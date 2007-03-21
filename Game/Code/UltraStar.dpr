@@ -258,6 +258,13 @@ begin
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Score DB System', 1);
 
+  //GoldenStarsTwinkleMod
+  Log.BenchmarkStart(1);
+  Log.LogStatus('GoldenStars', 'Initialization');
+  GoldenRec := TEffectManager.Create;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading GoldenStars', 1);
+
   // Joypad
   if Ini.Joypad = 1 then begin
     Log.BenchmarkStart(1);

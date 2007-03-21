@@ -1,7 +1,7 @@
 unit UDraw;
 
 interface
-uses UThemes, ModiSDK;
+uses UThemes, ModiSDK, UGraphicClasses;
 
 procedure SingDraw;
 procedure SingModiDraw (PlayerInfo: TPlayerInfo);
@@ -200,6 +200,8 @@ var
   Pet:      integer;
   TempR:    real;
   R,G,B:    real;
+
+  GoldenStarPos : real;
 begin
   glColor3f(1, 1, 1);
   glEnable(GL_TEXTURE_2D);
@@ -214,10 +216,8 @@ begin
           // Golden Note Patch
           case Wartosc of
             1: glColor4f(1, 1, 1, 0.85);
-            2: glColor4f(1, 1, 0.3, 0.85);
+            2: glColor4f(1, 1, 1, 0.85); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85);
           end; // case
-
-
 
           // lewa czesc  -  left part
           Rec.Left := (Start-Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
@@ -231,6 +231,11 @@ begin
             glTexCoord2f(7/8, 1); glVertex2f(Rec.Right, Rec.Bottom);
             glTexCoord2f(7/8, 0); glVertex2f(Rec.Right, Rec.Top);
           glEnd;
+
+          //We keep the postion of the top left corner b4 it's overwritten
+            GoldenStarPos := Rec.Left;
+          //done
+
 
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
@@ -256,12 +261,11 @@ begin
           glTexCoord2f(1,   0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
-
           // Golden Star Patch
-          //case Wartosc of
-          //  2: SingGoldenStar(Rec.Left, Rec.Top, 1, StarfrG);
-          //end; // case
-
+          if Wartosc = 2 then
+            begin
+              GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
+            end;
 
         end; // if not FreeStyle
       end; // with

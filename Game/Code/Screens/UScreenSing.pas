@@ -3,7 +3,7 @@ unit UScreenSing;
 interface
 
 uses UMenu, UMusic, SDL, SysUtils, UPliki, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
-  TextGL, OpenGL12, BASS, UThemes, ULCD;
+  TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses;
 
 type
   TScreenSing = class(TMenu)
@@ -973,6 +973,9 @@ begin
   // draw custom items
   SingDraw;  // always draw
 
+//GoldenNoteStarsTwinkle Mod
+  GoldenRec.SpawnRec;
+//GoldenNoteStarsTwinkle Mod
 
   // back stereo
   Static[StaticP1].Texture.X := Static[StaticP1].Texture.X - 10*ScreenX;
@@ -1116,6 +1119,9 @@ Player[I].ScoreLast := Player[I].Score + Player[I].ScoreGolden;
 end;
 //PhrasenBonus - Line Bonus Mod End// }
 
+//GoldenStarsTwinkle Mod
+  GoldenRec.KillAll;
+//GoldenStarsTwinkle Mod End
 end;
 
 end.
