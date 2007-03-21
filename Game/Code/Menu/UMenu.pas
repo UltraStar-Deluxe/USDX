@@ -1,0 +1,1136 @@
+unit UMenu;
+
+interface
+
+uses OpenGL12, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
+  UMenuInteract, UThemes;
+
+type
+{  Int16 = SmallInt;}
+
+  PMenu = ^TMenu;
+  TMenu = class
+    protected
+      Interactions:   array of TInteract;
+      SelInteraction: integer;
+      Static:         array of TStatic;
+      Button:         array of TButton;
+      Selects:        array of TSelect;
+      SelectsS:       array of TSelectSlide;
+      BackImg:        TTexture;
+      BackW:          integer;
+      BackH:          integer;
+    public
+      Text:       array of TText;
+      mX:         integer; // mouse X
+      mY:         integer; // mouse Y
+
+      Fade:       integer; // fade type
+      ShowFinish: boolean; // true if there is no fade 
+
+
+      destructor Destroy; override;
+      constructor Create; overload; virtual;
+      constructor Create(Back: string); overload; virtual; // Back is a JPG resource name for background
+      constructor Create(Back: string; W, H: integer); overload; virtual; // W and H are the number of overlaps
+
+      // interaction
+      procedure AddInteraction(Typ, Num: integer);
+      procedure SetInteraction(Num: integer);
+      property Interaction: integer read SelInteraction write SetInteraction;
+
+      // background
+      procedure AddBackground(Name: string);
+
+      // static
+      function AddStatic(ThemeStatic: TThemeStatic): integer; overload;
+      function AddStatic(X, Y, W, H: real; Name: string): integer; overload;
+      function AddStatic(X, Y, W, H: real; Name, Format, Typ: string): integer; overload;
+      function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; Name, Format, Typ: string): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; Name, Format, Typ: string): integer; overload;
+      function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; Name, Format, Typ: string; Color: integer): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; Name, Format, Typ: string; Color: integer): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; Name, Format, Typ: string; Color: integer): integer; overload;
+
+      // text
+      function AddText(ThemeText: TThemeText): integer; overload;
+      function AddText(X, Y: real; Tekst: string): integer; overload;
+      function AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Tekst: string): integer; overload;
+      function AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer; overload;
+
+      // button
+      function AddButton(ThemeButton: TThemeButton): integer; overload;
+      function AddButton(X, Y, W, H: real; Name: String): integer; overload;
+      function AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer; overload;
+      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean): integer; overload;
+      procedure ClearButtons;
+      procedure AddButtonText(AddX, AddY: real; AddText: string); overload;
+      procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; AddText: string); overload;
+      procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; AddText: string); overload;
+
+      // select
+      function AddSelect(ThemeSelect: TThemeSelect; var Data: integer; Values: array of string): integer; overload;
+      function AddSelect(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+        TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
+        SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
+        STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
+        Name, Typ: String; SBGName, SBGTyp: String;
+        Caption: string; var Data: integer): integer; overload;
+      procedure AddSelectOption(AddX, AddY: real; AddText: string); overload;
+      procedure AddSelectOption(SelectNo: Cardinal; AddX, AddY: real; AddText: string); overload;
+      procedure UpdateSelectOptions(ThemeSelect: TThemeSelect; SelectNum: integer; Values: array of string; var Data: integer);
+
+      // select slide
+      function AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer; Values: array of string): integer; overload;
+      function AddSelectSlide(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+        TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
+        SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
+        STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
+        Name, Typ: String; SBGName, SBGTyp: String;
+        Caption: string; var Data: integer): integer; overload;
+      procedure AddSelectSlideOption(AddText: string); overload;
+      procedure AddSelectSlideOption(SelectNo: Cardinal; AddText: string); overload;
+      procedure UpdateSelectSlideOptions(ThemeSelectSlide: TThemeSelectSlide; SelectNum: integer; Values: array of string; var Data: integer);
+
+
+//      function AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
+//      procedure ClearWidgets(MinNumber : Int16);
+      procedure FadeTo(Screen: PMenu);
+
+      function DrawBG: boolean; virtual;
+      function DrawFG: boolean; virtual;
+      function Draw: boolean; virtual;
+      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown : Boolean): Boolean; virtual;
+      function ParseMouse(Typ: integer; X: integer; Y: integer): Boolean; virtual; abstract;
+      function InRegion(X1, Y1, X2, Y2, X, Y: real): Boolean;
+      function InStaticRegion(StaticNr: integer; X, Y: integer): Boolean;
+      procedure onShow; virtual;
+      procedure onShowFinish; virtual;
+      procedure onHide; virtual;
+
+      procedure SetAnimationProgress(Progress: real); virtual;
+
+
+      procedure InteractNext; virtual;
+      procedure InteractCustom(CustomSwitch: integer); virtual;
+      procedure InteractPrev; virtual;
+      procedure InteractInc; virtual;
+      procedure InteractDec; virtual;
+
+      procedure AddBox(X, Y, W, H: real);
+  end;
+
+const
+  pmMove = 1;
+  pmClick = 2;
+  pmUnClick = 3;
+
+  iButton = 0; // interaction type
+  iSelect = 1;
+  iText = 2;
+  iSelectS = 3;
+
+//  fBlack = 0; // fade type
+//  fWhite = 1;
+
+implementation
+
+uses UMain, UDrawTexture, UGraphic, UDisplay, UCovers, USkins;
+
+destructor TMenu.Destroy;
+begin
+  inherited;
+end;
+
+constructor TMenu.Create;
+begin
+  Fade := 0;//fWhite;
+
+  SetLength(Static, 0);
+  SetLength(Button, 0);
+
+  BackImg.TexNum := -1;
+end;
+
+constructor TMenu.Create(Back: String);
+begin
+  inherited Create;
+
+  if Back <> '' then begin
+//    BackImg := Texture.LoadTexture(true, PChar(Back), 'JPG', 'Plain', 0);
+    BackImg := Texture.LoadTexture(PChar(Back), 'JPG', 'Plain', 0); // new theme system
+    BackImg.W := 800;//640;
+    BackImg.H := 600;//480;
+    BackW := 1;
+    BackH := 1;
+  end else
+    BackImg.TexNum := -1;
+end;
+
+constructor TMenu.Create(Back: string; W, H: integer);
+begin
+  Create(Back);
+  BackImg.W := BackImg.W / W;
+  BackImg.H := BackImg.H / H;
+  BackW := W;
+  BackH := H;
+end;
+
+procedure TMenu.AddInteraction(Typ, Num: integer);
+var
+  IntNum:   integer;
+begin
+  IntNum := Length(Interactions);
+  SetLength(Interactions, IntNum+1);
+  Interactions[IntNum].Typ := Typ;
+  Interactions[IntNum].Num := Num;
+  Interaction := 0;
+end;
+
+procedure TMenu.SetInteraction(Num: integer);
+var
+  OldNum, OldTyp:   integer;
+  NewNum, NewTyp:   integer;
+begin
+  // set inactive
+  OldNum := Interactions[Interaction].Num;
+  OldTyp := Interactions[Interaction].Typ;
+  case OldTyp of
+    iButton:  Button[OldNum].Selected := False;
+    iSelect:  Selects[OldNum].Selected := False;
+    iText:    Text[OldNum].Selected := False;
+    iSelectS: SelectsS[OldNum].Selected := False;
+  end;
+
+  // set active
+  SelInteraction := Num;
+  NewNum := Interactions[Interaction].Num;
+  NewTyp := Interactions[Interaction].Typ;
+  case NewTyp of
+    iButton:  Button[NewNum].Selected := True;
+    iSelect:  Selects[NewNum].Selected := True;
+    iText:    Text[NewNum].Selected := True;
+    iSelectS: SelectsS[NewNum].Selected := True;
+  end;
+end;
+
+procedure TMenu.AddBackground(Name: string);
+begin
+  if Name <> '' then begin
+//    BackImg := Texture.LoadTexture(false, PChar(Skin.SkinPath + FileName), 'JPG', 'Plain', 0); // new theme system
+    BackImg := Texture.GetTexture(Skin.GetTextureFileName(Name), 'Plain');
+    BackImg.W := 800;
+    BackImg.H := 600;
+    BackW := 1;
+    BackH := 1;
+  end;
+end;
+
+function TMenu.AddStatic(ThemeStatic: TThemeStatic): integer;
+begin
+  Result := AddStatic(ThemeStatic.X, ThemeStatic.Y, ThemeStatic.W, ThemeStatic.H, ThemeStatic.Z,
+    ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
+    ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2,
+    {<0.5.1: Skin.SkinPath + ThemeStatic.Tex, 0.5.1:} Skin.GetTextureFileName(ThemeStatic.Tex),
+    'JPG', ThemeStatic.Typ, $FFFFFF);
+    //'Font Black');
+end;
+
+function TMenu.AddStatic(X, Y, W, H: real; Name: string): integer;
+begin
+  Result := AddStatic(X, Y, W, H, Name, 'JPG', 'Plain');
+end;
+
+function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; Name, Format, Typ: string): integer;
+var
+  StatNum:  integer;
+begin
+  Result := AddStatic(X, Y, W, H, ColR, ColG, ColB, Name, Format, Typ, $FFFFFF);
+end;
+
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; Name, Format, Typ: string): integer;
+var
+  StatNum:  integer;
+begin
+  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, Name, Format, Typ, $FFFFFF);
+end;
+
+function TMenu.AddStatic(X, Y, W, H: real; Name, Format, Typ: string): integer;
+var
+  StatNum:  integer;
+begin
+  // adds static
+  StatNum := Length(Static);
+  SetLength(Static, StatNum + 1);
+//  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), $FF00FF)); // $FFFFFF
+//  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Skin.SkinReg, PChar(Name), PChar(Format), PChar(Typ), $FF00FF)); // new skin system
+  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), $FF00FF)); // new skin
+
+  // configures static
+  Static[StatNum].Texture.X := X;
+  Static[StatNum].Texture.Y := Y;
+  Static[StatNum].Texture.W := W;
+  Static[StatNum].Texture.H := H;
+  Static[StatNum].Visible := true;
+  Result := StatNum;
+end;
+
+function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; Name, Format, Typ: string; Color: integer): integer;
+var
+  StatNum:  integer;
+begin
+  Result := AddStatic(X, Y, W, H, 0, ColR, ColG, ColB, Name, Format, Typ, Color);
+end;
+
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; Name, Format, Typ: string; Color: integer): integer;
+begin
+  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Format, Typ, Color);
+//
+end;
+
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; Name, Format, Typ: string; Color: integer): integer;
+var
+  StatNum:  integer;
+begin
+  // adds static
+  StatNum := Length(Static);
+  SetLength(Static, StatNum + 1);
+//  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), Color));
+//  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Skin.SkinReg, PChar(Name), PChar(Format), PChar(Typ), Color)); // new skin system
+Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), Color)); // new skin
+//  Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ));
+
+  // configures static
+  Static[StatNum].Texture.X := X;
+  Static[StatNum].Texture.Y := Y;
+  Static[StatNum].Texture.W := W;
+  Static[StatNum].Texture.H := H;
+  Static[StatNum].Texture.Z := Z;
+  Static[StatNum].Texture.ColR := ColR;
+  Static[StatNum].Texture.ColG := ColG;
+  Static[StatNum].Texture.ColB := ColB;
+  Static[StatNum].Texture.TexX1 := TexX1;
+  Static[StatNum].Texture.TexY1 := TexY1;
+  Static[StatNum].Texture.TexX2 := TexX2;
+  Static[StatNum].Texture.TexY2 := TexY2;
+  Static[StatNum].Texture.Alpha := 1;
+  Static[StatNum].Visible := true;
+  Result := StatNum;
+end;
+
+function TMenu.AddText(ThemeText: TThemeText): integer;
+begin
+  Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.Font, ThemeText.Size,
+    ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text);
+end;
+
+function TMenu.AddText(X, Y: real; Tekst: string): integer;
+var
+  TextNum:  integer;
+begin
+  // adds text
+  TextNum := Length(Text);
+  SetLength(Text, TextNum + 1);
+  Text[TextNum] := TText.Create(X, Y, Tekst);
+  Result := TextNum;
+end;
+
+function TMenu.AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Tekst: string): integer;
+begin
+  Result := AddText(X, Y, Style, Size, ColR, ColG, ColB, 0, Tekst);
+end;
+
+function TMenu.AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer;
+var
+  TextNum:  integer;
+begin
+  // adds text
+  TextNum := Length(Text);
+  SetLength(Text, TextNum + 1);
+  Text[TextNum] := TText.Create(X, Y, Style, Size, ColR, ColG, ColB, Align, Tekst);
+  Result := TextNum;
+end;
+
+
+// Method to add a button in our TMenu. It returns the assigned ButtonNumber
+function TMenu.AddButton(ThemeButton: TThemeButton): integer;
+var
+  BT:     integer;
+  BTLen:  integer;
+  temp:   integer;
+begin
+{  Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
+    ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
+    ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
+    ThemeButton.Tex, 'JPG', 'Font Black');}
+
+  Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
+    ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
+    ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
+    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ, ThemeButton.Reflection);
+
+
+  BTLen := Length(ThemeButton.Text);
+  for BT := 0 to BTLen-1 do begin
+    AddButtonText(ThemeButton.Text[BT].X, ThemeButton.Text[BT].Y,
+      ThemeButton.Text[BT].ColR, ThemeButton.Text[BT].ColG, ThemeButton.Text[BT].ColB,
+      ThemeButton.Text[BT].Font, ThemeButton.Text[BT].Size, ThemeButton.Text[BT].Align,
+      ThemeButton.Text[BT].Text);
+  end;
+end;
+
+function TMenu.AddButton(X, Y, W, H: real; Name: String): integer;
+begin
+  Result := AddButton(X, Y, W, H, Name, 'JPG', 'Plain', False);
+end;
+
+function TMenu.AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer;
+begin
+  Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, 'JPG', 'Plain', Reflection);
+end;
+
+function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean): integer;
+var
+  ButNum : integer;
+begin
+  // adds button
+  ButNum := Length(Button);
+  SetLength(Button, ButNum + 1);
+//  Button[ButNum] := TButton.Create(Texture.GetTexture(Name, Typ));
+
+  // check here for cache
+//  Texture.GetTexture(Name, Typ, false); // preloads textures and creates cahce mipmap when needed
+//  if Covers.CoverExists(Name) then
+  Button[ButNum] := TButton.Create(Texture.GetTexture(Name, Typ, true)); // use cache texture
+//  else
+//    Button[ButNum] := TButton.Create(Texture.GetTexture(Name, Typ, false)); // don't use cache texture}
+
+  // configures button
+  Button[ButNum].Texture.X := X;
+  Button[ButNum].Texture.Y := Y;
+  Button[ButNum].Texture.W := W;
+  Button[ButNum].Texture.H := H;
+  Button[ButNum].SelectColR := ColR;
+  Button[ButNum].SelectColG := ColG;
+  Button[ButNum].SelectColB := ColB;
+  Button[ButNum].SelectInt := Int;
+  Button[ButNum].DeselectColR := DColR;
+  Button[ButNum].DeselectColG := DColG;
+  Button[ButNum].DeselectColB := DColB;
+  Button[ButNum].DeselectInt := DInt;
+  Button[ButNum].Texture.TexX1 := 0;
+  Button[ButNum].Texture.TexY1 := 0;
+  Button[ButNum].Texture.TexX2 := 1;
+  Button[ButNum].Texture.TexY2 := 1;
+  Button[ButNum].SetSelect(false);
+
+  Button[ButNum].Reflection := Reflection;
+
+  // adds interaction
+  AddInteraction(iButton, ButNum);
+  Interaction := 0;
+end;
+
+procedure TMenu.ClearButtons;
+begin
+  Setlength(Button, 0);
+end;
+
+// Method to draw our TMenu and all his child buttons
+function TMenu.DrawBG: boolean;
+var
+  PetX:   integer;
+  PetY:   integer;
+begin
+//  glClearColor(1, 1, 1, 1);
+//  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+
+  glMatrixMode(GL_PROJECTION);
+    glLoadIdentity;
+    glOrtho(0, RenderW, RenderH, 0, -1, 100);
+  glMatrixMode(GL_MODELVIEW);
+
+  BackImg.ColR := 1;
+  BackImg.ColG := 1;
+  BackImg.ColB := 1;
+  BackImg.TexX1 := 0;
+  BackImg.TexY1 := 0;
+  BackImg.TexX2 := 1;
+  BackImg.TexY2 := 1;
+  if (BackImg.TexNum <> -1) then begin
+    // draw texture with overlapping
+    for PetY := 1 to BackH do
+      for PetX := 1 to BackW do begin
+        BackImg.X := (PetX-1)/BackW * 800; //640
+        BackImg.Y := (PetY-1)/BackH * 600; //480
+        DrawTexture(BackImg);
+      end; // for PetX
+  end; // if
+end;
+
+function TMenu.DrawFG: boolean;
+var
+  J:      Integer;
+begin
+  // We don't forget about newly implemented static for nice skin ...
+  for J := 0 to Length(Static) - 1 do
+    Static[J].Draw;
+
+  // ... and slightly implemented menutext unit
+  for J := 0 to Length(Text) - 1 do
+    Text[J].Draw;
+
+  // Second, we draw all of our buttons
+  for J := 0 to Length(Button) - 1 do
+    Button[J].Draw;
+
+  // Third, we draw all of our selects
+  for J := 0 to Length(Selects) - 1 do
+    Selects[J].Draw(1);
+
+  for J := 0 to Length(SelectsS) - 1 do
+    SelectsS[J].Draw;
+
+ // Third, we draw all our widgets
+//  for J := 0 to Length(WidgetsSrc) - 1 do
+//    SDL_BlitSurface(WidgetsSrc[J], nil, ParentBackBuf, WidgetsRect[J]);
+  Result := True;
+end;
+
+function TMenu.Draw: boolean;
+begin
+  DrawBG;
+  DrawFG;
+  Result := True;
+end;
+
+{function TMenu.GetNextScreen(): PMenu;
+begin
+  Result := NextScreen;
+end;}
+
+{function TMenu.AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
+var
+  WidgetNum : Int16;
+
+begin
+  If (Assigned(WidgetSrc)) Then
+  begin
+    WidgetNum := Length(WidgetsSrc);
+
+    SetLength(WidgetsSrc, WidgetNum + 1);
+    SetLength(WidgetsRect, WidgetNum + 1);
+
+    WidgetsSrc[WidgetNum] := WidgetSrc;
+    WidgetsRect[WidgetNum] := new(PSDL_Rect);
+    WidgetsRect[WidgetNum]^.x := X;
+    WidgetsRect[WidgetNum]^.y := Y;
+    WidgetsRect[WidgetNum]^.w := WidgetSrc^.w;
+    WidgetsRect[WidgetNum]^.h := WidgetSrc^.h;
+
+    Result := WidgetNum;
+  end
+  else
+    Result := -1;
+end;}
+
+{procedure TMenu.ClearWidgets(MinNumber : Int16);
+var
+  J : Int16;
+begin
+  For J := MinNumber to (Length(WidgetsSrc) - 1) do
+  begin
+    SDL_FreeSurface(WidgetsSrc[J]);
+    dispose(WidgetsRect[J]);
+  end;
+
+  SetLength(WidgetsSrc, MinNumber);
+  SetLength(WidgetsRect, MinNumber);
+end;}
+
+procedure TMenu.InteractNext;
+var
+  Num:    integer;
+  Typ:    integer;
+  Again:  boolean;
+begin
+  Again := true;
+
+  // change interaction as long as it's needed
+  while (Again = true) do begin
+    Num := (Interaction + 1) Mod Length(Interactions);
+    Interaction := Num;
+    Again := false; // reset, default to accept changing interaction
+
+
+    // checking newly interacted element
+    Num := Interactions[Interaction].Num;
+    Typ := Interactions[Interaction].Typ;
+    case Typ of
+    iButton:
+      begin
+        if Button[Num].Selectable = false then Again := True;
+      end;
+    end; // case
+  end; // while
+end;
+
+
+procedure TMenu.InteractPrev;
+var
+  Num:    integer;
+  Typ:    integer;
+  Again:  boolean;
+begin
+  Again := true;
+
+  // change interaction as long as it's needed
+  while (Again = true) do begin
+    Num := SelInteraction - 1;
+    if Num = -1 then Num := High(Interactions);
+    Interaction := Num;
+    Again := false; // reset, default to accept changing interaction
+
+    // checking newly interacted element
+    Num := Interactions[Interaction].Num;
+    Typ := Interactions[Interaction].Typ;
+    case Typ of
+    iButton:
+      begin
+        if Button[Num].Selectable = false then Again := True;
+      end;
+    end; // case
+  end; // while
+
+end;
+
+
+procedure TMenu.InteractCustom(CustomSwitch: integer);
+var
+  Num:    integer;
+  Typ:    integer;
+  Again:  boolean;
+begin
+  if num<0 then begin
+    CustomSwitch:= CustomSwitch*(-1);
+    Again := true;
+  // change interaction as long as it's needed
+  while (Again = true) do begin
+    Num := SelInteraction - CustomSwitch;
+    if Num = -1 then Num := High(Interactions);
+    Interaction := Num;
+    Again := false; // reset, default to accept changing interaction
+
+    // checking newly interacted element
+    Num := Interactions[Interaction].Num;
+    Typ := Interactions[Interaction].Typ;
+    case Typ of
+    iButton:
+      begin
+        if Button[Num].Selectable = false then Again := True;
+      end;
+    end; // case
+  end; // while
+  end
+  else if num>0 then begin
+    Again := true;
+    // change interaction as long as it's needed
+  while (Again = true) do begin
+    Num := (Interaction + CustomSwitch) Mod Length(Interactions);
+    Interaction := Num;
+    Again := false; // reset, default to accept changing interaction
+
+
+    // checking newly interacted element
+    Num := Interactions[Interaction].Num;
+    Typ := Interactions[Interaction].Typ;
+    case Typ of
+    iButton:
+      begin
+        if Button[Num].Selectable = false then Again := True;
+      end;
+    end; // case
+  end; // while
+    end
+end;
+
+
+procedure TMenu.FadeTo(Screen: PMenu);
+begin
+  Display.Fade := 0;
+  Display.NextScreen := Screen;
+end;
+
+procedure TMenu.AddButtonText(AddX, AddY: real; AddText: string);
+begin
+  AddButtonText(AddX, AddY, 1, 1, 1, AddText);
+end;
+
+procedure TMenu.AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; AddText: string);
+var
+  Il:   integer;
+begin
+  with Button[High(Button)] do begin
+    Il := Length(Text);
+    SetLength(Text, Il+1);
+    Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
+    Text[Il].ColR := ColR;
+    Text[Il].ColG := ColG;
+    Text[Il].ColB := ColB;
+    Text[Il].Int := 1;//0.5;
+  end;
+end;
+
+procedure TMenu.AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; AddText: string);
+var
+  Il:   integer;
+begin
+  with Button[High(Button)] do begin
+    Il := Length(Text);
+    SetLength(Text, Il+1);
+    Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
+    Text[Il].ColR := ColR;
+    Text[Il].ColG := ColG;
+    Text[Il].ColB := ColB;
+    Text[Il].Int := 1;//0.5;
+    Text[Il].Style := Font;
+    Text[Il].Size := Size;
+    Text[Il].Align := Align;
+  end;
+end;
+
+function TMenu.AddSelect(ThemeSelect: TThemeSelect; var Data: integer; Values: array of string): integer;
+var
+  SO:     integer;
+begin
+  Result := AddSelect(ThemeSelect.X, ThemeSelect.Y, ThemeSelect.W, ThemeSelect.H, ThemeSelect.SkipX,
+    ThemeSelect.ColR, ThemeSelect.ColG, ThemeSelect.ColB, ThemeSelect.Int,
+    ThemeSelect.DColR, ThemeSelect.DColG, ThemeSelect.DColB, ThemeSelect.DInt,
+    ThemeSelect.TColR, ThemeSelect.TColG, ThemeSelect.TColB, ThemeSelect.TInt,
+    ThemeSelect.TDColR, ThemeSelect.TDColG, ThemeSelect.TDColB, ThemeSelect.TDInt,
+    ThemeSelect.SBGColR, ThemeSelect.SBGColG, ThemeSelect.SBGColB, ThemeSelect.SBGInt,
+    ThemeSelect.SBGDColR, ThemeSelect.SBGDColG, ThemeSelect.SBGDColB, ThemeSelect.SBGDInt,
+    ThemeSelect.STColR, ThemeSelect.STColG, ThemeSelect.STColB, ThemeSelect.STInt,
+    ThemeSelect.STDColR, ThemeSelect.STDColG, ThemeSelect.STDColB, ThemeSelect.STDInt,
+    Skin.GetTextureFileName(ThemeSelect.Tex), 'Font Black',
+    Skin.GetTextureFileName(ThemeSelect.TexSBG), 'Font Black',
+    ThemeSelect.Text, Data);
+  for SO := 0 to High(Values) do
+    AddSelectOption(ThemeSelect.X + ThemeSelect.W + ThemeSelect.SkipX + SO * 100 + 20, ThemeSelect.Y + 20, Values[SO]);
+end;
+
+function TMenu.AddSelect(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+  TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
+  SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
+  STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
+  Name, Typ: String; SBGName, SBGTyp: String;
+  Caption: string; var Data: integer): integer;
+var
+  S:    integer;
+begin
+  S := Length(Selects);
+  SetLength(Selects, S + 1);
+  Selects[S] := TSelect.Create;
+
+  Selects[S].Texture := Texture.GetTexture(Name, Typ);
+  Selects[S].X := X;
+  Selects[S].Y := Y;
+  Selects[S].W := W;
+  Selects[S].H := H;
+  Selects[S].ColR := ColR;
+  Selects[S].ColG := ColG;
+  Selects[S].ColB := ColB;
+  Selects[S].Int := Int;
+  Selects[S].DColR := DColR;
+  Selects[S].DColG := DColG;
+  Selects[S].DColB := DColB;
+  Selects[S].DInt := DInt;
+
+  Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
+  Selects[S].TextureSBG.X := X + W + SkipX;
+  Selects[S].TextureSBG.Y := Y;
+  Selects[S].TextureSBG.W := 450;
+  Selects[S].TextureSBG.H := H;
+  Selects[S].SBGColR := SBGColR;
+  Selects[S].SBGColG := SBGColG;
+  Selects[S].SBGColB := SBGColB;
+  Selects[S].SBGInt := SBGInt;
+  Selects[S].SBGDColR := SBGDColR;
+  Selects[S].SBGDColG := SBGDColG;
+  Selects[S].SBGDColB := SBGDColB;
+  Selects[S].SBGDInt := SBGDInt;
+
+  Selects[S].Text.X := X + 20;
+  Selects[S].Text.Y := Y + 20;
+  Selects[S].Text.Text := Caption;
+  Selects[S].Text.Size := 10;
+  Selects[S].Text.Visible := true;
+  Selects[S].TColR := TColR;
+  Selects[S].TColG := TColG;
+  Selects[S].TColB := TColB;
+  Selects[S].TInt := TInt;
+  Selects[S].TDColR := TDColR;
+  Selects[S].TDColG := TDColG;
+  Selects[S].TDColB := TDColB;
+  Selects[S].TDInt := TDInt;
+
+  Selects[S].STColR := STColR;
+  Selects[S].STColG := STColG;
+  Selects[S].STColB := STColB;
+  Selects[S].STInt := STInt;
+  Selects[S].STDColR := STDColR;
+  Selects[S].STDColG := STDColG;
+  Selects[S].STDColB := STDColB;
+  Selects[S].STDInt := STDInt;
+
+  // new
+  Selects[S].Texture.TexX1 := 0;
+  Selects[S].Texture.TexY1 := 0;
+  Selects[S].Texture.TexX2 := 1;
+  Selects[S].Texture.TexY2 := 1;
+  Selects[S].TextureSBG.TexX1 := 0;
+  Selects[S].TextureSBG.TexY1 := 0;
+  Selects[S].TextureSBG.TexX2 := 1;
+  Selects[S].TextureSBG.TexY2 := 1;
+
+  // Sets Data to copy the value of selectops to global value;
+  Selects[S].PData := @Data;
+
+  // Sets default value of selectopt from Data;
+  Selects[S].SelectedOption := Data;
+
+  // Disables default selection
+  Selects[S].SetSelect(false);
+
+  // adds interaction
+  AddInteraction(iSelect, S);
+end;
+
+procedure TMenu.AddSelectOption(AddX, AddY: real; AddText: string);
+begin
+  AddSelectOption (High(Selects), AddX, AddY, AddText);
+end;
+
+procedure TMenu.AddSelectOption(SelectNo: Cardinal; AddX, AddY: real; AddText: string);
+var
+  SO:     integer;
+begin
+  SO := Length(Selects[SelectNo].TextOpt);
+  SetLength(Selects[SelectNo].TextOpt, SO + 1);
+
+  Selects[SelectNo].TextOpt[SO] := TText.Create;
+
+  Selects[SelectNo].TextOpt[SO].X := AddX;
+  Selects[SelectNo].TextOpt[SO].Y := AddY;
+  Selects[SelectNo].TextOpt[SO].Text := AddText;
+  Selects[SelectNo].TextOpt[SO].Size := 10;
+  Selects[SelectNo].TextOpt[SO].ColR := Selects[SelectNo].STDColR;
+  Selects[SelectNo].TextOpt[SO].ColG := Selects[SelectNo].STDColG;
+  Selects[SelectNo].TextOpt[SO].ColB := Selects[SelectNo].STDColB;
+  Selects[SelectNo].TextOpt[SO].Int := Selects[SelectNo].STDInt;
+  Selects[SelectNo].TextOpt[SO].Visible := true;
+
+  if SO = Selects[SelectNo].PData^ then Selects[SelectNo].SelectedOption := SO;
+end;
+
+procedure TMenu.UpdateSelectOptions(ThemeSelect: TThemeSelect; SelectNum: integer; Values: array of string; var Data: integer);
+var
+  SO:   integer;
+begin
+  SetLength(Selects[SelectNum].TextOpt, 0);
+  for SO := 0 to High(Values) do
+    AddSelectOption(SelectNum, ThemeSelect.X + ThemeSelect.W + ThemeSelect.SkipX + SO * 100 + 20, ThemeSelect.Y + 20, Values[SO]);
+end;
+
+function TMenu.AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer; Values: array of string): integer;
+var
+  SO:     integer;
+begin
+  Result := AddSelectSlide(ThemeSelectS.X, ThemeSelectS.Y, ThemeSelectS.W, ThemeSelectS.H, ThemeSelectS.SkipX,
+    ThemeSelectS.ColR, ThemeSelectS.ColG, ThemeSelectS.ColB, ThemeSelectS.Int,
+    ThemeSelectS.DColR, ThemeSelectS.DColG, ThemeSelectS.DColB, ThemeSelectS.DInt,
+    ThemeSelectS.TColR, ThemeSelectS.TColG, ThemeSelectS.TColB, ThemeSelectS.TInt,
+    ThemeSelectS.TDColR, ThemeSelectS.TDColG, ThemeSelectS.TDColB, ThemeSelectS.TDInt,
+    ThemeSelectS.SBGColR, ThemeSelectS.SBGColG, ThemeSelectS.SBGColB, ThemeSelectS.SBGInt,
+    ThemeSelectS.SBGDColR, ThemeSelectS.SBGDColG, ThemeSelectS.SBGDColB, ThemeSelectS.SBGDInt,
+    ThemeSelectS.STColR, ThemeSelectS.STColG, ThemeSelectS.STColB, ThemeSelectS.STInt,
+    ThemeSelectS.STDColR, ThemeSelectS.STDColG, ThemeSelectS.STDColB, ThemeSelectS.STDInt,
+    Skin.GetTextureFileName(ThemeSelectS.Tex), 'Font Black',
+    Skin.GetTextureFileName(ThemeSelectS.TexSBG), 'Font Black',
+    ThemeSelectS.Text, Data);
+  for SO := 0 to High(Values) do
+    AddSelectSlideOption(Values[SO]);
+
+  //Generate Lines
+  SelectsS[High(SelectsS)].GenLines;
+
+  SelectsS[High(SelectsS)].SelectedOption := SelectsS[High(SelectsS)].SelectOptInt; // refresh
+end;
+
+function TMenu.AddSelectSlide(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+  TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
+  SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
+  STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
+  Name, Typ: String; SBGName, SBGTyp: String;
+  Caption: string; var Data: integer): integer;
+var
+  S:    integer;
+  I:    integer;
+begin
+  S := Length(SelectsS);
+  SetLength(SelectsS, S + 1);
+  SelectsS[S] := TSelectSlide.Create;
+
+  SelectsS[S].Texture := Texture.GetTexture(Name, Typ);
+  SelectsS[S].X := X;
+  SelectsS[S].Y := Y;
+  SelectsS[S].W := W;
+  SelectsS[S].H := H;
+  SelectsS[S].ColR := ColR;
+  SelectsS[S].ColG := ColG;
+  SelectsS[S].ColB := ColB;
+  SelectsS[S].Int := Int;
+  SelectsS[S].DColR := DColR;
+  SelectsS[S].DColG := DColG;
+  SelectsS[S].DColB := DColB;
+  SelectsS[S].DInt := DInt;
+
+  SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
+  SelectsS[S].TextureSBG.X := X + W + SkipX;
+  SelectsS[S].TextureSBG.Y := Y;
+  SelectsS[S].TextureSBG.W := 450;
+  SelectsS[S].TextureSBG.H := H;
+  SelectsS[S].SBGColR := SBGColR;
+  SelectsS[S].SBGColG := SBGColG;
+  SelectsS[S].SBGColB := SBGColB;
+  SelectsS[S].SBGInt := SBGInt;
+  SelectsS[S].SBGDColR := SBGDColR;
+  SelectsS[S].SBGDColG := SBGDColG;
+  SelectsS[S].SBGDColB := SBGDColB;
+  SelectsS[S].SBGDInt := SBGDInt;
+
+  SelectsS[S].Text.X := X + 20;
+  SelectsS[S].Text.Y := Y + 20;
+  SelectsS[S].Text.Text := Caption;
+  SelectsS[S].Text.Size := 10;
+  SelectsS[S].Text.Visible := true;
+  SelectsS[S].TColR := TColR;
+  SelectsS[S].TColG := TColG;
+  SelectsS[S].TColB := TColB;
+  SelectsS[S].TInt := TInt;
+  SelectsS[S].TDColR := TDColR;
+  SelectsS[S].TDColG := TDColG;
+  SelectsS[S].TDColB := TDColB;
+  SelectsS[S].TDInt := TDInt;
+
+  SelectsS[S].STColR := STColR;
+  SelectsS[S].STColG := STColG;
+  SelectsS[S].STColB := STColB;
+  SelectsS[S].STInt := STInt;
+  SelectsS[S].STDColR := STDColR;
+  SelectsS[S].STDColG := STDColG;
+  SelectsS[S].STDColB := STDColB;
+  SelectsS[S].STDInt := STDInt;
+
+  // new
+  SelectsS[S].Texture.TexX1 := 0;
+  SelectsS[S].Texture.TexY1 := 0;
+  SelectsS[S].Texture.TexX2 := 1;
+  SelectsS[S].Texture.TexY2 := 1;
+  SelectsS[S].TextureSBG.TexX1 := 0;
+  SelectsS[S].TextureSBG.TexY1 := 0;
+  SelectsS[S].TextureSBG.TexX2 := 1;
+  SelectsS[S].TextureSBG.TexY2 := 1;
+
+  // Sets Data to copy the value of selectops to global value;
+  SelectsS[S].PData := @Data;
+  // Configures Select options
+  {//SelectsS[S].TextOpt[0].Text := IntToStr(I+1);
+  SelectsS[S].TextOpt[0].Size := 10;
+  SelectsS[S].TextOpt[0].Align := 1;
+
+  SelectsS[S].TextOpt[0].ColR := SelectsS[S].STDColR;
+  SelectsS[S].TextOpt[0].ColG := SelectsS[S].STDColG;
+  SelectsS[S].TextOpt[0].ColB := SelectsS[S].STDColB;
+  SelectsS[S].TextOpt[0].Int := SelectsS[S].STDInt;
+  SelectsS[S].TextOpt[0].Visible := true; }
+
+  // Sets default value of selectopt from Data;
+  SelectsS[S].SelectedOption := Data;
+
+  // Disables default selection
+  SelectsS[S].SetSelect(false);
+
+  {// Configures 3 select options
+  for I := 0 to 2 do begin
+    SelectsS[S].TextOpt[I].X := SelectsS[S].TextureSBG.X + 20 + (50 + 20) + (150 - 20) * I;
+    SelectsS[S].TextOpt[I].Y := SelectsS[S].TextureSBG.Y + 20;
+    SelectsS[S].TextOpt[I].Text := IntToStr(I+1);
+    SelectsS[S].TextOpt[I].Size := 10;
+    SelectsS[S].TextOpt[I].Align := 1;
+
+
+    SelectsS[S].TextOpt[I].ColR := SelectsS[S].STDColR;
+    SelectsS[S].TextOpt[I].ColG := SelectsS[S].STDColG;
+    SelectsS[S].TextOpt[I].ColB := SelectsS[S].STDColB;
+    SelectsS[S].TextOpt[I].Int := SelectsS[S].STDInt;
+    SelectsS[S].TextOpt[I].Visible := true;
+  end;}
+
+
+  // adds interaction
+  AddInteraction(iSelectS, S);
+  Result := S;
+end;
+
+procedure TMenu.AddSelectSlideOption(AddText: string);
+begin
+  AddSelectSlideOption(High(SelectsS), AddText);
+end;
+
+procedure TMenu.AddSelectSlideOption(SelectNo: Cardinal; AddText: string);
+var
+  SO:     integer;
+begin
+  SO := Length(SelectsS[SelectNo].TextOptT);
+  
+  SetLength(SelectsS[SelectNo].TextOptT, SO + 1);
+  SelectsS[SelectNo].TextOptT[SO] := AddText;
+
+  //SelectsS[S].SelectedOption := SelectsS[S].SelectOptInt; // refresh
+
+  //if SO = Selects[S].PData^ then Selects[S].SelectedOption := SO;
+end;
+
+procedure TMenu.UpdateSelectSlideOptions(ThemeSelectSlide: TThemeSelectSlide; SelectNum: integer; Values: array of string; var Data: integer);
+var
+  SO:   integer;
+begin
+  SetLength(SelectsS[SelectNum].TextOptT, 0);
+  for SO := 0 to High(Values) do
+    AddSelectSlideOption(SelectNum, Values[SO]);
+
+  SelectsS[SelectNum].GenLines;
+
+//  SelectsS[SelectNum].SelectedOption := SelectsS[SelectNum].SelectOptInt; // refresh
+//  SelectS[SelectNum].SetSelectOpt(Data);
+//  SelectS[SelectNum].SelectedOption := 0;//Data;
+
+//  Log.LogError(IntToStr(High(SelectsS[SelectNum].TextOptT)));
+//  if 0 <= High(SelectsS[SelectNum].TextOptT) then
+
+  SelectsS[SelectNum].PData := @Data;
+  SelectsS[SelectNum].SelectedOption := Data;
+end;
+
+function TMenu.InRegion(X1, Y1, X2, Y2, X, Y: real): Boolean;
+begin
+  Result := false;
+  X1 := X1 * RenderW/640;
+  X2 := X2 * RenderW/640;
+  Y1 := Y1 * RenderH/480;
+  Y2 := Y2 * RenderH/480;
+  if (X >= X1) and (X <= X2) and (Y >= Y1) and (Y <= Y2) then
+    Result := true;
+end;
+
+function TMenu.InStaticRegion(StaticNr: integer; X, Y: integer): Boolean;
+begin
+  Result := InRegion(Static[StaticNr].Texture.X,
+    Static[StaticNr].Texture.Y,
+    Static[StaticNr].Texture.X + Static[StaticNr].Texture.W - 1,
+    Static[StaticNr].Texture.Y + Static[StaticNr].Texture.H - 1,
+    X, Y);
+end;
+
+procedure TMenu.InteractInc;
+var
+  Num:    integer;
+  Value:  integer;
+begin
+  case Interactions[Interaction].Typ of
+    iSelect:  begin
+        Num := Interactions[Interaction].Num;
+        Value := Selects[Num].SelectedOption;
+        Value := (Value + 1) Mod (Length(Selects[Num].TextOpt));
+        Selects[Num].SelectedOption := Value;
+      end;
+    iSelectS: begin
+        Num := Interactions[Interaction].Num;
+        Value := SelectsS[Num].SelectedOption;
+//        Value := (Value + 1) Mod (Length(SelectsS[Num].TextOptT));
+
+        // limit
+        Value := Value + 1;
+        if Value <= High(SelectsS[Num].TextOptT) then
+          SelectsS[Num].SelectedOption := Value;
+      end;
+  end;
+end;
+
+procedure TMenu.InteractDec;
+var
+  Num:    integer;
+  Value:  integer;
+begin
+  case Interactions[Interaction].Typ of
+    iSelect:  begin
+        Num := Interactions[Interaction].Num;
+        Value := Selects[Num].SelectedOption;
+        Value := Value - 1;
+        if Value = -1 then
+          Value := High(Selects[Num].TextOpt);
+        Selects[Num].SelectedOption := Value;
+      end;
+    iSelectS: begin
+        Num := Interactions[Interaction].Num;
+        Value := SelectsS[Num].SelectedOption;
+        Value := Value - 1;
+//        if Value = -1 then
+//          Value := High(SelectsS[Num].TextOptT);
+
+        if Value >= 0 then
+          SelectsS[Num].SelectedOption := Value;
+      end;
+  end
+end;
+
+procedure TMenu.AddBox(X, Y, W, H: real);
+begin
+  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('Bar'), 'JPG', 'Font Black');
+  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('Bar'), 'JPG', 'Font Black');
+end;
+
+procedure TMenu.onShow;
+begin
+// nothing
+//  beep;
+end;
+
+procedure TMenu.onShowFinish;
+begin
+// nothing
+//  beep;
+end;
+
+procedure TMenu.onHide;
+begin
+// nothing
+//  beep;
+end;
+
+function TMenu.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+begin
+// nothing
+//  Beep;
+  Result := true;
+end;
+
+procedure TMenu.SetAnimationProgress(Progress: real);
+begin
+// nothing
+//beep;
+end;
+
+end.
+
