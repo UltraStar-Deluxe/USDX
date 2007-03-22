@@ -72,7 +72,7 @@ begin
         5: Result := 32;
       end;
     end
-    else if (PlayerInfo.Playerinfo[I].Score = MaxScore) then
+    else if (PlayerInfo.Playerinfo[I].Score = MaxScore) AND (PlayerInfo.Playerinfo[I].Score <> 0) then
     begin
       Case I of
         0: Result := Result OR 1;
