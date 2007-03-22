@@ -14,7 +14,7 @@ type
   end;
 
   TLanguage = class
-    private
+    public
       Entry:  array of TLanguageEntry; //Entrys of Chosen Language
       SEntry: array of TLanguageEntry; //Entrys of Standard Language
       CEntry: array of TLanguageEntry; //Constant Entrys e.g. Version
@@ -68,6 +68,8 @@ begin
         SEntry[J] := Entry[J];
 
       SetLength(Entry, 0);
+      
+      Break;
     end;
 
     if (I = high(List)) then
@@ -139,6 +141,9 @@ var
   E:    integer; // entry
 begin
   Result := Text;
+  Text := Uppercase(Result);
+
+  Log.LogError('Text: "' + Text + '" L: ' + InttoStr(Length(Entry)));
 
   //Const Mod
   for E := 0 to high(CEntry) do
@@ -158,14 +163,11 @@ begin
 
   //Standard Language (If a Language File is Incomplete)
   //Then use Standard Language
-    if Text = Result then
+    for E := low(SEntry) to high(SEntry) do
+      if Text = SEntry[E].ID then
       begin
-      for E := low(SEntry) to high(SEntry) do
-        if Text = SEntry[E].ID then
-        begin
-          Result := SEntry[E].Text;
-          exit;
-        end;
+        Result := SEntry[E].Text;
+        Break;
       end;
   //Standard Language END
 end;

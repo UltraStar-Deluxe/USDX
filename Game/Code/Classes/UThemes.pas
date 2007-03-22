@@ -2,7 +2,11 @@ unit UThemes;
 
 interface
 
-uses IniFiles, SysUtils, Classes;
+uses
+{$IFDEF TRANSLATE}
+ ULanguage,
+{$ENDIF}
+IniFiles, SysUtils, Classes;
 
 type
   TRGB = record
@@ -576,9 +580,6 @@ var
 implementation
 
 uses
-{$IFDEF TRANSLATE}
- ULanguage,
-{$ENDIF}
 USkins, UIni;
 
 constructor TTheme.Create(FileName: string);

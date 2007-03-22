@@ -483,11 +483,11 @@ begin
   for Pet := 0 to High(IJoypad) do
     if Tekst = IJoypad[Pet] then Ini.Joypad := Pet;
 
-  // SoundCard
+  {// SoundCard
   for I := 0 to 7 do begin
     Ini.SoundCard[I, 1] := IniFile.ReadInteger('SoundCards', 'SoundCard'+IntToStr(I+1)+'L', Ini.SoundCard[I, 1]);
     Ini.SoundCard[I, 2] := IniFile.ReadInteger('SoundCards', 'SoundCard'+IntToStr(I+1)+'R', Ini.SoundCard[I, 2]);
-  end;
+  end;   }
 
   // LCD
   Tekst := IniFile.ReadString('Devices',    'LPT',   ILPT[0]);

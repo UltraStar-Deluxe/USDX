@@ -71,6 +71,7 @@ begin
   if ScreenSing.Tex_Background.TexNum >= 1 then begin
 
   glClearColor (1, 1, 1, 1);
+  glColor4f (1, 1, 1, 1);
 
     if (Ini.MovieSize = 0) then  //HalfSize BG
     begin

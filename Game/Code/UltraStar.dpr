@@ -6,16 +6,9 @@
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
 uses
-  {//Earlyer in Code Dir.. Now in SearchDir
-  DDKint in '..\ZLPortIO\ddkint.pas',
-  ZLPortIO in '..\ZLPortIO\zlportio.pas',
-  SQLiteTable3 in '..\SQLite\SQLiteTable3.pas',
-  SQLite3 in '..\SQLite\SQLite3.pas',}
-  Windows,
-  SDL,
-  SysUtils,
-
-  //Menu Objects
+  //------------------------------
+  //Includes - Menu System
+  //------------------------------
   UDisplay in 'Menu\UDisplay.pas',
   UMenu in 'Menu\UMenu.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
@@ -26,11 +19,14 @@ uses
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
 
-  //Classes
+  //------------------------------
+  //Includes - Classes
+  //------------------------------
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
   UPliki in 'Classes\UPliki.pas',
+  ULanguage in 'Classes\ULanguage.pas',
   UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
   URecord in 'Classes\URecord.pas',
@@ -47,7 +43,6 @@ uses
   ULCD in 'Classes\ULCD.pas',
   ULight in 'Classes\ULight.pas',
   UScores in 'Classes\UScores.pas',
-  ULanguage in 'Classes\ULanguage.pas',
   UCovers in 'Classes\UCovers.pas',
   UCatCovers in 'Classes\UCatCovers.pas',
   UFiles in 'Classes\UFiles.pas',
@@ -55,7 +50,9 @@ uses
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
 
-  //Screens
+  //------------------------------
+  //Includes - Screens
+  //------------------------------
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -78,7 +75,10 @@ uses
   UScreenOpen in 'Screens\UScreenOpen.pas',
   UScreenTop5 in 'Screens\UScreenTop5.pas',
   UScreenSongMenu in 'Screens\UScreenSongMenu.pas',
-  //PartyMode
+
+  //------------------------------
+  //Includes - Screens PartyMode
+  //------------------------------
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
@@ -86,8 +86,17 @@ uses
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
 
-  //Modi SDK
-  ModiSDK in '..\..\Modis\SDK\ModiSDK.pas';
+  //------------------------------
+  //Includes - Modi SDK
+  //------------------------------
+  ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
+
+  //------------------------------
+  //Includes - Delphi
+  //------------------------------
+  Windows,
+  SDL,
+  SysUtils;
 
 const
   Version = 'UltraStar Deluxe V 0.90 Beta';
@@ -100,7 +109,9 @@ var
 begin
   WndTitle := Version;
 
+  //------------------------------
   //Start more than One Time Prevention
+  //------------------------------
   hWnd:= FindWindow(nil, PChar(WndTitle));
   //Programm already started
   if (hWnd <> 0) then
@@ -120,15 +131,15 @@ begin
       Exit;
   end;
 
-
-
+  //------------------------------
+  //StartUp - Create Classes and Load Files
+  //------------------------------
   USTime := TTime.Create;
 
   // Log + Benchmark
   Log := TLog.Create;
   Log.Title := WndTitle;
   Log.BenchmarkStart(0);
-//  Log.LogError(IntToStr(DayOfTheYear(Date)));
 
   // Language
   Log.BenchmarkStart(1);
@@ -151,8 +162,6 @@ begin
   Log.LogStatus('Loading Skin List', 'Initialization');             Skin := TSkin.Create;
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Skin List', 1);
-
-  //Log.LogBenchmark(inttostr(Skin.), 1);
 
   // Sound Card List
   Log.BenchmarkStart(1);
@@ -187,7 +196,6 @@ begin
   Log.LogStatus('Load Light', 'Initialization');              Light := TLight.Create;
   if Ini.LPT = 2 then begin
     Light.Enable;
-//    Light.LightOne(0, 1000);
   end;
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Light', 1);
@@ -223,9 +231,6 @@ begin
   Log.BenchmarkStart(1);
   Log.LogStatus('PluginManager', 'Initialization');
   DLLMan := TDLLMan.Create;   //Load PluginList
-
-  Log.LogError(inttostr(Length(DLLMan.Plugins)) + ' Plugins Loaded');
-  
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading PluginManager', 1);
 
@@ -260,10 +265,10 @@ begin
 
   //GoldenStarsTwinkleMod
   Log.BenchmarkStart(1);
-  Log.LogStatus('GoldenStars', 'Initialization');
+  Log.LogStatus('Effect Manager', 'Initialization');
   GoldenRec := TEffectManager.Create;
   Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading GoldenStars', 1);
+  Log.LogBenchmark('Loading Particel System', 1);
 
   // Joypad
   if Ini.Joypad = 1 then begin
@@ -277,15 +282,18 @@ begin
   Log.LogBenchmark('Loading Time', 0);
 
 
-//  Music.SetLoop(true);
-//  Music.SetVolume(50);
-//  Music.Open(SkinPath + 'Menu Music 3.mp3');
-//  Music.Play;
+  //------------------------------
+  //Start- Mainloop
+  //------------------------------
+  //Music.SetLoop(true);
+  //Music.SetVolume(50);
+  //Music.Open(SkinPath + 'Menu Music 3.mp3');
+  //Music.Play;
   Log.LogStatus('Main Loop', 'Initialization');               MainLoop;
 
-//  sleep(3000);
-
-  // finish
+  //------------------------------
+  //Finish Application
+  //------------------------------
   if Ini.LPT = 1 then LCD.Clear;
   if Ini.LPT = 2 then Light.TurnOff;
 

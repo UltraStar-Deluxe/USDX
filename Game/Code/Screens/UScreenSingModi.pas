@@ -585,16 +585,16 @@ begin
 
   Log.LogStatus('End', 'onShow');  }
 
-PlayersPlay := TeamInfo.NumTeams;
+  PlayersPlay := TeamInfo.NumTeams;
 
-if DLLMan.Selected.LoadSong then //Start with Song
-begin
-  inherited;
-end
-else //Start Without Song
-begin
-  Music.CaptureStart;
-end;
+  if DLLMan.Selected.LoadSong then //Start with Song
+  begin
+    inherited;
+  end
+  else //Start Without Song
+  begin
+    Music.CaptureStart;
+  end;
 
 //Set Playerinfo
   PlayerInfo.NumPlayers := PlayersPlay;
@@ -648,16 +648,21 @@ end;
   //Music.CaptureStart;
   //Music.MoveTo(AktSong.Start);
 
-//Init Plugin
-if not DLLMan.PluginInit(TeamInfo, PlayerInfo, ToSentences(Czesci[0]), LoadTex, Print, LoadSound, PlaySound) then
-begin
-//Fehler
-Log.LogError('Could not Init Plugin');
-Halt;
-end;
+  //Init Plugin
+  if not DLLMan.PluginInit(TeamInfo, PlayerInfo, ToSentences(Czesci[0]), LoadTex, Print, LoadSound, PlaySound) then
+  begin
+    //Fehler
+    Log.LogError('Could not Init Plugin');
+    Halt;
+  end;
 
-Winner := 0;
-//Set Score Visibility
+  // Set Background (Little Workaround, maybe change sometime)
+  if (DLLMan.Selected.LoadBack) AND (DLLMan.Selected.LoadSong) then
+    ScreenSing.Tex_Background := Tex_Background;
+
+  Winner := 0;
+
+  //Set Score Visibility
   if PlayersPlay = 1 then begin
     Text[TextP1Score].Visible := DLLMan.Selected.ShowScore;
     Static[StaticP1ScoreBG].Visible := DLLMan.Selected.ShowScore;
