@@ -70,6 +70,8 @@ var
   Tex_BG_Right:   array[1..6] of TTexture;
 
   Tex_Note_Star:  TTexture;
+  Tex_Note_Perfect_Star: TTexture;
+
 
   Tex_Ball:       TTexture;
   FullScreen:     boolean;
@@ -186,6 +188,7 @@ begin
     Tex_BG_Right[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), 'BMP', 'Alpha Black Colored', Col);
   end;
 
+  Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'JPG', 'Font Black', 0);
   Tex_Note_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')), 'JPG', 'Font Black', 0);
   Tex_Ball :=      Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
 

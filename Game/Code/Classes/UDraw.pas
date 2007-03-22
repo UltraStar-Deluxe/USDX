@@ -12,9 +12,10 @@ procedure SingDrawBeatDelimeters(Left, Top, Right: real; NrCzesci: integer);
 procedure SingDrawCzesc(Left, Top, Right: real; NrCzesci: integer; Space: integer);
 procedure SingDrawPlayerCzesc(X, Y, W: real; NrGracza: integer; Space: integer);
 procedure SingDrawPlayerBGCzesc(Left, Top, Right: real; NrCzesci, NrGracza: integer; Space: integer);
+{ for no use since we have UGraphicClasses
 procedure SingDrawStar(X, Y, A: real);
 procedure SingGoldenStar(X, Y, A: real);
-
+}
 // The Singbar
 procedure SingDrawSingbar(X, Y, W, H: real; Percent: integer);
 
@@ -381,8 +382,8 @@ var
             //inc(Starfr);
             //Starfr := Starfr mod 128;
 
-
-            SingDrawStar(Rec.Left+2, Rec.Top+4, A);
+            GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
+          {  SingDrawStar(Rec.Left+2, Rec.Top+4, A);}
         end;
 
         // detekt
@@ -500,6 +501,7 @@ begin
   end;
 end;
 
+{not used anymore tough we have UGraphicClasses
 procedure SingDrawStar(X, Y, A: real);
 var
   TempR:    real;
@@ -509,7 +511,7 @@ var
   W := 32;
   H := 32;
 
-  // Golden Star Patch
+// Golden Star Patch
 //  case Z of
 //    1: glColor4f(1, 1, 1, A);
 //    2: glColor4f(1, 1, 0.3, A);
@@ -530,8 +532,9 @@ var
     glTexCoord2f((1/16) * Starframe, 1); glVertex2f(X+W, Y-H);
   glEnd;
 end;
+}
 
-
+{not used anymore tough we have UGraphicClasses
 procedure SingGoldenStar(X, Y, A: real);
 var
   TempR:    real;
@@ -554,7 +557,7 @@ var
     glTexCoord2f((1/16) * StarfrG2, 1); glVertex2f(X+W, Y-H);
   glEnd;
 end;
-
+}
 
 procedure SingDraw;
 var

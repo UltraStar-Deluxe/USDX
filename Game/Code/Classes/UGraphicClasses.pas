@@ -8,9 +8,10 @@ type
    Frame    : Byte;     //act. Frame
    Tex      : Cardinal; //Tex num from Textur Manager
    Live     : Byte;     //How many Cycles before Kill
-   RecIndex : Integer;  //To which rectangle belongs this particle
+   RecIndex : Integer;  //To which rectangle this particle belongs
+   StarType : Integer;  // 1: GoldenNote | 2: PerfectNote
 
-   Constructor Create(cX,cY: Real; cTex: Cardinal; cLive: Byte; cFrame : integer; RecArrayIndex : Integer);
+   Constructor Create(cX,cY: Real; cTex: Cardinal; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : Integer);
    procedure Draw;
  end;
 
@@ -32,7 +33,7 @@ type
 
    constructor Create;
    procedure Draw;
-   function  Spawn(X, Y: Real; Tex: Cardinal; Live: Byte; StartFrame : Integer; RecArrayIndex : Integer): Cardinal;
+   function  Spawn(X, Y: Real; Tex: Cardinal; Live: Byte; StartFrame : Integer;  RecArrayIndex : Integer; StarType : Integer): Cardinal;
    procedure SpawnRec();
    procedure Kill(index: Cardinal);
    procedure KillAll();
@@ -47,14 +48,15 @@ implementation
 uses sysutils, Windows,OpenGl12, UThemes, USkins, UGraphic, UDrawTexture, UTexture, math, dialogs;
 
 //TParticle
-Constructor TParticle.Create(cX,cY: Real; cTex: Cardinal; cLive: Byte; cFrame : integer; RecArrayIndex : Integer);
+Constructor TParticle.Create(cX,cY: Real; cTex: Cardinal; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : Integer);
 begin
   X := cX;
   Y := cY;
   Tex := cTex;
   Live := cLive;
   Frame:= cFrame;
-  RecIndex := RecArrayIndex;
+  RecIndex := cRecArrayIndex;
+  StarType := cStarType;
 end;
 
 
@@ -63,16 +65,27 @@ var
   W, H:   real;
   Alpha : real;
 begin
-  W := 20;
-  H := 20;
-
   Alpha := (-cos((Frame+1)*2*pi/16)+1);  //Fade Eyecandy
 
-  glColor4f(0.99, 1, 0.6, Alpha);
+  Case StarType of
+      1:
+        begin
+          W := 20;
+          H := 20;
+          glColor4f(0.99, 1, 0.6, Alpha);
+        end;
+      2:
+        begin
+          W := 30;
+          H := 30;
+          glColor4f(1, 1, 0.95, Alpha);
+        end;
+  end;
+
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, Tex_Note_Star.TexNum);
+  glBindTexture(GL_TEXTURE_2D, Tex);
 
   begin
     glBegin(GL_QUADS);
@@ -139,11 +152,11 @@ begin
 end;
 
 
-function TEffectManager.Spawn(X, Y: Real; Tex: Cardinal; Live: Byte; StartFrame : Integer; RecArrayIndex : Integer): Cardinal;
+function TEffectManager.Spawn(X, Y: Real; Tex: Cardinal; Live: Byte; StartFrame : Integer; RecArrayIndex : Integer; StarType : Integer): Cardinal;
 begin
   Result := Length(Particle);
   SetLength(Particle, (Result + 1));
-  Particle[Result] := TParticle.Create(X, Y, Tex, Live, StartFrame, RecArrayIndex);
+  Particle[Result] := TParticle.Create(X, Y, Tex, Live, StartFrame, RecArrayIndex, StarType);
 end;
 
 
@@ -162,7 +175,7 @@ for P:= 0 to high(RecArray) do
         Xkatze := RandomRange(Ceil(RecArray[P].xTop), Ceil(RecArray[P].xBottom));
         Ykatze := RandomRange(Ceil(RecArray[P].yTop), Ceil(RecArray[P].yBottom));
         RandomFrame := RandomRange(0,14);
-        Spawn(Xkatze, Ykatze, Tex_Note_Star.TexNum, 16 - RandomFrame, RandomFrame, P);
+        Spawn(Xkatze, Ykatze, Tex_Note_Star.TexNum, 16 - RandomFrame, RandomFrame, P, 1);
         inc(RecArray[P].CurrentStarCount);
       end;
     end;
@@ -183,7 +196,7 @@ for P:= 0 to 2 do
         Xkatze := RandomRange(ceil(xPos) - 5 , ceil(xPos) + 10);
         Ykatze := RandomRange(ceil(yPos) - 5 , ceil(yPos) + 10);
         RandomFrame := RandomRange(0,14);
-        Spawn(Xkatze, Ykatze, Tex_Note_Star.TexNum, 16 - RandomFrame, RandomFrame, -1);
+        Spawn(Xkatze, Ykatze, Tex_Note_Star.TexNum, 16 - RandomFrame, RandomFrame, -1, 2);
     end;
   draw;
 end;
@@ -265,7 +278,7 @@ begin
         Xkatze := RandomRange(ceil(Xtop) - 5 , ceil(Xtop) + 10);
         Ykatze := RandomRange(ceil(Ytop) - 5 , ceil(Ytop) + 10);
         RandomFrame := RandomRange(0,14);
-        Spawn(Xkatze, Ykatze, Tex_Note_Star.TexNum, 16 - RandomFrame, RandomFrame, -1);
+        Spawn(Xkatze, Ykatze, Tex_Note_Perfect_Star.TexNum, 16 - RandomFrame, RandomFrame, -1, 2);
     end;
 
 end;
