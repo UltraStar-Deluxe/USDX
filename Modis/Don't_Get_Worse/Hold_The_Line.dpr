@@ -52,26 +52,28 @@ function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sen
 var
   I: Integer;
   Texname, TexType: PChar;
-begin {
+begin
   TexName := CreateStr(PChar('HDL_Pointer'));
   TexType := CreateStr(PChar('Plain'));
-  //PointerTex := LoadTex(TexName, TexType);
+  PointerTex := LoadTex(TexName, TexType);
 
   FreeStr(TexName);
   FreeStr(TexType);
 
-  //CountSentences := Sentences.High;
+  CountSentences := Sentences.High;
   Limit := 0;
   Frame := 0;
 
   fPrint := Print;
 
-  {for I := 0 to PlayerInfo.NumPlayers-1 do
+  for I := 0 to PlayerInfo.NumPlayers-1 do
   begin
     PlayerInfo.Playerinfo[I].Enabled := True;
     PlayerInfo.Playerinfo[I].Percentage := 100;
     PlayerTimes[I] := 0;
-  end; }         
+  end;
+
+  LoadOpenGL;
 
   Result := True;
 end;
@@ -110,12 +112,12 @@ begin
       begin
         PlayerInfo.Playerinfo[I].Enabled := False;
         Inc(C);
-        PlayerTimes[I] := Frame; //Save Tiem of Dismission
+        PlayerTimes[I] := Frame; //Save Time of Dismission
         //ToDo: PlaySound
       end;
       
       //Draw Pointer;
-      //glBindTexture(GL_TEXTURE_2D, PointerTex.TexNum);
+      glBindTexture(GL_TEXTURE_2D, PointerTex.TexNum);
 
       glBegin(GL_QUADS);
         glTexCoord2f(1/32, 0); glVertex2f(PlayerInfo.Playerinfo[I].PosX + L - 3, PlayerInfo.Playerinfo[I].PosY - 4);
@@ -131,7 +133,7 @@ begin
       //Draw Dismissed
       Text := CreateStr(PChar('PARTY_DISMISSED'));
       //Str := 'Test123';
-      //fPrint (1, 6, PlayerInfo.Playerinfo[I].PosX, PlayerInfo.Playerinfo[I].PosY-8, Text);
+      fPrint (1, 6, PlayerInfo.Playerinfo[I].PosX, PlayerInfo.Playerinfo[I].PosY-8, Text);
       FreeStr(Text);
     end;
   end;
@@ -150,6 +152,7 @@ for I := 0 to PlayerInfo.NumPlayers-1 do
   PlayerInfo.Playerinfo[I].Percentage := (PlayerTimes[I] * 100) div Frame;
     if (PlayerInfo.Playerinfo[I].Enabled) then
     begin
+      PlayerInfo.Playerinfo[I].Percentage := 100;
       Case I of
         0: Result := Result OR 1;
         1: Result := Result OR 2;
