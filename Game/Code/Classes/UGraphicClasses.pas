@@ -38,7 +38,6 @@ type
    procedure Kill(index: Cardinal);
    procedure KillAll();
    procedure SaveGoldenStarsRec(Xtop, Ytop, Xbottom, Ybottom: Real);
-   procedure SpawnNotePerfect(xPos,yPos : real);
    procedure SavePerfectNotePos(Xtop, Ytop: Real);
  end;
 
@@ -178,25 +177,6 @@ for P:= 0 to high(RecArray) do
         Spawn(Xkatze, Ykatze, Tex_Note_Star.TexNum, 16 - RandomFrame, RandomFrame, P, 1);
         inc(RecArray[P].CurrentStarCount);
       end;
-    end;
-  draw;
-end;
-
-
-procedure TEffectManager.SpawnNotePerfect(xPos,yPos : real);
-Var
-  Xkatze, Ykatze    : Real;
-  RandomFrame : Integer;
-  P : Integer; // P as seen on TV as Positionman
-begin
-//Spawn a random amount of stars within the given coordinates
-//RandomRange(0,14) <- this one starts at a random  frame, 16 is our last frame - would be senseless to start a particle with 16, cause it would be dead at the next frame
-for P:= 0 to 2 do
-  begin
-        Xkatze := RandomRange(ceil(xPos) - 5 , ceil(xPos) + 10);
-        Ykatze := RandomRange(ceil(yPos) - 5 , ceil(yPos) + 10);
-        RandomFrame := RandomRange(0,14);
-        Spawn(Xkatze, Ykatze, Tex_Note_Star.TexNum, 16 - RandomFrame, RandomFrame, -1, 2);
     end;
   draw;
 end;
