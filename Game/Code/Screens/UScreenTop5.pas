@@ -25,7 +25,7 @@ type
 
 implementation
 
-uses UGraphic, UScores, UMain, UIni;
+uses UGraphic, UDataBase, UMain, UIni;
 
 function TScreenTop5.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -94,10 +94,10 @@ begin
   PMax := Ini.Players;
   if Ini.Players = 4 then Ini.Players := 5;
   for I := 0 to PMax do
-    AddScore(AktSong, Ini.Difficulty, Ini.Name[I], Round(Player[I].ScoreTotalI));
+    DataBase.AddScore(AktSong, Ini.Difficulty, Ini.Name[I], Round(Player[I].ScoreTotalI));
 
-  //WriteScore(AktSong);
-  ReadScore(AktSong);
+  DataBase.WriteScore(AktSong);
+  DataBase.ReadScore(AktSong);
 
   Text[TextArtistTitle].Text := AktSong.Artist + ' - ' + AktSong.Title;
 

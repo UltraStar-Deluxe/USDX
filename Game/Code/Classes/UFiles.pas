@@ -171,6 +171,16 @@ begin
         //Additional Header Information
         //---------
 
+        // Video Gap
+        else if (Identifier = 'GAP') then
+        begin
+          // Replace . with ,
+          if (Pos('.', Value) <> 0) then
+            Value[Pos('.', Value)] := ',';
+
+          Song.GAP := StrtoFloatDef (Value, 0);
+        end
+
         //Cover Picture
         else if (Identifier = 'COVER') then
         begin

@@ -42,7 +42,7 @@ uses
   UJoystick in 'Classes\UJoystick.pas',
   ULCD in 'Classes\ULCD.pas',
   ULight in 'Classes\ULight.pas',
-  UScores in 'Classes\UScores.pas',
+  UDataBase in 'Classes\UDataBase.pas',
   UCovers in 'Classes\UCovers.pas',
   UCatCovers in 'Classes\UCatCovers.pas',
   UFiles in 'Classes\UFiles.pas',
@@ -258,10 +258,11 @@ begin
 
   // Score Saving System
   Log.BenchmarkStart(1);
-  Log.LogStatus('Score DB System', 'Initialization');
-  InitScore('Scores.db');
+  Log.LogStatus('DataBase System', 'Initialization');
+  DataBase := TDataBaseSystem.Create;
+  DataBase.Init ('Ultrastar.db');
   Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Score DB System', 1);
+  Log.LogBenchmark('Loading DataBase System', 1);
 
   //GoldenStarsTwinkleMod
   Log.BenchmarkStart(1);
