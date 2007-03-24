@@ -11,7 +11,7 @@ unit UTexture;
 // Arrow (for arrows, white is white, gray has color, black is transparent);
 
 interface
-uses OpenGL12, Windows, Math, Classes, SysUtils, Graphics, JPEG, UThemes;
+uses OpenGL12, Windows, Math, Classes, SysUtils, Graphics, JPEG, UThemes, PNGImage;
 
 procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
 //procedure glBindTexture(target: GLenum; texture: GLuint); stdcall; external opengl32;
@@ -192,6 +192,7 @@ var
   Res:        TResourceStream;
   TextureB:   TBitmap;
   TextureJ:   TJPEGImage;
+  TexturePNG: TPNGObject;
 
   Pet:        integer;
   Pet2:       integer;
@@ -215,10 +216,14 @@ begin
   end;
 
   if FromRegistry or ((not FromRegistry) and FileExists(Nazwa)) then begin
-
     TextureB := TBitmap.Create;
 
-  if Format = 'JPG' then begin
+  if Format = 'BMP' then begin
+    if FromRegistry then TextureB.LoadFromStream(Res)
+    else TextureB.LoadFromFile(Nazwa);
+  end
+
+  else if Format = 'JPG' then begin
     TextureJ := TJPEGImage.Create;
     if FromRegistry then TextureJ.LoadFromStream(Res)
     else begin
@@ -229,10 +234,19 @@ begin
     end;
     TextureB.Assign(TextureJ);
     TextureJ.Free;
-  end;
-  if Format = 'BMP' then begin
-    if FromRegistry then TextureB.LoadFromStream(Res)
-    else TextureB.LoadFromFile(Nazwa);
+  end
+
+  else if Format = 'PNG' then begin
+    TexturePNG := TPNGObject.Create;
+    if FromRegistry then TexturePNG.LoadFromStream(Res)
+    else begin
+      if FileExists(Nazwa) then
+        TexturePNG.LoadFromFile(Nazwa)
+      else
+        Exit;
+    end;
+    TextureB.Assign(TexturePNG);
+    TexturePNG.Free;
   end;
 
   if FromRegistry then Res.Free;
