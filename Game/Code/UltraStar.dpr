@@ -1,4 +1,4 @@
- program UltraStar;
+program UltraStar;
 
 {$DEFINE TRANSLATE}
 //DEFINE THEMESAVE}

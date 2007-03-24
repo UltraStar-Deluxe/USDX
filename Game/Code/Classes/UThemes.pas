@@ -3,9 +3,6 @@ unit UThemes;
 interface
 
 uses
-{$IFDEF TRANSLATE}
- ULanguage,
-{$ENDIF}
 IniFiles, SysUtils, Classes;
 
 type
@@ -580,6 +577,9 @@ var
 implementation
 
 uses
+{{$IFDEF TRANSLATE}
+ ULanguage,
+{{$ENDIF}
 USkins, UIni;
 
 constructor TTheme.Create(FileName: string);
@@ -716,7 +716,7 @@ begin
 
       //Score Text Translation Start
 
-      {$IFDEF TRANSLATE}
+      {{$IFDEF TRANSLATE}
       Main.Description[0] := Language.Translate('SING_SING');
       Main.DescriptionLong[0] := Language.Translate('SING_SING_DESC');
       Main.Description[1] := Language.Translate('SING_EDITOR');
@@ -725,7 +725,7 @@ begin
       Main.DescriptionLong[2] := Language.Translate('SING_GAME_OPTIONS_DESC');
       Main.Description[3] := Language.Translate('SING_EXIT');
       Main.DescriptionLong[3] := Language.Translate('SING_EXIT_DESC');
-      {$ENDIF}
+      {{$ENDIF}
 
       //Score Text Translation End
 
@@ -910,7 +910,7 @@ begin
     ThemeLoadButton(Options.ButtonRecord, 'OptionsButtonRecord');
     ThemeLoadButton(Options.ButtonExit, 'OptionsButtonExit');
 
-    {$IFDEF TRANSLATE}
+    {{$IFDEF TRANSLATE}
     Options.Description[0] := Language.Translate('SING_OPTIONS_GAME');
     Options.Description[1] := Language.Translate('SING_OPTIONS_GRAPHICS');
     Options.Description[2] := Language.Translate('SING_OPTIONS_SOUND');
@@ -918,7 +918,7 @@ begin
     Options.Description[4] := Language.Translate('SING_OPTIONS_THEMES');
     Options.Description[5] := Language.Translate('SING_OPTIONS_RECORD');
     Options.Description[6] := Language.Translate('SING_OPTIONS_EXIT');
-    {$ENDIF}
+    {{$ENDIF}
 
     ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
     Options.TextDescription.Text := Options.Description[0];
@@ -1137,9 +1137,9 @@ begin
   ThemeText.Size := ThemeIni.ReadInteger(Name, 'Size', 0);
   ThemeText.Align := ThemeIni.ReadInteger(Name, 'Align', 0);
 
-  {$IFDEF TRANSLATE}
+  {{$IFDEF TRANSLATE}
   ThemeText.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
-  {$ELSE}
+  {{$ELSE}{
   ThemeText.Text := ThemeIni.ReadString(Name, 'Text', '');
   {$ENDIF}
 
@@ -1268,9 +1268,9 @@ var
 begin
   DecimalSeparator := '.';
 
-  {$IFDEF TRANSLATE}
+  {{$IFDEF TRANSLATE}
   ThemeSelect.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
-  {$ELSE}
+  {{$ELSE}{
   ThemeSelect.Text := ThemeIni.ReadString(Name, 'Text', '');
   {$ENDIF}
 
@@ -1314,9 +1314,9 @@ var
 begin
   DecimalSeparator := '.';
 
-  {$IFDEF TRANSLATE}
+  {{$IFDEF TRANSLATE}
   ThemeSelectS.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
-  {$ELSE}
+  {{$ELSE}{
   ThemeSelectS.Text := ThemeIni.ReadString(Name, 'Text', '');
   {$ENDIF}
 

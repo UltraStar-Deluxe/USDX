@@ -45,11 +45,11 @@ type
 
 implementation
 
-{$IFDEF TRANSLATE}
+{{$IFDEF TRANSLATE}
 uses UGraphic, UScreenSong, UMenuStatic, UTime, UMain, UIni, ULanguage;
-{$ELSE}
+{{$ELSE}{
 uses UGraphic, UScreenSong, UMenuStatic, UTime, UMain, UIni;
-{$ENDIF}
+{{$ENDIF}
 function TScreenScore.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
   Result := true;
@@ -291,7 +291,7 @@ begin
 
     Text[TextName[PP]].Text := Ini.Name[P];
 
-    {$IFDEF TRANSLATE}
+    {{$IFDEF TRANSLATE}
     case (Player[P].ScoreTotalI) of
       0..2000:        Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
       2010..4000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_AMATEUR');
@@ -301,7 +301,7 @@ begin
       9010..9800:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_SUPERSTAR');
       9810..10000:    Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_ULTRASTAR');
     end;
-    {$ELSE}
+    {{$ELSE}{
     case (Player[P].ScoreTotalI) of
       0..2000:        Text[TextScore[PP]].Text := 'Tone Deaf';
       2010..4000:     Text[TextScore[PP]].Text := 'Amateur';
