@@ -1,8 +1,8 @@
-Font      PNG "..\Fonts\Normal\Font Normal 16.PNG"
-Font      FNT "..\Fonts\Normal\Font Normal.dat"
+Font      PNG "..\Fonts\Normal\eurostar_regular.png"
+Font      FNT "..\Fonts\Normal\eurostar_regular.dat"
 
-FontB     PNG "..\Fonts\Bold\Font 1024 Bold 16.PNG"
-FontB     FNT "..\Fonts\Bold\Font 1024 Bold.dat"
+FontB     PNG "..\Fonts\Bold\eurostar_regular_bold.png"
+FontB     FNT "..\Fonts\Bold\eurostar_regular_bold.dat"
 
 FontO     PNG "..\Fonts\Outline 1\Outline 36 (1024) 16c.PNG"
 FontO     FNT "..\Fonts\Outline 1\Outline 36 (1024).dat"
