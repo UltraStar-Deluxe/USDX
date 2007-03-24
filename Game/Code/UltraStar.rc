@@ -1,15 +1,13 @@
-Button    JPG "..\Graphics\MusicWheelItem song.jpg"
-
-Font      BMP "..\Fonts\Normal\Font Normal 16.bmp"
+Font      PNG "..\Fonts\Normal\Font Normal 16.PNG"
 Font      FNT "..\Fonts\Normal\Font Normal.dat"
 
-FontB     BMP "..\Fonts\Bold\Font 1024 Bold 16.bmp"
+FontB     PNG "..\Fonts\Bold\Font 1024 Bold 16.PNG"
 FontB     FNT "..\Fonts\Bold\Font 1024 Bold.dat"
 
-FontO     BMP "..\Fonts\Outline 1\Outline 36 (1024) 16c.bmp"
+FontO     PNG "..\Fonts\Outline 1\Outline 36 (1024) 16c.PNG"
 FontO     FNT "..\Fonts\Outline 1\Outline 36 (1024).dat"
 
-FontO2    BMP "..\Fonts\Outline 2\5 - Outline Dark Edited 16c.bmp"
+FontO2    PNG "..\Fonts\Outline 2\5 - Outline Dark Edited 16c.PNG"
 FontO2    FNT "..\Fonts\Outline 2\Outline.dat"
 
 MAINICON      ICON "..\Graphics\us.ico"

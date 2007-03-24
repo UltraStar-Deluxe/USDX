@@ -62,25 +62,25 @@ begin
   ActFont := 0;
 
   SetLength(Fonts, 5);
-  Fonts[0].Tex := Texture.LoadTexture(true, 'Font', 'BMP', 'Font', 0);
+  Fonts[0].Tex := Texture.LoadTexture(true, 'Font', 'PNG', 'Font', 0);
   Fonts[0].Tex.H := 30;
   Fonts[0].AspectW := 0.9;
   Fonts[0].Done := -1;
   Fonts[0].Outline := 0;
 
-  Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', 'BMP', 'Font', 0);
+  Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', 'PNG', 'Font', 0);
   Fonts[1].Tex.H := 30;
   Fonts[1].AspectW := 1;
   Fonts[1].Done := -1;
   Fonts[1].Outline := 0;
 
-  Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', 'BMP', 'Font Outline', 0);
+  Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', 'PNG', 'Font Outline', 0);
   Fonts[2].Tex.H := 30;
   Fonts[2].AspectW := 0.95;
   Fonts[2].Done := -1;
   Fonts[2].Outline := 5;
 
-  Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', 'BMP', 'Font Outline 2', 0);
+  Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', 'PNG', 'Font Outline 2', 0);
   Fonts[3].Tex.H := 30;
   Fonts[3].AspectW := 0.95;
   Fonts[3].Done := -1;
