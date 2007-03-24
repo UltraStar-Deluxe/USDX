@@ -636,6 +636,10 @@ begin
 
   // prepare timer (II)
   CountSkipTimeSet;
+
+//GoldenStarsTwinkle Mod
+  GoldenRec.KillAll;
+//GoldenStarsTwinkle Mod End
 end;
 
 function TScreenSing.Draw: boolean;
