@@ -342,7 +342,12 @@ end;
 
 procedure TMusic.SetVolume(Volume: integer);
 begin
-  BASS_SetVolume(Volume);
+  //Old Sets Wave Volume
+  //BASS_SetVolume(Volume);
+  //New: Sets Volume only for this Application
+  BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, Volume);
+  BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume);
+  BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, Volume);
 end;
 
 procedure TMusic.SetLoop(Enabled: boolean);
