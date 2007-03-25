@@ -780,6 +780,15 @@ begin
       Song.Equalizer.Bands := ThemeIni.ReadInteger('SongEqualizer', 'Bands', 5);
       Song.Equalizer.Length := ThemeIni.ReadInteger('SongEqualizer', 'Length', 12);
 
+      //Color
+      I := ColorExists(ThemeIni.ReadString('SongEqualizer', 'Color', 'Black'));
+      if I >= 0 then begin
+        Song.Equalizer.ColR := Color[I].RGB.R;
+        Song.Equalizer.ColG := Color[I].RGB.G;
+        Song.Equalizer.ColB := Color[I].RGB.B;
+      end;
+      //Load Equalizer Pos and Size from Theme Mod End
+
       //Party Mode
       ThemeLoadStatic(Song.StaticTeam1Joker1, 'SongStaticTeam1Joker1');
       ThemeLoadStatic(Song.StaticTeam1Joker2, 'SongStaticTeam1Joker2');
@@ -798,15 +807,6 @@ begin
       ThemeLoadStatic(Song.StaticTeam3Joker3, 'SongStaticTeam3Joker3');
       ThemeLoadStatic(Song.StaticTeam3Joker4, 'SongStaticTeam3Joker4');
       ThemeLoadStatic(Song.StaticTeam3Joker5, 'SongStaticTeam3Joker5');
-
-      //Color
-      I := ColorExists(ThemeIni.ReadString('SongEqualizer', 'Color', 'Black'));
-      if I >= 0 then begin
-        Song.Equalizer.ColR := Color[I].RGB.R;
-        Song.Equalizer.ColG := Color[I].RGB.G;
-        Song.Equalizer.ColB := Color[I].RGB.B;
-      end;
-      //Load Equalizer Pos and Size from Theme Mod End
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
