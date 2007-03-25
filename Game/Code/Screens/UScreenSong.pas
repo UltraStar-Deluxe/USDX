@@ -1021,21 +1021,19 @@ begin
     Button[B].Visible := CatSongs.Song[B].Visible; // nowe
     if Button[B].Visible then begin // 0.5.0 optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
 
-//    Wsp := 2 * pi * (B - SongCurrent) / Length(Button);
-//    Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - 0) / CatSongs.VisibleSongs;
     Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
 
-    Z := (1 + cos(Wsp)) / 2;
+    Z := (1 + cos(Wsp)) / 2 - 0.02;
     Z2 := (1 + 2*Z) / 3;
 
-    Button[B].X := Theme.Song.Cover.X + (300 + 37 * VS {CatSongs.VisibleSongs} {Length(Button)} * sin(Wsp) - 400) * Z2; // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
+    Button[B].X := Theme.Song.Cover.X + (Theme.Song.Cover.W + 0.185 * Theme.Song.Cover.H * VS * sin(Wsp) - Theme.Song.Cover.X) * Z2; // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
     Button[B].Z := Z;
 
-    Button[B].H := Theme.Song.Cover.H * Z2;
-    Button[B].W := Button[B].H;
+    Button[B].W := Theme.Song.Cover.H * Z2;
 
 //    Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
-    Button[B].Y := Theme.Song.Cover.Y + (Theme.Song.Cover.H - Button[B].H) * 0.65;
+    Button[B].Y := Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
+    Button[B].H := Button[B].W;
     end;
   end;
 end;
@@ -1158,17 +1156,17 @@ begin
     if Button[B].Visible then //Only Change Pos for Visible Buttons
     begin
       Pos := (CatSongs.VisibleIndex(B) - SongCurrent);
-      if (Pos < -VS) then
+      if (Pos < -VS/2) then
         Pos := Pos + VS
-      else if (Pos > VS) then
+      else if (Pos > VS/2) then
         Pos := Pos - VS;
         
-      if (Abs(Pos) < 3) then {fixed Positions}
+      if (Abs(Pos) < 2.5) then {fixed Positions}
       begin
       Angle := Pi * (Pos / 5);
       //Button[B].Visible := False;
 
-      Button[B].H := Theme.Song.Cover.H * cos(Angle);//Power(Z2, 3);
+      Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle));//Power(Z2, 3);
 
       Button[B].Z := 0.95 - Abs(Pos) * 0.01;
 
@@ -1178,67 +1176,37 @@ begin
 
       Diff := (Button[B].H - Theme.Song.Cover.H)/2;;
 
-      if (X < 0) then
-        Button[B].X :=  Theme.Song.Cover.X + Theme.Song.Cover.W * Sin(Angle){ - Theme.Song.Cover.H/2} - Diff
-      else
-        Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * Sin(Angle){ - Theme.Song.Cover.H/2}- Diff;
+      Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * Sin(Angle) - Diff;
 
-      Button[B].Visible := True;
       end
       else
       begin {Behind the Front Covers}
-      //Button[B].Visible := False;
-      Pos := Frac(Pos / VS);
-      if Pos < 0 then
-        Pos := Pos + 1;
-      
-      Angle := Abs(2 * pi * ((Pos) / VS / 2));
-      //Pos := Power(Pos*2 - 1, 3);
+        Button[B].Visible := False;
 
-      Button[B].Z := (0.2 + Pos/2) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
+        if Pos < 0 then
+          Pos := (Pos - VS/2) /VS
+        else
+          Pos := (Pos + VS/2) /VS;
 
-      //Pos := abs(Pos) mod 1;
+        Angle := 2 * pi * Pos;
 
-      X := sin(Angle);
-      //Button[B].H := (0.2 + 0.4 * Abs(Pos)) * Theme.Song.Cover.H; //Cover High + Width
-      Button[B].H := 80;
-      Button[B].W := Button[B].H;
+        Button[B].Z := (0.5 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
 
-      Diff := (Theme.Song.Cover.H - Button[B].H)/2;
+        Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle));//Power(Z2, 3);
 
-      //Button[B].X := Theme.Song.Cover.X + (Theme.Song.Cover.W) * Sin(Angle) - diff
-      //Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * Pos - Diff;
+        Button[B].W := Button[B].H;
 
-      if (X < 0) then
-        Button[B].X :=  Theme.Song.Cover.X + Theme.Song.Cover.W * Sin(Angle) - Theme.Song.Cover.H/2 + Diff
-      else
-        Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * Sin(Angle) - Theme.Song.Cover.H/2;
-        
+        Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H) * 0.7);
+
+        Diff := (Button[B].H - Theme.Song.Cover.H)/2;;
+
+        Button[B].X :=  Theme.Song.Cover.X + (Theme.Song.Cover.W + Theme.Song.Cover.H*VS*0.185)* Sin(Angle) - Diff
+
       end;
 
-      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H)/1.5); //Cover at down border of the change field
+      //Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H)/1.5); //Cover at down border of the change field
+      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H) * 0.7);
 
-      {X := sin(Angle);
-
-      Button[B].H := (0.5 + Power(cos(Angle), 1.7))/1.5 * Theme.Song.Cover.H; //Cover High + Width
-      Button[B].W := Button[B].H;
-
-      {if (X < 0) then
-        Diff := Theme.Song.Cover.H - Button[B].H
-      else
-        Diff := 0;
-
-      if (((CatSongs.VisibleIndex(B) - SongCurrent)>= -3) AND ((CatSongs.VisibleIndex(B) - SongCurrent) <= 3)) OR (((CatSongs.VisibleIndex(B) - SongCurrent)>= -3 + VS) AND ((CatSongs.VisibleIndex(B) - SongCurrent) <= 3 + VS)) OR (((CatSongs.VisibleIndex(B) - SongCurrent)>= -3 - VS) AND ((CatSongs.VisibleIndex(B) - SongCurrent) <= 3 - VS)) then
-        Button[B].X := Theme.Song.Cover.X + diff + margin(CatSongs.VisibleIndex(B), SongCurrent, VS)* 30
-      else
-        Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * X + diff;}{
-
-      Diff := (Button[B].H - Theme.Song.Cover.H)/2;
-
-      if X < 0 then
-        Button[B].X := Theme.Song.Cover.X + (Theme.Song.Cover.W) * -Power(-X, 1/2) - diff
-      else
-        Button[B].X := Theme.Song.Cover.X + (Theme.Song.Cover.W) * Power(X, 1/2) - diff;}
     end;
   end;
 end;

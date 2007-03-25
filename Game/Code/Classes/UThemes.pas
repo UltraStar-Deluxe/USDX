@@ -759,11 +759,11 @@ begin
 
       //Load Cover Pos and Size from Theme Mod
       Song.Cover.X := ThemeIni.ReadInteger('SongCover', 'X', 400);
-      Song.Cover.Y := ThemeIni.ReadInteger('SongCover', 'Y', 100);
+      Song.Cover.Y := ThemeIni.ReadInteger('SongCover', 'Y', 140);
       Song.Cover.Z := ThemeIni.ReadInteger('SongCover', 'Z', 250);
-      Song.Cover.W := ThemeIni.ReadInteger('SongCover', 'W', 200);
+      Song.Cover.W := ThemeIni.ReadInteger('SongCover', 'W', 300);
       Song.Cover.H := ThemeIni.ReadInteger('SongCover', 'H', 200);
-      Song.Cover.Style := ThemeIni.ReadInteger('SongCover', 'Style', 5);
+      Song.Cover.Style := ThemeIni.ReadInteger('SongCover', 'Style', 4);
       Song.Cover.Reflections := (ThemeIni.ReadInteger('SongCover', 'Reflections', 0) = 1);
       //Load Cover Pos and Size from Theme Mod End
 
