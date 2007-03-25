@@ -55,6 +55,8 @@ type
       procedure PasteText;
       procedure CopySentence(Src, Dst: integer);
       procedure CopySentences(Src, Dst, Num: integer);
+      //Note Name Mod
+      function GetNoteName(Note: Integer): String;
     public
       Tex_Background:     TTexture;
       FadeOut:            boolean;
@@ -1110,7 +1112,9 @@ begin
     Czesci[0].Czesc[0].Nuta[0].Color := 1;
 
     Music.Open(Path + AktSong.Mp3);
-
+    //Set Down Music Volume for Better hearability of Midi Sounds
+    Music.SetVolume(40);
+    
     Lyric.Clear;
     Lyric.X := 400;
     Lyric.Y := 500;
@@ -1207,7 +1211,7 @@ begin
   // Note info
   Text[TextNStart].Text :=    IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start);
   Text[TextNDlugosc].Text :=  IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Dlugosc);
-  Text[TextNTon].Text :=      IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton);
+  Text[TextNTon].Text :=      IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton) + ' ( ' + GetNoteName(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton) + ' )';
   Text[TextNText].Text :=              Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Tekst;
 
   // Text Edit Mode
@@ -1231,6 +1235,39 @@ procedure TScreenEditSub.onHide;
 begin
   MidiOut.Close;
   MidiOut.Free;
+  Music.SetVolume(100);
+end;
+
+function TScreenEditSub.GetNoteName(Note: Integer): String;
+var N1, N2: Integer;
+begin
+  N1 := Note mod 12;
+  N2 := Note div 12;
+
+  case N1 of
+    0: Result := 'c';
+    1: Result := 'c#';
+    2: Result := 'd';
+    3: Result := 'd#';
+    4: Result := 'e';
+    5: Result := 'f';
+    6: Result := 'f#';
+    7: Result := 'g';
+    8: Result := 'g#';
+    9: Result := 'a';
+    10: Result := 'b';
+    11: Result := 'h';
+  end;
+
+  case N2 of
+    0: Result := UpperCase(Result); //Normal Uppercase Note, 1: Normal lowercase Note
+    2: Result := Result + '''';     //One Striped
+    3: Result := Result + '''''';   //Two Striped
+    4: Result := Result + ''''''''; //etc.
+    5: Result := Result + '''''''''';
+    6: Result := Result + '''''''''''';
+    7: Result := Result + '''''''''''''';
+  end;
 end;
 
 end.
