@@ -75,6 +75,7 @@ uses
   UScreenOpen in 'Screens\UScreenOpen.pas',
   UScreenTop5 in 'Screens\UScreenTop5.pas',
   UScreenSongMenu in 'Screens\UScreenSongMenu.pas',
+  UScreenSongJumpto in 'Screens\UScreenSongJumpto.pas',
 
   //------------------------------
   //Includes - Screens PartyMode

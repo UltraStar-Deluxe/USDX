@@ -82,6 +82,8 @@ type
     function FindNextVisible(SearchFrom:integer): integer; //Find Next visible Song
     function VisibleSongs: integer; // returns number of visible songs (for tabs)
     function VisibleIndex(Index: integer): integer; // returns visible song index (skips invisible)
+
+    function SetFilter(FilterStr: String; const fType: Byte): Cardinal;
   end;
 
 var
@@ -91,7 +93,7 @@ var
 
 implementation
 
-uses UPliki, UIni, UFiles;
+uses UPliki, UIni, UFiles, StrUtils;
 
 procedure TSongs.LoadSongList;
 begin
@@ -572,12 +574,12 @@ var
   S:    integer; // song
 begin
   CatNumShow := Index;
-  for S := 0 to high(CatSongs.Song) do begin
-    if CatSongs.Song[S].OrderNum = Index then
+  for S := 0 to high(CatSongs.Song) do
+  begin
+    if (CatSongs.Song[S].OrderNum = Index) AND (Not CatSongs.Song[S].Main) then
       CatSongs.Song[S].Visible := true
     else
-      if not CatSongs.Song[S].Main then
-        CatSongs.Song[S].Visible := false;
+      CatSongs.Song[S].Visible := false;
   end;
 end;
 
@@ -599,12 +601,6 @@ begin
   if Num <> CatNumShow then
     begin
     ShowCategory(Num);
-    //Hide Categorys when in Category Hack
-    for S := low(CatSongs.Song) to high(CatSongs.Song) do begin
-      if CatSongs.Song[S].Main then   //Hide all Cats
-      CatSongs.Song[S].Visible := false
-    end;
-    //Hide Categorys when in Category Hack End
     end
   else begin
     ShowCategoryList;
@@ -662,6 +658,65 @@ begin
   Result := 0;
   for S := 0 to Index-1 do
     if CatSongs.Song[S].Visible = true then Inc(Result);
+end;
+
+function TCatSongs.SetFilter(FilterStr: String; const fType: Byte): Cardinal;
+var
+  I, J: Integer;
+  cString: String;
+  SearchStr: Array of String;
+begin
+  {fType: 0: All
+          1: Title
+          2: Artist}
+  if FilterStr<>'' then begin
+    Result := 0;
+    //Create Search Array
+    SetLength(SearchStr, 1);
+    I := Pos (' ', FilterStr);
+    While (I <> 0) do
+    begin
+      SetLength (SearchStr, Length(SearchStr) + 1);
+      cString := Copy(FilterStr, 1, I-1);
+      if (cString <> ' ') AND (cString <> '') then
+        SearchStr[High(SearchStr)-1] := cString;
+      Delete (FilterStr, 1, I);
+
+      I := Pos (' ', FilterStr);
+    end;
+    //Copy last Word
+    if (FilterStr <> ' ') AND (FilterStr <> '') then
+      SearchStr[High(SearchStr)] := FilterStr;
+
+    for I:=0 to High(Song) do begin
+      if not Song[i].Main then
+      begin
+        case fType of
+          0: cString := Song[I].Artist + ' ' + Song[i].Title + ' ' + Song[i].Folder;
+          1: cString := Song[I].Title;
+          2: cString := Song[I].Artist;
+        end;
+        Song[i].Visible:=True;
+        //Look for every Searched Word
+        For J := 0 to High(SearchStr) do
+        begin
+          Song[i].Visible := Song[i].Visible AND AnsiContainsText(cString, SearchStr[J])
+        end;
+        if Song[i].Visible then
+          Inc(Result);
+      end
+      else
+        Song[i].Visible:=False;
+    end;
+    CatNumShow := -2;
+  end
+  else begin
+    for i:=0 to High(Song) do begin
+      Song[i].Visible:=(Ini.Tabs=1)=Song[i].Main;
+      CatNumShow := -1;
+    end;
+    Result := 0;
+  end;
 end;
 
 end.

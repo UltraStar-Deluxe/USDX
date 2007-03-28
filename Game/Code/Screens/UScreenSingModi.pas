@@ -63,7 +63,7 @@ procedure PlaySound (const Index: Cardinal); stdcall;       //Plays a Custom Sou
 function ToSentences(Const Czeski: TCzesci): TSentences;
 
 implementation
-uses UGraphic, UDraw, UMain, Classes, URecord, ULanguage, math, UDLLManager, USkins;
+uses UGraphic, UDraw, UMain, Classes, URecord, ULanguage, math, UDLLManager, USkins, UGraphicClasses;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
@@ -966,6 +966,10 @@ end;
 
   // draw custom items
   SingModiDraw(PlayerInfo);  // always draw
+
+  //GoldenNoteStarsTwinkle Mod
+    GoldenRec.SpawnRec;
+  //GoldenNoteStarsTwinkle Mod
 
   //Update PlayerInfo
   for I := 0 to PlayerInfo.NumPlayers-1 do

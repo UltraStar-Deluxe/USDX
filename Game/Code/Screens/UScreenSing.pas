@@ -636,10 +636,6 @@ begin
 
   // prepare timer (II)
   CountSkipTimeSet;
-
-//GoldenStarsTwinkle Mod
-  GoldenRec.KillAll;
-//GoldenStarsTwinkle Mod End
 end;
 
 function TScreenSing.Draw: boolean;
@@ -1015,6 +1011,11 @@ procedure TScreenSing.Finish;
 begin
   Music.CaptureStop;
   Music.Stop;
+
+  //Kill all Stars not Killed yet
+  //GoldenStarsTwinkle Mod
+    GoldenRec.KillAll;
+  //GoldenStarsTwinkle Mod End
 
   if Ini.SavePlayback = 1 then begin
     Log.BenchmarkStart(0);

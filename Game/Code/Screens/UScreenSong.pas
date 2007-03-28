@@ -69,7 +69,8 @@ type
       procedure SkipTo(Target: integer);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
-      procedure ShowCatTL(Cat: Integer);// Show Cat in Tob left
+      procedure ShowCatTL(Cat: Integer);// Show Cat in Top left
+      procedure ShowCatTLCustom(Caption: String);// Show Custom Text in Top left
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh; //Refresh Song Sorting
       procedure DrawEqualizer;
@@ -81,6 +82,9 @@ type
       procedure StartSong;
       procedure OpenEditor;
       procedure DoJoker(Team: Byte);
+
+      //Extensions
+      procedure DrawExtensions;
   end;
 
 implementation
@@ -92,36 +96,49 @@ uses UGraphic, UMain, UCovers, math, OpenGL12, Windows, USkins, UDLLManager, UPa
 procedure TScreenSong.FixSelected;
 var I, I2: Integer;
   begin
-  I2:= 0;
-  for I := low(CatSongs.Song) to High(Catsongs.Song) do
+    if CatSongs.VisibleSongs > 0 then
     begin
-    if CatSongs.Song[I].Visible then
-      inc(I2);
+      I2:= 0;
+      for I := low(CatSongs.Song) to High(Catsongs.Song) do
+      begin
+        if CatSongs.Song[I].Visible then
+          inc(I2);
 
-    if I = Interaction - 1 then
-      break;
+        if I = Interaction - 1 then
+          break;
+      end;
+
+      SongCurrent := I2;
+      SongTarget  := I2;
     end;
-
-  SongCurrent := I2;
-  SongTarget  := I2;
   end;
 
 procedure TScreenSong.FixSelected2;
 var I, I2: Integer;
   begin
-  I2:= 0;
-  for I := low(CatSongs.Song) to High(Catsongs.Song) do
+    if CatSongs.VisibleSongs > 0 then
     begin
-    if CatSongs.Song[I].Visible then
-      inc(I2);
+      I2:= 0;
+      for I := low(CatSongs.Song) to High(Catsongs.Song) do
+      begin
+        if CatSongs.Song[I].Visible then
+          inc(I2);
 
-    if I = Interaction - 1 then
-      break;
+        if I = Interaction - 1 then
+          break;
+      end;
+
+      SongTarget  := I2;
     end;
-
-  SongTarget  := I2;
   end;
 //Show Wrong Song when Tabs on Fix End
+
+  procedure TScreenSong.ShowCatTLCustom(Caption: String);// Show Custom Text in Top left
+  begin
+    Text[TextCat].Text := Caption;
+    Text[TextCat].Visible := true;
+    Static[StaticCat].Visible := False;
+  end;
 
   //Show Cat in Top Left Mod
   procedure TScreenSong.ShowCatTL(Cat: Integer);
@@ -162,163 +179,23 @@ var
 begin
   Result := true;
 
-  //Song Menu
+  //Song Screen Extensions (Jumpto + Menu)
   if (ScreenSongMenu.Visible) then
   begin
     Result := ScreenSongMenu.ParseInput(PressedKey, ScanCode, PressedDown);
+    Exit;
+  end
+  else if (ScreenSongJumpto.Visible) then
+  begin
+    Result := ScreenSongJumpto.ParseInput(PressedKey, ScanCode, PressedDown);
     Exit;
   end;
 
   If (PressedDown) Then
   begin // Key Down
 
-//  HS := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
-{  if (not HighSpeed) and (HS > 0) then begin
-    HighSpeed := true;
-    SDL_EnableKeyRepeat(50, 50);
-  end;
-  if (HighSpeed) and (HS = 0) then begin
-    HighSpeed := false;
-    SDL_EnableKeyRepeat(125, 125);
-  end;}
-
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
-
-  // Jump to Key Mod
-  if (SDL_ModState = KMOD_LALT) AND (Mode = 0) then //Jump to Key
-  begin
-    //get Letter
-    case PressedKey of
-      SDLK_A :  Letter := 'A';
-      SDLK_B :  Letter := 'B';
-      SDLK_C :  Letter := 'C';
-      SDLK_D :  Letter := 'D';
-      SDLK_E :  Letter := 'E';
-      SDLK_F :  Letter := 'F';
-      SDLK_G :  Letter := 'G';
-      SDLK_H :  Letter := 'H';
-      SDLK_I :  Letter := 'I';
-      SDLK_J :  Letter := 'J';
-      SDLK_K :  Letter := 'K';
-      SDLK_L :  Letter := 'L';
-      SDLK_M :  Letter := 'M';
-      SDLK_N :  Letter := 'N';
-      SDLK_O :  Letter := 'O';
-      SDLK_P :  Letter := 'P';
-      SDLK_Q :  Letter := 'Q';
-      SDLK_R :  Letter := 'R';
-      SDLK_S :  Letter := 'S';
-      SDLK_T :  Letter := 'T';
-      SDLK_U :  Letter := 'U';
-      SDLK_V :  Letter := 'V';
-      SDLK_W :  Letter := 'W';
-      SDLK_X :  Letter := 'X';
-      SDLK_Y :  Letter := 'Y';
-      SDLK_Z :  Letter := 'Z';
-      SDLK_1 :  Letter := '1';
-      SDLK_2 :  Letter := '2';
-      SDLK_3 :  Letter := '3';
-      SDLK_4 :  Letter := '4';
-      SDLK_5 :  Letter := '5';
-      SDLK_6 :  Letter := '6';
-      SDLK_7 :  Letter := '7';
-      SDLK_8 :  Letter := '8';
-      SDLK_9 :  Letter := '9';
-      SDLK_0 :  Letter := '0';
-      else exit;
-    end;
-
-  {//Search Letter
-  for I := Interaction + 1 to high(CatSongs.Song) do
-  begin
-    if CatSongs.Song[I].Visible and (Letter = Uppercase(CatSongs.Song[I].Artist)[1]) then
-      break; //Found Song
-    if I = Interaction then //went through complete array but nothing Found
-      break;
-    if I = high(CatSongs.Song) then //At the end of the array->Go to beginning
-      for I2 := low(CatSongs.Song) to Interaction do
-        if CatSongs.Song[I].Visible and (Letter = Uppercase(CatSongs.Song[I].Artist)[1]) then
-          break; //Found Song
-  end;   }
-
-    for I := 0 to High(CatSongs.Song) do begin
-      if (CatSongs.Song[I].Visible) AND (UpperCase(CatSongs.Song[I].Artist[1]) = Letter) then
-      begin
-        //Select Song
-        Interaction := I;
-        SkipTo(Interaction);
-        break;
-      end;
-    end;
-
-  //Don't do other Functions
-  exit;
-  end;
-
-  if (SDL_ModState = KMOD_LALT or KMOD_LSHIFT) then //Jump to Key
-  begin
-    //get Letter
-    case PressedKey of
-      SDLK_a..SDLK_z :  Letter := Chr(Ord('a')+PressedKey-97);
-      SDLK_1 :  Letter := '1';
-      SDLK_2 :  Letter := '2';
-      SDLK_3 :  Letter := '3';
-      SDLK_4 :  Letter := '4';
-      SDLK_5 :  Letter := '5';
-      SDLK_6 :  Letter := '6';
-      SDLK_7 :  Letter := '7';
-      SDLK_8 :  Letter := '8';
-      SDLK_9 :  Letter := '9';
-      SDLK_0 :  Letter := '0';
-      else exit;
-    end;
-
-  {//Search Letter
-  for I := Interaction + 1 to high(CatSongs.Song) do
-  begin
-    if CatSongs.Song[I].Visible and (Letter = Uppercase(CatSongs.Song[I].Artist)[1]) then
-      break; //Found Song
-    if I = Interaction then //went through complete array but nothing Found
-      break;
-    if I = high(CatSongs.Song) then //At the end of the array->Go to beginning
-      for I2 := low(CatSongs.Song) to Interaction do
-        if CatSongs.Song[I].Visible and (Letter = Uppercase(CatSongs.Song[I].Artist)[1]) then
-          break; //Found Song
-  end;   }
-
-   {for I := 0 to High(CatSongs.Song) do begin
-     if (CatSongs.Song[I].Visible) AND (UpperCase(CatSongs.Song[I].Artist[1]) = Letter) then}
-
-    for I := Interaction + 1 to high(CatSongs.Song) + 1 do
-    begin
-      if (I > high(CatSongs.Song)) then
-      begin
-        for I2 := low(CatSongs.Song) to Interaction do
-        begin
-          if CatSongs.Song[I2].Visible and (Letter = lowercase(CatSongs.Song[I2].Artist[1])) then
-          begin
-            Interaction := I2;
-            break; //Found Song
-          end;
-        end;
-        break;
-      end
-      else if CatSongs.Song[I].Visible and (Letter = lowercase(CatSongs.Song[I].Artist[1])) then
-      begin
-        Interaction := I;
-        break; //Found Song
-      end;
-    end;
-
-
-   //Select Song
-   SkipTo(Interaction);
-
-  //Don't do other Functions
-  exit;
-  end;
-
 
     case PressedKey of
       SDLK_ESCAPE :
@@ -406,7 +283,6 @@ begin
               end
               else if (Mode = 1) then //PartyMode -> Show Menu
               begin
-                ScreenSongMenu.Visible := True;
                 ScreenSongMenu.MenuShow(SM_Party_Main);
               end;
             end;
@@ -417,9 +293,16 @@ begin
         begin
           if Length(Songs.Song) > 0 then begin
             if not CatSongs.Song[Interaction].Main then begin // clicked on Song
-              ScreenSongMenu.Visible := True;
               ScreenSongMenu.MenuShow(SM_Main);
             end;
+          end;
+        end;
+
+      SDLK_J: //Show SongMenu
+        begin
+          if Length(Songs.Song) > 0 then
+          begin
+            ScreenSongJumpto.Visible := True;
           end;
         end;
 
@@ -788,25 +671,47 @@ begin
 end;
 
 procedure TScreenSong.SetScroll;
+var
+  VS, B: Integer;
 begin
-//Set Positions
-  Case Theme.Song.Cover.Style of
-    3: SetScroll3;
-    5: SetScroll5
-    else SetScroll4;
-  end;
-//Set Texts:
-  Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
-  Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
-  if (Ini.Tabs_at_startup = 1) And (CatSongs.CatNumShow = -1) then
+  VS := CatSongs.VisibleSongs;
+  if VS > 0 then
   begin
-    Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].OrderNum) + '/' + IntToStr(CatSongs.CatCount);
-    Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
+    //Set Positions
+    Case Theme.Song.Cover.Style of
+      3: SetScroll3;
+      5:begin
+          if VS > 5 then
+            SetScroll5
+          else
+            SetScroll4;
+        end;
+      else SetScroll4;
+    end;
+    //Set Texts:
+    Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
+    Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
+    if (Ini.Tabs_at_startup = 1) And (CatSongs.CatNumShow = -1) then
+    begin
+      Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].OrderNum) + '/' + IntToStr(CatSongs.CatCount);
+      Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
+    end
+    else if (CatSongs.CatNumShow = -2) then
+      Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
+    else if (Ini.Tabs_at_startup = 1) then
+      Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].CatNumber) + '/' + IntToStr(CatSongs.Song[Interaction - CatSongs.Song[Interaction].CatNumber].CatNumber)
+    else
+      Text[TextNumber].Text := IntToStr(Interaction+1) + '/' + IntToStr(Length(CatSongs.Song));
   end
-  else if (Ini.Tabs_at_startup = 1) then
-    Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].CatNumber) + '/' + IntToStr(CatSongs.Song[Interaction - CatSongs.Song[Interaction].CatNumber].CatNumber)
   else
-    Text[TextNumber].Text := IntToStr(Interaction+1) + '/' + IntToStr(Length(CatSongs.Song));
+  begin
+    Text[TextNumber].Text := '0/0';
+    Text[TextArtist].Text := '';
+    Text[TextTitle].Text  := '';
+    for B := 0 to High(Button) do
+      Button[B].Visible := False;
+
+  end;
 end;
 
 procedure TScreenSong.SetScroll1;
@@ -1023,7 +928,7 @@ begin
 
     Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
 
-    Z := (1 + cos(Wsp)) / 2 - 0.02;
+    Z := (1 + cos(Wsp)) / 2 - 0.2;
     Z2 := (1 + 2*Z) / 3;
 
     Button[B].X := Theme.Song.Cover.X + (Theme.Song.Cover.W + 0.185 * Theme.Song.Cover.H * VS * sin(Wsp) - Theme.Song.Cover.X) * Z2; // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
@@ -1247,6 +1152,19 @@ begin
   SetJoker;
 end;
 
+procedure TScreenSong.DrawExtensions;
+begin
+  //Draw Song Menu
+  if (ScreenSongMenu.Visible) then
+  begin
+    ScreenSongMenu.Draw;
+  end
+  else if (ScreenSongJumpto.Visible) then
+  begin
+    ScreenSongJumpto.Draw;
+  end
+end;
+
 function TScreenSong.Draw: boolean;
 var
   dx:   real;
@@ -1286,71 +1204,80 @@ begin
   if Theme.Song.Equalizer.Visible then
     DrawEqualizer;
 
-  //Draw Song Menu
-  if (ScreenSongMenu.Visible) then
-  begin
-    ScreenSongMenu.Draw;
-  end;
+  DrawExtensions;
 end;
 
 procedure TScreenSong.SelectNext;
 var
   Skip:   integer;
   I:      integer;
+  VS:     Integer;
 begin
-  CoverTime := 0;
-  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
-  Button[Interaction].Texture2.Alpha := 0;
+  VS := CatSongs.VisibleSongs;
 
-  //0.5.0: unload old full size texture
-  if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
-    Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
+  if VS > 0 then
+  begin
+    CoverTime := 0;
+    Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
+    Button[Interaction].Texture2.Alpha := 0;
 
-  Skip := 1;
+    //0.5.0: unload old full size texture
+    if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+      Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
 
-  // this 1 could be changed by CatSongs.FindNextVisible
-  while (not CatSongs.Song[(Interaction + Skip) mod Length(Interactions)].Visible) do Inc(Skip);
-  SongTarget := SongTarget + 1;//Skip;
+    Skip := 1;
 
-  Interaction := (Interaction + Skip) mod Length(Interactions);
+    // this 1 could be changed by CatSongs.FindNextVisible
+    while (not CatSongs.Song[(Interaction + Skip) mod Length(Interactions)].Visible) do Inc(Skip);
 
-  // try to keep all at the beginning
-  if SongTarget > CatSongs.VisibleSongs-1 then begin
-    SongTarget := SongTarget - CatSongs.VisibleSongs;
-    SongCurrent := SongCurrent - CatSongs.VisibleSongs;
+    SongTarget := SongTarget + 1;//Skip;
+
+    Interaction := (Interaction + Skip) mod Length(Interactions);
+
+    // try to keep all at the beginning
+    if SongTarget > VS-1 then begin
+      SongTarget := SongTarget - VS;
+      SongCurrent := SongCurrent - VS;
+    end;
+
   end;
-
-  // Interaction -> Button, ktorego okladke przeczytamy
-//  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false); // 0.5.0: show uncached texture
+      // Interaction -> Button, ktorego okladke przeczytamy
+      //  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false); // 0.5.0: show uncached texture
 end;
 
 procedure TScreenSong.SelectPrev;
 var
   Skip:   integer;
   I:      integer;
+  VS:     Integer;
 begin
-  CoverTime := 0;
-  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
-  Button[Interaction].Texture2.Alpha := 0;
+  VS := CatSongs.VisibleSongs;
 
-  //0.5.0: unload old full size texture
-  if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
-    Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
+  if VS > 0 then
+  begin
+    CoverTime := 0;
+    Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
+    Button[Interaction].Texture2.Alpha := 0;
 
-  Skip := 1;
+    //0.5.0: unload old full size texture
+    if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+      Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
 
-  while (not CatSongs.Song[(Interaction - Skip + Length(Interactions)) mod Length(Interactions)].Visible) do Inc(Skip);
-  SongTarget := SongTarget - 1;//Skip;
+    Skip := 1;
 
-  Interaction := (Interaction - Skip + Length(Interactions)) mod Length(Interactions);
+    while (not CatSongs.Song[(Interaction - Skip + Length(Interactions)) mod Length(Interactions)].Visible) do Inc(Skip);
+    SongTarget := SongTarget - 1;//Skip;
 
-  // try to keep all at the beginning
-  if SongTarget < 0 then begin
-    SongTarget := SongTarget + CatSongs.VisibleSongs;
-    SongCurrent := SongCurrent + CatSongs.VisibleSongs;
+    Interaction := (Interaction - Skip + Length(Interactions)) mod Length(Interactions);
+
+    // try to keep all at the beginning
+    if SongTarget < 0 then begin
+      SongTarget := SongTarget + CatSongs.VisibleSongs;
+      SongCurrent := SongCurrent + CatSongs.VisibleSongs;
+    end;
+
+  //  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false); // 0.5.0: show uncached texture
   end;
-
-//  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false); // 0.5.0: show uncached texture
 end;
 
 procedure TScreenSong.UpdateLCD;

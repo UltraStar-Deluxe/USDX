@@ -6,7 +6,7 @@ uses
   UScreenWelcome, UScreenMain, UScreenName, UScreenLevel, UScreenOptions, UScreenOptionsGame,
   UScreenOptionsGraphics, UScreenOptionsSound, UScreenOptionsLyrics, UScreenOptionsThemes, UScreenOptionsRecord,
   UScreenSong, UScreenSing, UScreenScore, UScreenTop5, UScreenEditSub,
-  UScreenEdit, UScreenEditConvert, UScreenEditHeader, UScreenOpen, UThemes, USkins, UScreenSongMenu,
+  UScreenEdit, UScreenEditConvert, UScreenEditHeader, UScreenOpen, UThemes, USkins, UScreenSongMenu, UScreenSongJumpto,
   {Party Screens} UScreenSingModi, UScreenPartyNewRound, UScreenPartyScore, UScreenPartyOptions, UScreenPartyWin, UScreenPartyPlayer;
 
 type
@@ -51,6 +51,7 @@ var
   ScreenOpen:         TScreenOpen;
 
   ScreenSongMenu:     TScreenSongMenu;
+  ScreenSongJumpto:     TScreenSongJumpto;
 
   //Party Screens
   ScreenSingModi:         TScreenSingModi;
@@ -390,9 +391,11 @@ begin
   ScreenOpen :=             TScreenOpen.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Open', 3); Log.BenchmarkStart(3);
   ScreenSingModi :=         TScreenSingModi.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongMenu', 3); Log.BenchmarkStart(3);
-  //ScreenSongMenu :=         TScreenSongMenu.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
+  ScreenSongMenu :=         TScreenSongMenu.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongMenu', 3); Log.BenchmarkStart(3);
+  ScreenSongJumpto :=         TScreenSongJumpto.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongJumpto', 3); Log.BenchmarkStart(3);
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyNewRound', 3); Log.BenchmarkStart(3);
   ScreenPartyScore :=       TScreenPartyScore.Create;

@@ -393,6 +393,12 @@ type
     TextMenu: TThemeText;
   end;
 
+  TThemeSongJumpTo = class(TThemeBasic)
+    ButtonSearchText: TThemeButton;
+    SelectSlideType:  TThemeSelectSlide;
+    TextFound:        TThemeText;
+  end;
+
   //Party Screens
   TThemePartyNewRound = class(TThemeBasic)
     TextRound1:        TThemeText;
@@ -525,6 +531,7 @@ type
     OptionsRecord:    TThemeOptionsRecord;
     //Menu
     SongMenu:         TThemeSongMenu;
+    SongJumpto:       TThemeSongJumpTo;
     //Party Screens:
     PartyNewRound:    TThemePartyNewRound;
     PartyScore:       TThemePartyScore;
@@ -606,6 +613,7 @@ begin
   OptionsRecord := TThemeOptionsRecord.Create;
 
   SongMenu := TThemeSongMenu.Create;
+  SongJumpto := TThemeSongJumpto.Create;
   //Party Screens
   PartyNewRound := TThemePartyNewRound.Create;
   PartyWin := TThemePartyWin.Create;
@@ -980,7 +988,7 @@ begin
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannelR, 'OptionsRecordSelectSlideChannelR');
       ThemeLoadButton(OptionsRecord.ButtonExit, 'OptionsRecordButtonExit');
 
-    //Song Menu
+   //Song Menu
     ThemeLoadBasic (SongMenu, 'SongMenu');
     ThemeLoadButton(SongMenu.Button1, 'SongMenuButton1');
     ThemeLoadButton(SongMenu.Button2, 'SongMenuButton2');
@@ -989,6 +997,12 @@ begin
     ThemeLoadSelectSlide(SongMenu.SelectSlide3, 'SongMenuSelectSlide3');
 
     ThemeLoadText(SongMenu.TextMenu, 'SongMenuTextMenu');
+
+    //Song Jumpto
+    ThemeLoadBasic (SongJumpto, 'SongJumpto');
+    ThemeLoadButton(SongJumpto.ButtonSearchText, 'SongJumptoButtonSearchText');
+    ThemeLoadSelectSlide(SongJumpto.SelectSlideType, 'SongJumptoSelectSlideType');
+    ThemeLoadText(SongJumpto.TextFound, 'SongJumptoTextFound');
 
     //Party Screens:
     //Party NewRound

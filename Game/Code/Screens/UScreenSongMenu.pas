@@ -165,6 +165,7 @@ end;
 procedure TScreenSongMenu.MenuShow(sMenu: Byte);
 begin
   Interaction := 0; //Reset Interaction
+  Visible := True;  //Set Visible
   Case sMenu of
     SM_Main:
       begin
