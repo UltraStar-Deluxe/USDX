@@ -50,6 +50,8 @@ type
 
       //OnSentenceEnd for LineBonus + Singbar
       procedure onSentenceEnd(S: Cardinal);
+      //OnSentenceChange (for Golden Notes)
+      procedure onSentenceChange(S: Cardinal);
   end;
 
 implementation
@@ -1055,78 +1057,84 @@ A: Real;
 B: integer; //Max Points for Notes
 begin
 
-//Check for Empty Sentence
-if (Czesci[0].Czesc[S].TotalNotes<=0) then
-  exit;
+  //Check for Empty Sentence
+  if (Czesci[0].Czesc[S].TotalNotes<=0) then
+    exit;
 
-//Set Max Note Points
-if (Ini.LineBonus > 0) then
-  B :=  9000
-else
-  B := 10000;
+  //Set Max Note Points
+  if (Ini.LineBonus > 0) then
+    B :=  9000
+  else
+    B := 10000;
 
-for I := 0 to High(Player) do begin
-  A := Player[I].Score + Player[I].ScoreGolden - Player[I].ScoreLast + 2;
+  for I := 0 to High(Player) do begin
+    A := Player[I].Score + Player[I].ScoreGolden - Player[I].ScoreLast + 2;
 
-  //SingBar Mod
-  If ({(Ini.Oscilloscope = 2) and }(Czesci[0].Czesc[S].TotalNotes>0)) then
-  begin
-  Player[I].ScorePercentTarget := Player[I].ScorePercentTarget + floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 40 - 26);
-  if Player[I].ScorePercentTarget < 0 then Player[I].ScorePercentTarget := 0;
-  if Player[I].ScorePercentTarget > 99 then Player[I].ScorePercentTarget := 99;
+    //SingBar Mod
+    If ({(Ini.Oscilloscope = 2) and }(Czesci[0].Czesc[S].TotalNotes>0)) then
+    begin
+      Player[I].ScorePercentTarget := Player[I].ScorePercentTarget + floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 40 - 26);
+      if Player[I].ScorePercentTarget < 0 then Player[I].ScorePercentTarget := 0;
+      if Player[I].ScorePercentTarget > 99 then Player[I].ScorePercentTarget := 99;
 
     //end Singbar Mod
-  end;
+    end;
 
     //PhrasenBonus - Line Bonus Mod
 
-  If (Ini.LineBonus > 0) then
-  begin
+    If (Ini.LineBonus > 0) then
+    begin
 
-    //Generate Steps 0 to 8
-    A := Floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 8);
-    if A >= 8 then
-      Player[I].LineBonus_Text := Language.Translate('LINEBONUS_PERFECT')
-    else if (A = 6) or (A = 7) then
-      Player[I].LineBonus_Text := Language.Translate('LINEBONUS_BETTER')
-    else if A = 5 then
-      Player[I].LineBonus_Text := Language.Translate('LINEBONUS_GOOD')
-    else if (A = 3) or (A = 4) then
-      Player[I].LineBonus_Text := Language.Translate('LINEBONUS_NORMAL')
-    else if A = 2 then
-      Player[I].LineBonus_Text := Language.Translate('LINEBONUS_BAD')
-    else
-      Player[I].LineBonus_Text := Language.Translate('LINEBONUS_WORST');
+      //Generate Steps 0 to 8
+      A := Floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 8);
+      if A >= 8 then
+        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_PERFECT')
+      else if (A = 6) or (A = 7) then
+        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_BETTER')
+      else if A = 5 then
+        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_GOOD')
+      else if (A = 3) or (A = 4) then
+        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_NORMAL')
+      else if A = 2 then
+        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_BAD')
+      else
+        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_WORST');
 
-    //PhrasenBonus give Points
-    Player[I].ScoreLine := Player[I].ScoreLine + (1000 / (Length(Czesci[0].Czesc) - NumEmptySentences) * A / 8);
-    Player[I].ScoreLineI := Round(Player[I].ScoreLine / 10) * 10;
-    //Update Total Score
-    Player[I].ScoreTotalI := Player[I].ScoreI + Player[I].ScoreGoldenI + Player[I].ScoreLineI;
+      //PhrasenBonus give Points
+      Player[I].ScoreLine := Player[I].ScoreLine + (1000 / (Length(Czesci[0].Czesc) - NumEmptySentences) * A / 8);
+      Player[I].ScoreLineI := Round(Player[I].ScoreLine / 10) * 10;
+      //Update Total Score
+      Player[I].ScoreTotalI := Player[I].ScoreI + Player[I].ScoreGoldenI + Player[I].ScoreLineI;
 
-    //Color
-    Player[I].LineBonus_Color.B := 0;
-    Player[I].LineBonus_Color.R := (8-A)/8;
-    Player[I].LineBonus_Color.G := A/10;
+      //Color
+      Player[I].LineBonus_Color.B := 0;
+      Player[I].LineBonus_Color.R := (8-A)/8;
+      Player[I].LineBonus_Color.G := A/10;
 
-    Player[I].LineBonus_PosX  := Player[I].LineBonus_StartX;
-    Player[I].LineBonus_PosY  := Player[I].LineBonus_StartY;
-    Player[I].LineBonus_Alpha := 0.92;
-    Player[I].LineBonus_Visible := True;
+      Player[I].LineBonus_PosX  := Player[I].LineBonus_StartX;
+      Player[I].LineBonus_PosY  := Player[I].LineBonus_StartY;
+      Player[I].LineBonus_Alpha := 0.92;
+      Player[I].LineBonus_Visible := True;
 
 
+
+    end;
+
+  //Refresh LastScore
+  Player[I].ScoreLast := Player[I].Score + Player[I].ScoreGolden;
 
   end;
-
-//Refresh LastScore
-Player[I].ScoreLast := Player[I].Score + Player[I].ScoreGolden;
-
-end;
 //PhrasenBonus - Line Bonus Mod End// }
 
 //GoldenStarsTwinkle Mod
   GoldenRec.KillAll;
 //GoldenStarsTwinkle Mod End
+end;
+
+//Called on Sentence Change S= New Current Sentence
+procedure TScreenSing.onSentenceChange(S: Cardinal);
+begin
+  //Dummy
 end;
 
 end.

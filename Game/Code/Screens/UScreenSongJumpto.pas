@@ -11,10 +11,20 @@ type
       Songsfound: String;
       NoSongsfound: String;
       CatText: String;
+
+      //For ChangeMusic
+      LastPlayed: Integer;
+      VisibleBool: Boolean;
     public
-      Visible: Boolean; //Whether the Menu should be Drawn
       VisSongs: Integer;
+
       constructor Create; override;
+
+      //Visible //Whether the Menu should be Drawn
+      //Whether the Menu should be Drawn
+      procedure SetVisible(Value: Boolean);
+      property Visible: Boolean read VisibleBool write SetVisible;
+
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       function Draw: boolean; override;
@@ -159,12 +169,29 @@ begin
     AddText(Theme.SongJumpto.Text[I]);
 
   Interaction := 0;
+  LastPlayed  := 0;
+end;
+
+procedure TScreenSongJumpto.SetVisible(Value: Boolean);
+begin
+//If change from unvisible to Visible then OnShow
+  if (VisibleBool = False) AND (Value = True) then
+    OnShow;
+
+  VisibleBool := Value;
 end;
 
 procedure TScreenSongJumpto.onShow;
 begin
-  Interaction := 0;
-  SetTextFound(0);
+  //Reset Screen if no Old Search is Displayed
+  if (CatSongs.CatNumShow <> -2) then
+  begin
+    Interaction := 0;
+    SelectType := 0;
+
+    Button[0].Text[0].Text := '';
+    Text[0].Text := NoSongsFound;
+  end;
 end;
 
 function TScreenSongJumpto.Draw: boolean;
@@ -189,6 +216,14 @@ begin
   ScreenSong.Interaction := 0;
   ScreenSong.SelectNext;
   ScreenSong.FixSelected;
+
+  //Play Correct Music
+  if (ScreenSong.Interaction <> LastPlayed) then
+  begin
+    LastPlayed := ScreenSong.Interaction;
+
+    ScreenSong.ChangeMusic;
+  end;
 end;
 
 end.

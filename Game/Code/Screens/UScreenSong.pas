@@ -74,6 +74,7 @@ type
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh; //Refresh Song Sorting
       procedure DrawEqualizer;
+      procedure ChangeMusic;
       //Party Mode
       procedure SelectRandomSong;
       procedure SetJoker;
@@ -269,11 +270,7 @@ begin
             FixSelected;
 
             //Play Music:
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-              Music.MoveTo(Music.Length / 4);
-              Music.Play;
-            end;
+            ChangeMusic;
 
             end else begin // clicked on song
               if (Mode = 0) then //Normal Mode -> Start Song
@@ -342,11 +339,7 @@ begin
 
             //Play Music:
             Music.PlayChange;
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-              Music.MoveTo(Music.Length / 4);
-              Music.Play;
-            end;
+            ChangeMusic;
 
             end;
 
@@ -392,11 +385,7 @@ begin
 
             //Play Music:
             Music.PlayChange;
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-              Music.MoveTo(Music.Length / 4);
-              Music.Play;
-            end;
+            ChangeMusic;
 
             end;
 
@@ -412,11 +401,7 @@ begin
             SelectNext;
 //            InteractNext;
 //           SongTarget := Interaction;
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-              Music.MoveTo(Music.Length / 4);
-              Music.Play;
-            end;
+            ChangeMusic;
             SetScroll4;
             UpdateLCD;
             Light.LightOne(1, 200);
@@ -428,11 +413,7 @@ begin
           if (Length(Songs.Song) > 0)AND (Mode = 0)  then begin
             Music.PlayChange;
             SelectPrev;
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-              Music.MoveTo(Music.Length / 4);
-              Music.Play;
-            end;
+            ChangeMusic;
             SetScroll4;
             UpdateLCD;
             Light.LightOne(0, 200);
@@ -514,11 +495,7 @@ begin
             end;
             Music.PlayChange;
 
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-              Music.MoveTo(Music.Length / 4);
-              Music.Play;
-            end;
+            ChangeMusic;
             SetScroll4;
             UpdateLCD;
           end;
@@ -1288,6 +1265,21 @@ begin
   LCD.WriteText(2, Text[TextTitle].Text);
 end;
 
+//Procedure Change current played Preview
+procedure TScreenSong.ChangeMusic;
+begin
+  if (NOT CatSongs.Song[Interaction].Main) AND(CatSongs.VisibleSongs > 0) then
+  begin
+    Music.Close;
+    if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
+      Music.MoveTo(Music.Length / 4);
+      Music.Play;
+    end;
+  end
+  else
+    Music.Stop;
+end;
+
 procedure TScreenSong.SkipTo(Target: integer); // 0.5.0
 var
   Skip:   integer;
@@ -1447,11 +1439,7 @@ begin
   //Choose Song
   SkipTo(I2-I);
 
-  Music.Close;
-  if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-    Music.MoveTo(Music.Length / 4);
-    Music.Play;
-  end;
+  ChangeMusic;
 end;
 
 procedure TScreenSong.SetJoker;

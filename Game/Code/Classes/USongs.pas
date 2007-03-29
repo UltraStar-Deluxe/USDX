@@ -669,6 +669,7 @@ begin
   {fType: 0: All
           1: Title
           2: Artist}
+  FilterStr := Trim(FilterStr);
   if FilterStr<>'' then begin
     Result := 0;
     //Create Search Array

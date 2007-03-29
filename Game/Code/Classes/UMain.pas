@@ -387,6 +387,9 @@ begin
   end;
 
   Sender.UpdateLCD;
+  
+  //On Sentence Change...
+  Sender.onSentenceChange(Czesci[0].Akt);
 end;
 
 procedure NewBeat(Sender: TScreenSing);
