@@ -81,6 +81,8 @@ type
 //      property W2: real read Texture2.w write Texture2.w;
 //      property H2: real read Texture2.h write Texture2.h;
 
+      property SBGW: real read TextureSBG.w write TextureSBG.w;
+
       // procedures
       procedure SetSelect(Value: boolean);
       property Selected: Boolean read SelectBool write SetSelect;
@@ -103,6 +105,9 @@ begin
   Text := TText.Create;
   SetLength(TextOpt, 1);
   TextOpt[0] := TText.Create;
+
+  //Set Standard Width for Selections Background
+  SBGW := 450;
 
   Visible := True;
   {SetLength(TextOpt, 3);
@@ -326,7 +331,7 @@ begin
     TextOpt[I].Y := TextureSBG.Y + 20;
 
     //Better Look with 2 Options
-    if (Lines=2) then
+    if (Lines=2) AND (Length(TextOptT)= 2) then
       TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(PChar(TextOptT[1]))) * I;
     end;
       //TextOpt[I] := TextOpt[0];

@@ -97,6 +97,7 @@ type
   TThemeText = record
     X:      integer;
     Y:      integer;
+    W:      integer;
     Color:  string;
     ColR:   real;
     ColG:   real;
@@ -156,6 +157,10 @@ type
     Y:      integer;
     W:      integer;
     H:      integer;
+    
+    //SBGW Mod
+    SBGW:   integer;
+
     Text:   string;
     ColR,  ColG,  ColB,  Int:     real;
     DColR, DColG, DColB, DInt:    real;
@@ -1142,6 +1147,7 @@ begin
   DecimalSeparator := '.';
   ThemeText.X := ThemeIni.ReadInteger(Name, 'X', 0);
   ThemeText.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
+  ThemeText.W := ThemeIni.ReadInteger(Name, 'W', 0);
 
   ThemeText.ColR := ThemeIni.ReadFloat(Name, 'ColR', 0);
   ThemeText.ColG := ThemeIni.ReadFloat(Name, 'ColG', 0);
@@ -1343,6 +1349,7 @@ begin
   ThemeSelectS.H := ThemeIni.ReadInteger(Name, 'H', 0);
   ThemeSelectS.SkipX := ThemeIni.ReadInteger(Name, 'SkipX', 0);
 
+  ThemeSelectS.SBGW := ThemeIni.ReadInteger(Name, 'SBGW', 450);
 
   LoadColor(ThemeSelectS.ColR, ThemeSelectS.ColG,  ThemeSelectS.ColB, ThemeIni.ReadString(Name, 'Color', ''));
   ThemeSelectS.Int :=  ThemeIni.ReadFloat(Name, 'Int', 1);

@@ -56,7 +56,7 @@ type
       function AddText(ThemeText: TThemeText): integer; overload;
       function AddText(X, Y: real; Tekst: string): integer; overload;
       function AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Tekst: string): integer; overload;
-      function AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer; overload;
+      function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer; overload;
 
       // button
       function AddButton(ThemeButton: TThemeButton): integer; overload;
@@ -82,7 +82,7 @@ type
 
       // select slide
       function AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer; Values: array of string): integer; overload;
-      function AddSelectSlide(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+      function AddSelectSlide(X, Y, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
         TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
         SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
         STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
@@ -320,7 +320,7 @@ end;
 
 function TMenu.AddText(ThemeText: TThemeText): integer;
 begin
-  Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.Font, ThemeText.Size,
+  Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.W, ThemeText.Font, ThemeText.Size,
     ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text);
 end;
 
@@ -337,17 +337,17 @@ end;
 
 function TMenu.AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Tekst: string): integer;
 begin
-  Result := AddText(X, Y, Style, Size, ColR, ColG, ColB, 0, Tekst);
+  Result := AddText(X, Y, 0, Style, Size, ColR, ColG, ColB, 0, Tekst);
 end;
 
-function TMenu.AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer;
+function TMenu.AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer;
 var
   TextNum:  integer;
 begin
   // adds text
   TextNum := Length(Text);
   SetLength(Text, TextNum + 1);
-  Text[TextNum] := TText.Create(X, Y, Style, Size, ColR, ColG, ColB, Align, Tekst);
+  Text[TextNum] := TText.Create(X, Y, W, Style, Size, ColR, ColG, ColB, Align, Tekst);
   Result := TextNum;
 end;
 
@@ -846,7 +846,7 @@ function TMenu.AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer
 var
   SO:     integer;
 begin
-  Result := AddSelectSlide(ThemeSelectS.X, ThemeSelectS.Y, ThemeSelectS.W, ThemeSelectS.H, ThemeSelectS.SkipX,
+  Result := AddSelectSlide(ThemeSelectS.X, ThemeSelectS.Y, ThemeSelectS.W, ThemeSelectS.H, ThemeSelectS.SkipX, ThemeSelectS.SBGW,
     ThemeSelectS.ColR, ThemeSelectS.ColG, ThemeSelectS.ColB, ThemeSelectS.Int,
     ThemeSelectS.DColR, ThemeSelectS.DColG, ThemeSelectS.DColB, ThemeSelectS.DInt,
     ThemeSelectS.TColR, ThemeSelectS.TColG, ThemeSelectS.TColB, ThemeSelectS.TInt,
@@ -867,7 +867,7 @@ begin
   SelectsS[High(SelectsS)].SelectedOption := SelectsS[High(SelectsS)].SelectOptInt; // refresh
 end;
 
-function TMenu.AddSelectSlide(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+function TMenu.AddSelectSlide(X, Y, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
   TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
   SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
   STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
@@ -886,6 +886,7 @@ begin
   SelectsS[S].Y := Y;
   SelectsS[S].W := W;
   SelectsS[S].H := H;
+
   SelectsS[S].ColR := ColR;
   SelectsS[S].ColG := ColG;
   SelectsS[S].ColB := ColB;
@@ -898,7 +899,8 @@ begin
   SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
   SelectsS[S].TextureSBG.X := X + W + SkipX;
   SelectsS[S].TextureSBG.Y := Y;
-  SelectsS[S].TextureSBG.W := 450;
+  //SelectsS[S].TextureSBG.W := 450;
+  SelectsS[S].SBGW := SBGW;
   SelectsS[S].TextureSBG.H := H;
   SelectsS[S].SBGColR := SBGColR;
   SelectsS[S].SBGColG := SBGColG;

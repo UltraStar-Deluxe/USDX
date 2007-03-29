@@ -369,6 +369,11 @@ begin
   //Deactivate Pause
   Paused := False;
 
+  //Kill all Stars not Killed yet
+  //GoldenStarsTwinkle Mod
+    GoldenRec.KillAll;
+  //GoldenStarsTwinkle Mod End
+
   {Static[StaticP2R].Visible := V2R;
   Static[StaticP2RScoreBG].Visible := V2R;
   Text[TextP2R].Visible := V2R;
@@ -1014,11 +1019,6 @@ begin
   Music.CaptureStop;
   Music.Stop;
 
-  //Kill all Stars not Killed yet
-  //GoldenStarsTwinkle Mod
-    GoldenRec.KillAll;
-  //GoldenStarsTwinkle Mod End
-
   if Ini.SavePlayback = 1 then begin
     Log.BenchmarkStart(0);
     Log.LogVoice(0);
@@ -1032,6 +1032,8 @@ begin
     CloseSmpeg;
     AktSong.VideoLoaded := false; // to prevent drawing closed video
   end;
+
+  SetFontItalic (False);
 end;
 
 procedure TScreenSing.UpdateLCD;

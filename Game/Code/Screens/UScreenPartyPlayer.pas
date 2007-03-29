@@ -63,8 +63,7 @@ begin
 
       SDLK_BACKSPACE:
         begin
-          Delete(Button[Interaction].Text[0].Text,
-            Length(Button[Interaction].Text[0].Text), 1);
+          Button[Interaction].Text[0].DeleteLastL;
         end;
 
       SDLK_ESCAPE :

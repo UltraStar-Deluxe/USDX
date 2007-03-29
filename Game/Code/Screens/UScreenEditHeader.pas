@@ -105,7 +105,7 @@ begin
         begin
           T := Interaction - 2 + TextTitle;
           if (Interaction >= 2) and (Interaction <= 13) and (Length(Text[T].Text) >= 1) then begin
-            Delete(Text[T].Text, Length(Text[T].Text), 1);
+            Text[T].DeleteLastL;
             SetRoundButtons;            
           end;
         end;

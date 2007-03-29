@@ -43,9 +43,9 @@ begin
     case PressedKey of
       8: // del
         begin
-          if Interaction = 0 then
-            if Length(Text[TextN].Text) >= 1 then begin
-              Delete(Text[TextN].Text, Length(Text[TextN].Text), 1);
+            if Interaction = 0 then
+            begin
+              Text[TextN].DeleteLastL;
               FileName := Text[TextN].Text;
             end;
         end;

@@ -90,8 +90,7 @@ begin
         begin
           if Interaction = 0 then
           begin
-            Delete(Button[0].Text[0].Text,
-            Length(Button[0].Text[0].Text), 1);
+            Button[0].Text[0].DeleteLastL;
             SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
           end;
         end;
@@ -121,12 +120,18 @@ begin
       SDLK_RIGHT:
         begin
           if (Interaction=1) then
+          begin
             InteractInc;
+            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
+          end;
         end;
       SDLK_LEFT:
         begin
           if (Interaction=1) then
+          begin
             InteractDec;
+            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
+          end;
         end;
     end;
   end
