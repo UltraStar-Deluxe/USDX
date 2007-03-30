@@ -9,6 +9,9 @@ type
       SelectBool:   boolean;
       TextString:   String;
       TextTiles:    Array of String;
+
+      STicks:       Cardinal;
+      SelectBlink:  Boolean;
     public
       X:      real;
       Y:      real;
@@ -38,11 +41,15 @@ type
   end;
 
 implementation
-uses UGraphic, StrUtils;
+uses UGraphic, StrUtils, Windows;
 
 procedure TText.SetSelect(Value: Boolean);
 begin
   SelectBool := Value;
+  
+  //Set Cursor Visible
+  SelectBlink := True;
+  STicks := GettickCount div 550;
 end;
 
 procedure TText.SetText(Value: String);
@@ -99,6 +106,10 @@ begin
       TextTiles[L] := Copy (Value, LastBreak + 1, Length(Value) - LastBreak);
 
   end;
+
+  //Set Cursor Visible
+  SelectBlink := True;
+  STicks := GettickCount div 550;
 end;
 
 Procedure TText.DeleteLastL;
@@ -125,9 +136,21 @@ begin
     SetFontSize(Size);
     SetFontItalic(False);
     glColor3f(ColR*Int, ColG*Int, ColB*Int);
+
+    //If Selected Set Blink...
+    if SelectBool then
+    begin
+      I := Gettickcount div 550;
+      if I <> STicks then
+      begin //Change Visability
+        STicks := I;
+        SelectBlink := Not SelectBlink;
+      end;
+    end;
+
     if (W <= 0) then //No Width set Draw as one Long String
     begin
-      if not SelectBool then
+      if not (SelectBool AND SelectBlink) then
         Text2 := Text
       else
         Text2 := Text + '|';
@@ -147,7 +170,7 @@ begin
       Y2 := Y;
       for I := 0 to high(TextTiles) do
       begin
-        if (not SelectBool) OR (I <> high(TextTiles)) then
+        if (not (SelectBool AND SelectBlink)) OR (I <> high(TextTiles)) then
           Text2 := TextTiles[I]
         else
           Text2 := TextTiles[I] + '|';
