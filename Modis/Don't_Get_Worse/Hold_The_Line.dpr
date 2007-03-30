@@ -3,15 +3,21 @@ library Hold_The_Line;
 uses
   ModiSDK in '..\SDK\ModiSDK.pas',
   StrUtils in '..\SDK\StrUtils.pas',
-  OpenGL12;
+  OpenGL12,
+  Windows;
 
 var
   PointerTex: TSmallTexture;
   CountSentences: Cardinal;
   Limit: Byte;
   fPrint: fModi_Print;
+  fPlaySound: fModi_PlaySound;
   Frame: Integer;
   PlayerTimes: array[0..5] of Integer;
+  LastTick: Cardinal;
+  PointerVisible: Boolean;
+
+  DismissedSound: Cardinal;
 
 //Gave the Plugins Info
 procedure PluginInfo (var Info: TPluginInfo); stdcall;
@@ -54,17 +60,22 @@ var
   Texname, TexType: PChar;
 begin
   TexName := CreateStr(PChar('HDL_Pointer'));
-  TexType := CreateStr(PChar('Plain'));
+  TexType := CreateStr(PChar('Font Black'));
   PointerTex := LoadTex(TexName, TexType);
 
   FreeStr(TexName);
   FreeStr(TexType);
+
+  TexName := CreateStr(PChar('dismissed.mp3'));
+  DismissedSound := LoadSound (TexName);
+  FreeStr(TexName);
 
   CountSentences := Sentences.High;
   Limit := 0;
   Frame := 0;
 
   fPrint := Print;
+  fPlaySound := PlaySound;
 
   for I := 0 to PlayerInfo.NumPlayers-1 do
   begin
@@ -85,7 +96,28 @@ var
   L: Byte;
   C: Byte;
   Text: PChar;
+  Blink: Boolean;
+  tick: Cardinal;
 begin
+  //Aktivate Blink
+  If (CurSentence = CountSentences div 5 * 2 - 1) OR (CurSentence = CountSentences div 3 * 2 - 1) then
+  begin
+    Tick := Gettickcount div 400;
+    If (Tick <> LastTick) then
+    begin
+      LastTick := Tick;
+      PointerVisible := Not PointerVisible;
+    end;
+  end
+  else
+    PointerVisible := True;
+
+  //Inc Limit
+  if (Limit = 0) And  (CurSentence >= CountSentences div 5 * 2) then
+    Inc(Limit)
+  else if (Limit = 1) And  (CurSentence >= CountSentences div 3 * 2) then
+    Inc(Limit);
+
   case Limit of
     0: L := 20;
     1: L := 50;
@@ -94,15 +126,7 @@ begin
 
   C:= 0;
 
-  Inc(Frame);
-
   Result := True;
-
-  //Inc Limit
-  if (Limit = 0) And  (CurSentence >= CountSentences div 5 * 2) then
-    Inc(Limit)
-  else if (Limit = 1) And  (CurSentence >= CountSentences div 3 * 2) then
-    Inc(Limit);
 
   for I := 0 to PlayerInfo.NumPlayers-1 do
   begin
@@ -112,19 +136,32 @@ begin
       begin
         PlayerInfo.Playerinfo[I].Enabled := False;
         Inc(C);
-        PlayerTimes[I] := Frame; //Save Time of Dismission
-        //ToDo: PlaySound
+        PlayerTimes[I] := CurSentence; //Save Time of Dismission
+        //PlaySound
+        fPlaySound (DismissedSound);
       end;
-      
-      //Draw Pointer;
-      glBindTexture(GL_TEXTURE_2D, PointerTex.TexNum);
 
-      glBegin(GL_QUADS);
-        glTexCoord2f(1/32, 0); glVertex2f(PlayerInfo.Playerinfo[I].PosX + L - 3, PlayerInfo.Playerinfo[I].PosY - 4);
-        glTexCoord2f(1/32, 1); glVertex2f(PlayerInfo.Playerinfo[I].PosX + L - 3, PlayerInfo.Playerinfo[I].PosY + 12);
-        glTexCoord2f(31/32, 1); glVertex2f(PlayerInfo.Playerinfo[I].PosX+ L + 3, PlayerInfo.Playerinfo[I].PosY + 12);
-        glTexCoord2f(31/32, 0); glVertex2f(PlayerInfo.Playerinfo[I].PosX+ L + 3, PlayerInfo.Playerinfo[I].PosY - 4);
-      glEnd;
+      //Draw Pointer
+      if (PointerVisible) then
+      begin
+        glColor4f (0.2, 0.8, 0.1, 1);
+
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glBindTexture(GL_TEXTURE_2D, PointerTex.TexNum);
+
+        glBegin(GL_QUADS);
+          glTexCoord2f(1/32, 0); glVertex2f(PlayerInfo.Playerinfo[I].PosX + L - 3, PlayerInfo.Playerinfo[I].PosY - 4);
+          glTexCoord2f(1/32, 1); glVertex2f(PlayerInfo.Playerinfo[I].PosX + L - 3, PlayerInfo.Playerinfo[I].PosY + 12);
+          glTexCoord2f(31/32, 1); glVertex2f(PlayerInfo.Playerinfo[I].PosX+ L + 3, PlayerInfo.Playerinfo[I].PosY + 12);
+          glTexCoord2f(31/32, 0); glVertex2f(PlayerInfo.Playerinfo[I].PosX+ L + 3, PlayerInfo.Playerinfo[I].PosY - 4);
+        glEnd;
+
+        glDisable(GL_TEXTURE_2D);
+        glDisable(GL_BLEND);
+      end;
 
     end
     else
@@ -132,13 +169,15 @@ begin
       Inc(C);
       //Draw Dismissed
       Text := CreateStr(PChar('PARTY_DISMISSED'));
-      //Str := 'Test123';
+
+      glColor4f (0.8, 0.8, 0.8, 1);
+
       fPrint (1, 6, PlayerInfo.Playerinfo[I].PosX, PlayerInfo.Playerinfo[I].PosY-8, Text);
       FreeStr(Text);
     end;
   end;
-  {if (C >= PlayerInfo.NumPlayers-1) then
-    Result := False; }
+  if (C >= PlayerInfo.NumPlayers-1) then
+    Result := False;
 end;
 
 //Is Executed on Finish, Returns the Playernum of the Winner
@@ -149,7 +188,7 @@ begin
 Result := 0;
 for I := 0 to PlayerInfo.NumPlayers-1 do
   begin
-  PlayerInfo.Playerinfo[I].Percentage := (PlayerTimes[I] * 100) div Frame;
+  PlayerInfo.Playerinfo[I].Percentage := (PlayerTimes[I] * 100) div CountSentences;
     if (PlayerInfo.Playerinfo[I].Enabled) then
     begin
       PlayerInfo.Playerinfo[I].Percentage := 100;
