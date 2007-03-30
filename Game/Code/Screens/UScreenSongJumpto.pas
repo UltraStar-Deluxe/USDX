@@ -114,8 +114,17 @@ begin
       // Up and Down could be done at the same time,
       // but I don't want to declare variables inside
       // functions like this one, called so many times
-      SDLK_DOWN:    SelectNext;
-      SDLK_UP:      SelectPrev;
+      SDLK_DOWN:
+        begin
+          SelectNext;
+          Button[0].Text[0].Selected := (Interaction = 0);
+        end;
+
+      SDLK_UP:
+        begin
+          SelectPrev;
+          Button[0].Text[0].Selected := (Interaction = 0);
+        end;
 
       SDLK_RIGHT:
         begin
@@ -191,12 +200,15 @@ begin
   //Reset Screen if no Old Search is Displayed
   if (CatSongs.CatNumShow <> -2) then
   begin
-    Interaction := 0;
     SelectType := 0;
 
     Button[0].Text[0].Text := '';
     Text[0].Text := NoSongsFound;
   end;
+
+  //Select Input
+  Interaction := 0;
+  Button[0].Text[0].Selected := True;
 end;
 
 function TScreenSongJumpto.Draw: boolean;
@@ -207,14 +219,20 @@ end;
 procedure TScreenSongJumpto.SetTextFound(const Count: Cardinal);
 begin
   if (Count = 0) then
-    Text[0].Text := NoSongsFound
+  begin
+    Text[0].Text := NoSongsFound;
+    ScreenSong.HideCatTL;
+  end
   else
+  begin
     Text[0].Text := Format(SongsFound, [Count]);
 
-  //Set CatTopLeftText
-  ScreenSong.ShowCatTLCustom(Format(CatText, [Button[0].Text[0].Text]));
+    //Set CatTopLeftText
+    ScreenSong.ShowCatTLCustom(Format(CatText, [Button[0].Text[0].Text]));
+  end;
 
-  //visSongs setzen
+
+  //Set visSongs
   VisSongs := Count;
 
   //Fix SongSelection
