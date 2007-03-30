@@ -731,11 +731,18 @@ begin
 end;
 
 function TMusic.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
+var
+  L: Integer;
 begin
   if FileExists(Name) then begin
     Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadPlayerFromFile');
     try
       hStream := BASS_StreamCreateFile(False, pchar(Name), 0, 0, 0);
+      //Add CustomSound
+      L := High(CustomSounds) + 1;
+      SetLength (CustomSounds, L + 1);
+      CustomSounds[L].Filename := Name;
+      CustomSounds[L].Handle := hStream;
     except
       Log.LogError('Failed to open using BASS', 'LoadPlayerFromFile');
     end;
@@ -762,7 +769,7 @@ var
   F: String;
 begin
   //Search for Sound in already loaded Sounds
-  F := UpperCase(FileName);
+  F := UpperCase(SoundPath + FileName);
   For I := 0 to High(CustomSounds) do
   begin
     if (UpperCase(CustomSounds[I].Filename) = F) then
@@ -772,7 +779,7 @@ begin
     end;
   end;
 
-  if LoadSoundFromFile(S, Filename) then
+  if LoadSoundFromFile(S, SoundPath + Filename) then
     Result := High(CustomSounds)
   else
     Result := 0;

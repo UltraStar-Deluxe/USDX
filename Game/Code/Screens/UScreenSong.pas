@@ -149,7 +149,7 @@ var I, I2: Integer;
     //showmessage(CatSongs.Song[Cat].Path + CatSongs.Song[Cat].Cover);
     //Static[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, 'Plain', true);
 
-    Static[StaticCat].Texture := Texture.GetTexture(CatSongs.Song[Cat].Path + CatSongs.Song[Cat].Cover, 'Plain', true);
+    Static[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, 'Plain', true);
     //Texture.GetTexture(Button[Cat].Texture.Name, 'Plain', false);
     //Button[Cat].
     //Cover
@@ -197,6 +197,30 @@ begin
 
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
+
+    {//Jump To
+    if (SDL_ModState = KMOD_LALT) AND (PressedKey > SDLK_A) AND (PressedKey < SDLK_Z) then
+    begin
+      Letter := UpCase(Chr(ScanCode));
+      Log.LogError(Letter);
+      I2 := Length(CatSongs.Song);
+      For I := 1 to high(CatSongs.Song) do
+      begin
+        if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Title[1]) = Letter) then
+        begin
+          SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+
+          Music.PlayChange;
+
+          ChangeMusic;
+          SetScroll4;
+          UpdateLCD;
+          //Break and Exit
+          Exit;
+        end;
+      end;
+      Exit;
+    end; }
 
     case PressedKey of
       SDLK_ESCAPE :

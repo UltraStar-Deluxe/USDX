@@ -52,7 +52,7 @@ begin
   Implode_Glue2 := ' and ';
 
   if (Length(List) = 0) then //No Language Files Loaded -> Abort Loading
-    Log.CriticalError('Could not load any Language Files');
+    Log.CriticalError('Could not load any Language File');
 
   //Standard Language (If a Language File is Incomplete)
   //Then use English Language
@@ -142,8 +142,6 @@ var
 begin
   Result := Text;
   Text := Uppercase(Result);
-
-  Log.LogError('Text: "' + Text + '" L: ' + InttoStr(Length(Entry)));
 
   //Const Mod
   for E := 0 to high(CEntry) do
