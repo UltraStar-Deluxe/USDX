@@ -273,7 +273,7 @@ begin
     SM_PlayList_Del:
       begin
         CurMenu := sMenu;
-        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_Del');
+        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DEL');
 
         Button[0].Visible := True;
         Button[1].Visible := False;
@@ -304,7 +304,7 @@ begin
         if (Length(ISelections)>=1) then
         begin
           UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 0, ISelections, SelectValue);
-          Interaction := 4;
+          Interaction := 3;
         end
         else
         begin
@@ -312,7 +312,7 @@ begin
           SelectsS[0].Visible := False;
           Button[2].Visible := True;
           Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
-          Interaction := 3;
+          Interaction := 2;
         end;
       end;
 
