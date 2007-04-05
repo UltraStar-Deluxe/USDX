@@ -89,7 +89,8 @@ begin
 
 
   AddButton(Theme.OptionsGraphics.ButtonExit);
-  AddButtonText(14, 20, 'Exit');
+  if (Length(Button[0].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[6]);
 
 end;
 

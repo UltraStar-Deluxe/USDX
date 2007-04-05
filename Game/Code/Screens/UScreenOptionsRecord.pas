@@ -104,7 +104,8 @@ begin
   SelectSlideChannelR := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelR, Ini.CardList[0].ChannelR, IChannel);
 
   AddButton(Theme.OptionsRecord.ButtonExit);
-  AddButtonText(14, 20, 'Exit');
+  if (Length(Button[0].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[6]);
 
   Interaction := 0;
 end;

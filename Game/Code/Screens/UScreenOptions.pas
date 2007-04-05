@@ -159,25 +159,32 @@ begin
   AddBackground(Theme.Options.Background.Tex);
 
   AddButton(Theme.Options.ButtonGame);
-  AddButtonText(14, 20, Theme.Options.Description[0]);
+  if (Length(Button[0].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[0]);
 
   AddButton(Theme.Options.ButtonGraphics);
-  AddButtonText(14, 20, Theme.Options.Description[1]);
+  if (Length(Button[1].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[1]);
 
   AddButton(Theme.Options.ButtonSound);
-  AddButtonText(14, 20, Theme.Options.Description[2]);
+  if (Length(Button[2].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[2]);
 
   AddButton(Theme.Options.ButtonLyrics);
-  AddButtonText(14, 20, Theme.Options.Description[3]);
+  if (Length(Button[3].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[3]);
 
   AddButton(Theme.Options.ButtonThemes);
-  AddButtonText(14, 20, Theme.Options.Description[4]);
+  if (Length(Button[4].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[4]);
 
   AddButton(Theme.Options.ButtonRecord);
-  AddButtonText(14, 20, Theme.Options.Description[5]);
+  if (Length(Button[5].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[5]);
 
   AddButton(Theme.Options.ButtonExit);
-  AddButtonText(14, 20, Theme.Options.Description[6]);
+  if (Length(Button[6].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[6]);
 
   for I := 0 to High(Theme.Options.Static) do
     AddStatic(Theme.Options.Static[I]);

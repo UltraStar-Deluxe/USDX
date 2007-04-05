@@ -99,15 +99,14 @@ begin
     AddText(Theme.OptionsThemes.Text[I]);
 
   AddSelectSlide(Theme.OptionsThemes.SelectTheme, Ini.Theme, ITheme);
-  //SelectsS[High(SelectsS)].SetSelectOpt(Ini.Theme);
 
   SkinSelect := AddSelectSlide(Theme.OptionsThemes.SelectSkin, Ini.SkinNo, ISkin);
 
-  //AddSelectSlideOption('SingStar');
   AddSelectSlide(Theme.OptionsThemes.SelectColor, Ini.Color, IColor);
 
   AddButton(Theme.OptionsThemes.ButtonExit);
-  AddButtonText(14, 20, 'Exit');
+  if (Length(Button[0].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[6]);
 end;
 
 procedure TScreenOptionsThemes.onShow;
