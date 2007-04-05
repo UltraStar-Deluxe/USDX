@@ -333,10 +333,11 @@ type
     ButtonLyrics:     TThemeButton;
     ButtonThemes:     TThemeButton;
     ButtonRecord:     TThemeButton;
+    ButtonAdvanced:   TThemeButton;
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
-    Description:          array[0..6] of string;
+    Description:          array[0..7] of string;
   end;
 
   TThemeOptionsGame = class(TThemeBasic)
@@ -387,6 +388,16 @@ type
     SelectSlideInput:     TThemeSelectSlide;
     SelectSlideChannelL:  TThemeSelectSlide;
     SelectSlideChannelR:  TThemeSelectSlide;
+    ButtonExit:           TThemeButton;
+  end;
+
+  TThemeOptionsAdvanced = class(TThemeBasic)
+    SelectLoadAnimation:  TThemeSelect;
+    SelectEffectPerfect:  TThemeSelect;
+    SelectEffectGolden:   TThemeSelect;
+    SelectLineBonus:      TThemeSelect;
+    SelectAskbeforeDel:   TThemeSelect;
+    SelectOnSongClick:    TThemeSelectSlide;
     ButtonExit:           TThemeButton;
   end;
 
@@ -549,7 +560,8 @@ type
     OptionsLyrics:    TThemeOptionsLyrics;
     OptionsThemes:    TThemeOptionsThemes;
     OptionsRecord:    TThemeOptionsRecord;
-    //Menu
+    OptionsAdvanced:  TThemeOptionsAdvanced;
+    //ScreenSong extensions
     SongMenu:         TThemeSongMenu;
     SongJumpto:       TThemeSongJumpTo;
     //Party Screens:
@@ -633,6 +645,7 @@ begin
   OptionsLyrics := TThemeOptionsLyrics.Create;
   OptionsThemes := TThemeOptionsThemes.Create;
   OptionsRecord := TThemeOptionsRecord.Create;
+  OptionsAdvanced := TThemeOptionsAdvanced.Create;
 
   SongMenu := TThemeSongMenu.Create;
   SongJumpto := TThemeSongJumpto.Create;
@@ -939,72 +952,74 @@ begin
       ThemeLoadTexts(Top5.TextName, 'Top5TextName');
       ThemeLoadTexts(Top5.TextScore, 'Top5TextScore');
 
-    // Options
-    ThemeLoadBasic(Options, 'Options');
+      // Options
+      ThemeLoadBasic(Options, 'Options');
 
-    ThemeLoadButton(Options.ButtonGame, 'OptionsButtonGame');
-    ThemeLoadButton(Options.ButtonGraphics, 'OptionsButtonGraphics');
-    ThemeLoadButton(Options.ButtonSound, 'OptionsButtonSound');
-    ThemeLoadButton(Options.ButtonLyrics, 'OptionsButtonLyrics');
-    ThemeLoadButton(Options.ButtonThemes, 'OptionsButtonThemes');
-    ThemeLoadButton(Options.ButtonRecord, 'OptionsButtonRecord');
-    ThemeLoadButton(Options.ButtonExit, 'OptionsButtonExit');
+      ThemeLoadButton(Options.ButtonGame, 'OptionsButtonGame');
+      ThemeLoadButton(Options.ButtonGraphics, 'OptionsButtonGraphics');
+      ThemeLoadButton(Options.ButtonSound, 'OptionsButtonSound');
+      ThemeLoadButton(Options.ButtonLyrics, 'OptionsButtonLyrics');
+      ThemeLoadButton(Options.ButtonThemes, 'OptionsButtonThemes');
+      ThemeLoadButton(Options.ButtonRecord, 'OptionsButtonRecord');
+      ThemeLoadButton(Options.ButtonAdvanced, 'OptionsButtonAdvanced');
+      ThemeLoadButton(Options.ButtonExit, 'OptionsButtonExit');
 
-    {{$IFDEF TRANSLATE}
-    Options.Description[0] := Language.Translate('SING_OPTIONS_GAME');
-    Options.Description[1] := Language.Translate('SING_OPTIONS_GRAPHICS');
-    Options.Description[2] := Language.Translate('SING_OPTIONS_SOUND');
-    Options.Description[3] := Language.Translate('SING_OPTIONS_LYRICS');
-    Options.Description[4] := Language.Translate('SING_OPTIONS_THEMES');
-    Options.Description[5] := Language.Translate('SING_OPTIONS_RECORD');
-    Options.Description[6] := Language.Translate('SING_OPTIONS_EXIT');
-    {{$ENDIF}
+      {{$IFDEF TRANSLATE}
+      Options.Description[0] := Language.Translate('SING_OPTIONS_GAME');
+      Options.Description[1] := Language.Translate('SING_OPTIONS_GRAPHICS');
+      Options.Description[2] := Language.Translate('SING_OPTIONS_SOUND');
+      Options.Description[3] := Language.Translate('SING_OPTIONS_LYRICS');
+      Options.Description[4] := Language.Translate('SING_OPTIONS_THEMES');
+      Options.Description[5] := Language.Translate('SING_OPTIONS_RECORD');
+      Options.Description[6] := Language.Translate('SING_OPTIONS_ADVANCED');
+      Options.Description[7] := Language.Translate('SING_OPTIONS_EXIT');
+      {{$ENDIF}
 
-    ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
-    Options.TextDescription.Text := Options.Description[0];
+      ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
+      Options.TextDescription.Text := Options.Description[0];
 
-    // Options Game
-    ThemeLoadBasic(OptionsGame, 'OptionsGame');
+      // Options Game
+      ThemeLoadBasic(OptionsGame, 'OptionsGame');
 
-    ThemeLoadSelect(OptionsGame.SelectPlayers, 'OptionsGameSelectPlayers');
-    ThemeLoadSelect(OptionsGame.SelectDifficulty, 'OptionsGameSelectDifficulty');
-    ThemeLoadSelectSlide(OptionsGame.SelectLanguage, 'OptionsGameSelectSlideLanguage');
-    ThemeLoadSelect(OptionsGame.SelectTabs, 'OptionsGameSelectTabs');
-    ThemeLoadSelectSlide(OptionsGame.SelectSorting, 'OptionsGameSelectSlideSorting');
-    ThemeLoadSelect(OptionsGame.SelectDebug, 'OptionsGameSelectDebug');
-    ThemeLoadButton(OptionsGame.ButtonExit, 'OptionsGameButtonExit');
+      ThemeLoadSelect(OptionsGame.SelectPlayers, 'OptionsGameSelectPlayers');
+      ThemeLoadSelect(OptionsGame.SelectDifficulty, 'OptionsGameSelectDifficulty');
+      ThemeLoadSelectSlide(OptionsGame.SelectLanguage, 'OptionsGameSelectSlideLanguage');
+      ThemeLoadSelect(OptionsGame.SelectTabs, 'OptionsGameSelectTabs');
+      ThemeLoadSelectSlide(OptionsGame.SelectSorting, 'OptionsGameSelectSlideSorting');
+      ThemeLoadSelect(OptionsGame.SelectDebug, 'OptionsGameSelectDebug');
+      ThemeLoadButton(OptionsGame.ButtonExit, 'OptionsGameButtonExit');
 
-    // Options Graphics
-    ThemeLoadBasic(OptionsGraphics, 'OptionsGraphics');
+      // Options Graphics
+      ThemeLoadBasic(OptionsGraphics, 'OptionsGraphics');
 
-    ThemeLoadSelect(OptionsGraphics.SelectFullscreen, 'OptionsGraphicsSelectFullscreen');
-    ThemeLoadSelectSlide(OptionsGraphics.SelectSlideResolution, 'OptionsGraphicsSelectSlideResolution');
-    ThemeLoadSelect(OptionsGraphics.SelectDepth, 'OptionsGraphicsSelectDepth');
-    ThemeLoadSelect(OptionsGraphics.SelectOscilloscope, 'OptionsGraphicsSelectOscilloscope');
-    ThemeLoadSelect(OptionsGraphics.SelectLineBonus, 'OptionsGraphicsSelectLineBonus');
-    ThemeLoadSelect(OptionsGraphics.SelectMovieSize, 'OptionsGraphicsSelectMovieSize');
-    ThemeLoadButton(OptionsGraphics.ButtonExit, 'OptionsGraphicsButtonExit');
+      ThemeLoadSelect(OptionsGraphics.SelectFullscreen, 'OptionsGraphicsSelectFullscreen');
+      ThemeLoadSelectSlide(OptionsGraphics.SelectSlideResolution, 'OptionsGraphicsSelectSlideResolution');
+      ThemeLoadSelect(OptionsGraphics.SelectDepth, 'OptionsGraphicsSelectDepth');
+      ThemeLoadSelect(OptionsGraphics.SelectOscilloscope, 'OptionsGraphicsSelectOscilloscope');
+      ThemeLoadSelect(OptionsGraphics.SelectLineBonus, 'OptionsGraphicsSelectLineBonus');
+      ThemeLoadSelect(OptionsGraphics.SelectMovieSize, 'OptionsGraphicsSelectMovieSize');
+      ThemeLoadButton(OptionsGraphics.ButtonExit, 'OptionsGraphicsButtonExit');
 
-    // Options Sound
-    ThemeLoadBasic(OptionsSound, 'OptionsSound');
+      // Options Sound
+      ThemeLoadBasic(OptionsSound, 'OptionsSound');
 
-    ThemeLoadSelect(OptionsSound.SelectMicBoost, 'OptionsSoundSelectMicBoost');
-    ThemeLoadSelect(OptionsSound.SelectClickAssist, 'OptionsSoundSelectClickAssist');
-    ThemeLoadSelect(OptionsSound.SelectBeatClick, 'OptionsSoundSelectBeatClick');
-    ThemeLoadSelect(OptionsSound.SelectThreshold, 'OptionsSoundSelectThreshold');
-    //ThemeLoadSelect(OptionsSound.SelectTwoPlayerMode, 'OptionsSoundSelectTwoPlayerMode');
-    ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
+      ThemeLoadSelect(OptionsSound.SelectMicBoost, 'OptionsSoundSelectMicBoost');
+      ThemeLoadSelect(OptionsSound.SelectClickAssist, 'OptionsSoundSelectClickAssist');
+      ThemeLoadSelect(OptionsSound.SelectBeatClick, 'OptionsSoundSelectBeatClick');
+      ThemeLoadSelect(OptionsSound.SelectThreshold, 'OptionsSoundSelectThreshold');
+      //ThemeLoadSelect(OptionsSound.SelectTwoPlayerMode, 'OptionsSoundSelectTwoPlayerMode');
+      ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
 
-    // Options Lyrics
-    ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
+      // Options Lyrics
+      ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
 
-    ThemeLoadSelect(OptionsLyrics.SelectLyricsFont, 'OptionsLyricsSelectLyricsFont');
-    ThemeLoadSelect(OptionsLyrics.SelectLyricsEffect, 'OptionsLyricsSelectLyricsEffect');
-    ThemeLoadSelect(OptionsLyrics.SelectSolmization, 'OptionsLyricsSelectSolmization');
-    ThemeLoadButton(OptionsLyrics.ButtonExit, 'OptionsLyricsButtonExit');
+      ThemeLoadSelect(OptionsLyrics.SelectLyricsFont, 'OptionsLyricsSelectLyricsFont');
+      ThemeLoadSelect(OptionsLyrics.SelectLyricsEffect, 'OptionsLyricsSelectLyricsEffect');
+      ThemeLoadSelect(OptionsLyrics.SelectSolmization, 'OptionsLyricsSelectSolmization');
+      ThemeLoadButton(OptionsLyrics.ButtonExit, 'OptionsLyricsButtonExit');
 
-    // Options Themes
-    ThemeLoadBasic(OptionsThemes, 'OptionsThemes');
+      // Options Themes
+      ThemeLoadBasic(OptionsThemes, 'OptionsThemes');
 
       ThemeLoadSelectSlide(OptionsThemes.SelectTheme, 'OptionsThemesSelectTheme');
       ThemeLoadSelectSlide(OptionsThemes.SelectSkin, 'OptionsThemesSelectSkin');
@@ -1020,147 +1035,158 @@ begin
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannelR, 'OptionsRecordSelectSlideChannelR');
       ThemeLoadButton(OptionsRecord.ButtonExit, 'OptionsRecordButtonExit');
 
-   //Song Menu
-    ThemeLoadBasic (SongMenu, 'SongMenu');
-    ThemeLoadButton(SongMenu.Button1, 'SongMenuButton1');
-    ThemeLoadButton(SongMenu.Button2, 'SongMenuButton2');
-    ThemeLoadButton(SongMenu.Button3, 'SongMenuButton3');
-    ThemeLoadButton(SongMenu.Button4, 'SongMenuButton4');
-    ThemeLoadSelectSlide(SongMenu.SelectSlide3, 'SongMenuSelectSlide3');
+      //Options Advanced
+      ThemeLoadBasic(OptionsAdvanced, 'OptionsAdvanced');
 
-    ThemeLoadText(SongMenu.TextMenu, 'SongMenuTextMenu');
+      ThemeLoadSelect       (OptionsAdvanced.SelectLoadAnimation, 'OptionsAdvancedSelectLoadAnimation');
+      ThemeLoadSelect       (OptionsAdvanced.SelectEffectPerfect, 'OptionsAdvancedSelectEffectPerfect');
+      ThemeLoadSelect       (OptionsAdvanced.SelectEffectGolden, 'OptionsAdvancedSelectEffectGolden');
+      ThemeLoadSelect       (OptionsAdvanced.SelectLineBonus, 'OptionsAdvancedSelectLineBonus');
+      ThemeLoadSelectSlide  (OptionsAdvanced.SelectOnSongClick, 'OptionsAdvancedSelectSlideOnSongClick');
+      ThemeLoadSelect       (OptionsAdvanced.SelectAskbeforeDel, 'OptionsAdvancedSelectAskbeforeDel');
+      ThemeLoadButton       (OptionsAdvanced.ButtonExit, 'OptionsAdvancedButtonExit');
 
-    //Song Jumpto
-    ThemeLoadBasic (SongJumpto, 'SongJumpto');
-    ThemeLoadButton(SongJumpto.ButtonSearchText, 'SongJumptoButtonSearchText');
-    ThemeLoadSelectSlide(SongJumpto.SelectSlideType, 'SongJumptoSelectSlideType');
-    ThemeLoadText(SongJumpto.TextFound, 'SongJumptoTextFound');
-    //Translations
-    SongJumpto.IType[0] := Language.Translate('SONG_JUMPTO_TYPE1');
-    SongJumpto.IType[1] := Language.Translate('SONG_JUMPTO_TYPE2');
-    SongJumpto.IType[2] := Language.Translate('SONG_JUMPTO_TYPE3');
-    SongJumpto.SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
-    SongJumpto.NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
-    SongJumpto.CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
+      //Song Menu
+      ThemeLoadBasic (SongMenu, 'SongMenu');
+      ThemeLoadButton(SongMenu.Button1, 'SongMenuButton1');
+      ThemeLoadButton(SongMenu.Button2, 'SongMenuButton2');
+      ThemeLoadButton(SongMenu.Button3, 'SongMenuButton3');
+      ThemeLoadButton(SongMenu.Button4, 'SongMenuButton4');
+      ThemeLoadSelectSlide(SongMenu.SelectSlide3, 'SongMenuSelectSlide3');
 
-    //Party Screens:
-    //Party NewRound
-    ThemeLoadBasic(PartyNewRound, 'PartyNewRound');
+      ThemeLoadText(SongMenu.TextMenu, 'SongMenuTextMenu');
 
-    ThemeLoadText (PartyNewRound.TextRound1, 'PartyNewRoundTextRound1');
-    ThemeLoadText (PartyNewRound.TextRound2, 'PartyNewRoundTextRound2');
-    ThemeLoadText (PartyNewRound.TextRound3, 'PartyNewRoundTextRound3');
-    ThemeLoadText (PartyNewRound.TextRound4, 'PartyNewRoundTextRound4');
-    ThemeLoadText (PartyNewRound.TextRound5, 'PartyNewRoundTextRound5');
-    ThemeLoadText (PartyNewRound.TextRound6, 'PartyNewRoundTextRound6');
-    ThemeLoadText (PartyNewRound.TextRound7, 'PartyNewRoundTextRound7');
-    ThemeLoadText (PartyNewRound.TextWinner1, 'PartyNewRoundTextWinner1');
-    ThemeLoadText (PartyNewRound.TextWinner2, 'PartyNewRoundTextWinner2');
-    ThemeLoadText (PartyNewRound.TextWinner3, 'PartyNewRoundTextWinner3');
-    ThemeLoadText (PartyNewRound.TextWinner4, 'PartyNewRoundTextWinner4');
-    ThemeLoadText (PartyNewRound.TextWinner5, 'PartyNewRoundTextWinner5');
-    ThemeLoadText (PartyNewRound.TextWinner6, 'PartyNewRoundTextWinner6');
-    ThemeLoadText (PartyNewRound.TextWinner7, 'PartyNewRoundTextWinner7');
-    ThemeLoadText (PartyNewRound.TextNextRound, 'PartyNewRoundTextNextRound');
-    ThemeLoadText (PartyNewRound.TextNextRoundNo, 'PartyNewRoundTextNextRoundNo');
-    ThemeLoadText (PartyNewRound.TextNextPlayer1, 'PartyNewRoundTextNextPlayer1');
-    ThemeLoadText (PartyNewRound.TextNextPlayer2, 'PartyNewRoundTextNextPlayer2');
-    ThemeLoadText (PartyNewRound.TextNextPlayer3, 'PartyNewRoundTextNextPlayer3');
+      //Song Jumpto
+      ThemeLoadBasic (SongJumpto, 'SongJumpto');
+      ThemeLoadButton(SongJumpto.ButtonSearchText, 'SongJumptoButtonSearchText');
+      ThemeLoadSelectSlide(SongJumpto.SelectSlideType, 'SongJumptoSelectSlideType');
+      ThemeLoadText(SongJumpto.TextFound, 'SongJumptoTextFound');
+      //Translations
+      SongJumpto.IType[0] := Language.Translate('SONG_JUMPTO_TYPE1');
+      SongJumpto.IType[1] := Language.Translate('SONG_JUMPTO_TYPE2');
+      SongJumpto.IType[2] := Language.Translate('SONG_JUMPTO_TYPE3');
+      SongJumpto.SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
+      SongJumpto.NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
+      SongJumpto.CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
 
-    ThemeLoadStatic (PartyNewRound.StaticRound1, 'PartyNewRoundStaticRound1');
-    ThemeLoadStatic (PartyNewRound.StaticRound2, 'PartyNewRoundStaticRound2');
-    ThemeLoadStatic (PartyNewRound.StaticRound3, 'PartyNewRoundStaticRound3');
-    ThemeLoadStatic (PartyNewRound.StaticRound4, 'PartyNewRoundStaticRound4');
-    ThemeLoadStatic (PartyNewRound.StaticRound5, 'PartyNewRoundStaticRound5');
-    ThemeLoadStatic (PartyNewRound.StaticRound6, 'PartyNewRoundStaticRound6');
-    ThemeLoadStatic (PartyNewRound.StaticRound7, 'PartyNewRoundStaticRound7');
+      //Party Screens:
+      //Party NewRound
+      ThemeLoadBasic(PartyNewRound, 'PartyNewRound');
 
-    ThemeLoadText (PartyNewRound.TextScoreTeam1, 'PartyNewRoundTextScoreTeam1');
-    ThemeLoadText (PartyNewRound.TextScoreTeam2, 'PartyNewRoundTextScoreTeam2');
-    ThemeLoadText (PartyNewRound.TextScoreTeam3, 'PartyNewRoundTextScoreTeam3');
-    ThemeLoadText (PartyNewRound.TextNameTeam1, 'PartyNewRoundTextNameTeam1');
-    ThemeLoadText (PartyNewRound.TextNameTeam2, 'PartyNewRoundTextNameTeam2');
-    ThemeLoadText (PartyNewRound.TextNameTeam3, 'PartyNewRoundTextNameTeam3');
+      ThemeLoadText (PartyNewRound.TextRound1, 'PartyNewRoundTextRound1');
+      ThemeLoadText (PartyNewRound.TextRound2, 'PartyNewRoundTextRound2');
+      ThemeLoadText (PartyNewRound.TextRound3, 'PartyNewRoundTextRound3');
+      ThemeLoadText (PartyNewRound.TextRound4, 'PartyNewRoundTextRound4');
+      ThemeLoadText (PartyNewRound.TextRound5, 'PartyNewRoundTextRound5');
+      ThemeLoadText (PartyNewRound.TextRound6, 'PartyNewRoundTextRound6');
+      ThemeLoadText (PartyNewRound.TextRound7, 'PartyNewRoundTextRound7');
+      ThemeLoadText (PartyNewRound.TextWinner1, 'PartyNewRoundTextWinner1');
+      ThemeLoadText (PartyNewRound.TextWinner2, 'PartyNewRoundTextWinner2');
+      ThemeLoadText (PartyNewRound.TextWinner3, 'PartyNewRoundTextWinner3');
+      ThemeLoadText (PartyNewRound.TextWinner4, 'PartyNewRoundTextWinner4');
+      ThemeLoadText (PartyNewRound.TextWinner5, 'PartyNewRoundTextWinner5');
+      ThemeLoadText (PartyNewRound.TextWinner6, 'PartyNewRoundTextWinner6');
+      ThemeLoadText (PartyNewRound.TextWinner7, 'PartyNewRoundTextWinner7');
+      ThemeLoadText (PartyNewRound.TextNextRound, 'PartyNewRoundTextNextRound');
+      ThemeLoadText (PartyNewRound.TextNextRoundNo, 'PartyNewRoundTextNextRoundNo');
+      ThemeLoadText (PartyNewRound.TextNextPlayer1, 'PartyNewRoundTextNextPlayer1');
+      ThemeLoadText (PartyNewRound.TextNextPlayer2, 'PartyNewRoundTextNextPlayer2');
+      ThemeLoadText (PartyNewRound.TextNextPlayer3, 'PartyNewRoundTextNextPlayer3');
 
-    ThemeLoadStatic (PartyNewRound.StaticTeam1, 'PartyNewRoundStaticTeam1');
-    ThemeLoadStatic (PartyNewRound.StaticTeam2, 'PartyNewRoundStaticTeam2');
-    ThemeLoadStatic (PartyNewRound.StaticTeam3, 'PartyNewRoundStaticTeam3');
+      ThemeLoadStatic (PartyNewRound.StaticRound1, 'PartyNewRoundStaticRound1');
+      ThemeLoadStatic (PartyNewRound.StaticRound2, 'PartyNewRoundStaticRound2');
+      ThemeLoadStatic (PartyNewRound.StaticRound3, 'PartyNewRoundStaticRound3');
+      ThemeLoadStatic (PartyNewRound.StaticRound4, 'PartyNewRoundStaticRound4');
+      ThemeLoadStatic (PartyNewRound.StaticRound5, 'PartyNewRoundStaticRound5');
+      ThemeLoadStatic (PartyNewRound.StaticRound6, 'PartyNewRoundStaticRound6');
+      ThemeLoadStatic (PartyNewRound.StaticRound7, 'PartyNewRoundStaticRound7');
 
-    ThemeLoadButton (PartyNewRound.ButtonNext, 'PartyNewRoundButtonNext');
+      ThemeLoadText (PartyNewRound.TextScoreTeam1, 'PartyNewRoundTextScoreTeam1');
+      ThemeLoadText (PartyNewRound.TextScoreTeam2, 'PartyNewRoundTextScoreTeam2');
+      ThemeLoadText (PartyNewRound.TextScoreTeam3, 'PartyNewRoundTextScoreTeam3');
+      ThemeLoadText (PartyNewRound.TextNameTeam1, 'PartyNewRoundTextNameTeam1');
+      ThemeLoadText (PartyNewRound.TextNameTeam2, 'PartyNewRoundTextNameTeam2');
+      ThemeLoadText (PartyNewRound.TextNameTeam3, 'PartyNewRoundTextNameTeam3');
 
-    //Party Score
-    ThemeLoadBasic(PartyScore, 'PartyScore');
+      ThemeLoadStatic (PartyNewRound.StaticTeam1, 'PartyNewRoundStaticTeam1');
+      ThemeLoadStatic (PartyNewRound.StaticTeam2, 'PartyNewRoundStaticTeam2');
+      ThemeLoadStatic (PartyNewRound.StaticTeam3, 'PartyNewRoundStaticTeam3');
 
-    ThemeLoadText (PartyScore.TextScoreTeam1, 'PartyScoreTextScoreTeam1');
-    ThemeLoadText (PartyScore.TextScoreTeam2, 'PartyScoreTextScoreTeam2');
-    ThemeLoadText (PartyScore.TextScoreTeam3, 'PartyScoreTextScoreTeam3');
-    ThemeLoadText (PartyScore.TextNameTeam1, 'PartyScoreTextNameTeam1');
-    ThemeLoadText (PartyScore.TextNameTeam2, 'PartyScoreTextNameTeam2');
-    ThemeLoadText (PartyScore.TextNameTeam3, 'PartyScoreTextNameTeam3');
+      ThemeLoadButton (PartyNewRound.ButtonNext, 'PartyNewRoundButtonNext');
 
-    ThemeLoadStatic (PartyScore.StaticTeam1, 'PartyScoreStaticTeam1');
-    ThemeLoadStatic (PartyScore.StaticTeam2, 'PartyScoreStaticTeam2');
-    ThemeLoadStatic (PartyScore.StaticTeam3, 'PartyScoreStaticTeam3');
+      //Party Score
+      ThemeLoadBasic(PartyScore, 'PartyScore');
 
-    ThemeLoadText (PartyScore.TextWinner, 'PartyScoreTextWinner');
+      ThemeLoadText (PartyScore.TextScoreTeam1, 'PartyScoreTextScoreTeam1');
+      ThemeLoadText (PartyScore.TextScoreTeam2, 'PartyScoreTextScoreTeam2');
+      ThemeLoadText (PartyScore.TextScoreTeam3, 'PartyScoreTextScoreTeam3');
+      ThemeLoadText (PartyScore.TextNameTeam1, 'PartyScoreTextNameTeam1');
+      ThemeLoadText (PartyScore.TextNameTeam2, 'PartyScoreTextNameTeam2');
+      ThemeLoadText (PartyScore.TextNameTeam3, 'PartyScoreTextNameTeam3');
 
-    //Party Win
-    ThemeLoadBasic(PartyWin, 'PartyWin');
+      ThemeLoadStatic (PartyScore.StaticTeam1, 'PartyScoreStaticTeam1');
+      ThemeLoadStatic (PartyScore.StaticTeam2, 'PartyScoreStaticTeam2');
+      ThemeLoadStatic (PartyScore.StaticTeam3, 'PartyScoreStaticTeam3');
 
-    ThemeLoadText (PartyWin.TextScoreTeam1, 'PartyWinTextScoreTeam1');
-    ThemeLoadText (PartyWin.TextScoreTeam2, 'PartyWinTextScoreTeam2');
-    ThemeLoadText (PartyWin.TextScoreTeam3, 'PartyWinTextScoreTeam3');
-    ThemeLoadText (PartyWin.TextNameTeam1, 'PartyWinTextNameTeam1');
-    ThemeLoadText (PartyWin.TextNameTeam2, 'PartyWinTextNameTeam2');
-    ThemeLoadText (PartyWin.TextNameTeam3, 'PartyWinTextNameTeam3');
+      ThemeLoadText (PartyScore.TextWinner, 'PartyScoreTextWinner');
 
-    ThemeLoadStatic (PartyWin.StaticTeam1, 'PartyWinStaticTeam1');
-    ThemeLoadStatic (PartyWin.StaticTeam2, 'PartyWinStaticTeam2');
-    ThemeLoadStatic (PartyWin.StaticTeam3, 'PartyWinStaticTeam3');
+      //Party Win
+      ThemeLoadBasic(PartyWin, 'PartyWin');
 
-    ThemeLoadText (PartyWin.TextWinner, 'PartyWinTextWinner');
+      ThemeLoadText (PartyWin.TextScoreTeam1, 'PartyWinTextScoreTeam1');
+      ThemeLoadText (PartyWin.TextScoreTeam2, 'PartyWinTextScoreTeam2');
+      ThemeLoadText (PartyWin.TextScoreTeam3, 'PartyWinTextScoreTeam3');
+      ThemeLoadText (PartyWin.TextNameTeam1, 'PartyWinTextNameTeam1');
+      ThemeLoadText (PartyWin.TextNameTeam2, 'PartyWinTextNameTeam2');
+      ThemeLoadText (PartyWin.TextNameTeam3, 'PartyWinTextNameTeam3');
 
-    //Party Options
-    ThemeLoadBasic(PartyOptions, 'PartyOptions');
-    ThemeLoadSelectSlide(PartyOptions.SelectLevel, 'PartyOptionsSelectLevel');
-    ThemeLoadSelectSlide(PartyOptions.SelectPlayList, 'PartyOptionsSelectPlayList');
-    ThemeLoadSelectSlide(PartyOptions.SelectPlayList2, 'PartyOptionsSelectPlayList2');
-    ThemeLoadSelectSlide(PartyOptions.SelectRounds, 'PartyOptionsSelectRounds');
-    ThemeLoadSelectSlide(PartyOptions.SelectTeams, 'PartyOptionsSelectTeams');
-    ThemeLoadSelectSlide(PartyOptions.SelectPlayers1, 'PartyOptionsSelectPlayers1');
-    ThemeLoadSelectSlide(PartyOptions.SelectPlayers2, 'PartyOptionsSelectPlayers2');
-    ThemeLoadSelectSlide(PartyOptions.SelectPlayers3, 'PartyOptionsSelectPlayers3');
+      ThemeLoadStatic (PartyWin.StaticTeam1, 'PartyWinStaticTeam1');
+      ThemeLoadStatic (PartyWin.StaticTeam2, 'PartyWinStaticTeam2');
+      ThemeLoadStatic (PartyWin.StaticTeam3, 'PartyWinStaticTeam3');
 
-    {ThemeLoadButton (ButtonNext, 'ButtonNext');
-    ThemeLoadButton (ButtonPrev, 'ButtonPrev');}
+      ThemeLoadText (PartyWin.TextWinner, 'PartyWinTextWinner');
 
-    //Party Player
-    ThemeLoadBasic(PartyPlayer, 'PartyPlayer');
-    ThemeLoadButton(PartyPlayer.Team1Name, 'PartyPlayerTeam1Name');
-    ThemeLoadButton(PartyPlayer.Player1Name, 'PartyPlayerPlayer1Name');
-    ThemeLoadButton(PartyPlayer.Player2Name, 'PartyPlayerPlayer2Name');
-    ThemeLoadButton(PartyPlayer.Player3Name, 'PartyPlayerPlayer3Name');
-    ThemeLoadButton(PartyPlayer.Player4Name, 'PartyPlayerPlayer4Name');
+      //Party Options
+      ThemeLoadBasic(PartyOptions, 'PartyOptions');
+      ThemeLoadSelectSlide(PartyOptions.SelectLevel, 'PartyOptionsSelectLevel');
+      ThemeLoadSelectSlide(PartyOptions.SelectPlayList, 'PartyOptionsSelectPlayList');
+      ThemeLoadSelectSlide(PartyOptions.SelectPlayList2, 'PartyOptionsSelectPlayList2');
+      ThemeLoadSelectSlide(PartyOptions.SelectRounds, 'PartyOptionsSelectRounds');
+      ThemeLoadSelectSlide(PartyOptions.SelectTeams, 'PartyOptionsSelectTeams');
+      ThemeLoadSelectSlide(PartyOptions.SelectPlayers1, 'PartyOptionsSelectPlayers1');
+      ThemeLoadSelectSlide(PartyOptions.SelectPlayers2, 'PartyOptionsSelectPlayers2');
+      ThemeLoadSelectSlide(PartyOptions.SelectPlayers3, 'PartyOptionsSelectPlayers3');
 
-    ThemeLoadButton(PartyPlayer.Team2Name, 'PartyPlayerTeam2Name');
-    ThemeLoadButton(PartyPlayer.Player5Name, 'PartyPlayerPlayer5Name');
-    ThemeLoadButton(PartyPlayer.Player6Name, 'PartyPlayerPlayer6Name');
-    ThemeLoadButton(PartyPlayer.Player7Name, 'PartyPlayerPlayer7Name');
-    ThemeLoadButton(PartyPlayer.Player8Name, 'PartyPlayerPlayer8Name');
+      {ThemeLoadButton (ButtonNext, 'ButtonNext');
+      ThemeLoadButton (ButtonPrev, 'ButtonPrev');}
 
-    ThemeLoadButton(PartyPlayer.Team3Name, 'PartyPlayerTeam3Name');
-    ThemeLoadButton(PartyPlayer.Player9Name, 'PartyPlayerPlayer9Name');
-    ThemeLoadButton(PartyPlayer.Player10Name, 'PartyPlayerPlayer10Name');
-    ThemeLoadButton(PartyPlayer.Player11Name, 'PartyPlayerPlayer11Name');
-    ThemeLoadButton(PartyPlayer.Player12Name, 'PartyPlayerPlayer12Name');
+      //Party Player
+      ThemeLoadBasic(PartyPlayer, 'PartyPlayer');
+      ThemeLoadButton(PartyPlayer.Team1Name, 'PartyPlayerTeam1Name');
+      ThemeLoadButton(PartyPlayer.Player1Name, 'PartyPlayerPlayer1Name');
+      ThemeLoadButton(PartyPlayer.Player2Name, 'PartyPlayerPlayer2Name');
+      ThemeLoadButton(PartyPlayer.Player3Name, 'PartyPlayerPlayer3Name');
+      ThemeLoadButton(PartyPlayer.Player4Name, 'PartyPlayerPlayer4Name');
 
-    {ThemeLoadButton(ButtonNext, 'PartyPlayerButtonNext');
-    ThemeLoadButton(ButtonPrev, 'PartyPlayerButtonPrev');}
+      ThemeLoadButton(PartyPlayer.Team2Name, 'PartyPlayerTeam2Name');
+      ThemeLoadButton(PartyPlayer.Player5Name, 'PartyPlayerPlayer5Name');
+      ThemeLoadButton(PartyPlayer.Player6Name, 'PartyPlayerPlayer6Name');
+      ThemeLoadButton(PartyPlayer.Player7Name, 'PartyPlayerPlayer7Name');
+      ThemeLoadButton(PartyPlayer.Player8Name, 'PartyPlayerPlayer8Name');
 
-    //Playlist Translations
-    Playlist.CatText := Language.Translate('PLAYLIST_CATTEXT')
-  end;
-      
+      ThemeLoadButton(PartyPlayer.Team3Name, 'PartyPlayerTeam3Name');
+      ThemeLoadButton(PartyPlayer.Player9Name, 'PartyPlayerPlayer9Name');
+      ThemeLoadButton(PartyPlayer.Player10Name, 'PartyPlayerPlayer10Name');
+      ThemeLoadButton(PartyPlayer.Player11Name, 'PartyPlayerPlayer11Name');
+      ThemeLoadButton(PartyPlayer.Player12Name, 'PartyPlayerPlayer12Name');
+
+      {ThemeLoadButton(ButtonNext, 'PartyPlayerButtonNext');
+      ThemeLoadButton(ButtonPrev, 'PartyPlayerButtonPrev');}
+
+      //Playlist Translations
+      Playlist.CatText := Language.Translate('PLAYLIST_CATTEXT')
+    end;
+
     ThemeIni.Free;
   end;
 end;

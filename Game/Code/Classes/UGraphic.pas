@@ -4,7 +4,7 @@ interface
 uses
   SDL, OpenGL12, UTexture, TextGL, ULog, SysUtils, ULyrics, UScreenLoading,
   UScreenWelcome, UScreenMain, UScreenName, UScreenLevel, UScreenOptions, UScreenOptionsGame,
-  UScreenOptionsGraphics, UScreenOptionsSound, UScreenOptionsLyrics, UScreenOptionsThemes, UScreenOptionsRecord,
+  UScreenOptionsGraphics, UScreenOptionsSound, UScreenOptionsLyrics, UScreenOptionsThemes, UScreenOptionsRecord, UScreenOptionsAdvanced,
   UScreenSong, UScreenSing, UScreenScore, UScreenTop5, UScreenEditSub,
   UScreenEdit, UScreenEditConvert, UScreenEditHeader, UScreenOpen, UThemes, USkins, UScreenSongMenu, UScreenSongJumpto,
   {Party Screens} UScreenSingModi, UScreenPartyNewRound, UScreenPartyScore, UScreenPartyOptions, UScreenPartyWin, UScreenPartyPlayer;
@@ -44,6 +44,7 @@ var
   ScreenOptionsLyrics:    TScreenOptionsLyrics;
   ScreenOptionsThemes:    TScreenOptionsThemes;
   ScreenOptionsRecord:    TScreenOptionsRecord;
+  ScreenOptionsAdvanced:  TScreenOptionsAdvanced;
   ScreenEditSub:      TScreenEditSub;
   ScreenEdit:         TScreenEdit;
   ScreenEditConvert:  TScreenEditConvert;
@@ -162,7 +163,7 @@ procedure LoadScreens;
 
 
 implementation
-uses UMain, UIni, UDisplay;
+uses UMain, UIni, UDisplay, Graphics, Classes, Windows;
 
 procedure LoadTextures;
 var
@@ -215,13 +216,36 @@ begin
 end;
 
 procedure Initialize3D (Title: string);
+var
+  Icon: TIcon;
+  Res:  TResourceStream;
+  ISurface: PSDL_Surface;
 begin
   Log.LogStatus('LoadOpenGL', 'Initialize3D');
   Log.BenchmarkStart(2);
 
   LoadOpenGL;
 
-//  SDL_WM_SetIcon(SDL_LoadBMP('..\Graphics\us.ico'),0);
+  {//Load Icon
+  Res := TResourceStream.CreateFromID(HInstance, 3, RT_ICON);
+  Icon := TIcon.Create;
+  Icon.LoadFromStream(Res);
+  Res.Free;
+
+  //Create icon Surface
+  SDL_CreateRGBSurface (
+  SDL_SWSURFACE,
+  Icon.Width,
+  Icon.Height,
+  32,
+  128 or 64,
+  32 or 16,
+  8 or 4,
+  2 or 1);
+  SDL_BlitSurface( //}
+
+
+  SDL_WM_SetIcon(SDL_LoadBMP('us.ico'), 0); //}
 
   Log.LogStatus('SDL_Init', 'Initialize3D');
   if ( SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO)= -1 ) then begin
@@ -370,16 +394,18 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options', 3); Log.BenchmarkStart(3);
   ScreenOptionsGame :=      TScreenOptionsGame.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Game', 3); Log.BenchmarkStart(3);
-  ScreenOptionsGraphics :=  TScreenOptionsGraphics.Create('');
+  ScreenOptionsGraphics  :=  TScreenOptionsGraphics.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Graphics', 3); Log.BenchmarkStart(3);
-  ScreenOptionsSound :=     TScreenOptionsSound.Create('');
+  ScreenOptionsSound    :=     TScreenOptionsSound.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Sound', 3); Log.BenchmarkStart(3);
-  ScreenOptionsLyrics :=    TScreenOptionsLyrics.Create('');
+  ScreenOptionsLyrics   :=    TScreenOptionsLyrics.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Lyrics', 3); Log.BenchmarkStart(3);
-  ScreenOptionsThemes :=    TScreenOptionsThemes.Create('');
+  ScreenOptionsThemes   :=    TScreenOptionsThemes.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Themes', 3); Log.BenchmarkStart(3);
-  ScreenOptionsRecord :=    TScreenOptionsRecord.Create;
+  ScreenOptionsRecord   :=    TScreenOptionsRecord.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Record', 3); Log.BenchmarkStart(3);
+  ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Advanced', 3); Log.BenchmarkStart(3);
   ScreenEditSub :=          TScreenEditSub.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Edit Sub', 3); Log.BenchmarkStart(3);
   ScreenEdit :=             TScreenEdit.Create('');

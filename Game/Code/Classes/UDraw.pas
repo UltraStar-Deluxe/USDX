@@ -215,11 +215,17 @@ begin
       with Nuta[Pet] do begin
         if not FreeStyle then begin
 
-          // Golden Note Patch
-          case Wartosc of
-            1: glColor4f(1, 1, 1, 0.85);
-            2: glColor4f(1, 1, 1, 0.85); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85);
-          end; // case
+
+          if Ini.EffectGolden = 0 then
+          // If Golden note Effect of then Change not Color
+          begin
+            case Wartosc of
+              1: glColor4f(1, 1, 1, 0.85);
+              2: glColor4f(1, 1, 0.3, 0.85); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85);
+            end; // case
+          end //Else all Notes same Color
+          else
+            glColor4f(1, 1, 1, 0.85);
 
           // lewa czesc  -  left part
           Rec.Left := (Start-Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
@@ -264,10 +270,10 @@ begin
         glEnd;
 
           // Golden Star Patch
-          if Wartosc = 2 then
-            begin
-              GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
-            end;
+          if (Wartosc = 2) AND (Ini.EffectGolden=1) then
+          begin
+            GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
+          end;
 
         end; // if not FreeStyle
       end; // with
@@ -373,7 +379,7 @@ var
 
         //Rec.Right := X + (Start+Dlugosc-Czesci[0].Czesc[Czesci[0].Akt].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
         //if (Start+Dlugosc-1 = Czas.AktBeatD) then
-        if Perfect AND (Ini.GMAFix <> 1) then begin
+        if Perfect and (Ini.EffectPerfect=1) then begin
 //          A := sqrt((1+sin(Music.Position * 3))/2);
           A := 1 - 2*(Czas.Teraz - GetTimeFromBeat(Start+Dlugosc));
           if not (Start+Dlugosc-1 = Czas.AktBeatD) then

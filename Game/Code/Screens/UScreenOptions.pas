@@ -70,6 +70,11 @@ begin
           end;
 
           if SelInteraction = 6 then begin
+            Music.PlayStart;
+            FadeTo(@ScreenOptionsAdvanced);
+          end;
+
+          if SelInteraction = 7 then begin
             Ini.Save;
             Music.PlayBack;
             FadeTo(@ScreenMain);
@@ -182,9 +187,13 @@ begin
   if (Length(Button[5].Text)=0) then
     AddButtonText(14, 20, Theme.Options.Description[5]);
 
-  AddButton(Theme.Options.ButtonExit);
+  AddButton(Theme.Options.ButtonAdvanced);
   if (Length(Button[6].Text)=0) then
     AddButtonText(14, 20, Theme.Options.Description[6]);
+
+  AddButton(Theme.Options.ButtonExit);
+  if (Length(Button[7].Text)=0) then
+    AddButtonText(14, 20, Theme.Options.Description[7]);
 
   for I := 0 to High(Theme.Options.Static) do
     AddStatic(Theme.Options.Static[I]);

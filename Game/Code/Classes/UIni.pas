@@ -27,11 +27,6 @@ type
     Spectrum:       integer;
     Spectrograph:   integer;
     MovieSize:      integer;
-    //LineBonus Mod
-    LineBonus: integer;
-    //GMA Fix
-    GMAFix: integer;
-
 
     // Sound
     MicBoost:       integer;
@@ -60,6 +55,14 @@ type
       ChannelL:       integer;
       ChannelR:       integer;
     end;
+
+    // Advanced
+    LoadAnimation:  integer;
+    EffectPerfect:  integer;
+    EffectGolden:   integer;
+    AskbeforeDel:   integer;
+    OnSongClick:    integer;
+    LineBonus:      integer;
 
     // Controller
     Joypad:         integer;
@@ -113,11 +116,6 @@ const
   IOscilloscope:  array[0..2] of string = ('Off', 'Osci', 'Bar');
   //IOscilloscope:  array[0..1] of string = ('Off', 'On');
 
-  //Line Bonus MOd
-  ILineBonus:  array[0..2] of string = ('Off', 'At Score', 'At Notes');
-  //GMA Fix
-  IGMAFix:  array[0..1] of string = ('Off', 'On');
-
   ISpectrum:      array[0..1] of string = ('Off', 'On');
   ISpectrograph:  array[0..1] of string = ('Off', 'On');
   IMovieSize:     array[0..1] of string = ('Half', 'Full');
@@ -134,6 +132,14 @@ const
   ISolmization:   array[0..3] of string = ('Off', 'Euro', 'Jap', 'American');
 
   IColor:         array[0..8] of string = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
+
+  // Advanced
+  ILoadAnimation: array[0..1] of string = ('Off', 'On');
+  IEffectPerfect: array[0..1] of string = ('Off', 'On');
+  IEffectGolden:  array[0..1] of string = ('Off', 'On');
+  IAskbeforeDel:  array[0..1] of string = ('Off', 'On');
+  IOnSongClick:   array[0..2] of string = ('Sing', 'Select Players', 'Open Menu');
+  ILineBonus:  array[0..2] of string = ('Off', 'At Score', 'At Notes');
 
   IJoypad:        array[0..1] of string = ('Off', 'On');
   ILPT:           array[0..2] of string = ('Off', 'LCD', 'Lights');
@@ -257,16 +263,6 @@ begin
   for Pet := 0 to High(IOscilloscope) do
     if Tekst = IOscilloscope[Pet] then Ini.Oscilloscope := Pet;
 
-  // Line Bonus
-  Tekst := IniFile.ReadString('Graphics', 'LineBonus', 'At Score');
-  for Pet := 0 to High(ILineBonus) do
-    if Tekst = ILineBonus[Pet] then Ini.LineBonus := Pet;
-
-  //GMA Fix
-  Tekst := IniFile.ReadString('Graphics', 'GMAFix', 'Off');
-  for Pet := 0 to High(IGMAFix) do
-    if Tekst = IGMAFix[Pet] then Ini.GMAFix := Pet;
-
   // Spectrum
   Tekst := IniFile.ReadString('Graphics', 'Spectrum', 'Off');
   for Pet := 0 to High(ISpectrum) do
@@ -307,22 +303,6 @@ begin
   for Pet := 0 to High(IThreshold) do
     if Tekst = IThreshold[Pet] then Ini.Threshold := Pet;
 
-  {// Two Player Mode
-  for I := 0 to 7 do begin
-    Ini.SoundCard[I, 1] := 2*I + 1;
-    Ini.SoundCard[I, 2] := 2*I + 2;
-  end;
-
-  Tekst := IniFile.ReadString('Sound', 'TwoPlayerMode', ITwoPlayerMode[0]);
-  for Pet := 0 to High(ITwoPlayerMode) do
-    if Tekst = ITwoPlayerMode[Pet] then Ini.TwoPlayerMode := Pet;
-
-  if Ini.TwoPlayerMode = 1 then begin
-    Ini.SoundCard[0, 1] := 1;
-    Ini.SoundCard[0, 2] := 3;
-    Ini.SoundCard[1, 1] := 2;
-  end;}
-
   // Lyrics Font
   Tekst := IniFile.ReadString('Lyrics',    'LyricsFont',   ILyricsFont[1]);
   for Pet := 0 to High(ILyricsFont) do
@@ -339,15 +319,6 @@ begin
     if Tekst = ISolmization[Pet] then Ini.Solmization := Pet;
 
   // Theme
-  {SetLength(ITheme, 0);
-  if FileExists('Themes\Singstar.ini') then begin
-    SetLength(ITheme, Length(ITheme)+1);
-    ITheme[High(ITheme)] := 'Singstar';
-  end; {
-  if FileExists('Themes\Karin.ini') then begin
-    SetLength(ITheme, Length(ITheme)+1);
-    ITheme[High(ITheme)] := 'Karin';
-  end;}
 
   //Theme List Patch
     SetLength(ITheme, 0);
@@ -372,8 +343,7 @@ begin
   //No Theme Found
   if (Length(ITheme)=0) then
   begin
-    Log.LogError('Could not find any valid Themes.');
-    Halt;
+    Log.CriticalError('Could not find any valid Themes.');
   end;
 
 
@@ -425,8 +395,6 @@ begin
     Inc(I);
   end;
 
-  Log.LogError(InttoStr(Length(CardList)) + ' Cards Loaded');
-
   // Record - append detected soundcards
   for I := 0 to High(Recording.SoundCard) do
   begin
@@ -455,39 +423,44 @@ begin
     end;
   end;
 
-  {for I := 0 to High(Recording.SoundCard) do begin
+  //Advanced Settings
 
-    B := false;
-    I2 := 0;
-    while ((B = false) and (I2 <= High(CardList))) do
-      if CardList[I2].Name = Recording.SoundCard[I].Description then B := true
-      else Inc(I2);
+  // LoadAnimation
+  Tekst := IniFile.ReadString('Advanced', 'LoadAnimation', 'On');
+  for Pet := 0 to High(ILoadAnimation) do
+    if Tekst = ILoadAnimation[Pet] then Ini.LoadAnimation := Pet;
 
-    // if the card wasn't detected in ini file, append it to the ini list
-    if B = false then begin
-      I3 := Length(CardList);
-      SetLength(CardList, I3+1);
-      CardList[I3].Name := Recording.SoundCard[I].Description;
-      CardList[I3].Input := 0;
-      CardList[I3].ChannelL := 0;
-      CardList[I3].ChannelR := 0;
-      if Length(CardList) = 1 then CardList[I].ChannelL := 1; // default for new users
-      //CardList[I].Input := 2;
-    end;
-  end; }
+  // EffectPerfect
+  Tekst := IniFile.ReadString('Advanced', 'EffectPerfect', 'On');
+  for Pet := 0 to High(IEffectPerfect) do
+    if Tekst = IEffectPerfect[Pet] then Ini.EffectPerfect := Pet;
 
-  Log.LogError(InttoStr(Length(CardList)) + ' Cards Detected');
+  // EffectGolden
+  Tekst := IniFile.ReadString('Advanced', 'EffectGolden', 'On');
+  for Pet := 0 to High(IEffectGolden) do
+    if Tekst = IEffectGolden[Pet] then Ini.EffectGolden := Pet;
+
+  // AskbeforeDel
+  Tekst := IniFile.ReadString('Advanced', 'AskbeforeDel', 'On');
+  for Pet := 0 to High(IAskbeforeDel) do
+    if Tekst = IAskbeforeDel[Pet] then Ini.AskbeforeDel := Pet;
+
+  // OnSongClick
+  Tekst := IniFile.ReadString('Advanced', 'OnSongClick', 'Sing');
+  for Pet := 0 to High(IOnSongClick) do
+    if Tekst = IOnSongClick[Pet] then Ini.OnSongClick := Pet;
+
+  // Linebonus
+  Tekst := IniFile.ReadString('Advanced', 'LineBonus', 'At Score');
+  for Pet := 0 to High(ILineBonus) do
+    if Tekst = ILineBonus[Pet] then Ini.LineBonus := Pet;
+
+
 
   // Joypad
   Tekst := IniFile.ReadString('Controller',    'Joypad',   IJoypad[0]);
   for Pet := 0 to High(IJoypad) do
     if Tekst = IJoypad[Pet] then Ini.Joypad := Pet;
-
-  {// SoundCard
-  for I := 0 to 7 do begin
-    Ini.SoundCard[I, 1] := IniFile.ReadInteger('SoundCards', 'SoundCard'+IntToStr(I+1)+'L', Ini.SoundCard[I, 1]);
-    Ini.SoundCard[I, 2] := IniFile.ReadInteger('SoundCards', 'SoundCard'+IntToStr(I+1)+'R', Ini.SoundCard[I, 2]);
-  end;   }
 
   // LCD
   Tekst := IniFile.ReadString('Devices',    'LPT',   ILPT[0]);
@@ -564,14 +537,6 @@ begin
   Tekst := IOscilloscope[Ini.Oscilloscope];
   IniFile.WriteString('Graphics', 'Oscilloscope', Tekst);
 
-  //Line Bonus
-  Tekst := ILineBonus[Ini.LineBonus];
-  IniFile.WriteString('Graphics', 'LineBonus', Tekst);
-
-  //GMA Fix
-  Tekst := IGMAFix[Ini.GMAFix];
-  IniFile.WriteString('Graphics', 'GMAFix', Tekst);
-
   // Spectrum
   Tekst := ISpectrum[Ini.Spectrum];
   IniFile.WriteString('Graphics', 'Spectrum', Tekst);
@@ -603,10 +568,6 @@ begin
   // SavePlayback
   Tekst := ISavePlayback[Ini.SavePlayback];
   IniFile.WriteString('Sound',    'SavePlayback',    Tekst);
-
-  {// Two Player Mode
-  Tekst := ITwoPlayerMode[Ini.TwoPlayerMode];
-  IniFile.WriteString('Sound',    'TwoPlayerMode',    Tekst); }
 
   // Lyrics Font
   Tekst := ILyricsFont[Ini.LyricsFont];
@@ -650,6 +611,33 @@ begin
     end;
 
     Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
+
+  //Advanced Settings
+
+  //LoadAnimation
+  Tekst := ILoadAnimation[Ini.LoadAnimation];
+  IniFile.WriteString('Advanced', 'LoadAnimation', Tekst);
+
+  //EffectPerfect
+  Tekst := IEffectPerfect[Ini.EffectPerfect];
+  IniFile.WriteString('Advanced', 'EffectPerfect', Tekst);
+
+  //EffectGolden
+  Tekst := IEffectGolden[Ini.EffectGolden];
+  IniFile.WriteString('Advanced', 'EffectGolden', Tekst);
+
+  //AskbeforeDel
+  Tekst := IAskbeforeDel[Ini.AskbeforeDel];
+  IniFile.WriteString('Advanced', 'AskbeforeDel', Tekst);
+
+  //OnSongClick
+  Tekst := IOnSongClick[Ini.OnSongClick];
+  IniFile.WriteString('Advanced', 'OnSongClick', Tekst);
+
+  //Line Bonus
+  Tekst := ILineBonus[Ini.LineBonus];
+  IniFile.WriteString('Advanced', 'LineBonus', Tekst);
+
 
   // Joypad
   Tekst := IJoypad[Ini.Joypad];

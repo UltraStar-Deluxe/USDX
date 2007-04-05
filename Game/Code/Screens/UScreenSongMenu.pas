@@ -250,7 +250,7 @@ begin
           Button[3].Visible := False;
           SelectsS[0].Visible := False;
           Button[2].Visible := True;
-          Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
+          Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
         end;
       end;
 
@@ -311,7 +311,7 @@ begin
           Button[3].Visible := False;
           SelectsS[0].Visible := False;
           Button[2].Visible := True;
-          Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
+          Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
           Interaction := 2;
         end;
       end;

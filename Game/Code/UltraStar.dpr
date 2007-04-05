@@ -6,6 +6,9 @@ program UltraStar;
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
 uses
+  //------------------------------
+  //Includes - Menu System
+  //------------------------------
   UDisplay in 'Menu\UDisplay.pas',
   UMenu in 'Menu\UMenu.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
@@ -15,6 +18,10 @@ uses
   UMenuSelect in 'Menu\UMenuSelect.pas',
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
+
+  //------------------------------
+  //Includes - Classes
+  //------------------------------
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
@@ -42,6 +49,11 @@ uses
   UGraphicClasses in 'Classes\UGraphicClasses.pas',
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
+  UPlaylist in 'Classes\UPlaylist.pas',
+
+  //------------------------------
+  //Includes - Screens
+  //------------------------------
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -57,6 +69,7 @@ uses
   UScreenOptionsLyrics in 'Screens\UScreenOptionsLyrics.pas',
   UScreenOptionsThemes in 'Screens\UScreenOptionsThemes.pas',
   UScreenOptionsRecord in 'Screens\UScreenOptionsRecord.pas',
+  UScreenOptionsAdvanced in 'Screens\UScreenOptionsAdvanced.pas',
   UScreenEditSub in 'Screens\UScreenEditSub.pas',
   UScreenEdit in 'Screens\UScreenEdit.pas',
   UScreenEditConvert in 'Screens\UScreenEditConvert.pas',
@@ -65,17 +78,29 @@ uses
   UScreenTop5 in 'Screens\UScreenTop5.pas',
   UScreenSongMenu in 'Screens\UScreenSongMenu.pas',
   UScreenSongJumpto in 'Screens\UScreenSongJumpto.pas',
+
+  //------------------------------
+  //Includes - Screens PartyMode
+  //------------------------------
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
   UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
+
+  //------------------------------
+  //Includes - Modi SDK
+  //------------------------------
   ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
+
+  //------------------------------
+  //Includes - Delphi
+  //------------------------------
   Windows,
   SDL,
-  SysUtils,
-  UPlaylist in 'Classes\UPlaylist.pas';
+  SysUtils;
+
 
 const
   Version = 'UltraStar Deluxe V 0.90 Beta';

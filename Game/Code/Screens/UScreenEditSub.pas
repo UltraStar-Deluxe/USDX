@@ -1096,6 +1096,8 @@ begin
     MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
   MidiOut.Open;
 
+  //MidiOut.SetVolume(65535, 65535);
+
 
 
   CzyscNuty;
@@ -1113,7 +1115,7 @@ begin
 
     Music.Open(Path + AktSong.Mp3);
     //Set Down Music Volume for Better hearability of Midi Sounds
-    Music.SetVolume(40);
+    //Music.SetVolume(40);
     
     Lyric.Clear;
     Lyric.X := 400;

@@ -1089,18 +1089,12 @@ begin
 
       //Generate Steps 0 to 8
       A := Floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 8);
+
+      //Generate Text
       if A >= 8 then
-        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_PERFECT')
-      else if (A = 6) or (A = 7) then
-        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_BETTER')
-      else if A = 5 then
-        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_GOOD')
-      else if (A = 3) or (A = 4) then
-        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_NORMAL')
-      else if A = 2 then
-        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_BAD')
+        Player[I].LineBonus_Text := Theme.Sing.LineBonusText[8]
       else
-        Player[I].LineBonus_Text := Language.Translate('LINEBONUS_WORST');
+        Player[I].LineBonus_Text := Theme.Sing.LineBonusText[Floor(A)];
 
       //PhrasenBonus give Points
       Player[I].ScoreLine := Player[I].ScoreLine + (1000 / (Length(Czesci[0].Czesc) - NumEmptySentences) * A / 8);
