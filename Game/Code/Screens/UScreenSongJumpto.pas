@@ -8,10 +8,6 @@ uses
 type
   TScreenSongJumpto = class(TMenu)
     private
-      Songsfound: String;
-      NoSongsfound: String;
-      CatText: String;
-
       //For ChangeMusic
       LastPlayed: Integer;
       VisibleBool: Boolean;
@@ -157,13 +153,6 @@ var
   I:    integer;
 begin
   inherited Create;
-  //Translate Texts     //TODO: Port to UTheme (Linebonus and PartyScreens, too
-  IType[0] := Language.Translate('SONG_JUMPTO_TYPE1');
-  IType[1] := Language.Translate('SONG_JUMPTO_TYPE2');
-  IType[2] := Language.Translate('SONG_JUMPTO_TYPE3');
-  SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
-  NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
-  CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
 
   AddBackground(Theme.SongJumpto.Background.Tex);
 
@@ -172,7 +161,7 @@ begin
     AddButtonText(14, 20, '');
 
   SelectType := 0;
-  AddSelectSlide(Theme.SongJumpto.SelectSlideType, SelectType, IType);
+  AddSelectSlide(Theme.SongJumpto.SelectSlideType, SelectType, Theme.SongJumpto.IType);
 
   AddText(Theme.SongJumpto.TextFound);
 
@@ -203,7 +192,7 @@ begin
     SelectType := 0;
 
     Button[0].Text[0].Text := '';
-    Text[0].Text := NoSongsFound;
+    Text[0].Text := Theme.SongJumpto.NoSongsFound;
   end;
 
   //Select Input
@@ -220,15 +209,15 @@ procedure TScreenSongJumpto.SetTextFound(const Count: Cardinal);
 begin
   if (Count = 0) then
   begin
-    Text[0].Text := NoSongsFound;
+    Text[0].Text := Theme.SongJumpto.NoSongsFound;
     ScreenSong.HideCatTL;
   end
   else
   begin
-    Text[0].Text := Format(SongsFound, [Count]);
+    Text[0].Text := Format(Theme.SongJumpto.SongsFound, [Count]);
 
     //Set CatTopLeftText
-    ScreenSong.ShowCatTLCustom(Format(CatText, [Button[0].Text[0].Text]));
+    ScreenSong.ShowCatTLCustom(Format(Theme.SongJumpto.CatText, [Button[0].Text[0].Text]));
   end;
 
 

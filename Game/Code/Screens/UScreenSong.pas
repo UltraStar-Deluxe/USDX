@@ -314,12 +314,26 @@ begin
         begin
           if Length(Songs.Song) > 0 then begin
             if not CatSongs.Song[Interaction].Main then begin // clicked on Song
-              ScreenSongMenu.MenuShow(SM_Main);
+              if CatSongs.CatNumShow = -3 then
+                ScreenSongMenu.MenuShow(SM_Playlist)
+              else
+                ScreenSongMenu.MenuShow(SM_Main);
+            end
+            else
+            begin
+              ScreenSongMenu.MenuShow(SM_Playlist_Load);
             end;
           end;
         end;
 
-      SDLK_J: //Show SongMenu
+      SDLK_P: //Show Playlist Menu
+        begin
+          if Length(Songs.Song) > 0 then begin
+              ScreenSongMenu.MenuShow(SM_Playlist_Load);
+          end;
+        end;
+
+      SDLK_J: //Show Jumpto Menu
         begin
           if Length(Songs.Song) > 0 then
           begin
@@ -698,6 +712,8 @@ begin
       Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
     end
     else if (CatSongs.CatNumShow = -2) then
+      Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
+    else if (CatSongs.CatNumShow = -3) then
       Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
     else if (Ini.Tabs_at_startup = 1) then
       Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].CatNumber) + '/' + IntToStr(CatSongs.Song[Interaction - CatSongs.Song[Interaction].CatNumber].CatNumber)
@@ -1144,8 +1160,18 @@ begin
     UpdateLCD;
   end;
 
+  //Playlist Mode
+  if (Mode = 0) then
+  begin
+    //If Playlist Shown -> Select Next automatically
+    if (CatSongs.CatNumShow = -3) then
+    begin
+      SelectNext;
+      ChangeMusic;
+    end;
+  end
   //Party Mode
-  if (Mode = 1) then
+  else if (Mode = 1) then
   begin
     SelectRandomSong;
   end;

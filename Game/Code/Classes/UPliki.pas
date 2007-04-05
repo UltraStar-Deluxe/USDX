@@ -22,6 +22,7 @@ var
   CoversPath:       string;
   LanguagesPath:    string;
   PluginPath:       string;
+  PlayListPath:     string;
 
   Plik:       TextFile;   // all procedures in this unit operates on this file
   PlikC:      char;
@@ -48,6 +49,8 @@ begin
   LanguagesPath := GamePath + 'Languages\';
   //Modi Loader
   PluginPath := GamePath + 'Plugins\';
+
+  PlaylistPath := GamePath + 'Playlists\';
 
   DecimalSeparator := ',';
 end;

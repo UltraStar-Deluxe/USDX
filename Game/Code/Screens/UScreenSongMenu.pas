@@ -22,7 +22,16 @@ type
 
 const
   SM_Main = 1;
+  
   SM_PlayList = 64 or 1;
+  SM_Playlist_Add = 64 or 2;
+  SM_Playlist_New = 64 or 3;
+
+  SM_Playlist_Del = 64 or 5;
+
+  SM_Playlist_Load = 64 or 8 or 1;
+
+
   SM_Party_Main = 128 or 1;
   SM_Party_Joker = 128 or 2;
 
@@ -33,7 +42,7 @@ var
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty;
+uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UPlaylist;
 
 function TScreenSongMenu.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
   function IsVisible: Boolean;
@@ -70,6 +79,23 @@ begin
   Result := true;
   If (PressedDown) Then
   begin // Key Down
+    if (CurMenu = SM_Playlist_New) AND (Interaction=0) then
+    begin
+      case PressedKey of
+        SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
+          begin
+            Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + chr(ScanCode);
+            exit;
+          end;
+
+        SDLK_BACKSPACE:
+          begin
+            Button[Interaction].Text[0].DeleteLastL;
+            exit;
+          end;
+      end;
+    end;
+
     case PressedKey of
       SDLK_Q:
         begin
@@ -87,9 +113,6 @@ begin
           HandleReturn;
         end;
 
-      // Up and Down could be done at the same time,
-      // but I don't want to declare variables inside
-      // functions like this one, called so many times
       SDLK_DOWN:    SelectNext;
       SDLK_UP:      SelectPrev;
 
@@ -179,9 +202,9 @@ begin
         SelectsS[0].Visible := False;
 
         Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAY');
-        Button[1].Text[0].Text := Language.Translate('SONG_MENU_EDIT');
-        Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYMODI');
-        Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
+        Button[1].Text[0].Text := Language.Translate('SONG_MENU_CHANGEPLAYERS');
+        Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_ADD');
+        Button[3].Text[0].Text := Language.Translate('SONG_MENU_EDIT');
       end;
 
     SM_PlayList:
@@ -190,16 +213,109 @@ begin
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST');
 
         Button[0].Visible := True;
+        Button[1].Visible := True;
+        Button[2].Visible := True;
+        Button[3].Visible := True;
+        SelectsS[0].Visible := False;
+
+        Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAY');
+        Button[1].Text[0].Text := Language.Translate('SONG_MENU_CHANGEPLAYERS');
+        Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_DEL');
+        Button[3].Text[0].Text := Language.Translate('SONG_MENU_EDIT');
+      end;
+
+    SM_Playlist_Add:
+      begin
+        CurMenu := sMenu;
+        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_ADD');
+
+        Button[0].Visible := True;
+        Button[1].Visible := False;
+        Button[2].Visible := False;
+        Button[3].Visible := True;
+        SelectsS[0].Visible := True;
+
+        Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_ADD_NEW');
+        Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_ADD_EXISTING');
+
+        SetLength(ISelections, Length(PlaylistMan.Playlists));
+        PlaylistMan.GetNames(ISelections);
+
+        if (Length(ISelections)>=1) then
+        begin
+          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 0, ISelections, SelectValue);
+        end
+        else
+        begin
+          Button[3].Visible := False;
+          SelectsS[0].Visible := False;
+          Button[2].Visible := True;
+          Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
+        end;
+      end;
+
+    SM_Playlist_New:
+      begin
+        CurMenu := sMenu;
+        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_NEW');
+
+        Button[0].Visible := True;
+        Button[1].Visible := False;
+        Button[2].Visible := True;
+        Button[3].Visible := True;
+        SelectsS[0].Visible := False;
+
+        Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NEW_UNNAMED');
+        Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NEW_CREATE');
+        Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
+      end;
+
+    SM_PlayList_Del:
+      begin
+        CurMenu := sMenu;
+        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_Del');
+
+        Button[0].Visible := True;
         Button[1].Visible := False;
         Button[2].Visible := False;
         Button[3].Visible := True;
         SelectsS[0].Visible := False;
 
-        Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_ADD');
-        Button[1].Text[0].Text := '';
-        Button[2].Text[0].Text := '';
+        Button[0].Text[0].Text := Language.Translate('SONG_MENU_YES');
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
       end;
+
+    SM_Playlist_Load:
+      begin
+        CurMenu := sMenu;
+        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_LOAD');
+
+        Button[0].Visible := False;
+        Button[1].Visible := False;
+        Button[2].Visible := False;
+        Button[3].Visible := True;
+        SelectsS[0].Visible := True;
+
+        Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_LOAD');
+
+        SetLength(ISelections, Length(PlaylistMan.Playlists));
+        PlaylistMan.GetNames(ISelections);
+
+        if (Length(ISelections)>=1) then
+        begin
+          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 0, ISelections, SelectValue);
+          Interaction := 4;
+        end
+        else
+        begin
+          Button[3].Visible := False;
+          SelectsS[0].Visible := False;
+          Button[2].Visible := True;
+          Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
+          Interaction := 3;
+        end;
+      end;
+
 
     SM_Party_Main:
       begin
@@ -242,21 +358,24 @@ begin
   Case CurMenu of
     SM_Main:
       begin
-        Visible := False;
         Case Interaction of
           0: //Button 1
             begin
               ScreenSong.StartSong;
+              Visible := False;
             end;
 
           1: //Button 2
             begin
-              ScreenSong.OpenEditor;
+              //Select New Players then Sing:
+
+              Visible := False;
             end;
 
           2: //Button 3
             begin
-              //Todo: Add SingleRound Modi Support
+              //Show add to Playlist Menu
+              MenuShow(SM_Playlist_Add);
             end;
 
           3: //SelectSlide 3
@@ -266,7 +385,8 @@ begin
 
           4: //Button 4
             begin
-              //Cancel... (Do Nothing)
+              ScreenSong.OpenEditor;
+              Visible := False;
             end;
         end;
       end;
@@ -277,17 +397,21 @@ begin
         Case Interaction of
           0: //Button 1
             begin
-              //
+              ScreenSong.StartSong;
+              Visible := False;
             end;
 
           1: //Button 2
             begin
-              //
+              //Select New Players then Sing:
+
+              Visible := False;
             end;
 
           2: //Button 3
             begin
-              //Todo
+              //Show add to Playlist Menu
+              MenuShow(SM_Playlist_Del);
             end;
 
           3: //SelectSlide 3
@@ -297,7 +421,89 @@ begin
 
           4: //Button 4
             begin
-              //
+              ScreenSong.OpenEditor;
+              Visible := False;
+            end;
+        end;
+      end;
+
+    SM_Playlist_Add:
+      begin
+        Case Interaction of
+          0: //Button 1
+            begin
+              MenuShow(SM_Playlist_New);
+            end;
+
+          3: //SelectSlide 3
+            begin
+              //Dummy
+            end;
+
+          4: //Button 4
+            begin
+              PlaylistMan.AddItem(ScreenSong.Interaction, SelectValue);
+              Visible := False;
+            end;
+        end;
+      end;
+
+      SM_Playlist_New:
+      begin
+        Case Interaction of
+          0: //Button 1
+            begin
+              //Nothing, Button for Entering Name
+            end;
+
+          2: //Button 3
+            begin
+              //Create Playlist and Add Song
+              PlaylistMan.AddItem(
+              ScreenSong.Interaction,
+              PlaylistMan.AddPlaylist(Button[0].Text[0].Text));
+              Visible := False;
+            end;
+
+          3: //SelectSlide 3
+            begin
+              //Cancel -> Go back to Add screen
+              MenuShow(SM_Playlist_Add);
+            end;
+
+          4: //Button 4
+            begin
+              Visible := False;
+            end;
+        end;
+      end;
+
+    SM_PlayList_Del:
+      begin
+        Visible := False;
+        Case Interaction of
+          0: //Button 1
+            begin
+              //Delete
+              PlayListMan.DelItem(PlayListMan.GetIndexbySongID(ScreenSong.Interaction));
+              Visible := False;
+            end;
+
+          4: //Button 4
+            begin
+              MenuShow(SM_Playlist);
+            end;
+        end;
+      end;
+
+    SM_Playlist_Load:
+      begin
+        Case Interaction of
+          4: //Button 4
+            begin
+              //Load Playlist
+              PlaylistMan.SetPlayList(SelectValue);
+              Visible := False;
             end;
         end;
       end;
