@@ -113,6 +113,7 @@ type
     Text:   AThemeText;
     X:      integer;
     Y:      integer;
+    Z:      Real;
     W:      integer;
     H:      integer;
     Color:  string;
@@ -280,6 +281,9 @@ type
     StaticP3RScoreBG: TThemeStatic; //Static for ScoreBG
     TextP3R:          TThemeText;
     TextP3RScore:     TThemeText;
+
+    //Linebonus Translations
+    LineBonusText:    Array [0..8] of String;
   end;
 
   TThemeScore = class(TThemeBasic)
@@ -402,6 +406,12 @@ type
     ButtonSearchText: TThemeButton;
     SelectSlideType:  TThemeSelectSlide;
     TextFound:        TThemeText;
+
+    //Translated Texts
+    Songsfound:       String;
+    NoSongsfound:     String;
+    CatText:          String;
+    IType:            array [0..2] of String;
   end;
 
   //Party Screens
@@ -512,6 +522,11 @@ type
     ButtonPrev: TThemeButton;}
   end;
 
+  //Playlist Translations
+  TThemePlaylist = record
+    CatText:    string;
+  end;
+
   TTheme = class
     {$IFDEF THEMESAVE}
     ThemeIni:         TIniFile;
@@ -541,8 +556,10 @@ type
     PartyNewRound:    TThemePartyNewRound;
     PartyScore:       TThemePartyScore;
     PartyWin:         TThemePartyWin;
-    PartyOptions:      TThemePartyOptions;
-    PartyPlayer:       TThemePartyPlayer;
+    PartyOptions:     TThemePartyOptions;
+    PartyPlayer:      TThemePartyPlayer;
+
+    Playlist:         TThemePlaylist;
 
     constructor Create(FileName: string); overload; // Initialize theme system
     constructor Create(FileName: string; Color: integer); overload; // Initialize theme system with color
@@ -871,6 +888,16 @@ begin
 
       ThemeLoadText(Sing.TextP3R, 'SingP3RText');
       ThemeLoadText(Sing.TextP3RScore, 'SingP3RTextScore');
+      //Line Bonus Texts
+      Sing.LineBonusText[0] := Language.Translate('LINEBONUS_WORST');
+      Sing.LineBonusText[1] := Sing.LineBonusText[0];
+      Sing.LineBonusText[2] := Language.Translate('LINEBONUS_BAD');
+      Sing.LineBonusText[3] := Language.Translate('LINEBONUS_NORMAL');
+      Sing.LineBonusText[4] := Sing.LineBonusText[3];
+      Sing.LineBonusText[5] := Language.Translate('LINEBONUS_GOOD');
+      Sing.LineBonusText[6] := Language.Translate('LINEBONUS_BETTER');
+      Sing.LineBonusText[7] := Sing.LineBonusText[6];
+      Sing.LineBonusText[8] := Language.Translate('LINEBONUS_PERFECT');
 
       // Score
       ThemeLoadBasic(Score, 'Score');
@@ -1008,6 +1035,13 @@ begin
     ThemeLoadButton(SongJumpto.ButtonSearchText, 'SongJumptoButtonSearchText');
     ThemeLoadSelectSlide(SongJumpto.SelectSlideType, 'SongJumptoSelectSlideType');
     ThemeLoadText(SongJumpto.TextFound, 'SongJumptoTextFound');
+    //Translations
+    SongJumpto.IType[0] := Language.Translate('SONG_JUMPTO_TYPE1');
+    SongJumpto.IType[1] := Language.Translate('SONG_JUMPTO_TYPE2');
+    SongJumpto.IType[2] := Language.Translate('SONG_JUMPTO_TYPE3');
+    SongJumpto.SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
+    SongJumpto.NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
+    SongJumpto.CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
 
     //Party Screens:
     //Party NewRound
@@ -1122,6 +1156,9 @@ begin
 
     {ThemeLoadButton(ButtonNext, 'PartyPlayerButtonNext');
     ThemeLoadButton(ButtonPrev, 'PartyPlayerButtonPrev');}
+
+    //Playlist Translations
+    Playlist.CatText := Language.Translate('PLAYLIST_CATTEXT')
   end;
       
     ThemeIni.Free;
@@ -1239,10 +1276,11 @@ var
 begin
   DecimalSeparator := '.';
   ThemeButton.Tex := ThemeIni.ReadString(Name, 'Tex', '');
-  ThemeButton.X := ThemeIni.ReadInteger(Name, 'X', 0);
-  ThemeButton.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
-  ThemeButton.W := ThemeIni.ReadInteger(Name, 'W', 0);
-  ThemeButton.H := ThemeIni.ReadInteger(Name, 'H', 0);
+  ThemeButton.X := ThemeIni.ReadInteger (Name, 'X', 0);
+  ThemeButton.Y := ThemeIni.ReadInteger (Name, 'Y', 0);
+  ThemeButton.Z := ThemeIni.ReadFloat   (Name, 'Z', 0);
+  ThemeButton.W := ThemeIni.ReadInteger (Name, 'W', 0);
+  ThemeButton.H := ThemeIni.ReadInteger (Name, 'H', 0);
 
   ThemeButton.Typ := ThemeIni.ReadString(Name, 'Type', '');
 

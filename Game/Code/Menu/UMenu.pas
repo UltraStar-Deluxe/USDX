@@ -369,6 +369,8 @@ begin
     ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
     Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ, ThemeButton.Reflection);
 
+  Button[Result].Z := ThemeButton.Z;
+
 
   BTLen := Length(ThemeButton.Text);
   for BT := 0 to BTLen-1 do begin
@@ -390,44 +392,42 @@ begin
 end;
 
 function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean): integer;
-var
-  ButNum : integer;
 begin
   // adds button
-  ButNum := Length(Button);
-  SetLength(Button, ButNum + 1);
-//  Button[ButNum] := TButton.Create(Texture.GetTexture(Name, Typ));
+  Result := Length(Button);
+  SetLength(Button, Result + 1);
+//  Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ));
 
   // check here for cache
 //  Texture.GetTexture(Name, Typ, false); // preloads textures and creates cahce mipmap when needed
 //  if Covers.CoverExists(Name) then
-  Button[ButNum] := TButton.Create(Texture.GetTexture(Name, Typ, true)); // use cache texture
+  Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ, true)); // use cache texture
 //  else
-//    Button[ButNum] := TButton.Create(Texture.GetTexture(Name, Typ, false)); // don't use cache texture}
+//    Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ, false)); // don't use cache texture}
 
   // configures button
-  Button[ButNum].Texture.X := X;
-  Button[ButNum].Texture.Y := Y;
-  Button[ButNum].Texture.W := W;
-  Button[ButNum].Texture.H := H;
-  Button[ButNum].SelectColR := ColR;
-  Button[ButNum].SelectColG := ColG;
-  Button[ButNum].SelectColB := ColB;
-  Button[ButNum].SelectInt := Int;
-  Button[ButNum].DeselectColR := DColR;
-  Button[ButNum].DeselectColG := DColG;
-  Button[ButNum].DeselectColB := DColB;
-  Button[ButNum].DeselectInt := DInt;
-  Button[ButNum].Texture.TexX1 := 0;
-  Button[ButNum].Texture.TexY1 := 0;
-  Button[ButNum].Texture.TexX2 := 1;
-  Button[ButNum].Texture.TexY2 := 1;
-  Button[ButNum].SetSelect(false);
+  Button[Result].Texture.X := X;
+  Button[Result].Texture.Y := Y;
+  Button[Result].Texture.W := W;
+  Button[Result].Texture.H := H;
+  Button[Result].SelectColR := ColR;
+  Button[Result].SelectColG := ColG;
+  Button[Result].SelectColB := ColB;
+  Button[Result].SelectInt := Int;
+  Button[Result].DeselectColR := DColR;
+  Button[Result].DeselectColG := DColG;
+  Button[Result].DeselectColB := DColB;
+  Button[Result].DeselectInt := DInt;
+  Button[Result].Texture.TexX1 := 0;
+  Button[Result].Texture.TexY1 := 0;
+  Button[Result].Texture.TexX2 := 1;
+  Button[Result].Texture.TexY2 := 1;
+  Button[Result].SetSelect(false);
 
-  Button[ButNum].Reflection := Reflection;
+  Button[Result].Reflection := Reflection;
 
   // adds interaction
-  AddInteraction(iButton, ButNum);
+  AddInteraction(iButton, Result);
   Interaction := 0;
 end;
 
