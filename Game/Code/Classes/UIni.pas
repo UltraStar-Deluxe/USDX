@@ -259,7 +259,7 @@ begin
     if Tekst = ISingWindow[Pet] then Ini.SingWindow := Pet;
 
   // Oscilloscope
-  Tekst := IniFile.ReadString('Graphics', 'Oscilloscope', 'Off');
+  Tekst := IniFile.ReadString('Graphics', 'Oscilloscope', 'Bar');
   for Pet := 0 to High(IOscilloscope) do
     if Tekst = IOscilloscope[Pet] then Ini.Oscilloscope := Pet;
 
