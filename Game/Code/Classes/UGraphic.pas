@@ -191,7 +191,7 @@ begin
   end;
 
   Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'JPG', 'Font Black', 0);
-  Tex_Note_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')), 'JPG', 'Font Black', 0);
+  Tex_Note_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) , 'JPG', 'Alpha Black Colored', $FFFFFF);
   Tex_Ball :=      Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
 
 

@@ -30,6 +30,7 @@ type
    LastTime      : Cardinal;
    RecArray      : Array of RectanglePositions;
    PerfNoteArray : Array of PerfectNotePositions;
+   DelayAfterKillall : Integer;
 
    constructor Create;
    procedure Draw;
@@ -39,6 +40,7 @@ type
    procedure KillAll();
    procedure SaveGoldenStarsRec(Xtop, Ytop, Xbottom, Ybottom: Real);
    procedure SavePerfectNotePos(Xtop, Ytop: Real);
+   procedure GoldenNoteTwinkle(Top,Bottom,Right: Real);
  end;
 
 var GoldenRec : TEffectManager;
@@ -64,27 +66,36 @@ var
   W, H:   real;
   Alpha : real;
 begin
-  Alpha := (-cos((Frame+1)*2*pi/16)+1);  //Fade Eyecandy
+    //Fade Eyecandy
 
   Case StarType of
       1:
         begin
+          Alpha := (-cos((Frame+1)*2*pi/16)+1);
           W := 20;
           H := 20;
           glColor4f(0.99, 1, 0.6, Alpha);
         end;
       2:
         begin
+          Alpha := (-cos((Frame+1)*2*pi/16)+1);
           W := 30;
           H := 30;
           glColor4f(1, 1, 0.95, Alpha);
         end;
+      3:
+        begin
+          Alpha := (Live/3);
+          W := 15;
+          H := 15;
+          glColor4f(1, 1, 0.9, Alpha);
+        end;
   end;
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glBindTexture(GL_TEXTURE_2D, Tex);
+  glEnable(GL_TEXTURE_2D);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
 
   begin
     glBegin(GL_QUADS);
@@ -209,6 +220,30 @@ begin
     Kill(0);
   SetLength(RecArray,0);
   SetLength(PerfNoteArray,0);
+end;
+
+procedure TeffectManager.GoldenNoteTwinkle(Top,Bottom,Right: Real);
+//Twinkle stars while golden note hit
+var
+  C, P, XKatze, YKatze: Integer;
+begin
+  DelayAfterKillall:=10;    // To be used later, for the screen change issue
+  For P := 0 to high(RecArray) do  // Are we inside a GoldenNoteRectangle?
+    begin
+      if ((RecArray[P].xBottom >= Right) and
+          (RecArray[P].xTop <= Right) and
+          (RecArray[P].yTop <= (Top+Bottom)/2) and
+          (RecArray[P].yBottom >= (Top+Bottom)/2)) then
+        begin
+          for C := 1 to 8 do
+          begin
+            Ykatze := RandomRange(ceil(Top) , ceil(Bottom));
+            XKatze := RandomRange(-7,3);
+            Spawn(Ceil(Right)+XKatze, YKatze, Tex_Note_Star.TexNum, 3, 0, -1, 3);
+          end;
+          exit; // found a GoldenRec, did spawning stuff... done
+        end;
+    end;
 end;
 
 procedure TEffectManager.SaveGoldenStarsRec(Xtop, Ytop, Xbottom, Ybottom: Real);
