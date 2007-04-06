@@ -27,10 +27,13 @@ type
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
+      procedure SetPlaylist2;
   end;
 
 var
   ILevel: array[0..2] of String;
+  IPlaylist: array[0..2] of String;
+  IPlaylist2: array of String;
 const
   ITeams: array[0..1] of String =('2', '3');
   IPlayers: array[0..3] of String =('1', '2', '3', '4');
@@ -38,10 +41,42 @@ const
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UDLLManager;
+uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UDLLManager, UPlaylist, USongs;
 
 function TScreenPartyOptions.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
-var I: Integer;
+  var
+    I, J: Integer;
+
+  function IsVisible: Boolean;
+  begin
+    Result := True;
+    if (Interactions[Interaction].Typ = 0) then
+    begin
+      Result := Button[Interactions[Interaction].Num].Visible;
+    end
+    else if (Interactions[Interaction].Typ = 1) then
+    begin
+      //Result := Selects[Interactions[Interaction].Num].Visible;
+    end
+    else if (Interactions[Interaction].Typ = 3) then
+    begin
+      Result := SelectsS[Interactions[Interaction].Num].Visible;
+    end;
+  end;
+
+  Procedure SelectNext;
+  begin
+    repeat
+      InteractNext;
+    until IsVisible;
+  end;
+
+  Procedure SelectPrev;
+  begin
+    repeat
+      InteractPrev;
+    until IsVisible;
+  end;
 begin
   Result := true;
   If (PressedDown) Then
@@ -71,6 +106,26 @@ begin
           PartySession.Teams.Teaminfo[0].NumPlayers := NumPlayer1+1;
           PartySession.Teams.Teaminfo[1].NumPlayers := NumPlayer2+1;
           PartySession.Teams.Teaminfo[2].NumPlayers := NumPlayer3+1;
+          //Save Playlist
+          PlaylistMan.Mode := Playlist;
+          //If Category Selected Search Category ID
+          if Playlist = 1 then
+          begin
+            J := -1;
+            For I := 0 to high(CatSongs.Song) do
+            begin
+              if CatSongs.Song[I].Main then
+                Inc(J);
+
+              if J = Playlist2 then
+              begin
+                PlaylistMan.CurPlayList := I;
+                Break;
+              end;
+            end;
+          end
+          else
+            PlaylistMan.CurPlayList := Playlist2;
           //Save Rounds + Random
           SetLength (PartySession.Rounds, Rounds + 2);
           For I := 0 to high (PartySession.Rounds) do
@@ -86,17 +141,43 @@ begin
       // Up and Down could be done at the same time,
       // but I don't want to declare variables inside
       // functions like this one, called so many times
-      SDLK_DOWN:    InteractNext;
-      SDLK_UP:      InteractPrev;
+      SDLK_DOWN:    SelectNext;
+      SDLK_UP:      SelectPrev;
       SDLK_RIGHT:
         begin
           Music.PlayOption;
           InteractInc;
+
+          //Change Playlist2 if Playlist is Changed
+          If (Interaction = 1) then
+          begin
+            SetPlaylist2;
+          end //Change Team3 Players visibility
+          Else If (Interaction = 4) then
+          begin
+            Case NumTeams of
+              0: SelectsS[7].Visible := False;
+              1: SelectsS[7].Visible := True;
+            end;
+          end;
         end;
       SDLK_LEFT:
         begin
           Music.PlayOption;
           InteractDec;
+
+          //Change Playlist2 if Playlist is Changed
+          If (Interaction = 1) then
+          begin
+            SetPlaylist2;
+          end //Change Team3 Players visibility
+          Else If (Interaction = 4) then
+          begin
+            Case NumTeams of
+              0: SelectsS[7].Visible := False;
+              1: SelectsS[7].Visible := True;
+            end;
+          end;
         end;
     end;
   end
@@ -119,6 +200,15 @@ begin
   ILevel[1] := Language.Translate('SING_MEDIUM');
   ILevel[2] := Language.Translate('SING_HARD');
 
+  //Fill IPlaylist
+  IPlaylist[0] := Language.Translate('PARTY_PLAYLIST_ALL');
+  IPlaylist[1] := Language.Translate('PARTY_PLAYLIST_CATEGORY');
+  IPlaylist[2] := Language.Translate('PARTY_PLAYLIST_PLAYLIST');
+
+  //Fill IPlaylist2
+  SetLength(IPlaylist2, 1);
+  IPlaylist2[0] := '---';
+
   NumTeams := 0;
   NumPlayer1 := 0;
   NumPlayer2 := 0;
@@ -130,8 +220,8 @@ begin
   AddBackground(Theme.PartyOptions.Background.Tex);
 
   SelectLevel := AddSelectSlide (Theme.PartyOptions.SelectLevel, Ini.Difficulty, ILevel);
-  SelectPlayList := AddSelectSlide (Theme.PartyOptions.SelectPlayList, PlayList, ITeams);
-  SelectPlayList2 := AddSelectSlide (Theme.PartyOptions.SelectPlayList2, PlayList2, ITeams);
+  SelectPlayList := AddSelectSlide (Theme.PartyOptions.SelectPlayList, PlayList, IPlaylist);
+  SelectPlayList2 := AddSelectSlide (Theme.PartyOptions.SelectPlayList2, PlayList2, IPlaylist2);
   SelectRounds := AddSelectSlide (Theme.PartyOptions.SelectRounds, Rounds, IRounds);
   SelectTeams := AddSelectSlide (Theme.PartyOptions.SelectTeams, NumTeams, ITeams);
   SelectPlayers1 := AddSelectSlide (Theme.PartyOptions.SelectPlayers1, NumPlayer1, IPlayers);
@@ -145,6 +235,41 @@ begin
     AddText(Theme.PartyOptions.Text[I]);
 
   Interaction := 0;
+
+  //Hide Team3 Players
+  SelectsS[7].Visible := False;
+end;
+
+procedure TScreenPartyOptions.SetPlaylist2;
+var I: Integer;
+begin
+  Case Playlist of
+    0:
+      begin
+        SetLength(IPlaylist2, 1);
+        IPlaylist2[0] := '---';
+      end;
+    1:
+      begin
+        SetLength(IPlaylist2, 0);
+        For I := 0 to high(CatSongs.Song) do
+        begin
+          If (CatSongs.Song[I].Main) then
+          begin
+            SetLength(IPlaylist2, Length(IPlaylist2) + 1);
+            IPlaylist2[high(IPlaylist2)] := CatSongs.Song[I].Artist;
+          end;
+        end;
+      end;
+    2:
+      begin
+        SetLength(IPlaylist2, Length(PlaylistMan.Playlists));
+        PlaylistMan.GetNames(IPlaylist2);
+      end;
+  end;
+
+  Playlist2 := 0;
+  UpdateSelectSlideOptions(Theme.PartyOptions.SelectPlayList2, 2, IPlaylist2, Playlist2);
 end;
 
 procedure TScreenPartyOptions.onShow;

@@ -50,8 +50,8 @@ type
 
     {Modes:
       0: Standard Mode
-      1: PlayList Mode
-      2: Category Mode}
+      1: Category Mode
+      2: PlayList Mode}
 
   var
     PlayListMan:  TPlaylistManager;
@@ -244,7 +244,7 @@ begin
 
   //Set CatSongsMode + Playlist Mode
   CatSongs.CatNumShow := -3;
-  Mode := 1;
+  Mode := 2;
 
   //Show Cat in Topleft:
   ScreenSong.ShowCatTLCustom(Format(Theme.Playlist.CatText,[Playlists[Index].Name]));

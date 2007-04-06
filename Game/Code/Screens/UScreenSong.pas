@@ -89,7 +89,7 @@ type
   end;
 
 implementation
-uses UGraphic, UMain, UCovers, math, OpenGL12, Windows, USkins, UDLLManager, UParty, UScreenSongMenu;
+uses UGraphic, UMain, UCovers, math, OpenGL12, Windows, USkins, UDLLManager, UParty, UPlaylist, UScreenSongMenu;
 
 // ***** Public methods ****** //
 
@@ -198,8 +198,8 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
-    {//Jump To
-    if (SDL_ModState = KMOD_LALT) AND (PressedKey > SDLK_A) AND (PressedKey < SDLK_Z) then
+    //Jump To
+    if (SDL_ModState = KMOD_LALT) AND (Mode = 0) AND (PressedKey > SDLK_A) AND (PressedKey < SDLK_Z) then
     begin
       Letter := UpCase(Chr(ScanCode));
       Log.LogError(Letter);
@@ -208,7 +208,7 @@ begin
       begin
         if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Title[1]) = Letter) then
         begin
-          SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+          SkipTo(2 + CatSongs.VisibleIndex((I + Interaction) mod I2));
 
           Music.PlayChange;
 
@@ -220,7 +220,7 @@ begin
         end;
       end;
       Exit;
-    end; }
+    end;
 
     case PressedKey of
       SDLK_ESCAPE :
@@ -312,7 +312,7 @@ begin
 
       SDLK_M: //Show SongMenu
         begin
-          if Length(Songs.Song) > 0 then begin
+          if (Length(Songs.Song) > 0) AND (Mode = 0) then begin
             if not CatSongs.Song[Interaction].Main then begin // clicked on Song
               if CatSongs.CatNumShow = -3 then
                 ScreenSongMenu.MenuShow(SM_Playlist)
@@ -328,14 +328,14 @@ begin
 
       SDLK_P: //Show Playlist Menu
         begin
-          if Length(Songs.Song) > 0 then begin
+          if (Length(Songs.Song) > 0) AND (Mode = 0) then begin
               ScreenSongMenu.MenuShow(SM_Playlist_Load);
           end;
         end;
 
       SDLK_J: //Show Jumpto Menu
         begin
-          if Length(Songs.Song) > 0 then
+          if (Length(Songs.Song) > 0) AND (Mode = 0) then
           begin
             ScreenSongJumpto.Visible := True;
           end;
@@ -1462,34 +1462,65 @@ Procedure TScreenSong.SelectRandomSong;
 var
   I, I2: Integer;
 begin
-  repeat
-    I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
-  until CatSongs.Song[I2].Main = false;
+  Case PlaylistMan.Mode of
+      0:  //All Songs Just Select Random Song
+        begin
+          repeat
+            I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
+          until CatSongs.Song[I2].Main = false;
 
-  //Search Cat
-  for I := I2 downto low(CatSongs.Song) do
-  begin
-    if CatSongs.Song[I].Main then
-      break;
+          //Search Cat
+          for I := I2 downto low(CatSongs.Song) do
+          begin
+            if CatSongs.Song[I].Main then
+              break;
+          end;
+          //In I ist jetzt die Kategorie in I2 der Song
+
+          //Choose Cat
+          CatSongs.ShowCategoryList;
+
+          //Show Cat in Top Left Mod
+            ShowCatTL (I);
+
+          CatSongs.ClickCategoryButton(I);
+          SelectNext;
+
+          //Fix: Not Existing Song selected:
+          if (I+1=I2) then Inc(I2);
+
+          //Choose Song
+          SkipTo(I2-I);
+        end;
+      1:  //One Category Select Category and Select Random Song
+        begin
+          CatSongs.HideCategory(-1);
+          CatSongs.ShowCategory(PlaylistMan.CurPlayList);
+          ShowCatTL(PlaylistMan.CurPlayList);
+
+          SelectNext;
+          FixSelected;
+
+          SkipTo(2+Random(CatSongs.VisibleSongs-1));
+          Music.PlayChange;
+          ChangeMusic;
+          SetScroll4;
+          UpdateLCD;
+        end;
+      2:  //Playlist: Select Playlist and Select Random Song
+        begin
+          PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
+
+          SkipTo(2+Random(CatSongs.VisibleSongs-1));
+          Music.PlayChange;
+          ChangeMusic;
+          SetScroll4;
+          UpdateLCD;
+          FixSelected;
+        end;
   end;
-  //In I ist jetzt die Kategorie in I2 der Song
 
-  //Choose Cat
-  CatSongs.ShowCategoryList;
-
-  //Show Cat in Top Left Mod
-    ShowCatTL (I);
-
-  CatSongs.ClickCategoryButton(I);
-  SelectNext;
-
-  //Fix: Not Existing Song selected:
-  if (I+1=I2) then Inc(I2);
-
-  //Choose Song
-  SkipTo(I2-I);
-
-  ChangeMusic;
+          ChangeMusic;
 end;
 
 procedure TScreenSong.SetJoker;

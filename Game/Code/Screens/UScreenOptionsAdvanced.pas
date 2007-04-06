@@ -82,7 +82,7 @@ begin
 
   AddButton(Theme.OptionsAdvanced.ButtonExit);
   if (Length(Button[0].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[6]);
+    AddButtonText(14, 20, Theme.Options.Description[7]);
 
   Interaction := 0;
 end;
