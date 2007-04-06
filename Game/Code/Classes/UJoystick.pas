@@ -12,8 +12,17 @@ type
     Sym:        cardinal;
   end;
 
+  TJoyHatState = record
+    State:      Boolean;
+    LastTick:   Cardinal;
+    Enabled:    boolean;
+    Type_:      byte;
+    Sym:        cardinal;
+  end;
+
   TJoyUnit = record
     Button:   array[0..15] of TJoyButton;
+    HatState: Array[0..3]  of TJoyHatState;
   end;
 
   TJoy = class
@@ -29,7 +38,7 @@ var
 
 implementation
 
-uses SysUtils;
+uses SysUtils, Windows, ULog;
 
 constructor TJoy.Create;
 var
@@ -77,13 +86,21 @@ begin
   //New Sarutas method
   SDL_JoystickEventState(SDL_IGNORE);
   SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-  if SDL_NumJoysticks < 1 then beep;
+  if SDL_NumJoysticks < 1 then
+  begin
+    Log.LogError('No Joystick found');
+    exit;
+  end;
+
 
   SDL_Joy := SDL_JoystickOpen(0);
-  if SDL_Joy = nil then beep;
-
+  if SDL_Joy = nil then
+  begin
+    Log.LogError('Could not Init Joystick');
+    exit;
+  end;
   N := SDL_JoystickNumButtons(SDL_Joy);
-  if N < 6 then beep;
+  //if N < 6 then beep;
 
   for B := 0 to 5 do begin
     JoyUnit.Button[B].Enabled := true;
@@ -91,21 +108,37 @@ begin
     JoyUnit.Button[B].Type_ := SDL_KEYDOWN;
   end;
 
-  JoyUnit.Button[0].Sym := SDLK_UP;
-  JoyUnit.Button[1].Sym := SDLK_RIGHT;
-  JoyUnit.Button[2].Sym := SDLK_DOWN;
-  JoyUnit.Button[3].Sym := SDLK_LEFT;
+  JoyUnit.Button[0].Sym := SDLK_Return;
+  JoyUnit.Button[1].Sym := SDLK_Escape;
+  JoyUnit.Button[2].Sym := SDLK_M;
+  JoyUnit.Button[3].Sym := SDLK_R;
 
   JoyUnit.Button[4].Sym := SDLK_RETURN;
   JoyUnit.Button[5].Sym := SDLK_ESCAPE;
+
+  //Set HatState
+  for B := 0 to 3 do begin
+    JoyUnit.HatState[B].Enabled := true;
+    JoyUnit.HatState[B].State := False;
+    JoyUnit.HatState[B].Type_ := SDL_KEYDOWN;
+  end;
+
+  JoyUnit.HatState[0].Sym := SDLK_UP;
+  JoyUnit.HatState[1].Sym := SDLK_RIGHT;
+  JoyUnit.HatState[2].Sym := SDLK_DOWN;
+  JoyUnit.HatState[3].Sym := SDLK_LEFT;
 end;
 
 procedure TJoy.Update;
 var
-  B:    integer;
+  B:      integer;
+  State:  UInt8;
+  Tick:   Cardinal;
+  Axes:   Smallint;
 begin
   SDL_JoystickUpdate;
 
+  //Manage Buttons
   for B := 0 to 15 do begin
     if (JoyUnit.Button[B].Enabled) and (JoyUnit.Button[B].State <> SDL_JoystickGetButton(SDL_Joy, B)) and (JoyUnit.Button[B].State = 0) then begin
       JoyEvent.type_ := JoyUnit.Button[B].Type_;
@@ -117,6 +150,122 @@ begin
 
   for B := 0 to 15 do begin
     JoyUnit.Button[B].State := SDL_JoystickGetButton(SDL_Joy, B);
+  end;
+
+  //Get Tick
+  Tick := Gettickcount;
+
+  //Get CoolieHat
+  if (SDL_JoystickNumHats(SDL_Joy)>=1) then
+    State := SDL_JoystickGetHat(SDL_Joy, 0)
+  else
+    State := 0;
+
+  //Get Axis  
+  if (SDL_JoystickNumAxes(SDL_Joy)>=2) then
+  begin
+    //Down - Up (X- Axis)
+    Axes := SDL_JoystickGetAxis(SDL_Joy, 1);
+    If Axes >= 15000 then
+      State := State or SDL_HAT_Down
+    Else If Axes <= -15000 then
+      State := State or SDL_HAT_UP;
+
+    //Left - Right (Y- Axis)
+    Axes := SDL_JoystickGetAxis(SDL_Joy, 0);
+    If Axes >= 15000 then
+      State := State or SDL_HAT_Right
+    Else If Axes <= -15000 then
+      State := State or SDL_HAT_Left;
+  end;
+
+  //Manage Hat and joystick Events
+  if (SDL_JoystickNumHats(SDL_Joy)>=1) OR (SDL_JoystickNumAxes(SDL_Joy)>=2) then
+  begin
+
+    //Up Button
+    If (JoyUnit.HatState[0].Enabled) and ((SDL_HAT_UP AND State) = SDL_HAT_UP) then
+    begin //IF Button is newly Pressed or if he is Pressed longer than 500 msecs
+      if (JoyUnit.HatState[0].State = False) OR (JoyUnit.HatState[0].Lasttick < Tick) then
+      begin
+        //Set Tick and State
+        if JoyUnit.HatState[0].State then
+          JoyUnit.HatState[0].Lasttick := Tick + 200
+        else
+          JoyUnit.HatState[0].Lasttick := Tick + 500;
+
+        JoyUnit.HatState[0].State := True;
+
+        JoyEvent.type_ := JoyUnit.HatState[0].Type_;
+        JoyEvent.key.keysym.sym := JoyUnit.HatState[0].Sym;
+        SDL_PushEvent(@JoyEvent);
+      end;
+    end
+    else
+      JoyUnit.HatState[0].State := False;
+
+    //Right Button
+    If (JoyUnit.HatState[1].Enabled) and ((SDL_HAT_RIGHT AND State) = SDL_HAT_RIGHT) then
+    begin //IF Button is newly Pressed or if he is Pressed longer than 500 msecs
+      if (JoyUnit.HatState[1].State = False) OR (JoyUnit.HatState[1].Lasttick < Tick) then
+      begin
+        //Set Tick and State
+        if JoyUnit.HatState[1].State then
+          JoyUnit.HatState[1].Lasttick := Tick + 200
+        else
+          JoyUnit.HatState[1].Lasttick := Tick + 500;
+
+        JoyUnit.HatState[1].State := True;
+        
+        JoyEvent.type_ := JoyUnit.HatState[1].Type_;
+        JoyEvent.key.keysym.sym := JoyUnit.HatState[1].Sym;
+        SDL_PushEvent(@JoyEvent);
+      end;
+    end
+    else
+      JoyUnit.HatState[1].State := False;
+
+    //Down button
+    If (JoyUnit.HatState[2].Enabled) and ((SDL_HAT_DOWN AND State) = SDL_HAT_DOWN) then
+    begin //IF Button is newly Pressed or if he is Pressed longer than 230 msecs
+      if (JoyUnit.HatState[2].State = False) OR (JoyUnit.HatState[2].Lasttick < Tick) then
+      begin
+        //Set Tick and State
+        if JoyUnit.HatState[2].State then
+          JoyUnit.HatState[2].Lasttick := Tick + 200
+        else
+          JoyUnit.HatState[2].Lasttick := Tick + 500;
+
+        JoyUnit.HatState[2].State := True;
+        
+        JoyEvent.type_ := JoyUnit.HatState[2].Type_;
+        JoyEvent.key.keysym.sym := JoyUnit.HatState[2].Sym;
+        SDL_PushEvent(@JoyEvent);
+      end;
+    end
+    else
+      JoyUnit.HatState[2].State := False;
+
+    //Left Button
+    If (JoyUnit.HatState[3].Enabled) and ((SDL_HAT_LEFT AND State) = SDL_HAT_LEFT) then
+    begin //IF Button is newly Pressed or if he is Pressed longer than 230 msecs
+      if (JoyUnit.HatState[3].State = False) OR (JoyUnit.HatState[3].Lasttick < Tick) then
+      begin
+        //Set Tick and State
+        if JoyUnit.HatState[3].State then
+          JoyUnit.HatState[3].Lasttick := Tick + 200
+        else
+          JoyUnit.HatState[3].Lasttick := Tick + 500;
+
+        JoyUnit.HatState[3].State := True;
+        
+        JoyEvent.type_ := JoyUnit.HatState[3].Type_;
+        JoyEvent.key.keysym.sym := JoyUnit.HatState[3].Sym;
+        SDL_PushEvent(@JoyEvent);
+      end;
+    end
+    else
+      JoyUnit.HatState[3].State := False;
   end;
 
 end;
