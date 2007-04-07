@@ -425,11 +425,12 @@ var
 
       end; // with
     end; // for
-// eigentlich brauchen wir hier einen vergleich, um festzustellen, ob wir mit
-// singen schon weiter wären, als bei Rec.Right, _auch, wenn nicht gesungen wird_
-    with Player[NrGracza].Nuta[N] do
-      if not (Start+Dlugosc-1 = Czas.AktBeatD) then
-        GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right);
+    // eigentlich brauchen wir hier einen vergleich, um festzustellen, ob wir mit
+    // singen schon weiter wären, als bei Rec.Right, _auch, wenn nicht gesungen wird_
+
+    // passing on NrGracza... hope this is really something like the player-number, not only
+    // some kind of weird index into a colour-table
+    GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, NrGracza);
   end; // if
 end;
 

@@ -1121,16 +1121,14 @@ begin
 
   end;
 //PhrasenBonus - Line Bonus Mod End// }
-
-//GoldenStarsTwinkle Mod
-  GoldenRec.KillAll;
-//GoldenStarsTwinkle Mod End
 end;
 
 //Called on Sentence Change S= New Current Sentence
 procedure TScreenSing.onSentenceChange(S: Cardinal);
 begin
-  //Dummy
+  //GoldenStarsTwinkle Mod
+  GoldenRec.KillAll;
+  //GoldenStarsTwinkle Mod End
 end;
 
 end.

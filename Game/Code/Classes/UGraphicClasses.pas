@@ -29,8 +29,9 @@ type
    Particle      : array of TParticle;
    LastTime      : Cardinal;
    RecArray      : Array of RectanglePositions;
+   TwinkleArray  : Array[0..5] of PerfectNotePositions; // store position of last twinkle for every player
    PerfNoteArray : Array of PerfectNotePositions;
-   DelayAfterKillall : Integer;
+   KillallTime   : Cardinal; // Timestamp set when Killall is called
 
    constructor Create;
    procedure Draw;
@@ -40,13 +41,17 @@ type
    procedure KillAll();
    procedure SaveGoldenStarsRec(Xtop, Ytop, Xbottom, Ybottom: Real);
    procedure SavePerfectNotePos(Xtop, Ytop: Real);
-   procedure GoldenNoteTwinkle(Top,Bottom,Right: Real);
+   procedure GoldenNoteTwinkle(Top,Bottom,Right: Real; Player: Integer);
  end;
 
 var GoldenRec : TEffectManager;
 
 implementation
 uses sysutils, Windows,OpenGl12, UThemes, USkins, UGraphic, UDrawTexture, UTexture, math, dialogs;
+
+const
+  KillallDelay: Integer = 100;
+
 
 //TParticle
 Constructor TParticle.Create(cX,cY: Real; cTex: Cardinal; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : Integer);
@@ -111,8 +116,15 @@ end;
 
 
 constructor TEffectManager.Create;
+var c: Cardinal;
 begin
   LastTime := GetTickCount;
+  KillallTime := LastTime;
+  for c:=0 to 5 do
+  begin
+    TwinkleArray[c].xPos := 0;
+    TwinkleArray[c].yPos := 0;
+  end;
 end;
 
 
@@ -214,27 +226,41 @@ if not(LastParticleIndex = -1) then
 end;
 
 procedure TEffectManager.KillAll();
+var c: Cardinal;
 begin
 //It's the kill all kennies rotuine
   while Length(Particle) > 0 do
     Kill(0);
   SetLength(RecArray,0);
   SetLength(PerfNoteArray,0);
+  for c:=0 to 5 do
+  begin
+    TwinkleArray[c].xPos:=0;
+    TwinkleArray[c].yPos:=0;
+  end;
 end;
 
-procedure TeffectManager.GoldenNoteTwinkle(Top,Bottom,Right: Real);
+procedure TeffectManager.GoldenNoteTwinkle(Top,Bottom,Right: Real; Player: Integer);
 //Twinkle stars while golden note hit
+// this is called from UDraw.pas, SingDrawPlayerCzesc
 var
   C, P, XKatze, YKatze: Integer;
+  CurrentTime: Cardinal;
 begin
-  DelayAfterKillall:=10;    // To be used later, for the screen change issue
-  For P := 0 to high(RecArray) do  // Are we inside a GoldenNoteRectangle?
-    begin
-      if ((RecArray[P].xBottom >= Right) and
-          (RecArray[P].xTop <= Right) and
-          (RecArray[P].yTop <= (Top+Bottom)/2) and
-          (RecArray[P].yBottom >= (Top+Bottom)/2)) then
+  CurrentTime := GetTickCount;
+  //delay after Killall
+  if (CurrentTime > (KillallTime + KillallDelay)) then
+    // make sure we spawn only one time at one position
+    if (TwinkleArray[Player].xPos < Right) then
+      For P := 0 to high(RecArray) do  // Are we inside a GoldenNoteRectangle?
+      begin
+        if ((RecArray[P].xBottom >= Right) and
+            (RecArray[P].xTop <= Right) and
+            (RecArray[P].yTop <= (Top+Bottom)/2) and
+            (RecArray[P].yBottom >= (Top+Bottom)/2)) then
         begin
+          TwinkleArray[Player].xPos:=Right;
+          
           for C := 1 to 8 do
           begin
             Ykatze := RandomRange(ceil(Top) , ceil(Bottom));
@@ -243,21 +269,26 @@ begin
           end;
           exit; // found a GoldenRec, did spawning stuff... done
         end;
-    end;
+      end;
 end;
 
 procedure TEffectManager.SaveGoldenStarsRec(Xtop, Ytop, Xbottom, Ybottom: Real);
 var
   P : Integer;   // P like used in Positions
   NewIndex : Integer;
+  CurrentTime: Cardinal;
 begin
-  For P := 0 to high(RecArray) do  // Do we already have that "new" position?
-    begin
-      if ((ceil(RecArray[P].xTop) = ceil(Xtop)) and (ceil(RecArray[P].yTop) = ceil(Ytop))) then
-        exit; // it's already in the array, so we don't have to create a new one
-    end;
+  CurrentTime := GetTickCount;
+  //delay after Killall
+  if (CurrentTime > (KillallTime + KillallDelay)) then
+  begin
+    For P := 0 to high(RecArray) do  // Do we already have that "new" position?
+      begin
+        if ((ceil(RecArray[P].xTop) = ceil(Xtop)) and (ceil(RecArray[P].yTop) = ceil(Ytop))) then
+          exit; // it's already in the array, so we don't have to create a new one
+      end;
 
-// we got a new position, add the new positions to our array
+  // we got a new position, add the new positions to our array
       NewIndex := Length(RecArray);
       SetLength(RecArray, NewIndex + 1);
       RecArray[NewIndex].xTop    := Xtop;
@@ -266,6 +297,7 @@ begin
       RecArray[NewIndex].yBottom := Ybottom;
       RecArray[NewIndex].TotalStarCount := ceil(Xbottom - Xtop) div 12 + 3;
       RecArray[NewIndex].CurrentStarCount := 0;
+  end;
 end;
 
 procedure TEffectManager.SavePerfectNotePos(Xtop, Ytop: Real);
@@ -275,27 +307,32 @@ var
 
   RandomFrame : Integer;
   Xkatze, Ykatze : Integer;
+  CurrentTime: Cardinal;
 begin
-  For P := 0 to high(PerfNoteArray) do  // Do we already have that "new" position?
-    begin
-      if ((ceil(PerfNoteArray[P].xPos) = ceil(Xtop)) and (ceil(PerfNoteArray[P].yPos) = ceil(Ytop))) then
-        exit; // it's already in the array, so we don't have to create a new one
-    end;
+  CurrentTime := GetTickCount;
+  //delay after Killall
+  if (CurrentTime > (KillallTime + KillallDelay)) then
+  begin
+    For P := 0 to high(PerfNoteArray) do  // Do we already have that "new" position?
+      begin
+        if ((ceil(PerfNoteArray[P].xPos) = ceil(Xtop)) and (ceil(PerfNoteArray[P].yPos) = ceil(Ytop))) then
+          exit; // it's already in the array, so we don't have to create a new one
+      end;
 
-// we got a new position, add the new positions to our array
+  // we got a new position, add the new positions to our array
       NewIndex := Length(PerfNoteArray);
       SetLength(PerfNoteArray, NewIndex + 1);
       PerfNoteArray[NewIndex].xPos    := Xtop;
       PerfNoteArray[NewIndex].yPos    := Ytop;
 
-    for P:= 0 to 2 do
-      begin
-        Xkatze := RandomRange(ceil(Xtop) - 5 , ceil(Xtop) + 10);
-        Ykatze := RandomRange(ceil(Ytop) - 5 , ceil(Ytop) + 10);
-        RandomFrame := RandomRange(0,14);
-        Spawn(Xkatze, Ykatze, Tex_Note_Perfect_Star.TexNum, 16 - RandomFrame, RandomFrame, -1, 2);
-    end;
-
+      for P:= 0 to 2 do
+        begin
+          Xkatze := RandomRange(ceil(Xtop) - 5 , ceil(Xtop) + 10);
+          Ykatze := RandomRange(ceil(Ytop) - 5 , ceil(Ytop) + 10);
+          RandomFrame := RandomRange(0,14);
+          Spawn(Xkatze, Ykatze, Tex_Note_Perfect_Star.TexNum, 16 - RandomFrame, RandomFrame, -1, 2);
+      end;
+  end;
 end;
 end.
 
