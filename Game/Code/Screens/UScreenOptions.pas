@@ -232,6 +232,8 @@ begin
   Button[3].Texture.ScaleW := Progress;
   Button[4].Texture.ScaleW := Progress;
   Button[5].Texture.ScaleW := Progress;
+  Button[6].Texture.ScaleW := Progress;
+  Button[7].Texture.ScaleW := Progress;
 end;
 
 end.

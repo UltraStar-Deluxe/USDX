@@ -38,7 +38,7 @@ begin
 {          if SelInteraction <= 1 then begin
             Restart := true;
           end;}
-          if SelInteraction = 6 then begin
+          if SelInteraction = 5 then begin
             Ini.Save;
             Music.PlayBack;
             FadeTo(@ScreenOptions);
@@ -50,14 +50,14 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
             Music.PlayOption;
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
             Music.PlayOption;
             InteractDec;
           end;
