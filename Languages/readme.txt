@@ -4,6 +4,16 @@ To port a LanguageFile from Ultrastar 0.5.2 or Higher add the following Texts to
 
 SING_MENU=Main Menu
 
+#Advanced Options Screen
+SING_OPTIONS_ADVANCED=advanced
+SING_OPTIONS_ADVANCED_DESC=advanced options
+SING_OPTIONS_ADVANCED_EFFECTGOLDEN=Golden Notes effect
+SING_OPTIONS_ADVANCED_EFFECTPERFECT=Perfect Notes effect
+SING_OPTIONS_ADVANCED_LOADANIMATION=Load Animation
+SING_OPTIONS_ADVANCED_ASKBEFOREDEL=Savety Questions
+SING_OPTIONS_ADVANCED_LINEBONUS=Line Bonus
+SING_OPTIONS_ADVANCED_ONSONGCLICK=after SongSelection
+
 #Ratings at the Score Screen
 SING_SCORE_TONE_DEAF=Tone Deaf
 SING_SCORE_AMATEUR=Amateur
