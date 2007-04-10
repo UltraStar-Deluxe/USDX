@@ -45,11 +45,11 @@ const Credits_Text: Array[0..46] of PChar = (
   'DennistheMenace:',
   'Beta Testing and great Support in "the Board"',
   ':SPACE:',
-  'Moq/Moguhguh:',
+  'Mog:',
   'Programming',
   ':SPACE:',
   'Mota:',
-  'Programming, Idea of creating this Mod, Team Leading',
+  'Programming, Idea of creating this Mod',
   ':SPACE:',
   'Sawyer:',
   'Web Master, Programming',
@@ -72,9 +72,9 @@ const Credits_Text: Array[0..46] of PChar = (
   ':SPACE:',
   ':SPACE:',
   'Visit us at:',
-  'http://www.UltraStar-Deluxe.de.vu',
-  'http://www.USD.de.vu',
-  'http://www.Ultra-Star.dl.am ("The Board" by Blind Guard)',
+  'http://www.ultrastardx.dl.am',
+  'http://sourceforge.net/projects/ultrastardx/',
+  'http://www.Ultra-Star.dl.am',
   'Please write Bug Reports and Feature Requests',
   'to help making this a better Game');
 
@@ -329,7 +329,7 @@ begin
   SetFontStyle (2);
   SetFontItalic(False);
   SetFontSize(9);
-  SetFontPos (460, 570);
+  SetFontPos (10, 5);
   glColor4f(1, 0, 0, 0.2 + Abs((Credits_Alpha mod 150)/100 - 0.75));
   glPrint ('Credits! Press any Key to Continue');
 
@@ -339,7 +339,12 @@ begin
   if (Credits_Y>-35) then
   begin
     Ver := PChar(Language.Translate('US_VERSION'));
-    glColor4f(1, 0.6, 0.08, 0.8);
+    //Set Color
+    if Credits_Y > 500 then
+      glColor4f(1, 0.6, 0.08, (600 - Credits_Y)/100 - 0.2)
+    else
+      glColor4f(1, 0.6, 0.08, 0.8);
+      
     SetFontPos (400 - glTextWidth(Ver)/2, Credits_Y);
     glprint(Ver);
   end;
@@ -367,6 +372,12 @@ begin
       Y := Y + 55
     else
     begin
+      //Set Color
+      if Y > 500 then
+        glColor4f(0.8, 0.8, 1, (600 - Y)/100 - 0.2)
+      else
+        glColor4f(0.8, 0.8, 1, 0.8);
+
       SetFontPos (400 - glTextWidth(Credits_Text[T])/2, Y);
       glprint(Credits_Text[T]);
       Y := Y + 30;
@@ -376,7 +387,7 @@ begin
       break;
   end;
 
-  //If lower Position is outside the Screen-> Show MainMenu
+  //If lowest Position is outside the Screen-> Show MainMenu
   if (Y <= 0) then
     Credits_Visible := False;
 end;
