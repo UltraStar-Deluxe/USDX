@@ -945,11 +945,12 @@ begin
 
     Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
 
-    Z := (1 + cos(Wsp)) / 2 - 0.2;
+    Z := (1 + cos(Wsp)) / 2;
     Z2 := (1 + 2*Z) / 3;
 
-    Button[B].X := Theme.Song.Cover.X + (Theme.Song.Cover.W + 0.185 * Theme.Song.Cover.H * VS * sin(Wsp) - Theme.Song.Cover.X) * Z2; // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
-    Button[B].Z := Z;
+
+    Button[B].X := Theme.Song.Cover.X + (0.185 * Theme.Song.Cover.H * VS * sin(Wsp)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
+    Button[B].Z := Z / 2 + 0.3;
 
     Button[B].W := Theme.Song.Cover.H * Z2;
 
@@ -1050,16 +1051,6 @@ var
   VS:     integer;
   diff:     real;
   X:        Real;
-  {function margin (const X, Y, VS: real):real; //Margin of to Buttons
-  begin
-    Result := Frac(x / y) * y;
-    if (X - VS) >= -3 then
-      Result := X - VS - Y
-    else if (X + 3) >= VS then
-      Result := X - VS + Y
-    else
-      Result := X - Y;
-  end;   }
 begin
   VS := CatSongs.VisibleSongs; // cache Visible Songs
   {Vars
@@ -1096,9 +1087,12 @@ begin
 
       Button[B].W := Button[B].H;
 
-      Diff := (Button[B].H - Theme.Song.Cover.H)/2;;
+      Diff := (Button[B].H - Theme.Song.Cover.H)/2;
 
-      Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * Sin(Angle) - Diff;
+
+      X := Sin(Angle);
+
+      Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * X - Diff;
 
       end
       else
