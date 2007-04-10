@@ -46,7 +46,7 @@ const Credits_Text: Array[0..46] of PChar = (
   'Beta Testing and great Support in "the Board"',
   ':SPACE:',
   'Mog:',
-  'Programming',
+  'Programming, Graphics',
   ':SPACE:',
   'Mota:',
   'Programming, Idea of creating this Mod',

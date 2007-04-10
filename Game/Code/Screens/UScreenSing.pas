@@ -1119,6 +1119,8 @@ begin
   //Refresh LastScore
   Player[I].ScoreLast := Player[I].Score + Player[I].ScoreGolden;
 
+
+
   end;
 //PhrasenBonus - Line Bonus Mod End// }
 end;
@@ -1129,6 +1131,7 @@ begin
   //GoldenStarsTwinkle Mod
   GoldenRec.KillAll;
   //GoldenStarsTwinkle Mod End
+
 end;
 
 end.

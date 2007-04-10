@@ -3,7 +3,7 @@ unit UScreenLoading;
 interface
 
 uses
-  UMenu, SDL, SysUtils, UThemes;
+  UMenu, SDL, SysUtils, UThemes, OpenGL12;
 
 type
   TScreenLoading = class(TMenu)
@@ -11,6 +11,7 @@ type
       Fadeout:      boolean;
       constructor Create(Back: String); override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function GetBGTexNum: GLUInt;
       procedure onShow; override;
   end;
 
@@ -43,6 +44,11 @@ end;
 procedure TScreenLoading.onShow;
 begin
 // nothing
+end;
+
+function TScreenLoading.GetBGTexNum: GLUInt;
+begin
+  Result := Self.BackImg.TexNum;
 end;
 
 end.
