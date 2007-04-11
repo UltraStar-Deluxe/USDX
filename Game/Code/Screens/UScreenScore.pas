@@ -11,6 +11,8 @@ type
       TextArtist:   integer;
       TextTitle:    integer;
 
+      TextArtistTitle : integer;
+      
       TextName:             array[1..6] of integer;
       TextScore:            array[1..6] of integer;
 
@@ -24,6 +26,8 @@ type
       TextTotalScore:       array[1..6] of integer;
 
       PlayerStatic:         array[1..6] of array of integer;
+      PlayerTexts :         array[1..6] of array of integer;
+
 
       StaticBoxLightest:    array[1..6] of integer;
       StaticBoxLight:       array[1..6] of integer;
@@ -91,7 +95,7 @@ end;
 constructor TScreenScore.Create(Back: String);
 var
   P:    integer;
-  I:    integer;
+  I, C:    integer;
 begin
   inherited Create(Back);
 
@@ -146,6 +150,8 @@ begin
   TextArtist := AddText(Theme.Score.TextArtist);
   TextTitle := AddText(Theme.Score.TextTitle);
 
+  TextArtistTitle := AddText(Theme.Score.TextArtistTitle);
+
   for P := 1 to 6 do begin
     TextName[P] := AddText(Theme.Score.TextName[P]);
     TextScore[P] := AddText(Theme.Score.TextScore[P]);
@@ -160,8 +166,15 @@ begin
     TextTotalScore[P] := AddText(Theme.Score.TextTotalScore[P]);
 
     SetLength(PlayerStatic[P], Length(Theme.Score.PlayerStatic[P]));
+
     for I := 0 to High(Theme.Score.PlayerStatic[P]) do
       PlayerStatic[P, I] := AddStatic(Theme.Score.PlayerStatic[P, I]);
+
+
+    //added by mog
+    for C := 0 to High(Theme.Score.PlayerTexts[P]) do
+      PlayerTexts[P, C] := AddText(Theme.Score.PlayerTexts[P, C]);
+    // more skinable now
 
     StaticBoxLightest[P] := AddStatic(Theme.Score.StaticBoxLightest[P]);
     StaticBoxLight[P] := AddStatic(Theme.Score.StaticBoxLight[P]);
@@ -225,6 +238,7 @@ begin
 
   Text[TextArtist].Text := AktSong.Artist;
   Text[TextTitle].Text := AktSong.Title;
+  Text[TextArtistTitle].Text := AktSong.Artist + ' - ' + AktSong.Title;
 
   // set visibility
   case PlayersPlay of
@@ -269,6 +283,9 @@ begin
 
     for I := 0 to high(PlayerStatic[P]) do
       Static[PlayerStatic[P, I]].Visible := V[P];
+
+    for I := 0 to high(PlayerTexts[P]) do
+      Static[PlayerTexts[P, I]].Visible := V[P];
 
     Static[StaticBoxLightest[P]].Visible := V[P];
     Static[StaticBoxLight[P]].Visible := V[P];

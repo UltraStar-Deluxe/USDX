@@ -430,6 +430,8 @@ var
 
     // passing on NrGracza... hope this is really something like the player-number, not only
     // some kind of weird index into a colour-table
+
+    if (Ini.EffectGolden=1) then
     GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, NrGracza);
   end; // if
 end;

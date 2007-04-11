@@ -290,7 +290,10 @@ type
     TextArtist:       TThemeText;
     TextTitle:        TThemeText;
 
+    TextArtistTitle:  TThemeText;
+
     PlayerStatic:     array[1..6] of AThemeStatic;
+    PlayerTexts:      array[1..6] of AThemeText;
 
     TextName:         array[1..6] of TThemeText;
     TextScore:        array[1..6] of TThemeText;
@@ -917,9 +920,11 @@ begin
 
       ThemeLoadText(Score.TextArtist, 'ScoreTextArtist');
       ThemeLoadText(Score.TextTitle, 'ScoreTextTitle');
+      ThemeLoadText(Score.TextArtistTitle, 'ScoreTextArtistTitle');
 
       for I := 1 to 6 do begin
         ThemeLoadStatics(Score.PlayerStatic[I], 'ScorePlayer' + IntToStr(I) + 'Static');
+        ThemeLoadTexts(Score.PlayerTexts[I],     'ScorePlayer' + IntToStr(I) + 'Text');
 
         ThemeLoadText(Score.TextName[I], 'ScoreTextName' + IntToStr(I));
         ThemeLoadText(Score.TextScore[I], 'ScoreTextScore' + IntToStr(I));

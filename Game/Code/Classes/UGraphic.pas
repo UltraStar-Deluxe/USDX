@@ -404,7 +404,7 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Themes', 3); Log.BenchmarkStart(3);
   ScreenOptionsRecord   :=    TScreenOptionsRecord.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Record', 3); Log.BenchmarkStart(3);
-  ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create;
+  ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Advanced', 3); Log.BenchmarkStart(3);
   ScreenEditSub :=          TScreenEditSub.Create('');
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Edit Sub', 3); Log.BenchmarkStart(3);
