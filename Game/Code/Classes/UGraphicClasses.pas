@@ -1,3 +1,4 @@
+// notes:
 unit UGraphicClasses;
 
 interface
@@ -13,7 +14,8 @@ type
  TParticle = Class
    X, Y     : Real;     //Position
    W, H     : Cardinal; //dimensions of particle
-   Col      : TColour3f; // Colour of particle
+   Col      : array of TColour3f; // Colour(s) of particle
+   Scale    : array of Real;      // Scaling factors of particle layers
    Frame    : Byte;     //act. Frame
    Tex      : Cardinal; //Tex num from Textur Manager
    Live     : Byte;     //How many Cycles before Kill
@@ -21,8 +23,10 @@ type
    StarType : TParticleType;  // GoldenNote | PerfectNote | NoteHitTwinkle | PerfectLineTwinkle
    Alpha    : Real;     // used for fading...
    mX, mY   : Real;     // movement-vector for PerfectLineTwinkle
+   SurviveSentenceChange : Boolean;
 
    Constructor Create(cX,cY: Real; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
+   Destructor Destroy();
    procedure Draw;
    procedure LiveOn;
  end;
@@ -57,20 +61,23 @@ type
    procedure SpawnRec();
    procedure Kill(index: Cardinal);
    procedure KillAll();
+   procedure SentenceChange();
    procedure SaveGoldenStarsRec(Xtop, Ytop, Xbottom, Ybottom: Real);
    procedure SavePerfectNotePos(Xtop, Ytop: Real);
    procedure GoldenNoteTwinkle(Top,Bottom,Right: Real; Player: Integer);
+   procedure SpawnPerfectLineTwinkle();
  end;
 
 var GoldenRec : TEffectManager;
 
 implementation
-uses sysutils, Windows,OpenGl12, UThemes, USkins, UGraphic, UDrawTexture, UTexture, math, dialogs;
+uses sysutils, Windows,OpenGl12, UIni, UMain, UThemes, USkins, UGraphic, UDrawTexture, UTexture, math, dialogs;
 
 //TParticle
 Constructor TParticle.Create(cX,cY: Real; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
 begin
   inherited Create;
+  // in this constructor we set all initial values for our particle
   X := cX;
   Y := cY;
   Live := cLive;
@@ -78,24 +85,45 @@ begin
   RecIndex := cRecArrayIndex;
   StarType := cStarType;
   Alpha := (-cos((Frame+1)*2*pi/16)+1); // neat fade-in-and-out
+  SetLength(Scale,1);
+  Scale[0]:=1;
+  SurviveSentenceChange:=False;
   case cStarType of
     GoldenNote:
         begin
           Tex := Tex_Note_Star.TexNum;
           W := 20;
           H := 20;
-          Col.r := 0.99;
-          Col.g := 1;
-          Col.b := 0.6;
+          SetLength(Scale,4);
+          Scale[1]:=0.8;
+          Scale[2]:=0.4;
+          Scale[3]:=0.3;
+          SetLength(Col,4);
+          Col[0].r := 1;
+          Col[0].g := 0.7;
+          Col[0].b := 0.1;
+
+          Col[1].r := 1;
+          Col[1].g := 1;
+          Col[1].b := 0.4;
+
+          Col[2].r := 1;
+          Col[2].g := 1;
+          Col[2].b := 1;
+
+          Col[3].r := 1;
+          Col[3].g := 1;
+          Col[3].b := 1;
         end;
     PerfectNote:
         begin
           Tex := Tex_Note_Perfect_Star.TexNum;
           W := 30;
           H := 30;
-          Col.r := 1;
-          Col.g := 1;
-          Col.b := 0.95;
+          SetLength(Col,1);
+          Col[0].r := 1;
+          Col[0].g := 1;
+          Col[0].b := 0.95;
         end;
     NoteHitTwinkle:
         begin
@@ -103,21 +131,33 @@ begin
           Alpha := (Live/10);  // linear fade-out
           W := 15;
           H := 15;
-          Col.r := 1;
-          Col.g := 1;
-          Col.b := RandomRange(10*Live,100)/80; //0.9; 
+          Setlength(Col,1);
+          Col[0].r := 1;
+          Col[0].g := 1;
+          Col[0].b := RandomRange(10*Live,100)/80; //0.9;
         end;
     PerfectLineTwinkle:
         begin
           Tex := Tex_Note_Star.TexNum;
           W := RandomRange(10,30);
           H := W;
-          // hier muss entsprechend des players farbe gesetzt werden (sollten wir dann auch übergeben bekommen)
-          // case Player of
-          // ...
-          Col.r := 1;
-          Col.g := 0.5;
-          Col.b := 0.5;
+          SurviveSentenceChange:=True;
+          // assign colours according to player given
+          SetLength(Scale,2);
+          Scale[1]:=0.3;
+          SetLength(Col,2);
+          case Player of
+            0: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P1Light');
+            1: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P2Light');
+            2: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P3Light');
+            3: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P4Light');
+            4: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P5Light');
+            5: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P6Light');
+            else LoadColor(Col[0].r,Col[0].g,Col[0].b,'P1Light');
+          end;
+          Col[1].r:=Col[0].r+0.5;
+          Col[1].g:=Col[0].g+0.5;
+          Col[1].b:=Col[0].b+0.5;
           mX := RandomRange(-5,5);
           mY := RandomRange(-5,5);
         end;
@@ -127,11 +167,19 @@ begin
           Alpha := 1;
           W := 20;
           H := 20;
-          Col.r := 1;
-          Col.g := 1;
-          Col.b := 1;
+          SetLength(Col,1);
+          Col[0].r := 1;
+          Col[0].g := 1;
+          Col[0].b := 1;
         end;
   end;
+end;
+
+Destructor TParticle.Destroy();
+begin
+  SetLength(Scale,0);
+  SetLength(Col,0);
+  inherited;
 end;
 
 procedure TParticle.LiveOn;
@@ -144,6 +192,7 @@ begin
   Frame := ( Frame + 1 ) mod 16;
 
   // make our particles do funny stuff (besides being animated)
+  // changes of any particle-values throughout its life are done here
   case StarType of
     GoldenNote:
         begin
@@ -168,21 +217,26 @@ begin
 end;
 
 procedure TParticle.Draw;
+var L: Cardinal;
 begin
-  glColor4f(Col.r, Col.g, Col.b, Alpha);
-
-  glBindTexture(GL_TEXTURE_2D, Tex);
-  glEnable(GL_TEXTURE_2D);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-
+  // this draws (multiple) texture(s) of our particle
+  for L:=0 to High(Col) do
   begin
-    glBegin(GL_QUADS);
-    glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W, Y-H);
-    glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W, Y+H);
-    glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W, Y+H);
-    glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W, Y-H);
-    glEnd;
+    glColor4f(Col[L].r, Col[L].g, Col[L].b, Alpha);
+
+    glBindTexture(GL_TEXTURE_2D, Tex);
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+
+    begin
+      glBegin(GL_QUADS);
+      glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L], Y-H*Scale[L]);
+      glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W*Scale[L], Y+H*Scale[L]);
+      glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W*Scale[L], Y+H*Scale[L]);
+      glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W*Scale[L], Y-H*Scale[L]);
+      glEnd;
+    end;
   end;
   glcolor4f(1,1,1,1);
 end;
@@ -313,6 +367,25 @@ begin
   end;
 end;
 
+procedure TEffectManager.SentenceChange();
+var c: Cardinal;
+begin
+  c:=0;
+  while c <= High(Particle) do
+  begin
+    if Particle[c].SurviveSentenceChange then
+      inc(c)
+    else
+      Kill(c);
+  end;
+  SetLength(RecArray,0);  // remove GoldenRec positions
+  SetLength(PerfNoteArray,0); // remove PerfectNote positions
+  for c:=0 to 5 do
+  begin
+    TwinkleArray[c] := 0; // reset GoldenNoteHit memory
+  end;
+end;
+
 procedure TeffectManager.GoldenNoteTwinkle(Top,Bottom,Right: Real; Player: Integer);
 //Twinkle stars while golden note hit
 // this is called from UDraw.pas, SingDrawPlayerCzesc
@@ -420,6 +493,65 @@ begin
         RandomFrame := RandomRange(0,14);
         Spawn(Xkatze, Ykatze, 16 - RandomFrame, RandomFrame, -1, PerfectNote, 0);
      end; //for
+
+end;
+
+procedure TEffectManager.SpawnPerfectLineTwinkle();
+var
+  P,I,Life: Cardinal;
+  Left, Right, Top, Bottom: Cardinal;
+begin
+// calculation of coordinates done with hardcoded values like in UDraw.pas
+// might need to be adjusted if drawing of SingScreen is modified
+// coordinates may still be a bit weird and need adjustment
+  if Ini.SingWindow = 0 then begin
+    Left := 130;
+  end else begin
+    Left := 30;
+  end;
+  Right := 770;
+  // spawn effect for every player with a perfect line
+  for P:=0 to PlayersPlay-1 do
+    if Player[P].LastSentencePerfect then
+    begin
+      // calculate area where notes of this player are drawn
+      case PlayersPlay of
+        1: begin
+             Bottom:=Skin_P2_NotesB-10;
+             Top:=Bottom-105;
+           end;
+        2,4: case P of
+               0,2: begin
+                      Bottom:=Skin_P1_NotesB-10;
+                      Top:=Bottom-105;
+                    end;
+               else begin
+                      Bottom:=Skin_P2_NotesB-10;
+                      Top:=Bottom-105;
+                    end;
+             end;
+        3,6: case P of
+               0,3: begin
+                      Top:=130;
+                      Bottom:=Top+85;
+                    end;
+               1,4: begin
+                      Top:=255;
+                      Bottom:=Top+85;
+                    end;
+               2,5: begin
+                      Top:=380;
+                      Bottom:=Top+85;
+                    end;
+             end;
+      end;
+      // spawn Sparkling Stars inside calculated coordinates
+      for I:= 0 to 80 do
+      begin
+        Life:=RandomRange(8,16);
+        Spawn(RandomRange(Left,Right), RandomRange(Top,Bottom), Life, 16-Life, -1, PerfectLineTwinkle, P);
+      end;
+    end;
 end;
 
 end.

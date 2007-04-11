@@ -40,7 +40,9 @@ type
     LineBonus_StartY:  integer;
     //PhrasenBonus - Line Bonus Mod End
 
-
+    //PerfectLineTwinkle Mod (effect)
+    LastSentencePerfect: Boolean;
+    //PerfectLineTwinkle Mod end
 
 
 //    Meter:        real;

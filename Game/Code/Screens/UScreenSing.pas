@@ -371,7 +371,7 @@ begin
 
   //Kill all Stars not Killed yet
   //GoldenStarsTwinkle Mod
-    GoldenRec.KillAll;
+    GoldenRec.SentenceChange;
   //GoldenStarsTwinkle Mod End
 
   {Static[StaticP2R].Visible := V2R;
@@ -1119,17 +1119,24 @@ begin
   //Refresh LastScore
   Player[I].ScoreLast := Player[I].Score + Player[I].ScoreGolden;
 
-
+  //PerfectLineTwinkle Mod (effect) Pt.1
+  if A >= 8 then Player[I].LastSentencePerfect := True
+  else Player[I].LastSentencePerfect := False;
+  //PerfectLineTwinkle Mod end
 
   end;
 //PhrasenBonus - Line Bonus Mod End// }
+
+  //PerfectLineTwinkle Mod (effect) Pt.2
+  GoldenRec.SpawnPerfectLineTwinkle;
+  //PerfectLineTwinkle Mod end
 end;
 
 //Called on Sentence Change S= New Current Sentence
 procedure TScreenSing.onSentenceChange(S: Cardinal);
 begin
   //GoldenStarsTwinkle Mod
-  GoldenRec.KillAll;
+  GoldenRec.SentenceChange;
   //GoldenStarsTwinkle Mod End
 
 end;
