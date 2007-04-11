@@ -167,6 +167,8 @@ begin
 
     SetLength(PlayerStatic[P], Length(Theme.Score.PlayerStatic[P]));
 
+    SetLength(PlayerTexts[P], Length(Theme.Score.PlayerTexts[P]));
+
     for I := 0 to High(Theme.Score.PlayerStatic[P]) do
       PlayerStatic[P, I] := AddStatic(Theme.Score.PlayerStatic[P, I]);
 
@@ -285,7 +287,7 @@ begin
       Static[PlayerStatic[P, I]].Visible := V[P];
 
     for I := 0 to high(PlayerTexts[P]) do
-      Static[PlayerTexts[P, I]].Visible := V[P];
+      Text[PlayerTexts[P, I]].Visible := V[P];
 
     Static[StaticBoxLightest[P]].Visible := V[P];
     Static[StaticBoxLight[P]].Visible := V[P];
