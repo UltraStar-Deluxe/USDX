@@ -2,7 +2,7 @@
 unit UGraphicClasses;
 
 interface
-const  DelayBetweenFrames : Cardinal = 100;
+const  DelayBetweenFrames : Cardinal = 60;
 type
 
  TParticleType=(GoldenNote, PerfectNote, NoteHitTwinkle, PerfectLineTwinkle);
@@ -13,6 +13,7 @@ type
 
  TParticle = Class
    X, Y     : Real;     //Position
+   Screen   : Integer;
    W, H     : Cardinal; //dimensions of particle
    Col      : array of TColour3f; // Colour(s) of particle
    Scale    : array of Real;      // Scaling factors of particle layers
@@ -23,9 +24,10 @@ type
    StarType : TParticleType;  // GoldenNote | PerfectNote | NoteHitTwinkle | PerfectLineTwinkle
    Alpha    : Real;     // used for fading...
    mX, mY   : Real;     // movement-vector for PerfectLineTwinkle
+   SizeMod  : Real;     // experimental size modifier
    SurviveSentenceChange : Boolean;
 
-   Constructor Create(cX,cY: Real; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
+   Constructor Create(cX,cY: Real; cScreen: Integer; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
    Destructor Destroy();
    procedure Draw;
    procedure LiveOn;
@@ -35,10 +37,12 @@ type
    xTop, yTop, xBottom, yBottom : Real;
    TotalStarCount   : Integer;
    CurrentStarCount : Integer;
+   Screen           : Integer;
  end;
 
  PerfectNotePositions = Record
    xPos, yPos : Real;
+   Screen     : Integer;
  end;
 
  TEffectManager = Class
@@ -52,6 +56,7 @@ type
    destructor  Destroy; override;
    procedure Draw;
    function  Spawn(X, Y: Real;
+                   Screen: Integer;
                    Live: Byte;
                    StartFrame: Integer;
                    RecArrayIndex: Integer;  // this is only used with GoldenNotes
@@ -74,20 +79,22 @@ implementation
 uses sysutils, Windows,OpenGl12, UIni, UMain, UThemes, USkins, UGraphic, UDrawTexture, UTexture, math, dialogs;
 
 //TParticle
-Constructor TParticle.Create(cX,cY: Real; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
+Constructor TParticle.Create(cX,cY: Real; cScreen: Integer; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
 begin
   inherited Create;
   // in this constructor we set all initial values for our particle
   X := cX;
   Y := cY;
+  Screen := cScreen;
   Live := cLive;
   Frame:= cFrame;
   RecIndex := cRecArrayIndex;
   StarType := cStarType;
   Alpha := (-cos((Frame+1)*2*pi/16)+1); // neat fade-in-and-out
   SetLength(Scale,1);
-  Scale[0]:=1;
-  SurviveSentenceChange:=False;
+  Scale[0] := 1;
+  SurviveSentenceChange := False;
+  SizeMod := 1;
   case cStarType of
     GoldenNote:
         begin
@@ -128,24 +135,26 @@ begin
     NoteHitTwinkle:
         begin
           Tex := Tex_Note_Star.TexNum;
-          Alpha := (Live/10);  // linear fade-out
+          Alpha := (Live/16);  // linear fade-out
           W := 15;
           H := 15;
           Setlength(Col,1);
           Col[0].r := 1;
           Col[0].g := 1;
-          Col[0].b := RandomRange(10*Live,100)/80; //0.9;
+          Col[0].b := RandomRange(10*Live,100)/90; //0.9;
         end;
     PerfectLineTwinkle:
         begin
           Tex := Tex_Note_Star.TexNum;
-          W := RandomRange(10,30);
+          W := RandomRange(10,20);
           H := W;
+          SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
           SurviveSentenceChange:=True;
           // assign colours according to player given
-          SetLength(Scale,2);
+          SetLength(Scale,3);
           Scale[1]:=0.3;
-          SetLength(Col,2);
+          Scale[2]:=0.2;
+          SetLength(Col,3);
           case Player of
             0: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P1Light');
             1: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P2Light');
@@ -155,9 +164,12 @@ begin
             5: LoadColor(Col[0].r,Col[0].g,Col[0].b,'P6Light');
             else LoadColor(Col[0].r,Col[0].g,Col[0].b,'P1Light');
           end;
-          Col[1].r:=Col[0].r+0.5;
-          Col[1].g:=Col[0].g+0.5;
-          Col[1].b:=Col[0].b+0.5;
+          Col[1].r := 1;
+          Col[1].g := 1;
+          Col[1].b := 0.4;
+          Col[2].r:=Col[0].r+0.5;
+          Col[2].g:=Col[0].g+0.5;
+          Col[2].b:=Col[0].b+0.5;
           mX := RandomRange(-5,5);
           mY := RandomRange(-5,5);
         end;
@@ -209,6 +221,7 @@ begin
     PerfectLineTwinkle:
         begin
           Alpha := (-cos((Frame+1)*2*pi/16)+1); // neat fade-in-and-out
+          SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
           // move around
           X := X + mX;
           Y := Y + mY;
@@ -219,25 +232,26 @@ end;
 procedure TParticle.Draw;
 var L: Cardinal;
 begin
-  // this draws (multiple) texture(s) of our particle
-  for L:=0 to High(Col) do
-  begin
-    glColor4f(Col[L].r, Col[L].g, Col[L].b, Alpha);
-
-    glBindTexture(GL_TEXTURE_2D, Tex);
-    glEnable(GL_TEXTURE_2D);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
-
+  if ScreenAct = Screen then
+    // this draws (multiple) texture(s) of our particle
+    for L:=0 to High(Col) do
     begin
-      glBegin(GL_QUADS);
-      glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L], Y-H*Scale[L]);
-      glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W*Scale[L], Y+H*Scale[L]);
-      glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W*Scale[L], Y+H*Scale[L]);
-      glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W*Scale[L], Y-H*Scale[L]);
-      glEnd;
+      glColor4f(Col[L].r, Col[L].g, Col[L].b, Alpha);
+
+      glBindTexture(GL_TEXTURE_2D, Tex);
+      glEnable(GL_TEXTURE_2D);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glEnable(GL_BLEND);
+
+      begin
+        glBegin(GL_QUADS);
+        glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+        glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
+        glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
+        glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+        glEnd;
+      end;
     end;
-  end;
   glcolor4f(1,1,1,1);
 end;
 // end of TParticle
@@ -301,11 +315,11 @@ begin
 end;
 
 // this method creates just one particle
-function TEffectManager.Spawn(X, Y: Real; Live: Byte; StartFrame : Integer; RecArrayIndex : Integer; StarType : TParticleType; Player: Cardinal): Cardinal;
+function TEffectManager.Spawn(X, Y: Real; Screen: Integer; Live: Byte; StartFrame : Integer; RecArrayIndex : Integer; StarType : TParticleType; Player: Cardinal): Cardinal;
 begin
   Result := Length(Particle);
   SetLength(Particle, (Result + 1));
-  Particle[Result] := TParticle.Create(X, Y, Live, StartFrame, RecArrayIndex, StarType, Player);
+  Particle[Result] := TParticle.Create(X, Y, Screen, Live, StartFrame, RecArrayIndex, StarType, Player);
 end;
 
 // manage Sparkling of GoldenNote Bars
@@ -325,7 +339,7 @@ for P:= 0 to high(RecArray) do
         Ykatze := RandomRange(Ceil(RecArray[P].yTop), Ceil(RecArray[P].yBottom));
         RandomFrame := RandomRange(0,14);
         // Spawn a GoldenNote Particle
-        Spawn(Xkatze, Ykatze, 16 - RandomFrame, RandomFrame, P, GoldenNote, 0);
+        Spawn(Xkatze, Ykatze, RecArray[P].Screen, 16 - RandomFrame, RandomFrame, P, GoldenNote, 0);
         inc(RecArray[P].CurrentStarCount);
       end;
     end;
@@ -400,43 +414,44 @@ begin
       H := (Top+Bottom)/2; // helper...
       with RecArray[P] do
       if ((xBottom >= Right) and (xTop <= Right) and
-          (yTop <= H) and (yBottom >= H)) then
+          (yTop <= H) and (yBottom >= H))
+          and (Screen = ScreenAct) then
       begin
         TwinkleArray[Player] := Right; // remember twinkle position for this player
-        for C := 1 to 20 do
+        for C := 1 to 10 do
         begin
           Ykatze := RandomRange(ceil(Top) , ceil(Bottom));
           XKatze := RandomRange(-7,3);
-          LKatze := RandomRange(4,10);
-          Spawn(Ceil(Right)+XKatze, YKatze, LKatze, 0, -1, NoteHitTwinkle, 0);
+          LKatze := RandomRange(7,13);
+          Spawn(Ceil(Right)+XKatze, YKatze, ScreenAct, LKatze, 0, -1, NoteHitTwinkle, 0);
         end;
-        for C := 1 to 5 do
+        for C := 1 to 3 do
         begin
           Ykatze := RandomRange(ceil(Top)-6 , ceil(Top));
           XKatze := RandomRange(-5,1);
-          LKatze := RandomRange(2,3);
-          Spawn(Ceil(Right)+XKatze, YKatze, LKatze, 0, -1, NoteHitTwinkle, 0);
+          LKatze := RandomRange(4,7);
+          Spawn(Ceil(Right)+XKatze, YKatze, ScreenAct, LKatze, 0, -1, NoteHitTwinkle, 0);
         end;
-        for C := 1 to 5 do
+        for C := 1 to 3 do
         begin
           Ykatze := RandomRange(ceil(Bottom), ceil(Bottom)+6);
           XKatze := RandomRange(-5,1);
-          LKatze := RandomRange(2,3);
-          Spawn(Ceil(Right)+XKatze, YKatze, LKatze, 0, -1, NoteHitTwinkle, 0);
+          LKatze := RandomRange(4,7);
+          Spawn(Ceil(Right)+XKatze, YKatze, ScreenAct, LKatze, 0, -1, NoteHitTwinkle, 0);
         end;
         for C := 1 to 3 do
         begin
           Ykatze := RandomRange(ceil(Top)-10 , ceil(Top)-6);
           XKatze := RandomRange(-5,1);
-          LKatze := RandomRange(1,2);
-          Spawn(Ceil(Right)+XKatze, YKatze, LKatze, 0, -1, NoteHitTwinkle, 0);
+          LKatze := RandomRange(1,4);
+          Spawn(Ceil(Right)+XKatze, YKatze, ScreenAct, LKatze, 0, -1, NoteHitTwinkle, 0);
         end;
         for C := 1 to 3 do
         begin
           Ykatze := RandomRange(ceil(Bottom)+6 , ceil(Bottom)+10);
           XKatze := RandomRange(-5,1);
-          LKatze := RandomRange(1,2);
-          Spawn(Ceil(Right)+XKatze, YKatze, LKatze, 0, -1, NoteHitTwinkle, 0);
+          LKatze := RandomRange(1,4);
+          Spawn(Ceil(Right)+XKatze, YKatze, ScreenAct, LKatze, 0, -1, NoteHitTwinkle, 0);
         end;
 
         exit; // found a matching GoldenRec, did spawning stuff... done
@@ -451,7 +466,9 @@ var
 begin
   For P := 0 to high(RecArray) do  // Do we already have that "new" position?
     begin
-      if ((ceil(RecArray[P].xTop) = ceil(Xtop)) and (ceil(RecArray[P].yTop) = ceil(Ytop))) then
+      if (ceil(RecArray[P].xTop) = ceil(Xtop)) and
+      (ceil(RecArray[P].yTop) = ceil(Ytop)) and
+      (ScreenAct = RecArray[p].Screen) then
         exit; // it's already in the array, so we don't have to create a new one
     end;
 
@@ -464,6 +481,7 @@ begin
     RecArray[NewIndex].yBottom := Ybottom;
     RecArray[NewIndex].TotalStarCount := ceil(Xbottom - Xtop) div 12 + 3;
     RecArray[NewIndex].CurrentStarCount := 0;
+    RecArray[NewIndex].Screen := ScreenAct;
 end;
 
 procedure TEffectManager.SavePerfectNotePos(Xtop, Ytop: Real);
@@ -476,7 +494,8 @@ begin
   For P := 0 to high(PerfNoteArray) do  // Do we already have that "new" position?
     begin
       with PerfNoteArray[P] do
-      if ((ceil(xPos) = ceil(Xtop)) and (ceil(yPos) = ceil(Ytop))) then
+      if (ceil(xPos) = ceil(Xtop)) and (ceil(yPos) = ceil(Ytop)) and
+         (Screen = ScreenAct) then
         exit; // it's already in the array, so we don't have to create a new one
     end; //for
 
@@ -485,13 +504,14 @@ begin
     SetLength(PerfNoteArray, NewIndex + 1);
     PerfNoteArray[NewIndex].xPos    := Xtop;
     PerfNoteArray[NewIndex].yPos    := Ytop;
+    PerfNoteArray[NewIndex].Screen  := ScreenAct;
 
     for P:= 0 to 2 do
       begin
         Xkatze := RandomRange(ceil(Xtop) - 5 , ceil(Xtop) + 10);
         Ykatze := RandomRange(ceil(Ytop) - 5 , ceil(Ytop) + 10);
         RandomFrame := RandomRange(0,14);
-        Spawn(Xkatze, Ykatze, 16 - RandomFrame, RandomFrame, -1, PerfectNote, 0);
+        Spawn(Xkatze, Ykatze, ScreenAct, 16 - RandomFrame, RandomFrame, -1, PerfectNote, 0);
      end; //for
 
 end;
@@ -500,6 +520,7 @@ procedure TEffectManager.SpawnPerfectLineTwinkle();
 var
   P,I,Life: Cardinal;
   Left, Right, Top, Bottom: Cardinal;
+  cScreen: Integer;
 begin
 // calculation of coordinates done with hardcoded values like in UDraw.pas
 // might need to be adjusted if drawing of SingScreen is modified
@@ -517,39 +538,52 @@ begin
       // calculate area where notes of this player are drawn
       case PlayersPlay of
         1: begin
-             Bottom:=Skin_P2_NotesB-10;
+             Bottom:=Skin_P2_NotesB;
              Top:=Bottom-105;
+             cScreen:=1;
            end;
-        2,4: case P of
-               0,2: begin
-                      Bottom:=Skin_P1_NotesB-10;
-                      Top:=Bottom-105;
-                    end;
-               else begin
-                      Bottom:=Skin_P2_NotesB-10;
-                      Top:=Bottom-105;
-                    end;
+        2,4: begin
+               case P of
+                 0,2: begin
+                        Bottom:=Skin_P1_NotesB;
+                        Top:=Bottom-105;
+                      end;
+                 else begin
+                        Bottom:=Skin_P2_NotesB;
+                        Top:=Bottom-105;
+                      end;
+               end;
+               case P of
+                 0,1: cScreen:=1;
+                 else cScreen:=2;
+               end;
              end;
-        3,6: case P of
-               0,3: begin
-                      Top:=130;
-                      Bottom:=Top+85;
-                    end;
-               1,4: begin
-                      Top:=255;
-                      Bottom:=Top+85;
-                    end;
-               2,5: begin
-                      Top:=380;
-                      Bottom:=Top+85;
-                    end;
+        3,6: begin
+               case P of
+                 0,3: begin
+                        Top:=130;
+                        Bottom:=Top+85;
+                      end;
+                 1,4: begin
+                        Top:=255;
+                        Bottom:=Top+85;
+                      end;
+                 2,5: begin
+                        Top:=380;
+                        Bottom:=Top+85;
+                      end;
+               end;
+               case P of
+                 0,1,2: cScreen:=1;
+                 else cScreen:=2;
+               end;
              end;
       end;
       // spawn Sparkling Stars inside calculated coordinates
       for I:= 0 to 80 do
       begin
         Life:=RandomRange(8,16);
-        Spawn(RandomRange(Left,Right), RandomRange(Top,Bottom), Life, 16-Life, -1, PerfectLineTwinkle, P);
+        Spawn(RandomRange(Left,Right), RandomRange(Top,Bottom), cScreen, Life, 16-Life, -1, PerfectLineTwinkle, P);
       end;
     end;
 end;
