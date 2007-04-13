@@ -66,7 +66,7 @@ type
       procedure SelectNext;
       procedure SelectPrev;
       procedure UpdateLCD;
-      procedure SkipTo(Target: integer);
+      procedure SkipTo(Target: Cardinal);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
       procedure ShowCatTL(Cat: Integer);// Show Cat in Top left
@@ -208,7 +208,7 @@ begin
       begin
         if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Title[1]) = Letter) then
         begin
-          SkipTo(2 + CatSongs.VisibleIndex((I + Interaction) mod I2));
+          SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
           Music.PlayChange;
 
@@ -521,7 +521,7 @@ begin
             SelectNext;
 
             //Fix: Not Existing Song selected:
-            if (I+1=I2) then Inc(I2);
+            //if (I+1=I2) then Inc(I2);
 
             //Choose Song
             SkipTo(I2-I);
@@ -529,7 +529,7 @@ begin
             end
             else //Random in one Category
             begin
-            SkipTo(2+Random(CatSongs.VisibleSongs-1));
+            SkipTo(Random(CatSongs.VisibleSongs));
             end;
             Music.PlayChange;
 
@@ -1324,7 +1324,7 @@ begin
     Music.Stop;
 end;
 
-procedure TScreenSong.SkipTo(Target: integer); // 0.5.0
+procedure TScreenSong.SkipTo(Target: Cardinal); // 0.5.0
 var
   Skip:   integer;
   I:      integer;
@@ -1339,7 +1339,7 @@ begin
   Interaction := 0;
   SongTarget := 0;
 
-  for I := 2 to Target do
+  for I := 1 to Target+1 do
     SelectNext;
 
   FixSelected2;
@@ -1481,7 +1481,7 @@ begin
           SelectNext;
 
           //Fix: Not Existing Song selected:
-          if (I+1=I2) then Inc(I2);
+          //if (I+1=I2) then Inc(I2);
 
           //Choose Song
           SkipTo(I2-I);
@@ -1495,7 +1495,7 @@ begin
           SelectNext;
           FixSelected;
 
-          SkipTo(2+Random(CatSongs.VisibleSongs-1));
+          SkipTo(Random(CatSongs.VisibleSongs));
           Music.PlayChange;
           ChangeMusic;
           SetScroll4;
@@ -1505,7 +1505,7 @@ begin
         begin
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
-          SkipTo(2+Random(CatSongs.VisibleSongs-1));
+          SkipTo(Random(CatSongs.VisibleSongs));
           Music.PlayChange;
           ChangeMusic;
           SetScroll4;
