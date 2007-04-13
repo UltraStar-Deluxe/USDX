@@ -538,18 +538,18 @@ begin
       // calculate area where notes of this player are drawn
       case PlayersPlay of
         1: begin
-             Bottom:=Skin_P2_NotesB;
+             Bottom:=Skin_P2_NotesB+10;
              Top:=Bottom-105;
              cScreen:=1;
            end;
         2,4: begin
                case P of
                  0,2: begin
-                        Bottom:=Skin_P1_NotesB;
+                        Bottom:=Skin_P1_NotesB+10;
                         Top:=Bottom-105;
                       end;
                  else begin
-                        Bottom:=Skin_P2_NotesB;
+                        Bottom:=Skin_P2_NotesB+10;
                         Top:=Bottom-105;
                       end;
                end;

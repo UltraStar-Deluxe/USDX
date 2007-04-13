@@ -29,7 +29,7 @@ type
       function Draw: boolean; override;
   end;
 
-const Credits_Text: Array[0..46] of PChar = (
+const Credits_Text: Array[0..49] of PChar = (
   ':SPACE:',
   'Main Idea: Corvus 5',
   'Thank you very much for this great Game',
@@ -47,6 +47,9 @@ const Credits_Text: Array[0..46] of PChar = (
   ':SPACE:',
   'Mog:',
   'Programming, Graphics',
+  ':SPACE:',
+  'blindy:',
+  'VFX Programming',
   ':SPACE:',
   'Mota:',
   'Programming, Idea of creating this Mod',

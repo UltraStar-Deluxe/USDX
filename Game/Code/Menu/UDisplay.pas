@@ -2,7 +2,7 @@ unit UDisplay;
 
 interface
 
-uses Windows, SDL, UMenu, OpenGL12, SysUtils;
+uses Windows, SDL, UMenu, OpenGL12, SysUtils, dialogs;
 
 type
   TDisplay = class
@@ -12,13 +12,19 @@ type
     h_DC:     HDC;
     h_RC:     HGLRC;
 
-//    FadeType:   integer;
-    FadeTex:    glUInt;
-    LastFade:   real;
-    Fade:       real;
+    Fade: Real;
+    // fade-mod
+    myfade: integer;
+    pTexData : Pointer;
+    pTex : glUInt;
+    // end
+
     function Draw: Boolean;
     procedure PrintScreen;
     constructor Create;
+    // fade mod
+    destructor Destroy;
+    // end
     procedure ScreenShot;
   end;
 
@@ -34,23 +40,42 @@ uses UGraphic, UTime, Graphics, Jpeg, UPliki, UTexture;
 constructor TDisplay.Create;
 begin
   inherited Create;
-//  FadeType := 0;
-  Fade := 0;
+  // fade mod
+  myfade:=0;
+  // generate texture for fading between screens
+  GetMem(pTexData, 1024*1024*4);
+  glGenTextures(1, pTex);
+  glBindTexture(GL_TEXTURE_2D, pTex);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, pTexData);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  FreeMem(pTexData);
+  // end
 end;
+
+// fade mod
+destructor TDisplay.Destroy;
+begin
+  glDeleteTextures(1,@pTex);
+  inherited Destroy;
+end;
+// end
 
 function TDisplay.Draw: Boolean;
 var
   S:    integer;
-  Col:  real;
-  Surface: PSDL_Surface;
+  // fade mod
+  myfade2:integer;
+  // end
 begin
   Result := True;
 
-  Col := 1;
+{  Col := 1;
   if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
-    Col := 0;
+    Col := 0;}
 
-  glClearColor(Col, Col, Col , 1);
+  glClearColor(0, 0, 0 , 0);
   glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 
   for S := 1 to Screens do begin
@@ -62,125 +87,63 @@ begin
     ScreenX := 0;
 
 
-    if S = 2 then TimeSkip := 0; // it's easier than rewriting code
+    if S = 2 then TimeSkip := 0 else; // it's easier than rewriting code
     glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
-    ActualScreen.SetAnimationProgress(1);
-    if not assigned (NextScreen) then Result := ActualScreen.Draw
+//    ActualScreen.SetAnimationProgress(1);
+    if not assigned (NextScreen) then begin
+      Result := ActualScreen.Draw;
+      // fade mod
+      myfade:=0;
+      // end
+    end
     else begin
-      LastFade := Fade;
-      Fade := Fade + TimeSkip * 6; // * 4
-
-      {//Create Fading texture
-      if Fade = 0 then
+      // fade mod
+      //Create Fading texture if we're just starting
+      if myfade = 0 then
       begin
-        Surface := SDL_GetVideoSurface;
-        glGenTextures(1, FadeTex);
-
-        glBindTexture(GL_TEXTURE_2D, FadeTex);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, Surface.pitch div Surface.format.BytesPerPixel);
-        glTexImage2D(GL_TEXTURE_2D, 0, 3, 800, 600, 0, GL_RGBA, GL_UNSIGNED_BYTE, Surface.pixels);
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-      end;}
-
-      ActualScreen.ShowFinish := false;
-
-      //Fade = 2 (Belnding) Mod
-      if (FadeTex > 0) then
-      begin
-        ActualScreen.SetAnimationProgress(Fade-1);
         ActualScreen.Draw;
-        glBindTexture(GL_TEXTURE_2D, FadeTex);
-        glColor4f(Col, Col, Col, 1-Fade); // 0
-        glEnable(GL_BLEND);
-        glBegin(GL_QUADS);
-          glVertex2f(0,   0);
-          glVertex2f(0,   600);
-          glVertex2f(800, 600);
-          glVertex2f(800, 0);
-        glEnd;
-        glDisable(GL_BLEND);
-      end
-      else
-      begin
-      case ActualScreen.Fade of
-      0:  begin
-            if Fade < 1 then begin
-              ActualScreen.SetAnimationProgress(1-Fade);
-              ActualScreen.Draw;
-              glColor4f(Col, Col, Col, Fade); // 0
-            end else begin
-              ActualScreen.SetAnimationProgress(Fade-1);
-              ActualScreen.Draw;
-              glColor4f(Col, Col, Col, 1-Fade); // 0
-            end;
-            glEnable(GL_BLEND);
-            glBegin(GL_QUADS);
-              glVertex2f(0,   0);
-              glVertex2f(0,   600);
-              glVertex2f(800, 600);
-              glVertex2f(800, 0);
-            glEnd;
-            glDisable(GL_BLEND);
-          end;
-      2:  begin
-            if Fade < 1 then begin
-              ActualScreen.SetAnimationProgress(1-Fade);
-              ActualScreen.Draw;
-              //glColor4f(Col, Col, Col, Fade); // 0
-              glColor4f(1, 1, 1, 1); // 0
-              //Fade := 1
-            end;
-            glEnable(GL_BLEND);
-            glBegin(GL_QUADS);
-              glVertex2f(0,   0);
-              glVertex2f(0,   600);
-              glVertex2f(800, 600);
-              glVertex2f(800, 0);
-            glEnd;
-            glDisable(GL_BLEND);
-          end;
-      end; // case
+        glBindTexture(GL_TEXTURE_2D, pTex);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1024, 1024, 0);
+        NextScreen.onShow;
       end;
 
-      if (LastFade < 1 ) and (Fade >= 1) then begin
-        if (ActualScreen.Fade = 2) then
-        begin
-          ScreenShot;
-          //Create Fading Texture
-          Surface := SDL_GetVideoSurface;
-          glGenTextures(1, FadeTex);
+//      LastFade := Fade;   // whatever
+//      Fade := Fade -0.999; // start fading out
+      myfade:=myfade+1;
 
-          glBindTexture(GL_TEXTURE_2D, FadeTex);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-          glPixelStorei(GL_UNPACK_ROW_LENGTH, Surface.pitch div Surface.format.BytesPerPixel);
-          glTexImage2D(GL_TEXTURE_2D, 0, 3, 800, 600, 0, GL_RGBA, GL_UNSIGNED_BYTE, Surface.pixels);
-          glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-        end;
+//      ActualScreen.ShowFinish := false; // no purpose?
 
-        // pokazuje 2 ekran, ale nie kasuje informacji o NextScreen
-        ActualScreen.onHide;
-        ActualScreen := NextScreen;
-        ActualScreen.onShow;
-      end;
+//      ActualScreen.SetAnimationProgress(Fade-1); // nop?
 
-      if Fade >= 2 then begin
-        if (FadeTex > 0) then //Delete Fade Tex
-        begin
-          glDeleteTextures(1, @FadeTex);
-          FadeTex := 0;
-        end;
+      NextScreen.Draw; // draw next screen
 
-        // koniec fade'a
-        ActualScreen := NextScreen;
+      // and draw old screen over it... slowly fading out
+      myfade2:=myfade*myfade;
+      glBindTexture(GL_TEXTURE_2D, pTex);
+      glColor4f(1, 1, 1, (1000-myfade2)/1000); // strange calculation - alpha gets negative... but looks good this way
+      glEnable(GL_TEXTURE_2D);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glEnable(GL_BLEND);
+      glBegin(GL_QUADS);
+        glTexCoord2f(0,0);glVertex2f(0-myfade2,   600+myfade2);
+        glTexCoord2f(0,ScreenH/1024);glVertex2f(0-myfade2,   0-myfade2);
+        glTexCoord2f(ScreenW/1024,ScreenH/1024);glVertex2f(800+myfade2, 0-myfade2);
+        glTexCoord2f(ScreenW/1024,0);glVertex2f(800+myfade2, 600+myfade2);
+      glEnd;
+      glDisable(GL_BLEND);
+      glDisable(GL_TEXTURE_2D);
+    end;
+
+    if myfade > 50 then begin // fade out complete...
+        myfade:=0;
+        ActualScreen.onHide; // nop... whatever
+        ActualScreen.ShowFinish:=False;
+        ActualScreen:=NextScreen;
         NextScreen := nil;
-        ActualScreen.onShowFinish;
-        ActualScreen.ShowFinish := true;
-      end;
+        ActualScreen.onShowFinish; // one more nop...
+        ActualScreen.ShowFinish := true; // who wrote this crap?
+    // end of fade mod
     end; // if
   end; // for
 //  SwapBuffers(h_DC);
