@@ -13,7 +13,6 @@ type
     protected
       Interactions:   array of TInteract;
       SelInteraction: integer;
-      Static:         array of TStatic;
       Button:         array of TButton;
       Selects:        array of TSelect;
       SelectsS:       array of TSelectSlide;
@@ -22,6 +21,7 @@ type
       BackH:          integer;
     public
       Text:       array of TText;
+      Static:         array of TStatic;
       mX:         integer; // mouse X
       mY:         integer; // mouse Y
 
@@ -50,7 +50,7 @@ type
       function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; Name, Format, Typ: string): integer; overload;
       function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; Name, Format, Typ: string; Color: integer): integer; overload;
       function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; Name, Format, Typ: string; Color: integer): integer; overload;
-      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; Name, Format, Typ: string; Color: integer): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; Name, Format, Typ: string; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer; overload;
 
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
@@ -62,7 +62,7 @@ type
       function AddButton(ThemeButton: TThemeButton): integer; overload;
       function AddButton(X, Y, W, H: real; Name: String): integer; overload;
       function AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer; overload;
-      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean): integer; overload;
+      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing: Real): integer; overload;
       procedure ClearButtons;
       procedure AddButtonText(AddX, AddY: real; AddText: string); overload;
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; AddText: string); overload;
@@ -232,7 +232,7 @@ begin
     ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
     ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2,
     {<0.5.1: Skin.SkinPath + ThemeStatic.Tex, 0.5.1:} Skin.GetTextureFileName(ThemeStatic.Tex),
-    'JPG', ThemeStatic.Typ, $FFFFFF);
+    'JPG', ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
     //'Font Black');
 end;
 
@@ -284,11 +284,11 @@ end;
 
 function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; Name, Format, Typ: string; Color: integer): integer;
 begin
-  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Format, Typ, Color);
+  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Format, Typ, Color, False, 0);
 //
 end;
 
-function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; Name, Format, Typ: string; Color: integer): integer;
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; Name, Format, Typ: string; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer;
 var
   StatNum:  integer;
 begin
@@ -315,6 +315,11 @@ Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format)
   Static[StatNum].Texture.TexY2 := TexY2;
   Static[StatNum].Texture.Alpha := 1;
   Static[StatNum].Visible := true;
+
+  //ReflectionMod
+  Static[StatNum].Reflection := Reflection;
+  Static[StatNum].ReflectionSpacing := ReflectionSpacing;
+
   Result := StatNum;
 end;
 
@@ -367,7 +372,7 @@ begin
   Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
     ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
     ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
-    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ, ThemeButton.Reflection);
+    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ, ThemeButton.Reflection, ThemeButton.Reflectionspacing);
 
   Button[Result].Z := ThemeButton.Z;
 
@@ -388,10 +393,10 @@ end;
 
 function TMenu.AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer;
 begin
-  Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, 'JPG', 'Plain', Reflection);
+  Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, 'JPG', 'Plain', Reflection, 15);
 end;
 
-function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean): integer;
+function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing: Real): integer;
 begin
   // adds button
   Result := Length(Button);
@@ -425,6 +430,7 @@ begin
   Button[Result].SetSelect(false);
 
   Button[Result].Reflection := Reflection;
+  Button[Result].Reflectionspacing := ReflectionSpacing;
 
   // adds interaction
   AddInteraction(iButton, Result);

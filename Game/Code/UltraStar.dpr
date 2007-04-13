@@ -103,7 +103,7 @@ uses
 
 
 const
-  Version = 'UltraStar Deluxe V 0.90 Beta';
+  Version = 'UltraStar Deluxe V 0.95 Beta';
 
 var
   WndTitle: string;

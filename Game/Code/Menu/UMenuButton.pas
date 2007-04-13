@@ -19,6 +19,7 @@ type
       Visible:              boolean;
       //Reflection Mod
       Reflection:           boolean;
+      Reflectionspacing:    Real;
       
       Selectable:           boolean;
 
@@ -190,23 +191,23 @@ begin
         glBegin(GL_QUADS);//Top Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX1*TexW, TexY2*TexH);
-          glVertex3f(x, y+h*scaleH+ 15, z);
+          glVertex3f(x, y+h*scaleH+ Reflectionspacing, z);
 
           //Bottom Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX1*TexW, {TexY1*TexH*}0.5);
-          glVertex3f(x, y+h*scaleH + h*scaleH/2 + 15, z);
+          glVertex3f(x, y+h*scaleH + h*scaleH/2 + Reflectionspacing, z);
 
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX2*TexW, {TexY1*TexH*}0.5);
-          glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + 15, z);
+          glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Reflectionspacing, z);
 
           //Top Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
-          glVertex3f(x+w*scaleW, y+h*scaleH + 15, z);
+          glVertex3f(x+w*scaleW, y+h*scaleH + Reflectionspacing, z);
         glEnd;
       end;
     end;

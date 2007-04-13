@@ -91,6 +91,9 @@ type
     TexY1:  real;
     TexX2:  real;
     TexY2:  real;
+    //Reflection Mod
+    Reflection:           boolean;
+    Reflectionspacing:    Real;
   end;
   AThemeStatic = array of TThemeStatic;
 
@@ -129,7 +132,8 @@ type
     Tex:    string;
     Typ:    string;
     //Reflection Mod
-    Reflection: Boolean;
+    Reflection:           boolean;
+    Reflectionspacing:    Real;
   end;
 
   TThemeSelect = record
@@ -181,6 +185,8 @@ type
   end;
 
   TThemeLoading = class(TThemeBasic)
+    StaticAnimation:  TThemeStatic;
+    TextLoading:      TThemeText;
   end;
 
   TThemeMain = class(TThemeBasic)
@@ -749,6 +755,8 @@ begin
 
       // Loading
       ThemeLoadBasic(Loading, 'Loading');
+      ThemeLoadText(Loading.TextLoading, 'LoadingTextLoading');
+      ThemeLoadStatic(Loading.StaticAnimation, 'LoadingStaticAnimation');
 
       // Main
       ThemeLoadBasic(Main, 'Main');
@@ -1284,6 +1292,10 @@ begin
   ThemeStatic.TexX2 := ThemeIni.ReadFloat(Name, 'TexX2', 1);
   ThemeStatic.TexY2 := ThemeIni.ReadFloat(Name, 'TexY2', 1);
 
+  //Reflection Mod
+  ThemeStatic.Reflection := (ThemeIni.ReadInteger(Name, 'Reflection', 0) = 1);
+  ThemeStatic.ReflectionSpacing := ThemeIni.ReadFloat(Name, 'ReflectionSpacing', 15);
+
   DecimalSeparator := ',';
 end;
 
@@ -1317,6 +1329,7 @@ begin
 
   //Reflection Mod
   ThemeButton.Reflection := (ThemeIni.ReadInteger(Name, 'Reflection', 0) = 1);
+  ThemeButton.ReflectionSpacing := ThemeIni.ReadFloat(Name, 'ReflectionSpacing', 15);
 
   ThemeButton.ColR := ThemeIni.ReadFloat(Name, 'ColR', 1);
   ThemeButton.ColG := ThemeIni.ReadFloat(Name, 'ColG', 1);
