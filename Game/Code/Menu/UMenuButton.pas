@@ -179,12 +179,12 @@ begin
         //Bind Tex and GL Attributes
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
+
         glDepthRange(0, 10);
         glDepthFunc(GL_LEQUAL);
-        //glDepthFunc(GL_GEQUAL);
         glEnable(GL_DEPTH_TEST);
+
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glBlendFunc(GL_SRC_COLOR, GL_ZERO);
         glBindTexture(GL_TEXTURE_2D, TexNum);
 
         //Draw
@@ -209,6 +209,10 @@ begin
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
           glVertex3f(x+w*scaleW, y+h*scaleH + Reflectionspacing, z);
         glEnd;
+
+        glDisable(GL_TEXTURE_2D);
+        glDisable(GL_DEPTH_TEST); 
+        glDisable(GL_BLEND);
       end;
     end;
 
