@@ -1084,11 +1084,11 @@ begin
 
     //PhrasenBonus - Line Bonus Mod
 
+    //Generate Steps 0 to 8
+    A := Floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 8);
+
     If (Ini.LineBonus > 0) then
     begin
-
-      //Generate Steps 0 to 8
-      A := Floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 8);
 
       //Generate Text
       if A >= 8 then
@@ -1111,21 +1111,21 @@ begin
       Player[I].LineBonus_PosY  := Player[I].LineBonus_StartY;
       Player[I].LineBonus_Alpha := 0.92;
       Player[I].LineBonus_Visible := True;
-
-
-
     end;
+    //PhrasenBonus - Line Bonus Mod End// }
+
+    //PerfectLineTwinkle Mod (effect) Pt.1
+    If (Ini.EffectPerfect>=1) then
+    begin
+      if A >= 8 then Player[I].LastSentencePerfect := True
+      else Player[I].LastSentencePerfect := False;
+    end;
+    //PerfectLineTwinkle Mod end
 
   //Refresh LastScore
   Player[I].ScoreLast := Player[I].Score + Player[I].ScoreGolden;
 
-  //PerfectLineTwinkle Mod (effect) Pt.1
-  if A >= 8 then Player[I].LastSentencePerfect := True
-  else Player[I].LastSentencePerfect := False;
-  //PerfectLineTwinkle Mod end
-
   end;
-//PhrasenBonus - Line Bonus Mod End// }
 
   //PerfectLineTwinkle Mod (effect) Pt.2
   GoldenRec.SpawnPerfectLineTwinkle;
@@ -1138,7 +1138,6 @@ begin
   //GoldenStarsTwinkle Mod
   GoldenRec.SentenceChange;
   //GoldenStarsTwinkle Mod End
-
 end;
 
 end.
