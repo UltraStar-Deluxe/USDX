@@ -87,10 +87,6 @@ begin
             PartySession.Teams.Teaminfo[I].Joker := Round (Length(PartySession.Rounds) * 0.85);
           end;
 
-
-          //Start Party
-          PartySession.StartNewParty;
-
           Music.PlayStart;
           FadeTo(@ScreenPartyNewRound);
         end;

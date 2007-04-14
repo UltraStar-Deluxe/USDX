@@ -22,7 +22,7 @@ type
 
     constructor Create;
 
-    procedure StartNewParty;
+    procedure StartNewParty(NumRounds: Byte);
     procedure StartRound;
     procedure EndRound;
     function  GetWinner: Byte;
@@ -47,14 +47,98 @@ end;
 //----------
 //StartNewParty - Clears the Class and Prepares for new Party
 //----------
-procedure TParty_Session.StartNewParty;
-begin
-//Set cur Round to Round 1
-CurRound := 255;
+procedure TParty_Session.StartNewParty(NumRounds: Byte);
+var
+  Plugins: Array of record
+    ID: Byte;
+    TimesPlayed: Byte;
+  end;
+  TeamMode: Boolean;
+  Len:  Integer;
+  I:  Integer;
 
-PlayersPlay := Teams.NumTeams;
-if isWinner(0,9) then
-  Log.LogError('Test');
+  function GetRandomPlugin: Byte;
+  var
+    LowestTP: Byte;
+    NumPwithLTP: Word;
+    I: Integer;
+    R: Word;
+  begin
+    LowestTP := high(Byte);
+    NumPwithLTP := 0;
+
+    //Search for Plugins not often played yet
+    For I := 0 to high(Plugins) do
+    begin
+      if (Plugins[I].TimesPlayed < lowestTP) then
+      begin
+        lowestTP := Plugins[I].TimesPlayed;
+        NumPwithLTP := 1;
+      end
+      else if (Plugins[I].TimesPlayed = lowestTP) then
+      begin
+        Inc(NumPwithLTP);
+      end;
+    end;
+
+    //Create Random No
+    R := Random(NumPwithLTP);
+
+    //Search for Random Plugin
+    For I := 0 to high(Plugins) do
+    begin
+      if Plugins[I].TimesPlayed = lowestTP then
+      begin
+        //Plugin Found
+        if (R = 0) then
+        begin
+          Result := Plugins[I].ID;
+          Inc(Plugins[I].TimesPlayed);
+          Break;
+        end;
+        
+        Dec(R);
+      end;
+    end;
+  end;
+begin
+  //Set cur Round to Round 1
+  CurRound := 255;
+
+  PlayersPlay := Teams.NumTeams;
+
+  TeamMode := True;
+  For I := 0 to Teams.NumTeams-1 do
+    if Teams.Teaminfo[I].NumPlayers < 2 then
+    begin
+      TeamMode := False;
+      Break;
+    end;
+
+  //Fill Plugin Array
+  SetLength(Plugins, 0);
+  For I := 0 to high(DLLMan.Plugins) do
+  begin
+    if TeamMode or (Not DLLMan.Plugins[I].TeamModeOnly)  then
+    begin //Add only Plugins Playable with cur. PlayerConfiguration
+      Len := Length(Plugins);
+      SetLength(Plugins, Len + 1);
+      Plugins[Len].ID := I;
+      Plugins[Len].TimesPlayed := 0;
+    end;
+  end;
+
+  //Set Rounds
+  If (Length(Plugins) >= 1) then
+  begin
+    SetLength (Rounds, NumRounds);
+    For I := 0 to NumRounds-1 do
+    begin
+      PartySession.Rounds[I].Plugin := GetRandomPlugin;
+      PartySession.Rounds[I].Winner := 255;
+    end;
+  end
+  else SetLength (Rounds, 0);
 end;
 
 //----------
@@ -65,10 +149,10 @@ var
   I, J: Integer;
   lowestTP: Byte;
 begin
-  //Get lowest TP
+  //Get lowest TimesPlayed
   lowestTP := high(Byte);
   J := -1;
-  for I := 0 to Teams.Teaminfo[Team].NumPlayers do
+  for I := 0 to Teams.Teaminfo[Team].NumPlayers-1 do
   begin
     if (Teams.Teaminfo[Team].Playerinfo[I].TimesPlayed < lowestTP) then
     begin
@@ -86,7 +170,7 @@ begin
     repeat
       Result := Random(Teams.Teaminfo[Team].NumPlayers);
     until (Teams.Teaminfo[Team].Playerinfo[Result].TimesPlayed = lowestTP)
-  else //Else Select the one wth lowest TP
+  else //Else Select the one with lowest TP
     Result:= J;
 end;
 
@@ -106,7 +190,7 @@ begin
     DllMan.LoadPlugin(Rounds[CurRound].Plugin);
 
     //Select Players
-    for I := 0 to Teams.NumTeams do
+    for I := 0 to Teams.NumTeams-1 do
       Teams.Teaminfo[I].CurPlayer := GetRandomPlayer(I);
 
     //Set ScreenSingModie Variables
@@ -142,7 +226,7 @@ procedure TParty_Session.GenScores;
 var
   I: Byte;
 begin
-  for I := 0 to Teams.NumTeams do
+  for I := 0 to Teams.NumTeams-1 do
   begin
     if isWinner(I, Rounds[CurRound].Winner) then
       Inc(Teams.Teaminfo[I].Score);
@@ -159,12 +243,18 @@ var
 begin
   if (Rounds[Round].Winner = 0) then
   begin
-    Result := 'Nobody';
+    Result := Language.Translate('PARTY_NOBODY');
+    exit;
+  end;
+
+  if (Rounds[Round].Winner = 255) then
+  begin
+    Result := Language.Translate('PARTY_NOTPLAYEDYET');
     exit;
   end;
 
   SetLength(Winners, 0);
-  for I := 0 to Teams.NumTeams do
+  for I := 0 to Teams.NumTeams-1 do
   begin
     if isWinner(I, Rounds[Round].Winner) then
     begin
@@ -188,7 +278,7 @@ begin
   GenScores;
 
   //Increase TimesPlayed 4 all Players
-  For I := 0 to Teams.NumTeams do
+  For I := 0 to Teams.NumTeams-1 do
     Inc(Teams.Teaminfo[I].Playerinfo[Teams.Teaminfo[0].CurPlayer].TimesPlayed);
 
 end;

@@ -95,7 +95,6 @@ begin
 
       SDLK_RETURN:
         begin
-
           //Save Difficulty
           Ini.Difficulty := SelectsS[SelectLevel].SelectedOption;
           Ini.SaveLevel;
@@ -106,6 +105,7 @@ begin
           PartySession.Teams.Teaminfo[0].NumPlayers := NumPlayer1+1;
           PartySession.Teams.Teaminfo[1].NumPlayers := NumPlayer2+1;
           PartySession.Teams.Teaminfo[2].NumPlayers := NumPlayer3+1;
+
           //Save Playlist
           PlaylistMan.Mode := Playlist;
           //If Category Selected Search Category ID
@@ -126,13 +126,10 @@ begin
           end
           else
             PlaylistMan.CurPlayList := Playlist2;
-          //Save Rounds + Random
-          SetLength (PartySession.Rounds, Rounds + 2);
-          For I := 0 to high (PartySession.Rounds) do
-          begin
-            PartySession.Rounds[I].Plugin := Random (Length(DLLMan.Plugins));
-            PartySession.Rounds[I].Winner := 0;
-          end;
+
+          //Start Party
+          PartySession.StartNewParty(Rounds + 2);
+
           Music.PlayStart;
           //Go to Player Screen
           FadeTo(@ScreenPartyPlayer);
@@ -155,10 +152,7 @@ begin
           end //Change Team3 Players visibility
           Else If (Interaction = 4) then
           begin
-            Case NumTeams of
-              0: SelectsS[7].Visible := False;
-              1: SelectsS[7].Visible := True;
-            end;
+              SelectsS[7].Visible := (NumTeams = 1);
           end;
         end;
       SDLK_LEFT:
@@ -173,10 +167,7 @@ begin
           end //Change Team3 Players visibility
           Else If (Interaction = 4) then
           begin
-            Case NumTeams of
-              0: SelectsS[7].Visible := False;
-              1: SelectsS[7].Visible := True;
-            end;
+            SelectsS[7].Visible := (NumTeams = 1);
           end;
         end;
     end;

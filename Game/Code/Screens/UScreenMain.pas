@@ -128,65 +128,8 @@ begin
         end;
       SDLK_M:
         begin
-          if (SDL_ModState = KMOD_LALT) then
-          begin
-            //Create Teams:
-            PartySession.Teams.NumTeams := 3;
-            //Team 1
-            PartySession.Teams.Teaminfo[0].Name := 'Team 1';
-            PartySession.Teams.Teaminfo[0].Score:= 0;
-            PartySession.Teams.Teaminfo[0].Joker := 3;
-            PartySession.Teams.Teaminfo[0].CurPlayer := 0;
-            PartySession.Teams.Teaminfo[0].NumPlayers := 2;
-            PartySession.Teams.Teaminfo[0].Playerinfo[0].Name := 'Player 1';
-            PartySession.Teams.Teaminfo[0].Playerinfo[0].TimesPlayed := 0;
-            PartySession.Teams.Teaminfo[0].Playerinfo[1].Name := 'Player 2';
-            PartySession.Teams.Teaminfo[0].Playerinfo[1].TimesPlayed := 0;
-
-            //Team 2
-            PartySession.Teams.Teaminfo[1].Name := 'Team 2';
-            PartySession.Teams.Teaminfo[1].Score:= 0;
-            PartySession.Teams.Teaminfo[1].Joker := 3;
-            PartySession.Teams.Teaminfo[1].CurPlayer := 0;
-            PartySession.Teams.Teaminfo[1].NumPlayers := 2;
-            PartySession.Teams.Teaminfo[1].Playerinfo[0].Name := 'Player 3';
-            PartySession.Teams.Teaminfo[1].Playerinfo[0].TimesPlayed := 0;
-            PartySession.Teams.Teaminfo[1].Playerinfo[1].Name := 'Player 4';
-            PartySession.Teams.Teaminfo[1].Playerinfo[1].TimesPlayed := 0;
-
-            //Team 3
-            PartySession.Teams.Teaminfo[2].Name := 'Team 3';
-            PartySession.Teams.Teaminfo[2].Score:= 0;
-            PartySession.Teams.Teaminfo[2].Joker := 3;
-            PartySession.Teams.Teaminfo[2].CurPlayer := 0;
-            PartySession.Teams.Teaminfo[2].NumPlayers := 2;
-            PartySession.Teams.Teaminfo[2].Playerinfo[0].Name := 'Player 5';
-            PartySession.Teams.Teaminfo[2].Playerinfo[0].TimesPlayed := 0;
-            PartySession.Teams.Teaminfo[2].Playerinfo[1].Name := 'Player 6';
-            PartySession.Teams.Teaminfo[2].Playerinfo[1].TimesPlayed := 0;
-
-            //Rounds:
-            SetLength (PartySession.Rounds, 3);
-            PartySession.Rounds[0].Plugin := 1;
-            PartySession.Rounds[0].Winner := 0;
-            PartySession.Rounds[1].Plugin := 0;
-            PartySession.Rounds[1].Winner := 0;
-            PartySession.Rounds[2].Plugin := 0;
-            PartySession.Rounds[2].Winner := 0;
-
-            //Start Party
-            PartySession.StartNewParty;
-            //Change Screen
-            Music.PlayStart;
-            FadeTo(@ScreenPartyNewRound);
-
-          end
-          else
-          begin
-            Music.PlayStart;
-            FadeTo(@ScreenPartyOptions);
-          end;
-
+          Music.PlayStart;
+          FadeTo(@ScreenPartyOptions);
         end;
 
       SDLK_RETURN:
