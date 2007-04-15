@@ -46,14 +46,14 @@ begin
   myfade:=0;
   doFade:=True;
   // generate texture for fading between screens
-  GetMem(pTexData, 1024*1024*4);
+  GetMem(pTexData, 1024*1024*3);
   if pTexData <> NIL then
   begin
     glGenTextures(1, pTex);
     if glGetError <> GL_NO_ERROR then doFade := False;
     glBindTexture(GL_TEXTURE_2D, pTex);
     if glGetError <> GL_NO_ERROR then doFade := False;
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, pTexData);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, pTexData);
     if glGetError <> GL_NO_ERROR then doFade := False;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     if glGetError <> GL_NO_ERROR then doFade := False;
@@ -81,6 +81,7 @@ end;
 function TDisplay.Draw: Boolean;
 var
   S:    integer;
+  Col: Real;
   // fade mod
   myFade2:integer;
   currentTime: Cardinal;
@@ -88,11 +89,11 @@ var
 begin
   Result := True;
 
-{  Col := 1;
+  Col := 1;
   if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
-    Col := 0;}
+    Col := 0;
 
-  glClearColor(0, 0, 0 , 0);
+  glClearColor(Col, Col, Col , 0);
   glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 
   for S := 1 to Screens do begin
@@ -124,7 +125,7 @@ begin
         begin
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex);
-          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1024, 1024, 0);
+          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1024, 1024, 0);
           if glGetError <> GL_NO_ERROR then
           begin
             doFade := False;
