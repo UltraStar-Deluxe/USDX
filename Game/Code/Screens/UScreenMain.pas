@@ -84,7 +84,7 @@ const Credits_Text: Array[0..49] of PChar = (
 
 implementation
 
-uses Windows, UGraphic, UMain, UIni, UTexture, USongs, Textgl, opengl, ULanguage, UParty;
+uses Windows, UGraphic, UMain, UIni, UTexture, USongs, Textgl, opengl, ULanguage, UParty, UDLLManager;
 
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
@@ -128,8 +128,11 @@ begin
         end;
       SDLK_M:
         begin
-          Music.PlayStart;
-          FadeTo(@ScreenPartyOptions);
+          if (Ini.Players >= 2) AND (Length(DLLMan.Plugins)>=1) then
+          begin
+            Music.PlayStart;
+            FadeTo(@ScreenPartyOptions);
+          end;
         end;
 
       SDLK_RETURN:
@@ -147,8 +150,6 @@ begin
           if Interaction = 2 then begin
             Music.PlayStart;
             FadeTo(@ScreenOptions);
-//            SDL_SetVideoMode(800, 600, 32, SDL_OPENGL);// or SDL_FULLSCREEN);
-//            LoadTextures;
           end;
           if Interaction = 3 then begin
             Result := false;
