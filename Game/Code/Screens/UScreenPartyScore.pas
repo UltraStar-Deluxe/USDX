@@ -57,13 +57,10 @@ begin
       SDLK_RETURN:
         begin
           Music.PlayStart;
-          if (PartySession.CurRound <= High(PartySession.Rounds)) then
+          if (PartySession.CurRound < High(PartySession.Rounds)) then
             FadeTo(@ScreenPartyNewRound)
           else
-          begin
-            PartySession.EndRound;
             FadeTo(@ScreenPartyWin);
-          end;
         end;
     end;
   end;
@@ -113,6 +110,9 @@ begin
   Static[StaticTeam1].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
   Static[StaticTeam2].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
   Static[StaticTeam3].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;
+
+  //End Last Round
+  PartySession.EndRound;
 
   //Set Winnertext
   Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.GetWinnerString(PartySession.CurRound)]);

@@ -107,13 +107,16 @@ begin
 
   PlayersPlay := Teams.NumTeams;
 
+  //Get Teammode and Set Joker
   TeamMode := True;
   For I := 0 to Teams.NumTeams-1 do
+  begin
     if Teams.Teaminfo[I].NumPlayers < 2 then
     begin
       TeamMode := False;
-      Break;
     end;
+    Teams.Teaminfo[I].Joker := Round(NumRounds*0.7);
+  end;
 
   //Fill Plugin Array
   SetLength(Plugins, 0);
@@ -186,7 +189,7 @@ begin
     //Increase Current Round
     Inc (CurRound);
 
-    Rounds[CurRound].Winner := 0;
+    Rounds[CurRound].Winner := 255;
     DllMan.LoadPlugin(Rounds[CurRound].Plugin);
 
     //Select Players
@@ -241,9 +244,13 @@ var
   Winners: Array of String;
   I: Integer;
 begin
+  Result := Language.Translate('PARTY_NOBODY');
+  
+  if (Round > High(Rounds)) then
+    exit;
+
   if (Rounds[Round].Winner = 0) then
   begin
-    Result := Language.Translate('PARTY_NOBODY');
     exit;
   end;
 

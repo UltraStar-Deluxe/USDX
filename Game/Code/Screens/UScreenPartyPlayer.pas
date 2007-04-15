@@ -76,6 +76,7 @@ begin
       SDLK_RETURN:
         begin
 
+          //Save PlayerNames
           for I := 0 to PartySession.Teams.NumTeams-1 do
           begin
             PartySession.Teams.Teaminfo[I].Name := PChar(Button[I*5].Text[0].Text);
@@ -84,7 +85,6 @@ begin
               PartySession.Teams.Teaminfo[I].Playerinfo[J].Name := PChar(Button[I*5 + J+1].Text[0].Text);
               PartySession.Teams.Teaminfo[I].Playerinfo[J].TimesPlayed := 0;
             end;
-            PartySession.Teams.Teaminfo[I].Joker := Round (Length(PartySession.Rounds) * 0.85);
           end;
 
           Music.PlayStart;

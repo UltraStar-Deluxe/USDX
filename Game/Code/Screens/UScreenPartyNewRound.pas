@@ -176,10 +176,6 @@ procedure TScreenPartyNewRound.onShow;
 var
   I: Integer;
 begin
-  //If not First Round, End Last Round
-  if (PartySession.CurRound <> 255) then
-    PartySession.EndRound;
-
   PartySession.StartRound;
   Log.LogError(InttoStr(Length(DllMan.Plugins)));
 

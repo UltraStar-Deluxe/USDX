@@ -128,7 +128,7 @@ begin
         end;
       SDLK_M:
         begin
-          if (Ini.Players >= 2) AND (Length(DLLMan.Plugins)>=1) then
+          if (Ini.Players >= 1) AND (Length(DLLMan.Plugins)>=1) then
           begin
             Music.PlayStart;
             FadeTo(@ScreenPartyOptions);

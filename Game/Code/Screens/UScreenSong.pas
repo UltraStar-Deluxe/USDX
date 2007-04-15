@@ -1488,8 +1488,8 @@ begin
         end;
       1:  //One Category Select Category and Select Random Song
         begin
-          CatSongs.HideCategory(-1);
-          CatSongs.ShowCategory(PlaylistMan.CurPlayList);
+          CatSongs.ShowCategoryList;
+          CatSongs.ClickCategoryButton(PlaylistMan.CurPlayList);
           ShowCatTL(PlaylistMan.CurPlayList);
 
           SelectNext;
