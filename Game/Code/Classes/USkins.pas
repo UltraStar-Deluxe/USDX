@@ -145,6 +145,7 @@ var
   S:    integer;
   Name: String;
 begin
+  Ini.SkinNo:=0;
   SetLength(ISkin, 0);
   Name := Uppercase(ITheme[Ini.Theme]);
   for S := 0 to High(Skin) do
