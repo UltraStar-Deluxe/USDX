@@ -542,6 +542,27 @@ type
     ButtonPrev: TThemeButton;}
   end;
 
+  //Stats Screens
+  TThemeStatMain = class(TThemeBasic)
+    ButtonScores:     TThemeButton;
+    ButtonSingers:    TThemeButton;
+    ButtonSongs:      TThemeButton;
+    ButtonBands:       TThemeButton;
+
+    TextOverview:     TThemeText;
+  end;
+
+  TThemeStatDetail = class(TThemeBasic)
+    ButtonNext:       TThemeButton;
+    ButtonPrev:       TThemeButton;
+    ButtonReverse:    TThemeButton;
+    ButtonExit:       TThemeButton;
+    
+    Description:      array[0..3] of string;
+    TextDescription:  TThemeText;
+    TextList:         AThemeText;
+  end;
+
   //Playlist Translations
   TThemePlaylist = record
     CatText:    string;
@@ -579,6 +600,10 @@ type
     PartyWin:         TThemePartyWin;
     PartyOptions:     TThemePartyOptions;
     PartyPlayer:      TThemePartyPlayer;
+
+    //Stats Screens:
+    StatMain:         TThemeStatMain;
+    StatDetail:       TThemeStatDetail;
 
     Playlist:         TThemePlaylist;
 
@@ -664,6 +689,10 @@ begin
   PartyScore := TThemePartyScore.Create;
   PartyOptions := TThemePartyOptions.Create;
   PartyPlayer := TThemePartyPlayer.Create;
+
+  //Stats Screens:
+  StatMain :=   TThemeStatMain.Create;
+  StatDetail := TThemeStatDetail.Create;
 
   LoadTheme(FileName, Color);
 
@@ -1195,6 +1224,31 @@ begin
 
       {ThemeLoadButton(ButtonNext, 'PartyPlayerButtonNext');
       ThemeLoadButton(ButtonPrev, 'PartyPlayerButtonPrev');}
+
+      ThemeLoadBasic(StatMain, 'StatMain');
+
+      ThemeLoadButton(StatMain.ButtonScores, 'StatMainButtonScores');
+      ThemeLoadButton(StatMain.ButtonSingers, 'StatMainButtonSingers');
+      ThemeLoadButton(StatMain.ButtonSongs, 'StatMainButtonSongs');
+      ThemeLoadButton(StatMain.ButtonBands, 'StatMainButtonBands');
+
+      ThemeLoadText (StatMain.TextOverview, 'StatMainTextOverview');
+
+
+      ThemeLoadBasic(StatDetail, 'StatDetail');
+
+      ThemeLoadButton(StatDetail.ButtonNext, 'StatDetailButtonNext');
+      ThemeLoadButton(StatDetail.ButtonPrev, 'StatDetailButtonPrev');
+      ThemeLoadButton(StatDetail.ButtonReverse, 'StatDetailButtonReverse');
+      ThemeLoadButton(StatDetail.ButtonExit, 'StatDetailButtonExit');
+
+      ThemeLoadText (StatDetail.TextDescription, 'StatDetailTextDescription');
+      ThemeLoadTexts(StatDetail.TextList, 'StatDetailTextList');
+
+      StatDetail.Description[0] := Language.Translate('STAT_DESC_SCORES');
+      StatDetail.Description[1] := Language.Translate('STAT_DESC_SINGERS');
+      StatDetail.Description[2] := Language.Translate('STAT_DESC_SONGS');
+      StatDetail.Description[3] := Language.Translate('STAT_DESC_BANDS');
 
       //Playlist Translations
       Playlist.CatText := Language.Translate('PLAYLIST_CATTEXT')
