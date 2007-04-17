@@ -663,24 +663,37 @@ begin
     Rec.Top := Skin_LyricsT + 3;
     Rec.Bottom := Rec.Top + 33;//SingScreen.LyricMain.Size * 3;
 
-    // zapalanie
+{    // zapalanie
     BarAlpha := (BarWspol*10) * 0.5;
     if BarAlpha > 0.5 then BarAlpha := 0.5;
 
     // gaszenie
-    if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);
+    if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);}
+
     //Change fuer Crazy Joker
-    glEnable(GL_BLEND);
-    glBegin(GL_QUADS);
+
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
+  glBegin(GL_QUADS);
+    glColor4f(1, 1, 1, 0);
+    glTexCoord2f(1/16, 1/16); glVertex2f(Rec.Left, Rec.Top);
+    glTexCoord2f(1/16, 15/16); glVertex2f(Rec.Left, Rec.Bottom);
+    glColor4f(1, 1, 1, 0.5);
+    glTexCoord2f(15/16, 15/16); glVertex2f(Rec.Right, Rec.Bottom);
+    glTexCoord2f(15/16, 1/16); glVertex2f(Rec.Right, Rec.Top);
+    glEnd;
+    glDisable(GL_BLEND);
+{    glBegin(GL_QUADS);
       glColor4f(26/255, 165/255, 220/255, 0);
       glVertex2f(Rec.Left, Rec.Top);
       glVertex2f(Rec.Left, Rec.Bottom);
       glColor4f(26/255, 165/255, 220/255, BarAlpha);
       glVertex2f(Rec.Right, Rec.Bottom);
       glVertex2f(Rec.Right, Rec.Top);
-    glEnd;
-    glDisable(GL_BLEND);
-  end;
+    glEnd;}
+   end;
 
   // oscilloscope
   if Ini.Oscilloscope = 1 then begin
