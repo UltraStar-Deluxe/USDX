@@ -402,8 +402,8 @@ type
 
   TThemeOptionsAdvanced = class(TThemeBasic)
     SelectLoadAnimation:  TThemeSelect;
-    SelectEffectPerfect:  TThemeSelect;
-    SelectEffectGolden:   TThemeSelect;
+    SelectEffectSing:     TThemeSelect;
+    SelectScreenFade:     TThemeSelect;
     SelectLineBonus:      TThemeSelect;
     SelectAskbeforeDel:   TThemeSelect;
     SelectOnSongClick:    TThemeSelectSlide;
@@ -1052,8 +1052,8 @@ begin
       ThemeLoadBasic(OptionsAdvanced, 'OptionsAdvanced');
 
       ThemeLoadSelect       (OptionsAdvanced.SelectLoadAnimation, 'OptionsAdvancedSelectLoadAnimation');
-      ThemeLoadSelect       (OptionsAdvanced.SelectEffectPerfect, 'OptionsAdvancedSelectEffectPerfect');
-      ThemeLoadSelect       (OptionsAdvanced.SelectEffectGolden, 'OptionsAdvancedSelectEffectGolden');
+      ThemeLoadSelect       (OptionsAdvanced.SelectScreenFade, 'OptionsAdvancedSelectScreenFade');
+      ThemeLoadSelect       (OptionsAdvanced.SelectEffectSing, 'OptionsAdvancedSelectEffectSing');
       ThemeLoadSelect       (OptionsAdvanced.SelectLineBonus, 'OptionsAdvancedSelectLineBonus');
       ThemeLoadSelectSlide  (OptionsAdvanced.SelectOnSongClick, 'OptionsAdvancedSelectSlideOnSongClick');
       ThemeLoadSelect       (OptionsAdvanced.SelectAskbeforeDel, 'OptionsAdvancedSelectAskbeforeDel');

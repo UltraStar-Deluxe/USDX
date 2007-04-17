@@ -15,6 +15,7 @@ type
     Fade: Real;
     // fade-mod
     doFade: Boolean;
+    canFade: Boolean;
     myFade: integer;
     lastTime: Cardinal;
     pTexData : Pointer;
@@ -37,42 +38,51 @@ var
 
 implementation
 
-uses UGraphic, UTime, Graphics, Jpeg, UPliki, UTexture;
+uses UGraphic, UTime, Graphics, Jpeg, UPliki, UTexture, UIni;
 
 constructor TDisplay.Create;
 begin
   inherited Create;
   // fade mod
   myfade:=0;
-  doFade:=True;
+
+  if Ini.ScreenFade=1 then
+    doFade:=True
+  else
+    doFade:=False;
+
+  canFade:=True;
   // generate texture for fading between screens
   GetMem(pTexData, 1024*1024*3);
   if pTexData <> NIL then
   begin
     glGenTextures(1, pTex);
-    if glGetError <> GL_NO_ERROR then doFade := False;
+    if glGetError <> GL_NO_ERROR then canFade := False;
     glBindTexture(GL_TEXTURE_2D, pTex);
-    if glGetError <> GL_NO_ERROR then doFade := False;
+    if glGetError <> GL_NO_ERROR then canFade := False;
     glTexImage2D(GL_TEXTURE_2D, 0, 3, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, pTexData);
-    if glGetError <> GL_NO_ERROR then doFade := False;
+    if glGetError <> GL_NO_ERROR then canFade := False;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    if glGetError <> GL_NO_ERROR then doFade := False;
+    if glGetError <> GL_NO_ERROR then canFade := False;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    if glGetError <> GL_NO_ERROR then doFade := False;
+    if glGetError <> GL_NO_ERROR then canFade := False;
     FreeMem(pTexData);
   end
   else
   begin
-    doFade:=False;
+    canFade:=False;
   end;
-  if not doFade then showmessage('Fehler beim Initialisieren der Fading-Textur... Fading deaktiviert');
+  if not canFade then begin
+    showmessage('Fehler beim Initialisieren der Fading-Textur... Fading deaktiviert');
+    doFade:=False;
+  end
   // end
 end;
 
 // fade mod
 destructor TDisplay.Destroy;
 begin
-  if doFade then
+  if canFade then
     glDeleteTextures(1,@pTex);
   inherited Destroy;
 end;
@@ -113,11 +123,15 @@ begin
       Result := ActualScreen.Draw;
       // fade mod
       myfade:=0;
+      if (Ini.ScreenFade=1) and canFade then
+        doFade:=True
+      else if Ini.ScreenFade=0 then
+        doFade:=False;
       // end
     end
     else
     begin
-      if doFade then
+      if doFade and canFade then
       begin
         // fade mod
         //Create Fading texture if we're just starting
@@ -128,7 +142,7 @@ begin
           glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1024, 1024, 0);
           if glGetError <> GL_NO_ERROR then
           begin
-            doFade := False;
+            canFade := False;
             showmessage('Fehler beim Kopieren der Fade-Textur... Fading deaktiviert');
           end;
           NextScreen.onShow;
@@ -167,7 +181,7 @@ begin
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
       end;
-      if (myfade > 40) or (not doFade) then begin // fade out complete...
+      if (myfade > 40) or (not doFade) or (not canFade) then begin // fade out complete...
         myFade:=0;
         ActualScreen.onHide; // nop... whatever
         ActualScreen.ShowFinish:=False;

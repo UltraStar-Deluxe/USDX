@@ -1115,7 +1115,7 @@ begin
     //PhrasenBonus - Line Bonus Mod End// }
 
     //PerfectLineTwinkle Mod (effect) Pt.1
-    If (Ini.EffectPerfect>=1) then
+    If (Ini.EffectSing=1) then
     begin
       if A >= 8 then Player[I].LastSentencePerfect := True
       else Player[I].LastSentencePerfect := False;
@@ -1128,7 +1128,8 @@ begin
   end;
 
   //PerfectLineTwinkle Mod (effect) Pt.2
-  GoldenRec.SpawnPerfectLineTwinkle;
+  if Ini.EffectSing=1 then
+    GoldenRec.SpawnPerfectLineTwinkle;
   //PerfectLineTwinkle Mod end
 end;
 

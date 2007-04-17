@@ -58,8 +58,8 @@ type
 
     // Advanced
     LoadAnimation:  integer;
-    EffectPerfect:  integer;
-    EffectGolden:   integer;
+    EffectSing:     integer;
+    ScreenFade:     integer;
     AskbeforeDel:   integer;
     OnSongClick:    integer;
     LineBonus:      integer;
@@ -135,8 +135,8 @@ const
 
   // Advanced
   ILoadAnimation: array[0..1] of string = ('Off', 'On');
-  IEffectPerfect: array[0..1] of string = ('Off', 'On');
-  IEffectGolden:  array[0..1] of string = ('Off', 'On');
+  IEffectSing:    array[0..1] of string = ('Off', 'On');
+  IScreenFade: array [0..1] of String =('Off', 'On');
   IAskbeforeDel:  array[0..1] of string = ('Off', 'On');
   IOnSongClick:   array[0..2] of string = ('Sing', 'Select Players', 'Open Menu');
   ILineBonus:  array[0..2] of string = ('Off', 'At Score', 'At Notes');
@@ -430,15 +430,15 @@ begin
   for Pet := 0 to High(ILoadAnimation) do
     if Tekst = ILoadAnimation[Pet] then Ini.LoadAnimation := Pet;
 
-  // EffectPerfect
-  Tekst := IniFile.ReadString('Advanced', 'EffectPerfect', 'On');
-  for Pet := 0 to High(IEffectPerfect) do
-    if Tekst = IEffectPerfect[Pet] then Ini.EffectPerfect := Pet;
+  // ScreenFade
+  Tekst := IniFile.ReadString('Advanced', 'ScreenFade', 'On');
+  for Pet := 0 to High(IScreenFade) do
+    if Tekst = IScreenFade[Pet] then Ini.ScreenFade := Pet;
 
-  // EffectGolden
-  Tekst := IniFile.ReadString('Advanced', 'EffectGolden', 'On');
-  for Pet := 0 to High(IEffectGolden) do
-    if Tekst = IEffectGolden[Pet] then Ini.EffectGolden := Pet;
+  // EffectSing
+  Tekst := IniFile.ReadString('Advanced', 'EffectSing', 'On');
+  for Pet := 0 to High(IEffectSing) do
+    if Tekst = IEffectSing[Pet] then Ini.EffectSing := Pet;
 
   // AskbeforeDel
   Tekst := IniFile.ReadString('Advanced', 'AskbeforeDel', 'On');
@@ -618,13 +618,13 @@ begin
   Tekst := ILoadAnimation[Ini.LoadAnimation];
   IniFile.WriteString('Advanced', 'LoadAnimation', Tekst);
 
-  //EffectPerfect
-  Tekst := IEffectPerfect[Ini.EffectPerfect];
-  IniFile.WriteString('Advanced', 'EffectPerfect', Tekst);
+  //EffectSing
+  Tekst := IEffectSing[Ini.EffectSing];
+  IniFile.WriteString('Advanced', 'EffectSing', Tekst);
 
-  //EffectGolden
-  Tekst := IEffectGolden[Ini.EffectGolden];
-  IniFile.WriteString('Advanced', 'EffectGolden', Tekst);
+  //ScreenFade
+  Tekst := IScreenFade[Ini.ScreenFade];
+  IniFile.WriteString('Advanced', 'ScreenFade', Tekst);
 
   //AskbeforeDel
   Tekst := IAskbeforeDel[Ini.AskbeforeDel];

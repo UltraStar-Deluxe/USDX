@@ -74,8 +74,8 @@ begin
     AddText(Theme.OptionsAdvanced.Text[I]);
 
   AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimation);
-  AddSelect(Theme.OptionsAdvanced.SelectEffectPerfect, Ini.EffectPerfect, IEffectPerfect);
-  AddSelect(Theme.OptionsAdvanced.SelectEffectGolden, Ini.EffectGolden, IEffectGolden);
+  AddSelect(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFade);
+  AddSelect(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSing);
   AddSelect(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonus);
   AddSelectSlide(Theme.OptionsAdvanced.SelectOnSongClick, Ini.OnSongClick, IOnSongClick);
   AddSelect(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskbeforeDel, IAskbeforeDel);

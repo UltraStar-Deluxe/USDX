@@ -48,7 +48,7 @@ var
   StarfrG:   integer;
 
 
-  
+
   //SingBar Mod
   TickOld: cardinal;
   TickOld2:cardinal;
@@ -216,7 +216,7 @@ begin
         if not FreeStyle then begin
 
 
-          if Ini.EffectGolden = 0 then
+          if Ini.EffectSing = 0 then
           // If Golden note Effect of then Change not Color
           begin
             case Wartosc of
@@ -270,7 +270,7 @@ begin
         glEnd;
 
           // Golden Star Patch
-          if (Wartosc = 2) AND (Ini.EffectGolden=1) then
+          if (Wartosc = 2) AND (Ini.EffectSing=1) then
           begin
             GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
           end;
@@ -379,7 +379,7 @@ var
 
         //Rec.Right := X + (Start+Dlugosc-Czesci[0].Czesc[Czesci[0].Akt].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
         //if (Start+Dlugosc-1 = Czas.AktBeatD) then
-        if Perfect and (Ini.EffectPerfect=1) then begin
+        if Perfect and (Ini.EffectSing=1) then begin
 //          A := sqrt((1+sin(Music.Position * 3))/2);
           A := 1 - 2*(Czas.Teraz - GetTimeFromBeat(Start+Dlugosc));
           if not (Start+Dlugosc-1 = Czas.AktBeatD) then
@@ -387,7 +387,6 @@ var
             //Star animation counter
             //inc(Starfr);
             //Starfr := Starfr mod 128;
-
             GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
           {  SingDrawStar(Rec.Left+2, Rec.Top+4, A);}
         end;
@@ -431,7 +430,7 @@ var
     // passing on NrGracza... hope this is really something like the player-number, not only
     // some kind of weird index into a colour-table
 
-    if (Ini.EffectGolden=1) then
+    if (Ini.EffectSing=1) then
     GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, NrGracza);
   end; // if
 end;
