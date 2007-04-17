@@ -361,7 +361,7 @@ begin
     for Pet := 0 to TexOrygH-1 do begin
       for Pet2 := 0 to TexOrygW-1 do begin
         Pix := TextureB.Canvas.Pixels[Pet2, Pet];
-        if Pix = Col then begin
+        if ((Pix = $fefefe) or (Pix = Col)) then begin //Small fix, that caused artefacts to be drawn (#fe == dec254)
           TextureD32[Pet*TexNewW + Pet2 + 1, 1] := 0;
           TextureD32[Pet*TexNewW + Pet2 + 1, 2] := 0;
           TextureD32[Pet*TexNewW + Pet2 + 1, 3] := 0;
