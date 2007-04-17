@@ -272,6 +272,18 @@ type
     TextP1:           TThemeText;
     TextP1Score:      TThemeText;
 
+    //added for ps3 skin
+    //game in 2/4 player modi
+    StaticP1TwoP:         TThemeStatic;
+    StaticP1TwoPScoreBG:  TThemeStatic; //Static for ScoreBG
+    TextP1TwoP:           TThemeText;
+    TextP1TwoPScore:      TThemeText;
+    //game in 3/6 player modi
+    StaticP1ThreeP:         TThemeStatic;
+    StaticP1ThreePScoreBG:  TThemeStatic; //Static for ScoreBG
+    TextP1ThreeP:           TThemeText;
+    TextP1ThreePScore:      TThemeText;
+    //eoa
 
     StaticP2R:        TThemeStatic;
     StaticP2RScoreBG: TThemeStatic; //Static for ScoreBG
@@ -896,52 +908,37 @@ begin
       ThemeLoadBasic(Sing, 'Sing');
 
       ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
-
-
-      //ScoreBG Mod
-      ThemeLoadStatic(Sing.StaticP1ScoreBG, 'SingP1Static2');//ScoreBG
-      //end ScoreBG Mod
-
-
       ThemeLoadText(Sing.TextP1, 'SingP1Text');
+      ThemeLoadStatic(Sing.StaticP1ScoreBG, 'SingP1Static2');
       ThemeLoadText(Sing.TextP1Score, 'SingP1TextScore');
+  //Added for ps3 skin
+  //This one is shown in 2/4P mode
+      ThemeLoadStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
+      ThemeLoadText(Sing.TextP1TwoP, 'SingP1TwoPText');
+      ThemeLoadStatic(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
+      ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
 
+  //This one is shown in 3/6P mode
+      ThemeLoadStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
+      ThemeLoadText(Sing.TextP1ThreeP, 'SingP1ThreePText');
+      ThemeLoadStatic(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
+      ThemeLoadText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
+  //eoa
       ThemeLoadStatic(Sing.StaticP2R, 'SingP2RStatic');
-
-
-
-      //ScoreBG Mod
-      ThemeLoadStatic(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
-      //end ScoreBG Mod
-
-
-
       ThemeLoadText(Sing.TextP2R, 'SingP2RText');
+      ThemeLoadStatic(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
       ThemeLoadText(Sing.TextP2RScore, 'SingP2RTextScore');
 
       ThemeLoadStatic(Sing.StaticP2M, 'SingP2MStatic');
-
-
-      //ScoreBG Mod
-      ThemeLoadStatic(Sing.StaticP2MScoreBG, 'SingP2MStatic2');
-      //end ScoreBG Mod
-
-
-
       ThemeLoadText(Sing.TextP2M, 'SingP2MText');
+      ThemeLoadStatic(Sing.StaticP2MScoreBG, 'SingP2MStatic2');
       ThemeLoadText(Sing.TextP2MScore, 'SingP2MTextScore');
 
       ThemeLoadStatic(Sing.StaticP3R, 'SingP3RStatic');
-
-
-       //ScoreBG Mod
-      ThemeLoadStatic(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
-      //end ScoreBG Mod
-
-
-
       ThemeLoadText(Sing.TextP3R, 'SingP3RText');
+      ThemeLoadStatic(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
       ThemeLoadText(Sing.TextP3RScore, 'SingP3RTextScore');
+
       //Line Bonus Texts
       Sing.LineBonusText[0] := Language.Translate('LINEBONUS_WORST');
       Sing.LineBonusText[1] := Sing.LineBonusText[0];
@@ -1784,58 +1781,39 @@ begin
   ThemeSaveStatic(Song.StaticCat, 'SongStaticCat');
 
   ThemeSaveBasic(Sing, 'Sing');
+
   ThemeSaveStatic(Sing.StaticP1, 'SingP1Static');
-
-
-
-  //ScoreBG Mod
-  ThemeSaveStatic(Sing.StaticP1ScoreBG, 'SingP1Static2');
-  //end ScoreBG Mod
-
-
-
   ThemeSaveText(Sing.TextP1, 'SingP1Text');
+  ThemeSaveStatic(Sing.StaticP1ScoreBG, 'SingP1Static2');
   ThemeSaveText(Sing.TextP1Score, 'SingP1TextScore');
 
+  //Added for ps3 skin
+  //This one is shown in 2/4P mode
+  ThemeSaveStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
+  ThemeSaveText(Sing.TextP1TwoP, 'SingP1TwoPText');
+  ThemeSaveStatic(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
+  ThemeSaveText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
+
+  //This one is shown in 3/6P mode
+  ThemeSaveStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
+  ThemeSaveText(Sing.TextP1ThreeP, 'SingP1ThreePText');
+  ThemeSaveStatic(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
+  ThemeSaveText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
+  //eoa
+
   ThemeSaveStatic(Sing.StaticP2R, 'SingP2RStatic');
-
-
-
-  //ScoreBG Mod
-  ThemeSaveStatic(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
-  //end ScoreBG Mod
-
-
-
   ThemeSaveText(Sing.TextP2R, 'SingP2RText');
+  ThemeSaveStatic(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
   ThemeSaveText(Sing.TextP2RScore, 'SingP2RTextScore');
 
   ThemeSaveStatic(Sing.StaticP2M, 'SingP2MStatic');
-
-
-
-  //ScoreBG Mod
-  ThemeSaveStatic(Sing.StaticP2MScoreBG, 'SingP2MStatic2');
-  //end ScoreBG Mod
-
-
-
-
   ThemeSaveText(Sing.TextP2M, 'SingP2MText');
+  ThemeSaveStatic(Sing.StaticP2MScoreBG, 'SingP2MStatic2');
   ThemeSaveText(Sing.TextP2MScore, 'SingP2MTextScore');
 
   ThemeSaveStatic(Sing.StaticP3R, 'SingP3RStatic');
-
-
-
-  //ScoreBG Mod
-  ThemeSaveStatic(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
-  //end ScoreBG Mod
-
-
-
-
   ThemeSaveText(Sing.TextP3R, 'SingP3RText');
+  ThemeSaveStatic(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
   ThemeSaveText(Sing.TextP3RScore, 'SingP3RTextScore');
 
   ThemeSaveBasic(Score, 'Score');
