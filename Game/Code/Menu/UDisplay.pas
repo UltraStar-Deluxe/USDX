@@ -2,7 +2,7 @@ unit UDisplay;
 
 interface
 
-uses Windows, SDL, UMenu, OpenGL12, SysUtils, dialogs;
+uses Windows, SDL, UMenu, OpenGL12, SysUtils, dialogs, Math;
 
 type
   TDisplay = class
@@ -43,6 +43,7 @@ uses UGraphic, UTime, Graphics, Jpeg, UPliki, UTexture, UIni;
 constructor TDisplay.Create;
 begin
   inherited Create;
+
   // fade mod
   myfade:=0;
 
@@ -163,6 +164,8 @@ begin
 
 //      ActualScreen.SetAnimationProgress(Fade-1); // nop?
 
+        glClearColor(Col, Col, Col , 0);
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
         NextScreen.Draw; // draw next screen
 
       // and draw old screen over it... slowly fading out
@@ -180,7 +183,10 @@ begin
         glEnd;
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
-      end;
+      end
+        else NextScreen.OnShow;
+
+
       if (myfade > 40) or (not doFade) or (not canFade) then begin // fade out complete...
         myFade:=0;
         ActualScreen.onHide; // nop... whatever
