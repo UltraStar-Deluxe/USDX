@@ -547,7 +547,8 @@ type
     ButtonScores:     TThemeButton;
     ButtonSingers:    TThemeButton;
     ButtonSongs:      TThemeButton;
-    ButtonBands:       TThemeButton;
+    ButtonBands:      TThemeButton;
+    ButtonExit:       TThemeButton;
 
     TextOverview:     TThemeText;
   end;
@@ -1231,6 +1232,7 @@ begin
       ThemeLoadButton(StatMain.ButtonSingers, 'StatMainButtonSingers');
       ThemeLoadButton(StatMain.ButtonSongs, 'StatMainButtonSongs');
       ThemeLoadButton(StatMain.ButtonBands, 'StatMainButtonBands');
+      ThemeLoadButton(StatMain.ButtonExit, 'StatMainButtonExit');
 
       ThemeLoadText (StatMain.TextOverview, 'StatMainTextOverview');
 
