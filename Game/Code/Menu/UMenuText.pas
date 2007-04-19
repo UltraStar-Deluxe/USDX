@@ -114,13 +114,13 @@ begin
   end;
 
   I := 0;
-  // /n Hack
+  // \n Hack
   While (I <= High(TextTiles)) do
   begin
-    LastPos := Pos ('/n', TextTiles[I]);
+    LastPos := Pos ('\n', TextTiles[I]);
     if (LastPos = 0) then //No /n Tags -> Search in next Tile
       Inc(I)
-    else //Found /n Tag -> Create a Break
+    else //Found \n Tag -> Create a Break
     begin
       //Add a new Tile and move all Tiles behind actual Tile to the right
       L := Length(TextTiles);

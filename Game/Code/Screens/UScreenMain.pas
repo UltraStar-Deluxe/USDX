@@ -135,6 +135,12 @@ begin
           end;
         end;
 
+      SDLK_S:
+        begin
+          Music.PlayStart;
+          FadeTo(@ScreenStatMain);
+        end;
+
       SDLK_RETURN:
         begin
           if (Interaction = 0) and (Length(Songs.Song) >= 1) then begin

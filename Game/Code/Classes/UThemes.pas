@@ -570,10 +570,15 @@ type
     ButtonPrev:       TThemeButton;
     ButtonReverse:    TThemeButton;
     ButtonExit:       TThemeButton;
-    
-    Description:      array[0..3] of string;
+
     TextDescription:  TThemeText;
+    TextPage:         TThemeText;
     TextList:         AThemeText;
+
+    Description:      array[0..3] of string;
+    DescriptionR:     array[0..3] of string;
+    FormatStr:        array[0..3] of string;
+    PageStr:          String;
   end;
 
   //Playlist Translations
@@ -619,6 +624,8 @@ type
     StatDetail:       TThemeStatDetail;
 
     Playlist:         TThemePlaylist;
+
+    ILevel: array[0..2] of String;
 
     constructor Create(FileName: string); overload; // Initialize theme system
     constructor Create(FileName: string; Color: integer); overload; // Initialize theme system with color
@@ -1242,15 +1249,35 @@ begin
       ThemeLoadButton(StatDetail.ButtonExit, 'StatDetailButtonExit');
 
       ThemeLoadText (StatDetail.TextDescription, 'StatDetailTextDescription');
+      ThemeLoadText (StatDetail.TextPage, 'StatDetailTextPage');
       ThemeLoadTexts(StatDetail.TextList, 'StatDetailTextList');
 
+      //Translate Texts
       StatDetail.Description[0] := Language.Translate('STAT_DESC_SCORES');
       StatDetail.Description[1] := Language.Translate('STAT_DESC_SINGERS');
       StatDetail.Description[2] := Language.Translate('STAT_DESC_SONGS');
       StatDetail.Description[3] := Language.Translate('STAT_DESC_BANDS');
 
+      StatDetail.DescriptionR[0] := Language.Translate('STAT_DESC_SCORES_REVERSED');
+      StatDetail.DescriptionR[1] := Language.Translate('STAT_DESC_SINGERS_REVERSED');
+      StatDetail.DescriptionR[2] := Language.Translate('STAT_DESC_SONGS_REVERSED');
+      StatDetail.DescriptionR[3] := Language.Translate('STAT_DESC_BANDS_REVERSED');
+
+      StatDetail.FormatStr[0] := Language.Translate('STAT_FORMAT_SCORES');
+      StatDetail.FormatStr[1] := Language.Translate('STAT_FORMAT_SINGERS');
+      StatDetail.FormatStr[2] := Language.Translate('STAT_FORMAT_SONGS');
+      StatDetail.FormatStr[3] := Language.Translate('STAT_FORMAT_BANDS');
+
+      StatDetail.PageStr := Language.Translate('STAT_PAGE');
+
       //Playlist Translations
-      Playlist.CatText := Language.Translate('PLAYLIST_CATTEXT')
+      Playlist.CatText := Language.Translate('PLAYLIST_CATTEXT');
+
+      //Level Translations
+      //Fill ILevel
+      ILevel[0] := Language.Translate('SING_EASY');
+      ILevel[1] := Language.Translate('SING_MEDIUM');
+      ILevel[2] := Language.Translate('SING_HARD');
     end;
 
     ThemeIni.Free;

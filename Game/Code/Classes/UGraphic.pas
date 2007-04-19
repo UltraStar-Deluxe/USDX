@@ -7,7 +7,8 @@ uses
   UScreenOptionsGraphics, UScreenOptionsSound, UScreenOptionsLyrics, UScreenOptionsThemes, UScreenOptionsRecord, UScreenOptionsAdvanced,
   UScreenSong, UScreenSing, UScreenScore, UScreenTop5, UScreenEditSub,
   UScreenEdit, UScreenEditConvert, UScreenEditHeader, UScreenOpen, UThemes, USkins, UScreenSongMenu, UScreenSongJumpto,
-  {Party Screens} UScreenSingModi, UScreenPartyNewRound, UScreenPartyScore, UScreenPartyOptions, UScreenPartyWin, UScreenPartyPlayer;
+  {Party Screens} UScreenSingModi, UScreenPartyNewRound, UScreenPartyScore, UScreenPartyOptions, UScreenPartyWin, UScreenPartyPlayer,
+  {Stats Screens} UScreenStatMain, UScreenStatDetail;
 
 type
   TRecR = record
@@ -61,6 +62,10 @@ var
   ScreenPartyWin:         TScreenPartyWin;
   ScreenPartyOptions:     TScreenPartyOptions;
   ScreenPartyPlayer:      TScreenPartyPlayer;
+
+  //StatsScreens
+  ScreenStatMain:         TScreenStatMain;
+  ScreenStatDetail:       TScreenStatDetail;
 
 
   Tex_Left:       array[0..6] of TTexture;
@@ -221,20 +226,27 @@ var
   Icon: TIcon;
   Res:  TResourceStream;
   ISurface: PSDL_Surface;
+  Pixel: PByteArray;
 begin
   Log.LogStatus('LoadOpenGL', 'Initialize3D');
   Log.BenchmarkStart(2);
 
   LoadOpenGL;
 
-  {//Load Icon
+  Log.LogStatus('SDL_Init', 'Initialize3D');
+  if ( SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO)= -1 ) then begin
+    Log.LogError('SDL_Init Failed', 'Initialize3D');
+    exit;
+  end;
+
+ { //Load Icon
   Res := TResourceStream.CreateFromID(HInstance, 3, RT_ICON);
   Icon := TIcon.Create;
   Icon.LoadFromStream(Res);
   Res.Free;
-
+  Icon.
   //Create icon Surface
-  SDL_CreateRGBSurface (
+  SDL_CreateRGBSurfaceFrom (
   SDL_SWSURFACE,
   Icon.Width,
   Icon.Height,
@@ -243,18 +255,12 @@ begin
   32 or 16,
   8 or 4,
   2 or 1);
-  SDL_BlitSurface( //}
+  //SDL_BlitSurface(
 
 
-  SDL_WM_SetIcon(SDL_LoadBMP('us.ico'), 0); //}
+  SDL_WM_SetIcon(SDL_LoadBMP('DEFAULT_WINDOW_ICON'), 0); //}
 
-  Log.LogStatus('SDL_Init', 'Initialize3D');
-  if ( SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO)= -1 ) then begin
-    Log.LogError('SDL_Init Failed', 'Initialize3D');
-    exit;
-  end;
-
-  SDL_WM_SetCaption(PChar(Title), 'WM_DEFAULT');
+  SDL_WM_SetCaption(PChar(Title), nil);
 
   InitializeScreen;
 
@@ -433,6 +439,10 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyOptions', 3); Log.BenchmarkStart(3);
   ScreenPartyPlayer :=      TScreenPartyPlayer.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyPlayer', 3); Log.BenchmarkStart(3);
+  ScreenStatMain :=         TScreenStatMain.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Stat Main', 3); Log.BenchmarkStart(3);
+  ScreenStatDetail :=       TScreenStatDetail.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Stat Detail', 3); Log.BenchmarkStart(3);
 end;
 
 end.

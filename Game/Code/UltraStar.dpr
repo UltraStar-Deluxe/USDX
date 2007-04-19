@@ -78,6 +78,8 @@ uses
   UScreenTop5 in 'Screens\UScreenTop5.pas',
   UScreenSongMenu in 'Screens\UScreenSongMenu.pas',
   UScreenSongJumpto in 'Screens\UScreenSongJumpto.pas',
+  UScreenStatMain in 'Screens\UScreenStatMain.pas',
+  UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
 
   //------------------------------
   //Includes - Screens PartyMode
@@ -103,7 +105,7 @@ uses
 
 
 const
-  Version = 'UltraStar Deluxe V 0.95 Beta';
+  Version = 'UltraStar Deluxe V 0.96 Beta';
 
 var
   WndTitle: string;

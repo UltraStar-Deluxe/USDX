@@ -31,7 +31,6 @@ type
   end;
 
 var
-  ILevel: array[0..2] of String;
   IPlaylist: array[0..2] of String;
   IPlaylist2: array of String;
 const
@@ -185,12 +184,6 @@ var
   I:    integer;
 begin
   inherited Create;
-
-  //Fill ILevel
-  ILevel[0] := Language.Translate('SING_EASY');
-  ILevel[1] := Language.Translate('SING_MEDIUM');
-  ILevel[2] := Language.Translate('SING_HARD');
-
   //Fill IPlaylist
   IPlaylist[0] := Language.Translate('PARTY_PLAYLIST_ALL');
   IPlaylist[1] := Language.Translate('PARTY_PLAYLIST_CATEGORY');
@@ -210,7 +203,7 @@ begin
 
   AddBackground(Theme.PartyOptions.Background.Tex);
 
-  SelectLevel := AddSelectSlide (Theme.PartyOptions.SelectLevel, Ini.Difficulty, ILevel);
+  SelectLevel := AddSelectSlide (Theme.PartyOptions.SelectLevel, Ini.Difficulty, Theme.ILevel);
   SelectPlayList := AddSelectSlide (Theme.PartyOptions.SelectPlayList, PlayList, IPlaylist);
   SelectPlayList2 := AddSelectSlide (Theme.PartyOptions.SelectPlayList2, PlayList2, IPlaylist2);
   SelectRounds := AddSelectSlide (Theme.PartyOptions.SelectRounds, Rounds, IRounds);

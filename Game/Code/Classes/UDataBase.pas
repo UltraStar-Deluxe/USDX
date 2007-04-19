@@ -8,6 +8,26 @@ uses USongs, SQLiteTable3;
 //DataBaseSystem - Class including all DB Methods
 //--------------------
 type
+  TStatResult = record
+    Case Typ: Byte of
+      0: (Singer:     ShortString;
+          Score:      Word;
+          Difficulty: Byte;
+          SongArtist: ShortString;
+          SongTitle:  ShortString);
+
+      1: (Player:     ShortString;
+          AverageScore: Word);
+
+      2: (Artist: ShortString;
+          Title:  ShortString;
+          TimesSung:  Word);
+
+      3: (ArtistName:   ShortString;
+          TimesSungtot: Word);
+  end;
+  AStatResult = Array of TStatResult;
+  
   TDataBaseSystem = class
     private
       ScoreDB: TSqliteDatabase;
@@ -15,12 +35,17 @@ type
     public
 
 
+    property Filename: String read sFilename;
+    
     Destructor Free;
 
     Procedure Init(const Filename: string);
     procedure ReadScore(var Song: TSong);
     procedure AddScore(var Song: TSong; Level: integer; Name: string; Score: integer);
     procedure WriteScore(var Song: TSong);
+
+    Function  GetStats(var Stats: AStatResult; const Typ, Count: Byte; const Page: Cardinal; const Reversed: Boolean): Boolean;
+    Function  GetTotalEntrys(const Typ: Byte): Cardinal;
   end;
 
 var
@@ -158,6 +183,112 @@ begin
   except
 
   end;
+end;
+
+//--------------------
+//GetStats - Write some Stats to Array, Returns True if Chossen Page has Entrys
+//Case Typ of
+//0 - Best Scores
+//1 - Best Singers
+//2 - Most sung Songs
+//3 - Most popular Band
+//--------------------
+Function TDataBaseSystem.GetStats(var Stats: AStatResult; const Typ, Count: Byte; const Page: Cardinal; const Reversed: Boolean): Boolean;
+var
+  Query: String;
+  TableData: TSqliteTable;
+begin
+  Result := False;
+
+  if (Length(Stats) < Count) then
+    Exit;
+
+  {Todo:
+    Add Prevention that only Players with more than 5 Scores are Selected at Typ 2}
+
+  //Create Query
+  Case Typ of
+    0: Query := 'SELECT `Player` , `Difficulty` , `Score` , `Artist` , `Title` FROM `US_Scores` INNER JOIN `US_Songs` ON (`SongID` = `ID`) ORDER BY `Score`';
+    1: Query := 'SELECT `Player` , (Sum(`Score`) / COUNT(`Score`)) FROM `US_Scores` GROUP BY `Player` ORDER BY (Sum(`Score`) / COUNT(`Score`))';
+    2: Query := 'SELECT `Artist` , `Title` , `TimesPlayed` FROM `US_Songs` ORDER BY `TimesPlayed`';
+    3: Query := 'SELECT `Artist` , Sum(`TimesPlayed`) FROM `US_Songs` GROUP BY `Artist` ORDER BY Sum(`TimesPlayed`)';
+  end;
+
+  //Add Order Direction
+  If Reversed then
+    Query := Query + ' ASC'
+  else
+    Query := Query + ' DESC';
+
+  //Add Limit
+  Query := Query + ' LIMIT ' + InttoStr(Count * Page) + ', ' + InttoStr(Count) + ';';
+
+  //Execute Query
+  //try
+    TableData := ScoreDB.GetTable(Query);
+  {except
+    exit;
+  end;}
+
+  //if Result empty -> Exit
+  if (TableData.RowCount < 1) then
+    exit;
+
+  //Copy Result to Stats Array
+  while not TableData.Eof do
+  begin
+    Stats[TableData.Row].Typ := Typ;
+
+    Case Typ of
+      0:begin
+          Stats[TableData.Row].Singer := TableData.Fields[0];
+
+          Stats[TableData.Row].Difficulty := StrtoIntDef(TableData.Fields[1], 0);
+
+          Stats[TableData.Row].Score := StrtoIntDef(TableData.Fields[2], 0){TableData.FieldAsInteger(2)};
+          Stats[TableData.Row].SongArtist := TableData.Fields[3];
+          Stats[TableData.Row].SongTitle := TableData.Fields[4];
+        end;
+
+        1:begin
+          Stats[TableData.Row].Player := TableData.Fields[0];
+          Stats[TableData.Row].AverageScore := TableData.FieldAsInteger(1);
+        end;
+
+        2:begin
+          Stats[TableData.Row].Artist := TableData.Fields[0];
+          Stats[TableData.Row].Title  := TableData.Fields[1];
+          Stats[TableData.Row].TimesSung  := StrtoIntDef(TableData.Fields[2], 0);
+        end;
+
+        3:begin
+          Stats[TableData.Row].ArtistName := TableData.Fields[0];
+          Stats[TableData.Row].TimesSungtot := StrtoIntDef(TableData.Fields[1], 0);
+        end;
+
+    end;
+
+    TableData.Next;
+  end;
+
+  Result := True;
+end;
+
+//--------------------
+//GetTotalEntrys - Get Total Num of entrys for a Stats Query
+//--------------------
+Function  TDataBaseSystem.GetTotalEntrys(const Typ: Byte): Cardinal;
+var Query: String;
+begin
+  //Create Query
+  Case Typ of
+    0: Query := 'SELECT COUNT(`SongID`) FROM `US_Scores`;';
+    1: Query := 'SELECT COUNT(DISTINCT `Player`) FROM `US_Scores`;';
+    2: Query := 'SELECT COUNT(`ID`) FROM `US_Songs`;';
+    3: Query := 'SELECT COUNT(DISTINCT `Artist`) FROM `US_Songs`;';
+  end;
+
+  Result := ScoreDB.GetTableValue(Query);
 end;
 
 end.
