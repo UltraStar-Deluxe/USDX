@@ -61,6 +61,7 @@ var
 begin
   TextString := Value;
 
+  //Create Page Breaks if width is given
   if (W > 0) then
   begin
     //Set Font Propertys
@@ -76,7 +77,7 @@ begin
     I := Pos (' ', Value);
     While (I <> 0) do
     begin
-      if (glTextWidth(PChar(Copy (Value,LastBreak + 1,I))) > W) AND (LastPos <> 1) then
+      if (glTextWidth(PChar(Copy (Value,LastBreak + 1,I - LastBreak))) > W) AND (LastPos <> 1) then
       begin
         //new Break
         SetLength (TextTiles, L+1);
@@ -105,6 +106,39 @@ begin
       SetLength (TextTiles, L+1);
       TextTiles[L] := Copy (Value, LastBreak + 1, Length(Value) - LastBreak);
 
+  end
+  else
+  begin
+    SetLength (TextTiles, 1);
+    TextTiles[0] := Value;
+  end;
+
+  I := 0;
+  // /n Hack
+  While (I <= High(TextTiles)) do
+  begin
+    LastPos := Pos ('/n', TextTiles[I]);
+    if (LastPos = 0) then //No /n Tags -> Search in next Tile
+      Inc(I)
+    else //Found /n Tag -> Create a Break
+    begin
+      //Add a new Tile and move all Tiles behind actual Tile to the right
+      L := Length(TextTiles);
+      SetLength(TextTiles, L+1);
+      For L := L-1 downto I + 1 do
+      begin
+        TextTiles[L+1] := TextTiles[L];
+      end;
+
+      //Write Text to new Tile
+      TextTiles[I+1] := Trim(Copy(TextTiles[I], LastPos + 2, Length(TextTiles[I]) - LastPos - 1));
+      //Delete Text that now is in new Tile from cur. Tile
+      Delete(TextTiles[I], LastPos, Length(TextTiles[I]) - LastPos + 1);
+      TextTiles[I] := Trim (TextTiles[I]);
+      
+      //Goto next Tile because cur. Tile can not have another /n Tag
+      Inc(I) 
+    end;
   end;
 
   //Set Cursor Visible
@@ -148,7 +182,7 @@ begin
       end;
     end;
 
-    if (W <= 0) then //No Width set Draw as one Long String
+    if (False) then //No Width set Draw as one Long String
     begin
       if not (SelectBool AND SelectBlink) then
         Text2 := Text
