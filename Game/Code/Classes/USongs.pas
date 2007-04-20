@@ -58,6 +58,9 @@ type
   end;
 
   TSongs = class
+  private
+    BrowsePos: Cardinal; //Actual Pos in Song Array
+  public
     Song:       array of TSong; // array of songs
     Selected:   integer; // selected song index
     procedure LoadSongList; // load all songs
@@ -100,10 +103,14 @@ begin
   Log.LogStatus('Initializing', 'LoadSongList');
 
   // clear
-  Setlength(Song, 0);
+  Setlength(Song, 50);
 
+  BrowsePos := 0;
   // browse directories
   BrowseDir(SongPath);
+
+  //Set Correct SongArray Length
+  SetLength(Song, BrowsePos + 1);
 //  if Ini.Debug = 1 then BrowseDir('D:\Extract\Songs\');
 end;
 
@@ -125,14 +132,19 @@ begin
  if FindFirst(Dir + '*.txt', 0, SR) = 0 then begin
 //          Log.LogStatus('Parsing file:      ' + Dir + SR.Name + '\' + SRD.Name, 'LoadSongList');
     repeat
+      //New Mod for better Memory Management
+
+      SLen := BrowsePos;
+      {//Old
       SLen := Length(Song);
-      SetLength(Song, SLen + 1);
+      SetLength(Song, SLen + 1);//}
+
       Song[SLen].Path := Dir;
       Song[SLen].Folder := Copy(Dir, Length(SongPath)+1, 10000);
       Song[SLen].Folder := Copy(Song[SLen].Folder, 1, Pos('\', Song[SLen].Folder)-1);
       Song[SLen].FileName := SR.Name;
 
-      if (AnalyseFile(Song[SLen]) = false) then SetLength(Song, SLen)
+      if (AnalyseFile(Song[SLen]) = false) then Dec(BrowsePos)
       else begin
         // scanning complete, file is good
         // if there is no cover then try to find it
@@ -144,6 +156,14 @@ begin
         // fix by adding path. no, don't fix it.
 //        if Song[SLen].Cover <> '' then
 //          Song[SLen].Cover := Song[SLen].Path + Song[SLen].Cover;
+      end;
+
+      //Change Length Only every 50 Entrys
+      Inc(BrowsePos);
+      
+      if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
+      begin
+          SetLength(Song, Length(Song) + 50);
       end;
 
     until FindNext(SR) <> 0;

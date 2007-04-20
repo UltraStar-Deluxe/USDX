@@ -634,6 +634,9 @@ begin
   // Song List
 //  Songs.LoadSongList; // moved to the UltraStar unit
   CatSongs.Refresh;
+
+  //Set Length of Button Array one Time Instead of one time for every Song
+  SetButtonLength(Length(CatSongs.Song));
   for Pet := 0 to High(CatSongs.Song) do begin // creating all buttons
     // new
     Texture.Limit := 512;// 256 0.4.2 value, 512 in 0.5.0

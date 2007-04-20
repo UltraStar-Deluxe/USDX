@@ -72,6 +72,8 @@ var
   SC:     integer;
   SCI:    integer;
 begin
+  inherited Create;
+  
   AddBackground(Theme.OptionsRecord.Background.Tex);
   for I := 0 to High(Theme.OptionsRecord.Static) do
     AddStatic(Theme.OptionsRecord.Static[I]);

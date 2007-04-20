@@ -11,6 +11,8 @@ type
   PMenu = ^TMenu;
   TMenu = class
     protected
+      ButtonPos:      Integer;
+      
       Interactions:   array of TInteract;
       SelInteraction: integer;
       Button:         array of TButton;
@@ -59,6 +61,7 @@ type
       function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer; overload;
 
       // button
+      Procedure SetButtonLength(Length: Cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button 
       function AddButton(ThemeButton: TThemeButton): integer; overload;
       function AddButton(X, Y, W, H: real; Name: String): integer; overload;
       function AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer; overload;
@@ -150,6 +153,9 @@ begin
   SetLength(Button, 0);
 
   BackImg.TexNum := -1;
+
+  //Set ButtonPos to Autoset Length
+  ButtonPos := -1;
 end;
 
 constructor TMenu.Create(Back: String);
@@ -165,6 +171,9 @@ begin
     BackH := 1;
   end else
     BackImg.TexNum := -1;
+
+   //Set ButtonPos to Autoset Length 
+   ButtonPos := -1;
 end;
 
 constructor TMenu.Create(Back: string; W, H: integer);
@@ -356,6 +365,19 @@ begin
   Result := TextNum;
 end;
 
+//Function that Set Length of Button Array in one Step instead of register new Memory for every Button
+Procedure TMenu.SetButtonLength(Length: Cardinal);
+begin
+  if (ButtonPos = -1) AND (Length > 0) then
+  begin
+    //Set Length of Button
+    SetLength(Button, Length);
+
+    //Set ButtonPos to start with 0
+    ButtonPos := 0;
+  end;
+end;
+
 
 // Method to add a button in our TMenu. It returns the assigned ButtonNumber
 function TMenu.AddButton(ThemeButton: TThemeButton): integer;
@@ -399,8 +421,17 @@ end;
 function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing: Real): integer;
 begin
   // adds button
-  Result := Length(Button);
-  SetLength(Button, Result + 1);
+  //SetLength is used to reduce Memory usement
+  if (ButtonPos <> -1) then
+  begin
+    Result := ButtonPos;
+    Inc(ButtonPos)
+  end
+  else //Old Method -> Reserve new Memory for every Button 
+  begin
+    Result := Length(Button);
+    SetLength(Button, Result + 1);
+  end;
 //  Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ));
 
   // check here for cache
