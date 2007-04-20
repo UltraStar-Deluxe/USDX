@@ -1145,9 +1145,36 @@ begin
       Player[I].ScoreTotalI := Player[I].ScoreI + Player[I].ScoreGoldenI + Player[I].ScoreLineI;
 
       //Color
-      Player[I].LineBonus_Color.B := 0;
-      Player[I].LineBonus_Color.R := (8-A)/8;
-      Player[I].LineBonus_Color.G := A/10;
+      Case Floor(A) of
+        0: begin
+          Player[I].LineBonus_Color.R := 1;
+          Player[I].LineBonus_Color.G := 0;
+          Player[I].LineBonus_Color.B := 0;
+        end;
+        1..3: begin
+          Player[I].LineBonus_Color.R := 1;
+          Player[I].LineBonus_Color.G := (A * 0.25);
+          Player[I].LineBonus_Color.B := 0;
+        end;
+        4: begin
+          Player[I].LineBonus_Color.R := 1;
+          Player[I].LineBonus_Color.G := 1;
+          Player[I].LineBonus_Color.B := 0;
+        end;
+        5..7: begin
+          Player[I].LineBonus_Color.R := 1-((a-4)*0.25);
+          Player[I].LineBonus_Color.G := 1;
+          Player[I].LineBonus_Color.B := 0;
+        end;
+        8: begin
+          Player[I].LineBonus_Color.R := 0;
+          Player[I].LineBonus_Color.G := 1;
+          Player[I].LineBonus_Color.B := 0;
+        end;
+      End; //Case
+      //Player[I].LineBonus_Color.B := 0;
+      //Player[I].LineBonus_Color.R := (8-A)/8;
+      //Player[I].LineBonus_Color.G := A/10;
 
       Player[I].LineBonus_PosX  := Player[I].LineBonus_StartX;
       Player[I].LineBonus_PosY  := Player[I].LineBonus_StartY;
