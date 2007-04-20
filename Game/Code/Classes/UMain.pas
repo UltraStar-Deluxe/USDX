@@ -26,12 +26,13 @@ type
     //end Singbar Mod
 
     //PhrasenBonus - Line Bonus Mod
-    LineBonus_PosX:     integer;
-    LineBonus_PosY:     integer;
+    LineBonus_PosX:     Single;
+    LineBonus_PosY:     Single;
     LineBonus_Alpha:    Single;
     LineBonus_Visible:  boolean;
     LineBonus_Text:     string;
     LineBonus_Color:    TRGB;
+    LineBonus_Age:      Integer;
 
     //Variable vor Positioning -> Set on ScreenShow, different when Playercount Changes
     LineBonus_TargetX:  integer;

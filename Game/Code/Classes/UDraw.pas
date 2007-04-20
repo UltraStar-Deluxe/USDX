@@ -20,7 +20,7 @@ procedure SingGoldenStar(X, Y, A: real);
 procedure SingDrawSingbar(X, Y, W, H: real; Percent: integer);
 
 //Phrasen Bonus - Line Bonus
-procedure SingDrawLineBonus( const X, Y: integer; Color: TRGB; Alpha: Single; Text: string);
+procedure SingDrawLineBonus( const X, Y: Single; Color: TRGB; Alpha: Single; Text: string; Age: Integer);
 
 //Draw Editor NoteLines
 procedure EditDrawCzesc(Left, Top, Right: real; NrCzesci: integer; Space: integer);
@@ -662,7 +662,6 @@ begin
     Rec.Right := Rec.Left + 50;
     Rec.Top := Skin_LyricsT + 3;
     Rec.Bottom := Rec.Top + 33;//SingScreen.LyricMain.Size * 3;
-
 {    // zapalanie
     BarAlpha := (BarWspol*10) * 0.5;
     if BarAlpha > 0.5 then BarAlpha := 0.5;
@@ -685,14 +684,7 @@ begin
     glTexCoord2f(15/16, 1/16); glVertex2f(Rec.Right, Rec.Top);
     glEnd;
     glDisable(GL_BLEND);
-{    glBegin(GL_QUADS);
-      glColor4f(26/255, 165/255, 220/255, 0);
-      glVertex2f(Rec.Left, Rec.Top);
-      glVertex2f(Rec.Left, Rec.Bottom);
-      glColor4f(26/255, 165/255, 220/255, BarAlpha);
-      glVertex2f(Rec.Right, Rec.Bottom);
-      glVertex2f(Rec.Right, Rec.Top);
-    glEnd;}
+
    end;
 
   // oscilloscope
@@ -793,58 +785,61 @@ begin
       for E := 0 to (PlayersPlay - 1) do begin
           //Change Alpha
           Player[E].LineBonus_Alpha := Player[E].LineBonus_Alpha - 0.02;
-
           if Player[E].LineBonus_Alpha <= 0 then
-            Player[E].LineBonus_Visible := False
+            begin
+              Player[E].LineBonus_Age := 0;
+              Player[E].LineBonus_Visible := False
+            end
           else
           begin
+          inc(Player[E].LineBonus_Age, 1);
           //Change Position
           if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then
-            Inc(Player[E].LineBonus_PosX,1)
+            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
            else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then
-            Dec(Player[E].LineBonus_PosX,1);
+            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
 
           if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
-            Inc(Player[E].LineBonus_PosY,1)
+            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
           else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
-            Dec(Player[E].LineBonus_PosY,1);
+            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
 
           end;
       end;
     end; //if
 
     if PlayersPlay = 1 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
+      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
    end
    else if PlayersPlay = 2 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
-      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
+      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
+      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
    end
    else if PlayersPlay = 3 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
-      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
-      SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text);
+      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
+      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
+      SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
     end
    else if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
-      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
+      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
+      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
       end;
       if ScreenAct = 2 then begin
-      SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text);
-      SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text);
+      SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
+      SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
       end;
     end;
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
-        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
-        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text);
+        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
+        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
+        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
       end;
       if ScreenAct = 2 then begin
-        SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text);
-        SingDrawLineBonus( Player[4].LineBonus_PosX, Player[4].LineBonus_PosY, Player[4].LineBonus_Color, Player[4].LineBonus_Alpha, Player[4].LineBonus_Text);
-        SingDrawLineBonus( Player[5].LineBonus_PosX, Player[5].LineBonus_PosY, Player[5].LineBonus_Color, Player[5].LineBonus_Alpha, Player[5].LineBonus_Text);
+        SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
+        SingDrawLineBonus( Player[4].LineBonus_PosX, Player[4].LineBonus_PosY, Player[4].LineBonus_Color, Player[4].LineBonus_Alpha, Player[4].LineBonus_Text, Player[4].LineBonus_Age);
+        SingDrawLineBonus( Player[5].LineBonus_PosX, Player[5].LineBonus_PosY, Player[5].LineBonus_Color, Player[5].LineBonus_Alpha, Player[5].LineBonus_Text, Player[5].LineBonus_Age);
       end;
     end;
   end;
@@ -1056,24 +1051,28 @@ begin
       Rec.Right := Rec.Left + 50;
       Rec.Top := Skin_LyricsT + 3;
       Rec.Bottom := Rec.Top + 33;//SingScreen.LyricMain.Size * 3;
+{    // zapalanie
+    BarAlpha := (BarWspol*10) * 0.5;
+    if BarAlpha > 0.5 then BarAlpha := 0.5;
 
-      // zapalanie
-      BarAlpha := (BarWspol*10) * 0.5;
-      if BarAlpha > 0.5 then BarAlpha := 0.5;
+    // gaszenie
+    if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);}
 
-      // gaszenie
-      if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);
-      //Change fuer Crazy Joker
-      glEnable(GL_BLEND);
-      glBegin(GL_QUADS);
-        glColor4f(26/255, 165/255, 220/255, 0);
-        glVertex2f(Rec.Left, Rec.Top);
-        glVertex2f(Rec.Left, Rec.Bottom);
-        glColor4f(26/255, 165/255, 220/255, BarAlpha);
-        glVertex2f(Rec.Right, Rec.Bottom);
-        glVertex2f(Rec.Right, Rec.Top);
-      glEnd;
-      glDisable(GL_BLEND);
+    //Change fuer Crazy Joker
+
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
+  glBegin(GL_QUADS);
+    glColor4f(1, 1, 1, 0);
+    glTexCoord2f(1/16, 1/16); glVertex2f(Rec.Left, Rec.Top);
+    glTexCoord2f(1/16, 15/16); glVertex2f(Rec.Left, Rec.Bottom);
+    glColor4f(1, 1, 1, 0.5);
+    glTexCoord2f(15/16, 15/16); glVertex2f(Rec.Right, Rec.Bottom);
+    glTexCoord2f(15/16, 1/16); glVertex2f(Rec.Right, Rec.Top);
+    glEnd;
+    glDisable(GL_BLEND);
     end;
 
   // oscilloscope
@@ -1207,20 +1206,27 @@ begin
           //Change Alpha
           Player[E].LineBonus_Alpha := Player[E].LineBonus_Alpha - 0.02;
 
+
           if Player[E].LineBonus_Alpha <= 0 then
+            begin
+            Player[E].LineBonus_Age := 0;
             Player[E].LineBonus_Visible := False
+
+            end
           else
           begin
+          inc(Player[E].LineBonus_Age, 1);
+
           //Change Position
           if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then
-            Inc(Player[E].LineBonus_PosX,1)
+            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
            else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then
-            Dec(Player[E].LineBonus_PosX,1);
+            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
 
           if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
-            Inc(Player[E].LineBonus_PosY,1)
+            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
           else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
-            Dec(Player[E].LineBonus_PosY,1);
+            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
 
           end;
       end;
@@ -1228,52 +1234,52 @@ begin
 
     if PlayersPlay = 1 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
+        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
    end
    else if PlayersPlay = 2 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
+        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
       if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
+        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
    end
    else if PlayersPlay = 3 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
+        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
       if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
+        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
       if PlayerInfo.Playerinfo[2].Enabled then
-        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text);
+        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
     end
    else if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
+          SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
         if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
+          SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
       end;
       if ScreenAct = 2 then begin
         if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text);
+          SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
         if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text);
+          SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
       end;
     end;
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text);
+          SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
         if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text);
+          SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
         if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text);
+          SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
       end;
       if ScreenAct = 2 then begin
         if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text);
+          SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
         if PlayerInfo.Playerinfo[4].Enabled then
-          SingDrawLineBonus( Player[4].LineBonus_PosX, Player[4].LineBonus_PosY, Player[4].LineBonus_Color, Player[4].LineBonus_Alpha, Player[4].LineBonus_Text);
+          SingDrawLineBonus( Player[4].LineBonus_PosX, Player[4].LineBonus_PosY, Player[4].LineBonus_Color, Player[4].LineBonus_Alpha, Player[4].LineBonus_Text, Player[4].LineBonus_Age);
         if PlayerInfo.Playerinfo[5].Enabled then
-          SingDrawLineBonus( Player[5].LineBonus_PosX, Player[5].LineBonus_PosY, Player[5].LineBonus_Color, Player[5].LineBonus_Alpha, Player[5].LineBonus_Text);
+          SingDrawLineBonus( Player[5].LineBonus_PosX, Player[5].LineBonus_PosY, Player[5].LineBonus_Color, Player[5].LineBonus_Alpha, Player[5].LineBonus_Text, Player[5].LineBonus_Age);
       end;
     end;
   end;
@@ -1492,16 +1498,17 @@ end;
 //end Singbar Mod
 
 //PhrasenBonus - Line Bonus Mod
-procedure SingDrawLineBonus( const X, Y: integer; Color: TRGB; Alpha: Single; Text: string);
+procedure SingDrawLineBonus( const X, Y: Single; Color: TRGB; Alpha: Single; Text: string; Age: Integer);
 var
 Length, X2: Real; //Length of Text
+Size: Integer; //Size of Popup
 begin
 if Alpha <> 0 then
 begin
 
 //Set Font Propertys
 SetFontStyle(2); //Font: Outlined1
-SetFontSize(6);
+if Age < 5 then SetFontSize(Age + 1) else SetFontSize(6);
 SetFontItalic(False);
 
 //Check Font Size
@@ -1510,56 +1517,24 @@ Length := glTextWidth ( PChar(Text)) + 3; //Little Space for a Better Look ^^
 //Text
 SetFontPos (X + 50 - (Length / 2), Y + 12); //Position
 
+
+if Age < 5 then Size := Age * 10 else Size := 50;
+
   //Draw  Background
   glColor4f(Color.R, Color.G, Color.B, Alpha); //Set Color
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  //Old Method with Variable Background
-  {//Draw Left Side
-  glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusL.TexNum);
 
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(X, Y);
-    glTexCoord2f(0, 1); glVertex2f(X, Y + Tex_SingLineBonusL.H * Tex_SingLineBonusL.ScaleH);
-    glTexCoord2f(1, 1); glVertex2f(X + Tex_SingLineBonusL.W * Tex_SingLineBonusL.scaleW, Y + Tex_SingLineBonusL.H * Tex_SingLineBonusL.scaleH);
-    glTexCoord2f(1, 0); glVertex2f(X + Tex_SingLineBonusL.W * Tex_SingLineBonusL.scaleW, Y);
-  glEnd;
-
-  //Set X of Next Tile
-  X2 := X + Tex_SingLineBonusL.W * Tex_SingLineBonusL.scaleW;
-
-  //Draw Middle
-  glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusM.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(X2, Y);
-    glTexCoord2f(0, 1); glVertex2f(X2, Y + Tex_SingLineBonusM.H * Tex_SingLineBonusM.ScaleH);
-    glTexCoord2f(1, 1); glVertex2f(X2 + Length, Y + Tex_SingLineBonusM.H * Tex_SingLineBonusM.scaleH);
-    glTexCoord2f(1, 0); glVertex2f(X2 + Length, Y);
-  glEnd;
-
-  //Set X of Next Tile
-  X2 := X2 + Length;
-
-  //Draw Rigth Side
-  glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusR.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(X2, Y);
-    glTexCoord2f(0, 1); glVertex2f(X2, Y + Tex_SingLineBonusR.H * Tex_SingLineBonusR.ScaleH);
-    glTexCoord2f(1, 1); glVertex2f(X2 + Tex_SingLineBonusR.W * Tex_SingLineBonusR.scaleW, Y + Tex_SingLineBonusR.H * Tex_SingLineBonusR.scaleH);
-    glTexCoord2f(1, 0); glVertex2f(X2 + Tex_SingLineBonusR.W * Tex_SingLineBonusR.scaleW, Y);
-  glEnd;}
   //New Method, Not Variable
   glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusBack.TexNum);
 
   glBegin(GL_QUADS);
-    glTexCoord2f(1/32, 0); glVertex2f(X, Y);
-    glTexCoord2f(1/32, 1); glVertex2f(X, Y + 50);
-    glTexCoord2f(31/32, 1); glVertex2f(X + 100, Y + 50);
-    glTexCoord2f(31/32, 0); glVertex2f(X + 100, Y);
+    glTexCoord2f(1/32, 0); glVertex2f(X + 50 - Size, Y + 25 - (Size/2));
+    glTexCoord2f(1/32, 1); glVertex2f(X + 50 - Size, Y + 25 + (Size/2));
+    glTexCoord2f(31/32, 1); glVertex2f(X + 50 + Size, Y + 25 + (Size/2));
+    glTexCoord2f(31/32, 0); glVertex2f(X + 50 + Size, Y + 25 - (Size/2));
   glEnd;
 
   glColor4f(1, 1, 1, Alpha); //Set Color

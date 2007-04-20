@@ -1180,6 +1180,7 @@ begin
       Player[I].LineBonus_PosY  := Player[I].LineBonus_StartY;
       Player[I].LineBonus_Alpha := 0.92;
       Player[I].LineBonus_Visible := True;
+      Player[I].LineBonus_Age := 1;
     end;
     //PhrasenBonus - Line Bonus Mod End// }
 
