@@ -177,7 +177,6 @@ var
   I: Integer;
 begin
   PartySession.StartRound;
-  Log.LogError(InttoStr(Length(DllMan.Plugins)));
 
   //Set Visibility of Round Infos
   I := Length(PartySession.Rounds);

@@ -116,6 +116,7 @@ begin
       TeamMode := False;
     end;
     Teams.Teaminfo[I].Joker := Round(NumRounds*0.7);
+    Teams.Teaminfo[I].Score := 0;
   end;
 
   //Fill Plugin Array
@@ -149,10 +150,46 @@ end;
 //----------
 function TParty_Session.GetRandomPlayer(Team: Byte): Byte;
 var
-  I, J: Integer;
+  I, R: Integer;
   lowestTP: Byte;
+  NumPwithLTP: Byte;
 begin
-  //Get lowest TimesPlayed
+    LowestTP := high(Byte);
+    NumPwithLTP := 0;
+
+    //Search for Players that have not often played yet
+    For I := 0 to Teams.Teaminfo[Team].NumPlayers-1 do
+    begin
+      if (Teams.Teaminfo[Team].Playerinfo[I].TimesPlayed < lowestTP) then
+      begin
+        lowestTP := Teams.Teaminfo[Team].Playerinfo[I].TimesPlayed;
+        NumPwithLTP := 1;
+      end
+      else if (Teams.Teaminfo[Team].Playerinfo[I].TimesPlayed = lowestTP) then
+      begin
+        Inc(NumPwithLTP);
+      end;
+    end;
+
+    //Create Random No
+    R := Random(NumPwithLTP);
+
+    //Search for Random Player
+    For I := 0 to Teams.Teaminfo[Team].NumPlayers-1 do
+    begin
+      if Teams.Teaminfo[Team].Playerinfo[I].TimesPlayed = lowestTP then
+      begin
+        //Player Found
+        if (R = 0) then
+        begin
+          Result := I;
+          Break;
+        end;
+        
+        Dec(R);
+      end;
+    end;
+  {//Get lowest TimesPlayed
   lowestTP := high(Byte);
   J := -1;
   for I := 0 to Teams.Teaminfo[Team].NumPlayers-1 do
@@ -174,7 +211,7 @@ begin
       Result := Random(Teams.Teaminfo[Team].NumPlayers);
     until (Teams.Teaminfo[Team].Playerinfo[Result].TimesPlayed = lowestTP)
   else //Else Select the one with lowest TP
-    Result:= J;
+    Result:= J;}
 end;
 
 //----------
