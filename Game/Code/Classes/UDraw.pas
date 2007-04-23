@@ -730,6 +730,7 @@ begin
   end
 
   //SingBar Mod
+  //modded again to make it moveable: it's working, so why try harder
   else if Ini.Oscilloscope = 2 then begin
     A := GetTickCount div 33;
     if A <> Tickold then begin
@@ -741,37 +742,53 @@ begin
       end; //for
     end; //if
     if PlayersPlay = 1 then begin
-      SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP1SingBar.x, Theme.Sing.StaticP1SingBar.y, Theme.Sing.StaticP1SingBar.w, Theme.Sing.StaticP1SingBar.h , Player[0].ScorePercent);
    end;
     if PlayersPlay = 2 then begin
-      SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-      SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+      //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
    end;
     if PlayersPlay = 3 then begin
-      SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-      SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
-      SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+      //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+      //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
     end;
     if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
-      SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-      SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+      //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
       end;
       if ScreenAct = 2 then begin
-      SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
-      SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
+      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+      //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[2].ScorePercent);
+      SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[3].ScorePercent);
       end;
     end;
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
-        SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-        SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
-        SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
-      end;
+        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+        //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+        //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
+     end;
       if ScreenAct = 2 then begin
-        SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
-        SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[4].ScorePercent);
-        SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[5].ScorePercent);
+        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
+        //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[4].ScorePercent);
+        //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[5].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[3].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[4].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[5].ScorePercent);
       end;
     end;
   end;
@@ -1134,6 +1151,7 @@ begin
   end
 
   //SingBar Mod
+  // was fürn sinn hattn der quark hier?
   else if ((Ini.Oscilloscope = 2) AND (DLLMan.Selected.ShowRateBar_O)) OR (DLLMan.Selected.ShowRateBar) then begin
     A := GetTickCount div 33;
     if A <> Tickold then begin
@@ -1146,52 +1164,68 @@ begin
     end; //if
     if PlayersPlay = 1 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP1SingBar.x, Theme.Sing.StaticP1SingBar.y, Theme.Sing.StaticP1SingBar.w, Theme.Sing.StaticP1SingBar.h , Player[0].ScorePercent);
    end;
     if PlayersPlay = 2 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
       if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+        //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
    end;
     if PlayersPlay = 3 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
       if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+        //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
       if PlayerInfo.Playerinfo[2].Enabled then
-        SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+        //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
     end;
     if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
         if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+          //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
       end;
       if ScreenAct = 2 then begin
         if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[2].ScorePercent);
         if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
+          //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[3].ScorePercent);
       end;
     end;
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
         if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+          //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
         if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+          //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
       end;
       if ScreenAct = 2 then begin
         if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
+          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[3].ScorePercent);
         if PlayerInfo.Playerinfo[4].Enabled then
-          SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[4].ScorePercent);
+          //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[4].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[4].ScorePercent);
         if PlayerInfo.Playerinfo[5].Enabled then
-          SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[5].ScorePercent);
+          //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[5].ScorePercent);
+          SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[5].ScorePercent);
       end;
     end;
   end;

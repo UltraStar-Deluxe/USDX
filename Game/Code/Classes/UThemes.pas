@@ -272,6 +272,15 @@ type
     TextP1:           TThemeText;
     TextP1Score:      TThemeText;
 
+    //moveable singbar mod
+    StaticP1SingBar:         TThemeStatic;
+    StaticP1ThreePSingBar:   TThemeStatic;
+    StaticP1TwoPSingBar:     TThemeStatic;
+    StaticP2RSingBar:        TThemeStatic;
+    StaticP2MSingBar:        TThemeStatic;
+    StaticP3SingBar:         TThemeStatic;
+    //eoa moveable singbar
+
     //added for ps3 skin
     //game in 2/4 player modi
     StaticP1TwoP:         TThemeStatic;
@@ -913,6 +922,15 @@ begin
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
+
+      //moveable singbar mod
+    ThemeLoadStatic(Sing.StaticP1SingBar, 'SingP1SingBar');
+    ThemeLoadStatic(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
+    ThemeLoadStatic(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
+    ThemeLoadStatic(Sing.StaticP2RSingBar, 'SingP2RSingBar');
+    ThemeLoadStatic(Sing.StaticP2MSingBar, 'SingP2MSingBar');
+    ThemeLoadStatic(Sing.StaticP3SingBar, 'SingP3SingBar');
+     //eoa moveable singbar
 
       ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
       ThemeLoadText(Sing.TextP1, 'SingP1Text');
@@ -1813,6 +1831,15 @@ begin
   ThemeSaveText(Sing.TextP1, 'SingP1Text');
   ThemeSaveStatic(Sing.StaticP1ScoreBG, 'SingP1Static2');
   ThemeSaveText(Sing.TextP1Score, 'SingP1TextScore');
+
+  //moveable singbar mod
+  ThemeSaveStatic(Sing.StaticP1SingBar, 'SingP1SingBar');
+  ThemeSaveStatic(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
+  ThemeSaveStatic(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
+  ThemeSaveStatic(Sing.StaticP2RSingBar, 'SingP2RSingBar');
+  ThemeSaveStatic(Sing.StaticP2MSingBar, 'SingP2MSingBar');
+  ThemeSaveStatic(Sing.StaticP3SingBar, 'SingP3SingBar');
+  //eoa moveable singbar
 
   //Added for ps3 skin
   //This one is shown in 2/4P mode

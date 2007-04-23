@@ -19,6 +19,15 @@ type
       TextP1:             integer;
       TextP1Score:        integer;
 
+      //moveable singbar mod
+      StaticP1SingBar:         integer;
+      StaticP1ThreePSingBar:   integer;
+      StaticP1TwoPSingBar:     integer;
+      StaticP2RSingBar:        integer;
+      StaticP2MSingBar:        integer;
+      StaticP3SingBar:         integer;
+      //eoa moveable singbar
+
       //Added for ps3 skin
       //shown when game is in 2/4 player modus
       StaticP1TwoP:           integer;
@@ -169,6 +178,15 @@ begin
   StaticP1ScoreBG := AddStatic(Theme.Sing.StaticP1ScoreBG);
   TextP1 := AddText(Theme.Sing.TextP1);
   TextP1Score := AddText(Theme.Sing.TextP1Score);
+
+  //moveable singbar mod
+  StaticP1SingBar         := AddStatic(Theme.Sing.StaticP1SingBar);
+  StaticP1ThreePSingBar   := AddStatic(Theme.Sing.StaticP1ThreePSingBar);
+  StaticP1TwoPSingBar     := AddStatic(Theme.Sing.StaticP2RSingBar);
+  StaticP2RSingBar        := AddStatic(Theme.Sing.StaticP2RSingBar);
+  StaticP2MSingBar        := AddStatic(Theme.Sing.StaticP2MSingBar);
+  StaticP3SingBar         := AddStatic(Theme.Sing.StaticP3SingBar);
+  //eoa moveable singbar
 
   //Added for ps3 skin
   //This one is shown in 2/4P mode
