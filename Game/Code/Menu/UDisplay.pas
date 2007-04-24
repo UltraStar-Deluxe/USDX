@@ -143,12 +143,12 @@ begin
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
           glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 512, 512, 0);
-          glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           if glGetError <> GL_NO_ERROR then
           begin
             canFade := False;
             showmessage('Fehler beim Kopieren der Fade-Textur... Fading deaktiviert');
           end;
+          glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           NextScreen.onShow;
           lastTime:=GetTickCount;
           if (S=2) or (Screens = 1) then
