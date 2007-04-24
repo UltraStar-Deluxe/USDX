@@ -2,7 +2,7 @@ unit UDisplay;
 
 interface
 
-uses Windows, SDL, UMenu, OpenGL12, SysUtils, dialogs, Math;
+uses Windows, SDL, UMenu, OpenGL12, SysUtils, dialogs;
 
 type
   TDisplay = class
@@ -19,7 +19,7 @@ type
     myFade: integer;
     lastTime: Cardinal;
     pTexData : Pointer;
-    pTex : glUInt;
+    pTex : array[1..2] of glUInt;
     // end
 
     function Draw: Boolean;
@@ -41,6 +41,7 @@ implementation
 uses UGraphic, UTime, Graphics, Jpeg, UPliki, UTexture, UIni;
 
 constructor TDisplay.Create;
+var i: integer;
 begin
   inherited Create;
 
@@ -56,10 +57,11 @@ begin
   // generate texture for fading between screens
   GetMem(pTexData, 1024*1024*3);
   if pTexData <> NIL then
+  for i:= 1 to 2 do
   begin
-    glGenTextures(1, pTex);
+    glGenTextures(1, pTex[i]);
     if glGetError <> GL_NO_ERROR then canFade := False;
-    glBindTexture(GL_TEXTURE_2D, pTex);
+    glBindTexture(GL_TEXTURE_2D, pTex[i]);
     if glGetError <> GL_NO_ERROR then canFade := False;
     glTexImage2D(GL_TEXTURE_2D, 0, 3, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, pTexData);
     if glGetError <> GL_NO_ERROR then canFade := False;
@@ -67,12 +69,12 @@ begin
     if glGetError <> GL_NO_ERROR then canFade := False;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     if glGetError <> GL_NO_ERROR then canFade := False;
-    FreeMem(pTexData);
   end
   else
   begin
     canFade:=False;
   end;
+  FreeMem(pTexData);
   if not canFade then begin
     showmessage('Fehler beim Initialisieren der Fading-Textur... Fading deaktiviert');
     doFade:=False;
@@ -94,7 +96,7 @@ var
   S:    integer;
   Col: Real;
   // fade mod
-  myFade2:integer;
+  myFade2: Real;
   currentTime: Cardinal;
   // end
 begin
@@ -116,7 +118,6 @@ begin
     ScreenX := 0;
 
 
-    if S = 2 then TimeSkip := 0 else; // it's easier than rewriting code
     glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
 //    ActualScreen.SetAnimationProgress(1);
@@ -139,8 +140,8 @@ begin
         if myfade = 0 then
         begin
           ActualScreen.Draw;
-          glBindTexture(GL_TEXTURE_2D, pTex);
-          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1024, 1024, 0);
+          glBindTexture(GL_TEXTURE_2D, pTex[S]);
+          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (S-1)*ScreenW div Screens, 0, 1024, 1024, 0);
           if glGetError <> GL_NO_ERROR then
           begin
             canFade := False;
@@ -148,14 +149,18 @@ begin
           end;
           NextScreen.onShow;
           lastTime:=GetTickCount;
-          myfade:=myfade+1;
-        end;
+          if (S=2) or (Screens = 1) then
+            myfade:=myfade+1;
+        end; // end texture creation in first fading step
+
+        //do some time-based fading
         currentTime:=GetTickCount;
-        if currentTime > lastTime+30 then
+        if (currentTime > lastTime+30) and (S=1) then
         begin
           myfade:=myfade+4;
           lastTime:=currentTime;
         end;
+
 //      LastFade := Fade;   // whatever
 //      Fade := Fade -0.999; // start fading out
 
@@ -164,22 +169,20 @@ begin
 
 //      ActualScreen.SetAnimationProgress(Fade-1); // nop?
 
-        glClearColor(Col, Col, Col , 0);
-        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
         NextScreen.Draw; // draw next screen
 
       // and draw old screen over it... slowly fading out
-        myfade2:=myfade*myfade;
-        glBindTexture(GL_TEXTURE_2D, pTex);
-        glColor4f(1, 1, 1, (1000-myfade2)/1000); // strange calculation - alpha gets negative... but looks good this way
+        myfade2:=(myfade*myfade)/10000;
+        glBindTexture(GL_TEXTURE_2D, pTex[S]);
+        glColor4f(1, 1, 1, (1000-myfade*myfade)/1000); // strange calculation - alpha gets negative... but looks good this way
         glEnable(GL_TEXTURE_2D);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
         glBegin(GL_QUADS);
-          glTexCoord2f(0,0);glVertex2f(0-myfade2,   600+myfade2);
-          glTexCoord2f(0,ScreenH/1024);glVertex2f(0-myfade2,   0-myfade2);
-          glTexCoord2f(ScreenW/1024,ScreenH/1024);glVertex2f(800+myfade2, 0-myfade2);
-          glTexCoord2f(ScreenW/1024,0);glVertex2f(800+myfade2, 600+myfade2);
+          glTexCoord2f(0+myfade2,0+myfade2);glVertex2f(0,   600);
+          glTexCoord2f(0+myfade2,ScreenH/1024-myfade2);glVertex2f(0,   0);
+          glTexCoord2f((ScreenW div Screens)/1024-myfade2,ScreenH/1024-myfade2);glVertex2f(800, 0);
+          glTexCoord2f((ScreenW div Screens)/1024-myfade2,0+myfade2);glVertex2f(800, 600);
         glEnd;
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
@@ -189,12 +192,12 @@ begin
 
       if (myfade > 40) or (not doFade) or (not canFade) then begin // fade out complete...
         myFade:=0;
-        ActualScreen.onHide; // nop... whatever
+        ActualScreen.onHide;
         ActualScreen.ShowFinish:=False;
         ActualScreen:=NextScreen;
         NextScreen := nil;
-        ActualScreen.onShowFinish; // one more nop...
-        ActualScreen.ShowFinish := true; // who wrote this crap?
+        ActualScreen.onShowFinish;
+        ActualScreen.ShowFinish := true;
       // end of fade mod
       end;
     end; // if
