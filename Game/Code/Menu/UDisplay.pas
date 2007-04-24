@@ -139,10 +139,10 @@ begin
         //Create Fading texture if we're just starting
         if myfade = 0 then
         begin
-          glViewPort((S-1) * 512, 0, 512, 512);
+          glViewPort(0, 0, 512, 512);
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
-          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (S-1)*512, 0, 512, 512, 0);
+          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 512, 512, 0);
           glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           if glGetError <> GL_NO_ERROR then
           begin
