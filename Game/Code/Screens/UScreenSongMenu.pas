@@ -329,8 +329,8 @@ begin
         SelectsS[0].Visible := False;
 
         Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAY');
-        Button[1].Text[0].Text := Language.Translate('SONG_MENU_JOKER');
-        Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYMODI');
+        //Button[1].Text[0].Text := Language.Translate('SONG_MENU_JOKER');
+        //Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYMODI');
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_JOKER');
       end;
 
@@ -349,6 +349,21 @@ begin
         Button[1].Text[0].Text := String(PartySession.Teams.Teaminfo[1].Name);
         Button[2].Text[0].Text := String(PartySession.Teams.Teaminfo[2].Name);
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
+
+        //Set right Interaction
+        if (not Button[0].Visible) then
+        begin
+          if (not Button[1].Visible) then
+          begin
+            if (not Button[2].Visible) then
+            begin
+              Interaction := 4;
+            end
+            else Interaction := 2;
+          end
+          else Interaction := 1;
+        end;
+        
       end;
   end;
 end;
