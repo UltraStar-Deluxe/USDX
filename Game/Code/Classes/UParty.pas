@@ -55,7 +55,7 @@ var
   end;
   TeamMode: Boolean;
   Len:  Integer;
-  I:  Integer;
+  I, J:  Integer;
 
   function GetRandomPlugin: Byte;
   var
@@ -107,13 +107,18 @@ begin
 
   PlayersPlay := Teams.NumTeams;
 
-  //Get Teammode and Set Joker
+  //Get Teammode and Set Joker, also set TimesPlayed
   TeamMode := True;
   For I := 0 to Teams.NumTeams-1 do
   begin
     if Teams.Teaminfo[I].NumPlayers < 2 then
     begin
       TeamMode := False;
+    end;
+    //Set Player Attributes
+    For J := 0 to Teams.TeamInfo[I].NumPlayers-1 do
+    begin
+      Teams.TeamInfo[I].Playerinfo[J].TimesPlayed := 0;
     end;
     Teams.Teaminfo[I].Joker := Round(NumRounds*0.7);
     Teams.Teaminfo[I].Score := 0;
@@ -156,6 +161,7 @@ var
 begin
     LowestTP := high(Byte);
     NumPwithLTP := 0;
+    Result := 0;
 
     //Search for Players that have not often played yet
     For I := 0 to Teams.Teaminfo[Team].NumPlayers-1 do
@@ -323,7 +329,7 @@ begin
 
   //Increase TimesPlayed 4 all Players
   For I := 0 to Teams.NumTeams-1 do
-    Inc(Teams.Teaminfo[I].Playerinfo[Teams.Teaminfo[0].CurPlayer].TimesPlayed);
+    Inc(Teams.Teaminfo[I].Playerinfo[Teams.Teaminfo[I].CurPlayer].TimesPlayed);
 
 end;
 
