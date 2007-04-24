@@ -147,6 +147,8 @@ begin
             Music.PlayStart;
             if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
             if (Ini.Players = 4) then PlayersPlay := 6;
+
+            ScreenName.Goto_SingScreen := False;
             FadeTo(@ScreenName);
           end;
           if Interaction = 1 then begin
@@ -206,6 +208,23 @@ begin
   TextDescriptionLong := AddText(Theme.Main.TextDescriptionLong);
 
   Interaction := 0;
+
+  //Some Testing for Button Fade
+  Button[0].SelectH := Button[0].H * 3;
+  Button[0].Fade := True;
+  Button[0].FadeText := True;
+  Button[0].DeSelectReflectionspacing := 280;
+
+  Button[1].SelectH := Button[0].H * 3;
+  Button[1].Fade := True;
+
+  Button[2].SelectH := Button[0].H * 3;
+  Button[2].Fade := True;
+  Button[2].FadeText := True;
+
+  Button[3].SelectH := Button[0].H * 3;
+  Button[3].Fade := True;
+  Button[3].FadeText := True;
 end;
 
 procedure TScreenMain.onShow;

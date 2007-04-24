@@ -368,7 +368,7 @@ begin
           1: //Button 2
             begin
               //Select New Players then Sing:
-
+              ScreenSong.SelectPlayers;
               Visible := False;
             end;
 

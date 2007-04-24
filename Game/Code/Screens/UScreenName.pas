@@ -8,6 +8,7 @@ uses
 type
   TScreenName = class(TMenu)
     public
+      Goto_SingScreen: Boolean; //If True then next Screen in SingScreen
       constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
@@ -49,7 +50,13 @@ begin
             Ini.Name[I-1] := Button[I-1].Text[0].Text;
           Ini.SaveNames;
           Music.PlayStart;
-          FadeTo(@ScreenLevel);
+
+          if GoTo_SingScreen then
+            FadeTo(@ScreenSing)
+          else
+            FadeTo(@ScreenLevel);
+
+          GoTo_SingScreen := False;
         end;
 
       // Up and Down could be done at the same time,

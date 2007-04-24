@@ -83,6 +83,7 @@ type
       procedure StartSong;
       procedure OpenEditor;
       procedure DoJoker(Team: Byte);
+      procedure SelectPlayers;
 
       //Extensions
       procedure DrawExtensions;
@@ -299,8 +300,17 @@ begin
             end else begin // clicked on song
               if (Mode = 0) then //Normal Mode -> Start Song
               begin
-                StartSong;
-
+                //Do the Action that is specified in Ini
+                case Ini.OnSongClick of
+                  0: StartSong;
+                  1: SelectPlayers;
+                  2:begin
+                      If (CatSongs.CatNumShow = -3) then
+                        ScreenSongMenu.MenuShow(SM_Playlist)
+                      else
+                        ScreenSongMenu.MenuShow(SM_Main);
+                    end;
+                end;
               end
               else if (Mode = 1) then //PartyMode -> Show Menu
               begin
@@ -1613,6 +1623,15 @@ begin
   begin
     FadeTo(@ScreenSing);
   end;
+end;
+
+procedure TScreenSong.SelectPlayers;
+begin
+  CatSongs.Selected := Interaction;
+  Music.Stop;
+
+  ScreenName.Goto_SingScreen := True;
+  FadeTo(@ScreenName);
 end;
 
 procedure TScreenSong.OpenEditor;
