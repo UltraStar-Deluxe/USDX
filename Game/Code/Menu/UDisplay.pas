@@ -55,7 +55,7 @@ begin
 
   canFade:=True;
   // generate texture for fading between screens
-  GetMem(pTexData, 1024*1024*3);
+  GetMem(pTexData, 512*512*3);
   if pTexData <> NIL then
   for i:= 1 to 2 do
   begin
@@ -63,7 +63,7 @@ begin
     if glGetError <> GL_NO_ERROR then canFade := False;
     glBindTexture(GL_TEXTURE_2D, pTex[i]);
     if glGetError <> GL_NO_ERROR then canFade := False;
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, pTexData);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, pTexData);
     if glGetError <> GL_NO_ERROR then canFade := False;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     if glGetError <> GL_NO_ERROR then canFade := False;
@@ -117,7 +117,7 @@ begin
 //    if (Screens = 2) and (S = 2) then ScreenX := 1;
     ScreenX := 0;
 
-    if S = 2 then TimeSkip := 0 else; 
+    if S = 2 then TimeSkip := 0 else;
     glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
 //    ActualScreen.SetAnimationProgress(1);
@@ -139,9 +139,11 @@ begin
         //Create Fading texture if we're just starting
         if myfade = 0 then
         begin
+          glViewPort((S-1) * 512, 0, 512, 512);
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
-          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (S-1)*ScreenW div Screens, 0, 1024, 1024, 0);
+          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, (S-1)*512, 0, 512, 512, 0);
+          glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           if glGetError <> GL_NO_ERROR then
           begin
             canFade := False;
@@ -180,9 +182,9 @@ begin
         glEnable(GL_BLEND);
         glBegin(GL_QUADS);
           glTexCoord2f(0+myfade2,0+myfade2);glVertex2f(0,   600);
-          glTexCoord2f(0+myfade2,ScreenH/1024-myfade2);glVertex2f(0,   0);
-          glTexCoord2f((ScreenW div Screens)/1024-myfade2,ScreenH/1024-myfade2);glVertex2f(800, 0);
-          glTexCoord2f((ScreenW div Screens)/1024-myfade2,0+myfade2);glVertex2f(800, 600);
+          glTexCoord2f(0+myfade2,1-myfade2);glVertex2f(0,   0);
+          glTexCoord2f(1-myfade2,1-myfade2);glVertex2f(800, 0);
+          glTexCoord2f(1-myfade2,0+myfade2);glVertex2f(800, 600);
         glEnd;
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
