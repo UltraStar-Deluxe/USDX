@@ -234,10 +234,10 @@ begin
           Rec.Bottom := Rec.Top + 2 * NotesH;
           glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum);
           glBegin(GL_QUADS);
-            glTexCoord2f(0,   0); glVertex2f(Rec.Left,  Rec.Top);
-            glTexCoord2f(0,   1); glVertex2f(Rec.Left,  Rec.Bottom);
-            glTexCoord2f(7/8, 1); glVertex2f(Rec.Right, Rec.Bottom);
-            glTexCoord2f(7/8, 0); glVertex2f(Rec.Right, Rec.Top);
+            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
           glEnd;
 
           //We keep the postion of the top left corner b4 it's overwritten
@@ -251,10 +251,10 @@ begin
 
         glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/32,  0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/32,  1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(31/32, 1); glVertex2f(Rec.Right, Rec.Bottom);
-         glTexCoord2f(31/32, 0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
         // prawa czesc  -  right part
@@ -263,10 +263,10 @@ begin
 
         glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/8, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/8, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1,   1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1,   0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
           // Golden Star Patch
@@ -336,10 +336,10 @@ var
         glColor3f(1, 1, 1);
         glBindTexture(GL_TEXTURE_2D, Tex_Left[NrGracza+1].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/8, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/8, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(7/8, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(7/8, 0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
         // srodkowa czesc
@@ -356,10 +356,10 @@ var
 //        glBindTexture(GL_TEXTURE_2D, Tex_MidGray.TexNum);
         glBindTexture(GL_TEXTURE_2D, Tex_Mid[NrGracza+1].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/8,  0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/8,  1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(7/8, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(7/8, 0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
         glColor3f(1, 1, 1);
 
@@ -369,10 +369,10 @@ var
 
         glBindTexture(GL_TEXTURE_2D, Tex_Right[NrGracza+1].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/8, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/8, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1,   1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1,   0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
 
@@ -474,10 +474,10 @@ begin
 
           glBindTexture(GL_TEXTURE_2D, Tex_BG_Left[NrGracza+1].TexNum);
           glBegin(GL_QUADS);
-            glTexCoord2f(0,   0); glVertex2f(Rec.Left,  Rec.Top);
-            glTexCoord2f(0,   1); glVertex2f(Rec.Left,  Rec.Bottom);
-            glTexCoord2f(7/8, 1); glVertex2f(Rec.Right, Rec.Bottom);
-            glTexCoord2f(7/8, 0); glVertex2f(Rec.Right, Rec.Top);
+            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
           glEnd;
 
 
@@ -487,10 +487,10 @@ begin
 
         glBindTexture(GL_TEXTURE_2D, Tex_BG_Mid[NrGracza+1].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/32,  0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/32,  1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(31/32, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(31/32, 0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
         // prawa czesc
@@ -499,10 +499,10 @@ begin
 
         glBindTexture(GL_TEXTURE_2D, Tex_BG_Right[NrGracza+1].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/8, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/8, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1,   1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1,   0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
         end; // if not FreeStyle
       end; // with
@@ -677,11 +677,11 @@ begin
   glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
   glBegin(GL_QUADS);
     glColor4f(1, 1, 1, 0);
-    glTexCoord2f(1/16, 1/16); glVertex2f(Rec.Left, Rec.Top);
-    glTexCoord2f(1/16, 15/16); glVertex2f(Rec.Left, Rec.Bottom);
+    glTexCoord2f(0, 0); glVertex2f(Rec.Left, Rec.Top);
+    glTexCoord2f(0, 1); glVertex2f(Rec.Left, Rec.Bottom);
     glColor4f(1, 1, 1, 0.5);
-    glTexCoord2f(15/16, 15/16); glVertex2f(Rec.Right, Rec.Bottom);
-    glTexCoord2f(15/16, 1/16); glVertex2f(Rec.Right, Rec.Top);
+    glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+    glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
     glEnd;
     glDisable(GL_BLEND);
 
@@ -1083,11 +1083,11 @@ begin
   glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
   glBegin(GL_QUADS);
     glColor4f(1, 1, 1, 0);
-    glTexCoord2f(1/16, 1/16); glVertex2f(Rec.Left, Rec.Top);
-    glTexCoord2f(1/16, 15/16); glVertex2f(Rec.Left, Rec.Bottom);
+    glTexCoord2f(0, 0); glVertex2f(Rec.Left, Rec.Top);
+    glTexCoord2f(0, 1); glVertex2f(Rec.Left, Rec.Bottom);
     glColor4f(1, 1, 1, 0.5);
-    glTexCoord2f(15/16, 15/16); glVertex2f(Rec.Right, Rec.Bottom);
-    glTexCoord2f(15/16, 1/16); glVertex2f(Rec.Right, Rec.Top);
+    glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+    glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
     glEnd;
     glDisable(GL_BLEND);
     end;
@@ -1468,10 +1468,10 @@ begin;
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glBindTexture(GL_TEXTURE_2D, Tex_SingBar_Back.TexNum);
   glBegin(GL_QUADS);
-    glTexCoord2f(1/16, 0); glVertex2f(X, Y);
-    glTexCoord2f(1/16, 1); glVertex2f(X, Y+H);
-    glTexCoord2f(1 - 1/16, 1); glVertex2f(X+W, Y+H);
-    glTexCoord2f(1 - 1/16, 0); glVertex2f(X+W, Y);
+    glTexCoord2f(0, 0); glVertex2f(X, Y);
+    glTexCoord2f(0, 1); glVertex2f(X, Y+H);
+    glTexCoord2f(1, 1); glVertex2f(X+W, Y+H);
+    glTexCoord2f(1, 0); glVertex2f(X+W, Y);
   glEnd;
 
   //SingBar coloured Bar
@@ -1510,10 +1510,10 @@ begin;
   glBindTexture(GL_TEXTURE_2D, Tex_SingBar_Bar.TexNum);
   //Size= Player[PlayerNum].ScorePercent of W
     glBegin(GL_QUADS);
-    glTexCoord2f(1/16, 0); glVertex2f(X, Y);
-    glTexCoord2f(1/16, 1); glVertex2f(X, Y+H);
-    glTexCoord2f(1 - 1/16, 1); glVertex2f(X+(W/100 * (Percent +1)), Y+H);
-    glTexCoord2f(1 - 1/16, 0); glVertex2f(X+(W/100 * (Percent +1)), Y);
+    glTexCoord2f(0, 0); glVertex2f(X, Y);
+    glTexCoord2f(0, 1); glVertex2f(X, Y+H);
+    glTexCoord2f(1, 1); glVertex2f(X+(W/100 * (Percent +1)), Y+H);
+    glTexCoord2f(1, 0); glVertex2f(X+(W/100 * (Percent +1)), Y);
   glEnd;
 
   //SingBar Front
@@ -1565,10 +1565,10 @@ if Age < 5 then Size := Age * 10 else Size := 50;
   glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusBack.TexNum);
 
   glBegin(GL_QUADS);
-    glTexCoord2f(1/32, 0); glVertex2f(X + 50 - Size, Y + 25 - (Size/2));
-    glTexCoord2f(1/32, 1); glVertex2f(X + 50 - Size, Y + 25 + (Size/2));
-    glTexCoord2f(31/32, 1); glVertex2f(X + 50 + Size, Y + 25 + (Size/2));
-    glTexCoord2f(31/32, 0); glVertex2f(X + 50 + Size, Y + 25 - (Size/2));
+    glTexCoord2f(0, 0); glVertex2f(X + 50 - Size, Y + 25 - (Size/2));
+    glTexCoord2f(0, 1); glVertex2f(X + 50 - Size, Y + 25 + (Size/2));
+    glTexCoord2f(1, 1); glVertex2f(X + 50 + Size, Y + 25 + (Size/2));
+    glTexCoord2f(1, 0); glVertex2f(X + 50 + Size, Y + 25 - (Size/2));
   glEnd;
 
   glColor4f(1, 1, 1, Alpha); //Set Color
@@ -1614,10 +1614,10 @@ begin
           Rec.Bottom := Rec.Top + 2 * NotesH;
           glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum);
           glBegin(GL_QUADS);
-            glTexCoord2f(0,   0); glVertex2f(Rec.Left,  Rec.Top);
-            glTexCoord2f(0,   1); glVertex2f(Rec.Left,  Rec.Bottom);
-            glTexCoord2f(7/8, 1); glVertex2f(Rec.Right, Rec.Bottom);
-            glTexCoord2f(7/8, 0); glVertex2f(Rec.Right, Rec.Top);
+            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
           glEnd;
 
          // srodkowa czesc  -  middle part
@@ -1626,10 +1626,10 @@ begin
 
         glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/32,  0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/32,  1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(31/32, 1); glVertex2f(Rec.Right, Rec.Bottom);
-         glTexCoord2f(31/32, 0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
         // prawa czesc  -  right part
@@ -1638,10 +1638,10 @@ begin
 
         glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum);
         glBegin(GL_QUADS);
-          glTexCoord2f(1/8, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(1/8, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1,   1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1,   0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
       end; // with
