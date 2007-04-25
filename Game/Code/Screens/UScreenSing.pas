@@ -592,107 +592,107 @@ begin
 
   Case PlayersPlay of
     1: begin
-      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_TargetY := Skin_P2_NotesB - 105 - 65;
-      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_StartY  := Skin_P2_NotesB - 105;
     end;
 
     2: begin
       //P1
-      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_TargetY := Skin_P1_NotesB - 105 - 65 + 28;
-      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_StartY  := Skin_P1_NotesB - 105 + 28;
 
       //P2
-      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_TargetY := Skin_P2_NotesB - 105 - 65 + 28;
-      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_StartY  := Skin_P2_NotesB - 105 + 28;
     end;
 
     3: begin
       //P1
-      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_TargetY := 120 - 65 + 28;
-      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_StartY  := 120 + 28;
 
       //P2
-      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_TargetY := 245 - 65 + 28;
-      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_StartY  := 245 + 28;
 
       //P3
-      Player[2].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[2].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[2].LineBonus_TargetY := 370 - 65 + 28;
-      Player[2].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[2].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[2].LineBonus_StartY  := 370 + 28;
     end;
 
     4: begin
       //P1
-      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_TargetY := Skin_P1_NotesB - 105 - 65 + 28;
-      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_StartY  := Skin_P1_NotesB - 105 + 28;
 
       //P2
-      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_TargetY := Skin_P2_NotesB - 105 - 65 + 28;
-      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_StartY  := Skin_P2_NotesB - 105 + 28;
 
       //P3
-      Player[2].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[2].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[2].LineBonus_TargetY := Skin_P1_NotesB - 105 - 65 + 28;
-      Player[2].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[2].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[2].LineBonus_StartY  := Skin_P1_NotesB - 105 + 28;
 
       //P4
-      Player[3].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[3].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[3].LineBonus_TargetY := Skin_P2_NotesB - 105 - 65 + 28;
-      Player[3].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[3].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[3].LineBonus_StartY  := Skin_P2_NotesB - 105 + 28;
     end;
 
     6: begin
       //P1
-      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_TargetY := 120 - 65 + 28;
-      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[0].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[0].LineBonus_StartY  := 120 + 28;
 
       //P2
-      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_TargetY := 245 - 65 + 28;
-      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[1].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[1].LineBonus_StartY  := 245 + 28;
 
       //P3
-      Player[2].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[2].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[2].LineBonus_TargetY := 370 - 65 + 28;
-      Player[2].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[2].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[2].LineBonus_StartY  := 370 + 28;
 
       //P4
-      Player[3].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[3].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[3].LineBonus_TargetY := 120 - 65 + 28;
-      Player[3].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[3].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[3].LineBonus_StartY  := 120 + 28;
 
       //P5
-      Player[4].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[4].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[4].LineBonus_TargetY := 245 - 65 + 28;
-      Player[4].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[4].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[4].LineBonus_StartY  := 245 + 28;
 
       //P6
-      Player[5].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 87);
+      Player[5].LineBonus_TargetX := Round(Nr.Right + 10*ScreenX - 100);
       Player[5].LineBonus_TargetY := 370 - 65 + 28;
-      Player[5].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 87);
+      Player[5].LineBonus_StartX  := Round(Nr.Right + 10*ScreenX - 100);
       Player[5].LineBonus_StartY  := 370 + 28;
     end;
   end;
