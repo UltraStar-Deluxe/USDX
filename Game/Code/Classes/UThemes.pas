@@ -134,6 +134,14 @@ type
     //Reflection Mod
     Reflection:           boolean;
     Reflectionspacing:    Real;
+    //Fade Mod
+    SelectH:    integer;
+    SelectW:    integer;
+    Fade:       boolean;
+    FadeText:   boolean;
+    DeSelectReflectionspacing : Real;
+    FadeTex:    string;
+    FadeTexPos: integer;
   end;
 
   TThemeSelect = record
@@ -1454,6 +1462,22 @@ begin
     ThemeButton.DColB := Color[C].RGB.B;
   end;
 
+  //Fade Mod
+  ThemeButton.SelectH := ThemeIni.ReadInteger (Name, 'SelectH', ThemeButton.H);
+  ThemeButton.SelectW := ThemeIni.ReadInteger (Name, 'SelectW', ThemeButton.W);
+
+  ThemeButton.DeSelectReflectionspacing := ThemeIni.ReadFloat(Name, 'DeSelectReflectionSpacing', ThemeButton.Reflectionspacing);
+  
+  ThemeButton.Fade := (ThemeIni.ReadInteger(Name, 'Fade', 0) = 1);
+  ThemeButton.FadeText := (ThemeIni.ReadInteger(Name, 'FadeText', 0) = 1);
+
+
+  ThemeButton.FadeTex := ThemeIni.ReadString(Name, 'FadeTex', '');
+  ThemeButton.FadeTexPos:= ThemeIni.ReadInteger(Name, 'FadeTexPos', 0);
+  if (ThemeButton.FadeTexPos > 4) Or (ThemeButton.FadeTexPos < 0) then
+    ThemeButton.FadeTexPos := 0;
+
+  //Read ButtonTexts
   TLen := ThemeIni.ReadInteger(Name, 'Texts', 0);
   SetLength(ThemeButton.Text, TLen);
   for T := 1 to TLen do

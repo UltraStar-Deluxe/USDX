@@ -23,7 +23,7 @@ type
 
 implementation
 
-uses Windows, UGraphic, UMain, UIni, UTexture, USongs, Textgl, opengl, ULanguage, UParty, UDLLManager, UScreenCredits;
+uses Windows, UGraphic, UMain, UIni, UTexture, USongs, Textgl, opengl, ULanguage, UParty, UDLLManager, UScreenCredits, USkins;
 
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
@@ -149,24 +149,6 @@ begin
   TextDescriptionLong := AddText(Theme.Main.TextDescriptionLong);
 
   Interaction := 0;
-
-  //Some Testing for Button Fade
-{  Button[0].SelectH := Button[0].H * 3;
-  Button[0].Fade := True;
-  Button[0].FadeText := True;
-  Button[0].DeSelectReflectionspacing := 280;
-
-  Button[1].SelectH := Button[0].H * 3;
-  Button[1].Fade := True;
-
-  Button[2].SelectH := Button[0].H * 3;
-  Button[2].Fade := True;
-  Button[2].FadeText := True;
-
-  Button[3].SelectH := Button[0].H * 3;
-  Button[3].Fade := True;
-  Button[3].FadeText := True;
-}
 end;
 
 procedure TScreenMain.onShow;

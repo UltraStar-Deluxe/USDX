@@ -65,7 +65,7 @@ type
       function AddButton(ThemeButton: TThemeButton): integer; overload;
       function AddButton(X, Y, W, H: real; Name: String): integer; overload;
       function AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer; overload;
-      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing: Real): integer; overload;
+      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer; overload;
       procedure ClearButtons;
       procedure AddButtonText(AddX, AddY: real; AddText: string); overload;
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; AddText: string); overload;
@@ -394,9 +394,18 @@ begin
   Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
     ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
     ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
-    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ, ThemeButton.Reflection, ThemeButton.Reflectionspacing);
+    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ, ThemeButton.Reflection, ThemeButton.Reflectionspacing, ThemeButton.DeSelectReflectionspacing);
 
   Button[Result].Z := ThemeButton.Z;
+
+  //Some Things from ButtonFading
+  Button[Result].SelectH := ThemeButton.SelectH;
+  Button[Result].SelectW := ThemeButton.SelectW;
+
+  Button[Result].Fade := ThemeButton.Fade;
+  Button[Result].FadeText := ThemeButton.FadeText;
+  Button[Result].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ, true);
+  Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
 
 
   BTLen := Length(ThemeButton.Text);
@@ -415,10 +424,10 @@ end;
 
 function TMenu.AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer;
 begin
-  Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, 'JPG', 'Plain', Reflection, 15);
+  Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, 'JPG', 'Plain', Reflection, 15, 15);
 end;
 
-function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing: Real): integer;
+function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer;
 begin
   // adds button
   //SetLength is used to reduce Memory usement
@@ -442,10 +451,10 @@ begin
 //    Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ, false)); // don't use cache texture}
 
   // configures button
-  Button[Result].Texture.X := X;
-  Button[Result].Texture.Y := Y;
-  Button[Result].Texture.W := W;
-  Button[Result].Texture.H := H;
+  Button[Result].X := X;
+  Button[Result].Y := Y;
+  Button[Result].W := W;
+  Button[Result].H := H;
   Button[Result].SelectColR := ColR;
   Button[Result].SelectColG := ColG;
   Button[Result].SelectColB := ColB;
@@ -462,6 +471,7 @@ begin
 
   Button[Result].Reflection := Reflection;
   Button[Result].Reflectionspacing := ReflectionSpacing;
+  Button[Result].DeSelectReflectionspacing := DeSelectReflectionSpacing;
 
   // adds interaction
   AddInteraction(iButton, Result);

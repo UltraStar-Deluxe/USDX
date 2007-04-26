@@ -7,11 +7,23 @@ type
   TButton = class
     private
       SelectBool:           Boolean;
+
+      FadeProgress:         Real;
+      FadeLastTick:         Cardinal;
+      
+      DeSelectW:            Real;
+      DeSelectH:            Real;
+      PosX:                 Real;
+      PosY:                 Real; 
+      
       constructor Create(); overload;
     public
       Text:                 Array of TText;
       Texture:              TTexture; // Button Screen position and size
       Texture2:             TTexture; // second texture only used for fading full resolution covers
+
+      FadeTex:              TTexture; //Texture for beautiful fading
+      FadeTexPos:           byte;     //Pos of the FadeTexture (0: Top, 1: Left, 2: Bottom, 3: Right)
 //      Texture2Blend:        real; // blending factor for second texture (0=invisible, 1=visible)
       // now uses alpha
 
@@ -20,7 +32,12 @@ type
       //Reflection Mod
       Reflection:           boolean;
       Reflectionspacing:    Real;
-      
+      DeSelectReflectionspacing: Real;
+
+      //Fade Mod
+      Fade: Boolean;
+      FadeText: Boolean;
+
       Selectable:           boolean;
 
       SelectColR:   real;
@@ -28,6 +45,9 @@ type
       SelectColB:   real;
       SelectInt:    real;
       SelectTInt:   real;
+      //Fade Mod
+      SelectW:      real;
+      SelectH:      real;
 
       DeselectColR:   real;
       DeselectColG:   real;
@@ -36,12 +56,16 @@ type
       DeselectTInt:   real;
 
       procedure SetY(Value: real);
+      procedure SetX(Value: real);
+      procedure SetW(Value: real);
+      procedure SetH(Value: real);
+
       procedure SetSelect(Value: Boolean);
-      property X: real read Texture.x write Texture.x;
-      property Y: real read Texture.y write SetY;
+      property X: real read PosX write SetX;
+      property Y: real read PosY write SetY;
       property Z: real read Texture.z write Texture.z;
-      property W: real read Texture.w write Texture.w;
-      property H: real read Texture.h write Texture.h;
+      property W: real read DeSelectW write SetW;
+      property H: real read DeSelectH write SetH;
       property Selected: Boolean read SelectBool write SetSelect;
 
       procedure Draw;
@@ -51,24 +75,76 @@ type
   end;
 
 implementation
-uses UDrawTexture, SysUtils;
+uses UDrawTexture, SysUtils, windows;
+
+procedure TButton.SetX(Value: real);
+var
+  dx:   real;
+  T:    integer;    // text
+begin
+  {dY := Value - Texture.y;
+
+  Texture.X := Value;
+
+  for T := 0 to High(Text) do
+    Text[T].X := Text[T].X + dY;}
+
+  PosX := Value;
+  if (FadeTex.TexNum = -1) then
+    Texture.X := Value;
+
+end;
 
 procedure TButton.SetY(Value: real);
 var
   dY:   real;
   T:    integer;    // text
 begin
-  dY := Value - Texture.y;
+  {dY := Value - PosY;
 
-  Texture.y := Value;
 
   for T := 0 to High(Text) do
-    Text[T].Y := Text[T].Y + dY;
+    Text[T].Y := Text[T].Y + dY;}
+    
+  PosY := Value;
+  if (FadeTex.TexNum = -1) then
+    Texture.y := Value;
+end;
 
+procedure TButton.SetW(Value: real);
+begin
+  if SelectW = DeSelectW then
+    SelectW := Value;
+
+  DeSelectW := Value;
+
+  if Not Fade then
+  begin
+    if SelectBool then
+      Texture.W := SelectW
+    else
+      Texture.W := DeSelectW;
+  end;
+end;
+
+procedure TButton.SetH(Value: real);
+begin
+  if SelectH = DeSelectH then
+    SelectH := Value;
+
+  DeSelectH := Value;
+
+  if Not Fade then
+  begin
+    if SelectBool then
+      Texture.H := SelectH
+    else
+      Texture.H := DeSelectH;
+  end;
 end;
 
 procedure TButton.SetSelect(Value : Boolean);
-var
+var                         
   T:    integer;
 begin
   SelectBool := Value;
@@ -85,6 +161,18 @@ begin
 
     for T := 0 to High(Text) do
       Text[T].Int := SelectTInt;
+
+    //Fade Mod
+    if Fade then
+    begin
+      if (FadeProgress <= 0) then
+        FadeProgress := 0.125;
+    end
+    else
+    begin
+      Texture.W := SelectW;
+      Texture.H := SelectH;
+    end;
   end else begin
     Texture.ColR := DeselectColR;
     Texture.ColG := DeselectColG;
@@ -98,6 +186,18 @@ begin
 
     for T := 0 to High(Text) do
       Text[T].Int := DeselectTInt;
+
+    //Fade Mod
+    if Fade then
+    begin
+      if (FadeProgress >= 1) then
+        FadeProgress := 0.875;
+    end
+    else
+    begin
+      Texture.W := DeSelectW;
+      Texture.H := DeSelectH;
+    end;
   end;
 end;
 
@@ -140,7 +240,16 @@ begin
   DeselectInt := 0.5;
   DeselectTInt := 1;
 
+  FadeTex.TexNum := -1;
 
+  FadeProgress := 0;
+  Fade := False;
+  FadeText := False;
+  SelectW := DeSelectW;
+  SelectH := DeSelectH;
+
+  PosX := 0;
+  PosY := 0;
 end;
 
 // ***** Public methods ****** //
@@ -148,9 +257,129 @@ end;
 procedure TButton.Draw;
 var
   T:    integer;
+  Tick: Cardinal;
+  Spacing: Real;
 begin
   if Visible then begin
+    //Fade Mod
+    if Fade then
+    begin
+      if (FadeProgress < 1) and (FadeProgress > 0) then
+      begin
+        Tick := GetTickCount div 16;
+        if (Tick <> FadeLastTick) then
+        begin
+          FadeLastTick := Tick;
+          if SelectBool then
+            FadeProgress := FadeProgress + 0.125
+          else
+            FadeProgress := FadeProgress - 0.125;
+
+          if (FadeText) then
+          begin
+            For T := 0 to high(Text) do
+            begin
+              Text[T].MoveX := (SelectW - DeSelectW) * FadeProgress;
+              Text[T].MoveY := (SelectH - DeSelectH) * FadeProgress;
+            end;
+          end;
+        end;
+      end;
+      //Method without Fade Texture
+      if (FadeTex.TexNum = -1) then
+      begin
+      Texture.W := DeSelectW + (SelectW - DeSelectW) * FadeProgress;
+      Texture.H := DeSelectH + (SelectH - DeSelectH) * FadeProgress;
+      end
+      else //method with Fade Texture
+      begin
+        Texture.W := DeSelectW;
+        Texture.H := DeSelectH;
+
+        FadeTex.ColR := Texture.ColR;
+        FadeTex.ColG := Texture.ColG;
+        FadeTex.ColB := Texture.ColB;
+        FadeTex.Int := Texture.Int;
+
+        FadeTex.Z := Texture.Z;
+
+        FadeTex.Alpha := Texture.Alpha;
+        FadeTex.TexX1 := 0;
+        FadeTex.TexX2 := 1;
+        FadeTex.TexY1 := 0;
+        FadeTex.TexY2 := 1;
+
+        Case FadeTexPos of
+          0: //FadeTex on Top
+            begin
+              //Standard Texture
+              Texture.X := PosX;
+              Texture.Y := PosY + (SelectH - DeSelectH) * FadeProgress;
+              //Fade Tex
+              FadeTex.X := PosX;
+              FadeTex.Y := PosY;
+              FadeTex.W := Texture.W;
+              FadeTex.H := (SelectH - DeSelectH) * FadeProgress;
+              FadeTex.ScaleW := Texture.ScaleW;
+              //Some Hack that Fixes a little Space between both Textures
+              FadeTex.TexY2 := 0.9;
+            end;
+          1: //FadeTex on Left
+            begin
+              //Standard Texture
+              Texture.X := PosX + (SelectW - DeSelectW) * FadeProgress;
+              Texture.Y := PosY;
+              //Fade Tex
+              FadeTex.X := PosX;
+              FadeTex.Y := PosY;
+              FadeTex.H := Texture.H;
+              FadeTex.W := (SelectW - DeSelectW) * FadeProgress;
+              FadeTex.ScaleH := Texture.ScaleH;
+              //Some Hack that Fixes a little Space between both Textures
+              FadeTex.TexX2 := 0.9;
+            end;
+          2: //FadeTex on Bottom
+            begin
+              //Standard Texture
+              Texture.X := PosX;
+              Texture.Y := PosY;
+              //Fade Tex
+              FadeTex.X := PosX;
+              FadeTex.Y := PosY  + (SelectH - DeSelectH) * FadeProgress;;
+              FadeTex.W := Texture.W;
+              FadeTex.H := (SelectH - DeSelectH) * FadeProgress;
+              FadeTex.ScaleW := Texture.ScaleW;
+              //Some Hack that Fixes a little Space between both Textures
+              FadeTex.TexY1 := 0.1;
+            end;
+          3: //FadeTex on Right
+            begin
+              //Standard Texture
+              Texture.X := PosX;
+              Texture.Y := PosY;
+              //Fade Tex
+              FadeTex.X := PosX + (SelectW - DeSelectW) * FadeProgress;
+              FadeTex.Y := PosY;
+              FadeTex.H := Texture.H;
+              FadeTex.W := (SelectW - DeSelectW) * FadeProgress;
+              FadeTex.ScaleH := Texture.ScaleH;
+              //Some Hack that Fixes a little Space between both Textures
+              FadeTex.TexX1 := 0.1;
+            end;
+        end;
+      end;
+    end
+    else if (FadeText) then
+    begin
+      Text[T].MoveX := (SelectW - DeSelectW);
+      Text[T].MoveY := (SelectH - DeSelectH);
+    end;
+
     DrawTexture(Texture);
+
+    //Draw FadeTex
+    if (FadeTex.TexNum <> -1) then
+      DrawTexture(FadeTex);
 
     if Texture2.Alpha > 0 then begin
       Texture2.ScaleW := Texture.ScaleW;
@@ -174,6 +403,15 @@ begin
     //Reflection Mod
     if (Reflection) then // Draw Reflections
     begin
+      if (FadeProgress <> 0) AND (FadeProgress <> 1) then
+      begin
+        Spacing := DeSelectReflectionspacing - (DeSelectReflectionspacing - Reflectionspacing) * FadeProgress;
+      end
+      else if SelectBool then
+        Spacing := Reflectionspacing
+      else
+        Spacing := DeSelectReflectionspacing;
+        
       with Texture do
       begin
         //Bind Tex and GL Attributes
@@ -191,23 +429,23 @@ begin
         glBegin(GL_QUADS);//Top Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX1*TexW, TexY2*TexH);
-          glVertex3f(x, y+h*scaleH+ Reflectionspacing, z);
+          glVertex3f(x, y+h*scaleH+ Spacing, z);
 
           //Bottom Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX1*TexW, {TexY1*TexH*}0.5);
-          glVertex3f(x, y+h*scaleH + h*scaleH/2 + Reflectionspacing, z);
+          glVertex3f(x, y+h*scaleH + h*scaleH/2 + Spacing, z);
 
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX2*TexW, {TexY1*TexH*}0.5);
-          glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Reflectionspacing, z);
+          glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Spacing, z);
 
           //Top Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
-          glVertex3f(x+w*scaleW, y+h*scaleH + Reflectionspacing, z);
+          glVertex3f(x+w*scaleW, y+h*scaleH + Spacing, z);
         glEnd;
 
         glDisable(GL_TEXTURE_2D);
