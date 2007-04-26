@@ -8,7 +8,8 @@ uses
   UScreenSong, UScreenSing, UScreenScore, UScreenTop5, UScreenEditSub,
   UScreenEdit, UScreenEditConvert, UScreenEditHeader, UScreenOpen, UThemes, USkins, UScreenSongMenu, UScreenSongJumpto,
   {Party Screens} UScreenSingModi, UScreenPartyNewRound, UScreenPartyScore, UScreenPartyOptions, UScreenPartyWin, UScreenPartyPlayer,
-  {Stats Screens} UScreenStatMain, UScreenStatDetail;
+  {Stats Screens} UScreenStatMain, UScreenStatDetail,
+  {CreditsScreen} UScreenCredits;
 
 type
   TRecR = record
@@ -67,7 +68,10 @@ var
   ScreenStatMain:         TScreenStatMain;
   ScreenStatDetail:       TScreenStatDetail;
 
+  //CreditsScreen
+  ScreenCredits: TScreenCredits;
 
+  //Notes
   Tex_Left:       array[0..6] of TTexture;
   Tex_Mid:        array[0..6] of TTexture;
   Tex_Right:      array[0..6] of TTexture;
@@ -443,6 +447,9 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Stat Main', 3); Log.BenchmarkStart(3);
   ScreenStatDetail :=       TScreenStatDetail.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Stat Detail', 3); Log.BenchmarkStart(3);
-end;
+  ScreenCredits    :=       TScreenCredits.Create('');
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Credits', 3); Log.BenchmarkStart(3);
+
+  end;
 
 end.
