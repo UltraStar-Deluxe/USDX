@@ -15,6 +15,8 @@ type
     public
       X:      real;
       Y:      real;
+      MoveX:  real;       //Some Modifier for X - Position that don't Affect the Real Y
+      MoveY:  real;       //Some Modifier for Y - Position that don't Affect the Real Y
       W:      real;       // if text is wider than W then it is breaked
 //      H:      real;
       Size:   real;
@@ -54,66 +56,139 @@ end;
 
 procedure TText.SetText(Value: String);
 var
-  I: Integer;
-  L: Integer;
-  LastPos: Integer;
-  LastBreak: Integer;
+  NextPos: Cardinal;    //NextPos of a Space etc.
+  LastPos: Cardinal;    //LastPos "
+  LastBreak: Cardinal;  //Last Break
+  isBreak: Boolean;     //True if the Break is not Caused because the Text is out of the area
+  FirstWord: Word;      //Is First Word after Break?
+  Len:       Word;      //Length of the Tiles Array
+  Function Smallest(const A, B: Cardinal):Cardinal;
+  begin
+    if (A < B) then
+      Result := A
+    else
+      Result := B;
+  end;
+
+  Function GetNextPos: Boolean;
+  var
+    T1, T2, T3: Cardinal;
+  begin
+    LastPos := NextPos;
+
+    //Next Space (If Width is given)
+    if (W > 0) then
+      T1 := PosEx(' ', Value, LastPos + 1)
+    else T1 := Length(Value);
+
+    {//Next -
+    T2 := PosEx('-', Value, LastPos + 1);}
+
+    //Next Break
+    T3 := PosEx('\n', Value, LastPos + 1);
+
+    if T1 = 0 then
+      T1 := Length(Value);
+    {if T2 = 0 then
+      T2 := Length(Value); }
+    if T3 = 0 then
+      T3 := Length(Value);
+
+    //Get Nearest Pos
+    NextPos := Smallest(T1, T3{Smallest(T2, T3)});
+
+    if (LastPos = Length(Value)) then
+      NextPos := 0;
+
+    isBreak := (NextPos = T3) AND (NextPos <> Length(Value));
+    Result := (NextPos <> 0);
+  end;
+  procedure AddBreak(const From, bTo: Cardinal);
+  begin
+    if (isBreak) OR (bTo - From > 1) then
+    begin
+      Inc(Len);
+      SetLength (TextTiles, Len);
+      TextTiles[Len-1] := Trim(Copy(Value, From, bTo - From));
+
+      if isBreak then
+        LastBreak := bTo + 2
+      else
+        LastBreak := bTo + 1;
+      FirstWord := 0;
+    end;
+  end;
 begin
+  //Set TExtstring
   TextString := Value;
 
-  //Create Page Breaks if width is given
+  //Create Tiles
+  //Reset Text Array
+  SetLength (TextTiles, 0);
+  Len := 0;
+
+  //Reset Counter Vars
+  LastPos := 1;
+  NextPos := 1;
+  LastBreak := 1;
+  FirstWord := 1;
+
   if (W > 0) then
   begin
     //Set Font Propertys
     SetFontStyle(Style);
     SetFontSize(Size);
-
-    //Create New TextTiles Array
-    SetLength (TextTiles, 0);
-    L := 0;
-
-    LastPos := 1;
-    LastBreak := 0;
-    I := Pos (' ', Value);
-    While (I <> 0) do
-    begin
-      if (glTextWidth(PChar(Copy (Value,LastBreak + 1,I - LastBreak))) > W) AND (LastPos <> 1) then
-      begin
-        //new Break
-        SetLength (TextTiles, L+1);
-        TextTiles[L] := Copy (Value, LastBreak + 1, LastPos - LastBreak);
-
-        Inc(L);
-        LastBreak := LastPos;
-      end;
-      
-      LastPos := I;
-      I := PosEx (' ', Value, I+1);
-    end;
-
-    //Last Break
-    if (glTextWidth(PChar(Copy (Value,LastBreak + 1,Length(Value) - LastBreak))) > W) AND (LastPos <> 1) then
-      begin
-        //new Break
-        SetLength (TextTiles, L+1);
-        TextTiles[L] := Copy (Value, LastBreak + 1, LastPos - LastBreak);
-
-        Inc(L);
-        LastBreak := LastPos;
-      end;
-
-      //last Part
-      SetLength (TextTiles, L+1);
-      TextTiles[L] := Copy (Value, LastBreak + 1, Length(Value) - LastBreak);
-
-  end
-  else
-  begin
-    SetLength (TextTiles, 1);
-    TextTiles[0] := Value;
   end;
 
-  I := 0;
+
+  //go Through Text
+  While (GetNextPos) do
+  begin
+      //Break in Text
+      if isBreak then
+      begin
+        //Look for Break before the Break
+        if (glTextWidth(PChar(Copy(Value, LastBreak, NextPos - LastBreak + 1))) > W) AND (NextPos-LastPos > 1) then
+        begin
+          //Not the First word after Break, so we don't have to break within a word
+          if (FirstWord > 1) then
+          begin
+            //Add Break before actual Position, because there the  Text fits the Area
+            AddBreak(LastBreak, LastPos);
+          end
+          else //First Word after Break Break within the Word
+          begin
+            //ToDo
+            //AddBreak(LastBreak, LastBreak + 155);
+          end;
+        end;
+
+        //Add Break from Text
+        AddBreak(LastBreak, NextPos);
+      end
+      //Text comes out of the Text Area -> CreateBreak
+      else if (glTextWidth(PChar(Copy(Value, LastBreak, NextPos - LastBreak + 1))) > W) then
+      begin
+        //Not the First word after Break, so we don't have to break within a word
+        if (FirstWord > 1) then
+        begin
+          //Add Break before actual Position, because there the  Text fits the Area
+          AddBreak(LastBreak, LastPos);
+        end
+        else //First Word after Break -> Break within the Word
+        begin
+          //ToDo
+          //AddBreak(LastBreak, LastBreak + 155);
+        end;
+      end;
+    //end;
+    Inc(FirstWord)
+  end;
+  //Add Ending
+  AddBreak(LastBreak, Length(Value)+1);
+
+
+  {I := 0;
   // \n Hack
   While (I <= High(TextTiles)) do
   begin
@@ -135,11 +210,119 @@ begin
       //Delete Text that now is in new Tile from cur. Tile
       Delete(TextTiles[I], LastPos, Length(TextTiles[I]) - LastPos + 1);
       TextTiles[I] := Trim (TextTiles[I]);
-      
+
       //Goto next Tile because cur. Tile can not have another /n Tag
-      Inc(I) 
+      Inc(I)
     end;
   end;
+
+  //Create Page Breaks if width is given and the Text overlapps the width
+  if (W > 0) then
+  begin
+    //Set Font Propertys
+    SetFontStyle(Style);
+    SetFontSize(Size);
+
+    {//Create New TextTiles Array
+    SetLength (TextTiles, 0);}{
+    I := 0;
+
+    //Go Through all Tiles
+    While (I <= High(TextTiles)) do
+    begin
+      LastPos := 0;
+      CurPos := Pos (' ', TextTiles[I]);
+
+      //Go through all Spaces
+      While (CurPos <> 0) do
+      begin
+        //Text is too long for given Width and not the First Word(That means that the Given Word don't Fit the given Width
+        if (glTextWidth(PChar(Copy (TextTiles[I],1,CurPos-1))) > W) AND (LastPos <> 1) then
+        begin
+          //Add a new Tile and move all Tiles behind actual Tile to the right
+          L := Length(TextTiles);
+          SetLength(TextTiles, L+1);
+          For L := L-1 downto I + 1 do
+          begin
+            TextTiles[L+1] := TextTiles[L];
+          end;
+
+          //Write Text to new Tile
+          TextTiles[I+1] := Trim(Copy(TextTiles[I], LastPos + 1, Length(TextTiles[I]) - LastPos));
+          //Delete Text that now is in new Tile from cur. Tile
+          Delete(TextTiles[I], LastPos, Length(TextTiles[I]) - LastPos + 1);
+          TextTiles[I] := Trim (TextTiles[I]);
+
+          //Goto next Tile because cur. Tile can not have another Space
+          Inc(I)
+        end;
+        //Set LastPos and Cur Pos
+        LastPos := CurPos;
+        CurPos := PosEx (' ', TextTiles[I], LastPos+1);
+      end;
+
+      //Look for PageBreak in Last Part of the Tile
+      CurPos := Length(TextTiles[I]);
+      if (glTextWidth(PChar(Copy (TextTiles[I],1,CurPos))) > W) AND (LastPos <> 1) then
+      begin
+        //Add a new Tile and move all Tiles behind actual Tile to the right
+        L := Length(TextTiles);
+        SetLength(TextTiles, L+1);
+        For L := L-1 downto I + 1 do
+        begin
+          TextTiles[L+1] := TextTiles[L];
+        end;
+
+        //Write Text to new Tile
+        TextTiles[I+1] := Trim(Copy(TextTiles[I], LastPos + 1, CurPos - LastPos));
+        //Delete Text from cur. Tile that now is in new Tile
+        Delete(TextTiles[I], LastPos, CurPos - LastPos + 1);
+        TextTiles[I] := Trim (TextTiles[I]);
+        //Goto next Tile because cur. Tile can not have another Space
+        Inc(I)
+      end;
+
+      //Inc I if Current Tile has no more Spaces
+      Inc(I)
+    end;
+
+    I := high(TextTiles);
+
+      {LastPos := 1;
+      LastBreak := 0;
+      I := Pos (' ', Value);
+      While (I <> 0) do
+      begin
+        if (glTextWidth(PChar(Copy (Value,LastBreak + 1,I - LastBreak))) > W) AND (LastPos <> 1) then
+        begin
+          //new Break
+          SetLength (TextTiles, L+1);
+          TextTiles[L] := Copy (Value, LastBreak + 1, LastPos - LastBreak);
+
+          Inc(L);
+          LastBreak := LastPos;
+        end;
+
+        LastPos := I;
+        I := PosEx (' ', Value, I+1);
+      end;
+
+      //Last Break
+      if (glTextWidth(PChar(Copy (Value,LastBreak + 1,Length(Value) - LastBreak))) > W) AND (LastPos <> 1) then
+      begin
+        //new Break
+        SetLength (TextTiles, L+1);
+        TextTiles[L] := Copy (Value, LastBreak + 1, LastPos - LastBreak);
+
+        Inc(L);
+        LastBreak := LastPos;
+      end;
+
+      //last Part
+      SetLength (TextTiles, L+1);
+      TextTiles[L] := Copy (Value, LastBreak + 1, Length(Value) - LastBreak);
+
+  end;    }
 
   //Set Cursor Visible
   SelectBlink := True;
@@ -201,7 +384,7 @@ begin
     end
     else
     begin //Draw Text as Many Strings
-      Y2 := Y;
+      Y2 := Y + MoveY;
       for I := 0 to high(TextTiles) do
       begin
         if (not (SelectBool AND SelectBlink)) OR (I <> high(TextTiles)) then
@@ -210,9 +393,9 @@ begin
           Text2 := TextTiles[I] + '|';
 
         case Align of
-          0: X2 := X;
-          1: X2 := X - glTextWidth(pchar(Text2))/2;
-          2: X2 := X - glTextWidth(pchar(Text2));
+          0: X2 := X + MoveX;
+          1: X2 := X + MoveX - glTextWidth(pchar(Text2))/2;
+          2: X2 := X + MoveX - glTextWidth(pchar(Text2));
         end;
 
         SetFontPos(X2, Y2);
