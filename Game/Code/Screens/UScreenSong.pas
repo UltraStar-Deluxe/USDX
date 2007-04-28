@@ -199,25 +199,49 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
-    //Jump To
-    if (SDL_ModState = KMOD_LALT) AND (Mode = 0) AND (PressedKey > SDLK_A) AND (PressedKey < SDLK_Z) then
+    //Jump to Artist/Titel
+    if (SDL_ModState and KMOD_LALT <> 0) AND (Mode = 0) AND (PressedKey > SDLK_A) AND (PressedKey < SDLK_Z) then
     begin
       Letter := UpCase(Chr(ScanCode));
-      Log.LogError(Letter);
       I2 := Length(CatSongs.Song);
-      For I := 1 to high(CatSongs.Song) do
+      
+      //Jump To Titel
+      if (SDL_ModState = KMOD_LALT or KMOD_LSHIFT) then
       begin
-        if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Title[1]) = Letter) then
+        For I := 1 to high(CatSongs.Song) do
         begin
-          SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Title[1]) = Letter) then
+          begin
+            SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-          Music.PlayChange;
+            Music.PlayChange;
 
-          ChangeMusic;
-          SetScroll4;
-          UpdateLCD;
-          //Break and Exit
-          Exit;
+            ChangeMusic;
+            SetScroll4;
+            UpdateLCD;
+            //Break and Exit
+            Exit;
+          end;
+        end;
+      end
+      //Jump to Artist
+      else  if (SDL_ModState = KMOD_LALT) then
+      begin
+        For I := 1 to high(CatSongs.Song) do
+        begin
+          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Artist[1]) = Letter) then
+          begin
+            SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+
+            Music.PlayChange;
+
+            ChangeMusic;
+            SetScroll4;
+            UpdateLCD;
+            
+            //Break and Exit
+            Exit;
+          end;
         end;
       end;
       Exit;
