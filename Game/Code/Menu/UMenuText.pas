@@ -105,7 +105,7 @@ var
   end;
   procedure AddBreak(const From, bTo: Cardinal);
   begin
-    if (isBreak) OR (bTo - From > 1) then
+    if (isBreak) OR (bTo - From >= 1) then
     begin
       Inc(Len);
       SetLength (TextTiles, Len);
@@ -122,6 +122,18 @@ begin
   //Set TExtstring
   TextString := Value;
 
+  //Set Cursor Visible
+  SelectBlink := True;
+  STicks := GettickCount div 550;
+
+  //Exit if there is no Need to Create Tiles
+  If (W <= 0) and (Pos('\n', Value) = 0) then
+  begin
+    SetLength (TextTiles, 1);
+    TextTiles[0] := Value;
+    Exit;
+  end;
+
   //Create Tiles
   //Reset Text Array
   SetLength (TextTiles, 0);
@@ -133,13 +145,13 @@ begin
   LastBreak := 1;
   FirstWord := 1;
 
+
   if (W > 0) then
   begin
     //Set Font Propertys
     SetFontStyle(Style);
     SetFontSize(Size);
   end;
-
 
   //go Through Text
   While (GetNextPos) do
@@ -186,10 +198,6 @@ begin
   end;
   //Add Ending
   AddBreak(LastBreak, Length(Value)+1);
-
-  //Set Cursor Visible
-  SelectBlink := True;
-  STicks := GettickCount div 550;
 end;
 
 Procedure TText.DeleteLastL;
