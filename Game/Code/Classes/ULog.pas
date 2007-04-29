@@ -139,7 +139,7 @@ var
   Miliseconds:  integer;
   ValueText:    string;
 begin
-  if Ini.Debug = 1 then begin
+  //if Ini.Debug = 1 then begin
 
   if not FileAnalyzeO then begin
     AssignFile(FileAnalyze, LogPath + 'Analyze.log');
@@ -154,7 +154,7 @@ begin
     Flush(FileAnalyze); // try to speed up
   end;
 
-  end;
+  //end;
 end;
 
 procedure TLog.LogError(Text: string);
@@ -202,8 +202,9 @@ end;
 
 procedure TLog.LogStatus(Log1, Log2: string);
 begin
-//asd
-  LogError (Log2 + ': ' + Log1);
+  //Just for Debugging
+  //Comment for Release
+    //LogAnalyze (Log2 + ': ' + Log1);
 end;
 
 procedure TLog.LogError(Log1, Log2: string);
@@ -224,4 +225,3 @@ begin
 end;
 
 end.
- 

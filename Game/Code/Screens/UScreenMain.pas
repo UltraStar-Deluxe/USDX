@@ -84,6 +84,12 @@ begin
           FadeTo(@ScreenStatMain);
         end;
 
+      SDLK_E:
+        begin
+          Music.PlayStart;
+          FadeTo(@ScreenEdit);
+        end;
+
       SDLK_RETURN:
         begin
           //Solo

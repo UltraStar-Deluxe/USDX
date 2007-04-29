@@ -1367,7 +1367,7 @@ begin
       begin
         InteractPrev;
         //If ButtonCollection with more than 1 Entry then Select Last Entry
-        if (ButtonCollection[Button[Interactions[Interaction].Num].Parent-1].CountChilds > 1) then
+        if (Button[Interactions[Interaction].Num].Parent <> 0) AND (ButtonCollection[Button[Interactions[Interaction].Num].Parent-1].CountChilds > 1) then
         begin
           //Select Last Child
           For Num := High(Button) downto 1 do
