@@ -80,7 +80,9 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.StatMain.Background.Tex);
+  TextOverview := AddText(Theme.StatMain.TextOverview);
+
+  LoadFromTheme(Theme.StatMain);
 
   AddButton(Theme.StatMain.ButtonScores);
   if (Length(Button[0].Text)=0) then
@@ -102,16 +104,9 @@ begin
   if (Length(Button[4].Text)=0) then
     AddButtonText(14, 20, Theme.Options.Description[4]);
 
-  TextOverview := AddText(Theme.StatMain.TextOverview);
-
-  for I := 0 to High(Theme.StatMain.Static) do
-    AddStatic(Theme.StatMain.Static[I]);
-
-  for I := 0 to High(Theme.StatMain.Text) do
-    AddText(Theme.StatMain.Text[I]);
-
   Interaction := 0;
 
+  //Set Songs with Vid
   SongswithVid := 0;
   For I := 0 to high(Songs.Song) do
     if (Songs.Song[I].Video <> '') AND FileExists(Songs.Song[I].Path + Songs.Song[I].Video) then

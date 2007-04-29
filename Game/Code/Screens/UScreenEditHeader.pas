@@ -35,7 +35,7 @@ type
       Sel:            array[0..11] of boolean;
       procedure SetRoundButtons;
 
-      constructor Create(Back: String); override;
+      constructor Create; override;
       procedure onShow; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
 {      function Draw: boolean; override;
@@ -124,9 +124,9 @@ begin
   end;
 end;
 
-constructor TScreenEditHeader.Create(Back: String);
+constructor TScreenEditHeader.Create;
 begin
-  inherited Create(Back);
+  inherited Create;
 
   AddButton(40, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(15, 5, 'Open');

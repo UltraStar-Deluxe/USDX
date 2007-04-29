@@ -58,7 +58,7 @@ type
       procedure Extract;
       procedure MidiFile1MidiEvent(event: PMidiEvent);
       function SelectedNumber: integer;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       procedure onShow; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
@@ -299,11 +299,11 @@ begin
   MidiOut.PutShort(event.event, event.data1, event.data2);
 end;
 
-constructor TScreenEditConvert.Create(Back: String);
+constructor TScreenEditConvert.Create;
 var
   P:  integer;
 begin
-  inherited Create(Back);
+  inherited Create;
   AddButton(40, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(15, 5, 0, 0, 0, 'Open');
 //  Button[High(Button)].Text[0].Size := 11;

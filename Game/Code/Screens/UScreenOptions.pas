@@ -9,7 +9,7 @@ type
   TScreenOptions = class(TMenu)
     public
       TextDescription:    integer;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure InteractNext; override;
@@ -80,88 +80,23 @@ begin
             FadeTo(@ScreenMain);
           end;
         end;
-      SDLK_LEFT:
-      begin
-          {case SelInteraction of
-          0: InteractCustom(+2);
-          1: InteractCustom(-1);
-          2: InteractCustom(-1);
-          3: InteractCustom(+2);
-          4: InteractCustom(-1);
-          5: InteractCustom(-1);
-          end;}
-          InteractPrev;
-      end;
-      SDLK_RIGHT:
-      begin
-          {case SelInteraction of
-          0: InteractCustom(+1);
-          1: InteractCustom(+1);
-          2: InteractCustom(-2);
-          3: InteractCustom(+1);
-          4: InteractCustom(+1);
-          5: InteractCustom(-2);
-          end;}
-          InteractNext;
-      end;
-      SDLK_UP:
-      begin
-          InteractPrev;
-          {case SelInteraction of
-          0: InteractCustom(+3);
-          1: InteractCustom(+3);
-          2: InteractCustom(+3);
-          3: InteractCustom(-3);
-          4: InteractCustom(-3);
-          5: InteractCustom(-3);
-          end; }
-      end;
-      SDLK_DOWN:
-      begin
-          {case SelInteraction of
-          0: InteractCustom(+3);
-          1: InteractCustom(+3);
-          2: InteractCustom(+3);
-          3: InteractCustom(-3);
-          4: InteractCustom(-3);
-          5: InteractCustom(-3);
-          end;  }
-          InteractNext;
-      end;
+      SDLK_DOWN:    InteractInc;
+      SDLK_UP:      InteractDec;
+      SDLK_RIGHT:   InteractNext;
+      SDLK_LEFT:    InteractPrev;
     end;
   end;
 end;
 
-constructor TScreenOptions.Create(Back: String);
+constructor TScreenOptions.Create;
 var
   I:    integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  // Game
-{  AddButton(225, 100 + 0*60, 350, 50, Skin.Button, 'JPG', 'Transparent Range');
-  AddButtonText(11, 10, 'Game');}
+  TextDescription := AddText(Theme.Options.TextDescription);
 
-  // Graphics
-{  AddButton(225, 100 + 1*60, 350, 50, Skin.Button, 'JPG', 'Transparent Range');
-  AddButtonText(11, 10, 'Graphics');
-
-  // Sound
-  AddButton(225, 100 + 2*60, 350, 50, Skin.Button, 'JPG', 'Transparent Range');
-  AddButtonText(11, 10, 'Sound');
-
-  // Lyrics
-  AddButton(225, 100 + 3*60, 350, 50, Skin.Button, 'JPG', 'Transparent Range');
-  AddButtonText(11, 10, 'Lyrics');
-
-  // Themes
-  AddButton(225, 100 + 4*60, 350, 50, Skin.Button, 'JPG', 'Transparent Range');
-  AddButtonText(11, 10, 'Themes');
-
-  // Exit
-  AddButton(225, 100 + 6*60, 350, 50, Skin.Exit);}
-
-  AddBackground(Theme.Options.Background.Tex);
+  LoadFromTheme(Theme.Options);
 
   AddButton(Theme.Options.ButtonGame);
   if (Length(Button[0].Text)=0) then
@@ -194,14 +129,6 @@ begin
   AddButton(Theme.Options.ButtonExit);
   if (Length(Button[7].Text)=0) then
     AddButtonText(14, 20, Theme.Options.Description[7]);
-
-  for I := 0 to High(Theme.Options.Static) do
-    AddStatic(Theme.Options.Static[I]);
-
-  for I := 0 to High(Theme.Options.Text) do
-    AddText(Theme.Options.Text[I]);
-
-  TextDescription := AddText(Theme.Options.TextDescription);
 
   Interaction := 0;
 end;

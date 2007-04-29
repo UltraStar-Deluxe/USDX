@@ -142,7 +142,20 @@ type
     DeSelectReflectionspacing : Real;
     FadeTex:    string;
     FadeTexPos: integer;
+
+    //Button Collection Mod
+    Parent: Byte; //Number of the Button Collection this Button is assigned to. IF 0: No Assignement
   end;
+
+  //Button Collection Mod
+  TThemeButtonCollection = record
+    Style: TThemeButton;
+    ChildCount: Byte; //No of assigned Childs
+    FirstChild: Byte; //No of Child on whose Interaction Position the Button should be
+  end;
+
+  AThemeButtonCollection = array of TThemeButtonCollection;
+  PAThemeButtonCollection = ^AThemeButtonCollection;
 
   TThemeSelect = record
     Tex:    string;
@@ -186,10 +199,14 @@ type
     SkipX:    integer;
   end;
 
+  PThemeBasic = ^TThemeBasic;
   TThemeBasic = class
     Background:       TThemeBackground;
     Text:             AThemeText;
     Static:           AThemeStatic;
+
+    //Button Collection Mod
+    ButtonCollection: AThemeButtonCollection;
   end;
 
   TThemeLoading = class(TThemeBasic)
@@ -199,15 +216,16 @@ type
 
   TThemeMain = class(TThemeBasic)
     ButtonSolo:       TThemeButton;
-//    ButtonMulti:      TThemeButton;
+    ButtonMulti:      TThemeButton;
+    ButtonStat:       TThemeButton;
     ButtonEditor:     TThemeButton;
     ButtonOptions:    TThemeButton;
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
     TextDescriptionLong:  TThemeText;
-    Description:          array[0..4] of string;
-    DescriptionLong:      array[0..4] of string;
+    Description:          array[0..5] of string;
+    DescriptionLong:      array[0..5] of string;
   end;
 
   TThemeName = class(TThemeBasic)
@@ -604,11 +622,15 @@ type
   end;
 
   TTheme = class
+  private
     {$IFDEF THEMESAVE}
     ThemeIni:         TIniFile;
     {$ELSE}
     ThemeIni:         TMemIniFile;
     {$ENDIF}
+
+    LastThemeBasic:   TThemeBasic;
+  public
 
     Loading:          TThemeLoading;
     Main:             TThemeMain;
@@ -656,7 +678,9 @@ type
     procedure ThemeLoadTexts(var ThemeText: AThemeText; Name: string);
     procedure ThemeLoadStatic(var ThemeStatic: TThemeStatic; Name: string);
     procedure ThemeLoadStatics(var ThemeStatic: AThemeStatic; Name: string);
-    procedure ThemeLoadButton(var ThemeButton: TThemeButton; Name: string);
+    procedure ThemeLoadButton(var ThemeButton: TThemeButton; Name: string; const Collections: PAThemeButtonCollection = nil);
+    procedure ThemeLoadButtonCollection(var Collection: TThemeButtonCollection; Name: string);
+    procedure ThemeLoadButtonCollections(var Collections: AThemeButtonCollection; Name: string);
     procedure ThemeLoadSelect(var ThemeSelect: TThemeSelect; Name: string);
     procedure ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; Name: string);
 
@@ -692,7 +716,7 @@ uses
 {{$IFDEF TRANSLATE}
  ULanguage,
 {{$ENDIF}
-USkins, UIni;
+USkins, UIni, Dialogs;
 
 constructor TTheme.Create(FileName: string);
 begin
@@ -830,24 +854,30 @@ begin
       ThemeLoadText(Main.TextDescription, 'MainTextDescription');
       ThemeLoadText(Main.TextDescriptionLong, 'MainTextDescriptionLong');
       ThemeLoadButton(Main.ButtonSolo, 'MainButtonSolo');
+      ThemeLoadButton(Main.ButtonMulti, 'MainButtonMulti');
+      ThemeLoadButton(Main.ButtonStat, 'MainButtonStats');
       ThemeLoadButton(Main.ButtonEditor, 'MainButtonEditor');
       ThemeLoadButton(Main.ButtonOptions, 'MainButtonOptions');
       ThemeLoadButton(Main.ButtonExit, 'MainButtonExit');
 
-      //Score Text Translation Start
+      //Main Desc Text Translation Start
 
       {{$IFDEF TRANSLATE}
       Main.Description[0] := Language.Translate('SING_SING');
       Main.DescriptionLong[0] := Language.Translate('SING_SING_DESC');
-      Main.Description[1] := Language.Translate('SING_EDITOR');
-      Main.DescriptionLong[1] := Language.Translate('SING_EDITOR_DESC');
-      Main.Description[2] := Language.Translate('SING_GAME_OPTIONS');
-      Main.DescriptionLong[2] := Language.Translate('SING_GAME_OPTIONS_DESC');
-      Main.Description[3] := Language.Translate('SING_EXIT');
-      Main.DescriptionLong[3] := Language.Translate('SING_EXIT_DESC');
+      Main.Description[1] := Language.Translate('SING_MULTI');
+      Main.DescriptionLong[1] := Language.Translate('SING_MULTI_DESC');
+      Main.Description[2] := Language.Translate('SING_STATS');
+      Main.DescriptionLong[2] := Language.Translate('SING_STATS_DESC');
+      Main.Description[3] := Language.Translate('SING_EDITOR');
+      Main.DescriptionLong[3] := Language.Translate('SING_EDITOR_DESC');
+      Main.Description[4] := Language.Translate('SING_GAME_OPTIONS');
+      Main.DescriptionLong[4] := Language.Translate('SING_GAME_OPTIONS_DESC');
+      Main.Description[5] := Language.Translate('SING_EXIT');
+      Main.DescriptionLong[5] := Language.Translate('SING_EXIT_DESC');
       {{$ENDIF}
 
-      //Score Text Translation End
+      //Main Desc Text Translation End
 
       Main.TextDescription.Text := Main.Description[0];
       Main.TextDescriptionLong.Text := Main.DescriptionLong[0];
@@ -931,14 +961,14 @@ begin
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
 
-      //moveable singbar mod
-    ThemeLoadStatic(Sing.StaticP1SingBar, 'SingP1SingBar');
-    ThemeLoadStatic(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
-    ThemeLoadStatic(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
-    ThemeLoadStatic(Sing.StaticP2RSingBar, 'SingP2RSingBar');
-    ThemeLoadStatic(Sing.StaticP2MSingBar, 'SingP2MSingBar');
-    ThemeLoadStatic(Sing.StaticP3SingBar, 'SingP3SingBar');
-     //eoa moveable singbar
+    //moveable singbar mod
+      ThemeLoadStatic(Sing.StaticP1SingBar, 'SingP1SingBar');
+      ThemeLoadStatic(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
+      ThemeLoadStatic(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
+      ThemeLoadStatic(Sing.StaticP2RSingBar, 'SingP2RSingBar');
+      ThemeLoadStatic(Sing.StaticP2MSingBar, 'SingP2MSingBar');
+      ThemeLoadStatic(Sing.StaticP3SingBar, 'SingP3SingBar');
+    //eoa moveable singbar
 
       ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
       ThemeLoadText(Sing.TextP1, 'SingP1Text');
@@ -1315,6 +1345,9 @@ begin
   ThemeLoadBackground(Theme.Background, Name);
   ThemeLoadTexts(Theme.Text, Name + 'Text');
   ThemeLoadStatics(Theme.Static, Name + 'Static');
+  ThemeLoadButtonCollections(Theme.ButtonCollection, Name + 'ButtonCollection');
+
+  LastThemeBasic := Theme;
 end;
 
 procedure TTheme.ThemeLoadBackground(var ThemeBackground: TThemeBackground; Name: string);
@@ -1417,11 +1450,40 @@ begin
   end;
 end;
 
-procedure TTheme.ThemeLoadButton(var ThemeButton: TThemeButton; Name: string);
+//Button Collection Mod
+procedure TTheme.ThemeLoadButtonCollection(var Collection: TThemeButtonCollection; Name: string);
+var T: Integer;
+begin
+  //Load Collection Style
+  ThemeLoadButton(Collection.Style, Name);
+
+  //Load Other Attributes
+  T := ThemeIni.ReadInteger (Name, 'FirstChild', 0);
+  if (T > 0) And (T < 256) then
+    Collection.FirstChild := T
+  else
+    Collection.FirstChild := 0;
+end;
+
+procedure TTheme.ThemeLoadButtonCollections(var Collections: AThemeButtonCollection; Name: string);
+var
+  I:      integer;
+begin
+  I := 1;
+  while ThemeIni.SectionExists(Name + IntToStr(I)) do begin
+    SetLength(Collections, I);
+    ThemeLoadButtonCollection(Collections[I-1], Name + IntToStr(I));
+    Inc(I);
+  end;
+end;
+//End Button Collection Mod
+
+procedure TTheme.ThemeLoadButton(var ThemeButton: TThemeButton; Name: string; const Collections: PAThemeButtonCollection);
 var
   C:      integer;
   TLen:   integer;
   T:      integer;
+  Collections2: PAThemeButtonCollection;
 begin
   DecimalSeparator := '.';
   ThemeButton.Tex := ThemeIni.ReadString(Name, 'Tex', '');
@@ -1476,6 +1538,23 @@ begin
   ThemeButton.FadeTexPos:= ThemeIni.ReadInteger(Name, 'FadeTexPos', 0);
   if (ThemeButton.FadeTexPos > 4) Or (ThemeButton.FadeTexPos < 0) then
     ThemeButton.FadeTexPos := 0;
+
+  //Button Collection Mod
+  T := ThemeIni.ReadInteger(Name, 'Parent', 0);
+
+  //Set Collections to Last Basic Collections if no valid Value
+  if (Collections = nil) then
+    Collections2 := @LastThemeBasic.ButtonCollection
+  else
+    Collections2 := Collections;
+  //Test for valid Value
+  if (Collections2 <> nil) AND (T > 0) AND (T <= Length(Collections2^)) then
+  begin
+    Inc(Collections2^[T-1].ChildCount);
+    ThemeButton.Parent := T;
+  end
+  else
+    ThemeButton.Parent := 0;
 
   //Read ButtonTexts
   TLen := ThemeIni.ReadInteger(Name, 'Texts', 0);

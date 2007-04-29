@@ -630,13 +630,7 @@ begin
 //  AddStatic(200, 10, 400, 90, Skin.SelectSong);
 //  AddStatic(200-10, 140-5, 400+20, 50+10, Skin.Selection, 'JPG', 'Font Gray');
 
-  AddBackground(Theme.Song.Background.Tex);
-
-    for I := 0 to High(Theme.Song.Static) do
-    AddStatic(Theme.Song.Static[I]);
-
-  for I := 0 to High(Theme.Song.Text) do
-    AddText(Theme.Song.Text[I]);
+  LoadFromTheme(Theme.Song); 
 
   TextArtist := AddText(Theme.Song.TextArtist);
   TextTitle :=  AddText(Theme.Song.TextTitle);

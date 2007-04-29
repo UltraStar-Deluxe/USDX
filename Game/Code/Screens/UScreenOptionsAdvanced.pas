@@ -8,7 +8,7 @@ uses
 type
   TScreenOptionsAdvanced = class(TMenu)
     public
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
   end;
@@ -59,19 +59,13 @@ begin
   end;
 end;
 
-constructor TScreenOptionsAdvanced.Create(Back: String);
+constructor TScreenOptionsAdvanced.Create;
 var
   I:      integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  AddBackground(Theme.OptionsAdvanced.Background.Tex);
-
-  for I := 0 to High(Theme.OptionsAdvanced.Static) do
-    AddStatic(Theme.OptionsAdvanced.Static[I]);
-
-  for I := 0 to High(Theme.OptionsAdvanced.Text) do
-    AddText(Theme.OptionsAdvanced.Text[I]);
+  LoadFromTheme(Theme.OptionsAdvanced);
 
   AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimation);
   AddSelect(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFade);

@@ -76,16 +76,11 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.Name.Background.Tex);
+  LoadFromTheme(Theme.Name);
+
 
   for I := 1 to 6 do
     AddButton(Theme.Name.ButtonPlayer[I]);
-
-  for I := 0 to High(Theme.Name.Static) do
-    AddStatic(Theme.Name.Static[I]);
-
-  for I := 0 to High(Theme.Name.Text) do
-    AddText(Theme.Name.Text[I]);
 
   Interaction := 0;
 end;

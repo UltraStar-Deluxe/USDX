@@ -154,7 +154,9 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.SongJumpto.Background.Tex);
+  AddText(Theme.SongJumpto.TextFound);
+
+  LoadFromTheme(Theme.SongJumpto);
 
   AddButton(Theme.SongJumpto.ButtonSearchText);
   if (Length(Button[0].Text) = 0) then
@@ -163,13 +165,6 @@ begin
   SelectType := 0;
   AddSelectSlide(Theme.SongJumpto.SelectSlideType, SelectType, Theme.SongJumpto.IType);
 
-  AddText(Theme.SongJumpto.TextFound);
-
-  for I := 0 to High(Theme.SongJumpto.Static) do
-    AddStatic(Theme.SongJumpto.Static[I]);
-
-  for I := 0 to High(Theme.SongJumpto.Text) do
-    AddText(Theme.SongJumpto.Text[I]);
 
   Interaction := 0;
   LastPlayed  := 0;

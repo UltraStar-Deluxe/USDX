@@ -45,36 +45,6 @@ implementation
 uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UPlaylist;
 
 function TScreenSongMenu.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
-  function IsVisible: Boolean;
-  begin
-    Result := True;
-    if (Interactions[Interaction].Typ = 0) then
-    begin
-      Result := Button[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 1) then
-    begin
-      //Result := Selects[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 3) then
-    begin
-      Result := SelectsS[Interactions[Interaction].Num].Visible;
-    end;
-  end;
-
-  Procedure SelectNext;
-  begin
-    repeat
-      InteractNext;
-    until IsVisible;
-  end;
-
-  Procedure SelectPrev;
-  begin
-    repeat
-      InteractPrev;
-    until IsVisible;
-  end;
 begin
   Result := true;
   If (PressedDown) Then
@@ -113,8 +83,8 @@ begin
           HandleReturn;
         end;
 
-      SDLK_DOWN:    SelectNext;
-      SDLK_UP:      SelectPrev;
+      SDLK_DOWN:    InteractNext;
+      SDLK_UP:      InteractPrev;
 
       SDLK_RIGHT:
         begin
@@ -141,10 +111,15 @@ var
   I:    integer;
 begin
   inherited Create;
+  
+  //Create Dummy SelectSlide Entrys
   SetLength(ISelections, 1);
   ISelections[0] := 'Dummy';
 
-  AddBackground(Theme.SongMenu.Background.Tex);
+  
+  AddText(Theme.SongMenu.TextMenu);
+
+  LoadFromTheme(Theme.SongMenu);
 
   AddButton(Theme.SongMenu.Button1);
   if (Length(Button[0].Text) = 0) then
@@ -164,13 +139,6 @@ begin
   if (Length(Button[3].Text) = 0) then
     AddButtonText(14, 20, 'Button 4');
 
-  AddText(Theme.SongMenu.TextMenu);
-
-  for I := 0 to High(Theme.SongMenu.Static) do
-    AddStatic(Theme.SongMenu.Static[I]);
-
-  for I := 0 to High(Theme.SongMenu.Text) do
-    AddText(Theme.SongMenu.Text[I]);
 
   Interaction := 0;
 end;

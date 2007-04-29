@@ -74,20 +74,8 @@ var
 begin
   inherited Create;
   
-  AddBackground(Theme.OptionsRecord.Background.Tex);
-  for I := 0 to High(Theme.OptionsRecord.Static) do
-    AddStatic(Theme.OptionsRecord.Static[I]);
+  LoadFromTheme(Theme.OptionsRecord);
 
-  for I := 0 to High(Theme.OptionsRecord.Text) do
-    AddText(Theme.OptionsRecord.Text[I]);
-
-//  SetLength(ICard, 0);
-//  ICard[0] := 'karta';
-
-//  SetLength(IInput, 0);
-//  IInput[0] := 'wejscie';
-
-//  if Length(Recording.SoundCard) > 0 then begin
   SetLength(ICard, Length(Recording.SoundCard));
   for SC := 0 to High(Recording.SoundCard) do
     ICard[SC] := Recording.SoundCard[SC].Description;

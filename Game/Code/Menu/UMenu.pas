@@ -3,7 +3,7 @@ unit UMenu;
 interface
 
 uses OpenGL12, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
-  UMenuInteract, UThemes;
+  UMenuInteract, UThemes, UMenuButtonCollection;
 
 type
 {  Int16 = SmallInt;}
@@ -18,12 +18,13 @@ type
       Button:         array of TButton;
       Selects:        array of TSelect;
       SelectsS:       array of TSelectSlide;
+      ButtonCollection: Array of TButtonCollection;
       BackImg:        TTexture;
       BackW:          integer;
       BackH:          integer;
     public
       Text:       array of TText;
-      Static:         array of TStatic;
+      Static:     array of TStatic;
       mX:         integer; // mouse X
       mY:         integer; // mouse Y
 
@@ -33,14 +34,20 @@ type
 
       destructor Destroy; override;
       constructor Create; overload; virtual;
-      constructor Create(Back: string); overload; virtual; // Back is a JPG resource name for background
-      constructor Create(Back: string; W, H: integer); overload; virtual; // W and H are the number of overlaps
+      //constructor Create(Back: string); overload; virtual; // Back is a JPG resource name for background
+      //constructor Create(Back: string; W, H: integer); overload; virtual; // W and H are the number of overlaps
 
       // interaction
       procedure AddInteraction(Typ, Num: integer);
       procedure SetInteraction(Num: integer);
       property Interaction: integer read SelInteraction write SetInteraction;
 
+      //Procedure Load BG, Texts, Statics and Button Collections from ThemeBasic
+      procedure LoadFromTheme(const ThemeBasic: TThemeBasic);
+
+      procedure PrepareButtonCollections(const Collections: AThemeButtonCollection);
+      procedure AddButtonCollection(const ThemeCollection: TThemeButtonCollection; Const Num: Byte);
+      
       // background
       procedure AddBackground(Name: string);
 
@@ -70,6 +77,7 @@ type
       procedure AddButtonText(AddX, AddY: real; AddText: string); overload;
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; AddText: string); overload;
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; AddText: string); overload;
+      procedure AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; AddText: string); overload;
 
       // select
       function AddSelect(ThemeSelect: TThemeSelect; var Data: integer; Values: array of string): integer; overload;
@@ -113,7 +121,8 @@ type
 
       procedure SetAnimationProgress(Progress: real); virtual;
 
-
+      function IsSelectable(Int: Cardinal): Boolean;
+      
       procedure InteractNext; virtual;
       procedure InteractCustom(CustomSwitch: integer); virtual;
       procedure InteractPrev; virtual;
@@ -132,13 +141,14 @@ const
   iSelect = 1;
   iText = 2;
   iSelectS = 3;
+  iBCollectionChild = 5;
 
 //  fBlack = 0; // fade type
 //  fWhite = 1;
 
 implementation
 
-uses UMain, UDrawTexture, UGraphic, UDisplay, UCovers, USkins;
+uses UMain, UDrawTexture, UGraphic, UDisplay, UCovers, USkins, Dialogs;
 
 destructor TMenu.Destroy;
 begin
@@ -157,7 +167,7 @@ begin
   //Set ButtonPos to Autoset Length
   ButtonPos := -1;
 end;
-
+{
 constructor TMenu.Create(Back: String);
 begin
   inherited Create;
@@ -183,7 +193,7 @@ begin
   BackImg.H := BackImg.H / H;
   BackW := W;
   BackH := H;
-end;
+end;   }
 
 procedure TMenu.AddInteraction(Typ, Num: integer);
 var
@@ -204,23 +214,65 @@ begin
   // set inactive
   OldNum := Interactions[Interaction].Num;
   OldTyp := Interactions[Interaction].Typ;
+
+  NewNum := Interactions[Num].Num;
+  NewTyp := Interactions[Num].Typ;
+
   case OldTyp of
     iButton:  Button[OldNum].Selected := False;
     iSelect:  Selects[OldNum].Selected := False;
     iText:    Text[OldNum].Selected := False;
     iSelectS: SelectsS[OldNum].Selected := False;
+    //Button Collection Mod
+    iBCollectionChild:
+      begin
+        Button[OldNum].Selected := False;
+        
+        //Deselect Collection if Next Button is Not from Collection
+        if (NewTyp <> iButton) Or (Button[NewNum].Parent <> Button[OldNum].Parent) then
+          ButtonCollection[Button[OldNum].Parent-1].Selected := False;
+      end;
   end;
 
   // set active
   SelInteraction := Num;
-  NewNum := Interactions[Interaction].Num;
-  NewTyp := Interactions[Interaction].Typ;
   case NewTyp of
     iButton:  Button[NewNum].Selected := True;
     iSelect:  Selects[NewNum].Selected := True;
     iText:    Text[NewNum].Selected := True;
     iSelectS: SelectsS[NewNum].Selected := True;
+
+    //Button Collection Mod
+    iBCollectionChild:
+      begin
+        Button[NewNum].Selected := True;
+        ButtonCollection[Button[NewNum].Parent-1].Selected := True;
+      end;
   end;
+end;
+
+//----------------------
+//LoadFromTheme - Load BG, Texts, Statics and
+//Button Collections from ThemeBasic
+//----------------------
+procedure TMenu.LoadFromTheme(const ThemeBasic: TThemeBasic);
+var
+  I: Integer;
+begin
+  //Add Button Collections (Set Button CollectionsLength)
+  //Button Collections are Created when the first ChildButton is Created
+  PrepareButtonCollections(ThemeBasic.ButtonCollection);
+
+
+  //Add Background
+  AddBackground(ThemeBasic.Background.Tex);
+
+  //Add Statics and Texts
+  for I := 0 to High(ThemeBasic.Static) do
+    AddStatic(ThemeBasic.Static[I]);
+
+  for I := 0 to High(ThemeBasic.Text) do
+    AddText(ThemeBasic.Text[I]);
 end;
 
 procedure TMenu.AddBackground(Name: string);
@@ -232,6 +284,84 @@ begin
     BackImg.H := 600;
     BackW := 1;
     BackH := 1;
+  end;
+end;
+
+//----------------------
+//PrepareButtonCollections:
+//Add Button Collections (Set Button CollectionsLength)
+//----------------------
+procedure TMenu.PrepareButtonCollections(const Collections: AThemeButtonCollection);
+var
+  I: Integer;
+begin
+  SetLength(ButtonCollection, Length(Collections));
+  For I := 0 to High(ButtonCollection) do
+    AddButtonCollection(Collections[I], I);
+end;
+
+//----------------------
+//AddButtonCollection:
+//Create a Button Collection;
+//----------------------
+procedure TMenu.AddButtonCollection(const ThemeCollection: TThemeButtonCollection; Const Num: Byte);
+var
+  BT, BTLen: Integer;
+begin
+  if (Num > High(ButtonCollection)) then
+    exit;
+
+  ButtonCollection[Num] := TButtonCollection.Create(Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), ThemeCollection.Style.Typ, true)); // use cache texture
+
+  //Set Parent menu
+  ButtonCollection[Num].ScreenButton := @Self.Button;
+
+  //Set Attributes
+  ButtonCollection[Num].FirstChild := ThemeCollection.FirstChild;
+  ButtonCollection[Num].CountChilds := ThemeCollection.ChildCount;
+  ButtonCollection[Num].Parent := Num + 1;
+
+  //Set Style
+  ButtonCollection[Num].X := ThemeCollection.Style.X;
+  ButtonCollection[Num].Y := ThemeCollection.Style.Y;
+  ButtonCollection[Num].W := ThemeCollection.Style.W;
+  ButtonCollection[Num].H := ThemeCollection.Style.H;
+  ButtonCollection[Num].SelectColR := ThemeCollection.Style.ColR;
+  ButtonCollection[Num].SelectColG := ThemeCollection.Style.ColG;
+  ButtonCollection[Num].SelectColB := ThemeCollection.Style.ColB;
+  ButtonCollection[Num].SelectInt := ThemeCollection.Style.Int;
+  ButtonCollection[Num].DeselectColR := ThemeCollection.Style.DColR;
+  ButtonCollection[Num].DeselectColG := ThemeCollection.Style.DColG;
+  ButtonCollection[Num].DeselectColB := ThemeCollection.Style.DColB;
+  ButtonCollection[Num].DeselectInt := ThemeCollection.Style.DInt;
+  ButtonCollection[Num].Texture.TexX1 := 0;
+  ButtonCollection[Num].Texture.TexY1 := 0;
+  ButtonCollection[Num].Texture.TexX2 := 1;
+  ButtonCollection[Num].Texture.TexY2 := 1;
+  ButtonCollection[Num].SetSelect(false);
+
+  ButtonCollection[Num].Reflection := ThemeCollection.Style.Reflection;
+  ButtonCollection[Num].Reflectionspacing := ThemeCollection.Style.ReflectionSpacing;
+  ButtonCollection[Num].DeSelectReflectionspacing := ThemeCollection.Style.DeSelectReflectionSpacing;
+
+  ButtonCollection[Num].Z := ThemeCollection.Style.Z;
+
+  //Some Things from ButtonFading
+  ButtonCollection[Num].SelectH := ThemeCollection.Style.SelectH;
+  ButtonCollection[Num].SelectW := ThemeCollection.Style.SelectW;
+
+  ButtonCollection[Num].Fade := ThemeCollection.Style.Fade;
+  ButtonCollection[Num].FadeText := ThemeCollection.Style.FadeText;
+  ButtonCollection[Num].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ, true);
+  ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
+
+
+  BTLen := Length(ThemeCollection.Style.Text);
+  for BT := 0 to BTLen-1 do begin
+    AddButtonText(ButtonCollection[Num], ThemeCollection.Style.Text[BT].X, ThemeCollection.Style.Text[BT].Y,
+      ThemeCollection.Style.Text[BT].ColR, ThemeCollection.Style.Text[BT].ColG, ThemeCollection.Style.Text[BT].ColB,
+      ThemeCollection.Style.Text[BT].Font, ThemeCollection.Style.Text[BT].Size, ThemeCollection.Style.Text[BT].Align,
+      ThemeCollection.Style.Text[BT].Text);
   end;
 end;
 
@@ -415,6 +545,20 @@ begin
       ThemeButton.Text[BT].Font, ThemeButton.Text[BT].Size, ThemeButton.Text[BT].Align,
       ThemeButton.Text[BT].Text);
   end;
+
+  //BAutton Collection Mod
+  if (ThemeButton.Parent <> 0) then
+  begin
+    //If Collection Exists then Change Interaction to Child Button
+    if (@ButtonCollection[ThemeButton.Parent-1] <> nil) then
+    begin
+      Interactions[High(Interactions)].Typ := iBCollectionChild;
+      Button[Result].Visible := False;
+      Button[Result].Parent := ThemeButton.Parent;
+      if (ButtonCollection[ThemeButton.Parent-1].Fade) then
+        Button[Result].Texture.Alpha := 0;
+    end;
+  end;
 end;
 
 function TMenu.AddButton(X, Y, W, H: real; Name: String): integer;
@@ -473,6 +617,10 @@ begin
   Button[Result].Reflectionspacing := ReflectionSpacing;
   Button[Result].DeSelectReflectionspacing := DeSelectReflectionSpacing;
 
+  //Button Collection Mod
+  Button[Result].Parent := 0;
+
+
   // adds interaction
   AddInteraction(iButton, Result);
   Interaction := 0;
@@ -526,6 +674,10 @@ begin
   // ... and slightly implemented menutext unit
   for J := 0 to Length(Text) - 1 do
     Text[J].Draw;
+
+  //  Draw all ButtonCollections
+  For J := 0 to High(ButtonCollection) do
+    ButtonCollection[J].Draw;
 
   // Second, we draw all of our buttons
   for J := 0 to Length(Button) - 1 do
@@ -595,60 +747,68 @@ begin
   SetLength(WidgetsRect, MinNumber);
 end;}
 
+function TMenu.IsSelectable(Int: Cardinal): Boolean;
+begin
+  Result := True;
+  Case Interactions[Int].Typ of
+    //Button
+    iButton: Result := Button[Interactions[Int].Num].Visible and Button[Interactions[Int].Num].Selectable;
+    //Select
+    iSelect: Result := True;
+    //Select Slide
+    iSelectS: Result := SelectsS[Interactions[Int].Num].Visible;
+
+    //ButtonCollection Child
+    iBCollectionChild:
+      Result := (ButtonCollection[Button[Interactions[Int].Num].Parent - 1].FirstChild - 1 = Int) AND ((Interactions[Interaction].Typ <> iBCollectionChild) OR (Button[Interactions[Interaction].Num].Parent <> Button[Interactions[Int].Num].Parent));
+  end;
+end;
+
 procedure TMenu.InteractNext;
 var
-  Num:    integer;
-  Typ:    integer;
-  Again:  boolean;
+  Int: Integer;
 begin
-  Again := true;
+  Int := Interaction;
 
   // change interaction as long as it's needed
-  while (Again = true) do begin
-    Num := (Interaction + 1) Mod Length(Interactions);
-    Interaction := Num;
-    Again := false; // reset, default to accept changing interaction
+  repeat
+    Int := (Int + 1) Mod Length(Interactions);
 
+    //If no Interaction is Selectable Simply Select Next
+    if (Int = Interaction) then
+    begin
+      Int := (Int + 1) Mod Length(Interactions);
+      Break;
+    end;
+  Until IsSelectable(Int);
 
-    // checking newly interacted element
-    Num := Interactions[Interaction].Num;
-    Typ := Interactions[Interaction].Typ;
-    case Typ of
-    iButton:
-      begin
-        if Button[Num].Selectable = false then Again := True;
-      end;
-    end; // case
-  end; // while
+  //Set Interaction
+  Interaction := Int;
 end;
 
 
 procedure TMenu.InteractPrev;
 var
-  Num:    integer;
-  Typ:    integer;
-  Again:  boolean;
+  Int: Integer;
 begin
-  Again := true;
+  Int := Interaction;
 
   // change interaction as long as it's needed
-  while (Again = true) do begin
-    Num := SelInteraction - 1;
-    if Num = -1 then Num := High(Interactions);
-    Interaction := Num;
-    Again := false; // reset, default to accept changing interaction
+  repeat
+    Int := Int - 1;
+    if Int = -1 then Int := High(Interactions);
 
-    // checking newly interacted element
-    Num := Interactions[Interaction].Num;
-    Typ := Interactions[Interaction].Typ;
-    case Typ of
-    iButton:
-      begin
-        if Button[Num].Selectable = false then Again := True;
-      end;
-    end; // case
-  end; // while
+    //If no Interaction is Selectable Simply Select Next
+    if (Int = Interaction) then
+    begin
+      Int := SelInteraction - 1;
+      if Int = -1 then Int := High(Interactions);
+      Break;
+    end;
+  Until IsSelectable(Int);
 
+  //Set Interaction
+  Interaction := Int
 end;
 
 
@@ -658,7 +818,9 @@ var
   Typ:    integer;
   Again:  boolean;
 begin
-  if num<0 then begin
+  //Code Commented atm, because it needs to be Rewritten
+  //it doesn't work with Button Collections
+  {then begin
     CustomSwitch:= CustomSwitch*(-1);
     Again := true;
   // change interaction as long as it's needed
@@ -698,7 +860,7 @@ begin
       end;
     end; // case
   end; // while
-    end
+    end     }
 end;
 
 
@@ -733,6 +895,24 @@ var
   Il:   integer;
 begin
   with Button[High(Button)] do begin
+    Il := Length(Text);
+    SetLength(Text, Il+1);
+    Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
+    Text[Il].ColR := ColR;
+    Text[Il].ColG := ColG;
+    Text[Il].ColB := ColB;
+    Text[Il].Int := 1;//0.5;
+    Text[Il].Style := Font;
+    Text[Il].Size := Size;
+    Text[Il].Align := Align;
+  end;
+end;
+
+procedure TMenu.AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; AddText: string);
+var
+  Il:   integer;
+begin
+  with CustomButton do begin
     Il := Length(Text);
     SetLength(Text, Il+1);
     Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
@@ -1114,6 +1294,28 @@ begin
         if Value <= High(SelectsS[Num].TextOptT) then
           SelectsS[Num].SelectedOption := Value;
       end;
+    //Button Collection Mod
+    iBCollectionChild:
+      begin
+
+        //Select Next Button in Collection
+        For Num := 1 to High(Button) do
+        begin
+          Value := (Interaction + Num) Mod Length(Button);
+          if Value = 0 then
+          begin
+            InteractNext;
+            Break;
+          end;
+          if (Button[Value].Parent = Button[Interaction].Parent) then
+          begin
+            Interaction := Value;
+            Break;
+          end;
+        end;
+      end;
+    //interact Next if there is Nothing to Change
+    else InteractNext;
   end;
 end;
 
@@ -1141,7 +1343,45 @@ begin
         if Value >= 0 then
           SelectsS[Num].SelectedOption := Value;
       end;
-  end
+    //Button Collection Mod
+    iBCollectionChild:
+      begin
+        //Select Prev Button in Collection
+        For Num := High(Button) downto 1 do
+        begin
+          Value := (Interaction + Num) Mod Length(Button);
+          if Value = High(Button) then
+          begin
+            InteractPrev;
+            Break;
+          end;
+          if (Button[Value].Parent = Button[Interaction].Parent) then
+          begin
+            Interaction := Value;
+            Break;
+          end;
+        end;
+      end;
+    //interact Prev if there is Nothing to Change
+    else
+      begin
+        InteractPrev;
+        //If ButtonCollection with more than 1 Entry then Select Last Entry
+        if (ButtonCollection[Button[Interactions[Interaction].Num].Parent-1].CountChilds > 1) then
+        begin
+          //Select Last Child
+          For Num := High(Button) downto 1 do
+          begin
+            Value := (Interaction + Num) Mod Length(Button);
+            if (Button[Value].Parent = Button[Interaction].Parent) then
+            begin
+              Interaction := Value;
+              Break;
+            end;
+          end;
+        end;
+      end;
+  end;
 end;
 
 procedure TMenu.AddBox(X, Y, W, H: real);

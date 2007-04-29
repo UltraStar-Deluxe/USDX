@@ -2,7 +2,16 @@ To translate USD to a new language, take the English Language File, or another o
 
 To port a LanguageFile from Ultrastar 0.5.2 or Higher add the following Texts to the end of the file:
 
+#Main Screen
 SING_MENU=Main Menu
+
+SING_MULTI=party
+SING_MULTI_DESC=Sing in PartyMode
+
+SING_TOOLS=Tools
+
+SING_STATS=stats
+SING_STATS_DESC=View the Statistics
 
 #Advanced Options Screen
 SING_OPTIONS_ADVANCED=advanced

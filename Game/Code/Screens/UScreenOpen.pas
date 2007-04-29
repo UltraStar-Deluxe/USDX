@@ -16,7 +16,7 @@ type
       Path:               string;
       BackScreen:         pointer;
       procedure AddBox(X, Y, W, H: real);
-      constructor Create(Back: String); override;
+      constructor Create; override;
       procedure onShow; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
 //      function Draw: boolean; override;
@@ -90,9 +90,9 @@ begin
   AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('Bar'), 'JPG', 'Font Black');
 end;
 
-constructor TScreenOpen.Create(Back: String);
+constructor TScreenOpen.Create;
 begin
-  inherited Create(Back);
+  inherited Create;
 
   // linijka
 {  AddStatic(20, 10, 80, 30, 0, 0, 0, 'Bar', 'JPG', 'Font Black');

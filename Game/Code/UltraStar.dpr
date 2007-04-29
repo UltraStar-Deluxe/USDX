@@ -6,6 +6,9 @@ program UltraStar;
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
 uses
+  //------------------------------
+  //Includes - Menu System
+  //------------------------------
   UDisplay in 'Menu\UDisplay.pas',
   UMenu in 'Menu\UMenu.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
@@ -15,6 +18,11 @@ uses
   UMenuSelect in 'Menu\UMenuSelect.pas',
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
+  UMenuButtonCollection in 'Menu\UMenuButtonCollection.pas',
+
+  //------------------------------
+  //Includes - Classes
+  //------------------------------
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
@@ -43,6 +51,10 @@ uses
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
+
+  //------------------------------
+  //Includes - Screens
+  //------------------------------
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -69,14 +81,26 @@ uses
   UScreenSongJumpto in 'Screens\UScreenSongJumpto.pas',
   UScreenStatMain in 'Screens\UScreenStatMain.pas',
   UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
+  UScreenCredits in 'Screens\UScreenCredits.pas',
+
+  //------------------------------
+  //Includes - Screens PartyMode
+  //------------------------------
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
   UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
+
+  //------------------------------
+  //Includes - Modi SDK
+  //------------------------------
   ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
-  UScreenCredits in 'Screens\UScreenCredits.pas',
+
+  //------------------------------
+  //Includes - Delphi
+  //------------------------------
   Windows,
   SDL,
   SysUtils;

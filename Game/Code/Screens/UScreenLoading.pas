@@ -9,7 +9,7 @@ type
   TScreenLoading = class(TMenu)
     public
       Fadeout:      boolean;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       function GetBGTexNum: GLUInt;
       procedure onShow; override;
@@ -24,19 +24,11 @@ begin
   Result := true;
 end;
 
-constructor TScreenLoading.Create(Back: String);
-var
-  I:    integer;
+constructor TScreenLoading.Create;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  AddBackground(Theme.Loading.Background.Tex);
-
-  for I := 0 to High(Theme.Loading.Static) do
-    AddStatic(Theme.Loading.Static[I]);
-
-  for I := 0 to High(Theme.Loading.Text) do
-    AddText(Theme.Loading.Text[I]);
+  LoadFromTheme(Theme.Loading);
 
   Fadeout := false;
 end;

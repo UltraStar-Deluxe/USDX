@@ -8,7 +8,7 @@ uses
 type
   TScreenOptionsGraphics = class(TMenu)
     public
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
   end;
@@ -66,19 +66,13 @@ begin
   end;
 end;
 
-constructor TScreenOptionsGraphics.Create(Back: String);
+constructor TScreenOptionsGraphics.Create;
 var
   I:      integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  AddBackground(Theme.OptionsGraphics.Background.Tex);
-
-  for I := 0 to High(Theme.OptionsGraphics.Static) do
-    AddStatic(Theme.OptionsGraphics.Static[I]);
-
-  for I := 0 to High(Theme.OptionsGraphics.Text) do
-    AddText(Theme.OptionsGraphics.Text[I]);
+  LoadFromTheme(Theme.OptionsGraphics);
 
   AddSelectSlide(Theme.OptionsGraphics.SelectSlideResolution, Ini.Resolution, IResolution);
   AddSelect(Theme.OptionsGraphics.SelectFullscreen, Ini.Fullscreen, IFullscreen);

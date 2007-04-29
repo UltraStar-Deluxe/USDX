@@ -11,7 +11,7 @@ type
       FadeOut:            boolean;
       Path:               string;
       FileName:           string;}
-      constructor Create(Back: String); override;
+      constructor Create; override;
       procedure onShow; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
 {      function Draw: boolean; override;
@@ -63,9 +63,9 @@ begin
   end;
 end;
 
-constructor TScreenEdit.Create(Back: String);
+constructor TScreenEdit.Create;
 begin
-  inherited Create(Back);
+  inherited Create;
   AddButton(400-200, 100 + 0*70, 400, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(10, 5, 0, 0, 0, 'Convert Midi to Txt');
 //  Button[High(Button)].Text[0].Size := 11;

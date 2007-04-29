@@ -108,7 +108,7 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.PartyPlayer.Background.Tex);
+  LoadFromTheme(Theme.PartyPlayer);
 
   Team1Name := AddButton(Theme.PartyPlayer.Team1Name);
   AddButton(Theme.PartyPlayer.Player1Name);
@@ -127,12 +127,6 @@ begin
   AddButton(Theme.PartyPlayer.Player10Name);
   AddButton(Theme.PartyPlayer.Player11Name);
   AddButton(Theme.PartyPlayer.Player12Name);
-
-  for I := 0 to High(Theme.PartyPlayer.Static) do
-    AddStatic(Theme.PartyPlayer.Static[I]);
-
-  for I := 0 to High(Theme.PartyPlayer.Text) do
-    AddText(Theme.PartyPlayer.Text[I]);
 
   Interaction := 0;
 end;

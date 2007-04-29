@@ -4,8 +4,9 @@ interface
 uses TextGL, UTexture, OpenGL12, UMenuText;
 
 type
+  CButton = class of TButton;
   TButton = class
-    private
+    protected
       SelectBool:           Boolean;
 
       FadeProgress:         Real;
@@ -14,9 +15,10 @@ type
       DeSelectW:            Real;
       DeSelectH:            Real;
       PosX:                 Real;
-      PosY:                 Real; 
-      
+      PosY:                 Real;
+
       constructor Create(); overload;
+      
     public
       Text:                 Array of TText;
       Texture:              TTexture; // Button Screen position and size
@@ -40,6 +42,9 @@ type
 
       Selectable:           boolean;
 
+      //No of the Parent Collection, 0 if in no Collection
+      Parent:  Byte;
+
       SelectColR:   real;
       SelectColG:   real;
       SelectColB:   real;
@@ -60,7 +65,7 @@ type
       procedure SetW(Value: real);
       procedure SetH(Value: real);
 
-      procedure SetSelect(Value: Boolean);
+      procedure SetSelect(Value: Boolean); virtual;
       property X: real read PosX write SetX;
       property Y: real read PosY write SetY;
       property Z: real read Texture.z write Texture.z;
@@ -68,7 +73,7 @@ type
       property H: real read DeSelectH write SetH;
       property Selected: Boolean read SelectBool write SetSelect;
 
-      procedure Draw;
+      procedure Draw; virtual;
 
       constructor Create(Textura: TTexture); overload;
       destructor Destroy; override;
@@ -250,6 +255,8 @@ begin
 
   PosX := 0;
   PosY := 0;
+
+  Parent := 0;
 end;
 
 // ***** Public methods ****** //

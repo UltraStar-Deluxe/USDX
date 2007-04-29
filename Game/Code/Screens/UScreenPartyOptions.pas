@@ -45,37 +45,6 @@ uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UDLLManager, UPlaylist,
 function TScreenPartyOptions.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
   var
     I, J: Integer;
-
-  function IsVisible: Boolean;
-  begin
-    Result := True;
-    if (Interactions[Interaction].Typ = 0) then
-    begin
-      Result := Button[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 1) then
-    begin
-      //Result := Selects[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 3) then
-    begin
-      Result := SelectsS[Interactions[Interaction].Num].Visible;
-    end;
-  end;
-
-  Procedure SelectNext;
-  begin
-    repeat
-      InteractNext;
-    until IsVisible;
-  end;
-
-  Procedure SelectPrev;
-  begin
-    repeat
-      InteractPrev;
-    until IsVisible;
-  end;
 begin
   Result := true;
   If (PressedDown) Then
@@ -137,8 +106,8 @@ begin
       // Up and Down could be done at the same time,
       // but I don't want to declare variables inside
       // functions like this one, called so many times
-      SDLK_DOWN:    SelectNext;
-      SDLK_UP:      SelectPrev;
+      SDLK_DOWN:    InteractNext;
+      SDLK_UP:      InteractPrev;
       SDLK_RIGHT:
         begin
           Music.PlayOption;
@@ -193,6 +162,7 @@ begin
   SetLength(IPlaylist2, 1);
   IPlaylist2[0] := '---';
 
+  //Clear all Selects
   NumTeams := 0;
   NumPlayer1 := 0;
   NumPlayer2 := 0;
@@ -201,7 +171,8 @@ begin
   PlayList := 0;
   PlayList2 := 0;
 
-  AddBackground(Theme.PartyOptions.Background.Tex);
+  //Load Screen From Theme
+  LoadFromTheme(Theme.PartyOptions);
 
   SelectLevel := AddSelectSlide (Theme.PartyOptions.SelectLevel, Ini.Difficulty, Theme.ILevel);
   SelectPlayList := AddSelectSlide (Theme.PartyOptions.SelectPlayList, PlayList, IPlaylist);
@@ -211,12 +182,6 @@ begin
   SelectPlayers1 := AddSelectSlide (Theme.PartyOptions.SelectPlayers1, NumPlayer1, IPlayers);
   SelectPlayers2 := AddSelectSlide (Theme.PartyOptions.SelectPlayers2, NumPlayer2, IPlayers);
   SelectPlayers3 := AddSelectSlide (Theme.PartyOptions.SelectPlayers3, NumPlayer3, IPlayers);
-
-  for I := 0 to High(Theme.PartyOptions.Static) do
-    AddStatic(Theme.PartyOptions.Static[I]);
-
-  for I := 0 to High(Theme.PartyOptions.Text) do
-    AddText(Theme.PartyOptions.Text[I]);
 
   Interaction := 0;
 

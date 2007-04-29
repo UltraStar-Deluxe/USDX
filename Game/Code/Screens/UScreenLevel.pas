@@ -68,17 +68,11 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.Level.Background.Tex);
+  LoadFromTheme(Theme.Level);
 
   AddButton(Theme.Level.ButtonEasy);
   AddButton(Theme.Level.ButtonMedium);
   AddButton(Theme.Level.ButtonHard);
-
-  for I := 0 to High(Theme.Level.Static) do
-    AddStatic(Theme.Level.Static[I]);
-
-  for I := 0 to High(Theme.Level.Text) do
-    AddText(Theme.Level.Text[I]);
 
   Interaction := 0;
 end;

@@ -62,7 +62,7 @@ type
       FadeOut:            boolean;
       Path:               string;
       FileName:           string;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       procedure onShow; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       function ParseInputEditText(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
@@ -1035,9 +1035,9 @@ begin
 end;
 
 
-constructor TScreenEditSub.Create(Back: String);
+constructor TScreenEditSub.Create;
 begin
-  inherited Create(Back);
+  inherited Create;
   SetLength(Player, 1);
 
   // linijka

@@ -8,7 +8,7 @@ uses
 type
   TScreenOptionsSound = class(TMenu)
     public
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
   end;
@@ -59,25 +59,18 @@ begin
   end;
 end;
 
-constructor TScreenOptionsSound.Create(Back: String);
+constructor TScreenOptionsSound.Create;
 var
   I:      integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  AddBackground(Theme.OptionsSound.Background.Tex);
-
-  for I := 0 to High(Theme.OptionsSound.Static) do
-    AddStatic(Theme.OptionsSound.Static[I]);
-
-  for I := 0 to High(Theme.OptionsSound.Text) do
-    AddText(Theme.OptionsSound.Text[I]);
+  LoadFromTheme(Theme.OptionsSound);
 
   AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);
   AddSelect(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
   AddSelect(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
   AddSelect(Theme.OptionsSound.SelectThreshold, Ini.Threshold, IThreshold);
-  //AddSelect(Theme.OptionsSound.SelectTwoPlayerMode, Ini.TwoPlayerMode, ITwoPlayerMode);
 
   AddButton(Theme.OptionsSound.ButtonExit);
   if (Length(Button[0].Text)=0) then

@@ -9,7 +9,7 @@ type
   TScreenOptionsGame = class(TMenu)
     public
       old_Tabs, old_Sorting: integer;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure RefreshSongs;
@@ -61,19 +61,13 @@ begin
   end;
 end;
 
-constructor TScreenOptionsGame.Create(Back: String);
+constructor TScreenOptionsGame.Create;
 var
   I:      integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  AddBackground(Theme.OptionsGame.Background.Tex);
-
-  for I := 0 to High(Theme.OptionsGame.Static) do
-    AddStatic(Theme.OptionsGame.Static[I]);
-
-  for I := 0 to High(Theme.OptionsGame.Text) do
-    AddText(Theme.OptionsGame.Text[I]);
+  LoadFromTheme(Theme.OptionsGame);
 
   //Refresh Songs Patch
   old_Sorting := Ini.Sorting;

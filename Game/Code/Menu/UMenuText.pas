@@ -162,6 +162,7 @@ begin
         //Look for Break before the Break
         if (glTextWidth(PChar(Copy(Value, LastBreak, NextPos - LastBreak + 1))) > W) AND (NextPos-LastPos > 1) then
         begin
+          isBreak := False;
           //Not the First word after Break, so we don't have to break within a word
           if (FirstWord > 1) then
           begin
@@ -175,6 +176,7 @@ begin
           end;
         end;
 
+        isBreak := True;
         //Add Break from Text
         AddBreak(LastBreak, NextPos);
       end

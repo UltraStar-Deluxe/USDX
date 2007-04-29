@@ -16,6 +16,8 @@ type
       procedure onShow; override;
       procedure InteractNext; override;
       procedure InteractPrev; override;
+      procedure InteractInc; override;
+      procedure InteractDec; override;
       procedure UpdateLCD;
       procedure SetAnimationProgress(Progress: real); override;
       //function Draw: boolean; override;
@@ -84,6 +86,7 @@ begin
 
       SDLK_RETURN:
         begin
+          //Solo
           if (Interaction = 0) and (Length(Songs.Song) >= 1) then begin
             Music.PlayStart;
             if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
@@ -92,23 +95,44 @@ begin
             ScreenName.Goto_SingScreen := False;
             FadeTo(@ScreenName);
           end;
+
+          //Multi
           if Interaction = 1 then begin
+            if (Ini.Players >= 1) AND (Length(DLLMan.Plugins)>=1) then
+            begin
+              Music.PlayStart;
+              FadeTo(@ScreenPartyOptions);
+            end;
+          end;
+
+          //Stats
+          if Interaction = 2 then begin
+            Music.PlayStart;
+            FadeTo(@ScreenStatMain);
+          end;
+          
+          //Editor
+          if Interaction = 3 then begin
             Music.PlayStart;
             FadeTo(@ScreenEdit);
           end;
-          if Interaction = 2 then begin
+
+          //Options
+          if Interaction = 4 then begin
             Music.PlayStart;
             FadeTo(@ScreenOptions);
           end;
-          if Interaction = 3 then begin
+
+          //Exit
+          if Interaction = 5 then begin
             Result := false;
           end;
         end;
       // Up and Down could be done at the same time,
       // but I don't want to declare variables inside
       // functions like this one, called so many times
-      SDLK_DOWN:    InteractNext;
-      SDLK_UP:      InteractPrev;
+      SDLK_DOWN:    InteractInc;
+      SDLK_UP:      InteractDec;
       SDLK_RIGHT:   InteractNext;
       SDLK_LEFT:    InteractPrev;
     end;
@@ -127,26 +151,27 @@ var
 begin
   inherited Create;
 
-//  AddButton(400-200, 320, 400, 60, Skin.GameStart);
-//  AddButton(400-200, 390, 400, 60, Skin.Editor);
-//  AddButton(400-200, 460, 400, 60, Skin.Options);
-//  AddButton(400-200, 530, 400, 60, Skin.Exit);
+  //----------------
+  //Attention ^^:
+  //New Creation Order needed because of LoadFromTheme
+  //and Button Collections.
+  //At First Custom Texts and Statics
+  //Then LoadFromTheme
+  //after LoadFromTheme the Buttons and Selects
+  //----------------
 
-  AddBackground(Theme.Main.Background.Tex);
-
-  AddButton(Theme.Main.ButtonSolo);
-  AddButton(Theme.Main.ButtonEditor);
-  AddButton(Theme.Main.ButtonOptions);
-  AddButton(Theme.Main.ButtonExit);
-
-  for I := 0 to High(Theme.Main.Static) do
-    AddStatic(Theme.Main.Static[I]);
-
-  for I := 0 to High(Theme.Main.Text) do
-    AddText(Theme.Main.Text[I]);
 
   TextDescription := AddText(Theme.Main.TextDescription);
   TextDescriptionLong := AddText(Theme.Main.TextDescriptionLong);
+
+  LoadFromTheme(Theme.Main);
+
+  AddButton(Theme.Main.ButtonSolo);
+  AddButton(Theme.Main.ButtonMulti);
+  AddButton(Theme.Main.ButtonStat);
+  AddButton(Theme.Main.ButtonEditor);
+  AddButton(Theme.Main.ButtonOptions);
+  AddButton(Theme.Main.ButtonExit);
 
   Interaction := 0;
 end;
@@ -173,6 +198,24 @@ begin
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
   UpdateLCD;
   Light.LightOne(0, 200);
+end;
+
+procedure TScreenMain.InteractDec;
+begin
+  inherited InteractDec;
+  Text[TextDescription].Text := Theme.Main.Description[Interaction];
+  Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
+  UpdateLCD;
+  Light.LightOne(0, 200);
+end;
+
+procedure TScreenMain.InteractInc;
+begin
+  inherited InteractInc;
+  Text[TextDescription].Text := Theme.Main.Description[Interaction];
+  Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
+  UpdateLCD;
+  Light.LightOne(1, 200);
 end;
 
 procedure TScreenMain.UpdateLCD;

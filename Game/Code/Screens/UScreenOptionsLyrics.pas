@@ -8,7 +8,7 @@ uses
 type
   TScreenOptionsLyrics = class(TMenu)
     public
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
   end;
@@ -59,19 +59,13 @@ begin
   end;
 end;
 
-constructor TScreenOptionsLyrics.Create(Back: String);
+constructor TScreenOptionsLyrics.Create;
 var
   I:      integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  AddBackground(Theme.OptionsLyrics.Background.Tex);
-
-  for I := 0 to High(Theme.OptionsLyrics.Static) do
-    AddStatic(Theme.OptionsLyrics.Static[I]);
-
-  for I := 0 to High(Theme.OptionsLyrics.Text) do
-    AddText(Theme.OptionsLyrics.Text[I]);
+  LoadFromTheme(Theme.OptionsLyrics);
 
   AddSelect(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFont);
   AddSelect(Theme.OptionsLyrics.SelectLyricsEffect, Ini.LyricsEffect, ILyricsEffect);

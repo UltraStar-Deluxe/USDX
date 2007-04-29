@@ -163,13 +163,7 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.Sing.Background.Tex);
-
-  for I := 0 to High(Theme.Sing.Static) do
-    AddStatic(Theme.Sing.Static[I]);
-
-  for I := 0 to High(Theme.Sing.Text) do
-    AddText(Theme.Sing.Text[I]);
+  LoadFromTheme(Theme.Sing);
 
   // time
   TextTime := AddText(75, 14, 1, 8, 0.25, 0.25, 0.25, '00:00');

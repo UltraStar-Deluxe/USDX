@@ -14,7 +14,7 @@ type
       Credits_Alpha: Cardinal;
 
       Fadeout:      boolean;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure onShow; override;
@@ -97,11 +97,11 @@ begin
     end; //fi
 end;
 
-constructor TScreenCredits.Create(Back: String);
+constructor TScreenCredits.Create;
 var
   I:    integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
   AddBackground(Theme.Loading.Background.Tex);
 

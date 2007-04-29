@@ -58,13 +58,7 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.Top5.Background.Tex);
-
-  for I := 0 to High(Theme.Top5.Static) do
-    AddStatic(Theme.Top5.Static[I]);
-
-  for I := 0 to High(Theme.Top5.Text) do
-    AddText(Theme.Top5.Text[I]);
+  LoadFromTheme(Theme.Top5);
 
 
   TextLevel := AddText(Theme.Top5.TextLevel);

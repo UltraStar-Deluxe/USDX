@@ -102,7 +102,15 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.StatDetail.Background.Tex);
+  for I := 0 to High(Theme.StatDetail.TextList) do
+    AddText(Theme.StatDetail.TextList[I]);
+
+  Count := Length(Theme.StatDetail.TextList);
+
+  AddText(Theme.StatDetail.TextDescription);
+  AddText(Theme.StatDetail.TextPage);
+
+  LoadFromTheme(Theme.StatDetail);
 
   AddButton(Theme.StatDetail.ButtonNext);
   if (Length(Button[0].Text)=0) then
@@ -119,22 +127,6 @@ begin
   AddButton(Theme.StatDetail.ButtonExit);
   if (Length(Button[3].Text)=0) then
     AddButtonText(14, 20, Theme.Options.Description[7]);
-
-  for I := 0 to High(Theme.StatDetail.TextList) do
-    AddText(Theme.StatDetail.TextList[I]);
-
-  Count := Length(Theme.StatDetail.TextList);
-
-  AddText(Theme.StatDetail.TextDescription);
-  AddText(Theme.StatDetail.TextPage);
-
-  for I := 0 to High(Theme.StatDetail.Static) do
-    AddStatic(Theme.StatDetail.Static[I]);
-
-  for I := 0 to High(Theme.StatDetail.Text) do
-    AddText(Theme.StatDetail.Text[I]);
-
-
 
   Interaction := 0;
   Typ := 0;

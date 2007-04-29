@@ -116,9 +116,6 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.PartyNewRound.Background.Tex);
-  Log.LogError(Theme.PartyNewRound.Background.Tex);
-
   TextRound1 := AddText (Theme.PartyNewRound.TextRound1);
   TextRound2 := AddText (Theme.PartyNewRound.TextRound2);
   TextRound3 := AddText (Theme.PartyNewRound.TextRound3);
@@ -161,15 +158,7 @@ begin
   StaticTeam2 := AddStatic (Theme.PartyNewRound.StaticTeam2);
   StaticTeam3 := AddStatic (Theme.PartyNewRound.StaticTeam3);
 
-  AddButton (Theme.PartyNewRound.ButtonNext);
-
-  for I := 0 to High(Theme.PartyNewRound.Static) do
-    AddStatic(Theme.PartyNewRound.Static[I]);
-
-  for I := 0 to High(Theme.PartyNewRound.Text) do
-    AddText(Theme.PartyNewRound.Text[I]);
-
-  Interaction := 0;
+  LoadFromTheme(Theme.PartyNewRound);
 end;
 
 procedure TScreenPartyNewRound.onShow;

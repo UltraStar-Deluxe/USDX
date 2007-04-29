@@ -72,8 +72,6 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.PartyScore.Background.Tex);
-
   TextScoreTeam1 := AddText (Theme.PartyScore.TextScoreTeam1);
   TextScoreTeam2 := AddText (Theme.PartyScore.TextScoreTeam2);
   TextScoreTeam3 := AddText (Theme.PartyScore.TextScoreTeam3);
@@ -87,11 +85,7 @@ begin
 
   TextWinner := AddText (Theme.PartyScore.TextWinner);
 
-  for I := 0 to High(Theme.PartyScore.Static) do
-    AddStatic(Theme.PartyScore.Static[I]);
-
-  for I := 0 to High(Theme.PartyScore.Text) do
-    AddText(Theme.PartyScore.Text[I]);
+  LoadFromTheme(Theme.PartyScore);
 end;
 
 procedure TScreenPartyScore.onShow;

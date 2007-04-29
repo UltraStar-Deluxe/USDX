@@ -40,7 +40,7 @@ type
 
       Animation:    real;
       Fadeout:      boolean;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       function Draw: boolean; override;
@@ -92,60 +92,14 @@ begin
   end;
 end;
 
-constructor TScreenScore.Create(Back: String);
+constructor TScreenScore.Create;
 var
   P:    integer;
   I, C:    integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  // background arrows sorted from farthest to nearest 
-{  AddStatic(-2000 + 400,  100, 360,  60, 1, 1, 1, Skin.Arrow2, 'JPG', 'Arrow');
-  AddStatic(-2000 + -50,  200, 420,  70, 1, 1, 1, Skin.Arrow, 'JPG', 'Arrow');
-  AddStatic(-2000 + 90,    30, 500,  90, 1, 1, 1, Skin.Arrow, 'JPG', 'Arrow');
-  AddStatic(-2000 + -250, 100, 800, 150, 1, 1, 1, Skin.Arrow, 'JPG', 'Arrow');
-
-  Static[0].Texture.Rot := 100 * pi/180;
-  Static[1].Texture.Rot := 7   * pi/180;
-  Static[2].Texture.Rot := 35  * pi/180;
-
-
-  // main arrow with text
-  AddStatic(0, 340, 1000, 180, 1, 1, 1, Skin.Arrow2, 'JPG', 'Arrow');
-//  AddText(450, 409, 4, 15, 1, 1, 1, 'Smile');
-  AddText(450, 409, 4, 15, 1, 1, 1, 'Let''s see the results');
-  Text[0].Y := 401;
-
-  Static[4].Texture.Rot := -3  * pi/180;
-
-
-  // two mid arrows
-  AddStatic(-2000 + -250, 100, 800, 150, 1, 1, 1, Skin.Arrow, 'JPG', 'Arrow');
-  AddStatic(-2000 + -250, 100, 800, 150, 1, 1, 1, Skin.Arrow, 'JPG', 'Arrow');
-
-
-  // last arrow
-  AddStatic(-2000, 340, 1100, 180, 1, 1, 1, Skin.Arrow2, 'JPG', 'Arrow');
-//  AddText(-2000, 407, 4, 17, 1, 1, 1, 'SHUFFLE !');
-  AddText(-2000, 407, 4, 15, 1, 1, 1, 'SHUFFLE !');
-
-  Static[7].Texture.Rot := 184  * pi/180;
-
-  // score text
-  AddText(-2000, 407, 4, 17, 1, 1, 1, '10010 points');
-  AddText(-2000, 407, 4, 17, 1, 1, 1, 'Cheater');
-
-  Fadeout := false;}
-
-
-  // Singstar Theme
-  AddBackground(Theme.Score.Background.Tex);
-
-  for I := 0 to High(Theme.Score.Static) do
-    AddStatic(Theme.Score.Static[I]);
-
-  for I := 0 to High(Theme.Score.Text) do
-    AddText(Theme.Score.Text[I]);
+  LoadFromTheme(Theme.Score);
 
   TextArtist := AddText(Theme.Score.TextArtist);
   TextTitle := AddText(Theme.Score.TextTitle);

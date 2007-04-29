@@ -9,7 +9,7 @@ type
   TScreenOptionsThemes = class(TMenu)
     public
       SkinSelect: Integer;
-      constructor Create(Back: String); override;
+      constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure InteractInc; override;
@@ -84,19 +84,13 @@ begin
   end;
 end;
 
-constructor TScreenOptionsThemes.Create(Back: String);
+constructor TScreenOptionsThemes.Create;
 var
   I:      integer;
 begin
-  inherited Create(Back);
+  inherited Create;
 
-  AddBackground(Theme.OptionsThemes.Background.Tex);
-
-  for I := 0 to High(Theme.OptionsThemes.Static) do
-    AddStatic(Theme.OptionsThemes.Static[I]);
-
-  for I := 0 to High(Theme.OptionsThemes.Text) do
-    AddText(Theme.OptionsThemes.Text[I]);
+  LoadFromTheme(Theme.OptionsThemes);
 
   AddSelectSlide(Theme.OptionsThemes.SelectTheme, Ini.Theme, ITheme);
 
