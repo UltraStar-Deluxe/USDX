@@ -99,14 +99,6 @@ begin
             FadeTo(@ScreenSingModi);
           end;
         end;
-
-      // Up and Down could be done at the same time,
-      // but I don't want to declare variables inside
-      // functions like this one, called so many times
-      SDLK_DOWN:    InteractNext;
-      SDLK_UP:      InteractPrev;
-      SDLK_RIGHT:   InteractNext;
-      SDLK_LEFT:    InteractPrev;
     end;
   end
   else // Key Up

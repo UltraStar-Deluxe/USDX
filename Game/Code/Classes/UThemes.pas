@@ -131,6 +131,9 @@ type
     DInt:   real;
     Tex:    string;
     Typ:    string;
+
+    Visible: Boolean;
+
     //Reflection Mod
     Reflection:           boolean;
     Reflectionspacing:    Real;
@@ -1529,6 +1532,8 @@ begin
     ThemeButton.DColG := Color[C].RGB.G;
     ThemeButton.DColB := Color[C].RGB.B;
   end;
+
+  ThemeButton.Visible := (ThemeIni.ReadInteger(Name, 'Visible', 1) = 1);
 
   //Fade Mod
   ThemeButton.SelectH := ThemeIni.ReadInteger (Name, 'SelectH', ThemeButton.H);

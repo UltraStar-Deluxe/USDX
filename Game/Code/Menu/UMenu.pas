@@ -528,6 +528,9 @@ begin
 
   Button[Result].Z := ThemeButton.Z;
 
+  //Button Visibility
+  Button[Result].Visible := ThemeButton.Visible;
+
   //Some Things from ButtonFading
   Button[Result].SelectH := ThemeButton.SelectH;
   Button[Result].SelectW := ThemeButton.SelectW;
@@ -574,7 +577,7 @@ end;
 function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; Name, Format, Typ: String; Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer;
 begin
   // adds button
-  //SetLength is used to reduce Memory usement
+  //SetLength is used once to reduce Memory usement
   if (ButtonPos <> -1) then
   begin
     Result := ButtonPos;
