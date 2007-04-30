@@ -520,14 +520,16 @@ type
     TextNameTeam1:     TThemeText;
     TextNameTeam2:     TThemeText;
     TextNameTeam3:     TThemeText;
+    TextTeam1Players:  TThemeText;
+    TextTeam2Players:  TThemeText;
+    TextTeam3Players:  TThemeText;
+    
     StaticTeam1:       TThemeStatic;
     StaticTeam2:       TThemeStatic;
     StaticTeam3:       TThemeStatic;
     StaticNextPlayer1: TThemeStatic;
     StaticNextPlayer2: TThemeStatic;
     StaticNextPlayer3: TThemeStatic;
-
-    ButtonNext:        TThemeButton;
   end;
 
   TThemePartyScore = class(TThemeBasic)
@@ -1217,14 +1219,16 @@ begin
       ThemeLoadText (PartyNewRound.TextNameTeam2, 'PartyNewRoundTextNameTeam2');
       ThemeLoadText (PartyNewRound.TextNameTeam3, 'PartyNewRoundTextNameTeam3');
 
+      ThemeLoadText (PartyNewRound.TextTeam1Players, 'PartyNewRoundTextTeam1Players');
+      ThemeLoadText (PartyNewRound.TextTeam2Players, 'PartyNewRoundTextTeam2Players');
+      ThemeLoadText (PartyNewRound.TextTeam3Players, 'PartyNewRoundTextTeam3Players');
+
       ThemeLoadStatic (PartyNewRound.StaticTeam1, 'PartyNewRoundStaticTeam1');
       ThemeLoadStatic (PartyNewRound.StaticTeam2, 'PartyNewRoundStaticTeam2');
       ThemeLoadStatic (PartyNewRound.StaticTeam3, 'PartyNewRoundStaticTeam3');
       ThemeLoadStatic (PartyNewRound.StaticNextPlayer1, 'PartyNewRoundStaticNextPlayer1');
       ThemeLoadStatic (PartyNewRound.StaticNextPlayer2, 'PartyNewRoundStaticNextPlayer2');
       ThemeLoadStatic (PartyNewRound.StaticNextPlayer3, 'PartyNewRoundStaticNextPlayer3');
-
-      ThemeLoadButton (PartyNewRound.ButtonNext, 'PartyNewRoundButtonNext');
 
       //Party Score
       ThemeLoadBasic(PartyScore, 'PartyScore');

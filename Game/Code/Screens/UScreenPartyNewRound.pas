@@ -48,6 +48,10 @@ type
       TextNameTeam2: Cardinal;
       TextNameTeam3: Cardinal;
 
+      TextTeam1Players: Cardinal;
+      TextTeam2Players: Cardinal;
+      TextTeam3Players: Cardinal;
+
       StaticTeam1: Cardinal;
       StaticTeam2: Cardinal;
       StaticTeam3: Cardinal;
@@ -153,6 +157,11 @@ begin
   TextNameTeam2 := AddText (Theme.PartyNewRound.TextNameTeam2);
   TextNameTeam3 := AddText (Theme.PartyNewRound.TextNameTeam3);
 
+  //Players
+  TextTeam1Players := AddText (Theme.PartyNewRound.TextTeam1Players);
+  TextTeam2Players := AddText (Theme.PartyNewRound.TextTeam2Players);
+  TextTeam3Players := AddText (Theme.PartyNewRound.TextTeam3Players);
+
   StaticTeam1 := AddStatic (Theme.PartyNewRound.StaticTeam1);
   StaticTeam2 := AddStatic (Theme.PartyNewRound.StaticTeam2);
   StaticTeam3 := AddStatic (Theme.PartyNewRound.StaticTeam3);
@@ -166,6 +175,22 @@ end;
 procedure TScreenPartyNewRound.onShow;
 var
   I: Integer;
+  function GetTeamPlayers(const Num: Byte): String;
+  var
+    Players: Array of String;
+    J: Byte;
+  begin
+    if (Num-1 >= PartySession.Teams.NumTeams) then
+      exit;
+
+    //Create Players Array
+    SetLength(Players, PartySession.Teams.TeamInfo[Num-1].NumPlayers);
+    For J := 0 to PartySession.Teams.TeamInfo[Num-1].NumPlayers-1 do
+      Players[J] := String(PartySession.Teams.TeamInfo[Num-1].PlayerInfo[J].Name);
+
+    //Implode and Return
+    Result := Language.Implode(Players);
+  end;
 begin
   PartySession.StartRound;
 
@@ -295,9 +320,11 @@ begin
   begin
     Text[TextScoreTeam1].Text := InttoStr(PartySession.Teams.TeamInfo[0].Score);
     Text[TextNameTeam1].Text := String(PartySession.Teams.TeamInfo[0].Name);
+    Text[TextTeam1Players].Text := GetTeamPlayers(1);
 
     Text[TextScoreTeam1].Visible := True;
     Text[TextNameTeam1].Visible := True;
+    Text[TextTeam1Players].Visible := True;
     Static[StaticTeam1].Visible := True;
     Static[StaticNextPlayer1].Visible := True;
   end
@@ -305,6 +332,7 @@ begin
   begin
     Text[TextScoreTeam1].Visible := False;
     Text[TextNameTeam1].Visible := False;
+    Text[TextTeam1Players].Visible := False;
     Static[StaticTeam1].Visible := False;
     Static[StaticNextPlayer1].Visible := False;
   end;
@@ -313,9 +341,11 @@ begin
   begin
     Text[TextScoreTeam2].Text := InttoStr(PartySession.Teams.TeamInfo[1].Score);
     Text[TextNameTeam2].Text := String(PartySession.Teams.TeamInfo[1].Name);
+    Text[TextTeam2Players].Text := GetTeamPlayers(2);
 
     Text[TextScoreTeam2].Visible := True;
     Text[TextNameTeam2].Visible := True;
+    Text[TextTeam2Players].Visible := True;
     Static[StaticTeam2].Visible := True;
     Static[StaticNextPlayer2].Visible := True;
   end
@@ -323,6 +353,7 @@ begin
   begin
     Text[TextScoreTeam2].Visible := False;
     Text[TextNameTeam2].Visible := False;
+    Text[TextTeam2Players].Visible := False;
     Static[StaticTeam2].Visible := False;
     Static[StaticNextPlayer2].Visible := False;
   end;
@@ -331,9 +362,11 @@ begin
   begin
     Text[TextScoreTeam3].Text := InttoStr(PartySession.Teams.TeamInfo[2].Score);
     Text[TextNameTeam3].Text := String(PartySession.Teams.TeamInfo[2].Name);
+    Text[TextTeam3Players].Text := GetTeamPlayers(3);
 
     Text[TextScoreTeam3].Visible := True;
     Text[TextNameTeam3].Visible := True;
+    Text[TextTeam3Players].Visible := True;
     Static[StaticTeam3].Visible := True;
     Static[StaticNextPlayer3].Visible := True;
   end
@@ -341,6 +374,7 @@ begin
   begin
     Text[TextScoreTeam3].Visible := False;
     Text[TextNameTeam3].Visible := False;
+    Text[TextTeam3Players].Visible := False;
     Static[StaticTeam3].Visible := False;
     Static[StaticNextPlayer3].Visible := False;
   end;
@@ -371,8 +405,6 @@ begin
   end
   else
     Text[TextNextPlayer3].Visible := False;
-
-  Log.LogError('Plugin Selected: ' + InttoStr(PartySession.Rounds[0].Plugin));
 
 
 //  LCD.WriteText(1, '  Choose mode:  ');
