@@ -30,6 +30,7 @@ type
       TextNextPlayer1: Cardinal;
       TextNextPlayer2: Cardinal;
       TextNextPlayer3: Cardinal;
+
       //Statics
       StaticRound1: Cardinal;
       StaticRound2: Cardinal;
@@ -50,6 +51,12 @@ type
       StaticTeam1: Cardinal;
       StaticTeam2: Cardinal;
       StaticTeam3: Cardinal;
+      StaticNextPlayer1: Cardinal;
+      StaticNextPlayer2: Cardinal;
+      StaticNextPlayer3: Cardinal;
+
+
+
 
       constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
@@ -157,6 +164,9 @@ begin
   StaticTeam1 := AddStatic (Theme.PartyNewRound.StaticTeam1);
   StaticTeam2 := AddStatic (Theme.PartyNewRound.StaticTeam2);
   StaticTeam3 := AddStatic (Theme.PartyNewRound.StaticTeam3);
+  StaticNextPlayer1 := AddStatic (Theme.PartyNewRound.StaticNextPlayer1);
+  StaticNextPlayer2 := AddStatic (Theme.PartyNewRound.StaticNextPlayer2);
+  StaticNextPlayer3 := AddStatic (Theme.PartyNewRound.StaticNextPlayer3);
 
   LoadFromTheme(Theme.PartyNewRound);
 end;
@@ -297,12 +307,14 @@ begin
     Text[TextScoreTeam1].Visible := True;
     Text[TextNameTeam1].Visible := True;
     Static[StaticTeam1].Visible := True;
+    Static[StaticNextPlayer1].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam1].Visible := False;
     Text[TextNameTeam1].Visible := False;
     Static[StaticTeam1].Visible := False;
+    Static[StaticNextPlayer1].Visible := False;
   end;
 
   if (PartySession.Teams.NumTeams >= 2) then
@@ -313,12 +325,14 @@ begin
     Text[TextScoreTeam2].Visible := True;
     Text[TextNameTeam2].Visible := True;
     Static[StaticTeam2].Visible := True;
+    Static[StaticNextPlayer2].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam2].Visible := False;
     Text[TextNameTeam2].Visible := False;
     Static[StaticTeam2].Visible := False;
+    Static[StaticNextPlayer2].Visible := False;
   end;
 
   if (PartySession.Teams.NumTeams >= 3) then
@@ -329,12 +343,14 @@ begin
     Text[TextScoreTeam3].Visible := True;
     Text[TextNameTeam3].Visible := True;
     Static[StaticTeam3].Visible := True;
+    Static[StaticNextPlayer3].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam3].Visible := False;
     Text[TextNameTeam3].Visible := False;
     Static[StaticTeam3].Visible := False;
+    Static[StaticNextPlayer3].Visible := False;
   end;
 
   //nextRound Texts
