@@ -41,7 +41,10 @@ begin
         begin
           Ini.SaveNames;
           Music.PlayBack;
-          FadeTo(@ScreenMain);
+          if GoTo_SingScreen then
+            FadeTo(@ScreenSong)
+          else
+            FadeTo(@ScreenMain);
         end;
 
       SDLK_RETURN:

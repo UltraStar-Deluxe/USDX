@@ -217,6 +217,7 @@ begin
       end;
 
     finally
+      log.LogError('Could not write Playlistfile "' + Playlists[Index].Name + '"');
       CloseFile(F);
     end;
   end;

@@ -1169,7 +1169,7 @@ begin
     if (Ini.Tabs_at_startup = 1) AND (CatSongs.CatNumShow = -1) then
       begin
       CatSongs.ShowCategoryList;
-      SelectNext;SelectPrev; //Workaround <- must be fixed sometime
+      SelectNext; //Workaround <- must be fixed sometime
       FixSelected;
       //Show Cat in Top Left Mod
         HideCatTL;
