@@ -434,7 +434,7 @@ begin
 
         //Draw
         glBegin(GL_QUADS);//Top Left
-          glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, (Alpha-0.3)*FadeProgress*FadeProgress*FadeProgress);
           glTexCoord2f(TexX1*TexW, TexY2*TexH);
           glVertex3f(x, y+h*scaleH+ Spacing, z);
 
@@ -450,7 +450,7 @@ begin
           glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Spacing, z);
 
           //Top Right
-          glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, (Alpha-0.3)*FadeProgress*FadeProgress*FadeProgress);
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
           glVertex3f(x+w*scaleW, y+h*scaleH + Spacing, z);
         glEnd;
