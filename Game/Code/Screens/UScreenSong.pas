@@ -1104,24 +1104,26 @@ begin
         Pos := Pos + VS
       else if (Pos > VS/2) then
         Pos := Pos - VS;
-        
+
       if (Abs(Pos) < 2.5) then {fixed Positions}
       begin
       Angle := Pi * (Pos / 5);
       //Button[B].Visible := False;
 
-      Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle));//Power(Z2, 3);
+      Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle*0.8));//Power(Z2, 3);
+
+      Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
 
       Button[B].Z := 0.95 - Abs(Pos) * 0.01;
 
-      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H) * 0.7);
+      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.7);
 
       Button[B].W := Button[B].H;
 
       Diff := (Button[B].H - Theme.Song.Cover.H)/2;
 
 
-      X := Sin(Angle);
+      X := Sin(Angle*1.3)*0.9;
 
       Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * X - Diff;
 
