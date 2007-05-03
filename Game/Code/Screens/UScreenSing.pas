@@ -12,7 +12,12 @@ type
     PauseTime: Real;
     NumEmptySentences: integer;
     public
-      TextTime:           integer;
+      //TextTime:           integer;
+
+      //TimeBar mod
+       StaticTimeProgress:  integer;
+       TextTimeText:        integer;
+      //eoa TimeBar mod
 
       StaticP1:           integer;
       StaticP1ScoreBG:    integer;
@@ -166,7 +171,12 @@ begin
   LoadFromTheme(Theme.Sing);
 
   // time
-  TextTime := AddText(75, 14, 1, 8, 0.25, 0.25, 0.25, '00:00');
+  //TextTime := AddText(75, 14, 1, 8, 0.25, 0.25, 0.25, '00:00');
+
+  //TimeBar mod
+    StaticTimeProgress :=  AddStatic(Theme.Sing.StaticTimeProgress);
+    TextTimeText       :=  AddText(Theme.Sing.TextTimeText);
+  //eoa TimeBar mod
 
   StaticP1 := AddStatic(Theme.Sing.StaticP1);
   StaticP1ScoreBG := AddStatic(Theme.Sing.StaticP1ScoreBG);
@@ -908,11 +918,11 @@ begin
   // update static menu with time ...
   Min := Round(Czas.Teraz) div 60;
   Sec := Round(Czas.Teraz) mod 60;
-  Text[TextTime].Text := '';
-  if Min < 10 then Text[TextTime].Text := '0';
-  Text[TextTime].Text := Text[TextTime].Text + IntToStr(Min) + ':';
-  if Sec < 10 then Text[TextTime].Text := Text[TextTime].Text + '0';
-  Text[TextTime].Text := Text[TextTime].Text + IntToStr(Sec);
+  Text[TextTimeText].Text := '';
+  if Min < 10 then Text[TextTimeText].Text := '0';
+  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
+  if Sec < 10 then Text[TextTimeText].Text := Text[TextTimeText].Text + '0';
+  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Sec);
 
   // .. and scores
   if PlayersPlay = 1 then begin

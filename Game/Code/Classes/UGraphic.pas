@@ -93,7 +93,7 @@ var
   Tex_Lyric_Help_Bar: TTexture;
   FullScreen:     boolean;
 
-
+  Tex_TimeProgress: TTexture;
 
   //Sing Bar Mod
   Tex_SingBar_Back:  TTexture;
@@ -210,6 +210,10 @@ begin
   Tex_Ball :=        Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
   Tex_Lyric_Help_Bar := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', 'Transparent', $FF00FF);
 
+
+  //TimeBar mod
+  Tex_TimeProgress :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('TimeBar')));
+  //eoa TimeBar mod
 
   //SingBar Mod
   Tex_SingBar_Back :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBack')),   'JPG', 'Plain', 0);

@@ -927,11 +927,11 @@ begin
   // update static menu with time ...
   Min := Round(Czas.Teraz) div 60;
   Sec := Round(Czas.Teraz) mod 60;
-  Text[TextTime].Text := '';
-  if Min < 10 then Text[TextTime].Text := '0';
-  Text[TextTime].Text := Text[TextTime].Text + IntToStr(Min) + ':';
-  if Sec < 10 then Text[TextTime].Text := Text[TextTime].Text + '0';
-  Text[TextTime].Text := Text[TextTime].Text + IntToStr(Sec);
+  Text[TextTimeText].Text := '';
+  if Min < 10 then Text[TextTimeText].Text := '0';
+  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
+  if Sec < 10 then Text[TextTimeText].Text := Text[TextTimeText].Text + '0';
+  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Sec);
 end;
 
   // draw static menu (BG)

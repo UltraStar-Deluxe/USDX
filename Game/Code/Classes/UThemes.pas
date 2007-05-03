@@ -296,9 +296,15 @@ type
   end;
 
    TThemeSing = class(TThemeBasic)
+
+    //TimeBar mod
+    StaticTimeProgress:   TThemeStatic;
+    TextTimeText    :   TThemeText;
+    //eoa TimeBar mod
+
     StaticP1:         TThemeStatic;
-    StaticP1ScoreBG:  TThemeStatic; //Static for ScoreBG
     TextP1:           TThemeText;
+    StaticP1ScoreBG:  TThemeStatic; //Static for ScoreBG
     TextP1Score:      TThemeText;
 
     //moveable singbar mod
@@ -987,6 +993,11 @@ begin
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
+
+      //TimeBar mod
+       ThemeLoadStatic(Sing.StaticTimeProgress, 'SingTimeProgress');
+       ThemeLoadText(Sing.TextTimeText, 'SingTimeText');
+      //eoa TimeBar mod
 
     //moveable singbar mod
       ThemeLoadStatic(Sing.StaticP1SingBar, 'SingP1SingBar');
@@ -1972,6 +1983,11 @@ begin
   ThemeSaveStatic(Song.StaticCat, 'SongStaticCat');
 
   ThemeSaveBasic(Sing, 'Sing');
+
+  //TimeBar mod
+  ThemeSaveStatic(Sing.StaticTimeProgress, 'SingTimeProgress');
+  ThemeSaveText(Sing.TextTimeText, 'SingTimeText');
+  //eoa TimeBar mod
 
   ThemeSaveStatic(Sing.StaticP1, 'SingP1Static');
   ThemeSaveText(Sing.TextP1, 'SingP1Text');

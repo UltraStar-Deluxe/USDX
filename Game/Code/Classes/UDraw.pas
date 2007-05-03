@@ -12,6 +12,11 @@ procedure SingDrawBeatDelimeters(Left, Top, Right: real; NrCzesci: integer);
 procedure SingDrawCzesc(Left, Top, Right: real; NrCzesci: integer; Space: integer);
 procedure SingDrawPlayerCzesc(X, Y, W: real; NrGracza: integer; Space: integer);
 procedure SingDrawPlayerBGCzesc(Left, Top, Right: real; NrCzesci, NrGracza: integer; Space: integer);
+
+// TimeBar mod
+procedure SingDrawTimeBar();
+// eoa TimeBar mod
+
 { for no use since we have UGraphicClasses
 procedure SingDrawStar(X, Y, A: real);
 procedure SingGoldenStar(X, Y, A: real);
@@ -615,20 +620,9 @@ begin
   // background  //BG Fullsize Mod
   //SingDrawBackground;
 
-  // time bar
-//  Log.LogStatus('Time Bar', 'SingDraw');
-  glBegin(GL_QUADS);
-    glColor3f(0.9, 0.9, 0.9);
-    glVertex2f(140 + 10*ScreenX, 21);
-    glVertex2f(140 + 10*ScreenX, 29);
-    glVertex2f(330 + 10*ScreenX, 29);
-    glVertex2f(330 + 10*ScreenX, 21);
-    glColor3f(Skin_TimeR, Skin_TimeG, Skin_TimeB);
-    glVertex2f(140 + 10*ScreenX,                                   21);
-    glVertex2f(140 + 10*ScreenX,                                   29);
-    glVertex2f(140 + 10*ScreenX+(330-140)*(Czas.Teraz/Czas.Razem), 29);
-    glVertex2f(140 + 10*ScreenX+(330-140)*(Czas.Teraz/Czas.Razem), 21);
-  glEnd;
+  //TimeBar mod
+  SingDrawTimeBar();
+  //eoa TimeBar mod
 
   // rysuje paski pod nutami
   if PlayersPlay = 1 then
@@ -1020,18 +1014,7 @@ begin
 
   // time bar
 //  Log.LogStatus('Time Bar', 'SingDraw');
-  glBegin(GL_QUADS);
-    glColor3f(0.9, 0.9, 0.9);
-    glVertex2f(140 + 10*ScreenX, 21);
-    glVertex2f(140 + 10*ScreenX, 29);
-    glVertex2f(330 + 10*ScreenX, 29);
-    glVertex2f(330 + 10*ScreenX, 21);
-    glColor3f(Skin_TimeR, Skin_TimeG, Skin_TimeB);
-    glVertex2f(140 + 10*ScreenX,                                   21);
-    glVertex2f(140 + 10*ScreenX,                                   29);
-    glVertex2f(140 + 10*ScreenX+(330-140)*(Czas.Teraz/Czas.Razem), 29);
-    glVertex2f(140 + 10*ScreenX+(330-140)*(Czas.Teraz/Czas.Razem), 21);
-  glEnd;
+  SingDrawTimeBar();
 
   if DLLMan.Selected.ShowNotes then
   begin
@@ -1650,6 +1633,36 @@ begin
 
   glDisable(GL_BLEND);
   glDisable(GL_TEXTURE_2D);
+end;
+
+procedure SingDrawTimeBar();
+var x,y:           real;
+    width, height: real;
+begin
+  x := Theme.Sing.StaticTimeProgress.x;
+  y := Theme.Sing.StaticTimeProgress.y;
+  width:= Theme.Sing.StaticTimeProgress.w;
+  height:= Theme.Sing.StaticTimeProgress.h;
+
+  glColor4f(Theme.Sing.StaticTimeProgress.ColR,
+            Theme.Sing.StaticTimeProgress.ColG,
+            Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
+
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+
+  glBindTexture(GL_TEXTURE_2D, Tex_TimeProgress.TexNum);
+  
+  glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); glVertex2f(x,y);
+    glTexCoord2f(0, 1); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y);
+    glTexCoord2f(1, 1); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y+height);
+    glTexCoord2f(1, 0); glVertex2f(x, y+height);
+  glEnd;
+
+ glDisable(GL_TEXTURE_2D);
+ glDisable(GL_BLEND);
+ glcolor4f(1,1,1,1);
 end;
 
 end.
