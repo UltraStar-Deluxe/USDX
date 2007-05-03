@@ -157,7 +157,7 @@ begin
       // check if we had an initialization error (canfade=false, dofade=true)
       if doFade and not canFade then begin
         doFade:=False; //disable fading
-        ScreenPopupError.ShowPopup(['Error initializing','fade texture','','fading','disabled']); //show error message
+        ScreenPopupError.ShowPopup('Error initializing\nfade texture\n\nfading\ndisabled'); //show error message
       end;
       if doFade and canFade then
       begin
@@ -169,10 +169,10 @@ begin
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
           glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 512, 512, 0);
-          if glGetError <> GL_NO_ERROR then
+          if glGetError = GL_NO_ERROR then
           begin
             canFade := False;
-            ScreenPopupError.ShowPopup(['Error copying','fade texture','','fading','disabled']); //show error message
+            ScreenPopupError.ShowPopup('Error copying\nfade texture\nfading\ndisabled'); //show error message
           end;
           glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           NextScreen.onShow;

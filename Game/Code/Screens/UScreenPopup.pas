@@ -7,8 +7,6 @@ uses
 
 type
   TScreenPopupCheck = class(TMenu)
-    private
-      CurMenu: Byte; //Num of the cur. Shown Menu
     public
       Visible: Boolean; //Whether the Menu should be Drawn
 
@@ -30,7 +28,7 @@ type
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure onHide; override;
-      procedure ShowPopup(msg: array of String);
+      procedure ShowPopup(msg: String);
       function Draw: boolean; override;
   end;
 
@@ -220,6 +218,7 @@ begin
 
       SDLK_ESCAPE :
         begin
+          Visible:=False;
           Result := false;
         end;
 
@@ -280,17 +279,15 @@ end;
 procedure TScreenPopupError.onHide;
 var i: integer;
 begin
-  for i:=0 to high(Text) do
-    Text[i].Text:='';
 end;
 
-procedure TScreenPopupError.ShowPopup(msg: array of String);
+procedure TScreenPopupError.ShowPopup(msg: String);
 var i: integer;
 begin
   Interaction := 0; //Reset Interaction
   Visible := True;  //Set Visible
 
-  //dirty hack... Text[0] is invisible for some strange reason
+{  //dirty hack... Text[0] is invisible for some strange reason
   for i:=1 to high(Text) do
     if i-1 <= high(msg) then
     begin
@@ -300,7 +297,8 @@ begin
     else
     begin
       Text[i].Visible:=False;
-    end;
+    end;}
+  Text[0].Text:=msg;
 
   Button[0].Visible := True;
 
