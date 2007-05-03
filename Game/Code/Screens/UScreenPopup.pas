@@ -87,6 +87,9 @@ begin
 
       SDLK_ESCAPE :
         begin
+          Display.CheckOK:=False;
+          Display.NextScreenWithCheck:=NIL;
+          Visible:=False;
           Result := false;
         end;
 
