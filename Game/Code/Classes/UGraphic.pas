@@ -9,7 +9,8 @@ uses
   UScreenEdit, UScreenEditConvert, UScreenEditHeader, UScreenOpen, UThemes, USkins, UScreenSongMenu, UScreenSongJumpto,
   {Party Screens} UScreenSingModi, UScreenPartyNewRound, UScreenPartyScore, UScreenPartyOptions, UScreenPartyWin, UScreenPartyPlayer,
   {Stats Screens} UScreenStatMain, UScreenStatDetail,
-  {CreditsScreen} UScreenCredits;
+  {CreditsScreen} UScreenCredits,
+  {Popup for errors, etc.} UScreenPopup;
 
 type
   TRecR = record
@@ -70,6 +71,10 @@ var
 
   //CreditsScreen
   ScreenCredits: TScreenCredits;
+
+  //popup mod
+  ScreenPopupCheck: TScreenPopupCheck;
+  ScreenPopupError: TScreenPopupError;
 
   //Notes
   Tex_Left:       array[0..6] of TTexture;
@@ -433,6 +438,10 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongMenu', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongJumpto', 3); Log.BenchmarkStart(3);
+  ScreenPopupCheck := TScreenPopupCheck.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Check)', 3); Log.BenchmarkStart(3);
+  ScreenPopupError := TScreenPopupError.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Error)', 3); Log.BenchmarkStart(3);
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyNewRound', 3); Log.BenchmarkStart(3);
   ScreenPartyScore :=       TScreenPartyScore.Create;

@@ -86,7 +86,7 @@ begin
       SDLK_ESCAPE :
         begin
           Music.PlayBack;
-          FadeTo(@ScreenMain);
+          CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
         end;
 
       SDLK_RETURN:

@@ -460,6 +460,19 @@ type
     ButtonExit:           TThemeButton;
   end;
 
+  //Error- and Check-Popup
+  TThemeError = class(TThemeBasic)
+    Button1: TThemeButton;
+    TextError: TThemeText;
+  end;
+
+  TThemeCheck = class(TThemeBasic)
+    Button1: TThemeButton;
+    Button2: TThemeButton;
+    TextCheck: TThemeText;
+  end;
+
+
   //ScreenSong Menue
   TThemeSongMenu = class(TThemeBasic)
     Button1: TThemeButton;
@@ -656,6 +669,9 @@ type
     OptionsThemes:    TThemeOptionsThemes;
     OptionsRecord:    TThemeOptionsRecord;
     OptionsAdvanced:  TThemeOptionsAdvanced;
+    //error and check popup
+    ErrorPopup:       TThemeError;
+    CheckPopup:       TThemeCheck;
     //ScreenSong extensions
     SongMenu:         TThemeSongMenu;
     SongJumpto:       TThemeSongJumpTo;
@@ -749,6 +765,9 @@ begin
   OptionsThemes := TThemeOptionsThemes.Create;
   OptionsRecord := TThemeOptionsRecord.Create;
   OptionsAdvanced := TThemeOptionsAdvanced.Create;
+
+  ErrorPopup := TThemeError.Create;
+  CheckPopup := TThemeCheck.Create;
 
   SongMenu := TThemeSongMenu.Create;
   SongJumpto := TThemeSongJumpto.Create;
@@ -1156,6 +1175,15 @@ begin
       ThemeLoadSelectSlide  (OptionsAdvanced.SelectOnSongClick, 'OptionsAdvancedSelectSlideOnSongClick');
       ThemeLoadSelect       (OptionsAdvanced.SelectAskbeforeDel, 'OptionsAdvancedSelectAskbeforeDel');
       ThemeLoadButton       (OptionsAdvanced.ButtonExit, 'OptionsAdvancedButtonExit');
+
+      //error and check popup
+      ThemeLoadBasic (ErrorPopup, 'ErrorPopup');
+      ThemeLoadButton(ErrorPopup.Button1, 'ErrorPopupButton1');
+      ThemeLoadText  (ErrorPopup.TextError,'ErrorPopupText');
+      ThemeLoadBasic (CheckPopup, 'CheckPopup');
+      ThemeLoadButton(CheckPopup.Button1, 'CheckPopupButton1');
+      ThemeLoadButton(CheckPopup.Button2, 'CheckPopupButton2');
+      ThemeLoadText(CheckPopup.TextCheck , 'CheckPopupText');
 
       //Song Menu
       ThemeLoadBasic (SongMenu, 'SongMenu');

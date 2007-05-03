@@ -2,12 +2,15 @@ unit UDisplay;
 
 interface
 
-uses Windows, SDL, UMenu, OpenGL12, SysUtils, dialogs;
+uses Windows, SDL, UMenu, OpenGL12, SysUtils;
 
 type
   TDisplay = class
     ActualScreen:     PMenu;
     NextScreen:       PMenu;
+    //popup hack
+    NextScreenWithCheck: Pmenu;
+    CheckOK: Boolean;
 
     h_DC:     HDC;
     h_RC:     HGLRC;
@@ -45,6 +48,11 @@ var i: integer;
 begin
   inherited Create;
 
+  //popup hack
+  CheckOK:=False;
+  NextScreen:=NIL;
+  NextScreenWithCheck:=NIL;
+
   // fade mod
   myfade:=0;
 
@@ -75,10 +83,6 @@ begin
     canFade:=False;
   end;
   FreeMem(pTexData);
-  if not canFade then begin
-    showmessage('Fehler beim Initialisieren der Fading-Textur... Fading deaktiviert');
-    doFade:=False;
-  end
   // end
 end;
 
@@ -120,9 +124,26 @@ begin
     if S = 2 then TimeSkip := 0 else;
     glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
+    //popup hack
+    // check was successful... move on
+    if CheckOK then
+      if assigned (NextScreenWithCheck)then
+      begin
+        NextScreen:=NextScreenWithCheck;
+        NextScreenWithCheck := NIL;
+        CheckOk:=False;
+      end
+    else
+      Result:=False;
+    //end popup hack
+
 //    ActualScreen.SetAnimationProgress(1);
     if not assigned (NextScreen) then begin
-      Result := ActualScreen.Draw;
+      ActualScreen.Draw;
+      //popup mod
+      if ScreenPopupError <> NIL then if ScreenPopupError.Visible then ScreenPopupError.Draw else
+      if ScreenPopupCheck <> NIL then if ScreenPopupCheck.Visible then ScreenPopupCheck.Draw;
+      //popup end
       // fade mod
       myfade:=0;
       if (Ini.ScreenFade=1) and canFade then
@@ -133,6 +154,11 @@ begin
     end
     else
     begin
+      // check if we had an initialization error (canfade=false, dofade=true)
+      if doFade and not canFade then begin
+        doFade:=False; //disable fading
+        ScreenPopupError.ShowPopup(['Error initializing','fade texture','','fading','disabled']); //show error message
+      end;
       if doFade and canFade then
       begin
         // fade mod
@@ -146,7 +172,7 @@ begin
           if glGetError <> GL_NO_ERROR then
           begin
             canFade := False;
-            showmessage('Fehler beim Kopieren der Fade-Textur... Fading deaktiviert');
+            ScreenPopupError.ShowPopup(['Error copying','fade texture','','fading','disabled']); //show error message
           end;
           glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           NextScreen.onShow;

@@ -82,6 +82,7 @@ uses
   UScreenStatMain in 'Screens\UScreenStatMain.pas',
   UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
   UScreenCredits in 'Screens\UScreenCredits.pas',
+  UScreenPopup in 'Screens\UScreenPopup.pas',
 
   //------------------------------
   //Includes - Screens PartyMode

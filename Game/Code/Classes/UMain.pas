@@ -2,7 +2,7 @@ unit UMain;
 
 interface
 uses SDL, UGraphic, UMusic, URecord, UTime, SysUtils, UDisplay, UIni, ULog, ULyrics, UScreenSing,
-  OpenGL12, zlportio {you can disable it and all PortWriteB calls}, ULCD, ULight, UThemes;
+  OpenGL12, zlportio {you can disable it and all PortWriteB calls}, ULCD, ULight, UThemes{, UScreenPopup};
 
 type
   TPlayer = record
@@ -112,7 +112,7 @@ begin
     CheckEvents;
 
     // display
-    Display.Draw;
+    done:=not Display.Draw;
     SwapBuffers;
 
     // light
@@ -156,6 +156,11 @@ Begin
         End; // With}
       SDL_KEYDOWN:
         begin
+          // popup hack... if there is a visible popup then let it handle input instead of underlying screen
+          // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
+          if ScreenPopupError <> NIL then if ScreenPopupError.Visible then ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True) else
+          if ScreenPopupCheck <> NIL then if ScreenPopupCheck.Visible then ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True) else
+          // end of popup hack
           if (Not Display.ActualScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)) then
 //        if (Not Display.ActualScreen^.ParseInput(Event.key.keysym.scancode, True)) then
             done := true; // exit game

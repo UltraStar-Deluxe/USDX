@@ -55,7 +55,9 @@ begin
 
       SDLK_ESCAPE :
         begin
-          Result := False;
+          //popup hack
+          CheckFadeTo(NIL,'MSG_QUIT_USDX');
+//          Result := False;
         end;
 
       SDLK_C:
@@ -116,7 +118,7 @@ begin
             Music.PlayStart;
             FadeTo(@ScreenStatMain);
           end;
-          
+
           //Editor
           if Interaction = 3 then begin
             Music.PlayStart;
@@ -131,7 +133,9 @@ begin
 
           //Exit
           if Interaction = 5 then begin
-            Result := false;
+            //popup hack
+            CheckFadeTo(NIL,'MSG_QUIT_USDX');
+//            Result := false;
           end;
         end;
       // Up and Down could be done at the same time,

@@ -12,7 +12,7 @@ type
   TMenu = class
     protected
       ButtonPos:      Integer;
-      
+
       Interactions:   array of TInteract;
       SelInteraction: integer;
       Button:         array of TButton;
@@ -29,7 +29,7 @@ type
       mY:         integer; // mouse Y
 
       Fade:       integer; // fade type
-      ShowFinish: boolean; // true if there is no fade 
+      ShowFinish: boolean; // true if there is no fade
 
 
       destructor Destroy; override;
@@ -47,7 +47,7 @@ type
 
       procedure PrepareButtonCollections(const Collections: AThemeButtonCollection);
       procedure AddButtonCollection(const ThemeCollection: TThemeButtonCollection; Const Num: Byte);
-      
+
       // background
       procedure AddBackground(Name: string);
 
@@ -68,7 +68,7 @@ type
       function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; Tekst: string): integer; overload;
 
       // button
-      Procedure SetButtonLength(Length: Cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button 
+      Procedure SetButtonLength(Length: Cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
       function AddButton(ThemeButton: TThemeButton): integer; overload;
       function AddButton(X, Y, W, H: real; Name: String): integer; overload;
       function AddButton(X, Y, W, H: real; Name, Format, Typ: String; Reflection: Boolean): integer; overload;
@@ -107,6 +107,8 @@ type
 //      function AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
 //      procedure ClearWidgets(MinNumber : Int16);
       procedure FadeTo(Screen: PMenu);
+      //popup hack
+      procedure CheckFadeTo(Screen: PMenu; msg: String);
 
       function DrawBG: boolean; virtual;
       function DrawFG: boolean; virtual;
@@ -871,6 +873,15 @@ procedure TMenu.FadeTo(Screen: PMenu);
 begin
   Display.Fade := 0;
   Display.NextScreen := Screen;
+end;
+
+//popup hack
+procedure TMenu.CheckFadeTo(Screen: PMenu; msg: String);
+begin
+  Display.Fade := 0;
+  Display.NextScreenWithCheck := Screen;
+  Display.CheckOK:=False;
+  ScreenPopupCheck.ShowPopup(msg);
 end;
 
 procedure TMenu.AddButtonText(AddX, AddY: real; AddText: string);
