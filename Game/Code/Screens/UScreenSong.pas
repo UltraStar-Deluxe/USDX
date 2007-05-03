@@ -1116,7 +1116,7 @@ begin
 
       Button[B].Z := 0.95 - Abs(Pos) * 0.01;
 
-      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.7);
+      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.5);
 
       Button[B].W := Button[B].H;
 
@@ -1130,31 +1130,34 @@ begin
       end
       else
       begin {Behind the Front Covers}
-        Button[B].Visible := False;
+//      Button[B].Visible := False;
+//        if VS/2-abs(Pos)>VS*0.4 then Button[B].Visible := False;
 
         if Pos < 0 then
           Pos := (Pos - VS/2) /VS
         else
           Pos := (Pos + VS/2) /VS;
 
-        Angle := 2 * pi * Pos;
+        Angle := 2 * pi * Pos*1.2;
 
-        Button[B].Z := (0.5 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
+        Button[B].Z := (0.4 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
 
-        Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle));//Power(Z2, 3);
+        Button[B].H :=0.6*(Theme.Song.Cover.H-Abs(Theme.Song.Cover.H * cos(Angle/2)*0.8));//Power(Z2, 3);
 
         Button[B].W := Button[B].H;
 
-        Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H) * 0.7);
+        Button[B].Y := Theme.Song.Cover.Y  - (Button[B].H - Theme.Song.Cover.H)*0.75;
 
-        Diff := (Button[B].H - Theme.Song.Cover.H)/2;;
+        Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
 
-        Button[B].X :=  Theme.Song.Cover.X + (Theme.Song.Cover.W + Theme.Song.Cover.H*VS*0.185)* Sin(Angle) - Diff
+        Diff := (Button[B].H - Theme.Song.Cover.H)/2;
+
+        Button[B].X :=  Theme.Song.Cover.X+Theme.Song.Cover.H/2-Button[b].H/2 + (Theme.Song.Cover.H)*sin(Angle/2)*1.52;
 
       end;
 
       //Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H)/1.5); //Cover at down border of the change field
-      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H) * 0.7);
+//      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H) * 0.7);
 
     end;
   end;
