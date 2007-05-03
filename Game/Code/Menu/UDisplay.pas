@@ -8,6 +8,9 @@ type
   TDisplay = class
     ActualScreen:     PMenu;
     NextScreen:       PMenu;
+
+    //fade-to-black-hack
+    BlackScreen: Boolean;
     //popup hack
     NextScreenWithCheck: Pmenu;
     CheckOK: Boolean;
@@ -36,8 +39,6 @@ type
 
 var
   Display:          TDisplay;
-//  ActualScreen:     PMenu;
-//  NextScreen:       PMenu;
 
 implementation
 
@@ -52,6 +53,7 @@ begin
   CheckOK:=False;
   NextScreen:=NIL;
   NextScreenWithCheck:=NIL;
+  BlackScreen:=False;
 
   // fade mod
   myfade:=0;
@@ -134,11 +136,11 @@ begin
         CheckOk:=False;
       end
     else
-      Result:=False;
+      BlackScreen:=True; // end of game - fade to black before exit
     //end popup hack
 
 //    ActualScreen.SetAnimationProgress(1);
-    if not assigned (NextScreen) then begin
+    if (not assigned (NextScreen)) and (not BlackScreen) then begin
       ActualScreen.Draw;
       //popup mod
       if ScreenPopupError <> NIL then if ScreenPopupError.Visible then ScreenPopupError.Draw else
@@ -169,13 +171,15 @@ begin
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
           glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 512, 512, 0);
-          if glGetError = GL_NO_ERROR then
+          if glGetError <> GL_NO_ERROR then
           begin
             canFade := False;
             ScreenPopupError.ShowPopup('Error copying\nfade texture\nfading\ndisabled'); //show error message
           end;
           glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
-          NextScreen.onShow;
+          // blackscreen-hack
+          if not BlackScreen then
+            NextScreen.onShow;
           lastTime:=GetTickCount;
           if (S=2) or (Screens = 1) then
             myfade:=myfade+1;
@@ -197,7 +201,13 @@ begin
 
 //      ActualScreen.SetAnimationProgress(Fade-1); // nop?
 
-        NextScreen.Draw; // draw next screen
+        // blackscreen-hack
+        if not BlackScreen then
+          NextScreen.Draw // draw next screen
+        else begin
+          glClearColor(0, 0, 0 , 0);
+          glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+        end;
 
       // and draw old screen over it... slowly fading out
         myfade2:=(myfade*myfade)/10000;
@@ -215,7 +225,11 @@ begin
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
       end
-        else NextScreen.OnShow;
+      else
+        // blackscreen hack
+        if not BlackScreen then
+          NextScreen.OnShow;
+
 
 
       if (myfade > 40) or (not doFade) or (not canFade) then begin // fade out complete...
@@ -224,8 +238,13 @@ begin
         ActualScreen.ShowFinish:=False;
         ActualScreen:=NextScreen;
         NextScreen := nil;
-        ActualScreen.onShowFinish;
-        ActualScreen.ShowFinish := true;
+        if not blackscreen then
+        begin
+          ActualScreen.onShowFinish;
+          ActualScreen.ShowFinish := true;
+        end
+        else
+          Result:=False;
       // end of fade mod
       end;
     end; // if
