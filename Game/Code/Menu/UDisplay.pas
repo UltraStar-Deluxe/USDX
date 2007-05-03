@@ -104,6 +104,8 @@ var
   // fade mod
   myFade2: Real;
   currentTime: Cardinal;
+  glError: glEnum;
+  glErrorStr: String;
   // end
 begin
   Result := True;
@@ -171,10 +173,20 @@ begin
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
           glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 512, 512, 0);
-          if glGetError <> GL_NO_ERROR then
+          glError:=glGetError;
+          if glError <> GL_NO_ERROR then
           begin
             canFade := False;
-            ScreenPopupError.ShowPopup('Error copying\nfade texture\nfading\ndisabled'); //show error message
+            case glError of
+              GL_INVALID_ENUM: glErrorStr:='INVALID_ENUM';
+              GL_INVALID_VALUE: glErrorStr:='INVALID_VALUE';
+              GL_INVALID_OPERATION: glErrorStr:='INVALID_OPERATION';
+              GL_STACK_OVERFLOW: glErrorStr:='STACK_OVERFLOW';
+              GL_STACK_UNDERFLOW: glErrorStr:='STACK_UNDERFLOW';
+              GL_OUT_OF_MEMORY: glErrorStr:='OUT_OF_MEMORY';
+              else glErrorStr:='unknown error';
+            end;
+            ScreenPopupError.ShowPopup('Error copying\nfade texture\n('+glErrorStr+')\nfading\ndisabled'); //show error message
           end;
           glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           // blackscreen-hack
