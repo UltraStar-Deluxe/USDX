@@ -1112,7 +1112,8 @@ begin
 
       Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle*0.8));//Power(Z2, 3);
 
-      Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
+//      Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
+      Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
 
       Button[B].Z := 0.95 - Abs(Pos) * 0.01;
 
@@ -1148,7 +1149,8 @@ begin
 
         Button[B].Y := Theme.Song.Cover.Y  - (Button[B].H - Theme.Song.Cover.H)*0.75;
 
-        Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
+//        Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
+        Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
 
         Diff := (Button[B].H - Theme.Song.Cover.H)/2;
 
