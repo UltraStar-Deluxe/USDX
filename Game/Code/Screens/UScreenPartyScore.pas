@@ -15,8 +15,14 @@ type
       TextNameTeam2:     Cardinal;
       TextNameTeam3:     Cardinal;
       StaticTeam1:       Cardinal;
+      StaticTeam1BG:     Cardinal;
+      StaticTeam1Deco:   Cardinal;
       StaticTeam2:       Cardinal;
+      StaticTeam2BG:     Cardinal;
+      StaticTeam2Deco:   Cardinal;
       StaticTeam3:       Cardinal;
+      StaticTeam3BG:     Cardinal;
+      StaticTeam3Deco:   Cardinal;
       TextWinner:        Cardinal;
 
       MaxScore:          Word;
@@ -80,8 +86,14 @@ begin
   TextNameTeam3 := AddText (Theme.PartyScore.TextNameTeam3);
 
   StaticTeam1 := AddStatic (Theme.PartyScore.StaticTeam1);
+  StaticTeam1BG := AddStatic (Theme.PartyScore.StaticTeam1BG);
+  StaticTeam1Deco := AddStatic (Theme.PartyScore.StaticTeam1Deco);
   StaticTeam2 := AddStatic (Theme.PartyScore.StaticTeam2);
+  StaticTeam2BG := AddStatic (Theme.PartyScore.StaticTeam2BG);
+  StaticTeam2Deco := AddStatic (Theme.PartyScore.StaticTeam2Deco);
   StaticTeam3 := AddStatic (Theme.PartyScore.StaticTeam3);
+  StaticTeam3BG := AddStatic (Theme.PartyScore.StaticTeam3BG);
+  StaticTeam3Deco := AddStatic (Theme.PartyScore.StaticTeam3Deco);
 
   TextWinner := AddText (Theme.PartyScore.TextWinner);
 
@@ -105,6 +117,11 @@ begin
   Static[StaticTeam2].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
   Static[StaticTeam3].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;
 
+  //fix: prevents static from drawn out of bounds.
+  if Static[StaticTeam1].Texture.ScaleW > 99 then Static[StaticTeam1].Texture.ScaleW := 99;
+  if Static[StaticTeam2].Texture.ScaleW > 99 then Static[StaticTeam2].Texture.ScaleW := 99;
+  if Static[StaticTeam3].Texture.ScaleW > 99 then Static[StaticTeam3].Texture.ScaleW := 99;
+
   //End Last Round
   PartySession.EndRound;
 
@@ -119,12 +136,16 @@ begin
     Text[TextScoreTeam1].Visible := True;
     Text[TextNameTeam1].Visible := True;
     Static[StaticTeam1].Visible := True;
+    Static[StaticTeam1BG].Visible := True;
+    Static[StaticTeam1Deco].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam1].Visible := False;
     Text[TextNameTeam1].Visible := False;
     Static[StaticTeam1].Visible := False;
+    Static[StaticTeam1BG].Visible := False;
+    Static[StaticTeam1Deco].Visible := False;
   end;
 
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
@@ -135,12 +156,16 @@ begin
     Text[TextScoreTeam2].Visible := True;
     Text[TextNameTeam2].Visible := True;
     Static[StaticTeam2].Visible := True;
+    Static[StaticTeam2BG].Visible := True;
+    Static[StaticTeam2Deco].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam2].Visible := False;
     Text[TextNameTeam2].Visible := False;
     Static[StaticTeam2].Visible := False;
+    Static[StaticTeam2BG].Visible := False;
+    Static[StaticTeam2Deco].Visible := False;
   end;
 
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
@@ -151,12 +176,16 @@ begin
     Text[TextScoreTeam3].Visible := True;
     Text[TextNameTeam3].Visible := True;
     Static[StaticTeam3].Visible := True;
+    Static[StaticTeam3BG].Visible := True;
+    Static[StaticTeam3Deco].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam3].Visible := False;
     Text[TextNameTeam3].Visible := False;
     Static[StaticTeam3].Visible := False;
+    Static[StaticTeam3BG].Visible := False;
+    Static[StaticTeam3Deco].Visible := False;
   end;
 
 

@@ -559,8 +559,14 @@ type
     TextNameTeam2:     TThemeText;
     TextNameTeam3:     TThemeText;
     StaticTeam1:       TThemeStatic;
+    StaticTeam1BG:     TThemeStatic;
+    StaticTeam1Deco:   TThemeStatic;
     StaticTeam2:       TThemeStatic;
+    StaticTeam2BG:     TThemeStatic;
+    StaticTeam2Deco:   TThemeStatic;
     StaticTeam3:       TThemeStatic;
+    StaticTeam3BG:     TThemeStatic;
+    StaticTeam3Deco:   TThemeStatic;
 
     TextWinner:        TThemeText;
   end;
@@ -1280,8 +1286,14 @@ begin
       ThemeLoadText (PartyScore.TextNameTeam3, 'PartyScoreTextNameTeam3');
 
       ThemeLoadStatic (PartyScore.StaticTeam1, 'PartyScoreStaticTeam1');
+      ThemeLoadStatic (PartyScore.StaticTeam1BG, 'PartyScoreStaticTeam1BG');
+      ThemeLoadStatic (PartyScore.StaticTeam1Deco, 'PartyScoreStaticTeam1Deco');
       ThemeLoadStatic (PartyScore.StaticTeam2, 'PartyScoreStaticTeam2');
+      ThemeLoadStatic (PartyScore.StaticTeam2BG, 'PartyScoreStaticTeam2BG');
+      ThemeLoadStatic (PartyScore.StaticTeam2Deco, 'PartyScoreStaticTeam2Deco');
       ThemeLoadStatic (PartyScore.StaticTeam3, 'PartyScoreStaticTeam3');
+      ThemeLoadStatic (PartyScore.StaticTeam3BG, 'PartyScoreStaticTeam3BG');
+      ThemeLoadStatic (PartyScore.StaticTeam3Deco, 'PartyScoreStaticTeam3Deco');
 
       ThemeLoadText (PartyScore.TextWinner, 'PartyScoreTextWinner');
 
