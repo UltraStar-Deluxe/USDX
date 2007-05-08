@@ -44,6 +44,9 @@ LINEBONUS_WORST=Ghastly!
 IMPLODE_GLUE1=, 
 IMPLODE_GLUE2= and 
 
+#Song Screen Legend
+PLAYLIST_CATTEXT=Playlist: %s
+
 #Text for the Legend Bar at the bottom
 SING_LEGEND_CONTINUE=Continue
 
@@ -121,20 +124,25 @@ PLUGIN_BLIND_DESC=Duell without seeing the Notes
 
 #Statistics Screen
 #For more Info about the Format Strings look at the SorceCode (UScreenStatMain)
-STAT_MAIN_DESC=Statistics
+STAT_MAIN=Statistics
+STAT_MAIN_DESC=General
+STAT_MAIN_WHEREAMI=Statistics
 
 STAT_OVERVIEW_INTRO=%0:s Statistics.  \n Last Reset at %2:.2d.%1:.2d.%3:d
 STAT_OVERVIEW_SONG=%0:d Songs(%3:d with Video), whereof %1:d already were played  and %2:d were not played yet.\n The most popular Song is %5:s from %4:s.
-STAT_OVERVIEW_PLAYER=Since the last Reset ther were/was %0:d different Player(s).\n The Best Player is %1:s with an average Score of %2:d Points.\n %3:s did the highest Score with %4:d Points.
+STAT_OVERVIEW_PLAYER=Since the last Reset there were/was %0:d different Player(s).\n The Best Player is %1:s with an average Score of %2:d Points.\n %3:s did the highest Score with %4:d Points.
 
 #Stat Detail Screen
+STAT_DETAIL=Statistics
+STAT_DETAIL_WHEREAMI=Detail Statistics
+
 STAT_NEXT=Next Page
 STAT_PREV=Previous Page
-STAT_REVERSE=Change Order
+STAT_REVERSE=Reverse Order
 STAT_PAGE=Seite %0:d of %1:d Pages\n (%2:d of %3:d Entrys)
 
 STAT_DESC_SCORES=HighScores
-STAT_DESC_SCORES_REVERSED=LowestScores
+STAT_DESC_SCORES_REVERSED=LowScores
 STAT_FORMAT_SCORES=%0:s - %1:d  [%2:s] \n (%3:s - %4:s)
 
 STAT_DESC_SINGERS=Best Singers
