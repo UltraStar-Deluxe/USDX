@@ -112,7 +112,7 @@ begin
     CheckEvents;
 
     // display
-    done:=not Display.Draw;
+    done := not Display.Draw;
     SwapBuffers;
 
     // light
@@ -158,12 +158,35 @@ Begin
         begin
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
-          if ScreenPopupError <> NIL then if ScreenPopupError.Visible then ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True) else
-          if ScreenPopupCheck <> NIL then if ScreenPopupCheck.Visible then ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True) else
+          if (ScreenPopupError <> NIL) and (ScreenPopupError.Visible) then
+            done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
+          else if (ScreenPopupCheck <> NIL) AND (ScreenPopupCheck.Visible) then
+            done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
+
           // end of popup hack
-          if (Not Display.ActualScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)) then
-//        if (Not Display.ActualScreen^.ParseInput(Event.key.keysym.scancode, True)) then
-            done := true; // exit game
+
+          else
+          begin
+            // check for Screen want to Exit
+            done := Not Display.ActualScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True);
+
+            //If Screen wants to Exit
+            if done then
+            begin
+              //If Question Option is enabled then Show Exit Popup
+              if (Ini.AskbeforeDel = 1) then
+              begin
+                Display.ActualScreen^.CheckFadeTo(NIL,'MSG_QUIT_USDX');
+              end
+              else //When asking for exit is disabled then simply exit
+              begin
+                Display.Fade := 0;
+                Display.NextScreenWithCheck := nil;
+                Display.CheckOK := True;
+              end;
+            end;
+
+          end;            //        if (Not Display.ActualScreen^.ParseInput(Event.key.keysym.scancode, True)) then
         end;
 //      SDL_JOYAXISMOTION:
 //        begin

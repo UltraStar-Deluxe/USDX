@@ -92,6 +92,17 @@ begin
   If (PressedDown) Then
   begin // Key Down
     case PressedKey of
+      SDLK_Q:
+        begin
+          //When not ask before Exit then Finish now
+          if (Ini.AskbeforeDel <> 1) then
+            Finish
+          //else just Pause and let the Popup make the Work  
+          else if not paused then
+            Pause;
+          
+          Result := false;
+        end;
       SDLK_ESCAPE :
         begin
           //Record Sound Hack:
@@ -100,12 +111,6 @@ begin
           Finish;
           Music.PlayBack;
           FadeTo(@ScreenScore);
-        end;
-
-      SDLK_Q:
-        begin
-          Finish;
-          Result := false;
         end;
 
       SDLK_P://Pause Mod
@@ -127,13 +132,7 @@ begin
         begin
         end;
     end;
-  end
-  else // Key Up
-    case PressedKey of
-      SDLK_RETURN :
-        begin
-        end;
-    end;
+  end;
 end;
 
 //Pause Mod

@@ -97,13 +97,7 @@ begin
             InteractDec;
         end;
     end;
-  end
-  else // Key Up
-    case PressedKey of
-      SDLK_RETURN :
-        begin
-        end;
-    end;
+  end;
 end;
 
 constructor TScreenSongMenu.Create;

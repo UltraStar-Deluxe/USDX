@@ -53,13 +53,7 @@ begin
       SDLK_RIGHT:   InteractNext;
       SDLK_LEFT:    InteractPrev;
     end;
-  end
-  else // Key Up
-    case PressedKey of
-      SDLK_RETURN :
-        begin
-        end;
-    end;
+  end;
 end;
 
 constructor TScreenLevel.Create;

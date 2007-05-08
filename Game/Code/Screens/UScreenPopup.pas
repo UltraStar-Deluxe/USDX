@@ -42,36 +42,6 @@ implementation
 uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UPlaylist, UDisplay;
 
 function TScreenPopupCheck.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
-  function IsVisible: Boolean;
-  begin
-    Result := True;
-    if (Interactions[Interaction].Typ = 0) then
-    begin
-      Result := Button[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 1) then
-    begin
-      //Result := Selects[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 3) then
-    begin
-      Result := SelectsS[Interactions[Interaction].Num].Visible;
-    end;
-  end;
-
-  Procedure SelectNext;
-  begin
-    repeat
-      InteractNext;
-    until IsVisible;
-  end;
-
-  Procedure SelectPrev;
-  begin
-    repeat
-      InteractPrev;
-    until IsVisible;
-  end;
 begin
   Result := true;
   If (PressedDown) Then
@@ -95,6 +65,15 @@ begin
         begin
           case Interaction of
           0: begin
+               //Hack to Finish Singscreen correct on Exit with Q Shortcut
+               if (Display.NextScreenWithCheck = NIL) then
+               begin
+                 if (Display.ActualScreen = @ScreenSing) then
+                   ScreenSing.Finish
+                 else if (Display.ActualScreen = @ScreenSingModi) then
+                   ScreenSingModi.Finish;
+               end;
+
                Display.CheckOK:=True;
              end;
           1: begin
@@ -106,19 +85,13 @@ begin
           Result := false;
         end;
 
-      SDLK_DOWN:    SelectNext;
-      SDLK_UP:      SelectPrev;
+      SDLK_DOWN:    InteractNext;
+      SDLK_UP:      InteractPrev;
 
-      SDLK_RIGHT: SelectNext;
-      SDLK_LEFT: SelectPrev;
+      SDLK_RIGHT: InteractNext;
+      SDLK_LEFT: InteractPrev;
     end;
-  end
-  else // Key Up
-    case PressedKey of
-      SDLK_RETURN :
-        begin
-        end;
-    end;
+  end;
 end;
 
 constructor TScreenPopupCheck.Create;
@@ -175,36 +148,6 @@ end;
 // error popup
 
 function TScreenPopupError.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
-  function IsVisible: Boolean;
-  begin
-    Result := True;
-    if (Interactions[Interaction].Typ = 0) then
-    begin
-      Result := Button[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 1) then
-    begin
-      //Result := Selects[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 3) then
-    begin
-      Result := SelectsS[Interactions[Interaction].Num].Visible;
-    end;
-  end;
-
-  Procedure SelectNext;
-  begin
-    repeat
-      InteractNext;
-    until IsVisible;
-  end;
-
-  Procedure SelectPrev;
-  begin
-    repeat
-      InteractPrev;
-    until IsVisible;
-  end;
 begin
   Result := true;
   If (PressedDown) Then
@@ -228,19 +171,13 @@ begin
           Result := false;
         end;
 
-      SDLK_DOWN:    SelectNext;
-      SDLK_UP:      SelectPrev;
+      SDLK_DOWN:    InteractNext;
+      SDLK_UP:      InteractPrev;
 
-      SDLK_RIGHT: SelectNext;
-      SDLK_LEFT: SelectPrev;
+      SDLK_RIGHT: InteractNext;
+      SDLK_LEFT: InteractPrev;
     end;
-  end
-  else // Key Up
-    case PressedKey of
-      SDLK_RETURN :
-        begin
-        end;
-    end;
+  end;
 end;
 
 constructor TScreenPopupError.Create;

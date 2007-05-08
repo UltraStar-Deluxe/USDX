@@ -248,6 +248,10 @@ begin
     end;
 
     case PressedKey of
+      SDLK_Q:
+        begin
+          Result := false;
+        end;
       SDLK_ESCAPE :
         begin
         if (Mode = 0) then
@@ -605,19 +609,8 @@ begin
             SetJoker;
           end;
         end;
-
-      SDLK_Q:
-        begin
-          Result := false;
-        end;
     end;
-  end
-  else // Key Up
-    case PressedKey of
-      SDLK_RETURN :
-        begin
-        end;
-    end;
+  end;
 end;
 
 constructor TScreenSong.Create;

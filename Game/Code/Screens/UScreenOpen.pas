@@ -41,6 +41,10 @@ begin
     end;
 
     case PressedKey of
+      SDLK_Q:
+        begin
+          Result := false;
+        end;
       8: // del
         begin
             if Interaction = 0 then

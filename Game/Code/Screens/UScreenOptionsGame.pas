@@ -25,6 +25,10 @@ begin
   If (PressedDown) Then
   begin // Key Down
     case PressedKey of
+      SDLK_Q:
+        begin
+          Result := false;
+        end;
       SDLK_ESCAPE :
         begin
           Music.PlayBack;

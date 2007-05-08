@@ -55,9 +55,7 @@ begin
 
       SDLK_ESCAPE :
         begin
-          //popup hack
-          CheckFadeTo(NIL,'MSG_QUIT_USDX');
-//          Result := False;
+          Result := False;
         end;
 
       SDLK_C:
@@ -133,9 +131,7 @@ begin
 
           //Exit
           if Interaction = 5 then begin
-            //popup hack
-            CheckFadeTo(NIL,'MSG_QUIT_USDX');
-//            Result := false;
+            Result := false;
           end;
         end;
       // Up and Down could be done at the same time,
