@@ -63,6 +63,7 @@ type
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure onShow; override;
+      procedure onHide; override;
       procedure SelectNext;
       procedure SelectPrev;
       procedure UpdateLCD;
@@ -298,6 +299,12 @@ begin
 //          Music.Open(Skin.SkinPath + 'Menu Music 3.mp3');
 //          Music.Play;
           end;
+        end
+        //When in party Mode then Ask before Close
+        else if (Mode = 1) then
+        begin
+          Music.PlayBack;
+          CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
         end;
         end;
       SDLK_RETURN:
@@ -1198,10 +1205,19 @@ begin
   //Party Mode
   else if (Mode = 1) then
   begin
+
     SelectRandomSong;
+    //Show Mennu direct in PartyMode
+    ScreenSongMenu.MenuShow(SM_Party_Main);
   end;
 
   SetJoker;
+end;
+
+procedure TScreenSong.onHide;
+begin
+  //When hide then Stop Music (For Party Mode Popup on Exit)
+  Music.Stop;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -1631,7 +1647,7 @@ end;
 procedure TScreenSong.StartSong;
 begin
   CatSongs.Selected := Interaction;
-  Music.Stop;
+  //Music.Stop;
   //Party Mode
   if (Mode = 1) then
   begin
