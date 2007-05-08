@@ -160,3 +160,5 @@ STAT_FORMAT_BANDS=%0:s \n %1:dx Sung
 #Messages for Popup Message Boxes
 MSG_QUIT_USDX=Leave UltraStar?
 MSG_END_PARTY=End Party Mode?
+ERROR_NO_SONGS=Error: \n No Songs \n loaded
+ERROR_NO_PLUGINS=Error: \n No Plugins \n loaded

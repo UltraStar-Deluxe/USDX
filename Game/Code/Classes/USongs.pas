@@ -110,7 +110,7 @@ begin
   BrowseDir(SongPath);
 
   //Set Correct SongArray Length
-  SetLength(Song, BrowsePos + 1);
+  SetLength(Song, BrowsePos);
 //  if Ini.Debug = 1 then BrowseDir('D:\Extract\Songs\');
 end;
 

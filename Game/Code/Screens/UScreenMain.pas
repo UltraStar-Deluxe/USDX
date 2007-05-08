@@ -93,22 +93,35 @@ begin
       SDLK_RETURN:
         begin
           //Solo
-          if (Interaction = 0) and (Length(Songs.Song) >= 1) then begin
-            Music.PlayStart;
-            if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
-            if (Ini.Players = 4) then PlayersPlay := 6;
+          if (Interaction = 0) then
+          begin
+            if (Length(Songs.Song) >= 1) then
+            begin
+              Music.PlayStart;
+              if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
+              if (Ini.Players = 4) then PlayersPlay := 6;
 
-            ScreenName.Goto_SingScreen := False;
-            FadeTo(@ScreenName);
+              ScreenName.Goto_SingScreen := False;
+              FadeTo(@ScreenName);
+            end
+            else //show error message
+              ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
           end;
 
           //Multi
           if Interaction = 1 then begin
-            if (Ini.Players >= 1) AND (Length(DLLMan.Plugins)>=1) then
+            if (Length(Songs.Song) >= 1) then
             begin
-              Music.PlayStart;
-              FadeTo(@ScreenPartyOptions);
-            end;
+              if (Length(DLLMan.Plugins)>=1) then
+              begin
+                Music.PlayStart;
+                FadeTo(@ScreenPartyOptions);
+              end
+              else //show error message, No Plugins Loaded
+              ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_PLUGINS'));
+            end
+            else //show error message, No Songs Loaded
+              ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
           end;
 
           //Stats
