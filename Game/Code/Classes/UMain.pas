@@ -145,7 +145,11 @@ Begin
   Begin
 //    beep;
     Case Event.type_ Of
-      SDL_QUITEV: done := true;
+      SDL_QUITEV: begin
+        Display.Fade := 0;
+        Display.NextScreenWithCheck := nil;
+        Display.CheckOK := True;
+      end;
 {      SDL_MOUSEBUTTONDOWN:
         With Event.button Do
         Begin

@@ -357,17 +357,20 @@ begin
 
       SDLK_M: //Show SongMenu
         begin
-          if (Length(Songs.Song) > 0) AND (Mode = 0) then begin
-            if not CatSongs.Song[Interaction].Main then begin // clicked on Song
-              if CatSongs.CatNumShow = -3 then
-                ScreenSongMenu.MenuShow(SM_Playlist)
+          if (Length(Songs.Song) > 0) then begin
+            if (Mode = 0) then begin
+              if not CatSongs.Song[Interaction].Main then begin // clicked on Song
+                if CatSongs.CatNumShow = -3 then
+                  ScreenSongMenu.MenuShow(SM_Playlist)
+                else
+                  ScreenSongMenu.MenuShow(SM_Main);
+              end
               else
-                ScreenSongMenu.MenuShow(SM_Main);
-            end
-            else
-            begin
-              ScreenSongMenu.MenuShow(SM_Playlist_Load);
-            end;
+              begin
+                ScreenSongMenu.MenuShow(SM_Playlist_Load);
+              end;
+            end //Party Mode -> Show Party Menu
+            else ScreenSongMenu.MenuShow(SM_Party_Main);
           end;
         end;
 
@@ -1506,32 +1509,37 @@ begin
   Case PlaylistMan.Mode of
       0:  //All Songs Just Select Random Song
         begin
-          repeat
-            I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
-          until CatSongs.Song[I2].Main = false;
-
-          //Search Cat
-          for I := I2 downto low(CatSongs.Song) do
+          //When Tabs are activated then use Tab Method
+          if (Ini.Tabs_at_startup = 1) then
           begin
-            if CatSongs.Song[I].Main then
-              break;
-          end;
-          //In I ist jetzt die Kategorie in I2 der Song
+            repeat
+              I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
+            until CatSongs.Song[I2].Main = false;
 
-          //Choose Cat
-          CatSongs.ShowCategoryList;
+            //Search Cat
+            for I := I2 downto low(CatSongs.Song) do
+            begin
+              if CatSongs.Song[I].Main then
+                break;
+            end;
+            //In I ist jetzt die Kategorie in I2 der Song
+            //I is the CatNum, I2 is the No of the Song within this Cat
 
-          //Show Cat in Top Left Mod
+            //Choose Cat
+            CatSongs.ShowCategoryList;
+
+            //Show Cat in Top Left Mod
             ShowCatTL (I);
 
-          CatSongs.ClickCategoryButton(I);
-          SelectNext;
+            CatSongs.ClickCategoryButton(I);
+            SelectNext;
 
-          //Fix: Not Existing Song selected:
-          //if (I+1=I2) then Inc(I2);
-
-          //Choose Song
-          SkipTo(I2-I);
+            //Choose Song
+            SkipTo(I2-I);
+          end
+          //When Tabs are deactivated use easy Method
+          else
+            SkipTo(Random(CatSongs.VisibleSongs));
         end;
       1:  //One Category Select Category and Select Random Song
         begin
@@ -1540,28 +1548,23 @@ begin
           ShowCatTL(PlaylistMan.CurPlayList);
 
           SelectNext;
-          FixSelected;
+          FixSelected2;
 
           SkipTo(Random(CatSongs.VisibleSongs));
-          Music.PlayChange;
-          ChangeMusic;
-          SetScroll4;
-          UpdateLCD;
         end;
       2:  //Playlist: Select Playlist and Select Random Song
         begin
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
           SkipTo(Random(CatSongs.VisibleSongs));
-          Music.PlayChange;
-          ChangeMusic;
-          SetScroll4;
-          UpdateLCD;
-          FixSelected;
+          FixSelected2;
         end;
   end;
 
-          ChangeMusic;
+  Music.PlayChange;
+  ChangeMusic;
+  SetScroll;
+  UpdateLCD;
 end;
 
 procedure TScreenSong.SetJoker;
