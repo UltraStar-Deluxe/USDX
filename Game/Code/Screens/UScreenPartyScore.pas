@@ -51,7 +51,7 @@ begin
       SDLK_ESCAPE :
         begin
           Music.PlayStart;
-          if (PartySession.CurRound <= High(PartySession.Rounds)) then
+          if (PartySession.CurRound < High(PartySession.Rounds)) then
             FadeTo(@ScreenPartyNewRound)
           else
           begin

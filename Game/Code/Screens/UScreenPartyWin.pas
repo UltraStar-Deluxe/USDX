@@ -15,10 +15,16 @@ type
       TextNameTeam2:     Cardinal;
       TextNameTeam3:     Cardinal;
       StaticTeam1:       Cardinal;
+      StaticTeam1BG:     Cardinal;
+      StaticTeam1Deco:   Cardinal;
       StaticTeam2:       Cardinal;
+      StaticTeam2BG:     Cardinal;
+      StaticTeam2Deco:   Cardinal;
       StaticTeam3:       Cardinal;
+      StaticTeam3BG:     Cardinal;
+      StaticTeam3Deco:   Cardinal;
       TextWinner:        Cardinal;
-      
+
       constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
@@ -40,11 +46,11 @@ begin
           Result := false;
         end;
 
-      SDLK_ESCAPE :
+      {SDLK_ESCAPE :
         begin
           Music.PlayStart;
           FadeTo(@ScreenMain);
-        end;
+        end;}
 
       SDLK_RETURN:
         begin
@@ -69,8 +75,14 @@ begin
   TextNameTeam3 := AddText (Theme.PartyWin.TextNameTeam3);
 
   StaticTeam1 := AddStatic (Theme.PartyWin.StaticTeam1);
+  StaticTeam1BG := AddStatic (Theme.PartyWin.StaticTeam1BG);
+  StaticTeam1Deco := AddStatic (Theme.PartyWin.StaticTeam1Deco);
   StaticTeam2 := AddStatic (Theme.PartyWin.StaticTeam2);
+  StaticTeam2BG := AddStatic (Theme.PartyWin.StaticTeam2BG);
+  StaticTeam2Deco := AddStatic (Theme.PartyWin.StaticTeam2Deco);
   StaticTeam3 := AddStatic (Theme.PartyWin.StaticTeam3);
+  StaticTeam3BG := AddStatic (Theme.PartyWin.StaticTeam3BG);
+  StaticTeam3Deco := AddStatic (Theme.PartyWin.StaticTeam3Deco);
 
   TextWinner := AddText (Theme.PartyWin.TextWinner);
 
@@ -93,12 +105,16 @@ begin
     Text[TextScoreTeam1].Visible := True;
     Text[TextNameTeam1].Visible := True;
     Static[StaticTeam1].Visible := True;
+    Static[StaticTeam1BG].Visible := True;
+    Static[StaticTeam1Deco].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam1].Visible := False;
     Text[TextNameTeam1].Visible := False;
     Static[StaticTeam1].Visible := False;
+    Static[StaticTeam1BG].Visible := False;
+    Static[StaticTeam1Deco].Visible := False;
   end;
 
   if (PartySession.Teams.NumTeams >= 2) then
@@ -109,12 +125,16 @@ begin
     Text[TextScoreTeam2].Visible := True;
     Text[TextNameTeam2].Visible := True;
     Static[StaticTeam2].Visible := True;
+    Static[StaticTeam2BG].Visible := True;
+    Static[StaticTeam2Deco].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam2].Visible := False;
     Text[TextNameTeam2].Visible := False;
     Static[StaticTeam2].Visible := False;
+    Static[StaticTeam2BG].Visible := False;
+    Static[StaticTeam2Deco].Visible := False;
   end;
 
   if (PartySession.Teams.NumTeams >= 3) then
@@ -125,12 +145,16 @@ begin
     Text[TextScoreTeam3].Visible := True;
     Text[TextNameTeam3].Visible := True;
     Static[StaticTeam3].Visible := True;
+    Static[StaticTeam3BG].Visible := True;
+    Static[StaticTeam3Deco].Visible := True;
   end
   else
   begin
     Text[TextScoreTeam3].Visible := False;
     Text[TextNameTeam3].Visible := False;
     Static[StaticTeam3].Visible := False;
+    Static[StaticTeam3BG].Visible := False;
+    Static[StaticTeam3Deco].Visible := False;
   end;
 
 

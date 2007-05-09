@@ -97,30 +97,50 @@ SONG_JUMPTO_HELP=Type Text to Search for
 SONG_JUMPTO_CATTEXT=Search for: %s
 
 #Texts for Party Mode
-PARTY_SCORE_WINS=%s wins!
-PARTY_OPTIONS_DESC=Party Mode
+PARTY_MODE=party mode
 PARTY_DIFFICULTY=Difficulty
 PARTY_PLAYLIST=Playlist Mode
+PARTY_PLAYLIST_ALL=All songs
+PARTY_PLAYLIST_CATEGORY=Folder
+PARTY_PLAYLIST_PLAYLIST=Playlist
 PARTY_ROUNDS=Rounds
 PARTY_TEAMS=Teams
 PARTY_TEAMS_PLAYER1=Player Team1
 PARTY_TEAMS_PLAYER2=Player Team2
 PARTY_TEAMS_PLAYER3=Player Team3
-PARTY_SELECT_PLAYER=Enter Playernames!
-
+PARTY_LEGEND_CONTINUE=continue
+PARTY_OPTIONS_DESC=settings for the party-game
+PARTY_OPTIONS_WHEREAMI=Party Options
+PARTY_PLAYER_DESC=enter player- and teamnames!
+PARTY_PLAYER_WHEREAMI=Party Names
+PARTY_PLAYER_ENTER_NAME=enter names
+PARTY_PLAYER_LEGEND_CONTINUE=start party-game
+PARTY_ROUND_DESC=next players to the mics
+PARTY_ROUND_WHEREAMI=Party Next Round
+PARTY_ROUND_LEGEND_CONTINUE=start round
+PARTY_SCORE_DESC=score of the last round
+PARTY_SCORE_WHEREAMI=Party Points
+PARTY_WIN_DESC=winner of the party-game
+PARTY_WIN_WHEREAMI=Party Winner
+PARTY_WIN_LEGEND_CONTINUE=back to main-menu
+PARTY_ROUND=Round
+PARTY_ROUND_WINNER=Winner
+PARTY_NOTPLAYEDYET=not played yet
+PARTY_NOBODY=nobody
+NEXT_ROUND=Next round:
 PARTY_DISMISSED=Dismissed!
-PARTY_NOTPLAYEDYET=Not played yet
-PARTY_NOBODY=Nobody
+PARTY_SCORE_WINS=%s 
+PARTY_SCORE_WINS2=wins!
 
 #Texts that descripts Plugins or Modis
 PLUGIN_HDL_NAME=Hold the Line
-PLUGIN_HDL_DESC=Don't get worse than the Pointer at the Rating bar shows you.
+PLUGIN_HDL_DESC=Don't get worse than the pointer at the rating bar shows you.
 PLUGIN_UNTIL5000_NAME=Until 5000
-PLUGIN_UNTIL5000_DESC=Who gets 5000 Points first wins the match
+PLUGIN_UNTIL5000_DESC=Who gets 5000 points first wins the match.
 PLUGIN_DUELL_NAME=Duell
-PLUGIN_DUELL_DESC=Sing a Duell until 10000 Points
+PLUGIN_DUELL_DESC=Sing a duell until 10000 points.
 PLUGIN_BLIND_NAME=Blind Mode
-PLUGIN_BLIND_DESC=Duell without seeing the Notes
+PLUGIN_BLIND_DESC=Duell without seeing the notes.
 
 #Statistics Screen
 #For more Info about the Format Strings look at the SorceCode (UScreenStatMain)
@@ -158,7 +178,7 @@ STAT_DESC_BANDS_REVERSED=Least popular Bands
 STAT_FORMAT_BANDS=%0:s \n %1:dx Sung
 
 #Messages for Popup Message Boxes
-MSG_QUIT_USDX=Leave UltraStar?
-MSG_END_PARTY=End Party Mode?
+MSG_QUIT_USDX=Really leave\n\nUltraStar?
+MSG_END_PARTY=Really end\n\nParty Mode?
 ERROR_NO_SONGS=Error: \n No Songs \n loaded
 ERROR_NO_PLUGINS=Error: \n No Plugins \n loaded
