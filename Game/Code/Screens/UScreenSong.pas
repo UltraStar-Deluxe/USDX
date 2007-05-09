@@ -1220,7 +1220,8 @@ end;
 procedure TScreenSong.onHide;
 begin
   //When hide then Stop Music (For Party Mode Popup on Exit)
-  Music.Stop;
+  if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) then
+    Music.Stop;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -1650,7 +1651,7 @@ end;
 procedure TScreenSong.StartSong;
 begin
   CatSongs.Selected := Interaction;
-  //Music.Stop;
+  Music.Stop;
   //Party Mode
   if (Mode = 1) then
   begin
