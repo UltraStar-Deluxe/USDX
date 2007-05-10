@@ -368,7 +368,7 @@ begin
   // sub text
   LyricSub.Clear;
   LyricSub.X := 400;
-  LyricSub.Y := Skin_LyricsT + 42; //40
+  LyricSub.Y := Skin_LyricsT + 35; //42 //40
   LyricSub.Align := 1;
 
   // set custom options
@@ -385,13 +385,13 @@ begin
         {LyricMain.ColSR := Skin_FontHighlightR;
         LyricMain.ColSG := Skin_FontHighlightG;
         LyricMain.ColSB := Skin_FontHighlightB;1aa5dc}
-        LyricMain.ColSR := 26/255;
-        LyricMain.ColSG := 165/255;
-        LyricMain.ColSB := 220/255;
+        LyricMain.ColSR := 96/255; //26
+        LyricMain.ColSG := 192/255; //165
+        LyricMain.ColSB := 96/255;  //220
 
-        LyricSub.ColR := 0.6;
-        LyricSub.ColG := 0.6;
-        LyricSub.ColB := 0.6;
+        LyricSub.ColR := 0.4; //0.6
+        LyricSub.ColG := 0.4; //0.6
+        LyricSub.ColB := 0.4; //0.6
       end;
     1:
       begin

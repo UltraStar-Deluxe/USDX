@@ -146,7 +146,7 @@ const
   Skin_OscG = 0;
   Skin_OscB = 0;
 
-  Skin_LyricsT = 500; // 510 / 400
+  Skin_LyricsT = 494; // 500 / 510 / 400
   Skin_SpectrumT = 470;
   Skin_SpectrumBot = 570;
   Skin_SpectrumH = 100;
