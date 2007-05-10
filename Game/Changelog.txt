@@ -9,6 +9,7 @@ Upd: Add ability to 0.5.1 System to load third party Themes to add usability
 Upd: Add ability to change Positions and some other things relating to Covers within the Theme
 Upd: Add ability to add reflections to the Covers
 Upd: New Method for displaying Covers in a Circle. Looks better with many Songs. (Turn Off On within the Theme)
+Upd: Add Equalizer Object to SongScreen
 Upd: Add ability to add reflection to Buttons and Statics (Reflection = 1)
 Upd: Add ability to Group Buttons to a Buttonmenu, see Deluxe Theme Main Menu Tools Collection
 Upd: Add ability to Hide Buttons within Theme. Useful for example for MAinscreen Exit Button
@@ -26,7 +27,7 @@ Song Screen
 --------------
 Upd: Added Playlist Support
 
-Upd: Song Search (with Screen interface
+Upd: Song Search (with Screen interface)
 Upd: Jump to Letter Hotkey
 Upd: Menu in Songscreen similar to Singstars
 
@@ -36,7 +37,7 @@ Party Mode
 Upd: Added Party Mode:
        3 Teams possible with up to 4 Players
        => total of 12 Players
-Upd: Modi SDK for Create nearly any Modi with some Programming Skill
+Upd: Modi SDK to create nearly any Modi with some Programming Skill
 Upd: 4 Custom Party Modi Plugins: Duell, Hold the Line, Until 5000, Blind Mode
 
 --------------
@@ -44,7 +45,7 @@ Effects
 --------------
 Upd: New Perfect Note Effects
 Upd: Add Perfect Sentence Effect
-Upd: Golden Notes now with Singstar like Star twinkle Effect, isntead of just Yellow
+Upd: Golden Notes now with Singstar like Star Twinkle Effect, instead of just Yellow coloring
 Upd: Add Effect: Golden notes "Glow" when they are hit
 Upd: New Screen Fading Effect: Screen Blurs and "Flys" out of the Screen
      looks better with every Background. More possibility for Theme Creators
@@ -56,10 +57,13 @@ Upd: Added Deluxe Theme: Theme that has a look similiar to PS3 Singstar.
 Upd: New Score Saving System (SQLite Based)
 Upd: Statistic Screen with general Statistics and some Tables: 
      Best Scores, Best Singers, Most Popular Songs, Most Popular Bands
+Upd: Add some on Screen Error Messages helping new Peoples
+Upd: Add Advanced Screen with some new Options.
+Upd: Add a Question PopUp before exiting
 Upd: Show real Note in Editor (C, F#, etc.)
 Fix: Videosize can now be changed again
-Fix: Bug in LineBonus Popub then can end u in Memory Overflow
-Fix: Bug in SelectSlide with less then 3 Options, Now Overlapping anymore. Automatic resizing
+Fix: Bug in LineBonus Popup that can end up in a Memory Overflow
+Fix: Bug in SelectSlide with less then 3 Options, No Overlapping anymore. Automatic resizing
 Fix: Backgrounds can be used now in option Screens, too
 
 
