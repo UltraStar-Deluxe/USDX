@@ -46,11 +46,11 @@ begin
           Result := false;
         end;
 
-      {SDLK_ESCAPE :
+      SDLK_ESCAPE :
         begin
           Music.PlayStart;
           FadeTo(@ScreenMain);
-        end;}
+        end;
 
       SDLK_RETURN:
         begin
@@ -92,15 +92,18 @@ end;
 procedure TScreenPartyWin.onShow;
 var
   I: Integer;
+  Placing: TeamOrderArray;
 begin
-
+  //Get Team Placing
+  Placing := PartySession.GetTeamOrder;
+  
   //Set Winnertext
-  Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.GetWinnerString(255)]);
+  Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.Teams.Teaminfo[Placing[0]].Name]);
 
   if (PartySession.Teams.NumTeams >= 1) then
   begin
-    Text[TextScoreTeam1].Text := InttoStr(PartySession.Teams.TeamInfo[0].Score);
-    Text[TextNameTeam1].Text := String(PartySession.Teams.TeamInfo[0].Name);
+    Text[TextScoreTeam1].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[0]].Score);
+    Text[TextNameTeam1].Text := String(PartySession.Teams.TeamInfo[Placing[0]].Name);
 
     Text[TextScoreTeam1].Visible := True;
     Text[TextNameTeam1].Visible := True;
@@ -119,8 +122,8 @@ begin
 
   if (PartySession.Teams.NumTeams >= 2) then
   begin
-    Text[TextScoreTeam2].Text := InttoStr(PartySession.Teams.TeamInfo[1].Score);
-    Text[TextNameTeam2].Text := String(PartySession.Teams.TeamInfo[1].Name);
+    Text[TextScoreTeam2].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[1]].Score);
+    Text[TextNameTeam2].Text := String(PartySession.Teams.TeamInfo[Placing[1]].Name);
 
     Text[TextScoreTeam2].Visible := True;
     Text[TextNameTeam2].Visible := True;
@@ -139,8 +142,8 @@ begin
 
   if (PartySession.Teams.NumTeams >= 3) then
   begin
-    Text[TextScoreTeam3].Text := InttoStr(PartySession.Teams.TeamInfo[2].Score);
-    Text[TextNameTeam3].Text := String(PartySession.Teams.TeamInfo[2].Name);
+    Text[TextScoreTeam3].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[2]].Score);
+    Text[TextNameTeam3].Text := String(PartySession.Teams.TeamInfo[Placing[2]].Name);
 
     Text[TextScoreTeam3].Visible := True;
     Text[TextNameTeam3].Visible := True;

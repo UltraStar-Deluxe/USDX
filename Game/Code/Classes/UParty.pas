@@ -10,6 +10,13 @@ type
     Winner: Byte;
   end;
 
+  TeamOrderEntry = record
+    Teamnum: Byte;
+    Score: Byte;
+  end;
+
+  TeamOrderArray = Array[0..5] of Byte;
+
   TParty_Session = class
   private
     function GetRandomPlayer(Team: Byte): Byte;
@@ -25,7 +32,7 @@ type
     procedure StartNewParty(NumRounds: Byte);
     procedure StartRound;
     procedure EndRound;
-    function  GetWinner: Byte;
+    function  GetTeamOrder: TeamOrderArray;
     function  GetWinnerString(Round: Byte): String;
   end;
 
@@ -334,11 +341,34 @@ begin
 end;
 
 //----------
-//Get Winner - Gives back the Number of the total Winner
+//GetTeamOrder - Gives back the Placing of eacb Team [First Position of Array is Teamnum of first placed Team, ...]
 //----------
-function TParty_Session.GetWinner: Byte;
+function TParty_Session.GetTeamOrder: TeamOrderArray;
+var
+  I, J: Integer;
+  ATeams: array [0..5] of TeamOrderEntry;
+  TempTeam: TeamOrderEntry;
 begin
+  //Fill Team Array
+  For I := 0 to Teams.NumTeams-1 do
+  begin
+    ATeams[I].Teamnum := I;
+    ATeams[I].Score := Teams.Teaminfo[I].Score;
+  end;
 
+  //Sort Teams
+  for J := 0 to Teams.NumTeams-1 do
+    for I := 1 to Teams.NumTeams-1 do
+      if ATeams[I].Score > ATeams[I-1].Score then
+      begin
+        TempTeam    := ATeams[I-1];
+        ATeams[I-1] := ATeams[I];
+        ATeams[I]   := TempTeam;
+      end;
+
+  //Copy to Result
+  For I := 0 to Teams.NumTeams-1 do
+    Result[I] := ATeams[I].TeamNum;
 end;
 
 end.
