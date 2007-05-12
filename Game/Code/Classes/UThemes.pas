@@ -953,9 +953,8 @@ begin
       ThemeLoadText(Song.TextCat, 'SongTextCat');
 
       //Load Cover Pos and Size from Theme Mod
-      Song.Cover.X := ThemeIni.ReadInteger('SongCover', 'X', 400);
+      Song.Cover.X := ThemeIni.ReadInteger('SongCover', 'X', 300);
       Song.Cover.Y := ThemeIni.ReadInteger('SongCover', 'Y', 140);
-      Song.Cover.Z := ThemeIni.ReadInteger('SongCover', 'Z', 250);
       Song.Cover.W := ThemeIni.ReadInteger('SongCover', 'W', 300);
       Song.Cover.H := ThemeIni.ReadInteger('SongCover', 'H', 200);
       Song.Cover.Style := ThemeIni.ReadInteger('SongCover', 'Style', 4);
@@ -967,8 +966,8 @@ begin
       Song.Equalizer.Direction := (ThemeIni.ReadInteger('SongEqualizer', 'Direction', 0) = 1);
       Song.Equalizer.Alpha := ThemeIni.ReadInteger('SongEqualizer', 'Alpha', 1);
       Song.Equalizer.Space := ThemeIni.ReadInteger('SongEqualizer', 'Space', 1);
-      Song.Equalizer.X := ThemeIni.ReadInteger('SongEqualizer', 'X', 650);
-      Song.Equalizer.Y := ThemeIni.ReadInteger('SongEqualizer', 'Y', 430);
+      Song.Equalizer.X := ThemeIni.ReadInteger('SongEqualizer', 'X', 0);
+      Song.Equalizer.Y := ThemeIni.ReadInteger('SongEqualizer', 'Y', 0);
       Song.Equalizer.Z := ThemeIni.ReadInteger('SongEqualizer', 'Z', 1);
       Song.Equalizer.W := ThemeIni.ReadInteger('SongEqualizer', 'PieceW', 8);
       Song.Equalizer.H := ThemeIni.ReadInteger('SongEqualizer', 'PieceH', 8);
