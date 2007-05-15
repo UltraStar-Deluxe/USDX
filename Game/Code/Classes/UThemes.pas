@@ -293,6 +293,13 @@ type
     StaticTeam3Joker3: TThemeStatic;
     StaticTeam3Joker4: TThemeStatic;
     StaticTeam3Joker5: TThemeStatic;
+
+
+
+    StaticKeys1      : TThemeStatic;
+    TextKeys1        : TThemeText;
+
+
   end;
 
    TThemeSing = class(TThemeBasic)
@@ -1001,6 +1008,9 @@ begin
       ThemeLoadStatic(Song.StaticTeam3Joker3, 'SongStaticTeam3Joker3');
       ThemeLoadStatic(Song.StaticTeam3Joker4, 'SongStaticTeam3Joker4');
       ThemeLoadStatic(Song.StaticTeam3Joker5, 'SongStaticTeam3Joker5');
+
+      ThemeLoadStatic(Song.StaticKeys1, 'SongStaticKeys1');
+      ThemeLoadText(Song.TextKeys1, 'SongStaticKeys1Text');
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');

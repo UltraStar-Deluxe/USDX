@@ -52,7 +52,9 @@ type
       StaticTeam3Joker3: Cardinal;
       StaticTeam3Joker4: Cardinal;
       StaticTeam3Joker5: Cardinal;
-      
+      StaticKeys1: Cardinal;
+      TextKeys1: integer;
+
       constructor Create; override;
       procedure SetScroll;
       procedure SetScroll1;
@@ -79,7 +81,7 @@ type
       //Party Mode
       procedure SelectRandomSong;
       procedure SetJoker;
-
+      procedure SetStatics;
       //procedures for Menu
       procedure StartSong;
       procedure OpenEditor;
@@ -662,6 +664,10 @@ begin
   StaticTeam3Joker4 := AddStatic(Theme.Song.StaticTeam3Joker4);
   StaticTeam3Joker5 := AddStatic(Theme.Song.StaticTeam3Joker5);
 
+  StaticKeys1 := AddStatic(Theme.Song.StaticKeys1);
+
+  TextKeys1 := AddText(Theme.Song.TextKeys1);
+
   // Song List
 //  Songs.LoadSongList; // moved to the UltraStar unit
   CatSongs.Refresh;
@@ -1215,6 +1221,7 @@ begin
   end;
 
   SetJoker;
+  SetStatics;
 end;
 
 procedure TScreenSong.onHide;
@@ -1643,6 +1650,21 @@ begin
     Static[StaticTeam3Joker3].Visible := False;
     Static[StaticTeam3Joker4].Visible := False;
     Static[StaticTeam3Joker5].Visible := False;
+  end;
+end;
+
+procedure TScreenSong.SetStatics;
+begin
+  //If Party Mode
+  if Mode = 1 then //Use Statics for Party-Song-Selection
+  begin
+    Static[StaticKeys1].Visible := false;
+    Text[TextKeys1].Visible := false;
+  end
+  else //Use regular Statics for Song-Selection
+  begin //Hide all
+    Static[StaticKeys1].Visible := true;
+    Text[TextKeys1].Visible := true;
   end;
 end;
 

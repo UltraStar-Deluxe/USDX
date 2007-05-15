@@ -96,6 +96,39 @@ begin
           if (Interaction=3) then
             InteractDec;
         end;
+
+      SDLK_1:
+        begin //Jocker
+            //Joker spielen
+          case CurMenu of
+            SM_Party_Main:
+            begin
+              ScreenSong.DoJoker(0)
+            end;
+          end;
+        end;
+      SDLK_2:
+        begin //Jocker
+            //Joker spielen
+          case CurMenu of
+            SM_Party_Main:
+            begin
+              ScreenSong.DoJoker(1)
+            end;
+          end;
+        end;
+      SDLK_3:
+        begin //Jocker
+            //Joker spielen
+          case CurMenu of
+            SM_Party_Main:
+            begin
+              ScreenSong.DoJoker(2)
+            end;
+          end;
+        end;
+
+
     end;
   end;
 end;
