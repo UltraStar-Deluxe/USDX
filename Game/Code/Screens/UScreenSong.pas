@@ -1142,7 +1142,7 @@ begin
         else
           Pos := (Pos + VS/2) /VS;
 
-        Angle := 2 * pi * Pos*1.2;
+        Angle := pi * Pos*2;
 
         Button[B].Z := (0.4 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
 
