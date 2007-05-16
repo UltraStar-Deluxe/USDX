@@ -292,14 +292,31 @@ begin
             end
           else
           begin
-            //On Escape goto Cat-List Hack End
-            Music.Stop;
-            Music.PlayBack;
-//          FadeTo(@ScreenLevel);
-            FadeTo(@ScreenMain);
+          //On Escape goto Cat-List Hack End
+            //Tabs off and in Search or Playlist -> Go back to Song view
+            if (CatSongs.CatNumShow < -1) then
+            begin
+              //Atm: Set Empty Filter
+              CatSongs.SetFilter('', 0);
 
-//          Music.Open(Skin.SkinPath + 'Menu Music 3.mp3');
-//          Music.Play;
+              //Show Cat in Top Left Mod
+              HideCatTL;
+              Interaction := 0;
+
+              //Show Wrong Song when Tabs on Fix
+              SelectNext;
+              FixSelected;
+
+              ChangeMusic;
+            end
+            else
+            begin
+              Music.Stop;
+              Music.PlayBack;
+
+              FadeTo(@ScreenMain);
+            end;
+
           end;
         end
         //When in party Mode then Ask before Close
