@@ -178,7 +178,10 @@ STAT_DESC_BANDS_REVERSED=Least popular Bands
 STAT_FORMAT_BANDS=%0:s \n %1:dx Sung
 
 #Messages for Popup Message Boxes
-MSG_QUIT_USDX=Really leave\n\nUltraStar?
-MSG_END_PARTY=Really end\n\nParty Mode?
-ERROR_NO_SONGS=Error: \n No Songs \n loaded
-ERROR_NO_PLUGINS=Error: \n No Plugins \n loaded
+MSG_ERROR_TITLE=Error
+MSG_QUESTION_TITLE=Question
+MSG_QUIT_USDX=Really leave \n\n UltraStar?
+MSG_END_PARTY=Really end \n\n Party Mode?
+ERROR_NO_SONGS=No Songs \n\n loaded
+ERROR_NO_PLUGINS=No Plugins \n\n loaded
+ERROR_CORRUPT_SONG=Song could not be \n\n loaded.
