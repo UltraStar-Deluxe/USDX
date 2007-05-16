@@ -36,7 +36,7 @@ var
 
 implementation
 
-uses UPliki, UIni, IniFiles, Classes, SysUtils, Windows, ULog;
+uses UFiles, UIni, IniFiles, Classes, SysUtils, Windows, ULog;
 
 //----------
 //Create - Construct Class then LoadList + Standard Language + Set Standard Implode Glues

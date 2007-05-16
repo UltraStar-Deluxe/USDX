@@ -3,7 +3,7 @@ unit UScreenCredits;
 interface
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UPliki, SysUtils, UThemes, ULCD, ULight;
+  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes, ULCD, ULight;
 
 type
   TScreenCredits = class(TMenu)

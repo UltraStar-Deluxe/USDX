@@ -44,7 +44,7 @@ type
 
 implementation
 
-uses UGraphic, UMusic, SysUtils, UPliki, USkins;
+uses UGraphic, UMusic, SysUtils, UFiles, USkins;
 
 function TScreenEditHeader.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 var

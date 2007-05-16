@@ -3,7 +3,7 @@ unit UScreenSong;
 interface
 
 uses
-  UMenu, SDL, UMusic, UPliki, UTime, UDisplay, USongs, SysUtils, ULog, UThemes, UTexture, ULanguage,
+  UMenu, SDL, UMusic, UFiles, UTime, UDisplay, USongs, SysUtils, ULog, UThemes, UTexture, ULanguage,
   ULCD, ULight, UIni;
 
 type
@@ -1227,7 +1227,7 @@ end;
 procedure TScreenSong.onHide;
 begin
   //When hide then Stop Music (For Party Mode Popup on Exit)
-  if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) then
+  if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) and (Music <> nil) then
     Music.Stop;
 end;
 

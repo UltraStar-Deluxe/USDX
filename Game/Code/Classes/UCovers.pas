@@ -34,7 +34,7 @@ var
   Covers:     TCovers;
 
 implementation
-uses UPliki, ULog, DateUtils;
+uses UFiles, ULog, DateUtils;
 
 constructor TCovers.Create;
 begin

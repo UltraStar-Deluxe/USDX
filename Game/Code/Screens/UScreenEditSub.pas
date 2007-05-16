@@ -2,12 +2,15 @@ unit UScreenEditSub;
 
 interface
 
-uses UMenu, UMusic, SDL, SysUtils, UPliki, UTime, USongs, UIni, ULog, USmpeg, UTexture, UMenuText,
+uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, UMenuText,
   ULyrics, Math, OpenGL12, UThemes, MidiOut;
 
 type
   TScreenEditSub = class(TMenu)
     private
+      //Variable is True if no SOng is loaded 
+      Error:        Boolean;
+      
       TextNote:     integer;
       TextSentence: integer;
       TextTitle:    integer;
@@ -71,7 +74,7 @@ type
   end;
 
 implementation
-uses UGraphic, UDraw, UMain, USkins;
+uses UGraphic, UDraw, UMain, USkins, ULanguage;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
@@ -190,17 +193,15 @@ begin
 
       SDLK_S:
         begin
-          if SDL_ModState = 0 then
-            // Save Song
+          // Save Song
+          if SDL_ModState = KMOD_LSHIFT then
+            SaveSong(AktSong, Czesci[0], Path + FileName, true)
+          else
             SaveSong(AktSong, Czesci[0], Path + FileName, false);
 
-          if SDL_ModState = KMOD_LSHIFT then
+          {if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
             // Save Song
-            SaveSong(AktSong, Czesci[0], Path + FileName, true);
-
-          if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
-            // Save Song
-            SaveSongDebug(AktSong, Czesci[0], 'C:\song.asm', false);
+            SaveSongDebug(AktSong, Czesci[0], 'C:\song.asm', false);}
 
         end;
 
@@ -1091,20 +1092,26 @@ procedure TScreenEditSub.onShow;
 begin
   Log.LogStatus('Initializing', 'TEditScreen.onShow');
 
-  MidiOut := TMidiOutput.Create(nil);
-  if Ini.Debug = 1 then
-    MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
-  MidiOut.Open;
+  try
+    ResetSingTemp;
+    Error := not LoadSong(Path + FileName);
+  except
+    Error := True;
+  end;
 
-  //MidiOut.SetVolume(65535, 65535);
-
-
-
-  CzyscNuty;
-  if WczytajCzesci(Path + FileName) = false then
-//  if WczytajCzesci(SongPath + 'Zapis.txt') = false then
-    Text[TextTitle].Text := 'Error loading file'
+  if Error then
+  begin
+    //Error Loading Song -> Go back to Song Screen and Show some Error Message
+    FadeTo(@ScreenSong);
+    ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
+    Exit;
+  end
   else begin
+    MidiOut := TMidiOutput.Create(nil);
+    if Ini.Debug = 1 then
+      MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
+    MidiOut.Open;
+
     Text[TextTitle].Text :=   AktSong.Title;
     Text[TextArtist].Text :=  AktSong.Artist;
     Text[TextMp3].Text :=     AktSong.Mp3;
@@ -1201,7 +1208,7 @@ begin
       end;
     end; // click
   end; // if PlaySentence
-
+  
 
   Text[TextSentence].Text := IntToStr(Czesci[0].Akt + 1) + ' / ' + IntToStr(Czesci[0].Ilosc);
   Text[TextNote].Text := IntToStr(AktNuta + 1) + ' / ' + IntToStr(Czesci[0].Czesc[Czesci[0].Akt].IlNut);
@@ -1210,23 +1217,31 @@ begin
   Text[TextBPM].Text := FloatToStr(AktSong.BPM[0].BPM / 4);
   Text[TextGAP].Text := FloatToStr(AktSong.GAP);
 
-  // Note info
-  Text[TextNStart].Text :=    IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start);
-  Text[TextNDlugosc].Text :=  IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Dlugosc);
-  Text[TextNTon].Text :=      IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton) + ' ( ' + GetNoteName(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton) + ' )';
-  Text[TextNText].Text :=              Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Tekst;
+  //Error reading Variables when no Song is loaded
+  if not Error then
+  begin
+    // Note info
+    Text[TextNStart].Text :=    IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start);
+    Text[TextNDlugosc].Text :=  IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Dlugosc);
+    Text[TextNTon].Text :=      IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton) + ' ( ' + GetNoteName(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton) + ' )';
+    Text[TextNText].Text :=              Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Tekst;
+  end;
 
   // Text Edit Mode
   if TextEditMode then
-    Text[TextNText].Text := Text[TextNText].Text + '|';
+    Text[TextNText].Text := Text[TextNText].Text + '|'; 
 
   // draw static menu
   inherited Draw;
 
   // draw notes
   SingDrawNoteLines(20, 300, 780, 15);
-  SingDrawBeatDelimeters(40, 300, 760, 0);
-  EditDrawCzesc(40, 405, 760, 0, 15);
+  //Error Drawing when no Song is loaded
+  if not Error then
+  begin
+    SingDrawBeatDelimeters(40, 300, 760, 0);
+    EditDrawCzesc(40, 405, 760, 0, 15);
+  end;
 
   // draw text
   Lyric.Draw;
@@ -1237,7 +1252,7 @@ procedure TScreenEditSub.onHide;
 begin
   MidiOut.Close;
   MidiOut.Free;
-  Music.SetVolume(100);
+  //Music.SetVolume(100);
 end;
 
 function TScreenEditSub.GetNoteName(Note: Integer): String;

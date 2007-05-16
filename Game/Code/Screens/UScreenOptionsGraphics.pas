@@ -3,7 +3,7 @@ unit UScreenOptionsGraphics;
 interface
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UPliki, UIni, UThemes;
+  UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes;
 
 type
   TScreenOptionsGraphics = class(TMenu)

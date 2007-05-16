@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses UGraphic, UTime, Graphics, Jpeg, UPliki, UTexture, UIni;
+uses UGraphic, UTime, Graphics, Jpeg, UFiles, UTexture, UIni;
 
 constructor TDisplay.Create;
 var i: integer;
@@ -137,8 +137,8 @@ begin
         NextScreenWithCheck := NIL;
         CheckOk:=False;
       end
-    else
-      BlackScreen:=True; // end of game - fade to black before exit
+      else
+        BlackScreen:=True; // end of game - fade to black before exit
     //end popup hack
 
 //    ActualScreen.SetAnimationProgress(1);

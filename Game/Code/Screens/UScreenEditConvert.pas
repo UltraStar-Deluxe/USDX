@@ -66,7 +66,7 @@ type
   end;
 
 implementation
-uses UGraphic, SysUtils, UDrawTexture, TextGL, UPliki, UMain, UIni, OpenGL, USkins;
+uses UGraphic, SysUtils, UDrawTexture, TextGL, UFiles, UMain, UIni, OpenGL, USkins;
 
 function TScreenEditConvert.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 var

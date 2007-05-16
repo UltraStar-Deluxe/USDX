@@ -3,7 +3,7 @@ unit UScreenOptionsAdvanced;
 interface
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UPliki, UIni, UThemes;
+  UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes;
 
 type
   TScreenOptionsAdvanced = class(TMenu)

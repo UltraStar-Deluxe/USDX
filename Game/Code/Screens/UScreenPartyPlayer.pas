@@ -3,7 +3,7 @@ unit UScreenPartyPlayer;
 Interface
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UPliki, SysUtils, UThemes;
+  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
 
 type
   TScreenPartyPlayer = class(TMenu)

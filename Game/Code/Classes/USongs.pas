@@ -96,7 +96,7 @@ var
 
 implementation
 
-uses UPliki, UIni, UFiles, StrUtils;
+uses UFiles, UIni, StrUtils;
 
 procedure TSongs.LoadSongList;
 begin

@@ -3,7 +3,7 @@ unit UScreenPartyOptions;
 interface
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UPliki, SysUtils, UThemes;
+  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
 
 type
   TScreenPartyOptions = class(TMenu)

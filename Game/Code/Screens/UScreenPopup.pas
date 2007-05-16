@@ -3,7 +3,7 @@ unit UScreenPopup;
 interface
 
 uses
-  UMenu, SDL, UMusic, UPliki, SysUtils, UThemes;
+  UMenu, SDL, UMusic, UFiles, SysUtils, UThemes;
 
 type
   TScreenPopupCheck = class(TMenu)

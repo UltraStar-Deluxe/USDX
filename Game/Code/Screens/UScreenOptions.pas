@@ -3,7 +3,7 @@ unit UScreenOptions;
 interface
 
 uses
-  UMenu, SDL, SysUtils, UDisplay, UMusic, UPliki, UIni, UThemes;
+  UMenu, SDL, SysUtils, UDisplay, UMusic, UFiles, UIni, UThemes;
 
 type
   TScreenOptions = class(TMenu)

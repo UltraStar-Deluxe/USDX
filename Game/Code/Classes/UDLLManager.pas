@@ -1,7 +1,7 @@
 unit UDLLManager;
 
 interface
-uses ModiSDK, UPliki;
+uses ModiSDK, UFiles;
 
 type
   TDLLMan = class

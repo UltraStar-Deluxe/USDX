@@ -199,7 +199,7 @@ const
   ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
 
 implementation
-uses UGraphic, URecord, UPliki, UIni, UMain, UThemes;
+uses UGraphic, URecord, UFiles, UIni, UMain, UThemes;
 
 procedure InitializeSound;
 begin

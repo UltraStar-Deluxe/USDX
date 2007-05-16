@@ -2,7 +2,7 @@ unit UScreenSing;
 
 interface
 
-uses UMenu, UMusic, SDL, SysUtils, UPliki, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
+uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
   TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses;
 
 type
@@ -321,11 +321,29 @@ begin
   Text[TextP3RScore].Visible := V3R;
 
   // load notes
-  CzyscNuty;
+  ResetSingTemp;
 //  Log.LogWarning(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName, '!!!');
   AktSong := CatSongs.Song[CatSongs.Selected];
-
-  WczytajCzesci(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName);
+  try
+    if not LoadSong(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName) then
+    begin
+      //Error Loading Song -> Go back to Song Screen and Show some Error Message
+      FadeTo(@ScreenSong);
+      //Select New Song in Party Mode
+      if ScreenSong.Mode = 1 then
+        ScreenSong.SelectRandomSong;
+      ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
+      Exit;
+    end;
+  except
+    //Error Loading Song -> Go back to Song Screen and Show some Error Message
+    FadeTo(@ScreenSong);
+    //Select New Song in Party Mode
+      if ScreenSong.Mode = 1 then
+        ScreenSong.SelectRandomSong;
+    ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
+    Exit;
+  end;
   AktSong.Path := CatSongs.Song[CatSongs.Selected].Path;
 //  AktSong.GAP := AktSong.GAP + 40 {4096 = 100ms for buffer} + 20 {microphone} + 60000 / AktSong.BPM[0].BPM / 2; // temporary until UMain will be fixed
 

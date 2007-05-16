@@ -3,7 +3,7 @@ unit UScreenOptionsGame;
 interface
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UPliki, UIni, UThemes, USongs;
+  UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes, USongs;
 
 type
   TScreenOptionsGame = class(TMenu)

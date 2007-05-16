@@ -26,7 +26,7 @@ uses
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
-  UPliki in 'Classes\UPliki.pas',
+  //UPliki in 'Classes\UPliki.pas',
   ULanguage in 'Classes\ULanguage.pas',
   UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
@@ -107,7 +107,7 @@ uses
   SysUtils;
 
 const
-  Version = 'UltraStar Deluxe V 0.96 Beta';
+  Version = 'UltraStar Deluxe V 0.98 Beta';
 
 var
   WndTitle: string;

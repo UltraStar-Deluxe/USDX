@@ -2,7 +2,7 @@ unit UScreenSingModi;
 
 interface
 
-uses UMenu, UMusic, SDL, SysUtils, UPliki, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
+uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
   TextGL, OpenGL12, BASS, UThemes, ULCD, UScreenSing, ModiSDK;
 
 type
