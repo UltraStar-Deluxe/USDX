@@ -315,7 +315,7 @@ begin
 
     //TextOpt[I] := TextOpt[0];
     TextOpt[I] := TText.Create;
-    TextOpt[I].Size := 10;
+    TextOpt[I].Size := Text.Size;
     //TextOpt[I].Align := 1;
     TextOpt[I].Align := 0;
     TextOpt[I].Visible := True;
@@ -328,7 +328,7 @@ begin
     //Generate Positions
     //TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * (I + 0.5);
     TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * I;
-    TextOpt[I].Y := TextureSBG.Y + 20;
+    TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H / 2) - 1.5 * Text.Size{20};
 
     //Better Look with 2 Options
     if (Lines=2) AND (Length(TextOptT)= 2) then

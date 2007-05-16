@@ -186,6 +186,9 @@ type
     Y:      integer;
     W:      integer;
     H:      integer;
+    Z:      real;
+
+    TextSize:   integer;
     
     //SBGW Mod
     SBGW:   integer;
@@ -1717,6 +1720,11 @@ begin
   ThemeSelectS.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
   ThemeSelectS.W := ThemeIni.ReadInteger(Name, 'W', 0);
   ThemeSelectS.H := ThemeIni.ReadInteger(Name, 'H', 0);
+
+  ThemeSelectS.Z := ThemeIni.ReadFloat(Name, 'Z', 0);
+
+  ThemeSelectS.TextSize := ThemeIni.ReadInteger(Name, 'TextSize', 10);
+
   ThemeSelectS.SkipX := ThemeIni.ReadInteger(Name, 'SkipX', 0);
 
   ThemeSelectS.SBGW := ThemeIni.ReadInteger(Name, 'SBGW', 450);

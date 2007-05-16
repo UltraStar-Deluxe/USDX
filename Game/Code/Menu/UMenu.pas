@@ -1102,6 +1102,11 @@ begin
   for SO := 0 to High(Values) do
     AddSelectSlideOption(Values[SO]);
 
+  SelectsS[High(SelectsS)].Text.Size := ThemeSelectS.TextSize;
+
+  SelectsS[High(SelectsS)].Texture.Z := ThemeSelectS.Z;
+  SelectsS[High(SelectsS)].TextureSBG.Z := ThemeSelectS.Z;
+
   //Generate Lines
   SelectsS[High(SelectsS)].GenLines;
 
@@ -1153,7 +1158,7 @@ begin
   SelectsS[S].SBGDInt := SBGDInt;
 
   SelectsS[S].Text.X := X + 20;
-  SelectsS[S].Text.Y := Y + 20;
+  SelectsS[S].Text.Y := Y + (SelectsS[S].TextureSBG.H / 2) - 15;
   SelectsS[S].Text.Text := Caption;
   SelectsS[S].Text.Size := 10;
   SelectsS[S].Text.Visible := true;
