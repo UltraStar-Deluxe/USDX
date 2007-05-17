@@ -249,7 +249,10 @@ type
     TextTitle:        TThemeText;
     TextNumber:       TThemeText;
 
-    //Show Cat in TopLeft Mod
+    //Video Icon Mod
+    VideoIcon:        TThemeStatic;
+
+   //Show Cat in TopLeft Mod
     TextCat:          TThemeText;
     StaticCat:        TThemeStatic;
 
@@ -280,6 +283,7 @@ type
       ColR, ColG, ColB: Real;
       end;
 
+
     //Party and Non Party specific Statics and Texts
     StaticParty:    AThemeStatic;
     TextParty:      AThemeText;
@@ -303,6 +307,8 @@ type
     StaticTeam3Joker3: TThemeStatic;
     StaticTeam3Joker4: TThemeStatic;
     StaticTeam3Joker5: TThemeStatic;
+
+
   end;
 
    TThemeSing = class(TThemeBasic)
@@ -959,6 +965,9 @@ begin
       ThemeLoadText(Song.TextTitle, 'SongTextTitle');
       ThemeLoadText(Song.TextNumber, 'SongTextNumber');
 
+      //Video Icon Mod
+      ThemeLoadStatic(Song.VideoIcon, 'SongVideoIcon');
+
       //Show Cat in TopLeft Mod
       ThemeLoadStatic(Song.StaticCat, 'SongStaticCat');
       ThemeLoadText(Song.TextCat, 'SongTextCat');
@@ -1019,6 +1028,7 @@ begin
       ThemeLoadStatic(Song.StaticTeam3Joker3, 'SongStaticTeam3Joker3');
       ThemeLoadStatic(Song.StaticTeam3Joker4, 'SongStaticTeam3Joker4');
       ThemeLoadStatic(Song.StaticTeam3Joker5, 'SongStaticTeam3Joker5');
+
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');

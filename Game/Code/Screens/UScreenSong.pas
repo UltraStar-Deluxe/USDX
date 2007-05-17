@@ -13,6 +13,9 @@ type
       TextTitle:    integer;
       TextNumber:   integer;
 
+      //Video Icon Mod
+      VideoIcon:         Cardinal;
+
       TextCat:   integer;
       StaticCat: integer;
 
@@ -57,6 +60,7 @@ type
       TextParty:      Array of Cardinal;
       StaticNonParty: Array of Cardinal;
       TextNonParty:   Array of Cardinal;
+
 
       constructor Create; override;
       procedure SetScroll;
@@ -1325,6 +1329,13 @@ begin
   if Button[Interaction].Texture2.Alpha > 1 then Button[Interaction].Texture2.Alpha := 1;
 
   inherited Draw;
+
+  //Draw Video Icon if Video is present
+  if CatSongs.Song[Interaction].Video <> '' then
+    Static[VideoIcon].Visible := True
+  else
+    Static[VideoIcon].Visible := False;
+
 
   //Draw Equalizer
   if Theme.Song.Equalizer.Visible then
