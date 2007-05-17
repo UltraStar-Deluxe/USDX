@@ -35,7 +35,6 @@ begin
         begin
           if Interaction = 0 then begin
             Text[TextN].Text := Text[TextN].Text + chr(ScanCode);
-            FileName := Text[TextN].Text;
           end;
         end;
     end;
@@ -50,18 +49,29 @@ begin
             if Interaction = 0 then
             begin
               Text[TextN].DeleteLastL;
-              FileName := Text[TextN].Text;
             end;
         end;
 
       SDLK_ESCAPE:
         begin
-          result := false;
+          //Empty Filename and go to last Screen
+            FileName := '';
+            Music.PlayBack;
+            FadeTo(BackScreen);
         end;
 
       SDLK_RETURN:
         begin
-          if Interaction = 2 then begin
+          if (Interaction = 2) then begin
+            //Update Filename and go to last Screen
+            FileName := Text[TextN].Text;
+            Music.PlayBack;
+            FadeTo(BackScreen);
+          end
+          else if (Interaction = 1) then
+          begin
+            //Empty Filename and go to last Screen
+            FileName := '';
             Music.PlayBack;
             FadeTo(BackScreen);
           end;
