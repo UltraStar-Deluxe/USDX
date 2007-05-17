@@ -214,7 +214,7 @@ begin
   VisSongs := Count;
 
   //Fix SongSelection
-  ScreenSong.Interaction := 0;
+  ScreenSong.Interaction := high(CatSongs.Song);
   ScreenSong.SelectNext;
   ScreenSong.FixSelected;
 
