@@ -170,8 +170,11 @@ var I, I2: Integer;
   procedure TScreenSong.HideCatTL;
     begin
     //Hide
-    Text[TextCat].Visible := false;
+    //Text[TextCat].Visible := false;
     Static[StaticCat].Visible := false;
+    //New -> Show Text specified in Theme
+    Text[TextCat].Visible := True;
+    Text[TextCat].Text := Theme.Song.TextCat.Text;
     end;
     //Show Cat in Top Left Mod End
 
