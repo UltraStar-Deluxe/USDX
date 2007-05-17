@@ -664,9 +664,6 @@ var
 begin
   inherited Create;
 
-//  AddStatic(200, 10, 400, 90, Skin.SelectSong);
-//  AddStatic(200-10, 140-5, 400+20, 50+10, Skin.Selection, 'JPG', 'Font Gray');
-
   LoadFromTheme(Theme.Song); 
 
   TextArtist := AddText(Theme.Song.TextArtist);
@@ -676,6 +673,9 @@ begin
   //Show Cat in Top Left mod
   TextCat := AddText(Theme.Song.TextCat);
   StaticCat :=  AddStatic(Theme.Song.StaticCat);
+
+  //Show Video Icon Mod
+  VideoIcon := AddStatic(Theme.Song.VideoIcon);
 
   //Party Mode
   StaticTeam1Joker1 := AddStatic(Theme.Song.StaticTeam1Joker1);
@@ -748,21 +748,12 @@ begin
       AddButton(300 + Pet*250, 140, 200, 200, CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, 'JPG', 'Plain', Theme.Song.Cover.Reflections);
     end;
     Texture.Limit := 1024*1024;
-
-
-//    AddButtonText(11, 10, CatSongs.Song[Pet].Title); // new way
   end;
-//  Covers.Save;
 
-  {  if Length(CatSongs.Song) > 0 then // setting to first song
-    Interaction := 0
-  else begin // no song detected
-    AddButton(400-200, 140, 400, 50, Skin.Button, 'JPG', 'Transparent Range');
-    AddButtonText(11, 10, 'No songs detected');
-  end;}
+
 
   // Randomize Patch
-            Randomize;
+  Randomize;
   //Equalizer
   SetLength(EqualizerBands, Theme.Song.Equalizer.Bands);
   //ClearArray
@@ -788,6 +779,9 @@ begin
         end;
       else SetScroll4;
     end;
+    //Set Visibility of Video Icon
+    Static[VideoIcon].Visible := (CatSongs.Song[Interaction].Video <> '');
+
     //Set Texts:
     Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
     Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
@@ -1329,12 +1323,6 @@ begin
   if Button[Interaction].Texture2.Alpha > 1 then Button[Interaction].Texture2.Alpha := 1;
 
   inherited Draw;
-
-  //Draw Video Icon if Video is present
-  if CatSongs.Song[Interaction].Video <> '' then
-    Static[VideoIcon].Visible := True
-  else
-    Static[VideoIcon].Visible := False;
 
 
   //Draw Equalizer
