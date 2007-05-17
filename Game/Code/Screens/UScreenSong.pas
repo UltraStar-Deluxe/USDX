@@ -210,7 +210,7 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     //Jump to Artist/Titel
-    if (SDL_ModState and KMOD_LALT <> 0) AND (Mode = 0) AND (PressedKey > SDLK_A) AND (PressedKey < SDLK_Z) then
+    if (SDL_ModState and KMOD_LALT <> 0) AND (Mode = 0) AND (PressedKey >= SDLK_A) AND (PressedKey <= SDLK_Z) then
     begin
       Letter := UpCase(Chr(ScanCode));
       I2 := Length(CatSongs.Song);
@@ -1441,7 +1441,7 @@ begin
   if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
     Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
 
-  Interaction := 0;
+  Interaction := High(CatSongs.Song);
   SongTarget := 0;
 
   for I := 1 to Target+1 do
