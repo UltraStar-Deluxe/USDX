@@ -35,7 +35,7 @@ var
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USongs, UScreenSong;
+uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USongs, UScreenSong, ULog;
 
 function TScreenSongJumpto.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
   function IsVisible: Boolean;
@@ -73,7 +73,7 @@ begin
   If (PressedDown) Then
   begin // Key Down
     case PressedKey of
-      SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
+      SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL, SDLK_LEFTBRACKET, SDLK_SEMICOLON:
         begin
           if Interaction = 0 then
           begin
