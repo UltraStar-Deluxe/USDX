@@ -297,10 +297,38 @@ type
     StaticTeam3Joker4: TThemeStatic;
     StaticTeam3Joker5: TThemeStatic;
 
-
-
     StaticKeys1      : TThemeStatic;
     TextKeys1        : TThemeText;
+    StaticKeys1Party : TThemeStatic;
+    TextKeys1Party   : TThemeText;
+    StaticKeys2      : TThemeStatic;
+    TextKeys2        : TThemeText;
+    StaticKeys2Party : TThemeStatic;
+    TextKeys2Party   : TThemeText;
+    StaticKeys3      : TThemeStatic;
+    TextKeys3        : TThemeText;
+    StaticKeys3Party : TThemeStatic;
+    TextKeys3Party   : TThemeText;
+    StaticKeys4      : TThemeStatic;
+    TextKeys4        : TThemeText;
+    StaticKeys4Party : TThemeStatic;
+    TextKeys4Party   : TThemeText;
+    StaticKeys5      : TThemeStatic;
+    TextKeys5        : TThemeText;
+    StaticKeys5Party : TThemeStatic;
+    TextKeys5Party   : TThemeText;
+    StaticKeys6      : TThemeStatic;
+    TextKeys6        : TThemeText;
+    StaticKeys6Party : TThemeStatic;
+    TextKeys6Party   : TThemeText;
+    StaticKeys7      : TThemeStatic;
+    TextKeys7        : TThemeText;
+    StaticKeys7Party : TThemeStatic;
+    TextKeys7Party   : TThemeText;
+    StaticKeys8      : TThemeStatic;
+    TextKeys8        : TThemeText;
+    StaticKeys8Party : TThemeStatic;
+    TextKeys8Party   : TThemeText;
 
 
   end;
@@ -473,6 +501,7 @@ type
     SelectLineBonus:      TThemeSelect;
     SelectAskbeforeDel:   TThemeSelect;
     SelectOnSongClick:    TThemeSelectSlide;
+    SelectPartyPopup:     TThemeSelect;
     ButtonExit:           TThemeButton;
   end;
 
@@ -1014,6 +1043,43 @@ begin
 
       ThemeLoadStatic(Song.StaticKeys1, 'SongStaticKeys1');
       ThemeLoadText(Song.TextKeys1, 'SongStaticKeys1Text');
+      ThemeLoadStatic(Song.StaticKeys1Party, 'SongStaticKeys1Party');
+      ThemeLoadText(Song.TextKeys1Party, 'SongStaticKeys1TextParty');
+
+      ThemeLoadStatic(Song.StaticKeys2, 'SongStaticKeys2');
+      ThemeLoadText(Song.TextKeys2, 'SongStaticKeys2Text');
+      ThemeLoadStatic(Song.StaticKeys2Party, 'SongStaticKeys2Party');
+      ThemeLoadText(Song.TextKeys2Party, 'SongStaticKeys2TextParty');
+
+      ThemeLoadStatic(Song.StaticKeys3, 'SongStaticKeys3');
+      ThemeLoadText(Song.TextKeys3, 'SongStaticKeys3Text');
+      ThemeLoadStatic(Song.StaticKeys3Party, 'SongStaticKeys3Party');
+      ThemeLoadText(Song.TextKeys3Party, 'SongStaticKeys3TextParty');
+
+      ThemeLoadStatic(Song.StaticKeys4, 'SongStaticKeys4');
+      ThemeLoadText(Song.TextKeys4, 'SongStaticKeys4Text');
+      ThemeLoadStatic(Song.StaticKeys4Party, 'SongStaticKeys4Party');
+      ThemeLoadText(Song.TextKeys4Party, 'SongStaticKeys4TextParty');
+
+      ThemeLoadStatic(Song.StaticKeys5, 'SongStaticKeys5');
+      ThemeLoadText(Song.TextKeys5, 'SongStaticKeys5Text');
+      ThemeLoadStatic(Song.StaticKeys5Party, 'SongStaticKeys5Party');
+      ThemeLoadText(Song.TextKeys5Party, 'SongStaticKeys5TextParty');
+
+      ThemeLoadStatic(Song.StaticKeys6, 'SongStaticKeys6');
+      ThemeLoadText(Song.TextKeys6, 'SongStaticKeys6Text');
+      ThemeLoadStatic(Song.StaticKeys6Party, 'SongStaticKeys6Party');
+      ThemeLoadText(Song.TextKeys6Party, 'SongStaticKeys6TextParty');
+
+      ThemeLoadStatic(Song.StaticKeys7, 'SongStaticKeys7');
+      ThemeLoadText(Song.TextKeys7, 'SongStaticKeys7Text');
+      ThemeLoadStatic(Song.StaticKeys7Party, 'SongStaticKeys7Party');
+      ThemeLoadText(Song.TextKeys7Party, 'SongStaticKeys7TextParty');
+
+      ThemeLoadStatic(Song.StaticKeys8, 'SongStaticKeys8');
+      ThemeLoadText(Song.TextKeys8, 'SongStaticKeys8Text');
+      ThemeLoadStatic(Song.StaticKeys8Party, 'SongStaticKeys8Party');
+      ThemeLoadText(Song.TextKeys8Party, 'SongStaticKeys8TextParty');
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
@@ -1209,6 +1275,7 @@ begin
       ThemeLoadSelect       (OptionsAdvanced.SelectLineBonus, 'OptionsAdvancedSelectLineBonus');
       ThemeLoadSelectSlide  (OptionsAdvanced.SelectOnSongClick, 'OptionsAdvancedSelectSlideOnSongClick');
       ThemeLoadSelect       (OptionsAdvanced.SelectAskbeforeDel, 'OptionsAdvancedSelectAskbeforeDel');
+      ThemeLoadSelect       (OptionsAdvanced.SelectPartyPopup, 'OptionsAdvancedSelectPartyPopup');
       ThemeLoadButton       (OptionsAdvanced.ButtonExit, 'OptionsAdvancedButtonExit');
 
       //error and check popup

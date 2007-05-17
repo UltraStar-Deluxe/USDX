@@ -52,8 +52,46 @@ type
       StaticTeam3Joker3: Cardinal;
       StaticTeam3Joker4: Cardinal;
       StaticTeam3Joker5: Cardinal;
+
       StaticKeys1: Cardinal;
       TextKeys1: integer;
+      StaticKeys1Party: Cardinal;
+      TextKeys1Party: integer;
+
+      StaticKeys2: Cardinal;
+      TextKeys2: integer;
+      StaticKeys2Party: Cardinal;
+      TextKeys2Party: integer;
+
+      StaticKeys3: Cardinal;
+      TextKeys3: integer;
+      StaticKeys3Party: Cardinal;
+      TextKeys3Party: integer;
+
+      StaticKeys4: Cardinal;
+      TextKeys4: integer;
+      StaticKeys4Party: Cardinal;
+      TextKeys4Party: integer;
+
+      StaticKeys5: Cardinal;
+      TextKeys5: integer;
+      StaticKeys5Party: Cardinal;
+      TextKeys5Party: integer;
+
+      StaticKeys6: Cardinal;
+      TextKeys6: integer;
+      StaticKeys6Party: Cardinal;
+      TextKeys6Party: integer;
+
+      StaticKeys7: Cardinal;
+      TextKeys7: integer;
+      StaticKeys7Party: Cardinal;
+      TextKeys7Party: integer;
+
+      StaticKeys8: Cardinal;
+      TextKeys8: integer;
+      StaticKeys8Party: Cardinal;
+      TextKeys8Party: integer;
 
       constructor Create; override;
       procedure SetScroll;
@@ -163,6 +201,7 @@ var I, I2: Integer;
     Text[TextCat].Visible := true;
     Static[StaticCat].Visible := True;
     end;
+
   procedure TScreenSong.HideCatTL;
     begin
     //Hide
@@ -368,7 +407,9 @@ begin
               end
               else if (Mode = 1) then //PartyMode -> Show Menu
               begin
-                ScreenSongMenu.MenuShow(SM_Party_Main);
+                 //Is this Right?
+                 ScreenSong.StartSong;
+                //ScreenSongMenu.MenuShow(SM_Party_Main);
               end;
             end;
           end;
@@ -682,8 +723,44 @@ begin
   StaticTeam3Joker5 := AddStatic(Theme.Song.StaticTeam3Joker5);
 
   StaticKeys1 := AddStatic(Theme.Song.StaticKeys1);
-
   TextKeys1 := AddText(Theme.Song.TextKeys1);
+  StaticKeys1Party := AddStatic(Theme.Song.StaticKeys1Party);
+  TextKeys1Party := AddText(Theme.Song.TextKeys1Party);
+
+  StaticKeys2 := AddStatic(Theme.Song.StaticKeys2);
+  TextKeys2 := AddText(Theme.Song.TextKeys2);
+  StaticKeys2Party := AddStatic(Theme.Song.StaticKeys2Party);
+  TextKeys2Party := AddText(Theme.Song.TextKeys2Party);
+
+  StaticKeys3 := AddStatic(Theme.Song.StaticKeys3);
+  TextKeys3 := AddText(Theme.Song.TextKeys3);
+  StaticKeys3Party := AddStatic(Theme.Song.StaticKeys3Party);
+  TextKeys3Party := AddText(Theme.Song.TextKeys3Party);
+
+  StaticKeys4 := AddStatic(Theme.Song.StaticKeys4);
+  TextKeys4 := AddText(Theme.Song.TextKeys4);
+  StaticKeys4Party := AddStatic(Theme.Song.StaticKeys4Party);
+  TextKeys4Party := AddText(Theme.Song.TextKeys4Party);
+
+  StaticKeys5 := AddStatic(Theme.Song.StaticKeys5);
+  TextKeys5 := AddText(Theme.Song.TextKeys5);
+  StaticKeys5Party := AddStatic(Theme.Song.StaticKeys5Party);
+  TextKeys5Party := AddText(Theme.Song.TextKeys5Party);
+
+  StaticKeys6 := AddStatic(Theme.Song.StaticKeys6);
+  TextKeys6 := AddText(Theme.Song.TextKeys6);
+  StaticKeys6Party := AddStatic(Theme.Song.StaticKeys6Party);
+  TextKeys6Party := AddText(Theme.Song.TextKeys6Party);
+
+  StaticKeys7 := AddStatic(Theme.Song.StaticKeys7);
+  TextKeys7 := AddText(Theme.Song.TextKeys7);
+  StaticKeys7Party := AddStatic(Theme.Song.StaticKeys7Party);
+  TextKeys7Party := AddText(Theme.Song.TextKeys7Party);
+
+  StaticKeys8 := AddStatic(Theme.Song.StaticKeys8);
+  TextKeys8 := AddText(Theme.Song.TextKeys8);
+  StaticKeys8Party := AddStatic(Theme.Song.StaticKeys8Party);
+  TextKeys8Party := AddText(Theme.Song.TextKeys8Party);
 
   // Song List
 //  Songs.LoadSongList; // moved to the UltraStar unit
@@ -1234,7 +1311,13 @@ begin
 
     SelectRandomSong;
     //Show Mennu direct in PartyMode
-    ScreenSongMenu.MenuShow(SM_Party_Main);
+    //But only if selected in Options
+    if (Ini.PartyPopup = 1) then
+      begin
+      ScreenSongMenu.MenuShow(SM_Party_Main);
+      end;
+
+
   end;
 
   SetJoker;
@@ -1675,13 +1758,92 @@ begin
   //If Party Mode
   if Mode = 1 then //Use Statics for Party-Song-Selection
   begin
-    Static[StaticKeys1].Visible := false;
-    Text[TextKeys1].Visible := false;
+    Static[StaticKeys1].Visible := False;
+    Text[TextKeys1].Visible := False;
+    Static[StaticKeys1Party].Visible := True;
+    Text[TextKeys1Party].Visible := True;
+
+    Static[StaticKeys2].Visible := False;
+    Text[TextKeys2].Visible := False;
+    Static[StaticKeys2Party].Visible := True;
+    Text[TextKeys2Party].Visible := True;
+
+    Static[StaticKeys3].Visible := False;
+    Text[TextKeys3].Visible := False;
+    Static[StaticKeys3Party].Visible := True;
+    Text[TextKeys3Party].Visible := True;
+
+    Static[StaticKeys4].Visible := False;
+    Text[TextKeys4].Visible := False;
+    Static[StaticKeys4Party].Visible := True;
+    Text[TextKeys4Party].Visible := True;
+
+    Static[StaticKeys5].Visible := False;
+    Text[TextKeys5].Visible := False;
+    Static[StaticKeys5Party].Visible := True;
+    Text[TextKeys5Party].Visible := True;
+
+    Static[StaticKeys6].Visible := False;
+    Text[TextKeys6].Visible := False;
+    Static[StaticKeys6Party].Visible := True;
+    Text[TextKeys6Party].Visible := True;
+
+    Static[StaticKeys7].Visible := False;
+    Text[TextKeys7].Visible := False;
+    Static[StaticKeys7Party].Visible := True;
+    Text[TextKeys7Party].Visible := True;
+
+    Static[StaticKeys8].Visible := False;
+    Text[TextKeys8].Visible := False;
+    Static[StaticKeys8Party].Visible := True;
+    Text[TextKeys8Party].Visible := True;
   end
   else //Use regular Statics for Song-Selection
-  begin //Hide all
-    Static[StaticKeys1].Visible := true;
-    Text[TextKeys1].Visible := true;
+  begin
+    Static[StaticKeys1].Visible := True;
+    Text[TextKeys1].Visible := True;
+    Static[StaticKeys1Party].Visible := False;
+    Text[TextKeys1Party].Visible := False;
+
+    Static[StaticKeys2].Visible := True;
+    Text[TextKeys2].Visible := True;
+    Static[StaticKeys2Party].Visible := False;
+    Text[TextKeys2Party].Visible := False;
+
+    Static[StaticKeys2].Visible := True;
+    Text[TextKeys2].Visible := True;
+    Static[StaticKeys2Party].Visible := False;
+    Text[TextKeys2Party].Visible := False;
+
+    Static[StaticKeys3].Visible := True;
+    Text[TextKeys3].Visible := True;
+    Static[StaticKeys3Party].Visible := False;
+    Text[TextKeys3Party].Visible := False;
+
+    Static[StaticKeys4].Visible := True;
+    Text[TextKeys4].Visible := True;
+    Static[StaticKeys4Party].Visible := False;
+    Text[TextKeys4Party].Visible := False;
+
+    Static[StaticKeys5].Visible := True;
+    Text[TextKeys5].Visible := True;
+    Static[StaticKeys5Party].Visible := False;
+    Text[TextKeys5Party].Visible := False;
+
+    Static[StaticKeys6].Visible := True;
+    Text[TextKeys6].Visible := True;
+    Static[StaticKeys6Party].Visible := False;
+    Text[TextKeys6Party].Visible := False;
+
+    Static[StaticKeys7].Visible := True;
+    Text[TextKeys7].Visible := True;
+    Static[StaticKeys7Party].Visible := False;
+    Text[TextKeys7Party].Visible := False;
+
+    Static[StaticKeys8].Visible := True;
+    Text[TextKeys8].Visible := True;
+    Static[StaticKeys8Party].Visible := False;
+    Text[TextKeys8Party].Visible := False;
   end;
 end;
 

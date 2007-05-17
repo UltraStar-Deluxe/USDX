@@ -63,6 +63,7 @@ type
     AskbeforeDel:   integer;
     OnSongClick:    integer;
     LineBonus:      integer;
+    PartyPopup:     integer;
 
     // Controller
     Joypad:         integer;
@@ -140,6 +141,7 @@ const
   IAskbeforeDel:  array[0..1] of string = ('Off', 'On');
   IOnSongClick:   array[0..2] of string = ('Sing', 'Select Players', 'Open Menu');
   ILineBonus:  array[0..2] of string = ('Off', 'At Score', 'At Notes');
+  IPartyPopup: array[0..1] of string = ('Off', 'On');
 
   IJoypad:        array[0..1] of string = ('Off', 'On');
   ILPT:           array[0..2] of string = ('Off', 'LCD', 'Lights');
@@ -455,6 +457,10 @@ begin
   for Pet := 0 to High(ILineBonus) do
     if Tekst = ILineBonus[Pet] then Ini.LineBonus := Pet;
 
+  // PartyPopup
+  Tekst := IniFile.ReadString('Advanced', 'PartyPopup', 'On');
+  for Pet := 0 to High(IPartyPopup) do
+    if Tekst = IPartyPopup[Pet] then Ini.PartyPopup := Pet;
 
 
   // Joypad
@@ -638,6 +644,9 @@ begin
   Tekst := ILineBonus[Ini.LineBonus];
   IniFile.WriteString('Advanced', 'LineBonus', Tekst);
 
+  //Party Popup
+  Tekst := IPartyPopup[Ini.PartyPopup];
+  IniFile.WriteString('Advanced', 'PartyPopup', Tekst);
 
   // Joypad
   Tekst := IJoypad[Ini.Joypad];
