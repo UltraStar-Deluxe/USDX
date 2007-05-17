@@ -109,7 +109,7 @@ begin
   //Set Songs with Vid
   SongswithVid := 0;
   For I := 0 to high(Songs.Song) do
-    if (Songs.Song[I].Video <> '') AND FileExists(Songs.Song[I].Path + Songs.Song[I].Video) then
+    if (Songs.Song[I].Video <> '') then
       Inc(SongswithVid);
 end;
 

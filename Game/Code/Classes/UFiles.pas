@@ -239,7 +239,7 @@ begin
         end
 
         // Video File
-        else if (Identifier = 'VIDEO') then
+        else if (Identifier = 'VIDEO') AND (FileExists(Song.Path + Value)) then
         begin
           Song.Video := Value;
         end
