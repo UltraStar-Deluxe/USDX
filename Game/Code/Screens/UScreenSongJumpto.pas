@@ -187,6 +187,8 @@ begin
   //Select Input
   Interaction := 0;
   Button[0].Text[0].Selected := True;
+
+  LastPlayed := ScreenSong.Interaction;
 end;
 
 function TScreenSongJumpto.Draw: boolean;
