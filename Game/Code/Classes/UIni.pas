@@ -616,7 +616,7 @@ begin
       IniFile.WriteString('Record', 'ChannelR' + S, Tekst);
     end;
 
-    Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
+    //Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
 
   //Advanced Settings
 
