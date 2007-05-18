@@ -84,27 +84,23 @@ begin
 
       SDLK_BACKSPACE:
         begin
-          if Interaction = 0 then
+          if (Interaction = 0) AND (Length(Button[0].Text[0].Text) > 0) then
           begin
             Button[0].Text[0].DeleteLastL;
             SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
           end;
         end;
 
-      SDLK_ESCAPE :
-        begin
-          Music.PlayBack;
-          Visible := False;
-          if VisSongs = 0 then
-            CatSongs.SetFilter('', 0);
-        end;
-
-      SDLK_RETURN:
+      SDLK_RETURN, SDLK_ESCAPE:
         begin
           Visible := False;
           Music.PlayBack;
-          if VisSongs = 0 then
+          if (VisSongs = 0) AND (Length(Button[0].Text[0].Text) > 0) then
+          begin
+            Button[0].Text[0].Text := '';
             CatSongs.SetFilter('', 0);
+            SetTextFound(0);
+          end;
         end;
 
       // Up and Down could be done at the same time,
@@ -127,7 +123,8 @@ begin
           if (Interaction=1) then
           begin
             InteractInc;
-            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
+            if (Length(Button[0].Text[0].Text) > 0) then
+              SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
           end;
         end;
       SDLK_LEFT:
@@ -135,7 +132,8 @@ begin
           if (Interaction=1) then
           begin
             InteractDec;
-            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
+            if (Length(Button[0].Text[0].Text) > 0) then
+              SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
           end;
         end;
     end;
@@ -178,7 +176,7 @@ begin
   //Reset Screen if no Old Search is Displayed
   if (CatSongs.CatNumShow <> -2) then
   begin
-    SelectType := 0;
+    SelectsS[0].SetSelectOpt(0);
 
     Button[0].Text[0].Text := '';
     Text[0].Text := Theme.SongJumpto.NoSongsFound;
@@ -201,7 +199,10 @@ begin
   if (Count = 0) then
   begin
     Text[0].Text := Theme.SongJumpto.NoSongsFound;
-    ScreenSong.HideCatTL;
+    if (Length(Button[0].Text[0].Text) = 0) then
+      ScreenSong.HideCatTL
+    else
+      ScreenSong.ShowCatTLCustom(Format(Theme.SongJumpto.CatText, [Button[0].Text[0].Text]));
   end
   else
   begin
