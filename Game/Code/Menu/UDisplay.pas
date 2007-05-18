@@ -300,7 +300,6 @@ begin
   Jpeg.Assign(Bitmap);
   Bitmap.Free;
   Jpeg.CompressionQuality := 95;//90;
-  ForceDirectories(ScreenshotsPath);
   Jpeg.SaveToFile(FileName);
   Jpeg.Free;
 end;
@@ -317,7 +316,7 @@ begin
   for Num := 1 to 9999 do begin
     FileName := IntToStr(Num);
     while Length(FileName) < 4 do FileName := '0' + FileName;
-    FileName := {ScreenshotsPath + }'screenshot' + FileName + '.BMP';
+    FileName := ScreenshotsPath + FileName + '.BMP';
     if not FileExists(FileName) then break
   end;
 
@@ -331,8 +330,8 @@ begin
  
  //Schreiben der Bitmap-Informationen
  FileInfo.biSize := SizeOf(BITMAPINFOHEADER);
- FileInfo.biWidth := ScreenH;
- FileInfo.biHeight := ScreenW;
+ FileInfo.biWidth := ScreenW;
+ FileInfo.biHeight := ScreenH;
  FileInfo.biPlanes := 1;
  FileInfo.biBitCount := 32;
  FileInfo.biSizeImage := FileInfo.biWidth*FileInfo.biHeight*(FileInfo.biBitCount div 8);

@@ -160,13 +160,16 @@ Begin
         End; // With}
       SDL_KEYDOWN:
         begin
+          //ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
+          if (Event.key.keysym.sym = SDLK_SYSREQ) then
+            Display.ScreenShot
+
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
-          if (ScreenPopupError <> NIL) and (ScreenPopupError.Visible) then
+          else if (ScreenPopupError <> NIL) and (ScreenPopupError.Visible) then
             done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
           else if (ScreenPopupCheck <> NIL) AND (ScreenPopupCheck.Visible) then
             done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
-
           // end of popup hack
 
           else
