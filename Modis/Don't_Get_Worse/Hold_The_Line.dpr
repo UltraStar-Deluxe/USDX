@@ -10,8 +10,7 @@ var
   PointerTex: TSmallTexture;
   CountSentences: Cardinal;
   Limit: Byte;
-  fPrint: fModi_Print;
-  fPlaySound: fModi_PlaySound;
+  MethodRec: TMethodRec;
   Frame: Integer;
   PlayerTimes: array[0..5] of Integer;
   LastTick: Cardinal;
@@ -23,12 +22,14 @@ var
 procedure PluginInfo (var Info: TPluginInfo); stdcall;
 begin
   Info.Name    := 'PLUGIN_HDL_NAME';
-  Info.NumPlayers := 31;
 
   Info.Creator    := 'Whiteshark';
   Info.PluginDesc := 'PLUGIN_HDL_DESC';
 
+  //Set to Party Modi Plugin
+  Info.Typ := 8;
 
+  Info.NumPlayers := 31;
   //Options
   Info.LoadSong := True;  //Whether or not a Song should be Loaded
   //Only When Song is Loaded:
@@ -54,28 +55,27 @@ begin
 end;
 
 //Executed on Game Start //If True Game begins, else Failure
-function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: fModi_PlaySound): boolean; stdcall;
+function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean; stdcall;
 var
   I: Integer;
   Texname, TexType: PChar;
 begin
   TexName := CreateStr(PChar('HDL_Pointer'));
   TexType := CreateStr(PChar('Font Black'));
-  PointerTex := LoadTex(TexName, TexType);
+  PointerTex := Methods.LoadTex(TexName, TexType);
 
   FreeStr(TexName);
   FreeStr(TexType);
 
   TexName := CreateStr(PChar('dismissed.mp3'));
-  DismissedSound := LoadSound (TexName);
+  DismissedSound := Methods.LoadSound (TexName);
   FreeStr(TexName);
 
   CountSentences := Sentences.High;
   Limit := 0;
   Frame := 0;
 
-  fPrint := Print;
-  fPlaySound := PlaySound;
+  MethodRec := Methods;
 
   for I := 0 to PlayerInfo.NumPlayers-1 do
   begin
@@ -138,7 +138,7 @@ begin
         Inc(C);
         PlayerTimes[I] := CurSentence; //Save Time of Dismission
         //PlaySound
-        fPlaySound (DismissedSound);
+        MethodRec.PlaySound (DismissedSound);
       end;
 
       //Draw Pointer
@@ -172,7 +172,7 @@ begin
 
       glColor4f (0.8, 0.8, 0.8, 1);
 
-      fPrint (1, 6, PlayerInfo.Playerinfo[I].PosX, PlayerInfo.Playerinfo[I].PosY-8, Text);
+      MethodRec.Print (1, 6, PlayerInfo.Playerinfo[I].PosX, PlayerInfo.Playerinfo[I].PosY-8, Text);
       FreeStr(Text);
     end;
   end;

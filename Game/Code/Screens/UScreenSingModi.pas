@@ -1061,8 +1061,6 @@ begin
   Result.TexNum := Tex.TexNum;
   Result.W := Tex.W;
   Result.H := Tex.H;
-  Result.ScaleW := Tex.ScaleW;
-  Result.ScaleH := Tex.ScaleH;
 end;
 {
 function Translate (const Name: PChar): PChar; stdcall;

@@ -7,11 +7,14 @@ uses
 procedure PluginInfo (var Info: TPluginInfo); stdcall;
 begin
   Info.Name    := 'PLUGIN_BLIND_NAME';
-  Info.NumPlayers := 31;
 
   Info.Creator    := 'Whiteshark';
   Info.PluginDesc := 'PLUGIN_BLIND_DESC';
 
+  //Set to Party Modi Plugin
+  Info.Typ := 8;
+
+  Info.NumPlayers := 31;
 
   //Options
   Info.LoadSong := True;  //Whether or not a Song should be Loaded
@@ -38,7 +41,7 @@ begin
 end;
 
 //Executed on Game Start //If True Game begins, else Failure
-function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: fModi_PlaySound): boolean; stdcall;
+function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean; stdcall;
 begin
 Result := True;
 end;
@@ -86,7 +89,9 @@ begin
       end;
     end;
   end;
-
+  //If everybody has 0 Points nobody Wins
+  If (MaxScore = 0) then
+    Result := 0;
 end;
 
 exports

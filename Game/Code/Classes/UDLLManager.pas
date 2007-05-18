@@ -25,7 +25,7 @@ type
       function  LoadPlugin(No: Cardinal): boolean;
       procedure UnLoadPlugin;
 
-      function  PluginInit   (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: fModi_PlaySound): boolean;
+      function  PluginInit   (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: pModi_PlaySound): boolean;
       function  PluginDraw   (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean;
       function  PluginFinish (var Playerinfo: TPlayerinfo): byte;
       procedure PluginRData  (handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD);
@@ -75,6 +75,9 @@ end;
 
 procedure TDLLMan.ClearPluginInfo(No: Cardinal);
 begin
+  //Set to Party Modi Plugin
+  Plugins[No].Typ := 8;
+
   Plugins[No].Name := 'unknown';
   Plugins[No].NumPlayers := 0;
 
@@ -183,12 +186,19 @@ if (hLib <> 0) then
 @P_RData := nil;
 end;
 
-function TDLLMan.PluginInit (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: fModi_PlaySound): boolean;
+function TDLLMan.PluginInit (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: pModi_PlaySound): boolean;
+var
+  Methods: TMethodRec;
 begin
-if (@P_Init <> nil) then
-  Result := P_Init (TeamInfo, PlayerInfo, Sentences, LoadTex, Print, LoadSound, PlaySound)
-else
-  Result := False
+  Methods.LoadTex := LoadTex;
+  Methods.Print := Print;
+  Methods.LoadSound := LoadSound;
+  Methods.PlaySound := PlaySound;
+  
+  if (@P_Init <> nil) then
+    Result := P_Init (TeamInfo, PlayerInfo, Sentences, Methods)
+  else
+    Result := False
 end;
 
 function TDLLMan.PluginDraw   (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean;
