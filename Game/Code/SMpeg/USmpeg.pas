@@ -112,8 +112,9 @@ end;
 
 procedure CloseSmpeg;
 begin
-//  glmovie_quit;
   SMPEG_delete(mpeg);
+  //Fixing the Memory Lag in earlyer Versions (X-Mas Mod, all Official Versions)
+  glmovie_quit;
 end;
 
 function glmovie_init( Width : GLuint; Height : TGLuint ) : TGLenum;
@@ -294,6 +295,7 @@ end;
 procedure glmovie_quit;
 begin
   glDeleteTextures(1, @texture_ids);
+  SDL_FreeSurface(surface);
 end;
 
 end.
