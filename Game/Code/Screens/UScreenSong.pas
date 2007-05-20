@@ -218,7 +218,7 @@ begin
     begin
       Letter := UpCase(Chr(ScanCode));
       I2 := Length(CatSongs.Song);
-      
+
       //Jump To Titel
       if (SDL_ModState = KMOD_LALT or KMOD_LSHIFT) then
       begin
@@ -252,7 +252,7 @@ begin
             ChangeMusic;
             SetScroll4;
             UpdateLCD;
-            
+
             //Break and Exit
             Exit;
           end;
@@ -664,7 +664,7 @@ var
 begin
   inherited Create;
 
-  LoadFromTheme(Theme.Song); 
+  LoadFromTheme(Theme.Song);
 
   TextArtist := AddText(Theme.Song.TextArtist);
   TextTitle :=  AddText(Theme.Song.TextTitle);
@@ -759,6 +759,9 @@ begin
   //ClearArray
   For I := low(EqualizerBands) to high(EqualizerBands) do
     EqualizerBands[I] := 3;
+
+  if (Length(CatSongs.Song) > 0) then
+    Interaction := 0;
 end;
 
 procedure TScreenSong.SetScroll;
@@ -1222,13 +1225,12 @@ begin
 
   //Cat Mod etc
     if (Ini.Tabs_at_startup = 1) AND (CatSongs.CatNumShow = -1) then
-      begin
+    begin
       CatSongs.ShowCategoryList;
-      SelectNext; //Workaround <- must be fixed sometime
       FixSelected;
       //Show Cat in Top Left Mod
-        HideCatTL;
-      end;
+      HideCatTL;
+    end;
 
 
   if Length(CatSongs.Song) > 0 then begin
