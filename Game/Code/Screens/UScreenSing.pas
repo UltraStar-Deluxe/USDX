@@ -730,7 +730,23 @@ end;
 procedure TScreenSing.onShowFinish;
 begin
   // play movie (II)
-  if AktSong.VideoLoaded then PlaySmpeg;
+
+  if AktSong.VideoLoaded then
+  begin
+    try
+      PlaySmpeg;
+    except
+      //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
+      AktSong.VideoLoaded := False;
+      Log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
+      Log.LogError('Corrupted File: ' + AktSong.Video);
+      try
+        CloseSmpeg;
+      except
+
+      end;
+    end;
+  end;
 
   // play music (II)
   Music.Play;
@@ -1039,7 +1055,19 @@ begin
   SingDrawBackground;
   // update and draw movie
   if ShowFinish and AktSong.VideoLoaded then begin
-    UpdateSmpeg; // this only draws
+    try
+      UpdateSmpeg; // this only draws
+    except
+      //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
+      AktSong.VideoLoaded := False;
+      log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
+      Log.LogError('Corrupted File: ' + AktSong.Video);
+      try
+        CloseSmpeg;
+      except
+
+      end;
+    end;
   end;
 
   // draw static menu (FG)
