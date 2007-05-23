@@ -239,9 +239,12 @@ begin
         end
 
         // Video File
-        else if (Identifier = 'VIDEO') AND (FileExists(Song.Path + Value)) then
+        else if (Identifier = 'VIDEO') then
         begin
-          Song.Video := Value;
+          if (FileExists(Song.Path + Value)) then
+            Song.Video := Value
+          else
+            Log.LogError('Can''t find Video File in Song: ' + Song.Path + Song.FileName);
         end
 
         // Video Gap
@@ -579,6 +582,7 @@ begin
   Result := ReadTxTHeader(AktSong);
   if not Result then
   begin
+    CloseFile(SongFile);
     Log.LogError('Error Loading SongHeader, abort Song Loading');
     Exit;
   end;
@@ -594,6 +598,7 @@ begin
     
     if (EoF(SongFile)) then
     begin //Song File Corrupted - No Notes
+      CloseFile(SongFile);
       Log.LogError('Could not load txt File, no Notes found: ' + Name);
       Result := False;
       Exit;
@@ -617,7 +622,6 @@ begin
 //  TempC := Tekst[1]; // read from backup variable, don't use default ':' value
 
   while (TempC <> 'E') AND (not EOF(SongFile)) do begin
-    Inc(FileLineNo);
     if (TempC = ':') or (TempC = '*') or (TempC = 'F') then begin
       // wczytuje nute
       Read(SongFile, Param1);
@@ -688,10 +692,17 @@ begin
     end;
 
     Read(SongFile, TempC);
+    Inc(FileLineNo);
   end; // while}
 
   CloseFile(SongFile);
   except
+    try
+      CloseFile(SongFile);
+    except
+
+    end;
+
     Log.LogError('Error Loading File: "' + Name + '" in Line ' + inttostr(FileLineNo));
     exit;
   end;
