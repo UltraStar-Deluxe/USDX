@@ -137,92 +137,94 @@ var
   I, J, K: Integer;
   LastI: integer;
 begin
-  pProgress.Max := high(Songs.Song);
-  pProgress.Position := 0;
-  // Go through all Songs
-  For I := 0 to high(Songs.Song) do
+  if (Messagebox(0, PChar('If the same directory is added more than one time the Score-File will be useless. Contìnue ?'), PChar(Mainform.Caption), MB_ICONWARNING or MB_YESNO) = IDYes) then
   begin
-    try
-      //Read Scores from .SCO File
-      ReadScore (Songs.Song[I]);
+    pProgress.Max := high(Songs.Song);
+    pProgress.Position := 0;
+    // Go through all Songs
+    For I := 0 to high(Songs.Song) do
+    begin
+      try
+        //Read Scores from .SCO File
+        ReadScore (Songs.Song[I]);
 
-      //Go from Easy to Difficult
-      For J := 0 to 2 do
-      begin
-        //Go through all Score Entrys with Difficulty J
-        For K := 0 to high(Songs.Song[I].Score[J]) do
+        //Go from Easy to Difficult
+        For J := 0 to 2 do
         begin
-          //Add to DataBase
-          DataBase.AddScore(Songs.Song[I], J, Songs.Song[I].Score[J][K].Name, Songs.Song[I].Score[J][K].Score);
+          //Go through all Score Entrys with Difficulty J
+          For K := 0 to high(Songs.Song[I].Score[J]) do
+          begin
+            //Add to DataBase
+            DataBase.AddScore(Songs.Song[I], J, Songs.Song[I].Score[J][K].Name, Songs.Song[I].Score[J][K].Score);
+          end;
         end;
+
+      except
+        showmessage ('Error Converting Score From Song: ' + Songs.Song[I].Path  + Songs.Song[I].FileName);
       end;
 
-    except
-      showmessage ('Error Converting Score From Song: ' + Songs.Song[I].Path  + Songs.Song[I].FileName);
+      //Update ProgressBar
+      J := I div 30;
+      if (LastI <> J) then
+      begin
+        LastI := J;
+        pProgress.Position := I;
+        lStatus.Caption := 'Adding Songscore: ' + Songs.Song[I].Artist + ' - ' + Songs.Song[I].Title;
+        Application.ProcessMessages;
+      end;
     end;
 
-    //Update ProgressBar
-    if (LastI <> I div 30) then
-    begin
-      LastI := I div 30;
-      pProgress.Position := I;
-      lStatus.Caption := 'Adding Songscore: ' + Songs.Song[I].Artist + ' - ' + Songs.Song[I].Title;
-      Application.ProcessMessages;
-    end;
+    pProgress.Position := pProgress.Max;
+    lStatus.Caption := 'Finished';
   end;
-
-  pProgress.Position := pProgress.Max;
-  lStatus.Caption := 'Finished';
 end;
 
 procedure Tmainform.bFromDBClick(Sender: TObject);
 var
-  I, J, K: Integer;
+  I, J: Integer;
   LastI: integer;
   anyScoreinthere: boolean;
 begin
-  pProgress.Max := high(Songs.Song);
-  pProgress.Position := 0;
-  // Go through all Songs
-  For I := 0 to high(Songs.Song) do
+  if (Messagebox(0, PChar('All Score Entrys in the Song Directory having an equivalent will be Overwritten. Contìnue ?'), PChar(Mainform.Caption), MB_ICONWARNING or MB_YESNO) = IDYes) then
   begin
-    try
-      //Not Write ScoreFile when there are no Scores for this File
-      anyScoreinthere := false;
-      //Read Scores from DB File
-      Database.ReadScore (Songs.Song[I]);
+    pProgress.Max := high(Songs.Song);
+    pProgress.Position := 0;
+    // Go through all Songs
+    For I := 0 to high(Songs.Song) do
+    begin
+      try
+        //Not Write ScoreFile when there are no Scores for this File
+        anyScoreinthere := false;
+        //Read Scores from DB File
+        Database.ReadScore (Songs.Song[I]);
 
-      //Go from Easy to Difficult
-      For J := 0 to 2 do
-      begin
-        //Go through all Score Entrys with Difficulty J
-        For K := 0 to high(Songs.Song[I].Score[J]) do
+        //Go from Easy to Difficult
+        For J := 0 to 2 do
         begin
-          //Add to ScoreFile
-          AddScore(Songs.Song[I], J, Songs.Song[I].Score[J][K].Name, Songs.Song[I].Score[J][K].Score);
-          anyScoreinthere := True;
+          anyScoreinthere := anyScoreinthere or (Length(Songs.Song[I].Score[J]) > 0);
         end;
+
+        if AnyScoreinThere then
+          WriteScore(Songs.Song[I]);
+
+      except
+        showmessage ('Error Converting Score From Song: ' + Songs.Song[I].Path  + Songs.Song[I].FileName);
       end;
 
-      if AnyScoreinThere then
-        WriteScore(Songs.Song[I]);
-
-    except
-      showmessage ('Error Converting Score From Song: ' + Songs.Song[I].Path  + Songs.Song[I].FileName);
+      //Update ProgressBar
+      J := I div 30;
+      if (LastI <> J) then
+      begin
+        LastI := J;
+        pProgress.Position := I;
+        lStatus.Caption := 'Writing ScoreFile: ' + Songs.Song[I].Artist + ' - ' + Songs.Song[I].Title;
+        Application.ProcessMessages;
+      end;
     end;
-
-    //Update ProgressBar
-    if (LastI <> I div 30) then
-    begin
-      LastI := I div 30;
-      pProgress.Position := I;
-      lStatus.Caption := 'Writing ScoreFile: ' + Songs.Song[I].Artist + ' - ' + Songs.Song[I].Title;
-      Application.ProcessMessages;
-    end;
+    
+    pProgress.Position := pProgress.Max;
+    lStatus.Caption := 'Finished';
   end;
-
-  pProgress.Position := pProgress.Max;
-  lStatus.Caption := 'Finished';
 end;
 
 end.
