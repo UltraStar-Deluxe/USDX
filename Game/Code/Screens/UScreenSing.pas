@@ -403,9 +403,9 @@ begin
         {LyricMain.ColSR := Skin_FontHighlightR;
         LyricMain.ColSG := Skin_FontHighlightG;
         LyricMain.ColSB := Skin_FontHighlightB;1aa5dc}
-        LyricMain.ColSR := 96/255; //26
-        LyricMain.ColSG := 192/255; //165
-        LyricMain.ColSB := 96/255;  //220
+        LyricMain.ColSR := 5/255; //26
+        LyricMain.ColSG := 163/255; //165
+        LyricMain.ColSB := 210/255;  //220
 
         LyricSub.ColR := 0.4; //0.6
         LyricSub.ColG := 0.4; //0.6
