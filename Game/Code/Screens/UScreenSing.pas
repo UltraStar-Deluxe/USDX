@@ -8,9 +8,9 @@ uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UT
 type
   TScreenSing = class(TMenu)
     protected
-    paused: boolean; //Pause Mod
-    PauseTime: Real;
-    NumEmptySentences: integer;
+      paused: boolean; //Pause Mod
+      PauseTime: Real;
+      NumEmptySentences: integer;
     public
       //TextTime:           integer;
 
@@ -356,7 +356,12 @@ begin
 
   // set background
   if (AktSong.Background <> '')  and (AktSong.VideoLoaded = false) then
-    Tex_Background := Texture.LoadTexture(AktSong.Path + AktSong.Background)
+    try
+      Tex_Background := Texture.LoadTexture(AktSong.Path + AktSong.Background);
+    except
+      log.LogError('Background could not be loaded: ' + AktSong.Path + AktSong.Background);
+      Tex_Background.TexNum := -1;
+    end
   else
     Tex_Background.TexNum := -1;
 

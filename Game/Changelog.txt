@@ -12,8 +12,8 @@ Upd: New Method for displaying Covers in a Circle. Looks better with many Songs.
 Upd: Add Equalizer Object to SongScreen
 Upd: Add ability to add reflection to Buttons and Statics (Reflection = 1)
 Upd: Add ability to Group Buttons to a Buttonmenu, see Deluxe Theme Main Menu Tools Collection
-Upd: Add ability to Hide Buttons within Theme. Useful for example for MAinscreen Exit Button
-Upd: Add ability to give Texts a Wdth, so the Text breaks at the given Position
+Upd: Add ability to Hide Buttons within Theme. Useful for example for Mainscreen Exit Button
+Upd: Add ability to give Texts a Width, so the Text breaks at the given Position.
  
 --------------
 Recording Options
@@ -37,7 +37,7 @@ Party Mode
 Upd: Added Party Mode:
        3 Teams possible with up to 4 Players
        => total of 12 Players
-Upd: Modi SDK to create nearly any Modi with some Programming Skill
+Upd: Modi SDK: Possibility to create nearly any Modi with some Programming Skill
 Upd: 4 Custom Party Modi Plugins: Duell, Hold the Line, Until 5000, Blind Mode
 
 --------------
@@ -61,15 +61,22 @@ Upd: Add some on Screen Error Messages helping new Peoples
 Upd: Add Advanced Screen with some new Options.
 Upd: Add a Question PopUp before exiting
 Upd: Show real Note in Editor (C, F#, etc.)
+Fix: No crashes caused by corrupted Textfiles anymore.
+     Added Errormessage Popup inGame and Jump Back to Songscreen. So even the Party Mode,
+     isn't interuppted.
 Fix: Videosize can now be changed again
 Fix: Bug in LineBonus Popup that can end up in a Memory Overflow
 Fix: Bug in SelectSlide with less then 3 Options, No Overlapping anymore. Automatic resizing
 Fix: Backgrounds can be used now in option Screens, too
+Fix: useless Memory usement when Song with Video is Played. When a Song with Video is played
+     there was some Memory that was not freeed at the End of the Song. This could have caused
+     too much Memory usement when many Songs with Video are Played.
+Fix: Some Changes in Memory usement and better Loading speed.
 
 
 UltraStar 0.5.0 ultra-star.dl.am Mod X-Mas Edition (by Mota und Whiteshark)
 -----------------------------
-Upd: Headereinlesefunktion komplett neu geschrieben
+Upd: New faster and Error resistant Header reader
 Upd: Bewertungs Bar (Singstar Like)
 Upd: PhrasenBonus + Popups
 
