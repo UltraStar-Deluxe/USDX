@@ -336,8 +336,8 @@ begin
   if (Done <> 15) then
   begin
     Result := False;
-    if (Done and 8) = 0 then      //No BMP Flag
-    Log.LogError('BMP Tag Missing: ' + Song.FileName)
+    if (Done and 8) = 0 then      //No BPM Flag
+    Log.LogError('BPM Tag Missing: ' + Song.FileName)
     else if (Done and 4) = 0 then //No MP3 Flag
     Log.LogError('MP3 Tag/File Missing: ' + Song.FileName)
     else if (Done and 2) = 0 then //No Artist Flag
