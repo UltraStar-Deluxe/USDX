@@ -279,6 +279,9 @@ begin
         {if Size >= 10 then
           Y2 := Y2 + Size * 2.8
         else}
+        if (Style = 1) then
+          Y2 := Y2 + Size * 2.8
+        else
           Y2 := Y2 + Size * 2.15;
       end;
       SetFontStyle(0); // reset to default
