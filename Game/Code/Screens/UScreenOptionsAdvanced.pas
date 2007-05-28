@@ -35,7 +35,9 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 7 then begin
+          //SelectLoadAnimation Hidden because it is useless atm
+          //if SelInteraction = 7 then begin
+          if SelInteraction = 6 then begin
             Ini.Save;
             Music.PlayBack;
             FadeTo(@ScreenOptions);
@@ -47,14 +49,18 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
+          //SelectLoadAnimation Hidden because it is useless atm
+          //if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
             Music.PlayOption;
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
+          //SelectLoadAnimation Hidden because it is useless atm
+          //if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
             Music.PlayOption;
             InteractDec;
           end;
@@ -71,7 +77,8 @@ begin
 
   LoadFromTheme(Theme.OptionsAdvanced);
 
-  AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimation);
+  //SelectLoadAnimation Hidden because it is useless atm
+  //AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimation);
   AddSelect(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFade);
   AddSelect(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSing);
   AddSelect(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonus);
