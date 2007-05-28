@@ -718,72 +718,74 @@ begin
 //  Songs.LoadSongList; // moved to the UltraStar unit
   CatSongs.Refresh;
 
-  //Set Length of Button Array one Time Instead of one time for every Song
-  SetButtonLength(Length(CatSongs.Song));
+  if (length(CatSongs.Song) > 0) then
+  begin
+    //Set Length of Button Array one Time Instead of one time for every Song
+    SetButtonLength(Length(CatSongs.Song));
 
-  I := 0;
-  CreateSongButtons:
+    I := 0;
+    CreateSongButtons:
 
-  try
-    for Pet := I to High(CatSongs.Song) do begin // creating all buttons
-      // new
-      Texture.Limit := 512;// 256 0.4.2 value, 512 in 0.5.0
+    try
+      for Pet := I to High(CatSongs.Song) do begin // creating all buttons
+        // new
+        Texture.Limit := 512;// 256 0.4.2 value, 512 in 0.5.0
 
-      if not FileExists(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover) then
-        CatSongs.Song[Pet].Cover := ''; // 0.5.0: if cover not found then show 'no cover'
+        if not FileExists(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover) then
+          CatSongs.Song[Pet].Cover := ''; // 0.5.0: if cover not found then show 'no cover'
 
-      if CatSongs.Song[Pet].Cover = '' then
-        AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), 'JPG', 'Plain', Theme.Song.Cover.Reflections)
-      else begin
-        // cache texture if there is a need to this
-        if not Covers.CoverExists(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover) then begin
-          Texture.CreateCacheMipmap := true;
-          Texture.GetTexture(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, 'Plain', true); // preloads textures and creates cache mipmap
-          Texture.CreateCacheMipmap := false;
+        if CatSongs.Song[Pet].Cover = '' then
+          AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), 'JPG', 'Plain', Theme.Song.Cover.Reflections)
+        else begin
+          // cache texture if there is a need to this
+          if not Covers.CoverExists(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover) then begin
+            Texture.CreateCacheMipmap := true;
+            Texture.GetTexture(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, 'Plain', true); // preloads textures and creates cache mipmap
+            Texture.CreateCacheMipmap := false;
 
-          // puts this texture to the cache file
-          Covers.AddCover(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover);
+            // puts this texture to the cache file
+            Covers.AddCover(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover);
 
-          // unload full size texture
-          Texture.UnloadTexture(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, false);
+            // unload full size texture
+            Texture.UnloadTexture(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, false);
 
-          // we should also add mipmap texture by calling createtexture and use mipmap cache as data source
+            // we should also add mipmap texture by calling createtexture and use mipmap cache as data source
+          end;
+
+          // and now load it from cache file (small place for the optimization by eliminating reading it from file, but not here)
+          AddButton(300 + Pet*250, 140, 200, 200, CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, 'JPG', 'Plain', Theme.Song.Cover.Reflections);
         end;
-
-        // and now load it from cache file (small place for the optimization by eliminating reading it from file, but not here)
-        AddButton(300 + Pet*250, 140, 200, 200, CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, 'JPG', 'Plain', Theme.Song.Cover.Reflections);
+        Texture.Limit := 1024*1024;
+        I := -1;
       end;
-      Texture.Limit := 1024*1024;
-      I := -1;
-    end;
-  except
-    //When Error is reported the First time for this Song
-    if (I <> Pet) then
-    begin
-      //Some Error reporting:
-      Log.LogError('Could not load Cover: ' + CatSongs.Song[Pet].Cover);
+    except
+      //When Error is reported the First time for this Song
+      if (I <> Pet) then
+      begin
+        //Some Error reporting:
+        Log.LogError('Could not load Cover: ' + CatSongs.Song[Pet].Cover);
 
-      //Change Cover to NoCover and Continue Loading
-      CatSongs.Song[Pet].Cover := '';
-      I := Pet;
-    end
-    else //when Error occurs Multiple Times(NoSong Cover is damaged), then start loading next Song
-    begin
-      Log.LogError('NoCover Cover is damaged!');
-      try
-        AddButton(300 + Pet*250, 140, 200, 200, '', 'JPG', 'Plain', Theme.Song.Cover.Reflections);
-      except
-        Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);
-        Halt;
+        //Change Cover to NoCover and Continue Loading
+        CatSongs.Song[Pet].Cover := '';
+        I := Pet;
+      end
+      else //when Error occurs Multiple Times(NoSong Cover is damaged), then start loading next Song
+      begin
+        Log.LogError('NoCover Cover is damaged!');
+        try
+          AddButton(300 + Pet*250, 140, 200, 200, '', 'JPG', 'Plain', Theme.Song.Cover.Reflections);
+        except
+          Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);
+          Halt;
+        end;
+        I := Pet + 1;
       end;
-      I := Pet + 1;
     end;
+
+    if (I <> -1) then
+      GoTo CreateSongButtons;
+
   end;
-
-  if (I <> -1) then
-    GoTo CreateSongButtons;
-
-
 
   // Randomize Patch
   Randomize;
