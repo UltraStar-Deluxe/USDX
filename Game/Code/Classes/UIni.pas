@@ -5,7 +5,11 @@ uses IniFiles, ULog, SysUtils;
 
 type
   TIni = class
-    Name:           array[0..5] of string;
+    Name:           array[0..11] of string;
+
+    // Templates for Names Mod
+    NameTeam:       array[0..2] of string;
+    NameTemplate:   array[0..11] of string;
 
     // Game
     Players:        integer;
@@ -174,8 +178,15 @@ begin
   IniFile := TMemIniFile.Create(GamePath + 'config.ini');
 
   // Name
-  for I := 0 to 5 do
+  for I := 0 to 11 do
     Ini.Name[I] := IniFile.ReadString('Name', 'P'+IntToStr(I+1), 'Player'+IntToStr(I+1));
+
+
+  // Templates for Names Mod
+  for I := 0 to 2 do
+    Ini.NameTeam[I] := IniFile.ReadString('NameTeam', 'T'+IntToStr(I+1), 'Team'+IntToStr(I+1));
+  for I := 0 to 11 do
+    Ini.NameTemplate[I] := IniFile.ReadString('NameTemplate', 'Name'+IntToStr(I+1), 'Template'+IntToStr(I+1));
 
   // Players
   Tekst := IniFile.ReadString('Game', 'Players', IPlayers[0]);
@@ -665,8 +676,13 @@ begin
     IniFile := TIniFile.Create(GamePath + 'config.ini');
 
     //Name
-    for I := 1 to 6 do
+      // Templates for Names Mod
+    for I := 1 to 12 do
       IniFile.WriteString('Name', 'P' + IntToStr(I), Ini.Name[I-1]);
+    for I := 1 to 3 do
+      IniFile.WriteString('NameTeam', 'T' + IntToStr(I), Ini.NameTeam[I-1]);
+    for I := 1 to 12 do
+      IniFile.WriteString('NameTemplate', 'Name' + IntToStr(I), Ini.NameTemplate[I-1]);
 
     IniFile.Free;
   end;

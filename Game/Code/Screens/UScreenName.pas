@@ -32,6 +32,57 @@ begin
           Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + chr(ScanCode);
         end;
 
+      // Templates for Names Mod
+      SDLK_F1:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[0];
+        end;
+      SDLK_F2:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[1];
+        end;
+      SDLK_F3:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[2];
+        end;
+      SDLK_F4:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[3];
+        end;
+      SDLK_F5:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[4];
+        end;
+      SDLK_F6:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[5];
+        end;
+      SDLK_F7:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[6];
+        end;
+      SDLK_F8:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[7];
+        end;
+      SDLK_F9:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[8];
+        end;
+      SDLK_F10:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[9];
+        end;
+      SDLK_F11:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[10];
+        end;
+      SDLK_F12:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[11];
+        end;
+
+
       SDLK_BACKSPACE:
         begin
           Button[Interaction].Text[0].DeleteLastL;

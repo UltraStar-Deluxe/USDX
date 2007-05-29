@@ -61,6 +61,56 @@ begin
           Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + chr(ScanCode);
         end;
 
+      // Templates for Names Mod
+      SDLK_F1:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[0];
+        end;
+      SDLK_F2:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[1];
+        end;
+      SDLK_F3:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[2];
+        end;
+      SDLK_F4:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[3];
+        end;
+      SDLK_F5:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[4];
+        end;
+      SDLK_F6:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[5];
+        end;
+      SDLK_F7:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[6];
+        end;
+      SDLK_F8:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[7];
+        end;
+      SDLK_F9:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[8];
+        end;
+      SDLK_F10:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[9];
+        end;
+      SDLK_F11:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[10];
+        end;
+      SDLK_F12:
+        begin
+          Button[Interaction].Text[0].Text := Ini.NameTemplate[11];
+        end;
+
       SDLK_BACKSPACE:
         begin
           Button[Interaction].Text[0].DeleteLastL;
@@ -135,6 +185,21 @@ procedure TScreenPartyPlayer.onShow;
 var
   I:    integer;
 begin
+  // Templates for Names Mod
+  for I := 1 to 4 do
+    Button[I].Text[0].Text := Ini.Name[I-1];
+
+  for I := 6 to 9 do
+    Button[I].Text[0].Text := Ini.Name[I-2];
+
+  for I := 11 to 14 do
+    Button[I].Text[0].Text := Ini.Name[I-3];
+
+    Button[0].Text[0].Text := Ini.NameTeam[0];
+    Button[5].Text[0].Text := Ini.NameTeam[1];
+    Button[10].Text[0].Text := Ini.NameTeam[2];
+    // Templates for Names Mod end
+  
   If (PartySession.Teams.NumTeams>=1) then
   begin
     Button[0].Visible := True;
