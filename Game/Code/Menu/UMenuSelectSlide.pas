@@ -308,33 +308,34 @@ begin
   if (Lines <= 0) then
     Lines := 1;
 
+  //Free old Space used by Texts
+  For I := low(TextOpt) to high(TextOpt) do
+    TextOpt[I].Free;
+    
   setLength (TextOpt, Lines);
 
     for I := low(TextOpt) to high(TextOpt) do
     begin
+      TextOpt[I] := TText.Create;
+      TextOpt[I].Size := Text.Size;
+      //TextOpt[I].Align := 1;
+      TextOpt[I].Align := 0;
+      TextOpt[I].Visible := True;
 
-    //TextOpt[I] := TextOpt[0];
-    TextOpt[I] := TText.Create;
-    TextOpt[I].Size := Text.Size;
-    //TextOpt[I].Align := 1;
-    TextOpt[I].Align := 0;
-    TextOpt[I].Visible := True;
+      TextOpt[I].ColR := STDColR;
+      TextOpt[I].ColG := STDColG;
+      TextOpt[I].ColB := STDColB;
+      TextOpt[I].Int := STDInt;
 
-    TextOpt[I].ColR := STDColR;
-    TextOpt[I].ColG := STDColG;
-    TextOpt[I].ColB := STDColB;
-    TextOpt[I].Int := STDInt;
+      //Generate Positions
+      //TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * (I + 0.5);
+      TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * I;
+      TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H / 2) - 1.5 * Text.Size{20};
 
-    //Generate Positions
-    //TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * (I + 0.5);
-    TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * I;
-    TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H / 2) - 1.5 * Text.Size{20};
-
-    //Better Look with 2 Options
-    if (Lines=2) AND (Length(TextOptT)= 2) then
-      TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(PChar(TextOptT[1]))) * I;
+      //Better Look with 2 Options
+      if (Lines=2) AND (Length(TextOptT)= 2) then
+        TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(PChar(TextOptT[1]))) * I;
     end;
-      //TextOpt[I] := TextOpt[0];
 end;
 
 end.
