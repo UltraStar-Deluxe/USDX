@@ -974,7 +974,7 @@ begin
 
       //Load Cover Pos and Size from Theme Mod
       Song.Cover.X := ThemeIni.ReadInteger('SongCover', 'X', 300);
-      Song.Cover.Y := ThemeIni.ReadInteger('SongCover', 'Y', 140);
+      Song.Cover.Y := ThemeIni.ReadInteger('SongCover', 'Y', 190);
       Song.Cover.W := ThemeIni.ReadInteger('SongCover', 'W', 300);
       Song.Cover.H := ThemeIni.ReadInteger('SongCover', 'H', 200);
       Song.Cover.Style := ThemeIni.ReadInteger('SongCover', 'Style', 4);
@@ -1589,6 +1589,11 @@ var
   T:      integer;
   Collections2: PAThemeButtonCollection;
 begin
+  if not ThemeIni.SectionExists(Name) then
+  begin
+    ThemeButton.Visible := False;
+    exit;
+  end;
   DecimalSeparator := '.';
   ThemeButton.Tex := ThemeIni.ReadString(Name, 'Tex', '');
   ThemeButton.X := ThemeIni.ReadInteger (Name, 'X', 0);
