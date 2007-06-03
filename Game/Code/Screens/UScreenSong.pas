@@ -1275,6 +1275,8 @@ begin
     Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
     Music.MoveTo(Music.Length / 4);
     Music.Play;
+    //Music Fade (Start not with max Volume)
+    Music.SetMusicVolume(70);
     SetScroll;
     UpdateLCD;
   end;
@@ -1349,17 +1351,24 @@ begin
 //  Log.LogBenchmark('SetScroll4', 5);
 
 
-  // 0.5.0: cover fade
+  // 0.5.0: cover fade and Song Fade
   if (CoverTime < 1) and (CoverTime + TimeSkip >= 1) then begin
     // load new texture
     Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false);
     Button[Interaction].Texture.Alpha := 1;
     Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false);
     Button[Interaction].Texture2.Alpha := 1;
+
+    //Play Song
+    Music.SetMusicVolume(20);
+    Music.Play;
   end;
   CoverTime := CoverTime + TimeSkip;
   Button[Interaction].Texture2.Alpha := (CoverTime - 1) * 1.5;
   if Button[Interaction].Texture2.Alpha > 1 then Button[Interaction].Texture2.Alpha := 1;
+
+  if (CoverTime > 1) and (CoverTime <= 3.5) then
+    Music.SetMusicVolume(Round((CoverTime-1)* 20));
 
   inherited Draw;
 
@@ -1448,7 +1457,8 @@ begin
     Music.Close;
     if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
       Music.MoveTo(Music.Length / 4);
-      Music.Play;
+      //Song Fading: Not Play Directly
+      //Music.Play;
     end;
   end
   else
