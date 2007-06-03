@@ -95,6 +95,8 @@ type
       procedure DoJoker(Team: Byte);
       procedure SelectPlayers;
 
+      procedure UnLoadDetailedCover;
+
       //Extensions
       procedure DrawExtensions;
   end;
@@ -1379,13 +1381,7 @@ begin
 
   if VS > 0 then
   begin
-    CoverTime := 0;
-    Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
-    Button[Interaction].Texture2.Alpha := 0;
-
-    //0.5.0: unload old full size texture
-    if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
-      Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
+    UnLoadDetailedCover;
 
     Skip := 1;
 
@@ -1417,13 +1413,7 @@ begin
 
   if VS > 0 then
   begin
-    CoverTime := 0;
-    Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
-    Button[Interaction].Texture2.Alpha := 0;
-
-    //0.5.0: unload old full size texture
-    if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
-      Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
+    UnLoadDetailedCover;
 
     Skip := 1;
 
@@ -1470,12 +1460,7 @@ var
   Skip:   integer;
   I:      integer;
 begin
-  CoverTime := 0;
-  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
-  Button[Interaction].Texture2.Alpha := 0;
-
-  if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
-    Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
+  UnLoadDetailedCover;
 
   Interaction := High(CatSongs.Song);
   SongTarget := 0;
@@ -1807,6 +1792,18 @@ begin
     SelectRandomSong;
     SetJoker;
   end;
+end;
+
+//Detailed Cover Unloading. Unloads the Detailed, uncached Cover of the cur. Song
+procedure TScreenSong.UnLoadDetailedCover;
+begin
+  CoverTime := 0;
+  
+  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
+  Button[Interaction].Texture2.Alpha := 0;
+
+  if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+    Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
 end;
 
 procedure TScreenSong.Refresh;

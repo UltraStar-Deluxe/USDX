@@ -97,6 +97,7 @@ begin
           Music.PlayBack;
           if (VisSongs = 0) AND (Length(Button[0].Text[0].Text) > 0) then
           begin
+            ScreenSong.UnLoadDetailedCover;
             Button[0].Text[0].Text := '';
             CatSongs.SetFilter('', 0);
             SetTextFound(0);

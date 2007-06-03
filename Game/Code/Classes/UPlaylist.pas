@@ -40,6 +40,7 @@ type
       Procedure   SetPlayList(Index: Cardinal);
 
       Function    AddPlaylist(Name: String): Cardinal;
+      Procedure   DelPlaylist(const Index: Cardinal);
 
       Procedure   AddItem(const SongID: Cardinal; const iPlaylist: Integer = -1);
       Procedure   DelItem(const iItem: Cardinal; const iPlaylist: Integer = -1);
@@ -197,27 +198,29 @@ begin
     //open File for Rewriting
     AssignFile(F, PlaylistPath + Playlists[Index].Filename);
     try
-      Rewrite(F);
+      try
+        Rewrite(F);
 
-      //Write Version (not nessecary but helpful)
-      WriteLn(F, '######################################');
-      WriteLn(F, '#Ultrastar Deluxe Playlist Format v1.0');
-      WriteLn(F, '#Playlist "' + Playlists[Index].Name + '" with ' + InttoStr(Length(Playlists[Index].Items)) + ' Songs.');
-      WriteLn(F, '######################################');
+        //Write Version (not nessecary but helpful)
+        WriteLn(F, '######################################');
+        WriteLn(F, '#Ultrastar Deluxe Playlist Format v1.0');
+        WriteLn(F, '#Playlist "' + Playlists[Index].Name + '" with ' + InttoStr(Length(Playlists[Index].Items)) + ' Songs.');
+        WriteLn(F, '######################################');
 
-      //Write Name Information
-      WriteLn(F, '#Name: ' + Playlists[Index].Name);
+        //Write Name Information
+        WriteLn(F, '#Name: ' + Playlists[Index].Name);
 
-      //Write Song Information
-      WriteLn(F, '#Songs:');
+        //Write Song Information
+        WriteLn(F, '#Songs:');
 
-      For I := 0 to high(Playlists[Index].Items) do
-      begin
-        WriteLn(F, Playlists[Index].Items[I].Artist + ' : ' + Playlists[Index].Items[I].Title);
+        For I := 0 to high(Playlists[Index].Items) do
+        begin
+          WriteLn(F, Playlists[Index].Items[I].Artist + ' : ' + Playlists[Index].Items[I].Title);
+        end;
+      except
+        log.LogError('Could not write Playlistfile "' + Playlists[Index].Name + '"');
       end;
-
     finally
-      log.LogError('Could not write Playlistfile "' + Playlists[Index].Name + '"');
       CloseFile(F);
     end;
   end;
@@ -246,6 +249,9 @@ begin
   //Set CatSongsMode + Playlist Mode
   CatSongs.CatNumShow := -3;
   Mode := 2;
+
+  //Set CurPlaylist
+  CurPlaylist := Index;
 
   //Show Cat in Topleft:
   ScreenSong.ShowCatTLCustom(Format(Theme.Playlist.CatText,[Playlists[Index].Name]));
@@ -284,6 +290,47 @@ begin
 
   //Save new Playlist
   SavePlayList(Result);
+end;
+
+//----------
+//DelPlaylist - Deletes a Playlist
+//----------
+Procedure   TPlayListManager.DelPlaylist(const Index: Cardinal);
+var
+  I: Integer;
+  Filename: String;
+begin
+  If Index > High(Playlists) then
+    Exit;
+
+  Filename := PlaylistPath + Playlists[Index].Filename;
+
+  //If not FileExists or File is not Writeable then exit
+  If (Not FileExists(Filename)) OR (FileisReadOnly(Filename)) then
+    Exit;
+
+
+  //Delete Playlist from FileSystem
+  if Not DeleteFile(Filename) then
+    Exit;
+
+  //Delete Playlist from Array
+  //move all PLs to the Hole
+  For I := Index to High(Playlists)-1 do
+    PlayLists[I] := PlayLists[I+1];
+
+  //Delete last Playlist
+  SetLength (Playlists, High(Playlists));
+
+  //If Playlist is Displayed atm
+  //-> Display Songs
+  if (CatSongs.CatNumShow = -3) and (Index = CurPlaylist) then
+  begin
+    ScreenSong.UnLoadDetailedCover;
+    CatSongs.SetFilter('', 0);
+    ScreenSong.Interaction := 0;
+    ScreenSong.FixSelected;
+  end;
 end;
 
 //----------
@@ -347,8 +394,13 @@ begin
     SavePlayList(P);
   end;
 
+  //Delete Playlist if Last Song is deleted
+  if (Length(PlayLists[P].Items) = 0) then
+  begin
+    DelPlaylist(P);
+  end
   //Correct Display when Editing current Playlist
-  if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
+  else if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
     SetPlaylist(P);
 end;
 
