@@ -1053,16 +1053,38 @@ begin
       ThemeLoadText(Sing.TextP1Score, 'SingP1TextScore');
   //Added for ps3 skin
   //This one is shown in 2/4P mode
-      ThemeLoadStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
-      ThemeLoadText(Sing.TextP1TwoP, 'SingP1TwoPText');
-      ThemeLoadStatic(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
-      ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
+  //if it exists, otherwise the one Player equivaltents are used
+      if (ThemeIni.SectionExists('SingP1TwoPTextScore')) then
+      begin
+        ThemeLoadStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
+        ThemeLoadText(Sing.TextP1TwoP, 'SingP1TwoPText');
+        ThemeLoadStatic(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
+        ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
+      end
+      else
+      begin
+        Sing.StaticP1TwoP := Sing.StaticP1;
+        Sing.TextP1TwoP := Sing.TextP1;
+        Sing.StaticP1TwoPScoreBG := Sing.StaticP1ScoreBG;
+        Sing.TextP1TwoPScore := Sing.TextP1Score;
+      end;
 
   //This one is shown in 3/6P mode
-      ThemeLoadStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
-      ThemeLoadText(Sing.TextP1ThreeP, 'SingP1ThreePText');
-      ThemeLoadStatic(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
-      ThemeLoadText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
+  //if it exists, otherwise the one Player equivaltents are used
+      if (ThemeIni.SectionExists('SingP1TwoPTextScore')) then
+      begin
+        ThemeLoadStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
+        ThemeLoadText(Sing.TextP1ThreeP, 'SingP1ThreePText');
+        ThemeLoadStatic(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
+        ThemeLoadText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
+      end
+      else
+      begin
+        Sing.StaticP1ThreeP := Sing.StaticP1;
+        Sing.TextP1ThreeP := Sing.TextP1;
+        Sing.StaticP1ThreePScoreBG := Sing.StaticP1ScoreBG;
+        Sing.TextP1ThreePScore := Sing.TextP1Score;
+      end;
   //eoa
       ThemeLoadStatic(Sing.StaticP2R, 'SingP2RStatic');
       ThemeLoadText(Sing.TextP2R, 'SingP2RText');
