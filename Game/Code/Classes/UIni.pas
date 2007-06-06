@@ -38,7 +38,10 @@ type
     BeatClick:      integer;
     SavePlayback:   integer;
     Threshold:      integer;
-    //TwoPlayerMode:  integer;
+
+    //Song Preview
+    PreviewVolume: integer;
+    PreviewFading: integer;
 
     // Lyrics
     LyricsFont:     integer;
@@ -130,7 +133,10 @@ const
   IBeatClick:     array[0..1] of string = ('Off', 'On');
   ISavePlayback:  array[0..1] of string = ('Off', 'On');
   IThreshold:     array[0..3] of string = ('5%', '10%', '15%', '20%');
-  //ITwoPlayerMode: array[0..2] of string = ('Stereo', '2 Cards', 'Advanced');
+  //Song Preview
+  IPreviewVolume: array[0..10] of string = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
+  IPreviewFading: array[0..5] of string  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
+
 
   ILyricsFont:    array[0..2] of string = ('Plain', 'OLine1', 'OLine2');
   ILyricsEffect:  array[0..3] of string = ('Simple', 'Zoom', 'Slide', 'Ball');
@@ -315,6 +321,15 @@ begin
   Tekst := IniFile.ReadString('Sound', 'Threshold', IThreshold[2]);
   for Pet := 0 to High(IThreshold) do
     if Tekst = IThreshold[Pet] then Ini.Threshold := Pet;
+
+  //Song Preview
+  Tekst := IniFile.ReadString('Sound', 'PreviewVolume', IPreviewVolume[7]);
+  for Pet := 0 to High(IPreviewVolume) do
+    if Tekst = IPreviewVolume[Pet] then Ini.PreviewVolume := Pet;
+
+  Tekst := IniFile.ReadString('Sound', 'PreviewFading', IPreviewFading[1]);
+  for Pet := 0 to High(IPreviewFading) do
+    if Tekst = IPreviewFading[Pet] then Ini.PreviewFading := Pet;
 
   // Lyrics Font
   Tekst := IniFile.ReadString('Lyrics',    'LyricsFont',   ILyricsFont[1]);
@@ -581,6 +596,13 @@ begin
   // Threshold
   Tekst := IThreshold[Ini.Threshold];
   IniFile.WriteString('Sound',    'Threshold',    Tekst);
+
+  // Song Preview
+  Tekst := IPreviewVolume[Ini.PreviewVolume];
+  IniFile.WriteString('Sound',    'PreviewVolume',    Tekst);
+
+  Tekst := IPreviewFading[Ini.PreviewFading];
+  IniFile.WriteString('Sound',    'PreviewFading',    Tekst);
 
   // SavePlayback
   Tekst := ISavePlayback[Ini.SavePlayback];

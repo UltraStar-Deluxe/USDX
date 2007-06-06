@@ -59,7 +59,7 @@ type
       procedure InitializePlayback;
       procedure InitializeRecord;
       procedure SetVolume(Volume: integer);
-      procedure SetMusicVolume(Volume: Byte);
+      procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
       function Open(Name: string): boolean; // true if succeed
       procedure Rewind;
@@ -351,14 +351,14 @@ begin
   BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, Volume);
 end;
 
-procedure TMusic.SetMusicVolume(Volume: Byte);
+procedure TMusic.SetMusicVolume(Volume: Integer);
 begin
   //Max Volume Prevention
   if Volume > 100 then
     Volume := 100;
 
   //Set Volume
-  BASS_ChannelSetAttributes (Bass, -1, Integer(Volume), -101);
+  BASS_ChannelSetAttributes (Bass, -1, Volume, -101);
 end;
 
 procedure TMusic.SetLoop(Enabled: boolean);
