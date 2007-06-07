@@ -1325,6 +1325,10 @@ begin
   If (Ini.PreviewVolume <> 100) or (Ini.PreviewFading <> 0) then
     Music.SetMusicVolume(100);
 
+  //If Preview is deactivated: Load MUsicfile now
+  If (Ini.PreviewVolume = 0) then
+    Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
+
   //When hide then Stop Music (For Party Mode Popup on Exit)
   if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) and (Music <> nil) then
     Music.Stop;
@@ -1491,10 +1495,10 @@ begin
       if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
         Music.MoveTo(Music.Length / 4);
         //If Song Fading is activated then don't Play directly, and Set Volume to Null, else Play normal
-        if (Ini.PreviewVolume <> 0) then
-          Music.SetMusicVolume(0)
+        if (Ini.PreviewFading = 0) then
+          Music.Play
         else
-          Music.Play;
+          Music.SetMusicVolume(0);
       end;
     end
     else
