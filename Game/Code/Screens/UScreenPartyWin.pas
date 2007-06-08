@@ -93,6 +93,14 @@ procedure TScreenPartyWin.onShow;
 var
   I: Integer;
   Placing: TeamOrderArray;
+  Function GetTeamColor(Team: Byte): Cardinal;
+  var
+    NameString: String;
+  begin
+    NameString := 'P' + InttoStr(Team+1) + 'Dark';
+
+    Result := ColorExists(NameString);
+  end;
 begin
   //Get Team Placing
   Placing := PartySession.GetTeamOrder;
@@ -110,6 +118,29 @@ begin
     Static[StaticTeam1].Visible := True;
     Static[StaticTeam1BG].Visible := True;
     Static[StaticTeam1Deco].Visible := True;
+
+    //Set Static Color to Team Color
+    If (Theme.PartyWin.StaticTeam1BG.Color = 'TeamColor') then
+    begin
+      I := GetTeamColor(Placing[0]);
+      if (I <> -1) then
+      begin
+        Static[StaticTeam1BG].Texture.ColR := Color[I].RGB.R;
+        Static[StaticTeam1BG].Texture.ColG := Color[I].RGB.G;
+        Static[StaticTeam1BG].Texture.ColB := Color[I].RGB.B;
+      end;
+    end;
+
+    If (Theme.PartyWin.StaticTeam1.Color = 'TeamColor') then
+    begin
+      I := GetTeamColor(Placing[0]);
+      if (I <> -1) then
+      begin
+        Static[StaticTeam1].Texture.ColR := Color[I].RGB.R;
+        Static[StaticTeam1].Texture.ColG := Color[I].RGB.G;
+        Static[StaticTeam1].Texture.ColB := Color[I].RGB.B;
+      end;
+    end;
   end
   else
   begin
@@ -130,6 +161,29 @@ begin
     Static[StaticTeam2].Visible := True;
     Static[StaticTeam2BG].Visible := True;
     Static[StaticTeam2Deco].Visible := True;
+
+    //Set Static Color to Team Color
+    If (Theme.PartyWin.StaticTeam2BG.Color = 'TeamColor') then
+    begin
+      I := GetTeamColor(Placing[1]);
+      if (I <> -1) then
+      begin
+        Static[StaticTeam2BG].Texture.ColR := Color[I].RGB.R;
+        Static[StaticTeam2BG].Texture.ColG := Color[I].RGB.G;
+        Static[StaticTeam2BG].Texture.ColB := Color[I].RGB.B;
+      end;
+    end;
+
+    If (Theme.PartyWin.StaticTeam2.Color = 'TeamColor') then
+    begin
+      I := GetTeamColor(Placing[1]);
+      if (I <> -1) then
+      begin
+        Static[StaticTeam2].Texture.ColR := Color[I].RGB.R;
+        Static[StaticTeam2].Texture.ColG := Color[I].RGB.G;
+        Static[StaticTeam2].Texture.ColB := Color[I].RGB.B;
+      end;
+    end;
   end
   else
   begin
@@ -150,6 +204,29 @@ begin
     Static[StaticTeam3].Visible := True;
     Static[StaticTeam3BG].Visible := True;
     Static[StaticTeam3Deco].Visible := True;
+
+    //Set Static Color to Team Color
+    If (Theme.PartyWin.StaticTeam3BG.Color = 'TeamColor') then
+    begin
+      I := GetTeamColor(Placing[2]);
+      if (I <> -1) then
+      begin
+        Static[StaticTeam3BG].Texture.ColR := Color[I].RGB.R;
+        Static[StaticTeam3BG].Texture.ColG := Color[I].RGB.G;
+        Static[StaticTeam3BG].Texture.ColB := Color[I].RGB.B;
+      end;
+    end;
+
+    If (Theme.PartyWin.StaticTeam3.Color = 'TeamColor') then
+    begin
+      I := GetTeamColor(Placing[2]);
+      if (I <> -1) then
+      begin
+        Static[StaticTeam3].Texture.ColR := Color[I].RGB.R;
+        Static[StaticTeam3].Texture.ColG := Color[I].RGB.G;
+        Static[StaticTeam3].Texture.ColB := Color[I].RGB.B;
+      end;
+    end;
   end
   else
   begin
