@@ -381,7 +381,6 @@ begin
               end
               else if (Mode = 1) then //PartyMode -> Show Menu
               begin
-                //Is this Right?
                 if (Ini.PartyPopup = 1) then
                   ScreenSongMenu.MenuShow(SM_Party_Main)
                 else
@@ -427,93 +426,83 @@ begin
 
       SDLK_DOWN:
         begin
-        if (Mode = 0) then
-        begin
-{          if Length(Songs.Song) > 0 then begin
-            Music.PlayChange;
-            InteractNext;
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then Music.Play;
-            SetScroll;
-          end;}
-
-          //Cat Change Hack
-          if Ini.Tabs_at_startup = 1 then
+          if (Mode = 0) then
+          begin
+            //Only Change Cat when not in Playlist or Search Mode
+            if (CatSongs.CatNumShow > -2) then
             begin
-            I := Interaction;
-            if I <= 0 then I := 1;
-
-            while not catsongs.Song[I].Main do
+              //Cat Change Hack
+              if Ini.Tabs_at_startup = 1 then
               begin
-              Inc (I);
-              if (I > high(catsongs.Song)) then
-                I := low(catsongs.Song);
+                I := Interaction;
+                if I <= 0 then I := 1;
+
+                while not catsongs.Song[I].Main do
+                begin
+                  Inc (I);
+                  if (I > high(catsongs.Song)) then
+                    I := low(catsongs.Song);
+                end;
+
+                Interaction := I;
+
+                //Show Cat in Top Left Mod
+                ShowCatTL (Interaction);
+
+                CatSongs.ClickCategoryButton(Interaction);
+                SelectNext;
+                FixSelected;
+
+                //Play Music:
+                Music.PlayChange;
+                ChangeMusic;
+
               end;
 
-            Interaction := I;
-
-            //Show Cat in Top Left Mod
-            ShowCatTL (Interaction);
-
-            CatSongs.ClickCategoryButton(Interaction);
-            SelectNext;
-            FixSelected;
-
-            //Play Music:
-            Music.PlayChange;
-            ChangeMusic;
-
+            //
+            //Cat Change Hack End}
             end;
-
-          //
-          //Cat Change Hack End}
-        end;
+          end;
         end;
       SDLK_UP:
         begin
-        if (Mode = 0) then
-        begin
-{          if Length(Songs.Song) > 0 then begin
-            Music.PlayChange;
-            InteractPrev;
-            Music.Close;
-            if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then Music.Play;
-            SetScroll;
-          end;}
-          //Cat Change Hack
-          if Ini.Tabs_at_startup = 1 then
+          if (Mode = 0) then
+          begin
+            //Only Change Cat when not in Playlist or Search Mode
+            if (CatSongs.CatNumShow > -2) then
             begin
-            I := Interaction;
-            I2 := 0;
-            if I <= 0 then I := 1;
-
-            while not catsongs.Song[I].Main or (I2 = 0) do
+              //Cat Change Hack
+              if Ini.Tabs_at_startup = 1 then
               begin
-              if catsongs.Song[I].Main then
-                Inc(I2);
-              Dec (I);
-              if (I < low(catsongs.Song)) then
-                I := high(catsongs.Song);
+                I := Interaction;
+                I2 := 0;
+                if I <= 0 then I := 1;
+
+                while not catsongs.Song[I].Main or (I2 = 0) do
+                begin
+                  if catsongs.Song[I].Main then
+                    Inc(I2);
+                  Dec (I);
+                  if (I < low(catsongs.Song)) then
+                    I := high(catsongs.Song);
+                end;
+
+                Interaction := I;
+
+                //Show Cat in Top Left Mod
+                ShowCatTL (I);
+
+                CatSongs.ClickCategoryButton(I);
+                SelectNext;
+                FixSelected;
+
+                //Play Music:
+                Music.PlayChange;
+                ChangeMusic;
               end;
-
-            Interaction := I;
-
-            //Show Cat in Top Left Mod
-            ShowCatTL (I);
-
-            CatSongs.ClickCategoryButton(I);
-            SelectNext;
-            FixSelected;
-
-            //Play Music:
-            Music.PlayChange;
-            ChangeMusic;
-
             end;
-
-          //
-          //Cat Change Hack End}
-        end;
+            //Cat Change Hack End}
+          end;
         end;
 
       SDLK_RIGHT:
