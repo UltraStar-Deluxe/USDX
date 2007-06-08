@@ -27,9 +27,10 @@ const
   SM_Playlist_Add = 64 or 2;
   SM_Playlist_New = 64 or 3;
 
-  SM_Playlist_Del = 64 or 5;
+  SM_Playlist_DelItem = 64 or 5;
 
   SM_Playlist_Load = 64 or 8 or 1;
+  SM_Playlist_Del  = 64 or 8 or 5;
 
 
   SM_Party_Main = 128 or 1;
@@ -42,7 +43,7 @@ var
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UPlaylist;
+uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UPlaylist, USongs;
 
 function TScreenSongMenu.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -265,10 +266,10 @@ begin
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
       end;
 
-    SM_PlayList_Del:
+    SM_Playlist_DelItem:
       begin
         CurMenu := sMenu;
-        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DEL');
+        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DELITEM');
 
         Button[0].Visible := True;
         Button[1].Visible := False;
@@ -285,12 +286,15 @@ begin
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_LOAD');
 
-        Button[0].Visible := False;
+        //Show Delete Curent Playlist Button when Playlist is opened
+        Button[0].Visible := (CatSongs.CatNumShow = -3);
+
         Button[1].Visible := False;
         Button[2].Visible := False;
         Button[3].Visible := True;
         SelectsS[0].Visible := True;
 
+        Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_DELCURRENT');
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_LOAD');
 
         SetLength(ISelections, Length(PlaylistMan.Playlists));
@@ -309,6 +313,21 @@ begin
           Button[2].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_NOEXISTING');
           Interaction := 2;
         end;
+      end;
+
+    SM_Playlist_Del:
+      begin
+        CurMenu := sMenu;
+        Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DEL');
+
+        Button[0].Visible := True;
+        Button[1].Visible := False;
+        Button[2].Visible := False;
+        Button[3].Visible := True;
+        SelectsS[0].Visible := False;
+
+        Button[0].Text[0].Text := Language.Translate('SONG_MENU_YES');
+        Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
       end;
 
 
@@ -421,7 +440,7 @@ begin
           2: //Button 3
             begin
               //Show add to Playlist Menu
-              MenuShow(SM_Playlist_Del);
+              MenuShow(SM_Playlist_DelItem);
             end;
 
           3: //SelectSlide 3
@@ -488,7 +507,7 @@ begin
         end;
       end;
 
-    SM_PlayList_Del:
+    SM_Playlist_DelItem:
       begin
         Visible := False;
         Case Interaction of
@@ -509,11 +528,33 @@ begin
     SM_Playlist_Load:
       begin
         Case Interaction of
+          0: //Button 1 (Delete Playlist)
+            begin
+              MenuShow(SM_Playlist_Del);
+            end;
           4: //Button 4
             begin
               //Load Playlist
               PlaylistMan.SetPlayList(SelectValue);
               Visible := False;
+            end;
+        end;
+      end;
+
+    SM_Playlist_Del:
+      begin
+        Visible := False;
+        Case Interaction of
+          0: //Button 1
+            begin
+              //Delete
+              PlayListMan.DelPlaylist(PlaylistMan.CurPlayList);
+              Visible := False;
+            end;
+
+          4: //Button 4
+            begin
+              MenuShow(SM_Playlist_Load);
             end;
         end;
       end;
