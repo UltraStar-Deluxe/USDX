@@ -291,8 +291,8 @@ var
 maxlength: Real;
 I: Integer;
 begin
-  SetFontStyle(TextOpt[0].Style);
-  SetFontSize(TextOpt[0].Size);
+  SetFontStyle(0{Text.Style});
+  SetFontSize(Text.Size);
   maxlength := 0;
 
   for I := low(TextOptT) to high (TextOptT) do
@@ -329,7 +329,11 @@ begin
 
       //Generate Positions
       //TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * (I + 0.5);
-      TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * I;
+      if (I <> High(TextOpt)) OR (High(TextOpt) = 0) OR (Length(TextOptT) = Lines) then
+        TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * I
+      else
+        TextOpt[I].X := TextureSBG.X + TextureSBG.W - maxlength;
+
       TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H / 2) - 1.5 * Text.Size{20};
 
       //Better Look with 2 Options

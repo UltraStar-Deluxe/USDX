@@ -35,7 +35,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 4 then begin
+          if SelInteraction = 6 then begin
             Ini.Save;
             Music.PlayBack;
             FadeTo(@ScreenOptions);
@@ -47,14 +47,14 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
             Music.PlayOption;
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
             Music.PlayOption;
             InteractDec;
           end;
@@ -75,6 +75,11 @@ begin
   AddSelect(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
   AddSelect(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
   AddSelect(Theme.OptionsSound.SelectThreshold, Ini.Threshold, IThreshold);
+
+  //Song Preview
+  AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewVolume, Ini.PreviewVolume, IPreviewVolume);
+  AddSelectSlide
+  (Theme.OptionsSound.SelectSlidePreviewFading, Ini.PreviewFading, IPreviewFading);
 
   AddButton(Theme.OptionsSound.ButtonExit);
   if (Length(Button[0].Text)=0) then

@@ -446,7 +446,9 @@ type
     SelectClickAssist:    TThemeSelect;
     SelectBeatClick:      TThemeSelect;
     SelectThreshold:      TThemeSelect;
-    //SelectTwoPlayerMode:  TThemeSelect;
+    //Song Preview
+    SelectSlidePreviewVolume: TThemeSelectSlide;
+    SelectSlidePreviewFading: TThemeSelectSlide;
     ButtonExit:           TThemeButton;
   end;
 
@@ -1209,7 +1211,10 @@ begin
       ThemeLoadSelect(OptionsSound.SelectClickAssist, 'OptionsSoundSelectClickAssist');
       ThemeLoadSelect(OptionsSound.SelectBeatClick, 'OptionsSoundSelectBeatClick');
       ThemeLoadSelect(OptionsSound.SelectThreshold, 'OptionsSoundSelectThreshold');
-      //ThemeLoadSelect(OptionsSound.SelectTwoPlayerMode, 'OptionsSoundSelectTwoPlayerMode');
+      //Song Preview
+      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume, 'OptionsSoundSelectSlidePreviewVolume');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading, 'OptionsSoundSelectSlidePreviewFading');
+
       ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
 
       // Options Lyrics

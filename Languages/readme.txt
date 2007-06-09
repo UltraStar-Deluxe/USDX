@@ -13,6 +13,10 @@ SING_TOOLS=Tools
 SING_STATS=stats
 SING_STATS_DESC=View the Statistics
 
+#Sound Options Screen
+SING_OPTIONS_SOUND_PREVIEWVOLUME=Preview Volume
+SING_OPTIONS_SOUND_PREVIEWFADING=Preview Fading
+
 #Advanced Options Screen
 SING_OPTIONS_ADVANCED=advanced
 SING_OPTIONS_ADVANCED_DESC=advanced options
