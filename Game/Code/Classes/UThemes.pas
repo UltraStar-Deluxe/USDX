@@ -1002,6 +1002,11 @@ begin
         Song.Equalizer.ColR := Color[I].RGB.R;
         Song.Equalizer.ColG := Color[I].RGB.G;
         Song.Equalizer.ColB := Color[I].RGB.B;
+      end
+      else begin
+        Song.Equalizer.ColR := 0;
+        Song.Equalizer.ColG := 0;
+        Song.Equalizer.ColB := 0;
       end;
       //Load Equalizer Pos and Size from Theme Mod End
 
