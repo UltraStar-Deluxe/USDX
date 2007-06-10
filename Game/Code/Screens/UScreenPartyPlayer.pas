@@ -39,6 +39,7 @@ uses UGraphic, UMain, UIni, UTexture, UParty;
 function TScreenPartyPlayer.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 var
   I, J:    integer;
+  SDL_ModState:  Word;
   procedure IntNext;
   begin
     repeat
@@ -54,6 +55,10 @@ var
 begin
   Result := true;
   If (PressedDown) Then
+
+    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
+
   begin // Key Down
     case PressedKey of
       SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
@@ -63,53 +68,113 @@ begin
 
       // Templates for Names Mod
       SDLK_F1:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[0];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[0] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[0];
+         end;
       SDLK_F2:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[1];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[1] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[1];
+         end;
       SDLK_F3:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[2];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[2] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[2];
+         end;
       SDLK_F4:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[3];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[3] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[3];
+         end;
       SDLK_F5:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[4];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[4] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[4];
+         end;
       SDLK_F6:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[5];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[5] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[5];
+         end;
       SDLK_F7:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[6];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[6] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[6];
+         end;
       SDLK_F8:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[7];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[7] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[7];
+         end;
       SDLK_F9:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[8];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[8] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[8];
+         end;
       SDLK_F10:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[9];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[9] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[9];
+         end;
       SDLK_F11:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[10];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[10] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[10];
+         end;
       SDLK_F12:
-        begin
-          Button[Interaction].Text[0].Text := Ini.NameTemplate[11];
-        end;
+       if (SDL_ModState = KMOD_LALT) then
+         begin
+           Ini.NameTemplate[11] := Button[Interaction].Text[0].Text;
+         end
+         else
+         begin
+           Button[Interaction].Text[0].Text := Ini.NameTemplate[11];
+         end;
 
       SDLK_BACKSPACE:
         begin
