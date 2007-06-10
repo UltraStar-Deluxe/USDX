@@ -1533,9 +1533,10 @@ begin
 
     B:=0;
     Pos := 0;
-    Res := floor(92/Theme.Song.Equalizer.Bands);//How much channels are used for one Band
+    Res := ceil(92/Theme.Song.Equalizer.Bands);//How much channels are used for one Band
+
     //Change Lengths
-    for I := 0 to 92 do
+    for I := 0 to (Res * Theme.Song.Equalizer.Bands - 1) do
     begin
       A := floor(I/Res);
 
@@ -1589,7 +1590,7 @@ begin
   PosY := Theme.Song.Equalizer.Y;
   PosX := Theme.Song.Equalizer.X;
 
-  For I := 0 to Theme.Song.Equalizer.Bands do
+  For I := 0 to Theme.Song.Equalizer.Bands-1 do
   begin
     if Theme.Song.Equalizer.Direction then
       PosY := Theme.Song.Equalizer.Y //+ (Theme.Song.Equalizer.H + Theme.Song.Equalizer.Space) * Theme.Song.Equalizer.Length
