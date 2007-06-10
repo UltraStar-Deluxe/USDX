@@ -1109,15 +1109,15 @@ begin
       ThemeLoadText(Sing.TextP3RScore, 'SingP3RTextScore');
 
       //Line Bonus Texts
-      Sing.LineBonusText[0] := Language.Translate('LINEBONUS_WORST');
+      Sing.LineBonusText[0] := Language.Translate('POPUP_AWFUL');
       Sing.LineBonusText[1] := Sing.LineBonusText[0];
-      Sing.LineBonusText[2] := Language.Translate('LINEBONUS_BAD');
-      Sing.LineBonusText[3] := Language.Translate('LINEBONUS_NORMAL');
-      Sing.LineBonusText[4] := Sing.LineBonusText[3];
-      Sing.LineBonusText[5] := Language.Translate('LINEBONUS_GOOD');
-      Sing.LineBonusText[6] := Language.Translate('LINEBONUS_BETTER');
-      Sing.LineBonusText[7] := Sing.LineBonusText[6];
-      Sing.LineBonusText[8] := Language.Translate('LINEBONUS_PERFECT');
+      Sing.LineBonusText[2] := Language.Translate('POPUP_POOR');
+      Sing.LineBonusText[3] := Language.Translate('POPUP_BAD');
+      Sing.LineBonusText[4] := Language.Translate('POPUP_NOTBAD');
+      Sing.LineBonusText[5] := Language.Translate('POPUP_GOOD');
+      Sing.LineBonusText[6] := Language.Translate('POPUP_GREAT');
+      Sing.LineBonusText[7] := Language.Translate('POPUP_AWESOME');
+      Sing.LineBonusText[8] := Language.Translate('POPUP_PERFECT');
 
       // Score
       ThemeLoadBasic(Score, 'Score');
