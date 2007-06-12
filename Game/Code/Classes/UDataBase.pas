@@ -209,7 +209,7 @@ begin
   //Create Query
   Case Typ of
     0: Query := 'SELECT `Player` , `Difficulty` , `Score` , `Artist` , `Title` FROM `US_Scores` INNER JOIN `US_Songs` ON (`SongID` = `ID`) ORDER BY `Score`';
-    1: Query := 'SELECT `Player` , (Sum(`Score`) / COUNT(`Score`)) FROM `US_Scores` GROUP BY `Player` ORDER BY (Sum(`Score`) / COUNT(`Score`))';
+    1: Query := 'SELECT `Player` , ROUND (Sum(`Score`) / COUNT(`Score`)) FROM `US_Scores` GROUP BY `Player` ORDER BY (Sum(`Score`) / COUNT(`Score`))';
     2: Query := 'SELECT `Artist` , `Title` , `TimesPlayed` FROM `US_Songs` ORDER BY `TimesPlayed`';
     3: Query := 'SELECT `Artist` , Sum(`TimesPlayed`) FROM `US_Songs` GROUP BY `Artist` ORDER BY Sum(`TimesPlayed`)';
   end;
@@ -252,7 +252,7 @@ begin
 
         1:begin
           Stats[TableData.Row].Player := TableData.Fields[0];
-          Stats[TableData.Row].AverageScore := TableData.FieldAsInteger(1);
+          Stats[TableData.Row].AverageScore := StrtoIntDef(TableData.Fields[1], 0);
         end;
 
         2:begin
