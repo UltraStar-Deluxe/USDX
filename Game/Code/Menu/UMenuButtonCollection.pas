@@ -36,7 +36,7 @@ begin
 end;
 
 procedure TButtonCollection.Draw;
-var I: Integer;
+var I, J: Integer;
 begin
   inherited;
   //If fading is activated, Fade Child Buttons
@@ -46,10 +46,19 @@ begin
       if (ScreenButton^[I].Parent = Parent) then
       begin
         if (FadeProgress < 0.5) then
-          ScreenButton^[I].Visible := SelectBool
+        begin
+          ScreenButton^[I].Visible := SelectBool;
+
+          For J := 0 to High(ScreenButton^[I].Text) do
+            ScreenButton^[I].Text[J].Visible := SelectBool;
+        end
         else
+        begin
           ScreenButton^[I].Texture.Alpha := (FadeProgress-0.666)*3;
-        //ScreenButton^[I].Text[0].
+          
+          For J := 0 to High(ScreenButton^[I].Text) do
+            ScreenButton^[I].Text[J].Alpha := (FadeProgress-0.666)*3;
+        end;
       end;
   end;
 end;

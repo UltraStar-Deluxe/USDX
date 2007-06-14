@@ -559,6 +559,10 @@ begin
     begin
       Interactions[High(Interactions)].Typ := iBCollectionChild;
       Button[Result].Visible := False;
+
+      for BT := 0 to BTLen-1 do
+        Button[Result].Text[BT].Alpha := 0;
+
       Button[Result].Parent := ThemeButton.Parent;
       if (ButtonCollection[ThemeButton.Parent-1].Fade) then
         Button[Result].Texture.Alpha := 0;

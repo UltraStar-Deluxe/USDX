@@ -23,6 +23,7 @@ type
       ColR:   real;
       ColG:   real;
       ColB:   real;
+      Alpha:  real;
       Int:    real;
       Style:  integer;
       Visible:  boolean;
@@ -225,7 +226,7 @@ begin
     SetFontStyle(Style);
     SetFontSize(Size);
     SetFontItalic(False);
-    glColor3f(ColR*Int, ColG*Int, ColB*Int);
+    glColor4f(ColR*Int, ColG*Int, ColB*Int, Alpha);
 
     //If Selected Set Blink...
     if SelectBool then
@@ -303,6 +304,7 @@ end;
 constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string);
 begin
   inherited Create;
+  Alpha := 1;
   X := ParX;
   Y := ParY;
   W := ParW;
