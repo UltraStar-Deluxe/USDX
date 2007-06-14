@@ -38,36 +38,6 @@ implementation
 uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USongs, UScreenSong, ULog;
 
 function TScreenSongJumpto.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
-  function IsVisible: Boolean;
-  begin
-    Result := True;
-    if (Interactions[Interaction].Typ = 0) then
-    begin
-      Result := Button[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 1) then
-    begin
-      //Result := Selects[Interactions[Interaction].Num].Visible;
-    end
-    else if (Interactions[Interaction].Typ = 3) then
-    begin
-      Result := SelectsS[Interactions[Interaction].Num].Visible;
-    end;
-  end;
-
-  Procedure SelectNext;
-  begin
-    repeat
-      InteractNext;
-    until IsVisible;
-  end;
-
-  Procedure SelectPrev;
-  begin
-    repeat
-      InteractPrev;
-    until IsVisible;
-  end;
 begin
   Result := true;
   If (PressedDown) Then
@@ -109,33 +79,31 @@ begin
       // functions like this one, called so many times
       SDLK_DOWN:
         begin
-          SelectNext;
-          Button[0].Text[0].Selected := (Interaction = 0);
+          {SelectNext;
+          Button[0].Text[0].Selected := (Interaction = 0);}
         end;
 
       SDLK_UP:
         begin
-          SelectPrev;
-          Button[0].Text[0].Selected := (Interaction = 0);
+          {SelectPrev;
+          Button[0].Text[0].Selected := (Interaction = 0); }
         end;
 
       SDLK_RIGHT:
         begin
-          if (Interaction=1) then
-          begin
-            InteractInc;
-            if (Length(Button[0].Text[0].Text) > 0) then
-              SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
-          end;
+          Interaction := 1;
+          InteractInc;
+          if (Length(Button[0].Text[0].Text) > 0) then
+            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
+          Interaction := 0;
         end;
       SDLK_LEFT:
         begin
-          if (Interaction=1) then
-          begin
-            InteractDec;
-            if (Length(Button[0].Text[0].Text) > 0) then
-              SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
-          end;
+          Interaction := 1;
+          InteractDec;
+          if (Length(Button[0].Text[0].Text) > 0) then
+            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
+          Interaction := 0;
         end;
     end;
   end;
