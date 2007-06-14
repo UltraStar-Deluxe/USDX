@@ -30,6 +30,9 @@ Upd: Added Playlist Support
 Upd: Song Search (with Screen interface)
 Upd: Jump to Letter Hotkey
 Upd: Menu in Songscreen similar to Singstars
+Upd: Ability to change Playernames before singing
+Upd: Ability to change Song Preview Volume
+Upd: Song Preview Fade in
 
 --------------
 Party Mode
@@ -62,8 +65,9 @@ Upd: Add Advanced Screen with some new Options.
 Upd: Add a Question PopUp before exiting
 Upd: Show real Note in Editor (C, F#, etc.)
 Fix: No crashes caused by corrupted Textfiles anymore.
-     Added Errormessage Popup inGame and Jump Back to Songscreen. So even the Party Mode,
+     Added inGame Errormessage Popup and Jump Back to Songscreen. So even the Party Mode,
      isn't interuppted.
+Fix: Workaround for Cover and BG JPG Errors
 Fix: Videosize can now be changed again
 Fix: Bug in LineBonus Popup that can end up in a Memory Overflow
 Fix: Bug in SelectSlide with less then 3 Options, No Overlapping anymore. Automatic resizing
@@ -78,110 +82,108 @@ UltraStar 0.5.0 ultra-star.dl.am Mod X-Mas Edition (by Mota und Whiteshark)
 -----------------------------
 Upd: New faster and Error resistant Header reader
 Upd: Bewertungs Bar (Singstar Like)
-Upd: PhrasenBonus + Popups
+Upd: LineBonus + Popups
 
-Upd: Skin verschönert
+Upd: Skin beautified
 
 UltraStar 0.5.0 ultra-star.dl.am Mod r10 (by Mota und Whiteshark)
 -----------------------------
-Fix: Ein kleiner Bug bei der Pause Funktion wurde gefixt.
-Fix: Ein Bug im Theme System wurde behoben. (SelectSlide konnte nicht weniger als 3 Einträge enthalten.)
-Fix: Skin, Beschränkung auf 4 Skins aufgehoben
-Fix: Noten Texturen werden anders/besser eingelesen
+Fix: Minor Bug in Pause Method fixed.
+Fix: Fixed a Bug in Theme System
+Fix: New Note Texture Reading
 
-Upd: Zahlen bei der Songauswahl sind jetzt sinnvoller.
-Upd: Anzahl der Songs die eine Kategorie beinhaltet wird in der Übersicht angezeigt
-Upd: Neuer Notenskin
+Upd: Numbers in SongSelection are now more meaningful
+Upd: Show Count of Songs in Category in Category Overview
+Upd: New Note Texture
 
-Upd: LanguageTag + Sortierung
-Upd: Unterstützung der Covers.ini aus 0.5.1 - Für alle Sortier-Funtionen. Die alte Möglichkeit ohne die Covers.ini ist weiterhin möglich, genauso wie eine Kombination beider Methoden.
+Upd: LanguageTag + Sorting
+Upd: Support for the Covers.ini from 0.5.1 - for all sorting options. The old behaviour without Covers.ini is also possible, just as well as a combination of both methods.
 
 UltraStar 0.5.0 ultra-star.dl.am Mod r9 (Release by Whiteshark)
 -----------------------------
 
-Upd: BPM und VideoGap Angaben mit Punkt werden jetzt auch eingelesen. Es wird aber in diesem Fall in der Error.log eine meldung mit dem Namen des Fehlerhaften Songs ausgegeben.
-Upd: Sollte beim Einlesen eines Songs(speziell beim Header) ein Fehler auftreten wird in der Error.log der Songname + Zeile ausgegeben.
+Upd: BPM and VideoGap Can now be read, too. But there will be an Errormessage in Error.log
 
-Upd, Beta: Pause. P drücken und der Song wird pausiert, nocheinmal P und es kann wieder gesungen werden. Noch keine Anzeige ob Pause aktiviert wird, und noch kein Pause Menü.
-
-bekannte Probleme:
-Stellt man die Aufnahme Funktion ein, kommt es zu einem extremen CPU-Zeit verbrauch und es fängt an zu Laggen
+Upd, Beta: Pause. Press P and the Song will be paused, press P again and it will be continued. Pause Display and Menu missing.
 
 UltraStar 0.5.0 ultra-star.dl.am Mod r8b (Release by Whiteshark)
 -----------------------------
-Fix: Random Funktionen funktionieren alle ohne Fehler
-Fix: In der Kategorieauswahl wird jetzt beim Start immer die erste Kategorie angezeigt
-Fix: Musik wird nach Kategoriewechsel korrekt abgespielt
-Fix: Richtiger Text wird jetzt nicht mehr zu falscher Musik abgespielt
-Fix: Nach Beenden eines Songs ist dieser jetzt wieder in der Übersicht angewählt
-Fix: Midi-konvertor Bug behoben (Nur Freestyle Noten anstatt Normalen)
+Fix: Random Methods now work without Errors
+Fix: First Category is now shown at Startup.
+Fix: Music is played correctly after categorychange
+Fix: No wrong MP3 playing anymore
+Fix: After exit Singing Mode the Song is chossen in Song Screen
+Fix: Midi-konvertor Bug (Only Freestyle Notes instead of normal)
 
-Thx to: dennisthemenace und mota für die super Bug-Reports :P
-
-Upd: doomhammers Cover sind Integriert: thx to doomhammer
+Thx to: dennisthemenace and mota for Bug-Reports :P
 
 UltraStar 0.5.0 ultra-star.dl.am Mod r8a (Release by Whiteshark)
 -----------------------------
-Fix: Theme System konnte nicht ausgewählt werden (workaround: Nur bis zu 4 Themes möglich)
-Fix: Richtige Kategorie wird angezeigt nach Druck von Escape
+Fix: Themes could not be Selected (workaround: Only 4 Themes possible)
+Fix: Correct category is displayed after pressing Escape
 
-Upd: Neue Random Funktionen: R + [Strg]: Random in allen Kategorien (Hier wird die Kategorie oben noch falsch angezeigt); R + [Shift]: Zufällige Kategorie
-Upd: Gerade gewählte Kategorie wird oben links in der Ecke gezeigt
+Upd: new Random functions: R + [Strg]: Random in all Categorys;
+                           R + [Shift]: Random Category
+Upd: Chossen Category is displayed in the top left
    
 UltraStar 0.5.0 ultra-star.dl.am Mod r8 (Release by Whiteshark)
 -----------------------------
-Fix: Creatorbug behoben
-Fix: Wenn Tabs=on kam es manchmal vor das der angewählte Song nicht mit dem Angezeigten übereingestimmt hat
+Fix: Creatorbug fixed
+Fix: Tabs=on Preview Bug
 
-Upd: Theme System komplett
-   -Bei Start nach Themes Suchen
-   -Den ThemeOptions Screen ändern
-Upd: Neue Farben für Themes :)
-Upd: kleine änderungen am Editor
-   -Leerzeichen im Header werden automatisch korrigiert
-   -Header ist nicht mehr Case Sensitive
+Upd: Theme System ready
+   -Look for Themes at Startup
+   -ThemeOptions Screen working
+Upd: New Theme Colors :)
+Upd: Little changes at Editor
+   -Spaces in Header are corrected automaticaly
+   -Header is not Case Sensitive anymore
 
-Upd: Skin Ordner gesäubert, Es gibt jetzt 2 Skins: Motas und der Original Skin
-Upd: Ordner haben ihr eigenes Cover, welches angezeigt wird falls kein spezielles Cover vorhanden ist
-Upd: Der BewertungsText (Ultrastar, Singstar, etc.) kann jetzt übersetzt werden
+Upd: Skin Folder Cleaned up, There are 2 Skins now: Motas and the Original Skin
+Upd: Categorys have their own noCover Image
+Upd: Rating Text (Ultrastar, Singstar, etc.) can now be Translated
 
-Upd: Falls eine Sprache nicht komplett ist werden die nicht übersetzten Texte, mit der Englischen Sprachdatei übersetzt. (Falls es zu nicht kompletten Sprachdateien kommt)
+Upd: Inomplete Languages are corrected with Entrys from the English Language File
 
-Upd: neues Kategorie System:
-   -Wenn eine Kategorie angewählt wird, werden nur die enthaltenden Songs angezeigt.
-   -Mit Escape gehts zurück in die Kategorie Auswahl
-   -Mit Hoch und Runter kann die Kategorie gewechselt werden.
+Upd: new Category System:
+   -If a category is choosen only the Songs from this category are shown
+   -Press Escape to leave a category
+   -Press up or down to change the category.
 
 UltraStar 0.5.0 mota patch r7 (Release by Mota)
 -----------------------------
-- Neues Notendesign.
-- versch. Neue Grafiken.
-- Neue Bewertung "Ultrastar" ab 9810 Punkte.
-- Textgröße-Bug im Editor behoben.
+- New Note Texture.
+- other new grafics.
+- New rating "Ultrastar" with more than 9810 Points.
+- Textsize-Bug in editor fixed.
 
 UltraStar 0.5.0 mota patch r6 - 17.11.06 (Release by Mota)
 ----------------------------------------
-- Editiorfunktionen für Goldene/Freestyle-Noten. (Tasten [G] und [F])
-- Speicherfunktion des Editors angepasst.
-- Verändertes Theme "SingStar".
+- Editiorfunctions for Golden/Freestyle-Notes. (Press [G] or [F])
+- Saving Methods of Editor changed
+- Changed Theme "SingStar".
 
 UltraStar 0.5.0 mota patch r5 - 16.11.06 (Release by Mota)
 ----------------------------------------
-- Goldene Noten werden dargestellt
-- Zufallsauswahl verbessert
+- Goldene Notes are displayed
+- Randomizing improved
 
 UltraStar 0.5.0 mota patch r4 (Release by Mota)
 -----------------------------
-- Perfekt-Stern animation
+- Perfect-Star animation
 
 UltraStar 0.5.0 mota patch r3 (Release by Mota)
 -----------------------------
-- Sortierung Title2 und Artist2 -> Zahlen in Ordner "#"
+- Sorting Title2 and Artist2 -> Numbers in Category "#"
 
 UltraStar 0.5.0 mota patch r2 (Release by Mota)
 -----------------------------
-- Eigene Cover für alle Sortierungen
+- Cover for all Categorys and Sortings can be choosen
 
 UltraStar 0.5.0 mota patch (Release by Mota)
 --------------------------
-- Eigene Cover für Sortierung nach Edition.
+- Cover for Edition sorting can be choosen
+
+UltraStar 0.5.0 (by Corvus5)
+--------------------------
+- Original Code
