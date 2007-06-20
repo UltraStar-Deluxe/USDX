@@ -587,6 +587,23 @@ type
     StaticTeam3BG:     TThemeStatic;
     StaticTeam3Deco:   TThemeStatic;
 
+    DecoTextures:      record
+      ChangeTextures:  Boolean;
+
+      FirstTexture:    String;
+      FirstTyp:        String;
+      FirstColor:      String;
+
+      SecondTexture:   String;
+      SecondTyp:       String;
+      SecondColor:     String;
+
+      ThirdTexture:    String;
+      ThirdTyp:        String;
+      ThirdColor:      String;
+    end;
+
+
     TextWinner:        TThemeText;
   end;
 
@@ -1360,6 +1377,21 @@ begin
       ThemeLoadStatic (PartyScore.StaticTeam3, 'PartyScoreStaticTeam3');
       ThemeLoadStatic (PartyScore.StaticTeam3BG, 'PartyScoreStaticTeam3BG');
       ThemeLoadStatic (PartyScore.StaticTeam3Deco, 'PartyScoreStaticTeam3Deco');
+
+      //Load Party Score DecoTextures Object
+      PartyScore.DecoTextures.ChangeTextures := (ThemeIni.ReadInteger('PartyScoreDecoTextures', 'ChangeTextures', 0) = 1);
+
+      PartyScore.DecoTextures.FirstTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'FirstTexture', '');
+      PartyScore.DecoTextures.FirstTyp   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'FirstTyp', 'Note Black');
+      PartyScore.DecoTextures.FirstColor   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'FirstColor', 'Black');
+
+      PartyScore.DecoTextures.SecondTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'SecondTexture', '');
+      PartyScore.DecoTextures.SecondTyp   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'SecondTyp', 'Note Black');
+      PartyScore.DecoTextures.SecondColor   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'SecondColor', 'Black');
+
+      PartyScore.DecoTextures.ThirdTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'ThirdTexture', '');
+      PartyScore.DecoTextures.ThirdTyp   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'ThirdTyp', 'Note Black');
+      PartyScore.DecoTextures.ThirdColor   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'ThirdColor', 'Black');
 
       ThemeLoadText (PartyScore.TextWinner, 'PartyScoreTextWinner');
 

@@ -25,6 +25,11 @@ type
       StaticTeam3Deco:   Cardinal;
       TextWinner:        Cardinal;
 
+      DecoTex:          Array[0..5] of Integer;
+      DecoColor:        Array[0..5] of Record
+                                        R, G, B: Real;
+                        end;
+
       MaxScore:          Word;
       
       constructor Create; override;
@@ -35,7 +40,7 @@ type
 
 implementation
 
-uses UGraphic, UMain, UParty, UScreenSingModi, ULanguage;
+uses UGraphic, UMain, UParty, UScreenSingModi, ULanguage, UTexture, USkins;
 
 function TScreenPartyScore.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -75,6 +80,9 @@ end;
 constructor TScreenPartyScore.Create;
 var
   I:    integer;
+  Tex:  TTexture;
+  R, G, B: Real;
+  Color: Integer;
 begin
   inherited Create;
 
@@ -97,12 +105,50 @@ begin
 
   TextWinner := AddText (Theme.PartyScore.TextWinner);
 
+  //Load Deco Textures
+  if Theme.PartyScore.DecoTextures.ChangeTextures then
+  begin
+    //Get Color
+    LoadColor(R, G, B, Theme.PartyScore.DecoTextures.FirstColor);
+    Color := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+    DecoColor[0].R := R;
+    DecoColor[0].G := G;
+    DecoColor[0].B := B;
+
+    //Load Texture
+    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.FirstTexture)),  'JPG', PChar(Theme.PartyScore.DecoTextures.FirstTyp), Color);
+    DecoTex[0] := Tex.TexNum;
+
+    //Get Second Color
+    LoadColor(R, G, B, Theme.PartyScore.DecoTextures.SecondColor);
+    Color := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+    DecoColor[1].R := R;
+    DecoColor[1].G := G;
+    DecoColor[1].B := B;
+
+    //Load Second Texture
+    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.SecondTexture)),  'JPG', PChar(Theme.PartyScore.DecoTextures.SecondTyp), Color);
+    DecoTex[1] := Tex.TexNum;
+
+    //Get Third Color
+    LoadColor(R, G, B, Theme.PartyScore.DecoTextures.ThirdColor);
+    Color := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+    DecoColor[2].R := R;
+    DecoColor[2].G := G;
+    DecoColor[2].B := B;
+
+    //Load Third Texture
+    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.ThirdTexture)),  'JPG', PChar(Theme.PartyScore.DecoTextures.ThirdTyp), Color);
+    DecoTex[2] := Tex.TexNum;
+  end;
+
   LoadFromTheme(Theme.PartyScore);
 end;
 
 procedure TScreenPartyScore.onShow;
 var
-  I: Integer;
+  I, J: Integer;
+  Placings: Array [0..5] of Byte;
 begin
   //Get Maxscore
   MaxScore := 0;
@@ -111,6 +157,16 @@ begin
     if (ScreenSingModi.PlayerInfo.Playerinfo[I].Score > MaxScore) then
       MaxScore := ScreenSingModi.PlayerInfo.Playerinfo[I].Score;
   end;
+
+  //Get Placings
+  for I := 0 to ScreenSingModi.PlayerInfo.NumPlayers - 1 do
+  begin
+    Placings[I] := 0;
+    for J := 0 to ScreenSingModi.PlayerInfo.NumPlayers - 1 do
+      If (ScreenSingModi.PlayerInfo.Playerinfo[J].Score > ScreenSingModi.PlayerInfo.Playerinfo[I].Score) then
+        Inc(Placings[I]);
+  end;
+
 
   //Set Static Length
   Static[StaticTeam1].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
@@ -133,6 +189,15 @@ begin
     Text[TextScoreTeam1].Text := InttoStr(ScreenSingModi.PlayerInfo.Playerinfo[0].Score);
     Text[TextNameTeam1].Text := String(ScreenSingModi.TeamInfo.Teaminfo[0].Name);
 
+    //Set Deco Texture
+    if Theme.PartyScore.DecoTextures.ChangeTextures then
+    begin
+      Static[StaticTeam1Deco].Texture.TexNum := DecoTex[Placings[0]];
+      Static[StaticTeam1Deco].Texture.ColR := DecoColor[Placings[0]].R;
+      Static[StaticTeam1Deco].Texture.ColG := DecoColor[Placings[0]].G;
+      Static[StaticTeam1Deco].Texture.ColB := DecoColor[Placings[0]].B;
+    end;
+
     Text[TextScoreTeam1].Visible := True;
     Text[TextNameTeam1].Visible := True;
     Static[StaticTeam1].Visible := True;
@@ -153,6 +218,15 @@ begin
     Text[TextScoreTeam2].Text := InttoStr(ScreenSingModi.PlayerInfo.Playerinfo[1].Score);
     Text[TextNameTeam2].Text := String(ScreenSingModi.TeamInfo.Teaminfo[1].Name);
 
+    //Set Deco Texture
+    if Theme.PartyScore.DecoTextures.ChangeTextures then
+    begin
+      Static[StaticTeam2Deco].Texture.TexNum := DecoTex[Placings[1]];
+      Static[StaticTeam2Deco].Texture.ColR := DecoColor[Placings[1]].R;
+      Static[StaticTeam2Deco].Texture.ColG := DecoColor[Placings[1]].G;
+      Static[StaticTeam2Deco].Texture.ColB := DecoColor[Placings[1]].B;
+    end;
+
     Text[TextScoreTeam2].Visible := True;
     Text[TextNameTeam2].Visible := True;
     Static[StaticTeam2].Visible := True;
@@ -172,6 +246,15 @@ begin
   begin
     Text[TextScoreTeam3].Text := InttoStr(ScreenSingModi.PlayerInfo.Playerinfo[2].Score);
     Text[TextNameTeam3].Text := String(ScreenSingModi.TeamInfo.Teaminfo[2].Name);
+
+    //Set Deco Texture
+    if Theme.PartyScore.DecoTextures.ChangeTextures then
+    begin
+      Static[StaticTeam3Deco].Texture.TexNum := DecoTex[Placings[2]];
+      Static[StaticTeam3Deco].Texture.ColR := DecoColor[Placings[2]].R;
+      Static[StaticTeam3Deco].Texture.ColG := DecoColor[Placings[2]].G;
+      Static[StaticTeam3Deco].Texture.ColB := DecoColor[Placings[2]].B;
+    end;
 
     Text[TextScoreTeam3].Visible := True;
     Text[TextNameTeam3].Visible := True;
