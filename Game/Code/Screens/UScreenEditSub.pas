@@ -730,8 +730,12 @@ begin
         0:    S := Max;
         1:    S := Max;
         2:    S := Max - 1;
-        3..3: S := Max - 2;
-        4..10000: S := Min + 2; // poczatek + 2
+        3:    S := Max - 2;
+        else
+          if ((Max - Min) > 4) then
+            S := Min + 2
+          else
+            S := Max;
       end; // case
 
       Czesci[0].Czesc[C].Start := S;

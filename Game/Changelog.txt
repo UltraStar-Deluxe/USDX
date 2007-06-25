@@ -63,6 +63,7 @@ Upd: Statistic Screen with general Statistics and some Tables:
 Upd: Add some on Screen Error Messages helping new Peoples
 Upd: Add Advanced Screen with some new Options.
 Upd: Add a Question PopUp before exiting
+Upd: Add ability to scale Background Images in Singscreen to Fullsize
 Upd: Show real Note in Editor (C, F#, etc.)
 Fix: No crashes caused by corrupted Textfiles anymore.
      Added inGame Errormessage Popup and Jump Back to Songscreen. So even the Party Mode,
@@ -76,7 +77,9 @@ Fix: useless Memory usement when Song with Video is Played. When a Song with Vid
      there was some Memory that was not freeed at the End of the Song. This could have caused
      too much Memory usement when many Songs with Video are Played.
 Fix: Some Changes in Memory usement and better Loading speed.
-
+Fix: Wrong Timings pressing T in Editor if 2 Notes from different Sentences overlap
+Fix: [Midi Converter]Notes are added more than once when a File is opened twice or the save                      button is pressed multiple times.
+Fix: [Midi Converter]Sentence Timings are calculated automaticly when Midi File is converted
 
 UltraStar 0.5.0 ultra-star.dl.am Mod X-Mas Edition (by Mota und Whiteshark)
 -----------------------------

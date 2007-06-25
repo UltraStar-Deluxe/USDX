@@ -54,8 +54,10 @@ type
       BPM:                real;
       Ticks:              real;
       Nuta:               array of TNuta;
+
       procedure AddLyric(Start: integer; Tekst: string);
       procedure Extract;
+
       procedure MidiFile1MidiEvent(event: PMidiEvent);
       function SelectedNumber: integer;
       constructor Create; override;
@@ -192,6 +194,7 @@ var
   Nu:   integer;
   NutaTemp: TNuta;
   Move: integer;
+  Max, Min: integer;
 begin
   // song info
   Song.Title := '';
@@ -200,6 +203,8 @@ begin
   Song.Resolution := 4;
   SetLength(Song.BPM, 1);
   Song.BPM[0].BPM := BPM*4;
+
+  SetLength(Nuta, 0);
 
   // extract notes
   for T := 0 to High(ATrack) do begin
@@ -265,6 +270,27 @@ begin
       SetLength(Czesc.Czesc[C].Nuta, 0);
       Czesc.Czesc[C].IlNut := 0;
       Czesc.Czesc[C].HighNut := -1;
+
+      //Calculate Start of the Last Sentence
+      if (C > 0) and (Nu > 0) then
+      begin
+        Max := Nuta[Nu].Start;
+        Min := Nuta[Nu-1].Start + Nuta[Nu-1].Len;
+        
+        case (Max - Min) of
+          0:    Czesc.Czesc[C].Start := Max;
+          1:    Czesc.Czesc[C].Start := Max;
+          2:    Czesc.Czesc[C].Start := Max - 1;
+          3:    Czesc.Czesc[C].Start := Max - 2;
+          else
+            if ((Max - Min) > 4) then
+              Czesc.Czesc[C].Start := Min + 2
+            else
+              Czesc.Czesc[C].Start := Max;
+
+        end; // case
+
+      end;
     end;
 
     // tworzy miejsce na nowa nute
@@ -388,7 +414,11 @@ begin
 
     SetLength(Channel, 16);
     for T := 0 to 15 do
+    begin
       Channel[T].Name := IntToStr(T+1);
+      SetLength(Channel[T].Note, 0);
+      Channel[T].Status := 0;
+    end;
 
     for T := 0 to MidiFile.NumberOfTracks-1 do begin
       MidiTrack := MidiFile.GetTrack(T);

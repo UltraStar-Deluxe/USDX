@@ -62,6 +62,7 @@ Upd: Statistiken hinzugefügt. Generelle Statistiken und
 Upd: Einige On Screen Fehler Benachrichtigungen hinzugefügt, die neuen Spielern helfen sollten.
 Upd: Neuer Erweiterter Options Screen hinzugefügt
 Upd: Abfrage vor dem Beenden hinzugefügt
+Upd: Song Hintergrundbilder können jetzt auch auf voller Bildschrimfläche dargestellt werden.
 Upd: Im Editor werden jetzt zusätzlich die richtigen Notennamen ausgegeben (C, F#, etc.)
 Fix: Nahezu keine Abstürze mehr wegen fehlerhaften TXT-Dateien.
      In Game Popup hinzugefügt und einen Rücksprunk zum Songscreen.
@@ -75,7 +76,11 @@ Fix: Backgrounds can be used now in option Screens, too
 Fix: Unnützer Speicherverbauch wenn ein Song mit Video abgespielt wird. Einige Videodaten blieben im Speicher nachdem der Song beendet wurde. 
      Dies könnte zu einem Out Of Memory Error führen wenn viele Songs mit Video gespielt werden.
 Fix: Einige Speichernutzungs und Ladezeit Updates
-
+Fix: Falsche Satzübergänge wenn T im Editor benutzt wurde und sich 2 Noten von verschiedenen 
+     Sätzen überlagerten.
+Fix: [Midi Converter]Noten wurden mehrmals hinzugefügt wenn eine Datei mehrmals geöffnet wurde
+                     oder der Save Button mehrmals gedrückt wurde.
+Fix: [Midi Converter]Satzübergänge werden nun vom Mide Converter automatisch berechnet.
 
 UltraStar 0.5.0 ultra-star.dl.am Mod X-Mas Edition (by Mota und Whiteshark)
 -----------------------------
