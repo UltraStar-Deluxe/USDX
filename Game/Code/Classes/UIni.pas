@@ -126,7 +126,7 @@ const
 
   ISpectrum:      array[0..1] of string = ('Off', 'On');
   ISpectrograph:  array[0..1] of string = ('Off', 'On');
-  IMovieSize:     array[0..1] of string = ('Half', 'Full');
+  IMovieSize:     array[0..2] of string = ('Half', 'Full [Vid]', 'Full [BG+Vid]');
 
   IMicBoost:      array[0..3] of string = ('Off', '+6dB', '+12dB', '+18dB');
   IClickAssist:   array[0..1] of string = ('Off', 'On');
@@ -173,10 +173,10 @@ var
   Modes:      PPSDL_Rect;
   SR: TSearchRec; //Skin List Patch
 
-function GetFileName (S: String):String;
+  function GetFileName (S: String):String;
   begin
   //Result := copy (S,0,StrRScan (PChar(S),char('.'))+1);
-  Result := copy (S,0,Pos ('.ini',S)-1);
+    Result := copy (S,0,Pos ('.ini',S)-1);
   end;
 
 begin
@@ -293,7 +293,7 @@ begin
     if Tekst = ISpectrograph[Pet] then Ini.Spectrograph := Pet;
 
   // MovieSize
-  Tekst := IniFile.ReadString('Graphics', 'MovieSize', IMovieSize[0]);
+  Tekst := IniFile.ReadString('Graphics', 'MovieSize', IMovieSize[2]);
   for Pet := 0 to High(IMovieSize) do
     if Tekst = IMovieSize[Pet] then Ini.MovieSize := Pet;
 
@@ -349,12 +349,25 @@ begin
   // Theme
 
   //Theme List Patch
+
+    //I2 Saves the no of the Deluxe (Standard-) Theme
+    I2 := 0;
+    //I counts is the cur. Theme no
+    I := 0;
+
     SetLength(ITheme, 0);
     FindFirst('Themes\*.ini',faAnyFile,SR);
     Repeat
+      //Read Themename from Theme
       ThemeIni := TMemIniFile.Create(SR.Name);
       Tekst := UpperCase(ThemeIni.ReadString('Theme','Name',GetFileName(SR.Name)));
       ThemeIni.Free;
+
+      //if Deluxe Theme then save Themeno to I2
+      if (Tekst = 'DELUXE') then
+        I2 := I;
+
+      //Search for Skins for this Theme  
       for Pet := low(Skin.Skin) to high(Skin.Skin) do
       begin
         if UpperCase(Skin.Skin[Pet].Theme) = Tekst then
@@ -364,6 +377,8 @@ begin
           break;
         end;
       end;
+
+      Inc(I);
     Until FindNext(SR) <> 0;
     FindClose(SR);
   //Theme List Patch End }
@@ -375,7 +390,7 @@ begin
   end;
 
 
-  Tekst := IniFile.ReadString('Themes',    'Theme',   ITheme[0]);
+  Tekst := IniFile.ReadString('Themes',    'Theme',   ITheme[I2]);
   Ini.Theme := 0;
   for Pet := 0 to High(ITheme) do
     if Uppercase(Tekst) = Uppercase(ITheme[Pet]) then Ini.Theme := Pet;

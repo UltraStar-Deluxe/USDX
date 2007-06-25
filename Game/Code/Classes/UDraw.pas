@@ -79,7 +79,7 @@ begin
   glClearColor (1, 1, 1, 1);
   glColor4f (1, 1, 1, 1);
 
-    if (Ini.MovieSize = 0) then  //HalfSize BG
+    if (Ini.MovieSize <= 1) then  //HalfSize BG
     begin
       (* half screen + gradient *)
       Rec.Top := 110; // 80

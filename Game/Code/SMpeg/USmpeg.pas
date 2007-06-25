@@ -253,7 +253,7 @@ begin
     TexT := 110 / 600 * (textures.movie_height / 1024{512});
     TexB := 490 / 600 * (textures.movie_height / 1024{512});
 
-    if Ini.MovieSize = 1 then begin
+    if Ini.MovieSize >= 1 then begin
       // full screen size
       CropT := 0;
       CropB := 600;
