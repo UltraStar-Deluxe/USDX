@@ -116,6 +116,7 @@ begin
 
   //Additional Information
   Song.Background := '';
+  Song.Cover := '';
   Song.Video := '';
   Song.VideoGAP := 0;
   Song.NotesGAP := 0;
@@ -734,10 +735,10 @@ begin
   if Song.Edition     <> 'Unknown' then WriteLn(SongFile, '#EDITION:' + Song.Edition);
   if Song.Genre       <> 'Unknown' then   WriteLn(SongFile, '#GENRE:' + Song.Genre);
   if Song.Language    <> 'Unknown' then    WriteLn(SongFile, '#LANGUAGE:'    + Song.Language);
-  if Song.Cover       <> '' then    WriteLn(SongFile, '#COVER:'       + Song.Cover);
 
   WriteLn(SongFile, '#MP3:' + Song.Mp3);
 
+  if Song.Cover       <> '' then    WriteLn(SongFile, '#COVER:'       + Song.Cover);
   if Song.Background  <> '' then    WriteLn(SongFile, '#BACKGROUND:'  + Song.Background);
   if Song.Video       <> '' then    WriteLn(SongFile, '#VIDEO:'       + Song.Video);
   if Song.VideoGAP    <> 0  then    WriteLn(SongFile, '#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
