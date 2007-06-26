@@ -193,6 +193,10 @@ var
   TextureB:   TBitmap;
   TextureJ:   TJPEGImage;
   TexturePNG: TPNGObject;
+  TextureAlpha: array of byte;
+  AlphaPtr:   PByte;
+  TransparentColor: TColor;
+  PixelColor: TColor;
 
   Pet:        integer;
   Pet2:       integer;
@@ -246,6 +250,27 @@ begin
         Exit;
     end;
     TextureB.Assign(TexturePNG);
+    // transparent png hack start (part 1 of 2)
+    if (Typ = 'Transparent') and (TexturePNG.TransparencyMode = ptmPartial) then
+    begin
+      setlength(TextureAlpha, TextureB.Width*TextureB.Height);
+      if (TexturePNG.Header.ColorType = COLOR_GRAYSCALEALPHA) or
+         (TexturePNG.Header.ColorType = COLOR_RGBALPHA) then
+      begin
+        // i would have preferred english variables here but i use Pet because i'm lazy
+        for Pet := 0 to TextureB.Height - 1 do
+        begin
+          AlphaPtr := PByte(TexturePNG.AlphaScanline[Pet]);
+          for Pet2 := 0 to TextureB.Width - 1 do
+          begin
+            TextureAlpha[Pet*TextureB.Width+Pet2]:= AlphaPtr^;
+            Inc(AlphaPtr);
+          end;
+        end;
+      end;
+    end else
+      setlength(TextureAlpha,0); // just no special transparency for unimplemented transparency types (ptmBit)
+    // transparent png hack end
     TexturePNG.Free;
   end;
 
@@ -357,11 +382,13 @@ begin
     TexNewH := Round(Power(2, Ceil(Log2(TexOrygH))));
     TextureB.Width := TexNewW;
     TextureB.Height := TexNewH;
+
     // kopiowanie
     for Pet := 0 to TexOrygH-1 do begin
       for Pet2 := 0 to TexOrygW-1 do begin
         Pix := TextureB.Canvas.Pixels[Pet2, Pet];
-        if ((Pix = $fefefe) or (Pix = Col)) then begin //Small fix, that caused artefacts to be drawn (#fe == dec254)
+                                           // ,- part of transparent png hack
+        if ((Pix = $fefefe) or (Pix = Col)) and (length(TextureAlpha)=0) then begin //Small fix, that caused artefacts to be drawn (#fe == dec254)
           TextureD32[Pet*TexNewW + Pet2 + 1, 1] := 0;
           TextureD32[Pet*TexNewW + Pet2 + 1, 2] := 0;
           TextureD32[Pet*TexNewW + Pet2 + 1, 3] := 0;
@@ -370,7 +397,12 @@ begin
           TextureD32[Pet*TexNewW + Pet2+1, 1] := Pix;
           TextureD32[Pet*TexNewW + Pet2+1, 2] := Pix div 256;
           TextureD32[Pet*TexNewW + Pet2+1, 3] := Pix div (256*256);
-          TextureD32[Pet*TexNewW + Pet2+1, 4] := 255;
+          // transparent png hack start (part 2 of 2)
+          if (Format = 'PNG') and (length(TextureAlpha) <> 0) then begin
+            TextureD32[Pet*TexNewW+Pet2+1,4]:=TextureAlpha[Pet*TexOrygW+Pet2];
+          end else
+          // transparent png hack end
+            TextureD32[Pet*TexNewW + Pet2+1, 4] := 255;
         end;
       end;
     end;
