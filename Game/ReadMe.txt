@@ -62,11 +62,11 @@ And this piece of software is the Result!
 3. Controls
 ----------------------------
 Use the Arrowkeys to navigate through the Screens.
-Use Enter to Select and Escape to go back.
-In Songscreen you can use R, Shift + R or Strg + R to Select a Random Song/Category
-Use Alt + [Letter] to Jump to a Songs Artist with the first letter [Letter]
-Use Alt + Shift + [Letter] to Jump to a Song Title with the first letter [Letter]
-Press J to open the Search for a Song Interface
+Use Enter to select and Escape to go to the previous screen.
+In Songscreen you can use R, Shift + R or Strg + R to select a random song/category
+Use Alt + [Letter] to jump to a songs artist with the first letter [Letter]
+Use Alt + Shift + [Letter] to jump to a song title with the first letter [Letter]
+Press J to open the "Search for a Song" Interface
 
 Editor Controls are described in documentation.pdf
 
@@ -74,5 +74,5 @@ Editor Controls are described in documentation.pdf
 ----------------------------
 4. License
 ----------------------------
-Ultrastar Deluxe is licensed under the Terms of the GNU General Public License 2.0
-See License.txt for more Informations.
+Ultrastar Deluxe is licensed under the terms of the GNU General Public License 2.0
+See License.txt for more Information.
