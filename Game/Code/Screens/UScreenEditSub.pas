@@ -882,20 +882,49 @@ var
 begin
   C := Czesci[0].Akt;
 
-  // we copy all notes from the next to the selected one
-  for N := AktNuta+1 to Czesci[0].Czesc[C].HighNut do begin
-    Czesci[0].Czesc[C].Nuta[N-1] := Czesci[0].Czesc[C].Nuta[N];
+  //Do Not delete Last Note
+  if (Czesci[0].High > 0) OR (Czesci[0].Czesc[C].HighNut > 0) then
+  begin
+
+    // we copy all notes from the next to the selected one
+    for N := AktNuta+1 to Czesci[0].Czesc[C].HighNut do begin
+      Czesci[0].Czesc[C].Nuta[N-1] := Czesci[0].Czesc[C].Nuta[N];
+    end;
+
+    NLen := Czesci[0].Czesc[C].IlNut - 1;
+
+    if (NLen > 0) then
+    begin
+      SetLength(Czesci[0].Czesc[C].Nuta, NLen);
+      Dec(Czesci[0].Czesc[C].HighNut);
+      Dec(Czesci[0].Czesc[C].IlNut);
+
+
+      // me slightly modify new note
+      if AktNuta > Czesci[0].Czesc[C].HighNut then Dec(AktNuta);
+        Czesci[0].Czesc[C].Nuta[AktNuta].Color := 1;
+    end
+    //Last Note of current Sentence Deleted - > Delete Sentence
+    else
+    begin
+      //Move all Sentences after the current to the Left
+      for N := C+1 to Czesci[0].High do
+        Czesci[0].Czesc[N-1] := Czesci[0].Czesc[N];
+
+      //Delete Last Sentence
+      SetLength(Czesci[0].Czesc, Czesci[0].High);
+      Czesci[0].High := High(Czesci[0].Czesc);
+      Czesci[0].Ilosc := Length(Czesci[0].Czesc);
+
+      AktNuta := 0;
+      if (C > 0) then
+        Czesci[0].Akt := C - 1
+      else
+        Czesci[0].Akt := 0;
+
+      Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Color := 1;
+    end;
   end;
-
-  NLen := Czesci[0].Czesc[C].IlNut - 1;
-  SetLength(Czesci[0].Czesc[C].Nuta, NLen);
-  Dec(Czesci[0].Czesc[C].HighNut);
-  Dec(Czesci[0].Czesc[C].IlNut);
-
-
-  // me slightly modify new note
-  if AktNuta > Czesci[0].Czesc[C].HighNut then Dec(AktNuta);
-  Czesci[0].Czesc[C].Nuta[AktNuta].Color := 1;
 end;
 
 procedure TScreenEditSub.TransposeNote(Transpose: integer);
