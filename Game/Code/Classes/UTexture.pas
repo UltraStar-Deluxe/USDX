@@ -206,6 +206,7 @@ var
   TempA:      integer;
   Error:      integer;
   SkipX:      integer;
+  myAlpha:    Real;
 begin
   Log.BenchmarkStart(4);
   Mipmapping := true;
@@ -399,7 +400,16 @@ begin
           TextureD32[Pet*TexNewW + Pet2+1, 3] := Pix div (256*256);
           // transparent png hack start (part 2 of 2)
           if (Format = 'PNG') and (length(TextureAlpha) <> 0) then begin
-            TextureD32[Pet*TexNewW+Pet2+1,4]:=TextureAlpha[Pet*TexOrygW+Pet2];
+            myAlpha:=TextureAlpha[Pet*TexOrygW+Pet2];
+
+            // the following calculations tweak transparency so that it really looks transparent
+            myAlpha:=myAlpha-75;
+            if myAlpha < 0 then myAlpha:=0;
+            myAlpha:=myAlpha/180;
+            myAlpha:=myAlpha*myAlpha*myAlpha;
+            myAlpha:=myAlpha*255;
+
+            TextureD32[Pet*TexNewW+Pet2+1,4]:=floor(myAlpha);
           end else
           // transparent png hack end
             TextureD32[Pet*TexNewW + Pet2+1, 4] := 255;
