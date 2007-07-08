@@ -2,8 +2,9 @@ Ultrastar Deluxe 1.0 Readme.txt
 ----------------------------
 1. Authors
 2. Release Notes
-3. Controls
-4. License
+3. Command-Line Parameters
+4. Controls
+5. License
 ----------------------------
 
 SF.Net Page: http://sourceforge.net/projects/ultrastardx/
@@ -59,7 +60,40 @@ And this piece of software is the Result!
 
 
 ----------------------------
-3. Controls
+3. Command-Line Parameters
+----------------------------
+Command-Line Parameters are passed to the game adding it to the Path of a Shortcut or starting the game within the console.
+
+The following parameters are possible. They can be joined in any possible way.
+
+-Benchmark         : Create a benchmark.log file with start timings.
+-NoLog    	   : Do not create any .log files
+-Joypad            : Start with Joypad support
+-Language [ID]     : Load Language [ID] on startup. Example: -Language german
+
+-Songpath [Path]   : Some as config Songpath. Example: -SongPath "C:\Ultrastar Songs"
+-ConfigFile [File] : Load Configfile [File] instead of config.ini. Path to the file have to exist. Example: -ConfigFile config.SongCreation.ini
+-ScoreFile [File]  : Use [File] instead of Ultrastar.db. Path to the file have to exist. Example: -ScoreFile HouseParty.db
+
+-FullScreen        : Start the game in Fullscreen Mode
+-Depth [16/32]     : Force Depth 16 or 32. Example: -Depth 16
+-Resolution [ID]   : Force resolution. Example: -Resolution 800x600
+-Screens [1/2]     : Force 1 or 2 Screen Mode. Example: -Screens 2
+
+Some Examples:
+
+Start with Resolution 1024x768 32 Bit Depth and Fullscreen:
+ultrastar.exe -Resolution 1024x768 -Depth 32 -Fullscreen
+
+Start without logging and polish Language
+ultrastar.exe -NoLog -Language polish
+
+Start with custom config File and Score DB:
+ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ultrastar\Scores\PartyScores.db
+
+
+----------------------------
+4. Controls
 ----------------------------
 Use the Arrowkeys to navigate through the Screens.
 Use Enter to select and Escape to go to the previous screen.
@@ -72,7 +106,7 @@ Editor Controls are described in documentation.pdf
 
 
 ----------------------------
-4. License
+5. License
 ----------------------------
 Ultrastar Deluxe is licensed under the terms of the GNU General Public License 2.0
 See License.txt for more Information.
