@@ -95,7 +95,7 @@ function GetTimeFromBeat(Beat: integer): real;
 procedure ClearScores(PlayerNum: integer);
 
 implementation
-uses USongs, UJoystick, math;
+uses USongs, UJoystick, math, UCommandLine;
 
 procedure MainLoop;
 var
@@ -105,7 +105,7 @@ begin
   While not Done do
   Begin
     // joypad
-    if Ini.Joypad = 1 then
+    if (Ini.Joypad = 1) OR (Params.Joypad) then
       Joy.Update;
 
     // keyboard events

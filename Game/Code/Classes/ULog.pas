@@ -11,12 +11,13 @@ type
 
     FileBenchmark:    TextFile;
     FileBenchmarkO:   boolean; // opened
-    FileAnalyze:      TextFile;
-    FileAnalyzeO:     boolean; // opened
     FileError:        TextFile;
     FileErrorO:       boolean; // opened
 
     Title: String; //Application Title
+
+    //Should Log Files be written
+    Enabled:          Boolean;
 
     // destuctor
     destructor Free;
@@ -25,9 +26,6 @@ type
     procedure BenchmarkStart(Number: integer);
     procedure BenchmarkEnd(Number: integer);
     procedure LogBenchmark(Text: string; Number: integer);
-
-    // analyze
-    procedure LogAnalyze(Text: string);
 
     // error
     procedure LogError(Text: string); overload;
@@ -47,7 +45,7 @@ var
   Log:    TLog;
 
 implementation
-uses UFiles, SysUtils, DateUtils, URecord, UTime, UIni, Windows;
+uses UFiles, SysUtils, DateUtils, URecord, UTime, UIni, Windows, UCommandLine;
 
 destructor TLog.Free;
 begin
@@ -78,7 +76,7 @@ var
 
   ValueText:    string;
 begin
-  if (ParamStr(1) = '-benchmark') then begin
+  if Enabled AND (Params.Benchmark) then begin
     if not FileBenchmarkO then begin
       FileBenchmarkO := true;
       AssignFile(FileBenchmark, LogPath + 'Benchmark.log');
@@ -86,6 +84,16 @@ begin
       Rewrite(FileBenchmark);
       if IOResult = 0 then FileBenchmarkO := true;
       {$I+}
+
+      //If File is opened write Date to Benchmark File
+      If (FileBenchmarkO) then
+      begin
+        WriteLn(FileBenchmark, Title + ' Benchmark File');
+        WriteLn(FileBenchmark, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
+        WriteLn(FileBenchmark, '-------------------');
+
+        Flush(FileBenchmark);
+      end;
     end;
 
   if FileBenchmarkO then begin
@@ -133,44 +141,34 @@ begin
   end;
 end;
 
-procedure TLog.LogAnalyze(Text: string);
-var
-  Seconds:      integer;
-  Miliseconds:  integer;
-  ValueText:    string;
-begin
-  //if Ini.Debug = 1 then begin
-
-  if not FileAnalyzeO then begin
-    AssignFile(FileAnalyze, LogPath + 'Analyze.log');
-    {$I-}
-    Rewrite(FileAnalyze);
-    if IOResult = 0 then FileAnalyzeO := true;
-    {$I+}
-  end;
-
-  if FileAnalyzeO then begin
-    WriteLn(FileAnalyze, Text);
-    Flush(FileAnalyze); // try to speed up
-  end;
-
-  //end;
-end;
-
 procedure TLog.LogError(Text: string);
 begin
-  if not FileErrorO then begin
+  if Enabled AND (not FileErrorO) then begin
     FileErrorO := true;
     AssignFile(FileError, LogPath + 'Error.log');
     {$I-}
     Rewrite(FileError);
     if IOResult = 0 then FileErrorO := true;
     {$I+}
+
+    //If File is opened write Date to Error File
+    If (FileErrorO) then
+    begin
+      WriteLn(FileError, Title + ' Error Log');
+      WriteLn(FileError, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
+      WriteLn(FileError, '-------------------');
+
+      Flush(FileError);
+    end;
   end;
 
   if FileErrorO then begin
-    WriteLn(FileError, Text);
-    Flush(FileError);
+    try
+      WriteLn(FileError, Text);
+      Flush(FileError);
+    except
+      FileErrorO := false;
+    end;
   end;
 end;
 
@@ -225,3 +223,5 @@ begin
 end;
 
 end.
+
+

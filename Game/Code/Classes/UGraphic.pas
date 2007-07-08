@@ -178,7 +178,7 @@ procedure LoadScreens;
 
 
 implementation
-uses UMain, UIni, UDisplay, Graphics, Classes, Windows;
+uses UMain, UIni, UDisplay, UCommandLine, Graphics, Classes, Windows;
 
 procedure LoadTextures;
 var
@@ -332,8 +332,12 @@ var
   S:      string;
   I:      integer;
   W, H:   integer;
+  Depth:  Integer;
 begin
-  Screens := Ini.Screens + 1;
+  if (Params.Screens <> -1) then
+    Screens := Params.Screens + 1
+  else
+    Screens := Ini.Screens + 1;
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    5);
@@ -341,28 +345,39 @@ begin
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
 
-  S := IResolution[Ini.Resolution];
+  // If there is a resolution in Parameters, use it, else use the Ini value
+  I := Params.Resolution;
+  if (I <> -1) then
+    S := IResolution[I]
+  else
+    S := IResolution[Ini.Resolution];
+
   I := Pos('x', S);
   W := StrToInt(Copy(S, 1, I-1)) * Screens;
   H := StrToInt(Copy(S, I+1, 1000));
 
-  if ParamStr(1) = '-fsblack' then begin
+  {if ParamStr(1) = '-fsblack' then begin
     W := 800;
     H := 600;
   end;
   if ParamStr(1) = '-320x240' then begin
     W := 320;
     H := 240;
-  end;
+  end; }
+
+  If (Params.Depth <> -1) then
+    Depth := Params.Depth
+  else
+    Depth := Ini.Depth;
 
 
   Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
 //  SDL_SetRefreshrate(85);
 //  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-  if (Ini.FullScreen = 0) and (ParamStr(1) <> '-fsblack') then
-    screen := SDL_SetVideoMode(W, H, (Ini.Depth+1) * 16, SDL_OPENGL)
+  if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
+    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL)
   else begin
-    screen := SDL_SetVideoMode(W, H, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
     SDL_ShowCursor(0);
   end;
   if (screen = nil) then begin

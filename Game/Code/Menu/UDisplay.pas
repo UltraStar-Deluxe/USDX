@@ -111,8 +111,8 @@ begin
   Result := True;
 
   Col := 1;
-  if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
-    Col := 0;
+  {if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
+    Col := 0;    }
 
   glClearColor(Col, Col, Col , 0);
   glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);

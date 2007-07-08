@@ -1,7 +1,6 @@
 program UltraStar;
 
 {$DEFINE TRANSLATE}
-//DEFINE THEMESAVE}
 
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
@@ -26,7 +25,6 @@ uses
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
-  //UPliki in 'Classes\UPliki.pas',
   ULanguage in 'Classes\ULanguage.pas',
   UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
@@ -51,6 +49,7 @@ uses
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
+  UCommandLine  in 'Classes\UCommandLine.pas',
 
   //------------------------------
   //Includes - Screens
@@ -144,9 +143,13 @@ begin
   //------------------------------
   USTime := TTime.Create;
 
+  // Commandline Parameter Parser
+  Params := TCMDParams.Create;
+
   // Log + Benchmark
   Log := TLog.Create;
   Log.Title := WndTitle;
+  Log.Enabled := Not Params.NoLog;
   Log.BenchmarkStart(0);
 
   // Language
@@ -182,7 +185,13 @@ begin
   Log.BenchmarkStart(1);
   Log.LogStatus('Load Ini', 'Initialization');                Ini := TIni.Create;
                                                               Ini.Load;
-                                                              Language.ChangeLanguage(ILanguage[Ini.Language]);
+
+  //Load Languagefile
+  if (Params.Language <> -1) then
+    Language.ChangeLanguage(ILanguage[Params.Language])
+  else
+    Language.ChangeLanguage(ILanguage[Ini.Language]);
+
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Ini', 1);
 
@@ -268,7 +277,12 @@ begin
   Log.BenchmarkStart(1);
   Log.LogStatus('DataBase System', 'Initialization');
   DataBase := TDataBaseSystem.Create;
-  DataBase.Init ('Ultrastar.db');
+
+  if (Params.ScoreFile = '') then
+    DataBase.Init ('Ultrastar.db')
+  else
+    DataBase.Init (Params.ScoreFile);
+
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading DataBase System', 1);
 
@@ -287,7 +301,7 @@ begin
   Log.LogBenchmark('Loading Particel System', 1);
 
   // Joypad
-  if Ini.Joypad = 1 then begin
+  if (Ini.Joypad = 1) OR (Params.Joypad) then begin
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize Joystick', 'Initialization');   Joy := TJoy.Create;
     Log.BenchmarkEnd(1);

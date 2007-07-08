@@ -153,8 +153,8 @@ var
 begin;
 //  Log.LogStatus('Oscilloscope', 'SingDraw');
   glColor3f(Skin_OscR, Skin_OscG, Skin_OscB);
-  if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
-    glColor3f(1, 1, 1);
+  {if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
+    glColor3f(1, 1, 1);  }
 
   glBegin(GL_LINE_STRIP);
     glVertex2f(X, -Sound[NrSound].BufferArray[1] / $10000 * H + Y + H/2);

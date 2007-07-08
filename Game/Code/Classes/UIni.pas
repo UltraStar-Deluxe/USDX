@@ -11,6 +11,9 @@ type
     NameTeam:       array[0..2] of string;
     NameTemplate:   array[0..11] of string;
 
+    //Filename of the opened iniFile
+    Filename:       string;
+
     // Game
     Players:        integer;
     Difficulty:     integer;
@@ -159,7 +162,7 @@ const
   IChannel:       array[0..6] of string = ('0', '1', '2', '3', '4', '5', '6');
 
 implementation
-uses UFiles, SDL, ULanguage, USkins, URecord;
+uses UFiles, SDL, ULanguage, USkins, URecord, UCommandLine;
 
 procedure TIni.Load;
 var
@@ -181,7 +184,16 @@ var
 
 begin
   GamePath := ExtractFilePath(ParamStr(0));
-  IniFile := TMemIniFile.Create(GamePath + 'config.ini');
+  
+  if (Params.ConfigFile <> '') then
+    try
+      IniFile := TMemIniFile.Create(Params.ConfigFile);
+    except
+      IniFile := TMemIniFile.Create(GamePath + 'config.ini');
+    end
+  else
+    IniFile := TMemIniFile.Create(GamePath + 'config.ini');
+
 
   // Name
   for I := 0 to 11 do
@@ -516,9 +528,12 @@ begin
 
 
   // SongPath
-  SongPath := IncludeTrailingPathDelimiter(IniFile.ReadString('Path', 'Songs', SongPath));
+  if (Params.SongPath <> '') then
+    SongPath := IncludeTrailingPathDelimiter(Params.SongPath)
+  else
+    SongPath := IncludeTrailingPathDelimiter(IniFile.ReadString('Path', 'Songs', SongPath));
 
-
+  Filename := IniFile.FileName;
   IniFile.Free;
 end;
 
@@ -529,176 +544,178 @@ var
   I: Integer;
   S: String;
 begin
-  if not (FileExists(GamePath + 'config.ini') and FileIsReadOnly(GamePath + 'config.ini')) then begin
-    IniFile := TIniFile.Create(GamePath + 'config.ini');
+  //if not (FileExists(GamePath + 'config.ini') and FileIsReadOnly(GamePath + 'config.ini')) then begin
+  if not (FileExists(Filename) and FileIsReadOnly(Filename)) then begin
 
-  // Players
-  Tekst := IPlayers[Ini.Players];
-  IniFile.WriteString('Game',     'Players',   Tekst);
+    IniFile := TIniFile.Create(Filename);
 
-  // Difficulty
-  Tekst := IDifficulty[Ini.Difficulty];
-  IniFile.WriteString('Game',     'Difficulty',   Tekst);
+    // Players
+    Tekst := IPlayers[Ini.Players];
+    IniFile.WriteString('Game',     'Players',   Tekst);
 
-  // Language
-  Tekst := ILanguage[Ini.Language];
-  IniFile.WriteString('Game',     'Language',   Tekst);
+    // Difficulty
+    Tekst := IDifficulty[Ini.Difficulty];
+    IniFile.WriteString('Game',     'Difficulty',   Tekst);
 
-  // Tabs
-  Tekst := ITabs[Ini.Tabs];
-  IniFile.WriteString('Game',     'Tabs',   Tekst);
+    // Language
+    Tekst := ILanguage[Ini.Language];
+    IniFile.WriteString('Game',     'Language',   Tekst);
 
-  // Sorting
-  Tekst := ISorting[Ini.Sorting];
-  IniFile.WriteString('Game',     'Sorting',   Tekst);
+    // Tabs
+    Tekst := ITabs[Ini.Tabs];
+    IniFile.WriteString('Game',     'Tabs',   Tekst);
 
-  // Debug
-  Tekst := IDebug[Ini.Debug];
-  IniFile.WriteString('Game',     'Debug',   Tekst);
+    // Sorting
+    Tekst := ISorting[Ini.Sorting];
+    IniFile.WriteString('Game',     'Sorting',   Tekst);
 
-  // Screens
-  Tekst := IScreens[Ini.Screens];
-  IniFile.WriteString('Graphics', 'Screens', Tekst);
+    // Debug
+    Tekst := IDebug[Ini.Debug];
+    IniFile.WriteString('Game',     'Debug',   Tekst);
 
-  // FullScreen
-  Tekst := IFullScreen[Ini.FullScreen];
-  IniFile.WriteString('Graphics', 'FullScreen', Tekst);
+    // Screens
+    Tekst := IScreens[Ini.Screens];
+    IniFile.WriteString('Graphics', 'Screens', Tekst);
 
-  // Resolution
-  Tekst := IResolution[Ini.Resolution];
-  IniFile.WriteString('Graphics', 'Resolution', Tekst);
+    // FullScreen
+    Tekst := IFullScreen[Ini.FullScreen];
+    IniFile.WriteString('Graphics', 'FullScreen', Tekst);
 
-  // Depth
-  Tekst := IDepth[Ini.Depth];
-  IniFile.WriteString('Graphics', 'Depth', Tekst);
+    // Resolution
+    Tekst := IResolution[Ini.Resolution];
+    IniFile.WriteString('Graphics', 'Resolution', Tekst);
 
-  // Resolution
-  Tekst := ITextureSize[Ini.TextureSize];
-  IniFile.WriteString('Graphics', 'TextureSize', Tekst);
+    // Depth
+    Tekst := IDepth[Ini.Depth];
+    IniFile.WriteString('Graphics', 'Depth', Tekst);
 
-  // Sing Window
-  Tekst := ISingWindow[Ini.SingWindow];
-  IniFile.WriteString('Graphics', 'SingWindow', Tekst);
+    // Resolution
+    Tekst := ITextureSize[Ini.TextureSize];
+    IniFile.WriteString('Graphics', 'TextureSize', Tekst);
 
-  // Oscilloscope
-  Tekst := IOscilloscope[Ini.Oscilloscope];
-  IniFile.WriteString('Graphics', 'Oscilloscope', Tekst);
+    // Sing Window
+    Tekst := ISingWindow[Ini.SingWindow];
+    IniFile.WriteString('Graphics', 'SingWindow', Tekst);
 
-  // Spectrum
-  Tekst := ISpectrum[Ini.Spectrum];
-  IniFile.WriteString('Graphics', 'Spectrum', Tekst);
+    // Oscilloscope
+    Tekst := IOscilloscope[Ini.Oscilloscope];
+    IniFile.WriteString('Graphics', 'Oscilloscope', Tekst);
 
-  // Spectrograph
-  Tekst := ISpectrograph[Ini.Spectrograph];
-  IniFile.WriteString('Graphics', 'Spectrograph', Tekst);
+    // Spectrum
+    Tekst := ISpectrum[Ini.Spectrum];
+    IniFile.WriteString('Graphics', 'Spectrum', Tekst);
 
-  // Movie Size
-  Tekst := IMovieSize[Ini.MovieSize];
-  IniFile.WriteString('Graphics', 'MovieSize', Tekst);
+    // Spectrograph
+    Tekst := ISpectrograph[Ini.Spectrograph];
+    IniFile.WriteString('Graphics', 'Spectrograph', Tekst);
 
-  // MicBoost
-  Tekst := IMicBoost[Ini.MicBoost];
-  IniFile.WriteString('Sound',    'MicBoost',    Tekst);
+    // Movie Size
+    Tekst := IMovieSize[Ini.MovieSize];
+    IniFile.WriteString('Graphics', 'MovieSize', Tekst);
 
-  // ClickAssist
-  Tekst := IClickAssist[Ini.ClickAssist];
-  IniFile.WriteString('Sound',    'ClickAssist',    Tekst);
+    // MicBoost
+    Tekst := IMicBoost[Ini.MicBoost];
+    IniFile.WriteString('Sound',    'MicBoost',    Tekst);
 
-  // BeatClick
-  Tekst := IBeatClick[Ini.BeatClick];
-  IniFile.WriteString('Sound',    'BeatClick',    Tekst);
+    // ClickAssist
+    Tekst := IClickAssist[Ini.ClickAssist];
+    IniFile.WriteString('Sound',    'ClickAssist',    Tekst);
 
-  // Threshold
-  Tekst := IThreshold[Ini.Threshold];
-  IniFile.WriteString('Sound',    'Threshold',    Tekst);
+    // BeatClick
+    Tekst := IBeatClick[Ini.BeatClick];
+    IniFile.WriteString('Sound',    'BeatClick',    Tekst);
 
-  // Song Preview
-  Tekst := IPreviewVolume[Ini.PreviewVolume];
-  IniFile.WriteString('Sound',    'PreviewVolume',    Tekst);
+    // Threshold
+    Tekst := IThreshold[Ini.Threshold];
+    IniFile.WriteString('Sound',    'Threshold',    Tekst);
 
-  Tekst := IPreviewFading[Ini.PreviewFading];
-  IniFile.WriteString('Sound',    'PreviewFading',    Tekst);
+    // Song Preview
+    Tekst := IPreviewVolume[Ini.PreviewVolume];
+    IniFile.WriteString('Sound',    'PreviewVolume',    Tekst);
 
-  // SavePlayback
-  Tekst := ISavePlayback[Ini.SavePlayback];
-  IniFile.WriteString('Sound',    'SavePlayback',    Tekst);
+    Tekst := IPreviewFading[Ini.PreviewFading];
+    IniFile.WriteString('Sound',    'PreviewFading',    Tekst);
 
-  // Lyrics Font
-  Tekst := ILyricsFont[Ini.LyricsFont];
-  IniFile.WriteString('Lyrics',    'LyricsFont',    Tekst);
+    // SavePlayback
+    Tekst := ISavePlayback[Ini.SavePlayback];
+    IniFile.WriteString('Sound',    'SavePlayback',    Tekst);
 
-  // Lyrics Effect
-  Tekst := ILyricsEffect[Ini.LyricsEffect];
-  IniFile.WriteString('Lyrics',    'LyricsEffect',    Tekst);
+    // Lyrics Font
+    Tekst := ILyricsFont[Ini.LyricsFont];
+    IniFile.WriteString('Lyrics',    'LyricsFont',    Tekst);
 
-  // Solmization
-  Tekst := ISolmization[Ini.Solmization];
-  IniFile.WriteString('Lyrics',    'Solmization',    Tekst);
+    // Lyrics Effect
+    Tekst := ILyricsEffect[Ini.LyricsEffect];
+    IniFile.WriteString('Lyrics',    'LyricsEffect',    Tekst);
 
-  // Theme
-  Tekst := ITheme[Ini.Theme];
-  IniFile.WriteString('Themes',    'Theme',    Tekst);
+    // Solmization
+    Tekst := ISolmization[Ini.Solmization];
+    IniFile.WriteString('Lyrics',    'Solmization',    Tekst);
 
-  // Skin
-  Tekst := ISkin[Ini.SkinNo];
-  IniFile.WriteString('Themes',    'Skin',    Tekst);
+    // Theme
+    Tekst := ITheme[Ini.Theme];
+    IniFile.WriteString('Themes',    'Theme',    Tekst);
 
-  // Color
-  Tekst := IColor[Ini.Color];
-  IniFile.WriteString('Themes',    'Color',    Tekst);
+    // Skin
+    Tekst := ISkin[Ini.SkinNo];
+    IniFile.WriteString('Themes',    'Skin',    Tekst);
 
-  // Record
-    for I := 0 to High(CardList) do begin
-      S := IntToStr(I+1);
+    // Color
+    Tekst := IColor[Ini.Color];
+    IniFile.WriteString('Themes',    'Color',    Tekst);
 
-      Tekst := CardList[I].Name;
-      IniFile.WriteString('Record', 'DeviceName' + S, Tekst);
+    // Record
+      for I := 0 to High(CardList) do begin
+        S := IntToStr(I+1);
 
-      Tekst := IntToStr(CardList[I].Input);
-      IniFile.WriteString('Record', 'Input' + S, Tekst);
+        Tekst := CardList[I].Name;
+        IniFile.WriteString('Record', 'DeviceName' + S, Tekst);
 
-      Tekst := IntToStr(CardList[I].ChannelL);
-      IniFile.WriteString('Record', 'ChannelL' + S, Tekst);
+        Tekst := IntToStr(CardList[I].Input);
+        IniFile.WriteString('Record', 'Input' + S, Tekst);
 
-      Tekst := IntToStr(CardList[I].ChannelR);
-      IniFile.WriteString('Record', 'ChannelR' + S, Tekst);
-    end;
+        Tekst := IntToStr(CardList[I].ChannelL);
+        IniFile.WriteString('Record', 'ChannelL' + S, Tekst);
 
-    //Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
+        Tekst := IntToStr(CardList[I].ChannelR);
+        IniFile.WriteString('Record', 'ChannelR' + S, Tekst);
+      end;
 
-  //Advanced Settings
+      //Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
 
-  //LoadAnimation
-  Tekst := ILoadAnimation[Ini.LoadAnimation];
-  IniFile.WriteString('Advanced', 'LoadAnimation', Tekst);
+    //Advanced Settings
 
-  //EffectSing
-  Tekst := IEffectSing[Ini.EffectSing];
-  IniFile.WriteString('Advanced', 'EffectSing', Tekst);
+    //LoadAnimation
+    Tekst := ILoadAnimation[Ini.LoadAnimation];
+    IniFile.WriteString('Advanced', 'LoadAnimation', Tekst);
 
-  //ScreenFade
-  Tekst := IScreenFade[Ini.ScreenFade];
-  IniFile.WriteString('Advanced', 'ScreenFade', Tekst);
+    //EffectSing
+    Tekst := IEffectSing[Ini.EffectSing];
+    IniFile.WriteString('Advanced', 'EffectSing', Tekst);
 
-  //AskbeforeDel
-  Tekst := IAskbeforeDel[Ini.AskbeforeDel];
-  IniFile.WriteString('Advanced', 'AskbeforeDel', Tekst);
+    //ScreenFade
+    Tekst := IScreenFade[Ini.ScreenFade];
+    IniFile.WriteString('Advanced', 'ScreenFade', Tekst);
 
-  //OnSongClick
-  Tekst := IOnSongClick[Ini.OnSongClick];
-  IniFile.WriteString('Advanced', 'OnSongClick', Tekst);
+    //AskbeforeDel
+    Tekst := IAskbeforeDel[Ini.AskbeforeDel];
+    IniFile.WriteString('Advanced', 'AskbeforeDel', Tekst);
 
-  //Line Bonus
-  Tekst := ILineBonus[Ini.LineBonus];
-  IniFile.WriteString('Advanced', 'LineBonus', Tekst);
+    //OnSongClick
+    Tekst := IOnSongClick[Ini.OnSongClick];
+    IniFile.WriteString('Advanced', 'OnSongClick', Tekst);
 
-  //Party Popup
-  Tekst := IPartyPopup[Ini.PartyPopup];
-  IniFile.WriteString('Advanced', 'PartyPopup', Tekst);
+    //Line Bonus
+    Tekst := ILineBonus[Ini.LineBonus];
+    IniFile.WriteString('Advanced', 'LineBonus', Tekst);
 
-  // Joypad
-  Tekst := IJoypad[Ini.Joypad];
-  IniFile.WriteString('Controller',    'Joypad',    Tekst);
+    //Party Popup
+    Tekst := IPartyPopup[Ini.PartyPopup];
+    IniFile.WriteString('Advanced', 'PartyPopup', Tekst);
+
+    // Joypad
+    Tekst := IJoypad[Ini.Joypad];
+    IniFile.WriteString('Controller',    'Joypad',    Tekst);
 
     IniFile.Free;
   end;
@@ -709,8 +726,10 @@ var
   IniFile:    TIniFile;
   I:          integer;
 begin
-  if not FileIsReadOnly(GamePath + 'config.ini') then begin
-    IniFile := TIniFile.Create(GamePath + 'config.ini');
+  //if not FileIsReadOnly(GamePath + 'config.ini') then begin
+    //IniFile := TIniFile.Create(GamePath + 'config.ini');
+  if not FileIsReadOnly(Filename) then begin
+    IniFile := TIniFile.Create(Filename);
 
     //Name
       // Templates for Names Mod
@@ -730,8 +749,10 @@ var
   IniFile:    TIniFile;
   I:          integer;
 begin
-  if not FileIsReadOnly(GamePath + 'config.ini') then begin
-    IniFile := TIniFile.Create(GamePath + 'config.ini');
+  //if not FileIsReadOnly(GamePath + 'config.ini') then begin
+    //IniFile := TIniFile.Create(GamePath + 'config.ini');
+  if not FileIsReadOnly(Filename) then begin
+    IniFile := TIniFile.Create(Filename);
 
     // Difficulty
     IniFile.WriteString('Game', 'Difficulty', IDifficulty[Ini.Difficulty]);
