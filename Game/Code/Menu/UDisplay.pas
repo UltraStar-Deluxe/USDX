@@ -244,7 +244,7 @@ begin
 
 
 
-      if (myfade > 40) or (not doFade) or (not canFade) then begin // fade out complete...
+      if ((myfade > 40) or (not doFade) or (not canFade)) And (S = 1) then begin // fade out complete...
         myFade:=0;
         ActualScreen.onHide;
         ActualScreen.ShowFinish:=False;
@@ -256,7 +256,10 @@ begin
           ActualScreen.ShowFinish := true;
         end
         else
+        begin
           Result:=False;
+          Break;
+        end;
       // end of fade mod
       end;
     end; // if
