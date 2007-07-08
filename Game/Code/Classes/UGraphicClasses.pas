@@ -2,10 +2,11 @@
 unit UGraphicClasses;
 
 interface
+uses UTexture;
 const  DelayBetweenFrames : Cardinal = 60;
 type
 
- TParticleType=(GoldenNote, PerfectNote, NoteHitTwinkle, PerfectLineTwinkle);
+ TParticleType=(GoldenNote, PerfectNote, NoteHitTwinkle, PerfectLineTwinkle, ColoredStar, Flare);
 
  TColour3f = Record
                r, g, b: Real;
@@ -52,6 +53,8 @@ type
    TwinkleArray  : Array[0..5] of Real; // store x-position of last twinkle for every player
    PerfNoteArray : Array of PerfectNotePositions;
 
+   FlareTex: TTexture;
+
    constructor Create;
    destructor  Destroy; override;
    procedure Draw;
@@ -76,7 +79,7 @@ type
 var GoldenRec : TEffectManager;
 
 implementation
-uses sysutils, Windows,OpenGl12, UIni, UMain, UThemes, USkins, UGraphic, UDrawTexture, UTexture, math, dialogs;
+uses sysutils, Windows,OpenGl12, UIni, UMain, UThemes, USkins, UGraphic, UDrawTexture, math, dialogs;
 
 //TParticle
 Constructor TParticle.Create(cX,cY: Real; cScreen: Integer; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
@@ -173,6 +176,52 @@ begin
           mX := RandomRange(-5,5);
           mY := RandomRange(-5,5);
         end;
+    ColoredStar:
+        begin
+          Tex := Tex_Note_Star.TexNum;
+          W := RandomRange(10,20);
+          H := W;
+          SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
+          SurviveSentenceChange:=True;
+          // assign colours according to player given
+          SetLength(Scale,1);
+          SetLength(Col,1);
+          Col[0].b := (Player and $ff)/255;
+          Col[0].g := ((Player shr 8) and $ff)/255;
+          Col[0].r := ((Player shr 16) and $ff)/255;
+          mX := 0;
+          mY := 0;
+        end;
+    Flare:
+        begin
+          Tex := Tex_Note_Star.TexNum;
+          W := 7;
+          H := 7;
+          SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
+          mX := RandomRange(-5,5);
+          mY := RandomRange(-5,5);
+          SetLength(Scale,4);
+          Scale[1]:=0.8;
+          Scale[2]:=0.4;
+          Scale[3]:=0.3;
+          SetLength(Col,4);
+          Col[0].r := 1;
+          Col[0].g := 0.7;
+          Col[0].b := 0.1;
+
+          Col[1].r := 1;
+          Col[1].g := 1;
+          Col[1].b := 0.4;
+
+          Col[2].r := 1;
+          Col[2].g := 1;
+          Col[2].b := 1;
+
+          Col[3].r := 1;
+          Col[3].g := 1;
+          Col[3].b := 1;
+
+        end;
     else    // just some random default values
         begin
           Tex := Tex_Note_Star.TexNum;
@@ -225,6 +274,20 @@ begin
           // move around
           X := X + mX;
           Y := Y + mY;
+        end;
+    ColoredStar:
+        begin
+          Alpha := (-cos((Frame+1)*2*pi/16)+1); // neat fade-in-and-out
+        end;
+    Flare:
+        begin
+          Alpha := (-cos((Frame+1)/16*1.7*pi+0.3*pi)+1); // neat fade-in-and-out
+          SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
+          // move around
+          X := X + mX;
+          Y := Y + mY;
+          mY:=mY+1.5;
+//          mX:=mX/2;
         end;
   end;
 end;
