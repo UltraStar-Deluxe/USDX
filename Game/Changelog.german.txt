@@ -64,6 +64,8 @@ Upd: Neuer Erweiterter Options Screen hinzugefügt
 Upd: Abfrage vor dem Beenden hinzugefügt
 Upd: Song Hintergrundbilder können jetzt auch auf voller Bildschrimfläche dargestellt werden.
 Upd: Im Editor werden jetzt zusätzlich die richtigen Notennamen ausgegeben (C, F#, etc.)
+Upd: Neue Schriftarten
+Upd: Bessere Unterstützung für Kommandozeilen Parameter
 Fix: Nahezu keine Abstürze mehr wegen fehlerhaften TXT-Dateien.
      In Game Popup hinzugefügt und einen Rücksprunk zum Songscreen.
      Selbst der Partymodus wird nicht unterbrochen.
@@ -78,6 +80,7 @@ Fix: Unnützer Speicherverbauch wenn ein Song mit Video abgespielt wird. Einige V
 Fix: Einige Speichernutzungs und Ladezeit Updates
 Fix: Falsche Satzübergänge wenn T im Editor benutzt wurde und sich 2 Noten von verschiedenen 
      Sätzen überlagerten.
+Fix: Editor stürzte ab wenn die letzte Note eines Satzes gelöscht wurde.
 Fix: [Midi Converter]Noten wurden mehrmals hinzugefügt wenn eine Datei mehrmals geöffnet wurde
                      oder der Save Button mehrmals gedrückt wurde.
 Fix: [Midi Converter]Satzübergänge werden nun vom Mide Converter automatisch berechnet.

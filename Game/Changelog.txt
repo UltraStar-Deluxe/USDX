@@ -65,6 +65,8 @@ Upd: Add Advanced Screen with some new Options.
 Upd: Add a Question PopUp before exiting
 Upd: Add ability to scale Background Images in Singscreen to Fullsize
 Upd: Show real Note in Editor (C, F#, etc.)
+Upd: New fonts added
+Upd: Add better support for Command-Line Parameters
 Fix: No crashes caused by corrupted Textfiles anymore.
      Added inGame Errormessage Popup and Jump Back to Songscreen. So even the Party Mode,
      isn't interuppted.
@@ -78,6 +80,7 @@ Fix: useless Memory usement when Song with Video is Played. When a Song with Vid
      too much Memory usement when many Songs with Video are Played.
 Fix: Some Changes in Memory usement and better Loading speed.
 Fix: Wrong Timings pressing T in Editor if 2 Notes from different Sentences overlap
+Fix: Editor crashes when last note of a sentence is deleted
 Fix: [Midi Converter]Notes are added more than once when a File is opened twice or the save                      button is pressed multiple times.
 Fix: [Midi Converter]Sentence Timings are calculated automaticly when Midi File is converted
 
