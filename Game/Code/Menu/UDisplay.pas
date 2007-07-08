@@ -28,6 +28,14 @@ type
     pTex : array[1..2] of glUInt;
     // end
 
+    //FPS Counter
+    FPSCounter: Cardinal;
+    LastFPS:    Cardinal;
+    NextFPSSwap:Cardinal;
+    
+    //For Debug OSD
+    OSD_LastError: String;
+
     function Draw: Boolean;
     procedure PrintScreen;
     constructor Create;
@@ -35,6 +43,8 @@ type
     destructor Destroy;
     // end
     procedure ScreenShot;
+
+    procedure DrawDebugInformation;
   end;
 
 var
@@ -42,7 +52,7 @@ var
 
 implementation
 
-uses UGraphic, UTime, Graphics, Jpeg, UFiles, UTexture, UIni;
+uses UGraphic, UTime, Graphics, Jpeg, UFiles, UTexture, UIni, TextGL, UCommandLine;
 
 constructor TDisplay.Create;
 var i: integer;
@@ -86,6 +96,9 @@ begin
   end;
   FreeMem(pTexData);
   // end
+
+  //Set LastError for OSD to No Error
+  OSD_LastError := 'No Errors';
 end;
 
 // fade mod
@@ -243,7 +256,6 @@ begin
           NextScreen.OnShow;
 
 
-
       if ((myfade > 40) or (not doFade) or (not canFade)) And (S = 1) then begin // fade out complete...
         myFade:=0;
         ActualScreen.onHide;
@@ -263,6 +275,11 @@ begin
       // end of fade mod
       end;
     end; // if
+
+    //Draw OSD only on first Screen if Debug Mode is enabled
+    if ((Ini.Debug = 1) OR (Params.Debug)) AND (S=1) then
+      DrawDebugInformation;
+      
   end; // for
 //  SwapBuffers(h_DC);
 end;
@@ -365,5 +382,57 @@ begin
  end;
 end;
 
+//------------
+// DrawDebugInformation - Procedure draw FPS and some other Informations on Screen
+//------------
+procedure TDisplay.DrawDebugInformation;
+var Ticks: Cardinal;
+begin
+  //Some White Background for information
+  glEnable(GL_BLEND);
+  glDisable(GL_TEXTURE_2D);
+  glColor4f(1, 1, 1, 0.5);
+  glBegin(GL_QUADS);
+    glVertex2f(690, 44);
+    glVertex2f(690, 0);
+    glVertex2f(800, 0);
+    glVertex2f(800, 44);
+  glEnd;
+  glDisable(GL_BLEND);
+
+  //Set Font Specs
+  SetFontStyle(0);
+  SetFontSize(7);
+  SetFontItalic(False);
+  glColor4f(0, 0, 0, 1);
+
+  //Calculate FPS
+  Ticks := GetTickCount;
+  if (Ticks >= NextFPSSwap) then
+  begin
+    LastFPS := FPSCounter * 4;
+    FPSCounter := 0;
+    NextFPSSwap := Ticks + 250;
+  end;
+
+  Inc(FPSCounter);
+
+  //Draw Text
+
+  //FPS
+  SetFontPos(695, 0);
+  glPrint (PChar('FPS: ' + InttoStr(LastFPS)));
+
+  //RSpeed
+  SetFontPos(695, 13);
+  glPrint (PChar('RSpeed: ' + InttoStr(Round(1000 * TimeMid))));
+
+  //LastError
+  SetFontPos(695, 26);
+  glColor4f(1, 0, 0, 1);
+  glPrint (PChar(OSD_LastError));
+
+  glColor4f(1, 1, 1, 1);
+end;
 
 end.
