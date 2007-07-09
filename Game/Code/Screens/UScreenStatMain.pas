@@ -170,7 +170,7 @@ begin
     %2:d Count of UnSung Songs
     %3:d Count of Songs with Video (A3)
     %4:s Name of the most popular Song}
-  A1 := Length(CatSongs.Song);
+  A1 := Length(Songs.Song);
   A2 := Database.GetTotalEntrys(2);
 
   A3 := SongswithVid;
