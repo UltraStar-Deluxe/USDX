@@ -63,11 +63,15 @@ begin
 
       SDLK_RETURN:
         begin
+          //Don'T start when Playlist is Selected and there are no Playlists
+          If (Playlist = 2) and (Length(PlaylistMan.Playlists) = 0) then
+            Exit;
+
           //Save Difficulty
           Ini.Difficulty := SelectsS[SelectLevel].SelectedOption;
           Ini.SaveLevel;
-          //Save PlayList
-          //(Todo)
+
+
           //Save Num Teams:
           PartySession.Teams.NumTeams := NumTeams + 2;
           PartySession.Teams.Teaminfo[0].NumPlayers := NumPlayer1+1;
@@ -76,6 +80,7 @@ begin
 
           //Save Playlist
           PlaylistMan.Mode := Playlist;
+          PlaylistMan.CurPlayList := High(Cardinal);
           //If Category Selected Search Category ID
           if Playlist = 1 then
           begin
@@ -91,6 +96,10 @@ begin
                 Break;
               end;
             end;
+
+            //No Categorys or Invalid Entry
+            If PlaylistMan.CurPlayList = High(Cardinal) then
+              Exit;
           end
           else
             PlaylistMan.CurPlayList := Playlist2;
@@ -203,11 +212,25 @@ begin
             IPlaylist2[high(IPlaylist2)] := CatSongs.Song[I].Artist;
           end;
         end;
+
+        If (Length(IPlaylist2) = 0) then
+        begin
+          SetLength(IPlaylist2, 1);
+          IPlaylist2[0] := 'No Categories found';
+        end;
       end;
     2:
       begin
-        SetLength(IPlaylist2, Length(PlaylistMan.Playlists));
-        PlaylistMan.GetNames(IPlaylist2);
+        if (Length(PlaylistMan.Playlists) > 0) then
+        begin
+          SetLength(IPlaylist2, Length(PlaylistMan.Playlists));
+          PlaylistMan.GetNames(IPlaylist2);
+        end
+        else
+        begin
+          SetLength(IPlaylist2, 1);
+          IPlaylist2[0] := 'No Playlists found';
+        end;
       end;
   end;
 
