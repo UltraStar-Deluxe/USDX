@@ -1291,8 +1291,18 @@ end;
 function TScreenEditSub.GetNoteName(Note: Integer): String;
 var N1, N2: Integer;
 begin
-  N1 := Note mod 12;
-  N2 := Note div 12;
+  if (Note > 0) then
+  begin
+    N1 := Note mod 12;
+    N2 := Note div 12;
+  end
+  else
+  begin
+    N1 := (Note + (-Trunc(Note/12)+1)*12) mod 12;
+    N2 := -1;
+  end;
+
+
 
   case N1 of
     0: Result := 'c';
