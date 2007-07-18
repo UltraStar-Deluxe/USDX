@@ -1340,6 +1340,7 @@ function TScreenSong.Draw: boolean;
 var
   dx:   real;
   dt:   real;
+  I:    Integer;
 begin
   dx := SongTarget-SongCurrent;
   dt := TimeSkip*7;
@@ -1393,7 +1394,26 @@ begin
 
   end;
 
-  inherited Draw;
+  //inherited Draw;
+  //heres a little Hack, that causes the Statics
+  //are Drawn after the Buttons because of some Blending Problems.
+  //This should cause no Problems because all Buttons on this screen
+  //Has Z Position.
+  //Draw BG
+  DrawBG;
+
+  //Instead of Draw FG Procedure:
+  //We draw Buttons for our own
+  for I := 0 to Length(Button) - 1 do
+    Button[I].Draw;
+
+  // Statics
+  for I := 0 to Length(Static) - 1 do
+    Static[I].Draw;
+
+  // and texts
+  for I := 0 to Length(Text) - 1 do
+    Text[I].Draw;
 
 
   //Draw Equalizer
