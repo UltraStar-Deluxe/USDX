@@ -286,7 +286,7 @@ begin
           // move around
           X := X + mX;
           Y := Y + mY;
-          mY:=mY+1.5;
+          mY:=mY+1.8;
 //          mX:=mX/2;
         end;
   end;

@@ -407,6 +407,7 @@ procedure TMusic.Play;
 begin
   if Loaded then begin
 //    MediaPlayer.Play;
+    if Loop then BASS_ChannelPlay(Bass, True); // start from beginning... actually bass itself does not loop, nor does this TMusic Class
     BASS_ChannelPlay(Bass, False); // for setting position before playing
   end;
 end;
