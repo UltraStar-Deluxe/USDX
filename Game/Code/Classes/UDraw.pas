@@ -1648,21 +1648,19 @@ begin
   width:= Theme.Sing.StaticTimeProgress.w;
   height:= Theme.Sing.StaticTimeProgress.h;
 
- // glColor4f(Theme.Sing.StaticTimeProgress.ColR,
- //           Theme.Sing.StaticTimeProgress.ColG,
- //           Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
+  glColor4f(Theme.Sing.StaticTimeProgress.ColR,
+  Theme.Sing.StaticTimeProgress.ColG,
+  Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
 
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
 
   glBindTexture(GL_TEXTURE_2D, Tex_TimeProgress.TexNum);
-//  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  //  glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
 
   glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex2f(x,y);
-    glTexCoord2f(1, 0); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y);
-    glTexCoord2f(1, 1); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y+height);
+    glTexCoord2f((width*(Czas.Teraz/Czas.Razem))/8, 0); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y);
+    glTexCoord2f((width*(Czas.Teraz/Czas.Razem))/8, 1); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y+height);
     glTexCoord2f(0, 1); glVertex2f(x, y+height);
   glEnd;
 
