@@ -14,11 +14,6 @@ interface
 uses OpenGL12, Windows, Math, Classes, SysUtils, Graphics, JPEG, UThemes, PNGImage;
 
 procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
-//procedure glBindTexture(target: GLenum; texture: GLuint); stdcall; external opengl32;
-//function  gluBuild2DMipmaps (target: GLenum; components, width, height: GLint;
-//                             format, atype: GLenum; data: Pointer): Integer; stdcall; external glu32;
-//procedure glCopyTexImage2D(target: GLenum; level: GLint; internalFormat: GLenum; x, y: GLint; width, height: GLsizei; border: GLint); stdcall; external opengl32;
-
 
 type
   TTexture = record
@@ -66,9 +61,9 @@ type
     function GetTexture(Name, Typ: string): TTexture; overload;
     function GetTexture(Name, Typ: string; FromCache: boolean): TTexture; overload;
     function FindTexture(Name: string): integer;
-    function LoadTexture(FromRegistry: boolean; Nazwa, Format, Typ: PChar; Col: LongWord): TTexture; overload;
-    function LoadTexture(Nazwa, Format, Typ: PChar; Col: LongWord): TTexture; overload;
-    function LoadTexture(Nazwa: string): TTexture; overload;
+    function LoadTexture(FromRegistry: boolean; Identifier, Format, Typ: PChar; Col: LongWord): TTexture; overload;
+    function LoadTexture(Identifier, Format, Typ: PChar; Col: LongWord): TTexture; overload;
+    function LoadTexture(Identifier: string): TTexture; overload;
     function CreateTexture(var Data: array of byte; Name: string; W, H: word; Bits: byte): TTexture;
     procedure UnloadTexture(Name: string; FromCache: boolean);
   end;
@@ -77,24 +72,14 @@ var
   Texture:          TTextureUnit;
   TextureDatabase:  TTextureDatabase;
 
-
-  // for print screens
-//  PrintScreenTex:   GLuint;
-//  PrintScreenData:  array[0..480-1, 0..640-1] of longword;
   PrintScreenData:  array[0..1024*768-1] of longword;
 
-//  Tekstur:    Gluint;
   ActTex:     GLuint;//integer;
 
-{  Tekstura:   array[1..32] of TTekstura;
-  Mipmapping: boolean = true;}
-
-  TexOrygW:   integer;
-  TexOrygH:   integer;
+  TexOrigW:   integer;
+  TexOrigH:   integer;
   TexNewW:    integer;
   TexNewH:    integer;
-{  RLE:        array[1..128*128] of byte;
-  RLE2:       array[1..128*128] of byte;}
 
   TexFitW:    integer;
   TexFitH:    integer; // new for limit
@@ -107,15 +92,13 @@ var
   // total 40MB at 2048*2048
   // total 10MB at 1024*1024
 
-{  Paleta:     array[0..255, 1..4] of byte;
-  Len:        integer;}
   Mipmapping: Boolean;
 
   CacheMipmap:  array[0..256*256*3-1] of byte; // 3KB
 
 
 implementation
-uses ULog, DateUtils, UCovers;
+uses ULog, DateUtils, UCovers, StrUtils;
 
 function TTextureUnit.GetTexture(Name, Typ: string): TTexture;
 begin
@@ -138,7 +121,7 @@ begin
     TextureDatabase.Texture[T].Name := Name;
     TextureDatabase.Texture[T].Typ := Typ;
 
-    // inform database that not textures has been loaded into memory
+    // inform database that no textures have been loaded into memory
     TextureDatabase.Texture[T].Texture.TexNum := -1;
     TextureDatabase.Texture[T].TextureCache.TexNum := -1;
   end;
@@ -163,12 +146,6 @@ begin
     if TextureDatabase.Texture[T].TextureCache.TexNum = -1 then begin
       // load texture
       Covers.PrepareData(Name);
-{      Covers.Data[0] := 0;
-      Covers.Data[1] := 0;
-      Covers.Data[2] := 0;
-      Covers.Data[3] := 255;
-      Covers.Data[4] := 255;
-      Covers.Data[5] := 255;}
       TextureDatabase.Texture[T].TextureCache := CreateTexture(Covers.Data, Name, Covers.Cover[C].W, Covers.Cover[C].H, 24);
     end;
 
@@ -187,7 +164,7 @@ begin
       Result := T;
 end;
 
-function TTextureUnit.LoadTexture(FromRegistry: boolean; Nazwa, Format, Typ: PChar; Col: LongWord): TTexture;
+function TTextureUnit.LoadTexture(FromRegistry: boolean; Identifier, Format, Typ: PChar; Col: LongWord): TTexture;
 var
   Res:        TResourceStream;
   TextureB:   TBitmap;
@@ -198,8 +175,8 @@ var
   TransparentColor: TColor;
   PixelColor: TColor;
 
-  Pet:        integer;
-  Pet2:       integer;
+  Position:        integer;
+  Position2:       integer;
   Pix:        integer;
   ColInt:     real;
   PPix:       PByteArray;
@@ -213,27 +190,35 @@ begin
 
   if FromRegistry then begin
     try
-      Res := TResourceStream.Create(HInstance, Nazwa, Format);
+      Res := TResourceStream.Create(HInstance, Identifier, Format);
     except
       beep;
       Exit;
     end;
   end;
 
-  if FromRegistry or ((not FromRegistry) and FileExists(Nazwa)) then begin
+  // filetype "detection"
+  if (not FromRegistry) and (FileExists(Identifier)) then begin
+    Format:='';
+    Format := PAnsichar(UpperCase(RightStr(ExtractFileExt(Identifier),3)));
+  end;
+//  else Format:='JPG';
+//  if not ((Format='BMP')or(Format='JPG')or(Format='PNG')) then Format:='JPG';
+
+  if FromRegistry or ((not FromRegistry) and FileExists(Identifier)) then begin
     TextureB := TBitmap.Create;
 
   if Format = 'BMP' then begin
     if FromRegistry then TextureB.LoadFromStream(Res)
-    else TextureB.LoadFromFile(Nazwa);
+    else TextureB.LoadFromFile(Identifier);
   end
 
   else if Format = 'JPG' then begin
     TextureJ := TJPEGImage.Create;
     if FromRegistry then TextureJ.LoadFromStream(Res)
     else begin
-      if FileExists(Nazwa) then
-        TextureJ.LoadFromFile(Nazwa)
+      if FileExists(Identifier) then
+        TextureJ.LoadFromFile(Identifier)
       else
         Exit;
     end;
@@ -245,8 +230,8 @@ begin
     TexturePNG := TPNGObject.Create;
     if FromRegistry then TexturePNG.LoadFromStream(Res)
     else begin
-      if FileExists(Nazwa) then
-        TexturePNG.LoadFromFile(Nazwa)
+      if FileExists(Identifier) then
+        TexturePNG.LoadFromFile(Identifier)
       else
         Exit;
     end;
@@ -258,13 +243,13 @@ begin
       if (TexturePNG.Header.ColorType = COLOR_GRAYSCALEALPHA) or
          (TexturePNG.Header.ColorType = COLOR_RGBALPHA) then
       begin
-        // i would have preferred english variables here but i use Pet because i'm lazy
-        for Pet := 0 to TextureB.Height - 1 do
+        // i would have preferred english variables here but i use Position because i'm lazy
+        for Position := 0 to TextureB.Height - 1 do
         begin
-          AlphaPtr := PByte(TexturePNG.AlphaScanline[Pet]);
-          for Pet2 := 0 to TextureB.Width - 1 do
+          AlphaPtr := PByte(TexturePNG.AlphaScanline[Position]);
+          for Position2 := 0 to TextureB.Width - 1 do
           begin
-            TextureAlpha[Pet*TextureB.Width+Pet2]:= AlphaPtr^;
+            TextureAlpha[Position*TextureB.Width+Position2]:= AlphaPtr^;
             Inc(AlphaPtr);
           end;
         end;
@@ -278,7 +263,7 @@ begin
   if FromRegistry then Res.Free;
 
   if (TextureB.Width > 1024) or (TextureB.Height > 1024) then begin // will be fixed in 0.5.1 and dynamically extended to 8192x8192 depending on the driver
-    Log.LogError('Image ' + Nazwa + ' is too big (' + IntToStr(TextureB.Width) + 'x' + IntToStr(TextureB.Height) + ')');
+    Log.LogError('Image ' + Identifier + ' is too big (' + IntToStr(TextureB.Width) + 'x' + IntToStr(TextureB.Height) + ')');
     Result.TexNum := -1;
   end else begin
 
@@ -289,46 +274,46 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   if Typ = 'Plain' then begin
-    // wymiary
-    TexOrygW := TextureB.Width;
-    TexOrygH := TextureB.Height;
-    TexNewW := Round(Power(2, Ceil(Log2(TexOrygW))));
-    TexNewH := Round(Power(2, Ceil(Log2(TexOrygH))));
+    // dimensions
+    TexOrigW := TextureB.Width;
+    TexOrigH := TextureB.Height;
+    TexNewW := Round(Power(2, Ceil(Log2(TexOrigW))));
+    TexNewH := Round(Power(2, Ceil(Log2(TexOrigH))));
 
-    // kopiowanie
+    // copy and process pixeldata
     TextureB.PixelFormat := pf24bit;
 {    if (TextureB.PixelFormat = pf8bit) then begin
-      for Pet := 0 to TexOrygH-1 do begin
-        for Pet2 := 0 to TexOrygW-1 do begin
-          Pix := TextureB.Canvas.Pixels[Pet2, Pet];
-          TextureD24[Pet*TexNewW + Pet2+1, 1] := Pix;
-          TextureD24[Pet*TexNewW + Pet2+1, 2] := Pix div 256;
-          TextureD24[Pet*TexNewW + Pet2+1, 3] := Pix div (256*256);
+      for Position := 0 to TexOrigH-1 do begin
+        for Position2 := 0 to TexOrigW-1 do begin
+          Pix := TextureB.Canvas.Pixels[Position2, Position];
+          TextureD24[Position*TexNewW + Position2+1, 1] := Pix;
+          TextureD24[Position*TexNewW + Position2+1, 2] := Pix div 256;
+          TextureD24[Position*TexNewW + Position2+1, 3] := Pix div (256*256);
         end;
       end;
     end;}
-    if (TexOrygW <= Limit) and (TexOrygW <= Limit) then begin
+    if (TexOrigW <= Limit) and (TexOrigW <= Limit) then begin
       if (TextureB.PixelFormat = pf24bit) then begin
-        for Pet := 0 to TexOrygH-1 do begin
-          PPix := TextureB.ScanLine[Pet];
-          for Pet2 := 0 to TexOrygW-1 do begin
-            TextureD24[Pet*TexNewW + Pet2+1, 1] := PPix[Pet2*3+2];
-            TextureD24[Pet*TexNewW + Pet2+1, 2] := PPix[Pet2*3+1];
-            TextureD24[Pet*TexNewW + Pet2+1, 3] := PPix[Pet2*3];
+        for Position := 0 to TexOrigH-1 do begin
+          PPix := TextureB.ScanLine[Position];
+          for Position2 := 0 to TexOrigW-1 do begin
+            TextureD24[Position*TexNewW + Position2+1, 1] := PPix[Position2*3+2];
+            TextureD24[Position*TexNewW + Position2+1, 2] := PPix[Position2*3+1];
+            TextureD24[Position*TexNewW + Position2+1, 3] := PPix[Position2*3];
           end;
         end;
       end;
     end else begin
       // limit
-      TexFitW := 4 * (TexOrygW div 4); // fix for bug in gluScaleImage
-      TexFitH := TexOrygH;
+      TexFitW := 4 * (TexOrigW div 4); // fix for bug in gluScaleImage
+      TexFitH := TexOrigH;
       if (TextureB.PixelFormat = pf24bit) then begin
-        for Pet := 0 to TexOrygH-1 do begin
-          PPix := TextureB.ScanLine[Pet];
-          for Pet2 := 0 to TexOrygW-1 do begin
-            TextureD24[Pet*TexFitW + Pet2+1, 1] := PPix[Pet2*3+2];
-            TextureD24[Pet*TexFitW + Pet2+1, 2] := PPix[Pet2*3+1];
-            TextureD24[Pet*TexFitW + Pet2+1, 3] := PPix[Pet2*3];
+        for Position := 0 to TexOrigH-1 do begin
+          PPix := TextureB.ScanLine[Position];
+          for Position2 := 0 to TexOrigW-1 do begin
+            TextureD24[Position*TexFitW + Position2+1, 1] := PPix[Position2*3+2];
+            TextureD24[Position*TexFitW + Position2+1, 2] := PPix[Position2*3+1];
+            TextureD24[Position*TexFitW + Position2+1, 3] := PPix[Position2*3];
           end;
         end;
       end;
@@ -337,25 +322,25 @@ begin
 
       TexNewW := Limit;
       TexNewH := Limit;
-      TexOrygW := Limit;
-      TexOrygH := Limit;
+      TexOrigW := Limit;
+      TexOrigH := Limit;
     end;
 
     // creating cache mipmap
     if CreateCacheMipmap then begin
-      if (TexOrygW <> TexNewW) or (TexOrygH <> TexNewH) then begin
+      if (TexOrigW <> TexNewW) or (TexOrigH <> TexNewH) then begin
         // texture only uses some of it's space. there's a need for resize to fit full size
         // and get best quality
-        TexFitW := 4 * (TexOrygW div 4); // 0.5.0: fix for bug in gluScaleImage
-        SkipX := (TexOrygW div 2) mod 2; // 0.5.0: try to center image
+        TexFitW := 4 * (TexOrigW div 4); // 0.5.0: fix for bug in gluScaleImage
+        SkipX := (TexOrigW div 2) mod 2; // 0.5.0: try to center image
 
-        TexFitH := TexOrygH;
-        for Pet := 0 to TexOrygH-1 do begin
-          PPix := TextureB.ScanLine[Pet];
-          for Pet2 := 0 to TexOrygW-1 do begin
-            TextureD242[Pet*TexFitW + Pet2+1, 1] := PPix[(Pet2+SkipX)*3+2];
-            TextureD242[Pet*TexFitW + Pet2+1, 2] := PPix[(Pet2+SkipX)*3+1];
-            TextureD242[Pet*TexFitW + Pet2+1, 3] := PPix[(Pet2+SkipX)*3];
+        TexFitH := TexOrigH;
+        for Position := 0 to TexOrigH-1 do begin
+          PPix := TextureB.ScanLine[Position];
+          for Position2 := 0 to TexOrigW-1 do begin
+            TextureD242[Position*TexFitW + Position2+1, 1] := PPix[(Position2+SkipX)*3+2];
+            TextureD242[Position*TexFitW + Position2+1, 2] := PPix[(Position2+SkipX)*3+1];
+            TextureD242[Position*TexFitW + Position2+1, 3] := PPix[(Position2+SkipX)*3];
           end;
         end;
         gluScaleImage(GL_RGB, TexFitW, TexFitH, GL_UNSIGNED_BYTE, @TextureD242,
@@ -363,7 +348,7 @@ begin
 
       end else begin
         // texture fits perfectly
-        gluScaleImage(GL_RGB, TexOrygW, TexOrygH, GL_UNSIGNED_BYTE, @TextureD24,
+        gluScaleImage(GL_RGB, TexOrigW, TexOrigH, GL_UNSIGNED_BYTE, @TextureD24,
           Covers.W, Covers.H, GL_UNSIGNED_BYTE, @CacheMipmap[0]); // takes some time
       end;
     end;
@@ -376,31 +361,31 @@ begin
   end;
 
   if Typ = 'Transparent' then begin
-    // wymiary
-    TexOrygW := TextureB.Width;
-    TexOrygH := TextureB.Height;
-    TexNewW := Round(Power(2, Ceil(Log2(TexOrygW))));
-    TexNewH := Round(Power(2, Ceil(Log2(TexOrygH))));
+    // dimensions
+    TexOrigW := TextureB.Width;
+    TexOrigH := TextureB.Height;
+    TexNewW := Round(Power(2, Ceil(Log2(TexOrigW))));
+    TexNewH := Round(Power(2, Ceil(Log2(TexOrigH))));
     TextureB.Width := TexNewW;
     TextureB.Height := TexNewH;
 
-    // kopiowanie
-    for Pet := 0 to TexOrygH-1 do begin
-      for Pet2 := 0 to TexOrygW-1 do begin
-        Pix := TextureB.Canvas.Pixels[Pet2, Pet];
+    // copy and process pixeldata
+    for Position := 0 to TexOrigH-1 do begin
+      for Position2 := 0 to TexOrigW-1 do begin
+        Pix := TextureB.Canvas.Pixels[Position2, Position];
                                            // ,- part of transparent png hack
         if ((Pix = $fefefe) or (Pix = Col)) and (length(TextureAlpha)=0) then begin //Small fix, that caused artefacts to be drawn (#fe == dec254)
-          TextureD32[Pet*TexNewW + Pet2 + 1, 1] := 0;
-          TextureD32[Pet*TexNewW + Pet2 + 1, 2] := 0;
-          TextureD32[Pet*TexNewW + Pet2 + 1, 3] := 0;
-          TextureD32[Pet*TexNewW + Pet2 + 1, 4] := 0;
+          TextureD32[Position*TexNewW + Position2 + 1, 1] := 0;
+          TextureD32[Position*TexNewW + Position2 + 1, 2] := 0;
+          TextureD32[Position*TexNewW + Position2 + 1, 3] := 0;
+          TextureD32[Position*TexNewW + Position2 + 1, 4] := 0;
         end else begin
-          TextureD32[Pet*TexNewW + Pet2+1, 1] := Pix;
-          TextureD32[Pet*TexNewW + Pet2+1, 2] := Pix div 256;
-          TextureD32[Pet*TexNewW + Pet2+1, 3] := Pix div (256*256);
+          TextureD32[Position*TexNewW + Position2+1, 1] := Pix;
+          TextureD32[Position*TexNewW + Position2+1, 2] := Pix div 256;
+          TextureD32[Position*TexNewW + Position2+1, 3] := Pix div (256*256);
           // transparent png hack start (part 2 of 2)
           if (Format = 'PNG') and (length(TextureAlpha) <> 0) then begin
-            myAlpha:=TextureAlpha[Pet*TexOrygW+Pet2];
+            myAlpha:=TextureAlpha[Position*TexOrigW+Position2];
 
             // the following calculations tweak transparency so that it really looks transparent
             myAlpha:=myAlpha-75;
@@ -409,10 +394,10 @@ begin
             myAlpha:=myAlpha*myAlpha*myAlpha;
             myAlpha:=myAlpha*255;
 
-            TextureD32[Pet*TexNewW+Pet2+1,4]:=floor(myAlpha);
+            TextureD32[Position*TexNewW+Position2+1,4]:=floor(myAlpha);
           end else
           // transparent png hack end
-            TextureD32[Pet*TexNewW + Pet2+1, 4] := 255;
+            TextureD32[Position*TexNewW + Position2+1, 4] := 255;
         end;
       end;
     end;
@@ -424,21 +409,21 @@ begin
   end;
 
   if Typ = 'Transparent Range' then begin
-    // wymiary
-    TexOrygW := TextureB.Width;
-    TexOrygH := TextureB.Height;
-    TexNewW := Round(Power(2, Ceil(Log2(TexOrygW))));
-    TexNewH := Round(Power(2, Ceil(Log2(TexOrygH))));
+    // dimensions
+    TexOrigW := TextureB.Width;
+    TexOrigH := TextureB.Height;
+    TexNewW := Round(Power(2, Ceil(Log2(TexOrigW))));
+    TexNewH := Round(Power(2, Ceil(Log2(TexOrigH))));
     TextureB.Width := TexNewW;
     TextureB.Height := TexNewH;
-    // kopiowanie
-    for Pet := 0 to TexOrygH-1 do begin
-      for Pet2 := 0 to TexOrygW-1 do begin
-        Pix := TextureB.Canvas.Pixels[Pet2, Pet];
-        TextureD32[Pet*TexNewW + Pet2+1, 1] := Pix;
-        TextureD32[Pet*TexNewW + Pet2+1, 2] := Pix div 256;
-        TextureD32[Pet*TexNewW + Pet2+1, 3] := Pix div (256*256);
-        TextureD32[Pet*TexNewW + Pet2+1, 4] := 256 - Pix div 256;
+    // copy and process pixeldata
+    for Position := 0 to TexOrigH-1 do begin
+      for Position2 := 0 to TexOrigW-1 do begin
+        Pix := TextureB.Canvas.Pixels[Position2, Position];
+        TextureD32[Position*TexNewW + Position2+1, 1] := Pix;
+        TextureD32[Position*TexNewW + Position2+1, 2] := Pix div 256;
+        TextureD32[Position*TexNewW + Position2+1, 3] := Pix div (256*256);
+        TextureD32[Position*TexNewW + Position2+1, 4] := 256 - Pix div 256;
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TexNewW, TexNewH, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
@@ -450,12 +435,12 @@ begin
 
   if Typ = 'Font' then begin
     TextureB.PixelFormat := pf24bit;
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
-        Pix := PPix[Pet2 * 3];
-        TextureD16[Pet*TextureB.Width + Pet2 + 1, 1] := 255;
-        TextureD16[Pet*TextureB.Width + Pet2 + 1, 2] := Pix;
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
+        Pix := PPix[Position2 * 3];
+        TextureD16[Position*TextureB.Width + Position2 + 1, 1] := 255;
+        TextureD16[Position*TextureB.Width + Position2 + 1, 2] := Pix;
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 2, TextureB.Width, TextureB.Height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, @TextureD16);
@@ -469,10 +454,10 @@ begin
 
   if Typ = 'Font Outline' then begin
     TextureB.PixelFormat := pf24bit;
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
-        Pix := PPix[Pet2 * 3];
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
+        Pix := PPix[Position2 * 3];
 
         Col := Pix;
         if Col < 127 then Col := 127;
@@ -483,8 +468,8 @@ begin
         if Pix < 95 then TempA := (Pix * 256) div 96;
 
 
-        TextureD16[Pet*TextureB.Width + Pet2 + 1, 1] := Col;
-        TextureD16[Pet*TextureB.Width + Pet2 + 1, 2] := TempA;
+        TextureD16[Position*TextureB.Width + Position2 + 1, 1] := Col;
+        TextureD16[Position*TextureB.Width + Position2 + 1, 2] := TempA;
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 2, TextureB.Width, TextureB.Height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, @TextureD16);
@@ -498,10 +483,10 @@ begin
 
   if Typ = 'Font Outline 2' then begin
     TextureB.PixelFormat := pf24bit;
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
-        Pix := PPix[Pet2 * 3];
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
+        Pix := PPix[Position2 * 3];
 
         Col := Pix;
         if Col < 31 then Col := 31;
@@ -510,8 +495,8 @@ begin
         if TempA >= 31 then TempA := 255;
         if Pix < 31 then TempA := Pix * (256 div 32);
 
-        TextureD16[Pet*TextureB.Width + Pet2 + 1, 1] := Col;
-        TextureD16[Pet*TextureB.Width + Pet2 + 1, 2] := TempA;
+        TextureD16[Position*TextureB.Width + Position2 + 1, 1] := Col;
+        TextureD16[Position*TextureB.Width + Position2 + 1, 2] := TempA;
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 2, TextureB.Width, TextureB.Height, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, @TextureD16);
@@ -524,24 +509,24 @@ begin
   end;
 
   if Typ = 'Font Black' then begin
-    // normalnie 0,125s     bez niczego 0,015s - 0,030s    z pix 0,125s
-    // wymiary
+    // normalnie 0,125s     bez niczego 0,015s - 0,030s    z pix 0,125s  <-- ???
+    // dimensions
     TextureB.PixelFormat := pf24bit;
-    TexOrygW := TextureB.Width;
-    TexOrygH := TextureB.Height;
-    TexNewW := Round(Power(2, Ceil(Log2(TexOrygW))));
-    TexNewH := Round(Power(2, Ceil(Log2(TexOrygH))));
+    TexOrigW := TextureB.Width;
+    TexOrigH := TextureB.Height;
+    TexNewW := Round(Power(2, Ceil(Log2(TexOrigW))));
+    TexNewH := Round(Power(2, Ceil(Log2(TexOrigH))));
     TextureB.Width := TexNewW;
     TextureB.Height := TexNewH;
-    // kopiowanie
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
-        Pix := PPix[Pet2*3];
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 1] := 255;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 2] := 255;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 3] := 255;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 4] := 255 - (Pix mod 256);
+    // copy and process pixeldata
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
+        Pix := PPix[Position2*3];
+        TextureD32[Position*TextureB.Width + Position2 + 1, 1] := 255;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 2] := 255;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 3] := 255;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 4] := 255 - (Pix mod 256);
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
@@ -549,42 +534,42 @@ begin
 
   if Typ = 'Alpha Black Colored' then begin
     TextureB.PixelFormat := pf24bit;
-    TexOrygW := TextureB.Width;
-    TexOrygH := TextureB.Height;
-    TexNewW := Round(Power(2, Ceil(Log2(TexOrygW))));
-    TexNewH := Round(Power(2, Ceil(Log2(TexOrygH))));
+    TexOrigW := TextureB.Width;
+    TexOrigH := TextureB.Height;
+    TexNewW := Round(Power(2, Ceil(Log2(TexOrigW))));
+    TexNewH := Round(Power(2, Ceil(Log2(TexOrigH))));
     TextureB.Width := TexNewW;
     TextureB.Height := TexNewH;
-    // kopiowanie
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
-        Pix := PPix[Pet2*3];
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 1] := (Col div $10000) and $FF;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 2] := (Col div $100) and $FF;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 3] := Col and $FF;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 4] := 255 - (Pix mod 256);
+    // copy and process pixeldata
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
+        Pix := PPix[Position2*3];
+        TextureD32[Position*TextureB.Width + Position2 + 1, 1] := (Col div $10000) and $FF;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 2] := (Col div $100) and $FF;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 3] := Col and $FF;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 4] := 255 - (Pix mod 256);
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
   end;
 
   if Typ = 'Font Gray' then begin
-    // wymiary
-    TexOrygW := TextureB.Width;
-    TexOrygH := TextureB.Height;
-    TexNewW := Round(Power(2, Ceil(Log2(TexOrygW))));
-    TexNewH := Round(Power(2, Ceil(Log2(TexOrygH))));
+    // dimensions
+    TexOrigW := TextureB.Width;
+    TexOrigH := TextureB.Height;
+    TexNewW := Round(Power(2, Ceil(Log2(TexOrigW))));
+    TexNewH := Round(Power(2, Ceil(Log2(TexOrigH))));
     TextureB.Width := TexNewW;
     TextureB.Height := TexNewH;
-    // kopiowanie
-    for Pet := 0 to TextureB.Height-1 do begin
-      for Pet2 := 0 to TextureB.Width-1 do begin
-        Pix := TextureB.Canvas.Pixels[Pet2, Pet];
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 1] := 127;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 2] := 127;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 3] := 127;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 4] := 255 - (Pix mod 256);
+    // copy and process pixeldata
+    for Position := 0 to TextureB.Height-1 do begin
+      for Position2 := 0 to TextureB.Width-1 do begin
+        Pix := TextureB.Canvas.Pixels[Position2, Position];
+        TextureD32[Position*TextureB.Width + Position2 + 1, 1] := 127;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 2] := 127;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 3] := 127;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 4] := 255 - (Pix mod 256);
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
@@ -596,10 +581,10 @@ begin
 
   if Typ = 'Arrow' then begin
     TextureB.PixelFormat := pf24bit;
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
-        Pix := PPix[Pet2 * 3];
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
+        Pix := PPix[Position2 * 3];
 
         // transparency
         if Pix >= 127 then TempA := 255;
@@ -610,10 +595,10 @@ begin
         if Pix >= 127 then ColInt := 2 - Pix / 128;
         //0.75, 0.6, 0.25
 
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 1] := Round(ColInt * 0.75 * 255 + (1 - ColInt) * 255);
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 2] := Round(ColInt * 0.6  * 255 + (1 - ColInt) * 255);
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 3] := Round(ColInt * 0.25 * 255 + (1 - ColInt) * 255);
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 4] := TempA;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 1] := Round(ColInt * 0.75 * 255 + (1 - ColInt) * 255);
+        TextureD32[Position*TextureB.Width + Position2 + 1, 2] := Round(ColInt * 0.6  * 255 + (1 - ColInt) * 255);
+        TextureD32[Position*TextureB.Width + Position2 + 1, 3] := Round(ColInt * 0.25 * 255 + (1 - ColInt) * 255);
+        TextureD32[Position*TextureB.Width + Position2 + 1, 4] := TempA;
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
@@ -626,22 +611,22 @@ begin
   end;
 
   if Typ = 'Note Plain' then begin
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
 
 
 
         // Skin Patch
         // 0-191= Fade Black to Col, 192= Col, 193-254 Fade Col to White, 255= White
-        case PPix[Pet2*3] of
-          0..191:    Pix := $10000 * ((((Col div $10000) and $FF) * PPix[Pet2*3]) div $Bf) + $100 * ((((Col div $100) and $FF) * PPix[Pet2*3]) div $Bf) + (((Col and $FF) * PPix[Pet2*3]) div $Bf);
+        case PPix[Position2*3] of
+          0..191:    Pix := $10000 * ((((Col div $10000) and $FF) * PPix[Position2*3]) div $Bf) + $100 * ((((Col div $100) and $FF) * PPix[Position2*3]) div $Bf) + (((Col and $FF) * PPix[Position2*3]) div $Bf);
           192:       Pix := Col;
-          193..254:  Pix := Col + ($10000 * ((($FF - ((Col div $10000) and $FF)) * ((PPix[Pet2*3] - $C0) * 4) ) div $FF) + $100 * ((($FF - ((Col div $100) and $FF)) * ((PPix[Pet2*3] - $C0) * 4)) div $FF) + ((($FF - (Col and $FF)) * ((PPix[Pet2*3] - $C0) * 4)) div $FF));
+          193..254:  Pix := Col + ($10000 * ((($FF - ((Col div $10000) and $FF)) * ((PPix[Position2*3] - $C0) * 4) ) div $FF) + $100 * ((($FF - ((Col div $100) and $FF)) * ((PPix[Position2*3] - $C0) * 4)) div $FF) + ((($FF - (Col and $FF)) * ((PPix[Position2*3] - $C0) * 4)) div $FF));
           255:       Pix := $FFFFFF;
          end;
 //  0.5.0. Original
-//        case PPix[Pet2*3] of
+//        case PPix[Position2*3] of
 //           128:    Pix := $10000 * ((Col div $10000) div 2) + $100 * (((Col div $100) and $FF) div 2) + (Col and $FF) div 2;
 //           192:    Pix := Col;
 //           255:    Pix := $FFFFFF;
@@ -651,33 +636,33 @@ begin
 
 
 
-        TextureD24[Pet*TextureB.Width + Pet2 + 1, 1] := Pix div $10000;
-        TextureD24[Pet*TextureB.Width + Pet2 + 1, 2] := (Pix div $100) and $FF;
-        TextureD24[Pet*TextureB.Width + Pet2 + 1, 3] := Pix and $FF;
+        TextureD24[Position*TextureB.Width + Position2 + 1, 1] := Pix div $10000;
+        TextureD24[Position*TextureB.Width + Position2 + 1, 2] := (Pix div $100) and $FF;
+        TextureD24[Position*TextureB.Width + Position2 + 1, 3] := Pix and $FF;
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 3, TextureB.Width, TextureB.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, @TextureD24);
   end;
 
   if Typ = 'Note Transparent' then begin
-    for Pet := 0 to TextureB.Height-1 do begin
-      PPix := TextureB.ScanLine[Pet];
-      for Pet2 := 0 to TextureB.Width-1 do begin
+    for Position := 0 to TextureB.Height-1 do begin
+      PPix := TextureB.ScanLine[Position];
+      for Position2 := 0 to TextureB.Width-1 do begin
         TempA := 255;
 
 
 
          //Skin Patch
          // 0= Transparent, 1-191= Fade Black to Col, 192= Col, 193-254 Fade Col to White, 255= White
-        case PPix[Pet2*3] of
+        case PPix[Position2*3] of
           0:         TempA := 0;
-          1..191:    Pix := $10000 * ((((Col div $10000) and $FF) * PPix[Pet2*3]) div $Bf) + $100 * ((((Col div $100) and $FF) * PPix[Pet2*3]) div $Bf) + (((Col and $FF) * PPix[Pet2*3]) div $Bf);
+          1..191:    Pix := $10000 * ((((Col div $10000) and $FF) * PPix[Position2*3]) div $Bf) + $100 * ((((Col div $100) and $FF) * PPix[Position2*3]) div $Bf) + (((Col and $FF) * PPix[Position2*3]) div $Bf);
           192:       Pix := Col;
-          193..254:  Pix := Col + ($10000 * ((($FF - ((Col div $10000) and $FF)) * ((PPix[Pet2*3] - $C0) * 4) ) div $FF) + $100 * ((($FF - ((Col div $100) and $FF)) * ((PPix[Pet2*3] - $C0) * 4)) div $FF) + ((($FF - (Col and $FF)) * ((PPix[Pet2*3] - $C0) * 4)) div $FF));
+          193..254:  Pix := Col + ($10000 * ((($FF - ((Col div $10000) and $FF)) * ((PPix[Position2*3] - $C0) * 4) ) div $FF) + $100 * ((($FF - ((Col div $100) and $FF)) * ((PPix[Position2*3] - $C0) * 4)) div $FF) + ((($FF - (Col and $FF)) * ((PPix[Position2*3] - $C0) * 4)) div $FF));
           255:       Pix := $FFFFFF;
         end;
 // 0.5.0 Original
-//        case PPix[Pet2*3] of
+//        case PPix[Position2*3] of
 //          0:      TempA := 0;
 //          128:    Pix := $10000 * ((Col div $10000) div 2) + $100 * (((Col div $100) and $FF) div 2) + (Col and $FF) div 2;
 //          192:    Pix := Col;
@@ -687,25 +672,16 @@ begin
 
 
 
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 1] := Pix div $10000;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 2] := (Pix div $100) and $FF;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 3] := Pix and $FF;
-        TextureD32[Pet*TextureB.Width + Pet2 + 1, 4] := TempA;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 1] := Pix div $10000;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 2] := (Pix div $100) and $FF;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 3] := Pix and $FF;
+        TextureD32[Position*TextureB.Width + Position2 + 1, 4] := TempA;
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
   end;
 
-
-
-
   TextureB.Free;
-//  Inc(ActTex);
-{  Tekst.Tekstura := ActTex;
-  Tekst.W := TexOrygW;
-  Tekst.H := TexOrygH;
-  Tekst.X2 := TexOrygW/TexNewW;
-  Tekst.Y2 := TexOrygH/TexNewH;}
   Result.X := 0;
   Result.Y := 0;
   Result.W := 0;
@@ -714,8 +690,8 @@ begin
   Result.ScaleH := 1;
   Result.Rot := 0;
   Result.TexNum := ActTex;
-  Result.TexW := TexOrygW / TexNewW;
-  Result.TexH := TexOrygH / TexNewH;
+  Result.TexW := TexOrigW / TexNewW;
+  Result.TexH := TexOrigH / TexNewH;
 
   Result.Int := 1;
   Result.ColR := 1;
@@ -730,32 +706,32 @@ begin
   Result.TexY2 := 1;
 
   // 0.5.0
-  Result.Name := Nazwa;
+  Result.Name := Identifier;
 
   end;
 
   Log.BenchmarkEnd(4);
   if Log.BenchmarkTimeLength[4] >= 1 then
-    Log.LogBenchmark('**********> Texture Load Time Warning - ' + Format + '/' + Nazwa + '/' + Typ, 4);
+    Log.LogBenchmark('**********> Texture Load Time Warning - ' + Format + '/' + Identifier + '/' + Typ, 4);
 
   end; // logerror
 end;
 
 {procedure ResizeTexture(s: pbytearray; d: pbytearray);
 var
-  Pet:    integer;
-  Pet2:   integer;
+  Position:    integer;
+  Position2:   integer;
 begin
-  for Pet := 0 to TexNewH*4-1 do
-    for Pet2 := 0 to TexNewW-1 do
-      d[Pet*TexNewW + Pet2] := 0;
+  for Position := 0 to TexNewH*4-1 do
+    for Position2 := 0 to TexNewW-1 do
+      d[Position*TexNewW + Position2] := 0;
 
-  for Pet := 0 to TexOrygH-1 do begin
-    for Pet2 := 0 to TexOrygW-1 do begin
-      d[(Pet*TexNewW + Pet2)*4] := Paleta[s[Pet*TexOrygW + Pet2], 1];
-      d[(Pet*TexNewW + Pet2)*4+1] := Paleta[s[Pet*TexOrygW + Pet2], 2];
-      d[(Pet*TexNewW + Pet2)*4+2] := Paleta[s[Pet*TexOrygW + Pet2], 3];
-      d[(Pet*TexNewW + Pet2)*4+3] := Paleta[s[Pet*TexOrygW + Pet2], 4];
+  for Position := 0 to TexOrigH-1 do begin
+    for Position2 := 0 to TexOrigW-1 do begin
+      d[(Position*TexNewW + Position2)*4] := Paleta[s[Position*TexOrigW + Position2], 1];
+      d[(Position*TexNewW + Position2)*4+1] := Paleta[s[Position*TexOrigW + Position2], 2];
+      d[(Position*TexNewW + Position2)*4+2] := Paleta[s[Position*TexOrigW + Position2], 3];
+      d[(Position*TexNewW + Position2)*4+3] := Paleta[s[Position*TexOrigW + Position2], 4];
     end;
   end;
 end;}
@@ -770,22 +746,22 @@ begin
   glTexImage2D(GL_TEXTURE_2D, 0, 4, TexNewW, TexNewH, 0, GL_RGBA, GL_UNSIGNED_BYTE, p);
 end;}
 
-function TTextureUnit.LoadTexture(Nazwa, Format, Typ: PChar; Col: LongWord): TTexture;
+function TTextureUnit.LoadTexture(Identifier, Format, Typ: PChar; Col: LongWord): TTexture;
 begin
-  Result := LoadTexture(false, Nazwa, Format, Typ, Col);
-//  Result := LoadTexture(SkinReg, Nazwa, Format, Typ, Col); // default to SkinReg
+  Result := LoadTexture(false, Identifier, Format, Typ, Col);
+//  Result := LoadTexture(SkinReg, Identifier, Format, Typ, Col); // default to SkinReg
 
 end;
 
-function TTextureUnit.LoadTexture(Nazwa: string): TTexture;
+function TTextureUnit.LoadTexture(Identifier: string): TTexture;
 begin
-  Result := LoadTexture(false, pchar(Nazwa), 'JPG', 'Plain', 0);
+  Result := LoadTexture(false, pchar(Identifier), 'JPG', 'Plain', 0);
 end;
 
 function TTextureUnit.CreateTexture(var Data: array of byte; Name: string; W, H: word; Bits: byte): TTexture;
 var
-  Pet:        integer;
-  Pet2:       integer;
+  Position:        integer;
+  Position2:       integer;
   Pix:        integer;
   ColInt:     real;
   PPix:       PByteArray;
@@ -806,13 +782,6 @@ begin
     if Error > 0 then beep;
   end;
 
-
-//  Inc(ActTex);
-{  Tekst.Tekstura := ActTex;
-  Tekst.W := TexOrygW;
-  Tekst.H := TexOrygH;
-  Tekst.X2 := TexOrygW/TexNewW;
-  Tekst.Y2 := TexOrygH/TexNewH;}
   Result.X := 0;
   Result.Y := 0;
   Result.W := 0;
