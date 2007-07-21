@@ -255,11 +255,13 @@ begin
         Rec.Right := (Start+Dlugosc-Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
 
         glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
           glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f((Rec.Right-Rec.Left)/32, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f((Rec.Right-Rec.Left)/32, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
         // prawa czesc  -  right part
@@ -363,8 +365,8 @@ var
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
           glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+          glTexCoord2f((Rec.Right-Rec.Left)/32, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f((Rec.Right-Rec.Left)/32, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
         glColor3f(1, 1, 1);
 
