@@ -52,13 +52,13 @@ begin
 
           //Bottom Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
-          glTexCoord2f(TexX1*TexW, 0.5);
+          glTexCoord2f(TexX1*TexW, 0.5*TexH);
           glVertex3f(x, y+h*scaleH + h*scaleH/2 + Reflectionspacing, z);
 
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
-          glTexCoord2f(TexX2*TexW, 0.5);
+          glTexCoord2f(TexX2*TexW, 0.5*TexH);
           glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Reflectionspacing, z);
 
           //Top Right
@@ -68,7 +68,7 @@ begin
         glEnd;
 
         glDisable(GL_TEXTURE_2D);
-        glDisable(GL_DEPTH_TEST); 
+        glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
       end;
     end;
