@@ -184,6 +184,8 @@ var
   Error:      integer;
   SkipX:      integer;
   myAlpha:    Real;
+  myRGBABitmap: array of byte;
+  RGBPtr: PByte;
 begin
   Log.BenchmarkStart(4);
   Mipmapping := true;
@@ -240,6 +242,7 @@ begin
     if (Typ = 'Transparent') and (TexturePNG.TransparencyMode = ptmPartial) then
     begin
       setlength(TextureAlpha, TextureB.Width*TextureB.Height);
+      setlength(MyRGBABitmap,TextureB.Width*TextureB.Height*4);
       if (TexturePNG.Header.ColorType = COLOR_GRAYSCALEALPHA) or
          (TexturePNG.Header.ColorType = COLOR_RGBALPHA) then
       begin
@@ -247,9 +250,18 @@ begin
         for Position := 0 to TextureB.Height - 1 do
         begin
           AlphaPtr := PByte(TexturePNG.AlphaScanline[Position]);
+          RGBPtr:=PByte(TexturePNG.Scanline[Position]);
           for Position2 := 0 to TextureB.Width - 1 do
           begin
             TextureAlpha[Position*TextureB.Width+Position2]:= AlphaPtr^;
+            MyRGBABitmap[(Position*TextureB.Width+Position2)*4]:= RGBPtr^;
+            Inc(RGBPtr);
+            MyRGBABitmap[(Position*TextureB.Width+Position2)*4+1]:= RGBPtr^;
+            Inc(RGBPtr);
+            MyRGBABitmap[(Position*TextureB.Width+Position2)*4+2]:= RGBPtr^;
+            Inc(RGBPtr);
+            MyRGBABitmap[(Position*TextureB.Width+Position2)*4+3]:= AlphaPtr^;
+//            Inc(RGBPtr);
             Inc(AlphaPtr);
           end;
         end;
@@ -379,28 +391,22 @@ begin
           TextureD32[Position*TexNewW + Position2 + 1, 2] := 0;
           TextureD32[Position*TexNewW + Position2 + 1, 3] := 0;
           TextureD32[Position*TexNewW + Position2 + 1, 4] := 0;
+        end else if (Format = 'PNG') and (length(TextureAlpha) <> 0) then begin
+          myAlpha:=TextureAlpha[Position*TexOrigW+Position2];
+          TextureD32[Position*TexNewW + Position2+1, 1] := MyRGBABitmap[(Position*TexOrigW+Position2)*4+2];
+          TextureD32[Position*TexNewW + Position2+1, 2] := MyRGBABitmap[(Position*TexOrigW+Position2)*4+1];
+          TextureD32[Position*TexNewW + Position2+1, 3] := MyRGBABitmap[(Position*TexOrigW+Position2)*4];
+          TextureD32[Position*TexNewW+Position2+1,4]:=MyRGBABitmap[(Position*TexOrigW+Position2)*4+3];
         end else begin
-          TextureD32[Position*TexNewW + Position2+1, 1] := Pix;
-          TextureD32[Position*TexNewW + Position2+1, 2] := Pix div 256;
-          TextureD32[Position*TexNewW + Position2+1, 3] := Pix div (256*256);
-          // transparent png hack start (part 2 of 2)
-          if (Format = 'PNG') and (length(TextureAlpha) <> 0) then begin
-            myAlpha:=TextureAlpha[Position*TexOrigW+Position2];
-
-            // the following calculations tweak transparency so that it really looks transparent
-            myAlpha:=myAlpha-75;
-            if myAlpha < 0 then myAlpha:=0;
-            myAlpha:=myAlpha/180;
-            myAlpha:=myAlpha*myAlpha*myAlpha;
-            myAlpha:=myAlpha*255;
-
-            TextureD32[Position*TexNewW+Position2+1,4]:=floor(myAlpha);
-          end else
-          // transparent png hack end
-            TextureD32[Position*TexNewW + Position2+1, 4] := 255;
+          TextureD32[Position*TexNewW + Position2+1, 1] := (Pix and $ff);
+          TextureD32[Position*TexNewW + Position2+1, 2] := ((Pix shr 8) and $ff);
+          TextureD32[Position*TexNewW + Position2+1, 3] := ((Pix shr 16) and $ff);
+          TextureD32[Position*TexNewW + Position2+1, 4] := 255;
         end;
       end;
     end;
+    setlength(TextureAlpha,0);
+    setlength(MyRGBABitmap,0);
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TexNewW, TexNewH, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
 {    if Mipmapping then begin
       Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 4, TextureB.Width, TextureB.Height, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
