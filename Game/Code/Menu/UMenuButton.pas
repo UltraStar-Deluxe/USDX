@@ -418,7 +418,7 @@ begin
         Spacing := Reflectionspacing
       else
         Spacing := DeSelectReflectionspacing;
-        
+
       with Texture do
       begin
         //Bind Tex and GL Attributes
@@ -440,13 +440,13 @@ begin
 
           //Bottom Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
-          glTexCoord2f(TexX1*TexW, {TexY1*TexH*}0.5);
+          glTexCoord2f(TexX1*TexW, TexY1+TexH*0.5);
           glVertex3f(x, y+h*scaleH + h*scaleH/2 + Spacing, z);
 
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
-          glTexCoord2f(TexX2*TexW, {TexY1*TexH*}0.5);
+          glTexCoord2f(TexX2*TexW, TexY1+TexH*0.5);
           glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Spacing, z);
 
           //Top Right
