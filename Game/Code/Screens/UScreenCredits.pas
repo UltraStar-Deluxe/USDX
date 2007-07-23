@@ -67,24 +67,11 @@ type
 
 const
   Funky_Text: AnsiString =
-{   'Hey doodz, we made it! You had to wait very long cause we wanted it to be perfect. So here it is, the most perfect UltraStar you`ll ever get. We have this awesome stars, we have this awesome party mode with plugins, we have the best skins and yes we´re '+
-   'the best :P Whiteshark tried his best to fix all the bugs, and he has done an awesome job! Mota and Mog fired up their Photoshops to create this stunning skins, Blindy has brought you this massive stars and Canni did the documentation. BlindGuard hosts '+
-   'the forum, and oh my gosh he spends a lot of time fucking with all the wankers asking for mp3s. We also want to thank the people in the forum for their massive support and their patience xD Blindy and Mog also want to thank www.demoscene.tv for '+
-   'inspiration (yay Kewlerz suck, but we suck more) - also big shout outs to Einsiedler for brewing our favourite beer and dnbradio.com for the music. Big greetings from Mog to Antje too, I love you baby :X';
-}
-   'So here we are, grandma deluxe has arrived. It´s Mog on the keyboard, but I speak for all of us teamers :P Took us '+
-   'longer than expected to come up with this, but hey you know good things take their time ;) As we tried to put in as '+
-   'many features as we have seen on the board (and our`s aswell), like the neat eyecandy (stars h00ray), the party mode, '+
-   'new awesome skins, fucking bugfixes (poor Whiteshark) and a hell lot of other stuff. I´m also proud to announce that '+
-   'we´re the only UltraStar with all this stuff, nice hu? ;) Maybe it´s about time to explain why it took so long, I just '+
-   'strip the part with lazy joker (has he done _anything_?) and all the other people who joined #ultra-star.dl.am on '+
-   'QuakeNet just to beg for a beta or wanted to "help" (hey I´m from a big newspaper). Actually there was a lot of code '+
-   'that had to be written up from scratch (party mode anyone?), and some of the stuff was pretty new to us (OpenGL h00ray). '+
-   'And it reallly didn´t help when people on the board didn´t stop arguing about the release date (I don´t say wankers), so '+
-   'next time some real help would be apprechiated - send us beer if you´re unskilled xD It´s almost sunset outside, time '+
-   'for the thanks then. We want to thank sourceforge for the hosting, BlindGuard for the board support (bet he has some '+
-   'grey hairs now), Wome for the tune you hear right now (thanks mate :X), Corvus5 for the work on UltraStar, our friends '+
-   'on the board (ultra-star.dl.am the place to be!), Einsiedler for the beer, the demoscene and weed for some inspiration...';
+    'Grandma Deluxe has arrived! Thanks to Corvus5 for the massive work on UltraStar, Wome for the nice tune you´re hearing, '+
+    'all the people who put massive effort and work in new songs (don´t forget UltraStar w/o songs would be nothing), ppl from '+
+    'irc helping us - eBandit and Gabari, scene ppl who really helped instead of compiling and running away. Greetings to '+
+    'Demoscene.tv, scene.org, KakiArts, Sourceforge,..';
+
 
   Timings: array[0..21] of Cardinal=(
      20,   //  0 Delay vor Start
@@ -972,7 +959,7 @@ Data := Music.GetFFTData;
       k:=0;
       for j:=0 to 40 do
         if Data[j]>=Data[k] then k:=j;
-      if Data[k]>0.25 then begin
+      if Data[k]>0.2 then begin
          l:=RandomRange(6,16);
          j:=RandomRange(0,27);
          GoldenRec.Spawn(myLogoCoords[j,0], myLogoCoords[j,1], 16-l, l, 0, -1, PerfectNote, 0);
@@ -1025,6 +1012,7 @@ Data := Music.GetFFTData;
         Music.Stop;
         Music.Open(soundpath + 'credits-outro-tune.mp3');
         Music.Play;
+        Music.SetVolume(20);
         Music.SetLoop(True);
       end;
       if CTime > 231 then begin
