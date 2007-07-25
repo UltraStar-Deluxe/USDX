@@ -15,7 +15,7 @@ type
       Credits_Time: Cardinal;
       Credits_Alpha: Cardinal;
       CTime: Cardinal;
-      CTime_hold: array of Cardinal;
+      CTime_hold: Cardinal;
       ESC_Alpha: Integer;
 
       credits_entry_tex: TTexture;
@@ -54,6 +54,8 @@ type
       CurrentScrollStart, CurrentScrollEnd: Integer;
 
       CRDTS_Stage: TCreditsStages;
+
+  myTex: glUint;
 
       Fadeout:      boolean;
       constructor Create; override;
@@ -115,12 +117,12 @@ begin
           FadeTo(@ScreenMain);
           Music.PlayBack;
         end;
-       SDLK_SPACE:
+{       SDLK_SPACE:
          begin
            setlength(CTime_hold,length(CTime_hold)+1);
            CTime_hold[high(CTime_hold)]:=CTime;
          end;
-
+}
      end;//esac
     end; //fi
 end;
@@ -153,7 +155,7 @@ begin
 
   outro_bg := Texture.LoadTexture(true, 'OUTRO_BG', 'PNG', 'Plain', 0);
   outro_esc := Texture.LoadTexture(true, 'OUTRO_ESC', 'PNG', 'Transparent', 0);
-  outro_exd := Texture.LoadTexture(true, 'OUTRO_EXD', 'PNG', 'Plain', 0);
+  outro_exd := Texture.LoadTexture(true, 'OUTRO_EXD', 'PNG', 'Transparent', 0);
 
   CRDTS_Stage:=InitialDelay;
 end;
@@ -173,7 +175,7 @@ begin
   Music.Open(soundpath + 'wome-credits-tune.mp3'); //danke kleinster liebster weeeetüüüüü!!
 //  Music.Play;
   CTime:=0;
-  setlength(CTime_hold,0);
+//  setlength(CTime_hold,0);
 end;
 
 procedure TScreenCredits.onHide;
@@ -220,7 +222,7 @@ begin
       inc(CurrentScrollEnd);
     end;
   end;
-  // timing hack
+{  // timing hack
     X:=5;
     SetFontStyle (2);
      SetFontItalic(False);
@@ -231,7 +233,7 @@ begin
      SetFontPos (500, X);
      glPrint (Addr(visibleText[0]));
      X:=X+20;
-     end;
+     end;}
 end;
 
 procedure Start3D;
@@ -266,6 +268,8 @@ var
   myColor: Cardinal;
   myScale: Real;
   myAngle: Real;
+
+
 const  myLogoCoords: Array[0..27,0..1] of Cardinal = ((39,32),(84,32),(100,16),(125,24),
                                        (154,31),(156,58),(168,32),(203,36),
                                        (258,34),(251,50),(274,93),(294,84),
@@ -285,6 +289,7 @@ Data := Music.GetFFTData;
   begin
     Credits_Time := T;
     inc(CTime);
+    inc(CTime_hold);
     Credits_X := Credits_X-2;
     if (CRDTS_Stage=InitialDelay) and (CTime=Timings[0]) then
     begin
@@ -1008,16 +1013,16 @@ Data := Music.GetFFTData;
     if (CRDTS_Stage=Outro) then
     begin
       if CTime=Timings[20] then begin
-        CTime:=0;
+        CTime_hold:=0;
         Music.Stop;
         Music.Open(soundpath + 'credits-outro-tune.mp3');
         Music.Play;
         Music.SetVolume(20);
         Music.SetLoop(True);
       end;
-      if CTime > 231 then begin
+      if CTime_hold > 231 then begin
         Music.Play;
-        Ctime:=0;
+        Ctime_hold:=0;
       end;
       glClearColor(0,0,0,0);
       glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
@@ -1079,9 +1084,6 @@ Data := Music.GetFFTData;
 }
   // make the stars shine
   GoldenRec.Draw;
-
-  //timing hack
-//    Draw_FunkyText;
 end;
 
 end.
