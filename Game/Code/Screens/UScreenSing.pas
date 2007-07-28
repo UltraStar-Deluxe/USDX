@@ -3,7 +3,7 @@ unit UScreenSing;
 interface
 
 uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
-  TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses;
+  TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses, Uffmpeg;
 
 type
   TScreenSing = class(TMenu)
@@ -145,7 +145,7 @@ begin
     //stop Music
     Music.Pause;
     if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then //Video
-      PauseSmpeg; //Video
+      FFmpegTogglePause;//PauseSmpeg; //Video
   end
   else            //Pause ausschalten
   begin
@@ -153,7 +153,7 @@ begin
     Music.MoveTo (PauseTime);//Position of Music
     Music.Play; //Play Music
     if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then //Video
-      PlaySmpeg;
+      FFmpegTogglePause;//PlaySmpeg;
       //SkipSmpeg(PauseTime);
     Paused := false;
   end;
@@ -222,6 +222,7 @@ begin
 
   LyricMain := TLyric.Create;
   LyricSub :=  TLyric.Create;
+  Uffmpeg.Init;
 end;
 
 procedure TScreenSing.onShow;
@@ -349,8 +350,11 @@ begin
 
   // set movie
   if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then begin
-    OpenSmpeg(AktSong.Path + AktSong.Video);
-    SkipSmpeg(AktSong.VideoGAP + AktSong.Start);
+{    OpenSmpeg(AktSong.Path + AktSong.Video);
+    SkipSmpeg(AktSong.VideoGAP + AktSong.Start);}
+    // todo: VideoGap and Start time verwursten
+    FFmpegOpenFile(pAnsiChar(AktSong.Path + AktSong.Video));
+    FFmpegSkip(AktSong.VideoGAP + AktSong.Start);
     AktSong.VideoLoaded := true;
   end;
 
@@ -739,14 +743,17 @@ begin
   if AktSong.VideoLoaded then
   begin
     try
-      PlaySmpeg;
+      FFmpegGetFrame(Czas.Teraz);
+      FFmpegDrawGL;
+//      PlaySmpeg;
     except
       //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
       AktSong.VideoLoaded := False;
       Log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
       Log.LogError('Corrupted File: ' + AktSong.Video);
       try
-        CloseSmpeg;
+//        CloseSmpeg;
+        FFmpegClose;
       except
 
       end;
@@ -1061,14 +1068,19 @@ begin
   // update and draw movie
   if ShowFinish and AktSong.VideoLoaded then begin
     try
-      UpdateSmpeg; // this only draws
+//      UpdateSmpeg; // this only draws
+      // todo: find a way to determine, when a new frame is needed
+      // toto: same for the need to skip frames
+      FFmpegGetFrame(Czas.Teraz);
+      FFmpegDrawGL;
     except
       //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
       AktSong.VideoLoaded := False;
       log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
       Log.LogError('Corrupted File: ' + AktSong.Video);
       try
-        CloseSmpeg;
+//        CloseSmpeg;
+        FFmpegClose;
       except
 
       end;
@@ -1095,7 +1107,7 @@ begin
     end;
   end;
   end;
-  
+
   // draw custom items
   SingDraw;  // always draw
 
@@ -1143,7 +1155,8 @@ begin
   end;
 
   if AktSong.VideoLoaded then begin
-    CloseSmpeg;
+//    CloseSmpeg;
+    FFmpegClose;
     AktSong.VideoLoaded := false; // to prevent drawing closed video
   end;
 

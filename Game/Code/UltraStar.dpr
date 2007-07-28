@@ -5,9 +5,6 @@ program UltraStar;
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
 uses
-  //------------------------------
-  //Includes - Menu System
-  //------------------------------
   UDisplay in 'Menu\UDisplay.pas',
   UMenu in 'Menu\UMenu.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
@@ -18,10 +15,6 @@ uses
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
   UMenuButtonCollection in 'Menu\UMenuButtonCollection.pas',
-
-  //------------------------------
-  //Includes - Classes
-  //------------------------------
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
@@ -49,11 +42,7 @@ uses
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
-  UCommandLine  in 'Classes\UCommandLine.pas',
-
-  //------------------------------
-  //Includes - Screens
-  //------------------------------
+  UCommandLine in 'Classes\UCommandLine.pas',
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -82,28 +71,17 @@ uses
   UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
   UScreenCredits in 'Screens\UScreenCredits.pas',
   UScreenPopup in 'Screens\UScreenPopup.pas',
-
-  //------------------------------
-  //Includes - Screens PartyMode
-  //------------------------------
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
   UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
-
-  //------------------------------
-  //Includes - Modi SDK
-  //------------------------------
   ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
-
-  //------------------------------
-  //Includes - Delphi
-  //------------------------------
   Windows,
   SDL,
-  SysUtils;
+  SysUtils,
+  Uffmpeg in 'SMpeg\Uffmpeg.pas';
 
 const
   Version = 'UltraStar Deluxe V 1.00 RC1';
