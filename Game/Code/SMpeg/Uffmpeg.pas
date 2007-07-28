@@ -38,7 +38,7 @@ begin
   av_register_all;
   VideoOpened:=False;
   VideoPaused:=False;
-  glGenTextures(1, PglUint(&VideoTex));
+  glGenTextures(1, PglUint(@VideoTex));
   SetLength(TexData,0);
 end;
 
