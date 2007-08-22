@@ -4,7 +4,7 @@ interface
 
 uses
   UMenu, SDL, UMusic, UFiles, UTime, UDisplay, USongs, SysUtils, ULog, UThemes, UTexture, ULanguage,
-  ULCD, ULight, UIni, TextGL;
+  ULCD, ULight, UIni;
 
 type
   TScreenSong = class(TMenu)
@@ -69,6 +69,7 @@ type
       procedure SetScroll3;
       procedure SetScroll4;
       procedure SetScroll5;
+      procedure SetScroll6;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure onShow; override;
@@ -806,6 +807,7 @@ begin
           else
             SetScroll4;
         end;
+      6: SetScroll6;
       else SetScroll4;
     end;
     //Set Visibility of Video Icon
@@ -1173,7 +1175,7 @@ begin
   //Change Pos of all Buttons
   for B := low(Button) to high(Button) do
   begin
-    Button[B].Visible := CatSongs.Song[B].Visible; //Adjust Visability
+    Button[B].Visible := CatSongs.Song[B].Visible; //Adjust Visibility
     if Button[B].Visible then //Only Change Pos for Visible Buttons
     begin
       Pos := (CatSongs.VisibleIndex(B) - SongCurrent);
@@ -1234,7 +1236,7 @@ begin
 
         Diff := (Button[B].H - Theme.Song.Cover.H)/2;
 
-        Button[B].X :=  Theme.Song.Cover.X+Theme.Song.Cover.H/2-Button[b].H/2 + (Theme.Song.Cover.H)*sin(Angle/2)*1.52;
+        Button[B].X :=  Theme.Song.Cover.X+Theme.Song.Cover.H/2-Button[b].H/2+Theme.Song.Cover.W/320*((Theme.Song.Cover.H)*sin(Angle/2)*1.52);
 
       end;
 
@@ -1244,6 +1246,112 @@ begin
     end;
   end;
 end;
+
+procedure TScreenSong.SetScroll6; // rotate (slotmachine style)
+var
+  B:      integer;
+  Angle:    real;
+  Pos:    Real;
+  VS:     integer;
+  diff:     real;
+  X:        Real;
+  Wsp:    real;
+  Z, Z2:      real;
+begin
+  VS := CatSongs.VisibleSongs; // cache Visible Songs
+  if VS <=5 then begin
+    // kolowe
+    for B := 0 to High(Button) do
+    begin
+      Button[B].Visible := CatSongs.Song[B].Visible; // nowe
+      if Button[B].Visible then begin // 0.5.0 optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
+
+      Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
+
+      Z := (1 + cos(Wsp)) / 2;
+      Z2 := (1 + 2*Z) / 3;
+
+
+      Button[B].Y := Theme.Song.Cover.Y + (0.185 * Theme.Song.Cover.H * VS * sin(Wsp)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
+      Button[B].Z := Z / 2 + 0.3;
+
+      Button[B].W := Theme.Song.Cover.H * Z2;
+
+//      Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
+      Button[B].X := Theme.Song.Cover.X  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
+      Button[B].H := Button[B].W;
+      end;
+    end;
+  end
+  else begin
+
+    //Change Pos of all Buttons
+    for B := low(Button) to high(Button) do
+      begin
+          Button[B].Visible := CatSongs.Song[B].Visible; //Adjust Visibility
+      if Button[B].Visible then //Only Change Pos for Visible Buttons
+        begin
+        Pos := (CatSongs.VisibleIndex(B) - SongCurrent);
+        if (Pos < -VS/2) then
+          Pos := Pos + VS
+        else if (Pos > VS/2) then
+          Pos := Pos - VS;
+
+        if (Abs(Pos) < 2.5) then {fixed Positions}
+        begin
+          Angle := Pi * (Pos / 5);
+//          Button[B].Visible := False;
+
+          Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle*0.8));//Power(Z2, 3);
+
+          Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
+
+          Button[B].Z := 0.95 - Abs(Pos) * 0.01;
+
+          Button[B].X := (Theme.Song.Cover.X  + (Theme.Song.Cover.H - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.5);
+
+          Button[B].W := Button[B].H;
+
+          Diff := (Button[B].H - Theme.Song.Cover.H)/2;
+
+
+          X := Sin(Angle*1.3)*0.9;
+
+          Button[B].Y := Theme.Song.Cover.Y + Theme.Song.Cover.W * X - Diff;
+        end
+        else
+        begin {Behind the Front Covers}
+
+          // limit-bg-covers hack
+          if (abs(VS/2-abs(Pos))>10) then Button[B].Visible:=False;
+          if VS > 25 then VS:=25;
+          // end of limit-bg-covers hack
+
+          if Pos < 0 then
+            Pos := (Pos - VS/2)/VS
+          else
+            Pos := (Pos + VS/2)/VS;
+
+          Angle := pi * Pos*2;
+
+          Button[B].Z := (0.4 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
+
+          Button[B].H :=0.6*(Theme.Song.Cover.H-Abs(Theme.Song.Cover.H * cos(Angle/2)*0.8));//Power(Z2, 3);
+
+          Button[B].W := Button[B].H;
+
+          Button[B].X := Theme.Song.Cover.X  - (Button[B].H - Theme.Song.Cover.H)*0.5;
+
+
+          Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
+
+          Button[B].Y := Theme.Song.Cover.Y+Theme.Song.Cover.H/2-Button[b].H/2+Theme.Song.Cover.W/320*(Theme.Song.Cover.H*sin(Angle/2)*1.52);
+        end;
+      end;
+    end;
+  end;
+end;
+
 
 procedure TScreenSong.onShow;
 begin
@@ -1424,15 +1532,6 @@ begin
     DrawEqualizer;
 
   DrawExtensions;
-
-
-    glColor4f(1, 1, 1, 1);
-    SetFontStyle (2);
-    SetFontItalic(False);
-    SetFontSize(9);
-    SetFontPos (5, 0);
-    glPrint(pAnsiChar(inttostr(floor(CatSongs.VisibleSongs))));
-
 
 end;
 
