@@ -1,3 +1,10 @@
+{############################################################################
+#                   FFmpeg support for UltraStar deluxe                     #
+#                                                                           #
+#   Created by b1indy                                                       #
+#   based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)  #
+#############################################################################}
+
 unit Uffmpeg;
 
 interface
@@ -31,7 +38,7 @@ var
 
 implementation
 
-const DebugDisplay=True;
+const DebugDisplay=False;
 
 procedure Init;
 begin
@@ -86,8 +93,9 @@ begin
     end else showmessage('no matching codec found');
     if(errnum >=0) then
     begin
-      showmessage('Found a matching Codec:'+#13#10#13#10+
-           'Width='+inttostr(VideoCodecContext^.width)+
+      if DebugDisplay then
+       showmessage('Found a matching Codec:'+#13#10#13#10+
+        'Width='+inttostr(VideoCodecContext^.width)+
         ', Height='+inttostr(VideoCodecContext^.height)+#13#10+
         'Aspect: '+inttostr(VideoCodecContext^.sample_aspect_ratio.num)+'/'+inttostr(VideoCodecContext^.sample_aspect_ratio.den)+#13#10+
         'Framerate: '+inttostr(VideoCodecContext^.time_base.num)+'/'+inttostr(VideoCodecContext^.time_base.den));
@@ -129,7 +137,7 @@ begin
         ScaledVideoWidth:=600.0*VideoAspect;
       end;
       VideoTimeBase:=VideoCodecContext^.time_base.num/VideoCodecContext^.time_base.den;
-      if (VideoAspect*VideoCodecContext^.width*VideoCodecContext^.height)>200000 then
+      if (DebugDisplay) and ((VideoAspect*VideoCodecContext^.width*VideoCodecContext^.height)>200000) then
         showmessage('you are trying to play a rather large video'+#13#10+
                     'be prepared to experience some timing problems');
     end;
@@ -238,6 +246,8 @@ end;
 procedure FFmpegDrawGL;
 begin
   if not VideoOpened then Exit;
+  glClearColor(0,0,0,0);
+  glClear(GL_COLOR_BUFFER_BIT and GL_DEPTH_BUFFER_BIT);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glColor4f(1, 1, 1, 1);
