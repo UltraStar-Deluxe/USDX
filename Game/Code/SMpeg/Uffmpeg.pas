@@ -247,7 +247,7 @@ procedure FFmpegDrawGL;
 begin
   if not VideoOpened then Exit;
   glClearColor(0,0,0,0);
-  glClear(GL_COLOR_BUFFER_BIT and GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glColor4f(1, 1, 1, 1);
