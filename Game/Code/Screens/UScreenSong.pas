@@ -4,7 +4,7 @@ interface
 
 uses
   UMenu, SDL, UMusic, UFiles, UTime, UDisplay, USongs, SysUtils, ULog, UThemes, UTexture, ULanguage,
-  ULCD, ULight, UIni;
+  ULCD, ULight, UIni, TextGL;
 
 type
   TScreenSong = class(TMenu)
@@ -1185,7 +1185,7 @@ begin
       if (Abs(Pos) < 2.5) then {fixed Positions}
       begin
       Angle := Pi * (Pos / 5);
-      //Button[B].Visible := False;
+//      Button[B].Visible := False;
 
       Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle*0.8));//Power(Z2, 3);
 
@@ -1208,13 +1208,16 @@ begin
       end
       else
       begin {Behind the Front Covers}
-//      Button[B].Visible := False;
-//        if VS/2-abs(Pos)>VS*0.4 then Button[B].Visible := False;
+
+        // limit-bg-covers hack
+        if (abs(VS/2-abs(Pos))>10) then Button[B].Visible:=False;
+        if VS > 25 then VS:=25;
+        // end of limit-bg-covers hack
 
         if Pos < 0 then
-          Pos := (Pos - VS/2) /VS
+          Pos := (Pos - VS/2)/VS
         else
-          Pos := (Pos + VS/2) /VS;
+          Pos := (Pos + VS/2)/VS;
 
         Angle := pi * Pos*2;
 
@@ -1381,7 +1384,7 @@ begin
         Music.SetMusicVolume(Round (CoverTime * Ini.PreviewVolume / Ini.PreviewFading * 10))
       else
         Music.SetMusicVolume(Ini.PreviewVolume * 10);
-        
+
     end;
 
 
@@ -1421,6 +1424,16 @@ begin
     DrawEqualizer;
 
   DrawExtensions;
+
+
+    glColor4f(1, 1, 1, 1);
+    SetFontStyle (2);
+    SetFontItalic(False);
+    SetFontSize(9);
+    SetFontPos (5, 0);
+    glPrint(pAnsiChar(inttostr(floor(CatSongs.VisibleSongs))));
+
+
 end;
 
 procedure TScreenSong.SelectNext;
