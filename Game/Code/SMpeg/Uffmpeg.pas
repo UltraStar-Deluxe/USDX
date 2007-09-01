@@ -5,7 +5,7 @@
 #   based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)  #
 #############################################################################}
 
-{$define DebugDisplay}
+//{$define DebugDisplay}
 
 
 unit Uffmpeg;
@@ -140,7 +140,9 @@ begin
       end;
       VideoTimeBase:=VideoCodecContext^.time_base.num/VideoCodecContext^.time_base.den;
       // hack to get reasonable timebase for divx
+{$ifdef DebugDisplay}
       showmessage('framerate: '+inttostr(floor(1/videotimebase))+'fps');
+{$endif}
       while VideoTimeBase < 0.02 do VideoTimeBase:=VideoTimeBase*10;
 {$ifdef DebugDisplay}
       showmessage('calculated framerate: '+inttostr(floor(1/videotimebase))+'fps');
@@ -237,10 +239,10 @@ begin
   // if we did not get an new frame, there's nothing more to do
   if Framefinished=0 then Exit;
   // otherwise we convert the pixeldata from YUV to RGB
-{  errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
+  errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
 			      VideoCodecContext^.width, VideoCodecContext^.height);
-}errnum:=1;
+//errnum:=1;
   if errnum >=0 then begin
     // copy RGB pixeldata to our TextureBuffer
     // (line by line)
