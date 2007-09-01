@@ -5,6 +5,9 @@
 #   based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)  #
 #############################################################################}
 
+{$define DebugDisplay}
+
+
 unit Uffmpeg;
 
 interface
@@ -37,8 +40,6 @@ var
   VideoSkipTime: Single;
 
 implementation
-
-const DebugDisplay=False;
 
 procedure Init;
 begin
@@ -93,12 +94,13 @@ begin
     end else showmessage('no matching codec found');
     if(errnum >=0) then
     begin
-      if DebugDisplay then
+{$ifdef DebugDisplay}
        showmessage('Found a matching Codec:'+#13#10#13#10+
         'Width='+inttostr(VideoCodecContext^.width)+
         ', Height='+inttostr(VideoCodecContext^.height)+#13#10+
         'Aspect: '+inttostr(VideoCodecContext^.sample_aspect_ratio.num)+'/'+inttostr(VideoCodecContext^.sample_aspect_ratio.den)+#13#10+
         'Framerate: '+inttostr(VideoCodecContext^.time_base.num)+'/'+inttostr(VideoCodecContext^.time_base.den));
+{$endif}
       // allocate space for decoded frame and rgb frame
       AVFrame:=avcodec_alloc_frame;
       AVFrameRGB:=avcodec_alloc_frame;
@@ -137,9 +139,15 @@ begin
         ScaledVideoWidth:=600.0*VideoAspect;
       end;
       VideoTimeBase:=VideoCodecContext^.time_base.num/VideoCodecContext^.time_base.den;
-      if (DebugDisplay) and ((VideoAspect*VideoCodecContext^.width*VideoCodecContext^.height)>200000) then
+      // hack to get reasonable timebase for divx
+      showmessage('framerate: '+inttostr(floor(1/videotimebase))+'fps');
+      while VideoTimeBase < 0.02 do VideoTimeBase:=VideoTimeBase*10;
+{$ifdef DebugDisplay}
+      showmessage('calculated framerate: '+inttostr(floor(1/videotimebase))+'fps');
+      if ((VideoAspect*VideoCodecContext^.width*VideoCodecContext^.height)>200000) then
         showmessage('you are trying to play a rather large video'+#13#10+
                     'be prepared to experience some timing problems');
+{$endif}
     end;
   end;
 end;
@@ -187,7 +195,10 @@ begin
     'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
 }
   if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then begin
-    if DebugDisplay then GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
+{$ifdef DebugDisplay}
+    // frame delay debug display
+    GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
+{$endif}
 {    showmessage('not getting new frame'+#13#10+
     'Time:      '+inttostr(floor(Time*1000))+#13#10+
     'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
@@ -199,7 +210,10 @@ begin
   VideoTime:=VideoTime+VideoTimeBase;
   TimeDifference:=myTime-VideoTime;
   if TimeDifference >= 3*VideoTimeBase then begin // skip frames
-    if DebugDisplay then GoldenRec.Spawn(200,35,1,16,0,-1,ColoredStar,$ff0000);
+{$ifdef DebugDisplay}
+    //frame drop debug display
+    GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
+{$endif}
 //    showmessage('skipping frames'+#13#10+
 //    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
 //    'TimeDiff:  '+inttostr(floor(TimeDifference*1000))+#13#10+
@@ -223,9 +237,10 @@ begin
   // if we did not get an new frame, there's nothing more to do
   if Framefinished=0 then Exit;
   // otherwise we convert the pixeldata from YUV to RGB
-  errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
+{  errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
 			      VideoCodecContext^.width, VideoCodecContext^.height);
+}errnum:=1;
   if errnum >=0 then begin
     // copy RGB pixeldata to our TextureBuffer
     // (line by line)
@@ -240,6 +255,11 @@ begin
     glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, TexData);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+{$ifdef DebugDisplay}
+    //frame decode debug display
+    GoldenRec.Spawn(200,35,1,16,0,-1,ColoredStar,$ffff00);
+{$endif}
+
   end;
 end;
 
@@ -261,15 +281,17 @@ begin
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
 
-  if DebugDisplay then begin
+{$ifdef DebugDisplay}
     SetFontStyle (2);
     SetFontItalic(False);
     SetFontSize(9);
     SetFontPos (5, 0);
     glPrint('delaying frame');
     SetFontPos (5, 20);
+    glPrint('fetching frame');
+    SetFontPos (5, 40);
     glPrint('dropping frame');
-  end;
+{$endif}
 end;
 
 end.
