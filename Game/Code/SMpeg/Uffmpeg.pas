@@ -5,7 +5,8 @@
 #   based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)  #
 #############################################################################}
 
-//{$define DebugDisplay}
+//{$define DebugDisplay}  // uncomment if u want to see the debug stuff
+//{$define DebugFrames}
 
 
 unit Uffmpeg;
@@ -17,7 +18,7 @@ procedure Init;
 procedure FFmpegOpenFile(FileName: pAnsiChar);
 procedure FFmpegClose;
 procedure FFmpegGetFrame(Time: Extended);
-procedure FFmpegDrawGL;
+procedure FFmpegDrawGL(Screen: integer);
 procedure FFmpegTogglePause;
 procedure FFmpegSkip(Time: Single);
 
@@ -197,7 +198,7 @@ begin
     'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
 }
   if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then begin
-{$ifdef DebugDisplay}
+{$ifdef DebugFrames}
     // frame delay debug display
     GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
 {$endif}
@@ -212,7 +213,7 @@ begin
   VideoTime:=VideoTime+VideoTimeBase;
   TimeDifference:=myTime-VideoTime;
   if TimeDifference >= 3*VideoTimeBase then begin // skip frames
-{$ifdef DebugDisplay}
+{$ifdef DebugFrames}
     //frame drop debug display
     GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
 {$endif}
@@ -257,7 +258,7 @@ begin
     glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, TexData);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-{$ifdef DebugDisplay}
+{$ifdef DebugFrames}
     //frame decode debug display
     GoldenRec.Spawn(200,35,1,16,0,-1,ColoredStar,$ffff00);
 {$endif}
@@ -265,11 +266,13 @@ begin
   end;
 end;
 
-procedure FFmpegDrawGL;
+procedure FFmpegDrawGL(Screen: integer);
 begin
   if not VideoOpened then Exit;
-  glClearColor(0,0,0,0);
-  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  if Screen=1 then begin
+    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  end;
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glColor4f(1, 1, 1, 1);

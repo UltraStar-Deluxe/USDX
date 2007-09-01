@@ -744,7 +744,7 @@ begin
   begin
     try
       FFmpegGetFrame(Czas.Teraz);
-      FFmpegDrawGL;
+      FFmpegDrawGL(ScreenAct);
 //      PlaySmpeg;
     except
       //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
@@ -1072,7 +1072,7 @@ begin
       // todo: find a way to determine, when a new frame is needed
       // toto: same for the need to skip frames
       FFmpegGetFrame(Czas.Teraz);
-      FFmpegDrawGL;
+      FFmpegDrawGL(ScreenAct);
     except
       //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
       AktSong.VideoLoaded := False;
