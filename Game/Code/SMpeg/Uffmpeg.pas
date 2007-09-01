@@ -7,6 +7,7 @@
 
 //{$define DebugDisplay}  // uncomment if u want to see the debug stuff
 //{$define DebugFrames}
+{$define Info}
 
 
 unit Uffmpeg;
@@ -88,11 +89,20 @@ begin
     begin
       VideoCodecContext:=VideoFormatContext^.streams[VideoStreamIndex]^.codec;
       VideoCodec:=avcodec_find_decoder(VideoCodecContext^.codec_id);
-    end else showmessage('found no video stream');
+    end else begin
+      showmessage('found no video stream');
+      av_close_input_file(VideoFormatContext);
+      Exit;
+    end;
     if(VideoCodec<>Nil) then
     begin
       errnum:=avcodec_open(VideoCodecContext, VideoCodec);
-    end else showmessage('no matching codec found');
+    end else begin
+      showmessage('no matching codec found');
+      avcodec_close(VideoCodecContext);
+      av_close_input_file(VideoFormatContext);
+      Exit;
+    end;
     if(errnum >=0) then
     begin
 {$ifdef DebugDisplay}
@@ -114,7 +124,14 @@ begin
     end;
     if myBuffer <> Nil then errnum:=avpicture_fill(PAVPicture(AVFrameRGB), myBuffer, PIX_FMT_RGB24,
                 VideoCodecContext^.width, VideoCodecContext^.height)
-    else showmessage('failed to allocate video buffer');
+    else begin
+      showmessage('failed to allocate video buffer');
+      av_free(AVFrameRGB);
+      av_free(AVFrame);
+      avcodec_close(VideoCodecContext);
+      av_close_input_file(VideoFormatContext);
+      Exit;
+    end;
     if errnum >=0 then
     begin
       VideoOpened:=True;
@@ -144,9 +161,14 @@ begin
 {$ifdef DebugDisplay}
       showmessage('framerate: '+inttostr(floor(1/videotimebase))+'fps');
 {$endif}
-      while VideoTimeBase < 0.02 do VideoTimeBase:=VideoTimeBase*10;
+      if VideoTimeBase < 0.02 then // 0.02 <-> 50 fps
+      begin
+        VideoTimeBase:=VideoCodecContext^.time_base.den/VideoCodecContext^.time_base.num;
+        while VideoTimeBase > 50 do VideoTimeBase:=VideoTimeBase/10;
+        VideoTimeBase:=1/VideoTimeBase;
+      end;
 {$ifdef DebugDisplay}
-      showmessage('calculated framerate: '+inttostr(floor(1/videotimebase))+'fps');
+      showmessage('corrected framerate: '+inttostr(floor(1/videotimebase))+'fps');
       if ((VideoAspect*VideoCodecContext^.width*VideoCodecContext^.height)>200000) then
         showmessage('you are trying to play a rather large video'+#13#10+
                     'be prepared to experience some timing problems');
@@ -238,7 +260,10 @@ begin
     av_free_packet(PAVPacket(@AVPacket));
   end;
   // if we did not get an new frame, there's nothing more to do
-  if Framefinished=0 then Exit;
+  if Framefinished=0 then begin
+    GoldenRec.Spawn(220,15,1,16,0,-1,ColoredStar,$0000ff);
+    Exit;
+  end;
   // otherwise we convert the pixeldata from YUV to RGB
   errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
@@ -268,11 +293,14 @@ end;
 
 procedure FFmpegDrawGL(Screen: integer);
 begin
-  if not VideoOpened then Exit;
+  // have a nice black background to draw on (even if there were errors opening the vid)
   if Screen=1 then begin
     glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
   end;
+  // exit if there's nothing to draw
+  if not VideoOpened then Exit;
+
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glColor4f(1, 1, 1, 1);
@@ -286,8 +314,29 @@ begin
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
 
-{$ifdef DebugDisplay}
-    SetFontStyle (2);
+{$ifdef Info}
+  if VideoSkipTime+VideoTime+VideoTimeBase < 0 then begin
+    glColor4f(0.7, 1, 0.3, 1);
+    SetFontStyle (1);
+    SetFontItalic(False);
+    SetFontSize(9);
+    SetFontPos (300, 0);
+    glPrint('Delay due to negative VideoGap');
+    glColor4f(1, 1, 1, 1);
+  end;
+{$endif}
+
+{$ifdef DebugFrames}
+    glColor4f(0, 0, 0, 0.2);
+    glbegin(gl_quads);
+      glVertex2f(0, 0);
+      glVertex2f(0, 70);
+      glVertex2f(250, 70);
+      glVertex2f(250, 0);
+    glEnd;
+
+    glColor4f(1,1,1,1);
+    SetFontStyle (1);
     SetFontItalic(False);
     SetFontSize(9);
     SetFontPos (5, 0);
