@@ -1159,9 +1159,9 @@ var
   Angle:    real;
   Pos:    Real;
   VS:     integer;
-  VS_hack: integer; // visible songs for the
   diff:     real;
   X:        Real;
+  helper: real;
 begin
   VS := CatSongs.VisibleSongs; // cache Visible Songs
   {Vars
@@ -1213,16 +1213,22 @@ begin
       begin {Behind the Front Covers}
 
         // limit-bg-covers hack
-        if (abs(VS/2-abs(Pos))>10) then Button[B].Visible:=False;
-        if VS > 25 then VS_hack:=25 else VS_hack:=VS;
+        if (abs(abs(Pos)-VS/2)>10) then Button[B].Visible:=False;
         // end of limit-bg-covers hack
 
         if Pos < 0 then
-          Pos := (Pos - VS_hack/2)/VS_hack
+          Pos := (Pos - VS/2)/VS
         else
-          Pos := (Pos + VS_hack/2)/VS_hack;
+          Pos := (Pos + VS/2)/VS;
 
         Angle := pi * Pos*2;
+        if VS > 24 then
+        begin
+          if Angle < 0 then helper:=-1 else helper:=1;
+          Angle:=2*pi-abs(Angle);
+          Angle:=Angle*(VS/24);
+          Angle:=(2*pi-Angle)*helper;
+        end;
 
         Button[B].Z := (0.4 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
 
