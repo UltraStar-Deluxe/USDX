@@ -1159,6 +1159,7 @@ var
   Angle:    real;
   Pos:    Real;
   VS:     integer;
+  VS_hack: integer; // visible songs for the
   diff:     real;
   X:        Real;
 begin
@@ -1213,13 +1214,13 @@ begin
 
         // limit-bg-covers hack
         if (abs(VS/2-abs(Pos))>10) then Button[B].Visible:=False;
-        if VS > 25 then VS:=25;
+        if VS > 25 then VS_hack:=25 else VS_hack:=VS;
         // end of limit-bg-covers hack
 
         if Pos < 0 then
-          Pos := (Pos - VS/2)/VS
+          Pos := (Pos - VS_hack/2)/VS_hack
         else
-          Pos := (Pos + VS/2)/VS;
+          Pos := (Pos + VS_hack/2)/VS_hack;
 
         Angle := pi * Pos*2;
 
