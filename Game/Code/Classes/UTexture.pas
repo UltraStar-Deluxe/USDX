@@ -38,10 +38,6 @@ type
     TexY2:    real;
     Alpha:    real;
     Name:     string; // 0.5.0: experimental for handling cache images. maybe it's useful for dynamic skins
-    // colorize hack
-    Colorized: Boolean;
-//    Colors: array of Cardinal;
-//    Texnums: array of Integer;
   end;
 
   TTextureEntry = record

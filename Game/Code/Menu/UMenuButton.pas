@@ -11,18 +11,21 @@ type
 
       FadeProgress:         Real;
       FadeLastTick:         Cardinal;
-      
+
       DeSelectW:            Real;
       DeSelectH:            Real;
       PosX:                 Real;
       PosY:                 Real;
 
       constructor Create(); overload;
-      
+
     public
       Text:                 Array of TText;
       Texture:              TTexture; // Button Screen position and size
       Texture2:             TTexture; // second texture only used for fading full resolution covers
+      //colorized hack
+      Colorized: Boolean;
+      DeSelectTexture:      TTexture; // texture for colorized hack
 
       FadeTex:              TTexture; //Texture for beautiful fading
       FadeTexPos:           byte;     //Pos of the FadeTexture (0: Top, 1: Left, 2: Bottom, 3: Right)
@@ -76,6 +79,7 @@ type
       procedure Draw; virtual;
 
       constructor Create(Textura: TTexture); overload;
+      constructor Create(Textura, DSTexture: TTexture); overload;
       destructor Destroy; override;
   end;
 
@@ -110,7 +114,7 @@ begin
 
   for T := 0 to High(Text) do
     Text[T].Y := Text[T].Y + dY;}
-    
+
   PosY := Value;
   if (FadeTex.TexNum = -1) then
     Texture.y := Value;
@@ -149,7 +153,7 @@ begin
 end;
 
 procedure TButton.SetSelect(Value : Boolean);
-var                         
+var
   T:    integer;
 begin
   SelectBool := Value;
@@ -216,6 +220,9 @@ begin
   Selectable := true;
   //Reflection Mod
   Reflection := true;
+
+  //colorized hack
+  Colorized:=False;
 
   // Default
 //  SelectInt := 1;
@@ -297,11 +304,15 @@ begin
       begin
       Texture.W := DeSelectW + (SelectW - DeSelectW) * FadeProgress;
       Texture.H := DeSelectH + (SelectH - DeSelectH) * FadeProgress;
+      DeselectTexture.W := Texture.W;
+      DeselectTexture.H := Texture.H;
       end
       else //method with Fade Texture
       begin
         Texture.W := DeSelectW;
         Texture.H := DeSelectH;
+        DeselectTexture.W := Texture.W;
+        DeselectTexture.H := Texture.H;
 
         FadeTex.ColR := Texture.ColR;
         FadeTex.ColG := Texture.ColG;
@@ -322,6 +333,8 @@ begin
               //Standard Texture
               Texture.X := PosX;
               Texture.Y := PosY + (SelectH - DeSelectH) * FadeProgress;
+              DeselectTexture.X := Texture.X;
+              DeselectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX;
               FadeTex.Y := PosY;
@@ -336,6 +349,8 @@ begin
               //Standard Texture
               Texture.X := PosX + (SelectW - DeSelectW) * FadeProgress;
               Texture.Y := PosY;
+              DeselectTexture.X := Texture.X;
+              DeselectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX;
               FadeTex.Y := PosY;
@@ -350,6 +365,8 @@ begin
               //Standard Texture
               Texture.X := PosX;
               Texture.Y := PosY;
+              DeselectTexture.X := Texture.X;
+              DeselectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX;
               FadeTex.Y := PosY  + (SelectH - DeSelectH) * FadeProgress;;
@@ -364,6 +381,8 @@ begin
               //Standard Texture
               Texture.X := PosX;
               Texture.Y := PosY;
+              DeselectTexture.X := Texture.X;
+              DeselectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX + (SelectW - DeSelectW) * FadeProgress;
               FadeTex.Y := PosY;
@@ -382,7 +401,10 @@ begin
       Text[T].MoveY := (SelectH - DeSelectH);
     end;
 
-    DrawTexture(Texture);
+    if SelectBool or not Colorized then
+      DrawTexture(Texture)
+    else
+      DrawTexture(DeselectTexture);
 
     //Draw FadeTex
     if (FadeTex.TexNum <> -1) then
@@ -419,6 +441,7 @@ begin
       else
         Spacing := DeSelectReflectionspacing;
 
+      if SelectBool or not Colorized then
       with Texture do
       begin
         //Bind Tex and GL Attributes
@@ -456,7 +479,47 @@ begin
         glEnd;
 
         glDisable(GL_TEXTURE_2D);
-        glDisable(GL_DEPTH_TEST); 
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
+      end else
+      with DeselectTexture do
+        begin
+        //Bind Tex and GL Attributes
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+
+        glDepthRange(0, 10);
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBindTexture(GL_TEXTURE_2D, TexNum);
+
+        //Draw
+        glBegin(GL_QUADS);//Top Left
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
+          glTexCoord2f(TexX1*TexW, TexY2*TexH);
+          glVertex3f(x, y+h*scaleH+ Spacing, z);
+
+          //Bottom Left
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
+          glTexCoord2f(TexX1*TexW, TexY1+TexH*0.5);
+          glVertex3f(x, y+h*scaleH + h*scaleH/2 + Spacing, z);
+
+
+          //Bottom Right
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
+          glTexCoord2f(TexX2*TexW, TexY1+TexH*0.5);
+          glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Spacing, z);
+
+          //Top Right
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
+          glTexCoord2f(TexX2*TexW, TexY2*TexH);
+          glVertex3f(x+w*scaleW, y+h*scaleH + Spacing, z);
+        glEnd;
+
+        glDisable(GL_TEXTURE_2D);
+        glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
       end;
     end;
@@ -478,11 +541,24 @@ constructor TButton.Create(Textura: TTexture);
 begin
   Create();
   Texture := Textura;
+  DeselectTexture:=Textura;
   Texture.ColR := 0;
   Texture.ColG := 0.5;
   Texture.ColB := 0;
   Texture.Int := 1;
+  Colorized:=False;
 end;
 
+constructor TButton.Create(Textura, DSTexture: TTexture);
+begin
+  Create();
+  Texture := Textura;
+  DeselectTexture := DSTexture;
+  Texture.ColR := 1;
+  Texture.ColG := 1;
+  Texture.ColB := 1;
+  Texture.Int := 1;
+  Colorized:=True;
+end;
 
 end.
