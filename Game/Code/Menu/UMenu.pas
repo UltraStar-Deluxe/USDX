@@ -3,7 +3,7 @@ unit UMenu;
 interface
 
 uses OpenGL12, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
-  UMenuInteract, UThemes, UMenuButtonCollection;
+  UMenuInteract, UThemes, UMenuButtonCollection, Math;
 
 type
 {  Int16 = SmallInt;}
@@ -432,13 +432,26 @@ end;
 function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; Name, Format, Typ: string; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer;
 var
   StatNum:  integer;
+  TempR, TempG, TempB: Cardinal;
+  TempCol: Cardinal;
 begin
   // adds static
   StatNum := Length(Static);
   SetLength(Static, StatNum + 1);
 //  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), Color));
 //  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Skin.SkinReg, PChar(Name), PChar(Format), PChar(Typ), Color)); // new skin system
-Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), Color)); // new skin
+
+// colorize hack
+if Typ='Colorized' then
+begin
+  TempR:=floor(255*ColR);
+  TempG:=floor(255*ColG);
+  TempB:=floor(255*ColB);
+  // give encoded color to loadtexture
+  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), ((((TempR shl 8) or TempG) shl 8)or TempB)));
+end
+else
+  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), Color)); // new skin
 //  Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ));
 
   // configures static
@@ -447,9 +460,11 @@ Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format)
   Static[StatNum].Texture.W := W;
   Static[StatNum].Texture.H := H;
   Static[StatNum].Texture.Z := Z;
-  Static[StatNum].Texture.ColR := ColR;
-  Static[StatNum].Texture.ColG := ColG;
-  Static[StatNum].Texture.ColB := ColB;
+  if Typ <> 'Colorized' then begin
+    Static[StatNum].Texture.ColR := ColR;
+    Static[StatNum].Texture.ColG := ColG;
+    Static[StatNum].Texture.ColB := ColB;
+  end;
   Static[StatNum].Texture.TexX1 := TexX1;
   Static[StatNum].Texture.TexY1 := TexY1;
   Static[StatNum].Texture.TexX2 := TexX2;

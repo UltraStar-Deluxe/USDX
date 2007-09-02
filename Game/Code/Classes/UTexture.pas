@@ -38,6 +38,10 @@ type
     TexY2:    real;
     Alpha:    real;
     Name:     string; // 0.5.0: experimental for handling cache images. maybe it's useful for dynamic skins
+    // colorize hack
+    Colorized: Boolean;
+//    Colors: array of Cardinal;
+//    Texnums: array of Integer;
   end;
 
   TTextureEntry = record
@@ -448,7 +452,7 @@ begin
     //now the colorize stuff
     for Position := 0 to TexOrigH-1 do begin
       for Position2 := 0 to TexOrigW-1 do begin
-        colorize(TextureD32[Position*TexNewW + Position2+1, 1],TextureD32[Position*TexNewW + Position2+1, 2],TextureD32[Position*TexNewW + Position2+1, 3], $fe198e);  //pinkie :P
+        colorize(TextureD32[Position*TexNewW + Position2+1, 1],TextureD32[Position*TexNewW + Position2+1, 2],TextureD32[Position*TexNewW + Position2+1, 3], Col);  //pinkie :P
       end;
     end;
 
