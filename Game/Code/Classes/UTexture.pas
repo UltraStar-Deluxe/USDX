@@ -11,7 +11,7 @@ unit UTexture;
 // Arrow (for arrows, white is white, gray has color, black is transparent);
 
 interface
-uses OpenGL12, Windows, Math, Classes, SysUtils, Graphics, JPEG, UThemes, PNGImage;
+uses OpenGL12, Windows, Math, Classes, SysUtils, Graphics, JPEG, UThemes, PNGImage, GraphUtil, dialogs;
 
 procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
 
@@ -66,6 +66,7 @@ type
     function LoadTexture(Identifier: string): TTexture; overload;
     function CreateTexture(var Data: array of byte; Name: string; W, H: word; Bits: byte): TTexture;
     procedure UnloadTexture(Name: string; FromCache: boolean);
+    procedure Colorize(var R,G,B : Byte; Color: Cardinal);    // Real colorize instead of: "150 grey is now blue, k?"
   end;
 
 var
@@ -239,7 +240,7 @@ begin
     end;
     TextureB.Assign(TexturePNG);
     // transparent png hack start (part 1 of 2)
-    if (Typ = 'Transparent') and (TexturePNG.TransparencyMode = ptmPartial) then
+    if ((Typ = 'Transparent') or (Typ = 'Colorized')) and (TexturePNG.TransparencyMode = ptmPartial) then
     begin
       setlength(TextureAlpha, TextureB.Width*TextureB.Height);
       setlength(MyRGBABitmap,TextureB.Width*TextureB.Height*4);
@@ -413,6 +414,49 @@ begin
       if Error > 0 then beep;
     end;}
   end;
+
+// The new awesomeness of colorized pngs starts here
+// We're the first who had this feature, so give credit when you copy+paste :P
+    if Typ = 'Colorized' then begin
+    // dimensions
+    TexOrigW := TextureB.Width;
+    TexOrigH := TextureB.Height;
+    TexNewW := Round(Power(2, Ceil(Log2(TexOrigW))));
+    TexNewH := Round(Power(2, Ceil(Log2(TexOrigH))));
+    TextureB.Width := TexNewW;
+    TextureB.Height := TexNewH;
+
+    // copy and process pixeldata
+    for Position := 0 to TexOrigH-1 do begin
+      for Position2 := 0 to TexOrigW-1 do begin
+        Pix := TextureB.Canvas.Pixels[Position2, Position];
+        if (Format = 'PNG') and (length(MyRGBABitmap) <> 0) then begin
+          myAlpha:=TextureAlpha[Position*TexOrigW+Position2];
+          TextureD32[Position*TexNewW + Position2+1, 1] := MyRGBABitmap[(Position*TexOrigW+Position2)*4+2]; // R
+          TextureD32[Position*TexNewW + Position2+1, 2] := MyRGBABitmap[(Position*TexOrigW+Position2)*4+1]; // G
+          TextureD32[Position*TexNewW + Position2+1, 3] := MyRGBABitmap[(Position*TexOrigW+Position2)*4];   // B
+          TextureD32[Position*TexNewW+Position2+1,4]    := MyRGBABitmap[(Position*TexOrigW+Position2)*4+3]; // Alpha
+        end else begin
+          TextureD32[Position*TexNewW + Position2+1, 1] := (Pix and $ff);
+          TextureD32[Position*TexNewW + Position2+1, 2] := ((Pix shr 8) and $ff);
+          TextureD32[Position*TexNewW + Position2+1, 3] := ((Pix shr 16) and $ff);
+          TextureD32[Position*TexNewW + Position2+1, 4] := 255;
+        end;
+      end;
+    end;
+
+    //now the colorize stuff
+    for Position := 0 to TexOrigH-1 do begin
+      for Position2 := 0 to TexOrigW-1 do begin
+        colorize(TextureD32[Position*TexNewW + Position2+1, 1],TextureD32[Position*TexNewW + Position2+1, 2],TextureD32[Position*TexNewW + Position2+1, 3], $fe198e);  //pinkie :P
+      end;
+    end;
+
+    setlength(TextureAlpha,0);
+    setlength(MyRGBABitmap,0);
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, TexNewW, TexNewH, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
+  end;
+// eoa COLORIZE
 
   if Typ = 'Transparent Range' then begin
     // dimensions
@@ -758,6 +802,23 @@ begin
 //  Result := LoadTexture(SkinReg, Identifier, Format, Typ, Col); // default to SkinReg
 
 end;
+
+
+// Funkyness of colorizing is done in this small box, remember to give credits when you copy from us
+Procedure TTextureUnit.Colorize(var R,G,B : Byte; Color : Cardinal);
+var
+  TexHue, TexLum, TexSat, ClrHue, ClrLum, ClrSat : Word;
+  ColorizedColors: Cardinal;
+begin        //red               //green               //blue
+  Color:=((Color and $ff) shl 16) or (Color and $ff00) or ((Color and $ff0000) shr 16);
+  ColorRGBToHLS(Color, ClrHue, ClrLum, ClrSat);
+  ColorRGBToHLS((((b shl 8) or g) shl 8 or r),TexHue, TexLum, TexSat);
+  ColorizedColors := ColorHLSToRGB(ClrHue, TexLum, TexSat);
+  R := ColorizedColors and $FF;
+  G := (ColorizedColors and $FF00) shr 8;
+  B := (ColorizedColors and $FF0000) shr 16;
+end;
+//eoa COLORIZE
 
 function TTextureUnit.LoadTexture(Identifier: string): TTexture;
 begin
