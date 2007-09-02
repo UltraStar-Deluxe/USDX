@@ -441,7 +441,7 @@ var
 begin
   Result := 60;
 
-  bytes := BASS_StreamGetLength(Bass);
+  bytes := BASS_ChannelGetLength(Bass);
   Result := BASS_ChannelBytes2Seconds(Bass, bytes);
 
 {  if Assigned(MediaPlayer) then begin

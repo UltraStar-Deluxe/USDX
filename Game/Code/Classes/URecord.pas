@@ -37,7 +37,8 @@ type
     // here can be the soundcard information - whole database from which user will select recording source
     Description:    string;
     Input:          array of TSoundCardInput;
-    InputSeleceted: integer;
+    InputSelected:  integer;
+    MicInput:       Integer;
 
     // bass record
     BassRecordStream: hStream;
@@ -117,7 +118,7 @@ begin
   for S := 1 to 1024 do begin // 0.5.2: fix. was from 0 to 1023
 //    Log.LogDebug('1');
 //    Log.LogDebug(IntTostr(S));
-    V := Abs(BufferArray[S]) / $10000;
+    V  := Abs(BufferArray[S]) / $10000;
 //    Log.LogDebug('2');
 //    Log.LogDebug(IntTostr(S) + ': ' + FloatToStr(V) + ', MaxV='+floattostr(maxv)+', buf='+inttostr(length(BufferArray)));
     if V > MaxV then MaxV := V;
@@ -279,7 +280,7 @@ var
   SC:         integer; // soundcard
   SCI:        integer; // soundcard input
   Descr:      string;
-  InputName:  string;
+  InputName:  PChar;
   Flags:      integer;
   No:         integer;
   function isDuplicate(Desc: String): Boolean;
@@ -298,7 +299,6 @@ var
     end;
   end;
 
-//  mic:      array[0..15] of integer;
 begin
   // checks for recording devices and puts them into array;
   SetLength(SoundCard, 0);
@@ -320,44 +320,36 @@ begin
     end;
 
     SetLength(SoundCard, SC+1);
-//    Log.LogError('Device #' + IntToStr(SC+1) + ': ' + Descr);
+
     SoundCard[SC].Description := Descr;
 
-    // check for recording inputs
-//      mic[device] := -1; // default to no change
+    //Get Recording Inputs
     SCI := 0;
     BASS_RecordInit(SC);
-    Flags := BASS_RecordGetInput(SCI);
+
     InputName := BASS_RecordGetInputName(SCI);
-//    Log.LogError('Input #' + IntToStr(SCI) + ' (' + IntToStr(Flags) + '): ' + InputName);
 
     SetLength(SoundCard[SC].Input, 1);
     SoundCard[SC].Input[SCI].Name := InputName;
 
     // process each input
-    while (Flags <> -1) do begin
-      if SCI >= 1 then begin
+    while (InputName <> nil) do begin
+      Flags := BASS_RecordGetInput(SCI);
+      if (SCI >= 1) {AND (Flags AND BASS_INPUT_OFF = 0)}  then begin
+
         SetLength(SoundCard[SC].Input, SCI+1);
-        InputName := BASS_RecordGetInputName(SCI);
+
         SoundCard[SC].Input[SCI].Name := InputName;
-//        Log.LogError('Input #' + IntToStr(SCI) + ' (' + IntToStr(Flags) + '): ' + InputName);
       end;
 
-{        if (flags and BASS_INPUT_TYPE_MASK) = BASS_INPUT_TYPE_MIC then begin
-          mic[device] := input; // auto set microphone
-        end;}
+      //Set Mic Index
+      if ((Flags and BASS_INPUT_TYPE_MIC) = 1) then
+        SoundCard[SC].MicInput := SCI;
+
 
       Inc(SCI);
-      Flags := BASS_RecordGetInput(SCI);
+      InputName := BASS_RecordGetInputName(SCI);
     end;
-
-{      if mic[device] <> -1 then begin
-        Log.LogAnalyze('Found the mic at input ' + IntToStr(Mic[device]))
-      end else begin
-        Log.LogAnalyze('Mic not found');
-        mic[device] := 0; // setting to the first one (for kxproject)
-      end;
-      SoundCard[SC].InputSeleceted := Mic[Device];}
 
 
     BASS_RecordFree;
@@ -367,5 +359,6 @@ begin
   end; // while
 end;
 end.
+
 
 
