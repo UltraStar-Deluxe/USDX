@@ -6,7 +6,7 @@
 #############################################################################}
 
 //{$define DebugDisplay}  // uncomment if u want to see the debug stuff
-//{$define DebugFrames}
+{$define DebugFrames}
 {$define Info}
 
 
@@ -199,6 +199,10 @@ end;
 procedure FFmpegSkip(Time: Single);
 begin
   VideoSkiptime:=Time;
+  if VideoSkipTime > 0 then begin
+    av_seek_frame(VideoFormatContext,-1,Floor((VideoSkipTime)*1500000),0);
+    VideoTime:=VideoSkipTime;
+  end;
 end;
 
 procedure FFmpegGetFrame(Time: Extended);
@@ -209,11 +213,16 @@ var
   FrameDataPtr: PByteArray;
   linesize: integer;
   myTime: Extended;
+  DropFrame: Boolean;
+  droppedFrames: Integer;
+const
+  FRAMEDROPCOUNT=3;
 begin
   if not VideoOpened then Exit;
   if VideoPaused then Exit;
   myTime:=Time+VideoSkipTime;
   TimeDifference:=myTime-VideoTime;
+  DropFrame:=False;
 {  showmessage('Time:      '+inttostr(floor(Time*1000))+#13#10+
     'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
     'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
@@ -234,7 +243,7 @@ begin
   end;
   VideoTime:=VideoTime+VideoTimeBase;
   TimeDifference:=myTime-VideoTime;
-  if TimeDifference >= 3*VideoTimeBase then begin // skip frames
+  if TimeDifference >= (FRAMEDROPCOUNT-1)*VideoTimeBase then begin // skip frames
 {$ifdef DebugFrames}
     //frame drop debug display
     GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
@@ -244,10 +253,13 @@ begin
 //    'TimeDiff:  '+inttostr(floor(TimeDifference*1000))+#13#10+
 //    'Time2Skip: '+inttostr(floor((Time-LastFrameTime)*1000)));
 //    av_seek_frame(VideoFormatContext,VideoStreamIndex,Floor(Time*VideoTimeBase),0);
-    av_seek_frame(VideoFormatContext,-1,Floor((myTime)*1100000),0);
-    VideoTime:=floor(myTime/VideoTimeBase)*VideoTimeBase;
+{    av_seek_frame(VideoFormatContext,-1,Floor((myTime+VideoTimeBase)*1500000),0);
+    VideoTime:=floor(myTime/VideoTimeBase)*VideoTimeBase;}
+    VideoTime:=VideoTime+FRAMEDROPCOUNT*VideoTimeBase;
+    DropFrame:=True;
   end;
 
+  av_init_packet(@AVPacket);
   FrameFinished:=0;
   // read packets until we have a finished frame (or there are no more packets)
   while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
@@ -255,10 +267,25 @@ begin
     // if we got a packet from the video stream, then decode it
     if (AVPacket.stream_index=VideoStreamIndex) then
       errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished,
-                                   AVPacket.data, AVPacket.size);
+                                     AVPacket.data, AVPacket.size);
     // release internal packet structure created by av_read_frame
-    av_free_packet(PAVPacket(@AVPacket));
+      av_free_packet(PAVPacket(@AVPacket));
   end;
+  if DropFrame then
+    for droppedFrames:=1 to FRAMEDROPCOUNT do begin
+      FrameFinished:=0;
+      // read packets until we have a finished frame (or there are no more packets)
+      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
+      begin
+        // if we got a packet from the video stream, then decode it
+        if (AVPacket.stream_index=VideoStreamIndex) then
+          errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished,
+                                         AVPacket.data, AVPacket.size);
+        // release internal packet structure created by av_read_frame
+          av_free_packet(PAVPacket(@AVPacket));
+      end;
+    end;
+
   // if we did not get an new frame, there's nothing more to do
   if Framefinished=0 then begin
     GoldenRec.Spawn(220,15,1,16,0,-1,ColoredStar,$0000ff);
