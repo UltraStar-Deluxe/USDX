@@ -401,7 +401,7 @@ begin
       Text[T].MoveY := (SelectH - DeSelectH);
     end;
 
-    if SelectBool or not Colorized then
+    if SelectBool or (FadeProgress > 0) or not Colorized then
       DrawTexture(Texture)
     else
       DrawTexture(DeselectTexture);
