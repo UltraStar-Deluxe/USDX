@@ -6,6 +6,37 @@ program UltraStar;
 
 uses
   //------------------------------
+  //Includes - 3rd Party Libraries
+  //------------------------------
+  OpenGL12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
+  smpeg        in 'lib\JEDI-SDLv1.0\smpeg\Pas\smpeg.pas',
+
+  bass         in 'lib\bass\delphi\bass.pas',
+
+  midiout      in 'lib\midi\midiout.pas',
+  midiin       in 'lib\midi\midiin.pas',
+  Circbuf      in 'lib\midi\CIRCBUF.PAS',
+  MidiType     in 'lib\midi\MidiType.PAS',
+  MidiDefs     in 'lib\midi\MidiDefs.PAS',
+  MidiCons     in 'lib\midi\MidiCons.PAS',
+  MidiFile     in 'lib\midi\MidiFile.PAS',
+  Delphmcb     in 'lib\midi\Delphmcb.PAS',
+
+  zlportio     in 'lib\zlportio\zlportio.pas',
+  ddkint       in 'lib\zlportio\ddkint.pas',
+
+  avcodec      in 'lib\ffmpeg\avcodec.pas',
+  avformat     in 'lib\ffmpeg\avformat.pas',
+  avutil       in 'lib\ffmpeg\avutil.pas',
+  rational     in 'lib\ffmpeg\rational.pas',
+  opt          in 'lib\ffmpeg\opt.pas',
+  avio         in 'lib\ffmpeg\avio.pas',
+
+  SQLiteTable3 in 'lib\SQLite\SQLiteTable3.pas',
+  SQLite3      in 'lib\SQLite\SQLite3.pas',
+
+
+  //------------------------------
   //Includes - Menu System
   //------------------------------
   UDisplay in 'Menu\UDisplay.pas',

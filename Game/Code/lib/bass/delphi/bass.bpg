@@ -1,0 +1,64 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = D3Test.exe BassTest.exe ConTest.exe custloop.exe DspTest.exe \
+  FXtest.exe livefx.exe Multi.exe netradio.exe plugins.exe RecordTest.exe \
+  samplevis.exe Speakers.exe StreamTest.exe writewav.exe
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+D3Test.exe: 3dTest\D3Test.dpr
+  $(DCC)
+
+BassTest.exe: BassTest\BassTest.dpr
+  $(DCC)
+
+ConTest.exe: ConTest\ConTest.dpr
+  $(DCC)
+
+custloop.exe: custloop\custloop.dpr
+  $(DCC)
+
+DspTest.exe: DspTest\DspTest.dpr
+  $(DCC)
+
+FXtest.exe: fxtest\FXtest.dpr
+  $(DCC)
+
+livefx.exe: livefx\livefx.dpr
+  $(DCC)
+
+Multi.exe: multi\Multi.dpr
+  $(DCC)
+
+netradio.exe: netradio\netradio.dpr
+  $(DCC)
+
+plugins.exe: plugins\plugins.dpr
+  $(DCC)
+
+RecordTest.exe: RecordTest\RecordTest.dpr
+  $(DCC)
+
+samplevis.exe: SampleVis\samplevis.dpr
+  $(DCC)
+
+Speakers.exe: Speakers\Speakers.dpr
+  $(DCC)
+
+StreamTest.exe: StreamTest\StreamTest.dpr
+  $(DCC)
+
+writewav.exe: writewav\writewav.dpr
+  $(DCC)
+
+

@@ -1,0 +1,17 @@
+Jedi-sdl
+  http://sourceforge.net/projects/jedi-sdl
+
+
+
+
+BASS.pas
+  http://www.un4seen.com/download.php?bass23
+
+zlportio
+  http://www.specosoft.com/en/download.html
+
+ffmpeg
+  http://www.iversenit.dk/dev/ffmpeg-headers/
+
+SQLLite Wrapper
+  http://www.itwriting.com/sqlitesimple.php
