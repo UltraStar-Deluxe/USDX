@@ -568,8 +568,7 @@ begin
   begin // Key Down
     case PressedKey of
 
-      SDLK_ESCAPE,
-      SDLK_BACKSPACE :
+      SDLK_ESCAPE:
         begin
           FadeTo(@ScreenSong);
         end;

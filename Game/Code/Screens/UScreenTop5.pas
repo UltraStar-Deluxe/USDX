@@ -39,7 +39,7 @@ begin
 
 
       SDLK_ESCAPE,
-      SDLK_BACKSPACE :
+      SDLK_BACKSPACE,
       SDLK_RETURN:
         begin
           if (not Fadeout) then begin
