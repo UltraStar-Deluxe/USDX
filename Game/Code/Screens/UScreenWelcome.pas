@@ -25,7 +25,8 @@ begin
   Result := true;
   If (PressedDown) Then begin
     case PressedKey of
-      SDLK_ESCAPE :
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
         begin
           Result := False;
         end;

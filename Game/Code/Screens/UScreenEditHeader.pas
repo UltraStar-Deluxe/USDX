@@ -57,6 +57,7 @@ begin
         begin
           Result := false;
         end;
+
       SDLK_ESCAPE :
         begin
 //          Music.PlayBack;

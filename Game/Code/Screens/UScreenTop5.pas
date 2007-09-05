@@ -37,7 +37,10 @@ begin
           Result := false;
         end;
 
-      SDLK_ESCAPE, SDLK_RETURN:
+
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
+      SDLK_RETURN:
         begin
           if (not Fadeout) then begin
             FadeTo(@ScreenSong);

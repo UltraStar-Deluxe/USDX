@@ -31,7 +31,9 @@ begin
         begin
           Result := false;
         end;
-      SDLK_ESCAPE:
+
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
         begin
           Ini.Save;
           Music.PlayBack;

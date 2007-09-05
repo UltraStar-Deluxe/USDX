@@ -52,7 +52,8 @@ begin
             end;
         end;
 
-      SDLK_ESCAPE:
+
+      SDLK_ESCAPE :
         begin
           //Empty Filename and go to last Screen
             FileName := '';

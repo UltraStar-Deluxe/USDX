@@ -181,7 +181,7 @@ begin
           Button[Interaction].Text[0].DeleteLastL;
         end;
 
-      SDLK_ESCAPE :
+      SDLK_ESCAPE:
         begin
           Ini.SaveNames;
           Music.PlayBack;

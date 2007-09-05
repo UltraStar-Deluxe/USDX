@@ -61,7 +61,8 @@ begin
           end;
         end;
 
-      SDLK_RETURN, SDLK_ESCAPE:
+      SDLK_RETURN,
+      SDLK_ESCAPE:
         begin
           Visible := False;
           Music.PlayBack;

@@ -103,7 +103,9 @@ begin
           
           Result := false;
         end;
-      SDLK_ESCAPE :
+
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
         begin
           //Record Sound Hack:
           //Sound[0].BufferLong

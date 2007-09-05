@@ -53,7 +53,8 @@ begin
           Result := false;
         end;
 
-      SDLK_ESCAPE :
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
         begin
           Display.CheckOK:=False;
           Display.NextScreenWithCheck:=NIL;
@@ -159,7 +160,8 @@ begin
           Result := false;
         end;
 
-      SDLK_ESCAPE :
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
         begin
           Visible:=False;
           Result := false;
