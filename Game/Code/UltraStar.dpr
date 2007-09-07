@@ -9,7 +9,6 @@ uses
   //Includes - 3rd Party Libraries
   //------------------------------
   OpenGL12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
-  smpeg        in 'lib\JEDI-SDLv1.0\smpeg\Pas\smpeg.pas',
 
   bass         in 'lib\bass\delphi\bass.pas',
 
