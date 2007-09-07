@@ -174,7 +174,7 @@ begin
       // check if we had an initialization error (canfade=false, dofade=true)
       if doFade and not canFade then begin
         doFade:=False; //disable fading
-        ScreenPopupError.ShowPopup('Error initializing\nfade texture\n\nfading\ndisabled'); //show error message
+//        ScreenPopupError.ShowPopup('Error initializing\nfade texture\n\nfading\ndisabled'); //show error message
       end;
       if doFade and canFade then
       begin
@@ -199,7 +199,7 @@ begin
               GL_OUT_OF_MEMORY: glErrorStr:='OUT_OF_MEMORY';
               else glErrorStr:='unknown error';
             end;
-            ScreenPopupError.ShowPopup('Error copying\nfade texture\n('+glErrorStr+')\nfading\ndisabled'); //show error message
+//            ScreenPopupError.ShowPopup('Error copying\nfade texture\n('+glErrorStr+')\nfading\ndisabled'); //show error message
           end;
           glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           // blackscreen-hack
