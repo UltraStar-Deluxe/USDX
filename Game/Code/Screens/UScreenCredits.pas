@@ -165,6 +165,7 @@ end;
 function TScreenCredits.Draw: boolean;
 begin
   DrawCredits;
+  Draw:=true;
 end;
 
 procedure TScreenCredits.onShow;
@@ -187,7 +188,7 @@ end;
 
 Procedure TScreenCredits.Draw_FunkyText;
 var
-  S,I, Len: Integer;
+  S: Integer;
   X,Y,A: Real;
   visibleText: PChar;
 begin
@@ -208,6 +209,7 @@ begin
     for S := 0 to length(visibleText)-1 do begin
       Y:=abs(sin((Credits_X+X)*0.93{*(((Credits_X+X))/1200)}/100*pi));
       SetFontPos(Credits_X+X,538-Y*(Credits_X+X)*(Credits_X+X)*(Credits_X+X)/1000000);
+      A:=0;
       if (Credits_X+X < 15) then A:=0;
       if (Credits_X+X >=15) then A:=Credits_X+X-15;
       if Credits_X+X > 32 then A:=17;
@@ -488,7 +490,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);
@@ -511,7 +512,7 @@ Data := Music.GetFFTData;
       gltranslatef(223,0,0);
       if CTime >=STime+Delay-10 then if CTime <=STime+Delay then begin
         gltranslatef(223,0,0);
-        glrotatef((CTime-(STime+Delay-10))*-9,0,0,1);
+        glrotatef((integer(CTime)-(integer(STime+Delay)-10))*-9,0,0,1);
         gltranslatef(-223,0,0);
       end;
       glBindTexture(GL_TEXTURE_2D, credits_blindguard.TexNum);
@@ -541,7 +542,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);
@@ -599,7 +599,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);
@@ -652,7 +651,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);
@@ -675,12 +673,11 @@ Data := Music.GetFFTData;
         f:=258.0-25.8*(CTime-STime)
       else
         f:=0;
-
+      g:=0;
       if CTime >=STime+Delay-10 then if CTime <=STime+Delay then begin
         j:=CTime-(STime+Delay-10);
         g:=32.6*j;
-      end else
-        g:=0;
+      end;
       glBindTexture(GL_TEXTURE_2D, credits_commandio.TexNum);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_BLEND);
@@ -742,7 +739,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);
@@ -766,11 +762,11 @@ Data := Music.GetFFTData;
       else
         f:=0;
 
+      g:=0;
       if CTime >=STime+Delay-10 then if CTime <=STime+Delay then begin
         j:=CTime-(STime+Delay-10);
         g:=32.6*j;
-      end else
-        g:=0;
+      end;
       glBindTexture(GL_TEXTURE_2D, credits_mog.TexNum);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_BLEND);
@@ -798,7 +794,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);
@@ -856,7 +851,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);
@@ -882,9 +876,8 @@ Data := Music.GetFFTData;
       end;
       if CTime >=STime+Delay-10 then if CTime <=STime+Delay then begin
         j:=CTime-(STime+Delay-10);
-        f:=j*10.0;
         gltranslatef(0,-223,0);
-        glrotatef(j*-9,0,0,1);
+        glrotatef(integer(j)*-9,0,0,1);
         gltranslatef(0,223,0);
         glrotatef(j*9,0,0,1);
       end;
@@ -915,7 +908,6 @@ Data := Music.GetFFTData;
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
-      k:=CTime-STime;
       if CTime <=STime+10 then j:=CTime-STime else j:=10;
       if (CTime >=STime+Delay-10) then if (CTime <=STime+Delay) then j:=(STime+Delay)-CTime else j:=0;
       glColor4f(1, 1, 1, ESC_Alpha/20*j/10);

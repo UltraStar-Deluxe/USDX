@@ -40,7 +40,7 @@ type
     procedure PrintScreen;
     constructor Create;
     // fade mod
-    destructor Destroy;
+    destructor Destroy; override;
     // end
     procedure ScreenShot;
 

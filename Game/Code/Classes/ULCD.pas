@@ -106,9 +106,9 @@ begin
 end;
 
 procedure TLCD.Enable;
-var
+{var
   A:  byte;
-  B:  byte;
+  B:  byte;}
 begin
   Enabled := true;
   if not HalfInterface then
@@ -191,7 +191,7 @@ end;
 procedure TLCD.AddTextBR(S: string);
 var
   Word:     string;
-  W:        integer;
+//  W:        integer;
   P:        integer;
   L:        integer;
 begin
@@ -227,9 +227,9 @@ begin
 end;
 
 procedure TLCD.MoveCursorBR(Pos: integer);
-var
+{var
   I:    integer;
-  L:    integer;
+  L:    integer;}
 begin
   if Enabled then begin
   Pos := Pos - (StartPos-1);

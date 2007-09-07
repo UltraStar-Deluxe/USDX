@@ -117,9 +117,9 @@ begin
 end;
 
 procedure TSelectSlide.SetSelect(Value: boolean);
-var
+{var
   SO:     integer;
-  I:      integer;
+  I:      integer;}
 begin
   SelectBool := Value;
   if Value then begin
@@ -187,7 +187,7 @@ procedure DoSelection(Sel: Cardinal);
       TextOpt[I].ColB := STDColB;
       TextOpt[I].Int := STDInt;
     end;
-    if (Sel <= high(TextOpt)) then
+    if (integer(Sel) <= high(TextOpt)) then
     begin
       TextOpt[Sel].ColR := STColR;
       TextOpt[Sel].ColG := STColG;

@@ -87,9 +87,9 @@ implementation
 uses UDrawTexture, SysUtils, windows;
 
 procedure TButton.SetX(Value: real);
-var
+{var
   dx:   real;
-  T:    integer;    // text
+  T:    integer;    // text}
 begin
   {dY := Value - Texture.y;
 
@@ -105,9 +105,9 @@ begin
 end;
 
 procedure TButton.SetY(Value: real);
-var
+{var
   dY:   real;
-  T:    integer;    // text
+  T:    integer;    // text}
 begin
   {dY := Value - PosY;
 
@@ -276,6 +276,7 @@ var
 begin
   if Visible then begin
     //Fade Mod
+    T:=0;
     if Fade then
     begin
       if (FadeProgress < 1) and (FadeProgress > 0) then

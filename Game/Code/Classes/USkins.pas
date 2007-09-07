@@ -48,8 +48,8 @@ end;
 procedure TSkin.LoadList;
 var
   SR:     TSearchRec;
-  SR2:    TSearchRec;
-  SLen:   integer;
+//  SR2:    TSearchRec;
+//  SLen:   integer;
 begin
   if FindFirst('Skins\*', faDirectory, SR) = 0 then begin
     repeat
@@ -63,7 +63,7 @@ end;
 procedure TSkin.ParseDir(Dir: string);
 var
   SR:     TSearchRec;
-  SLen:   integer;
+//  SLen:   integer;
 begin
   if FindFirst(Dir + '*.ini', faAnyFile, SR) = 0 then begin
     repeat

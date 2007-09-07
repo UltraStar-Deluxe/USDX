@@ -2,7 +2,7 @@ unit UScreenEditSub;
 
 interface
 
-uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, UMenuText,
+uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, UMenuText,
   ULyrics, Math, OpenGL12, UThemes, MidiOut;
 
 type

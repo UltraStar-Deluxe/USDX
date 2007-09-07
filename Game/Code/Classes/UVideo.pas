@@ -10,7 +10,7 @@
 {$define Info}
 
 
-unit Uffmpeg;
+unit UVideo;
 
 interface
 uses SDL, UGraphicClasses, textgl, avcodec, avformat, avutil, math, OpenGL12, SysUtils, UIni, dialogs;

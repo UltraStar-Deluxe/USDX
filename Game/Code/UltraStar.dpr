@@ -84,9 +84,8 @@ uses
   //------------------------------
   //Includes - Video Support
   //------------------------------
-  Uffmpeg in 'SMpeg\Uffmpeg.pas',
-  USmpeg in 'SMpeg\USmpeg.pas',
-
+  UVideo in 'Classes\UVideo.pas',
+  
   //------------------------------
   //Includes - Screens
   //------------------------------

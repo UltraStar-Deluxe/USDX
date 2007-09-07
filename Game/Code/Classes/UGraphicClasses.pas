@@ -29,7 +29,7 @@ type
    SurviveSentenceChange : Boolean;
 
    Constructor Create(cX,cY: Real; cScreen: Integer; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);
-   Destructor Destroy();
+   Destructor Destroy(); override;
    procedure Draw;
    procedure LiveOn;
  end;

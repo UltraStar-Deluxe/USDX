@@ -19,8 +19,8 @@ type
 
 type
   TScreenPopupError = class(TMenu)
-    private
-      CurMenu: Byte; //Num of the cur. Shown Menu
+{    private
+      CurMenu: Byte; //Num of the cur. Shown Menu}
     public
       Visible: Boolean; //Whether the Menu should be Drawn
 
@@ -124,7 +124,7 @@ end;
 
 function TScreenPopupCheck.Draw: boolean;
 begin
-  inherited Draw;
+  Draw:=inherited Draw;
 end;
 
 procedure TScreenPopupCheck.onShow;
@@ -207,7 +207,7 @@ end;
 
 function TScreenPopupError.Draw: boolean;
 begin
-  inherited Draw;
+  Draw:=inherited Draw;
 end;
 
 procedure TScreenPopupError.onShow;
@@ -216,12 +216,10 @@ begin
 end;
 
 procedure TScreenPopupError.onHide;
-var i: integer;
 begin
 end;
 
 procedure TScreenPopupError.ShowPopup(msg: String);
-var i: integer;
 begin
   Interaction := 0; //Reset Interaction
   Visible := True;  //Set Visible

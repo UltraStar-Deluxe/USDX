@@ -3,7 +3,7 @@ unit UScreenSing;
 interface
 
 uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
-  TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses, Uffmpeg;
+  TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses, UVideo;
 
 type
   TScreenSing = class(TMenu)
@@ -224,7 +224,7 @@ begin
 
   LyricMain := TLyric.Create;
   LyricSub :=  TLyric.Create;
-  Uffmpeg.Init;
+  UVideo.Init;
 end;
 
 procedure TScreenSing.onShow;

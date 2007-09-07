@@ -89,12 +89,12 @@ end;
 procedure TLight.Refresh;
 var
   Time:     real;
-  TimeSkip: real;
+//  TimeSkip: real;
   L:        integer;
 begin
   if Enabled then begin
     Time := GetTime;
-    TimeSkip := Time - LastTime;
+//    TimeSkip := Time - LastTime;
     for L := 0 to 7 do begin
       if Light[L] = true then begin
         if LightTime[L] > Time then begin

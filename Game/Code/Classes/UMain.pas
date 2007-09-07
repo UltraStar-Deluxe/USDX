@@ -545,6 +545,7 @@ begin
 
     // check if we can add new note
     Mozna := false;
+    SDet:=SMin;
     for S := SMin to SMax do
       for Pet := 0 to Czesci[0].Czesc[S].HighNut do
         if ((Czesci[0].Czesc[S].Nuta[Pet].Start <= Czas.AktBeatD)

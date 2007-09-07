@@ -99,8 +99,8 @@ begin
 end;
 
 procedure TSelect.SetSelect(Value: boolean);
-var
-  SO:     integer;
+{var
+  SO:     integer;}
 begin // default 1, 0.4
   SelectBool := Value;
   if Value then begin

@@ -23,6 +23,9 @@ type
 var
   Screen:             PSDL_Surface;
 
+  LoadingThread:         PSDL_Thread;
+  Mutex:          PSDL_Mutex;
+
   RenderW:    integer;
   RenderH:    integer;
   ScreenW:    integer;
@@ -174,7 +177,10 @@ procedure SwapBuffers;
 
 procedure LoadTextures;
 procedure InitializeScreen;
+procedure LoadLoadingScreen;
 procedure LoadScreens;
+
+function LoadingThreadFunction: integer;
 
 
 implementation
@@ -240,6 +246,7 @@ var
   Res:  TResourceStream;
   ISurface: PSDL_Surface;
   Pixel: PByteArray;
+  I: Integer;
 begin
   Log.LogStatus('LoadOpenGL', 'Initialize3D');
   Log.BenchmarkStart(2);
@@ -302,7 +309,42 @@ begin
   Log.LogStatus('Loading Screens', 'Initialize3D');
   Log.BenchmarkStart(3);
 
+  LoadLoadingScreen;
+  // now that we have something to display while loading,
+  // start thread that loads the rest of ultrastar
+//  Mutex   := SDL_CreateMutex;
+//  SDL_UnLockMutex(Mutex);
+
+  // funktioniert so noch nicht, da der ladethread unverändert auf opengl zugreifen will
+  // siehe dazu kommentar unten
+  //LoadingThread  := SDL_CreateThread(@LoadingThread, nil);
+
+  // das hier würde dann im ladethread ausgeführt
   LoadScreens;
+
+
+  // TODO!!!!!!1
+  // hier käme jetzt eine schleife, die
+  // * den ladescreen malt (ab und zu)
+  // * den "fortschritt" des ladescreens steuert
+  // * zwischendrin schaut, ob der ladethread texturen geladen hat (mutex prüfen) und
+  //   * die texturen in die opengl lädt, sowie
+  //   * dem ladethread signalisiert, dass der speicher für die textur
+  //     zum laden der nächsten textur weiterverwendet werden kann (über weiteren mutex)
+  // * über einen 3. mutex so lange läuft, bis der ladethread signalisiert,
+  //   dass er alles geladen hat fertig ist
+  //
+  // dafür muss loadtexture so umgeschrieben werden, dass es, statt selbst irgendwelche
+  // opengl funktionen aufzurufen, entsprechend mutexe verändert
+  // der hauptthread muss auch irgendwoher erfahren, was an opengl funktionen auszuführen ist,
+  // mit welchen parametern (texturtyp, entspr. texturobjekt, textur-zwischenspeicher-adresse, ...
+
+
+  //wait for loading thread to finish
+  // funktioniert so auch noch nicht
+  //SDL_WaitThread(LoadingThread, I);
+//  SDL_DestroyMutex(Mutex);
+
   Display.ActualScreen^.FadeTo(@ScreenMain);
 
   Log.BenchmarkEnd(2);
@@ -397,7 +439,7 @@ begin
   ScreenH := H;
 end;
 
-procedure LoadScreens;
+procedure LoadLoadingScreen;
 begin
   ScreenLoading := TScreenLoading.Create;
   ScreenLoading.onShow;
@@ -405,7 +447,17 @@ begin
   ScreenLoading.Draw;
   Display.Draw;
   SwapBuffers;
+end;
 
+procedure LoadScreens;
+begin
+{  ScreenLoading := TScreenLoading.Create;
+  ScreenLoading.onShow;
+  Display.ActualScreen := @ScreenLoading;
+  ScreenLoading.Draw;
+  Display.Draw;
+  SwapBuffers;
+}
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Loading', 3); Log.BenchmarkStart(3);
 { ScreenWelcome :=          TScreenWelcome.Create; //'BG', 4, 3);
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Welcome', 3); Log.BenchmarkStart(3);}
@@ -479,5 +531,11 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Credits', 3); Log.BenchmarkStart(3);
 
   end;
+
+function LoadingThreadFunction: integer;
+begin
+  LoadScreens;
+  Result:= 1;
+end;
 
 end.

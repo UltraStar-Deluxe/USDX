@@ -21,8 +21,6 @@ implementation
 uses UDrawTexture;
 
 procedure TStatic.Draw;
-var
-  Pet:    integer;
 begin
   if Visible then
   begin

@@ -2,7 +2,7 @@ unit UScreenSingModi;
 
 interface
 
-uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
+uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, ULyrics,
   TextGL, OpenGL12, BASS, UThemes, ULCD, UScreenSing, ModiSDK;
 
 type
@@ -943,10 +943,11 @@ end;
   if (DllMan.Selected.LoadSong) AND (DllMan.Selected.LoadBack) then
     SingDrawBackground;
 
+  // comment by blindy: wo zum henker wird denn in diesem screen ein video abgespielt?
   // update and draw movie
-  if ShowFinish and AktSong.VideoLoaded AND DllMan.Selected.LoadVideo then begin
+{  if ShowFinish and AktSong.VideoLoaded AND DllMan.Selected.LoadVideo then begin
     UpdateSmpeg; // this only draws
-  end;
+  end;}
 
   // draw static menu (FG)
   DrawFG;
