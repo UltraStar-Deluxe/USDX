@@ -712,14 +712,6 @@ var
   PetX:   integer;
   PetY:   integer;
 begin
-//  glClearColor(1, 1, 1, 1);
-//  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-
-  glMatrixMode(GL_PROJECTION);
-    glLoadIdentity;
-    glOrtho(0, RenderW, RenderH, 0, -1, 100);
-  glMatrixMode(GL_MODELVIEW);
-
   BackImg.ColR := 1;
   BackImg.ColG := 1;
   BackImg.ColB := 1;
@@ -728,13 +720,17 @@ begin
   BackImg.TexX2 := 1;
   BackImg.TexY2 := 1;
   if (BackImg.TexNum <> -1) then begin
-    // draw texture with overlapping
+  // does anyone know what these loops were for?
+{    // draw texture with overlapping
     for PetY := 1 to BackH do
       for PetX := 1 to BackW do begin
         BackImg.X := (PetX-1)/BackW * 800; //640
         BackImg.Y := (PetY-1)/BackH * 600; //480
         DrawTexture(BackImg);
-      end; // for PetX
+      end; // for PetX}
+    BackImg.X:=BackW;
+    BackImg.Y:=BackW;
+    DrawTexture(BackImg);
   end; // if
 end;
 

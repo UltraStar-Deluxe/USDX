@@ -75,7 +75,7 @@ begin
 
   canFade:=True;
   // generate texture for fading between screens
-  GetMem(pTexData, 512*512*3);
+  GetMem(pTexData, 512*512*4);
   if pTexData <> NIL then
   for i:= 1 to 2 do
   begin
@@ -83,7 +83,7 @@ begin
     if glGetError <> GL_NO_ERROR then canFade := False;
     glBindTexture(GL_TEXTURE_2D, pTex[i]);
     if glGetError <> GL_NO_ERROR then canFade := False;
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, pTexData);
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, pTexData);
     if glGetError <> GL_NO_ERROR then canFade := False;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     if glGetError <> GL_NO_ERROR then canFade := False;
@@ -185,7 +185,7 @@ begin
           glViewPort(0, 0, 512, 512);
           ActualScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
-          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 512, 512, 0);
+          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 512, 512, 0);
           glError:=glGetError;
           if glError <> GL_NO_ERROR then
           begin
@@ -229,7 +229,7 @@ begin
         // blackscreen-hack
         if not BlackScreen then
           NextScreen.Draw // draw next screen
-        else begin
+        else if ScreenAct=1 then begin
           glClearColor(0, 0, 0 , 0);
           glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
         end;

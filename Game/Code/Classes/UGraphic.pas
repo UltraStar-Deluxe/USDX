@@ -358,7 +358,7 @@ begin
   SDL_GL_SwapBuffers;
   glMatrixMode(GL_PROJECTION);
     glLoadIdentity;
-    glOrtho(0, 800, 600, 0, -1, 100);
+    glOrtho(0, RenderW, RenderH, 0, -1, 100);
   glMatrixMode(GL_MODELVIEW);
 end;
 
@@ -444,6 +444,7 @@ begin
   ScreenLoading := TScreenLoading.Create;
   ScreenLoading.onShow;
   Display.ActualScreen := @ScreenLoading;
+  swapbuffers;
   ScreenLoading.Draw;
   Display.Draw;
   SwapBuffers;
