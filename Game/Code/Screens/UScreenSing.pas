@@ -2,7 +2,7 @@ unit UScreenSing;
 
 interface
 
-uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, USmpeg, UTexture, ULyrics,
+uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, ULyrics,
   TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses, UVideo;
 
 type
