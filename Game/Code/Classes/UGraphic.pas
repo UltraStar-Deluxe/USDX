@@ -80,13 +80,17 @@ var
   ScreenPopupError: TScreenPopupError;
 
   //Notes
-  Tex_Left:       array[0..6] of TTexture;
-  Tex_Mid:        array[0..6] of TTexture;
-  Tex_Right:      array[0..6] of TTexture;
+  Tex_Left:        array[0..6] of TTexture;   //rename to tex_note_left
+  Tex_Mid:         array[0..6] of TTexture;   //rename to tex_note_mid
+  Tex_Right:       array[0..6] of TTexture;   //rename to tex_note_right
 
-  Tex_BG_Left:    array[1..6] of TTexture;
-  Tex_BG_Mid:     array[1..6] of TTexture;
-  Tex_BG_Right:   array[1..6] of TTexture;
+  Tex_plain_Left:  array[1..6] of TTexture;   //rename to tex_notebg_left
+  Tex_plain_Mid:   array[1..6] of TTexture;   //rename to tex_notebg_mid
+  Tex_plain_Right: array[1..6] of TTexture;   //rename to tex_notebg_right
+
+  Tex_BG_Left:     array[1..6] of TTexture;   //rename to tex_noteglow_left
+  Tex_BG_Mid:      array[1..6] of TTexture;   //rename to tex_noteglow_mid
+  Tex_BG_Right:    array[1..6] of TTexture;   //rename to tex_noteglow_right
 
   Tex_Note_Star:  TTexture;
   Tex_Note_Perfect_Star: TTexture;
@@ -105,7 +109,7 @@ var
   //end Singbar Mod
 
   //PhrasenBonus - Line Bonus Mod
-  Tex_SingLineBonusBack: TTexture;
+  Tex_SingLineBonusBack: array[0..8] of TTexture;
   //End PhrasenBonus - Line Bonus Mod
 
 const
@@ -194,21 +198,25 @@ var
 begin
    // zaladowanie tekstur
   Log.LogStatus('Loading Textures', 'LoadTextures');
-  Tex_Left[0] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'BMP', 'Transparent', 0);
-  Tex_Mid[0] :=   Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'BMP', 'Plain', 0);
-  Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'BMP', 'Transparent', 0);
+  Tex_Left[0]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'BMP', 'Transparent', 0);     //brauch man die noch?
+  Tex_Mid[0]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'BMP', 'Plain', 0);           //brauch man die noch?
+  Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'BMP', 'Transparent', 0);     //brauch man die noch?
 
   // P1-6
   for P := 1 to 6 do begin
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Left[P] :=    Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'BMP', 'Note Transparent', Col);
-    Tex_Mid[P] :=     Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'BMP', 'Note Plain', Col);
-    Tex_Right[P] :=   Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'BMP', 'Note Transparent', Col);
+    Tex_Left[P]        :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'PNG', 'Colorized', Col);
+    Tex_Mid[P]         :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'PNG', 'Colorized', Col);
+    Tex_Right[P]       :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'PNG', 'Colorized', Col);
 
-    Tex_BG_Left[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGLeft')),  'BMP', 'Alpha Black Colored', Col);
-    Tex_BG_Mid[P] :=   Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGMid')),   'BMP', 'Alpha Black Colored', Col);
-    Tex_BG_Right[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), 'BMP', 'Alpha Black Colored', Col);
+    Tex_plain_Left[P]  :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainLeft')),  'PNG', 'Colorized', Col);
+    Tex_plain_Mid[P]   :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainMid')),   'PNG', 'Colorized', Col);
+    Tex_plain_Right[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainRight')), 'PNG', 'Colorized', Col);
+
+    Tex_BG_Left[P]     := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGLeft')),  'PNG', 'Colorized', Col);
+    Tex_BG_Mid[P]      := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGMid')),   'PNG', 'Colorized', Col);
+    Tex_BG_Right[P]    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), 'PNG', 'Colorized', Col);
   end;
 
   Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'JPG', 'Font Black', 0);
@@ -227,8 +235,11 @@ begin
   Tex_SingBar_Front :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarFront')),   'JPG', 'Font', 0);
   //end Singbar Mod
 
-  //PhrasenBonus - Line Bonus Mod
-  Tex_SingLineBonusBack :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'JPG', 'Font Black', 0);
+  //Line Bonus PopUp
+  for P := 0 to 9 do
+    begin
+      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'PNG', 'Colorized', $FFFFFF);
+    end;
   {//Set Texture to Font High
   Tex_SingLineBonusL.H := 32; Tex_SingLineBonusL.W := 8;
   Tex_SingLineBonusM.H := 32; //Tex_SingLineBonusM.TexW := Tex_SingLineBonusM.TexW/2;

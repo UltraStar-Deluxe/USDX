@@ -141,24 +141,34 @@ end;
 procedure TScreenSing.Pause;
 begin
   if not paused then  //Pause einschalten
-  begin
-    PauseTime := Czas.Teraz;
-    Paused := true;
-    //stop Music
-    Music.Pause;
-    if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then //Video
-      FFmpegTogglePause;//PauseSmpeg; //Video
-  end
-  else            //Pause ausschalten
-  begin
-    Czas.Teraz := PauseTime; //Position of Notes
-    Music.MoveTo (PauseTime);//Position of Music
-    Music.Play; //Play Music
-    if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then //Video
-      FFmpegTogglePause;//PlaySmpeg;
+    begin
+      // pause Time
+      PauseTime := Czas.Teraz;
+      Paused    := true;
+
+      // pause Music
+      Music.Pause;
+
+      // pause Video
+      if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
+        FFmpegTogglePause;
+    end
+  else              //Pause ausschalten
+    begin
+      Czas.Teraz := PauseTime; //Position of Notes
+
+      // Position of Music
+      Music.MoveTo (PauseTime);
+      // Play Music
+      Music.Play;
+
+      // Video
+      if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
+      FFmpegTogglePause;
       //SkipSmpeg(PauseTime);
-    Paused := false;
-  end;
+
+      Paused := false;
+    end;
 end;
 //Pause Mod End
 
@@ -171,59 +181,60 @@ begin
 
   LoadFromTheme(Theme.Sing);
 
-  // time
-  //TextTime := AddText(75, 14, 1, 8, 0.25, 0.25, 0.25, '00:00');
+  //TimeBar
+  StaticTimeProgress    := AddStatic(Theme.Sing.StaticTimeProgress);
+  TextTimeText          := AddText(Theme.Sing.TextTimeText);
 
-  //TimeBar mod
-    StaticTimeProgress :=  AddStatic(Theme.Sing.StaticTimeProgress);
-    TextTimeText       :=  AddText(Theme.Sing.TextTimeText);
-  //eoa TimeBar mod
+// 1 player       | P1
+  StaticP1              := AddStatic(Theme.Sing.StaticP1);
+  StaticP1ScoreBG       := AddStatic(Theme.Sing.StaticP1ScoreBG);
+  TextP1                := AddText(Theme.Sing.TextP1);
+  TextP1Score           := AddText(Theme.Sing.TextP1Score);
+  StaticP1SingBar       := AddStatic(Theme.Sing.StaticP1SingBar);
 
-  StaticP1 := AddStatic(Theme.Sing.StaticP1);
-  StaticP1ScoreBG := AddStatic(Theme.Sing.StaticP1ScoreBG);
-  TextP1 := AddText(Theme.Sing.TextP1);
-  TextP1Score := AddText(Theme.Sing.TextP1Score);
+// 2 or 4 players | P1
+  StaticP1TwoP          := AddStatic(Theme.Sing.StaticP1TwoP);
+  StaticP1TwoPScoreBG   := AddStatic(Theme.Sing.StaticP1TwoPScoreBG);
+  TextP1TwoP            := AddText(Theme.Sing.TextP1TwoP);
+  TextP1TwoPScore       := AddText(Theme.Sing.TextP1TwoPScore);
+  StaticP1TwoPSingBar   := AddStatic(Theme.Sing.StaticP2RSingBar);
 
-  //moveable singbar mod
-  StaticP1SingBar         := AddStatic(Theme.Sing.StaticP1SingBar);
-  StaticP1ThreePSingBar   := AddStatic(Theme.Sing.StaticP1ThreePSingBar);
-  StaticP1TwoPSingBar     := AddStatic(Theme.Sing.StaticP2RSingBar);
-  StaticP2RSingBar        := AddStatic(Theme.Sing.StaticP2RSingBar);
-  StaticP2MSingBar        := AddStatic(Theme.Sing.StaticP2MSingBar);
-  StaticP3SingBar         := AddStatic(Theme.Sing.StaticP3SingBar);
-  //eoa moveable singbar
+  //              | P2
+  StaticP2R             := AddStatic(Theme.Sing.StaticP2R);
+  StaticP2RScoreBG      := AddStatic(Theme.Sing.StaticP2RScoreBG);
+  TextP2R               := AddText(Theme.Sing.TextP2R);
+  TextP2RScore          := AddText(Theme.Sing.TextP2RScore);
+  StaticP2RSingBar      := AddStatic(Theme.Sing.StaticP2RSingBar);
 
-  //Added for ps3 skin
-  //This one is shown in 2/4P mode
-  StaticP1TwoP := AddStatic(Theme.Sing.StaticP1TwoP);
-  StaticP1TwoPScoreBG := AddStatic(Theme.Sing.StaticP1TwoPScoreBG);
-  TextP1TwoP := AddText(Theme.Sing.TextP1TwoP);
-  TextP1TwoPScore := AddText(Theme.Sing.TextP1TwoPScore);
-
-  //This one is shown in 3/6P mode
-  StaticP1ThreeP := AddStatic(Theme.Sing.StaticP1ThreeP);
+// 3 or 6 players | P1
+  StaticP1ThreeP        := AddStatic(Theme.Sing.StaticP1ThreeP);
   StaticP1ThreePScoreBG := AddStatic(Theme.Sing.StaticP1ThreePScoreBG);
-  TextP1ThreeP := AddText(Theme.Sing.TextP1ThreeP);
-  TextP1ThreePScore := AddText(Theme.Sing.TextP1ThreePScore);
-  //eoa
+  TextP1ThreeP          := AddText(Theme.Sing.TextP1ThreeP);
+  TextP1ThreePScore     := AddText(Theme.Sing.TextP1ThreePScore);
+  StaticP1ThreePSingBar := AddStatic(Theme.Sing.StaticP1ThreePSingBar);
 
-  StaticP2R := AddStatic(Theme.Sing.StaticP2R);
-  StaticP2RScoreBG := AddStatic(Theme.Sing.StaticP2RScoreBG);
-  TextP2R := AddText(Theme.Sing.TextP2R);
-  TextP2RScore := AddText(Theme.Sing.TextP2RScore);
+  //              | P2
+  StaticP2M             := AddStatic(Theme.Sing.StaticP2M);
+  StaticP2MScoreBG      := AddStatic(Theme.Sing.StaticP2MScoreBG);
+  TextP2M               := AddText(Theme.Sing.TextP2M);
+  TextP2MScore          := AddText(Theme.Sing.TextP2MScore);
+  StaticP2MSingBar      := AddStatic(Theme.Sing.StaticP2MSingBar);
 
-  StaticP2M := AddStatic(Theme.Sing.StaticP2M);
-  StaticP2MScoreBG := AddStatic(Theme.Sing.StaticP2MScoreBG);
-  TextP2M := AddText(Theme.Sing.TextP2M);
-  TextP2MScore := AddText(Theme.Sing.TextP2MScore);
+  //              | P3
+  StaticP3R             := AddStatic(Theme.Sing.StaticP3R);
+  StaticP3RScoreBG      := AddStatic(Theme.Sing.StaticP3RScoreBG);
+  TextP3R               := AddText(Theme.Sing.TextP3R);
+  TextP3RScore          := AddText(Theme.Sing.TextP3RScore);
+  StaticP3SingBar       := AddStatic(Theme.Sing.StaticP3SingBar);
 
-  StaticP3R := AddStatic(Theme.Sing.StaticP3R);
-  StaticP3RScoreBG := AddStatic(Theme.Sing.StaticP3RScoreBG);
-  TextP3R := AddText(Theme.Sing.TextP3R);
-  TextP3RScore := AddText(Theme.Sing.TextP3RScore);
+  if ScreenAct = 2 then begin
+      // katze und affe
 
-  LyricMain := TLyric.Create;
-  LyricSub :=  TLyric.Create;
+    end;
+
+  LyricMain             := TLyric.Create;
+  LyricSub              := TLyric.Create;
+
   UVideo.Init;
 end;
 
@@ -245,44 +256,43 @@ begin
   SetLength(Player, PlayersPlay);
 //  Player[0].ScoreTotalI := 0;
 
-
   case PlayersPlay of
     1:  begin
           V1       := true;
-          V1TwoP   := false;  //added for ps3 skin
-          V1ThreeP := false;  //added for ps3 skin
+          V1TwoP   := false;
+          V1ThreeP := false;
           V2R      := false;
           V2M      := false;
           V3R      := false;
         end;
     2:  begin
           V1       := false;
-          V1TwoP   := true;  //added for ps3 skin
-          V1ThreeP := false; //added for ps3 skin
+          V1TwoP   := true;
+          V1ThreeP := false;
           V2R      := true;
           V2M      := false;
           V3R      := false;
         end;
     3:  begin
           V1       := false;
-          V1TwoP   := false; //added for ps3 skin
-          V1ThreeP := true;  //added for ps3 skin
+          V1TwoP   := false;
+          V1ThreeP := true;
           V2R      := false;
           V2M      := true;
           V3R      := true;
         end;
     4:  begin // double screen
           V1       := false;
-          V1TwoP   := true;  //added for ps3 skin
-          V1ThreeP := false; //added for ps3 skin
+          V1TwoP   := true;
+          V1ThreeP := false;
           V2R      := true;
           V2M      := false;
           V3R      := false;
         end;
     6:  begin // double screen
           V1       := false;
-          V1TwoP   := false; //added for ps3 skin
-          V1ThreeP := true;  //added for ps3 skin
+          V1TwoP   := false;
+          V1ThreeP := true; 
           V2R      := false;
           V2M      := true;
           V3R      := true;
@@ -290,38 +300,40 @@ begin
 
   end;
 
-  //Added for ps3 skin
   //This one is shown in 1P mode
-  Static[StaticP1].Visible := V1;
-  Static[StaticP1ScoreBG].Visible := V1;
-  Text[TextP1].Visible := V1;
-  Text[TextP1Score].Visible := V1;
+  Static[StaticP1].Visible              := V1;
+  Static[StaticP1ScoreBG].Visible       := V1;
+  Text[TextP1].Visible                  := V1;
+  Text[TextP1Score].Visible             := V1;
+
+
   //This one is shown in 2/4P mode
-  Static[StaticP1TwoP].Visible := V1TwoP;
-  Static[StaticP1TwoPScoreBG].Visible := V1TwoP;
-  Text[TextP1TwoP].Visible := V1TwoP;
-  Text[TextP1TwoPScore].Visible := V1TwoP;
+  Static[StaticP1TwoP].Visible          := V1TwoP;
+  Static[StaticP1TwoPScoreBG].Visible   := V1TwoP;
+  Text[TextP1TwoP].Visible              := V1TwoP;
+  Text[TextP1TwoPScore].Visible         := V1TwoP;
+
+  Static[StaticP2R].Visible             := V2R;
+  Static[StaticP2RScoreBG].Visible      := V2R;
+  Text[TextP2R].Visible                 := V2R;
+  Text[TextP2RScore].Visible            := V2R;
+
+
   //This one is shown in 3/6P mode
-  Static[StaticP1ThreeP].Visible := V1ThreeP;
+  Static[StaticP1ThreeP].Visible        := V1ThreeP;
   Static[StaticP1ThreePScoreBG].Visible := V1ThreeP;
-  Text[TextP1ThreeP].Visible := V1ThreeP;
-  Text[TextP1ThreePScore].Visible := V1ThreeP;
-  //eoa
+  Text[TextP1ThreeP].Visible            := V1ThreeP;
+  Text[TextP1ThreePScore].Visible       := V1ThreeP;
 
-  Static[StaticP2R].Visible := V2R;
-  Static[StaticP2RScoreBG].Visible := V2R;
-  Text[TextP2R].Visible := V2R;
-  Text[TextP2RScore].Visible := V2R;
+  Static[StaticP2M].Visible             := V2M;
+  Static[StaticP2MScoreBG].Visible      := V2M;
+  Text[TextP2M].Visible                 := V2M;
+  Text[TextP2MScore].Visible            := V2M;
 
-  Static[StaticP2M].Visible := V2M;
-  Static[StaticP2MScoreBG].Visible := V2M;
-  Text[TextP2M].Visible := V2M;
-  Text[TextP2MScore].Visible := V2M;
-
-  Static[StaticP3R].Visible := V3R;
-  Static[StaticP3RScoreBG].Visible := V3R;
-  Text[TextP3R].Visible := V3R;
-  Text[TextP3RScore].Visible := V3R;
+  Static[StaticP3R].Visible             := V3R;
+  Static[StaticP3RScoreBG].Visible      := V3R;
+  Text[TextP3R].Visible                 := V3R;
+  Text[TextP3RScore].Visible            := V3R;
 
   // load notes
   ResetSingTemp;
@@ -479,21 +491,6 @@ begin
     GoldenRec.SentenceChange;
   //GoldenStarsTwinkle Mod End
 
-  {Static[StaticP2R].Visible := V2R;
-  Static[StaticP2RScoreBG].Visible := V2R;
-  Text[TextP2R].Visible := V2R;
-  Text[TextP2RScore].Visible := V2R;
-
-  Static[StaticP2M].Visible := V2M;
-  Static[StaticP2MScoreBG].Visible := V2M;
-  Text[TextP2M].Visible := V2M;
-  Text[TextP2MScore].Visible := V2M;
-
-  Static[StaticP3R].Visible := V3R;
-  Static[StaticP3RScoreBG].Visible := V3R;
-  Text[TextP3R].Visible := V3R;
-  Text[TextP3RScore].Visible := V3R;}
-
   //Set Position of Line Bonus - PhrasenBonus
   if (Ini.LineBonus = 1) then //Show Line Bonus at Scores
   begin
@@ -606,9 +603,6 @@ begin
   end
   else if (Ini.LineBonus = 2) then //Show Line Bonus at Notes
   begin
-  //SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
-  //SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
-  //SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
 
   // positions
   if Ini.SingWindow = 0 then begin
@@ -781,24 +775,19 @@ begin
 
 
 
-  //ScoreBG Mod
-  // set player colors
-  if PlayersPlay = 4 then begin
+  //ScoreBG Mod | den wirren Scheiss hier brauch mer nimmer, wir haben colorized png's - no need for wirrness also
+  // set player colors  - macht nichts weiter als die farben des statics zu wechseln, was zu unschönen effekten bei colorized png führt
+{  if PlayersPlay = 4 then begin
     if ScreenAct = 1 then begin
       LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
       Static[StaticP1TwoP].Texture.ColB, 'P1Dark');
       LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
       Static[StaticP2R].Texture.ColB, 'P2Dark');
 
-
-
       LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
       Static[StaticP1TwoPScoreBG].Texture.ColB, 'P1Dark');
       LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
       Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
-
-
-
     end;
     if ScreenAct = 2 then begin
       LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
@@ -806,110 +795,57 @@ begin
       LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
         Static[StaticP2R].Texture.ColB, 'P4Dark');
 
-
-
       LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
         Static[StaticP1TwoPScoreBG].Texture.ColB, 'P3Dark');
       LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
         Static[StaticP2RScoreBG].Texture.ColB, 'P4Dark');
-
-
-
      end;
   end;
 
   if PlayersPlay = 6 then begin
     if ScreenAct = 1 then begin
-      LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
+     LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
         Static[StaticP1ThreeP].Texture.ColB, 'P1Dark');
       LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
         Static[StaticP2R].Texture.ColB, 'P2Dark');
       LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
         Static[StaticP3R].Texture.ColB, 'P3Dark');
 
-
-
       LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
         Static[StaticP1ThreePScoreBG].Texture.ColB, 'P1Dark');
       LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
-        Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
+       Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
       LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
         Static[StaticP3RScoreBG].Texture.ColB, 'P3Dark');
-
-
-
     end;
     if ScreenAct = 2 then begin
+
       LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
         Static[StaticP1ThreeP].Texture.ColB, 'P4Dark');
-      LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
+     LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
         Static[StaticP2R].Texture.ColB, 'P5Dark');
       LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
         Static[StaticP3R].Texture.ColB, 'P6Dark');
 
 
-
-
-      LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
-        Static[StaticP1ThreePScoreBG].Texture.ColB, 'P4Dark');
-      LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
+     LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
+       Static[StaticP1ThreePScoreBG].Texture.ColB, 'P4Dark');
+     LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
         Static[StaticP2RScoreBG].Texture.ColB, 'P5Dark');
       LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
         Static[StaticP3RScoreBG].Texture.ColB, 'P6Dark');
-
-
-
-
     end;
   end;
-
-//Original 0.5.0
-{  // set player colors
-  if PlayersPlay = 4 then begin
-    if ScreenAct = 1 then begin
-      //LoadColor(Static[StaticP1].Texture.ColR, Static[StaticP1].Texture.ColG,
-        //Static[StaticP1].Texture.ColB, 'P1Dark');
-//      LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
-  //      Static[StaticP2R].Texture.ColB, 'P2Dark');
-    end;
-    if ScreenAct = 2 then begin
-      LoadColor(Static[StaticP1].Texture.ColR, Static[StaticP1].Texture.ColG,
-        Static[StaticP1].Texture.ColB, 'P3Dark');
-      LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
-        Static[StaticP2R].Texture.ColB, 'P4Dark');
-    end;
-  end;
-
-  if PlayersPlay = 6 then begin
-    if ScreenAct = 1 then begin
-      LoadColor(Static[StaticP1].Texture.ColR, Static[StaticP1].Texture.ColG,
-        Static[StaticP1].Texture.ColB, 'P1Dark');
-      LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
-        Static[StaticP2R].Texture.ColB, 'P2Dark');
-      LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
-        Static[StaticP3R].Texture.ColB, 'P3Dark');
-    end;
-    if ScreenAct = 2 then begin
-      LoadColor(Static[StaticP1].Texture.ColR, Static[StaticP1].Texture.ColG,
-        Static[StaticP1].Texture.ColB, 'P4Dark');
-      LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
-        Static[StaticP2R].Texture.ColB, 'P5Dark');
-      LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
-        Static[StaticP3R].Texture.ColB, 'P6Dark');
-    end;
-  end;  }
-  //end ScoreBG Mod
-
-
+ }
 
   // set player names (for 2 screens and only Singstar skin)
   if ScreenAct = 1 then begin
-    Text[TextP1].Text := 'P1';
-    Text[TextP1TwoP].Text := 'P1'; //added for ps3 skin
-    Text[TextP1ThreeP].Text := 'P1'; //added for ps3 skin
-    Text[TextP2R].Text := 'P2';
-    Text[TextP2M].Text := 'P2';
-    Text[TextP3R].Text := 'P3';
+    Text[TextP1].Text       := 'P1';
+    Text[TextP1TwoP].Text   := 'P1';
+    Text[TextP1ThreeP].Text := 'P1';
+    Text[TextP2R].Text      := 'P2';
+    Text[TextP2M].Text      := 'P2';
+    Text[TextP3R].Text      := 'P3';
   end;
 
   if ScreenAct = 2 then begin
@@ -928,35 +864,37 @@ begin
             end;}
 
       4:  begin
-            Text[TextP1TwoP].Text := 'P3';
-            Text[TextP2R].Text := 'P4';
+            Text[TextP1TwoP].Text   := 'P3';
+            Text[TextP2R].Text      := 'P4';
           end;
       6:  begin
             Text[TextP1ThreeP].Text := 'P4';
-            Text[TextP2M].Text := 'P5';
-            Text[TextP3R].Text := 'P6';
+            Text[TextP2M].Text      := 'P5';
+            Text[TextP3R].Text      := 'P6';
           end;
     end; // case
   end; // if
 
   // stereo
 
-// weird stuff, maybe this is for "dual screen?", but where is player three then?
-  Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10*ScreenX;
-  Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
+// weird stuff, maybe this is for "dual screen?", but where is player three then? | okay, i commented the stuff out the other day - nothing was missing on screen w/ 6 players - so do we even need this stuff?
+// okay this stuff appears again some lines beneath this one, I commented it out for testing what it does - seems like it's doing nothing
+// but I might be wrong, so what is this stuff here doing? O.o
+  Static[StaticP1].Texture.X         := Static[StaticP1].Texture.X + 10*ScreenX;
+  Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
 
-  Text[TextP1].X := Text[TextP1].X + 10*ScreenX;
-  Text[TextP1Score].X := Text[TextP1Score].X + 10*ScreenX;
+  Text[TextP1].X                     := Text[TextP1].X + 10*ScreenX;
+  Text[TextP1Score].X                := Text[TextP1Score].X + 10*ScreenX;
 
 
-  Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10*ScreenX;
+  Static[StaticP2R].Texture.X        := Static[StaticP2R].Texture.X + 10*ScreenX;
   Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
 
-  Text[TextP2R].X := Text[TextP2R].X + 10*ScreenX;
-  Text[TextP2RScore].X := Text[TextP2RScore].X + 10*ScreenX;
+  Text[TextP2R].X                    := Text[TextP2R].X + 10*ScreenX;
+  Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;
 // end of weird stuff
 
-  for S := 1 to 1 do
+ for S := 1 to 1 do              //wtf?
     Static[S].Texture.X := Static[S].Texture.X + 10*ScreenX;
 
   for T := 0 to 1 do
@@ -1052,17 +990,6 @@ begin
     end;
   end;
 
-
-  // beat flash
-{  Flash := 1 - (Czas.MidBeat - Czas.AktBeat);
-  if (Czas.AktBeat + AktSong.NotesGAP) mod AktSong.Resolution = 0 then Flash := 1
-  else Flash := 0;
-  if Czas.AktBeat < 0 then Flash := 0;
-  glClearColor(Flash, Flash, Flash, 1);}
-
-  // beat sound
-//  if (Ini.BeatClick = 1) and (Flash = 1) and (Czas.AktBeat <> Czas.OldBeat) then Music.PlayClick;
-
   // draw static menu (BG)
   DrawBG;
   //Draw Background
@@ -1120,21 +1047,23 @@ begin
   // back stereo
 
 // weird stuff, maybe this is for "dual screen?", but where is player three then?
-  Static[StaticP1].Texture.X := Static[StaticP1].Texture.X - 10*ScreenX;
-  Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X - 10*ScreenX;
+// okay this stuff appears again some lines above this one, I commented it out for testing what it does - seems like it's doing nothing
+// but I might be wrong, so what is this stuff here doing? O.o
+  Static[StaticP1].Texture.X         := Static[StaticP1].Texture.X - 10*ScreenX;
+  Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X - 10*ScreenX;
 
-  Text[TextP1].X := Text[TextP1].X - 10*ScreenX;
-  Text[TextP1Score].X := Text[TextP1Score].X - 10*ScreenX;
+  Text[TextP1].X                     := Text[TextP1].X - 10*ScreenX;
+  Text[TextP1Score].X                := Text[TextP1Score].X - 10*ScreenX;
 
 
-  Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X - 10*ScreenX;
+  Static[StaticP2R].Texture.X        := Static[StaticP2R].Texture.X - 10*ScreenX;
   Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X - 10*ScreenX;
 
-  Text[TextP2R].X := Text[TextP2R].X - 10*ScreenX;
-  Text[TextP2RScore].X := Text[TextP2RScore].X - 10*ScreenX;
+  Text[TextP2R].X                    := Text[TextP2R].X - 10*ScreenX;
+  Text[TextP2RScore].X               := Text[TextP2RScore].X - 10*ScreenX;
 //weird end
 
-  for S := 1 to 1 do
+  for S := 1 to 1 do   // wtf?
     Static[S].Texture.X := Static[S].Texture.X - 10*ScreenX;
 
   for T := 0 to 1 do
@@ -1205,7 +1134,7 @@ begin
     If ({(Ini.Oscilloscope = 2) and }(Czesci[0].Czesc[S].TotalNotes>0)) then
     begin
       Player[I].ScorePercentTarget := Player[I].ScorePercentTarget + floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 40 - 26);
-      if Player[I].ScorePercentTarget < 0 then Player[I].ScorePercentTarget := 0;
+      if Player[I].ScorePercentTarget < 0  then Player[I].ScorePercentTarget := 0;
       if Player[I].ScorePercentTarget > 99 then Player[I].ScorePercentTarget := 99;
 
     //end Singbar Mod

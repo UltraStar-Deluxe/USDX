@@ -12,65 +12,6 @@ type
     B:    single;
   end;
 
-  {TSkin = record
-    GrayLeft:       string;
-    GrayMid:        string;
-    GrayRight:      string;
-
-    NoteBGLeft:     string;
-    NoteBGMid:      string;
-    NoteBGRight:    string;
-
-    NoteStar:       string;
-
-    Ball:           string;
-
-
-
-    //SingBar Mod
-    SingBarBack:    string;
-    SingBarBar:     string;
-    SingBarFront:   string;
-    //end Singbar Mod
-
-    //PhrasenBonus - Line Bonus Mod
-    SingLineBonusBack:  string;
-    //PhrasenBonus - Line Bonus Mod
-
-
-
-    WelcomeBG:      string;
-
-    Background:     string;
-    ScoreBG:        string;
-    MainStart:      string;
-    MainEditor:     string;
-    MainOptions:    string;
-    MainExit:       string;
-    MainBar:        string;
-    Cursor:         string;
-
-    SongFade:       string;
-    SongCover:      string;
-    SongSelection:  string;
-
-    SelectSong:     string;
-    Button:         string;
-    Bar:            string;
-    P:              string;
-    Arrow:          string;
-    Arrow2:         string;
-    ButtonF:        string;
-    Star:           string;
-    Line:           string;
-
-//    ThemePath:    string;
-    SkinReg:      boolean;
-    SkinName:     string;
-    SkinPath:     string;
-    SkinColor:    integer;
-  end;}
-
   TThemeBackground = record
     Tex:  string;
   end;
@@ -315,7 +256,7 @@ type
 
     //TimeBar mod
     StaticTimeProgress:   TThemeStatic;
-    TextTimeText    :   TThemeText;
+    TextTimeText      :   TThemeText;
     //eoa TimeBar mod
 
     StaticP1:         TThemeStatic;
@@ -838,60 +779,6 @@ begin
 
   LoadTheme(FileName, Color);
 
-
-  {Skin.GrayLeft :=    'Left Gray.bmp';
-  Skin.GrayMid :=     'Mid Gray.bmp';
-  Skin.GrayRight :=   'Right Gray.bmp';
-
-  Skin.NoteBGLeft :=   'Note BG Left.bmp';
-  Skin.NoteBGMid :=    'Note BG Mid.bmp';
-  Skin.NoteBGRight :=  'Note BG Right.bmp';
-
-  Skin.NoteStar := 'Note Star.jpg';
-
-
-
-  //SingBar Mod
-  Skin.SingBarBack := 'Sing Bar Back.jpg';
-  Skin.SingBarBar := 'Sing Bar Bar.jpg';
-  Skin.SingBarFront := 'Sing Bar Front.jpg';
-  //end Singbar Mod
-
-  //PhrasenBonus - Line Bonus Mod
-  Skin.SingLineBonusBack := 'Line Bonus PopUp.jpg';
-
-
-
-
-{  Skin.WelcomeBG :=   SkinPath + 'Welcome BG.jpg';
-//  Skin.Background :=  SkinPath + 'Background.jpg';
-  Skin.ScoreBG :=     SkinPath + 'Score BG.jpg';
-//  Skin.GameStart :=   SkinPath + 'Game Start.jpg';
-//  Skin.Editor :=      SkinPath + 'Editor.jpg';
-//  Skin.Options :=     SkinPath + 'Options.jpg';
-//  Skin.Exit :=        SkinPath + 'Exit.jpg';
-
-  Skin.MainStart :=   SkinPath + 'Main Solo.jpg';
-  Skin.MainEditor :=  SkinPath + 'Main Multi.jpg';
-  Skin.MainOptions := SkinPath + 'Main Options.jpg';
-  Skin.MainExit :=    SkinPath + 'Main Exit.jpg';
-  Skin.MainBar :=     SkinPath + 'Main Bar.jpg';
-  Skin.Cursor :=      SkinPath + 'Main Cursor.jpg';
-
-  Skin.SongFade :=      SkinPath + 'Song Fade.jpg';}{
-  Skin.SongCover :=     'Song Cover.jpg';
-  {Skin.SongSelection := SkinPath + 'Song Selection.jpg';
-
-  Skin.SelectSong :=  SkinPath + 'Select Song.jpg';}{
-//  Skin.Button :=      SkinPath + 'MusicWheelItem song.jpg';
-  Skin.Bar :=         'Bar.jpg';
-{  Skin.P :=           SkinPath + 'P.jpg';
-  Skin.Arrow :=       SkinPath + 'Arrow.jpg';
-  Skin.Arrow2 :=      SkinPath + 'Arrow 2.jpg';}{
-  Skin.ButtonF :=     'Button.jpg';
-  Skin.Ball :=        'Ball3.bmp';
-{  Skin.Star :=        SkinPath + 'Star.bmp';
-  Skin.Line :=        SkinPath + 'Line.jpg';}
 end;
 
 
@@ -1144,51 +1031,51 @@ begin
       ThemeLoadText(Score.TextArtistTitle, 'ScoreTextArtistTitle');
 
       for I := 1 to 6 do begin
-        ThemeLoadStatics(Score.PlayerStatic[I], 'ScorePlayer' + IntToStr(I) + 'Static');
-        ThemeLoadTexts(Score.PlayerTexts[I],     'ScorePlayer' + IntToStr(I) + 'Text');
+        ThemeLoadStatics(Score.PlayerStatic[I],        'ScorePlayer' + IntToStr(I) + 'Static');
+        ThemeLoadTexts(Score.PlayerTexts[I],           'ScorePlayer' + IntToStr(I) + 'Text');
 
-        ThemeLoadText(Score.TextName[I], 'ScoreTextName' + IntToStr(I));
-        ThemeLoadText(Score.TextScore[I], 'ScoreTextScore' + IntToStr(I));
-        ThemeLoadText(Score.TextNotes[I], 'ScoreTextNotes' + IntToStr(I));
-        ThemeLoadText(Score.TextNotesScore[I], 'ScoreTextNotesScore' + IntToStr(I));
-        ThemeLoadText(Score.TextLineBonus[I], 'ScoreTextLineBonus' + IntToStr(I));
-        ThemeLoadText(Score.TextLineBonusScore[I], 'ScoreTextLineBonusScore' + IntToStr(I));
-        ThemeLoadText(Score.TextGoldenNotes[I], 'ScoreTextGoldenNotes' + IntToStr(I));
-        ThemeLoadText(Score.TextGoldenNotesScore[I], 'ScoreTextGoldenNotesScore' + IntToStr(I));
-        ThemeLoadText(Score.TextTotal[I], 'ScoreTextTotal' + IntToStr(I));
-        ThemeLoadText(Score.TextTotalScore[I], 'ScoreTextTotalScore' + IntToStr(I));
+        ThemeLoadText(Score.TextName[I],               'ScoreTextName'             + IntToStr(I));
+        ThemeLoadText(Score.TextScore[I],              'ScoreTextScore'            + IntToStr(I));
+        ThemeLoadText(Score.TextNotes[I],              'ScoreTextNotes'            + IntToStr(I));
+        ThemeLoadText(Score.TextNotesScore[I],         'ScoreTextNotesScore'       + IntToStr(I));
+        ThemeLoadText(Score.TextLineBonus[I],          'ScoreTextLineBonus'        + IntToStr(I));
+        ThemeLoadText(Score.TextLineBonusScore[I],     'ScoreTextLineBonusScore'   + IntToStr(I));
+        ThemeLoadText(Score.TextGoldenNotes[I],        'ScoreTextGoldenNotes'      + IntToStr(I));
+        ThemeLoadText(Score.TextGoldenNotesScore[I],   'ScoreTextGoldenNotesScore' + IntToStr(I));
+        ThemeLoadText(Score.TextTotal[I],              'ScoreTextTotal'            + IntToStr(I));
+        ThemeLoadText(Score.TextTotalScore[I],         'ScoreTextTotalScore'       + IntToStr(I));
 
-        ThemeLoadStatic(Score.StaticBoxLightest[I], 'ScoreStaticBoxLightest' + IntToStr(I));
-        ThemeLoadStatic(Score.StaticBoxLight[I], 'ScoreStaticBoxLight' + IntToStr(I));
-        ThemeLoadStatic(Score.StaticBoxDark[I], 'ScoreStaticBoxDark' + IntToStr(I));
+        ThemeLoadStatic(Score.StaticBoxLightest[I],    'ScoreStaticBoxLightest'    + IntToStr(I));
+        ThemeLoadStatic(Score.StaticBoxLight[I],       'ScoreStaticBoxLight'       + IntToStr(I));
+        ThemeLoadStatic(Score.StaticBoxDark[I],        'ScoreStaticBoxDark'        + IntToStr(I));
 
-        ThemeLoadStatic(Score.StaticBackLevel[I], 'ScoreStaticBackLevel' + IntToStr(I));
+        ThemeLoadStatic(Score.StaticBackLevel[I],      'ScoreStaticBackLevel'      + IntToStr(I));
         ThemeLoadStatic(Score.StaticBackLevelRound[I], 'ScoreStaticBackLevelRound' + IntToStr(I));
-        ThemeLoadStatic(Score.StaticLevel[I], 'ScoreStaticLevel' + IntToStr(I));
-        ThemeLoadStatic(Score.StaticLevelRound[I], 'ScoreStaticLevelRound' + IntToStr(I));
+        ThemeLoadStatic(Score.StaticLevel[I],          'ScoreStaticLevel'          + IntToStr(I));
+        ThemeLoadStatic(Score.StaticLevelRound[I],     'ScoreStaticLevelRound'     + IntToStr(I));
       end;
 
       // Top5
       ThemeLoadBasic(Top5, 'Top5');
       
-      ThemeLoadText(Top5.TextLevel, 'Top5TextLevel');
+      ThemeLoadText(Top5.TextLevel,       'Top5TextLevel');
       ThemeLoadText(Top5.TextArtistTitle, 'Top5TextArtistTitle');
       ThemeLoadStatics(Top5.StaticNumber, 'Top5StaticNumber');
-      ThemeLoadTexts(Top5.TextNumber, 'Top5TextNumber');
-      ThemeLoadTexts(Top5.TextName, 'Top5TextName');
-      ThemeLoadTexts(Top5.TextScore, 'Top5TextScore');
+      ThemeLoadTexts(Top5.TextNumber,     'Top5TextNumber');
+      ThemeLoadTexts(Top5.TextName,       'Top5TextName');
+      ThemeLoadTexts(Top5.TextScore,      'Top5TextScore');
 
       // Options
       ThemeLoadBasic(Options, 'Options');
 
-      ThemeLoadButton(Options.ButtonGame, 'OptionsButtonGame');
+      ThemeLoadButton(Options.ButtonGame,     'OptionsButtonGame');
       ThemeLoadButton(Options.ButtonGraphics, 'OptionsButtonGraphics');
-      ThemeLoadButton(Options.ButtonSound, 'OptionsButtonSound');
-      ThemeLoadButton(Options.ButtonLyrics, 'OptionsButtonLyrics');
-      ThemeLoadButton(Options.ButtonThemes, 'OptionsButtonThemes');
-      ThemeLoadButton(Options.ButtonRecord, 'OptionsButtonRecord');
+      ThemeLoadButton(Options.ButtonSound,    'OptionsButtonSound');
+      ThemeLoadButton(Options.ButtonLyrics,   'OptionsButtonLyrics');
+      ThemeLoadButton(Options.ButtonThemes,   'OptionsButtonThemes');
+      ThemeLoadButton(Options.ButtonRecord,   'OptionsButtonRecord');
       ThemeLoadButton(Options.ButtonAdvanced, 'OptionsButtonAdvanced');
-      ThemeLoadButton(Options.ButtonExit, 'OptionsButtonExit');
+      ThemeLoadButton(Options.ButtonExit,     'OptionsButtonExit');
 
       {{$IFDEF TRANSLATE}
       Options.Description[0] := Language.Translate('SING_OPTIONS_GAME');
@@ -1207,32 +1094,32 @@ begin
       // Options Game
       ThemeLoadBasic(OptionsGame, 'OptionsGame');
 
-      ThemeLoadSelect(OptionsGame.SelectPlayers, 'OptionsGameSelectPlayers');
-      ThemeLoadSelect(OptionsGame.SelectDifficulty, 'OptionsGameSelectDifficulty');
+      ThemeLoadSelect(OptionsGame.SelectPlayers,       'OptionsGameSelectPlayers');
+      ThemeLoadSelect(OptionsGame.SelectDifficulty,    'OptionsGameSelectDifficulty');
       ThemeLoadSelectSlide(OptionsGame.SelectLanguage, 'OptionsGameSelectSlideLanguage');
-      ThemeLoadSelect(OptionsGame.SelectTabs, 'OptionsGameSelectTabs');
-      ThemeLoadSelectSlide(OptionsGame.SelectSorting, 'OptionsGameSelectSlideSorting');
-      ThemeLoadSelect(OptionsGame.SelectDebug, 'OptionsGameSelectDebug');
-      ThemeLoadButton(OptionsGame.ButtonExit, 'OptionsGameButtonExit');
+      ThemeLoadSelect(OptionsGame.SelectTabs,          'OptionsGameSelectTabs');
+      ThemeLoadSelectSlide(OptionsGame.SelectSorting,  'OptionsGameSelectSlideSorting');
+      ThemeLoadSelect(OptionsGame.SelectDebug,         'OptionsGameSelectDebug');
+      ThemeLoadButton(OptionsGame.ButtonExit,          'OptionsGameButtonExit');
 
       // Options Graphics
       ThemeLoadBasic(OptionsGraphics, 'OptionsGraphics');
 
-      ThemeLoadSelect(OptionsGraphics.SelectFullscreen, 'OptionsGraphicsSelectFullscreen');
+      ThemeLoadSelect(OptionsGraphics.SelectFullscreen,           'OptionsGraphicsSelectFullscreen');
       ThemeLoadSelectSlide(OptionsGraphics.SelectSlideResolution, 'OptionsGraphicsSelectSlideResolution');
-      ThemeLoadSelect(OptionsGraphics.SelectDepth, 'OptionsGraphicsSelectDepth');
-      ThemeLoadSelect(OptionsGraphics.SelectOscilloscope, 'OptionsGraphicsSelectOscilloscope');
-      ThemeLoadSelect(OptionsGraphics.SelectLineBonus, 'OptionsGraphicsSelectLineBonus');
-      ThemeLoadSelect(OptionsGraphics.SelectMovieSize, 'OptionsGraphicsSelectMovieSize');
-      ThemeLoadButton(OptionsGraphics.ButtonExit, 'OptionsGraphicsButtonExit');
+      ThemeLoadSelect(OptionsGraphics.SelectDepth,                'OptionsGraphicsSelectDepth');
+      ThemeLoadSelect(OptionsGraphics.SelectOscilloscope,         'OptionsGraphicsSelectOscilloscope');
+      ThemeLoadSelect(OptionsGraphics.SelectLineBonus,            'OptionsGraphicsSelectLineBonus');
+      ThemeLoadSelect(OptionsGraphics.SelectMovieSize,            'OptionsGraphicsSelectMovieSize');
+      ThemeLoadButton(OptionsGraphics.ButtonExit,                 'OptionsGraphicsButtonExit');
 
       // Options Sound
       ThemeLoadBasic(OptionsSound, 'OptionsSound');
 
-      ThemeLoadSelect(OptionsSound.SelectMicBoost, 'OptionsSoundSelectMicBoost');
+      ThemeLoadSelect(OptionsSound.SelectMicBoost,    'OptionsSoundSelectMicBoost');
       ThemeLoadSelect(OptionsSound.SelectClickAssist, 'OptionsSoundSelectClickAssist');
-      ThemeLoadSelect(OptionsSound.SelectBeatClick, 'OptionsSoundSelectBeatClick');
-      ThemeLoadSelect(OptionsSound.SelectThreshold, 'OptionsSoundSelectThreshold');
+      ThemeLoadSelect(OptionsSound.SelectBeatClick,   'OptionsSoundSelectBeatClick');
+      ThemeLoadSelect(OptionsSound.SelectThreshold,   'OptionsSoundSelectThreshold');
       //Song Preview
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume, 'OptionsSoundSelectSlidePreviewVolume');
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading, 'OptionsSoundSelectSlidePreviewFading');
@@ -1242,39 +1129,39 @@ begin
       // Options Lyrics
       ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
 
-      ThemeLoadSelect(OptionsLyrics.SelectLyricsFont, 'OptionsLyricsSelectLyricsFont');
+      ThemeLoadSelect(OptionsLyrics.SelectLyricsFont,   'OptionsLyricsSelectLyricsFont');
       ThemeLoadSelect(OptionsLyrics.SelectLyricsEffect, 'OptionsLyricsSelectLyricsEffect');
-      ThemeLoadSelect(OptionsLyrics.SelectSolmization, 'OptionsLyricsSelectSolmization');
-      ThemeLoadButton(OptionsLyrics.ButtonExit, 'OptionsLyricsButtonExit');
+      ThemeLoadSelect(OptionsLyrics.SelectSolmization,  'OptionsLyricsSelectSolmization');
+      ThemeLoadButton(OptionsLyrics.ButtonExit,         'OptionsLyricsButtonExit');
 
       // Options Themes
       ThemeLoadBasic(OptionsThemes, 'OptionsThemes');
 
       ThemeLoadSelectSlide(OptionsThemes.SelectTheme, 'OptionsThemesSelectTheme');
-      ThemeLoadSelectSlide(OptionsThemes.SelectSkin, 'OptionsThemesSelectSkin');
+      ThemeLoadSelectSlide(OptionsThemes.SelectSkin,  'OptionsThemesSelectSkin');
       ThemeLoadSelectSlide(OptionsThemes.SelectColor, 'OptionsThemesSelectColor');
-      ThemeLoadButton(OptionsThemes.ButtonExit, 'OptionsThemesButtonExit');
+      ThemeLoadButton(OptionsThemes.ButtonExit,       'OptionsThemesButtonExit');
 
       // Options Record
       ThemeLoadBasic(OptionsRecord, 'OptionsRecord');
 
-      ThemeLoadSelectSlide(OptionsRecord.SelectSlideCard, 'OptionsRecordSelectSlideCard');
-      ThemeLoadSelectSlide(OptionsRecord.SelectSlideInput,  'OptionsRecordSelectSlideInput');
+      ThemeLoadSelectSlide(OptionsRecord.SelectSlideCard,     'OptionsRecordSelectSlideCard');
+      ThemeLoadSelectSlide(OptionsRecord.SelectSlideInput,    'OptionsRecordSelectSlideInput');
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannelL, 'OptionsRecordSelectSlideChannelL');
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannelR, 'OptionsRecordSelectSlideChannelR');
-      ThemeLoadButton(OptionsRecord.ButtonExit, 'OptionsRecordButtonExit');
+      ThemeLoadButton(OptionsRecord.ButtonExit,               'OptionsRecordButtonExit');
 
       //Options Advanced
       ThemeLoadBasic(OptionsAdvanced, 'OptionsAdvanced');
 
       ThemeLoadSelect       (OptionsAdvanced.SelectLoadAnimation, 'OptionsAdvancedSelectLoadAnimation');
-      ThemeLoadSelect       (OptionsAdvanced.SelectScreenFade, 'OptionsAdvancedSelectScreenFade');
-      ThemeLoadSelect       (OptionsAdvanced.SelectEffectSing, 'OptionsAdvancedSelectEffectSing');
-      ThemeLoadSelect       (OptionsAdvanced.SelectLineBonus, 'OptionsAdvancedSelectLineBonus');
-      ThemeLoadSelectSlide  (OptionsAdvanced.SelectOnSongClick, 'OptionsAdvancedSelectSlideOnSongClick');
-      ThemeLoadSelect       (OptionsAdvanced.SelectAskbeforeDel, 'OptionsAdvancedSelectAskbeforeDel');
-      ThemeLoadSelect       (OptionsAdvanced.SelectPartyPopup, 'OptionsAdvancedSelectPartyPopup');
-      ThemeLoadButton       (OptionsAdvanced.ButtonExit, 'OptionsAdvancedButtonExit');
+      ThemeLoadSelect       (OptionsAdvanced.SelectScreenFade,    'OptionsAdvancedSelectScreenFade');
+      ThemeLoadSelect       (OptionsAdvanced.SelectEffectSing,    'OptionsAdvancedSelectEffectSing');
+      ThemeLoadSelect       (OptionsAdvanced.SelectLineBonus,     'OptionsAdvancedSelectLineBonus');
+      ThemeLoadSelectSlide  (OptionsAdvanced.SelectOnSongClick,   'OptionsAdvancedSelectSlideOnSongClick');
+      ThemeLoadSelect       (OptionsAdvanced.SelectAskbeforeDel,  'OptionsAdvancedSelectAskbeforeDel');
+      ThemeLoadSelect       (OptionsAdvanced.SelectPartyPopup,    'OptionsAdvancedSelectPartyPopup');
+      ThemeLoadButton       (OptionsAdvanced.ButtonExit,          'OptionsAdvancedButtonExit');
 
       //error and check popup
       ThemeLoadBasic (ErrorPopup, 'ErrorPopup');
@@ -1381,41 +1268,41 @@ begin
       //Load Party Score DecoTextures Object
       PartyScore.DecoTextures.ChangeTextures := (ThemeIni.ReadInteger('PartyScoreDecoTextures', 'ChangeTextures', 0) = 1);
 
-      PartyScore.DecoTextures.FirstTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'FirstTexture', '');
-      PartyScore.DecoTextures.FirstTyp   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'FirstTyp', 'Note Black');
-      PartyScore.DecoTextures.FirstColor   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'FirstColor', 'Black');
+      PartyScore.DecoTextures.FirstTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'FirstTexture', '');
+      PartyScore.DecoTextures.FirstTyp       :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'FirstTyp', 'Note Black');
+      PartyScore.DecoTextures.FirstColor     :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'FirstColor', 'Black');
 
-      PartyScore.DecoTextures.SecondTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'SecondTexture', '');
-      PartyScore.DecoTextures.SecondTyp   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'SecondTyp', 'Note Black');
-      PartyScore.DecoTextures.SecondColor   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'SecondColor', 'Black');
+      PartyScore.DecoTextures.SecondTexture  :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'SecondTexture', '');
+      PartyScore.DecoTextures.SecondTyp      :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'SecondTyp', 'Note Black');
+      PartyScore.DecoTextures.SecondColor    :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'SecondColor', 'Black');
 
-      PartyScore.DecoTextures.ThirdTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'ThirdTexture', '');
-      PartyScore.DecoTextures.ThirdTyp   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'ThirdTyp', 'Note Black');
-      PartyScore.DecoTextures.ThirdColor   :=  ThemeIni.ReadString('PartyScoreDecoTextures', 'ThirdColor', 'Black');
+      PartyScore.DecoTextures.ThirdTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'ThirdTexture', '');
+      PartyScore.DecoTextures.ThirdTyp       :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'ThirdTyp', 'Note Black');
+      PartyScore.DecoTextures.ThirdColor     :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'ThirdColor', 'Black');
 
       ThemeLoadText (PartyScore.TextWinner, 'PartyScoreTextWinner');
 
       //Party Win
       ThemeLoadBasic(PartyWin, 'PartyWin');
 
-      ThemeLoadText (PartyWin.TextScoreTeam1, 'PartyWinTextScoreTeam1');
-      ThemeLoadText (PartyWin.TextScoreTeam2, 'PartyWinTextScoreTeam2');
-      ThemeLoadText (PartyWin.TextScoreTeam3, 'PartyWinTextScoreTeam3');
-      ThemeLoadText (PartyWin.TextNameTeam1, 'PartyWinTextNameTeam1');
-      ThemeLoadText (PartyWin.TextNameTeam2, 'PartyWinTextNameTeam2');
-      ThemeLoadText (PartyWin.TextNameTeam3, 'PartyWinTextNameTeam3');
+      ThemeLoadText (PartyWin.TextScoreTeam1,    'PartyWinTextScoreTeam1');
+      ThemeLoadText (PartyWin.TextScoreTeam2,    'PartyWinTextScoreTeam2');
+      ThemeLoadText (PartyWin.TextScoreTeam3,    'PartyWinTextScoreTeam3');
+      ThemeLoadText (PartyWin.TextNameTeam1,     'PartyWinTextNameTeam1');
+      ThemeLoadText (PartyWin.TextNameTeam2,     'PartyWinTextNameTeam2');
+      ThemeLoadText (PartyWin.TextNameTeam3,     'PartyWinTextNameTeam3');
 
-      ThemeLoadStatic (PartyWin.StaticTeam1, 'PartyWinStaticTeam1');
-      ThemeLoadStatic (PartyWin.StaticTeam1BG, 'PartyWinStaticTeam1BG');
+      ThemeLoadStatic (PartyWin.StaticTeam1,     'PartyWinStaticTeam1');
+      ThemeLoadStatic (PartyWin.StaticTeam1BG,   'PartyWinStaticTeam1BG');
       ThemeLoadStatic (PartyWin.StaticTeam1Deco, 'PartyWinStaticTeam1Deco');
-      ThemeLoadStatic (PartyWin.StaticTeam2, 'PartyWinStaticTeam2');
-      ThemeLoadStatic (PartyWin.StaticTeam2BG, 'PartyWinStaticTeam2BG');
+      ThemeLoadStatic (PartyWin.StaticTeam2,     'PartyWinStaticTeam2');
+      ThemeLoadStatic (PartyWin.StaticTeam2BG,   'PartyWinStaticTeam2BG');
       ThemeLoadStatic (PartyWin.StaticTeam2Deco, 'PartyWinStaticTeam2Deco');
-      ThemeLoadStatic (PartyWin.StaticTeam3, 'PartyWinStaticTeam3');
-      ThemeLoadStatic (PartyWin.StaticTeam3BG, 'PartyWinStaticTeam3BG');
+      ThemeLoadStatic (PartyWin.StaticTeam3,     'PartyWinStaticTeam3');
+      ThemeLoadStatic (PartyWin.StaticTeam3BG,   'PartyWinStaticTeam3BG');
       ThemeLoadStatic (PartyWin.StaticTeam3Deco, 'PartyWinStaticTeam3Deco');
 
-      ThemeLoadText (PartyWin.TextWinner, 'PartyWinTextWinner');
+      ThemeLoadText (PartyWin.TextWinner,        'PartyWinTextWinner');
 
       //Party Options
       ThemeLoadBasic(PartyOptions, 'PartyOptions');
@@ -1580,11 +1467,11 @@ begin
 
   ThemeStatic.X := ThemeIni.ReadInteger(Name, 'X', 0);
   ThemeStatic.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
-  ThemeStatic.Z := ThemeIni.ReadFloat(Name, 'Z', 0);
+  ThemeStatic.Z := ThemeIni.ReadFloat  (Name, 'Z', 0);
   ThemeStatic.W := ThemeIni.ReadInteger(Name, 'W', 0);
   ThemeStatic.H := ThemeIni.ReadInteger(Name, 'H', 0);
 
-  ThemeStatic.Typ := ThemeIni.ReadString(Name, 'Type', '');
+  ThemeStatic.Typ   := ThemeIni.ReadString(Name, 'Type', '');
   ThemeStatic.Color := ThemeIni.ReadString(Name, 'Color', '');
 
   C := ColorExists(ThemeStatic.Color);
@@ -1600,7 +1487,7 @@ begin
   ThemeStatic.TexY2 := ThemeIni.ReadFloat(Name, 'TexY2', 1);
 
   //Reflection Mod
-  ThemeStatic.Reflection := (ThemeIni.ReadInteger(Name, 'Reflection', 0) = 1);
+  ThemeStatic.Reflection        := (ThemeIni.ReadInteger(Name, 'Reflection', 0) = 1);
   ThemeStatic.ReflectionSpacing := ThemeIni.ReadFloat(Name, 'ReflectionSpacing', 15);
 
   DecimalSeparator := ',';
@@ -1704,7 +1591,7 @@ begin
   ThemeButton.SelectW := ThemeIni.ReadInteger (Name, 'SelectW', ThemeButton.W);
 
   ThemeButton.DeSelectReflectionspacing := ThemeIni.ReadFloat(Name, 'DeSelectReflectionSpacing', ThemeButton.Reflectionspacing);
-  
+
   ThemeButton.Fade := (ThemeIni.ReadInteger(Name, 'Fade', 0) = 1);
   ThemeButton.FadeText := (ThemeIni.ReadInteger(Name, 'FadeText', 0) = 1);
 
@@ -2049,18 +1936,6 @@ begin
     //New Theme-Color Patch End
 
     end;
-
-  // pink
-//  Col := clRed;
-//  Color[C].ColR := (32 + Col and $FF) / (255 + 32);
-//  Color[C].ColG := (32 + Col div 256 and $FF) / (255 + 32);
-//  Color[C].ColB := (32 + Col div (256*256) and $FF) / (255 + 32);
-
-  // purple
-//  Color[C].ColR := 220/255;
-//  Color[C].ColG := 95/255;
-//  Color[C].ColB := 220/255;}
-
 end;
 
 function ColorSqrt(RGB: TRGB): TRGB;

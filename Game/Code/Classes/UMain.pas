@@ -33,7 +33,7 @@ type
     LineBonus_Text:     string;
     LineBonus_Color:    TRGB;
     LineBonus_Age:      Integer;
-
+    LineBonus_Rating: Integer;
     //Variable vor Positioning -> Set on ScreenShow, different when Playercount Changes
     LineBonus_TargetX:  integer;
     LineBonus_TargetY:  integer;

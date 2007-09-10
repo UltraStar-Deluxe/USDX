@@ -1,7 +1,7 @@
 unit UDraw;
 
 interface
-uses UThemes, ModiSDK, UGraphicClasses;
+uses UThemes, ModiSDK, UGraphicClasses, dialogs;
 
 procedure SingDraw;
 procedure SingModiDraw (PlayerInfo: TPlayerInfo);
@@ -13,14 +13,9 @@ procedure SingDrawCzesc(Left, Top, Right: real; NrCzesci: integer; Space: intege
 procedure SingDrawPlayerCzesc(X, Y, W: real; NrGracza: integer; Space: integer);
 procedure SingDrawPlayerBGCzesc(Left, Top, Right: real; NrCzesci, NrGracza: integer; Space: integer);
 
-// TimeBar mod
+// TimeBar 
 procedure SingDrawTimeBar();
-// eoa TimeBar mod
 
-{ for no use since we have UGraphicClasses
-procedure SingDrawStar(X, Y, A: real);
-procedure SingGoldenStar(X, Y, A: real);
-}
 // The Singbar
 procedure SingDrawSingbar(X, Y, W, H: real; Percent: integer);
 
@@ -52,15 +47,9 @@ var
   Starfr:   integer;
   StarfrG:   integer;
 
-
-
-  //SingBar Mod
+  //SingBar
   TickOld: cardinal;
   TickOld2:cardinal;
-  //end Singbar Mod
-
-
-
 
 const
   Przedz = 32;
@@ -208,8 +197,20 @@ var
   TempR:    real;
   R,G,B:    real;
 
+  PlayerNumber: Integer;
+
   GoldenStarPos : real;
 begin
+// We actually don't have a playernumber in this procedure, it should reside in NrCzesci - but it's always set to zero
+// So we exploit this behavior a bit - we give NrCzesci the playernumber, keep it in playernumber - and then we set NrCzesci to zero
+// This could also come quite in handy when we do the duet mode, cause just the notes for the player that has to sing should be drawn then
+// BUT this is not implemented yet, all notes are drawn! :D
+
+  PlayerNumber := NrCzesci + 1; // Player 1 is 0
+  NrCzesci     := 0;
+
+// exploit done
+
   glColor3f(1, 1, 1);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
@@ -225,19 +226,19 @@ begin
           // If Golden note Effect of then Change not Color
           begin
             case Wartosc of
-              1: glColor4f(1, 1, 1, 0.85);
-              2: glColor4f(1, 1, 0.3, 0.85); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85);
+              1: glColor4f(1, 1, 1, 1);   // We set alpha to 1, cause we can control the transparency through the png itself
+              2: glColor4f(1, 1, 0.3, 1); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
             end; // case
           end //Else all Notes same Color
           else
-            glColor4f(1, 1, 1, 0.85);
-
+            glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
+                                          // Czesci == teil, element == piece, element | koniec == ende, schluss
           // lewa czesc  -  left part
           Rec.Left := (Start-Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW;
           Rec.Top := Top - (Ton-BaseNote)*Space/2 - NotesH;
           Rec.Bottom := Rec.Top + 2 * NotesH;
-          glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum);
+          glBindTexture(GL_TEXTURE_2D, Tex_plain_Left[PlayerNumber].TexNum);
           glBegin(GL_QUADS);
             glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
             glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
@@ -249,12 +250,11 @@ begin
             GoldenStarPos := Rec.Left;
           //done
 
-
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Dlugosc-Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
+        Rec.Right := (Start+Dlugosc-Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == länge
 
-        glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
+        glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
         glBegin(GL_QUADS);
@@ -268,7 +268,7 @@ begin
         Rec.Left := Rec.Right;
         Rec.Right := Rec.Right + NotesW;
 
-        glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum);
+        glBindTexture(GL_TEXTURE_2D, Tex_plain_Right[PlayerNumber].TexNum);
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
           glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
@@ -313,134 +313,100 @@ var
 //  G := 175/255;
 //  B := 247/255;
 
-
   glColor3f(1, 1, 1);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  if Player[NrGracza].IlNut > 0 then begin
-    TempR := W / (Czesci[0].Czesc[Czesci[0].Akt].Koniec - Czesci[0].Czesc[Czesci[0].Akt].StartNote);
-    for N := 0 to Player[NrGracza].HighNut do begin
-      with Player[NrGracza].Nuta[N] do begin
-        // lewa czesc
-        Rec.Left := X + (Start-Czesci[0].Czesc[Czesci[0].Akt].StartNote) * TempR + 0.5 + 10*ScreenX;
-        Rec.Right := Rec.Left + NotesW;
 
+  if Player[NrGracza].IlNut > 0 then
+    begin
+      TempR := W / (Czesci[0].Czesc[Czesci[0].Akt].Koniec - Czesci[0].Czesc[Czesci[0].Akt].StartNote);
+        for N := 0 to Player[NrGracza].HighNut do
+          begin
+            with Player[NrGracza].Nuta[N] do
+              begin
+                // Left part of note
+                Rec.Left := X + (Start-Czesci[0].Czesc[Czesci[0].Akt].StartNote) * TempR + 0.5 + 10*ScreenX;
+                Rec.Right := Rec.Left + NotesW;
 
-       // Half size Notes Patch
-       if Hit then begin
-       NotesH2 := NotesH
-       end else begin
-       NotesH2 := int(NotesH * 0.65);
-       end; //if
+                // Draw it in half size, if not hit
+               if Hit then
+                 begin
+                   NotesH2 := NotesH
+                 end
+               else
+                 begin
+                   NotesH2 := int(NotesH * 0.65);
+                 end;
 
+                Rec.Top    := Y - (Ton-Czesci[0].Czesc[Czesci[0].Akt].BaseNote)*Space/2 - NotesH2;
+                Rec.Bottom := Rec.Top + 2 *NotesH2;
 
+                // draw the left part
+                glColor3f(1, 1, 1);
+                glBindTexture(GL_TEXTURE_2D, Tex_Left[NrGracza+1].TexNum);
+                glBegin(GL_QUADS);
+                  glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+                  glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+                  glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+                  glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+                glEnd;
 
-        //        if True then
-        Rec.Top    := Y - (Ton-Czesci[0].Czesc[Czesci[0].Akt].BaseNote)*Space/2 - NotesH2;
-        Rec.Bottom := Rec.Top + 2 *NotesH2;
+               // Middle part of the note
+               Rec.Left := Rec.Right;
+               Rec.Right := X + (Start+Dlugosc-Czesci[0].Czesc[Czesci[0].Akt].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
 
-        glColor3f(1, 1, 1);
-        glBindTexture(GL_TEXTURE_2D, Tex_Left[NrGracza+1].TexNum);
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
+               // (nowe) - dunno
+               if (Start+Dlugosc-1 = Czas.AktBeatD) then
+                 Rec.Right := Rec.Right - (1-Frac(Czas.MidBeatD)) * TempR;
+               // the left note is more right than the right note itself, sounds weird - so we fix that xD
+               if Rec.Right <= Rec.Left then Rec.Right := Rec.Left;
 
-        // srodkowa czesc
-        Rec.Left := Rec.Right;
-        Rec.Right := X + (Start+Dlugosc-Czesci[0].Czesc[Czesci[0].Akt].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
-        // (nowe)
-        if (Start+Dlugosc-1 = Czas.AktBeatD) then
-          Rec.Right := Rec.Right - (1-Frac(Czas.MidBeatD)) * TempR;
+               // draw the middle part
+               glBindTexture(GL_TEXTURE_2D, Tex_Mid[NrGracza+1].TexNum);
+               glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+               glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+               glBegin(GL_QUADS);
+                 glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+                 glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+                 glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
+                 glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
+               glEnd;
+               glColor3f(1, 1, 1);
 
-        if Rec.Right <= Rec.Left then Rec.Right := Rec.Left;
+               // the right part of the note
+               Rec.Left := Rec.Right;
+               Rec.Right := Rec.Right + NotesW;
 
+               glBindTexture(GL_TEXTURE_2D, Tex_Right[NrGracza+1].TexNum);
+               glBegin(GL_QUADS);
+                 glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+                 glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+                 glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+                 glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+               glEnd;
 
-//        glColor3f(R, G, B);
-//        glBindTexture(GL_TEXTURE_2D, Tex_MidGray.TexNum);
-        glBindTexture(GL_TEXTURE_2D, Tex_Mid[NrGracza+1].TexNum);
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
-        glColor3f(1, 1, 1);
+            // Perfect note is stored
+            if Perfect and (Ini.EffectSing=1) then
+              begin
+                A := 1 - 2*(Czas.Teraz - GetTimeFromBeat(Start+Dlugosc));
+                  if not (Start+Dlugosc-1 = Czas.AktBeatD) then
 
-        // prawa czesc
-        Rec.Left := Rec.Right;
-        Rec.Right := Rec.Right + NotesW;
-
-        glBindTexture(GL_TEXTURE_2D, Tex_Right[NrGracza+1].TexNum);
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
-
-
-
-        //Rec.Right := X + (Start+Dlugosc-Czesci[0].Czesc[Czesci[0].Akt].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
-        //if (Start+Dlugosc-1 = Czas.AktBeatD) then
-        if Perfect and (Ini.EffectSing=1) then begin
-//          A := sqrt((1+sin(Music.Position * 3))/2);
-          A := 1 - 2*(Czas.Teraz - GetTimeFromBeat(Start+Dlugosc));
-          if not (Start+Dlugosc-1 = Czas.AktBeatD) then
-
-            //Star animation counter
-            //inc(Starfr);
-            //Starfr := Starfr mod 128;
-            GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
-          {  SingDrawStar(Rec.Left+2, Rec.Top+4, A);}
-        end;
-
-        // detekt
-{        Rec.Left := Round((Detekt-Czesci.Czesc[Czesci.Akt].Start) * TempR) + 130;
-        glColor3f(1, 0.2, 0.2);
-        glDisable(GL_BLEND);
-        glDisable(GL_TEXTURE_2D);
-        glBegin(GL_QUADS);
-          glVertex(Rec.Left,   Rec.Top-5);
-          glVertex(Rec.Left,   Rec.Bottom+5);
-          glVertex(Rec.Left+1, Rec.Bottom+5);
-          glVertex(Rec.Left+1, Rec.Top-5);
-        glEnd;
-        glColor3f(1, 1, 1);
-        glEnable(GL_BLEND);
-        glEnable(GL_TEXTURE_2D);}
-
-        // detekt + FFT length
-{        Rec.Right := (Detekt-Czesci.Czesc[Czesci.Akt].Start) * TempR + 130;
-        // TempR = dlugosc 1 kostki
-        // 60 * 4 / BPM  = czas w sekundach na 1 kostke, np. 0,4s
-        // 4096 / 44100 = czas jednego sampla FFT, np. 0,1s
-        // ile to ma kostek? np. 0.25
-        // (4096 / 44100) / (60 * 4 / BPM), np. 0,1s / 0,4s = 0.25
-        // * TempR = dlugosc sampla FFT
-        Rec.Left := Rec.Right - (Sound.n / 44100) / (60 * 4 / Muzyka.BPM) * TempR;
-
-        glColor3f(1, 0.2, 0.2);
-        glVertex(Rec.Left,   Rec.Top-4);
-        glVertex(Rec.Left,   Rec.Bottom+4);
-        glVertex(Rec.Right, Rec.Bottom+4);
-        glVertex(Rec.Right, Rec.Top-4);}
-
-      end; // with
-    end; // for
+                  //Star animation counter
+                  //inc(Starfr);
+                  //Starfr := Starfr mod 128;
+                  GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
+              end;
+            end; // with
+        end; // for
     // eigentlich brauchen wir hier einen vergleich, um festzustellen, ob wir mit
     // singen schon weiter wären, als bei Rec.Right, _auch, wenn nicht gesungen wird_
 
     // passing on NrGracza... hope this is really something like the player-number, not only
     // some kind of weird index into a colour-table
 
-    if (Ini.EffectSing=1) then
-    GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, NrGracza);
+        if (Ini.EffectSing=1) then
+          GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, NrGracza);
   end; // if
 end;
 
@@ -523,64 +489,6 @@ begin
   end;
 end;
 
-{not used anymore tough we have UGraphicClasses
-procedure SingDrawStar(X, Y, A: real);
-var
-  TempR:    real;
-  W, H:     real;
-  Starframe: real;
-  begin
-  W := 32;
-  H := 32;
-
-// Golden Star Patch
-//  case Z of
-//    1: glColor4f(1, 1, 1, A);
-//    2: glColor4f(1, 1, 0.3, A);
-//  end; // case
-
-  glColor4f(1, 1, 1, A);
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, Tex_Note_Star.TexNum);
-
-  Starframe := 15 - ((GetTickCount div 33) mod 16);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f((1/16) * Starframe, 0); glVertex2f(X-W, Y-H);
-    glTexCoord2f((1/16) * Starframe + (1/16), 0); glVertex2f(X-W, Y+H);
-    glTexCoord2f((1/16) * Starframe + (1/16), 1); glVertex2f(X+W, Y+H);
-    glTexCoord2f((1/16) * Starframe, 1); glVertex2f(X+W, Y-H);
-  glEnd;
-end;
-}
-
-{not used anymore tough we have UGraphicClasses
-procedure SingGoldenStar(X, Y, A: real);
-var
-  TempR:    real;
-  W, H:     real;
-  StarfrG2: real;
-  begin
-  W := 16;
-  H := 16;
-  glColor4f(1, 1, 0.3, A);
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, Tex_Note_Star.TexNum);
-  StarfrG2 := 15 - ((GetTickCount div 67) mod 16);
-  glBegin(GL_QUADS);
-    //x1
-    glTexCoord2f((1/16) * StarfrG2, 0); glVertex2f(X-W, Y-H);
-    glTexCoord2f((1/16) * StarfrG2 + (1/16), 0); glVertex2f(X-W, Y+H);
-    glTexCoord2f((1/16) * StarfrG2 + (1/16), 1); glVertex2f(X+W, Y+H);
-    glTexCoord2f((1/16) * StarfrG2, 1); glVertex2f(X+W, Y-H);
-  glEnd;
-end;
-}
-
 procedure SingDraw;
 var
   Pet:      integer;
@@ -598,15 +506,11 @@ var
   LyricTemp:  string;
   PetCz:    integer;
 
-
-
   //SingBar Mod
   A: Integer;
   E: Integer;
   I: Integer;
   //end Singbar Mod
-
-
 
 begin
   // positions
@@ -739,51 +643,40 @@ begin
         else if I < 0 then Dec(Player[E].ScorePercent);
       end; //for
     end; //if
+
     if PlayersPlay = 1 then begin
-      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
       SingDrawSingbar(Theme.Sing.StaticP1SingBar.x, Theme.Sing.StaticP1SingBar.y, Theme.Sing.StaticP1SingBar.w, Theme.Sing.StaticP1SingBar.h , Player[0].ScorePercent);
-   end;
+    end;
+
     if PlayersPlay = 2 then begin
-      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-      //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
       SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
       SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
-   end;
+    end;
+
     if PlayersPlay = 3 then begin
-      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-      //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
-      //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
       SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
       SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
       SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
     end;
+
     if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
-      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-      //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
-      SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
-      SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
       end;
       if ScreenAct = 2 then begin
-      //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
-      //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
-      SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[2].ScorePercent);
-      SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[3].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[2].ScorePercent);
+        SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[3].ScorePercent);
       end;
     end;
+
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
-        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
-        //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
-        //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
      end;
       if ScreenAct = 2 then begin
-        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
-        //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[4].ScorePercent);
-        //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[5].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[3].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[4].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[5].ScorePercent);
@@ -798,53 +691,58 @@ begin
     if (A <> Tickold2) AND (Player[0].LineBonus_Visible) then begin
       Tickold2 := A;
       for E := 0 to (PlayersPlay - 1) do begin
-          //Change Alpha
-          Player[E].LineBonus_Alpha := Player[E].LineBonus_Alpha - 0.02;
+        //Change Alpha
+        Player[E].LineBonus_Alpha := Player[E].LineBonus_Alpha - 0.02;
           if Player[E].LineBonus_Alpha <= 0 then
             begin
               Player[E].LineBonus_Age := 0;
               Player[E].LineBonus_Visible := False
             end
           else
-          begin
-          inc(Player[E].LineBonus_Age, 1);
-          //Change Position
-          if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then
-            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
-           else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then
-            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
+            begin
+              inc(Player[E].LineBonus_Age, 1);
+              //Change Position
+                if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then
+                    Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
+                else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then
+                    Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
 
-          if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
-            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
-          else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
-            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
+                if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
+                    Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
+                else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
+                    Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
 
-          end;
-      end;
-    end; //if
+            end; // shift position of the pop up (if not dead)
+      end;       // loop - for all players
+    end;         // if - linebonus
 
-    if PlayersPlay = 1 then begin
+
+    if      PlayersPlay = 1 then begin
       SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-   end
-   else if PlayersPlay = 2 then begin
+    end
+
+    else if PlayersPlay = 2 then begin
       SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
       SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
    end
+
    else if PlayersPlay = 3 then begin
       SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
       SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
       SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
     end
+
    else if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
+        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
+        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
       end;
       if ScreenAct = 2 then begin
-      SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
-      SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
+        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
+        SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
       end;
     end;
+
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
         SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
@@ -860,9 +758,7 @@ begin
   end;
   //PhrasenBonus - Line Bonus Mod End
 
-
-  // rysuje paski
-//  Log.LogStatus('Original notes', 'SingDraw');
+// Set the note heights according to the difficulty level
   case Ini.Difficulty of
     0:
       begin
@@ -881,10 +777,11 @@ begin
       end;
   end;
 
+// Draw the Notes
   if PlayersPlay = 1 then begin
-    SingDrawPlayerBGCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 0, 15);
-    SingDrawCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 15);
-    SingDrawPlayerCzesc(Nr.Left + 20, Skin_P2_NotesB, Nr.Width - 40, 0, 15);
+    SingDrawPlayerBGCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 0, 15);  // Background glow    - colorized in playercolor
+    SingDrawCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 15);             // Plain unsung notes - colorized in playercolor
+    SingDrawPlayerCzesc(Nr.Left + 20, Skin_P2_NotesB, Nr.Width - 40, 0, 15);       // imho the sung notes
   end;
 
   if (PlayersPlay = 2)  then begin
@@ -892,7 +789,7 @@ begin
     SingDrawPlayerBGCzesc(Nr.Left + 20, Skin_P2_NotesB, Nr.Right - 20, 0, 1, 15);
 
     SingDrawCzesc(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 15);
-    SingDrawCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 15);
+    SingDrawCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 1, 15);
 
     SingDrawPlayerCzesc(Nr.Left + 20, Skin_P1_NotesB, Nr.Width - 40, 0, 15);
     SingDrawPlayerCzesc(Nr.Left + 20, Skin_P2_NotesB, Nr.Width - 40, 1, 15);
@@ -907,8 +804,8 @@ begin
     SingDrawPlayerBGCzesc(Nr.Left + 20, 370+95, Nr.Right - 20, 0, 2, 12);
 
     SingDrawCzesc(NR.Left + 20, 120+95, NR.Right - 20, 0, 12);
-    SingDrawCzesc(NR.Left + 20, 245+95, NR.Right - 20, 0, 12);
-    SingDrawCzesc(NR.Left + 20, 370+95, NR.Right - 20, 0, 12);
+    SingDrawCzesc(NR.Left + 20, 245+95, NR.Right - 20, 1, 12);
+    SingDrawCzesc(NR.Left + 20, 370+95, NR.Right - 20, 2, 12);
 
     SingDrawPlayerCzesc(Nr.Left + 20, 120+95, Nr.Width - 40, 0, 12);
     SingDrawPlayerCzesc(Nr.Left + 20, 245+95, Nr.Width - 40, 1, 12);
@@ -925,8 +822,14 @@ begin
       SingDrawPlayerBGCzesc(Nr.Left + 20, Skin_P2_NotesB, Nr.Right - 20, 0, 3, 15);
     end;
 
-    SingDrawCzesc(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 15);
-    SingDrawCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 15);
+    if ScreenAct = 1 then begin
+      SingDrawCzesc(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 15);
+      SingDrawCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 1, 15);
+    end;
+    if ScreenAct = 2 then begin
+      SingDrawCzesc(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 2, 15);
+      SingDrawCzesc(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 3, 15);
+    end;
 
     if ScreenAct = 1 then begin
       SingDrawPlayerCzesc(Nr.Left + 20, Skin_P1_NotesB, Nr.Width - 40, 0, 15);
@@ -953,9 +856,16 @@ begin
       SingDrawPlayerBGCzesc(Nr.Left + 20, 370+95, Nr.Right - 20, 0, 5, 12);
     end;
 
-    SingDrawCzesc(NR.Left + 20, 120+95, NR.Right - 20, 0, 12);
-    SingDrawCzesc(NR.Left + 20, 245+95, NR.Right - 20, 0, 12);
-    SingDrawCzesc(NR.Left + 20, 370+95, NR.Right - 20, 0, 12);
+    if ScreenAct = 1 then begin
+      SingDrawCzesc(NR.Left + 20, 120+95, NR.Right - 20, 0, 12);
+      SingDrawCzesc(NR.Left + 20, 245+95, NR.Right - 20, 1, 12);
+      SingDrawCzesc(NR.Left + 20, 370+95, NR.Right - 20, 2, 12);
+    end;
+    if ScreenAct = 2 then begin
+      SingDrawCzesc(NR.Left + 20, 120+95, NR.Right - 20, 3, 12);
+      SingDrawCzesc(NR.Left + 20, 245+95, NR.Right - 20, 4, 12);
+      SingDrawCzesc(NR.Left + 20, 370+95, NR.Right - 20, 5, 12);
+    end;
 
     if ScreenAct = 1 then begin
       SingDrawPlayerCzesc(Nr.Left + 20, 120+95, Nr.Width - 40, 0, 12);
@@ -968,11 +878,11 @@ begin
       SingDrawPlayerCzesc(Nr.Left + 20, 370+95, Nr.Width - 40, 5, 12);
     end;
   end;
-
   glDisable(GL_BLEND);
   glDisable(GL_TEXTURE_2D);
 end;
 
+// q'n'd for using the game mode dll's
 procedure SingModiDraw (PlayerInfo: TPlayerInfo);
 var
   Pet:      integer;
@@ -990,15 +900,11 @@ var
   LyricTemp:  string;
   PetCz:    integer;
 
-
-
   //SingBar Mod
   A: Integer;
   E: Integer;
   I: Integer;
   //end Singbar Mod
-
-
 
 begin
   // positions
@@ -1007,22 +913,17 @@ begin
   end else begin
     NR.Left := 20;
   end;
+
   NR.Right := 780;
-
   NR.Width := NR.Right - NR.Left;
-  NR.WMid := NR.Width / 2;
-  NR.Mid := NR.Left + NR.WMid;
-
-  // background  //BG Fullsize Mod
-  //SingDrawBackground;
+  NR.WMid  := NR.Width / 2;
+  NR.Mid   := NR.Left + NR.WMid;
 
   // time bar
-//  Log.LogStatus('Time Bar', 'SingDraw');
   SingDrawTimeBar();
 
   if DLLMan.Selected.ShowNotes then
   begin
-    // rysuje paski pod nutami
     if PlayersPlay = 1 then
       SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
     if (PlayersPlay = 2) or (PlayersPlay = 4) then begin
@@ -1037,7 +938,7 @@ begin
     end;
   end;
 
-    // rysuje tekst - new Lyric engine
+    // Lyric engine
     ScreenSingModi.LyricMain.Draw;
     ScreenSingModi.LyricSub.Draw;
 
@@ -1046,40 +947,30 @@ begin
     BarFrom := Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czesci[0].Czesc[Czesci[0].Akt].Start;
     if BarFrom > 40 then BarFrom := 40;
     if (Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czesci[0].Czesc[Czesci[0].Akt].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
-      (Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czas.MidBeat > 0) and                     // przed tekstem
-      (Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czas.MidBeat < 40) then begin            // ale nie za wczesnie
-      BarWspol := (Czas.MidBeat - (Czesci[0].Czesc[Czesci[0].Akt].StartNote - BarFrom)) / BarFrom;
-      Rec.Left := NR.Left + BarWspol *
-  //      (NR.WMid - Czesci[0].Czesc[Czesci[0].Akt].LyricWidth / 2 * FS - 50);
-        (ScreenSingModi.LyricMain.ClientX - NR.Left - 50) + 10*ScreenX;
-      Rec.Right := Rec.Left + 50;
-      Rec.Top := Skin_LyricsT + 3;
-      Rec.Bottom := Rec.Top + 33;//SingScreen.LyricMain.Size * 3;
-{    // zapalanie
-    BarAlpha := (BarWspol*10) * 0.5;
-    if BarAlpha > 0.5 then BarAlpha := 0.5;
+       (Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czas.MidBeat > 0) and                     // przed tekstem
+       (Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czas.MidBeat < 40) then begin            // ale nie za wczesnie
+         BarWspol := (Czas.MidBeat - (Czesci[0].Czesc[Czesci[0].Akt].StartNote - BarFrom)) / BarFrom;
+         Rec.Left := NR.Left + BarWspol * (ScreenSingModi.LyricMain.ClientX - NR.Left - 50) + 10*ScreenX;
+         Rec.Right := Rec.Left + 50;
+         Rec.Top := Skin_LyricsT + 3;
+         Rec.Bottom := Rec.Top + 33;//SingScreen.LyricMain.Size * 3;
 
-    // gaszenie
-    if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);}
-
-    //Change fuer Crazy Joker
-
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
-  glBegin(GL_QUADS);
-    glColor4f(1, 1, 1, 0);
-    glTexCoord2f(0, 0); glVertex2f(Rec.Left, Rec.Top);
-    glTexCoord2f(0, 1); glVertex2f(Rec.Left, Rec.Bottom);
-    glColor4f(1, 1, 1, 0.5);
-    glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-    glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-    glEnd;
-    glDisable(GL_BLEND);
+           glEnable(GL_TEXTURE_2D);
+           glEnable(GL_BLEND);
+           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+           glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
+           glBegin(GL_QUADS);
+             glColor4f(1, 1, 1, 0);
+               glTexCoord2f(0, 0); glVertex2f(Rec.Left, Rec.Top);
+               glTexCoord2f(0, 1); glVertex2f(Rec.Left, Rec.Bottom);
+             glColor4f(1, 1, 1, 0.5);
+               glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+               glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+           glEnd;
+           glDisable(GL_BLEND);
     end;
 
-  // oscilloscope
+  // oscilloscope | the thing that moves when you yell into your mic (imho)
   if (((Ini.Oscilloscope = 1) AND (DLLMan.Selected.ShowRateBar_O)) AND (NOT DLLMan.Selected.ShowRateBar)) then begin
     if PlayersPlay = 1 then
       if PlayerInfo.Playerinfo[0].Enabled then
@@ -1138,80 +1029,69 @@ begin
   end
 
   //SingBar Mod
-  // was fürn sinn hattn der quark hier?
+  // seems like we don't want the flicker thing, we want the linebonus rating bar beneath the scores
   else if ((Ini.Oscilloscope = 2) AND (DLLMan.Selected.ShowRateBar_O)) OR (DLLMan.Selected.ShowRateBar) then begin
     A := GetTickCount div 33;
     if A <> Tickold then begin
       Tickold := A;
       for E := 0 to (PlayersPlay - 1) do begin //Set new Pos + Alpha
         I := Player[E].ScorePercentTarget - Player[E].ScorePercent;
-        if I > 0 then Inc(Player[E].ScorePercent)
-        else if I < 0 then Dec(Player[E].ScorePercent);
+          if      I > 0 then Inc(Player[E].ScorePercent)
+          else if I < 0 then Dec(Player[E].ScorePercent);
       end; //for
     end; //if
+
     if PlayersPlay = 1 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP1SingBar.x, Theme.Sing.StaticP1SingBar.y, Theme.Sing.StaticP1SingBar.w, Theme.Sing.StaticP1SingBar.h , Player[0].ScorePercent);
-   end;
+    end;
+
     if PlayersPlay = 2 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
       if PlayerInfo.Playerinfo[1].Enabled then
-        //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
-   end;
+    end;
+
     if PlayersPlay = 3 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
-        //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
       if PlayerInfo.Playerinfo[1].Enabled then
-        //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
       if PlayerInfo.Playerinfo[2].Enabled then
-        //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
         SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
     end;
+
     if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
-          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
         if PlayerInfo.Playerinfo[1].Enabled then
-          //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
       end;
       if ScreenAct = 2 then begin
         if PlayerInfo.Playerinfo[2].Enabled then
-          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[2].ScorePercent);
         if PlayerInfo.Playerinfo[3].Enabled then
-          //SingDrawSingbar(620 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[3].ScorePercent);
       end;
     end;
+
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
-          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[0].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
         if PlayerInfo.Playerinfo[1].Enabled then
-          //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[1].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
         if PlayerInfo.Playerinfo[2].Enabled then
-          //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[2].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
       end;
       if ScreenAct = 2 then begin
         if PlayerInfo.Playerinfo[3].Enabled then
-          //SingDrawSingbar( 75 + 10*ScreenX, 95, 100, 8, Player[3].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[3].ScorePercent);
         if PlayerInfo.Playerinfo[4].Enabled then
-          //SingDrawSingbar(370 + 10*ScreenX, 95, 100, 8, Player[4].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[4].ScorePercent);
         if PlayerInfo.Playerinfo[5].Enabled then
-          //SingDrawSingbar(670 + 10*ScreenX, 95, 100, 8, Player[5].ScorePercent);
           SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[5].ScorePercent);
       end;
     end;
@@ -1227,43 +1107,42 @@ begin
           //Change Alpha
           Player[E].LineBonus_Alpha := Player[E].LineBonus_Alpha - 0.02;
 
-
           if Player[E].LineBonus_Alpha <= 0 then
             begin
-            Player[E].LineBonus_Age := 0;
-            Player[E].LineBonus_Visible := False
-
+              Player[E].LineBonus_Age := 0;
+              Player[E].LineBonus_Visible := False
             end
           else
-          begin
-          inc(Player[E].LineBonus_Age, 1);
+            begin
+              inc(Player[E].LineBonus_Age, 1);
+              //Change Position
+              if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then         // pop up has not yet reached it's position -> blend in
+                Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
+              else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then    // pop up has reached it's position -> blend out
+                Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
 
-          //Change Position
-          if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then
-            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
-           else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then
-            Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
+              if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
+                Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
+              else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
+                Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
 
-          if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
-            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
-          else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
-            Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
+            end; // pop up still visible, has not reached it's position - move it
+      end;       // loop through all players
+    end;         // if it's time to draw them
 
-          end;
-      end;
-    end; //if
-
-    if PlayersPlay = 1 then begin
+    if      PlayersPlay = 1 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
         SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-   end
-   else if PlayersPlay = 2 then begin
+    end
+
+    else if PlayersPlay = 2 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
         SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
       if PlayerInfo.Playerinfo[1].Enabled then
         SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-   end
-   else if PlayersPlay = 3 then begin
+    end
+
+    else if PlayersPlay = 3 then begin
       if PlayerInfo.Playerinfo[0].Enabled then
         SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
       if PlayerInfo.Playerinfo[1].Enabled then
@@ -1271,7 +1150,8 @@ begin
       if PlayerInfo.Playerinfo[2].Enabled then
         SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
     end
-   else if PlayersPlay = 4 then begin
+
+    else if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
           SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
@@ -1285,6 +1165,7 @@ begin
           SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
       end;
     end;
+
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
         if PlayerInfo.Playerinfo[0].Enabled then
@@ -1304,11 +1185,9 @@ begin
       end;
     end;
   end;
-  //PhrasenBonus - Line Bonus Mod End
+//PhrasenBonus - Line Bonus Mod End
 
-
-  // rysuje paski
-//  Log.LogStatus('Original notes', 'SingDraw');
+// resize the notes according to the difficulty level
   case Ini.Difficulty of
     0:
       begin
@@ -1518,11 +1397,11 @@ begin;
 end;
 //end Singbar Mod
 
-//PhrasenBonus - Line Bonus Mod
+//PhrasenBonus - Line Bonus Pop Up
 procedure SingDrawLineBonus( const X, Y: Single; Color: TRGB; Alpha: Single; Text: string; Age: Integer);
 var
 Length, X2: Real; //Length of Text
-Size: Integer; //Size of Popup
+Size: Integer;    //Size of Popup
 begin
 if Alpha <> 0 then
 begin
@@ -1542,14 +1421,17 @@ SetFontPos (X + 50 - (Length / 2), Y + 12); //Position
 if Age < 5 then Size := Age * 10 else Size := 50;
 
   //Draw  Background
-  glColor4f(Color.R, Color.G, Color.B, Alpha); //Set Color
+  //glColor4f(Color.R, Color.G, Color.B, Alpha); //Set Color
+  glColor4f(1, 1, 1, Alpha);
+
+
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
   //New Method, Not Variable
-  glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusBack.TexNum);
+  glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusBack[2]);
 
   glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex2f(X + 50 - Size, Y + 25 - (Size/2));
