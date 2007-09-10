@@ -236,7 +236,7 @@ begin
   //end Singbar Mod
 
   //Line Bonus PopUp
-  for P := 0 to 9 do
+  for P := 0 to 8 do
     begin
       Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'PNG', 'Colorized', $FFFFFF);
     end;

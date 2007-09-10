@@ -1431,7 +1431,7 @@ if Age < 5 then Size := Age * 10 else Size := 50;
 
 
   //New Method, Not Variable
-  glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusBack[2]);
+  glBindTexture(GL_TEXTURE_2D, Tex_SingLineBonusBack[2].TexNum);
 
   glBegin(GL_QUADS);
     glTexCoord2f(0, 0); glVertex2f(X + 50 - Size, Y + 25 - (Size/2));
