@@ -8,9 +8,12 @@ uses
   //------------------------------
   //Includes - 3rd Party Libraries
   //------------------------------
+  SDL          in 'lib\JEDI-SDLv1.0\SDL\Pas\SDL.pas',
   OpenGL12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
 
   bass         in 'lib\bass\delphi\bass.pas',
+
+  PNGImage     in 'lib\PNGImage\PNGImage.pas',
 
   midiout      in 'lib\midi\midiout.pas',
   midiin       in 'lib\midi\midiin.pas',
@@ -136,7 +139,6 @@ uses
   //Includes - Delphi
   //------------------------------
   Windows,
-  SDL,
   SysUtils;
 
 const
@@ -219,7 +221,7 @@ begin
   Log.BenchmarkStart(1);
   Log.LogStatus('Load Ini', 'Initialization');                Ini := TIni.Create;
                                                               Ini.Load;
-
+  
   //Load Languagefile
   if (Params.Language <> -1) then
     Language.ChangeLanguage(ILanguage[Params.Language])
@@ -228,6 +230,7 @@ begin
 
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Ini', 1);
+
 
   // LCD
   Log.BenchmarkStart(1);
@@ -251,6 +254,7 @@ begin
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Light', 1);
 
+
   // Theme
   Log.BenchmarkStart(1);
   Log.LogStatus('Load Themes', 'Initialization');             Theme := TTheme.Create('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
@@ -269,6 +273,8 @@ begin
   CatCovers:= TCatCovers.Create;
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Category Covers Array', 1);
+
+
 
   // Songs
   //Log.BenchmarkStart(1);

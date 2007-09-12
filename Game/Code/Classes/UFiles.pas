@@ -2,9 +2,12 @@ unit UFiles;
 
 interface
 
-uses USongs, SysUtils, ULog, UMusic;
+uses SysUtils,
+     ULog,
+     UMusic,
+     USongs;
 
-procedure     InitializePaths; //Function sets All Absolute Paths eg. for Songs
+//procedure   InitializePaths; //Function sets All Absolute Paths eg. for Songs
 function    ReadTXTHeader(var Song: TSong): boolean; //Reads Standard TXT Header
 function    AnalyseFile(var Song: TSong): boolean; //Analyse Song File and Read Header
 procedure   ClearSong(var Song: TSong); //Clears Song Header values
@@ -13,12 +16,13 @@ procedure   ClearSong(var Song: TSong); //Clears Song Header values
 procedure ResetSingTemp;
 procedure ParseNote(NrCzesci: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
 procedure NewSentence(NrCzesciP: integer; Param1, Param2: integer);
-function LoadSong(Name: string): boolean;
-function SaveSong(Song: TSong; Czesc: TCzesci; Name: string; Relative: boolean): boolean;
+function  LoadSong(Name: string): boolean;
+function  SaveSong(Song: TSong; Czesc: TCzesci; Name: string; Relative: boolean): boolean;
 
 
 
 var
+{*
   //Absolute Paths
   GamePath:         string;
   SoundPath:        string;
@@ -30,6 +34,7 @@ var
   LanguagesPath:    string;
   PluginPath:       string;
   PlayListPath:     string;
+*}
 
   SongFile: TextFile;   // all procedures in this unit operates on this file
   FileLineNo: integer;  //Line which is readed at Last, for error reporting
@@ -41,57 +46,51 @@ var
   MultBPM:  integer = 4;
 
 implementation
-uses TextGL, UIni, UMain;
 
+uses TextGL,
+     UIni,
+     UMain;
+{*
 //--------------------
 // Function sets all Absolute Paths e.g. Song Path and makes sure the Directorys exist
 //--------------------
 procedure InitializePaths;
-var
-  Writeable: Boolean;
+
+  // Initialize a Path Variable
+  // After Setting Paths, make sure that Paths exist
+  function initialize_path( out aPathVar : String; const aLocation : String ): boolean;
+  var
+    lWriteable: Boolean;
+  begin
+    aPathVar := aLocation;
+    
+    If DirectoryExists(aPathVar) then
+      lWriteable := ForceDirectories(aPathVar)
+    else
+      lWriteable := false;
+
+    if not Writeable then
+      Log.LogError('Error: Dir ('+ aLocation +') is Readonly');
+      
+    result := lWriteable;
+  end;
+
 begin
-  GamePath :=   ExtractFilePath(ParamStr(0));
-
-  SoundPath :=  GamePath + 'Sounds\';
-  SongPath :=   GamePath + 'Songs\';
-  LogPath := GamePath;
-  ThemePath := GamePath + 'Themes\';
-  ScreenshotsPath := GamePath + 'Screenshots\';
-  CoversPath := GamePath + 'Covers\';
-  LanguagesPath := GamePath + 'Languages\';
-  PluginPath := GamePath + 'Plugins\';
-  PlaylistPath := GamePath + 'Playlists\';
-
-  //After Setting Paths, make sure that Paths exist
-  If not DirectoryExists(SoundPath) then
-    Writeable := ForceDirectories(SoundPath);
-
-  If Writeable And (not DirectoryExists(SongPath)) then
-    Writeable := ForceDirectories(SongPath);
-
-  If Writeable And (not DirectoryExists(ThemePath)) then
-    Writeable := ForceDirectories(ThemePath);
-
-  If Writeable And (not DirectoryExists(ScreenshotsPath)) then
-    Writeable := ForceDirectories(ScreenshotsPath);
-
-  If Writeable And (not DirectoryExists(CoversPath)) then
-    Writeable := ForceDirectories(CoversPath);
-
-  If Writeable And (not DirectoryExists(LanguagesPath)) then
-    Writeable := ForceDirectories(LanguagesPath);
-
-  If Writeable And (not DirectoryExists(PluginPath)) then
-    Writeable := ForceDirectories(PluginPath);
-
-  If Writeable And (not DirectoryExists(PlaylistPath)) then
-    Writeable := ForceDirectories(PlaylistPath);
-
-  if not Writeable then
-    Log.LogError('Error: Dir is Readonly');
+  GamePath := ExtractFilePath(ParamStr(0));
+  
+  initialize_path( LogPath         , GamePath                 );
+  initialize_path( SoundPath       , GamePath + 'Sounds\'     );
+  initialize_path( SongPath        , GamePath + 'Songs\'      );
+  initialize_path( ThemePath       , GamePath + 'Themes\'     );
+  initialize_path( ScreenshotsPath , GamePath + 'Screenshots\');
+  initialize_path( CoversPath      , GamePath + 'Covers\'     );
+  initialize_path( LanguagesPath   , GamePath + 'Languages\'  );
+  initialize_path( PluginPath      , GamePath + 'Plugins\'    );
+  initialize_path( PlaylistPath    , GamePath + 'Playlists\'  );
 
   DecimalSeparator := ',';
 end;
+*}
 
 //--------------------
 // Clears Song Header values
@@ -99,29 +98,29 @@ end;
 procedure ClearSong(var Song: TSong);
 begin
   //Main Information
-  Song.Title := '';
+  Song.Title  := '';
   Song.Artist := '';
 
   //Sortings:
-  Song.Genre := 'Unknown';
-  Song.Edition := 'Unknown';
+  Song.Genre    := 'Unknown';
+  Song.Edition  := 'Unknown';
   Song.Language := 'Unknown'; //Language Patch
 
   //Required Information
-  Song.Mp3 := '';
-  Song.BPM := 0;
-  Song.GAP := 0;
-  Song.Start := 0;
+  Song.Mp3    := '';
+  Song.BPM    := 0;
+  Song.GAP    := 0;
+  Song.Start  := 0;
   Song.Finish := 0;
 
   //Additional Information
   Song.Background := '';
-  Song.Cover := '';
-  Song.Video := '';
-  Song.VideoGAP := 0;
-  Song.NotesGAP := 0;
+  Song.Cover      := '';
+  Song.Video      := '';
+  Song.VideoGAP   := 0;
+  Song.NotesGAP   := 0;
   Song.Resolution := 4;
-  Song.Creator := '';
+  Song.Creator    := '';
 end;
 
 //--------------------

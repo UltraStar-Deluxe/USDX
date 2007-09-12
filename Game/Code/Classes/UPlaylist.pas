@@ -59,7 +59,14 @@ type
 
 
 implementation
-uses USongs, ULog, UFiles, UGraphic, UThemes, SysUtils;
+
+uses USongs,
+     ULog,
+     UMain,
+     //UFiles,
+     UGraphic,
+     UThemes,
+     SysUtils;
 
 //----------
 //Create - Construct Class - Dummy for now

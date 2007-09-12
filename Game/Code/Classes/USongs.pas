@@ -96,7 +96,11 @@ var
 
 implementation
 
-uses UFiles, UIni, StrUtils;
+uses StrUtils,
+     UFiles,
+     UMain,
+     UIni;
+
 
 procedure TSongs.LoadSongList;
 begin

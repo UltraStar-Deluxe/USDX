@@ -45,7 +45,10 @@ var
   Params:    TCMDParams;
 
 implementation
-uses SysUtils, UIni;
+
+uses SysUtils;
+//      uINI   -- Nasty requirement... ( removed with permission of blindy )
+
 
 //-------------
 // Constructor - Create class, Reset Variables and Read Infos
@@ -249,6 +252,7 @@ var
   I: integer;
 begin
   Result := -1;
+{*  JB - 12sep07 to remove uINI dependency
 
   //Search for Language
   For I := 0 to high(ILanguage) do
@@ -257,6 +261,7 @@ begin
       Result := I;
       Break;
     end;
+*}
 end;
 
 //-------------
@@ -267,6 +272,7 @@ var
   I: integer;
 begin
   Result := -1;
+{*  JB - 12sep07 to remove uINI dependency
 
   //Search for Resolution
   For I := 0 to high(IResolution) do
@@ -275,6 +281,7 @@ begin
       Result := I;
       Break;
     end;
+*}
 end;
 
 end.

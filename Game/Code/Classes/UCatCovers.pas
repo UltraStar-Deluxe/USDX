@@ -24,7 +24,12 @@ var
 CatCovers: TCatCovers;
 
 implementation
-uses IniFiles, SysUtils, Classes, UFiles, ULog;
+uses IniFiles,
+     SysUtils,
+     Classes,
+     // UFiles,
+     UMain,
+     ULog;
 
 constructor TCatCovers.Create;
 begin

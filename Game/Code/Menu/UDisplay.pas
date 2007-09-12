@@ -52,7 +52,16 @@ var
 
 implementation
 
-uses UGraphic, UTime, Graphics, Jpeg, UFiles, UTexture, UIni, TextGL, UCommandLine;
+uses Graphics,
+     Jpeg,
+     TextGL,
+     // UFiles,
+     UMain,
+     UTexture,
+     UIni,
+     UGraphic,
+     UTime,
+     UCommandLine;
 
 constructor TDisplay.Create;
 var i: integer;

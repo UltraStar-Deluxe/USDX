@@ -162,7 +162,14 @@ const
   IChannel:       array[0..6] of string = ('0', '1', '2', '3', '4', '5', '6');
 
 implementation
-uses UFiles, SDL, ULanguage, USkins, URecord, UCommandLine;
+
+uses //UFiles,
+     UMain,
+     SDL,
+     ULanguage,
+     USkins,
+     URecord,
+     UCommandLine;
 
 procedure TIni.Load;
 var

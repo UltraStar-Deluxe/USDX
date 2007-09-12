@@ -34,7 +34,11 @@ var
   Covers:     TCovers;
 
 implementation
-uses UFiles, ULog, DateUtils;
+
+uses UMain,
+     // UFiles,
+     ULog,
+     DateUtils;
 
 constructor TCovers.Create;
 begin
@@ -56,48 +60,50 @@ var
   Name:   string;
 //  Data:   array of byte;
 begin
-  if FileExists(GamePath + 'covers.cache') then begin
-  AssignFile(F, GamePath + 'covers.cache');
-  Reset(F, 1);
+  if FileExists(GamePath + 'covers.cache') then
+  begin
+    AssignFile(F, GamePath + 'covers.cache');
+    Reset(F, 1);
 
-  WritetoFile := not FileIsReadOnly(GamePath + 'covers.cache');
+    WritetoFile := not FileIsReadOnly(GamePath + 'covers.cache');
 
-  SetLength(Cover, 0);
+    SetLength(Cover, 0);
 
-  while not EOF(F) do begin
-    SetLength(Cover, Length(Cover)+1);
+    while not EOF(F) do
+    begin
+      SetLength(Cover, Length(Cover)+1);
 
-    BlockRead(F, W, 2);
-    Cover[High(Cover)].W := W;
+      BlockRead(F, W, 2);
+      Cover[High(Cover)].W := W;
 
-    BlockRead(F, H, 2);
-    Cover[High(Cover)].H := H;
+      BlockRead(F, H, 2);
+      Cover[High(Cover)].H := H;
 
-    BlockRead(F, Bits, 1);
+      BlockRead(F, Bits, 1);
 
-    Cover[High(Cover)].Size := W * H * (Bits div 8);
+      Cover[High(Cover)].Size := W * H * (Bits div 8);
 
-    // test
-//    W := 128;
-//    H := 128;
-//    Bits := 24;
-//    Seek(F, FilePos(F) + 3);
+      // test
+  //    W := 128;
+  //    H := 128;
+  //    Bits := 24;
+  //    Seek(F, FilePos(F) + 3);
 
-    BlockRead(F, NLen, 2);
-    SetLength(Name, NLen);
+      BlockRead(F, NLen, 2);
+      SetLength(Name, NLen);
 
-    BlockRead(F, Name[1], NLen);
-    Cover[High(Cover)].Name := Name;
+      BlockRead(F, Name[1], NLen);
+      Cover[High(Cover)].Name := Name;
 
-    Cover[High(Cover)].Position := FilePos(F);
-    Seek(F, FilePos(F) + W*H*(Bits div 8));
+      Cover[High(Cover)].Position := FilePos(F);
+      Seek(F, FilePos(F) + W*H*(Bits div 8));
 
-//    SetLength(Cover[High(Cover)].Data, W*H*(Bits div 8));
-//    BlockRead(F, Cover[High(Cover)].Data[0], W*H*(Bits div 8));
+  //    SetLength(Cover[High(Cover)].Data, W*H*(Bits div 8));
+  //    BlockRead(F, Cover[High(Cover)].Data[0], W*H*(Bits div 8));
 
-  end;
+    end; // While
 
-  CloseFile(F);
+    CloseFile(F);
   end; // fileexists
 end;
 

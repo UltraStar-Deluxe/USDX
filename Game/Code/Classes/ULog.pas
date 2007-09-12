@@ -45,7 +45,17 @@ var
   Log:    TLog;
 
 implementation
-uses UFiles, SysUtils, DateUtils, URecord, UTime, UIni, Windows, UCommandLine;
+
+uses
+     Windows,
+     SysUtils,
+     DateUtils,
+//     UFiles,
+     UMain,
+     URecord,
+     UTime,
+//     UIni,  // JB - Seems to not be needed.
+     UCommandLine;
 
 destructor TLog.Free;
 begin
