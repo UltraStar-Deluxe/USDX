@@ -4,6 +4,8 @@ program UltraStar;
 
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
+
+// C:\Components\PngImage
 uses
   //------------------------------
   //Includes - 3rd Party Libraries
@@ -14,6 +16,8 @@ uses
   bass         in 'lib\bass\delphi\bass.pas',
 
   PNGImage     in 'lib\PNGImage\PNGImage.pas',
+  PNGzLib      in 'lib\PNGImage\PNGzLib.pas',
+  pnglang      in 'lib\PNGImage\pnglang.pas',
 
   midiout      in 'lib\midi\midiout.pas',
   midiin       in 'lib\midi\midiin.pas',
