@@ -19,6 +19,10 @@ unit avformat;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
   windows, avcodec, avio, rational, avutil;
 
@@ -554,6 +558,7 @@ const
 const
   FFM_PACKET_SIZE = 4096;
 
+  {$IFNDEF FPC}
   function ffm_read_write_index (fd: integer): int64;
     cdecl; external av__format;
 
@@ -562,20 +567,23 @@ const
 
   procedure ffm_set_write_index (s: PAVFormatContext; pos: int64; file_size: int64);
     cdecl; external av__format;
-
+  {$ENDIF}
+  
   function find_info_tag (arg: pchar; arg_size: integer; tag1: pchar; info: pchar): integer;
     cdecl; external av__format;
 
+  {$IFNDEF FPC}
   function get_frame_filename(buf: pchar; buf_size: integer;
                        path: pchar; number: integer): integer;
     cdecl; external av__format;
+
   function filename_number_test (filename: pchar): integer;
     cdecl; external av__format;
-
 
 (* grab specific *)
   function video_grab_init (): integer;
     cdecl; external av__format;
+
   function audio_init (): integer;
     cdecl; external av__format;
 
@@ -584,6 +592,7 @@ const
     cdecl; external av__format;
   function dc1394_init (): integer;
     cdecl; external av__format;
+  {$ENDIF}
 
   function strstart(str: pchar; val: pchar; ptr: PPointer): integer;
     cdecl; external av__format;

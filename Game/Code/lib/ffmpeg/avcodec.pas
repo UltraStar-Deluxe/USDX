@@ -1792,11 +1792,13 @@ procedure av_resample_close (c: PAVResampleContext);
                             got_sub_ptr: pinteger;
                             const buf: pchar; buf_size: integer): integer;
     cdecl; external av__codec;
+
+  {$IFNDEF FPC}
   function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
                         data_size_ptr: pinteger;
                         buf: pchar; buf_size: integer): integer;
     cdecl; external av__codec;
-
+  {$ENDIF}
   function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
                         buf_size: integer; const samples: Pword): integer;
     cdecl; external av__codec;

@@ -224,12 +224,14 @@ type
   procedure init_checksum (s: PByteIOContext; update_checksum: pointer; checksum: cardinal);
     cdecl; external av__format;
 
+  {$IFNDEF FPC}
   function udp_set_remote_url(h: PURLContext; const uri: pchar): integer;
     cdecl; external av__format;
   function udp_get_local_port(h: PURLContext): integer;
     cdecl; external av__format;
   function udp_get_file_handle(h: PURLContext): integer;
     cdecl; external av__format;
+  {$ENDIF}
 
 implementation
 

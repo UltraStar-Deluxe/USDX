@@ -4,8 +4,6 @@ program UltraStar;
 
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
-
-// C:\Components\PngImage
 uses
   //------------------------------
   //Includes - 3rd Party Libraries

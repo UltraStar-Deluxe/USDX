@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="1"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <Units Count="5">
+      <Unit0>
+        <Filename Value="lazarustest.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="lazarustest"/>
+        <CursorPos X="26" Y="8"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="22"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="delphi\bass.pas"/>
+        <UnitName Value="Bass"/>
+        <CursorPos X="12" Y="539"/>
+        <TopLine Value="589"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="avformat.pas"/>
+        <UnitName Value="avformat"/>
+        <CursorPos X="38" Y="594"/>
+        <TopLine Value="567"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="avcodec.pas"/>
+        <UnitName Value="avcodec"/>
+        <CursorPos X="3" Y="1796"/>
+        <TopLine Value="1775"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="avio.pas"/>
+        <UnitName Value="avio"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="3"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit4>
+    </Units>
+    <JumpHistory Count="24" HistoryIndex="23">
+      <Position1>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="16" Column="18" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="avio.pas"/>
+        <Caret Line="28" Column="38" TopLine="36"/>
+      </Position2>
+      <Position3>
+        <Filename Value="avio.pas"/>
+        <Caret Line="29" Column="7" TopLine="9"/>
+      </Position3>
+      <Position4>
+        <Filename Value="avio.pas"/>
+        <Caret Line="30" Column="7" TopLine="10"/>
+      </Position4>
+      <Position5>
+        <Filename Value="avio.pas"/>
+        <Caret Line="31" Column="7" TopLine="11"/>
+      </Position5>
+      <Position6>
+        <Filename Value="avio.pas"/>
+        <Caret Line="44" Column="10" TopLine="40"/>
+      </Position6>
+      <Position7>
+        <Filename Value="avio.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position7>
+      <Position8>
+        <Filename Value="avio.pas"/>
+        <Caret Line="23" Column="5" TopLine="3"/>
+      </Position8>
+      <Position9>
+        <Filename Value="avio.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position9>
+      <Position10>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="567" Column="24" TopLine="560"/>
+      </Position10>
+      <Position11>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="1968" Column="5" TopLine="1928"/>
+      </Position11>
+      <Position12>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="22" Column="31" TopLine="6"/>
+      </Position12>
+      <Position13>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="247" Column="14" TopLine="227"/>
+      </Position13>
+      <Position14>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="546" Column="46" TopLine="526"/>
+      </Position14>
+      <Position15>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="20" Column="26" TopLine="1"/>
+      </Position15>
+      <Position16>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="250" Column="59" TopLine="230"/>
+      </Position16>
+      <Position17>
+        <Filename Value="avcodec.pas"/>
+        <Caret Line="841" Column="53" TopLine="821"/>
+      </Position17>
+      <Position18>
+        <Filename Value="avio.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position18>
+      <Position19>
+        <Filename Value="avio.pas"/>
+        <Caret Line="236" Column="8" TopLine="205"/>
+      </Position19>
+      <Position20>
+        <Filename Value="avformat.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position20>
+      <Position21>
+        <Filename Value="avformat.pas"/>
+        <Caret Line="568" Column="3" TopLine="541"/>
+      </Position21>
+      <Position22>
+        <Filename Value="avformat.pas"/>
+        <Caret Line="41" Column="17" TopLine="25"/>
+      </Position22>
+      <Position23>
+        <Filename Value="avformat.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position23>
+      <Position24>
+        <Filename Value="avformat.pas"/>
+        <Caret Line="588" Column="1" TopLine="557"/>
+      </Position24>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>
