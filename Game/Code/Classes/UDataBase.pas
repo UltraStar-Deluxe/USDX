@@ -2,6 +2,11 @@ unit UDataBase;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 uses USongs, SQLiteTable3;
 
 //--------------------

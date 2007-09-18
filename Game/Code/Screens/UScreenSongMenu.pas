@@ -2,6 +2,10 @@ unit UScreenSongMenu;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses
   UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
 

@@ -8,6 +8,8 @@ program UltraStar;
 
 {$R 'UltraStar.res' 'UltraStar.rc'}
 
+{$I switches.inc}
+
 uses
 
   //------------------------------
@@ -19,7 +21,7 @@ uses
 
   bass         in 'lib\bass\delphi\bass.pas',
 
-(*
+  {$IFDEF UseMIDIPort}
   midiout      in 'lib\midi\midiout.pas',
   midiin       in 'lib\midi\midiin.pas',
   Circbuf      in 'lib\midi\CIRCBUF.PAS',
@@ -28,7 +30,7 @@ uses
   MidiCons     in 'lib\midi\MidiCons.PAS',
   MidiFile     in 'lib\midi\MidiFile.PAS',
   Delphmcb     in 'lib\midi\Delphmcb.PAS',
-*)
+  {$ENDIF}
 
   avcodec      in 'lib\ffmpeg\avcodec.pas',
   avformat     in 'lib\ffmpeg\avformat.pas',
@@ -45,7 +47,6 @@ uses
   //Includes - Menu System
   //------------------------------
   UMenu in 'Menu\UMenu.pas',
-(*
   UDisplay in 'Menu\UDisplay.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
   UMenuText in 'Menu\UMenuText.pas',
@@ -55,7 +56,7 @@ uses
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
   UMenuButtonCollection in 'Menu\UMenuButtonCollection.pas',
-*)
+
 
   //------------------------------
   //Includes - Classes
@@ -68,11 +69,10 @@ uses
   
   UIni in 'Classes\UIni.pas',
   UTexture in 'Classes\UTexture.pas',
-(*
+
   UGraphic in 'Classes\UGraphic.pas',
   UMusic in 'Classes\UMusic.pas',
   ULanguage in 'Classes\ULanguage.pas',
-  UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
   URecord in 'Classes\URecord.pas',
   TextGL in 'Classes\TextGL.pas',
@@ -91,20 +91,17 @@ uses
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
-*)
 
   //------------------------------
   //Includes - Video Support
   //------------------------------
-(*
   UVideo in 'Classes\UVideo.pas',
-*)
+
 
   //------------------------------
   //Includes - Screens
   //------------------------------
   UScreenLoading in 'Screens\UScreenLoading.pas',
-(*
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
   UScreenName in 'Screens\UScreenName.pas',
@@ -132,26 +129,24 @@ uses
   UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
   UScreenCredits in 'Screens\UScreenCredits.pas',
   UScreenPopup in 'Screens\UScreenPopup.pas',
-*)
+
 
   //------------------------------
   //Includes - Screens PartyMode
   //------------------------------
-(*
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
   UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
-*)
+
 
   //------------------------------
   //Includes - Modi SDK
   //------------------------------
-(*
   ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
-*)
+
 
   //------------------------------
   //Includes - Delphi

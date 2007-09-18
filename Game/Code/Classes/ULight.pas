@@ -36,6 +36,32 @@ uses
   zlportio,
   {$ENDIF}
   UTime;
+  
+{$IFDEF FPC}
+  function GetTime: TDateTime;
+  {$IFDEF MSWINDOWS}
+  var
+    SystemTime: TSystemTime;
+  begin
+    GetLocalTime(SystemTime);
+    with SystemTime do
+      Result := EncodeTime(wHour, wMinute, wSecond, wMilliSeconds);
+  end;
+  {$ENDIF}
+  {$IFDEF LINUX}
+  var
+    T: TTime_T;
+    TV: TTimeVal;
+    UT: TUnixTime;
+  begin
+    gettimeofday(TV, nil);
+    T := TV.tv_sec;
+    localtime_r(@T, UT);
+    Result := EncodeTime(UT.tm_hour, UT.tm_min, UT.tm_sec, TV.tv_usec div 1000);
+  end;
+  {$ENDIF}
+{$ENDIF}
+
 
 constructor TLight.Create;
 begin
@@ -44,7 +70,7 @@ end;
 
 procedure TLight.Enable;
 begin
-  Enabled := true;
+  Enabled  := true;
   LastTime := GetTime;
 end;
 

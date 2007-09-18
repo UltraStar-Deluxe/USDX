@@ -2,6 +2,11 @@ unit ULanguage;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+                
+
 type
   TLanguageEntry = record
     ID:     string;

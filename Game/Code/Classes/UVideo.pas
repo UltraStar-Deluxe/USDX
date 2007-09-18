@@ -5,6 +5,10 @@
 #   based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)  #
 #############################################################################}
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 //{$define DebugDisplay}  // uncomment if u want to see the debug stuff
 {$define DebugFrames}
 {$define Info}
@@ -13,7 +17,20 @@
 unit UVideo;
 
 interface
-uses SDL, UGraphicClasses, textgl, avcodec, avformat, avutil, math, OpenGL12, SysUtils, UIni, dialogs;
+
+uses SDL,
+     UGraphicClasses,
+     textgl,
+     avcodec,
+     avformat,
+     avutil,
+     math,
+     OpenGL12,
+     SysUtils,
+     {$ifdef DebugDisplay}
+     dialogs,
+     {$ENDIF}
+     UIni;
 
 procedure Init;
 procedure FFmpegOpenFile(FileName: pAnsiChar);
@@ -64,6 +81,7 @@ begin
   errnum:=av_open_input_file(VideoFormatContext, FileName, Nil, 0, Nil);
   if(errnum <> 0)
   then begin
+{$ifdef DebugDisplay}
     case errnum of
       AVERROR_UNKNOWN: showmessage('failed to open file '+Filename+#13#10+'AVERROR_UNKNOWN');
       AVERROR_IO: showmessage('failed to open file '+Filename+#13#10+'AVERROR_IO');
@@ -74,6 +92,7 @@ begin
       AVERROR_NOTSUPP: showmessage('failed to open file '+Filename+#13#10+'AVERROR_NOTSUPP');
     else showmessage('failed to open file '+Filename+#13#10+'Error number: '+inttostr(Errnum));
     end;
+{$ENDIF}
     Exit;
   end
   else begin
@@ -90,7 +109,9 @@ begin
       VideoCodecContext:=VideoFormatContext^.streams[VideoStreamIndex]^.codec;
       VideoCodec:=avcodec_find_decoder(VideoCodecContext^.codec_id);
     end else begin
+{$ifdef DebugDisplay}
       showmessage('found no video stream');
+{$ENDIF}
       av_close_input_file(VideoFormatContext);
       Exit;
     end;
@@ -98,7 +119,9 @@ begin
     begin
       errnum:=avcodec_open(VideoCodecContext, VideoCodec);
     end else begin
+{$ifdef DebugDisplay}
       showmessage('no matching codec found');
+{$ENDIF}
       avcodec_close(VideoCodecContext);
       av_close_input_file(VideoFormatContext);
       Exit;
@@ -125,7 +148,9 @@ begin
     if myBuffer <> Nil then errnum:=avpicture_fill(PAVPicture(AVFrameRGB), myBuffer, PIX_FMT_RGB24,
                 VideoCodecContext^.width, VideoCodecContext^.height)
     else begin
+{$ifdef DebugDisplay}
       showmessage('failed to allocate video buffer');
+{$endif}
       av_free(AVFrameRGB);
       av_free(AVFrame);
       avcodec_close(VideoCodecContext);

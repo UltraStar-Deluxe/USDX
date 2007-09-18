@@ -2,6 +2,11 @@ unit UScreenStatMain;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 uses
   UMenu, SDL, SysUtils, UDisplay, UMusic, UIni, UThemes;
 

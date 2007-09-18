@@ -2,8 +2,27 @@ unit UScreenEditSub;
 
 interface
 
-uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, UMenuText,
-  ULyrics, Math, OpenGL12, UThemes, MidiOut;
+{$I switches.inc}
+
+uses
+    UMenu,
+    UMusic,
+    SDL,
+    SysUtils,
+    UFiles,
+    UTime,
+    USongs,
+    UIni,
+    ULog,
+    UTexture,
+    UMenuText,
+    ULyrics,
+    Math,
+    OpenGL12,
+    {$IFDEF UseMIDIPort}
+    MidiOut,
+    {$ENDIF}
+    UThemes;
 
 type
   TScreenEditSub = class(TMenu)
@@ -31,7 +50,10 @@ type
       Click:        boolean;
       CopySrc:      integer;
 
+      {$IFDEF UseMIDIPort}
       MidiOut:      TMidiOutput;
+      {$endif}
+
       MidiStart:    real;
       MidiStop:     real;
       MidiTime:     real;
@@ -470,6 +492,7 @@ begin
 
       SDLK_DOWN:
         begin
+          {$IFDEF UseMIDIPort}
           // skip to next sentence
           if SDL_ModState = 0 then begin
             MidiOut.PutShort($81, Czesci[0].Czesc[Czesci[0].Akt].Nuta[MidiLastNote].Ton + 60, 127);
@@ -491,11 +514,13 @@ begin
           if SDL_ModState = KMOD_LCTRL then begin
             TransposeNote(-1);
           end;
+          {$endif}
 
         end;
 
       SDLK_UP:
         begin
+          {$IFDEF UseMIDIPort}
           // skip to previous sentence
           if SDL_ModState = 0 then begin
             MidiOut.PutShort($81, Czesci[0].Czesc[Czesci[0].Akt].Nuta[MidiLastNote].Ton + 60, 127);
@@ -517,6 +542,7 @@ begin
           if SDL_ModState = KMOD_LCTRL then begin
             TransposeNote(1);
           end;
+          {$endif}
         end;
 
       // Golden Note Patch

@@ -52,8 +52,11 @@ var
 
 implementation
 
-uses Graphics,
-     Jpeg,
+uses
+     {$IFNDEF FPC}
+     Graphics,
+     JPEG,
+     {$ENDIF}
      TextGL,
      // UFiles,
      UMain,

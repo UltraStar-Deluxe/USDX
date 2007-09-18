@@ -1,7 +1,14 @@
 unit UDLLManager;
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 interface
-uses ModiSDK, UFiles;
+
+uses ModiSDK,
+     UFiles;
 
 type
   TDLLMan = class

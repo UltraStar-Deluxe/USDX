@@ -1,6 +1,11 @@
 unit UIni;
 
 interface
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses IniFiles, ULog, SysUtils;
 
 type

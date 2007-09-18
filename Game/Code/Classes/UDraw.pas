@@ -1,7 +1,15 @@
 unit UDraw;
 
 interface
-uses UThemes, ModiSDK, UGraphicClasses, dialogs;
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+uses UThemes,
+     ModiSDK,
+     UGraphicClasses;
+     // dialogs;
 
 procedure SingDraw;
 procedure SingModiDraw (PlayerInfo: TPlayerInfo);

@@ -1,16 +1,59 @@
 unit UGraphic;
 
 interface
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses
-  SDL, OpenGL12, UTexture, TextGL, ULog, SysUtils, ULyrics, UScreenLoading,
-  UScreenWelcome, UScreenMain, UScreenName, UScreenLevel, UScreenOptions, UScreenOptionsGame,
-  UScreenOptionsGraphics, UScreenOptionsSound, UScreenOptionsLyrics, UScreenOptionsThemes, UScreenOptionsRecord, UScreenOptionsAdvanced,
-  UScreenSong, UScreenSing, UScreenScore, UScreenTop5, UScreenEditSub,
-  UScreenEdit, UScreenEditConvert, UScreenEditHeader, UScreenOpen, UThemes, USkins, UScreenSongMenu, UScreenSongJumpto,
-  {Party Screens} UScreenSingModi, UScreenPartyNewRound, UScreenPartyScore, UScreenPartyOptions, UScreenPartyWin, UScreenPartyPlayer,
-  {Stats Screens} UScreenStatMain, UScreenStatDetail,
-  {CreditsScreen} UScreenCredits,
-  {Popup for errors, etc.} UScreenPopup;
+  SDL,
+  OpenGL12,
+  UTexture,
+  TextGL,
+  ULog,
+  SysUtils,
+  ULyrics,
+  UScreenLoading,
+  UScreenWelcome,
+  UScreenMain,
+  UScreenName,
+  UScreenLevel,
+  UScreenOptions,
+  UScreenOptionsGame,
+  UScreenOptionsGraphics,
+  UScreenOptionsSound,
+  UScreenOptionsLyrics,
+  UScreenOptionsThemes,
+  UScreenOptionsRecord,
+  UScreenOptionsAdvanced,
+  UScreenSong,
+  UScreenSing,
+  UScreenScore,
+  UScreenTop5,
+  UScreenEditSub,
+  UScreenEdit,
+  UScreenEditConvert,
+  UScreenEditHeader,
+  UScreenOpen,
+  UThemes,
+  USkins,
+  UScreenSongMenu,
+  UScreenSongJumpto,
+  {Party Screens}
+  UScreenSingModi,
+  UScreenPartyNewRound,
+  UScreenPartyScore,
+  UScreenPartyOptions,
+  UScreenPartyWin,
+  UScreenPartyPlayer,
+  {Stats Screens}
+  UScreenStatMain,
+  UScreenStatDetail,
+  {CreditsScreen}
+  UScreenCredits,
+  {Popup for errors, etc.}
+  UScreenPopup;
 
 type
   TRecR = record
@@ -188,9 +231,20 @@ function LoadingThreadFunction: integer;
 
 
 implementation
-uses UMain, UIni, UDisplay, UCommandLine, Graphics, Classes, Windows;
+
+uses  UMain,
+      UIni,
+      UDisplay,
+      UCommandLine,
+      {$IFNDEF FPC}
+      Graphics,
+      {$ENDIF}
+      Classes,
+      Windows;
 
 procedure LoadTextures;
+
+
 var
   P:        integer;
   R, G, B:  real;
@@ -253,7 +307,7 @@ end;
 
 procedure Initialize3D (Title: string);
 var
-  Icon: TIcon;
+//  Icon: TIcon;
   Res:  TResourceStream;
   ISurface: PSDL_Surface;
   Pixel: PByteArray;

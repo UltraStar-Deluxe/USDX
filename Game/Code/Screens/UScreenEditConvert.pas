@@ -2,7 +2,18 @@ unit UScreenEditConvert;
 
 interface
 
-uses UMenu, SDL, MidiFile, MidiOut, ULog, USongs, UMusic, UThemes;
+{$I switches.inc}
+
+uses UMenu,
+     SDL,
+     {$IFDEF UseMIDIPort}
+     MidiFile,
+     MidiOut,
+     {$ENDIF}
+     ULog,
+     USongs,
+     UMusic,
+     UThemes;
 
 type
   TNote = record
@@ -45,10 +56,14 @@ type
       Sel:                integer;
       Selected:           boolean;
 //      FileName:           string;
+
+      {$IFDEF UseMIDIPort}
       MidiFile:           TMidiFile;
       MidiTrack:          TMidiTrack;
       MidiEvent:          pMidiEvent;
       MidiOut:            TMidiOutput;
+      {$ENDIF}
+      
       Song:               TSong;
       Czesc:              TCzesci;
       BPM:                real;
@@ -58,7 +73,10 @@ type
       procedure AddLyric(Start: integer; Tekst: string);
       procedure Extract;
 
+      {$IFDEF UseMIDIPort}
       procedure MidiFile1MidiEvent(event: PMidiEvent);
+      {$ENDIF}
+      
       function SelectedNumber: integer;
       constructor Create; override;
       procedure onShow; override;
@@ -68,7 +86,15 @@ type
   end;
 
 implementation
-uses UGraphic, SysUtils, UDrawTexture, TextGL, UFiles, UMain, UIni, OpenGL, USkins;
+uses UGraphic,
+     SysUtils,
+     UDrawTexture,
+     TextGL,
+     UFiles,
+     UMain,
+     UIni,
+     OpenGL12,
+     USkins;
 
 function TScreenEditConvert.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 var
@@ -87,7 +113,9 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
+      {$IFDEF UseMIDIPort}
           MidiFile.StopPlaying;
+      {$ENDIF}
           Music.PlayBack;
           FadeTo(@ScreenEdit);
         end;
@@ -102,14 +130,18 @@ begin
 
           if Interaction = 1 then begin
             Selected := false;
+      {$IFDEF UseMIDIPort}
             MidiFile.OnMidiEvent := MidiFile1MidiEvent;
 //            MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
             MidiFile.StartPlaying;
+            {$ENDIF}
           end;
 
           if Interaction = 2 then begin
             Selected := true;
+            {$IFDEF UseMIDIPort}
             MidiFile.OnMidiEvent := nil;
+            {$ENDIF}
             {for T := 0 to High(ATrack) do begin
               if ATrack[T].Hear then begin
                 MidiTrack := MidiFile.GetTrack(T);
@@ -356,7 +388,9 @@ begin
 //  MidiOut.SetVolume(100, 100); // temporary}
 
   FileName := GamePath + 'file.mid';
+  {$IFDEF UseMIDIPort}
   MidiFile := TMidiFile.Create(nil);
+  {$ENDIF}
 
   for P := 0 to 100 do begin
     ColR[P] := Random(10)/10;
@@ -380,7 +414,8 @@ begin
   MidiOut.Open;
 
 
-  if FileExists(FileName) then begin
+  if FileExists(FileName) then
+  begin
     MidiFile.Filename := FileName;
     MidiFile.ReadFile;
 

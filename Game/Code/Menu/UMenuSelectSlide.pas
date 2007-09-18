@@ -1,7 +1,15 @@
 unit UMenuSelectSlide;
 
 interface
-uses TextGL, UTexture, OpenGL12, UMenuText;
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+uses TextGL,
+     UTexture,
+     OpenGL12,
+     UMenuText;
 
 type
   PSelectSlide = ^TSelectSlide;

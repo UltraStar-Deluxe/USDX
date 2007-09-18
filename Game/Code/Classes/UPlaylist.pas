@@ -2,6 +2,11 @@ unit UPlaylist;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+                
+
 type
   TPlaylistItem = record
     Artist: String;

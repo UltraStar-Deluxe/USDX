@@ -12,7 +12,7 @@
       <MainUnit Value="0"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="1"/>
+      <ActiveEditorIndexAtStart Value="3"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
@@ -31,50 +31,46 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="18">
+    <Units Count="43">
       <Unit0>
         <Filename Value="UltraStar.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="1" Y="69"/>
-        <TopLine Value="53"/>
+        <CursorPos X="6" Y="70"/>
+        <TopLine Value="50"/>
         <EditorIndex Value="0"/>
-        <UsageCount Value="21"/>
+        <UsageCount Value="22"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas"/>
         <UnitName Value="opengl12"/>
-        <CursorPos X="47" Y="248"/>
-        <TopLine Value="228"/>
-        <EditorIndex Value="9"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <CursorPos X="2" Y="256"/>
+        <TopLine Value="236"/>
+        <UsageCount Value="11"/>
       </Unit1>
       <Unit2>
         <Filename Value="Classes\UTexture.pas"/>
         <UnitName Value="UTexture"/>
-        <CursorPos X="19" Y="20"/>
+        <CursorPos X="1" Y="20"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="4"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit2>
       <Unit3>
         <Filename Value="Classes\UCommandLine.pas"/>
         <UnitName Value="UCommandLine"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="12"/>
-        <UsageCount Value="10"/>
+        <EditorIndex Value="7"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="Classes\UIni.pas"/>
         <UnitName Value="UIni"/>
-        <CursorPos X="1" Y="1"/>
+        <CursorPos X="9" Y="7"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="11"/>
-        <UsageCount Value="10"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
@@ -82,27 +78,21 @@
         <UnitName Value="ULog"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="13"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit5>
       <Unit6>
         <Filename Value="Classes\UFiles.pas"/>
         <UnitName Value="UFiles"/>
         <CursorPos X="1" Y="38"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="14"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit6>
       <Unit7>
         <Filename Value="Classes\USongs.pas"/>
         <UnitName Value="USongs"/>
         <CursorPos X="57" Y="115"/>
         <TopLine Value="91"/>
-        <EditorIndex Value="15"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit7>
       <Unit8>
         <Filename Value="..\..\..\..\..\lazarus\fpc\2.0.4\source\rtl\objpas\sysutils\sysinth.inc"/>
@@ -113,205 +103,395 @@
       <Unit9>
         <Filename Value="Classes\UMain.pas"/>
         <UnitName Value="UMain"/>
-        <CursorPos X="1" Y="764"/>
-        <TopLine Value="725"/>
-        <EditorIndex Value="10"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="11"/>
       </Unit9>
       <Unit10>
         <Filename Value="Classes\UGraphic.pas"/>
         <UnitName Value="UGraphic"/>
-        <CursorPos X="75" Y="5"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="16"/>
-        <UsageCount Value="10"/>
+        <CursorPos X="3" Y="56"/>
+        <TopLine Value="19"/>
+        <EditorIndex Value="8"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit10>
       <Unit11>
         <Filename Value="Classes\UThemes.pas"/>
         <UnitName Value="UThemes"/>
-        <CursorPos X="17" Y="6"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="8"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <CursorPos X="24" Y="379"/>
+        <TopLine Value="359"/>
+        <UsageCount Value="11"/>
       </Unit11>
       <Unit12>
         <Filename Value="Classes\UCovers.pas"/>
         <UnitName Value="UCovers"/>
-        <CursorPos X="14" Y="12"/>
+        <CursorPos X="14" Y="11"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="5"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit12>
       <Unit13>
         <Filename Value="Classes\UMusic.pas"/>
         <UnitName Value="UMusic"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="6"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit13>
       <Unit14>
         <Filename Value="Classes\ULyrics.pas"/>
         <UnitName Value="ULyrics"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="7"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit14>
       <Unit15>
         <Filename Value="Screens\UScreenLoading.pas"/>
         <UnitName Value="UScreenLoading"/>
         <CursorPos X="8" Y="6"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="3"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit15>
       <Unit16>
         <Filename Value="Menu\UMenu.pas"/>
         <UnitName Value="UMenu"/>
-        <CursorPos X="34" Y="5"/>
+        <CursorPos X="9" Y="7"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="2"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="11"/>
       </Unit16>
       <Unit17>
         <Filename Value="Menu\UMenuText.pas"/>
         <UnitName Value="UMenuText"/>
-        <CursorPos X="39" Y="36"/>
-        <TopLine Value="22"/>
-        <EditorIndex Value="1"/>
+        <CursorPos X="1" Y="8"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="11"/>
+      </Unit17>
+      <Unit18>
+        <Filename Value="Menu\UMenuSelectSlide.pas"/>
+        <UnitName Value="UMenuSelectSlide"/>
+        <CursorPos X="6" Y="12"/>
+        <TopLine Value="2"/>
+        <UsageCount Value="10"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="Screens\UScreenMain.pas"/>
+        <UnitName Value="UScreenMain"/>
+        <CursorPos X="3" Y="14"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="4"/>
+        <UsageCount Value="10"/>
+        <Bookmarks Count="1">
+          <Item0 X="6" Y="43" ID="1"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
+      </Unit19>
+      <Unit20>
+        <Filename Value="Menu\UDisplay.pas"/>
+        <UnitName Value="UDisplay"/>
+        <CursorPos X="1" Y="60"/>
+        <TopLine Value="35"/>
+        <UsageCount Value="10"/>
+      </Unit20>
+      <Unit21>
+        <Filename Value="Classes\ULight.pas"/>
+        <UnitName Value="ULight"/>
+        <CursorPos X="81" Y="55"/>
+        <TopLine Value="51"/>
+        <UsageCount Value="10"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="Screens\UScreenSing.pas"/>
+        <UnitName Value="UScreenSing"/>
+        <CursorPos X="65" Y="6"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit22>
+      <Unit23>
+        <Filename Value="Classes\UVideo.pas"/>
+        <UnitName Value="UVideo"/>
+        <CursorPos X="9" Y="10"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="Screens\UScreenScore.pas"/>
+        <UnitName Value="UScreenScore"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit24>
+      <Unit25>
+        <Filename Value="Screens\UScreenEditSub.pas"/>
+        <UnitName Value="UScreenEditSub"/>
+        <CursorPos X="19" Y="545"/>
+        <TopLine Value="505"/>
+        <UsageCount Value="10"/>
+      </Unit25>
+      <Unit26>
+        <Filename Value="switches.inc"/>
+        <CursorPos X="10" Y="3"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="lib\midi\Midiout.pas"/>
+        <UnitName Value="MidiOut"/>
+        <CursorPos X="110" Y="20"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <UnitName Value="UScreenEditConvert"/>
+        <CursorPos X="48" Y="356"/>
+        <TopLine Value="336"/>
+        <EditorIndex Value="3"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
-      </Unit17>
+      </Unit28>
+      <Unit29>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <UnitName Value="UScreenSingModi"/>
+        <CursorPos X="6" Y="26"/>
+        <TopLine Value="6"/>
+        <EditorIndex Value="6"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="Screens\UScreenCredits.pas"/>
+        <UnitName Value="UScreenCredits"/>
+        <CursorPos X="64" Y="119"/>
+        <TopLine Value="96"/>
+        <EditorIndex Value="11"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit30>
+      <Unit31>
+        <Filename Value="Classes\URecord.pas"/>
+        <UnitName Value="URecord"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="18"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="lib\JEDI-SDLv1.0\SDL\Pas\jedi-sdl.inc"/>
+        <CursorPos X="4" Y="237"/>
+        <TopLine Value="217"/>
+        <UsageCount Value="10"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="..\..\Modis\SDK\ModiSDK.pas"/>
+        <UnitName Value="ModiSDK"/>
+        <CursorPos X="41" Y="8"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="5"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="Classes\UDLLManager.pas"/>
+        <UnitName Value="UDLLManager"/>
+        <CursorPos X="12" Y="5"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="9"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="Classes\UPlaylist.pas"/>
+        <UnitName Value="UPlaylist"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="10"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="Classes\UDataBase.pas"/>
+        <UnitName Value="UDataBase"/>
+        <CursorPos X="1" Y="8"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="17"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="Screens\UScreenStatMain.pas"/>
+        <UnitName Value="UScreenStatMain"/>
+        <CursorPos X="1" Y="8"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="12"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="Screens\UScreenPartyOptions.pas"/>
+        <UnitName Value="UScreenPartyOptions"/>
+        <CursorPos X="42" Y="233"/>
+        <TopLine Value="213"/>
+        <EditorIndex Value="13"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="Screens\UScreenPartyNewRound.pas"/>
+        <UnitName Value="UScreenPartyNewRound"/>
+        <CursorPos X="5" Y="422"/>
+        <TopLine Value="382"/>
+        <EditorIndex Value="14"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit39>
+      <Unit40>
+        <Filename Value="Classes\UParty.pas"/>
+        <UnitName Value="UParty"/>
+        <CursorPos X="1" Y="8"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="15"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit40>
+      <Unit41>
+        <Filename Value="Classes\UDraw.pas"/>
+        <UnitName Value="UDraw"/>
+        <CursorPos X="22" Y="11"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="16"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit41>
+      <Unit42>
+        <Filename Value="Screens\UScreenSongMenu.pas"/>
+        <UnitName Value="UScreenSongMenu"/>
+        <CursorPos X="9" Y="7"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit42>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas"/>
-        <Caret Line="15" Column="8" TopLine="1"/>
+        <Filename Value="Screens\UScreenPartyNewRound.pas"/>
+        <Caret Line="11" Column="51" TopLine="1"/>
       </Position1>
       <Position2>
-        <Filename Value="lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas"/>
-        <Caret Line="248" Column="47" TopLine="228"/>
+        <Filename Value="Classes\UParty.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position2>
       <Position3>
-        <Filename Value="lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas"/>
-        <Caret Line="7065" Column="15" TopLine="7045"/>
+        <Filename Value="Classes\UParty.pas"/>
+        <Caret Line="322" Column="33" TopLine="297"/>
       </Position3>
       <Position4>
-        <Filename Value="lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Classes\UParty.pas"/>
+        <Caret Line="294" Column="3" TopLine="274"/>
       </Position4>
       <Position5>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="14" Column="6" TopLine="1"/>
+        <Filename Value="Classes\UDraw.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position5>
       <Position6>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="15" Column="45" TopLine="1"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position6>
       <Position7>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="14" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <Caret Line="1110" Column="1" TopLine="1070"/>
       </Position7>
       <Position8>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="22" Column="14" TopLine="1"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <Caret Line="152" Column="33" TopLine="681"/>
       </Position8>
       <Position9>
-        <Filename Value="Classes\UThemes.pas"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
         <Caret Line="1" Column="1" TopLine="1"/>
       </Position9>
       <Position10>
-        <Filename Value="Classes\UThemes.pas"/>
-        <Caret Line="694" Column="50" TopLine="674"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <Caret Line="165" Column="18" TopLine="139"/>
       </Position10>
       <Position11>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="23" Column="14" TopLine="1"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <Caret Line="9" Column="9" TopLine="1"/>
       </Position11>
       <Position12>
-        <Filename Value="Classes\UCovers.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <Caret Line="7" Column="9" TopLine="1"/>
       </Position12>
       <Position13>
-        <Filename Value="Classes\UMusic.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenSingModi.pas"/>
+        <Caret Line="176" Column="52" TopLine="156"/>
       </Position13>
       <Position14>
-        <Filename Value="Classes\UMusic.pas"/>
-        <Caret Line="6" Column="3" TopLine="1"/>
+        <Filename Value="UltraStar.lpr"/>
+        <Caret Line="106" Column="34" TopLine="86"/>
       </Position14>
       <Position15>
-        <Filename Value="Classes\UMusic.pas"/>
-        <Caret Line="12" Column="14" TopLine="1"/>
+        <Filename Value="UltraStar.lpr"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position15>
       <Position16>
-        <Filename Value="Classes\UMusic.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="UltraStar.lpr"/>
+        <Caret Line="70" Column="6" TopLine="50"/>
       </Position16>
       <Position17>
-        <Filename Value="Classes\ULyrics.pas"/>
+        <Filename Value="Screens\UScreenSongMenu.pas"/>
         <Caret Line="1" Column="1" TopLine="1"/>
       </Position17>
       <Position18>
-        <Filename Value="Classes\ULyrics.pas"/>
-        <Caret Line="11" Column="6" TopLine="1"/>
+        <Filename Value="Screens\UScreenSongMenu.pas"/>
+        <Caret Line="166" Column="71" TopLine="146"/>
       </Position18>
       <Position19>
-        <Filename Value="Classes\ULyrics.pas"/>
-        <Caret Line="96" Column="88" TopLine="58"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position19>
       <Position20>
-        <Filename Value="Classes\ULyrics.pas"/>
-        <Caret Line="67" Column="95" TopLine="48"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="118" Column="14" TopLine="86"/>
       </Position20>
       <Position21>
-        <Filename Value="Classes\UGraphic.pas"/>
-        <Caret Line="5" Column="16" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="137" Column="21" TopLine="113"/>
       </Position21>
       <Position22>
-        <Filename Value="UltraStar.lpr"/>
-        <Caret Line="19" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="144" Column="21" TopLine="122"/>
       </Position22>
       <Position23>
-        <Filename Value="UltraStar.lpr"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="147" Column="38" TopLine="127"/>
       </Position23>
       <Position24>
-        <Filename Value="Screens\UScreenLoading.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="148" Column="50" TopLine="128"/>
       </Position24>
       <Position25>
-        <Filename Value="UltraStar.lpr"/>
-        <Caret Line="109" Column="1" TopLine="43"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="151" Column="21" TopLine="131"/>
       </Position25>
       <Position26>
-        <Filename Value="UltraStar.lpr"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="169" Column="34" TopLine="149"/>
       </Position26>
       <Position27>
-        <Filename Value="Menu\UMenu.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="171" Column="48" TopLine="151"/>
       </Position27>
       <Position28>
-        <Filename Value="UltraStar.lpr"/>
-        <Caret Line="47" Column="29" TopLine="29"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="356" Column="38" TopLine="336"/>
       </Position28>
       <Position29>
-        <Filename Value="UltraStar.lpr"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="393" Column="11" TopLine="371"/>
       </Position29>
       <Position30>
-        <Filename Value="Menu\UMenuText.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="Screens\UScreenEditConvert.pas"/>
+        <Caret Line="409" Column="28" TopLine="433"/>
       </Position30>
     </JumpHistory>
   </ProjectOptions>

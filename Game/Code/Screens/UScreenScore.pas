@@ -3,7 +3,15 @@ unit UScreenScore;
 interface
 
 uses
-  UMenu, SDL, SysUtils, UDisplay, UMusic, USongs, UThemes, ULCD, OpenGL;
+  UMenu,
+  SDL,
+  SysUtils,
+  UDisplay,
+  UMusic,
+  USongs,
+  UThemes,
+  ULCD;
+//  OpenGL;
 
 type
   TScreenScore = class(TMenu)
@@ -49,11 +57,11 @@ type
 
 implementation
 
-{{$IFDEF TRANSLATE}
+//{$IFDEF TRANSLATE}
 uses UGraphic, UScreenSong, UMenuStatic, UTime, UMain, UIni, ULanguage;
-{{$ELSE}{
-uses UGraphic, UScreenSong, UMenuStatic, UTime, UMain, UIni;
-{{$ENDIF}
+//{$ELSE}
+//uses UGraphic, UScreenSong, UMenuStatic, UTime, UMain, UIni;
+//{$ENDIF}
 function TScreenScore.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
   Result := true;

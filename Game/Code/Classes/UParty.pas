@@ -2,6 +2,11 @@ unit UParty;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 uses ModiSDK;
 
 type

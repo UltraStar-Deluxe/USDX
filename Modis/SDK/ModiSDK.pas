@@ -5,9 +5,9 @@ interface
 type  //PluginInfo, for Init
   TPluginInfo = record
     //Info
-    Name: Array [0..32] of Char;         //Modi to Register for the Plugin
-    Creator: Array [0..32] of Char;      //Name of the Author
-    PluginDesc: Array [0..64] of Char;   //Plugin Description
+    Name       : Array [0..32] of Char;   //Modi to Register for the Plugin
+    Creator    : Array [0..32] of Char;   //Name of the Author
+    PluginDesc : Array [0..64] of Char;   //Plugin Description
 
     //Plugin Typ, atm: 8 only for PartyMode Modi
     Case Typ: byte of

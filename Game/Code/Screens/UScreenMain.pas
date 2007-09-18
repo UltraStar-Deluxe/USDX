@@ -3,7 +3,15 @@ unit UScreenMain;
 interface
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes, ULCD, ULight;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  SysUtils,
+  UThemes,
+  ULCD,
+  ULight;
 
 type
   TScreenMain = class(TMenu)
@@ -25,7 +33,19 @@ type
 
 implementation
 
-uses Windows, UGraphic, UMain, UIni, UTexture, USongs, Textgl, opengl, ULanguage, UParty, UDLLManager, UScreenCredits, USkins;
+uses Windows,
+     UGraphic,
+     UMain,
+     UIni,
+     UTexture,
+     USongs,
+     Textgl,
+//     opengl,
+     ULanguage,
+     UParty,
+     UDLLManager,
+     UScreenCredits,
+     USkins;
 
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;

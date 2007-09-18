@@ -1,6 +1,11 @@
 unit UMain;
 
 interface
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses SDL, UGraphic, UMusic, URecord, UTime, SysUtils, UDisplay, UIni, ULog, ULyrics, UScreenSing,

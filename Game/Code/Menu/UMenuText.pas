@@ -1,6 +1,11 @@
 unit UMenuText;
 
 interface
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses TextGL, UTexture, OpenGL12, SysUtils;
 
 type

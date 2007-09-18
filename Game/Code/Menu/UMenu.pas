@@ -2,6 +2,10 @@ unit UMenu;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses OpenGL12, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
   UMenuInteract, UThemes, UMenuButtonCollection, Math;
 

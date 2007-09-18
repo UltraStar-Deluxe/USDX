@@ -1,5 +1,10 @@
 unit UTexture;
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+          
+
 // Plain (alpha = 1)
 // Transparent
 // Transparent Range
