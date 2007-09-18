@@ -1,7 +1,17 @@
 unit UCovers;
 
 interface
-uses OpenGL12, Windows, Math, Classes, SysUtils, Graphics, UThemes, UTexture;
+
+uses OpenGL12,
+     Windows,
+     Math,
+     Classes,
+     SysUtils,
+     {$IFNDEF FPC}
+     Graphics,
+     {$ENDIF}
+     UThemes,
+     UTexture;
 
 type
   TCover = record

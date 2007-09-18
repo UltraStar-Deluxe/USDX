@@ -2,6 +2,10 @@ unit UThemes;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses
 IniFiles, SysUtils, Classes;
 

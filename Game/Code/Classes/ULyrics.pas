@@ -1,7 +1,14 @@
 unit ULyrics;
 
 interface
-uses SysUtils, OpenGL12, UMusic;
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+uses SysUtils,
+     OpenGL12,
+     UMusic;
 
 type
   TWord = record
@@ -57,6 +64,15 @@ type
       Italic:   boolean;
       Text:     string;   // LCD
 
+      procedure AddWord(Text: string);          // Moved from published, lazarus didnt like it
+      procedure AddCzesc(NrCzesci: integer);
+
+      function SelectedLetter: integer;  // LCD
+      function SelectedLength: integer;  // LCD
+
+      procedure Clear;
+      procedure Draw;
+
     published
       property X: real write SetX;
       property Y: real write SetY;
@@ -68,15 +84,6 @@ type
       property Scale: real write SetScale;
       property Style: integer write SetStyle;
       property FontStyle: integer write SetFStyle;
-      procedure AddWord(Text: string);
-      procedure AddCzesc(NrCzesci: integer);
-
-      function SelectedLetter: integer;  // LCD
-      function SelectedLength: integer;  // LCD
-
-      procedure Clear;
-      procedure Draw;
-
   end;
 
 var

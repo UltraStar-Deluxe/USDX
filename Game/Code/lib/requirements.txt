@@ -1,8 +1,15 @@
+Not Included in SVN ( to many potential updates )
+---------------------------------------------------------------------------
+
 Jedi-sdl
   http://sourceforge.net/projects/jedi-sdl
 
 
+Included in SVN ..
+---------------------------------------------------------------------------
 
+pngImage
+  http://pngdelphi.sourceforge.net/
 
 BASS.pas
   http://www.un4seen.com/download.php?bass23

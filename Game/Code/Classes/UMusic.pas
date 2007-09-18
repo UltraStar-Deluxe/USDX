@@ -2,7 +2,16 @@ unit UMusic;
 
 interface
 
-uses Classes, MPlayer, Windows, Messages, SysUtils, Forms, ULog, USongs, Bass;//, DXSounds;
+uses Classes,
+     Windows,
+     Messages,
+     SysUtils,
+     {$IFNDEF FPC}
+     Forms,
+     {$ENDIF}
+     ULog,
+     USongs,
+     Bass;
 
 procedure InitializeSound;
 
@@ -22,17 +31,6 @@ type
 
   TMusic = class
     private
-//      MediaPlayer:        TMediaPlayer;       // It will be replaced by another component;
-{      MediaPlayerStart:   TMediaPlayer;       // or maybe not if done this way ;)
-      MediaPlayerBack:    TMediaPlayer;
-      MediaPlayerSwoosh:  TMediaPlayer;
-      MediaPlayerChange:  TMediaPlayer;
-      MediaPlayerOption:  TMediaPlayer;
-      MediaPlayerClick:   TMediaPlayer;
-      MediaPlayerDrum:    TMediaPlayer;
-      MediaPlayerHihat:   TMediaPlayer;
-      MediaPlayerClap:    TMediaPlayer;
-      MediaPlayerShuffle: TMediaPlayer;}
       BassStart:          hStream;            // Wait, I've replaced this with BASS
       BassBack:           hStream;            // It has almost all features we need
       BassSwoosh:         hStream;
@@ -50,12 +48,8 @@ type
 
       Loaded:   boolean;
       Loop:     boolean;
-//    DXSound:  TDXSound;
-//    Player:   TcmxMp3;
     public
       Bass:               hStream;
-      
-//      SoundCard:          array of TSoundCard;
       procedure InitializePlayback;
       procedure InitializeRecord;
       procedure SetVolume(Volume: integer);
@@ -86,7 +80,6 @@ type
       procedure CaptureStop;
       procedure CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
       procedure StopCard(Card: byte);
-      function LoadPlayerFromFile(var MediaPlayer: TMediaPlayer; Name: string): boolean;
       function LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 
       //Equalizer
@@ -105,11 +98,8 @@ type
   TMuzyka = record
     Path:   string;
     Start:  integer;        // start of song in ms
-//    BPM:    array of TBPM;
-//    Gap:    real;
     IlNut:  integer;
     DlugoscNut:   integer;
-//    WartoscNut:   integer;
   end;
 
   TCzesci = record
@@ -138,26 +128,14 @@ type
         Tekst:      string;
         FreeStyle:  boolean;
         Wartosc:    integer;    // zwykla nuta x1, zlota nuta x2
-
-
-
-
       end;
     end;
   end;
 
   TCzas = record              // wszystko, co dotyczy aktualnej klatki
-//    BajtowTotal:  integer;
-//    BajtowTeraz:  integer;
-//    BajtowNaSek:  integer;
     OldBeat:      integer;    // poprzednio wykryty beat w utworze
     AktBeat:      integer;    // aktualny beat w utworze
     MidBeat:      real;       // dokladny AktBeat
-
-    // should not be used
-//    OldHalf:      integer;    // poprzednio wykryta polowka
-//    AktHalf:      integer;    // aktualna polowka w utworze
-//    MidHalf:      real;       // dokladny AktHalf
 
     // now we use this for super synchronization!
     // only used when analyzing voice
@@ -178,11 +156,9 @@ type
 
     Teraz:        real;       // aktualny czas w utworze
     Razem:        real;       // caly czas utworu
-//    TerazSek:     integer;
   end;
 
 var
-  Form:     TForm;
   Music:    TMusic;
 
   // muzyka
@@ -195,6 +171,10 @@ var
   Czas:     TCzas;
 
   fHWND:        Thandle;
+
+type
+  TMPModes = (mpNotReady, mpStopped, mpPlaying, mpRecording, mpSeeking,
+    mpPaused, mpOpen);
 
 const
   ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
@@ -230,24 +210,7 @@ begin
 //  BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
 //  BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
 
-{  MediaPlayer := TMediaPlayer.Create( nil );
-  MediaPlayer.ParentWindow := fHWND;
-  MediaPlayer.Wait := true;}
-
   Log.LogStatus('Loading Sounds', 'Music Initialize');
-
-{  LoadPlayerFromFile(MediaPlayerStart,  SoundPath + 'Common Start.mp3');
-  LoadPlayerFromFile(MediaPlayerBack,   SoundPath + 'Common Back.mp3');
-  LoadPlayerFromFile(MediaPlayerSwoosh, SoundPath + 'menu swoosh.mp3');
-  LoadPlayerFromFile(MediaPlayerChange, SoundPath + 'select music change music.mp3');
-  LoadPlayerFromFile(MediaPlayerOption, SoundPath + 'option change col.mp3');
-  LoadPlayerFromFile(MediaPlayerClick,  SoundPath + 'rimshot022b.mp3');
-
-  LoadPlayerFromFile(MediaPlayerDrum,   SoundPath + 'bassdrumhard076b.mp3');
-  LoadPlayerFromFile(MediaPlayerHihat,  SoundPath + 'hihatclosed068b.mp3');
-  LoadPlayerFromFile(MediaPlayerClap,   SoundPath + 'claps050b.mp3');
-
-  LoadPlayerFromFile(MediaPlayerShuffle, SoundPath + 'Shuffle.mp3');}
 
   Log.BenchmarkStart(4);
   LoadSoundFromFile(BassStart,  SoundPath + 'Common Start.mp3');
@@ -370,9 +333,6 @@ function TMusic.Open(Name: string): boolean;
 begin
   Loaded := false;
   if FileExists(Name) then begin
-{    MediaPlayer.FileName := Name;
-    MediaPlayer.Open;}
-
     Bass := Bass_StreamCreateFile(false, pchar(Name), 0, 0, 0);
     Loaded := true;
     //Set Max Volume
@@ -380,15 +340,11 @@ begin
   end;
 
   Result := Loaded;
-
-//  Player := TcmxMp3.Create(Name);
 end;
 
 procedure TMusic.Rewind;
 begin
   if Loaded then begin
-//    MediaPlayer.Position := 0;
-    
   end;
 end;
 
@@ -396,18 +352,17 @@ procedure TMusic.MoveTo(Time: real);
 var
   bytes:    integer;
 begin
-//  if Loaded then begin
-//    MediaPlayer.StartPos := Round(Time);
     bytes := BASS_ChannelSeconds2Bytes(Bass, Time);
     BASS_ChannelSetPosition(Bass, bytes);
-//  end;
 end;
 
 procedure TMusic.Play;
 begin
-  if Loaded then begin
-//    MediaPlayer.Play;
-    if Loop then BASS_ChannelPlay(Bass, True); // start from beginning... actually bass itself does not loop, nor does this TMusic Class
+  if Loaded then
+  begin
+    if Loop then
+      BASS_ChannelPlay(Bass, True); // start from beginning... actually bass itself does not loop, nor does this TMusic Class
+      
     BASS_ChannelPlay(Bass, False); // for setting position before playing
   end;
 end;
@@ -422,17 +377,11 @@ end;
 procedure TMusic.Stop;
 begin
   Bass_ChannelStop(Bass);
-//  Bass_StreamFree(Bass);
-//  if ModeStr[MediaPlayer.Mode] = 'Playing' then begin
-//    MediaPlayer.Stop;
-//  end;
 end;
 
 procedure TMusic.Close;
 begin
   Bass_StreamFree(Bass);
-//  Player.Free;
-//  MediaPlayer.Close;
 end;
 
 function TMusic.Length: real;
@@ -441,129 +390,76 @@ var
 begin
   Result := 60;
 
-  bytes := BASS_ChannelGetLength(Bass);
+  bytes  := BASS_ChannelGetLength(Bass);
   Result := BASS_ChannelBytes2Seconds(Bass, bytes);
-
-{  if Assigned(MediaPlayer) then begin
-    if Loaded then Result := MediaPlayer.Length / 1000;
-  end;}
-//  if Assigned(Player) then
-//    Result := Player.LengthInSeconds;
 end;
 
 function TMusic.Position: real;
 var
   bytes:    integer;
 begin
-  Result := 0;//MediaPlayer.Position / 1000;
-  bytes := BASS_ChannelGetPosition(BASS);
+  Result := 0;
+  bytes  := BASS_ChannelGetPosition(BASS);
   Result := BASS_ChannelBytes2Seconds(BASS, bytes);
 end;
 
 function TMusic.Finished: boolean;
 begin
   Result := false;
-//  if ModeStr[MediaPlayer.Mode] = 'Stopped' then Result := true;
-  if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then begin
-//    beep;
+
+  if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then
+  begin
     Result := true;
   end;
 end;
 
-{function myeffect( chan : integer; stream : Pointer; len : integer; udata : Pointer ): Pointer; cdecl;
-var
-  dane:   pwordarray;
-  pet:    integer;
-  Prev:     smallint;
-  PrevNew:  smallint;
-begin
-  dane := stream;
-  Prev := 0;
-  for pet := 0 to len div 2 -1 do begin
-    PrevNew := Dane[Pet];
-
-//    Dane[pet] := Round(PrevNew*1/8 + Prev*7/8);
-
-    Prev := Dane[Pet];
-  end;
-end;}
-
 procedure TMusic.PlayStart;
-{var
-  Music:    PMix_Chunk;}
 begin
-{  Mix_OpenAudio(44100, 16, 1, 16*1024);
-  Music := Mix_LoadWAV('D:\Rozne\UltraStar\Old\Boys - Hej Sokoly 30s.wav');
-  Mix_RegisterEffect(0, myeffect, nil, 0);
-  Mix_PlayChannel(0, Music, 0);}
-
-//  MediaPlayerStart.Rewind;
-//  MediaPlayerStart.Play;
   BASS_ChannelPlay(BassStart, True);
 end;
 
 procedure TMusic.PlayBack;
 begin
-//  MediaPlayerBack.Rewind;
-//  MediaPlayerBack.Play;
-//  if not
   BASS_ChannelPlay(BassBack, True);// then
-//    Application.MessageBox ('Error playing stream!', 'Error');
 end;
 
 procedure TMusic.PlaySwoosh;
 begin
-//  MediaPlayerSwoosh.Rewind;
-//  MediaPlayerSwoosh.Play;
   BASS_ChannelPlay(BassSwoosh, True);
 end;
 
 procedure TMusic.PlayChange;
 begin
-//  MediaPlayerChange.Rewind;
-//  MediaPlayerChange.Play;
   BASS_ChannelPlay(BassChange, True);
 end;
 
 procedure TMusic.PlayOption;
 begin
-//  MediaPlayerOption.Rewind;
-//  MediaPlayerOption.Play;
   BASS_ChannelPlay(BassOption, True);
 end;
 
 procedure TMusic.PlayClick;
 begin
-//  MediaPlayerClick.Rewind;
-//  MediaPlayerClick.Play;
   BASS_ChannelPlay(BassClick, True);
 end;
 
 procedure TMusic.PlayDrum;
 begin
-//  MediaPlayerDrum.Rewind;
-//  MediaPlayerDrum.Play;
   BASS_ChannelPlay(BassDrum, True);
 end;
 
 procedure TMusic.PlayHihat;
 begin
-//  MediaPlayerHihat.Rewind;
-//  MediaPlayerHihat.Play;
   BASS_ChannelPlay(BassHihat, True);
 end;
 
 procedure TMusic.PlayClap;
 begin
-//  MediaPlayerClap.Rewind;
-//  MediaPlayerClap.Play;
   BASS_ChannelPlay(BassClap, True);
 end;
 
 procedure TMusic.PlayShuffle;
 begin
-//  MediaPlayerShuffle.Rewind;
-//  MediaPlayerShuffle.Play;
   BASS_ChannelPlay(BassShuffle, True);
 end;
 
@@ -582,35 +478,6 @@ begin
   for S := 0 to High(Sound) do
     Sound[S].BufferLong[0].Clear;
 
-{    case PlayersPlay of
-      1:  begin
-            CaptureCard(0, 0, 1, 0);
-          end;
-      2:  begin
-            if Ini.TwoPlayerMode = 0 then begin
-              CaptureCard(0, 0, 1, 2);
-            end else begin
-              CaptureCard(0, 0, 1, 0);
-              CaptureCard(1, 1, 2, 0);
-            end;
-          end;
-      3:  begin
-            CaptureCard(0, 0, 1, 2);
-            CaptureCard(1, 1, 3, 0);
-          end;
-    end; // case}
-
-//  CaptureCard(0, 0, 0, 0);
-//  end;
-
-  {for SC := 0 to High(SoundCard) do begin
-    P1 := Ini.SoundCard[SC, 1];
-    P2 := Ini.SoundCard[SC, 2];
-    if P1 > PlayersPlay then P1 := 0;
-    if P2 > PlayersPlay then P2 := 0;
-    CaptureCard(SC, P1, P2);
-  end;       }
-  // 0.5.2: new
   for SC := 0 to High(Ini.CardList) do begin
     P1 := Ini.CardList[SC].ChannelL;
     P2 := Ini.CardList[SC].ChannelR;
@@ -627,31 +494,7 @@ var
   P1:       integer;
   P2:       integer;
 begin
-{  if RecordSystem = 1 then begin
-    case PlayersPlay of
-      1:  begin
-            StopCard(0);
-          end;
-      2:  begin
-            if Ini.TwoPlayerMode = 0 then begin
-              StopCard(0);
-            end else begin
-              StopCard(0);
-              StopCard(1);
-            end;
-          end;
-      3:  begin
-            StopCard(0);
-            StopCard(1);
-          end;
-    end;
-  end;}
 
-  {for SC := 0 to High(SoundCard) do begin
-    StopCard(SC);
-  end; }
-
-  // 0.5.2
   for SC := 0 to High(Ini.CardList) do begin
     P1 := Ini.CardList[SC].ChannelL;
     P2 := Ini.CardList[SC].ChannelR;
@@ -686,26 +529,10 @@ begin
     Log.LogError('Music -> CaptureCard: Error initializing record: ' + ErrorMsg);
 
 
-  end else begin
-
-  //SoundCard[RecordI].BassRecordStream := BASS_RecordStart(44100, 2, MakeLong(0, 20) , @GetMicrophone, PlayerLeft + PlayerRight*256);
-  Recording.SoundCard[RecordI].BassRecordStream := BASS_RecordStart(44100, 2, MakeLong(0, 20) , @GetMicrophone, PlayerLeft + PlayerRight*256);
-
-  {if SoundCard[RecordI].BassRecordStream = 0 then begin
-    Error := BASS_ErrorGetCode;
-
-    ErrorMsg := IntToStr(Error);
-    if Error = BASS_ERROR_INIT then ErrorMsg := 'Not successfully called';
-    if Error = BASS_ERROR_ALREADY then ErrorMsg := 'Recording is already in progress';
-    if Error = BASS_ERROR_NOTAVAIL then ErrorMsg := 'The recording device is not available';
-    if Error = BASS_ERROR_FORMAT then ErrorMsg := 'The specified format is not supported';
-    if Error = BASS_ERROR_MEM then ErrorMsg := 'There is insufficent memory';
-    if Error = BASS_ERROR_UNKNOWN then ErrorMsg := 'Unknown';
-
-    Log.LogError('Error creating record stream [' + IntToStr(RecordI) + ', '
-      + IntToStr(PlayerLeft) + ', '+ IntToStr(PlayerRight) + ']: '
-      + ErrorMsg);
-  end;         }
+  end
+  else
+  begin
+    Recording.SoundCard[RecordI].BassRecordStream := BASS_RecordStart(44100, 2, MakeLong(0, 20) , @GetMicrophone, PlayerLeft + PlayerRight*256);
   end;
 end;
 
@@ -715,41 +542,12 @@ begin
   BASS_RecordFree;
 end;
 
-function TMusic.LoadPlayerFromFile(var MediaPlayer: TMediaPlayer; Name: string): boolean;
-begin
-  Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadPlayerFromFile');
-  if FileExists(Name) then begin
-    try
-      MediaPlayer := TMediaPlayer.Create( nil );
-    except
-      Log.LogError('Failed to create MediaPlayer', 'LoadPlayerFromFile');
-    end;
-    try
-      MediaPlayer.ParentWindow := fHWND;
-      MediaPlayer.Wait := true;
-      MediaPlayer.FileName := Name;
-      MediaPlayer.DeviceType := dtAutoSelect;
-      MediaPlayer.Display := nil;
-    except
-      Log.LogError('Failed setting MediaPlayer: ' + MediaPlayer.ErrorMessage, 'LoadPlayerFromFile');
-    end;
-    try
-      MediaPlayer.Open;
-    except
-      Log.LogError('Failed to open using MediaPlayer', 'LoadPlayerFromFile');
-    end;
-  end else begin
-    Log.LogError('Sound not found: "' + Name + '"', 'LoadPlayerFromFile');
-    exit;
-  end;
-end;
-
 function TMusic.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 var
   L: Integer;
 begin
   if FileExists(Name) then begin
-    Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadPlayerFromFile');
+    Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
     try
       hStream := BASS_StreamCreateFile(False, pchar(Name), 0, 0, 0);
       //Add CustomSound
@@ -758,10 +556,10 @@ begin
       CustomSounds[L].Filename := Name;
       CustomSounds[L].Handle := hStream;
     except
-      Log.LogError('Failed to open using BASS', 'LoadPlayerFromFile');
+      Log.LogError('Failed to open using BASS', 'LoadSoundFromFile');
     end;
   end else begin
-    Log.LogError('Sound not found: "' + Name + '"', 'LoadPlayerFromFile');
+    Log.LogError('Sound not found: "' + Name + '"', 'LoadSoundFromFile');
     exit;
   end;
 end;

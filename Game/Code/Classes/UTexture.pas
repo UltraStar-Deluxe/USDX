@@ -11,7 +11,19 @@ unit UTexture;
 // Arrow (for arrows, white is white, gray has color, black is transparent);
 
 interface
-uses OpenGL12, Windows, Math, Classes, SysUtils, Graphics, JPEG, UThemes, PNGImage;
+
+uses OpenGL12,
+     Windows,
+     Math,
+     Classes,
+     SysUtils,
+     {$IFNDEF FPC}
+     Graphics,
+     JPEG,
+     PNGImage,
+     {$ENDIF}
+     UThemes;
+
 
 procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
 
