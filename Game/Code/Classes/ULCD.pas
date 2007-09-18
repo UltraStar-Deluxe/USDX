@@ -1,6 +1,7 @@
 unit ULCD;
 
 interface
+{$I switches.inc}
 
 type
   TLCD = class
@@ -41,16 +42,24 @@ const
 implementation
 
 uses
-  SysUtils, zlportio, UTime;
+  SysUtils,
+  {$IFDEF UseSerialPort}
+  zlportio,
+  {$ENDIF}
+  UTime;
 
 procedure TLCD.WriteCommand(B: Byte);
 // Wysylanie komend sterujacych
 begin
-  if not HalfInterface then begin
+{$IFDEF UseSerialPort}
+  if not HalfInterface then
+  begin
     zlioportwrite(Control, 0, $02);
     zlioportwrite(Data, 0, B);
     zlioportwrite(Control, 0, $03);
-  end else begin
+  end
+  else
+  begin
     zlioportwrite(Control, 0, $02);
     zlioportwrite(Data, 0, B and $F0);
     zlioportwrite(Control, 0, $03);
@@ -66,11 +75,13 @@ begin
     Sleep(2)
   else
     TimeSleep(0.1);
+{$ENDIF}
 end;
 
 procedure TLCD.WriteData(B: Byte);
 // Wysylanie danych
 begin
+{$IFDEF UseSerialPort} 
   if not HalfInterface then begin
     zlioportwrite(Control, 0, $06);
     zlioportwrite(Data, 0, B);
@@ -89,6 +100,7 @@ begin
 
   TimeSleep(0.1);
   Inc(Position);
+{$ENDIF}
 end;
 
 procedure TLCD.WriteString(S: string);

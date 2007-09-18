@@ -1,6 +1,7 @@
 unit UScreenSong;
 
 interface
+{$I switches.inc}
 
 uses
   UMenu, SDL, UMusic, UFiles, UTime, UDisplay, USongs, SysUtils, ULog, UThemes, UTexture, ULanguage,
@@ -344,9 +345,13 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if Length(Songs.Song) > 0 then begin
-//            PortWriteB($378, 0);
-            if CatSongs.Song[Interaction].Main then begin // clicked on Category Button
+          if Length(Songs.Song) > 0 then
+          begin
+            {$IFDEF UseSerialPort}
+              // PortWriteB($378, 0);
+            {$ENDIF}
+            if CatSongs.Song[Interaction].Main then
+            begin // clicked on Category Button
 
               //Show Cat in Top Left Mod
               ShowCatTL (Interaction);

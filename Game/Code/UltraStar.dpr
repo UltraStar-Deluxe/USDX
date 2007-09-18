@@ -3,6 +3,7 @@ program UltraStar;
 {$DEFINE TRANSLATE}
 
 {$R 'UltraStar.res' 'UltraStar.rc'}
+{$I switches.inc}
 
 uses
   //------------------------------
@@ -26,8 +27,10 @@ uses
   MidiFile     in 'lib\midi\MidiFile.PAS',
   Delphmcb     in 'lib\midi\Delphmcb.PAS',
 
+  {$IFDEF UseSerialPort}
   zlportio     in 'lib\zlportio\zlportio.pas',
   ddkint       in 'lib\zlportio\ddkint.pas',
+  {$ENDIF}
 
   avcodec      in 'lib\ffmpeg\avcodec.pas',
   avformat     in 'lib\ffmpeg\avformat.pas',

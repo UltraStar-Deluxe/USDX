@@ -1,8 +1,16 @@
 unit UMain;
 
 interface
+{$I switches.inc}
+
 uses SDL, UGraphic, UMusic, URecord, UTime, SysUtils, UDisplay, UIni, ULog, ULyrics, UScreenSing,
-  OpenGL12, zlportio {you can disable it and all PortWriteB calls}, ULCD, ULight, UThemes{, UScreenPopup};
+  OpenGL12,
+
+  {$IFDEF UseSerialPort}
+  zlportio {you can disable it and all PortWriteB calls},
+  {$ENDIF}
+
+  ULCD, ULight, UThemes{, UScreenPopup};
 
 type
   TPlayer = record
@@ -512,7 +520,9 @@ begin
       if (TempBeat mod 4 <> 0) then Music.PlayHihat;*)
     end;
 
-  //PortWriteB($378, LPT_1 + LPT_2 * 2); // 0 zapala
+    {$IFDEF UseSerialPort}
+      // PortWriteB($378, LPT_1 + LPT_2 * 2); // 0 zapala
+    {$ENDIF}
 end;
 
 procedure NewBeatD(Sender: TScreenSing);

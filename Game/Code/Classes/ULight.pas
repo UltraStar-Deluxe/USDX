@@ -1,5 +1,6 @@
 unit ULight;
 interface
+{$I switches.inc}
 
 type
   TLight = class
@@ -30,7 +31,11 @@ const
 implementation
 
 uses
-  SysUtils, zlportio, UTime;
+  SysUtils,
+  {$IFDEF UseSerialPort}
+  zlportio,
+  {$ENDIF}
+  UTime;
 
 constructor TLight.Create;
 begin
@@ -45,8 +50,10 @@ end;
 
 procedure TLight.SetState(State: integer);
 begin
+  {$IFDEF UseSerialPort}
   if Enabled then
     PortWriteB($378, State);
+  {$ENDIF}
 end;
 
 procedure TLight.AutoSetState;
