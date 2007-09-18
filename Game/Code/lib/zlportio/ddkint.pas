@@ -26,7 +26,9 @@
 unit ddkint;
 
 interface
-uses windows,winsvc;
+uses
+    windows,
+    winsvc;
 
 function CTL_CODE(const DeviceType,Func,Method,Access:Cardinal):cardinal;
 

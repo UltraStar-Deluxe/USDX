@@ -52,7 +52,9 @@ unit zlportio;
 
 interface
 
-uses windows,sysutils,ddkint;
+uses windows,
+     sysutils,
+     ddkint;
 
 Const
   ZLIO_BYTE  = 0;
