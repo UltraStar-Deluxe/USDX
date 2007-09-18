@@ -1,0 +1,239 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <Units Count="8">
+      <Unit0>
+        <Filename Value="lazarustest.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="lazarustest"/>
+        <CursorPos X="49" Y="11"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="23"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="delphi\bass.pas"/>
+        <UnitName Value="Bass"/>
+        <CursorPos X="12" Y="539"/>
+        <TopLine Value="589"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="avformat.pas"/>
+        <UnitName Value="avformat"/>
+        <CursorPos X="38" Y="594"/>
+        <TopLine Value="567"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="avcodec.pas"/>
+        <UnitName Value="avcodec"/>
+        <CursorPos X="3" Y="1796"/>
+        <TopLine Value="1775"/>
+        <UsageCount Value="11"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="avio.pas"/>
+        <UnitName Value="avio"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="11"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="pngimage.pas"/>
+        <UnitName Value="pngimage"/>
+        <CursorPos X="20" Y="133"/>
+        <TopLine Value="121"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="pngzlib.pas"/>
+        <UnitName Value="pngzlib"/>
+        <CursorPos X="6" Y="111"/>
+        <TopLine Value="91"/>
+        <EditorIndex Value="3"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="pnglang.pas"/>
+        <UnitName Value="pnglang"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit7>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="4037" Column="16" TopLine="4017"/>
+      </Position1>
+      <Position2>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="19" Column="1" TopLine="1"/>
+      </Position2>
+      <Position3>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="6" Column="1" TopLine="1"/>
+      </Position3>
+      <Position4>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="4" Column="1" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="8" Column="30" TopLine="1"/>
+      </Position5>
+      <Position6>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="38" Column="37" TopLine="18"/>
+      </Position6>
+      <Position7>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="52" Column="16" TopLine="31"/>
+      </Position7>
+      <Position8>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="6" Column="1" TopLine="1"/>
+      </Position8>
+      <Position9>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="124" Column="82" TopLine="86"/>
+      </Position9>
+      <Position10>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position10>
+      <Position11>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="103" Column="6" TopLine="83"/>
+      </Position11>
+      <Position12>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="104" Column="6" TopLine="84"/>
+      </Position12>
+      <Position13>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="105" Column="6" TopLine="85"/>
+      </Position13>
+      <Position14>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="106" Column="6" TopLine="86"/>
+      </Position14>
+      <Position15>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="107" Column="6" TopLine="87"/>
+      </Position15>
+      <Position16>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="108" Column="6" TopLine="88"/>
+      </Position16>
+      <Position17>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="109" Column="6" TopLine="89"/>
+      </Position17>
+      <Position18>
+        <Filename Value="pngzlib.pas"/>
+        <Caret Line="110" Column="6" TopLine="90"/>
+      </Position18>
+      <Position19>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="4037" Column="62" TopLine="4017"/>
+      </Position19>
+      <Position20>
+        <Filename Value="pnglang.pas"/>
+        <Caret Line="275" Column="31" TopLine="255"/>
+      </Position20>
+      <Position21>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="19" Column="1" TopLine="1"/>
+      </Position21>
+      <Position22>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position22>
+      <Position23>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="19" Column="1" TopLine="1"/>
+      </Position23>
+      <Position24>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position24>
+      <Position25>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="139" Column="10" TopLine="119"/>
+      </Position25>
+      <Position26>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="138" Column="1" TopLine="119"/>
+      </Position26>
+      <Position27>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="146" Column="38" TopLine="121"/>
+      </Position27>
+      <Position28>
+        <Filename Value="pngimage.pas"/>
+        <Caret Line="141" Column="2" TopLine="121"/>
+      </Position28>
+      <Position29>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="11" Column="20" TopLine="1"/>
+      </Position29>
+      <Position30>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="14" Column="1" TopLine="1"/>
+      </Position30>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

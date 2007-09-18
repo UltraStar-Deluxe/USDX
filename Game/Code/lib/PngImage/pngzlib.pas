@@ -6,6 +6,10 @@
 
 unit pngzlib;
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 interface
 
 type
@@ -35,14 +39,12 @@ type
     reserved: Integer;    // reserved for future use
   end;
 
-function inflateInit_(var strm: TZStreamRec; version: PChar;
-  recsize: Integer): Integer; forward;
-function inflate(var strm: TZStreamRec; flush: Integer): Integer; forward;
-function inflateEnd(var strm: TZStreamRec): Integer; forward;
-function deflateInit_(var strm: TZStreamRec; level: Integer; version: PChar;
-  recsize: Integer): Integer; forward;
-function deflate(var strm: TZStreamRec; flush: Integer): Integer; forward;
-function deflateEnd(var strm: TZStreamRec): Integer; forward;
+function inflateInit_(var strm: TZStreamRec; version: PChar; recsize: Integer): Integer; // forward;
+function inflate(var strm: TZStreamRec; flush: Integer): Integer; //forward;
+function inflateEnd(var strm: TZStreamRec): Integer; //forward;
+function deflateInit_(var strm: TZStreamRec; level: Integer; version: PChar; recsize: Integer): Integer; //forward;
+function deflate(var strm: TZStreamRec; flush: Integer): Integer; //forward;
+function deflateEnd(var strm: TZStreamRec): Integer; //forward;
 
 const
   zlib_version = '1.1.4';
@@ -97,15 +99,17 @@ const
 
 implementation
 
-{$L obj\deflate.obj}
-{$L obj\trees.obj}
-{$L obj\inflate.obj}
-{$L obj\inftrees.obj}
-{$L obj\adler32.obj}
-{$L obj\infblock.obj}
-{$L obj\infcodes.obj}
-{$L obj\infutil.obj}
-{$L obj\inffast.obj}
+{$IFNDef FPC}
+  {$L obj\deflate.obj}
+  {$L obj\trees.obj}
+  {$L obj\inflate.obj}
+  {$L obj\inftrees.obj}
+  {$L obj\adler32.obj}
+  {$L obj\infblock.obj}
+  {$L obj\infcodes.obj}
+  {$L obj\infutil.obj}
+  {$L obj\inffast.obj}
+{$ENDIF}
 
 procedure _tr_init; external;
 procedure _tr_tally; external;
@@ -146,8 +150,7 @@ function deflate(var strm: TZStreamRec; flush: Integer): Integer; external;
 function deflateEnd(var strm: TZStreamRec): Integer; external;
 
 // inflate decompresses data
-function inflateInit_(var strm: TZStreamRec; version: PChar;
-  recsize: Integer): Integer; external;
+function inflateInit_(var strm: TZStreamRec; version: PChar; recsize: Integer): Integer; external;
 function inflate(var strm: TZStreamRec; flush: Integer): Integer; external;
 function inflateEnd(var strm: TZStreamRec): Integer; external;
 function inflateReset(var strm: TZStreamRec): Integer; external;

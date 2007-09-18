@@ -109,8 +109,15 @@ unit pngimage;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 {Triggers avaliable (edit the fields bellow)}
+{$IFNDef FPC}
 {$DEFINE UseDelphi}              //Disable fat vcl units (perfect to small apps)
+{$ENDIF}
+
 {$DEFINE ErrorOnUnknownCritical} //Error when finds an unknown critical chunk
 {$DEFINE CheckCRC}               //Enables CRC checking
 {$DEFINE RegisterGraphic}        //Registers TPNGObject to use with TPicture
@@ -122,8 +129,17 @@ interface
 
 
 uses
- Windows {$IFDEF UseDelphi}, Classes, Graphics, SysUtils{$ENDIF} {$IFDEF Debug},
- dialogs{$ENDIF}, pngzlib, pnglang;
+ Windows,
+ {$IFDEF UseDelphi}
+ Classes,
+ Graphics,
+ SysUtils,
+ {$ENDIF}
+ {$IFDEF Debug}
+ dialogs,
+ {$ENDIF}
+ pngzlib,
+ pnglang;
 
 {$IFNDEF UseDelphi}
   const
@@ -1249,8 +1265,7 @@ begin
         if Output = nil then
           GetMem(Output, OutputSize) else ReallocMem(Output, OutputSize);
         {Copies the new data}
-        CopyMemory(Ptr(Longint(Output) + OutputSize - total_out),
-          @Buffer, total_out);
+        CopyMemory(pointer(Longint(Output) + OutputSize - total_out), @Buffer, total_out);
       end {if (InflateRet = Z_STREAM_END) or (InflateRet = 0)}
       {Now tests for errors}
       else if InflateRet < 0 then
@@ -1309,8 +1324,7 @@ begin
           GetMem(Output, OutputSize) else ReallocMem(Output, OutputSize);
 
         {Copies the new data}
-        CopyMemory(Ptr(Longint(Output) + OutputSize - total_out),
-          @Buffer, total_out);
+        CopyMemory(Pointer(Longint(Output) + OutputSize - total_out), @Buffer, total_out);
       end {if (InflateRet = Z_STREAM_END) or (InflateRet = 0)}
       {Now tests for errors}
       else if DeflateRet < 0 then
@@ -1676,7 +1690,7 @@ function TStream.GetSize: Longint;
   function TResourceStream.Read(var Buffer; Count: Integer): Cardinal;
   begin
     //Returns data
-    CopyMemory(@Buffer, Ptr(Longint(Memory) + Position), Count);
+    CopyMemory(@Buffer, pointer(Longint(Memory) + Position), Count);
     //Update position
     inc(Position, Count);
     //Returns
@@ -1938,9 +1952,9 @@ begin
     if Keyword <> '' then
       CopyMemory(Data, @fKeyword[1], Length(Keyword));
     {Compression method 0 (inflate/deflate)}
-    pByte(Ptr(Longint(Data) + Length(Keyword) + 1))^ := 0;
+    pByte(pointer(Longint(Data) + Length(Keyword) + 1))^ := 0;
     if OutputSize > 0 then
-      CopyMemory(Ptr(Longint(Data) + Length(Keyword) + 2), Output, OutputSize);
+      CopyMemory(pointer(Longint(Data) + Length(Keyword) + 2), Output, OutputSize);
 
     {Let ancestor calculate crc and save}
     Result := SaveData(Stream);
@@ -1969,8 +1983,7 @@ begin
   {Get text}
   fKeyword := PChar(Data);
   SetLength(fText, Size - Length(fKeyword) - 1);
-  CopyMemory(@fText[1], Ptr(Longint(Data) + Length(fKeyword) + 1),
-    Length(fText));
+  CopyMemory(@fText[1], pointer(Longint(Data) + Length(fKeyword) + 1), Length(fText));
 end;
 
 {Saving the chunk to a stream}
@@ -1984,8 +1997,7 @@ begin
   if Keyword <> '' then
     CopyMemory(Data, @fKeyword[1], Length(Keyword));
   if Text <> '' then
-    CopyMemory(Ptr(Longint(Data) + Length(Keyword) + 1), @fText[1],
-      Length(Text));
+    CopyMemory(pointer(Longint(Data) + Length(Keyword) + 1), @fText[1], Length(Text));
   {Let ancestor calculate crc and save}
   Result := inherited SaveToStream(Stream);
 end;
@@ -2819,12 +2831,10 @@ begin
     {Get current row index}
     CurrentRow := RowStart[CurrentPass];
     {Get a pointer to the current row image data}
-    Data := Ptr(Longint(Header.ImageData) + Header.BytesPerRow *
-      (ImageHeight - 1 - CurrentRow));
-    Trans := Ptr(Longint(Header.ImageAlpha) + ImageWidth * CurrentRow);
+    Data  := pointer(Longint(Header.ImageData) + Header.BytesPerRow * (ImageHeight - 1 - CurrentRow));
+    Trans := pointer(Longint(Header.ImageAlpha) + ImageWidth * CurrentRow);
     {$IFDEF Store16bits}
-    Extra := Ptr(Longint(Header.ExtraImageData) + Header.BytesPerRow *
-      (ImageHeight - 1 - CurrentRow));
+    Extra := pointer(Longint(Header.ExtraImageData) + Header.BytesPerRow * (ImageHeight - 1 - CurrentRow));
     {$ENDIF}
 
     if Row_Bytes > 0 then {There must have bytes for this interlaced pass}
@@ -3808,9 +3818,8 @@ begin
     {Get current row index}
     CurrentRow := RowStart[CurrentPass];
     {Get a pointer to the current row image data}
-    Data := Ptr(Longint(Header.ImageData) + Header.BytesPerRow *
-      (ImageHeight - 1 - CurrentRow));
-    Trans := Ptr(Longint(Header.ImageAlpha) + ImageWidth * CurrentRow);
+    Data  := pointer(Longint(Header.ImageData) + Header.BytesPerRow * (ImageHeight - 1 - CurrentRow));
+    Trans := pointer(Longint(Header.ImageAlpha) + ImageWidth * CurrentRow);
 
     {Process all the image rows}
     if Row_Bytes > 0 then
@@ -4021,9 +4030,9 @@ begin
     FOR j := 0 TO fCount - 1 DO
       with BitmapInfo.bmiColors[j] do
       begin
-        DataPtr^ := Owner.InverseGamma[rgbRed]; inc(DataPtr);
+        DataPtr^ := Owner.InverseGamma[rgbRed]  ; inc(DataPtr);
         DataPtr^ := Owner.InverseGamma[rgbGreen]; inc(DataPtr);
-        DataPtr^ := Owner.InverseGamma[rgbBlue]; inc(DataPtr);
+        DataPtr^ := Owner.InverseGamma[rgbBlue] ; inc(DataPtr);
       end {with BitmapInfo};
 
   {Let ancestor do the rest of the work}
@@ -5100,8 +5109,7 @@ begin
       (X mod (8 div DataDepth)) * DataDepth));
 
     {Setting the new pixel}
-    ByteData^ := ByteData^ or (ValEntry shl ((8 - DataDepth) -
-      (X mod (8 div DataDepth)) * DataDepth));
+    ByteData^ := ByteData^ or (ValEntry shl ((8 - DataDepth) - (X mod (8 div DataDepth)) * DataDepth));
   end {with png.Header}
 end;
 
