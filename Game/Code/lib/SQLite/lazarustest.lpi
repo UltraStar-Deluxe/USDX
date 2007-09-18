@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <Units Count="9">
+      <Unit0>
+        <Filename Value="lazarustest.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="lazarustest"/>
+        <CursorPos X="61" Y="56"/>
+        <TopLine Value="36"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="23"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="delphi\bass.pas"/>
+        <UnitName Value="Bass"/>
+        <CursorPos X="12" Y="539"/>
+        <TopLine Value="589"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="avformat.pas"/>
+        <UnitName Value="avformat"/>
+        <CursorPos X="38" Y="594"/>
+        <TopLine Value="567"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="avcodec.pas"/>
+        <UnitName Value="avcodec"/>
+        <CursorPos X="3" Y="1796"/>
+        <TopLine Value="1775"/>
+        <UsageCount Value="11"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="avio.pas"/>
+        <UnitName Value="avio"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="11"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="pngimage.pas"/>
+        <UnitName Value="pngimage"/>
+        <CursorPos X="20" Y="133"/>
+        <TopLine Value="121"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="pngzlib.pas"/>
+        <UnitName Value="pngzlib"/>
+        <CursorPos X="6" Y="111"/>
+        <TopLine Value="91"/>
+        <UsageCount Value="10"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="pnglang.pas"/>
+        <UnitName Value="pnglang"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="SQLiteTable3.pas"/>
+        <UnitName Value="SQLiteTable3"/>
+        <CursorPos X="91" Y="38"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit8>
+    </Units>
+    <JumpHistory Count="5" HistoryIndex="4">
+      <Position1>
+        <Filename Value="SQLiteTable3.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="SQLiteTable3.pas"/>
+        <Caret Line="133" Column="29" TopLine="113"/>
+      </Position2>
+      <Position3>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="65" Column="17" TopLine="3"/>
+      </Position3>
+      <Position4>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="18" Column="43" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="lazarustest.lpr"/>
+        <Caret Line="58" Column="79" TopLine="36"/>
+      </Position5>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

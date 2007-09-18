@@ -17,6 +17,10 @@ unit SQLiteTable3;
 
 interface
 
+{$IFDEF FPC}
+ {$MODE Delphi}
+{$ENDIF}
+
 uses
   Windows, SQLite3, Classes, SysUtils;
 
