@@ -12,15 +12,38 @@ program UltraStar;
 
 uses
 
+  // ***************************************************************************
+  //
+  //                         Developers PLEASE NOTE !!!!!!!
+  //
+  //  As of september 2007, I am working towards porting Ultrastar-DX to run
+  //  on Linux.  I will be modifiying the source to make it compile in lazarus
+  //  on windows & linux and I will make sure that it compiles in delphi still
+  //  To help me in this endevour, please can you make a point of remembering
+  //  that linux is CASE SENSATIVE, and file / unit names must be as per
+  //  the filename exactly.
+  //
+  //  EG :  opengl12.pas  must not be OpenGL in the uses cluase.
+  //
+  //  thanks for your help...
+  //
+  // ***************************************************************************
+
   //------------------------------
   //Includes - 3rd Party Libraries
   //------------------------------
+  
+  // SDL / OpenGL
   sdl          in 'lib\JEDI-SDLv1.0\SDL\Pas\sdl.pas',
   moduleloader in 'lib\JEDI-SDLv1.0\SDL\Pas\moduleloader.pas',
-  OpenGL12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
+  opengl12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas',
 
+  // Bass
+  {$IFDEF win32}
   bass         in 'lib\bass\delphi\bass.pas',
+  {$ENDIF}
 
+  // Midi Units
   {$IFDEF UseMIDIPort}
   midiout      in 'lib\midi\midiout.pas',
   midiin       in 'lib\midi\midiin.pas',
@@ -32,6 +55,7 @@ uses
   Delphmcb     in 'lib\midi\Delphmcb.PAS',
   {$ENDIF}
 
+  // FFMpeg units
   avcodec      in 'lib\ffmpeg\avcodec.pas',
   avformat     in 'lib\ffmpeg\avformat.pas',
   avutil       in 'lib\ffmpeg\avutil.pas',
@@ -39,6 +63,7 @@ uses
   opt          in 'lib\ffmpeg\opt.pas',
   avio         in 'lib\ffmpeg\avio.pas',
 
+  // Sql Lite
   SQLiteTable3 in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3      in 'lib\SQLite\SQLite3.pas',
 
@@ -63,7 +88,7 @@ uses
   //------------------------------
   
   {$IFDEF FPC}
-  Ulazjpeg      in 'Classes\Ulazjpeg.pas',
+  ulazjpeg      in 'Classes\ulazjpeg.pas',
   {$ENDIF}
   
   UCommon       in 'Classes\UCommon.pas',

@@ -3,6 +3,8 @@ Not Included in SVN ( to many potential updates )
 
 Jedi-sdl
   http://sourceforge.net/projects/jedi-sdl
+  Make sure to download VERSION 1, beta...
+  not version 0.5
 
 
 Included in SVN ..
