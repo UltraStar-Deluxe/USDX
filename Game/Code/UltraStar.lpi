@@ -31,14 +31,19 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="50">
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="ImagesForLazarus"/>
+      </Item1>
+    </RequiredPackages>
+    <Units Count="52">
       <Unit0>
         <Filename Value="UltraStar.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="27" Y="68"/>
-        <TopLine Value="55"/>
+        <CursorPos X="23" Y="84"/>
+        <TopLine Value="64"/>
         <EditorIndex Value="0"/>
-        <UsageCount Value="68"/>
+        <UsageCount Value="70"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
@@ -51,13 +56,10 @@
       <Unit2>
         <Filename Value="Classes\UTexture.pas"/>
         <UnitName Value="UTexture"/>
-        <CursorPos X="1" Y="27"/>
-        <TopLine Value="7"/>
-        <EditorIndex Value="2"/>
-        <UsageCount Value="11"/>
-        <Bookmarks Count="1">
-          <Item0 X="29" Y="203" ID="1"/>
-        </Bookmarks>
+        <CursorPos X="1" Y="28"/>
+        <TopLine Value="4"/>
+        <EditorIndex Value="6"/>
+        <UsageCount Value="12"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
@@ -84,9 +86,11 @@
       <Unit6>
         <Filename Value="Classes\UFiles.pas"/>
         <UnitName Value="UFiles"/>
-        <CursorPos X="1" Y="512"/>
-        <TopLine Value="492"/>
+        <CursorPos X="8" Y="132"/>
+        <TopLine Value="96"/>
+        <EditorIndex Value="3"/>
         <UsageCount Value="11"/>
+        <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="Classes\USongs.pas"/>
@@ -134,7 +138,7 @@
         <UnitName Value="UMusic"/>
         <CursorPos X="46" Y="219"/>
         <TopLine Value="198"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="10"/>
       </Unit13>
       <Unit14>
         <Filename Value="Classes\ULyrics.pas"/>
@@ -181,9 +185,11 @@
       <Unit20>
         <Filename Value="Menu\UDisplay.pas"/>
         <UnitName Value="UDisplay"/>
-        <CursorPos X="29" Y="410"/>
-        <TopLine Value="390"/>
+        <CursorPos X="7" Y="65"/>
+        <TopLine Value="45"/>
+        <EditorIndex Value="5"/>
         <UsageCount Value="11"/>
+        <Loaded Value="True"/>
       </Unit20>
       <Unit21>
         <Filename Value="Classes\ULight.pas"/>
@@ -265,9 +271,7 @@
         <Filename Value="lib\JEDI-SDLv1.0\SDL\Pas\jedi-sdl.inc"/>
         <CursorPos X="4" Y="237"/>
         <TopLine Value="217"/>
-        <EditorIndex Value="3"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit32>
       <Unit33>
         <Filename Value="..\..\Modis\SDK\ModiSDK.pas"/>
@@ -384,50 +388,154 @@
       <Unit49>
         <Filename Value="Classes\Ulazjpeg.pas"/>
         <UnitName Value="Ulazjpeg"/>
-        <CursorPos X="14" Y="17"/>
-        <TopLine Value="1"/>
-        <EditorIndex Value="1"/>
-        <UsageCount Value="10"/>
+        <CursorPos X="31" Y="24"/>
+        <TopLine Value="4"/>
+        <EditorIndex Value="4"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit49>
+      <Unit50>
+        <Filename Value="Classes\TextGL.pas"/>
+        <UnitName Value="TextGL"/>
+        <CursorPos X="80" Y="76"/>
+        <TopLine Value="56"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="11"/>
+        <Bookmarks Count="1">
+          <Item0 X="1" Y="122" ID="1"/>
+        </Bookmarks>
+        <Loaded Value="True"/>
+      </Unit50>
+      <Unit51>
+        <Filename Value="UltraStar.lrs"/>
+        <CursorPos X="17" Y="1"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit51>
     </Units>
-    <JumpHistory Count="9" HistoryIndex="8">
+    <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="lib\JEDI-SDLv1.0\SDL\Pas\jedi-sdl.inc"/>
-        <Caret Line="237" Column="4" TopLine="217"/>
+        <Filename Value="UltraStar.lpr"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position1>
       <Position2>
-        <Filename Value="UltraStar.lpr"/>
-        <Caret Line="17" Column="1" TopLine="1"/>
+        <Filename Value="Classes\UFiles.pas"/>
+        <Caret Line="512" Column="1" TopLine="492"/>
       </Position2>
       <Position3>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="874" Column="52" TopLine="870"/>
+        <Filename Value="Classes\UFiles.pas"/>
+        <Caret Line="116" Column="19" TopLine="96"/>
       </Position3>
       <Position4>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="1" Column="1" TopLine="1"/>
+        <Filename Value="UltraStar.lpr"/>
+        <Caret Line="95" Column="24" TopLine="75"/>
       </Position4>
       <Position5>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="27" Column="11" TopLine="7"/>
+        <Filename Value="UltraStar.lpr"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position5>
       <Position6>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="25" Column="10" TopLine="7"/>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="14" Column="29" TopLine="1"/>
       </Position6>
       <Position7>
-        <Filename Value="Classes\UTexture.pas"/>
-        <Caret Line="27" Column="11" TopLine="5"/>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="104" Column="30" TopLine="85"/>
       </Position7>
       <Position8>
-        <Filename Value="Classes\Ulazjpeg.pas"/>
-        <Caret Line="24" Column="78" TopLine="1"/>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="303" Column="51" TopLine="283"/>
       </Position8>
       <Position9>
-        <Filename Value="Classes\Ulazjpeg.pas"/>
-        <Caret Line="126" Column="3" TopLine="87"/>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="133" Column="25" TopLine="105"/>
       </Position9>
+      <Position10>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="376" Column="1" TopLine="141"/>
+      </Position10>
+      <Position11>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position11>
+      <Position12>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="362" Column="33" TopLine="339"/>
+      </Position12>
+      <Position13>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position13>
+      <Position14>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="68" Column="30" TopLine="47"/>
+      </Position14>
+      <Position15>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position15>
+      <Position16>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="68" Column="30" TopLine="48"/>
+      </Position16>
+      <Position17>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="70" Column="31" TopLine="50"/>
+      </Position17>
+      <Position18>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="78" Column="28" TopLine="58"/>
+      </Position18>
+      <Position19>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="116" Column="29" TopLine="96"/>
+      </Position19>
+      <Position20>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="120" Column="29" TopLine="100"/>
+      </Position20>
+      <Position21>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="124" Column="29" TopLine="104"/>
+      </Position21>
+      <Position22>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="128" Column="29" TopLine="108"/>
+      </Position22>
+      <Position23>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="78" Column="1" TopLine="68"/>
+      </Position23>
+      <Position24>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="368" Column="1" TopLine="328"/>
+      </Position24>
+      <Position25>
+        <Filename Value="UltraStar.lrs"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position25>
+      <Position26>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="68" Column="31" TopLine="49"/>
+      </Position26>
+      <Position27>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="1" Column="1" TopLine="101"/>
+      </Position27>
+      <Position28>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="10" Column="5" TopLine="1"/>
+      </Position28>
+      <Position29>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="71" Column="52" TopLine="42"/>
+      </Position29>
+      <Position30>
+        <Filename Value="Classes\TextGL.pas"/>
+        <Caret Line="119" Column="34" TopLine="101"/>
+      </Position30>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>

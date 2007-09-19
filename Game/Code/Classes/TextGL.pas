@@ -59,13 +59,31 @@ var
 
 implementation
 
-uses UMain, Windows, SysUtils, UGraphic;
+uses UMain,
+     Windows,
+     SysUtils,
+     {$IFDEF FPC}
+     LResources,
+     {$ENDIF}
+     UGraphic;
 
 procedure BuildFont;			                // Build Our Bitmap Font
+
+  procedure loadfont( aID : integer; aType, aResourceName : String);
+  var
+    Rejestr:  TResourceStream;
+  begin
+    Rejestr := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
+    try
+      Rejestr.Read(Fonts[ aID ].Width, 256);
+    finally
+      Rejestr.Free;
+    end;
+  end;
+
 var
   font:     HFONT;              	          // Windows Font ID
   h_dc:     hdc;
-  Rejestr:  TResourceStream;
   Pet:      integer;
 begin
   ActFont := 0;
@@ -102,21 +120,21 @@ begin
   Fonts[4].Outline := 5;}
 
 
-  Rejestr := TResourceStream.Create(HInstance, 'Font', 'FNT');
-  Rejestr.Read(Fonts[0].Width, 256);
-  Rejestr.Free;
 
-  Rejestr := TResourceStream.Create(HInstance, 'FontB', 'FNT');
-  Rejestr.Read(Fonts[1].Width, 256);
-  Rejestr.Free;
+  {$IFDEF FPC}
+    loadfont( 0, 'DAT', 'eurostar_regular'   );
+    loadfont( 1, 'DAT', 'eurostar_regular_bold'  );
+    loadfont( 2, 'DAT', 'Outline 1'  );
+    loadfont( 3, 'DAT', 'Outline 2' );
+  {$ELSE}
+    loadfont( 0, 'FNT', 'Font'   );
+    loadfont( 1, 'FNT', 'FontB'  );
+    loadfont( 2, 'FNT', 'Font0'  );
+    loadfont( 3, 'FNT', 'FontO2' );
+  {$ENDIF}
 
-  Rejestr := TResourceStream.Create(HInstance, 'FontO', 'FNT');
-  Rejestr.Read(Fonts[2].Width, 256);
-  Rejestr.Free;
 
-  Rejestr := TResourceStream.Create(HInstance, 'FontO2', 'FNT');
-  Rejestr.Read(Fonts[3].Width, 256);
-  Rejestr.Free;
+
 
 {  Rejestr := TResourceStream.Create(HInstance, 'FontO', 'FNT');
   Rejestr.Read(Fonts[4].Width, 256);
@@ -351,4 +369,9 @@ begin
   Fonts[ActFont].AspectW := Aspect;
 end;
 
+initialization
+  {$I UltraStar.lrs}
+
 end.
+
+

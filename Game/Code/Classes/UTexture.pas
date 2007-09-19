@@ -21,11 +21,10 @@ uses OpenGL12,
      Math,
      Classes,
      SysUtils,
-     Graphics,
-
      {$IFDEF FPC}
-     lazjpeg,
+     ulazjpeg,
      {$ELSE}
+     Graphics,
      JPEG,
      PNGImage,
      {$ENDIF}

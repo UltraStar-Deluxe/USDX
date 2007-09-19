@@ -113,7 +113,7 @@ begin
   //Required Information
   Song.Mp3    := '';
   {$IFDEF FPC}
-  Song.BPM    := NULL;
+  setlength( Song.BPM, 0 );
   {$ELSE}
   Song.BPM    := 0;
   {$ENDIF}

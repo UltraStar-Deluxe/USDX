@@ -62,7 +62,7 @@ implementation
 
 uses
      {$IFDEF FPC}
-     lazjpeg,
+     ulazjpeg,
      {$ELSE}
      JPEG,
      {$ENDIF}

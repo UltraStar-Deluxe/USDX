@@ -4,9 +4,7 @@ program UltraStar;
 
 {$IFDEF FPC}
   {$MODE DELPHI}
-{$ENDIF}
-
-{$IFNDEF FPC}
+{$ELSE}
   {$R 'UltraStar.res' 'UltraStar.rc'}
 {$ENDIF}
 
@@ -209,7 +207,6 @@ begin
   Log.Enabled := Not Params.NoLog;
   Log.BenchmarkStart(0);
   
-{*
   // Language
   Log.BenchmarkStart(1);
   Log.LogStatus('Initialize Paths', 'Initialization');        InitializePaths;
@@ -384,6 +381,6 @@ begin
   //------------------------------
   if Ini.LPT = 1 then LCD.Clear;
   if Ini.LPT = 2 then Light.TurnOff;
-*}
+
   Log.Free;
 end.
