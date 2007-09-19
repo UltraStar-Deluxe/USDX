@@ -131,7 +131,7 @@ begin
   {$ELSE}
     loadfont( 0, 'FNT', 'Font'   );
     loadfont( 1, 'FNT', 'FontB'  );
-    loadfont( 2, 'FNT', 'Font0'  );
+    loadfont( 2, 'FNT', 'FontO'  );
     loadfont( 3, 'FNT', 'FontO2' );
   {$ENDIF}
 
