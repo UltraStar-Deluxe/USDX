@@ -321,6 +321,10 @@ var
 begin
   {$IFNDEF FPC} // TODO : JB eeeew this is a nasty one...
                 // but lazarus implementation scanlines is different :(
+                // need to implement as per
+                //    http://www.lazarus.freepascal.org/index.php?name=PNphpBB2&file=viewtopic&p=18512
+                //    http://www.lazarus.freepascal.org/index.php?name=PNphpBB2&file=viewtopic&p=10797
+                //    http://wiki.lazarus.freepascal.org/Developing_with_Graphics
   Log.BenchmarkStart(4);
   Mipmapping := true;
 
@@ -344,36 +348,46 @@ begin
   if FromRegistry or ((not FromRegistry) and FileExists(Identifier)) then begin
     TextureB := TBitmap.Create;
 
-  if Format = 'BMP' then begin
-    if FromRegistry then TextureB.LoadFromStream(Res)
-    else TextureB.LoadFromFile(Identifier);
+  if Format = 'BMP' then
+  begin
+    if FromRegistry then
+       TextureB.LoadFromStream(Res)
+    else
+       TextureB.LoadFromFile(Identifier);
   end
-
-  else if Format = 'JPG' then begin
+  else
+  if Format = 'JPG' then
+  begin
     TextureJ := TJPEGImage.Create;
-    if FromRegistry then TextureJ.LoadFromStream(Res)
-    else begin
+    
+    if FromRegistry then
+       TextureJ.LoadFromStream(Res)
+    else
+    begin
       if FileExists(Identifier) then
         TextureJ.LoadFromFile(Identifier)
       else
         Exit;
     end;
+    
     TextureB.Assign(TextureJ);
     TextureJ.Free;
   end
-
   else if Format = 'PNG' then
   begin
     {$IFNDEF FPC}
     // TODO : JB - fix this for lazarus..
     TexturePNG := TPNGObject.Create;
-    if FromRegistry then TexturePNG.LoadFromStream(Res)
-    else begin
+    if FromRegistry then
+      TexturePNG.LoadFromStream(Res)
+    else
+    begin
       if FileExists(Identifier) then
         TexturePNG.LoadFromFile(Identifier)
       else
         Exit;
     end;
+    
     TextureB.Assign(TexturePNG);
     // transparent png hack start (part 1 of 2)
     if ((Typ = 'Transparent') or (Typ = 'Colorized')) and (TexturePNG.TransparencyMode = ptmPartial) then
