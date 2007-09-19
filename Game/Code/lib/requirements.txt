@@ -24,3 +24,16 @@ ffmpeg
 
 SQLLite Wrapper
   http://www.itwriting.com/sqlitesimple.php
+
+======================================
+For LINUX build
+======================================
+On top of the above pas files, you will need development libraries for them.
+
+here are the instructions needed to compile on ubunty ( 7.04 )
+
+ffmpeg :
+  sudo apt-get install libavcodec-dev libavformat-dev
+
+sqlite :
+  sudo apt-get install libsqlite3-dev

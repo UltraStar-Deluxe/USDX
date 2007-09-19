@@ -22,7 +22,12 @@ interface
 {$ENDIF}
 
 uses
-  Windows, SQLite3, Classes, SysUtils;
+  {$ifdef win32}
+  Windows,
+  {$endif}
+  SQLite3,
+  Classes,
+  SysUtils;
 
 const
 

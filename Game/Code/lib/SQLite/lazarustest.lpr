@@ -15,6 +15,8 @@ var
   Notes    : String;
 
 begin
+  // needed for linux build.
+
   slDBPath := ExtractFilepath( paramstr(0) ) + 'test.db';
   sldb     := TSQLiteDatabase.Create(slDBPath);
   
