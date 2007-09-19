@@ -73,12 +73,14 @@ procedure BuildFont;			                // Build Our Bitmap Font
   var
     Rejestr:  TResourceStream;
   begin
+    {$IFNDEF FPC}
     Rejestr := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
     try
       Rejestr.Read(Fonts[ aID ].Width, 256);
     finally
       Rejestr.Free;
     end;
+    {$ENDIF}
   end;
 
 var

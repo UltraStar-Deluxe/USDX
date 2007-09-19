@@ -870,10 +870,10 @@ begin
   Result.TexW := TexOrigW / TexNewW;
   Result.TexH := TexOrigH / TexNewH;
 
-  Result.Int := 1;
-  Result.ColR := 1;
-  Result.ColG := 1;
-  Result.ColB := 1;
+  Result.Int   := 1;
+  Result.ColR  := 1;
+  Result.ColG  := 1;
+  Result.ColB  := 1;
   Result.Alpha := 1;
 
   // 0.4.2 new test - default use whole texure, taking TexW and TexH as const and changing these
