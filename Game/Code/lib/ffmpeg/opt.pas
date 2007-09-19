@@ -21,7 +21,10 @@ unit opt;
 interface
 
 uses
-  windows, rational;
+  {$IFDEF win32}
+  windows,
+  {$ENDIF}
+  rational;
 
 type
   TAVOptionType = (
@@ -36,7 +39,12 @@ type
   );
 
 const
-  av__codec = 'avcodec-51.dll';
+
+  {$IFDEF win32}
+    av__codec = 'avcodec-51.dll';
+  {$ELSE}
+    av__codec = 'avcodec.so'; // .0d
+  {$ENDIF}
 
   AV_OPT_FLAG_ENCODING_PARAM  = 1;   ///< a generic parameter which can be set by the user for muxing or encoding
   AV_OPT_FLAG_DECODING_PARAM  = 2;   ///< a generic parameter which can be set by the user for demuxing or decoding

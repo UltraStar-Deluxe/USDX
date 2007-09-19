@@ -22,7 +22,11 @@ interface
 
 
 const
-  av__util = 'avutil-49.dll';
+  {$IFDEF win32}
+    av__util = 'avutil-49.dll';
+  {$ELSE}
+    av__util = 'libavutil.so';   // .0d
+  {$ENDIF}
 
   LIBAVUTIL_VERSION_INT   =  ((49 shl 16) + (0 shl 8) + 1);
   LIBAVUTIL_VERSION       = '49.0.1';

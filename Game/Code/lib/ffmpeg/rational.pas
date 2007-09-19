@@ -20,11 +20,19 @@ unit rational;
 
 interface
 
+{$IFDEF win32}
 uses
   windows;
+{$endif}
 
 const
-  av__util = 'avutil-49.dll';
+
+  {$IFDEF win32}
+    av__util = 'avutil-49.dll';
+  {$ELSE}
+    av__util = 'libavutil.so';  // .0d
+  {$ENDIF}
+
 
 type
 

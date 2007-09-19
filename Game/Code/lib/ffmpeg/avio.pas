@@ -20,11 +20,17 @@ unit avio;
 
 interface
 
+{$IFDEF win32}
 uses
   windows;
+{$ENDIF}
 
 const
-  av__format = 'avformat-50.dll';
+  {$IFDEF win32}
+    av__format = 'avformat-50.dll';
+  {$ELSE}
+    av__format = 'libavformat.so';   // .0d
+  {$ENDIF}
 
   URL_RDONLY = 0;
   URL_WRONLY = 1;

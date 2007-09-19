@@ -20,10 +20,20 @@ unit avcodec;
 interface
 
 uses
-  windows, avutil, rational, opt;
+  {$IFDEF win32}
+  windows,
+  {$ENDIF}
+  avutil,
+  rational,
+  opt;
 
 const
-  av__format = 'avformat-50.dll';
+  {$IFDEF win32}
+    av__format = 'avformat-50.dll';
+  {$ELSE}
+    av__format = 'libavformat.so';   // .0d
+  {$ENDIF}
+
 
   LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (16 shl 8) + 0);
   LIBAVUTIL_VERSION       = '51.16.0';

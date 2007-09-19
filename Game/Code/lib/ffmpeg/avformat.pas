@@ -24,10 +24,21 @@ interface
 {$ENDIF}
 
 uses
-  windows, avcodec, avio, rational, avutil;
+  {$IFDEF win32}
+  windows,
+  {$ENDIF}
+  avcodec,
+  avio,
+  rational,
+  avutil;
 
 const
-  av__format = 'avformat-50.dll';
+  {$IFDEF win32}
+    av__format = 'avformat-50.dll';
+  {$ELSE}
+    av__format = 'libavformat.so';   // .0d
+    av__codec   = 'libavcodec.so';
+  {$ENDIF}
 
   LIBAVUTIL_VERSION_INT   =  ((49 shl 16) + (0 shl 8) + 1);
   LIBAVUTIL_VERSION       = '49.0.1';
@@ -342,6 +353,10 @@ type
     flags: integer;
     next: PAVImageFormat;
   end;
+  
+  {$IFNDEF win32}
+  HFILE = THandle;
+  {$ENDIF}
 
 procedure av_destruct_packet_nofree (pkt: PAVPacket);
   cdecl; external av__format;
@@ -393,29 +408,15 @@ function av_write_image(pb: PByteIOContext; fmt: PAVImageFormat; img: PAVImageIn
 //#include "rtsp.h"
 
 (* utils.c *)
-  procedure av_register_input_format (format: PAVInputFormat);
-    cdecl; external av__format;
-
-  procedure av_register_output_format (format: PAVOutputFormat);
-    cdecl; external av__format;
-
-  function guess_stream_format (short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat;
-    cdecl; external av__format;
-
-  function guess_format(short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat;
-    cdecl; external av__format;
-
+  procedure av_register_input_format (format: PAVInputFormat); cdecl; external av__format;
+  procedure av_register_output_format (format: PAVOutputFormat); cdecl; external av__format;
+  function guess_stream_format (short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat; cdecl; external av__format;
+  function guess_format(short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat; cdecl; external av__format;
   function av_guess_codec(fmt: PAVOutputFormat; short_name: pchar;
-                          filename: pchar; mime_type: pchar; _type: TCodecType): TCodecID;
-    cdecl; external av__format;
-
-  procedure av_hex_dump (f: HFILE; buf: pchar; size: integer);
-    cdecl; external av__format;
-  procedure av_pkt_dump(f: HFILE; pkt: pAVPacket; dump_payload: integer);
-    cdecl; external av__format;
-
-  procedure av_register_all ();
-    cdecl; external av__format;
+                          filename: pchar; mime_type: pchar; _type: TCodecType): TCodecID; cdecl; external av__format;
+  procedure av_hex_dump (f: HFILE; buf: pchar; size: integer); cdecl; external av__format;
+  procedure av_pkt_dump(f: HFILE; pkt: pAVPacket; dump_payload: integer); cdecl; external av__format;
+  procedure av_register_all (); cdecl; external av__format;
 
 
 (* media file input *)
