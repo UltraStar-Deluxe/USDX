@@ -371,8 +371,10 @@ begin
   Fonts[ActFont].AspectW := Aspect;
 end;
 
+{$IFDEF FPC}
 initialization
   {$I UltraStar.lrs}
+{$ENDIF}
 
 end.
 
