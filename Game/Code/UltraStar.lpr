@@ -6,7 +6,9 @@ program UltraStar;
   {$MODE DELPHI}
 {$ENDIF}
 
-{$R 'UltraStar.res' 'UltraStar.rc'}
+{$IFNDEF FPC}
+  {$R 'UltraStar.res' 'UltraStar.rc'}
+{$ENDIF}
 
 {$I switches.inc}
 
@@ -61,6 +63,10 @@ uses
   //------------------------------
   //Includes - Classes
   //------------------------------
+  
+  {$IFDEF FPC}
+  Ulazjpeg      in 'Classes\Ulazjpeg.pas',
+  {$ENDIF}
   
   UCommon       in 'Classes\UCommon.pas',
   UTime         in 'Classes\UTime.pas',

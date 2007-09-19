@@ -12,7 +12,7 @@
       <MainUnit Value="0"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="9"/>
+      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
@@ -31,22 +31,14 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <RequiredPackages Count="2">
-      <Item1>
-        <PackageName Value="ImagesForLazarus"/>
-      </Item1>
-      <Item2>
-        <PackageName Value="JPEGForLazarus"/>
-      </Item2>
-    </RequiredPackages>
-    <Units Count="49">
+    <Units Count="50">
       <Unit0>
         <Filename Value="UltraStar.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="1" Y="1"/>
-        <TopLine Value="1"/>
+        <CursorPos X="27" Y="68"/>
+        <TopLine Value="55"/>
         <EditorIndex Value="0"/>
-        <UsageCount Value="67"/>
+        <UsageCount Value="68"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
@@ -59,48 +51,42 @@
       <Unit2>
         <Filename Value="Classes\UTexture.pas"/>
         <UnitName Value="UTexture"/>
-        <CursorPos X="52" Y="874"/>
-        <TopLine Value="870"/>
-        <UsageCount Value="10"/>
+        <CursorPos X="1" Y="27"/>
+        <TopLine Value="7"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="11"/>
         <Bookmarks Count="1">
           <Item0 X="29" Y="203" ID="1"/>
         </Bookmarks>
+        <Loaded Value="True"/>
       </Unit2>
       <Unit3>
         <Filename Value="Classes\UCommandLine.pas"/>
         <UnitName Value="UCommandLine"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="24"/>
         <UsageCount Value="34"/>
-        <Loaded Value="True"/>
       </Unit3>
       <Unit4>
         <Filename Value="Classes\UIni.pas"/>
         <UnitName Value="UIni"/>
         <CursorPos X="9" Y="7"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="13"/>
         <UsageCount Value="34"/>
-        <Loaded Value="True"/>
       </Unit4>
       <Unit5>
         <Filename Value="Classes\ULog.pas"/>
         <UnitName Value="ULog"/>
         <CursorPos X="9" Y="7"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="8"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit5>
       <Unit6>
         <Filename Value="Classes\UFiles.pas"/>
         <UnitName Value="UFiles"/>
         <CursorPos X="1" Y="512"/>
         <TopLine Value="492"/>
-        <EditorIndex Value="5"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit6>
       <Unit7>
         <Filename Value="Classes\USongs.pas"/>
@@ -120,45 +106,35 @@
         <UnitName Value="UMain"/>
         <CursorPos X="5" Y="9"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="10"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit9>
       <Unit10>
         <Filename Value="Classes\UGraphic.pas"/>
         <UnitName Value="UGraphic"/>
         <CursorPos X="3" Y="56"/>
         <TopLine Value="19"/>
-        <EditorIndex Value="25"/>
         <UsageCount Value="34"/>
-        <Loaded Value="True"/>
       </Unit10>
       <Unit11>
         <Filename Value="Classes\UThemes.pas"/>
         <UnitName Value="UThemes"/>
-        <CursorPos X="37" Y="165"/>
-        <TopLine Value="139"/>
-        <EditorIndex Value="9"/>
+        <CursorPos X="29" Y="1746"/>
+        <TopLine Value="1691"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit11>
       <Unit12>
         <Filename Value="Classes\UCovers.pas"/>
         <UnitName Value="UCovers"/>
         <CursorPos X="12" Y="7"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="3"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit12>
       <Unit13>
         <Filename Value="Classes\UMusic.pas"/>
         <UnitName Value="UMusic"/>
         <CursorPos X="46" Y="219"/>
         <TopLine Value="198"/>
-        <EditorIndex Value="7"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit13>
       <Unit14>
         <Filename Value="Classes\ULyrics.pas"/>
@@ -179,9 +155,7 @@
         <UnitName Value="UMenu"/>
         <CursorPos X="1" Y="8"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="12"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit16>
       <Unit17>
         <Filename Value="Menu\UMenuText.pas"/>
@@ -202,18 +176,14 @@
         <UnitName Value="UScreenMain"/>
         <CursorPos X="3" Y="14"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="21"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit19>
       <Unit20>
         <Filename Value="Menu\UDisplay.pas"/>
         <UnitName Value="UDisplay"/>
         <CursorPos X="29" Y="410"/>
         <TopLine Value="390"/>
-        <EditorIndex Value="6"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit20>
       <Unit21>
         <Filename Value="Classes\ULight.pas"/>
@@ -227,36 +197,28 @@
         <UnitName Value="UScreenSing"/>
         <CursorPos X="40" Y="21"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="19"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
       </Unit22>
       <Unit23>
         <Filename Value="Classes\UVideo.pas"/>
         <UnitName Value="UVideo"/>
         <CursorPos X="1" Y="8"/>
         <TopLine Value="2"/>
-        <EditorIndex Value="20"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
       </Unit23>
       <Unit24>
         <Filename Value="Screens\UScreenScore.pas"/>
         <UnitName Value="UScreenScore"/>
         <CursorPos X="9" Y="7"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="18"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
       </Unit24>
       <Unit25>
         <Filename Value="Screens\UScreenEditSub.pas"/>
         <UnitName Value="UScreenEditSub"/>
         <CursorPos X="11" Y="1339"/>
         <TopLine Value="1330"/>
-        <EditorIndex Value="16"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
       </Unit25>
       <Unit26>
         <Filename Value="switches.inc"/>
@@ -269,51 +231,41 @@
         <UnitName Value="MidiOut"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="2"/>
-        <UsageCount Value="11"/>
-        <Loaded Value="True"/>
+        <UsageCount Value="10"/>
       </Unit27>
       <Unit28>
         <Filename Value="Screens\UScreenEditConvert.pas"/>
         <UnitName Value="UScreenEditConvert"/>
         <CursorPos X="23" Y="563"/>
         <TopLine Value="537"/>
-        <EditorIndex Value="15"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit28>
       <Unit29>
         <Filename Value="Screens\UScreenSingModi.pas"/>
         <UnitName Value="UScreenSingModi"/>
         <CursorPos X="6" Y="26"/>
         <TopLine Value="6"/>
-        <EditorIndex Value="23"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit29>
       <Unit30>
         <Filename Value="Screens\UScreenCredits.pas"/>
         <UnitName Value="UScreenCredits"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="28"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit30>
       <Unit31>
         <Filename Value="Classes\URecord.pas"/>
         <UnitName Value="URecord"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="36"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit31>
       <Unit32>
         <Filename Value="lib\JEDI-SDLv1.0\SDL\Pas\jedi-sdl.inc"/>
         <CursorPos X="4" Y="237"/>
         <TopLine Value="217"/>
-        <EditorIndex Value="11"/>
+        <EditorIndex Value="3"/>
         <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit32>
@@ -322,117 +274,91 @@
         <UnitName Value="ModiSDK"/>
         <CursorPos X="41" Y="8"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="22"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit33>
       <Unit34>
         <Filename Value="Classes\UDLLManager.pas"/>
         <UnitName Value="UDLLManager"/>
         <CursorPos X="12" Y="5"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="26"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit34>
       <Unit35>
         <Filename Value="Classes\UPlaylist.pas"/>
         <UnitName Value="UPlaylist"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="27"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit35>
       <Unit36>
         <Filename Value="Classes\UDataBase.pas"/>
         <UnitName Value="UDataBase"/>
         <CursorPos X="1" Y="8"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="35"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit36>
       <Unit37>
         <Filename Value="Screens\UScreenStatMain.pas"/>
         <UnitName Value="UScreenStatMain"/>
         <CursorPos X="1" Y="8"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="29"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit37>
       <Unit38>
         <Filename Value="Screens\UScreenPartyOptions.pas"/>
         <UnitName Value="UScreenPartyOptions"/>
         <CursorPos X="42" Y="233"/>
         <TopLine Value="213"/>
-        <EditorIndex Value="30"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit38>
       <Unit39>
         <Filename Value="Screens\UScreenPartyNewRound.pas"/>
         <UnitName Value="UScreenPartyNewRound"/>
         <CursorPos X="5" Y="422"/>
         <TopLine Value="382"/>
-        <EditorIndex Value="31"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit39>
       <Unit40>
         <Filename Value="Classes\UParty.pas"/>
         <UnitName Value="UParty"/>
         <CursorPos X="1" Y="8"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="32"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit40>
       <Unit41>
         <Filename Value="Classes\UDraw.pas"/>
         <UnitName Value="UDraw"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="33"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit41>
       <Unit42>
         <Filename Value="Screens\UScreenSongMenu.pas"/>
         <UnitName Value="UScreenSongMenu"/>
         <CursorPos X="1" Y="5"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="14"/>
         <UsageCount Value="33"/>
-        <Loaded Value="True"/>
       </Unit42>
       <Unit43>
         <Filename Value="Screens\UScreenTop5.pas"/>
         <UnitName Value="UScreenTop5"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="17"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
       </Unit43>
       <Unit44>
         <Filename Value="Classes\UGraphicClasses.pas"/>
         <UnitName Value="UGraphicClasses"/>
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
-        <EditorIndex Value="34"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
       </Unit44>
       <Unit45>
         <Filename Value="Screens\UScreenSong.pas"/>
         <UnitName Value="UScreenSong"/>
         <CursorPos X="13" Y="1162"/>
         <TopLine Value="1135"/>
-        <EditorIndex Value="4"/>
         <UsageCount Value="11"/>
-        <Loaded Value="True"/>
       </Unit45>
       <Unit46>
         <Filename Value="lib\midi\DELPHMCB.PAS"/>
@@ -446,9 +372,7 @@
         <UnitName Value="UCommon"/>
         <CursorPos X="55" Y="22"/>
         <TopLine Value="7"/>
-        <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit47>
       <Unit48>
         <Filename Value="..\..\..\..\..\lazarus\fpc\2.0.4\source\rtl\objpas\math.pp"/>
@@ -457,8 +381,54 @@
         <TopLine Value="1036"/>
         <UsageCount Value="10"/>
       </Unit48>
+      <Unit49>
+        <Filename Value="Classes\Ulazjpeg.pas"/>
+        <UnitName Value="Ulazjpeg"/>
+        <CursorPos X="14" Y="17"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit49>
     </Units>
-    <JumpHistory Count="0" HistoryIndex="-1"/>
+    <JumpHistory Count="9" HistoryIndex="8">
+      <Position1>
+        <Filename Value="lib\JEDI-SDLv1.0\SDL\Pas\jedi-sdl.inc"/>
+        <Caret Line="237" Column="4" TopLine="217"/>
+      </Position1>
+      <Position2>
+        <Filename Value="UltraStar.lpr"/>
+        <Caret Line="17" Column="1" TopLine="1"/>
+      </Position2>
+      <Position3>
+        <Filename Value="Classes\UTexture.pas"/>
+        <Caret Line="874" Column="52" TopLine="870"/>
+      </Position3>
+      <Position4>
+        <Filename Value="Classes\UTexture.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="Classes\UTexture.pas"/>
+        <Caret Line="27" Column="11" TopLine="7"/>
+      </Position5>
+      <Position6>
+        <Filename Value="Classes\UTexture.pas"/>
+        <Caret Line="25" Column="10" TopLine="7"/>
+      </Position6>
+      <Position7>
+        <Filename Value="Classes\UTexture.pas"/>
+        <Caret Line="27" Column="11" TopLine="5"/>
+      </Position7>
+      <Position8>
+        <Filename Value="Classes\Ulazjpeg.pas"/>
+        <Caret Line="24" Column="78" TopLine="1"/>
+      </Position8>
+      <Position9>
+        <Filename Value="Classes\Ulazjpeg.pas"/>
+        <Caret Line="126" Column="3" TopLine="87"/>
+      </Position9>
+    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
@@ -471,6 +441,7 @@
     </CodeGeneration>
     <Other>
       <CompilerPath Value="$(CompPath)"/>
+      <CreateMakefileOnBuild Value="True"/>
     </Other>
   </CompilerOptions>
   <Debugging>
