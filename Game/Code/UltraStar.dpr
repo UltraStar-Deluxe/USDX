@@ -60,6 +60,7 @@ uses
   //------------------------------
   //Includes - Classes
   //------------------------------
+  UCommon in 'Classes\UCommon.pas',  
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',

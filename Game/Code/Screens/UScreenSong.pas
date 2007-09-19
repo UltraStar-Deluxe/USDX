@@ -1078,7 +1078,8 @@ begin
   end;
 end;
 
-{procedure TScreenSong.SetScroll4; // rotate
+(*
+procedure TScreenSong.SetScroll4; // rotate
 var
   B:      integer;
   Wsp:    real;
@@ -1158,7 +1159,7 @@ begin
       else Button[B].Visible := False;
     end;
   end;
-end;      }
+end;      *)
 
 procedure TScreenSong.SetScroll5; // rotate
 var

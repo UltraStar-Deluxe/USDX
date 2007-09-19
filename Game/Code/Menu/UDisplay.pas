@@ -2,7 +2,15 @@ unit UDisplay;
 
 interface
 
-uses Windows, SDL, UMenu, OpenGL12, SysUtils;
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+uses Windows,
+     SDL,
+     UMenu,
+     OpenGL12,
+     SysUtils;
 
 type
   TDisplay = class
@@ -53,10 +61,12 @@ var
 implementation
 
 uses
-     {$IFNDEF FPC}
-     Graphics,
+     {$IFDEF FPC}
+     lazjpeg,
+     {$ELSE}
      JPEG,
      {$ENDIF}
+     graphics,
      TextGL,
      // UFiles,
      UMain,
@@ -320,8 +330,8 @@ begin
   end;
 
   glReadPixels(0, 0, ScreenW, ScreenH, GL_RGBA, GL_UNSIGNED_BYTE, @PrintScreenData[0]);
-  Bitmap := TBitmap.Create;
-  Bitmap.Width := ScreenW;
+  Bitmap        := TBitmap.Create;
+  Bitmap.Width  := ScreenW;
   Bitmap.Height := ScreenH;
 
   for Y := 0 to ScreenH-1 do

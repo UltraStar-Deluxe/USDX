@@ -2,6 +2,11 @@ unit UScreenSing;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, ULyrics,
   TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses, UVideo;
 
@@ -364,8 +369,9 @@ begin
 
   // set movie
   if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then begin
-{    OpenSmpeg(AktSong.Path + AktSong.Video);
-    SkipSmpeg(AktSong.VideoGAP + AktSong.Start);}
+(*    OpenSmpeg(AktSong.Path + AktSong.Video);
+    SkipSmpeg(AktSong.VideoGAP + AktSong.Start);*)
+    
     // todo: VideoGap and Start time verwursten
     FFmpegOpenFile(pAnsiChar(AktSong.Path + AktSong.Video));
     FFmpegSkip(AktSong.VideoGAP + AktSong.Start);

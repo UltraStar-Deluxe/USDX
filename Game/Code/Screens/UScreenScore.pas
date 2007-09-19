@@ -2,6 +2,10 @@ unit UScreenScore;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses
   UMenu,
   SDL,
@@ -274,7 +278,7 @@ begin
 
     Text[TextName[PP]].Text := Ini.Name[P];
 
-    {{$IFDEF TRANSLATE}
+    //{$IFDEF TRANSLATE}
     case (Player[P].ScoreTotalI) of
       0..2000:        Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
       2010..4000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_AMATEUR');
@@ -284,7 +288,7 @@ begin
       9010..9800:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_SUPERSTAR');
       9810..10000:    Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_ULTRASTAR');
     end;
-    {{$ELSE}{
+    (* {$ELSE}{
     case (Player[P].ScoreTotalI) of
       0..2000:        Text[TextScore[PP]].Text := 'Tone Deaf';
       2010..4000:     Text[TextScore[PP]].Text := 'Amateur';
@@ -294,7 +298,7 @@ begin
       9010..9800:     Text[TextScore[PP]].Text := 'Superstar';
       9810..10000:    Text[TextScore[PP]].Text := 'Ultrastar';
     end;
-    {$ENDIF}
+    {$ENDIF} *)
 
     S := IntToStr(Player[P].ScoreI);
     while (Length(S)<4) do S := '0' + S;
@@ -313,10 +317,12 @@ begin
     Text[TextTotalScore[PP]].Text := S;
 
     // Level bar length
-{    Lev := ((Round(Player[P].Punkty) div 10) * 10) / 10000;
+(*
+    Lev := ((Round(Player[P].Punkty) div 10) * 10) / 10000;
     Static[StaticLevel[PP]].Texture.H := Round(Static[StaticBackLevel[PP]].Texture.H * Lev);
     Static[StaticLevel[PP]].Texture.Y := Static[StaticBackLevel[PP]].Texture.Y + Static[StaticBackLevel[PP]].Texture.H  - Static[StaticLevel[PP]].Texture.H;
     Static[StaticLevelRound[PP]].Texture.Y := Static[StaticLevel[PP]].Texture.Y - Static[StaticLevelRound[PP]].Texture.H;}
+*)
     // doesn't align too much... (to fix)
     // hint: play with wrapping textures
     // resolution: setting TexY1 and TexY2 to 0.1 and 0.9

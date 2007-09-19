@@ -104,24 +104,16 @@ const
 
 implementation
 
-uses // Dialogs,
-     Windows,
+uses Windows,
      UGraphic,
      UMain,
      UIni,
      USongs,
      Textgl,
-//     opengl,
      ULanguage,
+     UCommon,
      Math;
      
-{$IFDEF FPC}
-// TODO : JB - move this to a lazarus common file for ultrastar
-function RandomRange(aMin: Integer; aMax: Integer) : Integer;
-begin
-RandomRange := Random(aMax-aMin) + aMin ;
-end;
-{$ENDIF}
 
 function TScreenCredits.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin

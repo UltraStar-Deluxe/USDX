@@ -2,6 +2,10 @@ unit ULog;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses Classes;
 
 type

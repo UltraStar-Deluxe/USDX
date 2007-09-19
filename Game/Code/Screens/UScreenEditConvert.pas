@@ -2,6 +2,10 @@ unit UScreenEditConvert;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses UMenu,
@@ -353,11 +357,13 @@ begin
     if ((ATrack[T].Status div 1) and 1) = 1 then Inc(Result);
 end;
 
+{$IFDEF UseMIDIPort}
 procedure TScreenEditConvert.MidiFile1MidiEvent(event: PMidiEvent);
 begin
 //  Log.LogStatus(IntToStr(event.event), 'MIDI');
   MidiOut.PutShort(event.event, event.data1, event.data2);
 end;
+{$ENDIF}
 
 constructor TScreenEditConvert.Create;
 var
@@ -407,6 +413,7 @@ var
   C:    integer; // channel
   CN:   integer; // channel note
 begin
+{$IFDEF UseMIDIPort}
   MidiOut := TMidiOutput.Create(nil);
   if Ini.Debug = 1 then
     MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
@@ -486,6 +493,7 @@ begin
   end;
 
   Interaction := 0;
+{$ENDIF}
 end;
 
 function TScreenEditConvert.Draw: boolean;
@@ -552,7 +560,9 @@ begin
     end;
 
   // playing line
-  X := 60+MidiFile.GetCurrentTime/MidiFile.GetTrackLength*730;
+  {$IFDEF UseMIDIPort}
+  X := 60 + MidiFile.GetCurrentTime/MidiFile.GetTrackLength*730;
+  {$ENDIF}
   DrawLine(X, Y, X, Bottom, 0.3, 0.3, 0.3);
 
 
@@ -560,8 +570,10 @@ end;
 
 procedure TScreenEditConvert.onHide;
 begin
+{$IFDEF UseMIDIPort}
   MidiOut.Close;
   MidiOut.Free;
+{$ENDIF}
 end;
 
 end.

@@ -3,6 +3,7 @@ unit UGraphicClasses;
 
 interface
 uses UTexture;
+
 const  DelayBetweenFrames : Cardinal = 60;
 type
 
@@ -79,7 +80,18 @@ type
 var GoldenRec : TEffectManager;
 
 implementation
-uses sysutils, Windows,OpenGl12, UIni, UMain, UThemes, USkins, UGraphic, UDrawTexture, math, dialogs;
+
+uses  sysutils,
+      Windows,
+      OpenGl12,
+      UIni,
+      UMain,
+      UThemes,
+      USkins,
+      UGraphic,
+      UDrawTexture,
+      UCommon,
+      math;
 
 //TParticle
 Constructor TParticle.Create(cX,cY: Real; cScreen: Integer; cLive: Byte; cFrame : integer; cRecArrayIndex : Integer; cStarType : TParticleType; Player: Cardinal);

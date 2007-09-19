@@ -2,6 +2,11 @@ unit UMusic;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+
 uses Classes,
      Windows,
      Messages,
@@ -180,7 +185,14 @@ const
   ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
 
 implementation
-uses UGraphic, URecord, UFiles, UIni, UMain, UThemes;
+
+uses UCommon,
+     UGraphic,
+     URecord,
+     UFiles,
+     UIni,
+     UMain,
+     UThemes;
 
 procedure InitializeSound;
 begin
@@ -195,12 +207,18 @@ var
 begin
   Log.BenchmarkStart(4);
   Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
-  Loaded := false;
-  Loop := false;
-  fHWND := AllocateHWND( nil);
 
-  if not BASS_Init(1, 44100, 0, fHWND, nil) then begin
+  Loaded := false;
+  Loop   := false;
+
+  fHWND  := AllocateHWND( nil); // TODO : JB - can we do something different here ?? lazarus didnt like this function
+
+  if not BASS_Init(1, 44100, 0, fHWND, nil) then
+  begin
+    {$IFNDEF FPC}
+    // TODO : JB find a way to do this nice..
     Application.MessageBox ('Could not initialize BASS', 'Error');
+    {$ENDIF}
     Exit;
   end;
 

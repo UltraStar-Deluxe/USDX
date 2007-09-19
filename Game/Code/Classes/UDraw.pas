@@ -9,7 +9,6 @@ interface
 uses UThemes,
      ModiSDK,
      UGraphicClasses;
-     // dialogs;
 
 procedure SingDraw;
 procedure SingModiDraw (PlayerInfo: TPlayerInfo);

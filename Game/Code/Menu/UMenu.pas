@@ -154,7 +154,12 @@ const
 
 implementation
 
-uses UMain, UDrawTexture, UGraphic, UDisplay, UCovers, USkins, Dialogs;
+uses UMain,
+     UDrawTexture,
+     UGraphic,
+     UDisplay,
+     UCovers,
+     USkins;
 
 destructor TMenu.Destroy;
 begin

@@ -2,6 +2,10 @@ unit UFiles;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses SysUtils,
      ULog,
      UMusic,
@@ -108,7 +112,12 @@ begin
 
   //Required Information
   Song.Mp3    := '';
+  {$IFDEF FPC}
+  Song.BPM    := NULL;
+  {$ELSE}
   Song.BPM    := 0;
+  {$ENDIF}
+
   Song.GAP    := 0;
   Song.Start  := 0;
   Song.Finish := 0;

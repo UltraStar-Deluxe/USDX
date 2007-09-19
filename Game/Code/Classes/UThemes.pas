@@ -7,7 +7,9 @@ interface
 {$ENDIF}
 
 uses
-IniFiles, SysUtils, Classes;
+    IniFiles,
+    SysUtils,
+    Classes;
 
 type
   TRGB = record
@@ -739,7 +741,8 @@ uses
 {{$IFDEF TRANSLATE}
  ULanguage,
 {{$ENDIF}
-USkins, UIni, Dialogs;
+  USkins,
+  UIni;
 
 constructor TTheme.Create(FileName: string);
 begin

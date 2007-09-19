@@ -61,14 +61,16 @@ uses
   //------------------------------
   //Includes - Classes
   //------------------------------
+  
+  UCommon       in 'Classes\UCommon.pas',
   UTime         in 'Classes\UTime.pas',
   UCommandLine  in 'Classes\UCommandLine.pas',
   ULog          in 'Classes\ULog.pas',
 
   UMain         in 'Classes\UMain.pas',
   
-  UIni in 'Classes\UIni.pas',
-  UTexture in 'Classes\UTexture.pas',
+  UIni          in 'Classes\UIni.pas',
+  UTexture      in 'Classes\UTexture.pas',
 
   UGraphic in 'Classes\UGraphic.pas',
   UMusic in 'Classes\UMusic.pas',

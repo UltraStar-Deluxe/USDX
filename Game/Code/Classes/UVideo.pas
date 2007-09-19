@@ -5,10 +5,6 @@
 #   based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)  #
 #############################################################################}
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
 //{$define DebugDisplay}  // uncomment if u want to see the debug stuff
 {$define DebugFrames}
 {$define Info}
@@ -17,6 +13,11 @@
 unit UVideo;
 
 interface
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 
 uses SDL,
      UGraphicClasses,

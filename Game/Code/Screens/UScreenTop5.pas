@@ -2,6 +2,11 @@ unit UScreenTop5;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 uses
   UMenu, SDL, SysUtils, UDisplay, UMusic, USongs, UThemes, ULCD;
 
@@ -131,7 +136,7 @@ function TScreenTop5.Draw: boolean;
   C:      integer;}
 begin
   // Singstar - let it be...... with 6 statics
-{  if PlayersPlay = 6 then begin
+(*  if PlayersPlay = 6 then begin
     for Item := 4 to 6 do begin
       if ScreenAct = 1 then P := Item-4;
       if ScreenAct = 2 then P := Item-1;
@@ -152,10 +157,10 @@ begin
           Static[StaticBoxLightest[Item]].Texture.ColG,
           Static[StaticBoxLightest[Item]].Texture.ColB,
           'P4Dark');
-      end;}
+      end; }
 
-{    end;
-  end;}
+    end;
+  end; *)
 
   inherited Draw;
 end;

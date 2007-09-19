@@ -91,8 +91,17 @@ unit MidiFile;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  stdctrls, ExtCtrls, WinProcs;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  stdctrls,
+  ExtCtrls,
+  WinProcs;
+
 type
   TChunkType = (illegal, header, track);
   TFileFormat = (single, multi_synch, multi_asynch);

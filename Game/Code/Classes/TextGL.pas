@@ -2,7 +2,16 @@ unit TextGL;
 
 interface
 
-uses OpenGL12, SDL, UTexture, Classes, ULog;
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+
+uses  OpenGL12,
+      SDL,
+      UTexture,
+      Classes,
+      ULog;
 
 procedure BuildFont;			                // Build Our Bitmap Font
 procedure KillFont;     		                // Delete The Font

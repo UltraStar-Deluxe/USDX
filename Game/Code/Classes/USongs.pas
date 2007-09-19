@@ -1,6 +1,12 @@
 unit USongs;
 
 interface
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 uses SysUtils, ULog, UTexture, UCatCovers;
 
 type

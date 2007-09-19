@@ -212,7 +212,9 @@ procedure Register;
 {====================================================================}
 implementation
 
-uses Graphics, Controls, Forms, Dialogs;
+uses Controls,
+     Forms,
+     Graphics;
 
 (* Not used in Delphi 3
 { This is the callback procedure in the external DLL.

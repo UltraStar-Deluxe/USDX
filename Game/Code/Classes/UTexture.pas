@@ -1,10 +1,5 @@
 unit UTexture;
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-          
-
 // Plain (alpha = 1)
 // Transparent
 // Transparent Range
@@ -17,16 +12,24 @@ unit UTexture;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses OpenGL12,
      Windows,
      Math,
      Classes,
      SysUtils,
-     {$IFNDEF FPC}
      Graphics,
+
+     {$IFDEF FPC}
+     lazjpeg,
+     {$ELSE}
      JPEG,
      PNGImage,
      {$ENDIF}
+     UCommon,
      UThemes;
 
 
@@ -192,11 +195,19 @@ var
 begin
   hls[0]:=hue;
 
-      clr[0]:=src[0]/255; clr[1]:=src[1]/255; clr[2]:=src[2]/255;
+      clr[0] := src[0]/255;
+      clr[1] := src[1]/255;
+      clr[2] := src[2]/255;
+      
       //calculate luminance and saturation from rgb
-      hls[1]:=maxvalue(clr); //l:=...
-      delta:=hls[1]-minvalue(clr);
-      if hls[1]=0.0 then hls[2]:=0.0 else hls[2]:=delta/hls[1]; //v:=...
+      hls[1] := maxvalue(clr); //l:=...
+      delta  := hls[1] - minvalue(clr);
+      
+      if hls[1] =  0.0 then
+         hls[2] := 0.0
+      else
+         hls[2] := delta/hls[1]; //v:=...
+         
       // calc new rgb from our hls (h from color, l ans s from pixel)
 //      if (hls[1]<>0.0) and (hls[2]<>0.0) then // only if colorizing makes sense
       begin
@@ -287,7 +298,10 @@ var
   Res:        TResourceStream;
   TextureB:   TBitmap;
   TextureJ:   TJPEGImage;
+  {$IFNDEF FPC}
   TexturePNG: TPNGObject;
+  {$ENDIF}
+  
   TextureAlpha: array of byte;
   AlphaPtr:   PByte;
   TransparentColor: TColor;
@@ -306,6 +320,8 @@ var
   RGBPtr: PByte;
   myHue: Double;
 begin
+  {$IFNDEF FPC} // TODO : JB eeeew this is a nasty one...
+                // but lazarus implementation scanlines is different :(
   Log.BenchmarkStart(4);
   Mipmapping := true;
 
@@ -347,7 +363,10 @@ begin
     TextureJ.Free;
   end
 
-  else if Format = 'PNG' then begin
+  else if Format = 'PNG' then
+  begin
+    {$IFNDEF FPC}
+    // TODO : JB - fix this for lazarus..
     TexturePNG := TPNGObject.Create;
     if FromRegistry then TexturePNG.LoadFromStream(Res)
     else begin
@@ -389,6 +408,7 @@ begin
       setlength(TextureAlpha,0); // just no special transparency for unimplemented transparency types (ptmBit)
     // transparent png hack end
     TexturePNG.Free;
+    {$ENDIF}
   end;
 
   if FromRegistry then Res.Free;
@@ -872,7 +892,8 @@ begin
   if Log.BenchmarkTimeLength[4] >= 1 then
     Log.LogBenchmark('**********> Texture Load Time Warning - ' + Format + '/' + Identifier + '/' + Typ, 4);
 
-  end; // logerror
+  end; // logerror    
+  {$ENDIF}
 end;
 
 {procedure ResizeTexture(s: pbytearray; d: pbytearray);

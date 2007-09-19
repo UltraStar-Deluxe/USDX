@@ -2,6 +2,10 @@ unit UCovers;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses OpenGL12,
      Windows,
      Math,

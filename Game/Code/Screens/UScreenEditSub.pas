@@ -1169,11 +1169,12 @@ begin
     Exit;
   end
   else begin
+  {$IFDEF UseMIDIPort}
     MidiOut := TMidiOutput.Create(nil);
     if Ini.Debug = 1 then
       MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
     MidiOut.Open;
-
+  {$ENDIF}
     Text[TextTitle].Text :=   AktSong.Title;
     Text[TextArtist].Text :=  AktSong.Artist;
     Text[TextMp3].Text :=     AktSong.Mp3;
@@ -1224,11 +1225,13 @@ begin
   if PlaySentenceMidi then begin
     MidiPos := USTime.GetTime - MidiTime + MidiStart;
 
+    {$IFDEF UseMIDIPort}
     // stop the music
     if (MidiPos > MidiStop) then begin
       MidiOut.PutShort($81, Czesci[0].Czesc[Czesci[0].Akt].Nuta[MidiLastNote].Ton + 60, 127);
       PlaySentenceMidi := false;
     end;
+    {$ENDIF}
 
     // click
     AktBeat := Floor(GetMidBeat(MidiPos - AktSong.GAP / 1000));
@@ -1236,13 +1239,16 @@ begin
 
     if AktBeat <> LastClick then begin
       for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
-        if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = AktBeat) then begin
+        if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = AktBeat) then
+        begin
 
+          {$IFDEF UseMIDIPort}
           LastClick := AktBeat;
           if Pet > 0 then
             MidiOut.PutShort($81, Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet-1].Ton + 60, 127);
           MidiOut.PutShort($91, Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Ton + 60, 127);
           MidiLastNote := Pet;
+          {$ENDIF}
 
         end;
     end;
@@ -1312,8 +1318,10 @@ end;
 
 procedure TScreenEditSub.onHide;
 begin
+  {$IFDEF UseMIDIPort}
   MidiOut.Close;
   MidiOut.Free;
+  {$ENDIF}
   //Music.SetVolume(100);
 end;
 
