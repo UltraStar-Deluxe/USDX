@@ -217,6 +217,8 @@ begin
   //Just for Debugging
   //Comment for Release
     //LogAnalyze (Log2 + ': ' + Log1);
+    
+  LogError(Log2 + ': ' + Log1);
 end;
 
 procedure TLog.LogError(Log1, Log2: string);
