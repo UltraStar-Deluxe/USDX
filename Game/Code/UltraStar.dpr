@@ -1,4 +1,4 @@
-﻿program UltraStar;
+program UltraStar;
 
 {$DEFINE TRANSLATE}
 
@@ -359,8 +359,6 @@ begin
 
   Log.BenchmarkEnd(0);
   Log.LogBenchmark('Loading Time', 0);
-
-  Lyric := TLyric.Create;  
 
 
   //------------------------------

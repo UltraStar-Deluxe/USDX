@@ -1072,6 +1072,7 @@ procedure TScreenEditSub.CopySentences(Src, Dst, Num: integer);
 var
   C:      integer;
 begin
+  Lyric := TLyric.Create;
   // create place for new sentences
   SetLength(Czesci[0].Czesc, Czesci[0].Ilosc + Num - 1);
 
