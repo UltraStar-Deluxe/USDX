@@ -78,15 +78,12 @@ procedure BuildFont;			                // Build Our Bitmap Font
   var
     Rejestr:  TResourceStream;
   begin
-    {$IFNDEF FPC}
-   
     Rejestr := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
     try
       Rejestr.Read(Fonts[ aID ].Width, 256);
     finally
       Rejestr.Free;
     end;
-    {$ENDIF}
   end;
 
 var
@@ -129,20 +126,10 @@ begin
 
 
 
-  {$IFDEF FPC}
-    loadfont( 0, 'DAT', 'eurostar_regular'   );
-    loadfont( 1, 'DAT', 'eurostar_regular_bold'  );
-    loadfont( 2, 'DAT', 'Outline 1'  );
-    loadfont( 3, 'DAT', 'Outline 2' );
-  {$ELSE}
-    loadfont( 0, 'FNT', 'Font'   );
-    loadfont( 1, 'FNT', 'FontB'  );
-    loadfont( 2, 'FNT', 'FontO'  );
-    loadfont( 3, 'FNT', 'FontO2' );
-  {$ENDIF}
-
-
-
+  loadfont( 0, 'FNT', 'Font'   );
+  loadfont( 1, 'FNT', 'FontB'  );
+  loadfont( 2, 'FNT', 'FontO'  );
+  loadfont( 3, 'FNT', 'FontO2' );
 
 {  Rejestr := TResourceStream.Create(HInstance, 'FontO', 'FNT');
   Rejestr.Read(Fonts[4].Width, 256);
