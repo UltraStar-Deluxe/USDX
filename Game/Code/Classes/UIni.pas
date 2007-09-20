@@ -380,7 +380,7 @@ begin
     I := 0;
 
     SetLength(ITheme, 0);
-    FindFirst('Themes\*.ini',faAnyFile,SR);
+    FindFirst('Themes' + PathDelim + '*.ini',faAnyFile,SR);
     Repeat
       //Read Themename from Theme
       ThemeIni := TMemIniFile.Create(SR.Name);

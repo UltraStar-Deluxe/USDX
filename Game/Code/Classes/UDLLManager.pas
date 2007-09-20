@@ -42,11 +42,11 @@ var
   DLLMan: TDLLMan;
 
 const
+  DLLPath = 'Plugins';
+
   {$IFDEF win32}
-     DLLPath = 'Plugins\';
      DLLExt  = '.dll';
   {$ELSE}
-     DLLPath = 'Plugins/';
      DLLExt  = '.so';
   {$ENDIF}
 
@@ -73,7 +73,7 @@ var
   SR:     TSearchRec;
 begin
 
-  if FindFirst(DLLPath + '*' + DLLExt, faAnyFile	, SR) = 0 then
+  if FindFirst(DLLPath +PathDelim+ '*' + DLLExt, faAnyFile	, SR) = 0 then
   begin
     repeat
       SetLength(Plugins, Length(Plugins)+1);
@@ -143,7 +143,7 @@ begin
       exit;  }
 
   //Load Libary
-  hLibg := LoadLibrary(PChar(DLLPath + Filename));
+  hLibg := LoadLibrary(PChar(DLLPath +PathDelim+ Filename));
   //If Loaded
   if (hLibg <> 0) then
   begin
@@ -170,7 +170,7 @@ function TDLLMan.LoadPlugin(No: Cardinal): boolean;
 begin
   Result := False;
   //Load Libary
-  hLib := LoadLibrary(PChar(DLLPath + PluginPaths[No]));
+  hLib := LoadLibrary(PChar(DLLPath +PathDelim+ PluginPaths[No]));
   //If Loaded
   if (hLib <> 0) then
   begin

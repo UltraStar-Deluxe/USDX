@@ -132,7 +132,7 @@ begin
   if FindFirst(Dir + '*', faDirectory, SR) = 0 then begin
     repeat
       if (SR.Name <> '.') and (SR.Name <> '..') then
-        BrowseDir(Dir + Sr.Name + '\');
+        BrowseDir(Dir + Sr.Name + PathDelim);
     until FindNext(SR) <> 0;
   end; // if
   FindClose(SR);
@@ -151,7 +151,7 @@ begin
 
       Song[SLen].Path := Dir;
       Song[SLen].Folder := Copy(Dir, Length(SongPath)+1, 10000);
-      Song[SLen].Folder := Copy(Song[SLen].Folder, 1, Pos('\', Song[SLen].Folder)-1);
+      Song[SLen].Folder := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
       Song[SLen].FileName := SR.Name;
 
       if (AnalyseFile(Song[SLen]) = false) then Dec(BrowsePos)

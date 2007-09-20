@@ -56,10 +56,10 @@ var
 //  SR2:    TSearchRec;
 //  SLen:   integer;
 begin
-  if FindFirst('Skins\*', faDirectory, SR) = 0 then begin
+  if FindFirst('Skins'+PathDelim+'*', faDirectory, SR) = 0 then begin
     repeat
       if (SR.Name <> '.') and (SR.Name <> '..') then
-        ParseDir('Skins\' + SR.Name + '\');
+        ParseDir('Skins'+PathDelim + SR.Name + PathDelim);
     until FindNext(SR) <> 0;
   end; // if
   FindClose(SR);
