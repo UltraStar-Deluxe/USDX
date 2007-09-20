@@ -7,7 +7,13 @@ interface
 {$ENDIF}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  SysUtils,
+  UThemes;
 
 type
   TScreenSongMenu = class(TMenu)
@@ -47,7 +53,14 @@ var
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UPlaylist, USongs;
+uses UGraphic,
+     UMain,
+     UIni,
+     UTexture,
+     ULanguage,
+     UParty,
+     UPlaylist,
+     USongs;
 
 function TScreenSongMenu.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin

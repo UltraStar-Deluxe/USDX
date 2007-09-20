@@ -33,7 +33,9 @@ type
 
 implementation
 
-uses Windows,
+uses {$IFDEF win32}
+     windows,
+     {$ENDIF}
      UGraphic,
      UMain,
      UIni,

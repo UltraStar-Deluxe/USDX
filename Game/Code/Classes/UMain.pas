@@ -8,14 +8,25 @@ interface
 
 {$I switches.inc}
 
-uses SDL, UGraphic, UMusic, URecord, UTime, SysUtils, UDisplay, UIni, ULog, ULyrics, UScreenSing,
-  OpenGL12,
-
-  {$IFDEF UseSerialPort}
-  zlportio {you can disable it and all PortWriteB calls},
-  {$ENDIF}
-
-  ULCD, ULight, UThemes{, UScreenPopup};
+uses
+    SDL,
+    UGraphic,
+    UMusic,
+    URecord,
+    UTime,
+    SysUtils,
+    UDisplay,
+    UIni,
+    ULog,
+    ULyrics,
+    UScreenSing,
+    OpenGL12,
+    {$IFDEF UseSerialPort}
+    zlportio {you can disable it and all PortWriteB calls},
+    {$ENDIF}
+    ULCD,
+    ULight,
+    UThemes;
 
 type
   TPlayer = record
@@ -764,15 +775,15 @@ begin
 
   GamePath := ExtractFilePath(ParamStr(0));
 
-  initialize_path( LogPath         , GamePath                 );
-  initialize_path( SoundPath       , GamePath + 'Sounds\'     );
-  initialize_path( SongPath        , GamePath + 'Songs\'      );
-  initialize_path( ThemePath       , GamePath + 'Themes\'     );
-  initialize_path( ScreenshotsPath , GamePath + 'Screenshots\');
-  initialize_path( CoversPath      , GamePath + 'Covers\'     );
-  initialize_path( LanguagesPath   , GamePath + 'Languages\'  );
-  initialize_path( PluginPath      , GamePath + 'Plugins\'    );
-  initialize_path( PlaylistPath    , GamePath + 'Playlists\'  );
+  initialize_path( LogPath         , GamePath                             );
+  initialize_path( SoundPath       , GamePath + 'Sounds'      + PathDelim );
+  initialize_path( SongPath        , GamePath + 'Songs'       + PathDelim );
+  initialize_path( ThemePath       , GamePath + 'Themes'      + PathDelim );
+  initialize_path( ScreenshotsPath , GamePath + 'Screenshots' + PathDelim );
+  initialize_path( CoversPath      , GamePath + 'Covers'      + PathDelim );
+  initialize_path( LanguagesPath   , GamePath + 'Languages'   + PathDelim );
+  initialize_path( PluginPath      , GamePath + 'Plugins'     + PathDelim );
+  initialize_path( PlaylistPath    , GamePath + 'Playlists'   + PathDelim );
 
   DecimalSeparator := ',';
 end;

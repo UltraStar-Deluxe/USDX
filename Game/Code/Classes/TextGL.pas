@@ -60,7 +60,12 @@ var
 implementation
 
 uses UMain,
-     Windows,
+     {$IFDEF win32}
+     windows,
+     {$ELSE}
+     lclintf,
+     lcltype,
+     {$ENDIF}
      SysUtils,
      {$IFDEF FPC}
      LResources,
@@ -372,8 +377,10 @@ begin
 end;
 
 {$IFDEF FPC}
+{$IFDEF win32}
 initialization
   {$I UltraStar.lrs}
+{$ENDIF}
 {$ENDIF}
 
 end.

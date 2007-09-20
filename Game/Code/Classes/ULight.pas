@@ -1,5 +1,11 @@
 unit ULight;
+
 interface
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 type
@@ -35,11 +41,15 @@ uses
   {$IFDEF UseSerialPort}
   zlportio,
   {$ENDIF}
+  {$IFNDEF win32}
+  libc,
+  {$ENDIF}
   UTime;
   
 {$IFDEF FPC}
+
   function GetTime: TDateTime;
-  {$IFDEF MSWINDOWS}
+  {$IFDEF win32}
   var
     SystemTime: TSystemTime;
   begin
@@ -47,19 +57,22 @@ uses
     with SystemTime do
       Result := EncodeTime(wHour, wMinute, wSecond, wMilliSeconds);
   end;
-  {$ENDIF}
-  {$IFDEF LINUX}
+  {$ELSE}
+  Type
+    Time_t  = longint;
+    TTime_T = Time_t;
   var
-    T: TTime_T;
+    T : TTime_T;
     TV: TTimeVal;
     UT: TUnixTime;
   begin
     gettimeofday(TV, nil);
     T := TV.tv_sec;
-    localtime_r(@T, UT);
+    localtime_r(@T, @UT);
     Result := EncodeTime(UT.tm_hour, UT.tm_min, UT.tm_sec, TV.tv_usec div 1000);
   end;
   {$ENDIF}
+  
 {$ENDIF}
 
 

@@ -41,10 +41,24 @@ type
 var
   DLLMan: TDLLMan;
 
-const DLLPath = 'Plugins\';
+const
+  {$IFDEF win32}
+     DLLPath = 'Plugins\';
+     DLLExt  = '.dll';
+  {$ELSE}
+     DLLPath = 'Plugins/';
+     DLLExt  = '.so';
+  {$ENDIF}
 
 implementation
-uses Windows, ULog, SysUtils;
+
+uses {$IFDEF win32}
+     windows,
+     {$ELSE}
+     dynlibs,
+     {$ENDIF}
+     ULog,
+     SysUtils;
 
 
 constructor TDLLMan.Create;
@@ -59,7 +73,7 @@ var
   SR:     TSearchRec;
 begin
 
-  if FindFirst(DLLPath + '*.dll', faAnyFile	, SR) = 0 then
+  if FindFirst(DLLPath + '*' + DLLExt, faAnyFile	, SR) = 0 then
   begin
     repeat
       SetLength(Plugins, Length(Plugins)+1);

@@ -2,6 +2,8 @@ unit UGraphic;
 
 interface
 
+{$I switches.inc}
+
 {$IFDEF FPC}
   {$MODE DELPHI}
 {$ENDIF}
@@ -239,8 +241,10 @@ uses  UMain,
       {$IFNDEF FPC}
       Graphics,
       {$ENDIF}
-      Classes,
-      Windows;
+      {$IFDEF win32}
+      windows,
+      {$ENDIF}
+      Classes;
 
 procedure LoadTextures;
 

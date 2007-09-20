@@ -7,7 +7,21 @@ interface
 {$ENDIF}
 
 uses
-  windows;
+
+{$IFDEF win32}
+   windows;
+{$ELSE}
+   lcltype,
+   messages;
+{$ENDIF}
+
+{$IFNDEF win32}
+type
+  hStream        = THandle;
+  HGLRC          = THandle;
+  TLargeInteger  = Int64;
+  TWin32FindData = LongInt;
+{$ENDIF}
 
 {$IFDEF FPC}
 
@@ -15,14 +29,52 @@ type
   TWndMethod = procedure(var Message: TMessage) of object;
 
 function  RandomRange(aMin: Integer; aMax: Integer) : Integer;
-function  AllocateHWnd(Method: TWndMethod): HWND;
-procedure DeallocateHWnd(Wnd: HWND);
+//function  AllocateHWnd(Method: TWndMethod): HWND;
+//procedure DeallocateHWnd(Wnd: HWND);
 
 function MaxValue(const Data: array of Double): Double;
 function MinValue(const Data: array of Double): Double;
 {$ENDIF}
 
+{$IFNDEF win32}
+(*
+  function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER):Bool;
+  function QueryPerformanceFrequency(lpFrequency:TLARGEINTEGER):Bool;
+*)
+  procedure ZeroMemory( Destination: Pointer; Length: DWORD );
+{$ENDIF}
+
 implementation
+
+{$IFNDEF win32}
+procedure ZeroMemory( Destination: Pointer; Length: DWORD );
+begin
+  FillChar( Destination^, Length, 0 );
+end; //ZeroMemory
+
+(*
+function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER):Bool;
+
+  // From http://en.wikipedia.org/wiki/RDTSC
+  function RDTSC: Int64; register;
+  asm
+    rdtsc
+  end;
+
+begin
+  // Use clock_gettime  here maybe ... from libc
+  lpPerformanceCount := RDTSC();
+  result := true;
+end;
+
+function QueryPerformanceFrequency(lpFrequency:TLARGEINTEGER):Bool;
+begin
+  lpFrequency := 0;
+  result := true;
+end;
+*)
+{$ENDIF}
+
 
 {$IFDEF FPC}
 
@@ -52,33 +104,17 @@ RandomRange := Random(aMax-aMin) + aMin ;
 end;
 
 
+// NOTE !!!!!!!!!!
+// AllocateHWnd is in lclintfh.inc
 
+{
 // TODO : JB this is dodgey and bad... find a REAL solution !
 function AllocateHWnd(Method: TWndMethod): HWND;
 var
   TempClass: TWndClass;
   ClassRegistered: Boolean;
 begin
-(*
-  UtilWindowClass.hInstance := HInstance;
-{$IFDEF PIC}
-  UtilWindowClass.lpfnWndProc := @DefWindowProc;
-{$ENDIF}
-  ClassRegistered := GetClassInfo(HInstance, UtilWindowClass.lpszClassName, TempClass);
-  if not ClassRegistered or (TempClass.lpfnWndProc <> @DefWindowProc) then
-  begin
-    if ClassRegistered then
-      Windows.UnregisterClass(UtilWindowClass.lpszClassName, HInstance);
-    Windows.RegisterClass(UtilWindowClass);
-  end;
-  Result := CreateWindowEx(WS_EX_TOOLWINDOW, UtilWindowClass.lpszClassName, '', WS_POPUP {+ 0}, 0, 0, 0, 0, 0, 0, HInstance, nil);
-*)
-  Result := CreateWindowEx(WS_EX_TOOLWINDOW, '', '', WS_POPUP {+ 0}, 0, 0, 0, 0, 0, 0, HInstance, nil);
-
-(*
-  if Assigned(Method) then
-    SetWindowLong(Result, GWL_WNDPROC, Longint(MakeObjectInstance(Method)));
-*)
+  Result := CreateWindowEx(WS_EX_TOOLWINDOW, '', '', WS_POPUP , 0, 0, 0, 0, 0, 0, HInstance, nil);
 end;
 
 procedure DeallocateHWnd(Wnd: HWND);
@@ -87,10 +123,8 @@ var
 begin
   Instance := Pointer(GetWindowLong(Wnd, GWL_WNDPROC));
   DestroyWindow(Wnd);
-  
-//  if Instance <> @DefWindowProc then
-//     FreeObjectInstance(Instance);
 end;
+}
 
 {$ENDIF}
 

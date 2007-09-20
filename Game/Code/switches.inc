@@ -5,3 +5,9 @@
   {$DEFINE UseSerialPort}
   {$DEFINE UseMIDIPort}
 {$ENDIF}  
+
+{$IFDEF win32}
+  {$DEFINE UseBASS}
+{$ELSE}
+  {$UNDEF  UseBASS}
+{$ENDIF}

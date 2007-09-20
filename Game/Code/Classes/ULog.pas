@@ -2,6 +2,8 @@ unit ULog;
 
 interface
 
+{$I switches.inc}
+
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
@@ -51,7 +53,9 @@ var
 implementation
 
 uses
-     Windows,
+     {$IFDEF win32}
+     windows,
+     {$ENDIF}
      SysUtils,
      DateUtils,
 //     UFiles,
@@ -231,8 +235,14 @@ begin
   //Write Error to Logfile:
   LogError (Text);
 
+  {$IFDEF win32}
   //Show Errormessage
   Messagebox(0, PChar(Text), PChar(Title), MB_ICONERROR or MB_OK);
+  {$ELSE}
+  // TODO - JB_Linux handle critical error so user can see message.
+  writeln( 'Critical ERROR :' );
+  writeln( Text );
+  {$ENDIF}
 
   //Exit Application
   Halt;

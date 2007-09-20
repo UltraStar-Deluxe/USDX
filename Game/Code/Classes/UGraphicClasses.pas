@@ -2,6 +2,13 @@
 unit UGraphicClasses;
 
 interface
+
+{$I switches.inc}
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses UTexture;
 
 const  DelayBetweenFrames : Cardinal = 60;
@@ -82,7 +89,11 @@ var GoldenRec : TEffectManager;
 implementation
 
 uses  sysutils,
-      Windows,
+      {$IFDEF win32}
+      windows,
+      {$ELSE}
+      lclintf,
+      {$ENDIF}
       OpenGl12,
       UIni,
       UMain,

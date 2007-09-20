@@ -4,8 +4,21 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UMusic, UFiles, UTime, UDisplay, USongs, SysUtils, ULog, UThemes, UTexture, ULanguage,
-  ULCD, ULight, UIni;
+  UMenu,
+  SDL,
+  UMusic,
+  UFiles,
+  UTime,
+  UDisplay,
+  USongs,
+  SysUtils,
+  ULog,
+  UThemes,
+  UTexture,
+  ULanguage,
+  ULCD,
+  ULight,
+  UIni;
 
 type
   TScreenSong = class(TMenu)
@@ -104,7 +117,21 @@ type
   end;
 
 implementation
-uses UGraphic, UMain, UCovers, math, OpenGL12, Windows, USkins, UDLLManager, UParty, UPlaylist, UScreenSongMenu;
+uses UGraphic,
+     UMain,
+     UCovers,
+     math,
+     OpenGL12,
+     {$IFDEF win32}
+     windows,
+     {$ELSE}
+     lclintf,
+     {$ENDIF}
+     USkins,
+     UDLLManager,
+     UParty,
+     UPlaylist,
+     UScreenSongMenu;
 
 // ***** Public methods ****** //
 
@@ -774,7 +801,13 @@ begin
         try
           AddButton(300 + Pet*250, 140, 200, 200, '', 'JPG', 'Plain', Theme.Song.Cover.Reflections);
         except
+          {$IFDEF win32}
           Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);
+          {$ELSE}
+          // TODO : JB_linux - better handle this message and display to user..
+          writeln( 'No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.');
+          Log.LogError( 'No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.' );
+          {$ENDIF}
           Halt;
         end;
         I := Pet + 1;

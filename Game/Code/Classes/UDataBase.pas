@@ -208,8 +208,7 @@ begin
   if (Length(Stats) < Count) then
     Exit;
 
-  {Todo:
-    Add Prevention that only Players with more than 5 Scores are Selected at Typ 2}
+  {Todo:  Add Prevention that only Players with more than 5 Scores are Selected at Typ 2}
 
   //Create Query
   Case Typ of

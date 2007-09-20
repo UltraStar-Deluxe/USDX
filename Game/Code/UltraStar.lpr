@@ -34,155 +34,154 @@ uses
   //------------------------------
   
   // SDL / OpenGL
-  sdl          in 'lib\JEDI-SDLv1.0\SDL\Pas\sdl.pas',
-  moduleloader in 'lib\JEDI-SDLv1.0\SDL\Pas\moduleloader.pas',
-  opengl12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas',
+  moduleloader           in 'lib\JEDI-SDLv1.0\SDL\Pas\moduleloader.pas',
+  opengl12               in 'lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas',
+  sdl                    in 'lib\JEDI-SDLv1.0\SDL\Pas\sdl.pas',
 
   // Bass
-  {$IFDEF win32}
-  bass         in 'lib\bass\delphi\bass.pas',
+  {$IFDEF UseBASS}
+  bass                   in 'lib\bass\delphi\bass.pas',
   {$ENDIF}
 
   // Midi Units
   {$IFDEF UseMIDIPort}
-  midiout      in 'lib\midi\midiout.pas',
-  midiin       in 'lib\midi\midiin.pas',
-  Circbuf      in 'lib\midi\CIRCBUF.PAS',
-  MidiType     in 'lib\midi\MidiType.PAS',
-  MidiDefs     in 'lib\midi\MidiDefs.PAS',
-  MidiCons     in 'lib\midi\MidiCons.PAS',
-  MidiFile     in 'lib\midi\MidiFile.PAS',
-  Delphmcb     in 'lib\midi\Delphmcb.PAS',
+  Circbuf                in 'lib\midi\CIRCBUF.PAS',
+  Delphmcb               in 'lib\midi\Delphmcb.PAS',
+  MidiCons               in 'lib\midi\MidiCons.PAS',
+  MidiDefs               in 'lib\midi\MidiDefs.PAS',
+  MidiFile               in 'lib\midi\MidiFile.PAS',
+  midiin                 in 'lib\midi\midiin.pas',
+  midiout                in 'lib\midi\midiout.pas',
+  MidiType               in 'lib\midi\MidiType.PAS',
   {$ENDIF}
 
   // FFMpeg units
-  avcodec      in 'lib\ffmpeg\avcodec.pas',
-  avformat     in 'lib\ffmpeg\avformat.pas',
-  avutil       in 'lib\ffmpeg\avutil.pas',
-  rational     in 'lib\ffmpeg\rational.pas',
-  opt          in 'lib\ffmpeg\opt.pas',
-  avio         in 'lib\ffmpeg\avio.pas',
+  avcodec                in 'lib\ffmpeg\avcodec.pas',
+  avformat               in 'lib\ffmpeg\avformat.pas',
+  avio                   in 'lib\ffmpeg\avio.pas',
+  avutil                 in 'lib\ffmpeg\avutil.pas',
+  opt                    in 'lib\ffmpeg\opt.pas',
+  rational               in 'lib\ffmpeg\rational.pas',
+
 
   // Sql Lite
-  SQLiteTable3 in 'lib\SQLite\SQLiteTable3.pas',
-  SQLite3      in 'lib\SQLite\SQLite3.pas',
+  SQLiteTable3           in 'lib\SQLite\SQLiteTable3.pas',
+  SQLite3                in 'lib\SQLite\SQLite3.pas',
 
 
   //------------------------------
   //Includes - Menu System
   //------------------------------
-  UMenu in 'Menu\UMenu.pas',
-  UDisplay in 'Menu\UDisplay.pas',
-  UMenuStatic in 'Menu\UMenuStatic.pas',
-  UMenuText in 'Menu\UMenuText.pas',
-  UMenuButton in 'Menu\UMenuButton.pas',
-  UMenuInteract in 'Menu\UMenuInteract.pas',
-  UMenuSelect in 'Menu\UMenuSelect.pas',
-  UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
-  UDrawTexture in 'Menu\UDrawTexture.pas',
-  UMenuButtonCollection in 'Menu\UMenuButtonCollection.pas',
-
+  
+  UDisplay               in 'Menu\UDisplay.pas',
+  UDrawTexture           in 'Menu\UDrawTexture.pas',
+  UMenu                  in 'Menu\UMenu.pas',
+  UMenuButton            in 'Menu\UMenuButton.pas',
+  UMenuButtonCollection  in 'Menu\UMenuButtonCollection.pas',
+  UMenuInteract          in 'Menu\UMenuInteract.pas',
+  UMenuSelect            in 'Menu\UMenuSelect.pas',
+  UMenuSelectSlide       in 'Menu\UMenuSelectSlide.pas',
+  UMenuStatic            in 'Menu\UMenuStatic.pas',
+  UMenuText              in 'Menu\UMenuText.pas',
 
   //------------------------------
   //Includes - Classes
   //------------------------------
   
   {$IFDEF FPC}
-  ulazjpeg      in 'Classes\ulazjpeg.pas',
+  ulazjpeg               in 'Classes\ulazjpeg.pas',
   {$ENDIF}
-  
-  UCommon       in 'Classes\UCommon.pas',
-  UTime         in 'Classes\UTime.pas',
-  UCommandLine  in 'Classes\UCommandLine.pas',
-  ULog          in 'Classes\ULog.pas',
 
-  UMain         in 'Classes\UMain.pas',
-  
-  UIni          in 'Classes\UIni.pas',
-  UTexture      in 'Classes\UTexture.pas',
+  TextGL                 in 'Classes\TextGL.pas',
+  UCatCovers             in 'Classes\UCatCovers.pas',
+  UCommandLine           in 'Classes\UCommandLine.pas',
+  UCommon                in 'Classes\UCommon.pas',
+  UCovers                in 'Classes\UCovers.pas',
+  UDataBase              in 'Classes\UDataBase.pas',
+  UDLLManager            in 'Classes\UDLLManager.pas',
+  UDraw                  in 'Classes\UDraw.pas',
+  UFiles                 in 'Classes\UFiles.pas',
+  UGraphic               in 'Classes\UGraphic.pas',
+  UGraphicClasses        in 'Classes\UGraphicClasses.pas',
+  UIni                   in 'Classes\UIni.pas',
+  UJoystick              in 'Classes\UJoystick.pas',
+  ULanguage              in 'Classes\ULanguage.pas',
+  ULCD                   in 'Classes\ULCD.pas',
+  ULight                 in 'Classes\ULight.pas',
+  ULog                   in 'Classes\ULog.pas',
+  ULyrics                in 'Classes\ULyrics.pas',
+  UMain                  in 'Classes\UMain.pas',
+  UMusic                 in 'Classes\UMusic.pas',
+  UParty                 in 'Classes\UParty.pas',
+  UPlaylist              in 'Classes\UPlaylist.pas',
+  URecord                in 'Classes\URecord.pas',
+  USkins                 in 'Classes\USkins.pas',
+  USongs                 in 'Classes\USongs.pas',
+  UTexture               in 'Classes\UTexture.pas',
+  UThemes                in 'Classes\UThemes.pas',
+  UTime                  in 'Classes\UTime.pas',
 
-  UGraphic in 'Classes\UGraphic.pas',
-  UMusic in 'Classes\UMusic.pas',
-  ULanguage in 'Classes\ULanguage.pas',
-  UDraw in 'Classes\UDraw.pas',
-  URecord in 'Classes\URecord.pas',
-  TextGL in 'Classes\TextGL.pas',
-  USongs in 'Classes\USongs.pas',
-  ULyrics in 'Classes\ULyrics.pas',
-  USkins in 'Classes\USkins.pas',
-  UThemes in 'Classes\UThemes.pas',
-  UJoystick in 'Classes\UJoystick.pas',
-  ULCD in 'Classes\ULCD.pas',
-  ULight in 'Classes\ULight.pas',
-  UDataBase in 'Classes\UDataBase.pas',
-  UCovers in 'Classes\UCovers.pas',
-  UCatCovers in 'Classes\UCatCovers.pas',
-  UFiles in 'Classes\UFiles.pas',
-  UGraphicClasses in 'Classes\UGraphicClasses.pas',
-  UDLLManager in 'Classes\UDLLManager.pas',
-  UParty in 'Classes\UParty.pas',
-  UPlaylist in 'Classes\UPlaylist.pas',
 
   //------------------------------
   //Includes - Video Support
   //------------------------------
-  UVideo in 'Classes\UVideo.pas',
+  UVideo                 in 'Classes\UVideo.pas',
 
 
   //------------------------------
   //Includes - Screens
   //------------------------------
-  UScreenLoading in 'Screens\UScreenLoading.pas',
-  UScreenWelcome in 'Screens\UScreenWelcome.pas',
-  UScreenMain in 'Screens\UScreenMain.pas',
-  UScreenName in 'Screens\UScreenName.pas',
-  UScreenLevel in 'Screens\UScreenLevel.pas',
-  UScreenSong in 'Screens\UScreenSong.pas',
-  UScreenSing in 'Screens\UScreenSing.pas',
-  UScreenScore in 'Screens\UScreenScore.pas',
-  UScreenOptions in 'Screens\UScreenOptions.pas',
-  UScreenOptionsGame in 'Screens\UScreenOptionsGame.pas',
-  UScreenOptionsGraphics in 'Screens\UScreenOptionsGraphics.pas',
-  UScreenOptionsSound in 'Screens\UScreenOptionsSound.pas',
-  UScreenOptionsLyrics in 'Screens\UScreenOptionsLyrics.pas',
-  UScreenOptionsThemes in 'Screens\UScreenOptionsThemes.pas',
-  UScreenOptionsRecord in 'Screens\UScreenOptionsRecord.pas',
+  UScreenCredits         in 'Screens\UScreenCredits.pas',
+  UScreenEdit            in 'Screens\UScreenEdit.pas',
+  UScreenEditConvert     in 'Screens\UScreenEditConvert.pas',
+  UScreenEditHeader      in 'Screens\UScreenEditHeader.pas',
+  UScreenEditSub         in 'Screens\UScreenEditSub.pas',
+  UScreenLevel           in 'Screens\UScreenLevel.pas',
+  UScreenLoading         in 'Screens\UScreenLoading.pas',
+  UScreenMain            in 'Screens\UScreenMain.pas',
+  UScreenName            in 'Screens\UScreenName.pas',
+  UScreenOpen            in 'Screens\UScreenOpen.pas',
+  UScreenOptions         in 'Screens\UScreenOptions.pas',
   UScreenOptionsAdvanced in 'Screens\UScreenOptionsAdvanced.pas',
-  UScreenEditSub in 'Screens\UScreenEditSub.pas',
-  UScreenEdit in 'Screens\UScreenEdit.pas',
-  UScreenEditConvert in 'Screens\UScreenEditConvert.pas',
-  UScreenEditHeader in 'Screens\UScreenEditHeader.pas',
-  UScreenOpen in 'Screens\UScreenOpen.pas',
-  UScreenTop5 in 'Screens\UScreenTop5.pas',
-  UScreenSongMenu in 'Screens\UScreenSongMenu.pas',
-  UScreenSongJumpto in 'Screens\UScreenSongJumpto.pas',
-  UScreenStatMain in 'Screens\UScreenStatMain.pas',
-  UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
-  UScreenCredits in 'Screens\UScreenCredits.pas',
-  UScreenPopup in 'Screens\UScreenPopup.pas',
-
+  UScreenOptionsGame     in 'Screens\UScreenOptionsGame.pas',
+  UScreenOptionsGraphics in 'Screens\UScreenOptionsGraphics.pas',
+  UScreenOptionsLyrics   in 'Screens\UScreenOptionsLyrics.pas',
+  UScreenOptionsRecord   in 'Screens\UScreenOptionsRecord.pas',
+  UScreenOptionsSound    in 'Screens\UScreenOptionsSound.pas',
+  UScreenOptionsThemes   in 'Screens\UScreenOptionsThemes.pas',
+  UScreenPopup           in 'Screens\UScreenPopup.pas',
+  UScreenScore           in 'Screens\UScreenScore.pas',
+  UScreenSing            in 'Screens\UScreenSing.pas',
+  UScreenSong            in 'Screens\UScreenSong.pas',
+  UScreenSongJumpto      in 'Screens\UScreenSongJumpto.pas',
+  UScreenSongMenu        in 'Screens\UScreenSongMenu.pas',
+  UScreenStatDetail      in 'Screens\UScreenStatDetail.pas',
+  UScreenStatMain        in 'Screens\UScreenStatMain.pas',
+  UScreenTop5            in 'Screens\UScreenTop5.pas',
+  UScreenWelcome         in 'Screens\UScreenWelcome.pas',
 
   //------------------------------
   //Includes - Screens PartyMode
   //------------------------------
-  UScreenSingModi in 'Screens\UScreenSingModi.pas',
-  UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
-  UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
-  UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
-  UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
-  UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
-
+  UScreenPartyNewRound   in 'Screens\UScreenPartyNewRound.pas',
+  UScreenPartyOptions    in 'Screens\UScreenPartyOptions.pas',
+  UScreenPartyPlayer     in 'Screens\UScreenPartyPlayer.pas',
+  UScreenPartyScore      in 'Screens\UScreenPartyScore.pas',
+  UScreenPartyWin        in 'Screens\UScreenPartyWin.pas',
+  UScreenSingModi        in 'Screens\UScreenSingModi.pas',
 
   //------------------------------
   //Includes - Modi SDK
   //------------------------------
-  ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
+  ModiSDK                in '..\..\Modis\SDK\ModiSDK.pas',
 
 
   //------------------------------
   //Includes - Delphi
   //------------------------------
+  {$IFDEF win32}
   Windows,
+  {$ENDIF}
   SysUtils;
 
 const
@@ -196,6 +195,7 @@ var
 begin
   WndTitle := Version;
 
+  {$ifdef Win32}
   //------------------------------
   //Start more than One Time Prevention
   //------------------------------
@@ -217,6 +217,7 @@ begin
     else
       Exit;
   end;
+  {$endif}
 
   //------------------------------
   //StartUp - Create Classes and Load Files

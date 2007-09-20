@@ -2,6 +2,8 @@ unit UScreenSingModi;
 
 interface
 
+{$I switches.inc}
+
 {$IFDEF FPC}
   {$MODE DELPHI}
 {$ENDIF}
@@ -19,7 +21,9 @@ uses UMenu,
      ULyrics,
      TextGL,
      OpenGL12,
-     BASS,
+     {$IFDEF useBASS}
+     bass,
+     {$ENDIF}
      UThemes,
      ULCD,
      UScreenSing,

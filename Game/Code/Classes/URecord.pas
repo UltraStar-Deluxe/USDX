@@ -2,13 +2,22 @@ unit URecord;
 
 interface
 
+{$I switches.inc}
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses Classes,
      Math,
      SysUtils,
+     {$IFDEF useBASS}
+     bass,
+     {$ENDIF}
+     UCommon,
      UMusic,
-     UIni,
-     BASS;
-
+     UIni;
+     
 type
   TSound = class
     BufferNew:    TMemoryStream; // buffer for newest sample
@@ -281,6 +290,8 @@ var
   end;
 
 begin
+  // TODO : JB_linux - Reimplement recording, without bass for linux
+  {$IFDEF useBASS}
   // checks for recording devices and puts them into array;
   SetLength(SoundCard, 0);
 
@@ -338,6 +349,7 @@ begin
     Inc(SC);
     Descr := BASS_RecordGetDeviceDescription(SC);
   end; // while
+  {$ENDIF}
 end;
 
 

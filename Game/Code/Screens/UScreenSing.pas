@@ -2,13 +2,33 @@ unit UScreenSing;
 
 interface
 
+{$I switches.inc}
+
 {$IFDEF FPC}
   {$MODE DELPHI}
 {$ENDIF}
 
 
-uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, ULyrics,
-  TextGL, OpenGL12, BASS, UThemes, ULCD, UGraphicClasses, UVideo;
+uses UMenu,
+     UMusic,
+     SDL,
+     SysUtils,
+     UFiles,
+     UTime,
+     USongs,
+     UIni,
+     ULog,
+     UTexture,
+     ULyrics,
+     TextGL,
+     OpenGL12,
+     {$IFDEF useBASS}
+     bass,
+     {$ENDIF}
+     UThemes,
+     ULCD,
+     UGraphicClasses,
+     UVideo;
 
 type
   TScreenSing = class(TMenu)

@@ -7,7 +7,9 @@ interface
 {$ENDIF}
 
 uses OpenGL12,
-     Windows,
+     {$IFDEF win32}
+     windows,
+     {$ENDIF}
      Math,
      Classes,
      SysUtils,

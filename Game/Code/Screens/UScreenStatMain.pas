@@ -8,7 +8,13 @@ interface
 
 
 uses
-  UMenu, SDL, SysUtils, UDisplay, UMusic, UIni, UThemes;
+  UMenu,
+  SDL,
+  SysUtils,
+  UDisplay,
+  UMusic,
+  UIni,
+  UThemes;
 
 type
   TScreenStatMain = class(TMenu)
@@ -27,7 +33,17 @@ type
 
 implementation
 
-uses UGraphic, UDataBase, USongs, ULanguage, windows, ULog;
+uses UGraphic,
+     UDataBase,
+     USongs,
+     ULanguage,
+     UCommon,
+     {$IFDEF win32}
+     windows,
+     {$ELSE}
+     sysconst,
+     {$ENDIF}
+     ULog;
 
 function TScreenStatMain.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -127,6 +143,17 @@ begin
 end;
 
 procedure TScreenStatMain.SetOverview;
+type
+  TwSystemTime = record
+    wYear,
+    wMonth,
+    wDayOfWeek,
+    wDay,
+    wHour,
+    wMinute,
+    wSecond,
+    wMilliseconds: Word;
+  end;
 var
   Overview, Formatstr: String;
   I: Integer;
@@ -135,6 +162,8 @@ var
   A4, A5: String;
   Result1, Result2: AStatResult;
   ResetTime: TSystemTime;
+  
+  {$IFDEF win32}
   function GetFileCreation(Filename: String): TSystemTime;
   var
     FindData: TWin32FindData;
@@ -144,25 +173,50 @@ var
     if Handle <> INVALID_HANDLE_VALUE then
     begin
       FileTimeToSystemTime(FindData.ftCreationTime, Result);
-      Windows.FindClose(Handle);
+      windows.FindClose(Handle);
     end;
   end;
+
+  {$ELSE}
+  
+  function GetFileCreation(Filename: String): TSystemTime;
+  Var
+    F,D : Longint;
+  Begin
+    F:=FileCreate( Filename );
+    try
+      D:=FileGetDate(F);
+      DateTimeToSystemTime( FileDateToDateTime(D) , result);
+    finally
+      FileClose(F);
+    end;
+  end;
+  {$ENDIF}
+  
 begin
   //Song Overview
 
   //Introduction
   Formatstr := Language.Translate ('STAT_OVERVIEW_INTRO');
-  {Format:
+  (*Format:
     %0:d Ultrastar Version
     %1:d Day of Reset (A1)
     %2:d Month of Reset (A2)
-    %3:d Year of Reset (A3)}
+    %3:d Year of Reset (A3)*)
 
   ResetTime := GetFileCreation(Database.Filename);
 
-  A1 := ResetTime.wDay;
-  A2 := ResetTime.wMonth;
-  A3 := ResetTime.wYear;
+  {$IFDEF win32}
+    A1 := ResetTime.wDay;
+    A2 := ResetTime.wMonth;
+    A3 := ResetTime.wYear;
+  {$ELSE}
+    A1 := ResetTime.Day;
+    A2 := ResetTime.Month;
+    A3 := ResetTime.Year;
+  {$ENDIF}
+  
+  
   try
     Overview := Format(Formatstr, [Language.Translate('US_VERSION'), A1, A2, A3]);
   except

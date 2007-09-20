@@ -6,7 +6,10 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-uses TextGL, UTexture, OpenGL12, SysUtils;
+uses TextGL,
+     UTexture,
+     OpenGL12,
+     SysUtils;
 
 type
   TText = class
@@ -49,7 +52,14 @@ type
   end;
 
 implementation
-uses UGraphic, StrUtils, Windows;
+
+uses UGraphic,
+     {$IFDEF win32}
+     windows,
+     {$ELSE}
+     lclintf,
+     {$ENDIF}
+     StrUtils;
 
 procedure TText.SetSelect(Value: Boolean);
 begin

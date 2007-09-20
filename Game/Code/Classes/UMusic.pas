@@ -2,21 +2,29 @@ unit UMusic;
 
 interface
 
+{$I switches.inc}
+
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
 
 
 uses Classes,
-     Windows,
+     {$IFDEF win32}
+     windows,
+     {$ENDIF}
+     UCommon,
      Messages,
      SysUtils,
      {$IFNDEF FPC}
      Forms,
      {$ENDIF}
+     {$IFDEF useBASS}
+     bass,
+     {$ENDIF}
      ULog,
-     USongs,
-     Bass;
+     USongs;
+
 
 procedure InitializeSound;
 
@@ -29,8 +37,8 @@ type
   TFFTData  = array [0..256] of Single;
   
   TCustomSoundEntry = record
-    Filename: String;
-    Handle: hStream;
+    Filename : String;
+    Handle   : hStream;
   end;
 
 
@@ -186,7 +194,10 @@ const
 
 implementation
 
-uses UCommon,
+uses
+     {$IFDEF FPC}
+     lclintf,
+     {$ENDIF}
      UGraphic,
      URecord,
      UFiles,
@@ -211,16 +222,19 @@ begin
   Loaded := false;
   Loop   := false;
 
-  fHWND  := AllocateHWND( nil); // TODO : JB - can we do something different here ?? lazarus didnt like this function
+  fHWND  := AllocateHWND( nil); // TODO : JB_lazarus - can we do something different here ?? lazarus didnt like this function
 
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   if not BASS_Init(1, 44100, 0, fHWND, nil) then
   begin
     {$IFNDEF FPC}
-    // TODO : JB find a way to do this nice..
+    // TODO : JB_lazarus find a way to do this nice..
     Application.MessageBox ('Could not initialize BASS', 'Error');
     {$ENDIF}
     Exit;
   end;
+  {$ENDIF}
 
   Log.BenchmarkEnd(4); Log.LogBenchmark('--> Bass Init', 4);
 
@@ -327,9 +341,13 @@ begin
   //Old Sets Wave Volume
   //BASS_SetVolume(Volume);
   //New: Sets Volume only for this Application
+
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, Volume);
+  {$ENDIF}
 end;
 
 procedure TMusic.SetMusicVolume(Volume: Integer);
@@ -339,7 +357,10 @@ begin
     Volume := 100;
 
   //Set Volume
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelSetAttributes (Bass, -1, Volume, -101);
+  {$ENDIF}
 end;
 
 procedure TMusic.SetLoop(Enabled: boolean);
@@ -350,8 +371,13 @@ end;
 function TMusic.Open(Name: string): boolean;
 begin
   Loaded := false;
-  if FileExists(Name) then begin
+  if FileExists(Name) then
+  begin
+    {$IFDEF useBASS}
+    // TODO : jb_linux replace with something other than bass
     Bass := Bass_StreamCreateFile(false, pchar(Name), 0, 0, 0);
+    {$ENDIF}
+    
     Loaded := true;
     //Set Max Volume
     SetMusicVolume (100);
@@ -370,12 +396,17 @@ procedure TMusic.MoveTo(Time: real);
 var
   bytes:    integer;
 begin
-    bytes := BASS_ChannelSeconds2Bytes(Bass, Time);
-    BASS_ChannelSetPosition(Bass, bytes);
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
+  bytes := BASS_ChannelSeconds2Bytes(Bass, Time);
+  BASS_ChannelSetPosition(Bass, bytes);
+  {$ENDIF}
 end;
 
 procedure TMusic.Play;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   if Loaded then
   begin
     if Loop then
@@ -383,23 +414,33 @@ begin
       
     BASS_ChannelPlay(Bass, False); // for setting position before playing
   end;
+  {$ENDIF}
 end;
 
 procedure TMusic.Pause; //Pause Mod
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   if Loaded then begin
     BASS_ChannelPause(Bass); // Pauses Song
   end;
+  {$ENDIF}
 end;
 
 procedure TMusic.Stop;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   Bass_ChannelStop(Bass);
+  {$ENDIF}
 end;
 
 procedure TMusic.Close;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   Bass_StreamFree(Bass);
+  {$ENDIF}
 end;
 
 function TMusic.Length: real;
@@ -408,8 +449,11 @@ var
 begin
   Result := 60;
 
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   bytes  := BASS_ChannelGetLength(Bass);
   Result := BASS_ChannelBytes2Seconds(Bass, bytes);
+  {$ENDIF}
 end;
 
 function TMusic.Position: real;
@@ -417,73 +461,113 @@ var
   bytes:    integer;
 begin
   Result := 0;
+
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   bytes  := BASS_ChannelGetPosition(BASS);
   Result := BASS_ChannelBytes2Seconds(BASS, bytes);
+  {$ENDIF}
 end;
 
 function TMusic.Finished: boolean;
 begin
   Result := false;
 
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then
   begin
     Result := true;
   end;
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayStart;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassStart, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayBack;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassBack, True);// then
+  {$ENDIF}
 end;
 
 procedure TMusic.PlaySwoosh;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassSwoosh, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayChange;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassChange, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayOption;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassOption, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayClick;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassClick, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayDrum;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassDrum, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayHihat;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassHihat, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayClap;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassClap, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.PlayShuffle;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassShuffle, True);
+  {$ENDIF}
 end;
 
 procedure TMusic.StopShuffle;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_ChannelStop(BassShuffle);
+  {$ENDIF}
 end;
 
 procedure TMusic.CaptureStart;
@@ -529,6 +613,9 @@ var
   Error:      integer;
   ErrorMsg:   string;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
+
   if not BASS_RecordInit(RecordI) then begin
     Error := BASS_ErrorGetCode;
 
@@ -552,12 +639,17 @@ begin
   begin
     Recording.SoundCard[RecordI].BassRecordStream := BASS_RecordStart(44100, 2, MakeLong(0, 20) , @GetMicrophone, PlayerLeft + PlayerRight*256);
   end;
+  
+  {$ENDIF}
 end;
 
 procedure TMusic.StopCard(Card: byte);
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
   BASS_RecordSetDevice(Card);
   BASS_RecordFree;
+  {$ENDIF}
 end;
 
 function TMusic.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
@@ -567,7 +659,11 @@ begin
   if FileExists(Name) then begin
     Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
     try
+      {$IFDEF useBASS}
+      // TODO : jb_linux replace with something other than bass
       hStream := BASS_StreamCreateFile(False, pchar(Name), 0, 0, 0);
+      {$ENDIF}
+      
       //Add CustomSound
       L := High(CustomSounds) + 1;
       SetLength (CustomSounds, L + 1);
@@ -587,9 +683,14 @@ function TMusic.GetFFTData: TFFTData;
 var
 Data: TFFTData;
 begin
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
+
   //Get Channel Data Mono and 256 Values
   BASS_ChannelGetData(Bass, @Result, BASS_DATA_FFT512);
   //Result := Data;
+  
+  {$ENDIF}
 end;
 
 function TMusic.LoadCustomSound(const Filename: String): Cardinal;
@@ -617,8 +718,13 @@ end;
 
 procedure TMusic.PlayCustomSound(const Index: Cardinal);
 begin
-if Index <= High(CustomSounds) then
-  BASS_ChannelPlay(CustomSounds[Index].Handle, True);
+  {$IFDEF useBASS}
+  // TODO : jb_linux replace with something other than bass
+
+  if Index <= High(CustomSounds) then
+    BASS_ChannelPlay(CustomSounds[Index].Handle, True);
+    
+  {$ENDIF}
 end;
 
 

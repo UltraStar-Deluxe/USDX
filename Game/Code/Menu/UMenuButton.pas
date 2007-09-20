@@ -84,7 +84,14 @@ type
   end;
 
 implementation
-uses UDrawTexture, SysUtils, windows;
+
+uses SysUtils,
+     {$IFDEF win32}
+     windows,
+     {$ELSE}
+     lclintf,
+     {$ENDIF}
+     UDrawTexture;
 
 procedure TButton.SetX(Value: real);
 {var

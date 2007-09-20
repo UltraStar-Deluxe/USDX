@@ -2,6 +2,9 @@ unit UJoystick;
 
 interface
 
+{$I switches.inc}
+
+
 uses SDL;
 
 type
@@ -38,7 +41,13 @@ var
 
 implementation
 
-uses SysUtils, Windows, ULog;
+uses SysUtils,
+     {$IFDEF win32}
+     windows,
+     {$ELSE}
+     LCLIntf,
+     {$ENDIF}
+     ULog;
 
 constructor TJoy.Create;
 var

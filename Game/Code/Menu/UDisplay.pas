@@ -6,7 +6,12 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-uses Windows,
+uses {$IFDEF win32}
+     windows,
+     {$ELSE}
+     LCLType,
+     {$ENDIF}
+     ucommon,
      SDL,
      UMenu,
      OpenGL12,
@@ -65,6 +70,9 @@ uses
      ulazjpeg,
      {$ELSE}
      JPEG,
+     {$ENDIF}
+     {$IFNDEF win32}
+     lclintf,
      {$ENDIF}
      graphics,
      TextGL,
@@ -227,6 +235,7 @@ begin
           // blackscreen-hack
           if not BlackScreen then
             NextScreen.onShow;
+            
           lastTime:=GetTickCount;
           if (S=2) or (Screens = 1) then
             myfade:=myfade+1;
@@ -364,7 +373,7 @@ begin
 
  //Speicher für die Speicherung der Header-Informationen vorbereiten
  ZeroMemory(@FileHeader, SizeOf(BITMAPFILEHEADER));
- ZeroMemory(@FileInfo, SizeOf(BITMAPINFOHEADER));
+ ZeroMemory(@FileInfo  , SizeOf(BITMAPINFOHEADER));
  
  //Initialisieren der Daten des Headers
  FileHeader.bfType := 19778; //$4D42 = 'BM'

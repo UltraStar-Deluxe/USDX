@@ -3,7 +3,18 @@ unit UScreenCredits;
 interface
 
 uses
-  UMenu, SDL, UDisplay, UTexture, OpenGL12, UMusic, UFiles, SysUtils, UThemes, ULCD, ULight, UGraphicClasses;
+    UMenu,
+    SDL,
+    UDisplay,
+    UTexture,
+    OpenGL12,
+    UMusic,
+    UFiles,
+    SysUtils,
+    UThemes,
+    ULCD,
+    ULight,
+    UGraphicClasses;
 
 type
   TCreditsStages=(InitialDelay,Intro,MainPart,Outro);
@@ -104,7 +115,11 @@ const
 
 implementation
 
-uses Windows,
+uses {$IFDEF win32}
+     windows,
+     {$ELSE}
+     lclintf,
+     {$ENDIF}
      UGraphic,
      UMain,
      UIni,
@@ -292,10 +307,8 @@ const  myLogoCoords: Array[0..27,0..1] of Cardinal = ((39,32),(84,32),(100,16),(
                                        (450,32),(485,34),(444,91),(486,93));
 
 begin
-//dis does teh muiwk y0r
-Data := Music.GetFFTData;
-
-
+  //dis does teh muiwk y0r
+  Data := Music.GetFFTData;
 
   T := GetTickCount div 33;
   if T <> Credits_Time then

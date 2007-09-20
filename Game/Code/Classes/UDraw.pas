@@ -63,7 +63,27 @@ const
 
 implementation
 
-uses Windows, OpenGL12, UGraphic, SysUtils, UMusic, URecord, ULog, UScreenSing, UScreenSingModi, ULyrics, UMain, TextGL, UTexture, UDrawTexture, UIni, Math, UDLLManager;
+uses {$IFDEF Win32}
+     windows,
+     {$ELSE}
+     lclintf,
+     {$ENDIF}
+     OpenGL12,
+     UGraphic,
+     SysUtils,
+     UMusic,
+     URecord,
+     ULog,
+     UScreenSing,
+     UScreenSingModi,
+     ULyrics,
+     UMain,
+     TextGL,
+     UTexture,
+     UDrawTexture,
+     UIni,
+     Math,
+     UDLLManager;
 
 procedure SingDrawBackground;
 var
@@ -640,7 +660,8 @@ begin
 
   //SingBar Mod
   //modded again to make it moveable: it's working, so why try harder
-  else if Ini.Oscilloscope = 2 then begin
+  else if Ini.Oscilloscope = 2 then
+  begin
     A := GetTickCount div 33;
     if A <> Tickold then begin
       Tickold := A;

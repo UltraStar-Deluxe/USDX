@@ -2,6 +2,10 @@ unit UTime;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 type
   TTime = class
     constructor Create;
@@ -25,7 +29,19 @@ var
 
 implementation
 
-uses Windows;
+uses
+  {$IFDEF win32}
+    windows,
+  {$ELSE}
+  libc,
+  time,
+  {$ENDIF}
+  ucommon;
+
+
+// -- ON Linux it MAY Be better to use ...   clock_gettime() instead of  CurrentSec100OfDay
+// who knows how fast or slow that function is !
+// but this gets a compile for now .. :)
 
 constructor TTime.Create;
 begin
@@ -34,21 +50,37 @@ end;
 
 procedure CountSkipTimeSet;
 begin
+  {$IFDEF win32}
   QueryPerformanceFrequency(TimeFreq);
   QueryPerformanceCounter(TimeNew);
+  {$ELSE}
+  TimeNew  := CurrentSec100OfDay();     // TODO - JB_Linux will prob need looking at
+  TimeFreq := 0;
+  {$ENDIF}
 end;
 
 procedure CountSkipTime;
 begin
   TimeOld := TimeNew;
+  
+  {$IFDEF win32}
   QueryPerformanceCounter(TimeNew);
+  {$ELSE}
+  TimeNew := CurrentSec100OfDay();    // TODO - JB_Linux will prob need looking at
+  {$ENDIF}
+  
   TimeSkip := (TimeNew-TimeOld)/TimeFreq;
 end;
 
 procedure CountMidTime;
 begin
+  {$IFDEF win32}
   QueryPerformanceCounter(TimeMidTemp);
   TimeMid := (TimeMidTemp-TimeNew)/TimeFreq;
+  {$ELSE}
+  TimeMidTemp := CurrentSec100OfDay();
+  TimeMid     := (TimeMidTemp-TimeNew);      // TODO - JB_Linux will prob need looking at
+  {$ENDIF}
 end;
 
 procedure TimeSleep(ms: real);
@@ -58,13 +90,26 @@ var
   Time:       real;
   Stop:       boolean;
 begin
+  {$IFDEF win32}
   QueryPerformanceCounter(TimeStart);
+  {$ELSE}
+  TimeStart := CurrentSec100OfDay();   // TODO - JB_Linux will prob need looking at
+  {$ENDIF}
+
 
   Stop := false;
-  while (not Stop) do begin
+  while (not Stop) do
+  begin
+    {$IFDEF win32}
     QueryPerformanceCounter(TimeHalf);
     Time := 1000 * (TimeHalf-TimeStart)/TimeFreq;
-    if Time > ms then Stop := true;
+    {$ELSE}
+    TimeHalf := CurrentSec100OfDay();
+    Time := 1000 * (TimeHalf-TimeStart); // TODO - JB_Linux will prob need looking at
+    {$ENDIF}
+
+    if Time > ms then
+      Stop := true;
   end;
 
 end;
@@ -73,8 +118,13 @@ function TTime.GetTime: real;
 var
   TimeTemp:   int64;
 begin
-  QueryPerformanceCounter(TimeTemp);
-  Result := TimeTemp/TimeFreq;
+  {$IFDEF win32}
+    QueryPerformanceCounter(TimeTemp);
+    Result := TimeTemp / TimeFreq;
+  {$ELSE}
+    TimeTemp := CurrentSec100OfDay();
+    Result   := TimeTemp;  // TODO - JB_Linux will prob need looking at
+  {$ENDIF}
 end;
 
 

@@ -12,27 +12,42 @@ unit UTexture;
 
 interface
 
+{$I switches.inc}
+
 {$IFDEF FPC}
   {$MODE DELPHI}
 {$ENDIF}
 
 uses OpenGL12,
-     Windows,
+     {$IFDEF win32}
+     windows,
+     {$ENDIF}
      Math,
      Classes,
      SysUtils,
      {$IFDEF FPC}
      ulazjpeg,
      {$ELSE}
-     Graphics,
      JPEG,
      PNGImage,
      {$ENDIF}
+     Graphics,
      UCommon,
      UThemes;
 
 
-procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
+  {$IFDEF Win32}
+    procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
+
+  {$ELSE}
+    {$ifdef darwin}
+    const opengl32 = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib';
+    {$ELSE}
+    const opengl32 = 'libGL.so' ; // YES Capital GL
+    {$ENDIF}
+    
+    procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
+  {$ENDIF}
 
 type
   TTexture = record
@@ -319,7 +334,7 @@ var
   RGBPtr: PByte;
   myHue: Double;
 begin
-  {$IFNDEF FPC} // TODO : JB eeeew this is a nasty one...
+  {$IFNDEF FPC} // TODO : JB_lazarus eeeew this is a nasty one...
                 // but lazarus implementation scanlines is different :(
                 // need to implement as per
                 //    http://www.lazarus.freepascal.org/index.php?name=PNphpBB2&file=viewtopic&p=18512
@@ -376,7 +391,7 @@ begin
   else if Format = 'PNG' then
   begin
     {$IFNDEF FPC}
-    // TODO : JB - fix this for lazarus..
+    // TODO : JB_lazarus - fix this for lazarus..
     TexturePNG := TPNGObject.Create;
     if FromRegistry then
       TexturePNG.LoadFromStream(Res)

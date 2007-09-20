@@ -47,7 +47,9 @@ uses UMain,
      IniFiles,
      Classes,
      SysUtils,
-     Windows,
+     {$IFDEF win32}
+     windows,
+     {$ENDIF}
      ULog;
 
 //----------
