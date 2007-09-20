@@ -154,32 +154,36 @@ begin
   // find texture entry
   T := FindTexture(Name);
 
-  if T = -1 then begin
+  if T = -1 then
+  begin
     // create texture entry
     T := Length(TextureDatabase.Texture);
     SetLength(TextureDatabase.Texture, T+1);
+
     TextureDatabase.Texture[T].Name := Name;
-    TextureDatabase.Texture[T].Typ := Typ;
+    TextureDatabase.Texture[T].Typ  := Typ;
 
     // inform database that no textures have been loaded into memory
-    TextureDatabase.Texture[T].Texture.TexNum := -1;
+    TextureDatabase.Texture[T].Texture.TexNum      := -1;
     TextureDatabase.Texture[T].TextureCache.TexNum := -1;
   end;
 
   // use preloaded texture
-  if (not FromCache) or (FromCache and not Covers.CoverExists(Name)) then begin
+  if (not FromCache) or (FromCache and not Covers.CoverExists(Name)) then
+  begin
     // use full texture
-    if TextureDatabase.Texture[T].Texture.TexNum = -1 then begin
+    if TextureDatabase.Texture[T].Texture.TexNum = -1 then
+    begin
       // load texture
       TextureDatabase.Texture[T].Texture := LoadTexture(false, pchar(Name), 'JPG', pchar(Typ), $0);
     end;
 
     // use texture
     Result := TextureDatabase.Texture[T].Texture;
-
   end;
 
-  if FromCache and Covers.CoverExists(Name) then begin
+  if FromCache and Covers.CoverExists(Name) then
+  begin
     // use cache texture
     C := Covers.CoverNumber(Name);
 
@@ -381,7 +385,7 @@ var
 begin
   lTextureStream := nil;
 
-//   Log.LogStatus( 'From Resource - ' + inttostr( integer( FromRegistry ) ) , Identifier +' '+ Format +' '+ Typ );
+   Log.LogStatus( 'From Resource - ' + inttostr( integer( FromRegistry ) ) , Identifier +' '+ Format +' '+ Typ );
 
 //  {$IFNDEF FPC}
                 // TODO : JB_lazarus eeeew this is a nasty one...
@@ -396,10 +400,12 @@ begin
   if FromRegistry then
   begin
     try
+      {$IFNDEF FPC}
       lTextureStream := TResourceStream.Create(HInstance, Identifier, Format);
 
       // TEmp, untill all code is moved to refactord way..
       Res := TResourceStream( lTextureStream );
+      {$ENDIF}
     except
       Log.LogStatus( 'ERROR Could not load from resource' , Identifier +' '+ Format +' '+ Typ );
       beep;

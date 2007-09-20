@@ -245,6 +245,12 @@ uses  UMain,
       {$ENDIF}
       Classes;
 
+procedure LoadFontTextures;
+begin
+  Log.LogStatus('Building Fonts', 'LoadTextures');
+  BuildFont;
+end;
+
 procedure LoadTextures;
 
 
@@ -261,6 +267,8 @@ begin
   Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'BMP', 'Transparent', 0);     //brauch man die noch?
 
   // P1-6
+  // TODO... do it once for each player... this is a bit crappy !!
+  //                                       can we make it any better !?
   for P := 1 to 6 do
   begin
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
@@ -307,8 +315,8 @@ begin
   //PhrasenBonus - Line Bonus Mod End
 
   // tworzenie czcionek
-  Log.LogStatus('Building Fonts', 'LoadTextures');
-  BuildFont;
+//  Log.LogStatus('Building Fonts', 'LoadTextures');
+//  BuildFont;
 end;
 
 procedure Initialize3D (Title: string);
@@ -320,12 +328,13 @@ var
   I: Integer;
 begin
   Log.LogStatus('LoadOpenGL', 'Initialize3D');
-  Log.BenchmarkStart(2);
+//  Log.BenchmarkStart(2);
 
   LoadOpenGL;
 
   Log.LogStatus('SDL_Init', 'Initialize3D');
-  if ( SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO)= -1 ) then begin
+  if ( SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO)= -1 ) then
+  begin
     Log.LogError('SDL_Init Failed', 'Initialize3D');
     exit;
   end;
@@ -355,17 +364,17 @@ begin
 
   InitializeScreen;
 
-  Log.BenchmarkEnd(2);
-  Log.LogBenchmark('--> Setting Screen', 2);
+//  Log.BenchmarkEnd(2);
+//  Log.LogBenchmark('--> Setting Screen', 2);
 
   // ladowanie tekstur
-  Log.BenchmarkStart(2);
+//  Log.BenchmarkStart(2);
   Texture := TTextureUnit.Create;
   Texture.Limit := 1024*1024;
 
-  LoadTextures;
-  Log.BenchmarkEnd(2);
-  Log.LogBenchmark('--> Loading Textures', 2);
+//  LoadTextures;
+//  Log.BenchmarkEnd(2);
+//  Log.LogBenchmark('--> Loading Textures', 2);
 
 {  Log.BenchmarkStart(2);
   Lyric:= TLyric.Create;
@@ -373,21 +382,23 @@ begin
   Log.LogBenchmark('--> Loading Fonts', 2);
 }
 
-  Log.BenchmarkStart(2);
+//  Log.BenchmarkStart(2);
   Display := TDisplay.Create;
   SDL_EnableUnicode(1);
-  Log.BenchmarkEnd(2); Log.LogBenchmark('====> Creating Display', 2);
+//  Log.BenchmarkEnd(2); Log.LogBenchmark('====> Creating Display', 2);
 
-  Log.LogStatus('Loading Screens', 'Initialize3D');
-  Log.BenchmarkStart(3);
+//  Log.LogStatus('Loading Screens', 'Initialize3D');
+//  Log.BenchmarkStart(3);
+
+  LoadFontTextures();
 
   // Show the Loading Screen -------------
   LoadLoadingScreen;
   Log.LogStatus('Loading Screens', 'Initialize3D');
 
 
-//  LoadTextures; // jb
-//  Log.LogStatus(' Loading Textures', '');
+  LoadTextures; // jb
+  Log.LogStatus(' Loading Textures', '');
 
 
   

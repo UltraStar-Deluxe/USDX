@@ -288,7 +288,8 @@ end;
 
 procedure TMenu.AddBackground(Name: string);
 begin
-  if Name <> '' then begin
+  if Name <> '' then
+  begin
 //    BackImg := Texture.LoadTexture(false, PChar(Skin.SkinPath + FileName), 'JPG', 'Plain', 0); // new theme system
     BackImg := Texture.GetTexture(Skin.GetTextureFileName(Name), 'Plain');
     BackImg.W := 800;
