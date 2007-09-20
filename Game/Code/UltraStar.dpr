@@ -73,7 +73,7 @@ uses
   USongs in 'Classes\USongs.pas',
   UIni in 'Classes\UIni.pas',
   ULyrics in 'Classes\ULyrics.pas',
-  ULyrics.bak in 'Classes\ULyrics.bak.pas',
+  ULyrics_bak in 'Classes\ULyrics_bak.pas',
   USkins in 'Classes\USkins.pas',
   UThemes in 'Classes\UThemes.pas',
   ULog in 'Classes\ULog.pas',

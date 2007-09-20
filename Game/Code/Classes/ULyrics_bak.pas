@@ -1,7 +1,17 @@
-unit ULyrics.bak;
+unit ULyrics_bak;
 
 interface
-uses SysUtils, OpenGL12, UMusic, UTexture;
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+{$I switches.inc}
+
+uses SysUtils,
+     OpenGL12,
+     UMusic,
+     UTexture;
 
 type
   TWord = record
@@ -74,6 +84,15 @@ type
       Text:     string;   // LCD
 
       constructor Create;
+      
+      procedure AddWord(Text: string);
+      procedure AddCzesc(NrCzesci: integer);
+
+      function SelectedLetter: integer;  // LCD
+      function SelectedLength: integer;  // LCD
+
+      procedure Clear;
+      procedure Draw;
     published
       property X: real write SetX;
       property Y: real write SetY;
@@ -85,15 +104,6 @@ type
       property Scale: real write SetScale;
       property Style: integer write SetStyle;
       property FontStyle: integer write SetFStyle;
-      procedure AddWord(Text: string);
-      procedure AddCzesc(NrCzesci: integer);
-
-      function SelectedLetter: integer;  // LCD
-      function SelectedLength: integer;  // LCD
-
-      procedure Clear;
-      procedure Draw;
-
   end;
 
 var

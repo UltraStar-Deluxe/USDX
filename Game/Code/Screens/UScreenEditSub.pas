@@ -2,6 +2,10 @@ unit UScreenEditSub;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses
@@ -16,7 +20,7 @@ uses
     ULog,
     UTexture,
     UMenuText,
-    ULyrics.bak,
+    ULyrics_bak,
     Math,
     OpenGL12,
     {$IFDEF UseMIDIPort}

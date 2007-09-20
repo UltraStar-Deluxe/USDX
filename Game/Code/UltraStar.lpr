@@ -110,6 +110,7 @@ uses
   ULight                 in 'Classes\ULight.pas',
   ULog                   in 'Classes\ULog.pas',
   ULyrics                in 'Classes\ULyrics.pas',
+  ULyrics_bak            in 'Classes\ULyrics_bak.pas',
   UMain                  in 'Classes\UMain.pas',
   UMusic                 in 'Classes\UMusic.pas',
   UParty                 in 'Classes\UParty.pas',

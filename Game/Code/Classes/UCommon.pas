@@ -29,11 +29,15 @@ type
   TWndMethod = procedure(var Message: TMessage) of object;
 
 function  RandomRange(aMin: Integer; aMax: Integer) : Integer;
-//function  AllocateHWnd(Method: TWndMethod): HWND;
-//procedure DeallocateHWnd(Wnd: HWND);
 
 function MaxValue(const Data: array of Double): Double;
 function MinValue(const Data: array of Double): Double;
+
+{$IFDEF Win32}
+function  AllocateHWnd(Method: TWndMethod): HWND;
+procedure DeallocateHWnd(Wnd: HWND);
+{$ENDIF}
+
 {$ENDIF}
 
 {$IFNDEF win32}
@@ -107,7 +111,7 @@ end;
 // NOTE !!!!!!!!!!
 // AllocateHWnd is in lclintfh.inc
 
-{
+{$IFDEF Win32}
 // TODO : JB this is dodgey and bad... find a REAL solution !
 function AllocateHWnd(Method: TWndMethod): HWND;
 var
@@ -124,7 +128,7 @@ begin
   Instance := Pointer(GetWindowLong(Wnd, GWL_WNDPROC));
   DestroyWindow(Wnd);
 end;
-}
+{$ENDIF}
 
 {$ENDIF}
 
