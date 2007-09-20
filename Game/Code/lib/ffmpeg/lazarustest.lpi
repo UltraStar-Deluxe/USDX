@@ -31,7 +31,7 @@
         <Filename Value="lazarustest.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="lazarustest"/>
-        <CursorPos X="37" Y="24"/>
+        <CursorPos X="94" Y="30"/>
         <TopLine Value="1"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="23"/>
@@ -50,7 +50,7 @@
         <CursorPos X="8" Y="40"/>
         <TopLine Value="1"/>
         <EditorIndex Value="2"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit2>
       <Unit3>
@@ -59,7 +59,7 @@
         <CursorPos X="13" Y="34"/>
         <TopLine Value="12"/>
         <EditorIndex Value="3"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="12"/>
         <Loaded Value="True"/>
       </Unit3>
       <Unit4>
@@ -68,7 +68,7 @@
         <CursorPos X="1" Y="1"/>
         <TopLine Value="1"/>
         <EditorIndex Value="4"/>
-        <UsageCount Value="11"/>
+        <UsageCount Value="12"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
@@ -77,7 +77,7 @@
         <CursorPos X="5" Y="28"/>
         <TopLine Value="1"/>
         <EditorIndex Value="1"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="11"/>
         <Loaded Value="True"/>
       </Unit5>
     </Units>
