@@ -312,7 +312,7 @@ end;
 procedure Initialize3D (Title: string);
 var
 //  Icon: TIcon;
-  Res:  TResourceStream;
+//  Res:  TResourceStream;
   ISurface: PSDL_Surface;
   Pixel: PByteArray;
   I: Integer;
