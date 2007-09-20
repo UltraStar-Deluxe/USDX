@@ -316,6 +316,8 @@ function TTextureUnit.LoadBitmap( aSourceStream : TStream; aIMG : TBitMap ): boo
 begin
   result := false;
   try
+    Log.LogStatus( '  TTextureUnit.LoadBitmap' , '' );
+
     aSourceStream.position := 0;
     aIMG.LoadFromStream( aSourceStream );
   finally
@@ -329,6 +331,8 @@ var
 begin
   result := false;
   try
+    Log.LogStatus( '  TTextureUnit.LoadJpeg' , '');
+
     aSourceStream.position := 0;
 
     TextureJ := TJPEGImage.Create;
@@ -375,6 +379,7 @@ var
   
   lTextureStream : TStream;
 begin
+  lTextureStream := nil;
 
   Log.LogStatus( 'From Resource - ' + inttostr( integer( FromRegistry ) ) , Identifier +' '+ Format +' '+ Typ );
 //  {$IFNDEF FPC}
@@ -390,9 +395,13 @@ begin
   if FromRegistry then
   begin
     try
-//      Res := TResourceStream.Create(HInstance, Identifier, Format);
+
+      Log.LogStatus( '  A' , '');
+
+    //      Res := TResourceStream.Create(HInstance, Identifier, Format);
       lTextureStream := TResourceStream.Create(HInstance, Identifier, Format);
-      
+      Log.LogStatus( '  B' , '');
+
       // TODO : Where does the format come from
     except
       Log.LogStatus( 'ERROR Could not load from resource' , Identifier +' '+ Format +' '+ Typ );
@@ -406,13 +415,17 @@ begin
     begin
       // Get the File Extension...
       Format := PAnsichar(UpperCase(RightStr(ExtractFileExt(Identifier),3)));
-      lTextureStream := TFileStream.create( Identifier , fmOpenRead );
+      lTextureStream := TFileStream.create( Identifier , fmOpenRead or fmShareDenyNone );
     end;
   end;
 
-//  if FromRegistry or
-//     ((not FromRegistry) and FileExists(Identifier)) then
+  if assigned( lTextureStream ) then
   begin
+    Log.LogStatus( '  C - '+Format , '');
+
+    // TEmp, untill all code is moved to refactord way..
+    Res := TResourceStream( lTextureStream );
+
   TextureB := TBitmap.Create;
 
   if Format = 'BMP' then
