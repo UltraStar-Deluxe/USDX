@@ -90,7 +90,8 @@ type
   TTextureUnit = class
   
     private
-      function LoadBitmap( aSourceStream : TStream; aBMP : TBitMap ): boolean;
+      function LoadBitmap( aSourceStream : TStream; aIMG : TBitMap ): boolean;
+      function LoadJpeg( aSourceStream : TStream; aIMG : TBitMap ): boolean;
     public
     Limit:      integer;
     CreateCacheMipmap:  boolean;
@@ -311,11 +312,39 @@ begin
 end;
 
 
-function TTextureUnit.LoadBitmap( aSourceStream : TStream; aBMP : TBitMap ): boolean;
+function TTextureUnit.LoadBitmap( aSourceStream : TStream; aIMG : TBitMap ): boolean;
 begin
-  aSourceStream.position := 0;
-  boolean := aBMP.LoadFromStream( aSourceStream ) > 0;
+  result := false;
+  try
+    aSourceStream.position := 0;
+    aIMG.LoadFromStream( aSourceStream );
+  finally
+    result := aSourceStream.position > 0;
+  end;
 end;
+
+function TTextureUnit.LoadJpeg( aSourceStream : TStream; aIMG : TBitMap ): boolean;
+var
+  TextureJ:   TJPEGImage;
+begin
+  result := false;
+  try
+    aSourceStream.position := 0;
+
+    TextureJ := TJPEGImage.Create;
+    try
+      TextureJ.LoadFromStream( aSourceStream );
+      aIMG.Assign(TextureJ);
+    finally
+      TextureJ.Free;
+    end;
+  finally
+    result := aSourceStream.position > 0;
+  end;
+end;
+
+
+
 
 function TTextureUnit.LoadTexture(FromRegistry: boolean; Identifier, Format, Typ: PChar; Col: LongWord): TTexture;
 var
@@ -381,38 +410,16 @@ begin
     end;
   end;
 
-  if FromRegistry or
-     ((not FromRegistry) and FileExists(Identifier)) then
+//  if FromRegistry or
+//     ((not FromRegistry) and FileExists(Identifier)) then
   begin
-    TextureB := TBitmap.Create;
+  TextureB := TBitmap.Create;
 
   if Format = 'BMP' then
-  begin
-    LoadBitmap( aSourceStream : TStream; TextureB );
-    
-    if FromRegistry then
-       TextureB.LoadFromStream(Res)
-    else
-       TextureB.LoadFromFile(Identifier);
-  end
+    LoadBitmap( lTextureStream , TextureB )
   else
   if Format = 'JPG' then
-  begin
-    TextureJ := TJPEGImage.Create;
-    
-    if FromRegistry then
-       TextureJ.LoadFromStream(Res)
-    else
-    begin
-      if FileExists(Identifier) then
-        TextureJ.LoadFromFile(Identifier)
-      else
-        Exit;
-    end;
-    
-    TextureB.Assign(TextureJ);
-    TextureJ.Free;
-  end
+    LoadJpeg( lTextureStream , TextureB )
   else if Format = 'PNG' then
   begin
     {$IFNDEF FPC}
