@@ -66,9 +66,8 @@ type
   end;
 
 var
-  Screen:             PSDL_Surface;
-
-  LoadingThread:         PSDL_Thread;
+  Screen:         PSDL_Surface;
+  LoadingThread:  PSDL_Thread;
   Mutex:          PSDL_Mutex;
 
   RenderW:    integer;
@@ -256,41 +255,44 @@ var
 begin
    // zaladowanie tekstur
   Log.LogStatus('Loading Textures', 'LoadTextures');
+  
   Tex_Left[0]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'BMP', 'Transparent', 0);     //brauch man die noch?
   Tex_Mid[0]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'BMP', 'Plain', 0);           //brauch man die noch?
   Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'BMP', 'Transparent', 0);     //brauch man die noch?
 
   // P1-6
-  for P := 1 to 6 do begin
+  for P := 1 to 6 do
+  begin
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Left[P]        :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'PNG', 'Colorized', Col);
-    Tex_Mid[P]         :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'PNG', 'Colorized', Col);
-    Tex_Right[P]       :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'PNG', 'Colorized', Col);
+    
+    Tex_Left[P]         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'PNG', 'Colorized', Col);
+    Tex_Mid[P]          := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'PNG', 'Colorized', Col);
+    Tex_Right[P]        := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'PNG', 'Colorized', Col);
 
-    Tex_plain_Left[P]  :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainLeft')),  'PNG', 'Colorized', Col);
-    Tex_plain_Mid[P]   :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainMid')),   'PNG', 'Colorized', Col);
-    Tex_plain_Right[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainRight')), 'PNG', 'Colorized', Col);
+    Tex_plain_Left[P]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainLeft')),  'PNG', 'Colorized', Col);
+    Tex_plain_Mid[P]    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainMid')),   'PNG', 'Colorized', Col);
+    Tex_plain_Right[P]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainRight')), 'PNG', 'Colorized', Col);
 
-    Tex_BG_Left[P]     := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGLeft')),  'PNG', 'Colorized', Col);
-    Tex_BG_Mid[P]      := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGMid')),   'PNG', 'Colorized', Col);
-    Tex_BG_Right[P]    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), 'PNG', 'Colorized', Col);
+    Tex_BG_Left[P]      := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGLeft')),  'PNG', 'Colorized', Col);
+    Tex_BG_Mid[P]       := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGMid')),   'PNG', 'Colorized', Col);
+    Tex_BG_Right[P]     := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), 'PNG', 'Colorized', Col);
   end;
 
   Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'JPG', 'Font Black', 0);
-  Tex_Note_Star :=   Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) , 'JPG', 'Alpha Black Colored', $FFFFFF);
-  Tex_Ball :=        Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
-  Tex_Lyric_Help_Bar := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', 'Transparent', $FF00FF);
+  Tex_Note_Star         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) , 'JPG', 'Alpha Black Colored', $FFFFFF);
+  Tex_Ball              := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
+  Tex_Lyric_Help_Bar    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', 'Transparent', $FF00FF);
 
 
   //TimeBar mod
-  Tex_TimeProgress :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('TimeBar')));
+  Tex_TimeProgress := Texture.LoadTexture(pchar(Skin.GetTextureFileName('TimeBar')));
   //eoa TimeBar mod
 
   //SingBar Mod
-  Tex_SingBar_Back :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBack')),   'JPG', 'Plain', 0);
-  Tex_SingBar_Bar :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBar')),   'JPG', 'Plain', 0);
-  Tex_SingBar_Front :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarFront')),   'JPG', 'Font', 0);
+  Tex_SingBar_Back  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBack')),   'JPG', 'Plain', 0);
+  Tex_SingBar_Bar   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBar')),   'JPG', 'Plain', 0);
+  Tex_SingBar_Front := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarFront')),   'JPG', 'Font', 0);
   //end Singbar Mod
 
   //Line Bonus PopUp
@@ -370,6 +372,7 @@ begin
   Log.BenchmarkEnd(2);
   Log.LogBenchmark('--> Loading Fonts', 2);
 }
+
   Log.BenchmarkStart(2);
   Display := TDisplay.Create;
   SDL_EnableUnicode(1);
@@ -378,7 +381,11 @@ begin
   Log.LogStatus('Loading Screens', 'Initialize3D');
   Log.BenchmarkStart(3);
 
+  // Show the Loading Screen -------------
   LoadLoadingScreen;
+  
+  
+  
   // now that we have something to display while loading,
   // start thread that loads the rest of ultrastar
 //  Mutex   := SDL_CreateMutex;
@@ -414,7 +421,7 @@ begin
   //SDL_WaitThread(LoadingThread, I);
 //  SDL_DestroyMutex(Mutex);
 
-  Display.ActualScreen^.FadeTo(@ScreenMain);
+  Display.ActualScreen^.FadeTo( @ScreenMain );
 
   Log.BenchmarkEnd(2);
   Log.LogBenchmark('--> Loading Screens', 2);
@@ -486,12 +493,17 @@ begin
 //  SDL_SetRefreshrate(85);
 //  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
   if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
+  begin
     screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL)
-  else begin
+  end
+  else
+  begin
     screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
     SDL_ShowCursor(0);
   end;
-  if (screen = nil) then begin
+  
+  if (screen = nil) then
+  begin
     Log.LogError('SDL_SetVideoMode Failed', 'Initialize3D');
     exit;
   end;
@@ -512,10 +524,14 @@ procedure LoadLoadingScreen;
 begin
   ScreenLoading := TScreenLoading.Create;
   ScreenLoading.onShow;
+  
   Display.ActualScreen := @ScreenLoading;
+
   swapbuffers;
+
   ScreenLoading.Draw;
   Display.Draw;
+
   SwapBuffers;
 end;
 

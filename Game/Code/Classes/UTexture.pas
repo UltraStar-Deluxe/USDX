@@ -88,6 +88,10 @@ type
   end;
 
   TTextureUnit = class
+  
+    private
+      function LoadBitmap( aSourceStream : TStream; aBMP : TBitMap ): boolean;
+    public
     Limit:      integer;
     CreateCacheMipmap:  boolean;
 
@@ -307,6 +311,12 @@ begin
 end;
 
 
+function TTextureUnit.LoadBitmap( aSourceStream : TStream; aBMP : TBitMap ): boolean;
+begin
+  aSourceStream.position := 0;
+  boolean := aBMP.LoadFromStream( aSourceStream ) > 0;
+end;
+
 function TTextureUnit.LoadTexture(FromRegistry: boolean; Identifier, Format, Typ: PChar; Col: LongWord): TTexture;
 var
   Res:        TResourceStream;
@@ -333,8 +343,13 @@ var
   myRGBABitmap: array of byte;
   RGBPtr: PByte;
   myHue: Double;
+  
+  lTextureStream : TStream;
 begin
-  {$IFNDEF FPC} // TODO : JB_lazarus eeeew this is a nasty one...
+
+  Log.LogStatus( 'From Resource - ' + inttostr( integer( FromRegistry ) ) , Identifier +' '+ Format +' '+ Typ );
+//  {$IFNDEF FPC}
+                // TODO : JB_lazarus eeeew this is a nasty one...
                 // but lazarus implementation scanlines is different :(
                 // need to implement as per
                 //    http://www.lazarus.freepascal.org/index.php?name=PNphpBB2&file=viewtopic&p=18512
@@ -343,28 +358,38 @@ begin
   Log.BenchmarkStart(4);
   Mipmapping := true;
 
-  if FromRegistry then begin
+  if FromRegistry then
+  begin
     try
-      Res := TResourceStream.Create(HInstance, Identifier, Format);
+//      Res := TResourceStream.Create(HInstance, Identifier, Format);
+      lTextureStream := TResourceStream.Create(HInstance, Identifier, Format);
+      
+      // TODO : Where does the format come from
     except
+      Log.LogStatus( 'ERROR Could not load from resource' , Identifier +' '+ Format +' '+ Typ );
       beep;
       Exit;
     end;
+  end
+  else
+  begin
+    if ( FileExists(Identifier) ) then
+    begin
+      // Get the File Extension...
+      Format := PAnsichar(UpperCase(RightStr(ExtractFileExt(Identifier),3)));
+      lTextureStream := TFileStream.create( Identifier , fmOpenRead );
+    end;
   end;
 
-  // filetype "detection"
-  if (not FromRegistry) and (FileExists(Identifier)) then begin
-    Format:='';
-    Format := PAnsichar(UpperCase(RightStr(ExtractFileExt(Identifier),3)));
-  end;
-//  else Format:='JPG';
-//  if not ((Format='BMP')or(Format='JPG')or(Format='PNG')) then Format:='JPG';
-
-  if FromRegistry or ((not FromRegistry) and FileExists(Identifier)) then begin
+  if FromRegistry or
+     ((not FromRegistry) and FileExists(Identifier)) then
+  begin
     TextureB := TBitmap.Create;
 
   if Format = 'BMP' then
   begin
+    LoadBitmap( aSourceStream : TStream; TextureB );
+    
     if FromRegistry then
        TextureB.LoadFromStream(Res)
     else
@@ -452,7 +477,9 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  if Typ = 'Plain' then begin
+  if Typ = 'Plain' then
+  begin
+    {$IFNDEF FPC}
     // dimensions
     TexOrigW := TextureB.Width;
     TexOrigH := TextureB.Height;
@@ -537,6 +564,7 @@ begin
       Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 3, TexNewW, TexNewH, GL_RGB, GL_UNSIGNED_BYTE, @TextureD24);
       if Error > 0 then beep;
     end
+    {$ENDIF}
   end;
 
   if Typ = 'Transparent' then begin
@@ -639,7 +667,9 @@ begin
     end;}
   end;
 
-  if Typ = 'Font' then begin
+  if Typ = 'Font' then
+  begin
+    {$IFNDEF FPC}
     TextureB.PixelFormat := pf24bit;
     for Position := 0 to TextureB.Height-1 do begin
       PPix := TextureB.ScanLine[Position];
@@ -656,9 +686,12 @@ begin
       Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 2, TextureB.Width, TextureB.Height, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, @TextureD16);
       if Error > 0 then beep;
     end;
+    {$ENDIF}
   end;
 
-  if Typ = 'Font Outline' then begin
+  if Typ = 'Font Outline' then
+  begin
+    {$IFNDEF FPC}
     TextureB.PixelFormat := pf24bit;
     for Position := 0 to TextureB.Height-1 do begin
       PPix := TextureB.ScanLine[Position];
@@ -685,9 +718,12 @@ begin
       Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 2, TextureB.Width, TextureB.Height, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, @TextureD16);
       if Error > 0 then beep;
     end;
+    {$ENDIF}
   end;
 
-  if Typ = 'Font Outline 2' then begin
+  if Typ = 'Font Outline 2' then
+  begin
+    {$IFNDEF FPC}
     TextureB.PixelFormat := pf24bit;
     for Position := 0 to TextureB.Height-1 do begin
       PPix := TextureB.ScanLine[Position];
@@ -712,9 +748,12 @@ begin
       Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 2, TextureB.Width, TextureB.Height, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, @TextureD16);
       if Error > 0 then beep;
     end;
+    {$ENDIF}
   end;
 
-  if Typ = 'Font Black' then begin
+  if Typ = 'Font Black' then
+  begin
+    {$IFNDEF FPC}
     // normalnie 0,125s     bez niczego 0,015s - 0,030s    z pix 0,125s  <-- ???
     // dimensions
     TextureB.PixelFormat := pf24bit;
@@ -736,9 +775,12 @@ begin
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
+    {$ENDIF}
   end;
 
-  if Typ = 'Alpha Black Colored' then begin
+  if Typ = 'Alpha Black Colored' then
+  begin
+    {$IFNDEF FPC}
     TextureB.PixelFormat := pf24bit;
     TexOrigW := TextureB.Width;
     TexOrigH := TextureB.Height;
@@ -758,9 +800,12 @@ begin
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
+    {$ENDIF}
   end;
 
-  if Typ = 'Font Gray' then begin
+  if Typ = 'Font Gray' then
+  begin
+    {$IFNDEF FPC}
     // dimensions
     TexOrigW := TextureB.Width;
     TexOrigH := TextureB.Height;
@@ -783,9 +828,12 @@ begin
       Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 4, TextureB.Width, TextureB.Height, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
       if Error > 0 then beep;
     end;}
+    {$ENDIF}
   end;
 
-  if Typ = 'Arrow' then begin
+  if Typ = 'Arrow' then
+  begin
+    {$IFNDEF FPC}
     TextureB.PixelFormat := pf24bit;
     for Position := 0 to TextureB.Height-1 do begin
       PPix := TextureB.ScanLine[Position];
@@ -814,12 +862,17 @@ begin
       Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 4, TextureB.Width, TextureB.Height, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
       if Error > 0 then beep;
     end;
+    {$ENDIF}
   end;
 
-  if Typ = 'Note Plain' then begin
-    for Position := 0 to TextureB.Height-1 do begin
+  if Typ = 'Note Plain' then
+  begin
+    {$IFNDEF FPC}
+    for Position := 0 to TextureB.Height-1 do
+    begin
       PPix := TextureB.ScanLine[Position];
-      for Position2 := 0 to TextureB.Width-1 do begin
+      for Position2 := 0 to TextureB.Width-1 do
+      begin
 
 
 
@@ -848,9 +901,12 @@ begin
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 3, TextureB.Width, TextureB.Height, 0, GL_RGB, GL_UNSIGNED_BYTE, @TextureD24);
+    {$ENDIF}
   end;
 
-  if Typ = 'Note Transparent' then begin
+  if Typ = 'Note Transparent' then
+  begin
+    {$IFNDEF FPC}
     for Position := 0 to TextureB.Height-1 do begin
       PPix := TextureB.ScanLine[Position];
       for Position2 := 0 to TextureB.Width-1 do begin
@@ -885,6 +941,7 @@ begin
       end;
     end;
     glTexImage2D(GL_TEXTURE_2D, 0, 4, TextureB.Width, TextureB.Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, @TextureD32);
+    {$ENDIF}
   end;
 
   TextureB.Free;
@@ -921,7 +978,7 @@ begin
     Log.LogBenchmark('**********> Texture Load Time Warning - ' + Format + '/' + Identifier + '/' + Typ, 4);
 
   end; // logerror    
-  {$ENDIF}
+//  {$ENDIF}
 end;
 
 {procedure ResizeTexture(s: pbytearray; d: pbytearray);

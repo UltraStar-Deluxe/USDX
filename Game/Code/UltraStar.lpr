@@ -402,6 +402,8 @@ begin
   //Music.Open(SkinPath + 'Menu Music 3.mp3');
   //Music.Play;
   Log.LogStatus('Main Loop', 'Initialization');               MainLoop;
+  
+  Log.LogStatus('Cleanup', 'Done');
 
   //------------------------------
   //Finish Application

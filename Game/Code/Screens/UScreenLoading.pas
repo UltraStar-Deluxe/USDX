@@ -2,22 +2,33 @@ unit UScreenLoading;
 
 interface
 
+{$I switches.inc}
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
 uses
-  UMenu, SDL, SysUtils, UThemes, OpenGL12;
+  UMenu,
+  SDL,
+  SysUtils,
+  UThemes,
+  OpenGL12;
 
 type
   TScreenLoading = class(TMenu)
     public
       Fadeout:      boolean;
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
-      function GetBGTexNum: GLUInt;
-      procedure onShow; override;
+      procedure   onShow; override;
+      function    ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function    GetBGTexNum: GLUInt;
   end;
 
 implementation
 
-uses UGraphic, UTime;
+uses UGraphic,
+     UTime;
 
 function TScreenLoading.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
