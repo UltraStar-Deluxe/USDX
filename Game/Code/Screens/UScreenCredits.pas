@@ -5,6 +5,7 @@ interface
 uses
     UMenu,
     SDL,
+    SDL_Image,
     UDisplay,
     UTexture,
     OpenGL12,
@@ -67,6 +68,7 @@ type
       CRDTS_Stage: TCreditsStages;
 
   myTex: glUint;
+  mysdlimage,myconvertedsdlimage: PSDL_Surface;
 
       Fadeout:      boolean;
       constructor Create; override;
@@ -113,6 +115,26 @@ const
    3366,   // 20 Ende Credits Tune
      60);  // 21 start flare im intro
 
+
+  sdl32bpprgba: TSDL_Pixelformat=(palette:       nil;
+                                  BitsPerPixel:  32;
+                                  BytesPerPixel: 4;
+                                  Rloss:         0;
+                                  Gloss:         0;
+                                  Bloss:         0;
+                                  Aloss:         0;
+                                  Rshift:        0;
+                                  Gshift:        8;
+                                  Bshift:       16;
+                                  Ashift:       24;
+                                  Rmask: $000000ff;
+                                  Gmask: $0000ff00;
+                                  Bmask: $00ff0000;
+                                  Amask: $ff000000;
+                                  colorkey:      0;
+                                  alpha:       255 );
+
+
 implementation
 
 uses {$IFDEF win32}
@@ -127,8 +149,9 @@ uses {$IFDEF win32}
      Textgl,
      ULanguage,
      UCommon,
-     Math;
-     
+     Math,
+     dialogs;
+
 
 function TScreenCredits.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -156,6 +179,7 @@ end;
 constructor TScreenCredits.Create;
 begin
   inherited Create;
+
   credits_bg_tex            := Texture.LoadTexture(true, 'CRDTS_BG', 'PNG', 'Plain', 0);
   credits_bg_ovl          := Texture.LoadTexture(true, 'CRDTS_OVL', 'PNG', 'Transparent', 0);
 
@@ -192,6 +216,63 @@ begin
   Draw:=true;
 end;
 
+function pixfmt_eq(fmt1,fmt2: TSDL_Pixelformat): boolean;
+begin
+  if (fmt1.BitsPerPixel = fmt2.BitsPerPixel) and
+     (fmt1.BytesPerPixel = fmt2.BytesPerPixel) and
+     (fmt1.Rloss = fmt2.Rloss) and
+     (fmt1.Gloss = fmt2.Gloss) and
+     (fmt1.Bloss = fmt2.Bloss) and
+     (fmt1.Rmask = fmt2.Rmask) and
+     (fmt1.Gmask = fmt2.Gmask) and
+     (fmt1.Bmask = fmt2.Bmask) and
+     (fmt1.Rshift = fmt2.Rshift) and
+     (fmt1.Gshift = fmt2.Gshift) and
+     (fmt1.Bshift = fmt2.Bshift)
+   then
+    pixfmt_eq:=True
+  else
+    pixfmt_eq:=False;
+end;
+
+function inttohexstr(i: cardinal):pchar;
+var helper, i2, c:cardinal;
+    tmpstr: string;
+begin
+  helper:=0;
+  i2:=i;
+  tmpstr:='';
+  for c:=1 to 8 do
+  begin
+    helper:=(helper shl 4) or (i2 and $f);
+    i2:=i2 shr 4;
+  end;
+  for c:=1 to 8 do
+  begin
+    i2:=helper and $f;
+    helper := helper shr 4;
+    case i2 of
+      0: tmpstr:=tmpstr+'0';
+      1: tmpstr:=tmpstr+'1';
+      2: tmpstr:=tmpstr+'2';
+      3: tmpstr:=tmpstr+'3';
+      4: tmpstr:=tmpstr+'4';
+      5: tmpstr:=tmpstr+'5';
+      6: tmpstr:=tmpstr+'6';
+      7: tmpstr:=tmpstr+'7';
+      8: tmpstr:=tmpstr+'8';
+      9: tmpstr:=tmpstr+'9';
+     10: tmpstr:=tmpstr+'a';
+     11: tmpstr:=tmpstr+'b';
+     12: tmpstr:=tmpstr+'c';
+     13: tmpstr:=tmpstr+'d';
+     14: tmpstr:=tmpstr+'e';
+     15: tmpstr:=tmpstr+'f';
+    end;
+  end;
+  inttohexstr:=pchar(tmpstr);
+end;
+
 procedure TScreenCredits.onShow;
 begin
   CRDTS_Stage:=InitialDelay;
@@ -203,6 +284,43 @@ begin
 //  Music.Play;
   CTime:=0;
 //  setlength(CTime_hold,0);
+  mysdlimage:=IMG_Load('test.png');
+  if assigned(mysdlimage) then
+  begin
+    showmessage('opened image via SDL_Image'+#13#10+
+                'Width:   '+inttostr(mysdlimage^.w)+#13#10+
+                'Height:  '+inttostr(mysdlimage^.h)+#13#10+
+                'BitsPP:  '+inttostr(mysdlimage^.format.BitsPerPixel)+#13#10+
+                'BytesPP: '+inttostr(mysdlimage^.format.BytesPerPixel)+#13#10+
+                'Rloss:  '+inttostr(mysdlimage^.format.Rloss)+#13#10+
+                'Gloss:  '+inttostr(mysdlimage^.format.Gloss)+#13#10+
+                'Bloss:  '+inttostr(mysdlimage^.format.Bloss)+#13#10+
+                'Aloss:  '+inttostr(mysdlimage^.format.Aloss)+#13#10+
+                'Rshift: '+inttostr(mysdlimage^.format.Rshift)+#13#10+
+                'Gshift: '+inttostr(mysdlimage^.format.Gshift)+#13#10+
+                'Bshift: '+inttostr(mysdlimage^.format.Bshift)+#13#10+
+                'Ashift: '+inttostr(mysdlimage^.format.Ashift)+#13#10+
+                'Rmask:  '+inttohexstr(mysdlimage^.format.Rmask)+#13#10+
+                'Gmask:  '+inttohexstr(mysdlimage^.format.Gmask)+#13#10+
+                'Bmask:  '+inttohexstr(mysdlimage^.format.Bmask)+#13#10+
+                'Amask:  '+inttohexstr(mysdlimage^.format.Amask)+#13#10+
+                'ColKey: '+inttostr(mysdlimage^.format.Colorkey)+#13#10+
+                'Alpha:  '+inttostr(mysdlimage^.format.Alpha));
+    if pixfmt_eq(mysdlimage^.format^,sdl32bpprgba)
+     then showmessage('equal pixelformats')
+     else showmessage('different pixelformats');
+    myconvertedsdlimage:=SDL_ConvertSurface(mysdlimage,@sdl32bpprgba,SDL_SWSURFACE);
+    glGenTextures(1,@myTex);
+    glBindTexture(GL_TEXTURE_2D, myTex);
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexImage2D( GL_TEXTURE_2D, 0, 4, myconvertedsdlimage^.w, myconvertedsdlimage^.h, 0,
+                      GL_RGBA, GL_UNSIGNED_BYTE, myconvertedsdlimage^.pixels );
+    SDL_FreeSurface(mysdlimage);
+    SDL_FreeSurface(myconvertedsdlimage);
+  end else
+    showmessage('could not open file');
+
 end;
 
 procedure TScreenCredits.onHide;
@@ -1098,6 +1216,22 @@ begin
     RuntimeStr:='CTime: '+inttostr(CTime);
     glPrint (Addr(RuntimeStr[1]));
 }
+
+
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glColor4f(1, 1, 1, 1);
+        glBindTexture(GL_TEXTURE_2D, myTex);
+        glbegin(gl_quads);
+          glTexCoord2f(0,0);glVertex2f(100,   100);
+          glTexCoord2f(0,1);glVertex2f(100,   200);
+          glTexCoord2f(1,1); glVertex2f(200, 200);
+          glTexCoord2f(1,0);glVertex2f(200, 100);
+        glEnd;
+        glDisable(GL_TEXTURE_2D);
+        glDisable(GL_BLEND);
+
+
   // make the stars shine
   GoldenRec.Draw;
 end;
