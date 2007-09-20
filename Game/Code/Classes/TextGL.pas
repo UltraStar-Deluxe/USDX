@@ -79,8 +79,7 @@ procedure BuildFont;			                // Build Our Bitmap Font
     Rejestr:  TResourceStream;
   begin
     {$IFNDEF FPC}
-    Log.LogStatus( 'TextGL - BUILDFONT - load Font Resource - ' + inttostr( integer( aID ) ) , aType +' '+ aResourceName  );
-    
+   
     Rejestr := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
     try
       Rejestr.Read(Fonts[ aID ].Width, 256);

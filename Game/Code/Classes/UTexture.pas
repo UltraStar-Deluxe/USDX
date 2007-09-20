@@ -90,8 +90,8 @@ type
   TTextureUnit = class
   
     private
-      function LoadBitmap( aSourceStream : TStream; aIMG : TBitMap ): boolean;
-      function LoadJpeg( aSourceStream : TStream; aIMG : TBitMap ): boolean;
+      function LoadBitmap( const aSourceStream : TStream; const aIMG : TBitMap ): boolean;
+      function LoadJpeg( const aSourceStream : TStream; const aIMG : TBitMap ): boolean;
     public
     Limit:      integer;
     CreateCacheMipmap:  boolean;
@@ -312,7 +312,7 @@ begin
 end;
 
 
-function TTextureUnit.LoadBitmap( aSourceStream : TStream; aIMG : TBitMap ): boolean;
+function TTextureUnit.LoadBitmap( const aSourceStream : TStream; const aIMG : TBitMap ): boolean;
 begin
   result := false;
   try
@@ -325,7 +325,7 @@ begin
   end;
 end;
 
-function TTextureUnit.LoadJpeg( aSourceStream : TStream; aIMG : TBitMap ): boolean;
+function TTextureUnit.LoadJpeg( const aSourceStream : TStream; const aIMG : TBitMap ): boolean;
 var
   TextureJ:   TJPEGImage;
 begin
@@ -396,7 +396,6 @@ begin
   if FromRegistry then
   begin
     try
-    //      Res := TResourceStream.Create(HInstance, Identifier, Format);
       lTextureStream := TResourceStream.Create(HInstance, Identifier, Format);
 
       // TEmp, untill all code is moved to refactord way..
@@ -413,7 +412,9 @@ begin
     begin
       // Get the File Extension...
       Format := PAnsichar(UpperCase(RightStr(ExtractFileExt(Identifier),3)));
-      lTextureStream := TFileStream.create( Identifier , fmOpenRead or fmShareDenyNone );
+
+      lTextureStream := TMemoryStream.create();
+      TMemoryStream(lTextureStream).loadfromfile( Identifier );
     end;
   end;
 
@@ -990,7 +991,9 @@ begin
   if Log.BenchmarkTimeLength[4] >= 1 then
     Log.LogBenchmark('**********> Texture Load Time Warning - ' + Format + '/' + Identifier + '/' + Typ, 4);
 
-  end; // logerror    
+  end; // logerror
+
+//  freeandnil( lTextureStream );  // TODO - jb - free this.. but we cant at the moment :(   
 //  {$ENDIF}
 end;
 

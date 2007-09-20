@@ -383,8 +383,13 @@ begin
 
   // Show the Loading Screen -------------
   LoadLoadingScreen;
-  
-  
+  Log.LogStatus('Loading Screens', 'Initialize3D');
+
+
+//  LoadTextures; // jb
+//  Log.LogStatus(' Loading Textures', '');
+
+
   
   // now that we have something to display while loading,
   // start thread that loads the rest of ultrastar
