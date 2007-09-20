@@ -381,7 +381,8 @@ var
 begin
   lTextureStream := nil;
 
-  Log.LogStatus( 'From Resource - ' + inttostr( integer( FromRegistry ) ) , Identifier +' '+ Format +' '+ Typ );
+//   Log.LogStatus( 'From Resource - ' + inttostr( integer( FromRegistry ) ) , Identifier +' '+ Format +' '+ Typ );
+
 //  {$IFNDEF FPC}
                 // TODO : JB_lazarus eeeew this is a nasty one...
                 // but lazarus implementation scanlines is different :(
@@ -395,14 +396,11 @@ begin
   if FromRegistry then
   begin
     try
-
-      Log.LogStatus( '  A' , '');
-
     //      Res := TResourceStream.Create(HInstance, Identifier, Format);
       lTextureStream := TResourceStream.Create(HInstance, Identifier, Format);
-      Log.LogStatus( '  B' , '');
 
-      // TODO : Where does the format come from
+      // TEmp, untill all code is moved to refactord way..
+      Res := TResourceStream( lTextureStream );
     except
       Log.LogStatus( 'ERROR Could not load from resource' , Identifier +' '+ Format +' '+ Typ );
       beep;
@@ -421,11 +419,6 @@ begin
 
   if assigned( lTextureStream ) then
   begin
-    Log.LogStatus( '  C - '+Format , '');
-
-    // TEmp, untill all code is moved to refactord way..
-    Res := TResourceStream( lTextureStream );
-
   TextureB := TBitmap.Create;
 
   if Format = 'BMP' then
