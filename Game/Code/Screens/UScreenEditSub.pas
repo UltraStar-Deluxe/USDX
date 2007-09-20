@@ -16,7 +16,7 @@ uses
     ULog,
     UTexture,
     UMenuText,
-    ULyrics,
+    ULyrics.bak,
     Math,
     OpenGL12,
     {$IFDEF UseMIDIPort}

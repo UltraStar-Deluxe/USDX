@@ -365,11 +365,11 @@ begin
   Log.BenchmarkEnd(2);
   Log.LogBenchmark('--> Loading Textures', 2);
 
-  Log.BenchmarkStart(2);
-  Lyric := TLyric.Create;
+{  Log.BenchmarkStart(2);
+  Lyric:= TLyric.Create;
   Log.BenchmarkEnd(2);
   Log.LogBenchmark('--> Loading Fonts', 2);
-
+}
   Log.BenchmarkStart(2);
   Display := TDisplay.Create;
   SDL_EnableUnicode(1);

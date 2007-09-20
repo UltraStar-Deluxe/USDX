@@ -88,8 +88,9 @@ type
 
       Tex_Background:     TTexture;
       FadeOut:            boolean;
-      LyricMain:          TLyric;
-      LyricSub:           TLyric;
+//      LyricMain:          TLyric;
+//      LyricSub:           TLyric;
+      Lyrics:             TLyricEngine;
 
       constructor Create; override;
       procedure onShow; override;
@@ -257,8 +258,7 @@ begin
 
     end;
 
-  LyricMain             := TLyric.Create;
-  LyricSub              := TLyric.Create;
+  Lyrics := TLyricEngine.Create(80,Skin_LyricsT,640,12,80,Skin_LyricsT+36,640,12);
 
   UVideo.Init;
 end;
@@ -426,24 +426,32 @@ begin
     ClearScores(P);
 
   // main text
-  LyricMain.Clear;
-  LyricMain.X := 400;
-  LyricMain.Y := Skin_LyricsT;
-  LyricMain.Scale := 1.4; //1.4
-  LyricMain.Align := 1;
-
-  // sub text
-  LyricSub.Clear;
-  LyricSub.X := 400;
-  LyricSub.Y := Skin_LyricsT + 35; //42 //40
-  LyricSub.Align := 1;
+  Lyrics.Clear (AktSong.BPM[0].BPM, AktSong.Resolution);
 
   // set custom options
   case Ini.LyricsFont of
     0:
       begin
-        LyricMain.FontStyle := 0;
-        LyricSub.FontStyle := 0;
+        Lyrics.UpperLineSize := 14;
+        Lyrics.LowerLineSize := 14;
+        Lyrics.FontStyle := 0;
+
+        Lyrics.LineColor_en.R := Skin_FontR;
+        Lyrics.LineColor_en.G := Skin_FontG;
+        Lyrics.LineColor_en.B := Skin_FontB;
+        Lyrics.LineColor_en.A := 1;
+
+        Lyrics.LineColor_dis.R := 0.4;
+        Lyrics.LineColor_dis.G := 0.4;
+        Lyrics.LineColor_dis.B := 0.4;
+        Lyrics.LineColor_dis.A := 1;
+
+        Lyrics.LineColor_akt.R := 5/256;
+        Lyrics.LineColor_akt.G := 163/256;
+        Lyrics.LineColor_akt.B := 210/256;
+        Lyrics.LineColor_akt.A := 1;
+
+{        LyricSub.FontStyle := 0;
         LyricMain.Size := 14; // 13
         LyricSub.Size := 14; // 13
         LyricMain.ColR := Skin_FontR;
@@ -451,18 +459,18 @@ begin
         LyricMain.ColB := Skin_FontB; //Change für Crazy Joker
         {LyricMain.ColSR := Skin_FontHighlightR;
         LyricMain.ColSG := Skin_FontHighlightG;
-        LyricMain.ColSB := Skin_FontHighlightB;1aa5dc}
+        LyricMain.ColSB := Skin_FontHighlightB;1aa5dc}{
         LyricMain.ColSR := 5/255; //26
         LyricMain.ColSG := 163/255; //165
         LyricMain.ColSB := 210/255;  //220
 
         LyricSub.ColR := 0.4; //0.6
         LyricSub.ColG := 0.4; //0.6
-        LyricSub.ColB := 0.4; //0.6
+        LyricSub.ColB := 0.4; //0.6   }
       end;
     1:
       begin
-        LyricMain.FontStyle := 2;
+ {       LyricMain.FontStyle := 2;
         LyricSub.FontStyle := 2;
         LyricMain.Size := 14;
         LyricSub.Size := 14;
@@ -474,12 +482,48 @@ begin
         LyricMain.ColSB := 1;
         LyricSub.ColR := 0.8;
         LyricSub.ColG := 0.8;
-        LyricSub.ColB := 0.8;
+        LyricSub.ColB := 0.8;   }
+
+        Lyrics.UpperLineSize := 14;
+        Lyrics.LowerLineSize := 14;
+        Lyrics.FontStyle := 2;
+
+        Lyrics.LineColor_en.R := 0.75;
+        Lyrics.LineColor_en.G := 0.75;
+        Lyrics.LineColor_en.B := 1;
+        Lyrics.LineColor_en.A := 1;
+
+        Lyrics.LineColor_dis.R := 0.8;
+        Lyrics.LineColor_dis.G := 0.8;
+        Lyrics.LineColor_dis.B := 0.8;
+        Lyrics.LineColor_dis.A := 1;
+
+        Lyrics.LineColor_akt.R := 0.5;
+        Lyrics.LineColor_akt.G := 0.5;
+        Lyrics.LineColor_akt.B := 1;
+        Lyrics.LineColor_akt.A := 1;
       end;
     2:
       begin
-        LyricMain.FontStyle := 3;
-        LyricSub.FontStyle := 3;
+        Lyrics.UpperLineSize := 12;
+        Lyrics.LowerLineSize := 12;
+        Lyrics.FontStyle := 3;
+
+        Lyrics.LineColor_en.R := 0.75;
+        Lyrics.LineColor_en.G := 0.75;
+        Lyrics.LineColor_en.B := 1;
+        Lyrics.LineColor_en.A := 1;
+
+        Lyrics.LineColor_dis.R := 0.8;
+        Lyrics.LineColor_dis.G := 0.8;
+        Lyrics.LineColor_dis.B := 0.8;
+        Lyrics.LineColor_dis.A := 1;
+
+        Lyrics.LineColor_akt.R := 0.5;
+        Lyrics.LineColor_akt.G := 0.5;
+        Lyrics.LineColor_akt.B := 1;
+        Lyrics.LineColor_akt.A := 1;
+{        LyricSub.FontStyle := 3;
         LyricMain.Size := 12;
         LyricSub.Size := 12;
         LyricMain.ColR := 0.75;
@@ -490,22 +534,20 @@ begin
         LyricMain.ColSB := 1;
         LyricSub.ColR := 0.8;
         LyricSub.ColG := 0.8;
-        LyricSub.ColB := 0.8;
+        LyricSub.ColB := 0.8;}
       end;
   end; // case
 
   case Ini.LyricsEffect of
-    0:  LyricMain.Style := 1; // 0 - one selected, 1 - selected all to the current
-    1:  LyricMain.Style := 2;
-    2:  LyricMain.Style := 3;
-    3:  LyricMain.Style := 4;
+    0:  Lyrics.HoverEffekt := 1; // 0 - one selected, 1 - selected all to the current
+    1:  Lyrics.HoverEffekt := 2;
+    2:  Lyrics.HoverEffekt := 3;
+    3:  Lyrics.HoverEffekt := 4;
   end; // case
 
-  // fill texts
-  LyricMain.AddCzesc(0);
-  LyricMain.Selected := -1;
-  LyricSub.AddCzesc(1);
-  LyricSub.Selected := -1;
+  // Add Lines to Lyrics
+  While (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Czesci[0].Czesc)) do
+      Lyrics.AddLine(@Czesci[0].Czesc[Lyrics.LineCounter]);
 
   UpdateLCD;
 
@@ -1124,7 +1166,8 @@ procedure TScreenSing.UpdateLCD;
 var
   T:    string;
 begin
-  LCD.HideCursor;
+  //Todo: Lyrics
+{  LCD.HideCursor;
   LCD.Clear;
 
   T := LyricMain.Text;
@@ -1133,7 +1176,7 @@ begin
 
   T := LyricSub.Text;
   if Copy(T, Length(T), 1) <> ' ' then T := T + ' ';
-  LCD.AddTextBR(T);
+  LCD.AddTextBR(T);}
 end;
 
 procedure TScreenSing.onSentenceEnd(S: Cardinal);
@@ -1250,6 +1293,8 @@ procedure TScreenSing.onSentenceChange(S: Cardinal);
 begin
   //GoldenStarsTwinkle Mod
   GoldenRec.SentenceChange;
+  if (Lyrics.LineCounter <= High(Czesci[0].Czesc)) then
+      Lyrics.AddLine(@Czesci[0].Czesc[Lyrics.LineCounter]);
   //GoldenStarsTwinkle Mod End
 end;
 

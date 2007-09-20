@@ -423,12 +423,13 @@ begin
   N := Czesci[0].Czesc[Czesci[0].Akt].HighNut;
 
   // wylacza ostatnia nute po przejsciu
+  {// todo: Lyrics
   if (Ini.LyricsEffect = 1) and (Done = 1) and
     (Czas.MidBeat > Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Start + Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Dlugosc)
     then Sender.LyricMain.Selected := -1;
 
   if Done > 1 then Done := 1;
-  Sender.LyricMain.Done := Done;
+  Sender.LyricMain.Done := Done;  }
 
   // use Done with LCD
 {  with ScreenSing do begin
@@ -452,13 +453,15 @@ begin
     SetLength(Player[G].Nuta, 0);
   end;
 
-  // wstawianie tekstow
+  // Add Words to Lyrics
   with Sender do begin
-    LyricMain.AddCzesc(Czesci[0].Akt);
+    {LyricMain.AddCzesc(Czesci[0].Akt);
     if Czesci[0].Akt < Czesci[0].High then
       LyricSub.AddCzesc(Czesci[0].Akt+1)
     else
-      LyricSub.Clear;
+      LyricSub.Clear;}
+    while (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Czesci[0].Czesc)) do
+      Lyrics.AddLine(@Czesci[0].Czesc[Lyrics.LineCounter]);
   end;
 
   Sender.UpdateLCD;
@@ -477,12 +480,13 @@ begin
   for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
     if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = Czas.AktBeat) then begin
       // operates on currently beated note
-      Sender.LyricMain.Selected := Pet;
+      //Todo: Lyrics
+      //Sender.LyricMain.Selected := Pet;
 
 //      LCD.MoveCursor(1, ScreenSing.LyricMain.SelectedLetter);
 //      LCD.ShowCursor;
 
-      LCD.MoveCursorBR(Sender.LyricMain.SelectedLetter);
+      //LCD.MoveCursorBR(Sender.LyricMain.SelectedLetter);
       LCD.ShowCursor;
 
     end;

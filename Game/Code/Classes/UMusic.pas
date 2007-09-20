@@ -115,6 +115,30 @@ type
     DlugoscNut:   integer;
   end;
 
+  PLine = ^TLine;
+  TLine = record
+    Start:    integer;
+    StartNote:  integer;
+    Lyric:      string;
+    LyricWidth: real;
+    Koniec:   integer;
+    BaseNote: integer;
+    HighNut:  integer;
+    IlNut:    integer;
+    TotalNotes: integer;
+    Nuta:     array of record
+      Color:      integer;
+      Start:      integer;
+      Dlugosc:    integer;
+      Ton:        integer;
+      TonGamy:    integer;
+      Tekst:      string;
+      FreeStyle:  boolean;
+      Wartosc:    integer;    // zwykla nuta x1, zlota nuta x2
+    end;
+  end;
+  ALine = array of TLine;
+
   TCzesci = record
     Akt:      integer;      // aktualna czesc utworu do rysowania
     High:     integer;
@@ -122,27 +146,7 @@ type
     Resolution: integer;
     NotesGAP: integer;
     Wartosc:  integer;
-    Czesc:    array of record
-      Start:    integer;
-      StartNote:  integer;
-      Lyric:      string;
-      LyricWidth: real;
-      Koniec:   integer;
-      BaseNote: integer;
-      HighNut:  integer;
-      IlNut:    integer;
-      TotalNotes: integer;
-      Nuta:     array of record
-        Color:      integer;
-        Start:      integer;
-        Dlugosc:    integer;
-        Ton:        integer;
-        TonGamy:    integer;
-        Tekst:      string;
-        FreeStyle:  boolean;
-        Wartosc:    integer;    // zwykla nuta x1, zlota nuta x2
-      end;
-    end;
+    Czesc:    ALine;
   end;
 
   TCzas = record              // wszystko, co dotyczy aktualnej klatki

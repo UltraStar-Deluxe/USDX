@@ -18,6 +18,10 @@ type
     B:    single;
   end;
 
+  TRGBA = record
+    R, G, B, A: Double;
+  end;
+
   TThemeBackground = record
     Tex:  string;
   end;

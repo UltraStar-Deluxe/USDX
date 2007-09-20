@@ -573,11 +573,11 @@ begin
     SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
   end;
 
-  // rysuje tekst - new Lyric engine
-  ScreenSing.LyricMain.Draw;
-  ScreenSing.LyricSub.Draw;
+  // Draw Lyrics
+  ScreenSing.Lyrics.Draw(Czas.MidBeat);
 
-  // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
+  // todo: Lyrics
+{  // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
   FS := 1.3;
   BarFrom := Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czesci[0].Czesc[Czesci[0].Akt].Start;
   if BarFrom > 40 then BarFrom := 40;
@@ -596,7 +596,7 @@ begin
     if BarAlpha > 0.5 then BarAlpha := 0.5;
 
     // gaszenie
-    if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);}
+    if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);}{
 
     //Change fuer Crazy Joker
 
@@ -614,7 +614,7 @@ begin
     glEnd;
     glDisable(GL_BLEND);
 
-   end;
+   end; }
 
   // oscilloscope
   if Ini.Oscilloscope = 1 then begin
@@ -966,11 +966,11 @@ begin
     end;
   end;
 
-    // Lyric engine
-    ScreenSingModi.LyricMain.Draw;
-    ScreenSingModi.LyricSub.Draw;
+    // Draw Lyrics
+    ScreenSingModi.Lyrics.Draw(Czas.MidBeat);
 
-    // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
+    // todo: Lyrics
+{    // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
     FS := 1.3;
     BarFrom := Czesci[0].Czesc[Czesci[0].Akt].StartNote - Czesci[0].Czesc[Czesci[0].Akt].Start;
     if BarFrom > 40 then BarFrom := 40;
@@ -997,6 +997,7 @@ begin
            glEnd;
            glDisable(GL_BLEND);
     end;
+    }
 
   // oscilloscope | the thing that moves when you yell into your mic (imho)
   if (((Ini.Oscilloscope = 1) AND (DLLMan.Selected.ShowRateBar_O)) AND (NOT DLLMan.Selected.ShowRateBar)) then begin

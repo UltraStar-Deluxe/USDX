@@ -1,390 +1,537 @@
 unit ULyrics;
 
 interface
-
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
-uses SysUtils,
-     OpenGL12,
-     UMusic;
+uses OpenGL12, UTexture, UThemes, UMusic;
 
 type
-  TWord = record
-      X:      real;
-      Y:      real;
-      Size:   real;
-      Width:  real;
-      Text:   string;
-      ColR:   real;
-      ColG:   real;
-      ColB:   real;
-      Scale:  real;
-      Done:   real;
-      FontStyle:  integer;
-      Italic:     boolean;
-      Selected:   boolean;
+  TLyricWord = record
+    X:          Real;     //X Pos of the Word
+    Width:      Real;     //Width of the Text
+    TexPos:     Real;     //Pos of the Word (0 to 1) in the Sentence Texture
+    TexWidth:   Real;     //width of the Word in Sentence Texture (0 to 1)
+    Start:      Cardinal; //Start of the Words in Quarters (Beats)
+    Length:     Cardinal; //Length of the Word in Quarters
+    Text:       String;   //Text of this Word
+    Freestyle:  Boolean;  //Is this Word Freestyle
+  end;
+  ALyricWord = array of TLyricWord;
+
+  PLyricLine = ^TLyricLine;
+  TLyricLine = record
+    Text:       String;       //Text of the Line
+    Tex:        glUInt;       //Texture of the Text from this Line
+    Width:      Real;         //Width of the Lyricline in Tex
+    Size:       Byte;         //Size of the Font in the Texture
+    Words:      ALyricWord;   //Words from this Line
+    Start:      Cardinal;     //Start in Quarters of teh Line
+    Length:     Cardinal;     //Length in Quarters (From Start of First Note to the End of Last Note)
+    Freestyle:  Boolean;      //Complete Line is Freestyle ?
+    Players:    Byte;         //Which Players Sing this Line (1: Player1; 2: Player2; 4: Player3; [..])
+    Done:       Boolean;      //Is Sentence Sung
   end;
 
-  TLyric = class
+  TLyricEngine = class
     private
-      AlignI:         integer;
-      XR:             real;
-      YR:             real;
-      SizeR:          real;
-      SelectedI:      integer;
-      ScaleR:         real;
-      StyleI:         integer;          // 0 - one selection, 1 - long selection, 2 - one selection with fade to normal text, 3 - long selection with fade with color from left
-      FontStyleI:     integer;          // font number
-      Word:           array of TWord;
-      procedure SetX(Value: real);
-      procedure SetY(Value: real);
-      function GetClientX: real;
-      procedure SetAlign(Value: integer);
-      function GetSize: real;
-      procedure SetSize(Value: real);
-      procedure SetSelected(Value: integer);
-      procedure SetDone(Value: real);
-      procedure SetScale(Value: real);
-      procedure SetStyle(Value: integer);
-      procedure SetFStyle(Value: integer);
-      procedure Refresh;
-      procedure DrawNormal(W: integer);
-      procedure DrawPlain(W: integer);
-      procedure DrawScaled(W: integer);
-      procedure DrawSlide(W: integer);
+      EoLastSentence: Real;       //When did the Last Sentence End (in Beats)
+      UpperLine:      TLyricLine; //Line in the Upper Part of the Lyric Display
+      LowerLine:      TLyricLine; //Line in the Lower Part of teh Lyric Display
+      QueueLine:      TLyricLine; //Line that is in Queue and will be added when next Line is Finished
+      PUpperLine, PLowerLine, PQueueLine: PLyricLine;
+
+      IndicatorTex:   TTexture;       //Texture for Lyric Indikator(Bar that indicates when the Line start)
+      BallTex:        TTexture;       //Texture of the Ball for cur. Word hover in Ballmode
+      PlayerIconTex:  array[0..5] of  //Textures for PlayerIcon Index: Playernum; Index2: Enabled/Disabled
+                      array [0..1] of
+                      TTexture;
+
+      inQueue:        Boolean;
+      LCounter:       Word;
+
+      //Some helper Procedures for Lyric Drawing
+      procedure DrawLyrics (Beat: Real);
+      procedure DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: TLyricLine; Beat: Real);
+      procedure DrawPlayerIcon(const Player: Byte; const Enabled: Boolean; const X, Y, Size, Alpha: Real);
     public
-      ColR:     real;
-      ColG:     real;
-      ColB:     real;
-      ColSR:    real;
-      ColSG:    real;
-      ColSB:    real;
-      Italic:   boolean;
-      Text:     string;   // LCD
+      //Positions, Line specific Settings
+      UpperLineX:     Real;       //X Start Pos of UpperLine
+      UpperLineW:     Real;       //Width of UpperLine with Icon(s) and Text
+      UpperLineY:     Real;       //Y Start Pos of UpperLine
+      UpperLineSize:  Byte;       //Max Size of Lyrics Text in UpperLine
 
-      procedure AddWord(Text: string);          // Moved from published, lazarus didnt like it
-      procedure AddCzesc(NrCzesci: integer);
+      LowerLineX:     Real;       //X Start Pos of LowerLine
+      LowerLineW:     Real;       //Width of LowerLine with Icon(s) and Text
+      LowerLineY:     Real;       //Y Start Pos of LowerLine
+      LowerLineSize:  Byte;       //Max Size of Lyrics Text in LowerLine
 
-      function SelectedLetter: integer;  // LCD
-      function SelectedLength: integer;  // LCD
+      //Display Propertys
+      LineColor_en:   TRGBA;      //Color of Words in an Enabled Line
+      LineColor_dis:  TRGBA;      //Color of Words in a Disabled Line
+      LineColor_akt:  TRGBA;      //Color of teh active Word
+      FontStyle:      Byte;       //Font for the Lyric Text
+      FontReSize:     Boolean;    //ReSize Lyrics if they don't fit Screen
 
-      procedure Clear;
-      procedure Draw;
+      HoverEffekt:    Byte;       //Effekt of Hovering active Word: 0 - one selection, 1 - long selection, 2 - one selection with fade to normal text, 3 - long selection with fade with color from left
+      FadeInEffekt:   Byte;       //Effekt for Line Fading in: 0: No Effekt; 1: Fade Effekt; 2: Move Upwards from Bottom to Pos
+      FadeOutEffekt:  Byte;       //Effekt for Line Fading out: 0: No Effekt; 1: Fade Effekt; 2: Move Upwards
 
-    published
-      property X: real write SetX;
-      property Y: real write SetY;
-      property ClientX: real read GetClientX;
-      property Align: integer write SetAlign;
-      property Size: real read GetSize write SetSize;
-      property Selected: integer read SelectedI write SetSelected;
-      property Done: real write SetDone;
-      property Scale: real write SetScale;
-      property Style: integer write SetStyle;
-      property FontStyle: integer write SetFStyle;
+      UseLinearFilter:Boolean;    //Should Linear Tex Filter be used
+
+      //Song specific Settings
+      BPM:            Real;
+      Resolution:     Integer;
+
+
+      //properties to easily update this Class within other Parts of Code
+      property LineinQueue: Boolean read inQueue;    //True when there is a Line in Queue
+      property LineCounter: Word    read LCounter;   //Lines that was Progressed so far (after last Clear)
+
+      Constructor Create; overload;     //Constructor, just get Memory
+      Constructor Create(ULX,ULY,ULW,ULS,LLX,LLY,LLW,LLS:Real); overload;
+      Procedure   LoadTextures;         //Load Player Textures and Create
+
+      Procedure   AddLine(Line: PLine); //Adds a Line to the Queue if there is Space
+      Procedure   Draw (Beat: Real);    //Procedure Draws Lyrics; Beat is curent Beat in Quarters
+      Procedure   Clear (const cBPM: Real = 0; const cResolution: Integer = 0); //Clears all cached Song specific Information
+
+      Destructor  Free;                 //Frees Memory
   end;
 
-var
-  Lyric:    TLyric;
+const LyricTexStart = 2/512;
 
 implementation
-uses TextGL, UGraphic, UDrawTexture;
+uses SysUtils, USkins, TextGL, UGraphic, UDisplay, dialogs;
 
-procedure TLyric.SetX(Value: real);
+//-----------
+//Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
+//-----------
+procedure glColorRGB(Color: TRGB);  overload;
 begin
-  XR := Value;
+  glColor3f(Color.R, Color.G, Color.B);
 end;
 
-procedure TLyric.SetY(Value: real);
+procedure glColorRGB(Color: TRGBA); overload;
 begin
-  YR := Value;
+  glColor4f(Color.R, Color.G, Color.B, Color.A);
 end;
 
-function TLyric.GetClientX: real;
+
+
+//---------------
+// Create - Constructor, just get Memory
+//---------------
+Constructor TLyricEngine.Create;
 begin
-  Result := Word[0].X;
+  BPM := 0;
+  Resolution := 0;
+  LCounter := 0;
+  inQueue := False;
+
+  UpperLine.Done := True;
+  LowerLine.Done := True;
+  QueueLine.Done := True;
+  PUpperline:=@UpperLine;
+  PLowerLine:=@LowerLine;
+  PQueueLine:=@QueueLine;
+
+  UseLinearFilter := True;
 end;
 
-procedure TLyric.SetAlign(Value: integer);
+Constructor TLyricEngine.Create(ULX,ULY,ULW,ULS,LLX,LLY,LLW,LLS:Real);
 begin
-  AlignI := Value;
-//  if AlignInt = 0 then beep;
+  Create;
+  UpperLineX := ULX;
+  UpperLineW := ULW;
+  UpperLineY := ULY;
+  UpperLineSize := Trunc(ULS);
+
+  LowerLineX := LLX;
+  LowerLineW := LLW;
+  LowerLineY := LLY;
+  LowerLineSize := Trunc(LLS);
+  LoadTextures;
 end;
 
-function TLyric.GetSize: real;
+
+//---------------
+// Free - Frees Memory
+//---------------
+Destructor  TLyricEngine.Free;
 begin
-  Result := SizeR;
+
 end;
 
-procedure TLyric.SetSize(Value: real);
+//---------------
+// Clear - Clears all cached Song specific Information
+//---------------
+Procedure   TLyricEngine.Clear (const cBPM: Real; const cResolution: Integer);
 begin
-  SizeR := Value;
+  BPM := cBPM;
+  Resolution := cResolution;
+  LCounter := 0;
+  inQueue := False;
+
+  UpperLine.Done := True;
+  LowerLine.Done := True;
+  QueueLine.Done := True;
+
+  PUpperline:=@UpperLine;
+  PLowerLine:=@LowerLine;
+  PQueueLine:=@QueueLine;
 end;
 
-procedure TLyric.SetSelected(Value: integer);
+
+//---------------
+// LoadTextures - Load Player Textures and Create Lyric Textures
+//---------------
+Procedure   TLyricEngine.LoadTextures;
 var
-  W:  integer;
-begin
-  if (StyleI = 0) or (StyleI = 2) or (StyleI = 4) then begin
-    if (SelectedI > -1) and (SelectedI <= High(Word)) then begin
-      Word[SelectedI].Selected := false;
-      Word[SelectedI].ColR := ColR;
-      Word[SelectedI].ColG := ColG;
-      Word[SelectedI].ColB := ColB;
-      Word[SelectedI].Done := 0;
+  I: Integer;
+  PTexData: Pointer;
+
+  function CreateLineTex: glUint;
+  begin
+    GetMem(pTexData, 1024*128*4); //get Memory to save Tex in
+
+    //generate and bind Texture
+    glGenTextures(1, Result);
+    glBindTexture(GL_TEXTURE_2D, Result);
+
+    //Get Memory
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, 1024, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, pTexData);
+
+    if UseLinearFilter then
+    begin
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     end;
 
-    SelectedI := Value;
-    if (Value > -1) and (Value <= High(Word)) then begin
-      Word[Value].Selected := true;
-      Word[Value].ColR := ColSR;
-      Word[Value].ColG := ColSG;
-      Word[Value].ColB := ColSB;
-      Word[Value].Scale := ScaleR;
+    //Free now unused Memory
+    FreeMem(pTexData);
+  end;
+begin
+  //Load Texture for Lyric Indikator(Bar that indicates when the Line start)
+  IndicatorTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', 'Transparent', $FF00FF);
+
+  //Load Texture of the Ball for cur. Word hover in Ballmode
+  BallTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
+
+  //Load PlayerTexs
+  For I := 0 to 1 do
+  begin
+    PlayerIconTex[I][0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
+    PlayerIconTex[I][1] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
+  end;
+
+  //atm just unset other texs
+  For I := 2 to 5 do
+  begin
+    PlayerIconTex[I][0].TexNum := high(Cardinal); //Set to C's -1
+    PlayerIconTex[I][1].TexNum := high(Cardinal);
+  end;
+
+  //Create LineTexs
+  UpperLine.Tex := CreateLineTex;
+  LowerLine.Tex := CreateLineTex;
+  QueueLine.Tex := CreateLineTex;
+end;
+
+
+//---------------
+// AddLine - Adds LyricLine to queue
+//---------------
+Procedure   TLyricEngine.AddLine(Line: PLine);
+var
+  LyricLine: PLyricLine;
+  I:  Integer;
+  countNotes: Cardinal;
+  PosX: Real;
+  Viewport: Array[0..3] of Integer;
+begin
+  //Only Add Lines if there is enough space
+  If not LineinQueue then
+  begin
+    //Set Pointer to Line to Write
+    If (LineCounter = 0) then
+      LyricLine := PUpperLine //Set Upper Line
+    else if (LineCounter = 1) then
+      LyricLine := PLowerLine //Set Lower Line
+    else
+    begin
+      LyricLine := PQueueLine; //Set Queue Line
+      inQueue   := True;       //now there is a Queued Line
     end;
-  end;
-
-  if (StyleI = 1) or (StyleI = 3) then begin
-    if (SelectedI > -1) and (SelectedI <= High(Word)) then begin
-      for W := SelectedI to High(Word) do begin
-        Word[W].Selected := false;
-        Word[W].ColR := ColR;
-        Word[W].ColG := ColG;
-        Word[W].ColB := ColB;
-        Word[W].Done := 0;
-      end;
-    end;
-
-    SelectedI := Value;
-    if (Value > -1) and (Value <= High(Word)) then begin
-      for W := 0 to Value do begin
-        Word[W].Selected := true;
-        Word[W].ColR := ColSR;
-        Word[W].ColG := ColSG;
-        Word[W].ColB := ColSB;
-        Word[W].Scale := ScaleR;
-        Word[W].Done := 1;
-      end;
-    end;
-  end;
-
-  Refresh;
-end;
-
-procedure TLyric.SetDone(Value: real);
-var
-  W:    integer;
-begin
-  W := SelectedI;
-  if W > -1 then
-    Word[W].Done := Value;
-end;
-
-procedure TLyric.SetScale(Value: real);
-begin
-  ScaleR := Value;
-end;
-
-procedure TLyric.SetStyle(Value: integer);
-begin
-  StyleI := Value;
-end;
-
-procedure TLyric.SetFStyle(Value: integer);
-begin
-  FontStyleI := Value;
-end;
-
-procedure TLyric.AddWord(Text: string);
-var
-  WordNum:    integer;
-begin
-  WordNum := Length(Word);
-  SetLength(Word, WordNum + 1);
-  if WordNum = 0 then begin
-    Word[WordNum].X := XR;
-  end else begin
-    Word[WordNum].X := Word[WordNum - 1].X + Word[WordNum - 1].Width;
-  end;
-
-  Word[WordNum].Y := YR;
-  Word[WordNum].Size := SizeR;
-  Word[WordNum].FontStyle := FontStyleI; // new
-  SetFontStyle(FontStyleI);
-  SetFontSize(SizeR);
-  Word[WordNum].Width := glTextWidth(pchar(Text));
-  Word[WordNum].Text := Text;
-  Word[WordNum].ColR := ColR;
-  Word[WordNum].ColG := ColG;
-  Word[WordNum].ColB := ColB;
-  Word[WordNum].Scale := 1;
-  Word[WordNum].Done := 0;
-  Word[WordNum].Italic := Italic;
-
-  Refresh;
-end;
-
-procedure TLyric.AddCzesc(NrCzesci: integer);
-var
-  N:    integer;
-begin
-  Clear;
-  for N := 0 to Czesci[0].Czesc[NrCzesci].HighNut do begin
-    Italic := Czesci[0].Czesc[NrCzesci].Nuta[N].FreeStyle;
-    AddWord(Czesci[0].Czesc[NrCzesci].Nuta[N].Tekst);
-    Text := Text + Czesci[0].Czesc[NrCzesci].Nuta[N].Tekst;
-  end;
-  Selected := -1;
-end;
-
-procedure TLyric.Clear;
-begin
-{  ColR := Skin_FontR;
-  ColG := Skin_FontG;
-  ColB := Skin_FontB;}
-  SetLength(Word, 0);
-  Text := '';
-  SelectedI := -1;
-end;
-
-procedure TLyric.Refresh;
-var
-  W:          integer;
-  TotWidth:   real;
-begin
-  if AlignI = 1 then begin
-    TotWidth := 0;
-    for W := 0 to High(Word) do
-      TotWidth := TotWidth + Word[W].Width;
-
-    Word[0].X := XR - TotWidth / 2;
-    for W := 1 to High(Word) do
-      Word[W].X := Word[W - 1].X + Word[W - 1].Width;
-  end;
-end;
-
-procedure TLyric.Draw;
-var
-  W:    integer;
-begin
-  case StyleI of
-    0:
-      begin
-        for W := 0 to High(Word) do
-          DrawNormal(W);
-      end;
-    1:
-      begin
-        for W := 0 to High(Word) do
-          DrawPlain(W);
-      end;
-    2: // zoom
-      begin
-        for W := 0 to High(Word) do
-          if not Word[W].Selected then
-            DrawNormal(W);
-
-        for W := 0 to High(Word) do
-          if Word[W].Selected then
-            DrawScaled(W);
-      end;
-    3: // slide
-      begin
-        for W := 0 to High(Word) do begin
-          if not Word[W].Selected then
-            DrawNormal(W)
-          else
-            DrawSlide(W);
-        end;
-      end;
-    4: // ball
-      begin
-        for W := 0 to High(Word) do
-          DrawNormal(W);
-
-        for W := 0 to High(Word) do
-          if Word[W].Selected then begin
-            Tex_Ball.X := (Word[W].X - 10) + Word[W].Done * Word[W].Width;
-            Tex_Ball.Y := 480 - 10*sin(Word[W].Done * pi);
-            Tex_Ball.W := 20;
-            Tex_Ball.H := 20;
-            DrawTexture(Tex_Ball);
-          end;
-      end;
-  end; // case
-end;
-
-procedure TLyric.DrawNormal(W: integer);
-begin
-  SetFontStyle(Word[W].FontStyle);
-  SetFontPos(Word[W].X+ 10*ScreenX, Word[W].Y);
-  SetFontSize(Word[W].Size);
-  SetFontItalic(Word[W].Italic);
-  glColor3f(Word[W].ColR, Word[W].ColG, Word[W].ColB);
-  glPrint(pchar(Word[W].Text));
-end;
-
-procedure TLyric.DrawPlain(W: integer);
-var
-  D:    real;
-begin
-  D := Word[W].Done; // przyrost
-
-  SetFontStyle(Word[W].FontStyle);
-  SetFontPos(Word[W].X, Word[W].Y);
-  SetFontSize(Word[W].Size);
-  SetFontItalic(Word[W].Italic);
-
-  if D = 0 then
-    glColor3f(ColR, ColG, ColB)
+  end
   else
-    glColor3f(ColSR, ColSG, ColSB);
+  begin
+    LyricLine:=PUpperLine;
+    PUpperLine:=PLowerLine;
+    PLowerLine:=PQueueLine;
+    PQueueLine:=LyricLine;
+  end;
 
-  glPrint(pchar(Word[W].Text));
+  //Check if Sentence has Notes
+  If (Length(Line.Nuta) > 0) then
+  begin
+    //Copy Values from SongLine to LyricLine
+    CountNotes := high(Line.Nuta);
+    LyricLine.Start := Line.Nuta[0].Start;
+    LyricLine.Length := Line.Nuta[CountNotes].Start + Line.Nuta[CountNotes].Dlugosc - LyricLine.Start;
+    LyricLine.Freestyle := True; //is set by And Notes Freestyle while copying Notes
+    LyricLine.Text    := '';      //Also Set while copying Notes
+    LyricLine.Players := 127; //All Players for now, no Duett Mode available
+    //Copy Words
+    SetLength(LyricLine.Words, CountNotes + 1);
+    For I := 0 to CountNotes do
+    begin
+      LyricLine.Freestyle := LyricLine.Freestyle AND Line.Nuta[I].FreeStyle;
+      LyricLine.Words[I].Start      := Line.Nuta[I].Start;
+      LyricLine.Words[I].Length     := Line.Nuta[I].Dlugosc;
+      LyricLine.Words[I].Text       := Line.Nuta[I].Tekst;
+      LyricLine.Words[I].Freestyle  := Line.Nuta[I].FreeStyle;
+      LyricLine.Text := LyricLine.Text + LyricLine.Words[I].Text
+    end;
+
+    //Set Font Params
+    SetFontStyle(FontStyle);
+    SetFontPos(0, 0);
+    LyricLine.Size := UpperLineSize;
+    SetFontSize(LyricLine.Size);
+    SetFontItalic(False);
+    glColor4f(1, 1, 1, 1);
+
+    //Change Fontsize to Fit the Screen
+    While (LyricLine.Width > 508) do
+    begin
+      Dec(LyricLine.Size);
+
+      if (LyricLine.Size <=1) then
+        Break;
+
+      SetFontSize(LyricLine.Size);
+      LyricLine.Width := glTextWidth(PChar(LyricLine.Text));
+    end;
+
+    //Set Word Positions and Line Size
+    PosX := 2 {LowerLineX + LowerLineW/2 + 80 - LyricLine.Width/2};
+    For I := 0 to High(LyricLine.Words) do
+    begin
+      LyricLine.Words[I].X := PosX;
+      LyricLine.Words[I].Width := glTextWidth(PChar(LyricLine.Words[I].Text));
+      LyricLine.Words[I].TexPos := PosX / 512;
+      LyricLine.Words[I].TexWidth := LyricLine.Words[I].TexWidth / 512;
+
+      PosX := PosX + LyricLine.Words[I].Width;
+    end;
+
+    //Create LyricTexture
+    //Prepare Ogl
+    glGetIntegerv(GL_VIEWPORT, @ViewPort);
+    glClearColor(0.0,0.0,0.0,0);
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+    {glMatrixMode(GL_PROJECTION);
+      glLoadIdentity;
+      glOrtho(0, 1024, 64, 0, -1, 100);
+    glMatrixMode(GL_MODELVIEW);}
+    glViewport(0, 0, 512, 512);
+
+    //Draw Lyrics
+    SetFontPos(0, 0);
+    glPrint(PChar(LyricLine.Text));
+
+    Display.ScreenShot;
+    //Copy to Texture
+    glBindTexture(GL_TEXTURE_2D, LyricLine.Tex);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 448, 512, 64, 0);
+
+    //Clear Buffer
+    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+
+    glViewPort(ViewPort[0], ViewPort[1], ViewPort[2], ViewPort[3]);
+    {glMatrixMode(GL_PROJECTION);
+      glLoadIdentity;
+      glOrtho(0, RenderW, RenderH, 0, -1, 100);
+    glMatrixMode(GL_MODELVIEW); }
+  end;
+
+  //Increase the Counter
+  Inc(LCounter);
 end;
 
-procedure TLyric.DrawScaled(W: integer);
+
+//---------------
+// Draw - Procedure Draws Lyrics; Beat is curent Beat in Quarters
+//        Draw just manage the Lyrics, drawing is done by a call of DrawLyrics
+//---------------
+Procedure   TLyricEngine.Draw (Beat: Real);
+begin
+
+  DrawLyrics(Beat);
+
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_Alpha {GL_ONE_MINUS_SRC_COLOR}, GL_ONE_MINUS_SRC_Alpha);
+    glBindTexture(GL_TEXTURE_2D, PUpperLine^.Tex);
+
+    glColor4f(1,1,0,1);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 1); glVertex2f(100, 100);
+      glTexCoord2f(0, 0); glVertex2f(100, 200);
+      glTexCoord2f(1, 0); glVertex2f(612, 200);
+      glTexCoord2f(1, 1); glVertex2f(612, 100);
+    glEnd;
+
+    glBindTexture(GL_TEXTURE_2D, PLowerLine^.Tex);
+
+    glColor4f(1,0,1,1);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 1); glVertex2f(100, 200);
+      glTexCoord2f(0, 0); glVertex2f(100, 300);
+      glTexCoord2f(1, 0); glVertex2f(612, 300);
+      glTexCoord2f(1, 1); glVertex2f(612, 200);
+    glEnd;
+
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+
+end;
+
+//---------------
+// DrawLyrics(private) - Helper for Draw; main Drawing procedure
+//---------------
+procedure TLyricEngine.DrawLyrics (Beat: Real);
+begin
+  DrawLyricsLine(UpperLineX, UpperLineW, UpperlineY, 15, Upperline, Beat);
+  DrawLyricsLine(LowerLineX, LowerLineW, LowerlineY, 15, Lowerline, Beat);
+end;
+
+//---------------
+// DrawPlayerIcon(private) - Helper for Draw; Draws a Playericon
+//---------------
+procedure TLyricEngine.DrawPlayerIcon(const Player: Byte; const Enabled: Boolean; const X, Y, Size, Alpha: Real);
+var IEnabled: Byte;
+begin
+  Case Enabled of
+    True: IEnabled := 0;
+    False: IEnabled:= 1;
+  end;
+  
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBindTexture(GL_TEXTURE_2D, PlayerIconTex[Player][IEnabled].TexNum);
+
+  glColor4f(1,1,1,Alpha);
+  glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); glVertex2f(X, Y);
+    glTexCoord2f(0, 1); glVertex2f(X, Y + Size);
+    glTexCoord2f(1, 1); glVertex2f(X + Size, Y + Size);
+    glTexCoord2f(1, 0); glVertex2f(X + Size, Y);
+  glEnd;
+
+
+  glDisable(GL_BLEND);
+  glDisable(GL_TEXTURE_2D);
+end;
+//---------------
+// DrawLyricsLine(private) - Helper for Draw; Draws one LyricLine
+//---------------
+procedure TLyricEngine.DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: TLyricLine; Beat: Real);
 var
-  D:    real;
+  I: Integer;
+  CurWord: Integer;
+  Progress: Real;
+  LyricX: Real; //Left Corner on X Axis
+  LyricX2: Real;//Right Corner " "
+  LyricScale: Real; //Up or Downscale the Lyrics need
+  IconSize: Real;
+  IconAlpha: Real;
 begin
-  // previous plus dynamic scaling effect
-  D := 1-Word[W].Done; // przyrost
-  SetFontStyle(Word[W].FontStyle);
-  SetFontPos(Word[W].X - D * Word[W].Width * (Word[W].Scale - 1) / 2 + (D+1)*10*ScreenX, Word[W].Y - D * 1.5 * Word[W].Size *(Word[W].Scale - 1));
-  SetFontSize(Word[W].Size + D * (Word[W].Size * Word[W].Scale - Word[W].Size));
-  SetFontItalic(Word[W].Italic);
-  glColor3f(Word[W].ColR, Word[W].ColG, Word[W].ColB);
-  glPrint(pchar(Word[W].Text))
+
+{  For I := 0 to High(Line.Words) do
+  begin
+    //Set Font Params
+    SetFontStyle(FontStyle);
+    SetFontSize(Size);
+    SetFontItalic(Line.Words[I].Freestyle);
+    glColor4f(1, 1, 1, 1);
+
+    SetFontPos(Line.Words[I].X, Y);
+
+    glPrint(PChar(Line.Words[I].Text));
+  end; }
+
+  LyricScale := Size / Line.Size;
+
+  //Draw Icons
+  IconSize := (2 * Size);
+  //IconAlpha := 1;
+  IconAlpha := Frac(Beat/(Resolution*4));
+
+  {DrawPlayerIcon (0, True, X, Y, IconSize, IconAlpha);
+  DrawPlayerIcon (1, True, X + IconSize + 1, Y, IconSize, IconAlpha);
+  DrawPlayerIcon (2, True, X + (IconSize + 1)*2, Y, IconSize, IconAlpha);}
+
+  //Check if a Word in the Sentence is active
+  if ((Line.Start > Beat) AND (Line.Start + Line.Length < Beat)) then
+  begin
+    //Get Start Position:
+    {  Start of Line - Width of all Icons + LineWidth/2 (Center}
+    LyricX  := X + (W - ((IconSize + 1) * 6))/2 + ((IconSize + 1) * 3);
+
+    LyricX2 := LyricX + Line.Width;
+
+    //Draw complete Sentence
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_COLOR {GL_ONE_MINUS_SRC_COLOR}, GL_ONE_MINUS_SRC_COLOR);
+    glBindTexture(GL_TEXTURE_2D, Line.Tex);
+
+    glColorRGB(LineColor_en);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
+      glTexCoord2f(0, 0); glVertex2f(LyricX, Y + 64 * W / 512);
+      glTexCoord2f(1, 0); glVertex2f(LyricX + LyricX2, Y + 64 * W / 512);
+      glTexCoord2f(1, 1); glVertex2f(LyricX + LyricX2, Y);
+    glEnd;
+
+
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+  end
+  else
+  begin
+
+  end;
+
+  {//Search for active Word
+  For I := 0 to High(Line.Words) do
+    if (Line.Words[I].Start < Beat) then
+    begin
+      CurWord := I - 1;
+    end;
+
+  if (CurWord < 0) then Exit;
+
+  //Draw Part until cur Word
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_COLOR {GL_ONE_MINUS_SRC_COLOR}{, GL_ONE_MINUS_SRC_COLOR);
+  glBindTexture(GL_TEXTURE_2D, Line.Tex);
+
+  glColorRGB(LineColor_en);
+  glBegin(GL_QUADS);
+    glTexCoord2f(0, 1); glVertex2f(X, Y);
+    glTexCoord2f(0, 0); glVertex2f(X, Y + 64 * W / 512);
+    glTexCoord2f(Line.Words[CurWord].TexPos, 0); glVertex2f(X + W, Y + 64 * W / 512);
+    glTexCoord2f(Line.Words[CurWord].TexPos, 1); glVertex2f(X + W, Y);
+  glEnd;
+
+
+  glDisable(GL_BLEND);
+  glDisable(GL_TEXTURE_2D);}
 end;
 
-procedure TLyric.DrawSlide(W: integer);
-var
-  D:    real;
-begin
-  D := Word[W].Done; // przyrost
-  SetFontStyle(Word[W].FontStyle);
-  SetFontPos(Word[W].X, Word[W].Y);
-  SetFontSize(Word[W].Size);
-  SetFontItalic(Word[W].Italic);
-  glColor3f(Word[W].ColR, Word[W].ColG, Word[W].ColB);
-  glPrintDone(pchar(Word[W].Text), D, ColR, ColG, ColB);
-end;
-
-function TLyric.SelectedLetter;  // LCD
-var
-  W:    integer;
-begin
-  Result := 1;
-
-  for W := 0 to SelectedI-1 do
-    Result := Result + Length(Word[W].Text);
-end;
-
-function TLyric.SelectedLength: integer;  // LCD
-begin
-  Result := Length(Word[SelectedI].Text);
-end;
 
 end.
+

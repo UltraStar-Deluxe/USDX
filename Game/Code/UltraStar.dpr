@@ -6,46 +6,28 @@ program UltraStar;
 {$I switches.inc}
 
 uses
-  //------------------------------
-  //Includes - 3rd Party Libraries
-  //------------------------------
-  SDL          in 'lib\JEDI-SDLv1.0\SDL\Pas\SDL.pas',
-  OpenGL12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
-
-  bass         in 'lib\bass\delphi\bass.pas',
-
-  PNGImage     in 'lib\PNGImage\PNGImage.pas',
-  PNGzLib      in 'lib\PNGImage\PNGzLib.pas',
-  pnglang      in 'lib\PNGImage\pnglang.pas',
-
-  midiout      in 'lib\midi\midiout.pas',
-  midiin       in 'lib\midi\midiin.pas',
-  Circbuf      in 'lib\midi\CIRCBUF.PAS',
-  MidiType     in 'lib\midi\MidiType.PAS',
-  MidiDefs     in 'lib\midi\MidiDefs.PAS',
-  MidiCons     in 'lib\midi\MidiCons.PAS',
-  MidiFile     in 'lib\midi\MidiFile.PAS',
-  Delphmcb     in 'lib\midi\Delphmcb.PAS',
-
-  {$IFDEF UseSerialPort}
-  zlportio     in 'lib\zlportio\zlportio.pas',
-  ddkint       in 'lib\zlportio\ddkint.pas',
-  {$ENDIF}
-
-  avcodec      in 'lib\ffmpeg\avcodec.pas',
-  avformat     in 'lib\ffmpeg\avformat.pas',
-  avutil       in 'lib\ffmpeg\avutil.pas',
-  rational     in 'lib\ffmpeg\rational.pas',
-  opt          in 'lib\ffmpeg\opt.pas',
-  avio         in 'lib\ffmpeg\avio.pas',
-
+  SDL in 'lib\JEDI-SDLv1.0\SDL\Pas\SDL.pas',
+  OpenGL12 in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
+  bass in 'lib\bass\delphi\bass.pas',
+  PNGImage in 'lib\PNGImage\PNGImage.pas',
+  PNGzLib in 'lib\PNGImage\PNGzLib.pas',
+  pnglang in 'lib\PNGImage\pnglang.pas',
+  midiout in 'lib\midi\midiout.pas',
+  midiin in 'lib\midi\midiin.pas',
+  CIRCBUF in 'lib\midi\CIRCBUF.PAS',
+  MidiType in 'lib\midi\MidiType.PAS',
+  MidiDefs in 'lib\midi\MidiDefs.PAS',
+  MidiCons in 'lib\midi\MidiCons.PAS',
+  MidiFile in 'lib\midi\MidiFile.PAS',
+  Delphmcb in 'lib\midi\Delphmcb.PAS',
+  avcodec in 'lib\ffmpeg\avcodec.pas',
+  avformat in 'lib\ffmpeg\avformat.pas',
+  avutil in 'lib\ffmpeg\avutil.pas',
+  rational in 'lib\ffmpeg\rational.pas',
+  opt in 'lib\ffmpeg\opt.pas',
+  avio in 'lib\ffmpeg\avio.pas',
   SQLiteTable3 in 'lib\SQLite\SQLiteTable3.pas',
-  SQLite3      in 'lib\SQLite\SQLite3.pas',
-
-
-  //------------------------------
-  //Includes - Menu System
-  //------------------------------
+  SQLite3 in 'lib\SQLite\SQLite3.pas',
   UDisplay in 'Menu\UDisplay.pas',
   UMenu in 'Menu\UMenu.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
@@ -56,11 +38,7 @@ uses
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
   UMenuButtonCollection in 'Menu\UMenuButtonCollection.pas',
-
-  //------------------------------
-  //Includes - Classes
-  //------------------------------
-  UCommon in 'Classes\UCommon.pas',  
+  UCommon in 'Classes\UCommon.pas',
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
@@ -87,16 +65,8 @@ uses
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
-  UCommandLine  in 'Classes\UCommandLine.pas',
-
-  //------------------------------
-  //Includes - Video Support
-  //------------------------------
+  UCommandLine in 'Classes\UCommandLine.pas',
   UVideo in 'Classes\UVideo.pas',
-  
-  //------------------------------
-  //Includes - Screens
-  //------------------------------
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -125,27 +95,16 @@ uses
   UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
   UScreenCredits in 'Screens\UScreenCredits.pas',
   UScreenPopup in 'Screens\UScreenPopup.pas',
-
-  //------------------------------
-  //Includes - Screens PartyMode
-  //------------------------------
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
   UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
-
-  //------------------------------
-  //Includes - Modi SDK
-  //------------------------------
   ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
-
-  //------------------------------
-  //Includes - Delphi
-  //------------------------------
   Windows,
-  SysUtils;
+  SysUtils,
+  ULyrics.bak in 'Classes\ULyrics.bak.pas';
 
 const
   Version = 'UltraStar Deluxe V 1.10 Alpha Build';
@@ -357,6 +316,7 @@ begin
   Log.BenchmarkEnd(0);
   Log.LogBenchmark('Loading Time', 0);
 
+  Lyric := TLyric.Create;
 
   //------------------------------
   //Start- Mainloop
