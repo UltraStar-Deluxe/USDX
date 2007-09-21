@@ -14,7 +14,11 @@ uses
   UMusic,
   USongs,
   UThemes,
+  OpenGL12,
+  Windows,
+  math,
   ULCD;
+
 //  OpenGL;
 
 type
@@ -52,11 +56,30 @@ type
 
       Animation:    real;
       Fadeout:      boolean;
+
+      BarScore_ActualHeight  : array[1..6] of real;
+      BarPhrase_ActualHeight : array[1..6] of real;
+      BarGolden_ActualHeight : array[1..6] of real;
+
+      BarScore_EaseOut_Step  : real;
+      BarPhrase_EaseOut_Step : real;
+      BarGolden_EaseOut_Step : real;
+
+      TextScore_ActualValue  : array[1..6] of integer;
+      TextPhrase_ActualValue : array[1..6] of integer;
+      TextGolden_ActualValue : array[1..6] of integer;
+
+      EaseOut_MaxSteps       : real;
+
       constructor Create; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
+      procedure onShowFinish; override;
       function Draw: boolean; override;
       procedure FillPlayer(Item, P: integer);
+
+      function RaiseBar(PlayerNumber: integer; BarStartPosY: Single; ActualHeight: real; Score: integer; ColorBrightness : String; EaseOut_Step: Real) : real;
+      function IncrementScore(PlayerNumber: integer; ActualScoreValue: Integer; ScoreReached: integer; EaseOut_Step: Real) : integer;
   end;
 
 implementation
@@ -239,34 +262,45 @@ begin
   end;
 
   for P := 1 to 6 do begin
-    Text[TextName[P]].Visible := V[P];
-    Text[TextScore[P]].Visible := V[P];
+    Text[TextName[P]].Visible               := V[P];
+    Text[TextScore[P]].Visible              := V[P];
 
-    Text[TextNotes[P]].Visible := V[P];
-    Text[TextNotesScore[P]].Visible := V[P];
-    Text[TextLineBonus[P]].Visible := V[P];
-    Text[TextLineBonusScore[P]].Visible := V[P];
-    Text[TextGoldenNotes[P]].Visible := V[P];
-    Text[TextGoldenNotesScore[P]].Visible := V[P];
-    Text[TextTotal[P]].Visible := V[P];
-    Text[TextTotalScore[P]].Visible := V[P];
+    // We set alpha to 0 , so we can nicely blend them in when we need them
+    Text[TextScore[P]].Alpha              := 0;
+    Text[TextNotesScore[P]].Alpha         := 0;
+    Text[TextNotes[P]].Alpha              := 0;
+    Text[TextLineBonus[P]].Alpha          := 0;
+    Text[TextLineBonusScore[P]].Alpha     := 0;
+    Text[TextGoldenNotes[P]].Alpha        := 0;
+    Text[TextGoldenNotesScore[P]].Alpha   := 0;
+    Text[TextTotal[P]].Alpha              := 0;
+    Text[TextTotalScore[P]].Alpha         := 0;
+
+    Text[TextNotes[P]].Visible              := V[P];
+    Text[TextNotesScore[P]].Visible         := V[P];
+    Text[TextLineBonus[P]].Visible          := V[P];
+    Text[TextLineBonusScore[P]].Visible     := V[P];
+    Text[TextGoldenNotes[P]].Visible        := V[P];
+    Text[TextGoldenNotesScore[P]].Visible   := V[P];
+    Text[TextTotal[P]].Visible              := V[P];
+    Text[TextTotalScore[P]].Visible         := V[P];
 
     for I := 0 to high(PlayerStatic[P]) do
-      Static[PlayerStatic[P, I]].Visible := V[P];
+      Static[PlayerStatic[P, I]].Visible    := V[P];
 
     for I := 0 to high(PlayerTexts[P]) do
-      Text[PlayerTexts[P, I]].Visible := V[P];
+      Text[PlayerTexts[P, I]].Visible       := V[P];
 
-    Static[StaticBoxLightest[P]].Visible := V[P];
-    Static[StaticBoxLight[P]].Visible := V[P];
-    Static[StaticBoxDark[P]].Visible := V[P];
+    Static[StaticBoxLightest[P]].Visible    := V[P];
+    Static[StaticBoxLight[P]].Visible       := V[P];
+    Static[StaticBoxDark[P]].Visible        := V[P];
 
-    Static[StaticBackLevel[P]].Visible := V[P];
-    Static[StaticBackLevelRound[P]].Visible := V[P];
-    Static[StaticLevel[P]].Visible := V[P];
-    Static[StaticLevelRound[P]].Visible := V[P];
+    Static[StaticBackLevel[P]].Visible      := false; //V[P];
+    Static[StaticBackLevelRound[P]].Visible := false; //V[P];
+    Static[StaticLevel[P]].Visible          := false; //V[P];
+    Static[StaticLevelRound[P]].Visible     := false; //V[P];
   end;
-
+{
   if PlayersPlay <= 3 then begin // only for 1 screen mode
   for P := 0 to PlayersPlay-1 do begin
     case PlayersPlay of
@@ -279,7 +313,7 @@ begin
     Text[TextName[PP]].Text := Ini.Name[P];
 
     //{$IFDEF TRANSLATE}
-    case (Player[P].ScoreTotalI) of
+{    case (Player[P].ScoreTotalI) of
       0..2000:        Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
       2010..4000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_AMATEUR');
       4010..6000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_RISING_STAR');
@@ -298,9 +332,10 @@ begin
       9010..9800:     Text[TextScore[PP]].Text := 'Superstar';
       9810..10000:    Text[TextScore[PP]].Text := 'Ultrastar';
     end;
-    {$ENDIF} *)
+{    {$ENDIF}
+//*)
 
-    S := IntToStr(Player[P].ScoreI);
+{    S := IntToStr(Player[P].ScoreI);
     while (Length(S)<4) do S := '0' + S;
     Text[TextNotesScore[PP]].Text := S;
 
@@ -322,12 +357,12 @@ begin
     Static[StaticLevel[PP]].Texture.H := Round(Static[StaticBackLevel[PP]].Texture.H * Lev);
     Static[StaticLevel[PP]].Texture.Y := Static[StaticBackLevel[PP]].Texture.Y + Static[StaticBackLevel[PP]].Texture.H  - Static[StaticLevel[PP]].Texture.H;
     Static[StaticLevelRound[PP]].Texture.Y := Static[StaticLevel[PP]].Texture.Y - Static[StaticLevelRound[PP]].Texture.H;}
-*)
+//*)
     // doesn't align too much... (to fix)
     // hint: play with wrapping textures
     // resolution: setting TexY1 and TexY2 to 0.1 and 0.9
 
-    Lev := Player[P].ScoreTotalI / 10000;
+{    Lev := Player[P].ScoreTotalI / 10000;
     MaxH := Static[StaticBackLevel[PP]].Texture.H + Static[StaticBackLevelRound[PP]].Texture.H / 2;
 
     // developer note (Polish):
@@ -370,7 +405,30 @@ begin
   LCD.Clear;
   LCD.WriteText(1, Ini.Name[0]);
   LCD.WriteText(2, 'Score: ' + Text[TextTotalScore[1]].Text);
+}
+end;
 
+procedure TScreenScore.onShowFinish;
+var
+  index : integer;
+begin
+for index := 1 to 2 do
+  begin
+    BarScore_ActualHeight[index]  := 0;
+    BarPhrase_ActualHeight[index] := 0;
+    BarGolden_ActualHeight[index] := 0;
+
+    TextScore_ActualValue[index]  := 0;
+    TextPhrase_ActualValue[index] := 0;
+    TextGolden_ActualValue[index] := 0;
+  end;
+
+
+  BarScore_EaseOut_Step  := 1;
+  BarPhrase_EaseOut_Step := 1;
+  BarGolden_EaseOut_Step := 1;
+
+  EaseOut_MaxSteps := 100;
 end;
 
 function TScreenScore.Draw: boolean;
@@ -381,117 +439,14 @@ var
   Wsp2:   real;
   Pet:    integer;}
 
+  ActualTime, OldTime : Integer;
+
   Item:   integer;
   P:      integer;
   C:      integer;
+
+  katze : integer;
 begin
-  // star animation
-{  Animation := Animation + TimeSkip*1000;
-
-  // move right
-  Min := 0; Max := 500;
-  if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
-    Wsp2 := 1 - Wsp;
-
-    Static[0].Texture.X := 400 + Wsp2 * 50; // prawa mala
-    Static[0].Texture.Y := 150 - Wsp2 * 500;
-    Static[1].Texture.X := -50 - Wsp2 * 500; // lewa mala
-    Static[1].Texture.Y := 200 + Wsp2 * 50;
-    Static[2].Texture.X := 100 - Wsp2 * 200;  // gorna w prawo
-    Static[2].Texture.Y := 80 - Wsp2 * 200;
-    Static[3].Texture.X := -280 - Wsp2 * 1000; // lewa wieksza gorna
-    Static[3].Texture.Y := 90;
-
-
-    Static[4].Texture.X := -1200 + Wsp * 1000;
-    Text[0].X := Static[4].Texture.X + 430;
-  end;
-
-  // slowly move right
-  Min := 500; Max := 4100;
-  if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
-
-    Static[0].Texture.X := 400 - Wsp * 10; // prawa mala
-    Static[0].Texture.Y := 150 + Wsp * 50;
-    Static[1].Texture.X := -50 + Wsp * 50; // lewa mala
-    Static[1].Texture.Y := 200;
-    Static[2].Texture.X := 100 + Wsp * 50;  // gorna w prawo
-    Static[2].Texture.Y := 80 + Wsp * 30;
-    Static[3].Texture.X := -280 + Wsp * 200; // lewa wieksza gorna
-    Static[3].Texture.Y := 90;
-
-    Static[4].Texture.X := -200 + Wsp * 150; // duza glowna
-    Text[0].X := Static[4].Texture.X + 430;
-  end;
-
-  // fast move right
-  Min := 4100; Max := 4400;
-  if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
-    Wsp2 := 1 - Wsp;
-
-    Static[0].Texture.X := 390 - Wsp * 200; // prawa mala
-    Static[0].Texture.Y := 200 + Wsp * 1000;
-    Static[1].Texture.X := 0 + Wsp * 1000; // lewa mala
-    Static[1].Texture.Y := 200;
-    Static[2].Texture.X := 150 + Wsp * 1000;  // gorna w prawo
-    Static[2].Texture.Y := 110 + Wsp * 600;
-    Static[3].Texture.X := -80 + Wsp * 2000; // lewa wieksza gorna
-    Static[3].Texture.Y := 90;
-
-    Static[4].Texture.X := -50 + Wsp * 2000;
-    Text[0].X := Static[4].Texture.X + 430;
-
-    Static[7].Texture.X := 100 + Wsp2 * 3000;
-    Text[1].X := Static[7].Texture.X + 230; // 300
-    Text[1].Y := Static[7].Texture.Y + 140; // 120 Sh
-
-    Text[2].X := Static[7].Texture.X + 250;
-    Text[2].Y := Static[7].Texture.Y - 250;
-    Text[3].X := Static[7].Texture.X + 250;
-    Text[3].Y := Static[7].Texture.Y - 200;
-  end;
-
-  // last arrow
-  Min := 4400; Max := 8000;
-  if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
-
-    Static[7].Texture.X := 100 - Wsp * 100;
-    Text[1].X := Static[7].Texture.X + 230; // 300
-    Text[1].Y := Static[7].Texture.Y + 140; // 120
-
-    Text[2].X := Static[7].Texture.X + 250;
-    Text[2].Y := Static[7].Texture.Y - 250;
-    Text[3].X := Static[7].Texture.X + 250;
-    Text[3].Y := Static[7].Texture.Y - 200;
-  end;
-
-  // fade last arrow to left
-  Min := 8000; Max := 8300;
-  if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
-
-    Static[7].Texture.X := 0 - Wsp * 3000;
-    Static[7].Texture.Y := 340 - Wsp * 50;
-    Text[1].X := Static[7].Texture.X + 230; // 300 Sh
-    Text[1].Y := Static[7].Texture.Y + 140; // 120 Sh
-
-    Text[2].X := Static[7].Texture.X + 250;
-    Text[2].Y := Static[7].Texture.Y - 250;
-    Text[3].X := Static[7].Texture.X + 250;
-    Text[3].Y := Static[7].Texture.Y - 200;
-  end;
-
-  Min := 8300;
-  if (Animation >= Min) and (not Fadeout) then begin
-    Music.StopShuffle;
-    FadeTo(@ScreenSong);
-    Fadeout := true;
-  end;}
-
 
   // 0.5.0: try also use 4 players screen with nicks
   if PlayersPlay = 4 then begin
@@ -532,6 +487,221 @@ begin
   end;
 
   inherited Draw;
+{
+  player[1].ScoreI       := 7000;
+  player[1].ScoreLineI   := 2000;
+  player[1].ScoreGoldenI := 1000;
+
+  player[2].ScoreI       := 2500;
+  player[2].ScoreLineI   := 1100;
+  player[2].ScoreGoldenI :=  900;
+ }
+// Let's arise the bars
+  ActualTime := GetTickCount div 33;
+    if ((ActualTime <> OldTime) and ShowFinish )then
+      begin
+        OldTime               := ActualTime;
+
+      For katze:= 0 to 5 do
+        begin
+
+          // We actually araise them in the right order, but we have to draw them in reverse order (golden -> phrase -> mainscore)
+          Case BarScore_EaseOut_Step < EaseOut_MaxSteps * 10 of
+            true : BarScore_EaseOut_Step := BarScore_EaseOut_Step + 1;
+          end;
+
+          // PhrasenBonus
+           if (BarScore_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
+            begin
+              Case BarPhrase_EaseOut_Step < EaseOut_MaxSteps * 10 of
+                true : BarPhrase_EaseOut_Step            := BarPhrase_EaseOut_Step + 1;
+              end;
+
+          // GoldenNotebonus
+               if (BarPhrase_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
+                begin
+                  Case BarGolden_EaseOut_Step < EaseOut_MaxSteps * 10 of
+                    true : BarGolden_EaseOut_Step        := BarGolden_EaseOut_Step + 1;
+                  end;
+
+        //########################
+        // Draw golden score bar #
+        //########################
+
+                  BarGolden_ActualHeight[katze] := RaiseBar(katze,
+                                                            Static[StaticBackLevel[katze+1]].Texture.y - BarScore_ActualHeight[katze] - BarPhrase_ActualHeight[katze],
+                                                            BarGolden_ActualHeight[katze],
+                                                            player[katze+1].ScoreGoldenI,
+                                                            'Lightest',
+                                                            BarGolden_EaseOut_Step);
+
+                  // Increment and show total score and plain score
+                  TextGolden_ActualValue[katze] := IncrementScore(katze,
+                                                            TextGolden_ActualValue[katze],
+                                                            Player[katze+1].ScoreGoldenI,
+                                                            BarGolden_EaseOut_Step);
+                  Text[TextGoldenNotesScore[katze+1]].Text  := IntToStr(TextGolden_ActualValue[katze]);
+
+                  // Blend in
+                  Text[TextGoldenNotesScore[katze+1]].Alpha := (BarGolden_EaseOut_Step / 100);
+                  Text[TextGoldenNotes[katze+1]].Alpha      := (BarGolden_EaseOut_Step / 100);
+
+                end;
+        //########################
+        // Draw phrase score bar #
+        //########################
+              BarPhrase_ActualHeight[katze]     := RaiseBar(katze,
+                                                            Static[StaticBackLevel[katze+1]].Texture.y - BarScore_ActualHeight[katze],
+                                                            BarPhrase_ActualHeight[katze],
+                                                            Player[katze+1].ScoreLineI,
+                                                            'Light',
+                                                            BarPhrase_EaseOut_Step);
+
+              // Increment and show total score and plain score
+              TextPhrase_ActualValue[katze]     := IncrementScore(katze,
+                                                            TextPhrase_ActualValue[katze],
+                                                            Player[katze+1].ScoreLineI,
+                                                            BarPhrase_EaseOut_Step);
+              Text[TextLineBonusScore[katze+1]].Text   := IntToStr(TextPhrase_ActualValue[katze]);
+
+              //Blend in
+              Text[TextLineBonusScore[katze+1]].Alpha  := (BarPhrase_EaseOut_Step / 100);
+              Text[TextLineBonus[katze+1]].Alpha       := (BarPhrase_EaseOut_Step / 100);
+
+
+            end;
+        //#######################
+        // Draw plain score bar #
+        //#######################
+        BarScore_ActualHeight[katze]            := RaiseBar(katze,
+                                                            Static[StaticBackLevel[katze+1]].Texture.y,
+                                                            BarScore_ActualHeight[katze],
+                                                            Player[katze+1].ScoreI,
+                                                            'Dark',
+                                                            BarScore_EaseOut_Step);
+        // Increment and show total score and plain score
+        TextScore_ActualValue[katze]            := IncrementScore(katze,
+                                                            TextScore_ActualValue[katze],
+                                                            Player[katze+1].ScoreI,
+                                                            BarScore_EaseOut_Step);
+        Text[TextNotesScore[katze+1]].Text      := IntToStr(TextScore_ActualValue[katze]);
+
+        Text[TextTotalScore[katze+1]].Text      := IntToStr(TextScore_ActualValue[katze] + TextPhrase_ActualValue[katze] + TextGolden_ActualValue[katze]);
+
+      //Blend em in
+        Text[TextTotalScore[katze+1]].Alpha     := (BarScore_EaseOut_Step / 100);
+        Text[TextTotal[katze+1]].Alpha          := (BarScore_EaseOut_Step / 100);
+        Text[TextNotesScore[katze+1]].Alpha     := (BarScore_EaseOut_Step / 100);
+        Text[TextNotes[katze+1]].Alpha          := (BarScore_EaseOut_Step / 100);
+        Text[TextScore[katze+1]].Alpha          := (BarScore_EaseOut_Step / 100);
+
+      end; // me loop
+    end;
+end;
+
+
+function TscreenScore.RaiseBar(PlayerNumber: integer; BarStartPosY: Single; ActualHeight: real; Score: integer; ColorBrightness : String; EaseOut_Step: Real) : real;
+const
+  RaiseSmoothness : integer = 100;
+var
+  MaxHeight       : real;
+  NewHeight       : real;
+  Width           : real;
+
+  Height2Reach    : real;
+
+  RaiseStep       : real;
+
+  BarStartPosX    : Single;
+
+  R,G,B           : real;
+begin
+
+  MaxHeight    := Static[StaticBackLevel[PlayerNumber + 1]].Texture.H;
+  Width        := Static[StaticBackLevel[PlayerNumber + 1]].Texture.W;
+
+  BarStartPosX := Static[StaticBackLevel[PlayerNumber + 1]].Texture.X;
+
+  BarStartPosY := BarStartPosY + MaxHeight; // The texture starts in the upper left corner, so let's subtract the height - so we can arise it
+
+  // the height dependend of the score
+  Height2Reach := (Score / 10000) * MaxHeight;
+
+  // EaseOut_Step is the actual step in the raising process, like the 20iest step of EaseOut_MaxSteps
+  RaiseStep := EaseOut_Step;
+
+  if (ActualHeight < Height2Reach) then
+    begin
+      // Check http://proto.layer51.com/d.aspx?f=400 for more info on easing functions
+      // Calculate the actual step according to the maxsteps
+      RaiseStep := RaiseStep / EaseOut_MaxSteps;
+
+      // quadratic easing out - decelerating to zero velocity
+      // -end_position * current_time * ( current_time - 2 ) + start_postion
+      NewHeight := (-Height2Reach * RaiseStep * (RaiseStep - 20) + BarStartPosY) / RaiseSmoothness;
+    end
+  else
+    begin
+      NewHeight := Height2Reach;
+    end;
+                                                //+1
+    LoadColor(R, G, B, 'P' + inttostr(PlayerNumber+1) + ColorBrightness); //dark, light, lightest
+    glColor4f(R, G, B, 1);
+
+    //the actual bar
+    glBindTexture(GL_TEXTURE_2D, Static[StaticLevel[PlayerNumber + 1]].Texture.TexNum);
+
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 0); glVertex2f(BarStartPosX,         BarStartPosY - NewHeight);
+      glTexCoord2f(1, 0); glVertex2f(BarStartPosX + Width, BarStartPosY - NewHeight);
+      glTexCoord2f(1, 1); glVertex2f(BarStartPosX + Width, BarStartPosY);
+      glTexCoord2f(0, 1); glVertex2f(BarStartPosX,         BarStartPosY);
+    glEnd;
+
+    //the round thing on top
+    glBindTexture(GL_TEXTURE_2D, Static[StaticLevelRound[PlayerNumber + 1]].Texture.TexNum);
+
+    glEnable(GL_TEXTURE_2D);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 0); glVertex2f(BarStartPosX,         (BarStartPosY - Static[StaticLevelRound[PlayerNumber + 1]].Texture.h) - NewHeight);
+      glTexCoord2f(1, 0); glVertex2f(BarStartPosX + Width, (BarStartPosY - Static[StaticLevelRound[PlayerNumber + 1]].Texture.h) - NewHeight);
+      glTexCoord2f(1, 1); glVertex2f(BarStartPosX + Width,  BarStartPosY - NewHeight);
+      glTexCoord2f(0, 1); glVertex2f(BarStartPosX,          BarStartPosY - NewHeight);
+    glEnd;
+
+  Result := NewHeight;
+end;
+
+function TScreenScore.IncrementScore(PlayerNumber: integer; ActualScoreValue: Integer; ScoreReached: integer; EaseOut_Step: Real) : integer;
+const
+  RaiseSmoothness : integer = 100;
+var
+  RaiseStep    : Real;
+begin
+  // EaseOut_Step is the actual step in the raising process, like the 20iest step of EaseOut_MaxSteps
+  RaiseStep     := EaseOut_Step;
+
+  if (ActualScoreValue < ScoreReached) then
+    begin
+      // Calculate the actual step according to the maxsteps
+      RaiseStep := RaiseStep / EaseOut_MaxSteps;
+
+      // quadratic easing out - decelerating to zero velocity
+      // -end_position * current_time * ( current_time - 2 ) + start_postion
+      Result    := floor((-ScoreReached * RaiseStep * (RaiseStep - 20)) / RaiseSmoothness);
+    end
+  else
+    begin
+      Result    := ScoreReached;
+    end;
+
 end;
 
 procedure TScreenScore.FillPlayer(Item, P: integer);

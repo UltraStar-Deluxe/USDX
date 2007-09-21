@@ -6,8 +6,8 @@
 #############################################################################}
 
 //{$define DebugDisplay}  // uncomment if u want to see the debug stuff
-{$define DebugFrames}
-{$define Info}
+//{$define DebugFrames}
+//{$define Info}
 
 
 unit UVideo;
