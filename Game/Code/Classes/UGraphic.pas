@@ -506,6 +506,11 @@ begin
 
 
   Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
+
+// Okay it's possible to set the title bar / taskbar icon here
+// it's working this way, but just if the bmp is in your exe folder
+  SDL_WM_SetIcon(SDL_LoadBMP('ustar-icon.bmp'), 0);
+
 //  SDL_SetRefreshrate(85);
 //  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
   if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
