@@ -10,6 +10,8 @@ uses
   //Includes - 3rd Party Libraries
   //------------------------------
   SDL          in 'lib\JEDI-SDLv1.0\SDL\Pas\SDL.pas',
+  moduleloader in 'lib\JEDI-SDLv1.0\SDL\Pas\moduleloader.pas',
+  sdlutils     in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas',
   SDL_Image    in 'lib\JEDI-SDLv1.0\SDL_Image\Pas\sdl_image.pas',
   OpenGL12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
 
