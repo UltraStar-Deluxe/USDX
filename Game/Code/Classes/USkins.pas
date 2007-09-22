@@ -127,8 +127,15 @@ var
   T:    integer;
 begin
   Result := '';
+  
   for T := 0 to High(SkinTexture) do
-    if SkinTexture[T].Name = TextureName then Result := SkinPath + SkinTexture[T].FileName;
+  begin
+    if ( SkinTexture[T].Name     = TextureName ) AND
+       ( SkinTexture[T].FileName <> ''         ) then
+    begin
+      Result := SkinPath + SkinTexture[T].FileName;
+    end;
+  end;
 
 {  Result := SkinPath + 'Bar.jpg';
   if TextureName = 'Ball' then Result := SkinPath + 'Ball.bmp';

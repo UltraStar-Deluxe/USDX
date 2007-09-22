@@ -287,15 +287,23 @@ begin
 end;
 
 procedure TMenu.AddBackground(Name: string);
+var
+  lFileName : string;
 begin
   if Name <> '' then
   begin
 //    BackImg := Texture.LoadTexture(false, PChar(Skin.SkinPath + FileName), 'JPG', 'Plain', 0); // new theme system
-    BackImg := Texture.GetTexture(Skin.GetTextureFileName(Name), 'Plain');
-    BackImg.W := 800;
-    BackImg.H := 600;
-    BackW := 1;
-    BackH := 1;
+    lFileName := Skin.GetTextureFileName(Name);
+    
+    if lFileName <> '' then
+    begin
+      BackImg   := Texture.GetTexture( lFileName , 'Plain');
+
+      BackImg.W := 800;
+      BackImg.H := 600;
+      BackW     := 1;
+      BackH     := 1;
+    end;
   end;
 end;
 

@@ -60,6 +60,7 @@ var
 implementation
 
 uses UMain,
+     UCommon,
      {$IFDEF win32}
      windows,
      {$ELSE}
@@ -75,14 +76,39 @@ uses UMain,
 procedure BuildFont;			                // Build Our Bitmap Font
 
   procedure loadfont( aID : integer; aType, aResourceName : String);
+  {$IFDEF FPC}
+  var
+    lLazRes  : TLResource;
+    lResData : TStringStream;
+  begin
+      try
+        lLazRes := LazFindResource( aResourceName, aType );
+        if lLazRes <> nil then
+        begin
+          lResData := TStringStream.create( lLazRes.value );
+          try
+            lResData.position := 0;
+            lResData.Read(Fonts[ aID ].Width, 256);
+          finally
+            freeandnil( lResData );
+          end;
+        end;
+      
+  {$ELSE}
   var
     Rejestr:  TResourceStream;
   begin
-    Rejestr := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
     try
-      Rejestr.Read(Fonts[ aID ].Width, 256);
-    finally
-      Rejestr.Free;
+        Rejestr := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
+        try
+          Rejestr.Read(Fonts[ aID ].Width, 256);
+        finally
+          Rejestr.Free;
+        end;
+  {$ENDIF}
+      
+    except
+      Log.LogStatus( 'Could not load font : loadfont( '+ inttostr( aID ) +' , '+aType+' )' , 'ERROR');
     end;
   end;
 
@@ -364,12 +390,14 @@ begin
   Fonts[ActFont].AspectW := Aspect;
 end;
 
+
 {$IFDEF FPC}
 {$IFDEF win32}
 initialization
   {$I UltraStar.lrs}
 {$ENDIF}
 {$ENDIF}
+
 
 end.
 

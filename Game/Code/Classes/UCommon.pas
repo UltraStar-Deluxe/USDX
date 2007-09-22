@@ -7,7 +7,10 @@ interface
 {$ENDIF}
 
 uses
-
+{$IFDEF FPC}
+   lResources,
+{$ENDIF}   
+   ULog,
 {$IFDEF win32}
    windows;
 {$ELSE}
@@ -28,7 +31,9 @@ type
 type
   TWndMethod = procedure(var Message: TMessage) of object;
 
-function  RandomRange(aMin: Integer; aMax: Integer) : Integer;
+function LazFindResource( const aName, aType : String ): TLResource;
+
+function RandomRange(aMin: Integer; aMax: Integer) : Integer;
 
 function MaxValue(const Data: array of Double): Double;
 function MinValue(const Data: array of Double): Double;
@@ -81,6 +86,23 @@ end;
 
 
 {$IFDEF FPC}
+
+function LazFindResource( const aName, aType : String ): TLResource;
+var
+  iCount : Integer;
+begin
+  result := nil;
+  
+  for iCount := 0 to LazarusResources.count -1 do
+  begin
+    if ( LazarusResources.items[ iCount ].Name      = aName ) AND
+       ( LazarusResources.items[ iCount ].ValueType = aType ) THEN
+    begin
+      result := LazarusResources.items[ iCount ];
+      exit;
+    end;
+  end;
+end;
 
 function MaxValue(const Data: array of Double): Double;
 var

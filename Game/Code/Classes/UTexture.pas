@@ -136,7 +136,14 @@ var
 
 
 implementation
-uses ULog, DateUtils, UCovers, StrUtils;
+
+uses ULog,
+     DateUtils,
+     UCovers,
+     {$IFDEF FPC}
+     LResources,
+     {$ENDIF}
+     StrUtils;
 
 const
   fmt_rgba: TSDL_Pixelformat=(palette:      nil;
@@ -156,8 +163,8 @@ const
                               Amask:  $ff000000;
                               ColorKey:       0;
                               Alpha:        255);
-  fmt_rgb: TSDL_Pixelformat=( palette:      nil;
-                              BitsPerPixel:  24;
+  fmt_rgb: TSDL_Pixelformat=( palette:      nil;
+                              BitsPerPixel:  24;
                               BytesPerPixel:  3;
                               Rloss:          0;
                               Gloss:          0;
@@ -235,50 +242,119 @@ end;
 
 function TTextureUnit.LoadImage(Identifier: PChar): PSDL_Surface;
 var
-  TexStream: TStream;
+
   TexRWops:  PSDL_RWops;
   dHandle: THandle;
 
+  {$IFDEF FPC}
+  lLazRes  : TLResource;
+  lResData : TStringStream;
+  {$ELSE}
+  TexStream: TStream;
+  {$ENDIF}
+
 begin
-  Result:=nil;
-  TexRWops:=nil;
-  Log.LogStatus( ' start' , Identifier);
+  Result   := nil;
+  TexRWops := nil;
+
+//  Log.LogStatus( Identifier, 'LoadImage' );
+
   if ( FileExists(Identifier) ) then
   begin
-    Log.LogStatus( ' found file' , '  '+ Identifier);
     // load from file
-    Result:=IMG_Load(Identifier);
+//    Log.LogStatus( 'Is File', '  LoadImage' );
+    try
+      Result:=IMG_Load(Identifier);
+    except
+      Log.LogStatus( 'ERROR Could not load from file' , Identifier);
+      beep;
+      Exit;
+    end;
   end
   else
   begin
-    Log.LogStatus( ' trying resource' , '  '+ Identifier);
+//    Log.LogStatus( 'NOT File', '  LoadImage' );
+  
     // load from resource stream
-    dHandle:=FindResource(hInstance,Identifier,'TEX');
-    if dHandle=0 then begin
-      Log.LogStatus( 'ERROR Could not find resource' , Identifier);
-      beep;
-      Exit;
-    end;
-    
-    try
-      TexStream := TResourceStream.Create(HInstance, Identifier, 'TEX');
-      TexRWops:=SDL_AllocRW;
-      TexRWops.unknown:=TUnknown(TexStream);
-      TexRWops.seek:=SDLStreamSeek;
-      TexRWops.read:=SDLStreamRead;
-      TexRWops.write:=nil;                     
-      TexRWops.close:=SDLStreamClose;
-      TexRWops.type_:=2;
-    except
-      Log.LogStatus( 'ERROR Could not load from resource' , Identifier);
-      beep;
-      Exit;
-    end;
-    Result:=IMG_Load_RW(TexRWops,0);
-    SDL_FreeRW(TexRWops);
-    TexStream.Free;
+    {$IFNDEF FPC}
+      dHandle := FindResource(hInstance, Identifier, 'TEX');
+      if dHandle=0 then
+      begin
+        Log.LogStatus( 'ERROR Could not find resource' , '  '+ Identifier);
+        beep;
+        Exit;
+      end;
+
+
+      TexStream := nil;
+      try
+        TexStream        := TResourceStream.Create(HInstance, Identifier, 'TEX');
+      except
+        Log.LogStatus( 'ERROR Could not load from resource' , Identifier);
+        beep;
+        Exit;
+      end;
+
+      try
+        try
+          TexRWops         := SDL_AllocRW;
+          TexRWops.unknown := TUnknown(TexStream);
+          TexRWops.seek    := SDLStreamSeek;
+          TexRWops.read    := SDLStreamRead;
+          TexRWops.write   := nil;
+          TexRWops.close   := SDLStreamClose;
+          TexRWops.type_   := 2;
+        except
+          Log.LogStatus( 'ERROR Could not assign resource' , Identifier);
+          beep;
+          Exit;
+        end;
+        
+        Result:=IMG_Load_RW(TexRWops,0);
+        SDL_FreeRW(TexRWops);
+        
+      finally
+        if assigned( TexStream ) then
+          freeandnil( TexStream );
+      end;
+
+
+    {$ELSE}
+      lLazRes := LazFindResource( Identifier, 'TEX' );
+      if lLazRes <> nil then
+      begin
+        lResData := TStringStream.create( lLazRes.value );
+        try
+          lResData.position := 0;
+          try
+            TexRWops         := SDL_AllocRW;
+            TexRWops.unknown := TUnknown( lResData );
+            TexRWops.seek    := SDLStreamSeek;
+            TexRWops.read    := SDLStreamRead;
+            TexRWops.write   := nil;
+            TexRWops.close   := SDLStreamClose;
+            TexRWops.type_   := 2;
+          except
+            Log.LogStatus( 'ERROR Could not assign resource' , Identifier);
+            beep;
+            Exit;
+          end;
+        
+          Result:=IMG_Load_RW(TexRWops,0);
+          SDL_FreeRW(TexRWops);
+        
+        finally
+          freeandnil( lResData );
+        end;
+      end
+      else
+      begin
+        Log.LogStatus( 'NOT found in Resource', '  LoadImage' );
+      end;
+    {$ENDIF}
+
+
   end;
-  Log.LogStatus( ' DONE' , '---'+ Identifier);
 end;
 
 procedure TTextureUnit.AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: PChar);
@@ -417,13 +493,19 @@ begin
   Log.BenchmarkStart(4);
   Mipmapping := true;
 
+
+
+(*
+  Log.LogStatus( '', '' );
+  
   if Identifier = nil then
     Log.LogStatus(' ERROR unknown Identifier', 'Id:'''+Identifier+''' Fmt:'''+Format+''' Typ:'''+Typ+'''')
   else
     Log.LogStatus(' should be ok - trying to load', 'Id:'''+Identifier+''' Fmt:'''+Format+''' Typ:'''+Typ+'''');
+*)
 
   // load texture data into memory
-  TexSurface:=LoadImage(Identifier);
+  TexSurface := LoadImage(Identifier);
   if not assigned(TexSurface) then
   begin
     Log.LogStatus( 'ERROR Could not load texture' , Identifier +' '+ Format +' '+ Typ );
@@ -797,6 +879,10 @@ var
   C:    integer; // cover
   Data: array of byte;
 begin
+
+  if Name = '' then
+    exit;
+
   // find texture entry
   T := FindTexture(Name);
 
@@ -938,5 +1024,13 @@ begin
     end;
   end;
 end;
+
+{$IFDEF FPC}
+{$IFDEF win32}
+initialization
+  {$I UltraStar.lrs}
+{$ENDIF}
+{$ENDIF}
+
 
 end.

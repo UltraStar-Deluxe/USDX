@@ -7,7 +7,7 @@
       <MainUnit Value="0"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
-      <ActiveEditorIndexAtStart Value="0"/>
+      <ActiveEditorIndexAtStart Value="1"/>
     </General>
     <VersionInfo>
       <ProjectVersion Value=""/>
@@ -31,23 +31,56 @@
         <PackageName Value="lcl"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="1">
+    <Units Count="2">
       <Unit0>
         <Filename Value="USDXResCompiler.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="USDXResCompiler"/>
-        <CursorPos X="47" Y="34"/>
-        <TopLine Value="1"/>
+        <CursorPos X="21" Y="28"/>
+        <TopLine Value="15"/>
         <EditorIndex Value="0"/>
-        <UsageCount Value="20"/>
+        <UsageCount Value="23"/>
         <Loaded Value="True"/>
       </Unit0>
+      <Unit1>
+        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <UnitName Value="LResources"/>
+        <CursorPos X="31" Y="55"/>
+        <TopLine Value="36"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit1>
     </Units>
-    <JumpHistory Count="1" HistoryIndex="0">
+    <JumpHistory Count="7" HistoryIndex="6">
       <Position1>
         <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="6" Column="1" TopLine="1"/>
+        <Caret Line="28" Column="21" TopLine="15"/>
       </Position1>
+      <Position2>
+        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <Caret Line="920" Column="30" TopLine="901"/>
+      </Position2>
+      <Position3>
+        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position3>
+      <Position4>
+        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <Caret Line="19" Column="27" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <Caret Line="259" Column="25" TopLine="239"/>
+      </Position5>
+      <Position6>
+        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <Caret Line="52" Column="17" TopLine="47"/>
+      </Position6>
+      <Position7>
+        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <Caret Line="259" Column="30" TopLine="149"/>
+      </Position7>
     </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
@@ -61,11 +94,15 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <BreakPoints Count="1">
+    <BreakPoints Count="2">
       <Item1>
         <Source Value="USDXResCompiler.lpr"/>
         <Line Value="14"/>
       </Item1>
+      <Item2>
+        <Source Value="USDXResCompiler.lpr"/>
+        <Line Value="18"/>
+      </Item2>
     </BreakPoints>
   </Debugging>
 </CONFIG>

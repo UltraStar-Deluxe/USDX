@@ -38,6 +38,8 @@ uses
   opengl12               in 'lib\JEDI-SDLv1.0\OpenGL\Pas\opengl12.pas',
   sdl                    in 'lib\JEDI-SDLv1.0\SDL\Pas\sdl.pas',
   sdl_image              in 'lib\JEDI-SDLv1.0\SDL_Image\Pas\sdl_image.pas',
+  sdlutils               in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas',
+
 
   // Bass
   {$IFDEF UseBASS}
@@ -196,6 +198,7 @@ var
 
 begin
   WndTitle := Version;
+
 
   {$ifdef Win32}
   //------------------------------

@@ -10,15 +10,13 @@ uses
 var
   lResourceFile : TMemoryStream;
   
-procedure AddFile( aResName, aResTye, aFile : string );
+procedure AddFile( aResName, aResType, aFile : string );
 var
   lTmpStream : TmemoryStream;
 begin
-  writeln();
-  writeln( aFile );
   if not fileexists( aFile ) then
   begin
-    writeln( 'NOT FOUND' );
+    writeln( 'SKIPED' + ' ( '+aFile+' ) File not found' );
     exit;
   end;
     
@@ -27,8 +25,8 @@ begin
     lTmpStream.loadfromfile( aFile );
     lTmpStream.position := 0;
     
-    BinaryToLazarusResourceCode(lTmpStream, lResourceFile, aResName, aResTye);
-    writeln( 'Added' );
+    BinaryToLazarusResourceCode(lTmpStream, lResourceFile, aResName, aResType);
+    writeln( 'ADDED - ' + aResType + ' : ' + aResName + ' ( '+aFile+' )' );
   finally
     freeandnil( lTmpStream );
   end;
@@ -39,21 +37,20 @@ begin
 
   lResourceFile := TMemoryStream.create();
   try
-     AddFile( 'Font', 'PNG', '..\Fonts\Normal\eurostar_regular.png' );
-     AddFile( 'Font', 'FNT', '.\Fonts\Normal\eurostar_regular.dat' );
+     AddFile( 'Font', 'TEX', '..\Fonts\Normal\eurostar_regular.png' );
+     AddFile( 'Font', 'FNT', '..\Fonts\Normal\eurostar_regular.dat' );
 
-     AddFile( 'FontB', 'PNG', '..\Fonts\Bold\eurostar_regular_bold.png' );
+     AddFile( 'FontB', 'TEX', '..\Fonts\Bold\eurostar_regular_bold.png' );
      AddFile( 'FontB', 'FNT', '..\Fonts\Bold\eurostar_regular_bold.dat' );
 
-     AddFile( 'FontO', 'PNG', '..\Fonts\Outline 1\Outline 1.PNG' );
+     AddFile( 'FontO', 'TEX', '..\Fonts\Outline 1\Outline 1.PNG' );
      AddFile( 'FontO', 'FNT', '..\Fonts\Outline 1\Outline 1.dat' );
      
-     AddFile( 'FontO2', 'PNG', '..\Fonts\Outline 2\Outline 2.PNG' );
+     AddFile( 'FontO2', 'TEX', '..\Fonts\Outline 2\Outline 2.PNG' );
      AddFile( 'FontO2', 'FNT', '..\Fonts\Outline 2\Outline 2.dat' );
      
      AddFile( 'MAINICON', 'ICON', '..\Graphics\ustar-icon_v01.ico' );
 
-     AddFile( 'MAINICON', 'ICON', '..\Graphics\ustar-icon_v01.ico' );
 
      AddFile( 'CRDTS_BG', 'PNG', '..\Graphics\credits_v5_bg.png' );
      AddFile( 'CRDTS_OVL', 'PNG', '..\Graphics\credits_v5_overlay.png"' );

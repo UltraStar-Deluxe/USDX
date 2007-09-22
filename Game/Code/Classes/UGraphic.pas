@@ -266,6 +266,8 @@ begin
   Tex_Mid[0]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'BMP', 'Plain', 0);           //brauch man die noch?
   Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'BMP', 'Transparent', 0);     //brauch man die noch?
 
+  Log.LogStatus('Loading Textures - A', 'LoadTextures');
+  
   // P1-6
   // TODO... do it once for each player... this is a bit crappy !!
   //                                       can we make it any better !?
@@ -287,6 +289,8 @@ begin
     Tex_BG_Right[P]     := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), 'PNG', 'Colorized', Col);
   end;
 
+  Log.LogStatus('Loading Textures - B', 'LoadTextures');
+
   Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'JPG', 'Font Black', 0);
   Tex_Note_Star         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) , 'JPG', 'Alpha Black Colored', $FFFFFF);
   Tex_Ball              := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
@@ -303,16 +307,26 @@ begin
   Tex_SingBar_Front := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarFront')),   'JPG', 'Font', 0);
   //end Singbar Mod
 
+  Log.LogStatus('Loading Textures - C', 'LoadTextures');
+
+  {$IFNDEF FPC}
+  // TODO : jb_FPC  why does this cause lazarus build, to have runtime error..
+  // TODO : jb_FPC - START HERE !!
   //Line Bonus PopUp
   for P := 0 to 8 do
     begin
       Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'PNG', 'Colorized', $FFFFFF);
     end;
+  {$ENDIF}
+    
+    
   {//Set Texture to Font High
   Tex_SingLineBonusL.H := 32; Tex_SingLineBonusL.W := 8;
   Tex_SingLineBonusM.H := 32; //Tex_SingLineBonusM.TexW := Tex_SingLineBonusM.TexW/2;
   Tex_SingLineBonusR.H := 32; Tex_SingLineBonusR.W := 8;  }
   //PhrasenBonus - Line Bonus Mod End
+
+  Log.LogStatus('Loading Textures - D', 'LoadTextures');
 
   // tworzenie czcionek
 //  Log.LogStatus('Building Fonts', 'LoadTextures');
@@ -327,15 +341,15 @@ var
   Pixel: PByteArray;
   I: Integer;
 begin
-  Log.LogStatus('LoadOpenGL', 'Initialize3D');
+  Log.LogStatus('LoadOpenGL', 'UGraphic.Initialize3D');
 //  Log.BenchmarkStart(2);
 
   LoadOpenGL;
 
-  Log.LogStatus('SDL_Init', 'Initialize3D');
+  Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
   if ( SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO)= -1 ) then
   begin
-    Log.LogError('SDL_Init Failed', 'Initialize3D');
+    Log.LogError('SDL_Init Failed', 'UGraphic.Initialize3D');
     exit;
   end;
 
@@ -390,15 +404,16 @@ begin
 //  Log.LogStatus('Loading Screens', 'Initialize3D');
 //  Log.BenchmarkStart(3);
 
+  Log.LogStatus('Loading Font Textures', 'UGraphic.Initialize3D');
   LoadFontTextures();
 
   // Show the Loading Screen -------------
+  Log.LogStatus('Loading Loading Screen', 'UGraphic.Initialize3D');
   LoadLoadingScreen;
-  Log.LogStatus('Loading Screens', 'Initialize3D');
 
 
+  Log.LogStatus(' Loading Textures', 'UGraphic.Initialize3D');
   LoadTextures; // jb
-  Log.LogStatus(' Loading Textures', '');
 
 
   
@@ -412,6 +427,7 @@ begin
   //LoadingThread  := SDL_CreateThread(@LoadingThread, nil);
 
   // das hier würde dann im ladethread ausgeführt
+  Log.LogStatus(' Loading Screens', 'UGraphic.Initialize3D');
   LoadScreens;
 
 
