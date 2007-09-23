@@ -28,7 +28,8 @@ uses UMenu,
      UThemes,
      ULCD,
      UGraphicClasses,
-     UVideo;
+     UVideo,
+     USingScores;
 
 type
   TScreenSing = class(TMenu)
@@ -45,52 +46,60 @@ type
       //eoa TimeBar mod
 
       StaticP1:           integer;
-      StaticP1ScoreBG:    integer;
       TextP1:             integer;
-      TextP1Score:        integer;
+      {StaticP1ScoreBG:    integer;
+      TextP1Score:        integer;}
 
-      //moveable singbar mod
+      {//moveable singbar mod
       StaticP1SingBar:         integer;
       StaticP1ThreePSingBar:   integer;
       StaticP1TwoPSingBar:     integer;
       StaticP2RSingBar:        integer;
       StaticP2MSingBar:        integer;
       StaticP3SingBar:         integer;
-      //eoa moveable singbar
+      //eoa moveable singbar }
 
       //Added for ps3 skin
       //shown when game is in 2/4 player modus
       StaticP1TwoP:           integer;
-      StaticP1TwoPScoreBG:    integer;
       TextP1TwoP:             integer;
-      TextP1TwoPScore:        integer;
+
+      {StaticP1TwoPScoreBG:    integer;
+      TextP1TwoPScore:        integer;}
       //shown when game is in 3/6 player modus
       StaticP1ThreeP:           integer;
-      StaticP1ThreePScoreBG:    integer;
       TextP1ThreeP:             integer;
-      TextP1ThreePScore:        integer;
+
+      {TextP1ThreePScore:        integer;
+      StaticP1ThreePScoreBG:    integer;  }
       //eoa
 
       StaticP2R:          integer;
-      StaticP2RScoreBG:   integer;
       TextP2R:            integer;
-      TextP2RScore:       integer;
+
+      {StaticP2RScoreBG:   integer;
+      TextP2RScore:       integer;}
 
       StaticP2M:          integer;
-      StaticP2MScoreBG:   integer;
       TextP2M:            integer;
-      TextP2MScore:       integer;
+
+      {StaticP2MScoreBG:   integer;
+      TextP2MScore:       integer; }
 
       StaticP3R:          integer;
-      StaticP3RScoreBG:   integer;
       TextP3R:            integer;
-      TextP3RScore:       integer;
+
+      {StaticP3RScoreBG:   integer;
+      TextP3RScore:       integer;}
 
       Tex_Background:     TTexture;
       FadeOut:            boolean;
 //      LyricMain:          TLyric;
 //      LyricSub:           TLyric;
       Lyrics:             TLyricEngine;
+
+      //Score Manager:
+      Scores: TSingScores;
 
       constructor Create; override;
       procedure onShow; override;
@@ -205,6 +214,10 @@ var
 begin
   inherited Create;
 
+  //Create Score Class
+  Scores := TSingScores.Create;
+  Scores.LoadfromTheme;
+
   LoadFromTheme(Theme.Sing);
 
   //TimeBar
@@ -213,45 +226,51 @@ begin
 
 // 1 player       | P1
   StaticP1              := AddStatic(Theme.Sing.StaticP1);
-  StaticP1ScoreBG       := AddStatic(Theme.Sing.StaticP1ScoreBG);
   TextP1                := AddText(Theme.Sing.TextP1);
+
+  {StaticP1ScoreBG       := AddStatic(Theme.Sing.StaticP1ScoreBG);
   TextP1Score           := AddText(Theme.Sing.TextP1Score);
-  StaticP1SingBar       := AddStatic(Theme.Sing.StaticP1SingBar);
+  StaticP1SingBar       := AddStatic(Theme.Sing.StaticP1SingBar);}
 
 // 2 or 4 players | P1
   StaticP1TwoP          := AddStatic(Theme.Sing.StaticP1TwoP);
-  StaticP1TwoPScoreBG   := AddStatic(Theme.Sing.StaticP1TwoPScoreBG);
   TextP1TwoP            := AddText(Theme.Sing.TextP1TwoP);
+
+  {StaticP1TwoPScoreBG   := AddStatic(Theme.Sing.StaticP1TwoPScoreBG);
   TextP1TwoPScore       := AddText(Theme.Sing.TextP1TwoPScore);
-  StaticP1TwoPSingBar   := AddStatic(Theme.Sing.StaticP2RSingBar);
+  StaticP1TwoPSingBar   := AddStatic(Theme.Sing.StaticP2RSingBar);}
 
   //              | P2
   StaticP2R             := AddStatic(Theme.Sing.StaticP2R);
-  StaticP2RScoreBG      := AddStatic(Theme.Sing.StaticP2RScoreBG);
   TextP2R               := AddText(Theme.Sing.TextP2R);
+
+  {StaticP2RScoreBG      := AddStatic(Theme.Sing.StaticP2RScoreBG);
   TextP2RScore          := AddText(Theme.Sing.TextP2RScore);
-  StaticP2RSingBar      := AddStatic(Theme.Sing.StaticP2RSingBar);
+  StaticP2RSingBar      := AddStatic(Theme.Sing.StaticP2RSingBar); }
 
 // 3 or 6 players | P1
   StaticP1ThreeP        := AddStatic(Theme.Sing.StaticP1ThreeP);
-  StaticP1ThreePScoreBG := AddStatic(Theme.Sing.StaticP1ThreePScoreBG);
   TextP1ThreeP          := AddText(Theme.Sing.TextP1ThreeP);
+
+  {StaticP1ThreePScoreBG := AddStatic(Theme.Sing.StaticP1ThreePScoreBG);
   TextP1ThreePScore     := AddText(Theme.Sing.TextP1ThreePScore);
-  StaticP1ThreePSingBar := AddStatic(Theme.Sing.StaticP1ThreePSingBar);
+  StaticP1ThreePSingBar := AddStatic(Theme.Sing.StaticP1ThreePSingBar);}
 
   //              | P2
   StaticP2M             := AddStatic(Theme.Sing.StaticP2M);
-  StaticP2MScoreBG      := AddStatic(Theme.Sing.StaticP2MScoreBG);
   TextP2M               := AddText(Theme.Sing.TextP2M);
+
+  {StaticP2MScoreBG      := AddStatic(Theme.Sing.StaticP2MScoreBG);
   TextP2MScore          := AddText(Theme.Sing.TextP2MScore);
-  StaticP2MSingBar      := AddStatic(Theme.Sing.StaticP2MSingBar);
+  StaticP2MSingBar      := AddStatic(Theme.Sing.StaticP2MSingBar);}
 
   //              | P3
   StaticP3R             := AddStatic(Theme.Sing.StaticP3R);
-  StaticP3RScoreBG      := AddStatic(Theme.Sing.StaticP3RScoreBG);
   TextP3R               := AddText(Theme.Sing.TextP3R);
+
+  {StaticP3RScoreBG      := AddStatic(Theme.Sing.StaticP3RScoreBG);
   TextP3RScore          := AddText(Theme.Sing.TextP3RScore);
-  StaticP3SingBar       := AddStatic(Theme.Sing.StaticP3SingBar);
+  StaticP3SingBar       := AddStatic(Theme.Sing.StaticP3SingBar);}
 
   if ScreenAct = 2 then begin
       // katze und affe
@@ -273,9 +292,23 @@ var
   V2M:      boolean;
   V3R:      boolean;
   NR:       TRecR; //Line Bonus Mod
+
+  Color: TRGB;
 begin
   Log.LogStatus('Begin', 'onShow');
   FadeOut := false; // 0.5.0: early 0.5.0 problems were by this line commented
+
+  //SetUp Score Manager
+  Scores.ClearPlayers; //Clear Old Player Values
+  Color.R := 0; Color.G := 0; Color.B := 0; //Dummy atm
+  For P := 0 to PlayersPlay -1 do //Add new Ones
+  begin
+    Scores.AddPlayer(Tex_ScoreBG[P], Color);
+  end;
+
+  Scores.Init; //Get Positions for Players
+
+  
 
   // prepare players
   SetLength(Player, PlayersPlay);
@@ -327,38 +360,44 @@ begin
 
   //This one is shown in 1P mode
   Static[StaticP1].Visible              := V1;
-  Static[StaticP1ScoreBG].Visible       := V1;
   Text[TextP1].Visible                  := V1;
-  Text[TextP1Score].Visible             := V1;
+
+  {Static[StaticP1ScoreBG].Visible       := V1;
+  Text[TextP1Score].Visible             := V1;}
 
 
   //This one is shown in 2/4P mode
   Static[StaticP1TwoP].Visible          := V1TwoP;
-  Static[StaticP1TwoPScoreBG].Visible   := V1TwoP;
   Text[TextP1TwoP].Visible              := V1TwoP;
-  Text[TextP1TwoPScore].Visible         := V1TwoP;
+
+  {Static[StaticP1TwoPScoreBG].Visible   := V1TwoP;
+  Text[TextP1TwoPScore].Visible         := V1TwoP;}
 
   Static[StaticP2R].Visible             := V2R;
-  Static[StaticP2RScoreBG].Visible      := V2R;
   Text[TextP2R].Visible                 := V2R;
-  Text[TextP2RScore].Visible            := V2R;
+
+  {Static[StaticP2RScoreBG].Visible      := V2R;
+  Text[TextP2RScore].Visible            := V2R;  }
 
 
   //This one is shown in 3/6P mode
   Static[StaticP1ThreeP].Visible        := V1ThreeP;
-  Static[StaticP1ThreePScoreBG].Visible := V1ThreeP;
   Text[TextP1ThreeP].Visible            := V1ThreeP;
-  Text[TextP1ThreePScore].Visible       := V1ThreeP;
+
+  {Static[StaticP1ThreePScoreBG].Visible := V1ThreeP;
+  Text[TextP1ThreePScore].Visible       := V1ThreeP; }
 
   Static[StaticP2M].Visible             := V2M;
-  Static[StaticP2MScoreBG].Visible      := V2M;
   Text[TextP2M].Visible                 := V2M;
-  Text[TextP2MScore].Visible            := V2M;
+
+  {Static[StaticP2MScoreBG].Visible      := V2M;
+  Text[TextP2MScore].Visible            := V2M; }
 
   Static[StaticP3R].Visible             := V3R;
-  Static[StaticP3RScoreBG].Visible      := V3R;
   Text[TextP3R].Visible                 := V3R;
-  Text[TextP3RScore].Visible            := V3R;
+
+  {Static[StaticP3RScoreBG].Visible      := V3R;
+  Text[TextP3RScore].Visible            := V3R; }
 
   // load notes
   ResetSingTemp;
@@ -559,7 +598,7 @@ begin
     GoldenRec.SentenceChange;
   //GoldenStarsTwinkle Mod End
 
-  //Set Position of Line Bonus - PhrasenBonus
+  {//Set Position of Line Bonus - PhrasenBonus
   if (Ini.LineBonus = 1) then //Show Line Bonus at Scores
   begin
   Case PlayersPlay of
@@ -790,7 +829,8 @@ begin
       Player[5].LineBonus_StartY  := 370 + 28;
     end;
   end;
-  end;
+  end; }
+  
   //Set Position of Line Bonus - PhrasenBonus End
   //Set Num of Empty Sentences for Phrasen Bonus
   NumEmptySentences := 0;
@@ -949,17 +989,19 @@ begin
 // okay this stuff appears again some lines beneath this one, I commented it out for testing what it does - seems like it's doing nothing
 // but I might be wrong, so what is this stuff here doing? O.o
   Static[StaticP1].Texture.X         := Static[StaticP1].Texture.X + 10*ScreenX;
-  Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
 
   Text[TextP1].X                     := Text[TextP1].X + 10*ScreenX;
-  Text[TextP1Score].X                := Text[TextP1Score].X + 10*ScreenX;
+
+  {Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
+  Text[TextP1Score].X                := Text[TextP1Score].X + 10*ScreenX;}
 
 
   Static[StaticP2R].Texture.X        := Static[StaticP2R].Texture.X + 10*ScreenX;
-  Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
 
   Text[TextP2R].X                    := Text[TextP2R].X + 10*ScreenX;
-  Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;
+
+  {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
+  Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;}
 // end of weird stuff
 
  for S := 1 to 1 do              //wtf?
@@ -977,7 +1019,7 @@ begin
   if Sec < 10 then Text[TextTimeText].Text := Text[TextTimeText].Text + '0';
   Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Sec);
 
-  // .. and scores
+  {// .. and scores
   if PlayersPlay = 1 then begin
     Tekst := IntToStr(Player[0].ScoreTotalI);
     while Length(Tekst) < 5 do Tekst := '0' + Tekst;
@@ -1056,7 +1098,7 @@ begin
       while Length(Tekst) < 5 do Tekst := '0' + Tekst;
       Text[TextP3RScore].Text := Tekst;
     end;
-  end;
+  end;  }
 
   // draw static menu (BG)
   DrawBG;
@@ -1112,23 +1154,26 @@ begin
   GoldenRec.SpawnRec;
 //GoldenNoteStarsTwinkle Mod
 
+  //Draw Scores
+  Scores.Draw;
+
   // back stereo
 
 // weird stuff, maybe this is for "dual screen?", but where is player three then?
 // okay this stuff appears again some lines above this one, I commented it out for testing what it does - seems like it's doing nothing
 // but I might be wrong, so what is this stuff here doing? O.o
   Static[StaticP1].Texture.X         := Static[StaticP1].Texture.X - 10*ScreenX;
-  Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X - 10*ScreenX;
-
   Text[TextP1].X                     := Text[TextP1].X - 10*ScreenX;
-  Text[TextP1Score].X                := Text[TextP1Score].X - 10*ScreenX;
+
+  {Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X - 10*ScreenX;
+  Text[TextP1Score].X                := Text[TextP1Score].X - 10*ScreenX;}
 
 
   Static[StaticP2R].Texture.X        := Static[StaticP2R].Texture.X - 10*ScreenX;
-  Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X - 10*ScreenX;
-
   Text[TextP2R].X                    := Text[TextP2R].X - 10*ScreenX;
-  Text[TextP2RScore].X               := Text[TextP2RScore].X - 10*ScreenX;
+
+  {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X - 10*ScreenX;
+  Text[TextP2RScore].X               := Text[TextP2RScore].X - 10*ScreenX;}
 //weird end
 
   for S := 1 to 1 do   // wtf?
@@ -1229,7 +1274,7 @@ begin
       //Update Total Score
       Player[I].ScoreTotalI := Player[I].ScoreI + Player[I].ScoreGoldenI + Player[I].ScoreLineI;
 
-      //Color
+      {//Color
       Case Floor(A) of
         0: begin
           Player[I].LineBonus_Color.R := 1;
@@ -1265,7 +1310,15 @@ begin
       Player[I].LineBonus_PosY  := Player[I].LineBonus_StartY;
       Player[I].LineBonus_Alpha := 0.92;
       Player[I].LineBonus_Visible := True;
-      Player[I].LineBonus_Age := 1;
+      Player[I].LineBonus_Age := 1;}
+
+      //Spawn PopUp
+      If (A >= 8) then
+        A := 8
+      else IF A < 0 then
+        A := 0;
+      //Round(Player[I].Score + Player[I].ScoreGolden - Player[I].ScoreLast + (1000 / (Length(Czesci[0].Czesc) - NumEmptySentences) * A / 8));
+      Scores.SpawnPopUp(I, Floor(A), Player[I].ScoreTotalI);
     end;
     //PhrasenBonus - Line Bonus Mod End// }
 

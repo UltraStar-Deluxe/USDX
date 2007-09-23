@@ -92,12 +92,14 @@ uses
   UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
   UCommandLine  in 'Classes\UCommandLine.pas',
+  USingScores in 'Classes\USingScores.pas',
+  USingNotes in 'Classes\USingNotes.pas',
 
   //------------------------------
   //Includes - Video Support
   //------------------------------
   UVideo in 'Classes\UVideo.pas',
-  
+
   //------------------------------
   //Includes - Screens
   //------------------------------
@@ -233,7 +235,7 @@ begin
   Log.BenchmarkStart(1);
   Log.LogStatus('Load Ini', 'Initialization');                Ini := TIni.Create;
                                                               Ini.Load;
-  
+
   //Load Languagefile
   if (Params.Language <> -1) then
     Language.ChangeLanguage(ILanguage[Params.Language])
@@ -307,7 +309,7 @@ begin
   Log.BenchmarkStart(1);
   Log.LogStatus('PartySession Manager', 'Initialization');
   PartySession := TParty_Session.Create;   //Load PartySession
-  
+
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading PartySession Manager', 1);
 
@@ -380,5 +382,5 @@ begin
   if Ini.LPT = 2 then Light.TurnOff;
 
   Log.Free;
-end.
 
+end.

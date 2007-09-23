@@ -713,7 +713,7 @@ begin
   end;
   //end Singbar Mod
 
-  //PhrasenBonus - Line Bonus Mod
+  {//PhrasenBonus - Line Bonus Mod
   if Ini.LineBonus > 0 then begin
     A := GetTickCount div 33;
     if (A <> Tickold2) AND (Player[0].LineBonus_Visible) then begin
@@ -784,7 +784,7 @@ begin
       end;
     end;
   end;
-  //PhrasenBonus - Line Bonus Mod End
+  //PhrasenBonus - Line Bonus Mod End  }
 
 // Set the note heights according to the difficulty level
   case Ini.Difficulty of
@@ -1127,7 +1127,7 @@ begin
   end;
   //end Singbar Mod
 
-  //PhrasenBonus - Line Bonus Mod
+  {//PhrasenBonus - Line Bonus Mod
   if ((Ini.LineBonus > 0) AND (DLLMan.Selected.EnLineBonus_O)) OR (DLLMan.Selected.EnLineBonus) then begin
     A := GetTickCount div 33;
     if (A <> Tickold2) AND (Player[0].LineBonus_Visible) then begin
@@ -1214,7 +1214,7 @@ begin
       end;
     end;
   end;
-//PhrasenBonus - Line Bonus Mod End
+//PhrasenBonus - Line Bonus Mod End }
 
 // resize the notes according to the difficulty level
   case Ini.Difficulty of

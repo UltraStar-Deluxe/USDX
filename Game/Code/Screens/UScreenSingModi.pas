@@ -190,7 +190,7 @@ begin
     PlayerInfo.Playerinfo[I].Enabled := False;
   end;
 
-  Case PlayersPlay of
+  {Case PlayersPlay of
     1: begin
       PlayerInfo.Playerinfo[0].PosX := Static[StaticP1ScoreBG].Texture.X;
       PlayerInfo.Playerinfo[0].PosY := Static[StaticP1ScoreBG].Texture.Y + Static[StaticP1ScoreBG].Texture.H;
@@ -219,7 +219,7 @@ begin
       PlayerInfo.Playerinfo[5].PosX := Static[StaticP3RScoreBG].Texture.X;
       PlayerInfo.Playerinfo[5].PosY := Static[StaticP3RScoreBG].Texture.Y + Static[StaticP3RScoreBG].Texture.H;
     end;
-  end;
+  end;       }
 
   // play music (I)
   //Music.CaptureStart;
@@ -240,7 +240,7 @@ begin
   Winner := 0;
 
   //Set Score Visibility
-  if PlayersPlay = 1 then begin
+  {if PlayersPlay = 1 then begin
     Text[TextP1Score].Visible := DLLMan.Selected.ShowScore;
     Static[StaticP1ScoreBG].Visible := DLLMan.Selected.ShowScore;
   end;
@@ -262,7 +262,7 @@ begin
 
     Text[TextP3RScore].Visible := DLLMan.Selected.ShowScore;
     Static[StaticP3RScoreBG].Visible := DLLMan.Selected.ShowScore;
-  end;
+  end; }
 end;
 
 function TScreenSingModi.Draw: boolean;
@@ -289,7 +289,7 @@ begin
 //Show Score
 if DLLMan.Selected.ShowScore then
 begin
-  //ScoreBG Mod
+  {//ScoreBG Mod
   // set player colors
   if PlayersPlay = 4 then begin
     if ScreenAct = 1 then begin
@@ -370,7 +370,7 @@ begin
 
     end;
   end;
-  //end ScoreBG Mod
+  //end ScoreBG Mod }
 
 // set player names (for 2 screens and only Singstar skin)
   if ScreenAct = 1 then begin
@@ -399,19 +399,19 @@ begin
 
   // stereo   <- and where iss P2M? or P3?
   Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10*ScreenX;
-  Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
-
   Text[TextP1].X := Text[TextP1].X + 10*ScreenX;
-  Text[TextP1Score].X := Text[TextP1Score].X + 10*ScreenX;
+
+  {Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
+  Text[TextP1Score].X := Text[TextP1Score].X + 10*ScreenX;}
 
   Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10*ScreenX;
-  Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
-
   Text[TextP2R].X := Text[TextP2R].X + 10*ScreenX;
-  Text[TextP2RScore].X := Text[TextP2RScore].X + 10*ScreenX;
+
+  {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
+  Text[TextP2RScore].X := Text[TextP2RScore].X + 10*ScreenX;}
 
   // .. and scores
-  if PlayersPlay = 1 then begin
+  {if PlayersPlay = 1 then begin
     Tekst := IntToStr(Player[0].ScoreTotalI);
     while Length(Tekst) < 5 do Tekst := '0' + Tekst;
     Text[TextP1Score].Text := Tekst;
@@ -489,7 +489,7 @@ begin
       while Length(Tekst) < 5 do Tekst := '0' + Tekst;
       Text[TextP3RScore].Text := Tekst;
     end;
-  end;
+  end;   }
 
 end; //ShowScore
 
@@ -588,17 +588,17 @@ end;
 
   // back stereo
   Static[StaticP1].Texture.X := Static[StaticP1].Texture.X - 10*ScreenX;
-  Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X - 10*ScreenX;
-
   Text[TextP1].X := Text[TextP1].X - 10*ScreenX;
-  Text[TextP1Score].X := Text[TextP1Score].X - 10*ScreenX;
+
+  {Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X - 10*ScreenX;
+  Text[TextP1Score].X := Text[TextP1Score].X - 10*ScreenX;}
 
 
   Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X - 10*ScreenX;
-  Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X - 10*ScreenX;
-
   Text[TextP2R].X := Text[TextP2R].X - 10*ScreenX;
-  Text[TextP2RScore].X := Text[TextP2RScore].X - 10*ScreenX;
+
+  {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X - 10*ScreenX;
+  Text[TextP2RScore].X := Text[TextP2RScore].X - 10*ScreenX;}
 
 
   for S := 1 to 1 do
@@ -667,3 +667,4 @@ begin
 end;
 
 end.
+>>>>>>> .r429

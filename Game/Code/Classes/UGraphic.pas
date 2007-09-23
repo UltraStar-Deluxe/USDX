@@ -156,6 +156,9 @@ var
   Tex_SingLineBonusBack: array[0..8] of TTexture;
   //End PhrasenBonus - Line Bonus Mod
 
+  //ScoreBG Texs
+  Tex_ScoreBG: array [0..5] of TTexture;
+
 const
   Skin_BGColorR = 1;
   Skin_BGColorG = 1;
@@ -315,22 +318,48 @@ begin
   //Line Bonus PopUp
   for P := 0 to 8 do
     begin
-      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'PNG', 'Colorized', $FFFFFF);
+      Case P of
+        0: begin
+          R := 1;
+          G := 0;
+          B := 0;
+        end;
+        1..3: begin
+          R := 1;
+          G := (P * 0.25);
+          B := 0;
+        end;
+        4: begin
+          R := 1;
+          G := 1;
+          B := 0;
+        end;
+        5..7: begin
+          R := 1-((P-4)*0.25);
+          G := 1;
+          B := 0;
+        end;
+        8: begin
+          R := 0;
+          G := 1;
+          B := 0;
+        end;
+      End;
+
+      Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'PNG', 'Colorized', Col);
     end;
+
+  //Score BG Textures
+  for P := 0 to 5 do begin
+    LoadColor(R, G, B, 'P' + IntToStr(P+1) + 'Light');
+    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+    Tex_ScoreBG[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreBG')),  'PNG', 'Colorized', Col);
+  end;
+
   {$ENDIF}
-    
-    
-  {//Set Texture to Font High
-  Tex_SingLineBonusL.H := 32; Tex_SingLineBonusL.W := 8;
-  Tex_SingLineBonusM.H := 32; //Tex_SingLineBonusM.TexW := Tex_SingLineBonusM.TexW/2;
-  Tex_SingLineBonusR.H := 32; Tex_SingLineBonusR.W := 8;  }
-  //PhrasenBonus - Line Bonus Mod End
 
   Log.LogStatus('Loading Textures - D', 'LoadTextures');
-
-  // tworzenie czcionek
-//  Log.LogStatus('Building Fonts', 'LoadTextures');
-//  BuildFont;
 end;
 
 procedure Initialize3D (Title: string);
