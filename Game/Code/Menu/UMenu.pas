@@ -764,6 +764,7 @@ begin
   for J := 0 to Length(Text) - 1 do
     Text[J].Draw;
 
+
   //  Draw all ButtonCollections
   For J := 0 to High(ButtonCollection) do
     ButtonCollection[J].Draw;

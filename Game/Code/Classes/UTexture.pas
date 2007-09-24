@@ -262,7 +262,7 @@ begin
   if ( FileExists(Identifier) ) then
   begin
     // load from file
-//    Log.LogStatus( 'Is File', '  LoadImage' );
+    Log.LogStatus( 'Is File', '  LoadImage' );
     try
       Result:=IMG_Load(Identifier);
     except
@@ -273,7 +273,7 @@ begin
   end
   else
   begin
-//    Log.LogStatus( 'NOT File', '  LoadImage' );
+    Log.LogStatus( 'IS Resource', '  LoadImage' );
   
     // load from resource stream
     {$IFNDEF FPC}
@@ -296,6 +296,7 @@ begin
       end;
 
       try
+        TexStream.position := 0;
         try
           TexRWops         := SDL_AllocRW;
           TexRWops.unknown := TUnknown(TexStream);
@@ -309,7 +310,8 @@ begin
           beep;
           Exit;
         end;
-        
+
+        Log.LogStatus( 'resource Assigned....' , Identifier);        
         Result:=IMG_Load_RW(TexRWops,0);
         SDL_FreeRW(TexRWops);
         
@@ -340,9 +342,8 @@ begin
             Exit;
           end;
         
-          Result:=IMG_Load_RW(TexRWops,0);
+          Result := IMG_Load_RW(TexRWops,0);
           SDL_FreeRW(TexRWops);
-        
         finally
           freeandnil( lResData );
         end;

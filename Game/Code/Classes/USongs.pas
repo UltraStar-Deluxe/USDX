@@ -137,21 +137,24 @@ begin
   end; // if
   FindClose(SR);
 
-//        Log.LogStatus('Parsing directory: ' + Dir + SR.Name, 'LoadSongList');
+//  Log.LogStatus('Parsing directory: ' + Dir + SR.Name, 'LoadSongList');
 
- if FindFirst(Dir + '*.txt', 0, SR) = 0 then begin
-//          Log.LogStatus('Parsing file:      ' + Dir + SR.Name + '\' + SRD.Name, 'LoadSongList');
+ if FindFirst(Dir + '*.txt', 0, SR) = 0 then
+ begin
     repeat
       //New Mod for better Memory Management
+
+//          Log.LogStatus('Parsing file:      ' + Dir + SR.Name, 'LoadSongList');
+
 
       SLen := BrowsePos;
       {//Old
       SLen := Length(Song);
       SetLength(Song, SLen + 1);//}
 
-      Song[SLen].Path := Dir;
-      Song[SLen].Folder := Copy(Dir, Length(SongPath)+1, 10000);
-      Song[SLen].Folder := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
+      Song[SLen].Path     := Dir;
+      Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
+      Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
       Song[SLen].FileName := SR.Name;
 
       if (AnalyseFile(Song[SLen]) = false) then Dec(BrowsePos)

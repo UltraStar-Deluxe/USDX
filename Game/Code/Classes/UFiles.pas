@@ -137,11 +137,12 @@ end;
 //--------------------
 function ReadTXTHeader(var Song: TSong): boolean;
 var
-Line, Identifier, Value: String;
-Temp: word;
-Done: byte;
+  Line, Identifier, Value: String;
+  Temp: word;
+  Done: byte;
 begin
   Result := true;
+  Done   := 0;
 
   //Read first Line
   ReadLn (SongFile, Line);
@@ -166,6 +167,8 @@ begin
       //Read Identifier and Value
       Identifier  := Uppercase(Trim(Copy(Line, 2, Temp - 2))); //Uppercase is for Case Insensitive Checks
       Value       := Trim(Copy(Line, Temp + 1,Length(Line) - Temp));
+
+      Log.LogError('Identifier: '+Identifier+' - '+ Value );
 
       //Check the Identifier (If Value is given)
       if (Length(Value) <> 0) then
@@ -332,7 +335,7 @@ begin
     else
     begin
       Result := False;
-      Log.LogError('File Incomplete or not Ultrastar TxT: ' + Song.FileName);
+      Log.LogError('File Incomplete or not Ultrastar TxT (A): ' + Song.FileName);
       break;
     end;
 
@@ -354,7 +357,7 @@ begin
     else if (Done and 1) = 0 then //No Title Flag
     Log.LogError('Title Tag Missing: ' + Song.FileName)
     else //unknown Error
-    Log.LogError('File Incomplete or not Ultrastar TxT: ' + Song.FileName);
+    Log.LogError('File Incomplete or not Ultrastar TxT (B - '+ inttostr(Done) +'): ' + Song.FileName);
   end;
 
 end;

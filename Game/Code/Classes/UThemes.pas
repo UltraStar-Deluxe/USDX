@@ -7,6 +7,7 @@ interface
 {$ENDIF}
 
 uses
+    ULog,
     IniFiles,
     SysUtils,
     Classes;
@@ -1426,24 +1427,20 @@ var
   C:    integer;
 begin
   DecimalSeparator := '.';
-  ThemeText.X := ThemeIni.ReadInteger(Name, 'X', 0);
-  ThemeText.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
-  ThemeText.W := ThemeIni.ReadInteger(Name, 'W', 0);
+  
+  ThemeText.X     := ThemeIni.ReadInteger(Name, 'X', 0);
+  ThemeText.Y     := ThemeIni.ReadInteger(Name, 'Y', 0);
+  ThemeText.W     := ThemeIni.ReadInteger(Name, 'W', 0);
 
-  ThemeText.ColR := ThemeIni.ReadFloat(Name, 'ColR', 0);
-  ThemeText.ColG := ThemeIni.ReadFloat(Name, 'ColG', 0);
-  ThemeText.ColB := ThemeIni.ReadFloat(Name, 'ColB', 0);
+  ThemeText.ColR  := ThemeIni.ReadFloat(Name, 'ColR', 0);
+  ThemeText.ColG  := ThemeIni.ReadFloat(Name, 'ColG', 0);
+  ThemeText.ColB  := ThemeIni.ReadFloat(Name, 'ColB', 0);
 
-  ThemeText.Font := ThemeIni.ReadInteger(Name, 'Font', 0);
-  ThemeText.Size := ThemeIni.ReadInteger(Name, 'Size', 0);
+  ThemeText.Font  := ThemeIni.ReadInteger(Name, 'Font', 0);
+  ThemeText.Size  := ThemeIni.ReadInteger(Name, 'Size', 0);
   ThemeText.Align := ThemeIni.ReadInteger(Name, 'Align', 0);
 
-  {{$IFDEF TRANSLATE}
-  ThemeText.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
-  {{$ELSE}{
-  ThemeText.Text := ThemeIni.ReadString(Name, 'Text', '');
-  {$ENDIF}
-
+  ThemeText.Text  := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
   ThemeText.Color := ThemeIni.ReadString(Name, 'Color', '');
 
   C := ColorExists(ThemeText.Color);

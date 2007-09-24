@@ -1,7 +1,14 @@
 unit USingScores;
 
 interface
-uses UThemes, OpenGl12, UTexture;
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+uses UThemes,
+     OpenGl12,
+     UTexture;
 
 //Some Constances containing Options that could change by time
 const
@@ -158,7 +165,12 @@ type
 
 
 implementation
-uses SDL, SysUtils, ULog, UGraphic, TextGL;
+
+uses SDL,
+     SysUtils,
+     ULog,
+     UGraphic,
+     TextGL;
 
 //-----------
 //Constructor just sets some standard Settings

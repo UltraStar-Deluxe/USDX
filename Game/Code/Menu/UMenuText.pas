@@ -237,10 +237,12 @@ var
   Text2:  string;
   I:      Integer;
 begin
-  if Visible then begin
+  if Visible then
+  begin
     SetFontStyle(Style);
     SetFontSize(Size);
     SetFontItalic(False);
+
     glColor4f(ColR*Int, ColG*Int, ColB*Int, Alpha);
 
     //If Selected Set Blink...

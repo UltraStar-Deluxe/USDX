@@ -119,6 +119,9 @@ var
 begin
   ActFont := 0;
 
+  Log.LogStatus( '' , '---------------------------');
+
+  Log.LogStatus( 'Font' , '---------------------------');
   SetLength(Fonts, 5);
   Fonts[0].Tex := Texture.LoadTexture(true, 'Font', 'PNG', 'Font', 0);
   Fonts[0].Tex.H := 30;
@@ -126,18 +129,22 @@ begin
   Fonts[0].Done := -1;
   Fonts[0].Outline := 0;
 
+  Log.LogStatus( 'FontB' , '---------------------------');
+
   Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', 'PNG', 'Font', 0);
   Fonts[1].Tex.H := 30;
   Fonts[1].AspectW := 1;
   Fonts[1].Done := -1;
   Fonts[1].Outline := 0;
 
+  Log.LogStatus( 'FontO' , '---------------------------');
   Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', 'PNG', 'Font Outline', 0);
   Fonts[2].Tex.H := 30;
   Fonts[2].AspectW := 0.95;
   Fonts[2].Done := -1;
   Fonts[2].Outline := 5;
 
+  Log.LogStatus( 'FontO2' , '---------------------------');
   Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', 'PNG', 'Font Outline 2', 0);
   Fonts[3].Tex.H := 30;
   Fonts[3].AspectW := 0.95;
@@ -212,41 +219,48 @@ var
   PR, PB:       real;
   XItal:        real; // X shift for italic type letter
 begin
-  with Fonts[ActFont].Tex do begin
-  FWidth := Fonts[ActFont].Width[Ord(Letter)];
+  with Fonts[ActFont].Tex do
+  begin
+    FWidth := Fonts[ActFont].Width[Ord(Letter)];
 
-  W := FWidth * (H/30) * Fonts[ActFont].AspectW;
-//  H := 30;
+    W := FWidth * (H/30) * Fonts[ActFont].AspectW;
+  //  H := 30;
 
-  // set texture positions
-  TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
-  TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
-  TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
-  TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
+    // set texture positions
+    TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
+    TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
+    TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
+    TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
 
-  // set vector positions
-  PL := X - Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW /2;
-  PT := Y;
-  PR := PL + W + Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW;
-  PB := PT + H;
-  if Fonts[ActFont].Italic = false then
-    XItal := 0
-  else
-    XItal := 12;
+    // set vector positions
+    PL := X - Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW /2;
+    PT := Y;
+    PR := PL + W + Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW;
+    PB := PT + H;
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, TexNum);
-  glBegin(GL_QUADS);
-    glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
-    glTexCoord2f(TexX, TexB); glVertex2f(PL,        PB);
-    glTexCoord2f(TexR, TexB); glVertex2f(PR,        PB);
-    glTexCoord2f(TexR, TexY); glVertex2f(PR+XItal,  PT);
-  glEnd;
-  X := X + W;
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
+    if Fonts[ActFont].Italic = false then
+      XItal := 0
+    else
+      XItal := 12;
+
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindTexture(GL_TEXTURE_2D, TexNum);
+
+    glBegin(GL_QUADS);
+    try
+      glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
+      glTexCoord2f(TexX, TexB); glVertex2f(PL,        PB);
+      glTexCoord2f(TexR, TexB); glVertex2f(PR,        PB);
+      glTexCoord2f(TexR, TexY); glVertex2f(PR+XItal,  PT);
+    finally
+      glEnd;
+    end;
+
+    X := X + W;
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
   end; // with
 end;
 
@@ -307,19 +321,33 @@ end;
 
 procedure glPrint(text: pchar);	                // Custom GL "Print" Routine
 var
-  Letter:       char;
+//  Letter :       char;
+  iPos   : Integer;
 begin
-  if (Text = '') then   			        // If There's No Text
-                Exit;					        // Do Nothing
+  if (Text = '') then     // If There's No Text
+    Exit;					        // Do Nothing
 
-  while (length(text) > 0) do begin
+(*
+  while (length(text) > 0) do
+  begin
     // cut
     Letter := Text[0];
-    Text := pchar(Copy(Text, 2, Length(Text)-1));
+    Text   := pchar(Copy(Text, 2, Length(Text)-1));
 
     // print
     glPrintLetter(Letter);
   end; // while
+*)
+
+  // This code is better, because doing a Copy of for every
+  // letter in a string is a waste of CPU & Memory resources.
+  // Copy operations are quite memory intensive, and this simple
+  // code achieves the same result.
+  for iPos := 0 to length( text ) - 1 do
+  begin
+    glPrintLetter( Text[iPos] );
+  end;
+
 end;
 
 procedure glPrintCut(text: pchar);
