@@ -23,12 +23,6 @@ procedure SingDrawPlayerBGCzesc(Left, Top, Right: real; NrCzesci, NrGracza: inte
 // TimeBar 
 procedure SingDrawTimeBar();
 
-// The Singbar
-procedure SingDrawSingbar(X, Y, W, H: real; Percent: integer);
-
-//Phrasen Bonus - Line Bonus
-procedure SingDrawLineBonus( const X, Y: Single; Color: TRGB; Alpha: Single; Text: string; Age: Integer);
-
 //Draw Editor NoteLines
 procedure EditDrawCzesc(Left, Top, Right: real; NrCzesci: integer; Space: integer);
 
@@ -530,14 +524,7 @@ var
   BarWspol: real;
   TempCol:  real;
   Tekst:    string;
-  LyricTemp:  string;
   PetCz:    integer;
-
-  //SingBar Mod
-  A: Integer;
-  E: Integer;
-  I: Integer;
-  //end Singbar Mod
 
 begin
   // positions
@@ -656,135 +643,7 @@ begin
       end;
     end;
 
-  end
-
-  //SingBar Mod
-  //modded again to make it moveable: it's working, so why try harder
-  else if Ini.Oscilloscope = 2 then
-  begin
-    A := GetTickCount div 33;
-    if A <> Tickold then begin
-      Tickold := A;
-      for E := 0 to (PlayersPlay - 1) do begin //Set new Pos + Alpha
-        I := Player[E].ScorePercentTarget - Player[E].ScorePercent;
-        if I > 0 then Inc(Player[E].ScorePercent)
-        else if I < 0 then Dec(Player[E].ScorePercent);
-      end; //for
-    end; //if
-
-    if PlayersPlay = 1 then begin
-      SingDrawSingbar(Theme.Sing.StaticP1SingBar.x, Theme.Sing.StaticP1SingBar.y, Theme.Sing.StaticP1SingBar.w, Theme.Sing.StaticP1SingBar.h , Player[0].ScorePercent);
-    end;
-
-    if PlayersPlay = 2 then begin
-      SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
-      SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
-    end;
-
-    if PlayersPlay = 3 then begin
-      SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
-      SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
-      SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
-    end;
-
-    if PlayersPlay = 4 then begin
-      if ScreenAct = 1 then begin
-        SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
-        SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
-      end;
-      if ScreenAct = 2 then begin
-        SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[2].ScorePercent);
-        SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[3].ScorePercent);
-      end;
-    end;
-
-    if PlayersPlay = 6 then begin
-      if ScreenAct = 1 then begin
-        SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
-        SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
-        SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
-     end;
-      if ScreenAct = 2 then begin
-        SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[3].ScorePercent);
-        SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[4].ScorePercent);
-        SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[5].ScorePercent);
-      end;
-    end;
   end;
-  //end Singbar Mod
-
-  {//PhrasenBonus - Line Bonus Mod
-  if Ini.LineBonus > 0 then begin
-    A := GetTickCount div 33;
-    if (A <> Tickold2) AND (Player[0].LineBonus_Visible) then begin
-      Tickold2 := A;
-      for E := 0 to (PlayersPlay - 1) do begin
-        //Change Alpha
-        Player[E].LineBonus_Alpha := Player[E].LineBonus_Alpha - 0.02;
-          if Player[E].LineBonus_Alpha <= 0 then
-            begin
-              Player[E].LineBonus_Age := 0;
-              Player[E].LineBonus_Visible := False
-            end
-          else
-            begin
-              inc(Player[E].LineBonus_Age, 1);
-              //Change Position
-                if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then
-                    Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
-                else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then
-                    Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
-
-                if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
-                    Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
-                else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
-                    Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
-
-            end; // shift position of the pop up (if not dead)
-      end;       // loop - for all players
-    end;         // if - linebonus
-
-
-    if      PlayersPlay = 1 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-    end
-
-    else if PlayersPlay = 2 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-   end
-
-   else if PlayersPlay = 3 then begin
-      SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-      SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-      SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
-    end
-
-   else if PlayersPlay = 4 then begin
-      if ScreenAct = 1 then begin
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-      end;
-      if ScreenAct = 2 then begin
-        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
-        SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
-      end;
-    end;
-
-    if PlayersPlay = 6 then begin
-      if ScreenAct = 1 then begin
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
-      end;
-      if ScreenAct = 2 then begin
-        SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
-        SingDrawLineBonus( Player[4].LineBonus_PosX, Player[4].LineBonus_PosY, Player[4].LineBonus_Color, Player[4].LineBonus_Alpha, Player[4].LineBonus_Text, Player[4].LineBonus_Age);
-        SingDrawLineBonus( Player[5].LineBonus_PosX, Player[5].LineBonus_PosY, Player[5].LineBonus_Color, Player[5].LineBonus_Alpha, Player[5].LineBonus_Text, Player[5].LineBonus_Age);
-      end;
-    end;
-  end;
-  //PhrasenBonus - Line Bonus Mod End  }
 
 // Set the note heights according to the difficulty level
   case Ini.Difficulty of
@@ -925,15 +784,7 @@ var
   BarWspol: real;
   TempCol:  real;
   Tekst:    string;
-  LyricTemp:  string;
   PetCz:    integer;
-
-  //SingBar Mod
-  A: Integer;
-  E: Integer;
-  I: Integer;
-  //end Singbar Mod
-
 begin
   // positions
   if Ini.SingWindow = 0 then begin
@@ -1055,166 +906,7 @@ begin
       end;
     end;
 
-  end
-
-  //SingBar Mod
-  // seems like we don't want the flicker thing, we want the linebonus rating bar beneath the scores
-  else if ((Ini.Oscilloscope = 2) AND (DLLMan.Selected.ShowRateBar_O)) OR (DLLMan.Selected.ShowRateBar) then begin
-    A := GetTickCount div 33;
-    if A <> Tickold then begin
-      Tickold := A;
-      for E := 0 to (PlayersPlay - 1) do begin //Set new Pos + Alpha
-        I := Player[E].ScorePercentTarget - Player[E].ScorePercent;
-          if      I > 0 then Inc(Player[E].ScorePercent)
-          else if I < 0 then Dec(Player[E].ScorePercent);
-      end; //for
-    end; //if
-
-    if PlayersPlay = 1 then begin
-      if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawSingbar(Theme.Sing.StaticP1SingBar.x, Theme.Sing.StaticP1SingBar.y, Theme.Sing.StaticP1SingBar.w, Theme.Sing.StaticP1SingBar.h , Player[0].ScorePercent);
-    end;
-
-    if PlayersPlay = 2 then begin
-      if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
-      if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
-    end;
-
-    if PlayersPlay = 3 then begin
-      if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
-      if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
-      if PlayerInfo.Playerinfo[2].Enabled then
-        SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
-    end;
-
-    if PlayersPlay = 4 then begin
-      if ScreenAct = 1 then begin
-        if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[0].ScorePercent);
-        if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[1].ScorePercent);
-      end;
-      if ScreenAct = 2 then begin
-        if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP1TwoPSingBar.x, Theme.Sing.StaticP1TwoPSingBar.y, Theme.Sing.StaticP1TwoPSingBar.w, Theme.Sing.StaticP1TwoPSingBar.h , Player[2].ScorePercent);
-        if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP2RSingBar.x, Theme.Sing.StaticP2RSingBar.y, Theme.Sing.StaticP2RSingBar.w, Theme.Sing.StaticP2RSingBar.h , Player[3].ScorePercent);
-      end;
-    end;
-
-    if PlayersPlay = 6 then begin
-      if ScreenAct = 1 then begin
-        if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[0].ScorePercent);
-        if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[1].ScorePercent);
-        if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[2].ScorePercent);
-      end;
-      if ScreenAct = 2 then begin
-        if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP1ThreePSingBar.x, Theme.Sing.StaticP1ThreePSingBar.y, Theme.Sing.StaticP1ThreePSingBar.w, Theme.Sing.StaticP1ThreePSingBar.h , Player[3].ScorePercent);
-        if PlayerInfo.Playerinfo[4].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP2MSingBar.x, Theme.Sing.StaticP2MSingBar.y, Theme.Sing.StaticP2MSingBar.w, Theme.Sing.StaticP2MSingBar.h , Player[4].ScorePercent);
-        if PlayerInfo.Playerinfo[5].Enabled then
-          SingDrawSingbar(Theme.Sing.StaticP3SingBar.x, Theme.Sing.StaticP3SingBar.y, Theme.Sing.StaticP3SingBar.w, Theme.Sing.StaticP3SingBar.h , Player[5].ScorePercent);
-      end;
-    end;
   end;
-  //end Singbar Mod
-
-  {//PhrasenBonus - Line Bonus Mod
-  if ((Ini.LineBonus > 0) AND (DLLMan.Selected.EnLineBonus_O)) OR (DLLMan.Selected.EnLineBonus) then begin
-    A := GetTickCount div 33;
-    if (A <> Tickold2) AND (Player[0].LineBonus_Visible) then begin
-      Tickold2 := A;
-      for E := 0 to (PlayersPlay - 1) do begin
-          //Change Alpha
-          Player[E].LineBonus_Alpha := Player[E].LineBonus_Alpha - 0.02;
-
-          if Player[E].LineBonus_Alpha <= 0 then
-            begin
-              Player[E].LineBonus_Age := 0;
-              Player[E].LineBonus_Visible := False
-            end
-          else
-            begin
-              inc(Player[E].LineBonus_Age, 1);
-              //Change Position
-              if (Player[E].LineBonus_PosX < Player[E].LineBonus_TargetX) then         // pop up has not yet reached it's position -> blend in
-                Player[E].LineBonus_PosX := Player[E].LineBonus_PosX + (2 - Player[E].LineBonus_Alpha * 1.5)
-              else if (Player[E].LineBonus_PosX > Player[E].LineBonus_TargetX) then    // pop up has reached it's position -> blend out
-                Player[E].LineBonus_PosX := Player[E].LineBonus_PosX - (2 - Player[E].LineBonus_Alpha * 1.5);
-
-              if (Player[E].LineBonus_PosY < Player[E].LineBonus_TargetY) then
-                Player[E].LineBonus_PosY := Player[E].LineBonus_PosY + (2 - Player[E].LineBonus_Alpha * 1.5)
-              else if (Player[E].LineBonus_PosY > Player[E].LineBonus_TargetY) then
-                Player[E].LineBonus_PosY := Player[E].LineBonus_PosY - (2 - Player[E].LineBonus_Alpha * 1.5);
-
-            end; // pop up still visible, has not reached it's position - move it
-      end;       // loop through all players
-    end;         // if it's time to draw them
-
-    if      PlayersPlay = 1 then begin
-      if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-    end
-
-    else if PlayersPlay = 2 then begin
-      if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-      if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-    end
-
-    else if PlayersPlay = 3 then begin
-      if PlayerInfo.Playerinfo[0].Enabled then
-        SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-      if PlayerInfo.Playerinfo[1].Enabled then
-        SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-      if PlayerInfo.Playerinfo[2].Enabled then
-        SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
-    end
-
-    else if PlayersPlay = 4 then begin
-      if ScreenAct = 1 then begin
-        if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-        if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-      end;
-      if ScreenAct = 2 then begin
-        if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
-        if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
-      end;
-    end;
-
-    if PlayersPlay = 6 then begin
-      if ScreenAct = 1 then begin
-        if PlayerInfo.Playerinfo[0].Enabled then
-          SingDrawLineBonus( Player[0].LineBonus_PosX, Player[0].LineBonus_PosY, Player[0].LineBonus_Color, Player[0].LineBonus_Alpha, Player[0].LineBonus_Text, Player[0].LineBonus_Age);
-        if PlayerInfo.Playerinfo[1].Enabled then
-          SingDrawLineBonus( Player[1].LineBonus_PosX, Player[1].LineBonus_PosY, Player[1].LineBonus_Color, Player[1].LineBonus_Alpha, Player[1].LineBonus_Text, Player[1].LineBonus_Age);
-        if PlayerInfo.Playerinfo[2].Enabled then
-          SingDrawLineBonus( Player[2].LineBonus_PosX, Player[2].LineBonus_PosY, Player[2].LineBonus_Color, Player[2].LineBonus_Alpha, Player[2].LineBonus_Text, Player[2].LineBonus_Age);
-      end;
-      if ScreenAct = 2 then begin
-        if PlayerInfo.Playerinfo[3].Enabled then
-          SingDrawLineBonus( Player[3].LineBonus_PosX, Player[3].LineBonus_PosY, Player[3].LineBonus_Color, Player[3].LineBonus_Alpha, Player[3].LineBonus_Text, Player[3].LineBonus_Age);
-        if PlayerInfo.Playerinfo[4].Enabled then
-          SingDrawLineBonus( Player[4].LineBonus_PosX, Player[4].LineBonus_PosY, Player[4].LineBonus_Color, Player[4].LineBonus_Alpha, Player[4].LineBonus_Text, Player[4].LineBonus_Age);
-        if PlayerInfo.Playerinfo[5].Enabled then
-          SingDrawLineBonus( Player[5].LineBonus_PosX, Player[5].LineBonus_PosY, Player[5].LineBonus_Color, Player[5].LineBonus_Alpha, Player[5].LineBonus_Text, Player[5].LineBonus_Age);
-      end;
-    end;
-  end;
-//PhrasenBonus - Line Bonus Mod End }
 
 // resize the notes according to the difficulty level
   case Ini.Difficulty of
@@ -1345,7 +1037,7 @@ begin
 end;
 
 
-//SingBar Mod
+{//SingBar Mod
 procedure SingDrawSingbar(X, Y, W, H: real; Percent: integer);
 var
   R:   Real;
@@ -1474,7 +1166,7 @@ if Age < 5 then Size := Age * 10 else Size := 50;
   glPrint (PChar(Text));
 end;
 end;
-//PhrasenBonus - Line Bonus Mod
+//PhrasenBonus - Line Bonus Mod}
 
 // Draw Note Bars for Editor
 //There are 11 Resons for a new Procdedure:

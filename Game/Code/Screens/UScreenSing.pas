@@ -1244,15 +1244,6 @@ begin
   for I := 0 to High(Player) do begin
     A := Player[I].Score + Player[I].ScoreGolden - Player[I].ScoreLast + 2;
 
-    //SingBar Mod
-    If ({(Ini.Oscilloscope = 2) and }(Czesci[0].Czesc[S].TotalNotes>0)) then
-    begin
-      Player[I].ScorePercentTarget := Player[I].ScorePercentTarget + floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 40 - 26);
-      if Player[I].ScorePercentTarget < 0  then Player[I].ScorePercentTarget := 0;
-      if Player[I].ScorePercentTarget > 99 then Player[I].ScorePercentTarget := 99;
-
-    //end Singbar Mod
-    end;
 
     //PhrasenBonus - Line Bonus Mod
 
@@ -1274,50 +1265,12 @@ begin
       //Update Total Score
       Player[I].ScoreTotalI := Player[I].ScoreI + Player[I].ScoreGoldenI + Player[I].ScoreLineI;
 
-      {//Color
-      Case Floor(A) of
-        0: begin
-          Player[I].LineBonus_Color.R := 1;
-          Player[I].LineBonus_Color.G := 0;
-          Player[I].LineBonus_Color.B := 0;
-        end;
-        1..3: begin
-          Player[I].LineBonus_Color.R := 1;
-          Player[I].LineBonus_Color.G := (A * 0.25);
-          Player[I].LineBonus_Color.B := 0;
-        end;
-        4: begin
-          Player[I].LineBonus_Color.R := 1;
-          Player[I].LineBonus_Color.G := 1;
-          Player[I].LineBonus_Color.B := 0;
-        end;
-        5..7: begin
-          Player[I].LineBonus_Color.R := 1-((a-4)*0.25);
-          Player[I].LineBonus_Color.G := 1;
-          Player[I].LineBonus_Color.B := 0;
-        end;
-        8: begin
-          Player[I].LineBonus_Color.R := 0;
-          Player[I].LineBonus_Color.G := 1;
-          Player[I].LineBonus_Color.B := 0;
-        end;
-      End; //Case
-      //Player[I].LineBonus_Color.B := 0;
-      //Player[I].LineBonus_Color.R := (8-A)/8;
-      //Player[I].LineBonus_Color.G := A/10;
-
-      Player[I].LineBonus_PosX  := Player[I].LineBonus_StartX;
-      Player[I].LineBonus_PosY  := Player[I].LineBonus_StartY;
-      Player[I].LineBonus_Alpha := 0.92;
-      Player[I].LineBonus_Visible := True;
-      Player[I].LineBonus_Age := 1;}
-
       //Spawn PopUp
       If (A >= 8) then
         A := 8
       else IF A < 0 then
         A := 0;
-      //Round(Player[I].Score + Player[I].ScoreGolden - Player[I].ScoreLast + (1000 / (Length(Czesci[0].Czesc) - NumEmptySentences) * A / 8));
+        
       Scores.SpawnPopUp(I, Floor(A), Player[I].ScoreTotalI);
     end;
     //PhrasenBonus - Line Bonus Mod End// }
