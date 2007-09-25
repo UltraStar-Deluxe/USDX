@@ -10,6 +10,16 @@ uses UThemes,
      OpenGl12,
      UTexture;
 
+//////////////////////////////////////////////////////////////
+//                        ATTENTION:                        //
+// Enabled Flag does not Work atm. This should cause Popups //
+// Not to Move and Scores to stay until Renenabling.        //
+// To use e.g. in Pause Mode                                //
+// Also InVisible Flag causes Attributes not to change.     //
+// This should be fixed after next Draw when Visible = True,//
+// but not testet yet                                       //
+//////////////////////////////////////////////////////////////
+
 //Some Constances containing Options that could change by time
 const
   MaxPlayers = 6;   //Maximum of Players that could be added
@@ -27,6 +37,9 @@ type
     ScoreDisplayed: Word; //Score cur. Displayed(for counting up)
     ScoreBG:  TTexture;//Texture of the Players Scores BG
     Color:    TRGB;    //Teh Players Color
+    RBPos:    Real;    //Cur. Percentille of the Rating Bar
+    RBTarget: Real;    //Target Position of Rating Bar
+    RBVisible:Boolean; //Is Rating bar Drawn
   end;
   aScorePlayer = array[0..MaxPlayers-1] of TScorePlayer;
 
@@ -103,6 +116,9 @@ type
       //Procedure Draws a Score by Playerindex
       Procedure DrawScore(const Index: Integer);
 
+      //Procedure Draws the RatingBar by Playerindex
+      Procedure DrawRatingBar(const Index: Integer);
+
       //Procedure Removes a PopUp w/o destroying the List
       Procedure KillPopUp(const last, cur: PScorePopUp);
     public
@@ -121,6 +137,10 @@ type
         RatingBar_Bar_Tex:  TTexture;
 
       end;
+
+      Visible: Boolean;    //Visibility of all Scores
+      Enabled: Boolean;    //Scores are changed, PopUps are Moved etc.
+      RBVisible: Boolean;  //Visibility of all Rating Bars
 
       //Propertys for Reading Position and Playercount
       Property PositionCount: Byte read oPositionCount;
@@ -180,6 +200,11 @@ begin
   //Clear PopupList Pointers
   FirstPopUp := nil;
   LastPopUp  := nil;
+
+  //Clear Variables
+  Visible := True;
+  Enabled := True;
+  RBVisible := True;
   
   //Clear Position Index
   oPositionCount  := 0;
@@ -231,6 +256,9 @@ begin
     aPlayers[PlayerCount].ScoreDisplayed     := Score;
     aPlayers[PlayerCount].ScoreBG   := ScoreBG;
     aPlayers[PlayerCount].Color     := Color;
+    aPlayers[PlayerCount].RBPos     := 0.5;
+    aPlayers[PlayerCount].RBTarget  := 0.5;
+    aPlayers[PlayerCount].RBVisible := True;
 
     Inc(oPlayerCount);
   end;
@@ -390,6 +418,13 @@ begin
   //Give Player the Last Points that missing till now
   aPlayers[Cur.Player].ScoreDisplayed := aPlayers[Cur.Player].ScoreDisplayed + Cur.ScoreDiff - Cur.ScoreGiven;
 
+  //Change Bars Position
+  aPlayers[Cur.Player].RBTarget := aPlayers[Cur.Player].RBTarget + (Cur.ScoreDiff - Cur.ScoreGiven)/Cur.ScoreDiff * (Cur.Rating / 20 - 0.26);
+  If (aPlayers[Cur.Player].RBTarget > 1) then
+    aPlayers[Cur.Player].RBTarget := 1
+  else If (aPlayers[Cur.Player].RBTarget < 0) then
+    aPlayers[Cur.Player].RBTarget := 0;
+
   //If this is the First PopUp => Make Next PopUp the First
   If (Cur = FirstPopUp) then
     FirstPopUp := Cur.Next
@@ -528,35 +563,47 @@ var
   CurPopUp, LastPopUp: PScorePopUp;
 begin
   CurTime := SDL_GetTicks;
-  
-  //Draw Popups
-  LastPopUp := nil;
-  CurPopUp  := FirstPopUp;
-  
-  While (CurPopUp <> nil) do
+
+  If Visible then
   begin
-    if (CurTime - CurPopUp.TimeStamp > Settings.Phase1Time + Settings.Phase2Time + Settings.Phase3Time) then
+    //Draw Popups
+    LastPopUp := nil;
+    CurPopUp  := FirstPopUp;
+
+    While (CurPopUp <> nil) do
     begin
-      KillPopUp(LastPopUp, CurPopUp);
-      if (LastPopUp = nil) then
-        CurPopUp := FirstPopUp
+      if (CurTime - CurPopUp.TimeStamp > Settings.Phase1Time + Settings.Phase2Time + Settings.Phase3Time) then
+      begin
+        KillPopUp(LastPopUp, CurPopUp);
+        if (LastPopUp = nil) then
+          CurPopUp := FirstPopUp
+        else
+          CurPopUp  := LastPopUp.Next;
+      end
       else
+      begin
+        DrawPopUp(CurPopUp);
+        LastPopUp := CurPopUp;
         CurPopUp  := LastPopUp.Next;
-    end
-    else
-    begin
-      DrawPopUp(CurPopUp);
-      LastPopUp := CurPopUp;
-      CurPopUp  := LastPopUp.Next;
+      end;
     end;
-  end;
 
 
-  //Draw Players
-  For I := 0 to PlayerCount-1 do
-  begin
-    DrawScore(I);
-  end;
+    IF (RBVisible) then
+      //Draw Players w/ Rating Bar
+      For I := 0 to PlayerCount-1 do
+      begin
+        DrawScore(I);
+        DrawRatingBar(I);
+      end
+    else
+      //Draw Players w/o Rating Bar
+      For I := 0 to PlayerCount-1 do
+      begin
+        DrawScore(I);
+      end;
+
+  end; //eo Visible
 end;
 
 //-----------
@@ -584,6 +631,11 @@ begin
       If ((Players[PopUp.Player].Position AND 128) = 0) = (ScreenAct = 1) then
       begin
         CurTime := SDL_GetTicks;
+        If Not (Enabled AND Players[PopUp.Player].Enabled) then
+        //Increase Timestamp with TIem where there is no Movement ...
+        begin
+          //Inc(PopUp.TimeStamp, LastRender);
+        end;
         TimeDiff := CurTime - PopUp.TimeStamp;
 
         //Get Position of PopUp
@@ -636,10 +688,20 @@ begin
 
           If (PopUp.Rating > 0) then
           begin
-            //Add Scores
-            ScoreToAdd := Round(PopUp.ScoreDiff * Progress) - PopUp.ScoreGiven;
-            Inc(PopUp.ScoreGiven, ScoreToAdd);
-            aPlayers[PopUp.Player].ScoreDisplayed := Players[PopUp.Player].ScoreDisplayed + ScoreToAdd;
+            //Add Scores if Player Enabled
+            If (Enabled AND Players[PopUp.Player].Enabled) then
+            begin
+              ScoreToAdd := Round(PopUp.ScoreDiff * Progress) - PopUp.ScoreGiven;
+              Inc(PopUp.ScoreGiven, ScoreToAdd);
+              aPlayers[PopUp.Player].ScoreDisplayed := Players[PopUp.Player].ScoreDisplayed + ScoreToAdd;
+
+              //Change Bars Position
+              aPlayers[PopUp.Player].RBTarget := aPlayers[PopUp.Player].RBTarget + ScoreToAdd/PopUp.ScoreDiff * (PopUp.Rating / 20 - 0.26);
+              If (aPlayers[PopUp.Player].RBTarget > 1) then
+                aPlayers[PopUp.Player].RBTarget := 1
+              else If (aPlayers[PopUp.Player].RBTarget < 0) then
+                aPlayers[PopUp.Player].RBTarget := 0;
+            end;
 
             //Set Positions etc.
             Alpha    := 0.7 - 0.7 * Progress;
@@ -676,7 +738,7 @@ begin
 
         //Draw PopUp
 
-        if (Alpha > 0) then
+        if (Alpha > 0) AND (Players[PopUp.Player].Visible) then
         begin
           //Draw BG:
           glEnable(GL_TEXTURE_2D);
@@ -730,7 +792,7 @@ begin
   If Players[Index].Position <> high(byte) then
   begin
     //Only Draw if Player is on Cur Screen
-    If ((Players[Index].Position AND 128) = 0) = (ScreenAct = 1) then
+    If (((Players[Index].Position AND 128) = 0) = (ScreenAct = 1)) AND Players[Index].Visible then
     begin
       Position := @Positions[Players[Index].Position and 127];
 
@@ -764,6 +826,128 @@ begin
 
       glPrint(PChar(ScoreStr));
 
+    end; //eo Right Screen
+  end; //eo Player has Position
+end;
+
+
+Procedure TSingScores.DrawRatingBar(const Index: Integer);
+var
+  Position: PScorePosition;
+  R,G,B, Size: Real;
+  Diff: Real;
+begin
+  //Only Draw if Player has a Position
+  If Players[Index].Position <> high(byte) then
+  begin
+    //Only Draw if Player is on Cur Screen
+    If ((Players[Index].Position AND 128) = 0) = (ScreenAct = 1) AND (Players[index].RBVisible AND Players[index].Visible) then
+    begin
+      Position := @Positions[Players[Index].Position and 127];
+
+      If (Enabled AND Players[Index].Enabled) then
+      begin
+        //Move Position if Enabled
+        Diff := Players[Index].RBTarget - Players[Index].RBPos;
+        If(Abs(Diff) < 0.02) then
+          aPlayers[Index].RBPos := aPlayers[Index].RBTarget
+        else
+          aPlayers[Index].RBPos := aPlayers[Index].RBPos + Diff*0.1;
+      end;
+
+      //Get Colors for RatingBar
+      If Players[index].RBPos <=0.22 then
+      begin
+        R := 1;
+        G := 0;
+        B := 0;
+      end
+      Else If Players[index].RBPos <=0.42 then
+      begin
+        R := 1;
+        G := Players[index].RBPos*5;
+        B := 0;
+      end
+      Else If Players[index].RBPos <=0.57 then
+      begin
+        R := 1;
+        G := 1;
+        B := 0;
+      end
+      Else If Players[index].RBPos <=0.77 then
+      begin
+        R := 1-(Players[index].RBPos-0.57)*5;
+        G := 1;
+        B := 0;
+      end
+      else
+      begin
+        R := 0;
+        G := 1;
+        B := 0;
+      end;
+
+      //Enable all glFuncs Needed
+      glEnable(GL_TEXTURE_2D);
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+      //Draw RatingBar BG
+      glColor4f(1, 1, 1, 0.8);
+      glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_BG_Tex.TexNum);
+
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0);
+        glVertex2f(Position.RBX, Position.RBY);
+
+        glTexCoord2f(0, Settings.RatingBar_BG_Tex.TexH);
+        glVertex2f(Position.RBX, Position.RBY+Position.RBH);
+
+        glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, Settings.RatingBar_BG_Tex.TexH);
+        glVertex2f(Position.RBX+Position.RBW, Position.RBY+Position.RBH);
+
+        glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, 0);
+        glVertex2f(Position.RBX+Position.RBW, Position.RBY);
+      glEnd;
+
+      //Draw Rating bar itself
+      Size := Position.RBX + Position.RBW * Players[Index].RBPos;
+      glColor4f(R, G, B, 1);
+      glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_Bar_Tex.TexNum);
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0);
+        glVertex2f(Position.RBX, Position.RBY);
+
+        glTexCoord2f(0, Settings.RatingBar_Bar_Tex.TexH);
+        glVertex2f(Position.RBX, Position.RBY + Position.RBH);
+
+        glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, Settings.RatingBar_Bar_Tex.TexH);
+        glVertex2f(Size, Position.RBY + Position.RBH);
+
+        glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, 0);
+        glVertex2f(Size, Position.RBY);
+      glEnd;
+
+      //Draw Ratingbar FG (Teh thing with the 3 lines to get better readability)
+      glColor4f(1, 1, 1, 0.6);
+      glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_FG_Tex.TexNum);
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0);
+        glVertex2f(Position.RBX, Position.RBY);
+
+        glTexCoord2f(0, Settings.RatingBar_FG_Tex.TexH);
+        glVertex2f(Position.RBX, Position.RBY + Position.RBH);
+
+        glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, Settings.RatingBar_FG_Tex.TexH);
+        glVertex2f(Position.RBX + Position.RBW, Position.RBY + Position.RBH);
+
+        glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, 0);
+        glVertex2f(Position.RBX + Position.RBW, Position.RBY);
+      glEnd;
+
+      //Disable all Enabled glFuncs
+      glDisable(GL_TEXTURE_2D);
+      glDisable(GL_BLEND);
     end; //eo Right Screen
   end; //eo Player has Position
 end;
