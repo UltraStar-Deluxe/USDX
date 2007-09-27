@@ -245,7 +245,7 @@ begin
 
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
     glBindTexture(GL_TEXTURE_2D, TexNum);
 
     glBegin(GL_QUADS);
@@ -304,7 +304,7 @@ begin
 
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
   glBindTexture(GL_TEXTURE_2D, TexNum);
   glBegin(GL_QUADS);
     glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);

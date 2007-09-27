@@ -363,6 +363,7 @@ procedure TDisplay.ScreenShot;
      FileName: String;
      Num: Integer;
 begin
+  Exit; // something broken in here... quick fix... disabled it
   //bilddatei Suchen
   for Num := 1 to 9999 do begin
     FileName := IntToStr(Num);
