@@ -45,6 +45,26 @@ type
 
     //LineBonus Mod
     ScoreLast:    Real;//Last Line Score
+    ScorePercent:    integer;//Aktual Fillstate of the SingBar
+    ScorePercentTarget:  integer;//Target Fillstate of the SingBar
+    //end Singbar Mod
+
+    //PhrasenBonus - Line Bonus Mod
+    LineBonus_PosX:     Single;
+    LineBonus_PosY:     Single;
+    LineBonus_Alpha:    Single;
+    LineBonus_Visible:  boolean;
+    LineBonus_Text:     string;
+    LineBonus_Color:    TRGB;
+    LineBonus_Age:      Integer;
+    LineBonus_Rating: Integer;
+    //Variable vor Positioning -> Set on ScreenShow, different when Playercount Changes
+    LineBonus_TargetX:  integer;
+    LineBonus_TargetY:  integer;
+    LineBonus_StartX:  integer;
+    LineBonus_StartY:  integer;
+    //PhrasenBonus - Line Bonus Mod End
+
 
     //PerfectLineTwinkle Mod (effect)
     LastSentencePerfect: Boolean;

@@ -2,6 +2,10 @@ unit UScreenMain;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
   UMenu,
   SDL,
