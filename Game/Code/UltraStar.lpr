@@ -124,6 +124,8 @@ uses
   UTexture               in 'Classes\UTexture.pas',
   UThemes                in 'Classes\UThemes.pas',
   UTime                  in 'Classes\UTime.pas',
+  USingScores in 'Classes\USingScores.pas',
+  USingNotes in 'Classes\USingNotes.pas',
 
 
   //------------------------------
