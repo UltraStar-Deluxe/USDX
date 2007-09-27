@@ -29,6 +29,10 @@ uses
   //
   // ***************************************************************************
 
+  // Interesting stuff... :)
+  // http://burningsmell.org/sdl_audioin/
+
+
   //------------------------------
   //Includes - 3rd Party Libraries
   //------------------------------
@@ -120,6 +124,7 @@ uses
   UPlaylist              in 'Classes\UPlaylist.pas',
   URecord                in 'Classes\URecord.pas',
   USkins                 in 'Classes\USkins.pas',
+  USingScores            in 'Classes\USingScores.pas',
   USongs                 in 'Classes\USongs.pas',
   UTexture               in 'Classes\UTexture.pas',
   UThemes                in 'Classes\UThemes.pas',
