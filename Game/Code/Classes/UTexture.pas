@@ -1,4 +1,6 @@
 unit UTexture;
+// added for easier debug disabling
+//{$define blindydebug}
 
 // Plain (alpha = 1)
 // Transparent
@@ -111,6 +113,8 @@ type
     function LoadTexture(Identifier: string): TTexture; overload;
     function CreateTexture(var Data: array of byte; Name: string; W, H: word; Bits: byte): TTexture;
     procedure UnloadTexture(Name: string; FromCache: boolean);
+    Constructor Create;
+    Destructor Destroy;
   end;
 
 var
@@ -133,6 +137,7 @@ var
   Mipmapping: Boolean;
 
   CacheMipmap:  array[0..256*256*3-1] of byte; // 3KB
+  CacheMipmapSurface: PSDL_Surface;
 
 
 implementation
@@ -143,7 +148,7 @@ uses ULog,
      {$IFDEF FPC}
      LResources,
      {$ENDIF}
-     StrUtils;
+     StrUtils, dialogs;
 
 const
   fmt_rgba: TSDL_Pixelformat=(palette:      nil;
@@ -181,6 +186,16 @@ const
                               ColorKey:       0;
                               Alpha:        255);
 
+
+Constructor TTextureUnit.Create;
+begin
+  inherited Create;
+end;
+
+Destructor TTextureUnit.Destroy;
+begin
+  inherited Destroy;
+end;
 
 function TTextureUnit.pixfmt_eq(fmt1,fmt2: PSDL_Pixelformat): boolean;
 begin
@@ -364,10 +379,14 @@ var
   NeededPixFmt: PSDL_Pixelformat;
 begin
   NeededPixFmt:=@fmt_rgba;
-  if Typ= 'Plain' then NeededPixFmt:=@fmt_rgb;
+  if Typ= 'Plain' then NeededPixFmt:=@fmt_rgb
+  else
   if (Typ='Transparent') or
      (Typ='Colorized')
-     then NeededPixFmt:=@fmt_rgba;
+     then NeededPixFmt:=@fmt_rgba
+  else
+    NeededPixFmt:=@fmt_rgb;
+
 
   if not pixfmt_eq(TexSurface^.format, NeededPixFmt) then
   begin
@@ -489,43 +508,58 @@ var
   MipmapSurface: PSDL_Surface;
   newWidth, newHeight: Cardinal;
   oldWidth, oldHeight: Cardinal;
-
+  kopierindex: Cardinal;
 begin
   Log.BenchmarkStart(4);
   Mipmapping := true;
-
-
-
 (*
   Log.LogStatus( '', '' );
-  
+
   if Identifier = nil then
     Log.LogStatus(' ERROR unknown Identifier', 'Id:'''+Identifier+''' Fmt:'''+Format+''' Typ:'''+Typ+'''')
   else
     Log.LogStatus(' should be ok - trying to load', 'Id:'''+Identifier+''' Fmt:'''+Format+''' Typ:'''+Typ+'''');
 *)
 
-  // load texture data into memory
+ // load texture data into memory
+  {$ifdef blindydebug}
+  Log.LogStatus('',' LoadImage('''+Identifier+''') (called by '+Format+')');
+  {$endif}
   TexSurface := LoadImage(Identifier);
+  {$ifdef blindydebug}
+  Log.LogStatus('',' ok');
+  {$endif}
   if not assigned(TexSurface) then
   begin
     Log.LogStatus( 'ERROR Could not load texture' , Identifier +' '+ Format +' '+ Typ );
     beep;
     Exit;
   end;
-
-  // convert pixel format as needed
+ // convert pixel format as needed
+  {$ifdef blindydebug}
+  Log.LogStatus('',' AdjustPixelFormat');
+  {$endif}
   AdjustPixelFormat(TexSurface, Typ);
-
-  // adjust texture size (scale down, if necessary)
-  newWidth:=TexSurface^.W;
+  {$ifdef blindydebug}
+  Log.LogStatus('',' ok');
+  {$endif}
+ // adjust texture size (scale down, if necessary)
+  newWidth:=TexSurface.W;
   newHeight:=TexSurface.H;
   if (newWidth > Limit) then
     newWidth:=Limit;
   if (newHeight > Limit) then
     newHeight:=Limit;
-  if (TexSurface.W > newWidth) or (TexSurface^.H > newHeight) then
+  if (TexSurface.W > newWidth) or (TexSurface.H > newHeight) then
+  begin
+    {$ifdef blindydebug}
+    Log.LogStatus('',' ScaleTexture');
+    {$endif}
     ScaleTexture(TexSurface,newWidth,newHeight);
+    {$ifdef blindydebug}
+    Log.LogStatus('',' ok');
+    {$endif}
+  end;
 
   // don't actually understand, if this is needed...
   // this should definately be changed... together with all this
@@ -534,21 +568,43 @@ begin
   begin
     if (Covers.W <= 256) and (Covers.H <= 256) then
     begin
+      {$ifdef blindydebug}
+      Log.LogStatus('',' GetScaledTexture('''+inttostr(Covers.W)+''','''+inttostr(Covers.H)+''') (for CacheMipmap)');
+      {$endif}
       MipmapSurface:=GetScaledTexture(TexSurface,Covers.W, Covers.H);
-      System.Move(MipmapSurface^.pixels,CacheMipmap,Covers.W*Covers.H*3-1);
-      SDL_FreeSurface(MipmapSurface);
+      if assigned(MipmapSurface) then
+      begin
+        {$ifdef blindydebug}
+        Log.LogStatus('',' ok');
+        Log.LogStatus('',' BlitSurface Stuff');
+        {$endif}
+        // creating and freeing the surface could be done once, if Cover.W and Cover.H don't change
+        CacheMipmapSurface:=SDL_CreateRGBSurfaceFrom(@CacheMipmap[0], Covers.W, Covers.H, 24, Covers.W*3, $000000ff, $0000ff00, $00ff0000, 0);
+        SDL_BlitSurface(MipMapSurface,nil,CacheMipmapSurface,nil);
+        SDL_FreeSurface(CacheMipmapSurface);
+        {$ifdef blindydebug}
+        Log.LogStatus('',' ok');
+        Log.LogStatus('',' SDL_FreeSurface (CacheMipmap)');
+        {$endif}
+        SDL_FreeSurface(MipmapSurface);
+        {$ifdef blindydebug}
+        Log.LogStatus('',' ok');
+        {$endif}
+      end
+      else
+      begin
+        Log.LogStatus(' Error creating CacheMipmap',' LoadTexture('''+Identifier+''')');
+      end;
     end;
     // should i create a cache texture, if Covers.W/H are larger?
   end;
 
-
-  // now we might colorize the whole thing
+ // now we might colorize the whole thing
   if Typ='Colorized' then ColorizeTexture(TexSurface,Col);
-
-  // save actual dimensions of our texture
+ // save actual dimensions of our texture
   oldWidth:=newWidth;
   oldHeight:=newHeight;
-  // make texture dimensions be powers of 2
+ // make texture dimensions be powers of 2
   newWidth:=Round(Power(2, Ceil(Log2(newWidth))));
   newHeight:=Round(Power(2, Ceil(Log2(newHeight))));
   if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
@@ -564,21 +620,19 @@ begin
   // then we're done manipulating it
   // and could now create our openGL texture from it
 
-  // prepare OpenGL texture
+ // prepare OpenGL texture
   glGenTextures(1, ActTex);
   glBindTexture(GL_TEXTURE_2D, ActTex);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  // load data into gl texture
-  if Typ = 'Plain' then
-  begin
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface^.pixels);
-  end;
-
+ // load data into gl texture
   if (Typ = 'Transparent') or (Typ='Colorized') then begin
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface^.pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
+  end
+  {if Typ = 'Plain' then} else
+  begin
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
   end;
 {
   if Typ = 'Transparent Range' then
@@ -908,7 +962,13 @@ begin
     if TextureDatabase.Texture[T].Texture.TexNum = -1 then
     begin
       // load texture
+      {$ifdef blindydebug}
+      Log.LogStatus('...', 'GetTexture('''+Name+''','''+Typ+''')');
+      {$endif}
       TextureDatabase.Texture[T].Texture := LoadTexture(false, pchar(Name), 'JPG', pchar(Typ), $0);
+      {$ifdef blindydebug}
+      Log.LogStatus('done',' ');
+      {$endif}
     end;
 
     // use texture
