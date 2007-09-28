@@ -282,7 +282,7 @@ begin
     begin
       if (Player[I].ScoreTotalI<=10000) then
         PlayerInfo.Playerinfo[I].Score:=  Player[I].ScoreTotalI;
-      PlayerInfo.Playerinfo[I].Bar :=  Player[I].ScorePercent;
+      PlayerInfo.Playerinfo[I].Bar :=  Round(Scores.Players[I].RBPos * 100);
     end;
   end;
 
@@ -557,7 +557,7 @@ end;
   begin
     if PlayerInfo.Playerinfo[I].Enabled then
     begin
-      PlayerInfo.Playerinfo[I].Bar :=  Player[I].ScorePercent;
+      //PlayerInfo.Playerinfo[I].Bar :=  Player[I].ScorePercent;
       PlayerInfo.Playerinfo[I].Score := Player[I].ScoreTotalI;
     end;
   end;
@@ -582,8 +582,8 @@ end;
       //Player[I].ScoreTotal   := Player[I].ScoreTotal + (PlayerInfo.Playerinfo[I].Score - Player[I].ScoreTotalI);
       Player[I].ScoreTotalI := PlayerInfo.Playerinfo[I].Score;
     end;
-    if (PlayerInfo.Playerinfo[I].Bar <> Player[I].ScorePercent) then
-      Player[I].ScorePercentTarget := PlayerInfo.Playerinfo[I].Bar;
+    {if (PlayerInfo.Playerinfo[I].Bar <> Player[I].ScorePercent) then
+      Player[I].ScorePercentTarget := PlayerInfo.Playerinfo[I].Bar; }
   end;
 
   // back stereo

@@ -1252,13 +1252,6 @@ begin
 
     If (Ini.LineBonus > 0) then
     begin
-
-      //Generate Text
-      if A >= 8 then
-        Player[I].LineBonus_Text := Theme.Sing.LineBonusText[8]
-      else
-        Player[I].LineBonus_Text := Theme.Sing.LineBonusText[Floor(A)];
-
       //PhrasenBonus give Points
       Player[I].ScoreLine := Player[I].ScoreLine + (1000 / (Length(Czesci[0].Czesc) - NumEmptySentences) * A / 8);
       Player[I].ScoreLineI := Round(Player[I].ScoreLine / 10) * 10;

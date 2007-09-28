@@ -45,7 +45,7 @@ type
 
     //LineBonus Mod
     ScoreLast:    Real;//Last Line Score
-    ScorePercent:    integer;//Aktual Fillstate of the SingBar
+    {ScorePercent:    integer;//Aktual Fillstate of the SingBar
     ScorePercentTarget:  integer;//Target Fillstate of the SingBar
     //end Singbar Mod
 
@@ -63,7 +63,7 @@ type
     LineBonus_TargetY:  integer;
     LineBonus_StartX:  integer;
     LineBonus_StartY:  integer;
-    //PhrasenBonus - Line Bonus Mod End
+    //PhrasenBonus - Line Bonus Mod End  }
 
 
     //PerfectLineTwinkle Mod (effect)
@@ -736,20 +736,6 @@ begin
   Player[PlayerNum].ScoreGolden := 0;
   Player[PlayerNum].ScoreGoldenI := 0;
   Player[PlayerNum].ScoreTotalI := 0;
-
-
-  //SingBar Mod
-  Player[PlayerNum].ScoreLast := 0;
-  Player[PlayerNum].ScorePercent := 50;// Sets to 50% when song starts
-  Player[PlayerNum].ScorePercentTarget := 50;// Sets to 50% when song starts
-  //end SingBar Mod
-
-  //PhrasenBonus - Line Bonus Mod
-  Player[PlayerNum].LineBonus_Visible := False; //Hide Line Bonus
-  Player[PlayerNum].LineBonus_Alpha   := 0;
-  Player[PlayerNum].LineBonus_TargetX := 70 + PlayerNum*500;
-  Player[PlayerNum].LineBonus_TargetY := 30;
-  //PhrasenBonus - Line Bonus Mod End
 end;
 
 //--------------------
