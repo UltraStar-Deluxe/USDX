@@ -221,6 +221,9 @@ var
   PlayerNumber: Integer;
 
   GoldenStarPos : real;
+  
+  lTmpA ,
+  lTmpB : real;
 begin
 // We actually don't have a playernumber in this procedure, it should reside in NrCzesci - but it's always set to zero
 // So we exploit this behavior a bit - we give NrCzesci the playernumber, keep it in playernumber - and then we set NrCzesci to zero
@@ -236,7 +239,26 @@ begin
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  TempR := (Right-Left) / (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
+
+  lTmpA := (Right-Left);
+  lTmpB := (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
+
+  writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
+  writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
+  writeln( '' );
+
+
+  if ( lTmpA > 0 ) AND
+     ( lTmpB > 0 ) THEN
+  begin
+    TempR := lTmpA / lTmpB;
+  end
+  else
+  begin
+    TempR := 0;
+  end;
+
+  
   with Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt] do begin
     for Pet := 0 to HighNut do begin
       with Nuta[Pet] do begin
@@ -440,13 +462,35 @@ var
   R,G,B:    real;
   X1, X2, X3, X4: real;
   W, H:     real;
+  
+  lTmpA  ,
+  lTmpB  : real;
 begin
   if (Player[NrGracza].ScoreTotalI >= 0) then begin
   glColor4f(1, 1, 1, sqrt((1+sin(Music.Position * 3))/4)/ 2 + 0.5 );
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  TempR := (Right-Left) / (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
+
+
+  lTmpA := (Right-Left);
+  lTmpB := (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
+  
+  writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
+  writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
+  writeln( '' );
+
+
+  if ( lTmpA > 0 ) AND
+     ( lTmpB > 0 ) THEN
+  begin
+    TempR := lTmpA / lTmpB;
+  end
+  else
+  begin
+    TempR := 0;
+  end;
+
   with Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt] do begin
     for Pet := 0 to HighNut do begin
       with Nuta[Pet] do begin
