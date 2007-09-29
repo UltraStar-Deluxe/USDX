@@ -421,5 +421,7 @@ begin
   if Ini.LPT = 1 then LCD.Clear;
   if Ini.LPT = 2 then Light.TurnOff;
 
+  // Insignificant change..
+
   Log.Free;
 end.
