@@ -243,10 +243,13 @@ begin
   lTmpA := (Right-Left);
   lTmpB := (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
 
+  {$IFDEF FPC}
+(*
   writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
   writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
   writeln( '' );
-
+*)
+  {$ENFIF}
 
   if ( lTmpA > 0 ) AND
      ( lTmpB > 0 ) THEN
@@ -476,10 +479,13 @@ begin
   lTmpA := (Right-Left);
   lTmpB := (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
   
+  {$IFDEF FPC}
+{*
   writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
   writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
   writeln( '' );
-
+*}
+  {$ENDIF}
 
   if ( lTmpA > 0 ) AND
      ( lTmpB > 0 ) THEN
