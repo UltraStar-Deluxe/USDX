@@ -249,7 +249,7 @@ begin
   writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
   writeln( '' );
 *)
-  {$ENFIF}
+  {$ENDIF}
 
   if ( lTmpA > 0 ) AND
      ( lTmpB > 0 ) THEN
