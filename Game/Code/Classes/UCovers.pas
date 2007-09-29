@@ -161,7 +161,8 @@ var
   NLen:   word;
   Bits:   byte;
 begin
-  if not CoverExists(Name) then begin
+  if not CoverExists(Name) then
+  begin
     SetLength(Cover, Length(Cover)+1);
     Cover[High(Cover)].Name := Name;
 
@@ -177,27 +178,32 @@ begin
     if WritetoFile then
     begin
       AssignFile(F, GamePath + 'covers.cache');
-      if FileExists(GamePath + 'covers.cache') then begin
+      
+      if FileExists(GamePath + 'covers.cache') then
+      begin
         Reset(F, 1);
         Seek(F, FileSize(F));
-      end else
+      end
+      else
+      begin
         Rewrite(F, 1);
-
-        Bits := 24;
-
-        BlockWrite(F, W, 2);
-        BlockWrite(F, H, 2);
-        BlockWrite(F, Bits, 1);
-
-        NLen := Length(Name);
-        BlockWrite(F, NLen, 2);
-        BlockWrite(F, Name[1], NLen);
-
-        Cover[High(Cover)].Position := FilePos(F);
-        BlockWrite(F, CacheMipmap[0], W*H*(Bits div 8));
-
-        CloseFile(F);
       end;
+
+      Bits := 24;
+
+      BlockWrite(F, W, 2);
+      BlockWrite(F, H, 2);
+      BlockWrite(F, Bits, 1);
+
+      NLen := Length(Name);
+      BlockWrite(F, NLen, 2);
+      BlockWrite(F, Name[1], NLen);
+
+      Cover[High(Cover)].Position := FilePos(F);
+      BlockWrite(F, CacheMipmap[0], W*H*(Bits div 8));
+
+      CloseFile(F);
+    end;
   end
   else
     Cover[High(Cover)].Position := 0;
@@ -208,9 +214,13 @@ var
   C:    integer; // cover
 begin
   Result := false;
-  C := 0;
-  while (C <= High(Cover)) and (Result = false) do begin
-    if Cover[C].Name = Name then Result := true;
+  C      := 0;
+  
+  while (C <= High(Cover)) and (Result = false) do
+  begin
+    if Cover[C].Name = Name then
+      Result := true;
+      
     Inc(C);
   end;
 end;
@@ -220,9 +230,13 @@ var
   C:    integer;
 begin
   Result := -1;
-  C := 0;
-  while (C <= High(Cover)) and (Result = -1) do begin
-    if Cover[C].Name = Name then Result := C;
+  C      := 0;
+  
+  while (C <= High(Cover)) and (Result = -1) do
+  begin
+    if Cover[C].Name = Name then
+      Result := C;
+      
     Inc(C);
   end;
 end;
@@ -232,7 +246,8 @@ var
   F:  File;
   C:  integer;
 begin
-  if FileExists(GamePath + 'covers.cache') then begin
+  if FileExists(GamePath + 'covers.cache') then
+  begin
     AssignFile(F, GamePath + 'covers.cache');
     Reset(F, 1);
 

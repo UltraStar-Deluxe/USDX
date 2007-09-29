@@ -233,7 +233,7 @@ begin
   if not BASS_Init(1, 44100, 0, fHWND, nil) then
   begin
     {$IFNDEF FPC}
-    // TODO : JB_lazarus find a way to do this nice..
+    // TODO : JB_linux find a way to do this nice..
     Application.MessageBox ('Could not initialize BASS', 'Error');
     {$ENDIF}
     Exit;

@@ -312,9 +312,6 @@ begin
 
   Log.LogStatus('Loading Textures - C', 'LoadTextures');
 
-  {$IFNDEF FPC}
-  // TODO : jb_FPC  why does this cause lazarus build, to have runtime error..
-  // TODO : jb_FPC - START HERE !!
   //Line Bonus PopUp
   for P := 0 to 8 do
     begin
@@ -356,8 +353,6 @@ begin
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
     Tex_ScoreBG[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreBG')),  'PNG', 'Colorized', Col);
   end;
-
-  {$ENDIF}
 
   Log.LogStatus('Loading Textures - D', 'LoadTextures');
 end;

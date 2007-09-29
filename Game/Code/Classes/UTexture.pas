@@ -980,7 +980,8 @@ begin
     // use cache texture
     C := Covers.CoverNumber(Name);
 
-    if TextureDatabase.Texture[T].TextureCache.TexNum = -1 then begin
+    if TextureDatabase.Texture[T].TextureCache.TexNum = -1 then
+    begin
       // load texture
       Covers.PrepareData(Name);
       TextureDatabase.Texture[T].TextureCache := CreateTexture(Covers.Data, Name, Covers.Cover[C].W, Covers.Cover[C].H, 24);
