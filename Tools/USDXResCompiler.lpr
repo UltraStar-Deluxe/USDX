@@ -14,6 +14,11 @@ procedure AddFile( aResName, aResType, aFile : string );
 var
   lTmpStream : TmemoryStream;
 begin
+  if aFile[1] = '"' then
+  begin
+    aFile := copy( aFile, 2, length( aFile ) - 2 );
+  end;
+
   if not fileexists( aFile ) then
   begin
     writeln( 'SKIPED' + ' ( '+aFile+' ) File not found' );
@@ -31,12 +36,77 @@ begin
     freeandnil( lTmpStream );
   end;
 end;
-  
-  
-begin
 
+procedure addresourceline( aRCLine : String );
+var
+  lName : String;
+  lType : String;
+  lFile : String;
+  lTmp  ,
+  lTmp2 : Integer;
+begin
+  if trim( aRCLine ) = '' then
+    exit;
+    
+  if aRCLine[1] = '#' then
+    exit;
+
+  if ( aRCLine[1] = '/' ) AND
+     ( aRCLine[2] = '/' ) THEN
+    exit;
+
+  // find 2nd column... and put it in lTmp
+  lTmp  := pos( ' ', aRcLine );
+  lTmp2 := pos( #9, aRcLine  );
+  if lTmp2 < lTmp then
+    lTmp := lTmp2;
+  
+  // Name = Start to lTmp
+  lName := trim( copy( aRcLine, 1, lTmp ) );
+
+  // Type = lTmp to first "
+  lTmp2 := pos( '"', aRcLine );
+  lType := trim( copy( aRcLine, lTmp, lTmp2-lTmp ) );
+
+  // File = " to end of line
+  lFile := trim( copy( aRcLine, lTmp2, maxint ) );
+
+(*
+  writeln( aRcLine );
+  writeln( lName );
+  writeln( lType );
+  writeln( lFile );
+  writeln( '' );
+*)
+  AddFile( lName , lType , lFile );
+
+end;
+
+
+var
+  lRCFile : TStringList;
+  iCount  : Integer;
+begin
+  if not fileexists( paramstr(1) ) then
+  begin
+    writeln( 'MUST Specify Delphi format RC File' );
+    exit;
+  end;
+
+  lRCFile := TStringList.create();
   lResourceFile := TMemoryStream.create();
   try
+     lRCFile.loadfromfile( paramstr(1) );
+     
+     if trim( lRCFile.text ) = '' then
+       exit;
+     
+     for iCount := 0 to lRCFile.count -1 do
+     begin
+       addresourceline( lRCFile[ iCount ] );
+     end;
+  
+(*
      AddFile( 'Font', 'TEX', '..\Fonts\Normal\eurostar_regular.png' );
      AddFile( 'Font', 'FNT', '..\Fonts\Normal\eurostar_regular.dat' );
 
@@ -75,11 +145,13 @@ begin
      AddFile( 'OUTRO_BG', 'TEX', '..\Graphics\outro-bg.png' );
      AddFile( 'OUTRO_ESC', 'TEX', '..\Graphics\outro-esc.png' );
      AddFile( 'OUTRO_EXD', 'TEX', '..\Graphics\outro-exit-dark.png' );
-
+*)
 
   finally
     lResourceFile.SaveToFile( 'UltraStar.lrs' );
     freeandnil( lResourceFile );
+    
+    freeandnil( lRCFile );
   end;
 end.
 
