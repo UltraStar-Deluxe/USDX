@@ -52,29 +52,29 @@ begin
      AddFile( 'MAINICON', 'ICON', '..\Graphics\ustar-icon_v01.ico' );
 
 
-     AddFile( 'CRDTS_BG', 'PNG', '..\Graphics\credits_v5_bg.png' );
-     AddFile( 'CRDTS_OVL', 'PNG', '..\Graphics\credits_v5_overlay.png"' );
-     AddFile( 'CRDTS_blindguard', 'PNG', '..\Graphics\names_blindguard.png' );
-     AddFile( 'CRDTS_blindy', 'PNG', '..\Graphics\names_blindy.png' );
-     AddFile( 'CRDTS_canni', 'PNG', '..\Graphics\names_canni.png' );
-     AddFile( 'CRDTS_commandio', 'PNG', '..\Graphics\names_commandio.png' );
-     AddFile( 'CRDTS_lazyjoker', 'PNG', '..\Graphics\names_lazyjoker.png' );
-     AddFile( 'CRDTS_mog', 'PNG', '..\Graphics\names_mog.png' );
-     AddFile( 'CRDTS_mota', 'PNG', '..\Graphics\names_mota.png' );
-     AddFile( 'CRDTS_skillmaste', 'PNG', '..\Graphics\names_skillmaster.png' );
-     AddFile( 'CRDTS_whiteshark', 'PNG', '..\Graphics\names_whiteshark.png' );
-     AddFile( 'INTRO_L01', 'PNG', '..\Graphics\intro-l-01.png' );
-     AddFile( 'INTRO_L02', 'PNG', '..\Graphics\intro-l-02.png' );
-     AddFile( 'INTRO_L03', 'PNG', '..\Graphics\intro-l-03.png' );
-     AddFile( 'INTRO_L04', 'PNG', '..\Graphics\intro-l-04.png' );
-     AddFile( 'INTRO_L05', 'PNG', '..\Graphics\intro-l-05.png' );
-     AddFile( 'INTRO_L06', 'PNG', '..\Graphics\intro-l-06.png' );
-     AddFile( 'INTRO_L07', 'PNG', '..\Graphics\intro-l-07.png' );
-     AddFile( 'INTRO_L08', 'PNG', '..\Graphics\intro-l-08.png' );
-     AddFile( 'INTRO_L09', 'PNG', '..\Graphics\intro-l-09.png' );
-     AddFile( 'OUTRO_BG', 'PNG', '..\Graphics\outro-bg.png' );
-     AddFile( 'OUTRO_ESC', 'PNG', '..\Graphics\outro-esc.png' );
-     AddFile( 'OUTRO_EXD', 'PNG', '..\Graphics\outro-exit-dark.png' );
+     AddFile( 'CRDTS_BG', 'TEX', '..\Graphics\credits_v5_bg.png' );
+     AddFile( 'CRDTS_OVL', 'TEX', '..\Graphics\credits_v5_overlay.png' );
+     AddFile( 'CRDTS_blindguard', 'TEX', '..\Graphics\names_blindguard.png' );
+     AddFile( 'CRDTS_blindy', 'TEX', '..\Graphics\names_blindy.png' );
+     AddFile( 'CRDTS_canni', 'TEX', '..\Graphics\names_canni.png' );
+     AddFile( 'CRDTS_commandio', 'TEX', '..\Graphics\names_commandio.png' );
+     AddFile( 'CRDTS_lazyjoker', 'TEX', '..\Graphics\names_lazyjoker.png' );
+     AddFile( 'CRDTS_mog', 'TEX', '..\Graphics\names_mog.png' );
+     AddFile( 'CRDTS_mota', 'TEX', '..\Graphics\names_mota.png' );
+     AddFile( 'CRDTS_skillmaste', 'TEX', '..\Graphics\names_skillmaster.png' );
+     AddFile( 'CRDTS_whiteshark', 'TEX', '..\Graphics\names_whiteshark.png' );
+     AddFile( 'INTRO_L01', 'TEX', '..\Graphics\intro-l-01.png' );
+     AddFile( 'INTRO_L02', 'TEX', '..\Graphics\intro-l-02.png' );
+     AddFile( 'INTRO_L03', 'TEX', '..\Graphics\intro-l-03.png' );
+     AddFile( 'INTRO_L04', 'TEX', '..\Graphics\intro-l-04.png' );
+     AddFile( 'INTRO_L05', 'TEX', '..\Graphics\intro-l-05.png' );
+     AddFile( 'INTRO_L06', 'TEX', '..\Graphics\intro-l-06.png' );
+     AddFile( 'INTRO_L07', 'TEX', '..\Graphics\intro-l-07.png' );
+     AddFile( 'INTRO_L08', 'TEX', '..\Graphics\intro-l-08.png' );
+     AddFile( 'INTRO_L09', 'TEX', '..\Graphics\intro-l-09.png' );
+     AddFile( 'OUTRO_BG', 'TEX', '..\Graphics\outro-bg.png' );
+     AddFile( 'OUTRO_ESC', 'TEX', '..\Graphics\outro-esc.png' );
+     AddFile( 'OUTRO_EXD', 'TEX', '..\Graphics\outro-exit-dark.png' );
 
 
   finally

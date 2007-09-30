@@ -291,9 +291,11 @@ begin
 //  Music.Play;
   CTime:=0;
 //  setlength(CTime_hold,0);
+
   mysdlimage:=IMG_Load('test.png');
   if assigned(mysdlimage) then
   begin
+    {$IFNDEF FPC}
     showmessage('opened image via SDL_Image'+#13#10+
                 'Width:   '+inttostr(mysdlimage^.w)+#13#10+
                 'Height:  '+inttostr(mysdlimage^.h)+#13#10+
@@ -313,9 +315,13 @@ begin
                 'Amask:  '+inttohexstr(mysdlimage^.format.Amask)+#13#10+
                 'ColKey: '+inttostr(mysdlimage^.format.Colorkey)+#13#10+
                 'Alpha:  '+inttostr(mysdlimage^.format.Alpha));
-    if pixfmt_eq(mysdlimage^.format^,sdl32bpprgba)
-     then showmessage('equal pixelformats')
-     else showmessage('different pixelformats');
+
+    if pixfmt_eq(mysdlimage^.format^,sdl32bpprgba) then
+      showmessage('equal pixelformats')
+    else
+      showmessage('different pixelformats');
+    {$ENDIF}
+
     myconvertedsdlimage:=SDL_ConvertSurface(mysdlimage,@sdl32bpprgba,SDL_SWSURFACE);
     glGenTextures(1,@myTex);
     glBindTexture(GL_TEXTURE_2D, myTex);
@@ -325,8 +331,13 @@ begin
                       GL_RGBA, GL_UNSIGNED_BYTE, myconvertedsdlimage^.pixels );
     SDL_FreeSurface(mysdlimage);
     SDL_FreeSurface(myconvertedsdlimage);
-  end else
-    showmessage('could not open file');
+  end
+  else
+    {$IFDEF FPC}
+    writeln( 'could not open file - test.png');
+    {$ELSE}
+    showmessage('could not open file - test.png');
+    {$ENDIF}
 
 end;
 
