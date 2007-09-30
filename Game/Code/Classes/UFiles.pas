@@ -54,47 +54,6 @@ implementation
 uses TextGL,
      UIni,
      UMain;
-{*
-//--------------------
-// Function sets all Absolute Paths e.g. Song Path and makes sure the Directorys exist
-//--------------------
-procedure InitializePaths;
-
-  // Initialize a Path Variable
-  // After Setting Paths, make sure that Paths exist
-  function initialize_path( out aPathVar : String; const aLocation : String ): boolean;
-  var
-    lWriteable: Boolean;
-  begin
-    aPathVar := aLocation;
-    
-    If DirectoryExists(aPathVar) then
-      lWriteable := ForceDirectories(aPathVar)
-    else
-      lWriteable := false;
-
-    if not Writeable then
-      Log.LogError('Error: Dir ('+ aLocation +') is Readonly');
-      
-    result := lWriteable;
-  end;
-
-begin
-  GamePath := ExtractFilePath(ParamStr(0));
-  
-  initialize_path( LogPath         , GamePath                 );
-  initialize_path( SoundPath       , GamePath + 'Sounds\'     );
-  initialize_path( SongPath        , GamePath + 'Songs\'      );
-  initialize_path( ThemePath       , GamePath + 'Themes\'     );
-  initialize_path( ScreenshotsPath , GamePath + 'Screenshots\');
-  initialize_path( CoversPath      , GamePath + 'Covers\'     );
-  initialize_path( LanguagesPath   , GamePath + 'Languages\'  );
-  initialize_path( PluginPath      , GamePath + 'Plugins\'    );
-  initialize_path( PlaylistPath    , GamePath + 'Playlists\'  );
-
-  DecimalSeparator := ',';
-end;
-*}
 
 //--------------------
 // Clears Song Header values

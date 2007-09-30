@@ -2,7 +2,7 @@
   {$UNDEF UseSerialPort}
   {$UNDEF UseMIDIPort}
 {$ELSE}
-  {$DEFINE UseSerialPort}
+  {$UNDEF UseSerialPort}
   {$DEFINE UseMIDIPort}
 {$ENDIF}  
 

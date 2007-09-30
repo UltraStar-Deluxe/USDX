@@ -748,14 +748,22 @@ procedure InitializePaths;
   function initialize_path( out aPathVar : String; const aLocation : String ): boolean;
   var
     lWriteable: Boolean;
+    lAttrib   : integer;
   begin
-    aPathVar := aLocation;
+    lWriteable := false;
+    aPathVar   := aLocation;
+
+    // Make sure the directory is needex
+    ForceDirectories(aPathVar);
 
     If DirectoryExists(aPathVar) then
-      lWriteable := ForceDirectories(aPathVar)
-    else
-      lWriteable := false;
+    begin
+      lAttrib := fileGetAttr('C:Temp');
 
+      lWriteable :=     ( lAttrib and faDirectory <> 0 ) AND
+                    NOT ( lAttrib and faReadOnly  <> 0 )
+    end;
+    
     if not lWriteable then
       Log.LogError('Error: Dir ('+ aLocation +') is Readonly');
 

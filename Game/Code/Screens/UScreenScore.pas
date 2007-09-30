@@ -192,7 +192,8 @@ var
   MaxH: real; // maximum height of score bar
   Wsp:  real;
 begin
-{  CountSkipTimeSet;
+{*
+  CountSkipTimeSet;
 
   Animation := 0;
   Fadeout := false;
@@ -224,7 +225,8 @@ begin
     9010..10000:    Text[3].Text := '  Superstar';
   end;
 
-  Music.PlayShuffle;}
+  Music.PlayShuffle;
+*}
 
   // Singstar
   Fadeout := false;
@@ -300,112 +302,7 @@ begin
     Static[StaticLevel[P]].Visible          := false; //V[P];
     Static[StaticLevelRound[P]].Visible     := false; //V[P];
   end;
-{
-  if PlayersPlay <= 3 then begin // only for 1 screen mode
-  for P := 0 to PlayersPlay-1 do begin
-    case PlayersPlay of
-      1:  PP := 1;
-      2:  PP := P + 2;
-      3:  PP := P + 4;
-    end;
-    //PP := 1;
 
-    Text[TextName[PP]].Text := Ini.Name[P];
-
-    //{$IFDEF TRANSLATE}
-{    case (Player[P].ScoreTotalI) of
-      0..2000:        Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
-      2010..4000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_AMATEUR');
-      4010..6000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_RISING_STAR');
-      6010..8000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_LEAD_SINGER');
-      8010..9000:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_HIT_ARTIST');
-      9010..9800:     Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_SUPERSTAR');
-      9810..10000:    Text[TextScore[PP]].Text := Language.Translate('SING_SCORE_ULTRASTAR');
-    end;
-    (* {$ELSE}{
-    case (Player[P].ScoreTotalI) of
-      0..2000:        Text[TextScore[PP]].Text := 'Tone Deaf';
-      2010..4000:     Text[TextScore[PP]].Text := 'Amateur';
-      4010..6000:     Text[TextScore[PP]].Text := 'Rising Star';
-      6010..8000:     Text[TextScore[PP]].Text := 'Lead Singer';
-      8010..9000:     Text[TextScore[PP]].Text := 'Hit Artist';
-      9010..9800:     Text[TextScore[PP]].Text := 'Superstar';
-      9810..10000:    Text[TextScore[PP]].Text := 'Ultrastar';
-    end;
-{    {$ENDIF}
-//*)
-
-{    S := IntToStr(Player[P].ScoreI);
-    while (Length(S)<4) do S := '0' + S;
-    Text[TextNotesScore[PP]].Text := S;
-
-    S := IntToStr(Player[P].ScoreLineI);
-    while (Length(S)<4) do S := '0' + S;
-    Text[TextLineBonusScore[PP]].Text := S;
-
-    S := IntToStr(Player[P].ScoreGoldenI);
-    while (Length(S)<4) do S := '0' + S;
-    Text[TextGoldenNotesScore[PP]].Text := S;
-
-    S := IntToStr(Player[P].ScoreTotalI);
-    while (Length(S)<5) do S := '0' + S;
-    Text[TextTotalScore[PP]].Text := S;
-
-    // Level bar length
-(*
-    Lev := ((Round(Player[P].Punkty) div 10) * 10) / 10000;
-    Static[StaticLevel[PP]].Texture.H := Round(Static[StaticBackLevel[PP]].Texture.H * Lev);
-    Static[StaticLevel[PP]].Texture.Y := Static[StaticBackLevel[PP]].Texture.Y + Static[StaticBackLevel[PP]].Texture.H  - Static[StaticLevel[PP]].Texture.H;
-    Static[StaticLevelRound[PP]].Texture.Y := Static[StaticLevel[PP]].Texture.Y - Static[StaticLevelRound[PP]].Texture.H;}
-//*)
-    // doesn't align too much... (to fix)
-    // hint: play with wrapping textures
-    // resolution: setting TexY1 and TexY2 to 0.1 and 0.9
-
-{    Lev := Player[P].ScoreTotalI / 10000;
-    MaxH := Static[StaticBackLevel[PP]].Texture.H + Static[StaticBackLevelRound[PP]].Texture.H / 2;
-
-    // developer note (Polish):
-    // w sumie np. 120 pix
-    // ten static moze miec 100 pix
-    // wlacza sie od 20 pix i rosnie do 120 pix
-    // wiec wysokosc = wyznaczona ilosc - 20
-    // nie moze byc mniejsze od 0
-    // Lev * MaxH = total number of pixels to draw
-    Static[StaticLevel[PP]].Visible := true;
-    Static[StaticLevel[PP]].Texture.H := Lev * MaxH - Static[StaticBackLevelRound[PP]].Texture.H / 2;
-    if Static[StaticLevel[PP]].Texture.H < 0 then Static[StaticLevel[PP]].Visible := false;
-
-    // Y doesn't change and depend on the back texture coordinate
-    Static[StaticLevel[PP]].Texture.Y := Static[StaticBackLevel[PP]].Texture.Y + Static[StaticBackLevel[PP]].Texture.H  - Static[StaticLevel[PP]].Texture.H;
-
-    // we modify LevelRound texture by changing it's Y. TexY1 and TexY2 change when the height to draw is lower than 20
-    if Lev * MaxH < Static[StaticBackLevelRound[PP]].Texture.H / 2 then begin
-      // when it's lower than 20 => we move TexY1 and TexY2 higher to show only part of this texture
-      Static[StaticLevelRound[PP]].Texture.Y := Static[StaticBackLevel[PP]].Texture.Y + Static[StaticBackLevel[PP]].Texture.H - Static[StaticBackLevelRound[PP]].Texture.H;
-      // - 0.25 when points = 0
-      // - 0 wnen there are more points
-      // if Lev * MaxH = Static[StaticBackLevelRound[PP]].Texture.H / 2) then we do not change it
-      // if Lev * MaxH = 0 then we substract 0.25
-      // we substract (0.25 - 0.25 * (Lev * MaxH)/Static[StaticBackLevelRound[PP]].Texture.H / 2)
-      Wsp := Lev * MaxH / (Static[StaticBackLevelRound[PP]].Texture.H / 2);
-      Static[StaticLevelRound[PP]].Texture.TexY1 := Static[StaticBackLevelRound[PP]].Texture.TexY1 - 0.25 + 0.25 * Wsp;
-      Static[StaticLevelRound[PP]].Texture.TexY2 := Static[StaticBackLevelRound[PP]].Texture.TexY2 - 0.25 + 0.25 * Wsp;
-    end else begin
-      // when it's higher or equal 20 => full texture is being shown
-      Static[StaticLevelRound[PP]].Texture.TexY1 := Static[StaticBackLevelRound[PP]].Texture.TexY1;
-      Static[StaticLevelRound[PP]].Texture.TexY2 := Static[StaticBackLevelRound[PP]].Texture.TexY2;
-      Static[StaticLevelRound[PP]].Texture.Y := Static[StaticLevel[PP]].Texture.Y - Static[StaticBackLevelRound[PP]].Texture.H;
-    end;
-
-  end; // for
-  end; // if
-
-  LCD.HideCursor;
-  LCD.Clear;
-  LCD.WriteText(1, Ini.Name[0]);
-  LCD.WriteText(2, 'Score: ' + Text[TextTotalScore[1]].Text);
-}
 end;
 
 procedure TScreenScore.onShowFinish;
@@ -684,6 +581,7 @@ const
   RaiseSmoothness : integer = 100;
 var
   RaiseStep    : Real;
+  lTmpA        : Real;
 begin
   // EaseOut_Step is the actual step in the raising process, like the 20iest step of EaseOut_MaxSteps
   RaiseStep     := EaseOut_Step;
@@ -695,7 +593,12 @@ begin
 
       // quadratic easing out - decelerating to zero velocity
       // -end_position * current_time * ( current_time - 2 ) + start_postion
-      Result    := floor((-ScoreReached * RaiseStep * (RaiseStep - 20)) / RaiseSmoothness);
+      lTmpA := (-ScoreReached * RaiseStep * (RaiseStep - 20));
+      if ( lTmpA           > 0 ) AND
+         ( RaiseSmoothness > 0 ) THEN
+      begin
+        Result    := floor( lTmpA / RaiseSmoothness);
+      end;
     end
   else
     begin
