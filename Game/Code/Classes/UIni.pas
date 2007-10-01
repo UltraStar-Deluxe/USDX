@@ -264,11 +264,19 @@ begin
   SetLength(IResolution, 0);
   Modes := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN); // Check if there are any modes available
   repeat
-//    Log.LogError(Format( ' %d x %d', [ modes^.w, modes^.h ] ) );
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
     Inc(Modes);
   until Modes^ = nil;
+
+  // if no modes were set, then failback to 800x600
+  // as per http://sourceforge.net/forum/message.php?msg_id=4544965
+  // THANKS : linnex at users.sourceforge.net
+  if Length(IResolution) < 1 then
+  begin
+    SetLength(IResolution, Length(IResolution) + 1);
+    IResolution[High(IResolution)] := IntToStr(800) + 'x' + IntToStr(600);
+  end;
 
   // reverse order
   for I := 0 to (Length(IResolution) div 2) - 1 do begin
