@@ -11,6 +11,8 @@ uses  OpenGL12,
       SDL,
       UTexture,
       Classes,
+      dialogs,
+      SDL_ttf,
       ULog;
 
 procedure BuildFont;			                // Build Our Bitmap Font
@@ -26,6 +28,16 @@ procedure SetFontSize(Size: real);
 procedure SetFontStyle(Style: integer); // sets active font style (normal, bold, etc)
 procedure SetFontItalic(Enable: boolean); // sets italic type letter (works for all fonts)
 procedure SetFontAspectW(Aspect: real);
+
+// Start of SDL_ttf
+function NextPowerOfTwo(Value: Integer): Integer;
+//Checks if the ttf exists, if yes then a SDL_ttf is returned
+function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
+
+// Does the renderstuff, color is in $ffeecc style
+function RenderText(font: PTTF_Font; Text:PAnsiChar; Color: Cardinal):PSDL_Surface;
+procedure printrandomtext();
+// End of SDL_ttf
 
 type
   TTextGL = record
@@ -323,6 +335,7 @@ procedure glPrint(text: pchar);	                // Custom GL "Print" Routine
 var
 //  Letter :       char;
   iPos   : Integer;
+
 begin
   if (Text = '') then     // If There's No Text
     Exit;					        // Do Nothing
@@ -347,6 +360,115 @@ begin
   begin
     glPrintLetter( Text[iPos] );
   end;
+
+end;
+
+function NextPowerOfTwo(Value: Integer): Integer;
+// tyty to Asphyre
+begin
+ Result:= 1;
+ asm
+  xor ecx, ecx
+  bsr ecx, Value
+  inc ecx
+  shl Result, cl
+ end;
+end;
+
+function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
+begin
+ if (FileExists(FileName)) then
+   begin
+     Result := TTF_OpenFont( FileName, PointSize );
+   end
+ else
+   begin
+     Log.LogStatus('ERROR Could not find font in ' + FileName , '');
+     ShowMessage(  'ERROR Could not find font in ' + FileName );
+   end;
+end;
+
+function RenderText(font: PTTF_Font; Text:PAnsiChar; Color: Cardinal): PSDL_Surface;
+var
+  clr : TSDL_color;
+begin
+  clr.r  := (((Color and $ff0000) shr 16) / 255);
+  clr.g  := ((Color and $ff00) shr 8)/255;
+  clr.b  := ( Color and $ff)/255;
+
+  result := TTF_RenderText_Blended( font, text, cLr);
+end;
+
+procedure printrandomtext();
+var
+  stext,intermediary : PSDL_surface;
+  clrFg, clrBG       : TSDL_color;
+  texture            : Gluint;
+  font               : PTTF_Font;
+  w,h                : integer;
+begin
+
+font := LoadFont('fonts\comicbd.ttf', 42);
+
+clrFg.r := 255;
+clrFg.g := 255;
+clrFg.b := 255;
+clrFg.unused := 255;
+
+clrBg.r := 255;
+clrbg.g := 0;
+clrbg.b := 255;
+clrbg.unused := 0;
+
+  sText := RenderText(font, 'katzeeeeeee', $fe198e);
+//sText :=  TTF_RenderText_Blended( font, 'huuuuuuuuuund', clrFG);
+
+  // Convert the rendered text to a known format
+  w :=  nextpoweroftwo(sText.w);
+  h :=  nextpoweroftwo(sText.h);
+
+intermediary := SDL_CreateRGBSurface(0, w, h, 32,
+			$000000ff, $0000ff00, $00ff0000, $ff000000);
+
+ SDL_SetAlpha(intermediary, 0, 255);
+ SDL_SetAlpha(sText, 0, 255);
+ SDL_BlitSurface(sText, 0, intermediary, 0);
+
+ glGenTextures(1, texture);
+
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, intermediary.pixels);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+
+
+      glEnable(GL_TEXTURE_2D);
+      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+      glEnable(GL_BLEND);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glColor4f(1, 0, 1, 1);
+
+      glbegin(gl_quads);
+        glTexCoord2f(0,0); glVertex2f(200,     300);
+        glTexCoord2f(0,sText.h/h); glVertex2f(200    , 300 + sText.h);
+        glTexCoord2f(sText.w/w,sText.h/h); glVertex2f(200 + sText.w, 300 + sText.h);
+        glTexCoord2f(sText.w/w,0); glVertex2f(200 + sText.w, 300);
+      glEnd;
+      glfinish();
+      glDisable(GL_BLEND);
+      gldisable(gl_texture_2d);
+
+
+
+
+SDL_FreeSurface( sText );
+SDL_FreeSurface( intermediary );
+glDeleteTextures(1, @texture);
+TTF_CloseFont( font );
 
 end;
 
