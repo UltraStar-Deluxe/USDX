@@ -392,9 +392,9 @@ function RenderText(font: PTTF_Font; Text:PAnsiChar; Color: Cardinal): PSDL_Surf
 var
   clr : TSDL_color;
 begin
-  clr.r  := (((Color and $ff0000) shr 16) / 255);
-  clr.g  := ((Color and $ff00) shr 8)/255;
-  clr.b  := ( Color and $ff)/255;
+  clr.r  := ((Color and $ff0000) shr 16  ) div 255;
+  clr.g  := ((Color and $ff00  ) shr 8   ) div 255;
+  clr.b  := ( Color and $ff    ) div 255 ;
 
   result := TTF_RenderText_Blended( font, text, cLr);
 end;
