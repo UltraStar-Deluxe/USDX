@@ -39,7 +39,7 @@ uses OpenGL12,
 
 
   {$IFDEF Win32}
-    procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
+//    procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
 
 (*
   {$ELSE}
