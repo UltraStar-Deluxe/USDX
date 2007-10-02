@@ -46,7 +46,7 @@ procedure DeallocateHWnd(Wnd: HWND);
 
 {$ENDIF} // FPC Only
 
-function StringReplaceW(text, search, rep: WideString):WideString;
+function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
 function AdaptFilePaths( const aPath : widestring ): widestring;
 
 
@@ -60,18 +60,30 @@ function AdaptFilePaths( const aPath : widestring ): widestring;
 
 implementation
 
-function StringReplaceW(text, search, rep: WideString):WideString;
+function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
 var
   iPos  : integer;
-  sTemp : WideString;
+//  sTemp : WideString;
 begin
+(*
   result := text;
   iPos   := Pos(search, result);
   while (iPos > 0) do
   begin
-    sTEmp := copy(result, iPos + length(search), length(result));
+    sTemp  := copy(result, iPos + length(search), length(result));
     result := copy(result, 1, iPos - 1) + rep + sTEmp;
-    iPos := Pos(search, result);
+    iPos   := Pos(search, result);
+  end;
+*)
+  result := text;
+
+  if search = rep then
+    exit;
+
+  for iPos := 0 to length( result ) - 1 do
+  begin
+    if result[ iPos ] = search then
+      result[ iPos ] := rep;
   end;
 end;
 
