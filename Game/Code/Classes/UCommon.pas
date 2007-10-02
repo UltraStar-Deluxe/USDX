@@ -7,6 +7,7 @@ interface
 {$ENDIF}
 
 uses
+  SysUtils,
 {$IFDEF FPC}
    lResources,
 {$ENDIF}   
@@ -31,6 +32,9 @@ type
 type
   TWndMethod = procedure(var Message: TMessage) of object;
 
+function StringReplaceW(text, search, rep: WideString):WideString;
+function AdaptFilePaths( const aPath : widestring ): widestring;
+
 function LazFindResource( const aName, aType : String ): TLResource;
 
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;
@@ -54,6 +58,27 @@ procedure DeallocateHWnd(Wnd: HWND);
 {$ENDIF}
 
 implementation
+
+function StringReplaceW(text, search, rep: WideString):WideString;
+var
+  iPos  : integer;
+  sTemp : WideString;
+begin
+  result := text;
+  iPos   := Pos(search, result);
+  while (iPos > 0) do
+  begin
+    sTEmp := copy(result, iPos + length(search), length(result));
+    result := copy(result, 1, iPos - 1) + rep + sTEmp;
+    iPos := Pos(search, result);
+  end;
+end;
+
+function AdaptFilePaths( const aPath : widestring ): widestring;
+begin
+  result := StringReplaceW( aPath, '\', PathDelim );//, [rfReplaceAll] );
+end;
+
 
 {$IFNDEF win32}
 procedure ZeroMemory( Destination: Pointer; Length: DWORD );

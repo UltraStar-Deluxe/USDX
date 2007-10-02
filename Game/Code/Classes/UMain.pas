@@ -160,8 +160,10 @@ begin
     CountMidTime;
 //    if 1000*TimeMid > 100 then beep;
     Delay := Floor(1000 / 100 - 1000 * TimeMid);
+
     if Delay >= 1 then
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
+
     CountSkipTime;
 
     // reinitialization of graphics

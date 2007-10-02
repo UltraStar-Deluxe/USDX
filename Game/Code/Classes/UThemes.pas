@@ -743,9 +743,8 @@ var
 implementation
 
 uses
-{{$IFDEF TRANSLATE}
- ULanguage,
-{{$ENDIF}
+  UCommon,
+  ULanguage,
   USkins,
   UIni;
 
@@ -800,7 +799,20 @@ var
   Path: string;
 begin
   Result := false;
-  if FileExists(FileName) then begin
+  
+  FileName := AdaptFilePaths( FileName );
+
+  if not FileExists(FileName) then
+  begin
+    {$ifndef win32}
+      writeln( 'ERROR !!! Theme does not exist ('+ FileName +')' );
+    {$endif}
+
+    Log.LogStatus( 'ERROR !!! Theme does not exist ('+ FileName +')' , 'TTheme.LoadTheme');
+  end;
+
+  if FileExists(FileName) then
+  begin
     Result := true;
 
     {$IFDEF THEMESAVE}
@@ -842,7 +854,7 @@ begin
 
       //Main Desc Text Translation Start
 
-      {{$IFDEF TRANSLATE}
+      //{$IFDEF TRANSLATE}
       Main.Description[0] := Language.Translate('SING_SING');
       Main.DescriptionLong[0] := Language.Translate('SING_SING_DESC');
       Main.Description[1] := Language.Translate('SING_MULTI');
@@ -855,7 +867,7 @@ begin
       Main.DescriptionLong[4] := Language.Translate('SING_GAME_OPTIONS_DESC');
       Main.Description[5] := Language.Translate('SING_EXIT');
       Main.DescriptionLong[5] := Language.Translate('SING_EXIT_DESC');
-      {{$ENDIF}
+      //{$ENDIF}
 
       //Main Desc Text Translation End
 
@@ -1089,7 +1101,7 @@ begin
       ThemeLoadButton(Options.ButtonAdvanced, 'OptionsButtonAdvanced');
       ThemeLoadButton(Options.ButtonExit,     'OptionsButtonExit');
 
-      {{$IFDEF TRANSLATE}
+      //{$IFDEF TRANSLATE}
       Options.Description[0] := Language.Translate('SING_OPTIONS_GAME');
       Options.Description[1] := Language.Translate('SING_OPTIONS_GRAPHICS');
       Options.Description[2] := Language.Translate('SING_OPTIONS_SOUND');
@@ -1098,7 +1110,7 @@ begin
       Options.Description[5] := Language.Translate('SING_OPTIONS_RECORD');
       Options.Description[6] := Language.Translate('SING_OPTIONS_ADVANCED');
       Options.Description[7] := Language.Translate('SING_OPTIONS_EXIT');
-      {{$ENDIF}
+      //{$ENDIF}
 
       ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
       Options.TextDescription.Text := Options.Description[0];
@@ -1641,11 +1653,11 @@ var
 begin
   DecimalSeparator := '.';
 
-  {{$IFDEF TRANSLATE}
+  //{$IFDEF TRANSLATE}
   ThemeSelect.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
-  {{$ELSE}{
-  ThemeSelect.Text := ThemeIni.ReadString(Name, 'Text', '');
-  {$ENDIF}
+  //{$ELSE}{
+  //ThemeSelect.Text := ThemeIni.ReadString(Name, 'Text', '');
+  //{$ENDIF}
 
   ThemeSelect.Tex := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'Tex', '');
   ThemeSelect.TexSBG := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'TexSBG', '');
@@ -1687,11 +1699,11 @@ var
 begin
   DecimalSeparator := '.';
 
-  {{$IFDEF TRANSLATE}
+  //{{$IFDEF TRANSLATE}
   ThemeSelectS.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
-  {{$ELSE}{
-  ThemeSelectS.Text := ThemeIni.ReadString(Name, 'Text', '');
-  {$ENDIF}
+  //{{$ELSE}{
+  //ThemeSelectS.Text := ThemeIni.ReadString(Name, 'Text', '');
+  //{$ENDIF}
 
   ThemeSelectS.Tex := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'Tex', '');
   ThemeSelectS.TexSBG := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'TexSBG', '');

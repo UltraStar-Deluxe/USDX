@@ -226,7 +226,10 @@ begin
   Loaded := false;
   Loop   := false;
 
+  {$ifdef win32}
+  // TODO : JB_Linux ... is this needed ? :)
   fHWND  := AllocateHWND( nil); // TODO : JB_lazarus - can we do something different here ?? lazarus didnt like this function
+  {$ENDIF}
 
   {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass

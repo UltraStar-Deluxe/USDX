@@ -41,6 +41,7 @@ uses OpenGL12,
   {$IFDEF Win32}
     procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
 
+(*
   {$ELSE}
     {$ifdef darwin}
     const opengl32 = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib';
@@ -48,7 +49,8 @@ uses OpenGL12,
     const opengl32 = 'libGL.so' ; // YES Capital GL
     {$ENDIF}
 
-    procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
+    procedure glGenTextures(n: GLsizei; var textures: PGLuint); stdcall; external opengl32;
+*)
   {$ENDIF}
 
 type
@@ -288,7 +290,7 @@ begin
   end
   else
   begin
-    Log.LogStatus( 'IS Resource', '  LoadImage' );
+    Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
   
     // load from resource stream
     {$IFNDEF FPC}
@@ -352,7 +354,7 @@ begin
             TexRWops.close   := SDLStreamClose;
             TexRWops.type_   := 2;
           except
-            Log.LogStatus( 'ERROR Could not assign resource' , Identifier);
+            Log.LogStatus( 'ERROR Could not assign resource ('+Identifier+')' , Identifier);
             beep;
             Exit;
           end;
@@ -365,7 +367,7 @@ begin
       end
       else
       begin
-        Log.LogStatus( 'NOT found in Resource', '  LoadImage' );
+        Log.LogStatus( 'NOT found in Resource ('+Identifier+')', '  LoadImage' );
       end;
     {$ENDIF}
 
@@ -544,12 +546,15 @@ begin
   Log.LogStatus('',' ok');
   {$endif}
  // adjust texture size (scale down, if necessary)
-  newWidth:=TexSurface.W;
-  newHeight:=TexSurface.H;
+  newWidth   := TexSurface.W;
+  newHeight  := TexSurface.H;
+  
   if (newWidth > Limit) then
-    newWidth:=Limit;
+    newWidth := Limit;
+    
   if (newHeight > Limit) then
-    newHeight:=Limit;
+    newHeight := Limit;
+    
   if (TexSurface.W > newWidth) or (TexSurface.H > newHeight) then
   begin
     {$ifdef blindydebug}
@@ -560,6 +565,12 @@ begin
     Log.LogStatus('',' ok');
     {$endif}
   end;
+
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-1');
+  {$endif}
+
+
 
   // don't actually understand, if this is needed...
   // this should definately be changed... together with all this
@@ -598,9 +609,16 @@ begin
     end;
     // should i create a cache texture, if Covers.W/H are larger?
   end;
+  
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-2');
+  {$endif}
+
 
  // now we might colorize the whole thing
-  if Typ='Colorized' then ColorizeTexture(TexSurface,Col);
+  if Typ='Colorized' then
+    ColorizeTexture(TexSurface,Col);
+    
  // save actual dimensions of our texture
   oldWidth:=newWidth;
   oldHeight:=newHeight;
@@ -615,17 +633,30 @@ begin
   // scaled so that dimensions are powers of 2
   // and converted to either RGB or RGBA
 
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-3');
+  {$endif}
+
 
   // if we got a Texture of Type Plain, Transparent or Colorized,
   // then we're done manipulating it
   // and could now create our openGL texture from it
 
  // prepare OpenGL texture
-  glGenTextures(1, ActTex);
+ 
+  // JB_linux : this is causing AV's on linux... ActText seems to be nil !
+  {$IFnDEF win32}
+  if pointer(ActTex) = nil then
+    exit;
+  {$endif}
+    
+  glGenTextures(1, @ActTex);
+
   glBindTexture(GL_TEXTURE_2D, ActTex);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
  // load data into gl texture
   if (Typ = 'Transparent') or (Typ='Colorized') then begin
     glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
@@ -634,6 +665,11 @@ begin
   begin
     glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
   end;
+  
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-4');
+  {$endif}
+
 {
   if Typ = 'Transparent Range' then
     // set alpha to 256-green-component (not sure)
@@ -888,6 +924,11 @@ begin
   end;
 }
 
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-5');
+  {$endif}
+
+
   Result.X := 0;
   Result.Y := 0;
   Result.W := 0;
@@ -910,16 +951,30 @@ begin
   Result.TexY1 := 0;
   Result.TexX2 := 1;
   Result.TexY2 := 1;
+  
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-6');
+  {$endif}
+
 
   // 0.5.0
   Result.Name := Identifier;
 
   SDL_FreeSurface(TexSurface);
 
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-7');
+  {$endif}
+
 
   Log.BenchmarkEnd(4);
   if Log.BenchmarkTimeLength[4] >= 1 then
     Log.LogBenchmark('**********> Texture Load Time Warning - ' + Format + '/' + Identifier + '/' + Typ, 4);
+    
+  {$ifdef blindydebug}
+  Log.LogStatus('',' JB-8');
+  {$endif}
+
 end;
 
 
@@ -1024,7 +1079,7 @@ var
 begin
   Mipmapping := false;
 
-  glGenTextures(1, ActTex); // ActText = new texture number
+  glGenTextures(1, @ActTex); // ActText = new texture number
   glBindTexture(GL_TEXTURE_2D, ActTex);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1088,10 +1143,8 @@ begin
 end;
 
 {$IFDEF FPC}
-{$IFDEF win32}
 initialization
   {$I UltraStar.lrs}
-{$ENDIF}
 {$ENDIF}
 
 

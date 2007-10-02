@@ -73,7 +73,7 @@ begin
   TextArtistTitle := AddText(Theme.Top5.TextArtistTitle);
 
   for I := 0 to 4 do
-    StaticNumber[I+1] := AddStatic(Theme.Top5.StaticNumber[I]);
+    StaticNumber[I+1] := AddStatic( Theme.Top5.StaticNumber[I] );
 
   for I := 0 to 4 do
     TextNumber[I+1] := AddText(Theme.Top5.TextNumber[I]);

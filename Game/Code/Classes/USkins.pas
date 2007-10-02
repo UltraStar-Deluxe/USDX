@@ -137,6 +137,9 @@ begin
     end;
   end;
 
+  Log.LogStatus('', '-----------------------------------------');
+  Log.LogStatus(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
+
 {  Result := SkinPath + 'Bar.jpg';
   if TextureName = 'Ball' then Result := SkinPath + 'Ball.bmp';
   if Copy(TextureName, 1, 4) = 'Gray' then Result := SkinPath + 'Ball.bmp';

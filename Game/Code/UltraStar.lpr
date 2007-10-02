@@ -130,7 +130,7 @@ uses
   UTexture               in 'Classes\UTexture.pas',
   UThemes                in 'Classes\UThemes.pas',
   UTime                  in 'Classes\UTime.pas',
-  USingNotes 		 in 'Classes\USingNotes.pas',
+  USingNotes 		         in 'Classes\USingNotes.pas',
 
 
   //------------------------------

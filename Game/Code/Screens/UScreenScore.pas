@@ -15,7 +15,9 @@ uses
   USongs,
   UThemes,
   OpenGL12,
+  {$ifdef win32}
   Windows,
+  {$endif}
   math,
   ULCD;
 
@@ -84,11 +86,18 @@ type
 
 implementation
 
-//{$IFDEF TRANSLATE}
-uses UGraphic, UScreenSong, UMenuStatic, UTime, UMain, UIni, ULanguage;
-//{$ELSE}
-//uses UGraphic, UScreenSong, UMenuStatic, UTime, UMain, UIni;
-//{$ENDIF}
+
+uses UGraphic,
+     UScreenSong,
+     UMenuStatic,
+     UTime,
+     UMain,
+     UIni,
+     {$IFNDEF win32}
+     lclintf,
+     {$ENDIF}
+     ULanguage;
+
 function TScreenScore.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
   Result := true;

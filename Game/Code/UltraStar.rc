@@ -1,17 +1,17 @@
-Font      TEX "..\Fonts\Normal\eurostar_regular.png"
-Font      FNT "..\Fonts\Normal\eurostar_regular.dat"
+Font      		TEX "..\Fonts\Normal\eurostar_regular.png"
+Font      		FNT "..\Fonts\Normal\eurostar_regular.dat"
 
-FontB     TEX "..\Fonts\Bold\eurostar_regular_bold.png"
-FontB     FNT "..\Fonts\Bold\eurostar_regular_bold.dat"
+FontB     		TEX "..\Fonts\Bold\eurostar_regular_bold.png"
+FontB     		FNT "..\Fonts\Bold\eurostar_regular_bold.dat"
 
-FontO     TEX "..\Fonts\Outline 1\Outline 1.png"
-FontO     FNT "..\Fonts\Outline 1\Outline 1.dat"
+FontO     		TEX "..\Fonts\Outline 1\Outline 1.png"
+FontO     		FNT "..\Fonts\Outline 1\Outline 1.dat"
 
-FontO2    TEX "..\Fonts\Outline 2\Outline 2.png"
-FontO2    FNT "..\Fonts\Outline 2\Outline 2.dat"
+FontO2    		TEX "..\Fonts\Outline 2\Outline 2.png"
+FontO2    		FNT "..\Fonts\Outline 2\Outline 2.dat"
 
-MAINICON  ICON "..\Graphics\ustar-icon_v01.ico"
-//MAINICON      ICON "..\Graphics\us.ico"
+MAINICON  		ICON "..\Graphics\ustar-icon_v01.ico"
+//MAINICON      	ICON "..\Graphics\us.ico"
 
 CRDTS_BG		TEX "..\Graphics\credits_v5_bg.png"
 CRDTS_OVL		TEX "..\Graphics\credits_v5_overlay.png"

@@ -37,3 +37,7 @@ ffmpeg :
 
 sqlite :
   sudo apt-get install libsqlite3-dev
+
+sdl development libraries :
+  sudo apt-get install libsdl-ttf2.0-dev
+  THERE WILL be more of them... oops I forgot to list them :P

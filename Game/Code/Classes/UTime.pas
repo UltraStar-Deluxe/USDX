@@ -69,7 +69,11 @@ begin
   TimeNew := CurrentSec100OfDay();    // TODO - JB_Linux will prob need looking at
   {$ENDIF}
   
-  TimeSkip := (TimeNew-TimeOld)/TimeFreq;
+  if ( TimeNew-TimeOld > 0 ) AND
+     ( TimeFreq        > 0 ) THEN
+  begin
+    TimeSkip := (TimeNew-TimeOld)/TimeFreq;
+  end;
 end;
 
 procedure CountMidTime;

@@ -19,45 +19,41 @@ uses {$IFDEF win32}
 
 type
   TDisplay = class
-    ActualScreen:     PMenu;
-    NextScreen:       PMenu;
+    ActualScreen : PMenu;
+    NextScreen   : PMenu;
 
     //fade-to-black-hack
     BlackScreen: Boolean;
+
     //popup hack
     NextScreenWithCheck: Pmenu;
-    CheckOK: Boolean;
+    CheckOK  : Boolean;
 
-    h_DC:     HDC;
-    h_RC:     HGLRC;
+    h_DC     :     HDC;
+    h_RC     :     HGLRC;
 
-    Fade: Real;
-    // fade-mod
-    doFade: Boolean;
-    canFade: Boolean;
-    myFade: integer;
-    lastTime: Cardinal;
+    Fade     : Real;
+    doFade   : Boolean;
+    canFade  : Boolean;
+    myFade   : integer;
+    lastTime : Cardinal;
     pTexData : Pointer;
-    pTex : array[1..2] of glUInt;
-    // end
+    pTex     : array[1..2] of glUInt;
 
-    //FPS Counter
-    FPSCounter: Cardinal;
-    LastFPS:    Cardinal;
-    NextFPSSwap:Cardinal;
+    FPSCounter    : Cardinal;
+    LastFPS       : Cardinal;
+    NextFPSSwap   : Cardinal;
     
-    //For Debug OSD
-    OSD_LastError: String;
-
-    function Draw: Boolean;
-    procedure PrintScreen;
+    OSD_LastError : String;
+  public
     constructor Create;
-    // fade mod
-    destructor Destroy; override;
-    // end
-    procedure ScreenShot;
+    destructor  Destroy; override;
 
+    procedure PrintScreen;
+    procedure ScreenShot;
     procedure DrawDebugInformation;
+    
+    function  Draw: Boolean;
   end;
 
 var
@@ -76,7 +72,7 @@ uses
      {$ENDIF}
      graphics,
      TextGL,
-     // UFiles,
+//     ULog,
      UMain,
      UTexture,
      UIni,
@@ -85,15 +81,17 @@ uses
      UCommandLine;
 
 constructor TDisplay.Create;
-var i: integer;
+var
+  i: integer;
+  
 begin
   inherited Create;
 
   //popup hack
-  CheckOK:=False;
-  NextScreen:=NIL;
-  NextScreenWithCheck:=NIL;
-  BlackScreen:=False;
+  CheckOK             := False;
+  NextScreen          := NIL;
+  NextScreenWithCheck := NIL;
+  BlackScreen         := False;
 
   // fade mod
   myfade:=0;
@@ -106,24 +104,37 @@ begin
   canFade:=True;
   // generate texture for fading between screens
   GetMem(pTexData, 512*512*4);
+
   if pTexData <> NIL then
   for i:= 1 to 2 do
   begin
-    glGenTextures(1, pTex[i]);
-    if glGetError <> GL_NO_ERROR then canFade := False;
+  
+    glGenTextures(1, @pTex[i] );
+
+    if glGetError <> GL_NO_ERROR then
+      canFade := False;
+
     glBindTexture(GL_TEXTURE_2D, pTex[i]);
-    if glGetError <> GL_NO_ERROR then canFade := False;
+    if glGetError <> GL_NO_ERROR then
+      canFade := False;
+
     glTexImage2D(GL_TEXTURE_2D, 0, 4, 512, 512, 0, GL_RGBA, GL_UNSIGNED_BYTE, pTexData);
-    if glGetError <> GL_NO_ERROR then canFade := False;
+    if glGetError <> GL_NO_ERROR then
+      canFade := False;
+      
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    if glGetError <> GL_NO_ERROR then canFade := False;
+    if glGetError <> GL_NO_ERROR then
+      canFade := False;
+      
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    if glGetError <> GL_NO_ERROR then canFade := False;
+    if glGetError <> GL_NO_ERROR then
+      canFade := False;
   end
   else
   begin
     canFade:=False;
   end;
+
   FreeMem(pTexData);
   // end
 
@@ -131,25 +142,22 @@ begin
   OSD_LastError := 'No Errors';
 end;
 
-// fade mod
 destructor TDisplay.Destroy;
 begin
   if canFade then
     glDeleteTextures(1,@pTex);
+    
   inherited Destroy;
 end;
-// end
 
 function TDisplay.Draw: Boolean;
 var
   S:    integer;
   Col: Real;
-  // fade mod
   myFade2: Real;
   currentTime: Cardinal;
   glError: glEnum;
   glErrorStr: String;
-  // end
 begin
   Result := True;
 

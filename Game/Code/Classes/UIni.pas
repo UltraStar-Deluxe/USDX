@@ -260,12 +260,22 @@ begin
   for Pet := 0 to High(IScreens) do
     if Tekst = IScreens[Pet] then Ini.Screens := Pet;
 
+  // FullScreen
+  Tekst := IniFile.ReadString('Graphics', 'FullScreen', 'On');
+  for Pet := 0 to High(IFullScreen) do
+    if Tekst = IFullScreen[Pet] then Ini.FullScreen := Pet;
+
+
   // Resolution
   SetLength(IResolution, 0);
   Modes := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN); // Check if there are any modes available
   repeat
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
+    Tekst := IniFile.ReadString('Graphics', 'Screens', IScreens[0]);
+    
+    Log.LogStatus('SDL_ListModes Res : ' + IResolution[High(IResolution)], 'Graphics - Resolutions');
+    
     Inc(Modes);
   until Modes^ = nil;
 
@@ -276,6 +286,10 @@ begin
   begin
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := IntToStr(800) + 'x' + IntToStr(600);
+    Log.LogStatus('SDL_ListModes Defaulted Res To : ' + IResolution[High(IResolution)] , 'Graphics - Resolutions');
+
+    // Default to fullscreen OFF, in this case !
+    Ini.FullScreen := 0;
   end;
 
   // reverse order
@@ -289,10 +303,6 @@ begin
   for Pet := 0 to High(IResolution) do
     if Tekst = IResolution[Pet] then Ini.Resolution := Pet;
 
-  // FullScreen
-  Tekst := IniFile.ReadString('Graphics', 'FullScreen', 'On');
-  for Pet := 0 to High(IFullScreen) do
-    if Tekst = IFullScreen[Pet] then Ini.FullScreen := Pet;
 
   // Resolution
   Tekst := IniFile.ReadString('Graphics', 'Depth', '32 bit');

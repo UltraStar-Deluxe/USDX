@@ -421,7 +421,11 @@ begin
 }
 
 //  Log.BenchmarkStart(2);
+
+  Log.LogStatus('TDisplay.Create', 'UGraphic.Initialize3D');
   Display := TDisplay.Create;
+  
+  Log.LogStatus('SDL_EnableUnicode', 'UGraphic.Initialize3D');
   SDL_EnableUnicode(1);
 //  Log.BenchmarkEnd(2); Log.LogBenchmark('====> Creating Display', 2);
 
@@ -545,20 +549,31 @@ begin
     Depth := Ini.Depth;
 
 
-  Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
+  Log.LogStatus('SDL_SetVideoMode', 'Set Window Icon');
 
 // Okay it's possible to set the title bar / taskbar icon here
 // it's working this way, but just if the bmp is in your exe folder
   SDL_WM_SetIcon(SDL_LoadBMP('ustar-icon.bmp'), 0);
 
+  Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
 //  SDL_SetRefreshrate(85);
 //  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+
+  {$ifndef win32}
+    // Todo : jb_linux remove this for linux... but helps for debugging
+    Ini.FullScreen := 0;
+    W := 800;
+    H := 600;
+  {$endif}
+
   if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
   begin
+    Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
     screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL)
   end
   else
   begin
+    Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Full Screen');
     screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
     SDL_ShowCursor(0);
   end;

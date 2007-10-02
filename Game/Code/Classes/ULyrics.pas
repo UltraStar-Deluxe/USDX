@@ -106,7 +106,13 @@ type
 const LyricTexStart = 2/512;
 
 implementation
-uses SysUtils, USkins, TextGL, UGraphic, UDisplay, dialogs;
+
+uses SysUtils,
+     USkins,
+     TextGL,
+     UGraphic,
+     UDisplay,
+     dialogs;
 
 //-----------
 //Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
@@ -200,7 +206,7 @@ var
     GetMem(pTexData, 1024*128*4); //get Memory to save Tex in
 
     //generate and bind Texture
-    glGenTextures(1, Result);
+    glGenTextures(1, @Result);
     glBindTexture(GL_TEXTURE_2D, Result);
 
     //Get Memory

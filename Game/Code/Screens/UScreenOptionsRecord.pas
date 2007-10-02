@@ -87,16 +87,22 @@ begin
 //  end;
 
 //  if Length(Recording.SoundCard[Ini.Card].Input) > 0 then begin
+
+  {$IFDEF win32}
+  // TODO : JB_Linux .... Audio Input ... had to remove to get it to run ???
+  
     SetLength(IInput, Length(Recording.SoundCard[Ini.Card].Input));
     for SCI := 0 to High(Recording.SoundCard[Ini.Card].Input) do
       IInput[SCI] := Recording.SoundCard[Ini.Card].Input[SCI].Name;
 //  end;
 
-
   AddSelectSlide(Theme.OptionsRecord.SelectSlideCard, Ini.Card, ICard);
   SelectSlideInput    := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput, Ini.CardList[0].Input, IInput);
   SelectSlideChannelL := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelL, Ini.CardList[0].ChannelL, IChannel);
   SelectSlideChannelR := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelR, Ini.CardList[0].ChannelR, IChannel);
+
+  {$ENDIF}
+
 
   AddButton(Theme.OptionsRecord.ButtonExit);
   if (Length(Button[0].Text)=0) then
