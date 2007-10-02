@@ -71,6 +71,8 @@ begin
   // File = " to end of line
   lFile := trim( copy( aRcLine, lTmp2, maxint ) );
 
+  lFile := StringReplace( lFile, '\', PathDelim ,[rfReplaceAll] );
+
 (*
   writeln( aRcLine );
   writeln( lName );

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Version Value="5"/>
     <General>
       <MainUnit Value="0"/>
@@ -36,72 +36,24 @@
         <Filename Value="USDXResCompiler.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="USDXResCompiler"/>
-        <CursorPos X="78" Y="36"/>
-        <TopLine Value="2"/>
+        <CursorPos X="48" Y="74"/>
+        <TopLine Value="42"/>
         <EditorIndex Value="0"/>
         <UsageCount Value="24"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="..\..\..\..\lazarus\lcl\lresources.pp"/>
+        <Filename Value="../../../../lazarus/lcl/lresources.pp"/>
         <UnitName Value="LResources"/>
         <CursorPos X="31" Y="55"/>
         <TopLine Value="36"/>
-        <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
-        <Loaded Value="True"/>
       </Unit1>
     </Units>
-    <JumpHistory Count="11" HistoryIndex="10">
-      <Position1>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="39" Column="10" TopLine="15"/>
-      </Position1>
-      <Position2>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="86" Column="27" TopLine="47"/>
-      </Position2>
-      <Position3>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="47" Column="37" TopLine="20"/>
-      </Position3>
-      <Position4>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="43" Column="39" TopLine="23"/>
-      </Position4>
-      <Position5>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="45" Column="39" TopLine="25"/>
-      </Position5>
-      <Position6>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="47" Column="20" TopLine="30"/>
-      </Position6>
-      <Position7>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="35" Column="28" TopLine="11"/>
-      </Position7>
-      <Position8>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="47" Column="19" TopLine="27"/>
-      </Position8>
-      <Position9>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="37" Column="26" TopLine="7"/>
-      </Position9>
-      <Position10>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="63" Column="17" TopLine="29"/>
-      </Position10>
-      <Position11>
-        <Filename Value="USDXResCompiler.lpr"/>
-        <Caret Line="66" Column="29" TopLine="34"/>
-      </Position11>
-    </JumpHistory>
+    <JumpHistory Count="0" HistoryIndex="-1"/>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="5"/>
-    <PathDelim Value="\"/>
     <CodeGeneration>
       <Generate Value="Faster"/>
     </CodeGeneration>
