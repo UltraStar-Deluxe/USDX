@@ -32,9 +32,6 @@ type
 type
   TWndMethod = procedure(var Message: TMessage) of object;
 
-function StringReplaceW(text, search, rep: WideString):WideString;
-function AdaptFilePaths( const aPath : widestring ): widestring;
-
 function LazFindResource( const aName, aType : String ): TLResource;
 
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;
@@ -45,9 +42,13 @@ function MinValue(const Data: array of Double): Double;
 {$IFDEF Win32}
 function  AllocateHWnd(Method: TWndMethod): HWND;
 procedure DeallocateHWnd(Wnd: HWND);
-{$ENDIF}
+{$ENDIF} // Win32
 
-{$ENDIF}
+{$ENDIF} // FPC Only
+
+function StringReplaceW(text, search, rep: WideString):WideString;
+function AdaptFilePaths( const aPath : widestring ): widestring;
+
 
 {$IFNDEF win32}
 (*
