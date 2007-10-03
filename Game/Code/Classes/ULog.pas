@@ -188,6 +188,11 @@ begin
       FileErrorO := false;
     end;
   end;
+  {$DEFINE DEBUG} //How can i check if this is set in *.dpr file o0
+  //If Debug => Write to Console Output
+  {$IFDEF DEBUG}
+  WriteLn('Error: ' + Text);
+  {$ENDIF}
 end;
 
 procedure TLog.LogVoice(SoundNr: integer);
@@ -219,10 +224,13 @@ end;
 procedure TLog.LogStatus(Log1, Log2: string);
 begin
   //Just for Debugging
-  //Comment for Release
-    //LogAnalyze (Log2 + ': ' + Log1);
-    
-  LogError(Log2 + ': ' + Log1);
+  //Comment for Release    
+  //LogError(Log2 + ': ' + Log1);
+
+  //If Debug => Write to Console Output
+  {$IFDEF DEBUG}
+  WriteLn(Log2 + ': ' + Log1);
+  {$ENDIF}
 end;
 
 procedure TLog.LogError(Log1, Log2: string);

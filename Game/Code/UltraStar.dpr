@@ -1,6 +1,7 @@
 program UltraStar;
 
 {$DEFINE TRANSLATE}
+{$DEFINE DEBUG} //Remove b4 release
 
 {$R 'UltraStar.res' 'UltraStar.rc'}
 {$I switches.inc}
@@ -97,6 +98,14 @@ uses
   USingScores in 'Classes\USingScores.pas',
   USingNotes in 'Classes\USingNotes.pas',
 
+  //New Plugin and Core Management
+  {ULists in 'Classes\ULists.pas',      //maybe drop this
+  UHooks in 'Classes\UHooks.pas',       //80 % - Whiteshark is about to work on this
+  UServices in 'Classes\UServices.pas', //20 % - Whiteshark is about to work on this
+  UCore in 'Classes\UCore.pas',
+  UCoreModule in 'Classes\UCoreModule.pas', }
+  UPluginInterface in 'Classes\UPluginInterface.pas', //Some changes to work with unwriten classes, need to be done
+
   //------------------------------
   //Includes - Video Support
   //------------------------------
@@ -148,6 +157,7 @@ uses
   //Includes - Modi SDK
   //------------------------------
   ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
+  UPluginDefs in '..\..\Modis\SDK\UPluginDefs.pas', //New Plugin SDK
 
   //------------------------------
   //Includes - Delphi

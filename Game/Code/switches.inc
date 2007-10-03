@@ -2,12 +2,15 @@
   {$UNDEF UseSerialPort}
   {$UNDEF UseMIDIPort}
 {$ELSE}
-  {$UNDEF UseSerialPort}
+  {$DEFINE UseSerialPort}
   {$DEFINE UseMIDIPort}
-{$ENDIF}  
+{$ENDIF}
 
 {$IFDEF win32}
   {$DEFINE UseBASS}
+  {$IFDEF DEBUG}
+    {$APPTYPE CONSOLE}
+  {$ENDIF}
 {$ELSE}
   {$UNDEF  UseBASS}
 {$ENDIF}
