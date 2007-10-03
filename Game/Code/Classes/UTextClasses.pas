@@ -25,7 +25,7 @@ type
   deconstructor  procedure ReleaseTextures();
 end;
 
-// okay, we now need the stuff that's even beneath this glyph - we're right at the birth of text in here :P
+// (2) okay, we now need the stuff that's even beneath this glyph - we're right at the birth of text in here :P
 
   GlyphTexture = record
     textureID         : GLuint;      // we need this for caching the letters, if the texture wasn't created before create it, should be very fast because of this one
