@@ -97,12 +97,12 @@ type
 
       //Custom Sounds
       CustomSounds: array of TCustomSoundEntry;
+      Loaded:   boolean;
+      Loop:     boolean;
 
 
       function FFMPeg_StreamCreateFile(abool : boolean; aFileName : pchar ): THandle;
 
-      Loaded:   boolean;
-      Loop:     boolean;
     public
       Bass:               hStream;
       procedure InitializePlayback;
@@ -670,7 +670,8 @@ begin
   {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
 
-  if not BASS_RecordInit(RecordI) then begin
+  if not BASS_RecordInit(RecordI) then
+  begin
     Error := BASS_ErrorGetCode;
 
     ErrorMsg := IntToStr(Error);

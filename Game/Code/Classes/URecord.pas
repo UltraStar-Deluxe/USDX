@@ -76,6 +76,7 @@ var
   Recording:  TRecord;
 
 implementation
+
 uses UMain;
 
 procedure TSound.ProcessNewBuffer;
@@ -308,7 +309,7 @@ begin
       Repeat
         Inc(No)
       Until not IsDuplicate(Descr + ' (' + InttoStr(No) + ')');
-      
+
       //Set Description
       Descr := Descr + ' (' + InttoStr(No) + ')';
     end;
