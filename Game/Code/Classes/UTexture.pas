@@ -37,22 +37,6 @@ uses OpenGL12,
      sdlutils,
      SDL_Image;
 
-
-  {$IFDEF Win32}
-//    procedure glGenTextures(n: GLsizei; var textures: GLuint); stdcall; external opengl32;
-
-(*
-  {$ELSE}
-    {$ifdef darwin}
-    const opengl32 = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib';
-    {$ELSE}
-    const opengl32 = 'libGL.so' ; // YES Capital GL
-    {$ENDIF}
-
-    procedure glGenTextures(n: GLsizei; var textures: PGLuint); stdcall; external opengl32;
-*)
-  {$ENDIF}
-
 type
   TTexture = record
     TexNum:   integer;
@@ -525,6 +509,7 @@ begin
 
  // load texture data into memory
   {$ifdef blindydebug}
+  Log.LogStatus('',' ----------------------------------------------------');
   Log.LogStatus('',' LoadImage('''+Identifier+''') (called by '+Format+')');
   {$endif}
   TexSurface := LoadImage(Identifier);
@@ -537,6 +522,7 @@ begin
     beep;
     Exit;
   end;
+  
  // convert pixel format as needed
   {$ifdef blindydebug}
   Log.LogStatus('',' AdjustPixelFormat');
@@ -567,7 +553,7 @@ begin
   end;
 
   {$ifdef blindydebug}
-  Log.LogStatus('',' JB-1');
+  Log.LogStatus('',' JB-1 : typ='+Typ);
   {$endif}
 
 
@@ -577,6 +563,10 @@ begin
   // cover cache stuff
   if (CreateCacheMipmap) and (Typ='Plain') then
   begin
+    {$ifdef blindydebug}
+    Log.LogStatus('',' JB-1 : Minimap');
+    {$endif}
+
     if (Covers.W <= 256) and (Covers.H <= 256) then
     begin
       {$ifdef blindydebug}
@@ -645,10 +635,10 @@ begin
  // prepare OpenGL texture
  
   // JB_linux : this is causing AV's on linux... ActText seems to be nil !
-  {$IFnDEF win32}
-  if pointer(ActTex) = nil then
-    exit;
-  {$endif}
+//  {$IFnDEF win32}
+//  if pointer(ActTex) = nil then
+//    exit;
+//  {$endif}
     
   glGenTextures(1, @ActTex);
 
@@ -658,7 +648,9 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
  // load data into gl texture
-  if (Typ = 'Transparent') or (Typ='Colorized') then begin
+  if (Typ = 'Transparent') or
+     (Typ='Colorized') then
+  begin
     glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
   end
   {if Typ = 'Plain' then} else

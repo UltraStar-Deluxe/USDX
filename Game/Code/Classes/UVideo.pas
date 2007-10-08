@@ -29,7 +29,9 @@ uses SDL,
      OpenGL12,
      SysUtils,
      {$ifdef DebugDisplay}
+     {$ifdef win32}
      dialogs,
+     {$endif}
      {$ENDIF}
      UIni;
 
@@ -58,30 +60,49 @@ var
   VideoTextureU, VideoTextureV: Real;
   VideoTimeBase, VideoTime, LastFrameTime, TimeDifference: Extended;
   VideoSkipTime: Single;
-
+  
 implementation
+
+{$ifdef DebugDisplay}
+{$ifNdef win32}
+
+procedure showmessage( aMessage : String );
+begin
+  writeln( aMessage );
+end;
+
+{$endif}
+{$ENDIF}
 
 procedure Init;
 begin
   av_register_all;
+  {$ifdef DebugDisplay}
+  showmessage( 'AV_Register_ALL' );
+  {$endif}
+  
   VideoOpened:=False;
   VideoPaused:=False;
+  
   glGenTextures(1, PglUint(@VideoTex));
   SetLength(TexData,0);
 end;
 
 procedure FFmpegOpenFile(FileName: pAnsiChar);
 var errnum, i, x,y: Integer;
+  lStreamsCount : Integer;
 begin
-  VideoOpened:=False;
-  VideoPaused:=False;
-  VideoTimeBase:=0;
-  VideoTime:=0;
-  LastFrameTime:=0;
-  TimeDifference:=0;
-  errnum:=av_open_input_file(VideoFormatContext, FileName, Nil, 0, Nil);
-  if(errnum <> 0)
-  then begin
+  VideoOpened    := False;
+  VideoPaused    := False;
+  VideoTimeBase  := 0;
+  VideoTime      := 0;
+  LastFrameTime  := 0;
+  TimeDifference := 0;
+  
+  errnum         := av_open_input_file(VideoFormatContext, FileName, Nil, 0, Nil);
+  
+  if(errnum <> 0) then
+  begin
 {$ifdef DebugDisplay}
     case errnum of
       AVERROR_UNKNOWN: showmessage('failed to open file '+Filename+#13#10+'AVERROR_UNKNOWN');
@@ -96,26 +117,63 @@ begin
 {$ENDIF}
     Exit;
   end
-  else begin
+  else
+  begin
     VideoStreamIndex:=-1;
-    if(av_find_stream_info(VideoFormatContext)>=0) then
+
+    // Find which stream contains the video
+    if(av_find_stream_info(VideoFormatContext) >= 0) then
     begin
-      for i:=0 to VideoFormatContext^.nb_streams-1 do
-        if(VideoFormatContext^.streams[i]^.codec^.codec_type=CODEC_TYPE_VIDEO) then begin
-          VideoStreamIndex:=i;
-        end else
+      {$ifdef DebugDisplay}
+       writeln( 'FFMPEG debug...  VideoFormatContext^.nb_streams : '+ inttostr( VideoFormatContext^.nb_streams ) );
+      {$endif}
+      for i:= 0 to MAX_STREAMS-1 do
+      begin
+        {$ifdef DebugDisplay}
+        writeln( 'FFMPEG debug...  found stream '+ inttostr(i) + ' stream val ' + inttostr( integer(VideoFormatContext^.streams[i] ) ) );
+        {$endif}
+        try
+          if assigned( VideoFormatContext                    ) AND
+             assigned( VideoFormatContext^.streams[i]        ) AND
+             assigned( VideoFormatContext^.streams[i]^.codec ) THEN
+          begin
+              {$ifdef DebugDisplay}
+            writeln( 'FFMPEG debug...  found stream '+ inttostr(i) + ' code val ' + inttostr( integer(VideoFormatContext^.streams[i].codec ) ) );
+            writeln( 'FFMPEG debug...  found stream '+ inttostr(i) + ' code Type ' + inttostr( integer(VideoFormatContext^.streams[i].codec^.codec_type ) ) );
+              {$endif}
+            if(VideoFormatContext^.streams[i]^.codec^.codec_type=CODEC_TYPE_VIDEO) then
+            begin
+              {$ifdef DebugDisplay}
+              writeln( 'FFMPEG debug, found CODEC_TYPE_VIDEO stream' );
+              {$endif}
+              VideoStreamIndex:=i;
+            end
+            else
+          end;
+        except
+          // TODO : JB_Linux ... this is excepting at line 108...  ( Was 111 previously.. so its prob todo with streams[i]^.codec ..
+    {$ifdef DebugDisplay}
+          writeln( 'FFMPEG error, finding video stream' );
+    {$endif}
+        end;
+
+      end;
     end;
+    
     if(VideoStreamIndex >= 0) then
     begin
       VideoCodecContext:=VideoFormatContext^.streams[VideoStreamIndex]^.codec;
       VideoCodec:=avcodec_find_decoder(VideoCodecContext^.codec_id);
-    end else begin
+    end
+    else
+    begin
 {$ifdef DebugDisplay}
       showmessage('found no video stream');
 {$ENDIF}
       av_close_input_file(VideoFormatContext);
       Exit;
     end;
+    
     if(VideoCodec<>Nil) then
     begin
       errnum:=avcodec_open(VideoCodecContext, VideoCodec);

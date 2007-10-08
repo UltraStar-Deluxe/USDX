@@ -259,7 +259,7 @@ type
     oformat: PAVOutputFormat;
     priv_data: pointer;
     pb: TByteIOContext;
-    nb_streams: integer;
+    nb_streams: cardinal;//  integer;
     streams: array [0..MAX_STREAMS - 1] of PAVStream;
     filename: array [0..1023] of char; (* input or output filename *)
     (* stream info *)

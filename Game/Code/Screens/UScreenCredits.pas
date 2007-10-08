@@ -149,6 +149,7 @@ uses {$IFDEF win32}
      {$ELSE}
      lclintf,
      {$ENDIF}
+     ULog,
      UGraphic,
      UMain,
      UIni,
@@ -446,6 +447,8 @@ begin
   //dis does teh muiwk y0r
   Data := Music.GetFFTData;
 
+  Log.LogStatus('',' JB-1');
+
   T := GetTickCount div 33;
   if T <> Credits_Time then
   begin
@@ -453,6 +456,8 @@ begin
     inc(CTime);
     inc(CTime_hold);
     Credits_X := Credits_X-2;
+    
+    Log.LogStatus('',' JB-2');
     if (CRDTS_Stage=InitialDelay) and (CTime=Timings[0]) then
     begin
 //      CTime:=Timings[20];
@@ -472,6 +477,8 @@ begin
       CRDTS_Stage:=Outro;
     end;
   end;
+  
+  Log.LogStatus('',' JB-3');
 
   //draw background
   if CRDTS_Stage=InitialDelay then
@@ -636,6 +643,9 @@ begin
 //#########################################################################
 // draw credits names
 
+
+Log.LogStatus('',' JB-4');
+
 // BlindGuard (von links oben reindrehen, nach rechts unten rausdrehen)
     STime:=Timings[9]-10;
     Delay:=Timings[10]-Timings[9];
@@ -643,8 +653,20 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -695,8 +717,21 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -752,8 +787,21 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -804,8 +852,21 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -857,8 +918,21 @@ begin
     if CTime > STime then
     begin
       k:=0;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)>10) and ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -892,8 +966,22 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -947,8 +1035,21 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -1004,8 +1105,21 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -1061,8 +1175,21 @@ begin
     begin
       k:=0;
       ESC_Alpha:=20;
+
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+
       if Data[k]>0.25 then ESC_Alpha:=5 else inc(ESC_Alpha);
       if ESC_Alpha >20 then ESC_Alpha:=20;
       if ((CTime-STime)<20) then ESC_Alpha:=20;
@@ -1110,15 +1237,33 @@ begin
     end;
 
 
+   Log.LogStatus('',' JB-103');
+
 // ####################################################################
 // do some twinkle stuff (kinda on beat)
-    if (CTime>Timings[8]) and (CTime < Timings[19]) then begin
-      k:=0;
+    if (CTime > Timings[8]  ) and
+       (CTime < Timings[19] ) then
+    begin
+      k := 0;
+      
+      try
       for j:=0 to 40 do
-        if Data[j]>=Data[k] then k:=j;
-      if Data[k]>0.2 then begin
-         l:=RandomRange(6,16);
-         j:=RandomRange(0,27);
+      begin
+        if ( j < length( Data ) ) AND
+           ( k < length( Data ) ) then
+        begin
+          if Data[j] >= Data[k] then
+             k:=j;
+        end;
+      end;
+      except
+      end;
+
+      if Data[k]>0.2 then
+      begin
+         l := RandomRange(6,16);
+         j := RandomRange(0,27);
+         
          GoldenRec.Spawn(myLogoCoords[j,0], myLogoCoords[j,1], 16-l, l, 0, -1, PerfectNote, 0);
       end;
     end;
