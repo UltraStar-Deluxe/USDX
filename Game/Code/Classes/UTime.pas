@@ -43,6 +43,17 @@ uses
 // who knows how fast or slow that function is !
 // but this gets a compile for now .. :)
 
+(*
+msec( )
+{
+  struct timeval tv;
+  gettimeofday( &tv, NULL );
+  return (int64_t)tv.tv_sec * (int64_t)1000000 + (int64_t)tv.tv_usec;
+}
+
+*)
+
+
 constructor TTime.Create;
 begin
   CountSkipTimeSet;

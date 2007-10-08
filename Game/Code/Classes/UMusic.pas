@@ -41,8 +41,48 @@ type
     Handle   : hStream;
   end;
 
+  IAudioPlayback = Interface
+      procedure InitializePlayback;
 
-  TMusic = class
+      procedure SetVolume(Volume: integer);
+      procedure SetMusicVolume(Volume: integer);
+      procedure SetLoop(Enabled: boolean);
+      
+      function Open(Name: string): boolean; // true if succeed
+
+      procedure Play;
+      procedure Pause; //Pause Mod
+      procedure Stop;
+
+      procedure Rewind;
+      procedure MoveTo(Time: real);
+      procedure Close;
+      
+      function Finished: boolean;
+      function Length: real;
+      function Position: real;
+
+      procedure PlayStart;
+      procedure PlayBack;
+      procedure PlaySwoosh;
+      procedure PlayChange;
+      procedure PlayOption;
+      procedure PlayClick;
+      procedure PlayDrum;
+      procedure PlayHihat;
+      procedure PlayClap;
+      procedure PlayShuffle;
+      procedure StopShuffle;
+
+      function LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
+
+      //Custom Sounds
+      function LoadCustomSound(const Filename: String): Cardinal;
+      procedure PlayCustomSound(const Index: Cardinal);
+  end;
+
+
+  TMusic = class( TInterfacedObject, IAudioPlayback )
     private
       BassStart:          hStream;            // Wait, I've replaced this with BASS
       BassBack:           hStream;            // It has almost all features we need
@@ -58,6 +98,8 @@ type
       //Custom Sounds
       CustomSounds: array of TCustomSoundEntry;
 
+
+      function FFMPeg_StreamCreateFile(abool : boolean; aFileName : pchar ): THandle;
 
       Loaded:   boolean;
       Loop:     boolean;
@@ -101,7 +143,6 @@ type
       //Custom Sounds
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal);
-
 end;
 
 const
@@ -202,6 +243,11 @@ uses
      {$IFDEF FPC}
      lclintf,
      {$ENDIF}
+     
+     avcodec,
+     avformat,
+     avutil,
+     
      UGraphic,
      URecord,
      UFiles,
@@ -265,7 +311,8 @@ begin
 
 //  LoadSoundFromFile(BassShuffle, SoundPath + 'Shuffle.mp3');
 
-  Log.BenchmarkEnd(4); Log.LogBenchmark('--> Loading Sounds', 4);
+  Log.BenchmarkEnd(4);
+  Log.LogBenchmark('--> Loading Sounds', 4);
 end;
 
 procedure TMusic.InitializeRecord;
@@ -663,13 +710,18 @@ function TMusic.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 var
   L: Integer;
 begin
-  if FileExists(Name) then begin
+  if FileExists(Name) then
+  begin
     Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
     try
       {$IFDEF useBASS}
       // TODO : jb_linux replace with something other than bass
       hStream := BASS_StreamCreateFile(False, pchar(Name), 0, 0, 0);
+      {$ELSE}
+      hStream := FFMPeg_StreamCreateFile(False, pchar(Name) );
       {$ENDIF}
+      
+
       
       //Add CustomSound
       L := High(CustomSounds) + 1;
@@ -679,7 +731,9 @@ begin
     except
       Log.LogError('Failed to open using BASS', 'LoadSoundFromFile');
     end;
-  end else begin
+  end
+  else
+  begin
     Log.LogError('Sound not found: "' + Name + '"', 'LoadSoundFromFile');
     exit;
   end;
@@ -734,5 +788,48 @@ begin
   {$ENDIF}
 end;
 
+
+{*
+
+Sorry guys... this is my mess :(
+Im going to try and get ffmpeg to handle audio playback ( at least for linux )
+and Im going to implement it nicly along side BASS, in TMusic ( where I can )
+
+http://www.dranger.com/ffmpeg/ffmpeg.html
+http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
+
+http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
+
+*}
+function TMusic.FFMPeg_StreamCreateFile(abool : boolean; aFileName : pchar ): THandle;
+var
+ lFormatCtx : PAVFormatContext;
+begin
+
+(*
+  if(SDL_OpenAudio(&wanted_spec, &spec) < 0)
+  begin
+    fprintf(stderr, "SDL_OpenAudio: %s\n", SDL_GetError());
+    writeln( 'SDL_OpenAudio' );
+    exit;
+  end;
+*)
+
+(*
+  if ( av_open_input_file( lFormatCtx, aFileName, NULL, 0, NULL ) <> 0 )
+  begin
+    writeln( 'Unable to open file '+ aFileName );
+    exit;
+  end;
+
+  // Retrieve stream information
+  if ( av_find_stream_info(pFormatCtx) < 0 )
+  begin
+  	writeln( 'Unable to Retrieve stream information' );
+    exit;
+  end;
+*)
+
+end;
 
 end.
