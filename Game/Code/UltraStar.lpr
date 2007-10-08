@@ -97,7 +97,7 @@ uses
   //------------------------------
   
   {$IFDEF FPC}
-  ulazjpeg               in 'Classes\ulazjpeg.pas',
+  ulazjpeg               in 'Classes\Ulazjpeg.pas',
   {$ENDIF}
 
   TextGL                 in 'Classes\TextGL.pas',
