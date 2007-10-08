@@ -3,6 +3,12 @@ unit UScreenSong;
 interface
 {$I switches.inc}
 
+
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+
 uses
   UMenu,
   SDL,
@@ -1700,7 +1706,9 @@ var
   A, B: Integer;
   PosX, PosY: Integer;
   Pos: Real;
+  lTmp : double;
 begin
+
 if (not Music.Finished) AND (Theme.Song.Equalizer.Length > 0) then
 begin
 
@@ -1747,8 +1755,26 @@ begin
       if (Data[i] >= 1) then
         Data[i] := 0.9999999999999;
 
-      if Data[i]*Theme.Song.Equalizer.Length > Pos then
-        Pos := Data[i]*Theme.Song.Equalizer.Length;
+      try
+      if ( assigned( Theme )      ) AND
+         ( assigned( Theme.Song ) ) AND
+         ( i < length( Data )     ) THEN
+      begin
+        writeln( '!!!!!!!!! - '+ inttostr( i ) + ' - ' + inttostr( Theme.Song.Equalizer.Length ) );
+
+        if Single(Data[i]) > 0 then
+        begin
+          lTmp := Single(Data[i]) * Theme.Song.Equalizer.Length;
+          if lTmp > Pos then
+            Pos := lTmp;
+        end;
+      end;
+      except
+        // TODO: JB_Linux..... why does this happen !
+        on E:EInvalidOp do
+          writeln( 'UScreenSong - DOH !!!!' );
+      end
+      
     end;
 
     //Change Last Band
