@@ -1,0 +1,9 @@
+Ultrastar Deluxe Hook List
+-----------------------------------
+Here you can find the Services the Core offers to you:
+
+--------------------
+Core:
+--------------------
+Core/ReportError    <- Calls the 'Core/NewError' Chain. wParam: Pchar(Message), lParam: PChar(Reportername)
+Core/ReportDebug    <- Calls the 'Core/NewDebugInfo' Chain. wParam: Pchar(Message), lParam: PChar(Reportername)

@@ -1,3 +1,5 @@
+{$DEFINE DEBUG} // to-do : Remove b4 release
+
 {$IFDEF FPC}
   {$UNDEF UseSerialPort}
   {$UNDEF UseMIDIPort}

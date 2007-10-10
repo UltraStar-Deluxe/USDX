@@ -1,8 +1,5 @@
 program UltraStar;
 
-{$DEFINE TRANSLATE}
-{$DEFINE DEBUG} //Remove b4 release
-
 {$R 'UltraStar.res' 'UltraStar.rc'}
 {$I switches.inc}
 
@@ -99,11 +96,11 @@ uses
   USingNotes in 'Classes\USingNotes.pas',
 
   //New Plugin and Core Management
-  {ULists in 'Classes\ULists.pas',      //maybe drop this
-  UHooks in 'Classes\UHooks.pas',       //80 % - Whiteshark is about to work on this
-  UServices in 'Classes\UServices.pas', //20 % - Whiteshark is about to work on this
-  UCore in 'Classes\UCore.pas',
-  UCoreModule in 'Classes\UCoreModule.pas', }
+  UModules in 'Classes\UModules.pas',      //This Unit contains a const with the Modules to Load
+  UHooks in 'Classes\UHooks.pas',          //Class for Hook Management     //Write Freeing  Methods for Both
+  UServices in 'Classes\UServices.pas',    //95% - One Hack to remove ;)
+  UCore in 'Classes\UCore.pas',            //30 % - Many Classes needs Rewriting or Manipulation
+  UCoreModule in 'Classes\UCoreModule.pas',
   UPluginInterface in 'Classes\UPluginInterface.pas', //Some changes to work with unwriten classes, need to be done
 
   //------------------------------
@@ -191,7 +188,7 @@ begin
         Inc(I);
         hWnd := FindWindow(nil, PChar(WndTitle + ' Instance ' + InttoStr(I)));
       until (hWnd = 0);
-
+      MessageBox(
       WndTitle := WndTitle + ' Instance ' + InttoStr(I);
     end
     else

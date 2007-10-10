@@ -374,7 +374,6 @@ end;
 Procedure TSingScores.SpawnPopUp(const PlayerIndex: Byte; const Rating: Byte; const Score: Word);
 var Cur: PScorePopUp;
 begin
-  Log.LogError('Spawn PopUp: Score: ' + InttoStr(Score));
   if (PlayerIndex < PlayerCount) then
   begin
     //Get Memory and Add Data

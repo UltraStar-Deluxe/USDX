@@ -13,6 +13,12 @@ type
   //----------------
   // TUS_PluginInfo - Some Infos from Plugin to Core.
   // Send when Plugininfo procedure is Called
+  // ---
+  // Version Structure:
+  // First  Byte: Head Revison
+  // Second Byte: Sub Revison
+  // Third  Byte: Sub Revision 2
+  // Fourth Byte: Letter (For Bug Fix releases. 0 or 'a' .. 'z')
   //----------------
   PUS_PluginInfo = ^TUS_PluginInfo;
   TUS_PluginInfo = record
@@ -30,7 +36,7 @@ type
   // TUS_Hook - Structure of the Hook Function
   // Return 0 if the Hook should be continue,
   // or a non zero Value, if the Hook should be Interuped
-  // In this Case the Caller of the Notivier gets the Return Value
+  // In this Case the Caller of the Notifier gets the Return Value
   // Return Value Should not be -1
   //----------------
   TUS_Hook            = Function (wParam, lParam: DWord): integer; stdcall;
@@ -54,7 +60,7 @@ type
     {Function Creates a new Hookable Event and Returns the Handle
      or 0 on Failure. (Name already exists)}
     CreateHookableEvent: Function (EventName: PChar): THandle; stdcall;
-    
+
     {Function Destroys an Event and Unhooks all Hooks to this Event.
      0 on success, not 0 on Failure}
     DestroyHookableEvent: Function (hEvent: THandle): integer; stdcall;
@@ -80,7 +86,7 @@ type
     {Function Creates a new Service and Returns the Services Handle
      or 0 on Failure. (Name already exists)}
     CreateService: Function (ServiceName: PChar; ServiceProc: TUS_Service): THandle; stdcall;
-    
+
     {Function Destroys a Service.
      0 on success, not 0 on Failure}
     DestroyService: Function (hService: THandle): integer; stdcall;
@@ -98,10 +104,41 @@ type
 // Some Default Constants
 //----------------
 const
-  {Returned if Service is not Found from CallService}
+  {Returned if Service is not found from CallService}
   SERVICE_NOT_FOUND=$80000000;
+
+  CORE_SM_NOSYMBOL= 0;
+  CORE_SM_ERROR   = 1;
+  CORE_SM_WARNING = 2;
+  CORE_SM_INFO    = 3;
+
+//----------------
+// Some Functions to Handle Version DWords
+//----------------
+Function MakeVersion(const HeadRevision, SubVersion, SubVersion2: Byte; Letter: Char): DWord;
+Function VersiontoSting(const Version: DWord): String;
 
 
 implementation
+
+//--------------
+// MakeVersion - Converts 4 Values to a valid Version DWord
+//--------------
+Function MakeVersion(const HeadRevision, SubVersion, SubVersion2: Byte; Letter: Char): DWord;
+begin
+  If (letter < 'a') or (Letter > 'z') then
+    letter := chr(0);
+
+  Result := (HeadRevision shl 24) or (SubVersion shl 16) or (SubVersion2 shl 8) or Ord(Letter);
+end;
+
+//--------------
+// VersiontoString - Returns some beauty '1.0.2a' like String
+//--------------
+Function VersiontoSting(const Version: DWord): String;
+begin // to-do : Write VersiontoString without SysUtils depencies
+  //Result := InttoStr((ver and $FF000000) shr 24);
+  Result := '1.0.1
+end;
 
 end.
