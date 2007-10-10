@@ -31,8 +31,8 @@ type
       hExit:            THandle;
       hDebug:           THandle;
       hError:           THandle;
-      sgiveError:       THandle;
-      sgiveDebug:       THandle;
+      sReportError:       THandle;
+      sReportDebug:       THandle;
 
       Modules:          Array [0..High(CORE_MODULES_TO_LOAD)] of TModuleListItem;
 
@@ -81,8 +81,8 @@ type
       // Hook and Service Procs:
       //--------------
       Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)
-      Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)
-      Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)
+      {Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)
+      Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)}
   end;
 
 var
@@ -178,6 +178,8 @@ end;
 //Inits Core and all Modules
 //-------------
 Function TCore.Init: Boolean;
+var
+  I: Integer;
 begin
   Result := InitCore;
 
@@ -193,8 +195,9 @@ end;
 //DeInits Core and all Modules
 //-------------
 Function TCore.DeInit: Boolean;
-
-  label Continue;
+var
+  I: Integer;
+label Continue;
 begin
   I := High(CORE_MODULES_TO_LOAD);
 
@@ -209,8 +212,10 @@ begin
     end;
   Except
 
-    GoTo Continue;
+
   end;
+  If (I >= 0) then
+    GoTo Continue;
 
   DeInitCore;
 end;

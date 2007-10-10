@@ -138,7 +138,7 @@ end;
 Function VersiontoSting(const Version: DWord): String;
 begin // to-do : Write VersiontoString without SysUtils depencies
   //Result := InttoStr((ver and $FF000000) shr 24);
-  Result := '1.0.1
+  Result := '1.0.1'
 end;
 
 end.

@@ -188,7 +188,6 @@ begin
         Inc(I);
         hWnd := FindWindow(nil, PChar(WndTitle + ' Instance ' + InttoStr(I)));
       until (hWnd = 0);
-      MessageBox(
       WndTitle := WndTitle + ' Instance ' + InttoStr(I);
     end
     else
