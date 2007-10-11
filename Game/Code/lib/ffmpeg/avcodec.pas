@@ -15,32 +15,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
                                                                               *)
+
+(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+in the source codes *)
+
 unit avcodec;
+
+{$LINKLIB libavutil}
+{$LINKLIB libavcodec}
+{$MODE DELPHI } (* CAT *)
+{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
 
 interface
 
 uses
-  {$IFDEF win32}
-  windows,
-  {$ENDIF}
-  avutil,
-  rational,
-  opt;
+  avutil, rational, opt;  // CAT
 
 const
-  {$IFDEF win32}
-    av__format = 'avformat-50.dll';
-  {$ELSE}
-    av__format = 'libavformat.so';   // .0d
-  {$ENDIF}
+(* version numbers are changed by The Creative CAT *)
+  av__format = 'libavformat.51';
 
-
-  LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (16 shl 8) + 0);
-  LIBAVUTIL_VERSION       = '51.16.0';
+  LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (12 shl 8) + 1);
+  LIBAVUTIL_VERSION       = '51.12.1';
   LIBAVUTIL_BUILD         = LIBAVUTIL_VERSION_INT;
 
   AV_NOPTS_VALUE: int64   = $8000000000000000;
   AV_TIME_BASE            = 1000000;
+  AV_TIME_BASE_Q          : TAVRational = (num:1; den:AV_TIME_BASE); (* added by CAT *)
 
 type
   TCodecID = (
@@ -119,7 +122,8 @@ type
     CODEC_TYPE_VIDEO,
     CODEC_TYPE_AUDIO,
     CODEC_TYPE_DATA,
-    CODEC_TYPE_SUBTITLE
+    CODEC_TYPE_SUBTITLE,
+	CODEC_TYPE_NB    (* CAT#3 *)
   );
 
 //* currently unused, may be used if 24/32 bits samples ever supported */
@@ -347,11 +351,11 @@ type
   TAVFrame = record {200}
     (*** pointer to the picture planes.
      * this might be different from the first allocated byte *)
-    data: array [0..3] of pointer;
+    data: array [0..3] of pbyte;
     linesize: array [0..3] of integer;
     (*** pointer to the first allocated byte of the picture. can be used in get_buffer/release_buffer
      * this isn't used by lavc unless the default get/release_buffer() is used*)
-    base: array [0..3] of pchar;
+    base: array [0..3] of pbyte;
     (*** 1 -> keyframe, 0-> not *)
     key_frame: integer;
     (*** picture type of the frame, see ?_TYPE below.*)
@@ -374,7 +378,7 @@ type
     (*** QP store stride*)
     qstride: integer;
     (*** mbskip_table[mb]>=1 if MB didnt change*)
-    mbskip_table: pchar;
+    mbskip_table: pbyte;
     (**
      * Motion vector table.
      * @code
@@ -403,9 +407,9 @@ type
     (*** when decoding, this signal how much the picture must be delayed.
      * extra_delay = repeat_pict / (2*fps)*)
     repeat_pict: integer;
-    qscale_type: Integer;
+    qscale_type: integer;
     (*** The content of the picture is interlaced.*)
-    interlaced_frame: Integer;
+    interlaced_frame: integer;
     (*** if the content is interlaced, is top field displayed first.*)
     top_field_first: integer;
     (*** Pan scan.*)
@@ -416,9 +420,9 @@ type
      * - decoding: set by lavc (before get_buffer() call))*)
     buffer_hints: integer;
     (*** DCT coeffitients*)
-    dct_coeff: PSmallInt;
+    dct_coeff: PsmallInt;
     (*** Motion referece frame index*)
-    ref_index: array [0..1] of pchar;
+    ref_index: array [0..1] of pshortint;
   end;
 
 const
@@ -573,12 +577,12 @@ const
   X264_PART_B8X8 = $100;  (* Analyse b16x8, b8x16 and b8x8 *)
 
 type
-  PAVCLASS = ^TAVCLASS;
+  PAVClass = ^TAVClass;
   PAVCodecContext = ^TAVCodecContext;
   PAVCodec = ^TAVCodec;
   PAVPaletteControl = ^TAVPaletteControl;
 
-  TAVCLASS = record {12}
+  TAVclass = record {12}
     class_name: pchar;
     (* actually passing a pointer to an AVCodecContext
 					or AVFormatContext, which begin with an AVClass.
@@ -629,7 +633,7 @@ type
      * - encoding: set/allocated/freed by lavc.
      * - decoding: set/allocated/freed by user.
      *)
-    extradata: pointer;
+    extradata: pbyte;
     extradata_size: integer;
 
     (**
@@ -787,8 +791,8 @@ type
      * this is used to workaround some encoder bugs
      * - encoding: set by user, if not then the default based on codec_id will be used
      * - decoding: set by user, will be converted to upper case by lavc during init     *)
-//    codec_tag: cardinal;  // можно array [0..3] of char - тогда видно FOURCC
-    codec_tag: array [0..3] of char; 
+    codec_tag: cardinal;  // можно array [0..3] of char - тогда видно FOURCC
+//    codec_tag: array [0..3] of char; 
 
     (*** workaround bugs in encoders which sometimes cannot be detected automatically.
      * - encoding: set by user
@@ -966,7 +970,7 @@ type
     (*** slice offsets in the frame in bytes.
      * - encoding: set/allocated by lavc
      * - decoding: set/allocated by user (or NULL)     *)
-    slice_offset: PInteger;
+    slice_offset: Pinteger;
 
     (*** error concealment flags.
      * - encoding: unused
@@ -1517,7 +1521,7 @@ type
     _type: TCodecType;
     id: TCodecID;
     priv_data_size: integer;
-    init: function (avctx: pAVCodecContext): integer; cdecl;
+    init: function (avctx: PAVCodecContext): integer; cdecl; (* typo corretion by the Creative CAT *)
     encode: function (avctx: PAVCodecContext; buf: pchar; buf_size: integer; data: pointer): integer; cdecl;
     close: function (avctx: PAVCodecContext): integer; cdecl;
     decode: function (avctx: PAVCodecContext; outdata: pointer; outdata_size: PInteger;
@@ -1731,12 +1735,18 @@ procedure av_resample_close (c: PAVResampleContext);
 
   procedure avcodec_get_context_defaults (s: PAVCodecContext);
     cdecl; external av__codec;
-  function avcodec_alloc_context (): PAVCodecContext;
+  function avcodec_alloc_context : PAVCodecContext;
     cdecl; external av__codec;
+(* favourite of The Creative CAT
+  function avcodec_alloc_context (): PAVCodecContext;
+    cdecl; external av__codec; *)
   procedure avcodec_get_frame_defaults (pic: PAVFrame);
     cdecl; external av__codec;
-  function avcodec_alloc_frame (): PAVFrame;
+  function avcodec_alloc_frame : PAVFrame;
     cdecl; external av__codec;
+(* favourite of The Creative CAT
+  function avcodec_alloc_frame (): PAVFrame;
+    cdecl; external av__codec; *)
 
   function avcodec_default_get_buffer (s: PAVCodecContext; pic: PAVFrame): integer;
     cdecl; external av__codec;
@@ -1782,9 +1792,15 @@ procedure av_resample_close (c: PAVResampleContext);
  * @return 0 if successful, -1 if not.
  *)
 
+(** This comment was added by the Creative CAT.  frame_size_ptr was changed to
+ variable refference.
+ 
+ * @deprecated Use avcodec_decode_audio2() instead.
+ *)
+
   function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
-                         frame_size_ptr: pinteger;
-                         buf: pchar; buf_size: integer): integer;
+                         		 var frame_size_ptr: integer;
+                         		 buf: pchar; buf_size: integer): integer;
     cdecl; external av__codec;
 (* decode a frame.
  * @param buf bitstream buffer, must be FF_INPUT_BUFFER_PADDING_SIZE larger then the actual read bytes
@@ -1793,8 +1809,47 @@ procedure av_resample_close (c: PAVResampleContext);
  * @param got_picture_ptr zero if no frame could be decompressed, Otherwise, it is non zero
  * @return -1 if error, otherwise return the number of
  * bytes used. *)
+
+  function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PWord;
+								 var frame_size_ptr : integer;
+                         		 buf: pchar; buf_size: integer): integer;
+    cdecl; external av__codec;
+(* Added by The Creative CAT
+/**
+ * Decodes a video frame from \p buf into \p picture.
+ * The avcodec_decode_video() function decodes a video frame from the input
+ * buffer \p buf of size \p buf_size. To decode it, it makes use of the
+ * video codec which was coupled with \p avctx using avcodec_open(). The
+ * resulting decoded frame is stored in \p picture.
+ *
+ * @warning The input buffer must be \c FF_INPUT_BUFFER_PADDING_SIZE larger than
+ * the actual read bytes because some optimized bitstream readers read 32 or 64
+ * bits at once and could read over the end.
+ *
+ * @warning The end of the input buffer \p buf should be set to 0 to ensure that
+ * no overreading happens for damaged MPEG streams.
+ *
+ * @note You might have to align the input buffer \p buf and output buffer \p
+ * samples. The alignment requirements depend on the CPU: on some CPUs it isn't
+ * necessary at all, on others it won't work at all if not aligned and on others
+ * it will work but it will have an impact on performance. In practice, the
+ * bitstream should have 4 byte alignment at minimum and all sample data should
+ * be 16 byte aligned unless the CPU doesn't need it (AltiVec and SSE do). If
+ * the linesize is not a multiple of 16 then there's no sense in aligning the
+ * start of the buffer to 16.
+ *
+ * @param avctx the codec context
+ * @param[out] picture The AVFrame in which the decoded video frame will be stored.
+ * @param[in] buf the input buffer
+ * @param[in] buf_size the size of the input buffer in bytes
+ * @param[in,out] got_picture_ptr Zero if no frame could be decompressed, otherwise, it is nonzero.
+ * @return On error a negative value is returned, otherwise the number of bytes
+ * used or zero if no frame could be decompressed.
+ */
+*)
+
   function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
-                         got_picture_ptr: pinteger;
+                         var got_picture_ptr: integer; (* favour of The Creative CAT *)
                          buf: PByte; buf_size: integer): integer;
     cdecl; external av__codec;
 
@@ -1802,19 +1857,18 @@ procedure av_resample_close (c: PAVResampleContext);
                             got_sub_ptr: pinteger;
                             const buf: pchar; buf_size: integer): integer;
     cdecl; external av__codec;
-
-  {$IFNDEF FPC}
   function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
                         data_size_ptr: pinteger;
                         buf: pchar; buf_size: integer): integer;
     cdecl; external av__codec;
-  {$ENDIF}
+
   function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
-                        buf_size: integer; const samples: Pword): integer;
+                        buf_size: integer; const samples: PWord): integer;
     cdecl; external av__codec;
 
   (* avcodec_encode_video: -1 if error *)
-  function avcodec_encode_video (avctx: PAVCodecContext; buf: pointer;
+  (* type of the second argument is changed by The Creative CAT *)
+  function avcodec_encode_video (avctx: PAVCodecContext; buf: PByte;
                         buf_size: integer; pict: PAVFrame): integer;
     cdecl; external av__codec;
   function avcodec_encode_subtitle (avctx: PAVCodecContext; buf: pchar;

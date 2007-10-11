@@ -15,33 +15,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
                                                                               *)
+
+(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+in the source codes *)
+
 unit avformat;
+
+{$LINKLIB libavutil}
+{$LINKLIB libavformat}
+{$MODE DELPHI } (* CAT *)
+{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
 uses
-  {$IFDEF win32}
-  windows,
-  {$ENDIF}
-  avcodec,
-  avio,
-  rational,
-  avutil;
+  avcodec, avio, rational, avutil; (* CAT *)
 
 const
-  {$IFDEF win32}
-    av__format = 'avformat-50.dll';
-  {$ELSE}
-    av__format = 'libavformat.so';   // .0d
-    av__codec   = 'libavcodec.so';
-  {$ENDIF}
+  av__format = 'libavformat.51'; (* CAT *)
 
-  LIBAVUTIL_VERSION_INT   =  ((49 shl 16) + (0 shl 8) + 1);
-  LIBAVUTIL_VERSION       = '49.0.1';
+  LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (12 shl 8) + 1);
+  LIBAVUTIL_VERSION       = '51.12.1';
   LIBAVUTIL_BUILD         = LIBAVUTIL_VERSION_INT;
 
   MAXINT64 = $7fffffffffffffff;
@@ -49,10 +45,37 @@ const
 
   PKT_FLAG_KEY = $0001;
 
-  (* AVImageFormat.flags field constants *)
-  AVIMAGE_INTERLEAVED = $0001; (* image format support interleaved output *)
-  MAX_STREAMS         = 20;
+(*************************************************)
+(* input/output formats *)
+
+  AVPROBE_SCORE_MAX   = 100;   ///< max score, half of that is used for file extension based detection
+  AVPROBE_PADDING_SIZE = 32;   ///< extra allocated bytes at the end of the probe buffer
+
+//! demuxer will use url_fopen, no opened file should be provided by the caller
+  AVFMT_NOFILE = $0001;
+  AVFMT_NEEDNUMBER = $0002; (**< needs '%d' in filename *)
+  AVFMT_SHOW_IDS = $0008; (**< show format stream IDs numbers *)
+  AVFMT_RAWPICTURE = $0020; (**< format wants AVPicture structure for
+                                      raw picture data *)
+  AVFMT_GLOBALHEADER = $0040; (**< format wants global header *)
+  AVFMT_NOTIMESTAMPS = $0080; (**< format does not need / have any timestamps *)
+  AVFMT_GENERIC_INDEX = $0100; (**< use generic index building code *)
+
+  AVINDEX_KEYFRAME = $0001;
+
+  MAX_REORDER_DELAY = 4;
+
+  AVFMTCTX_NOHEADER = $0001; (**< signal that no header is present
+                                         (streams are added dynamically) *)
+  MAX_STREAMS = 20;
+  AVFMT_NOOUTPUTLOOP = -1;
+  AVFMT_INFINITEOUTPUTLOOP = 0;
+  AVFMT_FLAG_GENPTS = $0001; ///< generate pts if missing even if it requires parsing future frames
+  AVFMT_FLAG_IGNIDX = $0002; ///< ignore index
+  AVFMT_FLAG_NONBLOCK = $0004; ///< do not block when reading packets from input
+
 type
+  HFILE = THandle; /// (* CAT *)
   int = integer;
 
   PAVPacket = ^TAVPacket;
@@ -75,9 +98,10 @@ type
     stream_index: integer;
     flags: integer;
     duration: integer;                         ///< presentation duration in time_base units (0 if not available)
-    destruct: procedure (p: PAVPacket);
+    destruct: procedure (p: PAVPacket);  (* This cannot be var : TAVPacket. 
+										because TAVPacket is not completely defined yet *)
     priv: pointer;
-    pos: int64;                            ///< byte position in stream, -1 if unknown
+    pos: int64                            ///< byte position in stream, -1 if unknown
   end;
 
 (*************************************************)
@@ -89,9 +113,6 @@ type
   TAVFrac = record
     val, num, den: int64;
   end;
-
-(*************************************************)
-(* input/output formats *)
 
 (* this structure contains the data a format has to probe a file *)
   TAVProbeData = record {12}
@@ -107,9 +128,9 @@ type
     width: integer;
     height: integer;
     pix_fmt: TAVPixelFormat;
-    image_format: PAVImageFormat; (* 4 bytes *)
+{    image_format: PAVImageFormat; (* 4 bytes *)}  (* CAT#3 *)
     channel: integer; (* used to select dv channel *)
-    device: pchar; (* video, audio or DV device *)
+    device: pchar; (* video, audio or DV device, if LIBAVFORMAT_VERSION_INT < (52<<16) *)
     standard: pchar; (* tv standard, NTSC, PAL, SECAM *)
 //    int mpeg2ts_raw:1;  (* force raw MPEG2 transport stream output, if possible *)
 //    int mpeg2ts_compute_pcr:1; (* compute exact PCR for each transport
@@ -117,6 +138,7 @@ type
 //                                  mpeg2ts_raw is TRUE *)
 //    int initial_pause:1;       (* do not begin to play the stream
 //                                  immediately (RTSP only) *)
+//    int prealloced_context:1;
     dummy: byte;
     video_codec_id: TCodecID;
     audio_codec_id: TCodecID;
@@ -133,13 +155,20 @@ type
     audio_codec: TCodecID; (* default audio codec *)
     video_codec: TCodecID; (* default video codec *)
     write_header: function (c: PAVFormatContext): integer; cdecl;
-    write_packet: function (c: PAVFormatContext; pkt: PAVPacket): integer; cdecl;
+    write_packet: function (c: PAVFormatContext; var pkt: TAVPacket): integer; cdecl; (* CAT#2 *)
     write_trailer: function (c: PAVFormatContext): integer; cdecl;
     (* can use flags: AVFMT_NOFILE, AVFMT_NEEDNUMBER, AVFMT_GLOBALHEADER *)
     flags: integer;
     (* currently only used to set pixel format if not YUV420P *)
     set_parameters: function (c: PAVFormatContext; f: PAVFormatParameters): integer; cdecl;
     interleave_packet: function (s: PAVFormatContext; _out: PAVPacket; _in: PAVPacket; flush: integer): integer; cdecl;
+
+    (**
+     * list of supported codec_id-codec_tag pairs, ordered by "better choice first"
+     * the arrays are all CODEC_ID_NONE terminated
+     *)
+    //const struct AVCodecTag **codec_tag;
+
     (* private fields *)
     next: PAVOutputFormat;
   end;
@@ -159,7 +188,7 @@ type
     (* read one packet and put it in 'pkt'. pts and flags are also
        set. 'av_new_stream' can be called only if the flag
        AVFMTCTX_NOHEADER is used. *)
-    read_packet: function (c: PAVFormatContext; pkt: PAVPacket): integer; cdecl;
+    read_packet: function (c: PAVFormatContext; var pkt: TAVPacket): integer; cdecl;
     (* close the stream. The AVFormatContext and AVStreams are not
        freed by this function *)
     read_close: function (c: PAVFormatContext): integer; cdecl;
@@ -188,55 +217,66 @@ type
     (* pause playing - only meaningful if using a network based format  (RTSP) *)
     read_pause: function (c: PAVFormatContext): integer; cdecl;
 
+    //const struct AVCodecTag **codec_tag;
+
     (* private fields *)
     next: PAVInputFormat;
   end;
+
+  TAVStreamParseType = (
+    AVSTREAM_PARSE_NONE,
+    AVSTREAM_PARSE_FULL,       (**< full parsing and repack *)
+    AVSTREAM_PARSE_HEADERS,    (**< only parse headers, don't repack *)
+    AVSTREAM_PARSE_TIMESTAMPS  (**< full parsing and interpolation of timestamps for frames not starting on packet boundary *)
+    );
 
   TAVIndexEntry = record {24}
     pos: int64;
     timestamp: int64;
 (* the following 2 flags indicate that the next/prev keyframe is known, and scaning for it isnt needed *)
     flags: integer;
+//    int flags:2;
+//    int size:30; //Yeah, trying to keep the size of this small to reduce memory requirements (it is 24 vs 32 byte due to possible 8byte align).
     min_distance: integer;         (* min distance between this and the previous keyframe, used to avoid unneeded searching *)
   end;
 
   TAVStream = record {168}
-    index: integer;    (* stream index in AVFormatContext *)
-    id: integer;       (* format specific stream id *)
-    codec: PAVCodecContext; (* codec context *)
+    index: integer;    (* stream index in AVFormatContext *) {4-4}
+    id: integer;       (* format specific stream id *)       {4-8}
+    codec: PAVCodecContext; (* codec context *)              {4-12}
     (*** real base frame rate of the stream.
      * for example if the timebase is 1/90000 and all frames have either
      * approximately 3600 or 1800 timer ticks then r_frame_rate will be 50/1     *)
-    r_frame_rate: TAVRational;
-    priv_data: pointer;
+    r_frame_rate: TAVRational;                               {4*2=8-20}
+    priv_data: pointer;                                      {4-24}
     (* internal data used in av_find_stream_info() *)
-    codec_info_duration: int64;
-    codec_info_nb_frames: integer;
+    codec_info_duration: int64; (* #if LIBAVFORMAT_VERSION_INT < (52<<16) *)  {8-32}
+    codec_info_nb_frames: integer; (* #if LIBAVFORMAT_VERSION_INT < (52<<16) *) {4-38}
     (* encoding: PTS generation when outputing stream *)
-    pts: TAVFrac;
+    pts: TAVFrac;                                            {8*3=24-62}
 
     (*** this is the fundamental unit of time (in seconds) in terms
      * of which frame timestamps are represented. for fixed-fps content,
      * timebase should be 1/framerate and timestamp increments should be
      * identically 1.     *)
-    time_base: TAVRational;
-    pts_wrap_bits: integer; (* number of bits in pts (used for wrapping control) *)
+    time_base: TAVRational;                                  {4*2=8-70}
+    pts_wrap_bits: integer; (* number of bits in pts (used for wrapping control) *) {4-74}
     (* ffmpeg.c private use *)
-    stream_copy: integer; (* if TRUE, just copy stream *)
-    discard: TAVDiscard; ///< selects which packets can be discarded at will and dont need to be demuxed
+    stream_copy: integer; (* if TRUE, just copy stream *)  {4-78}
+    discard: TAVDiscard; ///< selects which packets can be discarded at will and dont need to be demuxed {4-82}
     //FIXME move stuff to a flags field?
     (* quality, as it has been removed from AVCodecContext and put in AVVideoFrame
      * MN:dunno if thats the right place, for it *)
-    quality: single;
+    quality: single; {4-86}
     (* decoding: position of the first frame of the component, in AV_TIME_BASE fractional seconds. *)
-    start_time: int64;
-    (* decoding: duration of the stream, in AV_TIME_BASE fractional seconds. *)
-    duration: int64;
+    start_time: int64; {8-92}
+    (* decoding: duration of the stream, in stream time base. *)
+    duration: int64; {8-100}
 
-    language: array [0..3] of char; (* ISO 639 3-letter language code (empty string if undefined) *)
+    language: array [0..3] of char; (* ISO 639 3-letter language code (empty string if undefined) *)(* 101 th byte - 1 base *) {4-104}
 
     (* av_read_frame() support *)
-    need_parsing: integer;                  ///< 1->full parsing needed, 2->only parse headers dont repack
+    need_parsing: TAVStreamParseType;//CAT#3           ///< 1->full parsing needed, 2->only parse headers dont repack
     parser: PAVCodecParserContext;
 
     cur_dts: int64;
@@ -245,10 +285,10 @@ type
     (* av_seek_frame() support *)
     index_entries: PAVIndexEntry; (* only used if the format does not support seeking natively *)
     nb_index_entries: integer;
-    index_entries_allocated_size: integer;
+    index_entries_allocated_size: cardinal; (* CAT#3 *)
 
     nb_frames: int64;                 ///< number of frames in this stream if known or 0
-    pts_buffer: array [0..4] of int64;
+    pts_buffer: array [0..MAX_REORDER_DELAY] of int64
   end;
 
 (* format I/O context *)
@@ -259,7 +299,7 @@ type
     oformat: PAVOutputFormat;
     priv_data: pointer;
     pb: TByteIOContext;
-    nb_streams: cardinal;//  integer;
+    nb_streams: cardinal;  (* CAT#3 *)
     streams: array [0..MAX_STREAMS - 1] of PAVStream;
     filename: array [0..1023] of char; (* input or output filename *)
     (* stream info *)
@@ -297,7 +337,7 @@ type
 
     (* av_read_frame() support *)
     cur_st: PAVStream;
-    cur_ptr: pchar;
+    cur_ptr: pbyte;
     cur_len: integer;
     cur_pkt: TAVPacket;
 
@@ -317,6 +357,14 @@ type
     loop_input: integer;
     (* decoding: size of data to probe; encoding unused *)
     probesize: cardinal;
+
+    (**
+     * maximum duration in AV_TIME_BASE units over which the input should be analyzed in av_find_stream_info()
+     *)
+    max_analyze_duration: integer;
+
+    key: pbyte;
+    keylen : integer
   end;
 
   TAVPacketList = record {64}
@@ -353,23 +401,19 @@ type
     flags: integer;
     next: PAVImageFormat;
   end;
-  
-  {$IFNDEF win32}
-  HFILE = THandle;
-  {$ENDIF}
 
-procedure av_destruct_packet_nofree (pkt: PAVPacket);
+procedure av_destruct_packet_nofree (var pkt: TAVPacket); (* CAT#2 *)
   cdecl; external av__format;
-procedure av_destruct_packet (pkt: PAVPacket);
+procedure av_destruct_packet (var pkt: TAVPacket); (* CAT#2 *)
   cdecl; external av__format;
 
 (* initialize optional fields of a packet *)
-procedure av_init_packet (pkt: PAVPacket);
+procedure av_init_packet (var pkt: TAVPacket);  (* CAT#2 *)
 
-function av_new_packet(pkt: PAVPacket; size: integer): integer;
+function av_new_packet(var pkt: TAVPacket; size: integer): integer; (* CAT#2 *)
   cdecl; external av__format;
 
-function av_get_packet (s: PByteIOContext; pkt: PAVPacket; size: integer): integer;
+function av_get_packet (s: PByteIOContext; var pkt: TAVPacket; size: integer): integer; (* CAT#2 *)
   cdecl; external av__format;
 
 function av_dup_packet (pkt: PAVPacket): integer;
@@ -378,7 +422,7 @@ function av_dup_packet (pkt: PAVPacket): integer;
 (** * Free a packet
  *
  * @param pkt packet to free *)
-procedure av_free_packet (pkt: PAVPacket);
+procedure av_free_packet (var pkt: TAVPacket); (* CAT#2 *)
 
 procedure av_register_image_format (img_fmt: PAVImageFormat);
     cdecl; external av__format;
@@ -408,15 +452,29 @@ function av_write_image(pb: PByteIOContext; fmt: PAVImageFormat; img: PAVImageIn
 //#include "rtsp.h"
 
 (* utils.c *)
-  procedure av_register_input_format (format: PAVInputFormat); cdecl; external av__format;
-  procedure av_register_output_format (format: PAVOutputFormat); cdecl; external av__format;
-  function guess_stream_format (short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat; cdecl; external av__format;
-  function guess_format(short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat; cdecl; external av__format;
+  procedure av_register_input_format (format: PAVInputFormat);
+    cdecl; external av__format;
+
+  procedure av_register_output_format (format: PAVOutputFormat);
+    cdecl; external av__format;
+
+  function guess_stream_format (short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat;
+    cdecl; external av__format;
+
+  function guess_format(short_name: pchar; filename: pchar; mime_type: pchar): PAVOutputFormat;
+    cdecl; external av__format;
+
   function av_guess_codec(fmt: PAVOutputFormat; short_name: pchar;
-                          filename: pchar; mime_type: pchar; _type: TCodecType): TCodecID; cdecl; external av__format;
-  procedure av_hex_dump (f: HFILE; buf: pchar; size: integer); cdecl; external av__format;
-  procedure av_pkt_dump(f: HFILE; pkt: pAVPacket; dump_payload: integer); cdecl; external av__format;
-  procedure av_register_all (); cdecl; external av__format;
+                          filename: pchar; mime_type: pchar; _type: TCodecType): TCodecID;
+    cdecl; external av__format;
+
+  procedure av_hex_dump (f: HFILE; buf: pchar; size: integer);
+    cdecl; external av__format;
+  procedure av_pkt_dump(f: HFILE; var pkt: TAVPacket; dump_payload: integer); (* CAT#2 *)
+    cdecl; external av__format;
+
+  procedure av_register_all ();
+    cdecl; external av__format;
 
 
 (* media file input *)
@@ -467,7 +525,7 @@ const
 
   function av_find_stream_info (ic: PAVFormatContext): integer;
     cdecl; external av__format;
-  function av_read_packet (s: PAVFormatContext; pkt: PAVPacket): integer;
+  function av_read_packet (s: PAVFormatContext; var pkt: TAVPacket): integer; (* CAT#2 *)
     cdecl; external av__format;
 (*** Return the next frame of a stream.
  *
@@ -487,7 +545,7 @@ const
  *
  * @return 0 if OK, < 0 if error or end of file. *)
 
-  function av_read_frame (s: PAVFormatContext; pkt: PAVPacket): integer;
+  function av_read_frame (s: PAVFormatContext; var pkt: TAVPacket): integer; (* CAT#2 *)
     cdecl; external av__format;
   function av_seek_frame (s: PAVFormatContext; stream_index: integer; timestamp: int64; flags: integer): integer;
     cdecl; external av__format;
@@ -530,11 +588,11 @@ const
   function av_write_header (s: PAVFormatContext): integer;
     cdecl; external av__format;
 
-  function av_write_frame(s: PAVFormatContext; pkt: PAVPacket): integer;
-    cdecl; external av__format;
+  function av_write_frame(s: PAVFormatContext; var pkt: TAVPacket): integer;
+    cdecl; external av__format; (* CAT#2 *)
 
-  function av_interleaved_write_frame (s: PAVFormatContext; pkt: PAVPacket): integer;
-    cdecl; external av__format;
+  function av_interleaved_write_frame (s: PAVFormatContext; var pkt: TAVPacket): integer;
+    cdecl; external av__format; (* CAT#2 *)
 
   function av_interleave_packet_per_dts(s: PAVFormatContext; _out: PAVPacket;
                                         pkt: PAVPacket; flush: integer): integer;
@@ -559,7 +617,6 @@ const
 const
   FFM_PACKET_SIZE = 4096;
 
-  {$IFNDEF FPC}
   function ffm_read_write_index (fd: integer): int64;
     cdecl; external av__format;
 
@@ -568,23 +625,20 @@ const
 
   procedure ffm_set_write_index (s: PAVFormatContext; pos: int64; file_size: int64);
     cdecl; external av__format;
-  {$ENDIF}
-  
+
   function find_info_tag (arg: pchar; arg_size: integer; tag1: pchar; info: pchar): integer;
     cdecl; external av__format;
 
-  {$IFNDEF FPC}
   function get_frame_filename(buf: pchar; buf_size: integer;
                        path: pchar; number: integer): integer;
     cdecl; external av__format;
-
   function filename_number_test (filename: pchar): integer;
     cdecl; external av__format;
+
 
 (* grab specific *)
   function video_grab_init (): integer;
     cdecl; external av__format;
-
   function audio_init (): integer;
     cdecl; external av__format;
 
@@ -593,7 +647,6 @@ const
     cdecl; external av__format;
   function dc1394_init (): integer;
     cdecl; external av__format;
-  {$ENDIF}
 
   function strstart(str: pchar; val: pchar; ptr: PPointer): integer;
     cdecl; external av__format;
@@ -610,21 +663,24 @@ const
 
 implementation
 
-procedure av_init_packet (pkt: PAVPacket);
+procedure av_init_packet (var pkt: TAVPacket);  (* CAT#2 + bug fix *)
 begin
-  pkt.pts   := AV_NOPTS_VALUE;
-  pkt.dts   := AV_NOPTS_VALUE;
-  pkt.pos   := -1;
-  pkt.duration := 0;
-  pkt.flags := 0;
-  pkt.stream_index := 0;
-  pkt.destruct := @av_destruct_packet_nofree;
+  with pkt do begin
+    pts   := AV_NOPTS_VALUE;
+    dts   := AV_NOPTS_VALUE;
+    pos   := -1;
+    duration := 0;
+    flags := 0;
+    stream_index := 0;
+    destruct := @av_destruct_packet_nofree
+  end
 end;
 
-procedure av_free_packet (pkt: PAVPacket);
+procedure av_free_packet (var pkt: TAVPacket); (* CAT#2 *)
 begin
-  if (pkt <> nil) and (@pkt^.destruct <> nil) then
-    pkt^.destruct (pkt);
+  if @pkt.destruct <> nil then pkt.destruct (@pkt)
+{  if (pkt <> nil) and (@pkt^.destruct <> nil) then
+    pkt^.destruct (pkt)}
 end;
 
 end.

@@ -15,21 +15,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
                                                                               *)
+(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+in the source codes *)
 
 unit avutil;
+{$MODE DELPHI}
+{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
 
 interface
 
-
 const
-  {$IFDEF win32}
-    av__util = 'avutil-49.dll';
-  {$ELSE}
-    av__util = 'libavutil.so';   // .0d
-  {$ENDIF}
+(* version numbers are changed by The Creative CAT *)
+  av__util = 'libavutil.49';
 
-  LIBAVUTIL_VERSION_INT   =  ((49 shl 16) + (0 shl 8) + 1);
-  LIBAVUTIL_VERSION       = '49.0.1';
+  LIBAVUTIL_VERSION_INT   =  ((49 shl 16) + (4 shl 8) + 1);
+  LIBAVUTIL_VERSION       = '49.4.1';
   LIBAVUTIL_BUILD         = LIBAVUTIL_VERSION_INT;
 
 type

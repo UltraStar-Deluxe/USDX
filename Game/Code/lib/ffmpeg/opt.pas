@@ -16,15 +16,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 *)
+(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+in the source codes *)
+
 unit opt;
+{$MODE DELPHI} (* CAT *)
+{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
 
 interface
 
 uses
-  {$IFDEF win32}
-  windows,
-  {$ENDIF}
-  rational;
+  rational;  (* CAT *)
 
 type
   TAVOptionType = (
@@ -39,12 +43,9 @@ type
   );
 
 const
+(* version numbers are changed by The Creative CAT *)
+  av__codec = 'libavcodec.51';
 
-  {$IFDEF win32}
-    av__codec = 'avcodec-51.dll';
-  {$ELSE}
-    av__codec = 'avcodec.so'; // .0d
-  {$ENDIF}
 
   AV_OPT_FLAG_ENCODING_PARAM  = 1;   ///< a generic parameter which can be set by the user for muxing or encoding
   AV_OPT_FLAG_DECODING_PARAM  = 2;   ///< a generic parameter which can be set by the user for demuxing or decoding

@@ -16,23 +16,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
+(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+in the source codes *)
+
 unit rational;
+{$MODE DELPHI}  (* CAT *)
+{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
 
-interface
-
-{$IFDEF win32}
-uses
-  windows;
-{$endif}
+interface		(* unit windows is deleted by CAT *)
 
 const
-
-  {$IFDEF win32}
-    av__util = 'avutil-49.dll';
-  {$ELSE}
-    av__util = 'libavutil.so';  // .0d
-  {$ENDIF}
-
+(* version numbers are changed by The Creative CAT *)
+  av__util = 'libavutil.49';
 
 type
 
@@ -82,10 +79,8 @@ var
 begin
   tmp := a.num * b.den - b.num * a.den;
 
-  if tmp = 0 then
-    Result := (tmp shr 63) or 1
-  else
-    Result := 0;
+  if tmp <> 0 then Result := (tmp shr 63) or 1 (* fixed by CAT *)
+              else Result := 0
 end;
 
 function av_q2d(a: TAVRational): double;

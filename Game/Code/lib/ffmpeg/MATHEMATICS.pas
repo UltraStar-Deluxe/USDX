@@ -20,11 +20,19 @@ interface
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
+(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+in the source codes *)
+ 
+{$MODE DELPHI} (* CAT *)
+{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+
 uses
-  windows, rational;
+  rational; (* CAT *)
 
 const
-  av__util = 'avutil-49.dll';
+  av__util = 'libavutil.49'; (* CAT *)
 
 type
   TAVRounding = (

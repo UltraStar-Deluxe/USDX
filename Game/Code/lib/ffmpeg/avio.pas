@@ -16,21 +16,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
                                                                               *)
+
+(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+in the source codes *)
+
 unit avio;
+{$MODE DELPHI } (* CAT *)
+{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
 
-interface
-
-{$IFDEF win32}
-uses
-  windows;
-{$ENDIF}
+interface       (* Widows unit is deleted by CAT *)
 
 const
-  {$IFDEF win32}
-    av__format = 'avformat-50.dll';
-  {$ELSE}
-    av__format = 'libavformat.so';   // .0d
-  {$ENDIF}
+(* version numbers are changed by The Creative CAT *)
+  av__format = 'libavformat.51';
 
   URL_RDONLY = 0;
   URL_WRONLY = 1;
@@ -230,14 +230,12 @@ type
   procedure init_checksum (s: PByteIOContext; update_checksum: pointer; checksum: cardinal);
     cdecl; external av__format;
 
-  {$IFNDEF FPC}
   function udp_set_remote_url(h: PURLContext; const uri: pchar): integer;
     cdecl; external av__format;
   function udp_get_local_port(h: PURLContext): integer;
     cdecl; external av__format;
   function udp_get_file_handle(h: PURLContext): integer;
     cdecl; external av__format;
-  {$ENDIF}
 
 implementation
 
