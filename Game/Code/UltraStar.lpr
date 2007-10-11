@@ -121,7 +121,7 @@ uses
   ULyrics_bak            in 'Classes\ULyrics_bak.pas',
   UMain                  in 'Classes\UMain.pas',
   UMusic                 in 'Classes\UMusic.pas',
-  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
+//  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
   UAudio_Bass            in 'Classes\UAudio_Bass.pas',
   
   UParty                 in 'Classes\UParty.pas',
