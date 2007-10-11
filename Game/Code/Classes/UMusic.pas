@@ -96,7 +96,6 @@ type
 type
   IAudioPlayback = Interface
       procedure InitializePlayback;
-      procedure InitializeRecord;
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
@@ -121,18 +120,25 @@ type
       procedure PlayClap;
       procedure PlayShuffle;
       procedure StopShuffle;
-      procedure CaptureStart;
-      procedure CaptureStop;
-      procedure CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
-      procedure StopCard(Card: byte);
-      function LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 
-      //Equalizer
-      function GetFFTData: TFFTData;
+      function LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 
       //Custom Sounds
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal );
+  end;
+
+  IAudioInput = Interface
+      procedure InitializeRecord;
+
+      procedure CaptureStart;
+      procedure CaptureStop;
+
+      procedure CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
+      procedure StopCard(Card: byte);
+
+      //Equalizer
+      function GetFFTData: TFFTData;
   end;
 
 
@@ -147,8 +153,11 @@ var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
   Czas:     TCzas;
   
 
-procedure InitializeSound;  
+procedure InitializeSound;
+ 
 function  AudioPlayback(): IAudioPlayback;
+function  AudioInput(): IAudioInput;
+
 
 implementation
 
@@ -158,16 +167,28 @@ uses
 
 var
   singleton_AudioPlayback : IAudioPlayback;
+  singleton_AudioInput    : IAudioInput;
 
 function AudioPlayback(): IAudioPlayback;
 begin
   if singleton_AudioPlayback = nil then
   begin
     writeln( 'Created AudioPlayback' );
-    singleton_AudioPlayback := TMusic_bass.create();
+    singleton_AudioPlayback := TMusic_bass.create(); // Yes we could do this with one instance of TMusic_Bass... but I cant be bothered at this point:P
   end;
 
   result := singleton_AudioPlayback;
+end;
+
+function AudioInput(): IAudioInput;
+begin
+  if singleton_AudioInput = nil then
+  begin
+    writeln( 'Created AudioInput' );
+    singleton_AudioInput := TMusic_bass.create();   // Yes we could do this with one instance of TMusic_Bass... but I cant be bothered at this point:P
+  end;
+
+  result := singleton_AudioInput;
 end;
 
 procedure InitializeSound;
@@ -176,7 +197,7 @@ begin
     AudioPlayback.InitializePlayback;
 
     Log.LogStatus('Initializing Record', 'InitializeSound');
-    AudioPlayback.InitializeRecord;
+    AudioInput.InitializeRecord;
 end;
 
 end.

@@ -170,7 +170,7 @@ begin
   end
   else //Start Without Song
   begin
-    AudioPlayback.CaptureStart;
+    AudioInput.CaptureStart;
   end;
 
 //Set Playerinfo

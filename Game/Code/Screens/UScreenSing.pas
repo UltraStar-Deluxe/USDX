@@ -451,7 +451,7 @@ begin
 
 
   // play music (I)
-  AudioPlayback.CaptureStart;
+  AudioInput.CaptureStart;
   AudioPlayback.MoveTo(AktSong.Start);
 //  Music.Play;
 
@@ -1201,7 +1201,7 @@ end;
 
 procedure TScreenSing.Finish;
 begin
-  AudioPlayback.CaptureStop;
+  AudioInput.CaptureStop;
   AudioPlayback.Stop;
 
   if Ini.SavePlayback = 1 then begin

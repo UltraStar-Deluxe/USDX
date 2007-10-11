@@ -32,7 +32,7 @@ uses Classes,
 
 type
 
-  TMusic_bass = class( TInterfacedObject, IAudioPlayback )
+  TMusic_bass = class( TInterfacedObject, IAudioPlayback, IAudioInput )
     private
       BassStart:          hStream;            // Wait, I've replaced this with BASS
       BassBack:           hStream;            // It has almost all features we need
