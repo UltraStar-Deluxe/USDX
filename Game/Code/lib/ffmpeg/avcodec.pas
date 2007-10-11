@@ -22,11 +22,13 @@ in the source codes *)
 
 unit avcodec;
 
-{$LINKLIB libavutil}
-{$LINKLIB libavcodec}
-{$MODE DELPHI } (* CAT *)
-{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$IFDEF FPC}
+  {$LINKLIB libavutil}
+  {$LINKLIB libavcodec}
+  {$MODE DELPHI } (* CAT *)
+  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$ENDIF}
 
 interface
 
@@ -34,8 +36,13 @@ uses
   avutil, rational, opt;  // CAT
 
 const
-(* version numbers are changed by The Creative CAT *)
-  av__format = 'libavformat.51';
+{$IFDEF win32}
+  av__format = 'avformat-50.dll';
+{$ELSE}
+  av__format = 'libavformat.so';   // .0d
+//  av__format = 'libavformat.51';
+{$ENDIF}
+
 
   LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (12 shl 8) + 1);
   LIBAVUTIL_VERSION       = '51.12.1';

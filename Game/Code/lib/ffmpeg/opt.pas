@@ -21,9 +21,11 @@ For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
 unit opt;
-{$MODE DELPHI} (* CAT *)
-{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$IFDEF FPC}
+  {$MODE DELPHI} (* CAT *)
+  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$ENDIF}
 
 interface
 
@@ -43,8 +45,13 @@ type
   );
 
 const
-(* version numbers are changed by The Creative CAT *)
-  av__codec = 'libavcodec.51';
+
+{$IFDEF win32}
+  av__codec = 'avcodec-51.dll';
+{$ELSE}
+  av__codec = 'avcodec.so'; // .0d
+  // av__codec = 'libavcodec.51';
+{$ENDIF}
 
 
   AV_OPT_FLAG_ENCODING_PARAM  = 1;   ///< a generic parameter which can be set by the user for muxing or encoding

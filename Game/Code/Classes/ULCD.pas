@@ -46,6 +46,7 @@ uses
   {$IFDEF UseSerialPort}
   zlportio,
   {$ENDIF}
+  SDL,
   UTime;
 
 procedure TLCD.WriteCommand(B: Byte);
@@ -64,7 +65,7 @@ begin
     zlioportwrite(Data, 0, B and $F0);
     zlioportwrite(Control, 0, $03);
 
-    TimeSleep(0.1);
+    SDL_Delay( 100 );
 
     zlioportwrite(Control, 0, $02);
     zlioportwrite(Data, 0, (B * 16) and $F0);
@@ -74,7 +75,7 @@ begin
   if (B=1) or (B=2) then
     Sleep(2)
   else
-    TimeSleep(0.1);
+    SDL_Delay( 100 );
 {$ENDIF}
 end;
 
@@ -82,23 +83,26 @@ procedure TLCD.WriteData(B: Byte);
 // Wysylanie danych
 begin
 {$IFDEF UseSerialPort} 
-  if not HalfInterface then begin
+  if not HalfInterface then
+  begin
     zlioportwrite(Control, 0, $06);
     zlioportwrite(Data, 0, B);
     zlioportwrite(Control, 0, $07);
-  end else begin
+  end
+  else
+  begin
     zlioportwrite(Control, 0, $06);
     zlioportwrite(Data, 0, B and $F0);
     zlioportwrite(Control, 0, $07);
 
-    TimeSleep(0.1);
+    SDL_Delay( 100 );
 
     zlioportwrite(Control, 0, $06);
     zlioportwrite(Data, 0, (B * 16) and $F0);
     zlioportwrite(Control, 0, $07);
   end;
 
-  TimeSleep(0.1);
+  SDL_Delay( 100 );
   Inc(Position);
 {$ENDIF}
 end;

@@ -20,15 +20,22 @@ For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
 unit avutil;
-{$MODE DELPHI}
-{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$IFDEF FPC}
+  {$MODE DELPHI}
+  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$ENDIF}
 
 interface
 
 const
-(* version numbers are changed by The Creative CAT *)
-  av__util = 'libavutil.49';
+{$IFDEF win32}
+  av__util = 'avutil-49.dll';
+{$ELSE}
+  av__util = 'libavutil.so';   // .0d
+//  av__util = 'libavutil.49';
+{$ENDIF}
+
 
   LIBAVUTIL_VERSION_INT   =  ((49 shl 16) + (4 shl 8) + 1);
   LIBAVUTIL_VERSION       = '49.4.1';

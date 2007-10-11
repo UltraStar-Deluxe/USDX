@@ -1766,7 +1766,7 @@ begin
            ( assigned( Theme.Song ) ) AND
            ( i < length( Data )     ) THEN
         begin
-          if single( Data[i] ) > single( 1 ) then
+          if single( Data[i] ) > 1  then
           begin
             lTmp := Single(Data[i]) * Theme.Song.Equalizer.Length;
             if lTmp > Pos then
@@ -1774,8 +1774,10 @@ begin
           end;
         end;
       except
+        {$IFDEF FPC}
         on E:EInvalidOp do
-          writeln( 'UScreenSong - DOH !!!! ('+inttostr(i)+' '+ inttostr( integer( single( Data[i] ) ) )+' * '+ ')' );
+          writeln( 'UScreenSong - DOH !!!! ('+inttostr(i)+' '+ inttostr( integer( Data[i] ) )+' * '+ ')' );
+        {$ENDIF}
       end
       
     end;

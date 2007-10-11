@@ -22,15 +22,24 @@ For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
 unit avio;
-{$MODE DELPHI } (* CAT *)
-{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$IFDEF FPC}
+  {$MODE DELPHI } (* CAT *)
+  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$ENDIF}
 
 interface       (* Widows unit is deleted by CAT *)
 
 const
 (* version numbers are changed by The Creative CAT *)
-  av__format = 'libavformat.51';
+
+{$IFDEF win32}
+  av__format = 'avformat-50.dll';
+{$ELSE}
+  av__format = 'libavformat.so';   // .0d
+//av__format = 'libavformat.51';
+{$ENDIF}
+
 
   URL_RDONLY = 0;
   URL_WRONLY = 1;

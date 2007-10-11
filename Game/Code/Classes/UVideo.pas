@@ -89,14 +89,14 @@ var
 implementation
 
 {$ifdef DebugDisplay}
-{$ifNdef win32}
+//{$ifNdef win32}
 
 procedure showmessage( aMessage : String );
 begin
   writeln( aMessage );
 end;
 
-{$endif}
+//{$endif}
 {$ENDIF}
 
 { ------------------------------------------------------------------------------

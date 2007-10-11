@@ -22,19 +22,31 @@ in the source codes *)
 
 unit avformat;
 
-{$LINKLIB libavutil}
-{$LINKLIB libavformat}
-{$MODE DELPHI } (* CAT *)
-{$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-{$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$IFDEF FPC}
+  {$LINKLIB libavutil}
+  {$LINKLIB libavformat}
+  {$MODE DELPHI } (* CAT *)
+  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
+  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+{$ENDIF}
 
 interface
 
 uses
-  avcodec, avio, rational, avutil; (* CAT *)
+  avcodec,
+  avio,
+  rational,
+  avutil; (* CAT *)
 
 const
-  av__format = 'libavformat.51'; (* CAT *)
+
+
+{$IFDEF win32}
+  av__format = 'avformat-50.dll';
+{$ELSE}
+  av__format = 'libavformat.so';   // .0d
+  //av__format = 'libavformat.51'; (* CAT *)
+{$ENDIF}
 
   LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (12 shl 8) + 1);
   LIBAVUTIL_VERSION       = '51.12.1';
