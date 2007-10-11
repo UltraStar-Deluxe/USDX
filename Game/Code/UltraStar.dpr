@@ -43,8 +43,12 @@ uses
   UCommon in 'Classes\UCommon.pas',
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
-  UMusic in 'Classes\UMusic.pas',
-  UMusic_BASS in 'Classes\UMusic_BASS.pas',
+
+  UMusic        in 'Classes\UMusic.pas',
+  UAudio_FFMpeg in 'Classes\UAudio_FFMpeg.pas',
+  UAudio_Bass   in 'Classes\UAudio_Bass.pas',
+
+
   ULanguage in 'Classes\ULanguage.pas',
   UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
@@ -291,8 +295,7 @@ begin
 
   // Sound
   Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize Sound', 'Initialization');
-  Log.LogStatus('Creating Music', 'InitializeSound');         InitializeSound();
+  Log.LogStatus('Initialize Sound', 'Initialization');        InitializeSound();
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Initializing Sound', 1);
 

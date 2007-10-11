@@ -95,6 +95,8 @@ type
 
 type
   IAudioPlayback = Interface
+  ['{E4AE0B40-3C21-4DC5-847C-20A87E0DFB96}']
+      function  GetName: String;
       procedure InitializePlayback;
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
@@ -129,6 +131,8 @@ type
   end;
 
   IAudioInput = Interface
+  ['{A5C8DA92-2A0C-4AB2-849B-2F7448C6003A}']
+      function  GetName: String;
       procedure InitializeRecord;
 
       procedure CaptureStart;
@@ -158,46 +162,89 @@ procedure InitializeSound;
 function  AudioPlayback(): IAudioPlayback;
 function  AudioInput(): IAudioInput;
 
+function  AudioManager: TInterfaceList;
+
 
 implementation
 
 uses
-  uLog,
-  UMusic_BASS;
+  sysutils,
+  uLog;
 
 var
   singleton_AudioPlayback : IAudioPlayback;
   singleton_AudioInput    : IAudioInput;
+  singleton_AudioManager  : TInterfaceList;
+
+
+function AudioManager: TInterfaceList;
+begin
+  Result := singleton_AudioManager;
+end; //CompressionPluginManager
+
 
 function AudioPlayback(): IAudioPlayback;
 begin
-  if singleton_AudioPlayback = nil then
-  begin
-    writeln( 'Created AudioPlayback' );
-    singleton_AudioPlayback := TMusic_bass.create(); // Yes we could do this with one instance of TMusic_Bass... but I cant be bothered at this point:P
-  end;
-
   result := singleton_AudioPlayback;
 end;
 
 function AudioInput(): IAudioInput;
 begin
-  if singleton_AudioInput = nil then
-  begin
-    writeln( 'Created AudioInput' );
-    singleton_AudioInput := TMusic_bass.create();   // Yes we could do this with one instance of TMusic_Bass... but I cant be bothered at this point:P
-  end;
-
   result := singleton_AudioInput;
 end;
 
 procedure InitializeSound;
+var
+  lTmpPlayBack : IAudioPlayback;
+  lTmpInput    : IAudioInput;
+  iCount       : Integer;
 begin
-    Log.LogStatus('Initializing Playback', 'InitializeSound');
-    AudioPlayback.InitializePlayback;
+  lTmpPlayBack := nil;
+  lTmpInput    := nil;
 
-    Log.LogStatus('Initializing Record', 'InitializeSound');
-    AudioInput.InitializeRecord;
+  writeln( 'InitializeSound , Enumerate Registered Audio Interfaces' );
+  for iCount := 0 to singleton_AudioManager.Count - 1 do
+  begin
+    if assigned( AudioManager[iCount] ) then
+    begin
+      // if this interface is a Playback, then set it as the default used
+      if ( AudioManager[iCount].QueryInterface( IAudioPlayback, lTmpPlayBack ) = 0 ) AND
+         ( not assigned( singleton_AudioPlayback )                                 ) then
+      begin
+        singleton_AudioPlayback := lTmpPlayBack;
+      end;
+
+      // if this interface is a Input, then set it as the default used
+      if ( AudioManager[iCount].QueryInterface( IAudioInput, lTmpInput )        = 0 ) AND
+         ( not assigned( singleton_AudioInput )                                     ) then
+      begin
+        singleton_AudioInput := lTmpInput;
+      end;
+    end;
+  end;
+
+
+  writeln( 'Registered Audio Playback Interface : ' + AudioPlayback.GetName );
+  writeln( 'Registered Audio Input Interface    : ' + AudioInput.GetName );
+
+  // Initialize Playback
+  Log.LogStatus('Initializing Playback ('+AudioPlayback.GetName+')', 'InitializeSound');
+  AudioPlayback.InitializePlayback;
+
+  // Initialize Input  
+  Log.LogStatus('Initializing Record ('+AudioPlayback.GetName+')', 'InitializeSound');
+  AudioInput.InitializeRecord;  
 end;
+
+initialization
+begin
+  writeln('Init AudioManager');
+  singleton_AudioManager := TInterfaceList.Create();
+end;
+
+finalization
+  writeln('Finalize AudioManager');
+  singleton_AudioManager.clear;
+  FreeAndNil( singleton_AudioManager );
 
 end.

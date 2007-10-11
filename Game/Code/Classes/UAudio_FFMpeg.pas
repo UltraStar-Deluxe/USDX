@@ -1,8 +1,6 @@
-unit UMusic_BASS;
+unit UAudio_FFMpeg;
 
 interface
-
-{$I switches.inc}
 
 {$IFDEF FPC}
   {$MODE Delphi}
@@ -10,12 +8,9 @@ interface
 
 
 uses Classes,
-
      {$IFDEF win32}
      windows,
      {$ENDIF}
-
-//     UCommon,
      Messages,
      SysUtils,
      {$IFNDEF FPC}
@@ -25,14 +20,30 @@ uses Classes,
      bass,
      ULog,
      UMusic;
-//     USongs;
-//     Classes;
 
+implementation
 
+uses
+     {$IFDEF FPC}
+     lclintf,
+     {$ENDIF}
+     URecord,
+     UIni,
+     UMain,
+     UThemes;
+
+const
+  RecordSystem = 1;
 
 type
+  TMPModes = (mpNotReady, mpStopped, mpPlaying, mpRecording, mpSeeking,
+    mpPaused, mpOpen);
 
-  TMusic_bass = class( TInterfacedObject, IAudioPlayback, IAudioInput )
+const
+  ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
+
+type
+    TAudio_ffMpeg = class( TInterfacedObject, IAudioPlayback )
     private
       BassStart:          hStream;            // Wait, I've replaced this with BASS
       BassBack:           hStream;            // It has almost all features we need
@@ -53,6 +64,7 @@ type
 
     public
       Bass: hStream;
+      function  GetName: String;
       procedure InitializePlayback;
       procedure InitializeRecord;
       procedure SetVolume(Volume: integer);
@@ -93,37 +105,15 @@ type
       procedure PlayCustomSound(const Index: Cardinal );
 end;
 
-const
-  RecordSystem = 1;
+var
+  singleton_MusicFFMpeg : IAudioPlayback;
 
-type
-  TMPModes = (mpNotReady, mpStopped, mpPlaying, mpRecording, mpSeeking,
-    mpPaused, mpOpen);
+function  TAudio_ffMpeg.GetName: String;
+begin
+  result := 'FFMpeg';
+end;
 
-const
-  ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
-
-implementation
-
-uses
-     {$IFDEF FPC}
-     lclintf,
-     {$ENDIF}
-     
-//     avcodec,
-//     avformat,
-//     avutil,
-
-//     UGraphic,
-     URecord,
-//     UFiles,
-     UIni,
-     UMain,
-     UThemes;
-
-
-
-procedure TMusic_bass.InitializePlayback;
+procedure TAudio_ffMpeg.InitializePlayback;
 var
   Pet:  integer;
   S:    integer;
@@ -139,7 +129,6 @@ begin
   fHWND  := AllocateHWND( nil); // TODO : JB_lazarus - can we do something different here ?? lazarus didnt like this function
   {$ENDIF}
 
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   if not BASS_Init(1, 44100, 0, fHWND, nil) then
   begin
@@ -149,7 +138,6 @@ begin
     {$ENDIF}
     Exit;
   end;
-  {$ENDIF}
 
   Log.BenchmarkEnd(4); Log.LogBenchmark('--> Bass Init', 4);
 
@@ -177,7 +165,7 @@ begin
   Log.LogBenchmark('--> Loading Sounds', 4);
 end;
 
-procedure TMusic_bass.InitializeRecord;
+procedure TAudio_ffMpeg.InitializeRecord;
 var
   S:        integer;
   device:   integer;
@@ -252,21 +240,20 @@ begin
   end; // if
 end;
 
-procedure TMusic_bass.SetVolume(Volume: integer);
+procedure TAudio_ffMpeg.SetVolume(Volume: integer);
 begin
   //Old Sets Wave Volume
   //BASS_SetVolume(Volume);
   //New: Sets Volume only for this Application
 
-  {$IFDEF useBASS}
+
   // TODO : jb_linux replace with something other than bass
   BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, Volume);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.SetMusicVolume(Volume: Integer);
+procedure TAudio_ffMpeg.SetMusicVolume(Volume: Integer);
 begin
   //Max Volume Prevention
   if Volume > 100 then
@@ -277,26 +264,22 @@ begin
 
 
   //Set Volume
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelSetAttributes (Bass, -1, Volume, -101);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.SetLoop(Enabled: boolean);
+procedure TAudio_ffMpeg.SetLoop(Enabled: boolean);
 begin
   Loop := Enabled;
 end;
 
-function TMusic_bass.Open(Name: string): boolean;
+function TAudio_ffMpeg.Open(Name: string): boolean;
 begin
   Loaded := false;
   if FileExists(Name) then
   begin
-    {$IFDEF useBASS}
     // TODO : jb_linux replace with something other than bass
     Bass := Bass_StreamCreateFile(false, pchar(Name), 0, 0, 0);
-    {$ENDIF}
     
     Loaded := true;
     //Set Max Volume
@@ -306,191 +289,153 @@ begin
   Result := Loaded;
 end;
 
-procedure TMusic_bass.Rewind;
+procedure TAudio_ffMpeg.Rewind;
 begin
   if Loaded then begin
   end;
 end;
 
-procedure TMusic_bass.MoveTo(Time: real);
+procedure TAudio_ffMpeg.MoveTo(Time: real);
 var
   bytes:    integer;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   bytes := BASS_ChannelSeconds2Bytes(Bass, Time);
   BASS_ChannelSetPosition(Bass, bytes);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.Play;
+procedure TAudio_ffMpeg.Play;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   if Loaded then
   begin
     if Loop then
-      BASS_ChannelPlay(Bass, True); // start from beginning... actually bass itself does not loop, nor does this TMusic_bass Class
+      BASS_ChannelPlay(Bass, True); // start from beginning... actually bass itself does not loop, nor does this TAudio_ffMpeg Class
 
     BASS_ChannelPlay(Bass, False); // for setting position before playing
   end;
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.Pause; //Pause Mod
+procedure TAudio_ffMpeg.Pause; //Pause Mod
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   if Loaded then begin
     BASS_ChannelPause(Bass); // Pauses Song
   end;
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.Stop;
+procedure TAudio_ffMpeg.Stop;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   Bass_ChannelStop(Bass);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.Close;
+procedure TAudio_ffMpeg.Close;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   Bass_StreamFree(Bass);
-  {$ENDIF}
 end;
 
-function TMusic_bass.Length: real;
+function TAudio_ffMpeg.Length: real;
 var
   bytes:    integer;
 begin
   Result := 60;
 
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   bytes  := BASS_ChannelGetLength(Bass);
   Result := BASS_ChannelBytes2Seconds(Bass, bytes);
-  {$ENDIF}
 end;
 
-function TMusic_bass.Position: real;
+function TAudio_ffMpeg.Position: real;
 var
   bytes:    integer;
 begin
   Result := 0;
 
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   bytes  := BASS_ChannelGetPosition(BASS);
   Result := BASS_ChannelBytes2Seconds(BASS, bytes);
-  {$ENDIF}
 end;
 
-function TMusic_bass.Finished: boolean;
+function TAudio_ffMpeg.Finished: boolean;
 begin
   Result := false;
 
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then
   begin
     Result := true;
   end;
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayStart;
+procedure TAudio_ffMpeg.PlayStart;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassStart, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayBack;
+procedure TAudio_ffMpeg.PlayBack;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassBack, True);// then
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlaySwoosh;
+procedure TAudio_ffMpeg.PlaySwoosh;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassSwoosh, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayChange;
+procedure TAudio_ffMpeg.PlayChange;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassChange, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayOption;
+procedure TAudio_ffMpeg.PlayOption;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassOption, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayClick;
+procedure TAudio_ffMpeg.PlayClick;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassClick, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayDrum;
+procedure TAudio_ffMpeg.PlayDrum;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassDrum, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayHihat;
+procedure TAudio_ffMpeg.PlayHihat;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassHihat, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayClap;
+procedure TAudio_ffMpeg.PlayClap;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassClap, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.PlayShuffle;
+procedure TAudio_ffMpeg.PlayShuffle;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassShuffle, True);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.StopShuffle;
+procedure TAudio_ffMpeg.StopShuffle;
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_ChannelStop(BassShuffle);
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.CaptureStart;
+procedure TAudio_ffMpeg.CaptureStart;
 var
   S:        integer;
   SC:       integer;
@@ -510,7 +455,7 @@ begin
   end;
 end;
 
-procedure TMusic_bass.CaptureStop;
+procedure TAudio_ffMpeg.CaptureStop;
 var
   SC:   integer;
   P1:       integer;
@@ -527,15 +472,12 @@ begin
 
 end;
 
-//procedure TMusic_bass.CaptureCard(RecordI, SoundNum, PlayerLeft, PlayerRight: byte);
-procedure TMusic_bass.CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
+//procedure TAudio_ffMpeg.CaptureCard(RecordI, SoundNum, PlayerLeft, PlayerRight: byte);
+procedure TAudio_ffMpeg.CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
 var
   Error:      integer;
   ErrorMsg:   string;
 begin
-  {$IFDEF useBASS}
-  // TODO : jb_linux replace with something other than bass
-
   if not BASS_RecordInit(RecordI) then
   begin
     Error := BASS_ErrorGetCode;
@@ -560,20 +502,16 @@ begin
   begin
     Recording.SoundCard[RecordI].BassRecordStream := BASS_RecordStart(44100, 2, MakeLong(0, 20) , @GetMicrophone, PlayerLeft + PlayerRight*256);
   end;
-  
-  {$ENDIF}
 end;
 
-procedure TMusic_bass.StopCard(Card: byte);
+procedure TAudio_ffMpeg.StopCard(Card: byte);
 begin
-  {$IFDEF useBASS}
   // TODO : jb_linux replace with something other than bass
   BASS_RecordSetDevice(Card);
   BASS_RecordFree;
-  {$ENDIF}
 end;
 
-function TMusic_bass.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
+function TAudio_ffMpeg.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 var
   L: Integer;
 begin
@@ -581,15 +519,9 @@ begin
   begin
     Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
     try
-      {$IFDEF useBASS}
       // TODO : jb_linux replace with something other than bass
       hStream := BASS_StreamCreateFile(False, pchar(Name), 0, 0, 0);
-      {$ELSE}
-      hStream := FFMPeg_StreamCreateFile(False, pchar(Name) );
-      {$ENDIF}
-      
 
-      
       //Add CustomSound
       L := High(CustomSounds) + 1;
       SetLength (CustomSounds, L + 1);
@@ -607,21 +539,15 @@ begin
 end;
 
 //Equalizer
-function TMusic_bass.GetFFTData: TFFTData;
+function TAudio_ffMpeg.GetFFTData: TFFTData;
 var
-Data: TFFTData;
+  Data: TFFTData;
 begin
-  {$IFDEF useBASS}
-  // TODO : jb_linux replace with something other than bass
-
   //Get Channel Data Mono and 256 Values
   BASS_ChannelGetData(Bass, @Result, BASS_DATA_FFT512);
-  //Result := Data;
-  
-  {$ENDIF}
 end;
 
-function TMusic_bass.LoadCustomSound(const Filename: String): Cardinal;
+function TAudio_ffMpeg.LoadCustomSound(const Filename: String): Cardinal;
 var
   S: hStream;
   I: Integer;
@@ -644,15 +570,10 @@ begin
     Result := 0;
 end;
 
-procedure TMusic_bass.PlayCustomSound(const Index: Cardinal );
+procedure TAudio_ffMpeg.PlayCustomSound(const Index: Cardinal );
 begin
-  {$IFDEF useBASS}
-  // TODO : jb_linux replace with something other than bass
-
   if Index <= High(CustomSounds) then
     BASS_ChannelPlay(CustomSounds[Index].Handle, True);
-    
-  {$ENDIF}
 end;
 
 
@@ -660,7 +581,7 @@ end;
 
 Sorry guys... this is my mess :(
 Im going to try and get ffmpeg to handle audio playback ( at least for linux )
-and Im going to implement it nicly along side BASS, in TMusic_bass ( where I can )
+and Im going to implement it nicly along side BASS, in TAudio_ffMpeg ( where I can )
 
 http://www.dranger.com/ffmpeg/ffmpeg.html
 http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
@@ -669,7 +590,7 @@ http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
 
 *}
 {*
-function TMusic_bass.FFMPeg_StreamCreateFile(abool : boolean; aFileName : pchar ): THandle;
+function TAudio_ffMpeg.FFMPeg_StreamCreateFile(abool : boolean; aFileName : pchar ): THandle;
 var
  lFormatCtx : PAVFormatContext;
 begin
@@ -699,5 +620,15 @@ begin
 *)
 
 end;  *}
+
+initialization
+  singleton_MusicFFMpeg := TAudio_ffMpeg.create();
+
+  writeln( 'UAudio_Bass - Register Playback' );
+  AudioManager.add( IAudioPlayback( singleton_MusicFFMpeg ) );
+
+finalization
+  AudioManager.Remove( IAudioPlayback( singleton_MusicFFMpeg ) );
+
 
 end.
