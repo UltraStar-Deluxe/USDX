@@ -122,8 +122,10 @@ uses
   UMain                  in 'Classes\UMain.pas',
   UMusic                 in 'Classes\UMusic.pas',
 //  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
-  UAudio_Bass            in 'Classes\UAudio_Bass.pas',
-  
+{$ifdef win32}
+  UAudio_bass            in 'Classes\UAudio_bass.pas',
+{$endif}
+
   UParty                 in 'Classes\UParty.pas',
   UPlaylist              in 'Classes\UPlaylist.pas',
   URecord                in 'Classes\URecord.pas',
@@ -416,9 +418,7 @@ exit;
 
   // Sound
   Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize Sound', 'Initialization');
-  Log.LogStatus('Creating Music', 'InitializeSound');         Music := TMusic.Create;
-  InitializeSound;
+  Log.LogStatus('Initialize Sound', 'Initialization');        InitializeSound();
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Initializing Sound', 1);
 
