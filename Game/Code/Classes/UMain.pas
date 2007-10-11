@@ -520,7 +520,7 @@ begin
 
   // beat click
   if (Ini.BeatClick = 1) and ((Czas.AktBeatC + Czesci[0].Resolution + Czesci[0].NotesGAP) mod Czesci[0].Resolution = 0) then
-    Music.PlayClick;
+    AudioPlayback.PlayClick;
 
   // debug system on LPT
   if ((Czas.AktBeatC + Czesci[0].Resolution + Czesci[0].NotesGAP) mod Czesci[0].Resolution = 0) then begin
@@ -542,7 +542,7 @@ begin
     if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = Czas.AktBeatC) then begin
       // click assist
       if Ini.ClickAssist = 1 then
-        Music.PlayClick;
+        AudioPlayback.PlayClick;
 
         //LPT_2 := 0;
         if ParamStr(1) <> '-doublelights' then

@@ -65,7 +65,7 @@ begin
       SDLK_ESCAPE:
         begin
           Visible := False;
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           if (VisSongs = 0) AND (Length(Button[0].Text[0].Text) > 0) then
           begin
             ScreenSong.UnLoadDetailedCover;

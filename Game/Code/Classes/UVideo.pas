@@ -210,7 +210,6 @@ begin
       writeln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
       writeln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
     end;
-(*
     aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
 
     WantedAudioCodecContext.freq     := aCodecCtx^.sample_rate;
@@ -222,7 +221,7 @@ begin
     WantedAudioCodecContext.userdata := aCodecCtx;
 
 
-
+(*
     if(SDL_OpenAudio(WantedAudioCodecContext, AudioCodecContext) < 0) then
     begin
       writeln( 'Could not do SDL_OpenAudio' );

@@ -51,7 +51,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenStatMain);
         end;
       SDLK_RETURN:
@@ -74,7 +74,7 @@ begin
           end;
 
           if Interaction = 3 then begin
-            Music.PlayBack;
+            AudioPlayback.PlayBack;
             FadeTo(@ScreenStatMain);
           end;
         end;

@@ -4,50 +4,32 @@ program UltraStar;
 {$I switches.inc}
 
 uses
-  //------------------------------
-  //Includes - 3rd Party Libraries
-  //------------------------------
-  SDL          in 'lib\JEDI-SDLv1.0\SDL\Pas\SDL.pas',
+  SDL in 'lib\JEDI-SDLv1.0\SDL\Pas\SDL.pas',
   moduleloader in 'lib\JEDI-SDLv1.0\SDL\Pas\moduleloader.pas',
-  sdlutils     in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas',
-  sdl_image    in 'lib\JEDI-SDLv1.0\SDL_Image\Pas\sdl_image.pas',
-  OpenGL12     in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
-  sdl_ttf      in 'lib\JEDI-SDLv1.0\SDL_ttf\Pas\sdl_ttf.pas',
-
-  bass         in 'lib\bass\delphi\bass.pas',
-
-  PNGImage     in 'lib\PNGImage\PNGImage.pas',
-  PNGzLib      in 'lib\PNGImage\PNGzLib.pas',
-  pnglang      in 'lib\PNGImage\pnglang.pas',
-
-  midiout      in 'lib\midi\midiout.pas',
-  midiin       in 'lib\midi\midiin.pas',
-  Circbuf      in 'lib\midi\CIRCBUF.PAS',
-  MidiType     in 'lib\midi\MidiType.PAS',
-  MidiDefs     in 'lib\midi\MidiDefs.PAS',
-  MidiCons     in 'lib\midi\MidiCons.PAS',
-  MidiFile     in 'lib\midi\MidiFile.PAS',
-  Delphmcb     in 'lib\midi\Delphmcb.PAS',
-
-  {$IFDEF UseSerialPort}
-  zlportio     in 'lib\zlportio\zlportio.pas',
-  ddkint       in 'lib\zlportio\ddkint.pas',
-  {$ENDIF}
-
-  avcodec      in 'lib\ffmpeg\avcodec.pas',
-  avformat     in 'lib\ffmpeg\avformat.pas',
-  avutil       in 'lib\ffmpeg\avutil.pas',
-  rational     in 'lib\ffmpeg\rational.pas',
-  opt          in 'lib\ffmpeg\opt.pas',
-  avio         in 'lib\ffmpeg\avio.pas',
-
+  sdlutils in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas',
+  sdl_image in 'lib\JEDI-SDLv1.0\SDL_Image\Pas\sdl_image.pas',
+  OpenGL12 in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
+  sdl_ttf in 'lib\JEDI-SDLv1.0\SDL_ttf\Pas\sdl_ttf.pas',
+  bass in 'lib\bass\delphi\bass.pas',
+  PNGImage in 'lib\PNGImage\PNGImage.pas',
+  PNGzLib in 'lib\PNGImage\PNGzLib.pas',
+  pnglang in 'lib\PNGImage\pnglang.pas',
+  midiout in 'lib\midi\midiout.pas',
+  midiin in 'lib\midi\midiin.pas',
+  CIRCBUF in 'lib\midi\CIRCBUF.PAS',
+  MidiType in 'lib\midi\MidiType.PAS',
+  MidiDefs in 'lib\midi\MidiDefs.PAS',
+  MidiCons in 'lib\midi\MidiCons.PAS',
+  MidiFile in 'lib\midi\MidiFile.PAS',
+  Delphmcb in 'lib\midi\Delphmcb.PAS',
+  avcodec in 'lib\ffmpeg\avcodec.pas',
+  avformat in 'lib\ffmpeg\avformat.pas',
+  avutil in 'lib\ffmpeg\avutil.pas',
+  rational in 'lib\ffmpeg\rational.pas',
+  opt in 'lib\ffmpeg\opt.pas',
+  avio in 'lib\ffmpeg\avio.pas',
   SQLiteTable3 in 'lib\SQLite\SQLiteTable3.pas',
-  SQLite3      in 'lib\SQLite\SQLite3.pas',
-
-
-  //------------------------------
-  //Includes - Menu System
-  //------------------------------
+  SQLite3 in 'lib\SQLite\SQLite3.pas',
   UDisplay in 'Menu\UDisplay.pas',
   UMenu in 'Menu\UMenu.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
@@ -58,14 +40,11 @@ uses
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
   UMenuButtonCollection in 'Menu\UMenuButtonCollection.pas',
-
-  //------------------------------
-  //Includes - Classes
-  //------------------------------
   UCommon in 'Classes\UCommon.pas',
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
   UMusic in 'Classes\UMusic.pas',
+  UMusic_BASS in 'Classes\UMusic_BASS.pas',
   ULanguage in 'Classes\ULanguage.pas',
   UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
@@ -90,27 +69,17 @@ uses
   UDLLManager in 'Classes\UDLLManager.pas',
   UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
-  UCommandLine  in 'Classes\UCommandLine.pas',
+  UCommandLine in 'Classes\UCommandLine.pas',
   UTextClasses in 'Classes\UTextClasses.pas',
   USingScores in 'Classes\USingScores.pas',
   USingNotes in 'Classes\USingNotes.pas',
-
-  //New Plugin and Core Management
-  UModules in 'Classes\UModules.pas',      //This Unit contains a const with the Modules to Load
-  UHooks in 'Classes\UHooks.pas',          //Class for Hook Management     //Write Freeing  Methods for Both
-  UServices in 'Classes\UServices.pas',    //95% - One Hack to remove ;)
-  UCore in 'Classes\UCore.pas',            //30 % - Many Classes needs Rewriting or Manipulation
+  UModules in 'Classes\UModules.pas',
+  UHooks in 'Classes\UHooks.pas',
+  UServices in 'Classes\UServices.pas',
+  UCore in 'Classes\UCore.pas',
   UCoreModule in 'Classes\UCoreModule.pas',
-  UPluginInterface in 'Classes\UPluginInterface.pas', //Some changes to work with unwriten classes, need to be done
-
-  //------------------------------
-  //Includes - Video Support
-  //------------------------------
+  UPluginInterface in 'Classes\UPluginInterface.pas',
   UVideo in 'Classes\UVideo.pas',
-
-  //------------------------------
-  //Includes - Screens
-  //------------------------------
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -139,26 +108,14 @@ uses
   UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
   UScreenCredits in 'Screens\UScreenCredits.pas',
   UScreenPopup in 'Screens\UScreenPopup.pas',
-
-  //------------------------------
-  //Includes - Screens PartyMode
-  //------------------------------
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
   UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
-
-  //------------------------------
-  //Includes - Modi SDK
-  //------------------------------
   ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
-  UPluginDefs in '..\..\Modis\SDK\UPluginDefs.pas', //New Plugin SDK
-
-  //------------------------------
-  //Includes - Delphi
-  //------------------------------
+  UPluginDefs in '..\..\Modis\SDK\UPluginDefs.pas',
   Windows,
   SysUtils;
 
@@ -335,8 +292,7 @@ begin
   // Sound
   Log.BenchmarkStart(1);
   Log.LogStatus('Initialize Sound', 'Initialization');
-  Log.LogStatus('Creating Music', 'InitializeSound');         Music := TMusic.Create;
-  InitializeSound;
+  Log.LogStatus('Creating Music', 'InitializeSound');         InitializeSound();
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Initializing Sound', 1);
 

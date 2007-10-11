@@ -57,7 +57,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Music.PlayStart;
+          AudioPlayback.PlayStart;
           if (PartySession.CurRound < High(PartySession.Rounds)) then
             FadeTo(@ScreenPartyNewRound)
           else
@@ -69,7 +69,7 @@ begin
 
       SDLK_RETURN:
         begin
-          Music.PlayStart;
+          AudioPlayback.PlayStart;
           if (PartySession.CurRound < High(PartySession.Rounds)) then
             FadeTo(@ScreenPartyNewRound)
           else

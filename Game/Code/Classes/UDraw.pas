@@ -470,7 +470,7 @@ var
   lTmpB  : real;
 begin
   if (Player[NrGracza].ScoreTotalI >= 0) then begin
-  glColor4f(1, 1, 1, sqrt((1+sin(Music.Position * 3))/4)/ 2 + 0.5 );
+  glColor4f(1, 1, 1, sqrt((1+sin( AudioPlayback.Position * 3))/4)/ 2 + 0.5 );
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

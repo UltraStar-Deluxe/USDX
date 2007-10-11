@@ -102,7 +102,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Finish;
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenPartyScore);
         end;
 
@@ -170,7 +170,7 @@ begin
   end
   else //Start Without Song
   begin
-    Music.CaptureStart;
+    AudioPlayback.CaptureStart;
   end;
 
 //Set Playerinfo
@@ -531,7 +531,7 @@ end;
   if ShowFinish then begin
     if DllMan.Selected.LoadSong then
     begin
-      if (not Music.Finished) and ((AktSong.Finish = 0) or (Czas.Teraz*1000 <= AktSong.Finish)) then begin
+      if (not AudioPlayback.Finished) and ((AktSong.Finish = 0) or (Czas.Teraz*1000 <= AktSong.Finish)) then begin
         //Pause Mod:
         if not Paused then
           Sing(Self);       // analyze song
@@ -658,12 +658,12 @@ end;
 
 function LoadSound  (const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
 begin
- Result := Music.LoadCustomSound(String(Name));
+ Result := AudioPlayback.LoadCustomSound(String(Name));
 end;
 
 procedure PlaySound (const Index: Cardinal); stdcall;       //Plays a Custom Sound
 begin
-  Music.PlayCustomSound(Index);
+  AudioPlayback.PlayCustomSound(Index);
 end;
 
 end.

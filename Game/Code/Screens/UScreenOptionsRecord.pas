@@ -36,14 +36,14 @@ begin
       SDLK_BACKSPACE:
         begin
           Ini.Save;
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
         begin
           if SelInteraction = 4 then begin
             Ini.Save;
-            Music.PlayBack;
+            AudioPlayback.PlayBack;
             FadeTo(@ScreenOptions);
           end;
         end;
@@ -54,7 +54,7 @@ begin
       SDLK_RIGHT:
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
-            Music.PlayOption;
+            AudioPlayback.PlayOption;
             InteractInc;
           end;
           if SelInteraction = 0 then UpdateCard;
@@ -62,7 +62,7 @@ begin
       SDLK_LEFT:
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
-            Music.PlayOption;
+            AudioPlayback.PlayOption;
             InteractDec;
           end;
           if SelInteraction = 0 then UpdateCard;

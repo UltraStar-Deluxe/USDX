@@ -265,7 +265,7 @@ begin
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-            Music.PlayChange;
+            AudioPlayback.PlayChange;
 
             ChangeMusic;
             SetScroll4;
@@ -284,7 +284,7 @@ begin
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-            Music.PlayChange;
+            AudioPlayback.PlayChange;
 
             ChangeMusic;
             SetScroll4;
@@ -326,7 +326,7 @@ begin
             Interaction := I - 1;
 
             //Stop Music
-            Music.Stop;
+            AudioPlayback.Stop;
 
             CatSongs.ShowCategoryList;
 
@@ -361,8 +361,8 @@ begin
             end
             else
             begin
-              Music.Stop;
-              Music.PlayBack;
+              AudioPlayback.Stop;
+              AudioPlayback.PlayBack;
 
               FadeTo(@ScreenMain);
             end;
@@ -372,7 +372,7 @@ begin
         //When in party Mode then Ask before Close
         else if (Mode = 1) then
         begin
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
         end;
         end;
@@ -495,7 +495,7 @@ begin
                 FixSelected;
 
                 //Play Music:
-                Music.PlayChange;
+                AudioPlayback.PlayChange;
                 ChangeMusic;
 
               end;
@@ -538,7 +538,7 @@ begin
                 FixSelected;
 
                 //Play Music:
-                Music.PlayChange;
+                AudioPlayback.PlayChange;
                 ChangeMusic;
               end;
             end;
@@ -548,8 +548,9 @@ begin
 
       SDLK_RIGHT:
         begin
-          if (Length(Songs.Song) > 0) AND (Mode = 0) then begin
-            Music.PlayChange;
+          if (Length(Songs.Song) > 0) AND (Mode = 0) then
+          begin
+            AudioPlayback.PlayChange;
             SelectNext;
 //            InteractNext;
 //           SongTarget := Interaction;
@@ -563,7 +564,7 @@ begin
       SDLK_LEFT:
         begin
           if (Length(Songs.Song) > 0)AND (Mode = 0)  then begin
-            Music.PlayChange;
+            AudioPlayback.PlayChange;
             SelectPrev;
             ChangeMusic;
             SetScroll4;
@@ -643,9 +644,9 @@ begin
             end
             else //Random in one Category
             begin
-            SkipTo(Random(CatSongs.VisibleSongs));
+              SkipTo(Random(CatSongs.VisibleSongs));
             end;
-            Music.PlayChange;
+            AudioPlayback.PlayChange;
 
             ChangeMusic;
             SetScroll4;
@@ -1410,7 +1411,7 @@ end;
 
 procedure TScreenSong.onShow;
 begin
-  Music.Stop;
+  AudioPlayback.Stop;
 
   if Ini.Players <= 3 then PlayersPlay := Ini.Players + 1;
   if Ini.Players = 4 then PlayersPlay := 6;
@@ -1429,13 +1430,13 @@ begin
     //Load Music only when Song Preview is activated
     if (Ini.PreviewVolume <> 0) then
     begin
-      Music.SetLoop(false);
-      Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
-      Music.MoveTo(Music.Length / 4);
-      Music.Play;
+      AudioPlayback.SetLoop(false);
+      AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
+      AudioPlayback.MoveTo(AudioPlayback.Length / 4);
+      AudioPlayback.Play;
 
       //Set Preview Volume
-      Music.SetMusicVolume (Ini.PreviewVolume * 10);
+      AudioPlayback.SetMusicVolume (Ini.PreviewVolume * 10);
       {//if Music Fade is activated, Set Volume to 0 %
       if (Ini.PreviewFading <> 0) then
         Music.SetMusicVolume(0);}
@@ -1478,15 +1479,15 @@ procedure TScreenSong.onHide;
 begin
   //When Music Fading is activated, Turn Music to 100 %
   If (Ini.PreviewVolume <> 100) or (Ini.PreviewFading <> 0) then
-    Music.SetMusicVolume(100);
+    AudioPlayback.SetMusicVolume(100);
 
   //If Preview is deactivated: Load MUsicfile now
   If (Ini.PreviewVolume = 0) then
-    Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
+    AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
 
   //When hide then Stop Music (For Party Mode Popup on Exit)
-  if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) and (Music <> nil) then
-    Music.Stop;
+  if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) and (AudioPlayback <> nil) then
+    AudioPlayback.Stop;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -1546,13 +1547,13 @@ begin
     begin
       //Start Song Fade after a little Time, to prevent Song to be Played on Scrolling
       if (CoverTime < 0.2) and (CoverTime + TimeSkip >= 0.2) then
-        Music.Play;
+        AudioPlayback.Play;
 
       //Update Song Volume
       if (CoverTime < Ini.PreviewFading) then
-        Music.SetMusicVolume(Round (CoverTime * Ini.PreviewVolume / Ini.PreviewFading * 10))
+        AudioPlayback.SetMusicVolume(Round (CoverTime * Ini.PreviewVolume / Ini.PreviewFading * 10))
       else
-        Music.SetMusicVolume(Ini.PreviewVolume * 10);
+        AudioPlayback.SetMusicVolume(Ini.PreviewVolume * 10);
 
     end;
 
@@ -1673,18 +1674,18 @@ begin
     begin
     if (NOT CatSongs.Song[Interaction].Main) AND(CatSongs.VisibleSongs > 0) then
     begin
-      Music.Close;
-      if Music.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-        Music.MoveTo(Music.Length / 4);
+      AudioPlayback.Close;
+      if AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
+        AudioPlayback.MoveTo(AudioPlayback.Length / 4);
         //If Song Fading is activated then don't Play directly, and Set Volume to Null, else Play normal
         if (Ini.PreviewFading = 0) then
-          Music.Play
+          AudioPlayback.Play
         else
-          Music.SetMusicVolume(0);
+          AudioPlayback.SetMusicVolume(0);
       end;
     end
     else
-      Music.Stop;
+      AudioPlayback.Stop;
   end;
 end;
 
@@ -1715,7 +1716,7 @@ var
   lTmp : double;
 begin
 
-if (not Music.Finished) AND (Theme.Song.Equalizer.Length > 0) then
+if (not AudioPlayback.Finished) AND (Theme.Song.Equalizer.Length > 0) then
 begin
 
 
@@ -1724,7 +1725,7 @@ begin
   if (A <> EqualizerTime) then
   begin
     EqualizerTime := A;
-    Data := Music.GetFFTData;
+    Data := AudioPlayback.GetFFTData;
 
     B:=0;
     Pos := 0;
@@ -1890,7 +1891,7 @@ begin
         end;
   end;
 
-  Music.PlayChange;
+  AudioPlayback.PlayChange;
   ChangeMusic;
   SetScroll;
   UpdateLCD;
@@ -2003,7 +2004,7 @@ end;
 procedure TScreenSong.StartSong;
 begin
   CatSongs.Selected := Interaction;
-  Music.Stop;
+  AudioPlayback.Stop;
   //Party Mode
   if (Mode = 1) then
   begin
@@ -2018,7 +2019,7 @@ end;
 procedure TScreenSong.SelectPlayers;
 begin
   CatSongs.Selected := Interaction;
-  Music.Stop;
+  AudioPlayback.Stop;
 
   ScreenName.Goto_SingScreen := True;
   FadeTo(@ScreenName);
@@ -2026,9 +2027,10 @@ end;
 
 procedure TScreenSong.OpenEditor;
 begin
-  if (Length(Songs.Song) > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = 0) then begin
-    Music.Stop;
-    Music.PlayStart;
+  if (Length(Songs.Song) > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = 0) then
+  begin
+    AudioPlayback.Stop;
+    AudioPlayback.PlayStart;
     ScreenEditSub.Path := CatSongs.Song[Interaction].Path;
     ScreenEditSub.FileName := CatSongs.Song[Interaction].FileName;
     FadeTo(@ScreenEditSub);

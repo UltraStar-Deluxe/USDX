@@ -32,7 +32,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
@@ -41,7 +41,7 @@ begin
           //if SelInteraction = 7 then begin
           if SelInteraction = 6 then begin
             Ini.Save;
-            Music.PlayBack;
+            AudioPlayback.PlayBack;
             FadeTo(@ScreenOptions);
           end;
         end;
@@ -54,7 +54,7 @@ begin
           //SelectLoadAnimation Hidden because it is useless atm
           //if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
           if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
-            Music.PlayOption;
+            AudioPlayback.PlayOption;
             InteractInc;
           end;
         end;
@@ -63,7 +63,7 @@ begin
           //SelectLoadAnimation Hidden because it is useless atm
           //if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
           if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
-            Music.PlayOption;
+            AudioPlayback.PlayOption;
             InteractDec;
           end;
         end;

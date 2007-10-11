@@ -36,14 +36,15 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenMain);
 //          Result := false;
         end;
       SDLK_RETURN:
         begin
-          if Interaction = 0 then begin
-            Music.PlayStart;
+          if Interaction = 0 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenEditConvert);
           end;
 //          if Interaction = 1 then begin
@@ -51,8 +52,9 @@ begin
 //            FadeTo(@ScreenEditHeader);
 //          end;
 
-          if Interaction = 1 then begin
-            Music.PlayBack;
+          if Interaction = 1 then
+          begin
+            AudioPlayback.PlayBack;
             FadeTo(@ScreenMain);
           end;
         end;

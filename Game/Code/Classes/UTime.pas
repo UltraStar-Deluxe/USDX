@@ -6,7 +6,6 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$DEFINE SDLTimer}
 {$UNDEF DebugDisplay}
 
 type
@@ -22,7 +21,6 @@ procedure CountMidTime;
 var
   USTime:   TTime;
   
-  TimeFreq: int64;
   TimeNew:  int64;
   TimeOld:  int64;
   TimeSkip: real;
@@ -32,16 +30,8 @@ var
 implementation
 
 uses
-  {$IFDEF win32}
-    windows,
-  {$ELSE}
-  libc,
-  time,
-  {$ENDIF}
-  sysutils,
-  {$IFDEF SDLTimer}
+//  sysutils,
   sdl,
-  {$ENDIF}
   ucommon;
   
 const
@@ -65,18 +55,7 @@ end;
 
 procedure CountSkipTimeSet;
 begin
-  {$IFDEF SDLTimer}
-    TimeNew  := SDL_GetTicks(); // / cSDLCorrectionRatio
-    TimeFreq := 0;
-  {$ELSE}
-    {$IFDEF win32}
-    QueryPerformanceFrequency(TimeFreq);
-    QueryPerformanceCounter(TimeNew);
-    {$ELSE}
-    TimeNew  := CurrentSec100OfDay();     // TODO - JB_Linux will prob need looking at
-    TimeFreq := 0;
-    {$ENDIF}
-  {$ENDIF}
+  TimeNew  := SDL_GetTicks();
 
   {$IFDEF DebugDisplay}
   Writeln( 'CountSkipTimeSet : ' + inttostr(trunc(TimeNew)) );
@@ -86,26 +65,9 @@ end;
 
 procedure CountSkipTime;
 begin
-  TimeOld := TimeNew;
-  
-  {$IFDEF SDLTimer}
-    TimeNew  := SDL_GetTicks();
-    TimeSkip := (TimeNew-TimeOld) / cSDLCorrectionRatio;
-  {$ELSE}
-    {$IFDEF win32}
-    QueryPerformanceCounter(TimeNew);
-    
-    if ( TimeNew-TimeOld > 0 ) AND
-       ( TimeFreq        > 0 ) THEN
-    begin
-      TimeSkip := (TimeNew-TimeOld)/TimeFreq;
-    end;
-    
-    {$ELSE}
-    TimeNew  := CurrentSec100OfDay();    // TODO - JB_Linux will prob need looking at
-    TimeSkip := (TimeNew-TimeOld);
-    {$ENDIF}
-  {$ENDIF}
+  TimeOld  := TimeNew;
+  TimeNew  := SDL_GetTicks();
+  TimeSkip := (TimeNew-TimeOld) / cSDLCorrectionRatio;
 
   {$IFDEF DebugDisplay}
     Writeln( 'TimeNew       : ' + inttostr(trunc(TimeNew)) );
@@ -116,43 +78,20 @@ end;
 
 procedure CountMidTime;
 begin
-  {$IFDEF SDLTimer}
-    TimeMidTemp := SDL_GetTicks();
-    TimeMid     := (TimeMidTemp - TimeNew) / cSDLCorrectionRatio;
-  {$ELSE}
-    {$IFDEF win32}
-    QueryPerformanceCounter(TimeMidTemp);
-    TimeMid := (TimeMidTemp-TimeNew)/TimeFreq;
-    {$ELSE}
-    TimeMidTemp := CurrentSec100OfDay();
-    TimeMid     := (TimeMidTemp-TimeNew);      // TODO - JB_Linux will prob need looking at
-    {$ENDIF}
-  {$ENDIF}
+  TimeMidTemp := SDL_GetTicks();
+  TimeMid     := (TimeMidTemp - TimeNew) / cSDLCorrectionRatio;
 
   {$IFDEF DebugDisplay}
-  Writeln( 'TimeNew       : ' + inttostr(trunc(TimeNew)) );
+  Writeln( 'TimeNew      : ' + inttostr(trunc(TimeNew)) );
   Writeln( 'CountMidTime : ' + inttostr(trunc(TimeMid)) );
   {$ENDIF}
 end;
 
 
 function TTime.GetTime: real;
-var
-  TimeTemp:   int64;
 begin
-  {$IFDEF SDLTimer}
-    TimeTemp := SDL_GetTicks();
-    Result   := TimeTemp / cSDLCorrectionRatio;  // TODO - JB_Linux will prob need looking at
-  {$ELSE}
-    {$IFDEF win32}
-      QueryPerformanceCounter(TimeTemp);
-      Result := TimeTemp / TimeFreq;
-    {$ELSE}
-      TimeTemp := CurrentSec100OfDay();
-      Result   := TimeTemp;  // TODO - JB_Linux will prob need looking at
-    {$ENDIF}
-  {$ENDIF}
-  
+  Result   := SDL_GetTicks() / cSDLCorrectionRatio;
+
   {$IFDEF DebugDisplay}
   Writeln( 'GetTime : ' + inttostr(trunc(Result)) );
   {$ENDIF}

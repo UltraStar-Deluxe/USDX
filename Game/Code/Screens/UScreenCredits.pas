@@ -172,7 +172,7 @@ begin
       SDLK_BACKSPACE :
         begin
           FadeTo(@ScreenMain);
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
         end;
 {       SDLK_SPACE:
          begin
@@ -288,7 +288,7 @@ begin
   deluxe_slidein := 0;
   Credits_Alpha := 0;
   //Music.SetLoop(true); Loop looped ned, so ne scheisse
-  Music.Open(soundpath + 'wome-credits-tune.mp3'); //danke kleinster liebster weeeetüüüüü!!
+  AudioPlayback.Open(soundpath + 'wome-credits-tune.mp3'); //danke kleinster liebster weeeetüüüüü!!
 //  Music.Play;
   CTime:=0;
 //  setlength(CTime_hold,0);
@@ -344,7 +344,7 @@ end;
 
 procedure TScreenCredits.onHide;
 begin
-  Music.Stop;
+  AudioPlayback.Stop;
 end;
 
 Procedure TScreenCredits.Draw_FunkyText;
@@ -445,7 +445,7 @@ const  myLogoCoords: Array[0..27,0..1] of Cardinal = ((39,32),(84,32),(100,16),(
 
 begin
   //dis does teh muiwk y0r
-  Data := Music.GetFFTData;
+  Data := AudioPlayback.GetFFTData;
 
   Log.LogStatus('',' JB-1');
 
@@ -465,7 +465,7 @@ begin
 
       CRDTS_Stage:=Intro;
       CTime:=0;
-      Music.Play;
+      AudioPlayback.Play;
 
     end;
     if (CRDTS_Stage=Intro) and (CTime=Timings[7]) then
@@ -1311,14 +1311,14 @@ Log.LogStatus('',' JB-4');
     begin
       if CTime=Timings[20] then begin
         CTime_hold:=0;
-        Music.Stop;
-        Music.Open(soundpath + 'credits-outro-tune.mp3');
-        Music.Play;
-        Music.SetVolume(20);
-        Music.SetLoop(True);
+        AudioPlayback.Stop;
+        AudioPlayback.Open(soundpath + 'credits-outro-tune.mp3');
+        AudioPlayback.Play;
+        AudioPlayback.SetVolume(20);
+        AudioPlayback.SetLoop(True);
       end;
       if CTime_hold > 231 then begin
-        Music.Play;
+        AudioPlayback.Play;
         Ctime_hold:=0;
       end;
       glClearColor(0,0,0,0);

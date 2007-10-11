@@ -94,7 +94,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           Visible := False;
         end;
 

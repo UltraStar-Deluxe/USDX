@@ -146,7 +146,7 @@ begin
           //Sound[0].BufferLong
 
           Finish;
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenScore);
         end;
 
@@ -182,7 +182,7 @@ begin
       Paused    := true;
 
       // pause Music
-      Music.Pause;
+      AudioPlayback.Pause;
 
       // pause Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
@@ -193,9 +193,9 @@ begin
       Czas.Teraz := PauseTime; //Position of Notes
 
       // Position of Music
-      Music.MoveTo (PauseTime);
+      AudioPlayback.MoveTo (PauseTime);
       // Play Music
-      Music.Play;
+      AudioPlayback.Play;
 
       // Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
@@ -451,14 +451,14 @@ begin
 
 
   // play music (I)
-  Music.CaptureStart;
-  Music.MoveTo(AktSong.Start);
+  AudioPlayback.CaptureStart;
+  AudioPlayback.MoveTo(AktSong.Start);
 //  Music.Play;
 
   // prepare timer (I)
 //  CountSkipTimeSet;
   Czas.Teraz := AktSong.Start;
-  Czas.Razem := Music.Length;
+  Czas.Razem := AudioPlayback.Length;
   if (AktSong.Finish > 0) then Czas.Razem := AktSong.Finish / 1000;
   Czas.OldBeat := -1;
   for P := 0 to High(Player) do
@@ -871,7 +871,7 @@ begin
   end;
 
   // play music (II)
-  Music.Play;
+  AudioPlayback.Play;
 
   // prepare timer (II)
   CountSkipTimeSet;
@@ -1147,7 +1147,7 @@ begin
   // check for music finish
 //  Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(Czas.Teraz*1000) + ' ' + IntToStr(AktSong.Finish));
   if ShowFinish then begin
-  if (not Music.Finished) and ((AktSong.Finish = 0) or (Czas.Teraz*1000 <= AktSong.Finish)) then begin
+  if (not AudioPlayback.Finished) and ((AktSong.Finish = 0) or (Czas.Teraz*1000 <= AktSong.Finish)) then begin
   //Pause Mod:
     if not Paused then
     Sing(Self);       // analyze song
@@ -1201,8 +1201,8 @@ end;
 
 procedure TScreenSing.Finish;
 begin
-  Music.CaptureStop;
-  Music.Stop;
+  AudioPlayback.CaptureStop;
+  AudioPlayback.Stop;
 
   if Ini.SavePlayback = 1 then begin
     Log.BenchmarkStart(0);

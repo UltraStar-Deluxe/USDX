@@ -60,19 +60,20 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenMain);
         end;
       SDLK_RETURN:
         begin
           //Exit Button Pressed
-          if Interaction = 4 then begin
-            Music.PlayBack;
+          if Interaction = 4 then
+          begin
+            AudioPlayback.PlayBack;
             FadeTo(@ScreenMain);
           end
           else //One of the Stats Buttons Pressed
           begin
-            Music.PlayBack;
+            AudioPlayback.PlayBack;
             ScreenStatDetail.Typ := Interaction;
             FadeTo(@ScreenStatDetail);
           end;

@@ -36,49 +36,57 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenMain);
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 0 then begin
-            Music.PlayStart;
+          if SelInteraction = 0 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptionsGame);
           end;
 
-          if SelInteraction = 1 then begin
-            Music.PlayStart;
+          if SelInteraction = 1 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptionsGraphics);
           end;
 
-          if SelInteraction = 2 then begin
-            Music.PlayStart;
+          if SelInteraction = 2 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptionsSound);
           end;
 
-          if SelInteraction = 3 then begin
-            Music.PlayStart;
+          if SelInteraction = 3 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptionsLyrics);
           end;
 
-          if SelInteraction = 4 then begin
-            Music.PlayStart;
+          if SelInteraction = 4 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptionsThemes);
           end;
 
-          if SelInteraction = 5 then begin
-            Music.PlayStart;
+          if SelInteraction = 5 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptionsRecord);
           end;
 
-          if SelInteraction = 6 then begin
-            Music.PlayStart;
+          if SelInteraction = 6 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptionsAdvanced);
           end;
 
-          if SelInteraction = 7 then begin
+          if SelInteraction = 7 then
+          begin
             Ini.Save;
-            Music.PlayBack;
+            AudioPlayback.PlayBack;
             FadeTo(@ScreenMain);
           end;
         end;

@@ -92,7 +92,7 @@ begin
             //Credits_Y := 600;
             //Credits_Alpha := 0;
             //Credits_Visible := True;
-            Music.PlayStart;
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenCredits);
           end;
         end;
@@ -100,20 +100,20 @@ begin
         begin
           if (Ini.Players >= 1) AND (Length(DLLMan.Plugins)>=1) then
           begin
-            Music.PlayStart;
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenPartyOptions);
           end;
         end;
 
       SDLK_S:
         begin
-          Music.PlayStart;
+          AudioPlayback.PlayStart;
           FadeTo(@ScreenStatMain);
         end;
 
       SDLK_E:
         begin
-          Music.PlayStart;
+          AudioPlayback.PlayStart;
           FadeTo(@ScreenEdit);
         end;
 
@@ -124,7 +124,7 @@ begin
           begin
             if (Length(Songs.Song) >= 1) then
             begin
-              Music.PlayStart;
+              AudioPlayback.PlayStart;
               if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
               if (Ini.Players = 4) then PlayersPlay := 6;
 
@@ -141,7 +141,7 @@ begin
             begin
               if (Length(DLLMan.Plugins)>=1) then
               begin
-                Music.PlayStart;
+                AudioPlayback.PlayStart;
                 FadeTo(@ScreenPartyOptions);
               end
               else //show error message, No Plugins Loaded
@@ -152,25 +152,29 @@ begin
           end;
 
           //Stats
-          if Interaction = 2 then begin
-            Music.PlayStart;
+          if Interaction = 2 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenStatMain);
           end;
 
           //Editor
-          if Interaction = 3 then begin
-            Music.PlayStart;
+          if Interaction = 3 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenEdit);
           end;
 
           //Options
-          if Interaction = 4 then begin
-            Music.PlayStart;
+          if Interaction = 4 then
+          begin
+            AudioPlayback.PlayStart;
             FadeTo(@ScreenOptions);
           end;
 
           //Exit
-          if Interaction = 5 then begin
+          if Interaction = 5 then
+          begin
             Result := false;
           end;
         end;

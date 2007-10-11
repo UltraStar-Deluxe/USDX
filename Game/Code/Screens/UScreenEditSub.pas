@@ -320,13 +320,13 @@ begin
           if SDL_ModState = 0 then begin
             // Play Sentence
             Click := true;
-            Music.Stop;
+            AudioPlayback.Stop;
             R := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote);
-            if R <= Music.Length then begin
-              Music.MoveTo(R);
+            if R <= AudioPlayback.Length then begin
+              AudioPlayback.MoveTo(R);
               PlayStopTime := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Koniec);
               PlaySentence := true;
-              Music.Play;
+              AudioPlayback.Play;
               LastClick := -100;
             end;
           end;
@@ -349,10 +349,10 @@ begin
 
             PlaySentence := true;
             Click := true;
-            Music.Stop;
-            Music.MoveTo(GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote)+0{-0.10});
+            AudioPlayback.Stop;
+            AudioPlayback.MoveTo(GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote)+0{-0.10});
             PlayStopTime := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Koniec)+0;
-            Music.Play;
+            AudioPlayback.Play;
             LastClick := -100;
           end;
         end;
@@ -363,12 +363,12 @@ begin
           PlaySentenceMidi := false; // stop midi
           PlaySentence := true;
           Click := false;
-          Music.Stop;
-          Music.MoveTo(GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start));
+          AudioPlayback.Stop;
+          AudioPlayback.MoveTo(GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start));
           PlayStopTime := (GetTimeFromBeat(
             Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start +
             Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Dlugosc));
-          Music.Play;
+          AudioPlayback.Play;
           LastClick := -100;
         end;
 
@@ -510,7 +510,7 @@ begin
 
             Lyric.AddCzesc(Czesci[0].Akt);
             Lyric.Selected := 0;
-            Music.Stop;
+            AudioPlayback.Stop;
             PlaySentence := false;
           end;
 
@@ -538,7 +538,7 @@ begin
 
             Lyric.AddCzesc(Czesci[0].Akt);
             Lyric.Selected := 0;
-            Music.Stop;
+            AudioPlayback.Stop;
             PlaySentence := false;
           end;
 
@@ -1188,7 +1188,7 @@ begin
     AktNuta := 0;
     Czesci[0].Czesc[0].Nuta[0].Color := 1;
 
-    Music.Open(Path + AktSong.Mp3);
+    AudioPlayback.Open(Path + AktSong.Mp3);
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(40);
     
@@ -1262,20 +1262,22 @@ begin
   // mp3 music
   if PlaySentence then begin
     // stop the music
-    if (Music.Position > PlayStopTime) then begin
-      Music.Stop;
+    if (AudioPlayback.Position > PlayStopTime) then
+    begin
+      AudioPlayback.Stop;
       PlaySentence := false;
     end;
 
     // click
     if (Click) and (PlaySentence) then begin
 //      AktBeat := Floor(AktSong.BPM[0].BPM * (Music.Position - AktSong.GAP / 1000) / 60);
-      AktBeat := Floor(GetMidBeat(Music.Position - AktSong.GAP / 1000));
+      AktBeat := Floor(GetMidBeat(AudioPlayback.Position - AktSong.GAP / 1000));
       Text[TextDebug].Text := IntToStr(AktBeat);
       if AktBeat <> LastClick then begin
         for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
-          if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = AktBeat) then begin
-            Music.PlayClick;
+          if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = AktBeat) then
+          begin
+            AudioPlayback.PlayClick;
             LastClick := AktBeat;
           end;
       end;

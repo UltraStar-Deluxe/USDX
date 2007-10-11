@@ -8,7 +8,10 @@ interface
 
 {$I switches.inc}
 
-uses OpenGL12, UTexture, UThemes, UMusic;
+uses OpenGL12,
+     UTexture,
+     UThemes,
+     UMusic;
 
 type
   TLyricWord = record

@@ -50,13 +50,13 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Music.PlayStart;
+          AudioPlayback.PlayStart;
           FadeTo(@ScreenMain);
         end;
 
       SDLK_RETURN:
         begin
-          Music.PlayStart;
+          AudioPlayback.PlayStart;
           FadeTo(@ScreenMain);
         end;
     end;

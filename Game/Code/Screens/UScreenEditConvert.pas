@@ -120,19 +120,21 @@ begin
       {$IFDEF UseMIDIPort}
           MidiFile.StopPlaying;
       {$ENDIF}
-          Music.PlayBack;
+          AudioPlayback.PlayBack;
           FadeTo(@ScreenEdit);
         end;
 
       SDLK_RETURN:
         begin
-          if Interaction = 0 then begin
-            Music.PlayStart;
+          if Interaction = 0 then
+          begin
+            AudioPlayback.PlayStart;
             ScreenOpen.BackScreen := @ScreenEditConvert;
             FadeTo(@ScreenOpen);
           end;
 
-          if Interaction = 1 then begin
+          if Interaction = 1 then
+          begin
             Selected := false;
       {$IFDEF UseMIDIPort}
             MidiFile.OnMidiEvent := MidiFile1MidiEvent;
