@@ -851,16 +851,22 @@ begin
       FFmpegDrawGL(ScreenAct);
 //      PlaySmpeg;
     except
-      //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
-      AktSong.VideoLoaded := False;
-      Log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
-      Log.LogError('Corrupted File: ' + AktSong.Video);
-      try
-//        CloseSmpeg;
-        FFmpegClose;
-      except
+    
+     on E : Exception do
+     begin
+       //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
+       AktSong.VideoLoaded := False;
+       Log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
+       Log.LogError('Error Message : '+ E.message );
+       Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.onShowFinish)' );
+       Log.LogError('Corrupted File: ' + AktSong.Video);
+       try
+//         CloseSmpeg;
+         FFmpegClose;
+       except
 
-      end;
+       end;
+     end;
     end;
   end;
 
@@ -1105,23 +1111,32 @@ begin
   //Draw Background
   SingDrawBackground;
   // update and draw movie
+  
   if ShowFinish and AktSong.VideoLoaded then begin
     try
 //      UpdateSmpeg; // this only draws
       // todo: find a way to determine, when a new frame is needed
       // toto: same for the need to skip frames
+
       FFmpegGetFrame(Czas.Teraz);
       FFmpegDrawGL(ScreenAct);
     except
-      //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
-      AktSong.VideoLoaded := False;
-      log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
-      Log.LogError('Corrupted File: ' + AktSong.Video);
-      try
-//        CloseSmpeg;
-        FFmpegClose;
-      except
+      on E : Exception do
+      begin
 
+        //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
+        AktSong.VideoLoaded := False;
+        log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
+        Log.LogError('Error Message : '+ E.message );
+        Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.Draw)' );
+
+        Log.LogError('Corrupted File: ' + AktSong.Video);
+        try
+//        CloseSmpeg;
+          FFmpegClose;
+        except
+
+        end;
       end;
     end;
   end;

@@ -1509,8 +1509,13 @@ var
   I:    Integer;
 begin
   dx := SongTarget-SongCurrent;
-  dt := TimeSkip*7;
-  if dt > 1 then dt := 1;
+  dt := TimeSkip * 7;
+
+//  writeln( 'TScreenSong.Draw '+ inttostr(trunc(TimeSkip)) );
+  
+  if dt > 1 then
+    dt := 1;
+    
   SongCurrent := SongCurrent + dx*dt;
 
 {  if SongCurrent > Catsongs.VisibleSongs then begin
@@ -1527,7 +1532,8 @@ begin
   If (CoverTime < 5) then
   begin
     // 0.5.0: cover fade
-    if (CoverTime < 1) and (CoverTime + TimeSkip >= 1) then begin
+    if (CoverTime < 1) and (CoverTime + TimeSkip >= 1) then
+    begin
       // load new texture
       Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false);
       Button[Interaction].Texture.Alpha := 1;
@@ -1756,27 +1762,24 @@ begin
         Data[i] := 0.9999999999999;
 
       try
-      if ( assigned( Theme )      ) AND
-         ( assigned( Theme.Song ) ) AND
-         ( i < length( Data )     ) THEN
-      begin
-        writeln( '!!!!!!!!! - '+ inttostr( i ) + ' - ' + inttostr( Theme.Song.Equalizer.Length ) );
-
-        if Single(Data[i]) > 0 then
+        if ( assigned( Theme )      ) AND
+           ( assigned( Theme.Song ) ) AND
+           ( i < length( Data )     ) THEN
         begin
-          lTmp := Single(Data[i]) * Theme.Song.Equalizer.Length;
-          if lTmp > Pos then
-            Pos := lTmp;
+          if single( Data[i] ) > single( 1 ) then
+          begin
+            lTmp := Single(Data[i]) * Theme.Song.Equalizer.Length;
+            if lTmp > Pos then
+              Pos := lTmp;
+          end;
         end;
-      end;
       except
-        // TODO: JB_Linux..... why does this happen !
         on E:EInvalidOp do
-          writeln( 'UScreenSong - DOH !!!!' );
+          writeln( 'UScreenSong - DOH !!!! ('+inttostr(i)+' '+ inttostr( integer( single( Data[i] ) ) )+' * '+ ')' );
       end
       
     end;
-
+    
     //Change Last Band
     if (EqualizerBands[B] <= Theme.Song.Equalizer.Length) then
     begin

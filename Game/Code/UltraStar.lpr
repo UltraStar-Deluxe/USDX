@@ -202,8 +202,61 @@ var
   WndTitle: string;
   hWnd: THandle;
   I: Integer;
+  
+  aFormatCtx : PAVFormatContext;//PAVCodecContext;
+  aCodecCtx  : PAVCodecContext;
+  VideoStreamIndex,
+  AudioStreamIndex : integer;
 
 begin
+
+
+
+(*
+
+av_register_all;
+aFormatCtx := av_alloc_format_context();
+if av_open_input_file( aFormatCtx, pchar( Paramstr(1) ), NIL, 0, NIL) = 0 then
+begin
+  if av_find_stream_info( aFormatCtx ) >= 0 then
+  begin
+    writeln('');
+    dump_format(aFormatCtx, 0, pchar( Paramstr(1) ), 0);
+    writeln('');
+
+//    writeln( pchar( filename ) );
+    
+//    av_read_play( aFormatCtx );
+    find_stream_ids( aFormatCtx , VideoStreamIndex , AudioStreamIndex );
+
+    writeln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
+    writeln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
+    
+    aCodecCtx := aFormatCtx.streams[ AudioStreamIndex ].codec;
+    writeln( 'Audio Codec Channels: '+ inttostr( integer( aCodecCtx.channels ) ) );
+    writeln( 'Audio Codec freq: '+ inttostr( integer( aCodecCtx.sample_rate ) ) );
+    
+    wanted_spec.freq = aCodecCtx->sample_rate;
+    wanted_spec.format = AUDIO_S16SYS;
+    wanted_spec.channels = aCodecCtx->channels;
+    wanted_spec.silence = 0;
+    wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
+    wanted_spec.callback = audio_callback;
+    wanted_spec.userdata = aCodecCtx;
+    
+    if(SDL_OpenAudio(&wanted_spec, aCodecCtx) < 0) then
+    begin
+      writeln( 'Could not do SDL_OpenAudio' );
+      exit;
+    end;
+
+
+  end;
+end;
+
+exit;
+*)
+
   WndTitle := Version;
 
 

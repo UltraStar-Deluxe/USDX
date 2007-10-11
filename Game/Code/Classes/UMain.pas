@@ -139,7 +139,11 @@ procedure MainLoop;
 var
   Delay:    integer;
 begin
+  Delay := 0;
   SDL_EnableKeyRepeat(125, 125);
+  
+  
+  CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
   While not Done do
   Begin
     // joypad
@@ -158,8 +162,17 @@ begin
 
     // delay
     CountMidTime;
+    
+    {$IFDEF DebugDisplay}
+    Writeln( 'TimeMid : '+ inttostr(trunc(TimeMid)) );
+    {$ENDIF}
+
 //    if 1000*TimeMid > 100 then beep;
     Delay := Floor(1000 / 100 - 1000 * TimeMid);
+
+    {$IFDEF DebugDisplay}
+    Writeln( 'Delay ms : '+ inttostr(Delay) );
+    {$ENDIF}
 
     if Delay >= 1 then
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
@@ -167,7 +180,8 @@ begin
     CountSkipTime;
 
     // reinitialization of graphics
-    if Restart then begin
+    if Restart then
+    begin
       Reinitialize3D;
       Restart := false;
     end;

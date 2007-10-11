@@ -1,16 +1,20 @@
-{############################################################################
-#                   FFmpeg support for UltraStar deluxe                     #
-#                                                                           #
-#   Created by b1indy                                                       #
-#   based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)  #
-#############################################################################}
+unit UVideo;
+{< #############################################################################
+#                    FFmpeg support for UltraStar deluxe                       #
+#                                                                              #
+#    Created by b1indy                                                         #
+#    based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)    #
+#                                                                              #
+# http://www.mail-archive.com/fpc-pascal@lists.freepascal.org/msg09949.html    #
+# http://www.nabble.com/file/p11795857/mpegpas01.zip                           #
+#                                                                              #
+############################################################################## }
 
-//{$define DebugDisplay}  // uncomment if u want to see the debug stuff
+{$define DebugDisplay}  // uncomment if u want to see the debug stuff
 //{$define DebugFrames}
 //{$define Info}
+{}
 
-
-unit UVideo;
 
 interface
 
@@ -43,10 +47,26 @@ procedure FFmpegDrawGL(Screen: integer);
 procedure FFmpegTogglePause;
 procedure FFmpegSkip(Time: Single);
 
+{
+  @author(Jay Binks <jaybinks@gmail.com>)
+  @created(2007-10-09)
+  @lastmod(2007-10-09)
+
+  @param(aFormatCtx is a PAVFormatContext returned from av_open_input_file )
+  @param(aFirstVideoStream is an OUT value of type integer, this is the index of the video stream)
+  @param(aFirstAudioStream is an OUT value of type integer, this is the index of the audio stream)
+  @returns(@true on success, @false otherwise)
+
+  translated from "Setting Up the Audio" section at
+  http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
+ }
+function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
+
 var
   VideoOpened, VideoPaused: Boolean;
   VideoFormatContext: PAVFormatContext;
-  VideoStreamIndex: Integer;
+  VideoStreamIndex ,
+  AudioStreamIndex : Integer;
   VideoCodecContext: PAVCodecContext;
   VideoCodec: PAVCodec;
   AVFrame: PAVFrame;
@@ -61,6 +81,11 @@ var
   VideoTimeBase, VideoTime, LastFrameTime, TimeDifference: Extended;
   VideoSkipTime: Single;
   
+  
+  WantedAudioCodecContext,
+  AudioCodecContext : PSDL_AudioSpec;
+  aCodecCtx         : PAVCodecContext;
+  
 implementation
 
 {$ifdef DebugDisplay}
@@ -74,13 +99,13 @@ end;
 {$endif}
 {$ENDIF}
 
+{ ------------------------------------------------------------------------------
+asdf
+------------------------------------------------------------------------------ }
 procedure Init;
 begin
   av_register_all;
-  {$ifdef DebugDisplay}
-  showmessage( 'AV_Register_ALL' );
-  {$endif}
-  
+
   VideoOpened:=False;
   VideoPaused:=False;
   
@@ -88,9 +113,61 @@ begin
   SetLength(TexData,0);
 end;
 
+{
+  @author(Jay Binks <jaybinks@gmail.com>)
+  @created(2007-10-09)
+  @lastmod(2007-10-09)
+
+  @param(aFormatCtx is a PAVFormatContext returned from av_open_input_file )
+  @param(aFirstVideoStream is an OUT value of type integer, this is the index of the video stream)
+  @param(aFirstAudioStream is an OUT value of type integer, this is the index of the audio stream)
+  @returns(@true on success, @false otherwise)
+
+  translated from "Setting Up the Audio" section at
+  http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
+}
+function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
+var
+  i : integer;
+  st : pAVStream;
+begin
+  // Find the first video stream
+  aFirstAudioStream := -1;
+  aFirstVideoStream := -1;
+
+  writeln( ' aFormatCtx.nb_streams : ' + inttostr( aFormatCtx.nb_streams ) );
+  writeln( ' length( aFormatCtx.streams ) : ' + inttostr( length(aFormatCtx.streams) ) );
+  
+  i := 0;
+  while ( i < aFormatCtx.nb_streams ) do
+//  while ( i < length(aFormatCtx.streams)-1 ) do
+  begin
+    writeln( ' aFormatCtx.streams[i] : ' + inttostr( i ) );
+    st := aFormatCtx.streams[i];
+    
+    if(st.codec.codec_type = CODEC_TYPE_VIDEO ) AND
+      (aFirstVideoStream < 0) THEN
+    begin
+      aFirstVideoStream := i;
+    end;
+
+    if ( st.codec.codec_type = CODEC_TYPE_AUDIO ) AND
+       ( aFirstAudioStream < 0) THEN
+    begin
+      aFirstAudioStream := i;
+    end;
+    
+    inc( i );
+  end; // while
+  
+  result := (aFirstAudioStream > -1) OR
+            (aFirstVideoStream > -1) ;  // Didn't find a video stream
+end;
+
 procedure FFmpegOpenFile(FileName: pAnsiChar);
 var errnum, i, x,y: Integer;
   lStreamsCount : Integer;
+
 begin
   VideoOpened    := False;
   VideoPaused    := False;
@@ -98,9 +175,12 @@ begin
   VideoTime      := 0;
   LastFrameTime  := 0;
   TimeDifference := 0;
+  VideoFormatContext := 0;
+
+  writeln( Filename );
   
   errnum         := av_open_input_file(VideoFormatContext, FileName, Nil, 0, Nil);
-  
+  writeln( 'Errnum : ' +inttostr( errnum ));
   if(errnum <> 0) then
   begin
 {$ifdef DebugDisplay}
@@ -119,46 +199,36 @@ begin
   end
   else
   begin
-    VideoStreamIndex:=-1;
+    VideoStreamIndex := -1;
+    AudioStreamIndex := -1;
 
     // Find which stream contains the video
-    if(av_find_stream_info(VideoFormatContext) >= 0) then
+    if( av_find_stream_info(VideoFormatContext) >= 0 ) then
     begin
-      {$ifdef DebugDisplay}
-       writeln( 'FFMPEG debug...  VideoFormatContext^.nb_streams : '+ inttostr( VideoFormatContext^.nb_streams ) );
-      {$endif}
-      for i:= 0 to MAX_STREAMS-1 do
-      begin
-        {$ifdef DebugDisplay}
-        writeln( 'FFMPEG debug...  found stream '+ inttostr(i) + ' stream val ' + inttostr( integer(VideoFormatContext^.streams[i] ) ) );
-        {$endif}
-        try
-          if assigned( VideoFormatContext                    ) AND
-             assigned( VideoFormatContext^.streams[i]        ) AND
-             assigned( VideoFormatContext^.streams[i]^.codec ) THEN
-          begin
-              {$ifdef DebugDisplay}
-            writeln( 'FFMPEG debug...  found stream '+ inttostr(i) + ' code val ' + inttostr( integer(VideoFormatContext^.streams[i].codec ) ) );
-            writeln( 'FFMPEG debug...  found stream '+ inttostr(i) + ' code Type ' + inttostr( integer(VideoFormatContext^.streams[i].codec^.codec_type ) ) );
-              {$endif}
-            if(VideoFormatContext^.streams[i]^.codec^.codec_type=CODEC_TYPE_VIDEO) then
-            begin
-              {$ifdef DebugDisplay}
-              writeln( 'FFMPEG debug, found CODEC_TYPE_VIDEO stream' );
-              {$endif}
-              VideoStreamIndex:=i;
-            end
-            else
-          end;
-        except
-          // TODO : JB_Linux ... this is excepting at line 108...  ( Was 111 previously.. so its prob todo with streams[i]^.codec ..
-    {$ifdef DebugDisplay}
-          writeln( 'FFMPEG error, finding video stream' );
-    {$endif}
-        end;
-
-      end;
+      find_stream_ids( VideoFormatContext, VideoStreamIndex, AudioStreamIndex );
+    
+      writeln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
+      writeln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
     end;
+(*
+    aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
+
+    WantedAudioCodecContext.freq     := aCodecCtx^.sample_rate;
+    WantedAudioCodecContext.format   := AUDIO_S16SYS;
+    WantedAudioCodecContext.channels := aCodecCtx^.channels;
+    WantedAudioCodecContext.silence  := 0;
+    WantedAudioCodecContext.samples  := 1024;//SDL_AUDIO_BUFFER_SIZE;
+//    WantedAudioCodecContext.callback := audio_callback;
+    WantedAudioCodecContext.userdata := aCodecCtx;
+
+
+
+    if(SDL_OpenAudio(WantedAudioCodecContext, AudioCodecContext) < 0) then
+    begin
+      writeln( 'Could not do SDL_OpenAudio' );
+      exit;
+    end;
+*)
     
     if(VideoStreamIndex >= 0) then
     begin
@@ -173,6 +243,7 @@ begin
       av_close_input_file(VideoFormatContext);
       Exit;
     end;
+
     
     if(VideoCodec<>Nil) then
     begin
@@ -188,11 +259,10 @@ begin
     if(errnum >=0) then
     begin
 {$ifdef DebugDisplay}
-       showmessage('Found a matching Codec:'+#13#10#13#10+
-        'Width='+inttostr(VideoCodecContext^.width)+
-        ', Height='+inttostr(VideoCodecContext^.height)+#13#10+
-        'Aspect: '+inttostr(VideoCodecContext^.sample_aspect_ratio.num)+'/'+inttostr(VideoCodecContext^.sample_aspect_ratio.den)+#13#10+
-        'Framerate: '+inttostr(VideoCodecContext^.time_base.num)+'/'+inttostr(VideoCodecContext^.time_base.den));
+       showmessage('Found a matching Codec: '+ VideoCodecContext^.Codec.Name +#13#10#13#10+
+        '  Width = '+inttostr(VideoCodecContext^.width)+ ', Height='+inttostr(VideoCodecContext^.height)+#13#10+
+        '  Aspect    : '+inttostr(VideoCodecContext^.sample_aspect_ratio.num)+'/'+inttostr(VideoCodecContext^.sample_aspect_ratio.den)+#13#10+
+        '  Framerate : '+inttostr(VideoCodecContext^.time_base.num)+'/'+inttostr(VideoCodecContext^.time_base.den));
 {$endif}
       // allocate space for decoded frame and rgb frame
       AVFrame:=avcodec_alloc_frame;
@@ -253,6 +323,7 @@ begin
       end;
 {$ifdef DebugDisplay}
       showmessage('corrected framerate: '+inttostr(floor(1/videotimebase))+'fps');
+      
       if ((VideoAspect*VideoCodecContext^.width*VideoCodecContext^.height)>200000) then
         showmessage('you are trying to play a rather large video'+#13#10+
                     'be prepared to experience some timing problems');
@@ -303,39 +374,53 @@ const
   FRAMEDROPCOUNT=3;
 begin
   if not VideoOpened then Exit;
+
   if VideoPaused then Exit;
+  
   myTime:=Time+VideoSkipTime;
   TimeDifference:=myTime-VideoTime;
   DropFrame:=False;
-{  showmessage('Time:      '+inttostr(floor(Time*1000))+#13#10+
+
+{$IFDEF DebugDisplay}
+  showmessage('Time:      '+inttostr(floor(Time*1000))+#13#10+
     'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
     'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
     'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
-}
-  if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then begin
+{$endif}
+
+  if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then
+  begin
 {$ifdef DebugFrames}
     // frame delay debug display
     GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
 {$endif}
-{    showmessage('not getting new frame'+#13#10+
+
+{$IFDEF DebugDisplay}
+    showmessage('not getting new frame'+#13#10+
     'Time:      '+inttostr(floor(Time*1000))+#13#10+
     'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
     'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
     'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
-}
+{$endif}
+
     Exit;// we don't need a new frame now
   end;
+  
   VideoTime:=VideoTime+VideoTimeBase;
   TimeDifference:=myTime-VideoTime;
-  if TimeDifference >= (FRAMEDROPCOUNT-1)*VideoTimeBase then begin // skip frames
+  if TimeDifference >= (FRAMEDROPCOUNT-1)*VideoTimeBase then  // skip frames
+  begin
 {$ifdef DebugFrames}
     //frame drop debug display
     GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
 {$endif}
-//    showmessage('skipping frames'+#13#10+
-//    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
-//    'TimeDiff:  '+inttostr(floor(TimeDifference*1000))+#13#10+
-//    'Time2Skip: '+inttostr(floor((Time-LastFrameTime)*1000)));
+
+{$IFDEF DebugDisplay}
+    showmessage('skipping frames'+#13#10+
+    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
+    'TimeDiff:  '+inttostr(floor(TimeDifference*1000))+#13#10+
+    'Time2Skip: '+inttostr(floor((Time-LastFrameTime)*1000)));
+{$endif}
 //    av_seek_frame(VideoFormatContext,VideoStreamIndex,Floor(Time*VideoTimeBase),0);
 {    av_seek_frame(VideoFormatContext,-1,Floor((myTime+VideoTimeBase)*1500000),0);
     VideoTime:=floor(myTime/VideoTimeBase)*VideoTimeBase;}
@@ -343,30 +428,41 @@ begin
     DropFrame:=True;
   end;
 
-  av_init_packet(@AVPacket);
+//  av_init_packet(@AVPacket);
+  av_init_packet( AVPacket ); // JB-ffmpeg
+  
   FrameFinished:=0;
   // read packets until we have a finished frame (or there are no more packets)
-  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
+//  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
+  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do     // JB-ffmpeg
   begin
     // if we got a packet from the video stream, then decode it
     if (AVPacket.stream_index=VideoStreamIndex) then
-      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished,
-                                     AVPacket.data, AVPacket.size);
+//      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  @frameFinished , AVPacket.data, AVPacket.size);
+      errnum := avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
+
+      
     // release internal packet structure created by av_read_frame
-      av_free_packet(PAVPacket(@AVPacket));
+//      av_free_packet(PAVPacket(@AVPacket));
+      av_free_packet( AVPacket );  // JB-ffmpeg
   end;
+  
   if DropFrame then
     for droppedFrames:=1 to FRAMEDROPCOUNT do begin
       FrameFinished:=0;
       // read packets until we have a finished frame (or there are no more packets)
-      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
+//      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
+      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do  // JB-ffmpeg
       begin
         // if we got a packet from the video stream, then decode it
         if (AVPacket.stream_index=VideoStreamIndex) then
-          errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished,
-                                         AVPacket.data, AVPacket.size);
+//          errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished, AVPacket.data, AVPacket.size);
+      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
+
+
         // release internal packet structure created by av_read_frame
-          av_free_packet(PAVPacket(@AVPacket));
+//          av_free_packet(PAVPacket(@AVPacket)); // JB-ffmpeg
+          av_free_packet( AVPacket );
       end;
     end;
 
@@ -380,12 +476,16 @@ begin
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
 			      VideoCodecContext^.width, VideoCodecContext^.height);
 //errnum:=1;
-  if errnum >=0 then begin
+
+  if errnum >=0 then
+  begin
     // copy RGB pixeldata to our TextureBuffer
     // (line by line)
-    FrameDataPtr:=AVFrameRGB^.data[0];
-    linesize:=AVFrameRGB^.linesize[0];
-    for y:=0 to TexY-1 do begin
+
+    FrameDataPtr := pointer( AVFrameRGB^.data[0] );
+    linesize     := AVFrameRGB^.linesize[0];
+    for y:=0 to TexY-1 do
+    begin
       System.Move(FrameDataPtr[y*linesize],TexData[3*y*dataX],linesize);
     end;
 
