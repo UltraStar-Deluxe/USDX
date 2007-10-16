@@ -45,8 +45,12 @@ uses
   UTexture in 'Classes\UTexture.pas',
 
   UMusic        in 'Classes\UMusic.pas',
-  UAudio_FFMpeg in 'Classes\UAudio_FFMpeg.pas',
+  UMedia_dummy  in 'Classes\UMedia_dummy.pas',
+  
+  //  UAudio_FFMpeg in 'Classes\UAudio_FFMpeg.pas',
   UAudio_Bass   in 'Classes\UAudio_Bass.pas',
+  UVideo in 'Classes\UVideo.pas',
+
 
 
   ULanguage in 'Classes\ULanguage.pas',
@@ -83,7 +87,7 @@ uses
   UCore in 'Classes\UCore.pas',
   UCoreModule in 'Classes\UCoreModule.pas',
   UPluginInterface in 'Classes\UPluginInterface.pas',
-  UVideo in 'Classes\UVideo.pas',
+
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -133,6 +137,11 @@ var
 
 begin
   WndTitle := Version;
+
+//  InitializeSound();
+//  writeln( 'DONE' );
+//  exit;
+
 
   //------------------------------
   //Start more than One Time Prevention
@@ -243,6 +252,7 @@ begin
   Log.LogBenchmark('Loading Light', 1);
 
 
+
   // Theme
   Log.BenchmarkStart(1);
   Log.LogStatus('Load Themes', 'Initialization');             Theme := TTheme.Create('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
@@ -261,8 +271,6 @@ begin
   CatCovers:= TCatCovers.Create;
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading Category Covers Array', 1);
-
-
 
   // Songs
   //Log.BenchmarkStart(1);
@@ -287,17 +295,18 @@ begin
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading PartySession Manager', 1);
 
-  // Graphics
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize 3D', 'Initialization');           Initialize3D(WndTitle);
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Initializing 3D', 1);
-
   // Sound
   Log.BenchmarkStart(1);
   Log.LogStatus('Initialize Sound', 'Initialization');        InitializeSound();
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Initializing Sound', 1);
+
+
+  // Graphics
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Initialize 3D', 'Initialization');           Initialize3D(WndTitle);
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Initializing 3D', 1);
 
   // Score Saving System
   Log.BenchmarkStart(1);

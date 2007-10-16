@@ -121,6 +121,7 @@ uses
   ULyrics_bak            in 'Classes\ULyrics_bak.pas',
   UMain                  in 'Classes\UMain.pas',
   UMusic                 in 'Classes\UMusic.pas',
+  UMedia_dummy           in 'Classes\UMedia_dummy.pas',  
 //  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
 {$ifdef win32}
   UAudio_bass            in 'Classes\UAudio_bass.pas',

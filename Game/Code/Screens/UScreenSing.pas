@@ -22,13 +22,15 @@ uses UMenu,
      ULyrics,
      TextGL,
      OpenGL12,
+(*
      {$IFDEF useBASS}
      bass,
      {$ENDIF}
+*)     
      UThemes,
      ULCD,
      UGraphicClasses,
-     UVideo,
+//     UVideo,
      USingScores;
 
 type
@@ -186,7 +188,8 @@ begin
 
       // pause Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
-        FFmpegTogglePause;
+        VideoPlayback.Pause;
+//        FFmpegTogglePause;
     end
   else              //Pause ausschalten
     begin
@@ -199,7 +202,8 @@ begin
 
       // Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
-      FFmpegTogglePause;
+        VideoPlayback.Pause;
+//      FFmpegTogglePause;
       //SkipSmpeg(PauseTime);
 
       Paused := false;
@@ -279,7 +283,7 @@ begin
 
   Lyrics := TLyricEngine.Create(80,Skin_LyricsT,640,12,80,Skin_LyricsT+36,640,12);
 
-  UVideo.Init;
+  VideoPlayback.Init();
 end;
 
 procedure TScreenSing.onShow;
@@ -432,8 +436,12 @@ begin
     SkipSmpeg(AktSong.VideoGAP + AktSong.Start);*)
     
     // todo: VideoGap and Start time verwursten
-    FFmpegOpenFile(pAnsiChar(AktSong.Path + AktSong.Video));
-    FFmpegSkip(AktSong.VideoGAP + AktSong.Start);
+//    FFmpegOpenFile(pAnsiChar(AktSong.Path + AktSong.Video));
+    VideoPlayback.Open( AktSong.Path + AktSong.Video );
+
+//    FFmpegSkip(AktSong.VideoGAP + AktSong.Start);
+    VideoPlayback.position := AktSong.VideoGAP + AktSong.Start;
+    
     AktSong.VideoLoaded := true;
   end;
 
@@ -847,8 +855,11 @@ begin
   if AktSong.VideoLoaded then
   begin
     try
-      FFmpegGetFrame(Czas.Teraz);
-      FFmpegDrawGL(ScreenAct);
+      writeln( 'VideoPlayback.FFmpegGetFrame' );
+      VideoPlayback.FFmpegGetFrame(Czas.Teraz);
+
+      writeln( 'VideoPlayback.FFmpegDrawGL' );
+      VideoPlayback.FFmpegDrawGL(ScreenAct);
 //      PlaySmpeg;
     except
     
@@ -862,7 +873,7 @@ begin
        Log.LogError('Corrupted File: ' + AktSong.Video);
        try
 //         CloseSmpeg;
-         FFmpegClose;
+         VideoPlayback.Close;
        except
 
        end;
@@ -1112,14 +1123,15 @@ begin
   SingDrawBackground;
   // update and draw movie
   
-  if ShowFinish and AktSong.VideoLoaded then begin
+  if ShowFinish and AktSong.VideoLoaded then
+  begin
     try
 //      UpdateSmpeg; // this only draws
       // todo: find a way to determine, when a new frame is needed
       // toto: same for the need to skip frames
 
-      FFmpegGetFrame(Czas.Teraz);
-      FFmpegDrawGL(ScreenAct);
+      VideoPlayback.FFmpegGetFrame(Czas.Teraz);
+      VideoPlayback.FFmpegDrawGL(ScreenAct);
     except
       on E : Exception do
       begin
@@ -1133,7 +1145,7 @@ begin
         Log.LogError('Corrupted File: ' + AktSong.Video);
         try
 //        CloseSmpeg;
-          FFmpegClose;
+          VideoPlayback.Close;
         except
 
         end;
@@ -1213,9 +1225,10 @@ begin
     Log.LogBenchmark('Creating files', 0);
   end;
 
-  if AktSong.VideoLoaded then begin
+  if AktSong.VideoLoaded then
+  begin
 //    CloseSmpeg;
-    FFmpegClose;
+    VideoPlayback.Close;
     AktSong.VideoLoaded := false; // to prevent drawing closed video
   end;
 

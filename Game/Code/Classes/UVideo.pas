@@ -22,6 +22,14 @@ interface
   {$MODE DELPHI}
 {$ENDIF}
 
+(*
+
+  look into
+  av_read_play
+
+*)
+
+implementation
 
 uses SDL,
      UGraphicClasses,
@@ -37,56 +45,69 @@ uses SDL,
      dialogs,
      {$endif}
      {$ENDIF}
-     UIni;
+     UIni,
+     UMusic;
 
-procedure Init;
-procedure FFmpegOpenFile(FileName: pAnsiChar);
-procedure FFmpegClose;
-procedure FFmpegGetFrame(Time: Extended);
-procedure FFmpegDrawGL(Screen: integer);
-procedure FFmpegTogglePause;
-procedure FFmpegSkip(Time: Single);
-
-{
-  @author(Jay Binks <jaybinks@gmail.com>)
-  @created(2007-10-09)
-  @lastmod(2007-10-09)
-
-  @param(aFormatCtx is a PAVFormatContext returned from av_open_input_file )
-  @param(aFirstVideoStream is an OUT value of type integer, this is the index of the video stream)
-  @param(aFirstAudioStream is an OUT value of type integer, this is the index of the audio stream)
-  @returns(@true on success, @false otherwise)
-
-  translated from "Setting Up the Audio" section at
-  http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
- }
-function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
 
 var
-  VideoOpened, VideoPaused: Boolean;
-  VideoFormatContext: PAVFormatContext;
-  VideoStreamIndex ,
-  AudioStreamIndex : Integer;
-  VideoCodecContext: PAVCodecContext;
-  VideoCodec: PAVCodec;
-  AVFrame: PAVFrame;
-  AVFrameRGB: PAVFrame;
-  myBuffer: pByte;
-  VideoTex: glUint;
-  TexX, TexY, dataX, dataY: Cardinal;
-  TexData: array of Byte;
-  ScaledVideoWidth, ScaledVideoHeight: Real;
-  VideoAspect: Real;
-  VideoTextureU, VideoTextureV: Real;
-  VideoTimeBase, VideoTime, LastFrameTime, TimeDifference: Extended;
-  VideoSkipTime: Single;
-  
-  
-  WantedAudioCodecContext,
-  AudioCodecContext : PSDL_AudioSpec;
-  aCodecCtx         : PAVCodecContext;
-  
-implementation
+  singleton_VideoFFMpeg : IVideoPlayback;
+
+type
+    TVideoPlayback_ffmpeg = class( TInterfacedObject, IVideoPlayback )
+    private
+      fVideoOpened   ,
+      fVideoPaused   : Boolean;
+
+      fVideoTex      : glUint;
+      fVideoSkipTime : Single;
+
+      fTexData       : array of Byte;
+
+      VideoFormatContext: PAVFormatContext;
+
+      VideoStreamIndex ,
+      AudioStreamIndex : Integer;
+      VideoCodecContext: PAVCodecContext;
+      VideoCodec: PAVCodec;
+      AVFrame: PAVFrame;
+      AVFrameRGB: PAVFrame;
+      myBuffer: pByte;
+
+      TexX, TexY, dataX, dataY: Cardinal;
+
+      ScaledVideoWidth, ScaledVideoHeight: Real;
+      VideoAspect: Real;
+      VideoTextureU, VideoTextureV: Real;
+      VideoTimeBase, VideoTime, LastFrameTime, TimeDifference: Extended;
+
+
+      WantedAudioCodecContext,
+      AudioCodecContext : PSDL_AudioSpec;
+      aCodecCtx         : PAVCodecContext;      
+
+
+      function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
+    public
+      constructor create();
+      function  GetName: String;
+
+      procedure init();
+
+      function  Open( aFileName : string): boolean; // true if succeed
+      procedure Close;
+
+      procedure Play;
+      procedure Pause;
+      procedure Stop;
+
+      procedure MoveTo(Time: real);
+      function  getPosition: real;
+
+      procedure FFmpegGetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
+      procedure FFmpegDrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
+
+    end;
+
 
 {$ifdef DebugDisplay}
 //{$ifNdef win32}
@@ -102,15 +123,10 @@ end;
 { ------------------------------------------------------------------------------
 asdf
 ------------------------------------------------------------------------------ }
-procedure Init;
-begin
-  av_register_all;
 
-  VideoOpened:=False;
-  VideoPaused:=False;
-  
-  glGenTextures(1, PglUint(@VideoTex));
-  SetLength(TexData,0);
+function  TVideoPlayback_ffmpeg.GetName: String;
+begin
+  result := 'FFMpeg';
 end;
 
 {
@@ -126,7 +142,7 @@ end;
   translated from "Setting Up the Audio" section at
   http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
 }
-function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
+function TVideoPlayback_ffmpeg.find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
 var
   i : integer;
   st : pAVStream;
@@ -164,35 +180,278 @@ begin
             (aFirstVideoStream > -1) ;  // Didn't find a video stream
 end;
 
-procedure FFmpegOpenFile(FileName: pAnsiChar);
-var errnum, i, x,y: Integer;
+
+
+
+procedure TVideoPlayback_ffmpeg.FFmpegGetFrame(Time: Extended);
+var
+  FrameFinished: Integer;
+  AVPacket: TAVPacket;
+  errnum, x, y: Integer;
+  FrameDataPtr: PByteArray;
+  linesize: integer;
+  myTime: Extended;
+  DropFrame: Boolean;
+  droppedFrames: Integer;
+const
+  FRAMEDROPCOUNT=3;
+begin
+  if not fVideoOpened then Exit;
+
+  if fVideoPaused then Exit;
+
+  myTime         := Time   + fVideoSkipTime;
+  TimeDifference := myTime - VideoTime;
+  DropFrame      := False;
+
+{$IFDEF DebugDisplay}
+  showmessage('Time:      '+inttostr(floor(Time*1000))+#13#10+
+    'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
+    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
+    'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
+{$endif}
+
+  if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then
+  begin
+{$ifdef DebugFrames}
+    // frame delay debug display
+    GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
+{$endif}
+
+{$IFDEF DebugDisplay}
+    showmessage('not getting new frame'+#13#10+
+    'Time:      '+inttostr(floor(Time*1000))+#13#10+
+    'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
+    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
+    'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
+{$endif}
+
+    Exit;// we don't need a new frame now
+  end;
+
+
+  VideoTime:=VideoTime+VideoTimeBase;
+  TimeDifference:=myTime-VideoTime;
+  if TimeDifference >= (FRAMEDROPCOUNT-1)*VideoTimeBase then  // skip frames
+  begin
+{$ifdef DebugFrames}
+    //frame drop debug display
+    GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
+{$endif}
+
+{$IFDEF DebugDisplay}
+
+    showmessage('skipping frames'+#13#10+
+    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
+    'TimeDiff:  '+inttostr(floor(TimeDifference*1000))+#13#10+
+    'Time2Skip: '+inttostr(floor((Time-LastFrameTime)*1000)));
+
+{$endif}
+//    av_seek_frame(VideoFormatContext.,VideoStreamIndex,Floor(Time*VideoTimeBase),0);
+{    av_seek_frame(VideoFormatContext,-1,Floor((myTime+VideoTimeBase)*1500000),0);
+    VideoTime:=floor(myTime/VideoTimeBase)*VideoTimeBase;}
+    VideoTime:=VideoTime+FRAMEDROPCOUNT*VideoTimeBase;
+    DropFrame:=True;
+  end;
+
+
+//  av_init_packet(@AVPacket);
+  AVPacket.data := nil;
+  av_init_packet( AVPacket ); // JB-ffmpeg
+
+
+  FrameFinished:=0;
+  // read packets until we have a finished frame (or there are no more packets)
+//  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
+  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do     // JB-ffmpeg
+  begin
+
+
+    // if we got a packet from the video stream, then decode it
+    if (AVPacket.stream_index=VideoStreamIndex) then
+//      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  @frameFinished , AVPacket.data, AVPacket.size);
+      errnum := avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
+
+
+    // release internal packet structure created by av_read_frame
+//      av_free_packet(PAVPacket(@AVPacket));
+
+      try
+        if AVPacket.data <> nil then
+          av_free_packet( AVPacket );  // JB-ffmpeg
+      except
+        // TODO : JB_FFMpeg ... why does this now AV sometimes ( or always !! )
+      end;
+
+  end;
+
+
+  if DropFrame then
+    for droppedFrames:=1 to FRAMEDROPCOUNT do begin
+      FrameFinished:=0;
+      // read packets until we have a finished frame (or there are no more packets)
+//      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
+      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do  // JB-ffmpeg
+      begin
+        // if we got a packet from the video stream, then decode it
+        if (AVPacket.stream_index=VideoStreamIndex) then
+//          errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished, AVPacket.data, AVPacket.size);
+      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
+
+
+        // release internal packet structure created by av_read_frame
+//          av_free_packet(PAVPacket(@AVPacket)); // JB-ffmpeg
+          av_free_packet( AVPacket );
+      end;
+    end;
+
+  // if we did not get an new frame, there's nothing more to do
+  if Framefinished=0 then begin
+    GoldenRec.Spawn(220,15,1,16,0,-1,ColoredStar,$0000ff);
+    Exit;
+  end;
+  // otherwise we convert the pixeldata from YUV to RGB
+  errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
+            PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
+			      VideoCodecContext^.width, VideoCodecContext^.height);
+//errnum:=1;
+
+  if errnum >=0 then
+  begin
+    // copy RGB pixeldata to our TextureBuffer
+    // (line by line)
+
+    FrameDataPtr := pointer( AVFrameRGB^.data[0] );
+    linesize     := AVFrameRGB^.linesize[0];
+    for y:=0 to TexY-1 do
+    begin
+      System.Move(FrameDataPtr[y*linesize],fTexData[3*y*dataX],linesize);
+    end;
+
+    // generate opengl texture out of whatever we got
+    glBindTexture(GL_TEXTURE_2D, fVideoTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, fTexData);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+{$ifdef DebugFrames}
+    //frame decode debug display
+    GoldenRec.Spawn(200,35,1,16,0,-1,ColoredStar,$ffff00);
+{$endif}
+
+  end;
+end;
+
+procedure TVideoPlayback_ffmpeg.FFmpegDrawGL(Screen: integer);
+begin
+  // have a nice black background to draw on (even if there were errors opening the vid)
+  if Screen=1 then
+  begin
+    glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  end;
+  // exit if there's nothing to draw
+  if not fVideoOpened then Exit;
+
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glColor4f(1, 1, 1, 1);
+  glBindTexture(GL_TEXTURE_2D, fVideoTex);
+  glbegin(gl_quads);
+    glTexCoord2f(         0,          0); glVertex2f(400-ScaledVideoWidth/2, 300-ScaledVideoHeight/2);
+    glTexCoord2f(         0, TexY/dataY); glVertex2f(400-ScaledVideoWidth/2, 300+ScaledVideoHeight/2);
+    glTexCoord2f(TexX/dataX, TexY/dataY); glVertex2f(400+ScaledVideoWidth/2, 300+ScaledVideoHeight/2);
+    glTexCoord2f(TexX/dataX,          0); glVertex2f(400+ScaledVideoWidth/2, 300-ScaledVideoHeight/2);
+  glEnd;
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_BLEND);
+
+{$ifdef Info}
+  if VideoSkipTime+VideoTime+VideoTimeBase < 0 then
+  begin
+    glColor4f(0.7, 1, 0.3, 1);
+    SetFontStyle (1);
+    SetFontItalic(False);
+    SetFontSize(9);
+    SetFontPos (300, 0);
+    glPrint('Delay due to negative VideoGap');
+    glColor4f(1, 1, 1, 1);
+  end;
+{$endif}
+
+{$ifdef DebugFrames}
+    glColor4f(0, 0, 0, 0.2);
+    glbegin(gl_quads);
+      glVertex2f(0, 0);
+      glVertex2f(0, 70);
+      glVertex2f(250, 70);
+      glVertex2f(250, 0);
+    glEnd;
+
+    glColor4f(1,1,1,1);
+    SetFontStyle (1);
+    SetFontItalic(False);
+    SetFontSize(9);
+    SetFontPos (5, 0);
+    glPrint('delaying frame');
+    SetFontPos (5, 20);
+    glPrint('fetching frame');
+    SetFontPos (5, 40);
+    glPrint('dropping frame');
+{$endif}
+end;
+
+constructor TVideoPlayback_ffmpeg.create();
+begin
+  writeln( 'UVideo_FFMpeg - TVideoPlayback_ffmpeg.create()' );
+
+  writeln( 'UVideo_FFMpeg - av_register_all' );
+  av_register_all;
+
+  fVideoOpened := False;
+  fVideoPaused := False;
+
+end;
+
+procedure TVideoPlayback_ffmpeg.init();
+begin
+  writeln( 'UVideo_FFMpeg - glGenTextures(1, PglUint(@fVideoTex))' );
+  glGenTextures(1, PglUint(@fVideoTex));
+
+  writeln( 'UVideo_FFMpeg - SetLength(fTexData,0)' );
+  SetLength(fTexData,0);
+end;
+
+
+function TVideoPlayback_ffmpeg.Open( aFileName : string): boolean; // true if succeed
+var
+  errnum, i, x,y: Integer;
   lStreamsCount : Integer;
 
 begin
-  VideoOpened    := False;
-  VideoPaused    := False;
-  VideoTimeBase  := 0;
-  VideoTime      := 0;
-  LastFrameTime  := 0;
-  TimeDifference := 0;
+  fVideoOpened       := False;
+  fVideoPaused       := False;
+  VideoTimeBase      := 0;
+  VideoTime          := 0;
+  LastFrameTime      := 0;
+  TimeDifference     := 0;
   VideoFormatContext := 0;
 
-  writeln( Filename );
+  writeln( aFileName );
   
-  errnum         := av_open_input_file(VideoFormatContext, FileName, Nil, 0, Nil);
+  errnum         := av_open_input_file(VideoFormatContext, pchar( aFileName ), Nil, 0, Nil);
   writeln( 'Errnum : ' +inttostr( errnum ));
   if(errnum <> 0) then
   begin
 {$ifdef DebugDisplay}
     case errnum of
-      AVERROR_UNKNOWN: showmessage('failed to open file '+Filename+#13#10+'AVERROR_UNKNOWN');
-      AVERROR_IO: showmessage('failed to open file '+Filename+#13#10+'AVERROR_IO');
-      AVERROR_NUMEXPECTED: showmessage('failed to open file '+Filename+#13#10+'AVERROR_NUMEXPECTED');
-      AVERROR_INVALIDDATA: showmessage('failed to open file '+Filename+#13#10+'AVERROR_INVALIDDATA');
-      AVERROR_NOMEM: showmessage('failed to open file '+Filename+#13#10+'AVERROR_NOMEM');
-      AVERROR_NOFMT: showmessage('failed to open file '+Filename+#13#10+'AVERROR_NOFMT');
-      AVERROR_NOTSUPP: showmessage('failed to open file '+Filename+#13#10+'AVERROR_NOTSUPP');
-    else showmessage('failed to open file '+Filename+#13#10+'Error number: '+inttostr(Errnum));
+      AVERROR_UNKNOWN: showmessage('failed to open file '+aFileName+#13#10+'AVERROR_UNKNOWN');
+      AVERROR_IO: showmessage('failed to open file '+aFileName+#13#10+'AVERROR_IO');
+      AVERROR_NUMEXPECTED: showmessage('failed to open file '+aFileName+#13#10+'AVERROR_NUMEXPECTED');
+      AVERROR_INVALIDDATA: showmessage('failed to open file '+aFileName+#13#10+'AVERROR_INVALIDDATA');
+      AVERROR_NOMEM: showmessage('failed to open file '+aFileName+#13#10+'AVERROR_NOMEM');
+      AVERROR_NOFMT: showmessage('failed to open file '+aFileName+#13#10+'AVERROR_NOFMT');
+      AVERROR_NOTSUPP: showmessage('failed to open file '+aFileName+#13#10+'AVERROR_NOTSUPP');
+    else showmessage('failed to open file '+aFileName+#13#10+'Error number: '+inttostr(Errnum));
     end;
 {$ENDIF}
     Exit;
@@ -212,6 +471,7 @@ begin
     end;
     aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
 
+(*
     WantedAudioCodecContext.freq     := aCodecCtx^.sample_rate;
     WantedAudioCodecContext.format   := AUDIO_S16SYS;
     WantedAudioCodecContext.channels := aCodecCtx^.channels;
@@ -219,7 +479,7 @@ begin
     WantedAudioCodecContext.samples  := 1024;//SDL_AUDIO_BUFFER_SIZE;
 //    WantedAudioCodecContext.callback := audio_callback;
     WantedAudioCodecContext.userdata := aCodecCtx;
-
+*)
 
 (*
     if(SDL_OpenAudio(WantedAudioCodecContext, AudioCodecContext) < 0) then
@@ -287,13 +547,13 @@ begin
     end;
     if errnum >=0 then
     begin
-      VideoOpened:=True;
+      fVideoOpened:=True;
 
       TexX := VideoCodecContext^.width;
       TexY := VideoCodecContext^.height;
       dataX := Round(Power(2, Ceil(Log2(TexX))));
       dataY := Round(Power(2, Ceil(Log2(TexY))));
-      SetLength(TexData,dataX*dataY*3);
+      SetLength(fTexData,dataX*dataY*3);
       // calculate some information for video display
       VideoAspect:=VideoCodecContext^.sample_aspect_ratio.num/VideoCodecContext^.sample_aspect_ratio.den;
       if (VideoAspect = 0) then
@@ -331,231 +591,62 @@ begin
   end;
 end;
 
-procedure FFmpegClose;
+procedure TVideoPlayback_ffmpeg.Close;
 begin
-  if VideoOpened then begin
+  if fVideoOpened then
+  begin
     av_free(myBuffer);
     av_free(AVFrameRGB);
     av_free(AVFrame);
+
     avcodec_close(VideoCodecContext);
     av_close_input_file(VideoFormatContext);
-    SetLength(TexData,0);
-    VideoOpened:=False;
+
+    SetLength(fTexData,0);
+
+    fVideoOpened:=False;
   end;
 end;
 
-procedure FFmpegTogglePause;
+procedure TVideoPlayback_ffmpeg.Play;
 begin
-  if VideoPaused then VideoPaused:=False
-  else VideoPaused:=True;
 end;
 
-procedure FFmpegSkip(Time: Single);
+procedure TVideoPlayback_ffmpeg.Pause;
 begin
-  VideoSkiptime:=Time;
-  if VideoSkipTime > 0 then begin
-    av_seek_frame(VideoFormatContext,-1,Floor((VideoSkipTime)*1500000),0);
-    VideoTime:=VideoSkipTime;
-  end;
+  fVideoPaused := not fVideoPaused;
 end;
 
-procedure FFmpegGetFrame(Time: Extended);
-var
-  FrameFinished: Integer;
-  AVPacket: TAVPacket;
-  errnum, x, y: Integer;
-  FrameDataPtr: PByteArray;
-  linesize: integer;
-  myTime: Extended;
-  DropFrame: Boolean;
-  droppedFrames: Integer;
-const
-  FRAMEDROPCOUNT=3;
+procedure TVideoPlayback_ffmpeg.Stop;
 begin
-  if not VideoOpened then Exit;
-
-  if VideoPaused then Exit;
-  
-  myTime:=Time+VideoSkipTime;
-  TimeDifference:=myTime-VideoTime;
-  DropFrame:=False;
-
-{$IFDEF DebugDisplay}
-  showmessage('Time:      '+inttostr(floor(Time*1000))+#13#10+
-    'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
-    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
-    'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
-{$endif}
-
-  if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then
-  begin
-{$ifdef DebugFrames}
-    // frame delay debug display
-    GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
-{$endif}
-
-{$IFDEF DebugDisplay}
-    showmessage('not getting new frame'+#13#10+
-    'Time:      '+inttostr(floor(Time*1000))+#13#10+
-    'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
-    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
-    'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
-{$endif}
-
-    Exit;// we don't need a new frame now
-  end;
-  
-  VideoTime:=VideoTime+VideoTimeBase;
-  TimeDifference:=myTime-VideoTime;
-  if TimeDifference >= (FRAMEDROPCOUNT-1)*VideoTimeBase then  // skip frames
-  begin
-{$ifdef DebugFrames}
-    //frame drop debug display
-    GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
-{$endif}
-
-{$IFDEF DebugDisplay}
-    showmessage('skipping frames'+#13#10+
-    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
-    'TimeDiff:  '+inttostr(floor(TimeDifference*1000))+#13#10+
-    'Time2Skip: '+inttostr(floor((Time-LastFrameTime)*1000)));
-{$endif}
-//    av_seek_frame(VideoFormatContext,VideoStreamIndex,Floor(Time*VideoTimeBase),0);
-{    av_seek_frame(VideoFormatContext,-1,Floor((myTime+VideoTimeBase)*1500000),0);
-    VideoTime:=floor(myTime/VideoTimeBase)*VideoTimeBase;}
-    VideoTime:=VideoTime+FRAMEDROPCOUNT*VideoTimeBase;
-    DropFrame:=True;
-  end;
-
-//  av_init_packet(@AVPacket);
-  av_init_packet( AVPacket ); // JB-ffmpeg
-  
-  FrameFinished:=0;
-  // read packets until we have a finished frame (or there are no more packets)
-//  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
-  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do     // JB-ffmpeg
-  begin
-    // if we got a packet from the video stream, then decode it
-    if (AVPacket.stream_index=VideoStreamIndex) then
-//      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  @frameFinished , AVPacket.data, AVPacket.size);
-      errnum := avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
-
-      
-    // release internal packet structure created by av_read_frame
-//      av_free_packet(PAVPacket(@AVPacket));
-      av_free_packet( AVPacket );  // JB-ffmpeg
-  end;
-  
-  if DropFrame then
-    for droppedFrames:=1 to FRAMEDROPCOUNT do begin
-      FrameFinished:=0;
-      // read packets until we have a finished frame (or there are no more packets)
-//      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
-      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do  // JB-ffmpeg
-      begin
-        // if we got a packet from the video stream, then decode it
-        if (AVPacket.stream_index=VideoStreamIndex) then
-//          errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished, AVPacket.data, AVPacket.size);
-      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
-
-
-        // release internal packet structure created by av_read_frame
-//          av_free_packet(PAVPacket(@AVPacket)); // JB-ffmpeg
-          av_free_packet( AVPacket );
-      end;
-    end;
-
-  // if we did not get an new frame, there's nothing more to do
-  if Framefinished=0 then begin
-    GoldenRec.Spawn(220,15,1,16,0,-1,ColoredStar,$0000ff);
-    Exit;
-  end;
-  // otherwise we convert the pixeldata from YUV to RGB
-  errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
-            PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
-			      VideoCodecContext^.width, VideoCodecContext^.height);
-//errnum:=1;
-
-  if errnum >=0 then
-  begin
-    // copy RGB pixeldata to our TextureBuffer
-    // (line by line)
-
-    FrameDataPtr := pointer( AVFrameRGB^.data[0] );
-    linesize     := AVFrameRGB^.linesize[0];
-    for y:=0 to TexY-1 do
-    begin
-      System.Move(FrameDataPtr[y*linesize],TexData[3*y*dataX],linesize);
-    end;
-
-    // generate opengl texture out of whatever we got
-    glBindTexture(GL_TEXTURE_2D, VideoTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, TexData);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-{$ifdef DebugFrames}
-    //frame decode debug display
-    GoldenRec.Spawn(200,35,1,16,0,-1,ColoredStar,$ffff00);
-{$endif}
-
-  end;
 end;
 
-procedure FFmpegDrawGL(Screen: integer);
+procedure TVideoPlayback_ffmpeg.MoveTo(Time: real);
 begin
-  // have a nice black background to draw on (even if there were errors opening the vid)
-  if Screen=1 then begin
-    glClearColor(0,0,0,0);
-    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  fVideoSkipTime := Time;
+  
+  if fVideoSkipTime > 0 then
+  begin
+    av_seek_frame(VideoFormatContext,-1,Floor((fVideoSkipTime)*1500000),0);
+
+    VideoTime := fVideoSkipTime;
   end;
-  // exit if there's nothing to draw
-  if not VideoOpened then Exit;
-
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glColor4f(1, 1, 1, 1);
-  glBindTexture(GL_TEXTURE_2D, VideoTex);
-  glbegin(gl_quads);
-    glTexCoord2f(         0,          0); glVertex2f(400-ScaledVideoWidth/2, 300-ScaledVideoHeight/2);
-    glTexCoord2f(         0, TexY/dataY); glVertex2f(400-ScaledVideoWidth/2, 300+ScaledVideoHeight/2);
-    glTexCoord2f(TexX/dataX, TexY/dataY); glVertex2f(400+ScaledVideoWidth/2, 300+ScaledVideoHeight/2);
-    glTexCoord2f(TexX/dataX,          0); glVertex2f(400+ScaledVideoWidth/2, 300-ScaledVideoHeight/2);
-  glEnd;
-  glDisable(GL_TEXTURE_2D);
-  glDisable(GL_BLEND);
-
-{$ifdef Info}
-  if VideoSkipTime+VideoTime+VideoTimeBase < 0 then begin
-    glColor4f(0.7, 1, 0.3, 1);
-    SetFontStyle (1);
-    SetFontItalic(False);
-    SetFontSize(9);
-    SetFontPos (300, 0);
-    glPrint('Delay due to negative VideoGap');
-    glColor4f(1, 1, 1, 1);
-  end;
-{$endif}
-
-{$ifdef DebugFrames}
-    glColor4f(0, 0, 0, 0.2);
-    glbegin(gl_quads);
-      glVertex2f(0, 0);
-      glVertex2f(0, 70);
-      glVertex2f(250, 70);
-      glVertex2f(250, 0);
-    glEnd;
-
-    glColor4f(1,1,1,1);
-    SetFontStyle (1);
-    SetFontItalic(False);
-    SetFontSize(9);
-    SetFontPos (5, 0);
-    glPrint('delaying frame');
-    SetFontPos (5, 20);
-    glPrint('fetching frame');
-    SetFontPos (5, 40);
-    glPrint('dropping frame');
-{$endif}
 end;
+
+function  TVideoPlayback_ffmpeg.getPosition: real;
+begin
+  result := 0;  
+end;
+
+initialization
+  singleton_VideoFFMpeg := TVideoPlayback_ffmpeg.create();
+
+  writeln( 'UVideo_FFMpeg - Register Playback' );
+  AudioManager.add( IVideoPlayback( singleton_VideoFFMpeg ) );
+
+
+finalization
+  AudioManager.Remove( IVideoPlayback( singleton_VideoFFMpeg ) );
+
 
 end.

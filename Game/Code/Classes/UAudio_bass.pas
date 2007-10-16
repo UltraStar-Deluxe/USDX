@@ -79,7 +79,7 @@ type
       procedure Close;
       function Finished: boolean;
       function Length: real;
-      function Position: real;
+      function getPosition: real;
       procedure PlayStart;
       procedure PlayBack;
       procedure PlaySwoosh;
@@ -118,17 +118,22 @@ var
   Pet:  integer;
   S:    integer;
 begin
-  Log.BenchmarkStart(4);
-  Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
+  writeln( 'TAudio_bass.InitializePlayback' );
+//  Log.BenchmarkStart(4);
+//  Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
 
   Loaded := false;
   Loop   := false;
 
+
+  writeln( 'TAudio_bass AllocateHWND' );
   {$ifdef win32}
   // TODO : JB_Linux ... is this needed ? :)
   fHWND  := AllocateHWND( nil); // TODO : JB_lazarus - can we do something different here ?? lazarus didnt like this function
   {$ENDIF}
 
+
+  writeln( 'TAudio_bass BASS_Init' );
   // TODO : jb_linux replace with something other than bass
   if not BASS_Init(1, 44100, 0, fHWND, nil) then
   begin
@@ -139,15 +144,16 @@ begin
     Exit;
   end;
 
-  Log.BenchmarkEnd(4); Log.LogBenchmark('--> Bass Init', 4);
+//  Log.BenchmarkEnd(4); Log.LogBenchmark('--> Bass Init', 4);
 
   // config playing buffer
 //  BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
 //  BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
 
-  Log.LogStatus('Loading Sounds', 'Music Initialize');
+//  Log.LogStatus('Loading Sounds', 'Music Initialize');
 
-  Log.BenchmarkStart(4);
+  writeln( 'TAudio_bass LoadSoundFromFile' );
+//  Log.BenchmarkStart(4);
   LoadSoundFromFile(BassStart,  SoundPath + 'Common Start.mp3');
   LoadSoundFromFile(BassBack,   SoundPath + 'Common Back.mp3');
   LoadSoundFromFile(BassSwoosh, SoundPath + 'menu swoosh.mp3');
@@ -161,8 +167,8 @@ begin
 
 //  LoadSoundFromFile(BassShuffle, SoundPath + 'Shuffle.mp3');
 
-  Log.BenchmarkEnd(4);
-  Log.LogBenchmark('--> Loading Sounds', 4);
+//  Log.BenchmarkEnd(4);
+//  Log.LogBenchmark('--> Loading Sounds', 4);
 end;
 
 procedure TAudio_bass.InitializeRecord;
@@ -347,7 +353,7 @@ begin
   Result := BASS_ChannelBytes2Seconds(Bass, bytes);
 end;
 
-function TAudio_bass.Position: real;
+function TAudio_bass.getPosition: real;
 var
   bytes:    integer;
 begin
@@ -631,7 +637,10 @@ initialization
   AudioManager.add( IAudioInput( singleton_MusicBass )    );
 
 finalization
+  writeln( 'UAudio_Bass - UnRegister Playback' );
   AudioManager.Remove( IAudioPlayback( singleton_MusicBass ) );
+
+  writeln( 'UAudio_Bass - UnRegister Input' );
   AudioManager.Remove( IAudioInput( singleton_MusicBass ) );
 
 end.

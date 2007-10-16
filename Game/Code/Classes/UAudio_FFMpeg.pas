@@ -16,8 +16,6 @@ uses Classes,
      {$IFNDEF FPC}
      Forms,
      {$ENDIF}
-
-     bass,
      ULog,
      UMusic;
 

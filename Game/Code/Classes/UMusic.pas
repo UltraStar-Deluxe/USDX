@@ -8,8 +8,7 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-uses Classes // UCommon
-     ;
+uses Classes ;
 
 type
   TMuzyka = record
@@ -94,23 +93,58 @@ type
   end;
 
 type
-  IAudioPlayback = Interface
-  ['{E4AE0B40-3C21-4DC5-847C-20A87E0DFB96}']
+  IGenericPlayback = Interface
+  ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCE33DD}']
       function  GetName: String;
+
+      function  Open(Name: string): boolean; // true if succeed
+      procedure Close;
+
+      procedure Play;
+      procedure Pause;
+      procedure Stop;
+
+      procedure MoveTo(Time: real);
+      function  getPosition: real;
+
+      property position : real READ getPosition WRITE MoveTo;
+  end;
+
+  IVideoPlayback = Interface( IGenericPlayback )
+  ['{3574C40C-28AE-4201-B3D1-3D1F0759B131}']
+(*
+    procedure FFmpegOpenFile(FileName: pAnsiChar);
+    procedure FFmpegClose;
+
+    procedure FFmpegGetFrame(Time: Extended);
+    procedure FFmpegDrawGL(Screen: integer);
+    procedure FFmpegTogglePause;
+    procedure FFmpegSkip(Time: Single);
+*)
+    procedure init();
+    
+    procedure FFmpegGetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
+    procedure FFmpegDrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
+
+  end;
+
+  IAudioPlayback = Interface( IGenericPlayback )
+  ['{E4AE0B40-3C21-4DC5-847C-20A87E0DFB96}']
       procedure InitializePlayback;
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
-      function Open(Name: string): boolean; // true if succeed
+//      function Open(Name: string): boolean; // true if succeed
       procedure Rewind;
-      procedure MoveTo(Time: real);
-      procedure Play;
-      procedure Pause; //Pause Mod
-      procedure Stop;
-      procedure Close;
+//      procedure MoveTo(Time: real);
+//      procedure Play;
+//      procedure Pause;
+//      procedure Stop;
+//      procedure Close;
       function Finished: boolean;
       function Length: real;
-      function Position: real;
+//      function getPosition: real;
+
       procedure PlayStart;
       procedure PlayBack;
       procedure PlaySwoosh;
@@ -159,6 +193,7 @@ var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
 
 procedure InitializeSound;
  
+function  VideoPlayback(): IVideoPlayback;
 function  AudioPlayback(): IAudioPlayback;
 function  AudioInput(): IAudioInput;
 
@@ -168,20 +203,29 @@ function  AudioManager: TInterfaceList;
 implementation
 
 uses
-  sysutils,
-  uLog;
+  sysutils;
+//  uLog;
 
 var
-  singleton_AudioPlayback : IAudioPlayback;
-  singleton_AudioInput    : IAudioInput;
-  singleton_AudioManager  : TInterfaceList;
+  singleton_VideoPlayback : IVideoPlayback  = nil; 
+  singleton_AudioPlayback : IAudioPlayback  = nil;
+  singleton_AudioInput    : IAudioInput     = nil;
+  singleton_AudioManager  : TInterfaceList  = nil;
 
 
 function AudioManager: TInterfaceList;
 begin
+  if singleton_AudioManager = nil then
+    singleton_AudioManager := TInterfaceList.Create();
+  
   Result := singleton_AudioManager;
 end; //CompressionPluginManager
 
+
+function  VideoPlayback(): IVideoPlayback;
+begin
+  result := singleton_VideoPlayback;
+end;
 
 function AudioPlayback(): IAudioPlayback;
 begin
@@ -195,45 +239,71 @@ end;
 
 procedure InitializeSound;
 var
-  lTmpPlayBack : IAudioPlayback;
-  lTmpInput    : IAudioInput;
-  iCount       : Integer;
+  lTmpInterface : IInterface;
+  iCount        : Integer;
 begin
-  lTmpPlayBack := nil;
-  lTmpInput    := nil;
+  lTmpInterface := nil;
+
+  singleton_AudioPlayback := nil;
+  singleton_AudioInput    := nil;
+  singleton_VideoPlayback := nil;
 
   writeln( 'InitializeSound , Enumerate Registered Audio Interfaces' );
-  for iCount := 0 to singleton_AudioManager.Count - 1 do
+  for iCount := 0 to AudioManager.Count - 1 do
   begin
     if assigned( AudioManager[iCount] ) then
     begin
       // if this interface is a Playback, then set it as the default used
-      if ( AudioManager[iCount].QueryInterface( IAudioPlayback, lTmpPlayBack ) = 0 ) AND
-         ( not assigned( singleton_AudioPlayback )                                 ) then
+
+      if ( AudioManager[iCount].QueryInterface( IAudioPlayback, lTmpInterface ) = 0 ) AND
+         ( true ) then
+//         ( not assigned( singleton_AudioPlayback )                                  ) then
       begin
-        singleton_AudioPlayback := lTmpPlayBack;
+        singleton_AudioPlayback := IAudioPlayback( lTmpInterface );
       end;
 
       // if this interface is a Input, then set it as the default used
-      if ( AudioManager[iCount].QueryInterface( IAudioInput, lTmpInput )        = 0 ) AND
-         ( not assigned( singleton_AudioInput )                                     ) then
+      if ( AudioManager[iCount].QueryInterface( IAudioInput, lTmpInterface )    = 0 ) AND
+         ( true ) then
+//         ( not assigned( singleton_AudioInput )                                     ) then
       begin
-        singleton_AudioInput := lTmpInput;
+        singleton_AudioInput := IAudioInput( lTmpInterface );
       end;
+
+      // if this interface is a Input, then set it as the default used
+      if ( AudioManager[iCount].QueryInterface( IVideoPlayback, lTmpInterface ) = 0 ) AND
+         ( true ) then
+//         ( not assigned( singleton_VideoPlayback )                                  ) then
+      begin
+        singleton_VideoPlayback := IVideoPlayback( lTmpInterface );
+      end;
+
     end;
   end;
 
 
-  writeln( 'Registered Audio Playback Interface : ' + AudioPlayback.GetName );
-  writeln( 'Registered Audio Input Interface    : ' + AudioInput.GetName );
+  if VideoPlayback <> nil then
+  begin
+    writeln( 'Registered Video Playback Interface : ' + VideoPlayback.GetName );
+  end;
 
-  // Initialize Playback
-  Log.LogStatus('Initializing Playback ('+AudioPlayback.GetName+')', 'InitializeSound');
-  AudioPlayback.InitializePlayback;
+  if AudioPlayback <> nil then
+  begin
+    writeln( 'Registered Audio Playback Interface : ' + AudioPlayback.GetName );
+  //  Log.LogStatus('Initializing Playback ('+AudioPlayback.GetName+')', 'InitializeSound');
+    AudioPlayback.InitializePlayback;
+  end;
 
-  // Initialize Input  
-  Log.LogStatus('Initializing Record ('+AudioPlayback.GetName+')', 'InitializeSound');
-  AudioInput.InitializeRecord;  
+  if AudioInput <> nil then
+  begin
+    writeln( 'Registered Audio Input Interface    : ' + AudioInput.GetName );
+
+//    Log.LogStatus('Initializing Record ('+AudioPlayback.GetName+')', 'InitializeSound');
+    AudioInput.InitializeRecord;
+  end;
+
+  writeln( 'InitializeSound DONE' );
+
 end;
 
 initialization
