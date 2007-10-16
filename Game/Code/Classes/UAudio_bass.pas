@@ -30,6 +30,7 @@ uses
      URecord,
      UIni,
      UMain,
+     UCommon,
      UThemes;
 
 const
