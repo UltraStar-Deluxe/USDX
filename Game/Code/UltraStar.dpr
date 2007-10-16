@@ -49,7 +49,7 @@ uses
   
   //  UAudio_FFMpeg in 'Classes\UAudio_FFMpeg.pas',
   UAudio_Bass   in 'Classes\UAudio_Bass.pas',
-  UVideo in 'Classes\UVideo.pas',
+  UVideo        in 'Classes\UVideo.pas',
 
 
 

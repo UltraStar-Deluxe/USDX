@@ -22,15 +22,9 @@ uses UMenu,
      ULyrics,
      TextGL,
      OpenGL12,
-(*
-     {$IFDEF useBASS}
-     bass,
-     {$ENDIF}
-*)     
      UThemes,
      ULCD,
      UGraphicClasses,
-//     UVideo,
      USingScores;
 
 type

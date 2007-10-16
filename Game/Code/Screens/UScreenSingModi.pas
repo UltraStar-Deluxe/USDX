@@ -21,9 +21,7 @@ uses UMenu,
      ULyrics,
      TextGL,
      OpenGL12,
-     {$IFDEF useBASS}
-     bass,
-     {$ENDIF}
+
      UThemes,
      ULCD,
      UScreenSing,
