@@ -26,13 +26,18 @@ type
       //Some Hook Handles. See Plugin SDKs Hooks.txt for Infos
       hLoadingFinished: THandle;
       hMainLoop:        THandle;
+      hTranslate:       THandle;
       hLoadTextures:    THandle;
       hExitQuery:       THandle;
       hExit:            THandle;
       hDebug:           THandle;
       hError:           THandle;
-      sReportError:       THandle;
-      sReportDebug:       THandle;
+      sReportError:     THandle;
+      sReportDebug:     THandle;
+      sShowMessage:     THandle;
+      sRetranslate:     THandle;
+      sReloadTextures:  THandle;
+      sGetModuleInfo:   THandle;
 
       Modules:          Array [0..High(CORE_MODULES_TO_LOAD)] of TModuleListItem;
 
@@ -69,6 +74,10 @@ type
       Name:             String;         //Name of this Application
       Version:          LongWord;       //Version of this ". For Info Look PluginDefs Functions
 
+      LastErrorReporter:String;         //Who Reported the Last Error String
+      LastErrorString:  String;         //Last Error String reported
+
+
       //---------------
       //Main Methods to control the Core:
       //---------------
@@ -81,17 +90,21 @@ type
       // Hook and Service Procs:
       //--------------
       Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)
-      {Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)
-      Function ShowMessage(wParam, lParam: DWord): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)}
+      Function ReportError(wParam, lParam: DWord): integer; //Shows a Message (wParam: Pchar(Message), lParam: PChar(Reportername))
+      Function ReportDebug(wParam, lParam: DWord): integer; //Shows a Message (wParam: Pchar(Message), lParam: PChar(Reportername))
+      Function Retranslate(wParam, lParam: DWord): integer; //Calls Translate hook
+      Function ReloadTextures(wParam, lParam: DWord): integer; //Calls LoadTextures hook
+      Function GetModuleInfo(wParam, lParam: DWord): integer; //If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TModuleInfo to address at lparam
   end;
 
 var
   Core: TCore; 
 
 implementation
+uses SysUtils,
 {$IFDEF win32}
-uses Windows;
-{$ENDIF}
+Windows
+{$ENDIF};
 
 //-------------
 // Create - Creates Class + Hook and Service Manager
@@ -101,6 +114,9 @@ begin
   Name := cName;
   Version := cVersion;
   CurExecuted := 0;
+
+  LastErrorReporter := '';
+  LastErrorString   := '';
 
   Hooks := THookManager.Create(50);
   Services := TServiceManager.Create;
@@ -128,9 +144,88 @@ begin
     Except
       noError := False;
     end;
+
+    if (noError) then
+    begin //Init
+      Try
+        noError := Init;
+      Except
+        noError := False;
+      end;
+
+      If noError then
+      begin
+        //Call Translate Hook
+        noError := (Hooks.CallEventChain(hTranslate, 0, 0) = 0);
+
+        If noError then
+        begin //Calls LoadTextures Hook
+          noError := (Hooks.CallEventChain(hLoadTextures, 0, 0) = 0);
+
+          if noError then
+          begin //Calls Loading Finished Hook
+            noError := (Hooks.CallEventChain(hLoadingFinished, 0, 0) = 0);
+
+            If noError then
+            begin
+              //Start MainLoop
+              While noError do
+              begin
+                noError := MainLoop;
+                // to-do : Call Display Draw here
+              end;
+            end
+            else
+            begin
+              If (LastErrorString <> '') then
+                Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error calling LoadingFinished Hook: ' + LastErrorString)))
+              else
+                Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error calling LoadingFinished Hook')));
+            end;
+          end
+          else
+          begin
+            If (LastErrorString <> '') then
+              Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error loading textures: ' + LastErrorString)))
+            else
+              Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error loading textures')));
+          end;
+        end
+        else
+        begin
+          If (LastErrorString <> '') then
+            Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error translating: ' + LastErrorString)))
+          else
+            Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error translating')));
+        end;
+        
+      end
+      else
+      begin
+        If (LastErrorString <> '') then
+          Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error initing Modules: ' + LastErrorString)))
+        else
+          Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error initing Modules')));
+      end;
+    end
+    else
+    begin
+      If (LastErrorString <> '') then
+        Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error loading Modules: ' + LastErrorString)))
+      else
+        Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error loading Modules')));
+    end;
   end
   else
-    Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('')));
+  begin
+    If (LastErrorString <> '') then
+      Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error Getting Modules: ' + LastErrorString)))
+    else
+      Self.ShowMessage(CORE_SM_ERROR, Integer(PChar('Error Getting Modules')));
+  end;
+
+  //DeInit
+  DeInit;
 end;
 
 //-------------
@@ -138,7 +233,7 @@ end;
 //-------------
 Function TCore.MainLoop: Boolean;
 begin
-  Result := True;
+  Result := False;
 
 end;
 
@@ -149,11 +244,17 @@ Function TCore.GetModules: Boolean;
 var
   I: Integer;
 begin
-  For I := 0 to high(Modules) do
-  begin
-    Modules[I].NeedsDeInit := False;
-    Modules[I].Module := CORE_MODULES_TO_LOAD[I].Create;
-    Modules[I].Module.Info(@Modules[I].Info);
+  Result := False;
+  try
+    For I := 0 to high(Modules) do
+    begin
+      Modules[I].NeedsDeInit := False;
+      Modules[I].Module := CORE_MODULES_TO_LOAD[I].Create;
+      Modules[I].Module.Info(@Modules[I].Info);
+    end;
+    Result := True;
+  except
+    ReportError(Integer(PChar('Can''t get module #' + InttoStr(I) + ' "' + Modules[I].Info.Name + '"')), Integer(PChar('Core')));
   end;
 end;
 
@@ -169,7 +270,13 @@ begin
   I := 0;
   While ((Result = True) AND (I <= High(CORE_MODULES_TO_LOAD))) do
   begin
-    Result := Modules[I].Module.Load;
+    try
+      Result := Modules[I].Module.Load;
+    except
+      Result := False;
+      ReportError(Integer(PChar('Error loading module #' + InttoStr(I) + ' "' + Modules[I].Info.Name + '"')), Integer(PChar('Core')));
+    end;
+
     Inc(I);
   end;
 end;
@@ -186,7 +293,14 @@ begin
   I := 0;
   While ((Result = True) AND (I <= High(CORE_MODULES_TO_LOAD))) do
   begin
-    Result := Modules[I].Module.Init;
+    try
+      Result := Modules[I].Module.Init;
+    except
+      Result := False;
+      ReportError(Integer(PChar('Error initing module #' + InttoStr(I) + ' "' + Modules[I].Info.Name + '"')), Integer(PChar('Core')));
+    end;
+
+    Modules[I].NeedsDeInit := Result;
     Inc(I);
   end;
 end;
@@ -227,13 +341,19 @@ Function TCore.LoadCore: Boolean;
 begin
   hLoadingFinished := Hooks.AddEvent('Core/LoadingFinished');
   hMainLoop        := Hooks.AddEvent('Core/MainLoop');
+  hTranslate       := Hooks.AddEvent('Core/Translate');
   hLoadTextures    := Hooks.AddEvent('Core/LoadTextures');
   hExitQuery       := Hooks.AddEvent('Core/ExitQuery');
   hExit            := Hooks.AddEvent('Core/Exit');
   hDebug           := Hooks.AddEvent('Core/NewDebugInfo');
   hError           := Hooks.AddEvent('Core/NewError');
-  sReportError     := Services.AddService('Core/ReportError');
-  sReportDebug     := Services.AddService('Core/ReportDebug');
+  
+  sReportError     := Services.AddService('Core/ReportError', nil, Self.ReportError);
+  sReportDebug     := Services.AddService('Core/ReportDebug', nil, Self.ReportDebug);
+  sShowMessage     := Services.AddService('Core/ShowMessage', nil, Self.ShowMessage);
+  sRetranslate     := Services.AddService('Core/Retranslate', nil, Self.Retranslate);
+  sReloadTextures  := Services.AddService('Core/ReloadTextures', nil, Self.ReloadTextures);
+  sGetModuleInfo   := Services.AddService('Core/GetModuleInfo', nil, Self.GetModuleInfo);
 end;
 
 //-------------
@@ -255,7 +375,7 @@ begin
 end;
 
 //-------------
-//Shows a MessageDialog (lParam: PChar Text, wParam: Symbol)
+// Shows a MessageDialog (lParam: PChar Text, wParam: Symbol)
 //-------------
 Function TCore.ShowMessage(wParam, lParam: DWord): integer;
 var Params: Cardinal; 
@@ -278,6 +398,66 @@ begin
   {$ENDIF}
 
   // to-do : write ShowMessage for other OSes
+end;
+
+//-------------
+// Calls NewError HookChain (wParam: Pchar(Message), lParam: PChar(Reportername))
+//-------------
+Function TCore.ReportError(wParam, lParam: DWord): integer;
+begin
+  Hooks.CallEventChain(hError, wParam, lParam);
+
+  //Update LastErrorReporter and LastErrorString
+  LastErrorReporter := String(PChar(Ptr(lParam)));
+  LastErrorString   := String(PChar(Ptr(wParam)));
+end;
+
+//-------------
+// Calls NewDebugInfo HookChain (wParam: Pchar(Message), lParam: PChar(Reportername))
+//-------------
+Function TCore.ReportDebug(wParam, lParam: DWord): integer;
+begin
+  Hooks.CallEventChain(hDebug, wParam, lParam);
+end;
+
+//-------------
+// Calls Translate hook
+//-------------
+Function TCore.Retranslate(wParam, lParam: DWord): integer;
+begin
+  Hooks.CallEventChain(hTranslate, 0, 1);
+end;
+
+//-------------
+// Calls LoadTextures hook
+//-------------
+Function TCore.ReloadTextures(wParam, lParam: DWord): integer;
+begin
+  Hooks.CallEventChain(hLoadTextures, 0, 1);
+end;
+
+//-------------
+// If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TModuleInfo to address at lparam
+//-------------
+Function TCore.GetModuleInfo(wParam, lParam: DWord): integer;
+begin
+  if (ptr(lParam) = nil) then
+  begin
+    Result := Length(Modules);
+  end
+  else
+  begin
+    Try
+      For Result := 0 to High(Modules) do
+      begin
+        AModuleInfo(ptr(lParam))[Result].Name := Modules[Result].Info.Name;
+        AModuleInfo(ptr(lParam))[Result].Version := Modules[Result].Info.Version;
+        AModuleInfo(ptr(lParam))[Result].Description := Modules[Result].Info.Description;
+      end;
+    Except
+      Result := -1;
+    end;
+  end;
 end;
 
 end.

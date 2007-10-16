@@ -7,6 +7,7 @@ Core:
 --------------------
 Core/LoadingFinished <- Hook is called after all Modules and Plugins are loaded completely, before MainLoop
 Core/MainLoop        <- Hook is called once in MainLoop before Drawing
+Core/Translate       <- Hook is called when Strings should be translated. If this is Retranslating lParam is Non Zero
 Core/LoadTextures    <- Hook is called when Textures should be Loaded. This will be called in Ogl Thread. If Textures are Reloaded (e.g. on Display ReInit) LParam is non Zero.
 Core/ExitQuery       <- Hook is called if someone querys an exit. (e.g. X is pressed). Not called on ForcedExit. If Chain is breaked the exit will be aborted.
 Core/Exit            <- Hook is called before Module a. Plugin unload.

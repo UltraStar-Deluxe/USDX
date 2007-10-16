@@ -6,19 +6,13 @@ interface
   Dummy Class that has Methods that will be called from Core
   In the Best case every Piece of this Software is a Module
 *********************}
+uses UPluginDefs;
 
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
 
 type
-  PModuleInfo = ^TModuleInfo;
-  TModuleInfo = record
-    Name:         String;
-    Version:      LongWord;
-    Description:  String;
-  end;
-
   TCoreModule = class
     public
       //Function that gives some Infos about the Module to the Core
@@ -44,6 +38,10 @@ type
       //Deinit is in backwards Initing Order
       //If False is Returned this will cause a Forced Exit
       Procedure DeInit; virtual;
+
+      //Is Called if this Module will be unloaded and has been created
+      //Should be used to Free Memory
+      Procedure Free; virtual;
   end;
   cCoreModule = class of TCoreModule;
 
@@ -98,6 +96,15 @@ end;
 //Deinit is in backwards Initing Order
 //-------------
 Procedure TCoreModule.DeInit;
+begin
+  //Dummy ftw!!
+end;
+
+//-------------
+//Is Called if this Module will be unloaded and has been created
+//Should be used to Free Memory
+//-------------
+Procedure TCoreModule.Free;
 begin
   //Dummy ftw!!
 end;

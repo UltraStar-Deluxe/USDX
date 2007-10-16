@@ -4,16 +4,22 @@ program UltraStar;
 {$I switches.inc}
 
 uses
+  //------------------------------ 	 
+  //Includes - 3rd Party Libraries
+  //------------------------------
   SDL in 'lib\JEDI-SDLv1.0\SDL\Pas\SDL.pas',
   moduleloader in 'lib\JEDI-SDLv1.0\SDL\Pas\moduleloader.pas',
   sdlutils in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas',
   sdl_image in 'lib\JEDI-SDLv1.0\SDL_Image\Pas\sdl_image.pas',
   OpenGL12 in 'lib\JEDI-SDLv1.0\OpenGL\Pas\OpenGL12.pas',
   sdl_ttf in 'lib\JEDI-SDLv1.0\SDL_ttf\Pas\sdl_ttf.pas',
+
   bass in 'lib\bass\delphi\bass.pas',
+
   PNGImage in 'lib\PNGImage\PNGImage.pas',
   PNGzLib in 'lib\PNGImage\PNGzLib.pas',
   pnglang in 'lib\PNGImage\pnglang.pas',
+
   midiout in 'lib\midi\midiout.pas',
   midiin in 'lib\midi\midiin.pas',
   CIRCBUF in 'lib\midi\CIRCBUF.PAS',
@@ -22,14 +28,20 @@ uses
   MidiCons in 'lib\midi\MidiCons.PAS',
   MidiFile in 'lib\midi\MidiFile.PAS',
   Delphmcb in 'lib\midi\Delphmcb.PAS',
+
   avcodec in 'lib\ffmpeg\avcodec.pas',
   avformat in 'lib\ffmpeg\avformat.pas',
   avutil in 'lib\ffmpeg\avutil.pas',
   rational in 'lib\ffmpeg\rational.pas',
   opt in 'lib\ffmpeg\opt.pas',
   avio in 'lib\ffmpeg\avio.pas',
+
   SQLiteTable3 in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3 in 'lib\SQLite\SQLite3.pas',
+
+  //------------------------------ 	 
+  //Includes - Menu System
+  //------------------------------
   UDisplay in 'Menu\UDisplay.pas',
   UMenu in 'Menu\UMenu.pas',
   UMenuStatic in 'Menu\UMenuStatic.pas',
@@ -40,19 +52,15 @@ uses
   UMenuSelectSlide in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture in 'Menu\UDrawTexture.pas',
   UMenuButtonCollection in 'Menu\UMenuButtonCollection.pas',
+
+  //------------------------------ 	 
+  //Includes - Classes
+  //------------------------------
   UCommon in 'Classes\UCommon.pas',
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
-
-  UMusic        in 'Classes\UMusic.pas',
-  UMedia_dummy  in 'Classes\UMedia_dummy.pas',
-  
-  //  UAudio_FFMpeg in 'Classes\UAudio_FFMpeg.pas',
-  UAudio_Bass   in 'Classes\UAudio_Bass.pas',
-  UVideo        in 'Classes\UVideo.pas',
-
-
-
+  UMusic in 'Classes\UMusic.pas',
+  UAudio_Bass in 'Classes\UAudio_Bass.pas',
   ULanguage in 'Classes\ULanguage.pas',
   UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
@@ -75,19 +83,31 @@ uses
   UFiles in 'Classes\UFiles.pas',
   UGraphicClasses in 'Classes\UGraphicClasses.pas',
   UDLLManager in 'Classes\UDLLManager.pas',
-  UParty in 'Classes\UParty.pas',
   UPlaylist in 'Classes\UPlaylist.pas',
   UCommandLine in 'Classes\UCommandLine.pas',
   UTextClasses in 'Classes\UTextClasses.pas',
   USingScores in 'Classes\USingScores.pas',
   USingNotes in 'Classes\USingNotes.pas',
-  UModules in 'Classes\UModules.pas',
-  UHooks in 'Classes\UHooks.pas',
-  UServices in 'Classes\UServices.pas',
-  UCore in 'Classes\UCore.pas',
-  UCoreModule in 'Classes\UCoreModule.pas',
-  UPluginInterface in 'Classes\UPluginInterface.pas',
 
+  UModules in 'Classes\UModules.pas', //List of Modules to Load
+  UHooks in 'Classes\UHooks.pas',     //Hook Managing
+  UServices in 'Classes\UServices.pas',//Service Managing
+  UCore in 'Classes\UCore.pas',        //Core, Maybe remove this
+  UCoreModule in 'Classes\UCoreModule.pas', //^
+  UPluginInterface in 'Classes\UPluginInterface.pas', //Interface offered by Core to Plugins
+  uPluginLoader in 'Classes\uPluginLoader.pas',       //New Plugin Loader Module
+
+  UParty in 'Classes\UParty.pas',            // to - do : rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
+
+  //------------------------------
+  //Includes - Video Support
+  //------------------------------
+  UMedia_dummy in 'Classes\UMedia_dummy.pas',
+  UVideo in 'Classes\UVideo.pas',
+
+  //------------------------------ 	 
+  //Includes - Screens
+  //------------------------------
   UScreenLoading in 'Screens\UScreenLoading.pas',
   UScreenWelcome in 'Screens\UScreenWelcome.pas',
   UScreenMain in 'Screens\UScreenMain.pas',
@@ -116,14 +136,23 @@ uses
   UScreenStatDetail in 'Screens\UScreenStatDetail.pas',
   UScreenCredits in 'Screens\UScreenCredits.pas',
   UScreenPopup in 'Screens\UScreenPopup.pas',
+
+  //------------------------------ 	 
+  //Includes - Screens PartyMode
+  //------------------------------
   UScreenSingModi in 'Screens\UScreenSingModi.pas',
   UScreenPartyNewRound in 'Screens\UScreenPartyNewRound.pas',
   UScreenPartyScore in 'Screens\UScreenPartyScore.pas',
   UScreenPartyPlayer in 'Screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions in 'Screens\UScreenPartyOptions.pas',
   UScreenPartyWin in 'Screens\UScreenPartyWin.pas',
-  ModiSDK in '..\..\Modis\SDK\ModiSDK.pas',
-  UPluginDefs in '..\..\Modis\SDK\UPluginDefs.pas',
+
+  //------------------------------ 	 
+  //Includes - Modi SDK
+  //------------------------------
+  ModiSDK in '..\..\Modis\SDK\ModiSDK.pas', //Old SDK, will be deleted soon
+  UPluginDefs in '..\..\Modis\SDK\UPluginDefs.pas', //New SDK, not only Modis
+
   Windows,
   SysUtils;
 
@@ -346,6 +375,11 @@ begin
   Log.BenchmarkEnd(0);
   Log.LogBenchmark('Loading Time', 0);
 
+  Log.LogError('Creating Core');
+  Core := TCore.Create('Ultrastar Deluxe Beta', MakeVersion(1,1,0, chr(0)));
+
+  Log.LogError('Running Core');
+  Core.Run;
 
   //------------------------------
   //Start- Mainloop

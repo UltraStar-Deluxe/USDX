@@ -100,6 +100,15 @@ type
     ServiceExists: Function (ServiceName: PChar): Integer; stdcall;
   end;
 
+  //TModuleInfo: Info about Modules
+  PModuleInfo = ^TModuleInfo;
+  TModuleInfo = record
+    Name:         String;
+    Version:      LongWord;
+    Description:  String;
+  end;
+  AModuleInfo = array of TModuleInfo;
+
 //----------------
 // Some Default Constants
 //----------------
