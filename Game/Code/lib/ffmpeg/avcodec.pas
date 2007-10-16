@@ -23,8 +23,10 @@ in the source codes *)
 unit avcodec;
 
 {$IFDEF FPC}
+  {$IFNDEF win32}
   {$LINKLIB libavutil}
   {$LINKLIB libavcodec}
+  {$ENDIF}
   {$MODE DELPHI } (* CAT *)
   {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
   {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
