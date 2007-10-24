@@ -83,7 +83,7 @@ type
 
       WantedAudioCodecContext,
       AudioCodecContext : PSDL_AudioSpec;
-      aCodecCtx         : PAVCodecContext;      
+      aCodecCtx         : PAVCodecContext;
 
 
       function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
@@ -471,16 +471,19 @@ begin
     end;
     aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
 
-(*
+    if aCodecCtx <> nil then
+    begin
+
     WantedAudioCodecContext.freq     := aCodecCtx^.sample_rate;
-    WantedAudioCodecContext.format   := AUDIO_S16SYS;
-    WantedAudioCodecContext.channels := aCodecCtx^.channels;
-    WantedAudioCodecContext.silence  := 0;
+//    WantedAudioCodecContext.format   := AUDIO_S16SYS;
+//    WantedAudioCodecContext.channels := aCodecCtx^.channels;
+(*    WantedAudioCodecContext.silence  := 0;
     WantedAudioCodecContext.samples  := 1024;//SDL_AUDIO_BUFFER_SIZE;
 //    WantedAudioCodecContext.callback := audio_callback;
     WantedAudioCodecContext.userdata := aCodecCtx;
 *)
 
+    end;
 (*
     if(SDL_OpenAudio(WantedAudioCodecContext, AudioCodecContext) < 0) then
     begin
