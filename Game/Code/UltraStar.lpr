@@ -120,9 +120,13 @@ uses
   ULyrics                in 'Classes\ULyrics.pas',
   ULyrics_bak            in 'Classes\ULyrics_bak.pas',
   UMain                  in 'Classes\UMain.pas',
+
+
   UMusic                 in 'Classes\UMusic.pas',
   UMedia_dummy           in 'Classes\UMedia_dummy.pas',  
 //  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
+  UVideo                 in 'Classes\UVideo.pas',
+
 {$ifdef win32}
   UAudio_bass            in 'Classes\UAudio_bass.pas',
 {$endif}
@@ -138,11 +142,6 @@ uses
   UTime                  in 'Classes\UTime.pas',
   USingNotes 		         in 'Classes\USingNotes.pas',
 
-
-  //------------------------------
-  //Includes - Video Support
-  //------------------------------
-  UVideo                 in 'Classes\UVideo.pas',
 
 
   //------------------------------
@@ -411,17 +410,18 @@ exit;
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Loading PartySession Manager', 1);
 
+  // Sound
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Initialize Sound', 'Initialization');        InitializeSound();
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Initializing Sound', 1);
+
   // Graphics
   Log.BenchmarkStart(1);
   Log.LogStatus('Initialize 3D', 'Initialization');           Initialize3D(WndTitle);
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Initializing 3D', 1);
 
-  // Sound
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize Sound', 'Initialization');        InitializeSound();
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Initializing Sound', 1);
 
   // Score Saving System
   Log.BenchmarkStart(1);
