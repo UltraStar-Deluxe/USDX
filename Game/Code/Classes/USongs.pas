@@ -7,9 +7,14 @@ interface
 {$ENDIF}
 
 
-uses SysUtils, ULog, UTexture, UCatCovers;
+uses SysUtils,
+     oldlinux,
+     ULog,
+     UTexture,
+     UCatCovers;
 
 type
+
   TBPM = record
     BPM:        real;
     StartBeat:  real;
@@ -70,7 +75,7 @@ type
     Song:       array of TSong; // array of songs
     Selected:   integer; // selected song index
     procedure LoadSongList; // load all songs
-    procedure BrowseDir(Dir: string); // should return number of songs in the future
+    procedure BrowseDir(Dir: widestring); // should return number of songs in the future
     procedure Sort(Order: integer);
     function FindSongFile(Dir, Mask: string): string;
   end;
@@ -118,57 +123,73 @@ begin
   BrowsePos := 0;
   // browse directories
   BrowseDir(SongPath);
-
+  
   //Set Correct SongArray Length
   SetLength(Song, BrowsePos);
 //  if Ini.Debug = 1 then BrowseDir('D:\Extract\Songs\');
 end;
 
-procedure TSongs.BrowseDir(Dir: string);
+procedure TSongs.BrowseDir(Dir: widestring);
 var
   SR:     TSearchRec;   // for parsing Songs Directory
   SLen:   integer;
-begin
-  if FindFirst(Dir + '*', faDirectory, SR) = 0 then begin
-    repeat
-      if (SR.Name <> '.') and (SR.Name <> '..') then
-        BrowseDir(Dir + Sr.Name + PathDelim);
-    until FindNext(SR) <> 0;
-  end; // if
-  FindClose(SR);
 
+  TheDir : pdir;
+  ADirent :pDirent;
+  Entry : Longint;
+    info : stat;
+begin
+  {$ifdef win32}
+    if FindFirst(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows
+    begin
+      repeat
+        if (SR.Name <> '.') and (SR.Name <> '..') then
+        begin
+          BrowseDir(Dir + Sr.Name + PathDelim);
+        end
+      until FindNext(SR) <> 0;
+    end; // if
+    FindClose(SR);
+   {$else}
+    // Itterate the Songs Directory... ( With unicode capable functions for linux )
+    TheDir := opendir( Dir );     // JB_Unicode - linux
+    if TheDir <> nil then
+    begin
+      repeat
+        ADirent := ReadDir(TheDir);
+
+        If ADirent<>Nil then
+        begin
+          With ADirent^ do
+            begin
+
+              if ( name[0] <> '.') then
+                BrowseDir( Dir + name + pathdelim );
+
+            end;
+        end;
+      Until ADirent=Nil;
+    end;
+  {$endif}
+  
 //  Log.LogStatus('Parsing directory: ' + Dir + SR.Name, 'LoadSongList');
 
  if FindFirst(Dir + '*.txt', 0, SR) = 0 then
  begin
     repeat
-      //New Mod for better Memory Management
-
-//          Log.LogStatus('Parsing file:      ' + Dir + SR.Name, 'LoadSongList');
-
-
       SLen := BrowsePos;
-      {//Old
-      SLen := Length(Song);
-      SetLength(Song, SLen + 1);//}
 
       Song[SLen].Path     := Dir;
       Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
       Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
       Song[SLen].FileName := SR.Name;
 
-      if (AnalyseFile(Song[SLen]) = false) then Dec(BrowsePos)
-      else begin
-        // scanning complete, file is good
-        // if there is no cover then try to find it
-        if Song[SLen].Cover = '' then Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
-//        if Song[SLen].Background = '' then begin
-//          Song[SLen].Background := FindSongFile(Dir, '*[BG].jpg');
-//        end; // no needed here}
-
-        // fix by adding path. no, don't fix it.
-//        if Song[SLen].Cover <> '' then
-//          Song[SLen].Cover := Song[SLen].Path + Song[SLen].Cover;
+      if (AnalyseFile(Song[SLen]) = false) then
+        Dec(BrowsePos)
+      else
+      begin
+        if Song[SLen].Cover = '' then
+          Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
       end;
 
       //Change Length Only every 50 Entrys
