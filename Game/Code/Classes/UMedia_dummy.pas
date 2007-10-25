@@ -189,10 +189,12 @@ end;
 
 function Tmedia_dummy.Finished: boolean;
 begin
+  result := false;
 end;
 
 function Tmedia_dummy.Length: real;
 begin
+  Result := 60;
 end;
 
 procedure Tmedia_dummy.PlayStart;

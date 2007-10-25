@@ -521,6 +521,7 @@ var
   BarStartPosX    : Single;
 
   R,G,B           : real;
+  lTmp            : real;
 begin
 
   MaxHeight    := Static[StaticBackLevel[PlayerNumber + 1]].Texture.H;
@@ -544,7 +545,12 @@ begin
 
       // quadratic easing out - decelerating to zero velocity
       // -end_position * current_time * ( current_time - 2 ) + start_postion
-      NewHeight := (-Height2Reach * RaiseStep * (RaiseStep - 20) + BarStartPosY) / RaiseSmoothness;
+      lTmp := (-Height2Reach * RaiseStep * (RaiseStep - 20) + BarStartPosY);
+      if ( RaiseSmoothness > 0 ) AND
+         ( lTmp            > 0 ) then
+      begin
+        NewHeight := lTmp / RaiseSmoothness;
+      end;
     end
   else
     begin

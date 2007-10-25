@@ -130,6 +130,8 @@ uses
 {$ifdef win32}
   UAudio_bass            in 'Classes\UAudio_bass.pas',
 {$endif}
+//   UAudio_fmod            in 'Classes\UAudio_fmod.pas', // Not ready yet
+
 
   UParty                 in 'Classes\UParty.pas',
   UPlaylist              in 'Classes\UPlaylist.pas',

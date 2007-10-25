@@ -588,9 +588,14 @@ begin
 //  Log.LogStatus('Beat ' + IntToStr(Czas.AktBeat) + ' HalfBeat ' + IntToStr(Czas.AktHalf), 'NewBeat');
 //  beep;
 
+  // On linux we get an AV @ NEWNOTE,  line 600 of Classes/UMain.pas
+  if not assigned( Sound ) then  // TODO : JB_Linux ... why is this now not assigned... it was fine a few hours ago..
+    exit;
+
   // analizuje dla obu graczy ten sam sygnal (Sound.OneSrcForBoth)
   // albo juz lepiej nie
-  for CP := 0 to PlayersPlay-1 do begin
+  for CP := 0 to PlayersPlay-1 do
+  begin
 
     // analyze buffer
     Sound[CP].AnalizujBufor;

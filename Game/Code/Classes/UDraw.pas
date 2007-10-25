@@ -578,16 +578,20 @@ var
 
 begin
   // positions
-  if Ini.SingWindow = 0 then begin
+  if Ini.SingWindow = 0 then
+  begin
     NR.Left := 120;
-  end else begin
+  end
+  else
+  begin
     NR.Left := 20;
   end;
+  
   NR.Right := 780;
 
   NR.Width := NR.Right - NR.Left;
-  NR.WMid := NR.Width / 2;
-  NR.Mid := NR.Left + NR.WMid;
+  NR.WMid  := NR.Width / 2;
+  NR.Mid   := NR.Left + NR.WMid;
 
   // background  //BG Fullsize Mod
   //SingDrawBackground;
@@ -599,7 +603,9 @@ begin
   // rysuje paski pod nutami
   if PlayersPlay = 1 then
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
-  if (PlayersPlay = 2) or (PlayersPlay = 4) then begin
+    
+  if (PlayersPlay = 2) or (PlayersPlay = 4) then
+  begin
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15);
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
   end;
@@ -1295,15 +1301,17 @@ end;
 procedure SingDrawTimeBar();
 var x,y:           real;
     width, height: real;
+    lTmp         : real;
 begin
   x := Theme.Sing.StaticTimeProgress.x;
   y := Theme.Sing.StaticTimeProgress.y;
-  width:= Theme.Sing.StaticTimeProgress.w;
-  height:= Theme.Sing.StaticTimeProgress.h;
+  
+  width  := Theme.Sing.StaticTimeProgress.w;
+  height := Theme.Sing.StaticTimeProgress.h;
 
   glColor4f(Theme.Sing.StaticTimeProgress.ColR,
-  Theme.Sing.StaticTimeProgress.ColG,
-  Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
+            Theme.Sing.StaticTimeProgress.ColG,
+            Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
 
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
@@ -1311,11 +1319,26 @@ begin
   glBindTexture(GL_TEXTURE_2D, Tex_TimeProgress.TexNum);
 
   glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(x,y);
-    glTexCoord2f((width*(Czas.Teraz/Czas.Razem))/8, 0); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y);
-    glTexCoord2f((width*(Czas.Teraz/Czas.Razem))/8, 1); glVertex2f(x+width*(Czas.Teraz/Czas.Razem), y+height);
-    glTexCoord2f(0, 1); glVertex2f(x, y+height);
-  glEnd;
+  try
+    glTexCoord2f(0, 0);
+    glVertex2f(x,y);
+    
+    if ( Czas.Teraz > 0 ) AND
+       ( Czas.Razem > 0 ) THEN
+    BEGIN
+      lTmp := Czas.Teraz/Czas.Razem;
+      glTexCoord2f((width*Czas.Teraz/Czas.Razem)/8, 0);
+      glVertex2f(x+width*Czas.Teraz/Czas.Razem, y);
+
+      glTexCoord2f((width*Czas.Teraz/Czas.Razem)/8, 1);
+      glVertex2f(x+width*Czas.Teraz/Czas.Razem, y+height);
+    END;
+
+    glTexCoord2f(0, 1);
+    glVertex2f(x, y+height);
+  finally
+    glEnd;
+  end;
 
  glDisable(GL_TEXTURE_2D);
  glDisable(GL_BLEND);

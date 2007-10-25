@@ -474,7 +474,7 @@ begin
     if aCodecCtx <> nil then
     begin
 
-    WantedAudioCodecContext.freq     := aCodecCtx^.sample_rate;
+//    WantedAudioCodecContext.freq     := aCodecCtx^.sample_rate;
 //    WantedAudioCodecContext.format   := AUDIO_S16SYS;
 //    WantedAudioCodecContext.channels := aCodecCtx^.channels;
 (*    WantedAudioCodecContext.silence  := 0;

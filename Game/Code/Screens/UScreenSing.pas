@@ -425,7 +425,8 @@ begin
 //  AktSong.GAP := AktSong.GAP + 40 {4096 = 100ms for buffer} + 20 {microphone} + 60000 / AktSong.BPM[0].BPM / 2; // temporary until UMain will be fixed
 
   // set movie
-  if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then begin
+  if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
+  begin
 (*    OpenSmpeg(AktSong.Path + AktSong.Video);
     SkipSmpeg(AktSong.VideoGAP + AktSong.Start);*)
     
