@@ -123,15 +123,15 @@ uses
 
 
   UMusic                 in 'Classes\UMusic.pas',
-  UMedia_dummy           in 'Classes\UMedia_dummy.pas',  
-//  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
-  UVideo                 in 'Classes\UVideo.pas',
 
+  UMedia_dummy           in 'Classes\UMedia_dummy.pas',  
+  UVideo                 in 'Classes\UVideo.pas',
+//  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
 {$ifdef win32}
   UAudio_bass            in 'Classes\UAudio_bass.pas',
 {$endif}
-//   UAudio_fmod            in 'Classes\UAudio_fmod.pas', // Not ready yet
 
+//   UAudio_fmod            in 'Classes\UAudio_fmod.pas', // this has not yet been developed.. :(
 
   UParty                 in 'Classes\UParty.pas',
   UPlaylist              in 'Classes\UPlaylist.pas',
@@ -417,6 +417,14 @@ exit;
   Log.LogStatus('Initialize Sound', 'Initialization');        InitializeSound();
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Initializing Sound', 1);
+  
+  
+(*
+  // This is jays debugging for FFMpeg audio output..
+  singleton_MusicFFMpeg.PlaySwoosh();
+  writeln( 'did you hear the sound ?? ' );
+  halt(0);
+*)
 
   // Graphics
   Log.BenchmarkStart(1);
