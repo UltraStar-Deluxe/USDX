@@ -261,7 +261,9 @@ begin
       begin
         For I := 1 to high(CatSongs.Song) do
         begin
-          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Title[1]) = Letter) then
+          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
+             (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND
+             (widechar(UpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1]) = widechar(Letter)) then
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
@@ -280,7 +282,9 @@ begin
       begin
         For I := 1 to high(CatSongs.Song) do
         begin
-          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND (UpCase(CatSongs.Song[(I + Interaction) mod I2].Artist[1]) = Letter) then
+          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
+             (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND
+             (widechar(uppercase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1]) = widechar(Letter)) then
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 

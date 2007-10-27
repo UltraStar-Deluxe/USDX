@@ -7,6 +7,8 @@ This unit is primarily based upon -
     
     and tutorial03.c
 
+    http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
+
 *******************************************************************************)
 
 interface
@@ -25,10 +27,10 @@ uses Classes,
      {$IFNDEF FPC}
      Forms,
      {$ENDIF}
+     SDL,       // Used for Audio output Interface
      avcodec,   // FFMpeg Audio file decoding
      avformat,
      avutil,
-     SDL,       // Used for Audio output Interface
      ULog,
      UMusic;
 
@@ -47,19 +49,28 @@ type
   function  packet_queue_get(var aPacketQueue : TPacketQueue; var AVPacket : TAVPacket; block : integer ): integer;
   procedure packet_queue_init( var aPacketQueue : TPacketQueue );
   procedure audio_callback( userdata: Pointer; stream: PUInt8; len: Integer ); cdecl;
-  function  audio_decode_frame(aCodecCtx : TAVCodecContext; audio_buf : PUInt8; buf_size: integer): integer;
+  function  audio_decode_frame(aCodecCtx : TAVCodecContext; aAudio_buf : PUInt8; buf_size: integer): integer;
 
 var
   singleton_MusicFFMpeg : IAudioPlayback = nil;
 
+var
+  audioq        : TPacketQueue;
+  quit          : integer       = 0;
+//  faudio_buf     : array[ 0 .. 0 ] of byte; //pUInt8{$ifndef fpc};{$else} = nil;{$endif}
+//  audio_buf     : array[ 0 .. AVCODEC_MAX_AUDIO_FRAME_SIZE ] of byte; //pUInt8{$ifndef fpc};{$else} = nil;{$endif}
+
+type
+  Taudiobuff = array[ 0 .. AVCODEC_MAX_AUDIO_FRAME_SIZE ] of byte;
+  PAudioBuff = ^Taudiobuff;
 
 implementation
 
 uses
      {$IFDEF FPC}
      lclintf,
-     {$ENDIF}
      libc,
+     {$ENDIF}
 //     URecord,
      UIni,
      UMain,
@@ -82,9 +93,6 @@ type
 const
   ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
 
-var
-  audioq        : TPacketQueue;
-  quit          : integer       = 0;
 
 
 type
@@ -154,7 +162,7 @@ end;
 
 constructor TAudio_ffMpeg.create();
 begin
-  writeln( 'UVideo_FFMpeg - av_register_all' );
+//  writeln( 'UVideo_FFMpeg - av_register_all' );
   av_register_all;
 end;
 
@@ -170,20 +178,20 @@ begin
   i := 0;
   while ( i < aFormatCtx.nb_streams ) do
   begin
-    writeln( ' aFormatCtx.streams[i] : ' + inttostr( i ) );
+//    writeln( ' aFormatCtx.streams[i] : ' + inttostr( i ) );
     st := aFormatCtx.streams[i];
 
     if(st.codec.codec_type = CODEC_TYPE_VIDEO ) AND
       (aFirstVideoStream < 0) THEN
     begin
-      writeln( 'Found Video Stream' );
+//      writeln( 'Found Video Stream' );
       aFirstVideoStream := i;
     end;
 
     if ( st.codec.codec_type = CODEC_TYPE_AUDIO ) AND
        ( aFirstAudioStream < 0) THEN
     begin
-      writeln( 'Found Audio Stream' );
+//      writeln( 'Found Audio Stream' );
       aFirstAudioStream := i;
     end;
 
@@ -206,8 +214,8 @@ var
   S:    integer;
 begin
 
-  LoadSoundFromFile(BassStart,  SoundPath + 'foo fighters - best of you.mp3');
-
+//  LoadSoundFromFile(BassStart,  SoundPath + 'Green Day - American Idiot.mp3');
+  
 (*
   LoadSoundFromFile(BassStart,  SoundPath + 'Common start.mp3');
   LoadSoundFromFile(BassBack,   SoundPath + 'Common back.mp3');
@@ -438,12 +446,13 @@ end;
 
 procedure TAudio_ffMpeg.StopCard(Card: byte);
 begin
+
   // TODO : jb_linux replace with something other than bass
 //  BASS_RecordSetDevice(Card);
 //  BASS_RecordFree;
 end;
 
-function audio_decode_frame(aCodecCtx : TAVCodecContext; audio_buf : PUInt8; buf_size: integer): integer;
+function audio_decode_frame(aCodecCtx : TAVCodecContext; aAudio_buf : PUInt8; buf_size: integer): integer;
 var
   pkt             : TAVPacket;
   audio_pkt_data  : pchar;//PUInt8 = nil;
@@ -451,26 +460,44 @@ var
   len1            ,
   data_size       : integer;
 begin
-//  result := 1;
-//  exit;
+  {$ifdef win32}
+    FillChar(pkt, sizeof(pkt), #0);
+  {$else}
+    memset(@pkt, 0, sizeof(pkt));   // todo : jb memset
+  {$endif}
+
+  audio_pkt_data := nil;
+  audio_pkt_size := 0;
 
   while true do
   begin
   
     while ( audio_pkt_size > 0 ) do
     begin
-      writeln( 'got audio packet' );
+//      writeln( 'got audio packet' );
       data_size := buf_size;
-      
-//      len1 := avcodec_decode_audio2(aCodecCtx, (int16_t )audio_buf, &data_size, audio_pkt_data, audio_pkt_size);
-      len1 := avcodec_decode_audio(@aCodecCtx, PWord( audio_buf ), data_size, audio_pkt_data, audio_pkt_size); // Todo.. should be avcodec_decode_audio2 but this wont link on my ubuntu box.
+
+      len1 := -1;
+
+      if aAudio_buf <> nil  then
+      begin
+//        writeln( 'pre avcodec_decode_audio' );
+        {$ifdef fpc}
+          len1 := avcodec_decode_audio(@aCodecCtx, PWord( aAudio_buf ), data_size, audio_pkt_data, audio_pkt_size); // Todo.. should be avcodec_decode_audio2 but this wont link on my ubuntu box.
+        {$else}
+          len1 := avcodec_decode_audio(@aCodecCtx, Pointer( aAudio_buf ), data_size, audio_pkt_data, audio_pkt_size); // Todo.. should be avcodec_decode_audio2 but this wont link on my ubuntu box.
+        {$endif}
+//        writeln( 'post avcodec_decode_audio' );        
+
+      end;
 
 //      writeln('avcodec_decode_audio');
 
       if(len1 < 0) then
       begin
 	      //* if error, skip frame */
-       	audio_pkt_size := 0;
+//       	writeln( 'Skip audio frame' );
+        audio_pkt_size := 0;
        	break;
       end;
       
@@ -506,7 +533,7 @@ begin
 
     audio_pkt_data := pchar( pkt.data );
     audio_pkt_size := pkt.size;
-    writeln( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
+//    writeln( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
   end;
 end;
 
@@ -517,52 +544,69 @@ var
   audio_size      ,
   len1            : integer;
   aCodecCtx       : TAVCodecContext;
-  audio_buf       : pUInt8 = nil;
-begin
-  aCodecCtx  := pAVCodecContext(userdata)^;
-  audio_buf  := UInt8( (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) div 2);  // todo : JB
-  audio_size := -1;
 
-// writeln('----------- audio callback' );
+  lSrc            : pointer;
+
+  // this is used to emulate ...... static uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
+  lAudio_buf_data : Taudiobuff;  // This created the memory we need
+  laudio_buf      : PAudioBuff;  // this makes it easy to work with.. since its the pointer to that memeory everywhere                                     
+begin
+  laudio_buf      := @lAudio_buf_data ;
+
+  aCodecCtx       := pAVCodecContext(userdata)^;
+  audio_size      := -1;
+  audio_buf_index := 0;
+  audio_buf_size  := 0;
 
   while (len > 0) do
   begin
     if(audio_buf_index >= audio_buf_size) then
     begin
       // We have already sent all our data; get more */
-      audio_size := audio_decode_frame(aCodecCtx, audio_buf, sizeof(audio_buf));
+      audio_size := audio_decode_frame(aCodecCtx, pUInt8( laudio_buf ), sizeof(laudio_buf));
 
       if(audio_size < 0) then
       begin
       	// If error, output silence */
       	audio_buf_size := 1024; // arbitrary?
-      	memset(audio_buf, 0, audio_buf_size);   // todo : jb memset
+
+        {$ifdef win32}
+          FillChar(laudio_buf, audio_buf_size, #0);
+        {$else}
+        	memset(laudio_buf, 0, audio_buf_size);   // todo : jb memset
+        {$endif}
       end
       else
       begin
       	audio_buf_size := audio_size;
       end;
 
-//      audio_buf_index := 0;  // Todo : jb - SegFault ?
+      audio_buf_index := 0;  // Todo : jb - SegFault ?
     end;
     
     len1 := audio_buf_size - audio_buf_index;
 
     if (len1 > len) then
       len1 := len;
-      
-    memcpy(stream, PUInt8( audio_buf ) + audio_buf_index , len1);
 
-    len    := len    - len1;
-    stream := stream + len1;
+
+    {$ifdef win32}
+      lSrc := PUInt8( integer( laudio_buf ) + audio_buf_index );
+      CopyMemory(stream, lSrc , len1);
+    {$else}
+      memcpy(stream, PUInt8( laudio_buf ) + audio_buf_index , len1);
+    {$endif}
+
+    len             := len             - len1;
+    stream^         := stream^         + len1;
     audio_buf_index := audio_buf_index + len1;
   end;
 end;
 
 function TAudio_ffMpeg.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 var
-  L: Integer;
-  pFormatCtx: PAVFormatContext;
+  L             : Integer;
+  pFormatCtx    : PAVFormatContext;
   lVidStreamID  ,
   lAudStreamID  : Integer;
   aCodecCtx     : pAVCodecContext;
@@ -578,7 +622,7 @@ begin
 
   if FileExists(Name) then
   begin
-    writeln('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
+//    writeln('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
     
   // Open video file
   if (av_open_input_file(pFormatCtx, pchar(Name), nil, 0, nil) > 0) then
@@ -593,11 +637,11 @@ begin
   if not find_stream_ids( pFormatCtx, lVidStreamID, lAudStreamID ) then
     exit;
     
-  writeln( 'done searching for stream ids' );
+//  writeln( 'done searching for stream ids' );
     
   if lAudStreamID > -1 then
   begin
-    writeln( 'Audio Stream ID is : '+ inttostr( lAudStreamID ) );
+//    writeln( 'Audio Stream ID is : '+ inttostr( lAudStreamID ) );
 
     lAudioStream := pFormatCtx.streams[lAudStreamID];
     aCodecCtx := lAudioStream.codec;
@@ -617,9 +661,9 @@ begin
     writeln('SDL_OpenAudio: '+SDL_GetError());
     exit
   end;
-  
-  writeln( 'SDL opened audio device' );
-  
+
+//  writeln( 'SDL opened audio device' );
+
   aCodec := avcodec_find_decoder(aCodecCtx.codec_id);
   if (aCodec = nil) then
   begin
@@ -629,27 +673,28 @@ begin
 
   avcodec_open(aCodecCtx, aCodec);
 
-  writeln( 'Opened the codec' );
+//  writeln( 'Opened the codec' );
   
   packet_queue_init( audioq );
   SDL_PauseAudio(0);
   
-  writeln( 'SDL_PauseAudio' );
+//  writeln( 'SDL_PauseAudio' );
   
   i := 0;
-  while (av_read_frame(pFormatCtx, packet)>=0) do
+  while (av_read_frame(pFormatCtx, packet) >= 0) do
   begin
-    writeln( 'ffmpeg - av_read_frame' );
+//    writeln( 'ffmpeg - av_read_frame' );
     
     if (packet.stream_index = lAudStreamID ) then
     begin
+//      writeln( 'packet_queue_put' );
       packet_queue_put(audioq, packet);
     end
     else
     begin
       av_free_packet(packet);
     end;
-    
+
 
     // Free the packet that was allocated by av_read_frame
     SDL_PollEvent(@event);
@@ -665,12 +710,14 @@ begin
 *)
 
   end;
-  
+
+//  halt(0);
+
   // Close the codec
-  avcodec_close(aCodecCtx);
+//  avcodec_close(aCodecCtx);
 
   // Close the video file
-  av_close_input_file(pFormatCtx);
+//  av_close_input_file(pFormatCtx);
 
 (*
     try
@@ -698,7 +745,11 @@ end;
 
 procedure packet_queue_init(var aPacketQueue : TPacketQueue );
 begin
-  memset(@aPacketQueue, 0, sizeof(TPacketQueue));
+  {$ifdef win32}
+    FillChar(aPacketQueue, sizeof(TPacketQueue), #0);
+  {$else}
+    memset(@aPacketQueue, 0, sizeof(TPacketQueue));
+  {$endif}
   
   aPacketQueue.mutex := SDL_CreateMutex();
   aPacketQueue.cond  := SDL_CreateCond();
@@ -710,7 +761,7 @@ var
 begin
   result := -1;
   
-  writeln( 'TAudio_ffMpeg.packet_queue_put' );
+//  writeln( 'TAudio_ffMpeg.packet_queue_put' );
   
   if av_dup_packet(@AVPacket) < 0 then
     exit;

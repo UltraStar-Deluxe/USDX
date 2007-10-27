@@ -10,9 +10,11 @@ unit UVideo;
 #                                                                              #
 ############################################################################## }
 
-{$define DebugDisplay}  // uncomment if u want to see the debug stuff
+//{$define DebugDisplay}  // uncomment if u want to see the debug stuff
 //{$define DebugFrames}
 //{$define Info}
+
+//{$define FFMpegAudio}
 {}
 
 
@@ -45,6 +47,9 @@ uses SDL,
      dialogs,
      {$endif}
      {$ENDIF}
+     {$ifdef FFMpegAudio}
+     UAudio_FFMpeg,
+     {$endif}
      UIni,
      UMusic;
 
@@ -108,7 +113,9 @@ type
 
     end;
 
-
+    const
+  SDL_AUDIO_BUFFER_SIZE = 1024;
+  
 {$ifdef DebugDisplay}
 //{$ifNdef win32}
 
@@ -262,19 +269,23 @@ begin
 
   FrameFinished:=0;
   // read packets until we have a finished frame (or there are no more packets)
-//  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
-  while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do     // JB-ffmpeg
+  while ( FrameFinished = 0                                ) and
+        ( av_read_frame(VideoFormatContext, AVPacket) >= 0 ) do     // JB-ffmpeg
   begin
 
 
     // if we got a packet from the video stream, then decode it
     if (AVPacket.stream_index=VideoStreamIndex) then
-//      errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  @frameFinished , AVPacket.data, AVPacket.size);
+    begin
       errnum := avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
-
-
-    // release internal packet structure created by av_read_frame
-//      av_free_packet(PAVPacket(@AVPacket));
+    {$ifdef FFMpegAudio}
+    end
+    else
+    if (AVPacket.stream_index = AudioStreamIndex ) then
+    begin
+      UAudio_FFMpeg.packet_queue_put(UAudio_FFMpeg.audioq, AVPacket);
+    {$endif}
+    end;
 
       try
         if AVPacket.data <> nil then
@@ -427,6 +438,10 @@ var
   errnum, i, x,y: Integer;
   lStreamsCount : Integer;
 
+  wanted_spec   ,
+  spec          : TSDL_AudioSpec;
+  aCodec        : pAVCodec;
+
 begin
   fVideoOpened       := False;
   fVideoPaused       := False;
@@ -471,27 +486,47 @@ begin
     end;
     aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
 
+    {$ifdef FFMpegAudio}
+  // This is the audio ffmpeg audio support Jay is working on.
     if aCodecCtx <> nil then
     begin
+      wanted_spec.freq     := aCodecCtx.sample_rate;
+      wanted_spec.format   := AUDIO_S16SYS;
+      wanted_spec.channels := aCodecCtx.channels;
+      wanted_spec.silence  := 0;
+      wanted_spec.samples  := SDL_AUDIO_BUFFER_SIZE;
+      wanted_spec.callback := UAudio_FFMpeg.audio_callback;
+      wanted_spec.userdata := aCodecCtx;
 
-//    WantedAudioCodecContext.freq     := aCodecCtx^.sample_rate;
-//    WantedAudioCodecContext.format   := AUDIO_S16SYS;
-//    WantedAudioCodecContext.channels := aCodecCtx^.channels;
-(*    WantedAudioCodecContext.silence  := 0;
-    WantedAudioCodecContext.samples  := 1024;//SDL_AUDIO_BUFFER_SIZE;
-//    WantedAudioCodecContext.callback := audio_callback;
-    WantedAudioCodecContext.userdata := aCodecCtx;
-*)
+
+      if (SDL_OpenAudio(@wanted_spec, @spec) < 0) then
+      begin
+        writeln('SDL_OpenAudio: '+SDL_GetError());
+        exit;
+      end;
+
+      writeln( 'SDL opened audio device' );
+
+      aCodec := avcodec_find_decoder(aCodecCtx.codec_id);
+      if (aCodec = nil) then
+      begin
+        writeln('Unsupported codec!');
+        exit;
+      end;
+
+      avcodec_open(aCodecCtx, aCodec);
+
+      writeln( 'Opened the codec' );
+  
+      packet_queue_init( audioq );
+      SDL_PauseAudio(0);
+  
+      writeln( 'SDL_PauseAudio' );
+  
 
     end;
-(*
-    if(SDL_OpenAudio(WantedAudioCodecContext, AudioCodecContext) < 0) then
-    begin
-      writeln( 'Could not do SDL_OpenAudio' );
-      exit;
-    end;
-*)
-    
+    {$endif}
+
     if(VideoStreamIndex >= 0) then
     begin
       VideoCodecContext:=VideoFormatContext^.streams[VideoStreamIndex]^.codec;

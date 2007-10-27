@@ -13,6 +13,7 @@ uses SysUtils,
      {$endif}
      ULog,
      UTexture,
+     UCommon,
      UCatCovers;
 
 type
@@ -23,33 +24,33 @@ type
   end;
 
   TScore = record
-    Name:       string;
+    Name:       widestring;
     Score:      integer;
     Length:     string;
   end;
 
   TSong = record
-    Path:       string;
-    Folder:     string; // for sorting by folder
-    FileName:   string;
+    Path:       widestring;
+    Folder:     widestring; // for sorting by folder
+    FileName:   widestring;
 
     // sorting methods
-    Category:   array of string; // I think I won't need this
-    Genre:      string;
-    Edition:    string;
-    Language:   string; // 0.5.0: new
+    Category:   array of widestring; // I think I won't need this
+    Genre:      widestring;
+    Edition:    widestring;
+    Language:   widestring; // 0.5.0: new
 
-    Title:      string;
-    Artist:     string;
+    Title:      widestring;
+    Artist:     widestring;
 
-    Text:       string;
-    Creator:    string;
+    Text:       widestring;
+    Creator:    widestring;
 
-    Cover:      string;
+    Cover:      widestring;
     CoverTex:   TTexture;
-    Mp3:        string;
-    Background: string;
-    Video:      string;
+    Mp3:        widestring;
+    Background: widestring;
+    Video:      widestring;
     VideoGAP:   real;
     VideoLoaded: boolean; // 0.5.0: true if the video has been loaded 
     NotesGAP:   integer;
@@ -79,7 +80,7 @@ type
     procedure LoadSongList; // load all songs
     procedure BrowseDir(Dir: widestring); // should return number of songs in the future
     procedure Sort(Order: integer);
-    function FindSongFile(Dir, Mask: string): string;
+    function FindSongFile(Dir, Mask: widestring): widestring;
   end;
 
   TCatSongs = class
@@ -133,7 +134,7 @@ end;
 
 procedure TSongs.BrowseDir(Dir: widestring);
 var
-  SR:     TSearchRec;   // for parsing Songs Directory
+  SR:     TSearchRecW;   // for parsing Songs Directory
   SLen:   integer;
 
   {$ifndef win32}
@@ -144,16 +145,16 @@ var
   {$endif}  
 begin
   {$ifdef win32}
-    if FindFirst(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows
+    if FindFirstW(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows
     begin
       repeat
         if (SR.Name <> '.') and (SR.Name <> '..') then
         begin
           BrowseDir(Dir + Sr.Name + PathDelim);
         end
-      until FindNext(SR) <> 0;
+      until FindNextw(SR) <> 0;
     end; // if
-    FindClose(SR);
+    FindClosew(SR);
    {$else}
     // Itterate the Songs Directory... ( With unicode capable functions for linux )
     TheDir := opendir( Dir );     // JB_Unicode - linux
@@ -178,7 +179,7 @@ begin
   
 //  Log.LogStatus('Parsing directory: ' + Dir + SR.Name, 'LoadSongList');
 
- if FindFirst(Dir + '*.txt', 0, SR) = 0 then
+ if FindFirstW(Dir + '*.txt', 0, SR) = 0 then
  begin
     repeat
       SLen := BrowsePos;
@@ -204,9 +205,9 @@ begin
           SetLength(Song, Length(Song) + 50);
       end;
 
-    until FindNext(SR) <> 0;
+    until FindNextW(SR) <> 0;
     end; // if FindFirst
-  FindClose(SR);
+  FindCloseW(SR);
 end;
 
 procedure TSongs.Sort(Order: integer);
@@ -309,7 +310,7 @@ begin
   end; // case
 end;
 
-function TSongs.FindSongFile(Dir, Mask: string): string;
+function TSongs.FindSongFile(Dir, Mask: widestring): widestring;
 var
   SR:     TSearchRec;   // for parsing song directory
 begin
@@ -463,10 +464,12 @@ case Ini.Sorting of
       CatSongs.Song[CatLen].Visible := true;
     end
 
-    else if (Ini.Sorting = sTitle) and (Length(Songs.Song[S].Title)>=1) and (Letter <> UpCase(Songs.Song[S].Title[1])) then begin
+    else if (Ini.Sorting = sTitle) and
+            (Length(Songs.Song[S].Title)>=1) and
+            (Letter <> UpperCase(Songs.Song[S].Title)[1]) then begin
       // add a letter Category Button
       Inc(Order);
-      Letter := UpCase(Songs.Song[S].Title[1]);
+      Letter := Uppercase(Songs.Song[S].Title)[1];
       CatLen := Length(CatSongs.Song);
       SetLength(CatSongs.Song, CatLen+1);
       CatSongs.Song[CatLen].Artist := '[' + Letter + ']';
@@ -491,10 +494,10 @@ case Ini.Sorting of
       CatSongs.Song[CatLen].Visible := true;
     end
 
-    else if (Ini.Sorting = sArtist) and (Length(Songs.Song[S].Artist)>=1) and (Letter <> UpCase(Songs.Song[S].Artist[1])) then begin
+    else if (Ini.Sorting = sArtist) and (Length(Songs.Song[S].Artist)>=1) and (Letter <> UpperCase(Songs.Song[S].Artist)[1]) then begin
       // add a letter Category Button
       Inc(Order);
-      Letter := UpCase(Songs.Song[S].Artist[1]);
+      Letter := UpperCase(Songs.Song[S].Artist)[1];
       CatLen := Length(CatSongs.Song);
       SetLength(CatSongs.Song, CatLen+1);
       CatSongs.Song[CatLen].Artist := '[' + Letter + ']';
@@ -545,7 +548,7 @@ case Ini.Sorting of
     end
 
     else if (Ini.Sorting = sTitle2) AND (Length(Songs.Song[S].Title)>=1) then begin
-      if (ord(Songs.Song[S].Title[1]) > 47) and (ord(Songs.Song[S].Title[1]) < 58) then Letter2 := '#' else Letter2 := UpCase(Songs.Song[S].Title[1]);
+      if (ord(Songs.Song[S].Title[1]) > 47) and (ord(Songs.Song[S].Title[1]) < 58) then Letter2 := '#' else Letter2 := UpperCase(Songs.Song[S].Title)[1];
       if (Letter <> Letter2) then begin
         // add a letter Category Button
         Inc(Order);
@@ -575,7 +578,7 @@ case Ini.Sorting of
     end
 
     else if (Ini.Sorting = sArtist2) AND (Length(Songs.Song[S].Artist)>=1) then begin
-     if (ord(Songs.Song[S].Artist[1]) > 47) and (ord(Songs.Song[S].Artist[1]) < 58) then Letter2 := '#' else Letter2 := UpCase(Songs.Song[S].Artist[1]);
+     if (ord(Songs.Song[S].Artist[1]) > 47) and (ord(Songs.Song[S].Artist[1]) < 58) then Letter2 := '#' else Letter2 := UpperCase(Songs.Song[S].Artist)[1];
        if (Letter <> Letter2) then begin
         // add a letter Category Button
         Inc(Order);

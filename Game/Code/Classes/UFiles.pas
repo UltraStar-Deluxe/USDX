@@ -333,16 +333,22 @@ Result := False;
 
   //Open File and set File Pointer to the beginning
   AssignFile(SongFile, Song.Path + Song.FileName);
-  Reset(SongFile);
+//  if assinged( SongFile ) then
+  begin
+    try
+    Reset(SongFile);
 
-  //Clear old Song Header
-  ClearSong(Song);
+    //Clear old Song Header
+    ClearSong(Song);
 
-  //Read Header
-  Result := ReadTxTHeader(Song);
+    //Read Header
+    Result := ReadTxTHeader(Song);
 
-  //And Close File
-  CloseFile(SongFile);
+    //And Close File
+    finally
+      CloseFile(SongFile);
+    end;
+  end;
 {except
   CloseFile(SongFile);
 

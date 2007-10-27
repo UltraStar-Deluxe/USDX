@@ -59,8 +59,6 @@ uses
   UCommon in 'Classes\UCommon.pas',
   UGraphic in 'Classes\UGraphic.pas',
   UTexture in 'Classes\UTexture.pas',
-  UMusic in 'Classes\UMusic.pas',
-  UAudio_Bass in 'Classes\UAudio_Bass.pas',
   ULanguage in 'Classes\ULanguage.pas',
   UMain in 'Classes\UMain.pas',
   UDraw in 'Classes\UDraw.pas',
@@ -100,10 +98,14 @@ uses
   UParty in 'Classes\UParty.pas',            // to - do : rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
 
   //------------------------------
-  //Includes - Video Support
+  //Includes - Media support classes....
+  //           Make sure UMedia always first, then UMedia_dummy
   //------------------------------
-  UMedia_dummy in 'Classes\UMedia_dummy.pas',
-  UVideo in 'Classes\UVideo.pas',
+  UMusic        in 'Classes\UMusic.pas',
+  UMedia_dummy  in 'Classes\UMedia_dummy.pas',
+  UVideo        in 'Classes\UVideo.pas',
+//  UAudio_FFMpeg in 'Classes\UAudio_FFMpeg.pas',   // this is NEARLY to a working point :P
+  UAudio_Bass in 'Classes\UAudio_Bass.pas',
 
   //------------------------------ 	 
   //Includes - Screens
@@ -330,6 +332,7 @@ begin
   Log.BenchmarkEnd(1);
   Log.LogBenchmark('Initializing Sound', 1);
 
+//  exit;
 
   // Graphics
   Log.BenchmarkStart(1);
