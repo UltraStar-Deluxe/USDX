@@ -8,7 +8,9 @@ interface
 
 
 uses SysUtils,
+     {$ifndef win32}
      oldlinux,
+     {$endif}
      ULog,
      UTexture,
      UCatCovers;
@@ -134,10 +136,12 @@ var
   SR:     TSearchRec;   // for parsing Songs Directory
   SLen:   integer;
 
-  TheDir : pdir;
-  ADirent :pDirent;
-  Entry : Longint;
+  {$ifndef win32}
+    TheDir : pdir;
+    ADirent :pDirent;
+    Entry : Longint;
     info : stat;
+  {$endif}  
 begin
   {$ifdef win32}
     if FindFirst(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows
