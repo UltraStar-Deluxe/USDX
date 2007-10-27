@@ -38,6 +38,7 @@ type
       sRetranslate:     THandle;
       sReloadTextures:  THandle;
       sGetModuleInfo:   THandle;
+      sGetApplicationHandle: THandle;
 
       Modules:          Array [0..High(CORE_MODULES_TO_LOAD)] of TModuleListItem;
 
@@ -86,6 +87,9 @@ type
       //Starts Loading and Init Process. Then Runs MainLoop. DeInits on Shutdown
       Procedure Run;
 
+      //Method for other Classes to get Pointer to a specific Module
+      Function GetModulebyName(const Name: String): PCoreModule;
+
       //--------------
       // Hook and Service Procs:
       //--------------
@@ -95,6 +99,7 @@ type
       Function Retranslate(wParam, lParam: DWord): integer; //Calls Translate hook
       Function ReloadTextures(wParam, lParam: DWord): integer; //Calls LoadTextures hook
       Function GetModuleInfo(wParam, lParam: DWord): integer; //If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TModuleInfo to address at lparam
+      Function GetApplicationHandle(wParam, lParam: DWord): integer; //Returns Application Handle
   end;
 
 var
@@ -354,6 +359,10 @@ begin
   sRetranslate     := Services.AddService('Core/Retranslate', nil, Self.Retranslate);
   sReloadTextures  := Services.AddService('Core/ReloadTextures', nil, Self.ReloadTextures);
   sGetModuleInfo   := Services.AddService('Core/GetModuleInfo', nil, Self.GetModuleInfo);
+  sGetApplicationHandle := Services.AddService('Core/GetApplicationHandle', nil, Self.GetApplicationHandle);
+
+  //A little Test
+  Hooks.AddSubscriber('Core/NewError', HookTest);
 end;
 
 //-------------
@@ -372,6 +381,21 @@ begin
 
 
   // to-do : write TService-/HookManager.Free and call it here
+end;
+
+//-------------
+//Method for other Classes to get Pointer to a specific Module
+//-------------
+Function TCore.GetModulebyName(const Name: String): PCoreModule;
+var I: Integer;
+begin
+  Result := nil;
+  For I := 0 to high(Modules) do
+    If (Modules[I].Info.Name = Name) then
+    begin
+      Result := @Modules[I].Module;
+      Break;
+    end;
 end;
 
 //-------------
@@ -405,11 +429,11 @@ end;
 //-------------
 Function TCore.ReportError(wParam, lParam: DWord): integer;
 begin
-  Hooks.CallEventChain(hError, wParam, lParam);
-
   //Update LastErrorReporter and LastErrorString
   LastErrorReporter := String(PChar(Ptr(lParam)));
   LastErrorString   := String(PChar(Ptr(wParam)));
+  
+  Hooks.CallEventChain(hError, wParam, lParam);
 end;
 
 //-------------
@@ -458,6 +482,14 @@ begin
       Result := -1;
     end;
   end;
+end;
+
+//-------------
+// Returns Application Handle
+//-------------
+Function TCore.GetApplicationHandle(wParam, lParam: DWord): integer;
+begin
+  Result := hInstance;
 end;
 
 end.

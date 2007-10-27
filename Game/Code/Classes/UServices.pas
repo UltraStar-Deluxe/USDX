@@ -22,7 +22,7 @@ type
     Hash: Integer; //4 Bit Hash of the Services Name
     Name: TServiceName; //Name of this Service
 
-    Owner: Integer; //If > 0 [DLLMan Pluginindex + 1]; 0 - undefined, On Error Full shutdown, If < 0 [ModuleIndex - 1]  
+    Owner: Integer; //If < 0 [-(DLLMan Pluginindex + 1)]; 0 - undefined, On Error Full shutdown, If < 0 [ModuleIndex - 1]  
     
     Next: PServiceInfo; //Pointer to the Next Service in teh list
 
@@ -63,6 +63,7 @@ var
   ServiceManager: TServiceManager; 
 
 implementation
+uses UCore;
 
 //------------
 // Create - Creates Class and Set Standard Values
@@ -124,6 +125,9 @@ begin
       Cur.Name := #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0 + #0;
       Cur.Name := String(ServiceName);
       Cur.Hash := NametoHash(Cur.Name);
+
+      //Add Owner to Service
+      Cur.Owner := Core.CurExecuted;
 
       //Add Service to the List
       If (FirstService = nil) then
@@ -208,18 +212,26 @@ Function TServiceManager.CallService(const ServiceName: PChar; const wParam, lPa
 var
   SExists: Integer;
   Service: PServiceInfo;
+  CurExecutedBackup: Integer; //backup of Core.CurExecuted Attribute
 begin
   Result := SERVICE_NOT_FOUND;
   SExists := ServiceExists(ServiceName);
   If (SExists <> 0) then
   begin
+    //Backup CurExecuted
+    CurExecutedBackup := Core.CurExecuted;
+    
     Service := ptr(SExists);
+
     If (Service.isClass) then
       //Use Proc of Class
       Result := Service.ProcOfClass(wParam, lParam)
     Else
       //Use normal Proc
       Result := Service.Proc(wParam, lParam);
+
+    //Restore CurExecuted
+    Core.CurExecuted := CurExecutedBackup;
   end;
 
   {$IFDEF DEBUG}

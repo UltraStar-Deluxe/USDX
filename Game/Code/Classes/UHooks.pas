@@ -6,7 +6,7 @@ unit UHooks;
   Saves all hookable events and their subscribers
 *********************}
 interface
-uses uPluginDefs, SysUtils, WINDOWS;
+uses uPluginDefs, SysUtils;
 
 {$IFDEF FPC}
   {$MODE Delphi}
@@ -20,6 +20,8 @@ type
   TSubscriberInfo = record
     Self: THandle;  //ID of this Subscription (First Word: ID of Subscription; 2nd Word: ID of Hook)
     Next: PSubscriberInfo; //Pointer to next Item in HookChain
+
+    Owner: Integer; //For Error Handling and Plugin Unloading.
 
     //Here is s/t tricky
     //To avoid writing of Wrapping Functions to Hook an Event with a Class
@@ -39,6 +41,8 @@ type
     private
       Events: array of TEventInfo;
       SpaceinEvents: Word; //Number of empty Items in Events Array. (e.g. Deleted Items)
+
+      Procedure FreeSubscriber(const EventIndex: Word; const Last, Cur: PSubscriberInfo);
     public
       constructor Create(const SpacetoAllocate: Word);
 
@@ -50,15 +54,17 @@ type
 
       Function CallEventChain (const hEvent: THandle; const wParam, lParam: LongWord): Integer;
       Function EventExists (const EventName: PChar): Integer;
+
+      Procedure DelbyOwner(const Owner: Integer);
   end;
 
 function HookTest(wParam, lParam: DWord): integer; stdcall;
-function HookTest2(wParam, lParam: DWord): integer; stdcall;
 
 var
   HookManager: THookManager;
 
 implementation
+uses UCore;
 
 //------------
 // Create - Creates Class and Set Standard Values
@@ -192,6 +198,9 @@ begin
       //Fill it with Data
       Cur.Next := nil;
 
+      //Add Owner
+      Cur.Owner := Core.CurExecuted;
+
       If (@Proc = nil) then
       begin //Use the ProcofClass Method
         Cur.isClass := True;
@@ -228,10 +237,35 @@ begin
       Events[EventIndex].LastSubscriber := Cur;
 
       {$IFDEF DEBUG}
-          WriteLn('HookManager: Add Subscriber to Event ''' + Events[EventIndex].Name + ''' succesful. Handle: ''' + InttoStr(Result) + '');
+          WriteLn('HookManager: Add Subscriber to Event ''' + Events[EventIndex].Name + ''' succesful. Handle: ''' + InttoStr(Result) + ''' Owner: ' + InttoStr(Cur.Owner));
       {$ENDIF}
     end;
   end;
+end;
+
+//------------
+// FreeSubscriber - Helper for DelSubscriber. Prevents Loss of Chain Items. Frees Memory.
+//------------
+Procedure THookManager.FreeSubscriber(const EventIndex: Word; const Last, Cur: PSubscriberInfo);
+begin
+  //Delete from Chain
+  If (Last <> nil) then
+  begin
+    Last.Next := Cur.Next;
+  end
+  else  //Was first Popup
+  begin
+    Events[EventIndex].FirstSubscriber := Cur.Next;
+  end;
+
+  //Was this Last subscription ?
+  If (Cur = Events[EventIndex].LastSubscriber) then
+  begin //Change Last Subscriber
+    Events[EventIndex].LastSubscriber := Last;
+  end;
+
+  //Free Space:
+  FreeMem(Cur, SizeOf(TSubscriberInfo));
 end;
 
 //------------
@@ -259,24 +293,7 @@ begin
     begin
       If (Cur.Self = hSubscriber) then
       begin  //Found Subscription we searched for
-        //Delete from Chain
-        If (Last <> nil) then
-        begin
-          Last.Next := Cur.Next;
-        end
-        else  //Was first Popup
-        begin
-          Events[EventIndex].FirstSubscriber := Cur.Next;
-        end;
-
-        //Was this Last subscription ?
-        If (Cur = Events[EventIndex].LastSubscriber) then
-        begin //Change Last Subscriber
-          Events[EventIndex].LastSubscriber := Last;
-        end;
-
-        //Free Space:
-        FreeMem(Cur, SizeOf(TSubscriberInfo));
+        FreeSubscriber(EventIndex, Last, Cur);
 
         {$IFDEF DEBUG}
           WriteLn('HookManager: Del Subscriber from Event ''' + Events[EventIndex].Name + ''' succesful. Handle: ''' + InttoStr(hSubscriber) + '');
@@ -303,18 +320,24 @@ Function THookManager.CallEventChain (const hEvent: THandle; const wParam, lPara
 var
   EventIndex: Cardinal;
   Cur: PSubscriberInfo;
+  CurExecutedBackup: Integer; //backup of Core.CurExecuted Attribute
 begin
   Result := -1;
   EventIndex := hEvent - 1;
 
   If ((EventIndex <= High(Events)) AND (Events[EventIndex].Name[1] <> chr(0))) then
   begin //Existing Event
+    //Backup CurExecuted
+    CurExecutedBackup := Core.CurExecuted;
+
     //Start calling the Chain !!!11
     Cur := Events[EventIndex].FirstSubscriber;
     Result := 0;
     //Call Hooks until the Chain is at the End or breaked
     While ((Cur <> nil) AND (Result = 0)) do
     begin
+      //Set CurExecuted
+      Core.CurExecuted := Cur.Owner;
       if (Cur.isClass) then
         Result := Cur.ProcOfClass(wParam, lParam)
       else
@@ -322,6 +345,9 @@ begin
 
       Cur := Cur.Next;
     end;
+
+    //Restore CurExecuted
+    Core.CurExecuted := CurExecutedBackup;
   end;
 
   {$IFDEF DEBUG}
@@ -354,22 +380,49 @@ begin
   end;
 end;
 
-
-function HookTest(wParam, lParam: DWord): integer; stdcall;
-var Test: String[60];
-var T2: String;
+//------------
+// DelbyOwner - Dels all Subscriptions by a specific Owner. (For Clean Plugin/Module unloading)
+//------------
+Procedure THookManager.DelbyOwner(const Owner: Integer);
+var
+  I: Integer;
+  Cur, Last: PSubscriberInfo;
 begin
-  Messagebox(0, 'Test', 'test', MB_ICONWARNING or MB_OK);
-
-  Result := 0; //Don't break the chain
+  //Search for Owner in all Hooks Chains
+  For I := 0 to High(Events) do
+  begin
+    If (Events[I].Name[1] <> chr(0)) then
+    begin
+      
+      Last := nil;
+      Cur  := Events[I].FirstSubscriber;
+      //Went Through Chain
+      While (Cur <> nil) do
+      begin
+        If (Cur.Owner = Owner) then
+        begin //Found Subscription by Owner -> Delete
+          FreeSubscriber(I, Last, Cur);
+          If (Last <> nil) then
+            Cur := Last.Next
+          else
+            Cur := Events[I].FirstSubscriber;
+        end
+        Else
+        begin
+          //Next Item:
+          Last := Cur;
+          Cur := Cur.Next;
+        end;
+      end;
+    end;
+  end;
 end;
 
-function HookTest2(wParam, lParam: DWord): integer; stdcall;
-begin
-  //Showmessage(String(PCHAR(Ptr(lParam)));
-  Messagebox(0, Ptr(lParam), 'test', MB_ICONWARNING or MB_OK);
 
+function HookTest(wParam, lParam: DWord): integer; stdcall;
+begin
   Result := 0; //Don't break the chain
+  Core.ShowMessage(CORE_SM_INFO, Integer(PChar(String(PChar(Ptr(lParam))) + ': ' + String(PChar(Ptr(wParam))))));
 end;
 
 end.

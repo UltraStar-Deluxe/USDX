@@ -9,11 +9,6 @@ interface
 uses uPluginDefs;
 
 //---------------
-// Procedure that Sets the PluginInterface Record
-//---------------
-  Procedure Init_PluginInterface;
-
-//---------------
 // Methods for Plugin
 //---------------
   {******** Hook specific Methods ********}
@@ -59,29 +54,8 @@ uses uPluginDefs;
      otherwise 0}
   Function ServiceExists (ServiceName: PChar): Integer; stdcall;
 
-var
-  PluginInterface: TUS_PluginInterface;
-
 implementation
-
-//---------------
-// Procedure that Sets the PluginInterface Record
-//---------------
-Procedure Init_PluginInterface;
-begin
-  PluginInterface.CreateHookableEvent := CreateHookableEvent;
-  PluginInterface.DestroyHookableEvent := DestroyHookableEvent;
-  PluginInterface.NotivyEventHooks := NotivyEventHooks;
-  PluginInterface.HookEvent := HookEvent;
-  PluginInterface.UnHookEvent := UnHookEvent;
-  PluginInterface.EventExists := EventExists;
-
-  PluginInterface.CreateService := CreateService;
-  PluginInterface.DestroyService := DestroyService;
-  PluginInterface.CallService := CallService;
-  PluginInterface.ServiceExists := ServiceExists;
-end;
-
+uses UCore;
 
 {******** Hook specific Methods ********}
 //---------------
@@ -90,7 +64,7 @@ end;
 //---------------
 Function CreateHookableEvent (EventName: PChar): THandle; stdcall;
 begin
-
+  Result := Core.Hooks.AddEvent(EventName);
 end;
 
 //---------------
@@ -99,7 +73,7 @@ end;
 //---------------
 Function DestroyHookableEvent (hEvent: THandle): integer; stdcall;
 begin
-
+  Result := Core.Hooks.DelEvent(hEvent);
 end;
 
 //---------------
@@ -109,7 +83,7 @@ end;
 //---------------
 Function NotivyEventHooks (hEvent: THandle; wParam, lParam: dWord): integer; stdcall;
 begin
-
+  Result := Core.Hooks.CallEventChain(hEvent, wParam, lParam);
 end;
 
 //---------------
@@ -118,7 +92,7 @@ end;
 //---------------
 Function HookEvent (EventName: PChar; HookProc: TUS_Hook): THandle; stdcall;
 begin
-
+  Result := Core.Hooks.AddSubscriber(EventName, HookProc);
 end;
 
 //---------------
@@ -127,7 +101,7 @@ end;
 //---------------
 Function UnHookEvent (hHook: THandle): Integer; stdcall;
 begin
-
+  Result := Core.Hooks.DelSubscriber(hHook);
 end;
 
 //---------------
@@ -136,7 +110,7 @@ end;
 //---------------
 Function EventExists (EventName: PChar): Integer; stdcall;
 begin
-
+  Result := Core.Hooks.EventExists(EventName);
 end;
 
     {******** Service specific Methods ********}
@@ -146,7 +120,7 @@ end;
 //---------------
 Function CreateService (ServiceName: PChar; ServiceProc: TUS_Service): THandle; stdcall;
 begin
-
+  Result := Core.Services.AddService(ServiceName, ServiceProc);
 end;
 
 //---------------
@@ -155,7 +129,7 @@ end;
 //---------------
 Function DestroyService (hService: THandle): integer; stdcall;
 begin
-
+  Result := Core.Services.DelService(hService);
 end;
   
 //---------------
@@ -164,7 +138,7 @@ end;
 //---------------
 Function CallService (ServiceName: PChar; wParam, lParam: dWord): integer; stdcall;
 begin
-
+  Result := Core.Services.CallService(ServiceName, wParam, lParam);
 end;
    
 //---------------
@@ -173,7 +147,7 @@ end;
 //---------------
 Function ServiceExists (ServiceName: PChar): Integer; stdcall;
 begin
-
+  Result := Core.Services.ServiceExists(ServiceName);
 end;
 
 end.

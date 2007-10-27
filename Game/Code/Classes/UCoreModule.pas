@@ -13,10 +13,13 @@ uses UPluginDefs;
 {$ENDIF}
 
 type
+  PCoreModule = ^TCoreModule;
   TCoreModule = class
     public
+      Constructor Create; virtual;
+      
       //Function that gives some Infos about the Module to the Core
-      Procedure Info(const pInfo: PModuleInfo);
+      Procedure Info(const pInfo: PModuleInfo); virtual;
 
       //Is Called on Loading.
       //In this Method only Events and Services should be created
@@ -46,6 +49,14 @@ type
   cCoreModule = class of TCoreModule;
 
 implementation
+
+//-------------
+// Just the Constructor
+//-------------
+Constructor TCoreModule.Create;
+begin
+  //Dummy maaaan ;)
+end;
 
 //-------------
 // Function that gives some Infos about the Module to the Core
