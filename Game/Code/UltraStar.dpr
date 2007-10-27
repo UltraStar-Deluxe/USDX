@@ -93,7 +93,7 @@ uses
   UCore in 'Classes\UCore.pas',        //Core, Maybe remove this
   UCoreModule in 'Classes\UCoreModule.pas', //^
   UPluginInterface in 'Classes\UPluginInterface.pas', //Interface offered by Core to Plugins
-  uPluginLoader in 'Classes\uPluginLoader.pas',       //New Plugin Loader Module
+  UPluginLoader in 'Classes\UPluginLoader.pas',       //New Plugin Loader Module
 
   UParty in 'Classes\UParty.pas',            // to - do : rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
 

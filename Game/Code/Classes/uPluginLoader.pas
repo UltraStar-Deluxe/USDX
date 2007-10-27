@@ -1,6 +1,6 @@
-unit uPluginLoader;
+unit UPluginLoader;
 {*********************
-  uPluginLoader
+  UPluginLoader
   Unit contains to Classes
     TPluginLoader: Class Searching for and Loading the Plugins
     TtehPlugins:   Class that represents the Plugins in Modules chain

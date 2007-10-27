@@ -9,7 +9,7 @@ interface
 
 uses
   UCoreModule,
-  uPluginLoader;
+  UPluginLoader;
 
 const
   CORE_MODULES_TO_LOAD: Array[0..2] of cCoreModule = (

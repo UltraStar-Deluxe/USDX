@@ -1,7 +1,7 @@
 unit UCore;
 
 interface
-uses uPluginDefs, uCoreModule, UHooks, UServices, uModules;
+uses uPluginDefs, uCoreModule, UHooks, UServices, UModules;
 {*********************
   TCore
   Class manages all CoreModules, teh StartUp, teh MainLoop and the shutdown process
