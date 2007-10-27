@@ -761,8 +761,12 @@ begin
         BackImg.Y := (PetY-1)/BackH * 600; //480
         DrawTexture(BackImg);
       end; // for PetX}
-    BackImg.X:=BackW;
-    BackImg.Y:=BackW;
+    {BackImg.X:=BackW;
+    BackImg.Y:=BackW;  }
+    BackImg.X := 0;
+    BackImg.Y := 0;
+    BackImg.W := 800;
+    BackImg.H := 600;
     DrawTexture(BackImg);
   end; // if
 end;
