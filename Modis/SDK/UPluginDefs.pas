@@ -24,13 +24,15 @@ type
   TUS_PluginInfo = record
     cbSize:       Integer;    //Size of this record (usefull if record will be extended in the future)
 
-    Name:         PChar;      //Name of the Plugin
-    Version:      DWord;      //Version of the Plugin
-    Description:  PChar;      //Description, what does this Plugin do
-    Author:       PChar;      //Author of this Plugin
-    AuthorEmail:  PChar;      //Authors Email
-    Homepage:     PChar;      //Homepage of Plugin/Author
+    Name:         Array [0..31] of Char;      //Name of the Plugin
+    Version:      DWord;                      //Version of the Plugin
+    Description:  Array [0..127] of Char;     //Description, what does this Plugin do
+    Author:       Array [0..31] of Char;      //Author of this Plugin
+    AuthorEmail:  Array [0..63] of Char;      //Authors Email
+    Homepage:     Array [0..63] of Char;      //Homepage of Plugin/Author
   end;
+  AUS_PluginInfo = Array of TUS_PluginInfo;
+  PAUS_PluginInfo = ^AUS_PluginInfo;
 
   //----------------
   // TUS_Hook - Structure of the Hook Function
@@ -100,7 +102,9 @@ type
     ServiceExists: Function (ServiceName: PChar): Integer; stdcall;
   end;
 
-  //TModuleInfo: Info about Modules
+  //----------------
+  //TModuleInfo: Info about Modules. Result of Core/GetModuleInfo
+  //----------------
   PModuleInfo = ^TModuleInfo;
   TModuleInfo = record
     Name:         String;
@@ -109,6 +113,25 @@ type
   end;
   AModuleInfo = array of TModuleInfo;
 
+  //----------------
+  // Procs that should be exported by Plugin Dlls
+  //----------------
+  //Procedure is called to check if this is USDx Plugin
+  //Info is Pointer to this Plugins Info. Size is already set. Don't write over this limit
+  Proc_PluginInfo = procedure (Info: PUS_PluginInfo); stdcall;
+
+  //Called on Plugins Load. If Non Zero is Returned => abort Loading
+  //PInterface is Pointer to PluginInterface
+  Func_Load = function (const PInterface: PUS_PluginInterface): Integer; stdcall;
+
+  //Called on Plugins Init. If Non Zero is Returned => abort Loading
+  //PInterface is Pointer to PluginInterface
+  Func_Init = function (const PInterface: PUS_PluginInterface): Integer; stdcall;
+
+  //Called on Plugins Deinit.
+  //PInterface is Pointer to PluginInterface
+  Proc_DeInit = procedure (const PInterface: PUS_PluginInterface); stdcall;
+
 //----------------
 // Some Default Constants
 //----------------
@@ -116,6 +139,7 @@ const
   {Returned if Service is not found from CallService}
   SERVICE_NOT_FOUND=$80000000;
 
+  //for use in Service 'Core/ShowMessage' lParam(Symbol)
   CORE_SM_NOSYMBOL= 0;
   CORE_SM_ERROR   = 1;
   CORE_SM_WARNING = 2;
@@ -126,7 +150,6 @@ const
 //----------------
 Function MakeVersion(const HeadRevision, SubVersion, SubVersion2: Byte; Letter: Char): DWord;
 Function VersiontoSting(const Version: DWord): String;
-
 
 implementation
 

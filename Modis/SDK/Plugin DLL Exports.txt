@@ -1,0 +1,11 @@
+Ultrastar Plugin DLL(Libary) Exports
+-----------------------------------
+This are the Procedurs and Functions that a UsDx Plugin has to export to get Loaded.
+
+
+USPlugin_Info(PInfo: PUS_PluginInfo); stdcall;
+-----------------------------------
+Ultrastar uses this Procedure to identify the Plugins.
+At the given Address there is a PUS_PluginInfo Record. cbSize
+attribut is already set. Please asure not to overwrite this assigned
+memory amount.

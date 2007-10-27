@@ -11,3 +11,12 @@ Core/ShowMessage    <- Shows a Message Dialog. (lParam: PChar Text, wParam: Symb
 Core/Retranslate    <- Calls Translate Hook
 Core/ReloadTextures <- Calls LoadTextures Hook
 Core/GetModuleInfo  <- If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TModuleInfo to address at lparam
+Core/GetApplicationHandle <- Returns Main-Applications Handle (Win32 Only)
+
+--------------------
+PluginLoader
+--------------------
+PluginLoader/GetPluginInfo  <- If wParam = -1 then (If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TUS_PluginInfo to address at lparam) Else (Get PluginInfo of Plugin with Index(wParam) to Address at lParam)
+PluginLoader/GetPluginState <- If wParam = -1 then (If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TUS_PluginInfo to address at lparam) Else (Return PluginInfo of Plugin with Index(wParam))
+PluginLoader/LoadPlugin     <- wParam PChar(PluginName/PluginPath) | lParam (if wParam = nil) ID of the Plugin
+PluginLoader/UnloadPlugin   <- wParam PChar(PluginName/PluginPath) | lParam (if wParam = nil) ID of the Plugin
