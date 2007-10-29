@@ -134,14 +134,15 @@ end;
 
 procedure TSongs.BrowseDir(Dir: widestring);
 var
-  SR:     TSearchRecW;   // for parsing Songs Directory
   SLen:   integer;
 
-  {$ifndef win32}
-    TheDir : pdir;
-    ADirent :pDirent;
-    Entry : Longint;
-    info : stat;
+  {$ifdef win32}
+    SR:     TSearchRecW;   // for parsing Songs Directory
+  {$else}  // This should work on all posix systems.
+    TheDir  : pdir;
+    ADirent : pDirent;
+    Entry   : Longint;
+    info    : stat;
   {$endif}  
 begin
   {$ifdef win32}
@@ -155,6 +156,37 @@ begin
       until FindNextw(SR) <> 0;
     end; // if
     FindClosew(SR);
+    
+    if FindFirstW(Dir + '*.txt', 0, SR) = 0 then
+    begin
+      repeat
+        SLen := BrowsePos;
+
+        Song[SLen].Path     := Dir;
+        Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
+        Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
+        Song[SLen].FileName := SR.Name;
+
+        if (AnalyseFile(Song[SLen]) = false) then
+          Dec(BrowsePos)
+        else
+        begin
+          if Song[SLen].Cover = '' then
+            Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
+        end;
+
+        //Change Length Only every 50 Entrys
+        Inc(BrowsePos);
+
+        if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
+        begin
+            SetLength(Song, Length(Song) + 50);
+        end;
+
+      until FindNextW(SR) <> 0;
+      end; // if FindFirst
+    FindCloseW(SR);
+    
    {$else}
     // Itterate the Songs Directory... ( With unicode capable functions for linux )
     TheDir := opendir( Dir );     // JB_Unicode - linux
@@ -175,39 +207,50 @@ begin
         end;
       Until ADirent=Nil;
     end;
+    
+    
+
+    TheDir := opendir( Dir );     // JB_Unicode - linux
+    if TheDir <> nil then
+    begin
+      repeat
+        ADirent := ReadDir(TheDir);
+        
+        if ( ADirent <> Nil                    ) AND
+           ( pos( '.txt', ADirent^.name ) > -1 ) then
+        begin
+          SLen := BrowsePos;
+
+          Song[SLen].Path     := Dir;
+          Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
+          Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
+          Song[SLen].FileName := ADirent^.name;
+
+          if (AnalyseFile(Song[SLen]) = false) then
+            Dec(BrowsePos)
+          else
+          begin
+            if Song[SLen].Cover = '' then
+              Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
+          end;
+
+          //Change Length Only every 50 Entrys
+          Inc(BrowsePos);
+
+          if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
+          begin
+              SetLength(Song, Length(Song) + 50);
+          end;
+        end;
+
+      Until ADirent=Nil;
+    end; // if FindFirst
+
   {$endif}
   
 //  Log.LogStatus('Parsing directory: ' + Dir + SR.Name, 'LoadSongList');
 
- if FindFirstW(Dir + '*.txt', 0, SR) = 0 then
- begin
-    repeat
-      SLen := BrowsePos;
 
-      Song[SLen].Path     := Dir;
-      Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
-      Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
-      Song[SLen].FileName := SR.Name;
-
-      if (AnalyseFile(Song[SLen]) = false) then
-        Dec(BrowsePos)
-      else
-      begin
-        if Song[SLen].Cover = '' then
-          Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
-      end;
-
-      //Change Length Only every 50 Entrys
-      Inc(BrowsePos);
-      
-      if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
-      begin
-          SetLength(Song, Length(Song) + 50);
-      end;
-
-    until FindNextW(SR) <> 0;
-    end; // if FindFirst
-  FindCloseW(SR);
 end;
 
 procedure TSongs.Sort(Order: integer);
