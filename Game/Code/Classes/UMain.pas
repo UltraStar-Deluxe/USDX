@@ -5,6 +5,9 @@ interface
 {$I switches.inc}
 
 uses
+    {$IFDEF MSWINDOWS}
+    Windows,
+    {$ENDIF}
     SDL,
     UGraphic,
     UMusic,
@@ -131,7 +134,7 @@ procedure ClearScores(PlayerNum: integer);
 
 implementation
 
-uses USongs, UJoystick, math, UCommandLine, ULanguage, SDL_ttf, 
+uses USongs, UJoystick, math, UCommandLine, ULanguage, SDL_ttf,
      USkins, UCovers, UCatCovers, UDataBase, UPlaylist, UDLLManager,
 	 UParty, UCore, UGraphicClasses, UPluginDefs;
 
