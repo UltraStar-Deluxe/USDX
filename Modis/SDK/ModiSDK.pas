@@ -2,6 +2,8 @@ unit ModiSDK;
 
 interface
 
+{$I switches.inc}
+
 type  //PluginInfo, for Init
   TPluginInfo = record
     //Info

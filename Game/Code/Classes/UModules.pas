@@ -1,6 +1,9 @@
 unit UModules;
 
 interface
+
+{$I switches.inc}
+
 {*********************
   UModules
   Unit Contains all used Modules in its uses clausel

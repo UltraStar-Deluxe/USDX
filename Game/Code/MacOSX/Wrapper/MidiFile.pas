@@ -1,6 +1,6 @@
 unit MidiFile;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 

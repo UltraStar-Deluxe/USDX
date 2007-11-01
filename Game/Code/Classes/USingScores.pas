@@ -2,9 +2,7 @@ unit USingScores;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses UThemes,
      OpenGl12,
@@ -425,7 +423,7 @@ begin
   // TODO : JB_Lazarus - Exception=Invalid floating point operation
   //                     AT THIS LINE !
   
-  {$IFDEF FPC}
+  {$IFDEF LAZARUS}
 (*
   writeln( 'USINGSCORES-aPlayers[Cur.Player].RBTarget    : ' + floattostr( aPlayers[Cur.Player].RBTarget ) );
   writeln( 'USINGSCORES-(Cur.ScoreDiff - Cur.ScoreGiven) : ' + floattostr( (Cur.ScoreDiff - Cur.ScoreGiven) ) );
@@ -438,7 +436,7 @@ begin
   lTempA := ( aPlayers[Cur.Player].RBTarget + (Cur.ScoreDiff - Cur.ScoreGiven) );
   lTempB := ( Cur.ScoreDiff * (Cur.Rating / 20 - 0.26) );
   
-  {$IFDEF FPC}
+  {$IFDEF LAZARUS}
 (*
   writeln( 'USINGSCORES-lTempA                           : ' + floattostr( lTempA ) );
   writeln( 'USINGSCORES-lTempB                           : ' + floattostr( lTempB ) );

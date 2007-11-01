@@ -1,6 +1,9 @@
 unit UTextClasses;
 
 interface
+
+{$I switches.inc}
+
 uses  OpenGL12,
       SDL,
       UTexture,

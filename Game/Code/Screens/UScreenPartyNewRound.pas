@@ -2,10 +2,7 @@ unit UScreenPartyNewRound;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
+{$I switches.inc}
 
 uses
   UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;

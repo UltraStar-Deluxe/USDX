@@ -1,12 +1,8 @@
 unit UScreenSong;
 
 interface
+
 {$I switches.inc}
-
-
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
 
 
 uses
@@ -813,7 +809,7 @@ begin
         try
           AddButton(300 + Pet*250, 140, 200, 200, '', 'JPG', 'Plain', Theme.Song.Cover.Reflections);
         except
-          {$IFDEF win32}
+          {$IFDEF MSWINDOWS}
           Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);
           {$ELSE}
           // TODO : JB_linux - better handle this message and display to user..

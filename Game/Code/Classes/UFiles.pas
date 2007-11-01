@@ -2,9 +2,7 @@ unit UFiles;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses SysUtils,
      ULog,

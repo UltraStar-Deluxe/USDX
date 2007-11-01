@@ -2,10 +2,7 @@ unit UScreenTop5;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
+{$I switches.inc}
 
 uses
   UMenu, SDL, SysUtils, UDisplay, UMusic, USongs, UThemes, ULCD;

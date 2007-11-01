@@ -1,6 +1,9 @@
 unit UDrawTexture;
 
 interface
+
+{$I switches.inc}
+
 uses UTexture;
 
 procedure DrawLine(X1, Y1, X2, Y2, ColR, ColG, ColB: real);

@@ -1,6 +1,9 @@
 unit UMenuSelect;
 
 interface
+
+{$I switches.inc}
+
 uses TextGL, UTexture, OpenGL12, UMenuText;
 
 type

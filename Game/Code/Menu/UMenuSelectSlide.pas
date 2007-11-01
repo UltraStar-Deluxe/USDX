@@ -2,9 +2,7 @@ unit UMenuSelectSlide;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses TextGL,
      UTexture,

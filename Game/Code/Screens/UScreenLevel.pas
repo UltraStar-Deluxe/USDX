@@ -2,6 +2,8 @@ unit UScreenLevel;
 
 interface
 
+{$I switches.inc}
+
 uses
   UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
 

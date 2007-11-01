@@ -10,9 +10,19 @@ unit SQLite3;
 
 interface
 
+{$I switches.inc}
+
 const
 
+{$IFDEF MSWINDOWS}
   SQLiteDLL = 'sqlite3.dll';
+{$ENDIF}
+{$IFDEF LINUX}
+  SQLiteDLL = 'sqlite3.so';
+{$ENDIF}
+{$IFDEF DARWIN}
+  SQLiteDLL = 'libsqlite3.dylib';
+{$ENDIF}
 
 // Return values for sqlite3_exec() and sqlite3_step()
 

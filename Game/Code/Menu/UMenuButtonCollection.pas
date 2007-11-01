@@ -1,6 +1,9 @@
 unit UMenuButtonCollection;
 
 interface
+
+{$I switches.inc}
+
 uses UMenuButton;
 
 type

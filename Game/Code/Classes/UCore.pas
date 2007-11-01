@@ -1,18 +1,15 @@
 unit UCore;
 
 interface
+
+{$I switches.inc}
+
 uses uPluginDefs, uCoreModule, UHooks, UServices, UModules;
 {*********************
   TCore
   Class manages all CoreModules, teh StartUp, teh MainLoop and the shutdown process
   Also it does some Error Handling, and maybe sometime multithreaded Loading ;)
 *********************}
-
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
-{$I switches.inc}
 
 type
   TModuleListItem = record
@@ -406,7 +403,7 @@ var Params: Cardinal;
 begin
   Result := -1;
 
-  {$IFDEF win32}
+  {$IFDEF MSWINDOWS}
   If (ptr(lParam)<>nil) then
   begin
     Params := MB_OK;
@@ -430,8 +427,8 @@ end;
 Function TCore.ReportError(wParam, lParam: DWord): integer;
 begin
   //Update LastErrorReporter and LastErrorString
-  LastErrorReporter := String(PChar(Ptr(lParam)));
-  LastErrorString   := String(PChar(Ptr(wParam)));
+  LastErrorReporter := String(PChar(Pointer(lParam)));
+  LastErrorString   := String(PChar(Pointer(wParam)));
   
   Hooks.CallEventChain(hError, wParam, lParam);
 end;
@@ -465,7 +462,7 @@ end;
 //-------------
 Function TCore.GetModuleInfo(wParam, lParam: DWord): integer;
 begin
-  if (ptr(lParam) = nil) then
+  if (Pointer(lParam) = nil) then
   begin
     Result := Length(Modules);
   end
@@ -474,9 +471,9 @@ begin
     Try
       For Result := 0 to High(Modules) do
       begin
-        AModuleInfo(ptr(lParam))[Result].Name := Modules[Result].Info.Name;
-        AModuleInfo(ptr(lParam))[Result].Version := Modules[Result].Info.Version;
-        AModuleInfo(ptr(lParam))[Result].Description := Modules[Result].Info.Description;
+        AModuleInfo(Pointer(lParam))[Result].Name := Modules[Result].Info.Name;
+        AModuleInfo(Pointer(lParam))[Result].Version := Modules[Result].Info.Version;
+        AModuleInfo(Pointer(lParam))[Result].Description := Modules[Result].Info.Description;
       end;
     Except
       Result := -1;

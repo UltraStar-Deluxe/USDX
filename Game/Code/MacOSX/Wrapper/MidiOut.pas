@@ -1,6 +1,6 @@
 unit MidiOut;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 

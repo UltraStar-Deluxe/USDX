@@ -2,14 +2,15 @@ unit USongs;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
+{$I switches.inc}
 
 uses SysUtils,
-     {$ifndef win32}
-     oldlinux,
+     {$ifndef MSWINDOWS}
+	   {$IFDEF DARWIN}
+	     baseunix,
+	   {$ELSE}
+         oldlinux,
+	   {$ENDIF}	 
      {$endif}
      ULog,
      UTexture,
@@ -115,6 +116,12 @@ uses StrUtils,
      UMain,
      UIni;
 
+{$IFDEF DARWIN}
+function AnsiContainsText(const AText, ASubText: string): Boolean;
+begin
+  Result := AnsiPos(AnsiUppercase(ASubText), AnsiUppercase(AText)) > 0;
+end;
+{$ENDIF}
 
 procedure TSongs.LoadSongList;
 begin
@@ -136,7 +143,7 @@ procedure TSongs.BrowseDir(Dir: widestring);
 var
   SLen:   integer;
 
-  {$ifdef win32}
+  {$ifdef MSWINDOWS}
     SR:     TSearchRecW;   // for parsing Songs Directory
   {$else}  // This should work on all posix systems.
     TheDir  : pdir;
@@ -145,7 +152,7 @@ var
     info    : stat;
   {$endif}  
 begin
-  {$ifdef win32}
+  {$ifdef MSWINDOWS}
     if FindFirstW(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows
     begin
       repeat
@@ -186,8 +193,9 @@ begin
       until FindNextW(SR) <> 0;
       end; // if FindFirst
     FindCloseW(SR);
-    
-   {$else}
+    {$ENDIF}
+	
+   {$IFDEF LINUX}
     // Itterate the Songs Directory... ( With unicode capable functions for linux )
     TheDir := opendir( Dir );     // JB_Unicode - linux
     if TheDir <> nil then
@@ -225,6 +233,66 @@ begin
           Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
           Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
           Song[SLen].FileName := ADirent^.name;
+
+          if (AnalyseFile(Song[SLen]) = false) then
+            Dec(BrowsePos)
+          else
+          begin
+            if Song[SLen].Cover = '' then
+              Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
+          end;
+
+          //Change Length Only every 50 Entrys
+          Inc(BrowsePos);
+
+          if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
+          begin
+              SetLength(Song, Length(Song) + 50);
+          end;
+        end;
+
+      Until ADirent=Nil;
+    end; // if FindFirst
+  {$endif}
+  
+  {$IFDEF DARWIN}
+    // Itterate the Songs Directory... ( With unicode capable functions for linux )
+    TheDir := FPOpenDir( Dir );     // JB_Unicode - linux
+    if TheDir <> nil then
+    begin
+      repeat
+        ADirent := FPReadDir(TheDir);
+
+        If ADirent<>Nil then
+        begin
+          With ADirent^ do
+            begin
+
+              if ( d_name[0] <> '.') then
+                BrowseDir( Dir + d_name + pathdelim );
+
+            end;
+        end;
+      Until ADirent=Nil;
+    end;
+    
+    
+
+    TheDir := FPOpenDir( Dir );     // JB_Unicode - linux
+    if TheDir <> nil then
+    begin
+      repeat
+        ADirent := FPReadDir(TheDir);
+        
+        if ( ADirent <> Nil                    ) AND
+           ( pos( '.txt', ADirent^.d_name ) > -1 ) then
+        begin
+          SLen := BrowsePos;
+
+          Song[SLen].Path     := Dir;
+          Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
+          Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
+          Song[SLen].FileName := ADirent^.d_name;
 
           if (AnalyseFile(Song[SLen]) = false) then
             Dec(BrowsePos)

@@ -19,10 +19,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
 uses OpenGL12,
      {$IFDEF win32}
      windows,
@@ -131,7 +127,7 @@ implementation
 uses ULog,
      DateUtils,
      UCovers,
-     {$IFDEF FPC}
+     {$IFDEF LAZARUS}
      LResources,
      {$ENDIF}
      StrUtils, dialogs;
@@ -247,7 +243,7 @@ var
   TexRWops:  PSDL_RWops;
   dHandle: THandle;
 
-  {$IFDEF FPC}
+  {$IFDEF LAZARUS}
   lLazRes  : TLResource;
   lResData : TStringStream;
   {$ELSE}
@@ -277,7 +273,7 @@ begin
     Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
   
     // load from resource stream
-    {$IFNDEF FPC}
+    {$IFDEF WIN32}
       dHandle := FindResource(hInstance, Identifier, 'TEX');
       if dHandle=0 then
       begin
@@ -1134,7 +1130,7 @@ begin
   end;
 end;
 
-{$IFDEF FPC}
+{$IFDEF LAZARUS}
 initialization
   {$I UltraStar.lrs}
 {$ENDIF}

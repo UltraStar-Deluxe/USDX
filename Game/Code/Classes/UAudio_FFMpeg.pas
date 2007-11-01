@@ -13,9 +13,7 @@ This unit is primarily based upon -
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 
 uses Classes,
@@ -67,7 +65,7 @@ type
 implementation
 
 uses
-     {$IFDEF FPC}
+     {$IFDEF LAZARUS}
      lclintf,
      libc,
      {$ENDIF}
@@ -590,7 +588,7 @@ begin
       len1 := len;
 
 
-    {$ifdef win32}
+    {$ifdef WIN32}
       lSrc := PUInt8( integer( laudio_buf ) + audio_buf_index );
       CopyMemory(stream, lSrc , len1);
     {$else}

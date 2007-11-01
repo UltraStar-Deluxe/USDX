@@ -2,10 +2,7 @@ unit UScreenStatMain;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
+{$I switches.inc}
 
 uses
   UMenu,
@@ -164,7 +161,7 @@ var
   Result1, Result2: AStatResult;
   ResetTime: TSystemTime;
   
-  {$IFDEF win32}
+  {$IFDEF MSWINDOWS}
   function GetFileCreation(Filename: String): TSystemTime;
   var
     FindData: TWin32FindData;
@@ -207,7 +204,7 @@ begin
 
   ResetTime := GetFileCreation(Database.Filename);
 
-  {$IFDEF win32}
+  {$IFDEF MSWINDOWS}
     A1 := ResetTime.wDay;
     A2 := ResetTime.wMonth;
     A3 := ResetTime.wYear;

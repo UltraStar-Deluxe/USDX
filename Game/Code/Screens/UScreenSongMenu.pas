@@ -2,9 +2,7 @@ unit UScreenSongMenu;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
+{$I switches.inc}
 
 uses
   UMenu,

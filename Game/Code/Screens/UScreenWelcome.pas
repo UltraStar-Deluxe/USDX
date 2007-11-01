@@ -2,6 +2,8 @@ unit UScreenWelcome;
 
 interface
 
+{$I switches.inc}
+
 uses
   UMenu, SDL, SysUtils, UThemes;
 

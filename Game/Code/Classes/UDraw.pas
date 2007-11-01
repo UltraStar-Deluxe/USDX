@@ -2,9 +2,7 @@ unit UDraw;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
+{$I switches.inc}
 
 uses UThemes,
      ModiSDK,
@@ -243,7 +241,7 @@ begin
   lTmpA := (Right-Left);
   lTmpB := (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
 
-  {$IFDEF FPC}
+  {$IFDEF LAZARUS}
 (*
   writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
   writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
@@ -479,7 +477,7 @@ begin
   lTmpA := (Right-Left);
   lTmpB := (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
   
-  {$IFDEF FPC}
+  {$IFDEF LAZARUS}
 {*
   writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
   writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );

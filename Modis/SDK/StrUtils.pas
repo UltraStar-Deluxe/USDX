@@ -1,6 +1,9 @@
 unit StrUtils;
 
 interface
+
+{$I switches.inc}
+
 uses ModiSDK;
 
 //function StrToAChar(Str: String): AChar;

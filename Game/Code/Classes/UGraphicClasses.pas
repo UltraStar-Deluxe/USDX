@@ -5,10 +5,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
 uses UTexture;
 
 const  DelayBetweenFrames : Cardinal = 60;

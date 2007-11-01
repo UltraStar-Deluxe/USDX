@@ -2,6 +2,9 @@ unit UCommandLine;
 
 interface
 
+{$I switches.inc}
+
+
 type
   //-----------
   // TCMDParams - Class Reaads Infos from ParamStr and set some easy Interface Variables

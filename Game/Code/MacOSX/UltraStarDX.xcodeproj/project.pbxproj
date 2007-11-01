@@ -26,7 +26,6 @@
 		2C4D9C9F0CC9EC8C0031092D /* UIni.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C720CC9EC8C0031092D /* UIni.pas */; };
 		2C4D9CA00CC9EC8C0031092D /* UJoystick.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C730CC9EC8C0031092D /* UJoystick.pas */; };
 		2C4D9CA10CC9EC8C0031092D /* ULanguage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C740CC9EC8C0031092D /* ULanguage.pas */; };
-		2C4D9CA20CC9EC8C0031092D /* Ulazjpeg.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C750CC9EC8C0031092D /* Ulazjpeg.pas */; };
 		2C4D9CA30CC9EC8C0031092D /* ULCD.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C760CC9EC8C0031092D /* ULCD.pas */; };
 		2C4D9CA40CC9EC8C0031092D /* ULight.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C770CC9EC8C0031092D /* ULight.pas */; };
 		2C4D9CA50CC9EC8C0031092D /* ULog.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C780CC9EC8C0031092D /* ULog.pas */; };
@@ -38,7 +37,6 @@
 		2C4D9CAB0CC9EC8C0031092D /* UMusic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */; };
 		2C4D9CAC0CC9EC8C0031092D /* UParty.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7F0CC9EC8C0031092D /* UParty.pas */; };
 		2C4D9CAD0CC9EC8C0031092D /* UPlaylist.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */; };
-		2C4D9CAE0CC9EC8C0031092D /* UPliki.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C810CC9EC8C0031092D /* UPliki.pas */; };
 		2C4D9CAF0CC9EC8C0031092D /* UPluginInterface.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */; };
 		2C4D9CB00CC9EC8C0031092D /* uPluginLoader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */; };
 		2C4D9CB10CC9EC8C0031092D /* URecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C840CC9EC8C0031092D /* URecord.pas */; };
@@ -71,7 +69,6 @@
 		2C4D9CCC0CC9EC8C0031092D /* UIni.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C720CC9EC8C0031092D /* UIni.pas */; };
 		2C4D9CCD0CC9EC8C0031092D /* UJoystick.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C730CC9EC8C0031092D /* UJoystick.pas */; };
 		2C4D9CCE0CC9EC8C0031092D /* ULanguage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C740CC9EC8C0031092D /* ULanguage.pas */; };
-		2C4D9CCF0CC9EC8C0031092D /* Ulazjpeg.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C750CC9EC8C0031092D /* Ulazjpeg.pas */; };
 		2C4D9CD00CC9EC8C0031092D /* ULCD.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C760CC9EC8C0031092D /* ULCD.pas */; };
 		2C4D9CD10CC9EC8C0031092D /* ULight.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C770CC9EC8C0031092D /* ULight.pas */; };
 		2C4D9CD20CC9EC8C0031092D /* ULog.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C780CC9EC8C0031092D /* ULog.pas */; };
@@ -83,7 +80,6 @@
 		2C4D9CD80CC9EC8C0031092D /* UMusic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */; };
 		2C4D9CD90CC9EC8C0031092D /* UParty.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7F0CC9EC8C0031092D /* UParty.pas */; };
 		2C4D9CDA0CC9EC8C0031092D /* UPlaylist.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */; };
-		2C4D9CDB0CC9EC8C0031092D /* UPliki.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C810CC9EC8C0031092D /* UPliki.pas */; };
 		2C4D9CDC0CC9EC8C0031092D /* UPluginInterface.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */; };
 		2C4D9CDD0CC9EC8C0031092D /* uPluginLoader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */; };
 		2C4D9CDE0CC9EC8C0031092D /* URecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C840CC9EC8C0031092D /* URecord.pas */; };
@@ -133,24 +129,14 @@
 		2C4D9DF20CC9EF210031092D /* sdltruetypefont.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */; };
 		2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */; };
 		2C4D9DF40CC9EF210031092D /* sdltruetypefont.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */; };
-		2C4D9E0B0CC9EF840031092D /* MacClasses.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DFF0CC9EF840031092D /* MacClasses.pas */; };
 		2C4D9E0C0CC9EF840031092D /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E000CC9EF840031092D /* Graphics.pas */; };
 		2C4D9E0D0CC9EF840031092D /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E010CC9EF840031092D /* JPEG.pas */; };
-		2C4D9E0E0CC9EF840031092D /* MidiFile.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E020CC9EF840031092D /* MidiFile.pas */; };
-		2C4D9E0F0CC9EF840031092D /* MidiOut.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E030CC9EF840031092D /* MidiOut.pas */; };
 		2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
-		2C4D9E130CC9EF840031092D /* PNGImage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E070CC9EF840031092D /* PNGImage.pas */; };
 		2C4D9E150CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
-		2C4D9E160CC9EF840031092D /* zlportio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E0A0CC9EF840031092D /* zlportio.pas */; };
-		2C4D9E170CC9EF840031092D /* MacClasses.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DFF0CC9EF840031092D /* MacClasses.pas */; };
 		2C4D9E180CC9EF840031092D /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E000CC9EF840031092D /* Graphics.pas */; };
 		2C4D9E190CC9EF840031092D /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E010CC9EF840031092D /* JPEG.pas */; };
-		2C4D9E1A0CC9EF840031092D /* MidiFile.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E020CC9EF840031092D /* MidiFile.pas */; };
-		2C4D9E1B0CC9EF840031092D /* MidiOut.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E030CC9EF840031092D /* MidiOut.pas */; };
 		2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
-		2C4D9E1F0CC9EF840031092D /* PNGImage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E070CC9EF840031092D /* PNGImage.pas */; };
 		2C4D9E210CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
-		2C4D9E220CC9EF840031092D /* zlportio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E0A0CC9EF840031092D /* zlportio.pas */; };
 		2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
 		2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
 		2CDD4BDE0CB947A400549FAC /* sdl.pas in Sources */ = {isa = PBXBuildFile; fileRef = 98B8BE5C0B1F974F00162019 /* sdl.pas */; };
@@ -159,6 +145,112 @@
 		2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CDEA4F60CBD725B0096994C /* OpenGL.framework */; };
 		2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
 		2CDEC4CD0CC52E7F00FFA244 /* UltraStarDX.icns in Resources */ = {isa = PBXBuildFile; fileRef = 2CDEC4CC0CC52E7F00FFA244 /* UltraStarDX.icns */; };
+		2CF54F650CDA1B2B00627463 /* UScreenCredits.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */; };
+		2CF54F660CDA1B2B00627463 /* UScreenEdit.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */; };
+		2CF54F670CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */; };
+		2CF54F680CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */; };
+		2CF54F690CDA1B2B00627463 /* UScreenEditSub.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */; };
+		2CF54F6A0CDA1B2B00627463 /* UScreenLevel.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */; };
+		2CF54F6B0CDA1B2B00627463 /* UScreenLoading.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */; };
+		2CF54F6C0CDA1B2B00627463 /* UScreenMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */; };
+		2CF54F6D0CDA1B2B00627463 /* UScreenName.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */; };
+		2CF54F6E0CDA1B2B00627463 /* UScreenOpen.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */; };
+		2CF54F6F0CDA1B2B00627463 /* UScreenOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */; };
+		2CF54F700CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */; };
+		2CF54F710CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */; };
+		2CF54F720CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */; };
+		2CF54F730CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */; };
+		2CF54F740CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */; };
+		2CF54F750CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */; };
+		2CF54F760CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */; };
+		2CF54F770CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */; };
+		2CF54F780CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */; };
+		2CF54F790CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */; };
+		2CF54F7A0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */; };
+		2CF54F7B0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */; };
+		2CF54F7C0CDA1B2B00627463 /* UScreenPopup.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */; };
+		2CF54F7D0CDA1B2B00627463 /* UScreenScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */; };
+		2CF54F7E0CDA1B2B00627463 /* UScreenSing.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */; };
+		2CF54F7F0CDA1B2B00627463 /* UScreenSingModi.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */; };
+		2CF54F800CDA1B2B00627463 /* UScreenSong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */; };
+		2CF54F810CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */; };
+		2CF54F820CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */; };
+		2CF54F830CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */; };
+		2CF54F840CDA1B2B00627463 /* UScreenStatMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */; };
+		2CF54F850CDA1B2B00627463 /* UScreenTop5.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */; };
+		2CF54F860CDA1B2B00627463 /* UScreenWelcome.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */; };
+		2CF54F870CDA1B2B00627463 /* UScreenCredits.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */; };
+		2CF54F880CDA1B2B00627463 /* UScreenEdit.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */; };
+		2CF54F890CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */; };
+		2CF54F8A0CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */; };
+		2CF54F8B0CDA1B2B00627463 /* UScreenEditSub.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */; };
+		2CF54F8C0CDA1B2B00627463 /* UScreenLevel.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */; };
+		2CF54F8D0CDA1B2B00627463 /* UScreenLoading.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */; };
+		2CF54F8E0CDA1B2B00627463 /* UScreenMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */; };
+		2CF54F8F0CDA1B2B00627463 /* UScreenName.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */; };
+		2CF54F900CDA1B2B00627463 /* UScreenOpen.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */; };
+		2CF54F910CDA1B2B00627463 /* UScreenOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */; };
+		2CF54F920CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */; };
+		2CF54F930CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */; };
+		2CF54F940CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */; };
+		2CF54F950CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */; };
+		2CF54F960CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */; };
+		2CF54F970CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */; };
+		2CF54F980CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */; };
+		2CF54F990CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */; };
+		2CF54F9A0CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */; };
+		2CF54F9B0CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */; };
+		2CF54F9C0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */; };
+		2CF54F9D0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */; };
+		2CF54F9E0CDA1B2B00627463 /* UScreenPopup.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */; };
+		2CF54F9F0CDA1B2B00627463 /* UScreenScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */; };
+		2CF54FA00CDA1B2B00627463 /* UScreenSing.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */; };
+		2CF54FA10CDA1B2B00627463 /* UScreenSingModi.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */; };
+		2CF54FA20CDA1B2B00627463 /* UScreenSong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */; };
+		2CF54FA30CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */; };
+		2CF54FA40CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */; };
+		2CF54FA50CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */; };
+		2CF54FA60CDA1B2B00627463 /* UScreenStatMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */; };
+		2CF54FA70CDA1B2B00627463 /* UScreenTop5.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */; };
+		2CF54FA80CDA1B2B00627463 /* UScreenWelcome.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */; };
+		2CF5508C0CDA22B000627463 /* ModiSDK.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5508B0CDA22B000627463 /* ModiSDK.pas */; };
+		2CF5508D0CDA22B000627463 /* ModiSDK.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5508B0CDA22B000627463 /* ModiSDK.pas */; };
+		2CF551100CDA293700627463 /* SQLite3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510E0CDA293700627463 /* SQLite3.pas */; };
+		2CF551110CDA293700627463 /* SQLiteTable3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510F0CDA293700627463 /* SQLiteTable3.pas */; };
+		2CF551120CDA293700627463 /* SQLite3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510E0CDA293700627463 /* SQLite3.pas */; };
+		2CF551130CDA293700627463 /* SQLiteTable3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510F0CDA293700627463 /* SQLiteTable3.pas */; };
+		2CF5512D0CDA29C600627463 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF5512C0CDA29C600627463 /* libsqlite3.dylib */; };
+		2CF552140CDA3D1400627463 /* UPluginDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552110CDA3D1400627463 /* UPluginDefs.pas */; };
+		2CF552170CDA3D1400627463 /* UPluginDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552110CDA3D1400627463 /* UPluginDefs.pas */; };
+		2CF552670CDA404000627463 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552660CDA404000627463 /* Messages.pas */; };
+		2CF552680CDA404000627463 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552660CDA404000627463 /* Messages.pas */; };
+		2CF552A70CDA42C900627463 /* avcodec.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529E0CDA42C900627463 /* avcodec.pas */; };
+		2CF552A80CDA42C900627463 /* avformat.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529F0CDA42C900627463 /* avformat.pas */; };
+		2CF552A90CDA42C900627463 /* avio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A00CDA42C900627463 /* avio.pas */; };
+		2CF552AA0CDA42C900627463 /* avutil.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A10CDA42C900627463 /* avutil.pas */; };
+		2CF552AD0CDA42C900627463 /* opt.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A40CDA42C900627463 /* opt.pas */; };
+		2CF552AE0CDA42C900627463 /* rational.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A50CDA42C900627463 /* rational.pas */; };
+		2CF552B00CDA42C900627463 /* avcodec.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529E0CDA42C900627463 /* avcodec.pas */; };
+		2CF552B10CDA42C900627463 /* avformat.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529F0CDA42C900627463 /* avformat.pas */; };
+		2CF552B20CDA42C900627463 /* avio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A00CDA42C900627463 /* avio.pas */; };
+		2CF552B30CDA42C900627463 /* avutil.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A10CDA42C900627463 /* avutil.pas */; };
+		2CF552B60CDA42C900627463 /* opt.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A40CDA42C900627463 /* opt.pas */; };
+		2CF552B70CDA42C900627463 /* rational.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A50CDA42C900627463 /* rational.pas */; };
+		2CF552C30CDA4B7B00627463 /* libavcodec.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */; };
+		2CF552C40CDA4B7B00627463 /* libavformat.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552C00CDA4B7B00627463 /* libavformat.dylib */; };
+		2CF552C50CDA4B7B00627463 /* libavutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552C10CDA4B7B00627463 /* libavutil.dylib */; };
+		2CF552C60CDA4B7B00627463 /* libmp3lame.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */; };
+		2CF553080CDA51B500627463 /* sdlutils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF553070CDA51B500627463 /* sdlutils.pas */; };
+		2CF553090CDA51B500627463 /* sdlutils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF553070CDA51B500627463 /* sdlutils.pas */; };
+		2CF553100CDA52D100627463 /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D980CC9EE0B0031092D /* SDL_image.framework */; };
+		2CF5533B0CDA52E200627463 /* SDL_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D990CC9EE0B0031092D /* SDL_ttf.framework */; };
+		2CF5533E0CDA530300627463 /* libbass.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9CE90CC9ECB50031092D /* libbass.dylib */; };
+		2CF5533F0CDA531100627463 /* libfreeimage.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */; };
+		2CF553400CDA531100627463 /* libsqlite3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF5512C0CDA29C600627463 /* libsqlite3.dylib */; };
+		2CF553410CDA531100627463 /* libavcodec.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */; };
+		2CF553420CDA531100627463 /* libavformat.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C00CDA4B7B00627463 /* libavformat.dylib */; };
+		2CF553430CDA531100627463 /* libavutil.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C10CDA4B7B00627463 /* libavutil.dylib */; };
+		2CF553440CDA531100627463 /* libmp3lame.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */; };
 		98B8BE340B1F947800162019 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE330B1F947800162019 /* AppKit.framework */; };
 		98B8BE390B1F949C00162019 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE370B1F949C00162019 /* Cocoa.framework */; };
 		98B8BE3A0B1F949C00162019 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE380B1F949C00162019 /* Foundation.framework */; };
@@ -238,6 +330,13 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
+				2CF5533F0CDA531100627463 /* libfreeimage.dylib in CopyFiles */,
+				2CF553400CDA531100627463 /* libsqlite3.dylib in CopyFiles */,
+				2CF553410CDA531100627463 /* libavcodec.dylib in CopyFiles */,
+				2CF553420CDA531100627463 /* libavformat.dylib in CopyFiles */,
+				2CF553430CDA531100627463 /* libavutil.dylib in CopyFiles */,
+				2CF553440CDA531100627463 /* libmp3lame.dylib in CopyFiles */,
+				2CF5533E0CDA530300627463 /* libbass.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -248,6 +347,8 @@
 			dstSubfolderSpec = 10;
 			files = (
 				2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */,
+				2CF553100CDA52D100627463 /* SDL_image.framework in CopyFiles */,
+				2CF5533B0CDA52E200627463 /* SDL_ttf.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,7 +374,6 @@
 		2C4D9C720CC9EC8C0031092D /* UIni.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UIni.pas; path = ../Classes/UIni.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C730CC9EC8C0031092D /* UJoystick.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UJoystick.pas; path = ../Classes/UJoystick.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C740CC9EC8C0031092D /* ULanguage.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = ULanguage.pas; path = ../Classes/ULanguage.pas; sourceTree = SOURCE_ROOT; };
-		2C4D9C750CC9EC8C0031092D /* Ulazjpeg.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Ulazjpeg.pas; path = ../Classes/Ulazjpeg.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C760CC9EC8C0031092D /* ULCD.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = ULCD.pas; path = ../Classes/ULCD.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C770CC9EC8C0031092D /* ULight.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = ULight.pas; path = ../Classes/ULight.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C780CC9EC8C0031092D /* ULog.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = ULog.pas; path = ../Classes/ULog.pas; sourceTree = SOURCE_ROOT; };
@@ -285,7 +385,6 @@
 		2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UMusic.pas; path = ../Classes/UMusic.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C7F0CC9EC8C0031092D /* UParty.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UParty.pas; path = ../Classes/UParty.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPlaylist.pas; path = ../Classes/UPlaylist.pas; sourceTree = SOURCE_ROOT; };
-		2C4D9C810CC9EC8C0031092D /* UPliki.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPliki.pas; path = ../Classes/UPliki.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPluginInterface.pas; path = ../Classes/UPluginInterface.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = uPluginLoader.pas; path = ../Classes/uPluginLoader.pas; sourceTree = SOURCE_ROOT; };
 		2C4D9C840CC9EC8C0031092D /* URecord.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = URecord.pas; path = ../Classes/URecord.pas; sourceTree = SOURCE_ROOT; };
@@ -319,18 +418,65 @@
 		2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = sdl_image.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_image/sdl_image.pas"; sourceTree = "<absolute>"; };
 		2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = sdl_ttf.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_ttf/sdl_ttf.pas"; sourceTree = "<absolute>"; };
 		2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = sdltruetypefont.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_ttf/sdltruetypefont.pas"; sourceTree = "<absolute>"; };
-		2C4D9DFF0CC9EF840031092D /* MacClasses.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = MacClasses.pas; path = Wrapper/MacClasses.pas; sourceTree = "<group>"; };
 		2C4D9E000CC9EF840031092D /* Graphics.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Graphics.pas; path = Wrapper/Graphics.pas; sourceTree = "<group>"; };
 		2C4D9E010CC9EF840031092D /* JPEG.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = JPEG.pas; path = Wrapper/JPEG.pas; sourceTree = "<group>"; };
-		2C4D9E020CC9EF840031092D /* MidiFile.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = MidiFile.pas; path = Wrapper/MidiFile.pas; sourceTree = "<group>"; };
-		2C4D9E030CC9EF840031092D /* MidiOut.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = MidiOut.pas; path = Wrapper/MidiOut.pas; sourceTree = "<group>"; };
 		2C4D9E040CC9EF840031092D /* OpenGL12.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = OpenGL12.pas; path = Wrapper/OpenGL12.pas; sourceTree = "<group>"; };
-		2C4D9E070CC9EF840031092D /* PNGImage.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = PNGImage.pas; path = Wrapper/PNGImage.pas; sourceTree = "<group>"; };
 		2C4D9E090CC9EF840031092D /* Windows.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Windows.pas; path = Wrapper/Windows.pas; sourceTree = "<group>"; };
-		2C4D9E0A0CC9EF840031092D /* zlportio.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = zlportio.pas; path = Wrapper/zlportio.pas; sourceTree = "<group>"; };
 		2C4D9E440CC9F0ED0031092D /* switches.inc */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = switches.inc; path = ../switches.inc; sourceTree = SOURCE_ROOT; };
 		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		2CDEC4CC0CC52E7F00FFA244 /* UltraStarDX.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = UltraStarDX.icns; sourceTree = "<group>"; };
+		2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenCredits.pas; path = ../Screens/UScreenCredits.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEdit.pas; path = ../Screens/UScreenEdit.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEditConvert.pas; path = ../Screens/UScreenEditConvert.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEditHeader.pas; path = ../Screens/UScreenEditHeader.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEditSub.pas; path = ../Screens/UScreenEditSub.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenLevel.pas; path = ../Screens/UScreenLevel.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenLoading.pas; path = ../Screens/UScreenLoading.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenMain.pas; path = ../Screens/UScreenMain.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenName.pas; path = ../Screens/UScreenName.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOpen.pas; path = ../Screens/UScreenOpen.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptions.pas; path = ../Screens/UScreenOptions.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsAdvanced.pas; path = ../Screens/UScreenOptionsAdvanced.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsGame.pas; path = ../Screens/UScreenOptionsGame.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsGraphics.pas; path = ../Screens/UScreenOptionsGraphics.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsLyrics.pas; path = ../Screens/UScreenOptionsLyrics.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsRecord.pas; path = ../Screens/UScreenOptionsRecord.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsSound.pas; path = ../Screens/UScreenOptionsSound.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsThemes.pas; path = ../Screens/UScreenOptionsThemes.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenPartyNewRound.pas; path = ../Screens/UScreenPartyNewRound.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenPartyOptions.pas; path = ../Screens/UScreenPartyOptions.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenPartyPlayer.pas; path = ../Screens/UScreenPartyPlayer.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenPartyScore.pas; path = ../Screens/UScreenPartyScore.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenPartyWin.pas; path = ../Screens/UScreenPartyWin.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenPopup.pas; path = ../Screens/UScreenPopup.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenScore.pas; path = ../Screens/UScreenScore.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenSing.pas; path = ../Screens/UScreenSing.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenSingModi.pas; path = ../Screens/UScreenSingModi.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenSong.pas; path = ../Screens/UScreenSong.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenSongJumpto.pas; path = ../Screens/UScreenSongJumpto.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenSongMenu.pas; path = ../Screens/UScreenSongMenu.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenStatDetail.pas; path = ../Screens/UScreenStatDetail.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenStatMain.pas; path = ../Screens/UScreenStatMain.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenTop5.pas; path = ../Screens/UScreenTop5.pas; sourceTree = SOURCE_ROOT; };
+		2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenWelcome.pas; path = ../Screens/UScreenWelcome.pas; sourceTree = SOURCE_ROOT; };
+		2CF5508B0CDA22B000627463 /* ModiSDK.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = ModiSDK.pas; path = ../../../Modis/SDK/ModiSDK.pas; sourceTree = SOURCE_ROOT; };
+		2CF5510E0CDA293700627463 /* SQLite3.pas */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.pascal; name = SQLite3.pas; path = ../lib/SQLite/SQLite3.pas; sourceTree = SOURCE_ROOT; };
+		2CF5510F0CDA293700627463 /* SQLiteTable3.pas */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.pascal; name = SQLiteTable3.pas; path = ../lib/SQLite/SQLiteTable3.pas; sourceTree = SOURCE_ROOT; };
+		2CF5512C0CDA29C600627463 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = ../lib/SQLite/libsqlite3.dylib; sourceTree = SOURCE_ROOT; };
+		2CF551A70CDA356800627463 /* UltraStar.dpr */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = UltraStar.dpr; path = ../UltraStar.dpr; sourceTree = SOURCE_ROOT; };
+		2CF552110CDA3D1400627463 /* UPluginDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPluginDefs.pas; path = ../../../Modis/SDK/UPluginDefs.pas; sourceTree = SOURCE_ROOT; };
+		2CF552660CDA404000627463 /* Messages.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; path = Messages.pas; sourceTree = "<group>"; };
+		2CF5529E0CDA42C900627463 /* avcodec.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = avcodec.pas; path = ../lib/ffmpeg/avcodec.pas; sourceTree = SOURCE_ROOT; };
+		2CF5529F0CDA42C900627463 /* avformat.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = avformat.pas; path = ../lib/ffmpeg/avformat.pas; sourceTree = SOURCE_ROOT; };
+		2CF552A00CDA42C900627463 /* avio.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = avio.pas; path = ../lib/ffmpeg/avio.pas; sourceTree = SOURCE_ROOT; };
+		2CF552A10CDA42C900627463 /* avutil.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = avutil.pas; path = ../lib/ffmpeg/avutil.pas; sourceTree = SOURCE_ROOT; };
+		2CF552A40CDA42C900627463 /* opt.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = opt.pas; path = ../lib/ffmpeg/opt.pas; sourceTree = SOURCE_ROOT; };
+		2CF552A50CDA42C900627463 /* rational.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = rational.pas; path = ../lib/ffmpeg/rational.pas; sourceTree = SOURCE_ROOT; };
+		2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = ../lib/ffmpeg/libavcodec.dylib; sourceTree = SOURCE_ROOT; };
+		2CF552C00CDA4B7B00627463 /* libavformat.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.dylib; path = ../lib/ffmpeg/libavformat.dylib; sourceTree = SOURCE_ROOT; };
+		2CF552C10CDA4B7B00627463 /* libavutil.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.dylib; path = ../lib/ffmpeg/libavutil.dylib; sourceTree = SOURCE_ROOT; };
+		2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmp3lame.dylib; path = ../lib/ffmpeg/libmp3lame.dylib; sourceTree = SOURCE_ROOT; };
+		2CF553070CDA51B500627463 /* sdlutils.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = sdlutils.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdlutils.pas"; sourceTree = "<absolute>"; };
 		9845B6590B1F9B9E0084DD62 /* SDL.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SDL.h; path = /Library/Frameworks/SDL.framework/Versions/A/Headers/SDL.h; sourceTree = "<absolute>"; };
 		98B8BE330B1F947800162019 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		98B8BE370B1F949C00162019 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -341,7 +487,7 @@
 		DD37F2430A60255800975B2D /* libfpcrtl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libfpcrtl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC6851B09F57195004E4BFF /* UltraStarDX.pas */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.pascal; path = UltraStarDX.pas; sourceTree = "<group>"; };
 		DDC6868B09F571C2004E4BFF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
-		DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "UltraStar Deluxe.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC688C809F574E9004E4BFF /* UltraStarDX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UltraStarDX.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC688CA09F574E9004E4BFF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC689B309F57C69004E4BFF /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DDC689B409F57C69004E4BFF /* SDLMain.nib */ = {isa = PBXFileReference; explicitFileType = wrapper.nib; name = SDLMain.nib; path = English.lproj/SDLMain.nib; sourceTree = "<group>"; };
@@ -362,6 +508,11 @@
 				2C4D9D970CC9EDEB0031092D /* libfreeimage.dylib in Frameworks */,
 				2C4D9D9A0CC9EE0B0031092D /* SDL_image.framework in Frameworks */,
 				2C4D9D9B0CC9EE0B0031092D /* SDL_ttf.framework in Frameworks */,
+				2CF5512D0CDA29C600627463 /* libsqlite3.dylib in Frameworks */,
+				2CF552C30CDA4B7B00627463 /* libavcodec.dylib in Frameworks */,
+				2CF552C40CDA4B7B00627463 /* libavformat.dylib in Frameworks */,
+				2CF552C50CDA4B7B00627463 /* libavutil.dylib in Frameworks */,
+				2CF552C60CDA4B7B00627463 /* libmp3lame.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -371,6 +522,7 @@
 		2C4D9DEB0CC9EECC0031092D /* SDL */ = {
 			isa = PBXGroup;
 			children = (
+				2CF553070CDA51B500627463 /* sdlutils.pas */,
 				2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */,
 				2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */,
 				2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */,
@@ -384,15 +536,11 @@
 		2C4D9DF50CC9EF3A0031092D /* Wrapper */ = {
 			isa = PBXGroup;
 			children = (
-				2C4D9DFF0CC9EF840031092D /* MacClasses.pas */,
 				2C4D9E000CC9EF840031092D /* Graphics.pas */,
 				2C4D9E010CC9EF840031092D /* JPEG.pas */,
-				2C4D9E020CC9EF840031092D /* MidiFile.pas */,
-				2C4D9E030CC9EF840031092D /* MidiOut.pas */,
 				2C4D9E040CC9EF840031092D /* OpenGL12.pas */,
-				2C4D9E070CC9EF840031092D /* PNGImage.pas */,
 				2C4D9E090CC9EF840031092D /* Windows.pas */,
-				2C4D9E0A0CC9EF840031092D /* zlportio.pas */,
+				2CF552660CDA404000627463 /* Messages.pas */,
 			);
 			name = Wrapper;
 			sourceTree = "<group>";
@@ -419,7 +567,6 @@
 				2C4D9C720CC9EC8C0031092D /* UIni.pas */,
 				2C4D9C730CC9EC8C0031092D /* UJoystick.pas */,
 				2C4D9C740CC9EC8C0031092D /* ULanguage.pas */,
-				2C4D9C750CC9EC8C0031092D /* Ulazjpeg.pas */,
 				2C4D9C760CC9EC8C0031092D /* ULCD.pas */,
 				2C4D9C770CC9EC8C0031092D /* ULight.pas */,
 				2C4D9C780CC9EC8C0031092D /* ULog.pas */,
@@ -431,7 +578,6 @@
 				2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */,
 				2C4D9C7F0CC9EC8C0031092D /* UParty.pas */,
 				2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */,
-				2C4D9C810CC9EC8C0031092D /* UPliki.pas */,
 				2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */,
 				2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */,
 				2C4D9C840CC9EC8C0031092D /* URecord.pas */,
@@ -490,16 +636,101 @@
 			name = BASS;
 			sourceTree = "<group>";
 		};
+		2CF54F420CDA1B0C00627463 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */,
+				2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */,
+				2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */,
+				2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */,
+				2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */,
+				2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */,
+				2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */,
+				2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */,
+				2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */,
+				2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */,
+				2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */,
+				2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */,
+				2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */,
+				2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */,
+				2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */,
+				2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */,
+				2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */,
+				2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */,
+				2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */,
+				2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */,
+				2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */,
+				2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */,
+				2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */,
+				2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */,
+				2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */,
+				2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */,
+				2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */,
+				2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */,
+				2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */,
+				2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */,
+				2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */,
+				2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */,
+				2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */,
+				2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */,
+			);
+			name = Screens;
+			sourceTree = "<group>";
+		};
+		2CF5508A0CDA228800627463 /* SDK */ = {
+			isa = PBXGroup;
+			children = (
+				2CF552110CDA3D1400627463 /* UPluginDefs.pas */,
+				2CF5508B0CDA22B000627463 /* ModiSDK.pas */,
+			);
+			name = SDK;
+			sourceTree = "<group>";
+		};
+		2CF5510C0CDA28F000627463 /* Lib */ = {
+			isa = PBXGroup;
+			children = (
+				2CE8C7CE0CBAA47D00E4D835 /* BASS */,
+				2CF5529C0CDA428000627463 /* ffmpeg */,
+				2CE1F4080CC3EEA400CD02E5 /* FreeImage */,
+				2C4D9DEB0CC9EECC0031092D /* SDL */,
+				2CF5510D0CDA291200627463 /* SQLite */,
+			);
+			name = Lib;
+			sourceTree = "<group>";
+		};
+		2CF5510D0CDA291200627463 /* SQLite */ = {
+			isa = PBXGroup;
+			children = (
+				2CF5510E0CDA293700627463 /* SQLite3.pas */,
+				2CF5510F0CDA293700627463 /* SQLiteTable3.pas */,
+			);
+			name = SQLite;
+			sourceTree = "<group>";
+		};
+		2CF5529C0CDA428000627463 /* ffmpeg */ = {
+			isa = PBXGroup;
+			children = (
+				2CF5529E0CDA42C900627463 /* avcodec.pas */,
+				2CF5529F0CDA42C900627463 /* avformat.pas */,
+				2CF552A00CDA42C900627463 /* avio.pas */,
+				2CF552A10CDA42C900627463 /* avutil.pas */,
+				2CF552A40CDA42C900627463 /* opt.pas */,
+				2CF552A50CDA42C900627463 /* rational.pas */,
+			);
+			name = ffmpeg;
+			sourceTree = "<group>";
+		};
 		DD7C45450A6E72DE003FA52B /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				2CF5510C0CDA28F000627463 /* Lib */,
 				2CDD43820CBBE8D400F364DE /* Classes */,
+				2CF54F420CDA1B0C00627463 /* Screens */,
 				2CDD438D0CBBE8F700F364DE /* Menu */,
-				2CE1F4080CC3EEA400CD02E5 /* FreeImage */,
-				2CE8C7CE0CBAA47D00E4D835 /* BASS */,
-				2C4D9DEB0CC9EECC0031092D /* SDL */,
+				2CF5508A0CDA228800627463 /* SDK */,
 				2C4D9DF50CC9EF3A0031092D /* Wrapper */,
 				DDC6851B09F57195004E4BFF /* UltraStarDX.pas */,
+				2CF551A70CDA356800627463 /* UltraStar.dpr */,
 				2C4D9E440CC9F0ED0031092D /* switches.inc */,
 			);
 			name = Source;
@@ -517,6 +748,11 @@
 				98B8BE330B1F947800162019 /* AppKit.framework */,
 				2C4D9CE90CC9ECB50031092D /* libbass.dylib */,
 				2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */,
+				2CF5512C0CDA29C600627463 /* libsqlite3.dylib */,
+				2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */,
+				2CF552C00CDA4B7B00627463 /* libavformat.dylib */,
+				2CF552C10CDA4B7B00627463 /* libavutil.dylib */,
+				2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */,
 				DD7C45450A6E72DE003FA52B /* Source */,
 				DDC6868A09F571C2004E4BFF /* Resources */,
 				2CDD8D0B0CC5539900E4169D /* UltraStarDX Resources */,
@@ -540,7 +776,7 @@
 		DDC6888C09F57243004E4BFF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */,
+				DDC688C809F574E9004E4BFF /* UltraStarDX.app */,
 				DD37F2430A60255800975B2D /* libfpcrtl.a */,
 			);
 			name = Products;
@@ -588,7 +824,7 @@
 			);
 			name = UltraStarDX;
 			productName = "JEDI-SDLCocoa";
-			productReference = DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */;
+			productReference = DDC688C809F574E9004E4BFF /* UltraStarDX.app */;
 			productType = "com.apple.product-type.application";
 		};
 		DDC688D409F57523004E4BFF /* Put all program sources also in this target */ = {
@@ -662,7 +898,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\nUS_RESOURCES_SOURCE_DIR=UltraStarResources\nUS_RESOURCES_DEST_DIR=\"$CONFIGURATION_BUILD_DIR\"/\"$PRODUCT_NAME\".app/Contents\n\ncp -Rf $US_RESOURCES_SOURCE_DIR $US_RESOURCES_DEST_DIR";
+			shellScript = "\nUS_RESOURCES_SOURCE_DIR=UltraStarResources\nUS_RESOURCES_DEST_DIR=\"$CONFIGURATION_BUILD_DIR\"/\"$PRODUCT_NAME\".app/Contents\n\n#cp -Rf $US_RESOURCES_SOURCE_DIR $US_RESOURCES_DEST_DIR";
 		};
 		DD37F2350A60250900975B2D /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -736,7 +972,6 @@
 				2C4D9C9F0CC9EC8C0031092D /* UIni.pas in Sources */,
 				2C4D9CA00CC9EC8C0031092D /* UJoystick.pas in Sources */,
 				2C4D9CA10CC9EC8C0031092D /* ULanguage.pas in Sources */,
-				2C4D9CA20CC9EC8C0031092D /* Ulazjpeg.pas in Sources */,
 				2C4D9CA30CC9EC8C0031092D /* ULCD.pas in Sources */,
 				2C4D9CA40CC9EC8C0031092D /* ULight.pas in Sources */,
 				2C4D9CA50CC9EC8C0031092D /* ULog.pas in Sources */,
@@ -748,7 +983,6 @@
 				2C4D9CAB0CC9EC8C0031092D /* UMusic.pas in Sources */,
 				2C4D9CAC0CC9EC8C0031092D /* UParty.pas in Sources */,
 				2C4D9CAD0CC9EC8C0031092D /* UPlaylist.pas in Sources */,
-				2C4D9CAE0CC9EC8C0031092D /* UPliki.pas in Sources */,
 				2C4D9CAF0CC9EC8C0031092D /* UPluginInterface.pas in Sources */,
 				2C4D9CB00CC9EC8C0031092D /* uPluginLoader.pas in Sources */,
 				2C4D9CB10CC9EC8C0031092D /* URecord.pas in Sources */,
@@ -778,16 +1012,57 @@
 				2C4D9DED0CC9EF0A0031092D /* sdl_image.pas in Sources */,
 				2C4D9DF10CC9EF210031092D /* sdl_ttf.pas in Sources */,
 				2C4D9DF20CC9EF210031092D /* sdltruetypefont.pas in Sources */,
-				2C4D9E0B0CC9EF840031092D /* MacClasses.pas in Sources */,
 				2C4D9E0C0CC9EF840031092D /* Graphics.pas in Sources */,
 				2C4D9E0D0CC9EF840031092D /* JPEG.pas in Sources */,
-				2C4D9E0E0CC9EF840031092D /* MidiFile.pas in Sources */,
-				2C4D9E0F0CC9EF840031092D /* MidiOut.pas in Sources */,
 				2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */,
-				2C4D9E130CC9EF840031092D /* PNGImage.pas in Sources */,
 				2C4D9E150CC9EF840031092D /* Windows.pas in Sources */,
-				2C4D9E160CC9EF840031092D /* zlportio.pas in Sources */,
 				2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */,
+				2CF54F650CDA1B2B00627463 /* UScreenCredits.pas in Sources */,
+				2CF54F660CDA1B2B00627463 /* UScreenEdit.pas in Sources */,
+				2CF54F670CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */,
+				2CF54F680CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */,
+				2CF54F690CDA1B2B00627463 /* UScreenEditSub.pas in Sources */,
+				2CF54F6A0CDA1B2B00627463 /* UScreenLevel.pas in Sources */,
+				2CF54F6B0CDA1B2B00627463 /* UScreenLoading.pas in Sources */,
+				2CF54F6C0CDA1B2B00627463 /* UScreenMain.pas in Sources */,
+				2CF54F6D0CDA1B2B00627463 /* UScreenName.pas in Sources */,
+				2CF54F6E0CDA1B2B00627463 /* UScreenOpen.pas in Sources */,
+				2CF54F6F0CDA1B2B00627463 /* UScreenOptions.pas in Sources */,
+				2CF54F700CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */,
+				2CF54F710CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */,
+				2CF54F720CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */,
+				2CF54F730CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */,
+				2CF54F740CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */,
+				2CF54F750CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */,
+				2CF54F760CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */,
+				2CF54F770CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */,
+				2CF54F780CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */,
+				2CF54F790CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */,
+				2CF54F7A0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */,
+				2CF54F7B0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */,
+				2CF54F7C0CDA1B2B00627463 /* UScreenPopup.pas in Sources */,
+				2CF54F7D0CDA1B2B00627463 /* UScreenScore.pas in Sources */,
+				2CF54F7E0CDA1B2B00627463 /* UScreenSing.pas in Sources */,
+				2CF54F7F0CDA1B2B00627463 /* UScreenSingModi.pas in Sources */,
+				2CF54F800CDA1B2B00627463 /* UScreenSong.pas in Sources */,
+				2CF54F810CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */,
+				2CF54F820CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */,
+				2CF54F830CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */,
+				2CF54F840CDA1B2B00627463 /* UScreenStatMain.pas in Sources */,
+				2CF54F850CDA1B2B00627463 /* UScreenTop5.pas in Sources */,
+				2CF54F860CDA1B2B00627463 /* UScreenWelcome.pas in Sources */,
+				2CF5508C0CDA22B000627463 /* ModiSDK.pas in Sources */,
+				2CF551100CDA293700627463 /* SQLite3.pas in Sources */,
+				2CF551110CDA293700627463 /* SQLiteTable3.pas in Sources */,
+				2CF552140CDA3D1400627463 /* UPluginDefs.pas in Sources */,
+				2CF552680CDA404000627463 /* Messages.pas in Sources */,
+				2CF552B00CDA42C900627463 /* avcodec.pas in Sources */,
+				2CF552B10CDA42C900627463 /* avformat.pas in Sources */,
+				2CF552B20CDA42C900627463 /* avio.pas in Sources */,
+				2CF552B30CDA42C900627463 /* avutil.pas in Sources */,
+				2CF552B60CDA42C900627463 /* opt.pas in Sources */,
+				2CF552B70CDA42C900627463 /* rational.pas in Sources */,
+				2CF553080CDA51B500627463 /* sdlutils.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -816,7 +1091,6 @@
 				2C4D9CCC0CC9EC8C0031092D /* UIni.pas in Sources */,
 				2C4D9CCD0CC9EC8C0031092D /* UJoystick.pas in Sources */,
 				2C4D9CCE0CC9EC8C0031092D /* ULanguage.pas in Sources */,
-				2C4D9CCF0CC9EC8C0031092D /* Ulazjpeg.pas in Sources */,
 				2C4D9CD00CC9EC8C0031092D /* ULCD.pas in Sources */,
 				2C4D9CD10CC9EC8C0031092D /* ULight.pas in Sources */,
 				2C4D9CD20CC9EC8C0031092D /* ULog.pas in Sources */,
@@ -828,7 +1102,6 @@
 				2C4D9CD80CC9EC8C0031092D /* UMusic.pas in Sources */,
 				2C4D9CD90CC9EC8C0031092D /* UParty.pas in Sources */,
 				2C4D9CDA0CC9EC8C0031092D /* UPlaylist.pas in Sources */,
-				2C4D9CDB0CC9EC8C0031092D /* UPliki.pas in Sources */,
 				2C4D9CDC0CC9EC8C0031092D /* UPluginInterface.pas in Sources */,
 				2C4D9CDD0CC9EC8C0031092D /* uPluginLoader.pas in Sources */,
 				2C4D9CDE0CC9EC8C0031092D /* URecord.pas in Sources */,
@@ -858,16 +1131,57 @@
 				2C4D9DEE0CC9EF0A0031092D /* sdl_image.pas in Sources */,
 				2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */,
 				2C4D9DF40CC9EF210031092D /* sdltruetypefont.pas in Sources */,
-				2C4D9E170CC9EF840031092D /* MacClasses.pas in Sources */,
 				2C4D9E180CC9EF840031092D /* Graphics.pas in Sources */,
 				2C4D9E190CC9EF840031092D /* JPEG.pas in Sources */,
-				2C4D9E1A0CC9EF840031092D /* MidiFile.pas in Sources */,
-				2C4D9E1B0CC9EF840031092D /* MidiOut.pas in Sources */,
 				2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */,
-				2C4D9E1F0CC9EF840031092D /* PNGImage.pas in Sources */,
 				2C4D9E210CC9EF840031092D /* Windows.pas in Sources */,
-				2C4D9E220CC9EF840031092D /* zlportio.pas in Sources */,
 				2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */,
+				2CF54F870CDA1B2B00627463 /* UScreenCredits.pas in Sources */,
+				2CF54F880CDA1B2B00627463 /* UScreenEdit.pas in Sources */,
+				2CF54F890CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */,
+				2CF54F8A0CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */,
+				2CF54F8B0CDA1B2B00627463 /* UScreenEditSub.pas in Sources */,
+				2CF54F8C0CDA1B2B00627463 /* UScreenLevel.pas in Sources */,
+				2CF54F8D0CDA1B2B00627463 /* UScreenLoading.pas in Sources */,
+				2CF54F8E0CDA1B2B00627463 /* UScreenMain.pas in Sources */,
+				2CF54F8F0CDA1B2B00627463 /* UScreenName.pas in Sources */,
+				2CF54F900CDA1B2B00627463 /* UScreenOpen.pas in Sources */,
+				2CF54F910CDA1B2B00627463 /* UScreenOptions.pas in Sources */,
+				2CF54F920CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */,
+				2CF54F930CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */,
+				2CF54F940CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */,
+				2CF54F950CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */,
+				2CF54F960CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */,
+				2CF54F970CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */,
+				2CF54F980CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */,
+				2CF54F990CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */,
+				2CF54F9A0CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */,
+				2CF54F9B0CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */,
+				2CF54F9C0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */,
+				2CF54F9D0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */,
+				2CF54F9E0CDA1B2B00627463 /* UScreenPopup.pas in Sources */,
+				2CF54F9F0CDA1B2B00627463 /* UScreenScore.pas in Sources */,
+				2CF54FA00CDA1B2B00627463 /* UScreenSing.pas in Sources */,
+				2CF54FA10CDA1B2B00627463 /* UScreenSingModi.pas in Sources */,
+				2CF54FA20CDA1B2B00627463 /* UScreenSong.pas in Sources */,
+				2CF54FA30CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */,
+				2CF54FA40CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */,
+				2CF54FA50CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */,
+				2CF54FA60CDA1B2B00627463 /* UScreenStatMain.pas in Sources */,
+				2CF54FA70CDA1B2B00627463 /* UScreenTop5.pas in Sources */,
+				2CF54FA80CDA1B2B00627463 /* UScreenWelcome.pas in Sources */,
+				2CF5508D0CDA22B000627463 /* ModiSDK.pas in Sources */,
+				2CF551120CDA293700627463 /* SQLite3.pas in Sources */,
+				2CF551130CDA293700627463 /* SQLiteTable3.pas in Sources */,
+				2CF552170CDA3D1400627463 /* UPluginDefs.pas in Sources */,
+				2CF552670CDA404000627463 /* Messages.pas in Sources */,
+				2CF552A70CDA42C900627463 /* avcodec.pas in Sources */,
+				2CF552A80CDA42C900627463 /* avformat.pas in Sources */,
+				2CF552A90CDA42C900627463 /* avio.pas in Sources */,
+				2CF552AA0CDA42C900627463 /* avutil.pas in Sources */,
+				2CF552AD0CDA42C900627463 /* opt.pas in Sources */,
+				2CF552AE0CDA42C900627463 /* rational.pas in Sources */,
+				2CF553090CDA51B500627463 /* sdlutils.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -972,11 +1286,12 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_5)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_6)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_3)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Bass\"";
-				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"$(SRCROOT)/FreeImage\"";
-				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"$(SRCROOT)/FreeImage\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/../lib/SQLite\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"$(SRCROOT)/../lib/ffmpeg\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_5 = "\"$(SRCROOT)/../lib/bass\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_6 = "\"$(SRCROOT)/../lib/FreeImage\"";
 				LINK_WITH_STANDARD_LIBRARIES = YES;
@@ -985,7 +1300,7 @@
 					Carbon,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = UltraStar;
+				PRODUCT_NAME = UltraStarDX;
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -1015,6 +1330,8 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_5)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_6)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_7)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_8)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Bass\"";
@@ -1022,6 +1339,8 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"$(SRCROOT)/FreeImage\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_5 = "\"$(SRCROOT)/../lib/bass\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_6 = "\"$(SRCROOT)/../lib/FreeImage\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_7 = "\"$(SRCROOT)/../lib/SQLite\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_8 = "\"$(SRCROOT)/../lib/ffmpeg\"";
 				LINK_WITH_STANDARD_LIBRARIES = YES;
 				OTHER_LDFLAGS = (
 					"-framework",

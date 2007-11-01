@@ -1,16 +1,15 @@
 unit UCoreModule;
 
 interface
+
+{$I switches.inc}
+
 {*********************
   TCoreModule
   Dummy Class that has Methods that will be called from Core
   In the Best case every Piece of this Software is a Module
 *********************}
 uses UPluginDefs;
-
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
 
 type
   PCoreModule = ^TCoreModule;

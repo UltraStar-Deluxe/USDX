@@ -1,6 +1,6 @@
 unit Graphics;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 

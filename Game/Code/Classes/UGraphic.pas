@@ -4,10 +4,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
 uses
   SDL,
   OpenGL12,

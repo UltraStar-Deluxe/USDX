@@ -2,10 +2,6 @@ unit UMain;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
 {$I switches.inc}
 
 uses
@@ -119,6 +115,7 @@ var
 
 procedure InitializePaths;
 
+Procedure Main;
 procedure MainLoop;
 procedure CheckEvents;
 procedure Sing(Sender: TScreenSing);
@@ -133,7 +130,275 @@ function GetTimeFromBeat(Beat: integer): real;
 procedure ClearScores(PlayerNum: integer);
 
 implementation
-uses USongs, UJoystick, math, UCommandLine;
+
+uses USongs, UJoystick, math, UCommandLine, ULanguage, SDL_ttf, 
+     USkins, UCovers, UCatCovers, UDataBase, UPlaylist, UDLLManager,
+	 UParty, UCore, UGraphicClasses, UPluginDefs;
+
+const
+  Version = 'UltraStar Deluxe V 1.10 Alpha Build';
+
+{$IFDEF WIN32}
+Procedure Main;
+var
+  WndTitle: string;
+  hWnd: THandle;
+  I: Integer;
+begin
+  WndTitle := Version;
+
+//  InitializeSound();
+//  writeln( 'DONE' );
+//  exit;
+
+
+  {$IFDEF MSWINDOWS}
+  //------------------------------
+  //Start more than One Time Prevention
+  //------------------------------
+  hWnd:= FindWindow(nil, PChar(WndTitle));
+  //Programm already started
+  if (hWnd <> 0) then
+  begin
+    I := Messagebox(0, PChar('Another Instance of Ultrastar is already running. Continue ?'), PChar(WndTitle), MB_ICONWARNING or MB_YESNO);
+    if (I = IDYes) then
+    begin
+      I := 1;
+      repeat
+        Inc(I);
+        hWnd := FindWindow(nil, PChar(WndTitle + ' Instance ' + InttoStr(I)));
+      until (hWnd = 0);
+      WndTitle := WndTitle + ' Instance ' + InttoStr(I);
+    end
+    else
+      Exit;
+  end;
+  {$ENDIF}
+
+  //------------------------------
+  //StartUp - Create Classes and Load Files
+  //------------------------------
+  USTime := TTime.Create;
+
+  // Commandline Parameter Parser
+  Params := TCMDParams.Create;
+
+  // Log + Benchmark
+  Log := TLog.Create;
+  Log.Title := WndTitle;
+  Log.Enabled := Not Params.NoLog;
+  Log.BenchmarkStart(0);
+
+  // Language
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Initialize Paths', 'Initialization');        
+  InitializePaths;
+  Log.LogStatus('Load Language', 'Initialization');           
+  Language := TLanguage.Create;
+  //Add Const Values:
+    Language.AddConst('US_VERSION', Version);
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Language', 1);
+
+  // SDL
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Initialize SDL', 'Initialization');
+  SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO);
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Initializing SDL', 1);
+
+  // SDL_ttf
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Initialize SDL_ttf', 'Initialization');
+  TTF_Init();                      //ttf_quit();
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Initializing SDL_ttf', 1);
+
+   // Skin
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Loading Skin List', 'Initialization');             
+  Skin := TSkin.Create;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Skin List', 1);
+
+  // Sound Card List
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Loading Soundcard list', 'Initialization');
+  Recording := TRecord.Create;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Soundcard list', 1);
+
+  // Ini + Paths
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Load Ini', 'Initialization');                
+  Ini := TIni.Create;
+  Ini.Load;
+
+  //Load Languagefile
+  if (Params.Language <> -1) then
+    Language.ChangeLanguage(ILanguage[Params.Language])
+  else
+    Language.ChangeLanguage(ILanguage[Ini.Language]);
+
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Ini', 1);
+
+
+  // LCD
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Load LCD', 'Initialization');                
+  LCD := TLCD.Create;
+  if Ini.LPT = 1 then begin
+//  LCD.HalfInterface := true;
+    LCD.Enable;
+    LCD.Clear;
+    LCD.WriteText(1, '  UltraStar    ');
+    LCD.WriteText(2, '  Loading...   ');
+  end;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading LCD', 1);
+
+  // Light
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Load Light', 'Initialization');              
+  Light := TLight.Create;
+  if Ini.LPT = 2 then begin
+    Light.Enable;
+  end;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Light', 1);
+
+
+
+  // Theme
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Load Themes', 'Initialization');             
+  Theme := TTheme.Create('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Themes', 1);
+
+  // Covers Cache
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Creating Covers Cache', 'Initialization');   
+  Covers := TCovers.Create;
+  Log.LogBenchmark('Loading Covers Cache Array', 1);
+  Log.BenchmarkStart(1);
+
+  // Category Covers
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Creating Category Covers Array', 'Initialization');
+  CatCovers:= TCatCovers.Create;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Category Covers Array', 1);
+
+  // Songs
+  //Log.BenchmarkStart(1);
+  Log.LogStatus('Creating Song Array', 'Initialization');     
+  Songs := TSongs.Create;
+  Songs.LoadSongList;
+  Log.LogStatus('Creating 2nd Song Array', 'Initialization'); 
+  CatSongs := TCatSongs.Create;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Songs', 1);
+
+  // PluginManager
+  Log.BenchmarkStart(1);
+  Log.LogStatus('PluginManager', 'Initialization');
+  DLLMan := TDLLMan.Create;   //Load PluginList
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading PluginManager', 1);
+
+  // Party Mode Manager
+  Log.BenchmarkStart(1);
+  Log.LogStatus('PartySession Manager', 'Initialization');
+  PartySession := TParty_Session.Create;   //Load PartySession
+
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading PartySession Manager', 1);
+
+  // Sound
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Initialize Sound', 'Initialization');        
+  InitializeSound();
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Initializing Sound', 1);
+
+//  exit;
+
+  // Graphics
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Initialize 3D', 'Initialization');           
+  Initialize3D(WndTitle);
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Initializing 3D', 1);
+
+  // Score Saving System
+  Log.BenchmarkStart(1);
+  Log.LogStatus('DataBase System', 'Initialization');
+  DataBase := TDataBaseSystem.Create;
+
+  if (Params.ScoreFile = '') then
+    DataBase.Init ('Ultrastar.db')
+  else
+    DataBase.Init (Params.ScoreFile);
+
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading DataBase System', 1);
+
+  //Playlist Manager
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Playlist Manager', 'Initialization');
+  PlaylistMan := TPlaylistManager.Create;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Playlist Manager', 1);
+
+  //GoldenStarsTwinkleMod
+  Log.BenchmarkStart(1);
+  Log.LogStatus('Effect Manager', 'Initialization');
+  GoldenRec := TEffectManager.Create;
+  Log.BenchmarkEnd(1);
+  Log.LogBenchmark('Loading Particel System', 1);
+
+  // Joypad
+  if (Ini.Joypad = 1) OR (Params.Joypad) then begin
+    Log.BenchmarkStart(1);
+    Log.LogStatus('Initialize Joystick', 'Initialization');   
+	Joy := TJoy.Create;
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Initializing Joystick', 1);
+  end;
+
+  Log.BenchmarkEnd(0);
+  Log.LogBenchmark('Loading Time', 0);
+
+  Log.LogError('Creating Core');
+  Core := TCore.Create('Ultrastar Deluxe Beta', MakeVersion(1,1,0, chr(0)));
+
+  Log.LogError('Running Core');
+  Core.Run;
+
+  //------------------------------
+  //Start- Mainloop
+  //------------------------------
+  //Music.SetLoop(true);
+  //Music.SetVolume(50);
+  //Music.Open(SkinPath + 'Menu Music 3.mp3');
+  //Music.Play;
+  Log.LogStatus('Main Loop', 'Initialization');               
+  MainLoop;
+
+  //------------------------------
+  //Finish Application
+  //------------------------------
+  if Ini.LPT = 1 then LCD.Clear;
+  if Ini.LPT = 2 then Light.TurnOff;
+
+  Log.LogStatus('Main Loop', 'Finished');
+
+  Log.Free;
+
+end;
+{$ENDIF}
 
 procedure MainLoop;
 var

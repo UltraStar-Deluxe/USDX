@@ -1,6 +1,6 @@
 unit zlportio;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 

@@ -2,6 +2,8 @@ unit UScreenOpen;
 
 interface
 
+{$I switches.inc}
+
 uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, UMenuText,
   ULyrics, Math, OpenGL12, UThemes;
 

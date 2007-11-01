@@ -2,9 +2,7 @@ unit UCovers;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses OpenGL12,
      {$IFDEF win32}

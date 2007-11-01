@@ -1,18 +1,14 @@
 unit Windows;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 
 uses Types;
 
 const
-{$IFDEF MSWINDOWS}
-  opengl32 = 'opengl32.dll';
-{$ENDIF}
-{$IFDEF MACOS}
   opengl32 = 'OpenGL';
-{$ENDIF}
+  MAX_PATH = 260;
 
 type
 
@@ -94,15 +90,42 @@ type
     TBitmapInfo = tagBITMAPINFO;
     {$EXTERNALSYM BITMAPINFO}
     BITMAPINFO = tagBITMAPINFO;
+	
+  PBitmapFileHeader = ^TBitmapFileHeader;
+  {$EXTERNALSYM tagBITMAPFILEHEADER}
+  tagBITMAPFILEHEADER = packed record
+    bfType: Word;
+    bfSize: DWORD;
+    bfReserved1: Word;
+    bfReserved2: Word;
+    bfOffBits: DWORD;
+  end;
+  TBitmapFileHeader = tagBITMAPFILEHEADER;
+  {$EXTERNALSYM BITMAPFILEHEADER}
+  BITMAPFILEHEADER = tagBITMAPFILEHEADER;
+	
 
     function MakeLong(a, b: Word): Longint;
     procedure ZeroMemory(Destination: Pointer; Length: DWORD);
     function QueryPerformanceFrequency(var lpFrequency: TLargeInteger): BOOL;
     function QueryPerformanceCounter(var lpPerformanceCount: TLargeInteger): BOOL;
+	function GetTickCount : Cardinal;
+	Procedure ShowMessage(msg : string);
+    procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: DWORD);
 
 implementation
 
-uses SDL {$IFDEF MSWINDOWS}, Windows{$ENDIF};
+uses SDL;
+
+procedure CopyMemory(Destination: Pointer; Source: Pointer; Length: DWORD);
+begin
+  Move(Source^, Destination^, Length);
+end;
+
+Procedure ShowMessage(msg : string);
+begin
+  // to be implemented	
+end;
 
 function MakeLong(A, B: Word): Longint;
 begin
@@ -134,6 +157,11 @@ begin
     Result := true;
     lpPerformanceCount := SDL_GetTicks;
 {$ENDIF}
+end;
+
+function GetTickCount : Cardinal;
+begin
+    Result := SDL_GetTicks;
 end;
 
 end.

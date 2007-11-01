@@ -17,9 +17,7 @@ unit SQLiteTable3;
 
 interface
 
-{$IFDEF FPC}
- {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses
   {$ifdef win32}

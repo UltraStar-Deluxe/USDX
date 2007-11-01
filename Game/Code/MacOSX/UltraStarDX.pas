@@ -1,8 +1,11 @@
-program UltraStar;
+program UltraStarDX;
 
-uses UMain;
+uses UMain, UAudio_bass, UAudio_FFMpeg, UMedia_dummy, USingNotes, UTextClasses, UVideo;
+
+var i : Integer;
 
 begin
+  i := 0;
   Main;
 end.
 

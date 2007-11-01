@@ -2,9 +2,7 @@ unit UIni;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
+{$I switches.inc}
 
 uses IniFiles, ULog, SysUtils;
 

@@ -2,16 +2,17 @@ unit UCommon;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses
   SysUtils,
-{$IFDEF FPC}
+{$IFDEF LAZARUS}
    lResources,
 {$ENDIF}   
    ULog,
+{$IFDEF DARWIN}
+  messages,
+{$ENDIF}
 {$IFDEF win32}
    windows;
 {$ELSE}
@@ -27,22 +28,23 @@ type
   TWin32FindData = LongInt;
 {$ENDIF}
 
+{$IFDEF LAZARUS}
+  function LazFindResource( const aName, aType : String ): TLResource;
+{$ENDIF}
+
 {$IFDEF FPC}
-
-type
-  TWndMethod = procedure(var Message: TMessage) of object;
-
-function LazFindResource( const aName, aType : String ): TLResource;
 
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;
 
 function MaxValue(const Data: array of Double): Double;
 function MinValue(const Data: array of Double): Double;
 
-{$IFDEF Win32}
-function  AllocateHWnd(Method: TWndMethod): HWND;
-procedure DeallocateHWnd(Wnd: HWND);
-{$ENDIF} // Win32
+  {$IFDEF WIN32}
+  type
+    TWndMethod = procedure(var Message: TMessage) of object;
+  function  AllocateHWnd(Method: TWndMethod): HWND;
+  procedure DeallocateHWnd(Wnd: HWND);
+  {$ENDIF} // Win32
 
 {$ENDIF} // FPC Only
 
@@ -58,7 +60,7 @@ function AdaptFilePaths( const aPath : widestring ): widestring;
   procedure ZeroMemory( Destination: Pointer; Length: DWORD );
 {$ENDIF}
 
-{$IFDEF Win32}
+{$IFDEF MSWINDOWS}
 
 type
   TSearchRecW = record
@@ -143,7 +145,7 @@ end;
 {$ENDIF}
 
 
-{$IFDEF FPC}
+{$IFDEF LAZARUS}
 
 function LazFindResource( const aName, aType : String ): TLResource;
 var
@@ -161,7 +163,9 @@ begin
     end;
   end;
 end;
+{$ENDIF}
 
+{$IFDEF FPC}
 function MaxValue(const Data: array of Double): Double;
 var
   I: Integer;
@@ -191,7 +195,7 @@ end;
 // NOTE !!!!!!!!!!
 // AllocateHWnd is in lclintfh.inc
 
-{$IFDEF Win32}
+{$IFDEF MSWINDOWS}
 // TODO : JB this is dodgey and bad... find a REAL solution !
 function AllocateHWnd(Method: TWndMethod): HWND;
 var
@@ -209,13 +213,23 @@ begin
   DestroyWindow(Wnd);
 end;
 {$ENDIF}
+{$IFDEF DARWIN}
+// TODO : Situation for the mac isn't better !
+function AllocateHWnd(Method: TWndMethod): HWND;
+begin
+end;
+
+procedure DeallocateHWnd(Wnd: HWND);
+begin
+end;
+{$ENDIF}
 
 
 
 
 {$ENDIF}
 
-{$ifdef win32}
+{$ifdef MSWINDOWS}
 function FindFirstW(const Path: widestring; Attr: Integer; var  F: TSearchRecW): Integer;
 const
   faSpecial = faHidden or faSysFile or faVolumeID or faDirectory;

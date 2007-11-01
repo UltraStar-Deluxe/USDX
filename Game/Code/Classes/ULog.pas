@@ -4,10 +4,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
 uses Classes;
 
 type
@@ -243,7 +239,7 @@ begin
   //Write Error to Logfile:
   LogError (Text);
 
-  {$IFDEF win32}
+  {$IFDEF MSWINDOWS}
   //Show Errormessage
   Messagebox(0, PChar(Text), PChar(Title), MB_ICONERROR or MB_OK);
   {$ELSE}

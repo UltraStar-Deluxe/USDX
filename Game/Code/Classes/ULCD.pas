@@ -1,6 +1,7 @@
 unit ULCD;
 
 interface
+
 {$I switches.inc}
 
 type

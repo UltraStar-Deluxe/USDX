@@ -4,9 +4,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
 
 uses UMenu,
      UMusic,

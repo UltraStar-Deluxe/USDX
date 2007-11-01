@@ -1,10 +1,10 @@
 unit JPEG;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 
-uses GlueGraphics;
+uses Graphics;
 
 type
     TJPEGImage = class(TBitmap)

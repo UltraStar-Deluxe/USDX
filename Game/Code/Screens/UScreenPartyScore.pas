@@ -2,6 +2,8 @@ unit UScreenPartyScore;
 
 interface
 
+{$I switches.inc}
+
 uses
   UMenu, SDL, UDisplay, UMusic, SysUtils, UThemes;
 

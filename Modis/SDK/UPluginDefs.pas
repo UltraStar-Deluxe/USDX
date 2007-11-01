@@ -7,6 +7,8 @@ unit uPluginDefs;
 
 interface
 
+{$I switches.inc}
+
 type
   DWORD = LongWord;
 

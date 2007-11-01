@@ -6,6 +6,9 @@ unit uPluginInterface;
 *********************}
 
 interface
+
+{$I switches.inc}
+
 uses uPluginDefs;
 
 //---------------

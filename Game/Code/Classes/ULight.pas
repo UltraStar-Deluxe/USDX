@@ -2,10 +2,6 @@ unit ULight;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
 {$I switches.inc}
 
 type
@@ -55,7 +51,11 @@ uses
   begin
     GetLocalTime(SystemTime);
     with SystemTime do
+{$IFDEF DARWIN}
+      Result := EncodeTime(Hour, Minute, Second, MilliSecond);
+{$ELSE}
       Result := EncodeTime(wHour, wMinute, wSecond, wMilliSeconds);
+{$ENDIF}
   end;
   {$ELSE}
   Type

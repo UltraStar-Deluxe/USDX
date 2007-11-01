@@ -6,6 +6,9 @@ unit UPartyDefs;
 *********************}
 
 interface
+
+{$I switches.inc}
+
 uses UPluginDefs;
 
 type

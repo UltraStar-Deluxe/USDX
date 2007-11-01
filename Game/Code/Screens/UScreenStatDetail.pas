@@ -2,6 +2,8 @@ unit UScreenStatDetail;
 
 interface
 
+{$I switches.inc}
+
 uses
   UMenu, SDL, SysUtils, UDisplay, UMusic, UIni, UThemes;
 

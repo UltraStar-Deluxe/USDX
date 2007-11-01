@@ -1,11 +1,8 @@
 unit USkins;
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-             
-
 interface
+
+{$I switches.inc}
 
 type
   TSkinTexture = record

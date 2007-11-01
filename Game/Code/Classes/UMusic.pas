@@ -4,10 +4,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
 uses Classes ;
 
 type

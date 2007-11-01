@@ -6,13 +6,10 @@ unit UHooks;
   Saves all hookable events and their subscribers
 *********************}
 interface
-uses uPluginDefs, SysUtils;
-
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
 
 {$I switches.inc}
+
+uses uPluginDefs, SysUtils;
 
 type
   //Record that saves info from Subscriber
@@ -422,7 +419,7 @@ end;
 function HookTest(wParam, lParam: DWord): integer; stdcall;
 begin
   Result := 0; //Don't break the chain
-  Core.ShowMessage(CORE_SM_INFO, Integer(PChar(String(PChar(Ptr(lParam))) + ': ' + String(PChar(Ptr(wParam))))));
+  Core.ShowMessage(CORE_SM_INFO, Integer(PChar(String(PChar(Pointer(lParam))) + ': ' + String(PChar(Pointer(wParam))))));
 end;
 
 end.

@@ -2,6 +2,8 @@ unit UScreenEditHeader;
 
 interface
 
+{$I switches.inc}
+
 uses UMenu, SDL, USongs, UThemes;
 
 type

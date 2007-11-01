@@ -2,6 +2,8 @@ unit UScreenOptionsGraphics;
 
 interface
 
+{$I switches.inc}
+
 uses
   UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes;
 

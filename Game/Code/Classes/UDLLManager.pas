@@ -1,11 +1,8 @@
 unit UDLLManager;
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
-
 interface
+
+{$I switches.inc}
 
 uses ModiSDK,
      UFiles;
@@ -44,15 +41,19 @@ var
 const
   DLLPath = 'Plugins';
 
-  {$IFDEF win32}
+  {$IFDEF MSWINDOWS}
      DLLExt  = '.dll';
-  {$ELSE}
+  {$ENDIF}
+  {$IFDEF LINUX}
      DLLExt  = '.so';
+  {$ENDIF}
+  {$IFDEF DARWIN}
+     DLLExt  = '.dylib';
   {$ENDIF}
 
 implementation
 
-uses {$IFDEF win32}
+uses {$IFDEF MSWINDOWS}
      windows,
      {$ELSE}
      dynlibs,

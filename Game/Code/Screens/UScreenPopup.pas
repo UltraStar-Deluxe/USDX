@@ -2,6 +2,8 @@ unit UScreenPopup;
 
 interface
 
+{$I switches.inc}
+
 uses
   UMenu, SDL, UMusic, UFiles, SysUtils, UThemes;
 

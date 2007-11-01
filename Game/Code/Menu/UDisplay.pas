@@ -2,9 +2,7 @@ unit UDisplay;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses {$IFDEF win32}
      windows,
@@ -62,7 +60,7 @@ var
 implementation
 
 uses
-     {$IFDEF FPC}
+     {$IFDEF LAZARUS}
      ulazjpeg,
      {$ELSE}
      JPEG,

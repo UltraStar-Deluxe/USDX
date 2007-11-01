@@ -2,9 +2,7 @@ unit UScreenMain;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 uses
   UMenu,

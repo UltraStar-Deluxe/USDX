@@ -1,6 +1,6 @@
 unit MacClasses;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 

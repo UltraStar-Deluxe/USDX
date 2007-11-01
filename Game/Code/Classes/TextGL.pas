@@ -2,9 +2,7 @@ unit TextGL;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 
 uses  OpenGL12,
@@ -80,7 +78,7 @@ uses UMain,
      lcltype,
      {$ENDIF}
      SysUtils,
-     {$IFDEF FPC}
+     {$IFDEF LAZARUS}
      LResources,
      {$ENDIF}
      UGraphic;
@@ -88,7 +86,7 @@ uses UMain,
 procedure BuildFont;			                // Build Our Bitmap Font
 
   procedure loadfont( aID : integer; aType, aResourceName : String);
-  {$IFDEF FPC}
+  {$IFDEF LAZARUS}
   var
     lLazRes  : TLResource;
     lResData : TStringStream;
@@ -541,7 +539,7 @@ begin
 end;
 
 
-{$IFDEF FPC}
+{$IFDEF LAZARUS}
 {$IFDEF win32}
 initialization
   {$I UltraStar.lrs}

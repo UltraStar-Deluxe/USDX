@@ -1,18 +1,15 @@
 unit UServices;
 
 interface
+
+{$I switches.inc}
+
 uses uPluginDefs, SysUtils;
 {*********************
   TServiceManager
   Class for saving, managing and calling of Services.
   Saves all Services and their Procs
 *********************}
-
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
-{$I switches.inc}
 
 type
   TServiceName = String[60];
@@ -221,7 +218,7 @@ begin
     //Backup CurExecuted
     CurExecutedBackup := Core.CurExecuted;
     
-    Service := ptr(SExists);
+    Service := Pointer(SExists);
 
     If (Service.isClass) then
       //Use Proc of Class

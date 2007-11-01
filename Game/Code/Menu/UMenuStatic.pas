@@ -1,6 +1,9 @@
 unit UMenuStatic;
 
 interface
+
+{$I switches.inc}
+
 uses UTexture, OpenGL12;
 
 type

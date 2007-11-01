@@ -2,6 +2,8 @@ unit UScreenEdit;
 
 interface
 
+{$I switches.inc}
+
 uses UMenu, SDL, UThemes;
 
 type

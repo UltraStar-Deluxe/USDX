@@ -2,6 +2,8 @@ unit UPliki;
 
 interface
 
+{$I switches.inc}
+
 uses USongs, SysUtils, ULog, UMusic;
 
 procedure InitializePaths;

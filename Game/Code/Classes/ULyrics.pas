@@ -2,10 +2,6 @@ unit ULyrics;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE DELPHI}
-{$ENDIF}
-
 {$I switches.inc}
 
 uses OpenGL12,

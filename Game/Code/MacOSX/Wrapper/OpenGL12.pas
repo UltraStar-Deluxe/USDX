@@ -1,18 +1,13 @@
 unit OpenGL12;
 
-{$INCLUDE ../Platform.inc}
+{$I switches.inc}
 
 interface
 
 uses Windows;
 
 const
-{$IFDEF MSWINDOWS}
-  glu32 = 'glu32.dll';
-{$ENDIF}
-{$IFDEF MACOS}
   glu32 = 'OpenGL';
-{$ENDIF}
 
 type
 
@@ -4651,7 +4646,7 @@ type
   procedure glTexParameteri(target, pname: TGLEnum; param: TGLint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
   procedure glTexImage2D(target: TGLEnum; level, internalformat: TGLint; width, height: TGLsizei; border: TGLint; format, atype: TGLEnum; Pixels:Pointer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
   procedure glDeleteTextures(n: TGLsizei; textures: PGLuint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
-  procedure glGenTextures(n: GLsizei; var textures: GLuint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glGenTextures(n: GLsizei; textures: PGLuint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
   procedure glColor3f(red, green, blue: TGLfloat); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
   procedure glBegin(mode: TGLEnum); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
   procedure glEnd; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
@@ -4675,6 +4670,16 @@ type
   function  glGetError:TGLuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
   procedure glTexSubImage2D(target: TGLEnum; level, xoffset, yoffset: TGLint; width, height: TGLsizei; format, atype: TGLEnum; pixels: Pointer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
   procedure gluOrtho2D(left, right, bottom, top: TGLdouble); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glPushMatrix; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glPopMatrix; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glFrustum(left, right, bottom, top, zNear, zFar: TGLdouble); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glTranslatef(x, y, z: TGLfloat); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glRotatef(angle, x, y, z: TGLfloat);  {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glScalef(x, y, z: TGLfloat); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glTexParameterf(target, pname: TGLEnum; param: TGLfloat); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glCopyTexImage2D(target: TGLEnum; level: TGLint; internalFormat: TGLEnum; x, y: TGLint; width, height: TGLsizei; border: TGLint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glGetIntegerv(pname: TGLEnum; params: PGLint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
+  procedure glFinish; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external opengl32;
 
   // GLU functions
   function gluBuild2DMipmaps(target: TGLEnum; components, width, height: TGLint; format, atype: TGLEnum; Data: Pointer): TGLint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external glu32;

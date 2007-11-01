@@ -2,9 +2,7 @@ unit UAudio_bass;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
+{$I switches.inc}
 
 
 uses Classes,
@@ -24,7 +22,7 @@ uses Classes,
 implementation
 
 uses
-     {$IFDEF FPC}
+     {$IFDEF LAZARUS}
      lclintf,
      {$ENDIF}
      URecord,
