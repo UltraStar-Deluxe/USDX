@@ -2,9 +2,14 @@ unit UServices;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
-uses uPluginDefs, SysUtils;
+uses uPluginDefs,
+     SysUtils;
 {*********************
   TServiceManager
   Class for saving, managing and calling of Services.

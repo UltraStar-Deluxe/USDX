@@ -2,6 +2,10 @@ unit USongs;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses SysUtils,
@@ -225,8 +229,10 @@ begin
         ADirent := ReadDir(TheDir);
         
         if ( ADirent <> Nil                    ) AND
-           ( pos( '.txt', ADirent^.name ) > -1 ) then
+           ( pos( '.txt', ADirent^.name ) > 0 ) then
         begin
+          writeln ('***** FOUND TXT' +  ADirent^.name );
+        
           SLen := BrowsePos;
 
           Song[SLen].Path     := Dir;
@@ -244,7 +250,6 @@ begin
 
           //Change Length Only every 50 Entrys
           Inc(BrowsePos);
-
           if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
           begin
               SetLength(Song, Length(Song) + 50);

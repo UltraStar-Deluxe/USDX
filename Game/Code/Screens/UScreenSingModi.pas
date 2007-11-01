@@ -2,6 +2,10 @@ unit UScreenSingModi;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 

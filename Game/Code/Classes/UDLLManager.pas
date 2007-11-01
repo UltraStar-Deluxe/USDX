@@ -2,6 +2,10 @@ unit UDLLManager;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses ModiSDK,

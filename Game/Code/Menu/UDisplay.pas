@@ -2,6 +2,10 @@ unit UDisplay;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses {$IFDEF win32}

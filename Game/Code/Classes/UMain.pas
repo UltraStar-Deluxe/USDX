@@ -2,6 +2,10 @@ unit UMain;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses
@@ -141,7 +145,7 @@ uses USongs, UJoystick, math, UCommandLine, ULanguage, SDL_ttf,
 const
   Version = 'UltraStar Deluxe V 1.10 Alpha Build';
 
-{$IFDEF WIN32}
+//{$IFDEF WIN32}
 Procedure Main;
 var
   WndTitle: string;
@@ -401,7 +405,7 @@ begin
   Log.Free;
 
 end;
-{$ENDIF}
+//{$ENDIF}
 
 procedure MainLoop;
 var

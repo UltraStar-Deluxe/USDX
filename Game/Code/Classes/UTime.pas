@@ -2,6 +2,9 @@ unit UTime;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
 {$I switches.inc}
 
 {$UNDEF DebugDisplay}

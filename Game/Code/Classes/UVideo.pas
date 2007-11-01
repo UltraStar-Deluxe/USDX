@@ -14,11 +14,15 @@ unit UVideo;
 //{$define DebugFrames}
 //{$define Info}
 
-//{$define FFMpegAudio}
+// {$define FFMpegAudio}
 {}
 
 
 interface
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
 
 {$I switches.inc}
 
@@ -281,6 +285,7 @@ begin
     else
     if (AVPacket.stream_index = AudioStreamIndex ) then
     begin
+      writeln('Encue Audio packet');
       UAudio_FFMpeg.packet_queue_put(UAudio_FFMpeg.audioq, AVPacket);
     {$endif}
     end;

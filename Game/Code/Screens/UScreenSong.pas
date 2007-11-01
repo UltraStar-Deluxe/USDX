@@ -2,6 +2,10 @@ unit UScreenSong;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 
@@ -1719,7 +1723,7 @@ begin
 if (not AudioPlayback.Finished) AND (Theme.Song.Equalizer.Length > 0) then
 begin
 
-
+  {$ifdef win32}
   A := GetTickCount div 44;
 
   if (A <> EqualizerTime) then
@@ -1794,6 +1798,7 @@ begin
     else
       EqualizerBands[B] := 1;
   end;
+  {$endif}
 
   //Draw every Channel
   glColor4f(Theme.Song.Equalizer.ColR, Theme.Song.Equalizer.ColG, Theme.Song.Equalizer.ColB, Theme.Song.Equalizer.Alpha); //Set Color

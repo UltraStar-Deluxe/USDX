@@ -2,9 +2,17 @@ unit UCore;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
-uses uPluginDefs, uCoreModule, UHooks, UServices, UModules;
+uses uPluginDefs,
+     uCoreModule,
+     UHooks,
+     UServices,
+     UModules;
 {*********************
   TCore
   Class manages all CoreModules, teh StartUp, teh MainLoop and the shutdown process
@@ -103,10 +111,11 @@ var
   Core: TCore; 
 
 implementation
-uses SysUtils,
-{$IFDEF win32}
-Windows
-{$ENDIF};
+
+uses {$IFDEF win32}
+       Windows,
+      {$ENDIF}
+      SysUtils;
 
 //-------------
 // Create - Creates Class + Hook and Service Manager

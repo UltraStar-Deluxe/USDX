@@ -13,6 +13,10 @@ This unit is primarily based upon -
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 
@@ -59,7 +63,7 @@ var
 //  audio_buf     : array[ 0 .. AVCODEC_MAX_AUDIO_FRAME_SIZE ] of byte; //pUInt8{$ifndef fpc};{$else} = nil;{$endif}
 
 type
-  Taudiobuff = array[ 0 .. AVCODEC_MAX_AUDIO_FRAME_SIZE ] of byte;
+  Taudiobuff = array[ 0 .. AVCODEC_MAX_AUDIO_FRAME_SIZE-1 ] of byte;
   PAudioBuff = ^Taudiobuff;
 
 implementation
@@ -376,6 +380,9 @@ end;
 
 procedure TAudio_ffMpeg.PlayStart;
 begin
+
+  // LoadSoundFromFile(BassStart,  SoundPath + 'foo fighters - best of you.mp3');
+
   // TODO : jb_linux replace with something other than bass
 //  BASS_ChannelPlay(BassStart, True);
 end;
@@ -458,10 +465,13 @@ var
   len1            ,
   data_size       : integer;
 begin
+  result := -1;
+
+(*
   {$ifdef win32}
-    FillChar(pkt, sizeof(pkt), #0);
+    FillChar(pkt, sizeof(TAVPacket), #0);
   {$else}
-    memset(@pkt, 0, sizeof(pkt));   // todo : jb memset
+    memset(@pkt, 0, sizeof(TAVPacket));   // todo : jb memset
   {$endif}
 
   audio_pkt_data := nil;
@@ -469,7 +479,7 @@ begin
 
   while true do
   begin
-  
+
     while ( audio_pkt_size > 0 ) do
     begin
 //      writeln( 'got audio packet' );
@@ -479,22 +489,15 @@ begin
 
       if aAudio_buf <> nil  then
       begin
-//        writeln( 'pre avcodec_decode_audio' );
-        {$ifdef fpc}
-          len1 := avcodec_decode_audio(@aCodecCtx, PWord( aAudio_buf ), data_size, audio_pkt_data, audio_pkt_size); // Todo.. should be avcodec_decode_audio2 but this wont link on my ubuntu box.
-        {$else}
-          len1 := avcodec_decode_audio(@aCodecCtx, Pointer( aAudio_buf ), data_size, audio_pkt_data, audio_pkt_size); // Todo.. should be avcodec_decode_audio2 but this wont link on my ubuntu box.
-        {$endif}
-//        writeln( 'post avcodec_decode_audio' );        
-
+        len1 := avcodec_decode_audio(@aCodecCtx, Pointer( aAudio_buf ), data_size, audio_pkt_data, audio_pkt_size); // Todo.. should be avcodec_decode_audio2 but this wont link on my ubuntu box.
       end;
 
-//      writeln('avcodec_decode_audio');
+//      writeln('avcodec_decode_audio : ' + inttostr( len1 ));
 
       if(len1 < 0) then
       begin
 	      //* if error, skip frame */
-//       	writeln( 'Skip audio frame' );
+       	writeln( 'Skip audio frame' );
         audio_pkt_size := 0;
        	break;
       end;
@@ -532,7 +535,7 @@ begin
     audio_pkt_data := pchar( pkt.data );
     audio_pkt_size := pkt.size;
 //    writeln( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
-  end;
+  end; *)
 end;
 
 procedure audio_callback( userdata: Pointer; stream: PUInt8; len: Integer );
@@ -558,41 +561,45 @@ begin
 
   while (len > 0) do
   begin
-    if(audio_buf_index >= audio_buf_size) then
+
+    if (audio_buf_index >= audio_buf_size) then
     begin
+
       // We have already sent all our data; get more */
-      audio_size := audio_decode_frame(aCodecCtx, pUInt8( laudio_buf ), sizeof(laudio_buf));
+      audio_size := audio_decode_frame(aCodecCtx, pUInt8( laudio_buf ), sizeof(Taudiobuff));
+      writeln( 'audio_decode_frame : ' + inttostr( audio_size ) + ' / ' + inttostr( sizeof(Taudiobuff) ) );
 
-      if(audio_size < 0) then
+      if(audio_size > 0) then
       begin
-      	// If error, output silence */
-      	audio_buf_size := 1024; // arbitrary?
-
-        {$ifdef win32}
-          FillChar(laudio_buf, audio_buf_size, #0);
-        {$else}
-        	memset(laudio_buf, 0, audio_buf_size);   // todo : jb memset
-        {$endif}
+      	audio_buf_size := audio_size;
       end
       else
       begin
-      	audio_buf_size := audio_size;
+      	// If error, output silence */
+
+//      	audio_buf_size := 1024; // arbitrary?
+
+//        {$ifdef win32}
+//          FillChar(laudio_buf, audio_buf_size, #0);
+//        {$else}
+//        	memset(laudio_buf, 0, audio_buf_size);   // todo : jb memset
+//        {$endif}
+
+        writeln( 'Silence' );
       end;
 
       audio_buf_index := 0;  // Todo : jb - SegFault ?
     end;
-    
-    len1 := audio_buf_size - audio_buf_index;
 
+    len1 := audio_buf_size - audio_buf_index;
     if (len1 > len) then
       len1 := len;
 
-
+    lSrc := PUInt8( integer( laudio_buf ) + audio_buf_index );
     {$ifdef WIN32}
-      lSrc := PUInt8( integer( laudio_buf ) + audio_buf_index );
       CopyMemory(stream, lSrc , len1);
     {$else}
-      memcpy(stream, PUInt8( laudio_buf ) + audio_buf_index , len1);
+      memcpy(stream, lSrc , len1);
     {$endif}
 
     len             := len             - len1;
@@ -620,7 +627,7 @@ begin
 
   if FileExists(Name) then
   begin
-//    writeln('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
+    writeln('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
     
   // Open video file
   if (av_open_input_file(pFormatCtx, pchar(Name), nil, 0, nil) > 0) then
@@ -697,6 +704,7 @@ begin
     // Free the packet that was allocated by av_read_frame
     SDL_PollEvent(@event);
 
+
 (*
     if  event.type_ = SDL_QUIT the
     begin
@@ -706,8 +714,9 @@ begin
     else
       break;
 *)
-
   end;
+  
+  writeln( 'Done filling buffer' );
 
 //  halt(0);
 

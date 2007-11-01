@@ -2,6 +2,10 @@ unit UScreenPartyNewRound;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses

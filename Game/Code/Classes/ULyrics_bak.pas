@@ -2,6 +2,10 @@ unit ULyrics_bak;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses SysUtils,

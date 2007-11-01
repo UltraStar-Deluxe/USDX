@@ -7,9 +7,14 @@ unit UHooks;
 *********************}
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
-uses uPluginDefs, SysUtils;
+uses uPluginDefs,
+     SysUtils;
 
 type
   //Record that saves info from Subscriber

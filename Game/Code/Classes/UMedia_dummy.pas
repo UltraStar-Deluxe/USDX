@@ -12,6 +12,10 @@ unit UMedia_dummy;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 implementation

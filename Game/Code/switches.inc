@@ -19,7 +19,8 @@
     {$DEFINE LAZARUS}	
   {$ENDIF}
 
-  {$MODE DELPHI}
+//  {$MODE DELPHI}  // JB - This is not allowed by the free pascal compiler for some reason ( At least on linux )
+
   {$DEFINE DLL_CDECL}
   {$UNDEF UseSerialPort}
   {$UNDEF UseMIDIPort}

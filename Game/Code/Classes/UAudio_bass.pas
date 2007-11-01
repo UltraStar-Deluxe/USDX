@@ -2,6 +2,10 @@ unit UAudio_bass;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 

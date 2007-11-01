@@ -2,6 +2,11 @@ unit UParty;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+
 {$I switches.inc}
 
 uses ModiSDK;

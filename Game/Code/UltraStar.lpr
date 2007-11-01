@@ -126,7 +126,7 @@ uses
 
   UMedia_dummy           in 'Classes\UMedia_dummy.pas',  
   UVideo                 in 'Classes\UVideo.pas',
-//  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
+  UAudio_FFMpeg          in 'Classes\UAudio_FFMpeg.pas',
 {$ifdef win32}
   UAudio_bass            in 'Classes\UAudio_bass.pas',
 {$endif}
@@ -143,7 +143,13 @@ uses
   UThemes                in 'Classes\UThemes.pas',
   UTime                  in 'Classes\UTime.pas',
   USingNotes 		         in 'Classes\USingNotes.pas',
-
+  
+  uPluginLoader          in 'Classes\uPluginLoader.pas',
+  UCoreModule            in 'Classes\UCoreModule.pas',
+  UServices              in 'Classes\UServices.pas',
+  UCore                  in 'Classes\UCore.pas',
+  UHooks                 in 'Classes\UHooks.pas',
+  
 
 
   //------------------------------
@@ -192,7 +198,7 @@ uses
   //Includes - Modi SDK
   //------------------------------
   ModiSDK                in '..\..\Modis\SDK\ModiSDK.pas',
-
+  UPluginDefs            in '..\..\Modis\SDK\UPluginDefs.pas',
 
   //------------------------------
   //Includes - Delphi
@@ -205,291 +211,9 @@ uses
 const
   Version = 'UltraStar Deluxe V 1.10 Alpha Build';
 
-var
-  WndTitle: string;
-  hWnd: THandle;
-  I: Integer;
-  
-  aFormatCtx : PAVFormatContext;//PAVCodecContext;
-  aCodecCtx  : PAVCodecContext;
-  VideoStreamIndex,
-  AudioStreamIndex : integer;
-
 begin
 
+  main();
 
 
-(*
-
-av_register_all;
-aFormatCtx := av_alloc_format_context();
-if av_open_input_file( aFormatCtx, pchar( Paramstr(1) ), NIL, 0, NIL) = 0 then
-begin
-  if av_find_stream_info( aFormatCtx ) >= 0 then
-  begin
-    writeln('');
-    dump_format(aFormatCtx, 0, pchar( Paramstr(1) ), 0);
-    writeln('');
-
-//    writeln( pchar( filename ) );
-    
-//    av_read_play( aFormatCtx );
-    find_stream_ids( aFormatCtx , VideoStreamIndex , AudioStreamIndex );
-
-    writeln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
-    writeln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
-    
-    aCodecCtx := aFormatCtx.streams[ AudioStreamIndex ].codec;
-    writeln( 'Audio Codec Channels: '+ inttostr( integer( aCodecCtx.channels ) ) );
-    writeln( 'Audio Codec freq: '+ inttostr( integer( aCodecCtx.sample_rate ) ) );
-    
-    wanted_spec.freq = aCodecCtx->sample_rate;
-    wanted_spec.format = AUDIO_S16SYS;
-    wanted_spec.channels = aCodecCtx->channels;
-    wanted_spec.silence = 0;
-    wanted_spec.samples = SDL_AUDIO_BUFFER_SIZE;
-    wanted_spec.callback = audio_callback;
-    wanted_spec.userdata = aCodecCtx;
-    
-    if(SDL_OpenAudio(&wanted_spec, aCodecCtx) < 0) then
-    begin
-      writeln( 'Could not do SDL_OpenAudio' );
-      exit;
-    end;
-
-
-  end;
-end;
-
-exit;
-*)
-
-  WndTitle := Version;
-
-
-  {$ifdef Win32}
-  //------------------------------
-  //Start more than One Time Prevention
-  //------------------------------
-  hWnd:= FindWindow(nil, PChar(WndTitle));
-  //Programm already started
-  if (hWnd <> 0) then
-  begin
-    I := Messagebox(0, PChar('Another Instance of Ultrastar is already running. Contìnue ?'), PChar(WndTitle), MB_ICONWARNING or MB_YESNO);
-    if (I = IDYes) then
-    begin
-      I := 1;
-      repeat
-        Inc(I);
-        hWnd := FindWindow(nil, PChar(WndTitle + ' Instance ' + InttoStr(I)));
-      until (hWnd = 0);
-
-      WndTitle := WndTitle + ' Instance ' + InttoStr(I);
-    end
-    else
-      Exit;
-  end;
-  {$endif}
-
-  //------------------------------
-  //StartUp - Create Classes and Load Files
-  //------------------------------
-  USTime := TTime.Create;
-
-  // Commandline Parameter Parser
-  Params := TCMDParams.Create;
-
-  // Log + Benchmark
-  Log := TLog.Create;
-  Log.Title := WndTitle;
-  Log.Enabled := Not Params.NoLog;
-  Log.BenchmarkStart(0);
-  
-  // Language
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize Paths', 'Initialization');        InitializePaths;
-  Log.LogStatus('Load Language', 'Initialization');           Language := TLanguage.Create;
-  //Add Const Values:
-    Language.AddConst('US_VERSION', Version);
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Language', 1);
-
-  // SDL
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize SDL', 'Initialization');
-  SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO);
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Initializing SDL', 1);
-
-   // Skin
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Loading Skin List', 'Initialization');             Skin := TSkin.Create;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Skin List', 1);
-
-  // Sound Card List
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Loading Soundcard list', 'Initialization');
-  Recording := TRecord.Create;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Soundcard list', 1);
-
-  // Ini + Paths
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Load Ini', 'Initialization');                Ini := TIni.Create;
-                                                              Ini.Load;
-
-  //Load Languagefile
-  if (Params.Language <> -1) then
-    Language.ChangeLanguage(ILanguage[Params.Language])
-  else
-    Language.ChangeLanguage(ILanguage[Ini.Language]);
-
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Ini', 1);
-
-  // LCD
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Load LCD', 'Initialization');                LCD := TLCD.Create;
-  if Ini.LPT = 1 then begin
-//  LCD.HalfInterface := true;
-    LCD.Enable;
-    LCD.Clear;
-    LCD.WriteText(1, '  UltraStar    ');
-    LCD.WriteText(2, '  Loading...   ');
-  end;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading LCD', 1);
-
-  // Light
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Load Light', 'Initialization');              Light := TLight.Create;
-  if Ini.LPT = 2 then begin
-    Light.Enable;
-  end;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Light', 1);
-
-  // Theme
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Load Themes', 'Initialization');             Theme := TTheme.Create('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Themes', 1);
-
-  // Covers Cache
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Creating Covers Cache', 'Initialization');   Covers := TCovers.Create;
-  Log.LogBenchmark('Loading Covers Cache Array', 1);
-  Log.BenchmarkStart(1);
-
-  // Category Covers
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Creating Category Covers Array', 'Initialization');
-  CatCovers:= TCatCovers.Create;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Category Covers Array', 1);
-
-  // Songs
-  //Log.BenchmarkStart(1);
-  Log.LogStatus('Creating Song Array', 'Initialization');     Songs := TSongs.Create;
-  Songs.LoadSongList;
-  Log.LogStatus('Creating 2nd Song Array', 'Initialization'); CatSongs := TCatSongs.Create;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Songs', 1);
-
-  // PluginManager
-  Log.BenchmarkStart(1);
-  Log.LogStatus('PluginManager', 'Initialization');
-  DLLMan := TDLLMan.Create;   //Load PluginList
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading PluginManager', 1);
-
-  // Party Mode Manager
-  Log.BenchmarkStart(1);
-  Log.LogStatus('PartySession Manager', 'Initialization');
-  PartySession := TParty_Session.Create;   //Load PartySession
-  
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading PartySession Manager', 1);
-
-  // Sound
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize Sound', 'Initialization');        InitializeSound();
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Initializing Sound', 1);
-  
-  
-(*
-  // This is jays debugging for FFMpeg audio output..
-  singleton_MusicFFMpeg.PlaySwoosh();
-  writeln( 'did you hear the sound ?? ' );
-  halt(0);
-*)
-
-  // Graphics
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Initialize 3D', 'Initialization');           Initialize3D(WndTitle);
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Initializing 3D', 1);
-
-
-  // Score Saving System
-  Log.BenchmarkStart(1);
-  Log.LogStatus('DataBase System', 'Initialization');
-  DataBase := TDataBaseSystem.Create;
-
-  if (Params.ScoreFile = '') then
-    DataBase.Init ('Ultrastar.db')
-  else
-    DataBase.Init (Params.ScoreFile);
-
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading DataBase System', 1);
-
-  //Playlist Manager
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Playlist Manager', 'Initialization');
-  PlaylistMan := TPlaylistManager.Create;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Playlist Manager', 1);
-
-  //GoldenStarsTwinkleMod
-  Log.BenchmarkStart(1);
-  Log.LogStatus('Effect Manager', 'Initialization');
-  GoldenRec := TEffectManager.Create;
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('Loading Particel System', 1);
-
-  // Joypad
-  if (Ini.Joypad = 1) OR (Params.Joypad) then begin
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize Joystick', 'Initialization');   Joy := TJoy.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing Joystick', 1);
-  end;
-
-  Log.BenchmarkEnd(0);
-  Log.LogBenchmark('Loading Time', 0);
-
-
-  //------------------------------
-  //Start- Mainloop
-  //------------------------------
-  //Music.SetLoop(true);
-  //Music.SetVolume(50);
-  //Music.Open(SkinPath + 'Menu Music 3.mp3');
-  //Music.Play;
-  Log.LogStatus('Main Loop', 'Initialization');               MainLoop;
-  
-  Log.LogStatus('Cleanup', 'Done');
-
-  //------------------------------
-  //Finish Application
-  //------------------------------
-  if Ini.LPT = 1 then LCD.Clear;
-  if Ini.LPT = 2 then Light.TurnOff;
-
-  // Insignificant change..
-
-  Log.Free;
 end.

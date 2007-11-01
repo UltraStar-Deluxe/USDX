@@ -2,6 +2,9 @@ unit UFiles;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
 {$I switches.inc}
 
 uses SysUtils,
@@ -329,8 +332,11 @@ Result := False;
   //Reset LineNo
   FileLineNo := 0;
 
+  writeln( 'Assign File : ' + Song.Path + Song.FileName );
+
   //Open File and set File Pointer to the beginning
   AssignFile(SongFile, Song.Path + Song.FileName);
+  
 //  if assinged( SongFile ) then
   begin
     try

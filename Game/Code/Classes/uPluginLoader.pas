@@ -8,6 +8,10 @@ unit UPluginLoader;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses UPluginDefs, UCoreModule;
