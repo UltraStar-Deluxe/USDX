@@ -230,6 +230,7 @@ procedure LoadTextures;
 procedure InitializeScreen;
 procedure LoadLoadingScreen;
 procedure LoadScreens;
+procedure UnLoadScreens;
 
 function LoadingThreadFunction: integer;
 
@@ -692,12 +693,48 @@ begin
   ScreenCredits    :=       TScreenCredits.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Credits', 3); Log.BenchmarkStart(3);
 
-  end;
+end;
 
 function LoadingThreadFunction: integer;
 begin
   LoadScreens;
   Result:= 1;
+end;
+
+procedure UnLoadScreens;
+begin
+  freeandnil( ScreenMain );
+  freeandnil( ScreenName );
+  freeandnil( ScreenLevel);
+  freeandnil( ScreenSong );
+  freeandnil( ScreenSongMenu );
+  freeandnil( ScreenSing );
+  freeandnil( ScreenScore);
+  freeandnil( ScreenTop5 );
+  freeandnil( ScreenOptions );
+  freeandnil( ScreenOptionsGame );
+  freeandnil( ScreenOptionsGraphics );
+  freeandnil( ScreenOptionsSound );
+  freeandnil( ScreenOptionsLyrics );
+//  freeandnil( ScreenOptionsThemes );
+  freeandnil( ScreenOptionsRecord );
+  freeandnil( ScreenOptionsAdvanced );
+  freeandnil( ScreenEditSub );
+  freeandnil( ScreenEdit );
+  freeandnil( ScreenEditConvert );
+  freeandnil( ScreenOpen );
+  freeandnil( ScreenSingModi );
+  freeandnil( ScreenSongMenu );
+  freeandnil( ScreenSongJumpto);
+  freeandnil( ScreenPopupCheck );
+  freeandnil( ScreenPopupError );
+  freeandnil( ScreenPartyNewRound );
+  freeandnil( ScreenPartyScore    );
+  freeandnil( ScreenPartyWin     );
+  freeandnil( ScreenPartyOptions  );
+  freeandnil( ScreenPartyPlayer   );
+  freeandnil( ScreenStatMain     );
+  freeandnil( ScreenStatDetail    );
 end;
 
 end.
