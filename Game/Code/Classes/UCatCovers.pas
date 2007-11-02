@@ -49,7 +49,7 @@ var
   Name, Filename, Temp: string;
 begin
 try
-  Ini := TMemIniFile.Create(CoversPath + 'covers.ini');
+  Ini  := TMemIniFile.Create(CoversPath + 'covers.ini');
   List := TStringlist.Create;
 
   //Add every Cover in Covers Ini for Every Sorting option

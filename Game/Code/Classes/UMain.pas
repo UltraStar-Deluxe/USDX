@@ -303,6 +303,7 @@ begin
 
     Log.LogStatus('Creating 2nd Song Array', 'Initialization');
     CatSongs := TCatSongs.Create;
+    
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Songs', 1);
 

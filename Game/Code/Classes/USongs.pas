@@ -8,17 +8,21 @@ interface
 
 {$I switches.inc}
 
-uses SysUtils,
+uses
      {$ifndef MSWINDOWS}
-     {$IFDEF DARWIN}
-	     baseunix,
-	   {$ELSE}
-       oldlinux,
-	   {$ENDIF}
+       {$IFDEF DARWIN}
+         baseunix,
+       {$ELSE}
+         oldlinux,
+       {$ENDIF}
       baseunix,
       UnixType,
       syscall,
+     {$else}
+       windows,
+       DirWatch,
      {$endif}
+     SysUtils,
      Classes,
      ULog,
      UTexture,
@@ -87,7 +91,11 @@ type
     fWatch    : longint;
     fParseSongDirectory : boolean;
     fProcessing         : boolean;
+    {$ifdef win32}
+      fDirWatch           : TDirectoryWatch;
+    {$endif}
     procedure int_LoadSongList;
+    procedure DoDirChanged(Sender: TObject);
   protected
     procedure Execute; override;
   public
@@ -143,6 +151,8 @@ const
 implementation
 
 uses StrUtils,
+     UGraphic,
+     UCovers,
      UFiles,
      UMain,
      UIni;
@@ -158,6 +168,14 @@ constructor TSongs.create();
 begin
   inherited create( false );
   self.freeonterminate := true;
+
+  {$IFDEF Win32}
+    fDirWatch := TDirectoryWatch.create(nil);
+    fDirWatch.OnChange     := DoDirChanged;
+    fDirWatch.Directory    := SongPath;
+    fDirWatch.WatchSubDirs := true;
+    fDirWatch.active       := true;
+  {$ENDIF}
 
   {$IFDEF linux}
   (*
@@ -186,23 +204,21 @@ begin
   Setlength(Song, 0);
 end;
 
+procedure TSongs.DoDirChanged(Sender: TObject);
+begin
+  LoadSongList();
+end;
+
 procedure TSongs.Execute();
-(*
 var
-  lrfds : fdSet;
-  time  : Ttimeval;
-  res   : integer;
-  buf   : pchar;
-  len, bufflen : longint;
-  str : String;
-*)
+  fChangeNotify : THandle;
 begin
   fParseSongDirectory := true;
   
   while not self.terminated do
   begin
 
-//    if fParseSongDirectory then
+    if fParseSongDirectory then
     begin
       writeln( 'int_LoadSongList' );
       int_LoadSongList();
@@ -217,7 +233,8 @@ procedure TSongs.int_LoadSongList;
 begin
   try
     fProcessing := true;
-    
+    Setlength(Song, 0);
+
     Log.LogError('SongList', 'Searching For Songs');
 
     Setlength(Song, 50);
@@ -228,6 +245,23 @@ begin
 
     //Set Correct SongArray Length
     SetLength(Song, BrowsePos);
+
+    if assigned( CatSongs ) then
+      CatSongs.Refresh;
+
+    if assigned( CatCovers ) then
+      CatCovers.Load;
+
+    if assigned( Covers ) then
+      Covers.Load;
+
+    if assigned(ScreenSong)  then
+    begin
+      ScreenSong.GenerateThumbnails();
+      ScreenSong.OnShow; // refresh ScreenSong
+    end;
+
+
   finally
     Log.LogError('SongList', 'Search Complete');
     

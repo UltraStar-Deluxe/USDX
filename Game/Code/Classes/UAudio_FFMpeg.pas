@@ -380,7 +380,6 @@ end;
 
 procedure TAudio_ffMpeg.PlayStart;
 begin
-
   // LoadSoundFromFile(BassStart,  SoundPath + 'foo fighters - best of you.mp3');
 
   // TODO : jb_linux replace with something other than bass

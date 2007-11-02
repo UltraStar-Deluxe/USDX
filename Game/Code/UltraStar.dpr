@@ -36,6 +36,8 @@ uses
   opt in 'lib\ffmpeg\opt.pas',
   avio in 'lib\ffmpeg\avio.pas',
 
+  DirWatch in 'lib\other\DirWatch.pas',
+
   SQLiteTable3 in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3 in 'lib\SQLite\SQLite3.pas',
 
