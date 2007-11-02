@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>${PRODUCT_NAME}</string>
 	<key>CFBundleIconFile</key>
-	<string>UltraStar.icns</string>
+	<string>ustar-icon_v01.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.ultrastardeluxe.ultrastardeluxe</string>
 	<key>CFBundleInfoDictionaryVersion</key>

@@ -139,6 +139,7 @@
 		2C4D9E210CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
 		2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
 		2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
+		2C4FA2A80CDBAD1E002CC3B0 /* ustar-icon_v01.icns in Resources */ = {isa = PBXBuildFile; fileRef = 2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */; };
 		2CDC716C0CDB9CB70018F966 /* StrUtils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CDC716B0CDB9CB70018F966 /* StrUtils.pas */; };
 		2CDC716D0CDB9CB70018F966 /* StrUtils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CDC716B0CDB9CB70018F966 /* StrUtils.pas */; };
 		2CDD4BDE0CB947A400549FAC /* sdl.pas in Sources */ = {isa = PBXBuildFile; fileRef = 98B8BE5C0B1F974F00162019 /* sdl.pas */; };
@@ -146,7 +147,6 @@
 		2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
 		2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CDEA4F60CBD725B0096994C /* OpenGL.framework */; };
 		2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
-		2CDEC4CD0CC52E7F00FFA244 /* UltraStarDX.icns in Resources */ = {isa = PBXBuildFile; fileRef = 2CDEC4CC0CC52E7F00FFA244 /* UltraStarDX.icns */; };
 		2CF54F650CDA1B2B00627463 /* UScreenCredits.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */; };
 		2CF54F660CDA1B2B00627463 /* UScreenEdit.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */; };
 		2CF54F670CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */; };
@@ -425,9 +425,9 @@
 		2C4D9E040CC9EF840031092D /* OpenGL12.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = OpenGL12.pas; path = Wrapper/OpenGL12.pas; sourceTree = "<group>"; };
 		2C4D9E090CC9EF840031092D /* Windows.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Windows.pas; path = Wrapper/Windows.pas; sourceTree = "<group>"; };
 		2C4D9E440CC9F0ED0031092D /* switches.inc */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = switches.inc; path = ../switches.inc; sourceTree = SOURCE_ROOT; };
+		2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "ustar-icon_v01.icns"; path = "../../Graphics/ustar-icon_v01.icns"; sourceTree = SOURCE_ROOT; };
 		2CDC716B0CDB9CB70018F966 /* StrUtils.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = StrUtils.pas; path = ../../../Modis/SDK/StrUtils.pas; sourceTree = SOURCE_ROOT; };
 		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
-		2CDEC4CC0CC52E7F00FFA244 /* UltraStarDX.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = UltraStarDX.icns; sourceTree = "<group>"; };
 		2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenCredits.pas; path = ../Screens/UScreenCredits.pas; sourceTree = SOURCE_ROOT; };
 		2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEdit.pas; path = ../Screens/UScreenEdit.pas; sourceTree = SOURCE_ROOT; };
 		2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEditConvert.pas; path = ../Screens/UScreenEditConvert.pas; sourceTree = SOURCE_ROOT; };
@@ -769,7 +769,7 @@
 		DDC6868A09F571C2004E4BFF /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				2CDEC4CC0CC52E7F00FFA244 /* UltraStarDX.icns */,
+				2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */,
 				DDC689B309F57C69004E4BFF /* InfoPlist.strings */,
 				DDC689B409F57C69004E4BFF /* SDLMain.nib */,
 				DDC6868B09F571C2004E4BFF /* Info.plist */,
@@ -874,7 +874,7 @@
 			files = (
 				DDC689B509F57C69004E4BFF /* InfoPlist.strings in Resources */,
 				DDC689B609F57C69004E4BFF /* SDLMain.nib in Resources */,
-				2CDEC4CD0CC52E7F00FFA244 /* UltraStarDX.icns in Resources */,
+				2C4FA2A80CDBAD1E002CC3B0 /* ustar-icon_v01.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
