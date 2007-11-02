@@ -187,14 +187,15 @@ begin
 end;
 
 procedure TSongs.Execute();
+(*
 var
-
   lrfds : fdSet;
   time  : Ttimeval;
   res   : integer;
   buf   : pchar;
   len, bufflen : longint;
   str : String;
+*)
 begin
   fParseSongDirectory := true;
   
@@ -218,6 +219,7 @@ begin
     fProcessing := true;
     
     Log.LogError('SongList', 'Searching For Songs');
+
     Setlength(Song, 50);
 
     BrowsePos := 0;
