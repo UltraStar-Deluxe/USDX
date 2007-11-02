@@ -9,19 +9,17 @@ interface
 {$I switches.inc}
 
 uses
-     {$ifndef MSWINDOWS}
-       {$IFDEF DARWIN}
-         baseunix,
-       {$ELSE}
+     {$IFDEF MSWINDOWS}
+       Windows,
+       DirWatch,
+     {$ELSE}
+       {$IFNDEF DARWIN}
          oldlinux,
+         syscall,
        {$ENDIF}
       baseunix,
       UnixType,
-      syscall,
-     {$else}
-       windows,
-       DirWatch,
-     {$endif}
+     {$ENDIF}
      SysUtils,
      Classes,
      ULog,
@@ -91,7 +89,7 @@ type
     fWatch    : longint;
     fParseSongDirectory : boolean;
     fProcessing         : boolean;
-    {$ifdef win32}
+    {$ifdef MSWINDOWS}
       fDirWatch           : TDirectoryWatch;
     {$endif}
     procedure int_LoadSongList;
@@ -169,7 +167,7 @@ begin
   inherited create( false );
   self.freeonterminate := true;
 
-  {$IFDEF Win32}
+  {$IFDEF MSWINDOWS}
     fDirWatch := TDirectoryWatch.create(nil);
     fDirWatch.OnChange     := DoDirChanged;
     fDirWatch.Directory    := SongPath;
@@ -284,12 +282,22 @@ var
 
   {$ifdef MSWINDOWS}
     SR:     TSearchRecW;   // for parsing Songs Directory
-  {$else}  // This should work on all posix systems.
+  {$ENDIF}	
+  
+  // eddie: can we merge that? is baseunix working on linux? oldlinux is
+  //        not available on mac os x.
+  {$IFDEF LINUX}
     TheDir  : oldlinux.pdir;
     ADirent : oldlinux.pDirent;
     Entry   : Longint;
     info    : oldlinux.stat;
-  {$endif}  
+  {$ENDIF}  
+  {$IFDEF DARWIN}
+    TheDir  : pdir;
+    ADirent : pDirent;
+    Entry   : Longint;
+    info    : stat;
+  {$ENDIF}  
 begin
   {$ifdef MSWINDOWS}
     if FindFirstW(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows

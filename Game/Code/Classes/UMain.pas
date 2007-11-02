@@ -145,7 +145,6 @@ uses USongs, UJoystick, math, UCommandLine, ULanguage, SDL_ttf,
 const
   Version = 'UltraStar Deluxe V 1.10 Alpha Build';
 
-//{$IFDEF WIN32}
 Procedure Main;
 var
   WndTitle: string;
