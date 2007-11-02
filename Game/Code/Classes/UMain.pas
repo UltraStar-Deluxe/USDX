@@ -1023,6 +1023,26 @@ begin
   Player[PlayerNum].ScoreTotalI := 0;
 end;
 
+{$IFDEF DARWIN}
+// Mac applications are packaged in directories.
+// We have to cut the last two directories
+// to get the application directory.
+Function GetGamePath : String;
+var
+	x,
+	i : integer;
+begin
+  Result := ExtractFilePath(ParamStr(0));
+  for x := 0 to 2 do begin
+	i := Length(Result);
+	repeat 
+	  Delete( Result, i, 1);
+	  i := Length(Result);
+	until (i = 0) or (Result[i] = '/');
+  end;  
+end;
+{$ENDIF}
+
 //--------------------
 // Function sets all Absolute Paths e.g. Song Path and makes sure the Directorys exist
 //--------------------
@@ -1057,7 +1077,11 @@ procedure InitializePaths;
 
 begin
 
+{$IFDEF DARWIN}  
+  GamePath := GetGamePath;
+{$ELSE}
   GamePath := ExtractFilePath(ParamStr(0));
+{$ENDIF}
 
   initialize_path( LogPath         , GamePath                             );
   initialize_path( SoundPath       , GamePath + 'Sounds'      + PathDelim );
