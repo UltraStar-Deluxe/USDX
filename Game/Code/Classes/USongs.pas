@@ -10,12 +10,16 @@ interface
 
 uses SysUtils,
      {$ifndef MSWINDOWS}
-	   {$IFDEF DARWIN}
+     {$IFDEF DARWIN}
 	     baseunix,
 	   {$ELSE}
-         oldlinux,
-	   {$ENDIF}	 
+       oldlinux,
+	   {$ENDIF}
+      baseunix,
+      UnixType,
+      syscall,
      {$endif}
+     Classes,
      ULog,
      UTexture,
      UCommon,
@@ -57,7 +61,7 @@ type
     Background: widestring;
     Video:      widestring;
     VideoGAP:   real;
-    VideoLoaded: boolean; // 0.5.0: true if the video has been loaded 
+    VideoLoaded: boolean; // 0.5.0: true if the video has been loaded
     NotesGAP:   integer;
     Start:      real; // in seconds
     Finish:     integer; // in miliseconds
@@ -76,16 +80,25 @@ type
     CatNumber:  integer; // Count of Songs in Category for Cats and Number of Song in Category for Songs
   end;
 
-  TSongs = class
+  TSongs = class( TThread )
   private
-    BrowsePos: Cardinal; //Actual Pos in Song Array
+    BrowsePos : Cardinal; //Actual Pos in Song Array
+    fNotify   ,
+    fWatch    : longint;
+    fParseSongDirectory : boolean;
+    fProcessing         : boolean;
+    procedure int_LoadSongList;
+  protected
+    procedure Execute; override;
   public
-    Song:       array of TSong; // array of songs
-    Selected:   integer; // selected song index
-    procedure LoadSongList; // load all songs
+    Song      : array of TSong; // array of songs
+    Selected  : integer;        // selected song index
+    constructor create();
+    procedure LoadSongList;     // load all songs
     procedure BrowseDir(Dir: widestring); // should return number of songs in the future
     procedure Sort(Order: integer);
-    function FindSongFile(Dir, Mask: widestring): widestring;
+    function  FindSongFile(Dir, Mask: widestring): widestring;
+    property  Processing : boolean read fProcessing;
   end;
 
   TCatSongs = class
@@ -113,6 +126,20 @@ var
   CatSongs:   TCatSongs; // categorized songs
   AktSong:    TSong; // one song *unknown use)
 
+const
+     IN_ACCESS		    = $00000001;	//* File was accessed */
+     IN_MODIFY		    = $00000002;	//* File was modified */
+     IN_ATTRIB		    = $00000004;	//* Metadata changed */
+     IN_CLOSE_WRITE		= $00000008;	//* Writtable file was closed */
+     IN_CLOSE_NOWRITE	= $00000010;	//* Unwrittable file closed */
+     IN_OPEN			    = $00000020;	//* File was opened */
+     IN_MOVED_FROM		= $00000040;	//* File was moved from X */
+     IN_MOVED_TO		  = $00000080;	//* File was moved to Y */
+     IN_CREATE		    = $00000100;	//* Subfile was created */
+     IN_DELETE		    = $00000200;	//* Subfile was deleted */
+     IN_DELETE_SELF		= $00000400;	//* Self was deleted */
+  
+
 implementation
 
 uses StrUtils,
@@ -127,22 +154,94 @@ begin
 end;
 {$ENDIF}
 
-procedure TSongs.LoadSongList;
+constructor TSongs.create();
 begin
-  Log.LogStatus('Initializing', 'LoadSongList');
+  inherited create( false );
+  self.freeonterminate := true;
 
-  // clear
-  Setlength(Song, 50);
-
-  BrowsePos := 0;
-  // browse directories
-  BrowseDir(SongPath);
+  {$IFDEF linux}
+  (*
+    Thankyou to : http://www.linuxjournal.com/article/8478
+                  http://www.tin.org/bin/man.cgi?section=2&topic=inotify_add_watch
+  *)
+(*
+  fNotify := -1;
+  fWatch  := -1;
   
-  //Set Correct SongArray Length
-  SetLength(Song, BrowsePos);
-//  if Ini.Debug = 1 then BrowseDir('D:\Extract\Songs\');
+  writeln( 'Calling inotify_init' );
+  fNotify := Do_SysCall( syscall_nr_inotify_init );
+  if ( fNotify < 0 ) then
+    writeln( 'Filesystem change notification - disabled' );
+  writeln( 'Calling inotify_init : '+ inttostr(fNotify)  );
+
+  writeln( 'Calling syscall_nr_inotify_init ('+SongPath+')' );
+  fWatch := Do_SysCall( syscall_nr_inotify_init , TSysParam( fNotify ), longint( pchar( SongPath ) ) , IN_MODIFY AND IN_CREATE AND IN_DELETE  );
+  
+  if (fWatch < 0) then
+     writeln ('inotify_add_watch');
+  writeln( 'Calling syscall_nr_inotify_init : '+ inttostr(fWatch)  );
+*)
+  {$endif}
+  
+  Setlength(Song, 0);
 end;
 
+procedure TSongs.Execute();
+var
+
+  lrfds : fdSet;
+  time  : Ttimeval;
+  res   : integer;
+  buf   : pchar;
+  len, bufflen : longint;
+  str : String;
+begin
+  fParseSongDirectory := true;
+  
+  while not self.terminated do
+  begin
+
+//    if fParseSongDirectory then
+    begin
+      writeln( 'int_LoadSongList' );
+      int_LoadSongList();
+    end;
+
+    self.suspend;
+  end;
+    
+end;
+
+procedure TSongs.int_LoadSongList;
+begin
+  try
+    fProcessing := true;
+    
+    Log.LogError('SongList', 'Searching For Songs');
+    Setlength(Song, 50);
+
+    BrowsePos := 0;
+    // browse directories
+    BrowseDir(SongPath);
+
+    //Set Correct SongArray Length
+    SetLength(Song, BrowsePos);
+  finally
+    Log.LogError('SongList', 'Search Complete');
+    
+    fParseSongDirectory := false;
+    fProcessing         := false;
+  end;
+end;
+
+
+procedure TSongs.LoadSongList;
+begin
+  fParseSongDirectory := true;
+  self.resume;
+end;
+
+// TODO : JB - THis whole function SUX ! and needs refactoring ! :P
 procedure TSongs.BrowseDir(Dir: widestring);
 var
   SLen:   integer;
@@ -150,10 +249,10 @@ var
   {$ifdef MSWINDOWS}
     SR:     TSearchRecW;   // for parsing Songs Directory
   {$else}  // This should work on all posix systems.
-    TheDir  : pdir;
-    ADirent : pDirent;
+    TheDir  : oldlinux.pdir;
+    ADirent : oldlinux.pDirent;
     Entry   : Longint;
-    info    : stat;
+    info    : oldlinux.stat;
   {$endif}  
 begin
   {$ifdef MSWINDOWS}
@@ -201,11 +300,11 @@ begin
 	
    {$IFDEF LINUX}
     // Itterate the Songs Directory... ( With unicode capable functions for linux )
-    TheDir := opendir( Dir );     // JB_Unicode - linux
+    TheDir := oldlinux.opendir( Dir );     // JB_Unicode - linux
     if TheDir <> nil then
     begin
       repeat
-        ADirent := ReadDir(TheDir);
+        ADirent := oldlinux.ReadDir(TheDir);
 
         If ADirent<>Nil then
         begin
@@ -222,11 +321,11 @@ begin
     
     
 
-    TheDir := opendir( Dir );     // JB_Unicode - linux
+    TheDir := oldlinux.opendir( Dir );     // JB_Unicode - linux
     if TheDir <> nil then
     begin
       repeat
-        ADirent := ReadDir(TheDir);
+        ADirent := oldlinux.ReadDir(TheDir);
         
         if ( ADirent <> Nil                    ) AND
            ( pos( '.txt', ADirent^.name ) > 0 ) then

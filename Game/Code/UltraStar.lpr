@@ -11,6 +11,11 @@ program UltraStar;
 {$I switches.inc}
 
 uses
+  {$ifdef unix}            // http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial
+    cthreads,              // THIS MUST be the first used unit !!
+  {$endif}
+  
+  syscall,
 
   // ***************************************************************************
   //
@@ -212,8 +217,5 @@ const
   Version = 'UltraStar Deluxe V 1.10 Alpha Build';
 
 begin
-
   main();
-
-
 end.
