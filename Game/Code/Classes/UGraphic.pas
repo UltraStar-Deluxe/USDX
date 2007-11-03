@@ -566,6 +566,11 @@ begin
     W := 800;
     H := 600;
   {$endif}
+  
+  {$IFDEF DARWIN}
+    // Todo : eddie: remove before realease
+    Ini.FullScreen := 0;
+  {$ENDIF}
 
   if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
   begin

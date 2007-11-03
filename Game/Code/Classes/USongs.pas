@@ -27,6 +27,9 @@ uses
      ULog,
      UTexture,
      UCommon,
+	 {$IFDEF DARWIN}
+	 cthreads,
+	 {$ENDIF}
      UCatCovers;
 
 type
