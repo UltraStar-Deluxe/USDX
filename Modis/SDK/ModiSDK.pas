@@ -2,6 +2,10 @@ unit ModiSDK;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 type  //PluginInfo, for Init

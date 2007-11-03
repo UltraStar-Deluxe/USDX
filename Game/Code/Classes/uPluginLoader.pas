@@ -139,7 +139,7 @@ begin
   PluginInterface.UnHookEvent := UnHookEvent;
   PluginInterface.EventExists := EventExists;
 
-  PluginInterface.CreateService := CreateService;
+  PluginInterface.CreateService := @CreateService;
   PluginInterface.DestroyService := DestroyService;
   PluginInterface.CallService := CallService;
   PluginInterface.ServiceExists := ServiceExists;

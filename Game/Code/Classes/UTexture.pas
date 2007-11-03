@@ -277,7 +277,7 @@ begin
     Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
   
     // load from resource stream
-    {$IFDEF WIN32}
+    {$IFDEF DELPHI}
       dHandle := FindResource(hInstance, Identifier, 'TEX');
       if dHandle=0 then
       begin

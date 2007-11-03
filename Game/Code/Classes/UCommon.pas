@@ -12,7 +12,7 @@ uses
   SysUtils,
 {$IFDEF LAZARUS}
    lResources,
-{$ENDIF}   
+{$ENDIF}
    ULog,
 {$IFDEF DARWIN}
   messages,
@@ -64,8 +64,7 @@ function AdaptFilePaths( const aPath : widestring ): widestring;
   procedure ZeroMemory( Destination: Pointer; Length: DWORD );
 {$ENDIF}
 
-{$IFDEF MSWINDOWS}
-
+{$IFNDEF FPC}
 type
   TSearchRecW = record
     Time: Integer;
@@ -233,13 +232,13 @@ end;
 
 {$ENDIF}
 
-{$ifdef MSWINDOWS}
+{$ifNdef FPC}
 function FindFirstW(const Path: widestring; Attr: Integer; var  F: TSearchRecW): Integer;
 const
   faSpecial = faHidden or faSysFile or faVolumeID or faDirectory;
 begin
   F.ExcludeAttr := not Attr and faSpecial;
-  F.FindHandle := FindFirstFileW(PWideChar(Path), F.FindData);
+  F.FindHandle  := FindFirstFileW(PWideChar(Path), F.FindData);
   if F.FindHandle <> INVALID_HANDLE_VALUE then
   begin
     Result := FindMatchingFileW(F);

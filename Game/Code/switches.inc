@@ -25,6 +25,7 @@
   {$UNDEF UseSerialPort}
   {$UNDEF UseMIDIPort}
 {$ELSE}
+  {$DEFINE Delphi}
   {$DEFINE DLL_STDCALL}
   {$UNDEF UseSerialPort}
   {$DEFINE UseMIDIPort}

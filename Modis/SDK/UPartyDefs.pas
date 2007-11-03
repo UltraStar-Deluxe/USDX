@@ -7,6 +7,10 @@ unit UPartyDefs;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses UPluginDefs;

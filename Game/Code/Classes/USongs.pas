@@ -11,7 +11,9 @@ interface
 uses
      {$IFDEF MSWINDOWS}
        Windows,
+       {$ifdef Delphi}
        DirWatch,
+       {$endif}
      {$ELSE}
        {$IFNDEF DARWIN}
          oldlinux,
@@ -89,7 +91,7 @@ type
     fWatch    : longint;
     fParseSongDirectory : boolean;
     fProcessing         : boolean;
-    {$ifdef MSWINDOWS}
+    {$ifdef Delphi}
       fDirWatch           : TDirectoryWatch;
     {$endif}
     procedure int_LoadSongList;
@@ -167,7 +169,7 @@ begin
   inherited create( false );
   self.freeonterminate := true;
 
-  {$IFDEF MSWINDOWS}
+  {$ifdef Delphi}
     fDirWatch := TDirectoryWatch.create(nil);
     fDirWatch.OnChange     := DoDirChanged;
     fDirWatch.Directory    := SongPath;
@@ -280,7 +282,7 @@ procedure TSongs.BrowseDir(Dir: widestring);
 var
   SLen:   integer;
 
-  {$ifdef MSWINDOWS}
+  {$ifdef Delphi}
     SR:     TSearchRecW;   // for parsing Songs Directory
   {$ENDIF}	
   
@@ -299,7 +301,7 @@ var
     info    : stat;
   {$ENDIF}  
 begin
-  {$ifdef MSWINDOWS}
+  {$ifdef Delphi}
     if FindFirstW(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows
     begin
       repeat
