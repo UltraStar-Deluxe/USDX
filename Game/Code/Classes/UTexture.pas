@@ -277,7 +277,38 @@ begin
     Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
   
     // load from resource stream
-    {$IFDEF DELPHI}
+    {$IFDEF LAZARUS}
+      lLazRes := LazFindResource( Identifier, 'TEX' );
+      if lLazRes <> nil then
+      begin
+        lResData := TStringStream.create( lLazRes.value );
+        try
+          lResData.position := 0;
+          try
+            TexRWops         := SDL_AllocRW;
+            TexRWops.unknown := TUnknown( lResData );
+            TexRWops.seek    := SDLStreamSeek;
+            TexRWops.read    := SDLStreamRead;
+            TexRWops.write   := nil;
+            TexRWops.close   := SDLStreamClose;
+            TexRWops.type_   := 2;
+          except
+            Log.LogStatus( 'ERROR Could not assign resource ('+Identifier+')' , Identifier);
+            beep;
+            Exit;
+          end;
+        
+          Result := IMG_Load_RW(TexRWops,0);
+          SDL_FreeRW(TexRWops);
+        finally
+          freeandnil( lResData );
+        end;
+      end
+      else
+      begin
+        Log.LogStatus( 'NOT found in Resource ('+Identifier+')', '  LoadImage' );
+      end;
+    {$ELSE}
       dHandle := FindResource(hInstance, Identifier, 'TEX');
       if dHandle=0 then
       begin
@@ -320,42 +351,7 @@ begin
         if assigned( TexStream ) then
           freeandnil( TexStream );
       end;
-
-
-    {$ELSE}
-      lLazRes := LazFindResource( Identifier, 'TEX' );
-      if lLazRes <> nil then
-      begin
-        lResData := TStringStream.create( lLazRes.value );
-        try
-          lResData.position := 0;
-          try
-            TexRWops         := SDL_AllocRW;
-            TexRWops.unknown := TUnknown( lResData );
-            TexRWops.seek    := SDLStreamSeek;
-            TexRWops.read    := SDLStreamRead;
-            TexRWops.write   := nil;
-            TexRWops.close   := SDLStreamClose;
-            TexRWops.type_   := 2;
-          except
-            Log.LogStatus( 'ERROR Could not assign resource ('+Identifier+')' , Identifier);
-            beep;
-            Exit;
-          end;
-        
-          Result := IMG_Load_RW(TexRWops,0);
-          SDL_FreeRW(TexRWops);
-        finally
-          freeandnil( lResData );
-        end;
-      end
-      else
-      begin
-        Log.LogStatus( 'NOT found in Resource ('+Identifier+')', '  LoadImage' );
-      end;
     {$ENDIF}
-
-
   end;
 end;
 
