@@ -18,9 +18,9 @@ uses
   sdl_ttf                in 'lib\JEDI-SDLv1.0\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas', 
 
+  {$ifdef delphi}
   bass          in 'lib\bass\delphi\bass.pas',
 
-  {$ifdef delphi}
   midiout       in 'lib\midi\midiout.pas',
   midiin        in 'lib\midi\midiin.pas',
   CIRCBUF       in 'lib\midi\CIRCBUF.PAS',
