@@ -1,6 +1,6 @@
 program UltraStarDX;
 
-uses UMain, UAudio_bass, UAudio_FFMpeg, UMedia_dummy, USingNotes, UTextClasses, UVideo;
+uses UMain, UMedia_dummy, UAudio_FFMpeg, UAudio_bass, USingNotes, UTextClasses, UVideo;
 
 begin
   Main;

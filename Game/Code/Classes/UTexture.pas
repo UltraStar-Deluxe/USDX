@@ -134,6 +134,9 @@ uses ULog,
      {$IFDEF LAZARUS}
      LResources,
      {$ENDIF}
+     {$IFDEF DARWIN}
+     MacResources,
+     {$ENDIF}
      StrUtils, dialogs;
 
 const

@@ -147,6 +147,10 @@
 		2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
 		2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CDEA4F60CBD725B0096994C /* OpenGL.framework */; };
 		2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
+		2CF3EF220CDE13A0004F5956 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF210CDE13A0004F5956 /* Messages.pas */; };
+		2CF3EF230CDE13A0004F5956 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF210CDE13A0004F5956 /* Messages.pas */; };
+		2CF3EF270CDE13BA004F5956 /* MacResources.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF260CDE13BA004F5956 /* MacResources.pas */; };
+		2CF3EF280CDE13BA004F5956 /* MacResources.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF260CDE13BA004F5956 /* MacResources.pas */; };
 		2CF54F650CDA1B2B00627463 /* UScreenCredits.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */; };
 		2CF54F660CDA1B2B00627463 /* UScreenEdit.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */; };
 		2CF54F670CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */; };
@@ -224,8 +228,6 @@
 		2CF5512D0CDA29C600627463 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF5512C0CDA29C600627463 /* libsqlite3.dylib */; };
 		2CF552140CDA3D1400627463 /* UPluginDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552110CDA3D1400627463 /* UPluginDefs.pas */; };
 		2CF552170CDA3D1400627463 /* UPluginDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552110CDA3D1400627463 /* UPluginDefs.pas */; };
-		2CF552670CDA404000627463 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552660CDA404000627463 /* Messages.pas */; };
-		2CF552680CDA404000627463 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552660CDA404000627463 /* Messages.pas */; };
 		2CF552A70CDA42C900627463 /* avcodec.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529E0CDA42C900627463 /* avcodec.pas */; };
 		2CF552A80CDA42C900627463 /* avformat.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529F0CDA42C900627463 /* avformat.pas */; };
 		2CF552A90CDA42C900627463 /* avio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A00CDA42C900627463 /* avio.pas */; };
@@ -428,6 +430,8 @@
 		2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "ustar-icon_v01.icns"; path = "../../Graphics/ustar-icon_v01.icns"; sourceTree = SOURCE_ROOT; };
 		2CDC716B0CDB9CB70018F966 /* StrUtils.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = StrUtils.pas; path = ../../../Modis/SDK/StrUtils.pas; sourceTree = SOURCE_ROOT; };
 		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		2CF3EF210CDE13A0004F5956 /* Messages.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Messages.pas; path = Wrapper/Messages.pas; sourceTree = "<group>"; };
+		2CF3EF260CDE13BA004F5956 /* MacResources.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = MacResources.pas; path = Wrapper/MacResources.pas; sourceTree = "<group>"; };
 		2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenCredits.pas; path = ../Screens/UScreenCredits.pas; sourceTree = SOURCE_ROOT; };
 		2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEdit.pas; path = ../Screens/UScreenEdit.pas; sourceTree = SOURCE_ROOT; };
 		2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UScreenEditConvert.pas; path = ../Screens/UScreenEditConvert.pas; sourceTree = SOURCE_ROOT; };
@@ -468,7 +472,6 @@
 		2CF5512C0CDA29C600627463 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = ../lib/SQLite/libsqlite3.dylib; sourceTree = SOURCE_ROOT; };
 		2CF551A70CDA356800627463 /* UltraStar.dpr */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = UltraStar.dpr; path = ../UltraStar.dpr; sourceTree = SOURCE_ROOT; };
 		2CF552110CDA3D1400627463 /* UPluginDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPluginDefs.pas; path = ../../../Modis/SDK/UPluginDefs.pas; sourceTree = SOURCE_ROOT; };
-		2CF552660CDA404000627463 /* Messages.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; path = Messages.pas; sourceTree = "<group>"; };
 		2CF5529E0CDA42C900627463 /* avcodec.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = avcodec.pas; path = ../lib/ffmpeg/avcodec.pas; sourceTree = SOURCE_ROOT; };
 		2CF5529F0CDA42C900627463 /* avformat.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = avformat.pas; path = ../lib/ffmpeg/avformat.pas; sourceTree = SOURCE_ROOT; };
 		2CF552A00CDA42C900627463 /* avio.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = avio.pas; path = ../lib/ffmpeg/avio.pas; sourceTree = SOURCE_ROOT; };
@@ -539,11 +542,12 @@
 		2C4D9DF50CC9EF3A0031092D /* Wrapper */ = {
 			isa = PBXGroup;
 			children = (
+				2CF3EF260CDE13BA004F5956 /* MacResources.pas */,
+				2CF3EF210CDE13A0004F5956 /* Messages.pas */,
 				2C4D9E000CC9EF840031092D /* Graphics.pas */,
 				2C4D9E010CC9EF840031092D /* JPEG.pas */,
 				2C4D9E040CC9EF840031092D /* OpenGL12.pas */,
 				2C4D9E090CC9EF840031092D /* Windows.pas */,
-				2CF552660CDA404000627463 /* Messages.pas */,
 			);
 			name = Wrapper;
 			sourceTree = "<group>";
@@ -1059,7 +1063,6 @@
 				2CF551100CDA293700627463 /* SQLite3.pas in Sources */,
 				2CF551110CDA293700627463 /* SQLiteTable3.pas in Sources */,
 				2CF552140CDA3D1400627463 /* UPluginDefs.pas in Sources */,
-				2CF552680CDA404000627463 /* Messages.pas in Sources */,
 				2CF552B00CDA42C900627463 /* avcodec.pas in Sources */,
 				2CF552B10CDA42C900627463 /* avformat.pas in Sources */,
 				2CF552B20CDA42C900627463 /* avio.pas in Sources */,
@@ -1068,6 +1071,8 @@
 				2CF552B70CDA42C900627463 /* rational.pas in Sources */,
 				2CF553080CDA51B500627463 /* sdlutils.pas in Sources */,
 				2CDC716C0CDB9CB70018F966 /* StrUtils.pas in Sources */,
+				2CF3EF220CDE13A0004F5956 /* Messages.pas in Sources */,
+				2CF3EF270CDE13BA004F5956 /* MacResources.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1179,7 +1184,6 @@
 				2CF551120CDA293700627463 /* SQLite3.pas in Sources */,
 				2CF551130CDA293700627463 /* SQLiteTable3.pas in Sources */,
 				2CF552170CDA3D1400627463 /* UPluginDefs.pas in Sources */,
-				2CF552670CDA404000627463 /* Messages.pas in Sources */,
 				2CF552A70CDA42C900627463 /* avcodec.pas in Sources */,
 				2CF552A80CDA42C900627463 /* avformat.pas in Sources */,
 				2CF552A90CDA42C900627463 /* avio.pas in Sources */,
@@ -1188,6 +1192,8 @@
 				2CF552AE0CDA42C900627463 /* rational.pas in Sources */,
 				2CF553090CDA51B500627463 /* sdlutils.pas in Sources */,
 				2CDC716D0CDB9CB70018F966 /* StrUtils.pas in Sources */,
+				2CF3EF230CDE13A0004F5956 /* Messages.pas in Sources */,
+				2CF3EF280CDE13BA004F5956 /* MacResources.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
