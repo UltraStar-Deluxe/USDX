@@ -181,23 +181,25 @@ var
   var
     Players: Array of String;
     J: Byte;
-  begin
-    if (Num-1 >= PartySession.Teams.NumTeams) then
+  begin            // to-do : Party
+    if (Num-1 >= {PartySession.Teams.NumTeams}0) then
       exit;
 
-    //Create Players Array
+    {//Create Players Array
     SetLength(Players, PartySession.Teams.TeamInfo[Num-1].NumPlayers);
     For J := 0 to PartySession.Teams.TeamInfo[Num-1].NumPlayers-1 do
-      Players[J] := String(PartySession.Teams.TeamInfo[Num-1].PlayerInfo[J].Name);
+      Players[J] := String(PartySession.Teams.TeamInfo[Num-1].PlayerInfo[J].Name);}
 
     //Implode and Return
     Result := Language.Implode(Players);
   end;
 begin
-  PartySession.StartRound;
+  // to-do : Party
+  //PartySession.StartRound;
 
   //Set Visibility of Round Infos
-  I := Length(PartySession.Rounds);
+  // to-do : Party
+  I := {Length(PartySession.Rounds)}0;
   if (I >= 1) then
   begin
     Static[StaticRound1].Visible := True;
@@ -205,8 +207,8 @@ begin
     Text[TextWinner1].Visible := True;
 
     //Texts:
-    Text[TextRound1].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[0].Plugin].Name);
-    Text[TextWinner1].Text := PartySession.GetWinnerString(0);
+    //Text[TextRound1].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[0].Plugin].Name);
+    //Text[TextWinner1].Text := PartySession.GetWinnerString(0);
   end
   else
   begin
@@ -222,8 +224,8 @@ begin
     Text[TextWinner2].Visible := True;
 
     //Texts:
-    Text[TextRound2].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[1].Plugin].Name);
-    Text[TextWinner2].Text := PartySession.GetWinnerString(1);
+    //Text[TextRound2].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[1].Plugin].Name);
+    //Text[TextWinner2].Text := PartySession.GetWinnerString(1);
   end
   else
   begin
@@ -239,8 +241,8 @@ begin
     Text[TextWinner3].Visible := True;
 
     //Texts:
-    Text[TextRound3].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[2].Plugin].Name);
-    Text[TextWinner3].Text := PartySession.GetWinnerString(2);
+    //Text[TextRound3].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[2].Plugin].Name);
+    //Text[TextWinner3].Text := PartySession.GetWinnerString(2);
   end
   else
   begin
@@ -256,8 +258,8 @@ begin
     Text[TextWinner4].Visible := True;
 
     //Texts:
-    Text[TextRound4].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[3].Plugin].Name);
-    Text[TextWinner4].Text := PartySession.GetWinnerString(3);
+    //Text[TextRound4].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[3].Plugin].Name);
+    //Text[TextWinner4].Text := PartySession.GetWinnerString(3);
   end
   else
   begin
@@ -273,8 +275,8 @@ begin
     Text[TextWinner5].Visible := True;
 
     //Texts:
-    Text[TextRound5].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[4].Plugin].Name);
-    Text[TextWinner5].Text := PartySession.GetWinnerString(4);
+    //Text[TextRound5].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[4].Plugin].Name);
+    //Text[TextWinner5].Text := PartySession.GetWinnerString(4);
   end
   else
   begin
@@ -290,8 +292,8 @@ begin
     Text[TextWinner6].Visible := True;
 
     //Texts:
-    Text[TextRound6].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[5].Plugin].Name);
-    Text[TextWinner6].Text := PartySession.GetWinnerString(5);
+    //Text[TextRound6].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[5].Plugin].Name);
+    //Text[TextWinner6].Text := PartySession.GetWinnerString(5);
   end
   else
   begin
@@ -307,8 +309,8 @@ begin
     Text[TextWinner7].Visible := True;
 
     //Texts:
-    Text[TextRound7].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[6].Plugin].Name);
-    Text[TextWinner7].Text := PartySession.GetWinnerString(6);
+    //Text[TextRound7].Text := Language.Translate(DllMan.Plugins[PartySession.Rounds[6].Plugin].Name);
+    //Text[TextWinner7].Text := PartySession.GetWinnerString(6);
   end
   else
   begin
@@ -318,7 +320,7 @@ begin
   end;
 
   //Display Scores
-  if (PartySession.Teams.NumTeams >= 1) then
+  {if (PartySession.Teams.NumTeams >= 1) then
   begin
     Text[TextScoreTeam1].Text := InttoStr(PartySession.Teams.TeamInfo[0].Score);
     Text[TextNameTeam1].Text := String(PartySession.Teams.TeamInfo[0].Name);
@@ -406,7 +408,7 @@ begin
     Text[TextNextPlayer3].Visible := True;
   end
   else
-    Text[TextNextPlayer3].Visible := False;
+    Text[TextNextPlayer3].Visible := False;  }
 
 
 //  LCD.WriteText(1, '  Choose mode:  ');

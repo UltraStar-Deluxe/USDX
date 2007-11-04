@@ -38,6 +38,11 @@ type
   TPlayer = record
     Name:         string;
 
+    //Index in Teaminfo record
+    TeamID:       Byte;
+    PlayerID:     Byte;
+
+    //Scores
     Score:        real;
     ScoreLine:    real;
     ScoreGolden:  real;
@@ -51,26 +56,6 @@ type
 
     //LineBonus Mod
     ScoreLast:    Real;//Last Line Score
-    {ScorePercent:    integer;//Aktual Fillstate of the SingBar
-    ScorePercentTarget:  integer;//Target Fillstate of the SingBar
-    //end Singbar Mod
-
-    //PhrasenBonus - Line Bonus Mod
-    LineBonus_PosX:     Single;
-    LineBonus_PosY:     Single;
-    LineBonus_Alpha:    Single;
-    LineBonus_Visible:  boolean;
-    LineBonus_Text:     string;
-    LineBonus_Color:    TRGB;
-    LineBonus_Age:      Integer;
-    LineBonus_Rating: Integer;
-    //Variable vor Positioning -> Set on ScreenShow, different when Playercount Changes
-    LineBonus_TargetX:  integer;
-    LineBonus_TargetY:  integer;
-    LineBonus_StartX:  integer;
-    LineBonus_StartY:  integer;
-    //PhrasenBonus - Line Bonus Mod End  }
-
 
     //PerfectLineTwinkle Mod (effect)
     LastSentencePerfect: Boolean;
@@ -316,13 +301,13 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading PluginManager', 1);
 
-    // Party Mode Manager
+    {// Party Mode Manager
     Log.BenchmarkStart(1);
     Log.LogStatus('PartySession Manager', 'Initialization');
-    PartySession := TParty_Session.Create;   //Load PartySession
+    PartySession := TPartySession.Create;   //Load PartySession
 
     Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading PartySession Manager', 1);
+    Log.LogBenchmark('Loading PartySession Manager', 1);      }
 
     // Sound
     Log.BenchmarkStart(1);

@@ -96,7 +96,7 @@ end;
 procedure TScreenPartyWin.onShow;
 var
   I: Integer;
-  Placing: TeamOrderArray;
+  Placing: Integer;
   Function GetTeamColor(Team: Byte): Cardinal;
   var
     NameString: String;
@@ -106,13 +106,13 @@ var
     Result := ColorExists(NameString);
   end;
 begin
+  // to-do : Party
   //Get Team Placing
-  Placing := PartySession.GetTeamOrder;
-  
-  //Set Winnertext
-  Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.Teams.Teaminfo[Placing[0]].Name]);
+  //Placing := PartySession.GetTeamOrder;
 
-  if (PartySession.Teams.NumTeams >= 1) then
+  //Set Winnertext
+  //Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.Teams.Teaminfo[Placing[0]].Name]);
+  {if (PartySession.Teams.NumTeams >= 1) then
   begin
     Text[TextScoreTeam1].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[0]].Score);
     Text[TextNameTeam1].Text := String(PartySession.Teams.TeamInfo[Placing[0]].Name);
@@ -239,7 +239,7 @@ begin
     Static[StaticTeam3].Visible := False;
     Static[StaticTeam3BG].Visible := False;
     Static[StaticTeam3Deco].Visible := False;
-  end;
+  end;   }
 
 
 //  LCD.WriteText(1, '  Choose mode:  ');

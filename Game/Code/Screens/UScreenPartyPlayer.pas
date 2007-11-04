@@ -193,7 +193,7 @@ begin
       SDLK_RETURN:
         begin
 
-          //Save PlayerNames
+          {//Save PlayerNames
           for I := 0 to PartySession.Teams.NumTeams-1 do
           begin
             PartySession.Teams.Teaminfo[I].Name := PChar(Button[I*5].Text[0].Text);
@@ -205,7 +205,7 @@ begin
           end;
 
           AudioPlayback.PlayStart;
-          FadeTo(@ScreenPartyNewRound);
+          FadeTo(@ScreenPartyNewRound);}
         end;
 
       // Up and Down could be done at the same time,
@@ -267,7 +267,7 @@ begin
     Button[10].Text[0].Text := Ini.NameTeam[2];
     // Templates for Names Mod end
   
-  If (PartySession.Teams.NumTeams>=1) then
+  {If (PartySession.Teams.NumTeams>=1) then
   begin
     Button[0].Visible := True;
     Button[1].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=1);
@@ -316,7 +316,7 @@ begin
     Button[12].Visible := False;
     Button[13].Visible := False;
     Button[14].Visible := False;
-  end;
+  end;   }
 
 end;
 

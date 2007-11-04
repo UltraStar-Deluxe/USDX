@@ -660,36 +660,36 @@ begin
         end;
 
       SDLK_1:
-        begin //Jocker
-          if (Mode = 1) AND (PartySession.Teams.NumTeams >= 1) AND (PartySession.Teams.Teaminfo[0].Joker > 0) then
+        begin //Jocker // to-do : Party
+          {if (Mode = 1) AND (PartySession.Teams.NumTeams >= 1) AND (PartySession.Teams.Teaminfo[0].Joker > 0) then
           begin
             //Joker spielen
             Dec(PartySession.Teams.Teaminfo[0].Joker);
             SelectRandomSong;
             SetJoker;
-          end;
+          end;  }
         end;
 
       SDLK_2:
         begin //Jocker
-          if (Mode = 1) AND (PartySession.Teams.NumTeams >= 2) AND (PartySession.Teams.Teaminfo[1].Joker > 0) then
+          {if (Mode = 1) AND (PartySession.Teams.NumTeams >= 2) AND (PartySession.Teams.Teaminfo[1].Joker > 0) then
           begin
             //Joker spielen
             Dec(PartySession.Teams.Teaminfo[1].Joker);
             SelectRandomSong;
             SetJoker;
-          end;
+          end;  }
         end;
 
       SDLK_3:
         begin //Jocker
-          if (Mode = 1) AND (PartySession.Teams.NumTeams >= 3) AND (PartySession.Teams.Teaminfo[2].Joker > 0) then
+          {if (Mode = 1) AND (PartySession.Teams.NumTeams >= 3) AND (PartySession.Teams.Teaminfo[2].Joker > 0) then
           begin
             //Joker spielen
             Dec(PartySession.Teams.Teaminfo[2].Joker);
             SelectRandomSong;
             SetJoker;
-          end;
+          end; }
         end;
     end;
   end;
@@ -1991,7 +1991,8 @@ end;
 
 procedure TScreenSong.SetJoker;
 begin
-  //If Party Mode
+  {//If Party Mode
+  // to-do : Party
   if Mode = 1 then //Show Joker that are available
   begin
     if (PartySession.Teams.NumTeams >= 1) then
@@ -2064,7 +2065,7 @@ begin
     Static[StaticTeam3Joker3].Visible := False;
     Static[StaticTeam3Joker4].Visible := False;
     Static[StaticTeam3Joker5].Visible := False;
-  end;
+  end;  }
 end;
 
 procedure TScreenSong.SetStatics;
@@ -2132,13 +2133,13 @@ end;
 //Team No of Team (0-5)
 procedure TScreenSong.DoJoker (Team: Byte);
 begin
-  if (Mode = 1) AND (PartySession.Teams.NumTeams >= Team + 1) AND (PartySession.Teams.Teaminfo[Team].Joker > 0) then
+  {if (Mode = 1) AND (PartySession.Teams.NumTeams >= Team + 1) AND (PartySession.Teams.Teaminfo[Team].Joker > 0) then
   begin
     //Joker spielen
     Dec(PartySession.Teams.Teaminfo[Team].Joker);
     SelectRandomSong;
     SetJoker;
-  end;
+  end;  }
 end;
 
 //Detailed Cover Unloading. Unloads the Detailed, uncached Cover of the cur. Song

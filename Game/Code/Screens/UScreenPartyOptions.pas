@@ -81,10 +81,10 @@ begin
 
 
           //Save Num Teams:
-          PartySession.Teams.NumTeams := NumTeams + 2;
+          {PartySession.Teams.NumTeams := NumTeams + 2;
           PartySession.Teams.Teaminfo[0].NumPlayers := NumPlayer1+1;
           PartySession.Teams.Teaminfo[1].NumPlayers := NumPlayer2+1;
-          PartySession.Teams.Teaminfo[2].NumPlayers := NumPlayer3+1;
+          PartySession.Teams.Teaminfo[2].NumPlayers := NumPlayer3+1;}
 
           //Save Playlist
           PlaylistMan.Mode := Playlist;
@@ -113,7 +113,8 @@ begin
             PlaylistMan.CurPlayList := Playlist2;
 
           //Start Party
-          PartySession.StartNewParty(Rounds + 2);
+          // to-do : Party
+          //PartySession.StartNewParty(Rounds + 2);
 
           AudioPlayback.PlayStart;
           //Go to Player Screen

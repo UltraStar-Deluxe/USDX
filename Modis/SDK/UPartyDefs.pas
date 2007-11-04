@@ -31,9 +31,9 @@ type
   TUS_Party_Proc_Draw     = Function (ID: Integer): integer; stdcall;
 
   //----------------
-  // TUS_Party_Proc_Init - Structure of the Party Init Proc
+  // TUS_Party_Proc_DeInit - Structure of the Party DeInit Proc
   // This Function is called on SingScreen DeInit When Plugin abort Song or Song finishes
-  // Return Non Zero to Abort Party Modi Loading... In this Case another Plugin will be loaded
+  // Return Winner
   //----------------
   TUS_Party_Proc_DeInit   = Function (ID: Integer): integer; stdcall;
 
@@ -69,7 +69,7 @@ type
     // 8          | Only Playable with 2 and more players
     // 16         | Restrict Background Loading
     // 32         | Restrict Video Loading
-    // 64         | Not in Use, Don't set it!
+    // 64         | Increase TimesPlayed for Cur. Player
     // 128        | Not in Use, Don't set it!
     LoadingSettings: Byte;
 
@@ -111,6 +111,24 @@ type
     ModiDeInit: TUS_Party_Proc_DeInit;
   end;
 
+  //--------------
+  // Team Info Record. Used by "Party/GetTeamInfo" and "Party/SetTeamInfo"
+  //--------------
+  TTeamInfo = record
+    NumTeams: Byte;
+    Teaminfo: array[0..5] of record
+      Name:  PChar;     //Teamname
+      Score: Word;      //TeamScore
+      Joker: Byte;      //Team Jokers available
+      CurPlayer: Byte;  //Id of Cur. Playing Player
+      NumPlayers: Byte;
+      Playerinfo: array[0..3] of record
+        Name: PChar;        //Playername
+        TimesPlayed: Byte;  //How often this Player has Sung
+      end;
+    end;
+  end;
+
 //----------------
 // Some Default Constants
 //----------------
@@ -122,6 +140,7 @@ const
   MLS_TeamOnly    = 8;  //Only Playable with 2 and more players
   MLS_RestrictBG  = 16; //Restrict Background Loading
   MLS_RestrictVid = 32; //Restrict Video Loading
+  MLS_IncTP       = 64; //Increase TimesPlayed for Cur. Player
 
   // to use with TUS_ModiInfo.SingScreenSettings
   MSS_ShowNotes   = 1;  //ShowNotes
@@ -130,7 +149,7 @@ const
   MSS_AutoPlayback= 8;  //Start Audio Playback automaticaly
 
   //Standard (Duell) for TUS_ModiInfo.LoadingSettings and TUS_ModiInfo.SingScreenSettings
-  MLS_Standard    = MLS_LoadSong;
+  MLS_Standard    = MLS_LoadSong or MLS_IncTP;
   MSS_Standard    = MSS_ShowNotes or MSS_ShowScores or MSS_ShowTime or MSS_AutoPlayback;
 
 //-------------

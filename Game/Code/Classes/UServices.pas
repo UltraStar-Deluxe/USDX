@@ -247,7 +247,7 @@ end;
 Function TServiceManager.NametoHash(const ServiceName: TServiceName): Integer;
 asm
   { CL: Counter; EAX: Result; EDX: Current Memory Address }
-  Mov CL, 14 {Init Counter, Fold 14 Times to became 4 Bytes out of 60}
+  Mov ECX, 14 {Init Counter, Fold 14 Times to get 4 Bytes out of 60}
 
   Mov EDX, ServiceName {Save Address of String that should be "Hashed"}
 

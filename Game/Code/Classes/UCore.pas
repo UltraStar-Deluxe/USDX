@@ -47,6 +47,12 @@ type
 
       Modules:          Array [0..High(CORE_MODULES_TO_LOAD)] of TModuleListItem;
 
+      //Cur + Last Executed Setting and Getting ;)
+      iCurExecuted: Integer;
+      iLastExecuted: Integer;
+
+      Procedure SetCurExecuted(Value: Integer);
+
       //Function Get all Modules and Creates them
       Function GetModules: Boolean;
 
@@ -75,14 +81,14 @@ type
       Hooks:            THookManager;   //Teh Hook Manager ;)
       Services:         TServiceManager;//The Service Manager
 
-      CurExecuted:      Integer;        //ID of Plugin or Module curently Executed
-
       Name:             String;         //Name of this Application
       Version:          LongWord;       //Version of this ". For Info Look PluginDefs Functions
 
       LastErrorReporter:String;         //Who Reported the Last Error String
       LastErrorString:  String;         //Last Error String reported
 
+      property CurExecuted: Integer read iCurExecuted write SetCurExecuted;       //ID of Plugin or Module curently Executed
+      property LastExecuted: Integer read iLastExecuted;
 
       //---------------
       //Main Methods to control the Core:
@@ -124,7 +130,8 @@ Constructor TCore.Create(const cName: String; const cVersion: LongWord);
 begin
   Name := cName;
   Version := cVersion;
-  CurExecuted := 0;
+  iLastExecuted := 0;
+  iCurExecuted := 0;
 
   LastErrorReporter := '';
   LastErrorString   := '';
@@ -496,6 +503,18 @@ end;
 Function TCore.GetApplicationHandle(wParam, lParam: DWord): integer;
 begin
   Result := hInstance;
+end;
+
+//-------------
+// Called when setting CurExecuted
+//-------------
+Procedure TCore.SetCurExecuted(Value: Integer);
+begin
+  //Set Last Executed
+  iLastExecuted := iCurExecuted;
+
+  //Set Cur Executed
+  iCurExecuted := Value;
 end;
 
 end.
