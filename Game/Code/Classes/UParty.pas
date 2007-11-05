@@ -162,7 +162,7 @@ var
   Len: Integer;
   Info: PUS_ModiInfo;
 begin
-  Info := ptr(PModiInfo);
+  Info := Pointer(PModiInfo);
   //Copy Info if cbSize is correct
   If (Info.cbSize = SizeOf(TUS_ModiInfo)) then
   begin
@@ -237,7 +237,7 @@ begin
   If (Teams.NumTeams >= 1) AND (NumRounds < High(Byte)-1) then
   begin
     bPartyMode := false;
-    aiRounds := Ptr(PAofIRounds);
+    aiRounds := Pointer(PAofIRounds);
 
     Try
       //Is this Teammode(More then one Player per Team) ?
@@ -245,8 +245,9 @@ begin
       For I := 0 to Teams.NumTeams-1 do
         TeamMode := TeamMode AND (Teams.Teaminfo[I].NumPlayers > 1);
 
-      For I := 0 to High(NumRounds) do
-      begin //Set Plugins
+      // For I := 0 to High(NumRounds) do  // eddie: changed NumRounds to Rounds - is this correct ??? I get compile errors on the mac otherwise...
+      For I := 0 to High(Rounds) do 
+	  begin //Set Plugins
         If (aiRounds[I] = -1) then
           Rounds[I].Modi := GetRandomPlugin(TeamMode)
         Else If (aiRounds[I] >= 0) AND (aiRounds[I] <= High(Modis)) AND (TeamMode OR ((Modis[aiRounds[I]].Info.LoadingSettings AND MLS_TeamOnly) = 0))  then
@@ -484,7 +485,7 @@ Function TPartySession.GetTeamInfo(wParam, pTeamInfo: DWord): integer;
 var Info: ^TTeamInfo;
 begin
   Result := -1;
-  Info := ptr(pTeamInfo);
+  Info := Pointer(pTeamInfo);
   If (Info <> nil) then
   begin
     Try
@@ -507,7 +508,7 @@ var
   Info: ^TTeamInfo;
 begin
   Result := -1;
-  Info := ptr(pTeamInfo);
+  Info := Pointer(pTeamInfo);
   If (Info <> nil) then
   begin
     Try
@@ -593,14 +594,14 @@ begin
   end;
 
   //Now Return what we have got
-  If (ptr(lParam) = nil) then
+  If (Pointer(lParam) = nil) then
   begin //ReturnString Length
     Result := Length(ResultStr);
   end
   Else
   begin //Return String
     Try
-      S := Ptr(lParam);
+      S := Pointer(lParam);
       S^ := ResultStr;
       Result := 0;
     Except

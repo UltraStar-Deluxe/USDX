@@ -255,6 +255,8 @@
 		2CF553420CDA531100627463 /* libavformat.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C00CDA4B7B00627463 /* libavformat.dylib */; };
 		2CF553430CDA531100627463 /* libavutil.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C10CDA4B7B00627463 /* libavutil.dylib */; };
 		2CF553440CDA531100627463 /* libmp3lame.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */; };
+		2CF8E6BE0CDFA8E80053A996 /* UPartyDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */; };
+		2CF8E6BF0CDFA8E80053A996 /* UPartyDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */; };
 		98B8BE340B1F947800162019 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE330B1F947800162019 /* AppKit.framework */; };
 		98B8BE390B1F949C00162019 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE370B1F949C00162019 /* Cocoa.framework */; };
 		98B8BE3A0B1F949C00162019 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE380B1F949C00162019 /* Foundation.framework */; };
@@ -483,6 +485,7 @@
 		2CF552C10CDA4B7B00627463 /* libavutil.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.dylib; path = ../lib/ffmpeg/libavutil.dylib; sourceTree = SOURCE_ROOT; };
 		2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmp3lame.dylib; path = ../lib/ffmpeg/libmp3lame.dylib; sourceTree = SOURCE_ROOT; };
 		2CF553070CDA51B500627463 /* sdlutils.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = sdlutils.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdlutils.pas"; sourceTree = "<absolute>"; };
+		2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPartyDefs.pas; path = ../../../Modis/SDK/UPartyDefs.pas; sourceTree = SOURCE_ROOT; };
 		9845B6590B1F9B9E0084DD62 /* SDL.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SDL.h; path = /Library/Frameworks/SDL.framework/Versions/A/Headers/SDL.h; sourceTree = "<absolute>"; };
 		98B8BE330B1F947800162019 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		98B8BE370B1F949C00162019 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -687,6 +690,7 @@
 		2CF5508A0CDA228800627463 /* SDK */ = {
 			isa = PBXGroup;
 			children = (
+				2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */,
 				2CDC716B0CDB9CB70018F966 /* StrUtils.pas */,
 				2CF552110CDA3D1400627463 /* UPluginDefs.pas */,
 				2CF5508B0CDA22B000627463 /* ModiSDK.pas */,
@@ -1073,6 +1077,7 @@
 				2CDC716C0CDB9CB70018F966 /* StrUtils.pas in Sources */,
 				2CF3EF220CDE13A0004F5956 /* Messages.pas in Sources */,
 				2CF3EF270CDE13BA004F5956 /* MacResources.pas in Sources */,
+				2CF8E6BE0CDFA8E80053A996 /* UPartyDefs.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1194,6 +1199,7 @@
 				2CDC716D0CDB9CB70018F966 /* StrUtils.pas in Sources */,
 				2CF3EF230CDE13A0004F5956 /* Messages.pas in Sources */,
 				2CF3EF280CDE13BA004F5956 /* MacResources.pas in Sources */,
+				2CF8E6BF0CDFA8E80053A996 /* UPartyDefs.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
