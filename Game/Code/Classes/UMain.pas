@@ -1051,7 +1051,7 @@ procedure InitializePaths;
 
     If DirectoryExists(aPathVar) then
     begin
-      lAttrib := fileGetAttr('C:Temp');
+      lAttrib := fileGetAttr(aPathVar);
 
       lWriteable :=     ( lAttrib and faDirectory <> 0 ) AND
                     NOT ( lAttrib and faReadOnly  <> 0 )

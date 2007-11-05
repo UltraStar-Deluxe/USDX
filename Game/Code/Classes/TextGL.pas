@@ -85,6 +85,9 @@ uses UMain,
      {$IFDEF LAZARUS}
      LResources,
      {$ENDIF}
+     {$IFDEF DARWIN}
+     MacResources,
+     {$ENDIF}
      UGraphic;
 
 procedure BuildFont;			                // Build Our Bitmap Font
