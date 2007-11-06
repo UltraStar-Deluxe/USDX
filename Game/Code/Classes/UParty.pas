@@ -57,22 +57,22 @@ type
     Procedure Free; override;
 
     //Register Modi Service
-    Function RegisterModi(pModiInfo, nothin: DWord): integer; //Registers a new Modi. wParam: Pointer to TUS_ModiInfo
+    Function RegisterModi(nothin: TwParam; pModiInfo: TlParam): integer; //Registers a new Modi. wParam: Pointer to TUS_ModiInfo
 
     //Start new Party
-    Function StartParty(NumRounds, PAofIRounds: DWord): integer; //Starts new Party Mode. Returns Non Zero on Success
-    Function GetCurModi(wParam, lParam: DWord): integer; //Returns Pointer to Cur. Modis TUS_ModiInfo (to Use with Singscreen)
-    Function StopParty(wParam, lParam: DWord): integer; //Stops Party Mode. Returns 1 If Partymode was enabled before.
-    Function NextRound(wParam, lParam: DWord): integer; //Increases CurRound by 1; Returns num of Round or -1 if last Round is already played
+    Function StartParty(NumRounds: TwParam; PAofIRounds: TlParam): integer; //Starts new Party Mode. Returns Non Zero on Success
+    Function GetCurModi(wParam: TwParam; lParam: TlParam): integer; //Returns Pointer to Cur. Modis TUS_ModiInfo (to Use with Singscreen)
+    Function StopParty(wParam: TwParam; lParam: TlParam): integer; //Stops Party Mode. Returns 1 If Partymode was enabled before.
+    Function NextRound(wParam: TwParam; lParam: TlParam): integer; //Increases CurRound by 1; Returns num of Round or -1 if last Round is already played
 
-    Function CallModiInit(wParam, lParam: DWord): integer;    //Calls CurModis Init Proc. If an Error occurs, Returns Nonzero. In this Case a New Plugin was Selected. Please renew Loading
-    Function CallModiDeInit(wParam, lParam: DWord): integer;  //Calls DeInitProc and does the RoundEnding
+    Function CallModiInit(wParam: TwParam; lParam: TlParam): integer;    //Calls CurModis Init Proc. If an Error occurs, Returns Nonzero. In this Case a New Plugin was Selected. Please renew Loading
+    Function CallModiDeInit(wParam: TwParam; lParam: TlParam): integer;  //Calls DeInitProc and does the RoundEnding
 
-    Function GetTeamInfo(wParam, pTeamInfo: DWord): integer;    //Writes TTeamInfo Record to Pointer at lParam. Returns Zero on Success
-    Function SetTeamInfo(wParam, pTeamInfo: DWord): integer;    //Read TTeamInfo Record from Pointer at lParam. Returns Zero on Success
+    Function GetTeamInfo(wParam: TwParam; pTeamInfo: TlParam): integer;    //Writes TTeamInfo Record to Pointer at lParam. Returns Zero on Success
+    Function SetTeamInfo(wParam: TwParam; pTeamInfo: TlParam): integer;    //Read TTeamInfo Record from Pointer at lParam. Returns Zero on Success
 
-    Function  GetTeamOrder(wParam, lParam: DWord): integer;     //Returns Team Order. Structure: Bits 1..3: Team at Place1; Bits 4..6: Team at Place2 ...
-    Function  GetWinnerString(wParam, lParam: DWord): integer;  //wParam is Roundnum. If (Pointer = nil) then Return Length of the String. Otherwise Write the String to Address at lParam
+    Function  GetTeamOrder(wParam: TwParam; lParam: TlParam): integer;     //Returns Team Order. Structure: Bits 1..3: Team at Place1; Bits 4..6: Team at Place2 ...
+    Function  GetWinnerString(wParam: TwParam; lParam: TlParam): integer;  //wParam is Roundnum. If (Pointer = nil) then Return Length of the String. Otherwise Write the String to Address at lParam
   end;
 
 const
@@ -157,12 +157,12 @@ end;
 // Registers a new Modi. wParam: Pointer to TUS_ModiInfo
 // Service for Plugins
 //-------------
-Function TPartySession.RegisterModi(pModiInfo, nothin: DWord): integer;
+Function TPartySession.RegisterModi(nothin: TwParam; pModiInfo: TlParam): integer;
 var
   Len: Integer;
   Info: PUS_ModiInfo;
 begin
-  Info := Pointer(PModiInfo);
+  Info := PModiInfo;
   //Copy Info if cbSize is correct
   If (Info.cbSize = SizeOf(TUS_ModiInfo)) then
   begin
@@ -172,7 +172,7 @@ begin
     Modis[Len].Info := Info^;
   end
   else
-    Core.ReportError(Integer(PChar('Plugins try to Register Modi with wrong Pointer, or wrong TUS_ModiInfo Record.')), Integer(PChar('TPartySession')));
+    Core.ReportError(Integer(PChar('Plugins try to Register Modi with wrong Pointer, or wrong TUS_ModiInfo Record.')), PChar('TPartySession'));
 end;
 
 //----------
@@ -227,7 +227,7 @@ end;
 //----------
 // Starts new Party Mode. Returns Non Zero on Success
 //----------
-Function TPartySession.StartParty(NumRounds, PAofIRounds: DWord): integer;
+Function TPartySession.StartParty(NumRounds: TwParam; PAofIRounds: TlParam): integer;
 var
   I: Integer;
   aiRounds: PARounds;
@@ -237,7 +237,7 @@ begin
   If (Teams.NumTeams >= 1) AND (NumRounds < High(Byte)-1) then
   begin
     bPartyMode := false;
-    aiRounds := Pointer(PAofIRounds);
+    aiRounds := PAofIRounds;
 
     Try
       //Is this Teammode(More then one Player per Team) ?
@@ -245,9 +245,11 @@ begin
       For I := 0 to Teams.NumTeams-1 do
         TeamMode := TeamMode AND (Teams.Teaminfo[I].NumPlayers > 1);
 
-      // For I := 0 to High(NumRounds) do  // eddie: changed NumRounds to Rounds - is this correct ??? I get compile errors on the mac otherwise...
-      For I := 0 to High(Rounds) do 
-	  begin //Set Plugins
+      //Set Rounds
+      SetLength(Rounds, NumRounds);
+
+      For I := 0 to High(Rounds) do
+      begin //Set Plugins
         If (aiRounds[I] = -1) then
           Rounds[I].Modi := GetRandomPlugin(TeamMode)
         Else If (aiRounds[I] >= 0) AND (aiRounds[I] <= High(Modis)) AND (TeamMode OR ((Modis[aiRounds[I]].Info.LoadingSettings AND MLS_TeamOnly) = 0))  then
@@ -265,7 +267,7 @@ begin
       Result := 1;
 
     Except
-      Core.ReportError(Integer(PChar('Can''t start PartyMode.')), Integer(PChar('TPartySession')));
+      Core.ReportError(Integer(PChar('Can''t start PartyMode.')), PChar('TPartySession'));
     end;
   end;
 end;
@@ -273,7 +275,7 @@ end;
 //----------
 // Returns Pointer to Cur. ModiInfoEx (to Use with Singscreen)
 //----------
-Function TPartySession.GetCurModi(wParam, lParam: DWord): integer;
+Function TPartySession.GetCurModi(wParam: TwParam; lParam: TlParam): integer;
 begin
   If (bPartyMode) AND (CurRound <= High(Rounds)) then
   begin //If PartyMode is enabled:
@@ -289,7 +291,7 @@ end;
 //----------
 // Stops Party Mode. Returns 1 If Partymode was enabled before. And -1 if Change was not possible
 //----------
-Function TPartySession.StopParty(wParam, lParam: DWord): integer;
+Function TPartySession.StopParty(wParam: TwParam; lParam: TlParam): integer;
 begin
   Result := -1;
   If (bPartyMode) then
@@ -352,7 +354,7 @@ end;
 //----------
 // NextRound - Increases CurRound by 1; Returns num of Round or -1 if last Round is already played
 //----------
-Function TPartySession.NextRound(wParam, lParam: DWord): integer;
+Function TPartySession.NextRound(wParam: TwParam; lParam: TlParam): integer;
 var I: Integer;
 begin
   If ((CurRound < high(Rounds)) OR (CurRound = high(CurRound))) then
@@ -396,7 +398,7 @@ end;
 //----------
 // CallModiInit - Calls CurModis Init Proc. If an Error occurs, Returns Nonzero. In this Case a New Plugin was Selected. Please renew Loading
 //----------
-Function TPartySession.CallModiInit(wParam, lParam: DWord): integer;
+Function TPartySession.CallModiInit(wParam: TwParam; lParam: TlParam): integer;
 begin
   If (not bPartyMode) then
   begin //Set Rounds if not in PartyMode
@@ -411,10 +413,10 @@ begin
   Except
     on E : Exception do
     begin
-      Core.ReportError(Integer(PChar('Error starting Modi: ' + Modis[Rounds[CurRound].Modi].Info.Name + ' ErrorStr: ' + E.Message)), Integer(PChar('TPartySession')));
+      Core.ReportError(Integer(PChar('Error starting Modi: ' + Modis[Rounds[CurRound].Modi].Info.Name + ' ErrorStr: ' + E.Message)), PChar('TPartySession'));
       If (Rounds[CurRound].Modi = StandardModi) then
       begin
-        Core.ReportError(Integer(PChar('Can''t start StandardModi, will exit now!')), Integer(PChar('TPartySession')));
+        Core.ReportError(Integer(PChar('Can''t start StandardModi, will exit now!')), PChar('TPartySession'));
         Halt;
       end
       Else //Select StandardModi
@@ -428,7 +430,7 @@ end;
 //----------
 // CallModiDeInit - Calls DeInitProc and does the RoundEnding
 //----------
-Function TPartySession.CallModiDeInit(wParam, lParam: DWord): integer;
+Function TPartySession.CallModiDeInit(wParam: TwParam; lParam: TlParam): integer;
 var
   I: Integer;
   MaxScore: Word;
@@ -481,11 +483,11 @@ end;
 //----------
 // GetTeamInfo - Writes TTeamInfo Record to Pointer at lParam. Returns Zero on Success
 //----------
-Function TPartySession.GetTeamInfo(wParam, pTeamInfo: DWord): integer;
+Function TPartySession.GetTeamInfo(wParam: TwParam; pTeamInfo: TlParam): integer;
 var Info: ^TTeamInfo;
 begin
   Result := -1;
-  Info := Pointer(pTeamInfo);
+  Info := pTeamInfo;
   If (Info <> nil) then
   begin
     Try
@@ -502,13 +504,13 @@ end;
 //----------
 // SetTeamInfo - Read TTeamInfo Record from Pointer at lParam. Returns Zero on Success
 //----------
-Function TPartySession.SetTeamInfo(wParam, pTeamInfo: DWord): integer;
+Function TPartySession.SetTeamInfo(wParam: TwParam; pTeamInfo: TlParam): integer;
 var
   TeamInfobackup: TTeamInfo;
   Info: ^TTeamInfo;
 begin
   Result := -1;
-  Info := Pointer(pTeamInfo);
+  Info := pTeamInfo;
   If (Info <> nil) then
   begin
     Try
@@ -527,7 +529,7 @@ end;
 //----------
 // GetTeamOrder - Returns Team Order. Structure: Bits 1..3: Team at Place1; Bits 4..6: Team at Place2 ...
 //----------
-Function  TPartySession.GetTeamOrder(wParam, lParam: DWord): integer;
+Function  TPartySession.GetTeamOrder(wParam: TwParam; lParam: TlParam): integer;
 var
   I, J: Integer;
   ATeams: array [0..5] of TeamOrderEntry;
@@ -560,7 +562,7 @@ end;
 //----------
 // GetWinnerString - wParam is Roundnum. If (Pointer = nil) then Return Length of the String. Otherwise Write the String to Address at lParam
 //----------
-Function  TPartySession.GetWinnerString(wParam, lParam: DWord): integer;
+Function  TPartySession.GetWinnerString(wParam: TwParam; lParam: TlParam): integer;
 var
   Winners: Array of String;
   I: Integer;
@@ -594,14 +596,14 @@ begin
   end;
 
   //Now Return what we have got
-  If (Pointer(lParam) = nil) then
+  If (lParam = nil) then
   begin //ReturnString Length
     Result := Length(ResultStr);
   end
   Else
   begin //Return String
     Try
-      S := Pointer(lParam);
+      S := lParam;
       S^ := ResultStr;
       Result := 0;
     Except

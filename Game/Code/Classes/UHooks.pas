@@ -54,13 +54,13 @@ type
       Function AddSubscriber (const EventName: PChar; const Proc: TUS_Hook = nil; const ProcOfClass: TUS_Hook_of_Object = nil): THandle;
       Function DelSubscriber (const hSubscriber: THandle): Integer;
 
-      Function CallEventChain (const hEvent: THandle; const wParam, lParam: LongWord): Integer;
+      Function CallEventChain (const hEvent: THandle; const wParam: TwParam; lParam: TlParam): Integer;
       Function EventExists (const EventName: PChar): Integer;
 
       Procedure DelbyOwner(const Owner: Integer);
   end;
 
-function HookTest(wParam, lParam: DWord): integer; stdcall;
+function HookTest(wParam: TwParam; lParam: TlParam): integer; stdcall;
 
 var
   HookManager: THookManager;
@@ -318,7 +318,7 @@ end;
 // CallEventChain - Calls the Chain of a specified EventHandle
 // Returns: -1: Handle doesn't Exist, 0 Chain is called until the End
 //------------
-Function THookManager.CallEventChain (const hEvent: THandle; const wParam, lParam: LongWord): Integer;
+Function THookManager.CallEventChain (const hEvent: THandle; const wParam: TwParam; lParam: TlParam): Integer;
 var
   EventIndex: Cardinal;
   Cur: PSubscriberInfo;
@@ -421,10 +421,10 @@ begin
 end;
 
 
-function HookTest(wParam, lParam: DWord): integer; stdcall;
+function HookTest(wParam: TwParam; lParam: TlParam): integer; stdcall;
 begin
   Result := 0; //Don't break the chain
-  Core.ShowMessage(CORE_SM_INFO, Integer(PChar(String(PChar(Pointer(lParam))) + ': ' + String(PChar(Pointer(wParam))))));
+  Core.ShowMessage(CORE_SM_INFO, PChar(String(PChar(Pointer(lParam))) + ': ' + String(PChar(Pointer(wParam)))));
 end;
 
 end.

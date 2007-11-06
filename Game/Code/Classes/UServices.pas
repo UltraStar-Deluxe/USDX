@@ -55,7 +55,7 @@ type
       Function AddService(const ServiceName: PChar; const Proc: TUS_Service = nil; const ProcofClass: TUS_Service_of_Object = nil): THandle;
       Function DelService(const hService: THandle): integer;
 
-      Function CallService(const ServiceName: PChar; const wParam, lParam: dWord): integer;
+      Function CallService(const ServiceName: PChar; const wParam: TwParam; lParam: TlParam): integer;
 
       Function NametoHash(const ServiceName: TServiceName): Integer;
       Function ServiceExists(const ServiceName: PChar): Integer;
@@ -210,7 +210,7 @@ end;
 // Function Calls a Services Proc
 // Returns Services Return Value or SERVICE_NOT_FOUND on Failure
 //------------
-Function TServiceManager.CallService(const ServiceName: PChar; const wParam, lParam: dWord): integer;
+Function TServiceManager.CallService(const ServiceName: PChar; const wParam: TwParam; lParam: TlParam): integer;
 var
   SExists: Integer;
   Service: PServiceInfo;

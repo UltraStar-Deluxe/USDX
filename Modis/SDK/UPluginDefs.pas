@@ -16,6 +16,17 @@ interface
 type
   DWORD = LongWord;
 
+  //Compatibility with 64 Bit Systems
+  {$IFDEF CPU32}
+  TwParam = Integer;
+  TlParam = Pointer; //lParam is Used for 32 Bit addresses DWord is large enough
+  {$ELSE}
+  TwParam = Int64;
+  TlParam = Pointer; //lParam used for 64Bit addresses in 64 Bit Systems(FreePascal)
+  {$ENDIF}
+  //wParam is mainly used for Ordninals
+  //lParam is mainly used for Pointers
+
   //----------------
   // TUS_PluginInfo - Some Infos from Plugin to Core.
   // Send when Plugininfo procedure is Called
@@ -47,16 +58,16 @@ type
   // In this Case the Caller of the Notifier gets the Return Value
   // Return Value Should not be -1
   //----------------
-  TUS_Hook            = Function (wParam, lParam: DWord): integer; stdcall;
-  TUS_Hook_of_Object  = Function (wParam, lParam: DWord): integer of Object;
+  TUS_Hook            = Function (wParam: TwParam; lParam: TlParam): integer; stdcall;
+  TUS_Hook_of_Object  = Function (wParam: TwParam; lParam: TlParam): integer of Object;
 
   //----------------
   // TUS_Service - Structure of the Service Function
   // This Function is called if the Registered Service is Called
   // Return Value Should not be SERVICE_NOT_FOUND
   //----------------
-  TUS_Service           = Function (wParam, lParam: DWord): integer; stdcall;
-  TUS_Service_of_Object = Function (wParam, lParam: DWord): integer of Object;
+  TUS_Service           = Function (wParam: TwParam; lParam: TlParam): integer; stdcall;
+  TUS_Service_of_Object = Function (wParam: TwParam; lParam: TlParam): integer of Object;
 
   //----------------
   // TUS_PluginInterface - Structure that Includes all Methods callable
@@ -76,7 +87,7 @@ type
     {Function start calling the Hook Chain
      0 if Chain is called until the End, -1 if Event Handle is not valid
      otherwise Return Value of the Hook that breaks the Chain}
-    NotivyEventHooks: Function (hEvent: THandle; wParam, lParam: dWord): integer; stdcall;
+    NotivyEventHooks: Function (hEvent: THandle; wParam: TwParam; lParam: TlParam): integer; stdcall;
 
     {Function Hooks an Event by Name.
      Returns Hook Handle on Success, otherwise 0}
@@ -101,7 +112,7 @@ type
 
     {Function Calls a Services Proc
      Returns Services Return Value or SERVICE_NOT_FOUND on Failure}
-    CallService: Function (ServiceName: PChar; wParam, lParam: dWord): integer; stdcall;
+    CallService: Function (ServiceName: PChar; wParam: TwParam; lParam: TlParam): integer; stdcall;
 
     {Function Returns Non Zero if a Service with the given Name Exists,
      otherwise 0}
@@ -151,11 +162,13 @@ const
   CORE_SM_WARNING = 2;
   CORE_SM_INFO    = 3;
 
+
 //----------------
 // Some Functions to Handle Version DWords
 //----------------
 Function MakeVersion(const HeadRevision, SubVersion, SubVersion2: Byte; Letter: Char): DWord;
 Function VersiontoSting(const Version: DWord): String;
+
 
 implementation
 

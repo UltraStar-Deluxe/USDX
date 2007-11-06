@@ -26,7 +26,7 @@ uses uPluginDefs;
     {Function start calling the Hook Chain
      0 if Chain is called until the End, -1 if Event Handle is not valid
      otherwise Return Value of the Hook that breaks the Chain}
-  Function NotivyEventHooks (hEvent: THandle; wParam, lParam: dWord): integer; stdcall;
+  Function NotivyEventHooks (hEvent: THandle; wParam: TwParam; lParam: TlParam): integer; stdcall;
 
     {Function Hooks an Event by Name.
      Returns Hook Handle on Success, otherwise 0}
@@ -51,7 +51,7 @@ uses uPluginDefs;
 
     {Function Calls a Services Proc
      Returns Services Return Value or SERVICE_NOT_FOUND on Failure}
-  Function CallService (ServiceName: PChar; wParam, lParam: dWord): integer; stdcall;
+  Function CallService (ServiceName: PChar; wParam: TwParam; lParam: TlParam): integer; stdcall;
 
     {Function Returns Non Zero if a Service with the given Name Exists,
      otherwise 0}
@@ -84,7 +84,7 @@ end;
 // 0 if Chain is called until the End, -1 if Event Handle is not valid
 // otherwise Return Value of the Hook that breaks the Chain
 //---------------
-Function NotivyEventHooks (hEvent: THandle; wParam, lParam: dWord): integer; stdcall;
+Function NotivyEventHooks (hEvent: THandle; wParam: TwParam; lParam: TlParam): integer; stdcall;
 begin
   Result := Core.Hooks.CallEventChain(hEvent, wParam, lParam);
 end;
@@ -139,7 +139,7 @@ end;
 // Function Calls a Services Proc
 // Returns Services Return Value or SERVICE_NOT_FOUND on Failure
 //---------------
-Function CallService (ServiceName: PChar; wParam, lParam: dWord): integer; stdcall;
+Function CallService (ServiceName: PChar; wParam: TwParam; lParam: TlParam): integer; stdcall;
 begin
   Result := Core.Services.CallService(ServiceName, wParam, lParam);
 end;
