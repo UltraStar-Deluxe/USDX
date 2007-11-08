@@ -12,6 +12,17 @@ uses Classes, UPlatform;
 
 type
   
+  TPlatform = class(TInterfacedObject, IPlatform)
+  public
+    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
+  end;
+
+implementation
+
+uses SysUtils, Windows;
+
+type
+  
   TSearchRecW = record
     Time: Integer;
     Size: Integer;
@@ -22,14 +33,6 @@ type
     FindData: TWin32FindDataW;
   end;
 
-  TPlatform = class(TInterfacedObject, IPlatform)
-  public
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
-  end;
-
-implementation
-
-uses SysUtils, Windows;
 
 function FindFirstW(const Path: widestring; Attr: Integer; var  F: TSearchRecW): Integer;
 const
