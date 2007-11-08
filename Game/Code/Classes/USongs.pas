@@ -30,6 +30,7 @@ uses
      {$ENDIF}
      SysUtils,
      Classes,
+  	 UPlatform,
      ULog,
      UTexture,
      UCommon,
@@ -299,198 +300,51 @@ begin
   self.resume;
 end;
 
-// TODO : JB - THis whole function SUX ! and needs refactoring ! :P
 procedure TSongs.BrowseDir(Dir: widestring);
 var
   SLen:   integer;
-
-  {$ifdef Delphi}
-    SR:     TSearchRecW;   // for parsing Songs Directory
-  {$ENDIF}	
-  
-  // eddie: can we merge that? is baseunix working on linux? oldlinux is
-  //        not available on mac os x.
-  {$IFDEF LINUX}
-    TheDir  : oldlinux.pdir;
-    ADirent : oldlinux.pDirent;
-    Entry   : Longint;
-    info    : oldlinux.stat;
-  {$ENDIF}  
-  {$IFDEF DARWIN}
-    TheDir  : pdir;
-    ADirent : pDirent;
-    Entry   : Longint;
-    info    : stat;
-    lAttrib   : integer;		
-  {$ENDIF}  
+  i : Integer;
+  Files : TDirectoryEntryArray;
 begin
-  {$ifdef Delphi}
-    if FindFirstW(Dir + '*', faDirectory, SR) = 0 then   // JB_Unicode - windows
-    begin
-      repeat
-        if (SR.Name <> '.') and (SR.Name <> '..') then
-        begin
-          BrowseDir(Dir + Sr.Name + PathDelim);
-        end
-      until FindNextw(SR) <> 0;
-    end; // if
-    FindClosew(SR);
-    
-    if FindFirstW(Dir + '*.txt', 0, SR) = 0 then
-    begin
-      repeat
-        SLen := BrowsePos;
-
-        Song[SLen].Path     := Dir;
-        Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
-        Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
-        Song[SLen].FileName := SR.Name;
-
-        if (AnalyseFile(Song[SLen]) = false) then
-          Dec(BrowsePos)
-        else
-        begin
-          if Song[SLen].Cover = '' then
-            Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
-        end;
-
-        //Change Length Only every 50 Entrys
-        Inc(BrowsePos);
-
-        if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
-        begin
-            SetLength(Song, Length(Song) + 50);
-        end;
-
-      until FindNextW(SR) <> 0;
-      end; // if FindFirst
-    FindCloseW(SR);
-    {$ENDIF}
-	
-   {$IFDEF LINUX}
-    // Itterate the Songs Directory... ( With unicode capable functions for linux )
-    TheDir := oldlinux.opendir( Dir );     // JB_Unicode - linux
-    if TheDir <> nil then
-    begin
-      repeat
-        ADirent := oldlinux.ReadDir(TheDir);
-
-        If ADirent<>Nil then
-        begin
-          With ADirent^ do
-            begin
-
-              if ( name[0] <> '.') then
-                BrowseDir( Dir + name + pathdelim );
-
-            end;
-        end;
-      Until ADirent=Nil;
-    end;
-    
-    
-
-    TheDir := oldlinux.opendir( Dir );     // JB_Unicode - linux
-    if TheDir <> nil then
-    begin
-      repeat
-        ADirent := oldlinux.ReadDir(TheDir);
-        
-        if ( ADirent <> Nil                    ) AND
-           ( pos( '.txt', ADirent^.name ) > 0 ) then
-        begin
-          writeln ('***** FOUND TXT' +  ADirent^.name );
-        
-          SLen := BrowsePos;
-
-          Song[SLen].Path     := Dir;
-          Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
-          Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
-          Song[SLen].FileName := ADirent^.name;
-
-          if (AnalyseFile(Song[SLen]) = false) then
-            Dec(BrowsePos)
-          else
-          begin
-            if Song[SLen].Cover = '' then
-              Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
-          end;
-
-          //Change Length Only every 50 Entrys
-          Inc(BrowsePos);
-          if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
-          begin
-              SetLength(Song, Length(Song) + 50);
-          end;
-        end;
-
-      Until ADirent=Nil;
-    end; // if FindFirst
-  {$endif}
-  
-  {$IFDEF DARWIN}
-    // Itterate the Songs Directory... ( With unicode capable functions for linux )
-    TheDir := FPOpenDir(Dir);     // JB_Unicode - linux
-    if TheDir <> nil then
-    begin
-      repeat
-        ADirent := FPReadDir(TheDir);
-
-        If assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
-        begin
-			      lAttrib := FileGetAttr(Dir + ADirent^.d_name);
-						if (lAttrib and faDirectory) <> 0 then
-						begin
-						  //Log.LogError('Entering dir "' + Dir + ADirent^.d_name + PathDelim + '" now.');
-						  BrowseDir(Dir + ADirent^.d_name + PathDelim);						
-						end	
-						else if Pos( '.txt', LowerCase(ADirent^.d_name)) > 0 then
-						begin
-							SLen := BrowsePos;
-							
-							try
-							Song[SLen].Path     := Dir;
-							Song[SLen].Folder   := Copy(String(Dir), Length(String(SongPath))+1, 10000);
-							Song[SLen].Folder   := Copy(String(Song[SLen].Folder), 1, Pos( PathDelim , Song[SLen].Folder)-1);
-							Song[SLen].FileName := ADirent^.d_name;
-							//Log.LogError( 'Song: ' + ADirent^.d_name + ', Length(Song) = ' + inttostr(Length(Song)) + ', BrowsePos = ' + IntToStr(BrowsePos) + ', Dir = "' + Dir + '"');
-
-							if (AnalyseFile(Song[SLen]) = false) then
-							begin
-							  Log.LogError('AnalyseFile failed for "' + ADirent^.d_name + '".');
-								Dec(BrowsePos);
-							end
-							else
-							begin
-								if Song[SLen].Cover = '' then
-									Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
-							end;
-							except 
-							end;
-
-							//Change Length Only every 50 Entrys
-							Inc(BrowsePos);
-
-							if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
-							begin
-									SetLength(Song, Length(Song) + 50);
-							end;
-						end;
-        end;
-				
-      Until ADirent=Nil;
-			
-			if (FPCloseDir(TheDir) <> 0) then
+	  Files := Platform.DirectoryFindFiles( Dir, '.txt', true);
+		for i := 0 to Length(Files)-1 do
+		begin
+		  if Files[i].IsDirectory then
 			begin
-			  Log.LogError('TSongs.BrowseDir: Exception: Error closing dir: "' + Dir + '".')
+			  BrowseDir( Dir + Files[i].Name + PathDelim );
+			end
+			else
+			begin
+				SLen := BrowsePos;
+
+				Song[SLen].Path     := Dir;
+				Song[SLen].Folder   := Copy(String(Dir), Length(String(SongPath))+1, 10000);
+				Song[SLen].Folder   := Copy(String(Song[SLen].Folder), 1, Pos( PathDelim , Song[SLen].Folder)-1);
+				Song[SLen].FileName := Files[i].Name;
+
+				if (AnalyseFile(Song[SLen]) = false) then
+				begin
+					Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
+					Dec(BrowsePos);
+				end
+				else
+				begin
+					if Song[SLen].Cover = '' then
+						Song[SLen].Cover := FindSongFile(Dir, '*[CO].jpg');
+				end;
+
+				//Change Length Only every 50 Entrys
+				Inc(BrowsePos);
+
+				if (BrowsePos mod 50 = 0) AND (BrowsePos <> 0) then
+				begin
+						SetLength(Song, Length(Song) + 50);
+				end;
 			end;
-    end;
+		end;
+		SetLength( Files, 0);
 
-  {$endif}
-  
 //  Log.LogStatus('Parsing directory: ' + Dir + SR.Name, 'LoadSongList');
-
-
 end;
 
 procedure TSongs.Sort(Order: integer);

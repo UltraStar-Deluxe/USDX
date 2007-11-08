@@ -12,9 +12,6 @@ uses
     {$IFDEF MSWINDOWS}
     Windows,
     {$ENDIF}
-    {$IFDEF DARWIN}		// needed for initialization of cthreads
-    cthreads,
-    {$ENDIF}
     SDL,
     UGraphic,
     UMusic,

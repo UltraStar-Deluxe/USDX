@@ -101,9 +101,16 @@ uses
   uPluginLoader     in 'Classes\uPluginLoader.pas',     //New Plugin Loader Module
 
   UParty            in 'Classes\UParty.pas',            // to - do : rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
+  UPlatform         in 'Classes\UPlatform.pas', 
+{$IFDEF WIN32}
+  UPlatformWindows  in 'Classes\UPlatformWindows.pas', 
+{$ENDIF}
+{$IFDEF LINUX}
+  UPlatformLinux    in 'Classes\UPlatformLinux.pas', 
+{$ENDIF}
 
 {$IFDEF FPC}
-  ulazjpeg               in 'Classes\Ulazjpeg.pas',
+  ulazjpeg          in 'Classes\Ulazjpeg.pas',
 {$ENDIF}
 
 
