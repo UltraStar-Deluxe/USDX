@@ -8,6 +8,12 @@ interface
 
 {$I switches.inc}
 
+{$IFDEF DARWIN}
+	{$IFDEF DEBUG}
+		{$DEFINE USE_PSEUDO_THREAD}
+	{$ENDIF}
+{$ENDIF}
+
 uses
      {$IFDEF MSWINDOWS}
        Windows,
@@ -29,6 +35,9 @@ uses
      UCommon,
 	 {$IFDEF DARWIN}
 	 cthreads,
+	 {$ENDIF}
+	 {$IFDEF USE_PSEUDO_THREAD}
+	 PseudoThread,
 	 {$ENDIF}
      UCatCovers;
 
@@ -86,8 +95,13 @@ type
     OrderTyp:   integer; // type of sorting for this button (0=name)
     CatNumber:  integer; // Count of Songs in Category for Cats and Number of Song in Category for Songs
   end;
-
+	
+	
+	{$IFDEF USE_PSEUDO_THREAD}
+	TSongs = class( TPseudoThread )
+	{$ELSE}
   TSongs = class( TThread )
+	{$ENDIF}
   private
     BrowsePos : Cardinal; //Actual Pos in Song Array
     fNotify   ,
@@ -204,7 +218,9 @@ begin
 *)
   {$endif}
   
-  Setlength(Song, 0);
+{$IFNDEF USE_PSEUDO_THREAD}  
+	Setlength(Song, 0);
+{$ENDIF}
 end;
 
 procedure TSongs.DoDirChanged(Sender: TObject);
@@ -216,6 +232,9 @@ procedure TSongs.Execute();
 var
   fChangeNotify : THandle;
 begin
+{$IFDEF USE_PSEUDO_THREAD}
+  int_LoadSongList();
+{$ELSE}
   fParseSongDirectory := true;
   
   while not self.terminated do
@@ -229,7 +248,7 @@ begin
 
     self.suspend;
   end;
-    
+{$ENDIF}    
 end;
 
 procedure TSongs.int_LoadSongList;

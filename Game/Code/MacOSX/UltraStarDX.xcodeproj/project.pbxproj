@@ -129,12 +129,8 @@
 		2C4D9DF20CC9EF210031092D /* sdltruetypefont.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */; };
 		2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */; };
 		2C4D9DF40CC9EF210031092D /* sdltruetypefont.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */; };
-		2C4D9E0C0CC9EF840031092D /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E000CC9EF840031092D /* Graphics.pas */; };
-		2C4D9E0D0CC9EF840031092D /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E010CC9EF840031092D /* JPEG.pas */; };
 		2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
 		2C4D9E150CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
-		2C4D9E180CC9EF840031092D /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E000CC9EF840031092D /* Graphics.pas */; };
-		2C4D9E190CC9EF840031092D /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E010CC9EF840031092D /* JPEG.pas */; };
 		2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
 		2C4D9E210CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
 		2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
@@ -147,6 +143,12 @@
 		2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
 		2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CDEA4F60CBD725B0096994C /* OpenGL.framework */; };
 		2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
+		2CEA2AE00CE385190097A5FF /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADE0CE385190097A5FF /* Graphics.pas */; };
+		2CEA2AE10CE385190097A5FF /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADF0CE385190097A5FF /* JPEG.pas */; };
+		2CEA2AE20CE385190097A5FF /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADE0CE385190097A5FF /* Graphics.pas */; };
+		2CEA2AE30CE385190097A5FF /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADF0CE385190097A5FF /* JPEG.pas */; };
+		2CEA2AF10CE3868E0097A5FF /* PseudoThread.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */; };
+		2CEA2AF20CE3868E0097A5FF /* PseudoThread.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */; };
 		2CF3EF220CDE13A0004F5956 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF210CDE13A0004F5956 /* Messages.pas */; };
 		2CF3EF230CDE13A0004F5956 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF210CDE13A0004F5956 /* Messages.pas */; };
 		2CF3EF270CDE13BA004F5956 /* MacResources.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF260CDE13BA004F5956 /* MacResources.pas */; };
@@ -424,14 +426,15 @@
 		2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl_image.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_image/sdl_image.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
 		2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl_ttf.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_ttf/sdl_ttf.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
 		2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdltruetypefont.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_ttf/sdltruetypefont.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
-		2C4D9E000CC9EF840031092D /* Graphics.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = Graphics.pas; path = Wrapper/Graphics.pas; sourceTree = "<group>"; tabWidth = 2; };
-		2C4D9E010CC9EF840031092D /* JPEG.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = JPEG.pas; path = Wrapper/JPEG.pas; sourceTree = "<group>"; tabWidth = 2; };
 		2C4D9E040CC9EF840031092D /* OpenGL12.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = OpenGL12.pas; path = Wrapper/OpenGL12.pas; sourceTree = "<group>"; tabWidth = 2; };
 		2C4D9E090CC9EF840031092D /* Windows.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = Windows.pas; path = Wrapper/Windows.pas; sourceTree = "<group>"; tabWidth = 2; };
 		2C4D9E440CC9F0ED0031092D /* switches.inc */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = switches.inc; path = ../switches.inc; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "ustar-icon_v01.icns"; path = "../../Graphics/ustar-icon_v01.icns"; sourceTree = SOURCE_ROOT; };
 		2CDC716B0CDB9CB70018F966 /* StrUtils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = StrUtils.pas; path = ../../../Modis/SDK/StrUtils.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		2CEA2ADE0CE385190097A5FF /* Graphics.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Graphics.pas; path = Wrapper/Graphics.pas; sourceTree = "<group>"; };
+		2CEA2ADF0CE385190097A5FF /* JPEG.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = JPEG.pas; path = Wrapper/JPEG.pas; sourceTree = "<group>"; };
+		2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = PseudoThread.pas; path = Wrapper/PseudoThread.pas; sourceTree = "<group>"; };
 		2CF3EF210CDE13A0004F5956 /* Messages.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = Messages.pas; path = Wrapper/Messages.pas; sourceTree = "<group>"; tabWidth = 2; };
 		2CF3EF260CDE13BA004F5956 /* MacResources.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = MacResources.pas; path = Wrapper/MacResources.pas; sourceTree = "<group>"; tabWidth = 2; };
 		2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenCredits.pas; path = ../Screens/UScreenCredits.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
@@ -545,10 +548,11 @@
 		2C4D9DF50CC9EF3A0031092D /* Wrapper */ = {
 			isa = PBXGroup;
 			children = (
+				2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */,
+				2CEA2ADE0CE385190097A5FF /* Graphics.pas */,
+				2CEA2ADF0CE385190097A5FF /* JPEG.pas */,
 				2CF3EF260CDE13BA004F5956 /* MacResources.pas */,
 				2CF3EF210CDE13A0004F5956 /* Messages.pas */,
-				2C4D9E000CC9EF840031092D /* Graphics.pas */,
-				2C4D9E010CC9EF840031092D /* JPEG.pas */,
 				2C4D9E040CC9EF840031092D /* OpenGL12.pas */,
 				2C4D9E090CC9EF840031092D /* Windows.pas */,
 			);
@@ -1024,8 +1028,6 @@
 				2C4D9DED0CC9EF0A0031092D /* sdl_image.pas in Sources */,
 				2C4D9DF10CC9EF210031092D /* sdl_ttf.pas in Sources */,
 				2C4D9DF20CC9EF210031092D /* sdltruetypefont.pas in Sources */,
-				2C4D9E0C0CC9EF840031092D /* Graphics.pas in Sources */,
-				2C4D9E0D0CC9EF840031092D /* JPEG.pas in Sources */,
 				2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */,
 				2C4D9E150CC9EF840031092D /* Windows.pas in Sources */,
 				2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */,
@@ -1078,6 +1080,9 @@
 				2CF3EF220CDE13A0004F5956 /* Messages.pas in Sources */,
 				2CF3EF270CDE13BA004F5956 /* MacResources.pas in Sources */,
 				2CF8E6BE0CDFA8E80053A996 /* UPartyDefs.pas in Sources */,
+				2CEA2AE00CE385190097A5FF /* Graphics.pas in Sources */,
+				2CEA2AE10CE385190097A5FF /* JPEG.pas in Sources */,
+				2CEA2AF10CE3868E0097A5FF /* PseudoThread.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1146,8 +1151,6 @@
 				2C4D9DEE0CC9EF0A0031092D /* sdl_image.pas in Sources */,
 				2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */,
 				2C4D9DF40CC9EF210031092D /* sdltruetypefont.pas in Sources */,
-				2C4D9E180CC9EF840031092D /* Graphics.pas in Sources */,
-				2C4D9E190CC9EF840031092D /* JPEG.pas in Sources */,
 				2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */,
 				2C4D9E210CC9EF840031092D /* Windows.pas in Sources */,
 				2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */,
@@ -1200,6 +1203,9 @@
 				2CF3EF230CDE13A0004F5956 /* Messages.pas in Sources */,
 				2CF3EF280CDE13BA004F5956 /* MacResources.pas in Sources */,
 				2CF8E6BF0CDFA8E80053A996 /* UPartyDefs.pas in Sources */,
+				2CEA2AE20CE385190097A5FF /* Graphics.pas in Sources */,
+				2CEA2AE30CE385190097A5FF /* JPEG.pas in Sources */,
+				2CEA2AF20CE3868E0097A5FF /* PseudoThread.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

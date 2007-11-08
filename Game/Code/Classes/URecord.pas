@@ -323,6 +323,16 @@ begin
     BASS_RecordInit(SC);
 
     InputName := BASS_RecordGetInputName(SCI);
+		
+		{$IFDEF DARWIN}
+  		// Under MacOSX the SingStar Mics have an empty
+	  	// InputName. So, we have to add a hard coded
+		  // Workaround for this problem
+			if (InputName = nil) and (Pos( 'USBMIC Serial#', Descr) > 0) then
+			begin
+			  InputName := 'Microphone';
+			end;
+		{$ENDIF}
 
     SetLength(SoundCard[SC].Input, 1);
     SoundCard[SC].Input[SCI].Name := InputName;
