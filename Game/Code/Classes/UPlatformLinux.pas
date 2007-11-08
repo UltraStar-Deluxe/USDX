@@ -38,21 +38,21 @@ begin
   repeat
     ADirent :=  oldlinux.ReadDir(TheDir);
 
-    If Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
+    If Assigned(ADirent) and (ADirent^.name <> '.') and (ADirent^.name <> '..') then
     begin
-      lAttrib := FileGetAttr(Dir + ADirent^.d_name);
+      lAttrib := FileGetAttr(Dir + ADirent^.name);
       if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
       begin
         SetLength( Result, i + 1);
-        Result[i].Name        := ADirent^.d_name;
+        Result[i].Name        := ADirent^.name;
         Result[i].IsDirectory := true;
         Result[i].IsFile      := false;
         i := i + 1;
       end
-      else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.d_name)) > 0) then
+      else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.name)) > 0) then
       begin
         SetLength( Result, i + 1);
-        Result[i].Name        := ADirent^.d_name;
+        Result[i].Name        := ADirent^.name;
         Result[i].IsDirectory := false;
         Result[i].IsFile      := true;
         i := i + 1;
