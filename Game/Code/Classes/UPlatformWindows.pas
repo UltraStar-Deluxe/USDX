@@ -103,32 +103,33 @@ Function TPlatform.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs
 var
     i : Integer;
     SR : TSearchRecW;
+    lAttrib : Integer;
 begin
   i := 0;
   Filter := LowerCase(Filter);
 
-  if ReturnAllSubDirs then begin
-    if FindFirstW(Dir + '*', faDirectory, SR) = 0 then
-    repeat
-      if (SR.Name <> '.') and (SR.Name <> '..') then
+  if FindFirstW(Dir + '*', faAnyFile or faDirectory, SR) = 0 then
+  repeat
+    if (SR.Name <> '.') and (SR.Name <> '..') then
+    begin
+      lAttrib := FileGetAttr(Dir + SR.name);
+      if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
       begin
         SetLength( Result, i + 1);
-        Result[i].Name        := SR.Name;
+        Result[i].Name        := SR.name;
         Result[i].IsDirectory := true;
         Result[i].IsFile      := false;
         i := i + 1;
+      end
+      else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(SR.Name)) > 0) then
+      begin
+        SetLength( Result, i + 1);
+        Result[i].Name        := SR.Name;
+        Result[i].IsDirectory := false;
+        Result[i].IsFile      := true;
+        i := i + 1;
       end;
-    until FindNextW(SR) <> 0;
-    FindCloseW(SR);
-  end;
-  
-  if FindFirstW(Dir + '*' + Filter, 0, SR) = 0 then
-  repeat
-    SetLength( Result, i + 1);
-    Result[i].Name        := SR.Name;
-    Result[i].IsDirectory := true;
-    Result[i].IsFile      := false;
-    i := i + 1;
+    end;
   until FindNextW(SR) <> 0;
   FindCloseW(SR);
 end;
