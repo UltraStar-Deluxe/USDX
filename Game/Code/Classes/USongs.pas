@@ -318,8 +318,8 @@ begin
 				SLen := BrowsePos;
 
 				Song[SLen].Path     := Dir;
-				Song[SLen].Folder   := Copy(String(Dir), Length(String(SongPath))+1, 10000);
-				Song[SLen].Folder   := Copy(String(Song[SLen].Folder), 1, Pos( PathDelim , Song[SLen].Folder)-1);
+				Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
+				Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
 				Song[SLen].FileName := Files[i].Name;
 
 				if (AnalyseFile(Song[SLen]) = false) then
