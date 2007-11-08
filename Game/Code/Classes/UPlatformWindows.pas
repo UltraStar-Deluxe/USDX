@@ -33,6 +33,11 @@ type
     FindData: TWin32FindDataW;
   end;
 
+function  FindFirstW(const Path: WideString; Attr: Integer; var  F: TSearchRecW): Integer; forward;
+function  FindNextW(var F: TSearchRecW): Integer; forward;
+procedure FindCloseW(var F: TSearchRecW); forward;
+function  FindMatchingFileW(var F: TSearchRecW): Integer; forward;
+function  DirectoryExistsW(const Directory: widestring): Boolean; forward;
 
 function FindFirstW(const Path: widestring; Attr: Integer; var  F: TSearchRecW): Integer;
 const
