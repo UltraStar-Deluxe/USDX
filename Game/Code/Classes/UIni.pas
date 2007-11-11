@@ -271,15 +271,12 @@ begin
   // Resolution
   SetLength(IResolution, 0);
   Modes := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN); // Check if there are any modes available
-  repeat
+  while Assigned(Modes) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
+  begin
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
-    Tekst := IniFile.ReadString('Graphics', 'Screens', IScreens[0]);
-    
-    Log.LogStatus('SDL_ListModes Res : ' + IResolution[High(IResolution)], 'Graphics - Resolutions');
-    
     Inc(Modes);
-  until Modes^ = nil;
+  end;
 
   // if no modes were set, then failback to 800x600
   // as per http://sourceforge.net/forum/message.php?msg_id=4544965
