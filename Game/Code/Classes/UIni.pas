@@ -270,8 +270,8 @@ begin
 
   // Resolution
   SetLength(IResolution, 0);
-  Modes^ := nil;
-  Modes := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN); // Check if there are any modes available
+
+  Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN); // Check if there are any modes available
   while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
   begin
     SetLength(IResolution, Length(IResolution) + 1);
