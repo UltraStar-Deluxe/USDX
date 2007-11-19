@@ -5,10 +5,18 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes;
+  SDL,
+  UMenu,
+  UDisplay,
+  UMusic,
+  UFiles,
+  UIni,
+  UThemes;
 
 type
   TScreenOptionsThemes = class(TMenu)
+    private
+      procedure ReloadTheme;
     public
       SkinSelect: Integer;
       constructor Create; override;
@@ -57,8 +65,6 @@ begin
             UGraphic.UnLoadScreens();
             UGraphic.LoadScreens();
 
-            UGraphic.LoadScreens();
-
             AudioPlayback.PlayBack;
             FadeTo(@ScreenOptions);
           end;
@@ -90,51 +96,29 @@ end;
 procedure TScreenOptionsThemes.InteractInc;
 begin
   inherited InteractInc;
+
   //Update Skins
   if (SelInteraction = 0) then
   begin
     Skin.OnThemeChange;
     UpdateSelectSlideOptions (Theme.OptionsThemes.SelectSkin, SkinSelect, ISkin, Ini.SkinNo);
-
-    Theme.LoadTheme('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
-
-    ScreenOptionsThemes := TScreenOptionsThemes.create();
-    ScreenOptionsThemes.onshow;
-    Display.ActualScreen := @ScreenOptionsThemes;
-    ScreenOptionsThemes.Draw;
-
-
-    Display.Draw;
-    SwapBuffers;
-
-    freeandnil( self );
-    
   end;
+
+  ReloadTheme();
 end;
 
 procedure TScreenOptionsThemes.InteractDec;
 begin
   inherited InteractDec;
+
   //Update Skins
-  if (SelInteraction = 0) then
+  if (SelInteraction = 0 ) then
   begin
     Skin.OnThemeChange;
     UpdateSelectSlideOptions (Theme.OptionsThemes.SelectSkin, SkinSelect, ISkin, Ini.SkinNo);
-
-    Theme.LoadTheme('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
-
-    ScreenOptionsThemes := TScreenOptionsThemes.create();
-    ScreenOptionsThemes.onshow;
-    Display.ActualScreen := @ScreenOptionsThemes;
-    ScreenOptionsThemes.Draw;
-
-
-    Display.Draw;
-    SwapBuffers;
-
-    freeandnil( self );
-    
   end;
+
+  ReloadTheme();
 end;
 
 constructor TScreenOptionsThemes.Create;
@@ -159,6 +143,24 @@ end;
 procedure TScreenOptionsThemes.onShow;
 begin
   Interaction := 0;
+end;
+
+procedure TScreenOptionsThemes.ReloadTheme;
+begin
+  Theme.LoadTheme('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
+
+  ScreenOptionsThemes := TScreenOptionsThemes.create();
+  ScreenOptionsThemes.onshow;
+  Display.ActualScreen := @ScreenOptionsThemes;
+
+  ScreenOptionsThemes.Interaction    := self.Interaction;
+  ScreenOptionsThemes.Draw;
+
+
+  Display.Draw;
+  SwapBuffers;
+
+  freeandnil( self );
 end;
 
 end.
