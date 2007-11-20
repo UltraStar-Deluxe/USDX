@@ -12,7 +12,7 @@ uses Classes, UPlatform;
 
 type
 
-  TPlatform = class(TPlatform)
+  TPlatformLinux = class(TPlatform)
   public
     Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
   end;
