@@ -9,9 +9,6 @@ interface
 {$I switches.inc}
 
 uses
-    {$IFDEF MSWINDOWS}
-    Windows,
-    {$ENDIF}
     SDL,
     UGraphic,
     UMusic,
