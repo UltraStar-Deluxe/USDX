@@ -25,20 +25,25 @@ type
  
   TDirectoryEntryArray = Array of TDirectoryEntry;
 	
-  IPlatform = interface
-  
-	// DirectoryFindFiles returns all files matching the filter. Do not use '*' in the filter.
-	// If you set ReturnAllSubDirs = true all directories will be returned, if yout set it to false
-	// directories are completely ignored. 
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
+  TPlatform = class
+
+	  // DirectoryFindFiles returns all files matching the filter. Do not use '*' in the filter.
+	  // If you set ReturnAllSubDirs = true all directories will be returned, if yout set it to false
+	  // directories are completely ignored.
+    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; virtual; abstract;
+
+    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean; virtual;
+
+    function GetGamePath : WideString; virtual;
   end;
 
 var
-  Platform : IPlatform;
+  Platform : TPlatform;
 
 implementation
 
 uses
+  SysUtils,
   {$IFDEF MSWINDOWS}
   UPlatformWindows;
   {$ENDIF}
@@ -49,8 +54,33 @@ uses
   UPlatformMacOSX;
   {$ENDIF}
 
+{ TPlatform }
+
+function TPlatform.GetGamePath: WideString;
+begin
+  // Windows and Linux use this:
+  Result := ExtractFilePath(ParamStr(0));
+end;
+
+function TPlatform.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+begin
+  // Linux and Mac don't check for running apps at the moment
+  Result := false;
+end;
+
 initialization
 
-  Platform := TPlatform.Create;
+  {$IFDEF MSWINDOWS}
+    Platform := TPlatformWindows.Create;
+  {$ENDIF}
+  {$IFDEF LINUX}
+    Platform := TPlatformLinux.Create;
+  {$ENDIF}
+  {$IFDEF DARWIN}
+    Platform := TPlatformMacOSX.Create;
+  {$ENDIF}
 
+finalization
+
+    Platform.Free;
 end.

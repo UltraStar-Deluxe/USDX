@@ -64,24 +64,7 @@ function AdaptFilePaths( const aPath : widestring ): widestring;
   procedure ZeroMemory( Destination: Pointer; Length: DWORD );
 {$ENDIF}
 
-{$IFNDEF FPC}
-type
-  TSearchRecW = record
-    Time: Integer;
-    Size: Integer;
-    Attr: Integer;
-    Name: WideString;
-    ExcludeAttr: Integer;
-    FindHandle: THandle;
-    FindData: TWin32FindDataW;
-  end;
-
-  function  FindFirstW(const Path: WideString; Attr: Integer; var  F: TSearchRecW): Integer;
-  function  FindNextW(var F: TSearchRecW): Integer;
-  procedure FindCloseW(var F: TSearchRecW);
-  function  FindMatchingFileW(var F: TSearchRecW): Integer;
-  function  DirectoryExistsW(const Directory: widestring): Boolean;
-{$endif}
+// eddie: FindFirstW etc are now in UPlatformWindows.pas
 
 implementation
 
@@ -225,77 +208,8 @@ end;
 procedure DeallocateHWnd(Wnd: HWND);
 begin
 end;
-{$ENDIF}
+{$ENDIF} // IFDEF DARWIN
 
-
-
-
-{$ENDIF}
-
-{$ifNdef FPC}
-function FindFirstW(const Path: widestring; Attr: Integer; var  F: TSearchRecW): Integer;
-const
-  faSpecial = faHidden or faSysFile or faVolumeID or faDirectory;
-begin
-  F.ExcludeAttr := not Attr and faSpecial;
-  F.FindHandle  := FindFirstFileW(PWideChar(Path), F.FindData);
-  if F.FindHandle <> INVALID_HANDLE_VALUE then
-  begin
-    Result := FindMatchingFileW(F);
-    if Result <> 0 then FindCloseW(F);
-  end else
-    Result := GetLastError;
-end;
-
-function FindNextW(var F: TSearchRecW): Integer;
-begin
-  if FindNextFileW(F.FindHandle, F.FindData) then
-    Result := FindMatchingFileW(F)
-  else
-    Result := GetLastError;
-end;
-
-procedure FindCloseW(var F: TSearchRecW);
-begin
-  if F.FindHandle <> INVALID_HANDLE_VALUE then
-  begin
-    Windows.FindClose(F.FindHandle);
-    F.FindHandle := INVALID_HANDLE_VALUE;
-  end;
-end;
-
-function FindMatchingFileW(var F: TSearchRecW): Integer;
-var
-  LocalFileTime: TFileTime;
-begin
-  with F do
-  begin
-    while FindData.dwFileAttributes and ExcludeAttr <> 0 do
-      if not FindNextFileW(FindHandle, FindData) then
-      begin
-        Result := GetLastError;
-        Exit;
-      end;
-    FileTimeToLocalFileTime(FindData.ftLastWriteTime, LocalFileTime);
-    FileTimeToDosDateTime(LocalFileTime, LongRec(Time).Hi, LongRec(Time).Lo);
-    Size := FindData.nFileSizeLow;
-    Attr := FindData.dwFileAttributes;
-    Name := FindData.cFileName;
-  end;
-  Result := 0;
-end;
-
-function DirectoryExistsW(const Directory: widestring): Boolean;
-var
-  Code: Integer;
-begin
-  Code := GetFileAttributesW(PWideChar(Directory));
-  Result := (Code <> -1) and (FILE_ATTRIBUTE_DIRECTORY and Code <> 0);
-end;
-{$endif}
-
-
-
-
+{$ENDIF} // IFDEF FPC
 
 end.

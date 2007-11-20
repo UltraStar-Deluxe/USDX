@@ -125,7 +125,7 @@ implementation
 
 uses USongs, UJoystick, math, UCommandLine, ULanguage, SDL_ttf,
      USkins, UCovers, UCatCovers, UDataBase, UPlaylist, UDLLManager,
-	 UParty, UCore, UGraphicClasses, UPluginDefs;
+	 UParty, UCore, UGraphicClasses, UPluginDefs, UPlatform;
 
 const
   Version = 'UltraStar Deluxe V 1.10 Alpha Build';
@@ -133,36 +133,14 @@ const
 Procedure Main;
 var
   WndTitle: string;
-  hWnd: THandle;
-  I: Integer;
 begin
   try
 
     WndTitle := Version;
 
-    {$IFDEF MSWINDOWS}
-    //------------------------------
-    //Start more than One Time Prevention
-    //------------------------------
-    hWnd:= FindWindow(nil, PChar(WndTitle));
-    //Programm already started
-    if (hWnd <> 0) then
-    begin
-      I := Messagebox(0, PChar('Another Instance of Ultrastar is already running. Continue ?'), PChar(WndTitle), MB_ICONWARNING or MB_YESNO);
-      if (I = IDYes) then
-      begin
-        I := 1;
-        repeat
-          Inc(I);
-          hWnd := FindWindow(nil, PChar(WndTitle + ' Instance ' + InttoStr(I)));
-        until (hWnd = 0);
-        WndTitle := WndTitle + ' Instance ' + InttoStr(I);
-      end
-      else
-        Exit;
-    end;
-    {$ENDIF}
-
+    if Platform.TerminateIfAlreadyRunning( {var} WndTitle) then
+      Exit;
+      
     //------------------------------
     //StartUp - Create Classes and Load Files
     //------------------------------
@@ -1008,25 +986,6 @@ begin
   Player[PlayerNum].ScoreTotalI := 0;
 end;
 
-{$IFDEF DARWIN}
-// Mac applications are packaged in directories.
-// We have to cut the last two directories
-// to get the application directory.
-Function GetGamePath : String;
-var
-	x,
-	i : integer;
-begin
-  Result := ExtractFilePath(ParamStr(0));
-  for x := 0 to 2 do begin
-	i := Length(Result);
-	repeat 
-	  Delete( Result, i, 1);
-	  i := Length(Result);
-	until (i = 0) or (Result[i] = '/');
-  end;  
-end;
-{$ENDIF}
 
 //--------------------
 // Function sets all Absolute Paths e.g. Song Path and makes sure the Directorys exist
@@ -1062,11 +1021,7 @@ procedure InitializePaths;
 
 begin
 
-{$IFDEF DARWIN}  
-  GamePath := GetGamePath;
-{$ELSE}
-  GamePath := ExtractFilePath(ParamStr(0));
-{$ENDIF}
+  GamePath := Platform.GetGamePath;
 
   initialize_path( LogPath         , GamePath                             );
   initialize_path( SoundPath       , GamePath + 'Sounds'      + PathDelim );

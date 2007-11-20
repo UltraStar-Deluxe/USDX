@@ -12,16 +12,16 @@ uses Classes, UPlatform;
 
 type
 
-  TPlatform = class(TInterfacedObject, IPlatform)
+  TPlatform = class(TPlatform)
   public
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
+    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
   end;
 
 implementation
 
 uses SysUtils, oldlinux;
 
-Function TPlatform.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
+Function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
 var
     i : Integer;
     TheDir  : oldlinux.pdir;

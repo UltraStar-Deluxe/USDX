@@ -76,7 +76,7 @@ var I: Integer;
 begin
   //Get the Space and "Zero" it
   SetLength (Events, SpacetoAllocate);
-  For I := 0 to SpacetoAllocate do
+  For I := 0 to SpacetoAllocate-1 do
     Events[I].Name[1] := chr(0);
 
   SpaceinEvents := SpacetoAllocate;

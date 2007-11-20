@@ -12,16 +12,36 @@ uses Classes, UPlatform;
 
 type
 
-  TPlatform = class(TInterfacedObject, IPlatform)
+  TPlatformMacOSX = class(TPlatform)
+  private
   public
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
+    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
+    function GetGamePath: WideString; override;
   end;
 
 implementation
 
 uses SysUtils, baseunix;
 
-Function TPlatform.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
+// Mac applications are packaged in directories.
+// We have to cut the last two directories
+// to get the application directory.
+Function TPlatformMacOSX.GetGamePath : WideString;
+var
+	x,
+	i : integer;
+begin
+  Result := ExtractFilePath(ParamStr(0));
+  for x := 0 to 2 do begin
+    i := Length(Result);
+    repeat
+      Delete( Result, i, 1);
+      i := Length(Result);
+    until (i = 0) or (Result[i] = '/');
+  end;
+end;
+
+Function TPlatformMacOSX.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
 var
     i : Integer;
     TheDir  : pdir;
