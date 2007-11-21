@@ -166,7 +166,7 @@ const
   IJoypad:        array[0..1] of string = ('Off', 'On');
   ILPT:           array[0..2] of string = ('Off', 'LCD', 'Lights');
 
-  IChannel:       array[0..6] of string = ('0', '1', '2', '3', '4', '5', '6');
+  IChannel:       array[0..6] of string = ('Off', '1', '2', '3', '4', '5', '6');
 
 implementation
 
@@ -198,7 +198,7 @@ var
 
 begin
   GamePath := ExtractFilePath(ParamStr(0));
-  
+
   if (Params.ConfigFile <> '') then
     try
       IniFile := TMemIniFile.Create(Params.ConfigFile);
@@ -409,7 +409,7 @@ begin
       if (Tekst = 'DELUXE') then
         I2 := I;
 
-      //Search for Skins for this Theme  
+      //Search for Skins for this Theme
       for Pet := low(Skin.Skin) to high(Skin.Skin) do
       begin
         if UpperCase(Skin.Skin[Pet].Theme) = Tekst then
