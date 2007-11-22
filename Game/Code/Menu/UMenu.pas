@@ -767,6 +767,7 @@ begin
     BackImg.Y:=BackW;  }
     BackImg.X := 0;
     BackImg.Y := 0;
+    BackImg.Z := 0; // todo: eddie: to the opengl experts: please check this! On the mac z is not initialized???
     BackImg.W := 800;
     BackImg.H := 600;
     DrawTexture(BackImg);

@@ -384,7 +384,7 @@
 		2C4D9C700CC9EC8C0031092D /* UGraphicClasses.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UGraphicClasses.pas; path = ../Classes/UGraphicClasses.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C710CC9EC8C0031092D /* UHooks.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UHooks.pas; path = ../Classes/UHooks.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C720CC9EC8C0031092D /* UIni.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UIni.pas; path = ../Classes/UIni.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
-		2C4D9C730CC9EC8C0031092D /* UJoystick.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UJoystick.pas; path = ../Classes/UJoystick.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C730CC9EC8C0031092D /* UJoystick.pas */ = {isa = PBXFileReference; explicitFileType = sourcecode.pascal; fileEncoding = 5; indentWidth = 2; name = UJoystick.pas; path = ../Classes/UJoystick.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C740CC9EC8C0031092D /* ULanguage.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULanguage.pas; path = ../Classes/ULanguage.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C760CC9EC8C0031092D /* ULCD.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULCD.pas; path = ../Classes/ULCD.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C770CC9EC8C0031092D /* ULight.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULight.pas; path = ../Classes/ULight.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
@@ -875,10 +875,12 @@
 		DDC6850F09F5717A004E4BFF /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = DDC6851009F5717A004E4BFF /* Build configuration list for PBXProject "UltraStarDX" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 0;
 			mainGroup = DDC6850D09F5717A004E4BFF;
 			productRefGroup = DDC6888C09F57243004E4BFF /* Products */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				DDC688C709F574E9004E4BFF /* UltraStarDX */,
 				DDC688D409F57523004E4BFF /* Put all program sources also in this target */,
@@ -1280,6 +1282,7 @@
 				HEADER_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = "";
 				REZ_SEARCH_PATHS = "";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
@@ -1293,6 +1296,7 @@
 				FPC_OVERRIDE_OPTIONS = "";
 				FPC_RTL_UNITS_BASE = /usr/local/lib/fpc/;
 				FPC_SPECIFIC_OPTIONS = "-Ci- -Cr- -Co- -O3 -Xs ";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Release;
 		};
