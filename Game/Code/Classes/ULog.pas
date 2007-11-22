@@ -45,6 +45,7 @@ type
     // compability
     procedure LogStatus(Log1, Log2: string);
     procedure LogError(Log1, Log2: string); overload;
+    procedure LogBuffer(const buf : Pointer; const bufLength : Integer; filename : string);
   end;
 
 var
@@ -254,6 +255,24 @@ begin
 
   //Exit Application
   Halt;
+end;
+
+procedure TLog.LogBuffer(const buf: Pointer; const bufLength: Integer; filename: string);
+var
+  f : TFileStream;
+begin
+  f := nil;
+
+  try
+    f := TFileStream.Create( filename, fmCreate);
+    f.Write( buf^, bufLength);
+    f.Free;
+  except
+    on e : Exception do begin
+      Log.LogError('TLog.LogBuffer: Failed to log buffer into file "' + filename + '". ErrMsg: ' + e.Message);
+      f.Free;
+    end;
+  end;
 end;
 
 end.
