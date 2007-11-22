@@ -242,6 +242,8 @@ PLUGIN_DUELL_NAME=Duell
 PLUGIN_DUELL_DESC=Sing a duell until 10000 points.
 PLUGIN_BLIND_NAME=Blind Mode
 PLUGIN_BLIND_DESC=Duell without seeing the notes.
+PLUGIN_TEAMDUELL_NAME=Team Duell
+PLUGIN_TEAMDUELL_DESC=Pass The Mic!
 
 #Statistics Screen
 #For more Info about the Format Strings look at the SorceCode (UScreenStatMain)
