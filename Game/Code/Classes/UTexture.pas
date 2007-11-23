@@ -427,6 +427,8 @@ procedure TTextureUnit.ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
     clr[2]:=(Color and $ff)/255;
     hls[1]:=maxvalue(clr);
     delta:=hls[1]-minvalue(clr);
+    // this is for safety reasons
+    if delta = 0.0 then delta:=0.000000000001;
     if      clr[0]=hls[1] then hls[0]:=(clr[1]-clr[2])/delta
     else if clr[1]=hls[1] then hls[0]:=2.0+(clr[2]-clr[0])/delta
     else if clr[2]=hls[1] then hls[0]:=4.0+(clr[0]-clr[1])/delta;
