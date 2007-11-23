@@ -98,7 +98,7 @@ type  //PluginInfo, for Init
     Sentence:    array of record
       Start:    integer;
       StartNote:  integer;
-      Lyric:      PChar;      // todo: eddie: changed string to pchar.
+      Lyric:      String;
       LyricWidth: real;
       Koniec:   integer;
       BaseNote: integer;

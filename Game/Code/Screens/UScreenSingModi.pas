@@ -133,7 +133,7 @@ begin
   begin
     Result.Sentence[I].Start := Czeski.Czesc[I].Start;
     Result.Sentence[I].StartNote := Czeski.Czesc[I].StartNote;
-    Result.Sentence[I].Lyric := Czeski.Czesc[I].Lyric;
+    Result.Sentence[I].Lyric := Czeski.Czesc[I].Lyric;     
     Result.Sentence[I].LyricWidth := Czeski.Czesc[I].LyricWidth;
     Result.Sentence[I].Koniec := Czeski.Czesc[I].Koniec;
     Result.Sentence[I].BaseNote := Czeski.Czesc[I].BaseNote;
