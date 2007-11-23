@@ -51,6 +51,7 @@ uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UDLLManager, UPlaylist,
 function TScreenPartyOptions.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
   var
     I, J: Integer;
+    OnlyMultiPlayer: boolean;
 begin
   Result := true;
   If (PressedDown) Then
@@ -74,7 +75,15 @@ begin
           //Don'T start when Playlist is Selected and there are no Playlists
           If (Playlist = 2) and (Length(PlaylistMan.Playlists) = 0) then
             Exit;
-
+          // Don't start when SinglePlayer Teams but only Multiplayer Plugins available
+          OnlyMultiPlayer:=true;
+          for I := 0 to High(DLLMan.Plugins) do begin
+            OnlyMultiPlayer := (OnlyMultiPlayer AND DLLMan.Plugins[I].TeamModeOnly);
+          end;
+          if (OnlyMultiPlayer) AND ((NumPlayer1 = 0) OR (NumPlayer2 = 0) OR ((NumPlayer3 = 0) AND (NumTeams = 1))) then begin
+            ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_PLUGINS'));
+            Exit;
+          end;
           //Save Difficulty
           Ini.Difficulty := SelectsS[SelectLevel].SelectedOption;
           Ini.SaveLevel;
