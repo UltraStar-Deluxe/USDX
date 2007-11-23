@@ -6,7 +6,7 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$I ../../Game/Code/switches.inc}
+{$I switches.inc}
 
 type  //PluginInfo, for Init
   TPluginInfo = record
