@@ -140,7 +140,7 @@ begin
 
   Log.LogStatus( 'Font' , '---------------------------');
   SetLength(Fonts, 5);
-  Fonts[0].Tex := Texture.LoadTexture(true, 'Font', 'PNG', 'Font', 0);
+  Fonts[0].Tex := Texture.LoadTexture(true, 'Font', 'PNG', 'Transparent', 0);
   Fonts[0].Tex.H := 30;
   Fonts[0].AspectW := 0.9;
   Fonts[0].Done := -1;
@@ -148,21 +148,21 @@ begin
 
   Log.LogStatus( 'FontB' , '---------------------------');
 
-  Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', 'PNG', 'Font', 0);
+  Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', 'PNG', 'Transparent', 0);
   Fonts[1].Tex.H := 30;
   Fonts[1].AspectW := 1;
   Fonts[1].Done := -1;
   Fonts[1].Outline := 0;
 
   Log.LogStatus( 'FontO' , '---------------------------');
-  Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', 'PNG', 'Font Outline', 0);
+  Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', 'PNG', 'Transparent', 0);
   Fonts[2].Tex.H := 30;
   Fonts[2].AspectW := 0.95;
   Fonts[2].Done := -1;
   Fonts[2].Outline := 5;
 
   Log.LogStatus( 'FontO2' , '---------------------------');
-  Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', 'PNG', 'Font Outline 2', 0);
+  Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', 'PNG', 'Transparent', 0);
   Fonts[3].Tex.H := 30;
   Fonts[3].AspectW := 0.95;
   Fonts[3].Done := -1;
@@ -262,7 +262,7 @@ begin
 
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBindTexture(GL_TEXTURE_2D, TexNum);
 
     glBegin(GL_QUADS);
@@ -321,7 +321,7 @@ begin
 
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glBindTexture(GL_TEXTURE_2D, TexNum);
   glBegin(GL_QUADS);
     glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
