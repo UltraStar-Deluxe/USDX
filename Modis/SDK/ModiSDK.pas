@@ -6,7 +6,7 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$I switches.inc}
+{$I ../../Game/Code/switches.inc}
 
 type  //PluginInfo, for Init
   TPluginInfo = record
@@ -98,7 +98,7 @@ type  //PluginInfo, for Init
     Sentence:    array of record
       Start:    integer;
       StartNote:  integer;
-      Lyric:      string;
+      Lyric:      PChar;      // todo: eddie: changed string to pchar.
       LyricWidth: real;
       Koniec:   integer;
       BaseNote: integer;
@@ -122,11 +122,11 @@ type  //PluginInfo, for Init
   HSTREAM = DWORD;
 
   //Routines to gave to the Plugin
-  fModi_LoadTex = function (const Name, Typ: PChar): TsmallTexture; stdcall; //Pointer to Texture Loader
-  //fModi_Translate = function (const Name, Translation: AChar): Integer; stdcall;       //Pointer to Translator
-  fModi_Print = procedure (const Style, Size: Byte; const X, Y: Real; const Text: PChar); stdcall;       //Procedure to Print Text   //Now translated automatically
-  fModi_LoadSound = function (const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
-  pModi_PlaySound = procedure (const Index: Cardinal); stdcall;       //Plays a Custom Sound
+  fModi_LoadTex = function (const Name, Typ: PChar): TsmallTexture; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} //Pointer to Texture Loader
+  //fModi_Translate = function (const Name, Translation: AChar): Integer; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}       //Pointer to Translator
+  fModi_Print = procedure (const Style, Size: Byte; const X, Y: Real; const Text: PChar); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}       //Procedure to Print Text   //Now translated automatically
+  fModi_LoadSound = function (const Name: PChar): Cardinal; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}       //Procedure that loads a Custom Sound
+  pModi_PlaySound = procedure (const Index: Cardinal); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}       //Plays a Custom Sound
 
   TMethodRec = record
     LoadTex:    fModi_LoadTex;
@@ -136,15 +136,15 @@ type  //PluginInfo, for Init
   end;
   //DLL Funktionen
   //Gave the Plugins Info
-  pModi_PluginInfo = procedure (var Info: TPluginInfo); stdcall;
+  pModi_PluginInfo = procedure (var Info: TPluginInfo); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   //Executed on Game Start //If True Game begins, else Failure
-  fModi_Init = function (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean; stdcall;
+  fModi_Init = function (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   //Executed everytime the Screen is Drawed //If False The Game finishes
-  fModi_Draw = function (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean; stdcall;
+  fModi_Draw = function (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   //Is Executed on Finish, Returns the Playernum of the Winner
-  fModi_Finish = function (var Playerinfo: TPlayerinfo): byte; stdcall;
+  fModi_Finish = function (var Playerinfo: TPlayerinfo): byte; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   //Procedure called when new Sound Data is available
-  pModi_RData = procedure (handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD); stdcall;
+  pModi_RData = procedure (handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
 implementation
 
