@@ -11,7 +11,7 @@ interface
 uses Classes, UPlatform;
 
 type
-  
+
   TPlatformWindows = class(TPlatform)
   public
     Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
@@ -23,7 +23,7 @@ implementation
 uses SysUtils, Windows;
 
 type
-  
+
   TSearchRecW = record
     Time: Integer;
     Size: Integer;
@@ -45,7 +45,11 @@ const
   faSpecial = faHidden or faSysFile or faVolumeID or faDirectory;
 begin
   F.ExcludeAttr := not Attr and faSpecial;
+{$IFDEF Delphi}
   F.FindHandle  := FindFirstFileW(PWideChar(Path), F.FindData);
+{$ELSE}
+  F.FindHandle  := FindFirstFileW(PWideChar(Path), @F.FindData);
+{$ENDIF}
   if F.FindHandle <> INVALID_HANDLE_VALUE then
   begin
     Result := FindMatchingFileW(F);
@@ -56,7 +60,11 @@ end;
 
 function FindNextW(var F: TSearchRecW): Integer;
 begin
+{$IFDEF Delphi}
   if FindNextFileW(F.FindHandle, F.FindData) then
+{$ELSE}
+  if FindNextFileW(F.FindHandle, @F.FindData) then
+{$ENDIF}
     Result := FindMatchingFileW(F)
   else
     Result := GetLastError;
@@ -78,7 +86,11 @@ begin
   with F do
   begin
     while FindData.dwFileAttributes and ExcludeAttr <> 0 do
+{$IFDEF Delphi}
       if not FindNextFileW(FindHandle, FindData) then
+{$ELSE}
+      if not FindNextFileW(FindHandle, @FindData) then
+{$ENDIF}
       begin
         Result := GetLastError;
         Exit;
