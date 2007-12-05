@@ -191,6 +191,13 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Soundcard list', 1);
 
+    // Sound (+ fills Sound Card List)
+    Log.BenchmarkStart(1);
+    Log.LogStatus('Initialize Sound', 'Initialization');
+    InitializeSound();
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Initializing Sound', 1);
+
     // Ini + Paths
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Ini', 'Initialization');
@@ -262,7 +269,7 @@ begin
 
     Log.LogStatus('Creating 2nd Song Array', 'Initialization');
     CatSongs := TCatSongs.Create;
-    
+
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Songs', 1);
 
@@ -280,15 +287,6 @@ begin
 
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading PartySession Manager', 1);      }
-
-    // Sound
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize Sound', 'Initialization');
-    InitializeSound();
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing Sound', 1);
-
-  //  exit;
 
     // Graphics
     Log.BenchmarkStart(1);
@@ -813,7 +811,7 @@ begin
 //  beep;
 
   // On linux we get an AV @ NEWNOTE,  line 600 of Classes/UMain.pas
-  if not assigned( Sound ) then  // TODO : JB_Linux ... why is this now not assigned... it was fine a few hours ago..
+  if not assigned( Recording.Sound ) then  // TODO : JB_Linux ... why is this now not assigned... it was fine a few hours ago..
     exit;
 
   // analizuje dla obu graczy ten sam sygnal (Sound.OneSrcForBoth)
@@ -822,7 +820,7 @@ begin
   begin
 
     // analyze buffer
-    Sound[CP].AnalizujBufor;
+    Recording.Sound[CP].AnalizujBufor;
 
     // adds some noise
 //    Czas.Ton := Czas.Ton + Round(Random(3)) - 1;
@@ -857,7 +855,7 @@ begin
 //    Czas.Ton := 27;
 
     // gdy moze, to dodaje nute
-    if (Sound[CP].SzczytJest) and (Mozna) then begin
+    if (Recording.Sound[CP].SzczytJest) and (Mozna) then begin
       // operowanie na ostatniej nucie
       for Pet := 0 to Czesci[0].Czesc[S].HighNut do
         if (Czesci[0].Czesc[S].Nuta[Pet].Start <= Czas.OldBeatD+1)
@@ -866,10 +864,10 @@ begin
           // to robi, tylko dla pary nut (oryginalnej i gracza)
 
           // przesuwanie tonu w odpowiednia game
-          while (Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton > 6) do
-            Sound[CP].Ton := Sound[CP].Ton - 12;
-          while (Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton < -6) do
-            Sound[CP].Ton := Sound[CP].Ton + 12;
+          while (Recording.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton > 6) do
+            Recording.Sound[CP].Ton := Recording.Sound[CP].Ton - 12;
+          while (Recording.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton < -6) do
+            Recording.Sound[CP].Ton := Recording.Sound[CP].Ton + 12;
 
           // Half size Notes Patch
           NoteHit := false;
@@ -878,8 +876,8 @@ begin
           //if Ini.Difficulty = 1 then Range := 1;
           //if Ini.Difficulty = 2 then Range := 0;
           Range := 2 - Ini.Difficulty;
-          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - Sound[CP].Ton) <= Range then begin
-            Sound[CP].Ton := Czesci[0].Czesc[S].Nuta[Pet].Ton;
+          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - Recording.Sound[CP].Ton) <= Range then begin
+            Recording.Sound[CP].Ton := Czesci[0].Czesc[S].Nuta[Pet].Ton;
 
 
             // Half size Notes Patch
@@ -919,7 +917,8 @@ begin
       if S = SMax then begin
       Nowa := true;
       // jezeli ostatnia ma ten sam ton
-      if (Player[CP].IlNut > 0 ) and (Player[CP].Nuta[Player[CP].HighNut].Ton = Sound[CP].Ton)
+      if (Player[CP].IlNut > 0 )
+        and (Player[CP].Nuta[Player[CP].HighNut].Ton = Recording.Sound[CP].Ton)
         and (Player[CP].Nuta[Player[CP].HighNut].Start + Player[CP].Nuta[Player[CP].HighNut].Dlugosc = Czas.AktBeatD)
         then Nowa := false;
       // jezeli jest jakas nowa nuta na sprawdzanym beacie
@@ -935,7 +934,7 @@ begin
         SetLength(Player[CP].Nuta, Player[CP].IlNut);
         Player[CP].Nuta[Player[CP].HighNut].Start := Czas.AktBeatD;
         Player[CP].Nuta[Player[CP].HighNut].Dlugosc := 1;
-        Player[CP].Nuta[Player[CP].HighNut].Ton := Sound[CP].Ton; // Ton || TonDokl
+        Player[CP].Nuta[Player[CP].HighNut].Ton := Recording.Sound[CP].Ton; // Ton || TonDokl
         Player[CP].Nuta[Player[CP].HighNut].Detekt := Czas.MidBeat;
 
 
