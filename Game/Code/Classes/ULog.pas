@@ -214,9 +214,9 @@ begin
 
   FS := TFileStream.Create(FileName, fmCreate);
 
-  for BL := 0 to High(Sound[SoundNr].BufferLong) do begin
-    Sound[SoundNr].BufferLong[BL].Seek(0, soBeginning);
-    FS.CopyFrom(Sound[SoundNr].BufferLong[BL], Sound[SoundNr].BufferLong[BL].Size);
+  for BL := 0 to High(Recording.Sound[SoundNr].BufferLong) do begin
+    Recording.Sound[SoundNr].BufferLong[BL].Seek(0, soBeginning);
+    FS.CopyFrom(Recording.Sound[SoundNr].BufferLong[BL], Recording.Sound[SoundNr].BufferLong[BL].Size);
   end;
 
   FS.Free;

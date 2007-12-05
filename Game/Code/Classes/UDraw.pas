@@ -169,10 +169,10 @@ begin;
     glColor3f(1, 1, 1);  }
 
   glBegin(GL_LINE_STRIP);
-    glVertex2f(X, -Sound[NrSound].BufferArray[1] / $10000 * H + Y + H/2);
-    for Pet := 2 to Sound[NrSound].n div 1 do begin
-      glVertex2f(X + (Pet-1) * W / (Sound[NrSound].n - 1),
-      -Sound[NrSound].BufferArray[Pet] / $10000 * H + Y + H/2);
+    glVertex2f(X, -Recording.Sound[NrSound].BufferArray[1] / $10000 * H + Y + H/2);
+    for Pet := 2 to Recording.Sound[NrSound].n div 1 do begin
+      glVertex2f(X + (Pet-1) * W / (Recording.Sound[NrSound].n - 1),
+      -Recording.Sound[NrSound].BufferArray[Pet] / $10000 * H + Y + H/2);
     end;
   glEnd;
 end;
