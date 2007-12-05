@@ -16,7 +16,7 @@
     {$DEFINE WIN32}		   
     {$DEFINE TRANSLATE}
   {$ELSE}
-    {$DEFINE LAZARUS}	
+    {$DEFINE LAZARUS}
   {$ENDIF}
 
 //  {$MODE DELPHI}  // JB - This is not allowed by the free pascal compiler for some reason ( At least on linux )
@@ -33,13 +33,20 @@
 
 
 {$IFDEF win32}
-  {$DEFINE UseBASS}
+  {$DEFINE UseBASSOutput}
+  {$DEFINE UseBASSInput}
+  //{$DEFINE UsePortaudio}
+  //{$DEFINE UsePortmixer}
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
       {$APPTYPE CONSOLE}
 	{$ENDIF}
   {$ENDIF}
 {$ELSE}
-  {$UNDEF  UseBASS}
+  //{$DEFINE FFMpegAudio}
+  {$DEFINE UsePortaudio}
 {$ENDIF}
 
+{$IF Defined(UseBASSInput) or Defined(UseBASSOutput)}
+  {$DEFINE UseBASS}
+{$IFEND}
