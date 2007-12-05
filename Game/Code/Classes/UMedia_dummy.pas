@@ -261,19 +261,11 @@ end;
 initialization
   singleton_dummy := Tmedia_dummy.create();
 
-  writeln( 'UMedia_dummy - Register dummy Video_Playback' );
-  AudioManager.add( IVideoPlayback( singleton_dummy ) );
+  writeln( 'UMedia_dummy - Register' );
+  AudioManager.add( singleton_dummy );
 
-  writeln( 'UMedia_dummy - Register dummy Video_Playback' );
-  AudioManager.add( IAudioPlayback( singleton_dummy ) );
-
-  writeln( 'UMedia_dummy - Register dummy Video_Playback' );
-  AudioManager.add( IAudioInput( singleton_dummy ) );
-  
 finalization
-  AudioManager.Remove( IVideoPlayback( singleton_dummy ) );
-  AudioManager.Remove( IAudioPlayback( singleton_dummy ) );
-  AudioManager.Remove( IAudioInput( singleton_dummy ) );
-
+  writeln( 'UMedia_dummy - UnRegister' );
+  AudioManager.Remove( singleton_dummy );
 
 end.
