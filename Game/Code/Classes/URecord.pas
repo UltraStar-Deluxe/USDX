@@ -11,9 +11,6 @@ interface
 uses Classes,
      Math,
      SysUtils,
-     {$IFDEF useBASS}
-     bass,
-     {$ENDIF}
      UCommon,
      UMusic,
      UIni;
@@ -46,38 +43,41 @@ type
     Name:   string;
   end;
 
-  TSoundCard = record
+  TGenericSoundCard = class
     // here can be the soundcard information - whole database from which user will select recording source
-    Description:    string;
-    Input:          array of TSoundCardInput;
-    InputSelected:  integer;
-    MicInput:       Integer;
-
-    // bass record
-    BassRecordStream: hStream;
+    Description:    string;    // soundcard name/description
+    Input:          array of TSoundCardInput; // soundcard input(-source)s
+    InputSelected:  integer;   // unused. What is this good for?
+    MicInput:       integer;   // unused. What is this good for?
+    //SampleRate:     integer; // TODO: for sample-rate conversion (for devices that do not support 44.1kHz)
+    CaptureSoundLeft:  TSound; // sound(-buffer) used for left channel capture data
+    CaptureSoundRight: TSound; // sound(-buffer) used for right channel capture data
   end;
 
   TRecord = class
-    SoundCard:  array of TSoundCard;
+    Sound:      array of TSound;
+    SoundCard:  array of TGenericSoundCard;
     constructor Create;
+    
+    // handle microphone input
+    procedure HandleMicrophoneData(Buffer: Pointer; Length: Cardinal;
+        InputDevice: TGenericSoundCard);
   end;
 
   smallintarray = array [0..maxInt shr 1-1] of smallInt;
   psmallintarray = ^smallintarray;
 
-  // procedures - bass record
-  function GetMicrophone(handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD): boolean; stdcall;
-
-
 var
-  Sound:      array of TSound;
-  SoundCard:  array of TSoundCard;
   Poz:        integer;
   Recording:  TRecord;
 
 implementation
 
 uses UMain;
+
+// FIXME: Race-Conditions between Callback-thread and main-thread
+//        on BufferArray (maybe BufferNew also).
+//        Use SDL-mutexes to solve this problem.
 
 procedure TSound.ProcessNewBuffer;
 var
@@ -197,7 +197,17 @@ begin
   Result := 1 - Count / Il;
 end;
 
-function GetMicrophone(handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD): boolean; stdcall;
+{*
+ * Handle captured microphone input data.
+ * Params:
+ *   Buffer - buffer of signed 16bit interleaved stereo PCM-samples.
+ *     Interleaved means that a right-channel sample follows a left-
+ *     channel sample and vice versa (0:left[0],1:right[0],2:left[1],...).
+ *   Length - number of bytes in Buffer
+ *   Input - Soundcard-Input used for capture
+ *}
+procedure TRecord.HandleMicrophoneData(Buffer: Pointer; Length: Cardinal;
+    InputDevice: TGenericSoundCard);
 var
   L:    integer;
   S:    integer;
@@ -205,8 +215,6 @@ var
   PSI:  psmallintarray;
   I:    integer;
   Skip: integer;
-  P1:   integer;
-  P2:   integer;
   Boost:  byte;
 begin
   // set boost
@@ -218,7 +226,7 @@ begin
   end;
 
   // boost buffer
-  L := Len div 2; // number of samples
+  L := Length div 2; // number of samples
   PSI := Buffer;
   for S := 0 to L-1 do
   begin
@@ -228,139 +236,49 @@ begin
     PSI^[S] := I;
   end;
 
-  // decode user
-  P1 := (user and 255) - 1;
-  P2 := (user div 256) - 1;
-
-
   // 2 players USB mic, left channel
-  if P1 >= 0 then
+  if InputDevice.CaptureSoundLeft <> nil then
   begin
-    L  := Len div 4; // number of samples
+    L  := Length div 4; // number of samples
     PB := Buffer;
 
-    Sound[P1].BufferNew.Clear; // 0.5.2: problem on exiting
-    for S := 1 to L do
+    InputDevice.CaptureSoundLeft.BufferNew.Clear; // 0.5.2: problem on exiting
+    for S := 0 to L-1 do
     begin
-      Sound[P1].BufferNew.Write(PB[(S-1)*4], 2);
+      InputDevice.CaptureSoundLeft.BufferNew.Write(PB[S*4], 2);
     end;
-    Sound[P1].ProcessNewBuffer;
+    InputDevice.CaptureSoundLeft.ProcessNewBuffer;
   end;
 
   // 2 players USB mic, right channel
   Skip := 2;
 
-  if P2 >= 0 then
+  if InputDevice.CaptureSoundRight <> nil then
   begin
-    L := Len div 4; // number of samples
+    L := Length div 4; // number of samples
     PB := Buffer;
-    Sound[P2].BufferNew.Clear;
-    for S := 1 to L do
+    InputDevice.CaptureSoundRight.BufferNew.Clear;
+    for S := 0 to L-1 do
     begin
-      Sound[P2].BufferNew.Write(PB[Skip + (S-1)*4], 2);
+      InputDevice.CaptureSoundRight.BufferNew.Write(PB[Skip + S*4], 2);
     end;
-    Sound[P2].ProcessNewBuffer;
+    InputDevice.CaptureSoundRight.ProcessNewBuffer;
   end;
-
-  Result := true;
 end;
 
 constructor TRecord.Create;
 var
-  SC:         integer; // soundcard
-  SCI:        integer; // soundcard input
-  Descr:      string;
-  InputName:  PChar;
-  Flags:      integer;
-  No:         integer;
-  
-  function isDuplicate(Desc: String): Boolean;
-  var
-    I: Integer;
-  begin
-    Result := False;
-    //Check for Soundcard with same Description
-    For I := 0 to SC-1 do
-    begin
-      if (SoundCard[I].Description = Desc) then
-      begin
-        Result := True;
-        Break;
-      end;
-    end;
-  end;
-
+  S:        integer;
 begin
-  // TODO : JB_linux - Reimplement recording, without bass for linux
-  {$IFDEF useBASS}
-  // checks for recording devices and puts them into array;
-  SetLength(SoundCard, 0);
-
-  SC := 0;
-  Descr := BASS_RecordGetDeviceDescription(SC);
-
-  while (Descr <> '') do
-  begin
-
-    //If there is another SoundCard with the Same ID, Search an available Name
-    if (IsDuplicate(Descr)) then
-    begin
-      No:= 1; //Count of SoundCards with  same Name
-      Repeat
-        Inc(No)
-      Until not IsDuplicate(Descr + ' (' + InttoStr(No) + ')');
-
-      //Set Description
-      Descr := Descr + ' (' + InttoStr(No) + ')';
-    end;
-
-    SetLength(SoundCard, SC+1);
-
-    SoundCard[SC].Description := Descr;
-
-    //Get Recording Inputs
-    SCI := 0;
-    BASS_RecordInit(SC);
-
-    InputName := BASS_RecordGetInputName(SCI);
-		
-		{$IFDEF DARWIN}
-  		// Under MacOSX the SingStar Mics have an empty
-	  	// InputName. So, we have to add a hard coded
-		  // Workaround for this problem
-			if (InputName = nil) and (Pos( 'USBMIC Serial#', Descr) > 0) then
-			begin
-			  InputName := 'Microphone';
-			end;
-		{$ENDIF}
-
-    SetLength(SoundCard[SC].Input, 1);
-    SoundCard[SC].Input[SCI].Name := InputName;
-
-    // process each input
-    while (InputName <> nil) do
-    begin
-      Flags := BASS_RecordGetInput(SCI);
-      if (SCI >= 1) {AND (Flags AND BASS_INPUT_OFF = 0)}  then
-      begin
-        SetLength(SoundCard[SC].Input, SCI+1);
-        SoundCard[SC].Input[SCI].Name := InputName;
-      end;
-
-      //Set Mic Index
-      if ((Flags and BASS_INPUT_TYPE_MIC) = 1) then
-        SoundCard[SC].MicInput := SCI;
-
-      Inc(SCI);
-      InputName := BASS_RecordGetInputName(SCI);
-    end;
-
-    BASS_RecordFree;
-
-    Inc(SC);
-    Descr := BASS_RecordGetDeviceDescription(SC);
-  end; // while
-  {$ENDIF}
+  SetLength(Sound, 6 {max players});//Ini.Players+1);
+  for S := 0 to High(Sound) do begin //Ini.Players do begin
+    Sound[S] := TSound.Create;
+    Sound[S].Num := S;
+    Sound[S].BufferNew := TMemoryStream.Create;
+    SetLength(Sound[S].BufferLong, 1);
+    Sound[S].BufferLong[0] := TMemoryStream.Create;
+    Sound[S].n := 4*1024;
+  end;
 end;
 
 
