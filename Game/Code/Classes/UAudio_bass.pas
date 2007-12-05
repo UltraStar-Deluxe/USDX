@@ -18,7 +18,6 @@ uses Classes,
      {$IFNDEF FPC}
      Forms,
      {$ENDIF}
-
      bass,
      ULog,
      UMusic;
@@ -35,9 +34,6 @@ uses
      UCommon,
      UThemes;
 
-const
-  RecordSystem = 1;
-
 type
   TMPModes = (mpNotReady, mpStopped, mpPlaying, mpRecording, mpSeeking,
     mpPaused, mpOpen);
@@ -46,7 +42,11 @@ const
   ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
 
 type
-    TAudio_bass = class( TInterfacedObject, IAudioPlayback, IAudioInput )
+{$IFDEF UseBASSInput}
+  TAudio_bass = class( TInterfacedObject, IAudioPlayback, IAudioInput)
+{$ELSE}
+  TAudio_bass = class( TInterfacedObject, IAudioPlayback)
+{$ENDIF}
     private
       BassStart:          hStream;            // Wait, I've replaced this with BASS
       BassBack:           hStream;            // It has almost all features we need
@@ -63,13 +63,14 @@ type
       CustomSounds: array of TCustomSoundEntry;
       Loaded:   boolean;
       Loop:     boolean;
-      fHWND:    THandle;
 
     public
       Bass: hStream;
       function  GetName: String;
+
+      {IAudioOutput interface}
+
       procedure InitializePlayback;
-      procedure InitializeRecord;
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
@@ -94,10 +95,6 @@ type
       procedure PlayClap;
       procedure PlayShuffle;
       procedure StopShuffle;
-      procedure CaptureStart;
-      procedure CaptureStop;
-      procedure CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
-      procedure StopCard(Card: byte);
       function LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
 
       //Equalizer
@@ -106,7 +103,24 @@ type
       //Custom Sounds
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal );
-end;
+
+      {IAudioInput interface}
+      {$IFDEF UseBASSInput}
+      procedure InitializeRecord;
+
+      procedure CaptureStart;
+      procedure CaptureStop;
+      procedure CaptureCard(Card: byte; CaptureSoundLeft, CaptureSoundRight: TSound);
+      procedure StopCard(Card: byte);
+      {$ENDIF}
+  end;
+
+{$IFDEF UseBASSInput}
+  TBassSoundCard = class(TGenericSoundCard)
+    RecordStream: HSTREAM;
+  end;
+{$ENDIF}
+
 
 var
   singleton_MusicBass : IAudioPlayback;
@@ -128,22 +142,10 @@ begin
   Loaded := false;
   Loop   := false;
 
-
-  writeln( 'TAudio_bass AllocateHWND' );
-  {$ifdef win32}
-  // TODO : JB_Linux ... is this needed ? :)
-  fHWND  := AllocateHWND( nil); // TODO : JB_lazarus - can we do something different here ?? lazarus didnt like this function
-  {$ENDIF}
-
-
   writeln( 'TAudio_bass BASS_Init' );
-  // TODO : jb_linux replace with something other than bass
-  if not BASS_Init(1, 44100, 0, fHWND, nil) then
+  if not BASS_Init(1, 44100, 0, 0, nil) then
   begin
-    {$IFNDEF FPC}
-    // TODO : JB_linux find a way to do this nice..
-    Application.MessageBox ('Could not initialize BASS', 'Error');
-    {$ENDIF}
+    Log.LogError('Could not initialize BASS', 'Error');
     Exit;
   end;
 
@@ -174,89 +176,12 @@ begin
 //  Log.LogBenchmark('--> Loading Sounds', 4);
 end;
 
-procedure TAudio_bass.InitializeRecord;
-var
-  S:        integer;
-  device:   integer;
-  descr:    string;
-  input:    integer;
-  input2:   integer;
-  flags:    integer;
-  mic:      array[0..15] of integer;
-  SC:       integer; // soundcard
-  SCI:      integer; // soundcard input
-begin
-  if RecordSystem = 1 then begin
-    SetLength(Sound, 6 {max players});//Ini.Players+1);
-    for S := 0 to High(Sound) do begin //Ini.Players do begin
-      Sound[S] := TSound.Create;
-      Sound[S].Num := S;
-      Sound[S].BufferNew := TMemoryStream.Create;
-      SetLength(Sound[S].BufferLong, 1);
-      Sound[S].BufferLong[0] := TMemoryStream.Create;
-      Sound[S].n := 4*1024;
-    end;
-
-
-    // check for recording devices;
-    {device := 0;
-    descr := BASS_RecordGetDeviceDescription(device);
-
-    SetLength(SoundCard, 0);
-    while (descr <> '') do begin
-      SC := High(SoundCard) + 1;
-      SetLength(SoundCard, SC+1);
-
-      Log.LogAnalyze('Device #'+IntToStr(device)+': '+ descr);
-      SoundCard[SC].Description := Descr;
-
-      // check for recording inputs
-      mic[device] := -1; // default to no change
-      input := 0;
-      BASS_RecordInit(device);
-      Log.LogAnalyze('Input #' + IntToStr(Input) + ': ' + BASS_RecordGetInputName(input));
-      flags := BASS_RecordGetInput(input);
-
-      SetLength(SoundCard[SC].Input, 0);
-      while (flags <> -1) do begin
-        SCI := High(SoundCard[SC].Input) + 1;
-        SetLength(SoundCard[SC].Input, SCI+1);
-
-        Log.LogAnalyze('Input #' + IntToStr(Input) + ': ' + BASS_RecordGetInputName(input));
-        SoundCard[SC].Input[SCI].Name := BASS_RecordGetInputName(Input);
-
-        if (flags and BASS_INPUT_TYPE_MASK) = BASS_INPUT_TYPE_MIC then begin
-          mic[device] := input; // auto set microphone
-        end;
-        Inc(Input);
-        flags := BASS_RecordGetInput(input);
-      end;
-
-      if mic[device] <> -1 then begin
-        Log.LogAnalyze('Found the mic at input ' + IntToStr(Mic[device]))
-      end else begin
-        Log.LogAnalyze('Mic not found');
-        mic[device] := 0; // setting to the first one (for kxproject)
-      end;
-      SoundCard[SC].InputSeleceted := Mic[Device];
-
-
-      BASS_RecordFree;
-
-      inc(Device);
-      descr := BASS_RecordGetDeviceDescription(Device);
-    end; // while}
-  end; // if
-end;
-
 procedure TAudio_bass.SetVolume(Volume: integer);
 begin
   //Old Sets Wave Volume
   //BASS_SetVolume(Volume);
   //New: Sets Volume only for this Application
 
-
-  // TODO : jb_linux replace with something other than bass
   BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, Volume);
@@ -287,9 +212,8 @@ begin
   Loaded := false;
   if FileExists(Name) then
   begin
-    // TODO : jb_linux replace with something other than bass
     Bass := Bass_StreamCreateFile(false, pchar(Name), 0, 0, 0);
-    
+
     Loaded := true;
     //Set Max Volume
     SetMusicVolume (100);
@@ -308,14 +232,12 @@ procedure TAudio_bass.MoveTo(Time: real);
 var
   bytes:    integer;
 begin
-  // TODO : jb_linux replace with something other than bass
   bytes := BASS_ChannelSeconds2Bytes(Bass, Time);
   BASS_ChannelSetPosition(Bass, bytes);
 end;
 
 procedure TAudio_bass.Play;
 begin
-  // TODO : jb_linux replace with something other than bass
   if Loaded then
   begin
     if Loop then
@@ -327,7 +249,6 @@ end;
 
 procedure TAudio_bass.Pause; //Pause Mod
 begin
-  // TODO : jb_linux replace with something other than bass
   if Loaded then begin
     BASS_ChannelPause(Bass); // Pauses Song
   end;
@@ -335,13 +256,11 @@ end;
 
 procedure TAudio_bass.Stop;
 begin
-  // TODO : jb_linux replace with something other than bass
   Bass_ChannelStop(Bass);
 end;
 
 procedure TAudio_bass.Close;
 begin
-  // TODO : jb_linux replace with something other than bass
   Bass_StreamFree(Bass);
 end;
 
@@ -351,7 +270,6 @@ var
 begin
   Result := 60;
 
-  // TODO : jb_linux replace with something other than bass
   bytes  := BASS_ChannelGetLength(Bass);
   Result := BASS_ChannelBytes2Seconds(Bass, bytes);
 end;
@@ -362,7 +280,6 @@ var
 begin
   Result := 0;
 
-  // TODO : jb_linux replace with something other than bass
   bytes  := BASS_ChannelGetPosition(BASS);
   Result := BASS_ChannelBytes2Seconds(BASS, bytes);
 end;
@@ -371,7 +288,6 @@ function TAudio_bass.Finished: boolean;
 begin
   Result := false;
 
-  // TODO : jb_linux replace with something other than bass
   if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then
   begin
     Result := true;
@@ -380,144 +296,57 @@ end;
 
 procedure TAudio_bass.PlayStart;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassStart, True);
 end;
 
 procedure TAudio_bass.PlayBack;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassBack, True);// then
 end;
 
 procedure TAudio_bass.PlaySwoosh;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassSwoosh, True);
 end;
 
 procedure TAudio_bass.PlayChange;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassChange, True);
 end;
 
 procedure TAudio_bass.PlayOption;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassOption, True);
 end;
 
 procedure TAudio_bass.PlayClick;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassClick, True);
 end;
 
 procedure TAudio_bass.PlayDrum;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassDrum, True);
 end;
 
 procedure TAudio_bass.PlayHihat;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassHihat, True);
 end;
 
 procedure TAudio_bass.PlayClap;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassClap, True);
 end;
 
 procedure TAudio_bass.PlayShuffle;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelPlay(BassShuffle, True);
 end;
 
 procedure TAudio_bass.StopShuffle;
 begin
-  // TODO : jb_linux replace with something other than bass
   BASS_ChannelStop(BassShuffle);
-end;
-
-procedure TAudio_bass.CaptureStart;
-var
-  S:        integer;
-  SC:       integer;
-  P1:       integer;
-  P2:       integer;
-begin
-  for S := 0 to High(Sound) do
-    Sound[S].BufferLong[0].Clear;
-
-  for SC := 0 to High(Ini.CardList) do begin
-    P1 := Ini.CardList[SC].ChannelL;
-    P2 := Ini.CardList[SC].ChannelR;
-    if P1 > PlayersPlay then P1 := 0;
-    if P2 > PlayersPlay then P2 := 0;
-    if (P1 > 0) or (P2 > 0) then
-      CaptureCard(SC, P1, P2);
-  end;
-end;
-
-procedure TAudio_bass.CaptureStop;
-var
-  SC:   integer;
-  P1:       integer;
-  P2:       integer;
-begin
-
-  for SC := 0 to High(Ini.CardList) do begin
-    P1 := Ini.CardList[SC].ChannelL;
-    P2 := Ini.CardList[SC].ChannelR;
-    if P1 > PlayersPlay then P1 := 0;
-    if P2 > PlayersPlay then P2 := 0;
-    if (P1 > 0) or (P2 > 0) then StopCard(SC);
-  end;
-
-end;
-
-//procedure TAudio_bass.CaptureCard(RecordI, SoundNum, PlayerLeft, PlayerRight: byte);
-procedure TAudio_bass.CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
-var
-  Error:      integer;
-  ErrorMsg:   string;
-begin
-  if not BASS_RecordInit(RecordI) then
-  begin
-    Error := BASS_ErrorGetCode;
-
-    ErrorMsg := IntToStr(Error);
-    if Error = BASS_ERROR_DX then ErrorMsg := 'No DX5';
-    if Error = BASS_ERROR_ALREADY then ErrorMsg := 'The device has already been initialized';
-    if Error = BASS_ERROR_DEVICE then ErrorMsg := 'The device number specified is invalid';
-    if Error = BASS_ERROR_DRIVER then ErrorMsg := 'There is no available device driver';
-
-    {Log.LogAnalyze('Error initializing record [' + IntToStr(RecordI) + ', '
-      + IntToStr(PlayerLeft) + ', '+ IntToStr(PlayerRight) + ']: '
-      + ErrorMsg);}
-    Log.LogError('Error initializing record [' + IntToStr(RecordI) + ', '
-      + IntToStr(PlayerLeft) + ', '+ IntToStr(PlayerRight) + ']: '
-      + ErrorMsg);
-    Log.LogError('Music -> CaptureCard: Error initializing record: ' + ErrorMsg);
-
-
-  end
-  else
-  begin
-    Recording.SoundCard[RecordI].BassRecordStream := BASS_RecordStart(44100, 2, MakeLong(0, 20) , @GetMicrophone, PlayerLeft + PlayerRight*256);
-  end;
-end;
-
-procedure TAudio_bass.StopCard(Card: byte);
-begin
-  // TODO : jb_linux replace with something other than bass
-  BASS_RecordSetDevice(Card);
-  BASS_RecordFree;
 end;
 
 function TAudio_bass.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
@@ -528,7 +357,6 @@ begin
   begin
     Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
     try
-      // TODO : jb_linux replace with something other than bass
       hStream := BASS_StreamCreateFile(False, pchar(Name), 0, 0, 0);
 
       //Add CustomSound
@@ -585,65 +413,236 @@ begin
     BASS_ChannelPlay(CustomSounds[Index].Handle, True);
 end;
 
+{$IFDEF UseBASSInput}
 
-{*
-
-Sorry guys... this is my mess :(
-Im going to try and get ffmpeg to handle audio playback ( at least for linux )
-and Im going to implement it nicly along side BASS, in TAudio_bass ( where I can )
-
-http://www.dranger.com/ffmpeg/ffmpeg.html
-http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
-
-http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
-
-*}
-{*
-function TAudio_bass.FFMPeg_StreamCreateFile(abool : boolean; aFileName : pchar ): THandle;
+procedure TAudio_bass.InitializeRecord;
 var
- lFormatCtx : PAVFormatContext;
+  device:     integer;
+  Descr:      string;
+  input:      integer;
+  input2:     integer;
+  InputName:  PChar;
+  Flags:      integer;
+  mic:        array[0..15] of integer;
+  SC:         integer; // soundcard
+  SCI:        integer; // soundcard input
+  No:         integer;
+
+function isDuplicate(Desc: String): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  //Check for Soundcard with same Description
+  For I := 0 to SC-1 do
+  begin
+    if (Recording.SoundCard[I].Description = Desc) then
+    begin
+      Result := True;
+      Break;
+    end;
+  end;
+end;
+
+begin
+  with Recording do
+  begin
+    // checks for recording devices and puts them into an array
+    SetLength(SoundCard, 0);
+
+    SC := 0;
+    Descr := BASS_RecordGetDeviceDescription(SC);
+
+    while (Descr <> '') do
+    begin
+      //If there is another SoundCard with the Same ID, Search an available Name
+      if (IsDuplicate(Descr)) then
+      begin
+        No:= 1; //Count of SoundCards with  same Name
+        Repeat
+          Inc(No)
+        Until not IsDuplicate(Descr + ' (' + InttoStr(No) + ')');
+
+        //Set Description
+        Descr := Descr + ' (' + InttoStr(No) + ')';
+      end;
+
+      SetLength(SoundCard, SC+1);
+
+      // TODO: free object on termination
+      SoundCard[SC] := TBassSoundCard.Create();
+      SoundCard[SC].Description := Descr;
+
+      //Get Recording Inputs
+      SCI := 0;
+      BASS_RecordInit(SC);
+
+      InputName := BASS_RecordGetInputName(SCI);
+
+      {$IFDEF DARWIN}
+        // Under MacOSX the SingStar Mics have an empty
+        // InputName. So, we have to add a hard coded
+        // Workaround for this problem
+        if (InputName = nil) and (Pos( 'USBMIC Serial#', Descr) > 0) then
+        begin
+          InputName := 'Microphone';
+        end;
+      {$ENDIF}
+
+      SetLength(SoundCard[SC].Input, 1);
+      SoundCard[SC].Input[SCI].Name := InputName;
+
+      // process each input
+      while (InputName <> nil) do
+      begin
+        Flags := BASS_RecordGetInput(SCI);
+        if (SCI >= 1) {AND (Flags AND BASS_INPUT_OFF = 0)}  then
+        begin
+          SetLength(SoundCard[SC].Input, SCI+1);
+          SoundCard[SC].Input[SCI].Name := InputName;
+        end;
+
+        //Set Mic Index
+        if ((Flags and BASS_INPUT_TYPE_MIC) = 1) then
+          SoundCard[SC].MicInput := SCI;
+
+        Inc(SCI);
+        InputName := BASS_RecordGetInputName(SCI);
+      end;
+
+      BASS_RecordFree;
+
+      Inc(SC);
+      Descr := BASS_RecordGetDeviceDescription(SC);
+    end; // while
+  end; // with Recording
+end;
+
+// TODO: code is used by all IAudioInput implementors
+//   -> move to a common superclass (TAudioInput_Generic?)
+procedure TAudio_bass.CaptureStart;
+var
+  S:  integer;
+  SC: integer;
+  PlayerLeft, PlayerRight: integer;
+  CaptureSoundLeft, CaptureSoundRight: TSound;
+begin
+  for S := 0 to High(Recording.Sound) do
+    Recording.Sound[S].BufferLong[0].Clear;
+
+  for SC := 0 to High(Ini.CardList) do begin
+    PlayerLeft  := Ini.CardList[SC].ChannelL-1;
+    PlayerRight := Ini.CardList[SC].ChannelR-1;
+    if PlayerLeft  >= PlayersPlay then PlayerLeft  := -1;
+    if PlayerRight >= PlayersPlay then PlayerRight := -1;
+    if (PlayerLeft > -1) or (PlayerRight > -1) then begin
+      if (PlayerLeft > -1) then
+        CaptureSoundLeft := Recording.Sound[PlayerLeft]
+      else
+        CaptureSoundLeft := nil;
+      if (PlayerRight > -1) then
+        CaptureSoundRight := Recording.Sound[PlayerRight]
+      else
+        CaptureSoundRight := nil;
+
+      CaptureCard(SC, CaptureSoundLeft, CaptureSoundRight);
+    end;
+  end;
+end;
+
+// TODO: code is used by all IAudioInput implementors
+//   -> move to a common superclass (TAudioInput_Generic?)
+procedure TAudio_bass.CaptureStop;
+var
+  SC:   integer;
+  PlayerLeft:  integer;
+  PlayerRight: integer;
 begin
 
-(*
-  if(SDL_OpenAudio(&wanted_spec, &spec) < 0)
-  begin
-    fprintf(stderr, "SDL_OpenAudio: %s\n", SDL_GetError());
-    writeln( 'SDL_OpenAudio' );
-    exit;
-  end;
-*)
-
-(*
-  if ( av_open_input_file( lFormatCtx, aFileName, NULL, 0, NULL ) <> 0 )
-  begin
-    writeln( 'Unable to open file '+ aFileName );
-    exit;
+  for SC := 0 to High(Ini.CardList) do begin
+    PlayerLeft  := Ini.CardList[SC].ChannelL-1;
+    PlayerRight := Ini.CardList[SC].ChannelR-1;
+    if PlayerLeft  >= PlayersPlay then PlayerLeft  := -1;
+    if PlayerRight >= PlayersPlay then PlayerRight := -1;
+    if (PlayerLeft > -1) or (PlayerRight > -1) then
+      StopCard(SC);
   end;
 
-  // Retrieve stream information
-  if ( av_find_stream_info(pFormatCtx) < 0 )
-  begin
-  	writeln( 'Unable to Retrieve stream information' );
-    exit;
-  end;
-*)
+end;
 
-end;  *}
+{*
+ * Bass input capture callback.
+ * Params:
+ *   stream - BASS input stream
+ *   buffer - buffer of captured samples
+ *   len - size of buffer in bytes
+ *   user - players associated with left/right channels
+ *}
+function MicrophoneCallback(stream: HSTREAM; buffer: Pointer;
+    len: Cardinal; Card: Cardinal): boolean; stdcall;
+begin
+  Recording.HandleMicrophoneData(buffer, len, Recording.SoundCard[Card]);
+  Result := true;
+end;
+
+{*
+ * Start input-capturing on Soundcard specified by Card.
+ * Params:
+ *   Card - soundcard index in Recording.SoundCard array
+ *   CaptureSoundLeft  - sound(-buffer) used for left channel capture data
+ *   CaptureSoundRight - sound(-buffer) used for right channel capture data
+ *}
+procedure TAudio_bass.CaptureCard(Card: byte; CaptureSoundLeft, CaptureSoundRight: TSound);
+var
+  Error:      integer;
+  ErrorMsg:   string;
+  bassSoundCard:  TBassSoundCard;
+begin
+  if not BASS_RecordInit(Card) then
+  begin
+    Error := BASS_ErrorGetCode;
+    ErrorMsg := IntToStr(Error);
+    if Error = BASS_ERROR_DX then ErrorMsg := 'No DX5';
+    if Error = BASS_ERROR_ALREADY then ErrorMsg := 'The device has already been initialized';
+    if Error = BASS_ERROR_DEVICE then ErrorMsg := 'The device number specified is invalid';
+    if Error = BASS_ERROR_DRIVER then ErrorMsg := 'There is no available device driver';
+    Log.LogError('Error initializing record [' + IntToStr(Card) + ']');
+    Log.LogError('TAudio_bass.CaptureCard: Error initializing record: ' + ErrorMsg);
+  end
+  else
+  begin
+    bassSoundCard := TBassSoundCard(Recording.SoundCard[Card]);
+    bassSoundCard.CaptureSoundLeft  := CaptureSoundLeft;
+    bassSoundCard.CaptureSoundRight := CaptureSoundRight;
+
+    // capture in 44.1kHz/stereo/16bit and a 20ms callback period
+    bassSoundCard.RecordStream :=
+      BASS_RecordStart(44100, 2, MakeLong(0, 20) , @MicrophoneCallback, Card);
+  end;
+end;
+
+{*
+ * Stop input-capturing on Soundcard specified by Card.
+ * Params:
+ *   Card - soundcard index in Recording.SoundCard array
+ *}
+procedure TAudio_bass.StopCard(Card: byte);
+begin
+  BASS_RecordSetDevice(Card);
+  BASS_RecordFree;
+end;
+
+{$ENDIF}
+
 
 initialization
   singleton_MusicBass := TAudio_bass.create();
 
-  writeln( 'UAudio_Bass - Register Playback' );
-  AudioManager.add( IAudioPlayback( singleton_MusicBass ) );
-
-  writeln( 'UAudio_Bass - Register Input' );
-  AudioManager.add( IAudioInput( singleton_MusicBass )    );
+  writeln( 'UAudio_Bass - Register' );
+  AudioManager.add( singleton_MusicBass );
 
 finalization
-  writeln( 'UAudio_Bass - UnRegister Playback' );
-  AudioManager.Remove( IAudioPlayback( singleton_MusicBass ) );
-
-  writeln( 'UAudio_Bass - UnRegister Input' );
-  AudioManager.Remove( IAudioInput( singleton_MusicBass ) );
+  writeln( 'UAudio_Bass - UnRegister' );
+  AudioManager.Remove( singleton_MusicBass );
 
 end.
