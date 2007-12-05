@@ -487,7 +487,11 @@ begin
       writeln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
       writeln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
     end;
-    aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
+    // FIXME: AudioStreamIndex is -1 if video has no sound -> memory access error
+    // Just a temporary workaround for now
+    aCodecCtx := nil;
+    if( AudioStreamIndex >= 0) then
+      aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
 
     {$ifdef FFMpegAudio}
   // This is the audio ffmpeg audio support Jay is working on.
@@ -683,11 +687,11 @@ initialization
   singleton_VideoFFMpeg := TVideoPlayback_ffmpeg.create();
 
   writeln( 'UVideo_FFMpeg - Register Playback' );
-  AudioManager.add( IVideoPlayback( singleton_VideoFFMpeg ) );
+  AudioManager.add( singleton_VideoFFMpeg );
 
 
 finalization
-  AudioManager.Remove( IVideoPlayback( singleton_VideoFFMpeg ) );
+  AudioManager.Remove( singleton_VideoFFMpeg );
 
 
 end.
