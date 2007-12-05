@@ -162,6 +162,9 @@ type
       //Custom Sounds
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal );
+
+      //Equalizer
+      function GetFFTData: TFFTData;
   end;
 
   IAudioInput = Interface
@@ -171,12 +174,6 @@ type
 
       procedure CaptureStart;
       procedure CaptureStop;
-
-      procedure CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
-      procedure StopCard(Card: byte);
-
-      //Equalizer
-      function GetFFTData: TFFTData;
   end;
 
 
