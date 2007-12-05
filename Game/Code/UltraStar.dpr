@@ -18,9 +18,17 @@ uses
   sdl_ttf                in 'lib\JEDI-SDLv1.0\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas', 
 
-  {$ifdef delphi}
+  {$ifdef UseBass}
   bass          in 'lib\bass\delphi\bass.pas',
+  {$endif}
+  {$ifdef UsePortAudio}
+  portaudio     in 'lib\portaudio\delphi\portaudio.pas',
+  {$endif}
+  {$ifdef UsePortmixer}
+  portmixer     in 'lib\portmixer\delphi\portmixer.pas',
+  {$endif}
 
+  {$ifdef delphi}
   midiout       in 'lib\midi\midiout.pas',
   midiin        in 'lib\midi\midiin.pas',
   CIRCBUF       in 'lib\midi\CIRCBUF.PAS',
@@ -39,7 +47,7 @@ uses
   rational      in 'lib\ffmpeg\rational.pas',
   opt           in 'lib\ffmpeg\opt.pas',
   avio          in 'lib\ffmpeg\avio.pas',
-
+  //swscale       in 'lib\ffmpeg\swscale.pas',
 
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3       in 'lib\SQLite\SQLite3.pas',
@@ -106,7 +114,7 @@ uses
   UPlatformWindows  in 'Classes\UPlatformWindows.pas', 
 {$ENDIF}
 {$IFDEF LINUX}
-  UPlatformLinux    in 'Classes\UPlatformLinux.pas', 
+  UPlatformLinux    in 'Classes\UPlatformLinux.pas',
 {$ENDIF}
 
 {$IFDEF FPC}
@@ -121,11 +129,14 @@ uses
   UMusic          in 'Classes\UMusic.pas',
   UMedia_dummy    in 'Classes\UMedia_dummy.pas',
   UVideo          in 'Classes\UVideo.pas',
-{$ifdef linux}
-  UAudio_FFMpeg   in 'Classes\UAudio_FFMpeg.pas',
-{$endif}
-{$ifdef win32}
+{$ifdef UseBass}
   UAudio_bass     in 'Classes\UAudio_bass.pas',
+{$endif}
+{$ifdef UsePortaudio}
+  UAudio_portaudio in 'Classes\UAudio_portaudio.pas',
+{$endif}
+{$ifdef FFMpegAudio}
+  UAudio_FFMpeg   in 'Classes\UAudio_FFMpeg.pas',
 {$endif}
 
   //------------------------------
