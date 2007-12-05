@@ -1816,7 +1816,7 @@ begin
   if (A <> EqualizerTime) then
   begin
     EqualizerTime := A;
-    Data := AudioInput.GetFFTData;
+    Data := AudioPlayback.GetFFTData;
 
     B:=0;
     Pos := 0;

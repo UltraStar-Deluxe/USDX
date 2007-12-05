@@ -445,7 +445,7 @@ const  myLogoCoords: Array[0..27,0..1] of Cardinal = ((39,32),(84,32),(100,16),(
 
 begin
   //dis does teh muiwk y0r
-  Data := AudioInput.GetFFTData;
+  Data := AudioPlayback.GetFFTData;
 
   Log.LogStatus('',' JB-1');
 
