@@ -37,11 +37,15 @@
  *}
 unit portmixer;
 
-interface
-
 {$IFDEF FPC}
-  {$MODE DELPHI}
+  {$IFNDEF win32}
+  {$LINKLIB libportaudio}
+  {$ENDIF}
+  {$PACKRECORDS C}    (* GCC/Visual C/C++ compatible record packing *)
+  {$MODE DELPHI }
 {$ENDIF}
+
+interface
 
 uses
   portaudio;
@@ -67,14 +71,14 @@ type
  audio device.  Pass 0 as the index for the first (default) mixer.
 *}
 
-function Px_OpenMixer( pa_stream: Pointer; i: Integer ): PPxMixer; cdecl ; external LibName;
+function Px_OpenMixer( pa_stream: Pointer; i: Integer ): PPxMixer; cdecl; external LibName;
 
 {*
  Px_CloseMixer() closes a mixer opened using Px_OpenMixer and frees any
  memory associated with it. 
 *}
 
-procedure Px_CloseMixer( mixer: PPxMixer ); cdecl ; external LibName;
+procedure Px_CloseMixer( mixer: PPxMixer ); cdecl; external LibName;
 
 {*
  Px_GetNumMixers returns the number of mixers which could be
@@ -84,64 +88,64 @@ procedure Px_CloseMixer( mixer: PPxMixer ); cdecl ; external LibName;
  which are independent of any particular PortAudio device.
 *}
 
-function Px_GetNumMixers( mixer: PPxMixer ): Integer; cdecl ; external LibName;
-function Px_GetMixerName( mixer: PPxMixer; i: Integer ): PChar; cdecl ; external LibName;
+function Px_GetNumMixers( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_GetMixerName( mixer: PPxMixer; i: Integer ): PChar; cdecl; external LibName;
 
 {*
  Master (output) volume
 *}
 
-function Px_GetMasterVolume( mixer: PPxMixer ): TPxVolume; cdecl ; external LibName;
-procedure Px_SetMasterVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl ; external LibName;
+function Px_GetMasterVolume( mixer: PPxMixer ): TPxVolume; cdecl; external LibName;
+procedure Px_SetMasterVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl; external LibName;
 
 {*
  Main output volume
 *}
 
-function Px_GetPCMOutputVolume( mixer: PPxMixer ): TPxVolume; cdecl ; external LibName;
-procedure Px_SetPCMOutputVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl ; external LibName;
-function Px_SupportsPCMOutputVolume( mixer: PPxMixer ): Integer; cdecl ; external LibName;
+function Px_GetPCMOutputVolume( mixer: PPxMixer ): TPxVolume; cdecl; external LibName;
+procedure Px_SetPCMOutputVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl; external LibName;
+function Px_SupportsPCMOutputVolume( mixer: PPxMixer ): Integer; cdecl; external LibName;
 
 {*
  All output volumes
 *}
 
-function Px_GetNumOutputVolumes( mixer: PPxMixer ): Integer; cdecl ; external LibName;
-function Px_GetOutputVolumeName( mixer: PPxMixer; i: Integer ): PChar; cdecl ; external LibName;
-function Px_GetOutputVolume( mixer: PPxMixer; i: Integer ): TPxVolume; cdecl ; external LibName;
-procedure Px_SetOutputVolume( mixer: PPxMixer; i: Integer; volume: TPxVolume ); cdecl ; external LibName;
+function Px_GetNumOutputVolumes( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_GetOutputVolumeName( mixer: PPxMixer; i: Integer ): PChar; cdecl; external LibName;
+function Px_GetOutputVolume( mixer: PPxMixer; i: Integer ): TPxVolume; cdecl; external LibName;
+procedure Px_SetOutputVolume( mixer: PPxMixer; i: Integer; volume: TPxVolume ); cdecl; external LibName;
 
 {*
  Input source
 *}
 
-function Px_GetNumInputSources( mixer: PPxMixer ): Integer; cdecl ; external LibName;
-function Px_GetInputSourceName( mixer: PPxMixer; i: Integer): PChar; cdecl ; external LibName;
-function Px_GetCurrentInputSource( mixer: PPxMixer ): Integer; cdecl ; external LibName; {* may return -1 == none *}
-procedure Px_SetCurrentInputSource( mixer: PPxMixer; i: Integer ); cdecl ; external LibName;
+function Px_GetNumInputSources( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_GetInputSourceName( mixer: PPxMixer; i: Integer): PChar; cdecl; external LibName;
+function Px_GetCurrentInputSource( mixer: PPxMixer ): Integer; cdecl; external LibName; {* may return -1 == none *}
+procedure Px_SetCurrentInputSource( mixer: PPxMixer; i: Integer ); cdecl; external LibName;
 
 {*
  Input volume
 *}
 
-function Px_GetInputVolume( mixer: PPxMixer ): TPxVolume; cdecl ; external LibName;
-procedure Px_SetInputVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl ; external LibName;
+function Px_GetInputVolume( mixer: PPxMixer ): TPxVolume; cdecl; external LibName;
+procedure Px_SetInputVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl; external LibName;
 
 {*
   Balance
 *}
 
-function Px_SupportsOutputBalance( mixer: PPxMixer ): Integer; cdecl ; external LibName;
-function Px_GetOutputBalance( mixer: PPxMixer ): TPxBalance; cdecl ; external LibName;
-procedure Px_SetOutputBalance( mixer: PPxMixer; balance: TPxBalance ); cdecl ; external LibName;
+function Px_SupportsOutputBalance( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_GetOutputBalance( mixer: PPxMixer ): TPxBalance; cdecl; external LibName;
+procedure Px_SetOutputBalance( mixer: PPxMixer; balance: TPxBalance ); cdecl; external LibName;
 
 {*
   Playthrough
 *}
 
-function Px_SupportsPlaythrough( mixer: PPxMixer ): Integer; cdecl ; external LibName;
-function Px_GetPlaythrough( mixer: PPxMixer ): TPxVolume; cdecl ; external LibName;
-procedure Px_SetPlaythrough( mixer: PPxMixer; volume: TPxVolume ); cdecl ; external LibName;
+function Px_SupportsPlaythrough( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_GetPlaythrough( mixer: PPxMixer ): TPxVolume; cdecl; external LibName;
+procedure Px_SetPlaythrough( mixer: PPxMixer; volume: TPxVolume ); cdecl; external LibName;
 
 implementation
 

@@ -43,11 +43,15 @@
 
 unit portaudio;
 
-interface
-
 {$IFDEF FPC}
-  {$MODE DELPHI}
+  {$IFNDEF win32}
+  {$LINKLIB libportaudio}
+  {$ENDIF}
+  {$PACKRECORDS C}    (* GCC/Visual C/C++ compatible record packing *)
+  {$MODE DELPHI }
 {$ENDIF}
+
+interface
 
 //uses;
 
@@ -65,13 +69,13 @@ const
 {** Retrieve the release number of the currently running PortAudio build,
  eg 1900.
 *}
-function Pa_GetVersion(): Integer; cdecl ; external LibName;
+function Pa_GetVersion(): Integer; cdecl; external LibName;
 
 
 {** Retrieve a textual description of the current PortAudio build,
  eg "PortAudio V19-devel 13 October 2002".
 *}
-function Pa_GetVersionText(): PChar; cdecl ; external LibName;
+function Pa_GetVersionText(): PChar; cdecl; external LibName;
 
 
 {** Error codes returned by PortAudio functions.
@@ -118,7 +122,7 @@ type TPaErrorCode = {enum}Integer; const
 {** Translate the supplied PortAudio error code into a human readable
  message.
 *}
-function Pa_GetErrorText( errorCode: TPaError ): PChar; cdecl ; external LibName;
+function Pa_GetErrorText( errorCode: TPaError ): PChar; cdecl; external LibName;
 
 
 {** Library initialization function - call this before using PortAudio.
@@ -140,7 +144,7 @@ function Pa_GetErrorText( errorCode: TPaError ): PChar; cdecl ; external LibName
 
  @see Pa_Terminate
 *}
-function Pa_Initialize(): TPaError; cdecl ; external LibName;
+function Pa_Initialize(): TPaError; cdecl; external LibName;
 
 
 {** Library termination function - call this when finished using PortAudio.
@@ -159,7 +163,7 @@ function Pa_Initialize(): TPaError; cdecl ; external LibName;
  
  @see Pa_Initialize
 *}
-function Pa_Terminate(): TPaError; cdecl ; external LibName;
+function Pa_Terminate(): TPaError; cdecl; external LibName;
 
 
 
@@ -206,7 +210,7 @@ type TPaHostApiIndex = Integer;
 
  @see PaHostApiIndex
 *}
-function Pa_GetHostApiCount(): TPaHostApiIndex; cdecl ; external LibName;
+function Pa_GetHostApiCount(): TPaHostApiIndex; cdecl; external LibName;
 
 
 {** Retrieve the index of the default host API. The default host API will be
@@ -217,7 +221,7 @@ function Pa_GetHostApiCount(): TPaHostApiIndex; cdecl ; external LibName;
  indicating the default host API index or, a PaErrorCode (which are always
  negative) if PortAudio is not initialized or an error is encountered.
 *}
-function Pa_GetDefaultHostApi(): TPaHostApiIndex; cdecl ; external LibName;
+function Pa_GetDefaultHostApi(): TPaHostApiIndex; cdecl; external LibName;
 
 
 {** Unchanging unique identifiers for each supported host API. This type
@@ -295,7 +299,7 @@ type
  be manipulated or freed. The pointer is only guaranteed to be valid between
  calls to Pa_Initialize() and Pa_Terminate().
 *}
-function Pa_GetHostApiInfo( hostApi: TPaHostApiIndex ): PPaHostApiInfo; cdecl ; external LibName;
+function Pa_GetHostApiInfo( hostApi: TPaHostApiIndex ): PPaHostApiInfo; cdecl; external LibName;
 
 
 {** Convert a static host API unique identifier, into a runtime
@@ -313,7 +317,7 @@ function Pa_GetHostApiInfo( hostApi: TPaHostApiIndex ): PPaHostApiInfo; cdecl ; 
 
  @see PaHostApiTypeId
 *}
-function Pa_HostApiTypeIdToHostApiIndex( _type: TPaHostApiTypeId ): TPaHostApiIndex; cdecl ; external LibName;
+function Pa_HostApiTypeIdToHostApiIndex( _type: TPaHostApiTypeId ): TPaHostApiIndex; cdecl; external LibName;
 
 
 {** Convert a host-API-specific device index to standard PortAudio device index.
@@ -338,7 +342,7 @@ function Pa_HostApiTypeIdToHostApiIndex( _type: TPaHostApiTypeId ): TPaHostApiIn
  @see PaHostApiInfo
 *}
 function Pa_HostApiDeviceIndexToDeviceIndex( hostApi: TPaHostApiIndex;
-        hostApiDeviceIndex: Integer ): TPaDeviceIndex; cdecl ; external LibName;
+        hostApiDeviceIndex: Integer ): TPaDeviceIndex; cdecl; external LibName;
 
 
 
@@ -366,7 +370,7 @@ type
  PortAudio function has previously returned the paUnanticipatedHostError
  error code.
 *}
-function Pa_GetLastHostErrorInfo(): PPaHostErrorInfo; cdecl ; external LibName;
+function Pa_GetLastHostErrorInfo(): PPaHostErrorInfo; cdecl; external LibName;
 
 
 
@@ -379,7 +383,7 @@ function Pa_GetLastHostErrorInfo(): PPaHostErrorInfo; cdecl ; external LibName;
  a PaErrorCode (which are always negative) if PortAudio is not initialized
  or an error is encountered.
 *}
-function Pa_GetDeviceCount(): TPaDeviceIndex; cdecl ; external LibName;
+function Pa_GetDeviceCount(): TPaDeviceIndex; cdecl; external LibName;
 
 
 {** Retrieve the index of the default input device. The result can be
@@ -388,7 +392,7 @@ function Pa_GetDeviceCount(): TPaDeviceIndex; cdecl ; external LibName;
  @return The default input device index for the default host API, or paNoDevice
  if no default input device is available or an error was encountered.
 *}
-function Pa_GetDefaultInputDevice(): TPaDeviceIndex; cdecl ; external LibName;
+function Pa_GetDefaultInputDevice(): TPaDeviceIndex; cdecl; external LibName;
 
 
 {** Retrieve the index of the default output device. The result can be
@@ -406,7 +410,7 @@ function Pa_GetDefaultInputDevice(): TPaDeviceIndex; cdecl ; external LibName;
  The user should first determine the available device ids by using
  the supplied application "pa_devs".
 *}
-function Pa_GetDefaultOutputDevice(): TPaDeviceIndex; cdecl ; external LibName;
+function Pa_GetDefaultOutputDevice(): TPaDeviceIndex; cdecl; external LibName;
 
 
 {** The type used to represent monotonic time in seconds that can be used
@@ -485,7 +489,7 @@ type
 
  @see PaDeviceInfo, PaDeviceIndex
 *}
-function Pa_GetDeviceInfo( device: TPaDeviceIndex ): PPaDeviceInfo; cdecl ; external LibName;
+function Pa_GetDeviceInfo( device: TPaDeviceIndex ): PPaDeviceInfo; cdecl; external LibName;
 
 
 {** Parameters for one direction (input or output) of a stream.
@@ -563,7 +567,7 @@ const paFormatIsSupported = (0);
 *}
 function Pa_IsFormatSupported( inputParameters: PPaStreamParameters;
                               outputParameters: PPaStreamParameters;
-                              sampleRate: Double ): TPaError; cdecl ; external LibName;
+                              sampleRate: Double ): TPaError; cdecl; external LibName;
 
 
 
@@ -648,8 +652,8 @@ const   paPlatformSpecificFlags = TPaStreamFlags($FFFF0000);
  Timing information for the buffers passed to the stream callback.
 *}
 type
-  PPaStreamCallbackTimeInfo = ^PaStreamCallbackTimeInfo;
-  PaStreamCallbackTimeInfo = record
+  PPaStreamCallbackTimeInfo = ^TPaStreamCallbackTimeInfo;
+  TPaStreamCallbackTimeInfo = record
       inputBufferAdcTime: TPaTime;
       currentTime: TPaTime;
       outputBufferDacTime: TPaTime;
@@ -825,7 +829,7 @@ function Pa_OpenStream( var stream: PPaStream;
                        framesPerBuffer: Longword;
                        streamFlags: TPaStreamFlags;
                        streamCallback: PPaStreamCallback;
-                       userData: Pointer ): TPaError; cdecl ; external LibName;
+                       userData: Pointer ): TPaError; cdecl; external LibName;
 
 
 {** A simplified version of Pa_OpenStream() that opens the default input
@@ -865,13 +869,13 @@ function Pa_OpenDefaultStream( var stream: PPaStream;
                               sampleRate: Double;
                               framesPerBuffer: Longword;
                               streamCallback: PPaStreamCallback;
-                              userData: Pointer ): TPaError; cdecl ; external LibName;
+                              userData: Pointer ): TPaError; cdecl; external LibName;
 
 
 {** Closes an audio stream. If the audio stream is active it
  discards any pending buffers as if Pa_AbortStream() had been called.
 *}
-function Pa_CloseStream( stream: PPaStream ): TPaError; cdecl ; external LibName;
+function Pa_CloseStream( stream: PPaStream ): TPaError; cdecl; external LibName;
 
 
 {** Functions of type PaStreamFinishedCallback are implemented by PortAudio 
@@ -912,24 +916,24 @@ type
  @see PaStreamFinishedCallback
 *}
 function Pa_SetStreamFinishedCallback( stream: PPaStream;
-                streamFinishedCallback: PPaStreamFinishedCallback ): TPaError; cdecl ; external LibName;
+                streamFinishedCallback: PPaStreamFinishedCallback ): TPaError; cdecl; external LibName;
 
 
 {** Commences audio processing.
 *}
-function Pa_StartStream( stream: PPaStream ): TPaError; cdecl ; external LibName;
+function Pa_StartStream( stream: PPaStream ): TPaError; cdecl; external LibName;
 
 
 {** Terminates audio processing. It waits until all pending
  audio buffers have been played before it returns.
 *}
-function Pa_StopStream( stream: PPaStream ): TPaError; cdecl ; external LibName;
+function Pa_StopStream( stream: PPaStream ): TPaError; cdecl; external LibName;
 
 
 {** Terminates audio processing immediately without waiting for pending
  buffers to complete.
 *}
-function Pa_AbortStream( stream: PPaStream ): TPaError; cdecl ; external LibName;
+function Pa_AbortStream( stream: PPaStream ): TPaError; cdecl; external LibName;
 
 
 {** Determine whether the stream is stopped.
@@ -944,7 +948,7 @@ function Pa_AbortStream( stream: PPaStream ): TPaError; cdecl ; external LibName
 
  @see Pa_StopStream, Pa_AbortStream, Pa_IsStreamActive
 *}
-function Pa_IsStreamStopped( stream: PPaStream ): TPaError; cdecl ; external LibName;
+function Pa_IsStreamStopped( stream: PPaStream ): TPaError; cdecl; external LibName;
 
 
 {** Determine whether the stream is active.
@@ -960,7 +964,7 @@ function Pa_IsStreamStopped( stream: PPaStream ): TPaError; cdecl ; external Lib
 
  @see Pa_StopStream, Pa_AbortStream, Pa_IsStreamStopped
 *}
-function Pa_IsStreamActive( stream: PPaStream ): TPaError; cdecl ; external LibName;
+function Pa_IsStreamActive( stream: PPaStream ): TPaError; cdecl; external LibName;
 
 
 
@@ -968,8 +972,8 @@ function Pa_IsStreamActive( stream: PPaStream ): TPaError; cdecl ; external LibN
  @see Pa_GetStreamInfo
 *}
 type
-  PPaStreamInfo = ^PaStreamInfo;
-  PaStreamInfo = record
+  PPaStreamInfo = ^TPaStreamInfo;
+  TPaStreamInfo = record
       {** this is struct version 1 *}
       structVersion: Integer;
 
@@ -1013,7 +1017,7 @@ type
 
  @see PaStreamInfo
 *}
-function Pa_GetStreamInfo( stream: PPaStream ): PPaStreamInfo; cdecl ; external LibName;
+function Pa_GetStreamInfo( stream: PPaStream ): PPaStreamInfo; cdecl; external LibName;
 
 
 {** Determine the current time for the stream according to the same clock used
@@ -1024,7 +1028,7 @@ function Pa_GetStreamInfo( stream: PPaStream ): PPaStreamInfo; cdecl ; external 
 
  @see PaTime, PaStreamCallback
 *}
-function Pa_GetStreamTime( stream: PPaStream ): TPaTime; cdecl ; external LibName;
+function Pa_GetStreamTime( stream: PPaStream ): TPaTime; cdecl; external LibName;
 
 
 {** Retrieve CPU usage information for the specified stream.
@@ -1043,7 +1047,7 @@ function Pa_GetStreamTime( stream: PPaStream ): TPaTime; cdecl ; external LibNam
  return value may exceed 1.0. A value of 0.0 will always be returned for a
  blocking read/write stream, or if an error occurrs.
 *}
-function Pa_GetStreamCpuLoad( stream: PPaStream ): Double; cdecl ; external LibName;
+function Pa_GetStreamCpuLoad( stream: PPaStream ): Double; cdecl; external LibName;
 
 
 {** Read samples from an input stream. The function doesn't return until
@@ -1069,7 +1073,7 @@ function Pa_GetStreamCpuLoad( stream: PPaStream ): Double; cdecl ; external LibN
 *}
 function Pa_ReadStream( stream: PPaStream;
                        buffer: Pointer;
-                       frames: Longword ): TPaError; cdecl ; external LibName;
+                       frames: Longword ): TPaError; cdecl; external LibName;
 
 
 {** Write samples to an output stream. This function doesn't return until the
@@ -1096,7 +1100,7 @@ function Pa_ReadStream( stream: PPaStream;
 *}
 function Pa_WriteStream( stream: PPaStream;
                         buffer: Pointer;
-                        frames: Longword ): TPaError; cdecl ; external LibName;
+                        frames: Longword ): TPaError; cdecl; external LibName;
 
 
 {** Retrieve the number of frames that can be read from the stream without
@@ -1107,7 +1111,7 @@ function Pa_WriteStream( stream: PPaStream;
  PaErrorCode (which are always negative) if PortAudio is not initialized or an
  error is encountered.
 *}
-function Pa_GetStreamReadAvailable( stream: PPaStream ): Longint; cdecl ; external LibName;
+function Pa_GetStreamReadAvailable( stream: PPaStream ): Longint; cdecl; external LibName;
 
 
 {** Retrieve the number of frames that can be written to the stream without
@@ -1118,7 +1122,7 @@ function Pa_GetStreamReadAvailable( stream: PPaStream ): Longint; cdecl ; extern
  PaErrorCode (which are always negative) if PortAudio is not initialized or an
  error is encountered.
 *}
-function Pa_GetStreamWriteAvailable( stream: PPaStream ): Longint; cdecl ; external LibName;
+function Pa_GetStreamWriteAvailable( stream: PPaStream ): Longint; cdecl; external LibName;
 
 
 {** Retrieve the host type handling an open stream.
@@ -1127,7 +1131,7 @@ function Pa_GetStreamWriteAvailable( stream: PPaStream ): Longint; cdecl ; exter
  handling an open stream or, a PaErrorCode (which are always negative)
  if PortAudio is not initialized or an error is encountered.
 *}
-function Pa_GetStreamHostApiType( stream: PPaStream ): TPaHostApiTypeId; cdecl ; external LibName;
+function Pa_GetStreamHostApiType( stream: PPaStream ): TPaHostApiTypeId; cdecl; external LibName;
 
 
 {* Miscellaneous utilities *}
@@ -1138,7 +1142,7 @@ function Pa_GetStreamHostApiType( stream: PPaStream ): TPaHostApiTypeId; cdecl ;
  @return The size in bytes of a single sample in the specified format,
  or paSampleFormatNotSupported if the format is not supported.
 *}
-function Pa_GetSampleSize( format: TPaSampleFormat ): TPaError; cdecl ; external LibName;
+function Pa_GetSampleSize( format: TPaSampleFormat ): TPaError; cdecl; external LibName;
 
 
 {** Put the caller to sleep for at least 'msec' milliseconds. This function is
@@ -1148,7 +1152,7 @@ function Pa_GetSampleSize( format: TPaSampleFormat ): TPaError; cdecl ; external
  The function may sleep longer than requested so don't rely on this for accurate
  musical timing.
 *}
-procedure Pa_Sleep( msec: Longint ); cdecl ; external LibName;
+procedure Pa_Sleep( msec: Longint ); cdecl; external LibName;
 
 implementation
 
