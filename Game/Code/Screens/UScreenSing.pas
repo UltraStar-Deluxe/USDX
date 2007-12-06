@@ -150,6 +150,13 @@ begin
         begin
           Pause;
         end;
+
+      SDLK_V: //Show Visualization
+        begin
+          AktSong.VideoLoaded := not AktSong.VideoLoaded;
+          VideoPlayback.play;          
+
+        end;
         
       SDLK_RETURN:
         begin
@@ -183,7 +190,7 @@ begin
       // pause Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
         VideoPlayback.Pause;
-//        FFmpegTogglePause;
+
     end
   else              //Pause ausschalten
     begin
@@ -197,8 +204,6 @@ begin
       // Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
         VideoPlayback.Pause;
-//      FFmpegTogglePause;
-      //SkipSmpeg(PauseTime);
 
       Paused := false;
     end;
@@ -427,14 +432,9 @@ begin
   // set movie
   if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
   begin
-(*    OpenSmpeg(AktSong.Path + AktSong.Video);
-    SkipSmpeg(AktSong.VideoGAP + AktSong.Start);*)
-    
     // todo: VideoGap and Start time verwursten
-//    FFmpegOpenFile(pAnsiChar(AktSong.Path + AktSong.Video));
     VideoPlayback.Open( AktSong.Path + AktSong.Video );
 
-//    FFmpegSkip(AktSong.VideoGAP + AktSong.Start);
     VideoPlayback.position := AktSong.VideoGAP + AktSong.Start;
     
     AktSong.VideoLoaded := true;
@@ -1119,6 +1119,7 @@ begin
   // update and draw movie
   
   if ShowFinish and AktSong.VideoLoaded then
+//  if ShowFinish then
   begin
     try
 //      UpdateSmpeg; // this only draws

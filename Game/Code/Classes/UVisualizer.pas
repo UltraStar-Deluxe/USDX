@@ -63,22 +63,21 @@ type
     procedure VisualizerTogglePause;
   public
     constructor create();
-    function  GetName: String;
+    procedure   init();
+    function    GetName: String;    
 
-    procedure init();
+    function    Open( aFileName : string): boolean; // true if succeed
+    procedure   Close;
 
-    function  Open( aFileName : string): boolean; // true if succeed
-    procedure Close;
+    procedure   Play;
+    procedure   Pause;
+    procedure   Stop;
 
-    procedure Play;
-    procedure Pause;
-    procedure Stop;
+    procedure   MoveTo(Time: real);
+    function    getPosition: real;
 
-    procedure MoveTo(Time: real);
-    function  getPosition: real;
-
-    procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
-    procedure DrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
+    procedure   GetFrame(Time: Extended);
+    procedure   DrawGL(Screen: integer);  
   end;  
 
 
@@ -188,8 +187,7 @@ end;
 
 procedure TVideoPlayback_ProjectM.VisualizerTogglePause;
 begin
-  if VisualizerPaused then VisualizerPaused:=False
-  else VisualizerPaused:=True;
+  VisualizerPaused := not VisualizerPaused;
 end;
 
 procedure TVideoPlayback_ProjectM.GetFrame(Time: Extended);

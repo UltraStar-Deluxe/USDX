@@ -96,22 +96,21 @@ type
       function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
     public
       constructor create();
-      function  GetName: String;
+      function    GetName: String;
+      procedure   init();
 
-      procedure init();
+      function    Open( aFileName : string): boolean; // true if succeed
+      procedure   Close;
 
-      function  Open( aFileName : string): boolean; // true if succeed
-      procedure Close;
+      procedure   Play;
+      procedure   Pause;
+      procedure   Stop;
 
-      procedure Play;
-      procedure Pause;
-      procedure Stop;
+      procedure   MoveTo(Time: real);
+      function    getPosition: real;
 
-      procedure MoveTo(Time: real);
-      function  getPosition: real;
-
-      procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
-      procedure DrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
+      procedure   GetFrame(Time: Extended);
+      procedure   DrawGL(Screen: integer);  
 
     end;
 
