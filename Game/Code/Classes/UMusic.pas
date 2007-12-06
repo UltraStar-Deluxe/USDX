@@ -83,7 +83,10 @@ type
     Source:   array of string;
   end;
 
-  TFFTData  = array [0..256] of Single;
+  TFFTData  = array[0..256] of Single;
+
+  TPCMStereoSample = array[0..1] of Smallint;
+  TPCMData  = array[0..511] of TPCMStereoSample;
 
   hStream = Cardinal;
 
@@ -165,6 +168,9 @@ type
 
       //Equalizer
       function GetFFTData: TFFTData;
+
+      // Interface for Visualizer
+      function GetPCMData(var data: TPCMData): Cardinal;
   end;
 
   IAudioInput = Interface

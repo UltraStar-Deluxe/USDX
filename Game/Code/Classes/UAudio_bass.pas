@@ -100,6 +100,9 @@ type
       //Equalizer
       function GetFFTData: TFFTData;
 
+      // Interface for Visualizer
+      function GetPCMData(var data: TPCMData): Cardinal;
+
       //Custom Sounds
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal );
@@ -382,6 +385,40 @@ var
 begin
   //Get Channel Data Mono and 256 Values
   BASS_ChannelGetData(Bass, @Result, BASS_DATA_FFT512);
+end;
+
+{*
+ * Copies interleaved PCM 16bit uint (maybe fake) stereo samples into data.
+ * Returns the number of frames (= stereo/mono sample)
+ *}
+function TAudio_bass.GetPCMData(var data: TPCMData): Cardinal;
+var
+  info: BASS_CHANNELINFO;
+  nBytes: DWORD;
+begin
+  //Get Channel Data Mono and 256 Values
+  BASS_ChannelGetInfo(Bass, info);
+  ZeroMemory(@data, sizeof(TPCMData));
+  
+  if (info.chans = 1) then
+  begin
+    // mono file -> add stereo channel
+    {
+    nBytes := BASS_ChannelGetData(Bass, @data[0], samples*sizeof(Smallint));
+    // interleave data
+    //CopyMemory(@data[1], @data[0], samples*sizeof(Smallint));
+    }
+    result := 0;
+  end
+  else
+  begin
+    // stereo file
+    nBytes := BASS_ChannelGetData(Bass, @data, sizeof(TPCMData));
+  end;
+  if(nBytes <= 0) then
+    result := 0
+  else
+    result := nBytes div sizeof(TPCMStereoSample);
 end;
 
 function TAudio_bass.LoadCustomSound(const Filename: String): Cardinal;

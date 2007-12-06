@@ -57,6 +57,7 @@ type
       procedure CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
       procedure StopCard(Card: byte);
       function GetFFTData: TFFTData;
+      function GetPCMData(var data: TPCMData): Cardinal;
 
       // IAudioPlayback
       procedure InitializePlayback;
@@ -165,6 +166,11 @@ end;
 
 function  Tmedia_dummy.GetFFTData: TFFTData;
 begin
+end;
+
+function  Tmedia_dummy.GetPCMData(var data: TPCMData): Cardinal;
+begin
+  result := 0;
 end;
 
 // IAudioPlayback

@@ -49,8 +49,13 @@ uses
   avio          in 'lib\ffmpeg\avio.pas',
   //swscale       in 'lib\ffmpeg\swscale.pas',
 
+  {$ifdef UseProjectM}
+  projectM     in 'lib\projectM\projectM.pas',
+  {$endif}
+
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3       in 'lib\SQLite\SQLite3.pas',
+
 
   //------------------------------
   //Includes - Menu System
@@ -68,7 +73,7 @@ uses
 
   //------------------------------
   //Includes - Classes
-  //------------------------------  
+  //------------------------------
   UCommon           in 'Classes\UCommon.pas',
   UGraphic          in 'Classes\UGraphic.pas',
   UTexture          in 'Classes\UTexture.pas',
@@ -109,9 +114,9 @@ uses
   uPluginLoader     in 'Classes\uPluginLoader.pas',     //New Plugin Loader Module
 
   UParty            in 'Classes\UParty.pas',            // to - do : rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
-  UPlatform         in 'Classes\UPlatform.pas', 
+  UPlatform         in 'Classes\UPlatform.pas',
 {$IFDEF WIN32}
-  UPlatformWindows  in 'Classes\UPlatformWindows.pas', 
+  UPlatformWindows  in 'Classes\UPlatformWindows.pas',
 {$ENDIF}
 {$IFDEF LINUX}
   UPlatformLinux    in 'Classes\UPlatformLinux.pas',
@@ -139,8 +144,9 @@ uses
   UAudio_FFMpeg   in 'Classes\UAudio_FFMpeg.pas',
 {$endif}
 
-  projectM        in 'lib\projectM\projectM.pas',
-  UVisualizer     in 'Classes\UVisualizer.pas', 
+{$IFDEF UseProjectM}
+  UVisualizer     in 'Classes\UVisualizer.pas',
+{$ENDIF}
 
   //------------------------------
   //Includes - Screens

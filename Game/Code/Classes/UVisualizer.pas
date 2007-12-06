@@ -30,16 +30,19 @@ uses SDL,
 
 implementation
 
+uses
+     UGraphic;
+
 var
   singleton_VideoProjectM : IVideoPlayback;
 
 const
-  VisualWidth  = 800;  // 640
-  VisualHeight = 600;  // 480
   gx           = 32;
   gy           = 24;
   fps          = 30;
   texsize      = 512;
+  visuals_Dir  = 'Visuals'; // TODO: move this to a place common for all visualizers
+  projectM_Dir = visuals_Dir+'/projectM';
 
 type
   TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback )
@@ -50,7 +53,7 @@ type
     VisualizerPaused  : Boolean;
 
     VisualTex         : glUint;
-    pcm_data          : TPCM16;
+    PCMData           : TPCMData;
     hRC               : Integer;
     hDC               : Integer;
 
@@ -140,7 +143,6 @@ end;
 
 procedure TVideoPlayback_ProjectM.VisualizerStart;
 begin
-//exit;
   VisualizerStarted := True;
 
   New(pm);
@@ -153,8 +155,8 @@ begin
 	pm^.fps := fps;
 	pm^.renderTarget^.usePbuffers := 0;
 
-	pm^.fontURL   := PChar('Visuals\fonts');
-	pm^.presetURL := PChar('Visuals\presets');
+	pm^.fontURL := PChar(projectM_Dir+'/fonts');
+	pm^.presetURL := PChar(projectM_Dir+'/presets');
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	projectM_init(pm);
@@ -164,7 +166,9 @@ begin
   glPushMatrix();
   glMatrixMode(GL_TEXTURE);
   glPushMatrix();
-	projectM_resetGL(pm, VisualWidth, VisualHeight);
+
+	projectM_resetGL(pm, ScreenW, ScreenH);
+  
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
@@ -191,21 +195,16 @@ end;
 procedure TVideoPlayback_ProjectM.GetFrame(Time: Extended);
 var
   i: integer;
+  nSamples: cardinal;
 begin
-//  exit;
-
   if not VisualizerStarted then Exit;
   if VisualizerPaused then Exit;
 
-  Randomize();
+  // get audio data
+  nSamples := AudioPlayback.GetPCMData(PcmData);
+  addPCM16Data(PSmallInt(@PcmData), nSamples);
 
-	for i := 0 to 511 do
-  begin
-    pcm_data[0][i] := RandomRange(High(Smallint), Low(Smallint));
-    pcm_data[1][i] := pcm_data[0][i];
-  end;
-  addPCM16(pcm_data);
-
+  // store OpenGL state (might be messed up otherwise)
   glPushAttrib(GL_ALL_ATTRIB_BITS);
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
@@ -213,12 +212,17 @@ begin
   glPushMatrix();
   glMatrixMode(GL_TEXTURE);
   glPushMatrix();
+
+  // let projectM render a frame
   renderFrame(pm);
   glFlush();
-  {
+
+  {$IFDEF UseTexture}
   glBindTexture(GL_TEXTURE_2D, VisualTex);
   glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, VisualWidth, VisualHeight, 0);
-  }
+  {$ENDIF}
+
+  // restore USDX OpenGL state
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
@@ -227,41 +231,45 @@ begin
   glPopMatrix();
   glPopAttrib();
 
+  // discard projectM's depth buffer information (avoid overlay)
   glClear(GL_DEPTH_BUFFER_BIT);
-
-  {
-  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-
-  glEnable(GL_TEXTURE_2D);
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  glBindTexture(GL_TEXTURE_2D, VisualTex);
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(-1, -1);
-    glTexCoord2f(1, 0); glVertex2f( 1, -1);
-    glTexCoord2f(1, 1); glVertex2f( 1,  1);
-    glTexCoord2f(0, 1); glVertex2f(-1,  1);
-  glEnd();
-  glDisable(GL_TEXTURE_2D);
-  }
 end;
 
 procedure TVideoPlayback_ProjectM.DrawGL(Screen: integer);
 begin
-
-  exit;
-
+  {$IFDEF UseTexture}
   // have a nice black background to draw on (even if there were errors opening the vid)
   if Screen=1 then begin
-    glClearColor(0,0,0,0);
+    glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
   end;
   // exit if there's nothing to draw
   if not VisualizerStarted then Exit;
 
-  glEnable(GL_TEXTURE_2D);
+  // setup display
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  gluOrtho2D(0, 1, 0, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+
   glEnable(GL_BLEND);
-  glColor4f(1, 1, 1, 1);
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   glBindTexture(GL_TEXTURE_2D, VisualTex);
+  glColor4f(1, 1, 1, 1);
+
+  // draw projectM frame
+  glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); glVertex2f(0, 0);
+    glTexCoord2f(1, 0); glVertex2f(1, 0);
+    glTexCoord2f(1, 1); glVertex2f(1, 1);
+    glTexCoord2f(0, 1); glVertex2f(0, 1);
+  glEnd();
+
+  {
   glbegin(GL_QUADS);
     glTexCoord2f(0, 0);
     glVertex2f(400-VisualWidth/2, 300-VisualHeight/2);
@@ -272,9 +280,17 @@ begin
     glTexCoord2f(1, 0);
     glVertex2f(400+VisualWidth/2, 300-VisualHeight/2);
   glEnd;
+  }
+
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
 
+  // restore state
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+  {$ENDIF}
 end;
 
 

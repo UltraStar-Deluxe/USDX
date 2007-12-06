@@ -344,8 +344,8 @@ type
   procedure addPCMfloat(PCMdata: PFLOAT, samples: INT);
   }
   procedure addPCM16(pcm_data: TPCM16); cdecl; external 'libprojectM.dll';
+  procedure addPCM16Data(pcm_data: PSmallint; samples: Smallint); cdecl; external 'libprojectM.dll';
   {
-  procedure addPCM16Data(const short* pcm_data, short samples);
   procedure addPCM8( unsigned char [2][512]);
   }
 
