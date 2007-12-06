@@ -39,7 +39,7 @@
   //{$DEFINE UsePortaudio}
   //{$DEFINE UsePortmixer}
   
-  //{$DEFINE UseProjectM}
+  {$DEFINE UseProjectM}
   
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
