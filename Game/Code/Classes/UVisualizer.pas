@@ -133,6 +133,39 @@ end;
 
 procedure TVideoPlayback_ProjectM.MoveTo(Time: real);
 begin
+  // this code MAY be able to be cut down... but Im not 100% sure..
+  // in here, we cant realy move to a specific time, since its all random generated
+  // but a call to this function will change the preset, which changes the pattern 
+	projectM_reset(pm);
+
+	pm^.fullscreen := 0;
+  pm^.renderTarget^.texsize := texsize;
+	pm^.gx := gx;
+	pm^.gy := gy;
+	pm^.fps := fps;
+	pm^.renderTarget^.usePbuffers := 0;
+
+	pm^.fontURL := PChar(projectM_Dir+'/fonts');
+	pm^.presetURL := PChar(projectM_Dir+'/presets');
+
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	projectM_init(pm);
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glMatrixMode(GL_TEXTURE);
+  glPushMatrix();
+
+	projectM_resetGL(pm, ScreenW, ScreenH);
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+  glMatrixMode(GL_TEXTURE);
+  glPopMatrix();
+  glPopAttrib();
+
 end;
 
 function  TVideoPlayback_ProjectM.getPosition: real;

@@ -157,6 +157,12 @@ begin
           VideoPlayback.play;          
 
         end;
+
+      SDLK_TAB: //Change Visualization Preset
+        begin
+          if AktSong.VideoLoaded then
+            VideoPlayback.MoveTo( now ); // move to a random position
+        end;
         
       SDLK_RETURN:
         begin
