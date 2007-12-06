@@ -34,10 +34,13 @@
 
 {$IFDEF win32}
   {$DEFINE UseBASSOutput}
-//  {$DEFINE UseBASSInput}
+  {$DEFINE UseBASSInput}
 
-  {$DEFINE UsePortaudio}
+  //{$DEFINE UsePortaudio}
   //{$DEFINE UsePortmixer}
+  
+  //{$DEFINE UseProjectM}
+  
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
       {$APPTYPE CONSOLE}
