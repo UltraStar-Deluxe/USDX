@@ -2,6 +2,7 @@
 #                   Visualizer support for UltraStar deluxe                 #
 #                                                                           #
 #   Created by hennymcc                                                     #
+#   Slight modifications by Jay Binks                                       #
 #   based on UVideo.pas                                                     #
 #############################################################################}
 
@@ -24,46 +25,122 @@ uses SDL,
      dialogs,
      {$ENDIF}
      projectM,
+     UMusic,
      windows;
-
-procedure Init;
-procedure VisualizerStart;
-procedure VisualizerStop;
-procedure VisualizerGetFrame(Time: Extended);
-procedure VisualizerDrawGL(Screen: integer);
-procedure VisualizerTogglePause;
-
-const
-  VisualWidth = 640;
-  VisualHeight = 480;
-  gx = 32;
-  gy = 24;
-  fps = 30;
-  texsize = 512;
-
-var
-  pm: PProjectM;
-  VisualizerStarted, VisualizerPaused: Boolean;
-  VisualTex: glUint;
-  pcm_data: TPCM16;
-  hRC: Integer;
-  hDC: Integer;
 
 implementation
 
-procedure Init;
+var
+  singleton_VideoProjectM : IVideoPlayback;
+
+const
+  VisualWidth  = 800;  // 640
+  VisualHeight = 600;  // 480
+  gx           = 32;
+  gy           = 24;
+  fps          = 30;
+  texsize      = 512;
+
+type
+  TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback )
+
+    pm                : PProjectM;
+
+    VisualizerStarted ,
+    VisualizerPaused  : Boolean;
+
+    VisualTex         : glUint;
+    pcm_data          : TPCM16;
+    hRC               : Integer;
+    hDC               : Integer;
+
+    procedure VisualizerStart;
+    procedure VisualizerStop;
+
+    procedure VisualizerTogglePause;
+  public
+    constructor create();
+    function  GetName: String;
+
+    procedure init();
+
+    function  Open( aFileName : string): boolean; // true if succeed
+    procedure Close;
+
+    procedure Play;
+    procedure Pause;
+    procedure Stop;
+
+    procedure MoveTo(Time: real);
+    function  getPosition: real;
+
+    procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
+    procedure DrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
+  end;  
+
+
+constructor TVideoPlayback_ProjectM.create();
 begin
+end;
+
+
+procedure TVideoPlayback_ProjectM.init();
+begin
+  writeln( 'TVideoPlayback_ProjectM - INITIALIZE !!!!!!!!' );
+
   VisualizerStarted := False;
-  VisualizerPaused := False;
+  VisualizerPaused  := False;
+
   glGenTextures(1, PglUint(@VisualTex));
 	glBindTexture(GL_TEXTURE_2D, VisualTex);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 end;
 
-procedure VisualizerStart;
+function  TVideoPlayback_ProjectM.GetName: String;
 begin
-exit;
+  result := 'ProjectM';
+end;
+
+
+function TVideoPlayback_ProjectM.Open( aFileName : string): boolean; // true if succeed
+begin
+  VisualizerStart();
+  result := true;
+end;
+
+procedure TVideoPlayback_ProjectM.Close;
+begin
+end;
+
+procedure TVideoPlayback_ProjectM.Play;
+begin
+  VisualizerStart();
+end;
+
+procedure TVideoPlayback_ProjectM.Pause;
+begin
+  VisualizerTogglePause();
+end;
+
+procedure TVideoPlayback_ProjectM.Stop;
+begin
+  VisualizerStop();
+end;
+
+procedure TVideoPlayback_ProjectM.MoveTo(Time: real);
+begin
+end;
+
+function  TVideoPlayback_ProjectM.getPosition: real;
+begin
+  result := 0;  
+end;
+
+procedure TVideoPlayback_ProjectM.VisualizerStart;
+begin
+//exit;
   VisualizerStarted := True;
 
   New(pm);
@@ -76,7 +153,7 @@ exit;
 	pm^.fps := fps;
 	pm^.renderTarget^.usePbuffers := 0;
 
-	pm^.fontURL := PChar('Visuals\fonts');
+	pm^.fontURL   := PChar('Visuals\fonts');
 	pm^.presetURL := PChar('Visuals\presets');
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -97,7 +174,7 @@ exit;
   glPopAttrib();
 end;
 
-procedure VisualizerStop;
+procedure TVideoPlayback_ProjectM.VisualizerStop;
 begin
   if VisualizerStarted then begin
     VisualizerStarted := False;
@@ -105,17 +182,17 @@ begin
   end;
 end;
 
-procedure VisualizerTogglePause;
+procedure TVideoPlayback_ProjectM.VisualizerTogglePause;
 begin
   if VisualizerPaused then VisualizerPaused:=False
   else VisualizerPaused:=True;
 end;
 
-procedure VisualizerGetFrame(Time: Extended);
+procedure TVideoPlayback_ProjectM.GetFrame(Time: Extended);
 var
   i: integer;
 begin
-  exit;
+//  exit;
 
   if not VisualizerStarted then Exit;
   if VisualizerPaused then Exit;
@@ -168,9 +245,11 @@ begin
   }
 end;
 
-procedure VisualizerDrawGL(Screen: integer);
+procedure TVideoPlayback_ProjectM.DrawGL(Screen: integer);
 begin
-{
+
+  exit;
+
   // have a nice black background to draw on (even if there were errors opening the vid)
   if Screen=1 then begin
     glClearColor(0,0,0,0);
@@ -195,7 +274,19 @@ begin
   glEnd;
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
-}
+
 end;
+
+
+initialization
+  singleton_VideoProjectM := TVideoPlayback_ProjectM.create();
+
+  writeln( 'UVideoProjectM - Register Playback' );
+  AudioManager.add( singleton_VideoProjectM );
+
+finalization
+  AudioManager.Remove( singleton_VideoProjectM );
+
+
 
 end.

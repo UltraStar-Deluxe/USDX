@@ -110,8 +110,8 @@ type
       procedure MoveTo(Time: real);
       function  getPosition: real;
 
-      procedure FFmpegGetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
-      procedure FFmpegDrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
+      procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
+      procedure DrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
 
     end;
 
@@ -192,7 +192,7 @@ end;
 
 
 
-procedure TVideoPlayback_ffmpeg.FFmpegGetFrame(Time: Extended);
+procedure TVideoPlayback_ffmpeg.GetFrame(Time: Extended);
 var
   FrameFinished: Integer;
   AVPacket: TAVPacket;
@@ -355,7 +355,7 @@ begin
   end;
 end;
 
-procedure TVideoPlayback_ffmpeg.FFmpegDrawGL(Screen: integer);
+procedure TVideoPlayback_ffmpeg.DrawGL(Screen: integer);
 begin
   // have a nice black background to draw on (even if there were errors opening the vid)
   if Screen=1 then

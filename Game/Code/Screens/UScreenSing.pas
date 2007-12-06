@@ -851,10 +851,10 @@ begin
   begin
     try
       writeln( 'VideoPlayback.FFmpegGetFrame' );
-      VideoPlayback.FFmpegGetFrame(Czas.Teraz);
+      VideoPlayback.GetFrame(Czas.Teraz);
 
       writeln( 'VideoPlayback.FFmpegDrawGL' );
-      VideoPlayback.FFmpegDrawGL(ScreenAct);
+      VideoPlayback.DrawGL(ScreenAct);
 //      PlaySmpeg;
     except
     
@@ -1125,8 +1125,8 @@ begin
       // todo: find a way to determine, when a new frame is needed
       // toto: same for the need to skip frames
 
-      VideoPlayback.FFmpegGetFrame(Czas.Teraz);
-      VideoPlayback.FFmpegDrawGL(ScreenAct);
+      VideoPlayback.GetFrame(Czas.Teraz);
+      VideoPlayback.DrawGL(ScreenAct);
     except
       on E : Exception do
       begin

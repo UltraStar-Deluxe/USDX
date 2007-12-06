@@ -123,8 +123,8 @@ type
 *)
     procedure init();
     
-    procedure FFmpegGetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
-    procedure FFmpegDrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
+    procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
+    procedure DrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
 
   end;
 
@@ -265,6 +265,7 @@ begin
 //         ( not assigned( singleton_AudioInput )                                     ) then
       begin
         singleton_AudioInput := IAudioInput( lTmpInterface );
+        Writeln(singleton_AudioInput.GetName);
       end;
 
       // if this interface is a Input, then set it as the default used

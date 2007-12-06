@@ -128,7 +128,7 @@ uses
   //------------------------------
   UMusic          in 'Classes\UMusic.pas',
   UMedia_dummy    in 'Classes\UMedia_dummy.pas',
-  UVideo          in 'Classes\UVideo.pas',
+//  UVideo          in 'Classes\UVideo.pas',
 {$ifdef UseBass}
   UAudio_bass     in 'Classes\UAudio_bass.pas',
 {$endif}
@@ -138,6 +138,9 @@ uses
 {$ifdef FFMpegAudio}
   UAudio_FFMpeg   in 'Classes\UAudio_FFMpeg.pas',
 {$endif}
+
+  projectM        in 'lib\projectM\projectM.pas',
+  UVisualizer     in 'Classes\UVisualizer.pas', 
 
   //------------------------------
   //Includes - Screens

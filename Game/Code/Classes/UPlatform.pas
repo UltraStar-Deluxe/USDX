@@ -18,10 +18,10 @@ uses Classes;
 type
   
   TDirectoryEntry = Record
-    Name : WideString;
-	IsDirectory : Boolean;
-	IsFile : Boolean;
-  end;
+                      Name        : WideString;
+                      IsDirectory : Boolean;
+                      IsFile      : Boolean;
+                    end;
  
   TDirectoryEntryArray = Array of TDirectoryEntry;
 	
@@ -81,6 +81,5 @@ initialization
   {$ENDIF}
 
 finalization
-
-    Platform.Free;
+    freeandnil( Platform );
 end.

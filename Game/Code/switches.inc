@@ -34,8 +34,9 @@
 
 {$IFDEF win32}
   {$DEFINE UseBASSOutput}
-  {$DEFINE UseBASSInput}
-  //{$DEFINE UsePortaudio}
+//  {$DEFINE UseBASSInput}
+
+  {$DEFINE UsePortaudio}
   //{$DEFINE UsePortmixer}
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}

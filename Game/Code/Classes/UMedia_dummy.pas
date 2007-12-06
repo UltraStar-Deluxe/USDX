@@ -47,8 +47,8 @@ type
       procedure MoveTo(Time: real);
       function  getPosition: real;
 
-      procedure FFmpegGetFrame(Time: Extended);
-      procedure FFmpegDrawGL(Screen: integer); 
+      procedure GetFrame(Time: Extended);
+      procedure DrawGL(Screen: integer);
 
       // IAudioInput
       procedure InitializeRecord;
@@ -95,11 +95,11 @@ begin
 end;
 
 
-procedure Tmedia_dummy.FFmpegGetFrame(Time: Extended);
+procedure Tmedia_dummy.GetFrame(Time: Extended);
 begin
 end;
 
-procedure Tmedia_dummy.FFmpegDrawGL(Screen: integer);
+procedure Tmedia_dummy.DrawGL(Screen: integer);
 begin
 end;
 
