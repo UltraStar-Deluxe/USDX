@@ -45,7 +45,7 @@ const
   projectM_Dir = visuals_Dir+'/projectM';
 
 type
-  TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback )
+  TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
 
     pm                : PProjectM;
 

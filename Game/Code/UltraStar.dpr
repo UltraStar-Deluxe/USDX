@@ -133,6 +133,9 @@ uses
   //------------------------------
   UMusic          in 'Classes\UMusic.pas',
   UMedia_dummy    in 'Classes\UMedia_dummy.pas',
+{$IFDEF UseProjectM}
+  UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... 
+{$ENDIF}
   UVideo          in 'Classes\UVideo.pas',
 {$ifdef UseBass}
   UAudio_bass     in 'Classes\UAudio_bass.pas',
@@ -144,9 +147,6 @@ uses
   UAudio_FFMpeg   in 'Classes\UAudio_FFMpeg.pas',
 {$endif}
 
-{$IFDEF UseProjectM}
-  UVisualizer     in 'Classes\UVisualizer.pas',
-{$ENDIF}
 
   //------------------------------
   //Includes - Screens

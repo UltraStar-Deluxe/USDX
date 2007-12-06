@@ -97,6 +97,9 @@ type
       //Score Manager:
       Scores: TSingScores;
 
+      fShowVisualization          : boolean;
+      fCurrentVideoPlaybackEngine : IVideoPlayback;
+
       constructor Create; override;
       procedure onShow; override;
       procedure onShowFinish; override;
@@ -153,15 +156,22 @@ begin
 
       SDLK_V: //Show Visualization
         begin
-          AktSong.VideoLoaded := not AktSong.VideoLoaded;
-          VideoPlayback.play;          
+          fShowVisualization := not fShowVisualization;
+
+          if fShowVisualization then
+            fCurrentVideoPlaybackEngine := Visualization
+          else
+            fCurrentVideoPlaybackEngine := VideoPlayback;
+
+          if fShowVisualization then
+            fCurrentVideoPlaybackEngine.play;
 
         end;
 
       SDLK_TAB: //Change Visualization Preset
         begin
-          if AktSong.VideoLoaded then
-            VideoPlayback.MoveTo( now ); // move to a random position
+          if fShowVisualization then
+            fCurrentVideoPlaybackEngine.MoveTo( now ); // move to a random position
         end;
         
       SDLK_RETURN:
@@ -195,7 +205,7 @@ begin
 
       // pause Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
-        VideoPlayback.Pause;
+        fCurrentVideoPlaybackEngine.Pause;
 
     end
   else              //Pause ausschalten
@@ -209,7 +219,7 @@ begin
 
       // Video
       if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
-        VideoPlayback.Pause;
+        fCurrentVideoPlaybackEngine.Pause;
 
       Paused := false;
     end;
@@ -222,6 +232,10 @@ var
   P:    integer;
 begin
   inherited Create;
+
+  fShowVisualization := false;
+  fCurrentVideoPlaybackEngine := VideoPlayback;
+
 
   //Create Score Class
   Scores := TSingScores.Create;
@@ -288,7 +302,7 @@ begin
 
   Lyrics := TLyricEngine.Create(80,Skin_LyricsT,640,12,80,Skin_LyricsT+36,640,12);
 
-  VideoPlayback.Init();
+  fCurrentVideoPlaybackEngine.Init();
 end;
 
 procedure TScreenSing.onShow;
@@ -306,6 +320,9 @@ var
 begin
   Log.LogStatus('Begin', 'onShow');
   FadeOut := false; // 0.5.0: early 0.5.0 problems were by this line commented
+
+  // reset video playback engine, to play Video Clip...
+  fCurrentVideoPlaybackEngine := VideoPlayback;
 
   //SetUp Score Manager
   Scores.ClearPlayers; //Clear Old Player Values
@@ -439,9 +456,9 @@ begin
   if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
   begin
     // todo: VideoGap and Start time verwursten
-    VideoPlayback.Open( AktSong.Path + AktSong.Video );
+    fCurrentVideoPlaybackEngine.Open( AktSong.Path + AktSong.Video );
 
-    VideoPlayback.position := AktSong.VideoGAP + AktSong.Start;
+    fCurrentVideoPlaybackEngine.position := AktSong.VideoGAP + AktSong.Start;
     
     AktSong.VideoLoaded := true;
   end;
@@ -857,10 +874,10 @@ begin
   begin
     try
       writeln( 'VideoPlayback.FFmpegGetFrame' );
-      VideoPlayback.GetFrame(Czas.Teraz);
+      fCurrentVideoPlaybackEngine.GetFrame(Czas.Teraz);
 
       writeln( 'VideoPlayback.FFmpegDrawGL' );
-      VideoPlayback.DrawGL(ScreenAct);
+      fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
 //      PlaySmpeg;
     except
     
@@ -874,7 +891,7 @@ begin
        Log.LogError('Corrupted File: ' + AktSong.Video);
        try
 //         CloseSmpeg;
-         VideoPlayback.Close;
+         fCurrentVideoPlaybackEngine.Close;
        except
 
        end;
@@ -1124,7 +1141,7 @@ begin
   SingDrawBackground;
   // update and draw movie
   
-  if ShowFinish and AktSong.VideoLoaded then
+  if ShowFinish and ( AktSong.VideoLoaded or fShowVisualization ) then
 //  if ShowFinish then
   begin
     try
@@ -1132,8 +1149,8 @@ begin
       // todo: find a way to determine, when a new frame is needed
       // toto: same for the need to skip frames
 
-      VideoPlayback.GetFrame(Czas.Teraz);
-      VideoPlayback.DrawGL(ScreenAct);
+      fCurrentVideoPlaybackEngine.GetFrame(Czas.Teraz);
+      fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     except
       on E : Exception do
       begin
@@ -1147,7 +1164,7 @@ begin
         Log.LogError('Corrupted File: ' + AktSong.Video);
         try
 //        CloseSmpeg;
-          VideoPlayback.Close;
+          fCurrentVideoPlaybackEngine.Close;
         except
 
         end;
@@ -1230,7 +1247,7 @@ begin
   if AktSong.VideoLoaded then
   begin
 //    CloseSmpeg;
-    VideoPlayback.Close;
+    fCurrentVideoPlaybackEngine.Close;
     AktSong.VideoLoaded := false; // to prevent drawing closed video
   end;
 

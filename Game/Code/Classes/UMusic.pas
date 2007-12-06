@@ -131,6 +131,10 @@ type
 
   end;
 
+  IVideoVisualization = Interface( IVideoPlayback )
+  ['{5AC17D60-B34D-478D-B632-EB00D4078017}']
+  end;
+
   IAudioPlayback = Interface( IGenericPlayback )
   ['{E4AE0B40-3C21-4DC5-847C-20A87E0DFB96}']
       procedure InitializePlayback;
@@ -195,7 +199,8 @@ var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
   
 
 procedure InitializeSound;
- 
+
+function  Visualization(): IVideoPlayback;
 function  VideoPlayback(): IVideoPlayback;
 function  AudioPlayback(): IAudioPlayback;
 function  AudioInput(): IAudioInput;
@@ -210,9 +215,11 @@ uses
 //  uLog;
 
 var
-  singleton_VideoPlayback : IVideoPlayback  = nil; 
+  singleton_VideoPlayback : IVideoPlayback  = nil;
+  singleton_Visualization : IVideoPlayback  = nil;
   singleton_AudioPlayback : IAudioPlayback  = nil;
   singleton_AudioInput    : IAudioInput     = nil;
+
   singleton_AudioManager  : TInterfaceList  = nil;
 
 
@@ -228,6 +235,11 @@ end; //CompressionPluginManager
 function  VideoPlayback(): IVideoPlayback;
 begin
   result := singleton_VideoPlayback;
+end;
+
+function  Visualization(): IVideoPlayback;
+begin
+  result := singleton_Visualization;
 end;
 
 function AudioPlayback(): IAudioPlayback;
@@ -250,6 +262,7 @@ begin
   singleton_AudioPlayback := nil;
   singleton_AudioInput    := nil;
   singleton_VideoPlayback := nil;
+  singleton_Visualization := nil;
 
   writeln( 'InitializeSound , Enumerate Registered Audio Interfaces' );
   for iCount := 0 to AudioManager.Count - 1 do
@@ -276,10 +289,17 @@ begin
 
       // if this interface is a Input, then set it as the default used
       if ( AudioManager[iCount].QueryInterface( IVideoPlayback, lTmpInterface ) = 0 ) AND
+         //( AudioManager[iCount].QueryInterface( IVideoVisualization, lTmpInterface ) <> 0 ) AND
          ( true ) then
 //         ( not assigned( singleton_VideoPlayback )                                  ) then
       begin
         singleton_VideoPlayback := IVideoPlayback( lTmpInterface );
+      end;
+
+      if ( AudioManager[iCount].QueryInterface( IVideoVisualization, lTmpInterface ) = 0 ) AND
+         ( true ) then
+      begin
+        singleton_Visualization := IVideoPlayback( lTmpInterface );
       end;
 
     end;

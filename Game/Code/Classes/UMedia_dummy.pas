@@ -29,7 +29,7 @@ var
   singleton_dummy : IVideoPlayback;
 
 type
-    Tmedia_dummy = class( TInterfacedObject, IVideoPlayback, IAudioPlayback, IAudioInput )
+    Tmedia_dummy = class( TInterfacedObject, IVideoPlayback, IVideoVisualization, IAudioPlayback, IAudioInput )
     private
     public
       constructor create();
