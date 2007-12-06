@@ -25,8 +25,7 @@ uses SDL,
      dialogs,
      {$ENDIF}
      projectM,
-     UMusic,
-     windows;
+     UMusic;
 
 implementation
 
@@ -98,6 +97,10 @@ begin
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+ 
+  New(pm);
+	projectM_reset(pm);
+
 end;
 
 function  TVideoPlayback_ProjectM.GetName: String;
@@ -177,17 +180,24 @@ procedure TVideoPlayback_ProjectM.VisualizerStart;
 begin
   VisualizerStarted := True;
 
-  New(pm);
-	projectM_reset(pm);
+//  New(pm);
+//	projectM_reset(pm);
+
+ writeln('Render Target');
+ writeln( inttostr( integer( assigned(pm^.renderTarget) ) ) );
 
 	pm^.fullscreen := 0;
-  pm^.renderTarget^.texsize := texsize;
-	pm^.gx := gx;
-	pm^.gy := gy;
+	pm^.gx  := gx;
+	pm^.gy  := gy;
 	pm^.fps := fps;
-	pm^.renderTarget^.usePbuffers := 0;
+ 
+  if assigned(pm^.renderTarget) then
+  begin
+    pm^.renderTarget^.texsize := texsize;
+  	pm^.renderTarget^.usePbuffers := 0;
+  end;
 
-	pm^.fontURL := PChar(projectM_Dir+'/fonts');
+	pm^.fontURL   := PChar(projectM_Dir+'/fonts');
 	pm^.presetURL := PChar(projectM_Dir+'/presets');
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);

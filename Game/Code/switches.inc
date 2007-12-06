@@ -48,7 +48,8 @@
   {$ENDIF}
 {$ELSE}
   //{$DEFINE FFMpegAudio}
-  {$DEFINE UsePortaudio}
+//  {$DEFINE UsePortaudio}
+  {$DEFINE UseProjectM}
 {$ENDIF}
 
 {$IF Defined(UseBASSInput) or Defined(UseBASSOutput)}

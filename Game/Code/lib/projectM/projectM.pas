@@ -4,6 +4,13 @@ interface
 
 uses OpenGL12;
 
+const
+  {$IFDEF win32}
+    libname = 'libprojectM.dll';
+  {$Else}
+    libname = 'libprojectM.so';
+  {$endif}
+
 type
   FLOAT = Single;
   PFLOAT = ^FLOAT;
@@ -301,11 +308,11 @@ type
   end;
 
   { Functions }
-  procedure projectM_init(pm: PProjectM); cdecl; external 'libprojectM.dll'; 
-  procedure projectM_reset(pm: PProjectM); cdecl; external 'libprojectM.dll';
-  procedure projectM_resetGL(pm: PProjectM; width: INT; height: INT); cdecl; external 'libprojectM.dll';
-  procedure projectM_setTitle(pm: PProjectM; title: PChar); cdecl; external 'libprojectM.dll';
-  procedure renderFrame(pm: PProjectM); cdecl; external 'libprojectM.dll';
+  procedure projectM_init(pm: PProjectM); cdecl; external libname;
+  procedure projectM_reset(pm: PProjectM); cdecl; external libname;
+  procedure projectM_resetGL(pm: PProjectM; width: INT; height: INT); cdecl; external libname;
+  procedure projectM_setTitle(pm: PProjectM; title: PChar); cdecl; external libname;
+  procedure renderFrame(pm: PProjectM); cdecl; external libname;
 
   {
   procedure draw_help(pm: PProjectM);
@@ -343,8 +350,8 @@ type
   {
   procedure addPCMfloat(PCMdata: PFLOAT, samples: INT);
   }
-  procedure addPCM16(pcm_data: TPCM16); cdecl; external 'libprojectM.dll';
-  procedure addPCM16Data(pcm_data: PSmallint; samples: Smallint); cdecl; external 'libprojectM.dll';
+  procedure addPCM16(pcm_data: TPCM16); cdecl; external libname;
+  procedure addPCM16Data(pcm_data: PSmallint; samples: Smallint); cdecl; external libname;
   {
   procedure addPCM8( unsigned char [2][512]);
   }
