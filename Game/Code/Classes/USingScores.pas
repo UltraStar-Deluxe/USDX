@@ -212,9 +212,9 @@ begin
   oPositionCount  := 0;
   oPlayerCount    := 0;
 
-  Settings.Phase1Time := 1000;
-  Settings.Phase2Time := 2000;
-  Settings.Phase3Time := 2000;
+  Settings.Phase1Time := 350;  // plop it up     . -> [   ]
+  Settings.Phase2Time := 550;  // shift it up        ^[   ]^
+  Settings.Phase3Time := 200;  // increase score      [s++]
 
   Settings.PopUpTex[0].TexNum := High(gluInt);
   Settings.PopUpTex[1].TexNum := High(gluInt);
