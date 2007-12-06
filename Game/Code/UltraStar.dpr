@@ -133,7 +133,7 @@ uses
   //------------------------------
   UMusic          in 'Classes\UMusic.pas',
   UMedia_dummy    in 'Classes\UMedia_dummy.pas',
-//  UVideo          in 'Classes\UVideo.pas',
+  UVideo          in 'Classes\UVideo.pas',
 {$ifdef UseBass}
   UAudio_bass     in 'Classes\UAudio_bass.pas',
 {$endif}
