@@ -131,10 +131,12 @@ uses
   //Includes - Media support classes....
   //           Make sure UMedia always first, then UMedia_dummy
   //------------------------------
+
+  // TODO :  these all need to be renamed like UMedia_********   for consistency
   UMusic          in 'Classes\UMusic.pas',
-  UMedia_dummy    in 'Classes\UMedia_dummy.pas',
+  UMedia_dummy    in 'Classes\UMedia_dummy.pas',  // Must be first UMedia Unit, all others will override available interfaces
 {$IFDEF UseProjectM}
-  UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... 
+  UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... so video can override...
 {$ENDIF}
   UVideo          in 'Classes\UVideo.pas',
 {$ifdef UseBass}
