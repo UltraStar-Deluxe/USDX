@@ -161,7 +161,7 @@ begin
 
   writeln( ' aFormatCtx.nb_streams : ' + inttostr( aFormatCtx.nb_streams ) );
   writeln( ' length( aFormatCtx.streams ) : ' + inttostr( length(aFormatCtx.streams) ) );
-  
+
   i := 0;
   while ( i < aFormatCtx.nb_streams ) do
 //  while ( i < length(aFormatCtx.streams)-1 ) do
@@ -415,22 +415,15 @@ end;
 
 constructor TVideoPlayback_ffmpeg.create();
 begin
-  writeln( 'UVideo_FFMpeg - TVideoPlayback_ffmpeg.create()' );
-
-  writeln( 'UVideo_FFMpeg - av_register_all' );
   av_register_all;
 
   fVideoOpened := False;
   fVideoPaused := False;
-
 end;
 
 procedure TVideoPlayback_ffmpeg.init();
 begin
-  writeln( 'UVideo_FFMpeg - glGenTextures(1, PglUint(@fVideoTex))' );
   glGenTextures(1, PglUint(@fVideoTex));
-
-  writeln( 'UVideo_FFMpeg - SetLength(fTexData,0)' );
   SetLength(fTexData,0);
 end;
 
@@ -453,10 +446,10 @@ begin
   TimeDifference     := 0;
   VideoFormatContext := 0;
 
-  writeln( aFileName );
-  
+//  writeln( aFileName );
+
   errnum         := av_open_input_file(VideoFormatContext, pchar( aFileName ), Nil, 0, Nil);
-  writeln( 'Errnum : ' +inttostr( errnum ));
+//  writeln( 'Errnum : ' +inttostr( errnum ));
   if(errnum <> 0) then
   begin
 {$ifdef DebugDisplay}
@@ -684,10 +677,7 @@ end;
 
 initialization
   singleton_VideoFFMpeg := TVideoPlayback_ffmpeg.create();
-
-  writeln( 'UVideo_FFMpeg - Register Playback' );
   AudioManager.add( singleton_VideoFFMpeg );
-
 
 finalization
   AudioManager.Remove( singleton_VideoFFMpeg );

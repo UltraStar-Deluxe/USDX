@@ -419,11 +419,9 @@ end;
 
 initialization
   singleton_MusicPortaudio := TAudio_Portaudio.create();
-  writeln( 'UAudio_Portaudio - Register' );
   AudioManager.add( singleton_MusicPortaudio );
 
 finalization
-  writeln( 'UAudio_Portaudio - UnRegister' );
   AudioManager.Remove( singleton_MusicPortaudio );
 
 end.

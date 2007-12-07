@@ -1144,13 +1144,18 @@ begin
   if ShowFinish and ( AktSong.VideoLoaded or fShowVisualization ) then
 //  if ShowFinish then
   begin
-    try
+//    try
 //      UpdateSmpeg; // this only draws
       // todo: find a way to determine, when a new frame is needed
       // toto: same for the need to skip frames
 
-      fCurrentVideoPlaybackEngine.GetFrame(Czas.Teraz);
-      fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
+      if assigned( fCurrentVideoPlaybackEngine ) then
+      begin
+        fCurrentVideoPlaybackEngine.GetFrame(Czas.Teraz);
+        fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
+      end;
+
+(*
     except
       on E : Exception do
       begin
@@ -1170,6 +1175,8 @@ begin
         end;
       end;
     end;
+*)
+
   end;
 
   // draw static menu (FG)
@@ -1332,6 +1339,12 @@ begin
   if Ini.EffectSing=1 then
     GoldenRec.SpawnPerfectLineTwinkle;
   //PerfectLineTwinkle Mod end
+
+
+  // if we are shoing a visualization... change to a new preset after each sentence..
+  // Maybe we should make this less often or something... just a
+  if fShowVisualization then
+    fCurrentVideoPlaybackEngine.MoveTo( now ); // move to a random position
 end;
 
 //Called on Sentence Change S= New Current Sentence

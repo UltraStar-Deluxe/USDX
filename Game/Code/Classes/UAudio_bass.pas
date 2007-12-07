@@ -138,14 +138,12 @@ var
   Pet:  integer;
   S:    integer;
 begin
-  writeln( 'TAudio_bass.InitializePlayback' );
 //  Log.BenchmarkStart(4);
 //  Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
 
   Loaded := false;
   Loop   := false;
 
-  writeln( 'TAudio_bass BASS_Init' );
   if not BASS_Init(1, 44100, 0, 0, nil) then
   begin
     Log.LogError('Could not initialize BASS', 'Error');
@@ -160,7 +158,6 @@ begin
 
 //  Log.LogStatus('Loading Sounds', 'Music Initialize');
 
-  writeln( 'TAudio_bass LoadSoundFromFile' );
 //  Log.BenchmarkStart(4);
   LoadSoundFromFile(BassStart,  SoundPath + 'Common Start.mp3');
   LoadSoundFromFile(BassBack,   SoundPath + 'Common Back.mp3');
@@ -674,12 +671,9 @@ end;
 
 initialization
   singleton_MusicBass := TAudio_bass.create();
-
-  writeln( 'UAudio_Bass - Register' );
   AudioManager.add( singleton_MusicBass );
 
 finalization
-  writeln( 'UAudio_Bass - UnRegister' );
   AudioManager.Remove( singleton_MusicBass );
 
 end.

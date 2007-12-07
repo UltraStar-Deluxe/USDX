@@ -34,6 +34,8 @@ type
       ConfigFile: String;
       ScoreFile:  String;
 
+      procedure showhelp();
+
       //Pseudo Integer Values
       Function GetLanguage:   Integer;
       Property Language:      Integer read GetLanguage;
@@ -50,6 +52,11 @@ type
 
 var
   Params:    TCMDParams;
+  
+const
+  cHelp            = 'help';
+  cMediaInterfaces = 'showinterfaces';
+
 
 implementation
 
@@ -62,8 +69,34 @@ uses SysUtils;
 //-------------
 Constructor TCMDParams.Create;
 begin
+
+  if FindCmdLineSwitch( cHelp ) then
+    showhelp();
+
   ResetVariables;
   ReadParamInfo;
+end;
+
+procedure TCMDParams.showhelp();
+
+  function s( aString : String ) : string;
+  begin
+    result := aString + StringofChar( ' ', 15 - length( aString ) );
+  end;
+  
+begin
+
+  writeln( '' );
+  writeln( '**************************************************************' );
+  writeln( '  UltraStar Deluxe - Command line switches                    ' );
+  writeln( '**************************************************************' );
+  writeln( '' );
+  writeln( '  '+s( 'Switch' ) +' : Purpose' );
+  writeln( '  ----------------------------------------------------------' );
+  writeln( '  '+s( cMediaInterfaces ) + ' : Show in-use media interfaces' );
+  writeln( '' );
+
+  halt();
 end;
 
 //-------------
@@ -100,6 +133,7 @@ var
 begin
   PCount := ParamCount;
   //Log.LogError('ParamCount: ' + Inttostr(PCount));
+  
 
   //Check all Parameters
   For I := 1 to PCount do

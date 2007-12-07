@@ -171,37 +171,9 @@ begin
   result := data;
 end;
 
-var count: integer = 0;
-
 function  Tmedia_dummy.GetPCMData(var data: TPCMData): Cardinal;
-var i: integer;
 begin
-  // Produce some fake PCM data
-  if ( count mod 500 = 0 ) then
-  begin
-    for i := 0 to 511 do begin
-      data[0][i] := 0;
-      data[1][i] := 0;
-    end;
-  end
-  else begin
-    for i := 0 to 511 do begin
-      if ( i mod 2 = 0 ) then begin
-        data[0][i] := floor(Random * power(2.,14));
-        data[1][i] := floor(Random * power(2.,14));
-      end
-      else begin;
-        data[0][i] := floor(Random * power(2.,14));
-        data[1][i] := floor(Random * power(2.,14));
-      end;
-      if ( i mod 2 = 1 ) then begin
-        data[0][i] := -data[0][i];
-        data[1][i] := -data[1][i];
-      end;
-    end;
-  end;
-  Inc(count);
-  result := 512;
+  result := 0;
 end;
 
 // IAudioPlayback
@@ -293,16 +265,11 @@ procedure Tmedia_dummy.PlayCustomSound(const Index: Cardinal );
 begin
 end;
 
-
-
 initialization
   singleton_dummy := Tmedia_dummy.create();
-
-  writeln( 'UMedia_dummy - Register' );
   AudioManager.add( singleton_dummy );
 
 finalization
-  writeln( 'UMedia_dummy - UnRegister' );
   AudioManager.Remove( singleton_dummy );
 
 end.

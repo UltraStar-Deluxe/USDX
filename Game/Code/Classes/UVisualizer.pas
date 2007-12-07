@@ -56,10 +56,14 @@ type
     hRC               : Integer;
     hDC               : Integer;
 
+    RndPCMcount       : integer;
+
     procedure VisualizerStart;
     procedure VisualizerStop;
 
     procedure VisualizerTogglePause;
+    
+    function  GetRandomPCMData(var data: TPCMData): Cardinal;
   public
     constructor create();
     procedure   init();
@@ -82,13 +86,12 @@ type
 
 constructor TVideoPlayback_ProjectM.create();
 begin
+  RndPCMcount := 0;
 end;
 
 
 procedure TVideoPlayback_ProjectM.init();
 begin
-  writeln( 'TVideoPlayback_ProjectM - INITIALIZE !!!!!!!!' );
-
   VisualizerStarted := False;
   VisualizerPaused  := False;
 
@@ -232,6 +235,10 @@ begin
 
   // get audio data
   nSamples := AudioPlayback.GetPCMData(PcmData);
+
+  if nSamples = 0 then
+    nSamples := GetRandomPCMData(PcmData);
+  
   addPCM16Data(PPCM16Data(@PcmData), nSamples);
 
   // store OpenGL state (might be messed up otherwise)
@@ -244,7 +251,15 @@ begin
   glPushMatrix();
 
   // let projectM render a frame
-  renderFrame(pm);
+  try
+    renderFrame(pm);
+  except
+    // This happens with some presets... ( and only some times also .. moreso on linux )
+    // if we have an "Invalid Floating Point Error" while rendering a frame... then change preset.
+    MoveTo( now );
+    
+    // hmm have to be careful, that we dont get to many here... coz it could keep failing.. and trying again.
+  end;
   glFlush();
 
   {$IFDEF UseTexture}
@@ -323,11 +338,41 @@ begin
   {$ENDIF}
 end;
 
+function  TVideoPlayback_ProjectM.GetRandomPCMData(var data: TPCMData): Cardinal;
+var
+  i: integer;
+begin
+  // Produce some fake PCM data
+  if ( RndPCMcount mod 500 = 0 ) then
+  begin
+    for i := 0 to 511 do begin
+      data[0][i] := 0;
+      data[1][i] := 0;
+    end;
+  end
+  else begin
+    for i := 0 to 511 do begin
+      if ( i mod 2 = 0 ) then begin
+        data[0][i] := floor(Random * power(2.,14));
+        data[1][i] := floor(Random * power(2.,14));
+      end
+      else begin;
+        data[0][i] := floor(Random * power(2.,14));
+        data[1][i] := floor(Random * power(2.,14));
+      end;
+      if ( i mod 2 = 1 ) then begin
+        data[0][i] := -data[0][i];
+        data[1][i] := -data[1][i];
+      end;
+    end;
+  end;
+  Inc( RndPCMcount );
+  result := 512;
+end;
+
 
 initialization
   singleton_VideoProjectM := TVideoPlayback_ProjectM.create();
-
-  writeln( 'UVideoProjectM - Register Playback' );
   AudioManager.add( singleton_VideoProjectM );
 
 finalization

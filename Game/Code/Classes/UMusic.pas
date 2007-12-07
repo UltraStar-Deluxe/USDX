@@ -109,21 +109,12 @@ type
 
       procedure MoveTo(Time: real);
       function  getPosition: real;
-
-      property position : real READ getPosition WRITE MoveTo;
+      
+      property  position : real READ getPosition WRITE MoveTo;
   end;
 
   IVideoPlayback = Interface( IGenericPlayback )
   ['{3574C40C-28AE-4201-B3D1-3D1F0759B131}']
-(*
-    procedure FFmpegOpenFile(FileName: pAnsiChar);
-    procedure FFmpegClose;
-
-    procedure FFmpegGetFrame(Time: Extended);
-    procedure FFmpegDrawGL(Screen: integer);
-    procedure FFmpegTogglePause;
-    procedure FFmpegSkip(Time: Single);
-*)
     procedure init();
     
     procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
@@ -141,16 +132,10 @@ type
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
-//      function Open(Name: string): boolean; // true if succeed
+
       procedure Rewind;
-//      procedure MoveTo(Time: real);
-//      procedure Play;
-//      procedure Pause;
-//      procedure Stop;
-//      procedure Close;
-      function Finished: boolean;
-      function Length: real;
-//      function getPosition: real;
+      function  Finished: boolean;
+      function  Length: real;
 
       procedure PlayStart;
       procedure PlayBack;
@@ -211,7 +196,8 @@ function  AudioManager: TInterfaceList;
 implementation
 
 uses
-  sysutils;
+  sysutils,
+  UCommandLine;
 //  uLog;
 
 var
@@ -264,7 +250,6 @@ begin
   singleton_VideoPlayback := nil;
   singleton_Visualization := nil;
 
-  writeln( 'InitializeSound , Enumerate Registered Audio Interfaces' );
   for iCount := 0 to AudioManager.Count - 1 do
   begin
     if assigned( AudioManager[iCount] ) then
@@ -273,7 +258,6 @@ begin
 
       if ( AudioManager[iCount].QueryInterface( IAudioPlayback, lTmpInterface ) = 0 ) AND
          ( true ) then
-//         ( not assigned( singleton_AudioPlayback )                                  ) then
       begin
         singleton_AudioPlayback := IAudioPlayback( lTmpInterface );
       end;
@@ -281,17 +265,13 @@ begin
       // if this interface is a Input, then set it as the default used
       if ( AudioManager[iCount].QueryInterface( IAudioInput, lTmpInterface )    = 0 ) AND
          ( true ) then
-//         ( not assigned( singleton_AudioInput )                                     ) then
       begin
         singleton_AudioInput := IAudioInput( lTmpInterface );
-        Writeln(singleton_AudioInput.GetName);
       end;
 
       // if this interface is a Input, then set it as the default used
       if ( AudioManager[iCount].QueryInterface( IVideoPlayback, lTmpInterface ) = 0 ) AND
-         //( AudioManager[iCount].QueryInterface( IVideoVisualization, lTmpInterface ) <> 0 ) AND
          ( true ) then
-//         ( not assigned( singleton_VideoPlayback )                                  ) then
       begin
         singleton_VideoPlayback := IVideoPlayback( lTmpInterface );
       end;
@@ -306,38 +286,44 @@ begin
   end;
 
 
+
   if VideoPlayback <> nil then
   begin
-    writeln( 'Registered Video Playback Interface : ' + VideoPlayback.GetName );
   end;
 
   if AudioPlayback <> nil then
   begin
-    writeln( 'Registered Audio Playback Interface : ' + AudioPlayback.GetName );
-  //  Log.LogStatus('Initializing Playback ('+AudioPlayback.GetName+')', 'InitializeSound');
     AudioPlayback.InitializePlayback;
   end;
 
   if AudioInput <> nil then
   begin
-    writeln( 'Registered Audio Input Interface    : ' + AudioInput.GetName );
-
-//    Log.LogStatus('Initializing Record ('+AudioPlayback.GetName+')', 'InitializeSound');
     AudioInput.InitializeRecord;
   end;
 
-  writeln( 'InitializeSound DONE' );
+  if FindCmdLineSwitch( cMediaInterfaces ) then
+  begin
+    writeln( '' );
+    writeln( '--------------------------------------------------------------' );
+    writeln( '  In-use Media Interfaces                                     ' );
+    writeln( '--------------------------------------------------------------' );
+    writeln( 'Registered Audio Playback Interface : ' + AudioPlayback.GetName );
+    writeln( 'Registered Audio Input    Interface : ' + AudioInput.GetName    );
+    writeln( 'Registered Video Playback Interface : ' + VideoPlayback.GetName );
+    writeln( 'Registered Visualization  Interface : ' + Visualization.GetName );
+    writeln( '--------------------------------------------------------------' );
+    writeln( '' );
 
+    halt;
+  end;
 end;
 
 initialization
 begin
-  writeln('Init AudioManager');
   singleton_AudioManager := TInterfaceList.Create();
 end;
 
 finalization
-  writeln('Finalize AudioManager');
   singleton_AudioManager.clear;
   FreeAndNil( singleton_AudioManager );
 
