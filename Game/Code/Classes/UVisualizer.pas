@@ -98,9 +98,6 @@ begin
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
  
-  New(pm);
-	projectM_reset(pm);
-
 end;
 
 function  TVideoPlayback_ProjectM.GetName: String;
@@ -180,8 +177,8 @@ procedure TVideoPlayback_ProjectM.VisualizerStart;
 begin
   VisualizerStarted := True;
 
-//  New(pm);
-//	projectM_reset(pm);
+  New(pm);
+	projectM_reset(pm);
 
  writeln('Render Target');
  writeln( inttostr( integer( assigned(pm^.renderTarget) ) ) );
