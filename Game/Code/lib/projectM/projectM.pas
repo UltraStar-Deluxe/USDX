@@ -1,15 +1,32 @@
 unit projectM;
 
+{$IFDEF FPC}
+  {$IFNDEF win32}
+  {$LINKLIB libprojectM}
+  {$ENDIF}
+  {$MODE DELPHI}
+  {$PACKENUM 4}
+  {$PACKRECORDS C}
+{$ENDIF}
+
 interface
 
-uses OpenGL12;
+uses
+{$IFNDEF win32}
+  baseunix,
+{$ENDIF}
+  OpenGL12;
 
 const
-  {$IFDEF win32}
-    libname = 'libprojectM.dll';
-  {$Else}
-    libname = 'libprojectM.so';
-  {$endif}
+{$IFDEF win32}
+  libprojectM = 'libprojectM.dll';
+{$ELSE}
+  libprojectM = 'libprojectM.so';
+{$ENDIF}
+
+const
+  PROJECTM_VERSION = '0.99';
+  PROJECTM_TITLE   = 'projectM 0.99';
 
 type
   FLOAT = Single;
@@ -20,8 +37,16 @@ type
   LONG = Longint;
 
 type
+  // 16bit interleaved data
+  TPCM16Data = array[0..511, 0..1] of SHORT;
+  PPCM16Data = ^TPCM16Data;
+  // 16bit non-interleaved data
   TPCM16 = array[0..1, 0..511] of SHORT;
-  
+  PPCM16 = ^TPCM16;
+  // 8bit non-interleaved data
+  TPCM8  = array[0..1, 0..511] of byte;
+  PPCM8  = ^TPCM8;
+
 type
   TTextureScale = INT;
 const
@@ -103,7 +128,7 @@ type
 
     {$ifndef Win32}
     { The first ticks value of the application }
-    startTime: LONG; //struct timeval 
+    startTime: timeval;
     {$else}
     startTime: LONG;
     {$endif Win32}
@@ -308,53 +333,48 @@ type
   end;
 
   { Functions }
-  procedure projectM_init(pm: PProjectM); cdecl; external libname;
-  procedure projectM_reset(pm: PProjectM); cdecl; external libname;
-  procedure projectM_resetGL(pm: PProjectM; width: INT; height: INT); cdecl; external libname;
-  procedure projectM_setTitle(pm: PProjectM; title: PChar); cdecl; external libname;
-  procedure renderFrame(pm: PProjectM); cdecl; external libname;
+  procedure projectM_init(pm: PProjectM); cdecl; external libprojectM;
+  procedure projectM_reset(pm: PProjectM); cdecl; external libprojectM;
+  procedure projectM_resetGL(pm: PProjectM; width: INT; height: INT); cdecl; external libprojectM;
+  procedure projectM_setTitle(pm: PProjectM; title: PChar); cdecl; external libprojectM;
+  procedure renderFrame(pm: PProjectM); cdecl; external libprojectM;
 
   {
-  procedure draw_help(pm: PProjectM);
-  procedure draw_fps(pm: PProjectM; fps: Single);
-  procedure draw_preset(pm: PProjectM);
-  procedure draw_title(pm: PProjectM);
-  procedure draw_stats(pm: PProjectM);
+  procedure draw_help(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_fps(pm: PProjectM; fps: Single); cdecl; external libprojectM;
+  procedure draw_preset(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_title(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_stats(pm: PProjectM); cdecl; external libprojectM;
 
-  procedure modulate_opacity_by_volume(pm: PProjectM);
-  procedure maximize_colors(pm: PProjectM);
-  procedure do_per_pixel_math(pm: PProjectM);
-  procedure do_per_frame(pm: PProjectM);
-  procedure render_texture_to_studio(pm: PProjectM);
-  procedure darken_center(pm: PProjectM);
+  procedure modulate_opacity_by_volume(pm: PProjectM); cdecl; external libprojectM;
+  procedure maximize_colors(pm: PProjectM); cdecl; external libprojectM;
+  procedure do_per_pixel_math(pm: PProjectM); cdecl; external libprojectM;
+  procedure do_per_frame(pm: PProjectM); cdecl; external libprojectM;
+  procedure darken_center(pm: PProjectM); cdecl; external libprojectM;
 
-  procedure render_interpolation(pm: PProjectM);
-  procedure render_texture_to_screen(pm: PProjectM);
-  procedure render_texture_to_studio(pm: PProjectM);
-  procedure draw_motion_vectors(pm: PProjectM);
-  procedure draw_borders(pm: PProjectM);
-  procedure draw_shapes(pm: PProjectM);
-  procedure draw_waveform(pm: PProjectM);
-  procedure draw_custom_waves(pm: PProjectM);
+  procedure render_interpolation(pm: PProjectM); cdecl; external libprojectM;
+  procedure render_texture_to_screen(pm: PProjectM); cdecl; external libprojectM;
+  procedure render_texture_to_studio(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_motion_vectors(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_borders(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_shapes(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_waveform(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_custom_waves(pm: PProjectM); cdecl; external libprojectM;
 
-  procedure draw_title_to_screen(pm: PProjectM);
-  procedure draw_title_to_texture(pm: PProjectM);
-  procedure get_title(pm: PProjectM);
+  procedure draw_title_to_screen(pm: PProjectM); cdecl; external libprojectM;
+  procedure draw_title_to_texture(pm: PProjectM); cdecl; external libprojectM;
+  procedure get_title(pm: PProjectM); cdecl; external libprojectM;
 
-  procedure reset_per_pixel_matrices(pm: PProjectM);
-  procedure init_per_pixel_matrices(pm: PProjectM);
-  procedure rescale_per_pixel_matrices(pm: PProjectM);
+  procedure reset_per_pixel_matrices(pm: PProjectM); cdecl; external libprojectM;
+  procedure init_per_pixel_matrices(pm: PProjectM); cdecl; external libprojectM;
+  procedure rescale_per_pixel_matrices(pm: PProjectM); cdecl; external libprojectM;
   }
-
+  
   { PCM.h declarations }
-  {
-  procedure addPCMfloat(PCMdata: PFLOAT, samples: INT);
-  }
-  procedure addPCM16(pcm_data: TPCM16); cdecl; external libname;
-  procedure addPCM16Data(pcm_data: PSmallint; samples: Smallint); cdecl; external libname;
-  {
-  procedure addPCM8( unsigned char [2][512]);
-  }
+  procedure addPCMfloat(pcm_data: PSingle; samples: integer); cdecl; external libprojectM;
+  procedure addPCM16(pcm_data: PPCM16); cdecl; external libprojectM;
+  procedure addPCM16Data(pcm_data: PPCM16Data; samples: Smallint); cdecl; external libprojectM;
+  procedure addPCM8(pcm_data: PPCM8); cdecl; external libprojectM;
 
 implementation
 
