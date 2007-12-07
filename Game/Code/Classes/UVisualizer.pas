@@ -97,7 +97,6 @@ begin
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
- 
 end;
 
 function  TVideoPlayback_ProjectM.GetName: String;
@@ -180,19 +179,12 @@ begin
   New(pm);
 	projectM_reset(pm);
 
- writeln('Render Target');
- writeln( inttostr( integer( assigned(pm^.renderTarget) ) ) );
-
 	pm^.fullscreen := 0;
-	pm^.gx  := gx;
-	pm^.gy  := gy;
+  pm^.renderTarget^.texsize := texsize;
+	pm^.gx := gx;
+	pm^.gy := gy;
 	pm^.fps := fps;
- 
-  if assigned(pm^.renderTarget) then
-  begin
-    pm^.renderTarget^.texsize := texsize;
-  	pm^.renderTarget^.usePbuffers := 0;
-  end;
+	pm^.renderTarget^.usePbuffers := 0;
 
 	pm^.fontURL   := PChar(projectM_Dir+'/fonts');
 	pm^.presetURL := PChar(projectM_Dir+'/presets');
@@ -240,7 +232,7 @@ begin
 
   // get audio data
   nSamples := AudioPlayback.GetPCMData(PcmData);
-  addPCM16Data(PSmallInt(@PcmData), nSamples);
+  addPCM16Data(PPCM16Data(@PcmData), nSamples);
 
   // store OpenGL state (might be messed up otherwise)
   glPushAttrib(GL_ALL_ATTRIB_BITS);

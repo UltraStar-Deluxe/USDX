@@ -165,7 +165,9 @@ begin
 end;
 
 function  Tmedia_dummy.GetFFTData: TFFTData;
+var data: TFFTData;
 begin
+  result := data;
 end;
 
 function  Tmedia_dummy.GetPCMData(var data: TPCMData): Cardinal;

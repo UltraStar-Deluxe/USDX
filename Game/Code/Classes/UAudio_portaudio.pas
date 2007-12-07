@@ -357,8 +357,6 @@ var
   stream:      PPaStream;
   paSoundCard: TPortaudioSoundCard;
 begin
-  Log.LogStatus('Cap1', 'Portaudio');
-
   paSoundCard := TPortaudioSoundCard(Recording.SoundCard[Card]);
   paSoundCard.CaptureSoundLeft  := CaptureSoundLeft;
   paSoundCard.CaptureSoundRight := CaptureSoundRight;
@@ -398,9 +396,6 @@ begin
     Log.CriticalError('TAudio_Portaudio.CaptureCard('+ IntToStr(Card) +'): Error starting stream: ' + ErrorMsg);
     //Halt;
   end;
-
-  //Readln;
-  Log.LogStatus('Cap2', 'Portaudio');
 end;
 
 {*
