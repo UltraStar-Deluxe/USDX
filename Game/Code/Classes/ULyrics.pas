@@ -342,7 +342,7 @@ begin
     //Create LyricTexture
     //Prepare Ogl
     glGetIntegerv(GL_VIEWPORT, @ViewPort);
-    glClearColor(0.0,0.0,0.0,0);
+    glClearColor(0.0,0.0,0.0,0.0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
     {glMatrixMode(GL_PROJECTION);
       glLoadIdentity;
@@ -356,9 +356,10 @@ begin
 
     Display.ScreenShot;
     //Copy to Texture
+    glEnable(GL_ALPHA);
     glBindTexture(GL_TEXTURE_2D, LyricLine.Tex);
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 448, 512, 64, 0);
-
+    glDisable(GL_ALPHA);
     //Clear Buffer
     glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
@@ -383,10 +384,10 @@ Procedure   TLyricEngine.Draw (Beat: Real);
 begin
 
   DrawLyrics(Beat);
-
+/////// start of debug draw
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_Alpha {GL_ONE_MINUS_SRC_COLOR}, GL_ONE_MINUS_SRC_Alpha);
+    glBlendFunc(GL_SRC_Alpha, GL_ONE_MINUS_SRC_Alpha);
     glBindTexture(GL_TEXTURE_2D, PUpperLine^.Tex);
 
     glColor4f(1,1,0,1);
@@ -409,7 +410,7 @@ begin
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
-
+/////// end of debug draw
 end;
 
 //---------------
@@ -500,7 +501,7 @@ begin
     //Draw complete Sentence
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_COLOR {GL_ONE_MINUS_SRC_COLOR}, GL_ONE_MINUS_SRC_COLOR);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBindTexture(GL_TEXTURE_2D, Line.Tex);
 
     glColorRGB(LineColor_en);
@@ -517,6 +518,29 @@ begin
   end
   else
   begin
+    //Get Start Position:
+    {  Start of Line - Width of all Icons + LineWidth/2 (Center}
+    LyricX  := X + {(W - ((IconSize + 1) * 6))/2 +} ((IconSize + 1) * 3);
+
+    LyricX2 := LyricX +500{ Line.Width};
+
+    //Draw complete Sentence
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindTexture(GL_TEXTURE_2D, Line.Tex);
+
+    glColorRGB(LineColor_akt);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
+      glTexCoord2f(0, 0); glVertex2f(LyricX, Y + 64 * W / 512);
+      glTexCoord2f(1, 0); glVertex2f(LyricX2, Y + 64 * W / 512);
+      glTexCoord2f(1, 1); glVertex2f(LyricX2, Y);
+    glEnd;
+
+
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
 
   end;
 
