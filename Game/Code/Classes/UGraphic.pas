@@ -295,8 +295,8 @@ begin
 
   Log.LogStatus('Loading Textures - B', 'LoadTextures');
 
-  Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'JPG', 'Font Black', 0);
-  Tex_Note_Star         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) , 'JPG', 'Alpha Black Colored', $FFFFFF);
+  Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'PNG', 'Transparent', 0);
+  Tex_Note_Star         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) , 'PNG', 'Transparent', $FFFFFF);
   Tex_Ball              := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
   Tex_Lyric_Help_Bar    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', 'Transparent', $FF00FF);
 
