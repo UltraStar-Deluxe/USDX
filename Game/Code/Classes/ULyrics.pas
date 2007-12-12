@@ -59,7 +59,7 @@ type
 
       //Some helper Procedures for Lyric Drawing
       procedure DrawLyrics (Beat: Real);
-      procedure DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: TLyricLine; Beat: Real);
+      procedure DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: PLyricLine; Beat: Real);
       procedure DrawPlayerIcon(const Player: Byte; const Enabled: Boolean; const X, Y, Size, Alpha: Real);
     public
       //Positions, Line specific Settings
@@ -418,8 +418,8 @@ end;
 //---------------
 procedure TLyricEngine.DrawLyrics (Beat: Real);
 begin
-  DrawLyricsLine(UpperLineX, UpperLineW, UpperlineY, 15, Upperline, Beat);
-  DrawLyricsLine(LowerLineX, LowerLineW, LowerlineY, 15, Lowerline, Beat);
+  DrawLyricsLine(UpperLineX, UpperLineW, UpperlineY, 15, PUpperline, Beat);
+  DrawLyricsLine(LowerLineX, LowerLineW, LowerlineY, 15, PLowerline, Beat);
 end;
 
 //---------------
@@ -453,7 +453,7 @@ end;
 //---------------
 // DrawLyricsLine(private) - Helper for Draw; Draws one LyricLine
 //---------------
-procedure TLyricEngine.DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: TLyricLine; Beat: Real);
+procedure TLyricEngine.DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: PLyricLine; Beat: Real);
 var
   I: Integer;
   CurWord: Integer;
@@ -490,19 +490,19 @@ begin
   DrawPlayerIcon (2, True, X + (IconSize + 1)*2, Y, IconSize, IconAlpha);}
 
   //Check if a Word in the Sentence is active
-  if ((Line.Start > Beat) AND (Line.Start + Line.Length < Beat)) then
+  if ((Line^.Start > Beat) AND (Line^.Start + Line^.Length < Beat)) then
   begin
     //Get Start Position:
     {  Start of Line - Width of all Icons + LineWidth/2 (Center}
     LyricX  := X + (W - ((IconSize + 1) * 6))/2 + ((IconSize + 1) * 3);
 
-    LyricX2 := LyricX + Line.Width;
+    LyricX2 := LyricX + Line^.Width;
 
     //Draw complete Sentence
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBindTexture(GL_TEXTURE_2D, Line.Tex);
+    glBindTexture(GL_TEXTURE_2D, Line^.Tex);
 
     glColorRGB(LineColor_en);
     glBegin(GL_QUADS);
@@ -528,7 +528,7 @@ begin
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBindTexture(GL_TEXTURE_2D, Line.Tex);
+    glBindTexture(GL_TEXTURE_2D, Line^.Tex);
 
     glColorRGB(LineColor_akt);
     glBegin(GL_QUADS);
