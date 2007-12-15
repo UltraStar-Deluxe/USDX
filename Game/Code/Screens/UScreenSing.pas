@@ -511,10 +511,10 @@ begin
         Lyrics.LineColor_dis.B := 0.4;
         Lyrics.LineColor_dis.A := 1;
 
-        Lyrics.LineColor_akt.R := 5/256;
-        Lyrics.LineColor_akt.G := 163/256;
-        Lyrics.LineColor_akt.B := 210/256;
-        Lyrics.LineColor_akt.A := 1;
+        Lyrics.LineColor_act.R := 5/256;
+        Lyrics.LineColor_act.G := 163/256;
+        Lyrics.LineColor_act.B := 210/256;
+        Lyrics.LineColor_act.A := 1;
 
 {        LyricSub.FontStyle := 0;
         LyricMain.Size := 14; // 13
@@ -563,10 +563,10 @@ begin
         Lyrics.LineColor_dis.B := 0.8;
         Lyrics.LineColor_dis.A := 1;
 
-        Lyrics.LineColor_akt.R := 0.5;
-        Lyrics.LineColor_akt.G := 0.5;
-        Lyrics.LineColor_akt.B := 1;
-        Lyrics.LineColor_akt.A := 1;
+        Lyrics.LineColor_act.R := 0.5;
+        Lyrics.LineColor_act.G := 0.5;
+        Lyrics.LineColor_act.B := 1;
+        Lyrics.LineColor_act.A := 1;
       end;
     2:
       begin
@@ -584,10 +584,10 @@ begin
         Lyrics.LineColor_dis.B := 0.8;
         Lyrics.LineColor_dis.A := 1;
 
-        Lyrics.LineColor_akt.R := 0.5;
-        Lyrics.LineColor_akt.G := 0.5;
-        Lyrics.LineColor_akt.B := 1;
-        Lyrics.LineColor_akt.A := 1;
+        Lyrics.LineColor_act.R := 0.5;
+        Lyrics.LineColor_act.G := 0.5;
+        Lyrics.LineColor_act.B := 1;
+        Lyrics.LineColor_act.A := 1;
 {        LyricSub.FontStyle := 3;
         LyricMain.Size := 12;
         LyricSub.Size := 12;
