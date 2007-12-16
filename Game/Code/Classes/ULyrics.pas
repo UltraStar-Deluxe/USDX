@@ -543,6 +543,10 @@ begin
       glTexCoord2f(Line^.Width/512, 1); glVertex2f(LyricX2, Y);
     glEnd;
 }
+
+    // this is actually a bit more than the real font size
+    // it helps adjusting the "zoom-center"
+    realfontsize:=30 * (Line^.Size/10)+16;
     // draw sentence up to current word
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, Line^.Tex);
@@ -550,8 +554,8 @@ begin
     glColorRGB(LineColor_act);
     glBegin(GL_QUADS);
       glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
-      glTexCoord2f(0, 0); glVertex2f(LyricX, Y + 64);
-      glTexCoord2f(CurWordStartTx, 0); glVertex2f(LyricX+CurWordStart, Y + 64);
+      glTexCoord2f(0, 1-realfontsize/64); glVertex2f(LyricX, Y + realfontsize);
+      glTexCoord2f(CurWordStartTx, 1-realfontsize/64); glVertex2f(LyricX+CurWordStart, Y + realfontsize);
       glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
     glEnd;
 
@@ -573,23 +577,22 @@ begin
 }
 
     // draw active word - type 2: zoom + farbwechsel - HoverEffect=4 ???
-//    realfontsize:=30 * (Line^.Size/10);
     glPushMatrix;
-    glTranslatef(LyricX+CurWordStart+(CurWordEnd-CurWordStart)/2,Y+32,0);
+    glTranslatef(LyricX+CurWordStart+(CurWordEnd-CurWordStart)/2,Y+realfontsize/2,0);
     glScalef(1.0+(1-progress)/2,1.0+(1-progress)/2,1.0);
     glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
     glBegin(GL_QUADS);
-      glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -32);
-      glTexCoord2f(CurWordStartTx+0.0001, 0); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + 32);
-      glTexCoord2f(CurWordEndTx-0.0001, 0); glVertex2f((CurWordEnd-CurWordStart)/2,  + 32);
-      glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -32);
+      glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
+      glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+      glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+      glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
     glEnd;
     glColor4f(LineColor_act.r,LineColor_act.g,LineColor_act.b,1);
     glBegin(GL_QUADS);
-      glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -32);
-      glTexCoord2f(CurWordStartTx+0.0001, 0); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + 32);
-      glTexCoord2f(CurWordEndTx-0.0001, 0); glVertex2f((CurWordEnd-CurWordStart)/2,  + 32);
-      glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -32);
+      glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
+      glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+      glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+      glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
     glEnd;
     glPopMatrix;
 
@@ -597,8 +600,8 @@ begin
     glColorRGB(LineColor_en);
     glBegin(GL_QUADS);
       glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, Y);
-      glTexCoord2f(CurWordEndTx, 0); glVertex2f(LyricX+CurWordEnd, Y + 64);
-      glTexCoord2f(Line^.Width/1024, 0); glVertex2f(LyricX2, Y + 64);
+      glTexCoord2f(CurWordEndTx, 1-realfontsize/64); glVertex2f(LyricX+CurWordEnd, Y + realfontsize);
+      glTexCoord2f(Line^.Width/1024, 1-realfontsize/64); glVertex2f(LyricX2, Y + realfontsize);
       glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, Y);
     glEnd;
 
@@ -628,13 +631,13 @@ begin
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBindTexture(GL_TEXTURE_2D, Line^.Tex);
 
-//    realfontsize:=30 * (Line^.Size/10);
+    realfontsize:=30 * (Line^.Size/10)+16;
 
     glColorRGB(LineColor_dis);
     glBegin(GL_QUADS);
       glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
-      glTexCoord2f(0, 0); glVertex2f(LyricX, Y + 64);
-      glTexCoord2f(Line^.Width/1024, 0); glVertex2f(LyricX2, Y + 64);
+      glTexCoord2f(0, 1-realfontsize/64); glVertex2f(LyricX, Y + realfontsize);
+      glTexCoord2f(Line^.Width/1024, 1-realfontsize/64); glVertex2f(LyricX2, Y + realfontsize);
       glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, Y);
     glEnd;
 
