@@ -1353,7 +1353,18 @@ begin
   //GoldenStarsTwinkle Mod
   GoldenRec.SentenceChange;
   if (Lyrics.LineCounter <= High(Czesci[0].Czesc)) then
+  begin
       Lyrics.AddLine(@Czesci[0].Czesc[Lyrics.LineCounter]);
+      // addline uses display memory
+      // calling draw makes sure, there's the singscreen in it, when the next
+      // swap between onscreen and offscreen buffers is done
+      // (this eliminates the onSentenceChange flickering)
+      // note: maybe it would be better to make sure, a display redraw is done
+      //     right after the sentence change (before buffer swap) or make sure
+      //     onsentencechange is only called right before calling Display.Draw
+      //     (or whatever it was called)
+      Draw;
+  end;
   //GoldenStarsTwinkle Mod End
 end;
 

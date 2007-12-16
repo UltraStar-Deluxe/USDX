@@ -44,6 +44,7 @@ type
   TLyricEngine = class
     private
       EoLastSentence: Real;       //When did the Last Sentence End (in Beats)
+      LastDrawBeat: Real;
       UpperLine:      TLyricLine; //Line in the Upper Part of the Lyric Display
       LowerLine:      TLyricLine; //Line in the Lower Part of teh Lyric Display
       QueueLine:      TLyricLine; //Line that is in Queue and will be added when next Line is Finished
@@ -116,7 +117,8 @@ uses SysUtils,
      TextGL,
      UGraphic,
      UDisplay,
-     dialogs;
+     dialogs,
+     math;
 
 //-----------
 //Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
@@ -151,6 +153,7 @@ begin
   PQueueLine:=@QueueLine;
 
   UseLinearFilter := True;
+  LastDrawBeat:=NAN;
 end;
 
 Constructor TLyricEngine.Create(ULX,ULY,ULW,ULS,LLX,LLY,LLW,LLS:Real);
@@ -194,6 +197,7 @@ begin
   PUpperline:=@UpperLine;
   PLowerLine:=@LowerLine;
   PQueueLine:=@QueueLine;
+  LastDrawBeat:=NAN;
 end;
 
 
@@ -342,15 +346,12 @@ begin
       PosX := PosX + LyricLine.Words[I].Width;
     end;
 
+
     //Create LyricTexture
     //Prepare Ogl
     glGetIntegerv(GL_VIEWPORT, @ViewPort);
     glClearColor(0.0,0.0,0.0,0.0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-    {glMatrixMode(GL_PROJECTION);
-      glLoadIdentity;
-      glOrtho(0, 1024, 64, 0, -1, 100);
-    glMatrixMode(GL_MODELVIEW);}
     glViewPort(0,0,800,600);
 
     //Draw Lyrics
@@ -368,10 +369,7 @@ begin
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 
     glViewPort(ViewPort[0], ViewPort[1], ViewPort[2], ViewPort[3]);
-    {glMatrixMode(GL_PROJECTION);
-      glLoadIdentity;
-      glOrtho(0, RenderW, RenderH, 0, -1, 100);
-    glMatrixMode(GL_MODELVIEW); }
+
   end;
 
   //Increase the Counter
@@ -385,8 +383,8 @@ end;
 //---------------
 Procedure   TLyricEngine.Draw (Beat: Real);
 begin
-
   DrawLyrics(Beat);
+  LastDrawBeat:=Beat;
 end;
 
 //---------------
