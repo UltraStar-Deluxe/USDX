@@ -145,11 +145,11 @@ type
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
-function sws_getContext(srcW: integer; srcH: integer; srcFormat: TAVPixelFormat; dstW: integer; dstH: integer;dstFormat: TAVPixelFormat; flags: integer;
+function sws_getContext(srcW: integer; srcH: integer; srcFormat: integer; dstW: integer; dstH: integer;dstFormat: integer; flags: integer;
               srcFilter: PSwsFilter; dstFilter: PSwsFilter; param: Pdouble): PSwsContext;
   cdecl; external sw__scale;
-function sws_scale(context: PSwsContext; src: {PPByteArray}array of pbyte; srcStride: {PIntArray} array of integer; srcSliceY: integer; srcSliceH: integer;
-              dst: {PPByteArray} array of pbyte; dstStride: {PIntArray}array of integer): integer;
+function sws_scale(context: PSwsContext; src: PPByteArray; srcStride: PIntArray; srcSliceY: integer; srcSliceH: integer;
+              dst: PPByteArray; dstStride: PIntArray): integer;
   cdecl; external sw__scale;
 function sws_scale_ordered(context: PSwsContext; src: PPByteArray; srcStride: PIntArray; srcSliceY: integer;
               srcSliceH: integer; dst: PPByteArray; dstStride: PIntArray): integer;
