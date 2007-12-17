@@ -14,23 +14,29 @@ interface
   {$MODE DELPHI}
 {$ENDIF}
 
-uses SDL,
-     UGraphicClasses,
-     textgl,
-     math,
-     OpenGL12,
-     SysUtils,
-     UIni,
-     {$ifdef DebugDisplay}
-     dialogs,
-     {$ENDIF}
-     projectM,
-     UMusic;
+{$I switches.inc}
+
+uses
+  SDL,
+  UGraphicClasses,
+  textgl,
+  math,
+  OpenGL12,
+  SysUtils,
+  UIni,
+  {$ifdef DebugDisplay}
+  {$ifdef win32}
+  dialogs,
+  {$endif}
+  {$endif}
+  projectM,
+  UMusic;
 
 implementation
 
 uses
-     UGraphic;
+  UGraphic,
+  ULog;
 
 var
   singleton_VideoProjectM : IVideoPlayback;
@@ -40,48 +46,57 @@ const
   gy           = 24;
   fps          = 30;
   texsize      = 512;
-  visuals_Dir  = 'Visuals'; // TODO: move this to a place common for all visualizers
-  projectM_Dir = visuals_Dir+'/projectM';
+  visualsDir  = 'Visuals'; // TODO: move this to a place common for all visualizers
+  projectMDir = visualsDir+'/projectM';
+  presetsDir  = projectMDir+'/presets';
+  fontsDir    = projectMDir+'/fonts';
 
 type
   TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
+    private
+      pm                : TProjectM;
 
-    pm                : PProjectM;
+      VisualizerStarted ,
+      VisualizerPaused  : Boolean;
 
-    VisualizerStarted ,
-    VisualizerPaused  : Boolean;
+      VisualTex         : glUint;
+      PCMData           : TPCMData;
+      hRC               : Integer;
+      hDC               : Integer;
 
-    VisualTex         : glUint;
-    PCMData           : TPCMData;
-    hRC               : Integer;
-    hDC               : Integer;
+      RndPCMcount       : integer;
 
-    RndPCMcount       : integer;
+      projMatrix: array[0..3, 0..3] of GLdouble;
+      texMatrix:  array[0..3, 0..3] of GLdouble;
 
-    procedure VisualizerStart;
-    procedure VisualizerStop;
+      procedure VisualizerStart;
+      procedure VisualizerStop;
 
-    procedure VisualizerTogglePause;
-    
-    function  GetRandomPCMData(var data: TPCMData): Cardinal;
-  public
-    constructor create();
-    procedure   init();
-    function    GetName: String;    
+      procedure VisualizerTogglePause;
 
-    function    Open( aFileName : string): boolean; // true if succeed
-    procedure   Close;
+      function  GetRandomPCMData(var data: TPCMData): Cardinal;
 
-    procedure   Play;
-    procedure   Pause;
-    procedure   Stop;
+      procedure SaveOpenGLState();
+      procedure RestoreOpenGLState();
 
-    procedure   MoveTo(Time: real);
-    function    getPosition: real;
+    public
+      constructor create();
+      procedure   init();
+      function    GetName: String;
 
-    procedure   GetFrame(Time: Extended);
-    procedure   DrawGL(Screen: integer);  
-  end;  
+      function    Open( aFileName : string): boolean; // true if succeed
+      procedure   Close;
+
+      procedure   Play;
+      procedure   Pause;
+      procedure   Stop;
+
+      procedure   MoveTo(Time: real);
+      function    getPosition: real;
+
+      procedure   GetFrame(Time: Extended);
+      procedure   DrawGL(Screen: integer);
+  end;
 
 
 constructor TVideoPlayback_ProjectM.create();
@@ -95,11 +110,13 @@ begin
   VisualizerStarted := False;
   VisualizerPaused  := False;
 
+  {$IFDEF UseTexture}
   glGenTextures(1, PglUint(@VisualTex));
 	glBindTexture(GL_TEXTURE_2D, VisualTex);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  {$ENDIF}
 end;
 
 function  TVideoPlayback_ProjectM.GetName: String;
@@ -135,88 +152,84 @@ end;
 
 procedure TVideoPlayback_ProjectM.MoveTo(Time: real);
 begin
-  // this code MAY be able to be cut down... but Im not 100% sure..
-  // in here, we cant realy move to a specific time, since its all random generated
-  // but a call to this function will change the preset, which changes the pattern 
-	projectM_reset(pm);
-
-	pm^.fullscreen := 0;
-  pm^.renderTarget^.texsize := texsize;
-	pm^.gx := gx;
-	pm^.gy := gy;
-	pm^.fps := fps;
-	pm^.renderTarget^.usePbuffers := 0;
-
-	pm^.fontURL := PChar(projectM_Dir+'/fonts');
-	pm^.presetURL := PChar(projectM_Dir+'/presets');
-
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	projectM_init(pm);
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glMatrixMode(GL_TEXTURE);
-  glPushMatrix();
-
-	projectM_resetGL(pm, ScreenW, ScreenH);
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
-  glMatrixMode(GL_TEXTURE);
-  glPopMatrix();
-  glPopAttrib();
-
+  pm.RandomPreset();
 end;
 
 function  TVideoPlayback_ProjectM.getPosition: real;
 begin
-  result := 0;  
+  result := 0;
+end;
+
+procedure TVideoPlayback_ProjectM.SaveOpenGLState();
+begin
+  // save all OpenGL state-machine attributes
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+  // save projection-matrix
+  glMatrixMode(GL_PROJECTION);
+  // - WARNING: projection-matrix stack-depth is only 2!
+  // -> overflow might occur if glPopMatrix() is used for this matrix
+  // -> use glGet() instead of glPushMatrix()
+  glPushMatrix();
+  //glGetDoublev(GL_PROJECTION_MATRIX, @projMatrix);
+
+  // save texture-matrix
+  glMatrixMode(GL_TEXTURE);
+  // - WARNING: texture-matrix stack-depth is only 2!
+  // -> overflow might occur if glPopMatrix() is used for this matrix
+  // -> use glGet() instead of glPushMatrix() if problems appear
+  glPushMatrix();
+  //glGetDoublev(GL_TEXTURE_MATRIX, @texMatrix);
+
+  // save modelview-matrix
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+end;
+
+procedure TVideoPlayback_ProjectM.RestoreOpenGLState();
+begin
+  // restore projection-matrix
+  glMatrixMode(GL_PROJECTION);
+  // - WARNING: projection-matrix stack-depth is only 2!
+  // -> overflow _occurs_ if glPopMatrix() is used for this matrix
+  // -> use glLoadMatrix() instead of glPopMatrix()
+  glPopMatrix();
+  //glLoadMatrixd(@projMatrix);
+
+  // restore texture-matrix
+  // -> overflow might occur if glPopMatrix() is used for this matrix
+  glMatrixMode(GL_TEXTURE);
+  glPopMatrix();
+  //glLoadMatrixd(@texMatrix);
+
+  // restore modelview-matrix
+  glMatrixMode(GL_MODELVIEW);
+  glPopMatrix();
+
+  // restore all OpenGL state-machine attributes
+  glPopAttrib();
 end;
 
 procedure TVideoPlayback_ProjectM.VisualizerStart;
+var
+  initResult: Cardinal;
 begin
   VisualizerStarted := True;
 
-  New(pm);
-	projectM_reset(pm);
+  pm := TProjectM.Create(gx, gy, fps, texsize, ScreenW, ScreenH,
+                         presetsDir, fontsDir);
+  //initResult := projectM_initRenderToTexture(pm);
 
-	pm^.fullscreen := 0;
-  pm^.renderTarget^.texsize := texsize;
-	pm^.gx := gx;
-	pm^.gy := gy;
-	pm^.fps := fps;
-	pm^.renderTarget^.usePbuffers := 0;
-
-	pm^.fontURL   := PChar(projectM_Dir+'/fonts');
-	pm^.presetURL := PChar(projectM_Dir+'/presets');
-
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	projectM_init(pm);
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glMatrixMode(GL_TEXTURE);
-  glPushMatrix();
-
-	projectM_resetGL(pm, ScreenW, ScreenH);
-  
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
-  glMatrixMode(GL_TEXTURE);
-  glPopMatrix();
-  glPopAttrib();
+	SaveOpenGLState();
+	pm.ResetGL(ScreenW, ScreenH);
+  RestoreOpenGLState();
 end;
 
 procedure TVideoPlayback_ProjectM.VisualizerStop;
 begin
   if VisualizerStarted then begin
     VisualizerStarted := False;
-    Dispose(pm);
+    pm.Free();
   end;
 end;
 
@@ -229,6 +242,7 @@ procedure TVideoPlayback_ProjectM.GetFrame(Time: Extended);
 var
   i: integer;
   nSamples: cardinal;
+  stackDepth: Integer;
 begin
   if not VisualizerStarted then Exit;
   if VisualizerPaused then Exit;
@@ -238,43 +252,37 @@ begin
 
   if nSamples = 0 then
     nSamples := GetRandomPCMData(PcmData);
-  
-  addPCM16Data(PPCM16Data(@PcmData), nSamples);
+
+  pm.AddPCM16Data(PSmallint(@PcmData), nSamples);
 
   // store OpenGL state (might be messed up otherwise)
-  glPushAttrib(GL_ALL_ATTRIB_BITS);
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glMatrixMode(GL_TEXTURE);
-  glPushMatrix();
+	SaveOpenGLState();
+	pm.ResetGL(ScreenW, ScreenH);
+
+  //glGetIntegerv(GL_PROJECTION_STACK_DEPTH, @stackDepth);
+  //writeln('StackDepth0: ' + inttostr(stackDepth));
 
   // let projectM render a frame
   try
-    renderFrame(pm);
+    pm.RenderFrame();
   except
-    // This happens with some presets... ( and only some times also .. moreso on linux )
-    // if we have an "Invalid Floating Point Error" while rendering a frame... then change preset.
+    // this may happen with some presets ( on linux ) if there is a div by zero
+    // in projectM's getBeatVals() function (file: beat_detect.cc)
+    Log.LogStatus('Div by zero!', 'Visualizer');
     MoveTo( now );
-    
-    // hmm have to be careful, that we dont get to many here... coz it could keep failing.. and trying again.
   end;
-  glFlush();
+
+  //glGetIntegerv(GL_PROJECTION_STACK_DEPTH, @stackDepth);
+  //writeln('StackDepth1: ' + inttostr(stackDepth));
 
   {$IFDEF UseTexture}
   glBindTexture(GL_TEXTURE_2D, VisualTex);
+  glFlush();
   glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, VisualWidth, VisualHeight, 0);
   {$ENDIF}
 
   // restore USDX OpenGL state
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
-  glMatrixMode(GL_TEXTURE);
-  glPopMatrix();
-  glPopAttrib();
+  RestoreOpenGLState();
 
   // discard projectM's depth buffer information (avoid overlay)
   glClear(GL_DEPTH_BUFFER_BIT);
@@ -313,19 +321,6 @@ begin
     glTexCoord2f(1, 1); glVertex2f(1, 1);
     glTexCoord2f(0, 1); glVertex2f(0, 1);
   glEnd();
-
-  {
-  glbegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2f(400-VisualWidth/2, 300-VisualHeight/2);
-    glTexCoord2f(0, 1);
-    glVertex2f(400-VisualWidth/2, 300+VisualHeight/2);
-    glTexCoord2f(1, 1);
-    glVertex2f(400+VisualWidth/2, 300+VisualHeight/2);
-    glTexCoord2f(1, 0);
-    glVertex2f(400+VisualWidth/2, 300-VisualHeight/2);
-  glEnd;
-  }
 
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_BLEND);
