@@ -14,7 +14,6 @@ unit UVideo;
 //{$define DebugFrames}
 //{$define Info}
 
-
 interface
 
 {$IFDEF FPC}
@@ -38,6 +37,7 @@ uses SDL,
      avcodec,
      avformat,
      avutil,
+//     swscale,
      math,
      OpenGL12,
      SysUtils,
@@ -50,7 +50,8 @@ uses SDL,
      UAudio_FFMpeg,
      {$endif}
      UIni,
-     UMusic;
+     UMusic,
+     UGraphic;
 
 
 var
@@ -65,6 +66,7 @@ type
       fVideoTex      : glUint;
       fVideoSkipTime : Single;
 
+      //remove
       fTexData       : array of Byte;
 
       VideoFormatContext: PAVFormatContext;
@@ -76,6 +78,8 @@ type
       AVFrame: PAVFrame;
       AVFrameRGB: PAVFrame;
       myBuffer: pByte;
+
+//      SoftwareScaleContext: PSwsContext;
 
       TexX, TexY, dataX, dataY: Cardinal;
 
@@ -107,13 +111,13 @@ type
       function    getPosition: real;
 
       procedure   GetFrame(Time: Extended);
-      procedure   DrawGL(Screen: integer);  
+      procedure   DrawGL(Screen: integer);
 
     end;
 
     const
   SDL_AUDIO_BUFFER_SIZE = 1024;
-  
+
 {$ifdef DebugDisplay}
 //{$ifNdef win32}
 
@@ -165,7 +169,7 @@ begin
   begin
     writeln( ' aFormatCtx.streams[i] : ' + inttostr( i ) );
     st := aFormatCtx.streams[i];
-    
+
     if(st.codec.codec_type = CODEC_TYPE_VIDEO ) AND
       (aFirstVideoStream < 0) THEN
     begin
@@ -177,10 +181,10 @@ begin
     begin
       aFirstAudioStream := i;
     end;
-    
+
     inc( i );
   end; // while
-  
+
   result := (aFirstAudioStream > -1) OR
             (aFirstVideoStream > -1) ;  // Didn't find a video stream
 end;
@@ -327,10 +331,22 @@ begin
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
 			      VideoCodecContext^.width, VideoCodecContext^.height);
 //errnum:=1;
-
+{
+  writeln('swscontext->srcH='+inttostr(SoftwareScaleContext^.srcH));
+  writeln('swscontext->dstH='+inttostr(SoftwareScaleContext^.dstH));
+  writeln('swscontext->slicedir='+inttostr(SoftwareScaleContext^.slicedir));
+  errnum:=sws_scale(SoftwareScaleContext,@(AVFrame.data),@(AVFrame.linesize),
+          0,VideoCodecContext^.Height,
+          @(AVFrameRGB.data),@(AVFrameRGB.linesize));
+  writeln('errnum='+inttostr(errnum));
+}
   if errnum >=0 then
   begin
-    // copy RGB pixeldata to our TextureBuffer
+  glBindTexture(GL_TEXTURE_2D, fVideoTex);
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, AVFrameRGB^.data[0]);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+(*    // copy RGB pixeldata to our TextureBuffer
     // (line by line)
 
     FrameDataPtr := pointer( AVFrameRGB^.data[0] );
@@ -345,6 +361,7 @@ begin
     glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, fTexData);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+*)
 {$ifdef DebugFrames}
     //frame decode debug display
     GoldenRec.Spawn(200,35,1,16,0,-1,ColoredStar,$ffff00);
@@ -436,6 +453,8 @@ var
   spec          : TSDL_AudioSpec;
   aCodec        : pAVCodec;
 
+  sws_dst_w, sws_dst_h: Integer;
+
 begin
   fVideoOpened       := False;
   fVideoPaused       := False;
@@ -474,7 +493,7 @@ begin
     if( av_find_stream_info(VideoFormatContext) >= 0 ) then
     begin
       find_stream_ids( VideoFormatContext, VideoStreamIndex, AudioStreamIndex );
-    
+
       writeln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
       writeln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
     end;
@@ -541,7 +560,7 @@ begin
       Exit;
     end;
 
-    
+
     if(VideoCodec<>Nil) then
     begin
       errnum:=avcodec_open(VideoCodecContext, VideoCodec);
@@ -555,6 +574,13 @@ begin
     end;
     if(errnum >=0) then
     begin
+      if (VideoCodecContext^.width >1024) or (VideoCodecContext^.height >1024) then
+      begin
+        ScreenPopupError.ShowPopup('Video dimensions\nmust not exceed\n1024 pixels\n\nvideo disabled'); //show error message
+        avcodec_close(VideoCodecContext);
+        av_close_input_file(VideoFormatContext);
+        Exit;
+      end;
 {$ifdef DebugDisplay}
        showmessage('Found a matching Codec: '+ VideoCodecContext^.Codec.Name +#13#10#13#10+
         '  Width = '+inttostr(VideoCodecContext^.width)+ ', Height='+inttostr(VideoCodecContext^.height)+#13#10+
@@ -565,24 +591,47 @@ begin
       AVFrame:=avcodec_alloc_frame;
       AVFrameRGB:=avcodec_alloc_frame;
     end;
+
+    dataX := Round(Power(2, Ceil(Log2(VideoCodecContext^.width))));
+    dataY := Round(Power(2, Ceil(Log2(VideoCodecContext^.height))));
     myBuffer:=Nil;
     if(AVFrame <> Nil) and (AVFrameRGB <> Nil) then
     begin
-      myBuffer:=av_malloc(avpicture_get_size(PIX_FMT_RGB24, VideoCodecContext^.width,
-                            VideoCodecContext^.height));
+      myBuffer:=av_malloc(avpicture_get_size(PIX_FMT_RGB24, dataX, dataY));
+//      myBuffer:=av_malloc(avpicture_get_size(PIX_FMT_RGB24, VideoCodecContext^.width, VideoCodecContext^.height));
     end;
     if myBuffer <> Nil then errnum:=avpicture_fill(PAVPicture(AVFrameRGB), myBuffer, PIX_FMT_RGB24,
-                VideoCodecContext^.width, VideoCodecContext^.height)
+//                VideoCodecContext^.width, VideoCodecContext^.height)
+                dataX, dataY)
     else begin
-{$ifdef DebugDisplay}
+      {$ifdef DebugDisplay}
       showmessage('failed to allocate video buffer');
-{$endif}
+      {$endif}
       av_free(AVFrameRGB);
       av_free(AVFrame);
       avcodec_close(VideoCodecContext);
       av_close_input_file(VideoFormatContext);
       Exit;
     end;
+{
+    writeln('trying to get sws context: '+inttostr(VideoCodecContext^.width)+'x'+
+      inttostr(VideoCodecContext^.height)+' -> '+inttostr(dataX)+'x'+inttostr(dataY));
+    SoftwareScaleContext:=Nil;
+    SoftwareScaleContext:=sws_getContext(VideoCodecContext^.width,VideoCodecContext^.height,integer(VideoCodecContext^.pix_fmt),
+                                         dataX, dataY, integer(PIX_FMT_RGB24),
+                                         SWS_FAST_BILINEAR, 0, 0, 0);
+    if SoftwareScaleContext <> Nil then
+        writeln('got swscale context')
+    else begin
+      writeln('ERROR: didn´t get swscale context');
+      av_free(AVFrameRGB);
+      av_free(AVFrame);
+      avcodec_close(VideoCodecContext);
+      av_close_input_file(VideoFormatContext);
+      Exit;
+    end;
+}
+    // this is the errnum from avpicture_fill
     if errnum >=0 then
     begin
       fVideoOpened:=True;
