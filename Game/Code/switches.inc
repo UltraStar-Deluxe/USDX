@@ -39,7 +39,7 @@
   //{$DEFINE UsePortaudio}
   //{$DEFINE UsePortmixer}
   
-  {$DEFINE UseProjectM}
+  {$DEFINE UseProjectM_0_9}
   
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
@@ -49,9 +49,14 @@
 {$ELSE}
   //{$DEFINE FFMpegAudio}
 //  {$DEFINE UsePortaudio}
-  {$DEFINE UseProjectM}
+  {$DEFINE UseProjectM_0_9}
 {$ENDIF}
 
 {$IF Defined(UseBASSInput) or Defined(UseBASSOutput)}
   {$DEFINE UseBASS}
 {$IFEND}
+
+{$IF Defined(UseProjectM_0_9) or Defined(UseProjectM_1_0)}
+  {$DEFINE UseProjectM}
+{$IFEND}
+
