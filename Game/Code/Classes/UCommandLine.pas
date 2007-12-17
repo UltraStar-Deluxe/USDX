@@ -96,7 +96,7 @@ begin
   writeln( '  '+s( cMediaInterfaces ) + ' : Show in-use media interfaces' );
   writeln( '' );
 
-  halt();
+  halt;
 end;
 
 //-------------
