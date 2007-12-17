@@ -82,7 +82,7 @@ type
       procedure PlayShuffle;
       procedure StopShuffle;
 
-      function LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
+      function LoadSoundFromFile(var stream: TAudioOutputStream; Name: string): boolean;
 
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal );
@@ -251,7 +251,7 @@ procedure Tmedia_dummy.StopShuffle;
 begin
 end;
 
-function Tmedia_dummy.LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
+function Tmedia_dummy.LoadSoundFromFile(var stream: TAudioOutputStream; Name: string): boolean;
 begin
   result := false;
 end;

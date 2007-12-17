@@ -88,11 +88,12 @@ type
   TPCMStereoSample = array[0..1] of Smallint;
   TPCMData  = array[0..511] of TPCMStereoSample;
 
-  hStream = Cardinal;
+  TAudioOutputStream = class
+  end;
 
   TCustomSoundEntry = record
     Filename : String;
-    Handle   : hStream;
+    Stream   : TAudioOutputStream;
   end;
 
 type
@@ -149,7 +150,8 @@ type
       procedure PlayShuffle;
       procedure StopShuffle;
 
-      function LoadSoundFromFile(var hStream: hStream; Name: string): boolean;
+      // TODO
+      //function LoadSoundFromFile(var stream: TAudioOutputStream; Name: string): boolean;
 
       //Custom Sounds
       function LoadCustomSound(const Filename: String): Cardinal;
