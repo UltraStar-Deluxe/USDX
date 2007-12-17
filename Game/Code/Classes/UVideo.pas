@@ -14,9 +14,6 @@ unit UVideo;
 //{$define DebugFrames}
 //{$define Info}
 
-// {$define FFMpegAudio}
-{}
-
 
 interface
 
@@ -49,7 +46,7 @@ uses SDL,
      dialogs,
      {$endif}
      {$ENDIF}
-     {$ifdef FFMpegAudio}
+     {$ifdef UseFFMpegAudio}
      UAudio_FFMpeg,
      {$endif}
      UIni,
@@ -279,14 +276,16 @@ begin
     if (AVPacket.stream_index=VideoStreamIndex) then
     begin
       errnum := avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
-    {$ifdef FFMpegAudio}
+    (* FIXME
+    {$ifdef UseFFMpegAudio}
     end
     else
     if (AVPacket.stream_index = AudioStreamIndex ) then
     begin
       writeln('Encue Audio packet');
-      UAudio_FFMpeg.packet_queue_put(UAudio_FFMpeg.audioq, AVPacket);
+      audioq.put(AVPacket);
     {$endif}
+    *)
     end;
 
       try
@@ -485,7 +484,8 @@ begin
     if( AudioStreamIndex >= 0) then
       aCodecCtx := VideoFormatContext.streams[ AudioStreamIndex ].codec;
 
-    {$ifdef FFMpegAudio}
+    (* FIXME
+    {$ifdef UseFFMpegAudio}
   // This is the audio ffmpeg audio support Jay is working on.
     if aCodecCtx <> nil then
     begin
@@ -516,15 +516,16 @@ begin
       avcodec_open(aCodecCtx, aCodec);
 
       writeln( 'Opened the codec' );
-  
+
       packet_queue_init( audioq );
       SDL_PauseAudio(0);
-  
+
       writeln( 'SDL_PauseAudio' );
-  
+
 
     end;
     {$endif}
+    *)
 
     if(VideoStreamIndex >= 0) then
     begin
