@@ -16,7 +16,7 @@ uses
   sdl                    in 'lib\JEDI-SDLv1.0\SDL\Pas\sdl.pas',
   sdl_image              in 'lib\JEDI-SDLv1.0\SDL_Image\Pas\sdl_image.pas',
   sdl_ttf                in 'lib\JEDI-SDLv1.0\SDL_ttf\Pas\sdl_ttf.pas',
-  sdlutils               in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas', 
+  sdlutils               in 'lib\JEDI-SDLv1.0\SDL\Pas\sdlutils.pas',
 
   {$ifdef UseBass}
   bass          in 'lib\bass\delphi\bass.pas',
@@ -49,8 +49,11 @@ uses
   avio          in 'lib\ffmpeg\avio.pas',
   //swscale       in 'lib\ffmpeg\swscale.pas',
 
-  {$ifdef UseProjectM}
-  projectM     in 'lib\projectM\projectM.pas',
+  {$ifdef UseProjectM_0_9}
+  projectM      in 'lib\projectM\0.9\projectM.pas',
+  {$endif}
+  {$ifdef UseProjectM_1_0}
+  projectM      in 'lib\projectM\1.0\projectM.pas',
   {$endif}
 
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
@@ -145,7 +148,7 @@ uses
 {$ifdef UsePortaudio}
   UAudio_portaudio in 'Classes\UAudio_portaudio.pas',
 {$endif}
-{$ifdef FFMpegAudio}
+{$ifdef UseFFMpegAudio}
   UAudio_FFMpeg   in 'Classes\UAudio_FFMpeg.pas',
 {$endif}
 
