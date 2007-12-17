@@ -47,7 +47,7 @@ uses
   rational      in 'lib\ffmpeg\rational.pas',
   opt           in 'lib\ffmpeg\opt.pas',
   avio          in 'lib\ffmpeg\avio.pas',
-  //swscale       in 'lib\ffmpeg\swscale.pas',
+  swscale       in 'lib\ffmpeg\swscale.pas',
 
   {$ifdef UseProjectM_0_9}
   projectM      in 'lib\projectM\0.9\projectM.pas',
