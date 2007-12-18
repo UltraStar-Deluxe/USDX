@@ -41,8 +41,11 @@ implementation
 uses
      {$IFDEF LAZARUS}
      lclintf,
-     libc,
+       {$ifndef win32}
+       libc, // not available in win32
+       {$endif}
      {$ENDIF}
+     portaudio,
      UIni,
      UMain,
      UThemes;
@@ -104,6 +107,9 @@ type
       audio_buf_index : cardinal;
       audio_buf_size  : cardinal;
       audio_buf       : TAudioBuffer;
+
+      paStream        : PPaStream;
+      paFrameSize     : integer;
     public
       constructor Create(); overload;
       constructor Create(pFormatCtx: PAVFormatContext;
@@ -182,16 +188,23 @@ type
   end;
 
 var
+  test: TFFMpegOutputStream;
+  it: integer;
+
+var
   singleton_MusicFFMpeg : IAudioPlayback = nil;
 
 
 function ParseAudio(data: Pointer): integer; cdecl; forward;
-procedure AudioCallback( userdata: Pointer; stream: PUInt8; len: Integer ); cdecl; forward;
+procedure SDL_AudioCallback( userdata: Pointer; stream: PUInt8; len: Integer ); cdecl; forward;
+function Pa_AudioCallback(input: Pointer; output: Pointer; frameCount: Longword;
+      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+      userData: Pointer): Integer; cdecl; forward;
 
 constructor TFFMpegOutputStream.Create();
 begin
   inherited;
-  
+
   packetQueue := TPacketQueue.Create();
 
   FillChar(pkt, sizeof(TAVPacket), #0);
@@ -210,14 +223,20 @@ constructor TFFMpegOutputStream.Create(pFormatCtx: PAVFormatContext;
                    ffmpegStreamID : Integer; ffmpegStream: PAVStream);
 begin
   Create();
+
   Self.pFormatCtx := pFormatCtx;
   Self.pCodecCtx := pCodecCtx;
   Self.pCodec    := pCodec;
   Self.ffmpegStreamID := ffmpegStreamID;
   Self.ffmpegStream   := ffmpegStream;
+
+  test := Self;
+  it:=0;
 end;
 
 procedure TFFMpegOutputStream.Play();
+var
+  err: TPaError;
 begin
   writeln('Play request');
   if(status = sStopped) then
@@ -225,7 +244,13 @@ begin
     writeln('Play ok');
     status := sPlaying;
     Self.parseThread := SDL_CreateThread(@ParseAudio, Self);
-    SDL_PauseAudio(0);
+    //SDL_PauseAudio(0);
+
+    err := Pa_StartStream(Self.paStream);
+    if(err <> paNoError) then
+    begin
+      Writeln('Play: '+ Pa_GetErrorText(err));
+    end;
   end;
 end;
 
@@ -260,11 +285,12 @@ begin
   Loop   := false;
 
   av_register_all();
-  SDL_Init(SDL_INIT_AUDIO);
+  //SDL_Init(SDL_INIT_AUDIO);
+  Pa_Initialize();
 
   StartSoundStream   := LoadSoundFromFile(SoundPath + 'Common start.mp3');
   {
-  BackSoundStream    := LoadSoundFromFile(SoundPath + 'Common back.mp3');
+  BackSoundStream    := LoadSoundFromFile(SoundPath + 'Common Back.mp3');
   SwooshSoundStream  := LoadSoundFromFile(SoundPath + 'menu swoosh.mp3');
   ChangeSoundStream  := LoadSoundFromFile(SoundPath + 'select music change music 50.mp3');
   OptionSoundStream  := LoadSoundFromFile(SoundPath + 'option change col.mp3');
@@ -380,28 +406,38 @@ begin
 
   if assigned( MusicStream ) then
   begin
-    //writeln( 'MusicStream : ' + inttostr( integer( assigned( MusicStream ))) );
-    //writeln( 'MusicStream.pFormatCtx : ' + inttostr( integer( assigned( MusicStream.pFormatCtx ))) );
-    //writeln( 'MusicStream.pFormatCtx^.duration : ' + inttostr( integer( MusicStream.pFormatCtx^.duration )) );
-
     Result := MusicStream.pFormatCtx^.duration / AV_TIME_BASE;
   end;
 end;
 
 function TAudio_FFMpeg.getPosition: real;
+var
+  bytes: integer;
 begin
   Result := 0;
+
+(*
+  bytes  := BASS_ChannelGetPosition(BASS);
+  Result := BASS_ChannelBytes2Seconds(BASS, bytes);
+*)
 end;
 
 function TAudio_FFMpeg.Finished: boolean;
 begin
   Result := false;
+
+(*
+  if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then
+  begin
+    Result := true;
+  end;
+*)
 end;
 
 procedure TAudio_FFMpeg.PlayStart;
 begin
   if StartSoundStream <> nil then
-    StartSoundStream.Play();
+  StartSoundStream.Play();
 end;
 
 procedure TAudio_FFMpeg.PlayBack;
@@ -464,6 +500,7 @@ begin
   ShuffleSoundStream.Stop();
 end;
 
+
 function TFFMpegOutputStream.AudioDecodeFrame(buffer : PUInt8; bufSize: integer): integer;
 var
   len1,
@@ -474,20 +511,23 @@ begin
   if (buffer = nil)  then
     exit;
 
-
   while true do
-  begin  
-
+  begin
     while (audio_pkt_size > 0) do
     begin
 //      writeln( 'got audio packet' );
       data_size := bufSize;
 
+      if(pCodecCtx = nil) then begin
+//        writeln('Das wars');
+        exit;
+      end;
+
       // TODO: should be avcodec_decode_audio2 but this wont link on my ubuntu box.
       len1 := avcodec_decode_audio(pCodecCtx, Pointer(buffer),
                   data_size, audio_pkt_data, audio_pkt_size);
 
-//      writeln('avcodec_decode_audio : ' + inttostr( len1 ));
+      //writeln('avcodec_decode_audio : ' + inttostr( len1 ));
 
       if(len1 < 0) then
       begin
@@ -506,37 +546,36 @@ begin
      	  continue;
       end;
 
-      // We have data, return it and come back for more later 
+      // We have data, return it and come back for more later
       result := data_size;
       exit;
     end;
 
+    inc(it);
     if (pkt.data <> nil) then
+    begin
       av_free_packet(pkt);
-
-
+    end;
 
     if (packetQueue.quit) then
     begin
       result := -1;
       exit;
     end;
-
+//    writeln(it);
     if (packetQueue.Get(pkt, true) < 0) then
     begin
       result := -1;
       exit;
     end;
 
-
     audio_pkt_data := PChar(pkt.data);
     audio_pkt_size := pkt.size;
 //    writeln( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
   end;
-
 end;
 
-procedure AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer); cdecl;
+procedure SDL_AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer); cdecl;
 var
   outStream       : TFFMpegOutputStream;
   len1,
@@ -546,21 +585,19 @@ begin
   outStream := TFFMpegOutputStream(userdata);
 
   while (len > 0) do
-  with outStream do
-  begin
-
+  with outStream do begin
     if (audio_buf_index >= audio_buf_size) then
     begin
       // We have already sent all our data; get more
       audio_size := AudioDecodeFrame(@audio_buf, sizeof(TAudioBuffer));
-//      writeln('audio_decode_frame : '+ inttostr(audio_size));
+      //writeln('audio_decode_frame : '+ inttostr(audio_size));
 
       if(audio_size < 0) then
       begin
       	// If error, output silence
         audio_buf_size := 1024;
         FillChar(audio_buf, audio_buf_size, #0);
-//        writeln( 'Silence' );
+        //writeln( 'Silence' );
       end
       else
       begin
@@ -583,9 +620,61 @@ begin
     Dec(len, len1);
     Inc(stream, len1);
     Inc(audio_buf_index, len1);
+  end;
+end;
 
+function Pa_AudioCallback(input: Pointer; output: Pointer; frameCount: Longword;
+      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+      userData: Pointer): Integer; cdecl;
+var
+  outStream       : TFFMpegOutputStream;
+  len1,
+  audio_size      : integer;
+  pSrc            : Pointer;
+  len             : integer;
+begin
+  outStream := TFFMpegOutputStream(userData);
+  len := frameCount * outStream.paFrameSize;
+
+  while (len > 0) do
+  with outStream do begin
+    if (audio_buf_index >= audio_buf_size) then
+    begin
+      // We have already sent all our data; get more
+      audio_size := AudioDecodeFrame(@audio_buf, sizeof(TAudioBuffer));
+      //writeln('audio_decode_frame : '+ inttostr(audio_size));
+
+      if(audio_size < 0) then
+      begin
+      	// If error, output silence
+        audio_buf_size := 1024;
+        FillChar(audio_buf, audio_buf_size, #0);
+        //writeln( 'Silence' );
+      end
+      else
+      begin
+      	audio_buf_size := audio_size;
+      end;
+      audio_buf_index := 0;  // Todo : jb - SegFault ?
+    end;
+
+    len1 := audio_buf_size - audio_buf_index;
+    if (len1 > len) then
+      len1 := len;
+
+    pSrc := PChar(@audio_buf) + audio_buf_index;
+    {$ifdef WIN32}
+      CopyMemory(output, pSrc , len1);
+    {$else}
+      memcpy(output, pSrc , len1);
+    {$endif}
+
+    Dec(len, len1);
+    Inc(PChar(output), len1);
+    Inc(audio_buf_index, len1);
   end;
 
+  result := paContinue;
 end;
 
 function TAudio_FFMpeg.FindAudioStreamID(pFormatCtx : PAVFormatContext): integer;
@@ -622,7 +711,7 @@ begin
 
   while (av_read_frame(stream.pFormatCtx, packet) >= 0) do
   begin
-//    writeln( 'ffmpeg - av_read_frame' );
+    //writeln( 'ffmpeg - av_read_frame' );
 
     if (packet.stream_index = stream.ffmpegStreamID) then
     begin
@@ -633,10 +722,9 @@ begin
     begin
       av_free_packet(packet);
     end;
-
   end;
 
-//  Writeln('Done: ' + inttostr(stream.packetQueue.nbPackets));
+  //Writeln('Done: ' + inttostr(stream.packetQueue.nbPackets));
 
   result := 0;
 end;
@@ -653,12 +741,20 @@ var
   spec           : TSDL_AudioSpec;
   csIndex        : integer;
   stream         : TFFMpegOutputStream;
+  err            : TPaError;
+  // move this to a portaudio specific section
+  paOutParams     : TPaStreamParameters;
+  paApiInfo       : PPaHostApiInfo;
+  paApi           : TPaHostApiIndex;
+  paOutDevice     : TPaDeviceIndex;
+  paOutDeviceInfo : PPaDeviceInfo;
 begin
   result := nil;
 
   if (not FileExists(Name)) then
   begin
     Log.LogStatus('LoadSoundFromFile: Sound not found "' + Name + '"', 'UAudio_FFMpeg');
+    writeln('ERROR : LoadSoundFromFile: Sound not found "' + Name + '"', 'UAudio_FFMpeg');
     exit;
   end;
 
@@ -694,6 +790,7 @@ begin
   stream := TFFMpegOutputStream.Create(pFormatCtx, pCodecCtx, pCodec,
               ffmpegStreamID, ffmpegStream);
 
+  {
   // Set SDL audio settings from codec info
   wanted_spec.freq     := pCodecCtx^.sample_rate;
   wanted_spec.format   := AUDIO_S16SYS;
@@ -708,7 +805,32 @@ begin
   begin
     Log.LogStatus('SDL_OpenAudio: '+SDL_GetError(), 'UAudio_FFMpeg');
     stream.Free();
-    exit
+    exit;
+  end;
+  }
+  
+  paApi     := Pa_HostApiTypeIdToHostApiIndex(paALSA);
+  paApiInfo := Pa_GetHostApiInfo(paApi);
+  paOutDevice     := paApiInfo^.defaultOutputDevice;
+  paOutDeviceInfo := Pa_GetDeviceInfo(paOutDevice);
+  
+  with paOutParams do begin
+    device := paOutDevice;
+    channelCount := pCodecCtx^.channels;
+    sampleFormat := paInt16;
+    suggestedLatency := paOutDeviceInfo^.defaultHighOutputLatency;
+    hostApiSpecificStreamInfo := nil;
+  end;
+
+  stream.paFrameSize := sizeof(Smallint) * pCodecCtx^.channels;
+
+  err := Pa_OpenStream(stream.paStream, nil, @paOutParams, pCodecCtx^.sample_rate,
+          paFramesPerBufferUnspecified, //SDL_AUDIO_BUFFER_SIZE div stream.paFrameSize
+          paNoFlag, @PA_AudioCallback, stream);
+  if(err <> paNoError) then begin
+    Log.LogStatus('Pa_OpenDefaultStream: '+Pa_GetErrorText(err), 'UAudio_FFMpeg');
+    stream.Free();
+    exit;
   end;
 
   Log.LogStatus('SDL opened audio device', 'UAudio_FFMpeg');
@@ -786,7 +908,6 @@ function TPacketQueue.Put(pkt : PAVPacket): integer;
 var
   pkt1 : PAVPacketList;
 begin
-
   result := -1;
 
   if (av_dup_packet(pkt) < 0) then
@@ -801,7 +922,7 @@ begin
 
 
   SDL_LockMutex(Self.mutex);
-//  try
+  try
 
     if (Self.lastPkt = nil) then
       Self.firstPkt := pkt1
@@ -816,9 +937,9 @@ begin
     Self.size := Self.size + pkt1^.pkt.size;
     SDL_CondSignal(Self.cond);
 
-//  finally
+  finally
     SDL_UnlockMutex(Self.mutex);
-//  end;
+  end;
 
   result := 0;
 end;
@@ -827,11 +948,10 @@ function TPacketQueue.Get(var pkt: TAVPacket; block: boolean): integer;
 var
   pkt1 : PAVPacketList;
 begin
-
   result := -1;
 
   SDL_LockMutex(Self.mutex);
-//  try
+  try
     while true do
     begin
       if (quit) then
@@ -866,10 +986,9 @@ begin
         SDL_CondWait(Self.cond, Self.mutex);
       end;
     end;
-//  finally
+  finally
     SDL_UnlockMutex(Self.mutex);
-//  end;
-
+  end;
 end;
 
 
