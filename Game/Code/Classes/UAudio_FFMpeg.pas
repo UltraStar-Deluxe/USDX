@@ -478,8 +478,10 @@ begin
   if (buffer = nil)  then
     exit;
 
+
   while true do
   begin  
+
     while (audio_pkt_size > 0) do
     begin
 //      writeln( 'got audio packet' );
@@ -489,7 +491,7 @@ begin
       len1 := avcodec_decode_audio(pCodecCtx, Pointer(buffer),
                   data_size, audio_pkt_data, audio_pkt_size);
 
-      writeln('avcodec_decode_audio : ' + inttostr( len1 ));
+//      writeln('avcodec_decode_audio : ' + inttostr( len1 ));
 
       if(len1 < 0) then
       begin
@@ -516,6 +518,8 @@ begin
     if (pkt.data <> nil) then
       av_free_packet(pkt);
 
+
+
     if (packetQueue.quit) then
     begin
       result := -1;
@@ -528,10 +532,12 @@ begin
       exit;
     end;
 
+
     audio_pkt_data := PChar(pkt.data);
     audio_pkt_size := pkt.size;
 //    writeln( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
   end;
+
 end;
 
 procedure AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer); cdecl;
@@ -544,19 +550,21 @@ begin
   outStream := TFFMpegOutputStream(userdata);
 
   while (len > 0) do
-  with outStream do begin
+  with outStream do
+  begin
+
     if (audio_buf_index >= audio_buf_size) then
     begin
       // We have already sent all our data; get more
       audio_size := AudioDecodeFrame(@audio_buf, sizeof(TAudioBuffer));
-      writeln('audio_decode_frame : '+ inttostr(audio_size));
+//      writeln('audio_decode_frame : '+ inttostr(audio_size));
 
       if(audio_size < 0) then
       begin
       	// If error, output silence
         audio_buf_size := 1024;
         FillChar(audio_buf, audio_buf_size, #0);
-        writeln( 'Silence' );
+//        writeln( 'Silence' );
       end
       else
       begin
@@ -579,7 +587,9 @@ begin
     Dec(len, len1);
     Inc(stream, len1);
     Inc(audio_buf_index, len1);
+
   end;
+
 end;
 
 function TAudio_FFMpeg.FindAudioStreamID(pFormatCtx : PAVFormatContext): integer;
@@ -616,7 +626,7 @@ begin
 
   while (av_read_frame(stream.pFormatCtx, packet) >= 0) do
   begin
-    writeln( 'ffmpeg - av_read_frame' );
+//    writeln( 'ffmpeg - av_read_frame' );
 
     if (packet.stream_index = stream.ffmpegStreamID) then
     begin
@@ -627,9 +637,10 @@ begin
     begin
       av_free_packet(packet);
     end;
+
   end;
 
-  Writeln('Done: ' + inttostr(stream.packetQueue.nbPackets));
+//  Writeln('Done: ' + inttostr(stream.packetQueue.nbPackets));
 
   result := 0;
 end;
@@ -779,6 +790,7 @@ function TPacketQueue.Put(pkt : PAVPacket): integer;
 var
   pkt1 : PAVPacketList;
 begin
+
   result := -1;
 
   if (av_dup_packet(pkt) < 0) then
@@ -793,7 +805,7 @@ begin
 
 
   SDL_LockMutex(Self.mutex);
-  try
+//  try
 
     if (Self.lastPkt = nil) then
       Self.firstPkt := pkt1
@@ -803,14 +815,14 @@ begin
     Self.lastPkt := pkt1;
     inc(Self.nbPackets);
 
-    Writeln('Put: ' + inttostr(nbPackets));
+//    Writeln('Put: ' + inttostr(nbPackets));
 
     Self.size := Self.size + pkt1^.pkt.size;
     SDL_CondSignal(Self.cond);
 
-  finally
+//  finally
     SDL_UnlockMutex(Self.mutex);
-  end;
+//  end;
 
   result := 0;
 end;
@@ -819,10 +831,11 @@ function TPacketQueue.Get(var pkt: TAVPacket; block: boolean): integer;
 var
   pkt1 : PAVPacketList;
 begin
+
   result := -1;
 
   SDL_LockMutex(Self.mutex);
-  try
+//  try
     while true do
     begin
       if (quit) then
@@ -837,7 +850,7 @@ begin
       	  Self.lastPkt := nil;
         dec(Self.nbPackets);
 
-        Writeln('Get: ' + inttostr(nbPackets));
+//        Writeln('Get: ' + inttostr(nbPackets));
 
         Self.size := Self.size - pkt1^.pkt.size;
         pkt := pkt1^.pkt;
@@ -857,9 +870,10 @@ begin
         SDL_CondWait(Self.cond, Self.mutex);
       end;
     end;
-  finally
+//  finally
     SDL_UnlockMutex(Self.mutex);
-  end;
+//  end;
+
 end;
 
 
