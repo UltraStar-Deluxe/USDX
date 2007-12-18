@@ -113,7 +113,7 @@ type
     stream_index: integer;
     flags: integer;
     duration: integer;                         ///< presentation duration in time_base units (0 if not available)
-    destruct: procedure (p: PAVPacket);  (* This cannot be var : TAVPacket. 
+    destruct: procedure (p: PAVPacket); cdecl; (* This cannot be var : TAVPacket. 
 										because TAVPacket is not completely defined yet *)
     priv: pointer;
     pos: int64                            ///< byte position in stream, -1 if unknown
