@@ -289,13 +289,12 @@ begin
   Pa_Initialize();
 
   StartSoundStream   := LoadSoundFromFile(SoundPath + 'Common start.mp3');
-  {
-  BackSoundStream    := LoadSoundFromFile(SoundPath + 'Common Back.mp3');
+  BackSoundStream    := LoadSoundFromFile(SoundPath + 'Common back.mp3');
   SwooshSoundStream  := LoadSoundFromFile(SoundPath + 'menu swoosh.mp3');
   ChangeSoundStream  := LoadSoundFromFile(SoundPath + 'select music change music 50.mp3');
   OptionSoundStream  := LoadSoundFromFile(SoundPath + 'option change col.mp3');
   ClickSoundStream   := LoadSoundFromFile(SoundPath + 'rimshot022b.mp3');
-  }
+
 //  DrumSoundStream  := LoadSoundFromFile(SoundPath + 'bassdrumhard076b.mp3');
 //  HihatSoundStream := LoadSoundFromFile(SoundPath + 'hihatclosed068b.mp3');
 //  ClapSoundStream  := LoadSoundFromFile(SoundPath + 'claps050b.mp3');
@@ -537,8 +536,8 @@ begin
        	break;
       end;
 
-      audio_pkt_data := audio_pkt_data + len1;
-      audio_pkt_size := audio_pkt_size + len1;
+      Inc(audio_pkt_data, len1);
+      Dec(audio_pkt_size, len1);
 
       if (data_size <= 0) then
       begin
@@ -603,7 +602,7 @@ begin
       begin
       	audio_buf_size := audio_size;
       end;
-      audio_buf_index := 0;  // Todo : jb - SegFault ?
+      audio_buf_index := 0;
     end;
 
     len1 := audio_buf_size - audio_buf_index;
@@ -833,7 +832,7 @@ begin
     exit;
   end;
 
-  Log.LogStatus('SDL opened audio device', 'UAudio_FFMpeg');
+  Log.LogStatus('Opened audio device', 'UAudio_FFMpeg');
 
   //Add CustomSound
   csIndex := High(CustomSounds) + 1;
