@@ -358,8 +358,11 @@ begin
     //------------------------------
     //Finish Application
     //------------------------------
-    if Ini.LPT = 1 then LCD.Clear;
-    if Ini.LPT = 2 then Light.TurnOff;
+    
+    {$ifdef WIN32}
+      if Ini.LPT = 1 then LCD.Clear;
+      if Ini.LPT = 2 then Light.TurnOff;
+    {$endif}
 
     Log.LogStatus('Main Loop', 'Finished');
     Log.Free;
