@@ -1,4 +1,4 @@
-unit UAudio_FFMpeg;
+unit UAudio_FFMpeg_Pa;
 
 (*******************************************************************************
 
@@ -41,7 +41,9 @@ implementation
 uses
      {$IFDEF LAZARUS}
      lclintf,
-     //libc, // not available in win32
+       {$ifndef win32}
+       libc, // not available in win32
+       {$endif}
      {$ENDIF}
      portaudio,
      UIni,
@@ -281,7 +283,7 @@ begin
   //SDL_Init(SDL_INIT_AUDIO);
   Pa_Initialize();
 
-  StartSoundStream   := LoadSoundFromFile(SoundPath + 'Common Start.mp3');
+  StartSoundStream   := LoadSoundFromFile(SoundPath + 'Common start.mp3');
   {
   BackSoundStream    := LoadSoundFromFile(SoundPath + 'Common Back.mp3');
   SwooshSoundStream  := LoadSoundFromFile(SoundPath + 'menu swoosh.mp3');
@@ -394,7 +396,13 @@ function TAudio_FFMpeg.Length: real;
 var
   bytes: integer;
 begin
-  Result := MusicStream.pFormatCtx^.duration / AV_TIME_BASE;
+  Result := 0;
+  // Todo : why is Music stream always nil !?
+
+  if assigned( MusicStream ) then
+  begin
+    Result := MusicStream.pFormatCtx^.duration / AV_TIME_BASE;
+  end;
 end;
 
 function TAudio_FFMpeg.getPosition: real;
@@ -506,7 +514,7 @@ begin
       data_size := bufSize;
 
       if(pCodecCtx = nil) then begin
-        writeln('Das wars');
+//        writeln('Das wars');
         exit;
       end;
 
@@ -549,7 +557,7 @@ begin
       result := -1;
       exit;
     end;
-    writeln(it);
+//    writeln(it);
     if (packetQueue.Get(pkt, true) < 0) then
     begin
       result := -1;
@@ -621,7 +629,7 @@ var
   len             : integer;
 begin
   outStream := TFFMpegOutputStream(userData);
-  len := frameCount * 4;  // use *2 for mono-files
+  len := frameCount * 2;  // use *2 for mono-files
 
   while (len > 0) do
   with outStream do begin
@@ -735,6 +743,7 @@ begin
   if (not FileExists(Name)) then
   begin
     Log.LogStatus('LoadSoundFromFile: Sound not found "' + Name + '"', 'UAudio_FFMpeg');
+    writeln('ERROR : LoadSoundFromFile: Sound not found "' + Name + '"', 'UAudio_FFMpeg');
     exit;
   end;
 
@@ -790,7 +799,7 @@ begin
   }
 
   err := Pa_OpenDefaultStream(stream.channel, 0, pCodecCtx^.channels, paInt16,
-          pCodecCtx^.sample_rate, SDL_AUDIO_BUFFER_SIZE div 4, //paFramesPerBufferUnspecified,
+          pCodecCtx^.sample_rate, SDL_AUDIO_BUFFER_SIZE div 2, //paFramesPerBufferUnspecified,
           @PA_AudioCallback, stream);
   if(err <> paNoError) then begin
     Log.LogStatus('Pa_OpenDefaultStream: '+Pa_GetErrorText(err), 'UAudio_FFMpeg');
@@ -897,7 +906,7 @@ begin
     Self.lastPkt := pkt1;
     inc(Self.nbPackets);
 
-    Writeln('Put: ' + inttostr(nbPackets));
+//    Writeln('Put: ' + inttostr(nbPackets));
 
     Self.size := Self.size + pkt1^.pkt.size;
     SDL_CondSignal(Self.cond);
@@ -931,7 +940,7 @@ begin
       	  Self.lastPkt := nil;
         dec(Self.nbPackets);
 
-        Writeln('Get: ' + inttostr(nbPackets));
+//        Writeln('Get: ' + inttostr(nbPackets));
 
         Self.size := Self.size - pkt1^.pkt.size;
         pkt := pkt1^.pkt;
