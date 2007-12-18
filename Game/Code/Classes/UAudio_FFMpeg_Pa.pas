@@ -660,6 +660,8 @@ begin
     Inc(PChar(output), len1);
     Inc(audio_buf_index, len1);
   end;
+
+  result := paContinue;
 end;
 
 function TAudio_FFMpeg.FindAudioStreamID(pFormatCtx : PAVFormatContext): integer;
