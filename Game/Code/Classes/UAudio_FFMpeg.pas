@@ -262,9 +262,9 @@ begin
   av_register_all();
   SDL_Init(SDL_INIT_AUDIO);
 
-  StartSoundStream   := LoadSoundFromFile(SoundPath + 'Common Start.mp3');
+  StartSoundStream   := LoadSoundFromFile(SoundPath + 'Common start.mp3');
   {
-  BackSoundStream    := LoadSoundFromFile(SoundPath + 'Common Back.mp3');
+  BackSoundStream    := LoadSoundFromFile(SoundPath + 'Common back.mp3');
   SwooshSoundStream  := LoadSoundFromFile(SoundPath + 'menu swoosh.mp3');
   ChangeSoundStream  := LoadSoundFromFile(SoundPath + 'select music change music 50.mp3');
   OptionSoundStream  := LoadSoundFromFile(SoundPath + 'option change col.mp3');
