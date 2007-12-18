@@ -37,7 +37,6 @@ uses SDL,
      avcodec,
      avformat,
      avutil,
-//     swscale,
      math,
      OpenGL12,
      SysUtils,
@@ -66,9 +65,6 @@ type
       fVideoTex      : glUint;
       fVideoSkipTime : Single;
 
-      //remove
-      fTexData       : array of Byte;
-
       VideoFormatContext: PAVFormatContext;
 
       VideoStreamIndex ,
@@ -78,8 +74,6 @@ type
       AVFrame: PAVFrame;
       AVFrameRGB: PAVFrame;
       myBuffer: pByte;
-
-//      SoftwareScaleContext: PSwsContext;
 
       TexX, TexY, dataX, dataY: Cardinal;
 
@@ -93,8 +87,8 @@ type
       AudioCodecContext : PSDL_AudioSpec;
       aCodecCtx         : PAVCodecContext;
 
-
       function find_stream_ids( const aFormatCtx : PAVFormatContext; Out aFirstVideoStream, aFirstAudioStream : integer ): boolean;
+
     public
       constructor create();
       function    GetName: String;
@@ -215,9 +209,9 @@ begin
 
 {$IFDEF DebugDisplay}
   showmessage('Time:      '+inttostr(floor(Time*1000))+#13#10+
-    'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
-    'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
-    'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
+              'VideoTime: '+inttostr(floor(VideoTime*1000))+#13#10+
+              'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
+              'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
 {$endif}
 
   if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then
@@ -238,7 +232,6 @@ begin
     Exit;// we don't need a new frame now
   end;
 
-
   VideoTime:=VideoTime+VideoTimeBase;
   TimeDifference:=myTime-VideoTime;
   if TimeDifference >= (FRAMEDROPCOUNT-1)*VideoTimeBase then  // skip frames
@@ -247,35 +240,25 @@ begin
     //frame drop debug display
     GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
 {$endif}
-
 {$IFDEF DebugDisplay}
-
     showmessage('skipping frames'+#13#10+
     'TimeBase:  '+inttostr(floor(VideoTimeBase*1000))+#13#10+
     'TimeDiff:  '+inttostr(floor(TimeDifference*1000))+#13#10+
     'Time2Skip: '+inttostr(floor((Time-LastFrameTime)*1000)));
-
 {$endif}
-//    av_seek_frame(VideoFormatContext.,VideoStreamIndex,Floor(Time*VideoTimeBase),0);
-{    av_seek_frame(VideoFormatContext,-1,Floor((myTime+VideoTimeBase)*1500000),0);
-    VideoTime:=floor(myTime/VideoTimeBase)*VideoTimeBase;}
     VideoTime:=VideoTime+FRAMEDROPCOUNT*VideoTimeBase;
     DropFrame:=True;
   end;
 
-
-//  av_init_packet(@AVPacket);
   AVPacket.data := nil;
   av_init_packet( AVPacket ); // JB-ffmpeg
 
-
   FrameFinished:=0;
   // read packets until we have a finished frame (or there are no more packets)
-  while ( FrameFinished = 0                                ) and
-        ( av_read_frame(VideoFormatContext, AVPacket) >= 0 ) do     // JB-ffmpeg
+  while ( FrameFinished = 0 ) do
   begin
-
-
+    if ( av_read_frame(VideoFormatContext, AVPacket) < 0 ) then
+      break;
     // if we got a packet from the video stream, then decode it
     if (AVPacket.stream_index=VideoStreamIndex) then
     begin
@@ -293,7 +276,7 @@ begin
     end;
 
       try
-        if AVPacket.data <> nil then
+//        if AVPacket.data <> nil then
           av_free_packet( AVPacket );  // JB-ffmpeg
       except
         // TODO : JB_FFMpeg ... why does this now AV sometimes ( or always !! )
@@ -301,72 +284,46 @@ begin
 
   end;
 
-
   if DropFrame then
     for droppedFrames:=1 to FRAMEDROPCOUNT do begin
       FrameFinished:=0;
       // read packets until we have a finished frame (or there are no more packets)
-//      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, @AVPacket)>=0) do
-      while (FrameFinished=0) and (av_read_frame(VideoFormatContext, AVPacket)>=0) do  // JB-ffmpeg
+      while (FrameFinished=0) do
       begin
+        if (av_read_frame(VideoFormatContext, AVPacket)<0) then
+          Break;
         // if we got a packet from the video stream, then decode it
         if (AVPacket.stream_index=VideoStreamIndex) then
-//          errnum:=avcodec_decode_video(VideoCodecContext, AVFrame, @frameFinished, AVPacket.data, AVPacket.size);
       errnum:=avcodec_decode_video(VideoCodecContext, AVFrame,  frameFinished , AVPacket.data, AVPacket.size); // JB-ffmpeg
 
-
         // release internal packet structure created by av_read_frame
-//          av_free_packet(PAVPacket(@AVPacket)); // JB-ffmpeg
-          av_free_packet( AVPacket );
+        try
+//          if AVPacket.data <> nil then
+            av_free_packet( AVPacket );  // JB-ffmpeg
+        except
+          // TODO : JB_FFMpeg ... why does this now AV sometimes ( or always !! )
+        end;
       end;
     end;
 
   // if we did not get an new frame, there's nothing more to do
   if Framefinished=0 then begin
-    GoldenRec.Spawn(220,15,1,16,0,-1,ColoredStar,$0000ff);
     Exit;
   end;
   // otherwise we convert the pixeldata from YUV to RGB
   errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
 			      VideoCodecContext^.width, VideoCodecContext^.height);
-//errnum:=1;
-{
-  writeln('swscontext->srcH='+inttostr(SoftwareScaleContext^.srcH));
-  writeln('swscontext->dstH='+inttostr(SoftwareScaleContext^.dstH));
-  writeln('swscontext->slicedir='+inttostr(SoftwareScaleContext^.slicedir));
-  errnum:=sws_scale(SoftwareScaleContext,@(AVFrame.data),@(AVFrame.linesize),
-          0,VideoCodecContext^.Height,
-          @(AVFrameRGB.data),@(AVFrameRGB.linesize));
-  writeln('errnum='+inttostr(errnum));
-}
   if errnum >=0 then
   begin
   glBindTexture(GL_TEXTURE_2D, fVideoTex);
   glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, AVFrameRGB^.data[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-(*    // copy RGB pixeldata to our TextureBuffer
-    // (line by line)
-
-    FrameDataPtr := pointer( AVFrameRGB^.data[0] );
-    linesize     := AVFrameRGB^.linesize[0];
-    for y:=0 to TexY-1 do
-    begin
-      System.Move(FrameDataPtr[y*linesize],fTexData[3*y*dataX],linesize);
-    end;
-
-    // generate opengl texture out of whatever we got
-    glBindTexture(GL_TEXTURE_2D, fVideoTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, dataX, dataY, 0, GL_RGB, GL_UNSIGNED_BYTE, fTexData);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-*)
 {$ifdef DebugFrames}
     //frame decode debug display
     GoldenRec.Spawn(200,35,1,16,0,-1,ColoredStar,$ffff00);
 {$endif}
-
   end;
 end;
 
@@ -440,7 +397,6 @@ end;
 procedure TVideoPlayback_ffmpeg.init();
 begin
   glGenTextures(1, PglUint(@fVideoTex));
-  SetLength(fTexData,0);
 end;
 
 
@@ -560,7 +516,6 @@ begin
       Exit;
     end;
 
-
     if(VideoCodec<>Nil) then
     begin
       errnum:=avcodec_open(VideoCodecContext, VideoCodec);
@@ -598,10 +553,8 @@ begin
     if(AVFrame <> Nil) and (AVFrameRGB <> Nil) then
     begin
       myBuffer:=av_malloc(avpicture_get_size(PIX_FMT_RGB24, dataX, dataY));
-//      myBuffer:=av_malloc(avpicture_get_size(PIX_FMT_RGB24, VideoCodecContext^.width, VideoCodecContext^.height));
     end;
     if myBuffer <> Nil then errnum:=avpicture_fill(PAVPicture(AVFrameRGB), myBuffer, PIX_FMT_RGB24,
-//                VideoCodecContext^.width, VideoCodecContext^.height)
                 dataX, dataY)
     else begin
       {$ifdef DebugDisplay}
@@ -613,24 +566,6 @@ begin
       av_close_input_file(VideoFormatContext);
       Exit;
     end;
-{
-    writeln('trying to get sws context: '+inttostr(VideoCodecContext^.width)+'x'+
-      inttostr(VideoCodecContext^.height)+' -> '+inttostr(dataX)+'x'+inttostr(dataY));
-    SoftwareScaleContext:=Nil;
-    SoftwareScaleContext:=sws_getContext(VideoCodecContext^.width,VideoCodecContext^.height,integer(VideoCodecContext^.pix_fmt),
-                                         dataX, dataY, integer(PIX_FMT_RGB24),
-                                         SWS_FAST_BILINEAR, 0, 0, 0);
-    if SoftwareScaleContext <> Nil then
-        writeln('got swscale context')
-    else begin
-      writeln('ERROR: didn´t get swscale context');
-      av_free(AVFrameRGB);
-      av_free(AVFrame);
-      avcodec_close(VideoCodecContext);
-      av_close_input_file(VideoFormatContext);
-      Exit;
-    end;
-}
     // this is the errnum from avpicture_fill
     if errnum >=0 then
     begin
@@ -640,40 +575,25 @@ begin
       TexY := VideoCodecContext^.height;
       dataX := Round(Power(2, Ceil(Log2(TexX))));
       dataY := Round(Power(2, Ceil(Log2(TexY))));
-      SetLength(fTexData,dataX*dataY*3);
       // calculate some information for video display
       VideoAspect:=VideoCodecContext^.sample_aspect_ratio.num/VideoCodecContext^.sample_aspect_ratio.den;
       if (VideoAspect = 0) then
         VideoAspect:=VideoCodecContext^.width/VideoCodecContext^.height
       else
         VideoAspect:=VideoAspect*VideoCodecContext^.width/VideoCodecContext^.height;
-      if VideoAspect >= 4/3 then
-      begin
         ScaledVideoWidth:=800.0;
         ScaledVideoHeight:=800.0/VideoAspect;
-      end else
-      begin
-        ScaledVideoHeight:=600.0;
-        ScaledVideoWidth:=600.0*VideoAspect;
-      end;
-      VideoTimeBase:=VideoCodecContext^.time_base.num/VideoCodecContext^.time_base.den;
-      // hack to get reasonable timebase for divx
+      VideoTimeBase:=VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.den/VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.num;
 {$ifdef DebugDisplay}
       showmessage('framerate: '+inttostr(floor(1/videotimebase))+'fps');
 {$endif}
+      // hack to get reasonable timebase (for divx and others)
       if VideoTimeBase < 0.02 then // 0.02 <-> 50 fps
       begin
-        VideoTimeBase:=VideoCodecContext^.time_base.den/VideoCodecContext^.time_base.num;
+        VideoTimeBase:=VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.num/VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.den;
         while VideoTimeBase > 50 do VideoTimeBase:=VideoTimeBase/10;
         VideoTimeBase:=1/VideoTimeBase;
       end;
-{$ifdef DebugDisplay}
-      showmessage('corrected framerate: '+inttostr(floor(1/videotimebase))+'fps');
-      
-      if ((VideoAspect*VideoCodecContext^.width*VideoCodecContext^.height)>200000) then
-        showmessage('you are trying to play a rather large video'+#13#10+
-                    'be prepared to experience some timing problems');
-{$endif}
     end;
   end;
 end;
@@ -688,8 +608,6 @@ begin
 
     avcodec_close(VideoCodecContext);
     av_close_input_file(VideoFormatContext);
-
-    SetLength(fTexData,0);
 
     fVideoOpened:=False;
   end;
@@ -711,18 +629,19 @@ end;
 procedure TVideoPlayback_ffmpeg.MoveTo(Time: real);
 begin
   fVideoSkipTime := Time;
-  
+
   if fVideoSkipTime > 0 then
   begin
-    av_seek_frame(VideoFormatContext,-1,Floor((fVideoSkipTime)*1500000),0);
+    av_seek_frame(VideoFormatContext,VideoStreamIndex,Floor(Time/VideoTimeBase),AVSEEK_FLAG_ANY);
 
     VideoTime := fVideoSkipTime;
   end;
 end;
 
+// what is this supposed to do? return VideoTime?
 function  TVideoPlayback_ffmpeg.getPosition: real;
 begin
-  result := 0;  
+  result := 0;
 end;
 
 initialization
@@ -731,6 +650,5 @@ initialization
 
 finalization
   AudioManager.Remove( singleton_VideoFFMpeg );
-
 
 end.
