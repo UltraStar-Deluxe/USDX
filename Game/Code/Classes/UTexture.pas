@@ -100,7 +100,7 @@ type
     function CreateTexture(var Data: array of byte; Name: string; W, H: word; Bits: byte): TTexture;
     procedure UnloadTexture(Name: string; FromCache: boolean);
     Constructor Create;
-    Destructor Destroy;
+    Destructor Destroy; override;
   end;
 
 var
