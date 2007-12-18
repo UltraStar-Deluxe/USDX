@@ -195,7 +195,7 @@ type
                            keycode:  TProjectMKeycode;
                            modifier: TProjectMModifier);
 
-      destructor Destroy();
+      destructor Destroy(); override;
   end;
 
 implementation
