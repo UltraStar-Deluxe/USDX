@@ -375,37 +375,33 @@ function TAudio_FFMpeg.Length: real;
 var
   bytes: integer;
 begin
-  Result := MusicStream.pFormatCtx^.duration / AV_TIME_BASE;
+  Result := 0;
+  // Todo : why is Music stream always nil !?
+
+  if assigned( MusicStream ) then
+  begin
+    //writeln( 'MusicStream : ' + inttostr( integer( assigned( MusicStream ))) );
+    //writeln( 'MusicStream.pFormatCtx : ' + inttostr( integer( assigned( MusicStream.pFormatCtx ))) );
+    //writeln( 'MusicStream.pFormatCtx^.duration : ' + inttostr( integer( MusicStream.pFormatCtx^.duration )) );
+
+    Result := MusicStream.pFormatCtx^.duration / AV_TIME_BASE;
+  end;
 end;
 
 function TAudio_FFMpeg.getPosition: real;
-var
-  bytes: integer;
 begin
   Result := 0;
-
-(*
-  bytes  := BASS_ChannelGetPosition(BASS);
-  Result := BASS_ChannelBytes2Seconds(BASS, bytes);
-*)
 end;
 
 function TAudio_FFMpeg.Finished: boolean;
 begin
   Result := false;
-
-(*
-  if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then
-  begin
-    Result := true;
-  end;
-*)
 end;
 
 procedure TAudio_FFMpeg.PlayStart;
 begin
   if StartSoundStream <> nil then
-  StartSoundStream.Play();
+    StartSoundStream.Play();
 end;
 
 procedure TAudio_FFMpeg.PlayBack;

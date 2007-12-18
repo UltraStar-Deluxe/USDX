@@ -1519,7 +1519,8 @@ begin
 
   if Length(CatSongs.Song) > 0 then begin
     //Load Music only when Song Preview is activated
-    if (Ini.PreviewVolume <> 0) then
+    if ( Ini.PreviewVolume   <> 0 ) AND
+       ( AudioPlayback.Length > 1 ) then
     begin
       AudioPlayback.SetLoop(false);
       AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
