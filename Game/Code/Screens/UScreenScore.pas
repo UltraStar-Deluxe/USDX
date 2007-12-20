@@ -462,7 +462,7 @@ begin
   end;
 }
 inherited Draw;
-
+  {*
   player[0].ScoreI       := 7000;
   player[0].ScoreLineI   := 2000;
   player[0].ScoreGoldenI := 1000;
@@ -472,7 +472,7 @@ inherited Draw;
   player[1].ScoreLineI   := 1100;
   player[1].ScoreGoldenI :=  900;
   player[1].ScoreTotalI  := 4500;
-
+ *}
 
 // Let's arise the bars
 
