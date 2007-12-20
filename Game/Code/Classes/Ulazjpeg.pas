@@ -19,8 +19,6 @@ unit Ulazjpeg;
 {$mode objfpc}{$H+}
 {$I switches.inc}
 
-{$DEFINE LAZARUS_V0924}
-
 interface
 
 uses
