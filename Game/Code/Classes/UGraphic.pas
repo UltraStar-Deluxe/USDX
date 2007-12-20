@@ -157,8 +157,20 @@ var
   //End PhrasenBonus - Line Bonus Mod
 
   //ScoreBG Texs
-  Tex_ScoreBG: array [0..5] of TTexture;
+  Tex_ScoreBG: array [1..6] of TTexture;
 
+  //Score Screen Textures
+    Tex_Score_NoteBarLevel_Dark     : array [1..6] of TTexture;
+    Tex_Score_NoteBarRound_Dark     : array [1..6] of TTexture;
+
+    Tex_Score_NoteBarLevel_Light    : array [1..6] of TTexture;
+    Tex_Score_NoteBarRound_Light    : array [1..6] of TTexture;
+
+    Tex_Score_NoteBarLevel_Lightest : array [1..6] of TTexture;
+    Tex_Score_NoteBarRound_Lightest : array [1..6] of TTexture;
+
+    Tex_Score_Ratings               : array [0..6] of TTexture;
+    
 const
   Skin_BGColorR = 1;
   Skin_BGColorG = 1;
@@ -348,14 +360,45 @@ begin
       Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'PNG', 'Colorized', Col);
     end;
 
-  //Score BG Textures
+//## backgrounds for the scores ##
   for P := 0 to 5 do begin
     LoadColor(R, G, B, 'P' + IntToStr(P+1) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
     Tex_ScoreBG[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreBG')),  'PNG', 'Colorized', Col);
   end;
 
+
   Log.LogStatus('Loading Textures - D', 'LoadTextures');
+
+// ######################
+// Score screen textures
+// ######################
+
+//## the bars that visualize the score ##
+  for P := 1 to 6 do begin
+//NoteBar ScoreBar
+    LoadColor(R, G, B, 'P' + IntToStr(P) + 'Dark');
+    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+    Tex_Score_NoteBarLevel_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark')),  'PNG', 'Colorized', Col);
+    Tex_Score_NoteBarRound_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark_Round')),  'PNG', 'Colorized', Col);
+//LineBonus ScoreBar
+    LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
+    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+    Tex_Score_NoteBarLevel_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light')),  'PNG', 'Colorized', Col);
+    Tex_Score_NoteBarRound_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light_Round')),  'PNG', 'Colorized', Col);
+//GoldenNotes ScoreBar
+    LoadColor(R, G, B, 'P' + IntToStr(P) + 'Lightest');
+    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
+    Tex_Score_NoteBarLevel_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest')),  'PNG', 'Colorized', Col);
+    Tex_Score_NoteBarRound_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest_Round')),  'PNG', 'Colorized', Col);
+  end;
+
+//## rating pictures that show a picture according to your rate ##
+    for P := 0 to 6 do begin
+    Tex_Score_Ratings[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Rating_'+IntToStr(P))),  'PNG', 'Transparent', 0);
+  end;
+
+  Log.LogStatus('Loading Textures - Done', 'LoadTextures');
 end;
 
 procedure Initialize3D (Title: string);

@@ -343,6 +343,8 @@ type
     StaticBoxLight:       array[1..6] of TThemeStatic;
     StaticBoxDark:        array[1..6] of TThemeStatic;
 
+    StaticRatings:        array[1..6] of TThemeStatic;
+
     StaticBackLevel:        array[1..6] of TThemeStatic;
     StaticBackLevelRound:   array[1..6] of TThemeStatic;
     StaticLevel:            array[1..6] of TThemeStatic;
@@ -1082,6 +1084,8 @@ begin
         ThemeLoadStatic(Score.StaticBackLevelRound[I], 'ScoreStaticBackLevelRound' + IntToStr(I));
         ThemeLoadStatic(Score.StaticLevel[I],          'ScoreStaticLevel'          + IntToStr(I));
         ThemeLoadStatic(Score.StaticLevelRound[I],     'ScoreStaticLevelRound'     + IntToStr(I));
+
+        ThemeLoadStatic(Score.StaticRatings[I],        'ScoreStaticRatingPicture'  + IntToStr(I));
       end;
 
       // Top5
