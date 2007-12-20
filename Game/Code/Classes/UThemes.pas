@@ -807,6 +807,8 @@ begin
 
   create_theme_objects();
   
+  writeln( 'TTheme.LoadTheme : '+ FileName );
+
   FileName := AdaptFilePaths( FileName );
 
   if not FileExists(FileName) then
@@ -828,7 +830,8 @@ begin
     ThemeIni := TMemIniFile.Create(FileName);
     {$ENDIF}
 
-    if ThemeIni.ReadString('Theme', 'Name', '') <> '' then begin
+    if ThemeIni.ReadString('Theme', 'Name', '') <> '' then
+    begin
 
       {Skin.SkinName := ThemeIni.ReadString('Theme', 'Name', 'Singstar');
       Skin.SkinPath := 'Skins\' + Skin.SkinName + '\';

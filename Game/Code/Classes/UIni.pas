@@ -398,11 +398,14 @@ begin
     I := 0;
 
     SetLength(ITheme, 0);
-    FindFirst('Themes' + PathDelim + '*.ini',faAnyFile,SR);
+    writeln( 'Searching for Theme : '+ ThemePath + '*.ini' );
+    FindFirst(ThemePath + '*.ini',faAnyFile,SR);
     Repeat
+      writeln( SR.Name );
+
       //Read Themename from Theme
       ThemeIni := TMemIniFile.Create(SR.Name);
-      Tekst := UpperCase(ThemeIni.ReadString('Theme','Name',GetFileName(SR.Name)));
+      Tekst    := UpperCase(ThemeIni.ReadString('Theme','Name',GetFileName(SR.Name)));
       ThemeIni.Free;
 
       //if Deluxe Theme then save Themeno to I2
@@ -412,8 +415,10 @@ begin
       //Search for Skins for this Theme
       for Pet := low(Skin.Skin) to high(Skin.Skin) do
       begin
+        writeln( 'forloop' );
         if UpperCase(Skin.Skin[Pet].Theme) = Tekst then
         begin
+        writeln( 'match' );
           SetLength(ITheme, Length(ITheme)+1);
           ITheme[High(ITheme)] := GetFileName(SR.Name);
           break;

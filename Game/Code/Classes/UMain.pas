@@ -86,11 +86,16 @@ var
   SongPath:         string;
   LogPath:          string;
   ThemePath:        string;
+  SkinsPath:        string;
   ScreenshotsPath:  string;
   CoversPath:       string;
   LanguagesPath:    string;
   PluginPath:       string;
   PlayListPath:     string;
+
+  UserSongPath:     string = '';
+  UserCoversPath:   string = '';
+  UserPlaylistPath: string = '';
 
   OGL:      Boolean;
   Done:     Boolean;
@@ -246,7 +251,7 @@ begin
     // Theme
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Themes', 'Initialization');
-    Theme := TTheme.Create('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
+    Theme := TTheme.Create(ThemePath + ITheme[Ini.Theme] + '.ini', Ini.Color);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Themes', 1);
 
@@ -1023,17 +1028,24 @@ procedure InitializePaths;
 
 begin
 
-  GamePath := Platform.GetGamePath;
+  initialize_path( LogPath         , Platform.GetLogPath                             );
+  initialize_path( SoundPath       , Platform.GetGameSharedPath + 'Sounds'      + PathDelim );
+  initialize_path( ThemePath       , Platform.GetGameSharedPath + 'Themes'      + PathDelim );
+  initialize_path( SkinsPath       , Platform.GetGameSharedPath + 'Skins'      + PathDelim );
+  initialize_path( LanguagesPath   , Platform.GetGameSharedPath + 'Languages'   + PathDelim );
+  initialize_path( PluginPath      , Platform.GetGameSharedPath + 'Plugins'     + PathDelim );
 
-  initialize_path( LogPath         , GamePath                             );
-  initialize_path( SoundPath       , GamePath + 'Sounds'      + PathDelim );
-  initialize_path( SongPath        , GamePath + 'Songs'       + PathDelim );
-  initialize_path( ThemePath       , GamePath + 'Themes'      + PathDelim );
-  initialize_path( ScreenshotsPath , GamePath + 'Screenshots' + PathDelim );
-  initialize_path( CoversPath      , GamePath + 'Covers'      + PathDelim );
-  initialize_path( LanguagesPath   , GamePath + 'Languages'   + PathDelim );
-  initialize_path( PluginPath      , GamePath + 'Plugins'     + PathDelim );
-  initialize_path( PlaylistPath    , GamePath + 'Playlists'   + PathDelim );
+  initialize_path( ScreenshotsPath , Platform.GetGameUserPath + 'Screenshots' + PathDelim );
+
+  // Users Song Path ....
+  initialize_path( UserSongPath        , Platform.GetGameUserPath + 'Songs'       + PathDelim );
+  initialize_path( UserCoversPath      , Platform.GetGameUserPath + 'Covers'      + PathDelim );
+  initialize_path( UserPlaylistPath    , Platform.GetGameUserPath + 'Playlists'   + PathDelim );
+
+  // Shared Song Path ....
+  initialize_path( SongPath        , Platform.GetGameSharedPath + 'Songs'       + PathDelim );
+  initialize_path( CoversPath      , Platform.GetGameSharedPath + 'Covers'      + PathDelim );
+  initialize_path( PlaylistPath    , Platform.GetGameSharedPath + 'Playlists'   + PathDelim );
 
   DecimalSeparator := ',';
 end;

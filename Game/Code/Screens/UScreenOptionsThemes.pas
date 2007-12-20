@@ -28,7 +28,9 @@ type
 
 implementation
 
-uses UGraphic, USkins;
+uses UMain,
+     UGraphic,
+     USkins;
 
 function TScreenOptionsThemes.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -147,7 +149,7 @@ end;
 
 procedure TScreenOptionsThemes.ReloadTheme;
 begin
-  Theme.LoadTheme('Themes\' + ITheme[Ini.Theme] + '.ini', Ini.Color);
+  Theme.LoadTheme(ThemePath + ITheme[Ini.Theme] + '.ini', Ini.Color);
 
   ScreenOptionsThemes := TScreenOptionsThemes.create();
   ScreenOptionsThemes.onshow;

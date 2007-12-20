@@ -265,7 +265,10 @@ begin
     BrowsePos := 0;
     // browse directories
     BrowseDir(SongPath);
-
+    
+    if UserSongPath <> SongPath then
+      BrowseDir(UserSongPath);
+      
     //Set Correct SongArray Length
     SetLength(Song, BrowsePos);
 
@@ -306,6 +309,7 @@ var
   i : Integer;
   Files : TDirectoryEntryArray;
 begin
+
 	  Files := Platform.DirectoryFindFiles( Dir, '.txt', true);
 		for i := 0 to Length(Files)-1 do
 		begin
@@ -318,7 +322,8 @@ begin
 				SLen := BrowsePos;
 
 				Song[SLen].Path     := Dir;
-				Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
+//				Song[SLen].Folder   := Copy(Dir, Length(SongPath)+1, 10000);
+				Song[SLen].Folder   := Copy(Dir, Length(Dir)+1, 10000);
 				Song[SLen].Folder   := Copy(Song[SLen].Folder, 1, Pos( PathDelim , Song[SLen].Folder)-1);
 				Song[SLen].FileName := Files[i].Name;
 

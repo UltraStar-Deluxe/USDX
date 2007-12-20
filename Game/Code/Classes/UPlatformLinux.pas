@@ -13,13 +13,20 @@ uses Classes, UPlatform;
 type
 
   TPlatformLinux = class(TPlatform)
+    function get_homedir(): string;
   public
     Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
+    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean; override;
+    
+    function GetLogPath        : WideString; override;
+    function GetGameSharedPath : WideString; override;
+    function GetGameUserPath   : WideString; override;
   end;
 
 implementation
 
 uses 
+  libc,
 {$IFNDEF FPC_V220}
   oldlinux,
 {$ELSE}
@@ -112,5 +119,36 @@ begin
   oldlinux.CloseDir(TheDir);
 end;
 {$ENDIF}
+
+
+function TPlatformLinux.GetLogPath        : WideString;
+begin
+  result := '/var/log/UltraStarDeluxe/';
+end;
+
+function TPlatformLinux.GetGameSharedPath : WideString;
+begin
+  result := '/usr/share/UltraStarDeluxe/';
+end;
+
+function TPlatformLinux.GetGameUserPath   : WideString;
+begin
+  result := get_homedir()+'/.UltraStarDeluxe/';
+end;
+
+function TPlatformLinux.get_homedir(): string;
+var
+  pPasswdEntry : Ppasswd;
+  lUserName    : String;
+begin
+  pPasswdEntry := getpwuid( getuid() );
+  result       := pPasswdEntry^.pw_dir;
+end;
+
+function TPlatformLinux.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+begin
+  // Linux and Mac don't check for running apps at the moment
+  Result := false;
+end;
 
 end.

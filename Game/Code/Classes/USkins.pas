@@ -42,7 +42,12 @@ var
 
 implementation
 
-uses IniFiles, Classes, SysUtils, ULog, UIni;
+uses IniFiles,
+     Classes,
+     SysUtils,
+     UMain,
+     ULog,
+     UIni;
 
 constructor TSkin.Create;
 begin
@@ -54,13 +59,11 @@ end;
 procedure TSkin.LoadList;
 var
   SR:     TSearchRec;
-//  SR2:    TSearchRec;
-//  SLen:   integer;
 begin
-  if FindFirst('Skins'+PathDelim+'*', faDirectory, SR) = 0 then begin
+  if FindFirst(SkinsPath+'*', faDirectory, SR) = 0 then begin
     repeat
       if (SR.Name <> '.') and (SR.Name <> '..') then
-        ParseDir('Skins'+PathDelim + SR.Name + PathDelim);
+        ParseDir(SkinsPath + SR.Name + PathDelim);
     until FindNext(SR) <> 0;
   end; // if
   FindClose(SR);
@@ -69,13 +72,13 @@ end;
 procedure TSkin.ParseDir(Dir: string);
 var
   SR:     TSearchRec;
-//  SLen:   integer;
 begin
   if FindFirst(Dir + '*.ini', faAnyFile, SR) = 0 then begin
     repeat
+
       if (SR.Name <> '.') and (SR.Name <> '..') then
         LoadHeader(Dir + SR.Name);
-        //Log.LogError(SR.Name);
+        
     until FindNext(SR) <> 0;
   end;
 end;
@@ -89,11 +92,12 @@ begin
 
   S := Length(Skin);
   SetLength(Skin, S+1);
-  Skin[S].Path := IncludeTrailingBackslash(ExtractFileDir(FileName));
+  
+  Skin[S].Path     := IncludeTrailingBackslash(ExtractFileDir(FileName));
   Skin[S].FileName := ExtractFileName(FileName);
-  Skin[S].Theme :=    SkinIni.ReadString('Skin', 'Theme', '');
-  Skin[S].Name :=     SkinIni.ReadString('Skin', 'Name', '');
-  Skin[S].Creator :=  SkinIni.ReadString('Skin', 'Creator', '');
+  Skin[S].Theme    := SkinIni.ReadString('Skin', 'Theme', '');
+  Skin[S].Name     := SkinIni.ReadString('Skin', 'Name', '');
+  Skin[S].Creator  := SkinIni.ReadString('Skin', 'Creator', '');
 
   SkinIni.Free;
 end;
@@ -105,17 +109,18 @@ var
   T:          integer;
   S:          integer;
 begin
-  S := GetSkinNumber(Name);
+  S        := GetSkinNumber(Name);
   SkinPath := Skin[S].Path;
 
-  SkinIni := TMemIniFile.Create(SkinPath + Skin[S].FileName);
+  SkinIni  := TMemIniFile.Create(SkinPath + Skin[S].FileName);
 
   SL := TStringList.Create;
   SkinIni.ReadSection('Textures', SL);
 
   SetLength(SkinTexture, SL.Count);
-  for T := 0 to SL.Count-1 do begin
-    SkinTexture[T].Name := SL.Strings[T];
+  for T := 0 to SL.Count-1 do
+  begin
+    SkinTexture[T].Name     := SL.Strings[T];
     SkinTexture[T].FileName := SkinIni.ReadString('Textures', SL.Strings[T], '');
   end;
 
