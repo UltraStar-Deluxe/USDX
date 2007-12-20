@@ -277,10 +277,6 @@ begin
   //Button Collections are Created when the first ChildButton is Created
   PrepareButtonCollections(ThemeBasic.ButtonCollection);
 
-  {$ifdef fpc}
-  writeln(' TMenu.LoadFromThem : '+ThemeBasic.Background.Tex );
-  {$endif}
-
   //Add Background
   AddBackground(ThemeBasic.Background.Tex);
 
@@ -298,23 +294,12 @@ var
 begin
   if Name <> '' then
   begin
-//    BackImg := Texture.LoadTexture(false, PChar(Skin.SkinPath + FileName), 'JPG', 'Plain', 0); // new theme system
     lFileName := Skin.GetTextureFileName(Name);
     lFileName := AdaptFilePaths( lFileName );
 
-    {$ifdef fpc}
-    writeln(' TMenu.AddBackground : '+Name+ ' - '+ lFileName );
-    {$endif}
-    
-//    if lFileName <> '' then
     if fileexists( lFileName ) then
     begin
       BackImg   := Texture.GetTexture( lFileName , 'Plain');
-
-      {$ifdef fpc}
-      writeln(' TMenu.AddBackground : '+ lFileName +' - LOADED');
-      {$endif}
-
 
       BackImg.W := 800;
       BackImg.H := 600;

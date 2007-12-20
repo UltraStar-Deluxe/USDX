@@ -189,8 +189,6 @@ begin
       FileErrorO := false;
     end;
   end;
-  {$DEFINE DEBUG} //How can i check if this is set in *.dpr file o0
-  //If Debug => Write to Console Output
   {$IFDEF DEBUG}
   WriteLn('Error: ' + Text);
   {$ENDIF}
@@ -230,7 +228,7 @@ begin
 
   //If Debug => Write to Console Output
   {$IFDEF DEBUG}
-  WriteLn(Log2 + ': ' + Log1);
+//   WriteLn(Log2 + ': ' + Log1);
   {$ENDIF}
 end;
 

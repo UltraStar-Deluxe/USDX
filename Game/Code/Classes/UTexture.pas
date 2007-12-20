@@ -1,6 +1,6 @@
 unit UTexture;
 // added for easier debug disabling
-{$define blindydebug}
+{$undefine blindydebug}
 
 // Plain (alpha = 1)
 // Transparent

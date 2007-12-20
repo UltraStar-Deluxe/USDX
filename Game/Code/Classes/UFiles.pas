@@ -128,8 +128,6 @@ begin
       Identifier  := Uppercase(Trim(Copy(Line, 2, Temp - 2))); //Uppercase is for Case Insensitive Checks
       Value       := Trim(Copy(Line, Temp + 1,Length(Line) - Temp));
 
-      Log.LogError('Identifier: '+Identifier+' - '+ Value );
-
       //Check the Identifier (If Value is given)
       if (Length(Value) <> 0) then
       begin
@@ -331,8 +329,6 @@ Result := False;
 {try }
   //Reset LineNo
   FileLineNo := 0;
-
-  writeln( 'Assign File : ' + Song.Path + Song.FileName );
 
   //Open File and set File Pointer to the beginning
   AssignFile(SongFile, Song.Path + Song.FileName);
