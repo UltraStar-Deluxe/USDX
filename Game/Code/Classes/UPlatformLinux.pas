@@ -27,6 +27,7 @@ implementation
 
 uses 
   libc,
+  uCommandLine,
 {$IFNDEF FPC_V220}
   oldlinux,
 {$ELSE}
@@ -123,17 +124,26 @@ end;
 
 function TPlatformLinux.GetLogPath        : WideString;
 begin
-  result := '/var/log/UltraStarDeluxe/';
+  if FindCmdLineSwitch( cUseLocalPaths ) then
+    result := inherited
+  else
+    result := '/var/log/UltraStarDeluxe/';
 end;
 
 function TPlatformLinux.GetGameSharedPath : WideString;
 begin
-  result := '/usr/share/UltraStarDeluxe/';
+  if FindCmdLineSwitch( cUseLocalPaths ) then
+    result := inherited
+  else
+    result := '/usr/share/UltraStarDeluxe/';
 end;
 
 function TPlatformLinux.GetGameUserPath   : WideString;
 begin
-  result := get_homedir()+'/.UltraStarDeluxe/';
+  if FindCmdLineSwitch( cUseLocalPaths ) then
+    result := inherited
+  else
+    result := get_homedir()+'/.UltraStarDeluxe/';
 end;
 
 function TPlatformLinux.get_homedir(): string;

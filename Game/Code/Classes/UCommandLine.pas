@@ -56,6 +56,7 @@ var
 const
   cHelp            = 'help';
   cMediaInterfaces = 'showinterfaces';
+  cUseLocalPaths   = 'localpaths';
 
 
 implementation
@@ -93,7 +94,9 @@ begin
   writeln( '' );
   writeln( '  '+s( 'Switch' ) +' : Purpose' );
   writeln( '  ----------------------------------------------------------' );
-  writeln( '  '+s( cMediaInterfaces ) + ' : Show in-use media interfaces' );
+  writeln( '  '+s( cMediaInterfaces ) + #9 + ' : Show in-use media interfaces' );
+  writeln( '  '+s( cUseLocalPaths ) + #9 + ' : Use relative paths' );
+
   writeln( '' );
 
   halt;
