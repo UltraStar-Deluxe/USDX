@@ -629,10 +629,15 @@ begin
         end;
   end;
 
-    fu := PlayerNumber + ArrayStartModifier;
+    fu := PlayerNumber + ArrayStartModifier;
 
 //todo: this could break if the width is not given, for instance when there's a skin with no picture for ratings
-    Text[TextScore[PlayerNumber + ArrayStartModifier]].Alpha := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / aPlayerScoreScreenRatings[PlayerNumber].RatePic_Width;
+    if ( aPlayerScoreScreenRatings[PlayerNumber].RatePic_Width > 0 ) AND   // JB :)
+       ( aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue > 0 ) then
+    begin
+      Text[TextScore[PlayerNumber + ArrayStartModifier]].Alpha := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / aPlayerScoreScreenRatings[PlayerNumber].RatePic_Width;
+    end;
+    
 // end todo
        {{$IFDEF TRANSLATE}
        case (Player[PlayerNumber-1].ScoreTotalI) of
@@ -728,7 +733,11 @@ begin
 	if (RaiseStep = 0)
    then ReturnValue := MaxVal;
 
-  RaiseStep := RaiseStep / MaxVal;
+  if ( MaxVal    > 0 ) AND  // JB :)
+     ( RaiseStep > 0 ) then
+  begin
+    RaiseStep := RaiseStep / MaxVal;
+  end;
 
   if (RaiseStep = 1)
     then
