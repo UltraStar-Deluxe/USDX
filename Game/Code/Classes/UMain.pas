@@ -448,7 +448,7 @@ Begin
       SDL_KEYDOWN:
         begin
           //ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
-          if (Event.key.keysym.sym = SDLK_SYSREQ) then
+          if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
             Display.ScreenShot
 
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
