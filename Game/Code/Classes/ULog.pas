@@ -163,7 +163,7 @@ end;
 procedure TLog.LogError(Text: string);
 begin
   if Enabled AND (not FileErrorO) then begin
-    FileErrorO := true;
+    //FileErrorO := true;
     AssignFile(FileError, LogPath + 'Error.log');
     {$I-}
     Rewrite(FileError);
