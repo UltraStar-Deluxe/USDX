@@ -376,6 +376,8 @@ begin
 
   //A little Test
   Hooks.AddSubscriber('Core/NewError', HookTest);
+
+  result := true;
 end;
 
 //-------------
@@ -384,6 +386,7 @@ end;
 Function TCore.InitCore: Boolean;
 begin
   //Dont Init s.th. atm.
+  result := true;
 end;
 
 //-------------
