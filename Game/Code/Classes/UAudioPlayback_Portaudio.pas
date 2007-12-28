@@ -46,9 +46,12 @@ type
       function GetLength(): real;           override;
       function GetStatus(): TStreamStatus;  override;
 
-      function ReadData(Buffer: PChar; BufSize: integer): integer;
-
       function IsLoaded(): boolean;
+
+      // functions delegated to the decode stream
+      function GetPosition: real;
+      procedure SetPosition(Time: real);
+      function ReadData(Buffer: PChar; BufSize: integer): integer;
   end;
 
 type
@@ -267,6 +270,16 @@ begin
   begin
     status := sStopped;
   end;
+end;
+
+function TPortaudioPlaybackStream.GetPosition: real;
+begin
+  result := decodeStream.Position;
+end;
+
+procedure TPortaudioPlaybackStream.SetPosition(Time: real);
+begin
+  decodeStream.Position := Time;
 end;
 
 
