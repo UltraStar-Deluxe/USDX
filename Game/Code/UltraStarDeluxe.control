@@ -5,5 +5,5 @@ Installed-Size: 45
 Maintainer: Jay Binks <jaybinks@gmail.com>
 Architecture: i386
 Version: 1.1.1
-Depends: libc6 (>= 2.1), libavcodec, libavformat, libsqlite3, libsdl-ttf2.0, libsdl-image1.2, portaudio19
+Depends: libc6 (>= 2.1), libsdl1.2debian-alsa, libportaudio2, libavcodec0d, libavformat0d, libsqlite3-0, libsdl-ttf2.0-0,  libsdl-image1.2
 Description: Ultrastar is a Karaoke game for the pc, similar to SingStar
