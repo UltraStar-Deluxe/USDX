@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## 
 # Creates an .lrs resource-file.

@@ -64,6 +64,6 @@ clean_obj:
 clean_res:
 	rm -f UltraStar.lrs link.res
 UltraStar.lrs: UltraStar.rc
-	sh lazres-UltraStar.sh
+	./lazres-UltraStar.sh
 
 .PHONY: all resource ultrastar install clean distclean clean_obj clean_res
