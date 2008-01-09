@@ -153,7 +153,12 @@ begin
   PQueueLine:=@QueueLine;
 
   UseLinearFilter := True;
+	{$IFDEF DARWIN}
+	// eddie: Getting range check error with NAN on OS X:
+  LastDrawBeat:=0;
+	{$ELSE}
   LastDrawBeat:=NAN;
+	{$ENDIF}
 end;
 
 Constructor TLyricEngine.Create(ULX,ULY,ULW,ULS,LLX,LLY,LLW,LLS:Real);
@@ -197,7 +202,12 @@ begin
   PUpperline:=@UpperLine;
   PLowerLine:=@LowerLine;
   PQueueLine:=@QueueLine;
+	{$IFDEF DARWIN}
+	// eddie: Getting range check error with NAN on OS X:
+  LastDrawBeat:=0;
+	{$ELSE}
   LastDrawBeat:=NAN;
+	{$ENDIF}
 end;
 
 
