@@ -7,9 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C4B70230CF7581000B0F0BD /* Until5000.dpr in Sources */ = {isa = PBXBuildFile; fileRef = 2C4B70220CF757A400B0F0BD /* Until5000.dpr */; };
+		2C4B70240CF7584500B0F0BD /* ModiSDK.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5508B0CDA22B000627463 /* ModiSDK.pas */; };
 		2C4D9C8F0CC9EC8C0031092D /* TextGL.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C620CC9EC8C0031092D /* TextGL.pas */; };
 		2C4D9C900CC9EC8C0031092D /* UAudio_bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C630CC9EC8C0031092D /* UAudio_bass.pas */; };
-		2C4D9C910CC9EC8C0031092D /* UAudio_FFMpeg.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C640CC9EC8C0031092D /* UAudio_FFMpeg.pas */; };
 		2C4D9C920CC9EC8C0031092D /* UCatCovers.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */; };
 		2C4D9C930CC9EC8C0031092D /* UCommandLine.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */; };
 		2C4D9C940CC9EC8C0031092D /* UCommon.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C670CC9EC8C0031092D /* UCommon.pas */; };
@@ -52,7 +53,6 @@
 		2C4D9CBB0CC9EC8C0031092D /* UVideo.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8E0CC9EC8C0031092D /* UVideo.pas */; };
 		2C4D9CBC0CC9EC8C0031092D /* TextGL.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C620CC9EC8C0031092D /* TextGL.pas */; };
 		2C4D9CBD0CC9EC8C0031092D /* UAudio_bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C630CC9EC8C0031092D /* UAudio_bass.pas */; };
-		2C4D9CBE0CC9EC8C0031092D /* UAudio_FFMpeg.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C640CC9EC8C0031092D /* UAudio_FFMpeg.pas */; };
 		2C4D9CBF0CC9EC8C0031092D /* UCatCovers.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */; };
 		2C4D9CC00CC9EC8C0031092D /* UCommandLine.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */; };
 		2C4D9CC10CC9EC8C0031092D /* UCommon.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C670CC9EC8C0031092D /* UCommon.pas */; };
@@ -126,9 +126,7 @@
 		2C4D9DED0CC9EF0A0031092D /* sdl_image.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */; };
 		2C4D9DEE0CC9EF0A0031092D /* sdl_image.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */; };
 		2C4D9DF10CC9EF210031092D /* sdl_ttf.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */; };
-		2C4D9DF20CC9EF210031092D /* sdltruetypefont.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */; };
 		2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */; };
-		2C4D9DF40CC9EF210031092D /* sdltruetypefont.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */; };
 		2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
 		2C4D9E150CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
 		2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
@@ -136,6 +134,9 @@
 		2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
 		2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
 		2C4FA2A80CDBAD1E002CC3B0 /* ustar-icon_v01.icns in Resources */ = {isa = PBXBuildFile; fileRef = 2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */; };
+		2C5663EF0D35645700D4FF53 /* portaudio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C5663EE0D35645700D4FF53 /* portaudio.pas */; };
+		2C5663F00D35645700D4FF53 /* portaudio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C5663EE0D35645700D4FF53 /* portaudio.pas */; };
+		2C56642C0D35683200D4FF53 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C56642B0D35683200D4FF53 /* SDLMain.m */; };
 		2C89372A0CE393FB005D8A87 /* UPlatform.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C8937290CE393FB005D8A87 /* UPlatform.pas */; };
 		2C89372B0CE393FB005D8A87 /* UPlatform.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C8937290CE393FB005D8A87 /* UPlatform.pas */; };
 		2C8937340CE395CE005D8A87 /* UPlatformMacOSX.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C8937310CE395CE005D8A87 /* UPlatformMacOSX.pas */; };
@@ -147,6 +148,12 @@
 		2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
 		2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CDEA4F60CBD725B0096994C /* OpenGL.framework */; };
 		2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
+		2CE907930D1BC8A800A1FDFF /* libavcodec.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */; };
+		2CE907940D1BC8A800A1FDFF /* libavformat.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907910D1BC8A800A1FDFF /* libavformat.dylib */; };
+		2CE907950D1BC8A800A1FDFF /* libavutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907920D1BC8A800A1FDFF /* libavutil.dylib */; };
+		2CE907980D1BC90A00A1FDFF /* libavcodec.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */; };
+		2CE907990D1BC91D00A1FDFF /* libavformat.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CE907910D1BC8A800A1FDFF /* libavformat.dylib */; };
+		2CE9079A0D1BC91D00A1FDFF /* libavutil.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CE907920D1BC8A800A1FDFF /* libavutil.dylib */; };
 		2CEA2AE00CE385190097A5FF /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADE0CE385190097A5FF /* Graphics.pas */; };
 		2CEA2AE10CE385190097A5FF /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADF0CE385190097A5FF /* JPEG.pas */; };
 		2CEA2AE20CE385190097A5FF /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADE0CE385190097A5FF /* Graphics.pas */; };
@@ -246,10 +253,6 @@
 		2CF552B30CDA42C900627463 /* avutil.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A10CDA42C900627463 /* avutil.pas */; };
 		2CF552B60CDA42C900627463 /* opt.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A40CDA42C900627463 /* opt.pas */; };
 		2CF552B70CDA42C900627463 /* rational.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A50CDA42C900627463 /* rational.pas */; };
-		2CF552C30CDA4B7B00627463 /* libavcodec.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */; };
-		2CF552C40CDA4B7B00627463 /* libavformat.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552C00CDA4B7B00627463 /* libavformat.dylib */; };
-		2CF552C50CDA4B7B00627463 /* libavutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552C10CDA4B7B00627463 /* libavutil.dylib */; };
-		2CF552C60CDA4B7B00627463 /* libmp3lame.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */; };
 		2CF553080CDA51B500627463 /* sdlutils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF553070CDA51B500627463 /* sdlutils.pas */; };
 		2CF553090CDA51B500627463 /* sdlutils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF553070CDA51B500627463 /* sdlutils.pas */; };
 		2CF553100CDA52D100627463 /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D980CC9EE0B0031092D /* SDL_image.framework */; };
@@ -257,17 +260,12 @@
 		2CF5533E0CDA530300627463 /* libbass.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9CE90CC9ECB50031092D /* libbass.dylib */; };
 		2CF5533F0CDA531100627463 /* libfreeimage.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */; };
 		2CF553400CDA531100627463 /* libsqlite3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF5512C0CDA29C600627463 /* libsqlite3.dylib */; };
-		2CF553410CDA531100627463 /* libavcodec.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */; };
-		2CF553420CDA531100627463 /* libavformat.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C00CDA4B7B00627463 /* libavformat.dylib */; };
-		2CF553430CDA531100627463 /* libavutil.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C10CDA4B7B00627463 /* libavutil.dylib */; };
-		2CF553440CDA531100627463 /* libmp3lame.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */; };
 		2CF8E6BE0CDFA8E80053A996 /* UPartyDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */; };
 		2CF8E6BF0CDFA8E80053A996 /* UPartyDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */; };
 		98B8BE340B1F947800162019 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE330B1F947800162019 /* AppKit.framework */; };
 		98B8BE390B1F949C00162019 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE370B1F949C00162019 /* Cocoa.framework */; };
 		98B8BE3A0B1F949C00162019 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE380B1F949C00162019 /* Foundation.framework */; };
 		98B8BE580B1F972400162019 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
-		98B8BE760B1F97F800162019 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 98B8BE750B1F97F800162019 /* SDLMain.m */; };
 		DD37F23D0A60252800975B2D /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
 		DD37F2C70A6037EA00975B2D /* libfpcrtl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DD37F2430A60255800975B2D /* libfpcrtl.a */; };
 		DDC689B509F57C69004E4BFF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DDC689B309F57C69004E4BFF /* InfoPlist.strings */; };
@@ -342,12 +340,11 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
+				2CE907990D1BC91D00A1FDFF /* libavformat.dylib in CopyFiles */,
+				2CE9079A0D1BC91D00A1FDFF /* libavutil.dylib in CopyFiles */,
+				2CE907980D1BC90A00A1FDFF /* libavcodec.dylib in CopyFiles */,
 				2CF5533F0CDA531100627463 /* libfreeimage.dylib in CopyFiles */,
 				2CF553400CDA531100627463 /* libsqlite3.dylib in CopyFiles */,
-				2CF553410CDA531100627463 /* libavcodec.dylib in CopyFiles */,
-				2CF553420CDA531100627463 /* libavformat.dylib in CopyFiles */,
-				2CF553430CDA531100627463 /* libavutil.dylib in CopyFiles */,
-				2CF553440CDA531100627463 /* libmp3lame.dylib in CopyFiles */,
 				2CF5533E0CDA530300627463 /* libbass.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -367,9 +364,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2C4B70220CF757A400B0F0BD /* Until5000.dpr */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = Until5000.dpr; path = ../../../Modis/5000Points/Until5000.dpr; sourceTree = SOURCE_ROOT; };
 		2C4D9C620CC9EC8C0031092D /* TextGL.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = TextGL.pas; path = ../Classes/TextGL.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C630CC9EC8C0031092D /* UAudio_bass.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UAudio_bass.pas; path = ../Classes/UAudio_bass.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
-		2C4D9C640CC9EC8C0031092D /* UAudio_FFMpeg.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UAudio_FFMpeg.pas; path = ../Classes/UAudio_FFMpeg.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCatCovers.pas; path = ../Classes/UCatCovers.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCommandLine.pas; path = ../Classes/UCommandLine.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C670CC9EC8C0031092D /* UCommon.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCommon.pas; path = ../Classes/UCommon.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
@@ -429,15 +426,20 @@
 		2C4D9DD50CC9EE6F0031092D /* UMenuText.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuText.pas; path = ../Menu/UMenuText.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl_image.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_image/sdl_image.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
 		2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl_ttf.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_ttf/sdl_ttf.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
-		2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdltruetypefont.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_ttf/sdltruetypefont.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
 		2C4D9E040CC9EF840031092D /* OpenGL12.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = OpenGL12.pas; path = Wrapper/OpenGL12.pas; sourceTree = "<group>"; tabWidth = 2; };
 		2C4D9E090CC9EF840031092D /* Windows.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = Windows.pas; path = Wrapper/Windows.pas; sourceTree = "<group>"; tabWidth = 2; };
 		2C4D9E440CC9F0ED0031092D /* switches.inc */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = switches.inc; path = ../switches.inc; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "ustar-icon_v01.icns"; path = "../../Graphics/ustar-icon_v01.icns"; sourceTree = SOURCE_ROOT; };
+		2C5663EE0D35645700D4FF53 /* portaudio.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = portaudio.pas; path = ../lib/portaudio/delphi/portaudio.pas; sourceTree = SOURCE_ROOT; };
+		2C56642B0D35683200D4FF53 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = SDLMain.m; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/SDLMain.m"; sourceTree = "<absolute>"; };
+		2C56642F0D35688200D4FF53 /* SDL.h */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.h; name = SDL.h; path = /Library/Frameworks/SDL.framework/Versions/A/Headers/SDL.h; sourceTree = "<absolute>"; };
 		2C8937290CE393FB005D8A87 /* UPlatform.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPlatform.pas; path = ../Classes/UPlatform.pas; sourceTree = SOURCE_ROOT; };
 		2C8937310CE395CE005D8A87 /* UPlatformMacOSX.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; lineEnding = 0; name = UPlatformMacOSX.pas; path = ../Classes/UPlatformMacOSX.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CDC716B0CDB9CB70018F966 /* StrUtils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = StrUtils.pas; path = ../../../Modis/SDK/StrUtils.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = ../lib/ffmpeg/libavcodec.dylib; sourceTree = SOURCE_ROOT; };
+		2CE907910D1BC8A800A1FDFF /* libavformat.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.dylib; path = ../lib/ffmpeg/libavformat.dylib; sourceTree = SOURCE_ROOT; };
+		2CE907920D1BC8A800A1FDFF /* libavutil.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.dylib; path = ../lib/ffmpeg/libavutil.dylib; sourceTree = SOURCE_ROOT; };
 		2CEA2ADE0CE385190097A5FF /* Graphics.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Graphics.pas; path = Wrapper/Graphics.pas; sourceTree = "<group>"; };
 		2CEA2ADF0CE385190097A5FF /* JPEG.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = JPEG.pas; path = Wrapper/JPEG.pas; sourceTree = "<group>"; };
 		2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = PseudoThread.pas; path = Wrapper/PseudoThread.pas; sourceTree = "<group>"; };
@@ -489,19 +491,14 @@
 		2CF552A10CDA42C900627463 /* avutil.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = avutil.pas; path = ../lib/ffmpeg/avutil.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CF552A40CDA42C900627463 /* opt.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = opt.pas; path = ../lib/ffmpeg/opt.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CF552A50CDA42C900627463 /* rational.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = rational.pas; path = ../lib/ffmpeg/rational.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
-		2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = ../lib/ffmpeg/libavcodec.dylib; sourceTree = SOURCE_ROOT; };
-		2CF552C00CDA4B7B00627463 /* libavformat.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.dylib; path = ../lib/ffmpeg/libavformat.dylib; sourceTree = SOURCE_ROOT; };
-		2CF552C10CDA4B7B00627463 /* libavutil.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.dylib; path = ../lib/ffmpeg/libavutil.dylib; sourceTree = SOURCE_ROOT; };
-		2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmp3lame.dylib; path = ../lib/ffmpeg/libmp3lame.dylib; sourceTree = SOURCE_ROOT; };
 		2CF553070CDA51B500627463 /* sdlutils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdlutils.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdlutils.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
+		2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libUntil5000.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UPartyDefs.pas; path = ../../../Modis/SDK/UPartyDefs.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
-		9845B6590B1F9B9E0084DD62 /* SDL.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SDL.h; path = /Library/Frameworks/SDL.framework/Versions/A/Headers/SDL.h; sourceTree = "<absolute>"; };
 		98B8BE330B1F947800162019 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		98B8BE370B1F949C00162019 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		98B8BE380B1F949C00162019 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		98B8BE570B1F972400162019 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
 		98B8BE5C0B1F974F00162019 /* sdl.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdl.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
-		98B8BE750B1F97F800162019 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = SDLMain.m; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/SDLMain.m"; sourceTree = "<absolute>"; };
 		DD37F2430A60255800975B2D /* libfpcrtl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libfpcrtl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC6851B09F57195004E4BFF /* UltraStarDX.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; path = UltraStarDX.pas; sourceTree = "<group>"; tabWidth = 2; };
 		DDC6868B09F571C2004E4BFF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -512,6 +509,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2CF77DB40CF7556C00F3B101 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDC688C609F574E9004E4BFF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -527,10 +531,9 @@
 				2C4D9D9A0CC9EE0B0031092D /* SDL_image.framework in Frameworks */,
 				2C4D9D9B0CC9EE0B0031092D /* SDL_ttf.framework in Frameworks */,
 				2CF5512D0CDA29C600627463 /* libsqlite3.dylib in Frameworks */,
-				2CF552C30CDA4B7B00627463 /* libavcodec.dylib in Frameworks */,
-				2CF552C40CDA4B7B00627463 /* libavformat.dylib in Frameworks */,
-				2CF552C50CDA4B7B00627463 /* libavutil.dylib in Frameworks */,
-				2CF552C60CDA4B7B00627463 /* libmp3lame.dylib in Frameworks */,
+				2CE907930D1BC8A800A1FDFF /* libavcodec.dylib in Frameworks */,
+				2CE907940D1BC8A800A1FDFF /* libavformat.dylib in Frameworks */,
+				2CE907950D1BC8A800A1FDFF /* libavutil.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,12 +543,11 @@
 		2C4D9DEB0CC9EECC0031092D /* SDL */ = {
 			isa = PBXGroup;
 			children = (
+				2C56642F0D35688200D4FF53 /* SDL.h */,
+				2C56642B0D35683200D4FF53 /* SDLMain.m */,
 				2CF553070CDA51B500627463 /* sdlutils.pas */,
 				2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */,
-				2C4D9DF00CC9EF210031092D /* sdltruetypefont.pas */,
 				2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */,
-				9845B6590B1F9B9E0084DD62 /* SDL.h */,
-				98B8BE750B1F97F800162019 /* SDLMain.m */,
 				98B8BE5C0B1F974F00162019 /* sdl.pas */,
 			);
 			name = SDL;
@@ -565,6 +567,14 @@
 			name = Wrapper;
 			sourceTree = "<group>";
 		};
+		2C5663EC0D35642E00D4FF53 /* portaudio */ = {
+			isa = PBXGroup;
+			children = (
+				2C5663EE0D35645700D4FF53 /* portaudio.pas */,
+			);
+			name = portaudio;
+			sourceTree = "<group>";
+		};
 		2CDD43820CBBE8D400F364DE /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -572,7 +582,6 @@
 				2C8937290CE393FB005D8A87 /* UPlatform.pas */,
 				2C4D9C620CC9EC8C0031092D /* TextGL.pas */,
 				2C4D9C630CC9EC8C0031092D /* UAudio_bass.pas */,
-				2C4D9C640CC9EC8C0031092D /* UAudio_FFMpeg.pas */,
 				2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */,
 				2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */,
 				2C4D9C670CC9EC8C0031092D /* UCommon.pas */,
@@ -714,6 +723,7 @@
 			isa = PBXGroup;
 			children = (
 				2CE8C7CE0CBAA47D00E4D835 /* BASS */,
+				2C5663EC0D35642E00D4FF53 /* portaudio */,
 				2CF5529C0CDA428000627463 /* ffmpeg */,
 				2CE1F4080CC3EEA400CD02E5 /* FreeImage */,
 				2C4D9DEB0CC9EECC0031092D /* SDL */,
@@ -744,6 +754,14 @@
 			name = ffmpeg;
 			sourceTree = "<group>";
 		};
+		2CF77DBA0CF755CA00F3B101 /* Modis */ = {
+			isa = PBXGroup;
+			children = (
+				2C4B70220CF757A400B0F0BD /* Until5000.dpr */,
+			);
+			name = Modis;
+			sourceTree = "<group>";
+		};
 		DD7C45450A6E72DE003FA52B /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -753,6 +771,7 @@
 				2CDD438D0CBBE8F700F364DE /* Menu */,
 				2CF5508A0CDA228800627463 /* SDK */,
 				2C4D9DF50CC9EF3A0031092D /* Wrapper */,
+				2CF77DBA0CF755CA00F3B101 /* Modis */,
 				DDC6851B09F57195004E4BFF /* UltraStarDX.pas */,
 				2CF551A70CDA356800627463 /* UltraStar.dpr */,
 				2C4D9E440CC9F0ED0031092D /* switches.inc */,
@@ -763,6 +782,9 @@
 		DDC6850D09F5717A004E4BFF = {
 			isa = PBXGroup;
 			children = (
+				2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */,
+				2CE907910D1BC8A800A1FDFF /* libavformat.dylib */,
+				2CE907920D1BC8A800A1FDFF /* libavutil.dylib */,
 				98B8BE570B1F972400162019 /* SDL.framework */,
 				2C4D9D980CC9EE0B0031092D /* SDL_image.framework */,
 				2C4D9D990CC9EE0B0031092D /* SDL_ttf.framework */,
@@ -773,10 +795,6 @@
 				2C4D9CE90CC9ECB50031092D /* libbass.dylib */,
 				2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */,
 				2CF5512C0CDA29C600627463 /* libsqlite3.dylib */,
-				2CF552BF0CDA4B7B00627463 /* libavcodec.dylib */,
-				2CF552C00CDA4B7B00627463 /* libavformat.dylib */,
-				2CF552C10CDA4B7B00627463 /* libavutil.dylib */,
-				2CF552C20CDA4B7B00627463 /* libmp3lame.dylib */,
 				DD7C45450A6E72DE003FA52B /* Source */,
 				DDC6868A09F571C2004E4BFF /* Resources */,
 				2CDD8D0B0CC5539900E4169D /* UltraStarDX Resources */,
@@ -802,13 +820,41 @@
 			children = (
 				DDC688C809F574E9004E4BFF /* UltraStarDX.app */,
 				DD37F2430A60255800975B2D /* libfpcrtl.a */,
+				2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		2CF77DB20CF7556C00F3B101 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		2CF77DB50CF7556C00F3B101 /* Modi_Until5000 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2CF77DB90CF7558B00F3B101 /* Build configuration list for PBXNativeTarget "Modi_Until5000" */;
+			buildPhases = (
+				2CF77DB20CF7556C00F3B101 /* Headers */,
+				2CF77DB30CF7556C00F3B101 /* Sources */,
+				2CF77DB40CF7556C00F3B101 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Modi_Until5000;
+			productName = Lib_UltraPong;
+			productReference = 2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		DD37F2420A60255800975B2D /* fpcrtl */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DD37F2560A60258300975B2D /* Build configuration list for PBXNativeTarget "fpcrtl" */;
@@ -885,6 +931,7 @@
 				DDC688C709F574E9004E4BFF /* UltraStarDX */,
 				DDC688D409F57523004E4BFF /* Put all program sources also in this target */,
 				DD37F2420A60255800975B2D /* fpcrtl */,
+				2CF77DB50CF7556C00F3B101 /* Modi_Until5000 */,
 			);
 		};
 /* End PBXProject section */
@@ -972,16 +1019,23 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2CF77DB30CF7556C00F3B101 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C4B70240CF7584500B0F0BD /* ModiSDK.pas in Sources */,
+				2C4B70230CF7581000B0F0BD /* Until5000.dpr in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDC688C509F574E9004E4BFF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */,
 				2CDD4BE00CB947B100549FAC /* sdl.pas in Sources */,
-				98B8BE760B1F97F800162019 /* SDLMain.m in Sources */,
 				2C4D9C8F0CC9EC8C0031092D /* TextGL.pas in Sources */,
 				2C4D9C900CC9EC8C0031092D /* UAudio_bass.pas in Sources */,
-				2C4D9C910CC9EC8C0031092D /* UAudio_FFMpeg.pas in Sources */,
 				2C4D9C920CC9EC8C0031092D /* UCatCovers.pas in Sources */,
 				2C4D9C930CC9EC8C0031092D /* UCommandLine.pas in Sources */,
 				2C4D9C940CC9EC8C0031092D /* UCommon.pas in Sources */,
@@ -1037,7 +1091,6 @@
 				2C4D9DDF0CC9EE6F0031092D /* UMenuText.pas in Sources */,
 				2C4D9DED0CC9EF0A0031092D /* sdl_image.pas in Sources */,
 				2C4D9DF10CC9EF210031092D /* sdl_ttf.pas in Sources */,
-				2C4D9DF20CC9EF210031092D /* sdltruetypefont.pas in Sources */,
 				2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */,
 				2C4D9E150CC9EF840031092D /* Windows.pas in Sources */,
 				2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */,
@@ -1095,6 +1148,8 @@
 				2CEA2AF10CE3868E0097A5FF /* PseudoThread.pas in Sources */,
 				2C89372A0CE393FB005D8A87 /* UPlatform.pas in Sources */,
 				2C8937340CE395CE005D8A87 /* UPlatformMacOSX.pas in Sources */,
+				2C5663EF0D35645700D4FF53 /* portaudio.pas in Sources */,
+				2C56642C0D35683200D4FF53 /* SDLMain.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1106,7 +1161,6 @@
 				DD37F23D0A60252800975B2D /* UltraStarDX.pas in Sources */,
 				2C4D9CBC0CC9EC8C0031092D /* TextGL.pas in Sources */,
 				2C4D9CBD0CC9EC8C0031092D /* UAudio_bass.pas in Sources */,
-				2C4D9CBE0CC9EC8C0031092D /* UAudio_FFMpeg.pas in Sources */,
 				2C4D9CBF0CC9EC8C0031092D /* UCatCovers.pas in Sources */,
 				2C4D9CC00CC9EC8C0031092D /* UCommandLine.pas in Sources */,
 				2C4D9CC10CC9EC8C0031092D /* UCommon.pas in Sources */,
@@ -1162,7 +1216,6 @@
 				2C4D9DE90CC9EE6F0031092D /* UMenuText.pas in Sources */,
 				2C4D9DEE0CC9EF0A0031092D /* sdl_image.pas in Sources */,
 				2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */,
-				2C4D9DF40CC9EF210031092D /* sdltruetypefont.pas in Sources */,
 				2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */,
 				2C4D9E210CC9EF840031092D /* Windows.pas in Sources */,
 				2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */,
@@ -1220,6 +1273,7 @@
 				2CEA2AF20CE3868E0097A5FF /* PseudoThread.pas in Sources */,
 				2C89372B0CE393FB005D8A87 /* UPlatform.pas in Sources */,
 				2C8937370CE395CE005D8A87 /* UPlatformMacOSX.pas in Sources */,
+				2C5663F00D35645700D4FF53 /* portaudio.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1239,6 +1293,38 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2CF77DB70CF7556D00F3B101 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/lib;
+				LD_DYLIB_INSTALL_NAME = "@executable_path/libUntil5000.dylib";
+				PREBINDING = NO;
+				PRODUCT_NAME = Until5000;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		2CF77DB80CF7556D00F3B101 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = Lib_UltraPong;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		DD37F2570A60258300975B2D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1328,12 +1414,14 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_6)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_3)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/../lib/SQLite\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"$(SRCROOT)/../lib/ffmpeg\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_5 = "\"$(SRCROOT)/../lib/bass\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_6 = "\"$(SRCROOT)/../lib/FreeImage\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../lib/ffmpeg\"";
 				LINK_WITH_STANDARD_LIBRARIES = YES;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -1372,6 +1460,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_6)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_7)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_8)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_9)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Bass\"";
@@ -1381,6 +1470,7 @@
 				LIBRARY_SEARCH_PATHS_QUOTED_6 = "\"$(SRCROOT)/../lib/FreeImage\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_7 = "\"$(SRCROOT)/../lib/SQLite\"";
 				LIBRARY_SEARCH_PATHS_QUOTED_8 = "\"$(SRCROOT)/../lib/ffmpeg\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_9 = "\"$(SRCROOT)/../lib/ffmpeg\"";
 				LINK_WITH_STANDARD_LIBRARIES = YES;
 				OTHER_LDFLAGS = (
 					"-framework",
@@ -1436,6 +1526,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2CF77DB90CF7558B00F3B101 /* Build configuration list for PBXNativeTarget "Modi_Until5000" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2CF77DB70CF7556D00F3B101 /* Debug */,
+				2CF77DB80CF7556D00F3B101 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		DD37F2560A60258300975B2D /* Build configuration list for PBXNativeTarget "fpcrtl" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
