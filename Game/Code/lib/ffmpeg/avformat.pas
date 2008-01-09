@@ -23,9 +23,9 @@ in the source codes *)
 unit avformat;
 
 {$IFDEF FPC}
-  {$IFNDEF win32}
-  {$LINKLIB libavutil}
-  {$LINKLIB libavformat}
+  {$IFDEF LINUX}
+    {$LINKLIB libavutil}
+    {$LINKLIB libavformat}
   {$ENDIF}
 
   {$MODE DELPHI } (* CAT *)
@@ -43,12 +43,14 @@ uses
 
 const
 
-
-{$IFDEF win32}
+{$IFDEF MSWINDOWS}
   av__format = 'avformat-50.dll';
-{$ELSE}
-  av__format = 'libavformat.so';   // .0d
-  //av__format = 'libavformat.51'; (* CAT *)
+{$ENDIF}
+{$IFDEF LINUX}
+  av__format = 'libavformat.so';
+{$ENDIF}
+{$IFDEF DARWIN}
+  av__format = 'libavformat.dylib';
 {$ENDIF}
 
   LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (12 shl 8) + 1);
@@ -313,8 +315,11 @@ type
     iformat: PAVInputFormat;
     oformat: PAVOutputFormat;
     priv_data: pointer;
-    pb: TByteIOContext;
-    nb_streams: cardinal;  (* CAT#3 *)
+    
+		//pb: TByteIOContext;
+    pb: Pointer; // eddie: This is a pointer (at least on OS X)
+    
+		nb_streams: cardinal;  (* CAT#3 *)
     streams: array [0..MAX_STREAMS - 1] of PAVStream;
     filename: array [0..1023] of char; (* input or output filename *)
     (* stream info *)
