@@ -15,7 +15,7 @@ type
   TPlatformMacOSX = class(TPlatform)
   private
   public
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
+    function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
     function GetLogPath        : WideString; override;
     function GetGameSharedPath : WideString; override;
     function GetGameUserPath   : WideString; override;
