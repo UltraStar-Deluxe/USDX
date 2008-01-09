@@ -54,6 +54,7 @@ implementation
 
 uses TextGL,
      UIni,
+		 UPlatform,
      UMain;
 
 //--------------------
@@ -131,6 +132,15 @@ begin
       //Check the Identifier (If Value is given)
       if (Length(Value) <> 0) then
       begin
+			
+				{$IFDEF DARWIN}
+				if ((Identifier = 'MP3') or (Identifier = 'COVER') or (Identifier = 'BACKGROUND') or (Identifier = 'VIDEO')) then
+				begin
+  			  // Filenames on OS X must be UTF8:
+				  Value := Utf8Encode(Value);				
+				end;
+				{$ENDIF}
+			
 
         //-----------
         //Required Attributes
@@ -332,7 +342,7 @@ Result := False;
 
   //Open File and set File Pointer to the beginning
   AssignFile(SongFile, Song.Path + Song.FileName);
-  
+	
 //  if assinged( SongFile ) then
   begin
     try
