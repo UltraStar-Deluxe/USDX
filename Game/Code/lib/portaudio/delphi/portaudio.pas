@@ -62,7 +62,7 @@ const
 {$IFDEF LINUX}
   LibName = 'libportaudio.so';
 {$ENDIF}
-{$IFDEF MACOS}
+{$IFDEF DARWIN}
   LibName = 'libportaudio.dylib';
 {$ENDIF}
 
