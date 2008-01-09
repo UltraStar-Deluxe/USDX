@@ -16,7 +16,9 @@ type
   private
   public
     Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
-    function GetGamePath: WideString; override;
+    function GetLogPath        : WideString; override;
+    function GetGameSharedPath : WideString; override;
+    function GetGameUserPath   : WideString; override;
   end;
 
 implementation
@@ -26,7 +28,7 @@ uses SysUtils, baseunix;
 // Mac applications are packaged in directories.
 // We have to cut the last two directories
 // to get the application directory.
-Function TPlatformMacOSX.GetGamePath : WideString;
+Function GetBundlePath : WideString;
 var
 	x,
 	i : integer;
@@ -39,6 +41,21 @@ begin
       i := Length(Result);
     until (i = 0) or (Result[i] = '/');
   end;
+end;
+
+function TPlatformMacOSX.GetLogPath        : WideString;
+begin
+  Result := GetBundlePath;
+end;
+
+function TPlatformMacOSX.GetGameSharedPath : WideString;
+begin
+  Result := GetBundlePath;
+end;
+
+function TPlatformMacOSX.GetGameUserPath   : WideString;
+begin
+  Result := GetBundlePath;
 end;
 
 Function TPlatformMacOSX.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
