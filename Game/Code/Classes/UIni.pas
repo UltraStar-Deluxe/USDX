@@ -174,6 +174,7 @@ uses //UFiles,
      UMain,
      SDL,
      ULanguage,
+		 UPlatform,
      USkins,
      URecord,
      UCommandLine;
@@ -197,7 +198,7 @@ var
   end;
 
 begin
-  GamePath := ExtractFilePath(ParamStr(0));
+  GamePath := Platform.GetGameUserPath;
 
   if (Params.ConfigFile <> '') then
     try
