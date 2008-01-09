@@ -104,7 +104,7 @@ type
   TSongs = class( TThread )
 	{$ENDIF}
   private
-    BrowsePos : Cardinal; //Actual Pos in Song Array
+    BrowsePos : Integer; //Actual Pos in Song Array. eddie: Must be int, because it could be decremented to -1.
     fNotify   ,
     fWatch    : longint;
     fParseSongDirectory : boolean;
