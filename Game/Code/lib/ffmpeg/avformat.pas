@@ -316,10 +316,9 @@ type
     oformat: PAVOutputFormat;
     priv_data: pointer;
     
-		//pb: TByteIOContext;
-    pb: Pointer; // eddie: This is a pointer (at least on OS X)
-    
-		nb_streams: cardinal;  (* CAT#3 *)
+    pb: PByteIOContext;
+
+    nb_streams: cardinal;  (* CAT#3 *)
     streams: array [0..MAX_STREAMS - 1] of PAVStream;
     filename: array [0..1023] of char; (* input or output filename *)
     (* stream info *)
