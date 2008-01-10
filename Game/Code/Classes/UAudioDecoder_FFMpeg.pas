@@ -26,9 +26,11 @@ uses Classes,
      {$ENDIF}
      SysUtils,
      SDL,
-     avcodec,   // FFMpeg Audio file decoding
+     avcodec,     // FFMpeg Audio file decoding
      avformat,
      avutil,
+     avio,        // used for url_ferror
+     mathematics, // used for av_rescale_q
      ULog,
      UMusic;
 
@@ -64,10 +66,15 @@ type
 
       function Put(pkt : PAVPacket): integer;
       function Get(var pkt: TAVPacket; block: boolean): integer;
+      procedure Flush();
   end;
 
+const
+  MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
+
 var
-  EOSPacket: TAVPacket;
+  EOFPacket:   TAVPacket;
+  FlushPacket: TAVPacket;
 
 type
   PAudioBuffer = ^TAudioBuffer;
@@ -76,9 +83,17 @@ type
 type
   TFFMpegDecodeStream = class(TAudioDecodeStream)
     private
-      status: TStreamStatus;
+      _EOF: boolean; // end-of-stream flag
+      _EOF_lock : PSDL_Mutex;
 
-      EOS_Flag: boolean; // end-of-stream flag
+      lock       : PSDL_Mutex;
+      resumeCond : PSDL_Cond;
+
+      quitRequest : boolean;
+
+      seekRequest: boolean;
+      seekFlags  : integer;
+      seekPos    : int64;
 
       parseThread: PSDL_Thread;
       packetQueue: TPacketQueue;
@@ -87,8 +102,8 @@ type
       pFormatCtx     : PAVFormatContext;
       pCodecCtx      : PAVCodecContext;
       pCodec         : PAVCodec;
-      ffmpegStreamID : Integer;
-      ffmpegStream   : PAVStream;
+      ffmpegStreamIndex : Integer;
+      ffmpegStream      : PAVStream;
 
       // "static" vars for DecodeFrame
       pkt             : TAVPacket;
@@ -101,6 +116,7 @@ type
       audio_buf       : TAudioBuffer;
 
       function DecodeFrame(var buffer: TAudioBuffer; bufSize: integer): integer;
+      procedure SetEOF(state: boolean);
     public
       constructor Create(pFormatCtx: PAVFormatContext;
                          pCodecCtx: PAVCodecContext; pCodec: PAVCodec;
@@ -114,7 +130,7 @@ type
       function GetSampleRate(): cardinal;    override;
       function GetPosition: real;            override;
       procedure SetPosition(Time: real);     override;
-      function IsEOS(): boolean;             override;
+      function IsEOF(): boolean;             override;
 
       function ReadData(Buffer: PChar; BufSize: integer): integer; override;
   end;
@@ -122,7 +138,7 @@ type
 type
   TAudioDecoder_FFMpeg = class( TInterfacedObject, IAudioDecoder )
     private
-      class function FindAudioStreamID(pFormatCtx : PAVFormatContext): integer;
+      class function FindAudioStreamIndex(pFormatCtx : PAVFormatContext): integer;
     public
       function GetName: String;
 
@@ -144,7 +160,6 @@ constructor TFFMpegDecodeStream.Create(pFormatCtx: PAVFormatContext;
 begin
   inherited Create();
 
-  status := sStopped;
   packetQueue := TPacketQueue.Create();
 
   audio_pkt_data := nil;
@@ -158,30 +173,46 @@ begin
   Self.pFormatCtx := pFormatCtx;
   Self.pCodecCtx := pCodecCtx;
   Self.pCodec    := pCodec;
-  Self.ffmpegStreamID := ffmpegStreamID;
-  Self.ffmpegStream   := ffmpegStream;
+  Self.ffmpegStreamIndex := ffmpegStreamIndex;
+  Self.ffmpegStream      := ffmpegStream;
 
-  EOS_Flag := false;
+  _EOF := false;
+  _EOF_lock := SDL_CreateMutex();
+
+  lock := SDL_CreateMutex();
+  resumeCond := SDL_CreateCond();
 
   parseThread := SDL_CreateThread(@ParseAudio, Self);
 end;
 
 destructor TFFMpegDecodeStream.Destroy();
 begin
-  packetQueue.Free();
-  //SDL_WaitThread(parseThread, nil);
+  //Close();
+  //packetQueue.Free();
   inherited;
 end;
 
 procedure TFFMpegDecodeStream.Close();
 begin
+  // TODO: abort thread
+  //quitRequest := true;
+  //SDL_WaitThread(parseThread, nil);
+
+  (*
   // Close the codec
-  avcodec_close(pCodecCtx);
+  if (pCodecCtx <> nil) then
+  begin
+    avcodec_close(pCodecCtx);
+    pCodecCtx := nil;
+  end;
 
   // Close the video file
-  av_close_input_file(pFormatCtx);
-
-  // TODO: abort thread
+  if (pFormatCtx <> nil) then
+  begin
+    av_close_input_file(pFormatCtx);
+    pFormatCtx := nil;
+  end;
+  *)
 end;
 
 function TFFMpegDecodeStream.GetLength(): real;
@@ -199,24 +230,134 @@ begin
   result := pCodecCtx^.sample_rate;
 end;
 
-function TFFMpegDecodeStream.IsEOS(): boolean;
+function TFFMpegDecodeStream.IsEOF(): boolean;
 begin
-  result := EOS_Flag;
+  SDL_mutexP(_EOF_lock);
+  result := _EOF;
+  SDL_mutexV(_EOF_lock);
 end;
 
+procedure TFFMpegDecodeStream.SetEOF(state: boolean);
+begin
+  SDL_mutexP(_EOF_lock);
+  _EOF := state;
+  SDL_mutexV(_EOF_lock);
+end;
+
+function TFFMpegDecodeStream.GetPosition(): real;
+var
+  bytes: integer;
+begin
+  // see: tutorial on synching (audio-clock)
+  Result := 0;
+end;
+
+procedure TFFMpegDecodeStream.SetPosition(Time: real);
+var
+  bytes:    integer;
+begin
+  SDL_mutexP(lock);
+  seekPos := Trunc(Time * AV_TIME_BASE);
+  // FIXME: seek_flags = rel < 0 ? AVSEEK_FLAG_BACKWARD : 0
+  seekFlags := 0;
+  seekRequest := true;
+  SDL_CondSignal(resumeCond);
+  SDL_mutexV(lock);
+end;
 
 function ParseAudio(streamPtr: Pointer): integer; cdecl;
 var
   packet: TAVPacket;
   stream: TFFMpegDecodeStream;
+  seekTarget: int64;
+  eofState: boolean;
 begin
   stream := TFFMpegDecodeStream(streamPtr);
+  eofState := false;
 
-  while (av_read_frame(stream.pFormatCtx, packet) >= 0) do
+  while (true) do
   begin
+
+    SDL_mutexP(stream.lock);
+
+    // wait if end-of-file reached
+    if (eofState) then
+    begin
+      if (not (stream.seekRequest or stream.quitRequest)) then
+      begin
+        // signal end-of-file
+        stream.packetQueue.put(@EOFPacket);
+        // wait for reuse or destruction of stream
+        repeat
+          SDL_CondWait(stream.resumeCond, stream.lock);
+        until (stream.seekRequest or stream.quitRequest);
+      end;
+      eofState := false;
+      stream.SetEOF(false);
+    end;
+
+    if (stream.quitRequest) then
+    begin
+      break;
+    end;
+
+    // handle seek-request
+    if(stream.seekRequest) then
+    begin
+      // TODO: Do we need this?
+      //       The position is converted to AV_TIME_BASE and then to the stream-specific base.
+      //       Why not convert to the stream-specific one from the beginning.
+      seekTarget := av_rescale_q(stream.seekPos, AV_TIME_BASE_Q, stream.ffmpegStream^.time_base);
+      if(av_seek_frame(stream.pFormatCtx, stream.ffmpegStreamIndex,
+          seekTarget, stream.seekFlags) = 0) then
+      begin
+        Log.LogStatus(stream.pFormatCtx^.filename + ': error while seeking', 'UAudioDecoder_FFMpeg');
+      end
+      else
+      begin
+        stream.packetQueue.Flush();
+        stream.packetQueue.Put(@FlushPacket);
+      end;
+      stream.seekRequest := false;
+    end;
+
+    SDL_mutexV(stream.lock);
+
+    
+    if(stream.packetQueue.size > MAX_AUDIOQ_SIZE) then
+    begin
+      SDL_Delay(10);
+      continue;
+    end;
+
+    if(av_read_frame(stream.pFormatCtx, packet) < 0) then
+    begin
+      // check for end-of-file (eof is not an error)
+      if(url_feof(@stream.pFormatCtx^.pb) <> 0) then
+      begin
+        eofState := true;
+        continue;
+      end;
+
+      // check for errors
+      if(url_ferror(@stream.pFormatCtx^.pb) = 0) then
+      begin
+        // no error -> wait for user input
+        SDL_Delay(100);
+        continue;
+      end
+      else
+      begin
+        // an error occured -> abort
+        // TODO: eof or quit?
+        eofState := true;
+        continue;
+      end;
+    end;
+
     //writeln( 'ffmpeg - av_read_frame' );
 
-    if (packet.stream_index = stream.ffmpegStreamID) then
+    if(packet.stream_index = stream.ffmpegStreamIndex) then
     begin
       //writeln( 'packet_queue_put' );
       stream.packetQueue.put(@packet);
@@ -229,9 +370,6 @@ begin
 
   //Writeln('Done: ' + inttostr(stream.packetQueue.nbPackets));
 
-  // signal end-of-stream
-  stream.packetQueue.put(@EOSPacket);
-
   result := 0;
 end;
 
@@ -242,10 +380,10 @@ var
 begin
   result := -1;
 
-  if (EOS_Flag) then
+  if EOF then
     exit;
 
-  while true do
+  while(true) do
   begin
     while (audio_pkt_size > 0) do
     begin
@@ -253,6 +391,8 @@ begin
       data_size := bufSize;
 
       // TODO: should be avcodec_decode_audio2 but this wont link on my ubuntu box.
+      // FIXME: with avcodec_decode_audio a package could contain several frames
+      //        this is not handled yet
       len1 := avcodec_decode_audio(pCodecCtx, @buffer,
                   data_size, audio_pkt_data, audio_pkt_size);
 
@@ -294,11 +434,17 @@ begin
     audio_pkt_data := PChar(pkt.data);
     audio_pkt_size := pkt.size;
 
-    // check for end-of-stream
-    if (audio_pkt_data = PChar(EOSPacket.data)) then
+    if (audio_pkt_data = PChar(FlushPacket.data)) then
     begin
-      // end-of-stream reached -> set EOS-flag
-      EOS_Flag := true;
+      avcodec_flush_buffers(pCodecCtx);
+      continue;
+    end;
+
+    // check for end-of-file
+    if (audio_pkt_data = PChar(EOFPacket.data)) then
+    begin
+      // end-of-file reached -> set EOF-flag
+      SetEOF(true);
       // note: buffer is not (even partially) filled -> no data to return
       exit;
     end;
@@ -316,9 +462,10 @@ var
   len             : integer;
 begin
   len := BufSize;
+  result := -1;
 
-  // end-of-stream reached
-  if (EOS_Flag) then
+  // end-of-file reached
+  if EOF then
     exit;
 
   while (len > 0) do begin
@@ -361,19 +508,6 @@ begin
   result := BufSize;
 end;
 
-function TFFMpegDecodeStream.GetPosition(): real;
-var
-  bytes: integer;
-begin
-  Result := 0;
-end;
-
-procedure TFFMpegDecodeStream.SetPosition(Time: real);
-var
-  bytes:    integer;
-begin
-end;
-
 
 { TAudioDecoder_FFMpeg }
 
@@ -388,21 +522,25 @@ begin
 
   av_register_all();
 
-  // init end-of-stream package
-  av_init_packet(EOSPacket);
-  EOSPacket.data := Pointer(PChar('EOS'));
+  // init end-of-file package
+  av_init_packet(EOFPacket);
+  EOFPacket.data := Pointer(PChar('EOF'));
+
+  // init flush package
+  av_init_packet(FlushPacket);
+  FlushPacket.data := Pointer(PChar('FLUSH'));
 
   result := true;
 end;
 
-class function TAudioDecoder_FFMpeg.FindAudioStreamID(pFormatCtx : PAVFormatContext): integer;
+class function TAudioDecoder_FFMpeg.FindAudioStreamIndex(pFormatCtx : PAVFormatContext): integer;
 var
   i : integer;
-  streamID: integer;
+  streamIndex: integer;
   stream : PAVStream;
 begin
   // Find the first audio stream
-  streamID := -1;
+  streamIndex := -1;
 
   for i := 0 to pFormatCtx^.nb_streams-1 do
   begin
@@ -412,12 +550,12 @@ begin
     if ( stream.codec^.codec_type = CODEC_TYPE_AUDIO ) then
     begin
       //Log.LogStatus('Found Audio Stream', 'UAudio_FFMpeg');
-      streamID := i;
+      streamIndex := i;
       break;
     end;
   end;
 
-  result := streamID;
+  result := streamIndex;
 end;
 
 function TAudioDecoder_FFMpeg.Open(const Filename: string): TAudioDecodeStream;
@@ -449,11 +587,11 @@ begin
 
   dump_format(pFormatCtx, 0, pchar(Filename), 0);
 
-  ffmpegStreamID := FindAudioStreamID(pFormatCtx);
+  ffmpegStreamID := FindAudioStreamIndex(pFormatCtx);
   if (ffmpegStreamID < 0) then
     exit;
 
-  //Log.LogStatus('Audio Stream ID is : '+ inttostr(ffmpegStreamID), 'UAudio_FFMpeg');
+  //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFMpeg');
 
   ffmpegStream := pFormatCtx.streams[ffmpegStreamID];
   pCodecCtx := ffmpegStream^.codec;
@@ -503,7 +641,7 @@ var
 begin
   result := -1;
 
-  if (pkt <> @EOSPacket) then
+  if ((pkt <> @EOFPacket) and (pkt <> @FlushPacket)) then
     if (av_dup_packet(pkt) < 0) then
       exit;
 
@@ -585,6 +723,27 @@ begin
   end;
 end;
 
+procedure TPacketQueue.Flush();
+var
+  pkt, pkt1: PAVPacketList;
+begin
+  SDL_LockMutex(Self.mutex);
+
+  pkt := Self.firstPkt;
+  while(pkt <> nil) do
+  begin
+    pkt1 := pkt^.next;
+    av_free_packet(pkt^.pkt);
+    av_freep(pkt);
+    pkt := pkt1;
+  end;
+  Self.lastPkt := nil;
+  Self.firstPkt := nil;
+  Self.nbPackets := 0;
+  Self.size := 0;
+
+  SDL_UnlockMutex(Self.mutex);
+end;
 
 
 initialization

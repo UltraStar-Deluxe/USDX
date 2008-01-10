@@ -22,6 +22,7 @@ uses
        libc,
        {$endif}
      {$ENDIF}
+     sdl,
      portaudio,
      ULog,
      UIni,
@@ -58,6 +59,7 @@ type
   TAudioMixerStream = class
     private
       activeStreams: TList;
+      mixerBuffer: PChar;
     public
       constructor Create();
       destructor Destroy(); override;
@@ -104,7 +106,7 @@ type
       procedure Rewind;
       procedure SetPosition(Time: real);
       procedure Play;
-      procedure Pause; //Pause Mod
+      procedure Pause;
 
       procedure Stop;
       procedure Close;
@@ -152,6 +154,8 @@ end;
 
 destructor TAudioMixerStream.Destroy();
 begin
+  if (mixerBuffer <> nil) then
+    Freemem(mixerBuffer);
   activeStreams.Free;
 end;
 
@@ -170,36 +174,33 @@ end;
 function TAudioMixerStream.ReadData(Buffer: PChar; BufSize: integer): integer;
 var
   i: integer;
+  size: integer;
   stream: TPortaudioPlaybackStream;
-  dataAvailable: boolean;
 begin
-  dataAvailable := false;
+  result := BufSize;
 
-  // search for playing stream
-  if (activeStreams.Count > 0) then
+  // zero target-buffer (silence)
+  FillChar(Buffer^, BufSize, 0);
+
+  // resize mixer-buffer
+  ReallocMem(mixerBuffer, BufSize);
+  if (mixerBuffer = nil) then
+    Exit;
+
+  writeln('Mix: ' + inttostr(activeStreams.Count));
+
+  for i := 0 to activeStreams.Count-1 do
   begin
-    for i := 0 to activeStreams.Count-1 do
+    stream := TPortaudioPlaybackStream(activeStreams[i]);
+    if (stream.GetStatus() = sPlaying) then
     begin
-      stream := TPortaudioPlaybackStream(activeStreams[i]);
-      if (stream.getStatus = sPlaying) then
+      // fetch data from current stream
+      size := stream.ReadData(mixerBuffer, BufSize);
+      if (size > 0) then
       begin
-        dataAvailable := true;
-        break;        
+        SDL_MixAudio(PUInt8(Buffer), PUInt8(mixerBuffer), size, SDL_MIX_MAXVOLUME);
       end;
     end;
-
-    // fetch data from current stream
-    if (dataAvailable) then
-    begin
-      result := stream.ReadData(Buffer, BufSize);
-    end;
-  end;
-
-  // return silence
-  if ((not dataAvailable) or (result = -1)) then
-  begin
-    FillChar(Buffer^, BufSize, 0);
-    result := BufSize;
   end;
 end;
 
@@ -219,7 +220,13 @@ end;
 
 procedure TPortaudioPlaybackStream.Play();
 begin
+  if (status <> sPaused) then
+  begin
+    // rewind
+    decodeStream.Position := 0;
+  end;
   status := sPlaying;
+  mixerStream.AddStream(Self);
 end;
 
 procedure TPortaudioPlaybackStream.Pause();
@@ -234,7 +241,9 @@ end;
 
 procedure TPortaudioPlaybackStream.Close();
 begin
-  Stop();
+  status := sStopped;
+  Loaded := false;
+  // TODO: cleanup decode-stream
 end;
 
 function TPortaudioPlaybackStream.IsLoaded(): boolean;
@@ -265,8 +274,8 @@ end;
 function TPortaudioPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
 begin
   result := decodeStream.ReadData(Buffer, BufSize);
-  // end-of-stream reached -> stop playback
-  if (decodeStream.EOS) then
+  // end-of-file reached -> stop playback
+  if (decodeStream.EOF) then
   begin
     status := sStopped;
   end;
@@ -424,7 +433,9 @@ end;
 
 procedure TAudioPlayback_Portaudio.SetLoop(Enabled: boolean);
 begin
-  MusicStream.SetLoop(Enabled);
+  if (MusicStream <> nil) then
+  if (MusicStream.IsLoaded) then
+   MusicStream.SetLoop(Enabled);
 end;
 
 function TAudioPlayback_Portaudio.Open(Filename: string): boolean;
@@ -449,8 +460,6 @@ begin
 end;
 
 procedure TAudioPlayback_Portaudio.SetPosition(Time: real);
-var
-  bytes:    integer;
 begin
   if (MusicStream.IsLoaded) then
   begin
@@ -458,10 +467,26 @@ begin
   end;
 end;
 
+function TAudioPlayback_Portaudio.GetPosition: real;
+begin
+  if (MusicStream.IsLoaded) then
+  Result := MusicStream.GetPosition();
+end;
+
+function TAudioPlayback_Portaudio.Length: real;
+begin
+  Result := 0;
+  if assigned( MusicStream ) then
+  if (MusicStream.IsLoaded) then
+  begin
+    Result := MusicStream.GetLength();
+  end;
+end;
+
 procedure TAudioPlayback_Portaudio.Play;
 begin
   if (MusicStream <> nil) then
-  if (MusicStream.IsLoaded()) then
+  if (MusicStream.IsLoaded) then
   begin
     if (MusicStream.GetLoop()) then
     begin
@@ -472,12 +497,10 @@ begin
   end;
 end;
 
-procedure TAudioPlayback_Portaudio.Pause; //Pause Mod
+procedure TAudioPlayback_Portaudio.Pause;
 begin
   if (MusicStream <> nil) then
-  if (MusicStream.IsLoaded()) then begin
-    MusicStream.Pause(); // Pauses Song
-  end;
+    MusicStream.Pause();
 end;
 
 procedure TAudioPlayback_Portaudio.Stop;
@@ -492,37 +515,10 @@ begin
   MusicStream.Close();
 end;
 
-function TAudioPlayback_Portaudio.Length: real;
-begin
-  Result := 0;
-  if assigned( MusicStream ) then
-  begin
-    Result := MusicStream.GetLength();
-  end;
-end;
-
-function TAudioPlayback_Portaudio.getPosition: real;
-var
-  bytes: integer;
-begin
-  Result := 0;
-
-(*
-  bytes  := BASS_ChannelGetPosition(BASS);
-  Result := BASS_ChannelBytes2Seconds(BASS, bytes);
-*)
-end;
-
 function TAudioPlayback_Portaudio.Finished: boolean;
 begin
-  Result := false;
-
-(*
-  if BASS_ChannelIsActive(BASS) = BASS_ACTIVE_STOPPED then
-  begin
-    Result := true;
-  end;
-*)
+  if MusicStream <> nil then
+  Result := (MusicStream.GetStatus() = sStopped);
 end;
 
 procedure TAudioPlayback_Portaudio.PlayStart;
@@ -623,7 +619,6 @@ begin
   end;
 
   playbackStream := TPortaudioPlaybackStream.Create(decodeStream);
-  mixerStream.AddStream(playbackStream);
 
   //Add CustomSound
   csIndex := High(CustomSounds) + 1;
