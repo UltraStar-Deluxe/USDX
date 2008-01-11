@@ -33,27 +33,34 @@
 
 
 {$IFDEF win32}
-  {$DEFINE UseBASSOutput}
+  {$DEFINE UseBASSPlayback}
   {$DEFINE UseBASSInput}
 
-  //{$DEFINE UsePortaudio}
+  //{$DEFINE UseFFMpegDecoder}
+  //{$DEFINE UsePortaudioPlayback}
+  //{$DEFINE UsePortaudioInput}
   //{$DEFINE UsePortmixer}
   
   {$DEFINE UseProjectM_0_9}
-  
+  //{$DEFINE UseProjectM_1_0}
+
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
       {$APPTYPE CONSOLE}
 	{$ENDIF}
   {$ENDIF}
 {$ELSE}
-  //{$DEFINE FFMpegAudio}
-//  {$DEFINE UsePortaudio}
+  {$DEFINE UseFFMpegAudio}
+  {$DEFINE UsePortaudio}
   {$DEFINE UseProjectM_0_9}
 {$ENDIF}
 
-{$IF Defined(UseBASSInput) or Defined(UseBASSOutput)}
+{$IF Defined(UseBASSInput) or Defined(UseBASSPlayback)}
   {$DEFINE UseBASS}
+{$IFEND}
+
+{$IF Defined(UsePortaudioInput) or Defined(UsePortaudioPlayback)}
+  {$DEFINE UsePortaudio}
 {$IFEND}
 
 {$IF Defined(UseProjectM_0_9) or Defined(UseProjectM_1_0)}

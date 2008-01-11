@@ -83,17 +83,72 @@ type
     Source:   array of string;
   end;
 
+type
   TFFTData  = array[0..256] of Single;
 
   TPCMStereoSample = array[0..1] of Smallint;
   TPCMData  = array[0..511] of TPCMStereoSample;
 
-  TAudioOutputStream = class
+type
+  TStreamStatus = (sStopped, sPlaying, sPaused);
+const
+  StreamStatusStr:  array[TStreamStatus] of string = ('Stopped', 'Playing', 'Paused');
+
+type
+  TAudioProcessingStream = class
+    public
+      procedure Close();                    virtual; abstract;
   end;
 
+  TAudioPlaybackStream = class(TAudioProcessingStream)
+    protected
+      function GetLoop(): boolean;          virtual; abstract;
+      procedure SetLoop(Enabled: boolean);  virtual; abstract;
+      function GetLength(): real;           virtual; abstract;
+      function GetStatus(): TStreamStatus;  virtual; abstract;
+    public
+      procedure Play();                     virtual; abstract;
+      procedure Pause();                    virtual; abstract;
+      procedure Stop();                     virtual; abstract;
+
+      property Loop: boolean READ GetLoop WRITE SetLoop;
+      property Length: real READ GetLength;
+      property Status: TStreamStatus READ GetStatus;
+  end;
+
+  (*
+  TAudioMixerStream = class(TAudioProcessingStream)
+    procedure AddStream(stream: TAudioProcessingStream);
+    procedure RemoveStream(stream: TAudioProcessingStream);
+    procedure SetMasterVolume(volume: cardinal);
+    function GetMasterVolume(): cardinal;
+    procedure SetStreamVolume(stream: TAudioProcessingStream; volume: cardinal);
+    function GetStreamVolume(stream: TAudioProcessingStream): cardinal;
+  end;
+  *)
+
+  TAudioDecodeStream = class(TAudioProcessingStream)
+    protected
+      function GetLength(): real;           virtual; abstract;
+      function GetChannelCount(): cardinal; virtual; abstract;
+      function GetSampleRate(): cardinal;   virtual; abstract;
+      function GetPosition(): real;         virtual; abstract;
+      procedure SetPosition(Time: real);    virtual; abstract;
+      function IsEOF(): boolean;            virtual; abstract;
+    public
+      function ReadData(Buffer: PChar; BufSize: integer): integer; virtual; abstract;
+
+      property Length: real READ GetLength;
+      property ChannelCount: cardinal READ GetChannelCount;
+      property SampleRate: cardinal READ GetSampleRate;
+      property Position: real READ GetPosition WRITE SetPosition;
+      property EOF: boolean READ IsEOF;
+  end;
+
+type
   TCustomSoundEntry = record
     Filename : String;
-    Stream   : TAudioOutputStream;
+    Stream   : TAudioPlaybackStream;
   end;
 
 type
@@ -101,23 +156,23 @@ type
   ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCE33DD}']
       function  GetName: String;
 
-      function  Open(Name: string): boolean; // true if succeed
+      function  Open(Filename: string): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
       procedure Pause;
       procedure Stop;
 
-      procedure MoveTo(Time: real);
-      function  getPosition: real;
-      
-      property  position : real READ getPosition WRITE MoveTo;
+      procedure SetPosition(Time: real);
+      function  GetPosition: real;
+
+      property  Position : real READ GetPosition WRITE SetPosition;
   end;
 
   IVideoPlayback = Interface( IGenericPlayback )
   ['{3574C40C-28AE-4201-B3D1-3D1F0759B131}']
     procedure init();
-    
+
     procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
     procedure DrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
 
@@ -150,9 +205,6 @@ type
       procedure PlayShuffle;
       procedure StopShuffle;
 
-      // TODO
-      //function LoadSoundFromFile(var stream: TAudioOutputStream; Name: string): boolean;
-
       //Custom Sounds
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal );
@@ -162,6 +214,24 @@ type
 
       // Interface for Visualizer
       function GetPCMData(var data: TPCMData): Cardinal;
+  end;
+
+  IGenericDecoder = Interface
+  ['{557B0E9A-604D-47E4-B826-13769F3E10B7}']
+      function InitializeDecoder(): boolean;
+      //function IsSupported(const Filename: string): boolean;
+  end;
+
+  (*
+  IVideoDecoder = Interface( IGenericDecoder )
+  ['{2F184B2B-FE69-44D5-9031-0A2462391DCA}']
+      function Open(const Filename: string): TVideoDecodeStream;
+  end;
+  *)
+
+  IAudioDecoder = Interface( IGenericDecoder )
+  ['{AB47B1B6-2AA9-4410-BF8C-EC79561B5478}']
+      function Open(const Filename: string): TAudioDecodeStream;
   end;
 
   IAudioInput = Interface
@@ -191,6 +261,7 @@ function  Visualization(): IVideoPlayback;
 function  VideoPlayback(): IVideoPlayback;
 function  AudioPlayback(): IAudioPlayback;
 function  AudioInput(): IAudioInput;
+function  AudioDecoder(): IAudioDecoder;
 
 function  AudioManager: TInterfaceList;
 
@@ -207,6 +278,7 @@ var
   singleton_Visualization : IVideoPlayback  = nil;
   singleton_AudioPlayback : IAudioPlayback  = nil;
   singleton_AudioInput    : IAudioInput     = nil;
+  singleton_AudioDecoder  : IAudioDecoder   = nil;
 
   singleton_AudioManager  : TInterfaceList  = nil;
 
@@ -240,6 +312,11 @@ begin
   result := singleton_AudioInput;
 end;
 
+function AudioDecoder(): IAudioDecoder;
+begin
+  result := singleton_AudioDecoder;
+end;
+
 procedure InitializeSound;
 var
   lTmpInterface : IInterface;
@@ -249,6 +326,7 @@ begin
 
   singleton_AudioPlayback := nil;
   singleton_AudioInput    := nil;
+  singleton_AudioDecoder  := nil;
   singleton_VideoPlayback := nil;
   singleton_Visualization := nil;
 
@@ -271,6 +349,13 @@ begin
         singleton_AudioInput := IAudioInput( lTmpInterface );
       end;
 
+      // if this interface is a Decoder, then set it as the default used
+      if ( AudioManager[iCount].QueryInterface( IAudioDecoder, lTmpInterface )    = 0 ) AND
+         ( true ) then
+      begin
+        singleton_AudioDecoder := IAudioDecoder( lTmpInterface );
+      end;
+
       // if this interface is a Input, then set it as the default used
       if ( AudioManager[iCount].QueryInterface( IVideoPlayback, lTmpInterface ) = 0 ) AND
          ( true ) then
@@ -291,6 +376,11 @@ begin
 
   if VideoPlayback <> nil then
   begin
+  end;
+
+  if AudioDecoder <> nil then
+  begin
+    AudioDecoder.InitializeDecoder;
   end;
 
   if AudioPlayback <> nil then

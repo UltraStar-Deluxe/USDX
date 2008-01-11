@@ -21,7 +21,7 @@ uses
   {$ifdef UseBass}
   bass          in 'lib\bass\delphi\bass.pas',
   {$endif}
-  {$ifdef UsePortAudio}
+  {$ifdef UsePortaudio}
   portaudio     in 'lib\portaudio\delphi\portaudio.pas',
   {$endif}
   {$ifdef UsePortmixer}
@@ -47,6 +47,7 @@ uses
   rational      in 'lib\ffmpeg\rational.pas',
   opt           in 'lib\ffmpeg\opt.pas',
   avio          in 'lib\ffmpeg\avio.pas',
+  mathematics   in 'lib\ffmpeg\mathematics.pas',
 //  swscale       in 'lib\ffmpeg\swscale.pas',
 
   {$ifdef UseProjectM_0_9}
@@ -142,14 +143,20 @@ uses
   UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... so video can override...
 {$ENDIF}
   UVideo          in 'Classes\UVideo.pas',
-{$ifdef UseBass}
-  UAudio_bass     in 'Classes\UAudio_bass.pas',
+{$ifdef UseFFMpegDecoder}
+  UAudioDecoder_FFMpeg   in 'Classes\UAudioDecoder_FFMpeg.pas',  // MUST be before Playback-classes
 {$endif}
-{$ifdef UsePortaudio}
-  UAudio_portaudio in 'Classes\UAudio_portaudio.pas',
+{$ifdef UseBASSInput}
+  UAudioInput_Bass       in 'Classes\UAudioInput_Bass.pas',
 {$endif}
-{$ifdef UseFFMpegAudio}
-    UAudio_FFMpeg     in 'Classes\UAudio_FFMpeg.pas',
+{$ifdef UseBASSPlayback}
+  UAudioPlayback_Bass    in 'Classes\UAudioPlayback_Bass.pas',
+{$endif}
+{$ifdef UsePortaudioInput}
+  UAudioInput_Portaudio  in 'Classes\UAudioInput_Portaudio.pas',
+{$endif}
+{$ifdef UsePortaudioPlayback}
+  UAudioPlayback_Portaudio  in 'Classes\UAudioPlayback_Portaudio.pas',
 {$endif}
 
 

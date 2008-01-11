@@ -45,9 +45,11 @@ uses SDL,
      dialogs,
      {$endif}
      {$ENDIF}
+     (* FIXME
      {$ifdef UseFFMpegAudio}
-     UAudio_FFMpeg,
+     UAudioDecoder_FFMpeg,
      {$endif}
+     *)
      UIni,
      UMusic,
      UGraphic;
@@ -101,8 +103,8 @@ type
       procedure   Pause;
       procedure   Stop;
 
-      procedure   MoveTo(Time: real);
-      function    getPosition: real;
+      procedure   SetPosition(Time: real);
+      function    GetPosition: real;
 
       procedure   GetFrame(Time: Extended);
       procedure   DrawGL(Screen: integer);
@@ -626,7 +628,7 @@ procedure TVideoPlayback_ffmpeg.Stop;
 begin
 end;
 
-procedure TVideoPlayback_ffmpeg.MoveTo(Time: real);
+procedure TVideoPlayback_ffmpeg.SetPosition(Time: real);
 begin
   fVideoSkipTime := Time;
 
@@ -639,7 +641,7 @@ begin
 end;
 
 // what is this supposed to do? return VideoTime?
-function  TVideoPlayback_ffmpeg.getPosition: real;
+function  TVideoPlayback_ffmpeg.GetPosition: real;
 begin
   result := 0;
 end;

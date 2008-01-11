@@ -61,9 +61,7 @@ type
 
       VisualTex         : glUint;
       PCMData           : TPCMData;
-      hRC               : Integer;
-      hDC               : Integer;
-
+ 
       RndPCMcount       : integer;
 
       projMatrix: array[0..3, 0..3] of GLdouble;
@@ -91,8 +89,8 @@ type
       procedure   Pause;
       procedure   Stop;
 
-      procedure   MoveTo(Time: real);
-      function    getPosition: real;
+      procedure   SetPosition(Time: real);
+      function    GetPosition: real;
 
       procedure   GetFrame(Time: Extended);
       procedure   DrawGL(Screen: integer);
@@ -150,12 +148,12 @@ begin
   VisualizerStop();
 end;
 
-procedure TVideoPlayback_ProjectM.MoveTo(Time: real);
+procedure TVideoPlayback_ProjectM.SetPosition(Time: real);
 begin
   pm.RandomPreset();
 end;
 
-function  TVideoPlayback_ProjectM.getPosition: real;
+function  TVideoPlayback_ProjectM.GetPosition: real;
 begin
   result := 0;
 end;
@@ -240,7 +238,6 @@ end;
 
 procedure TVideoPlayback_ProjectM.GetFrame(Time: Extended);
 var
-  i: integer;
   nSamples: cardinal;
   stackDepth: Integer;
 begin
@@ -269,7 +266,7 @@ begin
     // this may happen with some presets ( on linux ) if there is a div by zero
     // in projectM's getBeatVals() function (file: beat_detect.cc)
     Log.LogStatus('Div by zero!', 'Visualizer');
-    MoveTo( now );
+    SetPosition( now );
   end;
 
   //glGetIntegerv(GL_PROJECTION_STACK_DEPTH, @stackDepth);

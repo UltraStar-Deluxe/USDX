@@ -45,8 +45,8 @@ type
       procedure Pause;
       procedure Stop;
 
-      procedure MoveTo(Time: real);
-      function  getPosition: real;
+      procedure SetPosition(Time: real);
+      function  GetPosition: real;
 
       procedure GetFrame(Time: Extended);
       procedure DrawGL(Screen: integer);
@@ -81,8 +81,6 @@ type
       procedure PlayClap;
       procedure PlayShuffle;
       procedure StopShuffle;
-
-      function LoadSoundFromFile(var stream: TAudioOutputStream; Name: string): boolean;
 
       function LoadCustomSound(const Filename: String): Cardinal;
       procedure PlayCustomSound(const Index: Cardinal );
@@ -135,7 +133,7 @@ procedure Tmedia_dummy.Stop;
 begin
 end;
 
-procedure Tmedia_dummy.MoveTo(Time: real);
+procedure Tmedia_dummy.SetPosition(Time: real);
 begin
 end;
 
@@ -249,11 +247,6 @@ end;
 
 procedure Tmedia_dummy.StopShuffle;
 begin
-end;
-
-function Tmedia_dummy.LoadSoundFromFile(var stream: TAudioOutputStream; Name: string): boolean;
-begin
-  result := false;
 end;
 
 function Tmedia_dummy.LoadCustomSound(const Filename: String): Cardinal;
