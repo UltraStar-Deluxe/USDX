@@ -303,7 +303,7 @@ type
     oformat: PAVOutputFormat;
     priv_data: pointer;
 
-    {$IF (LIBAVFORMAT_VERSION >= 52)}
+    {$IF (LIBAVFORMAT_MAJOR_VERSION >= 52)}
     pb: PByteIOContext;
     {$ELSE}
     pb: TByteIOContext;

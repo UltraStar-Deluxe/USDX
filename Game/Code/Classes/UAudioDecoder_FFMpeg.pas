@@ -334,7 +334,7 @@ begin
     if(av_read_frame(stream.pFormatCtx, packet) < 0) then
     begin
       // check for end-of-file (eof is not an error)
-      {$IF (LIBAVFORMAT_VERSION >= 52)}
+      {$IF (LIBAVFORMAT_MAJOR_VERSION >= 52)}
       pbIOCtx := stream.pFormatCtx^.pb;
       {$ELSE}
       pbIOCtx := @stream.pFormatCtx^.pb;
