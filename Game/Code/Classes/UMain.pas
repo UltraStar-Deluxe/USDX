@@ -174,7 +174,7 @@ begin
     // SDL
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize SDL', 'Initialization');
-    SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO);
+    SDL_Init(SDL_INIT_VIDEO);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing SDL', 1);
 
