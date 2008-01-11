@@ -415,7 +415,7 @@ begin
   LoadOpenGL;
 
   Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
-  if ( SDL_Init(SDL_INIT_VIDEO or SDL_INIT_AUDIO)= -1 ) then
+  if ( SDL_Init(SDL_INIT_VIDEO)= -1 ) then
   begin
     Log.LogError('SDL_Init Failed', 'UGraphic.Initialize3D');
     exit;
