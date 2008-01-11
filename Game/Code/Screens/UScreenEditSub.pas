@@ -322,7 +322,7 @@ begin
             AudioPlayback.Stop;
             R := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote);
             if R <= AudioPlayback.Length then begin
-              AudioPlayback.MoveTo(R);
+              AudioPlayback.Position := R;
               PlayStopTime := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Koniec);
               PlaySentence := true;
               AudioPlayback.Play;
@@ -349,7 +349,7 @@ begin
             PlaySentence := true;
             Click := true;
             AudioPlayback.Stop;
-            AudioPlayback.MoveTo(GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote)+0{-0.10});
+            AudioPlayback.Position := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote)+0{-0.10};
             PlayStopTime := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Koniec)+0;
             AudioPlayback.Play;
             LastClick := -100;
@@ -363,7 +363,7 @@ begin
           PlaySentence := true;
           Click := false;
           AudioPlayback.Stop;
-          AudioPlayback.MoveTo(GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start));
+          AudioPlayback.Position := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start);
           PlayStopTime := (GetTimeFromBeat(
             Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start +
             Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Dlugosc));

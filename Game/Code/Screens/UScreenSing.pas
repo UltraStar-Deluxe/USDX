@@ -171,7 +171,7 @@ begin
       SDLK_TAB: //Change Visualization Preset
         begin
           if fShowVisualization then
-            fCurrentVideoPlaybackEngine.MoveTo( now ); // move to a random position
+            fCurrentVideoPlaybackEngine.Position := now; // move to a random position
         end;
         
       SDLK_RETURN:
@@ -213,7 +213,7 @@ begin
       Czas.Teraz := PauseTime; //Position of Notes
 
       // Position of Music
-      AudioPlayback.MoveTo (PauseTime);
+      AudioPlayback.Position := PauseTime;
       // Play Music
       AudioPlayback.Play;
 
@@ -478,7 +478,7 @@ begin
 
   // play music (I)
   AudioInput.CaptureStart;
-  AudioPlayback.MoveTo(AktSong.Start);
+  AudioPlayback.Position := AktSong.Start;
 //  Music.Play;
 
   // prepare timer (I)
@@ -1344,7 +1344,7 @@ begin
   // if we are shoing a visualization... change to a new preset after each sentence..
   // Maybe we should make this less often or something... just a
   if fShowVisualization then
-    fCurrentVideoPlaybackEngine.MoveTo( now ); // move to a random position
+    fCurrentVideoPlaybackEngine.Position := now; // move to a random position
 end;
 
 //Called on Sentence Change S= New Current Sentence

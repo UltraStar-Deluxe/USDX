@@ -1524,7 +1524,7 @@ begin
     begin
       AudioPlayback.SetLoop(false);
       AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
-      AudioPlayback.MoveTo(AudioPlayback.Length / 4);
+      AudioPlayback.Position := AudioPlayback.Length / 4;
       AudioPlayback.Play;
 
       //Set Preview Volume
@@ -1768,7 +1768,7 @@ begin
     begin
       AudioPlayback.Close;
       if AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-        AudioPlayback.MoveTo(AudioPlayback.Length / 4);
+        AudioPlayback.Position := AudioPlayback.Length / 4;
         //If Song Fading is activated then don't Play directly, and Set Volume to Null, else Play normal
         if (Ini.PreviewFading = 0) then
           AudioPlayback.Play
