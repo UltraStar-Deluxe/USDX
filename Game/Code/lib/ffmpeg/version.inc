@@ -33,7 +33,7 @@ const
   LIBAVUTIL_SUB_VERSION   = 0;
 {$ENDIF}
 {$IFDEF DARWIN}
-  av__format = 'libavcodec.dylib';
+  av__codec = 'libavcodec.dylib';
   LIBAVCODEC_MAJOR_VERSION = 51;
   LIBAVCODEC_MINOR_VERSION = 0;
   LIBAVCODEC_SUB_VERSION   = 0;
