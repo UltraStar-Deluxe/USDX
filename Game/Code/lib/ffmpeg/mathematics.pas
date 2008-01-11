@@ -36,16 +36,7 @@ in the source codes *)
 uses
   rational; (* CAT *)
 
-const
-{$IFDEF MSWINDOWS}
-  av__util = 'avutil-49.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  av__util = 'libavutil.so';   // .0d
-{$ENDIF}
-{$IFDEF DARWIN}
-  av__util = 'libavutil.dylib'; 
-{$ENDIF}
+{$I version.inc}
 
 type
   TAVRounding = (

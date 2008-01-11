@@ -41,22 +41,9 @@ uses
   rational,
   avutil; (* CAT *)
 
+{$I version.inc}
+
 const
-
-{$IFDEF MSWINDOWS}
-  av__format = 'avformat-50.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  av__format = 'libavformat.so';
-{$ENDIF}
-{$IFDEF DARWIN}
-  av__format = 'libavformat.dylib';
-{$ENDIF}
-
-  LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (12 shl 8) + 1);
-  LIBAVUTIL_VERSION       = '51.12.1';
-  LIBAVUTIL_BUILD         = LIBAVUTIL_VERSION_INT;
-
   MAXINT64 = $7fffffffffffffff;
   MININT64 = $8000000000000000;
 
@@ -315,8 +302,12 @@ type
     iformat: PAVInputFormat;
     oformat: PAVOutputFormat;
     priv_data: pointer;
-    
+
+    {$IF (LIBAVFORMAT_VERSION >= 52)}
     pb: PByteIOContext;
+    {$ELSE}
+    pb: TByteIOContext;
+    {$IFEND}
 
     nb_streams: cardinal;  (* CAT#3 *)
     streams: array [0..MAX_STREAMS - 1] of PAVStream;

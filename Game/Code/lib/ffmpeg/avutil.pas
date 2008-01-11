@@ -28,20 +28,7 @@ unit avutil;
 
 interface
 
-const
-{$IFDEF MSWINDOWS}
-  av__util = 'avutil-49.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  av__util = 'libavutil.so';   // .0d
-{$ENDIF}
-{$IFDEF DARWIN}
-  av__util = 'libavutil.dylib'; 
-{$ENDIF}
-
-  LIBAVUTIL_VERSION_INT   =  ((49 shl 16) + (4 shl 8) + 1);
-  LIBAVUTIL_VERSION       = '49.4.1';
-  LIBAVUTIL_BUILD         = LIBAVUTIL_VERSION_INT;
+{$I version.inc}
 
 type
 (**

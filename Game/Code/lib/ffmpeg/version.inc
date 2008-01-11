@@ -1,0 +1,102 @@
+const
+{$IFDEF MSWINDOWS}
+  av__codec = 'avcodec-51.dll';
+  LIBAVCODEC_MAJOR_VERSION = 51;
+  LIBAVCODEC_MINOR_VERSION = 0;
+  LIBAVCODEC_SUB_VERSION   = 0;
+
+  av__format = 'avformat-50.dll';
+  LIBAVFORMAT_MAJOR_VERSION = 50;
+  LIBAVFORMAT_MINOR_VERSION = 0;
+  LIBAVFORMAT_SUB_VERSION   = 0;
+
+  av__util = 'avutil-49.dll';
+  LIBAVUTIL_MAJOR_VERSION = 49;
+  LIBAVUTIL_MINOR_VERSION = 0;
+  LIBAVUTIL_SUB_VERSION   = 0;
+{$ENDIF}
+{$IFDEF LINUX}
+  av__codec = 'libavcodec.so';
+  LIBAVCODEC_MAJOR_VERSION = 51;
+  LIBAVCODEC_MINOR_VERSION = 0;
+  LIBAVCODEC_SUB_VERSION   = 0;
+
+  av__format = 'libavformat.so';
+//av__format = 'libavformat.51';
+  LIBAVFORMAT_MAJOR_VERSION = 51;
+  LIBAVFORMAT_MINOR_VERSION = 0;
+  LIBAVFORMAT_SUB_VERSION   = 0;
+
+  av__util = 'libavutil.so';
+  LIBAVUTIL_MAJOR_VERSION = 49;
+  LIBAVUTIL_MINOR_VERSION = 0;
+  LIBAVUTIL_SUB_VERSION   = 0;
+{$ENDIF}
+{$IFDEF DARWIN}
+  av__format = 'libavcodec.dylib';
+  LIBAVCODEC_MAJOR_VERSION = 51;
+  LIBAVCODEC_MINOR_VERSION = 0;
+  LIBAVCODEC_SUB_VERSION   = 0;
+
+  av__format = 'libavformat.dylib';
+  LIBAVFORMAT_MAJOR_VERSION = 52;
+  LIBAVFORMAT_MINOR_VERSION = 0;
+  LIBAVFORMAT_SUB_VERSION   = 0;
+
+  av__util = 'libavutil.dylib';
+  LIBAVUTIL_MAJOR_VERSION = 49;
+  LIBAVUTIL_MINOR_VERSION = 0;
+  LIBAVUTIL_SUB_VERSION   = 0;
+{$ENDIF}
+
+(* Max. supported version by this header *)
+(* TODO: someone has to check the changes up to version 52, add some IFDEFS and increase this version number *)
+
+LIBAVCODEC_MAX_MAJOR_VERSION = 51;
+LIBAVCODEC_MAX_MINOR_VERSION = 12;
+LIBAVCODEC_MAX_SUB_VERSION   = 1;
+LIBAVCODEC_MAX_VERSION = LIBAVCODEC_MAX_MAJOR_VERSION +
+                        (LIBAVCODEC_MAX_MINOR_VERSION * 0.01) +
+                        (LIBAVCODEC_MAX_SUB_VERSION   * 0.0001);
+
+LIBAVFORMAT_MAX_MAJOR_VERSION = 51;
+LIBAVFORMAT_MAX_MINOR_VERSION = 12;
+LIBAVFORMAT_MAX_SUB_VERSION   = 1;
+LIBAVFORMAT_MAX_VERSION = LIBAVFORMAT_MAX_MAJOR_VERSION +
+                         (LIBAVFORMAT_MAX_MINOR_VERSION * 0.01) +
+                         (LIBAVFORMAT_MAX_SUB_VERSION   * 0.0001);
+
+LIBAVUTIL_MAX_MAJOR_VERSION = 49;
+LIBAVUTIL_MAX_MINOR_VERSION = 4;
+LIBAVUTIL_MAX_SUB_VERSION   = 1;
+LIBAVUTIL_MAX_VERSION = LIBAVUTIL_MAX_MAJOR_VERSION +
+                       (LIBAVUTIL_MAX_MINOR_VERSION * 0.01) +
+                       (LIBAVUTIL_MAX_SUB_VERSION   * 0.0001);
+
+(* Calc linked version *)
+
+LIBAVCODEC_VERSION = LIBAVCODEC_MAJOR_VERSION +
+                    (LIBAVCODEC_MINOR_VERSION * 0.01) +
+                    (LIBAVCODEC_SUB_VERSION   * 0.0001);
+
+LIBAVFORMAT_VERSION = LIBAVFORMAT_MAJOR_VERSION +
+                     (LIBAVFORMAT_MINOR_VERSION * 0.01) +
+                     (LIBAVFORMAT_SUB_VERSION   * 0.0001);
+
+LIBAVUTIL_VERSION = LIBAVUTIL_MAJOR_VERSION +
+                   (LIBAVUTIL_MINOR_VERSION * 0.01) +
+                   (LIBAVUTIL_SUB_VERSION   * 0.0001);
+
+(* Check if linked versions are supported *)
+
+{$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
+  {$MESSAGE Warn 'Linked version of libavcodec may be unsupported!'}
+{$IFEND}
+
+{$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
+  {$MESSAGE Warn 'Linked version of libavformat may be unsupported!'}
+{$IFEND}
+
+{$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
+  {$MESSAGE Warn 'Linked version of libavutil may be unsupported!'}
+{$IFEND}

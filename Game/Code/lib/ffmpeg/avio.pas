@@ -30,17 +30,9 @@ unit avio;
 
 interface       (* Widows unit is deleted by CAT *)
 
+{$I version.inc}
+
 const
-(* version numbers are changed by The Creative CAT *)
-
-{$IFDEF win32}
-  av__format = 'avformat-50.dll';
-{$ELSE}
-  av__format = 'libavformat.so';   // .0d
-//av__format = 'libavformat.51';
-{$ENDIF}
-
-
   URL_RDONLY = 0;
   URL_WRONLY = 1;
   URL_RDWR   = 2;

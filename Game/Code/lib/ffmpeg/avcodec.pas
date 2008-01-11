@@ -24,8 +24,8 @@ unit avcodec;
 
 {$IFDEF FPC}
   {$IFDEF LINUX}
-    {$LINKLIB libavutil}
-    {$LINKLIB libavcodec}
+  {$LINKLIB libavutil}
+  {$LINKLIB libavcodec}
   {$ENDIF}
 	
   {$MODE DELPHI } (* CAT *)
@@ -38,23 +38,9 @@ interface
 uses
   avutil, rational, opt;  // CAT
 
+{$I version.inc}
+
 const
-
-{$IFDEF MSWINDOWS}
-  av__format = 'avformat-50.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  av__format = 'libavformat.so';
-{$ENDIF}
-{$IFDEF DARWIN}
-  av__format = 'libavformat.dylib';
-{$ENDIF}
-
-
-  LIBAVUTIL_VERSION_INT   =  ((51 shl 16) + (12 shl 8) + 1);
-  LIBAVUTIL_VERSION       = '51.12.1';
-  LIBAVUTIL_BUILD         = LIBAVUTIL_VERSION_INT;
-
   AV_NOPTS_VALUE: int64   = $8000000000000000;
   AV_TIME_BASE            = 1000000;
   AV_TIME_BASE_Q          : TAVRational = (num:1; den:AV_TIME_BASE); (* added by CAT *)

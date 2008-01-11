@@ -29,15 +29,9 @@ unit rational;
 
 interface		(* unit windows is deleted by CAT *)
 
-const
-  {$IFDEF win32}
-    av__util = 'avutil-49.dll';
-  {$ELSE}
-    av__util = 'libavutil.so';  // .0d
-//    av__util = 'libavutil.49';
-  {$ENDIF}
-type
+{$I version.inc}
 
+type
 (*
  * Rational number num/den. *)
   PAVRational = ^TAVRational;

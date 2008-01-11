@@ -32,6 +32,8 @@ interface
 uses
   rational;  (* CAT *)
 
+{$I version.inc}
+
 type
   TAVOptionType = (
     FF_OPT_TYPE_FLAGS,
@@ -45,15 +47,6 @@ type
   );
 
 const
-
-{$IFDEF win32}
-  av__codec = 'avcodec-51.dll';
-{$ELSE}
-  av__codec = 'avcodec.so'; // .0d
-  // av__codec = 'libavcodec.51';
-{$ENDIF}
-
-
   AV_OPT_FLAG_ENCODING_PARAM  = 1;   ///< a generic parameter which can be set by the user for muxing or encoding
   AV_OPT_FLAG_DECODING_PARAM  = 2;   ///< a generic parameter which can be set by the user for demuxing or decoding
   AV_OPT_FLAG_METADATA        = 4;   ///< some data extracted or inserted into the file like title, comment, ...
