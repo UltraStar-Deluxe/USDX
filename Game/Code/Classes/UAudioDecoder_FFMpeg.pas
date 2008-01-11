@@ -271,6 +271,7 @@ var
   stream: TFFMpegDecodeStream;
   seekTarget: int64;
   eofState: boolean;
+  pbIOCtx: PByteIOContext;
 begin
   stream := TFFMpegDecodeStream(streamPtr);
   eofState := false;
@@ -333,14 +334,19 @@ begin
     if(av_read_frame(stream.pFormatCtx, packet) < 0) then
     begin
       // check for end-of-file (eof is not an error)
-      if(url_feof(@stream.pFormatCtx^.pb) <> 0) then
+      {$IF (LIBAVFORMAT_VERSION >= 52)}
+      pbIOCtx := stream.pFormatCtx^.pb;
+      {$ELSE}
+      pbIOCtx := @stream.pFormatCtx^.pb;
+      {$IFEND}
+      if(url_feof(pbIOCtx) <> 0) then
       begin
         eofState := true;
         continue;
       end;
 
       // check for errors
-      if(url_ferror(@stream.pFormatCtx^.pb) = 0) then
+      if(url_ferror(pbIOCtx) = 0) then
       begin
         // no error -> wait for user input
         SDL_Delay(100);

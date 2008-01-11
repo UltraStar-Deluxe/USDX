@@ -226,7 +226,7 @@ begin
     decodeStream.Position := 0;
   end;
   status := sPlaying;
-  mixerStream.AddStream(Self);
+  //mixerStream.AddStream(Self);
 end;
 
 procedure TPortaudioPlaybackStream.Pause();
@@ -444,6 +444,8 @@ var
 begin
   decodeStream := AudioDecoder.Open(Filename);
   MusicStream := TPortaudioPlaybackStream.Create(decodeStream);
+  // FIXME: remove this line
+  mixerStream.AddStream(MusicStream);
 
   if(MusicStream.IsLoaded()) then
   begin
@@ -619,6 +621,8 @@ begin
   end;
 
   playbackStream := TPortaudioPlaybackStream.Create(decodeStream);
+  // FIXME: remove this line
+  mixerStream.AddStream(playbackStream);
 
   //Add CustomSound
   csIndex := High(CustomSounds) + 1;
