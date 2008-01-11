@@ -31,18 +31,21 @@ uses
      UThemes;
 
 type
-  TMPModes = (mpNotReady, mpStopped, mpPlaying, mpRecording, mpSeeking,
-    mpPaused, mpOpen);
+  TBassOutputStream = class(TAudioPlaybackStream)
+    private
+      Handle: HSTREAM;
+    public
+      constructor Create(); overload;
+      constructor Create(stream: HSTREAM); overload;
 
-const
-  ModeStr:  array[TMPModes] of string = ('Not ready', 'Stopped', 'Playing', 'Recording', 'Seeking', 'Paused', 'Open');
-
-type
-  TBassOutputStream = class(TAudioOutputStream)
-    Handle: HSTREAM;
-
-    constructor Create(); overload;
-    constructor Create(stream: HSTREAM); overload;
+      procedure Play();                     override;
+      procedure Pause();                    override;
+      procedure Stop();                     override;
+      procedure Close();                    override;
+      function GetLoop(): boolean;          override;
+      procedure SetLoop(Enabled: boolean);  override;
+      function GetLength(): real;           override;
+      function GetStatus(): TStreamStatus;  override;
   end;
 
 type
@@ -126,6 +129,61 @@ constructor TBassOutputStream.Create(stream: HSTREAM);
 begin
   Create();
   Handle := stream;
+end;
+
+procedure TBassOutputStream.Play();
+begin
+  BASS_ChannelPlay(Handle, True);
+end;
+
+procedure TBassOutputStream.Pause();
+begin
+  //if (Loaded) then
+  BASS_ChannelPause(Handle);
+end;
+
+procedure TBassOutputStream.Stop();
+begin
+  BASS_ChannelStop(Handle);
+end;
+
+procedure TBassOutputStream.Close();
+begin
+  Bass_StreamFree(Handle);
+end;
+
+function TBassOutputStream.GetLoop(): boolean;
+begin
+  // TODO
+  result := false;
+end;
+
+procedure TBassOutputStream.SetLoop(Enabled: boolean);
+begin
+  // TODO
+end;
+
+function TBassOutputStream.GetLength(): real;
+var
+  bytes:    integer;
+begin
+  bytes  := BASS_ChannelGetLength(Handle);
+  Result := BASS_ChannelBytes2Seconds(Handle, bytes);
+end;
+
+function TBassOutputStream.GetStatus(): TStreamStatus;
+var
+  state: DWORD;
+begin
+  state := BASS_ChannelIsActive(Handle);
+  case state of
+    BASS_ACTIVE_PLAYING:
+      result := sPlaying;
+    BASS_ACTIVE_PAUSED:
+      result := sPaused;
+    else
+      result := sStopped;
+  end;
 end;
 
 
@@ -267,8 +325,6 @@ function TAudioPlayback_Bass.Length: real;
 var
   bytes:    integer;
 begin
-  Result := 60;
-
   bytes  := BASS_ChannelGetLength(MusicStream);
   Result := BASS_ChannelBytes2Seconds(MusicStream, bytes);
 end;
@@ -277,8 +333,6 @@ function TAudioPlayback_Bass.getPosition: real;
 var
   bytes:    integer;
 begin
-  Result := 0;
-
   bytes  := BASS_ChannelGetPosition(MusicStream);
   Result := BASS_ChannelBytes2Seconds(MusicStream, bytes);
 end;
