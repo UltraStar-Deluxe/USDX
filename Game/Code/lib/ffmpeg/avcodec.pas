@@ -1946,7 +1946,7 @@ type
     next: PAVCodecParser;
   end;
 
-  procedure av_register_codec_parser (parser: PAVCodecParser); cdecl;
+  procedure av_register_codec_parser (parser: PAVCodecParser);
     cdecl; external av__codec;
 
   function av_parser_init (codec_id: integer): PAVCodecParserContext;
