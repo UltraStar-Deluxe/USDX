@@ -15,17 +15,13 @@ type
   TPlatformMacOSX = class( TInterfacedObject, IPlatform)
   private
   public
-<<<<<<< .mine
     Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
     function  GetGamePath: WideString; override;
     function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
     procedure halt();
-=======
-    function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
-    function GetLogPath        : WideString; override;
-    function GetGameSharedPath : WideString; override;
-    function GetGameUserPath   : WideString; override;
->>>>>>> .r788
+    function  GetLogPath        : WideString; override;
+    function  GetGameSharedPath : WideString; override;
+    function  GetGameUserPath   : WideString; override;
   end;
 
 implementation
@@ -52,6 +48,7 @@ end;
 
 function TPlatformMacOSX.GetLogPath        : WideString;
 begin
+  // surly logs go in /var/log/ ???
   Result := GetBundlePath;
 end;
 
@@ -62,6 +59,8 @@ end;
 
 function TPlatformMacOSX.GetGameUserPath   : WideString;
 begin
+  // is there no user profile ???
+  // like   ...  /home/user/  that could be used for song locations etc ??
   Result := GetBundlePath;
 end;
 
