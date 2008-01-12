@@ -304,9 +304,9 @@ begin
   // Singstar
   Fadeout := false;
 
-  Text[TextArtist].Text      := AktSong.Artist;
-  Text[TextTitle].Text       := AktSong.Title;
-  Text[TextArtistTitle].Text := AktSong.Artist + ' - ' + AktSong.Title;
+  Text[TextArtist].Text      := CurrentSong.Artist;
+  Text[TextTitle].Text       := CurrentSong.Title;
+  Text[TextArtistTitle].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
   // set visibility
   case PlayersPlay of

@@ -37,6 +37,7 @@ implementation
 uses UGraphic,
      UDataBase,
      USongs,
+     USong,
      ULanguage,
      UCommon,
      {$IFDEF win32}
@@ -133,8 +134,8 @@ begin
 
   //Set Songs with Vid
   SongswithVid := 0;
-  For I := 0 to high(Songs.Song) do
-    if (Songs.Song[I].Video <> '') then
+  For I := 0 to Songs.SongList.Count -1 do
+    if (TSong(Songs.SongList[I]).Video <> '') then
       Inc(SongswithVid);
 end;
 
@@ -233,7 +234,7 @@ begin
     %2:d Count of UnSung Songs
     %3:d Count of Songs with Video (A3)
     %4:s Name of the most popular Song}
-  A1 := Length(Songs.Song);
+  A1 := Songs.SongList.Count;
   A2 := Database.GetTotalEntrys(2);
 
   A3 := SongswithVid;

@@ -12,7 +12,7 @@ uses Classes, UPlatform;
 
 type
 
-  TPlatformLinux = class(TPlatform)
+  TPlatformLinux = class(TInterfacedObject, IPlatform)
     function get_homedir(): string;
   public
     Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;

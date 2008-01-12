@@ -4,7 +4,11 @@ interface
 
 {$I switches.inc}
 
-uses UMenu, SDL, USongs, UThemes;
+uses UMenu,
+     SDL,
+     USongs,
+     USong,
+     UThemes;
 
 type
   TScreenEditHeader = class(TMenu)

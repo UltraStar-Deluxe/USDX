@@ -16,6 +16,7 @@ uses UMenu,
      {$ENDIF}
      ULog,
      USongs,
+     USong,
      UMusic,
      UThemes;
 

@@ -9,6 +9,7 @@ interface
 {$I switches.inc}
 
 uses USongs,
+     USong,
      SQLiteTable3;
 
 //--------------------

@@ -15,6 +15,7 @@ uses
     UFiles,
     UTime,
     USongs,
+    USong,
     UIni,
     ULog,
     UTexture,
@@ -143,40 +144,40 @@ begin
         begin
           // Increase BPM
           if SDL_ModState = 0 then
-            AktSong.BPM[0].BPM := Round((AktSong.BPM[0].BPM * 5) + 1) / 5; // (1/20)
+            CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 5) + 1) / 5; // (1/20)
           if SDL_ModState = KMOD_LSHIFT then
-            AktSong.BPM[0].BPM := AktSong.BPM[0].BPM + 4; // (1/1)
+            CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM + 4; // (1/1)
           if SDL_ModState = KMOD_LCTRL then
-            AktSong.BPM[0].BPM := Round((AktSong.BPM[0].BPM * 25) + 1) / 25; // (1/100)
+            CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 25) + 1) / 25; // (1/100)
         end;
 
       SDLK_MINUS:
         begin
           // Decrease BPM
           if SDL_ModState = 0 then
-            AktSong.BPM[0].BPM := Round((AktSong.BPM[0].BPM * 5) - 1) / 5;
+            CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 5) - 1) / 5;
           if SDL_ModState = KMOD_LSHIFT then
-            AktSong.BPM[0].BPM := AktSong.BPM[0].BPM - 4;
+            CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM - 4;
           if SDL_ModState = KMOD_LCTRL then
-            AktSong.BPM[0].BPM := Round((AktSong.BPM[0].BPM * 25) - 1) / 25;
+            CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 25) - 1) / 25;
         end;
 
       SDLK_0:
         begin
           // Increase GAP
           if SDL_ModState = 0 then
-            AktSong.GAP := AktSong.GAP + 10;
+            CurrentSong.GAP := CurrentSong.GAP + 10;
           if SDL_ModState = KMOD_LSHIFT then
-            AktSong.GAP := AktSong.GAP + 1000;
+            CurrentSong.GAP := CurrentSong.GAP + 1000;
         end;
 
       SDLK_9:
         begin
           // Decrease GAP
           if SDL_ModState = 0 then
-            AktSong.GAP := AktSong.GAP - 10;
+            CurrentSong.GAP := CurrentSong.GAP - 10;
           if SDL_ModState = KMOD_LSHIFT then
-            AktSong.GAP := AktSong.GAP - 1000;
+            CurrentSong.GAP := CurrentSong.GAP - 1000;
         end;
 
       SDLK_KP_PLUS:
@@ -222,13 +223,13 @@ begin
         begin
           // Save Song
           if SDL_ModState = KMOD_LSHIFT then
-            SaveSong(AktSong, Czesci[0], Path + FileName, true)
+            SaveSong(CurrentSong, Czesci[0], Path + FileName, true)
           else
-            SaveSong(AktSong, Czesci[0], Path + FileName, false);
+            SaveSong(CurrentSong, Czesci[0], Path + FileName, false);
 
           {if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
             // Save Song
-            SaveSongDebug(AktSong, Czesci[0], 'C:\song.asm', false);}
+            SaveSongDebug(CurrentSong, Czesci[0], 'C:\song.asm', false);}
 
         end;
 
@@ -656,7 +657,7 @@ var
   C:    integer;
   N:    integer;
 begin                    
-  AktSong.BPM[0].BPM := AktSong.BPM[0].BPM / 2;
+  CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM / 2;
   for C := 0 to Czesci[0].High do begin
     Czesci[0].Czesc[C].Start :=     Czesci[0].Czesc[C].Start div 2;
     Czesci[0].Czesc[C].StartNote := Czesci[0].Czesc[C].StartNote div 2;
@@ -673,7 +674,7 @@ var
   C:    integer;
   N:    integer;
 begin
-  AktSong.BPM[0].BPM := AktSong.BPM[0].BPM * 2;
+  CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM * 2;
   for C := 0 to Czesci[0].High do begin
     Czesci[0].Czesc[C].Start :=     Czesci[0].Czesc[C].Start * 2;
     Czesci[0].Czesc[C].StartNote := Czesci[0].Czesc[C].StartNote * 2;
@@ -1160,7 +1161,7 @@ begin
 
   try
     ResetSingTemp;
-    Error := not LoadSong(Path + FileName);
+//    Error := not LoadSong(Path + FileName);  // todo - JB come back to this
   except
     Error := True;
   end;
@@ -1179,15 +1180,15 @@ begin
       MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
     MidiOut.Open;
   {$ENDIF}
-    Text[TextTitle].Text :=   AktSong.Title;
-    Text[TextArtist].Text :=  AktSong.Artist;
-    Text[TextMp3].Text :=     AktSong.Mp3;
+    Text[TextTitle].Text :=   CurrentSong.Title;
+    Text[TextArtist].Text :=  CurrentSong.Artist;
+    Text[TextMp3].Text :=     CurrentSong.Mp3;
 
     Czesci[0].Akt := 0;
     AktNuta := 0;
     Czesci[0].Czesc[0].Nuta[0].Color := 1;
 
-    AudioPlayback.Open(Path + AktSong.Mp3);
+    AudioPlayback.Open(Path + CurrentSong.Mp3);
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(40);
     
@@ -1238,7 +1239,7 @@ begin
     {$ENDIF}
 
     // click
-    AktBeat := Floor(GetMidBeat(MidiPos - AktSong.GAP / 1000));
+    AktBeat := Floor(GetMidBeat(MidiPos - CurrentSong.GAP / 1000));
     Text[TextDebug].Text := IntToStr(AktBeat);
 
     if AktBeat <> LastClick then begin
@@ -1269,8 +1270,8 @@ begin
 
     // click
     if (Click) and (PlaySentence) then begin
-//      AktBeat := Floor(AktSong.BPM[0].BPM * (Music.Position - AktSong.GAP / 1000) / 60);
-      AktBeat := Floor(GetMidBeat(AudioPlayback.Position - AktSong.GAP / 1000));
+//      AktBeat := Floor(CurrentSong.BPM[0].BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
+      AktBeat := Floor(GetMidBeat(AudioPlayback.Position - CurrentSong.GAP / 1000));
       Text[TextDebug].Text := IntToStr(AktBeat);
       if AktBeat <> LastClick then begin
         for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
@@ -1288,8 +1289,8 @@ begin
   Text[TextNote].Text := IntToStr(AktNuta + 1) + ' / ' + IntToStr(Czesci[0].Czesc[Czesci[0].Akt].IlNut);
 
   // Song info
-  Text[TextBPM].Text := FloatToStr(AktSong.BPM[0].BPM / 4);
-  Text[TextGAP].Text := FloatToStr(AktSong.GAP);
+  Text[TextBPM].Text := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+  Text[TextGAP].Text := FloatToStr(CurrentSong.GAP);
 
   //Error reading Variables when no Song is loaded
   if not Error then

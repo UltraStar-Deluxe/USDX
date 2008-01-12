@@ -101,22 +101,29 @@ type
       fCurrentVideoPlaybackEngine : IVideoPlayback;
 
       constructor Create; override;
-      procedure onShow; override;
-      procedure onShowFinish; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
-      function Draw: boolean; override;
-      procedure Finish; virtual;
-      procedure UpdateLCD;
-      procedure Pause; //Pause Mod(Toggles Pause)
+      procedure   onShow; override;
+      procedure   onShowFinish; override;
 
-      //OnSentenceEnd for LineBonus + Singbar
-      procedure onSentenceEnd(S: Cardinal);
-      //OnSentenceChange (for Golden Notes)
-      procedure onSentenceChange(S: Cardinal);
+      function    ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function    Draw: boolean; override;
+
+      procedure   Finish; virtual;
+      procedure   UpdateLCD;
+      procedure   Pause; //Pause Mod(Toggles Pause)
+
+      procedure   onSentenceEnd(S: Cardinal);     //OnSentenceEnd for LineBonus + Singbar
+      procedure   onSentenceChange(S: Cardinal);  //OnSentenceChange (for Golden Notes)
   end;
 
 implementation
-uses UGraphic, UDraw, UMain, Classes, URecord, ULanguage, math;
+
+uses UGraphic,
+     UDraw,
+     UMain,
+     Classes,
+     URecord,
+     ULanguage,
+     math;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
@@ -204,7 +211,7 @@ begin
       AudioPlayback.Pause;
 
       // pause Video
-      if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
+      if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
         fCurrentVideoPlaybackEngine.Pause;
 
     end
@@ -218,7 +225,7 @@ begin
       AudioPlayback.Play;
 
       // Video
-      if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
+      if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
         fCurrentVideoPlaybackEngine.Pause;
 
       Paused := false;
@@ -425,12 +432,13 @@ begin
   {Static[StaticP3RScoreBG].Visible      := V3R;
   Text[TextP3RScore].Visible            := V3R; }
 
-  // load notes
   ResetSingTemp;
 //  Log.LogWarning(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName, '!!!');
-  AktSong := CatSongs.Song[CatSongs.Selected];
+  CurrentSong := CatSongs.Song[CatSongs.Selected];
+
   try
-    if not LoadSong(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName) then
+    if not CurrentSong.LoadSong then
+//    if not LoadSong(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName) then
     begin
       //Error Loading Song -> Go back to Song Screen and Show some Error Message
       FadeTo(@ScreenSong);
@@ -449,26 +457,26 @@ begin
     ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
     Exit;
   end;
-  AktSong.Path := CatSongs.Song[CatSongs.Selected].Path;
-//  AktSong.GAP := AktSong.GAP + 40 {4096 = 100ms for buffer} + 20 {microphone} + 60000 / AktSong.BPM[0].BPM / 2; // temporary until UMain will be fixed
+  CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
+//  CurrentSong.GAP := CurrentSong.GAP + 40 {4096 = 100ms for buffer} + 20 {microphone} + 60000 / CurrentSong.BPM[0].BPM / 2; // temporary until UMain will be fixed
 
   // set movie
-  if (AktSong.Video <> '') and FileExists(AktSong.Path + AktSong.Video) then
+  if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
     // todo: VideoGap and Start time verwursten
-    fCurrentVideoPlaybackEngine.Open( AktSong.Path + AktSong.Video );
+    fCurrentVideoPlaybackEngine.Open( CurrentSong.Path + CurrentSong.Video );
 
-    fCurrentVideoPlaybackEngine.position := AktSong.VideoGAP + AktSong.Start;
+    fCurrentVideoPlaybackEngine.position := CurrentSong.VideoGAP + CurrentSong.Start;
     
-    AktSong.VideoLoaded := true;
+    CurrentSong.VideoLoaded := true;
   end;
 
   // set background
-  if (AktSong.Background <> '')  and (AktSong.VideoLoaded = false) then
+  if (CurrentSong.Background <> '')  and (CurrentSong.VideoLoaded = false) then
     try
-      Tex_Background := Texture.LoadTexture(AktSong.Path + AktSong.Background);
+      Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
     except
-      log.LogError('Background could not be loaded: ' + AktSong.Path + AktSong.Background);
+      log.LogError('Background could not be loaded: ' + CurrentSong.Path + CurrentSong.Background);
       Tex_Background.TexNum := -1;
     end
   else
@@ -478,20 +486,20 @@ begin
 
   // play music (I)
   AudioInput.CaptureStart;
-  AudioPlayback.Position := AktSong.Start;
+  AudioPlayback.Position := CurrentSong.Start;
 //  Music.Play;
 
   // prepare timer (I)
 //  CountSkipTimeSet;
-  Czas.Teraz := AktSong.Start;
+  Czas.Teraz := CurrentSong.Start;
   Czas.Razem := AudioPlayback.Length;
-  if (AktSong.Finish > 0) then Czas.Razem := AktSong.Finish / 1000;
+  if (CurrentSong.Finish > 0) then Czas.Razem := CurrentSong.Finish / 1000;
   Czas.OldBeat := -1;
   for P := 0 to High(Player) do
     ClearScores(P);
 
   // main text
-  Lyrics.Clear (AktSong.BPM[0].BPM, AktSong.Resolution);
+  Lyrics.Clear (CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
 
   // set custom options
   case Ini.LyricsFont of
@@ -870,7 +878,7 @@ procedure TScreenSing.onShowFinish;
 begin
   // play movie (II)
 
-  if AktSong.VideoLoaded then
+  if CurrentSong.VideoLoaded then
   begin
     try
       writeln( 'VideoPlayback.FFmpegGetFrame' );
@@ -884,11 +892,11 @@ begin
      on E : Exception do
      begin
        //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
-       AktSong.VideoLoaded := False;
+       CurrentSong.VideoLoaded := False;
        Log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
        Log.LogError('Error Message : '+ E.message );
        Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.onShowFinish)' );
-       Log.LogError('Corrupted File: ' + AktSong.Video);
+       Log.LogError('Corrupted File: ' + CurrentSong.Video);
        try
 //         CloseSmpeg;
          fCurrentVideoPlaybackEngine.Close;
@@ -1141,7 +1149,8 @@ begin
   SingDrawBackground;
   // update and draw movie
   
-  if ShowFinish and ( AktSong.VideoLoaded or fShowVisualization ) then
+  if ShowFinish and
+     ( CurrentSong.VideoLoaded or fShowVisualization ) then
 //  if ShowFinish then
   begin
 //    try
@@ -1161,12 +1170,12 @@ begin
       begin
 
         //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
-        AktSong.VideoLoaded := False;
+        CurrentSong.VideoLoaded := False;
         log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
         Log.LogError('Error Message : '+ E.message );
         Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.Draw)' );
 
-        Log.LogError('Corrupted File: ' + AktSong.Video);
+        Log.LogError('Corrupted File: ' + CurrentSong.Video);
         try
 //        CloseSmpeg;
           fCurrentVideoPlaybackEngine.Close;
@@ -1183,9 +1192,9 @@ begin
   DrawFG;
 
   // check for music finish
-//  Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(Czas.Teraz*1000) + ' ' + IntToStr(AktSong.Finish));
+//  Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(Czas.Teraz*1000) + ' ' + IntToStr(CurrentSong.Finish));
   if ShowFinish then begin
-  if (not AudioPlayback.Finished) and ((AktSong.Finish = 0) or (Czas.Teraz*1000 <= AktSong.Finish)) then begin
+  if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (Czas.Teraz*1000 <= CurrentSong.Finish)) then begin
   //Pause Mod:
     if not Paused then
     Sing(Self);       // analyze song
@@ -1251,11 +1260,11 @@ begin
     Log.LogBenchmark('Creating files', 0);
   end;
 
-  if AktSong.VideoLoaded then
+  if CurrentSong.VideoLoaded then
   begin
 //    CloseSmpeg;
     fCurrentVideoPlaybackEngine.Close;
-    AktSong.VideoLoaded := false; // to prevent drawing closed video
+    CurrentSong.VideoLoaded := false; // to prevent drawing closed video
   end;
 
   SetFontItalic (False);

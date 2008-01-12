@@ -12,13 +12,20 @@ uses Classes, UPlatform;
 
 type
 
-  TPlatformMacOSX = class(TPlatform)
+  TPlatformMacOSX = class( TInterfacedObject, IPlatform)
   private
   public
+<<<<<<< .mine
+    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
+    function  GetGamePath: WideString; override;
+    function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+    procedure halt();
+=======
     function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
     function GetLogPath        : WideString; override;
     function GetGameSharedPath : WideString; override;
     function GetGameUserPath   : WideString; override;
+>>>>>>> .r788
   end;
 
 implementation
@@ -98,6 +105,17 @@ begin
 	Until ADirent = nil;
 
 	FPCloseDir(TheDir);
+end;
+
+function TPlatformMacOSX.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+begin
+  result := false;
+end;
+
+
+procedure TPlatformMacOSX.halt;
+begin
+  halt;
 end;
 
 end.

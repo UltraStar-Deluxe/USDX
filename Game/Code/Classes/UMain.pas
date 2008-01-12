@@ -20,6 +20,7 @@ uses
     ULog,
     ULyrics,
     UScreenSing,
+    USong,
     OpenGL12,
     {$IFDEF UseSerialPort}
     zlportio {you can disable it and all PortWriteB calls},
@@ -107,6 +108,8 @@ var
   Player:       array of TPlayer;
   PlayersPlay:  integer;
 
+  CurrentSong : TSong;
+
 procedure InitializePaths;
 
 Procedure Main;
@@ -130,7 +133,7 @@ uses USongs,
      math,
      UCommandLine, ULanguage, SDL_ttf,
      USkins, UCovers, UCatCovers, UDataBase, UPlaylist, UDLLManager,
-	 UParty, UCore, UGraphicClasses, UPluginDefs, UPlatform;
+  	 UParty, UCore, UGraphicClasses, UPluginDefs, UPlatform;
 
 const
   Version = 'UltraStar Deluxe V 1.10 Alpha Build';
@@ -192,12 +195,14 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Skin List', 1);
 
+(*
     // Sound Card List
     Log.BenchmarkStart(1);
     Log.LogStatus('Loading Soundcard list', 'Initialization');
     Recording := TRecord.Create;
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Soundcard list', 1);
+*)
 
     // Sound (+ fills Sound Card List)
     Log.BenchmarkStart(1);
@@ -508,23 +513,23 @@ procedure GetMidBeatSub(BPMNum: integer; var Time: real; var CurBeat: real);
 var
   NewTime:  real;
 begin
-  if High(AktSong.BPM) = BPMNum then begin
+  if High(CurrentSong.BPM) = BPMNum then begin
     // last BPM
-    CurBeat := AktSong.BPM[BPMNum].StartBeat + GetBeats(AktSong.BPM[BPMNum].BPM, Time);
+    CurBeat := CurrentSong.BPM[BPMNum].StartBeat + GetBeats(CurrentSong.BPM[BPMNum].BPM, Time);
     Time := 0;
   end else begin
     // not last BPM
     // count how much time is it for start of the new BPM and store it in NewTime
-    NewTime := GetTimeForBeats(AktSong.BPM[BPMNum].BPM, AktSong.BPM[BPMNum+1].StartBeat - AktSong.BPM[BPMNum].StartBeat);
+    NewTime := GetTimeForBeats(CurrentSong.BPM[BPMNum].BPM, CurrentSong.BPM[BPMNum+1].StartBeat - CurrentSong.BPM[BPMNum].StartBeat);
 
     // compare it to remaining time
     if (Time - NewTime) > 0 then begin
       // there is still remaining time
-      CurBeat := AktSong.BPM[BPMNum].StartBeat;
+      CurBeat := CurrentSong.BPM[BPMNum].StartBeat;
       Time := Time - NewTime;
     end else begin
       // there is no remaining time
-      CurBeat := AktSong.BPM[BPMNum].StartBeat + GetBeats(AktSong.BPM[BPMNum].BPM, Time);
+      CurBeat := CurrentSong.BPM[BPMNum].StartBeat + GetBeats(CurrentSong.BPM[BPMNum].BPM, Time);
       Time := 0;
     end; // if
   end; // if
@@ -539,18 +544,18 @@ var
 //  TempTime: real;
 begin
   Result := 0;
-  if Length(AktSong.BPM) = 1 then Result := Time * AktSong.BPM[0].BPM / 60;
+  if Length(CurrentSong.BPM) = 1 then Result := Time * CurrentSong.BPM[0].BPM / 60;
 
   (* 2 BPMs *)
-{  if Length(AktSong.BPM) > 1 then begin
+{  if Length(CurrentSong.BPM) > 1 then begin
     (* new system *)
     CurBeat := 0;
-    TopBeat := GetBeats(AktSong.BPM[0].BPM, Time);
-    if TopBeat > AktSong.BPM[1].StartBeat then begin
+    TopBeat := GetBeats(CurrentSong.BPM[0].BPM, Time);
+    if TopBeat > CurrentSong.BPM[1].StartBeat then begin
       // analyze second BPM
-      Time := Time - GetTimeForBeats(AktSong.BPM[0].BPM, AktSong.BPM[1].StartBeat - CurBeat);
-      CurBeat := AktSong.BPM[1].StartBeat;
-      TopBeat := GetBeats(AktSong.BPM[1].BPM, Time);
+      Time := Time - GetTimeForBeats(CurrentSong.BPM[0].BPM, CurrentSong.BPM[1].StartBeat - CurBeat);
+      CurBeat := CurrentSong.BPM[1].StartBeat;
+      TopBeat := GetBeats(CurrentSong.BPM[1].BPM, Time);
       Result := CurBeat + TopBeat;
 
     end else begin
@@ -560,7 +565,7 @@ begin
   end; // if}
 
   (* more BPMs *)
-  if Length(AktSong.BPM) > 1 then begin
+  if Length(CurrentSong.BPM) > 1 then begin
 
     CurBeat := 0;
     CurBPM := 0;
@@ -578,21 +583,21 @@ var
   CurBPM:   integer;
 begin
   Result := 0;
-  if Length(AktSong.BPM) = 1 then Result := AktSong.GAP / 1000 + Beat * 60 / AktSong.BPM[0].BPM;
+  if Length(CurrentSong.BPM) = 1 then Result := CurrentSong.GAP / 1000 + Beat * 60 / CurrentSong.BPM[0].BPM;
 
   (* more BPMs *)
-  if Length(AktSong.BPM) > 1 then begin
-    Result := AktSong.GAP / 1000;
+  if Length(CurrentSong.BPM) > 1 then begin
+    Result := CurrentSong.GAP / 1000;
     CurBPM := 0;
-    while (CurBPM <= High(AktSong.BPM)) and (Beat > AktSong.BPM[CurBPM].StartBeat) do begin
-      if (CurBPM < High(AktSong.BPM)) and (Beat >= AktSong.BPM[CurBPM+1].StartBeat) then begin
+    while (CurBPM <= High(CurrentSong.BPM)) and (Beat > CurrentSong.BPM[CurBPM].StartBeat) do begin
+      if (CurBPM < High(CurrentSong.BPM)) and (Beat >= CurrentSong.BPM[CurBPM+1].StartBeat) then begin
         // full range
-        Result := Result + (60 / AktSong.BPM[CurBPM].BPM) * (AktSong.BPM[CurBPM+1].StartBeat - AktSong.BPM[CurBPM].StartBeat);
+        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) * (CurrentSong.BPM[CurBPM+1].StartBeat - CurrentSong.BPM[CurBPM].StartBeat);
       end;
 
-      if (CurBPM = High(AktSong.BPM)) or (Beat < AktSong.BPM[CurBPM+1].StartBeat) then begin
+      if (CurBPM = High(CurrentSong.BPM)) or (Beat < CurrentSong.BPM[CurBPM+1].StartBeat) then begin
         // in the middle
-        Result := Result + (60 / AktSong.BPM[CurBPM].BPM) * (Beat - AktSong.BPM[CurBPM].StartBeat);
+        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) * (Beat - CurrentSong.BPM[CurBPM].StartBeat);
       end;
       Inc(CurBPM);
     end;
@@ -615,7 +620,7 @@ begin
   Czas.Teraz := Czas.Teraz + TimeSkip;
 
   Czas.OldBeat := Czas.AktBeat;
-  Czas.MidBeat := GetMidBeat(Czas.Teraz - (AktSong.Gap{ + 90 I've forgotten for what it is}) / 1000); // new system with variable BPM in function
+  Czas.MidBeat := GetMidBeat(Czas.Teraz - (CurrentSong.Gap{ + 90 I've forgotten for what it is}) / 1000); // new system with variable BPM in function
   Czas.AktBeat := Floor(Czas.MidBeat);
 
 //  Czas.OldHalf := Czas.AktHalf;
@@ -623,11 +628,11 @@ begin
 //  Czas.AktHalf := Floor(Czas.MidHalf);
 
   Czas.OldBeatC := Czas.AktBeatC;
-  Czas.MidBeatC := GetMidBeat(Czas.Teraz - (AktSong.Gap) / 1000);
+  Czas.MidBeatC := GetMidBeat(Czas.Teraz - (CurrentSong.Gap) / 1000);
   Czas.AktBeatC := Floor(Czas.MidBeatC);
 
   Czas.OldBeatD := Czas.AktBeatD;
-  Czas.MidBeatD := -0.5+GetMidBeat(Czas.Teraz - (AktSong.Gap + 120 + 20) / 1000); // MidBeat with addition GAP
+  Czas.MidBeatD := -0.5+GetMidBeat(Czas.Teraz - (CurrentSong.Gap + 120 + 20) / 1000); // MidBeat with addition GAP
   Czas.AktBeatD := Floor(Czas.MidBeatD);
   Czas.FracBeatD := Frac(Czas.MidBeatD);
 
@@ -822,7 +827,7 @@ begin
 //  beep;
 
   // On linux we get an AV @ NEWNOTE,  line 600 of Classes/UMain.pas
-  if not assigned( Recording.Sound ) then  // TODO : JB_Linux ... why is this now not assigned... it was fine a few hours ago..
+  if not assigned( AudioInputProcessor.Sound ) then  // TODO : JB_Linux ... why is this now not assigned... it was fine a few hours ago..
     exit;
 
   // analizuje dla obu graczy ten sam sygnal (Sound.OneSrcForBoth)
@@ -831,7 +836,7 @@ begin
   begin
 
     // analyze buffer
-    Recording.Sound[CP].AnalizujBufor;
+    AudioInputProcessor.Sound[CP].AnalyzeBuffer;
 
     // adds some noise
 //    Czas.Ton := Czas.Ton + Round(Random(3)) - 1;
@@ -866,7 +871,7 @@ begin
 //    Czas.Ton := 27;
 
     // gdy moze, to dodaje nute
-    if (Recording.Sound[CP].SzczytJest) and (Mozna) then begin
+    if (AudioInputProcessor.Sound[CP].SzczytJest) and (Mozna) then begin
       // operowanie na ostatniej nucie
       for Pet := 0 to Czesci[0].Czesc[S].HighNut do
         if (Czesci[0].Czesc[S].Nuta[Pet].Start <= Czas.OldBeatD+1)
@@ -875,10 +880,11 @@ begin
           // to robi, tylko dla pary nut (oryginalnej i gracza)
 
           // przesuwanie tonu w odpowiednia game
-          while (Recording.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton > 6) do
-            Recording.Sound[CP].Ton := Recording.Sound[CP].Ton - 12;
-          while (Recording.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton < -6) do
-            Recording.Sound[CP].Ton := Recording.Sound[CP].Ton + 12;
+          while (AudioInputProcessor.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton > 6) do
+            AudioInputProcessor.Sound[CP].Ton := AudioInputProcessor.Sound[CP].Ton - 12;
+
+          while (AudioInputProcessor.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton < -6) do
+            AudioInputProcessor.Sound[CP].Ton := AudioInputProcessor.Sound[CP].Ton + 12;
 
           // Half size Notes Patch
           NoteHit := false;
@@ -887,8 +893,9 @@ begin
           //if Ini.Difficulty = 1 then Range := 1;
           //if Ini.Difficulty = 2 then Range := 0;
           Range := 2 - Ini.Difficulty;
-          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - Recording.Sound[CP].Ton) <= Range then begin
-            Recording.Sound[CP].Ton := Czesci[0].Czesc[S].Nuta[Pet].Ton;
+
+          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - AudioInputProcessor.Sound[CP].Ton) <= Range then begin
+            AudioInputProcessor.Sound[CP].Ton := Czesci[0].Czesc[S].Nuta[Pet].Ton;
 
 
             // Half size Notes Patch
@@ -929,7 +936,7 @@ begin
       Nowa := true;
       // jezeli ostatnia ma ten sam ton
       if (Player[CP].IlNut > 0 )
-        and (Player[CP].Nuta[Player[CP].HighNut].Ton = Recording.Sound[CP].Ton)
+        and (Player[CP].Nuta[Player[CP].HighNut].Ton = AudioInputProcessor.Sound[CP].Ton)
         and (Player[CP].Nuta[Player[CP].HighNut].Start + Player[CP].Nuta[Player[CP].HighNut].Dlugosc = Czas.AktBeatD)
         then Nowa := false;
       // jezeli jest jakas nowa nuta na sprawdzanym beacie
@@ -943,10 +950,10 @@ begin
         Player[CP].IlNut := Player[CP].IlNut + 1;
         Player[CP].HighNut := Player[CP].HighNut + 1;
         SetLength(Player[CP].Nuta, Player[CP].IlNut);
-        Player[CP].Nuta[Player[CP].HighNut].Start := Czas.AktBeatD;
+        Player[CP].Nuta[Player[CP].HighNut].Start   := Czas.AktBeatD;
         Player[CP].Nuta[Player[CP].HighNut].Dlugosc := 1;
-        Player[CP].Nuta[Player[CP].HighNut].Ton := Recording.Sound[CP].Ton; // Ton || TonDokl
-        Player[CP].Nuta[Player[CP].HighNut].Detekt := Czas.MidBeat;
+        Player[CP].Nuta[Player[CP].HighNut].Ton     := AudioInputProcessor.Sound[CP].Ton; // Ton || TonDokl
+        Player[CP].Nuta[Player[CP].HighNut].Detekt  := Czas.MidBeat;
 
 
         // Half Note Patch
@@ -977,7 +984,8 @@ begin
 
 //On Sentence End -> For LineBonus + SingBar
 if (sDet >= low(Czesci[0].Czesc)) AND (sDet <= high(Czesci[0].Czesc)) then
-if ((Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Start + Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Dlugosc - 1) = Czas.AktBeatD) then
+if assigned( Sender ) AND
+   ((Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Start + Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Dlugosc - 1) = Czas.AktBeatD) then
   Sender.onSentenceEnd(sDet);
 
 end;

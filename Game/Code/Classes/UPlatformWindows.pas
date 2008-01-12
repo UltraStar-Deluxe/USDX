@@ -8,19 +8,30 @@ interface
 
 {$I switches.inc}
 
-uses Classes, UPlatform;
+uses Classes,
+     UPlatform;
 
 type
 
-  TPlatformWindows = class(TPlatform)
+  TPlatformWindows = class( TInterfacedObject, IPlatform)
   public
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
-    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean; override;
+    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
+    function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+    function  GetGamePath: WideString;
+    function  FindSongFile(Dir, Mask: widestring): widestring;
+
+    procedure halt;
+
+    function GetLogPath        : WideString;
+    function GetGameSharedPath : WideString;
+    function GetGameUserPath   : WideString;
   end;
 
 implementation
 
-uses SysUtils, Windows;
+uses SysUtils,
+     Windows,
+     Forms;  
 
 type
 
@@ -174,5 +185,43 @@ begin
   until FindNextW(SR) <> 0;
   FindCloseW(SR);
 end;
+
+function TPlatformWindows.GetGamePath: WideString;
+begin
+  // Windows and Linux use this:
+  Result := ExtractFilePath(ParamStr(0));
+end;
+
+procedure TPlatformWindows.halt;
+begin
+  application.terminate;
+end;
+
+function TPlatformWindows.GetLogPath        : WideString;
+begin
+  result := ExtractFilePath(ParamStr(0));
+end;
+
+function TPlatformWindows.GetGameSharedPath : WideString;
+begin
+  result := ExtractFilePath(ParamStr(0));
+end;
+
+function TPlatformWindows.GetGameUserPath   : WideString;
+begin
+  result := ExtractFilePath(ParamStr(0));
+end;
+
+function TPlatformWindows.FindSongFile(Dir, Mask: widestring): widestring;
+var
+  SR:     TSearchRec;   // for parsing song directory
+begin
+  Result := '';
+  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin
+    Result := SR.Name;
+  end; // if
+  SysUtils.FindClose(SR);
+end;
+
 
 end.

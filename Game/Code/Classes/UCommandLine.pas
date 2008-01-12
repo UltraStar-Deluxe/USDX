@@ -61,7 +61,8 @@ const
 
 implementation
 
-uses SysUtils;
+uses SysUtils,
+     uPlatform;
 //      uINI   -- Nasty requirement... ( removed with permission of blindy )
 
 
@@ -99,7 +100,7 @@ begin
 
   writeln( '' );
 
-  halt;
+  platform.halt;
 end;
 
 //-------------

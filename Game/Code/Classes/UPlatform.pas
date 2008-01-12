@@ -16,7 +16,6 @@ interface
 uses Classes;
 
 type
-  
   TDirectoryEntry = Record
                       Name        : WideString;
                       IsDirectory : Boolean;
@@ -27,33 +26,16 @@ type
 	
   IPlatform = Interface
   ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCA23DF}']
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
-    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-	
-    function GetLogPath        : WideString;
-    function GetGameSharedPath : WideString;
-    function GetGameUserPath   : WideString;
-  end;
- 
-  TPlatform = class( TInterfacedOBject, IPlatform )
-
-	  // DirectoryFindFiles returns all files matching the filter. Do not use '*' in the filter.
-	  // If you set ReturnAllSubDirs = true all directories will be returned, if yout set it to false
-	  // directories are completely ignored.
-    function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; virtual; abstract;
-    
-    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean; virtual;
-
-//    function GetGamePath       : WideString; virtual;
-    function GetLogPath        : WideString; virtual;
-    function GetGameSharedPath : WideString; virtual;
-    function GetGameUserPath   : WideString; virtual;
-
+    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
+    function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+    function  FindSongFile(Dir, Mask: widestring): widestring;
+    procedure halt;
+    function  GetLogPath        : WideString;
+    function  GetGameSharedPath : WideString;
+    function  GetGameUserPath   : WideString;
   end;
 
-
-var
-  Platform : IPlatform;
+  function Platform : IPlatform;
 
 implementation
 
@@ -69,48 +51,30 @@ uses
   UPlatformMacOSX;
   {$ENDIF}
 
-{ TPlatform }
 
-(*
-function TPlatform.GetGamePath: WideString;
+// I have modified it to use the Platform_singleton in this location ( in the implementaiton )
+// so that this variable can NOT be overwritten from anywhere else in the application.
+// the accessor function platform, emulates all previous calls to work the same way.  
+var
+  Platform_singleton : IPlatform;
+
+function Platform : IPlatform;
 begin
-  // Windows and Linux use this:
-  Result := ExtractFilePath(ParamStr(0));
-end;
-*)
-function TPlatform.GetLogPath        : WideString;
-begin
-  result := ExtractFilePath(ParamStr(0));
+  result := Platform_singleton;
 end;
 
-function TPlatform.GetGameSharedPath : WideString;
-begin
-  result := ExtractFilePath(ParamStr(0));
-end;
-
-function TPlatform.GetGameUserPath   : WideString;
-begin
-  result := ExtractFilePath(ParamStr(0));
-end;
-
-function TPlatform.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-begin
-  // Linux and Mac don't check for running apps at the moment
-  Result := false;
-end;
 
 initialization
-
   {$IFDEF MSWINDOWS}
-    Platform := TPlatformWindows.Create;
+    Platform_singleton := TPlatformWindows.Create;
   {$ENDIF}
   {$IFDEF LINUX}
-    Platform := TPlatformLinux.Create;
+    Platform_singleton := TPlatformLinux.Create;
   {$ENDIF}
   {$IFDEF DARWIN}
-    Platform := TPlatformMacOSX.Create;
+    Platform_singleton := TPlatformMacOSX.Create;
   {$ENDIF}
 
 finalization
-    Platform := nil;
+    Platform_singleton := nil;
 end.

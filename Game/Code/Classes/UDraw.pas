@@ -161,7 +161,7 @@ end;
 
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
 var
-  Pet:    integer;
+  Pet        : integer;
 begin;
 //  Log.LogStatus('Oscilloscope', 'SingDraw');
   glColor3f(Skin_OscR, Skin_OscG, Skin_OscB);
@@ -169,13 +169,18 @@ begin;
     glColor3f(1, 1, 1);  }
 
   glBegin(GL_LINE_STRIP);
-    glVertex2f(X, -Recording.Sound[NrSound].BufferArray[1] / $10000 * H + Y + H/2);
-    for Pet := 2 to Recording.Sound[NrSound].n div 1 do begin
-      glVertex2f(X + (Pet-1) * W / (Recording.Sound[NrSound].n - 1),
-      -Recording.Sound[NrSound].BufferArray[Pet] / $10000 * H + Y + H/2);
+
+    glVertex2f(X, -AudioInputProcessor.Sound[NrSound].BufferArray[1] / $10000 * H + Y + H/2);
+
+    for Pet := 2 to AudioInputProcessor.Sound[NrSound].n div 1 do
+    begin
+      glVertex2f( X + (Pet-1) * W / (AudioInputProcessor.Sound[NrSound].n - 1),
+                  -AudioInputProcessor.Sound[NrSound].BufferArray[Pet] / $10000 * H + Y + H/2 );
     end;
   glEnd;
 end;
+
+
 
 procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
 var
@@ -366,7 +371,7 @@ var
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  if Player[NrGracza].IlNut > 0 then
+////  if Player[NrGracza].IlNut > 0 then
     begin
       TempR := W / (Czesci[0].Czesc[Czesci[0].Akt].Koniec - Czesci[0].Czesc[Czesci[0].Akt].StartNote);
         for N := 0 to Player[NrGracza].HighNut do
@@ -480,14 +485,7 @@ begin
 
   lTmpA := (Right-Left);
   lTmpB := (Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].Koniec - Czesci[NrCzesci].Czesc[Czesci[NrCzesci].Akt].StartNote);
-  
-  {$IFDEF LAZARUS}
-{*
-  writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
-  writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
-  writeln( '' );
-*}
-  {$ENDIF}
+
 
   if ( lTmpA > 0 ) AND
      ( lTmpB > 0 ) THEN
@@ -555,7 +553,7 @@ begin
         end; // if not FreeStyle
       end; // with
     end; // for
-  end; // with
+  end; // with                      1
 
   glDisable(GL_BLEND);
   glDisable(GL_TEXTURE_2D);

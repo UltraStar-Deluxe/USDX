@@ -79,7 +79,7 @@ begin
   //Check for Soundcard with same Description
   For I := 0 to SC-1 do
   begin
-    if (Recording.SoundCard[I].Description = Desc) then
+    if (AudioInputProcessor.SoundCard[I].Description = Desc) then
     begin
       Result := True;
       Break;
@@ -88,7 +88,7 @@ begin
 end;
 
 begin
-  with Recording do
+  with AudioInputProcessor do
   begin
     // checks for recording devices and puts them into an array
     SetLength(SoundCard, 0);
@@ -170,21 +170,22 @@ var
   PlayerLeft, PlayerRight: integer;
   CaptureSoundLeft, CaptureSoundRight: TSound;
 begin
-  for S := 0 to High(Recording.Sound) do
-    Recording.Sound[S].BufferLong[0].Clear;
+  for S := 0 to High(AudioInputProcessor.Sound) do
+    AudioInputProcessor.Sound[S].BufferLong[0].Clear;
 
-  for SC := 0 to High(Ini.CardList) do begin
+  for SC := 0 to High(Ini.CardList) do
+  begin
     PlayerLeft  := Ini.CardList[SC].ChannelL-1;
     PlayerRight := Ini.CardList[SC].ChannelR-1;
     if PlayerLeft  >= PlayersPlay then PlayerLeft  := -1;
     if PlayerRight >= PlayersPlay then PlayerRight := -1;
     if (PlayerLeft > -1) or (PlayerRight > -1) then begin
       if (PlayerLeft > -1) then
-        CaptureSoundLeft := Recording.Sound[PlayerLeft]
+        CaptureSoundLeft := AudioInputProcessor.Sound[PlayerLeft]
       else
         CaptureSoundLeft := nil;
       if (PlayerRight > -1) then
-        CaptureSoundRight := Recording.Sound[PlayerRight]
+        CaptureSoundRight := AudioInputProcessor.Sound[PlayerRight]
       else
         CaptureSoundRight := nil;
 
@@ -224,14 +225,14 @@ end;
 function MicrophoneCallback(stream: HSTREAM; buffer: Pointer;
     len: Cardinal; Card: Cardinal): boolean; stdcall;
 begin
-  Recording.HandleMicrophoneData(buffer, len, Recording.SoundCard[Card]);
+  AudioInputProcessor.HandleMicrophoneData(buffer, len, AudioInputProcessor.SoundCard[Card]);
   Result := true;
 end;
 
 {*
  * Start input-capturing on Soundcard specified by Card.
  * Params:
- *   Card - soundcard index in Recording.SoundCard array
+ *   Card - soundcard index in AudioInputProcessor.SoundCard array
  *   CaptureSoundLeft  - sound(-buffer) used for left channel capture data
  *   CaptureSoundRight - sound(-buffer) used for right channel capture data
  *}
@@ -254,7 +255,7 @@ begin
   end
   else
   begin
-    bassSoundCard := TBassSoundCard(Recording.SoundCard[Card]);
+    bassSoundCard := TBassSoundCard(AudioInputProcessor.SoundCard[Card]);
     bassSoundCard.CaptureSoundLeft  := CaptureSoundLeft;
     bassSoundCard.CaptureSoundRight := CaptureSoundRight;
 
@@ -267,7 +268,7 @@ end;
 {*
  * Stop input-capturing on Soundcard specified by Card.
  * Params:
- *   Card - soundcard index in Recording.SoundCard array
+ *   Card - soundcard index in AudioInputProcessor.SoundCard array
  *}
 procedure TAudioInput_Bass.StopCard(Card: byte);
 begin

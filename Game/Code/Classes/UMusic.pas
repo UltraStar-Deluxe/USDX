@@ -413,6 +413,7 @@ end;
 initialization
 begin
   singleton_AudioManager := TInterfaceList.Create();
+  
 end;
 
 finalization

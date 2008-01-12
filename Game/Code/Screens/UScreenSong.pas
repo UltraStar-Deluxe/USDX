@@ -383,7 +383,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if Length(Songs.Song) > 0 then
+          if Songs.SongList.Count > 0 then
           begin
             {$IFDEF UseSerialPort}
               // PortWriteB($378, 0);
@@ -438,7 +438,7 @@ begin
 
       SDLK_M: //Show SongMenu
         begin
-          if (Length(Songs.Song) > 0) then begin
+          if (Songs.SongList.Count > 0) then begin
             if (Mode = 0) then begin
               if not CatSongs.Song[Interaction].Main then begin // clicked on Song
                 if CatSongs.CatNumShow = -3 then
@@ -457,14 +457,14 @@ begin
 
       SDLK_P: //Show Playlist Menu
         begin
-          if (Length(Songs.Song) > 0) AND (Mode = 0) then begin
+          if (Songs.SongList.Count > 0) AND (Mode = 0) then begin
               ScreenSongMenu.MenuShow(SM_Playlist_Load);
           end;
         end;
 
       SDLK_J: //Show Jumpto Menu
         begin
-          if (Length(Songs.Song) > 0) AND (Mode = 0) then
+          if (Songs.SongList.Count > 0) AND (Mode = 0) then
           begin
             ScreenSongJumpto.Visible := True;
           end;
@@ -553,7 +553,7 @@ begin
 
       SDLK_RIGHT:
         begin
-          if (Length(Songs.Song) > 0) AND (Mode = 0) then
+          if (Songs.SongList.Count > 0) AND (Mode = 0) then
           begin
             AudioPlayback.PlayChange;
             SelectNext;
@@ -568,7 +568,7 @@ begin
 
       SDLK_LEFT:
         begin
-          if (Length(Songs.Song) > 0)AND (Mode = 0)  then begin
+          if (Songs.SongList.Count > 0)AND (Mode = 0)  then begin
             AudioPlayback.PlayChange;
             SelectPrev;
             ChangeMusic;
@@ -585,7 +585,7 @@ begin
 
       SDLK_R:
         begin
-          if (Length(Songs.Song) > 0) AND (Mode = 0) then begin
+          if (Songs.SongList.Count > 0) AND (Mode = 0) then begin
 
             if (SDL_ModState = KMOD_LSHIFT) AND (Ini.Tabs_at_startup = 1) then //Random Category
             begin
@@ -1819,7 +1819,7 @@ begin
     EqualizerTime := A;
     Data := AudioPlayback.GetFFTData;
 
-    B:=0;
+    B   := 0;
     Pos := 0;
     Res := ceil(92/Theme.Song.Equalizer.Bands);//How much channels are used for one Band
 
@@ -2121,7 +2121,7 @@ end;
 
 procedure TScreenSong.OpenEditor;
 begin
-  if (Length(Songs.Song) > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = 0) then
+  if (Songs.SongList.Count > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = 0) then
   begin
     AudioPlayback.Stop;
     AudioPlayback.PlayStart;

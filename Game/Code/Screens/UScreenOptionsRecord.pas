@@ -15,14 +15,21 @@ type
       SelectSlideChannelR:    integer;
     public
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
-      procedure onShow; override;
-      procedure UpdateCard;
+      function    Draw: boolean; override;
+      function    ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      procedure   onShow; override;
+      procedure   onHide; override;
+      procedure   UpdateCard;
   end;
 
 implementation
 
-uses SysUtils, UGraphic, URecord, ULog;
+uses SysUtils,
+     UGraphic,
+     URecord,
+     UDraw,
+     UMain,
+     ULog;
 
 function TScreenOptionsRecord.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -43,7 +50,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 4 then begin
+          if SelInteraction = 5 then begin
             Ini.Save;
             AudioPlayback.PlayBack;
             FadeTo(@ScreenOptions);
@@ -55,19 +62,21 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
             AudioPlayback.PlayOption;
             InteractInc;
           end;
-          if SelInteraction = 0 then UpdateCard;
+//          if SelInteraction = 0 then UpdateCard;
+          UpdateCard;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
             AudioPlayback.PlayOption;
             InteractDec;
           end;
-          if SelInteraction = 0 then UpdateCard;
+          UpdateCard;          
+//          if SelInteraction = 0 then UpdateCard;
         end;
     end;
   end;
@@ -80,22 +89,27 @@ var
   SCI:    integer;
 begin
   inherited Create;
-  
+
   LoadFromTheme(Theme.OptionsRecord);
 
-  SetLength(ICard, Length(Recording.SoundCard));
-  for SC := 0 to High(Recording.SoundCard) do
-    ICard[SC] := Recording.SoundCard[SC].Description;
+  SetLength(ICard, Length(AudioInputProcessor.SoundCard));
+  for SC := 0 to High(AudioInputProcessor.SoundCard) do
+    ICard[SC] := AudioInputProcessor.SoundCard[SC].Description;
 
-  if (Length(Recording.SoundCard) > 0) then begin
-    SetLength(IInput, Length(Recording.SoundCard[Ini.Card].Input));
-    for SCI := 0 to High(Recording.SoundCard[Ini.Card].Input) do
-      IInput[SCI] := Recording.SoundCard[Ini.Card].Input[SCI].Name;
+  if (Length(AudioInputProcessor.SoundCard) > 0) then
+  begin
+    SetLength(IInput, Length(AudioInputProcessor.SoundCard[Ini.Card].Input));
+    for SCI := 0 to High(AudioInputProcessor.SoundCard[Ini.Card].Input) do
+      IInput[SCI] := AudioInputProcessor.SoundCard[Ini.Card].Input[SCI].Name;
+
 
     AddSelectSlide(Theme.OptionsRecord.SelectSlideCard, Ini.Card, ICard);
+
     SelectSlideInput    := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput, Ini.CardList[0].Input, IInput);
     SelectSlideChannelL := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelL, Ini.CardList[0].ChannelL, IChannel);
     SelectSlideChannelR := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelR, Ini.CardList[0].ChannelR, IChannel);
+
+    AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);
   end;
 
   AddButton(Theme.OptionsRecord.ButtonExit);
@@ -108,6 +122,16 @@ end;
 procedure TScreenOptionsRecord.onShow;
 begin
   Interaction := 0;
+  writeln( 'AudioInput.CaptureStart') ;
+
+  PlayersPlay := 2;  //  TODO : This needs fixing
+  AudioInput.CaptureStart;
+
+end;
+
+procedure TScreenOptionsRecord.onHide;
+begin
+  AudioInput.CaptureStop;
 end;
 
 procedure TScreenOptionsRecord.UpdateCard;
@@ -115,18 +139,74 @@ var
   SC:     integer;
   SCI:    integer;
 begin
-  SC := Ini.Card;
-//  if SC = 1 then beep;
+  writeln( 'Update Card') ;
+  AudioInput.CaptureStop;
+  try
+    SC := Ini.Card;
+  //  if SC = 1 then beep;
 
-  SetLength(IInput, Length(Recording.SoundCard[SC].Input));
-  for SCI := 0 to High(Recording.SoundCard[SC].Input) do begin
-    IInput[SCI] := Recording.SoundCard[SC].Input[SCI].Name;
-//    Log.LogError(IInput[SCI]);
+    SetLength(IInput, Length(AudioInputProcessor.SoundCard[SC].Input));
+    for SCI := 0 to High(AudioInputProcessor.SoundCard[SC].Input) do begin
+      IInput[SCI] := AudioInputProcessor.SoundCard[SC].Input[SCI].Name;
+  //    Log.LogError(IInput[SCI]);
+    end;
+
+
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideInput, SelectSlideInput, IInput, Ini.CardList[SC].Input);
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelL, SelectSlideChannelL, IChannel, Ini.CardList[SC].ChannelL);
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelR, SelectSlideChannelR, IChannel, Ini.CardList[SC].ChannelR);
+
+  finally
+    AudioInput.CaptureStart;
   end;
-
-  UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideInput, SelectSlideInput, IInput, Ini.CardList[SC].Input);
-  UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelL, SelectSlideChannelL, IChannel, Ini.CardList[SC].ChannelL);
-  UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelR, SelectSlideChannelR, IChannel, Ini.CardList[SC].ChannelR);
 end;
+
+function TScreenOptionsRecord.Draw: boolean;
+begin
+  DrawBG;
+  DrawFG;
+
+    // TODO : this needs to be positioned correctly
+    if PlayersPlay = 1 then
+      SingDrawOscilloscope(190 + 10*ScreenX, 55, 180, 40, 0);
+
+    if PlayersPlay = 2 then begin
+      SingDrawOscilloscope(190 + 10*ScreenX, 55, 180, 40, 0);
+      SingDrawOscilloscope(425 + 10*ScreenX, 55, 180, 40, 1);
+    end;
+
+    if PlayersPlay = 4 then begin
+      if ScreenAct = 1 then begin
+        SingDrawOscilloscope(190 + 10*ScreenX, 55, 180, 40, 0);
+        SingDrawOscilloscope(425 + 10*ScreenX, 55, 180, 40, 1);
+      end;
+      if ScreenAct = 2 then begin
+        SingDrawOscilloscope(190 + 10*ScreenX, 55, 180, 40, 2);
+        SingDrawOscilloscope(425 + 10*ScreenX, 55, 180, 40, 3);
+      end;
+    end;
+
+    if PlayersPlay = 3 then begin
+      SingDrawOscilloscope(75 + 10*ScreenX, 95, 100, 20, 0);
+      SingDrawOscilloscope(370 + 10*ScreenX, 95, 100, 20, 1);
+      SingDrawOscilloscope(670 + 10*ScreenX, 95, 100, 20, 2);
+    end;
+
+    if PlayersPlay = 6 then begin
+      if ScreenAct = 1 then begin
+        SingDrawOscilloscope( 75 + 10*ScreenX, 95, 100, 20, 0);
+        SingDrawOscilloscope(370 + 10*ScreenX, 95, 100, 20, 1);
+        SingDrawOscilloscope(670 + 10*ScreenX, 95, 100, 20, 2);
+      end;
+      if ScreenAct = 2 then begin
+        SingDrawOscilloscope( 75 + 10*ScreenX, 95, 100, 20, 3);
+        SingDrawOscilloscope(370 + 10*ScreenX, 95, 100, 20, 4);
+        SingDrawOscilloscope(670 + 10*ScreenX, 95, 100, 20, 5);
+      end;
+    end;
+
+  Result := True;
+end;
+
 
 end.

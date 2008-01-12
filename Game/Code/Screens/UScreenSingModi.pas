@@ -520,7 +520,7 @@ end;
   // comment by blindy: wo zum henker wird denn in diesem screen ein video abgespielt?
   // update and draw movie
   // <mog> wie wo wadd? also in der selben funktion in der uscreensing kommt des video in der zeile 995, oder was wollteste wissen? :X
-{  if ShowFinish and AktSong.VideoLoaded AND DllMan.Selected.LoadVideo then begin
+{  if ShowFinish and CurrentSong.VideoLoaded AND DllMan.Selected.LoadVideo then begin
     UpdateSmpeg; // this only draws
   end;}
 
@@ -530,7 +530,7 @@ end;
   if ShowFinish then begin
     if DllMan.Selected.LoadSong then
     begin
-      if (not AudioPlayback.Finished) and ((AktSong.Finish = 0) or (Czas.Teraz*1000 <= AktSong.Finish)) then begin
+      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (Czas.Teraz*1000 <= CurrentSong.Finish)) then begin
         //Pause Mod:
         if not Paused then
           Sing(Self);       // analyze song

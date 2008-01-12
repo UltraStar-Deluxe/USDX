@@ -51,14 +51,14 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
             AudioPlayback.PlayOption;
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
             AudioPlayback.PlayOption;
             InteractDec;
           end;
@@ -75,15 +75,14 @@ begin
 
   LoadFromTheme(Theme.OptionsSound);
 
-  AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);
+  AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);  // TODO - This need moving to ScreenOptionsRecord
   AddSelect(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
   AddSelect(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
   AddSelect(Theme.OptionsSound.SelectThreshold, Ini.Threshold, IThreshold);
 
   //Song Preview
   AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewVolume, Ini.PreviewVolume, IPreviewVolume);
-  AddSelectSlide
-  (Theme.OptionsSound.SelectSlidePreviewFading, Ini.PreviewFading, IPreviewFading);
+  AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewFading, Ini.PreviewFading, IPreviewFading);
 
   AddButton(Theme.OptionsSound.ButtonExit);
   if (Length(Button[0].Text)=0) then

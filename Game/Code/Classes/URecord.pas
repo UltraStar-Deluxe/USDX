@@ -14,7 +14,9 @@ uses Classes,
      UCommon,
      UMusic,
      UIni;
-     
+
+//  http://www.poltran.com
+
 type
   TSound = class
     BufferNew:    TMemoryStream; // buffer for newest sample
@@ -26,7 +28,7 @@ type
 
     // pitch detection
     SzczytJest:   boolean;       // czy jest szczyt
-    Szczyt:       integer;    // pozycja szczytu na osi poziomej
+    pivot :       integer;    // Position of summit (top) on horizontal pivot 
     TonDokl:      real;       // ton aktualnego szczytu
     Ton:          integer;    // ton bez ulamka
     TonGamy:      integer;    // ton w gamie. wartosci: 0-11
@@ -34,8 +36,8 @@ type
 
     // procedures
     procedure ProcessNewBuffer;
-    procedure AnalizujBufor;    // use to analyze sound from buffers to get new pitch
-    procedure AnalizujByAutocorrelation;    // we call it to analyze sound by checking Autocorrelation
+    procedure AnalyzeBuffer;    // use to analyze sound from buffers to get new pitch
+    procedure AnalyzeByAutocorrelation;    // we call it to analyze sound by checking Autocorrelation
     function  AnalyzeAutocorrelationFreq(Freq: real): real;   // use this to check one frequency by Autocorrelation
   end;
 
@@ -54,30 +56,45 @@ type
     CaptureSoundRight: TSound; // sound(-buffer) used for right channel capture data
   end;
 
-  TRecord = class
+  TAudioInputProcessor = class
     Sound:      array of TSound;
     SoundCard:  array of TGenericSoundCard;
+
     constructor Create;
-    
+
     // handle microphone input
     procedure HandleMicrophoneData(Buffer: Pointer; Length: Cardinal;
-        InputDevice: TGenericSoundCard);
+                                   InputDevice: TGenericSoundCard);
+
+    function volume( aChannel : byte ): byte;
   end;
 
   smallintarray = array [0..maxInt shr 1-1] of smallInt;
   psmallintarray = ^smallintarray;
 
-var
-  Poz:        integer;
-  Recording:  TRecord;
+  function AudioInputProcessor(): TAudioInputProcessor;
 
 implementation
 
 uses UMain;
 
+var
+  singleton_AudioInputProcessor : TAudioInputProcessor = nil;
+
+
 // FIXME: Race-Conditions between Callback-thread and main-thread
 //        on BufferArray (maybe BufferNew also).
 //        Use SDL-mutexes to solve this problem.
+
+
+function AudioInputProcessor(): TAudioInputProcessor;
+begin
+  if singleton_AudioInputProcessor = nil then
+    singleton_AudioInputProcessor := TAudioInputProcessor.create();
+
+  result := singleton_AudioInputProcessor;
+ 
+end;
 
 procedure TSound.ProcessNewBuffer;
 var
@@ -108,12 +125,12 @@ begin
   end;
 end;
 
-procedure TSound.AnalizujBufor;
+procedure TSound.AnalyzeBuffer;
 begin
-  AnalizujByAutocorrelation;
+  AnalyzeByAutocorrelation;
 end;
 
-procedure TSound.AnalizujByAutocorrelation;
+procedure TSound.AnalyzeByAutocorrelation;
 var
   T:        integer;  // tone
   F:        real; // freq
@@ -143,7 +160,7 @@ begin
   // analyze all 12 halftones
   for T := 0 to 35 do // to 11, then 23, now 35 (for Whitney and my high voice)
   begin
-    F := 130.81*Power(1.05946309436, T)/2; // let's analyze below 130.81
+    F := 130.81 * Power(1.05946309436, T)/2; // let's analyze below 130.81
     Wages[T] := AnalyzeAutocorrelationFreq(F);
 
     if Wages[T] > MaxW then
@@ -164,8 +181,8 @@ begin
   if MaxV >= Threshold then
   begin // found acceptable volume // 0.1
     SzczytJest := true;
-    TonGamy := MaxT mod 12;
-    Ton := MaxT mod 12;
+    TonGamy    := MaxT mod 12;
+    Ton        := MaxT mod 12;
   end;
 
 end;
@@ -206,8 +223,7 @@ end;
  *   Length - number of bytes in Buffer
  *   Input - Soundcard-Input used for capture
  *}
-procedure TRecord.HandleMicrophoneData(Buffer: Pointer; Length: Cardinal;
-    InputDevice: TGenericSoundCard);
+procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: Pointer; Length: Cardinal; InputDevice: TGenericSoundCard);
 var
   L:    integer;
   S:    integer;
@@ -231,8 +247,14 @@ begin
   for S := 0 to L-1 do
   begin
     I := PSI^[S] * Boost;
-    if I > 32767 then I := 32767; // 0.5.0: limit
-    if I < -32768 then I := -32768; // 0.5.0: limit
+
+    // TODO :  JB -  This will clip the audio... cant we reduce the "Boot" if the data clips ??
+    if I > 32767 then
+      I := 32767; // 0.5.0: limit
+
+    if I < -32768 then
+      I := -32768; // 0.5.0: limit
+
     PSI^[S] := I;
   end;
 
@@ -266,12 +288,13 @@ begin
   end;
 end;
 
-constructor TRecord.Create;
+constructor TAudioInputProcessor.Create;
 var
   S:        integer;
 begin
   SetLength(Sound, 6 {max players});//Ini.Players+1);
-  for S := 0 to High(Sound) do begin //Ini.Players do begin
+  for S := 0 to High(Sound) do
+  begin //Ini.Players do begin
     Sound[S] := TSound.Create;
     Sound[S].Num := S;
     Sound[S].BufferNew := TMemoryStream.Create;
@@ -281,6 +304,20 @@ begin
   end;
 end;
 
+function TAudioInputProcessor.volume( aChannel : byte ): byte;
+var
+  lCount  : Integer;
+  lMaxVol : double;
+begin;
+  lMaxVol :=  AudioInputProcessor.Sound[aChannel].BufferArray[1];
+  for lCount := 2 to AudioInputProcessor.Sound[aChannel].n div 1 do
+  begin
+    if AudioInputProcessor.Sound[aChannel].BufferArray[lCount] > lMaxVol then
+      lMaxVol := AudioInputProcessor.Sound[aChannel].BufferArray[lCount];
+  end;
+
+  result := trunc( ( 255 / 32767 ) * trunc( lMaxVol ) );
+end;
 
 end.
 

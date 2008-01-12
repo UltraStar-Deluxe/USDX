@@ -463,9 +463,9 @@ begin
     //{
     B := False;
     //Look for Soundcard
-    for I2 := 0 to High(Recording.SoundCard) do
+    for I2 := 0 to High(AudioInputProcessor.SoundCard) do
     begin
-      if (S = Trim(Recording.SoundCard[I2].Description)) then
+      if (S = Trim(AudioInputProcessor.SoundCard[I2].Description)) then
       begin
       B := True;
       Break;
@@ -485,12 +485,12 @@ begin
   end;
 
   // Record - append detected soundcards
-  for I := 0 to High(Recording.SoundCard) do
+  for I := 0 to High(AudioInputProcessor.SoundCard) do
   begin
     B := False;
     For I2 := 0 to High(CardList) do
     begin //Search for Card in List
-      if (CardList[I2].Name = Trim(Recording.SoundCard[I].Description)) then
+      if (CardList[I2].Name = Trim(AudioInputProcessor.SoundCard[I].Description)) then
       begin
         B := True;
         Break;
@@ -502,7 +502,7 @@ begin
     begin
       I3 := Length(CardList);
       SetLength(CardList, I3+1);
-      CardList[I3].Name := Trim(Recording.SoundCard[I].Description);
+      CardList[I3].Name := Trim(AudioInputProcessor.SoundCard[I].Description);
       CardList[I3].Input := 0;
       CardList[I3].ChannelL := 0;
       CardList[I3].ChannelR := 0;

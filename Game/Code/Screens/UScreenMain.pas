@@ -124,7 +124,7 @@ begin
           //Solo
           if (Interaction = 0) then
           begin
-            if (Length(Songs.Song) >= 1) then
+            if (Songs.SongList.Count >= 1) then
             begin
               AudioPlayback.PlayStart;
               if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
@@ -138,8 +138,9 @@ begin
           end;
 
           //Multi
-          if Interaction = 1 then begin
-            if (Length(Songs.Song) >= 1) then
+          if Interaction = 1 then
+          begin
+            if (Songs.SongList.Count >= 1) then
             begin
               if (Length(DLLMan.Plugins)>=1) then
               begin
