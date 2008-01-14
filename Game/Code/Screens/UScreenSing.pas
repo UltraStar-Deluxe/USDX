@@ -120,6 +120,7 @@ implementation
 uses UGraphic,
      UDraw,
      UMain,
+     USong,
      Classes,
      URecord,
      ULanguage,
@@ -443,7 +444,7 @@ begin
       //Error Loading Song -> Go back to Song Screen and Show some Error Message
       FadeTo(@ScreenSong);
       //Select New Song in Party Mode
-      if ScreenSong.Mode = 1 then
+      if ScreenSong.Mode = smPartyMode then
         ScreenSong.SelectRandomSong;
       ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
       Exit;
@@ -452,7 +453,7 @@ begin
     //Error Loading Song -> Go back to Song Screen and Show some Error Message
     FadeTo(@ScreenSong);
     //Select New Song in Party Mode
-      if ScreenSong.Mode = 1 then
+      if ScreenSong.Mode = smPartyMode then
         ScreenSong.SelectRandomSong;
     ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
     Exit;

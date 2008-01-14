@@ -24,6 +24,7 @@ uses
   ULanguage,
   ULCD,
   ULight,
+  USong,
   UIni;
 
 type
@@ -56,7 +57,8 @@ type
       EqualizerTime2: Byte;
 
       //Party Mod
-      Mode: Byte;  //0 = Standard, 1= Go to PartyMode after Selection + Change to Random Song at Show
+      Mode: TSingMode;
+
       //party Statics (Joker)
       StaticTeam1Joker1: Cardinal;
       StaticTeam1Joker2: Cardinal;
@@ -252,7 +254,7 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     //Jump to Artist/Titel
-    if (SDL_ModState and KMOD_LALT <> 0) AND (Mode = 0) AND (PressedKey >= SDLK_A) AND (PressedKey <= SDLK_Z) then
+    if (SDL_ModState and KMOD_LALT <> 0) AND (Mode = smNormal) AND (PressedKey >= SDLK_A) AND (PressedKey <= SDLK_Z) then
     begin
       Letter := UpCase(Chr(ScanCode));
       I2 := Length(CatSongs.Song);
@@ -312,7 +314,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-        if (Mode = 0) then
+        if (Mode = smNormal) then
         begin
           //On Escape goto Cat-List Hack
           if (Ini.Tabs_at_startup = 1) AND (CatSongs.CatNumShow <> -1) then
@@ -375,7 +377,7 @@ begin
           end;
         end
         //When in party Mode then Ask before Close
-        else if (Mode = 1) then
+        else if (Mode = smPartyMode) then
         begin
           AudioPlayback.PlayBack;
           CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
@@ -410,8 +412,10 @@ begin
             //Play Music:
             ChangeMusic;
 
-            end else begin // clicked on song
-              if (Mode = 0) then //Normal Mode -> Start Song
+            end
+            else
+            begin // clicked on song
+              if (Mode = smNormal) then //Normal Mode -> Start Song
               begin
                 //Do the Action that is specified in Ini
                 case Ini.OnSongClick of
@@ -425,7 +429,7 @@ begin
                     end;
                 end;
               end
-              else if (Mode = 1) then //PartyMode -> Show Menu
+              else if (Mode = smPartyMode) then //PartyMode -> Show Menu
               begin
                 if (Ini.PartyPopup = 1) then
                   ScreenSongMenu.MenuShow(SM_Party_Main)
@@ -439,7 +443,7 @@ begin
       SDLK_M: //Show SongMenu
         begin
           if (Songs.SongList.Count > 0) then begin
-            if (Mode = 0) then begin
+            if (Mode = smNormal) then begin
               if not CatSongs.Song[Interaction].Main then begin // clicked on Song
                 if CatSongs.CatNumShow = -3 then
                   ScreenSongMenu.MenuShow(SM_Playlist)
@@ -457,14 +461,14 @@ begin
 
       SDLK_P: //Show Playlist Menu
         begin
-          if (Songs.SongList.Count > 0) AND (Mode = 0) then begin
+          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then begin
               ScreenSongMenu.MenuShow(SM_Playlist_Load);
           end;
         end;
 
       SDLK_J: //Show Jumpto Menu
         begin
-          if (Songs.SongList.Count > 0) AND (Mode = 0) then
+          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then
           begin
             ScreenSongJumpto.Visible := True;
           end;
@@ -472,7 +476,7 @@ begin
 
       SDLK_DOWN:
         begin
-          if (Mode = 0) then
+          if (Mode = smNormal) then
           begin
             //Only Change Cat when not in Playlist or Search Mode
             if (CatSongs.CatNumShow > -2) then
@@ -512,7 +516,7 @@ begin
         end;
       SDLK_UP:
         begin
-          if (Mode = 0) then
+          if (Mode = smNormal) then
           begin
             //Only Change Cat when not in Playlist or Search Mode
             if (CatSongs.CatNumShow > -2) then
@@ -553,7 +557,7 @@ begin
 
       SDLK_RIGHT:
         begin
-          if (Songs.SongList.Count > 0) AND (Mode = 0) then
+          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then
           begin
             AudioPlayback.PlayChange;
             SelectNext;
@@ -568,7 +572,7 @@ begin
 
       SDLK_LEFT:
         begin
-          if (Songs.SongList.Count > 0)AND (Mode = 0)  then begin
+          if (Songs.SongList.Count > 0)AND (Mode = smNormal)  then begin
             AudioPlayback.PlayChange;
             SelectPrev;
             ChangeMusic;
@@ -585,7 +589,7 @@ begin
 
       SDLK_R:
         begin
-          if (Songs.SongList.Count > 0) AND (Mode = 0) then begin
+          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then begin
 
             if (SDL_ModState = KMOD_LSHIFT) AND (Ini.Tabs_at_startup = 1) then //Random Category
             begin
@@ -661,7 +665,7 @@ begin
 
       SDLK_1:
         begin //Jocker // to-do : Party
-          {if (Mode = 1) AND (PartySession.Teams.NumTeams >= 1) AND (PartySession.Teams.Teaminfo[0].Joker > 0) then
+          {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= 1) AND (PartySession.Teams.Teaminfo[0].Joker > 0) then
           begin
             //Joker spielen
             Dec(PartySession.Teams.Teaminfo[0].Joker);
@@ -672,7 +676,7 @@ begin
 
       SDLK_2:
         begin //Jocker
-          {if (Mode = 1) AND (PartySession.Teams.NumTeams >= 2) AND (PartySession.Teams.Teaminfo[1].Joker > 0) then
+          {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= 2) AND (PartySession.Teams.Teaminfo[1].Joker > 0) then
           begin
             //Joker spielen
             Dec(PartySession.Teams.Teaminfo[1].Joker);
@@ -683,7 +687,7 @@ begin
 
       SDLK_3:
         begin //Jocker
-          {if (Mode = 1) AND (PartySession.Teams.NumTeams >= 3) AND (PartySession.Teams.Teaminfo[2].Joker > 0) then
+          {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= 3) AND (PartySession.Teams.Teaminfo[2].Joker > 0) then
           begin
             //Joker spielen
             Dec(PartySession.Teams.Teaminfo[2].Joker);
@@ -1540,7 +1544,7 @@ begin
   end;
 
   //Playlist Mode
-  if (Mode = 0) then
+  if (Mode = smNormal) then
   begin
     //If Playlist Shown -> Select Next automatically
     if (CatSongs.CatNumShow = -3) then
@@ -1550,7 +1554,7 @@ begin
     end;
   end
   //Party Mode
-  else if (Mode = 1) then
+  else if (Mode = smPartyMode) then
   begin
 
     SelectRandomSong;
@@ -1931,7 +1935,7 @@ var
   I, I2: Integer;
 begin
   Case PlaylistMan.Mode of
-      0:  //All Songs Just Select Random Song
+      smNormal:  //All Songs Just Select Random Song
         begin
           //When Tabs are activated then use Tab Method
           if (Ini.Tabs_at_startup = 1) then
@@ -1965,7 +1969,7 @@ begin
           else
             SkipTo(Random(CatSongs.VisibleSongs));
         end;
-      1:  //One Category Select Category and Select Random Song
+      smPartyMode:  //One Category Select Category and Select Random Song
         begin
           CatSongs.ShowCategoryList;
           CatSongs.ClickCategoryButton(PlaylistMan.CurPlayList);
@@ -1976,7 +1980,7 @@ begin
 
           SkipTo(Random(CatSongs.VisibleSongs));
         end;
-      2:  //Playlist: Select Playlist and Select Random Song
+      smPlaylistRandom:  //Playlist: Select Playlist and Select Random Song
         begin
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
@@ -1995,7 +1999,7 @@ procedure TScreenSong.SetJoker;
 begin
   {//If Party Mode
   // to-do : Party
-  if Mode = 1 then //Show Joker that are available
+  if Mode = smPartyMode then //Show Joker that are available
   begin
     if (PartySession.Teams.NumTeams >= 1) then
     begin
@@ -2076,7 +2080,7 @@ var
   Visible: Boolean;
 begin
   //Set Visibility of Party Statics and Text
-  Visible := (Mode = 1);
+  Visible := (Mode = smPartyMode);
 
   For I := 0 to high(StaticParty) do
     Static[StaticParty[I]].Visible := Visible;
@@ -2101,7 +2105,7 @@ begin
   CatSongs.Selected := Interaction;
   AudioPlayback.Stop;
   //Party Mode
-  if (Mode = 1) then
+  if (Mode = smPartyMode) then
   begin
     FadeTo(@ScreenSingModi);
   end
@@ -2122,7 +2126,7 @@ end;
 
 procedure TScreenSong.OpenEditor;
 begin
-  if (Songs.SongList.Count > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = 0) then
+  if (Songs.SongList.Count > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = smNormal) then
   begin
     AudioPlayback.Stop;
     AudioPlayback.PlayStart;
@@ -2135,7 +2139,7 @@ end;
 //Team No of Team (0-5)
 procedure TScreenSong.DoJoker (Team: Byte);
 begin
-  {if (Mode = 1) AND (PartySession.Teams.NumTeams >= Team + 1) AND (PartySession.Teams.Teaminfo[Team].Joker > 0) then
+  {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= Team + 1) AND (PartySession.Teams.Teaminfo[Team].Joker > 0) then
   begin
     //Joker spielen
     Dec(PartySession.Teams.Teaminfo[Team].Joker);

@@ -18,7 +18,11 @@ type
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture;
+uses UGraphic,
+     UMain,
+     UIni,
+     USong,
+     UTexture;
 
 function TScreenLevel.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -44,7 +48,7 @@ begin
           Ini.SaveLevel;
           AudioPlayback.PlayStart;
           //Set Standard Mode
-          ScreenSong.Mode := 0;
+          ScreenSong.Mode := smNormal;
           FadeTo(@ScreenSong);
         end;
 

@@ -46,7 +46,7 @@ const
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UDLLManager, UPlaylist, USongs;
+uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USong, UDLLManager, UPlaylist, USongs;
 
 function TScreenPartyOptions.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
   var
@@ -96,7 +96,7 @@ begin
           PartySession.Teams.Teaminfo[2].NumPlayers := NumPlayer3+1;}
 
           //Save Playlist
-          PlaylistMan.Mode := Playlist;
+          PlaylistMan.Mode := TSingMode( Playlist );
           PlaylistMan.CurPlayList := High(Cardinal);
           //If Category Selected Search Category ID
           if Playlist = 1 then

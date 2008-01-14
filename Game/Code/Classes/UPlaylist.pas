@@ -9,6 +9,9 @@ interface
 {$I switches.inc}
                
 
+uses
+  USong;
+
 type
   TPlaylistItem = record
     Artist: String;
@@ -33,7 +36,7 @@ type
     private
 
     public
-      Mode:         Byte;     //Current Playlist Mode for SongScreen
+      Mode:         TSingMode;     //Current Playlist Mode for SongScreen
       CurPlayList:  Cardinal;
       CurItem:      Cardinal;
 
@@ -262,7 +265,7 @@ begin
 
   //Set CatSongsMode + Playlist Mode
   CatSongs.CatNumShow := -3;
-  Mode := 2;
+  Mode := smPlayListRandom;
 
   //Set CurPlaylist
   CurPlaylist := Index;

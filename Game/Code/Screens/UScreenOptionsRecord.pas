@@ -124,7 +124,7 @@ begin
   Interaction := 0;
   writeln( 'AudioInput.CaptureStart') ;
 
-  PlayersPlay := 2;  //  TODO : This needs fixing
+  PlayersPlay := 2;  //  TODO :  This needs fixing
   AudioInput.CaptureStart;
 
 end;

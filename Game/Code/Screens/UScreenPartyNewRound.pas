@@ -76,7 +76,15 @@ type
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, UParty, UDLLManager, ULanguage, ULog;
+uses UGraphic,
+     UMain,
+     UIni,
+     UTexture,
+     UParty,
+     UDLLManager,
+     ULanguage,
+     USong,
+     ULog;
 
 function TScreenPartyNewRound.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 begin
@@ -103,7 +111,7 @@ begin
           if DLLMan.Selected.LoadSong then
           begin
             //Select PartyMode ScreenSong
-            ScreenSong.Mode := 1;
+            ScreenSong.Mode := smPartyMode;
             FadeTo(@ScreenSong);
           end
           else

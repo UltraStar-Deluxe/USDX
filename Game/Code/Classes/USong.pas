@@ -33,6 +33,8 @@ uses
 type
 
 
+  TSingMode = ( smNormal, smPartyMode, smPlaylistRandom );
+
   TBPM = record
     BPM:        real;
     StartBeat:  real;
