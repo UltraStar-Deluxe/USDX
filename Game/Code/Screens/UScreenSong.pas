@@ -1519,19 +1519,20 @@ begin
 
   if Length(CatSongs.Song) > 0 then begin
     //Load Music only when Song Preview is activated
-    if ( Ini.PreviewVolume   <> 0 ) AND
-       ( AudioPlayback.Length > 1 ) then
+    if ( Ini.PreviewVolume   <> 0 ) then
     begin
-      AudioPlayback.SetLoop(false);
-      AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
-      AudioPlayback.Position := AudioPlayback.Length / 4;
-      AudioPlayback.Play;
+      if(AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3)) then
+      begin
+        AudioPlayback.SetLoop(false);
+        AudioPlayback.Position := AudioPlayback.Length / 4;
+        AudioPlayback.Play;
 
-      //Set Preview Volume
-      AudioPlayback.SetMusicVolume (Ini.PreviewVolume * 10);
-      {//if Music Fade is activated, Set Volume to 0 %
-      if (Ini.PreviewFading <> 0) then
-        Music.SetMusicVolume(0);}
+        //Set Preview Volume
+        AudioPlayback.SetMusicVolume (Ini.PreviewVolume * 10);
+        {//if Music Fade is activated, Set Volume to 0 %
+        if (Ini.PreviewFading <> 0) then
+          Music.SetMusicVolume(0);}
+      end;
     end;
 
     SetScroll;
