@@ -37,6 +37,9 @@ uses SDL,
      avcodec,
      avformat,
      avutil,
+     {$IFDEF UseSWScale}
+     swscale,
+     {$ENDIF}
      math,
      OpenGL12,
      SysUtils,
@@ -76,6 +79,10 @@ type
       AVFrame: PAVFrame;
       AVFrameRGB: PAVFrame;
       myBuffer: pByte;
+
+      {$IFDEF UseSWScale}
+      SoftwareScaleContext: PSwsContext;
+      {$ENDIF}
 
       TexX, TexY, dataX, dataY: Cardinal;
 
@@ -312,10 +319,18 @@ begin
   if Framefinished=0 then begin
     Exit;
   end;
+
   // otherwise we convert the pixeldata from YUV to RGB
+  {$IFDEF UseSWScale}
+  errnum:=sws_scale(SoftwareScaleContext,@(AVFrame.data),@(AVFrame.linesize),
+          0,VideoCodecContext^.Height,
+          @(AVFrameRGB.data),@(AVFrameRGB.linesize));
+  {$ELSE}
   errnum:=img_convert(PAVPicture(AVFrameRGB), PIX_FMT_RGB24,
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
 			      VideoCodecContext^.width, VideoCodecContext^.height);
+  {$ENDIF}
+
   if errnum >=0 then
   begin
   glBindTexture(GL_TEXTURE_2D, fVideoTex);
@@ -568,6 +583,23 @@ begin
       av_close_input_file(VideoFormatContext);
       Exit;
     end;
+
+    {$IFDEF UseSWScale}
+    SoftwareScaleContext:=sws_getContext(VideoCodecContext^.width,VideoCodecContext^.height,integer(VideoCodecContext^.pix_fmt),
+                                         dataX, dataY, integer(PIX_FMT_RGB24),
+                                         SWS_FAST_BILINEAR, 0, 0, 0);
+    if SoftwareScaleContext <> Nil then
+        writeln('got swscale context')
+    else begin
+      writeln('ERROR: didn´t get swscale context');
+      av_free(AVFrameRGB);
+      av_free(AVFrame);
+      avcodec_close(VideoCodecContext);
+      av_close_input_file(VideoFormatContext);
+      Exit;
+    end;
+    {$ENDIF}
+
     // this is the errnum from avpicture_fill
     if errnum >=0 then
     begin
