@@ -1,5 +1,18 @@
 unit UPlatformMacOSX;
 
+// Note on directories (by eddie):
+// We use subfolders of the application directory on tha mac, because:
+// 1. Installation on the mac works as follows: Extract and copy an application
+//    and if you don't like or need the application anymore you move the folder
+//    to the trash - and you're done.
+// 2. If we would use subfolders of the home directory we would have to spread our
+//    files to many directories - these directories are defined by Apple, but the 
+//    average user doesn't know them, beacuse he or she doesn't need to know them.
+//    But for UltraStar the user must at least know the songs directory...
+// 
+//    Creating a subfolder directly under the home directory is not acceptable.
+// 
+
 interface
 
 {$IFDEF FPC}
@@ -13,15 +26,14 @@ uses Classes, UPlatform;
 type
 
   TPlatformMacOSX = class( TInterfacedObject, IPlatform)
-  private
   public
-    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
-    function  GetGamePath: WideString; override;
+    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
     function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
     procedure halt();
-    function  GetLogPath        : WideString; override;
-    function  GetGameSharedPath : WideString; override;
-    function  GetGameUserPath   : WideString; override;
+    function  GetLogPath        : WideString; 
+    function  GetGameSharedPath : WideString; 
+    function  GetGameUserPath   : WideString; 
+    function  FindSongFile(Dir, Mask: widestring): widestring;
   end;
 
 implementation
@@ -48,19 +60,19 @@ end;
 
 function TPlatformMacOSX.GetLogPath        : WideString;
 begin
-  // surly logs go in /var/log/ ???
-  Result := GetBundlePath;
+  // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
+  Result := GetBundlePath + '/Logs';
 end;
 
 function TPlatformMacOSX.GetGameSharedPath : WideString;
 begin
+  // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
   Result := GetBundlePath;
 end;
 
 function TPlatformMacOSX.GetGameUserPath   : WideString;
 begin
-  // is there no user profile ???
-  // like   ...  /home/user/  that could be used for song locations etc ??
+  // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
   Result := GetBundlePath;
 end;
 
@@ -69,8 +81,6 @@ var
     i : Integer;
     TheDir  : pdir;
     ADirent : pDirent;
-    Entry   : Longint;
-    info    : stat;
     lAttrib   : integer;		
 begin
   i := 0;
@@ -116,5 +126,17 @@ procedure TPlatformMacOSX.halt;
 begin
   halt;
 end;
+
+function TPlatformMacOSX.FindSongFile(Dir, Mask: widestring): widestring;
+var
+  SR:     TSearchRec;   // for parsing song directory
+begin
+  Result := '';
+  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin
+    Result := SR.Name;
+  end; // if
+  SysUtils.FindClose(SR);
+end;
+
 
 end.
