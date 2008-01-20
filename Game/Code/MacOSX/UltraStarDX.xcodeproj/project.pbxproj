@@ -495,7 +495,7 @@
 		2CF552A40CDA42C900627463 /* opt.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = opt.pas; path = ../lib/ffmpeg/opt.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CF552A50CDA42C900627463 /* rational.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = rational.pas; path = ../lib/ffmpeg/rational.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CF553070CDA51B500627463 /* sdlutils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdlutils.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdlutils.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
-		2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libLib_UltraPong.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libUntil5000.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UPartyDefs.pas; path = ../../../Modis/SDK/UPartyDefs.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		98B8BE330B1F947800162019 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		98B8BE370B1F949C00162019 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -505,7 +505,7 @@
 		DD37F2430A60255800975B2D /* libfpcrtl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libfpcrtl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC6851B09F57195004E4BFF /* UltraStarDX.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; path = UltraStarDX.pas; sourceTree = "<group>"; tabWidth = 2; };
 		DDC6868B09F571C2004E4BFF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
-		DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "UltraStar Deluxe.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC688C809F574E9004E4BFF /* UltraStarDX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UltraStarDX.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC688CA09F574E9004E4BFF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC689B309F57C69004E4BFF /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DDC689B409F57C69004E4BFF /* SDLMain.nib */ = {isa = PBXFileReference; explicitFileType = wrapper.nib; name = SDLMain.nib; path = English.lproj/SDLMain.nib; sourceTree = "<group>"; };
@@ -822,9 +822,9 @@
 		DDC6888C09F57243004E4BFF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */,
+				DDC688C809F574E9004E4BFF /* UltraStarDX.app */,
 				DD37F2430A60255800975B2D /* libfpcrtl.a */,
-				2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */,
+				2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -856,7 +856,7 @@
 			);
 			name = Modi_Until5000;
 			productName = Lib_UltraPong;
-			productReference = 2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */;
+			productReference = 2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		DD37F2420A60255800975B2D /* fpcrtl */ = {
@@ -898,7 +898,7 @@
 			);
 			name = UltraStarDX;
 			productName = "JEDI-SDLCocoa";
-			productReference = DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */;
+			productReference = DDC688C809F574E9004E4BFF /* UltraStarDX.app */;
 			productType = "com.apple.product-type.application";
 		};
 		DDC688D409F57523004E4BFF /* Put all program sources also in this target */ = {
