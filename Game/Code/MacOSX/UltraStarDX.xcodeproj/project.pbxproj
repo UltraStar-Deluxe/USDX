@@ -144,6 +144,8 @@
 		2CAC2BF40D380AE800CA518A /* libbass.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CAC2BF00D380AC200CA518A /* libbass.dylib */; };
 		2CAC2BF80D380B1B00CA518A /* Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BF70D380B1B00CA518A /* Bass.pas */; };
 		2CAC2BF90D380B1B00CA518A /* Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BF70D380B1B00CA518A /* Bass.pas */; };
+		2CB9E87E0D43B78400214DFA /* USong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9E87D0D43B78400214DFA /* USong.pas */; };
+		2CB9E87F0D43B78400214DFA /* USong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9E87D0D43B78400214DFA /* USong.pas */; };
 		2CDC716C0CDB9CB70018F966 /* StrUtils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CDC716B0CDB9CB70018F966 /* StrUtils.pas */; };
 		2CDC716D0CDB9CB70018F966 /* StrUtils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CDC716B0CDB9CB70018F966 /* StrUtils.pas */; };
 		2CDD4BDE0CB947A400549FAC /* sdl.pas in Sources */ = {isa = PBXBuildFile; fileRef = 98B8BE5C0B1F974F00162019 /* sdl.pas */; };
@@ -438,6 +440,7 @@
 		2CAC2BDF0D3809F500CA518A /* UAudioPlayback_Bass.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UAudioPlayback_Bass.pas; path = ../Classes/UAudioPlayback_Bass.pas; sourceTree = SOURCE_ROOT; };
 		2CAC2BF00D380AC200CA518A /* libbass.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbass.dylib; path = ../lib/bass/libbass.dylib; sourceTree = SOURCE_ROOT; };
 		2CAC2BF70D380B1B00CA518A /* Bass.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Bass.pas; path = ../lib/bass/MacOSX/Bass.pas; sourceTree = SOURCE_ROOT; };
+		2CB9E87D0D43B78400214DFA /* USong.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = USong.pas; path = ../Classes/USong.pas; sourceTree = SOURCE_ROOT; };
 		2CDC716B0CDB9CB70018F966 /* StrUtils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = StrUtils.pas; path = ../../../Modis/SDK/StrUtils.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = ../lib/ffmpeg/libavcodec.dylib; sourceTree = SOURCE_ROOT; };
@@ -589,6 +592,7 @@
 		2CDD43820CBBE8D400F364DE /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				2CB9E87D0D43B78400214DFA /* USong.pas */,
 				2CAC2BDD0D3809F500CA518A /* UAudioInput_Bass.pas */,
 				2CAC2BDF0D3809F500CA518A /* UAudioPlayback_Bass.pas */,
 				2C8937310CE395CE005D8A87 /* UPlatformMacOSX.pas */,
@@ -1155,6 +1159,7 @@
 				2CAC2BE20D3809F500CA518A /* UAudioInput_Bass.pas in Sources */,
 				2CAC2BE40D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */,
 				2CAC2BF80D380B1B00CA518A /* Bass.pas in Sources */,
+				2CB9E87E0D43B78400214DFA /* USong.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1280,6 +1285,7 @@
 				2CAC2BE70D3809F500CA518A /* UAudioInput_Bass.pas in Sources */,
 				2CAC2BE90D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */,
 				2CAC2BF90D380B1B00CA518A /* Bass.pas in Sources */,
+				2CB9E87F0D43B78400214DFA /* USong.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

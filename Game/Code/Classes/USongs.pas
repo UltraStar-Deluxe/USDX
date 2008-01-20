@@ -149,7 +149,9 @@ begin
   inherited create( false );
   self.freeonterminate := true;
 
-  SongList := TList.create();
+  // This check is needed if PseudoThread is used:
+	if not Assigned(SongList) then
+	  SongList := TList.create(); 
 
   {$ifdef Delphi}
     fDirWatch := TDirectoryWatch.create(nil);
@@ -227,7 +229,11 @@ begin
   try
     fProcessing := true;
 
-    SongList.clear;
+    {$IFDEF USE_PSEUDO_THREAD}
+		if not Assigned(SongList) then
+		  SongList := TList.create(); 
+		{$ENDIF}
+		SongList.clear;
     Log.LogError('SongList', 'Searching For Songs');
 
     // browse directories
