@@ -2,6 +2,12 @@ unit USong;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+{$I switches.inc}
+
 uses
      {$IFDEF MSWINDOWS}
        Windows,
@@ -120,22 +126,32 @@ uses
 
 constructor TSong.create( const aFileName : WideString );
 begin
-  Mult    := 1;
-  MultBPM := 4;
 
-  fFileName := aFileName;
+  Mult    := 1;
 
-  if fileexists( aFileName ) then
-  begin
-    self.Path     := ExtractFilePath( aFileName );
-    self.Folder   := ExtractFilePath( aFileName );
+  MultBPM := 4;
+
+
+  fFileName := aFileName;
+
+
+  if fileexists( aFileName ) then
+
+  begin
+
+    self.Path     := ExtractFilePath( aFileName );
+    self.Folder   := ExtractFilePath( aFileName );
     self.FileName := ExtractFileName( aFileName );
 
-(*
-    if ReadTXTHeader( aFileName ) then
-    begin
-      LoadSong();
-    end
+(*
+
+    if ReadTXTHeader( aFileName ) then
+
+    begin
+
+      LoadSong();
+
+    end
     else
     begin
       Log.LogError('Error Loading SongHeader, abort Song Loading');
@@ -146,8 +162,10 @@ begin
 
 end;
 
-function TSong.LoadSong(): boolean;
-var
+
+function TSong.LoadSong(): boolean;
+
+var
   TempC:    char;
   Tekst:    string;
   CP:       integer; // Current Player (0 or 1)
@@ -320,8 +338,10 @@ begin
   Result := true;
 end;
 
-function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
-var
+
+function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
+
+var
   Line, Identifier, Value: String;
   Temp        : word;
   Done        : byte;
@@ -361,6 +381,11 @@ begin
         //-----------
         //Required Attributes
         //-----------
+
+        {$IFDEF UTF8_FILENAMES}
+		if ((Identifier = 'MP3') or (Identifier = 'BACKGROUND') or (Identifier = 'COVER') or (Identifier = 'VIDEO')) then
+		  Value := Utf8Encode(Value);  
+        {$ENDIF}
 
         //Title
         if (Identifier = 'TITLE') then
