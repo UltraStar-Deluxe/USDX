@@ -15,6 +15,7 @@
     {$R-}
     {$DEFINE WIN32}		   
     {$DEFINE TRANSLATE}
+		{$DEFINE UTF8_FILENAMES}
   {$ELSE}
     {$DEFINE LAZARUS}
   {$ENDIF}
