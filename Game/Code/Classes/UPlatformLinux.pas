@@ -15,12 +15,15 @@ type
   TPlatformLinux = class(TInterfacedObject, IPlatform)
     function get_homedir(): string;
   public
-    Function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
-    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean; override;
-    
-    function GetLogPath        : WideString; override;
-    function GetGameSharedPath : WideString; override;
-    function GetGameUserPath   : WideString; override;
+    function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
+    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+    function FindSongFile(Dir, Mask: widestring): widestring;
+
+    procedure Halt;
+
+    function GetLogPath        : WideString;
+    function GetGameSharedPath : WideString;
+    function GetGameUserPath   : WideString;
   end;
 
 implementation
@@ -155,10 +158,34 @@ begin
   result       := pPasswdEntry^.pw_dir;
 end;
 
+// FIXME: just a dirty-fix to make the linux build work again.
+//        This i the same as the corresponding function for windows
+//        and MacOSX.
+//        Maybe this should be TPlatformBase.Halt()
+procedure TPlatformLinux.Halt;
+begin
+  application.terminate;
+end;
+
 function TPlatformLinux.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
 begin
   // Linux and Mac don't check for running apps at the moment
   Result := false;
+end;
+
+// FIXME: just a dirty-fix to make the linux build work again.
+//        This i the same as the corresponding function for windows
+//        (and MacOSX?).
+//        Maybe this should be TPlatformBase.FindSongFile()
+function TPlatformLinux.FindSongFile(Dir, Mask: widestring): widestring;
+var
+  SR:     TSearchRec;   // for parsing song directory
+begin
+  Result := '';
+  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin
+    Result := SR.Name;
+  end; // if
+  SysUtils.FindClose(SR);
 end;
 
 end.
