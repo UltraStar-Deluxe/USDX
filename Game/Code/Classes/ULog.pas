@@ -234,7 +234,7 @@ end;
 
 procedure TLog.LogError(Log1, Log2: string);
 begin
-//asd
+  LogError(Log1 + ' ['+Log2+']');
 end;
 
 procedure TLog.CriticalError(Text: string);
