@@ -15,33 +15,32 @@ interface
 {$ENDIF}
 
 uses
-     {$IFDEF MSWINDOWS}
-       Windows,
-       {$ifdef Delphi}
-       DirWatch,
-       {$endif}
-     {$ELSE}
-       {$IFNDEF DARWIN}
-//         oldlinux,
-         syscall,
-       {$ENDIF}
+    {$IFDEF MSWINDOWS}
+      Windows,
+      {$IFDEF Delphi}
+        DirWatch,
+      {$ENDIF}
+    {$ELSE}
+      {$IFNDEF DARWIN}
+        syscall,
+      {$ENDIF}
       baseunix,
       UnixType,
-     {$ENDIF}
-     SysUtils,
-     Classes,
-  	 UPlatform,
-     ULog,
-     UTexture,
-     UCommon,
-	 {$IFDEF DARWIN}
-	 cthreads,
-	 {$ENDIF}
-	 {$IFDEF USE_PSEUDO_THREAD}
-	 PseudoThread,
-	 {$ENDIF}
-   USong,
-     UCatCovers;
+    {$ENDIF}
+    SysUtils,
+    Classes,
+    UPlatform,
+    ULog,
+    UTexture,
+    UCommon,
+    {$IFDEF DARWIN}
+      cthreads,
+    {$ENDIF}
+    {$IFDEF USE_PSEUDO_THREAD}
+      PseudoThread,
+    {$ENDIF}
+    USong,
+    UCatCovers;
 
 type
 
@@ -79,7 +78,7 @@ type
     SongList  : TList; // array of songs
     Selected  : integer;        // selected song index
     constructor create();
-    destructor  destroy();
+    destructor  destroy(); override;
 
 
     procedure LoadSongList;     // load all songs
@@ -146,12 +145,11 @@ end;
 
 constructor TSongs.create();
 begin
-  inherited create( false );
+  // do not start thread BEFORE initialization (suspended = true)
+  inherited create( true );
   self.freeonterminate := true;
 
-  // This check is needed if PseudoThread is used:
-	if not Assigned(SongList) then
-	  SongList := TList.create(); 
+  SongList := TList.create();
 
   {$ifdef Delphi}
     fDirWatch := TDirectoryWatch.create(nil);
@@ -184,11 +182,9 @@ begin
   writeln( 'Calling syscall_nr_inotify_init : '+ inttostr(fWatch)  );
 *)
   {$endif}
-
-{$IFNDEF USE_PSEUDO_THREAD}
-//	Setlength(Song, 0);
-  SongList.clear;
-{$ENDIF}
+  
+  // now we can start the thread
+  Resume();
 end;
 
 destructor TSongs.destroy();
@@ -229,11 +225,6 @@ begin
   try
     fProcessing := true;
 
-    {$IFDEF USE_PSEUDO_THREAD}
-		if not Assigned(SongList) then
-		  SongList := TList.create(); 
-		{$ENDIF}
-		SongList.clear;
     Log.LogError('SongList', 'Searching For Songs');
 
     // browse directories
