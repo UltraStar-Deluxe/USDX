@@ -206,15 +206,18 @@ end;
 
 function glTextWidth(text: pchar): real;
 var
-  Letter:       char;
+  Letter: char;
+  i: integer;
 begin
 //  Log.LogStatus(Text, 'glTextWidth');
   Result := 0;
-  while (length(text) > 0) do begin
-    Letter := Text[0];
-    text := pchar(Copy(text, 2, Length(text)-1));
+  for i := 0 to Length(text) do
+  begin
+    Letter := Text[i];
+    // Bugfix: does not work with FPC, probably because a part of text is assigned to itself
+    //text := pchar(Copy(text, 2, Length(text)-1));
     Result := Result + Fonts[ActFont].Width[Ord(Letter)] * Fonts[ActFont].Tex.H / 30 * Fonts[ActFont].AspectW;
-  end; // while
+  end;
 end;
 
 procedure glPrintDone(text: pchar; Done: real; ColR, ColG, ColB: real);
