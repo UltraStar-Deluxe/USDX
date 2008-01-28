@@ -924,6 +924,7 @@ begin
 
   Result.X := 0;
   Result.Y := 0;
+  Result.Z := 0;
   Result.W := 0;
   Result.H := 0;
   Result.ScaleW := 1;
