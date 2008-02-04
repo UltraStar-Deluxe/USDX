@@ -128,7 +128,7 @@ end;
 function TPlatformLinux.GetLogPath        : WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
-    result := inherited
+    result := ExtractFilePath(ParamStr(0))
   else
     result := '/var/log/UltraStarDeluxe/';
 end;
@@ -136,7 +136,7 @@ end;
 function TPlatformLinux.GetGameSharedPath : WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
-    result := inherited
+    result := ExtractFilePath(ParamStr(0))
   else
     result := '/usr/share/UltraStarDeluxe/';
 end;
@@ -144,7 +144,7 @@ end;
 function TPlatformLinux.GetGameUserPath   : WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
-    result := inherited
+    result := ExtractFilePath(ParamStr(0))
   else
     result := get_homedir()+'/.UltraStarDeluxe/';
 end;
@@ -164,7 +164,7 @@ end;
 //        Maybe this should be TPlatformBase.Halt()
 procedure TPlatformLinux.Halt;
 begin
-  application.terminate;
+  halt();
 end;
 
 function TPlatformLinux.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
@@ -182,7 +182,8 @@ var
   SR:     TSearchRec;   // for parsing song directory
 begin
   Result := '';
-  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin
+  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then 
+  begin
     Result := SR.Name;
   end; // if
   SysUtils.FindClose(SR);

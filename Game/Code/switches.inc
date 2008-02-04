@@ -20,8 +20,6 @@
     {$DEFINE LAZARUS}
   {$ENDIF}
 
-//  {$MODE DELPHI}  // JB - This is not allowed by the free pascal compiler for some reason ( At least on linux )
-
   {$DEFINE DLL_CDECL}
   {$UNDEF UseSerialPort}
   {$UNDEF UseMIDIPort}
@@ -68,3 +66,7 @@
   {$DEFINE UseProjectM}
 {$IFEND}
 
+// I had to add these (jay)... but maybe henny has some way that the config script is meant to do this ?
+// Ill need to check with him.
+//{$DEFINE FPC_V220}
+//{$DEFINE LAZARUS_V0924}
