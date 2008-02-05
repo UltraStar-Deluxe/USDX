@@ -51,6 +51,7 @@ begin
     Player[pet].HighNut := -1;
   end;
 
+  (* FIXME
   //Reset Path and Filename Values to Prevent Errors in Editor
   if assigned( CurrentSong ) then
   begin
@@ -58,6 +59,7 @@ begin
     CurrentSong.Path := '';
     CurrentSong.FileName := '';
   end;
+  *)
   
 //  CurrentSong := nil;
 end;
