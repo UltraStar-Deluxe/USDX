@@ -23,8 +23,20 @@ unit DirWatch;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
-  Windows, Messages, SysUtils, Forms, Classes;
+  Windows,
+  Messages,
+  SysUtils,
+  {$IFDEF LCL}
+  LCLIntf, // used for AllocateHWnd
+  {$ELSE}
+  Forms,
+  {$ENDIF}
+  Classes;
 
 type
   TNotifyFilters = set of (nfFilename, nfDirname, nfAttrib,
