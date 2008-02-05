@@ -435,7 +435,7 @@ begin
   VideoTime          := 0;
   LastFrameTime      := 0;
   TimeDifference     := 0;
-  VideoFormatContext := 0;
+  VideoFormatContext := nil;
 
 //  writeln( aFileName );
 
@@ -587,7 +587,7 @@ begin
     {$IFDEF UseSWScale}
     SoftwareScaleContext:=sws_getContext(VideoCodecContext^.width,VideoCodecContext^.height,integer(VideoCodecContext^.pix_fmt),
                                          dataX, dataY, integer(PIX_FMT_RGB24),
-                                         SWS_FAST_BILINEAR, 0, 0, 0);
+                                         SWS_FAST_BILINEAR, nil, nil, nil);
     if SoftwareScaleContext <> Nil then
         writeln('got swscale context')
     else begin
