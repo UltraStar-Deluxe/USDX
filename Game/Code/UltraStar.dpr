@@ -59,7 +59,7 @@ uses
   {$IFDEF UseProjectM_0_9}
   projectM      in 'lib\projectM\0.9\projectM.pas',
   {$ENDIF}
-  {$IFDEF UseProjectM_1_0}
+  {$IFDEF UseProjectM_1_0_PLUS}
   projectM      in 'lib\projectM\1.0\projectM.pas',
   {$ENDIF}
 
