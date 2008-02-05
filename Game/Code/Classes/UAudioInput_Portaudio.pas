@@ -167,8 +167,8 @@ begin
   SC := 0;
 
   // init array-size to max. input-devices count
-  SetLength(Recording.SoundCard, apiInfo^.deviceCount); // fix deviceCountL
-  for i:= 0 to High(Recording.SoundCard) do
+  SetLength(AudioInputProcessor.SoundCard, apiInfo^.deviceCount); // fix deviceCountL
+  for i:= 0 to High(AudioInputProcessor.SoundCard) do
   begin
     // convert API-specific device-index to global index
     deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(apiIndex, i);
@@ -180,7 +180,7 @@ begin
 
     // TODO: free object on termination
     paSoundCard := TPortaudioSoundCard.Create();
-    Recording.SoundCard[SC] := paSoundCard;
+    AudioInputProcessor.SoundCard[SC] := paSoundCard;
     
     // retrieve device-name
     deviceName := deviceInfo^.name;
@@ -262,7 +262,7 @@ begin
   end;
 
   // adjust size to actual input-device count
-  SetLength(Recording.SoundCard, SC);
+  SetLength(AudioInputProcessor.SoundCard, SC);
 
   Log.LogStatus('#Soundcards: ' + inttostr(SC), 'Portaudio');
 
@@ -280,8 +280,8 @@ var
   PlayerLeft, PlayerRight: integer;
   CaptureSoundLeft, CaptureSoundRight: TSound;
 begin
-  for S := 0 to High(Recording.Sound) do
-    Recording.Sound[S].BufferLong[0].Clear;
+  for S := 0 to High(AudioInputProcessor.Sound) do
+    AudioInputProcessor.Sound[S].BufferLong[0].Clear;
 
   for SC := 0 to High(Ini.CardList) do begin
     PlayerLeft  := Ini.CardList[SC].ChannelL-1;
@@ -290,11 +290,11 @@ begin
     if PlayerRight >= PlayersPlay then PlayerRight := -1;
     if (PlayerLeft > -1) or (PlayerRight > -1) then begin
       if (PlayerLeft > -1) then
-        CaptureSoundLeft := Recording.Sound[PlayerLeft]
+        CaptureSoundLeft := AudioInputProcessor.Sound[PlayerLeft]
       else
         CaptureSoundLeft := nil;
       if (PlayerRight > -1) then
-        CaptureSoundRight := Recording.Sound[PlayerRight]
+        CaptureSoundRight := AudioInputProcessor.Sound[PlayerRight]
       else
         CaptureSoundRight := nil;
 
@@ -330,7 +330,7 @@ function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longwor
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
       inputDevice: Pointer): Integer; cdecl;
 begin
-  Recording.HandleMicrophoneData(input, frameCount*4, inputDevice);
+  AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
   result := paContinue;
 end;
 
@@ -350,7 +350,7 @@ var
   stream:      PPaStream;
   paSoundCard: TPortaudioSoundCard;
 begin
-  paSoundCard := TPortaudioSoundCard(Recording.SoundCard[Card]);
+  paSoundCard := TPortaudioSoundCard(AudioInputProcessor.SoundCard[Card]);
   paSoundCard.CaptureSoundLeft  := CaptureSoundLeft;
   paSoundCard.CaptureSoundRight := CaptureSoundRight;
 
@@ -401,7 +401,7 @@ var
   stream:      PPaStream;
   paSoundCard: TPortaudioSoundCard;
 begin
-  paSoundCard := TPortaudioSoundCard(Recording.SoundCard[Card]);
+  paSoundCard := TPortaudioSoundCard(AudioInputProcessor.SoundCard[Card]);
   stream := paSoundCard.RecordStream;
   if(stream <> nil) then begin
     Pa_StopStream(stream);
