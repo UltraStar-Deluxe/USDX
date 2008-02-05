@@ -1,4 +1,0 @@
-grab Jedi-sdl from :
-  http://sourceforge.net/projects/jedi-sdl
-
-and extract in this directory !!
