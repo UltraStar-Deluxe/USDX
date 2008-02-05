@@ -16,13 +16,15 @@
 }
 unit Ulazjpeg;
 
-{$mode objfpc}{$H+}
+{$mode delphi}
+
 {$I switches.inc}
 
 interface
 
 uses
-  SysUtils, Classes, FPImage, IntfGraphics, Graphics, FPReadJPEG, FPWriteJPEG;
+  SysUtils, Classes, FPImage, IntfGraphics, Graphics, FPReadJPEG, FPWriteJPEG,
+  UConfig;
 
 type
   TJPEGQualityRange = TFPJPEGCompressionQuality;
@@ -34,17 +36,17 @@ type
     FProgressiveEncoding: boolean;
     FQuality: TJPEGQualityRange;
   protected
-{$IFDEF LAZARUS_V0924}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
     procedure InitFPImageReader(IntfImg: TLazIntfImage; ImgReader: TFPCustomImageReader); override;
 {$ELSE}
     procedure InitFPImageReader(ImgReader: TFPCustomImageReader); override;
-{$ENDIF}
+{$IFEND}
     procedure FinalizeFPImageReader(ImgReader: TFPCustomImageReader); override;
-{$IFDEF LAZARUS_V0924}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
     procedure InitFPImageWriter(IntfImg: TLazIntfImage; ImgWriter: TFPCustomImageWriter); override;
 {$ELSE}
     procedure InitFPImageWriter(ImgWriter: TFPCustomImageWriter); override;
-{$ENDIF}
+{$IFEND}
   public
     constructor Create; override;
     class function GetFileExtensions: string; override;
@@ -65,26 +67,26 @@ implementation
 
 { TJPEGImage }
 
-{$IFDEF LAZARUS_V0924}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
 procedure TJPEGImage.InitFPImageReader(IntfImg: TLazIntfImage; ImgReader: TFPCustomImageReader);
 {$ELSE}
 procedure TJPEGImage.InitFPImageReader(ImgReader: TFPCustomImageReader);
-{$ENDIF}
+{$IFEND}
 var
   JPEGReader: TFPReaderJPEG;
 begin
   if ImgReader is TFPReaderJPEG then begin
     JPEGReader:=TFPReaderJPEG(ImgReader);
     JPEGReader.Performance:=Performance;
-{$IFDEF LAZARUS_V0924}
-    JPEGReader.OnProgress:=@Progress;
-{$ENDIF}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
+    JPEGReader.OnProgress:=Progress;
+{$IFEND}
   end;
-{$IFDEF LAZARUS_V0924}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
   inherited InitFPImageReader(IntfImg, ImgReader);
 {$ELSE}
   inherited InitFPImageReader(ImgReader);
-{$ENDIF}
+{$IFEND}
 end;
 
 procedure TJPEGImage.FinalizeFPImageReader(ImgReader: TFPCustomImageReader);
@@ -98,11 +100,11 @@ begin
   inherited FinalizeFPImageReader(ImgReader);
 end;
 
-{$IFDEF LAZARUS_V0924}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
 procedure TJPEGImage.InitFPImageWriter(IntfImg: TLazIntfImage; ImgWriter: TFPCustomImageWriter);
 {$ELSE}
 procedure TJPEGImage.InitFPImageWriter(ImgWriter: TFPCustomImageWriter);
-{$ENDIF}
+{$IFEND}
 var
   JPEGWriter: TFPWriterJPEG;
 begin
@@ -111,15 +113,15 @@ begin
     if JPEGWriter<>nil then ;
     JPEGWriter.ProgressiveEncoding:=ProgressiveEncoding;
     JPEGWriter.CompressionQuality:=CompressionQuality;
-{$IFDEF LAZARUS_V0924}
-    JPEGWriter.OnProgress:=@Progress;
-{$ENDIF}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
+    JPEGWriter.OnProgress:=Progress;
+{$IFEND}
   end;
-{$IFDEF LAZARUS_V0924}
+{$IF LAZARUS_VERSION >= 000009024} // 0.9.24
   inherited InitFPImageWriter(IntfImg, ImgWriter);
 {$ELSE}
   inherited InitFPImageWriter(ImgWriter);
-{$ENDIF}
+{$IFEND}
 end;
 
 class function TJPEGImage.GetDefaultFPReader: TFPCustomImageReaderClass;
