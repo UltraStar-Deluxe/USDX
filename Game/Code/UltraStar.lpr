@@ -8,6 +8,13 @@ uses
   {$ifdef unix}            // http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial
     cthreads,              // THIS MUST be the first used unit !!
   {$endif}
+  {$ifdef MSWINDOWS}
+  {$ifdef LCL}
+  Interfaces,              // Initialize Lazarus LCL (necessary for usage of LCLIntf, etc.)
+  {$endif}
+  {$endif}
+
+  {$I UltraStar.dpr}
 
   // ***************************************************************************
   //
@@ -28,8 +35,6 @@ uses
 
   // Interesting stuff... :)
   // http://burningsmell.org/sdl_audioin/
-
-  {$I UltraStar.dpr}
 
 begin
   main();

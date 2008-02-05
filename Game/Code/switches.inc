@@ -1,5 +1,3 @@
-{$DEFINE DEBUG} // to-do : Remove b4 release
-
 // Comment by eddie:
 // The mac port currently also uses the WIN32 define.
 // Once I get the beast compiled, linked and running
@@ -8,16 +6,20 @@
 // be used. I changed the WIN32 to MSWINDOWS.
 // So, for Windows-only code use the MSWINDOWS define.
 
-
 {$IFDEF FPC}
   {$IFDEF DARWIN}
     {$H+}
     {$R-}
-    {$DEFINE WIN32}		   
+    {$DEFINE WIN32}
     {$DEFINE TRANSLATE}
 		{$DEFINE UTF8_FILENAMES}
   {$ELSE}
     {$DEFINE LAZARUS}
+    {$IFNDEF LCL}
+      // LCL should be defined already
+      {$MESSAGE Warn 'LCL undefined, compile with "fpc -dLCL ..."!'}
+      {$DEFINE LCL}
+    {$ENDIF}
   {$ENDIF}
 
   {$DEFINE DLL_CDECL}
@@ -31,21 +33,37 @@
 {$ENDIF}
 
 
-{$IFDEF win32}
+{$IF Defined(win32)}
   {$I config-win.inc}
 
-  {$DEFINE UseBASSPlayback}
-  {$DEFINE UseBASSInput}
+  // audio config
+  {$DEFINE WinAudioLib_BASS}
+  {$IFDEF WinAudioLib_BASS}
+    {$DEFINE UseBASSPlayback}
+    {$DEFINE UseBASSInput}
+  {$ELSE}
+    {$DEFINE UseFFMpegDecoder}
+    {$DEFINE HaveAvcodecDecodeAudio2}
+    {$DEFINE UsePortaudioPlayback}
+    {$DEFINE UsePortaudioInput}
+    {$DEFINE UsePortmixer}
+  {$ENDIF}
+  {$UNDEF WinAudioLib_BASS}
 
-  //{$DEFINE UseFFMpegDecoder}
-  //{$DEFINE UsePortaudioPlayback}
-  //{$DEFINE UsePortaudioInput}
-  //{$DEFINE UsePortmixer}
+  // video config
+  {$IFDEF HaveFFMpeg}
+    {$DEFINE UseFFMpegVideo}
+  {$ENDIF}
+  {$IFDEF HaveSWScale}
+    {$DEFINE UseSWScale}
+  {$ENDIF}
+
+  // misc defines
 
   {$IF Defined(HaveProjectM_0_9)}
     {$DEFINE UseProjectM_0_9}
   {$ELSEIF Defined(HaveProjectM_1_0_PLUS)}
-    {$DEFINE UseProjectM_1_0}
+    {$DEFINE UseProjectM_1_0_PLUS}
   {$IFEND}
 
   {$IFDEF DEBUG}
@@ -53,11 +71,35 @@
       {$APPTYPE CONSOLE}
 	{$ENDIF}
   {$ENDIF}
-{$ELSE}
-  {$DEFINE UseFFMpegAudio}
-  {$DEFINE UsePortaudio}
-  {$DEFINE UseProjectM_0_9}
-{$ENDIF}
+{$ELSEIF Defined(Linux)}
+  {$I config-linux.inc}
+
+  // audio config
+  {$IFDEF HaveFFMpeg}
+    {$DEFINE UseFFMpegDecoder}
+    {$IFDEF HavePortaudio}
+      {$DEFINE UsePortaudioPlayback}
+      {$DEFINE UsePortaudioInput}
+    {$ENDIF}
+  {$ENDIF}
+
+  // video config
+  {$IFDEF HaveFFMpeg}
+    {$DEFINE UseFFMpegVideo}
+  {$ENDIF}
+  {$IFDEF HaveSWScale}
+    {$DEFINE UseSWScale}
+  {$ENDIF}
+
+  // misc defines
+  {$IFDEF HaveProjectM}
+    {$DEFINE UseProjectM_0_9}
+  {$ENDIF}
+{$IFEND}
+
+{$IF Defined(UseFFMpegVideo) or Defined(UseFFMpegDecoder)}
+  {$DEFINE UseFFMpeg}
+{$IFEND}
 
 {$IF Defined(UseBASSInput) or Defined(UseBASSPlayback)}
   {$DEFINE UseBASS}
@@ -67,11 +109,7 @@
   {$DEFINE UsePortaudio}
 {$IFEND}
 
-{$IF Defined(UseProjectM_0_9) or Defined(UseProjectM_1_0)}
+{$IF Defined(UseProjectM_0_9) or Defined(UseProjectM_1_0_PLUS)}
   {$DEFINE UseProjectM}
 {$IFEND}
 
-// I had to add these (jay)... but maybe henny has some way that the config script is meant to do this ?
-// Ill need to check with him.
-//{$DEFINE FPC_V220}
-//{$DEFINE LAZARUS_V0924}

@@ -18,17 +18,19 @@ uses
   sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
 
-  {$ifdef UseBass}
-  bass          in 'lib\bass\delphi\bass.pas',
-  {$endif}
-  {$ifdef UsePortaudio}
-  portaudio     in 'lib\portaudio\delphi\portaudio.pas',
-  {$endif}
-  {$ifdef UsePortmixer}
-  portmixer     in 'lib\portmixer\delphi\portmixer.pas',
-  {$endif}
+  {$IFDEF UseBass}
+  bass                   in 'lib\bass\delphi\bass.pas',
+  //UAudioCore_Bass        in 'Classes\UAudioCore_Bass.pas',
+  {$ENDIF}
+  {$IFDEF UsePortaudio}
+  portaudio              in 'lib\portaudio\delphi\portaudio.pas',
+  {$ENDIF}
+  {$IFDEF UsePortmixer}
+  portmixer              in 'lib\portmixer\delphi\portmixer.pas',
+  {$ENDIF}
 
-  {$ifdef delphi}
+  //{$IFDEF MSWINDOWS}
+  {$IFDEF Delphi}
   midiout       in 'lib\midi\midiout.pas',
   midiin        in 'lib\midi\midiin.pas',
   CIRCBUF       in 'lib\midi\CIRCBUF.PAS',
@@ -39,8 +41,9 @@ uses
   Delphmcb      in 'lib\midi\Delphmcb.PAS',
 
   DirWatch      in 'lib\other\DirWatch.pas',
-  {$endif}
+  {$ENDIF}
 
+  {$IFDEF UseFFMpeg}
   avcodec       in 'lib\ffmpeg\avcodec.pas',
   avformat      in 'lib\ffmpeg\avformat.pas',
   avutil        in 'lib\ffmpeg\avutil.pas',
@@ -48,14 +51,17 @@ uses
   opt           in 'lib\ffmpeg\opt.pas',
   avio          in 'lib\ffmpeg\avio.pas',
   mathematics   in 'lib\ffmpeg\mathematics.pas',
-//  swscale       in 'lib\ffmpeg\swscale.pas',
+  {$ENDIF}
+  {$IFDEF UseSWScale}
+  swscale       in 'lib\ffmpeg\swscale.pas',
+  {$ENDIF}
 
-  {$ifdef UseProjectM_0_9}
+  {$IFDEF UseProjectM_0_9}
   projectM      in 'lib\projectM\0.9\projectM.pas',
-  {$endif}
-  {$ifdef UseProjectM_1_0}
+  {$ENDIF}
+  {$IFDEF UseProjectM_1_0}
   projectM      in 'lib\projectM\1.0\projectM.pas',
-  {$endif}
+  {$ENDIF}
 
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3       in 'lib\SQLite\SQLite3.pas',
@@ -145,22 +151,24 @@ uses
 {$IFDEF UseProjectM}
   UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... so video can override...
 {$ENDIF}
+{$IFDEF UseFFMpegVideo}
   UVideo          in 'Classes\UVideo.pas',
-{$ifdef UseFFMpegDecoder}
+{$ENDIF}
+{$IFDEF UseFFMpegDecoder}
   UAudioDecoder_FFMpeg   in 'Classes\UAudioDecoder_FFMpeg.pas',  // MUST be before Playback-classes
-{$endif}
-{$ifdef UseBASSInput}
+{$ENDIF}
+{$IFDEF UseBASSInput}
   UAudioInput_Bass       in 'Classes\UAudioInput_Bass.pas',
-{$endif}
-{$ifdef UseBASSPlayback}
+{$ENDIF}
+{$IFDEF UseBASSPlayback}
   UAudioPlayback_Bass    in 'Classes\UAudioPlayback_Bass.pas',
-{$endif}
-{$ifdef UsePortaudioInput}
+{$ENDIF}
+{$IFDEF UsePortaudioInput}
   UAudioInput_Portaudio  in 'Classes\UAudioInput_Portaudio.pas',
-{$endif}
-{$ifdef UsePortaudioPlayback}
+{$ENDIF}
+{$IFDEF UsePortaudioPlayback}
   UAudioPlayback_Portaudio  in 'Classes\UAudioPlayback_Portaudio.pas',
-{$endif}
+{$ENDIF}
 
 
   //------------------------------
@@ -204,7 +212,7 @@ uses
   UScreenPartyWin         in 'Screens\UScreenPartyWin.pas',
 
 
-  //------------------------------ 	 
+  //------------------------------
   //Includes - Modi SDK
   //------------------------------
   ModiSDK       in '..\..\Modis\SDK\ModiSDK.pas', //Old SDK, will be deleted soon
@@ -213,7 +221,7 @@ uses
 
   {$IFDEF win32}
   Windows,
-  {$ENDIF}   
+  {$ENDIF}
   SysUtils;
 
 const
