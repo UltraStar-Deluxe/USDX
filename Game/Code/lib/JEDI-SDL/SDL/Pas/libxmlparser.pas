@@ -194,8 +194,6 @@ UNIT libxmlparser;
 
 {$I jedi-sdl.inc}
 
-{$ALIGN ON}
-
 INTERFACE
 
 USES

@@ -1,6 +1,6 @@
 unit logger;
 {
-  $Id: logger.pas,v 1.1 2004/02/05 00:08:20 savage Exp $
+  $Id: logger.pas,v 1.2 2006/11/26 16:58:04 savage Exp $
 
 }
 {******************************************************************************}
@@ -63,6 +63,9 @@ unit logger;
 {******************************************************************************}
 {
   $Log: logger.pas,v $
+  Revision 1.2  2006/11/26 16:58:04  savage
+  Modifed to create separate log files. Therefore each instance running from the same directory will have their own individual log file, prepended with a number.
+
   Revision 1.1  2004/02/05 00:08:20  savage
   Module 1.0 release
 
@@ -107,10 +110,20 @@ implementation
 
 { TLogger }
 constructor TLogger.Create;
+var
+  FileName : string;
+  FileNo : integer;
 begin
   FApplicationName := ExtractFileName( ParamStr(0) );
   FApplicationPath := ExtractFilePath( ParamStr(0) );
-  AssignFile( FFileHandle, FApplicationPath + ChangeFileExt( FApplicationName, '.log' ) );
+  FileName := FApplicationPath + ChangeFileExt( FApplicationName, '.log' );
+  FileNo := 0;
+  while FileExists( FileName ) do
+  begin
+    inc( FileNo );
+    FileName := FApplicationPath + IntToStr( FileNo ) + ChangeFileExt( FApplicationName, '.log' )
+  end;
+  AssignFile( FFileHandle, FileName );
   ReWrite( FFileHandle );
   (*inherited Create( FApplicationPath + ChangeFileExt( FApplicationName, '.log' ),
                     fmCreate {$IFNDEF FPC}or fmShareExclusive{$ENDIF} );*)

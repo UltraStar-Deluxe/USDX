@@ -1,7 +1,7 @@
 unit sdlutils;
 {
-  $Id: sdlutils.pas,v 1.4 2004/06/02 19:38:53 savage Exp $
-  
+  $Id: sdlutils.pas,v 1.5 2006/11/19 18:56:44 savage Exp $
+
 }
 {******************************************************************************}
 {                                                                              }
@@ -105,6 +105,9 @@ unit sdlutils;
 {******************************************************************************}
 {
   $Log: sdlutils.pas,v $
+  Revision 1.5  2006/11/19 18:56:44  savage
+  Removed Hints and Warnings.
+
   Revision 1.4  2004/06/02 19:38:53  savage
   Changes to SDL_GradientFillRect as suggested by
   Ángel Eduardo García Hernández.  Many thanks.
@@ -119,12 +122,12 @@ unit sdlutils;
   Revision 1.1  2004/02/05 00:08:20  savage
   Module 1.0 release
 
-  
+
 }
 
 interface
 
-{$i jedi-sdl.inc}
+{$I jedi-sdl.inc}
 
 uses
 {$IFDEF UNIX}
@@ -157,7 +160,7 @@ procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Col
   cardinal ); overload;
 
 procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
-  cardinal ; DashLength, DashSpace : byte );  overload;  
+  cardinal; DashLength, DashSpace : byte ); overload;
 
 procedure SDL_AddLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
   cardinal );
@@ -217,16 +220,16 @@ procedure SDL_FillRectSub( DstSurface : PSDL_Surface; dstrect : PSDL_Rect; color
 procedure SDL_GradientFillRect( DstSurface : PSDL_Surface; const Rect : PSDL_Rect; const StartColor, EndColor : TSDL_Color; const Style : TGradientStyle );
 
 // NOTE for All SDL_2xblit... function : the dest surface must be 2x of the source surface!
-procedure SDL_2xBlit(Src, Dest: PSDL_Surface);
+procedure SDL_2xBlit( Src, Dest : PSDL_Surface );
 
-procedure SDL_Scanline2xBlit(Src, Dest: PSDL_Surface);
+procedure SDL_Scanline2xBlit( Src, Dest : PSDL_Surface );
 
-procedure SDL_50Scanline2xBlit(Src, Dest: PSDL_Surface);
+procedure SDL_50Scanline2xBlit( Src, Dest : PSDL_Surface );
 
 //
 function SDL_PixelTestSurfaceVsRect( SrcSurface1 : PSDL_Surface; SrcRect1 :
-PSDL_Rect; SrcRect2 : PSDL_Rect; Left1, Top1, Left2, Top2 : integer ) :
-boolean;
+  PSDL_Rect; SrcRect2 : PSDL_Rect; Left1, Top1, Left2, Top2 : integer ) :
+  boolean;
 
 // Jason's boolean Surface functions
 procedure SDL_ORSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
@@ -242,7 +245,7 @@ procedure SDL_GTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
 procedure SDL_LTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 
-function SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect) : boolean;
+function SDL_ClipLine( var x1, y1, x2, y2 : Integer; ClipRect : PSDL_Rect ) : boolean;
 
 implementation
 
@@ -256,13 +259,13 @@ var
   right1, bottom1 : integer;
   right2, bottom2 : integer;
   Scan1Start, Scan2Start, ScanWidth, ScanHeight : cardinal;
-  Mod1, Mod2 : cardinal;
+  Mod1, Mod2   : cardinal;
   Addr1, Addr2 : cardinal;
-  BPP : cardinal;
+  BPP          : cardinal;
   Pitch1, Pitch2 : cardinal;
   TransparentColor1, TransparentColor2 : cardinal;
-  tx, ty : cardinal;
-  StartTick : cardinal;
+  tx, ty       : cardinal;
+  StartTick    : cardinal;
   Color1, Color2 : cardinal;
 begin
   Result := false;
@@ -438,9 +441,9 @@ end;
 procedure SDL_AddPixel( DstSurface : PSDL_Surface; x : cardinal; y : cardinal; Color :
   cardinal );
 var
-  SrcColor : cardinal;
-  Addr : cardinal;
-  R, G, B : cardinal;
+  SrcColor     : cardinal;
+  Addr         : cardinal;
+  R, G, B      : cardinal;
 begin
   if Color = 0 then
     exit;
@@ -521,9 +524,9 @@ end;
 procedure SDL_SubPixel( DstSurface : PSDL_Surface; x : cardinal; y : cardinal; Color :
   cardinal );
 var
-  SrcColor : cardinal;
-  Addr : cardinal;
-  R, G, B : cardinal;
+  SrcColor     : cardinal;
+  Addr         : cardinal;
+  R, G, B      : cardinal;
 begin
   if Color = 0 then
     exit;
@@ -608,12 +611,12 @@ procedure SDL_AddSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
-  Bits : cardinal;
+  Bits         : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -878,13 +881,13 @@ procedure SDL_SubSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr : cardinal;
   _ebx, _esi, _edi, _esp : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
-  Bits : cardinal;
+  Bits         : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -1140,14 +1143,14 @@ end;
 procedure SDL_MonoSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect; Color : cardinal );
 var
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr : cardinal;
   _ebx, _esi, _edi, _esp : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   TransparentColor, SrcColor : cardinal;
-  BPP : cardinal;
+  BPP          : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -1312,14 +1315,14 @@ procedure SDL_TexturedSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect; Texture : PSDL_Surface;
   TextureRect : PSDL_Rect );
 var
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr, TextAddr : cardinal;
   _ebx, _esi, _edi, _esp : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod, TextMod : cardinal;
   SrcColor, TransparentColor, TextureColor : cardinal;
-  BPP : cardinal;
+  BPP          : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -1496,10 +1499,10 @@ end;
 
 procedure SDL_ZoomSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect; DstSurface : PSDL_Surface; DstRect : PSDL_Rect );
 var
-  xc, yc : cardinal;
+  xc, yc       : cardinal;
   rx, wx, ry, wy, ry16 : cardinal;
-  color : cardinal;
-  modx, mody : cardinal;
+  color        : cardinal;
+  modx, mody   : cardinal;
 begin
   // Warning! No checks for surface pointers!!!
   if srcrect = nil then
@@ -1540,13 +1543,13 @@ end;
 
 procedure SDL_WarpSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect; DstSurface : PSDL_Surface; UL, UR, LR, LL : PPoint );
 const
-  SHIFTS = 15; // Extend ints to limit round-off error (try 2 - 20)
-  THRESH = 1 shl SHIFTS; // Threshold for pixel size value
+  SHIFTS       = 15; // Extend ints to limit round-off error (try 2 - 20)
+  THRESH       = 1 shl SHIFTS; // Threshold for pixel size value
   procedure CopySourceToDest( UL, UR, LR, LL : TPoint; x1, y1, x2, y2 : cardinal );
   var
     tm, lm, rm, bm, m : TPoint;
-    mx, my : cardinal;
-    cr : cardinal;
+    mx, my     : cardinal;
+    cr         : cardinal;
   begin
     // Does the destination area specify a single pixel?
     if ( ( abs( ul.x - ur.x ) < THRESH ) and
@@ -1620,6 +1623,7 @@ end;
 
 // Draw a line between x1,y1 and x2,y2 to the given surface
 // NOTE: The surface must be locked before calling this!
+
 procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
   cardinal );
 var
@@ -1673,8 +1677,9 @@ end;
 
 // Draw a dashed line between x1,y1 and x2,y2 to the given surface
 // NOTE: The surface must be locked before calling this!
+
 procedure SDL_DrawLine( DstSurface : PSDL_Surface; x1, y1, x2, y2 : integer; Color :
-  cardinal ; DashLength, DashSpace : byte );  overload;
+  cardinal; DashLength, DashSpace : byte ); overload;
 var
   dx, dy, sdx, sdy, x, y, px, py, counter : integer; drawdash : boolean;
 begin
@@ -1682,10 +1687,12 @@ begin
   drawdash := true; //begin line drawing with dash
 
   //Avoid invalid user-passed dash parameters
-  if (DashLength < 1)
-  then DashLength := 1;
-  if (DashSpace < 1)
-  then DashSpace := 0;
+  if ( DashLength < 1 )
+    then
+    DashLength := 1;
+  if ( DashSpace < 1 )
+    then
+    DashSpace := 0;
 
   dx := x2 - x1;
   dy := y2 - y1;
@@ -1706,28 +1713,28 @@ begin
   if dx >= dy then
   begin
     for x := 0 to dx - 1 do
-      begin
+    begin
 
       //Alternate drawing dashes, or leaving spaces
       if drawdash then
+      begin
+        SDL_PutPixel( DstSurface, px, py, Color );
+        inc( counter );
+        if ( counter > DashLength - 1 ) and ( DashSpace > 0 ) then
         begin
-          SDL_PutPixel( DstSurface, px, py, Color );
-          inc(counter);
-          if (counter > DashLength-1) and (DashSpace > 0) then
-            begin
-              drawdash := false;
-              counter := 0;
-            end;
-        end
-      else //space
-        begin
-          inc(counter);
-          if counter > DashSpace-1 then
-            begin
-              drawdash := true;
-              counter := 0;
-            end;
+          drawdash := false;
+          counter := 0;
         end;
+      end
+      else //space
+      begin
+        inc( counter );
+        if counter > DashSpace - 1 then
+        begin
+          drawdash := true;
+          counter := 0;
+        end;
+      end;
 
       y := y + dy;
       if y >= dx then
@@ -1745,24 +1752,24 @@ begin
 
       //Alternate drawing dashes, or leaving spaces
       if drawdash then
+      begin
+        SDL_PutPixel( DstSurface, px, py, Color );
+        inc( counter );
+        if ( counter > DashLength - 1 ) and ( DashSpace > 0 ) then
         begin
-          SDL_PutPixel( DstSurface, px, py, Color );
-          inc(counter);
-          if (counter > DashLength-1) and (DashSpace > 0) then
-            begin
-              drawdash := false;
-              counter := 0;
-            end;
-        end
-      else //space
-        begin
-          inc(counter);
-          if counter > DashSpace-1 then
-            begin
-              drawdash := true;
-              counter := 0;
-            end;
+          drawdash := false;
+          counter := 0;
         end;
+      end
+      else //space
+      begin
+        inc( counter );
+        if counter > DashSpace - 1 then
+        begin
+          drawdash := true;
+          counter := 0;
+        end;
+      end;
 
       x := x + dx;
       if x >= dy then
@@ -1878,13 +1885,14 @@ begin
 end;
 
 // flips a rectangle vertically on given surface
+
 procedure SDL_FlipRectV( DstSurface : PSDL_Surface; Rect : PSDL_Rect );
 var
-  TmpRect : TSDL_Rect;
-  Locked : boolean;
+  TmpRect      : TSDL_Rect;
+  Locked       : boolean;
   y, FlipLength, RowLength : integer;
-  Row1, Row2 : Pointer;
-  OneRow : TByteArray; // Optimize it if you wish
+  Row1, Row2   : Pointer;
+  OneRow       : TByteArray; // Optimize it if you wish
 begin
   if DstSurface <> nil then
   begin
@@ -1920,6 +1928,7 @@ begin
 end;
 
 // flips a rectangle horizontally on given surface
+
 procedure SDL_FlipRectH( DstSurface : PSDL_Surface; Rect : PSDL_Rect );
 type
   T24bit = packed array[ 0..2 ] of byte;
@@ -1928,15 +1937,15 @@ type
   TLongWordArray = array[ 0..8191 ] of LongWord;
   PLongWordArray = ^TLongWordArray;
 var
-  TmpRect : TSDL_Rect;
-  Row8bit : PByteArray;
-  Row16bit : PWordArray;
-  Row24bit : P24bitArray;
-  Row32bit : PLongWordArray;
+  TmpRect      : TSDL_Rect;
+  Row8bit      : PByteArray;
+  Row16bit     : PWordArray;
+  Row24bit     : P24bitArray;
+  Row32bit     : PLongWordArray;
   y, x, RightSide, FlipLength : integer;
-  Pixel : cardinal;
-  Pixel24 : T24bit;
-  Locked : boolean;
+  Pixel        : cardinal;
+  Pixel24      : T24bit;
+  Locked       : boolean;
 begin
   if DstSurface <> nil then
   begin
@@ -2030,9 +2039,10 @@ end;
 
 // Use with caution! The procedure allocates memory for TSDL_Rect and return with its pointer.
 // But you MUST free it after you don't need it anymore!!!
+
 function PSDLRect( aLeft, aTop, aWidth, aHeight : integer ) : PSDL_Rect;
 var
-  Rect : PSDL_Rect;
+  Rect         : PSDL_Rect;
 begin
   New( Rect );
   with Rect^ do
@@ -2103,10 +2113,11 @@ begin
 end;
 
 // Stretches a part of a surface
+
 function SDL_ScaleSurfaceRect( SrcSurface : PSDL_Surface; SrcX1, SrcY1, SrcW, SrcH,
   Width, Height : integer ) : PSDL_Surface;
 var
-  dst_surface : PSDL_Surface;
+  dst_surface  : PSDL_Surface;
   dx, dy, e, d, dx2, srcx2, srcy2 : integer;
   destx1, desty1 : integer;
 begin
@@ -2153,7 +2164,7 @@ end;
 procedure SDL_MoveLine( Surface : PSDL_Surface; x1, x2, y1, xofs, depth : integer );
 var
   src_pixels, dst_pixels : PUint8;
-  i : integer;
+  i            : integer;
 begin
   src_pixels := PUint8( integer( Surface^.pixels ) + Surface^.w * y1 * depth + x2 *
     depth );
@@ -2171,8 +2182,8 @@ NOTE: The surface must be locked before calling this! }
 
 function SDL_GetPixel( SrcSurface : PSDL_Surface; x : integer; y : integer ) : Uint32;
 var
-  bpp : UInt32;
-  p : PInteger;
+  bpp          : UInt32;
+  p            : PInteger;
 begin
   bpp := SrcSurface.format.BytesPerPixel;
   // Here p is the address to the pixel we want to retrieve
@@ -2199,8 +2210,8 @@ end;
 procedure SDL_PutPixel( DstSurface : PSDL_Surface; x : integer; y : integer; pixel :
   Uint32 );
 var
-  bpp : UInt32;
-  p : PInteger;
+  bpp          : UInt32;
+  p            : PInteger;
 begin
   bpp := DstSurface.format.BytesPerPixel;
   p := Pointer( Uint32( DstSurface.pixels ) + UInt32( y ) * DstSurface.pitch + UInt32( x )
@@ -2228,9 +2239,9 @@ end;
 
 procedure SDL_ScrollY( DstSurface : PSDL_Surface; DifY : integer );
 var
-  r1, r2 : TSDL_Rect;
+  r1, r2       : TSDL_Rect;
   //buffer: PSDL_Surface;
-  YPos : Integer;
+  YPos         : Integer;
 begin
   if ( DstSurface <> nil ) and ( DifY <> 0 ) then
   begin
@@ -2282,8 +2293,8 @@ end;}
 
 procedure SDL_ScrollX( DstSurface : PSDL_Surface; DifX : integer );
 var
-  r1, r2 : TSDL_Rect;
-  buffer : PSDL_Surface;
+  r1, r2       : TSDL_Rect;
+  buffer       : PSDL_Surface;
 begin
   if ( DstSurface <> nil ) and ( DifX <> 0 ) then
   begin
@@ -2310,14 +2321,14 @@ end;
 procedure SDL_RotateRad( DstSurface, SrcSurface : PSDL_Surface; SrcRect :
   PSDL_Rect; DestX, DestY, OffsetX, OffsetY : Integer; Angle : Single );
 var
-  aSin, aCos : Single;
+  aSin, aCos   : Single;
   MX, MY, DX, DY, NX, NY, SX, SY, OX, OY, Width, Height, TX, TY, RX, RY, ROX, ROY : Integer;
   Colour, TempTransparentColour : UInt32;
-  MAXX, MAXY : Integer;
+  MAXX, MAXY   : Integer;
 begin
   // Rotate the surface to the target surface.
   TempTransparentColour := SrcSurface.format.colorkey;
-  if srcRect.w > srcRect.h then
+  {if srcRect.w > srcRect.h then
   begin
     Width := srcRect.w;
     Height := srcRect.w;
@@ -2326,7 +2337,7 @@ begin
   begin
     Width := srcRect.h;
     Height := srcRect.h;
-  end;
+  end; }
 
   maxx := DstSurface.w;
   maxy := DstSurface.h;
@@ -2384,8 +2395,8 @@ end;
 
 function ValidateSurfaceRect( DstSurface : PSDL_Surface; dstrect : PSDL_Rect ) : TSDL_Rect;
 var
-  RealRect : TSDL_Rect;
-  OutOfRange : Boolean;
+  RealRect     : TSDL_Rect;
+  OutOfRange   : Boolean;
 begin
   OutOfRange := false;
   if dstrect = nil then
@@ -2457,9 +2468,9 @@ end;
 
 procedure SDL_FillRectAdd( DstSurface : PSDL_Surface; dstrect : PSDL_Rect; color : UInt32 );
 var
-  RealRect : TSDL_Rect;
-  Addr : pointer;
-  ModX, BPP : cardinal;
+  RealRect     : TSDL_Rect;
+  Addr         : pointer;
+  ModX, BPP    : cardinal;
   x, y, R, G, B, SrcColor : cardinal;
 begin
   RealRect := ValidateSurfaceRect( DstSurface, DstRect );
@@ -2590,9 +2601,9 @@ end;
 
 procedure SDL_FillRectSub( DstSurface : PSDL_Surface; dstrect : PSDL_Rect; color : UInt32 );
 var
-  RealRect : TSDL_Rect;
-  Addr : pointer;
-  ModX, BPP : cardinal;
+  RealRect     : TSDL_Rect;
+  Addr         : pointer;
+  ModX, BPP    : cardinal;
   x, y, R, G, B, SrcColor : cardinal;
 begin
   RealRect := ValidateSurfaceRect( DstSurface, DstRect );
@@ -2723,13 +2734,13 @@ end;
 
 procedure SDL_GradientFillRect( DstSurface : PSDL_Surface; const Rect : PSDL_Rect; const StartColor, EndColor : TSDL_Color; const Style : TGradientStyle );
 var
-  FBC : array[ 0..255 ] of Cardinal;
+  FBC          : array[ 0..255 ] of Cardinal;
   // temp vars
   i, YR, YG, YB, SR, SG, SB, DR, DG, DB : Integer;
 
   TempStepV, TempStepH : Single;
   TempLeft, TempTop, TempHeight, TempWidth : integer;
-  TempRect : TSDL_Rect;
+  TempRect     : TSDL_Rect;
 
 begin
   // calc FBC
@@ -2787,328 +2798,328 @@ begin
   end;
 end;
 
-procedure SDL_2xBlit(Src, Dest: PSDL_Surface);
+procedure SDL_2xBlit( Src, Dest : PSDL_Surface );
 var
-  ReadAddr, WriteAddr, ReadRow, WriteRow: UInt32;
-  SrcPitch, DestPitch, x, y: UInt32;
+  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
+  SrcPitch, DestPitch, x, y : UInt32;
 begin
-  if (Src = nil) or (Dest = nil) then
+  if ( Src = nil ) or ( Dest = nil ) then
     exit;
-  if (Src.w shl 1) < Dest.w then
+  if ( Src.w shl 1 ) < Dest.w then
     exit;
-  if (Src.h shl 1) < Dest.h then
+  if ( Src.h shl 1 ) < Dest.h then
     exit;
 
-  if SDL_MustLock(Src) then
-    SDL_LockSurface(Src);
-  if SDL_MustLock(Dest) then
-    SDL_LockSurface(Dest);
+  if SDL_MustLock( Src ) then
+    SDL_LockSurface( Src );
+  if SDL_MustLock( Dest ) then
+    SDL_LockSurface( Dest );
 
-  ReadRow := UInt32(Src.Pixels);
-  WriteRow := UInt32(Dest.Pixels);
+  ReadRow := UInt32( Src.Pixels );
+  WriteRow := UInt32( Dest.Pixels );
 
   SrcPitch := Src.pitch;
   DestPitch := Dest.pitch;
 
   case Src.format.BytesPerPixel of
-    1: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt8(WriteAddr)^ := PUInt8(ReadAddr)^;
-           PUInt8(WriteAddr + 1)^ := PUInt8(ReadAddr)^;
-           PUInt8(WriteAddr + DestPitch)^ := PUInt8(ReadAddr)^;
-           PUInt8(WriteAddr + DestPitch + 1)^ := PUInt8(ReadAddr)^;
-           inc(ReadAddr);
-           inc(WriteAddr, 2);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;
-    2: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt16(WriteAddr)^ := PUInt16(ReadAddr)^;
-           PUInt16(WriteAddr + 2)^ := PUInt16(ReadAddr)^;
-           PUInt16(WriteAddr + DestPitch)^ := PUInt16(ReadAddr)^;
-           PUInt16(WriteAddr + DestPitch + 2)^ := PUInt16(ReadAddr)^;
-           inc(ReadAddr, 2);
-           inc(WriteAddr, 4);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;
-    3: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt32(WriteAddr)^ := (PUInt32(WriteAddr)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
-           PUInt32(WriteAddr + 3)^ := (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
-           PUInt32(WriteAddr + DestPitch)^ := (PUInt32(WriteAddr + DestPitch)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
-           PUInt32(WriteAddr + DestPitch + 3)^ := (PUInt32(WriteAddr + DestPitch + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
-           inc(ReadAddr, 3);
-           inc(WriteAddr, 6);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;
-    4: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt32(WriteAddr)^ := PUInt32(ReadAddr)^;
-           PUInt32(WriteAddr + 4)^ := PUInt32(ReadAddr)^;
-           PUInt32(WriteAddr + DestPitch)^ := PUInt32(ReadAddr)^;
-           PUInt32(WriteAddr + DestPitch + 4)^ := PUInt32(ReadAddr)^;
-           inc(ReadAddr, 4);
-           inc(WriteAddr, 8);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;  
+    1 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt8( WriteAddr )^ := PUInt8( ReadAddr )^;
+          PUInt8( WriteAddr + 1 )^ := PUInt8( ReadAddr )^;
+          PUInt8( WriteAddr + DestPitch )^ := PUInt8( ReadAddr )^;
+          PUInt8( WriteAddr + DestPitch + 1 )^ := PUInt8( ReadAddr )^;
+          inc( ReadAddr );
+          inc( WriteAddr, 2 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    2 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt16( WriteAddr )^ := PUInt16( ReadAddr )^;
+          PUInt16( WriteAddr + 2 )^ := PUInt16( ReadAddr )^;
+          PUInt16( WriteAddr + DestPitch )^ := PUInt16( ReadAddr )^;
+          PUInt16( WriteAddr + DestPitch + 2 )^ := PUInt16( ReadAddr )^;
+          inc( ReadAddr, 2 );
+          inc( WriteAddr, 4 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    3 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt32( WriteAddr )^ := ( PUInt32( WriteAddr )^ and $FF000000 ) or ( PUInt32( ReadAddr )^ and $00FFFFFF );
+          PUInt32( WriteAddr + 3 )^ := ( PUInt32( WriteAddr + 3 )^ and $FF000000 ) or ( PUInt32( ReadAddr )^ and $00FFFFFF );
+          PUInt32( WriteAddr + DestPitch )^ := ( PUInt32( WriteAddr + DestPitch )^ and $FF000000 ) or ( PUInt32( ReadAddr )^ and $00FFFFFF );
+          PUInt32( WriteAddr + DestPitch + 3 )^ := ( PUInt32( WriteAddr + DestPitch + 3 )^ and $FF000000 ) or ( PUInt32( ReadAddr )^ and $00FFFFFF );
+          inc( ReadAddr, 3 );
+          inc( WriteAddr, 6 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    4 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt32( WriteAddr )^ := PUInt32( ReadAddr )^;
+          PUInt32( WriteAddr + 4 )^ := PUInt32( ReadAddr )^;
+          PUInt32( WriteAddr + DestPitch )^ := PUInt32( ReadAddr )^;
+          PUInt32( WriteAddr + DestPitch + 4 )^ := PUInt32( ReadAddr )^;
+          inc( ReadAddr, 4 );
+          inc( WriteAddr, 8 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
   end;
 
-  if SDL_MustLock(Src) then
-    SDL_UnlockSurface(Src);
-  if SDL_MustLock(Dest) then
-    SDL_UnlockSurface(Dest);
+  if SDL_MustLock( Src ) then
+    SDL_UnlockSurface( Src );
+  if SDL_MustLock( Dest ) then
+    SDL_UnlockSurface( Dest );
 end;
 
-procedure SDL_Scanline2xBlit(Src, Dest: PSDL_Surface);
+procedure SDL_Scanline2xBlit( Src, Dest : PSDL_Surface );
 var
-  ReadAddr, WriteAddr, ReadRow, WriteRow: UInt32;
-  SrcPitch, DestPitch, x, y: UInt32;
+  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
+  SrcPitch, DestPitch, x, y : UInt32;
 begin
-  if (Src = nil) or (Dest = nil) then
+  if ( Src = nil ) or ( Dest = nil ) then
     exit;
-  if (Src.w shl 1) < Dest.w then
+  if ( Src.w shl 1 ) < Dest.w then
     exit;
-  if (Src.h shl 1) < Dest.h then
+  if ( Src.h shl 1 ) < Dest.h then
     exit;
 
-  if SDL_MustLock(Src) then
-    SDL_LockSurface(Src);
-  if SDL_MustLock(Dest) then
-    SDL_LockSurface(Dest);
+  if SDL_MustLock( Src ) then
+    SDL_LockSurface( Src );
+  if SDL_MustLock( Dest ) then
+    SDL_LockSurface( Dest );
 
-  ReadRow := UInt32(Src.Pixels);
-  WriteRow := UInt32(Dest.Pixels);
+  ReadRow := UInt32( Src.Pixels );
+  WriteRow := UInt32( Dest.Pixels );
 
   SrcPitch := Src.pitch;
   DestPitch := Dest.pitch;
 
   case Src.format.BytesPerPixel of
-    1: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt8(WriteAddr)^ := PUInt8(ReadAddr)^;
-           PUInt8(WriteAddr + 1)^ := PUInt8(ReadAddr)^;
-           inc(ReadAddr);
-           inc(WriteAddr, 2);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;
-    2: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt16(WriteAddr)^ := PUInt16(ReadAddr)^;
-           PUInt16(WriteAddr + 2)^ := PUInt16(ReadAddr)^;
-           inc(ReadAddr, 2);
-           inc(WriteAddr, 4);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;
-    3: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt32(WriteAddr)^ := (PUInt32(WriteAddr)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
-           PUInt32(WriteAddr + 3)^ := (PUInt32(WriteAddr + 3)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
-           inc(ReadAddr, 3);
-           inc(WriteAddr, 6);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;
-    4: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           PUInt32(WriteAddr)^ := PUInt32(ReadAddr)^;
-           PUInt32(WriteAddr + 4)^ := PUInt32(ReadAddr)^;
-           inc(ReadAddr, 4);
-           inc(WriteAddr, 8);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;  
+    1 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt8( WriteAddr )^ := PUInt8( ReadAddr )^;
+          PUInt8( WriteAddr + 1 )^ := PUInt8( ReadAddr )^;
+          inc( ReadAddr );
+          inc( WriteAddr, 2 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    2 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt16( WriteAddr )^ := PUInt16( ReadAddr )^;
+          PUInt16( WriteAddr + 2 )^ := PUInt16( ReadAddr )^;
+          inc( ReadAddr, 2 );
+          inc( WriteAddr, 4 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    3 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt32( WriteAddr )^ := ( PUInt32( WriteAddr )^ and $FF000000 ) or ( PUInt32( ReadAddr )^ and $00FFFFFF );
+          PUInt32( WriteAddr + 3 )^ := ( PUInt32( WriteAddr + 3 )^ and $FF000000 ) or ( PUInt32( ReadAddr )^ and $00FFFFFF );
+          inc( ReadAddr, 3 );
+          inc( WriteAddr, 6 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    4 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          PUInt32( WriteAddr )^ := PUInt32( ReadAddr )^;
+          PUInt32( WriteAddr + 4 )^ := PUInt32( ReadAddr )^;
+          inc( ReadAddr, 4 );
+          inc( WriteAddr, 8 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
   end;
 
-  if SDL_MustLock(Src) then
-    SDL_UnlockSurface(Src);
-  if SDL_MustLock(Dest) then
-    SDL_UnlockSurface(Dest);
+  if SDL_MustLock( Src ) then
+    SDL_UnlockSurface( Src );
+  if SDL_MustLock( Dest ) then
+    SDL_UnlockSurface( Dest );
 end;
 
-procedure SDL_50Scanline2xBlit(Src, Dest: PSDL_Surface);
+procedure SDL_50Scanline2xBlit( Src, Dest : PSDL_Surface );
 var
-  ReadAddr, WriteAddr, ReadRow, WriteRow: UInt32;
-  SrcPitch, DestPitch, x, y, Color: UInt32;
+  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
+  SrcPitch, DestPitch, x, y, Color : UInt32;
 begin
-  if (Src = nil) or (Dest = nil) then
+  if ( Src = nil ) or ( Dest = nil ) then
     exit;
-  if (Src.w shl 1) < Dest.w then
+  if ( Src.w shl 1 ) < Dest.w then
     exit;
-  if (Src.h shl 1) < Dest.h then
+  if ( Src.h shl 1 ) < Dest.h then
     exit;
 
-  if SDL_MustLock(Src) then
-    SDL_LockSurface(Src);
-  if SDL_MustLock(Dest) then
-    SDL_LockSurface(Dest);
+  if SDL_MustLock( Src ) then
+    SDL_LockSurface( Src );
+  if SDL_MustLock( Dest ) then
+    SDL_LockSurface( Dest );
 
-  ReadRow := UInt32(Src.Pixels);
-  WriteRow := UInt32(Dest.Pixels);
+  ReadRow := UInt32( Src.Pixels );
+  WriteRow := UInt32( Dest.Pixels );
 
   SrcPitch := Src.pitch;
   DestPitch := Dest.pitch;
 
   case Src.format.BitsPerPixel of
-    8: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           Color := PUInt8(ReadAddr)^;
-           PUInt8(WriteAddr)^ := Color;
-           PUInt8(WriteAddr + 1)^ := Color;
-           Color := (Color shr 1) and $6d; {%01101101}
-           PUInt8(WriteAddr + DestPitch)^ := Color;
-           PUInt8(WriteAddr + DestPitch + 1)^ := Color;
-           inc(ReadAddr);
-           inc(WriteAddr, 2);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;
-    15: for y := 1 to Src.h do
+    8 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
         begin
-          ReadAddr := ReadRow;
-          WriteAddr := WriteRow;
-          for x := 1 to Src.w do
-          begin
-            Color := PUInt16(ReadAddr)^;
-            PUInt16(WriteAddr)^ := Color;
-            PUInt16(WriteAddr + 2)^ := Color;
-            Color := (Color shr 1) and $3def; {%0011110111101111}
-            PUInt16(WriteAddr + DestPitch)^ := Color;
-            PUInt16(WriteAddr + DestPitch + 2)^ := Color;
-            inc(ReadAddr, 2);
-            inc(WriteAddr, 4);
-          end;
-          inc(UInt32(ReadRow), SrcPitch);
-          inc(UInt32(WriteRow), DestPitch * 2);
+          Color := PUInt8( ReadAddr )^;
+          PUInt8( WriteAddr )^ := Color;
+          PUInt8( WriteAddr + 1 )^ := Color;
+          Color := ( Color shr 1 ) and $6D; {%01101101}
+          PUInt8( WriteAddr + DestPitch )^ := Color;
+          PUInt8( WriteAddr + DestPitch + 1 )^ := Color;
+          inc( ReadAddr );
+          inc( WriteAddr, 2 );
         end;
-    16: for y := 1 to Src.h do
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    15 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
         begin
-          ReadAddr := ReadRow;
-          WriteAddr := WriteRow;
-          for x := 1 to Src.w do
-          begin
-            Color := PUInt16(ReadAddr)^;
-            PUInt16(WriteAddr)^ := Color;
-            PUInt16(WriteAddr + 2)^ := Color;
-            Color := (Color shr 1) and $7bef; {%0111101111101111}
-            PUInt16(WriteAddr + DestPitch)^ := Color;
-            PUInt16(WriteAddr + DestPitch + 2)^ := Color;
-            inc(ReadAddr, 2);
-            inc(WriteAddr, 4);
-          end;
-          inc(UInt32(ReadRow), SrcPitch);
-          inc(UInt32(WriteRow), DestPitch * 2);
+          Color := PUInt16( ReadAddr )^;
+          PUInt16( WriteAddr )^ := Color;
+          PUInt16( WriteAddr + 2 )^ := Color;
+          Color := ( Color shr 1 ) and $3DEF; {%0011110111101111}
+          PUInt16( WriteAddr + DestPitch )^ := Color;
+          PUInt16( WriteAddr + DestPitch + 2 )^ := Color;
+          inc( ReadAddr, 2 );
+          inc( WriteAddr, 4 );
         end;
-    24: for y := 1 to Src.h do
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    16 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
         begin
-          ReadAddr := ReadRow;
-          WriteAddr := WriteRow;
-          for x := 1 to Src.w do
-          begin
-            Color := (PUInt32(WriteAddr)^ and $ff000000) or (PUInt32(ReadAddr)^ and $00ffffff);
-            PUInt32(WriteAddr)^ := Color;
-            PUInt32(WriteAddr + 3)^ := Color;
-            Color := (Color shr 1) and $007f7f7f; {%011111110111111101111111}
-            PUInt32(WriteAddr + DestPitch)^ := Color;
-            PUInt32(WriteAddr + DestPitch + 3)^ := Color;
-            inc(ReadAddr, 3);
-            inc(WriteAddr, 6);
-          end;
-          inc(UInt32(ReadRow), SrcPitch);
-          inc(UInt32(WriteRow), DestPitch * 2);
+          Color := PUInt16( ReadAddr )^;
+          PUInt16( WriteAddr )^ := Color;
+          PUInt16( WriteAddr + 2 )^ := Color;
+          Color := ( Color shr 1 ) and $7BEF; {%0111101111101111}
+          PUInt16( WriteAddr + DestPitch )^ := Color;
+          PUInt16( WriteAddr + DestPitch + 2 )^ := Color;
+          inc( ReadAddr, 2 );
+          inc( WriteAddr, 4 );
         end;
-    32: for y := 1 to Src.h do
-       begin
-         ReadAddr := ReadRow;
-         WriteAddr := WriteRow;
-         for x := 1 to Src.w do
-         begin
-           Color := PUInt32(ReadAddr)^;
-           PUInt32(WriteAddr)^ := Color;
-           PUInt32(WriteAddr + 4)^ := Color;
-           Color := (Color shr 1) and $7f7f7f7f;
-           PUInt32(WriteAddr + DestPitch)^ := Color;
-           PUInt32(WriteAddr + DestPitch + 4)^ := Color;
-           inc(ReadAddr, 4);
-           inc(WriteAddr, 8);
-         end;
-         inc(UInt32(ReadRow), SrcPitch);
-         inc(UInt32(WriteRow), DestPitch * 2);
-       end;  
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    24 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          Color := ( PUInt32( WriteAddr )^ and $FF000000 ) or ( PUInt32( ReadAddr )^ and $00FFFFFF );
+          PUInt32( WriteAddr )^ := Color;
+          PUInt32( WriteAddr + 3 )^ := Color;
+          Color := ( Color shr 1 ) and $007F7F7F; {%011111110111111101111111}
+          PUInt32( WriteAddr + DestPitch )^ := Color;
+          PUInt32( WriteAddr + DestPitch + 3 )^ := Color;
+          inc( ReadAddr, 3 );
+          inc( WriteAddr, 6 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
+    32 : for y := 1 to Src.h do
+      begin
+        ReadAddr := ReadRow;
+        WriteAddr := WriteRow;
+        for x := 1 to Src.w do
+        begin
+          Color := PUInt32( ReadAddr )^;
+          PUInt32( WriteAddr )^ := Color;
+          PUInt32( WriteAddr + 4 )^ := Color;
+          Color := ( Color shr 1 ) and $7F7F7F7F;
+          PUInt32( WriteAddr + DestPitch )^ := Color;
+          PUInt32( WriteAddr + DestPitch + 4 )^ := Color;
+          inc( ReadAddr, 4 );
+          inc( WriteAddr, 8 );
+        end;
+        inc( UInt32( ReadRow ), SrcPitch );
+        inc( UInt32( WriteRow ), DestPitch * 2 );
+      end;
   end;
 
-  if SDL_MustLock(Src) then
-    SDL_UnlockSurface(Src);
-  if SDL_MustLock(Dest) then
-    SDL_UnlockSurface(Dest);
+  if SDL_MustLock( Src ) then
+    SDL_UnlockSurface( Src );
+  if SDL_MustLock( Dest ) then
+    SDL_UnlockSurface( Dest );
 end;
 
 function SDL_PixelTestSurfaceVsRect( SrcSurface1 : PSDL_Surface; SrcRect1 :
-PSDL_Rect; SrcRect2 : PSDL_Rect; Left1, Top1, Left2, Top2 : integer ) :
-boolean;
+  PSDL_Rect; SrcRect2 : PSDL_Rect; Left1, Top1, Left2, Top2 : integer ) :
+  boolean;
 var
   Src_Rect1, Src_Rect2 : TSDL_Rect;
   right1, bottom1 : integer;
   right2, bottom2 : integer;
-  Scan1Start, Scan2Start, ScanWidth, ScanHeight : cardinal;
-  Mod1: cardinal;
-  Addr1 : cardinal;
-  BPP : cardinal;
-  Pitch1 : cardinal;
+  Scan1Start, {Scan2Start,} ScanWidth, ScanHeight : cardinal;
+  Mod1         : cardinal;
+  Addr1        : cardinal;
+  BPP          : cardinal;
+  Pitch1       : cardinal;
   TransparentColor1 : cardinal;
-  tx, ty : cardinal;
-  StartTick : cardinal;
-  Color1 : cardinal;
+  tx, ty       : cardinal;
+  StartTick    : cardinal;
+  Color1       : cardinal;
 begin
   Result := false;
   if SrcRect1 = nil then
@@ -3124,7 +3135,7 @@ begin
   else
     Src_Rect1 := SrcRect1^;
 
-    Src_Rect2 := SrcRect2^;
+  Src_Rect2 := SrcRect2^;
   with Src_Rect1 do
   begin
     Right1 := Left1 + w;
@@ -3135,15 +3146,13 @@ begin
     Right2 := Left2 + w;
     Bottom2 := Top2 + h;
   end;
-  if ( Left1 >= Right2 ) or ( Right1 <= Left2 ) or ( Top1 >= Bottom2 ) or ( 
-Bottom1 <=
-    Top2 ) then
+  if ( Left1 >= Right2 ) or ( Right1 <= Left2 ) or ( Top1 >= Bottom2 ) or ( Bottom1 <= Top2 ) then
     exit;
   if Left1 <= Left2 then
   begin
     // 1. left, 2. right
     Scan1Start := Src_Rect1.x + Left2 - Left1;
-    Scan2Start := Src_Rect2.x;
+    //Scan2Start := Src_Rect2.x;
     ScanWidth := Right1 - Left2;
     with Src_Rect2 do
       if ScanWidth > w then
@@ -3153,7 +3162,7 @@ Bottom1 <=
   begin
     // 1. right, 2. left
     Scan1Start := Src_Rect1.x;
-    Scan2Start := Src_Rect2.x + Left1 - Left2;
+    //Scan2Start := Src_Rect2.x + Left1 - Left2;
     ScanWidth := Right2 - Left1;
     with Src_Rect1 do
       if ScanWidth > w then
@@ -3213,7 +3222,7 @@ Bottom1 <=
       begin
         for tx := 1 to ScanWidth do
         begin
-          if ( PWord( Addr1 )^ <> TransparentColor1 )  then
+          if ( PWord( Addr1 )^ <> TransparentColor1 ) then
           begin
             Result := true;
             exit;
@@ -3248,7 +3257,7 @@ Bottom1 <=
       begin
         for tx := 1 to ScanWidth do
         begin
-          if ( PLongWord( Addr1 )^ <> TransparentColor1 )  then
+          if ( PLongWord( Addr1 )^ <> TransparentColor1 ) then
           begin
             Result := true;
             exit;
@@ -3266,12 +3275,12 @@ procedure SDL_ORSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
-  Bits : cardinal;
+  Bits         : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -3366,7 +3375,7 @@ begin
             if ( Pixel1 <> TransparentColor ) and ( Pixel1 <> 0 ) then
             begin
               Pixel2 := PUInt8( DestAddr )^;
-              PUInt8( DestAddr )^ := Pixel2 OR Pixel1;
+              PUInt8( DestAddr )^ := Pixel2 or Pixel1;
             end;
             inc( SrcAddr );
             inc( DestAddr );
@@ -3387,7 +3396,7 @@ begin
             begin
               Pixel2 := PUInt16( DestAddr )^;
 
-              PUInt16( DestAddr )^ := Pixel2 OR Pixel1;
+              PUInt16( DestAddr )^ := Pixel2 or Pixel1;
 
             end;
             inc( SrcAddr, 2 );
@@ -3409,7 +3418,7 @@ begin
             begin
               Pixel2 := PUInt16( DestAddr )^;
 
-                PUInt16( DestAddr )^ := Pixel2 OR Pixel1;
+              PUInt16( DestAddr )^ := Pixel2 or Pixel1;
 
             end;
             inc( SrcAddr, 2 );
@@ -3452,7 +3461,7 @@ begin
             begin
               Pixel2 := PUInt32( DestAddr )^;
 
-                PUInt32( DestAddr )^ := Pixel2 or Pixel1;
+              PUInt32( DestAddr )^ := Pixel2 or Pixel1;
             end;
             inc( SrcAddr, 4 );
             inc( DestAddr, 4 );
@@ -3472,12 +3481,12 @@ procedure SDL_ANDSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
-  Bits : cardinal;
+  Bits         : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -3615,7 +3624,7 @@ begin
             begin
               Pixel2 := PUInt16( DestAddr )^;
 
-                PUInt16( DestAddr )^ := Pixel2 and Pixel1;
+              PUInt16( DestAddr )^ := Pixel2 and Pixel1;
 
             end;
             inc( SrcAddr, 2 );
@@ -3658,7 +3667,7 @@ begin
             begin
               Pixel2 := PUInt32( DestAddr )^;
 
-                PUInt32( DestAddr )^ := Pixel2 and Pixel1;
+              PUInt32( DestAddr )^ := Pixel2 and Pixel1;
             end;
             inc( SrcAddr, 4 );
             inc( DestAddr, 4 );
@@ -3680,12 +3689,12 @@ procedure SDL_GTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
-  Bits : cardinal;
+  Bits         : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -3782,9 +3791,18 @@ begin
               Pixel2 := PUInt8( DestAddr )^;
               if Pixel2 > 0 then
               begin
-                if Pixel2 and $E0 > Pixel1 and $E0 then R := Pixel2 and $E0 else R := Pixel1 and $E0;
-                if Pixel2 and $1C > Pixel1 and $1C then G := Pixel2 and $1C else G := Pixel1 and $1C;
-                if Pixel2 and $03 > Pixel1 and $03 then B := Pixel2 and $03 else B := Pixel1 and $03;
+                if Pixel2 and $E0 > Pixel1 and $E0 then
+                  R := Pixel2 and $E0
+                else
+                  R := Pixel1 and $E0;
+                if Pixel2 and $1C > Pixel1 and $1C then
+                  G := Pixel2 and $1C
+                else
+                  G := Pixel1 and $1C;
+                if Pixel2 and $03 > Pixel1 and $03 then
+                  B := Pixel2 and $03
+                else
+                  B := Pixel1 and $03;
 
                 if R > $E0 then
                   R := $E0;
@@ -3818,9 +3836,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $7C00 > Pixel1 and $7C00 then R := Pixel2 and $7C00 else R := Pixel1 and $7C00;
-              if Pixel2 and $03E0 > Pixel1 and $03E0 then G := Pixel2 and $03E0 else G := Pixel1 and $03E0;
-              if Pixel2 and $001F > Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+                if Pixel2 and $7C00 > Pixel1 and $7C00 then
+                  R := Pixel2 and $7C00
+                else
+                  R := Pixel1 and $7C00;
+                if Pixel2 and $03E0 > Pixel1 and $03E0 then
+                  G := Pixel2 and $03E0
+                else
+                  G := Pixel1 and $03E0;
+                if Pixel2 and $001F > Pixel1 and $001F then
+                  B := Pixel2 and $001F
+                else
+                  B := Pixel1 and $001F;
 
                 PUInt16( DestAddr )^ := R or G or B;
               end
@@ -3848,9 +3875,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $F800 > Pixel1 and $F800 then R := Pixel2 and $F800 else R := Pixel1 and $F800;
-              if Pixel2 and $07E0 > Pixel1 and $07E0 then G := Pixel2 and $07E0 else G := Pixel1 and $07E0;
-              if Pixel2 and $001F > Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+                if Pixel2 and $F800 > Pixel1 and $F800 then
+                  R := Pixel2 and $F800
+                else
+                  R := Pixel1 and $F800;
+                if Pixel2 and $07E0 > Pixel1 and $07E0 then
+                  G := Pixel2 and $07E0
+                else
+                  G := Pixel1 and $07E0;
+                if Pixel2 and $001F > Pixel1 and $001F then
+                  B := Pixel2 and $001F
+                else
+                  B := Pixel1 and $001F;
 
                 PUInt16( DestAddr )^ := R or G or B;
               end
@@ -3878,9 +3914,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $FF0000 > Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
-              if Pixel2 and $00FF00 > Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
-              if Pixel2 and $0000FF > Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+                if Pixel2 and $FF0000 > Pixel1 and $FF0000 then
+                  R := Pixel2 and $FF0000
+                else
+                  R := Pixel1 and $FF0000;
+                if Pixel2 and $00FF00 > Pixel1 and $00FF00 then
+                  G := Pixel2 and $00FF00
+                else
+                  G := Pixel1 and $00FF00;
+                if Pixel2 and $0000FF > Pixel1 and $0000FF then
+                  B := Pixel2 and $0000FF
+                else
+                  B := Pixel1 and $0000FF;
 
                 PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or ( R or G or B );
               end
@@ -3908,9 +3953,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $FF0000 > Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
-              if Pixel2 and $00FF00 > Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
-              if Pixel2 and $0000FF > Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+                if Pixel2 and $FF0000 > Pixel1 and $FF0000 then
+                  R := Pixel2 and $FF0000
+                else
+                  R := Pixel1 and $FF0000;
+                if Pixel2 and $00FF00 > Pixel1 and $00FF00 then
+                  G := Pixel2 and $00FF00
+                else
+                  G := Pixel1 and $00FF00;
+                if Pixel2 and $0000FF > Pixel1 and $0000FF then
+                  B := Pixel2 and $0000FF
+                else
+                  B := Pixel1 and $0000FF;
 
                 PUInt32( DestAddr )^ := R or G or B;
               end
@@ -3936,12 +3990,12 @@ procedure SDL_LTSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
-  Src, Dest : TSDL_Rect;
-  Diff : integer;
+  Src, Dest    : TSDL_Rect;
+  Diff         : integer;
   SrcAddr, DestAddr : cardinal;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
-  Bits : cardinal;
+  Bits         : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
     exit; // Remove this to make it faster
@@ -4038,9 +4092,18 @@ begin
               Pixel2 := PUInt8( DestAddr )^;
               if Pixel2 > 0 then
               begin
-                if Pixel2 and $E0 < Pixel1 and $E0 then R := Pixel2 and $E0 else R := Pixel1 and $E0;
-                if Pixel2 and $1C < Pixel1 and $1C then G := Pixel2 and $1C else G := Pixel1 and $1C;
-                if Pixel2 and $03 < Pixel1 and $03 then B := Pixel2 and $03 else B := Pixel1 and $03;
+                if Pixel2 and $E0 < Pixel1 and $E0 then
+                  R := Pixel2 and $E0
+                else
+                  R := Pixel1 and $E0;
+                if Pixel2 and $1C < Pixel1 and $1C then
+                  G := Pixel2 and $1C
+                else
+                  G := Pixel1 and $1C;
+                if Pixel2 and $03 < Pixel1 and $03 then
+                  B := Pixel2 and $03
+                else
+                  B := Pixel1 and $03;
 
                 if R > $E0 then
                   R := $E0;
@@ -4074,9 +4137,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $7C00 < Pixel1 and $7C00 then R := Pixel2 and $7C00 else R := Pixel1 and $7C00;
-              if Pixel2 and $03E0 < Pixel1 and $03E0 then G := Pixel2 and $03E0 else G := Pixel1 and $03E0;
-              if Pixel2 and $001F < Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+                if Pixel2 and $7C00 < Pixel1 and $7C00 then
+                  R := Pixel2 and $7C00
+                else
+                  R := Pixel1 and $7C00;
+                if Pixel2 and $03E0 < Pixel1 and $03E0 then
+                  G := Pixel2 and $03E0
+                else
+                  G := Pixel1 and $03E0;
+                if Pixel2 and $001F < Pixel1 and $001F then
+                  B := Pixel2 and $001F
+                else
+                  B := Pixel1 and $001F;
 
                 PUInt16( DestAddr )^ := R or G or B;
               end
@@ -4104,9 +4176,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $F800 < Pixel1 and $F800 then R := Pixel2 and $F800 else R := Pixel1 and $F800;
-              if Pixel2 and $07E0 < Pixel1 and $07E0 then G := Pixel2 and $07E0 else G := Pixel1 and $07E0;
-              if Pixel2 and $001F < Pixel1 and $001F then B := Pixel2 and $001F else B := Pixel1 and $001F;
+                if Pixel2 and $F800 < Pixel1 and $F800 then
+                  R := Pixel2 and $F800
+                else
+                  R := Pixel1 and $F800;
+                if Pixel2 and $07E0 < Pixel1 and $07E0 then
+                  G := Pixel2 and $07E0
+                else
+                  G := Pixel1 and $07E0;
+                if Pixel2 and $001F < Pixel1 and $001F then
+                  B := Pixel2 and $001F
+                else
+                  B := Pixel1 and $001F;
 
                 PUInt16( DestAddr )^ := R or G or B;
               end
@@ -4134,9 +4215,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $FF0000 < Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
-              if Pixel2 and $00FF00 < Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
-              if Pixel2 and $0000FF < Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+                if Pixel2 and $FF0000 < Pixel1 and $FF0000 then
+                  R := Pixel2 and $FF0000
+                else
+                  R := Pixel1 and $FF0000;
+                if Pixel2 and $00FF00 < Pixel1 and $00FF00 then
+                  G := Pixel2 and $00FF00
+                else
+                  G := Pixel1 and $00FF00;
+                if Pixel2 and $0000FF < Pixel1 and $0000FF then
+                  B := Pixel2 and $0000FF
+                else
+                  B := Pixel1 and $0000FF;
 
                 PUInt32( DestAddr )^ := PUInt32( DestAddr )^ and $FF000000 or ( R or G or B );
               end
@@ -4164,9 +4254,18 @@ begin
               if Pixel2 > 0 then
               begin
 
-              if Pixel2 and $FF0000 < Pixel1 and $FF0000 then R := Pixel2 and $FF0000 else R := Pixel1 and $FF0000;
-              if Pixel2 and $00FF00 < Pixel1 and $00FF00 then G := Pixel2 and $00FF00 else G := Pixel1 and $00FF00;
-              if Pixel2 and $0000FF < Pixel1 and $0000FF then B := Pixel2 and $0000FF else B := Pixel1 and $0000FF;
+                if Pixel2 and $FF0000 < Pixel1 and $FF0000 then
+                  R := Pixel2 and $FF0000
+                else
+                  R := Pixel1 and $FF0000;
+                if Pixel2 and $00FF00 < Pixel1 and $00FF00 then
+                  G := Pixel2 and $00FF00
+                else
+                  G := Pixel1 and $00FF00;
+                if Pixel2 and $0000FF < Pixel1 and $0000FF then
+                  B := Pixel2 and $0000FF
+                else
+                  B := Pixel1 and $0000FF;
 
                 PUInt32( DestAddr )^ := R or G or B;
               end
@@ -4188,69 +4287,75 @@ begin
 end;
 
 // Will clip the x1,x2,y1,x2 params to the ClipRect provided
-function SDL_ClipLine(var x1,y1,x2,y2: Integer; ClipRect: PSDL_Rect) : boolean;
-  var tflag, flag1, flag2: word;
-    txy, xedge, yedge: Integer;
-    slope: single;
 
-  function ClipCode(x,y: Integer): word;
+function SDL_ClipLine( var x1, y1, x2, y2 : Integer; ClipRect : PSDL_Rect ) : boolean;
+var
+  tflag, flag1, flag2 : word;
+  txy, xedge, yedge : Integer;
+  slope        : single;
+
+  function ClipCode( x, y : Integer ) : word;
   begin
     Result := 0;
-    if x < ClipRect.x then Result := 1;
-    if x >= ClipRect.w + ClipRect.x then Result := Result or 2;
-    if y < ClipRect.y then Result := Result or 4;
-    if y >= ClipRect.h + ClipRect.y then Result := Result or 8;
+    if x < ClipRect.x then
+      Result := 1;
+    if x >= ClipRect.w + ClipRect.x then
+      Result := Result or 2;
+    if y < ClipRect.y then
+      Result := Result or 4;
+    if y >= ClipRect.h + ClipRect.y then
+      Result := Result or 8;
   end;
 
 begin
-  flag1 := ClipCode(x1,y1);
-  flag2 := ClipCode(x2,y2);
+  flag1 := ClipCode( x1, y1 );
+  flag2 := ClipCode( x2, y2 );
   result := true;
 
   while true do
   begin
-    if (flag1 or flag2) = 0 then Exit; // all in
+    if ( flag1 or flag2 ) = 0 then
+      Exit; // all in
 
-    if (flag1 and flag2) <> 0 then
-      begin
-        result := false;
-        Exit; // all out
-      end;
+    if ( flag1 and flag2 ) <> 0 then
+    begin
+      result := false;
+      Exit; // all out
+    end;
 
     if flag2 = 0 then
-      begin
-        txy := x1; x1 := x2; x2 := txy;
-        txy := y1; y1 := y2; y2 := txy;
-        tflag := flag1; flag1 := flag2; flag2 := tflag;
-      end;
+    begin
+      txy := x1; x1 := x2; x2 := txy;
+      txy := y1; y1 := y2; y2 := txy;
+      tflag := flag1; flag1 := flag2; flag2 := tflag;
+    end;
 
-    if (flag2 and 3) <> 0 then
-      begin
-        if (flag2 and 1) <> 0 then
-          xedge := ClipRect.x
-        else
-          xedge := ClipRect.w + ClipRect.x -1; // back 1 pixel otherwise we end up in a loop
+    if ( flag2 and 3 ) <> 0 then
+    begin
+      if ( flag2 and 1 ) <> 0 then
+        xedge := ClipRect.x
+      else
+        xedge := ClipRect.w + ClipRect.x - 1; // back 1 pixel otherwise we end up in a loop
 
-        slope := (y2 - y1) / (x2 - x1);
-        y2 := y1 + Round(slope * (xedge - x1));
-        x2 := xedge;
-      end
+      slope := ( y2 - y1 ) / ( x2 - x1 );
+      y2 := y1 + Round( slope * ( xedge - x1 ) );
+      x2 := xedge;
+    end
     else
-      begin
-        if (flag2 and 4) <> 0 then
-          yedge := ClipRect.y
-        else
-          yedge := ClipRect.h + ClipRect.y -1; // up 1 pixel otherwise we end up in a loop
+    begin
+      if ( flag2 and 4 ) <> 0 then
+        yedge := ClipRect.y
+      else
+        yedge := ClipRect.h + ClipRect.y - 1; // up 1 pixel otherwise we end up in a loop
 
-        slope := (x2 - x1) / (y2 - y1);
-        x2 := x1 + Round(slope * (yedge - y1));
-        y2 := yedge;
-      end;
+      slope := ( x2 - x1 ) / ( y2 - y1 );
+      x2 := x1 + Round( slope * ( yedge - y1 ) );
+      y2 := yedge;
+    end;
 
-    flag2 := ClipCode(x2, y2);
+    flag2 := ClipCode( x2, y2 );
   end;
 end;
 
 end.
-
 

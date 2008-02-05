@@ -1,5 +1,5 @@
 {
-  $Id: jedi-sdl.inc,v 1.9 2004/12/23 23:42:17 savage Exp $
+  $Id: jedi-sdl.inc,v 1.15 2007/05/29 21:30:48 savage Exp $
 }
 {******************************************************************************}
 {                                                                              }
@@ -74,6 +74,24 @@
 {                                                                              }
 (*
   $Log: jedi-sdl.inc,v $
+  Revision 1.15  2007/05/29 21:30:48  savage
+  Changes as suggested by Almindor for 64bit compatibility.
+
+  Revision 1.14  2007/05/20 20:29:11  savage
+  Initial Changes to Handle 64 Bits
+
+  Revision 1.13  2007/01/21 15:51:45  savage
+  Added Delphi 2006 support
+
+  Revision 1.12  2006/11/19 18:41:01  savage
+  removed THREADING ON flag as it is no longer needed in latest versions of FPC.
+
+  Revision 1.11  2006/01/04 00:52:41  drellis
+  Updated to include defined for ENDIAN values, SDL_BYTEORDER should now be correctly defined depending onthe platform. Code taken from sdl_mixer
+
+  Revision 1.10  2005/05/22 18:42:31  savage
+  Changes as suggested by Michalis Kamburelis. Thanks again.
+
   Revision 1.9  2004/12/23 23:42:17  savage
   Applied Patches supplied by Michalis Kamburelis ( THANKS! ), for greater FreePascal compatability.
 
@@ -148,73 +166,138 @@
 {$IFDEF ver90}
    {$DEFINE Delphi}      {Delphi 2.x}
    {$DEFINE Delphi32}
+   {$DEFINE WIN32}
+   {$DEFINE WINDOWS}
 {$ENDIF ver90}
 
 {$IFDEF ver100}
    {$DEFINE Delphi}      {Delphi 3.x}
    {$DEFINE Delphi32}
    {$DEFINE WIN32}
+   {$DEFINE WINDOWS}
 {$ENDIF ver100}
 
 {$IFDEF ver93}
    {$DEFINE Delphi}      {C++ Builder 1.x}
    {$DEFINE Delphi32}
+   {$DEFINE WINDOWS}
 {$ENDIF ver93}
 
 {$IFDEF ver110}
    {$DEFINE Delphi}      {C++ Builder 3.x}
    {$DEFINE Delphi32}
+   {$DEFINE WINDOWS}
 {$ENDIF ver110}
 
 {$IFDEF ver120}
    {$DEFINE Delphi}      {Delphi 4.x}
    {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
    {$DEFINE Has_Int64}
+   {$DEFINE WINDOWS}
 {$ENDIF ver120}
 
 {$IFDEF ver130}
    {$DEFINE Delphi}      {Delphi 5.x}
    {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
    {$DEFINE Has_Int64}
+   {$DEFINE WINDOWS}
 {$ENDIF ver130}
 
 {$IFDEF ver140}
    {$DEFINE Delphi}      {Delphi 6.x}
    {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
+   {$DEFINE Delphi6UP}
    {$DEFINE Has_Int64}
+   {$DEFINE HAS_TYPES}
 {$ENDIF ver140}
 
 {$IFDEF ver150}
    {$DEFINE Delphi}      {Delphi 7.x}
    {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
+   {$DEFINE Delphi6UP}
+   {$DEFINE Delphi7UP}
    {$WARN UNSAFE_TYPE OFF} {Disable warning for unsafe types in Delphi 7}
    {$DEFINE Has_Int64}
+   {$DEFINE HAS_TYPES}
 {$ENDIF ver150}
 
 {$IFDEF ver160}
-   {$DEFINE Delphi}      {Delphi 8??}
+   {$DEFINE Delphi}      {Delphi 8}
    {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
+   {$DEFINE Delphi6UP}
+   {$DEFINE Delphi7UP}
+   {$DEFINE Delphi8UP}
    {$DEFINE Has_Int64}
+   {$DEFINE HAS_TYPES}
 {$ENDIF ver160}
 
 {$IFDEF ver170}
-   {$DEFINE Delphi}      {Delphi 9??}
+   {$DEFINE Delphi}      {Delphi 2005}
    {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
+   {$DEFINE Delphi6UP}
+   {$DEFINE Delphi7UP}
+   {$DEFINE Delphi8UP}
+   {$DEFINE Delphi9UP}
    {$WARN UNSAFE_TYPE OFF} {Disable warning for unsafe types in Delphi 7}
    {$DEFINE Has_Int64}
+   {$DEFINE HAS_TYPES}
 {$ENDIF ver170}
 
+{$IFDEF ver180}
+   {$DEFINE Delphi}      {Delphi 2006}
+   {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
+   {$DEFINE Delphi6UP}
+   {$DEFINE Delphi7UP}
+   {$DEFINE Delphi8UP}
+   {$DEFINE Delphi9UP}
+   {$DEFINE Delphi10UP}
+   {$WARN UNSAFE_TYPE OFF} {Disable warning for unsafe types in Delphi 7}
+   {$DEFINE Has_Int64}
+   {$DEFINE HAS_TYPES}
+{$ENDIF ver180}
+
+{$IFDEF ver185}
+   {$DEFINE Delphi}      {Delphi 2007}
+   {$DEFINE Delphi32}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
+   {$DEFINE Delphi6UP}
+   {$DEFINE Delphi7UP}
+   {$DEFINE Delphi8UP}
+   {$DEFINE Delphi9UP}
+   {$DEFINE Delphi10UP}
+   {$WARN UNSAFE_TYPE OFF} {Disable warning for unsafe types in Delphi 7}
+   {$DEFINE Has_Int64}
+   {$DEFINE HAS_TYPES}
+{$ENDIF ver180}
+
 {$IFDEF UNIX}
-  {$ifdef VER150}
-    {$define KYLIX}
+  {$ifdef VER140}    // Kylix 1 & 2
+    {$DEFINE KYLIX}
+    {$DEFINE KYLIX1UP}
+    {$DEFINE KYLIX2UP}
+    {$DEFINE HAS_TYPES}
   {$endif}
 
-  {$ifdef VER140}
-    {$define KYLIX}
-  {$endif}
-
-  {$ifdef VER140}
-    {$define KYLIX}
+  {$ifdef VER150}   // Kylix 3
+    {$DEFINE KYLIX}
+    {$DEFINE KYLIX1UP}
+    {$DEFINE KYLIX2UP}
+    {$DEFINE KYLIX3UP}
+    {$DEFINE HAS_TYPES}
   {$endif}
 {$ENDIF UNIX}
 
@@ -227,14 +310,14 @@
 {$IFDEF Delphi}
   {$DEFINE Windows}
   {$DEFINE USE_STDCALL}
+  //{$ALIGN ON}
 {$ENDIF Delphi}
 
 {$IFDEF FPC}
   {$MODE Delphi}          { use Delphi compatibility mode }
   {$H+}
-  {$PACKRECORDS 4}        // Added for record
+  {$PACKRECORDS C}        // Added for record
   {$MACRO ON}             // Added For OpenGL
-  {$THREADING on}
   {$DEFINE Delphi}
   {$DEFINE UseAT}
   {$UNDEF USE_STDCALL}
@@ -242,7 +325,7 @@
   {$DEFINE NO_EXPORTS}
   {$DEFINE Has_Int64}
   {$DEFINE NOCRT}
-  {$IFDEF unix}
+  {$IFDEF UNIX}
      {$DEFINE fpc_unix}
   {$ELSE}
      {$DEFINE __OS_DOS__}
@@ -250,6 +333,7 @@
   {$IFDEF WIN32}
    {$DEFINE UseWin}
   {$ENDIF}
+  {$DEFINE HAS_TYPES}
 {$ENDIF FPC}
 
 {$IFDEF Win16}
@@ -334,4 +418,21 @@
 
 {$IFNDEF ver70}
   {$UNDEF assembler}
+{$ENDIF}
+
+{*************** define LITTLE ENDIAN platforms ********************}
+
+
+{$IFDEF Delphi}
+{$DEFINE IA32}
+{$ENDIF}
+
+{$IFDEF KYLIX}
+{$DEFINE IA32}
+{$ENDIF}
+
+{$IFDEF FPC}
+{$IFDEF FPC_LITTLE_ENDIAN}
+{$DEFINE IA32}
+{$ENDIF}
 {$ENDIF}

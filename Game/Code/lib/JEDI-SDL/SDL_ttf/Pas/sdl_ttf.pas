@@ -1,6 +1,6 @@
 unit sdl_ttf;
 {
-  $Id: sdl_ttf.pas,v 1.10 2005/01/02 19:07:32 savage Exp $
+  $Id: sdl_ttf.pas,v 1.19 2007/12/05 22:54:20 savage Exp $
 
 }
 {******************************************************************************}
@@ -87,6 +87,33 @@ unit sdl_ttf;
 {                                                                              }
 {
   $Log: sdl_ttf.pas,v $
+  Revision 1.19  2007/12/05 22:54:20  savage
+  Better Mac OS X support for Frameworks.
+
+  Revision 1.18  2007/06/01 11:16:33  savage
+  Added IFDEF UNIX for Workaround.
+
+  Revision 1.17  2007/06/01 08:38:21  savage
+  Added TTF_RenderText_Solid workaround as suggested by Michalis Kamburelis
+
+  Revision 1.16  2007/05/29 21:32:14  savage
+  Changes as suggested by Almindor for 64bit compatibility.
+
+  Revision 1.15  2007/05/20 20:32:45  savage
+  Initial Changes to Handle 64 Bits
+
+  Revision 1.14  2006/12/02 00:19:01  savage
+  Updated to latest version
+
+  Revision 1.13  2005/04/10 11:48:33  savage
+  Changes as suggested by Michalis, thanks.
+
+  Revision 1.12  2005/01/05 01:47:14  savage
+  Changed LibName to reflect what MacOS X should have. ie libSDL*-1.2.0.dylib respectively.
+
+  Revision 1.11  2005/01/04 23:14:57  savage
+  Changed LibName to reflect what most Linux distros will have. ie libSDL*-1.2.so.0 respectively.
+
   Revision 1.10  2005/01/02 19:07:32  savage
   Slight bug fix to use LongInt instead of Long ( Thanks Michalis Kamburelis )
 
@@ -124,7 +151,17 @@ unit sdl_ttf;
 
 {$I jedi-sdl.inc}
 
-{$ALIGN ON}
+{
+  Define this to workaround a known bug in some freetype versions.
+  The error manifests as TTF_RenderGlyph_Solid returning nil (error)
+  and error message (in SDL_Error) is
+  "Failed loading DPMSDisable: /usr/lib/libX11.so.6: undefined symbol: DPMSDisable"
+  See [http://lists.libsdl.org/pipermail/sdl-libsdl.org/2007-March/060459.html]
+}
+{$IFDEF UNIX}
+{$DEFINE Workaround_TTF_RenderText_Solid}
+{$ENDIF}
+
 
 interface
 
@@ -133,7 +170,7 @@ uses
   gpc,
 {$ENDIF}
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   {$IFNDEF __GPC__}
   Windows,
   {$ENDIF}
@@ -141,20 +178,25 @@ uses
   sdl;
 
 const
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   SDLttfLibName = 'SDL_ttf.dll';
 {$ENDIF}
 
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
-  SDLttfLibName = 'libSDL_ttf.dylib';
+  SDLttfLibName = 'libSDL_ttf-2.0.0.dylib';
 {$ELSE}
-  SDLttfLibName = 'libSDL_ttf.so';
+  {$IFDEF FPC}
+    SDLttfLibName = 'libSDL_ttf.so';
+  {$ELSE}
+    SDLttfLibName = 'libSDL_ttf-2.0.so.0';
+  {$ENDIF}
 {$ENDIF}
 {$ENDIF}
 
 {$IFDEF MACOS}
   SDLttfLibName = 'SDL_ttf';
+  {$linklib libSDL_ttf}
 {$ENDIF}
 
   {* Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL *}
@@ -162,7 +204,7 @@ const
 {$EXTERNALSYM SDL_TTF_MAJOR_VERSION}
   SDL_TTF_MINOR_VERSION = 0;
 {$EXTERNALSYM SDL_TTF_MINOR_VERSION}
-  SDL_TTF_PATCHLEVEL = 7;
+  SDL_TTF_PATCHLEVEL = 9;
 {$EXTERNALSYM SDL_TTF_PATCHLEVEL}
 
   // Backwards compatibility
@@ -314,8 +356,10 @@ cdecl; external {$IFDEF __GPC__}name 'TTF_SizeUNICODE'{$ELSE} SDLttfLibName{$END
 }
 function TTF_RenderText_Solid( font : PTTF_Font;
 				const text : PChar; fg : TSDL_Color ): PSDL_Surface;
+{$IFNDEF Workaround_TTF_RenderText_Solid}
 cdecl; external {$IFDEF __GPC__}name 'TTF_RenderText_Solid'{$ELSE} SDLttfLibName{$ENDIF __GPC__};
 {$EXTERNALSYM TTF_RenderText_Solid}
+{$ENDIF}
 
 function TTF_RenderUTF8_Solid( font : PTTF_Font;
 				const text : PChar; fg : TSDL_Color ): PSDL_Surface;
@@ -447,5 +491,15 @@ function TTF_GetError : PChar;
 begin
   result := SDL_GetError;
 end;
+
+{$IFDEF Workaround_TTF_RenderText_Solid}
+function TTF_RenderText_Solid( font : PTTF_Font;
+  const text : PChar; fg : TSDL_Color ): PSDL_Surface;
+const
+  Black: TSDL_Color = (r: 0; g: 0; b: 0; unused: 0);
+begin
+  Result := TTF_RenderText_Shaded(font, text, fg, Black);
+end;
+{$ENDIF Workaround_TTF_RenderText_Solid}
 
 end.

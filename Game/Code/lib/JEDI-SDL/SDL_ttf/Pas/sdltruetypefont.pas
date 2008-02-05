@@ -1,6 +1,6 @@
 unit sdltruetypefont;
 {
-  $Id: sdltruetypefont.pas,v 1.1 2004/09/30 22:39:50 savage Exp $
+  $Id: sdltruetypefont.pas,v 1.5 2005/05/26 21:22:28 savage Exp $
 
 }
 {******************************************************************************}
@@ -62,6 +62,21 @@ unit sdltruetypefont;
 {   September   23 2004 - DL : Initial Creation                                }
 {
   $Log: sdltruetypefont.pas,v $
+  Revision 1.5  2005/05/26 21:22:28  savage
+  Update to Input code.
+
+  Revision 1.1  2005/05/25 23:15:42  savage
+  Latest Changes
+
+  Revision 1.4  2005/05/25 22:55:01  savage
+  Added InputRect support.
+
+  Revision 1.3  2005/05/13 14:02:49  savage
+  Made it use UniCode rendering by default.
+
+  Revision 1.2  2005/05/13 11:37:52  savage
+  Improved wordwrapping algorithm
+
   Revision 1.1  2004/09/30 22:39:50  savage
   Added a true type font class which contains a wrap text function.
   Changed the sdl_ttf.pas header to reflect the future of jedi-sdl.
@@ -93,6 +108,7 @@ type
     FFontFile : string;
     FFontSize : integer;
     procedure PrepareFont;
+
   protected
 
   public
@@ -100,6 +116,7 @@ type
     destructor Destroy; override;
     function DrawText( aText : WideString ) : PSDL_Surface; overload;
     function DrawText( aText : WideString; aWidth, aHeight : Integer ) : PSDL_Surface; overload;
+    function Input(aDestination: PSDL_Surface; aX, aY, aWidth, aHeight: integer; var aText: string; aMaxChars: integer = 10 ): PSDL_Surface;
     property BackGroundColour : TSDL_Color read FBackGroundColour write FBackGroundColour;
     property ForeGroundColour : TSDL_Color read FForeGroundColour write FForeGroundColour;
     property FontFile : string read FFontFile write FFontFile;
@@ -131,7 +148,7 @@ begin
     FForeGroundColour.r := 0;
     FForeGroundColour.g := 0;
     FForeGroundColour.b := 0;
-    FRenderType := rtUTF8;
+    FRenderType := rtUnicode;
     if ( TTF_Init >= 0 ) then
     begin
       FFontFile := aFontFile;
@@ -265,26 +282,31 @@ begin
         else
         begin
           dec( i );
-          strChopped := Copy( strChopped, 0, i );
-          if TTF_SizeText( FFont, PChar( string( strChopped ) ), textw, texth ) = 0 then
+          if TTF_SizeText( FFont, PChar( string( Copy( strChopped, 0, i ) ) ), textw, texth ) = 0 then
           begin
             if ( textw < aWidth )
-              and ( texth < aHeight ) then
+            and ( texth < aHeight ) then
             begin
               SetLength( strlist, Length( strlist ) + 1 );
-              strlist[ Length( strlist ) - 1 ] := strChopped;
-              strChopped := Copy( aText, i + 2, Length( aText ) - ( i - 1 ) );
+              strlist[ Length( strlist ) - 1 ] := Copy( strChopped, 0, i );
+              strChopped := Copy( strChopped, i + 2, Length( strChopped ) - ( i - 1 ) );
               i := Length( strChopped );
               if TTF_SizeText( FFont, PChar( string( strChopped ) ), textw, texth ) = 0 then
               begin
-                SetLength( strlist, Length( strlist ) + 1 );
-                strlist[ Length( strlist ) - 1 ] := strChopped;
-                break;
+                if ( textw < aWidth )
+                and ( texth < aHeight ) then
+                begin
+                  SetLength( strlist, Length( strlist ) + 1 );
+                  strlist[ Length( strlist ) - 1 ] := Copy( strChopped, 0, i );
+                  strChopped := Copy( strChopped, i + 2, Length( strChopped ) - ( i - 1 ) );
+                  i := Length( strChopped );
+                end;
               end;
             end;
           end;
         end;
       end;
+      
       SetLength( SurfaceList, Length( strlist ) );
       for i := Low( strlist ) to High( strlist ) do
       begin
@@ -310,26 +332,31 @@ begin
         else
         begin
           dec( i );
-          strChopped := Copy( strChopped, 0, i );
-          if TTF_SizeUTF8( FFont, PChar( string( strChopped ) ), textw, texth ) = 0 then
+          if TTF_SizeUTF8( FFont, PChar( string( Copy( strChopped, 0, i ) ) ), textw, texth ) = 0 then
           begin
             if ( textw < aWidth )
-              and ( texth < aHeight ) then
+            and ( texth < aHeight ) then
             begin
               SetLength( strlist, Length( strlist ) + 1 );
-              strlist[ Length( strlist ) - 1 ] := strChopped;
-              strChopped := Copy( aText, i + 2, Length( aText ) - ( i - 1 ) );
+              strlist[ Length( strlist ) - 1 ] := Copy( strChopped, 0, i );
+              strChopped := Copy( strChopped, i + 2, Length( strChopped ) - ( i - 1 ) );
               i := Length( strChopped );
               if TTF_SizeUTF8( FFont, PChar( string( strChopped ) ), textw, texth ) = 0 then
               begin
-                SetLength( strlist, Length( strlist ) + 1 );
-                strlist[ Length( strlist ) - 1 ] := strChopped;
-                break;
+                if ( textw < aWidth )
+                and ( texth < aHeight ) then
+                begin
+                  SetLength( strlist, Length( strlist ) + 1 );
+                  strlist[ Length( strlist ) - 1 ] := Copy( strChopped, 0, i );
+                  strChopped := Copy( strChopped, i + 2, Length( strChopped ) - ( i - 1 ) );
+                  i := Length( strChopped );
+                end;
               end;
             end;
           end;
         end;
       end;
+
       SetLength( SurfaceList, Length( strlist ) );
       for i := Low( strlist ) to High( strlist ) do
       begin
@@ -355,21 +382,25 @@ begin
         else
         begin
           dec( i );
-          strChopped := Copy( strChopped, 0, i );
-          if TTF_SizeUNICODE( FFont, PUInt16( strChopped ), textw, texth ) = 0 then
+          if TTF_SizeUNICODE( FFont, PUInt16( Copy( strChopped, 0, i ) ), textw, texth ) = 0 then
           begin
             if ( textw < aWidth )
-              and ( texth < aHeight ) then
+            and ( texth < aHeight ) then
             begin
               SetLength( strlist, Length( strlist ) + 1 );
-              strlist[ Length( strlist ) - 1 ] := strChopped;
-              strChopped := Copy( aText, i + 2, Length( aText ) - ( i - 1 ) );
+              strlist[ Length( strlist ) - 1 ] := Copy( strChopped, 0, i );
+              strChopped := Copy( strChopped, i + 2, Length( strChopped ) - ( i - 1 ) );
               i := Length( strChopped );
               if TTF_SizeUNICODE( FFont, PUInt16( strChopped ), textw, texth ) = 0 then
               begin
-                SetLength( strlist, Length( strlist ) + 1 );
-                strlist[ Length( strlist ) - 1 ] := strChopped;
-                break;
+                if ( textw < aWidth )
+                and ( texth < aHeight ) then
+                begin
+                  SetLength( strlist, Length( strlist ) + 1 );
+                  strlist[ Length( strlist ) - 1 ] := Copy( strChopped, 0, i );
+                  strChopped := Copy( strChopped, i + 2, Length( strChopped ) - ( i - 1 ) );
+                  i := Length( strChopped );
+                end;
               end;
             end;
           end;
@@ -409,6 +440,103 @@ begin
   end;
   SetLength( SurfaceList, 0 );
   SetLength( strlist, 0 );
+end;
+
+function TTrueTypeFont.Input(aDestination: PSDL_Surface; aX, aY, aWidth: integer; aHeight : integer; var aText : string; aMaxChars: integer): PSDL_Surface;
+var
+  event : TSDL_Event;
+  ch : integer;
+
+  BackSurface, TextSurface : PSDL_Surface;
+  rect : SDL_Rect;
+  textw, texth : integer;
+  Done : boolean;
+  PassedInText : string; 
+begin
+  PassedInText := aText;
+
+  BackSurface := SDL_AllocSurface( aDestination.flags,
+    aDestination.w,
+    aDestination.h,
+    aDestination.format.BitsPerPixel,
+    aDestination.format.Rmask,
+    aDestination.format.Gmask,
+    aDestination.format.Bmask, 0 );
+
+  rect.x := aX;
+  rect.y := aY;
+  rect.w := aWidth;
+  rect.h := aHeight;
+
+  SDL_BlitSurface( aDestination, nil, BackSurface, nil );
+  SDL_FillRect( BackSurface, @rect, SDL_MapRGB( aDestination.format, 0, 0, 0 ) );
+
+  TextSurface := DrawText( aText + '|' );
+
+  // start input
+  SDL_EnableUNICODE( 1 );
+  Done := false;
+  while ( not Done ) and ( SDL_WaitEvent( @event ) > 0 ) do
+  begin
+    if event.type_ = SDL_KEYDOWN then
+    begin
+      ch := event.key.keysym.unicode;
+      case ch of
+        SDLK_RETURN :
+        begin
+          Done := true;
+        end;
+
+        SDLK_ESCAPE :
+        begin
+          aText := PassedInText;
+          Done := true;
+        end;
+
+        SDLK_BACKSPACE :
+        begin
+          if ( Length( aText ) > 0 ) then
+          begin
+            aText := Copy( aText, 0, Length( aText ) - 1 );
+            if TextSurface <> nil then
+                SDL_FreeSurface( TextSurface );
+            TextSurface := DrawText( aText + '|' );
+          end;
+        end;
+      else
+        begin
+          if Length( aText ) < aMaxChars then
+          begin
+            if ( chr( ch ) <> '' ) then
+            begin
+              aText := aText + chr( ch );
+
+              if ( aText <> '' )
+              and ( TTF_SizeUNICODE( FFont, PUInt16( aText ), textw, texth ) = 0 ) then
+              begin
+                if ( textw > aWidth ) then
+                  aText := Copy( aText, 0, Length( aText ) - 1 );
+              end;
+
+              if TextSurface <> nil then
+                SDL_FreeSurface( TextSurface );
+              TextSurface := DrawText( aText + '|' );
+            end;
+          end;
+        end;
+      end;
+    end;
+    SDL_BlitSurface( BackSurface, nil, aDestination, nil );
+    SDL_BlitSurface( TextSurface, nil, aDestination, @rect );
+    SDL_Flip( aDestination );
+  end;
+  
+  if TextSurface <> nil then
+    SDL_FreeSurface( TextSurface );
+  if aText <> '' then
+    TextSurface := DrawText( aText );
+  SDL_FreeSurface( BackSurface );
+  result := TextSurface;
 end;
 
 procedure TTrueTypeFont.PrepareFont;

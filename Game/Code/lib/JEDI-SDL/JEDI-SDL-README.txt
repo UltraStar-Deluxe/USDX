@@ -19,10 +19,12 @@ Both documents can be found in the "documentation" directory.
 Release History
 ---------------
 1.0  :   Yeah!! The Official v1.0 Release of JEDI-SDL!!
-           JEDI-SDL now updated to SDL v1.2.8, SDL_Image v1.2.4, SDL_Mixer v1.2.6, SDL_Net v1.2.1 & SDL_ttf v2.0.7
+           JEDI-SDL now updated to SDL v1.2.11, SDL_Image v1.2.5, SDL_Mixer v1.2.7, SDL_Net v1.2.6 & SDL_ttf v2.0.8
            Added Improved FreePascal, TMT Pascal and GnuPascal support as well as maintaining Delphi/Kylix support.
            Fixed Various bugs as pointed out on the JEDI-SDL mailing list.
            Added SDL_GL_STEREO, SDL_GL_MULTISAMPLEBUFFERS, SDL_GL_MULTISAMPLESAMPLES
+
+Now works on MacOS X and a MacOS X disk image is available for download.
 
 // DLL/Shared object functions
 function SDL_LoadObject( const sofile : PChar ) : Pointer;

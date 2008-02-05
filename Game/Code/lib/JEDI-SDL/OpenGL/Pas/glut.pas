@@ -1,6 +1,6 @@
 unit glut;
 {
-  $Id: glut.pas,v 1.2 2004/08/14 22:54:30 savage Exp $
+  $Id: glut.pas,v 1.4 2007/05/20 20:28:31 savage Exp $
 
   Adaption of the delphi3d.net OpenGL units to FreePascal
   Sebastian Guenther (sg@freepascal.org) in 2002
@@ -26,6 +26,12 @@ unit glut;
 
 {
   $Log: glut.pas,v $
+  Revision 1.4  2007/05/20 20:28:31  savage
+  Initial Changes to Handle 64 Bits
+
+  Revision 1.3  2006/11/20 21:20:59  savage
+  Updated to work in MacOS X
+
   Revision 1.2  2004/08/14 22:54:30  savage
   Updated so that Library name defines are correctly defined for MacOS X.
 
@@ -63,7 +69,7 @@ uses
   gpc,
 {$ENDIF}
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   Windows,
 {$ENDIF}
   moduleloader,
@@ -74,21 +80,21 @@ type
   PInteger = ^Integer;
   PPChar = ^PChar;
   {$ENDIF}
-  TGlutVoidCallback = procedure; {$IFNDEF __GPC__}{$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
-  TGlut1IntCallback = procedure(value: Integer); {$IFNDEF __GPC__}{$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
-  TGlut2IntCallback = procedure(v1, v2: Integer); {$IFNDEF __GPC__}{$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
-  TGlut3IntCallback = procedure(v1, v2, v3: Integer); {$IFNDEF __GPC__}{$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
-  TGlut4IntCallback = procedure(v1, v2, v3, v4: Integer); {$IFNDEF __GPC__}{$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
-  TGlut1Char2IntCallback = procedure(c: Byte; v1, v2: Integer); {$IFNDEF __GPC__}{$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
+  TGlutVoidCallback = procedure; {$IFNDEF __GPC__}{$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
+  TGlut1IntCallback = procedure(value: Integer); {$IFNDEF __GPC__}{$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
+  TGlut2IntCallback = procedure(v1, v2: Integer); {$IFNDEF __GPC__}{$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
+  TGlut3IntCallback = procedure(v1, v2, v3: Integer); {$IFNDEF __GPC__}{$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
+  TGlut4IntCallback = procedure(v1, v2, v3, v4: Integer); {$IFNDEF __GPC__}{$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
+  TGlut1Char2IntCallback = procedure(c: Byte; v1, v2: Integer); {$IFNDEF __GPC__}{$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}{$ENDIF}
 
 const
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   GlutLibName = 'glut32.dll';
 {$ENDIF}
 
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
-  GlutLibName = 'libglut.dylib';
+  GlutLibName = '/System/Library/Frameworks/GLUT.framework/Libraries/libglut.dylib';
 {$ELSE}
   GlutLibName = 'libglut.so';
 {$ENDIF}
@@ -301,139 +307,139 @@ const
 
 var
 // GLUT initialization sub-API.
-  glutInit: procedure(argcp: PInteger; argv: PPChar); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutInitDisplayMode: procedure(mode: Word); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutInitDisplayString: procedure(const str: PChar); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutInitWindowPosition: procedure(x, y: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutInitWindowSize: procedure(width, height: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutMainLoop: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutInit: procedure(argcp: PInteger; argv: PPChar); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutInitDisplayMode: procedure(mode: Word); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutInitDisplayString: procedure(const str: PChar); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutInitWindowPosition: procedure(x, y: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutInitWindowSize: procedure(width, height: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutMainLoop: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT window sub-API.
-  glutCreateWindow: function(const title: PChar): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutCreateSubWindow: function(win, x, y, width, height: Integer): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutDestroyWindow: procedure(win: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPostRedisplay: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPostWindowRedisplay: procedure(win: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSwapBuffers: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutGetWindow: function: Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSetWindow: procedure(win: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSetWindowTitle: procedure(const title: PChar); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSetIconTitle: procedure(const title: PChar); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPositionWindow: procedure(x, y: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutReshapeWindow: procedure(width, height: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPopWindow: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPushWindow: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutIconifyWindow: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutShowWindow: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutHideWindow: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutFullScreen: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSetCursor: procedure(cursor: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWarpPointer: procedure(x, y: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutCreateWindow: function(const title: PChar): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutCreateSubWindow: function(win, x, y, width, height: Integer): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutDestroyWindow: procedure(win: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPostRedisplay: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPostWindowRedisplay: procedure(win: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSwapBuffers: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutGetWindow: function: Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSetWindow: procedure(win: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSetWindowTitle: procedure(const title: PChar); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSetIconTitle: procedure(const title: PChar); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPositionWindow: procedure(x, y: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutReshapeWindow: procedure(width, height: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPopWindow: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPushWindow: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutIconifyWindow: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutShowWindow: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutHideWindow: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutFullScreen: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSetCursor: procedure(cursor: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWarpPointer: procedure(x, y: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT overlay sub-API.
-  glutEstablishOverlay: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutRemoveOverlay: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutUseLayer: procedure(layer: GLenum); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPostOverlayRedisplay: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPostWindowOverlayRedisplay: procedure(win: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutShowOverlay: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutHideOverlay: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutEstablishOverlay: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutRemoveOverlay: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutUseLayer: procedure(layer: GLenum); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPostOverlayRedisplay: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPostWindowOverlayRedisplay: procedure(win: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutShowOverlay: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutHideOverlay: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT menu sub-API.
-  glutCreateMenu: function(callback: TGlut1IntCallback): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutDestroyMenu: procedure(menu: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutGetMenu: function: Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSetMenu: procedure(menu: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutAddMenuEntry: procedure(const caption: PChar; value: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutAddSubMenu: procedure(const caption: PChar; submenu: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutChangeToMenuEntry: procedure(item: Integer; const caption: PChar; value: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutChangeToSubMenu: procedure(item: Integer; const caption: PChar; submenu: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutRemoveMenuItem: procedure(item: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutAttachMenu: procedure(button: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutDetachMenu: procedure(button: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutCreateMenu: function(callback: TGlut1IntCallback): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutDestroyMenu: procedure(menu: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutGetMenu: function: Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSetMenu: procedure(menu: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutAddMenuEntry: procedure(const caption: PChar; value: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutAddSubMenu: procedure(const caption: PChar; submenu: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutChangeToMenuEntry: procedure(item: Integer; const caption: PChar; value: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutChangeToSubMenu: procedure(item: Integer; const caption: PChar; submenu: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutRemoveMenuItem: procedure(item: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutAttachMenu: procedure(button: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutDetachMenu: procedure(button: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUTsub-API.
-  glutDisplayFunc: procedure(f: TGlutVoidCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutReshapeFunc: procedure(f: TGlut2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutKeyboardFunc: procedure(f: TGlut1Char2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutMouseFunc: procedure(f: TGlut4IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutMotionFunc: procedure(f: TGlut2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutPassiveMotionFunc: procedure(f: TGlut2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutEntryFunc: procedure(f: TGlut1IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutVisibilityFunc: procedure(f: TGlut1IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutIdleFunc: procedure(f: TGlutVoidCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutTimerFunc: procedure(millis: Word; f: TGlut1IntCallback; value: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutMenuStateFunc: procedure(f: TGlut1IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSpecialFunc: procedure(f: TGlut3IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSpaceballMotionFunc: procedure(f: TGlut3IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSpaceballRotateFunc: procedure(f: TGlut3IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSpaceballButtonFunc: procedure(f: TGlut2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutButtonBoxFunc: procedure(f: TGlut2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutDialsFunc: procedure(f: TGlut2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutTabletMotionFunc: procedure(f: TGlut2IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutTabletButtonFunc: procedure(f: TGlut4IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutMenuStatusFunc: procedure(f: TGlut3IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutOverlayDisplayFunc: procedure(f:TGlutVoidCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWindowStatusFunc: procedure(f: TGlut1IntCallback); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutDisplayFunc: procedure(f: TGlutVoidCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutReshapeFunc: procedure(f: TGlut2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutKeyboardFunc: procedure(f: TGlut1Char2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutMouseFunc: procedure(f: TGlut4IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutMotionFunc: procedure(f: TGlut2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutPassiveMotionFunc: procedure(f: TGlut2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutEntryFunc: procedure(f: TGlut1IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutVisibilityFunc: procedure(f: TGlut1IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutIdleFunc: procedure(f: TGlutVoidCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutTimerFunc: procedure(millis: Word; f: TGlut1IntCallback; value: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutMenuStateFunc: procedure(f: TGlut1IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSpecialFunc: procedure(f: TGlut3IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSpaceballMotionFunc: procedure(f: TGlut3IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSpaceballRotateFunc: procedure(f: TGlut3IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSpaceballButtonFunc: procedure(f: TGlut2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutButtonBoxFunc: procedure(f: TGlut2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutDialsFunc: procedure(f: TGlut2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutTabletMotionFunc: procedure(f: TGlut2IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutTabletButtonFunc: procedure(f: TGlut4IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutMenuStatusFunc: procedure(f: TGlut3IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutOverlayDisplayFunc: procedure(f:TGlutVoidCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWindowStatusFunc: procedure(f: TGlut1IntCallback); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT color index sub-API.
-  glutSetColor: procedure(cell: Integer; red, green, blue: GLfloat); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutGetColor: function(ndx, component: Integer): GLfloat; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutCopyColormap: procedure(win: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSetColor: procedure(cell: Integer; red, green, blue: GLfloat); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutGetColor: function(ndx, component: Integer): GLfloat; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutCopyColormap: procedure(win: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT state retrieval sub-API.
-  glutGet: function(t: GLenum): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutDeviceGet: function(t: GLenum): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutGet: function(t: GLenum): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutDeviceGet: function(t: GLenum): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT extension support sub-API
-  glutExtensionSupported: function(const name: PChar): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutGetModifiers: function: Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutLayerGet: function(t: GLenum): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutExtensionSupported: function(const name: PChar): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutGetModifiers: function: Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutLayerGet: function(t: GLenum): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT font sub-API
-  glutBitmapCharacter: procedure(font : pointer; character: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutBitmapWidth: function(font : pointer; character: Integer): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutStrokeCharacter: procedure(font : pointer; character: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutStrokeWidth: function(font : pointer; character: Integer): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutBitmapLength: function(font: pointer; const str: PChar): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutStrokeLength: function(font: pointer; const str: PChar): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutBitmapCharacter: procedure(font : pointer; character: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutBitmapWidth: function(font : pointer; character: Integer): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutStrokeCharacter: procedure(font : pointer; character: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutStrokeWidth: function(font : pointer; character: Integer): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutBitmapLength: function(font: pointer; const str: PChar): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutStrokeLength: function(font: pointer; const str: PChar): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT pre-built models sub-API
-  glutWireSphere: procedure(radius: GLdouble; slices, stacks: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidSphere: procedure(radius: GLdouble; slices, stacks: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireCone: procedure(base, height: GLdouble; slices, stacks: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidCone: procedure(base, height: GLdouble; slices, stacks: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireCube: procedure(size: GLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidCube: procedure(size: GLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireTorus: procedure(innerRadius, outerRadius: GLdouble; sides, rings: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidTorus: procedure(innerRadius, outerRadius: GLdouble; sides, rings: GLint); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireDodecahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidDodecahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireTeapot: procedure(size: GLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidTeapot: procedure(size: GLdouble); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireOctahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidOctahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireTetrahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidTetrahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutWireIcosahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSolidIcosahedron: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireSphere: procedure(radius: GLdouble; slices, stacks: GLint); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidSphere: procedure(radius: GLdouble; slices, stacks: GLint); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireCone: procedure(base, height: GLdouble; slices, stacks: GLint); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidCone: procedure(base, height: GLdouble; slices, stacks: GLint); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireCube: procedure(size: GLdouble); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidCube: procedure(size: GLdouble); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireTorus: procedure(innerRadius, outerRadius: GLdouble; sides, rings: GLint); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidTorus: procedure(innerRadius, outerRadius: GLdouble; sides, rings: GLint); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireDodecahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidDodecahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireTeapot: procedure(size: GLdouble); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidTeapot: procedure(size: GLdouble); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireOctahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidOctahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireTetrahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidTetrahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutWireIcosahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSolidIcosahedron: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT video resize sub-API.
-  glutVideoResizeGet: function(param: GLenum): Integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutSetupVideoResizing: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutStopVideoResizing: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutVideoResize: procedure(x, y, width, height: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutVideoPan: procedure(x, y, width, height: Integer); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutVideoResizeGet: function(param: GLenum): Integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutSetupVideoResizing: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutStopVideoResizing: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutVideoResize: procedure(x, y, width, height: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutVideoPan: procedure(x, y, width, height: Integer); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 // GLUT debugging sub-API.
-  glutReportErrors: procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutReportErrors: procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 
 var
   //example glutGameModeString('1280x1024:32@75');
-  glutGameModeString : procedure (const AString : PChar); {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutEnterGameMode : function : integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutLeaveGameMode : procedure; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF}
-  glutGameModeGet : function (mode : GLenum) : integer; {$IFDEF WIN32}stdcall;{$ELSE}cdecl;{$ENDIF} 
+  glutGameModeString : procedure (const AString : PChar); {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutEnterGameMode : function : integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutLeaveGameMode : procedure; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
+  glutGameModeGet : function (mode : GLenum) : integer; {$IFDEF WINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF} 
 
 procedure LoadGlut(const dll: PChar);
 procedure FreeGlut;

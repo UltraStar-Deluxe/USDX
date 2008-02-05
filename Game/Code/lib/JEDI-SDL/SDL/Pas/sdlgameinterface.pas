@@ -1,6 +1,6 @@
 unit sdlgameinterface;
 {
-  $Id: sdlgameinterface.pas,v 1.3 2004/10/17 18:41:49 savage Exp $
+  $Id: sdlgameinterface.pas,v 1.4 2005/08/03 18:57:31 savage Exp $
   
 }
 {******************************************************************************}
@@ -62,6 +62,9 @@ unit sdlgameinterface;
 {   September   23 2004 - DL : Initial Creation                                }
 {
   $Log: sdlgameinterface.pas,v $
+  Revision 1.4  2005/08/03 18:57:31  savage
+  Various updates and additions. Mainly to handle OpenGL 3D Window support and better cursor support for the mouse class
+
   Revision 1.3  2004/10/17 18:41:49  savage
   Slight Change to allow Reseting of Input Event handlers
 
@@ -97,11 +100,11 @@ type
     procedure MouseWheelScroll( WheelDelta : Integer; Shift: TSDLMod; MousePos : TPoint ); virtual;
     procedure KeyDown( var Key: TSDLKey; Shift: TSDLMod; unicode : UInt16 ); virtual;
   public
-    MainWindow : TSDL2DWindow;
+    MainWindow : TSDLCustomWindow;
     procedure ResetInputManager;
     procedure LoadSurfaces; virtual;
     function PointIsInRect( Point : TPoint; x, y, x1, y1 : integer ) : Boolean;
-    constructor Create( const aMainWindow : TSDL2DWindow );
+    constructor Create( const aMainWindow : TSDLCustomWindow );
     destructor Destroy; override;
     property NextGameInterface : TGameInterfaceClass read FNextGameInterface write FNextGameInterface;
   end;
@@ -114,7 +117,7 @@ begin
   FNextGameInterface := nil;
 end;
 
-constructor TGameInterface.Create( const aMainWindow : TSDL2DWindow );
+constructor TGameInterface.Create( const aMainWindow : TSDLCustomWindow );
 begin
   inherited Create;
   MainWindow := aMainWindow;
@@ -176,14 +179,18 @@ begin
 end;
 
 procedure TGameInterface.ResetInputManager;
+var
+  temp : TSDLNotifyEvent;
 begin
   MainWindow.InputManager.Mouse.OnMouseDown := MouseDown;
   MainWindow.InputManager.Mouse.OnMouseMove := MouseMove;
   MainWindow.InputManager.Mouse.OnMouseUp := MouseUp;
   MainWindow.InputManager.Mouse.OnMouseWheel := MouseWheelScroll;
   MainWindow.InputManager.KeyBoard.OnKeyDown := KeyDown;
-  MainWindow.OnRender := Render;
-  MainWindow.OnClose := Close;
+  temp := Render;
+  MainWindow.OnRender := temp;
+  temp := Close;
+  MainWindow.OnClose := temp;
   MainWindow.OnUpdate := Update;
 end;
 

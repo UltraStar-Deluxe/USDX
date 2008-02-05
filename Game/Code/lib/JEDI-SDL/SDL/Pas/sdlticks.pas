@@ -1,7 +1,7 @@
 unit sdlticks;
 {
-  $Id: sdlticks.pas,v 1.1 2004/09/30 22:35:47 savage Exp $
-  
+  $Id: sdlticks.pas,v 1.2 2006/11/08 08:22:48 savage Exp $
+
 }
 {******************************************************************************}
 {                                                                              }
@@ -59,9 +59,11 @@ unit sdlticks;
 {   September   23 2004 - DL : Initial Creation                                }
 {
   $Log: sdlticks.pas,v $
+  Revision 1.2  2006/11/08 08:22:48  savage
+  updates tp sdlgameinterface and sdlticks functions.
+
   Revision 1.1  2004/09/30 22:35:47  savage
   Changes, enhancements and additions as required to get SoAoS working.
-
 
 }
 {******************************************************************************}
@@ -71,49 +73,50 @@ interface
 uses
   sdl;
 
-
 type
   TSDLTicks = class
   private
-    m_startTime : Int64;
-    m_ticksPerSecond : Int64;
-    s_lastTime : Int64;
-
+    FStartTime : UInt32;
+    FTicksPerSecond : UInt32;
+    FElapsedLastTime : UInt32;
+    FFPSLastTime : UInt32;
+    FLockFPSLastTime : UInt32;
   public
     constructor Create;
-    destructor Destroy; override;          // destructor
+    destructor Destroy; override; // destructor
 
     {*****************************************************************************
      Init
-
      If the hi-res timer is present, the tick rate is stored and the function
      returns true. Otherwise, the function returns false, and the timer should
      not be used.
     *****************************************************************************}
     function Init : boolean;
 
-    function GetElapsedSeconds( elapsedFrames : Cardinal = 1 ) : single;
+    {***************************************************************************
+     GetGetElapsedSeconds
+     Returns the Elapsed time, since the function was last called.
+    ***************************************************************************}
+    function GetElapsedSeconds : Single;
 
     {***************************************************************************
      GetFPS
-
-     Returns the average frames per second over elapsedFrames, which defaults to
-     one. If this is not called every frame, the client should track the number
+     Returns the average frames per second.
+     If this is not called every frame, the client should track the number
      of frames itself, and reset the value after this is called.
     ***************************************************************************}
-    function GetFPS( elapsedFrames : Cardinal  = 1 )  : single;
+    function GetFPS : single;
 
     {***************************************************************************
      LockFPS
-
      Used to lock the frame rate to a set amount. This will block until enough
      time has passed to ensure that the fps won't go over the requested amount.
      Note that this can only keep the fps from going above the specified level;
      it can still drop below it. It is assumed that if used, this function will
      be called every frame. The value returned is the instantaneous fps, which
-     will be <= targetFPS.
+     will be less than or equal to the targetFPS.
     ***************************************************************************}
-    function LockFPS( targetFPS : Byte ) : single;
+    procedure LockFPS( targetFPS : Byte );
   end;
 
 implementation
@@ -121,76 +124,74 @@ implementation
 { TSDLTicks }
 constructor TSDLTicks.Create;
 begin
-
+  inherited;
+  FTicksPerSecond := 1000;
 end;
 
 destructor TSDLTicks.Destroy;
 begin
-
   inherited;
 end;
 
-function TSDLTicks.GetElapsedSeconds( elapsedFrames: Cardinal ): single;
+function TSDLTicks.GetElapsedSeconds : Single;
 var
-  currentTime : Int64;
+  currentTime       : Cardinal;
 begin
-  // s_lastTime := m_startTime;
-
   currentTime := SDL_GetTicks;
-  //QueryPerformanceCounter( currentTime );
 
-  result :=  (currentTime - s_lastTime) / m_ticksPerSecond;
+  result := ( currentTime - FElapsedLastTime ) / FTicksPerSecond;
 
   // reset the timer
-  s_lastTime := currentTime;
+  FElapsedLastTime := currentTime;
 end;
 
-function TSDLTicks.GetFPS( elapsedFrames: Cardinal ): single;
+function TSDLTicks.GetFPS : Single;
 var
-  currentTime : integer;
-  fps : single;
+  currentTime, FrameTime : UInt32;
+  fps               : single;
 begin
-  // s_lastTime := m_startTime;
-
   currentTime := SDL_GetTicks;
 
-  fps := elapsedFrames * m_ticksPerSecond / ( currentTime - s_lastTime);
+  FrameTime := ( currentTime - FFPSLastTime );
+
+  if FrameTime = 0 then
+    FrameTime := 1;
+
+  fps := FTicksPerSecond / FrameTime;
 
   // reset the timer
-  s_lastTime := currentTime;
-
+  FFPSLastTime := currentTime;
   result := fps;
 end;
 
-function TSDLTicks.Init: boolean;
+function TSDLTicks.Init : boolean;
 begin
-  m_startTime := SDL_GetTicks;
-  s_lastTime := m_startTime;
-  m_ticksPerSecond := 1000;
+  FStartTime := SDL_GetTicks;
+  FElapsedLastTime := FStartTime;
+  FFPSLastTime := FStartTime;
+  FLockFPSLastTime := FStartTime;
   result := true;
 end;
 
-function TSDLTicks.LockFPS(targetFPS: Byte): single;
+procedure TSDLTicks.LockFPS( targetFPS : Byte );
 var
-  currentTime : integer;
-  fps : single;
+  currentTime       : UInt32;
+  targetTime        : single;
 begin
-  if (targetFPS = 0) then
+  if ( targetFPS = 0 ) then
     targetFPS := 1;
 
-  s_lastTime := m_startTime;
+  targetTime := FTicksPerSecond / targetFPS;
 
   // delay to maintain a constant frame rate
   repeat
     currentTime := SDL_GetTicks;
-    fps := m_ticksPerSecond / (currentTime - s_lastTime);
-  until (fps > targetFPS);
+  until ( ( currentTime - FLockFPSLastTime ) > targetTime );
 
   // reset the timer
-  s_lastTime := m_startTime;
-
-  result := fps;
+  FLockFPSLastTime := currentTime;
 end;
 
 end.
+
  

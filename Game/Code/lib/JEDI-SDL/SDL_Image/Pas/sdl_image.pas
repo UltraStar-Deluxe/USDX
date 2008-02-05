@@ -1,6 +1,6 @@
 unit sdl_image;
 {
-  $Id: sdl_image.pas,v 1.7 2005/01/01 02:03:12 savage Exp $
+  $Id: sdl_image.pas,v 1.15 2007/12/05 22:52:23 savage Exp $
   
 }
 {******************************************************************************}
@@ -83,6 +83,30 @@ unit sdl_image;
 {                                                                              }
 {
   $Log: sdl_image.pas,v $
+  Revision 1.15  2007/12/05 22:52:23  savage
+  Better Mac OS X support for Frameworks.
+
+  Revision 1.14  2007/05/29 21:31:13  savage
+  Changes as suggested by Almindor for 64bit compatibility.
+
+  Revision 1.13  2007/05/20 20:30:54  savage
+  Initial Changes to Handle 64 Bits
+
+  Revision 1.12  2006/12/02 00:14:40  savage
+  Updated to latest version
+
+  Revision 1.11  2005/04/10 18:22:59  savage
+  Changes as suggested by Michalis, thanks.
+
+  Revision 1.10  2005/04/10 11:48:33  savage
+  Changes as suggested by Michalis, thanks.
+
+  Revision 1.9  2005/01/05 01:47:07  savage
+  Changed LibName to reflect what MacOS X should have. ie libSDL*-1.2.0.dylib respectively.
+
+  Revision 1.8  2005/01/04 23:14:44  savage
+  Changed LibName to reflect what most Linux distros will have. ie libSDL*-1.2.so.0 respectively.
+
   Revision 1.7  2005/01/01 02:03:12  savage
   Updated to v1.2.4
 
@@ -110,8 +134,6 @@ unit sdl_image;
 
 {$I jedi-sdl.inc}
 
-{$ALIGN ON}
-
 interface
 
 uses
@@ -121,20 +143,25 @@ uses
   sdl;
 
 const
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   SDL_ImageLibName =  'SDL_Image.dll';
 {$ENDIF}
 
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
-  SDL_ImageLibName = 'libSDL_image.dylib';
+  SDL_ImageLibName = 'libSDL_image-1.2.0.dylib';
 {$ELSE}
-  SDL_ImageLibName =  'libSDL_image.so';
+  {$IFDEF FPC}
+    SDL_ImageLibName = 'libSDL_image.so';
+  {$ELSE}
+    SDL_ImageLibName = 'libSDL_image-1.2.so.0';
+  {$ENDIF}
 {$ENDIF}
 {$ENDIF}
 
 {$IFDEF MACOS}
   SDL_ImageLibName = 'SDL_image';
+  {$linklib libSDL_image}
 {$ENDIF}
 
   // Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
@@ -142,7 +169,7 @@ const
 {$EXTERNALSYM SDL_IMAGE_MAJOR_VERSION}
   SDL_IMAGE_MINOR_VERSION = 2;
 {$EXTERNALSYM SDL_IMAGE_MINOR_VERSION}
-  SDL_IMAGE_PATCHLEVEL    = 4;
+  SDL_IMAGE_PATCHLEVEL    = 6;
 {$EXTERNALSYM SDL_IMAGE_PATCHLEVEL}
 
 { This macro can be used to fill a version structure with the compile-time
@@ -187,68 +214,103 @@ cdecl; external {$IFDEF __GPC__}name 'IMG_InvertAlpha'{$ELSE} SDL_ImageLibName{$
 function IMG_isBMP(src: PSDL_RWops): Integer;
 cdecl; external {$IFDEF __GPC__}name 'IMG_isBMP'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_isBMP}
-function IMG_isPNM(src: PSDL_RWops): Integer;
-cdecl; external {$IFDEF __GPC__}name 'IMG_isPNM'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_isPNM}
-function IMG_isXPM(src: PSDL_RWops): Integer;
-cdecl; external {$IFDEF __GPC__}name 'IMG_isXPM'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_isXPM}
-function IMG_isXCF(src: PSDL_RWops): Integer;
-cdecl; external {$IFDEF __GPC__}name 'IMG_isXCF'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_isXCF}
-function IMG_isPCX(src: PSDL_RWops): Integer;
-cdecl; external {$IFDEF __GPC__}name 'IMG_isPCX'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_isPCX}
+
 function IMG_isGIF(src: PSDL_RWops): Integer;
 cdecl; external {$IFDEF __GPC__}name 'IMG_isGIF'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_isGIF}
+
 function IMG_isJPG(src: PSDL_RWops): Integer;
 cdecl; external {$IFDEF __GPC__}name 'IMG_isJPG'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_isJPG}
-function IMG_isTIF(src: PSDL_RWops): Integer;
-cdecl; external {$IFDEF __GPC__}name 'IMG_isTIF'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_isTIF}
-function IMG_isPNG(src: PSDL_RWops): Integer;
-cdecl; external {$IFDEF __GPC__}name 'IMG_isPNG'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_isPNG}
+
 function IMG_isLBM(src: PSDL_RWops): Integer;
 cdecl; external {$IFDEF __GPC__}name 'IMG_isLBM'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_isLBM}
+
+function IMG_isPCX(src: PSDL_RWops): Integer;
+cdecl; external {$IFDEF __GPC__}name 'IMG_isPCX'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_isPCX}
+
+function IMG_isPNG(src: PSDL_RWops): Integer;
+cdecl; external {$IFDEF __GPC__}name 'IMG_isPNG'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_isPNG}
+
+function IMG_isPNM(src: PSDL_RWops): Integer;
+cdecl; external {$IFDEF __GPC__}name 'IMG_isPNM'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_isPNM}
+
+function IMG_isTIF(src: PSDL_RWops): Integer;
+cdecl; external {$IFDEF __GPC__}name 'IMG_isTIF'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_isTIF}
+
+function IMG_isXCF(src: PSDL_RWops): Integer;
+cdecl; external {$IFDEF __GPC__}name 'IMG_isXCF'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_isXCF}
+
+function IMG_isXPM(src: PSDL_RWops): Integer;
+cdecl; external {$IFDEF __GPC__}name 'IMG_isXPM'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_isXPM}
+
+function IMG_isXV(src: PSDL_RWops): Integer;
+cdecl; external {$IFDEF __GPC__}name 'IMG_isXV'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_isXV}
+
 
 { Individual loading functions }
 function IMG_LoadBMP_RW(src: PSDL_RWops): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_LoadBMP_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_LoadBMP_RW}
-function IMG_LoadPNM_RW(src: PSDL_RWops): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'IMG_LoadPNM_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_LoadPNM_RW}
-function IMG_LoadXPM_RW(src: PSDL_RWops): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'IMG_LoadXPM_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_LoadXPM_RW}
-function IMG_LoadXCF_RW(src: PSDL_RWops): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'IMG_LoadXCF_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_LoadXCF_RW}
-function IMG_LoadPCX_RW(src: PSDL_RWops): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'IMG_LoadPCX_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_LoadPCX_RW}
+
 function IMG_LoadGIF_RW(src: PSDL_RWops): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_LoadGIF_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_LoadGIF_RW}
+
 function IMG_LoadJPG_RW(src: PSDL_RWops): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_LoadJPG_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_LoadJPG_RW}
-function IMG_LoadTIF_RW(src: PSDL_RWops): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'IMG_LoadTIF_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_LoadTIF_RW}
-function IMG_LoadPNG_RW(src: PSDL_RWops): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'IMG_LoadPNG_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_LoadPNG_RW}
-function IMG_LoadTGA_RW(src: PSDL_RWops): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'IMG_LoadTGA_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
-{$EXTERNALSYM IMG_LoadTGA_RW}
+
 function IMG_LoadLBM_RW(src: PSDL_RWops): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_LoadLBM_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_LoadLBM_RW}
+
+function IMG_LoadPCX_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadPCX_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadPCX_RW}
+
+function IMG_LoadPNM_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadPNM_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadPNM_RW}
+
+function IMG_LoadPNG_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadPNG_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadPNG_RW}
+
+function IMG_LoadTGA_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadTGA_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadTGA_RW}
+
+function IMG_LoadTIF_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadTIF_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadTIF_RW}
+
+function IMG_LoadXCF_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadXCF_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadXCF_RW}
+
+function IMG_LoadXPM_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadXPM_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadXPM_RW}
+
+function IMG_LoadXV_RW(src: PSDL_RWops): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_LoadXV_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_LoadXV_RW}
+
+function IMG_ReadXPMFromArray( xpm : PPChar ): PSDL_Surface;
+cdecl; external {$IFDEF __GPC__}name 'IMG_ReadXPMFromArray'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
+{$EXTERNALSYM IMG_ReadXPMFromArray}
+
+
+
 
 { used internally, NOT an exported function }
 //function IMG_string_equals( const str1 : PChar; const str2 : PChar ) : integer;

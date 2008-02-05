@@ -1,6 +1,6 @@
 unit sdlwindow;
 {
-  $Id: sdlwindow.pas,v 1.7 2004/09/30 22:35:47 savage Exp $
+  $Id: sdlwindow.pas,v 1.9 2006/10/22 18:55:25 savage Exp $
   
 }
 {******************************************************************************}
@@ -59,6 +59,12 @@ unit sdlwindow;
 {                                                                              }
 {
   $Log: sdlwindow.pas,v $
+  Revision 1.9  2006/10/22 18:55:25  savage
+  Slight Change to handle OpenGL context
+
+  Revision 1.8  2005/08/03 18:57:32  savage
+  Various updates and additions. Mainly to handle OpenGL 3D Window support and better cursor support for the mouse class
+
   Revision 1.7  2004/09/30 22:35:47  savage
   Changes, enhancements and additions as required to get SoAoS working.
 
@@ -171,15 +177,8 @@ type
     function Show : Boolean; virtual;
   end;
 
-  TSDL2DWindow = class( TSDLBaseWindow )
+  TSDLCustomWindow = class( TSDLBaseWindow )
   public
-    constructor Create( aWidth : integer; aHeight : integer; aBitDepth : integer; aVideoFlags : Uint32 = SDL_DOUBLEBUF or SDL_SWSURFACE); override;
-    procedure Render; override;
-    procedure Update( aElapsedTime : single ); override;
-    procedure InitialiseObjects; override;
-    procedure RestoreObjects; override;
-    procedure DeleteObjects; override;
-    function Flip : integer; override;
     property OnCreate;
     property OnDestroy;
     property OnClose;
@@ -190,7 +189,18 @@ type
     property DisplaySurface;
   end;
 
-  TSDL3DWindow = class( TSDLBaseWindow )
+  TSDL2DWindow = class( TSDLCustomWindow )
+  public
+    constructor Create( aWidth : integer; aHeight : integer; aBitDepth : integer; aVideoFlags : Uint32 = SDL_DOUBLEBUF or SDL_SWSURFACE); override;
+    procedure Render; override;
+    procedure Update( aElapsedTime : single ); override;
+    procedure InitialiseObjects; override;
+    procedure RestoreObjects; override;
+    procedure DeleteObjects; override;
+    function Flip : integer; override;
+  end;
+
+  TSDL3DWindow = class( TSDLCustomWindow )
   public
     constructor Create( aWidth : integer; aHeight : integer; aBitDepth : integer; aVideoFlags : Uint32 = SDL_OPENGL or SDL_DOUBLEBUF); override;
     function Flip : integer; override;
@@ -199,14 +209,6 @@ type
     procedure InitialiseObjects; override;
     procedure RestoreObjects; override;
     procedure DeleteObjects; override;
-    property OnCreate;
-    property OnDestroy;
-    property OnClose;
-    property OnShow;
-    property OnResize;
-    property OnRender;
-    property OnUpdate;
-    property DisplaySurface;
   end;
 
 
@@ -226,7 +228,7 @@ begin
     Log.LogError( Format('Could not set video mode: %s', [SDL_GetError]), 'Main');
     exit;
   end;
-  
+
   SetCaption( 'Made with JEDI-SDL', 'JEDI-SDL Icon' );
 end;
 
@@ -552,7 +554,7 @@ end;
 procedure TSDL3DWindow.Render;
 begin
   inherited;
-
+  
 end;
 
 procedure TSDL3DWindow.RestoreObjects;

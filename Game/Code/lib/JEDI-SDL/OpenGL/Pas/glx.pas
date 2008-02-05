@@ -1,6 +1,6 @@
 unit glx;
 {
-  $Id: glx.pas,v 1.1 2004/03/30 21:53:55 savage Exp $
+  $Id: glx.pas,v 1.3 2006/11/20 21:20:59 savage Exp $
 
   Translation of the Mesa GLX headers for FreePascal
   Copyright (C) 1999 Sebastian Guenther
@@ -33,6 +33,12 @@ unit glx;
 
 {
   $Log: glx.pas,v $
+  Revision 1.3  2006/11/20 21:20:59  savage
+  Updated to work in MacOS X
+
+  Revision 1.2  2006/04/18 18:38:33  savage
+  fixed boolean test - thanks grudzio
+
   Revision 1.1  2004/03/30 21:53:55  savage
   Moved to it's own folder.
 
@@ -65,8 +71,6 @@ unit glx;
 interface
 
 {$I jedi-sdl.inc}
-
-//{$MACRO ON}
 
 {$IFDEF UNIX}
   uses
@@ -225,7 +229,7 @@ function InitGLXFromLibrary( dll : PChar ): Boolean;
 begin
   Result := False;
 
-  if LoadModule( libGLX, dll ) then
+  if not LoadModule( libGLX, dll ) then
     exit;
 
   glXChooseVisual := GetModuleSymbol(libglx, 'glXChooseVisual');

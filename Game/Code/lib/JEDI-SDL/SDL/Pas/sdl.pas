@@ -1,6 +1,6 @@
 unit sdl;
 {
-  $Id: sdl.pas,v 1.17 2005/01/03 18:40:59 savage Exp $
+  $Id: sdl.pas,v 1.38 2008/01/26 10:09:32 savage Exp $
 
 }
 {******************************************************************************}
@@ -36,10 +36,10 @@ unit sdl;
 {                          SDL_loadso.h                                        }
 {                                                                              }
 { The initial developer of this Pascal code was :                              }
-{ Dominqiue Louis <Dominique@SavageSoftware.com.au>                            }
+{ Dominique Louis <Dominique@SavageSoftware.com.au>                            }
 {                                                                              }
-{ Portions created by Dominqiue Louis are                                      }
-{ Copyright (C) 2000 - 2004 Dominqiue Louis.                                   }
+{ Portions created by Dominique Louis are                                      }
+{ Copyright (C) 2000 - 2004 Dominique Louis.                                   }
 {                                                                              }
 {                                                                              }
 { Contributor(s)                                                               }
@@ -168,6 +168,63 @@ unit sdl;
 {                                                                              }
 {
   $Log: sdl.pas,v $
+  Revision 1.38  2008/01/26 10:09:32  savage
+  Added SDL_BUTTON_X1 and SDL_BUTTON_X2 constants for extended mouse buttons. Now makes SDL v1.2.13 compliant.
+
+  Revision 1.37  2007/12/20 22:36:56  savage
+  Added SKYOS support, thanks to Sebastian-Torsten Tillmann
+
+  Revision 1.36  2007/12/05 22:52:04  savage
+  Better Mac OS X support for Frameworks.
+
+  Revision 1.35  2007/12/02 22:41:13  savage
+  Change for Mac OS X to link to SDL Framework
+
+  Revision 1.34  2007/08/26 23:50:53  savage
+  Jonas supplied another fix.
+
+  Revision 1.33  2007/08/26 15:59:46  savage
+  Mac OS changes as suggested by Jonas Maebe
+
+  Revision 1.32  2007/08/22 21:18:43  savage
+  Thanks to Dean for his MouseDelta patch.
+
+  Revision 1.31  2007/05/29 21:30:48  savage
+  Changes as suggested by Almindor for 64bit compatibility.
+
+  Revision 1.30  2007/05/29 19:31:03  savage
+  Fix to TSDL_Overlay structure - thanks David Pethes (aka imcold)
+
+  Revision 1.29  2007/05/20 20:29:11  savage
+  Initial Changes to Handle 64 Bits
+
+  Revision 1.26  2007/02/11 13:38:04  savage
+  Added Nintendo DS support - Thanks Dean.
+
+  Revision 1.25  2006/12/02 00:12:52  savage
+  Updated to latest version
+
+  Revision 1.24  2006/05/18 21:10:04  savage
+  Added 1.2.10 Changes
+
+  Revision 1.23  2005/12/04 23:17:52  drellis
+  Added declaration of SInt8 and PSInt8
+
+  Revision 1.22  2005/05/24 21:59:03  savage
+  Re-arranged uses clause to work on Win32 and Linux, Thanks again Michalis.
+
+  Revision 1.21  2005/05/22 18:42:31  savage
+  Changes as suggested by Michalis Kamburelis. Thanks again.
+
+  Revision 1.20  2005/04/10 11:48:33  savage
+  Changes as suggested by Michalis, thanks.
+
+  Revision 1.19  2005/01/05 01:47:06  savage
+  Changed LibName to reflect what MacOS X should have. ie libSDL*-1.2.0.dylib respectively.
+
+  Revision 1.18  2005/01/04 23:14:41  savage
+  Changed LibName to reflect what most Linux distros will have. ie libSDL*-1.2.so.0 respectively.
+
   Revision 1.17  2005/01/03 18:40:59  savage
   Updated Version number to reflect latest one
 
@@ -241,35 +298,54 @@ unit sdl;
 
 {$I jedi-sdl.inc}
 
-{$ALIGN ON}
-
 interface
 
 uses
 {$IFDEF __GPC__}
   system,
+  {$IFDEF WINDOWS}
+  wintypes,
+  {$ELSE}
+  {$ENDIF}
   gpc;
 {$ENDIF}
 
-{$IFDEF WIN32}
-  {$IFNDEF __GPC__}
+{$IFDEF HAS_TYPES}
+  Types{$IFNDEF NDS},{$ELSE};{$ENDIF}
+{$ENDIF}
+
+{$IFDEF WINDOWS}
   Windows;
-  {$ENDIF}
 {$ENDIF}
 
 {$IFDEF UNIX}
   {$IFDEF FPC}
-    {$IFDEF Ver1_0}
-    linux,
-    {$ELSE}
-    pthreads,
-    baseunix,
-    unix,
-    {$ENDIF}
-    x,
-    xlib;
+  {$IFNDEF SKYOS}
+  pthreads,
+  {$ENDIF}
+  baseunix,
+  {$IFNDEF GP2X}
+  {$IFNDEF DARWIN}
+  {$IFNDEF SKYOS}
+  unix,
   {$ELSE}
-  Types,
+  unix;
+  {$ENDIF}
+  {$ELSE}
+  unix;
+  {$ENDIF}
+  {$ELSE}
+  unix;
+  {$ENDIF}
+  {$IFNDEF GP2X}
+  {$IFNDEF DARWIN}
+  {$IFNDEF SKYOS}
+  x,
+  xlib;
+  {$ENDIF}
+  {$ENDIF}
+  {$ENDIF}
+  {$ELSE}
   Libc,
   Xlib;
   {$ENDIF}
@@ -280,21 +356,44 @@ uses
 {$ENDIF}
 
 const
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   SDLLibName = 'SDL.dll';
 {$ENDIF}
 
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
-  SDLLibName = 'libSDL.dylib';
+  SDLLibName = 'libSDL-1.2.0.dylib';
 {$ELSE}
+  {$IFDEF FPC}
   SDLLibName = 'libSDL.so';
+  {$ELSE}
+  SDLLibName = 'libSDL-1.2.so.0';
+  {$ENDIF}
 {$ENDIF}
 {$ENDIF}
 
 {$IFDEF MACOS}
   SDLLibName = 'SDL';
+  {$linklib libSDL}
 {$ENDIF}
+
+{$IFDEF NDS}
+  SDLLibName = 'libSDL.a';
+  {$linklib libSDL.a}
+  {$linklib libnds9.a}
+  {$linklib libc.a}
+  {$linklib libgcc.a}
+  {$linklib libsysbase.a}
+{$ENDIF}
+
+  // SDL_verion.h constants
+  // Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
+  SDL_MAJOR_VERSION = 1;
+{$EXTERNALSYM SDL_MAJOR_VERSION}
+  SDL_MINOR_VERSION = 2;
+{$EXTERNALSYM SDL_MINOR_VERSION}
+  SDL_PATCHLEVEL    = 13;
+{$EXTERNALSYM SDL_PATCHLEVEL}
 
   // SDL.h constants
   SDL_INIT_TIMER = $00000001;
@@ -437,15 +536,6 @@ const
 {$EXTERNALSYM SDL_HAT_LEFTUP}
   SDL_HAT_LEFTDOWN = SDL_HAT_LEFT or SDL_HAT_DOWN;
 {$EXTERNALSYM SDL_HAT_LEFTDOWN}
-
-  // SDL_verion.h constants
-  // Printable format: "%d.%d.%d", MAJOR, MINOR, PATCHLEVEL
-  SDL_MAJOR_VERSION = 1;
-{$EXTERNALSYM SDL_MAJOR_VERSION}
-  SDL_MINOR_VERSION = 2;
-{$EXTERNALSYM SDL_MINOR_VERSION}
-  SDL_PATCHLEVEL    = 8;
-{$EXTERNALSYM SDL_PATCHLEVEL}
 
   // SDL_events.h constants
   SDL_NOEVENT = 0; // Unused (do not remove)
@@ -1059,6 +1149,47 @@ const
   SDLK_EURO = 321; // Some european keyboards
 {$EXTERNALSYM SDLK_EURO}
 
+{$IFDEF GP2X}
+SDLK_GP2X_UP = 0;
+{$EXTERNALSYM SDLK_GP2X_UP}
+SDLK_GP2X_UPLEFT = 1;
+{$EXTERNALSYM SDLK_GP2X_UPLEFT}
+SDLK_GP2X_LEFT = 2;
+{$EXTERNALSYM SDLK_GP2X_LEFT}
+SDLK_GP2X_DOWNLEFT = 3;
+{$EXTERNALSYM SDLK_GP2X_DOWNLEFT}
+SDLK_GP2X_DOWN = 4;
+{$EXTERNALSYM SDLK_GP2X_DOWN}
+SDLK_GP2X_DOWNRIGHT = 5;
+{$EXTERNALSYM SDLK_GP2X_DOWNRIGHT}
+SDLK_GP2X_RIGHT = 6;
+{$EXTERNALSYM SDLK_GP2X_RIGHT}
+SDLK_GP2X_UPRIGHT = 7;
+{$EXTERNALSYM SDLK_GP2X_UPRIGHT}
+SDLK_GP2X_START = 8;
+{$EXTERNALSYM SDLK_GP2X_START}
+SDLK_GP2X_SELECT = 9;
+{$EXTERNALSYM SDLK_GP2X_SELECT}
+SDLK_GP2X_L = 10;
+{$EXTERNALSYM SDLK_GP2X_L}
+SDLK_GP2X_R = 11;
+{$EXTERNALSYM SDLK_GP2X_R}
+SDLK_GP2X_A = 12;
+{$EXTERNALSYM SDLK_GP2X_A}
+SDLK_GP2X_B = 13;
+{$EXTERNALSYM SDLK_GP2X_B}
+SDLK_GP2X_Y = 14;
+{$EXTERNALSYM SDLK_GP2X_Y}
+SDLK_GP2X_X = 15;
+{$EXTERNALSYM SDLK_GP2X_X}
+SDLK_GP2X_VOLUP = 16;
+{$EXTERNALSYM SDLK_GP2X_VOLUP}
+SDLK_GP2X_VOLDOWN = 17;
+{$EXTERNALSYM SDLK_GP2X_VOLDOWN}
+SDLK_GP2X_CLICK = 18;
+{$EXTERNALSYM SDLK_GP2X_CLICK}
+{$ENDIF}
+
   // Enumeration of valid key mods (possibly OR'd together)
   KMOD_NONE = $0000;
 {$EXTERNALSYM KMOD_NONE}
@@ -1173,25 +1304,36 @@ const
     Button 1:	Left mouse button
     Button 2:	Middle mouse button
     Button 3:	Right mouse button
-    Button 4:	Mouse Wheel Up
-    Button 5:	Mouse Wheel Down
+    Button 4:	Mouse Wheel Up (may also be a real button)
+    Button 5:	Mouse Wheel Down (may also be a real button)
+    Button 6:	Mouse X1 (may also be a real button)
+    Button 7:	Mouse X2 (may also be a real button)
   }
-  SDL_BUTTON_LEFT = 1;
+  SDL_BUTTON_LEFT      = 1;
 {$EXTERNALSYM SDL_BUTTON_LEFT}
-  SDL_BUTTON_MIDDLE = 2;
+  SDL_BUTTON_MIDDLE    = 2;
 {$EXTERNALSYM SDL_BUTTON_MIDDLE}
-  SDL_BUTTON_RIGHT = 3;
+  SDL_BUTTON_RIGHT     = 3;
 {$EXTERNALSYM SDL_BUTTON_RIGHT}
-  SDL_BUTTON_WHEELUP = 4;
+  SDL_BUTTON_WHEELUP   = 4;
 {$EXTERNALSYM SDL_BUTTON_WHEELUP}
   SDL_BUTTON_WHEELDOWN = 5;
 {$EXTERNALSYM SDL_BUTTON_WHEELDOWN}
+  SDL_BUTTON_X1        = 6;
+{$EXTERNALSYM SDL_BUTTON_X1}
+  SDL_BUTTON_X2        = 7;
+{$EXTERNALSYM SDL_BUTTON_X2}
+
   SDL_BUTTON_LMASK = SDL_PRESSED shl (SDL_BUTTON_LEFT - 1);
 {$EXTERNALSYM SDL_BUTTON_LMASK}
   SDL_BUTTON_MMASK = SDL_PRESSED shl (SDL_BUTTON_MIDDLE - 1);
 {$EXTERNALSYM SDL_BUTTON_MMASK}
-  SDL_BUTTON_RMask = SDL_PRESSED shl (SDL_BUTTON_RIGHT - 1);
-{$EXTERNALSYM SDL_BUTTON_RMask}
+  SDL_BUTTON_RMASK = SDL_PRESSED shl (SDL_BUTTON_RIGHT - 1);
+{$EXTERNALSYM SDL_BUTTON_RMASK}
+  SDL_BUTTON_X1MASK = SDL_PRESSED shl (SDL_BUTTON_X1 - 1);
+{$EXTERNALSYM SDL_BUTTON_X1MASK}
+  SDL_BUTTON_X2MASK = SDL_PRESSED shl (SDL_BUTTON_X2 - 1);
+{$EXTERNALSYM SDL_BUTTON_X2MASK}
 
   // SDL_active.h constants
   // The available application states
@@ -1233,6 +1375,7 @@ type
 
   PUInt8Array = ^TUInt8Array;
   PUInt8 = ^UInt8;
+  PPUInt8 = ^PUInt8;
   UInt8 = Byte;
 {$EXTERNALSYM UInt8}
   TUInt8Array = array [0..MAXINT shr 1] of UInt8;
@@ -1240,6 +1383,10 @@ type
   PUInt16 = ^UInt16;
   UInt16 = word;
 {$EXTERNALSYM UInt16}
+
+  PSInt8 = ^SInt8;
+  SInt8 = Shortint;
+{$EXTERNALSYM SInt8}
 
   PSInt16 = ^SInt16;
   SInt16 = smallint;
@@ -1675,7 +1822,7 @@ type
  {$ENDIF}
 
 // The windows custom event structure
-{$IFDEF Win32}
+{$IFDEF WINDOWS}
   PSDL_SysWMmsg = ^TSDL_SysWMmsg;
   TSDL_SysWMmsg = record
     version: TSDL_version;
@@ -1693,7 +1840,13 @@ type
     version : TSDL_version;
     subsystem : TSDL_SysWm;
     {$IFDEF FPC}
+    {$IFNDEF GP2X}
+    {$IFNDEF DARWIN}
+    {$IFNDEF SKYOS}
     event : TXEvent;
+    {$ENDIF}
+    {$ENDIF}
+    {$ENDIF}
     {$ELSE}
     event : XEvent;
     {$ENDIF}
@@ -1710,7 +1863,7 @@ type
 {$ENDIF}
 
 // The Windows custom window manager information structure
-{$IFDEF Win32}
+{$IFDEF WINDOWS}
   PSDL_SysWMinfo = ^TSDL_SysWMinfo;
   TSDL_SysWMinfo = record
     version : TSDL_version;
@@ -1720,6 +1873,9 @@ type
 
 // The Linux custom window manager information structure
 {$IFDEF Unix}
+  {$IFNDEF GP2X}
+  {$IFNDEF DARWIN}
+  {$IFNDEF SKYOS}
   TX11 = record
     display : PDisplay;	// The X11 display
     window : TWindow ;		// The X11 display window */
@@ -1735,12 +1891,21 @@ type
     fswindow : TWindow ;	// The X11 fullscreen window */
     wmwindow : TWindow ;	// The X11 managed input window */
   end;
-
+  {$ENDIF}
+  {$ENDIF}
+  {$ENDIF}
+  
   PSDL_SysWMinfo = ^TSDL_SysWMinfo;
   TSDL_SysWMinfo = record
      version : TSDL_version ;
      subsystem : TSDL_SysWm;
+     {$IFNDEF GP2X}
+     {$IFNDEF DARWIN}
+     {$IFNDEF SKYOS}
      X11 : TX11;
+     {$ENDIF}
+     {$ENDIF}
+     {$ENDIF}
   end;
 {$ELSE}
   // The generic custom window manager information structure
@@ -1839,7 +2004,7 @@ type
     alpha: UInt8; // Alpha value information (per-surface alpha)
   end;
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   {PPrivate_hwdata = ^TPrivate_hwdata;
   TPrivate_hwdata = record
     dd_surface : IDIRECTDRAWSURFACE3;
@@ -1939,6 +2104,8 @@ type
     UnusedBits3: UInt8; // Unused at this point
     video_mem: UInt32; // The total amount of video memory (in K)
     vfmt: PSDL_PixelFormat; // Value: The format of the video surface
+    current_w : SInt32;	// Value: The current video mode width
+	  current_h : SInt32;	// Value: The current video mode height
   end;
 
   // The YUV hardware video overlay
@@ -1949,8 +2116,8 @@ type
     planes: Integer; // Number of planes in the overlay. Usually either 1 or 3
     pitches: PUInt16;
       // An array of pitches, one for each plane. Pitch is the length of a row in bytes.
-    pixels: PUInt8;
-      // An array of pointers to teh data of each plane. The overlay should be locked before these pointers are used.
+    pixels: PPUInt8;
+      // An array of pointers to the data of each plane. The overlay should be locked before these pointers are used.
     hw_overlay: UInt32;
       // This will be set to 1 if the overlay is hardware accelerated.
   end;
@@ -1971,7 +2138,9 @@ type
     SDL_GL_ACCUM_ALPHA_SIZE,
     SDL_GL_STEREO,
     SDL_GL_MULTISAMPLEBUFFERS,
-    SDL_GL_MULTISAMPLESAMPLES);
+    SDL_GL_MULTISAMPLESAMPLES,
+    SDL_GL_ACCELERATED_VISUAL,
+    SDL_GL_SWAP_CONTROL);
 
 
 
@@ -1987,7 +2156,7 @@ type
 
 // SDL_mutex.h types
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   PSDL_Mutex = ^TSDL_Mutex;
   TSDL_Mutex = record
     id: THANDLE;
@@ -2005,6 +2174,15 @@ type
   end;
 {$ENDIF}
 
+{$IFDEF NDS}
+  PSDL_mutex = ^TSDL_Mutex;
+  TSDL_Mutex = record
+    recursive: Integer;
+    Owner: UInt32;
+    sem: PSDL_sem;
+  end;
+{$ENDIF}
+
 {$IFDEF __MACH__}
   {$define USE_NAMED_SEMAPHORES}
   // Broken sem_getvalue() in MacOS X Public Beta */
@@ -2012,8 +2190,8 @@ type
 {$ENDIF}
 
 PSDL_semaphore = ^TSDL_semaphore;
-{$IFDEF WIN32}
-  // Win32 or Machintosh
+{$IFDEF WINDOWS}
+  // WINDOWS or Machintosh
   TSDL_semaphore = record
     id: THANDLE;
     count: UInt32;
@@ -2065,12 +2243,16 @@ PSDL_semaphore = ^TSDL_semaphore;
   end;
 
   // SDL_thread.h types
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
   TSYS_ThreadHandle = THandle;
 {$ENDIF}
 
 {$IFDEF Unix}
   TSYS_ThreadHandle = pthread_t;
+{$ENDIF}
+
+{$IFDEF NDS}
+  TSYS_ThreadHandle = Integer;
 {$ENDIF}
 
   { This is the system-independent thread info structure }
@@ -2103,17 +2285,34 @@ PSDL_semaphore = ^TSDL_semaphore;
   TWordArray = array[0..16383] of Word;
 
   PPoint = ^TPoint;
-  TPoint = record
-    x: Longint;
-    y: Longint;
-  end;
+  {$IFDEF HAS_TYPES}
+  TPoint = Types.TPoint;
+  {$ELSE}
+    {$IFDEF WINDOWS}
+      {$IFDEF __GPC__}
+      TPoint = wintypes.TPoint;
+      {$ELSE}
+      TPoint = Windows.TPoint;
+      {$ENDIF}
+    {$ELSE}
+      //Can't define TPoint : neither Types nor Windows unit available.
+    {$ENDIF}
+  {$ENDIF}
 
   PRect = ^TRect;
-  TRect = record
-    case Integer of
-      0: (Left, Top, Right, Bottom: Integer);
-      1: (TopLeft, BottomRight: TPoint);
-  end;
+  {$IFDEF HAS_TYPES}
+  TRect = Types.TRect;
+  {$ELSE}
+    {$IFDEF WINDOWS}
+      {$IFDEF __GPC__}
+      TRect = wintypes.TRect;
+      {$ELSE}
+      TRect = Windows.TRect;
+      {$ENDIF}
+    {$ELSE}
+      //Can't define TRect: neither Types nor Windows unit available.
+    {$ENDIF}
+  {$ENDIF}
 
   { Generic procedure pointer }
   TProcedure = procedure;
@@ -2128,17 +2327,17 @@ PSDL_semaphore = ^TSDL_semaphore;
   signal handlers for some commonly ignored fatal signals (like SIGSEGV) }
 
 function SDL_Init( flags : UInt32 ) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_Init'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Init'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_Init}
 
 // This function initializes specific SDL subsystems
 function SDL_InitSubSystem( flags : UInt32 ) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_InitSubSystem'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_InitSubSystem'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_InitSubSystem}
 
 // This function cleans up specific SDL subsystems
 procedure SDL_QuitSubSystem( flags : UInt32 );
-cdecl; external {$IFDEF __GPC__}name 'SDL_QuitSubSystem'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_QuitSubSystem'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_QuitSubSystem}
 
 { This function returns mask of the specified subsystems which have
@@ -2146,26 +2345,26 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_QuitSubSystem'{$ELSE} SDLLibName{$ENDI
   If 'flags' is 0, it returns a mask of all initialized subsystems. }
 
 function SDL_WasInit( flags : UInt32 ): UInt32;
-cdecl; external {$IFDEF __GPC__}name 'SDL_WasInit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WasInit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WasInit}
 
 { This function cleans up all initialized subsystems and unloads the
   dynamically linked library.  You should call it upon all exit conditions. }
 procedure SDL_Quit;
-cdecl; external {$IFDEF __GPC__}name 'SDL_Quit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Quit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_Quit}
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 // This should be called from your WinMain() function, if any
 function SDL_RegisterApp(name: PChar; style: UInt32; h_Inst: Pointer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_RegisterApp'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_RegisterApp'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_RegisterApp}
 {$ENDIF}
 
 {$IFDEF __MACH__}
 // This should be called from your main() function, if any
 procedure SDL_InitQuickDraw( the_qd: QDGlobals );
-cdecl; external {$IFDEF __GPC__}name 'SDL_InitQuickDraw'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_InitQuickDraw'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_InitQuickDraw}
 {$ENDIF}
 
@@ -2183,18 +2382,18 @@ function SDL_TableSize( table: PChar ): Integer;
 {------------------------------------------------------------------------------}
 // Public functions
 function SDL_GetError: PChar;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetError'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetError'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetError}
 procedure SDL_SetError(fmt: PChar);
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetError'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetError'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetError}
 procedure SDL_ClearError;
-cdecl; external {$IFDEF __GPC__}name 'SDL_ClearError'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_ClearError'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_ClearError}
 
-{$IFNDEF WIN32}
+{$IFNDEF WINDOWS}
 procedure SDL_Error(Code: TSDL_errorcode);
-cdecl; external {$IFDEF __GPC__}name 'SDL_Error'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Error'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_Error}
 {$ENDIF}
 
@@ -2207,24 +2406,24 @@ procedure SDL_OutOfMemory;
 // Functions to create SDL_RWops structures from various data sources
 
 function SDL_RWFromFile(filename, mode: PChar): PSDL_RWops;
-cdecl; external {$IFDEF __GPC__}name 'SDL_RWFromFile'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_RWFromFile'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_RWFromFile}
 procedure SDL_FreeRW(area: PSDL_RWops);
-cdecl; external {$IFDEF __GPC__}name 'SDL_FreeRW'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_FreeRW'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_FreeRW}
 
 //fp is FILE *fp ???
 function SDL_RWFromFP(fp: Pointer; autoclose: Integer): PSDL_RWops;
-cdecl; external {$IFDEF __GPC__}name 'SDL_RWFromFP'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_RWFromFP'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_RWFromFP}
 function SDL_RWFromMem(mem: Pointer; size: Integer): PSDL_RWops;
-cdecl; external {$IFDEF __GPC__}name 'SDL_RWFromMem'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_RWFromMem'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_RWFromMem}
 function SDL_RWFromConstMem(const mem: Pointer; size: Integer) : PSDL_RWops;
-cdecl; external {$IFDEF __GPC__}name 'SDL_RWFromConstMem'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_RWFromConstMem'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_RWFromConstMem}
 function SDL_AllocRW: PSDL_RWops;
-cdecl; external {$IFDEF __GPC__}name 'SDL_AllocRW'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_AllocRW'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_AllocRW}
 
 function SDL_RWSeek(context: PSDL_RWops; offset: Integer; whence: Integer) : Integer;
@@ -2245,28 +2444,28 @@ function SDL_RWClose(context: PSDL_RWops): Integer;
 { Get the number of milliseconds since the SDL library initialization. }
 { Note that this value wraps if the program runs for more than ~49 days. }
 function SDL_GetTicks: UInt32;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetTicks'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetTicks'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetTicks}
 
 // Wait a specified number of milliseconds before returning
 procedure SDL_Delay(msec: UInt32);
-cdecl; external {$IFDEF __GPC__}name 'SDL_Delay'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Delay'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_Delay}
 
 { Add a new timer to the pool of timers already running. }
 { Returns a timer ID, or NULL when an error occurs.      }
 function SDL_AddTimer(interval: UInt32; callback: TSDL_NewTimerCallback; param : Pointer): PSDL_TimerID;
-cdecl; external {$IFDEF __GPC__}name 'SDL_AddTimer'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_AddTimer'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_AddTimer}
 
 { Remove one of the multiple timers knowing its ID. }
 { Returns a boolean value indicating success. }
 function SDL_RemoveTimer(t: PSDL_TimerID): TSDL_Bool;
-cdecl; external {$IFDEF __GPC__}name 'SDL_RemoveTimer'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_RemoveTimer'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_RemoveTimer}
 
 function SDL_SetTimer(interval: UInt32; callback: TSDL_TimerCallback): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetTimer'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetTimer'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetTimer}
 
 {------------------------------------------------------------------------------}
@@ -2278,10 +2477,10 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SetTimer'{$ELSE} SDLLibName{$ENDIF __G
   You should normally use SDL_Init() or SDL_InitSubSystem(). }
 
 function SDL_AudioInit(driver_name: PChar): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_AudioInit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_AudioInit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_AudioInit}
 procedure SDL_AudioQuit;
-cdecl; external {$IFDEF __GPC__}name 'SDL_AudioQuit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_AudioQuit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_AudioQuit}
 
 { This function fills the given character buffer with the name of the
@@ -2289,7 +2488,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_AudioQuit'{$ELSE} SDLLibName{$ENDIF __
   been initialized.  It returns NULL if no driver has been initialized. }
 
 function SDL_AudioDriverName(namebuf: PChar; maxlen: Integer): PChar;
-cdecl; external {$IFDEF __GPC__}name 'SDL_AudioDriverName'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_AudioDriverName'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_AudioDriverName}
 
 { This function opens the audio device with the desired parameters, and
@@ -2333,12 +2532,12 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_AudioDriverName'{$ELSE} SDLLibName{$EN
   any local mixing buffers after you open the audio device. }
 
 function SDL_OpenAudio(desired, obtained: PSDL_AudioSpec): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_OpenAudio'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_OpenAudio'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_OpenAudio}
 
 { Get the current audio state: }
 function SDL_GetAudioStatus: TSDL_Audiostatus;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetAudioStatus'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetAudioStatus'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetAudioStatus}
 
 { This function pauses and unpauses the audio callback processing.
@@ -2348,7 +2547,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetAudioStatus'{$ELSE} SDLLibName{$END
   Silence will be written to the audio device during the pause. }
 
 procedure SDL_PauseAudio(pause_on: Integer);
-cdecl; external {$IFDEF __GPC__}name 'SDL_PauseAudio'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_PauseAudio'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_PauseAudio}
 
 { This function loads a WAVE from the data source, automatically freeing
@@ -2369,7 +2568,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_PauseAudio'{$ELSE} SDLLibName{$ENDIF _
 
 function SDL_LoadWAV_RW(src: PSDL_RWops; freesrc: Integer; spec:
   PSDL_AudioSpec; audio_buf: PUInt8; audiolen: PUInt32): PSDL_AudioSpec;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LoadWAV_RW'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LoadWAV_RW'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LoadWAV_RW}
 
 // Compatibility convenience function -- loads a WAV from a file
@@ -2380,7 +2579,7 @@ function SDL_LoadWAV(filename: PChar; spec: PSDL_AudioSpec; audio_buf:
 { This function frees data previously allocated with SDL_LoadWAV_RW() }
 
 procedure SDL_FreeWAV(audio_buf: PUInt8);
-cdecl; external {$IFDEF __GPC__}name 'SDL_FreeWAV'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_FreeWAV'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_FreeWAV}
 
 { This function takes a source format and rate and a destination format
@@ -2391,7 +2590,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_FreeWAV'{$ELSE} SDLLibName{$ENDIF __GP
 function SDL_BuildAudioCVT(cvt: PSDL_AudioCVT; src_format: UInt16;
   src_channels: UInt8; src_rate: Integer; dst_format: UInt16; dst_channels: UInt8;
   dst_rate: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_BuildAudioCVT'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_BuildAudioCVT'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_BuildAudioCVT}
 
 { Once you have initialized the 'cvt' structure using SDL_BuildAudioCVT(),
@@ -2402,7 +2601,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_BuildAudioCVT'{$ELSE} SDLLibName{$ENDI
   cvt->buf should be allocated after the cvt structure is initialized by
   SDL_BuildAudioCVT(), and should be cvt->len*cvt->len_mult bytes long. }
 function SDL_ConvertAudio(cvt: PSDL_AudioCVT): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertAudio'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_ConvertAudio'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_ConvertAudio}
 
 { This takes two audio buffers of the playing audio format and mixes
@@ -2412,7 +2611,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertAudio'{$ELSE} SDLLibName{$ENDIF
   This is provided for convenience -- you can mix your own audio data. }
 
 procedure SDL_MixAudio(dst, src: PUInt8; len: UInt32; volume: Integer);
-cdecl; external {$IFDEF __GPC__}name 'SDL_MixAudio'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_MixAudio'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_MixAudio}
 
 { The lock manipulated by these functions protects the callback function.
@@ -2420,16 +2619,16 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_MixAudio'{$ELSE} SDLLibName{$ENDIF __G
   callback function is not running.  Do not call these from the callback
   function or you will cause deadlock. }
 procedure SDL_LockAudio;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LockAudio'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LockAudio'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LockAudio}
 procedure SDL_UnlockAudio;
-cdecl; external {$IFDEF __GPC__}name 'SDL_UnlockAudio'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_UnlockAudio'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_UnlockAudio}
 
 { This function shuts down audio processing and closes the audio device. }
 
 procedure SDL_CloseAudio;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CloseAudio'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CloseAudio'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CloseAudio}
 
 {------------------------------------------------------------------------------}
@@ -2440,7 +2639,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CloseAudio'{$ELSE} SDLLibName{$ENDIF _
   SDL_Init() has not been called with the SDL_INIT_CDROM flag. }
 
 function SDL_CDNumDrives: Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDNumDrives'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDNumDrives'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDNumDrives}
 
 { Returns a human-readable, system-dependent identifier for the CD-ROM.
@@ -2450,7 +2649,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CDNumDrives'{$ELSE} SDLLibName{$ENDIF 
    "/dev/disk/ide/1/master" }
 
 function SDL_CDName(drive: Integer): PChar;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDName'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDName'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDName}
 
 { Opens a CD-ROM drive for access.  It returns a drive handle on success,
@@ -2460,7 +2659,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CDName'{$ELSE} SDLLibName{$ENDIF __GPC
   Drives are numbered starting with 0.  Drive 0 is the system default CD-ROM. }
 
 function SDL_CDOpen(drive: Integer): PSDL_CD;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDOpen'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDOpen'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDOpen}
 
 { This function returns the current status of the given drive.
@@ -2468,7 +2667,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CDOpen'{$ELSE} SDLLibName{$ENDIF __GPC
   play position of the CD will be stored in the SDL_CD structure. }
 
 function SDL_CDStatus(cdrom: PSDL_CD): TSDL_CDStatus;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDStatus'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDStatus'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDStatus}
 
 {  Play the given CD starting at 'start_track' and 'start_frame' for 'ntracks'
@@ -2495,7 +2694,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CDStatus'{$ELSE} SDLLibName{$ENDIF __G
 
 function SDL_CDPlayTracks(cdrom: PSDL_CD; start_track: Integer; start_frame:
   Integer; ntracks: Integer; nframes: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDPlayTracks'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDPlayTracks'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDPlayTracks}
 
 
@@ -2503,32 +2702,32 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CDPlayTracks'{$ELSE} SDLLibName{$ENDIF
    It returns 0, or -1 if there was an error. }
 
 function SDL_CDPlay(cdrom: PSDL_CD; start: Integer; length: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDPlay'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDPlay'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDPlay}
 
 // Pause play -- returns 0, or -1 on error
 function SDL_CDPause(cdrom: PSDL_CD): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDPause'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDPause'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDPause}
 
 // Resume play -- returns 0, or -1 on error
 function SDL_CDResume(cdrom: PSDL_CD): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDResume'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDResume'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDResume}
 
 // Stop play -- returns 0, or -1 on error
 function SDL_CDStop(cdrom: PSDL_CD): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDStop'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDStop'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDStop}
 
 // Eject CD-ROM -- returns 0, or -1 on error
 function SDL_CDEject(cdrom: PSDL_CD): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDEject'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDEject'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDEject}
 
 // Closes the handle for the CD-ROM drive
 procedure SDL_CDClose(cdrom: PSDL_CD);
-cdecl; external {$IFDEF __GPC__}name 'SDL_CDClose'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CDClose'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CDClose}
 
 // Given a status, returns true if there's a disk in the drive
@@ -2548,14 +2747,14 @@ function MSF_TO_FRAMES(M: Integer; S: Integer; F: Integer): Integer;
 
 { Count the number of joysticks attached to the system }
 function SDL_NumJoysticks: Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_NumJoysticks'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_NumJoysticks'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_NumJoysticks}
 
 { Get the implementation dependent name of a joystick.
   This can be called before any joysticks are opened.
   If no name can be found, this function returns NULL. }
 function SDL_JoystickName(index: Integer): PChar;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickName'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickName'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickName}
 
 { Open a joystick for use - the index passed as an argument refers to
@@ -2564,40 +2763,40 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickName'{$ELSE} SDLLibName{$ENDIF
 
   This function returns a joystick identifier, or NULL if an error occurred. }
 function SDL_JoystickOpen(index: Integer): PSDL_Joystick;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickOpen'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickOpen'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickOpen}
 
 { Returns 1 if the joystick has been opened, or 0 if it has not. }
 function SDL_JoystickOpened(index: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickOpened'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickOpened'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickOpened}
 
 { Get the device index of an opened joystick. }
 function SDL_JoystickIndex(joystick: PSDL_Joystick): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickIndex'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickIndex'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickIndex}
 
 { Get the number of general axis controls on a joystick }
 function SDL_JoystickNumAxes(joystick: PSDL_Joystick): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickNumAxes'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickNumAxes'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickNumAxes}
 
 { Get the number of trackballs on a joystick
   Joystick trackballs have only relative motion events associated
   with them and their state cannot be polled. }
 function SDL_JoystickNumBalls(joystick: PSDL_Joystick): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickNumBalls'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickNumBalls'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickNumBalls}
 
 
 { Get the number of POV hats on a joystick }
 function SDL_JoystickNumHats(joystick: PSDL_Joystick): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickNumHats'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickNumHats'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickNumHats}
 
 { Get the number of buttons on a joystick }
 function SDL_JoystickNumButtons(joystick: PSDL_Joystick): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickNumButtons'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickNumButtons'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickNumButtons}
 
 { Update the current state of the open joysticks.
@@ -2605,7 +2804,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickNumButtons'{$ELSE} SDLLibName{
   events are enabled. }
 
 procedure SDL_JoystickUpdate;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickUpdate'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickUpdate'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickUpdate;}
 
 { Enable/disable joystick event polling.
@@ -2615,7 +2814,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickUpdate'{$ELSE} SDLLibName{$END
   The state can be one of SDL_QUERY, SDL_ENABLE or SDL_IGNORE. }
 
 function SDL_JoystickEventState(state: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickEventState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickEventState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickEventState}
 
 { Get the current state of an axis control on a joystick
@@ -2623,13 +2822,13 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickEventState'{$ELSE} SDLLibName{
   The axis indices start at index 0. }
 
 function SDL_JoystickGetAxis(joystick: PSDL_Joystick; axis: Integer) : SInt16;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickGetAxis'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickGetAxis'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickGetAxis}
 
 { The hat indices start at index 0. }
 
 function SDL_JoystickGetHat(joystick: PSDL_Joystick; hat: Integer): UInt8;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickGetHat'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickGetHat'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickGetHat}
 
 { Get the ball axis change since the last poll
@@ -2637,18 +2836,18 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickGetHat'{$ELSE} SDLLibName{$END
   The ball indices start at index 0. }
 
 function SDL_JoystickGetBall(joystick: PSDL_Joystick; ball: Integer; var dx: Integer; var dy: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickGetBall'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickGetBall'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickGetBall}
 
 { Get the current state of a button on a joystick
   The button indices start at index 0. }
 function SDL_JoystickGetButton( joystick: PSDL_Joystick; Button: Integer): UInt8;
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickGetButton'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickGetButton'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickGetButton}
 
 { Close a joystick previously opened with SDL_JoystickOpen() }
 procedure SDL_JoystickClose(joystick: PSDL_Joystick);
-cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickClose'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_JoystickClose'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_JoystickClose}
 
 {------------------------------------------------------------------------------}
@@ -2660,7 +2859,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_JoystickClose'{$ELSE} SDLLibName{$ENDI
   This should only be run in the thread that sets the video mode. }
 
 procedure SDL_PumpEvents;
-cdecl; external {$IFDEF __GPC__}name 'SDL_PumpEvents'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_PumpEvents'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_PumpEvents;}
 
 { Checks the event queue for messages and optionally returns them.
@@ -2676,7 +2875,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_PumpEvents'{$ELSE} SDLLibName{$ENDIF _
   if there was an error.  This function is thread-safe. }
 
 function SDL_PeepEvents(events: PSDL_Event; numevents: Integer; action: TSDL_eventaction; mask: UInt32): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_PeepEvents'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_PeepEvents'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_PeepEvents}
 
 { Polls for currently pending events, and returns 1 if there are any pending
@@ -2684,7 +2883,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_PeepEvents'{$ELSE} SDLLibName{$ENDIF _
    event is removed from the queue and stored in that area. }
 
 function SDL_PollEvent(event: PSDL_Event): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_PollEvent'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_PollEvent'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_PollEvent}
 
 {  Waits indefinitely for the next available event, returning 1, or 0 if there
@@ -2692,11 +2891,11 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_PollEvent'{$ELSE} SDLLibName{$ENDIF __
    event is removed from the queue and stored in that area. }
 
 function SDL_WaitEvent(event: PSDL_Event): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_WaitEvent'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WaitEvent'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WaitEvent}
 
 function SDL_PushEvent( event : PSDL_Event ) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_PushEvent'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_PushEvent'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_PushEvent}
 
 { If the filter returns 1, then the event will be added to the internal queue.
@@ -2714,14 +2913,14 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_PushEvent'{$ELSE} SDLLibName{$ENDIF __
   If the quit event is generated by an interrupt signal, it will bypass the
   internal queue and be delivered to the application at the next event poll. }
 procedure SDL_SetEventFilter( filter : TSDL_EventFilter );
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetEventFilter'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetEventFilter'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetEventFilter}
 
 { Return the current event filter - can be used to "chain" filters.
   If there is no event filter set, this function returns NULL. }
 
 function SDL_GetEventFilter: TSDL_EventFilter;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetEventFilter'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetEventFilter'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetEventFilter}
 
 { This function allows you to set the state of processing certain events.
@@ -2732,7 +2931,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetEventFilter'{$ELSE} SDLLibName{$END
   current processing state of the specified event. }
 
 function SDL_EventState(type_: UInt8; state: Integer): UInt8;
-cdecl; external {$IFDEF __GPC__}name 'SDL_EventState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_EventState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_EventState}
 
 {------------------------------------------------------------------------------}
@@ -2764,7 +2963,7 @@ function SDL_VERSION_ATLEAST(X: Integer; Y: Integer; Z: Integer) : LongBool;
   use the SDL_Version() macro. }
 
 function SDL_Linked_Version: PSDL_version;
-cdecl; external {$IFDEF __GPC__}name 'SDL_Linked_Version'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Linked_Version'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_Linked_Version}
 
 {------------------------------------------------------------------------------}
@@ -2785,10 +2984,10 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_Linked_Version'{$ELSE} SDLLibName{$END
   you won't be able to set full-screen display modes. }
 
 function SDL_VideoInit(driver_name: PChar; flags: UInt32): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_VideoInit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_VideoInit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_VideoInit}
 procedure SDL_VideoQuit;
-cdecl; external {$IFDEF __GPC__}name 'SDL_VideoQuit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_VideoQuit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_VideoQuit}
 
 { This function fills the given character buffer with the name of the
@@ -2796,7 +2995,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_VideoQuit'{$ELSE} SDLLibName{$ENDIF __
   been initialized.  It returns NULL if no driver has been initialized. }
 
 function SDL_VideoDriverName(namebuf: PChar; maxlen: Integer): PChar;
-cdecl; external {$IFDEF __GPC__}name 'SDL_VideoDriverName'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_VideoDriverName'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_VideoDriverName}
 
 { This function returns a pointer to the current display surface.
@@ -2805,7 +3004,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_VideoDriverName'{$ELSE} SDLLibName{$EN
   surface. }
 
 function SDL_GetVideoSurface: PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetVideoSurface'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetVideoSurface'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetVideoSurface}
 
 { This function returns a read-only pointer to information about the
@@ -2813,7 +3012,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetVideoSurface'{$ELSE} SDLLibName{$EN
   member of the returned structure will contain the pixel format of the
   "best" video mode. }
 function SDL_GetVideoInfo: PSDL_VideoInfo;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetVideoInfo'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetVideoInfo'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetVideoInfo}
 
 { Check to see if a particular video mode is supported.
@@ -2827,7 +3026,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetVideoInfo'{$ELSE} SDLLibName{$ENDIF
   SDL_SetVideoMode() }
 
 function SDL_VideoModeOK(width, height, bpp: Integer; flags: UInt32): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_VideoModeOK'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_VideoModeOK'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_VideoModeOK}
 
 { Return a pointer to an array of available screen dimensions for the
@@ -2839,7 +3038,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_VideoModeOK'{$ELSE} SDLLibName{$ENDIF 
   by SDL_GetVideoInfo( ) - > vfmt }
 
 function SDL_ListModes(format: PSDL_PixelFormat; flags: UInt32): PPSDL_Rect;
-cdecl; external {$IFDEF __GPC__}name 'SDL_ListModes'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_ListModes'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_ListModes}
 
 
@@ -2886,7 +3085,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_ListModes'{$ELSE} SDLLibName{$ENDIF __
   This function returns the video framebuffer surface, or NULL if it fails. }
 
 function SDL_SetVideoMode(width, height, bpp: Integer; flags: UInt32): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetVideoMode'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetVideoMode'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetVideoMode}
 
 
@@ -2896,10 +3095,10 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SetVideoMode'{$ELSE} SDLLibName{$ENDIF
   These functions should not be called while 'screen' is locked. }
 
 procedure SDL_UpdateRects(screen: PSDL_Surface; numrects: Integer; rects: PSDL_Rect);
-cdecl; external {$IFDEF __GPC__}name 'SDL_UpdateRects'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_UpdateRects'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_UpdateRects}
 procedure SDL_UpdateRect(screen: PSDL_Surface; x, y: SInt32; w, h: UInt32);
-cdecl; external {$IFDEF __GPC__}name 'SDL_UpdateRect'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_UpdateRect'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_UpdateRect}
 
 
@@ -2913,7 +3112,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_UpdateRect'{$ELSE} SDLLibName{$ENDIF _
   This function returns 0 if successful, or -1 if there was an error.}
 
 function SDL_Flip(screen: PSDL_Surface): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_Flip'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Flip'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_Flip}
 
 { Set the gamma correction for each of the color channels.
@@ -2924,7 +3123,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_Flip'{$ELSE} SDLLibName{$ENDIF __GPC__
   function returns 0, otherwise it returns -1. }
 
 function SDL_SetGamma(redgamma: single; greengamma: single; bluegamma: single ): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetGamma'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetGamma'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetGamma}
 
 { Set the gamma translation table for the red, green, and blue channels
@@ -2939,7 +3138,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SetGamma'{$ELSE} SDLLibName{$ENDIF __G
   this function will return -1. }
 
 function SDL_SetGammaRamp( redtable: PUInt16; greentable: PUInt16; bluetable: PUInt16): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetGammaRamp'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetGammaRamp'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetGammaRamp}
 
 { Retrieve the current values of the gamma translation tables.
@@ -2951,7 +3150,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SetGammaRamp'{$ELSE} SDLLibName{$ENDIF
   this function will return -1. }
 
 function SDL_GetGammaRamp( redtable: PUInt16; greentable: PUInt16; bluetable: PUInt16): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetGammaRamp'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetGammaRamp'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetGammaRamp}
 
 { Sets a portion of the colormap for the given 8-bit surface.  If 'surface'
@@ -2970,7 +3169,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetGammaRamp'{$ELSE} SDLLibName{$ENDIF
 
 
 function SDL_SetColors(surface: PSDL_Surface; colors: PSDL_Color; firstcolor : Integer; ncolors: Integer) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetColors'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetColors'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetColors}
 
 { Sets a portion of the colormap for a given 8-bit surface.
@@ -2989,27 +3188,27 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SetColors'{$ELSE} SDLLibName{$ENDIF __
   flags = (SDL_LOGPAL or SDL_PHYSPAL). }
 
 function SDL_SetPalette(surface: PSDL_Surface; flags: Integer; colors: PSDL_Color; firstcolor: Integer; ncolors: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetPalette'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetPalette'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetPalette}
 
 { Maps an RGB triple to an opaque pixel value for a given pixel format }
 function SDL_MapRGB(format: PSDL_PixelFormat; r: UInt8; g: UInt8; b: UInt8) : UInt32;
-cdecl; external {$IFDEF __GPC__}name 'SDL_MapRGB'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_MapRGB'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_MapRGB}
 
 { Maps an RGBA quadruple to a pixel value for a given pixel format }
 function SDL_MapRGBA(format: PSDL_PixelFormat; r: UInt8; g: UInt8; b: UInt8; a: UInt8): UInt32;
-cdecl; external {$IFDEF __GPC__}name 'SDL_MapRGBA'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_MapRGBA'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_MapRGBA}
 
 { Maps a pixel value into the RGB components for a given pixel format }
 procedure SDL_GetRGB(pixel: UInt32; fmt: PSDL_PixelFormat; r: PUInt8; g: PUInt8; b: PUInt8);
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetRGB'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetRGB'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetRGB}
 
 { Maps a pixel value into the RGBA components for a given pixel format }
 procedure SDL_GetRGBA(pixel: UInt32; fmt: PSDL_PixelFormat; r: PUInt8; g: PUInt8; b: PUInt8; a: PUInt8);
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetRGBA'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetRGBA'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetRGBA}
 
 { Allocate and free an RGB surface (must be called after SDL_SetVideoMode)
@@ -3050,16 +3249,16 @@ function SDL_AllocSurface(flags: UInt32; width, height, depth: Integer;
 {$EXTERNALSYM SDL_AllocSurface}
 
 function SDL_CreateRGBSurface(flags: UInt32; width, height, depth: Integer; RMask, GMask, BMask, AMask: UInt32): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateRGBSurface'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateRGBSurface'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateRGBSurface}
 
 function SDL_CreateRGBSurfaceFrom(pixels: Pointer; width, height, depth, pitch
   : Integer; RMask, GMask, BMask, AMask: UInt32): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateRGBSurfaceFrom'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateRGBSurfaceFrom'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateRGBSurfaceFrom}
 
 procedure SDL_FreeSurface(surface: PSDL_Surface);
-cdecl; external {$IFDEF __GPC__}name 'SDL_FreeSurface'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_FreeSurface'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_FreeSurface}
 
 function SDL_MustLock(Surface: PSDL_Surface): Boolean;
@@ -3081,11 +3280,11 @@ function SDL_MustLock(Surface: PSDL_Surface): Boolean;
 
   SDL_LockSurface() returns 0, or -1 if the surface couldn't be locked. }
 function SDL_LockSurface(surface: PSDL_Surface): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LockSurface'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LockSurface'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LockSurface}
 
 procedure SDL_UnlockSurface(surface: PSDL_Surface);
-cdecl; external {$IFDEF __GPC__}name 'SDL_UnlockSurface'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_UnlockSurface'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_UnlockSurface}
 
 { Load a surface from a seekable SDL data source (memory or file.)
@@ -3093,7 +3292,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_UnlockSurface'{$ELSE} SDLLibName{$ENDI
   Returns the new surface, or NULL if there was an error.
   The new surface should be freed with SDL_FreeSurface(). }
 function SDL_LoadBMP_RW(src: PSDL_RWops; freesrc: Integer): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LoadBMP_RW'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LoadBMP_RW'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LoadBMP_RW}
 
 // Convenience macro -- load a surface from a file
@@ -3105,7 +3304,7 @@ function SDL_LoadBMP(filename: PChar): PSDL_Surface;
   Returns 0 if successful or -1 if there was an error. }
 
 function SDL_SaveBMP_RW(surface: PSDL_Surface; dst: PSDL_RWops; freedst: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SaveBMP_RW'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SaveBMP_RW'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SaveBMP_RW}
 
 // Convenience macro -- save a surface to a file
@@ -3121,7 +3320,7 @@ function SDL_SaveBMP(surface: PSDL_Surface; filename: PChar): Integer;
   This function returns 0, or -1 if there was an error. }
 
 function SDL_SetColorKey(surface: PSDL_Surface; flag, key: UInt32) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetColorKey'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetColorKey'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetColorKey}
 
 { This function sets the alpha value for the entire surface, as opposed to
@@ -3138,7 +3337,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SetColorKey'{$ELSE} SDLLibName{$ENDIF 
 
 
 function SDL_SetAlpha(surface: PSDL_Surface; flag: UInt32; alpha: UInt8): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetAlpha'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetAlpha'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetAlpha}
 
 { Sets the clipping rectangle for the destination surface in a blit.
@@ -3152,14 +3351,14 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SetAlpha'{$ELSE} SDLLibName{$ENDIF __G
   Note that blits are automatically clipped to the edges of the source
   and destination surfaces. }
 procedure SDL_SetClipRect(surface: PSDL_Surface; rect: PSDL_Rect); cdecl;
-external {$IFDEF __GPC__}name 'SDL_SetClipRect'{$ELSE} SDLLibName{$ENDIF __GPC__};
+external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetClipRect'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetClipRect}
 
 { Gets the clipping rectangle for the destination surface in a blit.
   'rect' must be a pointer to a valid rectangle which will be filled
   with the correct values. }
 procedure SDL_GetClipRect(surface: PSDL_Surface; rect: PSDL_Rect); cdecl;
-external {$IFDEF __GPC__}name 'SDL_GetClipRect'{$ELSE} SDLLibName{$ENDIF __GPC__};
+external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetClipRect'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetClipRect}
 
 { Creates a new surface of the specified format, and then copies and maps
@@ -3174,7 +3373,7 @@ external {$IFDEF __GPC__}name 'SDL_GetClipRect'{$ELSE} SDLLibName{$ENDIF __GPC__
   This function is used internally by SDL_DisplayFormat(). }
 
 function SDL_ConvertSurface(src: PSDL_Surface; fmt: PSDL_PixelFormat; flags: UInt32): PSDL_Surface;
-cdecl; external {$IFDEF __GPC__}name 'SDL_ConvertSurface'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_ConvertSurface'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_ConvertSurface}
 
 {
@@ -3254,13 +3453,13 @@ function SDL_BlitSurface(src: PSDL_Surface; srcrect: PSDL_Rect; dst: PSDL_Surfac
 {  This is the public blit function, SDL_BlitSurface(), and it performs
    rectangle validation and clipping before passing it to SDL_LowerBlit() }
 function SDL_UpperBlit(src: PSDL_Surface; srcrect: PSDL_Rect; dst: PSDL_Surface; dstrect: PSDL_Rect): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_UpperBlit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_UpperBlit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_UpperBlit}
 
 { This is a semi-private blit function and it performs low-level surface
   blitting only. }
 function SDL_LowerBlit(src: PSDL_Surface; srcrect: PSDL_Rect; dst: PSDL_Surface; dstrect: PSDL_Rect): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LowerBlit'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LowerBlit'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LowerBlit}
 
 { This function performs a fast fill of the given rectangle with 'color'
@@ -3272,7 +3471,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_LowerBlit'{$ELSE} SDLLibName{$ENDIF __
   This function returns 0 on success, or -1 on error. }
 
 function SDL_FillRect(dst: PSDL_Surface; dstrect: PSDL_Rect; color: UInt32) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_FillRect'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_FillRect'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_FillRect}
 
 { This function takes a surface and copies it to a new surface of the
@@ -3286,7 +3485,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_FillRect'{$ELSE} SDLLibName{$ENDIF __G
   If the conversion fails or runs out of memory, it returns NULL }
 
 function SDL_DisplayFormat(surface: PSDL_Surface): PSDL_Surface; cdecl;
-external {$IFDEF __GPC__}name 'SDL_DisplayFormat'{$ELSE} SDLLibName{$ENDIF __GPC__};
+external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_DisplayFormat'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_DisplayFormat}
 
 { This function takes a surface and copies it to a new surface of the
@@ -3302,7 +3501,7 @@ external {$IFDEF __GPC__}name 'SDL_DisplayFormat'{$ELSE} SDLLibName{$ENDIF __GPC
 
 
 function SDL_DisplayFormatAlpha(surface: PSDL_Surface): PSDL_Surface; cdecl;
-external {$IFDEF __GPC__}name 'SDL_DisplayFormatAlpha'{$ELSE} SDLLibName{$ENDIF __GPC__};
+external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_DisplayFormatAlpha'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_DisplayFormatAlpha}
 
 //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -3315,16 +3514,16 @@ external {$IFDEF __GPC__}name 'SDL_DisplayFormatAlpha'{$ELSE} SDLLibName{$ENDIF 
   is shown is undefined - it may be overwritten with the converted YUV data. }
 
 function SDL_CreateYUVOverlay(width: Integer; height: Integer; format: UInt32; display: PSDL_Surface): PSDL_Overlay;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateYUVOverlay}
 
 // Lock an overlay for direct access, and unlock it when you are done
 function SDL_LockYUVOverlay(Overlay: PSDL_Overlay): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LockYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LockYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LockYUVOverlay}
 
 procedure SDL_UnlockYUVOverlay(Overlay: PSDL_Overlay); cdecl;
-external {$IFDEF __GPC__}name 'SDL_UnlockYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__};
+external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_UnlockYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_UnlockYUVOverlay}
 
 
@@ -3335,12 +3534,12 @@ external {$IFDEF __GPC__}name 'SDL_UnlockYUVOverlay'{$ELSE} SDLLibName{$ENDIF __
   that of the overlay, but currently only 2x scaling is supported. }
 
 function SDL_DisplayYUVOverlay(Overlay: PSDL_Overlay; dstrect: PSDL_Rect) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_DisplayYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_DisplayYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_DisplayYUVOverlay}
 
 // Free a video overlay
 procedure SDL_FreeYUVOverlay(Overlay: PSDL_Overlay);
-cdecl; external {$IFDEF __GPC__}name 'SDL_FreeYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_FreeYUVOverlay'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_FreeYUVOverlay}
 
 {------------------------------------------------------------------------------}
@@ -3358,17 +3557,17 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_FreeYUVOverlay'{$ELSE} SDLLibName{$END
 
 
 function SDL_GL_LoadLibrary(filename: PChar): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_LoadLibrary'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_LoadLibrary'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_LoadLibrary}
 
 { Get the address of a GL function (for extension functions) }
 function SDL_GL_GetProcAddress(procname: PChar) : Pointer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_GetProcAddress'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_GetProcAddress'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_GetProcAddress}
 
 { Set an attribute of the OpenGL subsystem before intialization. }
 function SDL_GL_SetAttribute(attr: TSDL_GLAttr; value: Integer) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_SetAttribute'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_SetAttribute'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_SetAttribute}
 
 { Get an attribute of the OpenGL subsystem from the windowing
@@ -3380,26 +3579,26 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GL_SetAttribute'{$ELSE} SDLLibName{$EN
   themselves if they want to retrieve these values. }
 
 function SDL_GL_GetAttribute(attr: TSDL_GLAttr; var value: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_GetAttribute'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_GetAttribute'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_GetAttribute}
 
 { Swap the OpenGL buffers, if double-buffering is supported. }
 
 procedure SDL_GL_SwapBuffers;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_SwapBuffers'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_SwapBuffers'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_SwapBuffers;}
 
 { Internal functions that should not be called unless you have read
   and understood the source code for these functions. }
 
 procedure SDL_GL_UpdateRects(numrects: Integer; rects: PSDL_Rect);
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_UpdateRects'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_UpdateRects'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_UpdateRects}
 procedure SDL_GL_Lock;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_Lock'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_Lock'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_Lock;}
 procedure SDL_GL_Unlock;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GL_Unlock'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GL_Unlock'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GL_Unlock;}
 
 {* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *}
@@ -3408,10 +3607,10 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GL_Unlock'{$ELSE} SDLLibName{$ENDIF __
 
 { Sets/Gets the title and icon text of the display window }
 procedure SDL_WM_GetCaption(var title : PChar; var icon : PChar);
-cdecl; external {$IFDEF __GPC__}name 'SDL_WM_GetCaption'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_GetCaption'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WM_GetCaption}
 procedure SDL_WM_SetCaption( const title : PChar; const icon : PChar);
-cdecl; external {$IFDEF __GPC__}name 'SDL_WM_SetCaption'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_SetCaption'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WM_SetCaption}
 
 { Sets the icon for the display window.
@@ -3419,7 +3618,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_WM_SetCaption'{$ELSE} SDLLibName{$ENDI
   It takes an icon surface, and a mask in MSB format.
   If 'mask' is NULL, the entire icon surface will be used as the icon. }
 procedure SDL_WM_SetIcon(icon: PSDL_Surface; mask: UInt8);
-cdecl; external {$IFDEF __GPC__}name 'SDL_WM_SetIcon'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_SetIcon'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WM_SetIcon}
 
 { This function iconifies the window, and returns 1 if it succeeded.
@@ -3427,7 +3626,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_WM_SetIcon'{$ELSE} SDLLibName{$ENDIF _
   This function is a noop and returns 0 in non-windowed environments. }
 
 function SDL_WM_IconifyWindow: Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_WM_IconifyWindow'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_IconifyWindow'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WM_IconifyWindow}
 
 { Toggle fullscreen mode without changing the contents of the screen.
@@ -3445,7 +3644,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_WM_IconifyWindow'{$ELSE} SDLLibName{$E
   This is currently only implemented in the X11 video driver. }
 
 function SDL_WM_ToggleFullScreen(surface: PSDL_Surface): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_WM_ToggleFullScreen'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_ToggleFullScreen'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WM_ToggleFullScreen}
 
 { Grabbing means that the mouse is confined to the application window,
@@ -3453,7 +3652,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_WM_ToggleFullScreen'{$ELSE} SDLLibName
   and not interpreted by a window manager, if any. }
 
 function SDL_WM_GrabInput(mode: TSDL_GrabMode): TSDL_GrabMode;
-cdecl; external {$IFDEF __GPC__}name 'SDL_WM_GrabInput'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_GrabInput'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WM_GrabInput}
 
 {------------------------------------------------------------------------------}
@@ -3466,7 +3665,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_WM_GrabInput'{$ELSE} SDLLibName{$ENDIF
   current mouse cursor position.  You can pass NULL for either x or y. }
 
 function SDL_GetMouseState(var x: Integer; var y: Integer): UInt8;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetMouseState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetMouseState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetMouseState}
 
 { Retrieve the current state of the mouse.
@@ -3474,12 +3673,12 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetMouseState'{$ELSE} SDLLibName{$ENDI
   be tested using the SDL_BUTTON(X) macros, and x and y are set to the
   mouse deltas since the last call to SDL_GetRelativeMouseState(). }
 function SDL_GetRelativeMouseState(var x: Integer; var y: Integer): UInt8;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetRelativeMouseState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetRelativeMouseState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetRelativeMouseState}
 
 { Set the position of the mouse cursor (generates a mouse motion event) }
 procedure SDL_WarpMouse(x, y: UInt16);
-cdecl; external {$IFDEF __GPC__}name 'SDL_WarpMouse'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WarpMouse'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WarpMouse}
 
 { Create a cursor using the specified data and mask (in MSB format).
@@ -3494,24 +3693,24 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_WarpMouse'{$ELSE} SDLLibName{$ENDIF __
 
   Cursors created with this function must be freed with SDL_FreeCursor(). }
 function SDL_CreateCursor(data, mask: PUInt8; w, h, hot_x, hot_y: Integer): PSDL_Cursor;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateCursor'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateCursor'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateCursor}
 
 { Set the currently active cursor to the specified one.
   If the cursor is currently visible, the change will be immediately
   represented on the display. }
 procedure SDL_SetCursor(cursor: PSDL_Cursor);
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetCursor'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetCursor'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetCursor}
 
 { Returns the currently active cursor. }
 function SDL_GetCursor: PSDL_Cursor;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetCursor'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetCursor'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetCursor}
 
 { Deallocates a cursor created with SDL_CreateCursor(). }
 procedure SDL_FreeCursor(cursor: PSDL_Cursor);
-cdecl; external {$IFDEF __GPC__}name 'SDL_FreeCursor'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_FreeCursor'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_FreeCursor}
 
 { Toggle whether or not the cursor is shown on the screen.
@@ -3520,7 +3719,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_FreeCursor'{$ELSE} SDLLibName{$ENDIF _
   before the call, or 0 if it was not.  You can query the current
   state by passing a 'toggle' value of -1. }
 function SDL_ShowCursor(toggle: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_ShowCursor'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_ShowCursor'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_ShowCursor}
 
 function SDL_BUTTON( Button : Integer ) : Integer;
@@ -3536,13 +3735,17 @@ function SDL_BUTTON( Button : Integer ) : Integer;
   If 'enable' is -1, the translation state is not changed.
   It returns the previous state of keyboard translation. }
 function SDL_EnableUNICODE(enable: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_EnableUNICODE'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_EnableUNICODE'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_EnableUNICODE}
 
 { If 'delay' is set to 0, keyboard repeat is disabled. }
 function SDL_EnableKeyRepeat(delay: Integer; interval: Integer): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_EnableKeyRepeat'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_EnableKeyRepeat'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_EnableKeyRepeat}
+
+procedure SDL_GetKeyRepeat(delay : PInteger; interval: PInteger);
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetKeyRepeat'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
+{$EXTERNALSYM SDL_GetKeyRepeat}
 
 { Get a snapshot of the current state of the keyboard.
   Returns an array of keystates, indexed by the SDLK_* syms.
@@ -3552,23 +3755,23 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_EnableKeyRepeat'{$ELSE} SDLLibName{$EN
   if ( keystate[SDLK_RETURN] ) ... <RETURN> is pressed }
 
 function SDL_GetKeyState(numkeys: PInt): PUInt8;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetKeyState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetKeyState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetKeyState}
 
 { Get the current key modifier state }
 function SDL_GetModState: TSDLMod;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetModState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetModState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetModState}
 
 { Set the current key modifier state
   This does not change the keyboard state, only the key modifier flags. }
 procedure SDL_SetModState(modstate: TSDLMod);
-cdecl; external {$IFDEF __GPC__}name 'SDL_SetModState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SetModState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SetModState}
 
 { Get the name of an SDL virtual keysym }
 function SDL_GetKeyName(key: TSDLKey): PChar;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetKeyName'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetKeyName'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetKeyName}
 
 {------------------------------------------------------------------------------}
@@ -3581,7 +3784,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetKeyName'{$ELSE} SDLLibName{$ENDIF _
   see your application, otherwise it has been iconified or disabled. }
 
 function SDL_GetAppState: UInt8;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetAppState'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetAppState'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetAppState}
 
 
@@ -3590,13 +3793,13 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetAppState'{$ELSE} SDLLibName{$ENDIF 
 { Create a mutex, initialized unlocked }
 
 function SDL_CreateMutex: PSDL_Mutex;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateMutex'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateMutex'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateMutex}
 
 { Lock the mutex  (Returns 0, or -1 on error) }
 
  function SDL_mutexP(mutex: PSDL_mutex): Integer;
- cdecl; external {$IFDEF __GPC__}name 'SDL_mutexP'{$ELSE} SDLLibName{$ENDIF __GPC__};
+ cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_mutexP'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 { $ EXTERNALSYM SDL_mutexP}
 
 function SDL_LockMutex(mutex: PSDL_mutex): Integer;
@@ -3604,7 +3807,7 @@ function SDL_LockMutex(mutex: PSDL_mutex): Integer;
 
 { Unlock the mutex  (Returns 0, or -1 on error) }
 function SDL_mutexV(mutex: PSDL_mutex): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_mutexV'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_mutexV'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_mutexV}
 
 function SDL_UnlockMutex(mutex: PSDL_mutex): Integer;
@@ -3612,7 +3815,7 @@ function SDL_UnlockMutex(mutex: PSDL_mutex): Integer;
 
 { Destroy a mutex }
 procedure SDL_DestroyMutex(mutex: PSDL_mutex);
-cdecl; external {$IFDEF __GPC__}name 'SDL_DestroyMutex'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_DestroyMutex'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_DestroyMutex}
 
 { * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
@@ -3620,13 +3823,13 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_DestroyMutex'{$ELSE} SDLLibName{$ENDIF
 { * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
 { Create a semaphore, initialized with value, returns NULL on failure. }
 function SDL_CreateSemaphore(initial_value: UInt32): PSDL_Sem;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateSemaphore'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateSemaphore'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateSemaphore}
 
 
 { Destroy a semaphore }
 procedure SDL_DestroySemaphore(sem: PSDL_sem);
-cdecl; external {$IFDEF __GPC__}name 'SDL_DestroySemaphore'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_DestroySemaphore'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_DestroySemaphore}
 
 { This function suspends the calling thread until the semaphore pointed
@@ -3634,14 +3837,14 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_DestroySemaphore'{$ELSE} SDLLibName{$E
   count. }
 
 function SDL_SemWait(sem: PSDL_sem): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SemWait'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SemWait'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SemWait}
 
 { Non-blocking variant of SDL_SemWait(), returns 0 if the wait succeeds,
    SDL_MUTEX_TIMEDOUT if the wait would block, and -1 on error. }
 
 function SDL_SemTryWait(sem: PSDL_sem): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SemTryWait'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SemTryWait'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SemTryWait}
 
 { Variant of SDL_SemWait() with a timeout in milliseconds, returns 0 if
@@ -3651,20 +3854,20 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SemTryWait'{$ELSE} SDLLibName{$ENDIF _
    of 1 ms, and so should be avoided if possible. }
 
 function SDL_SemWaitTimeout(sem: PSDL_sem; ms: UInt32): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SemWaitTimeout'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SemWaitTimeout'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SemTryWait}
 
 { Atomically increases the semaphore's count (not blocking), returns 0,
    or -1 on error. }
 
 function SDL_SemPost(sem: PSDL_sem): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SemPost'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SemPost'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SemTryWait}
 
 { Returns the current count of the semaphore }
 
 function SDL_SemValue(sem: PSDL_sem): UInt32;
-cdecl; external {$IFDEF __GPC__}name 'SDL_SemValue'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_SemValue'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_SemValue}
 
 { * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
@@ -3672,26 +3875,26 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_SemValue'{$ELSE} SDLLibName{$ENDIF __G
 { * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
 { Create a condition variable }
 function SDL_CreateCond: PSDL_Cond;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateCond'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateCond'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateCond}
 
 { Destroy a condition variable }
 procedure SDL_DestroyCond(cond: PSDL_Cond);
-cdecl; external {$IFDEF __GPC__}name 'SDL_DestroyCond'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_DestroyCond'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_DestroyCond}
 
 { Restart one of the threads that are waiting on the condition variable,
    returns 0 or -1 on error. }
 
 function SDL_CondSignal(cond: PSDL_cond): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CondSignal'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CondSignal'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CondSignal}
 
 { Restart all threads that are waiting on the condition variable,
   returns 0 or -1 on error. }
 
 function SDL_CondBroadcast(cond: PSDL_cond): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CondBroadcast'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CondBroadcast'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CondBroadcast}
 
 
@@ -3700,7 +3903,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CondBroadcast'{$ELSE} SDLLibName{$ENDI
   Returns 0 when it is signaled, or -1 on error. }
 
 function SDL_CondWait(cond: PSDL_cond; mut: PSDL_mutex): Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CondWait'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CondWait'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CondWait}
 
 { Waits for at most 'ms' milliseconds, and returns 0 if the condition
@@ -3710,7 +3913,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CondWait'{$ELSE} SDLLibName{$ENDIF __G
   of 1 ms, and so should be avoided if possible. }
 
 function SDL_CondWaitTimeout(cond: PSDL_cond; mut: PSDL_mutex; ms: UInt32) : Integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CondWaitTimeout'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CondWaitTimeout'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CondWaitTimeout}
 
 { * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * }
@@ -3719,18 +3922,18 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_CondWaitTimeout'{$ELSE} SDLLibName{$EN
 
 { Create a thread }
 function SDL_CreateThread(fn: PInt; data: Pointer): PSDL_Thread;
-cdecl; external {$IFDEF __GPC__}name 'SDL_CreateThread'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_CreateThread'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_CreateThread}
 
 { Get the 32-bit thread identifier for the current thread }
 function SDL_ThreadID: UInt32;
-cdecl; external {$IFDEF __GPC__}name 'SDL_ThreadID'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_ThreadID'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_ThreadID}
 
 { Get the 32-bit thread identifier for the specified thread,
   equivalent to SDL_ThreadID() if the specified thread is NULL. }
 function SDL_GetThreadID(thread: PSDL_Thread): UInt32;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetThreadID'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetThreadID'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetThreadID}
 
 { Wait for a thread to finish.
@@ -3738,18 +3941,18 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetThreadID'{$ELSE} SDLLibName{$ENDIF 
   pointed to by 'status', if 'status' is not NULL. }
 
 procedure SDL_WaitThread(thread: PSDL_Thread; var status: Integer);
-cdecl; external {$IFDEF __GPC__}name 'SDL_WaitThread'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WaitThread'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WaitThread}
 
 { Forcefully kill a thread without worrying about its state }
 procedure SDL_KillThread(thread: PSDL_Thread);
-cdecl; external {$IFDEF __GPC__}name 'SDL_KillThread'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_KillThread'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_KillThread}
 
 {------------------------------------------------------------------------------}
 { Get Environment Routines                                                     }
 {------------------------------------------------------------------------------}
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 function _putenv( const variable : Pchar ): integer;
 cdecl;
 {$ENDIF}
@@ -3762,7 +3965,7 @@ cdecl; external 'libc.so' name 'putenv';
 {$ENDIF}
 
 { Put a variable of the form "name=value" into the environment }
-//function SDL_putenv(const variable: PChar): integer; cdecl; external {$IFDEF __GPC__}name 'SDL_Init'{$ELSE} SDLLibName{$ENDIF __GPC__}SDLLibName name '';
+//function SDL_putenv(const variable: PChar): integer; cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Init'{$ELSE} SDLLibName{$ENDIF __GPC__}SDLLibName name '';
 function SDL_putenv(const variable: PChar): integer;
 {$EXTERNALSYM SDL_putenv}
 
@@ -3771,14 +3974,14 @@ function SDL_putenv(const variable: PChar): integer;
 //function putenv(const variable: PChar): integer;
 //{$EXTERNALSYM putenv}
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 {$IFNDEF __GPC__}
 function getenv( const name : Pchar ): PChar; cdecl;
 {$ENDIF}
 {$ENDIF}
 
 {* Retrieve a variable named "name" from the environment }
-//function SDL_getenv(const name: PChar): PChar; cdecl; external {$IFDEF __GPC__}name 'SDL_Init'{$ELSE} SDLLibName{$ENDIF __GPC__}SDLLibName name '';
+//function SDL_getenv(const name: PChar): PChar; cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_Init'{$ELSE} SDLLibName{$ENDIF __GPC__}SDLLibName name '';
 function SDL_getenv(const name: PChar): PChar;
 {$EXTERNALSYM SDL_getenv}
 
@@ -3794,7 +3997,7 @@ function SDL_getenv(const name: PChar): PChar;
  * the version member of the 'info' structure is invalid, it returns 0.
  *}
 function SDL_GetWMInfo(info : PSDL_SysWMinfo) : integer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_GetWMInfo'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_GetWMInfo'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_GetWMInfo}
 
 {------------------------------------------------------------------------------}
@@ -3805,7 +4008,7 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_GetWMInfo'{$ELSE} SDLLibName{$ENDIF __
  * The 'sofile' parameter is a system dependent name of the object file.
  *}
 function SDL_LoadObject( const sofile : PChar ) : Pointer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LoadObject'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LoadObject'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LoadObject}
 
 {* Given an object handle, this function looks up the address of the
@@ -3813,12 +4016,12 @@ cdecl; external {$IFDEF __GPC__}name 'SDL_LoadObject'{$ELSE} SDLLibName{$ENDIF _
  * is no longer valid after calling SDL_UnloadObject().
  *}
 function SDL_LoadFunction( handle : Pointer; const name : PChar ) : Pointer;
-cdecl; external {$IFDEF __GPC__}name 'SDL_LoadFunction'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_LoadFunction'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_LoadFunction}
 
 {* Unload a shared object from memory *}
 procedure SDL_UnloadObject( handle : Pointer );
-cdecl; external {$IFDEF __GPC__}name 'SDL_UnloadObject'{$ELSE} SDLLibName{$ENDIF __GPC__};
+cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_UnloadObject'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_UnloadObject}
 
 
@@ -3860,7 +4063,7 @@ end;
 
 procedure SDL_OutOfMemory;
 begin
-  {$IFNDEF WIN32}
+  {$IFNDEF WINDOWS}
   SDL_Error(SDL_ENOMEM);
   {$ENDIF}
 end;
@@ -3981,7 +4184,7 @@ begin
   Result := SDL_mutexV(mutex);
 end;
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 function _putenv( const variable : Pchar ): Integer;
 cdecl; external {$IFDEF __GPC__}name '_putenv'{$ELSE} 'MSVCRT.DLL'{$ENDIF __GPC__};
 {$ENDIF}
@@ -3989,7 +4192,7 @@ cdecl; external {$IFDEF __GPC__}name '_putenv'{$ELSE} 'MSVCRT.DLL'{$ENDIF __GPC_
 
 function SDL_putenv(const variable: PChar): Integer;
 begin
-  {$IFDEF WIN32}
+  {$IFDEF WINDOWS}
   Result := _putenv(variable);
   {$ENDIF}
 
@@ -4002,7 +4205,7 @@ begin
   {$ENDIF}
 end;
 
-{$IFDEF WIN32}
+{$IFDEF WINDOWS}
 {$IFNDEF __GPC__}
 function getenv( const name : Pchar ): PChar;
 cdecl; external {$IFDEF __GPC__}name 'getenv'{$ELSE} 'MSVCRT.DLL'{$ENDIF};
@@ -4011,7 +4214,7 @@ cdecl; external {$IFDEF __GPC__}name 'getenv'{$ELSE} 'MSVCRT.DLL'{$ENDIF};
 
 function SDL_getenv(const name: PChar): PChar;
 begin
-  {$IFDEF WIN32}
+  {$IFDEF WINDOWS}
 
   {$IFDEF __GPC__}
   Result := getenv( string( name ) );
