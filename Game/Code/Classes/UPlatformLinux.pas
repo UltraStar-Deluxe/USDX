@@ -28,18 +28,25 @@ type
 
 implementation
 
+// check for version of FPC >= 2.2.0
+{$IFDEF FPC}
+  {$IF (FPC_VERSION > 2) or ((FPC_VERSION = 2) and (FPC_RELEASE >= 2))}
+    {$DEFINE FPC_VERSION_2_2_0_PLUS}
+  {$IFEND}
+{$ENDIF}
+  
 uses 
   libc,
   uCommandLine,
-{$IFNDEF FPC_V220}
-  oldlinux,
-{$ELSE}
+{$IFDEF FPC_VERSION_2_2_0_PLUS}
   BaseUnix,
+{$ELSE}
+  oldlinux,
 {$ENDIF}
   SysUtils;
 
-{$IFDEF FPC_V220}
-Function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
+{$IFDEF FPC_VERSION_2_2_0_PLUS}
+Function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
 var
     i : Integer;
     TheDir  : pDir;
@@ -159,8 +166,7 @@ begin
 end;
 
 // FIXME: just a dirty-fix to make the linux build work again.
-//        This i the same as the corresponding function for windows
-//        and MacOSX.
+//        This i the same as the corresponding function for MacOSX.
 //        Maybe this should be TPlatformBase.Halt()
 procedure TPlatformLinux.Halt;
 begin
