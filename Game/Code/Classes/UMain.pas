@@ -443,6 +443,10 @@ Begin
         End; // With}
       SDL_KEYDOWN:
         begin
+          // remap the "keypad enter" key to the "standard enter" key
+          if (Event.key.keysym.sym = SDLK_KP_ENTER) then
+            Event.key.keysym.sym := SDLK_RETURN;
+
           //ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
           if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
             Display.ScreenShot
