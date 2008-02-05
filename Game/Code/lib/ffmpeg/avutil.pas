@@ -1,4 +1,4 @@
-                                                                              (*
+(*
  * copyright (c) 2006 Michael Niedermayer <michaelni@gmx.at>
  *
  * This library is free software; you can redistribute it and/or
@@ -14,21 +14,46 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-                                                                              *)
-(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
-For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
-in the source codes *)
+ *)
+
+(* This is a part of Pascal porting of ffmpeg.
+ * Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+ * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+ * in the source codes *)
+
+// Min. version: ?
+// Max. version: 49.6.0, Revision: 11207
 
 unit avutil;
+
 {$IFDEF FPC}
   {$MODE DELPHI}
-  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* C/C++-compatible record packing *)
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
 interface
 
-{$I version.inc}
+uses
+  mathematics,
+  rational,
+  UConfig;
+
+const
+  (* Max. supported version by this header *)
+  LIBAVUTIL_MAX_VERSION_MAJOR   = 49;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 6;
+  LIBAVUTIL_MAX_VERSION_RELEASE = 0;
+  LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
+                          (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
+                          (LIBAVUTIL_MAX_VERSION_RELEASE * VERSION_RELEASE);
+
+(* Check if linked versions are supported *)
+{$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
+  {$MESSAGE Warn 'Linked version of libavutil may be unsupported!'}
+{$IFEND}
 
 type
 (**
@@ -65,8 +90,8 @@ type
     PIX_FMT_RGB565,    ///< Packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), in cpu endianness
     PIX_FMT_RGB555,    ///< Packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), in cpu endianness most significant bit to 1
     PIX_FMT_GRAY8,     ///<        Y        ,  8bpp
-    PIX_FMT_MONOWHITE, ///<        Y        ,  1bpp, 1 is white
-    PIX_FMT_MONOBLACK, ///<        Y        ,  1bpp, 0 is black
+    PIX_FMT_MONOWHITE, ///<        Y        ,  1bpp, 0 is white, 1 is black
+    PIX_FMT_MONOBLACK, ///<        Y        ,  1bpp, 0 is black, 1 is white
     PIX_FMT_PAL8,      ///< 8 bit with PIX_FMT_RGB32 palette
     PIX_FMT_YUVJ420P,  ///< Planar YUV 4:2:0, 12bpp, full scale (jpeg)
     PIX_FMT_YUVJ422P,  ///< Planar YUV 4:2:2, 16bpp, full scale (jpeg)
@@ -90,8 +115,12 @@ type
     PIX_FMT_RGB32_1,   ///< Packed RGB 8:8:8, 32bpp, (msb)8R 8G 8B 8A(lsb), in cpu endianness
     PIX_FMT_BGR32_1,   ///< Packed RGB 8:8:8, 32bpp, (msb)8B 8G 8R 8A(lsb), in cpu endianness
 
-    PIX_FMT_NB,        ///< number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
-    PIX_FMT_FACKED = $FFFFF
+    PIX_FMT_GRAY16BE,  ///<        Y        , 16bpp, big-endian
+    PIX_FMT_GRAY16LE,  ///<        Y        , 16bpp, little-endian
+    PIX_FMT_YUV440P,   ///< Planar YUV 4:4:0 (1 Cr & Cb sample per 1x2 Y samples)
+    PIX_FMT_YUVJ440P,  ///< Planar YUV 4:4:0 full scale (jpeg)
+    PIX_FMT_YUVA420P,  ///< Planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y & A samples)
+    PIX_FMT_NB         ///< number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
   );
 
 const
@@ -100,33 +129,88 @@ const
   PIX_FMT_BGRA = PIX_FMT_BGR32_1;
   PIX_FMT_ARGB = PIX_FMT_RGB32;
   PIX_FMT_ABGR = PIX_FMT_BGR32;
+  PIX_FMT_GRAY16 = PIX_FMT_GRAY16BE;
 {$else}
   PIX_FMT_RGBA = PIX_FMT_BGR32;
   PIX_FMT_BGRA = PIX_FMT_RGB32;
   PIX_FMT_ARGB = PIX_FMT_BGR32_1;
   PIX_FMT_ABGR = PIX_FMT_RGB32_1;
-{$endif}                                              
+  PIX_FMT_GRAY16 = PIX_FMT_GRAY16LE;
+{$endif}
 
+{$IF LIBAVUTIL_VERSION_MAJOR < 50} // 50.0.0
   PIX_FMT_UYVY411 = PIX_FMT_UYYVYY411;
   PIX_FMT_RGBA32  = PIX_FMT_RGB32;
   PIX_FMT_YUV422  = PIX_FMT_YUYV422;
+{$IFEND}
 
-(* memory *)
+(* mem.h *)
+
+(**
+ * Allocate a block of \p size bytes with alignment suitable for all
+ * memory accesses (including vectors if available on the CPU).
+ * @param size Size in bytes for the memory block to be allocated.
+ * @return Pointer to the allocated block, NULL if it cannot allocate
+ * it.
+ * @see av_mallocz()
+ *)
 function av_malloc (size: cardinal): pointer;
   cdecl; external av__util;
 
+(**
+ * Allocate or reallocate a block of memory.
+ * If \p ptr is NULL and \p size > 0, allocate a new block. If \p
+ * size is zero, free the memory block pointed by \p ptr.
+ * @param size Size in bytes for the memory block to be allocated or
+ * reallocated.
+ * @param ptr Pointer to a memory block already allocated with
+ * av_malloc(z)() or av_realloc() or NULL.
+ * @return Pointer to a newly reallocated block or NULL if it cannot
+ * reallocate or the function is used to free the memory block.
+ * @see av_fast_realloc()
+ *)
 function av_realloc (ptr: pointer; size: cardinal): pointer;
   cdecl; external av__util;
 
+(**
+ * Free a memory block which has been allocated with av_malloc(z)() or
+ * av_realloc().
+ * @param ptr Pointer to the memory block which should be freed.
+ * @note ptr = NULL is explicitly allowed.
+ * @note It is recommended that you use av_freep() instead.
+ * @see av_freep()
+ *)
 procedure av_free (ptr: pointer);
   cdecl; external av__util;
 
+(**
+ * Allocate a block of \p size bytes with alignment suitable for all
+ * memory accesses (including vectors if available on the CPU) and
+ * set to zeroes all the bytes of the block.
+ * @param size Size in bytes for the memory block to be allocated.
+ * @return Pointer to the allocated block, NULL if it cannot allocate
+ * it.
+ * @see av_malloc()
+ *)
 function av_mallocz (size: cardinal): pointer;
   cdecl; external av__util;
 
-function av_strdup(const s: pchar): pchar;
+(**
+ * Duplicate the string \p s.
+ * @param s String to be duplicated.
+ * @return Pointer to a newly allocated string containing a
+ * copy of \p s or NULL if it cannot be allocated.
+ *)
+function av_strdup({const} s: pchar): pchar;
   cdecl; external av__util;
 
+(**
+ * Free a memory block which has been allocated with av_malloc(z)() or
+ * av_realloc() and set to NULL the pointer to it.
+ * @param ptr Pointer to the pointer to the memory block which should
+ * be freed.
+ * @see av_free()
+ *)
 procedure av_freep (ptr: pointer);
   cdecl; external av__util;
 

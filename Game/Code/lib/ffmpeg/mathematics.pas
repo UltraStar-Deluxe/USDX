@@ -1,7 +1,3 @@
-unit mathematics;
-
-interface
-
 (*
  * copyright (c) 2005 Michael Niedermayer <michaelni@gmx.at>
  *
@@ -24,19 +20,23 @@ interface
 For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
+// Revision: 10765
+
+unit mathematics;
+
 {$IFDEF FPC}
-  {$IFDEF LINUX}
-  {$LINKLIB libavutil}
-  {$ENDIF}
-  {$MODE DELPHI } (* CAT *)
-  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+  {$MODE DELPHI }
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* C/C++-compatible record packing *)
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
-uses
-  rational; (* CAT *)
+interface
 
-{$I version.inc}
+uses
+  rational,
+  UConfig;
 
 type
   TAVRounding = (
@@ -44,23 +44,26 @@ type
     AV_ROUND_INF      = 1, ///< round away from zero
     AV_ROUND_DOWN     = 2, ///< round toward -infinity
     AV_ROUND_UP       = 3, ///< round toward +infinity
-    AV_ROUND_NEAR_INF = 5, ///< round to nearest and halfway cases away from zero
-    AV_ROUND_FUCKING = $FFFFFF
+    AV_ROUND_NEAR_INF = 5  ///< round to nearest and halfway cases away from zero
   );
 
-(** * rescale a 64bit integer with rounding to nearest.
- * a simple a*b/c isn't possible as it can overflow *)
+(**
+ * rescale a 64bit integer with rounding to nearest.
+ * a simple a*b/c isn't possible as it can overflow
+ *)
 function av_rescale (a, b, c: int64): int64;
   cdecl; external av__util;
 
 (**
  * rescale a 64bit integer with specified rounding.
- * a simple a*b/c isn't possible as it can overflow *)
+ * a simple a*b/c isn't possible as it can overflow
+ *)
 function av_rescale_rnd (a, b, c: int64; enum: TAVRounding): int64;
   cdecl; external av__util;
 
 (**
- * rescale a 64bit integer by 2 rational numbers. *)
+ * rescale a 64bit integer by 2 rational numbers.
+ *)
 function av_rescale_q (a: int64; bq, cq: TAVRational): int64;
   cdecl; external av__util;
 

@@ -286,7 +286,7 @@ begin
 
       try
 //        if AVPacket.data <> nil then
-          av_free_packet( AVPacket );  // JB-ffmpeg
+          av_free_packet( @AVPacket );  // JB-ffmpeg
       except
         // TODO : JB_FFMpeg ... why does this now AV sometimes ( or always !! )
       end;
@@ -308,7 +308,7 @@ begin
         // release internal packet structure created by av_read_frame
         try
 //          if AVPacket.data <> nil then
-            av_free_packet( AVPacket );  // JB-ffmpeg
+            av_free_packet( @AVPacket );  // JB-ffmpeg
         except
           // TODO : JB_FFMpeg ... why does this now AV sometimes ( or always !! )
         end;

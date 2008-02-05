@@ -15,24 +15,30 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-*)
-(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
-For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
-in the source codes *)
+ *)
+
+(* This is a part of Pascal porting of ffmpeg.
+ * Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+ * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+ * in the source codes *)
+
+// Revision: 11250
 
 unit opt;
+
 {$IFDEF FPC}
-  {$MODE DELPHI} (* CAT *)
-  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+  {$MODE DELPHI}
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* C/C++-compatible record packing *)
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
 interface
 
 uses
-  rational;  (* CAT *)
-
-{$I version.inc}
+  rational,
+  UConfig;
 
 type
   TAVOptionType = (
@@ -43,6 +49,7 @@ type
     FF_OPT_TYPE_FLOAT,
     FF_OPT_TYPE_STRING,
     FF_OPT_TYPE_RATIONAL,
+    FF_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
     FF_OPT_TYPE_CONST = 128
   );
 
@@ -55,12 +62,20 @@ const
   AV_OPT_FLAG_SUBTITLE_PARAM  = 32;
 
 type
+  (**
+   * AVOption.
+   *)
   PAVOption = ^TAVOption;
   TAVOption = record
     name: pchar;
+    
+    (**
+     * short English text help.
+     * @todo what about other languages
+     *)
     help: pchar;
     offset: integer;             ///< offset to context structure where the parsed value should be stored
-    _type: TAVOptionType;
+    type_: TAVOptionType;
 
     default_val: double;
     min: double;
@@ -68,9 +83,13 @@ type
 
     flags: integer;
 //FIXME think about enc-audio, ... style flags
-    _unit: pchar;
+    unit_: pchar;
   end;
 
+{$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
+function av_find_opt (obj: Pointer; {const} name: PChar; {const} unit_: PChar; mask: integer; flags: integer): {const} PAVOption;
+  cdecl; external av__codec;
+{$IFEND}
 
 function av_set_string (obj: pointer; name: pchar; val: pchar): PAVOption;
   cdecl; external av__codec;
@@ -104,6 +123,11 @@ function av_opt_show (obj: pointer; av_log_obj: pointer): integer;
 
 procedure av_opt_set_defaults (s: pointer);
   cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
+procedure av_opt_set_defaults2 (s: Pointer; mask: integer; flags: integer);
+  cdecl; external av__codec;
+{$IFEND}
 
 implementation
 

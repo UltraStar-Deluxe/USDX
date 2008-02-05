@@ -1,4 +1,4 @@
-                                                                              (*
+(*
  * copyright (c) 2001 Fabrice Bellard
  *
  * This library is free software; you can redistribute it and/or
@@ -14,107 +14,306 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-                                                                              *)
+ *)
 
-(* This is a part of Pascal porting of ffmpeg.  Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
-For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
-in the source codes *)
+(* This is a part of Pascal porting of ffmpeg.
+ * Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+ * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+ * in the source codes *)
+
+// Min. version: 51.16.0
+// Max. version: 51.49.0, Revision: 11352
 
 unit avcodec;
 
 {$IFDEF FPC}
-  {$IFDEF LINUX}
-  {$LINKLIB libavutil}
-  {$LINKLIB libavcodec}
-  {$ENDIF}
-	
-  {$MODE DELPHI } (* CAT *)
-  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+  {$MODE DELPHI }
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* C/C++-compatible record packing *)
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
 interface
 
 uses
-  avutil, rational, opt;  // CAT
+  avutil,
+  rational,
+  opt,
+  UConfig;
 
-{$I version.inc}
+const
+  (* Max. supported version by this header *)
+  LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 49;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
+                           (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
+                           (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
+
+(* Check if linked version is supported *)
+{$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
+  {$MESSAGE Warn 'Linked version of libavcodec may be unsupported!'}
+{$IFEND}
 
 const
   AV_NOPTS_VALUE: int64   = $8000000000000000;
   AV_TIME_BASE            = 1000000;
   AV_TIME_BASE_Q          : TAVRational = (num:1; den:AV_TIME_BASE); (* added by CAT *)
 
+(**
+ * Identifies the syntax and semantics of the bitstream.
+ * The principle is roughly:
+ * Two decoders with the same ID can decode the same streams.
+ * Two encoders with the same ID can encode compatible streams.
+ * There may be slight deviations from the principle due to implementation
+ * details.
+ *
+ * If you add a codec ID to this list, add it so that
+ * 1. no value of a existing codec ID changes (that would break ABI),
+ * 2. it is as close as possible to similar codecs.
+ *)
 type
   TCodecID = (
-    CODEC_ID_NONE, CODEC_ID_MPEG1VIDEO,
-    CODEC_ID_MPEG2VIDEO, //* prefered ID for MPEG Video 1 or 2 decoding */
-    CODEC_ID_MPEG2VIDEO_XVMC, CODEC_ID_H261, CODEC_ID_H263, CODEC_ID_RV10,
-    CODEC_ID_RV20, CODEC_ID_MJPEG, CODEC_ID_MJPEGB, CODEC_ID_LJPEG,
-    CODEC_ID_SP5X, CODEC_ID_JPEGLS, CODEC_ID_MPEG4, CODEC_ID_RAWVIDEO,
-    CODEC_ID_MSMPEG4V1, CODEC_ID_MSMPEG4V2, CODEC_ID_MSMPEG4V3,
-    CODEC_ID_WMV1, CODEC_ID_WMV2, CODEC_ID_H263P,
-    CODEC_ID_H263I, CODEC_ID_FLV1, CODEC_ID_SVQ1, CODEC_ID_SVQ3,
-    CODEC_ID_DVVIDEO, CODEC_ID_HUFFYUV, CODEC_ID_CYUV, CODEC_ID_H264,
-    CODEC_ID_INDEO3, CODEC_ID_VP3, CODEC_ID_THEORA, CODEC_ID_ASV1,
-    CODEC_ID_ASV2, CODEC_ID_FFV1, CODEC_ID_4XM, CODEC_ID_VCR1,
-    CODEC_ID_CLJR, CODEC_ID_MDEC, CODEC_ID_ROQ, CODEC_ID_INTERPLAY_VIDEO,
-    CODEC_ID_XAN_WC3, CODEC_ID_XAN_WC4, CODEC_ID_RPZA, CODEC_ID_CINEPAK,
-    CODEC_ID_WS_VQA, CODEC_ID_MSRLE, CODEC_ID_MSVIDEO1, CODEC_ID_IDCIN,
-    CODEC_ID_8BPS, CODEC_ID_SMC, CODEC_ID_FLIC, CODEC_ID_TRUEMOTION1,
-    CODEC_ID_VMDVIDEO, CODEC_ID_MSZH, CODEC_ID_ZLIB, CODEC_ID_QTRLE,
-    CODEC_ID_SNOW, CODEC_ID_TSCC, CODEC_ID_ULTI, CODEC_ID_QDRAW,
-    CODEC_ID_VIXL, CODEC_ID_QPEG, CODEC_ID_XVID, CODEC_ID_PNG,
-    CODEC_ID_PPM, CODEC_ID_PBM, CODEC_ID_PGM, CODEC_ID_PGMYUV,
-    CODEC_ID_PAM, CODEC_ID_FFVHUFF, CODEC_ID_RV30, CODEC_ID_RV40,
-    CODEC_ID_VC1, CODEC_ID_WMV3, CODEC_ID_LOCO, CODEC_ID_WNV1,
-    CODEC_ID_AASC, CODEC_ID_INDEO2, CODEC_ID_FRAPS, CODEC_ID_TRUEMOTION2,
-    CODEC_ID_BMP, CODEC_ID_CSCD, CODEC_ID_MMVIDEO, CODEC_ID_ZMBV,
-    CODEC_ID_AVS, CODEC_ID_SMACKVIDEO, CODEC_ID_NUV, CODEC_ID_KMVC,
-    CODEC_ID_FLASHSV, CODEC_ID_CAVS, CODEC_ID_JPEG2000, CODEC_ID_VMNC,
-    CODEC_ID_VP5, CODEC_ID_VP6, CODEC_ID_VP6F,
+    CODEC_ID_NONE,
+    CODEC_ID_MPEG1VIDEO,
+    CODEC_ID_MPEG2VIDEO, //* prefered ID for MPEG Video 1/2 decoding */
+    CODEC_ID_MPEG2VIDEO_XVMC,
+    CODEC_ID_H261,
+    CODEC_ID_H263,
+    CODEC_ID_RV10,
+    CODEC_ID_RV20,
+    CODEC_ID_MJPEG,
+    CODEC_ID_MJPEGB,
+    CODEC_ID_LJPEG,
+    CODEC_ID_SP5X,
+    CODEC_ID_JPEGLS,
+    CODEC_ID_MPEG4,
+    CODEC_ID_RAWVIDEO,
+    CODEC_ID_MSMPEG4V1,
+    CODEC_ID_MSMPEG4V2,
+    CODEC_ID_MSMPEG4V3,
+    CODEC_ID_WMV1,
+    CODEC_ID_WMV2,
+    CODEC_ID_H263P,
+    CODEC_ID_H263I,
+    CODEC_ID_FLV1,
+    CODEC_ID_SVQ1,
+    CODEC_ID_SVQ3,
+    CODEC_ID_DVVIDEO,
+    CODEC_ID_HUFFYUV,
+    CODEC_ID_CYUV,
+    CODEC_ID_H264,
+    CODEC_ID_INDEO3,
+    CODEC_ID_VP3,
+    CODEC_ID_THEORA,
+    CODEC_ID_ASV1,
+    CODEC_ID_ASV2,
+    CODEC_ID_FFV1,
+    CODEC_ID_4XM,
+    CODEC_ID_VCR1,
+    CODEC_ID_CLJR,
+    CODEC_ID_MDEC,
+    CODEC_ID_ROQ,
+    CODEC_ID_INTERPLAY_VIDEO,
+    CODEC_ID_XAN_WC3,
+    CODEC_ID_XAN_WC4,
+    CODEC_ID_RPZA,
+    CODEC_ID_CINEPAK,
+    CODEC_ID_WS_VQA,
+    CODEC_ID_MSRLE,
+    CODEC_ID_MSVIDEO1,
+    CODEC_ID_IDCIN,
+    CODEC_ID_8BPS,
+    CODEC_ID_SMC,
+    CODEC_ID_FLIC,
+    CODEC_ID_TRUEMOTION1,
+    CODEC_ID_VMDVIDEO,
+    CODEC_ID_MSZH,
+    CODEC_ID_ZLIB,
+    CODEC_ID_QTRLE,
+    CODEC_ID_SNOW,
+    CODEC_ID_TSCC,
+    CODEC_ID_ULTI,
+    CODEC_ID_QDRAW,
+    CODEC_ID_VIXL,
+    CODEC_ID_QPEG,
+    CODEC_ID_XVID,
+    CODEC_ID_PNG,
+    CODEC_ID_PPM,
+    CODEC_ID_PBM,
+    CODEC_ID_PGM,
+    CODEC_ID_PGMYUV,
+    CODEC_ID_PAM,
+    CODEC_ID_FFVHUFF,
+    CODEC_ID_RV30,
+    CODEC_ID_RV40,
+    CODEC_ID_VC1,
+    CODEC_ID_WMV3,
+    CODEC_ID_LOCO,
+    CODEC_ID_WNV1,
+    CODEC_ID_AASC,
+    CODEC_ID_INDEO2,
+    CODEC_ID_FRAPS,
+    CODEC_ID_TRUEMOTION2,
+    CODEC_ID_BMP,
+    CODEC_ID_CSCD,
+    CODEC_ID_MMVIDEO,
+    CODEC_ID_ZMBV,
+    CODEC_ID_AVS,
+    CODEC_ID_SMACKVIDEO,
+    CODEC_ID_NUV,
+    CODEC_ID_KMVC,
+    CODEC_ID_FLASHSV,
+    CODEC_ID_CAVS,
+    CODEC_ID_JPEG2000,
+    CODEC_ID_VMNC,
+    CODEC_ID_VP5,
+    CODEC_ID_VP6,
+    CODEC_ID_VP6F,
+    CODEC_ID_TARGA,
+    CODEC_ID_DSICINVIDEO,
+    CODEC_ID_TIERTEXSEQVIDEO,
+    CODEC_ID_TIFF,
+    CODEC_ID_GIF,
+    CODEC_ID_FFH264,
+    CODEC_ID_DXA,
+    CODEC_ID_DNXHD,
+    CODEC_ID_THP,
+    CODEC_ID_SGI,
+    CODEC_ID_C93,
+    CODEC_ID_BETHSOFTVID,
+    CODEC_ID_PTX,
+    CODEC_ID_TXD,
+    CODEC_ID_VP6A,
+    CODEC_ID_AMV,
+    CODEC_ID_VB,
+    CODEC_ID_PCX,
+    CODEC_ID_SUNRAST,
 
-    //* various pcm "codecs" */
-    CODEC_ID_PCM_S16LE= $10000,  CODEC_ID_PCM_S16BE, CODEC_ID_PCM_U16LE,
-    CODEC_ID_PCM_U16BE, CODEC_ID_PCM_S8, CODEC_ID_PCM_U8, CODEC_ID_PCM_MULAW,
-    CODEC_ID_PCM_ALAW, CODEC_ID_PCM_S32LE, CODEC_ID_PCM_S32BE, CODEC_ID_PCM_U32LE,
-    CODEC_ID_PCM_U32BE, CODEC_ID_PCM_S24LE, CODEC_ID_PCM_S24BE, CODEC_ID_PCM_U24LE,
-    CODEC_ID_PCM_U24BE, CODEC_ID_PCM_S24DAUD,
-    //* various adpcm codecs */
-    CODEC_ID_ADPCM_IMA_QT= $11000, CODEC_ID_ADPCM_IMA_WAV, CODEC_ID_ADPCM_IMA_DK3,
-    CODEC_ID_ADPCM_IMA_DK4, CODEC_ID_ADPCM_IMA_WS, CODEC_ID_ADPCM_IMA_SMJPEG,
-    CODEC_ID_ADPCM_MS, CODEC_ID_ADPCM_4XM, CODEC_ID_ADPCM_XA, CODEC_ID_ADPCM_ADX,
-    CODEC_ID_ADPCM_EA, CODEC_ID_ADPCM_G726, CODEC_ID_ADPCM_CT, CODEC_ID_ADPCM_SWF,
-    CODEC_ID_ADPCM_YAMAHA, CODEC_ID_ADPCM_SBPRO_4, CODEC_ID_ADPCM_SBPRO_3,
+    //* various PCM "codecs" */
+    CODEC_ID_PCM_S16LE= $10000,
+    CODEC_ID_PCM_S16BE,
+    CODEC_ID_PCM_U16LE,
+    CODEC_ID_PCM_U16BE,
+    CODEC_ID_PCM_S8,
+    CODEC_ID_PCM_U8,
+    CODEC_ID_PCM_MULAW,
+    CODEC_ID_PCM_ALAW,
+    CODEC_ID_PCM_S32LE,
+    CODEC_ID_PCM_S32BE,
+    CODEC_ID_PCM_U32LE,
+    CODEC_ID_PCM_U32BE,
+    CODEC_ID_PCM_S24LE,
+    CODEC_ID_PCM_S24BE,
+    CODEC_ID_PCM_U24LE,
+    CODEC_ID_PCM_U24BE,
+    CODEC_ID_PCM_S24DAUD,
+    CODEC_ID_PCM_ZORK,
+    CODEC_ID_PCM_S16LE_PLANAR,
+
+    //* various ADPCM codecs */
+    CODEC_ID_ADPCM_IMA_QT= $11000,
+    CODEC_ID_ADPCM_IMA_WAV,
+    CODEC_ID_ADPCM_IMA_DK3,
+    CODEC_ID_ADPCM_IMA_DK4,
+    CODEC_ID_ADPCM_IMA_WS,
+    CODEC_ID_ADPCM_IMA_SMJPEG,
+    CODEC_ID_ADPCM_MS,
+    CODEC_ID_ADPCM_4XM,
+    CODEC_ID_ADPCM_XA,
+    CODEC_ID_ADPCM_ADX,
+    CODEC_ID_ADPCM_EA,
+    CODEC_ID_ADPCM_G726,
+    CODEC_ID_ADPCM_CT,
+    CODEC_ID_ADPCM_SWF,
+    CODEC_ID_ADPCM_YAMAHA,
+    CODEC_ID_ADPCM_SBPRO_4,
+    CODEC_ID_ADPCM_SBPRO_3,
     CODEC_ID_ADPCM_SBPRO_2,
-    //* AMR */
-    CODEC_ID_AMR_NB= $12000, CODEC_ID_AMR_WB,
-    //* RealAudio codecs*/
-    CODEC_ID_RA_144= $13000, CODEC_ID_RA_288,
-    //* various DPCM codecs */
-    CODEC_ID_ROQ_DPCM= $14000, CODEC_ID_INTERPLAY_DPCM, CODEC_ID_XAN_DPCM,
-    CODEC_ID_SOL_DPCM, CODEC_ID_MP2= $15000,
-    CODEC_ID_MP3, //* prefered ID for MPEG Audio layer 1, 2 or3 decoding */
-    CODEC_ID_AAC, CODEC_ID_MPEG4AAC, CODEC_ID_AC3, CODEC_ID_DTS, CODEC_ID_VORBIS,
-    CODEC_ID_DVAUDIO, CODEC_ID_WMAV1, CODEC_ID_WMAV2, CODEC_ID_MACE3,
-    CODEC_ID_MACE6, CODEC_ID_VMDAUDIO, CODEC_ID_SONIC, CODEC_ID_SONIC_LS,
-    CODEC_ID_FLAC, CODEC_ID_MP3ADU, CODEC_ID_MP3ON4, CODEC_ID_SHORTEN,
-    CODEC_ID_ALAC, CODEC_ID_WESTWOOD_SND1, CODEC_ID_GSM, CODEC_ID_QDM2,
-    CODEC_ID_COOK, CODEC_ID_TRUESPEECH, CODEC_ID_TTA, CODEC_ID_SMACKAUDIO,
-    CODEC_ID_QCELP, CODEC_ID_WAVPACK,
-    //* subtitle codecs */
-    CODEC_ID_DVD_SUBTITLE= $17000, CODEC_ID_DVB_SUBTITLE,
+    CODEC_ID_ADPCM_THP,
+    CODEC_ID_ADPCM_IMA_AMV,
+    CODEC_ID_ADPCM_EA_R1,
+    CODEC_ID_ADPCM_EA_R3,
+    CODEC_ID_ADPCM_EA_R2,
+    CODEC_ID_ADPCM_IMA_EA_SEAD,
+    CODEC_ID_ADPCM_IMA_EA_EACS,
+    CODEC_ID_ADPCM_EA_XAS,
 
-    CODEC_ID_MPEG2TS= $20000 //* _FAKE_ codec to indicate a raw MPEG2 transport
-                              //  stream (only used by libavformat) */
+    //* AMR */
+    CODEC_ID_AMR_NB= $12000,
+    CODEC_ID_AMR_WB,
+
+    //* RealAudio codecs*/
+    CODEC_ID_RA_144= $13000,
+    CODEC_ID_RA_288,
+
+    //* various DPCM codecs */
+    CODEC_ID_ROQ_DPCM= $14000,
+    CODEC_ID_INTERPLAY_DPCM,
+    CODEC_ID_XAN_DPCM,
+    CODEC_ID_SOL_DPCM,
+
+    CODEC_ID_MP2= $15000,
+    CODEC_ID_MP3, ///< preferred ID for decoding MPEG audio layer 1, 2 or 3
+    CODEC_ID_AAC,
+    {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+    _CODEC_ID_MPEG4AAC, // will be redefined to CODEC_ID_AAC below
+    {$IFEND}
+    CODEC_ID_AC3,
+    CODEC_ID_DTS,
+    CODEC_ID_VORBIS,
+    CODEC_ID_DVAUDIO,
+    CODEC_ID_WMAV1,
+    CODEC_ID_WMAV2,
+    CODEC_ID_MACE3,
+    CODEC_ID_MACE6,
+    CODEC_ID_VMDAUDIO,
+    CODEC_ID_SONIC,
+    CODEC_ID_SONIC_LS,
+    CODEC_ID_FLAC,
+    CODEC_ID_MP3ADU,
+    CODEC_ID_MP3ON4,
+    CODEC_ID_SHORTEN,
+    CODEC_ID_ALAC,
+    CODEC_ID_WESTWOOD_SND1,
+    CODEC_ID_GSM, ///< as in Berlin toast format
+    CODEC_ID_QDM2,
+    CODEC_ID_COOK,
+    CODEC_ID_TRUESPEECH,
+    CODEC_ID_TTA,
+    CODEC_ID_SMACKAUDIO,
+    CODEC_ID_QCELP,
+    CODEC_ID_WAVPACK,
+    CODEC_ID_DSICINAUDIO,
+    CODEC_ID_IMC,
+    CODEC_ID_MUSEPACK7,
+    CODEC_ID_MLP,
+    CODEC_ID_GSM_MS, { as found in WAV }
+    CODEC_ID_ATRAC3,
+    CODEC_ID_VOXWARE,
+    CODEC_ID_APE,
+    CODEC_ID_NELLYMOSER,
+    CODEC_ID_MUSEPACK8,
+
+    //* subtitle codecs */
+    CODEC_ID_DVD_SUBTITLE= $17000,
+    CODEC_ID_DVB_SUBTITLE,
+    CODEC_ID_TEXT,  ///< raw UTF-8 text
+    CODEC_ID_XSUB,
+    CODEC_ID_SSA,
+
+    CODEC_ID_MPEG2TS= $20000, {*< _FAKE_ codec to indicate a raw MPEG-2 TS
+                              * stream (only used by libavformat) *}
+    __CODEC_ID_4BYTE = $FFFFF  // ensure 4-byte enum
   );
 
-//* CODEC_ID_MP3LAME is absolete */
+{* CODEC_ID_MP3LAME is obsolete *}
 const
+  {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
   CODEC_ID_MP3LAME = CODEC_ID_MP3;
-
-  AVPALETTE_SIZE = 1024;
-  AVPALETTE_COUNT = 256;
+  CODEC_ID_MPEG4AAC = CODEC_ID_AAC;
+  {$IFEND}
 
 type
   TCodecType = (
@@ -123,62 +322,67 @@ type
     CODEC_TYPE_AUDIO,
     CODEC_TYPE_DATA,
     CODEC_TYPE_SUBTITLE,
-	CODEC_TYPE_NB    (* CAT#3 *)
+	  CODEC_TYPE_NB
   );
 
-//* currently unused, may be used if 24/32 bits samples ever supported */
-//* all in native endian */
+{**
+ * currently unused, may be used if 24/32 bits samples ever supported */
+ * all in native endian
+ *}
+type
   TSampleFormat = (
     SAMPLE_FMT_NONE = -1,
     SAMPLE_FMT_U8,              ///< unsigned 8 bits
     SAMPLE_FMT_S16,             ///< signed 16 bits
     SAMPLE_FMT_S24,             ///< signed 24 bits
     SAMPLE_FMT_S32,             ///< signed 32 bits
-    SAMPLE_FMT_FLT             ///< float
+    SAMPLE_FMT_FLT              ///< float
   );
 
 const
-//* in bytes */
+  {* in bytes *}
   AVCODEC_MAX_AUDIO_FRAME_SIZE = 192000; // 1 second of 48khz 32bit audio
 
-(**
+{**
  * Required number of additionally allocated bytes at the end of the input bitstream for decoding.
- * this is mainly needed because some optimized bitstream readers read
- * 32 or 64 bit at once and could read over the end<br>
- * Note, if the first 23 bits of the additional bytes are not 0 then damaged
- * MPEG bitstreams could cause overread and segfault
- *)
+ * This is mainly needed because some optimized bitstream readers read
+ * 32 or 64 bit at once and could read over the end.<br>
+ * Note: If the first 23 bits of the additional bytes are not 0, then damaged
+ * MPEG bitstreams could cause overread and segfault.
+ *}
   FF_INPUT_BUFFER_PADDING_SIZE = 8;
 
-(**
+{**
  * minimum encoding buffer size.
- * used to avoid some checks during header writing
- *)
+ * Used to avoid some checks during header writing.
+ *}
   FF_MIN_BUFFER_SIZE = 16384;
 
 type
-//* motion estimation type, EPZS by default */
+{*
+ * motion estimation type.
+ *}
   TMotion_Est_ID = (
-    ME_ZERO = 1,
+    ME_ZERO = 1,  ///< no search, that is use 0,0 vector whenever one is needed
     ME_FULL,
     ME_LOG,
     ME_PHODS,
-    ME_EPZS,
-    ME_X1,
-    ME_HEX,
-    ME_UMH,
-    ME_ITER
+    ME_EPZS,      ///< enhanced predictive zonal search
+    ME_X1,        ///< reserved for experiments
+    ME_HEX,       ///< hexagon based search
+    ME_UMH,       ///< uneven multi-hexagon search
+    ME_ITER       ///< iterative search
   );
 
   TAVDiscard = (
-//we leave some space between them for extensions (drop some keyframes for intra only or drop just some bidir frames)
-    AVDISCARD_NONE   = -16, ///< discard nothing
+    {* We leave some space between them for extensions (drop some
+     * keyframes for intra-only or drop just some bidir frames). *}
+    AVDISCARD_NONE   =-16, ///< discard nothing
     AVDISCARD_DEFAULT=  0, ///< discard useless packets like 0 size packets in avi
     AVDISCARD_NONREF =  8, ///< discard all non reference
     AVDISCARD_BIDIR  = 16, ///< discard all bidirectional frames
     AVDISCARD_NONKEY = 32, ///< discard all frames except keyframes
-    AVDISCARD_ALL    = 48, ///< discard all
-    AVDISCARD_FUCK = $FFFFFF
+    AVDISCARD_ALL    = 48  ///< discard all
   );
 
   PRcOverride = ^TRcOverride;
@@ -192,27 +396,30 @@ type
 const
   FF_MAX_B_FRAMES = 16;
 
-(* encoding support
-   these flags can be passed in AVCodecContext.flags before initing
-   Note: not everything is supported yet.
-*)
+{* encoding support
+   These flags can be passed in AVCodecContext.flags before initialization.
+   Note: Not everything is supported yet.
+*}
 
-  CODEC_FLAG_QSCALE = $0002;  ///< use fixed qscale
-  CODEC_FLAG_4MV    = $0004;  ///< 4 MV per MB allowed / Advanced prediction for H263
-  CODEC_FLAG_QPEL   = $0010;  ///< use qpel MC
-  CODEC_FLAG_GMC    = $0020;  ///< use GMC
-  CODEC_FLAG_MV0    = $0040;  ///< always try a MB with MV=<0,0>
-  CODEC_FLAG_PART   = $0080;  ///< use data partitioning
-//* parent program gurantees that the input for b-frame containing streams is not written to
-//   for at least s->max_b_frames+1 frames, if this is not set than the input will be copied */
-  CODEC_FLAG_INPUT_PRESERVED = $0100;
-  CODEC_FLAG_PASS1 = $0200;   ///< use internal 2pass ratecontrol in first  pass mode
-  CODEC_FLAG_PASS2 = $0400;   ///< use internal 2pass ratecontrol in second pass mode
-  CODEC_FLAG_EXTERN_HUFF = $1000; ///< use external huffman table (for mjpeg)
-  CODEC_FLAG_GRAY  = $2000;   ///< only decode/encode grayscale
-  CODEC_FLAG_EMU_EDGE = $4000; ///< don't draw edges
-  CODEC_FLAG_PSNR           = $8000; ///< error[?] variables will be set during encoding
-  CODEC_FLAG_TRUNCATED  = $00010000; //** input bitstream might be truncated at a random location instead
+  CODEC_FLAG_QSCALE = $0002;  ///< Use fixed qscale.
+  CODEC_FLAG_4MV    = $0004;  ///< 4 MV per MB allowed / advanced prediction for H263.
+  CODEC_FLAG_QPEL   = $0010;  ///< use qpel MC.
+  CODEC_FLAG_GMC    = $0020;  ///< use GMC.
+  CODEC_FLAG_MV0    = $0040;  ///< always try a MB with MV=<0,0>.
+  CODEC_FLAG_PART   = $0080;  ///< Use data partitioning.
+  {**
+   * The parent program guarantees that the input for B-frames containing
+   * streams is not written to for at least s->max_b_frames+1 frames, if
+   * this is not set the input will be copied.
+   *}
+  CODEC_FLAG_INPUT_PRESERVED    = $0100;
+  CODEC_FLAG_PASS1              = $0200; ///< use internal 2pass ratecontrol in first  pass mode
+  CODEC_FLAG_PASS2              = $0400; ///< use internal 2pass ratecontrol in second pass mode
+  CODEC_FLAG_EXTERN_HUFF        = $1000; ///< use external huffman table (for mjpeg)
+  CODEC_FLAG_GRAY               = $2000; ///< only decode/encode grayscale
+  CODEC_FLAG_EMU_EDGE           = $4000; ///< don't draw edges
+  CODEC_FLAG_PSNR               = $8000; ///< error[?] variables will be set during encoding
+  CODEC_FLAG_TRUNCATED      = $00010000; //** input bitstream might be truncated at a random location instead
                                    //         of only at frame boundaries */
   CODEC_FLAG_NORMALIZE_AQP  = $00020000; ///< normalize adaptive quantization
   CODEC_FLAG_INTERLACED_DCT = $00040000; ///< use interlaced dct
@@ -221,8 +428,10 @@ const
   CODEC_FLAG_TRELLIS_QUANT  = $00200000; ///< use trellis quantization
   CODEC_FLAG_GLOBAL_HEADER  = $00400000; ///< place global headers in extradata instead of every keyframe
   CODEC_FLAG_BITEXACT       = $00800000; ///< use only bitexact stuff (except (i)dct)
-//* Fx : Flag for h263+ extra options */
+  {* Fx : Flag for h263+ extra options *}
+  {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
   CODEC_FLAG_H263P_AIC      = $01000000; ///< H263 Advanced intra coding / MPEG4 AC prediction (remove this)
+  {$IFEND}
   CODEC_FLAG_AC_PRED        = $01000000; ///< H263 Advanced intra coding / MPEG4 AC prediction
   CODEC_FLAG_H263P_UMV      = $02000000; ///< Unlimited motion vector
   CODEC_FLAG_CBP_RD         = $04000000; ///< use rate distortion optimization for cbp
@@ -247,36 +456,42 @@ const
   CODEC_FLAG2_BRDO          = $00000400; ///< b-frame rate-distortion optimization
   CODEC_FLAG2_INTRA_VLC     = $00000800; ///< use MPEG-2 intra VLC table
   CODEC_FLAG2_MEMC_ONLY     = $00001000; ///< only do ME/MC (I frames -> ref, P frame -> ME+MC)
+  CODEC_FLAG2_DROP_FRAME_TIMECODE = $00002000; ///< timecode is in drop frame format.
+  CODEC_FLAG2_SKIP_RD       = $00004000; ///< RD optimal MB level residual skipping
+  CODEC_FLAG2_CHUNKS        = $00008000; ///< Input bitstream might be truncated at a packet boundaries instead of only at frame boundaries.
+  CODEC_FLAG2_NON_LINEAR_QUANT = $00010000; ///< Use MPEG-2 nonlinear quantizer.
 
 (* Unsupported options :
  *              Syntax Arithmetic coding (SAC)
  *              Reference Picture Selection
- *              Independant Segment Decoding */
-/* /Fx */
-/* codec capabilities *)
+ *              Independant Segment Decoding *)
+(* /Fx *)
+(* codec capabilities *)
 
 const
-  CODEC_CAP_DRAW_HORIZ_BAND = $001; ///< decoder can use draw_horiz_band callback
-(**
- * Codec uses get_buffer() for allocating buffers.
- * direct rendering method 1 *)
-  CODEC_CAP_DR1             = $002;
-(* if 'parse_only' field is true, then avcodec_parse_frame() can be   used *)
-  CODEC_CAP_PARSE_ONLY      = $004;
-  CODEC_CAP_TRUNCATED       = $008;
-//* codec can export data for HW decoding (XvMC) */
-  CODEC_CAP_HWACCEL         = $010;
-
-(**
- * codec has a non zero delay and needs to be feeded with NULL at the end to get the delayed data.
- * if this is not set, the codec is guranteed to never be feeded with NULL data *)
+  CODEC_CAP_DRAW_HORIZ_BAND = $0001; ///< decoder can use draw_horiz_band callback
+  (**
+   * Codec uses get_buffer() for allocating buffers.
+   * direct rendering method 1
+   *)
+  CODEC_CAP_DR1             = $0002;
+  (* if 'parse_only' field is true, then avcodec_parse_frame() can be used *)
+  CODEC_CAP_PARSE_ONLY      = $0004;
+  CODEC_CAP_TRUNCATED       = $0008;
+  (* codec can export data for HW decoding (XvMC) *)
+  CODEC_CAP_HWACCEL         = $0010;
+  (**
+   * codec has a non zero delay and needs to be feeded with NULL at the end to get the delayed data.
+   * if this is not set, the codec is guranteed to never be feeded with NULL data
+   *)
   CODEC_CAP_DELAY           = $0020;
-(**
- * Codec can be fed a final frame with a smaller size.
- * This can be used to prevent truncation of the last audio samples. *)
+  (**
+   * Codec can be fed a final frame with a smaller size.
+   * This can be used to prevent truncation of the last audio samples.
+   *)
   CODEC_CAP_SMALL_LAST_FRAME = $0040;
 
-//the following defines may change, don't expect compatibility if you use them
+   //the following defines may change, don't expect compatibility if you use them
    MB_TYPE_INTRA4x4   = $001;
    MB_TYPE_INTRA16x16 = $002; //FIXME h264 specific
    MB_TYPE_INTRA_PCM  = $004; //FIXME h264 specific
@@ -298,45 +513,48 @@ const
    MB_TYPE_L0L1       = (MB_TYPE_L0   or MB_TYPE_L1);
    MB_TYPE_QUANT      = $0010000;
    MB_TYPE_CBP        = $0020000;
-//Note bits 24-31 are reserved for codec specific use (h264 ref0, mpeg1 0mv, ...)
+   //Note bits 24-31 are reserved for codec specific use (h264 ref0, mpeg1 0mv, ...)
 
 type
 (**
  * Pan Scan area.
- * this specifies the area which should be displayed. Note there may be multiple such areas for one frame *)
+ * This specifies the area which should be displayed.
+ * Note there may be multiple such areas for one frame.
+ *)
   PAVPanScan = ^TAVPanScan;
   TAVPanScan = record {24}
     (*** id.
      * - encoding: set by user.
-     * - decoding: set by lavc     *)
+     * - decoding: set by libavcodec. *)
     id: integer;
 
     (*** width and height in 1/16 pel
      * - encoding: set by user.
-     * - decoding: set by lavc     *)
+     * - decoding: set by libavcodec. *)
     width: integer;
     height: integer;
 
     (*** position of the top left corner in 1/16 pel for up to 3 fields/frames.
      * - encoding: set by user.
-     * - decoding: set by lavc     *)
+     * - decoding: set by libavcodec. *)
     position: array [0..2] of array [0..1] of smallint;
   end;
 
 const
   FF_QSCALE_TYPE_MPEG1	= 0;
   FF_QSCALE_TYPE_MPEG2	= 1;
+  FF_QSCALE_TYPE_H264   = 2;
 
   FF_BUFFER_TYPE_INTERNAL = 1;
   FF_BUFFER_TYPE_USER     = 2; ///< Direct rendering buffers (image is (de)allocated by user)
   FF_BUFFER_TYPE_SHARED   = 4; ///< buffer from somewhere else, don't dealloc image (data/base), all other tables are not shared
-  FF_BUFFER_TYPE_COPY     = 8; ///< just a (modified) copy of some other buffer, don't dealloc anything
+  FF_BUFFER_TYPE_COPY     = 8; ///< just a (modified) copy of some other buffer, don't dealloc anything.
 
 
-  FF_I_TYPE = 1; // Intra
-  FF_P_TYPE = 2; // Predicted
-  FF_B_TYPE = 3; // Bi-dir predicted
-  FF_S_TYPE = 4; // S(GMC)-VOP MPEG4
+  FF_I_TYPE  = 1; // Intra
+  FF_P_TYPE  = 2; // Predicted
+  FF_B_TYPE  = 3; // Bi-dir predicted
+  FF_S_TYPE  = 4; // S(GMC)-VOP MPEG4
   FF_SI_TYPE = 5;
   FF_SP_TYPE = 6;
 
@@ -346,41 +564,103 @@ const
   FF_BUFFER_HINTS_REUSABLE = $08; // Codec will reuse the buffer (update)
 
 type
-  (*** Audio Video Frame. *)
+  {**
+   * Audio Video Frame.
+   * New fields can be added to the end of FF_COMMON_FRAME with minor version
+   * bumps.
+   * Removal, reordering and changes to existing fields require a major
+   * version bump. No fields should be added into AVFrame before or after
+   * FF_COMMON_FRAME!
+   * sizeof(AVFrame) must not be used outside libav*.
+   *}
   PAVFrame = ^TAVFrame;
   TAVFrame = record {200}
-    (*** pointer to the picture planes.
-     * this might be different from the first allocated byte *)
+    (**
+     * pointer to the picture planes.
+     * This might be different from the first allocated byte
+     * - encoding:
+     * - decoding:
+     *)
     data: array [0..3] of pbyte;
     linesize: array [0..3] of integer;
-    (*** pointer to the first allocated byte of the picture. can be used in get_buffer/release_buffer
-     * this isn't used by lavc unless the default get/release_buffer() is used*)
+    (**
+     * pointer to the first allocated byte of the picture. Can be used in get_buffer/release_buffer.
+     * This isn't used by libavcodec unless the default get/release_buffer() is used.
+     * - encoding:
+     * - decoding:
+     *)
     base: array [0..3] of pbyte;
-    (*** 1 -> keyframe, 0-> not *)
+    (**
+     * 1 -> keyframe, 0-> not
+     * - encoding: Set by libavcodec.
+     * - decoding: Set by libavcodec.
+     *)
     key_frame: integer;
-    (*** picture type of the frame, see ?_TYPE below.*)
+    (**
+     * Picture type of the frame, see ?_TYPE below.
+     * - encoding: Set by libavcodec. for coded_picture (and set by user for input).
+     * - decoding: Set by libavcodec.
+     *)
     pict_type: integer;
-    (*** presentation timestamp in time_base units (time when frame should be shown to user)
-     * if AV_NOPTS_VALUE then frame_rate = 1/time_base will be assumed*)
+    (**
+     * presentation timestamp in time_base units (time when frame should be shown to user)
+     * If AV_NOPTS_VALUE then frame_rate = 1/time_base will be assumed.
+     * - encoding: MUST be set by user.
+     * - decoding: Set by libavcodec.
+     *)
     pts: int64;
-    (*** picture number in bitstream order.*)
+    (**\
+     * picture number in bitstream order
+     * - encoding: set by
+     * - decoding: Set by libavcodec.
+     *)
     coded_picture_number: integer;
-    (*** picture number in display order.*)
+    (**
+     * picture number in display order
+     * - encoding: set by
+     * - decoding: Set by libavcodec.
+     *)
     display_picture_number: integer;
-    (*** quality (between 1 (good) and FF_LAMBDA_MAX (bad)) *)
+    (**
+     * quality (between 1 (good) and FF_LAMBDA_MAX (bad))
+     * - encoding: Set by libavcodec. for coded_picture (and set by user for input).
+     * - decoding: Set by libavcodec.
+     *)
     quality: integer;
-    (*** buffer age (1->was last buffer and dint change, 2->..., ...).*)
+    (**
+     * buffer age (1->was last buffer and dint change, 2->..., ...).
+     * Set to INT_MAX if the buffer has not been used yet.
+     * - encoding: unused
+     * - decoding: MUST be set by get_buffer().
+     *)
     age: integer;
-    (*** is this picture used as reference*)
+    (**
+     * is this picture used as reference
+     * - encoding: unused
+     * - decoding: Set by libavcodec. (before get_buffer() call)).
+     *)
     reference: integer;
-    (*** QP table*)
-    qscale_table: pchar;
-    (*** QP store stride*)
+    (**
+     * QP table
+     * - encoding: unused
+     * - decoding: Set by libavcodec.
+     *)
+    qscale_table: PShortint;
+    (**
+     * QP store stride
+     * - encoding: unused
+     * - decoding: Set by libavcodec.
+     *)
     qstride: integer;
-    (*** mbskip_table[mb]>=1 if MB didnt change*)
+    (**
+     * mbskip_table[mb]>=1 if MB didn't change
+     * stride= mb_width = (width+15)>>4
+     * - encoding: unused
+     * - decoding: Set by libavcodec.
+     *)
     mbskip_table: pbyte;
     (**
-     * Motion vector table.
+     * motion vector table
      * @code
      * example:
      * int mv_sample_log2= 4 - motion_subsample_log2;
@@ -388,45 +668,105 @@ type
      * int mv_stride= (mb_width << mv_sample_log2) + 1;
      * motion_val[direction][x + y*mv_stride][0->mv_x, 1->mv_y];
      * @endcode
-     * - encoding: set by user
-     * - decoding: set by lavc     *)
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
+    //int16_t (*motion_val[2])[2];
     motion_val: array [0..1] of pointer;
-    (*** Macroblock type table
-     * mb_type_base + mb_width + 2 *)
+    (**
+     * macroblock type table
+     * mb_type_base + mb_width + 2
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
     mb_type: PCardinal;
-    (*** log2 of the size of the block which a single vector in motion_val represents:
-     * (4->16x16, 3->8x8, 2-> 4x4, 1-> 2x2)*)
+    (**
+     * log2 of the size of the block which a single vector in motion_val represents:
+     * (4->16x16, 3->8x8, 2-> 4x4, 1-> 2x2)
+     * - encoding: unused
+     * - decoding: Set by libavcodec.
+     *)
     motion_subsample_log2: byte;
-    (*** for some private data of the user*)
+    (**
+     * for some private data of the user
+     * - encoding: unused
+     * - decoding: Set by user.
+     *)
     opaque: pointer;
-    (*** error*)
-    error: array [0..3] of int64;
-    (*** type of the buffer (to keep track of who has to dealloc data[*])
-     * Note: user allocated (direct rendering) & internal buffers can not coexist currently*)
-    _type: integer;
-    (*** when decoding, this signal how much the picture must be delayed.
-     * extra_delay = repeat_pict / (2*fps)*)
+    (**
+     * error
+     * - encoding: Set by libavcodec. if flags&CODEC_FLAG_PSNR.
+     * - decoding: unused
+     *)
+    error: array [0..3] of uint64;
+    (**
+     * type of the buffer (to keep track of who has to deallocate data[*])
+     * - encoding: Set by the one who allocates it.
+     * - decoding: Set by the one who allocates it.
+     * Note: User allocated (direct rendering) & internal buffers cannot coexist currently.
+     *)
+    type_: integer;
+    (**
+     * When decoding, this signals how much the picture must be delayed.
+     * extra_delay = repeat_pict / (2*fps)
+     * - encoding: unused
+     * - decoding: Set by libavcodec.
+     *)
     repeat_pict: integer;
+    (**
+     *
+     *)
     qscale_type: integer;
-    (*** The content of the picture is interlaced.*)
+    (**
+     * The content of the picture is interlaced.
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec. (default 0)
+     *)
     interlaced_frame: integer;
-    (*** if the content is interlaced, is top field displayed first.*)
+    (**
+     * If the content is interlaced, is top field displayed first.
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
     top_field_first: integer;
-    (*** Pan scan.*)
+    (**
+     * Pan scan.
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
     pan_scan: PAVPanScan;
-    (*** tell user application that palette has changed from previous frame.*)
+    (**
+     * Tell user application that palette has changed from previous frame.
+     * - encoding: ??? (no palette-enabled encoder yet)
+     * - decoding: Set by libavcodec. (default 0).
+     *)
     palette_has_changed: integer;
-    (*** Codec suggestion on buffer type if != 0
-     * - decoding: set by lavc (before get_buffer() call))*)
+    (**
+     * codec suggestion on buffer type if != 0
+     * - encoding: unused
+     * - decoding: Set by libavcodec. (before get_buffer() call)).
+     *)
     buffer_hints: integer;
-    (*** DCT coeffitients*)
+    (**
+     * DCT coefficients
+     * - encoding: unused
+     * - decoding: Set by libavcodec.
+     *)
     dct_coeff: PsmallInt;
-    (*** Motion referece frame index*)
-    ref_index: array [0..1] of pshortint;
+    (**
+     * motion referece frame index
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
+    ref_index: array [0..1] of PShortint;
   end;
 
 const
   DEFAULT_FRAME_RATE_BASE = 1001000;
+
+  FF_ASPECT_EXTENDED = 15;
+
+  FF_RC_STRATEGY_XVID = 1;
 
   FF_BUG_AUTODETECT       = 1;  ///< autodetection
   FF_BUG_OLD_MSMPEG4      = 2;
@@ -443,10 +783,11 @@ const
   FF_BUG_HPEL_CHROMA      = 2048;
   FF_BUG_DC_CLIP          = 4096;
   FF_BUG_MS               = 8192; ///< workaround various bugs in microsofts broken decoders
+  //FF_BUG_FAKE_SCALABILITY = 16 //Autodetection should work 100%.
 
-  FF_COMPLIANCE_VERY_STRICT   = 2; ///< strictly conform to a older more strict version of the spec or reference software
-  FF_COMPLIANCE_STRICT        = 1; ///< strictly conform to all the things in the spec no matter what consequences
-  FF_COMPLIANCE_NORMAL        = 0;
+  FF_COMPLIANCE_VERY_STRICT   =  2; ///< strictly conform to a older more strict version of the spec or reference software
+  FF_COMPLIANCE_STRICT        =  1; ///< strictly conform to all the things in the spec no matter what consequences
+  FF_COMPLIANCE_NORMAL        =  0;
   FF_COMPLIANCE_INOFFICIAL    = -1; ///< allow inofficial extensions
   FF_COMPLIANCE_EXPERIMENTAL  = -2; ///< allow non standarized experimental things
 
@@ -478,20 +819,26 @@ const
   FF_IDCT_VP3          = 12;
   FF_IDCT_IPP          = 13;
   FF_IDCT_XVIDMMX      = 14;
+  FF_IDCT_CAVS         = 15;
+  FF_IDCT_SIMPLEARMV5TE= 16;
+  FF_IDCT_SIMPLEARMV6  = 17;
+  FF_IDCT_SIMPLEVIS    = 18;
+  FF_IDCT_WMV2         = 19;
 
   FF_EC_GUESS_MVS   = 1;
   FF_EC_DEBLOCK     = 2;
 
   FF_MM_FORCE	      = $80000000; (* force usage of selected flags (OR) *)
-    (* lower 16 bits - CPU features *)
-
-  FF_MM_MMX	        = $0001; (* standard MMX *)
-  FF_MM_3DNOW	      = $0004; (* AMD 3DNOW *)
-  FF_MM_MMXEXT	    = $0002; (* SSE integer functions or AMD MMX ext *)
-  FF_MM_SSE	        = $0008; (* SSE functions *)
-  FF_MM_SSE2	      = $0010; (* PIV SSE2 functions *)
-  FF_MM_3DNOWEXT	  = $0020; (* AMD 3DNowExt *)
-  FF_MM_IWMMXT	    = $0100; (* XScale IWMMXT *)
+  (* lower 16 bits - CPU features *)
+  FF_MM_MMX	        = $0001; ///< standard MMX
+  FF_MM_3DNOW	      = $0004; ///< AMD 3DNOW
+  FF_MM_MMXEXT	    = $0002; ///< SSE integer functions or AMD MMX ext
+  FF_MM_SSE	        = $0008; ///< SSE functions
+  FF_MM_SSE2	      = $0010; ///< PIV SSE2 functions
+  FF_MM_3DNOWEXT	  = $0020; ///< AMD 3DNowExt
+  FF_MM_SSE3        = $0040; ///< Prescott SSE3 functions
+  FF_MM_SSSE3       = $0080; ///< Conroe SSSE3 functions
+  FF_MM_IWMMXT	    = $0100; ///< XScale IWMMXT
 
   FF_PRED_LEFT   = 0;
   FF_PRED_PLANE  = 1;
@@ -517,20 +864,21 @@ const
   FF_DEBUG_VIS_MV_B_FOR  = $00000002; //visualize forward predicted MVs of B frames
   FF_DEBUG_VIS_MV_B_BACK = $00000004; //visualize backward predicted MVs of B frames
 
-  FF_CMP_SAD  = 0;
-  FF_CMP_SSE  = 1;
-  FF_CMP_SATD = 2;
-  FF_CMP_DCT  = 3;
-  FF_CMP_PSNR = 4;
-  FF_CMP_BIT  = 5;
-  FF_CMP_RD   = 6;
-  FF_CMP_ZERO = 7;
-  FF_CMP_VSAD = 8;
-  FF_CMP_VSSE = 9;
-  FF_CMP_NSSE = 10;
-  FF_CMP_W53  = 11;
-  FF_CMP_W97  = 12;
+  FF_CMP_SAD    = 0;
+  FF_CMP_SSE    = 1;
+  FF_CMP_SATD   = 2;
+  FF_CMP_DCT    = 3;
+  FF_CMP_PSNR   = 4;
+  FF_CMP_BIT    = 5;
+  FF_CMP_RD     = 6;
+  FF_CMP_ZERO   = 7;
+  FF_CMP_VSAD   = 8;
+  FF_CMP_VSSE   = 9;
+  FF_CMP_NSSE   = 10;
+  FF_CMP_W53    = 11;
+  FF_CMP_W97    = 12;
   FF_CMP_DCTMAX = 13;
+  FF_CMP_DCT264 = 14;
   FF_CMP_CHROMA = 256;
 
   FF_DTG_AFD_SAME         = 8;
@@ -550,8 +898,11 @@ const
 
   FF_QUALITY_SCALE  = FF_LAMBDA_SCALE; //FIXME maybe remove
 
-  FF_CODER_TYPE_VLC   = 0;
-  FF_CODER_TYPE_AC    = 1;
+  FF_CODER_TYPE_VLC     = 0;
+  FF_CODER_TYPE_AC      = 1;
+  FF_CODER_TYPE_RAW     = 2;
+  FF_CODER_TYPE_RLE     = 3;
+  FF_CODER_TYPE_DEFLATE = 4;
 
   SLICE_FLAG_CODED_ORDER    = $0001; ///< draw_horiz_band() is called in coded order instead of display
   SLICE_FLAG_ALLOW_FIELD    = $0002; ///< allow draw_horiz_band() with field slices (MPEG2 field pics)
@@ -567,6 +918,10 @@ const
   FF_AA_FLOAT   = 3;
 
   FF_PROFILE_UNKNOWN  = -99;
+  FF_PROFILE_AAC_MAIN = 0;
+  FF_PROFILE_AAC_LOW  = 1;
+  FF_PROFILE_AAC_SSR  = 2;
+  FF_PROFILE_AAC_LTP  = 3;
 
   FF_LEVEL_UNKNOWN    = -99;
 
@@ -576,13 +931,47 @@ const
   X264_PART_P4X4 = $020;  (* Analyse p8x4, p4x8, p4x4 *)
   X264_PART_B8X8 = $100;  (* Analyse b16x8, b8x16 and b8x8 *)
 
+  FF_COMPRESSION_DEFAULT = -1;
+
+const
+  AVPALETTE_SIZE = 1024;
+  AVPALETTE_COUNT = 256;
+
+type
+(**
+ * AVPaletteControl
+ * This structure defines a method for communicating palette changes
+ * between and demuxer and a decoder.
+ *
+ * @deprecated Use AVPacket to send palette changes instead.
+ * This is totally broken.
+ *)
+  PAVPaletteControl = ^TAVPaletteControl;
+  TAVPaletteControl = record
+    (* demuxer sets this to 1 to indicate the palette has changed;
+     * decoder resets to 0 *)
+    palette_changed: integer;
+
+    (* 4-byte ARGB palette entries, stored in native byte order; note that
+     * the individual palette components should be on a 8-bit scale; if
+     * the palette data comes from a IBM VGA native format, the component
+     * data is probably 6 bits in size and needs to be scaled *)
+    palette: array [0..AVPALETTE_COUNT - 1] of cardinal;
+  end; {deprecated;}
+
 type
   PAVClass = ^TAVClass;
   PAVCodecContext = ^TAVCodecContext;
-  PAVCodec = ^TAVCodec;
-  PAVPaletteControl = ^TAVPaletteControl;
 
-  TAVclass = record {12}
+  PAVCodec = ^TAVCodec;
+
+  // int[4]
+  PQuadIntArray = ^TQuadIntArray;
+  TQuadIntArray = array[0..3] of integer;
+  // int (*func)(struct AVCodecContext *c2, void *arg)
+  TExecuteFunc = function(c2: PAVCodecContext; arg: Pointer): integer; cdecl;
+
+  TAVClass = record {12}
     class_name: pchar;
     (* actually passing a pointer to an AVCodecContext
 					or AVFormatContext, which begin with an AVClass.
@@ -592,159 +981,220 @@ type
     option: PAVOption;
   end;
 
+  (**
+   * main external API structure.
+   * New fields can be added to the end with minor version bumps.
+   * Removal, reordering and changes to existing fields require a major
+   * version bump.
+   * sizeof(AVCodecContext) must not be used outside libav*.
+   *)
   TAVCodecContext = record {720}
-    (*** Info on struct for av_log
-     * - set by avcodec_alloc_context     *)
+    (**
+     * information on struct for av_log
+     * - set by avcodec_alloc_context
+     *)
     av_class: PAVClass;
-    (*** the average bitrate.
-     * - encoding: set by user. unused for constant quantizer encoding
-     * - decoding: set by lavc. 0 or some bitrate if this info is available in the stream     *)
+    (**
+     * the average bitrate
+     * - encoding: Set by user; unused for constant quantizer encoding.
+     * - decoding: Set by libavcodec. 0 or some bitrate if this info is available in the stream.
+     *)
     bit_rate: integer;
-    (*** number of bits the bitstream is allowed to diverge from the reference.
+
+    (**
+     * number of bits the bitstream is allowed to diverge from the reference.
      *           the reference can be CBR (for CBR pass1) or VBR (for pass2)
-     * - encoding: set by user. unused for constant quantizer encoding
-     * - decoding: unused     *)
+     * - encoding: Set by user; unused for constant quantizer encoding.
+     * - decoding: unused
+     *)
     bit_rate_tolerance: integer;
-    (*** CODEC_FLAG_*.
-     * - encoding: set by user.
-     * - decoding: set by user.     *)
+
+    (**
+     * CODEC_FLAG_*.
+     * - encoding: Set by user.
+     * - decoding: Set by user.
+     *)
     flags: integer;
-    (*** some codecs needs additionnal format info. It is stored here
-     * - encoding: set by user.
-     * - decoding: set by lavc. (FIXME is this ok?)     *)
+
+    (**
+     * Some codecs need additional format info. It is stored here.
+     * If any muxer uses this then ALL demuxers/parsers AND encoders for the
+     * specific codec MUST set it correctly otherwise stream copy breaks.
+     * In general use of this field by muxers is not recommanded.
+     * - encoding: Set by libavcodec.
+     * - decoding: Set by libavcodec. (FIXME: Is this OK?)
+     *)
     sub_id: integer;
 
     (**
-     * motion estimation algorithm used for video coding.
+     * Motion estimation algorithm used for video coding.
      * 1 (zero), 2 (full), 3 (log), 4 (phods), 5 (epzs), 6 (x1), 7 (hex),
      * 8 (umh), 9 (iter) [7, 8 are x264 specific, 9 is snow specific]
      * - encoding: MUST be set by user.
-     * - decoding: unused     *)
+     * - decoding: unused
+     *)
     me_method: integer;
 
     (**
-     * some codecs need / can use extra-data like huffman tables.
-     * mjpeg: huffman tables
+     * some codecs need / can use extradata like Huffman tables.
+     * mjpeg: Huffman tables
      * rv10: additional flags
      * mpeg4: global headers (they can be in the bitstream or here)
-     * the allocated memory should be FF_INPUT_BUFFER_PADDING_SIZE bytes larger
-     * then extradata_size to avoid prolems if its read with the bitstream reader
-     * the bytewise contents of extradata must not depend on the architecture or cpu endianness
-     * - encoding: set/allocated/freed by lavc.
-     * - decoding: set/allocated/freed by user.
+     * The allocated memory should be FF_INPUT_BUFFER_PADDING_SIZE bytes larger
+     * than extradata_size to avoid prolems if it is read with the bitstream reader.
+     * The bytewise contents of extradata must not depend on the architecture or CPU endianness.
+     * - encoding: Set/allocated/freed by libavcodec.
+     * - decoding: Set/allocated/freed by user.
      *)
     extradata: pbyte;
     extradata_size: integer;
 
     (**
-     * this is the fundamental unit of time (in seconds) in terms
-     * of which frame timestamps are represented. for fixed-fps content,
+     * This is the fundamental unit of time (in seconds) in terms
+     * of which frame timestamps are represented. For fixed-fps content,
      * timebase should be 1/framerate and timestamp increments should be
      * identically 1.
-     * - encoding: MUST be set by user
-     * - decoding: set by lavc.     *)
+     * - encoding: MUST be set by user.
+     * - decoding: Set by libavcodec.
+     *)
     time_base: TAVRational;
 
     (* video only *)
-    (*** picture width / height.
+    (**
+     * picture width / height.
      * - encoding: MUST be set by user.
-     * - decoding: set by lavc.
-     * Note, for compatibility its possible to set this instead of
-     * coded_width/height before decoding     *)
+     * - decoding: Set by libavcodec.
+     * Note: For compatibility it is possible to set this instead of
+     * coded_width/height before decoding.
+     *)
     width, height: integer;
-    (*** the number of pictures in a group of pitures, or 0 for intra_only.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+
+    (**
+     * the number of pictures in a group of pictures, or 0 for intra_only
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     gop_size: integer;
-    (*** pixel format, see PIX_FMT_xxx.
-     * - encoding: set by user.
-     * - decoding: set by lavc.     *)
+
+    (**
+     * Pixel format, see PIX_FMT_xxx.
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
     pix_fmt: TAVPixelFormat;
-    (*** Frame rate emulation. If not zero lower layer (i.e. format handler)
+
+    (**
+     * Frame rate emulation. If not zero, the lower layer (i.e. format handler)
      * has to read frames at native frame rate.
-     * - encoding: set by user.
-     * - decoding: unused.     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     rate_emu: integer;
-    (*** if non NULL, 'draw_horiz_band' is called by the libavcodec
-     * decoder to draw an horizontal band. It improve cache usage. Not
+
+    (**
+     * If non NULL, 'draw_horiz_band' is called by the libavcodec
+     * decoder to draw a horizontal band. It improves cache usage. Not
      * all codecs can do that. You must check the codec capabilities
-     * before
+     * beforehand.
      * - encoding: unused
-     * - decoding: set by user.
+     * - decoding: Set by user.
      * @param height the height of the slice
      * @param y the y position of the slice
      * @param type 1->top field, 2->bottom field, 3->frame
-     * @param offset offset into the AVFrame.data from which the slice should be read *)
+     * @param offset offset into the AVFrame.data from which the slice should be read
+     *)
     draw_horiz_band: procedure (s: PAVCodecContext;
-                                const src: PAVFrame; offset: PInteger;
-                                y: integer; _type: integer; height: integer); cdecl;
+                                {const} src: PAVFrame; offset: PQuadIntArray;
+                                y: integer; type_: integer; height: integer); cdecl;
 
     (* audio only *)
-    sample_rate: integer; ///< samples per sec
+    sample_rate: integer; ///< samples per second
     channels: integer;
-    (*** audio sample format.
-     * - encoding: set by user.
-     * - decoding: set by lavc.     *)
+    
+    (**
+     * audio sample format
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
     sample_fmt: TSampleFormat;  ///< sample format, currenly unused
 
-    (* the following data should not be initialized *)
-    (*** samples per packet. initialized when calling 'init'     *)
+    (* The following data should not be initialized. *)
+    (**
+     * Samples per packet, initialized when calling 'init'.
+     *)
     frame_size: integer;
     frame_number: integer;   ///< audio or video frame number
     real_pict_num: integer;  ///< returns the real picture number of previous encoded frame
 
-    (*** number of frames the decoded output will be delayed relative to
+    (**
+     * Number of frames the decoded output will be delayed relative to
      * the encoded input.
-     * - encoding: set by lavc.
-     * - decoding: unused     *)
+     * - encoding: Set by libavcodec.
+     * - decoding: unused
+     *)
     delay: integer;
 
     (* - encoding parameters *)
     qcompress: single;  ///< amount of qscale change between easy & hard scenes (0.0-1.0)
     qblur: single;      ///< amount of qscale smoothing over time (0.0-1.0)
 
-    (*** minimum quantizer.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * minimum quantizer
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     qmin: integer;
 
-    (*** maximum quantizer.
-     * - encoding: set by user.
-     * - decoding: unused     *)
-    qmax: integer;
+   (**
+     * maximum quantizer
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
+   qmax: integer;
 
-    (*** maximum quantizer difference etween frames.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * maximum quantizer difference between frames
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     max_qdiff: integer;
 
-    (*** maximum number of b frames between non b frames.
-     * note: the output will be delayed by max_b_frames+1 relative to the input
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * maximum number of B-frames between non-B-frames
+     * Note: The output will be delayed by max_b_frames+1 relative to the input.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     max_b_frames: integer;
 
-    (*** qscale factor between ip and b frames.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * qscale factor between IP and B-frames
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     b_quant_factor: single;
 
     (** obsolete FIXME remove *)
     rc_strategy: integer;
+
     b_frame_strategy: integer;
 
-    (*** hurry up amount.
-     * deprecated in favor of skip_idct and skip_frame
+    (**
+     * hurry up amount
      * - encoding: unused
-     * - decoding: set by user. 1-> skip b frames, 2-> skip idct/dequant too, 5-> skip everything except header     *)
+     * - decoding: Set by user. 1-> Skip B-frames, 2-> Skip IDCT/dequant too, 5-> Skip everything except header
+     * @deprecated Deprecated in favor of skip_idct and skip_frame.
+     *)
     hurry_up: integer;
 
     codec: PAVCodec;
 
     priv_data: pointer;
 
+    {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
     (* unused, FIXME remove*)
     rtp_mode: integer;
+    {$IFEND}
 
     rtp_payload_size: integer;  (* The size of the RTP payload: the coder will  *)
                                 (* do it's best to deliver a chunk with size    *)
@@ -773,744 +1223,1046 @@ type
     skip_count: integer;
     misc_bits: integer;
 
-    (*** number of bits used for the previously encoded frame.
-     * - encoding: set by lavc
-     * - decoding: unused     *)
+    (**
+     * number of bits used for the previously encoded frame
+     * - encoding: Set by libavcodec.
+     * - decoding: unused
+     *)
     frame_bits: integer;
 
-    (*** private data of the user, can be used to carry app specific stuff.
-     * - encoding: set by user
-     * - decoding: set by user     *)
+    (**
+     * Private data of the user, can be used to carry app specific stuff.
+     * - encoding: Set by user.
+     * - decoding: Set by user.
+     *)
     opaque: pointer;
 
     codec_name: array [0..31] of char;
     codec_type: TCodecType; (* see CODEC_TYPE_xxx *)
     codec_id: TCodecID; (* see CODEC_ID_xxx *)
 
-    (*** fourcc (LSB first, so "ABCD" -> ('D'<<24) + ('C'<<16) + ('B'<<8) + 'A').
-     * this is used to workaround some encoder bugs
-     * - encoding: set by user, if not then the default based on codec_id will be used
-     * - decoding: set by user, will be converted to upper case by lavc during init     *)
+    (**
+     * fourcc (LSB first, so "ABCD" -> ('D'<<24) + ('C'<<16) + ('B'<<8) + 'A').
+     * This is used to work around some encoder bugs.
+     * A demuxer should set this to what is stored in the field used to identify the codec.
+     * If there are multiple such fields in a container then the demuxer should choose the one
+     * which maximizes the information about the used codec.
+     * If the codec tag field in a container is larger then 32 bits then the demuxer should
+     * remap the longer ID to 32 bits with a table or other structure. Alternatively a new
+     * extra_codec_tag + size could be added but for this a clear advantage must be demonstrated
+     * first.
+     * - encoding: Set by user, if not then the default based on codec_id will be used.
+     * - decoding: Set by user, will be converted to uppercase by libavcodec during init.
+     *)
     codec_tag: cardinal;  // можно array [0..3] of char - тогда видно FOURCC
-//    codec_tag: array [0..3] of char; 
 
-    (*** workaround bugs in encoders which sometimes cannot be detected automatically.
-     * - encoding: set by user
-     * - decoding: set by user     *)
+    (**
+     * Work around bugs in encoders which sometimes cannot be detected automatically.
+     * - encoding: Set by user
+     * - decoding: Set by user
+     *)
     workaround_bugs: integer;
 
-    (*** luma single coeff elimination threshold.
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * luma single coefficient elimination threshold
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     luma_elim_threshold: integer;
 
-    (*** chroma single coeff elimination threshold.
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * chroma single coeff elimination threshold
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     chroma_elim_threshold: integer;
 
-    (*** strictly follow the std (MPEG4, ...).
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * strictly follow the standard (MPEG4, ...).
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     strict_std_compliance: integer;
 
-    (*** qscale offset between ip and b frames.
-     * if > 0 then the last p frame quantizer will be used (q= lastp_q*factor+offset)
-     * if < 0 then normal ratecontrol will be done (q= -normal_q*factor+offset)
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * qscale offset between IP and B-frames
+     * If > 0 then the last P-frame quantizer will be used (q= lastp_q*factor+offset).
+     * If < 0 then normal ratecontrol will be done (q= -normal_q*factor+offset).
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     b_quant_offset: single;
 
-    (*** error resilience higher values will detect more errors but may missdetect
-     * some more or less valid parts as errors.
+    (**
+     * Error resilience; higher values will detect more errors but may
+     * misdetect some more or less valid parts as errors.
      * - encoding: unused
-     * - decoding: set by user     *)
+     * - decoding: Set by user.
+     *)
     error_resilience: integer;
 
-    (*** called at the beginning of each frame to get a buffer for it.
-     * if pic.reference is set then the frame will be read later by lavc
+    (**
+     * Called at the beginning of each frame to get a buffer for it.
+     * If pic.reference is set then the frame will be read later by libavcodec.
      * avcodec_align_dimensions() should be used to find the required width and
-     * height, as they normally need to be rounded up to the next multiple of 16
+     * height, as they normally need to be rounded up to the next multiple of 16.
      * - encoding: unused
-     * - decoding: set by lavc, user can override     *)
+     * - decoding: Set by libavcodec., user can override.
+     *)
     get_buffer: function (c: PAVCodecContext; pic: PAVFrame): integer; cdecl;
 
-    (*** called to release buffers which where allocated with get_buffer.
-     * a released buffer can be reused in get_buffer()
-     * pic.data[*] must be set to NULL
+    (**
+     * Called to release buffers which where allocated with get_buffer.
+     * A released buffer can be reused in get_buffer().
+     * pic.data[*] must be set to NULL.
      * - encoding: unused
-     * - decoding: set by lavc, user can override     *)
+     * - decoding: Set by libavcodec., user can override.
+     *)
     release_buffer: procedure (c: PAVCodecContext; pic: PAVFrame); cdecl;
 
-    (*** if 1 the stream has a 1 frame delay during decoding.
-     * - encoding: set by lavc
-     * - decoding: set by lavc     *)
+    (**
+     * If 1 the stream has a 1 frame delay during decoding.
+     * - encoding: Set by libavcodec.
+     * - decoding: Set by libavcodec.
+     *)
     has_b_frames: integer;
 
-    (*** number of bytes per packet if constant and known or 0
-     * used by some WAV based audio codecs     *)
+    (**
+     * number of bytes per packet if constant and known or 0
+     * Used by some WAV based audio codecs.
+     *)
     block_align: integer;
 
     parse_only: integer; (* - decoding only: if true, only parsing is done
                        (function avcodec_parse_frame()). The frame
                        data is returned. Only MPEG codecs support this now. *)
 
-    (*** 0-> h263 quant 1-> mpeg quant.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * 0-> h263 quant 1-> mpeg quant
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     mpeg_quant: integer;
 
-    (*** pass1 encoding statistics output buffer.
-     * - encoding: set by lavc
-     * - decoding: unused     *)
+    (**
+     * pass1 encoding statistics output buffer
+     * - encoding: Set by libavcodec.
+     * - decoding: unused
+     *)
     stats_out: pchar;
 
-    (*** pass2 encoding statistics input buffer.
-     * concatenated stuff from stats_out of pass1 should be placed here
-     * - encoding: allocated/set/freed by user
-     * - decoding: unused     *)
+    (**
+     * pass2 encoding statistics input buffer
+     * Concatenated stuff from stats_out of pass1 should be placed here.
+     * - encoding: Allocated/set/freed by user.
+     * - decoding: unused
+     *)
     stats_in: pchar;
 
-    (*** ratecontrol qmin qmax limiting method.
-     * 0-> clipping, 1-> use a nice continous function to limit qscale wthin qmin/qmax
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * ratecontrol qmin qmax limiting method
+     * 0-> clipping, 1-> use a nice continous function to limit qscale wthin qmin/qmax.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     rc_qsquish: single;
 
     rc_qmod_amp: single;
     rc_qmod_freq: integer;
 
-    (*** ratecontrol override, see RcOverride.
-     * - encoding: allocated/set/freed by user.
-     * - decoding: unused     *)
+    (**
+     * ratecontrol override, see RcOverride
+     * - encoding: Allocated/set/freed by user.
+     * - decoding: unused
+     *)
     rc_override: PRcOverride;
     rc_override_count: integer;
 
-    (*** rate control equation.
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * rate control equation
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
     rc_eq: pchar;
 
-    (*** maximum bitrate.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * maximum bitrate
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     rc_max_rate: integer;
 
-    (*** minimum bitrate.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * minimum bitrate
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     rc_min_rate: integer;
 
-    (*** decoder bitstream buffer size.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * decoder bitstream buffer size
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     rc_buffer_size: integer;
     rc_buffer_aggressivity: single;
 
-    (*** qscale factor between p and i frames.
-     * if > 0 then the last p frame quantizer will be used (q= lastp_q*factor+offset)
-     * if < 0 then normal ratecontrol will be done (q= -normal_q*factor+offset)
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * qscale factor between P and I-frames
+     * If > 0 then the last p frame quantizer will be used (q= lastp_q*factor+offset).
+     * If < 0 then normal ratecontrol will be done (q= -normal_q*factor+offset).
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     i_quant_factor: single;
 
-    (*** qscale offset between p and i frames.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * qscale offset between P and I-frames
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     i_quant_offset: single;
 
-    (*** initial complexity for pass1 ratecontrol.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * initial complexity for pass1 ratecontrol
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     rc_initial_cplx: single;
 
-    (*** dct algorithm, see FF_DCT_* below.
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * DCT algorithm, see FF_DCT_* below
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     dct_algo: integer;
 
-    (*** luminance masking (0-> disabled).
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * luminance masking (0-> disabled)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     lumi_masking: single;
 
-    (*** temporary complexity masking (0-> disabled).
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * temporary complexity masking (0-> disabled)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     temporal_cplx_masking: single;
 
-    (*** spatial complexity masking (0-> disabled).
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * spatial complexity masking (0-> disabled)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     spatial_cplx_masking: single;
 
-    (**     * p block masking (0-> disabled).
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * p block masking (0-> disabled)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     p_masking: single;
 
-    (*** darkness masking (0-> disabled).
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * darkness masking (0-> disabled)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     dark_masking: single;
 
+    {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
     (* for binary compatibility *)
     unused: integer;
+    {$IFEND}
 
-    (*** idct algorithm, see FF_IDCT_* below.
-     * - encoding: set by user
-     * - decoding: set by user     *)
+    (**
+     * IDCT algorithm, see FF_IDCT_* below.
+     * - encoding: Set by user.
+     * - decoding: Set by user.
+     *)
     idct_algo: integer;
 
-    (*** slice count.
-     * - encoding: set by lavc
-     * - decoding: set by user (or 0)     *)
+    (**
+     * slice count
+     * - encoding: Set by libavcodec.
+     * - decoding: Set by user (or 0).
+     *)
     slice_count: integer;
 
-    (*** slice offsets in the frame in bytes.
-     * - encoding: set/allocated by lavc
-     * - decoding: set/allocated by user (or NULL)     *)
+    (**
+     * slice offsets in the frame in bytes
+     * - encoding: Set/allocated by libavcodec.
+     * - decoding: Set/allocated by user (or NULL).
+     *)
     slice_offset: Pinteger;
 
-    (*** error concealment flags.
+    (**
+     * error concealment flags
      * - encoding: unused
-     * - decoding: set by user     *)
+     * - decoding: Set by user.
+     *)
     error_concealment: integer;
 
-    (*** dsp_mask could be add used to disable unwanted CPU features
+    (**
+     * dsp_mask could be add used to disable unwanted CPU features
      * CPU features (i.e. MMX, SSE. ...)
      *
-     * with FORCE flag you may instead enable given CPU features
-     * (Dangerous: usable in case of misdetection, improper usage however will
-     * result into program crash)     *)
+     * With the FORCE flag you may instead enable given CPU features.
+     * (Dangerous: Usable in case of misdetection, improper usage however will
+     * result into program crash.)
+     *)
     dsp_mask: cardinal;
 
-    (*** bits per sample/pixel from the demuxer (needed for huffyuv).
-     * - encoding: set by lavc
-     * - decoding: set by user     *)
+    (**
+     * bits per sample/pixel from the demuxer (needed for huffyuv).
+     * - encoding: Set by libavcodec.
+     * - decoding: Set by user.
+     *)
      bits_per_sample: integer;
 
-    (*** prediction method (needed for huffyuv).
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * prediction method (needed for huffyuv)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
      prediction_method: integer;
 
-    (*** sample aspect ratio (0 if unknown).
-     * numerator and denominator must be relative prime and smaller then 256 for some video standards
-     * - encoding: set by user.
-     * - decoding: set by lavc.     *)
+    (**
+     * sample aspect ratio (0 if unknown)
+     * Numerator and denominator must be relatively prime and smaller than 256 for some video standards.
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
     sample_aspect_ratio: TAVRational;
 
-    (*** the picture in the bitstream.
-     * - encoding: set by lavc
-     * - decoding: set by lavc     *)
+    (**
+     * the picture in the bitstream
+     * - encoding: Set by libavcodec.
+     * - decoding: Set by libavcodec.
+     *)
     coded_frame: PAVFrame;
 
-    (*** debug.
-     * - encoding: set by user.
-     * - decoding: set by user.     *)
+    (**
+     * debug
+     * - encoding: Set by user.
+     * - decoding: Set by user.
+     *)
     debug: integer;
 
-    (*** debug.
-     * - encoding: set by user.
-     * - decoding: set by user.     *)
+    (**
+     * debug
+     * - encoding: Set by user.
+     * - decoding: Set by user.
+     *)
     debug_mv: integer;
 
-    (** error.
-     * - encoding: set by lavc if flags&CODEC_FLAG_PSNR
-     * - decoding: unused     *)
-    error: array [0..3] of int64;
+    (**
+     * error
+     * - encoding: Set by libavcodec if flags&CODEC_FLAG_PSNR.
+     * - decoding: unused
+     *)
+    error: array [0..3] of uint64;
 
-    (*** minimum MB quantizer.
+    (**
+     * minimum MB quantizer
      * - encoding: unused
-     * - decoding: unused     *)
+     * - decoding: unused
+     *)
     mb_qmin: integer;
 
-    (*** maximum MB quantizer.
+    (**
+     * maximum MB quantizer
      * - encoding: unused
-     * - decoding: unused     *)
+     * - decoding: unused
+     *)
     mb_qmax: integer;
 
-    (*** motion estimation compare function.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * motion estimation comparison function
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     me_cmp: integer;
 
-    (*** subpixel motion estimation compare function.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * subpixel motion estimation comparison function
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     me_sub_cmp: integer;
-    (*** macroblock compare function (not supported yet).
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * macroblock comparison function (not supported yet)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     mb_cmp: integer;
-    (*** interlaced dct compare function
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * interlaced DCT comparison function
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     ildct_cmp: integer;
-    (*** ME diamond size & shape.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+
+    (**
+     * ME diamond size & shape
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     dia_size: integer;
 
-    (*** amount of previous MV predictors (2a+1 x 2a+1 square).
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * amount of previous MV predictors (2a+1 x 2a+1 square)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     last_predictor_count: integer;
 
-    (*** pre pass for motion estimation.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * prepass for motion estimation
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     pre_me: integer;
 
-    (*** motion estimation pre pass compare function.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * motion estimation prepass comparison function
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     me_pre_cmp: integer;
 
-    (*** ME pre pass diamond size & shape.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * ME prepass diamond size & shape
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     pre_dia_size: integer;
 
-    (*** subpel ME quality.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * subpel ME quality
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     me_subpel_quality: integer;
 
-    (*** callback to negotiate the pixelFormat.
+    (**
+     * callback to negotiate the pixelFormat
      * @param fmt is the list of formats which are supported by the codec,
-     * its terminated by -1 as 0 is a valid format, the formats are ordered by quality
-     * the first is allways the native one
-     * @return the choosen format
+     * it is terminated by -1 as 0 is a valid format, the formats are ordered by quality.
+     * The first is always the native one.
+     * @return the chosen format
      * - encoding: unused
-     * - decoding: set by user, if not set then the native format will always be choosen
+     * - decoding: Set by user, if not set the native format will be chosen.
      *)
-    get_format: function (s: PAVCodecContext; const fmt: PAVPixelFormat): TAVPixelFormat; cdecl;
+    get_format: function (s: PAVCodecContext; {const} fmt: PAVPixelFormat): TAVPixelFormat; cdecl;
 
-    (*** DTG active format information (additionnal aspect ratio
-     * information only used in DVB MPEG2 transport streams). 0 if
-     * not set.
-     * - encoding: unused.
-     * - decoding: set by decoder     *)
+    (**
+     * DTG active format information (additional aspect ratio
+     * information only used in DVB MPEG-2 transport streams)
+     * 0 if not set.
+     *
+     * - encoding: unused
+     * - decoding: Set by decoder.
+     *)
     dtg_active_format: integer;
 
-    (*** Maximum motion estimation search range in subpel units.
-     * if 0 then no limit
-     * - encoding: set by user.
-     * - decoding: unused.     *)
+    (**
+     * maximum motion estimation search range in subpel units
+     * If 0 then no limit.
+     *
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     me_range: integer;
 
-    (*** intra quantizer bias.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * intra quantizer bias
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     intra_quant_bias: integer;
 
-    (*** inter quantizer bias.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * inter quantizer bias
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     inter_quant_bias: integer;
 
-    (*** color table ID.
-     * - encoding: unused.
-     * - decoding: which clrtable should be used for 8bit RGB images
-     *             table have to be stored somewhere FIXME     *)
+    (**
+     * color table ID
+     * - encoding: unused
+     * - decoding: Which clrtable should be used for 8bit RGB images.
+     *             Tables have to be stored somewhere. FIXME
+     *)
     color_table_id: integer;
 
-    (*** internal_buffer count.
-     * Don't touch, used by lavc default_get_buffer()     *)
+    (**
+     * internal_buffer count
+     * Don't touch, used by libavcodec default_get_buffer().
+     *)
     internal_buffer_count: integer;
 
-    (*** internal_buffers.
-     * Don't touch, used by lavc default_get_buffer()     *)
+    (**
+     * internal_buffers
+     * Don't touch, used by libavcodec default_get_buffer().
+     *)
     internal_buffer: pointer;
 
-    (*** global quality for codecs which cannot change it per frame.
-     * this should be proportional to MPEG1/2/4 qscale.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * Global quality for codecs which cannot change it per frame.
+     * This should be proportional to MPEG-1/2/4 qscale.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     global_quality: integer;
 
-    (*** coder type
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * coder type
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     coder_type: integer;
 
-    (*** context model
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * context model
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     context_model: integer;
 
-    (*** slice flags
+    {
+    (**
+     *
      * - encoding: unused
-     * - decoding: set by user.     *)
+     * - decoding: Set by user.
+     *)
+    realloc: function (s: PAVCodecContext; buf: Pbyte; buf_size: integer): Pbyte; cdecl;
+    }
+
+    (**
+     * slice flags
+     * - encoding: unused
+     * - decoding: Set by user.
+     *)
     slice_flags: integer;
 
-    (*** XVideo Motion Acceleration
+    (**
+     * XVideo Motion Acceleration
      * - encoding: forbidden
-     * - decoding: set by decoder     *)
+     * - decoding: set by decoder
+     *)
     xvmc_acceleration: integer;
 
-    (*** macroblock decision mode
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * macroblock decision mode
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     mb_decision: integer;
 
-    (*** custom intra quantization matrix
-     * - encoding: set by user, can be NULL
-     * - decoding: set by lavc     *)
+    (**
+     * custom intra quantization matrix
+     * - encoding: Set by user, can be NULL.
+     * - decoding: Set by libavcodec.
+     *)
     intra_matrix: Pword;
 
-    (*** custom inter quantization matrix
-     * - encoding: set by user, can be NULL
-     * - decoding: set by lavc     *)
+    (**
+     * custom inter quantization matrix
+     * - encoding: Set by user, can be NULL.
+     * - decoding: Set by libavcodec.
+     *)
     inter_matrix: Pword;
 
-    (*** fourcc from the AVI stream header (LSB first, so "ABCD" -> ('D'<<24) + ('C'<<16) + ('B'<<8) + 'A').
-     * this is used to workaround some encoder bugs
+    (**
+     * fourcc from the AVI stream header (LSB first, so "ABCD" -> ('D'<<24) + ('C'<<16) + ('B'<<8) + 'A').
+     * This is used to work around some encoder bugs.
      * - encoding: unused
-     * - decoding: set by user, will be converted to upper case by lavc during init     *)
+     * - decoding: Set by user, will be converted to uppercase by libavcodec during init.
+     *)
     stream_codec_tag: array [0..3] of char; //cardinal;
 
-    (*** scene change detection threshold.
-     * 0 is default, larger means fewer detected scene changes
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * scene change detection threshold
+     * 0 is default, larger means fewer detected scene changes.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     scenechange_threshold: integer;
 
-    (*** minimum lagrange multipler
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * minimum Lagrange multipler
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     lmin: integer;
 
-    (*** maximum lagrange multipler
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * maximum Lagrange multipler
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     lmax: integer;
 
-    (*** Palette control structure
+    (**
+     * palette control structure
      * - encoding: ??? (no palette-enabled encoder yet)
-     * - decoding: set by user.     *)
+     * - decoding: Set by user.
+     *)
     palctrl: PAVPaletteControl;
 
-    (*** noise reduction strength
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * noise reduction strength
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     noise_reduction: integer;
 
-    (*** called at the beginning of a frame to get cr buffer for it.
-     * buffer type (size, hints) must be the same. lavc won't check it.
-     * lavc will pass previous buffer in pic, function should return
+    (**
+     * Called at the beginning of a frame to get cr buffer for it.
+     * Buffer type (size, hints) must be the same. libavcodec won't check it.
+     * libavcodec will pass previous buffer in pic, function should return
      * same buffer or new buffer with old frame "painted" into it.
-     * if pic.data[0] == NULL must behave like get_buffer().
+     * If pic.data[0] == NULL must behave like get_buffer().
      * - encoding: unused
-     * - decoding: set by lavc, user can override     *)
+     * - decoding: Set by libavcodec., user can override
+     *)
     reget_buffer: function (c: PAVCodecContext; pic: PAVFrame): integer; cdecl;
 
-    (*** number of bits which should be loaded into the rc buffer before decoding starts
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * Number of bits which should be loaded into the rc buffer before decoding starts.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     rc_initial_buffer_occupancy: integer;
+
+    (**
+     *
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     inter_threshold: integer;
 
-    (*** CODEC_FLAG2_*.
-     * - encoding: set by user.
-     * - decoding: set by user.     *)
+    (**
+     * CODEC_FLAG2_*
+     * - encoding: Set by user.
+     * - decoding: Set by user.
+     *)
     flags2: integer;
 
-    (*** simulates errors in the bitstream to test error concealment.
-     * - encoding: set by user.
-     * - decoding: unused.     *)
+    (**
+     * Simulates errors in the bitstream to test error concealment.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     error_rate: integer;
 
-    (*** MP3 antialias algorithm, see FF_AA_* below.
+    (**
+     * MP3 antialias algorithm, see FF_AA_* below.
      * - encoding: unused
-     * - decoding: set by user     *)
+     * - decoding: Set by user.
+     *)
     antialias_algo: integer;
 
-    (*** Quantizer noise shaping.
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * quantizer noise shaping
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     quantizer_noise_shaping: integer;
 
-    (*** Thread count.
-     * is used to decide how many independant tasks should be passed to execute()
-     * - encoding: set by user
-     * - decoding: set by user     *)
+    (**
+     * thread count
+     * is used to decide how many independent tasks should be passed to execute()
+     * - encoding: Set by user.
+     * - decoding: Set by user.
+     *)
     thread_count: integer;
 
-    (*** the codec may call this to execute several independant things. it will return only after
-     * finishing all tasks, the user may replace this with some multithreaded implementation, the
-     * default implementation will execute the parts serially
+    (**
+     * The codec may call this to execute several independent things.
+     * It will return only after finishing all tasks.
+     * The user may replace this with some multithreaded implementation,
+     * the default implementation will execute the parts serially.
      * @param count the number of things to execute
-     * - encoding: set by lavc, user can override
-     * - decoding: set by lavc, user can override     *)
-    execute: function (c: PAVCodecContext; func: pointer; arg: PPointer; ret: PInteger; count: integer): integer; cdecl;
+     * - encoding: Set by libavcodec, user can override.
+     * - decoding: Set by libavcodec, user can override.
+     *)
+    execute: function (c: PAVCodecContext; func: TExecuteFunc; arg: PPointer; ret: PInteger; count: integer): integer; cdecl;
 
-    (*** Thread opaque.
-     * can be used by execute() to store some per AVCodecContext stuff.
+    (**
+     * thread opaque
+     * Can be used by execute() to store some per AVCodecContext stuff.
      * - encoding: set by execute()
-     * - decoding: set by execute()     *)
+     * - decoding: set by execute()
+     *)
     thread_opaque: pointer;
 
-    (*** Motion estimation threshold. under which no motion estimation is
-     * performed, but instead the user specified motion vectors are used
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * Motion estimation threshold below which no motion estimation is
+     * performed, but instead the user specified motion vectors are used.
+     *
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
      me_threshold: integer;
 
-    (*** Macroblock threshold. under which the user specified macroblock types will be used
-     * - encoding: set by user
-     * - decoding: unused    *)
+    (**
+     * Macroblock threshold below which the user specified macroblock types will be used.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
      mb_threshold: integer;
 
-    (*** precision of the intra dc coefficient - 8.
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * precision of the intra DC coefficient - 8
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
      intra_dc_precision: integer;
 
-    (*** noise vs. sse weight for the nsse comparsion function.
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * noise vs. sse weight for the nsse comparsion function
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
      nsse_weight: integer;
 
-    (*** number of macroblock rows at the top which are skipped.
+    (**
+     * Number of macroblock rows at the top which are skipped.
      * - encoding: unused
-     * - decoding: set by user     *)
+     * - decoding: Set by user.
+     *)
      skip_top: integer;
 
-    (*** number of macroblock rows at the bottom which are skipped.
+    (**
+     * Number of macroblock rows at the bottom which are skipped.
      * - encoding: unused
-     * - decoding: set by user     *)
+     * - decoding: Set by user.
+     *)
      skip_bottom: integer;
 
-    (*** profile
-     * - encoding: set by user
-     * - decoding: set by lavc     *)
+    (**
+     * profile
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
      profile: integer;
 
-    (*** level
-     * - encoding: set by user
-     * - decoding: set by lavc     *)
+    (**
+     * level
+     * - encoding: Set by user.
+     * - decoding: Set by libavcodec.
+     *)
      level: integer;
 
-    (*** low resolution decoding. 1-> 1/2 size, 2->1/4 size
+    (**
+     * low resolution decoding, 1-> 1/2 size, 2->1/4 size
      * - encoding: unused
-     * - decoding: set by user     *)
+     * - decoding: Set by user.
+     *)
      lowres: integer;
 
-    (*** bitsream width / height. may be different from width/height if lowres
-     * or other things are used
+    (**
+     * Bitstream width / height, may be different from width/height if lowres
+     * or other things are used.
      * - encoding: unused
-     * - decoding: set by user before init if known, codec should override / dynamically change if needed     *)
+     * - decoding: Set by user before init if known. Codec should override / dynamically change if needed.
+     *)
     coded_width, coded_height: integer;
 
-    (*** frame skip threshold
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * frame skip threshold
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     frame_skip_threshold: integer;
 
-    (*** frame skip factor
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * frame skip factor
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     frame_skip_factor: integer;
 
-    (*** frame skip exponent
-     * - encoding: set by user
-     * - decoding: unused     *)
+    (**
+     * frame skip exponent
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     frame_skip_exp: integer;
 
-    (*** frame skip comparission function
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * frame skip comparison function
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     frame_skip_cmp: integer;
 
-    (*** border processing masking. raises the quantizer for mbs on the borders
+    (**
+     * Border processing masking, raises the quantizer for mbs on the borders
      * of the picture.
-     * - encoding: set by user
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     border_masking: single;
 
-    (*** minimum MB lagrange multipler.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * minimum MB lagrange multipler
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     mb_lmin: integer;
 
-    (*** maximum MB lagrange multipler.
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     * maximum MB lagrange multipler
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     mb_lmax: integer;
 
-    (***
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     *
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     me_penalty_compensation: integer;
 
-    (***
+    (**
+     *
      * - encoding: unused
-     * - decoding: set by user.     *)
+     * - decoding: Set by user.
+     *)
     skip_loop_filter: TAVDiscard;
 
-    (**     *
+    (**
+     *
      * - encoding: unused
-     * - decoding: set by user.     *)
+     * - decoding: Set by user.
+     *)
     skip_idct: TAVDiscard;
 
-    (**     *
+    (**
+     *
      * - encoding: unused
-     * - decoding: set by user.     *)
+     * - decoding: Set by user.
+     *)
     skip_frame: TAVDiscard;
 
-    (**     *
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     *
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     bidir_refine: integer;
 
-    (**     *
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     *
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     brd_scale: integer;
 
     (**
      * constant rate factor - quality-based VBR - values ~correspond to qps
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
+    {$IF LIBAVCODEC_VERSION >= 51021000} // 51.21.0
+    crf: single;
+    {$ELSE}
     crf: integer;
+    {$IFEND}
 
     (**
      * constant quantization parameter rate control method
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     cqp: integer;
 
     (**
-     * minimum gop size
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * minimum GOP size
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     keyint_min: integer;
 
     (**
      * number of reference frames
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     refs: integer;
 
     (**
      * chroma qp offset from luma
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     chromaoffset: integer;
 
     (**
-     * influences how often b-frames are used
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * Influences how often B-frames are used.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     bframebias: integer;
 
     (**
      * trellis RD quantization
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     trellis: integer;
 
     (**
-     * reduce fluctuations in qp (before curve compression)
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * Reduce fluctuations in qp (before curve compression).
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     complexityblur: single;
 
     (**
      * in-loop deblocking filter alphac0 parameter
      * alpha is in the range -6...6
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     deblockalpha: integer;
 
     (**
      * in-loop deblocking filter beta parameter
      * beta is in the range -6...6
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     deblockbeta: integer;
 
     (**
      * macroblock subpartition sizes to consider - p8x8, p4x4, b8x8, i8x8, i4x4
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     partitions: integer;
 
     (**
-     * direct mv prediction mode - 0 (none), 1 (spatial), 2 (temporal)
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * direct MV prediction mode - 0 (none), 1 (spatial), 2 (temporal)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     directpred: integer;
 
     (**
-     * audio cutoff bandwidth (0 means "automatic") . Currently used only by FAAC
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * Audio cutoff bandwidth (0 means "automatic")
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     cutoff: integer;
 
     (**
-     * multiplied by qscale for each frame and added to scene_change_score
-     * - encoding: set by user.
-     * - decoding: unused     *)
+     * Multiplied by qscale for each frame and added to scene_change_score.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     scenechange_factor: integer;
 
-    (**     *
-     * note: value depends upon the compare functin used for fullpel ME
-     * - encoding: set by user.
-     * - decoding: unused     *)
+    (**
+     *
+     * Note: Value depends upon the compare function used for fullpel ME.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     mv0_threshold: integer;
 
     (**
-     * adjusts sensitivity of b_frame_strategy 1
-     * - encoding: set by user.
-     * - decoding: unused      *)
+     * Adjusts sensitivity of b_frame_strategy 1.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     b_sensitivity: integer;
 
     (**
-     * - encoding: set by user.
-     * - decoding: unused      *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     compression_level: integer;
 
     (**
-     * sets whether to use LPC mode - used by FLAC encoder
-     * - encoding: set by user.
-     * - decoding: unused.     *)
+     * Sets whether to use LPC mode - used by FLAC encoder.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     use_lpc: integer;
 
     (**
      * LPC coefficient precision - used by FLAC encoder
-     * - encoding: set by user.
-     * - decoding: unused.     *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     lpc_coeff_precision: integer;
 
     (**
-     * - encoding: set by user.
-     * - decoding: unused.           *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     min_prediction_order: integer;
 
     (**
-     * - encoding: set by user.
-     * - decoding: unused.            *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     max_prediction_order: integer;
 
     (**
      * search method for selecting prediction order
-     * - encoding: set by user.
-     * - decoding: unused.            *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     prediction_order_method: integer;
 
     (**
-     * - encoding: set by user.
-     * - decoding: unused.               *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     min_partition_order: integer;
 
     (**
-     * - encoding: set by user.
-     * - decoding: unused.           *)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
     max_partition_order: integer;
+
+    {$IF LIBAVCODEC_VERSION >= 51026000} // 51.26.0
+    (**
+     * GOP timecode frame start number, in non drop frame format
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
+    timecode_frame_start: int64;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 51042000} // 51.42.0
+    (**
+     * Decoder should decode to this many channels if it can (0 for default)
+     * - encoding: unused
+     * - decoding: Set by user.
+     *)
+    request_channels: integer;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION > 51049000} // > 51.49.0
+    (**
+     * Percentage of dynamic range compression to be applied by the decoder.
+     * The default value is 1.0, corresponding to full compression.
+     * - encoding: unused
+     * - decoding: Set by user.
+     *)
+    drc_scale: Single;
+    {$IFEND}
   end;
 
 (**
@@ -1518,7 +2270,7 @@ type
  *)
   TAVCodec = record
     name: pchar;
-    _type: TCodecType;
+    type_: TCodecType;
     id: TCodecID;
     priv_data_size: integer;
     init: function (avctx: PAVCodecContext): integer; cdecl; (* typo corretion by the Creative CAT *)
@@ -1527,12 +2279,10 @@ type
     decode: function (avctx: PAVCodecContext; outdata: pointer; outdata_size: PInteger;
                   buf: pchar; buf_size: integer): integer; cdecl;
     capabilities: integer;
-// todo: check this ->
-//    void *dummy; // FIXME remove next time we break binary compatibility
     next: PAVCodec;
     flush: procedure (avctx: PAVCodecContext); cdecl;
-    supported_framerates: PAVRational; ///array of supported framerates, or NULL if any, array is terminated by {0,0}
-    pix_fmts: PAVPixelFormat;       ///array of supported pixel formats, or NULL if unknown, array is terminanted by -1
+    {const} supported_framerates: PAVRational; ///array of supported framerates, or NULL if any, array is terminated by {0,0}
+    {const} pix_fmts: PAVPixelFormat;       ///array of supported pixel formats, or NULL if unknown, array is terminanted by -1
   end;
 
 (**
@@ -1545,24 +2295,7 @@ type
     linesize: array [0..3] of integer;       ///< number of bytes per line
   end;
 
-(**
- * AVPaletteControl
- * This structure defines a method for communicating palette changes
- * between and demuxer and a decoder.
- * this is totally broken, palette changes should be sent as AVPackets
- *)
-  TAVPaletteControl = record
-    (* demuxer sets this to 1 to indicate the palette has changed;
-     * decoder resets to 0 *)
-    palette_changed: integer;
-
-    (* 4-byte ARGB palette entries, stored in native byte order; note that
-     * the individual palette components should be on a 8-bit scale; if
-     * the palette data comes from a IBM VGA native format, the component
-     * data is probably 6 bits in size and needs to be scaled *)
-    palette: array [0..AVPALETTE_COUNT - 1] of cardinal;
-  end;
-
+type
   PAVSubtitleRect = ^TAVSubtitleRect;
   TAVSubtitleRect = record
     x: word;
@@ -1595,7 +2328,7 @@ function audio_resample_init (output_channels: integer; input_channels: integer;
                               output_rate: integer; input_rate: integer): PReSampleContext;
   cdecl; external av__codec;
 
-function audio_resample (s: PReSampleContext; output: PWord; input: PWord; nb_samples: integer): integer;
+function audio_resample (s: PReSampleContext; output: PSmallint; input: PSmallint; nb_samples: integer): integer;
   cdecl; external av__codec;
 
 procedure audio_resample_close (s: PReSampleContext);
@@ -1606,7 +2339,7 @@ function av_resample_init (out_rate: integer; in_rate: integer; filter_length: i
                            log2_phase_count: integer; linear: integer; cutoff: double): PAVResampleContext;
   cdecl; external av__codec;
 
-function av_resample (c: PAVResampleContext; dst: PWord; src: PWord; consumed: PInteger;
+function av_resample (c: PAVResampleContext; dst: PSmallint; src: PSmallint; consumed: PInteger;
                       src_size: integer; dst_size: integer; update_ctx: integer): integer;
   cdecl; external av__codec;
 
@@ -1618,25 +2351,40 @@ procedure av_resample_close (c: PAVResampleContext);
   cdecl; external av__codec;
 
 
+{$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
 (* YUV420 format is assumed ! *)
 
-  function img_resample_init (output_width: integer; output_height: integer;
-                             input_width: integer; input_height: integer): PImgReSampleContext;
-    cdecl; external av__codec;
+(**
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+function img_resample_init (output_width: integer; output_height: integer;
+                           input_width: integer; input_height: integer): PImgReSampleContext;
+  cdecl; external av__codec; deprecated;
 
-  function img_resample_full_init (owidth: integer; oheight: integer;
-                                      iwidth: integer; iheight: integer;
-                                      topBand: integer; bottomBand: integer;
-                                      leftBand: integer; rightBand: integer;
-                                      padtop: integer; padbottom: integer;
-                                      padleft: integer; padright: integer): PImgReSampleContext;
-    cdecl; external av__codec;
+(**
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+function img_resample_full_init (owidth: integer; oheight: integer;
+                                    iwidth: integer; iheight: integer;
+                                    topBand: integer; bottomBand: integer;
+                                    leftBand: integer; rightBand: integer;
+                                    padtop: integer; padbottom: integer;
+                                    padleft: integer; padright: integer): PImgReSampleContext;
+  cdecl; external av__codec; deprecated;
 
-  procedure img_resample (s: PImgReSampleContext; output: PAVPicture; const input: PAVPicture);
-    cdecl; external av__codec;
+(**
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+procedure img_resample (s: PImgReSampleContext; output: PAVPicture; {const} input: PAVPicture);
+  cdecl; external av__codec; deprecated;
 
-  procedure img_resample_close (s: PImgReSampleContext);
-    cdecl; external av__codec;
+(**
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+procedure img_resample_close (s: PImgReSampleContext);
+  cdecl; external av__codec; deprecated;
+
+{$IFEND}
 
 (**
  * Allocate memory for a picture.  Call avpicture_free to free it.
@@ -1645,177 +2393,408 @@ procedure av_resample_close (c: PAVResampleContext);
  * @param pix_fmt the format of the picture.
  * @param width the width of the picture.
  * @param height the height of the picture.
- * @return 0 if successful, -1 if not.
+ * @return Zero if successful, a negative value if not.
  *)
-  function avpicture_alloc (picture: PAVPicture; pix_fmt: TAVPixelFormat;
-                            width: integer; height: integer): integer;
-    cdecl; external av__codec;
+function avpicture_alloc (picture: PAVPicture; pix_fmt: TAVPixelFormat;
+                          width: integer; height: integer): integer;
+  cdecl; external av__codec;
 
+(**
+ * Free a picture previously allocated by avpicture_alloc().
+ *
+ * @param picture the AVPicture to be freed
+ *)
+procedure avpicture_free (picture: PAVPicture);
+  cdecl; external av__codec;
 
-(* Free a picture previously allocated by avpicture_alloc. *)
-  procedure avpicture_free (picture: PAVPicture);
-    cdecl; external av__codec;
+(**
+ * Fill in the AVPicture fields.
+ * The fields of the given AVPicture are filled in by using the 'ptr' address
+ * which points to the image data buffer. Depending on the specified picture
+ * format, one or multiple image data pointers and line sizes will be set.
+ * If a planar format is specified, several pointers will be set pointing to
+ * the different picture planes and the line sizes of the different planes
+ * will be stored in the lines_sizes array.
+ *
+ * @param picture AVPicture whose fields are to be filled in
+ * @param ptr Buffer which will contain or contains the actual image data
+ * @param pix_fmt The format in which the picture data is stored.
+ * @param width the width of the image in pixels
+ * @param height the height of the image in pixels
+ * @return size of the image data in bytes
+ *)
+function avpicture_fill (picture: PAVPicture; ptr: pointer;
+                 pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
+  cdecl; external av__codec;
 
-  function avpicture_fill (picture: PAVPicture; ptr: pointer;
-                   pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
-    cdecl; external av__codec;
+function avpicture_layout ({const} src: PAVPicture; pix_fmt: TAVPixelFormat;
+                   width: integer; height: integer;
+                   dest: pchar; dest_size: integer): integer;
+  cdecl; external av__codec;
 
-  function avpicture_layout (const src: PAVPicture; pix_fmt: TAVPixelFormat;
-                     width: integer; height: integer;
-                     dest: pchar; dest_size: integer): integer;
-    cdecl; external av__codec;
+(**
+ * Calculate the size in bytes that a picture of the given width and height
+ * would occupy if stored in the given picture format.
+ *
+ * @param pix_fmt the given picture format
+ * @param width the width of the image
+ * @param height the height of the image
+ * @return Image data size in bytes
+ *)
+function avpicture_get_size (pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
+  cdecl; external av__codec;
 
-  function avpicture_get_size (pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
-    cdecl; external av__codec;
+procedure avcodec_get_chroma_sub_sample (pix_fmt: TAVPixelFormat; h_shift: Pinteger; v_shift: pinteger);
+  cdecl; external av__codec;
 
-  procedure avcodec_get_chroma_sub_sample (pix_fmt: TAVPixelFormat; h_shift: Pinteger; v_shift: pinteger);
-    cdecl; external av__codec;
+function avcodec_get_pix_fmt_name(pix_fmt: TAVPixelFormat): pchar;
+  cdecl; external av__codec;
 
-  function avcodec_get_pix_fmt_name(pix_fmt: TAVPixelFormat): pchar;
-    cdecl; external av__codec;
+procedure avcodec_set_dimensions(s: PAVCodecContext; width: integer; height: integer);
+  cdecl; external av__codec;
 
-  procedure avcodec_set_dimensions(s: PAVCodecContext; width: integer; height: integer);
-    cdecl; external av__codec;
+function avcodec_get_pix_fmt(const name: pchar): TAVPixelFormat;
+  cdecl; external av__codec;
 
-  function avcodec_get_pix_fmt(const name: pchar): TAVPixelFormat;
-    cdecl; external av__codec;
+function avcodec_pix_fmt_to_codec_tag(p: TAVPixelFormat): cardinal;
+  cdecl; external av__codec;
 
-  function avcodec_pix_fmt_to_codec_tag(p: TAVPixelFormat): cardinal;
-    cdecl; external av__codec;
+const
+  FF_LOSS_RESOLUTION  = $0001; {**< loss due to resolution change *}
+  FF_LOSS_DEPTH       = $0002; {**< loss due to color depth change *}
+  FF_LOSS_COLORSPACE  = $0004; {**< loss due to color space conversion *}
+  FF_LOSS_ALPHA       = $0008; {**< loss of alpha bits *}
+  FF_LOSS_COLORQUANT  = $0010; {**< loss due to color quantization *}
+  FF_LOSS_CHROMA      = $0020; {**< loss of chroma (e.g. RGB to gray conversion) *}
 
-  function avcodec_get_pix_fmt_loss (dst_pix_fmt: TAVPixelFormat; src_pix_fmt: TAVPixelFormat;
-                             has_alpha: integer): integer;
-    cdecl; external av__codec;
+(**
+ * Computes what kind of losses will occur when converting from one specific
+ * pixel format to another.
+ * When converting from one pixel format to another, information loss may occur.
+ * For example, when converting from RGB24 to GRAY, the color information will
+ * be lost. Similarly, other losses occur when converting from some formats to
+ * other formats. These losses can involve loss of chroma, but also loss of
+ * resolution, loss of color depth, loss due to the color space conversion, loss
+ * of the alpha bits or loss due to color quantization.
+ * avcodec_get_fix_fmt_loss() informs you about the various types of losses
+ * which will occur when converting from one pixel format to another.
+ *
+ * @param[in] dst_pix_fmt destination pixel format
+ * @param[in] src_pix_fmt source pixel format
+ * @param[in] has_alpha Whether the source pixel format alpha channel is used.
+ * @return Combination of flags informing you what kind of losses will occur.
+ *)
+function avcodec_get_pix_fmt_loss (dst_pix_fmt: TAVPixelFormat; src_pix_fmt: TAVPixelFormat;
+                           has_alpha: integer): integer;
+  cdecl; external av__codec;
 
-  function avcodec_find_best_pix_fmt (pix_fmt_mask: integer; src_pix_fmt: TAVPixelFormat;
-                              has_alpha: integer; loss_ptr: pinteger): integer;
-    cdecl; external av__codec;
+(**
+ * Finds the best pixel format to convert to given a certain source pixel
+ * format.  When converting from one pixel format to another, information loss
+ * may occur.  For example, when converting from RGB24 to GRAY, the color
+ * information will be lost. Similarly, other losses occur when converting from
+ * some formats to other formats. avcodec_find_best_pix_fmt() searches which of
+ * the given pixel formats should be used to suffer the least amount of loss.
+ * The pixel formats from which it chooses one, are determined by the
+ * \p pix_fmt_mask parameter.
+ *
+ * @code
+ * src_pix_fmt = PIX_FMT_YUV420P;
+ * pix_fmt_mask = (1 << PIX_FMT_YUV422P) || (1 << PIX_FMT_RGB24);
+ * dst_pix_fmt = avcodec_find_best_pix_fmt(pix_fmt_mask, src_pix_fmt, alpha, &loss);
+ * @endcode
+ *
+ * @param[in] pix_fmt_mask bitmask determining which pixel format to choose from
+ * @param[in] src_pix_fmt source pixel format
+ * @param[in] has_alpha Whether the source pixel format alpha channel is used.
+ * @param[out] loss_ptr Combination of flags informing you what kind of losses will occur.
+ * @return The best pixel format to convert to or -1 if none was found.
+ *)
+function avcodec_find_best_pix_fmt (pix_fmt_mask: integer; src_pix_fmt: TAVPixelFormat;
+                            has_alpha: integer; loss_ptr: pinteger): integer;
+  cdecl; external av__codec;
 
-  function img_get_alpha_info (const src: PAVPicture;
-		                           pix_fmt: TAVPixelFormat;
-                               width: integer; height: integer): integer;
-    cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
+(**
+ * Print in buf the string corresponding to the pixel format with
+ * number pix_fmt, or an header if pix_fmt is negative.
+ *
+ * @param[in] buf the buffer where to write the string
+ * @param[in] buf_size the size of buf
+ * @param[in] pix_fmt the number of the pixel format to print the corresponding info string, or
+ * a negative value to print the corresponding header.
+ * Meaningful values for obtaining a pixel format info vary from 0 to PIX_FMT_NB -1.
+ *)
+procedure avcodec_pix_fmt_string (buf: PChar; buf_size: integer; pix_fmt: integer);
+  cdecl; external av__codec;
+{$IFEND}
 
+const
+  FF_ALPHA_TRANSP      = $0001; {* image has some totally transparent pixels *}
+  FF_ALPHA_SEMI_TRANSP = $0002; {* image has some transparent pixels *}
 
-(* convert among pixel formats *)
-  function img_convert (dst: PAVPicture; dst_pix_fmt: TAVPixelFormat;
-                const src: PAVPicture; pix_fmt: TAVPixelFormat;
-                width: integer; height: integer): integer;
-    cdecl; external av__codec;
+(**
+ * Tell if an image really has transparent alpha values.
+ * @return ored mask of FF_ALPHA_xxx constants
+ *)
+function img_get_alpha_info ({const} src: PAVPicture;
+                             pix_fmt: TAVPixelFormat;
+                             width: integer; height: integer): integer;
+  cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+(**
+ * convert among pixel formats
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+function img_convert (dst: PAVPicture; dst_pix_fmt: TAVPixelFormat;
+              const src: PAVPicture; pix_fmt: TAVPixelFormat;
+              width: integer; height: integer): integer;
+  cdecl; external av__codec; deprecated;
+{$IFEND}
 
 (* deinterlace a picture *)
-  function avpicture_deinterlace (dst: PAVPicture; const src: PAVPicture;
-                          pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
-    cdecl; external av__codec;
+(* deinterlace - if not supported return -1 *)
+function avpicture_deinterlace (dst: PAVPicture; const src: PAVPicture;
+                        pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
+  cdecl; external av__codec;
+
+{* external high level API *}
+
+{$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+{
+var
+  first_avcodec: PAVCodec; external av__codec;
+}
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 51049000} // 51.49.0
+function av_codec_next(c: PAVCodec): PAVCodec;
+  cdecl; external av__codec;
+{$IFEND}
 
 (* returns LIBAVCODEC_VERSION_INT constant *)
-  function avcodec_version (): cardinal;
-    cdecl; external av__codec;
+function avcodec_version (): cardinal;
+  cdecl; external av__codec;
 
 (* returns LIBAVCODEC_BUILD constant *)
-  function avcodec_build (): cardinal;
-    cdecl; external av__codec;
+function avcodec_build (): cardinal;
+  cdecl; external av__codec;
 
-  procedure avcodec_init ();
-    cdecl; external av__codec;
+(**
+ * Initializes libavcodec.
+ *
+ * @warning This function \e must be called before any other libavcodec
+ * function.
+ *)
+procedure avcodec_init ();
+  cdecl; external av__codec;
 
-  procedure register_avcodec (format: PAVCodec);
-    cdecl; external av__codec;
+procedure register_avcodec (format: PAVCodec);
+  cdecl; external av__codec;
 
-  function avcodec_find_encoder (id: TCodecID): PAVCodec;
-    cdecl; external av__codec;
-  function avcodec_find_encoder_by_name (name: pchar): PAVCodec;
-    cdecl; external av__codec;
-  function avcodec_find_decoder(id: TCodecID): PAVCodec;
-    cdecl; external av__codec;
-  function avcodec_find_decoder_by_name (name: pchar): PAVCodec;
-    cdecl; external av__codec;
-  procedure avcodec_string(buf: pchar; buf_size: integer; enc: PAVCodecContext; encode: integer);
-    cdecl; external av__codec;
+(**
+ * Finds a registered encoder with a matching codec ID.
+ *
+ * @param id CodecID of the requested encoder
+ * @return An encoder if one was found, NULL otherwise.
+ *)
+function avcodec_find_encoder (id: TCodecID): PAVCodec;
+  cdecl; external av__codec;
 
-  procedure avcodec_get_context_defaults (s: PAVCodecContext);
-    cdecl; external av__codec;
-  function avcodec_alloc_context : PAVCodecContext;
-    cdecl; external av__codec;
-(* favourite of The Creative CAT
-  function avcodec_alloc_context (): PAVCodecContext;
-    cdecl; external av__codec; *)
-  procedure avcodec_get_frame_defaults (pic: PAVFrame);
-    cdecl; external av__codec;
-  function avcodec_alloc_frame : PAVFrame;
-    cdecl; external av__codec;
-(* favourite of The Creative CAT
-  function avcodec_alloc_frame (): PAVFrame;
-    cdecl; external av__codec; *)
+(**
+ * Finds a registered encoder with the specified name.
+ *
+ * @param name name of the requested encoder
+ * @return An encoder if one was found, NULL otherwise.
+ *)
+function avcodec_find_encoder_by_name (name: pchar): PAVCodec;
+  cdecl; external av__codec;
 
-  function avcodec_default_get_buffer (s: PAVCodecContext; pic: PAVFrame): integer;
-    cdecl; external av__codec;
-  procedure avcodec_default_release_buffer (s: PAVCodecContext; pic: PAVFrame);
-    cdecl; external av__codec;
-  function avcodec_default_reget_buffer (s: PAVCodecContext; pic: PAVFrame): integer;
-    cdecl; external av__codec;
-  procedure avcodec_align_dimensions(s: PAVCodecContext; width: Pinteger; height: PInteger);
-    cdecl; external av__codec;
-  function avcodec_check_dimensions (av_log_ctx: pointer; w: cardinal; h: cardinal): integer;
-    cdecl; external av__codec;
-  function avcodec_default_get_format(s: PAVCodecContext; const fmt: PAVPixelFormat): TAVPixelFormat;
-    cdecl; external av__codec;
+(**
+ * Finds a registered decoder with a matching codec ID.
+ *
+ * @param id CodecID of the requested decoder
+ * @return A decoder if one was found, NULL otherwise.
+ *)
+function avcodec_find_decoder(id: TCodecID): PAVCodec;
+  cdecl; external av__codec;
 
-  function avcodec_thread_init (s: PAVCodecContext; thread_count: integer): integer;
-    cdecl; external av__codec;
-  procedure avcodec_thread_free (s: PAVCodecContext);
-    cdecl; external av__codec;
-  function avcodec_thread_execute (s: PAVCodecContext; func: pointer; arg: PPointer; ret: Pinteger; count: integer): integer;
-    cdecl; external av__codec;
-  function avcodec_default_execute (s: PAVCodecContext; func: pointer; arg: PPointer; ret: Pinteger; count: integer): integer;
-    cdecl; external av__codec;
+(**
+ * Finds a registered decoder with the specified name.
+ *
+ * @param name name of the requested decoder
+ * @return A decoder if one was found, NULL otherwise.
+ *)
+function avcodec_find_decoder_by_name (name: pchar): PAVCodec;
+  cdecl; external av__codec;
+procedure avcodec_string(buf: pchar; buf_size: integer; enc: PAVCodecContext; encode: integer);
+  cdecl; external av__codec;
 
+(**
+ * Sets the fields of the given AVCodecContext to default values.
+ *
+ * @param s The AVCodecContext of which the fields should be set to default values.
+ *)
+procedure avcodec_get_context_defaults (s: PAVCodecContext);
+  cdecl; external av__codec;
 
+{$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
+(** THIS FUNCTION IS NOT YET PART OF THE PUBLIC API!
+ *  we WILL change its arguments and name a few times! *)
+procedure avcodec_get_context_defaults2(s: PAVCodecContext; ctype: TCodecType);
+  cdecl; external av__codec;
+{$IFEND}
+
+(**
+ * Allocates an AVCodecContext and sets its fields to default values.  The
+ * resulting struct can be deallocated by simply calling av_free().
+ *
+ * @return An AVCodecContext filled with default values or NULL on failure.
+ * @see avcodec_get_context_defaults
+ *)
+function avcodec_alloc_context(): PAVCodecContext;
+  cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
+(** THIS FUNCTION IS NOT YET PART OF THE PUBLIC API!
+ *  we WILL change its arguments and name a few times! *)
+function avcodec_alloc_context2(ctype: TCodecType): PAVCodecContext;
+  cdecl; external av__codec;
+{$IFEND}
+
+(**
+ * Sets the fields of the given AVFrame to default values.
+ *
+ * @param pic The AVFrame of which the fields should be set to default values.
+ *)
+procedure avcodec_get_frame_defaults (pic: PAVFrame);
+  cdecl; external av__codec;
+
+(**
+ * Allocates an AVFrame and sets its fields to default values.  The resulting
+ * struct can be deallocated by simply calling av_free().
+ *
+ * @return An AVFrame filled with default values or NULL on failure.
+ * @see avcodec_get_frame_defaults
+ *)
+function avcodec_alloc_frame(): PAVFrame;
+  cdecl; external av__codec;
+
+function avcodec_default_get_buffer (s: PAVCodecContext; pic: PAVFrame): integer;
+  cdecl; external av__codec;
+procedure avcodec_default_release_buffer (s: PAVCodecContext; pic: PAVFrame);
+  cdecl; external av__codec;
+function avcodec_default_reget_buffer (s: PAVCodecContext; pic: PAVFrame): integer;
+  cdecl; external av__codec;
+procedure avcodec_align_dimensions(s: PAVCodecContext; width: Pinteger; height: PInteger);
+  cdecl; external av__codec;
+
+(**
+ * Checks if the given dimension of a picture is valid, meaning that all
+ * bytes of the picture can be addressed with a signed int.
+ *
+ * @param[in] w Width of the picture.
+ * @param[in] h Height of the picture.
+ * @return Zero if valid, a negative value if invalid.
+ *)
+function avcodec_check_dimensions (av_log_ctx: pointer; w: cardinal; h: cardinal): integer;
+  cdecl; external av__codec;
+function avcodec_default_get_format(s: PAVCodecContext; const fmt: PAVPixelFormat): TAVPixelFormat;
+  cdecl; external av__codec;
+
+function avcodec_thread_init (s: PAVCodecContext; thread_count: integer): integer;
+  cdecl; external av__codec;
+procedure avcodec_thread_free (s: PAVCodecContext);
+  cdecl; external av__codec;
+function avcodec_thread_execute (s: PAVCodecContext; func: TExecuteFunc; arg: PPointer; ret: Pinteger; count: integer): integer;
+  cdecl; external av__codec;
+function avcodec_default_execute (s: PAVCodecContext; func: TExecuteFunc; arg: PPointer; ret: Pinteger; count: integer): integer;
+  cdecl; external av__codec;
 //FIXME func typedef
 
 (**
- * opens / inits the AVCodecContext.
- * not thread save!
+ * Initializes the AVCodecContext to use the given AVCodec. Prior to using this
+ * function the context has to be allocated.
+ *
+ * The functions avcodec_find_decoder_by_name(), avcodec_find_encoder_by_name(),
+ * avcodec_find_decoder() and avcodec_find_encoder() provide an easy way for
+ * retrieving a codec.
+ *
+ * @warning This function is not thread safe!
+ *
+ * @code
+ * avcodec_register_all();
+ * codec = avcodec_find_decoder(CODEC_ID_H264);
+ * if (!codec)
+ *     exit(1);
+ *
+ * context = avcodec_alloc_context();
+ *
+ * if (avcodec_open(context, codec) < 0)
+ *     exit(1);
+ * @endcode
+ *
+ * @param avctx The context which will be set up to use the given codec.
+ * @param codec The codec to use within the context.
+ * @return zero on success, a negative value on error
+ * @see avcodec_alloc_context, avcodec_find_decoder, avcodec_find_encoder
  *)
-  function avcodec_open (avctx: PAVCodecContext; codec: PAVCodec): integer;
-    cdecl; external av__codec;
-
+function avcodec_open (avctx: PAVCodecContext; codec: PAVCodec): integer;
+  cdecl; external av__codec;
 
 (**
- * Decode an audio frame.
- *
- * @param avctx the codec context.
- * @param samples output buffer, 16 byte aligned
- * @param frame_size_ptr the output buffer size in bytes, zero if no frame could be compressed
- * @param buf input buffer, 16 byte aligned
- * @param buf_size the input buffer size
- * @return 0 if successful, -1 if not.
- *)
-
-(** This comment was added by the Creative CAT.  frame_size_ptr was changed to
- variable refference.
- 
  * @deprecated Use avcodec_decode_audio2() instead.
  *)
+function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
+                           var frame_size_ptr: integer;
+                           buf: pchar; buf_size: integer): integer;
+  cdecl; external av__codec;
 
-  function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
-                         		 var frame_size_ptr: integer;
-                         		 buf: pchar; buf_size: integer): integer;
-    cdecl; external av__codec;
-(* decode a frame.
- * @param buf bitstream buffer, must be FF_INPUT_BUFFER_PADDING_SIZE larger then the actual read bytes
- * because some optimized bitstream readers read 32 or 64 bit at once and could read over the end
- * @param buf_size the size of the buffer in bytes
- * @param got_picture_ptr zero if no frame could be decompressed, Otherwise, it is non zero
- * @return -1 if error, otherwise return the number of
- * bytes used. *)
+{$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
+(**
+ * Decodes an audio frame from \p buf into \p samples.
+ * The avcodec_decode_audio2() function decodes an audio frame from the input
+ * buffer \p buf of size \p buf_size. To decode it, it makes use of the
+ * audio codec which was coupled with \p avctx using avcodec_open(). The
+ * resulting decoded frame is stored in output buffer \p samples.  If no frame
+ * could be decompressed, \p frame_size_ptr is zero. Otherwise, it is the
+ * decompressed frame size in \e bytes.
+ *
+ * @warning You \e must set \p frame_size_ptr to the allocated size of the
+ * output buffer before calling avcodec_decode_audio2().
+ *
+ * @warning The input buffer must be \c FF_INPUT_BUFFER_PADDING_SIZE larger than
+ * the actual read bytes because some optimized bitstream readers read 32 or 64
+ * bits at once and could read over the end.
+ *
+ * @warning The end of the input buffer \p buf should be set to 0 to ensure that
+ * no overreading happens for damaged MPEG streams.
+ *
+ * @note You might have to align the input buffer \p buf and output buffer \p
+ * samples. The alignment requirements depend on the CPU: On some CPUs it isn't
+ * necessary at all, on others it won't work at all if not aligned and on others
+ * it will work but it will have an impact on performance. In practice, the
+ * bitstream should have 4 byte alignment at minimum and all sample data should
+ * be 16 byte aligned unless the CPU doesn't need it (AltiVec and SSE do). If
+ * the linesize is not a multiple of 16 then there's no sense in aligning the
+ * start of the buffer to 16.
+ *
+ * @param avctx the codec context
+ * @param[out] samples the output buffer
+ * @param[in,out] frame_size_ptr the output buffer size in bytes
+ * @param[in] buf the input buffer
+ * @param[in] buf_size the input buffer size in bytes
+ * @return On error a negative value is returned, otherwise the number of bytes
+ * used or zero if no frame could be decompressed.
+ *)
+function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PSmallint;
+               var frame_size_ptr : integer;
+               buf: pchar; buf_size: integer): integer;
+  cdecl; external av__codec;
+{$IFEND}
 
-  function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PWord;
-								 var frame_size_ptr : integer;
-                         		 buf: pchar; buf_size: integer): integer;
-    cdecl; external av__codec;
-(* Added by The Creative CAT
-/**
+(**
  * Decodes a video frame from \p buf into \p picture.
  * The avcodec_decode_video() function decodes a video frame from the input
  * buffer \p buf of size \p buf_size. To decode it, it makes use of the
@@ -1845,66 +2824,120 @@ procedure av_resample_close (c: PAVResampleContext);
  * @param[in,out] got_picture_ptr Zero if no frame could be decompressed, otherwise, it is nonzero.
  * @return On error a negative value is returned, otherwise the number of bytes
  * used or zero if no frame could be decompressed.
- */
-*)
-
-  function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
-                         var got_picture_ptr: integer; (* favour of The Creative CAT *)
-                         buf: PByte; buf_size: integer): integer;
-    cdecl; external av__codec;
-
-  function avcodec_decode_subtitle (avctx: PAVCodecContext; sub: PAVSubtitle;
-                            got_sub_ptr: pinteger;
-                            const buf: pchar; buf_size: integer): integer;
-    cdecl; external av__codec;
-  function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
-                        data_size_ptr: pinteger;
-                        buf: pchar; buf_size: integer): integer;
-    cdecl; external av__codec;
-
-  function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
-                        buf_size: integer; const samples: PWord): integer;
-    cdecl; external av__codec;
-
-  (* avcodec_encode_video: -1 if error *)
-  (* type of the second argument is changed by The Creative CAT *)
-  function avcodec_encode_video (avctx: PAVCodecContext; buf: PByte;
-                        buf_size: integer; pict: PAVFrame): integer;
-    cdecl; external av__codec;
-  function avcodec_encode_subtitle (avctx: PAVCodecContext; buf: pchar;
-                        buf_size: integer; const sub: PAVSubtitle): integer;
-    cdecl; external av__codec;
-  function avcodec_close (avctx: PAVCodecContext): integer;
-    cdecl; external av__codec;
-
-  procedure avcodec_register_all ();
-    cdecl; external av__codec;
-
-  procedure avcodec_flush_buffers (avctx: PAVCodecContext);
-    cdecl; external av__codec;
-  procedure avcodec_default_free_buffers (s: PAVCodecContext);
-    cdecl; external av__codec;
-
-(* misc usefull functions *)
-
-(**
- * returns a single letter to describe the picture type
  *)
-  function av_get_pict_type_char (pict_type: integer): char;
-    cdecl; external av__codec;
+function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
+                       var got_picture_ptr: integer;
+                       buf: PByte; buf_size: integer): integer;
+  cdecl; external av__codec;
 
+(* Decode a subtitle message. Return -1 if error, otherwise return the
+ * number of bytes used. If no subtitle could be decompressed,
+ * got_sub_ptr is zero. Otherwise, the subtitle is stored in *sub. *)
+function avcodec_decode_subtitle (avctx: PAVCodecContext; sub: PAVSubtitle;
+                          var got_sub_ptr: integer;
+                          {const} buf: pchar; buf_size: integer): integer;
+  cdecl; external av__codec;
+function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
+                      data_size_ptr: pinteger;
+                      buf: pchar; buf_size: integer): integer;
+  cdecl; external av__codec;
 
 (**
- * returns codec bits per sample
+ * Encodes an audio frame from \p samples into \p buf.
+ * The avcodec_encode_audio() function encodes an audio frame from the input
+ * buffer \p samples. To encode it, it makes use of the audio codec which was
+ * coupled with \p avctx using avcodec_open(). The resulting encoded frame is
+ * stored in output buffer \p buf.
+ *
+ * @note The output buffer should be at least \c FF_MIN_BUFFER_SIZE bytes large.
+ *
+ * @param avctx the codec context
+ * @param[out] buf the output buffer
+ * @param[in] buf_size the output buffer size
+ * @param[in] samples the input buffer containing the samples
+ * The number of samples read from this buffer is frame_size*channels,
+ * both of which are defined in \p avctx.
+ * @return On error a negative value is returned, on success zero or the number
+ * of bytes used to encode the data read from the input buffer.
+ *)
+function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
+                      buf_size: integer; {const} samples: PWord): integer;
+  cdecl; external av__codec;
+
+(**
+ * Encodes a video frame from \p pict into \p buf.
+ * The avcodec_encode_video() function encodes a video frame from the input
+ * \p pict. To encode it, it makes use of the video codec which was coupled with
+ * \p avctx using avcodec_open(). The resulting encoded bytes representing the
+ * frame are stored in the output buffer \p buf. The input picture should be
+ * stored using a specific format, namely \c avctx.pix_fmt.
+ *
+ * @param avctx the codec context
+ * @param[out] buf the output buffer for the bitstream of encoded frame
+ * @param[in] buf_size the size of the output buffer in bytes
+ * @param[in] pict the input picture to encode
+ * @return On error a negative value is returned, on success zero or the number
+ * of bytes used from the input buffer.
+ *)
+function avcodec_encode_video (avctx: PAVCodecContext; buf: PByte;
+                      buf_size: integer; pict: PAVFrame): integer;
+  cdecl; external av__codec;
+function avcodec_encode_subtitle (avctx: PAVCodecContext; buf: pchar;
+                      buf_size: integer; {const} sub: PAVSubtitle): integer;
+  cdecl; external av__codec;
+
+function avcodec_close (avctx: PAVCodecContext): integer;
+  cdecl; external av__codec;
+
+procedure avcodec_register_all ();
+  cdecl; external av__codec;
+
+(**
+ * Flush buffers, should be called when seeking or when switching to a different stream.
+ *)
+procedure avcodec_flush_buffers (avctx: PAVCodecContext);
+  cdecl; external av__codec;
+  
+procedure avcodec_default_free_buffers (s: PAVCodecContext);
+  cdecl; external av__codec;
+
+(* misc useful functions *)
+
+(**
+ * Returns a single letter to describe the given picture type \p pict_type.
+ *
+ * @param[in] pict_type the picture type
+ * @return A single character representing the picture type.
+ *)
+function av_get_pict_type_char (pict_type: integer): char;
+  cdecl; external av__codec;
+
+(**
+ * Returns codec bits per sample.
+ *
+ * @param[in] codec_id the codec
+ * @return Number of bits per sample or zero if unknown for the given codec.
  *)
 function av_get_bits_per_sample (codec_id: TCodecID): integer;
   cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
+(**
+ * Returns sample format bits per sample.
+ *
+ * @param[in] sample_fmt the sample format
+ * @return Number of bits per sample or zero if unknown for the given sample format.
+ *)
+function av_get_bits_per_sample_format(sample_fmt: TSampleFormat): integer;
+  cdecl; external av__codec;
+{$IFEND}
 
 const
   AV_PARSER_PTS_NB      = 4;
   PARSER_FLAG_COMPLETE_FRAMES = $0001;
 
 type
+  {* frame parsing *}
   PAVCodecParserContext = ^TAVCodecParserContext;
   PAVCodecParser = ^TAVCodecParser;
 
@@ -1931,6 +2964,11 @@ type
     cur_frame_dts: array [0..AV_PARSER_PTS_NB - 1] of int64;
 
     flags: integer;
+
+    {$IF LIBAVCODEC_VERSION >= 51040003} // 51.40.3
+    offset: int64;      ///< byte offset from starting packet start
+    last_offset: int64;
+    {$IFEND}
   end;
 
   TAVCodecParser = record
@@ -1938,33 +2976,46 @@ type
     priv_data_size: integer;
     parser_init: function (s: PAVCodecParserContext): integer; cdecl;
     parser_parse: function (s: PAVCodecParserContext; avctx: PAVCodecContext;
-                            poutbuf: PPointer; poutbuf_size: PInteger;
-                            const buf: pchar; buf_size: integer): integer; cdecl;
+                            {const} poutbuf: PPointer; poutbuf_size: PInteger;
+                            {const} buf: pchar; buf_size: integer): integer; cdecl;
     parser_close: procedure (s: PAVCodecParserContext); cdecl;
-    split: function (avctx: PAVCodecContext; const buf: pchar;
+    split: function (avctx: PAVCodecContext; {const} buf: pchar;
                      buf_size: integer): integer; cdecl;
     next: PAVCodecParser;
   end;
 
-  procedure av_register_codec_parser (parser: PAVCodecParser);
-    cdecl; external av__codec;
 
-  function av_parser_init (codec_id: integer): PAVCodecParserContext;
-    cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+{
+var
+  av_first_parser: PAVCodecParser; external av__codec;
+}
+{$IFEND}
 
-  function av_parser_parse (s: PAVCodecParserContext;
-                    avctx: PAVCodecContext;
-                    poutbuf: PPointer; poutbuf_size: pinteger;
-                    const buf: pchar; buf_size: integer;
-                    pts: int64; dts: int64): integer;
-    cdecl; external av__codec;
-  function av_parser_change (s: PAVCodecParserContext;
-                     avctx: PAVCodecContext;
-                     poutbuf: PPointer; poutbuf_size: PInteger;
-                     const buf: pchar; buf_size: integer; keyframe: integer): integer;
-    cdecl; external av__codec;
-  procedure av_parser_close (s: PAVCodecParserContext);
-    cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION >= 51049000} // 51.49.0
+function av_parser_next(c: PAVCodecParser): PAVCodecParser;
+  cdecl; external av__codec;
+{$IFEND}
+
+procedure av_register_codec_parser (parser: PAVCodecParser);
+  cdecl; external av__codec;
+
+function av_parser_init (codec_id: integer): PAVCodecParserContext;
+  cdecl; external av__codec;
+
+function av_parser_parse (s: PAVCodecParserContext;
+                  avctx: PAVCodecContext;
+                  poutbuf: PPointer; poutbuf_size: pinteger;
+                  const buf: pchar; buf_size: integer;
+                  pts: int64; dts: int64): integer;
+  cdecl; external av__codec;
+function av_parser_change (s: PAVCodecParserContext;
+                   avctx: PAVCodecContext;
+                   poutbuf: PPointer; poutbuf_size: PInteger;
+                   const buf: pchar; buf_size: integer; keyframe: integer): integer;
+  cdecl; external av__codec;
+procedure av_parser_close (s: PAVCodecParserContext);
+  cdecl; external av__codec;
 
 type
   PAVBitStreamFilterContext = ^TAVBitStreamFilterContext;
@@ -1984,6 +3035,9 @@ type
                   avctx: PAVCodecContext; args: pchar;
                   poutbuf: PPointer; poutbuf_size: PInteger;
                   buf: PByte; buf_size: integer; keyframe: integer): integer; cdecl;
+    {$IF LIBAVCODEC_VERSION >= 51043000} // 51.43.0
+    close: procedure (bsfc: PAVBitStreamFilterContext);
+    {$IFEND}
     next: PAVBitStreamFilter;
   end;
 
@@ -2001,33 +3055,162 @@ function av_bitstream_filter_filter (bsfc: PAVBitStreamFilterContext;
 procedure av_bitstream_filter_close (bsf: PAVBitStreamFilterContext);
   cdecl; external av__codec;
 
+{$IF LIBAVCODEC_VERSION >= 51049000} // 51.49.0
+function av_bitstream_filter_next(f: PAVBitStreamFilter): PAVBitStreamFilter;
+  cdecl; external av__codec;
+{$IFEND}
 
 (* memory *)
-  procedure av_fast_realloc (ptr: pointer; size: PCardinal; min_size: Cardinal);
-    cdecl; external av__codec;
+
+(**
+ * Reallocates the given block if it is not large enough, otherwise it
+ * does nothing.
+ *
+ * @see av_realloc
+ *)
+procedure av_fast_realloc (ptr: pointer; size: PCardinal; min_size: Cardinal);
+  cdecl; external av__codec;
+  
 (* for static data only *)
-(* call av_free_static to release all staticaly allocated tables *)
-  procedure  av_free_static ();
-    cdecl; external av__codec;
 
-  procedure av_mallocz_static(size: cardinal);
-    cdecl; external av__codec;
+(**
+ * Frees all static arrays and resets their pointers to 0.
+ * Call this function to release all statically allocated tables.
+ *
+ * @deprecated. Code which uses av_free_static is broken/misdesigned
+ * and should correctly use static arrays
+ *
+ *)
+procedure  av_free_static ();
+  cdecl; external av__codec; deprecated;
 
-  procedure av_realloc_static(ptr: pointer; size: Cardinal);
-    cdecl; external av__codec;
+(**
+ * Allocation of static arrays.
+ *
+ * @warning Do not use for normal allocation.
+ *
+ * @param[in] size The amount of memory you need in bytes.
+ * @return block of memory of the requested size
+ * @deprecated. Code which uses av_mallocz_static is broken/misdesigned
+ * and should correctly use static arrays
+ *)
+procedure av_mallocz_static(size: cardinal);
+  cdecl; external av__codec; deprecated;
 
-  procedure img_copy (dst: PAVPicture; const src: PAVPicture;
-                      pix_fmt: TAVPixelFormat; width: integer; height: integer);
-    cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION < 51035000} // 51.35.0
+procedure av_realloc_static(ptr: pointer; size: Cardinal);
+  cdecl; external av__codec;
+{$IFEND}
 
-  function img_crop (dst: PAVPicture; const src: PAVPicture;
-             pix_fmt: TAVPixelFormat; top_band, left_band: integer): integer;
-    cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
+(**
+ * Copy image 'src' to 'dst'.
+ *)
+procedure av_picture_copy(dst: PAVPicture; {const} src: PAVPicture;
+              pix_fmt: integer; width: integer; height: integer);
+  cdecl; external av__codec;
 
-  function img_pad (dst: PAVPicture; const src: PAVPicture; height, width: integer;
-                    pix_fmt: TAVPixelFormat; padtop, padbottom, padleft, padright: integer;
-                    color: PInteger): integer;
-    cdecl; external av__codec;
+(**
+ * Crop image top and left side.
+ *)
+function av_picture_crop(dst: PAVPicture; {const} src: PAVPicture;
+             pix_fmt: integer; top_band: integer; left_band: integer): integer;
+  cdecl; external av__codec;
+
+(**
+ * Pad image.
+ *)
+function av_picture_pad(dst: PAVPicture; {const} src: PAVPicture; height: integer; width: integer; pix_fmt: integer;
+            padtop: integer; padbottom: integer; padleft: integer; padright: integer; color: PInteger): integer;
+  cdecl; external av__codec;
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+(**
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+procedure img_copy (dst: PAVPicture; const src: PAVPicture;
+                    pix_fmt: TAVPixelFormat; width: integer; height: integer);
+  cdecl; external av__codec; deprecated;
+
+(**
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+function img_crop (dst: PAVPicture; const src: PAVPicture;
+           pix_fmt: TAVPixelFormat; top_band, left_band: integer): integer;
+  cdecl; external av__codec; deprecated;
+
+(**
+ * @deprecated Use the software scaler (swscale) instead.
+ *)
+function img_pad (dst: PAVPicture; const src: PAVPicture; height, width: integer;
+                  pix_fmt: TAVPixelFormat; padtop, padbottom, padleft, padright: integer;
+                  color: PInteger): integer;
+  cdecl; external av__codec; deprecated;
+{$IFEND}
+
+function av_xiphlacing(s: PByte; v: Cardinal): Cardinal;
+  cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
+(**
+ * Parses \p str and put in \p width_ptr and \p height_ptr the detected values.
+ *
+ * @return 0 in case of a successful parsing, a negative value otherwise
+ * @param[in] str the string to parse: it has to be a string in the format
+ * <width>x<height> or a valid video frame size abbreviation.
+ * @param[in,out] width_ptr pointer to the variable which will contain the detected
+ * frame width value
+ * @param[in,out] height_ptr pointer to the variable which will contain the detected
+ * frame height value
+ *)
+function av_parse_video_frame_size(width_ptr: PInteger; height_ptr: PInteger; {const} str: PChar): integer;
+  cdecl; external av__codec;
+
+(**
+ * Parses \p str and put in \p frame_rate the detected values.
+ *
+ * @return 0 in case of a successful parsing, a negative value otherwise
+ * @param[in] str the string to parse: it has to be a string in the format
+ * <frame_rate_nom>/<frame_rate_den>, a float number or a valid video rate abbreviation
+ * @param[in,out] frame_rate pointer to the AVRational which will contain the detected
+ * frame rate
+ *)
+function av_parse_video_frame_rate(frame_rate: PAVRational; {const} str: PChar): integer;
+  cdecl; external av__codec;
+{$IFEND}
+
+(*
+{* error handling *}
+#if EINVAL > 0
+#define AVERROR(e) (-(e)) {**< Returns a negative error code from a POSIX error code, to return from library functions. *}
+#define AVUNERROR(e) (-(e)) {**< Returns a POSIX error code from a library function error return value. *}
+#else
+{* Some platforms have E* and errno already negated. *}
+#define AVERROR(e) (e)
+#define AVUNERROR(e) (e)
+#endif
+
+const
+  AVERROR_UNKNOWN     AVERROR(EINVAL)  {**< unknown error *}
+  AVERROR_IO          AVERROR(EIO)     {**< I/O error *}
+  AVERROR_NUMEXPECTED AVERROR(EDOM)    {**< Number syntax expected in filename. *}
+  AVERROR_INVALIDDATA AVERROR(EINVAL)  {**< invalid data found *}
+  AVERROR_NOMEM       AVERROR(ENOMEM)  {**< not enough memory *}
+  AVERROR_NOFMT       AVERROR(EILSEQ)  {**< unknown format *}
+  AVERROR_NOTSUPP     AVERROR(ENOSYS)  {**< Operation not supported. *}
+  AVERROR_NOENT       AVERROR(ENOENT)  {**< No such file or directory. *}
+  AVERROR_PATCHWELCOME    -MKTAG('P','A','W','E') {**< Not yet implemented in FFmpeg. Patches welcome. *}
+*)
+
+const
+  AVERROR_UNKNOWN     =(-1);  (* unknown error *)
+  AVERROR_IO          =(-2);  (* i/o error *)
+  AVERROR_NUMEXPECTED =(-3);  (* number syntax expected in filename *)
+  AVERROR_INVALIDDATA =(-4);  (* invalid data found *)
+  AVERROR_NOMEM       =(-5);  (* not enough memory *)
+  AVERROR_NOFMT       =(-6);  (* unknown format *)
+  AVERROR_NOTSUPP     =(-7);  (* operation not supported *)
 
 implementation
 

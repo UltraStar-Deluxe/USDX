@@ -45,7 +45,8 @@ uses
      {$ENDIF}
      UIni,
      UMain,
-     UThemes;
+     UThemes,
+     UConfig;
 
 
 type
@@ -334,7 +335,7 @@ begin
     if(av_read_frame(stream.pFormatCtx, packet) < 0) then
     begin
       // check for end-of-file (eof is not an error)
-      {$IF (LIBAVFORMAT_MAJOR_VERSION >= 52)}
+      {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
       pbIOCtx := stream.pFormatCtx^.pb;
       {$ELSE}
       pbIOCtx := @stream.pFormatCtx^.pb;
@@ -370,7 +371,7 @@ begin
     end
     else
     begin
-      av_free_packet(packet);
+      av_free_packet(@packet);
     end;
   end;
 
@@ -428,7 +429,7 @@ begin
 
     if (pkt.data <> nil) then
     begin
-      av_free_packet(pkt);
+      av_free_packet(@pkt);
     end;
 
     if (packetQueue.quit) then
@@ -739,7 +740,7 @@ begin
   while(pkt <> nil) do
   begin
     pkt1 := pkt^.next;
-    av_free_packet(pkt^.pkt);
+    av_free_packet(@pkt^.pkt);
     av_freep(pkt);
     pkt := pkt1;
   end;

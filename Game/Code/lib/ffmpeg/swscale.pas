@@ -1,4 +1,4 @@
-{
+(*
  * Copyright (C) 2001-2003 Michael Niedermayer <michaelni@gmx.at>
  *
  * This file is part of FFmpeg.
@@ -16,36 +16,42 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-}
-{
+ *)
+(*
  * @file swscale.h
  * @brief
  *     external api for the swscale stuff
-}
+ *)
 
 unit swscale;
 
 {$IFDEF FPC}
-  {$IFNDEF win32}
-  {$LINKLIB libavutil}
-  {$LINKLIB libswscale}
-  {$ENDIF}
-  {$MODE DELPHI } (* CAT *)
-  {$PACKENUM 4}    (* every enum type variables uses 4 bytes, CAT *)
-  {$PACKRECORDS C}    (* GCC compatible, Record Packing, CAT *)
+  {$MODE DELPHI }
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* C/C++-compatible record packing *)
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
 interface
 
 uses
-  avutil;
+  avutil,
+  config;
 
 const
-{$IFDEF win32}
-  sw__scale = 'swscale-0.dll';
-{$ELSE}
-  sw__scale = 'libswscale.so'; // .0.5.0
-{$ENDIF}
+  (* Max. supported version by this header *)
+  LIBSWSCALE_MAX_VERSION_MAJOR   = 0;
+  LIBSWSCALE_MAX_VERSION_MINOR   = 5;
+  LIBSWSCALE_MAX_VERSION_RELEASE = 0;
+  LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
+                           (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
+                           (LIBSWSCALE_MAX_VERSION_RELEASE * VERSION_RELEASE);
+
+(* Check if linked versions are supported *)
+{$IF (LIBSWSCALE_VERSION > LIBSWSCALE_MAX_VERSION)}
+  {$MESSAGE Warn 'Linked version of libswscale may be unsupported!'}
+{$IFEND}
 
 type
   TQuadIntArray = array[0..3] of integer;
