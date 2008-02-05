@@ -422,7 +422,7 @@ var Params: Cardinal;
 begin
   Result := -1;
 
-  {$IFDEF Delphi}
+  {$IFDEF MSWINDOWS}
   If (lParam<>nil) then
   begin
     Params := MB_OK;
