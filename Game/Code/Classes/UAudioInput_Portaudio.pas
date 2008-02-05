@@ -6,60 +6,43 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$I switches.inc}
+{$I ../switches.inc}
 
 
-uses Classes,
-     SysUtils,
-     portaudio,
-     {$IFDEF UsePortmixer}
-     portmixer,
-     {$ENDIF}
-     ULog,
-     UMusic;
+uses
+  Classes,
+  SysUtils,
+  UMusic;
 
 implementation
 
 uses
-     {$IFDEF LAZARUS}
-     lclintf,
-     {$ENDIF}
-     URecord,
-     UIni,
-     UMain,
-     UCommon,
-     UThemes;
-{
+  URecord,
+  UIni,
+  ULog,
+  UMain,
+  {$IFDEF UsePortmixer}
+  portmixer,
+  {$ENDIF}
+  portaudio;
+
 type
-  TPaHostApiIndex = PaHostApiIndex;
-  TPaDeviceIndex = PaDeviceIndex;
-  PPaStream = ^PaStreamPtr;
-  PPaStreamCallbackTimeInfo = ^PaStreamCallbackTimeInfo;
-  TPaStreamCallbackFlags = PaStreamCallbackFlags;
-  TPaHostApiTypeId = PaHostApiTypeId;
-  PPaHostApiInfo = ^PaHostApiInfo;
-  PPaDeviceInfo = ^PaDeviceInfo;
-  TPaError = PaError;
-  TPaStreamParameters = PaStreamParameters;
-}
-type
-  TAudioInput_Portaudio = class( TInterfacedObject, IAudioInput )
+  TAudioInput_Portaudio = class(TAudioInputBase)
     private
       function GetPreferredApiIndex(): TPaHostApiIndex;
     public
-      function  GetName: String;
-      procedure InitializeRecord;
-
-      procedure CaptureStart;
-      procedure CaptureStop;
-
-      procedure CaptureCard(Card: byte; CaptureSoundLeft, CaptureSoundRight: TSound);
-      procedure StopCard(Card: byte);
+      function GetName: String; override;
+      function InitializeRecord: boolean; override;
+      destructor Destroy; override;
   end;
 
-  TPortaudioSoundCard = class(TGenericSoundCard)
-    RecordStream:   PPaStream;
-    DeviceIndex:    TPaDeviceIndex;
+  TPortaudioInputDevice = class(TAudioInputDevice)
+    public
+      RecordStream:   PPaStream;
+      PaDeviceIndex:  TPaDeviceIndex;
+
+      procedure Start(); override;
+      procedure Stop();  override;
   end;
 
 function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longword;
@@ -68,9 +51,6 @@ function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longwor
 
 var
   singleton_AudioInputPortaudio : IAudioInput;
-
-const
-  sampleRate:  Double = 44100.;
 
 {* the default API used by Portaudio is the least common denominator
  * and might lack efficiency. ApiPreferenceOrder defines the order of
@@ -102,6 +82,62 @@ var
     array[0..0] of TPaHostApiTypeId = ( paDefaultApi );
 {$IFEND}
 
+
+{ TPortaudioInputDevice }
+
+procedure TPortaudioInputDevice.Start();
+var
+  Error:       TPaError;
+  ErrorMsg:    string;
+  inputParams: TPaStreamParameters;
+  deviceInfo:  PPaDeviceInfo;
+begin
+  // get input latency info
+  deviceInfo := Pa_GetDeviceInfo(PaDeviceIndex);
+
+  // set input stream parameters
+  with inputParams do begin
+    device := PaDeviceIndex;
+    channelCount := 2;
+    sampleFormat := paInt16;
+    suggestedLatency := deviceInfo^.defaultLowInputLatency;
+    hostApiSpecificStreamInfo := nil;
+  end;
+
+  Log.LogStatus(inttostr(PaDeviceIndex), 'Portaudio');
+  Log.LogStatus(floattostr(deviceInfo^.defaultLowInputLatency), 'Portaudio');
+
+  // open input stream
+  Error := Pa_OpenStream(RecordStream, @inputParams, nil, SampleRate,
+      paFramesPerBufferUnspecified, paNoFlag,
+      @MicrophoneCallback, Pointer(Self));
+  if(Error <> paNoError) then begin
+    ErrorMsg := Pa_GetErrorText(Error);
+    Log.CriticalError('TPortaudioInputDevice.Start(): Error opening stream: ' + ErrorMsg);
+    //Halt;
+  end;
+
+  // start capture
+  Error := Pa_StartStream(RecordStream);
+  if(Error <> paNoError) then begin
+    Pa_CloseStream(RecordStream);
+    ErrorMsg := Pa_GetErrorText(Error);
+    Log.CriticalError('TPortaudioInputDevice.Start(): Error starting stream: ' + ErrorMsg);
+    //Halt;
+  end;
+end;
+
+procedure TPortaudioInputDevice.Stop();
+begin
+  if assigned(RecordStream) then begin
+    Pa_StopStream(RecordStream);
+    Pa_CloseStream(RecordStream);
+  end;
+end;
+
+
+{ TAudioInput_Portaudio }
+
 function TAudioInput_Portaudio.GetName: String;
 begin
   result := 'Portaudio';
@@ -130,8 +166,7 @@ begin
   end;
 end;
 
-// TODO: should be a function with boolean return type
-procedure TAudioInput_Portaudio.InitializeRecord;
+function TAudioInput_Portaudio.InitializeRecord(): boolean;
 var
   i:           integer;
   apiIndex:    TPaHostApiIndex;
@@ -139,37 +174,42 @@ var
   deviceName:  string;
   deviceIndex: TPaDeviceIndex;
   deviceInfo:  PPaDeviceInfo;
-  inputCnt:    integer;
-  inputName:   string;
+  sourceCnt:   integer;
+  sourceName:  string;
   SC:          integer; // soundcard
-  SCI:         integer; // soundcard input
+  SCI:         integer; // soundcard source
   err:         TPaError;
   errMsg:      string;
-  paSoundCard: TPortaudioSoundCard;
+  paDevice:    TPortaudioInputDevice;
   inputParams: TPaStreamParameters;
   stream:      PPaStream;
   {$IFDEF UsePortmixer}
   mixer:       PPxMixer;
   {$ENDIF}
+const
+  captureFreq = 44100;
 begin
-  // TODO: call Pa_Terminate() on termination
+  result := false;
+
+  writeln('0');
+
   err := Pa_Initialize();
   if(err <> paNoError) then begin
-    Log.CriticalError('Portaudio.InitializeRecord: ' + Pa_GetErrorText(err));
-    //Log.LogError('Portaudio.InitializeRecord: ' + Pa_GetErrorText(err));
-    // result := false;
+    Log.LogError('Portaudio.InitializeRecord: ' + Pa_GetErrorText(err));
     Exit;
   end;
-
+  writeln('1');
   apiIndex := GetPreferredApiIndex();
   apiInfo := Pa_GetHostApiInfo(apiIndex);
 
   SC := 0;
+  writeln('2');
 
   // init array-size to max. input-devices count
-  SetLength(AudioInputProcessor.SoundCard, apiInfo^.deviceCount); // fix deviceCountL
-  for i:= 0 to High(AudioInputProcessor.SoundCard) do
+  SetLength(AudioInputProcessor.Device, apiInfo^.deviceCount);
+  for i:= 0 to High(AudioInputProcessor.Device) do
   begin
+  writeln('25');
     // convert API-specific device-index to global index
     deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(apiIndex, i);
     deviceInfo := Pa_GetDeviceInfo(deviceIndex);
@@ -178,14 +218,13 @@ begin
     if(deviceInfo^.maxInputChannels <= 0) then
       continue;
 
-    // TODO: free object on termination
-    paSoundCard := TPortaudioSoundCard.Create();
-    AudioInputProcessor.SoundCard[SC] := paSoundCard;
+    paDevice := TPortaudioInputDevice.Create();
+    AudioInputProcessor.Device[SC] := paDevice;
     
     // retrieve device-name
     deviceName := deviceInfo^.name;
-    paSoundCard.Description := deviceName;
-    paSoundCard.DeviceIndex := deviceIndex;
+    paDevice.Description := deviceName;
+    paDevice.PaDeviceIndex := deviceIndex;
 
     // setup desired input parameters
     with inputParams do begin
@@ -196,29 +235,32 @@ begin
       hostApiSpecificStreamInfo := nil;
     end;
 
+    paDevice.SampleRate := captureFreq;
+
     // check if device supports our input-format
-    err := Pa_IsFormatSupported(@inputParams, nil, sampleRate);
+    err := Pa_IsFormatSupported(@inputParams, nil, paDevice.SampleRate);
     if(err <> 0) then begin
       // format not supported -> skip
       errMsg := Pa_GetErrorText(err);
       Log.LogError('Portaudio.InitializeRecord, device: "'+ deviceName +'" '
                  + '('+ errMsg +')');
-      paSoundCard.Free();
+      paDevice.Free();
       continue;
     end;
 
     // TODO: retry with mono if stereo is not supported
     // TODO: retry with input-latency set to 20ms (defaultLowInputLatency might
     //       not be set correctly in OSS)
+    // use TPaDeviceInfo.defaultSampleRate
 
-    err := Pa_OpenStream(stream, @inputParams, nil, sampleRate,
+    err := Pa_OpenStream(stream, @inputParams, nil, paDevice.SampleRate,
         paFramesPerBufferUnspecified, paNoFlag, @MicrophoneCallback, nil);
     if(err <> paNoError) then begin
       // unable to open device -> skip
       errMsg := Pa_GetErrorText(err);
       Log.LogError('Portaudio.InitializeRecord, device: "'+ deviceName +'" '
                  + '('+ errMsg +')');
-      paSoundCard.Free();
+      paDevice.Free();
       continue;
     end;
 
@@ -229,14 +271,14 @@ begin
     mixer := Px_OpenMixer(stream, 0);
 
     // get input count
-    inputCnt := Px_GetNumInputSources(mixer);
-    SetLength(paSoundCard.Input, inputCnt);
+    sourceCnt := Px_GetNumInputSources(mixer);
+    SetLength(paDevice.Source, sourceCnt);
 
     // get input names
-    for SCI := 0 to inputCnt-1 do
+    for SCI := 0 to sourceCnt-1 do
     begin
-      inputName := Px_GetInputSourceName(mixer, SCI);
-      paSoundCard.Input[SCI].Name := inputName;
+      sourceName := Px_GetInputSourceName(mixer, SCI);
+      paDevice.Source[SCI].Name := sourceName;
     end;
 
     Px_CloseMixer(mixer);
@@ -247,80 +289,46 @@ begin
     // TODO: check if callback was called (this problem may occur on some devices)
     //Pa_StopStream(stream);
 
-    Pa_CloseStream(stream);
-
     // create a standard input source
-    SetLength(paSoundCard.Input, 1);
-    paSoundCard.Input[0].Name := 'Standard';
+    SetLength(paDevice.Source, 1);
+    paDevice.Source[0].Name := 'Standard';
 
     {$ENDIF}
 
+    // close test-stream
+    Pa_CloseStream(stream);
+
     // use default input source
-    paSoundCard.InputSelected := 0;
+    paDevice.SourceSelected := 0;
 
     Inc(SC);
   end;
+  writeln('3');
 
   // adjust size to actual input-device count
-  SetLength(AudioInputProcessor.SoundCard, SC);
+  SetLength(AudioInputProcessor.Device, SC);
 
   Log.LogStatus('#Soundcards: ' + inttostr(SC), 'Portaudio');
 
   {
     SoundCard[SC].InputSelected := Mic[Device];
   }
+  result := true;
 end;
 
-// TODO: code is used by all IAudioInput implementors
-//   -> move to a common superclass (TAudioInput_Generic?)
-procedure TAudioInput_Portaudio.CaptureStart;
+destructor TAudioInput_Portaudio.Destroy;
 var
-  S:  integer;
-  SC: integer;
-  PlayerLeft, PlayerRight: integer;
-  CaptureSoundLeft, CaptureSoundRight: TSound;
+  i: integer;
+  paSoundCard: TPortaudioInputDevice;
 begin
-  for S := 0 to High(AudioInputProcessor.Sound) do
-    AudioInputProcessor.Sound[S].BufferLong[0].Clear;
-
-  for SC := 0 to High(Ini.CardList) do begin
-    PlayerLeft  := Ini.CardList[SC].ChannelL-1;
-    PlayerRight := Ini.CardList[SC].ChannelR-1;
-    if PlayerLeft  >= PlayersPlay then PlayerLeft  := -1;
-    if PlayerRight >= PlayersPlay then PlayerRight := -1;
-    if (PlayerLeft > -1) or (PlayerRight > -1) then begin
-      if (PlayerLeft > -1) then
-        CaptureSoundLeft := AudioInputProcessor.Sound[PlayerLeft]
-      else
-        CaptureSoundLeft := nil;
-      if (PlayerRight > -1) then
-        CaptureSoundRight := AudioInputProcessor.Sound[PlayerRight]
-      else
-        CaptureSoundRight := nil;
-
-      CaptureCard(SC, CaptureSoundLeft, CaptureSoundRight);
-    end;
+  Pa_Terminate();
+  for i := 0 to High(AudioInputProcessor.Device) do
+  begin
+    AudioInputProcessor.Device[i].Free();
   end;
-end;
+  AudioInputProcessor.Device := nil;
 
-// TODO: code is used by all IAudioInput implementors
-//   -> move to a common superclass (TAudioInput_Generic?)
-procedure TAudioInput_Portaudio.CaptureStop;
-var
-  SC:   integer;
-  PlayerLeft:  integer;
-  PlayerRight: integer;
-begin
-
-  for SC := 0 to High(Ini.CardList) do begin
-    PlayerLeft  := Ini.CardList[SC].ChannelL-1;
-    PlayerRight := Ini.CardList[SC].ChannelR-1;
-    if PlayerLeft  >= PlayersPlay then PlayerLeft  := -1;
-    if PlayerRight >= PlayersPlay then PlayerRight := -1;
-    if (PlayerLeft > -1) or (PlayerRight > -1) then
-      StopCard(SC);
-  end;
-
+  inherited Destroy;
 end;
 
 {*
@@ -332,81 +340,6 @@ function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longwor
 begin
   AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
   result := paContinue;
-end;
-
-{*
- * Start input-capturing on Soundcard specified by Card.
- * Params:
- *   Card - soundcard index in Recording.SoundCard array
- *   CaptureSoundLeft  - sound(-buffer) used for left channel capture data
- *   CaptureSoundRight - sound(-buffer) used for right channel capture data
- *}
-procedure TAudioInput_Portaudio.CaptureCard(Card: byte; CaptureSoundLeft, CaptureSoundRight: TSound);
-var
-  Error:       TPaError;
-  ErrorMsg:    string;
-  inputParams: TPaStreamParameters;
-  deviceInfo:  PPaDeviceInfo;
-  stream:      PPaStream;
-  paSoundCard: TPortaudioSoundCard;
-begin
-  paSoundCard := TPortaudioSoundCard(AudioInputProcessor.SoundCard[Card]);
-  paSoundCard.CaptureSoundLeft  := CaptureSoundLeft;
-  paSoundCard.CaptureSoundRight := CaptureSoundRight;
-
-  // get input latency info
-  deviceInfo := Pa_GetDeviceInfo(paSoundCard.DeviceIndex);
-
-  // set input stream parameters
-  with inputParams do begin
-    device := paSoundCard.DeviceIndex;
-    channelCount := 2;
-    sampleFormat := paInt16;
-    suggestedLatency := deviceInfo^.defaultLowInputLatency;
-    hostApiSpecificStreamInfo := nil;
-  end;
-
-  Log.LogStatus(inttostr(paSoundCard.DeviceIndex), 'Portaudio');
-  Log.LogStatus(floattostr(deviceInfo^.defaultLowInputLatency), 'Portaudio');
-
-  // open input stream
-  Error := Pa_OpenStream(stream, @inputParams, nil, sampleRate,
-      paFramesPerBufferUnspecified, paNoFlag,
-      @MicrophoneCallback, Pointer(paSoundCard));
-  if(Error <> paNoError) then begin
-    ErrorMsg := Pa_GetErrorText(Error);
-    Log.CriticalError('TAudio_Portaudio.CaptureCard('+ IntToStr(Card) +'): Error opening stream: ' + ErrorMsg);
-    //Halt;
-  end;
-  
-  paSoundCard.RecordStream := stream;
-
-  // start capture
-  Error := Pa_StartStream(stream);
-  if(Error <> paNoError) then begin
-    Pa_CloseStream(stream);
-    ErrorMsg := Pa_GetErrorText(Error);
-    Log.CriticalError('TAudio_Portaudio.CaptureCard('+ IntToStr(Card) +'): Error starting stream: ' + ErrorMsg);
-    //Halt;
-  end;
-end;
-
-{*
- * Stop input-capturing on Soundcard specified by Card.
- * Params:
- *   Card - soundcard index in Recording.SoundCard array
- *}
-procedure TAudioInput_Portaudio.StopCard(Card: byte);
-var
-  stream:      PPaStream;
-  paSoundCard: TPortaudioSoundCard;
-begin
-  paSoundCard := TPortaudioSoundCard(AudioInputProcessor.SoundCard[Card]);
-  stream := paSoundCard.RecordStream;
-  if(stream <> nil) then begin
-    Pa_StopStream(stream);
-    Pa_CloseStream(stream);
-  end;
 end;
 
 

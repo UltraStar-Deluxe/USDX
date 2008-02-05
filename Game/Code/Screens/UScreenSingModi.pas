@@ -75,6 +75,16 @@ type
       //procedure Pause; //Pause Mod(Toggles Pause)
   end;
 
+type
+  TCustomSoundEntry = record
+    Filename : String;
+    Stream   : TAudioPlaybackStream;
+  end;
+
+var
+  //Custom Sounds
+  CustomSounds: array of TCustomSoundEntry;
+
 //Procedured for Plugin
 function LoadTex   (const Name, Typ: PChar): TsmallTexture; stdcall;
 //function Translate (const Name: PChar): PChar; stdcall;
@@ -101,7 +111,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Finish;
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenPartyScore);
         end;
 
@@ -656,14 +666,34 @@ begin
 end;
 
 function LoadSound  (const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
+var
+  S: TAudioPlaybackStream;
+  I: Integer;
+  F: String;
 begin
- Result := AudioPlayback.LoadCustomSound(String(Name));
+  //Search for Sound in already loaded Sounds
+  F := UpperCase(SoundPath + FileName);
+  For I := 0 to High(CustomSounds) do
+  begin
+    if (UpperCase(CustomSounds[I].Filename) = F) then
+    begin
+      Result := I;
+      Exit;
+    end;
+  end;
+
+  S := AudioPlayback.OpenSound(SoundPath + String(Name));
+  if (S <> nil) then
+    Result := High(CustomSounds)
+  else
+    Result := 0;
 end;
 
 procedure PlaySound (const Index: Cardinal); stdcall;       //Plays a Custom Sound
 begin
-  AudioPlayback.PlayCustomSound(Index);
+  if (Index <= High(CustomSounds)) then
+    AudioPlayback.PlaySound(CustomSounds[Index].Stream);
 end;
 
 end.
->>>>>>> .r429
+

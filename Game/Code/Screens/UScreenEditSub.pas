@@ -1277,7 +1277,7 @@ begin
         for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
           if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = AktBeat) then
           begin
-            AudioPlayback.PlayClick;
+            AudioPlayback.PlaySound(SoundLib.Click);
             LastClick := AktBeat;
           end;
       end;

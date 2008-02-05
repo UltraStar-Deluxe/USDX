@@ -153,7 +153,7 @@ begin
           //Sound[0].BufferLong
 
           Finish;
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenScore);
         end;
 

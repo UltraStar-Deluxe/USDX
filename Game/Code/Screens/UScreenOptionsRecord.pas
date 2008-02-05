@@ -10,6 +10,8 @@ uses
 type
   TScreenOptionsRecord = class(TMenu)
     private
+      Card: integer; // current input device
+
       SelectSlideInput:       integer;
       SelectSlideChannelL:    integer;
       SelectSlideChannelR:    integer;
@@ -45,14 +47,14 @@ begin
       SDLK_BACKSPACE:
         begin
           Ini.Save;
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
         begin
           if SelInteraction = 5 then begin
             Ini.Save;
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
           end;
         end;
@@ -63,7 +65,7 @@ begin
       SDLK_RIGHT:
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
 //          if SelInteraction = 0 then UpdateCard;
@@ -72,7 +74,7 @@ begin
       SDLK_LEFT:
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
           UpdateCard;          
@@ -84,30 +86,41 @@ end;
 
 constructor TScreenOptionsRecord.Create;
 var
-  I:      integer;
   SC:     integer;
   SCI:    integer;
+  InputDevice: TAudioInputDevice;
+  InputDeviceCfg: PInputDeviceConfig;
 begin
   inherited Create;
 
+  Card := 0;
+
   LoadFromTheme(Theme.OptionsRecord);
 
-  SetLength(ICard, Length(AudioInputProcessor.SoundCard));
-  for SC := 0 to High(AudioInputProcessor.SoundCard) do
-    ICard[SC] := AudioInputProcessor.SoundCard[SC].Description;
+  SetLength(ICard, Length(AudioInputProcessor.Device));
+  for SC := 0 to High(AudioInputProcessor.Device) do
+    ICard[SC] := AudioInputProcessor.Device[SC].Description;
 
-  if (Length(AudioInputProcessor.SoundCard) > 0) then
+  if (Card > High(AudioInputProcessor.Device)) then
+    Card := 0;
+
+  if (Length(AudioInputProcessor.Device) > 0) then
   begin
-    SetLength(IInput, Length(AudioInputProcessor.SoundCard[Ini.Card].Input));
-    for SCI := 0 to High(AudioInputProcessor.SoundCard[Ini.Card].Input) do
-      IInput[SCI] := AudioInputProcessor.SoundCard[Ini.Card].Input[SCI].Name;
+    InputDevice := AudioInputProcessor.Device[Card];
+    InputDeviceCfg := @Ini.InputDeviceConfig[InputDevice.CfgIndex];
+  
+    SetLength(IInput, Length(InputDevice.Source));
+    for SCI := 0 to High(InputDevice.Source) do
+      IInput[SCI] := InputDevice.Source[SCI].Name;
 
+    AddSelectSlide(Theme.OptionsRecord.SelectSlideCard, Card, ICard);
 
-    AddSelectSlide(Theme.OptionsRecord.SelectSlideCard, Ini.Card, ICard);
-
-    SelectSlideInput    := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput, Ini.CardList[0].Input, IInput);
-    SelectSlideChannelL := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelL, Ini.CardList[0].ChannelL, IChannel);
-    SelectSlideChannelR := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelR, Ini.CardList[0].ChannelR, IChannel);
+    SelectSlideInput    := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput,
+        InputDeviceCfg^.Input, IInput);
+    SelectSlideChannelL := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelL,
+        InputDeviceCfg^.ChannelToPlayerMap[0], IChannel);
+    SelectSlideChannelR := AddSelectSlide(Theme.OptionsRecord.SelectSlideChannelR,
+        InputDeviceCfg^.ChannelToPlayerMap[1], IChannel);
 
     AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);
   end;
@@ -136,29 +149,36 @@ end;
 
 procedure TScreenOptionsRecord.UpdateCard;
 var
-  SC:     integer;
-  SCI:    integer;
+  SourceIndex: integer;
+  InputDevice: TAudioInputDevice;
+  InputDeviceCfg: PInputDeviceConfig;
 begin
-  writeln( 'Update Card') ;
-  AudioInput.CaptureStop;
-  try
-    SC := Ini.Card;
-  //  if SC = 1 then beep;
+  Log.LogStatus('Update input-device', 'TScreenOptionsRecord.UpdateCard') ;
 
-    SetLength(IInput, Length(AudioInputProcessor.SoundCard[SC].Input));
-    for SCI := 0 to High(AudioInputProcessor.SoundCard[SC].Input) do begin
-      IInput[SCI] := AudioInputProcessor.SoundCard[SC].Input[SCI].Name;
-  //    Log.LogError(IInput[SCI]);
+  AudioInput.CaptureStop;
+
+  if (Card > High(AudioInputProcessor.Device)) then
+    Card := 0;
+
+  if (Length(AudioInputProcessor.Device) > 0) then
+  begin
+    InputDevice := AudioInputProcessor.Device[Card];
+    InputDeviceCfg := @Ini.InputDeviceConfig[InputDevice.CfgIndex];
+
+    SetLength(IInput, Length(InputDevice.Source));
+    for SourceIndex := 0 to High(InputDevice.Source) do begin
+      IInput[SourceIndex] := InputDevice.Source[SourceIndex].Name;
     end;
 
-
-    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideInput, SelectSlideInput, IInput, Ini.CardList[SC].Input);
-    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelL, SelectSlideChannelL, IChannel, Ini.CardList[SC].ChannelL);
-    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelR, SelectSlideChannelR, IChannel, Ini.CardList[SC].ChannelR);
-
-  finally
-    AudioInput.CaptureStart;
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideInput, SelectSlideInput, IInput,
+        InputDeviceCfg^.Input);
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelL, SelectSlideChannelL, IChannel,
+        InputDeviceCfg^.ChannelToPlayerMap[0]);
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideChannelR, SelectSlideChannelR, IChannel,
+        InputDeviceCfg^.ChannelToPlayerMap[1]);
   end;
+
+  AudioInput.CaptureStart;
 end;
 
 function TScreenOptionsRecord.Draw: boolean;

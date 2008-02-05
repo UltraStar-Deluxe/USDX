@@ -94,7 +94,7 @@ begin
             //Credits_Y := 600;
             //Credits_Alpha := 0;
             //Credits_Visible := True;
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenCredits);
           end;
         end;
@@ -102,20 +102,20 @@ begin
         begin
           if (Ini.Players >= 1) AND (Length(DLLMan.Plugins)>=1) then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenPartyOptions);
           end;
         end;
 
       SDLK_S:
         begin
-          AudioPlayback.PlayStart;
+          AudioPlayback.PlaySound(SoundLib.Start);
           FadeTo(@ScreenStatMain);
         end;
 
       SDLK_E:
         begin
-          AudioPlayback.PlayStart;
+          AudioPlayback.PlaySound(SoundLib.Start);
           FadeTo(@ScreenEdit);
         end;
 
@@ -126,7 +126,7 @@ begin
           begin
             if (Songs.SongList.Count >= 1) then
             begin
-              AudioPlayback.PlayStart;
+              AudioPlayback.PlaySound(SoundLib.Start);
               if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
               if (Ini.Players = 4) then PlayersPlay := 6;
 
@@ -144,7 +144,7 @@ begin
             begin
               if (Length(DLLMan.Plugins)>=1) then
               begin
-                AudioPlayback.PlayStart;
+                AudioPlayback.PlaySound(SoundLib.Start);
                 FadeTo(@ScreenPartyOptions);
               end
               else //show error message, No Plugins Loaded
@@ -157,21 +157,21 @@ begin
           //Stats
           if Interaction = 2 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenStatMain);
           end;
 
           //Editor
           if Interaction = 3 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenEdit);
           end;
 
           //Options
           if Interaction = 4 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptions);
           end;
 

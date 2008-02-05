@@ -9,34 +9,30 @@ interface
 {$I switches.inc}
 
 
-uses Classes,
-     {$IFDEF win32}
-     windows,
-     {$ENDIF}
-     SysUtils,
-     bass,
-     ULog,
-     UMusic;
+uses
+  Classes,
+  SysUtils,
+  UMusic;
 
 implementation
 
 uses
-     {$IFDEF LAZARUS}
-     lclintf,
-     {$ENDIF}
-     URecord,
-     UIni,
-     UMain,
-     UCommon,
-     UThemes;
+  UIni,
+  UMain,
+  ULog,
+  UAudioCore_Bass,
+  bass;
 
 type
-  TBassOutputStream = class(TAudioPlaybackStream)
+  TBassPlaybackStream = class(TAudioPlaybackStream)
     private
       Handle: HSTREAM;
+      Loop:   boolean;
     public
       constructor Create(); overload;
       constructor Create(stream: HSTREAM); overload;
+
+      procedure Reset();
 
       procedure Play();                     override;
       procedure Pause();                    override;
@@ -46,41 +42,33 @@ type
       procedure SetLoop(Enabled: boolean);  override;
       function GetLength(): real;           override;
       function GetStatus(): TStreamStatus;  override;
+      function GetVolume(): integer;        override;
+      procedure SetVolume(volume: integer); override;
+
+      function GetPosition: real;
+      procedure SetPosition(Time: real);
+
+      function IsLoaded(): boolean;
   end;
 
 type
   TAudioPlayback_Bass = class( TInterfacedObject, IAudioPlayback)
     private
-      MusicStream:        HSTREAM;
-      
-      StartSoundStream:   HSTREAM;
-      BackSoundStream:    HSTREAM;
-      SwooshSoundStream:  HSTREAM;
-      ChangeSoundStream:  HSTREAM;
-      OptionSoundStream:  HSTREAM;
-      ClickSoundStream:   HSTREAM;
-      DrumSoundStream:    HSTREAM;
-      HihatSoundStream:   HSTREAM;
-      ClapSoundStream:    HSTREAM;
-      ShuffleSoundStream: HSTREAM;
+      MusicStream: TBassPlaybackStream;
 
-      //Custom Sounds
-      CustomSounds: array of TCustomSoundEntry;
-      Loaded:   boolean;
-      Loop:     boolean;
-
+      function Load(Filename: string): TBassPlaybackStream;
     public
       function  GetName: String;
 
       {IAudioOutput interface}
 
-      procedure InitializePlayback;
+      function InitializePlayback(): boolean;
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
 
-      function Open(Name: string): boolean; // true if succeed
-      
+      function Open(Filename: string): boolean; // true if succeed
+
       procedure Rewind;
       procedure Play;
       procedure Pause; //Pause Mod
@@ -91,79 +79,106 @@ type
       function GetPosition: real;
       procedure SetPosition(Time: real);
 
-      procedure PlayStart;
-      procedure PlayBack;
-      procedure PlaySwoosh;
-      procedure PlayChange;
-      procedure PlayOption;
-      procedure PlayClick;
-      procedure PlayDrum;
-      procedure PlayHihat;
-      procedure PlayClap;
-      procedure PlayShuffle;
-      procedure StopShuffle;
-
-      function LoadSoundFromFile(var stream: HSTREAM; Name: string): boolean;
-
       //Equalizer
-      function GetFFTData: TFFTData;
+      procedure GetFFTData(var data: TFFTData);
 
       // Interface for Visualizer
       function GetPCMData(var data: TPCMData): Cardinal;
 
-      //Custom Sounds
-      function LoadCustomSound(const Filename: String): Cardinal;
-      procedure PlayCustomSound(const Index: Cardinal );
+      // Sounds
+      function OpenSound(const Filename: String): TAudioPlaybackStream;
+      procedure PlaySound(stream: TAudioPlaybackStream);
+      procedure StopSound(stream: TAudioPlaybackStream);
   end;
 
 var
   singleton_AudioPlaybackBass : IAudioPlayback;
 
 
-constructor TBassOutputStream.Create();
+constructor TBassPlaybackStream.Create();
 begin
   inherited;
+  Reset();
 end;
 
-constructor TBassOutputStream.Create(stream: HSTREAM);
+constructor TBassPlaybackStream.Create(stream: HSTREAM);
 begin
   Create();
   Handle := stream;
 end;
 
-procedure TBassOutputStream.Play();
+procedure TBassPlaybackStream.Reset();
 begin
-  BASS_ChannelPlay(Handle, True);
+  Loop := false;
+  if (Handle <> 0) then
+    Bass_StreamFree(Handle);
+  Handle := 0;
 end;
 
-procedure TBassOutputStream.Pause();
+procedure TBassPlaybackStream.Play();
 begin
-  //if (Loaded) then
+  BASS_ChannelPlay(Handle, Loop);
+end;
+
+procedure TBassPlaybackStream.Pause();
+begin
   BASS_ChannelPause(Handle);
 end;
 
-procedure TBassOutputStream.Stop();
+procedure TBassPlaybackStream.Stop();
 begin
   BASS_ChannelStop(Handle);
 end;
 
-procedure TBassOutputStream.Close();
+procedure TBassPlaybackStream.Close();
 begin
-  Bass_StreamFree(Handle);
+  Reset();
 end;
 
-function TBassOutputStream.GetLoop(): boolean;
+function TBassPlaybackStream.GetVolume(): integer;
 begin
-  // TODO
-  result := false;
+  Result := 0;
+  BASS_ChannelSetAttributes(Handle, PInteger(nil)^, Result, PInteger(nil)^);
 end;
 
-procedure TBassOutputStream.SetLoop(Enabled: boolean);
+procedure TBassPlaybackStream.SetVolume(volume: integer);
 begin
-  // TODO
+  // clamp volume
+  if volume < 0 then
+    volume := 0;
+  if volume > 100 then
+    volume := 100;
+  // set volume
+  BASS_ChannelSetAttributes(Handle, -1, volume, -101);
 end;
 
-function TBassOutputStream.GetLength(): real;
+function TBassPlaybackStream.GetPosition: real;
+var
+  bytes:    integer;
+begin
+  bytes  := BASS_ChannelGetPosition(Handle);
+  Result := BASS_ChannelBytes2Seconds(Handle, bytes);
+end;
+
+procedure TBassPlaybackStream.SetPosition(Time: real);
+var
+  bytes:    integer;
+begin
+  bytes := BASS_ChannelSeconds2Bytes(Handle, Time);
+  BASS_ChannelSetPosition(Handle, bytes);
+end;
+
+function TBassPlaybackStream.GetLoop(): boolean;
+begin
+  result := Loop;
+end;
+
+procedure TBassPlaybackStream.SetLoop(Enabled: boolean);
+begin
+  Loop := Enabled;
+end;
+
+function TBassPlaybackStream.GetLength(): real;
 var
   bytes:    integer;
 begin
@@ -171,19 +186,28 @@ begin
   Result := BASS_ChannelBytes2Seconds(Handle, bytes);
 end;
 
-function TBassOutputStream.GetStatus(): TStreamStatus;
+function TBassPlaybackStream.GetStatus(): TStreamStatus;
 var
   state: DWORD;
 begin
   state := BASS_ChannelIsActive(Handle);
   case state of
     BASS_ACTIVE_PLAYING:
-      result := sPlaying;
+      result := ssPlaying;
     BASS_ACTIVE_PAUSED:
-      result := sPaused;
+      result := ssPaused;
+    BASS_ACTIVE_STALLED:
+      result := ssBlocked;
+    BASS_ACTIVE_STOPPED:
+      result := ssStopped;
     else
-      result := sStopped;
+      result := ssUnknown;
   end;
+end;
+
+function TBassPlaybackStream.IsLoaded(): boolean;
+begin
+  Result := (Handle <> 0);
 end;
 
 
@@ -192,16 +216,15 @@ begin
   result := 'BASS_Playback';
 end;
 
-procedure TAudioPlayback_Bass.InitializePlayback;
+function TAudioPlayback_Bass.InitializePlayback(): boolean;
 var
   Pet:  integer;
   S:    integer;
 begin
-//  Log.BenchmarkStart(4);
-//  Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
+  result := false;
 
-  Loaded := false;
-  Loop   := false;
+  //Log.BenchmarkStart(4);
+  //Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
 
   if not BASS_Init(1, 44100, 0, 0, nil) then
   begin
@@ -209,30 +232,32 @@ begin
     Exit;
   end;
 
-//  Log.BenchmarkEnd(4); Log.LogBenchmark('--> Bass Init', 4);
+  //Log.BenchmarkEnd(4); Log.LogBenchmark('--> Bass Init', 4);
 
   // config playing buffer
-//  BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
-//  BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
+  //BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
+  //BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
 
-//  Log.LogStatus('Loading Sounds', 'Music Initialize');
+  result := true;
+end;
 
-//  Log.BenchmarkStart(4);
-  LoadSoundFromFile(StartSoundStream,  SoundPath + 'Common Start.mp3');
-  LoadSoundFromFile(BackSoundStream,   SoundPath + 'Common Back.mp3');
-  LoadSoundFromFile(SwooshSoundStream, SoundPath + 'menu swoosh.mp3');
-  LoadSoundFromFile(ChangeSoundStream, SoundPath + 'select music change music 50.mp3');
-  LoadSoundFromFile(OptionSoundStream, SoundPath + 'option change col.mp3');
-  LoadSoundFromFile(ClickSoundStream,  SoundPath + 'rimshot022b.mp3');
+function TAudioPlayback_Bass.Load(Filename: string): TBassPlaybackStream;
+var
+  L: Integer;
+  stream: HSTREAM;
+begin
+  Result := nil;
 
-//  LoadSoundFromFile(DrumSoundStream,   SoundPath + 'bassdrumhard076b.mp3');
-//  LoadSoundFromFile(HihatSoundStream,  SoundPath + 'hihatclosed068b.mp3');
-//  LoadSoundFromFile(ClapSoundStream,   SoundPath + 'claps050b.mp3');
+  //Log.LogStatus('Loading Sound: "' + Filename + '"', 'LoadSoundFromFile');
+  stream := BASS_StreamCreateFile(False, pchar(Filename), 0, 0, 0);
+  if (stream = 0) then
+  begin
+    Log.LogError('Failed to open "' + Filename + '", ' +
+                 TAudioCore_Bass.ErrorGetString(BASS_ErrorGetCode()), 'TAudioPlayback_Bass.Load');
+    Exit;
+  end;
 
-//  LoadSoundFromFile(ShuffleSoundStream, SoundPath + 'Shuffle.mp3');
-
-//  Log.BenchmarkEnd(4);
-//  Log.LogBenchmark('--> Loading Sounds', 4);
+  Result := TBassPlaybackStream.Create(stream);
 end;
 
 procedure TAudioPlayback_Bass.SetVolume(Volume: integer);
@@ -240,7 +265,6 @@ begin
   //Old Sets Wave Volume
   //BASS_SetVolume(Volume);
   //New: Sets Volume only for this Application
-
   BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume);
   BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, Volume);
@@ -248,193 +272,102 @@ end;
 
 procedure TAudioPlayback_Bass.SetMusicVolume(Volume: Integer);
 begin
-  //Max Volume Prevention
-  if Volume > 100 then
-    Volume := 100;
-
-  if Volume < 0 then
-    Volume := 0;
-
-  //Set Volume
-  BASS_ChannelSetAttributes (MusicStream, -1, Volume, -101);
+  if assigned(MusicStream) then
+    MusicStream.SetVolume(Volume);
 end;
 
 procedure TAudioPlayback_Bass.SetLoop(Enabled: boolean);
 begin
-  Loop := Enabled;
+  if assigned(MusicStream) then
+    MusicStream.Loop := Enabled;
 end;
 
-function TAudioPlayback_Bass.Open(Name: string): boolean;
+function TAudioPlayback_Bass.Open(Filename: string): boolean;
+var
+  stream: HSTREAM;
 begin
-  Loaded := false;
-  if FileExists(Name) then
-  begin
-    MusicStream := Bass_StreamCreateFile(false, pchar(Name), 0, 0, 0);
+  Result := false;
 
-    Loaded := true;
-    //Set Max Volume
-    SetMusicVolume (100);
-  end;
+  // free old MusicStream
+  if assigned(MusicStream) then
+    MusicStream.Free;
 
-  Result := Loaded;
+  MusicStream := Load(Filename);
+  if not assigned(MusicStream) then
+    Exit;
+
+  //Set Max Volume
+  SetMusicVolume(100);
+
+  Result := true;
 end;
 
 procedure TAudioPlayback_Bass.Rewind;
 begin
-  if Loaded then begin
-  end;
-end;
-
-procedure TAudioPlayback_Bass.SetPosition(Time: real);
-var
-  bytes:    integer;
-begin
-  bytes := BASS_ChannelSeconds2Bytes(MusicStream, Time);
-  BASS_ChannelSetPosition(MusicStream, bytes);
+  SetPosition(0);
 end;
 
 procedure TAudioPlayback_Bass.Play;
 begin
-  if Loaded then
-  begin
-    if Loop then
-      BASS_ChannelPlay(MusicStream, True); // start from beginning... actually bass itself does not loop, nor does this TAudio_bass Class
-
-    BASS_ChannelPlay(MusicStream, False); // for setting position before playing
-  end;
+  if assigned(MusicStream) then
+    MusicStream.Play();
 end;
 
-procedure TAudioPlayback_Bass.Pause; //Pause Mod
+procedure TAudioPlayback_Bass.Pause;
 begin
-  if Loaded then begin
-    BASS_ChannelPause(MusicStream); // Pauses Song
-  end;
+  if assigned(MusicStream) then
+    MusicStream.Pause();
 end;
 
 procedure TAudioPlayback_Bass.Stop;
 begin
-  Bass_ChannelStop(MusicStream);
+  if assigned(MusicStream) then
+    MusicStream.Stop();
 end;
 
 procedure TAudioPlayback_Bass.Close;
 begin
-  Bass_StreamFree(MusicStream);
+  if assigned(MusicStream) then
+    MusicStream.Close();
 end;
 
 function TAudioPlayback_Bass.Length: real;
 var
   bytes:    integer;
 begin
-  bytes  := BASS_ChannelGetLength(MusicStream);
-  Result := BASS_ChannelBytes2Seconds(MusicStream, bytes);
+  if assigned(MusicStream) then
+    Result := MusicStream.GetLength()
+  else
+    Result := -1;
 end;
 
-function TAudioPlayback_Bass.getPosition: real;
-var
-  bytes:    integer;
+function TAudioPlayback_Bass.GetPosition: real;
 begin
-  bytes  := BASS_ChannelGetPosition(MusicStream);
-  Result := BASS_ChannelBytes2Seconds(MusicStream, bytes);
+  if assigned(MusicStream) then
+    Result := MusicStream.GetPosition()
+  else
+    Result := -1;
+end;
+
+procedure TAudioPlayback_Bass.SetPosition(Time: real);
+begin
+  if assigned(MusicStream) then
+    MusicStream.SetPosition(Time);
 end;
 
 function TAudioPlayback_Bass.Finished: boolean;
 begin
-  Result := false;
-
-  if BASS_ChannelIsActive(MusicStream) = BASS_ACTIVE_STOPPED then
-  begin
-    Result := true;
-  end;
-end;
-
-procedure TAudioPlayback_Bass.PlayStart;
-begin
-  BASS_ChannelPlay(StartSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayBack;
-begin
-  BASS_ChannelPlay(BackSoundStream, True);// then
-end;
-
-procedure TAudioPlayback_Bass.PlaySwoosh;
-begin
-  BASS_ChannelPlay(SwooshSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayChange;
-begin
-  BASS_ChannelPlay(ChangeSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayOption;
-begin
-  BASS_ChannelPlay(OptionSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayClick;
-begin
-  BASS_ChannelPlay(ClickSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayDrum;
-begin
-  BASS_ChannelPlay(DrumSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayHihat;
-begin
-  BASS_ChannelPlay(HihatSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayClap;
-begin
-  BASS_ChannelPlay(ClapSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.PlayShuffle;
-begin
-  BASS_ChannelPlay(ShuffleSoundStream, True);
-end;
-
-procedure TAudioPlayback_Bass.StopShuffle;
-begin
-  BASS_ChannelStop(ShuffleSoundStream);
-end;
-
-function TAudioPlayback_Bass.LoadSoundFromFile(var stream: HSTREAM; Name: string): boolean;
-var
-  L: Integer;
-begin
-  if FileExists(Name) then
-  begin
-    Log.LogStatus('Loading Sound: "' + Name + '"', 'LoadSoundFromFile');
-    try
-      stream := BASS_StreamCreateFile(False, pchar(Name), 0, 0, 0);
-
-      //Add CustomSound
-      L := High(CustomSounds) + 1;
-      SetLength (CustomSounds, L + 1);
-      CustomSounds[L].Filename := Name;
-      CustomSounds[L].Stream := TBassOutputStream.Create(stream);
-    except
-      Log.LogError('Failed to open using BASS', 'LoadSoundFromFile');
-    end;
-  end
+  if assigned(MusicStream) then
+    Result := (MusicStream.GetStatus() = ssStopped)
   else
-  begin
-    Log.LogError('Sound not found: "' + Name + '"', 'LoadSoundFromFile');
-    exit;
-  end;
+    Result := true;
 end;
 
 //Equalizer
-function TAudioPlayback_Bass.GetFFTData: TFFTData;
-var
-  Data: TFFTData;
+procedure TAudioPlayback_Bass.GetFFTData(var data: TFFTData);
 begin
   //Get Channel Data Mono and 256 Values
-  BASS_ChannelGetData(MusicStream, @Result, BASS_DATA_FFT512);
+  BASS_ChannelGetData(MusicStream.Handle, @data, BASS_DATA_FFT512);
 end;
 
 {*
@@ -447,23 +380,21 @@ var
   nBytes: DWORD;
 begin
   //Get Channel Data Mono and 256 Values
-  BASS_ChannelGetInfo(MusicStream, info);
-  ZeroMemory(@data, sizeof(TPCMData));
+  BASS_ChannelGetInfo(MusicStream.Handle, info);
+  FillChar(data, sizeof(TPCMData), 0);
   
   if (info.chans = 1) then
   begin
     // mono file -> add stereo channel
-    {
-    nBytes := BASS_ChannelGetData(Bass, @data[0], samples*sizeof(Smallint));
+    nBytes := 0;//BASS_ChannelGetData(Bass, @data[0], samples*sizeof(Smallint));
     // interleave data
     //CopyMemory(@data[1], @data[0], samples*sizeof(Smallint));
-    }
     result := 0;
   end
   else
   begin
     // stereo file
-    nBytes := BASS_ChannelGetData(MusicStream, @data, sizeof(TPCMData));
+    nBytes := BASS_ChannelGetData(MusicStream.Handle, @data, sizeof(TPCMData));
   end;
   if(nBytes <= 0) then
     result := 0
@@ -471,36 +402,21 @@ begin
     result := nBytes div sizeof(TPCMStereoSample);
 end;
 
-function TAudioPlayback_Bass.LoadCustomSound(const Filename: String): Cardinal;
-var
-  S: hStream;
-  I: Integer;
-  F: String;
+function TAudioPlayback_Bass.OpenSound(const Filename: string): TAudioPlaybackStream;
 begin
-  //Search for Sound in already loaded Sounds
-  F := UpperCase(SoundPath + FileName);
-  For I := 0 to High(CustomSounds) do
-  begin
-    if (UpperCase(CustomSounds[I].Filename) = F) then
-    begin
-      Result := I;
-      Exit;
-    end;
-  end;
-
-  if LoadSoundFromFile(S, SoundPath + Filename) then
-    Result := High(CustomSounds)
-  else
-    Result := 0;
+  result := Load(Filename);
 end;
 
-procedure TAudioPlayback_Bass.PlayCustomSound(const Index: Cardinal );
+procedure TAudioPlayback_Bass.PlaySound(stream: TAudioPlaybackStream);
 begin
-  if Index <= High(CustomSounds) then
-  with CustomSounds[Index].Stream as TBassOutputStream do
-  begin
-    BASS_ChannelPlay(Handle, True);
-  end;
+  if assigned(stream) then
+    stream.Play();
+end;
+
+procedure TAudioPlayback_Bass.StopSound(stream: TAudioPlaybackStream);
+begin
+  if assigned(stream) then
+    stream.Stop();
 end;
 
 

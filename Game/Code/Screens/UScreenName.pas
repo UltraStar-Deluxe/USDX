@@ -158,7 +158,7 @@ begin
       SDLK_ESCAPE :
         begin
           Ini.SaveNames;
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           if GoTo_SingScreen then
             FadeTo(@ScreenSong)
           else
@@ -170,7 +170,7 @@ begin
           for I := 1 to 6 do
             Ini.Name[I-1] := Button[I-1].Text[0].Text;
           Ini.SaveNames;
-          AudioPlayback.PlayStart;
+          AudioPlayback.PlaySound(SoundLib.Start);
 
           if GoTo_SingScreen then
             FadeTo(@ScreenSing)

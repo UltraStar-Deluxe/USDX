@@ -195,23 +195,14 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Skin List', 1);
 
-(*
-    // Sound Card List
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Loading Soundcard list', 'Initialization');
-    Recording := TRecord.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Soundcard list', 1);
-*)
-
-    // Sound (+ fills Sound Card List)
+    // Sound
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize Sound', 'Initialization');
     InitializeSound();
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing Sound', 1);
 
-    // Ini + Paths
+    // Ini + Paths (depends on Sound)
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Ini', 'Initialization');
     Ini := TIni.Create;
@@ -758,7 +749,7 @@ begin
 
   // beat click
   if (Ini.BeatClick = 1) and ((Czas.AktBeatC + Czesci[0].Resolution + Czesci[0].NotesGAP) mod Czesci[0].Resolution = 0) then
-    AudioPlayback.PlayClick;
+    AudioPlayback.PlaySound(SoundLib.Click);
 
   // debug system on LPT
   if ((Czas.AktBeatC + Czesci[0].Resolution + Czesci[0].NotesGAP) mod Czesci[0].Resolution = 0) then begin
@@ -780,7 +771,7 @@ begin
     if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = Czas.AktBeatC) then begin
       // click assist
       if Ini.ClickAssist = 1 then
-        AudioPlayback.PlayClick;
+        AudioPlayback.PlaySound(SoundLib.Click);
 
         //LPT_2 := 0;
         if ParamStr(1) <> '-doublelights' then
@@ -871,7 +862,7 @@ begin
 //    Czas.Ton := 27;
 
     // gdy moze, to dodaje nute
-    if (AudioInputProcessor.Sound[CP].SzczytJest) and (Mozna) then begin
+    if (AudioInputProcessor.Sound[CP].ToneValid) and (Mozna) then begin
       // operowanie na ostatniej nucie
       for Pet := 0 to Czesci[0].Czesc[S].HighNut do
         if (Czesci[0].Czesc[S].Nuta[Pet].Start <= Czas.OldBeatD+1)
@@ -880,11 +871,11 @@ begin
           // to robi, tylko dla pary nut (oryginalnej i gracza)
 
           // przesuwanie tonu w odpowiednia game
-          while (AudioInputProcessor.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton > 6) do
-            AudioInputProcessor.Sound[CP].Ton := AudioInputProcessor.Sound[CP].Ton - 12;
+          while (AudioInputProcessor.Sound[CP].Tone - Czesci[0].Czesc[S].Nuta[Pet].Ton > 6) do
+            AudioInputProcessor.Sound[CP].Tone := AudioInputProcessor.Sound[CP].Tone - 12;
 
-          while (AudioInputProcessor.Sound[CP].Ton - Czesci[0].Czesc[S].Nuta[Pet].Ton < -6) do
-            AudioInputProcessor.Sound[CP].Ton := AudioInputProcessor.Sound[CP].Ton + 12;
+          while (AudioInputProcessor.Sound[CP].Tone - Czesci[0].Czesc[S].Nuta[Pet].Ton < -6) do
+            AudioInputProcessor.Sound[CP].Tone := AudioInputProcessor.Sound[CP].Tone + 12;
 
           // Half size Notes Patch
           NoteHit := false;
@@ -894,8 +885,8 @@ begin
           //if Ini.Difficulty = 2 then Range := 0;
           Range := 2 - Ini.Difficulty;
 
-          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - AudioInputProcessor.Sound[CP].Ton) <= Range then begin
-            AudioInputProcessor.Sound[CP].Ton := Czesci[0].Czesc[S].Nuta[Pet].Ton;
+          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - AudioInputProcessor.Sound[CP].Tone) <= Range then begin
+            AudioInputProcessor.Sound[CP].Tone := Czesci[0].Czesc[S].Nuta[Pet].Ton;
 
 
             // Half size Notes Patch
@@ -936,7 +927,7 @@ begin
       Nowa := true;
       // jezeli ostatnia ma ten sam ton
       if (Player[CP].IlNut > 0 )
-        and (Player[CP].Nuta[Player[CP].HighNut].Ton = AudioInputProcessor.Sound[CP].Ton)
+        and (Player[CP].Nuta[Player[CP].HighNut].Ton = AudioInputProcessor.Sound[CP].Tone)
         and (Player[CP].Nuta[Player[CP].HighNut].Start + Player[CP].Nuta[Player[CP].HighNut].Dlugosc = Czas.AktBeatD)
         then Nowa := false;
       // jezeli jest jakas nowa nuta na sprawdzanym beacie
@@ -952,7 +943,7 @@ begin
         SetLength(Player[CP].Nuta, Player[CP].IlNut);
         Player[CP].Nuta[Player[CP].HighNut].Start   := Czas.AktBeatD;
         Player[CP].Nuta[Player[CP].HighNut].Dlugosc := 1;
-        Player[CP].Nuta[Player[CP].HighNut].Ton     := AudioInputProcessor.Sound[CP].Ton; // Ton || TonDokl
+        Player[CP].Nuta[Player[CP].HighNut].Ton     := AudioInputProcessor.Sound[CP].Tone; // Ton || TonDokl
         Player[CP].Nuta[Player[CP].HighNut].Detekt  := Czas.MidBeat;
 
 

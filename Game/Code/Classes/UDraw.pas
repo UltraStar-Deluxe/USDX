@@ -161,21 +161,25 @@ end;
 
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
 var
-  Pet        : integer;
+  SampleIndex: integer;
+  Sound: TSound;
+  MaxX, MaxY: real;
 begin;
-//  Log.LogStatus('Oscilloscope', 'SingDraw');
+  Sound := AudioInputProcessor.Sound[NrSound];
+
+  //  Log.LogStatus('Oscilloscope', 'SingDraw');
   glColor3f(Skin_OscR, Skin_OscG, Skin_OscB);
   {if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
     glColor3f(1, 1, 1);  }
 
+  MaxX := W-1;
+  MaxY := (H-1) / 2;
+
   glBegin(GL_LINE_STRIP);
-
-    glVertex2f(X, -AudioInputProcessor.Sound[NrSound].BufferArray[1] / $10000 * H + Y + H/2);
-
-    for Pet := 2 to AudioInputProcessor.Sound[NrSound].n div 1 do
+    for SampleIndex := 0 to High(Sound.BufferArray) do
     begin
-      glVertex2f( X + (Pet-1) * W / (AudioInputProcessor.Sound[NrSound].n - 1),
-                  -AudioInputProcessor.Sound[NrSound].BufferArray[Pet] / $10000 * H + Y + H/2 );
+      glVertex2f(X + MaxX * SampleIndex/High(Sound.BufferArray),
+                 Y + MaxY * (1 - Sound.BufferArray[SampleIndex]/-Low(Smallint)));
     end;
   glEnd;
 end;

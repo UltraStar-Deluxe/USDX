@@ -29,6 +29,11 @@ uses
 
 type
   TScreenSong = class(TMenu)
+    private
+      EqualizerData: TFFTData; // moved here to avoid stack overflows
+      EqualizerBands: array of Byte;
+      EqualizerTime: Cardinal;
+      EqualizerTime2: Byte;
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -51,10 +56,6 @@ type
       CoverW:       integer;
       is_jump:      boolean; // Jump to Song Mod
       is_jump_title:boolean; //Jump to SOng MOd-YTrue if search for Title
-
-      EqualizerBands: array of Byte;
-      EqualizerTime: Cardinal;
-      EqualizerTime2: Byte;
 
       //Party Mod
       Mode: TSingMode;
@@ -270,7 +271,7 @@ begin
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-            AudioPlayback.PlayChange;
+            AudioPlayback.PlaySound(SoundLib.Change);
 
             ChangeMusic;
             SetScroll4;
@@ -291,7 +292,7 @@ begin
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-            AudioPlayback.PlayChange;
+            AudioPlayback.PlaySound(SoundLib.Change);
 
             ChangeMusic;
             SetScroll4;
@@ -369,7 +370,7 @@ begin
             else
             begin
               AudioPlayback.Stop;
-              AudioPlayback.PlayBack;
+              AudioPlayback.PlaySound(SoundLib.Back);
 
               FadeTo(@ScreenMain);
             end;
@@ -379,7 +380,7 @@ begin
         //When in party Mode then Ask before Close
         else if (Mode = smPartyMode) then
         begin
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
         end;
         end;
@@ -504,7 +505,7 @@ begin
                 FixSelected;
 
                 //Play Music:
-                AudioPlayback.PlayChange;
+                AudioPlayback.PlaySound(SoundLib.Change);
                 ChangeMusic;
 
               end;
@@ -547,7 +548,7 @@ begin
                 FixSelected;
 
                 //Play Music:
-                AudioPlayback.PlayChange;
+                AudioPlayback.PlaySound(SoundLib.Change);
                 ChangeMusic;
               end;
             end;
@@ -559,7 +560,7 @@ begin
         begin
           if (Songs.SongList.Count > 0) AND (Mode = smNormal) then
           begin
-            AudioPlayback.PlayChange;
+            AudioPlayback.PlaySound(SoundLib.Change);
             SelectNext;
 //            InteractNext;
 //           SongTarget := Interaction;
@@ -573,7 +574,7 @@ begin
       SDLK_LEFT:
         begin
           if (Songs.SongList.Count > 0)AND (Mode = smNormal)  then begin
-            AudioPlayback.PlayChange;
+            AudioPlayback.PlaySound(SoundLib.Change);
             SelectPrev;
             ChangeMusic;
             SetScroll4;
@@ -655,7 +656,7 @@ begin
             begin
               SkipTo(Random(CatSongs.VisibleSongs));
             end;
-            AudioPlayback.PlayChange;
+            AudioPlayback.PlaySound(SoundLib.Change);
 
             ChangeMusic;
             SetScroll4;
@@ -1804,7 +1805,6 @@ end;
 
 procedure TScreenSong.DrawEqualizer;
 var
-  Data: TFFTData; //Audio Data
   I, J: Integer;
   Res: byte;
   A, B: Integer;
@@ -1822,7 +1822,7 @@ begin
   if (A <> EqualizerTime) then
   begin
     EqualizerTime := A;
-    Data := AudioPlayback.GetFFTData;
+    AudioPlayback.GetFFTData(EqualizerData);
 
     B   := 0;
     Pos := 0;
@@ -1850,23 +1850,23 @@ begin
       end;
 
       if I > 35 then
-        Data[i] := Data[i] * 8
+        EqualizerData[i] := EqualizerData[i] * 8
       else if I > 11 then
-        Data[i] := Data[i] * 4.5
+        EqualizerData[i] := EqualizerData[i] * 4.5
       else
-        Data[i] := Data[i] * 1.1;
+        EqualizerData[i] := EqualizerData[i] * 1.1;
 
-      if (Data[i] >= 1) then
-        Data[i] := 0.9999999999999;
+      if (EqualizerData[i] >= 1) then
+        EqualizerData[i] := 0.9999999999999;
 
       try
         if ( assigned( Theme )      ) AND
            ( assigned( Theme.Song ) ) AND
-           ( i < length( Data )     ) THEN
+           ( i < length( EqualizerData ) ) THEN
         begin
-          if single( Data[i] ) > 1  then
+          if single( EqualizerData[i] ) > 1  then
           begin
-            lTmp := Single(Data[i]) * Theme.Song.Equalizer.Length;
+            lTmp := Single(EqualizerData[i]) * Theme.Song.Equalizer.Length;
             if lTmp > Pos then
               Pos := lTmp;
           end;
@@ -1874,7 +1874,7 @@ begin
       except
         {$IFDEF FPC}
         on E:EInvalidOp do
-          writeln( 'UScreenSong - DOH !!!! ('+inttostr(i)+' '+ inttostr( integer( Data[i] ) )+' * '+ ')' );
+          writeln( 'UScreenSong - DOH !!!! ('+inttostr(i)+' '+ inttostr( integer( EqualizerData[i] ) )+' * '+ ')' );
         {$ENDIF}
       end
       
@@ -1989,7 +1989,7 @@ begin
         end;
   end;
 
-  AudioPlayback.PlayChange;
+  AudioPlayback.PlaySound(SoundLib.Change);
   ChangeMusic;
   SetScroll;
   UpdateLCD;
@@ -2129,7 +2129,7 @@ begin
   if (Songs.SongList.Count > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = smNormal) then
   begin
     AudioPlayback.Stop;
-    AudioPlayback.PlayStart;
+    AudioPlayback.PlaySound(SoundLib.Start);
     ScreenEditSub.Path := CatSongs.Song[Interaction].Path;
     ScreenEditSub.FileName := CatSongs.Song[Interaction].FileName;
     FadeTo(@ScreenEditSub);

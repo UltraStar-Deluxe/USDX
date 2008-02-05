@@ -38,57 +38,57 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
         end;
       SDLK_RETURN:
         begin
           if SelInteraction = 0 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsGame);
           end;
 
           if SelInteraction = 1 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsGraphics);
           end;
 
           if SelInteraction = 2 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsSound);
           end;
 
           if SelInteraction = 3 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsLyrics);
           end;
 
           if SelInteraction = 4 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsThemes);
           end;
 
           if SelInteraction = 5 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsRecord);
           end;
 
           if SelInteraction = 6 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsAdvanced);
           end;
 
           if SelInteraction = 7 then
           begin
             Ini.Save;
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenMain);
           end;
         end;

@@ -34,7 +34,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
@@ -44,7 +44,7 @@ begin
           end;}
           if SelInteraction = 5 then begin
             Ini.Save;
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
           end;
         end;
@@ -55,14 +55,14 @@ begin
       SDLK_RIGHT:
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
         end;

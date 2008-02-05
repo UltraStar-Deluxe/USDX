@@ -172,7 +172,7 @@ begin
       SDLK_BACKSPACE :
         begin
           FadeTo(@ScreenMain);
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
         end;
 {       SDLK_SPACE:
          begin
@@ -445,7 +445,7 @@ const  myLogoCoords: Array[0..27,0..1] of Cardinal = ((39,32),(84,32),(100,16),(
 
 begin
   //dis does teh muiwk y0r
-  Data := AudioPlayback.GetFFTData;
+  AudioPlayback.GetFFTData(Data);
 
   Log.LogStatus('',' JB-1');
 

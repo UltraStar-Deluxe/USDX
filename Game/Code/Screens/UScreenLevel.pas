@@ -38,7 +38,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenName);
         end;
 
@@ -46,7 +46,7 @@ begin
         begin
           Ini.Difficulty := Interaction;
           Ini.SaveLevel;
-          AudioPlayback.PlayStart;
+          AudioPlayback.PlaySound(SoundLib.Start);
           //Set Standard Mode
           ScreenSong.Mode := smNormal;
           FadeTo(@ScreenSong);

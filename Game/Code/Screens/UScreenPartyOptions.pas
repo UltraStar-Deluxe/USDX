@@ -66,7 +66,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
         end;
 
@@ -125,7 +125,7 @@ begin
           // to-do : Party
           //PartySession.StartNewParty(Rounds + 2);
 
-          AudioPlayback.PlayStart;
+          AudioPlayback.PlaySound(SoundLib.Start);
           //Go to Player Screen
           FadeTo(@ScreenPartyPlayer);
         end;
@@ -137,7 +137,7 @@ begin
       SDLK_UP:      InteractPrev;
       SDLK_RIGHT:
         begin
-          AudioPlayback.PlayOption;
+          AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
 
           //Change Playlist2 if Playlist is Changed
@@ -152,7 +152,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          AudioPlayback.PlayOption;
+          AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
 
           //Change Playlist2 if Playlist is Changed

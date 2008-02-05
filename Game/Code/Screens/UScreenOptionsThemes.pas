@@ -53,7 +53,7 @@ begin
           UGraphic.UnLoadScreens();
           UGraphic.LoadScreens();
 
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
@@ -67,7 +67,7 @@ begin
             UGraphic.UnLoadScreens();
             UGraphic.LoadScreens();
 
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
           end;
         end;
@@ -79,7 +79,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 2) then 
           begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
         end;
@@ -87,7 +87,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 2) then 
           begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
         end;

@@ -121,7 +121,7 @@ begin
       {$IFDEF UseMIDIPort}
           MidiFile.StopPlaying;
       {$ENDIF}
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenEdit);
         end;
 
@@ -129,7 +129,7 @@ begin
         begin
           if Interaction = 0 then
           begin
-            AudioPlayback.PlayStart;
+            AudioPlayback.PlaySound(SoundLib.Start);
             ScreenOpen.BackScreen := @ScreenEditConvert;
             FadeTo(@ScreenOpen);
           end;

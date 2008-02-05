@@ -17,36 +17,33 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$I switches.inc}
+{$I ../switches.inc}
 
 
-uses Classes,
-     {$IFDEF win32}
-     windows,
-     {$ENDIF}
-     SysUtils,
-     SDL,
-     avcodec,     // FFMpeg Audio file decoding
-     avformat,
-     avutil,
-     avio,        // used for url_ferror
-     mathematics, // used for av_rescale_q
-     ULog,
-     UMusic;
+uses
+  Classes,
+  {$IFDEF win32}
+  windows,
+  {$ENDIF}
+  SysUtils,
+  UMusic;
 
 implementation
 
 uses
-     {$IFDEF LAZARUS}
-     lclintf,
-       {$ifndef win32}
-       libc,
-       {$endif}
-     {$ENDIF}
-     UIni,
-     UMain,
-     UThemes,
-     UConfig;
+  {$ifndef win32}
+  libc,
+  {$endif}
+  UIni,
+  UMain,
+  avcodec,     // FFMpeg Audio file decoding
+  avformat,
+  avutil,
+  avio,        // used for url_ferror
+  mathematics, // used for av_rescale_q
+  SDL,
+  ULog,
+  UConfig;
 
 
 type
@@ -106,12 +103,12 @@ type
       ffmpegStreamIndex : Integer;
       ffmpegStream      : PAVStream;
 
-      // "static" vars for DecodeFrame
+      // state-vars for DecodeFrame
       pkt             : TAVPacket;
       audio_pkt_data  : PChar;
       audio_pkt_size  : integer;
 
-      // "static" vars for AudioCallback
+      // state-vars for AudioCallback
       audio_buf_index : cardinal;
       audio_buf_size  : cardinal;
       audio_buf       : TAudioBuffer;
@@ -127,8 +124,7 @@ type
       procedure Close();                     override;
 
       function GetLength(): real;            override;
-      function GetChannelCount(): cardinal;  override;
-      function GetSampleRate(): cardinal;    override;
+      function GetAudioFormatInfo(): TAudioFormatInfo; override;
       function GetPosition: real;            override;
       procedure SetPosition(Time: real);     override;
       function IsEOF(): boolean;             override;
@@ -169,7 +165,7 @@ begin
   audio_buf_index := 0;
   audio_buf_size  := 0;
 
-  FillChar(pkt, sizeof(TAVPacket), #0);
+  FillChar(pkt, sizeof(TAVPacket), 0);
 
   Self.pFormatCtx := pFormatCtx;
   Self.pCodecCtx := pCodecCtx;
@@ -221,14 +217,12 @@ begin
   result := pFormatCtx^.duration / AV_TIME_BASE;
 end;
 
-function TFFMpegDecodeStream.GetChannelCount(): cardinal;
+function TFFMpegDecodeStream.GetAudioFormatInfo(): TAudioFormatInfo;
 begin
-  result := pCodecCtx^.channels;
-end;
-
-function TFFMpegDecodeStream.GetSampleRate(): cardinal;
-begin
-  result := pCodecCtx^.sample_rate;
+  result.Channels := pCodecCtx^.channels;
+  result.SampleRate := pCodecCtx^.sample_rate;
+  //result.Format := pCodecCtx^.sample_fmt; // sample_fmt not yet used by FFMpeg
+  result.Format := asfS16; // use FFMpeg's standard format
 end;
 
 function TFFMpegDecodeStream.IsEOF(): boolean;
@@ -260,7 +254,7 @@ begin
   SDL_mutexP(lock);
   seekPos := Trunc(Time * AV_TIME_BASE);
   // FIXME: seek_flags = rel < 0 ? AVSEEK_FLAG_BACKWARD : 0
-  seekFlags := 0;
+  seekFlags := 0;//AVSEEK_FLAG_BACKWARD;
   seekRequest := true;
   SDL_CondSignal(resumeCond);
   SDL_mutexV(lock);
@@ -279,9 +273,9 @@ begin
 
   while (true) do
   begin
+    //SafeWriteLn('Hallo');
 
     SDL_mutexP(stream.lock);
-
     // wait if end-of-file reached
     if (eofState) then
     begin
@@ -311,9 +305,10 @@ begin
       //       Why not convert to the stream-specific one from the beginning.
       seekTarget := av_rescale_q(stream.seekPos, AV_TIME_BASE_Q, stream.ffmpegStream^.time_base);
       if(av_seek_frame(stream.pFormatCtx, stream.ffmpegStreamIndex,
-          seekTarget, stream.seekFlags) = 0) then
+          seekTarget, stream.seekFlags) < 0) then
       begin
-        Log.LogStatus(stream.pFormatCtx^.filename + ': error while seeking', 'UAudioDecoder_FFMpeg');
+        // this will crash in FPC due to a bug
+        //Log.LogStatus({stream.pFormatCtx^.filename +} ': error while seeking', 'UAudioDecoder_FFMpeg');
       end
       else
       begin
@@ -340,8 +335,10 @@ begin
       {$ELSE}
       pbIOCtx := @stream.pFormatCtx^.pb;
       {$IFEND}
+      
       if(url_feof(pbIOCtx) <> 0) then
       begin
+        SafeWriteLn('feof');
         eofState := true;
         continue;
       end;
@@ -349,6 +346,7 @@ begin
       // check for errors
       if(url_ferror(pbIOCtx) = 0) then
       begin
+        SafeWriteLn('Errorf');
         // no error -> wait for user input
         SDL_Delay(100);
         continue;
@@ -362,11 +360,11 @@ begin
       end;
     end;
 
-    //writeln( 'ffmpeg - av_read_frame' );
+    //SafeWriteLn( 'ffmpeg - av_read_frame' );
 
     if(packet.stream_index = stream.ffmpegStreamIndex) then
     begin
-      //writeln( 'packet_queue_put' );
+      //SafeWriteLn( 'packet_queue_put' );
       stream.packetQueue.put(@packet);
     end
     else
@@ -375,7 +373,7 @@ begin
     end;
   end;
 
-  //Writeln('Done: ' + inttostr(stream.packetQueue.nbPackets));
+  SafeWriteLn('Done: ' + inttostr(stream.packetQueue.nbPackets));
 
   result := 0;
 end;
@@ -394,21 +392,25 @@ begin
   begin
     while (audio_pkt_size > 0) do
     begin
-      //writeln( 'got audio packet' );
+      //SafeWriteLn( 'got audio packet' );
       data_size := bufSize;
 
-      // TODO: should be avcodec_decode_audio2 but this wont link on my ubuntu box.
+      {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
+      len1 := avcodec_decode_audio2(pCodecCtx, @buffer,
+                  data_size, audio_pkt_data, audio_pkt_size);
+      {$ELSE}
       // FIXME: with avcodec_decode_audio a package could contain several frames
       //        this is not handled yet
       len1 := avcodec_decode_audio(pCodecCtx, @buffer,
                   data_size, audio_pkt_data, audio_pkt_size);
+      {$IFEND}
 
-      //writeln('avcodec_decode_audio : ' + inttostr( len1 ));
+      //SafeWriteLn('avcodec_decode_audio : ' + inttostr( len1 ));
 
       if(len1 < 0) then
       begin
-	      // if error, skip frame
-        //writeln( 'Skip audio frame' );
+	// if error, skip frame
+        SafeWriteLn( 'Skip audio frame' );
         audio_pkt_size := 0;
        	break;
       end;
@@ -444,6 +446,7 @@ begin
     if (audio_pkt_data = PChar(FlushPacket.data)) then
     begin
       avcodec_flush_buffers(pCodecCtx);
+      SafeWriteLn('Flush');
       continue;
     end;
 
@@ -452,11 +455,12 @@ begin
     begin
       // end-of-file reached -> set EOF-flag
       SetEOF(true);
+      SafeWriteLn('EOF');
       // note: buffer is not (even partially) filled -> no data to return
       exit;
     end;
 
-    //writeln( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
+    //SafeWriteLn( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
   end;
 end;
 
@@ -480,14 +484,14 @@ begin
     begin
       // We have already sent all our data; get more
       audio_size := DecodeFrame(audio_buf, sizeof(TAudioBuffer));
-      //writeln('audio_decode_frame : '+ inttostr(audio_size));
+      //SafeWriteLn('audio_decode_frame : '+ inttostr(audio_size));
 
       if(audio_size < 0) then
       begin
       	// If error, output silence
         audio_buf_size := 1024;
         FillChar(audio_buf, audio_buf_size, #0);
-        //writeln( 'Silence' );
+        //SafeWriteLn( 'Silence' );
       end
       else
       begin
@@ -611,7 +615,7 @@ begin
   end;
 
   avcodec_open(pCodecCtx, pCodec);
-  //writeln( 'Opened the codec' );
+  //WriteLn( 'Opened the codec' );
 
   stream := TFFMpegDecodeStream.Create(pFormatCtx, pCodecCtx, pCodec,
               ffmpegStreamID, ffmpegStream);
@@ -671,7 +675,7 @@ begin
     Self.lastPkt := pkt1;
     inc(Self.nbPackets);
 
-    //Writeln('Put: ' + inttostr(nbPackets));
+    //SafeWriteLn('Put: ' + inttostr(nbPackets));
 
     Self.size := Self.size + pkt1^.pkt.size;
     SDL_CondSignal(Self.cond);
@@ -705,7 +709,7 @@ begin
       	  Self.lastPkt := nil;
         dec(Self.nbPackets);
 
-        //Writeln('Get: ' + inttostr(nbPackets));
+        //SafeWriteLn('Get: ' + inttostr(nbPackets));
 
         Self.size := Self.size - pkt1^.pkt.size;
         pkt := pkt1^.pkt;
@@ -741,7 +745,8 @@ begin
   begin
     pkt1 := pkt^.next;
     av_free_packet(@pkt^.pkt);
-    av_freep(pkt);
+    // Note: param must be a pointer to a pointer!
+    av_freep(@pkt);
     pkt := pkt1;
   end;
   Self.lastPkt := nil;

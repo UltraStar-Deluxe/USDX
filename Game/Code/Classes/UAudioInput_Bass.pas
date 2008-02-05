@@ -9,210 +9,45 @@ interface
 {$I switches.inc}
 
 
-uses Classes,
-     {$IFDEF win32}
-     windows,
-     {$ENDIF}
-     SysUtils,
-     bass,
-     ULog,
-     UMusic;
+uses
+  Classes,
+  SysUtils,
+  URecord,
+  UMusic;
 
 implementation
 
 uses
-     {$IFDEF LAZARUS}
-     lclintf,
-     {$ENDIF}
-     URecord,
-     UIni,
-     UMain,
-     UCommon,
-     UThemes;
+  UMain,
+  UIni,
+  ULog,
+  UAudioCore_Bass,
+  Windows,
+  bass;
 
 type
-  TAudioInput_Bass = class( TInterfacedObject, IAudioInput)
-    private
+  TAudioInput_Bass = class(TAudioInputBase)
     public
-      function  GetName: String;
-
-      {IAudioInput interface}
-      procedure InitializeRecord;
-
-      procedure CaptureStart;
-      procedure CaptureStop;
-      procedure CaptureCard(Card: byte; CaptureSoundLeft, CaptureSoundRight: TSound);
-      procedure StopCard(Card: byte);
+      function GetName: String; override;
+      function InitializeRecord: boolean; override;
+      destructor Destroy; override;
   end;
 
-  TBassSoundCard = class(TGenericSoundCard)
-    RecordStream: HSTREAM;
+  TBassInputDevice = class(TAudioInputDevice)
+    public
+      DeviceIndex: integer;  // index in TAudioInputProcessor.Device[]
+      BassDeviceID: integer; // DeviceID used by BASS
+      RecordStream: HSTREAM;
+
+      procedure Start(); override;
+      procedure Stop();  override;
   end;
 
 var
   singleton_AudioInputBass : IAudioInput;
 
 
-function  TAudioInput_Bass.GetName: String;
-begin
-  result := 'BASS_Input';
-end;
-
-procedure TAudioInput_Bass.InitializeRecord;
-var
-  device:     integer;
-  Descr:      string;
-  input:      integer;
-  input2:     integer;
-  InputName:  PChar;
-  Flags:      integer;
-  mic:        array[0..15] of integer;
-  SC:         integer; // soundcard
-  SCI:        integer; // soundcard input
-  No:         integer;
-
-function isDuplicate(Desc: String): Boolean;
-var
-  I: Integer;
-begin
-  Result := False;
-  //Check for Soundcard with same Description
-  For I := 0 to SC-1 do
-  begin
-    if (AudioInputProcessor.SoundCard[I].Description = Desc) then
-    begin
-      Result := True;
-      Break;
-    end;
-  end;
-end;
-
-begin
-  with AudioInputProcessor do
-  begin
-    // checks for recording devices and puts them into an array
-    SetLength(SoundCard, 0);
-
-    SC := 0;
-    Descr := BASS_RecordGetDeviceDescription(SC);
-
-    while (Descr <> '') do
-    begin
-      //If there is another SoundCard with the Same ID, Search an available Name
-      if (IsDuplicate(Descr)) then
-      begin
-        No:= 1; //Count of SoundCards with  same Name
-        Repeat
-          Inc(No)
-        Until not IsDuplicate(Descr + ' (' + InttoStr(No) + ')');
-
-        //Set Description
-        Descr := Descr + ' (' + InttoStr(No) + ')';
-      end;
-
-      SetLength(SoundCard, SC+1);
-
-      // TODO: free object on termination
-      SoundCard[SC] := TBassSoundCard.Create();
-      SoundCard[SC].Description := Descr;
-
-      //Get Recording Inputs
-      SCI := 0;
-      BASS_RecordInit(SC);
-
-      InputName := BASS_RecordGetInputName(SCI);
-
-      {$IFDEF DARWIN}
-        // Under MacOSX the SingStar Mics have an empty
-        // InputName. So, we have to add a hard coded
-        // Workaround for this problem
-        if (InputName = nil) and (Pos( 'USBMIC Serial#', Descr) > 0) then
-        begin
-          InputName := 'Microphone';
-        end;
-      {$ENDIF}
-
-      SetLength(SoundCard[SC].Input, 1);
-      SoundCard[SC].Input[SCI].Name := InputName;
-
-      // process each input
-      while (InputName <> nil) do
-      begin
-        Flags := BASS_RecordGetInput(SCI);
-        if (SCI >= 1) {AND (Flags AND BASS_INPUT_OFF = 0)}  then
-        begin
-          SetLength(SoundCard[SC].Input, SCI+1);
-          SoundCard[SC].Input[SCI].Name := InputName;
-        end;
-
-        //Set Mic Index
-        if ((Flags and BASS_INPUT_TYPE_MIC) = 1) then
-          SoundCard[SC].MicInput := SCI;
-
-        Inc(SCI);
-        InputName := BASS_RecordGetInputName(SCI);
-      end;
-
-      BASS_RecordFree;
-
-      Inc(SC);
-      Descr := BASS_RecordGetDeviceDescription(SC);
-    end; // while
-  end; // with Recording
-end;
-
-// TODO: code is used by all IAudioInput implementors
-//   -> move to a common superclass (TAudioInput_Generic?)
-procedure TAudioInput_Bass.CaptureStart;
-var
-  S:  integer;
-  SC: integer;
-  PlayerLeft, PlayerRight: integer;
-  CaptureSoundLeft, CaptureSoundRight: TSound;
-begin
-  for S := 0 to High(AudioInputProcessor.Sound) do
-    AudioInputProcessor.Sound[S].BufferLong[0].Clear;
-
-  for SC := 0 to High(Ini.CardList) do
-  begin
-    PlayerLeft  := Ini.CardList[SC].ChannelL-1;
-    PlayerRight := Ini.CardList[SC].ChannelR-1;
-    if PlayerLeft  >= PlayersPlay then PlayerLeft  := -1;
-    if PlayerRight >= PlayersPlay then PlayerRight := -1;
-    if (PlayerLeft > -1) or (PlayerRight > -1) then begin
-      if (PlayerLeft > -1) then
-        CaptureSoundLeft := AudioInputProcessor.Sound[PlayerLeft]
-      else
-        CaptureSoundLeft := nil;
-      if (PlayerRight > -1) then
-        CaptureSoundRight := AudioInputProcessor.Sound[PlayerRight]
-      else
-        CaptureSoundRight := nil;
-
-      CaptureCard(SC, CaptureSoundLeft, CaptureSoundRight);
-    end;
-  end;
-end;
-
-// TODO: code is used by all IAudioInput implementors
-//   -> move to a common superclass (TAudioInput_Generic?)
-procedure TAudioInput_Bass.CaptureStop;
-var
-  SC:   integer;
-  PlayerLeft:  integer;
-  PlayerRight: integer;
-begin
-
-  for SC := 0 to High(Ini.CardList) do begin
-    PlayerLeft  := Ini.CardList[SC].ChannelL-1;
-    PlayerRight := Ini.CardList[SC].ChannelR-1;
-    if PlayerLeft  >= PlayersPlay then PlayerLeft  := -1;
-    if PlayerRight >= PlayersPlay then PlayerRight := -1;
-    if (PlayerLeft > -1) or (PlayerRight > -1) then
-      StopCard(SC);
-  end;
-
-end;
+{ Global }
 
 {*
  * Bass input capture callback.
@@ -225,55 +60,136 @@ end;
 function MicrophoneCallback(stream: HSTREAM; buffer: Pointer;
     len: Cardinal; Card: Cardinal): boolean; stdcall;
 begin
-  AudioInputProcessor.HandleMicrophoneData(buffer, len, AudioInputProcessor.SoundCard[Card]);
+  AudioInputProcessor.HandleMicrophoneData(buffer, len,
+      AudioInputProcessor.Device[Card]);
   Result := true;
 end;
 
-{*
- * Start input-capturing on Soundcard specified by Card.
- * Params:
- *   Card - soundcard index in AudioInputProcessor.SoundCard array
- *   CaptureSoundLeft  - sound(-buffer) used for left channel capture data
- *   CaptureSoundRight - sound(-buffer) used for right channel capture data
- *}
-procedure TAudioInput_Bass.CaptureCard(Card: byte; CaptureSoundLeft, CaptureSoundRight: TSound);
-var
-  Error:      integer;
-  ErrorMsg:   string;
-  bassSoundCard:  TBassSoundCard;
-begin
-  if not BASS_RecordInit(Card) then
-  begin
-    Error := BASS_ErrorGetCode;
-    ErrorMsg := IntToStr(Error);
-    if Error = BASS_ERROR_DX then ErrorMsg := 'No DX5';
-    if Error = BASS_ERROR_ALREADY then ErrorMsg := 'The device has already been initialized';
-    if Error = BASS_ERROR_DEVICE then ErrorMsg := 'The device number specified is invalid';
-    if Error = BASS_ERROR_DRIVER then ErrorMsg := 'There is no available device driver';
-    Log.LogError('Error initializing record [' + IntToStr(Card) + ']');
-    Log.LogError('TAudio_bass.CaptureCard: Error initializing record: ' + ErrorMsg);
-  end
-  else
-  begin
-    bassSoundCard := TBassSoundCard(AudioInputProcessor.SoundCard[Card]);
-    bassSoundCard.CaptureSoundLeft  := CaptureSoundLeft;
-    bassSoundCard.CaptureSoundRight := CaptureSoundRight;
 
-    // capture in 44.1kHz/stereo/16bit and a 20ms callback period
-    bassSoundCard.RecordStream :=
-      BASS_RecordStart(44100, 2, MakeLong(0, 20) , @MicrophoneCallback, Card);
+{ TBassInputDevice }
+
+{*
+ * Start input-capturing on this device.
+ * TODO: call BASS_RecordInit only once
+ *}
+procedure TBassInputDevice.Start();
+const
+  captureFreq = 44100;
+begin
+  // recording already started -> stop first
+  if (RecordStream <> 0) then
+    Stop();
+
+  // TODO: Call once. Otherwise it's to slow
+  if not BASS_RecordInit(BassDeviceID) then
+  begin
+    Log.LogError('TBassInputDevice.Start: Error initializing device['+IntToStr(DeviceIndex)+']: ' +
+                 TAudioCore_Bass.ErrorGetString());
+    Exit;
+  end;
+
+  SampleRate := captureFreq;
+
+  // capture in 44.1kHz/stereo/16bit and a 20ms callback period
+  RecordStream := BASS_RecordStart(captureFreq, 2, MakeLong(0, 20),
+                    @MicrophoneCallback, DeviceIndex);
+  if (RecordStream = 0) then
+  begin
+    BASS_RecordFree;
+    Exit;
   end;
 end;
 
 {*
- * Stop input-capturing on Soundcard specified by Card.
- * Params:
- *   Card - soundcard index in AudioInputProcessor.SoundCard array
+ * Stop input-capturing on this device.
  *}
-procedure TAudioInput_Bass.StopCard(Card: byte);
+procedure TBassInputDevice.Stop();
 begin
-  BASS_RecordSetDevice(Card);
-  BASS_RecordFree;
+  if (RecordStream = 0) then
+    Exit;
+  // TODO: Don't free the device. Do this on close
+  if (BASS_RecordSetDevice(BassDeviceID)) then
+    BASS_RecordFree;
+  RecordStream := 0;
+end;
+
+
+{ TAudioInput_Bass }
+
+function  TAudioInput_Bass.GetName: String;
+begin
+  result := 'BASS_Input';
+end;
+
+function TAudioInput_Bass.InitializeRecord(): boolean;
+var
+  Descr:      PChar;
+  SourceName: PChar;
+  Flags:      integer;
+  BassDeviceID: integer;
+  BassDevice:   TBassInputDevice;
+  DeviceIndex:  integer;
+  SourceIndex:  integer;
+begin
+  result := false;
+
+  DeviceIndex := 0;
+  BassDeviceID := 0;
+  SetLength(AudioInputProcessor.Device, 0);
+
+  // checks for recording devices and puts them into an array
+  while true do
+  begin
+    Descr := BASS_RecordGetDeviceDescription(BassDeviceID);
+    if (Descr = nil) then
+      break;
+
+    SetLength(AudioInputProcessor.Device, DeviceIndex+1);
+
+    // TODO: free object on termination
+    BassDevice := TBassInputDevice.Create();
+    AudioInputProcessor.Device[DeviceIndex] := BassDevice;
+
+    BassDevice.DeviceIndex := DeviceIndex;
+    BassDevice.BassDeviceID := BassDeviceID;
+    BassDevice.Description := UnifyDeviceName(Descr, DeviceIndex);
+
+    // get input sources
+    SourceIndex := 0;
+    BASS_RecordInit(BassDeviceID);
+    BassDevice.MicInput := 0;
+
+    // process each input
+    while true do
+    begin
+      SourceName := BASS_RecordGetInputName(SourceIndex);
+      if (SourceName = nil) then
+        break;
+
+      SetLength(BassDevice.Source, SourceIndex+1);
+      BassDevice.Source[SourceIndex].Name :=
+        UnifyDeviceSourceName(SourceName, BassDevice.Description);
+
+      // set mic index
+      Flags := BASS_RecordGetInput(SourceIndex);
+      if ((Flags and BASS_INPUT_TYPE_MIC) <> 0) then
+        BassDevice.MicInput := SourceIndex;
+
+      Inc(SourceIndex);
+    end;
+
+    BASS_RecordFree;
+
+    Inc(DeviceIndex);
+    Inc(BassDeviceID);
+  end;
+
+  result := true;
+end;
+
+destructor TAudioInput_Bass.Destroy;
+begin
+  inherited;
 end;
 
 

@@ -35,14 +35,14 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           RefreshSongs;
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
         begin
           if SelInteraction = 6 then begin
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             RefreshSongs;
             FadeTo(@ScreenOptions);
           end;
@@ -55,7 +55,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 5) then
           begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
         end;
@@ -63,7 +63,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 5) then
           begin
-            AudioPlayback.PlayOption;
+            AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
         end;

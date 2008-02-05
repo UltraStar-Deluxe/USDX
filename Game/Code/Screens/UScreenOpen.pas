@@ -59,7 +59,7 @@ begin
         begin
           //Empty Filename and go to last Screen
             FileName := '';
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(BackScreen);
         end;
 
@@ -68,14 +68,14 @@ begin
           if (Interaction = 2) then begin
             //Update Filename and go to last Screen
             FileName := Text[TextN].Text;
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(BackScreen);
           end
           else if (Interaction = 1) then
           begin
             //Empty Filename and go to last Screen
             FileName := '';
-            AudioPlayback.PlayBack;
+            AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(BackScreen);
           end;
         end;

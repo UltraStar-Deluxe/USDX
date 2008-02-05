@@ -186,7 +186,7 @@ begin
       SDLK_ESCAPE:
         begin
           Ini.SaveNames;
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenPartyOptions);
         end;
 

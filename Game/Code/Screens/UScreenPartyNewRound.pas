@@ -101,13 +101,13 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlayBack;
+          AudioPlayback.PlaySound(SoundLib.Back);
           CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
         end;
 
       SDLK_RETURN:
         begin
-          AudioPlayback.PlayStart;
+          AudioPlayback.PlaySound(SoundLib.Start);
           if DLLMan.Selected.LoadSong then
           begin
             //Select PartyMode ScreenSong

@@ -52,16 +52,14 @@ type
       procedure DrawGL(Screen: integer);
 
       // IAudioInput
-      procedure InitializeRecord;
+      function InitializeRecord: boolean;
       procedure CaptureStart;
       procedure CaptureStop;
-      procedure CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
-      procedure StopCard(Card: byte);
-      function GetFFTData: TFFTData;
+      procedure GetFFTData(var data: TFFTData);
       function GetPCMData(var data: TPCMData): Cardinal;
 
       // IAudioPlayback
-      procedure InitializePlayback;
+      function InitializePlayback: boolean;
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
@@ -70,21 +68,9 @@ type
       function Finished: boolean;
       function Length: real;
 
-      procedure PlayStart;
-      procedure PlayBack;
-      procedure PlaySwoosh;
-      procedure PlayChange;
-      procedure PlayOption;
-      procedure PlayClick;
-      procedure PlayDrum;
-      procedure PlayHihat;
-      procedure PlayClap;
-      procedure PlayShuffle;
-      procedure StopShuffle;
-
-      function LoadCustomSound(const Filename: String): Cardinal;
-      procedure PlayCustomSound(const Index: Cardinal );
-
+      function OpenSound(const Filename: String): TAudioPlaybackStream;
+      procedure PlaySound(stream: TAudioPlaybackStream);
+      procedure StopSound(stream: TAudioPlaybackStream);
     end;
 
 
@@ -143,8 +129,9 @@ begin
 end;
 
 // IAudioInput
-procedure Tmedia_dummy.InitializeRecord;
+function Tmedia_dummy.InitializeRecord: boolean;
 begin
+  result := true;
 end;
 
 procedure Tmedia_dummy.CaptureStart;
@@ -155,18 +142,8 @@ procedure Tmedia_dummy.CaptureStop;
 begin
 end;
 
-procedure Tmedia_dummy.CaptureCard(RecordI, PlayerLeft, PlayerRight: byte);
+procedure Tmedia_dummy.GetFFTData(var data: TFFTData);
 begin
-end;
-
-procedure Tmedia_dummy.StopCard(Card: byte);
-begin
-end;
-
-function  Tmedia_dummy.GetFFTData: TFFTData;
-var data: TFFTData;
-begin
-  result := data;
 end;
 
 function  Tmedia_dummy.GetPCMData(var data: TPCMData): Cardinal;
@@ -175,8 +152,9 @@ begin
 end;
 
 // IAudioPlayback
-procedure Tmedia_dummy.InitializePlayback;
+function Tmedia_dummy.InitializePlayback: boolean;
 begin
+  result := true;
 end;
 
 procedure Tmedia_dummy.SetVolume(Volume: integer);
@@ -205,56 +183,16 @@ begin
   Result := 60;
 end;
 
-procedure Tmedia_dummy.PlayStart;
+function Tmedia_dummy.OpenSound(const Filename: String): TAudioPlaybackStream;
+begin
+ result := nil;
+end;
+
+procedure Tmedia_dummy.PlaySound(stream: TAudioPlaybackStream);
 begin
 end;
 
-procedure Tmedia_dummy.PlayBack;
-begin
-end;
-
-procedure Tmedia_dummy.PlaySwoosh;
-begin
-end;
-
-procedure Tmedia_dummy.PlayChange;
-begin
-end;
-
-procedure Tmedia_dummy.PlayOption;
-begin
-end;
-
-procedure Tmedia_dummy.PlayClick;
-begin
-end;
-
-procedure Tmedia_dummy.PlayDrum;
-begin
-end;
-
-procedure Tmedia_dummy.PlayHihat;
-begin
-end;
-
-procedure Tmedia_dummy.PlayClap;
-begin
-end;
-
-procedure Tmedia_dummy.PlayShuffle;
-begin
-end;
-
-procedure Tmedia_dummy.StopShuffle;
-begin
-end;
-
-function Tmedia_dummy.LoadCustomSound(const Filename: String): Cardinal;
-begin
- result := 0;
-end;
-
-procedure Tmedia_dummy.PlayCustomSound(const Index: Cardinal );
+procedure Tmedia_dummy.StopSound(stream: TAudioPlaybackStream);
 begin
 end;
 

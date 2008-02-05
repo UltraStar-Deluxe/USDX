@@ -8,91 +8,112 @@ interface
 
 {$I switches.inc}
 
-uses Classes ;
+uses
+  Classes;
 
 type
-  TMuzyka = record
+  TNoteType = (ntFreestyle, ntNormal, ntGolden);
+
+  //http://paste.ubuntu-nl.org/51892/
+
+  TMuzyka = record           // (TODO: rename to TMusic/TMelody?)
     Path:   string;
     Start:  integer;        // start of song in ms
-    IlNut:  integer;
-    DlugoscNut:   integer;
+    IlNut:  integer;        // (TODO: Il = tone, Nut(a) = Note)
+    DlugoscNut:   integer;  // (TODO: Dlugosc = length, Nut(a) = Note)
   end;
 
   PLine = ^TLine;
-  TLine = record
-    Start:    integer;
+  TLine = record              // (TODO: rename to TSentence?)
+    Start:      integer;
     StartNote:  integer;
     Lyric:      string;
     LyricWidth: real;
-    Koniec:   integer;
-    BaseNote: integer;
-    HighNut:  integer;
-    IlNut:    integer;
+    Koniec:     integer;      // (TODO: rename to End_/Ending?) 
+    BaseNote:   integer;
+    HighNut:    integer;      // (TODO: rename to HighNote)
+    IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
     TotalNotes: integer;
-    Nuta:     array of record
+    Nuta:     array of record // (TODO: rename to Note)
       Color:      integer;
       Start:      integer;
-      Dlugosc:    integer;
-      Ton:        integer;
-      TonGamy:    integer;
-      Tekst:      string;
+      Dlugosc:    integer;    // (TODO: rename to Length)
+      Ton:        integer;    // full range tone (TODO: rename to Tone)
+      TonGamy:    integer;    // tone unified to one octave (TODO: rename to something meaningful, ToneGamus)
+      Tekst:      string;     // (TODO: rename to Text)
       FreeStyle:  boolean;
-      Wartosc:    integer;    // zwykla nuta x1, zlota nuta x2
+      Wartosc:    integer;    // normal-note: 1, golden-note: 2 (TODO: wartosc=value, rename to Type_ or Kind?)
     end;
   end;
-  ALine = array of TLine;
+  ALine = array of TLine; // (TODO: rename to TLineArray)
 
+  // (TCzesci = TSentences)
   TCzesci = record
-    Akt:      integer;      // aktualna czesc utworu do rysowania
-    High:     integer;
-    Ilosc:    integer;
+    Akt:        integer;        // for drawing of current line (Akt = Current)
+    High:       integer;
+    Ilosc:      integer;        // (TODO: Ilosc = Number/Count)
     Resolution: integer;
-    NotesGAP: integer;
-    Wartosc:  integer;
-    Czesc:    ALine;
+    NotesGAP:   integer;
+    Wartosc:    integer;        // TODO: rename (wartosc=value)
+    Czesc:      ALine;          // TODO: rename to Sentence or Line
   end;
 
-  TCzas = record              // wszystko, co dotyczy aktualnej klatki
-    OldBeat:      integer;    // poprzednio wykryty beat w utworze
-    AktBeat:      integer;    // aktualny beat w utworze
-    MidBeat:      real;       // dokladny AktBeat
+  // (TODO: rename TCzas to something like T(Line/Sentence)Time/TLinePosition/TLineState)
+  // (Czas = time)
+  TCzas = record              // all that concerns the current frames
+    OldBeat:      integer;    // previous discovered beat 
+    AktBeat:      integer;    // current beat (TODO: rename)
+    MidBeat:      real;       // like AktBeat
 
     // now we use this for super synchronization!
     // only used when analyzing voice
-    OldBeatD:     integer;    // poprzednio wykryty beat w utworze
-    AktBeatD:     integer;    // aktualny beat w utworze
-    MidBeatD:     real;       // dokladny AktBeatD
+    OldBeatD:     integer;    // previous discovered beat
+    AktBeatD:     integer;    // current beat (TODO: rename)
+    MidBeatD:     real;       // like AktBeatD
     FracBeatD:    real;       // fractional part of MidBeatD
 
-    // we use this for audiable clicks
-    OldBeatC:     integer;    // poprzednio wykryty beat w utworze
-    AktBeatC:     integer;    // aktualny beat w utworze
-    MidBeatC:     real;       // dokladny AktBeatC
+    // we use this for audible clicks
+    OldBeatC:     integer;    // previous discovered beat
+    AktBeatC:     integer;    // current beat (TODO: rename)
+    MidBeatC:     real;       // like AktBeatC
     FracBeatC:    real;       // fractional part of MidBeatC
 
 
-    OldCzesc:     integer;    // poprzednio wyswietlana czesc
-                              // akt jest w czesci.akt
+    OldCzesc:     integer;    // previous displayed sentence (Czesc = part (here: sentence/line))
 
-    Teraz:        real;       // aktualny czas w utworze
-    Razem:        real;       // caly czas utworu
+    Teraz:        real;       // (TODO: Teraz = current time)
+    Razem:        real;       // (TODO: Razem = total time)
   end;
 
-  TSoundCard = record
-    Name:     string;
-    Source:   array of string;
-  end;
-
+  
 type
-  TFFTData  = array[0..256] of Single;
+  TFFTData  = array[0..255] of Single;
 
   TPCMStereoSample = array[0..1] of Smallint;
   TPCMData  = array[0..511] of TPCMStereoSample;
 
 type
-  TStreamStatus = (sStopped, sPlaying, sPaused);
+  TStreamStatus = (ssStopped, ssPlaying, ssPaused, ssBlocked, ssUnknown);
 const
-  StreamStatusStr:  array[TStreamStatus] of string = ('Stopped', 'Playing', 'Paused');
+  StreamStatusStr:  array[TStreamStatus] of string =
+    ('Stopped', 'Playing', 'Paused', 'Blocked', 'Unknown');
+
+type
+  TAudioSampleFormat = (
+    asfU8, asfS8,         // unsigned/signed  8 bits
+    asfU16LSB, asfS16LSB, // unsigned/signed 16 bits (endianness: LSB)
+    asfU16MSB, asfS16MSB, // unsigned/signed 16 bits (endianness: MSB)
+    asfU16, asfS16,       // unsigned/signed 16 bits (endianness: System)
+    asfS24,               // signed 24 bits (endianness: System)
+    asfS32,               // signed 32 bits (endianness: System)
+    asfFloat              // float
+  );
+
+  TAudioFormatInfo = record
+    Channels: byte;
+    SampleRate: integer;
+    Format: TAudioSampleFormat;
+  end;
 
 type
   TAudioProcessingStream = class
@@ -106,6 +127,8 @@ type
       procedure SetLoop(Enabled: boolean);  virtual; abstract;
       function GetLength(): real;           virtual; abstract;
       function GetStatus(): TStreamStatus;  virtual; abstract;
+      function GetVolume(): integer;        virtual; abstract;
+      procedure SetVolume(volume: integer); virtual; abstract;
     public
       procedure Play();                     virtual; abstract;
       procedure Pause();                    virtual; abstract;
@@ -114,6 +137,7 @@ type
       property Loop: boolean READ GetLoop WRITE SetLoop;
       property Length: real READ GetLength;
       property Status: TStreamStatus READ GetStatus;
+      property Volume: integer READ GetVolume WRITE SetVolume;
   end;
 
   (*
@@ -130,25 +154,16 @@ type
   TAudioDecodeStream = class(TAudioProcessingStream)
     protected
       function GetLength(): real;           virtual; abstract;
-      function GetChannelCount(): cardinal; virtual; abstract;
-      function GetSampleRate(): cardinal;   virtual; abstract;
       function GetPosition(): real;         virtual; abstract;
       procedure SetPosition(Time: real);    virtual; abstract;
       function IsEOF(): boolean;            virtual; abstract;
     public
       function ReadData(Buffer: PChar; BufSize: integer): integer; virtual; abstract;
+      function GetAudioFormatInfo(): TAudioFormatInfo; virtual; abstract;
 
       property Length: real READ GetLength;
-      property ChannelCount: cardinal READ GetChannelCount;
-      property SampleRate: cardinal READ GetSampleRate;
       property Position: real READ GetPosition WRITE SetPosition;
       property EOF: boolean READ IsEOF;
-  end;
-
-type
-  TCustomSoundEntry = record
-    Filename : String;
-    Stream   : TAudioPlaybackStream;
   end;
 
 type
@@ -184,7 +199,7 @@ type
 
   IAudioPlayback = Interface( IGenericPlayback )
   ['{E4AE0B40-3C21-4DC5-847C-20A87E0DFB96}']
-      procedure InitializePlayback;
+      function InitializePlayback: boolean;
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
@@ -193,24 +208,13 @@ type
       function  Finished: boolean;
       function  Length: real;
 
-      procedure PlayStart;
-      procedure PlayBack;
-      procedure PlaySwoosh;
-      procedure PlayChange;
-      procedure PlayOption;
-      procedure PlayClick;
-      procedure PlayDrum;
-      procedure PlayHihat;
-      procedure PlayClap;
-      procedure PlayShuffle;
-      procedure StopShuffle;
+      // Sounds
+      function OpenSound(const Filename: String): TAudioPlaybackStream;
+      procedure PlaySound(stream: TAudioPlaybackStream);
+      procedure StopSound(stream: TAudioPlaybackStream);
 
-      //Custom Sounds
-      function LoadCustomSound(const Filename: String): Cardinal;
-      procedure PlayCustomSound(const Index: Cardinal );
-
-      //Equalizer
-      function GetFFTData: TFFTData;
+      // Equalizer
+      procedure GetFFTData(var data: TFFTData);
 
       // Interface for Visualizer
       function GetPCMData(var data: TPCMData): Cardinal;
@@ -237,23 +241,42 @@ type
   IAudioInput = Interface
   ['{A5C8DA92-2A0C-4AB2-849B-2F7448C6003A}']
       function  GetName: String;
-      procedure InitializeRecord;
+      function InitializeRecord: boolean;
 
       procedure CaptureStart;
       procedure CaptureStop;
   end;
 
+type
+  TSoundLibrary = class
+    public
+      Start:   TAudioPlaybackStream;
+      Back:    TAudioPlaybackStream;
+      Swoosh:  TAudioPlaybackStream;
+      Change:  TAudioPlaybackStream;
+      Option:  TAudioPlaybackStream;
+      Click:   TAudioPlaybackStream;
+      Drum:    TAudioPlaybackStream;
+      Hihat:   TAudioPlaybackStream;
+      Clap:    TAudioPlaybackStream;
+      Shuffle: TAudioPlaybackStream;
+
+      constructor Create();
+      destructor Destroy(); override;
+  end;
 
 var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
-  // muzyka
-  Muzyka:   TMuzyka;
+  // music
+  Muzyka:   TMuzyka; // TODO: rename
 
   // czesci z nutami;
-  Czesci:   array of TCzesci;
+  Czesci:   array of TCzesci;  // TODO: rename to Sentences/Lines
 
   // czas
-  Czas:     TCzas;
-  
+  Czas:     TCzas;             // TODO: rename
+
+  SoundLib: TSoundLibrary;
+
 
 procedure InitializeSound;
 
@@ -270,6 +293,7 @@ implementation
 
 uses
   sysutils,
+  UMain,
   UCommandLine;
 //  uLog;
 
@@ -393,6 +417,9 @@ begin
     AudioInput.InitializeRecord;
   end;
 
+  // Load in-game sounds
+  SoundLib := TSoundLibrary.Create;
+
   if FindCmdLineSwitch( cMediaInterfaces ) then
   begin
     writeln( '' );
@@ -409,6 +436,48 @@ begin
     halt;
   end;
 end;
+
+constructor TSoundLibrary.Create();
+begin
+  //Log.LogStatus('Loading Sounds', 'Music Initialize');
+
+  //Log.BenchmarkStart(4);
+
+  Start   := AudioPlayback.OpenSound(SoundPath + 'Common start.mp3');
+  (*
+  Back    := AudioPlayback.OpenSound(SoundPath + 'Common back.mp3');
+  Swoosh  := AudioPlayback.OpenSound(SoundPath + 'menu swoosh.mp3');
+  Change  := AudioPlayback.OpenSound(SoundPath + 'select music change music 50.mp3');
+  Option  := AudioPlayback.OpenSound(SoundPath + 'option change col.mp3');
+  Click   := AudioPlayback.OpenSound(SoundPath + 'rimshot022b.mp3');
+  *)
+
+  //Drum    := AudioPlayback.OpenSound(SoundPath + 'bassdrumhard076b.mp3');
+  //Hihat   := AudioPlayback.OpenSound(SoundPath + 'hihatclosed068b.mp3');
+  //Clap    := AudioPlayback.OpenSound(SoundPath + 'claps050b.mp3');
+
+  //Shuffle := AudioPlayback.OpenSound(SoundPath + 'Shuffle.mp3');
+
+  //Log.BenchmarkEnd(4);
+  //Log.LogBenchmark('--> Loading Sounds', 4);
+end;
+
+destructor TSoundLibrary.Destroy();
+begin
+  Start.Free;
+  Back.Free;
+  Swoosh.Free;
+  Change.Free;
+  Option.Free;
+  Click.Free;
+
+  //Drum.Free;
+  //Hihat.Free;
+  //Clap.Free;
+
+  //Shuffle.Free;
+end;
+
 
 initialization
 begin

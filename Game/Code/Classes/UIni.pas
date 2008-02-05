@@ -11,6 +11,14 @@ interface
 uses IniFiles, ULog, SysUtils;
 
 type
+  PInputDeviceConfig = ^TInputDeviceConfig;
+  TInputDeviceConfig = record
+    Name:               string;
+    Input:              integer;
+    ChannelToPlayerMap: array[0..1] of integer;
+  end;
+
+type
   TIni = class
     Name:           array[0..11] of string;
 
@@ -64,14 +72,7 @@ type
     Color:          integer;
 
     // Record
-    Card:           integer; // not saved in config.ini
-
-    CardList:       array of record
-      Name:           string;
-      Input:          integer;
-      ChannelL:       integer;
-      ChannelR:       integer;
-    end;
+    InputDeviceConfig: array of TInputDeviceConfig;
 
     // Advanced
     LoadAnimation:  integer;
@@ -454,45 +455,41 @@ begin
   for Pet := 0 to High(IColor) do
     if Tekst = IColor[Pet] then Ini.Color := Pet;
 
-  // Record - load ini list
-  SetLength(CardList, 0);
+  // Input devices - load ini list
+  SetLength(InputDeviceConfig, 0);
   I := 1;
-  while (IniFile.ValueExists('Record', 'DeviceName' + IntToStr(I)) = true) do begin
-    //Automatically Delete not Existing Sound Cards
-    S := IniFile.ReadString('Record', 'DeviceName' + IntToStr(I), '');
-    //{
-    B := False;
-    //Look for Soundcard
-    for I2 := 0 to High(AudioInputProcessor.SoundCard) do
-    begin
-      if (S = Trim(AudioInputProcessor.SoundCard[I2].Description)) then
-      begin
-      B := True;
-      Break;
-      end;
-    end;
+  while (IniFile.ValueExists('Record', 'DeviceName'+IntToStr(I))) do begin
+    // resize list
+    SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
+    I2 := High(InputDeviceConfig);
 
-    if B then
-    begin //}
-      I3 := Length(CardList);
-      SetLength(CardList, I3+1);
-      Ini.CardList[I3].Name := S;
-      Ini.CardList[I3].Input := IniFile.ReadInteger('Record', 'Input' + IntToStr(I), 0);
-      Ini.CardList[I3].ChannelL := IniFile.ReadInteger('Record', 'ChannelL' + IntToStr(I), 0);
-      Ini.CardList[I3].ChannelR := IniFile.ReadInteger('Record', 'ChannelR' + IntToStr(I), 0);
-    end;
+    // read an input device's config.
+    // Note: All devices are appended to the list whether they exist or not.
+    //   Otherwise an external device's config will be lost if it is not
+    //   connected (e.g. singstar mics or USB-Audio devices).
+    InputDeviceConfig[I2].Name :=
+        IniFile.ReadString('Record', 'DeviceName'+IntToStr(I), '');
+    InputDeviceConfig[I2].Input :=
+        IniFile.ReadInteger('Record', 'Input'+IntToStr(I), 0);
+    InputDeviceConfig[I2].ChannelToPlayerMap[0] :=
+        IniFile.ReadInteger('Record', 'ChannelL'+IntToStr(I), 0);
+    InputDeviceConfig[I2].ChannelToPlayerMap[1] :=
+        IniFile.ReadInteger('Record', 'ChannelR'+IntToStr(I), 0);
+
     Inc(I);
   end;
 
-  // Record - append detected soundcards
-  for I := 0 to High(AudioInputProcessor.SoundCard) do
+  // Input devices - append detected soundcards
+  for I := 0 to High(AudioInputProcessor.Device) do
   begin
     B := False;
-    For I2 := 0 to High(CardList) do
+    For I2 := 0 to High(InputDeviceConfig) do
     begin //Search for Card in List
-      if (CardList[I2].Name = Trim(AudioInputProcessor.SoundCard[I].Description)) then
+      if (InputDeviceConfig[I2].Name = Trim(AudioInputProcessor.Device[I].Description)) then
       begin
         B := True;
+        // associate ini-index with device
+        AudioInputProcessor.Device[I].CfgIndex := I2;
         Break;
       end;
     end;
@@ -500,15 +497,21 @@ begin
     //If not in List -> Add
     If not B then
     begin
-      I3 := Length(CardList);
-      SetLength(CardList, I3+1);
-      CardList[I3].Name := Trim(AudioInputProcessor.SoundCard[I].Description);
-      CardList[I3].Input := 0;
-      CardList[I3].ChannelL := 0;
-      CardList[I3].ChannelR := 0;
-      // default for new users
-      if (Length(CardList) = 1) then
-        CardList[I].ChannelL := 1;
+      // resize list
+      SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
+      I2 := High(InputDeviceConfig);
+
+      InputDeviceConfig[I2].Name := Trim(AudioInputProcessor.Device[I].Description);
+      InputDeviceConfig[I2].Input := 0;
+      InputDeviceConfig[I2].ChannelToPlayerMap[0] := 0;
+      InputDeviceConfig[I2].ChannelToPlayerMap[1] := 0;
+
+      // associate ini-index with device
+      AudioInputProcessor.Device[I].CfgIndex := I2;
+
+      // set default at first start of USDX (1st device, 1st channel -> player1)
+      if (I2 = 0) then
+        InputDeviceConfig[I2].ChannelToPlayerMap[0] := 1;
     end;
   end;
 
@@ -699,23 +702,23 @@ begin
     IniFile.WriteString('Themes',    'Color',    Tekst);
 
     // Record
-      for I := 0 to High(CardList) do begin
-        S := IntToStr(I+1);
+    for I := 0 to High(InputDeviceConfig) do begin
+      S := IntToStr(I+1);
 
-        Tekst := CardList[I].Name;
-        IniFile.WriteString('Record', 'DeviceName' + S, Tekst);
+      Tekst := InputDeviceConfig[I].Name;
+      IniFile.WriteString('Record', 'DeviceName' + S, Tekst);
 
-        Tekst := IntToStr(CardList[I].Input);
-        IniFile.WriteString('Record', 'Input' + S, Tekst);
+      Tekst := IntToStr(InputDeviceConfig[I].Input);
+      IniFile.WriteString('Record', 'Input' + S, Tekst);
 
-        Tekst := IntToStr(CardList[I].ChannelL);
-        IniFile.WriteString('Record', 'ChannelL' + S, Tekst);
+      Tekst := IntToStr(InputDeviceConfig[I].ChannelToPlayerMap[0]);
+      IniFile.WriteString('Record', 'ChannelL' + S, Tekst);
 
-        Tekst := IntToStr(CardList[I].ChannelR);
-        IniFile.WriteString('Record', 'ChannelR' + S, Tekst);
-      end;
+      Tekst := IntToStr(InputDeviceConfig[I].ChannelToPlayerMap[1]);
+      IniFile.WriteString('Record', 'ChannelR' + S, Tekst);
+    end;
 
-      //Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
+    //Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
 
     //Advanced Settings
 

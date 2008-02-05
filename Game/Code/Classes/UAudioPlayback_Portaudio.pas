@@ -9,35 +9,40 @@ interface
 {$I switches.inc}
 
 
-uses Classes,
-     SysUtils,
-     UMusic;
+uses
+  Classes,
+  SysUtils,
+  UMusic;
 
 implementation
 
 uses
-     {$IFDEF LAZARUS}
-     lclintf,
-       {$ifndef win32}
-       libc,
-       {$endif}
-     {$ENDIF}
-     sdl,
-     portaudio,
-     ULog,
-     UIni,
-     UMain;
+  {$IFNDEF Win32}
+  libc,
+  {$ENDIF}
+  sdl,
+  portaudio,
+  ULog,
+  UIni,
+  UMain;
 
 type
   TPortaudioPlaybackStream = class(TAudioPlaybackStream)
     private
-      status:   TStreamStatus;
-      Loaded:   boolean;
+      Status:   TStreamStatus;
       Loop:     boolean;
-    public
-      decodeStream: TAudioDecodeStream;
 
-      constructor Create(decodeStream: TAudioDecodeStream);
+      _volume: integer;
+
+      procedure Reset();
+    public
+      DecodeStream: TAudioDecodeStream;
+
+      constructor Create();
+      destructor Destroy(); override;
+
+      function SetDecodeStream(decodeStream: TAudioDecodeStream): boolean;
+
       procedure Play();                     override;
       procedure Pause();                    override;
       procedure Stop();                     override;
@@ -48,6 +53,9 @@ type
       function GetStatus(): TStreamStatus;  override;
 
       function IsLoaded(): boolean;
+
+      function GetVolume(): integer;        override;
+      procedure SetVolume(volume: integer); override;
 
       // functions delegated to the decode stream
       function GetPosition: real;
@@ -60,12 +68,23 @@ type
     private
       activeStreams: TList;
       mixerBuffer: PChar;
+      internalLock: PSDL_Mutex;
+
+      _volume: integer;
+
+      procedure Lock(); inline;
+      procedure Unlock(); inline;
+
+      function GetVolume(): integer;
+      procedure SetVolume(volume: integer);
     public
       constructor Create();
       destructor Destroy(); override;
       procedure AddStream(stream: TAudioPlaybackStream);
       procedure RemoveStream(stream: TAudioPlaybackStream);
       function ReadData(Buffer: PChar; BufSize: integer): integer;
+
+      property Volume: integer READ GetVolume WRITE SetVolume;
   end;
 
 type
@@ -73,36 +92,29 @@ type
     private
       MusicStream:        TPortaudioPlaybackStream;
 
-      StartSoundStream:   TPortaudioPlaybackStream;
-      BackSoundStream:    TPortaudioPlaybackStream;
-      SwooshSoundStream:  TPortaudioPlaybackStream;
-      ChangeSoundStream:  TPortaudioPlaybackStream;
-      OptionSoundStream:  TPortaudioPlaybackStream;
-      ClickSoundStream:   TPortaudioPlaybackStream;
-      DrumSoundStream:    TPortaudioPlaybackStream;
-      HihatSoundStream:   TPortaudioPlaybackStream;
-      ClapSoundStream:    TPortaudioPlaybackStream;
-      ShuffleSoundStream: TPortaudioPlaybackStream;
-
-      //Custom Sounds
-      CustomSounds: array of TCustomSoundEntry;
-
-      mixerStream: TAudioMixerStream;
+      MixerStream: TAudioMixerStream;
       paStream:    PPaStream;
-    public
-      FrameSize: integer;
 
-      function  GetName: String;
+      FrameSize: integer;
 
       function InitializePortaudio(): boolean;
       function StartPortaudioStream(): boolean;
 
-      procedure InitializePlayback();
+      function InitializeSDLAudio(): boolean;
+      function StartSDLAudioStream(): boolean;
+      procedure StopSDLAudioStream();
+    public
+      function  GetName: String;
+
+      function InitializePlayback(): boolean;
+      destructor Destroy; override;
+
+      function Load(const Filename: String): TPortaudioPlaybackStream;
+
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
       function Open(Filename: string): boolean; // true if succeed
-      function Load(Filename: string): TPortaudioPlaybackStream;
       procedure Rewind;
       procedure SetPosition(Time: real);
       procedure Play;
@@ -113,27 +125,17 @@ type
       function Finished: boolean;
       function Length: real;
       function GetPosition: real;
-      procedure PlayStart;
-      procedure PlayBack;
-      procedure PlaySwoosh;
-      procedure PlayChange;
-      procedure PlayOption;
-      procedure PlayClick;
-      procedure PlayDrum;
-      procedure PlayHihat;
-      procedure PlayClap;
-      procedure PlayShuffle;
-      procedure StopShuffle;
 
-      //Equalizer
-      function GetFFTData: TFFTData;
+      // Equalizer
+      procedure GetFFTData(var data: TFFTData);
 
       // Interface for Visualizer
       function GetPCMData(var data: TPCMData): Cardinal;
 
-      //Custom Sounds
-      function LoadCustomSound(const Filename: String): Cardinal;
-      procedure PlayCustomSound(const Index: Cardinal );
+      // Sounds
+      function OpenSound(const Filename: String): TAudioPlaybackStream;
+      procedure PlaySound(stream: TAudioPlaybackStream);
+      procedure StopSound(stream: TAudioPlaybackStream);
   end;
 
 
@@ -150,25 +152,59 @@ var
 constructor TAudioMixerStream.Create();
 begin
   activeStreams := TList.Create;
+  internalLock := SDL_CreateMutex();
+  _volume := 100;
 end;
 
 destructor TAudioMixerStream.Destroy();
 begin
-  if (mixerBuffer <> nil) then
+  if assigned(mixerBuffer) then
     Freemem(mixerBuffer);
   activeStreams.Free;
+  SDL_DestroyMutex(internalLock);
+end;
+
+procedure TAudioMixerStream.Lock();
+begin
+  SDL_mutexP(internalLock);
+end;
+
+procedure TAudioMixerStream.Unlock();
+begin
+  SDL_mutexV(internalLock);
+end;
+
+function TAudioMixerStream.GetVolume(): integer;
+begin
+  Lock();
+  result := _volume;
+  Unlock();
+end;
+
+procedure TAudioMixerStream.SetVolume(volume: integer);
+begin
+  Lock();
+  _volume := volume;
+  Unlock();
 end;
 
 procedure TAudioMixerStream.AddStream(stream: TAudioPlaybackStream);
 begin
+  if not assigned(stream) then
+    Exit;
+
+  Lock();
   // check if stream is already in list to avoid duplicates
   if (activeStreams.IndexOf(Pointer(stream)) = -1) then
     activeStreams.Add(Pointer(stream));
+  Unlock();
 end;
 
 procedure TAudioMixerStream.RemoveStream(stream: TAudioPlaybackStream);
 begin
+  Lock();
   activeStreams.Remove(Pointer(stream));
+  Unlock();
 end;
 
 function TAudioMixerStream.ReadData(Buffer: PChar; BufSize: integer): integer;
@@ -176,79 +212,111 @@ var
   i: integer;
   size: integer;
   stream: TPortaudioPlaybackStream;
+  appVolume: single;
 begin
   result := BufSize;
 
   // zero target-buffer (silence)
   FillChar(Buffer^, BufSize, 0);
 
-  // resize mixer-buffer
+  // resize mixer-buffer if necessary
   ReallocMem(mixerBuffer, BufSize);
-  if (mixerBuffer = nil) then
+  if not assigned(mixerBuffer) then
     Exit;
 
-  writeln('Mix: ' + inttostr(activeStreams.Count));
+  Lock();
+
+  //writeln('Mix: ' + inttostr(activeStreams.Count));
+
+  // use _volume instead of Volume to prevent recursive locking 
+  appVolume := _volume / 100 * SDL_MIX_MAXVOLUME;
 
   for i := 0 to activeStreams.Count-1 do
   begin
     stream := TPortaudioPlaybackStream(activeStreams[i]);
-    if (stream.GetStatus() = sPlaying) then
+    if (stream.GetStatus() = ssPlaying) then
     begin
       // fetch data from current stream
       size := stream.ReadData(mixerBuffer, BufSize);
       if (size > 0) then
       begin
-        SDL_MixAudio(PUInt8(Buffer), PUInt8(mixerBuffer), size, SDL_MIX_MAXVOLUME);
+        SDL_MixAudio(PUInt8(Buffer), PUInt8(mixerBuffer), size,
+          Trunc(appVolume * stream.Volume / 100));
       end;
     end;
   end;
+
+  Unlock();
 end;
 
 
 { TPortaudioPlaybackStream }
 
-constructor TPortaudioPlaybackStream.Create(decodeStream: TAudioDecodeStream);
+constructor TPortaudioPlaybackStream.Create();
 begin
   inherited Create();
-  status := sStopped;
-  if (decodeStream <> nil) then
-  begin
-    Self.decodeStream := decodeStream;
-    Loaded := true;
-  end;
+  Reset();
 end;
 
-procedure TPortaudioPlaybackStream.Play();
+destructor TPortaudioPlaybackStream.Destroy();
 begin
-  if (status <> sPaused) then
-  begin
-    // rewind
-    decodeStream.Position := 0;
-  end;
-  status := sPlaying;
-  //mixerStream.AddStream(Self);
+  Close();
+  inherited Destroy();
 end;
 
-procedure TPortaudioPlaybackStream.Pause();
+procedure TPortaudioPlaybackStream.Reset();
 begin
-  status := sPaused;
+  Status := ssStopped;
+  Loop := false;
+  DecodeStream := nil;
+  _volume := 0;
 end;
 
-procedure TPortaudioPlaybackStream.Stop();
+function TPortaudioPlaybackStream.SetDecodeStream(decodeStream: TAudioDecodeStream): boolean;
 begin
-  status := sStopped;
+  result := false;
+
+  Reset();
+
+  if not assigned(decodeStream) then
+    Exit;
+  Self.DecodeStream := decodeStream;
+
+  _volume := 100;
+
+  result := true;
 end;
 
 procedure TPortaudioPlaybackStream.Close();
 begin
-  status := sStopped;
-  Loaded := false;
-  // TODO: cleanup decode-stream
+  Reset();
+end;
+
+procedure TPortaudioPlaybackStream.Play();
+begin
+  if (status <> ssPaused) then
+  begin
+    // rewind
+    if assigned(DecodeStream) then
+      DecodeStream.Position := 0;
+  end;
+  status := ssPlaying;
+  //MixerStream.AddStream(Self);
+end;
+
+procedure TPortaudioPlaybackStream.Pause();
+begin
+  status := ssPaused;
+end;
+
+procedure TPortaudioPlaybackStream.Stop();
+begin
+  status := ssStopped;
 end;
 
 function TPortaudioPlaybackStream.IsLoaded(): boolean;
 begin
-  result := Loaded;
+  result := assigned(DecodeStream);
 end;
 
 function TPortaudioPlaybackStream.GetLoop(): boolean;
@@ -263,7 +331,10 @@ end;
 
 function TPortaudioPlaybackStream.GetLength(): real;
 begin
-  result := decodeStream.Length;
+  if assigned(DecodeStream) then
+    result := DecodeStream.Length
+  else
+    result := -1;
 end;
 
 function TPortaudioPlaybackStream.GetStatus(): TStreamStatus;
@@ -273,22 +344,47 @@ end;
 
 function TPortaudioPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
 begin
-  result := decodeStream.ReadData(Buffer, BufSize);
-  // end-of-file reached -> stop playback
-  if (decodeStream.EOF) then
+  if not assigned(DecodeStream) then
   begin
-    status := sStopped;
+    result := -1;
+    Exit;
+  end;
+  result := DecodeStream.ReadData(Buffer, BufSize);
+  // end-of-file reached -> stop playback
+  if (DecodeStream.EOF) then
+  begin
+    status := ssStopped;
   end;
 end;
 
 function TPortaudioPlaybackStream.GetPosition: real;
 begin
-  result := decodeStream.Position;
+  if assigned(DecodeStream) then
+    result := DecodeStream.Position
+  else
+    result := -1;
 end;
 
 procedure TPortaudioPlaybackStream.SetPosition(Time: real);
 begin
-  decodeStream.Position := Time;
+  if assigned(DecodeStream) then
+    DecodeStream.Position := Time;
+end;
+
+function TPortaudioPlaybackStream.GetVolume(): integer;
+begin
+  result := _volume;
+end;
+
+procedure TPortaudioPlaybackStream.SetVolume(volume: integer);
+begin
+  // clamp volume
+  if (volume > 100) then
+    _volume := 100
+  else if (volume < 0) then
+    _volume := 0
+  else
+    _volume := volume;
 end;
 
 
@@ -298,18 +394,26 @@ function AudioCallback(input: Pointer; output: Pointer; frameCount: Longword;
     timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
     userData: Pointer): Integer; cdecl;
 var
-  playback        : TAudioPlayback_Portaudio;
-  playbackStream  : TPortaudioPlaybackStream;
-  decodeStream    : TAudioDecodeStream;
+  playback: TAudioPlayback_Portaudio;
 begin
   playback := TAudioPlayback_Portaudio(userData);
   with playback do
   begin
-    mixerStream.ReadData(output, frameCount * FrameSize);
+    MixerStream.ReadData(output, frameCount * FrameSize);
   end;
   result := paContinue;
 end;
 
+procedure SDLAudioCallback(userdata: Pointer; stream: PChar; len: integer); cdecl;
+var
+  playback: TAudioPlayback_Portaudio;
+begin
+  playback := TAudioPlayback_Portaudio(userdata);
+  with playback do
+  begin
+    //MixerStream.ReadData(stream, len);
+  end;
+end;
 
 function TAudioPlayback_Portaudio.GetName: String;
 begin
@@ -349,10 +453,11 @@ begin
     device := paOutDevice;
     channelCount := 2;
     sampleFormat := paInt16;
-    suggestedLatency := paOutDeviceInfo^.defaultLowOutputLatency;
+    suggestedLatency := paOutDeviceInfo^.defaultHighOutputLatency;
     hostApiSpecificStreamInfo := nil;
   end;
 
+  // set the size of one audio frame (2channel 16bit uint sample)
   FrameSize := 2 * sizeof(Smallint);
 
   err := Pa_OpenStream(paStream, nil, @paOutParams, 44100,
@@ -384,76 +489,139 @@ begin
   result := true;
 end;
 
-procedure TAudioPlayback_Portaudio.InitializePlayback;
+function TAudioPlayback_Portaudio.InitializeSDLAudio(): boolean;
+var
+  desiredAudioSpec, obtainedAudioSpec: TSDL_AudioSpec;
+  err: integer;
 begin
-  Log.LogStatus('InitializePlayback', 'UAudioPlayback_Portaudio');
+  result := false;
 
-  InitializePortaudio();
-  mixerStream := TAudioMixerStream.Create;
+  SDL_InitSubSystem(SDL_INIT_AUDIO);
 
-  StartSoundStream  := Load(SoundPath + 'Common start.mp3');
-  BackSoundStream   := Load(SoundPath + 'Common back.mp3');
-  SwooshSoundStream := Load(SoundPath + 'menu swoosh.mp3');
-  ChangeSoundStream := Load(SoundPath + 'select music change music 50.mp3');
-  OptionSoundStream := Load(SoundPath + 'option change col.mp3');
-  ClickSoundStream  := Load(SoundPath + 'rimshot022b.mp3');
+  FillChar(desiredAudioSpec, sizeof(desiredAudioSpec), 0);
+  with desiredAudioSpec do
+  begin
+    freq := 44100;
+    format := AUDIO_S16SYS;
+    channels := 2;
+    samples := 1024; // latency: 23 ms
+    callback := @SDLAudioCallback;
+    userdata := Self;
+  end;
 
-//  DrumSoundStream  := Load(SoundPath + 'bassdrumhard076b.mp3');
-//  HihatSoundStream := Load(SoundPath + 'hihatclosed068b.mp3');
-//  ClapSoundStream  := Load(SoundPath + 'claps050b.mp3');
+  // set the size of one audio frame (2channel 16bit uint sample)
+  FrameSize := 2 * sizeof(Smallint);
 
-//  ShuffleSoundStream := Load(SoundPath + 'Shuffle.mp3');
+  if(SDL_OpenAudio(@desiredAudioSpec, @obtainedAudioSpec) = -1) then
+  begin
+    Log.LogStatus('SDL_OpenAudio: ' + SDL_GetError(), 'UAudioPlayback_SDL');
+    exit;
+  end;
 
-  StartPortaudioStream();
+  Log.LogStatus('Opened audio device', 'UAudioPlayback_SDL');
+
+  result := true;
 end;
 
+function TAudioPlayback_Portaudio.StartSDLAudioStream(): boolean;
+begin
+  SDL_PauseAudio(0);
+  result := true;
+end;
+
+procedure TAudioPlayback_Portaudio.StopSDLAudioStream();
+begin
+  SDL_CloseAudio();
+end;
+
+function TAudioPlayback_Portaudio.InitializePlayback: boolean;
+begin
+  result := false;
+
+  //Log.LogStatus('InitializePlayback', 'UAudioPlayback_Portaudio');
+
+  //if(not InitializePortaudio()) then
+  if(not InitializeSDLAudio()) then
+    Exit;
+
+  MixerStream := TAudioMixerStream.Create;
+
+  //if(not StartPortaudioStream()) then;
+  if(not StartSDLAudioStream()) then
+    Exit;
+
+  result := true;
+end;
+
+destructor TAudioPlayback_Portaudio.Destroy;
+begin
+  StopSDLAudioStream();
+
+  MixerStream.Free();
+  MusicStream.Free();
+
+  inherited Destroy();
+end;
+
+function TAudioPlayback_Portaudio.Load(const Filename: String): TPortaudioPlaybackStream;
+var
+  decodeStream: TAudioDecodeStream;
+  playbackStream: TPortaudioPlaybackStream;
+begin
+  Result := nil;
+
+  decodeStream := AudioDecoder.Open(Filename);
+  if not assigned(decodeStream) then
+  begin
+    Log.LogStatus('LoadSoundFromFile: Sound not found "' + Filename + '"', 'UAudioPlayback_Portaudio');
+    Exit;
+  end;
+
+  playbackStream := TPortaudioPlaybackStream.Create();
+  if (not playbackStream.SetDecodeStream(decodeStream)) then
+    Exit;
+
+  // FIXME: remove this line
+  MixerStream.AddStream(playbackStream);
+
+  result := playbackStream;
+end;
 
 procedure TAudioPlayback_Portaudio.SetVolume(Volume: integer);
 begin
-  //New: Sets Volume only for this Application
-(*
-  BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, Volume);
-  BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume);
-  BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, Volume);
-*)
+  // sets volume only for this application
+  MixerStream.Volume := Volume;
 end;
 
 procedure TAudioPlayback_Portaudio.SetMusicVolume(Volume: Integer);
 begin
-  //Max Volume Prevention
-  if Volume > 100 then
-    Volume := 100;
-
-  if Volume < 0 then
-    Volume := 0;
-
-  //Set Volume
-//  BASS_ChannelSetAttributes (Bass, -1, Volume, -101);
+  if assigned(MusicStream) then
+    MusicStream.Volume := Volume;
 end;
 
 procedure TAudioPlayback_Portaudio.SetLoop(Enabled: boolean);
 begin
-  if (MusicStream <> nil) then
-  if (MusicStream.IsLoaded) then
-   MusicStream.SetLoop(Enabled);
+  if assigned(MusicStream) then
+    MusicStream.SetLoop(Enabled);
 end;
 
 function TAudioPlayback_Portaudio.Open(Filename: string): boolean;
 var
   decodeStream: TAudioDecodeStream;
 begin
-  decodeStream := AudioDecoder.Open(Filename);
-  MusicStream := TPortaudioPlaybackStream.Create(decodeStream);
-  // FIXME: remove this line
-  mixerStream.AddStream(MusicStream);
+  Result := false;
 
-  if(MusicStream.IsLoaded()) then
-  begin
-    //Set Max Volume
-    SetMusicVolume(100);
-  end;
+  // free old MusicStream
+  MusicStream.Free();
 
-  Result := MusicStream.IsLoaded();
+  MusicStream := Load(Filename);
+  if not assigned(MusicStream) then
+    Exit;
+
+  //Set Max Volume
+  SetMusicVolume(100);
+
+  Result := true;
 end;
 
 procedure TAudioPlayback_Portaudio.Rewind;
@@ -463,140 +631,66 @@ end;
 
 procedure TAudioPlayback_Portaudio.SetPosition(Time: real);
 begin
-  if (MusicStream.IsLoaded) then
-  begin
+  if assigned(MusicStream) then
     MusicStream.SetPosition(Time);
-  end;
 end;
 
 function TAudioPlayback_Portaudio.GetPosition: real;
 begin
-  if (MusicStream.IsLoaded) then
-  Result := MusicStream.GetPosition();
+  if assigned(MusicStream) then
+    Result := MusicStream.GetPosition()
+  else
+    Result := -1;
 end;
 
 function TAudioPlayback_Portaudio.Length: real;
 begin
-  Result := 0;
-  if assigned( MusicStream ) then
-  if (MusicStream.IsLoaded) then
-  begin
-    Result := MusicStream.GetLength();
-  end;
+  if assigned(MusicStream) then
+    Result := MusicStream.GetLength()
+  else
+    Result := -1;
 end;
 
 procedure TAudioPlayback_Portaudio.Play;
 begin
-  if (MusicStream <> nil) then
-  if (MusicStream.IsLoaded) then
-  begin
-    if (MusicStream.GetLoop()) then
-    begin
-    end;
-    // start from beginning...
-    // actually bass itself does not loop, nor does this TAudio_FFMpeg Class
+  if assigned(MusicStream) then
     MusicStream.Play();
-  end;
 end;
 
 procedure TAudioPlayback_Portaudio.Pause;
 begin
-  if (MusicStream <> nil) then
+  if assigned(MusicStream) then
     MusicStream.Pause();
 end;
 
 procedure TAudioPlayback_Portaudio.Stop;
 begin
-  if MusicStream <> nil then
-  MusicStream.Stop();
+  if assigned(MusicStream) then
+    MusicStream.Stop();
 end;
 
 procedure TAudioPlayback_Portaudio.Close;
 begin
-  if MusicStream <> nil then
-  MusicStream.Close();
+  if assigned(MusicStream) then
+  begin
+    MixerStream.RemoveStream(MusicStream);
+    MusicStream.Close();
+  end;
 end;
 
 function TAudioPlayback_Portaudio.Finished: boolean;
 begin
-  if MusicStream <> nil then
-  Result := (MusicStream.GetStatus() = sStopped);
-end;
-
-procedure TAudioPlayback_Portaudio.PlayStart;
-begin
-  if StartSoundStream <> nil then
-  StartSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayBack;
-begin
-  if BackSoundStream <> nil then
-  BackSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlaySwoosh;
-begin
-  if SwooshSoundStream <> nil then
-  SwooshSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayChange;
-begin
-  if ChangeSoundStream <> nil then
-  ChangeSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayOption;
-begin
-  if OptionSoundStream <> nil then
-  OptionSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayClick;
-begin
-  if ClickSoundStream <> nil then
-  ClickSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayDrum;
-begin
-  if DrumSoundStream <> nil then
-  DrumSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayHihat;
-begin
-  if HihatSoundStream <> nil then
-  HihatSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayClap;
-begin
-  if ClapSoundStream <> nil then
-  ClapSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.PlayShuffle;
-begin
-  if ShuffleSoundStream <> nil then
-  ShuffleSoundStream.Play();
-end;
-
-procedure TAudioPlayback_Portaudio.StopShuffle;
-begin
-  if ShuffleSoundStream <> nil then
-  ShuffleSoundStream.Stop();
+  if assigned(MusicStream) then
+    Result := (MusicStream.GetStatus() = ssStopped)
+  else
+    Result := true;
 end;
 
 //Equalizer
-function TAudioPlayback_Portaudio.GetFFTData: TFFTData;
-var
-  data: TFFTData;
+procedure TAudioPlayback_Portaudio.GetFFTData(var data: TFFTData);
 begin
   //Get Channel Data Mono and 256 Values
 //  BASS_ChannelGetData(Bass, @Result, BASS_DATA_FFT512);
-  result := data;
 end;
 
 // Interface for Visualizer
@@ -605,64 +699,22 @@ begin
   result := 0;
 end;
 
-function TAudioPlayback_Portaudio.Load(Filename: string): TPortaudioPlaybackStream;
-var
-  decodeStream    : TAudioDecodeStream;
-  playbackStream  : TPortaudioPlaybackStream;
-  csIndex         : integer;
+function TAudioPlayback_Portaudio.OpenSound(const Filename: String): TAudioPlaybackStream;
 begin
-  result := nil;
-
-  decodeStream := AudioDecoder.Open(Filename);
-  if (decodeStream = nil) then
-  begin
-    Log.LogStatus('LoadSoundFromFile: Sound not found "' + Filename + '"', 'UAudioPlayback_Portaudio');
-    exit;
-  end;
-
-  playbackStream := TPortaudioPlaybackStream.Create(decodeStream);
-  // FIXME: remove this line
-  mixerStream.AddStream(playbackStream);
-
-  //Add CustomSound
-  csIndex := High(CustomSounds) + 1;
-  SetLength(CustomSounds, csIndex + 1);
-  CustomSounds[csIndex].Filename := Filename;
-  CustomSounds[csIndex].Stream := playbackStream;
-
-  result := playbackStream;
+  result := Load(Filename);
 end;
 
-function TAudioPlayback_Portaudio.LoadCustomSound(const Filename: String): Cardinal;
-var
-  S: TAudioPlaybackStream;
-  I: Integer;
-  F: String;
+procedure TAudioPlayback_Portaudio.PlaySound(stream: TAudioPlaybackStream);
 begin
-  //Search for Sound in already loaded Sounds
-  F := UpperCase(SoundPath + FileName);
-  For I := 0 to High(CustomSounds) do
-  begin
-    if (UpperCase(CustomSounds[I].Filename) = F) then
-    begin
-      Result := I;
-      Exit;
-    end;
-  end;
-
-  S := Load(SoundPath + Filename);
-  if (S <> nil) then
-    Result := High(CustomSounds)
-  else
-    Result := 0;
+  if assigned(stream) then
+    stream.Play();
 end;
 
-procedure TAudioPlayback_Portaudio.PlayCustomSound(const Index: Cardinal );
+procedure TAudioPlayback_Portaudio.StopSound(stream: TAudioPlaybackStream);
 begin
-  if (Index <= High(CustomSounds)) then
-    CustomSounds[Index].Stream.Play();
+  if assigned(stream) then
+    stream.Stop();
 end;
-
 
 
 initialization
