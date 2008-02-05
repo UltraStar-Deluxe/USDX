@@ -17,9 +17,7 @@ interface
 uses
     {$IFDEF MSWINDOWS}
       Windows,
-      {$IFDEF Delphi}
-        DirWatch,
-      {$ENDIF}
+      DirWatch,
     {$ELSE}
       {$IFNDEF DARWIN}
         syscall,
@@ -66,7 +64,7 @@ type
     fWatch    : longint;
     fParseSongDirectory : boolean;
     fProcessing         : boolean;
-    {$ifdef Delphi}
+    {$ifdef MSWINDOWS}
       fDirWatch           : TDirectoryWatch;
     {$endif}
     procedure int_LoadSongList;
@@ -151,7 +149,7 @@ begin
 
   SongList := TList.create();
 
-  {$ifdef Delphi}
+  {$ifdef MSWINDOWS}
     fDirWatch := TDirectoryWatch.create(nil);
     fDirWatch.OnChange     := DoDirChanged;
     fDirWatch.Directory    := SongPath;

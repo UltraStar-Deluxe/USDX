@@ -20,7 +20,7 @@ uses
 
   {$IFDEF UseBass}
   bass                   in 'lib\bass\delphi\bass.pas',
-  //UAudioCore_Bass        in 'Classes\UAudioCore_Bass.pas',
+  UAudioCore_Bass        in 'Classes\UAudioCore_Bass.pas',
   {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\delphi\portaudio.pas',
@@ -39,7 +39,9 @@ uses
   MidiCons      in 'lib\midi\MidiCons.PAS',
   MidiFile      in 'lib\midi\MidiFile.PAS',
   Delphmcb      in 'lib\midi\Delphmcb.PAS',
+  {$ENDIF}
 
+  {$IFDEF MSWINDOWS}
   DirWatch      in 'lib\other\DirWatch.pas',
   {$ENDIF}
 

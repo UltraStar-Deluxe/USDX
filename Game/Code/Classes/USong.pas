@@ -9,35 +9,30 @@ interface
 {$I switches.inc}
 
 uses
-     {$IFDEF MSWINDOWS}
-       Windows,
-       {$ifdef Delphi}
-       DirWatch,
-       {$endif}
-     {$ELSE}
-       {$IFNDEF DARWIN}
-//         oldlinux,
-         syscall,
-       {$ENDIF}
+    {$IFDEF MSWINDOWS}
+    Windows,
+    {$ELSE}
+      {$IFNDEF DARWIN}
+        syscall,
+      {$ENDIF}
       baseunix,
       UnixType,
-     {$ENDIF}
-     SysUtils,
-     Classes,
-  	 UPlatform,
-     ULog,
-     UTexture,
-     UCommon,
-	 {$IFDEF DARWIN}
-	 cthreads,
-	 {$ENDIF}
-	 {$IFDEF USE_PSEUDO_THREAD}
-	 PseudoThread,
-	 {$ENDIF}
-     UCatCovers;
+    {$ENDIF}
+    SysUtils,
+    Classes,
+    UPlatform,
+    ULog,
+    UTexture,
+    UCommon,
+    {$IFDEF DARWIN}
+    cthreads,
+    {$ENDIF}
+    {$IFDEF USE_PSEUDO_THREAD}
+    PseudoThread,
+    {$ENDIF}
+    UCatCovers;
 
 type
-
 
   TSingMode = ( smNormal, smPartyMode, smPlaylistRandom );
 
@@ -53,7 +48,6 @@ type
   end;
 
   TSong = class
-
     FileLineNo  : integer;  //Line which is readed at Last, for error reporting
 
     procedure ParseNote(NrCzesci: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
@@ -61,7 +55,6 @@ type
 
     function ReadTXTHeader( const aFileName : WideString ): boolean;
   public
-
     Path:       widestring;
     Folder:     widestring; // for sorting by folder
     fFileName,
@@ -181,23 +174,23 @@ begin
 
   if not FileExists(Path + PathDelim + FileName) then
   begin
-    Log.LogError('File not found: "' + Path + PathDelim + FileName + '"', 'WczytajCzesci');
+    Log.LogError('File not found: "' + Path + PathDelim + FileName + '"', 'TSong.LoadSong()');
     exit;
   end;
 
-  try
-    MultBPM           := 4; // 4 - mnoznik dla czasu nut
-    Mult              := 1; // 4 - dokladnosc pomiaru nut
-    Base[0]           := 100; // high number
-    Czesci[0].Wartosc := 0;
-    self.Relative     := false;
-    Rel[0]            := 0;
-    CP                := 0;
-    Both              := false;
-    
-    if Length(Player) = 2 then
-      Both := true;
+  MultBPM           := 4; // multiply beat-count of note by 4
+  Mult              := 1; // accuracy of measurement of note
+  Base[0]           := 100; // high number
+  Czesci[0].Wartosc := 0;
+  self.Relative     := false;
+  Rel[0]            := 0;
+  CP                := 0;
+  Both              := false;
 
+  if Length(Player) = 2 then
+    Both := true;
+
+  try
     // Open song file for reading.....
     FileMode := fmOpenRead;
     AssignFile(SongFile, fFileName);
@@ -248,13 +241,13 @@ begin
     begin
 
       if (TempC = ':') or (TempC = '*') or (TempC = 'F') then begin
-        // wczytuje nute
+        // read notes
         Read(SongFile, Param1);
         Read(SongFile, Param2);
         Read(SongFile, Param3);
         Read(SongFile, ParamS);
 
-        // dodaje nute
+        // add notes
         if not Both then
           // P1
           ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS)
