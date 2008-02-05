@@ -89,8 +89,6 @@ type
     public
       Tex_Background:     TTexture;
       FadeOut:            boolean;
-      Path:               string;
-      FileName:           string;
       constructor Create; override;
       procedure onShow; override;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
@@ -223,9 +221,9 @@ begin
         begin
           // Save Song
           if SDL_ModState = KMOD_LSHIFT then
-            SaveSong(CurrentSong, Czesci[0], Path + FileName, true)
+            SaveSong(CurrentSong, Czesci[0], CurrentSong.Path + CurrentSong.FileName, true)
           else
-            SaveSong(CurrentSong, Czesci[0], Path + FileName, false);
+            SaveSong(CurrentSong, Czesci[0], CurrentSong.Path + CurrentSong.FileName, false);
 
           {if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
             // Save Song
@@ -1159,9 +1157,10 @@ procedure TScreenEditSub.onShow;
 begin
   Log.LogStatus('Initializing', 'TEditScreen.onShow');
 
+  ResetSingTemp;
+
   try
-    ResetSingTemp;
-//    Error := not LoadSong(Path + FileName);  // todo - JB come back to this
+    Error := not CurrentSong.LoadSong();
   except
     Error := True;
   end;
@@ -1188,7 +1187,7 @@ begin
     AktNuta := 0;
     Czesci[0].Czesc[0].Nuta[0].Color := 1;
 
-    AudioPlayback.Open(Path + CurrentSong.Mp3);
+    AudioPlayback.Open(CurrentSong.Path + CurrentSong.Mp3);
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(40);
     

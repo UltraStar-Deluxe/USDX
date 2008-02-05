@@ -2130,8 +2130,7 @@ begin
   begin
     AudioPlayback.Stop;
     AudioPlayback.PlaySound(SoundLib.Start);
-    ScreenEditSub.Path := CatSongs.Song[Interaction].Path;
-    ScreenEditSub.FileName := CatSongs.Song[Interaction].FileName;
+    CurrentSong := CatSongs.Song[Interaction];
     FadeTo(@ScreenEditSub);
   end;
 end;
