@@ -78,6 +78,8 @@ uses
   //------------------------------
   //Includes - Classes
   //------------------------------
+  UConfig           in 'Classes\UConfig.pas',
+  
   UCommon           in 'Classes\UCommon.pas',
   UGraphic          in 'Classes\UGraphic.pas',
   UTexture          in 'Classes\UTexture.pas',

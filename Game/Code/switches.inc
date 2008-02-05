@@ -32,6 +32,8 @@
 
 
 {$IFDEF win32}
+  {$I config-win.inc}
+
   {$DEFINE UseBASSPlayback}
   {$DEFINE UseBASSInput}
 
@@ -39,9 +41,12 @@
   //{$DEFINE UsePortaudioPlayback}
   //{$DEFINE UsePortaudioInput}
   //{$DEFINE UsePortmixer}
-  
-  {$DEFINE UseProjectM_0_9}
-  //{$DEFINE UseProjectM_1_0}
+
+  {$IF Defined(HaveProjectM_0_9)}
+    {$DEFINE UseProjectM_0_9}
+  {$ELSEIF Defined(HaveProjectM_1_0_PLUS)}
+    {$DEFINE UseProjectM_1_0}
+  {$IFEND}
 
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
