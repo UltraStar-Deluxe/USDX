@@ -1,5 +1,6 @@
 ##
 # Makefile for @PACKAGE_NAME@ @PACKAGE_VERSION@ 
+# @AUTOCONF_INFO@
 # @PACKAGE_BUGREPORT@
 ##
 
@@ -12,6 +13,7 @@ infodir = @infodir@
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 datarootdir = @datarootdir@
+VPATH = @srcdir@
 
 # install tool
 INSTALL = @INSTALL@
@@ -20,6 +22,8 @@ LN_S = @LN_S@
 
 USDX_PREFIX = UltraStar
 USDX_TOOLS_DIR = ../../Tools
+
+
 
 EXE_SUFFIX = @EXEEXT@
 
@@ -83,26 +87,33 @@ USDX_BIN = $(USDX_PREFIX)$(EXE_SUFFIX)
 # name of resource
 USDX_RES = $(USDX_PREFIX)$(RES_SUFFIX)
 
-.PHONY: all resources ultrastar install uninstall clean distclean clean_obj clean_res
+.PHONY: all resources ultrastardx-app install uninstall clean distclean clean_obj clean_res
 
-all: resources ultrastar
+all: resources ultrastardx-app
 
 resources: $(USDX_RES)
 
-# we need to rebuild everything, fpc does some sort of caching of old files,
-# so we have to delete all the old stuff first
-ultrastar: clean_obj
+ultrastardx-app: $(USDX_BIN)
+
+# Clean and rebuild everything because FPC caches some old files
+# (it uses an .inc-files cache for example).
+# As a result FPC misses some changes if it is called without cleaning
+# up first (very annoying while debugging).
+$(USDX_BIN):
+	$(MAKE) clean_obj
 	mkdir -p $(PCUNIT_DIR)
 	$(PPC) $(PFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$(USDX_BIN) $(USDX_SRC)
 
 install: all
+# TODO: copy files to the appropriate places
 #	$()/mkinstalldirs $(bindir)
 #	$()/mkinstalldirs $(libdir)
 #	$()/mkinstalldirs $(infodir)
-	mv $(OUTPUT) ../..
+	mv $(USDX_BIN) ../..
 #	$(INSTALL) $(USDX_BIN) $(bindir)/$(USDX_BIN)
 
 uninstall:
+# TODO: remove installed files
 #	rm -f ...
 	echo "Comming soon!"
 
@@ -116,7 +127,7 @@ distclean: clean
 	rm -f config.inc config.log config.status configure
 
 clean_obj:
-	find "$(PCUNIT_DIR)" -name "*.o" -o -name "*.ppu" -o -name "*.rst" | xargs rm -f
+	find "$(PCUNIT_DIR)" -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
 	rm -f $(OUTPUT)
 
 clean_res:
@@ -128,7 +139,7 @@ $(USDX_RES): $(RESCOMPILER_BIN) $(USDX_PREFIX).rc
 $(RESCOMPILER_BIN): $(RESCOMPILER_SRC)
 	$(PPC) $(RESCOMPILER_PFLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(RESCOMPILER_SRC)
 
-configure: configure.ac aclocal.m4
+configure: configure.ac config.inc.in aclocal.m4
 	autoconf
 
 aclocal.m4: m4/*

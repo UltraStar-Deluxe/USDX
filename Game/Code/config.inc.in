@@ -1,127 +1,83 @@
-// Configuration include file for @PACKAGE_NAME@ @PACKAGE_VERSION@
-// @PACKAGE_BUGREPORT@
+{***************************************************************** 
+ * Configuration file for @PACKAGE_NAME@ @PACKAGE_VERSION@
+ *****************************************************************}
 
-// Note on version comparison:
-// -------------------------------------------------------------------
-// Delphi (in contrast to FPC) DOESN'T support MACROS. So we
-// can't define a macro like VERSION_MAJOR(version) to extract
-// parts of the version-number or to create version numbers for
-// comparison purposes as with a MAKE_VERSION(maj, min, rev) macro.
-// So we have to define constants for every part of the version here.
-//
-// In addition FPC (in contrast to delphi) DOESN'T support floating-
-// point numbers in $IF compiler-directives (e.g. {$IF VERSION > 1.23})
-// It also DOESN'T support arithmetic operations so we aren't able to
-// compare versions this way (brackets aren't supported too):
-//   {$IF VERSION > ((VER_MAJ*2)+(VER_MIN*23)+(VER_REL*1))}
-//
-// Hence we have to use fixed numbers in the directives. At least
-// Pascal allows leading 0s so 0005 equals 5 (octals are
-// preceded by & and not by 0 in FPC).
-// We also fix the count of digits for each part of the version number
-// to 3 (aaaiiirrr with aaa=major, iii=minor, rrr=release version)
-//
-// A check for a library with at least a version of 2.5.11 would look
-// like this:
-//   {$IF LIB_VERSION >= 002005011}
-//
-// If you just need to check the major version to this:
-//   {$IF LIB_VERSION_MAJOR >= 23}
-//
-// PLEASE consider this if you use version numbers in $IF compiler-
-// directives. Otherwise you might break portability.
-// -------------------------------------------------------------------
-   
+{* Misc options *}
+
 {$@DEFINE_DEBUG@ DEBUG}
 
-const 
-  VERSION_MAJOR   = 1000000;
-  VERSION_MINOR   = 1000;
-  VERSION_RELEASE = 1;
+{* Paths *}
 
-  FPC_VERSION_MAJOR   = @FPC_VERSION_MAJOR@;
-  FPC_VERSION_MINOR   = @FPC_VERSION_MINOR@;
-  FPC_VERSION_RELEASE = @FPC_VERSION_RELEASE@;
-  FPC_VERSION = (FPC_VERSION_MAJOR * VERSION_MAJOR) +
-                (FPC_VERSION_MINOR * VERSION_MINOR) +
-                (FPC_VERSION_RELEASE * VERSION_RELEASE);
+PathSuffix : WideString = '@suffix@';
+LogPath    : WideString = '@logrootdir@/'+USDXPathSuffix+'/';
+SharedPath : WideString = '@datarootdir@/'+USDXPathSuffix+'/';
 
+{* Libraries *}
+
+{$IF Defined(LAZARUS) and Defined(IncludeConstants)}
   LAZARUS_VERSION_MAJOR   = @LAZARUS_VERSION_MAJOR@;
   LAZARUS_VERSION_MINOR   = @LAZARUS_VERSION_MINOR@;
   LAZARUS_VERSION_RELEASE = @LAZARUS_VERSION_RELEASE@;
-  LAZARUS_VERSION = (LAZARUS_VERSION_MAJOR * VERSION_MAJOR) +
-                    (LAZARUS_VERSION_MINOR * VERSION_MINOR) +
-                    (LAZARUS_VERSION_RELEASE * VERSION_RELEASE);
+{$IFEND}
 
-  {$@DEFINE_HAVE_FFMPEG@ HaveFFMpeg}
-  {$IFDEF HaveFFMpeg}
-
-  av__codec = '@AVCODEC_LIB@';
+{$@DEFINE_HAVE_FFMPEG@ HaveFFMpeg}
+{$IF Defined(HaveFFMpeg) and Defined(IncludeConstants)}
+  av__codec = 'libavcodec';
+  //av__codec = '@AVCODEC_LIB@';
   LIBAVCODEC_VERSION_MAJOR   = @AVCODEC_VERSION_MAJOR@;
   LIBAVCODEC_VERSION_MINOR   = @AVCODEC_VERSION_MINOR@;
   LIBAVCODEC_VERSION_RELEASE = @AVCODEC_VERSION_RELEASE@;
-  LIBAVCODEC_VERSION = (LIBAVCODEC_VERSION_MAJOR * VERSION_MAJOR) +
-                       (LIBAVCODEC_VERSION_MINOR * VERSION_MINOR) +
-                       (LIBAVCODEC_VERSION_RELEASE * VERSION_RELEASE);
 
-  av__format = '@AVFORMAT_LIB@';
+  av__format = 'libavformat';
+  //av__format = '@AVFORMAT_LIB@';
   LIBAVFORMAT_VERSION_MAJOR   = @AVFORMAT_VERSION_MAJOR@;
   LIBAVFORMAT_VERSION_MINOR   = @AVFORMAT_VERSION_MINOR@;
   LIBAVFORMAT_VERSION_RELEASE = @AVFORMAT_VERSION_RELEASE@;
-  LIBAVFORMAT_VERSION = (LIBAVFORMAT_VERSION_MAJOR * VERSION_MAJOR) +
-                        (LIBAVFORMAT_VERSION_MINOR * VERSION_MINOR) +
-                        (LIBAVFORMAT_VERSION_RELEASE * VERSION_RELEASE);
 
-  av__util = '@AVUTIL_LIB@';
+  av__util = 'libavutil';
+  //av__util = '@AVUTIL_LIB@';
   LIBAVUTIL_VERSION_MAJOR   = @AVUTIL_VERSION_MAJOR@;
   LIBAVUTIL_VERSION_MINOR   = @AVUTIL_VERSION_MINOR@;
   LIBAVUTIL_VERSION_RELEASE = @AVUTIL_VERSION_RELEASE@;
-  LIBAVUTIL_VERSION = (LIBAVUTIL_VERSION_MAJOR * VERSION_MAJOR) +
-                      (LIBAVUTIL_VERSION_MINOR * VERSION_MINOR) +
-                      (LIBAVUTIL_VERSION_RELEASE * VERSION_RELEASE);
+{$IFEND}
 
-  {$ENDIF}
-
-  {$@DEFINE_HAVE_SWSCALE@ HaveSWScale}
-  {$IFDEF HaveSWScale}
-  sw__scale = '@SWSCALE_LIB@';
+{$@DEFINE_HAVE_SWSCALE@ HaveSWScale}
+{$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
+  sw__scale = 'libswscale';
+  //sw__scale = '@SWSCALE_LIB@';
   LIBSWSCALE_VERSION_MAJOR   = @SWSCALE_VERSION_MAJOR@;
   LIBSWSCALE_VERSION_MINOR   = @SWSCALE_VERSION_MINOR@;
   LIBSWSCALE_VERSION_RELEASE = @SWSCALE_VERSION_RELEASE@;
-  LIBSWSCALE_VERSION = (LIBSWSCALE_VERSION_MAJOR * VERSION_MAJOR) +
-                       (LIBSWSCALE_VERSION_MINOR * VERSION_MINOR) +
-                       (LIBSWSCALE_VERSION_RELEASE * VERSION_RELEASE);
-  {$ENDIF}
-		      
-  {$@DEFINE_HAVE_PROJECTM@ HaveProjectM}
-  {$IFDEF HaveProjectM}  
+{$IFEND}
+
+// define this for versions of ProjectM <  1.0 (use C-Interface)
+{$@DEFINE_HAVE_PROJECTM_0_9@ HaveProjectM_0_9}
+// define this for versions of ProjectM >= 1.0 (use C++-Interface)
+{$@DEFINE_HAVE_PROJECTM_1_0_PLUS@ HaveProjectM_1_0_PLUS}
+{$IF Defined(HaveProjectM_0_9) or Defined(HaveProjectM_1_0_PLUS)}
+  {$DEFINE HaveProjectM}
+{$IFEND}
+{$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
   libprojectM = '@PROJECTM_LIB@';
+  // Note: Un/Define HaveProjectM_0_9 or HaveProjectM_1_0_PLUS accordingly
   PROJECTM_VERSION_MAJOR   = @PROJECTM_VERSION_MAJOR@;
   PROJECTM_VERSION_MINOR   = @PROJECTM_VERSION_MINOR@;
   PROJECTM_VERSION_RELEASE = @PROJECTM_VERSION_RELEASE@;
-  PROJECTM_VERSION = (PROJECTM_VERSION_MAJOR * VERSION_MAJOR) +
-                     (PROJECTM_VERSION_MINOR * VERSION_MINOR) +
-                     (PROJECTM_VERSION_RELEASE * VERSION_RELEASE);
-  {$ENDIF}
+{$IFEND}
 
-  {$@DEFINE_HAVE_PORTAUDIO@ HavePortaudio}
-  {$IFDEF HavePortaudio}  
+{$@DEFINE_HAVE_PORTAUDIO@ HavePortaudio}
+{$IF Defined(HavePortaudio) and Defined(IncludeConstants)}
   libportaudio = '@PORTAUDIO_LIB@';
   PORTAUDIO_VERSION_MAJOR   = @PORTAUDIO_VERSION_MAJOR@;
   PORTAUDIO_VERSION_MINOR   = @PORTAUDIO_VERSION_MINOR@;
   PORTAUDIO_VERSION_RELEASE = @PORTAUDIO_VERSION_RELEASE@;
-  PORTAUDIO_VERSION = (PORTAUDIO_VERSION_MAJOR * VERSION_MAJOR) +
-                      (PORTAUDIO_VERSION_MINOR * VERSION_MINOR) +
-                      (PORTAUDIO_VERSION_RELEASE * VERSION_RELEASE);
-  {$ENDIF}
+{$IFEND}
 
-  {$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
-  {$IFDEF HavePortmixer}  
+{$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
+{$IF Defined(HavePortmixer) and Defined(IncludeConstants)}
   libportmixer = '@PORTMIXER_LIB@';
   PORTMIXER_VERSION_MAJOR   = @PORTMIXER_VERSION_MAJOR@;
   PORTMIXER_VERSION_MINOR   = @PORTMIXER_VERSION_MINOR@;
   PORTMIXER_VERSION_RELEASE = @PORTMIXER_VERSION_RELEASE@;
-  PORTMIXER_VERSION = (PORTMIXER_VERSION_MAJOR * VERSION_MAJOR) +
-                      (PORTMIXER_VERSION_MINOR * VERSION_MINOR) +
-                      (PORTMIXER_VERSION_RELEASE * VERSION_RELEASE);
-  {$ENDIF}
+{$IFEND}
+
