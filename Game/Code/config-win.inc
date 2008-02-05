@@ -32,7 +32,7 @@
   LIBAVUTIL_VERSION_RELEASE = 0;
 {$IFEND}
 
-{$DEFINE HaveSWScale}
+{$UNDEF HaveSWScale}
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
   sw__scale = 'swscale-0';
   LIBSWSCALE_VERSION_MAJOR   = 0;

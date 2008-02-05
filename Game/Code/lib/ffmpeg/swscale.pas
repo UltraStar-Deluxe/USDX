@@ -37,7 +37,7 @@ interface
 
 uses
   avutil,
-  config;
+  UConfig;
 
 const
   (* Max. supported version by this header *)
