@@ -325,6 +325,8 @@ var
   NR:       TRecR; //Line Bonus Mod
 
   Color: TRGB;
+
+  success:  boolean;
 begin
   Log.LogStatus('Begin', 'onShow');
   FadeOut := false; // 0.5.0: early 0.5.0 problems were by this line commented
@@ -433,34 +435,30 @@ begin
   {Static[StaticP3RScoreBG].Visible      := V3R;
   Text[TextP3RScore].Visible            := V3R; }
 
+  // FIXME: sets Path and Filename to ''
   ResetSingTemp;
-//  Log.LogWarning(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName, '!!!');
+
   CurrentSong := CatSongs.Song[CatSongs.Selected];
 
+  // FIXME: bad style, put the try-except into LoadSong() and not here
   try
-    if not CurrentSong.LoadSong then
-//    if not LoadSong(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].FileName) then
-    begin
-      //Error Loading Song -> Go back to Song Screen and Show some Error Message
-      FadeTo(@ScreenSong);
-      //Select New Song in Party Mode
-      if ScreenSong.Mode = smPartyMode then
-        ScreenSong.SelectRandomSong;
-      ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
-      Exit;
-    end;
+    success := CurrentSong.LoadSong();
   except
+    success := false;
+  end;
+  if (not success) then
+  begin
     //Error Loading Song -> Go back to Song Screen and Show some Error Message
     FadeTo(@ScreenSong);
     //Select New Song in Party Mode
       if ScreenSong.Mode = smPartyMode then
-        ScreenSong.SelectRandomSong;
+      ScreenSong.SelectRandomSong();
     ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
+    // FIXME: do we need this?
+    CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
     Exit;
   end;
-  CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
-//  CurrentSong.GAP := CurrentSong.GAP + 40 {4096 = 100ms for buffer} + 20 {microphone} + 60000 / CurrentSong.BPM[0].BPM / 2; // temporary until UMain will be fixed
-
+ 
   // set movie
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
