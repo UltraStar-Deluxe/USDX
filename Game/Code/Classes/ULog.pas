@@ -8,10 +8,12 @@ interface
 
 {$I switches.inc}
 
-uses Classes;
+uses
+  Classes;
 
 type
   TLog = class
+  public
     BenchmarkTimeStart:   array[0..7] of real;
     BenchmarkTimeLength:  array[0..7] of real;//TDateTime;
 
@@ -25,8 +27,10 @@ type
     //Should Log Files be written
     Enabled:          Boolean;
 
+    constructor Create;
+
     // destuctor
-    destructor Free;
+    destructor Destroy; override;
 
     // benchmark
     procedure BenchmarkStart(Number: integer);
@@ -48,25 +52,107 @@ type
     procedure LogBuffer(const buf : Pointer; const bufLength : Integer; filename : string);
   end;
 
+procedure SafeWriteLn(const msg: string); inline;
+
 var
   Log:    TLog;
 
 implementation
 
 uses
-     {$IFDEF win32}
-     windows,
-     {$ENDIF}
-     SysUtils,
-     DateUtils,
-//     UFiles,
-     UMain,
-     URecord,
-     UTime,
-//     UIni,  // JB - Seems to not be needed.
-     UCommandLine;
+  {$IFDEF win32}
+  windows,
+  {$ENDIF}
+  SysUtils,
+  DateUtils,
+//UFiles,
+  UMain,
+  URecord,
+  UTime,
+//UIni,  // JB - Seems to not be needed.
+  {$IFDEF FPC}
+  sdl,
+  {$ENDIF}
+  UCommandLine;
 
-destructor TLog.Free;
+{$IFDEF FPC}
+var
+  MessageList: TStringList;
+  ConsoleHandler: TThreadID;
+  ConsoleMutex: PSDL_Mutex;
+  ConsoleCond: PSDL_Cond;
+{$ENDIF}
+
+{$IFDEF FPC}
+{*
+ * The console-handlers main-function.
+ * TODO: create a quit-event on closing.
+ *}
+function ConsoleHandlerFunc(param: pointer): PtrInt;
+var
+  i: integer;
+begin
+  while true do
+  begin
+    SDL_mutexP(ConsoleMutex);
+    while (MessageList.Count = 0) do
+      SDL_CondWait(ConsoleCond, ConsoleMutex);
+    for i := 0 to MessageList.Count-1 do
+    begin
+      WriteLn(MessageList[i]);
+    end;
+    MessageList.Clear();
+    SDL_mutexV(ConsoleMutex);
+  end;
+  result := 0;
+end;
+{$ENDIF}
+
+{*
+ * With FPC console output is not thread-safe.
+ * Using WriteLn() from external threads (like in SDL callbacks)
+ *  will damage the heap and crash the program.
+ * Most probably FPC uses thread-local-data (TLS) to lock a mutex on
+ *  the console-buffer. This does not work with external lib's threads
+ *  because these do not have the TLS data and so it crashes while
+ *  accessing unallocated memory.
+ * The solution is to create an FPC-managed thread which has the TLS data
+ *  and use it to handle the console-output (hence it is called Console-Handler)
+ * It should be safe to do so, but maybe FPC requires the main-thread to access
+ *  the console-buffer only. In this case output should be delegated to it.
+ *
+ * TODO: - check if it is safe if an FPC-managed thread different than the
+ *           main-thread accesses the console-buffer in FPC. 
+ *       - check if Delphi's WriteLn is thread-safe.
+ *       - check if we need to synchronize file-output too
+ *       - Use TEvent and TCriticalSection instead of the SDL equivalents.
+ *           Note: If those two objects use TLS they might crash FPC too.
+ *}
+procedure SafeWriteLn(const msg: string);
+begin
+{$IFDEF FPC}
+  SDL_mutexP(ConsoleMutex);
+  MessageList.Add(msg);
+  SDL_CondSignal(ConsoleCond);
+  SDL_mutexV(ConsoleMutex);
+{$ELSE}
+  WriteLn(msg);
+{$ENDIF}
+end;
+
+constructor TLog.Create;
+begin
+{$IFDEF FPC}
+  // TODO: check for the main-thread?
+  //GetCurrentThreadThreadId();
+  MessageList := TStringList.Create();
+  ConsoleMutex := SDL_CreateMutex();
+  ConsoleCond := SDL_CreateCond();
+  ConsoleHandler := BeginThread(@ConsoleHandlerFunc);
+{$ENDIF}
+end;
+
+destructor TLog.Destroy;
 begin
   if FileBenchmarkO then CloseFile(FileBenchmark);
 //  if FileAnalyzeO then CloseFile(FileAnalyze);
@@ -190,7 +276,7 @@ begin
     end;
   end;
   {$IFDEF DEBUG}
-  WriteLn('Error: ' + Text);
+  SafeWriteLn('Error: ' + Text);
   {$ENDIF}
 end;
 
@@ -228,7 +314,7 @@ begin
 
   //If Debug => Write to Console Output
   {$IFDEF DEBUG}
-//   WriteLn(Log2 + ': ' + Log1);
+  // SafeWriteLn(Log2 + ': ' + Log1);
   {$ENDIF}
 end;
 
@@ -247,8 +333,8 @@ begin
   Messagebox(0, PChar(Text), PChar(Title), MB_ICONERROR or MB_OK);
   {$ELSE}
   // TODO - JB_Linux handle critical error so user can see message.
-  writeln( 'Critical ERROR :' );
-  writeln( Text );
+  SafeWriteLn( 'Critical ERROR :' );
+  SafeWriteLn( Text );
   {$ENDIF}
 
   //Exit Application
