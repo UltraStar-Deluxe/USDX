@@ -1,5 +1,6 @@
 {***************************************************************** 
  * Configuration file for @PACKAGE_NAME@ @PACKAGE_VERSION@
+ * @configure_input@
  *****************************************************************}
 
 {* Misc options *}
@@ -8,9 +9,12 @@
 
 {* Paths *}
 
-PathSuffix : WideString = '@suffix@';
-LogPath    : WideString = '@logrootdir@/'+USDXPathSuffix+'/';
-SharedPath : WideString = '@datarootdir@/'+USDXPathSuffix+'/';
+{$@DEFINE_USE_LOCAL_DIRS@ UseLocalDirs}
+{$IF not Defined(UseLocalDirs) and Defined(IncludeConstants)}
+  PathSuffix = WideString('@suffix@');
+  LogPath    = WideString('@logrootdir@/'+PathSuffix);
+  SharedPath = WideString('@sharerootdir@/'+PathSuffix);
+{$IFEND}
 
 {* Libraries *}
 

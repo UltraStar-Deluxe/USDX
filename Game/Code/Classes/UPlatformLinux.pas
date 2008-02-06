@@ -43,7 +43,8 @@ uses
 {$ELSE}
   oldlinux,
 {$ENDIF}
-  SysUtils;
+  SysUtils,
+  UConfig;
 
 {$IFDEF FPC_VERSION_2_2_0_PLUS}
 Function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
@@ -137,7 +138,11 @@ begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
     result := ExtractFilePath(ParamStr(0))
   else
-    result := '/var/log/UltraStarDeluxe/';
+{$IFDEF UseLocalDirs}
+    result := ExtractFilePath(ParamStr(0))
+{$ELSE}
+    result := LogPath+'/';
+{$ENDIF}
 end;
 
 function TPlatformLinux.GetGameSharedPath : WideString;
@@ -145,7 +150,11 @@ begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
     result := ExtractFilePath(ParamStr(0))
   else
-    result := '/usr/share/UltraStarDeluxe/';
+{$IFDEF UseLocalDirs}
+    result := ExtractFilePath(ParamStr(0))
+{$ELSE}
+    result := SharedPath+'/';
+{$ENDIF}
 end;
 
 function TPlatformLinux.GetGameUserPath   : WideString;
@@ -153,7 +162,11 @@ begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
     result := ExtractFilePath(ParamStr(0))
   else
-    result := get_homedir()+'/.UltraStarDeluxe/';
+{$IFDEF UseLocalDirs}
+    result := ExtractFilePath(ParamStr(0))
+{$ELSE}
+    result := get_homedir()+'/.'+PathSuffix+'/';
+{$ENDIF}
 end;
 
 function TPlatformLinux.get_homedir(): string;
