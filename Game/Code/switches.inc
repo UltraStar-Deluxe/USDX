@@ -95,7 +95,8 @@
 
   // misc defines
   {$IFDEF HaveProjectM}
-    {$DEFINE UseProjectM_0_9}
+    // this causes trouble at the moment
+    //{$DEFINE UseProjectM_0_9}
   {$ENDIF}
 {$IFEND}
 

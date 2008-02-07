@@ -296,7 +296,7 @@ if [[ -d "$LCL_WIDGET_DIR" ]]; then
     AC_MSG_RESULT(yes)
 else
     AC_MSG_RESULT(no)
-    AC_MSG_ERROR(LCL Widget Type not available: directory "$LCL_WIDGET_DIR" not found.)
+#    AC_MSG_ERROR(LCL Widget Type not available: directory "$LCL_WIDGET_DIR" not found.)
 fi
 
 # find sdl

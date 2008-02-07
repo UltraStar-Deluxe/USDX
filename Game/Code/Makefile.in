@@ -47,10 +47,10 @@ RESCOMPILER_PFLAGS = -dRELEASE
 PUNIT_TOKEN = -Fu
 PUNIT_FLAGS = \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM) \
-    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE) \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/images/lib/$(PPROCESSOR)-$(PPLATFORM) \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/jpeg \
     $(PUNIT_TOKEN).
+#    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE)
 
 # Directory where compiled units (.ppu and .o files) are stored
 PCUNIT_TOKEN = -FU
@@ -62,7 +62,8 @@ PINC_TOKEN = -Fi
 PINC_FLAGS = $(PINC_TOKEN)lib/JEDI-SDL/SDL/Pas
 
 # Defines
-PDEFINES  = -dLCL -dLCL$(LCL_WIDGET_TYPE)
+PDEFINES  = -dLCL 
+#-dLCL$(LCL_WIDGET_TYPE)
 
 # Misc fpc options
 PCOMPAT_FLAGS    = -S2dgi
