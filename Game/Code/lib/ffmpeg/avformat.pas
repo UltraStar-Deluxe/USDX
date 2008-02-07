@@ -22,8 +22,10 @@
  * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  * in the source codes *)
 
-// Min. version: 50.5.0
-// Max. version: 52.5.0, Revision: 11574
+(*
+ * Min. version: 50.5.0
+ * Max. version: 52.7.0, Revision: 11661, Tue Jan 29 09:25:49 2008 UTC
+ *)
 
 unit avformat;
 
@@ -47,7 +49,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 5;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 7;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -439,8 +441,13 @@ type
     index_entries_allocated_size: cardinal;
 
     nb_frames: int64;                 ///< number of frames in this stream if known or 0
+    
     {$IF LIBAVFORMAT_VERSION >= 50006000} // 50.6.0
-    pts_buffer: array [0..MAX_REORDER_DELAY] of int64
+    pts_buffer: array [0..MAX_REORDER_DELAY] of int64;
+    {$IFEND}
+    
+    {$IF LIBAVFORMAT_VERSION >= 52006000} // 52.6.0
+    filename: PChar; (**< source filename of the stream *)
     {$IFEND}
   end;
 
@@ -885,7 +892,7 @@ function av_read_pause (s: PAVFormatContext): integer;
  * Free a AVFormatContext allocated by av_open_input_stream.
  * @param s context to free
  *)
-procedure av_close_input_stream(AVFormatContext *s);
+procedure av_close_input_stream(s: PAVFormatContext);
   cdecl; external av__format;
 {$IFEND}
 

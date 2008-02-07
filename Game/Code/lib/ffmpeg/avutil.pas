@@ -21,8 +21,14 @@
  * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  * in the source codes *)
 
-// Min. version: ?
-// Max. version: 49.6.0, Revision: 11207
+(*
+ * avutil.h:
+ *  Min. version: ?
+ *  Max. version: 49.6.0, Revision: 11654, Mon Jan 28 17:23:57 2008 UTC
+ *
+ * mem.h:
+ *  Revision: 11641, Sun Jan 27 20:50:16 2008 UTC
+ *)
 
 unit avutil;
 

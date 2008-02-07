@@ -23,7 +23,9 @@
 For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
-// Revision: 11295
+(*
+ * Revision: 11305, Sat Dec 22 16:18:07 2007 UTC
+ *)
 
 unit avio;
 
@@ -198,6 +200,7 @@ function url_poll(poll_table: PURLPollEntry; n: integer; timeout: integer): inte
  * @param pause 1 for pause, 0 for resume
  *)
 function av_url_read_pause(h: PURLContext; pause: integer): integer;
+  cdecl; external av__format;
 {$IFEND}
 
 {$IF LIBAVFORMAT_VERSION >= 52001000} // 52.1.0
@@ -255,8 +258,8 @@ function av_alloc_put_byte(
                   buffer_size: integer;
                   write_flag: integer;
                   opaque: Pointer;
-                  read_packet: TReadWriteFunc,
-                  write_packet: TReadWriteFunc,
+                  read_packet: TReadWriteFunc;
+                  write_packet: TReadWriteFunc;
                   seek: TSeekFunc): PByteIOContext;
   cdecl; external av__format;
 {$IFEND}

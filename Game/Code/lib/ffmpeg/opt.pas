@@ -22,7 +22,9 @@
  * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  * in the source codes *)
 
-// Revision: 11250
+(*
+ * Revision: 11250, Mon Dec 17 17:41:24 2007 UTC
+ *)
 
 unit opt;
 

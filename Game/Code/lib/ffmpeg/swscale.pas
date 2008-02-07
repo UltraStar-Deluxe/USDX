@@ -23,6 +23,10 @@
  *     external api for the swscale stuff
  *)
 
+(*
+ * Revision: 24800, Thu Oct 18 09:30:33 2007 UTC
+ *)
+ 
 unit swscale;
 
 {$IFDEF FPC}

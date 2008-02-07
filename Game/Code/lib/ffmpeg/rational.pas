@@ -22,7 +22,9 @@
  * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  * in the source codes *)
 
-// Revision: 10765
+(*
+ * Revision: 10765, Wed Oct 17 09:37:46 2007 UTC
+ *)
 
 unit rational;
 

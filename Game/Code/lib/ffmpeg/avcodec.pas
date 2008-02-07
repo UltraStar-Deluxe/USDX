@@ -21,8 +21,10 @@
  * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  * in the source codes *)
 
-// Min. version: 51.16.0
-// Max. version: 51.49.0, Revision: 11352
+(*
+ * Min. version: 51.16.0
+ * Max. version: 51.50.0, Revision: 11878, Wed Feb 6 12:37:37 2008 UTC
+ *)
 
 unit avcodec;
 
@@ -45,7 +47,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 49;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 50;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -295,6 +297,7 @@ type
     CODEC_ID_APE,
     CODEC_ID_NELLYMOSER,
     CODEC_ID_MUSEPACK8,
+    CODEC_ID_SPEEX,
 
     //* subtitle codecs */
     CODEC_ID_DVD_SUBTITLE= $17000,
@@ -302,18 +305,22 @@ type
     CODEC_ID_TEXT,  ///< raw UTF-8 text
     CODEC_ID_XSUB,
     CODEC_ID_SSA,
+    CODEC_ID_MOV_TEXT,
 
+    (* other specific kind of codecs (generaly used for attachments) *)
+    CODEC_ID_TTF= $18000,
+    
     CODEC_ID_MPEG2TS= $20000, {*< _FAKE_ codec to indicate a raw MPEG-2 TS
                               * stream (only used by libavformat) *}
     __CODEC_ID_4BYTE = $FFFFF  // ensure 4-byte enum
   );
 
+{$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
 {* CODEC_ID_MP3LAME is obsolete *}
 const
-  {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
   CODEC_ID_MP3LAME = CODEC_ID_MP3;
   CODEC_ID_MPEG4AAC = CODEC_ID_AAC;
-  {$IFEND}
+{$IFEND}
 
 type
   TCodecType = (
@@ -322,6 +329,7 @@ type
     CODEC_TYPE_AUDIO,
     CODEC_TYPE_DATA,
     CODEC_TYPE_SUBTITLE,
+    CODEC_TYPE_ATTACHMENT,
 	  CODEC_TYPE_NB
   );
 
@@ -2277,7 +2285,7 @@ type
     encode: function (avctx: PAVCodecContext; buf: pchar; buf_size: integer; data: pointer): integer; cdecl;
     close: function (avctx: PAVCodecContext): integer; cdecl;
     decode: function (avctx: PAVCodecContext; outdata: pointer; outdata_size: PInteger;
-                  buf: pchar; buf_size: integer): integer; cdecl;
+                  {const} buf: pchar; buf_size: integer): integer; cdecl;
     capabilities: integer;
     next: PAVCodec;
     flush: procedure (avctx: PAVCodecContext); cdecl;
@@ -2748,7 +2756,7 @@ function avcodec_open (avctx: PAVCodecContext; codec: PAVCodec): integer;
  *)
 function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
                            var frame_size_ptr: integer;
-                           buf: pchar; buf_size: integer): integer;
+                           {const} buf: pchar; buf_size: integer): integer;
   cdecl; external av__codec;
 
 {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
@@ -2790,7 +2798,7 @@ function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
  *)
 function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PSmallint;
                var frame_size_ptr : integer;
-               buf: pchar; buf_size: integer): integer;
+               {const} buf: pchar; buf_size: integer): integer;
   cdecl; external av__codec;
 {$IFEND}
 
@@ -2827,7 +2835,7 @@ function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PSmallint;
  *)
 function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
                        var got_picture_ptr: integer;
-                       buf: PByte; buf_size: integer): integer;
+                       {const} buf: PByte; buf_size: integer): integer;
   cdecl; external av__codec;
 
 (* Decode a subtitle message. Return -1 if error, otherwise return the
