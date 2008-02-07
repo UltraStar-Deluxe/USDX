@@ -1,7 +1,6 @@
 ##
 # Makefile for @PACKAGE_NAME@ @PACKAGE_VERSION@ 
-# @AUTOCONF_INFO@
-# @PACKAGE_BUGREPORT@
+# @configure_input@
 ##
 
 # general definitions
@@ -23,19 +22,19 @@ LN_S = @LN_S@
 USDX_PREFIX = UltraStar
 USDX_TOOLS_DIR = ../../Tools
 
-
-
 EXE_SUFFIX = @EXEEXT@
 
 # Free Pascal compiler
 PPC = @PPC@
 PFLAGS = @PFLAGS@
+PLIBS = @PLIBS@
 # FPC target platform and processor
 PPLATFORM = @FPC_PLATFORM@
 PPROCESSOR = @FPC_PROCESSOR@
 
 # lazarus defines
 LAZARUS_DIR = @LAZARUS_DIR@
+LCL_WIDGET_TYPE = @LCL_WIDGET_TYPE@
 PROJ_SUFFIX = .lpr
 
 # RC to LRS resource compiler
@@ -44,14 +43,14 @@ RESCOMPILER_BIN = $(USDX_TOOLS_DIR)/$(RESCOMPILER_NAME)$(EXE_SUFFIX)
 RESCOMPILER_SRC = $(USDX_TOOLS_DIR)/$(RESCOMPILER_NAME)$(PROJ_SUFFIX)
 RESCOMPILER_PFLAGS = -dRELEASE
 
-RES_SUFFIX = .lrs
-
 # Directories added to the unit path
 PUNIT_TOKEN = -Fu
-PUNIT_FLAGS = $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM) \
-              $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/images/lib/$(PPROCESSOR)-$(PPLATFORM) \
-              $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/jpeg \
-              $(PUNIT_TOKEN).
+PUNIT_FLAGS = \
+    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM) \
+    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE) \
+    $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/images/lib/$(PPROCESSOR)-$(PPLATFORM) \
+    $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/jpeg \
+    $(PUNIT_TOKEN).
 
 # Directory where compiled units (.ppu and .o files) are stored
 PCUNIT_TOKEN = -FU
@@ -60,10 +59,10 @@ PCUNIT_FLAGS = $(PCUNIT_TOKEN)$(PCUNIT_DIR)
 
 # Directories added to the includes path
 PINC_TOKEN = -Fi
-PINC_FLAGS = $(PINC_TOKEN)lib/JEDI-SDLv1.0/SDL/Pas
+PINC_FLAGS = $(PINC_TOKEN)lib/JEDI-SDL/SDL/Pas
 
 # Defines
-PDEFINES  = -dLCL
+PDEFINES  = -dLCL -dLCL$(LCL_WIDGET_TYPE)
 
 # Misc fpc options
 PCOMPAT_FLAGS    = -S2dgi
@@ -84,14 +83,12 @@ PFLAGS += $(PCOMPAT_FLAGS) \
 USDX_SRC = $(USDX_PREFIX)$(PROJ_SUFFIX)
 # name of executable
 USDX_BIN = $(USDX_PREFIX)$(EXE_SUFFIX)
-# name of resource
-USDX_RES = $(USDX_PREFIX)$(RES_SUFFIX)
 
-.PHONY: all resources ultrastardx-app install uninstall clean distclean clean_obj clean_res
+.PHONY: all resources ultrastardx-app install install-dev install-release uninstall uninstall-dev uninstall-release clean distclean clean_obj clean_res
 
 all: resources ultrastardx-app
 
-resources: $(USDX_RES)
+resources: $(USDX_PREFIX).lrs
 
 ultrastardx-app: $(USDX_BIN)
 
@@ -99,44 +96,65 @@ ultrastardx-app: $(USDX_BIN)
 # (it uses an .inc-files cache for example).
 # As a result FPC misses some changes if it is called without cleaning
 # up first (very annoying while debugging).
-$(USDX_BIN):
-	$(MAKE) clean_obj
+$(USDX_BIN): clean_obj
+#	$(MAKE) clean_obj
 	mkdir -p $(PCUNIT_DIR)
-	$(PPC) $(PFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$(USDX_BIN) $(USDX_SRC)
+	$(PPC) $(PFLAGS) $(PLIBS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(USDX_SRC)
 
-install: all
+install: install-@install_type@
+# all
+
+uninstall: uninstall-@install_type@
+
+
+# local development build
+
+install-dev:
+	mv $(USDX_BIN) ../..
+
+uninstall-dev:
+	rm -f ../../$(USDX_BIN)
+
+# global release build
+
+install-release:
 # TODO: copy files to the appropriate places
 #	$()/mkinstalldirs $(bindir)
 #	$()/mkinstalldirs $(libdir)
 #	$()/mkinstalldirs $(infodir)
-	mv $(USDX_BIN) ../..
 #	$(INSTALL) $(USDX_BIN) $(bindir)/$(USDX_BIN)
+	@echo '"install-release" does not exist yet. Install USDX yourself or use "./configure --enable-dev-build" for a local installation.'
 
-uninstall:
+uninstall-release:
 # TODO: remove installed files
-#	rm -f ...
-	echo "Comming soon!"
+#	rm -f xyz
+	@echo '"install-release" does not exist yet.'
 
-clean: clean_obj clean_res
 
-distclean: clean
-	find . -name "*.o" -o -name "*.ppu" -o -name "*.rst" | xargs rm -f
-	find . -name "*.bak" -o -name "*.orig" -o -name "*.dcu" | xargs rm -f
+clean: clean_obj
+
+distclean: clean clean_res
+	find . -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
+	find . -name "*~" -name "*.bak" -o -name "*.orig" -o -name "*.dcu" | xargs rm -f
 	find . -name "__history" | xargs rm -r -f
-	rm -f $(OUTPUT).cfg $(OUTPUT).res $(OUTPUT).identcache
+	rm -f $(USDX_PREFIX).res $(USDX_PREFIX).identcache
 	rm -f config.inc config.log config.status configure
+	rm -f Makefile
+	rm -f aclocal.m4 
+	rm -rf autom4te.cache
 
 clean_obj:
 	find "$(PCUNIT_DIR)" -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
-	rm -f $(OUTPUT)
+	rm -f $(USDX_BIN)
 
 clean_res:
-	rm -f $(USDX_RES) link.res
+	rm -f $(USDX_PREFIX).lrs
 
-$(USDX_RES): $(RESCOMPILER_BIN) $(USDX_PREFIX).rc
+$(USDX_PREFIX).lrs: $(RESCOMPILER_BIN) $(USDX_PREFIX).rc
 	$(RESCOMPILER_BIN) $(USDX_PREFIX).rc
 
 $(RESCOMPILER_BIN): $(RESCOMPILER_SRC)
+	mkdir -p $(PCUNIT_DIR)
 	$(PPC) $(RESCOMPILER_PFLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(RESCOMPILER_SRC)
 
 configure: configure.ac config.inc.in aclocal.m4

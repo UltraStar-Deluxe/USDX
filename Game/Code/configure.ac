@@ -29,6 +29,18 @@ AC_CONFIG_MACRO_DIR(m4)
 # show features and packages in one list
 AC_PRESERVE_HELP_ORDER
 
+#echo $LIBS
+
+#define([maco], [])
+#echo maco
+#m4_foreach_w([arg], [-L/usr/local -l/bin/bash -L/usr/local],
+#    [m4_append_uniq([maco], "arg", [ ])
+#])
+#echo maco
+
+#echo m4_split([hallo o])
+#AC_MSG_ERROR(oi)
+
 # -----------------------------------------
 # define switches
 # -----------------------------------------
@@ -44,6 +56,15 @@ AC_ARG_WITH([lazarus],
     [with_lazarus=$withval], [with_lazarus="yes"])
 if [[ x$with_lazarus = xno ]] ; then
     AC_MSG_ERROR([Lazarus is required. It is impossible to build without it.]);
+fi
+
+# add lazarus widget-type option
+AC_ARG_WITH([lcl_widget_type], 
+    [AS_HELP_STRING([--with-lcl-widget-type=TYPE],
+      [Lazarus LCL Widget  Type @<:@default=gtk2@:>@])],
+    [with_lcl_widget_type=$withval], [with_lcl_widget_type="gtk2"])
+if [[ x$with_lcl_widget_type = xno -o x$with_lcl_widget_type = xyes ]] ; then
+    AC_MSG_ERROR([Invalid LCL Widget Type (try one of gtk2/gtk/qt)]);
 fi
 
 # add portaudio option
@@ -88,12 +109,26 @@ AC_ARG_WITH([cfg-dummy3], [
 Development options:])
 
 # add dev_layout option
-# Note: now handled by the Makefile
-AC_ARG_ENABLE(dev_install,
-    [AS_HELP_STRING([--enable-dev-install],
-      [local installation for testing])],
-    [enable_dev_install="yes"], [enable_dev_install="no"])
+AC_ARG_ENABLE(dev_build,
+    [AS_HELP_STRING([--enable-dev-build],
+      [local development build])],
+    [enable_dev_build="yes"], [enable_dev_build="no"])
 
+# -----------------------------------------
+# tools
+# -----------------------------------------
+
+# options for make command
+AC_PROG_MAKE_SET
+# find tool for ln -s
+AC_LN_S
+# find the best install tool
+AC_PROG_INSTALL
+# some other useful tools
+#AC_PROG_AWK
+AC_PROG_SED
+AC_PROG_GREP
+#AC_PROG_EGREP
 
 # -----------------------------------------
 # macro declarations
@@ -117,7 +152,7 @@ AC_DEFUN([AC_SPLIT_VERSION],
     # Note: We use a here-document (<<< here-strings not POSIX compatible)
     # Do NOT indent the eof-delimiter
     read major minor release ignore <<eof
-        `echo [$2] | tr '.-' ' ' | sed s/[^0-9\ ].*//` 
+        `echo [$2] | tr '.-' ' ' | $SED 's/[[^0-9\ ]].*//'` 
 eof
 
     # strip preceding 0s and set unset version-parts to 0
@@ -210,18 +245,6 @@ AC_LANG([C])
 AC_PROG_CXX
 AC_LANG([C++])
 
-# options for make command
-AC_PROG_MAKE_SET
-# find tool for ln -s
-AC_LN_S
-# find the best install tool
-AC_PROG_INSTALL
-# some other useful tools
-#AC_PROG_AWK
-#AC_PROG_SED
-#AC_PROG_GREP
-#AC_PROG_EGREP
-
 # find pkg-config
 PKG_PROG_PKG_CONFIG()
 if [[ x$PKG_CONFIG = x ]]; then
@@ -254,7 +277,7 @@ AC_PATH_PROG(LAZARUS, lazarus, no, [$LAZARUS_CHECK_DIRS])
 if [[ $LAZARUS = "no" ]] ; then
     AC_MSG_ERROR([Could not find lazarus. Please install lazarus and try again.]);
 fi
-LAZARUS_DIR=`dirname "$LAZARUS"`
+LAZARUS_DIR=`AS_DIRNAME(["$LAZARUS"])`
 
 # get lazarus version
 AC_MSG_CHECKING(for version of lazarus)
@@ -263,6 +286,18 @@ LAZARUS_VERSION=`(cd "$LAZARUS_DIR/tools/install"; ./get_lazarus_version.sh)`
 #LAZARUS_VERSION=`cat ide/version.inc | tr -d "' \t"` 
 AC_SPLIT_VERSION([LAZARUS], [$LAZARUS_VERSION])
 AC_MSG_RESULT(@<:@$LAZARUS_VERSION@:>@)
+
+# check if LCL Widget type is valid
+LCL_WIDGET_TYPE=$with_lcl_widget_type
+LCL_UNIT_DIR="$LAZARUS_DIR/lcl/units/$FPC_PROCESSOR-$FPC_PLATFORM"
+LCL_WIDGET_DIR="$LCL_UNIT_DIR/$LCL_WIDGET_TYPE"
+AC_MSG_CHECKING([whether LCL Widget Type "$LCL_WIDGET_TYPE" is valid])
+if [[ -d "$LCL_WIDGET_DIR" ]]; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+    AC_MSG_ERROR(LCL Widget Type not available: directory "$LCL_WIDGET_DIR" not found.)
+fi
 
 # find sdl
 AC_PKG_CHECK_VERSION(SDL, [sdl], yes)
@@ -328,12 +363,19 @@ AC_SUBST(PORTMIXER_LIB)
 AC_SUBST_DEFINE(HAVE_PORTMIXER, $PORTMIXER_HAVE)
 
 AC_SUBST(LAZARUS_DIR)
+AC_SUBST(LCL_WIDGET_TYPE)
 
-AC_SUBST_DEFINE(USE_LOCAL_DIRS, $enable_dev_install)
+AC_SUBST_DEFINE(USE_LOCAL_DIRS, $enable_dev_build)
+if [[ x$enable_dev_build = xyes ]]; then
+    AC_SUBST(install_type, ["dev"])
+else
+    AC_SUBST(install_type, ["release"])    
+fi
 AC_SUBST(suffix)
 AC_SUBST(logrootdir, [$with_logrootdir])
 AC_DEFINE_DIR(sharerootdir, datarootdir)
 
+AC_SUBST(PLIBS)
 AC_SUBST(PACKAGE_WEBSITE)
 
 # -----------------------------------------
