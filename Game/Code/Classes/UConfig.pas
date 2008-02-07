@@ -67,8 +67,19 @@ uses
   Sysutils;
 
 const
-  // include config-file
+  // IMPORTANT:
+  // If IncludeConstants is defined, the const-sections
+  // of the config-file will be included too.
+  // This switch is necessary because it is not possible to
+  // include the const-sections in the switches.inc.
+  // switches.inc is always included before the first uses-
+  // section but at that place no const-section is allowed.
+  // So we have to include the config-file in switches.inc
+  // with IncludeConstants undefined and in UConfig.pas with
+  // IncludeConstants defined (see the note above).
   {$DEFINE IncludeConstants}
+  
+  // include config-file (defines + constants)
   {$IF Defined(MSWindows)}
     {$I ../config-win.inc}
   {$ELSEIF Defined(Linux)}
@@ -139,14 +150,14 @@ const
                       (LIBAVUTIL_VERSION_MINOR * VERSION_MINOR) +
                       (LIBAVUTIL_VERSION_RELEASE * VERSION_RELEASE);
 
-  {$ENDIF}
-
   {$IFDEF HaveSWScale}
   LIBSWSCALE_VERSION = (LIBSWSCALE_VERSION_MAJOR * VERSION_MAJOR) +
                        (LIBSWSCALE_VERSION_MINOR * VERSION_MINOR) +
                        (LIBSWSCALE_VERSION_RELEASE * VERSION_RELEASE);
   {$ENDIF}
-		      
+
+  {$ENDIF}
+
   {$IFDEF HaveProjectM}  
   PROJECTM_VERSION = (PROJECTM_VERSION_MAJOR * VERSION_MAJOR) +
                      (PROJECTM_VERSION_MINOR * VERSION_MINOR) +

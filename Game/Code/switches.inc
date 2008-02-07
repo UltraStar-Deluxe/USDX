@@ -34,6 +34,7 @@
 
 
 {$IF Defined(win32)}
+  // include defines but no constants
   {$I config-win.inc}
 
   // audio config
@@ -53,9 +54,9 @@
   // video config
   {$IFDEF HaveFFMpeg}
     {$DEFINE UseFFMpegVideo}
-  {$ENDIF}
-  {$IFDEF HaveSWScale}
-    {$DEFINE UseSWScale}
+    {$IFDEF HaveSWScale}
+      {$DEFINE UseSWScale}
+    {$ENDIF}
   {$ENDIF}
 
   // misc defines
@@ -72,6 +73,7 @@
 	{$ENDIF}
   {$ENDIF}
 {$ELSEIF Defined(Linux)}
+  // include defines but no constants
   {$I config-linux.inc}
 
   // audio config
@@ -86,9 +88,9 @@
   // video config
   {$IFDEF HaveFFMpeg}
     {$DEFINE UseFFMpegVideo}
-  {$ENDIF}
-  {$IFDEF HaveSWScale}
-    {$DEFINE UseSWScale}
+    {$IFDEF HaveSWScale}
+      {$DEFINE UseSWScale}
+    {$ENDIF}
   {$ENDIF}
 
   // misc defines

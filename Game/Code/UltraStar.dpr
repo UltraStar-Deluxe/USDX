@@ -53,9 +53,9 @@ uses
   opt           in 'lib\ffmpeg\opt.pas',
   avio          in 'lib\ffmpeg\avio.pas',
   mathematics   in 'lib\ffmpeg\mathematics.pas',
-  {$ENDIF}
   {$IFDEF UseSWScale}
   swscale       in 'lib\ffmpeg\swscale.pas',
+  {$ENDIF}
   {$ENDIF}
 
   {$IFDEF UseProjectM_0_9}
