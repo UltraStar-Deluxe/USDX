@@ -411,7 +411,7 @@ begin
   playback := TAudioPlayback_Portaudio(userdata);
   with playback do
   begin
-    //MixerStream.ReadData(stream, len);
+    MixerStream.ReadData(stream, len);
   end;
 end;
 

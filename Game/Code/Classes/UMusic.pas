@@ -444,13 +444,11 @@ begin
   //Log.BenchmarkStart(4);
 
   Start   := AudioPlayback.OpenSound(SoundPath + 'Common start.mp3');
-  (*
   Back    := AudioPlayback.OpenSound(SoundPath + 'Common back.mp3');
   Swoosh  := AudioPlayback.OpenSound(SoundPath + 'menu swoosh.mp3');
   Change  := AudioPlayback.OpenSound(SoundPath + 'select music change music 50.mp3');
   Option  := AudioPlayback.OpenSound(SoundPath + 'option change col.mp3');
   Click   := AudioPlayback.OpenSound(SoundPath + 'rimshot022b.mp3');
-  *)
 
   //Drum    := AudioPlayback.OpenSound(SoundPath + 'bassdrumhard076b.mp3');
   //Hihat   := AudioPlayback.OpenSound(SoundPath + 'hihatclosed068b.mp3');

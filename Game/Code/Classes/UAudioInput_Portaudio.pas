@@ -191,25 +191,20 @@ const
 begin
   result := false;
 
-  writeln('0');
-
   err := Pa_Initialize();
   if(err <> paNoError) then begin
     Log.LogError('Portaudio.InitializeRecord: ' + Pa_GetErrorText(err));
     Exit;
   end;
-  writeln('1');
   apiIndex := GetPreferredApiIndex();
   apiInfo := Pa_GetHostApiInfo(apiIndex);
 
   SC := 0;
-  writeln('2');
 
   // init array-size to max. input-devices count
   SetLength(AudioInputProcessor.Device, apiInfo^.deviceCount);
   for i:= 0 to High(AudioInputProcessor.Device) do
   begin
-  writeln('25');
     // convert API-specific device-index to global index
     deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(apiIndex, i);
     deviceInfo := Pa_GetDeviceInfo(deviceIndex);
@@ -303,7 +298,6 @@ begin
 
     Inc(SC);
   end;
-  writeln('3');
 
   // adjust size to actual input-device count
   SetLength(AudioInputProcessor.Device, SC);
