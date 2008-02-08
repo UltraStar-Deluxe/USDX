@@ -1,14 +1,8 @@
-Not Included in SVN ( to many potential updates )
+Included in SVN ..
 ---------------------------------------------------------------------------
 
 Jedi-sdl
   http://sourceforge.net/projects/jedi-sdl
-  Make sure to download VERSION 1, beta...
-  not version 0.5
-
-
-Included in SVN ..
----------------------------------------------------------------------------
 
 pngImage
   http://pngdelphi.sourceforge.net/
@@ -32,20 +26,11 @@ On top of the above pas files, you will need development libraries for them.
 
 here are the instructions needed to compile on ubunty ( 7.04 )
 
-ffmpeg :
-  sudo apt-get install libavcodec-dev libavformat-dev
+	sudo apt-get install libavcodec-dev libavformat-dev libsqlite3-dev libsdl-ttf2.0-dev libsdl-image1.2-dev portaudio19-dev
 
-portaudio :
-  sudo apt-get install portaudio19-dev
 
-sqlite :
-  sudo apt-get install libsqlite3-dev
+for Fedora 8 ( contributed by kdub )
 
-sdl development libraries :
-  sudo apt-get install libsdl-ttf2.0-dev libsdl-image1.2-dev
-  THERE WILL be more of them... oops I forgot to list them :P
-
-For the Lazy... who use Debian or Ubuntu.... here is a single line  
-  sudo apt-get install libavcodec-dev libavformat-dev libsqlite3-dev libsdl-ttf2.0-dev libsdl-image1.2-dev portaudio19-dev
+	yum install ffmpeg-devel portaudio-devel SDL_ttf-devel SDL_image-devel sqlite-devel
 
   
