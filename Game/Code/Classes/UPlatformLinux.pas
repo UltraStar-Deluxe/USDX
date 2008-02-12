@@ -143,6 +143,9 @@ begin
 {$ELSE}
     result := LogPath+'/';
 {$ENDIF}
+
+   forcedirectories( result );
+
 end;
 
 function TPlatformLinux.GetGameSharedPath : WideString;

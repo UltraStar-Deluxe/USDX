@@ -10,16 +10,17 @@ mkdir ../../../packages
 mkdir ../../../deb-package
 mkdir ../../../deb-package/DEBIAN
 mkdir ../../../deb-package/usr
-mkdir ../../../deb-package/usr/share
-mkdir ../../../deb-package/usr/share/UltraStarDeluxe
+mkdir ../../../deb-package/usr/local
+mkdir ../../../deb-package/usr/local/share
+mkdir ../../../deb-package/usr/local/share/UltraStarDeluxe
 mkdir ../../../deb-package/usr/bin
 
-cp ./UltraStar ../../../deb-package/usr/bin/UltraStarDeluxe
+cp ../../UltraStar ../../../deb-package/usr/bin/UltraStarDeluxe
 
-cp -a ../../Themes/ ../../../deb-package/usr/share/UltraStarDeluxe/
-cp -a ../../Sounds/ ../../../deb-package/usr/share/UltraStarDeluxe/
-cp -a ../../Skins/ ../../../deb-package/usr/share/UltraStarDeluxe/
-cp -a ../../Languages/ ../../../deb-package/usr/share/UltraStarDeluxe/
+cp -a ../../Themes/ ../../../deb-package/usr/local/share/UltraStarDeluxe/
+cp -a ../../Sounds/ ../../../deb-package/usr/local/share/UltraStarDeluxe/
+cp -a ../../Skins/ ../../../deb-package/usr/local/share/UltraStarDeluxe/
+cp -a ../../Languages/ ../../../deb-package/usr/local/share/UltraStarDeluxe/
 
 cp UltraStarDeluxe.control ../../../deb-package/DEBIAN/control
 

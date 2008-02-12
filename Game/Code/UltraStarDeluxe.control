@@ -5,5 +5,15 @@ Installed-Size: 18400
 Maintainer: Jay Binks <jaybinks@gmail.com>
 Architecture: i386
 Version: 1.1.1
-Depends: libc6 (>= 2.1), libsdl1.2debian-alsa, libportaudio2, libavcodec0d, libavformat0d, libsqlite3-0, libsdl-ttf2.0-0,  libsdl-image1.2
-Description: Ultrastar is a Karaoke game for the pc, similar to SingStar
+Depends: libc6 (>= 2.1), libsdl1.2debian-alsa, libportaudio2, libavcodec1d, libavformat1d, libsqlite3-0, libsdl-ttf2.0-0,  libsdl-image1.2
+Description: 
+ Karaoke Software for PC like Singstar for PS2. 
+ It evaluates your singing by analyzing your voice pitch. 
+ Songs can be created with integrated Editor. 
+ .
+ This is a Fork of the UltraStar Project with many massive improvements. 
+ .
+ http://www.ultrastardeluxe.org/
+
+
+

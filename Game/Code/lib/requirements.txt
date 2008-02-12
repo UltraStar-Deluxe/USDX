@@ -26,7 +26,11 @@ On top of the above pas files, you will need development libraries for them.
 
 here are the instructions needed to compile on ubunty ( 7.04 )
 
-	sudo apt-get install libavcodec-dev libavformat-dev libsqlite3-dev libsdl-ttf2.0-dev libsdl-image1.2-dev portaudio19-dev
+		sudo apt-get install libavcodec-dev libavformat-dev libsqlite3-dev libsdl-ttf2.0-dev libsdl-image1.2-dev portaudio19-dev 
+
+	in order to build the configure file ( with autogen.sh )
+
+		sudo apt-get install automake autoconf
 
 
 for Fedora 8 ( contributed by kdub )
