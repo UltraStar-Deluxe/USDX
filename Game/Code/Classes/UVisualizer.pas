@@ -36,6 +36,7 @@ implementation
 
 uses
   UGraphic,
+  UMain,
   ULog;
 
 var
@@ -46,10 +47,15 @@ const
   gy           = 24;
   fps          = 30;
   texsize      = 512;
-  visualsDir  = 'Visuals'; // TODO: move this to a place common for all visualizers
-  projectMDir = visualsDir+'/projectM';
-  presetsDir  = projectMDir+'/presets';
-  fontsDir    = projectMDir+'/fonts';
+  
+var
+  ProjectMPath : string;
+  presetsDir   : string;
+  fontsDir     : string;
+
+  // FIXME: dirty fix needed because the init method is not
+  //   called yet.
+  inited: boolean;
 
 type
   TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
@@ -78,8 +84,8 @@ type
       procedure RestoreOpenGLState();
 
     public
-      constructor create();
-      procedure   init();
+      constructor Create();
+      procedure   Init();
       function    GetName: String;
 
       function    Open( aFileName : string): boolean; // true if succeed
@@ -97,14 +103,22 @@ type
   end;
 
 
-constructor TVideoPlayback_ProjectM.create();
+constructor TVideoPlayback_ProjectM.Create();
 begin
   RndPCMcount := 0;
 end;
 
 
-procedure TVideoPlayback_ProjectM.init();
+procedure TVideoPlayback_ProjectM.Init();
 begin
+  // FIXME: dirty fix needed because the init method is not
+  //   called yet.
+  inited := true;
+
+  ProjectMPath := VisualsPath + 'projectM' + PathDelim;
+  presetsDir := ProjectMPath + 'presets';
+  fontsDir   := ProjectMPath + 'fonts';
+
   VisualizerStarted := False;
   VisualizerPaused  := False;
 
@@ -212,6 +226,11 @@ procedure TVideoPlayback_ProjectM.VisualizerStart;
 var
   initResult: Cardinal;
 begin
+  // FIXME: dirty fix needed because the init method is not
+  //   called yet.
+  if (not inited) then
+    Init();
+
   VisualizerStarted := True;
 
   pm := TProjectM.Create(gx, gy, fps, texsize, ScreenW, ScreenH,

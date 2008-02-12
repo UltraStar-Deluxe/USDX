@@ -92,6 +92,7 @@ var
   CoversPath:       string;
   LanguagesPath:    string;
   PluginPath:       string;
+  VisualsPath:      string;
   PlayListPath:     string;
 
   UserSongPath:     string = '';
@@ -1034,9 +1035,10 @@ begin
   initialize_path( LogPath         , Platform.GetLogPath                             );
   initialize_path( SoundPath       , Platform.GetGameSharedPath + 'Sounds'      + PathDelim );
   initialize_path( ThemePath       , Platform.GetGameSharedPath + 'Themes'      + PathDelim );
-  initialize_path( SkinsPath       , Platform.GetGameSharedPath + 'Skins'      + PathDelim );
+  initialize_path( SkinsPath       , Platform.GetGameSharedPath + 'Skins'       + PathDelim );
   initialize_path( LanguagesPath   , Platform.GetGameSharedPath + 'Languages'   + PathDelim );
   initialize_path( PluginPath      , Platform.GetGameSharedPath + 'Plugins'     + PathDelim );
+  initialize_path( VisualsPath     , Platform.GetGameSharedPath + 'Visuals'     + PathDelim );
 
   initialize_path( ScreenshotsPath , Platform.GetGameUserPath + 'Screenshots' + PathDelim );
 
