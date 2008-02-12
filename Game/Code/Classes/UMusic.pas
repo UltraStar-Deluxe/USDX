@@ -341,18 +341,14 @@ begin
   result := singleton_AudioDecoder;
 end;
 
-procedure InitializeSound;
+procedure AssignSingletonObjects(); 
 var
   lTmpInterface : IInterface;
   iCount        : Integer;
 begin
   lTmpInterface := nil;
+  
 
-  singleton_AudioPlayback := nil;
-  singleton_AudioInput    := nil;
-  singleton_AudioDecoder  := nil;
-  singleton_VideoPlayback := nil;
-  singleton_Visualization := nil;
 
   for iCount := 0 to AudioManager.Count - 1 do
   begin
@@ -361,34 +357,34 @@ begin
       // if this interface is a Playback, then set it as the default used
 
       if ( AudioManager[iCount].QueryInterface( IAudioPlayback, lTmpInterface ) = 0 ) AND
-         ( true ) then
+         ( true ) then //not assigned( singleton_AudioPlayback ) ) then
       begin
         singleton_AudioPlayback := IAudioPlayback( lTmpInterface );
       end;
 
       // if this interface is a Input, then set it as the default used
       if ( AudioManager[iCount].QueryInterface( IAudioInput, lTmpInterface )    = 0 ) AND
-         ( true ) then
+         ( true ) then //not assigned( singleton_AudioInput ) ) then
       begin
         singleton_AudioInput := IAudioInput( lTmpInterface );
       end;
 
       // if this interface is a Decoder, then set it as the default used
       if ( AudioManager[iCount].QueryInterface( IAudioDecoder, lTmpInterface )    = 0 ) AND
-         ( true ) then
+         ( true ) then //not assigned( singleton_AudioDecoder ) ) then
       begin
         singleton_AudioDecoder := IAudioDecoder( lTmpInterface );
       end;
 
       // if this interface is a Input, then set it as the default used
       if ( AudioManager[iCount].QueryInterface( IVideoPlayback, lTmpInterface ) = 0 ) AND
-         ( true ) then
+         ( true ) then //not assigned( singleton_VideoPlayback ) ) then
       begin
         singleton_VideoPlayback := IVideoPlayback( lTmpInterface );
       end;
 
       if ( AudioManager[iCount].QueryInterface( IVideoVisualization, lTmpInterface ) = 0 ) AND
-         ( true ) then
+         ( true ) then //not assigned( singleton_Visualization ) ) then
       begin
         singleton_Visualization := IVideoPlayback( lTmpInterface );
       end;
@@ -396,6 +392,17 @@ begin
     end;
   end;
 
+end;
+
+procedure InitializeSound;
+begin
+  singleton_AudioPlayback := nil;
+  singleton_AudioInput    := nil;
+  singleton_AudioDecoder  := nil;
+  singleton_VideoPlayback := nil;
+  singleton_Visualization := nil;
+
+  AssignSingletonObjects();
 
 
   if VideoPlayback <> nil then
@@ -404,17 +411,35 @@ begin
 
   if AudioDecoder <> nil then
   begin
-    AudioDecoder.InitializeDecoder;
+    while not AudioDecoder.InitializeDecoder do
+    begin
+      //writeln('Initialize failed, Removing - '+ AudioDecoder.GetName  );
+      AudioManager.remove( AudioDecoder ); 
+      singleton_AudioDecoder  := nil;
+      AssignSingletonObjects();
+    end;
   end;
 
   if AudioPlayback <> nil then
   begin
-    AudioPlayback.InitializePlayback;
+    while not AudioPlayback.InitializePlayback do
+    begin
+      writeln('Initialize failed, Removing - '+ AudioPlayback.GetName  );
+      AudioManager.remove( AudioPlayback ); 
+      singleton_AudioPlayback := nil;
+      AssignSingletonObjects();
+    end;
   end;
 
   if AudioInput <> nil then
   begin
-    AudioInput.InitializeRecord;
+    while not AudioInput.InitializeRecord do
+    begin
+      writeln('Initialize failed, Removing - '+ AudioInput.GetName  );
+      AudioManager.remove( AudioInput ); 
+      singleton_AudioInput    := nil;
+      AssignSingletonObjects();
+    end;    
   end;
 
   // Load in-game sounds
