@@ -39,30 +39,34 @@ AC_ARG_ENABLE(release,
     [Enable FPC release options (same as --enable-debug=no)])],
   [FPC_DEBUG="no"], [])
 
-dnl use -dDEBUG (instead of -g) so it uses the fpc.cfg defaults
+dnl do not use -dDEBUG because this will enable range-checks
+dnl that will fail with USDX.
+dnl we have to disable -Xs which is defined in fpc.cfg.
 AC_ARG_WITH(debug-flags,
   [AS_HELP_STRING([--with-debug-flags],
-    [FPC debug flags @<:@-dDEBUG@:>@])],
-  [fpc_debugflags="$withval"], 
-  [fpc_debugflags="-dDEBUG"])
+    [FPC debug flags @<:@-gl -Coi -Xs- -vew@:>@])],
+  [PFLAGS_DEBUG="$withval"], 
+  [PFLAGS_DEBUG="-gl -Cit -Xs- -vew"])
 
-dnl use -dDEBUG (instead of e.g. -O2) so it uses the fpc.cfg defaults
+dnl -dRELEASE works too but we define our own settings
 AC_ARG_WITH(release-flags,
   [AS_HELP_STRING([--with-release-flags],
-    [FPC release flags @<:@-dRELEASE@:>@])],
-  [fpc_releaseflags="$withval"], 
-  [fpc_releaseflags="-dRELEASE"])
+    [FPC release flags @<:@-O2 -Xs -vew@:>@])],
+  [PFLAGS_RELEASE="$withval"], 
+  [PFLAGS_RELEASE="-O2 -Xs -vew"])
 
+dnl the user's PFLAGS must *follow* this script's flags
+dnl to enable the user to overwrite the settings.
 if test x$FPC_DEBUG = xyes; then 
-	PFLAGS="$PFLAGS $fpc_debugflags"
+	PFLAGS="$PFLAGS_DEBUG $PFLAGS"
 else
-	PFLAGS="$PFLAGS $fpc_releaseflags"
+	PFLAGS="$PFLAGS_RELEASE $PFLAGS"
 fi
 
 AC_ARG_ENABLE(profile,
   [AS_HELP_STRING([--enable-profile],
     [Enable FPC profiling options])],
-  [PFLAGS="$PFLAGS -pg"], [])
+  [PFLAGS="-pg $PFLAGS"], [])
 
 PPC_CHECK_PROGS="fpc FPC ppc386 ppc PPC386 ppos2"
 
@@ -91,6 +95,8 @@ fi
 FPC_BASE_PATH="${FPC_PREFIX}/lib/fpc/${FPC_VERSION}"
 FPC_UNIT_PATH="${FPC_BASE_PATH}/units/${FPC_PLATFORM}"
 AC_SUBST(PFLAGS)
+AC_SUBST(PFLAGS_DEBUG)
+AC_SUBST(PFLAGS_RELEASE)
 AC_SUBST(FPC_VERSION)
 AC_SUBST(FPC_PLATFORM)
 AC_SUBST(FPC_PROCESSOR)

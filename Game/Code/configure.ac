@@ -1,10 +1,9 @@
 #
-# UltraStar-DX configure.in script
+# UltraStar-DX configure.ac script
 #
 # by UltraStar Deluxe Team
 #
-# Call "aclocal -I m4" to create the aclocal.m4 file.
-# Process this file with autoconf to produce a configure script.
+# Execute "autogen.sh" to create the configure script.
 #
 
 # Require autoconf >= 2.61
@@ -29,7 +28,7 @@ AC_CONFIG_MACRO_DIR(m4)
 # show features and packages in one list
 AC_PRESERVE_HELP_ORDER
 
-#echo $LIBS
+#echo $LDFLAGS
 
 #define([maco], [])
 #echo maco
@@ -59,10 +58,11 @@ if [[ x$with_lazarus = xno ]] ; then
 fi
 
 # add lazarus widget-type option
-AC_ARG_WITH([lcl_widget_type], 
+# the result is not used at the moment
+AC_ARG_WITH([lcl-widget-type], 
     [AS_HELP_STRING([--with-lcl-widget-type=TYPE],
-      [Lazarus LCL Widget  Type @<:@default=gtk2@:>@])],
-    [with_lcl_widget_type=$withval], [with_lcl_widget_type="gtk2"])
+      [Lazarus LCL Widget  Type @<:@default=check@:>@])],
+    [with_lcl_widget_type=$withval], [with_lcl_widget_type=""])
 if [[ x$with_lcl_widget_type = xno -o x$with_lcl_widget_type = xyes ]] ; then
     AC_MSG_ERROR([Invalid LCL Widget Type (try one of gtk2/gtk/qt)]);
 fi
@@ -84,6 +84,12 @@ AC_ARG_WITH([projectM],
     [AS_HELP_STRING([--with-projectM@<:@=DIR@:>@],
       [Enable projectM visualization support @<:@default=check@:>@])],
     [with_projectM=$withval], [with_projectM="check"])
+
+# add skip pkg-config error option
+AC_ARG_ENABLE([skip-pkgconfig-errors], 
+    [AS_HELP_STRING([--enable-skip-pkgconfig-errors],
+      [Continue if pkg-config does not find a package @<:@default=no@:>@])],
+    [skip_pkgconfig_errors=$withval], [skip_pkgconfig_errors="no"])
 
 # print path options header
 AC_ARG_WITH([cfg-dummy2], [
@@ -109,7 +115,7 @@ AC_ARG_WITH([cfg-dummy3], [
 Development options:])
 
 # add dev_layout option
-AC_ARG_ENABLE(dev_build,
+AC_ARG_ENABLE(dev-build,
     [AS_HELP_STRING([--enable-dev-build],
       [local development build])],
     [enable_dev_build="yes"], [enable_dev_build="no"])
@@ -144,26 +150,39 @@ AC_PROG_GREP
 #   AC_SUBST([$VARIABLE_PREFIX]_VERSION_type] for each type
 AC_DEFUN([AC_SPLIT_VERSION],
 [
+    version=[$2]    
+
+    # strip leading non-numeric tokens 
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | $SED 's/^[[^.]]*[[^0-9.]][[^.]]*\.//'`
+
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
     # In addition we delete every character which is not 0-9.
     # 1.3a4-r32 will be [maj=1, min=34, rel=32].
-    # 
-    # Note: We use a here-document (<<< here-strings not POSIX compatible)
-    # Do NOT indent the eof-delimiter
     read major minor release ignore <<eof
-        `echo [$2] | tr '.-' ' ' | $SED 's/[[^0-9\ ]].*//'` 
+        `echo $version | tr '.-' ' ' | $SED 's/[[^0-9\ ]].*//'` 
 eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
 
     # strip preceding 0s and set unset version-parts to 0
     [$1][_VERSION_MAJOR]=$(($major))
     [$1][_VERSION_MINOR]=$(($minor))
     [$1][_VERSION_RELEASE]=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    [$1][_VERSION_INT]=$(($[$1][_VERSION_MAJOR]*1000000+$[$1][_VERSION_MINOR]*1000+$[$1][_VERSION_RELEASE]))
 
     AC_SUBST([$1][_VERSION_MAJOR])
     AC_SUBST([$1][_VERSION_MINOR])
     AC_SUBST([$1][_VERSION_RELEASE])
+    AC_SUBST([$1][_VERSION_INT])
 ])
+
+# set to yes if a pkg-config error was skipped
+pkgconfig_error_skipped="no"
 
 # AC_PKG_CHECK_VERSION(VARIABLE_PREFIX, MODULE, REQUIRED, PATH, MIN, MAX)
 # Aborts if lib was not found and REQUIRED="yes".
@@ -176,7 +195,7 @@ eof
 #   [$VARIABLE_PREFIX]_VERSION_RELEASE
 AC_DEFUN([AC_PKG_CHECK_VERSION],
 [
-    have_lib=no
+    have_lib="no"
     if test x$4 != xno; then
 	# on empty PATH or PATH="yes"/"check" use the default path
 	if test x$4 = x -o x$4 = xyes -o x$4 = xcheck; then
@@ -208,7 +227,7 @@ AC_DEFUN([AC_PKG_CHECK_VERSION],
         AC_MSG_CHECKING(for [$2]$minmax_text)
         [$1][_VERSION]=`eval $lib_path $PKG_CONFIG $minmax_flags --modversion [$2] --silence-errors`
 	if test $? -eq 0; then
-            have_lib=yes
+            have_lib="yes"
 	    [$1][_HAVE]="yes"
 	    AC_SPLIT_VERSION([$1], $[$1][_VERSION])
 	    AC_MSG_RESULT(yes @<:@$[$1][_VERSION]@:>@)
@@ -220,8 +239,33 @@ AC_DEFUN([AC_PKG_CHECK_VERSION],
         [$1][_HAVE]="no"
         AC_SPLIT_VERSION([$1], [0.0.0])
         AC_MSG_RESULT(no)
-	if test x$3 = xyes -o x$4 = xyes; then
-	    AC_MSG_ERROR([Could not find required library $2. Please install $2 and try again.]);
+        if test x$3 = xyes -o x$4 = xyes; then
+            AC_MSG_WARN([
+!!! Could not find the required library $2.
+]);
+            # do not abort if skip-pkgconfig-errors is set
+            if test x$skip_pkgconfig_errors = xno; then
+               AC_MSG_ERROR([
+!!! Please install $2 and try again.
+!!! 
+!!! If it is already installed check if "[$2].pc" is present in one 
+!!! of the pkg-config search directories (e.g. /usr/lib/pkgconfig). 
+!!! 
+!!! If the file is present but not in the standard search path you may add
+!!! its directory by prepending "PKG_CONFIG_PATH=mylibs_dir/pkgconfig/" to 
+!!! your configure call.
+!!! See the man-page on pkg-config for further information.
+!!! 
+!!! Some linux distributions do not provide a .pc-file by the default
+!!! package so you might have to install a special dev-package.
+!!! 
+!!! If all of this does not help you may consider to skip this error and 
+!!! adjust the configuration file yourself.
+!!! To do this call "./configure --enable-skip-pkgconfig-errors ...".
+])
+            else
+                pkgconfig_error_skipped="yes"
+            fi
 	fi
     fi
 ])
@@ -255,7 +299,7 @@ if [[ x$PKG_CONFIG = x ]]; then
 fi
 
 # -----------------------------------------
-# check for libraries
+# check for lazarus
 # -----------------------------------------
 
 # set dirs to check for lazarus
@@ -288,16 +332,41 @@ AC_SPLIT_VERSION([LAZARUS], [$LAZARUS_VERSION])
 AC_MSG_RESULT(@<:@$LAZARUS_VERSION@:>@)
 
 # check if LCL Widget type is valid
-LCL_WIDGET_TYPE=$with_lcl_widget_type
-LCL_UNIT_DIR="$LAZARUS_DIR/lcl/units/$FPC_PROCESSOR-$FPC_PLATFORM"
-LCL_WIDGET_DIR="$LCL_UNIT_DIR/$LCL_WIDGET_TYPE"
-AC_MSG_CHECKING([whether LCL Widget Type "$LCL_WIDGET_TYPE" is valid])
-if [[ -d "$LCL_WIDGET_DIR" ]]; then
-    AC_MSG_RESULT(yes)
+if [[ x$with_lcl_widget_type = x ]]; then
+    # search for standard types
+    LCL_CHECK_WIDGET_TYPES="gtk2 gtk qt win32 carbon"
 else
-    AC_MSG_RESULT(no)
-#    AC_MSG_ERROR(LCL Widget Type not available: directory "$LCL_WIDGET_DIR" not found.)
+    # search for user defined type only
+    LCL_CHECK_WIDGET_TYPES="$with_lcl_widget_type"
 fi
+
+# LCL widget specific base dir
+LCL_UNIT_DIR="$LAZARUS_DIR/lcl/units/$FPC_PROCESSOR-$FPC_PLATFORM"
+
+# check for a supported widget type
+LCL_WIDGET_TYPE=""
+for widget_type in $LCL_CHECK_WIDGET_TYPES; do
+    widget_dir="$LCL_UNIT_DIR/$widget_type"
+    AC_MSG_CHECKING([whether LCL Widget Type "$widget_type" is supported])
+    if [[ -d "$widget_dir" ]]; then
+        LCL_WIDGET_TYPE=$widget_type
+        AC_MSG_RESULT(yes)
+        break
+    else
+        AC_MSG_RESULT(no)
+    fi
+done
+
+# check if a widget type was found
+if [[ x$LCL_WIDGET_TYPE = x ]]; then
+    AC_MSG_ERROR([
+!!! Could not detect the LCL Widget Type. 
+!!! Specify the widget type with the --with-lcl-widget-type option.])
+fi
+
+# -----------------------------------------
+# check for libraries
+# -----------------------------------------
 
 # find sdl
 AC_PKG_CHECK_VERSION(SDL, [sdl], yes)
@@ -306,6 +375,13 @@ AC_PKG_CHECK_VERSION(SDL, [sdl], yes)
 AC_PKG_CHECK_VERSION(SQLITE3, [sqlite3], yes)
 
 # find ffmpeg
+# Note: do not use the min/max version parameters with ffmpeg
+# otherwise it might fail in ubuntu due to a wrong version number 
+# format in ffmpeg's .pc-files.
+# For example: 0d.51.1.2 instead of the correct 51.1.2.
+#   A check for a version >=52.0.0 will return version 0d.51.1.2 
+#   although it is lower because pkg-config is confused by the 0d.
+# Use [mylib]_VERSION_INT instead
 AC_PKG_CHECK_VERSION(AVCODEC, [libavcodec], yes)
 AC_CHECK_LIB(avcodec, avcodec_decode_audio)
 AC_CHECK_LIB(avcodec, avcodec_decode_audio2)
@@ -424,3 +500,14 @@ AC_MSG_NOTICE([
 #!!!   $PACKAGE_BUGREPORT
 #!!! You might as well ask for help at the IRC-Channel
 #!!!   $PACKAGE_IRC
+
+if [[ x$pkgconfig_error_skipped = xyes ]]; then
+   AC_MSG_WARN([
+??? pkg-config did not find all of the required libraries.
+??? Edit "config-linux.inc" to add the missing parts.
+??? If one of your libraries' directories is not in the linker's 
+??? search-path add it to the LDFLAGS environment variable and 
+??? rerun configure (e.g. ./configure LDFLAGS="-Lmylibdir" ...).
+])
+fi
+

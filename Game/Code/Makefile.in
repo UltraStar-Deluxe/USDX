@@ -14,19 +14,20 @@ top_srcdir = @top_srcdir@
 datarootdir = @datarootdir@
 VPATH = @srcdir@
 
+usdxrootdir = ../..
+
 # install tool
 INSTALL = @INSTALL@
 # calls "ln -s"
 LN_S = @LN_S@
 
 USDX_PREFIX = UltraStar
-USDX_TOOLS_DIR = ../../Tools
+USDX_TOOLS_DIR = $(usdxrootdir)/Tools
 
 EXE_SUFFIX = @EXEEXT@
 
 # Free Pascal compiler
 PPC = @PPC@
-PFLAGS = @PFLAGS@
 PLIBS = @PLIBS@
 # FPC target platform and processor
 PPLATFORM = @FPC_PLATFORM@
@@ -63,29 +64,33 @@ PINC_FLAGS = $(PINC_TOKEN)lib/JEDI-SDL/SDL/Pas
 
 # Defines
 PDEFINES  = -dLCL 
+# this is necessary to use lazjpeg instead of Ulazjpeg
+# but requires configure to detect if gtk/gkt2 or qt is used
 #-dLCL$(LCL_WIDGET_TYPE)
 
-# Misc fpc options
-PCOMPAT_FLAGS    = -S2dgi
-#PCOMPAT_FLAGS  += -Mdelphi
-PVERBOSE_FLAGS   = -vew -l
-#PDEBUG_FLAGS     = -g -gl
-#PDEBUG_FLAGS     = -dDEBUG
-#POTHER_FLAGS = -Crtoi
-#POPTIMIZE_FLAGS_FPC204 = -OG2p3 
-#POPTIMIZE_FLAGS_FPC220 = -O2p"NAME"
-#POPTIMIZE_FLAGS = -dRELEASE 
-#POPTIMIZE_FLAGS = -Xs
-PFLAGS += $(PCOMPAT_FLAGS) \
-          $(PVERBOSE_FLAGS) \
-	  $(PDEFINES) 
+# FPC flags
+
+# The user can overwrite the default flags with
+#   make PFLAGS="myflags"
+PFLAGS = -S2dgi
+# the user's flags (specified with configure) must be the last in
+# the list to overwrite the defaults (e.g.with the - option: -Xs-).
+PFLAGS += @PFLAGS@
+
+PFLAGS_DEBUG   = @PFLAGS_DEBUG@
+PFLAGS_RELEASE = @PFLAGS_RELEASE@
+
+# The user can specify additional flags with
+#   make PFLAGS_EXTRA="myflags"
+PFLAGS_EXTRA =
+PFLAGS += $(PFLAGS_EXTRA)
 
 # lpr project file used as input
 USDX_SRC = $(USDX_PREFIX)$(PROJ_SUFFIX)
 # name of executable
-USDX_BIN = $(USDX_PREFIX)$(EXE_SUFFIX)
+USDX_BIN = $(usdxrootdir)/$(USDX_PREFIX)$(EXE_SUFFIX)
 
-.PHONY: all resources ultrastardx-app install install-dev install-release uninstall uninstall-dev uninstall-release clean distclean clean_obj clean_res
+.PHONY: all resources ultrastardx-app install install-dev install-release uninstall uninstall-dev uninstall-release clean distclean clean_obj clean_res fetch-sounds
 
 all: resources ultrastardx-app
 
@@ -100,7 +105,7 @@ ultrastardx-app: $(USDX_BIN)
 $(USDX_BIN): clean_obj
 #	$(MAKE) clean_obj
 	mkdir -p $(PCUNIT_DIR)
-	$(PPC) $(PFLAGS) $(PLIBS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(USDX_SRC)
+	$(PPC) $(PFLAGS) $(PDEFINES) $(PLIBS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(USDX_SRC)
 
 install: install-@install_type@
 # all
@@ -111,10 +116,25 @@ uninstall: uninstall-@install_type@
 # local development build
 
 install-dev:
-	mv $(USDX_BIN) ../..
+	@if [ ! -d "$(usdxrootdir)/Visuals" ]; then \
+	  echo "Copying visualizer data to $(usdxrootdir)/Visuals ..."; \
+	  cp -r "$(usdxrootdir)/InstallerDependencies/Visuals" "$(usdxrootdir)"; \
+	fi
+	@if [ ! -f "$(usdxrootdir)/Sounds/Common start.mp3" ]; then \
+	  echo ""; \
+	  echo "# The sound-files from Sound-directory of the 1.0.1-branch are required."; \
+	  echo "# Copy them yourself to \"$(usdxrootdir)/Sounds\""; \
+	  echo "# or if you are connected to the web try:"; \
+	  echo "#  make fetch-sounds"; \
+	fi
+
+fetch-sounds:
+	svn co https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/branches/1.0.1/Sounds tmp-sounds
+	mv tmp-sounds/*.mp3 $(usdxrootdir)/Sounds
+	rm -rf tmp-sounds
 
 uninstall-dev:
-	rm -f ../../$(USDX_BIN)
+	rm -f $(USDX_BIN)
 
 # global release build
 
