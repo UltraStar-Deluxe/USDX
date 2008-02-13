@@ -9,7 +9,7 @@ interface
 {$I switches.inc}
 
 uses OpenGL12, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
-  UMenuInteract, UThemes, UMenuButtonCollection, Math;
+  UMenuInteract, UThemes, UMenuButtonCollection, Math, UMusic;
 
 type
 {  Int16 = SmallInt;}
@@ -112,7 +112,8 @@ type
 
 //      function AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
 //      procedure ClearWidgets(MinNumber : Int16);
-      procedure FadeTo(Screen: PMenu);
+      procedure FadeTo(Screen: PMenu); overload;
+      procedure FadeTo(Screen: PMenu; aSound: TAudioPlaybackStream); overload;
       //popup hack
       procedure CheckFadeTo(Screen: PMenu; msg: String);
 
@@ -966,6 +967,13 @@ begin
   Display.Fade := 0;
   Display.NextScreen := Screen;
 end;
+
+procedure TMenu.FadeTo(Screen: PMenu; aSound: TAudioPlaybackStream);
+begin
+  FadeTo( Screen );
+  AudioPlayback.PlaySound( aSound );
+end;
+
 
 //popup hack
 procedure TMenu.CheckFadeTo(Screen: PMenu; msg: String);

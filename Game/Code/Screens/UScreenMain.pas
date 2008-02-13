@@ -94,29 +94,25 @@ begin
             //Credits_Y := 600;
             //Credits_Alpha := 0;
             //Credits_Visible := True;
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenCredits);
+            FadeTo(@ScreenCredits , SoundLib.Start );
           end;
         end;
       SDLK_M:
         begin
           if (Ini.Players >= 1) AND (Length(DLLMan.Plugins)>=1) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenPartyOptions);
+            FadeTo(@ScreenPartyOptions, SoundLib.Start);
           end;
         end;
 
       SDLK_S:
         begin
-          AudioPlayback.PlaySound(SoundLib.Start);
-          FadeTo(@ScreenStatMain);
+          FadeTo(@ScreenStatMain, SoundLib.Start);
         end;
 
       SDLK_E:
         begin
-          AudioPlayback.PlaySound(SoundLib.Start);
-          FadeTo(@ScreenEdit);
+          FadeTo(@ScreenEdit, SoundLib.Start);
         end;
 
       SDLK_RETURN:
@@ -126,12 +122,11 @@ begin
           begin
             if (Songs.SongList.Count >= 1) then
             begin
-              AudioPlayback.PlaySound(SoundLib.Start);
               if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
               if (Ini.Players = 4) then PlayersPlay := 6;
 
               ScreenName.Goto_SingScreen := False;
-              FadeTo(@ScreenName);
+              FadeTo(@ScreenName, SoundLib.Start);
             end
             else //show error message
               ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
@@ -144,8 +139,7 @@ begin
             begin
               if (Length(DLLMan.Plugins)>=1) then
               begin
-                AudioPlayback.PlaySound(SoundLib.Start);
-                FadeTo(@ScreenPartyOptions);
+                FadeTo(@ScreenPartyOptions, SoundLib.Start);
               end
               else //show error message, No Plugins Loaded
               ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_PLUGINS'));
@@ -157,22 +151,19 @@ begin
           //Stats
           if Interaction = 2 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenStatMain);
+            FadeTo(@ScreenStatMain, SoundLib.Start);
           end;
 
           //Editor
           if Interaction = 3 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenEdit);
+            FadeTo(@ScreenEdit, SoundLib.Start);
           end;
 
           //Options
           if Interaction = 4 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenOptions);
+            FadeTo(@ScreenOptions, SoundLib.Start);
           end;
 
           //Exit
@@ -214,7 +205,7 @@ begin
   //----------------
 
 
-  TextDescription := AddText(Theme.Main.TextDescription);
+  TextDescription     := AddText(Theme.Main.TextDescription);
   TextDescriptionLong := AddText(Theme.Main.TextDescriptionLong);
 
   LoadFromTheme(Theme.Main);
@@ -238,7 +229,7 @@ end;
 procedure TScreenMain.InteractNext;
 begin
   inherited InteractNext;
-  Text[TextDescription].Text := Theme.Main.Description[Interaction];
+  Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
   UpdateLCD;
   Light.LightOne(1, 200);
@@ -247,7 +238,7 @@ end;
 procedure TScreenMain.InteractPrev;
 begin
   inherited InteractPrev;
-  Text[TextDescription].Text := Theme.Main.Description[Interaction];
+  Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
   UpdateLCD;
   Light.LightOne(0, 200);
@@ -256,7 +247,7 @@ end;
 procedure TScreenMain.InteractDec;
 begin
   inherited InteractDec;
-  Text[TextDescription].Text := Theme.Main.Description[Interaction];
+  Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
   UpdateLCD;
   Light.LightOne(0, 200);
