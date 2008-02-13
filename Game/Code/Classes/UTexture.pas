@@ -131,6 +131,9 @@ implementation
 uses ULog,
      DateUtils,
      UCovers,
+     {$ifdef FPC}
+       fileutil,
+     {$endif}
      {$IFDEF LAZARUS}
      LResources,
      {$ENDIF}
@@ -245,6 +248,22 @@ end;
 // -----------------------------------------------
 
 function TTextureUnit.LoadImage(Identifier: PChar): PSDL_Surface;
+
+  function FileExistsInsensative( var aFileName : PChar ): boolean;
+  begin
+{$IFDEF fpc}
+    result := true;
+
+    if FileExists( aFileName ) then
+      exit;
+
+    aFileName := pchar( FindDiskFileCaseInsensitive( aFileName ) );
+    result    := FileExists( aFileName );
+{$ELSE}
+    result := FileExists( aFileName );
+{$ENDIF}
+  end;
+
 var
 
   TexRWops:  PSDL_RWops;
@@ -256,19 +275,29 @@ var
   {$ELSE}
   TexStream: TStream;
   {$ENDIF}
+  
+  lFileName : pchar;
 
 begin
   Result   := nil;
   TexRWops := nil;
 
+  if Identifier = '' then
+    exit;
+    
+  lFileName := Identifier;
+
 //  Log.LogStatus( Identifier, 'LoadImage' );
 
-  if ( FileExists(Identifier) ) then
+    Log.LogStatus( 'Looking for File ( Loading : '+Identifier+' - '+ FindDiskFileCaseInsensitive(Identifier) +')', '  LoadImage' );
+
+  if ( FileExistsInsensative(lFileName) ) then
   begin
     // load from file
-    Log.LogStatus( 'Is File', '  LoadImage' );
+    Log.LogStatus( 'Is File ( Loading : '+lFileName+')', '  LoadImage' );
     try
-      Result:=IMG_Load(Identifier);
+      Result:=IMG_Load(lFileName);
+      Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
     except
       Log.LogStatus( 'ERROR Could not load from file' , Identifier);
       beep;
@@ -278,7 +307,7 @@ begin
   else
   begin
     Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
-  
+
     // load from resource stream
     {$IFDEF LAZARUS}
       lLazRes := LazFindResource( Identifier, 'TEX' );

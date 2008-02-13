@@ -143,8 +143,12 @@ begin
     end;
   end;
 
-  Log.LogStatus('', '-----------------------------------------');
-  Log.LogStatus(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
+  if ( TextureName <> '' ) AND
+     ( Result      <> '' ) THEN
+  begin
+    Log.LogError('', '-----------------------------------------');
+    Log.LogError(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
+  end;
 
 {  Result := SkinPath + 'Bar.jpg';
   if TextureName = 'Ball' then Result := SkinPath + 'Ball.bmp';
