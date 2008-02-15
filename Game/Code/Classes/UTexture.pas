@@ -289,7 +289,7 @@ begin
 
 //  Log.LogStatus( Identifier, 'LoadImage' );
 
-    Log.LogStatus( 'Looking for File ( Loading : '+Identifier+' - '+ FindDiskFileCaseInsensitive(Identifier) +')', '  LoadImage' );
+//    Log.LogStatus( 'Looking for File ( Loading : '+Identifier+' - '+ FindDiskFileCaseInsensitive(Identifier) +')', '  LoadImage' );
 
   if ( FileExistsInsensative(lFileName) ) then
   begin
