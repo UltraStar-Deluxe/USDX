@@ -310,7 +310,8 @@ begin
 
   Lyrics := TLyricEngine.Create(80,Skin_LyricsT,640,12,80,Skin_LyricsT+36,640,12);
 
-  fCurrentVideoPlaybackEngine.Init();
+  if assigned( fCurrentVideoPlaybackEngine ) then
+    fCurrentVideoPlaybackEngine.Init();
 end;
 
 procedure TScreenSing.onShow;
@@ -446,6 +447,7 @@ begin
   except
     success := false;
   end;
+
   if (not success) then
   begin
     //Error Loading Song -> Go back to Song Screen and Show some Error Message
@@ -458,15 +460,27 @@ begin
     CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
     Exit;
   end;
- 
+
+
+
+  // reset video playback engine, to play Video Clip...
+
+  Visualization.Init();
+
+  fCurrentVideoPlaybackEngine.Close;
+  fCurrentVideoPlaybackEngine := VideoPlayback;
+
   // set movie
+  CurrentSong.VideoLoaded := false;
+  fShowVisualization      := false;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
     // todo: VideoGap and Start time verwursten
+    
     fCurrentVideoPlaybackEngine.Open( CurrentSong.Path + CurrentSong.Video );
 
     fCurrentVideoPlaybackEngine.position := CurrentSong.VideoGAP + CurrentSong.Start;
-    
+
     CurrentSong.VideoLoaded := true;
   end;
 
@@ -887,7 +901,7 @@ begin
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
 //      PlaySmpeg;
     except
-    
+
      on E : Exception do
      begin
        //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
@@ -905,6 +919,7 @@ begin
      end;
     end;
   end;
+
 
   // play music (II)
   AudioPlayback.Play;
