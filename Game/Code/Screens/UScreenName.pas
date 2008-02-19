@@ -210,6 +210,8 @@ procedure TScreenName.onShow;
 var
   I:    integer;
 begin
+  inherited;
+  
   for I := 1 to 6 do
     Button[I-1].Text[0].Text := Ini.Name[I-1];
 

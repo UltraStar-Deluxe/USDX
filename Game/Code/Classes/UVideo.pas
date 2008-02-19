@@ -223,7 +223,8 @@ begin
               'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
 {$endif}
 
-  if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then
+//  if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then
+  if (VideoTime <> 0) and flooptime = 0 then
   begin
 {$ifdef DebugFrames}
     // frame delay debug display

@@ -222,6 +222,8 @@ end;
 
 procedure TScreenMain.onShow;
 begin
+  inherited;
+  
   LCD.WriteText(1, '  Choose mode:  ');
   UpdateLCD;
 end;

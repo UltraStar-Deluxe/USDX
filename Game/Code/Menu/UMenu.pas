@@ -28,6 +28,8 @@ type
       BackImg:        TTexture;
       BackW:          integer;
       BackH:          integer;
+
+      fFileName : string;
     public
       Text:       array of TText;
       Static:     array of TStatic;
@@ -181,6 +183,9 @@ begin
 
   //Set ButtonPos to Autoset Length
   ButtonPos := -1;
+
+
+  VideoPlayback.Init;
 end;
 {
 constructor TMenu.Create(Back: String);
@@ -290,17 +295,23 @@ begin
 end;
 
 procedure TMenu.AddBackground(Name: string);
-var
-  lFileName : string;
+//var
+//  lFileName : string;
 begin
   if Name <> '' then
   begin
-    lFileName := Skin.GetTextureFileName(Name);
-    lFileName := AdaptFilePaths( lFileName );
+    fFileName := Skin.GetTextureFileName(Name);
+    fFileName := AdaptFilePaths( fFileName );
 
-    if fileexists( lFileName ) then
+    if fileexists( fFileName ) then
     begin
-      BackImg   := Texture.GetTexture( lFileName , 'Plain');
+      BackImg   := Texture.GetTexture( fFileName , 'Plain');
+
+      if ( BackImg.TexNum = 0 )  then
+      begin
+        if VideoPlayback.Open( fFileName ) then
+          VideoPlayback.Play;
+      end;
 
       BackImg.W := 800;
       BackImg.H := 600;
@@ -733,6 +744,7 @@ var
   PetX:   integer;
   PetY:   integer;
 begin
+
   BackImg.ColR := 1;
   BackImg.ColG := 1;
   BackImg.ColB := 1;
@@ -740,7 +752,8 @@ begin
   BackImg.TexY1 := 0;
   BackImg.TexX2 := 1;
   BackImg.TexY2 := 1;
-  if (BackImg.TexNum <> -1) then begin
+  if (BackImg.TexNum <> -1) then
+  begin
   // does anyone know what these loops were for?
 {    // draw texture with overlapping
     for PetY := 1 to BackH do
@@ -758,6 +771,14 @@ begin
     BackImg.H := 600;
     DrawTexture(BackImg);
   end; // if
+
+
+//  if assigned( VideoPlayback ) then
+  begin
+    VideoPlayback.GetFrame( now() );
+    VideoPlayback.DrawGL(2);
+  end;
+
 end;
 
 function TMenu.DrawFG: boolean;
@@ -1513,6 +1534,18 @@ procedure TMenu.onShow;
 begin
 // nothing
 //  beep;
+
+  if fileexists( fFileName ) then
+  begin
+  //  BackImg   := Texture.GetTexture( fFileName , 'Plain');
+
+    if ( BackImg.TexNum = 0 )  then
+    begin
+      if VideoPlayback.Open( fFileName ) then
+        VideoPlayback.Play;
+    end;
+  end;
+
 end;
 
 procedure TMenu.onShowFinish;
