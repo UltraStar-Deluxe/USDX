@@ -21,6 +21,7 @@ uses
     UTexture,
     UMenuText,
     ULyrics_bak,
+    ULyrics,
     Math,
     OpenGL12,
     {$IFDEF UseMIDIPort}
@@ -320,7 +321,8 @@ begin
             Click := true;
             AudioPlayback.Stop;
             R := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote);
-            if R <= AudioPlayback.Length then begin
+            if R <= AudioPlayback.Length then
+            begin
               AudioPlayback.Position := R;
               PlayStopTime := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Koniec);
               PlaySentence := true;
@@ -340,9 +342,9 @@ begin
           end;
           if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL then begin
             PlaySentenceMidi := true;
-            MidiTime := USTime.GetTime;
+            MidiTime  := USTime.GetTime;
             MidiStart := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].StartNote);
-            MidiStop := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Koniec);
+            MidiStop  := GetTimeFromBeat(Czesci[0].Czesc[Czesci[0].Akt].Koniec);
             LastClick := -100;
 
             PlaySentence := true;
@@ -1070,7 +1072,9 @@ procedure TScreenEditSub.CopySentences(Src, Dst, Num: integer);
 var
   C:      integer;
 begin
-  Lyric := TLyric.Create;
+//  Lyric := TLyric.Create;
+
+
   // create place for new sentences
   SetLength(Czesci[0].Czesc, Czesci[0].Ilosc + Num - 1);
 
@@ -1156,6 +1160,7 @@ end;
 procedure TScreenEditSub.onShow;
 begin
   Log.LogStatus('Initializing', 'TEditScreen.onShow');
+  Lyric := TLyric.Create;
 
   ResetSingTemp;
 
@@ -1190,7 +1195,7 @@ begin
     AudioPlayback.Open(CurrentSong.Path + CurrentSong.Mp3);
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(40);
-    
+
     Lyric.Clear;
     Lyric.X := 400;
     Lyric.Y := 500;

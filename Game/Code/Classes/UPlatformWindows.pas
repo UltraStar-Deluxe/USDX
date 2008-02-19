@@ -194,7 +194,7 @@ end;
 
 procedure TPlatformWindows.halt;
 begin
-  application.terminate;
+  halt(0); // Application.terminate does NOT do the same thing..
 end;
 
 function TPlatformWindows.GetLogPath        : WideString;
