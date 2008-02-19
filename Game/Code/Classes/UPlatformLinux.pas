@@ -139,7 +139,7 @@ begin
     result := ExtractFilePath(ParamStr(0))
   else
 {$IFDEF UseLocalDirs}
-    result := ExtractFilePath(ParamStr(0))
+    result := ExtractFilePath(ParamStr(0));
 {$ELSE}
     result := LogPath+'/';
 {$ENDIF}
@@ -154,7 +154,7 @@ begin
     result := ExtractFilePath(ParamStr(0))
   else
 {$IFDEF UseLocalDirs}
-    result := ExtractFilePath(ParamStr(0))
+    result := ExtractFilePath(ParamStr(0));
 {$ELSE}
     result := SharedPath+'/';
 {$ENDIF}
@@ -166,7 +166,7 @@ begin
     result := ExtractFilePath(ParamStr(0))
   else
 {$IFDEF UseLocalDirs}
-    result := ExtractFilePath(ParamStr(0))
+    result := ExtractFilePath(ParamStr(0));
 {$ELSE}
     result := get_homedir()+'/.'+PathSuffix+'/';
 {$ENDIF}
