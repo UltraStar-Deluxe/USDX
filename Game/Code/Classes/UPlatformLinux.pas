@@ -136,16 +136,19 @@ end;
 function TPlatformLinux.GetLogPath        : WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
-    result := ExtractFilePath(ParamStr(0))
-  else
-{$IFDEF UseLocalDirs}
+  begin
     result := ExtractFilePath(ParamStr(0));
-{$ELSE}
-    result := LogPath+'/';
-{$ENDIF}
+  end
+  else
+  begin
+    {$IFDEF UseLocalDirs}
+      result := ExtractFilePath(ParamStr(0));
+    {$ELSE}
+      result := LogPath+'/';
+    {$ENDIF}
+  end;
 
-   forcedirectories( result );
-
+  forcedirectories( result );
 end;
 
 function TPlatformLinux.GetGameSharedPath : WideString;
