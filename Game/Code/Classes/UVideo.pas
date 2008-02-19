@@ -89,7 +89,7 @@ type
       ScaledVideoWidth, ScaledVideoHeight: Real;
       VideoAspect: Real;
       VideoTextureU, VideoTextureV: Real;
-      VideoTimeBase, VideoTime, LastFrameTime, TimeDifference: Extended;
+      VideoTimeBase, VideoTime, LastFrameTime, TimeDifference, flooptime: Extended;
 
 
       WantedAudioCodecContext,
@@ -212,7 +212,7 @@ begin
 
   if fVideoPaused then Exit;
 
-  myTime         := Time   + fVideoSkipTime;
+  myTime         := ( Time - flooptime )   + fVideoSkipTime;
   TimeDifference := myTime - VideoTime;
   DropFrame      := False;
 
@@ -267,7 +267,23 @@ begin
   while ( FrameFinished = 0 ) do
   begin
     if ( av_read_frame(VideoFormatContext, AVPacket) < 0 ) then
+    begin
+      // Record the Time we looped, this is used to keep the loops, in time. otherwise they speed
+      flooptime      := time;
+
+      // Dont use SetPosition() it dosnt let us go back to frame 0... can we / should we fix this ??
+      fVideoSkipTime := 0;
+      VideoTime      := 0;
+
+      // Free the packet we just got from av_read_frame
+      av_free_packet( @AVPacket );
+
+      // Seek to frame 0 in the video stream
+      av_seek_frame(VideoFormatContext,VideoStreamIndex,0,AVSEEK_FLAG_ANY);
       break;
+    end;
+
+
     // if we got a packet from the video stream, then decode it
     if (AVPacket.stream_index=VideoStreamIndex) then
     begin
