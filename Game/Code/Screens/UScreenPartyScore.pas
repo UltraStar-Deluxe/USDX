@@ -155,7 +155,11 @@ var
   I, J: Integer;
   Placings: Array [0..5] of Byte;
 begin
+  inherited;
+
+
   //Get Maxscore
+
   MaxScore := 0;
   for I := 0 to ScreenSingModi.PlayerInfo.NumPlayers - 1 do
   begin

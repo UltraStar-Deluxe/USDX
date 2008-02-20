@@ -141,6 +141,8 @@ end;
 
 procedure TScreenStatMain.onShow;
 begin
+  inherited;
+
   //Set Overview Text:
   SetOverview;
 end;

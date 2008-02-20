@@ -131,7 +131,7 @@ end;
 
 procedure TScreenPopupCheck.onShow;
 begin
-
+  inherited;
 end;
 
 procedure TScreenPopupCheck.ShowPopup(msg: String);
@@ -214,6 +214,7 @@ end;
 
 procedure TScreenPopupError.onShow;
 begin
+  inherited;
 
 end;
 

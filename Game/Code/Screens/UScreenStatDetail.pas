@@ -138,6 +138,8 @@ end;
 
 procedure TScreenStatDetail.onShow;
 begin
+  inherited;
+
   //Set Tot Entrys and PAges
   TotEntrys := DataBase.GetTotalEntrys(Typ);
   TotPages := Ceil(TotEntrys / Count);

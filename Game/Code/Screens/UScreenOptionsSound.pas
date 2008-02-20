@@ -93,6 +93,8 @@ end;
 
 procedure TScreenOptionsSound.onShow;
 begin
+  inherited;
+
   Interaction := 0;
 end;
 

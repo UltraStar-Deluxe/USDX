@@ -88,6 +88,8 @@ end;
 
 procedure TScreenOptionsLyrics.onShow;
 begin
+  inherited;
+
   Interaction := 0;
 end;
 

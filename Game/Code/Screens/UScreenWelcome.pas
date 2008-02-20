@@ -56,6 +56,8 @@ end;
 
 procedure TScreenWelcome.onShow;
 begin
+  inherited;
+
   CountSkipTimeSet;
 end;
 

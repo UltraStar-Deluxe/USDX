@@ -252,6 +252,8 @@ procedure TScreenPartyPlayer.onShow;
 var
   I:    integer;
 begin
+  inherited;
+
   // Templates for Names Mod
   for I := 1 to 4 do
     Button[I].Text[0].Text := Ini.Name[I-1];

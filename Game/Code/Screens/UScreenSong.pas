@@ -1507,6 +1507,8 @@ end;
 
 procedure TScreenSong.onShow;
 begin
+  inherited;
+
   AudioPlayback.Stop;
 
   if Ini.Players <= 3 then PlayersPlay := Ini.Players + 1;

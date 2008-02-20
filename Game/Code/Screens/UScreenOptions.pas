@@ -147,7 +147,7 @@ end;
 
 procedure TScreenOptions.onShow;
 begin
-//
+  inherited;
 end;
 
 procedure TScreenOptions.InteractNext;

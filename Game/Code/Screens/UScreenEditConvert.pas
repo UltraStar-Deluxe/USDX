@@ -416,6 +416,8 @@ var
   C:    integer; // channel
   CN:   integer; // channel note
 begin
+  inherited;
+
 {$IFDEF UseMIDIPort}
   MidiOut := TMidiOutput.Create(nil);
   if Ini.Debug = 1 then

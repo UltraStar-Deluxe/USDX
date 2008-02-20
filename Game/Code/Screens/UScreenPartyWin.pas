@@ -106,6 +106,8 @@ var
     Result := ColorExists(NameString);
   end;
 begin
+  inherited;
+
   // to-do : Party
   //Get Team Placing
   //Placing := PartySession.GetTeamOrder;

@@ -90,6 +90,8 @@ var
   I:      integer;
   PMax:   integer;
 begin
+  inherited;
+
   Fadeout := false;
 
   //ReadScore(CurrentSong);

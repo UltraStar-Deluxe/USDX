@@ -93,6 +93,8 @@ end;
 
 procedure TScreenOptionsGraphics.onShow;
 begin
+  inherited;
+
   Interaction := 0;
 end;
 

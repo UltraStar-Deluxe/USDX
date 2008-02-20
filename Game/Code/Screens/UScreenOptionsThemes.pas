@@ -144,6 +144,8 @@ end;
 
 procedure TScreenOptionsThemes.onShow;
 begin
+  inherited;
+
   Interaction := 0;
 end;
 

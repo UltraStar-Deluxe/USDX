@@ -99,6 +99,8 @@ end;
 
 procedure TScreenOptionsAdvanced.onShow;
 begin
+  inherited;
+
   Interaction := 0;
 end;
 

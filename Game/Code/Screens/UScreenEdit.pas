@@ -93,6 +93,8 @@ end;
 
 procedure TScreenEdit.onShow;
 begin
+  inherited;
+
 //  Interaction := 0;
 end;
 

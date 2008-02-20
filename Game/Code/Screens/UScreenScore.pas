@@ -265,6 +265,7 @@ var
   Wsp:  real;
   ArrayStartModifier :integer;
 begin
+  inherited;
 
   case PlayersPlay of
     1:    begin

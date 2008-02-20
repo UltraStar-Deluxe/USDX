@@ -329,6 +329,8 @@ var
 
   success:  boolean;
 begin
+  inherited;
+
   Log.LogStatus('Begin', 'onShow');
   FadeOut := false; // 0.5.0: early 0.5.0 problems were by this line commented
 

@@ -258,6 +258,8 @@ end;
 
 procedure TScreenPartyOptions.onShow;
 begin
+  inherited;
+
   Randomize;
 
 //  LCD.WriteText(1, '  Choose mode:  ');

@@ -170,6 +170,7 @@ procedure TScreenSingModi.onShow;
 var
   I: Integer;
 begin
+  inherited;
 
   PlayersPlay := TeamInfo.NumTeams;
 

@@ -202,6 +202,8 @@ var
     Result := Language.Implode(Players);
   end;
 begin
+  inherited;
+
   // to-do : Party
   //PartySession.StartRound;
 

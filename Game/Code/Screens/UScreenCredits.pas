@@ -283,6 +283,8 @@ end;
 
 procedure TScreenCredits.onShow;
 begin
+  inherited;
+
   CRDTS_Stage:=InitialDelay;
   Credits_X := 580;
   deluxe_slidein := 0;

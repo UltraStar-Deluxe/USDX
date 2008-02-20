@@ -46,7 +46,7 @@ end;
 
 procedure TScreenLoading.onShow;
 begin
-// nothing
+  inherited;
 end;
 
 function TScreenLoading.GetBGTexNum: GLUInt;

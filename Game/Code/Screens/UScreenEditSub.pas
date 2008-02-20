@@ -1159,6 +1159,8 @@ end;
 
 procedure TScreenEditSub.onShow;
 begin
+  inherited;
+
   Log.LogStatus('Initializing', 'TEditScreen.onShow');
   Lyric := TLyric.Create;
 
@@ -1281,7 +1283,7 @@ begin
         for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
           if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = AktBeat) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Click);
+            AudioPlayback.PlaySound( SoundLib.Click );
             LastClick := AktBeat;
           end;
       end;

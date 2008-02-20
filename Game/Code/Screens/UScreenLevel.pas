@@ -80,6 +80,8 @@ end;
 
 procedure TScreenLevel.onShow;
 begin
+  inherited;
+
   Interaction := Ini.Difficulty;
 
 //  LCD.WriteText(1, '  Choose mode:  ');

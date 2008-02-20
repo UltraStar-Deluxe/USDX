@@ -145,6 +145,8 @@ end;
 
 procedure TScreenSongJumpto.onShow;
 begin
+  inherited;
+
   //Reset Screen if no Old Search is Displayed
   if (CatSongs.CatNumShow <> -2) then
   begin

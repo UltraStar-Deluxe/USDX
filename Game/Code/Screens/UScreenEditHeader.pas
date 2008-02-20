@@ -208,6 +208,8 @@ end;
 
 procedure TScreenEditHeader.onShow;
 begin
+  inherited;
+
 {  if FileExists(FileName) then begin // load file
     AktSong.FileName := FileName;
     SkanujPlik(AktSong);

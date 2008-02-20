@@ -134,6 +134,8 @@ end;
 
 procedure TScreenOptionsRecord.onShow;
 begin
+  inherited;
+
   Interaction := 0;
   writeln( 'AudioInput.CaptureStart') ;
 

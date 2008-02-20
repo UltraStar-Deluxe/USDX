@@ -106,6 +106,8 @@ end;
 
 procedure TScreenOptionsGame.onShow;
 begin
+  inherited;
+
 //  Interaction := 0;
 end;
 

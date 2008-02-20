@@ -145,6 +145,8 @@ end;
 
 procedure TScreenOpen.onShow;
 begin
+  inherited;
+
   Interaction := 0;
 end;
 

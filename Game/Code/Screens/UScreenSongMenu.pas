@@ -199,6 +199,7 @@ end;
 
 procedure TScreenSongMenu.onShow;
 begin
+  inherited;
 
 end;
 
