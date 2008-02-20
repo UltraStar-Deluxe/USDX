@@ -109,10 +109,27 @@ type
     asfFloat              // float
   );
 
-  TAudioFormatInfo = record
-    Channels: byte;
-    SampleRate: integer;
-    Format: TAudioSampleFormat;
+const
+  // Size of one sample (one channel only) in bytes
+  AudioSampleSize: array[TAudioSampleFormat] of integer = (
+    1, 1,     // asfU8, asfS8
+    2, 2,     // asfU16LSB, asfS16LSB
+    2, 2,     // asfU16MSB, asfS16MSB
+    2, 2,     // asfU16,    asfS16
+    3,        // asfS24
+    4,        // asfS32
+    4         // asfFloat
+  );
+
+type
+  TAudioFormatInfo = class
+    public
+      Channels    : byte;
+      SampleRate  : integer;
+      Format      : TAudioSampleFormat;
+      FrameSize   : integer; // calculated on construction
+
+      constructor Create(Channels: byte; SampleRate: integer; Format: TAudioSampleFormat);
   end;
 
 type
@@ -307,6 +324,14 @@ var
   singleton_AudioManager  : TInterfaceList  = nil;
 
 
+constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: integer; Format: TAudioSampleFormat);
+begin
+  Self.Channels := Channels;
+  Self.SampleRate := SampleRate;
+  Self.Format := Format;
+  Self.FrameSize := AudioSampleSize[Format] * Channels;
+end;
+
 function AudioManager: TInterfaceList;
 begin
   if singleton_AudioManager = nil then
@@ -403,7 +428,6 @@ begin
   singleton_Visualization := nil;
 
   AssignSingletonObjects();
-
 
   if VideoPlayback <> nil then
   begin

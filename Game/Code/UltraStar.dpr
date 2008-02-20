@@ -167,8 +167,16 @@ uses
 {$IFDEF UsePortaudioInput}
   UAudioInput_Portaudio  in 'Classes\UAudioInput_Portaudio.pas',
 {$ENDIF}
+{$IF Defined(UsePortaudioPlayback) or Defined(UseSDLPlayback)}
+  UFFT                      in 'lib\fft\UFFT.pas',
+  //samplerate                in 'lib\samplerate\samplerate.pas',
+  UAudioPlayback_Softmixer  in 'Classes\UAudioPlayback_SoftMixer.pas',
+{$IFEND}
 {$IFDEF UsePortaudioPlayback}
   UAudioPlayback_Portaudio  in 'Classes\UAudioPlayback_Portaudio.pas',
+{$ENDIF}
+{$IFDEF UseSDLPlayback}
+  UAudioPlayback_SDL        in 'Classes\UAudioPlayback_SDL.pas',
 {$ENDIF}
 
 

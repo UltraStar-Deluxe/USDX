@@ -63,7 +63,7 @@ var
  *}
 const
   paDefaultApi = -1;
-var
+const
   ApiPreferenceOrder:
 {$IF Defined(WIN32)}
     // Note1: Portmixer has no mixer support for paASIO and paWASAPI at the moment

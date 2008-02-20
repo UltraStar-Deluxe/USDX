@@ -144,43 +144,58 @@ begin
     if (Descr = nil) then
       break;
 
-    SetLength(AudioInputProcessor.Device, DeviceIndex+1);
-
-    // TODO: free object on termination
-    BassDevice := TBassInputDevice.Create();
-    AudioInputProcessor.Device[DeviceIndex] := BassDevice;
-
-    BassDevice.DeviceIndex := DeviceIndex;
-    BassDevice.BassDeviceID := BassDeviceID;
-    BassDevice.Description := UnifyDeviceName(Descr, DeviceIndex);
-
-    // get input sources
-    SourceIndex := 0;
-    BASS_RecordInit(BassDeviceID);
-    BassDevice.MicInput := 0;
-
-    // process each input
-    while true do
+    // try to intialize the device
+    if not BASS_RecordInit(BassDeviceID) then
     begin
-      SourceName := BASS_RecordGetInputName(SourceIndex);
-      if (SourceName = nil) then
-        break;
+      Log.LogStatus('Failed to initialize BASS Capture-Device['+inttostr(BassDeviceID)+']',
+                    'TAudioInput_Bass.InitializeRecord');
+    end
+    else
+    begin
+      SetLength(AudioInputProcessor.Device, DeviceIndex+1);
 
-      SetLength(BassDevice.Source, SourceIndex+1);
-      BassDevice.Source[SourceIndex].Name :=
-        UnifyDeviceSourceName(SourceName, BassDevice.Description);
+      // TODO: free object on termination
+      BassDevice := TBassInputDevice.Create();
+      AudioInputProcessor.Device[DeviceIndex] := BassDevice;
 
-      // set mic index
-      Flags := BASS_RecordGetInput(SourceIndex);
-      if ((Flags and BASS_INPUT_TYPE_MIC) <> 0) then
-        BassDevice.MicInput := SourceIndex;
+      BassDevice.DeviceIndex := DeviceIndex;
+      BassDevice.BassDeviceID := BassDeviceID;
+      BassDevice.Description := UnifyDeviceName(Descr, DeviceIndex);
 
-      Inc(SourceIndex);
+      // get input sources
+      SourceIndex := 0;
+      BassDevice.MicInput := 0;
+
+      // process each input
+      while true do
+      begin
+        SourceName := BASS_RecordGetInputName(SourceIndex);
+        if (SourceName = nil) then
+          break;
+
+        SetLength(BassDevice.Source, SourceIndex+1);
+        BassDevice.Source[SourceIndex].Name :=
+          UnifyDeviceSourceName(SourceName, BassDevice.Description);
+
+        // set mic index
+        Flags := BASS_RecordGetInput(SourceIndex);
+        if ((Flags <> -1) and ((Flags and BASS_INPUT_TYPE_MIC) <> 0)) then
+        begin
+          BassDevice.MicInput := SourceIndex;
+        end;
+
+        Inc(SourceIndex);
+      end;
+
+      //Writeln('BASS_RecordFree');
+      // FIXME: this call hangs in FPC (windows) every 2nd time USDX is called.
+      //   Maybe because the sound-device was not released properly?
+      BASS_RecordFree;
+      //Writeln('BASS_RecordFree - Done');
+
+      Inc(DeviceIndex);
     end;
-
-    BASS_RecordFree;
-
-    Inc(DeviceIndex);
+    
     Inc(BassDeviceID);
   end;
 

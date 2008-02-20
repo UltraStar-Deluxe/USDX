@@ -42,8 +42,8 @@
     {$DEFINE UseBASSInput}
   {$ELSE}
     {$DEFINE UseFFMpegDecoder}
-    {$DEFINE UsePortaudioPlayback}
-    //{$DEFINE UseSDLPlayback}
+    //{$DEFINE UsePortaudioPlayback}
+    {$DEFINE UseSDLPlayback}
     {$DEFINE UsePortaudioInput}
     {$DEFINE UsePortmixer}
   {$ENDIF}
