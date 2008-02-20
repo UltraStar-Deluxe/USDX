@@ -233,10 +233,11 @@ begin
     if UserSongPath <> SongPath then
       BrowseDir(UserSongPath);
 
+(*
     if ( cUSNGPath <> SongPath     ) AND
        ( cUSNGPath <> UserSongPath ) then
       BrowseDir( cUSNGPath );                       // todo : JB this is REAL messy,
-                                                    // we should have some sort of path manager that lets us specify X number of extra paths to search
+*)                                                    // we should have some sort of path manager that lets us specify X number of extra paths to search
 
     if assigned( CatSongs ) then
       CatSongs.Refresh;

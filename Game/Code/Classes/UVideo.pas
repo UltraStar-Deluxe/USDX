@@ -224,7 +224,7 @@ begin
 {$endif}
 
 //  if (VideoTime <> 0) and (TimeDifference <= VideoTimeBase) then
-  if (VideoTime <> 0) and flooptime = 0 then
+  if (VideoTime <> 0) and ( flooptime = 0 ) then
   begin
 {$ifdef DebugFrames}
     // frame delay debug display
