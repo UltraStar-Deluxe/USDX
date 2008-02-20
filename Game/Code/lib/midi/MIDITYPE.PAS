@@ -8,7 +8,13 @@ unit Miditype;
 
 interface
 
-uses Classes, Wintypes, Messages, MMSystem, MidiDefs, Circbuf;
+uses
+  Classes,
+  Windows,
+  Messages,
+  MMSystem,
+  MidiDefs,
+  Circbuf;
 
 type
 	{-------------------------------------------------------------------}

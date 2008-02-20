@@ -90,17 +90,19 @@ unit MidiFile;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
   Windows,
+  Forms,
   Messages,
   SysUtils,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  stdctrls,
-  ExtCtrls,
-  WinProcs;
+  {$IFDEF LCL}
+  LCLIntf, // used for AllocateHWnd
+  {$ENDIF}
+  Classes;
 
 type
   TChunkType = (illegal, header, track);
@@ -235,7 +237,13 @@ implementation
 
 uses mmsystem;
 
-type TTimerProc=procedure(uTimerID,uMsg: Integer; dwUser,dwParam1,dwParam2:DWORD);stdcall;
+type
+{$IFDEF FPC}
+  TTimerProc = TTIMECALLBACK;
+  TTimeCaps = TIMECAPS;
+{$ELSE}
+  TTimerProc = TFNTimeCallBack;
+{$ENDIF}
 
 const TIMER_RESOLUTION=10;
 const WM_MULTIMEDIA_TIMER=WM_USER+127;
@@ -245,13 +253,13 @@ var MIDIFileHandle : HWND;
     MIDITimerID    : Integer;
     TimerPeriod     : Integer;
 
-procedure TimerCallBackProc(uTimerID,uMsg: Integer; dwUser,dwParam1,dwParam2:DWORD);stdcall;
+procedure TimerCallBackProc(uTimerID,uMsg: Cardinal; dwUser,dwParam1,dwParam2:DWORD);stdcall;
 begin
      PostMessage(HWND(dwUser),WM_MULTIMEDIA_TIMER,0,0);
 end;
 
 procedure SetMIDITimer;
-  var TimeCaps    : TTimeCaps ;
+  var TimeCaps    : TTimeCaps;
 begin
   timeGetDevCaps(@TimeCaps,SizeOf(TimeCaps));
   if TIMER_RESOLUTION < TimeCaps.wPeriodMin then
@@ -262,7 +270,7 @@ begin
     TimerPeriod:=TIMER_RESOLUTION;
 
   timeBeginPeriod(TimerPeriod);
-  MIDITimerID:=timeSetEvent(TimerPeriod,TimerPeriod,@TimerProc,
+  MIDITimerID:=timeSetEvent(TimerPeriod,TimerPeriod,TimerProc,
                             DWORD(MIDIFileHandle),TIME_PERIODIC);
   if MIDITimerID=0 then
     timeEndPeriod(TimerPeriod);
@@ -428,7 +436,7 @@ begin
   chunkData := nil;
   chunkType := illegal;
   Tracks := TList.Create;
-  TimerProc:=TimerCallBackProc;
+  TimerProc:=@TimerCallBackProc;
   FPriority:=GetPriorityClass(MIDIFileHandle);
 end;
 

@@ -21,17 +21,11 @@ Unit Circbuf;
 
 interface
 
-Uses Wintypes, WinProcs, MMSystem;
+Uses
+  Windows,
+  MMSystem;
 
 type
-    {$IFNDEF WIN32}
-    { API types not defined in Delphi 1 }
-    DWORD = Longint;
-    HGLOBAL = THandle;
-    UINT = Word;
-    TFNTimeCallBack = procedure(uTimerID, uMessage: UINT; dwUser, dw1, dw2: DWORD);
-    {$ENDIF}
-
 	{ MIDI input event }
 	TMidiBufferItem = record
 	  	timestamp: DWORD;	{ Timestamp in milliseconds after midiInStart }
@@ -83,19 +77,11 @@ begin
 			GlobalFree(hMem);
 		end;
 
-{$IFNDEF WIN32}
-	if (ptr <> Nil) then
-		GlobalPageLock(HIWORD(DWORD(ptr)));
-{$ENDIF}
 	GlobalSharedLockedAlloc := Ptr;
 end;
 
 procedure GlobalSharedLockedFree( hMem: HGLOBAL; ptr: Pointer );
 begin
-{$IFNDEF WIN32}
-	if (ptr <> Nil) then
-		GlobalPageUnlock(HIWORD(DWORD(ptr)));
-{$ENDIF}
 	if (hMem <> 0) then
 		begin
 		GlobalUnlock(hMem);

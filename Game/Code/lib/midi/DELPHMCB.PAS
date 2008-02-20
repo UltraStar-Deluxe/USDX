@@ -9,30 +9,25 @@ unit Delphmcb;
 
 interface
 
-uses WinProcs, WinTypes, MMsystem, Circbuf, MidiDefs, MidiCons;
+uses
+  Windows,
+  MMsystem,
+  Circbuf,
+  MidiDefs,
+  MidiCons;
 
-{$IFDEF WIN32}
 procedure midiHandler(
 		  hMidiIn: HMidiIn;
 		  wMsg: UINT;
 		  dwInstance: DWORD;
 		  dwParam1: DWORD;
-		  dwParam2: DWORD); stdcall export;
-function CircbufPutEvent(PBuffer: PCircularBuffer; PTheEvent: PMidiBufferItem): Boolean; stdcall; export;          
-{$ELSE}
-procedure midiHandler(
-		  hMidiIn: HMidiIn;
-		  wMsg: Word;
-		  dwInstance: DWORD;
-		  dwParam1: DWORD;
-		  dwParam2: DWORD); export;
-function CircbufPutEvent(PBuffer: PCircularBuffer; PTheEvent: PMidiBufferItem): Boolean; export;
-{$ENDIF}
+		  dwParam2: DWORD); stdcall; export;
+function CircbufPutEvent(PBuffer: PCircularBuffer; PTheEvent: PMidiBufferItem): Boolean; stdcall; export;
 
 implementation
 
 { Add an event to the circular input buffer. }
-function CircbufPutEvent(PBuffer: PCircularBuffer; PTheEvent: PMidiBufferItem): Boolean;
+function CircbufPutEvent(PBuffer: PCircularBuffer; PTheEvent: PMidiBufferItem): Boolean; stdcall;
 begin
 	If (PBuffer^.EventCount < PBuffer^.Capacity) Then
 		begin
@@ -66,13 +61,11 @@ procedure midiHandler(
 		  wMsg: UINT;
 		  dwInstance: DWORD;
 		  dwParam1: DWORD;
-		  dwParam2: DWORD);
-
+		  dwParam2: DWORD); stdcall;
 var
 	thisEvent: TMidiBufferItem;
 	thisCtlInfo: PMidiCtlInfo;
 	thisBuffer: PCircularBuffer;
-
 Begin
 	case wMsg of
 

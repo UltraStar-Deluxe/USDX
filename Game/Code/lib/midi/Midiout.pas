@@ -96,9 +96,28 @@ unit MidiOut;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
-  SysUtils, WinTypes, WinProcs, Messages, Classes, Controls, Forms,
-  MMSystem, Circbuf, MidiType, MidiDefs, Delphmcb;
+  SysUtils,
+  Windows,
+  Messages,
+  Classes,
+  //Controls,
+  MMSystem,
+  {$IFDEF LCL}
+  LCLIntf, // used for AllocateHWnd
+  {$ENDIF}
+  Circbuf,
+  MidiType,
+  MidiDefs,
+  Delphmcb;
+
+{$IFDEF FPC}
+type TmidioutCaps = MIDIOUTCAPS;
+{$ENDIF}
 
 type
   midioutputState = (mosOpen, mosClosed);
@@ -136,7 +155,7 @@ type
     FError: Word; { Last MMSYSTEM error }
 
  { Stuff from midioutCAPS }
-    FDriverVersion: Version; { Driver version from midioutGetDevCaps }
+    FDriverVersion: MMVERSION; { Driver version from midioutGetDevCaps }
     FProductName: string; { product name }
     FTechnology: OutPortTech; { Type of MIDI output device }
     FVoices: Word; { Number of voices (internal synth) }
@@ -159,7 +178,7 @@ type
   public
  { Properties }
     property MIDIHandle: Hmidiout read FMIDIHandle;
-    property DriverVersion: Version { Driver version from midioutGetDevCaps }
+    property DriverVersion: MMVERSION { Driver version from midioutGetDevCaps }
     read FDriverVersion;
     property Technology: OutPortTech { Type of MIDI output device }
     read FTechnology

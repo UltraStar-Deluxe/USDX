@@ -101,9 +101,24 @@ unit MidiIn;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
-  Classes, SysUtils, WinTypes, Messages, WinProcs, MMSystem, MidiDefs, MidiType,
-  MidiCons, Circbuf, Delphmcb;
+  Classes,
+  SysUtils,
+  Messages,
+  Windows,
+  MMSystem,
+  {$IFDEF LCL}
+  LCLIntf, // used for AllocateHWnd
+  {$ENDIF}
+  MidiDefs,
+  MidiType,
+  MidiCons,
+  Circbuf,
+  Delphmcb;
 
 type
   MidiInputState = (misOpen, misClosed, misCreating, misDestroying);
@@ -121,7 +136,7 @@ type
     FSysexOnly: Boolean;
 
  { Stuff from MIDIINCAPS }
-    FDriverVersion: Version;
+    FDriverVersion: MMVERSION;
     FProductName: string;
     FMID: Word; { Manufacturer ID }
     FPID: Word; { Product ID }
@@ -161,7 +176,7 @@ type
 
     property MIDIHandle: HMIDIIn read FMIDIHandle;
 
-    property DriverVersion: Version read FDriverVersion;
+    property DriverVersion: MMVERSION read FDriverVersion;
     property MID: Word read FMID; { Manufacturer ID }
     property PID: Word read FPID; { Product ID }
 
@@ -213,7 +228,6 @@ procedure Register;
 implementation
 
 uses Controls,
-     Forms,
      Graphics;
 
 (* Not used in Delphi 3

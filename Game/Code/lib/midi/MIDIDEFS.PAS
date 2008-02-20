@@ -11,7 +11,10 @@ unit Mididefs;
 
 interface
 
-uses WinProcs, WinTypes, MMsystem, Circbuf;
+uses
+  Windows,
+  MMsystem,
+  Circbuf;
 
 type
 

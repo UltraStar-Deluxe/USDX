@@ -29,8 +29,7 @@ uses
   portmixer              in 'lib\portmixer\delphi\portmixer.pas',
   {$ENDIF}
 
-  //{$IFDEF MSWINDOWS}
-  {$IFDEF Delphi}
+  {$IFDEF MSWINDOWS}
   midiout       in 'lib\midi\midiout.pas',
   midiin        in 'lib\midi\midiin.pas',
   CIRCBUF       in 'lib\midi\CIRCBUF.PAS',

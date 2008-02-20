@@ -24,12 +24,10 @@
 
   {$DEFINE DLL_CDECL}
   {$UNDEF UseSerialPort}
-  {$UNDEF UseMIDIPort}
 {$ELSE}
   {$DEFINE Delphi}
   {$DEFINE DLL_STDCALL}
   {$UNDEF UseSerialPort}
-  {$DEFINE UseMIDIPort}
 {$ENDIF}
 
 
@@ -44,8 +42,8 @@
     {$DEFINE UseBASSInput}
   {$ELSE}
     {$DEFINE UseFFMpegDecoder}
-    {$DEFINE HaveAvcodecDecodeAudio2}
     {$DEFINE UsePortaudioPlayback}
+    //{$DEFINE UseSDLPlayback}
     {$DEFINE UsePortaudioInput}
     {$DEFINE UsePortmixer}
   {$ENDIF}
@@ -70,7 +68,11 @@
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
       {$APPTYPE CONSOLE}
-	{$ENDIF}
+    {$ENDIF}
+  {$ENDIF}
+
+  {$IFDEF MSWINDOWS}
+    {$DEFINE UseMIDIPort}
   {$ENDIF}
 {$ELSEIF Defined(Linux)}
   // include defines but no constants
