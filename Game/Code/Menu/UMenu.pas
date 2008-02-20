@@ -307,7 +307,7 @@ begin
     begin
       BackImg   := Texture.GetTexture( fFileName , 'Plain');
 
-      if ( BackImg.TexNum = 0 )  then
+      if ( BackImg.TexNum < 1 )  then
       begin
         if VideoPlayback.Open( fFileName ) then
           VideoPlayback.Play;
@@ -1537,13 +1537,8 @@ begin
 
   if fileexists( fFileName ) then
   begin
-  //  BackImg   := Texture.GetTexture( fFileName , 'Plain');
-
-    if ( BackImg.TexNum = 0 )  then
-    begin
-      if VideoPlayback.Open( fFileName ) then
-        VideoPlayback.Play;
-    end;
+    if VideoPlayback.Open( fFileName ) then
+      VideoPlayback.Play;
   end;
 
 end;
