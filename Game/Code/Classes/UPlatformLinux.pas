@@ -44,6 +44,7 @@ uses
   oldlinux,
 {$ENDIF}
   SysUtils,
+  ULog,
   UConfig;
 
 {$IFDEF FPC_VERSION_2_2_0_PLUS}
@@ -61,32 +62,34 @@ begin
 
   TheDir := FpOpenDir( Dir );
   if Assigned(TheDir) then
-  repeat
-    ADirent :=  FpReadDir(TheDir^);
+  begin
+    repeat
+      ADirent :=  FpReadDir(TheDir^);
 
-    If Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
-    begin
-      lAttrib := FileGetAttr(Dir + ADirent^.d_name);
-      if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
+      If Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
       begin
-        SetLength( Result, i + 1);
-        Result[i].Name        := ADirent^.d_name;
-        Result[i].IsDirectory := true;
-        Result[i].IsFile      := false;
-        i := i + 1;
-      end
-      else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.d_name)) > 0) then
-      begin
-        SetLength( Result, i + 1);
-        Result[i].Name        := ADirent^.d_name;
-        Result[i].IsDirectory := false;
-        Result[i].IsFile      := true;
-        i := i + 1;
+        lAttrib := FileGetAttr(Dir + ADirent^.d_name);
+        if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
+        begin
+          SetLength( Result, i + 1);
+          Result[i].Name        := ADirent^.d_name;
+          Result[i].IsDirectory := true;
+          Result[i].IsFile      := false;
+          i := i + 1;
+        end
+        else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.d_name)) > 0) then
+        begin
+          SetLength( Result, i + 1);
+          Result[i].Name        := ADirent^.d_name;
+          Result[i].IsDirectory := false;
+          Result[i].IsFile      := true;
+          i := i + 1;
+        end;
       end;
-    end;
-  Until ADirent = nil;
+    until (ADirent = nil);
 
-  FpCloseDir(TheDir^);
+    FpCloseDir(TheDir^);
+  end;
 end;
 {$ELSE}
 Function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
@@ -103,32 +106,34 @@ begin
 
   TheDir := oldlinux.opendir( Dir );
   if Assigned(TheDir) then
-  repeat
-    ADirent :=  oldlinux.ReadDir(TheDir);
+  begin
+    repeat
+      ADirent :=  oldlinux.ReadDir(TheDir);
 
-    If Assigned(ADirent) and (ADirent^.name <> '.') and (ADirent^.name <> '..') then
-    begin
-      lAttrib := FileGetAttr(Dir + ADirent^.name);
-      if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
+      If Assigned(ADirent) and (ADirent^.name <> '.') and (ADirent^.name <> '..') then
       begin
-        SetLength( Result, i + 1);
-        Result[i].Name        := ADirent^.name;
-        Result[i].IsDirectory := true;
-        Result[i].IsFile      := false;
-        i := i + 1;
-      end
-      else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.name)) > 0) then
-      begin
-        SetLength( Result, i + 1);
-        Result[i].Name        := ADirent^.name;
-        Result[i].IsDirectory := false;
-        Result[i].IsFile      := true;
-        i := i + 1;
+        lAttrib := FileGetAttr(Dir + ADirent^.name);
+        if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
+        begin
+          SetLength( Result, i + 1);
+          Result[i].Name        := ADirent^.name;
+          Result[i].IsDirectory := true;
+          Result[i].IsFile      := false;
+          i := i + 1;
+        end
+        else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.name)) > 0) then
+        begin
+          SetLength( Result, i + 1);
+          Result[i].Name        := ADirent^.name;
+          Result[i].IsDirectory := false;
+          Result[i].IsFile      := true;
+          i := i + 1;
+        end;
       end;
-    end;
-  Until ADirent = nil;
+    until (ADirent = nil);
 
-  oldlinux.CloseDir(TheDir);
+    oldlinux.CloseDir(TheDir);
+  end;
 end;
 {$ENDIF}
 
