@@ -130,6 +130,17 @@ const
   //              (PPC_VERSION_MINOR * VERSION_MINOR) +
   //              (PPC_VERSION_RELEASE * VERSION_RELEASE);
 
+  {$IFDEF Delphi}
+  // Delphi evaluates every $IF-directive even if it is disabled by a surrounding
+  // $IF or $IFDEF so the follwing will give you an error in delphi:
+  //   {$IFDEF FPC}{$IF (FPC_VERSION > 2)}...{$IFEND}{$ENDIF}
+  // The reason for this error is that FPC_VERSION is not a valid constant.
+  // To avoid this error, we define dummys here.
+  FPC_VERSION = 0;
+  FPC_RELEASE = 0;
+  FPC_PATCH   = 0;
+  {$ENDIF}
+
   {$IFDEF LAZARUS}
   LAZARUS_VERSION = (LAZARUS_VERSION_MAJOR * VERSION_MAJOR) +
                     (LAZARUS_VERSION_MINOR * VERSION_MINOR) +
