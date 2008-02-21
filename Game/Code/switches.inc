@@ -82,7 +82,8 @@
   {$IFDEF HaveFFMpeg}
     {$DEFINE UseFFMpegDecoder}
     {$IFDEF HavePortaudio}
-      {$DEFINE UsePortaudioPlayback}
+      //{$DEFINE UsePortaudioPlayback}
+      {$DEFINE UseSDLPlayback}
       {$DEFINE UsePortaudioInput}
     {$ENDIF}
   {$ENDIF}
