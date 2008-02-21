@@ -10,8 +10,8 @@
 AC_PREREQ(2.61)
 
 # Init autoconf
-AC_INIT([UltraStar Deluxe], 
-        [1.1 alpha], 
+AC_INIT([UltraStar-Deluxe], 
+        [1.1-alpha], 
         [http://sourceforge.net/tracker/?group_id=191560&atid=937872])
 # specify the website here
 PACKAGE_WEBSITE="http://www.ultrastardeluxe.org/"
@@ -27,18 +27,6 @@ AC_CONFIG_MACRO_DIR(m4)
 
 # show features and packages in one list
 AC_PRESERVE_HELP_ORDER
-
-#echo $LDFLAGS
-
-#define([maco], [])
-#echo maco
-#m4_foreach_w([arg], [-L/usr/local -l/bin/bash -L/usr/local],
-#    [m4_append_uniq([maco], "arg", [ ])
-#])
-#echo maco
-
-#echo m4_split([hallo o])
-#AC_MSG_ERROR(oi)
 
 # -----------------------------------------
 # define switches
@@ -126,8 +114,10 @@ AC_ARG_ENABLE(dev-build,
 
 # options for make command
 AC_PROG_MAKE_SET
-# find tool for ln -s
+# find tool for ln -s (e.g. uses cp -p for FAT-filesystems)
 AC_LN_S
+# find a program for recursive dir creation
+AC_PROG_MKDIR_P
 # find the best install tool
 AC_PROG_INSTALL
 # some other useful tools
@@ -450,6 +440,9 @@ fi
 AC_SUBST(suffix)
 AC_SUBST(logrootdir, [$with_logrootdir])
 AC_DEFINE_DIR(sharerootdir, datarootdir)
+
+#AC_SUBST(LDFLAGS)
+#AC_SUBST(LIBS)
 
 AC_SUBST(PLIBS)
 AC_SUBST(PACKAGE_WEBSITE)

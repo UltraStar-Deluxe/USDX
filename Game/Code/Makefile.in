@@ -1,5 +1,5 @@
 ##
-# Makefile for @PACKAGE_NAME@ @PACKAGE_VERSION@ 
+# Makefile for @PACKAGE_STRING@
 # @configure_input@
 ##
 
@@ -16,14 +16,30 @@ VPATH = @srcdir@
 
 usdxrootdir = ../..
 
+INSTALL_PATH_SUFFIX = @suffix@
+INSTALL_datadir = $(datarootdir)/$(INSTALL_PATH_SUFFIX)
+
+# recursive dir creation tool
+MKDIR_P = @MKDIR_P@
 # install tool
 INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
 # calls "ln -s"
 LN_S = @LN_S@
 
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+
+# Package configuration
+USDX_PACKAGE_NAME = @PACKAGE_NAME@
+# should be $(USDX_PACKAGE_NAME) instead
 USDX_PREFIX = UltraStar
+USDX_VERSION = @PACKAGE_VERSION@
+USDX_TARNAME = @PACKAGE_TARNAME@
+
 USDX_TOOLS_DIR = $(usdxrootdir)/Tools
 
+# file-type suffix of executables (e.g. ".exe" in windows)
 EXE_SUFFIX = @EXEEXT@
 
 # Free Pascal compiler
@@ -88,9 +104,10 @@ PFLAGS += $(PFLAGS_EXTRA)
 # lpr project file used as input
 USDX_SRC = $(USDX_PREFIX)$(PROJ_SUFFIX)
 # name of executable
-USDX_BIN = $(usdxrootdir)/$(USDX_PREFIX)$(EXE_SUFFIX)
+USDX_BIN_NAME = $(USDX_PREFIX)$(EXE_SUFFIX)
+USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
 
-.PHONY: all resources ultrastardx-app install install-dev install-release uninstall uninstall-dev uninstall-release clean distclean clean_obj clean_res fetch-sounds
+.PHONY: all resources ultrastardx-app install install-dev install-release install-data install-data-recursive install-exec uninstall uninstall-dev uninstall-release uninstall-data uninstall-exec clean distclean clean_obj clean_res fetch-sounds dist debian-package
 
 all: resources ultrastardx-app
 
@@ -108,7 +125,7 @@ $(USDX_BIN): clean_obj
 	$(PPC) $(PFLAGS) $(PDEFINES) $(PLIBS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(USDX_SRC)
 
 install: install-@install_type@
-# all
+# depends on $(USDX_BIN)
 
 uninstall: uninstall-@install_type@
 
@@ -136,21 +153,85 @@ fetch-sounds:
 uninstall-dev:
 	rm -f $(USDX_BIN)
 
+
+
 # global release build
 
-install-release:
-# TODO: copy files to the appropriate places
-#	$()/mkinstalldirs $(bindir)
-#	$()/mkinstalldirs $(libdir)
-#	$()/mkinstalldirs $(infodir)
-#	$(INSTALL) $(USDX_BIN) $(bindir)/$(USDX_BIN)
-	@echo '"install-release" does not exist yet. Install USDX yourself or use "./configure --enable-dev-build" for a local installation.'
+install-release: install-data install-exec
 
-uninstall-release:
-# TODO: remove installed files
-#	rm -f xyz
-	@echo '"install-release" does not exist yet.'
+install-data:
+	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Themes RECURSIVE_DST_DIR=$(INSTALL_datadir)/Themes install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Sounds RECURSIVE_DST_DIR=$(INSTALL_datadir)/Sounds install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Languages RECURSIVE_DST_DIR=$(INSTALL_datadir)/Languages install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Skins RECURSIVE_DST_DIR=$(INSTALL_datadir)/Skins install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/InstallerDependencies/Visuals RECURSIVE_DST_DIR=$(INSTALL_datadir)/Visuals install-data-recursive
 
+install-data-recursive:
+	$(MKDIR_P) $(RECURSIVE_DST_DIR)
+	@for file in $(RECURSIVE_SRC_DIR)/*; do \
+	  if test -f "$$file"; then \
+	    $(INSTALL_DATA) "$$file" $(RECURSIVE_DST_DIR); \
+	  fi; \
+	  if test -d "$$file"; then \
+	    subdir="$$file"; \
+	    subdirname=`basename "$$subdir"`; \
+	    $(MAKE) RECURSIVE_SRC_DIR="$$subdir" RECURSIVE_DST_DIR="$(RECURSIVE_DST_DIR)/$$subdirname" install-data-recursive; \
+	  fi; \
+	done
+
+install-exec:
+	$(MKDIR_P) $(bindir)
+	$(INSTALL) $(USDX_BIN) $(bindir)
+
+uninstall-release: uninstall-data uninstall-exec
+
+uninstall-data:
+# TODO: delete the directories created at the first execution of usdx too (like Screenshots/Playlists)
+	rm -rf $(INSTALL_datadir)/Themes
+	rm -rf $(INSTALL_datadir)/Sounds
+	rm -rf $(INSTALL_datadir)/Languages
+	rm -rf $(INSTALL_datadir)/Skins
+	rm -rf $(INSTALL_datadir)/Visuals
+	rmdir $(INSTALL_datadir)
+
+uninstall-exec:
+	rm -f $(bindir)/$(USDX_BIN_NAME)
+
+disttmpdir = ./distdir
+
+dist:
+# TODO: this needs some work
+#	$(MKDIR_P) $(disttmpdir)
+#	acm $(usdxrootdir) $(disttmpdir)
+#	$(MAKE) -C $(disttmpdir)/Game/Code distclean 
+#	tar cvzf $(USDX_TARNAME)-$(USDX_VERSION).tar.gz $(usdxrootdir)
+	@echo "Comming soon"
+
+
+debpkgoutdir = $(usdxrootdir)/packages
+debpkgtmpdir = $(debpkgoutdir)/deb-package
+# should be $(USDX_PACKAGE_NAME) instead
+debpkgprefix = UltraStarDeluxe
+debpkgname = $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
+
+debian-package: $(debpkgname)
+
+$(debpkgname):
+#$(USDX_BIN)
+	rm -rf $(debpkgtmpdir)
+	rm -rf $(debpkgoutdir)
+
+	$(MKDIR_P) $(debpkgoutdir)
+	$(MKDIR_P) $(debpkgtmpdir)/DEBIAN
+
+	$(MAKE) prefix=$(debpkgtmpdir)/$(prefix) install
+
+	$(INSTALL_DATA) $(debpkgprefix).control $(debpkgtmpdir)/DEBIAN/control
+
+	dpkg-deb --build $(debpkgtmpdir)
+	mv $(debpkgtmpdir)/../deb-package.deb $(debpkgoutdir)/$(debpkgname)
+
+#	rm -rf $(debpkgtmpdir)
 
 clean: clean_obj
 

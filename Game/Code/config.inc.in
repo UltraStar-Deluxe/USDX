@@ -1,5 +1,5 @@
 {***************************************************************** 
- * Configuration file for @PACKAGE_NAME@ @PACKAGE_VERSION@
+ * Configuration file for @PACKAGE_STRING@
  * @configure_input@
  *****************************************************************}
 
