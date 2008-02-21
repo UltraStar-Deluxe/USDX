@@ -40,6 +40,7 @@ unit avio;
 interface
 
 uses
+  avutil,   // for uint64
   UConfig;
 
 (* output byte stream handling *)
