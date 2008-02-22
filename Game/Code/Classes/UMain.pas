@@ -361,6 +361,8 @@ begin
     //Finish Application
     //------------------------------
     
+    SDL_Quit();
+    
     {$ifdef WIN32}
       if Ini.LPT = 1 then LCD.Clear;
       if Ini.LPT = 2 then Light.TurnOff;

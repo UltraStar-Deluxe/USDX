@@ -604,13 +604,6 @@ begin
 //  SDL_SetRefreshrate(85);
 //  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
-  {$ifndef win32}
-    // Todo : jb_linux remove this for linux... but helps for debugging
-    Ini.FullScreen := 0;
-    W := 800;
-    H := 600;
-  {$endif}
-  
   {$IFDEF DARWIN}
     // Todo : eddie: remove before realease
     Ini.FullScreen := 0;
