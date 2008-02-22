@@ -216,8 +216,7 @@ debpkgname = $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
 
 debian-package: $(debpkgname)
 
-$(debpkgname):
-#$(USDX_BIN)
+$(debpkgname): $(USDX_BIN)
 	rm -rf $(debpkgtmpdir)
 	rm -rf $(debpkgoutdir)
 
