@@ -153,6 +153,12 @@
 		2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
 		2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CDEA4F60CBD725B0096994C /* OpenGL.framework */; };
 		2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
+		2CE603DA0D715F2100DB0D88 /* mathematics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603D90D715F2100DB0D88 /* mathematics.pas */; };
+		2CE603DB0D715F2100DB0D88 /* mathematics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603D90D715F2100DB0D88 /* mathematics.pas */; };
+		2CE603DE0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */; };
+		2CE603DF0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */; };
+		2CE603E20D715F8600DB0D88 /* UConfig.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603E10D715F8600DB0D88 /* UConfig.pas */; };
+		2CE603E30D715F8600DB0D88 /* UConfig.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603E10D715F8600DB0D88 /* UConfig.pas */; };
 		2CE907930D1BC8A800A1FDFF /* libavcodec.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */; };
 		2CE907940D1BC8A800A1FDFF /* libavformat.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907910D1BC8A800A1FDFF /* libavformat.dylib */; };
 		2CE907950D1BC8A800A1FDFF /* libavutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907920D1BC8A800A1FDFF /* libavutil.dylib */; };
@@ -443,6 +449,9 @@
 		2CB9E87D0D43B78400214DFA /* USong.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = USong.pas; path = ../Classes/USong.pas; sourceTree = SOURCE_ROOT; };
 		2CDC716B0CDB9CB70018F966 /* StrUtils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = StrUtils.pas; path = ../../../Modis/SDK/StrUtils.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		2CE603D90D715F2100DB0D88 /* mathematics.pas */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.pascal; name = mathematics.pas; path = ../lib/ffmpeg/mathematics.pas; sourceTree = SOURCE_ROOT; };
+		2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.pascal; name = UAudioCore_Bass.pas; path = ../Classes/UAudioCore_Bass.pas; sourceTree = SOURCE_ROOT; };
+		2CE603E10D715F8600DB0D88 /* UConfig.pas */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.pascal; name = UConfig.pas; path = ../Classes/UConfig.pas; sourceTree = SOURCE_ROOT; };
 		2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = ../lib/ffmpeg/libavcodec.dylib; sourceTree = SOURCE_ROOT; };
 		2CE907910D1BC8A800A1FDFF /* libavformat.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.dylib; path = ../lib/ffmpeg/libavformat.dylib; sourceTree = SOURCE_ROOT; };
 		2CE907920D1BC8A800A1FDFF /* libavutil.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.dylib; path = ../lib/ffmpeg/libavutil.dylib; sourceTree = SOURCE_ROOT; };
@@ -498,7 +507,7 @@
 		2CF552A40CDA42C900627463 /* opt.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = opt.pas; path = ../lib/ffmpeg/opt.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CF552A50CDA42C900627463 /* rational.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = rational.pas; path = ../lib/ffmpeg/rational.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2CF553070CDA51B500627463 /* sdlutils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdlutils.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdlutils.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
-		2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libUntil5000.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libLib_UltraPong.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UPartyDefs.pas; path = ../../../Modis/SDK/UPartyDefs.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		98B8BE330B1F947800162019 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		98B8BE370B1F949C00162019 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -508,7 +517,7 @@
 		DD37F2430A60255800975B2D /* libfpcrtl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libfpcrtl.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC6851B09F57195004E4BFF /* UltraStarDX.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; path = UltraStarDX.pas; sourceTree = "<group>"; tabWidth = 2; };
 		DDC6868B09F571C2004E4BFF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
-		DDC688C809F574E9004E4BFF /* UltraStarDX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UltraStarDX.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "UltraStar Deluxe.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DDC688CA09F574E9004E4BFF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		DDC689B309F57C69004E4BFF /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		DDC689B409F57C69004E4BFF /* SDLMain.nib */ = {isa = PBXFileReference; explicitFileType = wrapper.nib; name = SDLMain.nib; path = English.lproj/SDLMain.nib; sourceTree = "<group>"; };
@@ -592,6 +601,8 @@
 		2CDD43820CBBE8D400F364DE /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				2CE603E10D715F8600DB0D88 /* UConfig.pas */,
+				2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */,
 				2CB9E87D0D43B78400214DFA /* USong.pas */,
 				2CAC2BDD0D3809F500CA518A /* UAudioInput_Bass.pas */,
 				2CAC2BDF0D3809F500CA518A /* UAudioPlayback_Bass.pas */,
@@ -752,6 +763,7 @@
 		2CF5529C0CDA428000627463 /* ffmpeg */ = {
 			isa = PBXGroup;
 			children = (
+				2CE603D90D715F2100DB0D88 /* mathematics.pas */,
 				2CF5529E0CDA42C900627463 /* avcodec.pas */,
 				2CF5529F0CDA42C900627463 /* avformat.pas */,
 				2CF552A00CDA42C900627463 /* avio.pas */,
@@ -826,9 +838,9 @@
 		DDC6888C09F57243004E4BFF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DDC688C809F574E9004E4BFF /* UltraStarDX.app */,
+				DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */,
 				DD37F2430A60255800975B2D /* libfpcrtl.a */,
-				2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */,
+				2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -860,7 +872,7 @@
 			);
 			name = Modi_Until5000;
 			productName = Lib_UltraPong;
-			productReference = 2CF77DB60CF7556C00F3B101 /* libUntil5000.dylib */;
+			productReference = 2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		DD37F2420A60255800975B2D /* fpcrtl */ = {
@@ -902,7 +914,7 @@
 			);
 			name = UltraStarDX;
 			productName = "JEDI-SDLCocoa";
-			productReference = DDC688C809F574E9004E4BFF /* UltraStarDX.app */;
+			productReference = DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */;
 			productType = "com.apple.product-type.application";
 		};
 		DDC688D409F57523004E4BFF /* Put all program sources also in this target */ = {
@@ -1160,6 +1172,9 @@
 				2CAC2BE40D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */,
 				2CAC2BF80D380B1B00CA518A /* Bass.pas in Sources */,
 				2CB9E87E0D43B78400214DFA /* USong.pas in Sources */,
+				2CE603DA0D715F2100DB0D88 /* mathematics.pas in Sources */,
+				2CE603DE0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */,
+				2CE603E20D715F8600DB0D88 /* UConfig.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1286,6 +1301,9 @@
 				2CAC2BE90D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */,
 				2CAC2BF90D380B1B00CA518A /* Bass.pas in Sources */,
 				2CB9E87F0D43B78400214DFA /* USong.pas in Sources */,
+				2CE603DB0D715F2100DB0D88 /* mathematics.pas in Sources */,
+				2CE603DF0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */,
+				2CE603E30D715F8600DB0D88 /* UConfig.pas in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

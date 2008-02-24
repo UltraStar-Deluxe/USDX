@@ -131,7 +131,7 @@ implementation
 uses ULog,
      DateUtils,
      UCovers,
-     {$ifdef FPC}
+     {$ifdef LINUX}
        fileutil,
      {$endif}
      {$IFDEF LAZARUS}
@@ -251,7 +251,7 @@ function TTextureUnit.LoadImage(Identifier: PChar): PSDL_Surface;
 
   function FileExistsInsensative( var aFileName : PChar ): boolean;
   begin
-{$IFDEF fpc}
+{$IFDEF LINUX} // eddie: Changed FPC to LINUX: Windows and Mac OS X dont have case sensitive file systems
     result := true;
 
     if FileExists( aFileName ) then
