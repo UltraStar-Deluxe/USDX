@@ -457,25 +457,25 @@ Begin
           if (Event.key.keysym.sym = SDLK_KP_ENTER) then
             Event.key.keysym.sym := SDLK_RETURN;
 
-	  if (Event.key.keysym.sym = SDLK_F11 ) (*OR
-	     (Event.key.keysym.sym = KMOD_ALT and SDLK_RETURN )*)then // toggle full screen
-	  begin
-            writeln( 'Toggle FullScreen' );
+          if (Event.key.keysym.sym = SDLK_F11 ) OR
+             (Event.key.keysym.sym = KMOD_ALT and SDLK_RETURN ) then // toggle full screen
+          begin
             Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
 
-	    if boolean( Ini.FullScreen ) then
-	    begin
-   	      SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
-	      SDL_ShowCursor(0);				
-	    end
- 	    else
- 	    begin
-	      SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
-	      SDL_ShowCursor(1);		
-	    end;
+            if boolean( Ini.FullScreen ) then
+            begin
+              SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+              SDL_ShowCursor(0);
+            end
+            else
+            begin
+              SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+              SDL_ShowCursor(1);
+            end;
 
-	    glViewPort(0, 0, 1600, 1200);
-          end;
+	          glViewPort(0, 0, ScreenW, ScreenH);
+          end
+          else
 
           //ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
           if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
