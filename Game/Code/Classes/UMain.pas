@@ -457,10 +457,29 @@ Begin
           if (Event.key.keysym.sym = SDLK_KP_ENTER) then
             Event.key.keysym.sym := SDLK_RETURN;
 
+	  if (Event.key.keysym.sym = SDLK_F11 ) (*OR
+	     (Event.key.keysym.sym = KMOD_ALT and SDLK_RETURN )*)then // toggle full screen
+	  begin
+            writeln( 'Toggle FullScreen' );
+            Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
+
+	    if boolean( Ini.FullScreen ) then
+	    begin
+   	      SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+	      SDL_ShowCursor(0);				
+	    end
+ 	    else
+ 	    begin
+	      SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+	      SDL_ShowCursor(1);		
+	    end;
+
+	    glViewPort(0, 0, 1600, 1200);
+          end;
+
           //ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
           if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
             Display.ScreenShot
-
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
           else if (ScreenPopupError <> NIL) and (ScreenPopupError.Visible) then

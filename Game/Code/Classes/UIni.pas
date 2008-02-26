@@ -191,6 +191,7 @@ var
   S:          string;
   Modes:      PPSDL_Rect;
   SR: TSearchRec; //Skin List Patch
+  lFileName : String;
 
   function GetFileName (S: String):String;
   begin
@@ -201,14 +202,19 @@ var
 begin
   GamePath := Platform.GetGameUserPath;
 
+  Log.LogStatus( 'GamePath : ' +GamePath , '' );
+
   if (Params.ConfigFile <> '') then
     try
-      IniFile := TMemIniFile.Create(Params.ConfigFile);
+      lFileName := Params.ConfigFile;
     except
-      IniFile := TMemIniFile.Create(GamePath + 'config.ini');
+      lFileName := GamePath + 'config.ini';
     end
   else
-    IniFile := TMemIniFile.Create(GamePath + 'config.ini');
+    lFileName := GamePath + 'config.ini';
+
+  Log.LogStatus( 'Using config : ' +lFileName , '');
+  IniFile := TMemIniFile.Create( lFileName );
 
 
   // Name
@@ -273,19 +279,37 @@ begin
   // Resolution
   SetLength(IResolution, 0);
 
-  Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN); // Check if there are any modes available
-  while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
+  Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE ) ; // Check if there are any modes available
+//  Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN or SDL_RESIZABLE); // Check if there are any modes available
+  if integer( Modes ) = 0 then
   begin
-    SetLength(IResolution, Length(IResolution) + 1);
-    IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
-    Inc(Modes);
+    Log.LogStatus( 'No resolutions Found' , 'Video');
+  end
+  else
+  if integer( Modes ) = -1 then
+  begin
+    Log.LogStatus( 'ANY resolutions can be used' , 'Video');
+    // Interesting bug here on linux ...
+    // https://bugs.launchpad.net/ubuntu/+source/libsdl1.2/+bug/14044
+  end
+  else
+  begin
+    while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
+    begin
+      Log.LogStatus( 'Found Video Mode : ' + IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h) , 'Video');
+      SetLength(IResolution, Length(IResolution) + 1);
+      IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
+      Inc(Modes);
+    end;
   end;
+ 
 
   // if no modes were set, then failback to 800x600
   // as per http://sourceforge.net/forum/message.php?msg_id=4544965
   // THANKS : linnex at users.sourceforge.net
   if Length(IResolution) < 1 then
   begin
+    Log.LogStatus( 'Found Video Mode : NONE !!! ( Defaulted to 800 x 600 )', 'Video');
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := IntToStr(800) + 'x' + IntToStr(600);
     Log.LogStatus('SDL_ListModes Defaulted Res To : ' + IResolution[High(IResolution)] , 'Graphics - Resolutions');
