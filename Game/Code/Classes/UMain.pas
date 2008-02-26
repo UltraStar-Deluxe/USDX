@@ -444,6 +444,13 @@ Begin
             //
           End;
         End; // With}
+      SDL_VIDEORESIZE:
+  	begin
+  	  ScreenW := Event.resize.w;
+	  ScreenH := Event.resize.h;
+
+	  screen  := SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+	end;
       SDL_KEYDOWN:
         begin
           // remap the "keypad enter" key to the "standard enter" key

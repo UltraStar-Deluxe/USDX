@@ -612,12 +612,12 @@ begin
   if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
-    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL)
+    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE)
   end
   else
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Full Screen');
-    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN );
     SDL_ShowCursor(0);
   end;
   
