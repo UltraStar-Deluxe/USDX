@@ -457,8 +457,9 @@ Begin
           if (Event.key.keysym.sym = SDLK_KP_ENTER) then
             Event.key.keysym.sym := SDLK_RETURN;
 
-          if (Event.key.keysym.sym = SDLK_F11 ) OR
-             (Event.key.keysym.sym = KMOD_ALT and SDLK_RETURN ) then // toggle full screen
+          if (Event.key.keysym.sym = SDLK_F11) or
+             ((Event.key.keysym.sym = SDLK_RETURN) and
+              ((Event.key.keysym.modifier and KMOD_ALT) <> 0)) then // toggle full screen
           begin
             Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
 
