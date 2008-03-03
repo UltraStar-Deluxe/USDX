@@ -152,6 +152,7 @@ end;
 {$ENDIF}
 
 {$IFDEF FPC}
+// FIXME: already exists in FPC
 function MaxValue(const Data: array of Double): Double;
 var
   I: Integer;
@@ -162,6 +163,7 @@ begin
       Result := Data[I];
 end;
 
+// FIXME: already exists in FPC
 function MinValue(const Data: array of Double): Double;
 var
   I: Integer;

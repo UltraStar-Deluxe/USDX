@@ -525,7 +525,7 @@ begin
   //SDL_WaitThread(LoadingThread, I);
 //  SDL_DestroyMutex(Mutex);
 
-  Display.ActualScreen^.FadeTo( @ScreenMain );
+  Display.CurrentScreen^.FadeTo( @ScreenMain );
 
   Log.BenchmarkEnd(2);
   Log.LogBenchmark('--> Loading Screens', 2);
@@ -644,7 +644,7 @@ begin
   ScreenLoading := TScreenLoading.Create;
   ScreenLoading.onShow;
   
-  Display.ActualScreen := @ScreenLoading;
+  Display.CurrentScreen := @ScreenLoading;
 
   swapbuffers;
 
@@ -658,7 +658,7 @@ procedure LoadScreens;
 begin
 {  ScreenLoading := TScreenLoading.Create;
   ScreenLoading.onShow;
-  Display.ActualScreen := @ScreenLoading;
+  Display.CurrentScreen := @ScreenLoading;
   ScreenLoading.Draw;
   Display.Draw;
   SwapBuffers;

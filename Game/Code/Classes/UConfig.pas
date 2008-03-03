@@ -78,7 +78,7 @@ const
   // with IncludeConstants undefined and in UConfig.pas with
   // IncludeConstants defined (see the note above).
   {$DEFINE IncludeConstants}
-  
+
   // include config-file (defines + constants)
   {$IF Defined(MSWindows)}
     {$I ../config-win.inc}
@@ -96,7 +96,16 @@ const
   VERSION_MINOR   = 1000;
   VERSION_RELEASE = 1;
 
-  (* 
+  (*
+   * Current version of UltraStar Deluxe
+   *)
+  USDX_VERSION_MAJOR   = 1;
+  USDX_VERSION_MINOR   = 1;
+  USDX_VERSION_RELEASE = 0;
+  USDX_VERSION_STATE   = 'Alpha';
+  USDX_STRING = 'UltraStar Deluxe';
+
+  (*
    * FPC_VERSION is already defined as a macro by FPC itself.
    * You should use the built-in macros
    *   FPC_VERSION (=PPC_MAJOR)
@@ -181,6 +190,30 @@ const
                       (PORTAUDIO_VERSION_RELEASE * VERSION_RELEASE);
   {$ENDIF}
 
+function USDXVersionStr(): string;
+function USDXShortVersionStr(): string;
+
 implementation
+
+uses
+  StrUtils;
+
+function USDXShortVersionStr(): string;
+begin
+  Result :=
+    USDX_STRING +
+    IfThen(USDX_VERSION_STATE <> '', ' '+USDX_VERSION_STATE);
+end;
+
+function USDXVersionStr(): string;
+begin
+  Result :=
+    USDX_STRING + ' V ' +
+    IntToStr(USDX_VERSION_MAJOR) + '.' +
+    IntToStr(USDX_VERSION_MINOR) + '.' +
+    IntToStr(USDX_VERSION_RELEASE) +
+    IfThen(USDX_VERSION_STATE <> '', ' '+USDX_VERSION_STATE) +
+    ' Build';
+end;
 
 end.

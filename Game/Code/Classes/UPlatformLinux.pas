@@ -161,11 +161,13 @@ begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
     result := ExtractFilePath(ParamStr(0))
   else
+  begin
 {$IFDEF UseLocalDirs}
     result := ExtractFilePath(ParamStr(0));
 {$ELSE}
     result := SharedPath+'/';
 {$ENDIF}
+  end;
 end;
 
 function TPlatformLinux.GetGameUserPath   : WideString;
@@ -173,11 +175,13 @@ begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
     result := ExtractFilePath(ParamStr(0))
   else
+  begin
 {$IFDEF UseLocalDirs}
     result := ExtractFilePath(ParamStr(0));
 {$ELSE}
     result := get_homedir()+'/.'+PathSuffix+'/';
 {$ENDIF}
+  end;
 end;
 
 function TPlatformLinux.get_homedir(): string;

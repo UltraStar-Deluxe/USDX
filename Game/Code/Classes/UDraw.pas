@@ -59,27 +59,23 @@ const
 
 implementation
 
-uses {$IFDEF Win32}
-     windows,
-     {$ELSE}
-     lclintf,
-     {$ENDIF}
-     OpenGL12,
-     UGraphic,
-     SysUtils,
-     UMusic,
-     URecord,
-     ULog,
-     UScreenSing,
-     UScreenSingModi,
-     ULyrics,
-     UMain,
-     TextGL,
-     UTexture,
-     UDrawTexture,
-     UIni,
-     Math,
-     UDLLManager;
+uses
+  OpenGL12,
+  UGraphic,
+  SysUtils,
+  UMusic,
+  URecord,
+  ULog,
+  UScreenSing,
+  UScreenSingModi,
+  ULyrics,
+  UMain,
+  TextGL,
+  UTexture,
+  UDrawTexture,
+  UIni,
+  Math,
+  UDLLManager;
 
 procedure SingDrawBackground;
 var

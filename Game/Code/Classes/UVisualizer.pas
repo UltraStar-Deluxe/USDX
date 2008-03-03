@@ -124,10 +124,10 @@ begin
 
   {$IFDEF UseTexture}
   glGenTextures(1, PglUint(@VisualTex));
-	glBindTexture(GL_TEXTURE_2D, VisualTex);
+  glBindTexture(GL_TEXTURE_2D, VisualTex);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   {$ENDIF}
 end;
 
@@ -175,7 +175,7 @@ end;
 procedure TVideoPlayback_ProjectM.SaveOpenGLState();
 begin
   // save all OpenGL state-machine attributes
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+  glPushAttrib(GL_ALL_ATTRIB_BITS);
 
   // save projection-matrix
   glMatrixMode(GL_PROJECTION);
@@ -237,8 +237,8 @@ begin
                          presetsDir, fontsDir);
   //initResult := projectM_initRenderToTexture(pm);
 
-	SaveOpenGLState();
-	pm.ResetGL(ScreenW, ScreenH);
+  SaveOpenGLState();
+  pm.ResetGL(ScreenW, ScreenH);
   RestoreOpenGLState();
 end;
 
@@ -272,8 +272,8 @@ begin
   pm.AddPCM16Data(PSmallint(@PcmData), nSamples);
 
   // store OpenGL state (might be messed up otherwise)
-	SaveOpenGLState();
-	pm.ResetGL(ScreenW, ScreenH);
+  SaveOpenGLState();
+  pm.ResetGL(ScreenW, ScreenH);
 
   //glGetIntegerv(GL_PROJECTION_STACK_DEPTH, @stackDepth);
   //writeln('StackDepth0: ' + inttostr(stackDepth));
