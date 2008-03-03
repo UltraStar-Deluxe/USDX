@@ -39,7 +39,8 @@ type
       BassDeviceID: integer; // DeviceID used by BASS
       RecordStream: HSTREAM;
 
-      procedure Start(); override;
+      function Init(): boolean;
+      function Start(): boolean; override;
       procedure Stop();  override;
   end;
 
@@ -68,17 +69,9 @@ end;
 
 { TBassInputDevice }
 
-{*
- * Start input-capturing on this device.
- * TODO: call BASS_RecordInit only once
- *}
-procedure TBassInputDevice.Start();
-const
-  captureFreq = 44100;
+function TBassInputDevice.Init(): boolean;
 begin
-  // recording already started -> stop first
-  if (RecordStream <> 0) then
-    Stop();
+  Result := false;
 
   // TODO: Call once. Otherwise it's to slow
   if not BASS_RecordInit(BassDeviceID) then
@@ -88,16 +81,49 @@ begin
     Exit;
   end;
 
-  SampleRate := captureFreq;
+  Result := true;
+end;
 
-  // capture in 44.1kHz/stereo/16bit and a 20ms callback period
-  RecordStream := BASS_RecordStart(captureFreq, 2, MakeLong(0, 20),
+{*
+ * Start input-capturing on this device.
+ * TODO: call BASS_RecordInit only once
+ *}
+function TBassInputDevice.Start(): boolean;
+var
+  flags: Word;
+const
+  latency = 20; // 20ms callback period (= latency)
+begin
+  Result := false;
+
+  // recording already started -> stop first
+  if (RecordStream <> 0) then
+    Stop();
+
+  if not Init() then
+    Exit;
+
+  case AudioFormat.Format of
+    asfS16:   flags := 0;
+    asfFloat: flags := BASS_SAMPLE_FLOAT;
+    asfU8:    flags := BASS_SAMPLE_8BITS;
+    else begin
+      Log.LogError('Unhandled sample-format', 'TBassInputDevice.Start');
+      Exit;
+    end;
+  end;
+
+  // start capturing
+  RecordStream := BASS_RecordStart(AudioFormat.SampleRate, AudioFormat.Channels,
+                    MakeLong(flags, latency),
                     @MicrophoneCallback, DeviceIndex);
   if (RecordStream = 0) then
   begin
     BASS_RecordFree;
     Exit;
   end;
+
+  Result := true;
 end;
 
 {*
@@ -130,6 +156,7 @@ var
   BassDevice:   TBassInputDevice;
   DeviceIndex:  integer;
   SourceIndex:  integer;
+  RecordInfo: BASS_RECORDINFO;
 begin
   result := false;
 
@@ -162,9 +189,31 @@ begin
       BassDevice.BassDeviceID := BassDeviceID;
       BassDevice.Description := UnifyDeviceName(Descr, DeviceIndex);
 
+      // retrieve recording device info
+      BASS_RecordGetInfo(RecordInfo);
+
+      // FIXME: does BASS use LSB/MSB or system integer values for 16bit?
+
+      // check if BASS has capture-freq. info
+      if (RecordInfo.freq > 0) then
+      begin
+        // use current input sample rate (available only on Windows Vista and OSX).
+        // Recording at this rate will give the best quality and performance, as no resampling is required.
+        BassDevice.AudioFormat := TAudioFormatInfo.Create(2, RecordInfo.freq, asfS16)
+      end
+      else
+      begin
+        // BASS does not provide an explizit input channel count (except BASS_RECORDINFO.formats)
+        // but it doesn't fail if we use stereo input on a mono device
+        // -> use stereo by default
+        BassDevice.AudioFormat := TAudioFormatInfo.Create(2, 44100, asfS16)
+      end;
+
+      SetLength(BassDevice.CaptureChannel, BassDevice.AudioFormat.Channels);
+
       // get input sources
       SourceIndex := 0;
-      BassDevice.MicInput := 0;
+      BassDevice.MicSource := 0;
 
       // process each input
       while true do
@@ -181,7 +230,7 @@ begin
         Flags := BASS_RecordGetInput(SourceIndex);
         if ((Flags <> -1) and ((Flags and BASS_INPUT_TYPE_MIC) <> 0)) then
         begin
-          BassDevice.MicInput := SourceIndex;
+          BassDevice.MicSource := SourceIndex;
         end;
 
         Inc(SourceIndex);

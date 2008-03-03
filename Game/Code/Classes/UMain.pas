@@ -9,35 +9,35 @@ interface
 {$I switches.inc}
 
 uses
-    SDL,
-    UGraphic,
-    UMusic,
-    URecord,
-    UTime,
-    SysUtils,
-    UDisplay,
-    UIni,
-    ULog,
-    ULyrics,
-    UScreenSing,
-    USong,
-    OpenGL12,
-    {$IFDEF UseSerialPort}
-    zlportio {you can disable it and all PortWriteB calls},
-    {$ENDIF}
-    ULCD,
-    ULight,
-    UThemes;
+  SDL,
+  UGraphic,
+  UMusic,
+  URecord,
+  UTime,
+  SysUtils,
+  UDisplay,
+  UIni,
+  ULog,
+  ULyrics,
+  UScreenSing,
+  USong,
+  OpenGL12,
+  {$IFDEF UseSerialPort}
+  zlportio, //you can disable it and all PortWriteB calls
+  {$ENDIF}
+  ULCD,
+  ULight,
+  UThemes;
 
 type
   TPlayer = record
     Name:         string;
 
-    //Index in Teaminfo record
+    // Index in Teaminfo record
     TeamID:       Byte;
     PlayerID:     Byte;
 
-    //Scores
+    // Scores
     Score:        real;
     ScoreLine:    real;
     ScoreGolden:  real;
@@ -47,41 +47,31 @@ type
     ScoreGoldenI: integer;
     ScoreTotalI:  integer;
 
-
-
-    //LineBonus Mod
+    // LineBonus Mod
     ScoreLast:    Real;//Last Line Score
 
-    //PerfectLineTwinkle Mod (effect)
+    // PerfectLineTwinkle Mod (effect)
     LastSentencePerfect: Boolean;
-    //PerfectLineTwinkle Mod end
 
-
-//    Meter:        real;
+    //Meter:        real;
 
     HighNut:  integer;
     IlNut:    integer;
     Nuta:     array of record
       Start:      integer;
       Dlugosc:    integer;
-      Detekt:     real;     // dokladne miejsce, w ktorym wykryto ta nute
+      Detekt:     real;     // accurate place, detected in the note
       Ton:        real;
-      Perfect:    boolean; // true if the note matches the original one, lit the star
-
-
+      Perfect:    boolean;  // true if the note matches the original one, lit the star
 
       // Half size Notes Patch
       Hit:        boolean; // true if the note Hits the Line
-      //end Half size Notes Patch
-
-
-
     end;
   end;
 
 
 var
-  //Absolute Paths
+  // Absolute Paths
   GamePath:         string;
   SoundPath:        string;
   SongPath:         string;
@@ -105,7 +95,7 @@ var
   FileName: string;
   Restart:  boolean;
 
-  // gracz i jego nuty
+  // player and music info
   Player:       array of TPlayer;
   PlayersPlay:  integer;
 
@@ -129,23 +119,32 @@ procedure ClearScores(PlayerNum: integer);
 
 implementation
 
-uses USongs,
-     UJoystick,
-     math,
-     UCommandLine, ULanguage, SDL_ttf,
-     USkins, UCovers, UCatCovers, UDataBase, UPlaylist, UDLLManager,
-  	 UParty, UCore, UGraphicClasses, UPluginDefs, UPlatform;
+uses
+  USongs,
+  UJoystick,
+  math,
+  UCommandLine,
+  ULanguage,
+  SDL_ttf,
+  USkins,
+  UCovers,
+  UCatCovers,
+  UDataBase,
+  UPlaylist,
+  UDLLManager,
+  UParty,
+  UConfig,
+  UCore,
+  UGraphicClasses,
+  UPluginDefs,
+  UPlatform;
 
-const
-  Version = 'UltraStar Deluxe V 1.10 Alpha Build';
-
-Procedure Main;
+procedure Main;
 var
   WndTitle: string;
 begin
   try
-
-    WndTitle := Version;
+    WndTitle := USDXVersionStr;
 
     if Platform.TerminateIfAlreadyRunning( {var} WndTitle) then
       Exit;
@@ -161,7 +160,7 @@ begin
     // Log + Benchmark
     Log := TLog.Create;
     Log.Title := WndTitle;
-    Log.Enabled := Not Params.NoLog;
+    Log.Enabled := not Params.NoLog;
     Log.BenchmarkStart(0);
 
     // Language
@@ -170,8 +169,8 @@ begin
     InitializePaths;
     Log.LogStatus('Load Language', 'Initialization');
     Language := TLanguage.Create;
-    //Add Const Values:
-      Language.AddConst('US_VERSION', Version);
+    // Add Const Values:
+    Language.AddConst('US_VERSION', USDXVersionStr);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Language', 1);
 
@@ -185,7 +184,7 @@ begin
     // SDL_ttf
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize SDL_ttf', 'Initialization');
-    TTF_Init();                      //ttf_quit();
+    TTF_Init();
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing SDL_ttf', 1);
 
@@ -223,8 +222,9 @@ begin
     Log.BenchmarkStart(1);
     Log.LogStatus('Load LCD', 'Initialization');
     LCD := TLCD.Create;
-    if Ini.LPT = 1 then begin
-  //  LCD.HalfInterface := true;
+    if Ini.LPT = 1 then
+    begin
+      //LCD.HalfInterface := true;
       LCD.Enable;
       LCD.Clear;
       LCD.WriteText(1, '  UltraStar    ');
@@ -237,7 +237,8 @@ begin
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Light', 'Initialization');
     Light := TLight.Create;
-    if Ini.LPT = 2 then begin
+    if Ini.LPT = 2 then
+    begin
       Light.Enable;
     end;
     Log.BenchmarkEnd(1);
@@ -270,7 +271,7 @@ begin
     //Log.BenchmarkStart(1);
     Log.LogStatus('Creating Song Array', 'Initialization');
     Songs := TSongs.Create;
-//    Songs.LoadSongList;
+    //Songs.LoadSongList;
 
     Log.LogStatus('Creating 2nd Song Array', 'Initialization');
     CatSongs := TCatSongs.Create;
@@ -281,7 +282,7 @@ begin
     // PluginManager
     Log.BenchmarkStart(1);
     Log.LogStatus('PluginManager', 'Initialization');
-    DLLMan := TDLLMan.Create;   //Load PluginList
+    DLLMan := TDLLMan.Create;   // Load PluginList
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading PluginManager', 1);
 
@@ -313,14 +314,14 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading DataBase System', 1);
 
-    //Playlist Manager
+    // Playlist Manager
     Log.BenchmarkStart(1);
     Log.LogStatus('Playlist Manager', 'Initialization');
     PlaylistMan := TPlaylistManager.Create;
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Playlist Manager', 1);
 
-    //GoldenStarsTwinkleMod
+    // GoldenStarsTwinkleMod
     Log.BenchmarkStart(1);
     Log.LogStatus('Effect Manager', 'Initialization');
     GoldenRec := TEffectManager.Create;
@@ -332,7 +333,7 @@ begin
     begin
       Log.BenchmarkStart(1);
       Log.LogStatus('Initialize Joystick', 'Initialization');
-    	Joy := TJoy.Create;
+      Joy := TJoy.Create;
       Log.BenchmarkEnd(1);
       Log.LogBenchmark('Initializing Joystick', 1);
     end;
@@ -341,7 +342,13 @@ begin
     Log.LogBenchmark('Loading Time', 0);
 
     Log.LogError('Creating Core');
-    Core := TCore.Create('Ultrastar Deluxe Beta', MakeVersion(1,1,0, chr(0)));
+    Core := TCore.Create(
+      USDXShortVersionStr,
+      MakeVersion(USDX_VERSION_MAJOR,
+                  USDX_VERSION_MINOR,
+                  USDX_VERSION_RELEASE,
+                  chr(0))
+    );
 
     Log.LogError('Running Core');
     Core.Run;
@@ -349,10 +356,6 @@ begin
     //------------------------------
     //Start- Mainloop
     //------------------------------
-    //Music.SetLoop(true);
-    //Music.SetVolume(50);
-    //Music.Open(SkinPath + 'Menu Music 3.mp3');
-    //Music.Play;
     Log.LogStatus('Main Loop', 'Initialization');
     MainLoop;
 
@@ -360,16 +363,27 @@ begin
     //------------------------------
     //Finish Application
     //------------------------------
-    
+
+    // TODO:
+    // call an uninitialize routine for every initialize step
+    // or at least use the corresponding Free-Methods
+
+    UnloadOpenGL;
+    //TTF_quit();
     SDL_Quit();
-    
+
     {$ifdef WIN32}
-      if Ini.LPT = 1 then LCD.Clear;
-      if Ini.LPT = 2 then Light.TurnOff;
+      if assigned(LCD) and (Ini.LPT = 1) then
+        LCD.Clear;
+      if assigned(Light) and (Ini.LPT = 2) then
+        Light.TurnOff;
     {$endif}
 
-    Log.LogStatus('Main Loop', 'Finished');
-    Log.Free;
+    if assigned(Log) then
+    begin
+      Log.LogStatus('Main Loop', 'Finished');
+      Log.Free;
+    end;
   end;
 end;
 
@@ -377,80 +391,77 @@ procedure MainLoop;
 var
   Delay:    integer;
 begin
-  try
-    Delay := 0;
-    SDL_EnableKeyRepeat(125, 125);
+  Delay := 0;
+  SDL_EnableKeyRepeat(125, 125);
 
-    CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
-    While not Done do
-    Begin
-      // joypad
-      if (Ini.Joypad = 1) OR (Params.Joypad) then
-        Joy.Update;
+  CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
+  while not Done do
+  begin
+    // joypad
+    if (Ini.Joypad = 1) or (Params.Joypad) then
+      Joy.Update;
 
-      // keyboard events
-      CheckEvents;
+    // keyboard events
+    CheckEvents;
 
-      // display
-      done := not Display.Draw;
-      SwapBuffers;
+    // display
+    done := not Display.Draw;
+    SwapBuffers;
 
-      // light
-      Light.Refresh;
+    // light
+    Light.Refresh;
 
-      // delay
-      CountMidTime;
+    // delay
+    CountMidTime;
 
-      Delay := Floor(1000 / 100 - 1000 * TimeMid);
+    Delay := Floor(1000 / 100 - 1000 * TimeMid);
 
-      if Delay >= 1 then
-        SDL_Delay(Delay); // dynamic, maximum is 100 fps
+    if Delay >= 1 then
+      SDL_Delay(Delay); // dynamic, maximum is 100 fps
 
-      CountSkipTime;
+    CountSkipTime;
 
-      // reinitialization of graphics
-      if Restart then
-      begin
-        Reinitialize3D;
-        Restart := false;
-      end;
+    // reinitialization of graphics
+    if Restart then
+    begin
+      Reinitialize3D;
+      Restart := false;
+    end;
 
-    End;
-    
-  finally
-    UnloadOpenGL;
   end;
 End;
 
-Procedure CheckEvents;
-//var
-//  p:    pointer;
-Begin
-  if not Assigned(Display.NextScreen) then
-  While SDL_PollEvent( @event ) = 1 Do
-  Begin
-//    beep;
-    Case Event.type_ Of
-      SDL_QUITEV: begin
+procedure CheckEvents;
+begin
+  if Assigned(Display.NextScreen) then
+    Exit;
+    
+  while SDL_PollEvent( @event ) = 1 do
+  begin
+    case Event.type_ of
+      SDL_QUITEV:
+      begin
         Display.Fade := 0;
         Display.NextScreenWithCheck := nil;
         Display.CheckOK := True;
       end;
-{      SDL_MOUSEBUTTONDOWN:
-        With Event.button Do
-        Begin
-          If State = SDL_BUTTON_LEFT Then
-          Begin
+      {
+      SDL_MOUSEBUTTONDOWN:
+        with Event.button Do
+        begin
+          if State = SDL_BUTTON_LEFT Then
+          begin
             //
-          End;
-        End; // With}
+          end;
+        end;
+      }
       SDL_VIDEORESIZE:
-  	begin
-  	  ScreenW := Event.resize.w;
-	  ScreenH := Event.resize.h;
+      begin
+        ScreenW := Event.resize.w;
+        ScreenH := Event.resize.h;
 
-	  screen  := SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
-	end;
+        screen  := SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+      end;
       SDL_KEYDOWN:
         begin
           // remap the "keypad enter" key to the "standard enter" key
@@ -474,35 +485,32 @@ Begin
               SDL_ShowCursor(1);
             end;
 
-	          glViewPort(0, 0, ScreenW, ScreenH);
+            glViewPort(0, 0, ScreenW, ScreenH);
           end
-          else
-
-          //ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
-          if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
-            Display.ScreenShot
+          // ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
+          else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
+            Display.ScreenShot
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
-          else if (ScreenPopupError <> NIL) and (ScreenPopupError.Visible) then
+          else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
             done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
-          else if (ScreenPopupCheck <> NIL) AND (ScreenPopupCheck.Visible) then
+          else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
             done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
           // end of popup hack
-
           else
           begin
             // check for Screen want to Exit
-            done := Not Display.ActualScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True);
+            done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True);
 
-            //If Screen wants to Exit
+            // If Screen wants to Exit
             if done then
             begin
-              //If Question Option is enabled then Show Exit Popup
+              // If Question Option is enabled then Show Exit Popup
               if (Ini.AskbeforeDel = 1) then
               begin
-                Display.ActualScreen^.CheckFadeTo(NIL,'MSG_QUIT_USDX');
+                Display.CurrentScreen^.CheckFadeTo(nil,'MSG_QUIT_USDX');
               end
-              else //When asking for exit is disabled then simply exit
+              else // When asking for exit is disabled then simply exit
               begin
                 Display.Fade := 0;
                 Display.NextScreenWithCheck := nil;
@@ -510,19 +518,21 @@ Begin
               end;
             end;
 
-          end;            //        if (Not Display.ActualScreen^.ParseInput(Event.key.keysym.scancode, True)) then
+          end;
         end;
-//      SDL_JOYAXISMOTION:
-//        begin
-//          beep
-//        end;
+      {
+      SDL_JOYAXISMOTION:
+        begin
+          beep
+        end;
+      }
       SDL_JOYBUTTONDOWN:
         begin
           beep
         end;
-    End; // Case Event.type_
-  End; // While
-End; // CheckEvents
+    end; // Case
+  end; // While
+end;
 
 function GetTimeForBeats(BPM, Beats: real): real;
 begin
@@ -538,21 +548,27 @@ procedure GetMidBeatSub(BPMNum: integer; var Time: real; var CurBeat: real);
 var
   NewTime:  real;
 begin
-  if High(CurrentSong.BPM) = BPMNum then begin
+  if High(CurrentSong.BPM) = BPMNum then
+  begin
     // last BPM
     CurBeat := CurrentSong.BPM[BPMNum].StartBeat + GetBeats(CurrentSong.BPM[BPMNum].BPM, Time);
     Time := 0;
-  end else begin
+  end
+  else
+  begin
     // not last BPM
     // count how much time is it for start of the new BPM and store it in NewTime
     NewTime := GetTimeForBeats(CurrentSong.BPM[BPMNum].BPM, CurrentSong.BPM[BPMNum+1].StartBeat - CurrentSong.BPM[BPMNum].StartBeat);
 
     // compare it to remaining time
-    if (Time - NewTime) > 0 then begin
+    if (Time - NewTime) > 0 then
+    begin
       // there is still remaining time
       CurBeat := CurrentSong.BPM[BPMNum].StartBeat;
       Time := Time - NewTime;
-    end else begin
+    end
+    else
+    begin
       // there is no remaining time
       CurBeat := CurrentSong.BPM[BPMNum].StartBeat + GetBeats(CurrentSong.BPM[BPMNum].BPM, Time);
       Time := 0;
@@ -569,7 +585,8 @@ var
 //  TempTime: real;
 begin
   Result := 0;
-  if Length(CurrentSong.BPM) = 1 then Result := Time * CurrentSong.BPM[0].BPM / 60;
+  if Length(CurrentSong.BPM) = 1 then
+    Result := Time * CurrentSong.BPM[0].BPM / 60;
 
   (* 2 BPMs *)
 {  if Length(CurrentSong.BPM) > 1 then begin
@@ -583,24 +600,27 @@ begin
       TopBeat := GetBeats(CurrentSong.BPM[1].BPM, Time);
       Result := CurBeat + TopBeat;
 
-    end else begin
+    end
+    else
+    begin
       (* pierwszy przedzial *)
       Result := TopBeat;
     end;
-  end; // if}
+  end;}
 
   (* more BPMs *)
-  if Length(CurrentSong.BPM) > 1 then begin
-
+  if Length(CurrentSong.BPM) > 1 then
+  begin
     CurBeat := 0;
     CurBPM := 0;
-    while (Time > 0) do begin
+    while (Time > 0) do
+    begin
       GetMidBeatSub(CurBPM, Time, CurBeat);
       Inc(CurBPM);
     end;
 
     Result := CurBeat;
-  end; // if
+  end;
 end;
 
 function GetTimeFromBeat(Beat: integer): real;
@@ -608,29 +628,42 @@ var
   CurBPM:   integer;
 begin
   Result := 0;
-  if Length(CurrentSong.BPM) = 1 then Result := CurrentSong.GAP / 1000 + Beat * 60 / CurrentSong.BPM[0].BPM;
+  if Length(CurrentSong.BPM) = 1 then
+    Result := CurrentSong.GAP / 1000 + Beat * 60 / CurrentSong.BPM[0].BPM;
 
   (* more BPMs *)
-  if Length(CurrentSong.BPM) > 1 then begin
+  if Length(CurrentSong.BPM) > 1 then
+  begin
     Result := CurrentSong.GAP / 1000;
     CurBPM := 0;
-    while (CurBPM <= High(CurrentSong.BPM)) and (Beat > CurrentSong.BPM[CurBPM].StartBeat) do begin
-      if (CurBPM < High(CurrentSong.BPM)) and (Beat >= CurrentSong.BPM[CurBPM+1].StartBeat) then begin
+    while (CurBPM <= High(CurrentSong.BPM)) and
+          (Beat > CurrentSong.BPM[CurBPM].StartBeat) do
+    begin
+      if (CurBPM < High(CurrentSong.BPM)) and
+         (Beat >= CurrentSong.BPM[CurBPM+1].StartBeat) then
+      begin
         // full range
-        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) * (CurrentSong.BPM[CurBPM+1].StartBeat - CurrentSong.BPM[CurBPM].StartBeat);
+        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) *
+                           (CurrentSong.BPM[CurBPM+1].StartBeat - CurrentSong.BPM[CurBPM].StartBeat);
       end;
 
-      if (CurBPM = High(CurrentSong.BPM)) or (Beat < CurrentSong.BPM[CurBPM+1].StartBeat) then begin
+      if (CurBPM = High(CurrentSong.BPM)) or
+         (Beat < CurrentSong.BPM[CurBPM+1].StartBeat) then
+      begin
         // in the middle
-        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) * (Beat - CurrentSong.BPM[CurBPM].StartBeat);
+        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) *
+                           (Beat - CurrentSong.BPM[CurBPM].StartBeat);
       end;
       Inc(CurBPM);
     end;
 
-{    while (Time > 0) do begin
+    {
+    while (Time > 0) do
+    begin
       GetMidBeatSub(CurBPM, Time, CurBeat);
       Inc(CurBPM);
-    end;}
+    end;
+    }
   end; // if}
 end;
 
@@ -662,18 +695,23 @@ begin
   Czas.FracBeatD := Frac(Czas.MidBeatD);
 
   // sentences routines
-  for PetGr := 0 to 0 do begin;//High(Gracz) do begin
+  for PetGr := 0 to 0 do //High(Gracz)
+  begin;
     CP := PetGr;
-    // ustawianie starej czesci
+    // ustawianie starej parts
     Czas.OldCzesc := Czesci[CP].Akt;
 
-    // wybieranie aktualnej czesci
+    // wybieranie aktualnej parts
     for Pet := 0 to Czesci[CP].High do
-      if Czas.AktBeat >= Czesci[CP].Czesc[Pet].Start then Czesci[CP].Akt := Pet;
+    begin
+      if Czas.AktBeat >= Czesci[CP].Czesc[Pet].Start then
+        Czesci[CP].Akt := Pet;
+    end;
 
     // czysczenie nut gracza, gdy to jest nowa plansza
     // (optymizacja raz na halfbeat jest zla)
-    if Czesci[CP].Akt <> Czas.OldCzesc then NewSentence(Sender);
+    if Czesci[CP].Akt <> Czas.OldCzesc then
+      NewSentence(Sender);
 
   end; // for PetGr
 
@@ -696,9 +734,13 @@ begin
   // plynnie przesuwa text
   Done := 1;
   for N := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
-    if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Start <= Czas.MidBeat)
-    and (Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Start + Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Dlugosc >= Czas.MidBeat) then
+  begin
+    if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Start <= Czas.MidBeat) and
+       (Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Start + Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Dlugosc >= Czas.MidBeat) then
+    begin
       Done := (Czas.MidBeat - Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Start) / (Czesci[0].Czesc[Czesci[0].Akt].Nuta[N].Dlugosc);
+    end;
+  end;
 
   N := Czesci[0].Czesc[Czesci[0].Akt].HighNut;
 
@@ -727,20 +769,22 @@ var
 G: Integer;
 begin
   // czyszczenie nut graczy
-  for G := 0 to High(Player) do begin
+  for G := 0 to High(Player) do
+  begin
     Player[G].IlNut := 0;
     Player[G].HighNut := -1;
     SetLength(Player[G].Nuta, 0);
   end;
 
   // Add Words to Lyrics
-  with Sender do begin
+  with Sender do
+  begin
     {LyricMain.AddCzesc(Czesci[0].Akt);
     if Czesci[0].Akt < Czesci[0].High then
       LyricSub.AddCzesc(Czesci[0].Akt+1)
     else
       LyricSub.Clear;}
-    while (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Czesci[0].Czesc)) do
+    while (not Lyrics.LineinQueue) and (Lyrics.LineCounter <= High(Czesci[0].Czesc)) do
       Lyrics.AddLine(@Czesci[0].Czesc[Lyrics.LineCounter]);
   end;
 
@@ -758,7 +802,8 @@ begin
   // ustawia zaznaczenie tekstu
 //  SingScreen.LyricMain.Selected := -1;
   for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
-    if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = Czas.AktBeat) then begin
+    if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = Czas.AktBeat) then
+    begin
       // operates on currently beated note
       //Todo: Lyrics
       //Sender.LyricMain.Selected := Pet;
@@ -768,7 +813,6 @@ begin
 
       //LCD.MoveCursorBR(Sender.LyricMain.SelectedLetter);
       LCD.ShowCursor;
-
     end;
 end;
 
@@ -786,7 +830,8 @@ begin
     AudioPlayback.PlaySound(SoundLib.Click);
 
   // debug system on LPT
-  if ((Czas.AktBeatC + Czesci[0].Resolution + Czesci[0].NotesGAP) mod Czesci[0].Resolution = 0) then begin
+  if ((Czas.AktBeatC + Czesci[0].Resolution + Czesci[0].NotesGAP) mod Czesci[0].Resolution = 0) then
+  begin
     //LPT_1 := 0;
 //    Light.LightOne(0, 150);
 
@@ -802,27 +847,31 @@ begin
   end;
 
   for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
-    if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = Czas.AktBeatC) then begin
+  begin
+    if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = Czas.AktBeatC) then
+    begin
       // click assist
       if Ini.ClickAssist = 1 then
         AudioPlayback.PlaySound(SoundLib.Click);
 
-        //LPT_2 := 0;
-        if ParamStr(1) <> '-doublelights' then
+      //LPT_2 := 0;
+      if ParamStr(1) <> '-doublelights' then
         Light.LightOne(0, 150); //125
 
-
       // drum machine
-(*      TempBeat := Czas.AktBeat;// + 2;
+      (*
+      TempBeat := Czas.AktBeat;// + 2;
       if (TempBeat mod 8 = 0) then Music.PlayDrum;
       if (TempBeat mod 8 = 4) then Music.PlayClap;
 //      if (TempBeat mod 4 = 2) then Music.PlayHihat;
-      if (TempBeat mod 4 <> 0) then Music.PlayHihat;*)
+      if (TempBeat mod 4 <> 0) then Music.PlayHihat;
+      *)
     end;
+  end;
 
-    {$IFDEF UseSerialPort}
-      // PortWriteB($378, LPT_1 + LPT_2 * 2); // 0 zapala
-    {$ENDIF}
+  {$IFDEF UseSerialPort}
+    // PortWriteB($378, LPT_1 + LPT_2 * 2); // 0 zapala
+  {$ENDIF}
 end;
 
 procedure NewBeatD(Sender: TScreenSing);
@@ -852,56 +901,59 @@ begin
 //  beep;
 
   // On linux we get an AV @ NEWNOTE,  line 600 of Classes/UMain.pas
-  if not assigned( AudioInputProcessor.Sound ) then  // TODO : JB_Linux ... why is this now not assigned... it was fine a few hours ago..
+  if not assigned( AudioInputProcessor.Sound ) then
     exit;
 
   // analizuje dla obu graczy ten sam sygnal (Sound.OneSrcForBoth)
   // albo juz lepiej nie
   for CP := 0 to PlayersPlay-1 do
   begin
-
     // analyze buffer
     AudioInputProcessor.Sound[CP].AnalyzeBuffer;
 
     // adds some noise
-//    Czas.Ton := Czas.Ton + Round(Random(3)) - 1;
+    //Czas.Ton := Czas.Ton + Round(Random(3)) - 1;
 
-    // 0.5.0: count min and max sentence range for checking (detection is delayed to the notes we see on the screen)
+    // count min and max sentence range for checking (detection is delayed to the notes we see on the screen)
     SMin := Czesci[0].Akt-1;
-    if SMin < 0 then SMin := 0;
+    if SMin < 0 then
+      SMin := 0;
     SMax := Czesci[0].Akt;
 
     // check if we can add new note
     Mozna := false;
     SDet:=SMin;
     for S := SMin to SMax do
+    begin
       for Pet := 0 to Czesci[0].Czesc[S].HighNut do
+      begin
         if ((Czesci[0].Czesc[S].Nuta[Pet].Start <= Czas.AktBeatD)
           and (Czesci[0].Czesc[S].Nuta[Pet].Start + Czesci[0].Czesc[S].Nuta[Pet].Dlugosc - 1 >= Czas.AktBeatD))
           and (not Czesci[0].Czesc[S].Nuta[Pet].FreeStyle) // but don't allow when it's FreeStyle note
-          and (Czesci[0].Czesc[S].Nuta[Pet].Dlugosc > 0) // and make sure the note lenghts is at least 1
-          then begin
-            SDet := S;
-            Mozna := true;
-            Break;
-          end;
+          and (Czesci[0].Czesc[S].Nuta[Pet].Dlugosc > 0) then // and make sure the note lenghts is at least 1
+        begin
+          SDet := S;
+          Mozna := true;
+          Break;
+        end;
+      end;
+    end;
 
     S := SDet;
 
-
-
-
-
-//    Czas.SzczytJest := true;
-//    Czas.Ton := 27;
+    //Czas.SzczytJest := true;
+    //Czas.Ton := 27;
 
     // gdy moze, to dodaje nute
-    if (AudioInputProcessor.Sound[CP].ToneValid) and (Mozna) then begin
+    if (AudioInputProcessor.Sound[CP].ToneValid) and (Mozna) then
+    begin
       // operowanie na ostatniej nucie
       for Pet := 0 to Czesci[0].Czesc[S].HighNut do
-        if (Czesci[0].Czesc[S].Nuta[Pet].Start <= Czas.OldBeatD+1)
-        and (Czesci[0].Czesc[S].Nuta[Pet].Start +
-        Czesci[0].Czesc[S].Nuta[Pet].Dlugosc > Czas.OldBeatD+1) then begin
+      begin
+        if (Czesci[0].Czesc[S].Nuta[Pet].Start <= Czas.OldBeatD+1) and
+           (Czesci[0].Czesc[S].Nuta[Pet].Start +
+            Czesci[0].Czesc[S].Nuta[Pet].Dlugosc > Czas.OldBeatD+1) then
+        begin
           // to robi, tylko dla pary nut (oryginalnej i gracza)
 
           // przesuwanie tonu w odpowiednia game
@@ -919,33 +971,32 @@ begin
           //if Ini.Difficulty = 2 then Range := 0;
           Range := 2 - Ini.Difficulty;
 
-          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - AudioInputProcessor.Sound[CP].Tone) <= Range then begin
+          if abs(Czesci[0].Czesc[S].Nuta[Pet].Ton - AudioInputProcessor.Sound[CP].Tone) <= Range then
+          begin
             AudioInputProcessor.Sound[CP].Tone := Czesci[0].Czesc[S].Nuta[Pet].Ton;
-
 
             // Half size Notes Patch
             NoteHit := true;
 
-
             if (Ini.LineBonus = 0) then
             begin
-            // add points without LineBonus
-            case Czesci[0].Czesc[S].Nuta[Pet].Wartosc of
-              1:  Player[CP].Score := Player[CP].Score + 10000 / Czesci[0].Wartosc *
-                    Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
-              2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 10000 / Czesci[0].Wartosc *
-                    Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
-            end;
+              // add points without LineBonus
+              case Czesci[0].Czesc[S].Nuta[Pet].Wartosc of
+                1:  Player[CP].Score := Player[CP].Score + 10000 / Czesci[0].Wartosc *
+                      Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
+                2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 10000 / Czesci[0].Wartosc *
+                      Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
+              end;
             end
             else
             begin
-            // add points with Line Bonus
-            case Czesci[0].Czesc[S].Nuta[Pet].Wartosc of
-              1:  Player[CP].Score := Player[CP].Score + 9000 / Czesci[0].Wartosc *
-                    Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
-              2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 9000 / Czesci[0].Wartosc *
-                    Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
-            end;
+              // add points with Line Bonus
+              case Czesci[0].Czesc[S].Nuta[Pet].Wartosc of
+                1:  Player[CP].Score := Player[CP].Score + 9000 / Czesci[0].Wartosc *
+                      Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
+                2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 9000 / Czesci[0].Wartosc *
+                      Czesci[0].Czesc[S].Nuta[Pet].Wartosc;
+              end;
             end;
 
             Player[CP].ScoreI := Floor(Player[CP].Score / 10) * 10;
@@ -955,63 +1006,75 @@ begin
           end;
 
         end; // operowanie
+      end; // for
 
       // sprawdzanie czy to nowa nuta, czy przedluzenie
-      if S = SMax then begin
-      Nowa := true;
-      // jezeli ostatnia ma ten sam ton
-      if (Player[CP].IlNut > 0 )
-        and (Player[CP].Nuta[Player[CP].HighNut].Ton = AudioInputProcessor.Sound[CP].Tone)
-        and (Player[CP].Nuta[Player[CP].HighNut].Start + Player[CP].Nuta[Player[CP].HighNut].Dlugosc = Czas.AktBeatD)
-        then Nowa := false;
-      // jezeli jest jakas nowa nuta na sprawdzanym beacie
-      for Pet := 0 to Czesci[0].Czesc[S].HighNut do
-        if (Czesci[0].Czesc[S].Nuta[Pet].Start = Czas.AktBeatD) then
-          Nowa := true;
-
-      // dodawanie nowej nuty
-      if Nowa then begin
-        // nowa nuta
-        Player[CP].IlNut := Player[CP].IlNut + 1;
-        Player[CP].HighNut := Player[CP].HighNut + 1;
-        SetLength(Player[CP].Nuta, Player[CP].IlNut);
-        Player[CP].Nuta[Player[CP].HighNut].Start   := Czas.AktBeatD;
-        Player[CP].Nuta[Player[CP].HighNut].Dlugosc := 1;
-        Player[CP].Nuta[Player[CP].HighNut].Ton     := AudioInputProcessor.Sound[CP].Tone; // Ton || TonDokl
-        Player[CP].Nuta[Player[CP].HighNut].Detekt  := Czas.MidBeat;
-
-
-        // Half Note Patch
-        Player[CP].Nuta[Player[CP].HighNut].Hit := NoteHit;
-
-
-        //        Log.LogStatus('Nowa Nuta ' + IntToStr(Gracz.Nuta[Gracz.HighNut].Start), 'NewBeat');
-
-      end else begin
-        // przedluzenie nuty
-        Player[CP].Nuta[Player[CP].HighNut].Dlugosc := Player[CP].Nuta[Player[CP].HighNut].Dlugosc + 1;
-      end;
-
-
-      // check for perfect note and then lit the star (on Draw)
-      for Pet := 0 to Czesci[0].Czesc[S].HighNut do
-        if (Czesci[0].Czesc[S].Nuta[Pet].Start = Player[CP].Nuta[Player[CP].HighNut].Start)
-        and (Czesci[0].Czesc[S].Nuta[Pet].Dlugosc = Player[CP].Nuta[Player[CP].HighNut].Dlugosc)
-        and (Czesci[0].Czesc[S].Nuta[Pet].Ton = Player[CP].Nuta[Player[CP].HighNut].Ton) then begin
-          Player[CP].Nuta[Player[CP].HighNut].Perfect := true;
+      if S = SMax then
+      begin
+        Nowa := true;
+        // jezeli ostatnia ma ten sam ton
+        if (Player[CP].IlNut > 0 ) and
+           (Player[CP].Nuta[Player[CP].HighNut].Ton = AudioInputProcessor.Sound[CP].Tone) and
+           (Player[CP].Nuta[Player[CP].HighNut].Start + Player[CP].Nuta[Player[CP].HighNut].Dlugosc = Czas.AktBeatD) then
+        begin
+          Nowa := false;
         end;
 
+        // jezeli jest jakas nowa nuta na sprawdzanym beacie
+        for Pet := 0 to Czesci[0].Czesc[S].HighNut do
+        begin
+          if (Czesci[0].Czesc[S].Nuta[Pet].Start = Czas.AktBeatD) then
+            Nowa := true;
+        end;
+
+        // dodawanie nowej nuty
+        if Nowa then
+        begin
+          // nowa nuta
+          Player[CP].IlNut := Player[CP].IlNut + 1;
+          Player[CP].HighNut := Player[CP].HighNut + 1;
+          SetLength(Player[CP].Nuta, Player[CP].IlNut);
+          Player[CP].Nuta[Player[CP].HighNut].Start   := Czas.AktBeatD;
+          Player[CP].Nuta[Player[CP].HighNut].Dlugosc := 1;
+          Player[CP].Nuta[Player[CP].HighNut].Ton     := AudioInputProcessor.Sound[CP].Tone; // Ton || TonDokl
+          Player[CP].Nuta[Player[CP].HighNut].Detekt  := Czas.MidBeat;
+
+          // Half Note Patch
+          Player[CP].Nuta[Player[CP].HighNut].Hit := NoteHit;
+
+          //Log.LogStatus('Nowa Nuta ' + IntToStr(Gracz.Nuta[Gracz.HighNut].Start), 'NewBeat');
+        end
+        else
+        begin
+          // przedluzenie nuty
+          Player[CP].Nuta[Player[CP].HighNut].Dlugosc := Player[CP].Nuta[Player[CP].HighNut].Dlugosc + 1;
+        end;
+
+        // check for perfect note and then lit the star (on Draw)
+        for Pet := 0 to Czesci[0].Czesc[S].HighNut do
+        begin
+          if (Czesci[0].Czesc[S].Nuta[Pet].Start = Player[CP].Nuta[Player[CP].HighNut].Start) and
+             (Czesci[0].Czesc[S].Nuta[Pet].Dlugosc = Player[CP].Nuta[Player[CP].HighNut].Dlugosc) and
+             (Czesci[0].Czesc[S].Nuta[Pet].Ton = Player[CP].Nuta[Player[CP].HighNut].Ton) then
+          begin
+            Player[CP].Nuta[Player[CP].HighNut].Perfect := true;
+          end;
+        end;
       end;// else beep; // if S = SMax
 
     end; // if moze
   end; // for CP
-//  Log.LogStatus('EndBeat', 'NewBeat');
+  //  Log.LogStatus('EndBeat', 'NewBeat');
 
-//On Sentence End -> For LineBonus + SingBar
-if (sDet >= low(Czesci[0].Czesc)) AND (sDet <= high(Czesci[0].Czesc)) then
-if assigned( Sender ) AND
-   ((Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Start + Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Dlugosc - 1) = Czas.AktBeatD) then
-  Sender.onSentenceEnd(sDet);
+  //On Sentence End -> For LineBonus + SingBar
+  if (sDet >= low(Czesci[0].Czesc)) and (sDet <= high(Czesci[0].Czesc)) then
+  begin
+    if assigned( Sender ) and
+       ((Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Start + Czesci[0].Czesc[SDet].Nuta[Czesci[0].Czesc[SDet].HighNut].Dlugosc - 1) = Czas.AktBeatD) then
+    begin
+      Sender.onSentenceEnd(sDet);
+    end;
+  end;
 
 end;
 
@@ -1034,7 +1097,7 @@ procedure InitializePaths;
 
   // Initialize a Path Variable
   // After Setting Paths, make sure that Paths exist
-  function initialize_path( out aPathVar : String; const aLocation : String ): boolean;
+  function initialize_path( out aPathVar : string; const aLocation : string ): boolean;
   var
     lWriteable: Boolean;
     lAttrib   : integer;
@@ -1045,12 +1108,12 @@ procedure InitializePaths;
     // Make sure the directory is needex
     ForceDirectories(aPathVar);
 
-    If DirectoryExists(aPathVar) then
+    if DirectoryExists(aPathVar) then
     begin
       lAttrib := fileGetAttr(aPathVar);
 
-      lWriteable :=     ( lAttrib and faDirectory <> 0 ) AND
-                    NOT ( lAttrib and faReadOnly  <> 0 )
+      lWriteable := (lAttrib and faDirectory <> 0) and
+                not (lAttrib and faReadOnly  <> 0)
     end;
     
     if not lWriteable then
@@ -1060,7 +1123,6 @@ procedure InitializePaths;
   end;
 
 begin
-
   initialize_path( LogPath         , Platform.GetLogPath                             );
   initialize_path( SoundPath       , Platform.GetGameSharedPath + 'Sounds'      + PathDelim );
   initialize_path( ThemePath       , Platform.GetGameSharedPath + 'Themes'      + PathDelim );

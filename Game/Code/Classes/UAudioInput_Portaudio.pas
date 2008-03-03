@@ -17,19 +17,18 @@ uses
 implementation
 
 uses
-  URecord,
-  UIni,
-  ULog,
-  UMain,
   {$IFDEF UsePortmixer}
   portmixer,
   {$ENDIF}
-  portaudio;
+  portaudio,
+  UAudioCore_Portaudio,
+  URecord,
+  UIni,
+  ULog,
+  UMain;
 
 type
   TAudioInput_Portaudio = class(TAudioInputBase)
-    private
-      function GetPreferredApiIndex(): TPaHostApiIndex;
     public
       function GetName: String; override;
       function InitializeRecord: boolean; override;
@@ -41,7 +40,7 @@ type
       RecordStream:   PPaStream;
       PaDeviceIndex:  TPaDeviceIndex;
 
-      procedure Start(); override;
+      function Start(): boolean; override;
       procedure Stop();  override;
   end;
 
@@ -49,88 +48,75 @@ function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longwor
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
       inputDevice: Pointer): Integer; cdecl; forward;
 
+function MicrophoneTestCallback(input: Pointer; output: Pointer; frameCount: Longword;
+      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+      inputDevice: Pointer): Integer; cdecl; forward;
+
 var
   singleton_AudioInputPortaudio : IAudioInput;
-
-{* the default API used by Portaudio is the least common denominator
- * and might lack efficiency. ApiPreferenceOrder defines the order of
- * preferred APIs to use. The first API-type in the list is tried first. If it's
- * not available the next is tried, ...
- * If none of the preferred APIs was found the default API is used.
- * Pascal doesn't permit zero-length static arrays, so you can use paDefaultApi
- * as an array's only member if you do not have any preferences.
- * paDefaultApi also terminates a preferences list but this is optional.
- *}
-const
-  paDefaultApi = -1;
-const
-  ApiPreferenceOrder:
-{$IF Defined(WIN32)}
-    // Note1: Portmixer has no mixer support for paASIO and paWASAPI at the moment
-    // Note2: Windows Default-API is MME
-    //array[0..0] of TPaHostApiTypeId = ( paDirectSound, paMME );
-    array[0..0] of TPaHostApiTypeId = ( paDirectSound );
-{$ELSEIF Defined(LINUX)}
-    // Note1: Portmixer has no mixer support for paJACK at the moment
-    // Note2: Not tested, but ALSA might be better than OSS.
-    array[0..1] of TPaHostApiTypeId = ( paALSA, paOSS );
-{$ELSEIF Defined(DARWIN)}
-    // Note: Not tested.
-    //array[0..0] of TPaHostApiTypeId = ( paCoreAudio );
-    array[0..0] of TPaHostApiTypeId = ( paDefaultApi );
-{$ELSE}
-    array[0..0] of TPaHostApiTypeId = ( paDefaultApi );
-{$IFEND}
 
 
 { TPortaudioInputDevice }
 
-procedure TPortaudioInputDevice.Start();
+function TPortaudioInputDevice.Start(): boolean;
 var
   Error:       TPaError;
   ErrorMsg:    string;
   inputParams: TPaStreamParameters;
   deviceInfo:  PPaDeviceInfo;
 begin
+  Result := false;
+
   // get input latency info
   deviceInfo := Pa_GetDeviceInfo(PaDeviceIndex);
 
   // set input stream parameters
-  with inputParams do begin
+  with inputParams do
+  begin
     device := PaDeviceIndex;
-    channelCount := 2;
+    channelCount := AudioFormat.Channels;
     sampleFormat := paInt16;
     suggestedLatency := deviceInfo^.defaultLowInputLatency;
     hostApiSpecificStreamInfo := nil;
   end;
 
-  Log.LogStatus(inttostr(PaDeviceIndex), 'Portaudio');
-  Log.LogStatus(floattostr(deviceInfo^.defaultLowInputLatency), 'Portaudio');
+  //Log.LogStatus(deviceInfo^.name, 'Portaudio');
+  //Log.LogStatus(floattostr(deviceInfo^.defaultLowInputLatency), 'Portaudio');
 
   // open input stream
-  Error := Pa_OpenStream(RecordStream, @inputParams, nil, SampleRate,
+  Error := Pa_OpenStream(RecordStream, @inputParams, nil,
+      AudioFormat.SampleRate,
       paFramesPerBufferUnspecified, paNoFlag,
       @MicrophoneCallback, Pointer(Self));
-  if(Error <> paNoError) then begin
+  if(Error <> paNoError) then
+  begin
     ErrorMsg := Pa_GetErrorText(Error);
-    Log.CriticalError('TPortaudioInputDevice.Start(): Error opening stream: ' + ErrorMsg);
-    //Halt;
+    Log.LogError('Error opening stream: ' + ErrorMsg, 'TPortaudioInputDevice.Start');
+    Exit;
   end;
 
   // start capture
   Error := Pa_StartStream(RecordStream);
-  if(Error <> paNoError) then begin
+  if(Error <> paNoError) then
+  begin
     Pa_CloseStream(RecordStream);
     ErrorMsg := Pa_GetErrorText(Error);
-    Log.CriticalError('TPortaudioInputDevice.Start(): Error starting stream: ' + ErrorMsg);
-    //Halt;
+    Log.LogError('Error starting stream: ' + ErrorMsg, 'TPortaudioInputDevice.Start');
+    Exit;
   end;
+  
+  Result := true;
 end;
 
 procedure TPortaudioInputDevice.Stop();
 begin
-  if assigned(RecordStream) then begin
-    Pa_StopStream(RecordStream);
+  if assigned(RecordStream) then
+  begin
+    // Note: do NOT call Pa_StopStream here!
+    // It gets stuck on devices with non-working callback as Pa_StopStream
+    // waits until all buffers have been handled (which never occurs in that
+    // case).
+    // Pa_CloseStream internally calls Pa_AbortStream which works as expected.
     Pa_CloseStream(RecordStream);
   end;
 end;
@@ -143,151 +129,204 @@ begin
   result := 'Portaudio';
 end;
 
-function TAudioInput_Portaudio.GetPreferredApiIndex(): TPaHostApiIndex;
-var
-  i: integer;
-begin
-  result := -1;
-
-  // select preferred sound-API
-  for i:= 0 to High(ApiPreferenceOrder) do
-  begin
-    if(ApiPreferenceOrder[i] <> paDefaultApi) then begin
-      // check if API is available
-      result := Pa_HostApiTypeIdToHostApiIndex(ApiPreferenceOrder[i]);
-      if(result >= 0) then
-        break;
-    end;
-  end;
-
-  // None of the preferred APIs is available -> use default
-  if(result < 0) then begin
-    result := Pa_GetDefaultHostApi();
-  end;
-end;
-
 function TAudioInput_Portaudio.InitializeRecord(): boolean;
 var
   i:           integer;
-  apiIndex:    TPaHostApiIndex;
-  apiInfo:     PPaHostApiInfo;
+  paApiIndex:  TPaHostApiIndex;
+  paApiInfo:   PPaHostApiInfo;
   deviceName:  string;
   deviceIndex: TPaDeviceIndex;
   deviceInfo:  PPaDeviceInfo;
   sourceCnt:   integer;
+  sourceIndex: integer;
   sourceName:  string;
+  channelCnt:  integer;
   SC:          integer; // soundcard
-  SCI:         integer; // soundcard source
   err:         TPaError;
   errMsg:      string;
   paDevice:    TPortaudioInputDevice;
   inputParams: TPaStreamParameters;
   stream:      PPaStream;
+  streamInfo:  PPaStreamInfo;
+  sampleRate:  integer;
   {$IFDEF UsePortmixer}
   mixer:       PPxMixer;
   {$ENDIF}
-const
-  captureFreq = 44100;
+  cbPolls: integer;
+  cbWorks: boolean;
 begin
   result := false;
 
+  // initialize portaudio
   err := Pa_Initialize();
-  if(err <> paNoError) then begin
-    Log.LogError('Portaudio.InitializeRecord: ' + Pa_GetErrorText(err));
+  if(err <> paNoError) then
+  begin
+    Log.LogError(Pa_GetErrorText(err), 'TAudioInput_Portaudio.InitializeRecord');
     Exit;
   end;
-  apiIndex := GetPreferredApiIndex();
-  apiInfo := Pa_GetHostApiInfo(apiIndex);
+
+  // choose the best available Audio-API
+  paApiIndex := TAudioCore_Portaudio.GetPreferredApiIndex();
+  if(paApiIndex = -1) then
+  begin
+    Log.LogError('No working Audio-API found', 'TAudioInput_Portaudio.InitializeRecord');
+    Exit;
+  end;
+
+  paApiInfo := Pa_GetHostApiInfo(paApiIndex);
 
   SC := 0;
 
   // init array-size to max. input-devices count
-  SetLength(AudioInputProcessor.Device, apiInfo^.deviceCount);
+  SetLength(AudioInputProcessor.Device, paApiInfo^.deviceCount);
   for i:= 0 to High(AudioInputProcessor.Device) do
   begin
     // convert API-specific device-index to global index
-    deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(apiIndex, i);
+    deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(paApiIndex, i);
     deviceInfo := Pa_GetDeviceInfo(deviceIndex);
 
+    channelCnt := deviceInfo^.maxInputChannels;
+
     // current device is no input device -> skip
-    if(deviceInfo^.maxInputChannels <= 0) then
+    if (channelCnt <= 0) then
       continue;
+
+    // portaudio returns a channel-count of 128 for some devices
+    // (e.g. the "default"-device), so we have to detect those
+    // fantasy channel counts.
+    if (channelCnt > 8) then
+      channelCnt := 2;
 
     paDevice := TPortaudioInputDevice.Create();
     AudioInputProcessor.Device[SC] := paDevice;
-    
+
     // retrieve device-name
     deviceName := deviceInfo^.name;
     paDevice.Description := deviceName;
     paDevice.PaDeviceIndex := deviceIndex;
 
+    if (deviceInfo^.defaultSampleRate > 0) then
+      sampleRate := Trunc(deviceInfo^.defaultSampleRate)
+    else
+      sampleRate := 44100;
+
     // setup desired input parameters
-    with inputParams do begin
+    with inputParams do
+    begin
       device := deviceIndex;
-      channelCount := 2;
+      channelCount := channelCnt;
       sampleFormat := paInt16;
       suggestedLatency := deviceInfo^.defaultLowInputLatency;
       hostApiSpecificStreamInfo := nil;
     end;
 
-    paDevice.SampleRate := captureFreq;
-
     // check if device supports our input-format
-    err := Pa_IsFormatSupported(@inputParams, nil, paDevice.SampleRate);
-    if(err <> 0) then begin
-      // format not supported -> skip
-      errMsg := Pa_GetErrorText(err);
-      Log.LogError('Portaudio.InitializeRecord, device: "'+ deviceName +'" '
-                 + '('+ errMsg +')');
-      paDevice.Free();
-      continue;
-    end;
-
-    // TODO: retry with mono if stereo is not supported
     // TODO: retry with input-latency set to 20ms (defaultLowInputLatency might
     //       not be set correctly in OSS)
-    // use TPaDeviceInfo.defaultSampleRate
+    err := Pa_IsFormatSupported(@inputParams, nil, sampleRate);
+    if(err <> 0) then
+    begin
+      // format not supported -> skip
+      errMsg := Pa_GetErrorText(err);
+      Log.LogError('Device error: "'+ deviceName +'" ('+ errMsg +')',
+                   'TAudioInput_Portaudio.InitializeRecord');
+      paDevice.Free();
+      continue;
+    end;
 
-    err := Pa_OpenStream(stream, @inputParams, nil, paDevice.SampleRate,
-        paFramesPerBufferUnspecified, paNoFlag, @MicrophoneCallback, nil);
-    if(err <> paNoError) then begin
+    // check if the device really works
+    err := Pa_OpenStream(stream, @inputParams, nil, sampleRate,
+        paFramesPerBufferUnspecified, paNoFlag, @MicrophoneTestCallback, nil);
+    if(err <> paNoError) then
+    begin
       // unable to open device -> skip
       errMsg := Pa_GetErrorText(err);
-      Log.LogError('Portaudio.InitializeRecord, device: "'+ deviceName +'" '
-                 + '('+ errMsg +')');
+      Log.LogError('Device error: "'+ deviceName +'" ('+ errMsg +')',
+                   'TAudioInput_Portaudio.InitializeRecord');
       paDevice.Free();
       continue;
     end;
 
 
-    {$IFDEF UsePortmixer}
+    // check if mic-callback works (might not be called on some devices)
 
-    // use default mixer
-    mixer := Px_OpenMixer(stream, 0);
-
-    // get input count
-    sourceCnt := Px_GetNumInputSources(mixer);
-    SetLength(paDevice.Source, sourceCnt);
-
-    // get input names
-    for SCI := 0 to sourceCnt-1 do
+    // start the callback
+    Pa_StartStream(stream);
+    
+    cbWorks := false;
+    // check if the callback was called (poll for max. 200ms)
+    for cbPolls := 1 to 20 do
     begin
-      sourceName := Px_GetInputSourceName(mixer, SCI);
-      paDevice.Source[SCI].Name := sourceName;
+      // if the test-callback was called it should be aborted now
+      if (Pa_IsStreamActive(stream) = 0) then
+      begin
+        cbWorks := true;
+        break;
+      end;
+      // not yet aborted, wait and try (poll) again
+      Pa_Sleep(10);
     end;
 
-    Px_CloseMixer(mixer);
+    // finally abort the stream (Note: Pa_StopStream might hang here)
+    Pa_AbortStream(stream);
 
-    {$ELSE} // !UsePortmixer
+    // ignore device if callback did not work
+    if (not cbWorks) then
+    begin
+      Log.LogError('Device "'+paDevice.Description+'" does not respond',
+                   'TAudioInput_Portaudio.InitializeRecord');
+      Pa_CloseStream(stream);
+      paDevice.Free();
+      continue;
+    end;
 
-    //Pa_StartStream(stream);
-    // TODO: check if callback was called (this problem may occur on some devices)
-    //Pa_StopStream(stream);
+    // adjust sample-rate (might be changed by portaudio)
+    streamInfo := Pa_GetStreamInfo(stream);
+    if (streamInfo <> nil) then
+    begin
+      if (sampleRate <> Trunc(streamInfo^.sampleRate)) then
+      begin
+        Log.LogStatus('Portaudio changed Samplerate from ' + IntToStr(sampleRate) +
+            ' to ' + FloatToStr(streamInfo^.sampleRate),
+            'TAudioInput_Portaudio.InitializeRecord');
+        sampleRate := Trunc(streamInfo^.sampleRate);
+      end;
+    end;
+    
+    // create audio-format info and resize capture-buffer array
+    paDevice.AudioFormat := TAudioFormatInfo.Create(
+        channelCnt,
+        sampleRate,
+        asfS16
+    );
+    SetLength(paDevice.CaptureChannel, paDevice.AudioFormat.Channels);
 
-    // create a standard input source
-    SetLength(paDevice.Source, 1);
-    paDevice.Source[0].Name := 'Standard';
+    Log.LogStatus('InputDevice "'+paDevice.Description+'"@' +
+        IntToStr(paDevice.AudioFormat.Channels)+'x'+
+        IntToStr(paDevice.AudioFormat.SampleRate)+'Hz ('+
+        FloatTostr(inputParams.suggestedLatency)+'sec)' ,
+        'Portaudio.InitializeRecord');
 
+    {$IFDEF UsePortmixer}
+      // use default mixer
+      mixer := Px_OpenMixer(stream, 0);
+
+      // get input count
+      sourceCnt := Px_GetNumInputSources(mixer);
+      SetLength(paDevice.Source, sourceCnt);
+
+      // get input names
+      for sourceIndex := 0 to sourceCnt-1 do
+      begin
+        sourceName := Px_GetInputSourceName(mixer, sourceIndex);
+        paDevice.Source[sourceIndex].Name := sourceName;
+      end;
+
+      Px_CloseMixer(mixer);
+    {$ELSE} // not UsePortmixer
+      // create a standard input source
+      SetLength(paDevice.Source, 1);
+      paDevice.Source[0].Name := 'Standard';
     {$ENDIF}
 
     // close test-stream
@@ -304,9 +343,6 @@ begin
 
   Log.LogStatus('#Soundcards: ' + inttostr(SC), 'Portaudio');
 
-  {
-    SoundCard[SC].InputSelected := Mic[Device];
-  }
   result := true;
 end;
 
@@ -334,6 +370,17 @@ function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longwor
 begin
   AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
   result := paContinue;
+end;
+
+{*
+ * Portaudio test capture callback.
+ *}
+function MicrophoneTestCallback(input: Pointer; output: Pointer; frameCount: Longword;
+      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+      inputDevice: Pointer): Integer; cdecl;
+begin
+  // this callback is called only once
+  result := paAbort;
 end;
 
 

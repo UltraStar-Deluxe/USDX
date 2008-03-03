@@ -158,7 +158,7 @@ end;
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
 var
   SampleIndex: integer;
-  Sound: TSound;
+  Sound: TCaptureBuffer;
   MaxX, MaxY: real;
 begin;
   Sound := AudioInputProcessor.Sound[NrSound];

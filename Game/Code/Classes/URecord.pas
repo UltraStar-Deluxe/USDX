@@ -15,32 +15,44 @@ uses Classes,
      UMusic,
      UIni;
 
+const
+  BaseToneFreq = 65.4064; // lowest (half-)tone to analyze (C2 = 65.4064 Hz)
+  NumHalftones = 36; // C2-B4 (for Whitney and my high voice)
+
 type
-  TSound = class
+  TCaptureBuffer = class
     private
-      BufferNew:    TMemoryStream;              // buffer for newest samples
+      BufferNew:    TMemoryStream; // buffer for newest samples
+
+      function GetToneString: string; // converts a tone to its string represenatation;
     public
       BufferArray:  array[0..4095] of smallint; // newest 4096 samples
-      BufferLong:   array of TMemoryStream;     // full buffer
+      BufferLong:   TMemoryStream;              // full buffer
+      AnalysisBufferSize: integer; // number of samples of BufferArray to analyze
 
-      Index: integer;           // index in TAudioInputProcessor.Sound[] (TODO: Remove if not used)
-
-      AnalysisBufferSize: integer; // number of samples to analyze
+      AudioFormat: TAudioFormatInfo;
 
       // pitch detection
       ToneValid:    boolean;    // true if Tone contains a valid value (otherwise it contains noise)
-      //Peak:       integer;    // position of peak on horizontal pivot (TODO: Remove if not used)
-      //ToneAccuracy: real;     // tone accuracy (TODO: Remove if not used)
-      Tone:         integer;    // TODO: should be a non-unified full range tone (e.g. C2<>C3). Range: 0..NumHalftones-1
-                                // Note: at the moment it is the same as ToneUnified
-      ToneUnified:  integer;    // tone unified to one octave (e.g. C2=C3=C4). Range: 0-11
-      //Scale:      real;       // FFT scale (TODO: Remove if not used)
+      Tone:         integer;    // tone relative to one octave (e.g. C2=C3=C4). Range: 0-11
+      ToneAbs:      integer;    // absolute (full range) tone (e.g. C2<>C3). Range: 0..NumHalftones-1
 
-      // procedures
+      // methods
+      constructor Create;
+      destructor Destroy; override;
+
+      procedure Clear;
+
       procedure ProcessNewBuffer;
-      procedure AnalyzeBuffer;    // use to analyze sound from buffers to get new pitch
-      procedure AnalyzeByAutocorrelation;    // we call it to analyze sound by checking Autocorrelation
-      function  AnalyzeAutocorrelationFreq(Freq: real): real;   // use this to check one frequency by Autocorrelation
+      // use to analyze sound from buffers to get new pitch
+      procedure AnalyzeBuffer;
+      // we call it to analyze sound by checking Autocorrelation
+      procedure AnalyzeByAutocorrelation;
+      // use this to check one frequency by Autocorrelation
+      function AnalyzeAutocorrelationFreq(Freq: real): real;
+      function MaxSampleVolume: Single;
+
+      property ToneString: string READ GetToneString;
   end;
 
   TAudioInputDeviceSource = record
@@ -54,27 +66,29 @@ type
       Description:     string;    // soundcard name/description
       Source:          array of TAudioInputDeviceSource; // soundcard input(-source)s
       SourceSelected:  integer;  // unused. What is this good for?
-      MicInput:        integer;  // unused. What is this good for?
-      SampleRate:      integer;  // capture sample-rate (e.g. 44.1kHz -> 44100)
-      CaptureChannel:  array[0..1] of TSound; // sound(-buffers) used for left/right channel's capture data
+      MicSource:       integer;  // unused. What is this good for?
 
-      procedure Start(); virtual; abstract;
-      procedure Stop();  virtual; abstract;
+      AudioFormat:     TAudioFormatInfo; // capture format info (e.g. 44.1kHz SInt16 stereo)
+      CaptureChannel:  array of TCaptureBuffer; // sound-buffer references used for mono or stereo channel's capture data
 
       destructor Destroy; override;
+
+      procedure LinkCaptureBuffer(ChannelIndex: integer; Sound: TCaptureBuffer);
+      
+      function Start(): boolean; virtual; abstract;
+      procedure Stop();  virtual; abstract;
   end;
 
   TAudioInputProcessor = class
-    Sound:  array of TSound;
-    Device: array of TAudioInputDevice;
+    public
+      Sound:  array of TCaptureBuffer; // sound-buffers for every player
+      Device: array of TAudioInputDevice;
 
-    constructor Create;
+      constructor Create;
 
-    // handle microphone input
-    procedure HandleMicrophoneData(Buffer: Pointer; Size: Cardinal;
-                                   InputDevice: TAudioInputDevice);
-
-    function Volume( aChannel : byte ): byte;
+      // handle microphone input
+      procedure HandleMicrophoneData(Buffer: Pointer; Size: Cardinal;
+                                     InputDevice: TAudioInputDevice);
   end;
 
   TAudioInputBase = class( TInterfacedObject, IAudioInput )
@@ -102,11 +116,6 @@ implementation
 uses
   ULog,
   UMain;
-
-const
-  CaptureFreq = 44100;
-  BaseToneFreq = 65.4064; // lowest (half-)tone to analyze (C2 = 65.4064 Hz)
-  NumHalftones = 36; // C2-B4 (for Whitney and my high voice)
 
 var
   singleton_AudioInputProcessor : TAudioInputProcessor = nil;
@@ -136,15 +145,57 @@ var
 begin
   Stop();
   Source := nil;
-  for i := 0 to High(CaptureChannel) do
-    CaptureChannel[i] := nil;
+  CaptureChannel := nil;
+  FreeAndNil(AudioFormat);
   inherited Destroy;
 end;
 
+procedure TAudioInputDevice.LinkCaptureBuffer(ChannelIndex: integer; Sound: TCaptureBuffer);
+begin
+  // check bounds
+  if ((ChannelIndex < 0) or (ChannelIndex > High(CaptureChannel))) then
+    Exit;
+
+  // reset audio-format of old capture-buffer
+  if (CaptureChannel[ChannelIndex] <> nil) then
+    CaptureChannel[ChannelIndex].AudioFormat := nil;
+
+  // set audio-format of new capture-buffer
+  if (Sound <> nil) then
+    Sound.AudioFormat := AudioFormat;
+
+  // replace old with new buffer
+  CaptureChannel[ChannelIndex] := Sound;
+end;
 
 { TSound }
 
-procedure TSound.ProcessNewBuffer;
+constructor TCaptureBuffer.Create;
+begin
+  inherited;
+  BufferNew := TMemoryStream.Create;
+  BufferLong := TMemoryStream.Create;
+  AnalysisBufferSize := Min(4*1024, Length(BufferArray));
+end;
+
+destructor TCaptureBuffer.Destroy;
+begin
+  AudioFormat := nil;
+  FreeAndNil(BufferNew);
+  FreeAndNil(BufferLong);
+  inherited;
+end;
+
+procedure TCaptureBuffer.Clear;
+begin
+  if assigned(BufferNew) then
+    BufferNew.Clear;
+  if assigned(BufferLong) then
+    BufferLong.Clear;
+  FillChar(BufferArray[0], Length(BufferArray) * SizeOf(SmallInt), 0);
+end;
+
+procedure TCaptureBuffer.ProcessNewBuffer;
 var
   SkipCount:   integer;
   NumSamples:  integer;
@@ -155,7 +206,7 @@ begin
   NumSamples := BufferNew.Size div 2;
 
   // check if we have more new samples than we can store
-  if NumSamples > Length(BufferArray) then
+  if (NumSamples > Length(BufferArray)) then
   begin
     // discard the oldest of the new samples
     SkipCount := NumSamples - Length(BufferArray);
@@ -172,90 +223,96 @@ begin
   BufferNew.ReadBuffer(BufferArray[Length(BufferArray)-NumSamples], 2*NumSamples);
 
   // save capture-data to BufferLong if neccessary
-  if Ini.SavePlayback = 1 then
+  if (Ini.SavePlayback = 1) then
   begin
     BufferNew.Seek(0, soBeginning);
-    BufferLong[0].CopyFrom(BufferNew, BufferNew.Size);
+    BufferLong.CopyFrom(BufferNew, BufferNew.Size);
   end;
 end;
 
-procedure TSound.AnalyzeBuffer;
-begin
-  AnalyzeByAutocorrelation;
-end;
-
-procedure TSound.AnalyzeByAutocorrelation;
+procedure TCaptureBuffer.AnalyzeBuffer;
 var
-  ToneIndex: integer;
-  Freq:      real;
-  Wages:     array[0..NumHalftones-1] of real;
-  MaxTone:   integer;
-  MaxWage:   real;
   Volume:    real;
   MaxVolume: real;
   SampleIndex: integer;
   Threshold: real;
-const
-  HalftoneBase = 1.05946309436; // 2^(1/12) -> HalftoneBase^12 = 2 (one octave)
 begin
   ToneValid := false;
+  ToneAbs := -1;
+  Tone    := -1;
 
   // find maximum volume of first 1024 samples
   MaxVolume := 0;
   for SampleIndex := 0 to 1023 do
   begin
-    Volume := Abs(BufferArray[SampleIndex]) /
-              -Low(Smallint); // was $10000 (65536) before but must be 32768
-
+    Volume := Abs(BufferArray[SampleIndex]) / -Low(Smallint);
     if Volume > MaxVolume then
        MaxVolume := Volume;
   end;
 
-  // prepare to analyze
-  MaxWage := 0;
-
-  // analyze halftones
-  for ToneIndex := 0 to NumHalftones-1 do
-  begin
-    Freq := BaseToneFreq * Power(HalftoneBase, ToneIndex);
-    Wages[ToneIndex] := AnalyzeAutocorrelationFreq(Freq);
-
-    if Wages[ToneIndex] > MaxWage then
-    begin
-      // this frequency has better wage
-      MaxWage := Wages[ToneIndex];
-      MaxTone := ToneIndex;
-    end;
-  end;
-
-  Threshold := 0.2;
   case Ini.Threshold of
-    0:  Threshold := 0.1;
-    1:  Threshold := 0.2;
-    2:  Threshold := 0.3;
-    3:  Threshold := 0.4;
+    0:   Threshold := 0.05;
+    1:   Threshold := 0.1;
+    2:   Threshold := 0.15;
+    3:   Threshold := 0.2;
+    else Threshold := 0.1;
   end;
 
   // check if signal has an acceptable volume (ignore background-noise)
   if MaxVolume >= Threshold then
   begin
-    ToneValid   := true;
-    ToneUnified := MaxTone mod 12;
-    Tone        := MaxTone mod 12;
+    // analyse the current voice pitch
+    AnalyzeByAutocorrelation;
+    ToneValid := true;
   end;
-
 end;
 
-function TSound.AnalyzeAutocorrelationFreq(Freq: real): real; // result medium difference
+procedure TCaptureBuffer.AnalyzeByAutocorrelation;
 var
-  Dist:                   real;    // distance (0=equal .. 1=totally different) between correlated samples 
+  ToneIndex: integer;
+  CurFreq:   real;
+  CurWeight: real;
+  MaxWeight: real;
+  MaxTone:   integer;
+const
+  HalftoneBase = 1.05946309436; // 2^(1/12) -> HalftoneBase^12 = 2 (one octave)
+begin
+  // prepare to analyze
+  MaxWeight := -1;
+
+  // analyze halftones
+  // Note: at the lowest tone (~65Hz) and a buffer-size of 4096
+  // at 44.1 (or 48kHz) only 6 (or 5) samples are compared, this might be
+  // too few samples -> use a bigger buffer-size
+  for ToneIndex := 0 to NumHalftones-1 do
+  begin
+    CurFreq := BaseToneFreq * Power(HalftoneBase, ToneIndex);
+    CurWeight := AnalyzeAutocorrelationFreq(CurFreq);
+
+    // TODO: prefer higher frequencies (use >= or use downto)
+    if (CurWeight > MaxWeight) then
+    begin
+      // this frequency has a higher weight
+      MaxWeight := CurWeight;
+      MaxTone   := ToneIndex;
+    end;
+  end;
+
+  ToneAbs := MaxTone;
+  Tone    := MaxTone mod 12;
+end;
+
+// result medium difference
+function TCaptureBuffer.AnalyzeAutocorrelationFreq(Freq: real): real;
+var
+  Dist:                   real;    // distance (0=equal .. 1=totally different) between correlated samples
   AccumDist:              real;    // accumulated distances
   SampleIndex:            integer; // index of sample to analyze
   CorrelatingSampleIndex: integer; // index of sample one period ahead
   SamplesPerPeriod:       integer; // samples in one period
 begin
   SampleIndex := 0;
-  SamplesPerPeriod := Round(CaptureFreq/Freq);
+  SamplesPerPeriod := Round(AudioFormat.SampleRate/Freq);
   CorrelatingSampleIndex := SampleIndex + SamplesPerPeriod;
 
   AccumDist := 0;
@@ -265,7 +322,7 @@ begin
   begin
     // calc distance (correlation: 1-dist) to corresponding sample in next period
     Dist := Abs(BufferArray[SampleIndex] - BufferArray[CorrelatingSampleIndex]) /
-            High(Word); // was $10000 (65536) before but must be 65535
+            High(Word);
     AccumDist := AccumDist + Dist;
     Inc(SampleIndex);
     Inc(CorrelatingSampleIndex);
@@ -275,8 +332,48 @@ begin
   Result := 1 - AccumDist / AnalysisBufferSize;
 end;
 
+function TCaptureBuffer.MaxSampleVolume: Single;
+var
+  lSampleIndex: Integer;
+  lMaxVol : Longint;
+begin;
+  // FIXME: lock buffer to avoid race-conditions
+  lMaxVol := 0;
+  for lSampleIndex := 0 to High(BufferArray) do
+  begin
+    if Abs(BufferArray[lSampleIndex]) > lMaxVol then
+      lMaxVol := Abs(BufferArray[lSampleIndex]);
+  end;
+
+  result := lMaxVol / -Low(Smallint);
+end;
+
+const
+  ToneStrings: array[0..11] of string = (
+    'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'
+  );
+
+function TCaptureBuffer.GetToneString: string;
+begin
+  if (ToneValid) then
+    Result := ToneStrings[Tone] + IntToStr(ToneAbs div 12 + 2)
+  else
+    Result := '-';
+end;
+
 
 { TAudioInputProcessor }
+
+constructor TAudioInputProcessor.Create;
+var
+  i:        integer;
+begin
+  SetLength(Sound, 6 {max players});//Ini.Players+1);
+  for i := 0 to High(Sound) do
+  begin
+    Sound[i] := TCaptureBuffer.Create;
+  end;
+end;
 
 {*
  * Handle captured microphone input data.
@@ -289,32 +386,52 @@ end;
  *}
 procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: Pointer; Size: Cardinal; InputDevice: TAudioInputDevice);
 var
-  NumSamples:   integer; // number of samples
-  SampleIndex:  integer;
   Value:        integer;
-  ByteBuffer:   PByteArray;     // buffer handled as array of bytes
+  ChannelBuffer: PChar;         // buffer handled as array of bytes (offset relative to channel)
   SampleBuffer: PSmallIntArray; // buffer handled as array of samples
-  Offset: integer;
   Boost:  byte;
   ChannelCount: integer;
   ChannelIndex: integer;
-  CaptureChannel: TSound;
-  SampleSize: integer;
+  ChannelOffset: integer;
+  CaptureChannel: TCaptureBuffer;
+  AudioFormat: TAudioFormatInfo;
+  FrameSize: integer;
+  NumSamples: integer;
+  NumFrames: integer; // number of frames (stereo: 2xsamples)
+  i: integer;
 begin
   // set boost
   case Ini.MicBoost of
-    0:  Boost := 1;
-    1:  Boost := 2;
-    2:  Boost := 4;
-    3:  Boost := 8;
+    0:   Boost := 1;
+    1:   Boost := 2;
+    2:   Boost := 4;
+    3:   Boost := 8;
+    else Boost := 1;
   end;
 
-  // boost buffer
-  NumSamples := Size div 2;
-  SampleBuffer := Buffer;
-  for SampleIndex := 0 to NumSamples-1 do
+  AudioFormat := InputDevice.AudioFormat;
+
+  // FIXME: At the moment we assume a SInt16 format
+  // TODO:  use SDL_AudioConvert to convert to SInt16 but do NOT change the
+  // samplerate (SDL does not convert 44.1kHz to 48kHz so we might get wrong
+  // results in the analysis phase otherwise)
+  if (AudioFormat.Format <> asfS16) then
   begin
-    Value := SampleBuffer^[SampleIndex] * Boost;
+    // this only occurs if a developer choosed a wrong input sample-format
+    Log.CriticalError('TAudioInputProcessor.HandleMicrophoneData: Wrong sample-format');
+    Exit;
+  end;
+
+  // interpret buffer as buffer of bytes
+  SampleBuffer := Buffer;
+
+  NumSamples := Size div SizeOf(Smallint);
+
+  // boost buffer
+  // TODO: remove this senseless stuff - adjust the threshold instead
+  for i := 0 to NumSamples-1 do
+  begin
+    Value := SampleBuffer^[i] * Boost;
 
     // TODO :  JB -  This will clip the audio... cant we reduce the "Boost" if the data clips ??
     if Value > High(Smallint) then
@@ -323,18 +440,12 @@ begin
     if Value < Low(Smallint) then
       Value := Low(Smallint);
 
-    SampleBuffer^[SampleIndex] := Value;
+    SampleBuffer^[i] := Value;
   end;
 
-  // number of channels
-  ChannelCount := Length(InputDevice.CaptureChannel);
-  // size of one sample
-  SampleSize := ChannelCount * SizeOf(SmallInt);
   // samples per channel
-  NumSamples := Size div SampleSize;
-
-  // interpret buffer as buffer of bytes
-  ByteBuffer := Buffer;
+  FrameSize := AudioFormat.Channels * SizeOf(SmallInt);
+  NumFrames := Size div FrameSize;
 
   // process channels
   for ChannelIndex := 0 to High(InputDevice.CaptureChannel) do
@@ -342,53 +453,19 @@ begin
     CaptureChannel := InputDevice.CaptureChannel[ChannelIndex];
     if (CaptureChannel <> nil) then
     begin
-      Offset := ChannelIndex * SizeOf(SmallInt);
+      // set offset according to channel index
+      ChannelBuffer := @PChar(Buffer)[ChannelIndex * SizeOf(SmallInt)];
 
       // TODO: remove BufferNew and write to BufferArray directly
 
       CaptureChannel.BufferNew.Clear;
-      for SampleIndex := 0 to NumSamples-1 do
+      for i := 0 to NumFrames-1 do
       begin
-        CaptureChannel.BufferNew.Write(ByteBuffer^[Offset + SampleIndex*SampleSize],
-                                       SizeOf(SmallInt));
+        CaptureChannel.BufferNew.Write(ChannelBuffer[i*FrameSize], SizeOf(SmallInt));
       end;
       CaptureChannel.ProcessNewBuffer();
     end;
   end;
-end;
-
-constructor TAudioInputProcessor.Create;
-var
-  i:        integer;
-begin
-  SetLength(Sound, 6 {max players});//Ini.Players+1);
-  for i := 0 to High(Sound) do
-  begin
-    Sound[i] := TSound.Create;
-    Sound[i].Index := i;
-    Sound[i].BufferNew := TMemoryStream.Create;
-    SetLength(Sound[i].BufferLong, 1);
-    Sound[i].BufferLong[0] := TMemoryStream.Create;
-    Sound[i].AnalysisBufferSize := Min(4*1024, Length(Sound[i].BufferArray));
-  end;
-end;
-
-function TAudioInputProcessor.Volume( aChannel : byte ): byte;
-var
-  lSampleIndex: Integer;
-  lMaxVol : Word;
-begin;
-  with AudioInputProcessor.Sound[aChannel] do
-  begin
-    lMaxVol := BufferArray[0];
-    for lSampleIndex := 1 to High(BufferArray) do
-    begin
-      if Abs(BufferArray[lSampleIndex]) > lMaxVol then
-        lMaxVol := Abs(BufferArray[lSampleIndex]);
-    end;
-  end;
-
-  result := trunc( ( 255 / -Low(Smallint) ) * lMaxVol );
 end;
 
 
@@ -410,14 +487,13 @@ begin
   if (Started) then
     CaptureStop();
 
-  Log.BenchmarkStart(1);
-
   // reset buffers
   for S := 0 to High(AudioInputProcessor.Sound) do
-    AudioInputProcessor.Sound[S].BufferLong[0].Clear;
+    AudioInputProcessor.Sound[S].Clear;
 
   // start capturing on each used device
-  for DeviceIndex := 0 to High(AudioInputProcessor.Device) do begin
+  for DeviceIndex := 0 to High(AudioInputProcessor.Device) do
+  begin
     Device := AudioInputProcessor.Device[DeviceIndex];
     if not assigned(Device) then
       continue;
@@ -431,26 +507,24 @@ begin
       Player := DeviceCfg.ChannelToPlayerMap[ChannelIndex]-1;
       if (Player < 0) or (Player >= PlayersPlay) then
       begin
-        Device.CaptureChannel[ChannelIndex] := nil;
+        Device.LinkCaptureBuffer(ChannelIndex, nil);
       end
       else
       begin
-        Device.CaptureChannel[ChannelIndex] := AudioInputProcessor.Sound[Player];
+        Device.LinkCaptureBuffer(ChannelIndex, AudioInputProcessor.Sound[Player]);
         DeviceUsed := true;
       end;
     end;
 
     // start device if used
-    if (DeviceUsed) then begin
-  Log.BenchmarkStart(2);
+    if (DeviceUsed) then
+    begin
+      //Log.BenchmarkStart(2);
       Device.Start();
-  Log.BenchmarkEnd(2);
-  Log.LogBenchmark('Device.Start', 2) ;
+      //Log.BenchmarkEnd(2);
+      //Log.LogBenchmark('Device.Start', 2) ;
     end;
   end;
-
-  Log.BenchmarkEnd(1);
-  Log.LogBenchmark('CaptureStart', 1) ;
 
   Started := true;
 end;
@@ -465,7 +539,8 @@ var
   Device: TAudioInputDevice;
   DeviceCfg: PInputDeviceConfig;
 begin
-  for DeviceIndex := 0 to High(AudioInputProcessor.Device) do begin
+  for DeviceIndex := 0 to High(AudioInputProcessor.Device) do
+  begin
     Device := AudioInputProcessor.Device[DeviceIndex];
     if not assigned(Device) then
       continue;

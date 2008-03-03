@@ -8,94 +8,104 @@ interface
 
 {$I switches.inc}
 
-uses IniFiles, ULog, SysUtils;
+uses
+  Classes,
+  IniFiles,
+  ULog,
+  SysUtils;
 
 type
   PInputDeviceConfig = ^TInputDeviceConfig;
   TInputDeviceConfig = record
     Name:               string;
     Input:              integer;
-    ChannelToPlayerMap: array[0..1] of integer;
+    ChannelToPlayerMap: array of integer;
   end;
 
 type
   TIni = class
-    Name:           array[0..11] of string;
+    private
+      function ExtractKeyIndex(const key: string; const prefix: string; suffix: string): integer;
+      function GetMaxKeyIndex(keys: TStringList; const prefix: string; const suffix: string): integer;
+      procedure LoadInputDeviceCfg(IniFile: TMemIniFile);
+      procedure SaveInputDeviceCfg(IniFile: TIniFile);
+    public
+      Name:           array[0..11] of string;
 
-    // Templates for Names Mod
-    NameTeam:       array[0..2] of string;
-    NameTemplate:   array[0..11] of string;
+      // Templates for Names Mod
+      NameTeam:       array[0..2] of string;
+      NameTemplate:   array[0..11] of string;
 
-    //Filename of the opened iniFile
-    Filename:       string;
+      //Filename of the opened iniFile
+      Filename:       string;
 
-    // Game
-    Players:        integer;
-    Difficulty:     integer;
-    Language:       integer;
-    Tabs:           integer;
-    Tabs_at_startup:integer; //Tabs at Startup fix
-    Sorting:        integer;
-    Debug:          integer;
+      // Game
+      Players:        integer;
+      Difficulty:     integer;
+      Language:       integer;
+      Tabs:           integer;
+      Tabs_at_startup:integer; //Tabs at Startup fix
+      Sorting:        integer;
+      Debug:          integer;
 
-    // Graphics
-    Screens:        integer;
-    Resolution:     integer;
-    Depth:          integer;
-    FullScreen:     integer;
-    TextureSize:    integer;
-    SingWindow:     integer;
-    Oscilloscope:   integer;
-    Spectrum:       integer;
-    Spectrograph:   integer;
-    MovieSize:      integer;
+      // Graphics
+      Screens:        integer;
+      Resolution:     integer;
+      Depth:          integer;
+      FullScreen:     integer;
+      TextureSize:    integer;
+      SingWindow:     integer;
+      Oscilloscope:   integer;
+      Spectrum:       integer;
+      Spectrograph:   integer;
+      MovieSize:      integer;
 
-    // Sound
-    MicBoost:       integer;
-    ClickAssist:    integer;
-    BeatClick:      integer;
-    SavePlayback:   integer;
-    Threshold:      integer;
+      // Sound
+      MicBoost:       integer;
+      ClickAssist:    integer;
+      BeatClick:      integer;
+      SavePlayback:   integer;
+      Threshold:      integer;
 
-    //Song Preview
-    PreviewVolume: integer;
-    PreviewFading: integer;
+      //Song Preview
+      PreviewVolume: integer;
+      PreviewFading: integer;
 
-    // Lyrics
-    LyricsFont:     integer;
-    LyricsEffect:   integer;
-    Solmization:    integer;
+      // Lyrics
+      LyricsFont:     integer;
+      LyricsEffect:   integer;
+      Solmization:    integer;
 
-    // Themes
-    Theme:          integer;
-    SkinNo:           integer;
-    Color:          integer;
+      // Themes
+      Theme:          integer;
+      SkinNo:           integer;
+      Color:          integer;
 
-    // Record
-    InputDeviceConfig: array of TInputDeviceConfig;
+      // Record
+      InputDeviceConfig: array of TInputDeviceConfig;
 
-    // Advanced
-    LoadAnimation:  integer;
-    EffectSing:     integer;
-    ScreenFade:     integer;
-    AskbeforeDel:   integer;
-    OnSongClick:    integer;
-    LineBonus:      integer;
-    PartyPopup:     integer;
+      // Advanced
+      LoadAnimation:  integer;
+      EffectSing:     integer;
+      ScreenFade:     integer;
+      AskbeforeDel:   integer;
+      OnSongClick:    integer;
+      LineBonus:      integer;
+      PartyPopup:     integer;
 
-    // Controller
-    Joypad:         integer;
+      // Controller
+      Joypad:         integer;
 
-    // Soundcards
-    SoundCard:      array[0..7, 1..2] of integer;
+      // Soundcards
+      SoundCard:      array[0..7, 1..2] of integer;
 
-    // Devices
-    LPT:            integer;
+      // Devices
+      LPT:            integer;
 
-    procedure Load;
-    procedure Save;
-    procedure SaveNames;
-    procedure SaveLevel;
+      procedure Load();
+      procedure Save();
+      procedure SaveNames;
+      procedure SaveLevel;
   end;
 
 
@@ -105,8 +115,6 @@ var
   ILanguage:      array of string;
   ITheme:         array of string;
   ISkin:          array of string;
-  ICard:          array of string;
-  IInput:         array of string;
 
 const
   IPlayers:       array[0..4] of string = ('1', '2', '3', '4', '6');
@@ -171,16 +179,199 @@ const
 
 implementation
 
-uses //UFiles,
-     UMain,
-     SDL,
-     ULanguage,
-		 UPlatform,
-     USkins,
-     URecord,
-     UCommandLine;
+uses
+  StrUtils,
+  //UFiles,
+  UMain,
+  SDL,
+  ULanguage,
+  UPlatform,
+  USkins,
+  URecord,
+  UCommandLine;
 
-procedure TIni.Load;
+function TIni.ExtractKeyIndex(const key: string; const prefix: string; suffix: string): integer;
+var
+  tmpStr: string;
+begin
+  Result := -1;
+  if not AnsiStartsText(prefix, key) then
+    Exit;
+  tmpStr := AnsiReplaceText(key, prefix, '');
+  tmpStr := AnsiReplaceText(tmpStr, suffix, '');
+  Result := StrToIntDef(tmpStr, -1);
+end;
+
+function TIni.GetMaxKeyIndex(keys: TStringList; const prefix: string; const suffix: string): integer;
+var
+  i: integer;
+  keyIndex: integer;
+begin
+  Result := -1;
+  for i := 0 to keys.Count-1 do
+  begin
+    keyIndex := ExtractKeyIndex(keys[i], prefix, suffix);
+    if (keyIndex > Result) then
+      Result := keyIndex;
+  end;
+end;
+
+procedure TIni.LoadInputDeviceCfg(IniFile: TMemIniFile);
+var
+  deviceIndex: integer;
+  deviceCfgIndex: integer;
+  deviceCfg: PInputDeviceConfig;
+  device: TAudioInputDevice;
+  deviceIniIndex: integer;
+  deviceIniStr: string;
+  channelCount: integer;
+  channelIndex: integer;
+  channelIndexStr: string;
+  newDevice: boolean;
+  recordKeys: TStringList;
+  i: integer;
+begin
+  recordKeys := TStringList.Create();
+
+  // read all record-keys for filtering
+  IniFile.ReadSection('Record', recordKeys);
+
+  deviceCfgIndex := 0;
+  SetLength(InputDeviceConfig, 0);
+
+  for i := 0 to recordKeys.Count-1 do
+  begin
+    // find next device-name
+    deviceIniIndex := ExtractKeyIndex(recordKeys[i], 'DeviceName[', ']');
+    if (deviceIniIndex < 0) then
+      continue;
+    deviceIniStr := IntToStr(deviceIniIndex);
+
+    if not IniFile.ValueExists('Record', 'DeviceName['+deviceIniStr+']') then
+      break;
+
+    // resize list
+    SetLength(InputDeviceConfig, deviceCfgIndex+1);
+
+    deviceCfg := @InputDeviceConfig[deviceCfgIndex];
+
+    // read an input device's config.
+    // Note: All devices are appended to the list whether they exist or not.
+    //   Otherwise an external device's config will be lost if it is not
+    //   connected (e.g. singstar mics or USB-Audio devices).
+    deviceCfg.Name := IniFile.ReadString('Record', 'DeviceName['+deviceIniStr+']', '');
+    deviceCfg.Input := IniFile.ReadInteger('Record', 'Input['+deviceIniStr+']', 0);
+
+    // find the largest channel-number of the current device in the ini-file
+    channelCount := GetMaxKeyIndex(recordKeys, 'Channel(', ')['+deviceIniStr+']');
+    if (channelCount < 0) then
+      channelCount := 0;
+
+    SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
+
+    // read channel-to-player mapping for every channel of the current device
+    // or set non-configured channels to no player (=0).
+    for channelIndex := 0 to High(deviceCfg.ChannelToPlayerMap) do
+    begin
+      channelIndexStr := IntToStr(channelIndex+1);
+      deviceCfg.ChannelToPlayerMap[channelIndex] :=
+        IniFile.ReadInteger('Record', 'Channel('+channelIndexStr+')['+deviceIniStr+']', 0);
+    end;
+
+    Inc(deviceCfgIndex);
+  end;
+
+  recordKeys.Free();
+
+  // Input devices - append detected soundcards
+  for deviceIndex := 0 to High(AudioInputProcessor.Device) do
+  begin
+    newDevice := true;
+    for deviceCfgIndex := 0 to High(InputDeviceConfig) do
+    begin //Search for Card in List
+      deviceCfg := @InputDeviceConfig[deviceCfgIndex];
+      device := AudioInputProcessor.Device[deviceIndex];
+
+      if (deviceCfg.Name = Trim(device.Description)) then
+      begin
+        newDevice := false;
+
+        // store highest channel index as an offset for the new channels
+        channelIndex := High(deviceCfg.ChannelToPlayerMap);
+        // add missing channels or remove non-existing ones
+        SetLength(deviceCfg.ChannelToPlayerMap, device.AudioFormat.Channels);
+        // initialize added channels to 0
+        for i := channelIndex+1 to High(deviceCfg.ChannelToPlayerMap) do
+        begin
+          deviceCfg.ChannelToPlayerMap[i] := 0;
+        end;
+
+        // associate ini-index with device
+        device.CfgIndex := deviceCfgIndex;
+
+        Break;
+      end;
+    end;
+
+    //If not in List -> Add
+    if newDevice then
+    begin
+      // resize list
+      SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
+      deviceCfgIndex := High(InputDeviceConfig);
+
+      deviceCfg := @InputDeviceConfig[deviceCfgIndex];
+      device := AudioInputProcessor.Device[deviceIndex];
+
+      deviceCfg.Name := Trim(AudioInputProcessor.Device[deviceIndex].Description);
+      deviceCfg.Input := 0;
+
+      channelCount := device.AudioFormat.Channels;
+      SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
+
+      for channelIndex := 0 to channelCount-1 do
+      begin
+        // set default at first start of USDX (1st device, 1st channel -> player1)
+        if ((channelIndex = 0) and (deviceCfgIndex = 0)) then
+          deviceCfg.ChannelToPlayerMap[0] := 1
+        else
+          deviceCfg.ChannelToPlayerMap[channelIndex] := 0;
+      end;
+
+      // associate ini-index with device
+      device.CfgIndex := deviceCfgIndex;
+    end;
+  end;
+
+end;
+
+procedure TIni.SaveInputDeviceCfg(IniFile: TIniFile);
+var
+  deviceIndex: integer;
+  deviceIndexStr: string;
+  channelIndex: integer;
+  channelIndexStr: string;
+  valueStr: string;
+begin
+  for deviceIndex := 0 to High(InputDeviceConfig) do begin
+    deviceIndexStr := IntToStr(deviceIndex+1);
+
+    valueStr := InputDeviceConfig[deviceIndex].Name;
+    IniFile.WriteString('Record', 'DeviceName['+deviceIndexStr+']', valueStr);
+
+    valueStr := IntToStr(InputDeviceConfig[deviceIndex].Input);
+    IniFile.WriteString('Record', 'Input['+deviceIndexStr+']', valueStr);
+
+    for channelIndex := 0 to High(InputDeviceConfig[deviceIndex].ChannelToPlayerMap) do
+    begin
+      channelIndexStr := IntToStr(channelIndex+1);
+      valueStr := IntToStr(InputDeviceConfig[deviceIndex].ChannelToPlayerMap[channelIndex]);
+      IniFile.WriteString('Record', 'Channel('+channelIndexStr+')['+deviceIndexStr+']', valueStr);
+    end;
+  end;
+end;
+
+procedure TIni.Load();
 var
   IniFile:    TMemIniFile;
   ThemeIni:   TMemIniFile;
@@ -386,7 +577,7 @@ begin
     if Tekst = ISavePlayback[Pet] then Ini.SavePlayback := Pet;
 
   // Threshold
-  Tekst := IniFile.ReadString('Sound', 'Threshold', IThreshold[2]);
+  Tekst := IniFile.ReadString('Sound', 'Threshold', IThreshold[1]);
   for Pet := 0 to High(IThreshold) do
     if Tekst = IThreshold[Pet] then Ini.Threshold := Pet;
 
@@ -479,65 +670,7 @@ begin
   for Pet := 0 to High(IColor) do
     if Tekst = IColor[Pet] then Ini.Color := Pet;
 
-  // Input devices - load ini list
-  SetLength(InputDeviceConfig, 0);
-  I := 1;
-  while (IniFile.ValueExists('Record', 'DeviceName'+IntToStr(I))) do begin
-    // resize list
-    SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
-    I2 := High(InputDeviceConfig);
-
-    // read an input device's config.
-    // Note: All devices are appended to the list whether they exist or not.
-    //   Otherwise an external device's config will be lost if it is not
-    //   connected (e.g. singstar mics or USB-Audio devices).
-    InputDeviceConfig[I2].Name :=
-        IniFile.ReadString('Record', 'DeviceName'+IntToStr(I), '');
-    InputDeviceConfig[I2].Input :=
-        IniFile.ReadInteger('Record', 'Input'+IntToStr(I), 0);
-    InputDeviceConfig[I2].ChannelToPlayerMap[0] :=
-        IniFile.ReadInteger('Record', 'ChannelL'+IntToStr(I), 0);
-    InputDeviceConfig[I2].ChannelToPlayerMap[1] :=
-        IniFile.ReadInteger('Record', 'ChannelR'+IntToStr(I), 0);
-
-    Inc(I);
-  end;
-
-  // Input devices - append detected soundcards
-  for I := 0 to High(AudioInputProcessor.Device) do
-  begin
-    B := False;
-    For I2 := 0 to High(InputDeviceConfig) do
-    begin //Search for Card in List
-      if (InputDeviceConfig[I2].Name = Trim(AudioInputProcessor.Device[I].Description)) then
-      begin
-        B := True;
-        // associate ini-index with device
-        AudioInputProcessor.Device[I].CfgIndex := I2;
-        Break;
-      end;
-    end;
-
-    //If not in List -> Add
-    If not B then
-    begin
-      // resize list
-      SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
-      I2 := High(InputDeviceConfig);
-
-      InputDeviceConfig[I2].Name := Trim(AudioInputProcessor.Device[I].Description);
-      InputDeviceConfig[I2].Input := 0;
-      InputDeviceConfig[I2].ChannelToPlayerMap[0] := 0;
-      InputDeviceConfig[I2].ChannelToPlayerMap[1] := 0;
-
-      // associate ini-index with device
-      AudioInputProcessor.Device[I].CfgIndex := I2;
-
-      // set default at first start of USDX (1st device, 1st channel -> player1)
-      if (I2 = 0) then
-        InputDeviceConfig[I2].ChannelToPlayerMap[0] := 1;
-    end;
-  end;
+  LoadInputDeviceCfg(IniFile);
 
   //Advanced Settings
 
@@ -725,22 +858,7 @@ begin
     Tekst := IColor[Ini.Color];
     IniFile.WriteString('Themes',    'Color',    Tekst);
 
-    // Record
-    for I := 0 to High(InputDeviceConfig) do begin
-      S := IntToStr(I+1);
-
-      Tekst := InputDeviceConfig[I].Name;
-      IniFile.WriteString('Record', 'DeviceName' + S, Tekst);
-
-      Tekst := IntToStr(InputDeviceConfig[I].Input);
-      IniFile.WriteString('Record', 'Input' + S, Tekst);
-
-      Tekst := IntToStr(InputDeviceConfig[I].ChannelToPlayerMap[0]);
-      IniFile.WriteString('Record', 'ChannelL' + S, Tekst);
-
-      Tekst := IntToStr(InputDeviceConfig[I].ChannelToPlayerMap[1]);
-      IniFile.WriteString('Record', 'ChannelR' + S, Tekst);
-    end;
+    SaveInputDeviceCfg(IniFile);
 
     //Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
 

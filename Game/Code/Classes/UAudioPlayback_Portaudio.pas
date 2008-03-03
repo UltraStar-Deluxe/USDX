@@ -18,6 +18,7 @@ implementation
 
 uses
   portaudio,
+  UAudioCore_Portaudio,
   UAudioPlayback_SoftMixer,
   ULog,
   UIni,
@@ -38,7 +39,7 @@ type
 var
   singleton_AudioPlaybackPortaudio : IAudioPlayback;
 
-  
+
 { TAudioPlayback_Portaudio }
 
 function PortaudioAudioCallback(input: Pointer; output: Pointer; frameCount: Longword;
@@ -59,44 +60,43 @@ end;
 
 function TAudioPlayback_Portaudio.InitializeAudioPlaybackEngine(): boolean;
 var
-  paApi           : TPaHostApiIndex;
+  paApiIndex      : TPaHostApiIndex;
   paApiInfo       : PPaHostApiInfo;
   paOutParams     : TPaStreamParameters;
   paOutDevice     : TPaDeviceIndex;
   paOutDeviceInfo : PPaDeviceInfo;
   err             : TPaError;
-const
-  sampleFreq = 44100;
+  sampleRate      : integer;
 begin
   result := false;
 
   Pa_Initialize();
 
-  // FIXME: determine automatically
-  {$IFDEF WIN32}
-  paApi := Pa_HostApiTypeIdToHostApiIndex(paDirectSound);
-  {$ELSE}
-  paApi := Pa_HostApiTypeIdToHostApiIndex(paALSA);
-  {$ENDIF}
-  if (paApi < 0) then
+  paApiIndex := TAudioCore_Portaudio.GetPreferredApiIndex();
+  if(paApiIndex = -1) then
   begin
-    Log.LogStatus('Pa_HostApiTypeIdToHostApiIndex: '+Pa_GetErrorText(paApi), 'UAudioPlayback_Portaudio');
-    exit;
+    Log.LogError('No working Audio-API found', 'TAudioPlayback_Portaudio.InitializeAudioPlaybackEngine');
+    Exit;
   end;
 
-  paApiInfo := Pa_GetHostApiInfo(paApi);
+  paApiInfo := Pa_GetHostApiInfo(paApiIndex);
   paOutDevice     := paApiInfo^.defaultOutputDevice;
   paOutDeviceInfo := Pa_GetDeviceInfo(paOutDevice);
+
+  if (paOutDeviceInfo^.defaultSampleRate > 0) then
+    sampleRate := Trunc(paOutDeviceInfo^.defaultSampleRate)
+  else
+    sampleRate := 44100;
 
   with paOutParams do begin
     device := paOutDevice;
     channelCount := 2;
     sampleFormat := paInt16;
-    suggestedLatency := paOutDeviceInfo^.defaultHighOutputLatency;
+    suggestedLatency := paOutDeviceInfo^.defaultLowOutputLatency;
     hostApiSpecificStreamInfo := nil;
   end;
 
-  err := Pa_OpenStream(paStream, nil, @paOutParams, sampleFreq,
+  err := Pa_OpenStream(paStream, nil, @paOutParams, sampleRate,
           paFramesPerBufferUnspecified,
           paNoFlag, @PortaudioAudioCallback, Self);
   if(err <> paNoError) then begin
@@ -106,7 +106,7 @@ begin
 
   FormatInfo := TAudioFormatInfo.Create(
     paOutParams.channelCount,
-    sampleFreq,
+    sampleRate,
     asfS16 // FIXME: is paInt16 system-dependant or -independant?
   );
 

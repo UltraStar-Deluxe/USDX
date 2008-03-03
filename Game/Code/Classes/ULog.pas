@@ -286,7 +286,6 @@ var
   FS:           TFileStream;
   FileName:     string;
   Num:          integer;
-  BL:           integer;
 begin
   for Num := 1 to 9999 do begin
     FileName := IntToStr(Num);
@@ -298,10 +297,8 @@ begin
 
   FS := TFileStream.Create(FileName, fmCreate);
 
-  for BL := 0 to High(AudioInputProcessor.Sound[SoundNr].BufferLong) do begin
-    AudioInputProcessor.Sound[SoundNr].BufferLong[BL].Seek(0, soBeginning);
-    FS.CopyFrom(AudioInputProcessor.Sound[SoundNr].BufferLong[BL], AudioInputProcessor.Sound[SoundNr].BufferLong[BL].Size);
-  end;
+  AudioInputProcessor.Sound[SoundNr].BufferLong.Seek(0, soBeginning);
+  FS.CopyFrom(AudioInputProcessor.Sound[SoundNr].BufferLong, AudioInputProcessor.Sound[SoundNr].BufferLong.Size);
 
   FS.Free;
 end;

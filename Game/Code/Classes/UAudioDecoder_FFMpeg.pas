@@ -4,7 +4,7 @@ unit UAudioDecoder_FFMpeg;
 
 This unit is primarily based upon -
     http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
-    
+
     and tutorial03.c
 
     http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
@@ -19,6 +19,7 @@ interface
 
 {$I ../switches.inc}
 
+//{$DEFINE DebugFFMpegDecode}
 
 uses
   Classes,
@@ -38,7 +39,6 @@ uses
   SDL,
   ULog,
   UConfig;
-
 
 type
   PPacketQueue = ^TPacketQueue;
@@ -371,7 +371,9 @@ begin
       
       if(url_feof(pbIOCtx) <> 0) then
       begin
+        {$IFDEF DebugFFMpegDecode}
         SafeWriteLn('feof');
+        {$ENDIF}
         eofState := true;
         continue;
       end;
@@ -379,7 +381,9 @@ begin
       // check for errors
       if(url_ferror(pbIOCtx) = 0) then
       begin
+        {$IFDEF DebugFFMpegDecode}
         SafeWriteLn('Errorf');
+        {$ENDIF}
         // no error -> wait for user input
         SDL_Delay(100);
         continue;
@@ -438,10 +442,12 @@ begin
 
       if(len1 < 0) then
       begin
-	      // if error, skip frame
+        // if error, skip frame
+        {$IFDEF DebugFFMpegDecode}
         SafeWriteLn( 'Skip audio frame' );
+        {$ENDIF}
         audio_pkt_size := 0;
-       	break;
+        break;
       end;
 
       Inc(audio_pkt_data, len1);
@@ -449,8 +455,8 @@ begin
 
       if (data_size <= 0) then
       begin
-    	  // no data yet, get more frames
-     	  continue;
+        // no data yet, get more frames
+        continue;
       end;
 
       // we have data, return it and come back for more later
@@ -475,7 +481,9 @@ begin
     if (audio_pkt_data = PChar(FlushPacket.data)) then
     begin
       avcodec_flush_buffers(pCodecCtx);
+      {$IFDEF DebugFFMpegDecode}
       SafeWriteLn('Flush');
+      {$ENDIF}
       continue;
     end;
 
@@ -484,7 +492,9 @@ begin
     begin
       // end-of-file reached -> set EOF-flag
       SetEOF(true);
+      {$IFDEF DebugFFMpegDecode}
       SafeWriteLn('EOF');
+      {$ENDIF}
       // note: buffer is not (even partially) filled -> no data to return
       exit;
     end;
@@ -516,14 +526,14 @@ begin
 
       if(audio_size < 0) then
       begin
-      	// if error, output silence
+        // if error, output silence
         audio_buf_size := 1024;
         FillChar(audio_buf, audio_buf_size, #0);
         //SafeWriteLn( 'Silence' );
       end
       else
       begin
-      	audio_buf_size := audio_size;
+        audio_buf_size := audio_size;
       end;
       audio_buf_index := 0;
     end;
@@ -619,7 +629,9 @@ begin
   if (av_find_stream_info(pFormatCtx) < 0) then
     exit;
 
+  {$IFDEF DebugFFMpegDecode}
   dump_format(pFormatCtx, 0, pchar(Filename), 0);
+  {$ENDIF}
 
   ffmpegStreamID := FindAudioStreamIndex(pFormatCtx);
   if (ffmpegStreamID < 0) then
@@ -730,7 +742,7 @@ begin
       begin
         Self.firstPkt := pkt1.next;
         if (Self.firstPkt = nil) then
-      	  Self.lastPkt := nil;
+          Self.lastPkt := nil;
         dec(Self.nbPackets);
 
         //SafeWriteLn('Get: ' + inttostr(nbPackets));

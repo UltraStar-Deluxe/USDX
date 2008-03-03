@@ -423,11 +423,10 @@ type
   end;
 
   TThemeOptionsRecord = class(TThemeBasic)
-    SelectSlideCard:      TThemeSelectSlide;
-    SelectSlideInput:     TThemeSelectSlide;
-    SelectSlideChannelL:  TThemeSelectSlide;
-    SelectSlideChannelR:  TThemeSelectSlide;
-    ButtonExit:           TThemeButton;
+    SelectSlideCard:       TThemeSelectSlide;
+    SelectSlideInput:      TThemeSelectSlide;
+    SelectSlideChannel:    TThemeSelectSlide;
+    ButtonExit:            TThemeButton;
   end;
 
   TThemeOptionsAdvanced = class(TThemeBasic)
@@ -1183,8 +1182,7 @@ begin
 
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideCard,     'OptionsRecordSelectSlideCard');
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideInput,    'OptionsRecordSelectSlideInput');
-      ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannelL, 'OptionsRecordSelectSlideChannelL');
-      ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannelR, 'OptionsRecordSelectSlideChannelR');
+      ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannel,  'OptionsRecordSelectSlideChannel');
       ThemeLoadButton(OptionsRecord.ButtonExit,               'OptionsRecordButtonExit');
 
       //Options Advanced
