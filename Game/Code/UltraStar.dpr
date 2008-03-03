@@ -24,6 +24,7 @@ uses
   {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\delphi\portaudio.pas',
+  UAudioCore_Portaudio   in 'Classes\UAudioCore_Portaudio.pas',
   {$ENDIF}
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\delphi\portmixer.pas',
@@ -127,7 +128,7 @@ uses
   UPluginInterface  in 'Classes\UPluginInterface.pas',  //Interface offered by Core to Plugins
   uPluginLoader     in 'Classes\uPluginLoader.pas',     //New Plugin Loader Module
 
-  UParty            in 'Classes\UParty.pas',            // to - do : rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
+  UParty            in 'Classes\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
   UPlatform         in 'Classes\UPlatform.pas',
 {$IFDEF WIN32}
   UPlatformWindows  in 'Classes\UPlatformWindows.pas',
@@ -232,9 +233,6 @@ uses
   Windows,
   {$ENDIF}
   SysUtils;
-
-const
-  Version = 'UltraStar Deluxe V 1.10 Alpha Build';  
 
 {$IFNDEF FPC}
 begin
