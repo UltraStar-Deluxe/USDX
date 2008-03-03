@@ -88,7 +88,7 @@ PDEFINES  = -dLCL
 
 # The user can overwrite the default flags with
 #   make PFLAGS="myflags"
-PFLAGS = -S2dgi
+PFLAGS = -S2gi
 # the user's flags (specified with configure) must be the last in
 # the list to overwrite the defaults (e.g.with the - option: -Xs-).
 PFLAGS += @PFLAGS@
