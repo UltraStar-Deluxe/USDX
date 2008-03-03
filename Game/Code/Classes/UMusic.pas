@@ -186,7 +186,7 @@ type
 type
   IGenericPlayback = Interface
   ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCE33DD}']
-      function  GetName: String;
+      function GetName: String;
 
       function  Open(Filename: string): boolean; // true if succeed
       procedure Close;
@@ -239,6 +239,7 @@ type
 
   IGenericDecoder = Interface
   ['{557B0E9A-604D-47E4-B826-13769F3E10B7}']
+      function GetName(): String;
       function InitializeDecoder(): boolean;
       //function IsSupported(const Filename: string): boolean;
   end;
@@ -257,7 +258,7 @@ type
 
   IAudioInput = Interface
   ['{A5C8DA92-2A0C-4AB2-849B-2F7448C6003A}']
-      function  GetName: String;
+      function GetName: String;
       function InitializeRecord: boolean;
 
       procedure CaptureStart;
@@ -311,8 +312,8 @@ implementation
 uses
   sysutils,
   UMain,
-  UCommandLine;
-//  uLog;
+  UCommandLine,
+  ULog;
 
 var
   singleton_VideoPlayback : IVideoPlayback  = nil;
@@ -437,7 +438,7 @@ begin
   begin
     while not AudioDecoder.InitializeDecoder do
     begin
-      //writeln('Initialize failed, Removing - '+ AudioDecoder.GetName  );
+      Log.LogError('Initialize failed, Removing - '+ AudioDecoder.GetName);
       AudioManager.remove( AudioDecoder ); 
       singleton_AudioDecoder  := nil;
       AssignSingletonObjects();
@@ -448,7 +449,7 @@ begin
   begin
     while not AudioPlayback.InitializePlayback do
     begin
-      writeln('Initialize failed, Removing - '+ AudioPlayback.GetName  );
+      Log.LogError('Initialize failed, Removing - '+ AudioPlayback.GetName);
       AudioManager.remove( AudioPlayback ); 
       singleton_AudioPlayback := nil;
       AssignSingletonObjects();
@@ -459,7 +460,7 @@ begin
   begin
     while not AudioInput.InitializeRecord do
     begin
-      writeln('Initialize failed, Removing - '+ AudioInput.GetName  );
+      Log.LogError('Initialize failed, Removing - '+ AudioInput.GetName);
       AudioManager.remove( AudioInput ); 
       singleton_AudioInput    := nil;
       AssignSingletonObjects();
