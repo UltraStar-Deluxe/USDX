@@ -8,54 +8,55 @@ interface
 
 {$I switches.inc}
 
-uses {$IFDEF win32}
-     windows,
-     {$ELSE}
-     LCLType,
-     {$ENDIF}
-     ucommon,
-     SDL,
-     UMenu,
-     OpenGL12,
-     SysUtils;
+uses
+  {$IFDEF win32}
+  windows,
+  {$ELSE}
+  LCLType,
+  {$ENDIF}
+  ucommon,
+  SDL,
+  UMenu,
+  OpenGL12,
+  SysUtils;
 
 type
   TDisplay = class
-    ActualScreen : PMenu;
-    NextScreen   : PMenu;
+    private
+      //fade-to-black-hack
+      BlackScreen: Boolean;
 
-    //fade-to-black-hack
-    BlackScreen: Boolean;
+      doFade   : Boolean;
+      canFade  : Boolean;
+      myFade   : integer;
+      lastTime : Cardinal;
+      pTexData : Pointer;
+      pTex     : array[1..2] of glUInt;
 
-    //popup hack
-    NextScreenWithCheck: Pmenu;
-    CheckOK  : Boolean;
+      FPSCounter    : Cardinal;
+      LastFPS       : Cardinal;
+      NextFPSSwap   : Cardinal;
 
-    h_DC     :     HDC;
-    h_RC     :     HGLRC;
+      OSD_LastError : String;
 
-    Fade     : Real;
-    doFade   : Boolean;
-    canFade  : Boolean;
-    myFade   : integer;
-    lastTime : Cardinal;
-    pTexData : Pointer;
-    pTex     : array[1..2] of glUInt;
+      procedure DrawDebugInformation;
+    public
+      NextScreen   : PMenu;
+      CurrentScreen : PMenu;
 
-    FPSCounter    : Cardinal;
-    LastFPS       : Cardinal;
-    NextFPSSwap   : Cardinal;
-    
-    OSD_LastError : String;
-  public
-    constructor Create;
-    destructor  Destroy; override;
+      //popup hack
+      NextScreenWithCheck: Pmenu;
+      CheckOK  : Boolean;
 
-    procedure PrintScreen;
-    procedure ScreenShot;
-    procedure DrawDebugInformation;
-    
-    function  Draw: Boolean;
+      Fade     : Real;
+
+      constructor Create;
+      destructor  Destroy; override;
+
+      procedure PrintScreen;
+      procedure ScreenShot;
+
+      function  Draw: Boolean;
   end;
 
 var
@@ -138,7 +139,6 @@ begin
   end;
 
   FreeMem(pTexData);
-  // end
 
   //Set LastError for OSD to No Error
   OSD_LastError := 'No Errors';
@@ -184,6 +184,7 @@ begin
     //popup hack
     // check was successful... move on
     if CheckOK then
+    begin
       if assigned (NextScreenWithCheck)then
       begin
         NextScreen:=NextScreenWithCheck;
@@ -191,28 +192,34 @@ begin
         CheckOk:=False;
       end
       else
+      begin
         BlackScreen:=True; // end of game - fade to black before exit
-    //end popup hack
+      end;
+    end;
 
-//    ActualScreen.SetAnimationProgress(1);
-    if (not assigned (NextScreen)) and (not BlackScreen) then begin
-      ActualScreen.Draw;
+//    CurrentScreen.SetAnimationProgress(1);
+    if (not assigned (NextScreen)) and (not BlackScreen) then
+    begin
+      CurrentScreen.Draw;
+
       //popup mod
-      if ScreenPopupError <> NIL then if ScreenPopupError.Visible then ScreenPopupError.Draw else
-      if ScreenPopupCheck <> NIL then if ScreenPopupCheck.Visible then ScreenPopupCheck.Draw;
-      //popup end
+      if (ScreenPopupError <> NIL) and ScreenPopupError.Visible then
+        ScreenPopupError.Draw
+      else if (ScreenPopupCheck <> NIL) and ScreenPopupCheck.Visible then
+        ScreenPopupCheck.Draw;
+
       // fade mod
       myfade:=0;
       if (Ini.ScreenFade=1) and canFade then
         doFade:=True
       else if Ini.ScreenFade=0 then
         doFade:=False;
-      // end
     end
     else
     begin
       // check if we had an initialization error (canfade=false, dofade=true)
-      if doFade and not canFade then begin
+      if doFade and not canFade then
+      begin
         doFade:=False; //disable fading
 //        ScreenPopupError.ShowPopup('Error initializing\nfade texture\n\nfading\ndisabled'); //show error message
       end;
@@ -223,36 +230,28 @@ begin
         if myfade = 0 then
         begin
           glViewPort(0, 0, 512, 512);
-          ActualScreen.Draw;
+          CurrentScreen.Draw;
           glBindTexture(GL_TEXTURE_2D, pTex[S]);
           glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 512, 512, 0);
           glError:=glGetError;
-          if glError <> GL_NO_ERROR then
+          if (glError <> GL_NO_ERROR) then
           begin
             canFade := False;
-            case glError of
-              GL_INVALID_ENUM: glErrorStr:='INVALID_ENUM';
-              GL_INVALID_VALUE: glErrorStr:='INVALID_VALUE';
-              GL_INVALID_OPERATION: glErrorStr:='INVALID_OPERATION';
-              GL_STACK_OVERFLOW: glErrorStr:='STACK_OVERFLOW';
-              GL_STACK_UNDERFLOW: glErrorStr:='STACK_UNDERFLOW';
-              GL_OUT_OF_MEMORY: glErrorStr:='OUT_OF_MEMORY';
-              else glErrorStr:='unknown error';
-            end;
+            glErrorStr := gluErrorString(glError);
 //            ScreenPopupError.ShowPopup('Error copying\nfade texture\n('+glErrorStr+')\nfading\ndisabled'); //show error message
           end;
           glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
           // blackscreen-hack
           if not BlackScreen then
             NextScreen.onShow;
-            
-          lastTime:=GetTickCount;
+
+          lastTime:=GetTickCount; // TODO: use cross-plattform SDL_GetTicks() instead
           if (S=2) or (Screens = 1) then
             myfade:=myfade+1;
         end; // end texture creation in first fading step
 
         //do some time-based fading
-        currentTime:=GetTickCount;
+        currentTime:=GetTickCount; // TODO: use cross-plattform SDL_GetTicks() instead
         if (currentTime > lastTime+30) and (S=1) then
         begin
           myfade:=myfade+4;
@@ -263,14 +262,15 @@ begin
 //      Fade := Fade -0.999; // start fading out
 
 
-//      ActualScreen.ShowFinish := false; // no purpose?
+//      CurrentScreen.ShowFinish := false; // no purpose?
 
-//      ActualScreen.SetAnimationProgress(Fade-1); // nop?
+//      CurrentScreen.SetAnimationProgress(Fade-1); // nop?
 
         // blackscreen-hack
         if not BlackScreen then
           NextScreen.Draw // draw next screen
-        else if ScreenAct=1 then begin
+        else if ScreenAct=1 then
+        begin
           glClearColor(0, 0, 0 , 0);
           glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
         end;
@@ -291,22 +291,23 @@ begin
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
       end
-      else
-        // blackscreen hack
-        if not BlackScreen then
-          NextScreen.OnShow;
+      // blackscreen hack
+      else if not BlackScreen then
+      begin
+        NextScreen.OnShow;
+      end;
 
-
-      if ((myfade > 40) or (not doFade) or (not canFade)) And (S = 1) then begin // fade out complete...
+      if ((myfade > 40) or (not doFade) or (not canFade)) And (S = 1) then
+      begin // fade out complete...
         myFade:=0;
-        ActualScreen.onHide;
-        ActualScreen.ShowFinish:=False;
-        ActualScreen:=NextScreen;
+        CurrentScreen.onHide;
+        CurrentScreen.ShowFinish:=False;
+        CurrentScreen:=NextScreen;
         NextScreen := nil;
         if not blackscreen then
         begin
-          ActualScreen.onShowFinish;
-          ActualScreen.ShowFinish := true;
+          CurrentScreen.onShowFinish;
+          CurrentScreen.ShowFinish := true;
         end
         else
         begin
@@ -318,11 +319,12 @@ begin
     end; // if
 
     //Draw OSD only on first Screen if Debug Mode is enabled
-    if ((Ini.Debug = 1) OR (Params.Debug)) AND (S=1) then
+    if ((Ini.Debug = 1) or (Params.Debug)) and (S=1) then
       DrawDebugInformation;
       
   end; // for
-//  SwapBuffers(h_DC);
+
+  // SDL_GL_SwapBuffers();
 end;
 
 {function TDisplay.Fade(FadeIn : Boolean; Steps : UInt8): UInt8;
@@ -341,11 +343,14 @@ var
   Num:        integer;
   FileName:   string;
 begin
-  for Num := 1 to 9999 do begin
+  for Num := 1 to 9999 do
+  begin
     FileName := IntToStr(Num);
-    while Length(FileName) < 4 do FileName := '0' + FileName;
+    while Length(FileName) < 4 do
+      FileName := '0' + FileName;
     FileName := ScreenshotsPath + 'screenshot' + FileName + '.jpg';
-    if not FileExists(FileName) then break
+    if not FileExists(FileName) then
+      break
   end;
 
   glReadPixels(0, 0, ScreenW, ScreenH, GL_RGBA, GL_UNSIGNED_BYTE, @PrintScreenData[0]);
@@ -366,49 +371,55 @@ begin
 end;
 
 procedure TDisplay.ScreenShot;
- var F : file;
-     FileInfo: BITMAPINFOHEADER;
-     FileHeader : BITMAPFILEHEADER;
-     pPicData:Pointer;
-     FileName: String;
-     Num: Integer;
+var
+  F : file;
+  FileInfo: BITMAPINFOHEADER;
+  FileHeader : BITMAPFILEHEADER;
+  pPicData:Pointer;
+  FileName: String;
+  Num: Integer;
 begin
-  Exit; // something broken in here... quick fix... disabled it
-  //bilddatei Suchen
-  for Num := 1 to 9999 do begin
+  // FIXME: something broken in here... quick fix... disabled it
+  Exit;
+  
+  // search image-file
+  for Num := 1 to 9999 do
+  begin
     FileName := IntToStr(Num);
-    while Length(FileName) < 4 do FileName := '0' + FileName;
+    while Length(FileName) < 4 do
+      FileName := '0' + FileName;
     FileName := ScreenshotsPath + FileName + '.BMP';
-    if not FileExists(FileName) then break
+    if not FileExists(FileName) then
+      break
   end;
 
- //Speicher für die Speicherung der Header-Informationen vorbereiten
+ // prepare header memory
  ZeroMemory(@FileHeader, SizeOf(BITMAPFILEHEADER));
  ZeroMemory(@FileInfo  , SizeOf(BITMAPINFOHEADER));
  
- //Initialisieren der Daten des Headers
+ // initialize header-data
  FileHeader.bfType := 19778; //$4D42 = 'BM'
  FileHeader.bfOffBits := SizeOf(BITMAPINFOHEADER)+SizeOf(BITMAPFILEHEADER);
- 
- //Schreiben der Bitmap-Informationen
+
+ // write bitmap info
  FileInfo.biSize := SizeOf(BITMAPINFOHEADER);
  FileInfo.biWidth := ScreenW;
  FileInfo.biHeight := ScreenH;
  FileInfo.biPlanes := 1;
  FileInfo.biBitCount := 32;
  FileInfo.biSizeImage := FileInfo.biWidth*FileInfo.biHeight*(FileInfo.biBitCount div 8);
- 
- //Größenangabe auch in den Header übernehmen
+
+ // copy size-info to header
  FileHeader.bfSize := FileHeader.bfOffBits + FileInfo.biSizeImage;
- 
- //Speicher für die Bilddaten reservieren
+
+ // reserve memory for image-data
  GetMem(pPicData, FileInfo.biSizeImage);
  try
-  //Bilddaten von OpenGL anfordern (siehe oben)
+  // retrieve image-data from OpenGL (see above)
   glReadPixels(0, 0, ScreenW, ScreenH, GL_BGRA, GL_UNSIGNED_BYTE, pPicData);
- 
-  //Und den ganzen Müll in die Datei schieben ;-)
-  //Moderne Leute nehmen dafür auch Streams ...
+
+  // and move the whole stuff into the file ;-)
+  // up-to-date guys use streams for this purpose ...
   AssignFile(f, Filename);
   Rewrite( f,1 );
   try
@@ -419,7 +430,7 @@ begin
    CloseFile(f);
   end;
  finally
-  //Und den angeforderten Speicher wieder freigeben ...
+  // free allocated data ...
   FreeMem(pPicData, FileInfo.biSizeImage);
  end;
 end;
@@ -449,7 +460,7 @@ begin
   glColor4f(0, 0, 0, 1);
 
   //Calculate FPS
-  Ticks := GetTickCount;
+  Ticks := GetTickCount; // TODO: use cross-plattform SDL_GetTicks() instead
   if (Ticks >= NextFPSSwap) then
   begin
     LastFPS := FPSCounter * 4;

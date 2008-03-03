@@ -24,7 +24,7 @@ type
       Button:         array of TButton;
       Selects:        array of TSelect;
       SelectsS:       array of TSelectSlide;
-      ButtonCollection: Array of TButtonCollection;
+      ButtonCollection: array of TButtonCollection;
       BackImg:        TTexture;
       BackW:          integer;
       BackH:          integer;
@@ -1534,13 +1534,13 @@ procedure TMenu.onShow;
 begin
 // nothing
 //  beep;
-
+(*
   if fileexists( fFileName ) then
   begin
     if VideoPlayback.Open( fFileName ) then
       VideoPlayback.Play;
   end;
-
+*)
 end;
 
 procedure TMenu.onShowFinish;
