@@ -146,8 +146,8 @@ begin
   if ( TextureName <> '' ) AND
      ( Result      <> '' ) THEN
   begin
-    Log.LogError('', '-----------------------------------------');
-    Log.LogError(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
+    //Log.LogError('', '-----------------------------------------');
+    //Log.LogError(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
   end;
 
 {  Result := SkinPath + 'Bar.jpg';
