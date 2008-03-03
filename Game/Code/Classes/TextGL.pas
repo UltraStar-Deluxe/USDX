@@ -9,13 +9,14 @@ interface
 {$I switches.inc}
 
 
-uses  OpenGL12,
-      SDL,
-      UTexture,
-      Classes,
-      dialogs,
-      SDL_ttf,
-      ULog;
+uses
+  OpenGL12,
+  SDL,
+  UTexture,
+  Classes,
+  dialogs,
+  SDL_ttf,
+  ULog;
 
 procedure BuildFont;			                // Build Our Bitmap Font
 procedure KillFont;     		                // Delete The Font
@@ -73,22 +74,17 @@ var
 
 implementation
 
-uses UMain,
-     UCommon,
-     {$IFDEF win32}
-     windows,
-     {$ELSE}
-     lclintf,
-     lcltype,
-     {$ENDIF}
-     SysUtils,
-     {$IFDEF LAZARUS}
-     LResources,
-     {$ENDIF}
-     {$IFDEF DARWIN}
-     MacResources,
-     {$ENDIF}
-     UGraphic;
+uses
+  UMain,
+  UCommon,
+  SysUtils,
+  {$IFDEF LAZARUS}
+  LResources,
+  {$ENDIF}
+  {$IFDEF DARWIN}
+  MacResources,
+  {$ENDIF}
+  UGraphic;
 
 procedure BuildFont;			                // Build Our Bitmap Font
 
@@ -130,15 +126,13 @@ procedure BuildFont;			                // Build Our Bitmap Font
   end;
 
 var
-  font:     HFONT;              	          // Windows Font ID
-  h_dc:     hdc;
   Pet:      integer;
 begin
   ActFont := 0;
 
-  Log.LogStatus( '' , '---------------------------');
+  //Log.LogStatus( '' , '---------------------------');
 
-  Log.LogStatus( 'Font' , '---------------------------');
+  //Log.LogStatus( 'Font' , '---------------------------');
   SetLength(Fonts, 5);
   Fonts[0].Tex := Texture.LoadTexture(true, 'Font', 'PNG', 'Transparent', 0);
   Fonts[0].Tex.H := 30;
@@ -146,7 +140,7 @@ begin
   Fonts[0].Done := -1;
   Fonts[0].Outline := 0;
 
-  Log.LogStatus( 'FontB' , '---------------------------');
+  //Log.LogStatus( 'FontB' , '---------------------------');
 
   Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', 'PNG', 'Transparent', 0);
   Fonts[1].Tex.H := 30;
@@ -154,14 +148,14 @@ begin
   Fonts[1].Done := -1;
   Fonts[1].Outline := 0;
 
-  Log.LogStatus( 'FontO' , '---------------------------');
+  //Log.LogStatus( 'FontO' , '---------------------------');
   Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', 'PNG', 'Transparent', 0);
   Fonts[2].Tex.H := 30;
   Fonts[2].AspectW := 0.95;
   Fonts[2].Done := -1;
   Fonts[2].Outline := 5;
 
-  Log.LogStatus( 'FontO2' , '---------------------------');
+  //Log.LogStatus( 'FontO2' , '---------------------------');
   Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', 'PNG', 'Transparent', 0);
   Fonts[3].Tex.H := 30;
   Fonts[3].AspectW := 0.95;
