@@ -71,9 +71,9 @@ begin
                //Hack to Finish Singscreen correct on Exit with Q Shortcut
                if (Display.NextScreenWithCheck = NIL) then
                begin
-                 if (Display.ActualScreen = @ScreenSing) then
+                 if (Display.CurrentScreen = @ScreenSing) then
                    ScreenSing.Finish
-                 else if (Display.ActualScreen = @ScreenSingModi) then
+                 else if (Display.CurrentScreen = @ScreenSingModi) then
                    ScreenSingModi.Finish;
                end;
 

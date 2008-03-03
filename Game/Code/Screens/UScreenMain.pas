@@ -39,21 +39,19 @@ type
 
 implementation
 
-uses {$IFDEF win32}
-     windows,
-     {$ENDIF}
-     UGraphic,
-     UMain,
-     UIni,
-     UTexture,
-     USongs,
-     Textgl,
-//     opengl,
-     ULanguage,
-     UParty,
-     UDLLManager,
-     UScreenCredits,
-     USkins;
+uses
+  UGraphic,
+  UMain,
+  UIni,
+  UTexture,
+  USongs,
+  Textgl,
+  //opengl,
+  ULanguage,
+  UParty,
+  UDLLManager,
+  UScreenCredits,
+  USkins;
 
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;

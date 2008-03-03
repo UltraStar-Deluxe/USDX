@@ -155,7 +155,7 @@ begin
 
   ScreenOptionsThemes := TScreenOptionsThemes.create();
   ScreenOptionsThemes.onshow;
-  Display.ActualScreen := @ScreenOptionsThemes;
+  Display.CurrentScreen := @ScreenOptionsThemes;
 
   ScreenOptionsThemes.Interaction    := self.Interaction;
   ScreenOptionsThemes.Draw;
