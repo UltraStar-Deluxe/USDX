@@ -45,9 +45,11 @@ Fast Fourier Transform routines.
 
 unit UFFT;
 
-{$ifdef fpc}
-  {$mode delphi}{$H+}
-{$endif}
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+{$I switches.inc}
 
 interface
 type
@@ -55,7 +57,7 @@ type
   PSingleArray = ^TSingleArray;
 
 procedure PowerSpectrum(NumSamples: Integer; In_, Out_: PSingleArray);
-procedure WindowFunc(NumSamples: Integer; in_: PSingleArray); inline;
+procedure WindowFunc(NumSamples: Integer; in_: PSingleArray); {$IFDEF HasInline}inline;{$ENDIF}
 
 implementation
 
@@ -124,7 +126,7 @@ begin
    end;
 end;
 
-function FastReverseBits(i, NumBits: Integer): Integer; inline;
+function FastReverseBits(i, NumBits: Integer): Integer; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   if (NumBits <= MaxFastBits) then
     result := gFFTBitTable[NumBits - 1][i]
@@ -334,7 +336,7 @@ begin
    FreeMem(ImagOut);
 end;
 
-procedure WindowFunc(NumSamples: Integer; in_: PSingleArray); inline;
+procedure WindowFunc(NumSamples: Integer; in_: PSingleArray); {$IFDEF HasInline}inline;{$ENDIF}
 var
   i: Integer;
 begin

@@ -39,8 +39,8 @@ type
       class function ConvertAudioFormatToSDL(fmt: TAudioSampleFormat): UInt16;
       function InitFormatConversion(): boolean;
 
-      procedure Lock(); inline;
-      procedure Unlock(); inline;
+      procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure Unlock(); {$IFDEF HasInline}inline;{$ENDIF}
     public
       constructor Create(Engine: TAudioPlayback_SoftMixer);
       destructor Destroy(); override;
@@ -75,8 +75,8 @@ type
 
       _volume: integer;
 
-      procedure Lock(); inline;
-      procedure Unlock(); inline;
+      procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure Unlock(); {$IFDEF HasInline}inline;{$ENDIF}
 
       function GetVolume(): integer;
       procedure SetVolume(volume: integer);
@@ -100,7 +100,7 @@ type
       function InitializeAudioPlaybackEngine(): boolean; virtual; abstract;
       function StartAudioPlaybackEngine(): boolean;      virtual; abstract;
       procedure StopAudioPlaybackEngine();               virtual; abstract;
-      procedure AudioCallback(buffer: PChar; size: integer); inline;
+      procedure AudioCallback(buffer: PChar; size: integer); {$IFDEF HasInline}inline;{$ENDIF}
     public
       function  GetName: String;                         virtual; abstract;
 
@@ -130,7 +130,7 @@ type
       // Interface for Visualizer
       function GetPCMData(var data: TPCMData): Cardinal;
 
-      function GetMixer(): TAudioMixerStream; inline;
+      function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
       // Sounds

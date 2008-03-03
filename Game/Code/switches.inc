@@ -23,9 +23,20 @@
   {$ENDIF}
 
   {$DEFINE DLL_CDECL}
+  {$DEFINE HasInline}
   {$UNDEF UseSerialPort}
 {$ELSE}
   {$DEFINE Delphi}
+
+  // Delphi version numbers (ignore versions released before Delphi 6 as they miss the $IF directive):
+  // Delphi 6 (VER140), Delphi 7 (VER150), Delphi 8 (VER160)
+  // Delphi 9/2005 (VER170), Delphi 10/2006 (VER180)
+
+  // the inline-procedure directive was introduced with Delphi 2005
+  {$IF not (Defined(VER140) or Defined(VER150) or Defined(VER160))}
+    {$DEFINE HasInline}
+  {$IFEND}
+
   {$DEFINE DLL_STDCALL}
   {$UNDEF UseSerialPort}
 {$ENDIF}

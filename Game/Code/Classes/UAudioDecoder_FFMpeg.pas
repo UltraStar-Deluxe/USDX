@@ -17,7 +17,7 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$I ../switches.inc}
+{$I switches.inc}
 
 //{$DEFINE DebugFFMpegDecode}
 
@@ -109,9 +109,9 @@ type
       audio_buf_size  : cardinal;
       audio_buf       : TAudioBuffer;
 
-      procedure Lock(); inline;
-      procedure Unlock(); inline;
-      function GetLockMutex(): PSDL_Mutex; inline;
+      procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure Unlock(); {$IFDEF HasInline}inline;{$ENDIF}
+      function GetLockMutex(): PSDL_Mutex; {$IFDEF HasInline}inline;{$ENDIF}
 
       procedure ParseAudio();
       function DecodeFrame(var buffer: TAudioBuffer; bufSize: integer): integer;

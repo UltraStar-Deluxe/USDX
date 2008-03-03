@@ -52,7 +52,7 @@ type
     procedure LogBuffer(const buf : Pointer; const bufLength : Integer; filename : string);
   end;
 
-procedure SafeWriteLn(const msg: string); inline;
+procedure SafeWriteLn(const msg: string); {$IFDEF HasInline}inline;{$ENDIF}
 
 var
   Log:    TLog;

@@ -37,6 +37,8 @@ unit avformat;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$I switches.inc}
+
 interface
 
 uses
@@ -133,7 +135,7 @@ function av_dup_packet (pkt: PAVPacket): integer;
  *
  * @param pkt packet to free
  *)
-procedure av_free_packet (pkt: PAVPacket); inline;
+procedure av_free_packet (pkt: PAVPacket); {$IFDEF HasInline}inline;{$ENDIF}
 
 (*************************************************)
 (* fractional numbers for exact pts handling *)

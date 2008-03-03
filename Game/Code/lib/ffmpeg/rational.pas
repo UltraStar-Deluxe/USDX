@@ -36,6 +36,8 @@ unit rational;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$I switches.inc}
+
 interface
 
 uses
@@ -57,14 +59,14 @@ type
  * @param b second rational
  * @return 0 if a==b, 1 if a>b and -1 if a<b.
  *)
-function av_cmp_q(a: TAVRational; b: TAVRational): integer; inline;
+function av_cmp_q(a: TAVRational; b: TAVRational): integer; {$IFDEF HasInline}inline;{$ENDIF}
 
 (**
  * Rational to double conversion.
  * @param a rational to convert
  * @return (double) a
  *)
-function av_q2d(a: TAVRational): double; inline;
+function av_q2d(a: TAVRational): double; {$IFDEF HasInline}inline;{$ENDIF}
 
 (**
  * Reduce a fraction.

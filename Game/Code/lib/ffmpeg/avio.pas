@@ -37,6 +37,8 @@ unit avio;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$I switches.inc}
+
 interface
 
 uses
@@ -366,7 +368,7 @@ function ff_get_v(bc: PByteIOContext): uint64;
   cdecl; external av__format;
 {$IFEND}
 
-function url_is_streamed(s: PByteIOContext): integer; inline;
+function url_is_streamed(s: PByteIOContext): integer; {$IFDEF HasInline}inline;{$ENDIF}
 
 (** @note when opened as read/write, the buffers are only used for
    writing *)
