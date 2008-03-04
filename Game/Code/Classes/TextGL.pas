@@ -205,7 +205,7 @@ var
 begin
 //  Log.LogStatus(Text, 'glTextWidth');
   Result := 0;
-  for i := 0 to Length(text) do
+  for i := 0 to Length(text) -1 do  //  Patched by AlexanderS : bug with wrong sliced text lines
   begin
     Letter := Text[i];
     // Bugfix: does not work with FPC, probably because a part of text is assigned to itself
