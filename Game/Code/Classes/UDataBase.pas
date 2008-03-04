@@ -74,7 +74,7 @@ const
 
 Procedure TDataBaseSystem.Init(const Filename: string);
 begin
-  writeln( 'TDataBaseSystem.Init' );
+  writeln( 'TDataBaseSystem.Init ('+Filename+') @ '+ floattostr( now() ) );
   
   //Open Database
   ScoreDB   := TSqliteDatabase.Create( Filename );
@@ -251,8 +251,8 @@ begin
   Case Typ of
     0: Query := 'SELECT `Player` , `Difficulty` , `Score` , `Artist` , `Title` FROM `'+cUS_Scores+'` INNER JOIN `US_Songs` ON (`SongID` = `ID`) ORDER BY `Score`';
     1: Query := 'SELECT `Player` , ROUND (Sum(`Score`) / COUNT(`Score`)) FROM `'+cUS_Scores+'` GROUP BY `Player` ORDER BY (Sum(`Score`) / COUNT(`Score`))';
-    2: Query := 'SELECT `Artist` , `Title` , `TimesPlayed` FROM `'+cUS_Scores+'` ORDER BY `TimesPlayed`';
-    3: Query := 'SELECT `Artist` , Sum(`TimesPlayed`) FROM `'+cUS_Scores+'` GROUP BY `Artist` ORDER BY Sum(`TimesPlayed`)';
+    2: Query := 'SELECT `Artist` , `Title` , `TimesPlayed` FROM `'+cUS_Songs+'` ORDER BY `TimesPlayed`';
+    3: Query := 'SELECT `Artist` , Sum(`TimesPlayed`) FROM `'+cUS_Songs+'` GROUP BY `Artist` ORDER BY Sum(`TimesPlayed`)';
   end;
 
   //Add Order Direction
@@ -265,11 +265,12 @@ begin
   Query := Query + ' LIMIT ' + InttoStr(Count * Page) + ', ' + InttoStr(Count) + ';';
 
   //Execute Query
-  //try
+  try
     TableData := ScoreDB.GetTable(Query);
-  {except
-    exit;
-  end;}
+  except
+    exit;  // this has a try except, because ( on linux at least ) it seems that doing a GetTable, that returns nothing
+           // causes an exception.   and in the case of a new Database file, with no scores stored yet... this seems to except here.
+  end;
 
   //if Result empty -> Exit
   if (TableData.RowCount < 1) then
@@ -337,7 +338,7 @@ begin
              exit;
          end;
       2: begin
-           Query := 'SELECT COUNT(`ID`) FROM `'+cUS_Scores+'`;';
+           Query := 'SELECT COUNT(`ID`) FROM `'+cUS_Songs+'`;';
            if not ScoreDB.TableExists( cUS_Songs ) then
              exit;
          end;

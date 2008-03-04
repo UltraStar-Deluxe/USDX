@@ -509,10 +509,26 @@ begin
     with Line^.Words[Line^.CurWord] do
     begin
       Progress:=(Beat-Start)/Length;
+      if Progress >= 1 then
+        Progress := 1;
+      
+      if Progress <= 0 then
+        Progress := 0;
+      
       CurWordStartTx:=TexPos;
       CurWordEndTx:=TexPos+TexWidth;
       CurWordStart:=X;
       CurWordEnd:=X+Width;
+      
+      // Slide Effect
+      // simply paint the active texture to the current position 
+      if HoverEffekt = 3 then
+      begin
+        CurWordStartTx := CurWordStartTx + TexWidth * progress;
+        CurWordEndTx := CurWordStartTx;
+        CurWordStart := CurWordStart + Width * progress;
+        CurWordEnd := CurWordStart;
+      end;
     end;
 
     //Get Start Position:
@@ -561,7 +577,12 @@ begin
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, Line^.Tex);
 
-    glColorRGB(LineColor_act);
+    if HoverEffekt = 4 then
+      // ball lyric effect - only highlight current word and not that ones before in this line
+      glColorRGB(LineColor_en)
+    else
+      glColorRGB(LineColor_act);
+    
     glBegin(GL_QUADS);
       glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
       glTexCoord2f(0, 1-realfontsize/64); glVertex2f(LyricX, Y + realfontsize);
@@ -569,42 +590,55 @@ begin
       glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
     glEnd;
 
-{    // draw active word - type 1: farbwechsel - HoverEffect=3 oder so?
-    glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
-    glBegin(GL_QUADS);
-      glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
-      glTexCoord2f(CurWordStartTx, 0); glVertex2f(LyricX+CurWordStart, Y + 64);
-      glTexCoord2f(CurWordEndTx, 0); glVertex2f(LyricX+CurWordEnd, Y + 64);
-      glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, Y);
-    glEnd;
-    glColor4f(LineColor_act.r,LineColor_act.g,LineColor_act.b,progress);
-    glBegin(GL_QUADS);
-      glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
-      glTexCoord2f(CurWordStartTx, 0); glVertex2f(LyricX+CurWordStart, Y + 64);
-      glTexCoord2f(CurWordEndTx, 0); glVertex2f(LyricX+CurWordEnd, Y + 64);
-      glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, Y);
-    glEnd;
-}
-
-    // draw active word - type 2: zoom + farbwechsel - HoverEffect=4 ???
-    glPushMatrix;
-    glTranslatef(LyricX+CurWordStart+(CurWordEnd-CurWordStart)/2,Y+realfontsize/2,0);
-    glScalef(1.0+(1-progress)/2,1.0+(1-progress)/2,1.0);
-    glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
-    glBegin(GL_QUADS);
-      glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
-      glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-      glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-      glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
-    glEnd;
-    glColor4f(LineColor_act.r,LineColor_act.g,LineColor_act.b,1);
-    glBegin(GL_QUADS);
-      glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
-      glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-      glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-      glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
-    glEnd;
-    glPopMatrix;
+    // draw active word:
+    // type 1: simple lyric effect
+    // type 4: ball lyric effect
+    // only change the color of the current word
+    if (HoverEffekt = 1) or (HoverEffekt = 4) then
+    begin
+      {
+      glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
+      glBegin(GL_QUADS);
+        glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
+        glTexCoord2f(CurWordStartTx, 0); glVertex2f(LyricX+CurWordStart, Y + 64);
+        glTexCoord2f(CurWordEndTx, 0); glVertex2f(LyricX+CurWordEnd, Y + 64);
+        glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, Y);
+      glEnd;
+      }
+      
+      glColor3f(LineColor_act.r,LineColor_act.g,LineColor_act.b);
+      glBegin(GL_QUADS);
+        glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
+        glTexCoord2f(CurWordStartTx, 0); glVertex2f(LyricX+CurWordStart, Y + 64);
+        glTexCoord2f(CurWordEndTx, 0); glVertex2f(LyricX+CurWordEnd, Y + 64);
+        glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, Y);
+      glEnd;
+    end
+      
+    // draw active word:
+    // type 1: zoom lyric effect
+    // change color and zoom current word
+    else if HoverEffekt = 2 then
+    begin
+      glPushMatrix;
+      glTranslatef(LyricX+CurWordStart+(CurWordEnd-CurWordStart)/2,Y+realfontsize/2,0);
+      glScalef(1.0+(1-progress)/2,1.0+(1-progress)/2,1.0);
+      glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
+      glBegin(GL_QUADS);
+        glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
+        glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
+      glEnd;
+      glColor4f(LineColor_act.r,LineColor_act.g,LineColor_act.b,1);
+      glBegin(GL_QUADS);
+        glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
+        glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
+      glEnd;
+      glPopMatrix;
+    end;
 
     // draw rest of sentence
     glColorRGB(LineColor_en);

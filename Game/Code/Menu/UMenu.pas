@@ -894,11 +894,8 @@ begin
     Int := (Int + 1) Mod Length(Interactions);
 
     //If no Interaction is Selectable Simply Select Next
-    if (Int = Interaction) then
-    begin
-      Int := (Int + 1) Mod Length(Interactions);
-      Break;
-    end;
+    if (Int = Interaction) then Break;
+
   Until IsSelectable(Int);
 
   //Set Interaction
@@ -918,12 +915,7 @@ begin
     if Int = -1 then Int := High(Interactions);
 
     //If no Interaction is Selectable Simply Select Next
-    if (Int = Interaction) then
-    begin
-      Int := SelInteraction - 1;
-      if Int = -1 then Int := High(Interactions);
-      Break;
-    end;
+    if (Int = Interaction) then Break;
   Until IsSelectable(Int);
 
   //Set Interaction
