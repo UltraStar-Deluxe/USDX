@@ -334,6 +334,28 @@ end;
 
 function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
 
+  function Replace_Decimal_Separator( aValue : String ) : String;
+  var
+    lReplaceChar : char;
+    lDecSep      : char;
+  begin
+    result := aValue;
+
+    {$IFDEF FPC}
+      lDecSep := DefaultFormatSettings.DecimalSeparator;
+    {$ELSE}
+      lDecSep := DecimalSeparator;
+    {$ENDIF}
+
+    if lDecSep = '.' then
+      lReplaceChar := ','
+    else
+      lReplaceChar := '.';
+
+    if (Pos(lReplaceChar, result) <> 0) then
+      result[Pos(lReplaceChar, result)] := lDecSep;
+  end;
+
 var
   Line, Identifier, Value: String;
   Temp        : word;
@@ -411,14 +433,10 @@ begin
         //Beats per Minute
         else if (Identifier = 'BPM') then
         begin
-          // Replace . with ,
-          if (Pos('.', Value) <> 0) then
-            Value[Pos('.', Value)] := ',';
-
           SetLength(self.BPM, 1);
           self.BPM[0].StartBeat := 0;
 
-          self.BPM[0].BPM := StrtoFloatDef(Value, 0) * Mult * MultBPM;
+          self.BPM[0].BPM := StrtoFloatDef(Replace_Decimal_Separator( Value ), 0) * Mult * MultBPM;
 
           if self.BPM[0].BPM <> 0 then
           begin
@@ -433,13 +451,7 @@ begin
 
         // Video Gap
         else if (Identifier = 'GAP') then
-        begin
-          // Replace . with ,
-          if (Pos('.', Value) <> 0) then
-            Value[Pos('.', Value)] := ',';
-
-          self.GAP := StrtoFloatDef (Value, 0);
-        end
+          self.GAP := StrtoFloatDef ( Replace_Decimal_Separator( Value ), 0)
 
         //Cover Picture
         else if (Identifier = 'COVER') then
@@ -460,13 +472,7 @@ begin
 
         // Video Gap
         else if (Identifier = 'VIDEOGAP') then
-        begin
-          // Replace . with ,
-          if (Pos('.', Value) <> 0) then
-            Value[Pos('.', Value)] := ',';
-
-          self.VideoGAP := StrtoFloatDef (Value, 0);
-        end
+          self.VideoGAP := StrtoFloatDef ( Replace_Decimal_Separator( Value ), 0)
 
         //Genre Sorting
         else if (Identifier = 'GENRE') then
@@ -486,13 +492,7 @@ begin
 
         // Song Start
         else if (Identifier = 'START') then
-        begin
-          // Replace . with ,
-          if (Pos('.', Value) <> 0) then
-            Value[Pos('.', Value)] := ',';
-
-          self.Start := StrtoFloatDef(Value, 0);
-        end
+          self.Start := StrtoFloatDef( Replace_Decimal_Separator( Value ), 0)
 
         // Song Ending
         else if (Identifier = 'END') then
