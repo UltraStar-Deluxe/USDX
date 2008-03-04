@@ -334,26 +334,17 @@ end;
 
 function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
 
-  function Replace_Decimal_Separator( aValue : String ) : String;
+  function song_StrtoFloat( aValue : String ) : Extended;
   var
-    lReplaceChar : char;
-    lDecSep      : char;
+    lValue : String;
+    lOldDecimalSeparator : Char;
   begin
-    result := aValue;
+    lValue := aValue;
+    
+    if (Pos(',', lValue) <> 0) then
+      lValue[Pos(',', lValue)] := '.';
 
-    {$IFDEF FPC}
-      lDecSep := DefaultFormatSettings.DecimalSeparator;
-    {$ELSE}
-      lDecSep := DecimalSeparator;
-    {$ENDIF}
-
-    if lDecSep = '.' then
-      lReplaceChar := ','
-    else
-      lReplaceChar := '.';
-
-    if (Pos(lReplaceChar, result) <> 0) then
-      result[Pos(lReplaceChar, result)] := lDecSep;
+    Result := StrToFloatDef(lValue, 0);
   end;
 
 var
@@ -436,7 +427,7 @@ begin
           SetLength(self.BPM, 1);
           self.BPM[0].StartBeat := 0;
 
-          self.BPM[0].BPM := StrtoFloatDef(Replace_Decimal_Separator( Value ), 0) * Mult * MultBPM;
+          self.BPM[0].BPM := song_StrtoFloat( Value ) * Mult * MultBPM;
 
           if self.BPM[0].BPM <> 0 then
           begin
@@ -451,7 +442,7 @@ begin
 
         // Video Gap
         else if (Identifier = 'GAP') then
-          self.GAP := StrtoFloatDef ( Replace_Decimal_Separator( Value ), 0)
+          self.GAP := song_StrtoFloat( Value )
 
         //Cover Picture
         else if (Identifier = 'COVER') then
@@ -472,7 +463,7 @@ begin
 
         // Video Gap
         else if (Identifier = 'VIDEOGAP') then
-          self.VideoGAP := StrtoFloatDef ( Replace_Decimal_Separator( Value ), 0)
+          self.VideoGAP := song_StrtoFloat( Value )
 
         //Genre Sorting
         else if (Identifier = 'GENRE') then
@@ -492,7 +483,7 @@ begin
 
         // Song Start
         else if (Identifier = 'START') then
-          self.Start := StrtoFloatDef( Replace_Decimal_Separator( Value ), 0)
+          self.Start := song_StrtoFloat( Value )
 
         // Song Ending
         else if (Identifier = 'END') then

@@ -1143,7 +1143,7 @@ begin
   initialize_path( CoversPath      , Platform.GetGameSharedPath + 'Covers'      + PathDelim );
   initialize_path( PlaylistPath    , Platform.GetGameSharedPath + 'Playlists'   + PathDelim );
 
-  DecimalSeparator := ',';
+  DecimalSeparator := '.';
 end;
 
 end.

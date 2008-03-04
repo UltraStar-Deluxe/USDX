@@ -1448,8 +1448,6 @@ procedure TTheme.ThemeLoadText(var ThemeText: TThemeText; Name: string);
 var
   C:    integer;
 begin
-  DecimalSeparator := '.';
-  
   ThemeText.X     := ThemeIni.ReadInteger(Name, 'X', 0);
   ThemeText.Y     := ThemeIni.ReadInteger(Name, 'Y', 0);
   ThemeText.W     := ThemeIni.ReadInteger(Name, 'W', 0);
@@ -1471,8 +1469,6 @@ begin
     ThemeText.ColG := Color[C].RGB.G;
     ThemeText.ColB := Color[C].RGB.B;
   end;
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.ThemeLoadTexts(var ThemeText: AThemeText; Name: string);
@@ -1491,8 +1487,6 @@ procedure TTheme.ThemeLoadStatic(var ThemeStatic: TThemeStatic; Name: string);
 var
   C:  integer;
 begin
-  DecimalSeparator := '.';
-
   ThemeStatic.Tex := ThemeIni.ReadString(Name, 'Tex', '');
 
   ThemeStatic.X := ThemeIni.ReadInteger(Name, 'X', 0);
@@ -1519,8 +1513,6 @@ begin
   //Reflection Mod
   ThemeStatic.Reflection        := (ThemeIni.ReadInteger(Name, 'Reflection', 0) = 1);
   ThemeStatic.ReflectionSpacing := ThemeIni.ReadFloat(Name, 'ReflectionSpacing', 15);
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.ThemeLoadStatics(var ThemeStatic: AThemeStatic; Name: string);
@@ -1575,7 +1567,6 @@ begin
     ThemeButton.Visible := False;
     exit;
   end;
-  DecimalSeparator := '.';
   ThemeButton.Tex := ThemeIni.ReadString(Name, 'Tex', '');
   ThemeButton.X := ThemeIni.ReadInteger (Name, 'X', 0);
   ThemeButton.Y := ThemeIni.ReadInteger (Name, 'Y', 0);
@@ -1653,16 +1644,12 @@ begin
   SetLength(ThemeButton.Text, TLen);
   for T := 1 to TLen do
     ThemeLoadText(ThemeButton.Text[T-1], Name + 'Text' + IntToStr(T));
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.ThemeLoadSelect(var ThemeSelect: TThemeSelect; Name: string);
 var
   C:    integer;
 begin
-  DecimalSeparator := '.';
-
   //{$IFDEF TRANSLATE}
   ThemeSelect.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
   //{$ELSE}{
@@ -1698,17 +1685,12 @@ begin
   ThemeSelect.STInt :=  ThemeIni.ReadFloat(Name, 'STInt', 1);
   LoadColor(ThemeSelect.STDColR, ThemeSelect.STDColG,  ThemeSelect.STDColB, ThemeIni.ReadString(Name, 'STDColor', ''));
   ThemeSelect.STDInt :=  ThemeIni.ReadFloat(Name, 'STDInt', 1);
-
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; Name: string);
 var
   C:    integer;
 begin
-  DecimalSeparator := '.';
-
   //{{$IFDEF TRANSLATE}
   ThemeSelectS.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
   //{{$ELSE}{
@@ -1750,9 +1732,6 @@ begin
   ThemeSelectS.STInt :=  ThemeIni.ReadFloat(Name, 'STInt', 1);
   LoadColor(ThemeSelectS.STDColR, ThemeSelectS.STDColG,  ThemeSelectS.STDColB, ThemeIni.ReadString(Name, 'STDColor', ''));
   ThemeSelectS.STDInt :=  ThemeIni.ReadFloat(Name, 'STDInt', 1);
-
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.LoadColors;
@@ -2119,7 +2098,6 @@ end;
 
 procedure TTheme.ThemeSaveStatic(ThemeStatic: TThemeStatic; Name: string);
 begin
-  DecimalSeparator := '.';
   ThemeIni.WriteInteger(Name, 'X', ThemeStatic.X);
   ThemeIni.WriteInteger(Name, 'Y', ThemeStatic.Y);
   ThemeIni.WriteInteger(Name, 'W', ThemeStatic.W);
@@ -2133,8 +2111,6 @@ begin
   ThemeIni.WriteFloat(Name, 'TexY1', ThemeStatic.TexY1);
   ThemeIni.WriteFloat(Name, 'TexX2', ThemeStatic.TexX2);
   ThemeIni.WriteFloat(Name, 'TexY2', ThemeStatic.TexY2);
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.ThemeSaveStatics(ThemeStatic: AThemeStatic; Name: string);
@@ -2149,7 +2125,6 @@ end;
 
 procedure TTheme.ThemeSaveText(ThemeText: TThemeText; Name: string);
 begin
-  DecimalSeparator := '.';
   ThemeIni.WriteInteger(Name, 'X', ThemeText.X);
   ThemeIni.WriteInteger(Name, 'Y', ThemeText.Y);
 
@@ -2159,8 +2134,6 @@ begin
 
   ThemeIni.WriteString(Name, 'Text', ThemeText.Text);
   ThemeIni.WriteString(Name, 'Color', ThemeText.Color);
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.ThemeSaveTexts(ThemeText: AThemeText; Name: string);
@@ -2177,7 +2150,6 @@ procedure TTheme.ThemeSaveButton(ThemeButton: TThemeButton; Name: string);
 var
   T:    integer;
 begin
-  DecimalSeparator := '.';
   ThemeIni.WriteString(Name, 'Tex', ThemeButton.Tex);
   ThemeIni.WriteInteger(Name, 'X', ThemeButton.X);
   ThemeIni.WriteInteger(Name, 'Y', ThemeButton.Y);
@@ -2214,8 +2186,6 @@ begin
 
   for T := 0 to High(ThemeButton.Text) do
     ThemeSaveText(ThemeButton.Text[T], Name + 'Text' + IntToStr(T+1));
-
-  DecimalSeparator := ',';
 end;
 
 procedure TTheme.create_theme_objects();

@@ -37,6 +37,7 @@ var
   MultBPM:  integer;
 
 implementation
+
 uses TextGL, UIni, UMain, math;
 
 procedure InitializePaths;
@@ -49,12 +50,10 @@ begin
   ScreenshotsPath := GamePath + 'Screenshots\';
   CoversPath := GamePath + 'Covers\';
   LanguagesPath := GamePath + 'Languages\';
+
   //Modi Loader
-  PluginPath := GamePath + 'Plugins\';
-
+  PluginPath   := GamePath + 'Plugins\';
   PlaylistPath := GamePath + 'Playlists\';
-
-  DecimalSeparator := ',';
 end;
 
 function ReadHeader(var Song: TSong): boolean;
