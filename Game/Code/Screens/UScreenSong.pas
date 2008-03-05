@@ -1861,25 +1861,8 @@ begin
       if (EqualizerData[i] >= 1) then
         EqualizerData[i] := 0.9999999999999;
 
-      try
-        if ( assigned( Theme )      ) AND
-           ( assigned( Theme.Song ) ) AND
-           ( i < length( EqualizerData ) ) THEN
-        begin
-          if single( EqualizerData[i] ) > 1  then
-          begin
-            lTmp := Single(EqualizerData[i]) * Theme.Song.Equalizer.Length;
-            if lTmp > Pos then
-              Pos := lTmp;
-          end;
-        end;
-      except
-        {$IFDEF FPC}
-        on E:EInvalidOp do
-          writeln( 'UScreenSong - DOH !!!! ('+inttostr(i)+' '+ inttostr( integer( EqualizerData[i] ) )+' * '+ ')' );
-        {$ENDIF}
-      end
-      
+      if (EqualizerData[i] * Theme.Song.Equalizer.Length > Pos) then
+        Pos := EqualizerData[i] * Theme.Song.Equalizer.Length;
     end;
     
     //Change Last Band
