@@ -1982,10 +1982,11 @@ end;
 
 procedure TScreenSong.SetJoker;
 begin
-  {//If Party Mode
+//  {//If Party Mode
   // to-do : Party
   if Mode = smPartyMode then //Show Joker that are available
   begin
+(*
     if (PartySession.Teams.NumTeams >= 1) then
     begin
       Static[StaticTeam1Joker1].Visible := (PartySession.Teams.Teaminfo[0].Joker >= 1);
@@ -2036,6 +2037,7 @@ begin
       Static[StaticTeam3Joker4].Visible := False;
       Static[StaticTeam3Joker5].Visible := False;
     end;
+*)
   end
   else
   begin //Hide all
@@ -2056,7 +2058,7 @@ begin
     Static[StaticTeam3Joker3].Visible := False;
     Static[StaticTeam3Joker4].Visible := False;
     Static[StaticTeam3Joker5].Visible := False;
-  end;  }
+  end;
 end;
 
 procedure TScreenSong.SetStatics;
