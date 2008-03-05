@@ -24,6 +24,7 @@ type
 
       DecodeStream: TAudioDecodeStream;
       SampleBuffer    : PChar;
+      SampleBufferCount: integer; // number of available bytes in SampleBuffer
       SampleBufferPos : cardinal;
       BytesAvail: integer;
       cvt: TSDL_AudioCVT;
@@ -65,6 +66,8 @@ type
       function GetPosition: real;
       procedure SetPosition(Time: real);
       function ReadData(Buffer: PChar; BufSize: integer): integer;
+
+      procedure GetFFTData(var data: TFFTData);
   end;
 
   TAudioMixerStream = class
@@ -507,43 +510,50 @@ begin
   if (remFrameBytes > 0) then
     decodeBufSize := decodeBufSize + (frameSize - remFrameBytes);
 
-  // calc buffer size
-  sampleBufSize := decodeBufSize * cvt.len_mult;
+  Lock();
+  try
+    // calc buffer size
+    sampleBufSize := decodeBufSize * cvt.len_mult;
 
-  // resize buffer if necessary.
-  // The required buffer-size will be smaller than the result-buffer
-  // in most cases (if the decoded signal is mono or has a lesser bitrate).
-  // If the output-rate is 44.1kHz and the decode-rate is 48kHz or 96kHz it
-  // will be ~1.09 or ~2.18 times bigger. Those extra memory consumption
-  // should be reasonable. If not we should call TDecodeStream.ReadData()
-  // multiple times.
-  // Note: we do not decrease the buffer by the count of bytes used from
-  //   the previous call of this function (bytesAvail). Otherwise the
-  //   buffer will be reallocated each time this function is called just to
-  //   add or remove a few bytes from the buffer.
-  //   By not doing this the buffer's size should be rather stable and it
-  //   will not be reallocated/resized at all if the BufSize params does not
-  //   change in consecutive calls.
-  ReallocMem(SampleBuffer, sampleBufSize);
-  if not assigned(SampleBuffer) then
-    Exit;
+    // resize buffer if necessary.
+    // The required buffer-size will be smaller than the result-buffer
+    // in most cases (if the decoded signal is mono or has a lesser bitrate).
+    // If the output-rate is 44.1kHz and the decode-rate is 48kHz or 96kHz it
+    // will be ~1.09 or ~2.18 times bigger. Those extra memory consumption
+    // should be reasonable. If not we should call TDecodeStream.ReadData()
+    // multiple times.
+    // Note: we do not decrease the buffer by the count of bytes used from
+    //   the previous call of this function (bytesAvail). Otherwise the
+    //   buffer will be reallocated each time this function is called just to
+    //   add or remove a few bytes from the buffer.
+    //   By not doing this the buffer's size should be rather stable and it
+    //   will not be reallocated/resized at all if the BufSize params does not
+    //   change in consecutive calls.
+    ReallocMem(SampleBuffer, sampleBufSize);
+    if not assigned(SampleBuffer) then
+      Exit;
 
-  // decode data
-  nBytesDecoded := DecodeStream.ReadData(SampleBuffer, decodeBufSize);
-  if (nBytesDecoded = -1) then
-    Exit;
+    // decode data
+    nBytesDecoded := DecodeStream.ReadData(SampleBuffer, decodeBufSize);
+    if (nBytesDecoded = -1) then
+      Exit;
 
-  // end-of-file reached -> stop playback
-  if (DecodeStream.EOF) then
-    Stop();
+    // end-of-file reached -> stop playback
+    if (DecodeStream.EOF) then
+      Stop();
 
-  // resample decoded data
-  cvt.buf := PUint8(SampleBuffer);
-  cvt.len := nBytesDecoded;
-  if (SDL_ConvertAudio(@cvt) = -1) then
-    Exit;
+    // resample decoded data
+    cvt.buf := PUint8(SampleBuffer);
+    cvt.len := nBytesDecoded;
+    if (SDL_ConvertAudio(@cvt) = -1) then
+      Exit;
 
-  BytesAvail := cvt.len_cvt;
+    SampleBufferCount := cvt.len_cvt;
+  finally
+    Unlock();
+  end;
+
+  BytesAvail := SampleBufferCount;
   SampleBufferPos := 0;
 
   // copy data to result buffer
@@ -554,6 +564,50 @@ begin
   Inc(SampleBufferPos, copyCnt);
 
   Result := BufSize - BytesNeeded;
+end;
+
+procedure TSoftMixerPlaybackStream.GetFFTData(var data: TFFTData);
+var
+  i: integer;
+  Frames: integer;
+  DataIn: PSingleArray;
+  AudioFormat: TAudioFormatInfo;
+begin
+  // only works with SInt16 and Float values at the moment
+  AudioFormat := Engine.GetAudioFormatInfo();
+
+  GetMem(DataIn, FFTSize * SizeOf(Single));
+
+  Lock();
+  // FIXME: We just use the first Frames frames, the others are ignored.
+  // This is OK for the equalizer display but not if we want to use
+  // this function for voice-analysis.
+  Frames := Min(FFTSize, SampleBufferCount div AudioFormat.FrameSize);
+  // use only first channel and convert data to float-values
+  case AudioFormat.Format of
+    asfS16:
+    begin
+      for i := 0 to Frames-1 do
+        DataIn[i] := PSmallInt(@SampleBuffer[i*AudioFormat.FrameSize])^ / -Low(SmallInt);
+    end;
+    asfFloat:
+    begin
+      for i := 0 to Frames-1 do
+        DataIn[i] := PSingle(@SampleBuffer[i*AudioFormat.FrameSize])^;
+    end;
+  end;
+  Unlock();
+
+  WindowFunc(FFTSize, DataIn);
+  PowerSpectrum(FFTSize, DataIn, @data);
+  FreeMem(DataIn);
+
+  // resize data to a 0..1 range
+  for i := 0 to High(TFFTData) do
+  begin
+    // TODO: this might need some work
+    data[i] := Sqrt(data[i]) / 100;
+  end;
 end;
 
 (* TODO: libsamplerate support
@@ -778,8 +832,8 @@ end;
 //Equalizer
 procedure TAudioPlayback_SoftMixer.GetFFTData(var data: TFFTData);
 begin
-  //Get Channel Data Mono and 256 Values
-//  BASS_ChannelGetData(Bass, @Result, BASS_DATA_FFT512);
+  if assigned(MusicStream) then
+    MusicStream.GetFFTData(data);
 end;
 
 // Interface for Visualizer

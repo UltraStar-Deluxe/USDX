@@ -384,6 +384,7 @@ var
   DeviceCfg: PInputDeviceConfig;
   SelectSlide: TSelectSlide;
   ToneBoxWidth: real;
+  Volume: single;
 begin
   DrawBG;
   DrawFG;
@@ -434,22 +435,21 @@ begin
         glVertex2f(x2, y2);
         glVertex2f(x1, y2);
 
+        Volume := PreviewChannel[ChannelIndex].MaxSampleVolume();
+
         // coordinates for volume bar
         x1 := x1 + 1;
-        x2 := x1 + Trunc((SelectSlide.TextureSBG.W-4) *
-                    PreviewChannel[ChannelIndex].MaxSampleVolume()) + 1;
+        x2 := x1 + Trunc((SelectSlide.TextureSBG.W-4) * Volume) + 1;
         y1 := y1 + 1;
         y2 := y2 - 1;
 
         // draw volume bar
         glColor3f(RD, GD, BD);
         glVertex2f(x1, y1);
-        glColor3f(R, G, B);
-        glVertex2f(x2, y1);
+        glVertex2f(x1, y2);
         glColor3f(R, G, B);
         glVertex2f(x2, y2);
-        glColor3f(RD, GD, BD);
-        glVertex2f(x1, y2);
+        glVertex2f(x2, y1);
 
         //////////
         // draw Pitch

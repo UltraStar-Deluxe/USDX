@@ -149,6 +149,7 @@ var
   stream:      PPaStream;
   streamInfo:  PPaStreamInfo;
   sampleRate:  integer;
+  latency:     TPaTime;
   {$IFDEF UsePortmixer}
   mixer:       PPxMixer;
   {$ENDIF}
@@ -210,13 +211,17 @@ begin
     else
       sampleRate := 44100;
 
+    // on vista and xp the defaultLowInputLatency may be set to 0 but it works.
+    // TODO: correct too low latencies (what is a too low latency, maybe < 10ms?)
+    latency := deviceInfo^.defaultLowInputLatency;
+
     // setup desired input parameters
     with inputParams do
     begin
       device := deviceIndex;
       channelCount := channelCnt;
       sampleFormat := paInt16;
-      suggestedLatency := deviceInfo^.defaultLowInputLatency;
+      suggestedLatency := latency;
       hostApiSpecificStreamInfo := nil;
     end;
 

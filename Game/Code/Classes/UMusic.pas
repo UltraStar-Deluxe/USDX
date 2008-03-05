@@ -85,10 +85,13 @@ type
     Razem:        real;       // (TODO: Razem = total time)
   end;
 
-  
-type
-  TFFTData  = array[0..255] of Single;
 
+const
+  FFTSize = 512; // size of FFT data (output: FFTSize/2 values)
+type
+  TFFTData  = array[0..(FFTSize div 2-1)] of Single;
+
+type
   TPCMStereoSample = array[0..1] of Smallint;
   TPCMData  = array[0..511] of TPCMStereoSample;
 
