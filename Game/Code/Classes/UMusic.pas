@@ -16,7 +16,7 @@ type
 
   //http://paste.ubuntu-nl.org/51892/
 
-  TMuzyka = record           // (TODO: rename to TMusic/TMelody?)
+  TMelody = record
     Path:   string;
     Start:  integer;        // start of song in ms
     IlNut:  integer;        // (TODO: Il = tone, Nut(a) = Note)
@@ -24,17 +24,17 @@ type
   end;
 
   PLine = ^TLine;
-  TLine = record              // (TODO: rename to TSentence?)
+  TLine = record
     Start:      integer;
     StartNote:  integer;
     Lyric:      string;
     LyricWidth: real;
     Koniec:     integer;      // (TODO: rename to End_/Ending?) 
     BaseNote:   integer;
-    HighNut:    integer;      // (TODO: rename to HighNote)
+    HighNote:   integer;
     IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
     TotalNotes: integer;
-    Nuta:     array of record // (TODO: rename to Note)
+    Note:     array of record
       Color:      integer;
       Start:      integer;
       Dlugosc:    integer;    // (TODO: rename to Length)
@@ -47,15 +47,15 @@ type
   end;
   ALine = array of TLine; // (TODO: rename to TLineArray)
 
-  // (TCzesci = TSentences)
-  TCzesci = record
+  // (TCzesci = TSentences)  TCzesci changed to TLines because TSentences exist elseware in incompatible form
+  TLines = record
     Akt:        integer;        // for drawing of current line (Akt = Current)
     High:       integer;
     Ilosc:      integer;        // (TODO: Ilosc = Number/Count)
     Resolution: integer;
     NotesGAP:   integer;
     Wartosc:    integer;        // TODO: rename (wartosc=value)
-    Czesc:      ALine;          // TODO: rename to Sentence or Line
+    Line:       ALine;          // TODO: rename to Sentence or Line - renamed to Line
   end;
 
   // (TODO: rename TCzas to something like T(Line/Sentence)Time/TLinePosition/TLineState)
@@ -288,10 +288,10 @@ type
 
 var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
   // music
-  Muzyka:   TMuzyka; // TODO: rename
+  Melody:   TMelody; // TODO: rename
 
   // czesci z nutami;
-  Czesci:   array of TCzesci;  // TODO: rename to Sentences/Lines
+  Lines:   array of TLines;  // TODO: rename to Sentences/Lines
 
   // czas
   Czas:     TCzas;             // TODO: rename

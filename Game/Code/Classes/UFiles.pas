@@ -14,7 +14,7 @@ uses SysUtils,
      USong;
 
 procedure ResetSingTemp;
-function  SaveSong(Song: TSong; Czesc: TCzesci; Name: string; Relative: boolean): boolean;
+function  SaveSong(Song: TSong; Lines: TLines; Name: string; Relative: boolean): boolean;
 
 var
   SongFile: TextFile;   // all procedures in this unit operates on this file
@@ -40,12 +40,12 @@ procedure ResetSingTemp;
 var
   Pet:  integer;
 begin
-  SetLength(Czesci, Length(Player));
+  SetLength(Lines, Length(Player));
   for Pet := 0 to High(Player) do begin
-    SetLength(Czesci[Pet].Czesc, 1);
-    SetLength(Czesci[Pet].Czesc[0].Nuta, 0);
-    Czesci[Pet].Czesc[0].Lyric := '';
-    Czesci[Pet].Czesc[0].LyricWidth := 0;
+    SetLength(Lines[Pet].Line, 1);
+    SetLength(Lines[Pet].Line[0].Note, 0);
+    Lines[Pet].Line[0].Lyric := '';
+    Lines[Pet].Line[0].LyricWidth := 0;
     Player[pet].Score := 0;
     Player[pet].IlNut := 0;
     Player[pet].HighNut := -1;
@@ -68,7 +68,7 @@ end;
 //--------------------
 // Saves a Song
 //--------------------
-function SaveSong(Song: TSong; Czesc: TCzesci; Name: string; Relative: boolean): boolean;
+function SaveSong(Song: TSong; Lines: TLines; Name: string; Relative: boolean): boolean;
 var
   C:      integer;
   N:      integer;
@@ -109,13 +109,13 @@ begin
   for B := 1 to High(CurrentSong.BPM) do
     WriteLn(SongFile, 'B ' + FloatToStr(CurrentSong.BPM[B].StartBeat) + ' ' + FloatToStr(CurrentSong.BPM[B].BPM/4));
 
-  for C := 0 to Czesc.High do begin
-    for N := 0 to Czesc.Czesc[C].HighNut do begin
-      with Czesc.Czesc[C].Nuta[N] do begin
+  for C := 0 to Lines.High do begin
+    for N := 0 to Lines.Line[C].HighNote do begin
+      with Lines.Line[C].Note[N] do begin
 
 
         //Golden + Freestyle Note Patch
-        case Czesc.Czesc[C].Nuta[N].Wartosc of
+        case Lines.Line[C].Note[N].Wartosc of
           0: NoteState := 'F ';
           1: NoteState := ': ';
           2: NoteState := '* ';
@@ -127,13 +127,13 @@ begin
       end; // with
     end; // N
 
-    if C < Czesc.High then begin      // don't write end of last sentence
+    if C < Lines.High then begin      // don't write end of last sentence
       if not Relative then
-        S := '- ' + IntToStr(Czesc.Czesc[C+1].Start)
+        S := '- ' + IntToStr(Lines.Line[C+1].Start)
       else begin
-        S := '- ' + IntToStr(Czesc.Czesc[C+1].Start - RelativeSubTime) +
-          ' ' + IntToStr(Czesc.Czesc[C+1].Start - RelativeSubTime);
-        RelativeSubTime := Czesc.Czesc[C+1].Start;
+        S := '- ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime) +
+          ' ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime);
+        RelativeSubTime := Lines.Line[C+1].Start;
       end;
       WriteLn(SongFile, S);
     end;

@@ -70,10 +70,10 @@ type
       {$ENDIF}
       
       Song:               TSong;
-      Czesc:              TCzesci;
+      Lines:              TLines;
       BPM:                real;
       Ticks:              real;
-      Nuta:               array of TNuta;
+      Note:               array of TNuta;
 
       procedure AddLyric(Start: integer; Tekst: string);
       procedure Extract;
@@ -161,7 +161,7 @@ begin
           if Interaction = 3 then begin
             if SelectedNumber > 0 then begin
               Extract;
-              SaveSong(Song, Czesc, ChangeFileExt(FileName, '.txt'), false);
+              SaveSong(Song, Lines, ChangeFileExt(FileName, '.txt'), false);
             end;
           end;
 
@@ -209,20 +209,20 @@ procedure TScreenEditConvert.AddLyric(Start: integer; Tekst: string);
 var
   N:    integer;
 begin
-  for N := 0 to High(Nuta) do begin
-    if Nuta[N].Start = Start then begin
+  for N := 0 to High(Note) do begin
+    if Note[N].Start = Start then begin
       // check for new sentece
       if Copy(Tekst, 1, 1) = '\' then Delete(Tekst, 1, 1);
       if Copy(Tekst, 1, 1) = '/' then begin
         Delete(Tekst, 1, 1);
-        Nuta[N].NewSentence := true;
+        Note[N].NewSentence := true;
       end;
 
       // overwrite lyric od append
-      if Nuta[N].Lyric = '-' then
-        Nuta[N].Lyric := Tekst
+      if Note[N].Lyric = '-' then
+        Note[N].Lyric := Tekst
       else
-        Nuta[N].Lyric := Nuta[N].Lyric + Tekst;
+        Note[N].Lyric := Note[N].Lyric + Tekst;
     end;
   end;
 end;
@@ -233,7 +233,7 @@ var
   C:    integer;
   N:    integer;
   Nu:   integer;
-  NutaTemp: TNuta;
+  NoteTemp: TNuta;
   Move: integer;
   Max, Min: integer;
 begin
@@ -245,7 +245,7 @@ begin
   SetLength(Song.BPM, 1);
   Song.BPM[0].BPM := BPM*4;
 
-  SetLength(Nuta, 0);
+  SetLength(Note, 0);
 
   // extract notes
   for T := 0 to High(ATrack) do begin
@@ -253,12 +253,12 @@ begin
     if ((ATrack[T].Status div 1) and 1) = 1 then begin
       for N := 0 to High(ATrack[T].Note) do begin
         if (ATrack[T].Note[N].EventType = 9) and (ATrack[T].Note[N].Data2 > 0) then begin
-          Nu := Length(Nuta);
-          SetLength(Nuta, Nu + 1);
-          Nuta[Nu].Start := Round(ATrack[T].Note[N].Start / Ticks);
-          Nuta[Nu].Len := Round(ATrack[T].Note[N].Len / Ticks);
-          Nuta[Nu].Tone := ATrack[T].Note[N].Data1 - 12*5;
-          Nuta[Nu].Lyric := '-';
+          Nu := Length(Note);
+          SetLength(Note, Nu + 1);
+          Note[Nu].Start := Round(ATrack[T].Note[N].Start / Ticks);
+          Note[Nu].Len := Round(ATrack[T].Note[N].Len / Ticks);
+          Note[Nu].Tone := ATrack[T].Note[N].Data1 - 12*5;
+          Note[Nu].Lyric := '-';
         end;
       end;
     end;
@@ -278,56 +278,56 @@ begin
   end;
 
   // sort notes
-  for N := 0 to High(Nuta) do
-    for Nu := 0 to High(Nuta)-1 do
-      if Nuta[Nu].Start > Nuta[Nu+1].Start then begin
-        NutaTemp := Nuta[Nu];
-        Nuta[Nu] := Nuta[Nu+1];
-        Nuta[Nu+1] := NutaTemp;
+  for N := 0 to High(Note) do
+    for Nu := 0 to High(Note)-1 do
+      if Note[Nu].Start > Note[Nu+1].Start then begin
+        NoteTemp := Note[Nu];
+        Note[Nu] := Note[Nu+1];
+        Note[Nu+1] := NoteTemp;
       end;
 
   // move to 0 at beginning
-  Move := Nuta[0].Start;
-  for N := 0 to High(Nuta) do
-    Nuta[N].Start := Nuta[N].Start - Move;
+  Move := Note[0].Start;
+  for N := 0 to High(Note) do
+    Note[N].Start := Note[N].Start - Move;
 
   // copy notes
-  SetLength(Czesc.Czesc, 1);
-  Czesc.Ilosc := 1;
-  Czesc.High := 0;
+  SetLength(Lines.Line, 1);
+  Lines.Ilosc := 1;
+  Lines.High := 0;
 
   C := 0;
   N := 0;
-  Czesc.Czesc[C].IlNut := 0;
-  Czesc.Czesc[C].HighNut := -1;
+  Lines.Line[C].IlNut := 0;
+  Lines.Line[C].HighNote := -1;
 
-  for Nu := 0 to High(Nuta) do begin
-    if Nuta[Nu].NewSentence then begin // nowa linijka
-      SetLength(Czesc.Czesc, Length(Czesc.Czesc)+1);
-      Czesc.Ilosc := Czesc.Ilosc + 1;
-      Czesc.High := Czesc.High + 1;
+  for Nu := 0 to High(Note) do begin
+    if Note[Nu].NewSentence then begin // nowa linijka
+      SetLength(Lines.Line, Length(Lines.Line)+1);
+      Lines.Ilosc := Lines.Ilosc + 1;
+      Lines.High := Lines.High + 1;
       C := C + 1;
       N := 0;
-      SetLength(Czesc.Czesc[C].Nuta, 0);
-      Czesc.Czesc[C].IlNut := 0;
-      Czesc.Czesc[C].HighNut := -1;
+      SetLength(Lines.Line[C].Note, 0);
+      Lines.Line[C].IlNut := 0;
+      Lines.Line[C].HighNote := -1;
 
       //Calculate Start of the Last Sentence
       if (C > 0) and (Nu > 0) then
       begin
-        Max := Nuta[Nu].Start;
-        Min := Nuta[Nu-1].Start + Nuta[Nu-1].Len;
+        Max := Note[Nu].Start;
+        Min := Note[Nu-1].Start + Note[Nu-1].Len;
         
         case (Max - Min) of
-          0:    Czesc.Czesc[C].Start := Max;
-          1:    Czesc.Czesc[C].Start := Max;
-          2:    Czesc.Czesc[C].Start := Max - 1;
-          3:    Czesc.Czesc[C].Start := Max - 2;
+          0:    Lines.Line[C].Start := Max;
+          1:    Lines.Line[C].Start := Max;
+          2:    Lines.Line[C].Start := Max - 1;
+          3:    Lines.Line[C].Start := Max - 2;
           else
             if ((Max - Min) > 4) then
-              Czesc.Czesc[C].Start := Min + 2
+              Lines.Line[C].Start := Min + 2
             else
-              Czesc.Czesc[C].Start := Max;
+              Lines.Line[C].Start := Max;
 
         end; // case
 
@@ -335,17 +335,17 @@ begin
     end;
 
     // tworzy miejsce na nowa nute
-    SetLength(Czesc.Czesc[C].Nuta, Length(Czesc.Czesc[C].Nuta)+1);
-    Czesc.Czesc[C].IlNut := Czesc.Czesc[C].IlNut + 1;
-    Czesc.Czesc[C].HighNut := Czesc.Czesc[C].HighNut + 1;
+    SetLength(Lines.Line[C].Note, Length(Lines.Line[C].Note)+1);
+    Lines.Line[C].IlNut := Lines.Line[C].IlNut + 1;
+    Lines.Line[C].HighNote := Lines.Line[C].HighNote + 1;
 
     // dopisuje
-    Czesc.Czesc[C].Nuta[N].Start := Nuta[Nu].Start;
-    Czesc.Czesc[C].Nuta[N].Dlugosc := Nuta[Nu].Len;
-    Czesc.Czesc[C].Nuta[N].Ton := Nuta[Nu].Tone;
-    Czesc.Czesc[C].Nuta[N].Tekst := Nuta[Nu].Lyric;
+    Lines.Line[C].Note[N].Start := Note[Nu].Start;
+    Lines.Line[C].Note[N].Dlugosc := Note[Nu].Len;
+    Lines.Line[C].Note[N].Ton := Note[Nu].Tone;
+    Lines.Line[C].Note[N].Tekst := Note[Nu].Lyric;
     //All Notes are Freestyle when Converted Fix:
-    Czesc.Czesc[C].Nuta[N].Wartosc := 1;
+    Lines.Line[C].Note[N].Wartosc := 1;
     Inc(N);
   end;
 end;

@@ -264,10 +264,10 @@ var
   N:    integer;
 begin
   Clear;
-  for N := 0 to Czesci[0].Czesc[NrCzesci].HighNut do begin
-    Italic := Czesci[0].Czesc[NrCzesci].Nuta[N].FreeStyle;
-    AddWord(Czesci[0].Czesc[NrCzesci].Nuta[N].Tekst);
-    Text := Text + Czesci[0].Czesc[NrCzesci].Nuta[N].Tekst;
+  for N := 0 to Lines[0].Line[NrCzesci].HighNote do begin
+    Italic := Lines[0].Line[NrCzesci].Note[N].FreeStyle;
+    AddWord(Lines[0].Line[NrCzesci].Note[N].Tekst);
+    Text := Text + Lines[0].Line[NrCzesci].Note[N].Tekst;
   end;
   Selected := -1;
 end;

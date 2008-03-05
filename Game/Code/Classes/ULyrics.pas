@@ -304,12 +304,12 @@ begin
   end;
 
   //Check if Sentence has Notes
-  If (Length(Line.Nuta) > 0) then
+  If (Length(Line.Note) > 0) then
   begin
     //Copy Values from SongLine to LyricLine
-    CountNotes := high(Line.Nuta);
-    LyricLine.Start := Line.Nuta[0].Start;
-    LyricLine.Length := Line.Nuta[CountNotes].Start + Line.Nuta[CountNotes].Dlugosc - LyricLine.Start;
+    CountNotes := high(Line.Note);
+    LyricLine.Start := Line.Note[0].Start;
+    LyricLine.Length := Line.Note[CountNotes].Start + Line.Note[CountNotes].Dlugosc - LyricLine.Start;
     LyricLine.Freestyle := True; //is set by And Notes Freestyle while copying Notes
     LyricLine.Text    := '';      //Also Set while copying Notes
     LyricLine.Players := 127; //All Players for now, no Duett Mode available
@@ -318,11 +318,11 @@ begin
     SetLength(LyricLine.Words, CountNotes + 1);
     For I := 0 to CountNotes do
     begin
-      LyricLine.Freestyle := LyricLine.Freestyle AND Line.Nuta[I].FreeStyle;
-      LyricLine.Words[I].Start      := Line.Nuta[I].Start;
-      LyricLine.Words[I].Length     := Line.Nuta[I].Dlugosc;
-      LyricLine.Words[I].Text       := Line.Nuta[I].Tekst;
-      LyricLine.Words[I].Freestyle  := Line.Nuta[I].FreeStyle;
+      LyricLine.Freestyle := LyricLine.Freestyle AND Line.Note[I].FreeStyle;
+      LyricLine.Words[I].Start      := Line.Note[I].Start;
+      LyricLine.Words[I].Length     := Line.Note[I].Dlugosc;
+      LyricLine.Words[I].Text       := Line.Note[I].Tekst;
+      LyricLine.Words[I].Freestyle  := Line.Note[I].FreeStyle;
       LyricLine.Text := LyricLine.Text + LyricLine.Words[I].Text
     end;
 

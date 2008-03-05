@@ -634,8 +634,8 @@ begin
   end; // case
 
   // Add Lines to Lyrics
-  While (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Czesci[0].Czesc)) do
-      Lyrics.AddLine(@Czesci[0].Czesc[Lyrics.LineCounter]);
+  While (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Lines[0].Line)) do
+      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
 
   UpdateLCD;
 
@@ -883,8 +883,8 @@ begin
   //Set Position of Line Bonus - PhrasenBonus End
   //Set Num of Empty Sentences for Phrasen Bonus
   NumEmptySentences := 0;
-  for P := low(Czesci[0].Czesc) to high(Czesci[0].Czesc) do
-    if Czesci[0].Czesc[P].TotalNotes = 0 then Inc(NumEmptySentences);
+  for P := low(Lines[0].Line) to high(Lines[0].Line) do
+    if Lines[0].Line[P].TotalNotes = 0 then Inc(NumEmptySentences);
 
   Log.LogStatus('End', 'onShow');
 end;
@@ -1311,7 +1311,7 @@ B: integer; //Max Points for Notes
 begin
 
   //Check for Empty Sentence
-  if (Czesci[0].Czesc[S].TotalNotes<=0) then
+  if (Lines[0].Line[S].TotalNotes<=0) then
     exit;
 
   //Set Max Note Points
@@ -1327,12 +1327,12 @@ begin
     //PhrasenBonus - Line Bonus Mod
 
     //Generate Steps 0 to 8
-    A := Floor(A / (B * Czesci[0].Czesc[S].TotalNotes / Czesci[0].Wartosc) * 8);
+    A := Floor(A / (B * Lines[0].Line[S].TotalNotes / Lines[0].Wartosc) * 8);
 
     If (Ini.LineBonus > 0) then
     begin
       //PhrasenBonus give Points
-      Player[I].ScoreLine := Player[I].ScoreLine + (1000 / (Length(Czesci[0].Czesc) - NumEmptySentences) * A / 8);
+      Player[I].ScoreLine := Player[I].ScoreLine + (1000 / (Length(Lines[0].Line) - NumEmptySentences) * A / 8);
       Player[I].ScoreLineI := Round(Player[I].ScoreLine / 10) * 10;
       //Update Total Score
       Player[I].ScoreTotalI := Player[I].ScoreI + Player[I].ScoreGoldenI + Player[I].ScoreLineI;
@@ -1377,9 +1377,9 @@ procedure TScreenSing.onSentenceChange(S: Cardinal);
 begin
   //GoldenStarsTwinkle Mod
   GoldenRec.SentenceChange;
-  if (Lyrics.LineCounter <= High(Czesci[0].Czesc)) then
+  if (Lyrics.LineCounter <= High(Lines[0].Line)) then
   begin
-      Lyrics.AddLine(@Czesci[0].Czesc[Lyrics.LineCounter]);
+      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
       // addline uses display memory
       // calling draw makes sure, there's the singscreen in it, when the next
       // swap between onscreen and offscreen buffers is done

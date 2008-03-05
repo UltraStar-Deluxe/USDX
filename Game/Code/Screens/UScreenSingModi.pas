@@ -93,7 +93,7 @@ function LoadSound  (const Name: PChar): Cardinal; stdcall;       //Procedure th
 procedure PlaySound (const Index: Cardinal); stdcall;       //Plays a Custom Sound
 
 //Utilys
-function ToSentences(Const Czeski: TCzesci): TSentences;
+function ToSentences(Const Lines: TLines): TSentences;
 
 implementation
 uses UGraphic, UDraw, UMain, Classes, URecord, ULanguage, math, UDLLManager, USkins, UGraphicClasses;
@@ -127,41 +127,41 @@ begin
 
 end;
 
-function ToSentences(Const Czeski: TCzesci): TSentences;
+function ToSentences(Const Lines: TLines): TSentences;
 var
   I, J: Integer;
 begin
-  Result.Akt := Czeski.Akt;
-  Result.High := Czeski.High;
-  Result.Ilosc := Czeski.Ilosc;
-  Result.Resolution := Czeski.Resolution;
-  Result.NotesGAP := Czeski.NotesGAP;
-  Result.TotalLength := Czeski.Wartosc;
+  Result.Akt := Lines.Akt;
+  Result.High := Lines.High;
+  Result.Ilosc := Lines.Ilosc;
+  Result.Resolution := Lines.Resolution;
+  Result.NotesGAP := Lines.NotesGAP;
+  Result.TotalLength := Lines.Wartosc;
 
-  SetLength(Result.Sentence, Length(Czeski.Czesc));
+  SetLength(Result.Sentence, Length(Lines.Line));
   for I := low(Result.Sentence) to high(Result.Sentence) do
   begin
-    Result.Sentence[I].Start := Czeski.Czesc[I].Start;
-    Result.Sentence[I].StartNote := Czeski.Czesc[I].StartNote;
-    Result.Sentence[I].Lyric := Czeski.Czesc[I].Lyric;     
-    Result.Sentence[I].LyricWidth := Czeski.Czesc[I].LyricWidth;
-    Result.Sentence[I].Koniec := Czeski.Czesc[I].Koniec;
-    Result.Sentence[I].BaseNote := Czeski.Czesc[I].BaseNote;
-    Result.Sentence[I].HighNote := Czeski.Czesc[I].HighNut;
-    Result.Sentence[I].IlNut := Czeski.Czesc[I].IlNut;
-    Result.Sentence[I].TotalNotes := Czeski.Czesc[I].TotalNotes;
+    Result.Sentence[I].Start := Lines.Line[I].Start;
+    Result.Sentence[I].StartNote := Lines.Line[I].StartNote;
+    Result.Sentence[I].Lyric := Lines.Line[I].Lyric;     
+    Result.Sentence[I].LyricWidth := Lines.Line[I].LyricWidth;
+    Result.Sentence[I].Koniec := Lines.Line[I].Koniec;
+    Result.Sentence[I].BaseNote := Lines.Line[I].BaseNote;
+    Result.Sentence[I].HighNote := Lines.Line[I].HighNote;
+    Result.Sentence[I].IlNut := Lines.Line[I].IlNut;
+    Result.Sentence[I].TotalNotes := Lines.Line[I].TotalNotes;
 
-    SetLength(Result.Sentence[I].Note, Length(Czeski.Czesc[I].Nuta));
+    SetLength(Result.Sentence[I].Note, Length(Lines.Line[I].Note));
     for J := low(Result.Sentence[I].Note) to high(Result.Sentence[I].Note) do
     begin
-      Result.Sentence[I].Note[J].Color := Czeski.Czesc[I].Nuta[J].Color;
-      Result.Sentence[I].Note[J].Start := Czeski.Czesc[I].Nuta[J].Start;
-      Result.Sentence[I].Note[J].Length := Czeski.Czesc[I].Nuta[J].Dlugosc;
-      Result.Sentence[I].Note[J].Ton := Czeski.Czesc[I].Nuta[J].Ton;
-      Result.Sentence[I].Note[J].TonGamy := Czeski.Czesc[I].Nuta[J].TonGamy;
-      //Result.Sentence[I].Note[J].Text := Czeski.Czesc[I].Nuta[J].Tekst;
-      Result.Sentence[I].Note[J].FreeStyle := Czeski.Czesc[I].Nuta[J].FreeStyle;
-      Result.Sentence[I].Note[J].Typ := Czeski.Czesc[I].Nuta[J].Wartosc;
+      Result.Sentence[I].Note[J].Color := Lines.Line[I].Note[J].Color;
+      Result.Sentence[I].Note[J].Start := Lines.Line[I].Note[J].Start;
+      Result.Sentence[I].Note[J].Length := Lines.Line[I].Note[J].Dlugosc;
+      Result.Sentence[I].Note[J].Ton := Lines.Line[I].Note[J].Ton;
+      Result.Sentence[I].Note[J].TonGamy := Lines.Line[I].Note[J].TonGamy;
+      //Result.Sentence[I].Note[J].Text := Lines.Line[I].Note[J].Tekst;
+      Result.Sentence[I].Note[J].FreeStyle := Lines.Line[I].Note[J].FreeStyle;
+      Result.Sentence[I].Note[J].Typ := Lines.Line[I].Note[J].Wartosc;
     end;
   end;
 end;
@@ -236,7 +236,7 @@ begin
   //Music.MoveTo(AktSong.Start);
 
   //Init Plugin
-  if not DLLMan.PluginInit(TeamInfo, PlayerInfo, ToSentences(Czesci[0]), LoadTex, Print, LoadSound, PlaySound) then
+  if not DLLMan.PluginInit(TeamInfo, PlayerInfo, ToSentences(Lines[0]), LoadTex, Print, LoadSound, PlaySound) then
   begin
     //Fehler
     Log.LogError('Could not Init Plugin');
@@ -574,7 +574,7 @@ end;
 
   if ((ShowFinish) AND (NOT Paused)) then
   begin
-    if not DLLMan.PluginDraw(Playerinfo, Czesci[0].Akt) then
+    if not DLLMan.PluginDraw(Playerinfo, Lines[0].Akt) then
     begin
       if not FadeOut then begin
           Finish;

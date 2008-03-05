@@ -114,7 +114,7 @@ implementation
 uses
   TextGL,
   UIni,
-  UMusic,  // needed for Czesci .. ( whatever that is ) 
+  UMusic,  // needed for Lines .. ( whatever that is ) 
   UMain;   //needed for Player
 
 constructor TSong.create( const aFileName : WideString );
@@ -181,7 +181,7 @@ begin
   MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
   Base[0]           := 100; // high number
-  Czesci[0].Wartosc := 0;
+  Lines[0].Wartosc := 0;
   self.Relative     := false;
   Rel[0]            := 0;
   CP                := 0;
@@ -222,16 +222,16 @@ begin
       Read(SongFile, TempC);
     until ((TempC = ':') or (TempC = 'F') or (TempC = '*'));
 
-    SetLength(Czesci, 2);
-    for Pet := 0 to High(Czesci) do begin
-      SetLength(Czesci[Pet].Czesc, 1);
-      Czesci[Pet].High := 0;
-      Czesci[Pet].Ilosc := 1;
-      Czesci[Pet].Akt := 0;
-      Czesci[Pet].Resolution := self.Resolution;
-      Czesci[Pet].NotesGAP   := self.NotesGAP;
-      Czesci[Pet].Czesc[0].IlNut := 0;
-      Czesci[Pet].Czesc[0].HighNut := -1;
+    SetLength(Lines, 2);
+    for Pet := 0 to High(Lines) do begin
+      SetLength(Lines[Pet].Line, 1);
+      Lines[Pet].High := 0;
+      Lines[Pet].Ilosc := 1;
+      Lines[Pet].Akt := 0;
+      Lines[Pet].Resolution := self.Resolution;
+      Lines[Pet].NotesGAP   := self.NotesGAP;
+      Lines[Pet].Line[0].IlNut := 0;
+      Lines[Pet].Line[0].HighNote := -1;
     end;
 
   //  TempC := ':';
@@ -289,24 +289,24 @@ begin
 
       if not Both then
       begin
-        Czesci[CP].Czesc[Czesci[CP].High].BaseNote := Base[CP];
-        Czesci[CP].Czesc[Czesci[CP].High].LyricWidth := glTextWidth(PChar(Czesci[CP].Czesc[Czesci[CP].High].Lyric));
+        Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
+        Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(PChar(Lines[CP].Line[Lines[CP].High].Lyric));
         //Total Notes Patch
-        Czesci[CP].Czesc[Czesci[CP].High].TotalNotes := 0;
-        for I := low(Czesci[CP].Czesc[Czesci[CP].High].Nuta) to high(Czesci[CP].Czesc[Czesci[CP].High].Nuta) do
+        Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
+        for I := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
         begin
-         Czesci[CP].Czesc[Czesci[CP].High].TotalNotes := Czesci[CP].Czesc[Czesci[CP].High].TotalNotes + Czesci[CP].Czesc[Czesci[CP].High].Nuta[I].Dlugosc * Czesci[CP].Czesc[Czesci[CP].High].Nuta[I].Wartosc;
+         Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Dlugosc * Lines[CP].Line[Lines[CP].High].Note[I].Wartosc;
         end;
         //Total Notes Patch End
       end else begin
-        for Pet := 0 to High(Czesci) do begin
-          Czesci[Pet].Czesc[Czesci[Pet].High].BaseNote := Base[Pet];
-          Czesci[Pet].Czesc[Czesci[Pet].High].LyricWidth := glTextWidth(PChar(Czesci[Pet].Czesc[Czesci[Pet].High].Lyric));
+        for Pet := 0 to High(Lines) do begin
+          Lines[Pet].Line[Lines[Pet].High].BaseNote := Base[Pet];
+          Lines[Pet].Line[Lines[Pet].High].LyricWidth := glTextWidth(PChar(Lines[Pet].Line[Lines[Pet].High].Lyric));
           //Total Notes Patch
-          Czesci[Pet].Czesc[Czesci[Pet].High].TotalNotes := 0;
-          for I := low(Czesci[Pet].Czesc[Czesci[Pet].High].Nuta) to high(Czesci[Pet].Czesc[Czesci[Pet].High].Nuta) do
+          Lines[Pet].Line[Lines[Pet].High].TotalNotes := 0;
+          for I := low(Lines[Pet].Line[Lines[Pet].High].Note) to high(Lines[Pet].Line[Lines[Pet].High].Note) do
           begin
-            Czesci[Pet].Czesc[Czesci[Pet].High].TotalNotes := Czesci[Pet].Czesc[Czesci[Pet].High].TotalNotes + Czesci[Pet].Czesc[Czesci[Pet].High].Nuta[I].Dlugosc * Czesci[Pet].Czesc[Czesci[Pet].High].Nuta[I].Wartosc;
+            Lines[Pet].Line[Lines[Pet].High].TotalNotes := Lines[Pet].Line[Lines[Pet].High].TotalNotes + Lines[Pet].Line[Lines[Pet].High].Note[I].Dlugosc * Lines[Pet].Line[Lines[Pet].High].Note[I].Wartosc;
           end;
           //Total Notes Patch End
         end;
@@ -578,43 +578,43 @@ begin
       end;
   end; // case
 
-  with Czesci[NrCzesci].Czesc[Czesci[NrCzesci].High] do begin
-    SetLength(Nuta, Length(Nuta) + 1);
+  with Lines[NrCzesci].Line[Lines[NrCzesci].High] do begin
+    SetLength(Note, Length(Note) + 1);
     IlNut := IlNut + 1;
-    HighNut := HighNut + 1;
-    Muzyka.IlNut := Muzyka.IlNut + 1;
+    HighNote := HighNote + 1;
+    Melody.IlNut := Melody.IlNut + 1;
 
-    Nuta[HighNut].Start := StartP;
+    Note[HighNote].Start := StartP;
     if IlNut = 1 then begin
-      StartNote := Nuta[HighNut].Start;
-      if Czesci[NrCzesci].Ilosc = 1 then
+      StartNote := Note[HighNote].Start;
+      if Lines[NrCzesci].Ilosc = 1 then
         Start := -100;
-//        Start := Nuta[HighNut].Start;
+//        Start := Note[HighNote].Start;
     end;
 
-    Nuta[HighNut].Dlugosc := DurationP;
-    Muzyka.DlugoscNut := Muzyka.DlugoscNut + Nuta[HighNut].Dlugosc;
+    Note[HighNote].Dlugosc := DurationP;
+    Melody.DlugoscNut := Melody.DlugoscNut + Note[HighNote].Dlugosc;
 
     // back to the normal system with normal, golden and now freestyle notes
     case TypeP of
-      'F':  Nuta[HighNut].Wartosc := 0;
-      ':':  Nuta[HighNut].Wartosc := 1;
-      '*':  Nuta[HighNut].Wartosc := 2;
+      'F':  Note[HighNote].Wartosc := 0;
+      ':':  Note[HighNote].Wartosc := 1;
+      '*':  Note[HighNote].Wartosc := 2;
     end;
 
-    Czesci[NrCzesci].Wartosc := Czesci[NrCzesci].Wartosc + Nuta[HighNut].Dlugosc * Nuta[HighNut].Wartosc;
+    Lines[NrCzesci].Wartosc := Lines[NrCzesci].Wartosc + Note[HighNote].Dlugosc * Note[HighNote].Wartosc;
 
-    Nuta[HighNut].Ton := NoteP;
-    if Nuta[HighNut].Ton < Base[NrCzesci] then Base[NrCzesci] := Nuta[HighNut].Ton;
-    Nuta[HighNut].TonGamy := Nuta[HighNut].TonGamy mod 12;
+    Note[HighNote].Ton := NoteP;
+    if Note[HighNote].Ton < Base[NrCzesci] then Base[NrCzesci] := Note[HighNote].Ton;
+    Note[HighNote].TonGamy := Note[HighNote].TonGamy mod 12;
 
-    Nuta[HighNut].Tekst := Copy(LyricS, 2, 100);
-    Lyric := Lyric + Nuta[HighNut].Tekst;
+    Note[HighNote].Tekst := Copy(LyricS, 2, 100);
+    Lyric := Lyric + Note[HighNote].Tekst;
 
     if TypeP = 'F' then
-      Nuta[HighNut].FreeStyle := true;
+      Note[HighNote].FreeStyle := true;
 
-    Koniec := Nuta[HighNut].Start + Nuta[HighNut].Dlugosc;
+    Koniec := Note[HighNote].Start + Note[HighNote].Dlugosc;
   end; // with
 end;
 
@@ -624,31 +624,31 @@ I: Integer;
 begin
 
   // stara czesc //Alter Satz //Update Old Part
-  Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].BaseNote := Base[NrCzesciP];
-  Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].LyricWidth := glTextWidth(PChar(Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].Lyric));
+  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].BaseNote := Base[NrCzesciP];
+  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].LyricWidth := glTextWidth(PChar(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Lyric));
 
   //Total Notes Patch
-  Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].TotalNotes := 0;
-  for I := low(Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].Nuta) to high(Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].Nuta) do
+  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes := 0;
+  for I := low(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note) to high(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note) do
   begin
-    Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].TotalNotes := Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].TotalNotes + Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].Nuta[I].Dlugosc * Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].Nuta[I].Wartosc;
+    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes := Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes + Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].Dlugosc * Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].Wartosc;
   end;
   //Total Notes Patch End
 
 
   // nowa czesc //Neuer Satz //Update New Part
-  SetLength(Czesci[NrCzesciP].Czesc, Czesci[NrCzesciP].Ilosc + 1);
-  Czesci[NrCzesciP].High := Czesci[NrCzesciP].High + 1;
-  Czesci[NrCzesciP].Ilosc := Czesci[NrCzesciP].Ilosc + 1;
-  Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].HighNut := -1;
+  SetLength(Lines[NrCzesciP].Line, Lines[NrCzesciP].Ilosc + 1);
+  Lines[NrCzesciP].High := Lines[NrCzesciP].High + 1;
+  Lines[NrCzesciP].Ilosc := Lines[NrCzesciP].Ilosc + 1;
+  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].HighNote := -1;
 
   if self.Relative then
   begin
-    Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].Start := Param1;
+    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Start := Param1;
     Rel[NrCzesciP] := Rel[NrCzesciP] + Param2;
   end
   else
-    Czesci[NrCzesciP].Czesc[Czesci[NrCzesciP].High].Start := Param1;
+    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Start := Param1;
 
   Base[NrCzesciP] := 100; // high number
 end;
