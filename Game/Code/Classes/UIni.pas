@@ -25,8 +25,8 @@ type
 type
   TIni = class
     private
-      function ExtractKeyIndex(const key: string; const prefix: string; suffix: string): integer;
-      function GetMaxKeyIndex(keys: TStringList; const prefix: string; const suffix: string): integer;
+      function ExtractKeyIndex(const key, prefix, suffix: String): Integer;
+      function GetMaxKeyIndex(keys: TStringList; const prefix, suffix: String): Integer;
       procedure LoadInputDeviceCfg(IniFile: TMemIniFile);
       procedure SaveInputDeviceCfg(IniFile: TIniFile);
     public
@@ -181,7 +181,6 @@ implementation
 
 uses
   StrUtils,
-  //UFiles,
   UMain,
   SDL,
   ULanguage,
@@ -190,24 +189,30 @@ uses
   URecord,
   UCommandLine;
 
-function TIni.ExtractKeyIndex(const key: string; const prefix: string; suffix: string): integer;
+function TIni.ExtractKeyIndex(const key, prefix, suffix: String): Integer;
 var
-  tmpStr: string;
+  value: String;
+  start: Integer;
 begin
   Result := -1;
-  if not AnsiStartsText(prefix, key) then
-    Exit;
-  tmpStr := AnsiReplaceText(key, prefix, '');
-  tmpStr := AnsiReplaceText(tmpStr, suffix, '');
-  Result := StrToIntDef(tmpStr, -1);
+  
+  if Pos(prefix, key) > -1 then
+  begin
+    start := Pos(prefix, key) + Length(prefix);
+    
+    // copy all between prefix and suffix
+    value := copy (key, start, Pos(suffix, key) - 1 - start);
+    Result := StrToIntDef(value, -1);
+  end;
 end;
 
-function TIni.GetMaxKeyIndex(keys: TStringList; const prefix: string; const suffix: string): integer;
+function TIni.GetMaxKeyIndex(keys: TStringList; const prefix, suffix: string): integer;
 var
   i: integer;
   keyIndex: integer;
 begin
   Result := -1;
+  
   for i := 0 to keys.Count-1 do
   begin
     keyIndex := ExtractKeyIndex(keys[i], prefix, suffix);
@@ -219,14 +224,12 @@ end;
 procedure TIni.LoadInputDeviceCfg(IniFile: TMemIniFile);
 var
   deviceIndex: integer;
-  deviceCfgIndex: integer;
   deviceCfg: PInputDeviceConfig;
   device: TAudioInputDevice;
   deviceIniIndex: integer;
   deviceIniStr: string;
   channelCount: integer;
   channelIndex: integer;
-  channelIndexStr: string;
   newDevice: boolean;
   recordKeys: TStringList;
   i: integer;
@@ -236,49 +239,45 @@ begin
   // read all record-keys for filtering
   IniFile.ReadSection('Record', recordKeys);
 
-  deviceCfgIndex := 0;
   SetLength(InputDeviceConfig, 0);
 
   for i := 0 to recordKeys.Count-1 do
   begin
     // find next device-name
     deviceIniIndex := ExtractKeyIndex(recordKeys[i], 'DeviceName[', ']');
-    if (deviceIniIndex < 0) then
-      continue;
-    deviceIniStr := IntToStr(deviceIniIndex);
-
-    if not IniFile.ValueExists('Record', 'DeviceName['+deviceIniStr+']') then
-      break;
-
-    // resize list
-    SetLength(InputDeviceConfig, deviceCfgIndex+1);
-
-    deviceCfg := @InputDeviceConfig[deviceCfgIndex];
-
-    // read an input device's config.
-    // Note: All devices are appended to the list whether they exist or not.
-    //   Otherwise an external device's config will be lost if it is not
-    //   connected (e.g. singstar mics or USB-Audio devices).
-    deviceCfg.Name := IniFile.ReadString('Record', 'DeviceName['+deviceIniStr+']', '');
-    deviceCfg.Input := IniFile.ReadInteger('Record', 'Input['+deviceIniStr+']', 0);
-
-    // find the largest channel-number of the current device in the ini-file
-    channelCount := GetMaxKeyIndex(recordKeys, 'Channel(', ')['+deviceIniStr+']');
-    if (channelCount < 0) then
-      channelCount := 0;
-
-    SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
-
-    // read channel-to-player mapping for every channel of the current device
-    // or set non-configured channels to no player (=0).
-    for channelIndex := 0 to High(deviceCfg.ChannelToPlayerMap) do
+    if (deviceIniIndex >= 0) then
     begin
-      channelIndexStr := IntToStr(channelIndex+1);
-      deviceCfg.ChannelToPlayerMap[channelIndex] :=
-        IniFile.ReadInteger('Record', 'Channel('+channelIndexStr+')['+deviceIniStr+']', 0);
-    end;
+      deviceIniStr := IntToStr(deviceIniIndex);
 
-    Inc(deviceCfgIndex);
+      if not IniFile.ValueExists('Record', 'DeviceName['+deviceIniStr+']') then
+        break;
+
+      // resize list
+      SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
+
+      // read an input device's config.
+      // Note: All devices are appended to the list whether they exist or not.
+      //   Otherwise an external device's config will be lost if it is not
+      //   connected (e.g. singstar mics or USB-Audio devices).
+      deviceCfg := @InputDeviceConfig[High(InputDeviceConfig)];
+      deviceCfg.Name := IniFile.ReadString('Record', 'DeviceName['+deviceIniStr+']', '');
+      deviceCfg.Input := IniFile.ReadInteger('Record', 'Input['+deviceIniStr+']', 0);
+
+      // find the largest channel-number of the current device in the ini-file
+      channelCount := GetMaxKeyIndex(recordKeys, 'Channel(', ')['+deviceIniStr+']');
+      if (channelCount < 0) then
+        channelCount := 0;
+
+      SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
+
+      // read channel-to-player mapping for every channel of the current device
+      // or set non-configured channels to no player (=0).
+      for channelIndex := 0 to High(deviceCfg.ChannelToPlayerMap) do
+      begin
+        deviceCfg.ChannelToPlayerMap[channelIndex] :=
+          IniFile.ReadInteger('Record', 'Channel('+IntToStr(channelIndex+1)+')['+deviceIniStr+']', 0);
+      end;
+    end;
   end;
 
   recordKeys.Free();
@@ -287,9 +286,9 @@ begin
   for deviceIndex := 0 to High(AudioInputProcessor.Device) do
   begin
     newDevice := true;
-    for deviceCfgIndex := 0 to High(InputDeviceConfig) do
+    for deviceIniIndex := 0 to High(InputDeviceConfig) do
     begin //Search for Card in List
-      deviceCfg := @InputDeviceConfig[deviceCfgIndex];
+      deviceCfg := @InputDeviceConfig[deviceIniIndex];
       device := AudioInputProcessor.Device[deviceIndex];
 
       if (deviceCfg.Name = Trim(device.Description)) then
@@ -307,9 +306,8 @@ begin
         end;
 
         // associate ini-index with device
-        device.CfgIndex := deviceCfgIndex;
-
-        Break;
+        device.CfgIndex := deviceIniIndex;
+        break;
       end;
     end;
 
@@ -318,28 +316,26 @@ begin
     begin
       // resize list
       SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
-      deviceCfgIndex := High(InputDeviceConfig);
-
-      deviceCfg := @InputDeviceConfig[deviceCfgIndex];
+      deviceCfg := @InputDeviceConfig[High(InputDeviceConfig)];
       device := AudioInputProcessor.Device[deviceIndex];
+      
+      // associate ini-index with device
+      device.CfgIndex := High(InputDeviceConfig);
 
-      deviceCfg.Name := Trim(AudioInputProcessor.Device[deviceIndex].Description);
+      deviceCfg.Name := Trim(device.Description);
       deviceCfg.Input := 0;
-
+        
       channelCount := device.AudioFormat.Channels;
       SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
 
       for channelIndex := 0 to channelCount-1 do
       begin
         // set default at first start of USDX (1st device, 1st channel -> player1)
-        if ((channelIndex = 0) and (deviceCfgIndex = 0)) then
+        if ((channelIndex = 0) and (device.CfgIndex = 0)) then
           deviceCfg.ChannelToPlayerMap[0] := 1
         else
           deviceCfg.ChannelToPlayerMap[channelIndex] := 0;
       end;
-
-      // associate ini-index with device
-      device.CfgIndex := deviceCfgIndex;
     end;
   end;
 
@@ -347,49 +343,66 @@ end;
 
 procedure TIni.SaveInputDeviceCfg(IniFile: TIniFile);
 var
-  deviceIndex: integer;
-  deviceIndexStr: string;
-  channelIndex: integer;
-  channelIndexStr: string;
-  valueStr: string;
+  deviceIndex: 		Integer;
+  deviceIndexStr: 	String;
+  channelIndex: 	Integer;
 begin
-  for deviceIndex := 0 to High(InputDeviceConfig) do begin
+  for deviceIndex := 0 to High(InputDeviceConfig) do
+  begin
     deviceIndexStr := IntToStr(deviceIndex+1);
-
-    valueStr := InputDeviceConfig[deviceIndex].Name;
-    IniFile.WriteString('Record', 'DeviceName['+deviceIndexStr+']', valueStr);
-
-    valueStr := IntToStr(InputDeviceConfig[deviceIndex].Input);
-    IniFile.WriteString('Record', 'Input['+deviceIndexStr+']', valueStr);
-
+    
+    // DeviceName and DeviceInput
+    IniFile.WriteString('Record', 'DeviceName['+deviceIndexStr+']', InputDeviceConfig[deviceIndex].Name);
+    IniFile.WriteString('Record', 'Input['+deviceIndexStr+']', IntToStr(InputDeviceConfig[deviceIndex].Input));
+                        
+    // Channel-to-Player Mapping
     for channelIndex := 0 to High(InputDeviceConfig[deviceIndex].ChannelToPlayerMap) do
     begin
-      channelIndexStr := IntToStr(channelIndex+1);
-      valueStr := IntToStr(InputDeviceConfig[deviceIndex].ChannelToPlayerMap[channelIndex]);
-      IniFile.WriteString('Record', 'Channel('+channelIndexStr+')['+deviceIndexStr+']', valueStr);
+      IniFile.WriteString('Record', 'Channel('+IntToStr(channelIndex+1)+')['+deviceIndexStr+']',
+                          IntToStr(InputDeviceConfig[deviceIndex].ChannelToPlayerMap[channelIndex]));
     end;
   end;
 end;
 
 procedure TIni.Load();
 var
-  IniFile:    TMemIniFile;
-  ThemeIni:   TMemIniFile;
-  Tekst:      string;
-  Pet:        integer;
-  B: boolean;
-  I, I2, I3:          integer;
-  S:          string;
-  Modes:      PPSDL_Rect;
-  SR: TSearchRec; //Skin List Patch
-  lFileName : String;
-
+  IniFile:    	TMemIniFile;
+  ThemeIni:   	TMemIniFile;
+  ThemeName:  	String;
+  I:          	Integer;
+  Modes:      	PPSDL_Rect;
+  searchResult: TSearchRec;
+    // returns name without fileextension
   function GetFileName (S: String):String;
   begin
   //Result := copy (S,0,StrRScan (PChar(S),char('.'))+1);
     Result := copy (S,0,Pos ('.ini',S)-1);
   end;
-
+  
+  // get index of value V in array a, returns -1 if value is not in array
+  function GetArrayIndex(var A: array of String; V: String; caseInsensitiv: Boolean = False): Integer;
+  var
+    i: Integer;
+  begin
+    Result := -1;
+    
+    for i := 0 To High(A) do
+      if (A[i] = V) or (caseInsensitiv and (UpperCase(A[i]) = UpperCase(V))) then
+      begin
+        Result := i;
+        break;
+      end;
+  end;
+  
+  // swap two strings
+  procedure swap(var s1, s2: String);
+  var
+    s3: String;
+  begin
+    s3 := s1;
+    s1 := s2;
+    s2 := s3;
+  end;
 begin
   GamePath := Platform.GetGameUserPath;
 
@@ -397,103 +410,117 @@ begin
 
   if (Params.ConfigFile <> '') then
     try
-      lFileName := Params.ConfigFile;
+      FileName := Params.ConfigFile;
     except
-      lFileName := GamePath + 'config.ini';
+      FileName := GamePath + 'config.ini';
     end
   else
-    lFileName := GamePath + 'config.ini';
+    FileName := GamePath + 'config.ini';
 
-  Log.LogStatus( 'Using config : ' +lFileName , '');
-  IniFile := TMemIniFile.Create( lFileName );
-
+  Log.LogStatus( 'Using config : ' + FileName , 'Ini');
+  IniFile := TMemIniFile.Create( FileName );
 
   // Name
   for I := 0 to 11 do
-    Ini.Name[I] := IniFile.ReadString('Name', 'P'+IntToStr(I+1), 'Player'+IntToStr(I+1));
-
+    Name[I] := IniFile.ReadString('Name', 'P'+IntToStr(I+1), 'Player'+IntToStr(I+1));
 
   // Templates for Names Mod
   for I := 0 to 2 do
-    Ini.NameTeam[I] := IniFile.ReadString('NameTeam', 'T'+IntToStr(I+1), 'Team'+IntToStr(I+1));
+    NameTeam[I] := IniFile.ReadString('NameTeam', 'T'+IntToStr(I+1), 'Team'+IntToStr(I+1));
   for I := 0 to 11 do
-    Ini.NameTemplate[I] := IniFile.ReadString('NameTemplate', 'Name'+IntToStr(I+1), 'Template'+IntToStr(I+1));
-
+    NameTemplate[I] := IniFile.ReadString('NameTemplate', 'Name'+IntToStr(I+1), 'Template'+IntToStr(I+1));
+  
   // Players
-  Tekst := IniFile.ReadString('Game', 'Players', IPlayers[0]);
-  for Pet := 0 to High(IPlayers) do
-    if Tekst = IPlayers[Pet] then Ini.Players := Pet;
-
+  Players := GetArrayIndex(IPlayers, IniFile.ReadString('Game', 'Players', IPlayers[0]));
+  
   // Difficulty
-  Tekst := IniFile.ReadString('Game', 'Difficulty', 'Easy');
-  for Pet := 0 to High(IDifficulty) do
-    if Tekst = IDifficulty[Pet] then Ini.Difficulty := Pet;
-
+  Difficulty := GetArrayIndex(IDifficulty, IniFile.ReadString('Game', 'Difficulty', 'Easy'));
+  
   // Language
-  Tekst := IniFile.ReadString('Game', 'Language', 'English');
-  for Pet := 0 to High(ILanguage) do
-    if Tekst = ILanguage[Pet] then Ini.Language := Pet;
-
-//  Language.ChangeLanguage(ILanguage[Ini.Language]);
-
+  Language := GetArrayIndex(ILanguage, IniFile.ReadString('Game', 'Language', 'English'));
+  //Language.ChangeLanguage(ILanguage[Language]);
+  
   // Tabs
-  Tekst := IniFile.ReadString('Game', 'Tabs', ITabs[0]);
-  for Pet := 0 to High(ITabs) do
-    if Tekst = ITabs[Pet] then Ini.Tabs := Pet;
-
-  //Tabs at Startup fix
-  Ini.Tabs_at_startup := Ini.Tabs;
-
-  // Sorting
-  Tekst := IniFile.ReadString('Game', 'Sorting', ISorting[0]);
-  for Pet := 0 to High(ISorting) do
-    if Tekst = ISorting[Pet] then Ini.Sorting := Pet;
-
+  Tabs := GetArrayIndex(ITabs, IniFile.ReadString('Game', 'Tabs', ITabs[0]));
+  Tabs_at_startup := Tabs;	//Tabs at Startup fix
+  
+  // Song Sorting
+  Sorting := GetArrayIndex(ISorting, IniFile.ReadString('Game', 'Sorting', ISorting[0]));
+  
   // Debug
-  Tekst := IniFile.ReadString('Game', 'Debug', IDebug[0]);
-  for Pet := 0 to High(IDebug) do
-    if Tekst = IDebug[Pet] then Ini.Debug := Pet;
-
-  //if Ini.Debug = 1 then SongPath := 'E:\UltraStar 03\Songs\';
+  Debug := GetArrayIndex(IDebug, IniFile.ReadString('Game', 'Debug', IDebug[0]));
+  //if Debug = 1 then SongPath := 'E:\UltraStar 03\Songs\';
 
   // Screens
-  Tekst := IniFile.ReadString('Graphics', 'Screens', IScreens[0]);
-  for Pet := 0 to High(IScreens) do
-    if Tekst = IScreens[Pet] then Ini.Screens := Pet;
-
+  Screens := GetArrayIndex(IScreens, IniFile.ReadString('Graphics', 'Screens', IScreens[0]));
+  
   // FullScreen
-  Tekst := IniFile.ReadString('Graphics', 'FullScreen', 'On');
-  for Pet := 0 to High(IFullScreen) do
-    if Tekst = IFullScreen[Pet] then Ini.FullScreen := Pet;
-
+  FullScreen := GetArrayIndex(IFullScreen, IniFile.ReadString('Graphics', 'FullScreen', 'On'));
 
   // Resolution
   SetLength(IResolution, 0);
-
-  Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE ) ; // Check if there are any modes available
-//  Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN or SDL_RESIZABLE); // Check if there are any modes available
+  
+  // Check if there are any modes available
+  if IFullScreen[FullScreen] = 'On' then
+    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN or SDL_RESIZABLE)
+  else 
+    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE ) ;  
+  
   if integer( Modes ) = 0 then
   begin
     Log.LogStatus( 'No resolutions Found' , 'Video');
   end
   else
-  if integer( Modes ) = -1 then
   begin
-    Log.LogStatus( 'ANY resolutions can be used' , 'Video');
-    // Interesting bug here on linux ...
-    // https://bugs.launchpad.net/ubuntu/+source/libsdl1.2/+bug/14044
-  end
-  else
-  begin
-    while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
+    if integer( Modes ) = -1 then
     begin
-      Log.LogStatus( 'Found Video Mode : ' + IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h) , 'Video');
-      SetLength(IResolution, Length(IResolution) + 1);
-      IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
-      Inc(Modes);
+      Log.LogStatus( 'ANY resolutions can be used - Fallback to some standard resolutions' , 'Video');
+    
+      // Fallback to some standard resolutions
+      SetLength(IResolution, 10);
+      IResolution[0] := '640x480';
+      IResolution[1] := '800x600';
+      IResolution[2] := '1024x768';
+      IResolution[3] := '1152x864';
+      IResolution[4] := '1280x800';
+      IResolution[5] := '1280x960';
+      IResolution[6] := '1400x1050';
+      IResolution[7] := '1440x900';
+      IResolution[8] := '1600x1200';
+      IResolution[9] := '1680x1050';
+      
+      Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
+      if Resolution = -1 then
+      begin
+        SetLength(IResolution, Length(IResolution) + 1);
+        IResolution[High(IResolution)] := IniFile.ReadString('Graphics', 'Resolution', '800x600');
+        Resolution := High(IResolution);
+      end;
+    end
+    else
+    begin
+      while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
+      begin
+        Log.LogStatus( 'Found Video Mode : ' + IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h) , 'Video');
+        SetLength(IResolution, Length(IResolution) + 1);
+        IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
+        Inc(Modes);
+      end;
+      
+      // reverse order
+      for I := 0 to (Length(IResolution) div 2) - 1 do begin
+        swap(IResolution[I], IResolution[High(IResolution)-I]);
+      end;
+      Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
+      
+      if Resolution = -1 then
+      begin
+        Resolution := GetArrayIndex(IResolution, '800x600');
+        if Resolution = -1 then
+          Resolution := 0;
+      end;
     end;
   end;
- 
 
   // if no modes were set, then failback to 800x600
   // as per http://sourceforge.net/forum/message.php?msg_id=4544965
@@ -501,362 +528,244 @@ begin
   if Length(IResolution) < 1 then
   begin
     Log.LogStatus( 'Found Video Mode : NONE !!! ( Defaulted to 800 x 600 )', 'Video');
-    SetLength(IResolution, Length(IResolution) + 1);
-    IResolution[High(IResolution)] := IntToStr(800) + 'x' + IntToStr(600);
-    Log.LogStatus('SDL_ListModes Defaulted Res To : ' + IResolution[High(IResolution)] , 'Graphics - Resolutions');
+    SetLength(IResolution, 1);
+    IResolution[0] := '800x600';
+    Resolution := 0;
+    Log.LogStatus('SDL_ListModes Defaulted Res To : ' + IResolution[0] , 'Graphics - Resolutions');
 
     // Default to fullscreen OFF, in this case !
-    Ini.FullScreen := 0;
+    FullScreen := 0;
   end;
 
-  // reverse order
-  for I := 0 to (Length(IResolution) div 2) - 1 do begin
-    S := IResolution[I];
-    IResolution[I] := IResolution[High(IResolution)-I];
-    IResolution[High(IResolution)-I] := S;
-  end;
-
-  Tekst := IniFile.ReadString('Graphics', 'Resolution', '800x600');
-  for Pet := 0 to High(IResolution) do
-    if Tekst = IResolution[Pet] then Ini.Resolution := Pet;
-
-
-  // Resolution
-  Tekst := IniFile.ReadString('Graphics', 'Depth', '32 bit');
-  for Pet := 0 to High(IDepth) do
-    if Tekst = IDepth[Pet] then Ini.Depth := Pet;
-
-  // Texture Size
-  Tekst := IniFile.ReadString('Graphics', 'TextureSize', ITextureSize[1]);
-  for Pet := 0 to High(ITextureSize) do
-    if Tekst = ITextureSize[Pet] then Ini.TextureSize := Pet;
+  // Depth
+  Depth := GetArrayIndex(IDepth, IniFile.ReadString('Graphics', 'Depth', '32 bit'));
+  
+  // TextureSize
+  TextureSize := GetArrayIndex(ITextureSize, IniFile.ReadString('Graphics', 'TextureSize', ITextureSize[1]));
 
   // SingWindow
-  Tekst := IniFile.ReadString('Graphics', 'SingWindow', 'Big');
-  for Pet := 0 to High(ISingWindow) do
-    if Tekst = ISingWindow[Pet] then Ini.SingWindow := Pet;
+  SingWindow := GetArrayIndex(ISingWindow, IniFile.ReadString('Graphics', 'SingWindow', 'Big'));
 
   // Oscilloscope
-  Tekst := IniFile.ReadString('Graphics', 'Oscilloscope', 'Bar');
-  for Pet := 0 to High(IOscilloscope) do
-    if Tekst = IOscilloscope[Pet] then Ini.Oscilloscope := Pet;
+  Oscilloscope := GetArrayIndex(IOscilloscope, IniFile.ReadString('Graphics', 'Oscilloscope', 'Bar'));
 
   // Spectrum
-  Tekst := IniFile.ReadString('Graphics', 'Spectrum', 'Off');
-  for Pet := 0 to High(ISpectrum) do
-    if Tekst = ISpectrum[Pet] then Ini.Spectrum := Pet;
+  Spectrum := GetArrayIndex(ISpectrum, IniFile.ReadString('Graphics', 'Spectrum', 'Off'));
 
   // Spectrograph
-  Tekst := IniFile.ReadString('Graphics', 'Spectrograph', 'Off');
-  for Pet := 0 to High(ISpectrograph) do
-    if Tekst = ISpectrograph[Pet] then Ini.Spectrograph := Pet;
+  Spectrograph := GetArrayIndex(ISpectrograph, IniFile.ReadString('Graphics', 'Spectrograph', 'Off'));
 
   // MovieSize
-  Tekst := IniFile.ReadString('Graphics', 'MovieSize', IMovieSize[2]);
-  for Pet := 0 to High(IMovieSize) do
-    if Tekst = IMovieSize[Pet] then Ini.MovieSize := Pet;
+  MovieSize := GetArrayIndex(IMovieSize, IniFile.ReadString('Graphics', 'MovieSize', IMovieSize[2]));
 
   // MicBoost
-  Tekst := IniFile.ReadString('Sound',    'MicBoost',    'Off');
-  for Pet := 0 to High(IMicBoost) do
-    if Tekst = IMicBoost[Pet] then Ini.MicBoost := Pet;
+  MicBoost := GetArrayIndex(IMicBoost, IniFile.ReadString('Sound', 'MicBoost', 'Off'));
 
   // ClickAssist
-  Tekst := IniFile.ReadString('Sound',    'ClickAssist', 'Off');
-  for Pet := 0 to High(IClickAssist) do
-    if Tekst = IClickAssist[Pet] then Ini.ClickAssist := Pet;
+  ClickAssist := GetArrayIndex(IClickAssist, IniFile.ReadString('Sound', 'ClickAssist', 'Off'));
 
   // BeatClick
-  Tekst := IniFile.ReadString('Sound',    'BeatClick', IBeatClick[0]);
-  for Pet := 0 to High(IBeatClick) do
-    if Tekst = IBeatClick[Pet] then Ini.BeatClick := Pet;
+  BeatClick := GetArrayIndex(IBeatClick, IniFile.ReadString('Sound', 'BeatClick', IBeatClick[0]));
 
   // SavePlayback
-  Tekst := IniFile.ReadString('Sound',    'SavePlayback', ISavePlayback[0]);
-  for Pet := 0 to High(ISavePlayback) do
-    if Tekst = ISavePlayback[Pet] then Ini.SavePlayback := Pet;
-
+  SavePlayback := GetArrayIndex(ISavePlayback, IniFile.ReadString('Sound', 'SavePlayback', ISavePlayback[0]));
+  
   // Threshold
-  Tekst := IniFile.ReadString('Sound', 'Threshold', IThreshold[1]);
-  for Pet := 0 to High(IThreshold) do
-    if Tekst = IThreshold[Pet] then Ini.Threshold := Pet;
+  Threshold := GetArrayIndex(IThreshold, IniFile.ReadString('Sound', 'Threshold', IThreshold[1]));
 
-  //Song Preview
-  Tekst := IniFile.ReadString('Sound', 'PreviewVolume', IPreviewVolume[7]);
-  for Pet := 0 to High(IPreviewVolume) do
-    if Tekst = IPreviewVolume[Pet] then Ini.PreviewVolume := Pet;
-
-  Tekst := IniFile.ReadString('Sound', 'PreviewFading', IPreviewFading[1]);
-  for Pet := 0 to High(IPreviewFading) do
-    if Tekst = IPreviewFading[Pet] then Ini.PreviewFading := Pet;
-
+  //Preview Volume
+  PreviewVolume := GetArrayIndex(IPreviewVolume, IniFile.ReadString('Sound', 'PreviewVolume', IPreviewVolume[7]));
+  
+  //Preview Fading
+  PreviewFading := GetArrayIndex(IPreviewFading, IniFile.ReadString('Sound', 'PreviewFading', IPreviewFading[1]));
+  
   // Lyrics Font
-  Tekst := IniFile.ReadString('Lyrics',    'LyricsFont',   ILyricsFont[1]);
-  for Pet := 0 to High(ILyricsFont) do
-    if Tekst = ILyricsFont[Pet] then Ini.LyricsFont := Pet;
+  LyricsFont := GetArrayIndex(ILyricsFont, IniFile.ReadString('Lyrics', 'LyricsFont', ILyricsFont[1]));
 
   // Lyrics Effect
-  Tekst := IniFile.ReadString('Lyrics',    'LyricsEffect',   ILyricsEffect[1]);
-  for Pet := 0 to High(ILyricsEffect) do
-    if Tekst = ILyricsEffect[Pet] then Ini.LyricsEffect := Pet;
+  LyricsEffect := GetArrayIndex(ILyricsEffect, IniFile.ReadString('Lyrics', 'LyricsEffect', ILyricsEffect[1]));
 
   // Solmization
-  Tekst := IniFile.ReadString('Lyrics',    'Solmization',   ISolmization[0]);
-  for Pet := 0 to High(ISolmization) do
-    if Tekst = ISolmization[Pet] then Ini.Solmization := Pet;
-
+  Solmization := GetArrayIndex(ISolmization, IniFile.ReadString('Lyrics', 'Solmization', ISolmization[0]));
+  
   // Theme
+  SetLength(ITheme, 0);
+  Log.LogStatus('Searching for Theme : ' + ThemePath + '*.ini', 'Theme');
+  FindFirst(ThemePath + '*.ini',faAnyFile, searchResult);
+  Repeat
+    Log.LogStatus('Found Theme: ' + searchResult.Name, 'Theme');
 
-  //Theme List Patch
+    //Read Themename from Theme
+    ThemeIni := TMemIniFile.Create(searchResult.Name);
+    ThemeName := UpperCase(ThemeIni.ReadString('Theme','Name', GetFileName(searchResult.Name)));
+    ThemeIni.Free;
 
-    //I2 Saves the no of the Deluxe (Standard-) Theme
-    I2 := 0;
-    //I counts is the cur. Theme no
-    I := 0;
-
-    SetLength(ITheme, 0);
-    writeln( 'Searching for Theme : '+ ThemePath + '*.ini' );
-    FindFirst(ThemePath + '*.ini',faAnyFile,SR);
-    Repeat
-      writeln( SR.Name );
-
-      //Read Themename from Theme
-      ThemeIni := TMemIniFile.Create(SR.Name);
-      Tekst    := UpperCase(ThemeIni.ReadString('Theme','Name',GetFileName(SR.Name)));
-      ThemeIni.Free;
-
-      //if Deluxe Theme then save Themeno to I2
-      if (Tekst = 'DELUXE') then
-        I2 := I;
-
-      //Search for Skins for this Theme
-      for Pet := low(Skin.Skin) to high(Skin.Skin) do
+    //Search for Skins for this Theme
+    for I := Low(Skin.Skin) to High(Skin.Skin) do
+    begin
+      if UpperCase(Skin.Skin[I].Theme) = ThemeName then
       begin
-        if UpperCase(Skin.Skin[Pet].Theme) = Tekst then
-        begin
-          SetLength(ITheme, Length(ITheme)+1);
-          ITheme[High(ITheme)] := GetFileName(SR.Name);
-          break;
-        end;
+        SetLength(ITheme, Length(ITheme)+1);
+        ITheme[High(ITheme)] := GetFileName(searchResult.Name);
+        break;
       end;
+    end;
+  Until FindNext(searchResult) <> 0;
+  FindClose(searchResult);
 
-      Inc(I);
-    Until FindNext(SR) <> 0;
-    FindClose(SR);
-  //Theme List Patch End }
-
-  //No Theme Found
-  if (Length(ITheme)=0) then
+  // No Theme Found
+  if (Length(ITheme) = 0) then
   begin
     Log.CriticalError('Could not find any valid Themes.');
   end;
 
-
-  Tekst := IniFile.ReadString('Themes',    'Theme',   ITheme[I2]);
-  Ini.Theme := 0;
-  for Pet := 0 to High(ITheme) do
-    if Uppercase(Tekst) = Uppercase(ITheme[Pet]) then Ini.Theme := Pet;
-
+  Theme := GetArrayIndex(ITheme, IniFile.ReadString('Themes', 'Theme', 'DELUXE'), True);
+  if (Theme = -1) then
+       Theme := 0;
+ 
   // Skin
   Skin.onThemeChange;
-  Ini.SkinNo := 0;
-
-  Tekst := IniFile.ReadString('Themes',    'Skin',   ISkin[0]);
-  for Pet := 0 to High(ISkin) do
-    if Tekst = ISkin[Pet] then Ini.SkinNo := Pet;
+  
+  SkinNo := GetArrayIndex(ISkin, IniFile.ReadString('Themes',    'Skin',   ISkin[0]));
 
   // Color
-  Tekst := IniFile.ReadString('Themes',    'Color',   IColor[0]);
-  for Pet := 0 to High(IColor) do
-    if Tekst = IColor[Pet] then Ini.Color := Pet;
-
+  Color := GetArrayIndex(IColor, IniFile.ReadString('Themes',    'Color',   IColor[0]));
+  
   LoadInputDeviceCfg(IniFile);
 
   //Advanced Settings
 
   // LoadAnimation
-  Tekst := IniFile.ReadString('Advanced', 'LoadAnimation', 'On');
-  for Pet := 0 to High(ILoadAnimation) do
-    if Tekst = ILoadAnimation[Pet] then Ini.LoadAnimation := Pet;
+  LoadAnimation := GetArrayIndex(ILoadAnimation, IniFile.ReadString('Advanced', 'LoadAnimation', 'On'));
 
   // ScreenFade
-  Tekst := IniFile.ReadString('Advanced', 'ScreenFade', 'On');
-  for Pet := 0 to High(IScreenFade) do
-    if Tekst = IScreenFade[Pet] then Ini.ScreenFade := Pet;
+  ScreenFade := GetArrayIndex(IScreenFade, IniFile.ReadString('Advanced', 'ScreenFade', 'On'));
 
   // EffectSing
-  Tekst := IniFile.ReadString('Advanced', 'EffectSing', 'On');
-  for Pet := 0 to High(IEffectSing) do
-    if Tekst = IEffectSing[Pet] then Ini.EffectSing := Pet;
+  EffectSing := GetArrayIndex(IEffectSing, IniFile.ReadString('Advanced', 'EffectSing', 'On'));
 
   // AskbeforeDel
-  Tekst := IniFile.ReadString('Advanced', 'AskbeforeDel', 'On');
-  for Pet := 0 to High(IAskbeforeDel) do
-    if Tekst = IAskbeforeDel[Pet] then Ini.AskbeforeDel := Pet;
+  AskbeforeDel := GetArrayIndex(IAskbeforeDel, IniFile.ReadString('Advanced', 'AskbeforeDel', 'On'));
 
   // OnSongClick
-  Tekst := IniFile.ReadString('Advanced', 'OnSongClick', 'Sing');
-  for Pet := 0 to High(IOnSongClick) do
-    if Tekst = IOnSongClick[Pet] then Ini.OnSongClick := Pet;
+  OnSongClick := GetArrayIndex(IOnSongClick, IniFile.ReadString('Advanced', 'OnSongClick', 'Sing'));
 
   // Linebonus
-  Tekst := IniFile.ReadString('Advanced', 'LineBonus', 'At Score');
-  for Pet := 0 to High(ILineBonus) do
-    if Tekst = ILineBonus[Pet] then Ini.LineBonus := Pet;
+  LineBonus := GetArrayIndex(ILineBonus, IniFile.ReadString('Advanced', 'LineBonus', 'At Score'));
 
   // PartyPopup
-  Tekst := IniFile.ReadString('Advanced', 'PartyPopup', 'On');
-  for Pet := 0 to High(IPartyPopup) do
-    if Tekst = IPartyPopup[Pet] then Ini.PartyPopup := Pet;
-
+  PartyPopup := GetArrayIndex(IPartyPopup, IniFile.ReadString('Advanced', 'PartyPopup', 'On'));
 
   // Joypad
-  Tekst := IniFile.ReadString('Controller',    'Joypad',   IJoypad[0]);
-  for Pet := 0 to High(IJoypad) do
-    if Tekst = IJoypad[Pet] then Ini.Joypad := Pet;
+  Joypad := GetArrayIndex(IJoypad, IniFile.ReadString('Controller',    'Joypad',   IJoypad[0]));
 
   // LCD
-  Tekst := IniFile.ReadString('Devices',    'LPT',   ILPT[0]);
-  for Pet := 0 to High(ILPT) do
-    if Tekst = ILPT[Pet] then Ini.LPT := Pet;
-
+  LPT := GetArrayIndex(ILPT, IniFile.ReadString('Devices',    'LPT',   ILPT[0]));
 
   // SongPath
   if (Params.SongPath <> '') then
     SongPath := IncludeTrailingPathDelimiter(Params.SongPath)
   else
     SongPath := IncludeTrailingPathDelimiter(IniFile.ReadString('Path', 'Songs', SongPath));
-
-  Filename := IniFile.FileName;
+  
   IniFile.Free;
 end;
 
 procedure TIni.Save;
 var
   IniFile:    TIniFile;
-  Tekst:      string;
-  I: Integer;
-  S: String;
 begin
-  //if not (FileExists(GamePath + 'config.ini') and FileIsReadOnly(GamePath + 'config.ini')) then begin
-  if not (FileExists(Filename) and FileIsReadOnly(Filename)) then begin
+  if not (FileExists(Filename) and FileIsReadOnly(Filename)) then
+  begin
 
     IniFile := TIniFile.Create(Filename);
 
     // Players
-    Tekst := IPlayers[Ini.Players];
-    IniFile.WriteString('Game',     'Players',   Tekst);
+    IniFile.WriteString('Game', 'Players', IPlayers[Players]);
 
     // Difficulty
-    Tekst := IDifficulty[Ini.Difficulty];
-    IniFile.WriteString('Game',     'Difficulty',   Tekst);
+    IniFile.WriteString('Game', 'Difficulty', IDifficulty[Difficulty]);
 
     // Language
-    Tekst := ILanguage[Ini.Language];
-    IniFile.WriteString('Game',     'Language',   Tekst);
+    IniFile.WriteString('Game', 'Language', ILanguage[Language]);
 
     // Tabs
-    Tekst := ITabs[Ini.Tabs];
-    IniFile.WriteString('Game',     'Tabs',   Tekst);
+    IniFile.WriteString('Game', 'Tabs', ITabs[Tabs]);
 
     // Sorting
-    Tekst := ISorting[Ini.Sorting];
-    IniFile.WriteString('Game',     'Sorting',   Tekst);
+    IniFile.WriteString('Game', 'Sorting', ISorting[Sorting]);
 
     // Debug
-    Tekst := IDebug[Ini.Debug];
-    IniFile.WriteString('Game',     'Debug',   Tekst);
+    IniFile.WriteString('Game', 'Debug', IDebug[Debug]);
 
     // Screens
-    Tekst := IScreens[Ini.Screens];
-    IniFile.WriteString('Graphics', 'Screens', Tekst);
+    IniFile.WriteString('Graphics', 'Screens', IScreens[Screens]);
 
     // FullScreen
-    Tekst := IFullScreen[Ini.FullScreen];
-    IniFile.WriteString('Graphics', 'FullScreen', Tekst);
+    IniFile.WriteString('Graphics', 'FullScreen', IFullScreen[FullScreen]);
 
     // Resolution
-    Tekst := IResolution[Ini.Resolution];
-    IniFile.WriteString('Graphics', 'Resolution', Tekst);
+    IniFile.WriteString('Graphics', 'Resolution', IResolution[Resolution]);
 
     // Depth
-    Tekst := IDepth[Ini.Depth];
-    IniFile.WriteString('Graphics', 'Depth', Tekst);
+    IniFile.WriteString('Graphics', 'Depth', IDepth[Depth]);
 
-    // Resolution
-    Tekst := ITextureSize[Ini.TextureSize];
-    IniFile.WriteString('Graphics', 'TextureSize', Tekst);
+    // TextureSize
+    IniFile.WriteString('Graphics', 'TextureSize', ITextureSize[TextureSize]);
 
     // Sing Window
-    Tekst := ISingWindow[Ini.SingWindow];
-    IniFile.WriteString('Graphics', 'SingWindow', Tekst);
+    IniFile.WriteString('Graphics', 'SingWindow', ISingWindow[SingWindow]);
 
     // Oscilloscope
-    Tekst := IOscilloscope[Ini.Oscilloscope];
-    IniFile.WriteString('Graphics', 'Oscilloscope', Tekst);
+    IniFile.WriteString('Graphics', 'Oscilloscope', IOscilloscope[Oscilloscope]);
 
     // Spectrum
-    Tekst := ISpectrum[Ini.Spectrum];
-    IniFile.WriteString('Graphics', 'Spectrum', Tekst);
+    IniFile.WriteString('Graphics', 'Spectrum', ISpectrum[Spectrum]);
 
     // Spectrograph
-    Tekst := ISpectrograph[Ini.Spectrograph];
-    IniFile.WriteString('Graphics', 'Spectrograph', Tekst);
+    IniFile.WriteString('Graphics', 'Spectrograph', ISpectrograph[Spectrograph]);
 
     // Movie Size
-    Tekst := IMovieSize[Ini.MovieSize];
-    IniFile.WriteString('Graphics', 'MovieSize', Tekst);
+    IniFile.WriteString('Graphics', 'MovieSize', IMovieSize[MovieSize]);
 
     // MicBoost
-    Tekst := IMicBoost[Ini.MicBoost];
-    IniFile.WriteString('Sound',    'MicBoost',    Tekst);
+    IniFile.WriteString('Sound', 'MicBoost', IMicBoost[MicBoost]);
 
     // ClickAssist
-    Tekst := IClickAssist[Ini.ClickAssist];
-    IniFile.WriteString('Sound',    'ClickAssist',    Tekst);
+    IniFile.WriteString('Sound', 'ClickAssist', IClickAssist[ClickAssist]);
 
     // BeatClick
-    Tekst := IBeatClick[Ini.BeatClick];
-    IniFile.WriteString('Sound',    'BeatClick',    Tekst);
+    IniFile.WriteString('Sound', 'BeatClick', IBeatClick[BeatClick]);
 
     // Threshold
-    Tekst := IThreshold[Ini.Threshold];
-    IniFile.WriteString('Sound',    'Threshold',    Tekst);
+    IniFile.WriteString('Sound', 'Threshold', IThreshold[Threshold]);
 
     // Song Preview
-    Tekst := IPreviewVolume[Ini.PreviewVolume];
-    IniFile.WriteString('Sound',    'PreviewVolume',    Tekst);
-
-    Tekst := IPreviewFading[Ini.PreviewFading];
-    IniFile.WriteString('Sound',    'PreviewFading',    Tekst);
+    IniFile.WriteString('Sound', 'PreviewVolume', IPreviewVolume[PreviewVolume]);
+    
+    // PreviewFading
+    IniFile.WriteString('Sound', 'PreviewFading', IPreviewFading[PreviewFading]);
 
     // SavePlayback
-    Tekst := ISavePlayback[Ini.SavePlayback];
-    IniFile.WriteString('Sound',    'SavePlayback',    Tekst);
+    IniFile.WriteString('Sound', 'SavePlayback', ISavePlayback[SavePlayback]);
 
     // Lyrics Font
-    Tekst := ILyricsFont[Ini.LyricsFont];
-    IniFile.WriteString('Lyrics',    'LyricsFont',    Tekst);
+    IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
 
     // Lyrics Effect
-    Tekst := ILyricsEffect[Ini.LyricsEffect];
-    IniFile.WriteString('Lyrics',    'LyricsEffect',    Tekst);
+    IniFile.WriteString('Lyrics', 'LyricsEffect', ILyricsEffect[LyricsEffect]);
 
     // Solmization
-    Tekst := ISolmization[Ini.Solmization];
-    IniFile.WriteString('Lyrics',    'Solmization',    Tekst);
+    IniFile.WriteString('Lyrics', 'Solmization', ISolmization[Solmization]);
 
     // Theme
-    Tekst := ITheme[Ini.Theme];
-    IniFile.WriteString('Themes',    'Theme',    Tekst);
+    IniFile.WriteString('Themes', 'Theme', ITheme[Theme]);
 
     // Skin
-    Tekst := ISkin[Ini.SkinNo];
-    IniFile.WriteString('Themes',    'Skin',    Tekst);
+    IniFile.WriteString('Themes', 'Skin', ISkin[SkinNo]);
 
     // Color
-    Tekst := IColor[Ini.Color];
-    IniFile.WriteString('Themes',    'Color',    Tekst);
+    IniFile.WriteString('Themes', 'Color', IColor[Color]);
 
     SaveInputDeviceCfg(IniFile);
 
@@ -865,38 +774,31 @@ begin
     //Advanced Settings
 
     //LoadAnimation
-    Tekst := ILoadAnimation[Ini.LoadAnimation];
-    IniFile.WriteString('Advanced', 'LoadAnimation', Tekst);
+    IniFile.WriteString('Advanced',	'LoadAnimation', ILoadAnimation[LoadAnimation]);
 
     //EffectSing
-    Tekst := IEffectSing[Ini.EffectSing];
-    IniFile.WriteString('Advanced', 'EffectSing', Tekst);
+    IniFile.WriteString('Advanced', 'EffectSing', IEffectSing[EffectSing]);
 
     //ScreenFade
-    Tekst := IScreenFade[Ini.ScreenFade];
-    IniFile.WriteString('Advanced', 'ScreenFade', Tekst);
+    IniFile.WriteString('Advanced', 'ScreenFade', IScreenFade[ScreenFade]);
 
     //AskbeforeDel
-    Tekst := IAskbeforeDel[Ini.AskbeforeDel];
-    IniFile.WriteString('Advanced', 'AskbeforeDel', Tekst);
+    IniFile.WriteString('Advanced', 'AskbeforeDel', IAskbeforeDel[AskbeforeDel]);
 
     //OnSongClick
-    Tekst := IOnSongClick[Ini.OnSongClick];
-    IniFile.WriteString('Advanced', 'OnSongClick', Tekst);
+    IniFile.WriteString('Advanced', 'OnSongClick', IOnSongClick[OnSongClick]);
 
     //Line Bonus
-    Tekst := ILineBonus[Ini.LineBonus];
-    IniFile.WriteString('Advanced', 'LineBonus', Tekst);
+    IniFile.WriteString('Advanced', 'LineBonus', ILineBonus[LineBonus]);
 
     //Party Popup
-    Tekst := IPartyPopup[Ini.PartyPopup];
-    IniFile.WriteString('Advanced', 'PartyPopup', Tekst);
+    IniFile.WriteString('Advanced', 'PartyPopup', IPartyPopup[PartyPopup]);
 
     // Joypad
-    Tekst := IJoypad[Ini.Joypad];
-    IniFile.WriteString('Controller',    'Joypad',    Tekst);
+    IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);
 
     IniFile.Free;
+    
   end;
 end;
 
@@ -905,19 +807,16 @@ var
   IniFile:    TIniFile;
   I:          integer;
 begin
-  //if not FileIsReadOnly(GamePath + 'config.ini') then begin
-    //IniFile := TIniFile.Create(GamePath + 'config.ini');
   if not FileIsReadOnly(Filename) then begin
     IniFile := TIniFile.Create(Filename);
 
-    //Name
-      // Templates for Names Mod
+    //Name Templates for Names Mod
     for I := 1 to 12 do
-      IniFile.WriteString('Name', 'P' + IntToStr(I), Ini.Name[I-1]);
+      IniFile.WriteString('Name', 'P' + IntToStr(I), Name[I-1]);
     for I := 1 to 3 do
-      IniFile.WriteString('NameTeam', 'T' + IntToStr(I), Ini.NameTeam[I-1]);
+      IniFile.WriteString('NameTeam', 'T' + IntToStr(I), NameTeam[I-1]);
     for I := 1 to 12 do
-      IniFile.WriteString('NameTemplate', 'Name' + IntToStr(I), Ini.NameTemplate[I-1]);
+      IniFile.WriteString('NameTemplate', 'Name' + IntToStr(I), NameTemplate[I-1]);
 
     IniFile.Free;
   end;
@@ -926,15 +825,12 @@ end;
 procedure TIni.SaveLevel;
 var
   IniFile:    TIniFile;
-  I:          integer;
 begin
-  //if not FileIsReadOnly(GamePath + 'config.ini') then begin
-    //IniFile := TIniFile.Create(GamePath + 'config.ini');
   if not FileIsReadOnly(Filename) then begin
     IniFile := TIniFile.Create(Filename);
 
     // Difficulty
-    IniFile.WriteString('Game', 'Difficulty', IDifficulty[Ini.Difficulty]);
+    IniFile.WriteString('Game', 'Difficulty', IDifficulty[Difficulty]);
 
     IniFile.Free;
   end;
