@@ -33,7 +33,6 @@ type
       EqualizerData: TFFTData; // moved here to avoid stack overflows
       EqualizerBands: array of Byte;
       EqualizerTime: Cardinal;
-      EqualizerTime2: Byte;
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -1808,93 +1807,92 @@ end;
 procedure TScreenSong.DrawEqualizer;
 var
   I, J: Integer;
-  Res: byte;
-  A, B: Integer;
+  ChansPerBand: byte; // channels per band
+  MaxChannel: Integer;
+  CurBand: Integer; // current band
+  CurTime: Cardinal;
   PosX, PosY: Integer;
   Pos: Real;
   lTmp : double;
 begin
+  // Nothing to do if no music is played or an equalizer bar consists of no block
+  if (AudioPlayback.Finished or (Theme.Song.Equalizer.Length <= 0)) then
+    Exit;
 
-if (not AudioPlayback.Finished) AND (Theme.Song.Equalizer.Length > 0) then
-begin
+  CurTime := SDL_GetTicks();
 
-  {$ifdef win32}
-  A := GetTickCount div 44;
-
-  if (A <> EqualizerTime) then
+  // Evaluate FFT-data every 44 ms
+  if (CurTime >= EqualizerTime) then
   begin
-    EqualizerTime := A;
+    EqualizerTime := CurTime + 44;
     AudioPlayback.GetFFTData(EqualizerData);
 
-    B   := 0;
     Pos := 0;
-    Res := ceil(92/Theme.Song.Equalizer.Bands);//How much channels are used for one Band
+    // use only the first approx. 92 of 256 FFT-channels (approx. up to 8kHz
+    ChansPerBand := ceil(92 / Theme.Song.Equalizer.Bands); // How much channels are used for one Band
+    MaxChannel := ChansPerBand * Theme.Song.Equalizer.Bands - 1;
 
-    //Change Lengths
-    for I := 0 to (Res * Theme.Song.Equalizer.Bands - 1) do
+    // Change Lengths
+    for i := 0 to MaxChannel do
     begin
-      A := floor(I/Res);
-
-      if (A<>B) then //Band changed
-      begin
-        if (Pos <= Theme.Song.Equalizer.Length) then
-        begin
-          if ((Pos < EqualizerBands[B]) AND (EqualizerBands[B]>1)) then
-            EqualizerBands[B] := EqualizerBands[B] - 1
-          else
-            EqualizerBands[B] := floor(Pos);
-        end
-        else
-          EqualizerBands[B] := 1;
-
-        B := A;
-        Pos := 0;
-      end;
-
-      if I > 35 then
+      // Gain higher freq. data so that the bars are visible
+      if i > 35 then
         EqualizerData[i] := EqualizerData[i] * 8
-      else if I > 11 then
+      else if i > 11 then
         EqualizerData[i] := EqualizerData[i] * 4.5
       else
         EqualizerData[i] := EqualizerData[i] * 1.1;
 
-      if (EqualizerData[i] >= 1) then
-        EqualizerData[i] := 0.9999999999999;
+      // clamp data
+      if (EqualizerData[i] > 1) then
+        EqualizerData[i] := 1;
 
+      // Get max. pos
       if (EqualizerData[i] * Theme.Song.Equalizer.Length > Pos) then
         Pos := EqualizerData[i] * Theme.Song.Equalizer.Length;
-    end;
-    
-    //Change Last Band
-    if (EqualizerBands[B] <= Theme.Song.Equalizer.Length) then
-    begin
-      if ((Pos < EqualizerBands[B]) AND (EqualizerBands[B]>1)) then
-        EqualizerBands[B] := EqualizerBands[B] - 1
-      else
-        EqualizerBands[B] := floor(Pos)
-    end
-    else
-      EqualizerBands[B] := 1;
-  end;
-  {$endif}
 
-  //Draw every Channel
-  glColor4f(Theme.Song.Equalizer.ColR, Theme.Song.Equalizer.ColG, Theme.Song.Equalizer.ColB, Theme.Song.Equalizer.Alpha); //Set Color
+      // Check if this is the last channel in the band
+      if ((i+1) mod ChansPerBand = 0) then
+      begin
+        CurBand := i div ChansPerBand;
+
+        // Smooth delay if new equalizer is lower than the old one
+        if ((EqualizerBands[CurBand] > Pos) and (EqualizerBands[CurBand] > 1)) then
+          EqualizerBands[CurBand] := EqualizerBands[CurBand] - 1
+        else
+          EqualizerBands[CurBand] := Round(Pos);
+
+        Pos := 0;
+      end;
+    end;
+
+  end;
+
+  // Draw equalizer bands
+
+  // Setup OpenGL
+  glColor4f(Theme.Song.Equalizer.ColR, Theme.Song.Equalizer.ColG, Theme.Song.Equalizer.ColB, Theme.Song.Equalizer.Alpha);
   glDisable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
 
+  // Set position of the first equalizer bar
   PosY := Theme.Song.Equalizer.Y;
   PosX := Theme.Song.Equalizer.X;
 
-  For I := 0 to Theme.Song.Equalizer.Bands-1 do
+  // Draw bars for each band
+  for I := 0 to High(EqualizerBands) do
   begin
-    if Theme.Song.Equalizer.Direction then
+    // Reset to lower or left position depending on the drawing-direction
+    if Theme.Song.Equalizer.Direction then // Vertical bars
+      // FIXME: Is Theme.Song.Equalizer.Y the upper or lower coordinate?
       PosY := Theme.Song.Equalizer.Y //+ (Theme.Song.Equalizer.H + Theme.Song.Equalizer.Space) * Theme.Song.Equalizer.Length
-    else
+    else                                   // Horizontal bars
       PosX := Theme.Song.Equalizer.X;
-    //Draw for every visible quad
+
+    // Draw the bar as a stack of blocks
     for J := 1 to EqualizerBands[I] do
     begin
+      // Draw block
       glBegin(GL_QUADS);
         glVertex3f(PosX, PosY, Theme.Song.Equalizer.Z);
         glVertex3f(PosX, PosY+Theme.Song.Equalizer.H, Theme.Song.Equalizer.Z);
@@ -1902,17 +1900,19 @@ begin
         glVertex3f(PosX+Theme.Song.Equalizer.W, PosY, Theme.Song.Equalizer.Z);
       glEnd;
 
-      if Theme.Song.Equalizer.Direction then //Vertically
+      // Calc position of the bar's next block
+      if Theme.Song.Equalizer.Direction then // Vertical bars
         PosY := PosY - Theme.Song.Equalizer.H - Theme.Song.Equalizer.Space
-      else //Horizontally
+      else                                   // Horizontal bars
         PosX := PosX + Theme.Song.Equalizer.W + Theme.Song.Equalizer.Space;
     end;
-    if Theme.Song.Equalizer.Direction then //Horizontally
+
+    // Calc position of the next bar
+    if Theme.Song.Equalizer.Direction then // Vertical bars
       PosX := PosX + Theme.Song.Equalizer.W + Theme.Song.Equalizer.Space
-    else //Vertically
+    else                                   // Horizontal bars
       PosY := PosY + Theme.Song.Equalizer.H + Theme.Song.Equalizer.Space;
   end;
-end;
 end;
 
 Procedure TScreenSong.SelectRandomSong;
