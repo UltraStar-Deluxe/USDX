@@ -380,7 +380,7 @@ var
   end;
   
   // get index of value V in array a, returns -1 if value is not in array
-  function GetArrayIndex(var A: array of String; V: String; caseInsensitiv: Boolean = False): Integer;
+  function GetArrayIndex(const A: array of String; V: String; caseInsensitiv: Boolean = False): Integer;
   var
     i: Integer;
   begin
