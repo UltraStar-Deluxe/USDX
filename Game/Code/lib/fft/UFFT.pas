@@ -56,8 +56,87 @@ type
   TSingleArray = array[0..0] of Single;
   PSingleArray = ^TSingleArray;
 
+  TFFTWindowFunc = (
+    fwfRectangular,
+    fwfBartlett,
+    fwfHamming,
+    fwfHanning,
+    fwfBlackman,
+    fwfBlackman_Harris,
+    fwfWelch,
+    fwfGaussian2_5,
+    fwfGaussian3_5,
+    fwfGaussian4_5
+  );
+  
+const
+  FFTWindowName: array[TFFTWindowFunc] of string = (
+     'Rectangular',
+     'Bartlett',
+     'Hamming',
+     'Hanning',
+     'Blackman',
+     'Blackman-Harris',
+     'Welch',
+     'Gaussian(a=2.5)',
+     'Gaussian(a=3.5)',
+     'Gaussian(a=4.5)'
+  );
+
+(*
+ * This is the function you will use the most often.
+ * Given an array of floats, this will compute the power
+ * spectrum by doing a Real FFT and then computing the
+ * sum of the squares of the real and imaginary parts.
+ * Note that the output array is half the length of the
+ * input array, and that NumSamples must be a power of two.
+ *)
 procedure PowerSpectrum(NumSamples: Integer; In_, Out_: PSingleArray);
-procedure WindowFunc(NumSamples: Integer; in_: PSingleArray); {$IFDEF HasInline}inline;{$ENDIF}
+
+(*
+ * Computes an FFT when the input data is real but you still
+ * want complex data as output.  The output arrays are half
+ * the length of the input, and NumSamples must be a power of
+ * two.
+ *)
+procedure RealFFT(NumSamples: integer;
+                  RealIn, RealOut, ImagOut: PSingleArray);
+
+(*
+ * Computes a FFT of complex input and returns complex output.
+ * Currently this is the only function here that supports the
+ * inverse transform as well.
+ *)
+procedure FFT(NumSamples: Integer;
+              InverseTransform: boolean;
+              RealIn, ImagIn, RealOut, ImagOut: PSingleArray);
+
+(*
+ * Applies a windowing function to the data in place
+ *
+ * 0: Rectangular (no window)
+ * 1: Bartlett    (triangular)
+ * 2: Hamming
+ * 3: Hanning
+ * 4: Blackman
+ * 5: Blackman-Harris
+ * 6: Welch
+ * 7: Gaussian(a=2.5)
+ * 8: Gaussian(a=3.5)
+ * 9: Gaussian(a=4.5)
+ *)
+procedure WindowFunc(whichFunction: TFFTWindowFunc; NumSamples: Integer; in_: PSingleArray);
+
+(*
+ * Returns the name of the windowing function (for UI display)
+ *)
+function WindowFuncName(whichFunction: TFFTWindowFunc): string;
+
+(*
+ * Returns the number of windowing functions supported
+ *)
+function NumWindowFuncs(): integer;
+
 
 implementation
 
@@ -252,6 +331,80 @@ begin
    end;
 end;
 
+(*
+ * Real Fast Fourier Transform
+ *
+ * This function was based on the code in Numerical Recipes in C.
+ * In Num. Rec., the inner loop is based on a single 1-based array
+ * of interleaved real and imaginary numbers.  Because we have two
+ * separate zero-based arrays, our indices are quite different.
+ * Here is the correspondence between Num. Rec. indices and our indices:
+ *
+ * i1  <->  real[i]
+ * i2  <->  imag[i]
+ * i3  <->  real[n/2-i]
+ * i4  <->  imag[n/2-i]
+ *)
+procedure RealFFT(NumSamples: integer; RealIn, RealOut, ImagOut: PSingleArray);
+var
+  Half: Integer;
+  i: Integer;
+  theta: Single;
+  tmpReal, tmpImag: PSingleArray;
+  wtemp: Single;
+  wpr, wpi, wr, wi: Single;
+  i3: Integer;
+  h1r, h1i, h2r, h2i: Single;
+begin
+   Half := NumSamples div 2;
+
+   theta := Pi / Half;
+
+   GetMem(tmpReal, Half * sizeof(Single));
+   GetMem(tmpImag, Half * sizeof(Single));
+
+   for i := 0 to Half-1 do
+   begin
+      tmpReal[i] := RealIn[2 * i];
+      tmpImag[i] := RealIn[2 * i + 1];
+   end;
+
+   FFT(Half, false, tmpReal, tmpImag, RealOut, ImagOut);
+
+   wtemp := sin(0.5 * theta);
+
+   wpr := -2.0 * wtemp * wtemp;
+   wpi := sin(theta);
+   wr := 1.0 + wpr;
+   wi := wpi;
+
+   for i := 1 to (Half div 2)-1 do
+   begin
+      i3 := Half - i;
+
+      h1r := 0.5 * (RealOut[i] + RealOut[i3]);
+      h1i := 0.5 * (ImagOut[i] - ImagOut[i3]);
+      h2r := 0.5 * (ImagOut[i] + ImagOut[i3]);
+      h2i := -0.5 * (RealOut[i] - RealOut[i3]);
+
+      RealOut[i] := h1r + wr * h2r - wi * h2i;
+      ImagOut[i] := h1i + wr * h2i + wi * h2r;
+      RealOut[i3] := h1r - wr * h2r + wi * h2i;
+      ImagOut[i3] := -h1i + wr * h2i + wi * h2r;
+
+      wtemp := wr;
+      wr := wtemp * wpr - wi * wpi + wr;
+      wi := wi * wpr + wtemp * wpi + wi;
+   end;
+
+   h1r := RealOut[0];
+   RealOut[0] := h1r + ImagOut[0];
+   ImagOut[0] := h1r - ImagOut[0];
+
+   FreeMem(tmpReal);
+   FreeMem(tmpImag);
+end;
+
 {*
  * PowerSpectrum
  *
@@ -336,12 +489,113 @@ begin
    FreeMem(ImagOut);
 end;
 
-procedure WindowFunc(NumSamples: Integer; in_: PSingleArray); {$IFDEF HasInline}inline;{$ENDIF}
+(*
+ * Windowing Functions
+ *)
+function NumWindowFuncs(): integer;
+begin
+  Result := Length(FFTWindowName);
+end;
+
+function WindowFuncName(whichFunction: TFFTWindowFunc): string;
+begin
+  Result := FFTWindowName[whichFunction];
+end;
+
+procedure WindowFunc(whichFunction: TFFTWindowFunc; NumSamples: Integer; in_: PSingleArray);
 var
   i: Integer;
+  A: Single;
 begin
-  for i := 0 to NumSamples-1 do
-    in_[i] := in_[i] * (0.50 - 0.50 * cos(2 * Pi * i / (NumSamples - 1)));
+  case whichFunction of
+    fwfBartlett:
+    begin
+      // Bartlett (triangular) window
+      for i := 0 to (NumSamples div 2)-1 do
+      begin
+        in_[i] := in_[i] * (i / (NumSamples / 2));
+        in_[i + (NumSamples div 2)] :=
+            in_[i + (NumSamples div 2)] *
+            (1.0 - (i / (NumSamples / 2)));
+      end;
+    end;
+    fwfHamming:
+    begin
+      // Hamming
+      for i := 0 to NumSamples-1 do
+      begin
+        in_[i] := in_[i] * (0.54 - 0.46 * cos(2 * Pi * i / (NumSamples - 1)));
+      end;
+    end;
+    fwfHanning:
+    begin
+      // Hanning
+      for i := 0 to NumSamples-1 do
+      begin
+        in_[i] := in_[i] * (0.50 - 0.50 * cos(2 * Pi * i / (NumSamples - 1)));
+      end;
+    end;
+    fwfBlackman:
+    begin
+      // Blackman
+      for i := 0 to NumSamples-1 do
+      begin
+        in_[i] := in_[i] * (0.42 - 0.5 * cos (2 * Pi * i / (NumSamples - 1)) + 0.08 * cos (4 * Pi * i / (NumSamples - 1)));
+      end;
+    end;
+    fwfBlackman_Harris:
+    begin
+      // Blackman-Harris
+      for i := 0 to NumSamples-1 do
+      begin
+        in_[i] := in_[i] * (0.35875 - 0.48829 * cos(2 * Pi * i /(NumSamples-1)) + 0.14128 * cos(4 * Pi * i/(NumSamples-1)) - 0.01168 * cos(6 * Pi * i/(NumSamples-1)));
+      end;
+    end;
+    fwfWelch:
+    begin
+      // Welch
+      for i := 0 to NumSamples-1 do
+      begin
+        in_[i] := in_[i] * 4*i/NumSamples*(1-(i/NumSamples));
+      end;
+    end;
+    fwfGaussian2_5:
+    begin
+      // Gaussian (a=2.5)
+      // Precalculate some values, and simplify the fmla to try and reduce overhead
+      A := -2*2.5*2.5;
+
+      for i := 0 to NumSamples-1 do
+      begin
+        // full
+        // in_[i] := in_[i] * exp(-0.5*(A*((i-NumSamples/2)/NumSamples/2))*(A*((i-NumSamples/2)/NumSamples/2)));
+        // reduced
+        //in_[i] := in_[i] * exp(A*(0.25 + ((i/NumSamples)*(i/NumSamples)) - (i/NumSamples)));
+      end;
+    end;
+    fwfGaussian3_5:
+    begin
+      // Gaussian (a=3.5)
+      A := -2*3.5*3.5;
+
+      for i := 0 to NumSamples-1 do
+      begin
+        // reduced
+        in_[i] := in_[i] * exp(A*(0.25 + ((i/NumSamples)*(i/NumSamples)) - (i/NumSamples)));
+      end;
+    end;
+    fwfGaussian4_5:
+    begin
+      // Gaussian (a=4.5)
+      A := -2*4.5*4.5;
+
+      for i := 0 to NumSamples-1 do
+      begin
+        // reduced
+        in_[i] := in_[i] * exp(A*(0.25 + ((i/NumSamples)*(i/NumSamples)) - (i/NumSamples)));
+      end;
+    end;
+  end;
 end;
 
 end.
