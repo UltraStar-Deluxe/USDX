@@ -205,7 +205,7 @@ begin
   if not paused then  //Pause einschalten
     begin
       // pause Time
-      PauseTime := Czas.Teraz;
+      PauseTime := LineState.CurrentTime;
       Paused    := true;
 
       // pause Music
@@ -218,7 +218,7 @@ begin
     end
   else              //Pause ausschalten
     begin
-      Czas.Teraz := PauseTime; //Position of Notes
+      LineState.CurrentTime := PauseTime; //Position of Notes
 
       // Position of Music
       AudioPlayback.Position := PauseTime;
@@ -506,10 +506,10 @@ begin
 
   // prepare timer (I)
 //  CountSkipTimeSet;
-  Czas.Teraz := CurrentSong.Start;
-  Czas.Razem := AudioPlayback.Length;
-  if (CurrentSong.Finish > 0) then Czas.Razem := CurrentSong.Finish / 1000;
-  Czas.OldBeat := -1;
+  LineState.CurrentTime := CurrentSong.Start;
+  LineState.TotalTime := AudioPlayback.Length;
+  if (CurrentSong.Finish > 0) then LineState.TotalTime := CurrentSong.Finish / 1000;
+  LineState.OldBeat := -1;
   for P := 0 to High(Player) do
     ClearScores(P);
 
@@ -897,7 +897,7 @@ begin
   begin
     try
       writeln( 'VideoPlayback.FFmpegGetFrame' );
-      fCurrentVideoPlaybackEngine.GetFrame(Czas.Teraz);
+      fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
 
       writeln( 'VideoPlayback.FFmpegDrawGL' );
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
@@ -1070,8 +1070,8 @@ begin
     Text[T].X := Text[T].X + 10*ScreenX;
 
   // update static menu with time ...
-  Min := Round(Czas.Teraz) div 60;
-  Sec := Round(Czas.Teraz) mod 60;
+  Min := Round(LineState.CurrentTime) div 60;
+  Sec := Round(LineState.CurrentTime) mod 60;
   Text[TextTimeText].Text := '';
   if Min < 10 then Text[TextTimeText].Text := '0';
   Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
@@ -1176,7 +1176,7 @@ begin
 
       if assigned( fCurrentVideoPlaybackEngine ) then
       begin
-        fCurrentVideoPlaybackEngine.GetFrame(Czas.Teraz);
+        fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
         fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
       end;
 
@@ -1208,9 +1208,9 @@ begin
   DrawFG;
 
   // check for music finish
-//  Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(Czas.Teraz*1000) + ' ' + IntToStr(CurrentSong.Finish));
+//  Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LineState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
   if ShowFinish then begin
-  if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (Czas.Teraz*1000 <= CurrentSong.Finish)) then begin
+  if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LineState.CurrentTime*1000 <= CurrentSong.Finish)) then begin
   //Pause Mod:
     if not Paused then
     Sing(Self);       // analyze song

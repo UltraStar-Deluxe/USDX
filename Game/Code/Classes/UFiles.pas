@@ -48,7 +48,7 @@ begin
     Lines[Pet].Line[0].LyricWidth := 0;
     Player[pet].Score := 0;
     Player[pet].IlNut := 0;
-    Player[pet].HighNut := -1;
+    Player[pet].HighNote := -1;
   end;
 
   (* FIXME

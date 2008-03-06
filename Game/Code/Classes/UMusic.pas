@@ -17,10 +17,10 @@ type
   //http://paste.ubuntu-nl.org/51892/
 
   TMelody = record
-    Path:   string;
-    Start:  integer;        // start of song in ms
-    IlNut:  integer;        // (TODO: Il = tone, Nut(a) = Note)
-    DlugoscNut:   integer;  // (TODO: Dlugosc = length, Nut(a) = Note)
+    Path:       string;
+    Start:      integer;      // start of song in ms
+    IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
+    NoteLenght: integer;
   end;
 
   PLine = ^TLine;
@@ -29,7 +29,7 @@ type
     StartNote:  integer;
     Lyric:      string;
     LyricWidth: real;
-    End_:     integer;
+    End_:       integer;
     BaseNote:   integer;
     HighNote:   integer;
     IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
@@ -37,52 +37,52 @@ type
     Note:     array of record
       Color:      integer;
       Start:      integer;
-      Lenght:    integer;
-      Tone:        integer;    // full range tone
-      TonGamy:    integer;    // tone unified to one octave (TODO: rename to something meaningful, ToneGamus)
-      Text:      string;     // (TODO: rename to Text)
+      Lenght:     integer;
+      Tone:       integer;    // full range tone
+      ToneGamus:  integer;    // tone unified to one octave
+      Text:       string;
       FreeStyle:  boolean;
-      NoteType:    integer;    // normal-note: 1, golden-note: 2 (TODO: wartosc=value, rename to Type_ or Kind?)
+      NoteType:   integer;    // normal-note: 1, golden-note: 2
     end;
   end;
-  ALine = array of TLine; // (TODO: rename to TLineArray)
+  ALine = array of TLine;     // (TODO: rename to TLineArray)
 
   // (TCzesci = TSentences)  TCzesci changed to TLines because TSentences exist elseware in incompatible form
   TLines = record
-    Akt:        integer;        // for drawing of current line (Akt = Current)
+    Current:    integer;      // for drawing of current line
     High:       integer;
-    Ilosc:      integer;        // (TODO: Ilosc = Number/Count)
+    Ilosc:      integer;      // (TODO: Ilosc = Number/Count)
     Resolution: integer;
     NotesGAP:   integer;
-    NoteType:    integer;        // TODO: rename (wartosc=value)
-    Line:       ALine;          // TODO: rename to Sentence or Line - renamed to Line
+    NoteType:   integer;
+    Line:       ALine;
   end;
 
   // (TODO: rename TCzas to something like T(Line/Sentence)Time/TLinePosition/TLineState)
   // (Czas = time)
-  TCzas = record              // all that concerns the current frames
-    OldBeat:      integer;    // previous discovered beat 
-    AktBeat:      integer;    // current beat (TODO: rename)
-    MidBeat:      real;       // like AktBeat
+  TLineState = record        // all that concerns the current frames
+    OldBeat:      integer;    // previous discovered beat
+    CurrentBeat:  integer;
+    MidBeat:      real;       // like CurrentBeat
 
     // now we use this for super synchronization!
     // only used when analyzing voice
     OldBeatD:     integer;    // previous discovered beat
-    AktBeatD:     integer;    // current beat (TODO: rename)
-    MidBeatD:     real;       // like AktBeatD
+    CurrentBeatD: integer;
+    MidBeatD:     real;       // like CurrentBeatD
     FracBeatD:    real;       // fractional part of MidBeatD
 
     // we use this for audible clicks
     OldBeatC:     integer;    // previous discovered beat
-    AktBeatC:     integer;    // current beat (TODO: rename)
-    MidBeatC:     real;       // like AktBeatC
+    CurrentBeatC: integer;
+    MidBeatC:     real;       // like CurrentBeatC
     FracBeatC:    real;       // fractional part of MidBeatC
 
 
-    OldCzesc:     integer;    // previous displayed sentence (Czesc = part (here: sentence/line))
+    OldLine:      integer;    // previous displayed sentence
 
-    Teraz:        real;       // (TODO: Teraz = current time)
-    Razem:        real;       // (TODO: Razem = total time)
+    CurrentTime:  real;
+    TotalTime:    real;
   end;
 
 
@@ -288,13 +288,13 @@ type
 
 var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
   // music
-  Melody:   TMelody; // TODO: rename
+  Melody:   TMelody;
 
   // czesci z nutami;
-  Lines:   array of TLines;  // TODO: rename to Sentences/Lines
+  Lines:   array of TLines;
 
-  // czas
-  Czas:     TCzas;             // TODO: rename
+  // LineState
+  LineState:     TLineState;
 
   SoundLib: TSoundLibrary;
 

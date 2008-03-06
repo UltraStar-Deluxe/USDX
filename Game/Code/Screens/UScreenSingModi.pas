@@ -131,7 +131,7 @@ function ToSentences(Const Lines: TLines): TSentences;
 var
   I, J: Integer;
 begin
-  Result.Akt := Lines.Akt;
+  Result.Akt := Lines.Current;
   Result.High := Lines.High;
   Result.Ilosc := Lines.Ilosc;
   Result.Resolution := Lines.Resolution;
@@ -158,7 +158,7 @@ begin
       Result.Sentence[I].Note[J].Start := Lines.Line[I].Note[J].Start;
       Result.Sentence[I].Note[J].Length := Lines.Line[I].Note[J].Lenght;
       Result.Sentence[I].Note[J].Ton := Lines.Line[I].Note[J].Tone;
-      Result.Sentence[I].Note[J].TonGamy := Lines.Line[I].Note[J].TonGamy;
+      Result.Sentence[I].Note[J].TonGamy := Lines.Line[I].Note[J].ToneGamus;
       //Result.Sentence[I].Note[J].Text := Lines.Line[I].Note[J].Tekst;
       Result.Sentence[I].Note[J].FreeStyle := Lines.Line[I].Note[J].FreeStyle;
       Result.Sentence[I].Note[J].Typ := Lines.Line[I].Note[J].NoteType;
@@ -512,8 +512,8 @@ end; //ShowScore
 if DLLMan.Selected.LoadSong then
 begin
   // update static menu with time ...
-  Min := Round(Czas.Teraz) div 60;
-  Sec := Round(Czas.Teraz) mod 60;
+  Min := Round(LineState.CurrentTime) div 60;
+  Sec := Round(LineState.CurrentTime) mod 60;
   Text[TextTimeText].Text := '';
   if Min < 10 then Text[TextTimeText].Text := '0';
   Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
@@ -541,7 +541,7 @@ end;
   if ShowFinish then begin
     if DllMan.Selected.LoadSong then
     begin
-      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (Czas.Teraz*1000 <= CurrentSong.Finish)) then begin
+      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LineState.CurrentTime*1000 <= CurrentSong.Finish)) then begin
         //Pause Mod:
         if not Paused then
           Sing(Self);       // analyze song
@@ -574,7 +574,7 @@ end;
 
   if ((ShowFinish) AND (NOT Paused)) then
   begin
-    if not DLLMan.PluginDraw(Playerinfo, Lines[0].Akt) then
+    if not DLLMan.PluginDraw(Playerinfo, Lines[0].Current) then
     begin
       if not FadeOut then begin
           Finish;

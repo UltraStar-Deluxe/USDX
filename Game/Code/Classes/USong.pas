@@ -227,7 +227,7 @@ begin
       SetLength(Lines[Pet].Line, 1);
       Lines[Pet].High := 0;
       Lines[Pet].Ilosc := 1;
-      Lines[Pet].Akt := 0;
+      Lines[Pet].Current := 0;
       Lines[Pet].Resolution := self.Resolution;
       Lines[Pet].NotesGAP   := self.NotesGAP;
       Lines[Pet].Line[0].IlNut := 0;
@@ -593,7 +593,7 @@ begin
     end;
 
     Note[HighNote].Lenght := DurationP;
-    Melody.DlugoscNut := Melody.DlugoscNut + Note[HighNote].Lenght;
+    Melody.NoteLenght := Melody.NoteLenght + Note[HighNote].Lenght;
 
     // back to the normal system with normal, golden and now freestyle notes
     case TypeP of
@@ -606,7 +606,7 @@ begin
 
     Note[HighNote].Tone := NoteP;
     if Note[HighNote].Tone < Base[NrCzesci] then Base[NrCzesci] := Note[HighNote].Tone;
-    Note[HighNote].TonGamy := Note[HighNote].TonGamy mod 12;
+    Note[HighNote].ToneGamus := Note[HighNote].ToneGamus mod 12;
 
     Note[HighNote].Text := Copy(LyricS, 2, 100);
     Lyric := Lyric + Note[HighNote].Text;

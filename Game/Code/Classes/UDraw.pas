@@ -202,16 +202,16 @@ var
   Pet:    integer;
   TempR:  real;
 begin
-  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Akt].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote);
+  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
   glEnable(GL_BLEND);
   glBegin(GL_LINES);
-  for Pet := Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote to Lines[NrCzesci].Line[Lines[NrCzesci].Akt].End_ do begin
+  for Pet := Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote to Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ do begin
     if (Pet mod Lines[NrCzesci].Resolution) = Lines[NrCzesci].NotesGAP then
       glColor4f(0, 0, 0, 1)
     else
       glColor4f(0, 0, 0, 0.3);
-    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote), Top);
-    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote), Top + 135);
+    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote), Top);
+    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote), Top + 135);
   end;
   glEnd;
   glDisable(GL_BLEND);
@@ -248,7 +248,7 @@ begin
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   lTmpA := (Right-Left);
-  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Akt].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote);
+  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
 
   {$IFDEF LAZARUS}
 (*
@@ -269,7 +269,7 @@ begin
   end;
 
   
-  with Lines[NrCzesci].Line[Lines[NrCzesci].Akt] do begin
+  with Lines[NrCzesci].Line[Lines[NrCzesci].Current] do begin
     for Pet := 0 to HighNote do begin
       with Note[Pet] do begin
         if not FreeStyle then begin
@@ -287,7 +287,7 @@ begin
             glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
                                           // Czesci == teil, element == piece, element | koniec == end / ending
           // lewa czesc  -  left part
-          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
+          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW;
           Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH;
           Rec.Bottom := Rec.Top + 2 * NotesH;
@@ -305,7 +305,7 @@ begin
 
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == lenght
+        Rec.Right := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == lenght
 
         glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -373,13 +373,13 @@ var
 
 ////  if Player[NrGracza].IlNut > 0 then
     begin
-      TempR := W / (Lines[0].Line[Lines[0].Akt].End_ - Lines[0].Line[Lines[0].Akt].StartNote);
-        for N := 0 to Player[NrGracza].HighNut do
+      TempR := W / (Lines[0].Line[Lines[0].Current].End_ - Lines[0].Line[Lines[0].Current].StartNote);
+        for N := 0 to Player[NrGracza].HighNote do
           begin
             with Player[NrGracza].Note[N] do
               begin
                 // Left part of note
-                Rec.Left := X + (Start-Lines[0].Line[Lines[0].Akt].StartNote) * TempR + 0.5 + 10*ScreenX;
+                Rec.Left := X + (Start-Lines[0].Line[Lines[0].Current].StartNote) * TempR + 0.5 + 10*ScreenX;
                 Rec.Right := Rec.Left + NotesW;
 
                 // Draw it in half size, if not hit
@@ -392,7 +392,7 @@ var
                    NotesH2 := int(NotesH * 0.65);
                  end;
 
-                Rec.Top    := Y - (Tone-Lines[0].Line[Lines[0].Akt].BaseNote)*Space/2 - NotesH2;
+                Rec.Top    := Y - (Tone-Lines[0].Line[Lines[0].Current].BaseNote)*Space/2 - NotesH2;
                 Rec.Bottom := Rec.Top + 2 *NotesH2;
 
                 // draw the left part
@@ -407,11 +407,11 @@ var
 
                // Middle part of the note
                Rec.Left := Rec.Right;
-               Rec.Right := X + (Start+Lenght-Lines[0].Line[Lines[0].Akt].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
+               Rec.Right := X + (Start+Lenght-Lines[0].Line[Lines[0].Current].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
 
                // (nowe) - dunno
-               if (Start+Lenght-1 = Czas.AktBeatD) then
-                 Rec.Right := Rec.Right - (1-Frac(Czas.MidBeatD)) * TempR;
+               if (Start+Lenght-1 = LineState.CurrentBeatD) then
+                 Rec.Right := Rec.Right - (1-Frac(LineState.MidBeatD)) * TempR;
                // the left note is more right than the right note itself, sounds weird - so we fix that xD
                if Rec.Right <= Rec.Left then Rec.Right := Rec.Left;
 
@@ -442,8 +442,8 @@ var
             // Perfect note is stored
             if Perfect and (Ini.EffectSing=1) then
               begin
-                A := 1 - 2*(Czas.Teraz - GetTimeFromBeat(Start+Lenght));
-                  if not (Start+Lenght-1 = Czas.AktBeatD) then
+                A := 1 - 2*(LineState.CurrentTime - GetTimeFromBeat(Start+Lenght));
+                  if not (Start+Lenght-1 = LineState.CurrentBeatD) then
 
                   //Star animation counter
                   //inc(Starfr);
@@ -484,7 +484,7 @@ begin
 
 
   lTmpA := (Right-Left);
-  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Akt].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote);
+  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
 
 
   if ( lTmpA > 0 ) AND
@@ -497,7 +497,7 @@ begin
     TempR := 0;
   end;
 
-  with Lines[NrCzesci].Line[Lines[NrCzesci].Akt] do begin
+  with Lines[NrCzesci].Line[Lines[NrCzesci].Current] do begin
     for Pet := 0 to HighNote do begin
       with Note[Pet] do begin
         if not FreeStyle then begin
@@ -506,10 +506,10 @@ begin
           W := NotesW * 2 + 2;
           H := NotesH * 1.5 + 3.5;
 
-          X2 := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
+          X2 := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
           X1 := X2-W;
 
-          X3 := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
+          X3 := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
           X4 := X3+W;
 
           // left
@@ -617,19 +617,19 @@ begin
   end;
 
   // Draw Lyrics
-  ScreenSing.Lyrics.Draw(Czas.MidBeat);
+  ScreenSing.Lyrics.Draw(LineState.MidBeat);
 
   // todo: Lyrics
 {  // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
   FS := 1.3;
-  BarFrom := Lines[0].Line[Lines[0].Akt].StartNote - Lines[0].Line[Lines[0].Akt].Start;
+  BarFrom := Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start;
   if BarFrom > 40 then BarFrom := 40;
-  if (Lines[0].Line[Lines[0].Akt].StartNote - Lines[0].Line[Lines[0].Akt].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
-    (Lines[0].Line[Lines[0].Akt].StartNote - Czas.MidBeat > 0) and                     // przed tekstem
-    (Lines[0].Line[Lines[0].Akt].StartNote - Czas.MidBeat < 40) then begin            // ale nie za wczesnie
-    BarWspol := (Czas.MidBeat - (Lines[0].Line[Lines[0].Akt].StartNote - BarFrom)) / BarFrom;
+  if (Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
+    (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat > 0) and                     // przed tekstem
+    (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat < 40) then begin            // ale nie za wczesnie
+    BarWspol := (LineState.MidBeat - (Lines[0].Line[Lines[0].Current].StartNote - BarFrom)) / BarFrom;
     Rec.Left := NR.Left + BarWspol *
-//      (NR.WMid - Lines[0].Line[Lines[0].Akt].LyricWidth / 2 * FS - 50);
+//      (NR.WMid - Lines[0].Line[Lines[0].Current].LyricWidth / 2 * FS - 50);
       (ScreenSing.LyricMain.ClientX - NR.Left - 50) + 10*ScreenX;
     Rec.Right := Rec.Left + 50;
     Rec.Top := Skin_LyricsT + 3;
@@ -874,17 +874,17 @@ begin
   end;
 
     // Draw Lyrics
-    ScreenSingModi.Lyrics.Draw(Czas.MidBeat);
+    ScreenSingModi.Lyrics.Draw(LineState.MidBeat);
 
     // todo: Lyrics
 {    // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
     FS := 1.3;
-    BarFrom := Lines[0].Line[Lines[0].Akt].StartNote - Lines[0].Line[Lines[0].Akt].Start;
+    BarFrom := Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start;
     if BarFrom > 40 then BarFrom := 40;
-    if (Lines[0].Line[Lines[0].Akt].StartNote - Lines[0].Line[Lines[0].Akt].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
-       (Lines[0].Line[Lines[0].Akt].StartNote - Czas.MidBeat > 0) and                     // przed tekstem
-       (Lines[0].Line[Lines[0].Akt].StartNote - Czas.MidBeat < 40) then begin            // ale nie za wczesnie
-         BarWspol := (Czas.MidBeat - (Lines[0].Line[Lines[0].Akt].StartNote - BarFrom)) / BarFrom;
+    if (Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
+       (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat > 0) and                     // przed tekstem
+       (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat < 40) then begin            // ale nie za wczesnie
+         BarWspol := (LineState.MidBeat - (Lines[0].Line[Lines[0].Current].StartNote - BarFrom)) / BarFrom;
          Rec.Left := NR.Left + BarWspol * (ScreenSingModi.LyricMain.ClientX - NR.Left - 50) + 10*ScreenX;
          Rec.Right := Rec.Left + 50;
          Rec.Top := Skin_LyricsT + 3;
@@ -1239,8 +1239,8 @@ begin
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Akt].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote);
-  with Lines[NrCzesci].Line[Lines[NrCzesci].Akt] do begin
+  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
+  with Lines[NrCzesci].Line[Lines[NrCzesci].Current] do begin
     for Pet := 0 to HighNote do begin
       with Note[Pet] do begin
 
@@ -1254,7 +1254,7 @@ begin
 
 
           // lewa czesc  -  left part
-          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
+          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW;
           Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH;
           Rec.Bottom := Rec.Top + 2 * NotesH;
@@ -1268,7 +1268,7 @@ begin
 
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Akt].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
+        Rec.Right := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
 
         glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
         glBegin(GL_QUADS);
@@ -1323,15 +1323,15 @@ begin
     glTexCoord2f(0, 0);
     glVertex2f(x,y);
     
-    if ( Czas.Teraz > 0 ) AND
-       ( Czas.Razem > 0 ) THEN
+    if ( LineState.CurrentTime > 0 ) AND
+       ( LineState.TotalTime > 0 ) THEN
     BEGIN
-      lTmp := Czas.Teraz/Czas.Razem;
-      glTexCoord2f((width*Czas.Teraz/Czas.Razem)/8, 0);
-      glVertex2f(x+width*Czas.Teraz/Czas.Razem, y);
+      lTmp := LineState.CurrentTime/LineState.TotalTime;
+      glTexCoord2f((width*LineState.CurrentTime/LineState.TotalTime)/8, 0);
+      glVertex2f(x+width*LineState.CurrentTime/LineState.TotalTime, y);
 
-      glTexCoord2f((width*Czas.Teraz/Czas.Razem)/8, 1);
-      glVertex2f(x+width*Czas.Teraz/Czas.Razem, y+height);
+      glTexCoord2f((width*LineState.CurrentTime/LineState.TotalTime)/8, 1);
+      glVertex2f(x+width*LineState.CurrentTime/LineState.TotalTime, y+height);
     END;
 
     glTexCoord2f(0, 1);
