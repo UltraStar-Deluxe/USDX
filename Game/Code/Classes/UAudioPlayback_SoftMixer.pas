@@ -67,6 +67,7 @@ type
       procedure SetPosition(Time: real);
       function ReadData(Buffer: PChar; BufSize: integer): integer;
 
+      function GetPCMData(var data: TPCMData): Cardinal;
       procedure GetFFTData(var data: TFFTData);
   end;
 
@@ -115,7 +116,7 @@ type
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
-      function Open(Filename: string): boolean; // true if succeed
+      function Open(const Filename: string): boolean; // true if succeed
       procedure Rewind;
       procedure SetPosition(Time: real);
       procedure Play;
@@ -566,50 +567,6 @@ begin
   Result := BufSize - BytesNeeded;
 end;
 
-procedure TSoftMixerPlaybackStream.GetFFTData(var data: TFFTData);
-var
-  i: integer;
-  Frames: integer;
-  DataIn: PSingleArray;
-  AudioFormat: TAudioFormatInfo;
-begin
-  // only works with SInt16 and Float values at the moment
-  AudioFormat := Engine.GetAudioFormatInfo();
-
-  GetMem(DataIn, FFTSize * SizeOf(Single));
-
-  Lock();
-  // FIXME: We just use the first Frames frames, the others are ignored.
-  // This is OK for the equalizer display but not if we want to use
-  // this function for voice-analysis.
-  Frames := Min(FFTSize, SampleBufferCount div AudioFormat.FrameSize);
-  // use only first channel and convert data to float-values
-  case AudioFormat.Format of
-    asfS16:
-    begin
-      for i := 0 to Frames-1 do
-        DataIn[i] := PSmallInt(@SampleBuffer[i*AudioFormat.FrameSize])^ / -Low(SmallInt);
-    end;
-    asfFloat:
-    begin
-      for i := 0 to Frames-1 do
-        DataIn[i] := PSingle(@SampleBuffer[i*AudioFormat.FrameSize])^;
-    end;
-  end;
-  Unlock();
-
-  WindowFunc(FFTSize, DataIn);
-  PowerSpectrum(FFTSize, DataIn, @data);
-  FreeMem(DataIn);
-
-  // resize data to a 0..1 range
-  for i := 0 to High(TFFTData) do
-  begin
-    // TODO: this might need some work
-    data[i] := Sqrt(data[i]) / 100;
-  end;
-end;
-
 (* TODO: libsamplerate support
 function TSoftMixerPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
 var
@@ -633,6 +590,77 @@ begin
   //src_delete(convState);
 end;
 *)
+
+function TSoftMixerPlaybackStream.GetPCMData(var data: TPCMData): Cardinal;
+var size: integer;
+begin
+  Result := 0;
+(*  
+  // just SInt16 stereo support for now
+  if ((Engine.GetAudioFormatInfo().Format <> asfS16) or
+      (Engine.GetAudioFormatInfo().Channels <> 2)) then
+  begin
+    Exit;
+  end;
+
+  // zero memory
+  FillChar(data, SizeOf(data), 0);
+
+  Lock();
+  Result := Min(SizeOf(data), SampleBufferCount);
+  if (Result > 0) then
+  begin
+    Move(SampleBuffer[0], data[0], Result);
+  end;
+  Unlock();
+*)
+end;
+
+procedure TSoftMixerPlaybackStream.GetFFTData(var data: TFFTData);
+var
+  i: integer;
+  Frames: integer;
+  DataIn: PSingleArray;
+  AudioFormat: TAudioFormatInfo;
+begin
+  // only works with SInt16 and Float values at the moment
+  AudioFormat := Engine.GetAudioFormatInfo();
+
+  DataIn := AllocMem(FFTSize * SizeOf(Single));
+  if (DataIn = nil) then
+    Exit;
+
+  Lock();
+  // TODO: We just use the first Frames frames, the others are ignored.
+  // This is OK for the equalizer display but not if we want to use
+  // this function for voice-analysis someday (I don't think we want).
+  Frames := Min(FFTSize, SampleBufferCount div AudioFormat.FrameSize);
+  // use only first channel and convert data to float-values
+  case AudioFormat.Format of
+    asfS16:
+    begin
+      for i := 0 to Frames-1 do
+        DataIn[i] := PSmallInt(@SampleBuffer[i*AudioFormat.FrameSize])^ / -Low(SmallInt);
+    end;
+    asfFloat:
+    begin
+      for i := 0 to Frames-1 do
+        DataIn[i] := PSingle(@SampleBuffer[i*AudioFormat.FrameSize])^;
+    end;
+  end;
+  Unlock();
+
+  WindowFunc(fwfHanning, FFTSize, DataIn);
+  PowerSpectrum(FFTSize, DataIn, @data);
+  FreeMem(DataIn);
+
+  // resize data to a 0..1 range
+  for i := 0 to High(TFFTData) do
+  begin
+    // TODO: this might need some work
+    data[i] := Sqrt(data[i]) / 100;
+  end;
+end;
 
 function TSoftMixerPlaybackStream.GetPosition: real;
 begin
@@ -749,7 +777,7 @@ begin
     MusicStream.SetLoop(Enabled);
 end;
 
-function TAudioPlayback_SoftMixer.Open(Filename: string): boolean;
+function TAudioPlayback_SoftMixer.Open(const Filename: string): boolean;
 var
   decodeStream: TAudioDecodeStream;
 begin
@@ -839,12 +867,15 @@ end;
 // Interface for Visualizer
 function TAudioPlayback_SoftMixer.GetPCMData(var data: TPCMData): Cardinal;
 begin
-  result := 0;
+  if assigned(MusicStream) then
+    Result := MusicStream.GetPCMData(data)
+  else
+    Result := 0;
 end;
 
 function TAudioPlayback_SoftMixer.OpenSound(const Filename: String): TAudioPlaybackStream;
 begin
-  result := Load(Filename);
+  Result := Load(Filename);
 end;
 
 procedure TAudioPlayback_SoftMixer.PlaySound(stream: TAudioPlaybackStream);
