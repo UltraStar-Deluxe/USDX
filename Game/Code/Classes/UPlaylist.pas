@@ -93,6 +93,7 @@ Procedure   TPlayListManager.LoadPlayLists;
 var
   SR:   TSearchRec;
   Len:  Integer;
+  PlayListBuffer: TPlayList;
 begin
   SetLength(Playlists, 0);
 
@@ -103,11 +104,23 @@ begin
       SetLength(Playlists, Len +1);
 
       if not LoadPlayList (Len, Sr.Name) then
-        SetLength(Playlists, Len);
+        SetLength(Playlists, Len)
+      else
+      begin
+        // Sort the Playlists - Insertion Sort
+        PlayListBuffer := Playlists[Len];
+        Dec(Len);
+        while (Len >= 0) AND (CompareText(Playlists[Len].Name, PlayListBuffer.Name) >= 0) do
+        begin
+            Playlists[Len+1] := Playlists[Len];
+            Dec(Len);
+        end;
+        Playlists[Len+1] := PlayListBuffer;
+      end;
 
     until FindNext(SR) <> 0;
     FindClose(SR);
-  end;
+  end;  
 end;
 
 //----------
@@ -250,7 +263,7 @@ Procedure   TPlayListManager.SetPlayList(Index: Cardinal);
 var
   I: Integer;
 begin
-  If (Index > High(PlayLists)) then
+  If (Int(Index) > High(PlayLists)) then
     exit;
 
   //Hide all Songs
@@ -286,15 +299,21 @@ end;
 //AddPlaylist - Adds a Playlist and Returns the Index
 //----------
 Function    TPlayListManager.AddPlaylist(Name: String): Cardinal;
-var I: Integer;
+var
+  I: Integer;
 begin
   Result := Length(Playlists);
   SetLength(Playlists, Result + 1);
-
+  
+  // Sort the Playlists - Insertion Sort
+  while (Result > 0) AND (CompareText(Playlists[Result - 1].Name, Name) >= 0) do
+  begin
+    Dec(Result);
+    Playlists[Result+1] := Playlists[Result];
+  end;
   Playlists[Result].Name      := Name;
 
   I := 1;
-
   if (not FileExists(PlaylistPath + Name + '.upl')) then
     Playlists[Result].Filename  := Name + '.upl'
   else
@@ -317,7 +336,7 @@ var
   I: Integer;
   Filename: String;
 begin
-  If Index > High(Playlists) then
+  If Int(Index) > High(Playlists) then
     Exit;
 
   Filename := PlaylistPath + Playlists[Index].Filename;
@@ -367,7 +386,7 @@ begin
   else
     exit;
 
-  if (SongID <= High(CatSongs.Song)) AND (NOT CatSongs.Song[SongID].Main) then
+  if (Int(SongID) <= High(CatSongs.Song)) AND (NOT CatSongs.Song[SongID].Main) then
   begin
     Len := Length(Playlists[P].Items);
     SetLength(Playlists[P].Items, Len + 1);
@@ -400,7 +419,7 @@ begin
   else
     exit;
 
-  if (iItem <= high(Playlists[P].Items)) then
+  if (Int(iItem) <= high(Playlists[P].Items)) then
   begin
     //Move all entrys behind deleted one to Front
     For I := iItem to High(Playlists[P].Items) - 1 do
@@ -459,7 +478,7 @@ begin
 
   For I := 0 to high(Playlists[P].Items) do
   begin
-    if (Playlists[P].Items[I].SongID = SongID) then
+    if (Playlists[P].Items[I].SongID = Int(SongID)) then
     begin
       Result := I;
       Break;
