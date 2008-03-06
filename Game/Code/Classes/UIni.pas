@@ -66,6 +66,7 @@ type
       BeatClick:      integer;
       SavePlayback:   integer;
       Threshold:      integer;
+      SDLBufferSize:  integer;
 
       //Song Preview
       PreviewVolume: integer;
@@ -103,6 +104,8 @@ type
       LPT:            integer;
 
       procedure Load();
+      procedure LoadSoundSettings();
+      
       procedure Save();
       procedure SaveNames;
       procedure SaveLevel;
@@ -152,6 +155,8 @@ const
   IBeatClick:     array[0..1] of string = ('Off', 'On');
   ISavePlayback:  array[0..1] of string = ('Off', 'On');
   IThreshold:     array[0..3] of string = ('5%', '10%', '15%', '20%');
+  ISDLBufferSize:    array[0..8] of string = ('256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
+  
   //Song Preview
   IPreviewVolume: array[0..10] of string = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
   IPreviewFading: array[0..5] of string  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
@@ -573,6 +578,13 @@ begin
   // Threshold
   Threshold := GetArrayIndex(IThreshold, IniFile.ReadString('Sound', 'Threshold', IThreshold[1]));
 
+  // SDLBufferSize
+  SDLBufferSize := GetArrayIndex(ISDLBufferSize, IniFile.ReadString('Sound', 'SDLBufferSize', '1024'));
+  if (SDLBufferSize = -1) then
+    SDLBufferSize := 1024
+  else
+    SDLBufferSize := StrToInt(ISDLBufferSize[SDLBufferSize]);
+       
   //Preview Volume
   PreviewVolume := GetArrayIndex(IPreviewVolume, IniFile.ReadString('Sound', 'PreviewVolume', IPreviewVolume[7]));
   
@@ -631,10 +643,6 @@ begin
   // Color
   Color := GetArrayIndex(IColor, IniFile.ReadString('Themes',    'Color',   IColor[0]));
   
-  LoadInputDeviceCfg(IniFile);
-
-  //Advanced Settings
-
   // LoadAnimation
   LoadAnimation := GetArrayIndex(ILoadAnimation, IniFile.ReadString('Advanced', 'LoadAnimation', 'On'));
 
@@ -739,6 +747,9 @@ begin
 
     // Threshold
     IniFile.WriteString('Sound', 'Threshold', IThreshold[Threshold]);
+    
+    // SDLBufferSize
+    IniFile.WriteString('Sound', 'SDLBufferSize', IntToStr(SDLBufferSize));
 
     // Song Preview
     IniFile.WriteString('Sound', 'PreviewVolume', IPreviewVolume[PreviewVolume]);
@@ -768,10 +779,7 @@ begin
     IniFile.WriteString('Themes', 'Color', IColor[Color]);
 
     SaveInputDeviceCfg(IniFile);
-
     //Log.LogError(InttoStr(Length(CardList)) + ' Cards Saved');
-
-    //Advanced Settings
 
     //LoadAnimation
     IniFile.WriteString('Advanced',	'LoadAnimation', ILoadAnimation[LoadAnimation]);
@@ -800,6 +808,15 @@ begin
     IniFile.Free;
     
   end;
+end;
+
+procedure TIni.LoadSoundSettings;
+var
+  IniFile:	  TMemIniFile;
+begin
+  IniFile := TMemIniFile.Create(Filename);
+  LoadInputDeviceCfg(IniFile);
+  IniFile.Free;
 end;
 
 procedure TIni.SaveNames;

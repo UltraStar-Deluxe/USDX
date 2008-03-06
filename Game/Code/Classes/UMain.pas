@@ -169,6 +169,7 @@ begin
     InitializePaths;
     Log.LogStatus('Load Language', 'Initialization');
     Language := TLanguage.Create;
+    
     // Add Const Values:
     Language.AddConst('US_VERSION', USDXVersionStr);
     Log.BenchmarkEnd(1);
@@ -188,21 +189,14 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing SDL_ttf', 1);
 
-     // Skin
+    // Skin
     Log.BenchmarkStart(1);
     Log.LogStatus('Loading Skin List', 'Initialization');
     Skin := TSkin.Create;
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Skin List', 1);
 
-    // Sound
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize Sound', 'Initialization');
-    InitializeSound();
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing Sound', 1);
-
-    // Ini + Paths (depends on Sound)
+    // Ini + Paths
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Ini', 'Initialization');
     Ini := TIni.Create;
@@ -217,6 +211,19 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Ini', 1);
 
+    // Sound
+    Log.BenchmarkStart(1);
+    Log.LogStatus('Initialize Sound', 'Initialization');
+    InitializeSound();
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Initializing Sound', 1);
+
+    // Load Sound Settings from Ini
+    Log.BenchmarkStart(1);
+    Log.LogStatus('Load Sound Settings', 'Initialization');
+    Ini.LoadSoundSettings;
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Load Sound Settings', 1);
 
     // LCD
     Log.BenchmarkStart(1);
@@ -487,9 +494,9 @@ begin
 
             glViewPort(0, 0, ScreenW, ScreenH);
           end
-          // ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
-          else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
-            Display.ScreenShot
+          // ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
+          else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
+            Display.ScreenShot
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
           else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then

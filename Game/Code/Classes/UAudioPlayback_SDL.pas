@@ -67,7 +67,7 @@ begin
     freq := 44100;
     format := AUDIO_S16SYS;
     channels := 2;
-    samples := 1024; // latency: 23 ms
+    samples := Ini.SDLBufferSize;
     callback := @SDLAudioCallback;
     userdata := Self;
   end;
