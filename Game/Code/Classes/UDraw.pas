@@ -454,6 +454,10 @@ var
         end; // for
     // eigentlich brauchen wir hier einen vergleich, um festzustellen, ob wir mit
     // singen schon weiter wären, als bei Rec.Right, _auch, wenn nicht gesungen wird_
+    // English Translation:
+    // actually we need a compare here, to determine if the singing process is ahead Rec.Right
+    // even if there is no singing
+
 
     // passing on NrGracza... hope this is really something like the player-number, not only
     // some kind of weird index into a colour-table
@@ -1225,7 +1229,7 @@ end;
 //PhrasenBonus - Line Bonus Mod}
 
 // Draw Note Bars for Editor
-//There are 11 Resons for a new Procdedure:
+//There are 11 Resons for a new Procdedure:   (nice binary :D )
 // 1. It don't look good when you Draw the Golden Note Star Effect in the Editor
 // 2. You can see the Freestyle Notes in the Editor SemiTransparent
 // 3. Its easier and Faster then changing the old Procedure

@@ -432,7 +432,7 @@ begin
       CORE_SM_INFO: Params := Params or MB_ICONINFORMATION;
     end;
 
-    //Anzeigen:
+    //Show:
     Result := Messagebox(0, lParam, PChar(Name), Params);
   end;
   {$ENDIF}

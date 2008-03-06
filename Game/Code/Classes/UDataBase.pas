@@ -154,7 +154,7 @@ begin
       
     end; // While not TableData.EOF
 
-    except //Im Fehlerfall
+    except //In case of error (LOL? isn't this obvious)
       for Dif := 0 to 2 do
       begin
       SetLength(Song.Score[Dif], 1);

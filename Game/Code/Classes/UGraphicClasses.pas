@@ -268,7 +268,7 @@ end;
 
 procedure TParticle.LiveOn;
 begin
-  //Live = 0 => Live forever  <blindy> ?? die werden doch aber im Manager bei Draw getötet, wenns 0 is
+  //Live = 0 => Live forever  <blindy> ?? but if this is 0 they would be killed in the Manager at Draw
   if (Live > 0) then
     Dec(Live);
 

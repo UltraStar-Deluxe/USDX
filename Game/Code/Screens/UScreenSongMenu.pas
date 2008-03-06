@@ -121,7 +121,7 @@ begin
 
       SDLK_1:
         begin //Jocker
-            //Joker spielen
+            //Use Joker
           case CurMenu of
             SM_Party_Main:
             begin
@@ -131,7 +131,7 @@ begin
         end;
       SDLK_2:
         begin //Jocker
-            //Joker spielen
+            //Use Joker
           case CurMenu of
             SM_Party_Main:
             begin
@@ -141,7 +141,7 @@ begin
         end;
       SDLK_3:
         begin //Jocker
-            //Joker spielen
+            //Use Joker
           case CurMenu of
             SM_Party_Main:
             begin

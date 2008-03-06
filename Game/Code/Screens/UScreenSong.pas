@@ -633,7 +633,7 @@ begin
               if CatSongs.Song[I].Main then
                 break;
               end;
-            //In I ist jetzt die Kategorie in I2 der Song
+            //In I is now the categorie in I2 the song
 
             //Choose Cat
             CatSongs.ShowCategoryList;
@@ -664,10 +664,10 @@ begin
         end;
 
       SDLK_1:
-        begin //Jocker // to-do : Party
+        begin //Joker // to-do : Party
           {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= 1) AND (PartySession.Teams.Teaminfo[0].Joker > 0) then
           begin
-            //Joker spielen
+            //Use Joker
             Dec(PartySession.Teams.Teaminfo[0].Joker);
             SelectRandomSong;
             SetJoker;
@@ -675,10 +675,10 @@ begin
         end;
 
       SDLK_2:
-        begin //Jocker
+        begin //Joker
           {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= 2) AND (PartySession.Teams.Teaminfo[1].Joker > 0) then
           begin
-            //Joker spielen
+            //Use Joker
             Dec(PartySession.Teams.Teaminfo[1].Joker);
             SelectRandomSong;
             SetJoker;
@@ -686,10 +686,10 @@ begin
         end;
 
       SDLK_3:
-        begin //Jocker
+        begin //Joker
           {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= 3) AND (PartySession.Teams.Teaminfo[2].Joker > 0) then
           begin
-            //Joker spielen
+            //Use Joker
             Dec(PartySession.Teams.Teaminfo[2].Joker);
             SelectRandomSong;
             SetJoker;
@@ -1314,7 +1314,7 @@ begin
   Theme.Song.CoverX: Y Pos Obere Kante des gewählten Covers
   Theme.Song.CoverH: Höhe der Cover
 
-  (CatSongs.VisibleIndex(B) - SongCurrent)/VS = Abstand zum MIttleren Cover in %
+  (CatSongs.VisibleIndex(B) - SongCurrent)/VS = Distance to middle Cover in %
   }
 
   //Change Pos of all Buttons
@@ -2127,7 +2127,7 @@ procedure TScreenSong.DoJoker (Team: Byte);
 begin
   {if (Mode = smPartyMode) AND (PartySession.Teams.NumTeams >= Team + 1) AND (PartySession.Teams.Teaminfo[Team].Joker > 0) then
   begin
-    //Joker spielen
+    //Use Joker
     Dec(PartySession.Teams.Teaminfo[Team].Joker);
     SelectRandomSong;
     SetJoker;

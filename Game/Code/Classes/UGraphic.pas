@@ -496,9 +496,13 @@ begin
 
   // funktioniert so noch nicht, da der ladethread unverändert auf opengl zugreifen will
   // siehe dazu kommentar unten
+  // Englisch Translation:
+  // is currently not working because the loading thread trys to accses opengl unchanged
+  // look comment below
+
   //LoadingThread  := SDL_CreateThread(@LoadingThread, nil);
 
-  // das hier würde dann im ladethread ausgeführt
+  // this would be run in the loadingthread
   Log.LogStatus(' Loading Screens', 'UGraphic.Initialize3D');
   LoadScreens;
 
@@ -518,12 +522,28 @@ begin
   // opengl funktionen aufzurufen, entsprechend mutexe verändert
   // der hauptthread muss auch irgendwoher erfahren, was an opengl funktionen auszuführen ist,
   // mit welchen parametern (texturtyp, entspr. texturobjekt, textur-zwischenspeicher-adresse, ...
+  //
+  // English Translation:
+  // here should be a loop witch
+  // * draws the loading screen (form time to time)
+  // * controlls the "process of the loading screen
+  // * checks if the loadingthread has loaded textures (check mutex) and
+  //   * load the textures into opengl
+  //   * tells the loadingthread, that the memory for the texture can be reused
+  //     to load the netx texture (over another mutex)
+  // * runs as long as the loadingthread tells, that everything is loaded and ready (using a third mutex)
+  //
+  // therefor loadtexture have to be changed, that it, instat of caling some opengl functions
+  // for itself, it should change mutex
+  // the mainthread have to know somehow what opengl function have to be called with which parameters like
+  // texturetype, textureobjekt, textur-buffer-adress, ...
 
 
-  //wait for loading thread to finish
-  // funktioniert so auch noch nicht
-  //SDL_WaitThread(LoadingThread, I);
-//  SDL_DestroyMutex(Mutex);
+
+  // wait for loading thread to finish
+  // funktioniert so auch noch nicht - currently dos not work this way
+  // SDL_WaitThread(LoadingThread, I);
+  // SDL_DestroyMutex(Mutex);
 
   Display.CurrentScreen^.FadeTo( @ScreenMain );
 

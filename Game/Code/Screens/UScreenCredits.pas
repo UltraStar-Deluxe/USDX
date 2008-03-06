@@ -289,8 +289,8 @@ begin
   Credits_X := 580;
   deluxe_slidein := 0;
   Credits_Alpha := 0;
-  //Music.SetLoop(true); Loop looped ned, so ne scheisse
-  AudioPlayback.Open(soundpath + 'wome-credits-tune.mp3'); //danke kleinster liebster weeeetüüüüü!!
+  //Music.SetLoop(true); Loop looped ned, so ne scheisse  - loop loops not, shit
+  AudioPlayback.Open(soundpath + 'wome-credits-tune.mp3'); //danke kleinster liebster weeeetüüüüü!!  - thank you wetü
 //  Music.Play;
   CTime:=0;
 //  setlength(CTime_hold,0);
@@ -648,7 +648,7 @@ begin
 
 Log.LogStatus('',' JB-4');
 
-// BlindGuard (von links oben reindrehen, nach rechts unten rausdrehen)
+// BlindGuard (von links oben reindrehen, nach rechts unten rausdrehen) - (rotate in from upper left, rotate out to lower right)
     STime:=Timings[9]-10;
     Delay:=Timings[10]-Timings[9];
     if CTime > STime then
@@ -712,7 +712,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Blindy  (zoom von 0 auf volle grösse und drehung, zoom auf doppelte grösse und nach rechts oben schieben)
+// Blindy  (zoom von 0 auf volle grösse und drehung, zoom auf doppelte grösse und nach rechts oben schieben) - (zoom from 0 to full size and rotation, zoom zo doubble size and shift to upper right)
     STime:=Timings[10]-10;
     Delay:=Timings[11]-Timings[10]+5;
     if CTime > STime then
@@ -782,7 +782,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Canni  (von links reinschieben, nach rechts oben rausschieben)
+// Canni  (von links reinschieben, nach rechts oben rausschieben)  - (shift in from left, shift out to upper right)
     STime:=Timings[11]-10;
     Delay:=Timings[12]-Timings[11]+5;
     if CTime > STime then
@@ -847,7 +847,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Commandio  (von unten reinklappen, nach rechts oben rausklappen)
+// Commandio  (von unten reinklappen, nach rechts oben rausklappen) - (flip in from down, flip out to upper right)
     STime:=Timings[12]-10;
     Delay:=Timings[13]-Timings[12];
     if CTime > STime then
@@ -961,7 +961,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Mog (von links reinklappen, nach rechts unten rausklappen)
+// Mog (von links reinklappen, nach rechts unten rausklappen) - (flip in from right, flip out to lower right)
     STime:=Timings[14]-10;
     Delay:=Timings[15]-Timings[14]+5;
     if CTime > STime then
@@ -1030,7 +1030,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Mota (von rechts oben reindrehen, nach links unten rausschieben und verkleinern und dabei drehen)
+// Mota (von rechts oben reindrehen, nach links unten rausschieben und verkleinern und dabei drehen) - (rotate in from upper right, shift out to lower left while shrinking and rotateing)
     STime:=Timings[15]-10;
     Delay:=Timings[16]-Timings[15]+5;
     if CTime > STime then
@@ -1100,7 +1100,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Skillmaster (von rechts unten reinschieben, nach rechts oben rausdrehen)
+// Skillmaster (von rechts unten reinschieben, nach rechts oben rausdrehen) - (shift in from lower right, rotate out to upper right)
     STime:=Timings[16]-10;
     Delay:=Timings[17]-Timings[16]+5;
     if CTime > STime then
@@ -1170,7 +1170,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// WhiteShark (von links unten reinklappen, nach rechts oben rausklappen)
+// WhiteShark (von links unten reinklappen, nach rechts oben rausklappen) - (flip in from lower left, flip out to upper right)
     STime:=Timings[17]-10;
     Delay:=Timings[18]-Timings[17];
     if CTime > STime then
