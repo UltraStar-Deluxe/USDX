@@ -75,7 +75,7 @@ type
       Ticks:              real;
       Note:               array of TNuta;
 
-      procedure AddLyric(Start: integer; Tekst: string);
+      procedure AddLyric(Start: integer; Text: string);
       procedure Extract;
 
       {$IFDEF UseMIDIPort}
@@ -205,24 +205,24 @@ begin
   end;
 end;
 
-procedure TScreenEditConvert.AddLyric(Start: integer; Tekst: string);
+procedure TScreenEditConvert.AddLyric(Start: integer; Text: string);
 var
   N:    integer;
 begin
   for N := 0 to High(Note) do begin
     if Note[N].Start = Start then begin
       // check for new sentece
-      if Copy(Tekst, 1, 1) = '\' then Delete(Tekst, 1, 1);
-      if Copy(Tekst, 1, 1) = '/' then begin
-        Delete(Tekst, 1, 1);
+      if Copy(Text, 1, 1) = '\' then Delete(Text, 1, 1);
+      if Copy(Text, 1, 1) = '/' then begin
+        Delete(Text, 1, 1);
         Note[N].NewSentence := true;
       end;
 
       // overwrite lyric od append
       if Note[N].Lyric = '-' then
-        Note[N].Lyric := Tekst
+        Note[N].Lyric := Text
       else
-        Note[N].Lyric := Note[N].Lyric + Tekst;
+        Note[N].Lyric := Note[N].Lyric + Text;
     end;
   end;
 end;
@@ -341,11 +341,11 @@ begin
 
     // dopisuje
     Lines.Line[C].Note[N].Start := Note[Nu].Start;
-    Lines.Line[C].Note[N].Dlugosc := Note[Nu].Len;
-    Lines.Line[C].Note[N].Ton := Note[Nu].Tone;
-    Lines.Line[C].Note[N].Tekst := Note[Nu].Lyric;
+    Lines.Line[C].Note[N].Lenght := Note[Nu].Len;
+    Lines.Line[C].Note[N].Tone := Note[Nu].Tone;
+    Lines.Line[C].Note[N].Text := Note[Nu].Lyric;
     //All Notes are Freestyle when Converted Fix:
-    Lines.Line[C].Note[N].Wartosc := 1;
+    Lines.Line[C].Note[N].NoteType := 1;
     Inc(N);
   end;
 end;

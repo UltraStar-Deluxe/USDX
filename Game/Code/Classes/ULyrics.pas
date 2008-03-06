@@ -309,7 +309,7 @@ begin
     //Copy Values from SongLine to LyricLine
     CountNotes := high(Line.Note);
     LyricLine.Start := Line.Note[0].Start;
-    LyricLine.Length := Line.Note[CountNotes].Start + Line.Note[CountNotes].Dlugosc - LyricLine.Start;
+    LyricLine.Length := Line.Note[CountNotes].Start + Line.Note[CountNotes].Lenght - LyricLine.Start;
     LyricLine.Freestyle := True; //is set by And Notes Freestyle while copying Notes
     LyricLine.Text    := '';      //Also Set while copying Notes
     LyricLine.Players := 127; //All Players for now, no Duett Mode available
@@ -320,8 +320,8 @@ begin
     begin
       LyricLine.Freestyle := LyricLine.Freestyle AND Line.Note[I].FreeStyle;
       LyricLine.Words[I].Start      := Line.Note[I].Start;
-      LyricLine.Words[I].Length     := Line.Note[I].Dlugosc;
-      LyricLine.Words[I].Text       := Line.Note[I].Tekst;
+      LyricLine.Words[I].Length     := Line.Note[I].Lenght;
+      LyricLine.Words[I].Text       := Line.Note[I].Text;
       LyricLine.Words[I].Freestyle  := Line.Note[I].FreeStyle;
       LyricLine.Text := LyricLine.Text + LyricLine.Words[I].Text
     end;

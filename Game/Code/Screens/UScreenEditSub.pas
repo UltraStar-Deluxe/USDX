@@ -134,9 +134,9 @@ begin
       SDLK_BACKQUOTE:
         begin
           // Increase Note Length (same as Alt + Right)
-          Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc);
+          Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght);
           if AktNuta = Lines[0].Line[Lines[0].Akt].HighNote then
-            Inc(Lines[0].Line[Lines[0].Akt].Koniec);
+            Inc(Lines[0].Line[Lines[0].Akt].End_);
         end;
 
       SDLK_EQUALS:
@@ -324,7 +324,7 @@ begin
             if R <= AudioPlayback.Length then
             begin
               AudioPlayback.Position := R;
-              PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].Koniec);
+              PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].End_);
               PlaySentence := true;
               AudioPlayback.Play;
               LastClick := -100;
@@ -336,7 +336,7 @@ begin
 
             MidiTime := USTime.GetTime;
             MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].StartNote);
-            MidiStop := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].Koniec);
+            MidiStop := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].End_);
 
             LastClick := -100;
           end;
@@ -344,14 +344,14 @@ begin
             PlaySentenceMidi := true;
             MidiTime  := USTime.GetTime;
             MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].StartNote);
-            MidiStop  := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].Koniec);
+            MidiStop  := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].End_);
             LastClick := -100;
 
             PlaySentence := true;
             Click := true;
             AudioPlayback.Stop;
             AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].StartNote)+0{-0.10};
-            PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].Koniec)+0;
+            PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].End_)+0;
             AudioPlayback.Play;
             LastClick := -100;
           end;
@@ -367,7 +367,7 @@ begin
           AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Start);
           PlayStopTime := (GetTimeFromBeat(
             Lines[0].Line[Lines[0].Akt].Note[AktNuta].Start +
-            Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc));
+            Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght));
           AudioPlayback.Play;
           LastClick := -100;
         end;
@@ -407,8 +407,8 @@ begin
 
           // ctrl + right
           if SDL_ModState = KMOD_LCTRL then begin
-            if Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc > 1 then begin
-              Dec(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc);
+            if Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght > 1 then begin
+              Dec(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght);
               Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Start);
               if AktNuta = 0 then begin
                 Inc(Lines[0].Line[Lines[0].Akt].Start);
@@ -425,14 +425,14 @@ begin
               Inc(Lines[0].Line[Lines[0].Akt].StartNote);
             end;
             if AktNuta = Lines[0].Line[Lines[0].Akt].HighNote then
-              Inc(Lines[0].Line[Lines[0].Akt].Koniec);
+              Inc(Lines[0].Line[Lines[0].Akt].End_);
           end;
 
           // alt + right
           if SDL_ModState = KMOD_LALT then begin
-            Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc);
+            Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght);
             if AktNuta = Lines[0].Line[Lines[0].Akt].HighNote then
-              Inc(Lines[0].Line[Lines[0].Akt].Koniec);
+              Inc(Lines[0].Line[Lines[0].Akt].End_);
           end;
 
           // alt + ctrl + shift + right = move all from cursor to right
@@ -456,7 +456,7 @@ begin
           // ctrl + left
           if SDL_ModState = KMOD_LCTRL then begin
             Dec(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Start);
-            Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc);
+            Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght);
             if AktNuta = 0 then begin
               Dec(Lines[0].Line[Lines[0].Akt].Start);
               Dec(Lines[0].Line[Lines[0].Akt].StartNote);
@@ -474,16 +474,16 @@ begin
             end;
 
             if AktNuta = Lines[0].Line[Lines[0].Akt].HighNote then
-              Dec(Lines[0].Line[Lines[0].Akt].Koniec);
+              Dec(Lines[0].Line[Lines[0].Akt].End_);
 
           end;
 
           // alt + left
           if SDL_ModState = KMOD_LALT then begin
-            if Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc > 1 then begin
-              Dec(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc);
+            if Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght > 1 then begin
+              Dec(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght);
               if AktNuta = Lines[0].Line[Lines[0].Akt].HighNote then
-                Dec(Lines[0].Line[Lines[0].Akt].Koniec);
+                Dec(Lines[0].Line[Lines[0].Akt].End_);
             end;
           end;
 
@@ -499,7 +499,7 @@ begin
           {$IFDEF UseMIDIPort}
           // skip to next sentence
           if SDL_ModState = 0 then begin
-            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[MidiLastNote].Ton + 60, 127);
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
 
             Lines[0].Line[Lines[0].Akt].Note[AktNuta].Color := 0;
@@ -527,7 +527,7 @@ begin
           {$IFDEF UseMIDIPort}
           // skip to previous sentence
           if SDL_ModState = 0 then begin
-            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[MidiLastNote].Ton + 60, 127);
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
 
             Lines[0].Line[Lines[0].Akt].Note[AktNuta].Color := 0;
@@ -552,10 +552,10 @@ begin
       // Golden Note Patch
       SDLK_G:
         begin
-          case Lines[0].Line[Lines[0].Akt].Note[AktNuta].Wartosc of
-            0: Lines[0].Line[Lines[0].Akt].Note[AktNuta].Wartosc := 2;
-            1: Lines[0].Line[Lines[0].Akt].Note[AktNuta].Wartosc := 2;
-            2: Lines[0].Line[Lines[0].Akt].Note[AktNuta].Wartosc := 1;
+          case Lines[0].Line[Lines[0].Akt].Note[AktNuta].NoteType of
+            0: Lines[0].Line[Lines[0].Akt].Note[AktNuta].NoteType := 2;
+            1: Lines[0].Line[Lines[0].Akt].Note[AktNuta].NoteType := 2;
+            2: Lines[0].Line[Lines[0].Akt].Note[AktNuta].NoteType := 1;
           end; // case
           Lines[0].Line[Lines[0].Akt].Note[AktNuta].Freestyle := False;
         end;
@@ -563,15 +563,15 @@ begin
       // Freestyle Note Patch
       SDLK_F:
         begin
-           case Lines[0].Line[Lines[0].Akt].Note[AktNuta].Wartosc of
+           case Lines[0].Line[Lines[0].Akt].Note[AktNuta].NoteType of
             0:
             begin;
-              Lines[0].Line[Lines[0].Akt].Note[AktNuta].Wartosc := 1;
+              Lines[0].Line[Lines[0].Akt].Note[AktNuta].NoteType := 1;
               Lines[0].Line[Lines[0].Akt].Note[AktNuta].Freestyle := False;
             end;
             1,2:
             begin;
-              Lines[0].Line[Lines[0].Akt].Note[AktNuta].Wartosc := 0;
+              Lines[0].Line[Lines[0].Akt].Note[AktNuta].NoteType := 0;
               Lines[0].Line[Lines[0].Akt].Note[AktNuta].Freestyle := True;
             end;
           end; // case
@@ -609,13 +609,13 @@ begin
         end;
       SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
         begin
-          Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tekst :=
-            Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tekst + chr(ScanCode);
+          Lines[0].Line[Lines[0].Akt].Note[AktNuta].Text :=
+            Lines[0].Line[Lines[0].Akt].Note[AktNuta].Text + chr(ScanCode);
         end;
       SDLK_BACKSPACE:
         begin
-          Delete(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tekst,
-            Length(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tekst), 1);
+          Delete(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Text,
+            Length(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Text), 1);
         end;
       SDLK_RIGHT:
         begin
@@ -661,10 +661,10 @@ begin
   for C := 0 to Lines[0].High do begin
     Lines[0].Line[C].Start :=     Lines[0].Line[C].Start div 2;
     Lines[0].Line[C].StartNote := Lines[0].Line[C].StartNote div 2;
-    Lines[0].Line[C].Koniec :=    Lines[0].Line[C].Koniec div 2;
+    Lines[0].Line[C].End_ :=    Lines[0].Line[C].End_ div 2;
     for N := 0 to Lines[0].Line[C].HighNote do begin
       Lines[0].Line[C].Note[N].Start :=   Lines[0].Line[C].Note[N].Start div 2;
-      Lines[0].Line[C].Note[N].Dlugosc := Round(Lines[0].Line[C].Note[N].Dlugosc / 2);
+      Lines[0].Line[C].Note[N].Lenght := Round(Lines[0].Line[C].Note[N].Lenght / 2);
     end; // N
   end; // C
 end;
@@ -678,10 +678,10 @@ begin
   for C := 0 to Lines[0].High do begin
     Lines[0].Line[C].Start :=     Lines[0].Line[C].Start * 2;
     Lines[0].Line[C].StartNote := Lines[0].Line[C].StartNote * 2;
-    Lines[0].Line[C].Koniec :=    Lines[0].Line[C].Koniec * 2;
+    Lines[0].Line[C].End_ :=    Lines[0].Line[C].End_ * 2;
     for N := 0 to Lines[0].Line[C].HighNote do begin
       Lines[0].Line[C].Note[N].Start :=   Lines[0].Line[C].Note[N].Start * 2;
-      Lines[0].Line[C].Note[N].Dlugosc := Lines[0].Line[C].Note[N].Dlugosc * 2;
+      Lines[0].Line[C].Note[N].Lenght := Lines[0].Line[C].Note[N].Lenght * 2;
     end; // N
   end; // C
 end;
@@ -695,12 +695,12 @@ begin
   // temporary
 {  for C := 0 to Lines[0].High do
     for N := 0 to Lines[0].Line[C].HighNut do
-      Lines[0].Line[C].Note[N].Tekst := AnsiLowerCase(Lines[0].Line[C].Note[N].Tekst);}
+      Lines[0].Line[C].Note[N].Text := AnsiLowerCase(Lines[0].Line[C].Note[N].Text);}
 
   for C := 0 to Lines[0].High do begin
-    S := AnsiUpperCase(Copy(Lines[0].Line[C].Note[0].Tekst, 1, 1));
-    S := S + Copy(Lines[0].Line[C].Note[0].Tekst, 2, Length(Lines[0].Line[C].Note[0].Tekst)-1);
-    Lines[0].Line[C].Note[0].Tekst := S;
+    S := AnsiUpperCase(Copy(Lines[0].Line[C].Note[0].Text, 1, 1));
+    S := S + Copy(Lines[0].Line[C].Note[0].Text, 2, Length(Lines[0].Line[C].Note[0].Text)-1);
+    Lines[0].Line[C].Note[0].Text := S;
   end; // C
 end;
 
@@ -711,39 +711,39 @@ var
 begin
   for C := 0 to Lines[0].High do begin
     // correct starting spaces in the first word
-    while Copy(Lines[0].Line[C].Note[0].Tekst, 1, 1) = ' ' do
-      Lines[0].Line[C].Note[0].Tekst := Copy(Lines[0].Line[C].Note[0].Tekst, 2, 100);
+    while Copy(Lines[0].Line[C].Note[0].Text, 1, 1) = ' ' do
+      Lines[0].Line[C].Note[0].Text := Copy(Lines[0].Line[C].Note[0].Text, 2, 100);
 
     // move spaces on the start to the end of the previous note
     for N := 1 to Lines[0].Line[C].HighNote do begin
-      while (Copy(Lines[0].Line[C].Note[N].Tekst, 1, 1) = ' ') do begin
-        Lines[0].Line[C].Note[N].Tekst := Copy(Lines[0].Line[C].Note[N].Tekst, 2, 100);
-        Lines[0].Line[C].Note[N-1].Tekst := Lines[0].Line[C].Note[N-1].Tekst + ' ';
+      while (Copy(Lines[0].Line[C].Note[N].Text, 1, 1) = ' ') do begin
+        Lines[0].Line[C].Note[N].Text := Copy(Lines[0].Line[C].Note[N].Text, 2, 100);
+        Lines[0].Line[C].Note[N-1].Text := Lines[0].Line[C].Note[N-1].Text + ' ';
       end;
     end; // N
 
     // correct '-'  to '- '
     for N := 0 to Lines[0].Line[C].HighNote do begin
-      if Lines[0].Line[C].Note[N].Tekst = '-' then
-        Lines[0].Line[C].Note[N].Tekst := '- ';
+      if Lines[0].Line[C].Note[N].Text = '-' then
+        Lines[0].Line[C].Note[N].Text := '- ';
     end; // N
 
     // add space to the previous note when the current word is '- '
     for N := 1 to Lines[0].Line[C].HighNote do begin
-      if Lines[0].Line[C].Note[N].Tekst  = '- ' then
-        Lines[0].Line[C].Note[N-1].Tekst := Lines[0].Line[C].Note[N-1].Tekst + ' ';
+      if Lines[0].Line[C].Note[N].Text  = '- ' then
+        Lines[0].Line[C].Note[N-1].Text := Lines[0].Line[C].Note[N-1].Text + ' ';
     end; // N
 
     // correct too many spaces at the end of note
     for N := 0 to Lines[0].Line[C].HighNote do begin
-      while Copy(Lines[0].Line[C].Note[N].Tekst, Length(Lines[0].Line[C].Note[N].Tekst)-1, 2) = '  ' do
-        Lines[0].Line[C].Note[N].Tekst := Copy(Lines[0].Line[C].Note[N].Tekst, 1, Length(Lines[0].Line[C].Note[N].Tekst)-1);
+      while Copy(Lines[0].Line[C].Note[N].Text, Length(Lines[0].Line[C].Note[N].Text)-1, 2) = '  ' do
+        Lines[0].Line[C].Note[N].Text := Copy(Lines[0].Line[C].Note[N].Text, 1, Length(Lines[0].Line[C].Note[N].Text)-1);
     end; // N
 
     // and correct if there is no space at the end of sentence
     N := Lines[0].Line[C].HighNote;
-    if Copy(Lines[0].Line[C].Note[N].Tekst, Length(Lines[0].Line[C].Note[N].Tekst), 1) <> ' ' then
-      Lines[0].Line[C].Note[N].Tekst := Lines[0].Line[C].Note[N].Tekst + ' ';
+    if Copy(Lines[0].Line[C].Note[N].Text, Length(Lines[0].Line[C].Note[N].Text), 1) <> ' ' then
+      Lines[0].Line[C].Note[N].Text := Lines[0].Line[C].Note[N].Text + ' ';
 
   end; // C
 end;
@@ -757,7 +757,7 @@ var
 begin
   for C := 1 to Lines[0].High do begin
     with Lines[0].Line[C-1] do begin
-      Min := Note[HighNote].Start + Note[HighNote].Dlugosc;
+      Min := Note[HighNote].Start + Note[HighNote].Lenght;
       Max := Lines[0].Line[C].StartNote;
       case (Max - Min) of
         0:    S := Max;
@@ -805,7 +805,7 @@ begin
   Lines[0].Line[CNew].StartNote := Lines[0].Line[CStart].Note[NStart].Start;
   Lines[0].Line[CNew].Lyric := '';
   Lines[0].Line[CNew].LyricWidth := 0;
-  Lines[0].Line[CNew].Koniec := 0;
+  Lines[0].Line[CNew].End_ := 0;
   Lines[0].Line[CNew].BaseNote := 0; // 0.5.0: we modify it later in this procedure
   Lines[0].Line[CNew].IlNut := 0;
   Lines[0].Line[CNew].HighNote := -1;
@@ -821,22 +821,22 @@ begin
     // increase sentence counters
     Inc(Lines[0].Line[CNew].IlNut);
     Inc(Lines[0].Line[CNew].HighNote);
-    Lines[0].Line[CNew].Koniec := Lines[0].Line[CNew].Note[NNewL].Start +
-      Lines[0].Line[CNew].Note[NNewL].Dlugosc;
+    Lines[0].Line[CNew].End_ := Lines[0].Line[CNew].Note[NNewL].Start +
+      Lines[0].Line[CNew].Note[NNewL].Lenght;
   end;
 
   // clear old notes and set sentence counters
   Lines[0].Line[CStart].HighNote := NStart - 1;
   Lines[0].Line[CStart].IlNut := Lines[0].Line[CStart].HighNote + 1;
-  Lines[0].Line[CStart].Koniec := Lines[0].Line[CStart].Note[NStart-1].Start +
-    Lines[0].Line[CStart].Note[NStart-1].Dlugosc;
+  Lines[0].Line[CStart].End_ := Lines[0].Line[CStart].Note[NStart-1].Start +
+    Lines[0].Line[CStart].Note[NStart-1].Lenght;
   SetLength(Lines[0].Line[CStart].Note, Lines[0].Line[CStart].IlNut);
 
   // 0.5.0: modify BaseNote
   Lines[0].Line[CNew].BaseNote := 120;
   for N := 0 to Lines[0].Line[CNew].IlNut do
-    if Lines[0].Line[CNew].Note[N].Ton < Lines[0].Line[CNew].BaseNote then
-      Lines[0].Line[CNew].BaseNote := Lines[0].Line[CNew].Note[N].Ton;
+    if Lines[0].Line[CNew].Note[N].Tone < Lines[0].Line[CNew].BaseNote then
+      Lines[0].Line[CNew].BaseNote := Lines[0].Line[CNew].Note[N].Tone;
 
   Lines[0].Akt := Lines[0].Akt + 1;
   AktNuta := 0;
@@ -868,8 +868,8 @@ begin
 
   // increase sentence counters
   NDst := Lines[0].Line[C].HighNote;
-  Lines[0].Line[C].Koniec := Lines[0].Line[C].Note[NDst].Start +
-    Lines[0].Line[C].Note[NDst].Dlugosc;
+  Lines[0].Line[C].End_ := Lines[0].Line[C].Note[NDst].Start +
+    Lines[0].Line[C].Note[NDst].Lenght;
 
   // move needed sentences to one backward.
   for C := Lines[0].Akt + 1 to Lines[0].High - 1 do
@@ -900,10 +900,10 @@ begin
   end;
 
   // me slightly modify new note
-  Lines[0].Line[C].Note[AktNuta].Dlugosc := 1;
+  Lines[0].Line[C].Note[AktNuta].Lenght := 1;
   Inc(Lines[0].Line[C].Note[AktNuta+1].Start);
-  Dec(Lines[0].Line[C].Note[AktNuta+1].Dlugosc);
-  Lines[0].Line[C].Note[AktNuta+1].Tekst := '- ';
+  Dec(Lines[0].Line[C].Note[AktNuta+1].Lenght);
+  Lines[0].Line[C].Note[AktNuta+1].Text := '- ';
   Lines[0].Line[C].Note[AktNuta+1].Color := 0;
 end;
 
@@ -962,7 +962,7 @@ end;
 
 procedure TScreenEditSub.TransposeNote(Transpose: integer);
 begin
-  Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Ton, Transpose);
+  Inc(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tone, Transpose);
 end;
 
 procedure TScreenEditSub.ChangeWholeTone(Tone: integer);
@@ -973,7 +973,7 @@ begin
   for C := 0 to Lines[0].High do begin
     Lines[0].Line[C].BaseNote := Lines[0].Line[C].BaseNote + Tone;
     for N := 0 to Lines[0].Line[C].HighNote do
-      Lines[0].Line[C].Note[N].Ton := Lines[0].Line[C].Note[N].Ton + Tone;
+      Lines[0].Line[C].Note[N].Tone := Lines[0].Line[C].Note[N].Tone + Tone;
   end;
 end;
 
@@ -995,7 +995,7 @@ begin
       end;
 
       if N = Lines[0].Line[C].HighNote then // fix ending
-        Inc(Lines[0].Line[C].Koniec, Move);
+        Inc(Lines[0].Line[C].End_, Move);
 
     end; // for
   end; // for
@@ -1010,22 +1010,22 @@ begin
 {  C := Lines[0].Akt;
 
   for N := Lines[0].Line[C].HighNut downto 1 do begin
-    Lines[0].Line[C].Note[N].Tekst := Lines[0].Line[C].Note[N-1].Tekst;
+    Lines[0].Line[C].Note[N].Text := Lines[0].Line[C].Note[N-1].Text;
   end; // for
 
-  Lines[0].Line[C].Note[0].Tekst := '- ';}
+  Lines[0].Line[C].Note[0].Text := '- ';}
 
   C := Lines[0].Akt;
   NHigh := Lines[0].Line[C].HighNote;
 
   // last word
-  Lines[0].Line[C].Note[NHigh].Tekst := Lines[0].Line[C].Note[NHigh-1].Tekst + Lines[0].Line[C].Note[NHigh].Tekst;
+  Lines[0].Line[C].Note[NHigh].Text := Lines[0].Line[C].Note[NHigh-1].Text + Lines[0].Line[C].Note[NHigh].Text;
 
   // other words
   for N := NHigh - 1 downto AktNuta + 1 do begin
-    Lines[0].Line[C].Note[N].Tekst := Lines[0].Line[C].Note[N-1].Tekst;
+    Lines[0].Line[C].Note[N].Text := Lines[0].Line[C].Note[N-1].Text;
   end; // for
-  Lines[0].Line[C].Note[AktNuta].Tekst := '- ';
+  Lines[0].Line[C].Note[AktNuta].Text := '- ';
 end;
 
 procedure TScreenEditSub.MarkSrc;
@@ -1041,7 +1041,7 @@ begin
   C := Lines[0].Akt;
 
   for N := 0 to Lines[0].Line[CopySrc].HighNote do
-    Lines[0].Line[C].Note[N].Tekst := Lines[0].Line[CopySrc].Note[N].Tekst;
+    Lines[0].Line[C].Note[N].Text := Lines[0].Line[CopySrc].Note[N].Text;
 end;
 
 procedure TScreenEditSub.CopySentence(Src, Dst: integer);
@@ -1059,13 +1059,13 @@ begin
   Lines[0].Line[Dst].IlNut := Lines[0].Line[Src].IlNut;
   Lines[0].Line[Dst].HighNote := Lines[0].Line[Src].HighNote;
   for N := 0 to Lines[0].Line[Src].HighNote do begin
-    Lines[0].Line[Dst].Note[N].Tekst := Lines[0].Line[Src].Note[N].Tekst;
-    Lines[0].Line[Dst].Note[N].Dlugosc := Lines[0].Line[Src].Note[N].Dlugosc;
-    Lines[0].Line[Dst].Note[N].Ton := Lines[0].Line[Src].Note[N].Ton;
+    Lines[0].Line[Dst].Note[N].Text := Lines[0].Line[Src].Note[N].Text;
+    Lines[0].Line[Dst].Note[N].Lenght := Lines[0].Line[Src].Note[N].Lenght;
+    Lines[0].Line[Dst].Note[N].Tone := Lines[0].Line[Src].Note[N].Tone;
     Lines[0].Line[Dst].Note[N].Start := Lines[0].Line[Src].Note[N].Start + TD;
   end;
   N := Lines[0].Line[Src].HighNote;
-  Lines[0].Line[Dst].Koniec := Lines[0].Line[Dst].Note[N].Start + Lines[0].Line[Dst].Note[N].Dlugosc;
+  Lines[0].Line[Dst].End_ := Lines[0].Line[Dst].Note[N].Start + Lines[0].Line[Dst].Note[N].Lenght;
 end;
 
 procedure TScreenEditSub.CopySentences(Src, Dst, Num: integer);
@@ -1091,9 +1091,9 @@ begin
     Lines[0].Line[Dst + C].IlNut := 1;
     Lines[0].Line[Dst + C].HighNote := 0;
     Lines[0].Line[Dst + C].Note[0].Start := Lines[0].Line[Dst + C].Start;
-    Lines[0].Line[Dst + C].Note[0].Dlugosc := 1;
+    Lines[0].Line[Dst + C].Note[0].Lenght := 1;
     Lines[0].Line[Dst + C].StartNote := Lines[0].Line[Dst + C].Start;
-    Lines[0].Line[Dst + C].Koniec := Lines[0].Line[Dst + C].Start + 1;
+    Lines[0].Line[Dst + C].End_ := Lines[0].Line[Dst + C].Start + 1;
   end;
 
   // increase counters
@@ -1239,7 +1239,7 @@ begin
     {$IFDEF UseMIDIPort}
     // stop the music
     if (MidiPos > MidiStop) then begin
-      MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[MidiLastNote].Ton + 60, 127);
+      MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[MidiLastNote].Tone + 60, 127);
       PlaySentenceMidi := false;
     end;
     {$ENDIF}
@@ -1256,8 +1256,8 @@ begin
           {$IFDEF UseMIDIPort}
           LastClick := AktBeat;
           if Pet > 0 then
-            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[Pet-1].Ton + 60, 127);
-          MidiOut.PutShort($91, Lines[0].Line[Lines[0].Akt].Note[Pet].Ton + 60, 127);
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Akt].Note[Pet-1].Tone + 60, 127);
+          MidiOut.PutShort($91, Lines[0].Line[Lines[0].Akt].Note[Pet].Tone + 60, 127);
           MidiLastNote := Pet;
           {$ENDIF}
 
@@ -1303,9 +1303,9 @@ begin
   begin
     // Note info
     Text[TextNStart].Text :=    IntToStr(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Start);
-    Text[TextNDlugosc].Text :=  IntToStr(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Dlugosc);
-    Text[TextNTon].Text :=      IntToStr(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Ton) + ' ( ' + GetNoteName(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Ton) + ' )';
-    Text[TextNText].Text :=              Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tekst;
+    Text[TextNDlugosc].Text :=  IntToStr(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Lenght);
+    Text[TextNTon].Text :=      IntToStr(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tone) + ' ( ' + GetNoteName(Lines[0].Line[Lines[0].Akt].Note[AktNuta].Tone) + ' )';
+    Text[TextNText].Text :=              Lines[0].Line[Lines[0].Akt].Note[AktNuta].Text;
   end;
 
   // Text Edit Mode

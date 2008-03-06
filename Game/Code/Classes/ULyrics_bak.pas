@@ -266,8 +266,8 @@ begin
   Clear;
   for N := 0 to Lines[0].Line[NrCzesci].HighNote do begin
     Italic := Lines[0].Line[NrCzesci].Note[N].FreeStyle;
-    AddWord(Lines[0].Line[NrCzesci].Note[N].Tekst);
-    Text := Text + Lines[0].Line[NrCzesci].Note[N].Tekst;
+    AddWord(Lines[0].Line[NrCzesci].Note[N].Text);
+    Text := Text + Lines[0].Line[NrCzesci].Note[N].Text;
   end;
   Selected := -1;
 end;

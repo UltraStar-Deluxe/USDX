@@ -181,7 +181,7 @@ begin
   MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
   Base[0]           := 100; // high number
-  Lines[0].Wartosc := 0;
+  Lines[0].NoteType := 0;
   self.Relative     := false;
   Rel[0]            := 0;
   CP                := 0;
@@ -295,7 +295,7 @@ begin
         Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
         for I := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
         begin
-         Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Dlugosc * Lines[CP].Line[Lines[CP].High].Note[I].Wartosc;
+         Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Lenght * Lines[CP].Line[Lines[CP].High].Note[I].NoteType;
         end;
         //Total Notes Patch End
       end else begin
@@ -306,7 +306,7 @@ begin
           Lines[Pet].Line[Lines[Pet].High].TotalNotes := 0;
           for I := low(Lines[Pet].Line[Lines[Pet].High].Note) to high(Lines[Pet].Line[Lines[Pet].High].Note) do
           begin
-            Lines[Pet].Line[Lines[Pet].High].TotalNotes := Lines[Pet].Line[Lines[Pet].High].TotalNotes + Lines[Pet].Line[Lines[Pet].High].Note[I].Dlugosc * Lines[Pet].Line[Lines[Pet].High].Note[I].Wartosc;
+            Lines[Pet].Line[Lines[Pet].High].TotalNotes := Lines[Pet].Line[Lines[Pet].High].TotalNotes + Lines[Pet].Line[Lines[Pet].High].Note[I].Lenght * Lines[Pet].Line[Lines[Pet].High].Note[I].NoteType;
           end;
           //Total Notes Patch End
         end;
@@ -592,29 +592,29 @@ begin
 //        Start := Note[HighNote].Start;
     end;
 
-    Note[HighNote].Dlugosc := DurationP;
-    Melody.DlugoscNut := Melody.DlugoscNut + Note[HighNote].Dlugosc;
+    Note[HighNote].Lenght := DurationP;
+    Melody.DlugoscNut := Melody.DlugoscNut + Note[HighNote].Lenght;
 
     // back to the normal system with normal, golden and now freestyle notes
     case TypeP of
-      'F':  Note[HighNote].Wartosc := 0;
-      ':':  Note[HighNote].Wartosc := 1;
-      '*':  Note[HighNote].Wartosc := 2;
+      'F':  Note[HighNote].NoteType := 0;
+      ':':  Note[HighNote].NoteType := 1;
+      '*':  Note[HighNote].NoteType := 2;
     end;
 
-    Lines[NrCzesci].Wartosc := Lines[NrCzesci].Wartosc + Note[HighNote].Dlugosc * Note[HighNote].Wartosc;
+    Lines[NrCzesci].NoteType := Lines[NrCzesci].NoteType + Note[HighNote].Lenght * Note[HighNote].NoteType;
 
-    Note[HighNote].Ton := NoteP;
-    if Note[HighNote].Ton < Base[NrCzesci] then Base[NrCzesci] := Note[HighNote].Ton;
+    Note[HighNote].Tone := NoteP;
+    if Note[HighNote].Tone < Base[NrCzesci] then Base[NrCzesci] := Note[HighNote].Tone;
     Note[HighNote].TonGamy := Note[HighNote].TonGamy mod 12;
 
-    Note[HighNote].Tekst := Copy(LyricS, 2, 100);
-    Lyric := Lyric + Note[HighNote].Tekst;
+    Note[HighNote].Text := Copy(LyricS, 2, 100);
+    Lyric := Lyric + Note[HighNote].Text;
 
     if TypeP = 'F' then
       Note[HighNote].FreeStyle := true;
 
-    Koniec := Note[HighNote].Start + Note[HighNote].Dlugosc;
+    End_ := Note[HighNote].Start + Note[HighNote].Lenght;
   end; // with
 end;
 
@@ -631,7 +631,7 @@ begin
   Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes := 0;
   for I := low(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note) to high(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note) do
   begin
-    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes := Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes + Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].Dlugosc * Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].Wartosc;
+    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes := Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes + Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].Lenght * Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].NoteType;
   end;
   //Total Notes Patch End
 

@@ -115,12 +115,12 @@ begin
 
 
         //Golden + Freestyle Note Patch
-        case Lines.Line[C].Note[N].Wartosc of
+        case Lines.Line[C].Note[N].NoteType of
           0: NoteState := 'F ';
           1: NoteState := ': ';
           2: NoteState := '* ';
         end; // case
-        S := NoteState + IntToStr(Start-RelativeSubTime) + ' ' + IntToStr(Dlugosc) + ' ' + IntToStr(Ton) + ' ' + Tekst;
+        S := NoteState + IntToStr(Start-RelativeSubTime) + ' ' + IntToStr(Lenght) + ' ' + IntToStr(Tone) + ' ' + Text;
 
 
         WriteLn(SongFile, S);

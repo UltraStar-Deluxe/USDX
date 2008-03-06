@@ -29,7 +29,7 @@ type
     StartNote:  integer;
     Lyric:      string;
     LyricWidth: real;
-    Koniec:     integer;      // (TODO: rename to End_/Ending?) 
+    End_:     integer;
     BaseNote:   integer;
     HighNote:   integer;
     IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
@@ -37,12 +37,12 @@ type
     Note:     array of record
       Color:      integer;
       Start:      integer;
-      Dlugosc:    integer;    // (TODO: rename to Length)
-      Ton:        integer;    // full range tone (TODO: rename to Tone)
+      Lenght:    integer;
+      Tone:        integer;    // full range tone
       TonGamy:    integer;    // tone unified to one octave (TODO: rename to something meaningful, ToneGamus)
-      Tekst:      string;     // (TODO: rename to Text)
+      Text:      string;     // (TODO: rename to Text)
       FreeStyle:  boolean;
-      Wartosc:    integer;    // normal-note: 1, golden-note: 2 (TODO: wartosc=value, rename to Type_ or Kind?)
+      NoteType:    integer;    // normal-note: 1, golden-note: 2 (TODO: wartosc=value, rename to Type_ or Kind?)
     end;
   end;
   ALine = array of TLine; // (TODO: rename to TLineArray)
@@ -54,7 +54,7 @@ type
     Ilosc:      integer;        // (TODO: Ilosc = Number/Count)
     Resolution: integer;
     NotesGAP:   integer;
-    Wartosc:    integer;        // TODO: rename (wartosc=value)
+    NoteType:    integer;        // TODO: rename (wartosc=value)
     Line:       ALine;          // TODO: rename to Sentence or Line - renamed to Line
   end;
 
