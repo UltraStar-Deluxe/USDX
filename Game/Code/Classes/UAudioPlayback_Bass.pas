@@ -56,7 +56,7 @@ type
     private
       MusicStream: TBassPlaybackStream;
 
-      function Load(Filename: string): TBassPlaybackStream;
+      function Load(const Filename: string): TBassPlaybackStream;
     public
       function  GetName: String;
 
@@ -67,7 +67,7 @@ type
       procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
 
-      function Open(Filename: string): boolean; // true if succeed
+      function Open(const Filename: string): boolean; // true if succeed
 
       procedure Rewind;
       procedure Play;
@@ -241,7 +241,7 @@ begin
   result := true;
 end;
 
-function TAudioPlayback_Bass.Load(Filename: string): TBassPlaybackStream;
+function TAudioPlayback_Bass.Load(const Filename: string): TBassPlaybackStream;
 var
   L: Integer;
   stream: HSTREAM;
@@ -282,7 +282,7 @@ begin
     MusicStream.Loop := Enabled;
 end;
 
-function TAudioPlayback_Bass.Open(Filename: string): boolean;
+function TAudioPlayback_Bass.Open(const Filename: string): boolean;
 var
   stream: HSTREAM;
 begin
@@ -363,10 +363,10 @@ begin
     Result := true;
 end;
 
-//Equalizer
+// Equalizer
 procedure TAudioPlayback_Bass.GetFFTData(var data: TFFTData);
 begin
-  //Get Channel Data Mono and 256 Values
+  // Get Channel Data Mono and 256 Values
   BASS_ChannelGetData(MusicStream.Handle, @data, BASS_DATA_FFT512);
 end;
 
@@ -379,23 +379,17 @@ var
   info: BASS_CHANNELINFO;
   nBytes: DWORD;
 begin
-  //Get Channel Data Mono and 256 Values
+  Result := 0;
+
+  // Get Channel Data Mono and 256 Values
   BASS_ChannelGetInfo(MusicStream.Handle, info);
   FillChar(data, sizeof(TPCMData), 0);
-  
-  if (info.chans = 1) then
-  begin
-    // mono file -> add stereo channel
-    nBytes := 0;//BASS_ChannelGetData(Bass, @data[0], samples*sizeof(Smallint));
-    // interleave data
-    //CopyMemory(@data[1], @data[0], samples*sizeof(Smallint));
-    result := 0;
-  end
-  else
-  begin
-    // stereo file
-    nBytes := BASS_ChannelGetData(MusicStream.Handle, @data, sizeof(TPCMData));
-  end;
+
+  // no support for non-stereo files at the moment
+  if (info.chans <> 2) then
+    Exit;
+
+  nBytes := BASS_ChannelGetData(MusicStream.Handle, @data, sizeof(TPCMData));
   if(nBytes <= 0) then
     result := 0
   else

@@ -103,7 +103,7 @@ type
       function    GetName: String;
       procedure   init();
 
-      function    Open( aFileName : string): boolean; // true if succeed
+      function    Open(const aFileName : string): boolean; // true if succeed
       procedure   Close;
 
       procedure   Play;
@@ -433,7 +433,7 @@ begin
 end;
 
 
-function TVideoPlayback_ffmpeg.Open( aFileName : string): boolean; // true if succeed
+function TVideoPlayback_ffmpeg.Open(const aFileName : string): boolean; // true if succeed
 var
   errnum, i, x,y: Integer;
   lStreamsCount : Integer;

@@ -191,7 +191,7 @@ type
   ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCE33DD}']
       function GetName: String;
 
-      function  Open(Filename: string): boolean; // true if succeed
+      function  Open(const Filename: string): boolean; // true if succeed
       procedure Close;
 
       procedure Play;

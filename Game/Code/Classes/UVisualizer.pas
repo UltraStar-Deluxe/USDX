@@ -88,7 +88,7 @@ type
       procedure   Init();
       function    GetName: String;
 
-      function    Open( aFileName : string): boolean; // true if succeed
+      function    Open(const aFileName : string): boolean; // true if succeed
       procedure   Close;
 
       procedure   Play;
@@ -137,7 +137,7 @@ begin
 end;
 
 
-function TVideoPlayback_ProjectM.Open( aFileName : string): boolean; // true if succeed
+function TVideoPlayback_ProjectM.Open(const aFileName : string): boolean; // true if succeed
 begin
   VisualizerStart();
   result := true;

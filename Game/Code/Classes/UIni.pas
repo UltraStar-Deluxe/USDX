@@ -454,7 +454,6 @@ begin
   
   // Debug
   Debug := GetArrayIndex(IDebug, IniFile.ReadString('Game', 'Debug', IDebug[0]));
-  //if Debug = 1 then SongPath := 'E:\UltraStar 03\Songs\';
 
   // Screens
   Screens := GetArrayIndex(IScreens, IniFile.ReadString('Graphics', 'Screens', IScreens[0]));

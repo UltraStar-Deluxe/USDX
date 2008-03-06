@@ -38,7 +38,7 @@ type
 
       procedure init();
 
-      function  Open( aFileName : string): boolean; // true if succeed
+      function  Open(const aFileName : string): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -98,7 +98,7 @@ begin
 end;
 
 
-function Tmedia_dummy.Open( aFileName : string): boolean; // true if succeed
+function Tmedia_dummy.Open(const aFileName : string): boolean; // true if succeed
 begin
   result := false;
 end;
