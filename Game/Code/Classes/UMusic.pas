@@ -89,10 +89,10 @@ type
 const
   FFTSize = 512; // size of FFT data (output: FFTSize/2 values)
 type
-  TFFTData  = array[0..(FFTSize div 2-1)] of Single;
+  TFFTData  = array[0..(FFTSize div 2)-1] of Single;
 
 type
-  TPCMStereoSample = array[0..1] of Smallint;
+  TPCMStereoSample = array[0..1] of SmallInt;
   TPCMData  = array[0..511] of TPCMStereoSample;
 
 type

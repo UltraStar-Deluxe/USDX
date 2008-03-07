@@ -119,7 +119,7 @@ type
     public
       constructor Create(pFormatCtx: PAVFormatContext;
                          pCodecCtx: PAVCodecContext; pCodec: PAVCodec;
-                         ffmpegStreamID : Integer; ffmpegStream: PAVStream);
+                         ffmpegStreamIndex: Integer; ffmpegStream: PAVStream);
       destructor Destroy(); override;
 
       procedure Close();                     override;
@@ -154,7 +154,7 @@ var
 
 constructor TFFMpegDecodeStream.Create(pFormatCtx: PAVFormatContext;
                    pCodecCtx: PAVCodecContext; pCodec: PAVCodec;
-                   ffmpegStreamID : Integer; ffmpegStream: PAVStream);
+                   ffmpegStreamIndex : Integer; ffmpegStream: PAVStream);
 begin
   inherited Create();
 
@@ -634,6 +634,7 @@ begin
   {$ENDIF}
 
   ffmpegStreamID := FindAudioStreamIndex(pFormatCtx);
+  //Writeln('ID: ' + inttostr(ffmpegStreamID));
   if (ffmpegStreamID < 0) then
     exit;
 
@@ -649,7 +650,26 @@ begin
     exit;
   end;
 
-  avcodec_open(pCodecCtx, pCodec);
+  // set debug options
+  pCodecCtx^.debug_mv := 0;
+  pCodecCtx^.debug := 0;
+
+  // detect bug-workarounds automatically
+  pCodecCtx^.workaround_bugs := FF_BUG_AUTODETECT;
+
+  // TODO: Not sure if these fields are for audio too
+  //pCodecCtx^.lowres := lowres;
+  //if (fast) then pCodecCtx^.flags2 := pCodecCtx^.flags2 or CODEC_FLAG2_FAST;
+  //pCodecCtx^.skip_frame := skip_frame;
+  //pCodecCtx^.skip_loop_filter := skip_loop_filter;
+  //pCodecCtx^.error_resilience := error_resilience;
+  //pCodecCtx^.error_concealment := error_concealment;
+
+  if (avcodec_open(pCodecCtx, pCodec) < 0) then
+  begin
+    Log.LogStatus('avcodec_open failed!', 'UAudio_FFMpeg');
+    exit;
+  end;
   //WriteLn( 'Opened the codec' );
 
   stream := TFFMpegDecodeStream.Create(pFormatCtx, pCodecCtx, pCodec,
