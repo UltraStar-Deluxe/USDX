@@ -583,7 +583,7 @@ end;
 
 destructor TProjectM.Destroy();
 begin
-  Dispose(_pm);
+  Dispose(_PProjectM(_pm));
   _pm := nil;
 end;
 
