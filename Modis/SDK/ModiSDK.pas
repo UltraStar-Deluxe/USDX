@@ -89,28 +89,28 @@ type  //PluginInfo, for Init
   end;
 
   TSentences = record
-    Akt:      integer;      // aktualna czesc utworu do rysowania
-    High:     integer;
-    Ilosc:    integer;
+    Current:    integer;      // aktualna czesc utworu do rysowania
+    High:       integer;
+    Number:     integer;
     Resolution: integer;
-    NotesGAP: integer;
-    TotalLength:  integer;
-    Sentence:    array of record
-      Start:    integer;
+    NotesGAP:   integer;
+    TotalLength:integer;
+    Sentence:   array of record
+      Start:      integer;
       StartNote:  integer;
       Lyric:      string;
       LyricWidth: real;
-      Koniec:   integer;
-      BaseNote: integer;
-      HighNote:  integer;
-      IlNut:    integer;
+      End_:       integer;
+      BaseNote:   integer;
+      HighNote:   integer;
+      IlNut:      integer;
       TotalNotes: integer;
-      Note:     array of record
-        Color:      integer;
-        Start:      integer;
+      Note:       array of record
+        Color:     integer;
+        Start:     integer;
         Length:    integer;
-        Ton:        integer;
-        TonGamy:    integer;
+        Tone:      integer;
+        ToneGamus: integer;
         //Text:      string;
         FreeStyle:  boolean;
         Typ:    integer;    // zwykla nuta x1, zlota nuta x2
