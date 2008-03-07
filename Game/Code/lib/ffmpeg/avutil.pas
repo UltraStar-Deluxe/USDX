@@ -24,10 +24,10 @@
 (*
  * avutil.h:
  *  Min. version: ?
- *  Max. version: 49.6.0, Revision: 11654, Mon Jan 28 17:23:57 2008 UTC
+ *  Max. version: revision 12246, Tue Feb 26 20:37:59 2008 UTC
  *
  * mem.h:
- *  Revision: 11641, Sun Jan 27 20:50:16 2008 UTC
+ *  revision 12218, Mon Feb 25 18:32:55 2008 UTC
  *)
 
 unit avutil;

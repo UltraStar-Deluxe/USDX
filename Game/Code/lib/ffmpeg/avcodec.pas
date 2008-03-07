@@ -23,7 +23,7 @@
 
 (*
  * Min. version: 51.16.0
- * Max. version: 51.50.0, Revision: 11878, Wed Feb 6 12:37:37 2008 UTC
+ * Max. version: 51.51.0, revision 12352, Thu Mar 6 17:41:31 2008 UTC
  *)
 
 unit avcodec;
@@ -47,7 +47,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 50;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 51;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -192,6 +192,8 @@ type
     CODEC_ID_VB,
     CODEC_ID_PCX,
     CODEC_ID_SUNRAST,
+    CODEC_ID_INDEO4,
+    CODEC_ID_INDEO5,
 
     //* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= $10000,
@@ -298,6 +300,9 @@ type
     CODEC_ID_NELLYMOSER,
     CODEC_ID_MUSEPACK8,
     CODEC_ID_SPEEX,
+    CODEC_ID_WMAVOICE,
+    CODEC_ID_WMAPRO,
+    CODEC_ID_WMALOSSLESS,
 
     //* subtitle codecs */
     CODEC_ID_DVD_SUBTITLE= $17000,
@@ -468,6 +473,7 @@ const
   CODEC_FLAG2_SKIP_RD       = $00004000; ///< RD optimal MB level residual skipping
   CODEC_FLAG2_CHUNKS        = $00008000; ///< Input bitstream might be truncated at a packet boundaries instead of only at frame boundaries.
   CODEC_FLAG2_NON_LINEAR_QUANT = $00010000; ///< Use MPEG-2 nonlinear quantizer.
+  CODEC_FLAG2_BIT_RESERVOIR = $00020000; ///< Use a bit reservoir when encoding if possible
 
 (* Unsupported options :
  *              Syntax Arithmetic coding (SAC)
@@ -559,12 +565,13 @@ const
   FF_BUFFER_TYPE_COPY     = 8; ///< just a (modified) copy of some other buffer, don't dealloc anything.
 
 
-  FF_I_TYPE  = 1; // Intra
-  FF_P_TYPE  = 2; // Predicted
-  FF_B_TYPE  = 3; // Bi-dir predicted
-  FF_S_TYPE  = 4; // S(GMC)-VOP MPEG4
-  FF_SI_TYPE = 5;
-  FF_SP_TYPE = 6;
+  FF_I_TYPE  = 1; ///< Intra
+  FF_P_TYPE  = 2; ///< Predicted
+  FF_B_TYPE  = 3; ///< Bi-dir predicted
+  FF_S_TYPE  = 4; ///< S(GMC)-VOP MPEG4
+  FF_SI_TYPE = 5; ///< Switching Intra
+  FF_SP_TYPE = 6; ///< Switching Predicted
+  FF_BI_TYPE = 7;
 
   FF_BUFFER_HINTS_VALID    = $01; // Buffer hints value is meaningful (if 0 ignore)
   FF_BUFFER_HINTS_READABLE = $02; // Codec will read from buffer
@@ -832,6 +839,7 @@ const
   FF_IDCT_SIMPLEARMV6  = 17;
   FF_IDCT_SIMPLEVIS    = 18;
   FF_IDCT_WMV2         = 19;
+  FF_IDCT_FAAN         = 20;
 
   FF_EC_GUESS_MVS   = 1;
   FF_EC_DEBLOCK     = 2;
@@ -968,7 +976,7 @@ type
   end; {deprecated;}
 
 type
-  PAVClass = ^TAVClass;
+  PAVClass = ^TAVClass; {const}
   PAVCodecContext = ^TAVCodecContext;
 
   PAVCodec = ^TAVCodec;
@@ -1391,7 +1399,7 @@ type
      * - encoding: Set by user
      * - decoding: unused
      *)
-    rc_eq: pchar;
+    rc_eq: pchar; {const char*}
 
     (**
      * maximum bitrate

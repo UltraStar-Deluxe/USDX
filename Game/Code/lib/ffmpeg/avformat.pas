@@ -24,7 +24,7 @@
 
 (*
  * Min. version: 50.5.0
- * Max. version: 52.7.0, Revision: 11661, Tue Jan 29 09:25:49 2008 UTC
+ * Max. version: 52.7.0, revision 12246, Tue Feb 26 20:37:59 2008 UTC
  *)
 
 unit avformat;

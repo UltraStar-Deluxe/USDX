@@ -24,7 +24,7 @@
  *)
 
 (*
- * Revision: 24800, Thu Oct 18 09:30:33 2007 UTC
+ * revision 26183, Thu Mar 6 11:32:25 2008 UTC
  *)
  
 unit swscale;
@@ -47,7 +47,7 @@ const
   (* Max. supported version by this header *)
   LIBSWSCALE_MAX_VERSION_MAJOR   = 0;
   LIBSWSCALE_MAX_VERSION_MINOR   = 5;
-  LIBSWSCALE_MAX_VERSION_RELEASE = 0;
+  LIBSWSCALE_MAX_VERSION_RELEASE = 1;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBSWSCALE_MAX_VERSION_RELEASE * VERSION_RELEASE);
