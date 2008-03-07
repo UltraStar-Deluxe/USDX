@@ -398,7 +398,7 @@ begin
  ZeroMemory(@FileInfo  , SizeOf(BITMAPINFOHEADER));
  
  // initialize header-data
- FileHeader.bfType := 19778; //$4D42 = 'BM'
+ FileHeader.bfType := 19778; // $4D42 = 'BM'
  FileHeader.bfOffBits := SizeOf(BITMAPINFOHEADER)+SizeOf(BITMAPFILEHEADER);
 
  // write bitmap info
