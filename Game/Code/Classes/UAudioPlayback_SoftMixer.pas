@@ -592,10 +592,11 @@ end;
 *)
 
 function TSoftMixerPlaybackStream.GetPCMData(var data: TPCMData): Cardinal;
-var size: integer;
+var
+  nBytes: integer;
 begin
   Result := 0;
-(*  
+
   // just SInt16 stereo support for now
   if ((Engine.GetAudioFormatInfo().Format <> asfS16) or
       (Engine.GetAudioFormatInfo().Channels <> 2)) then
@@ -606,14 +607,18 @@ begin
   // zero memory
   FillChar(data, SizeOf(data), 0);
 
+  // TODO: At the moment just the first samples of the SampleBuffer
+  // are returned, even if there is newer data in the upper samples.
+
   Lock();
-  Result := Min(SizeOf(data), SampleBufferCount);
-  if (Result > 0) then
+  nBytes := Min(SizeOf(data), SampleBufferCount);
+  if (nBytes > 0) then
   begin
-    Move(SampleBuffer[0], data[0], Result);
+    Move(SampleBuffer[0], data, nBytes);
   end;
   Unlock();
-*)
+  
+  Result := nBytes div SizeOf(TPCMStereoSample);
 end;
 
 procedure TSoftMixerPlaybackStream.GetFFTData(var data: TFFTData);
