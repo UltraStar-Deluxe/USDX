@@ -109,14 +109,14 @@ procedure BuildFont;			                // Build Our Bitmap Font
       
   {$ELSE}
   var
-    Rejestr:  TResourceStream;
+    Reg:  TResourceStream;
   begin
     try
-        Rejestr := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
+        Reg := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
         try
-          Rejestr.Read(Fonts[ aID ].Width, 256);
+          Reg.Read(Fonts[ aID ].Width, 256);
         finally
-          Rejestr.Free;
+          Reg.Free;
         end;
   {$ENDIF}
       
@@ -126,7 +126,7 @@ procedure BuildFont;			                // Build Our Bitmap Font
   end;
 
 var
-  Pet:      integer;
+  Count:      integer;
 begin
   ActFont := 0;
 
@@ -175,21 +175,21 @@ begin
   loadfont( 2, 'FNT', 'FontO'  );
   loadfont( 3, 'FNT', 'FontO2' );
 
-{  Rejestr := TResourceStream.Create(HInstance, 'FontO', 'FNT');
-  Rejestr.Read(Fonts[4].Width, 256);
-  Rejestr.Free;}
+{  Reg := TResourceStream.Create(HInstance, 'FontO', 'FNT');
+  Reg.Read(Fonts[4].Width, 256);
+  Reg.Free;}
 
-  for Pet := 0 to 255 do
-    Fonts[1].Width[Pet] := Fonts[1].Width[Pet] div 2;
+  for Count := 0 to 255 do
+    Fonts[1].Width[Count] := Fonts[1].Width[Count] div 2;
 
-  for Pet := 0 to 255 do
-    Fonts[2].Width[Pet] := Fonts[2].Width[Pet] div 2 + 2;
+  for Count := 0 to 255 do
+    Fonts[2].Width[Count] := Fonts[2].Width[Count] div 2 + 2;
 
-  for Pet := 0 to 255 do
-    Fonts[3].Width[Pet] := Fonts[3].Width[Pet] + 1;
+  for Count := 0 to 255 do
+    Fonts[3].Width[Count] := Fonts[3].Width[Count] + 1;
 
-{  for Pet := 0 to 255 do
-    Fonts[4].Width[Pet] := Fonts[4].Width[Pet] div 2 + 2;}
+{  for Count := 0 to 255 do
+    Fonts[4].Width[Count] := Fonts[4].Width[Count] div 2 + 2;}
 
 end;
 

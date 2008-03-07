@@ -51,7 +51,7 @@ type
   TLines = record
     Current:    integer;      // for drawing of current line
     High:       integer;
-    Ilosc:      integer;      // (TODO: Ilosc = Number/Count)
+    Number:      integer;
     Resolution: integer;
     NotesGAP:   integer;
     NoteType:   integer;

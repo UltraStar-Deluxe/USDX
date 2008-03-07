@@ -56,13 +56,13 @@ type
     //Meter:        real;
 
     HighNote:  integer;
-    IlNut:    integer;
+    IlNut:     integer;
     Note:     array of record
-      Start:      integer;
+      Start:     integer;
       Lenght:    integer;
-      Detekt:     real;     // accurate place, detected in the note
-      Tone:        real;
-      Perfect:    boolean;  // true if the note matches the original one, lit the star
+      Detekt:    real;     // accurate place, detected in the note
+      Tone:      real;
+      Perfect:   boolean;  // true if the note matches the original one, lit the star
 
       // Half size Notes Patch
       Hit:        boolean; // true if the note Hits the Line
@@ -676,11 +676,11 @@ end;
 
 procedure Sing(Sender: TScreenSing);
 var
-  Pet:    integer;
-  PetGr:  integer;
-  CP:     integer;
-  Done:   real;
-  N:      integer;
+  Count:    integer;
+  CountGr:  integer;
+  CP:       integer;
+  Done:     real;
+  N:        integer;
 begin
   LineState.CurrentTime := LineState.CurrentTime + TimeSkip;
 
@@ -702,17 +702,17 @@ begin
   LineState.FracBeatD := Frac(LineState.MidBeatD);
 
   // sentences routines
-  for PetGr := 0 to 0 do //High(Gracz)
+  for CountGr := 0 to 0 do //High(Gracz)
   begin;
-    CP := PetGr;
+    CP := CountGr;
     // ustawianie starej parts
     LineState.OldLine := Lines[CP].Current;
 
     // wybieranie aktualnej parts
-    for Pet := 0 to Lines[CP].High do
+    for Count := 0 to Lines[CP].High do
     begin
-      if LineState.CurrentBeat >= Lines[CP].Line[Pet].Start then
-        Lines[CP].Current := Pet;
+      if LineState.CurrentBeat >= Lines[CP].Line[Count].Start then
+        Lines[CP].Current := Count;
     end;
 
     // czysczenie nut gracza, gdy to jest nowa plansza
@@ -720,7 +720,7 @@ begin
     if Lines[CP].Current <> LineState.OldLine then
       NewSentence(Sender);
 
-  end; // for PetGr
+  end; // for CountGr
 
   // wykonuje operacje raz na beat
   if (LineState.CurrentBeat >= 0) and (LineState.OldBeat <> LineState.CurrentBeat) then
@@ -803,17 +803,17 @@ end;
 
 procedure NewBeat(Sender: TScreenSing);
 var
-  Pet:      integer;
+  Count:      integer;
 //  TempBeat: integer;
 begin
   // ustawia zaznaczenie tekstu
 //  SingScreen.LyricMain.Selected := -1;
-  for Pet := 0 to Lines[0].Line[Lines[0].Current].HighNote do
-    if (Lines[0].Line[Lines[0].Current].Note[Pet].Start = LineState.CurrentBeat) then
+  for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
+    if (Lines[0].Line[Lines[0].Current].Note[Count].Start = LineState.CurrentBeat) then
     begin
       // operates on currently beated note
       //Todo: Lyrics
-      //Sender.LyricMain.Selected := Pet;
+      //Sender.LyricMain.Selected := Count;
 
 //      LCD.MoveCursor(1, ScreenSing.LyricMain.SelectedLetter);
 //      LCD.ShowCursor;
@@ -825,7 +825,7 @@ end;
 
 procedure NewBeatC;
 var
-  Pet:    integer;
+  Count:    integer;
 //  LPT_1:  integer;
 //  LPT_2:  integer;
 begin
@@ -853,9 +853,9 @@ begin
       Light.LightOne(1, 150)}
   end;
 
-  for Pet := 0 to Lines[0].Line[Lines[0].Current].HighNote do
+  for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
   begin
-    if (Lines[0].Line[Lines[0].Current].Note[Pet].Start = LineState.CurrentBeatC) then
+    if (Lines[0].Line[Lines[0].Current].Note[Count].Start = LineState.CurrentBeatC) then
     begin
       // click assist
       if Ini.ClickAssist = 1 then
@@ -898,9 +898,9 @@ var
   SMin:   integer;
   SMax:   integer;
   SDet:   integer; // temporary: sentence of detected note
-  Pet:    integer;
+  Count:  integer;
   Mozna:  boolean;
-  Nowa:   boolean;
+  New:    boolean;
   Range:  integer;
   NoteHit:boolean;
 begin
@@ -932,12 +932,12 @@ begin
     SDet:=SMin;
     for S := SMin to SMax do
     begin
-      for Pet := 0 to Lines[0].Line[S].HighNote do
+      for Count := 0 to Lines[0].Line[S].HighNote do
       begin
-        if ((Lines[0].Line[S].Note[Pet].Start <= LineState.CurrentBeatD)
-          and (Lines[0].Line[S].Note[Pet].Start + Lines[0].Line[S].Note[Pet].Lenght - 1 >= LineState.CurrentBeatD))
-          and (not Lines[0].Line[S].Note[Pet].FreeStyle) // but don't allow when it's FreeStyle note
-          and (Lines[0].Line[S].Note[Pet].Lenght > 0) then // and make sure the note lenghts is at least 1
+        if ((Lines[0].Line[S].Note[Count].Start <= LineState.CurrentBeatD)
+          and (Lines[0].Line[S].Note[Count].Start + Lines[0].Line[S].Note[Count].Lenght - 1 >= LineState.CurrentBeatD))
+          and (not Lines[0].Line[S].Note[Count].FreeStyle) // but don't allow when it's FreeStyle note
+          and (Lines[0].Line[S].Note[Count].Lenght > 0) then // and make sure the note lenghts is at least 1
         begin
           SDet := S;
           Mozna := true;
@@ -951,23 +951,23 @@ begin
     //Czas.SzczytJest := true;
     //Czas.Tone := 27;
 
-    // gdy moze, to dodaje nute
+    // gdy moze, to dodaje nute - When Mozna, it adds note (?)
     if (AudioInputProcessor.Sound[CP].ToneValid) and (Mozna) then
     begin
       // operowanie na ostatniej nucie
-      for Pet := 0 to Lines[0].Line[S].HighNote do
+      for Count := 0 to Lines[0].Line[S].HighNote do
       begin
-        if (Lines[0].Line[S].Note[Pet].Start <= LineState.OldBeatD+1) and
-           (Lines[0].Line[S].Note[Pet].Start +
-            Lines[0].Line[S].Note[Pet].Lenght > LineState.OldBeatD+1) then
+        if (Lines[0].Line[S].Note[Count].Start <= LineState.OldBeatD+1) and
+           (Lines[0].Line[S].Note[Count].Start +
+            Lines[0].Line[S].Note[Count].Lenght > LineState.OldBeatD+1) then
         begin
           // to robi, tylko dla pary nut (oryginalnej i gracza)
 
           // przesuwanie tonu w odpowiednia game
-          while (AudioInputProcessor.Sound[CP].Tone - Lines[0].Line[S].Note[Pet].Tone > 6) do
+          while (AudioInputProcessor.Sound[CP].Tone - Lines[0].Line[S].Note[Count].Tone > 6) do
             AudioInputProcessor.Sound[CP].Tone := AudioInputProcessor.Sound[CP].Tone - 12;
 
-          while (AudioInputProcessor.Sound[CP].Tone - Lines[0].Line[S].Note[Pet].Tone < -6) do
+          while (AudioInputProcessor.Sound[CP].Tone - Lines[0].Line[S].Note[Count].Tone < -6) do
             AudioInputProcessor.Sound[CP].Tone := AudioInputProcessor.Sound[CP].Tone + 12;
 
           // Half size Notes Patch
@@ -978,9 +978,9 @@ begin
           //if Ini.Difficulty = 2 then Range := 0;
           Range := 2 - Ini.Difficulty;
 
-          if abs(Lines[0].Line[S].Note[Pet].Tone - AudioInputProcessor.Sound[CP].Tone) <= Range then
+          if abs(Lines[0].Line[S].Note[Count].Tone - AudioInputProcessor.Sound[CP].Tone) <= Range then
           begin
-            AudioInputProcessor.Sound[CP].Tone := Lines[0].Line[S].Note[Pet].Tone;
+            AudioInputProcessor.Sound[CP].Tone := Lines[0].Line[S].Note[Count].Tone;
 
             // Half size Notes Patch
             NoteHit := true;
@@ -988,21 +988,21 @@ begin
             if (Ini.LineBonus = 0) then
             begin
               // add points without LineBonus
-              case Lines[0].Line[S].Note[Pet].NoteType of
+              case Lines[0].Line[S].Note[Count].NoteType of
                 1:  Player[CP].Score := Player[CP].Score + 10000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Pet].NoteType;
+                      Lines[0].Line[S].Note[Count].NoteType;
                 2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 10000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Pet].NoteType;
+                      Lines[0].Line[S].Note[Count].NoteType;
               end;
             end
             else
             begin
               // add points with Line Bonus
-              case Lines[0].Line[S].Note[Pet].NoteType of
+              case Lines[0].Line[S].Note[Count].NoteType of
                 1:  Player[CP].Score := Player[CP].Score + 9000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Pet].NoteType;
+                      Lines[0].Line[S].Note[Count].NoteType;
                 2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 9000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Pet].NoteType;
+                      Lines[0].Line[S].Note[Count].NoteType;
               end;
             end;
 
@@ -1018,26 +1018,26 @@ begin
       // sprawdzanie czy to nowa nuta, czy przedluzenie
       if S = SMax then
       begin
-        Nowa := true;
+        New := true;
         // jezeli ostatnia ma ten sam Tone
         if (Player[CP].IlNut > 0 ) and
            (Player[CP].Note[Player[CP].HighNote].Tone = AudioInputProcessor.Sound[CP].Tone) and
            (Player[CP].Note[Player[CP].HighNote].Start + Player[CP].Note[Player[CP].HighNote].Lenght = LineState.CurrentBeatD) then
         begin
-          Nowa := false;
+          New := false;
         end;
 
         // jezeli jest jakas nowa nuta na sprawdzanym beacie
-        for Pet := 0 to Lines[0].Line[S].HighNote do
+        for Count := 0 to Lines[0].Line[S].HighNote do
         begin
-          if (Lines[0].Line[S].Note[Pet].Start = LineState.CurrentBeatD) then
-            Nowa := true;
+          if (Lines[0].Line[S].Note[Count].Start = LineState.CurrentBeatD) then
+            New := true;
         end;
 
         // dodawanie nowej nuty
-        if Nowa then
+        if New then
         begin
-          // nowa nuta
+          // New Note
           Player[CP].IlNut := Player[CP].IlNut + 1;
           Player[CP].HighNote := Player[CP].HighNote + 1;
           SetLength(Player[CP].Note, Player[CP].IlNut);
@@ -1049,7 +1049,7 @@ begin
           // Half Note Patch
           Player[CP].Note[Player[CP].HighNote].Hit := NoteHit;
 
-          //Log.LogStatus('Nowa Nuta ' + IntToStr(Gracz.Note[Gracz.HighNote].Start), 'NewBeat');
+          //Log.LogStatus('New Note ' + IntToStr(Gracz.Note[Gracz.HighNote].Start), 'NewBeat');
         end
         else
         begin
@@ -1058,11 +1058,11 @@ begin
         end;
 
         // check for perfect note and then lit the star (on Draw)
-        for Pet := 0 to Lines[0].Line[S].HighNote do
+        for Count := 0 to Lines[0].Line[S].HighNote do
         begin
-          if (Lines[0].Line[S].Note[Pet].Start = Player[CP].Note[Player[CP].HighNote].Start) and
-             (Lines[0].Line[S].Note[Pet].Lenght = Player[CP].Note[Player[CP].HighNote].Lenght) and
-             (Lines[0].Line[S].Note[Pet].Tone = Player[CP].Note[Player[CP].HighNote].Tone) then
+          if (Lines[0].Line[S].Note[Count].Start = Player[CP].Note[Player[CP].HighNote].Start) and
+             (Lines[0].Line[S].Note[Count].Lenght = Player[CP].Note[Player[CP].HighNote].Lenght) and
+             (Lines[0].Line[S].Note[Count].Tone = Player[CP].Note[Player[CP].HighNote].Tone) then
           begin
             Player[CP].Note[Player[CP].HighNote].Perfect := true;
           end;

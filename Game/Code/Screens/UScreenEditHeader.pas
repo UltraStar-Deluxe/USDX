@@ -13,20 +13,20 @@ uses UMenu,
 type
   TScreenEditHeader = class(TMenu)
     public
-      AktSong:        TSong;
-      TextTitle:      integer;
-      TextArtist:     integer;
-      TextMp3:        integer;
-      TextBackground: integer;
-      TextVideo:      integer;
-      TextVideoGAP:   integer;
-      TextRelative:   integer;
-      TextResolution: integer;
-      TextNotesGAP:   integer;
-      TextStart:      integer;
-      TextGAP:        integer;
-      TextBPM:        integer;
-      StaticTitle:    integer;
+      CurrentSong:      TSong;
+      TextTitle:        integer;
+      TextArtist:       integer;
+      TextMp3:          integer;
+      TextBackground:   integer;
+      TextVideo:        integer;
+      TextVideoGAP:     integer;
+      TextRelative:     integer;
+      TextResolution:   integer;
+      TextNotesGAP:     integer;
+      TextStart:        integer;
+      TextGAP:          integer;
+      TextBPM:          integer;
+      StaticTitle:      integer;
       StaticArtist:     integer;
       StaticMp3:        integer;
       StaticBackground: integer;
@@ -38,7 +38,7 @@ type
       StaticStart:      integer;
       StaticGAP:        integer;
       StaticBPM:        integer;
-      Sel:            array[0..11] of boolean;
+      Sel:              array[0..11] of boolean;
       procedure SetRoundButtons;
 
       constructor Create; override;
@@ -163,34 +163,34 @@ begin
   AddText(160, 110 + 13*30, 0, 10, 0, 0, 0, 'GAP:');
   AddText(160, 110 + 14*30, 0, 10, 0, 0, 0, 'BPM:');
 
-  TextTitle :=  AddText(340, 110 + 0*30, 0, 10, 0, 0, 0, '');
+  TextTitle  := AddText(340, 110 + 0*30, 0, 10, 0, 0, 0, '');
   TextArtist := AddText(340, 110 + 1*30, 0, 10, 0, 0, 0, '');
-  TextMp3 :=    AddText(340, 110 + 2*30, 0, 10, 0, 0, 0, '');
+  TextMp3    := AddText(340, 110 + 2*30, 0, 10, 0, 0, 0, '');
 
   TextBackground := AddText(340, 110 + 4*30, 0, 10, 0, 0, 0, '');
-  TextVideo :=      AddText(340, 110 + 5*30, 0, 10, 0, 0, 0, '');
-  TextVideoGAP :=   AddText(340, 110 + 6*30, 0, 10, 0, 0, 0, '');
+  TextVideo      := AddText(340, 110 + 5*30, 0, 10, 0, 0, 0, '');
+  TextVideoGAP   := AddText(340, 110 + 6*30, 0, 10, 0, 0, 0, '');
 
-  TextRelative :=   AddText(340, 110 + 8*30, 0, 10, 0, 0, 0, '');
+  TextRelative   := AddText(340, 110 + 8*30, 0, 10, 0, 0, 0, '');
   TextResolution := AddText(340, 110 + 9*30, 0, 10, 0, 0, 0, '');
-  TextNotesGAP :=   AddText(340, 110 + 10*30, 0, 10, 0, 0, 0, '');
+  TextNotesGAP   := AddText(340, 110 + 10*30, 0, 10, 0, 0, 0, '');
 
   TextStart :=  AddText(340, 110 + 12*30, 0, 10, 0, 0, 0, '');
-  TextGAP :=    AddText(340, 110 + 13*30, 0, 10, 0, 0, 0, '');
-  TextBPM :=    AddText(340, 110 + 14*30, 0, 10, 0, 0, 0, '');
+  TextGAP   :=  AddText(340, 110 + 13*30, 0, 10, 0, 0, 0, '');
+  TextBPM   :=  AddText(340, 110 + 14*30, 0, 10, 0, 0, 0, '');
 
-  StaticTitle :=  AddStatic(130, 115 + 0*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticArtist := AddStatic(130, 115 + 1*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticMp3 :=    AddStatic(130, 115 + 2*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticTitle      := AddStatic(130, 115 + 0*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticArtist     := AddStatic(130, 115 + 1*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticMp3        := AddStatic(130, 115 + 2*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
   StaticBackground := AddStatic(130, 115 + 4*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticVideo :=      AddStatic(130, 115 + 5*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticVideoGAP :=   AddStatic(130, 115 + 6*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticRelative :=   AddStatic(130, 115 + 8*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticVideo      := AddStatic(130, 115 + 5*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticVideoGAP   := AddStatic(130, 115 + 6*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticRelative   := AddStatic(130, 115 + 8*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
   StaticResolution := AddStatic(130, 115 + 9*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticNotesGAP :=   AddStatic(130, 115 + 10*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticStart :=  AddStatic(130, 115 + 12*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticGAP :=    AddStatic(130, 115 + 13*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticBPM :=    AddStatic(130, 115 + 14*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticNotesGAP   := AddStatic(130, 115 + 10*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticStart      := AddStatic(130, 115 + 12*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticGAP        := AddStatic(130, 115 + 13*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticBPM        := AddStatic(130, 115 + 14*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
 
   AddInteraction(iText, TextTitle);
   AddInteraction(iText, TextArtist);
@@ -211,26 +211,26 @@ begin
   inherited;
 
 {  if FileExists(FileName) then begin // load file
-    AktSong.FileName := FileName;
-    SkanujPlik(AktSong);
+    CurrentSong.FileName := FileName;
+    SkanujPlik(CurrentSong);
 
     SetLength(TrueBoolStrs, 1);
     TrueBoolStrs[0] := 'yes';
     SetLength(FalseBoolStrs, 1);
     FalseBoolStrs[0] := 'no';
 
-    Text[TextTitle].Text :=   AktSong.Title;
-    Text[TextArtist].Text :=  AktSong.Artist;
-    Text[TextMP3].Text :=     AktSong.Mp3;
-    Text[TextBackground].Text :=  AktSong.Background;
-    Text[TextVideo].Text :=       AktSong.Video;
-    Text[TextVideoGAP].Text :=    FloatToStr(AktSong.VideoGAP);
-    Text[TextRelative].Text :=    BoolToStr(AktSong.Relative, true);
-    Text[TextResolution].Text :=  IntToStr(AktSong.Resolution);
-    Text[TextNotesGAP].Text :=    IntToStr(AktSong.NotesGAP);
-    Text[TextStart].Text := FloatToStr(AktSong.Start);
-    Text[TextGAP].Text :=   FloatToStr(AktSong.GAP);
-    Text[TextBPM].Text :=   FloatToStr(AktSong.BPM[0].BPM);
+    Text[TextTitle].Text :=   CurrentSong.Title;
+    Text[TextArtist].Text :=  CurrentSong.Artist;
+    Text[TextMP3].Text :=     CurrentSong.Mp3;
+    Text[TextBackground].Text :=  CurrentSong.Background;
+    Text[TextVideo].Text :=       CurrentSong.Video;
+    Text[TextVideoGAP].Text :=    FloatToStr(CurrentSong.VideoGAP);
+    Text[TextRelative].Text :=    BoolToStr(CurrentSong.Relative, true);
+    Text[TextResolution].Text :=  IntToStr(CurrentSong.Resolution);
+    Text[TextNotesGAP].Text :=    IntToStr(CurrentSong.NotesGAP);
+    Text[TextStart].Text := FloatToStr(CurrentSong.Start);
+    Text[TextGAP].Text :=   FloatToStr(CurrentSong.GAP);
+    Text[TextBPM].Text :=   FloatToStr(CurrentSong.BPM[0].BPM);
     SetRoundButtons;
   end;}
 
@@ -257,7 +257,7 @@ begin
 
     // click
     if (Click) and (PlaySentence) then begin
-      AktBeat := Floor(AktSong.BPM[0].BPM * (Music.Position - AktSong.GAP / 1000) / 60);
+      AktBeat := Floor(CurrentSong.BPM[0].BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
       Text[TextDebug].Text := IntToStr(AktBeat);
       if AktBeat <> LastClick then begin
         for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
@@ -273,8 +273,8 @@ begin
   Text[TextNote].Text := IntToStr(AktNuta + 1) + ' / ' + IntToStr(Czesci[0].Czesc[Czesci[0].Akt].IlNut);
 
   // Song info
-  Text[TextBPM].Text := FloatToStr(AktSong.BPM[0].BPM / 4);
-  Text[TextGAP].Text := FloatToStr(AktSong.GAP);
+  Text[TextBPM].Text := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+  Text[TextGAP].Text := FloatToStr(CurrentSong.GAP);
 
   // Note info
   Text[TextNStart].Text :=    IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start);

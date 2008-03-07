@@ -50,8 +50,8 @@ type
   TSong = class
     FileLineNo  : integer;  //Line which is readed at Last, for error reporting
 
-    procedure ParseNote(NrCzesci: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
-    procedure NewSentence(NrCzesciP: integer; Param1, Param2: integer);
+    procedure ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
+    procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
 
     function ReadTXTHeader( const aFileName : WideString ): boolean;
   public
@@ -114,7 +114,7 @@ implementation
 uses
   TextGL,
   UIni,
-  UMusic,  // needed for Lines .. ( whatever that is ) 
+  UMusic,  //needed for Lines
   UMain;   //needed for Player
 
 constructor TSong.create( const aFileName : WideString );
@@ -160,9 +160,9 @@ function TSong.LoadSong(): boolean;
 
 var
   TempC:    char;
-  Tekst:    string;
+  Text:    string;
   CP:       integer; // Current Player (0 or 1)
-  Pet:      integer;
+  Count:      integer;
   Both:     boolean;
   Param1:   integer;
   Param2:   integer;
@@ -209,7 +209,7 @@ begin
     FileLineNo := 0;
     //Search for Note Begining
     repeat
-      ReadLn(SongFile, Tekst);
+      ReadLn(SongFile, Text);
       Inc(FileLineNo);
     
       if (EoF(SongFile)) then
@@ -223,19 +223,19 @@ begin
     until ((TempC = ':') or (TempC = 'F') or (TempC = '*'));
 
     SetLength(Lines, 2);
-    for Pet := 0 to High(Lines) do begin
-      SetLength(Lines[Pet].Line, 1);
-      Lines[Pet].High := 0;
-      Lines[Pet].Ilosc := 1;
-      Lines[Pet].Current := 0;
-      Lines[Pet].Resolution := self.Resolution;
-      Lines[Pet].NotesGAP   := self.NotesGAP;
-      Lines[Pet].Line[0].IlNut := 0;
-      Lines[Pet].Line[0].HighNote := -1;
+    for Count := 0 to High(Lines) do begin
+      SetLength(Lines[Count].Line, 1);
+      Lines[Count].High := 0;
+      Lines[Count].Number := 1;
+      Lines[Count].Current := 0;
+      Lines[Count].Resolution := self.Resolution;
+      Lines[Count].NotesGAP   := self.NotesGAP;
+      Lines[Count].Line[0].IlNut := 0;
+      Lines[Count].Line[0].HighNote := -1;
     end;
 
   //  TempC := ':';
-  //  TempC := Tekst[1]; // read from backup variable, don't use default ':' value
+  //  TempC := Text[1]; // read from backup variable, don't use default ':' value
 
     while (TempC <> 'E') AND (not EOF(SongFile)) do
     begin
@@ -281,8 +281,8 @@ begin
         Read(SongFile, self.BPM[High(self.BPM)].StartBeat);
         self.BPM[High(self.BPM)].StartBeat := self.BPM[High(self.BPM)].StartBeat + Rel[0];
 
-        Read(SongFile, Tekst);
-        self.BPM[High(self.BPM)].BPM := StrToFloat(Tekst);
+        Read(SongFile, Text);
+        self.BPM[High(self.BPM)].BPM := StrToFloat(Text);
         self.BPM[High(self.BPM)].BPM := self.BPM[High(self.BPM)].BPM * Mult * MultBPM;
       end;
 
@@ -299,14 +299,14 @@ begin
         end;
         //Total Notes Patch End
       end else begin
-        for Pet := 0 to High(Lines) do begin
-          Lines[Pet].Line[Lines[Pet].High].BaseNote := Base[Pet];
-          Lines[Pet].Line[Lines[Pet].High].LyricWidth := glTextWidth(PChar(Lines[Pet].Line[Lines[Pet].High].Lyric));
+        for Count := 0 to High(Lines) do begin
+          Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
+          Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
           //Total Notes Patch
-          Lines[Pet].Line[Lines[Pet].High].TotalNotes := 0;
-          for I := low(Lines[Pet].Line[Lines[Pet].High].Note) to high(Lines[Pet].Line[Lines[Pet].High].Note) do
+          Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
+          for I := low(Lines[Count].Line[Lines[Count].High].Note) to high(Lines[Count].Line[Lines[Count].High].Note) do
           begin
-            Lines[Pet].Line[Lines[Pet].High].TotalNotes := Lines[Pet].Line[Lines[Pet].High].TotalNotes + Lines[Pet].Line[Lines[Pet].High].Note[I].Lenght * Lines[Pet].Line[Lines[Pet].High].Note[I].NoteType;
+            Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[I].Lenght * Lines[Count].Line[Lines[Count].High].Note[I].NoteType;
           end;
           //Total Notes Patch End
         end;
@@ -535,7 +535,7 @@ begin
 
 end;
 
-procedure TSong.ParseNote(NrCzesci: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
+procedure TSong.ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
 var
   Space:  boolean;
 begin
@@ -578,7 +578,7 @@ begin
       end;
   end; // case
 
-  with Lines[NrCzesci].Line[Lines[NrCzesci].High] do begin
+  with Lines[LineNumber].Line[Lines[LineNumber].High] do begin
     SetLength(Note, Length(Note) + 1);
     IlNut := IlNut + 1;
     HighNote := HighNote + 1;
@@ -587,7 +587,7 @@ begin
     Note[HighNote].Start := StartP;
     if IlNut = 1 then begin
       StartNote := Note[HighNote].Start;
-      if Lines[NrCzesci].Ilosc = 1 then
+      if Lines[LineNumber].Number = 1 then
         Start := -100;
 //        Start := Note[HighNote].Start;
     end;
@@ -602,10 +602,10 @@ begin
       '*':  Note[HighNote].NoteType := 2;
     end;
 
-    Lines[NrCzesci].NoteType := Lines[NrCzesci].NoteType + Note[HighNote].Lenght * Note[HighNote].NoteType;
+    Lines[LineNumber].NoteType := Lines[LineNumber].NoteType + Note[HighNote].Lenght * Note[HighNote].NoteType;
 
     Note[HighNote].Tone := NoteP;
-    if Note[HighNote].Tone < Base[NrCzesci] then Base[NrCzesci] := Note[HighNote].Tone;
+    if Note[HighNote].Tone < Base[LineNumber] then Base[LineNumber] := Note[HighNote].Tone;
     Note[HighNote].ToneGamus := Note[HighNote].ToneGamus mod 12;
 
     Note[HighNote].Text := Copy(LyricS, 2, 100);
@@ -618,39 +618,39 @@ begin
   end; // with
 end;
 
-procedure TSong.NewSentence(NrCzesciP: integer; Param1, Param2: integer);
+procedure TSong.NewSentence(LineNumberP: integer; Param1, Param2: integer);
 var
 I: Integer;
 begin
 
   // stara czesc //Alter Satz //Update Old Part
-  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].BaseNote := Base[NrCzesciP];
-  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].LyricWidth := glTextWidth(PChar(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Lyric));
+  Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := Base[LineNumberP];
+  Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(PChar(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric));
 
   //Total Notes Patch
-  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes := 0;
-  for I := low(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note) to high(Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note) do
+  Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
+  for I := low(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) to high(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) do
   begin
-    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes := Lines[NrCzesciP].Line[Lines[NrCzesciP].High].TotalNotes + Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].Lenght * Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Note[I].NoteType;
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Lenght * Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType;
   end;
   //Total Notes Patch End
 
 
   // nowa czesc //Neuer Satz //Update New Part
-  SetLength(Lines[NrCzesciP].Line, Lines[NrCzesciP].Ilosc + 1);
-  Lines[NrCzesciP].High := Lines[NrCzesciP].High + 1;
-  Lines[NrCzesciP].Ilosc := Lines[NrCzesciP].Ilosc + 1;
-  Lines[NrCzesciP].Line[Lines[NrCzesciP].High].HighNote := -1;
+  SetLength(Lines[LineNumberP].Line, Lines[LineNumberP].Number + 1);
+  Lines[LineNumberP].High := Lines[LineNumberP].High + 1;
+  Lines[LineNumberP].Number := Lines[LineNumberP].Number + 1;
+  Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote := -1;
 
   if self.Relative then
   begin
-    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Start := Param1;
-    Rel[NrCzesciP] := Rel[NrCzesciP] + Param2;
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
+    Rel[LineNumberP] := Rel[LineNumberP] + Param2;
   end
   else
-    Lines[NrCzesciP].Line[Lines[NrCzesciP].High].Start := Param1;
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
 
-  Base[NrCzesciP] := 100; // high number
+  Base[LineNumberP] := 100; // high number
 end;
 
 procedure TSong.clear();

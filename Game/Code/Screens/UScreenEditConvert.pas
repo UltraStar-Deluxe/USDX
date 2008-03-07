@@ -293,7 +293,7 @@ begin
 
   // copy notes
   SetLength(Lines.Line, 1);
-  Lines.Ilosc := 1;
+  Lines.Number := 1;
   Lines.High := 0;
 
   C := 0;
@@ -304,7 +304,7 @@ begin
   for Nu := 0 to High(Note) do begin
     if Note[Nu].NewSentence then begin // nowa linijka
       SetLength(Lines.Line, Length(Lines.Line)+1);
-      Lines.Ilosc := Lines.Ilosc + 1;
+      Lines.Number := Lines.Number + 1;
       Lines.High := Lines.High + 1;
       C := C + 1;
       N := 0;

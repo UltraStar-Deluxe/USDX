@@ -38,17 +38,17 @@ uses TextGL,
 //--------------------
 procedure ResetSingTemp;
 var
-  Pet:  integer;
+  Count:  integer;
 begin
   SetLength(Lines, Length(Player));
-  for Pet := 0 to High(Player) do begin
-    SetLength(Lines[Pet].Line, 1);
-    SetLength(Lines[Pet].Line[0].Note, 0);
-    Lines[Pet].Line[0].Lyric := '';
-    Lines[Pet].Line[0].LyricWidth := 0;
-    Player[pet].Score := 0;
-    Player[pet].IlNut := 0;
-    Player[pet].HighNote := -1;
+  for Count := 0 to High(Player) do begin
+    SetLength(Lines[Count].Line, 1);
+    SetLength(Lines[Count].Line[0].Note, 0);
+    Lines[Count].Line[0].Lyric := '';
+    Lines[Count].Line[0].LyricWidth := 0;
+    Player[Count].Score := 0;
+    Player[Count].IlNut := 0;
+    Player[Count].HighNote := -1;
   end;
 
   (* FIXME

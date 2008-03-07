@@ -11,7 +11,7 @@ interface
 
 type
   //-----------
-  // TCMDParams - Class Reaads Infos from ParamStr and set some easy Interface Variables
+  // TCMDParams - Class Reads Infos from ParamStr and set some easy Interface Variables
   //-----------
   TCMDParams = class
     private
