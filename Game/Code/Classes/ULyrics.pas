@@ -15,56 +15,61 @@ uses OpenGL12,
 
 type
   TLyricWord = record
-    X:          Real;     //X Pos of the Word
-    Width:      Real;     //Width of the Text
-    TexPos:     Real;     //Pos of the Word (0 to 1) in the Sentence Texture
-    TexWidth:   Real;     //width of the Word in Sentence Texture (0 to 1)
-    Start:      Cardinal; //Start of the Words in Quarters (Beats)
-    Length:     Cardinal; //Length of the Word in Quarters
-    Text:       String;   //Text of this Word
-    Freestyle:  Boolean;  //Is this Word Freestyle
+    X:          Real;     // left corner
+    Width:      Real;     // width
+    TexPos:     Real;     // left corner in texture (0 to 1)
+    TexWidth:   Real;     // width (0 to 1)
+    Start:      Cardinal; // start of the word in quarters (beats)
+    Length:     Cardinal; // length of the word in quarters
+    Text:       String;   // text
+    Freestyle:  Boolean;  // freestyle?
   end;
   ALyricWord = array of TLyricWord;
 
   PLyricLine = ^TLyricLine;
   TLyricLine = record
-    Text:       String;       //Text of the Line
-    Tex:        glUInt;       //Texture of the Text from this Line
-    Width:      Real;         //Width of the Lyricline in Tex
-    Size:       Byte;         //Size of the Font in the Texture
-    Words:      ALyricWord;   //Words from this Line
-	CurWord:    Integer;      //current active word (only valid if line is active)
-    Start:      Cardinal;     //Start in Quarters of teh Line
-    Length:     Cardinal;     //Length in Quarters (From Start of First Note to the End of Last Note)
-    Freestyle:  Boolean;      //Complete Line is Freestyle ?
-    Players:    Byte;         //Which Players Sing this Line (1: Player1; 2: Player2; 4: Player3; [..])
-    Done:       Boolean;      //Is Sentence Sung
+    Text:       String;       // text
+    Tex:        glUInt;       // texture of the text
+    Width:      Real;         // width
+    Size:       Byte;         // fontsize
+    Words:      ALyricWord;   // words in this line 
+	CurWord:    Integer;      // current active word idx (only valid if line is active)
+    Start:      Cardinal;     // start of this line in quarters
+    Length:     Cardinal;     // length in quarters
+    Freestyle:  Boolean;      // complete line is freestyle?
+    Players:    Byte;         // players that should sing that line (bitset, Player1: 1, Player2: 2, Player3: 4)
+    Done:       Boolean;      // is sentence already sung?
   end;
 
   TLyricEngine = class
     private
-      EoLastSentence: Real;       //When did the Last Sentence End (in Beats)
+      EoLastSentence: Real;          // end of the previous sentence (in beats)
       LastDrawBeat: Real;
-      UpperLine:      TLyricLine; //Line in the Upper Part of the Lyric Display
-      LowerLine:      TLyricLine; //Line in the Lower Part of teh Lyric Display
-      QueueLine:      TLyricLine; //Line that is in Queue and will be added when next Line is Finished
+      UpperLine:      TLyricLine;    // first line displayed (top)
+      LowerLine:      TLyricLine;    // second lind displayed (bottom)
+      QueueLine:      TLyricLine;    // third line (queue and will be displayed when next line is finished)
       PUpperLine, PLowerLine, PQueueLine: PLyricLine;
 
-      IndicatorTex:   TTexture;       //Texture for Lyric Indikator(Bar that indicates when the Line start)
-      BallTex:        TTexture;       //Texture of the Ball for cur. Word hover in Ballmode
-      PlayerIconTex:  array[0..5] of  //Textures for PlayerIcon Index: Playernum; Index2: Enabled/Disabled
-                      array [0..1] of
+      IndicatorTex:   TTexture;       // texture for lyric indikator
+      BallTex:        TTexture;       // texture of the ball for the lyric effekt
+      
+      inQueue:        Boolean;		  // is line in queue
+      LCounter:       Word;           // line counter
+      
+      // duet mode - textures for player icons
+      PlayerIconTex:  array[0..5] of  // player idx
+                      array [0..1] of // enabled disabled
                       TTexture;
 
-      inQueue:        Boolean;
-      LCounter:       Word;
 
       //Some helper Procedures for Lyric Drawing
       procedure DrawLyrics (Beat: Real);
       procedure DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: PLyricLine; Beat: Real);
       procedure DrawPlayerIcon(const Player: Byte; const Enabled: Boolean; const X, Y, Size, Alpha: Real);
+      procedure DrawBall(const XBall, YBall:Real);
+      
     public
-      //Positions, Line specific Settings
+      // positions, line specific settings
       UpperLineX:     Real;       //X Start Pos of UpperLine
       UpperLineW:     Real;       //Width of UpperLine with Icon(s) and Text
       UpperLineY:     Real;       //Y Start Pos of UpperLine
@@ -75,40 +80,47 @@ type
       LowerLineY:     Real;       //Y Start Pos of LowerLine
       LowerLineSize:  Byte;       //Max Size of Lyrics Text in LowerLine
 
-      //Display Propertys
+      // display propertys
       LineColor_en:   TRGBA;      //Color of Words in an Enabled Line
       LineColor_dis:  TRGBA;      //Color of Words in a Disabled Line
       LineColor_act:  TRGBA;      //Color of teh active Word
       FontStyle:      Byte;       //Font for the Lyric Text
       FontReSize:     Boolean;    //ReSize Lyrics if they don't fit Screen
-
-      HoverEffekt:    Byte;       //Effekt of Hovering active Word: 0 - one selection, 1 - long selection, 2 - one selection with fade to normal text, 3 - long selection with fade with color from left
-      FadeInEffekt:   Byte;       //Effekt for Line Fading in: 0: No Effekt; 1: Fade Effekt; 2: Move Upwards from Bottom to Pos
-      FadeOutEffekt:  Byte;       //Effekt for Line Fading out: 0: No Effekt; 1: Fade Effekt; 2: Move Upwards
+      
+      
+      HoverEffekt:    Byte;       //effekt of hovering active words: 
+                                  // 1 - simple (only current word is highlighted)
+                                  // 2 - zoom (current word is highlighted and zoomed bigger)
+                                  // 3 - slide (highlight the line up to the current position - like a progress bar)
+                                  // 4 - ball (current word is highlighted and ball is jumpung over that word)
+      
+      { // currently not used
+       FadeInEffekt:   Byte;       //Effekt for Line Fading in: 0: No Effekt; 1: Fade Effekt; 2: Move Upwards from Bottom to Pos
+       FadeOutEffekt:  Byte;       //Effekt for Line Fading out: 0: No Effekt; 1: Fade Effekt; 2: Move Upwards
+      }
 
       UseLinearFilter:Boolean;    //Should Linear Tex Filter be used
 
-      //Song specific Settings
+      // song specific settings
       BPM:            Real;
       Resolution:     Integer;
 
 
-      //properties to easily update this Class within other Parts of Code
-      property LineinQueue: Boolean read inQueue;    //True when there is a Line in Queue
-      property LineCounter: Word    read LCounter;   //Lines that was Progressed so far (after last Clear)
-
-      Constructor Create; overload;     //Constructor, just get Memory
+      // properties to easily read options of this class
+      property LineinQueue: Boolean read inQueue;    // line in queue?
+      property LineCounter: Word    read LCounter;   // lines that were progressed so far (after last clear)
+      
+      Procedure   AddLine(Line: PLine);              // adds a line to the queue, if there is space
+      Procedure   Draw (Beat: Real);                 // draw the current (active at beat) lyrics
+      
+      Procedure   Clear (const cBPM: Real = 0;       // clears all cached song specific information
+                         const cResolution: Integer = 0);
+      
+      Constructor Create; overload; 
       Constructor Create(ULX,ULY,ULW,ULS,LLX,LLY,LLW,LLS:Real); overload;
-      Procedure   LoadTextures;         //Load Player Textures and Create
-
-      Procedure   AddLine(Line: PLine); //Adds a Line to the Queue if there is Space
-      Procedure   Draw (Beat: Real);    //Procedure Draws Lyrics; Beat is curent Beat in Quarters
-      Procedure   Clear (const cBPM: Real = 0; const cResolution: Integer = 0); //Clears all cached Song specific Information
-
-      Destructor  Free;                 //Frees Memory
+      Procedure   LoadTextures;
+      Destructor  Free;
   end;
-
-const LyricTexStart = 2/512;
 
 implementation
 
@@ -153,12 +165,12 @@ begin
   PQueueLine:=@QueueLine;
 
   UseLinearFilter := True;
-	{$IFDEF DARWIN}
-	// eddie: Getting range check error with NAN on OS X:
-  LastDrawBeat:=0;
-	{$ELSE}
-  LastDrawBeat:=NAN;
-	{$ENDIF}
+  {$IFDEF DARWIN}
+    // eddie: Getting range check error with NAN on OS X:
+    LastDrawBeat:=0;
+  {$ELSE}
+    LastDrawBeat:=NAN;
+  {$ENDIF}
 end;
 
 Constructor TLyricEngine.Create(ULX,ULY,ULW,ULS,LLX,LLY,LLW,LLS:Real);
@@ -202,12 +214,13 @@ begin
   PUpperline:=@UpperLine;
   PLowerLine:=@LowerLine;
   PQueueLine:=@QueueLine;
-	{$IFDEF DARWIN}
-	// eddie: Getting range check error with NAN on OS X:
-  LastDrawBeat:=0;
-	{$ELSE}
-  LastDrawBeat:=NAN;
-	{$ENDIF}
+  
+  {$IFDEF DARWIN}
+    // eddie: Getting range check error with NAN on OS X:
+    LastDrawBeat:=0;
+  {$ELSE}
+    LastDrawBeat:=NAN;
+  {$ENDIF}
 end;
 
 
@@ -217,19 +230,20 @@ end;
 Procedure   TLyricEngine.LoadTextures;
 var
   I: Integer;
-  PTexData: Pointer;
-
+  
   function CreateLineTex: glUint;
+  var
+    PTexData: Pointer;
   begin
-    GetMem(pTexData, 1024*64*4); //get Memory to save Tex in
+    // get memory
+    GetMem(pTexData, 1024*64*4); 
 
-    //generate and bind Texture
+    // generate and bind Texture
     glGenTextures(1, @Result);
     glBindTexture(GL_TEXTURE_2D, Result);
 
-    //Get Memory
+    // get texture memeory
     glTexImage2D(GL_TEXTURE_2D, 0, 4, 1024, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, pTexData);
-
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -239,31 +253,25 @@ var
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     end;
 
-    //Free now unused Memory
+    // free unused memory
     FreeMem(pTexData);
   end;
 begin
-  //Load Texture for Lyric Indikator(Bar that indicates when the Line start)
+  
+  // lyric indikator (bar that indicates when the line start)
   IndicatorTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', 'Transparent', $FF00FF);
 
-  //Load Texture of the Ball for cur. Word hover in Ballmode
-  BallTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', 'Transparent', $FF00FF);
+  // ball for current word hover in ball effekt
+  BallTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'PNG', 'Transparent', 0);
 
-  //Load PlayerTexs
-  For I := 0 to 1 do
+  // duet mode: load player icon
+  For I := 0 to 5 do
   begin
     PlayerIconTex[I][0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
     PlayerIconTex[I][1] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
   end;
-
-  //atm just unset other texs
-  For I := 2 to 5 do
-  begin
-    PlayerIconTex[I][0].TexNum := high(Cardinal); //Set to C's -1
-    PlayerIconTex[I][1].TexNum := high(Cardinal);
-  end;
-
-  //Create LineTexs
+  
+  // create line textures
   UpperLine.Tex := CreateLineTex;
   LowerLine.Tex := CreateLineTex;
   QueueLine.Tex := CreateLineTex;
@@ -276,57 +284,67 @@ end;
 Procedure   TLyricEngine.AddLine(Line: PLine);
 var
   LyricLine: PLyricLine;
-  I:  Integer;
   countNotes: Cardinal;
-  PosX: Real;
   Viewport: Array[0..3] of Integer;
+  
+  PosX: Real;
+  I:  Integer;
 begin
-  //Only Add Lines if there is enough space
+  // only add lines, if there is space
   If not LineinQueue then
   begin
-    //Set Pointer to Line to Write
+    // set pointer to line to write
+    
     If (LineCounter = 0) then
-      LyricLine := PUpperLine //Set Upper Line
+      LyricLine := PUpperLine 
     else if (LineCounter = 1) then
-      LyricLine := PLowerLine //Set Lower Line
+      LyricLine := PLowerLine
     else
-    begin
-      LyricLine := PQueueLine; //Set Queue Line
-      inQueue   := True;       //now there is a Queued Line
+    begin  
+      LyricLine := PQueueLine;
+      
+      //now there is a queued line
+      inQueue   := True;       
     end;
   end
   else
   begin // rotate lines (round-robin-like)
-    LyricLine:=PUpperLine;
-    PUpperLine:=PLowerLine;
-    PLowerLine:=PQueueLine;
-    PQueueLine:=LyricLine;
+    LyricLine  := PUpperLine;
+    PUpperLine := PLowerLine;
+    PLowerLine := PQueueLine;
+    PQueueLine := LyricLine;
   end;
 
-  //Check if Sentence has Notes
+  // sentence has notes?
   If (Length(Line.Note) > 0) then
   begin
-    //Copy Values from SongLine to LyricLine
-    CountNotes := high(Line.Note);
-    LyricLine.Start := Line.Note[0].Start;
-    LyricLine.Length := Line.Note[CountNotes].Start + Line.Note[CountNotes].Lenght - LyricLine.Start;
-    LyricLine.Freestyle := True; //is set by And Notes Freestyle while copying Notes
-    LyricLine.Text    := '';      //Also Set while copying Notes
-    LyricLine.Players := 127; //All Players for now, no Duett Mode available
-    LyricLine.CurWord:=-1; // inactive line - so no word active atm
-    //Copy Words
+    // copy values from SongLine to LyricLine
+    CountNotes          := High(Line.Note);
+    LyricLine.Start     := Line.Note[0].Start;
+    LyricLine.Length    := Line.Note[CountNotes].Start + Line.Note[CountNotes].Lenght - LyricLine.Start;
+    LyricLine.CurWord   := -1;
+    
+    // default values - set later
+    LyricLine.Freestyle := True;
+    LyricLine.Text      := '';
+    
+    // duet mode: players of that line
+    LyricLine.Players   := 127;
+
+    //copy words
     SetLength(LyricLine.Words, CountNotes + 1);
     For I := 0 to CountNotes do
     begin
-      LyricLine.Freestyle := LyricLine.Freestyle AND Line.Note[I].FreeStyle;
-      LyricLine.Words[I].Start      := Line.Note[I].Start;
-      LyricLine.Words[I].Length     := Line.Note[I].Lenght;
-      LyricLine.Words[I].Text       := Line.Note[I].Text;
-      LyricLine.Words[I].Freestyle  := Line.Note[I].FreeStyle;
-      LyricLine.Text := LyricLine.Text + LyricLine.Words[I].Text
+      LyricLine.Words[I].Start     := Line.Note[I].Start;
+      LyricLine.Words[I].Length    := Line.Note[I].Lenght;
+      LyricLine.Words[I].Text      := Line.Note[I].Text;
+      LyricLine.Words[I].Freestyle := Line.Note[I].FreeStyle;
+      
+      LyricLine.Freestyle          := LyricLine.Freestyle AND Line.Note[I].FreeStyle;
+      LyricLine.Text               := LyricLine.Text + LyricLine.Words[I].Text
     end;
 
-    //Set Font Params
+    // set font params
     SetFontStyle(FontStyle);
     SetFontPos(0, 0);
     LyricLine.Size := UpperLineSize;
@@ -334,9 +352,9 @@ begin
     SetFontItalic(False);
     glColor4f(1, 1, 1, 1);
 
-    //Change Fontsize to Fit the Screen
+    // change fontsize to fit the screen
     LyricLine.Width := glTextWidth(PChar(LyricLine.Text));
-    While (LyricLine.Width > UpperLineW) do
+    while (LyricLine.Width > UpperLineW) do
     begin
       Dec(LyricLine.Size);
 
@@ -346,22 +364,20 @@ begin
       SetFontSize(LyricLine.Size);
       LyricLine.Width := glTextWidth(PChar(LyricLine.Text));
     end;
-
-    //Set Word Positions and Line Size
-    PosX := 0 {LowerLineX + LowerLineW/2 + 80 - LyricLine.Width/2};
-    For I := 0 to High(LyricLine.Words) do
+    
+    // set word positions and line size
+    PosX := 0;
+    for I := 0 to High(LyricLine.Words) do
     begin
-      LyricLine.Words[I].X := PosX;
-      LyricLine.Words[I].Width := glTextWidth(PChar(LyricLine.Words[I].Text));
-      LyricLine.Words[I].TexPos := (PosX+1) / 1024;
+      LyricLine.Words[I].X        := PosX;
+      LyricLine.Words[I].Width    := glTextWidth(PChar(LyricLine.Words[I].Text));
+      LyricLine.Words[I].TexPos   := (PosX+1) / 1024;
       LyricLine.Words[I].TexWidth := (LyricLine.Words[I].Width-1) / 1024;
-
+      
       PosX := PosX + LyricLine.Words[I].Width;
     end;
 
-
-    //Create LyricTexture
-    //Prepare Ogl
+    // create LyricTexture - prepare OpenGL
     glGetIntegerv(GL_VIEWPORT, @ViewPort);
     glClearColor(0.0,0.0,0.0,0.0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
@@ -370,13 +386,15 @@ begin
     //Draw Lyrics
     SetFontPos(0, 0);
     glPrint(PChar(LyricLine.Text));
-
+    
     Display.ScreenShot;
+    
     //Copy to Texture
     glEnable(GL_ALPHA);
     glBindTexture(GL_TEXTURE_2D, LyricLine.Tex);
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 600-64, 1024, 64, 0);
     glDisable(GL_ALPHA);
+    
     //Clear Buffer
     glClearColor(0,0,0,0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
@@ -394,10 +412,10 @@ end;
 // Draw - Procedure Draws Lyrics; Beat is curent Beat in Quarters
 //        Draw just manage the Lyrics, drawing is done by a call of DrawLyrics
 //---------------
-Procedure   TLyricEngine.Draw (Beat: Real);
+Procedure TLyricEngine.Draw (Beat: Real);
 begin
   DrawLyrics(Beat);
-  LastDrawBeat:=Beat;
+  LastDrawBeat := Beat;
 end;
 
 //---------------
@@ -416,8 +434,8 @@ procedure TLyricEngine.DrawPlayerIcon(const Player: Byte; const Enabled: Boolean
 var IEnabled: Byte;
 begin
   Case Enabled of
-    True: IEnabled := 0;
-    False: IEnabled:= 1;
+    True: 	IEnabled := 0;
+    False:  IEnabled := 1;
   end;
 
   glEnable(GL_TEXTURE_2D);
@@ -437,62 +455,71 @@ begin
   glDisable(GL_BLEND);
   glDisable(GL_TEXTURE_2D);
 end;
+
+//---------------
+// DrawBall(private) - Helper for Draw; Draws the Ball over the LyricLine if needed
+//---------------
+procedure TLyricEngine.DrawBall(const XBall, YBall:Real);
+begin
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBindTexture(GL_TEXTURE_2D, BallTex.TexNum);
+      
+  glColor3f(1,1,1);
+  glBegin(GL_QUADS);
+    glTexCoord2f(0, 0); glVertex2f(XBall - 10, YBall);
+    glTexCoord2f(0, 1); glVertex2f(XBall - 10, YBall + 20);
+    glTexCoord2f(1, 1); glVertex2f(XBall + 10, YBall + 20);
+    glTexCoord2f(1, 0); glVertex2f(XBall + 10, YBall);
+  glEnd;
+
+  glDisable(GL_BLEND);
+  glDisable(GL_TEXTURE_2D);
+end;
+
 //---------------
 // DrawLyricsLine(private) - Helper for Draw; Draws one LyricLine
 //---------------
 procedure TLyricEngine.DrawLyricsLine(const X, W, Y: Real; Size: Byte; const Line: PLyricLine; Beat: Real);
 var
-  I: Integer;
-//  CurWord: Integer;
-  CurWordStartTx,
-  CurWordEndTx: Real; // texture-coordinates of start and end of current word
-  CurWordStart,
-  CurWordEnd: Real; // screen coordinates of current word and the rest of the sentence
-  Progress: Real;
-  LyricX: Real; //Left Corner on X Axis
-  LyricX2: Real;//Right Corner " "
-  LyricScale: Real; //Up or Downscale the Lyrics need  <- ???
-  IconSize: Real;
-  IconAlpha: Real;
-
-  mybeat:string;
-  mywidth:real;
-  realfontsize:real;
+  CurWordStartTx, CurWordEndTx: Real; 	// texture-coordinates of start and end of current word
+  CurWordStart, CurWordEnd: Real; 		// screen coordinates of current word and the rest of the sentence
+  Progress: Real;						// progress of singing the current word
+  LyricX: Real; 						// left
+  LyricX2: Real;						// right
+  LyricY: Real;							// top
+  LyricsHeight: Real;					// height the lyrics are displayed
+  
+  {// duet mode
+  IconSize: Real;						// size of player icons
+  IconAlpha: Real;						// alpha level of player icons
+  }
 begin
-{    SetFontStyle(FontStyle);
-    SetFontSize(Size);
-    glColor4f(1, 1, 1, 1);
-
-    // line start beat
-    SetFontPos(50, Y-500);
-    mybeat:=inttostr(trunc(line^.start*100));
-    glPrint(addr(mybeat[1]));
-
-    // current beat
-    SetFontPos(250, Y-500);
-    mybeat:=inttostr(trunc(beat*100));
-    glPrint(addr(mybeat[1]));
-
-    // current beat
-    SetFontPos(450, Y-500);
-    mybeat:=inttostr(trunc((line^.start+line^.length)*100));
-    glPrint(addr(mybeat[1]));
-}
-
-  // what is this for?
-  LyricScale := Size / Line.Size;
-
-  //Draw Icons
+  // this is actually a bit more than the real font size
+  // it helps adjusting the "zoom-center"
+  LyricsHeight:=30 * (Line^.Size/10)+16;
+  
+  {
+  // duet mode
   IconSize := (2 * Size);
-  //IconAlpha := 1;
   IconAlpha := Frac(Beat/(Resolution*4));
-
-  {DrawPlayerIcon (0, True, X, Y, IconSize, IconAlpha);
-  DrawPlayerIcon (1, True, X + IconSize + 1, Y, IconSize, IconAlpha);
-  DrawPlayerIcon (2, True, X + (IconSize + 1)*2, Y, IconSize, IconAlpha);}
-
-  //Check if a Word in the Sentence is active
-  if ((Line^.Start < Beat) and (Beat < Line^.Start + Line^.Length)) then
+  
+  DrawPlayerIcon (0, True, X, Y + (42 - IconSize) / 2 , IconSize, IconAlpha);
+  DrawPlayerIcon (1, True, X + IconSize + 1,  Y + (42 - IconSize) / 2, IconSize, IconAlpha);
+  DrawPlayerIcon (2, True, X + (IconSize + 1)*2, Y + (42 - IconSize) / 2, IconSize, IconAlpha);
+  }
+  
+  LyricX := X+W/2;
+  LyricX2 := LyricX + Line^.Width/2;
+  LyricX := LyricX - Line^.Width/2;
+  
+  // maybe center smaller lines
+  LyricY := Y;
+  //LyricY := Y + ((Size / Line.Size - 1) * LyricsHeight) / 2; 
+    
+  // word in the sentence is active?
+  if (Line^.Start < Beat) then
   begin
     // if this line just got active, then CurWord is still -1
     // this means, we should try to make the first word active
@@ -500,83 +527,55 @@ begin
     // if not, we proceed to the next word
     if Line^.CurWord = -1 then
       Line^.CurWord:=0;
+    
     if not ((Beat < (Line^.Words[Line^.CurWord].Start+Line^.Words[Line^.CurWord].Length))) then
     Line^.CurWord:=Line^.CurWord+1;
-
-// !!TODO: make sure, it works if the sentence is still enabled, after last word was active
-//    if Line^.CurWord > high(Line^.Words) then Line^.CurWord:=-2;
-
-    with Line^.Words[Line^.CurWord] do
+    
+    // last word of this line finished, but this line did not hide
+    if (Line^.CurWord > High(Line^.Words)) then
     begin
-      Progress:=(Beat-Start)/Length;
-      if Progress >= 1 then
-        Progress := 1;
-      
-      if Progress <= 0 then
-        Progress := 0;
-      
-      CurWordStartTx:=TexPos;
-      CurWordEndTx:=TexPos+TexWidth;
-      CurWordStart:=X;
-      CurWordEnd:=X+Width;
-      
-      // Slide Effect
-      // simply paint the active texture to the current position 
-      if HoverEffekt = 3 then
+      with Line^.Words[High(Line^.Words)] do
       begin
-        CurWordStartTx := CurWordStartTx + TexWidth * progress;
+        CurWordStartTx := TexPos + TexWidth;
         CurWordEndTx := CurWordStartTx;
-        CurWordStart := CurWordStart + Width * progress;
+        CurWordStart := X + Width;
         CurWordEnd := CurWordStart;
       end;
+    end
+    else
+    begin
+      with Line^.Words[Line^.CurWord] do
+      begin
+        Progress:=(Beat-Start)/Length;
+        if Progress >= 1 then
+          Progress := 1;
+      
+        if Progress <= 0 then
+          Progress := 0;
+      
+        CurWordStartTx:=TexPos;
+        CurWordEndTx:=TexPos+TexWidth;
+        CurWordStart:=X;
+        CurWordEnd:=X+Width;
+      
+        // Slide Effect
+        // simply paint the active texture to the current position 
+        if HoverEffekt = 3 then
+        begin
+          CurWordStartTx := CurWordStartTx + TexWidth * progress;
+          CurWordEndTx := CurWordStartTx;
+          CurWordStart := CurWordStart + Width * progress;
+          CurWordEnd := CurWordStart;
+        end;
+      end;
     end;
-
-    //Get Start Position:
-    {  Start of Line - Width of all Icons + LineWidth/2 (Center}
-//    LyricX  := X + {(W - ((IconSize + 1) * 6))/2 + ((IconSize + 1) * 3) +} (W/2);
-    LyricX:=X+W/2;
-    LyricX2 := LyricX + Line^.Width/2;
-    LyricX:=LyricX - Line^.Width/2;
-
-    //Draw complete Sentence
+    
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-{    glColor4f(0,1,0.1,0.1);
-    glBegin(GL_QUADS);
-      glVertex2f(X+W/2, Y);
-      glVertex2f(X+W/2, Y + line^.size*3.5);
-      glVertex2f(X+W/2+line^.width/2, Y + line^.size*3.5);
-      glVertex2f(X+W/2+line^.width/2, Y);
-    glEnd;
-    glColor4f(0,1,0,0.1);
-    glBegin(GL_QUADS);
-      glVertex2f(X+W/2-line^.width/2, Y);
-      glVertex2f(X+W/2-line^.width/2, Y + line^.size*3.5);
-      glVertex2f(X+W/2, Y + line^.size*3.5);
-      glVertex2f(X+W/2, Y);
-    glEnd;
-
-    // draw whole sentence
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, Line^.Tex);
 
-    glColorRGB(LineColor_en);
-    glBegin(GL_QUADS);
-      glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
-      glTexCoord2f(0, 0); glVertex2f(LyricX, Y + 64);
-      glTexCoord2f(Line^.Width/512, 0); glVertex2f(LyricX2, Y + 64);
-      glTexCoord2f(Line^.Width/512, 1); glVertex2f(LyricX2, Y);
-    glEnd;
-}
-
-    // this is actually a bit more than the real font size
-    // it helps adjusting the "zoom-center"
-    realfontsize:=30 * (Line^.Size/10)+16;
     // draw sentence up to current word
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, Line^.Tex);
-
     if HoverEffekt = 4 then
       // ball lyric effect - only highlight current word and not that ones before in this line
       glColorRGB(LineColor_en)
@@ -584,10 +583,10 @@ begin
       glColorRGB(LineColor_act);
     
     glBegin(GL_QUADS);
-      glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
-      glTexCoord2f(0, 1-realfontsize/64); glVertex2f(LyricX, Y + realfontsize);
-      glTexCoord2f(CurWordStartTx, 1-realfontsize/64); glVertex2f(LyricX+CurWordStart, Y + realfontsize);
-      glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
+      glTexCoord2f(0, 1); glVertex2f(LyricX, LyricY);
+      glTexCoord2f(0, 1-LyricsHeight/64); glVertex2f(LyricX, LyricY + LyricsHeight);
+      glTexCoord2f(CurWordStartTx, 1-LyricsHeight/64); glVertex2f(LyricX+CurWordStart, LyricY + LyricsHeight);
+      glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, LyricY);
     glEnd;
 
     // draw active word:
@@ -596,7 +595,7 @@ begin
     // only change the color of the current word
     if (HoverEffekt = 1) or (HoverEffekt = 4) then
     begin
-      {
+      { // maybe fade in?
       glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
       glBegin(GL_QUADS);
         glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
@@ -608,34 +607,34 @@ begin
       
       glColor3f(LineColor_act.r,LineColor_act.g,LineColor_act.b);
       glBegin(GL_QUADS);
-        glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, Y);
-        glTexCoord2f(CurWordStartTx, 0); glVertex2f(LyricX+CurWordStart, Y + 64);
-        glTexCoord2f(CurWordEndTx, 0); glVertex2f(LyricX+CurWordEnd, Y + 64);
-        glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, Y);
+        glTexCoord2f(CurWordStartTx, 1); glVertex2f(LyricX+CurWordStart, LyricY);
+        glTexCoord2f(CurWordStartTx, 0); glVertex2f(LyricX+CurWordStart, LyricY + 64);
+        glTexCoord2f(CurWordEndTx, 0); glVertex2f(LyricX+CurWordEnd, LyricY + 64);
+        glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, LyricY);
       glEnd;
     end
       
     // draw active word:
-    // type 1: zoom lyric effect
+    // type 2: zoom lyric effect
     // change color and zoom current word
     else if HoverEffekt = 2 then
     begin
       glPushMatrix;
-      glTranslatef(LyricX+CurWordStart+(CurWordEnd-CurWordStart)/2,Y+realfontsize/2,0);
+      glTranslatef(LyricX+CurWordStart+(CurWordEnd-CurWordStart)/2,LyricY+LyricsHeight/2,0);
       glScalef(1.0+(1-progress)/2,1.0+(1-progress)/2,1.0);
       glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
       glBegin(GL_QUADS);
-        glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
-        glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-        glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-        glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
+        glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -LyricsHeight/2);
+        glTexCoord2f(CurWordStartTx+0.0001, 1-LyricsHeight/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1-LyricsHeight/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -LyricsHeight/2);
       glEnd;
       glColor4f(LineColor_act.r,LineColor_act.g,LineColor_act.b,1);
       glBegin(GL_QUADS);
-        glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -realfontsize/2);
-        glTexCoord2f(CurWordStartTx+0.0001, 1-realfontsize/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-        glTexCoord2f(CurWordEndTx-0.0001, 1-realfontsize/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + realfontsize/2);
-        glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -realfontsize/2);
+        glTexCoord2f(CurWordStartTx+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2, -LyricsHeight/2);
+        glTexCoord2f(CurWordStartTx+0.0001, 1-LyricsHeight/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1-LyricsHeight/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
+        glTexCoord2f(CurWordEndTx-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2, -LyricsHeight/2);
       glEnd;
       glPopMatrix;
     end;
@@ -643,105 +642,38 @@ begin
     // draw rest of sentence
     glColorRGB(LineColor_en);
     glBegin(GL_QUADS);
-      glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, Y);
-      glTexCoord2f(CurWordEndTx, 1-realfontsize/64); glVertex2f(LyricX+CurWordEnd, Y + realfontsize);
-      glTexCoord2f(Line^.Width/1024, 1-realfontsize/64); glVertex2f(LyricX2, Y + realfontsize);
-      glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, Y);
+      glTexCoord2f(CurWordEndTx, 1); glVertex2f(LyricX+CurWordEnd, LyricY);
+      glTexCoord2f(CurWordEndTx, 1-LyricsHeight/64); glVertex2f(LyricX+CurWordEnd, LyricY + LyricsHeight);
+      glTexCoord2f(Line^.Width/1024, 1-LyricsHeight/64); glVertex2f(LyricX2, LyricY + LyricsHeight);
+      glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, LyricY);
     glEnd;
 
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
-
-{    SetFontPos(50, Y);
-    SetFontSize(9);
-    mybeat:=line^.words[line^.CurWord].text;
-    mybeat:=inttostr(trunc(Fonts[actfont].Tex.H));
-    glPrint(addr(mybeat[1]));
-}
+    
+    if HoverEffekt = 4 then
+      DrawBall(LyricX + CurWordStart + (CurWordEnd - CurWordStart) * progress, LyricY - 15 - 15*sin(progress * pi));
   end
   else
   begin
-    //Get Start Position:
-    {  Start of Line - Width of all Icons + LineWidth/2 (Center}
-//    LyricX  := X + {(W - ((IconSize + 1) * 6))/2 + ((IconSize + 1) * 3) +} (W/2);
-    LyricX:=X+W/2;
-    LyricX2 := LyricX + Line^.Width/2;
-    LyricX:=LyricX - Line^.Width/2;
-
-    //Draw complete Sentence
+    // draw complete inactive sentence if line hasn't started but is already shown
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBindTexture(GL_TEXTURE_2D, Line^.Tex);
 
-    realfontsize:=30 * (Line^.Size/10)+16;
-
     glColorRGB(LineColor_dis);
     glBegin(GL_QUADS);
-      glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
-      glTexCoord2f(0, 1-realfontsize/64); glVertex2f(LyricX, Y + realfontsize);
-      glTexCoord2f(Line^.Width/1024, 1-realfontsize/64); glVertex2f(LyricX2, Y + realfontsize);
-      glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, Y);
+      glTexCoord2f(0, 1); glVertex2f(LyricX, LyricY);
+      glTexCoord2f(0, 1-LyricsHeight/64); glVertex2f(LyricX, LyricY + LyricsHeight);
+      glTexCoord2f(Line^.Width/1024, 1-LyricsHeight/64); glVertex2f(LyricX2, LyricY + LyricsHeight);
+      glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, LyricY);
     glEnd;
 
+    glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
-{    glColor4f(0,0,0,0.1);
-    glBegin(GL_QUADS);
-      glTexCoord2f(0, 1); glVertex2f(LyricX, Y);
-      glTexCoord2f(0, 0); glVertex2f(LyricX, Y + line^.size*3.5);
-      glTexCoord2f(Line^.Width/512, 0); glVertex2f(LyricX2, Y + line^.size*3.5);
-      glTexCoord2f(Line^.Width/512, 1); glVertex2f(LyricX2, Y);
-    glEnd;
-}
-
-    glDisable(GL_BLEND);
-//    glDisable(GL_TEXTURE_2D);
-{    SetFontPos(0, Y);
-    SetFontSize(9);
-    glColor4f(1,1,0,1);
-    mybeat:=inttostr(line^.size);
-    glPrint(addr(mybeat[1]));
-{    mywidth:=gltextwidth(addr(mybeat[1]));
-    glEnable(GL_BLEND);
-    glColor4f(0,0,1,0.1);
-    glBegin(GL_QUADS);
-      glVertex2f(0,y);
-      glVertex2f(0,y+64);
-      glVertex2f(0+mywidth,y+64);
-      glVertex2f(0+mywidth,y);
-    glEnd;
-    glDisable(GL_BLEND);
-}
-
   end;
-
-  {//Search for active Word
-  For I := 0 to High(Line.Words) do
-    if (Line.Words[I].Start < Beat) then
-    begin
-      CurWord := I - 1;
-    end;
-
-  if (CurWord < 0) then Exit;
-
-  //Draw Part until cur Word
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_COLOR {GL_ONE_MINUS_SRC_COLOR}{, GL_ONE_MINUS_SRC_COLOR);
-  glBindTexture(GL_TEXTURE_2D, Line.Tex);
-
-  glColorRGB(LineColor_en);
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 1); glVertex2f(X, Y);
-    glTexCoord2f(0, 0); glVertex2f(X, Y + 64 * W / 512);
-    glTexCoord2f(Line.Words[CurWord].TexPos, 0); glVertex2f(X + W, Y + 64 * W / 512);
-    glTexCoord2f(Line.Words[CurWord].TexPos, 1); glVertex2f(X + W, Y);
-  glEnd;
-
-
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);}
 end;
 
 
