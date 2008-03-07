@@ -67,7 +67,7 @@ PUNIT_FLAGS = \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/images/lib/$(PPROCESSOR)-$(PPLATFORM) \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/jpeg \
     $(PUNIT_TOKEN).
-#    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE)
+    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE)
 
 # Directory where compiled units (.ppu and .o files) are stored
 PCUNIT_TOKEN = -FU
@@ -79,10 +79,7 @@ PINC_TOKEN = -Fi
 PINC_FLAGS = $(PINC_TOKEN)lib/JEDI-SDL/SDL/Pas
 
 # Defines
-PDEFINES  = -dLCL 
-# this is necessary to use lazjpeg instead of Ulazjpeg
-# but requires configure to detect if gtk/gkt2 or qt is used
-#-dLCL$(LCL_WIDGET_TYPE)
+PDEFINES  = -dLCL -dLCL$(LCL_WIDGET_TYPE)
 
 # FPC flags
 
