@@ -66,8 +66,8 @@ PUNIT_FLAGS = \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM) \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/images/lib/$(PPROCESSOR)-$(PPLATFORM) \
     $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/jpeg \
+    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE) \
     $(PUNIT_TOKEN).
-    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE)
 
 # Directory where compiled units (.ppu and .o files) are stored
 PCUNIT_TOKEN = -FU
