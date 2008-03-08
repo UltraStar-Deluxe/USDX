@@ -28,6 +28,8 @@ const
 
   EaseOut_MaxSteps : real = 40;  // that's the speed of the bars (10 is fast | 100 is slower)
 
+  BarRaiseSpeed    : integer = 100; // This is given in MilliSeconds; -> one frame every 100 milliseconds, IE 10 frames per second
+
 type
   TPlayerScoreScreenTexture = record            // holds all colorized textures for up to 6 players
     //Bar textures
@@ -53,7 +55,7 @@ type
     BarGolden_ActualHeight : Real;
   end;
 
-  TPlayerScoreRatingPics = record                    // a fine array of the rating pictures
+  TPlayerScoreRatingPics = record               // a fine array of the rating pictures
     RatePic_X      :Real;
     RatePic_Y      :Real;
     RatePic_Height :Real;
@@ -253,13 +255,13 @@ end;
 procedure TScreenScore.onShow;
 var
   P:    integer;  // player
-  PP:   integer;  // another player variable
+  PP:   integer;  // players_play
   S:    string;
   I:    integer;
   Lev:  real;
   Skip: integer;
   V:    array[1..6] of boolean; // visibility array
-  MaxH: real; // maximum height of score bar
+  MaxH: real;                   // maximum height of score bar
   Wsp:  real;
   ArrayStartModifier :integer;
 begin
@@ -451,7 +453,7 @@ begin
   end;
 }
 inherited Draw;
-  {*
+
   player[0].ScoreI       := 7000;
   player[0].ScoreLineI   := 2000;
   player[0].ScoreGoldenI := 1000;
@@ -461,14 +463,18 @@ inherited Draw;
   player[1].ScoreLineI   := 1100;
   player[1].ScoreGoldenI :=  900;
   player[1].ScoreTotalI  := 4500;
- *}
 
   // Let's arise the bars
 
-  CurrentTime := GetTickCount div 33; // TODO: use cross-plattform SDL_GetTicks() instead
-  if ((CurrentTime <> OldTime) and ShowFinish ) then
-  begin
-    OldTime := CurrentTime;
+
+
+// Ask SDL for the time in milliseconds
+CurrentTime := SDL_GetTicks();
+
+if (((CurrentTime - OldTime) > BarRaiseSpeed) and ShowFinish ) then
+begin
+// set next frame as current frame
+OldTime := CurrentTime;
 
     for PlayerCounter := 1 to PlayersPlay do
     begin
@@ -654,7 +660,7 @@ begin
      end;
   end;
   {{$ELSE}{
-  case (Player[P].ScoreTotalI-1) of
+  case (Player[Playernumber-1].ScoreTotalI-1) of
    0..2000:        Text[TextScore[fu]].Text := 'Tone Deaf';
    2010..4000:     Text[TextScore[fu]].Text := 'Amateur';
    4010..6000:     Text[TextScore[fu]].Text := 'Rising Star';
