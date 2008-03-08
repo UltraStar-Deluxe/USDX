@@ -190,8 +190,6 @@ constructor TScreenScore.Create;
 var
   P                  : integer;
   I, C               : integer;
-  ArrayStartModifier : Byte;
-
 begin
   inherited Create;
 
@@ -255,15 +253,15 @@ end;
 procedure TScreenScore.onShow;
 var
   P:    integer;  // player
-  PP:   integer;  // players_play
-  S:    string;
+//  PP:   integer;  // players_play
+//  S:    string;
   I:    integer;
-  Lev:  real;
-  Skip: integer;
+//  Lev:  real;
+//  Skip: integer;
   V:    array[1..6] of boolean; // visibility array
-  MaxH: real;                   // maximum height of score bar
-  Wsp:  real;
-  ArrayStartModifier :integer;
+//  MaxH: real;                   // maximum height of score bar
+//  Wsp:  real;
+  ArrayStartModifier : integer;
 begin
   inherited;
 
@@ -271,6 +269,7 @@ begin
     1:    ArrayStartModifier := 0;
     2, 4: ArrayStartModifier := 1;
     3, 6: ArrayStartModifier := 3;
+  else ArrayStartModifier := 0; //this should never happen
   end;
 
   for P := 1 to PlayersPlay do
@@ -404,34 +403,38 @@ var
 
   CurrentTime, OldTime : Integer;
 
-  Item:   integer;
-  P:      integer;
-  C, I:      integer;
-
+//  Item:   integer;
+//  P:      integer;
+//  C, I:      integer;
+    I : Integer;
   PlayerCounter : integer;
 begin
-{
 
+  inherited Draw;
+
+{ (*
   // 0.5.0: try also use 4 players screen with nicks
-  if PlayersPlay = 4 then begin
-    for Item := 2 to 3 do begin
+  if PlayersPlay = 4 then
+  begin
+    for Item := 2 to 3 do
+    begin
       if ScreenAct = 1 then P := Item-2;
       if ScreenAct = 2 then P := Item;
-
       FillPlayer(Item, P);
     end;
   end;
 
-
   // Singstar - let it be...... with 6 statics
-  if PlayersPlay = 6 then begin
-    for Item := 4 to 6 do begin
+  if PlayersPlay = 6 then
+  begin
+    for Item := 4 to 6 do
+    begin
       if ScreenAct = 1 then P := Item-4;
       if ScreenAct = 2 then P := Item-1;
-
       FillPlayer(Item, P);
 
-      if ScreenAct = 1 then begin
+      if ScreenAct = 1 then
+      begin
         LoadColor(
           Static[StaticBoxLightest[Item]].Texture.ColR,
           Static[StaticBoxLightest[Item]].Texture.ColG,
@@ -439,21 +442,19 @@ begin
           'P1Dark');
       end;
 
-      if ScreenAct = 2 then begin
+      if ScreenAct = 2 then
+      begin
         LoadColor(
           Static[StaticBoxLightest[Item]].Texture.ColR,
           Static[StaticBoxLightest[Item]].Texture.ColG,
           Static[StaticBoxLightest[Item]].Texture.ColB,
           'P4Dark');
       end;
-
     end;
-
-
   end;
-}
-inherited Draw;
 
+  *) }
+{ (*
   player[0].ScoreI       := 7000;
   player[0].ScoreLineI   := 2000;
   player[0].ScoreGoldenI := 1000;
@@ -463,18 +464,16 @@ inherited Draw;
   player[1].ScoreLineI   := 1100;
   player[1].ScoreGoldenI :=  900;
   player[1].ScoreTotalI  := 4500;
+*) }
+  // Let's start to arise the bars
 
-  // Let's arise the bars
+  CurrentTime := SDL_GetTicks();
 
+  if (((CurrentTime - OldTime) > BarRaiseSpeed) and ShowFinish ) then
+  begin
 
-
-// Ask SDL for the time in milliseconds
-CurrentTime := SDL_GetTicks();
-
-if (((CurrentTime - OldTime) > BarRaiseSpeed) and ShowFinish ) then
-begin
-// set next frame as current frame
-OldTime := CurrentTime;
+  // set next frame as current frame
+  OldTime := CurrentTime;
 
     for PlayerCounter := 1 to PlayersPlay do
     begin
@@ -521,9 +520,12 @@ OldTime := CurrentTime;
       EaseBarIn(PlayerCounter,  'Note');    // ease bar for all other notes in
       EaseScoreIn(PlayerCounter,'Note');
 
+
       FillPlayerItems(PlayerCounter,'Funky');
+
     end;
   end;
+
 
   //todo: i need a clever method to draw statics with their z value
   for I := 0 to Length(Static) - 1 do
@@ -551,6 +553,7 @@ begin
     1:    ArrayStartModifier := 0;
     2, 4: ArrayStartModifier := 1;
     3, 6: ArrayStartModifier := 3;
+    else ArrayStartModifier := 0; //this should never happen
   end;
 
   // todo: take the name from player[PlayerNumber].Name instead of the ini when this is done (mog)
@@ -660,7 +663,7 @@ begin
      end;
   end;
   {{$ELSE}{
-  case (Player[Playernumber-1].ScoreTotalI-1) of
+  case (Player[PlayerNumber-1].ScoreTotalI) of
    0..2000:        Text[TextScore[fu]].Text := 'Tone Deaf';
    2010..4000:     Text[TextScore[fu]].Text := 'Amateur';
    4010..6000:     Text[TextScore[fu]].Text := 'Rising Star';
@@ -986,7 +989,7 @@ begin
     Text[TextName[Item]].ColG,
     Text[TextName[Item]].ColB,
     'P' + IntToStr(P+1) + 'Dark');
- {
+ { (*
   LoadColor(
     Static[StaticBoxLightest[Item]].Texture.ColR,
     Static[StaticBoxLightest[Item]].Texture.ColG,
@@ -1004,7 +1007,7 @@ begin
     Static[StaticBoxDark[Item]].Texture.ColG,
     Static[StaticBoxDark[Item]].Texture.ColB,
     'P' + IntToStr(P+1) + 'Dark');
-  }
+*)  }
 end;
 
 end.
