@@ -362,13 +362,13 @@ begin
 
     if(av_read_frame(pFormatCtx, packet) < 0) then
     begin
-      // check for end-of-file (eof is not an error)
       {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
       pbIOCtx := pFormatCtx^.pb;
       {$ELSE}
       pbIOCtx := @pFormatCtx^.pb;
       {$IFEND}
-      
+
+      // check for end-of-file (eof is not an error)
       if(url_feof(pbIOCtx) <> 0) then
       begin
         {$IFDEF DebugFFMpegDecode}

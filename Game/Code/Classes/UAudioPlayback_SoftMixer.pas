@@ -18,7 +18,7 @@ uses
 type
   TAudioPlayback_SoftMixer = class;
 
-  TSoftMixerPlaybackStream = class(TAudioPlaybackStream)
+  TGenericPlaybackStream = class(TAudioPlaybackStream)
     private
       Engine: TAudioPlayback_SoftMixer;
 
@@ -73,6 +73,8 @@ type
 
   TAudioMixerStream = class
     private
+      Engine: TAudioPlayback_SoftMixer;
+
       activeStreams: TList;
       mixerBuffer: PChar;
       internalLock: PSDL_Mutex;
@@ -85,7 +87,7 @@ type
       function GetVolume(): integer;
       procedure SetVolume(volume: integer);
     public
-      constructor Create();
+      constructor Create(Engine: TAudioPlayback_SoftMixer);
       destructor Destroy(); override;
       procedure AddStream(stream: TAudioPlaybackStream);
       procedure RemoveStream(stream: TAudioPlaybackStream);
@@ -96,7 +98,7 @@ type
 
   TAudioPlayback_SoftMixer = class( TInterfacedObject, IAudioPlayback )
     private
-      MusicStream: TSoftMixerPlaybackStream;
+      MusicStream: TGenericPlaybackStream;
       MixerStream: TAudioMixerStream;
     protected
       FormatInfo: TAudioFormatInfo;
@@ -111,7 +113,7 @@ type
       function InitializePlayback(): boolean;
       destructor Destroy; override;
 
-      function Load(const Filename: String): TSoftMixerPlaybackStream;
+      function Load(const Filename: String): TGenericPlaybackStream;
 
       procedure SetVolume(Volume: integer);
       procedure SetMusicVolume(Volume: integer);
@@ -137,6 +139,8 @@ type
       function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
+      procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer); virtual;
+
       // Sounds
       function OpenSound(const Filename: String): TAudioPlaybackStream;
       procedure PlaySound(stream: TAudioPlaybackStream);
@@ -155,8 +159,10 @@ uses
 
 { TAudioMixerStream }
 
-constructor TAudioMixerStream.Create();
+constructor TAudioMixerStream.Create(Engine: TAudioPlayback_SoftMixer);
 begin
+  Self.Engine := Engine;
+
   activeStreams := TList.Create;
   internalLock := SDL_CreateMutex();
   _volume := 100;
@@ -232,8 +238,7 @@ function TAudioMixerStream.ReadData(Buffer: PChar; BufSize: integer): integer;
 var
   i: integer;
   size: integer;
-  stream: TSoftMixerPlaybackStream;
-  appVolume: single;
+  stream: TGenericPlaybackStream;
   needsPacking: boolean;
 begin
   result := BufSize;
@@ -248,10 +253,6 @@ begin
 
   Lock();
 
-  // calc application volume
-  // use _volume instead of Volume to prevent recursive locking
-  appVolume := _volume / 100 * SDL_MIX_MAXVOLUME;
-
   needsPacking := false;
 
   // mix streams to one stream
@@ -263,13 +264,14 @@ begin
       continue;
     end;
 
-    stream := TSoftMixerPlaybackStream(activeStreams[i]);
+    stream := TGenericPlaybackStream(activeStreams[i]);
     // fetch data from current stream
     size := stream.ReadData(mixerBuffer, BufSize);
     if (size > 0) then
     begin
-      SDL_MixAudio(PUInt8(Buffer), PUInt8(mixerBuffer), size,
-        Trunc(appVolume * stream.Volume / 100));
+      // mix stream-data with mixer-buffer
+      // Note: use _volume (Application-Volume) instead of Volume to prevent recursive locking
+      Engine.MixBuffers(Buffer, mixerBuffer, size, _volume * stream.Volume div 100);
     end;
   end;
 
@@ -283,9 +285,9 @@ begin
 end;
 
 
-{ TSoftMixerPlaybackStream }
+{ TGenericPlaybackStream }
 
-constructor TSoftMixerPlaybackStream.Create(Engine: TAudioPlayback_SoftMixer);
+constructor TGenericPlaybackStream.Create(Engine: TAudioPlayback_SoftMixer);
 begin
   inherited Create();
   Self.Engine := Engine;
@@ -293,14 +295,14 @@ begin
   Reset();
 end;
 
-destructor TSoftMixerPlaybackStream.Destroy();
+destructor TGenericPlaybackStream.Destroy();
 begin
   Close();
   SDL_DestroyMutex(internalLock);
   inherited Destroy();
 end;
 
-procedure TSoftMixerPlaybackStream.Reset();
+procedure TGenericPlaybackStream.Reset();
 begin
   Stop();
   Loop := false;
@@ -313,17 +315,17 @@ begin
   _volume := 0;
 end;
 
-procedure TSoftMixerPlaybackStream.Lock();
+procedure TGenericPlaybackStream.Lock();
 begin
   SDL_mutexP(internalLock);
 end;
 
-procedure TSoftMixerPlaybackStream.Unlock();
+procedure TGenericPlaybackStream.Unlock();
 begin
   SDL_mutexV(internalLock);
 end;
 
-class function TSoftMixerPlaybackStream.ConvertAudioFormatToSDL(fmt: TAudioSampleFormat): UInt16;
+class function TGenericPlaybackStream.ConvertAudioFormatToSDL(fmt: TAudioSampleFormat): UInt16;
 begin
   case fmt of
     asfU8:     Result := AUDIO_U8;
@@ -338,7 +340,7 @@ begin
   end;
 end;
 
-function TSoftMixerPlaybackStream.InitFormatConversion(): boolean;
+function TGenericPlaybackStream.InitFormatConversion(): boolean;
 var
   err: integer;
   srcFormat: UInt16;
@@ -371,7 +373,7 @@ begin
   Result := true;
 end;
 
-function TSoftMixerPlaybackStream.SetDecodeStream(decodeStream: TAudioDecodeStream): boolean;
+function TGenericPlaybackStream.SetDecodeStream(decodeStream: TAudioDecodeStream): boolean;
 begin
   result := false;
 
@@ -388,12 +390,12 @@ begin
   result := true;
 end;
 
-procedure TSoftMixerPlaybackStream.Close();
+procedure TGenericPlaybackStream.Close();
 begin
   Reset();
 end;
 
-procedure TSoftMixerPlaybackStream.Play();
+procedure TGenericPlaybackStream.Play();
 var
   mixer: TAudioMixerStream;
 begin
@@ -410,7 +412,7 @@ begin
     mixer.AddStream(Self);
 end;
 
-procedure TSoftMixerPlaybackStream.Pause();
+procedure TGenericPlaybackStream.Pause();
 var
   mixer: TAudioMixerStream;
 begin
@@ -421,7 +423,7 @@ begin
     mixer.RemoveStream(Self);
 end;
 
-procedure TSoftMixerPlaybackStream.Stop();
+procedure TGenericPlaybackStream.Stop();
 var
   mixer: TAudioMixerStream;
 begin
@@ -432,22 +434,22 @@ begin
     mixer.RemoveStream(Self);
 end;
 
-function TSoftMixerPlaybackStream.IsLoaded(): boolean;
+function TGenericPlaybackStream.IsLoaded(): boolean;
 begin
   result := assigned(DecodeStream);
 end;
 
-function TSoftMixerPlaybackStream.GetLoop(): boolean;
+function TGenericPlaybackStream.GetLoop(): boolean;
 begin
   result := Loop;
 end;
 
-procedure TSoftMixerPlaybackStream.SetLoop(Enabled: boolean);
+procedure TGenericPlaybackStream.SetLoop(Enabled: boolean);
 begin
   Loop := Enabled;
 end;
 
-function TSoftMixerPlaybackStream.GetLength(): real;
+function TGenericPlaybackStream.GetLength(): real;
 begin
   if assigned(DecodeStream) then
     result := DecodeStream.Length
@@ -455,7 +457,7 @@ begin
     result := -1;
 end;
 
-function TSoftMixerPlaybackStream.GetStatus(): TStreamStatus;
+function TGenericPlaybackStream.GetStatus(): TStreamStatus;
 begin
   result := status;
 end;
@@ -467,9 +469,9 @@ end;
  *  So the result might not be that accurate. Although this is not
  *  audible in most cases it needs synchronization with the video
  *  or the lyrics timer.
- *  Using libsamplerate might give better results.  
+ *  Using libsamplerate might give better results.
  *}
-function TSoftMixerPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
+function TGenericPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
 var
   decodeBufSize: integer;
   sampleBufSize: integer;
@@ -568,7 +570,7 @@ begin
 end;
 
 (* TODO: libsamplerate support
-function TSoftMixerPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
+function TGenericPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
 var
   convState: PSRC_STATE;
   convData: SRC_DATA;
@@ -591,7 +593,7 @@ begin
 end;
 *)
 
-function TSoftMixerPlaybackStream.GetPCMData(var data: TPCMData): Cardinal;
+function TGenericPlaybackStream.GetPCMData(var data: TPCMData): Cardinal;
 var
   nBytes: integer;
 begin
@@ -621,7 +623,7 @@ begin
   Result := nBytes div SizeOf(TPCMStereoSample);
 end;
 
-procedure TSoftMixerPlaybackStream.GetFFTData(var data: TFFTData);
+procedure TGenericPlaybackStream.GetFFTData(var data: TFFTData);
 var
   i: integer;
   Frames: integer;
@@ -667,7 +669,7 @@ begin
   end;
 end;
 
-function TSoftMixerPlaybackStream.GetPosition: real;
+function TGenericPlaybackStream.GetPosition: real;
 begin
   if assigned(DecodeStream) then
     result := DecodeStream.Position
@@ -675,18 +677,18 @@ begin
     result := -1;
 end;
 
-procedure TSoftMixerPlaybackStream.SetPosition(Time: real);
+procedure TGenericPlaybackStream.SetPosition(Time: real);
 begin
   if assigned(DecodeStream) then
     DecodeStream.Position := Time;
 end;
 
-function TSoftMixerPlaybackStream.GetVolume(): integer;
+function TGenericPlaybackStream.GetVolume(): integer;
 begin
   result := _volume;
 end;
 
-procedure TSoftMixerPlaybackStream.SetVolume(volume: integer);
+procedure TGenericPlaybackStream.SetVolume(volume: integer);
 begin
   // clamp volume
   if (volume > 100) then
@@ -709,7 +711,7 @@ begin
   if(not InitializeAudioPlaybackEngine()) then
     Exit;
 
-  MixerStream := TAudioMixerStream.Create;
+  MixerStream := TAudioMixerStream.Create(Self);
 
   if(not StartAudioPlaybackEngine()) then
     Exit;
@@ -743,10 +745,10 @@ begin
   Result := FormatInfo;
 end;
 
-function TAudioPlayback_SoftMixer.Load(const Filename: String): TSoftMixerPlaybackStream;
+function TAudioPlayback_SoftMixer.Load(const Filename: String): TGenericPlaybackStream;
 var
   decodeStream: TAudioDecodeStream;
-  playbackStream: TSoftMixerPlaybackStream;
+  playbackStream: TGenericPlaybackStream;
 begin
   Result := nil;
 
@@ -757,7 +759,7 @@ begin
     Exit;
   end;
 
-  playbackStream := TSoftMixerPlaybackStream.Create(Self);
+  playbackStream := TGenericPlaybackStream.Create(Self);
   if (not playbackStream.SetDecodeStream(decodeStream)) then
     Exit;
 
@@ -860,6 +862,58 @@ begin
     Result := (MusicStream.GetStatus() = ssStopped)
   else
     Result := true;
+end;
+
+procedure TAudioPlayback_SoftMixer.MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer);
+var
+  SampleIndex: Cardinal;
+  SampleInt: Integer;
+  SampleFlt: Single;
+begin
+
+  // TODO: optimize this code, e.g. with assembler (MMX)
+
+  SampleIndex := 0;
+  case FormatInfo.Format of
+    asfS16:
+    begin
+      while (SampleIndex < size) do
+      begin
+        // apply volume and sum with previous mixer value
+        SampleInt := PSmallInt(@dst[SampleIndex])^ + PSmallInt(@src[SampleIndex])^ * volume div 100;
+        // clip result
+        if (SampleInt > High(SmallInt)) then
+          SampleInt := High(SmallInt)
+        else if (SampleInt < Low(SmallInt)) then
+          SampleInt := Low(SmallInt);
+        // assign result
+        PSmallInt(@dst[SampleIndex])^ := SampleInt;
+        // increase index by one sample
+        Inc(SampleIndex, SizeOf(SmallInt));
+      end;
+    end;
+    asfFloat:
+    begin
+      while (SampleIndex < size) do
+      begin
+        // apply volume and sum with previous mixer value
+        SampleFlt := PSingle(@dst[SampleIndex])^ + PSingle(@src[SampleIndex])^ * volume/100;
+        // clip result
+        if (SampleFlt > 1.0) then
+          SampleFlt := 1.0
+        else if (SampleFlt < -1.0) then
+          SampleFlt := -1.0;
+        // assign result
+        PSingle(@dst[SampleIndex])^ := SampleFlt;
+        // increase index by one sample
+        Inc(SampleIndex, SizeOf(Single));
+      end;
+    end;
+    else
+    begin
+      Log.LogError('Incompatible format', 'TAudioMixerStream.MixAudio');
+    end;
+  end;
 end;
 
 //Equalizer

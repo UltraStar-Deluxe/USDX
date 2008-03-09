@@ -31,6 +31,7 @@ type
       procedure StopAudioPlaybackEngine();               override;
     public
       function  GetName: String;                         override;
+      procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer); override;
   end;
 
 var
@@ -100,6 +101,12 @@ begin
   SDL_CloseAudio();
 end;
 
+procedure TAudioPlayback_SDL.MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer);
+begin
+  // Note: (volume * SDL_MIX_MAXVOLUME) may exceed High(Integer)
+  //   if SDL_MIX_MAXVOLUME (=128 at the moment) changes
+  SDL_MixAudio(PUInt8(dst), PUInt8(src), size, volume * SDL_MIX_MAXVOLUME div 100);
+end;
 
 
 initialization
