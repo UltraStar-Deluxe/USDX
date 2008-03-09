@@ -247,6 +247,9 @@ begin
         Read(SongFile, Param3);
         Read(SongFile, ParamS);
 
+       //Check for ZeroNote
+       if Param2 = 0 then Log.LogError('Error: Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+' '+ParamS+'" -> Note ignored!') else
+       begin
         // add notes
         if not Both then
           // P1
@@ -256,6 +259,7 @@ begin
           ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
           ParseNote(1, TempC, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
         end;
+       end; //Zeronote check 
       end; // if
 
       if TempC = '-' then
@@ -311,7 +315,6 @@ begin
           //Total Notes Patch End
         end;
       end;
-
       Read(SongFile, TempC);
       Inc(FileLineNo);
     end; // while}
