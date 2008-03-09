@@ -283,7 +283,9 @@ var
   S, I:      integer;
   T:      integer;
 begin
-//Set Playerinfo
+  Result := false;
+
+  //Set Playerinfo
   PlayerInfo.NumPlayers := PlayersPlay;
   for I := 0 to PlayerInfo.NumPlayers-1 do
   begin
@@ -296,163 +298,138 @@ begin
     end;
   end;
 
-//Show Score
-if DLLMan.Selected.ShowScore then
-begin
-  {//ScoreBG Mod
-  // set player colors
-  if PlayersPlay = 4 then begin
-    if ScreenAct = 1 then begin
-      LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
-      Static[StaticP1TwoP].Texture.ColB, 'P1Dark');
-      LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
-      Static[StaticP2R].Texture.ColB, 'P2Dark');
-
-
-
-      LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
-      Static[StaticP1TwoPScoreBG].Texture.ColB, 'P1Dark');
-      LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
-      Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
-
-
-
-    end;
-    if ScreenAct = 2 then begin
-      LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
-        Static[StaticP1TwoP].Texture.ColB, 'P3Dark');
-      LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
-        Static[StaticP2R].Texture.ColB, 'P4Dark');
-
-
-
-      LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
-        Static[StaticP1TwoPScoreBG].Texture.ColB, 'P3Dark');
-      LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
-        Static[StaticP2RScoreBG].Texture.ColB, 'P4Dark');
-
-
-
-     end;
-  end;
-
-  if PlayersPlay = 6 then begin
-    if ScreenAct = 1 then begin
-      LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
-        Static[StaticP1ThreeP].Texture.ColB, 'P1Dark');
-      LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
+  //Show Score
+  if DLLMan.Selected.ShowScore then
+  begin
+    {//ScoreBG Mod
+    // set player colors
+    if PlayersPlay = 4 then begin
+      if ScreenAct = 1 then begin
+        LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
+        Static[StaticP1TwoP].Texture.ColB, 'P1Dark');
+        LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
         Static[StaticP2R].Texture.ColB, 'P2Dark');
-      LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
-        Static[StaticP3R].Texture.ColB, 'P3Dark');
 
 
 
-      LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
-        Static[StaticP1ThreePScoreBG].Texture.ColB, 'P1Dark');
-      LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
+        LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
+        Static[StaticP1TwoPScoreBG].Texture.ColB, 'P1Dark');
+        LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
         Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
-      LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
-        Static[StaticP3RScoreBG].Texture.ColB, 'P3Dark');
 
 
 
+      end;
+      if ScreenAct = 2 then begin
+        LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
+          Static[StaticP1TwoP].Texture.ColB, 'P3Dark');
+        LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
+          Static[StaticP2R].Texture.ColB, 'P4Dark');
+
+
+
+        LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
+          Static[StaticP1TwoPScoreBG].Texture.ColB, 'P3Dark');
+        LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
+          Static[StaticP2RScoreBG].Texture.ColB, 'P4Dark');
+
+
+
+       end;
     end;
-    if ScreenAct = 2 then begin
-      LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
-        Static[StaticP1ThreeP].Texture.ColB, 'P4Dark');
-      LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
-        Static[StaticP2R].Texture.ColB, 'P5Dark');
-      LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
-        Static[StaticP3R].Texture.ColB, 'P6Dark');
+
+    if PlayersPlay = 6 then begin
+      if ScreenAct = 1 then begin
+        LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
+          Static[StaticP1ThreeP].Texture.ColB, 'P1Dark');
+        LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
+          Static[StaticP2R].Texture.ColB, 'P2Dark');
+        LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
+          Static[StaticP3R].Texture.ColB, 'P3Dark');
+
+
+
+        LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
+          Static[StaticP1ThreePScoreBG].Texture.ColB, 'P1Dark');
+        LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
+          Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
+        LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
+          Static[StaticP3RScoreBG].Texture.ColB, 'P3Dark');
+
+
+
+      end;
+      if ScreenAct = 2 then begin
+        LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
+          Static[StaticP1ThreeP].Texture.ColB, 'P4Dark');
+        LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
+          Static[StaticP2R].Texture.ColB, 'P5Dark');
+        LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
+          Static[StaticP3R].Texture.ColB, 'P6Dark');
 
 
 
 
-      LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
-        Static[StaticP1ThreePScoreBG].Texture.ColB, 'P4Dark');
-      LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
-        Static[StaticP2RScoreBG].Texture.ColB, 'P5Dark');
-      LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
-        Static[StaticP3RScoreBG].Texture.ColB, 'P6Dark');
+        LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
+          Static[StaticP1ThreePScoreBG].Texture.ColB, 'P4Dark');
+        LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
+          Static[StaticP2RScoreBG].Texture.ColB, 'P5Dark');
+        LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
+          Static[StaticP3RScoreBG].Texture.ColB, 'P6Dark');
 
 
 
 
+      end;
     end;
-  end;
-  //end ScoreBG Mod }
+    //end ScoreBG Mod }
 
-// set player names (for 2 screens and only Singstar skin)
-  if ScreenAct = 1 then begin
-    Text[TextP1].Text       := 'P1';
-    Text[TextP1TwoP].Text   := 'P1'; // added for ps3 skin
-    Text[TextP1ThreeP].Text := 'P1'; // added for ps3 skin
-    Text[TextP2R].Text      := 'P2';
-    Text[TextP2M].Text      := 'P2';
-    Text[TextP3R].Text      := 'P3';
-  end;
-
-  if ScreenAct = 2 then begin
-    case PlayersPlay of
-      4:  begin
-            Text[TextP1TwoP].Text := 'P3';
-            Text[TextP2R].Text := 'P4';
-          end;
-      6:  begin
-            Text[TextP1ThreeP].Text := 'P4';
-            Text[TextP2M].Text := 'P5';
-            Text[TextP3R].Text := 'P6';
-          end;
-    end; // case
-  end; // if
-
-
-  // stereo   <- and where iss P2M? or P3?
-  Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10*ScreenX;
-  Text[TextP1].X := Text[TextP1].X + 10*ScreenX;
-
-  {Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
-  Text[TextP1Score].X := Text[TextP1Score].X + 10*ScreenX;}
-
-  Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10*ScreenX;
-  Text[TextP2R].X := Text[TextP2R].X + 10*ScreenX;
-
-  {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
-  Text[TextP2RScore].X := Text[TextP2RScore].X + 10*ScreenX;}
-
-  // .. and scores
-  {if PlayersPlay = 1 then begin
-    Tekst := IntToStr(Player[0].ScoreTotalI);
-    while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-    Text[TextP1Score].Text := Tekst;
-  end;
-
-  if PlayersPlay = 2 then begin
-    Tekst := IntToStr(Player[0].ScoreTotalI);
-    while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-    Text[TextP1TwoPScore].Text := Tekst;
-
-    Tekst := IntToStr(Player[1].ScoreTotalI);
-    while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-    Text[TextP2RScore].Text := Tekst;
-  end;
-
-  if PlayersPlay = 3 then begin
-    Tekst := IntToStr(Player[0].ScoreTotalI);
-    while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-    Text[TextP1ThreePScore].Text := Tekst;
-
-    Tekst := IntToStr(Player[1].ScoreTotalI);
-    while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-    Text[TextP2MScore].Text := Tekst;
-
-    Tekst := IntToStr(Player[2].ScoreTotalI);
-    while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-    Text[TextP3RScore].Text := Tekst;
-  end;
-
-  if PlayersPlay = 4 then begin
+    // set player names (for 2 screens and only Singstar skin)
     if ScreenAct = 1 then begin
+      Text[TextP1].Text       := 'P1';
+      Text[TextP1TwoP].Text   := 'P1'; // added for ps3 skin
+      Text[TextP1ThreeP].Text := 'P1'; // added for ps3 skin
+      Text[TextP2R].Text      := 'P2';
+      Text[TextP2M].Text      := 'P2';
+      Text[TextP3R].Text      := 'P3';
+    end;
+
+    if ScreenAct = 2 then begin
+      case PlayersPlay of
+        4:  begin
+              Text[TextP1TwoP].Text := 'P3';
+              Text[TextP2R].Text := 'P4';
+            end;
+        6:  begin
+              Text[TextP1ThreeP].Text := 'P4';
+              Text[TextP2M].Text := 'P5';
+              Text[TextP3R].Text := 'P6';
+            end;
+      end; // case
+    end; // if
+
+
+    // stereo   <- and where iss P2M? or P3?
+    Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10*ScreenX;
+    Text[TextP1].X := Text[TextP1].X + 10*ScreenX;
+
+    {Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
+    Text[TextP1Score].X := Text[TextP1Score].X + 10*ScreenX;}
+
+    Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10*ScreenX;
+    Text[TextP2R].X := Text[TextP2R].X + 10*ScreenX;
+
+    {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
+    Text[TextP2RScore].X := Text[TextP2RScore].X + 10*ScreenX;}
+
+    // .. and scores
+    {if PlayersPlay = 1 then begin
+      Tekst := IntToStr(Player[0].ScoreTotalI);
+      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+      Text[TextP1Score].Text := Tekst;
+    end;
+
+    if PlayersPlay = 2 then begin
       Tekst := IntToStr(Player[0].ScoreTotalI);
       while Length(Tekst) < 5 do Tekst := '0' + Tekst;
       Text[TextP1TwoPScore].Text := Tekst;
@@ -461,19 +438,8 @@ begin
       while Length(Tekst) < 5 do Tekst := '0' + Tekst;
       Text[TextP2RScore].Text := Tekst;
     end;
-    if ScreenAct = 2 then begin
-      Tekst := IntToStr(Player[2].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP1TwoPScore].Text := Tekst;
 
-      Tekst := IntToStr(Player[3].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP2RScore].Text := Tekst;
-    end;
-  end;
-
-  if PlayersPlay = 6 then begin
-    if ScreenAct = 1 then begin
+    if PlayersPlay = 3 then begin
       Tekst := IntToStr(Player[0].ScoreTotalI);
       while Length(Tekst) < 5 do Tekst := '0' + Tekst;
       Text[TextP1ThreePScore].Text := Tekst;
@@ -486,22 +452,58 @@ begin
       while Length(Tekst) < 5 do Tekst := '0' + Tekst;
       Text[TextP3RScore].Text := Tekst;
     end;
-    if ScreenAct = 2 then begin
-      Tekst := IntToStr(Player[3].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP1ThreePScore].Text := Tekst;
 
-      Tekst := IntToStr(Player[4].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP2MScore].Text := Tekst;
+    if PlayersPlay = 4 then begin
+      if ScreenAct = 1 then begin
+        Tekst := IntToStr(Player[0].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP1TwoPScore].Text := Tekst;
 
-      Tekst := IntToStr(Player[5].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP3RScore].Text := Tekst;
+        Tekst := IntToStr(Player[1].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP2RScore].Text := Tekst;
+      end;
+      if ScreenAct = 2 then begin
+        Tekst := IntToStr(Player[2].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP1TwoPScore].Text := Tekst;
+
+        Tekst := IntToStr(Player[3].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP2RScore].Text := Tekst;
+      end;
     end;
-  end;   }
 
-end; //ShowScore
+    if PlayersPlay = 6 then begin
+      if ScreenAct = 1 then begin
+        Tekst := IntToStr(Player[0].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP1ThreePScore].Text := Tekst;
+
+        Tekst := IntToStr(Player[1].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP2MScore].Text := Tekst;
+
+        Tekst := IntToStr(Player[2].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP3RScore].Text := Tekst;
+      end;
+      if ScreenAct = 2 then begin
+        Tekst := IntToStr(Player[3].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP1ThreePScore].Text := Tekst;
+
+        Tekst := IntToStr(Player[4].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP2MScore].Text := Tekst;
+
+        Tekst := IntToStr(Player[5].ScoreTotalI);
+        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
+        Text[TextP3RScore].Text := Tekst;
+      end;
+    end;   }
+
+  end; //ShowScore
 
   for S := 1 to 1 do
     Static[S].Texture.X := Static[S].Texture.X + 10*ScreenX;
@@ -509,17 +511,17 @@ end; //ShowScore
   for T := 0 to 1 do
     Text[T].X := Text[T].X + 10*ScreenX;
 
-if DLLMan.Selected.LoadSong then
-begin
-  // update static menu with time ...
-  Min := Round(LineState.CurrentTime) div 60;
-  Sec := Round(LineState.CurrentTime) mod 60;
-  Text[TextTimeText].Text := '';
-  if Min < 10 then Text[TextTimeText].Text := '0';
-  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
-  if Sec < 10 then Text[TextTimeText].Text := Text[TextTimeText].Text + '0';
-  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Sec);
-end;
+  if DLLMan.Selected.LoadSong then
+  begin
+    // update static menu with time ...
+    Min := Round(LineState.CurrentTime) div 60;
+    Sec := Round(LineState.CurrentTime) mod 60;
+    Text[TextTimeText].Text := '';
+    if Min < 10 then Text[TextTimeText].Text := '0';
+    Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
+    if Sec < 10 then Text[TextTimeText].Text := Text[TextTimeText].Text + '0';
+    Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Sec);
+  end;
 
   // draw static menu (BG)
   DrawBG;
@@ -617,7 +619,7 @@ end;
   for T := 0 to 1 do
     Text[T].X := Text[T].X - 10*ScreenX;
 
-
+  Result := true;
 end;
 
 procedure TScreenSingModi.Finish;

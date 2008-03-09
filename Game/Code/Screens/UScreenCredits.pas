@@ -1218,11 +1218,16 @@ Log.LogStatus('',' JB-4');
       else
         f:=0;
 
-      if CTime >=STime+Delay-10 then if CTime <=STime+Delay then begin
+      if (CTime >= STime+Delay-10) and (CTime <= STime+Delay) then
+      begin
         j:=CTime-(STime+Delay-10);
         g:=32.6*j;
-      end else
+      end
+      else
+      begin
         g:=0;
+      end;
+
       glBindTexture(GL_TEXTURE_2D, credits_whiteshark.TexNum);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glEnable(GL_BLEND);

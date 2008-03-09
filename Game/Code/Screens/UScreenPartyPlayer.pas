@@ -56,10 +56,12 @@ var
   end;
 begin
   Result := true;
-  If (PressedDown) Then
 
+  if (PressedDown) then
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
+        + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT)
+  else
+    SDL_ModState := 0;
 
   begin // Key Down
     case PressedKey of
