@@ -145,7 +145,7 @@ type
   TMidiOutput = class(TComponent)
   protected
     Handle: THandle; { Window handle used for callback notification }
-    FDeviceID: Integer; { MIDI device ID }
+    FDeviceID: Cardinal; { MIDI device ID }
     FMIDIHandle: Hmidiout; { Handle to output device }
     FState: midioutputState; { Current device state }
     PCtlInfo: PMidiCtlInfo; { Pointer to control info for DLL }
@@ -170,7 +170,7 @@ type
     FOnMIDIOutput: TNotifyEvent; { Sysex output finished }
 
     procedure MidiOutput(var Message: TMessage);
-    procedure SetDeviceID(DeviceID: Integer);
+    procedure SetDeviceID(DeviceID: Cardinal);
     procedure SetProductName(NewProductName: string);
     procedure SetTechnology(NewTechnology: OutPortTech);
     function midioutErrorString(WError: Word): string;
@@ -211,7 +211,7 @@ type
  { TODO: Property editor with dropdown list of product names }
     property ProductName: string read FProductName write SetProductName;
 
-    property DeviceID: Integer read FDeviceID write SetDeviceID default 0;
+    property DeviceID: Cardinal read FDeviceID write SetDeviceID default 0;
  { TODO: midiOutGetVolume? Or two properties for Left and Right volume?
    Is it worth it??
      midiOutMessage?? Does anyone use this? }
@@ -305,7 +305,7 @@ end;
 {-------------------------------------------------------------------}
 { Set the output device ID and change the other properties to match }
 
-procedure Tmidioutput.SetDeviceID(DeviceID: Integer);
+procedure Tmidioutput.SetDeviceID(DeviceID: Cardinal);
 var
   midioutCaps: TmidioutCaps;
 begin
