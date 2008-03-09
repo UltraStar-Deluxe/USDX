@@ -174,15 +174,15 @@ begin
       If noError then
       begin
         //Call Translate Hook
-        noError := (Hooks.CallEventChain(hTranslate, 0, 0) = 0);
+        noError := (Hooks.CallEventChain(hTranslate, 0, nil) = 0);
 
         If noError then
         begin //Calls LoadTextures Hook
-          noError := (Hooks.CallEventChain(hLoadTextures, 0, 0) = 0);
+          noError := (Hooks.CallEventChain(hLoadTextures, 0, nil) = 0);
 
           if noError then
           begin //Calls Loading Finished Hook
-            noError := (Hooks.CallEventChain(hLoadingFinished, 0, 0) = 0);
+            noError := (Hooks.CallEventChain(hLoadingFinished, 0, nil) = 0);
 
             If noError then
             begin
@@ -263,17 +263,18 @@ var
   I: Integer;
 begin
   Result := False;
-  try
-    For I := 0 to high(Modules) do
-    begin
+  for I := 0 to high(Modules) do
+  begin
+    try
       Modules[I].NeedsDeInit := False;
       Modules[I].Module := CORE_MODULES_TO_LOAD[I].Create;
       Modules[I].Module.Info(@Modules[I].Info);
+    except
+      ReportError(Integer(PChar('Can''t get module #' + InttoStr(I) + ' "' + Modules[I].Info.Name + '"')), PChar('Core'));
+      Exit;
     end;
-    Result := True;
-  except
-    ReportError(Integer(PChar('Can''t get module #' + InttoStr(I) + ' "' + Modules[I].Info.Name + '"')), PChar('Core'));
   end;
+  Result := True;
 end;
 
 //-------------
@@ -350,6 +351,8 @@ begin
     GoTo Continue;
 
   DeInitCore;
+
+  Result := true;
 end;
 
 //-------------
@@ -397,6 +400,7 @@ begin
 
 
   // to-do : write TService-/HookManager.Free and call it here
+  Result := true;
 end;
 
 //-------------

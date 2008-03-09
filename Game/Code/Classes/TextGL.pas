@@ -434,7 +434,7 @@ intermediary := SDL_CreateRGBSurface(0, w, h, 32,
 
  SDL_SetAlpha(intermediary, 0, 255);
  SDL_SetAlpha(sText, 0, 255);
- SDL_BlitSurface(sText, 0, intermediary, 0);
+ SDL_BlitSurface(sText, nil, intermediary, nil);
 
  glGenTextures(1, @texture);
 

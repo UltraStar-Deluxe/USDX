@@ -672,7 +672,7 @@ begin
   {$IFDEF FPC}
   setlength( BPM, 0 );
   {$ELSE}
-  BPM    := 0;
+  BPM    := nil;
   {$ENDIF}
 
   GAP    := 0;

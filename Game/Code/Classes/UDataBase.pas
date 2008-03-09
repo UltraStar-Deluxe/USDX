@@ -123,7 +123,7 @@ end;
 procedure TDataBaseSystem.ReadScore(var Song: TSong);
 var
   TableData: TSqliteTable;
-  Dif: Byte;
+  Difficulty: Integer;
 begin
   if not assigned( ScoreDB ) then
     exit;
@@ -140,29 +140,31 @@ begin
     SetLength (Song.Score[1], 0);
     SetLength (Song.Score[2], 0);
 
-    while not TableData.Eof do//Go through all Entrys
-    begin//Add one Entry to Array
-      Dif := StrtoInt(TableData.FieldAsString(TableData.FieldIndex['Difficulty']));
-      if (Dif>=0) AND (Dif<=2) then
+    while not TableData.Eof do //Go through all Entrys
+    begin //Add one Entry to Array
+      Difficulty := StrToIntDef(TableData.FieldAsString(TableData.FieldIndex['Difficulty']), -1);
+      if (Difficulty >= 0) AND (Difficulty <= 2) then
       begin
-        SetLength(Song.Score[Dif], Length(Song.Score[Dif]) + 1);
+        SetLength(Song.Score[Difficulty], Length(Song.Score[Difficulty]) + 1);
 
-        Song.Score[Dif, high(Song.Score[Dif])].Name  := TableData.FieldAsString(TableData.FieldIndex['Player']);
-        Song.Score[Dif, high(Song.Score[Dif])].Score := StrtoInt(TableData.FieldAsString(TableData.FieldIndex['Score']));
+        Song.Score[Difficulty, high(Song.Score[Difficulty])].Name  :=
+            TableData.FieldAsString(TableData.FieldIndex['Player']);
+        Song.Score[Difficulty, high(Song.Score[Difficulty])].Score :=
+            StrtoInt(TableData.FieldAsString(TableData.FieldIndex['Score']));
       end;
       TableData.Next;
       
     end; // While not TableData.EOF
 
-    except //In case of error (LOL? isn't this obvious)
-      for Dif := 0 to 2 do
+    except
+      for Difficulty := 0 to 2 do
       begin
-      SetLength(Song.Score[Dif], 1);
-      Song.Score[Dif, 1].Name := 'Error Reading ScoreDB';
+        SetLength(Song.Score[Difficulty], 1);
+        Song.Score[Difficulty, 1].Name := 'Error Reading ScoreDB';
       end;
     end;
     
-  finally // Try Finally
+  finally
   //ScoreDb.Free;
   end;
 end;
@@ -322,8 +324,11 @@ end;
 Function  TDataBaseSystem.GetTotalEntrys(const Typ: Byte): Cardinal;
 var Query: String;
 begin
+  Result := 0;
+
   if not assigned( ScoreDB ) then
     exit;
+
   try
     //Create Query
     Case Typ of
@@ -355,7 +360,7 @@ begin
     on E:ESQLiteException DO  // used to handle : Could not retrieve data "SELECT COUNT(`ID`) FROM `US_Songs`;" : SQL logic error or missing database
                               // however, we should pre-empt this error... and make sure the database DOES exist.
     begin
-      result := 0;
+      exit;
     end;
   end;
 
