@@ -1144,14 +1144,14 @@ end;
 procedure TTextureUnit.UnloadTexture(Name: string; FromCache: boolean);
 var
   T:      integer;
-  TexNum: GLuint;
+  TexNum: integer;
 begin
   T := FindTexture(Name);
 
   if not FromCache then begin
     TexNum := TextureDatabase.Texture[T].Texture.TexNum;
     if TexNum >= 0 then begin
-      glDeleteTextures(1, @TexNum);
+      glDeleteTextures(1, PGLuint(@TexNum));
       TextureDatabase.Texture[T].Texture.TexNum := -1;
 //      Log.LogError('Unload texture no '+IntToStr(TexNum));
     end;

@@ -445,6 +445,8 @@ var
   sws_dst_w, sws_dst_h: Integer;
 
 begin
+  Result := false;
+
   fVideoOpened       := False;
   fVideoPaused       := False;
   VideoTimeBase      := 0;
@@ -646,6 +648,8 @@ begin
       end;
     end;
   end;
+
+  Result := true;
 end;
 
 procedure TVideoPlayback_ffmpeg.Close;
