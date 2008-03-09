@@ -123,7 +123,9 @@ type
       function DrawFG: boolean; virtual;
       function Draw: boolean; virtual;
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown : Boolean): Boolean; virtual;
-      function ParseMouse(Typ: integer; X: integer; Y: integer): Boolean; virtual; abstract;
+      // FIXME: ParseMouse is not implemented in any subclass and not even used anywhere in the code
+      //   -> do this before activation of this method
+      //function ParseMouse(Typ: integer; X: integer; Y: integer): Boolean; virtual; abstract;
       function InRegion(X1, Y1, X2, Y2, X, Y: real): Boolean;
       function InStaticRegion(StaticNr: integer; X, Y: integer): Boolean;
       procedure onShow; virtual;
