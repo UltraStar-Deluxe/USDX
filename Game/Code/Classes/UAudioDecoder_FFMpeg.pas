@@ -268,16 +268,16 @@ begin
 end;
 
 function TFFMpegDecodeStream.GetPosition(): real;
-var
-  bytes: integer;
+//var
+//  bytes: integer;
 begin
   // see: tutorial on synching (audio-clock)
   Result := 0;
 end;
 
 procedure TFFMpegDecodeStream.SetPosition(Time: real);
-var
-  bytes:    integer;
+//var
+//  bytes:    integer;
 begin
   Lock();
   seekPos := Trunc(Time * AV_TIME_BASE);
@@ -505,7 +505,7 @@ end;
 
 function TFFMpegDecodeStream.ReadData(Buffer : PChar; BufSize: integer): integer;
 var
-  outStream       : TFFMpegDecodeStream;
+  //outStream       : TFFMpegDecodeStream;
   len1,
   audio_size      : integer;
   len             : integer;
@@ -609,8 +609,8 @@ var
   pCodec         : PAVCodec;
   ffmpegStreamID : Integer;
   ffmpegStream   : PAVStream;
-  wanted_spec,
-  csIndex        : integer;
+//  wanted_spec,
+  //csIndex        : integer;
   stream         : TFFMpegDecodeStream;
 begin
   result := nil;

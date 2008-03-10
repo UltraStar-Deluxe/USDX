@@ -342,7 +342,7 @@ end;
 
 function TGenericPlaybackStream.InitFormatConversion(): boolean;
 var
-  err: integer;
+  //err: integer;
   srcFormat: UInt16;
   dstFormat: UInt16;
   srcFormatInfo: TAudioFormatInfo;
@@ -785,8 +785,8 @@ begin
 end;
 
 function TAudioPlayback_SoftMixer.Open(const Filename: string): boolean;
-var
-  decodeStream: TAudioDecodeStream;
+//var
+//  decodeStream: TAudioDecodeStream;
 begin
   Result := false;
 

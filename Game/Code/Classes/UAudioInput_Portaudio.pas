@@ -3,6 +3,7 @@ unit UAudioInput_Portaudio;
 interface
 
 {$IFDEF FPC}
+{$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
 
@@ -136,10 +137,10 @@ var
   paApiInfo:   PPaHostApiInfo;
   deviceName:  string;
   deviceIndex: TPaDeviceIndex;
-  deviceInfo:  PPaDeviceInfo;
-  sourceCnt:   integer;
+  //deviceInfo:  PPaDeviceInfo;
+  //sourceCnt:   integer;
   sourceIndex: integer;
-  sourceName:  string;
+  //sourceName:  string;
   channelCnt:  integer;
   SC:          integer; // soundcard
   err:         TPaError;
@@ -354,7 +355,7 @@ end;
 destructor TAudioInput_Portaudio.Destroy;
 var
   i: integer;
-  paSoundCard: TPortaudioInputDevice;
+  //paSoundCard: TPortaudioInputDevice;
 begin
   Pa_Terminate();
   for i := 0 to High(AudioInputProcessor.Device) do
