@@ -23,10 +23,10 @@ uses
   USong,
   OpenGL12,
   {$IFDEF UseSerialPort}
-  zlportio, //you can disable it and all PortWriteB calls
+  //zlportio, //you can disable it and all PortWriteB calls
   {$ENDIF}
-  ULCD,
-  ULight,
+  //ULCD,  //TODO: maybe LCD Support as Plugin?
+  //ULight, //TODO: maybe Light Support as Plugin?
   UThemes;
 
 type
@@ -225,10 +225,11 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Load Sound Settings', 1);
 
-    // LCD
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Load LCD', 'Initialization');
-    LCD := TLCD.Create;
+    // LCD         //TODO: maybe LCD Support as Plugin?
+    //Log.BenchmarkStart(1);
+    //Log.LogStatus('Load LCD', 'Initialization');
+    //LCD := TLCD.Create;
+    (*
     if Ini.LPT = 1 then
     begin
       //LCD.HalfInterface := true;
@@ -239,8 +240,9 @@ begin
     end;
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading LCD', 1);
-
-    // Light
+    *)
+    // Light //TODO: maybe Light Support as Plugin?
+    (*
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Light', 'Initialization');
     Light := TLight.Create;
@@ -250,7 +252,7 @@ begin
     end;
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Light', 1);
-
+    *)
 
 
     // Theme
@@ -379,12 +381,14 @@ begin
     //TTF_quit();
     SDL_Quit();
 
+    (*
     {$ifdef WIN32}
       if assigned(LCD) and (Ini.LPT = 1) then
         LCD.Clear;
       if assigned(Light) and (Ini.LPT = 2) then
         Light.TurnOff;
     {$endif}
+     *)
 
     if assigned(Log) then
     begin
@@ -416,7 +420,7 @@ begin
     SwapBuffers;
 
     // light
-    Light.Refresh;
+    //Light.Refresh;
 
     // delay
     CountMidTime;
@@ -795,7 +799,7 @@ begin
       Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
 
-  Sender.UpdateLCD;
+  //Sender.UpdateLCD;
   
   //On Sentence Change...
   Sender.onSentenceChange(Lines[0].Current);
@@ -819,7 +823,7 @@ begin
 //      LCD.ShowCursor;
 
       //LCD.MoveCursorBR(Sender.LyricMain.SelectedLetter);
-      LCD.ShowCursor;
+      //LCD.ShowCursor;
     end;
 end;
 
@@ -842,9 +846,11 @@ begin
     //LPT_1 := 0;
 //    Light.LightOne(0, 150);
 
+    (*
     Light.LightOne(1, 200); // beat light
     if ParamStr(1) = '-doublelights' then
       Light.LightOne(0, 200); // beat light
+    *)
 
 
 {    if ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod (Lines[0].Resolution * 2) = 0) then
@@ -862,8 +868,10 @@ begin
         AudioPlayback.PlaySound(SoundLib.Click);
 
       //LPT_2 := 0;
+      (*
       if ParamStr(1) <> '-doublelights' then
         Light.LightOne(0, 150); //125
+      *)
 
       // drum machine
       (*

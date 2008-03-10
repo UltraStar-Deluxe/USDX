@@ -15,9 +15,9 @@ uses
   UMusic,
   UFiles,
   SysUtils,
-  UThemes,
-  ULCD,
-  ULight;
+  UThemes;
+  //ULCD, //TODO: maybe LCD Support as Plugin?
+  //ULight //TODO: maybe Light Support as Plugin?
 
 type
   TScreenMain = class(TMenu)
@@ -32,7 +32,7 @@ type
       procedure InteractPrev; override;
       procedure InteractInc; override;
       procedure InteractDec; override;
-      procedure UpdateLCD;
+      //procedure UpdateLCD; //TODO: maybe LCD Support as Plugin?
       procedure SetAnimationProgress(Progress: real); override;
       //function Draw: boolean; override;
   end;
@@ -218,12 +218,13 @@ begin
   Interaction := 0;
 end;
 
-procedure TScreenMain.onShow;
+procedure TScreenMain.onShow;  //TODO: maybe LCD Support as Plugin?
 begin
   inherited;
-  
+  (*
   LCD.WriteText(1, '  Choose mode:  ');
   UpdateLCD;
+  *)
 end;
 
 procedure TScreenMain.InteractNext;
@@ -231,8 +232,8 @@ begin
   inherited InteractNext;
   Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-  UpdateLCD;
-  Light.LightOne(1, 200);
+  //UpdateLCD;
+  //Light.LightOne(1, 200);
 end;
 
 procedure TScreenMain.InteractPrev;
@@ -240,8 +241,8 @@ begin
   inherited InteractPrev;
   Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-  UpdateLCD;
-  Light.LightOne(0, 200);
+  //UpdateLCD;
+  //Light.LightOne(0, 200);
 end;
 
 procedure TScreenMain.InteractDec;
@@ -249,8 +250,8 @@ begin
   inherited InteractDec;
   Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-  UpdateLCD;
-  Light.LightOne(0, 200);
+  //UpdateLCD;
+  //Light.LightOne(0, 200);
 end;
 
 procedure TScreenMain.InteractInc;
@@ -258,19 +259,23 @@ begin
   inherited InteractInc;
   Text[TextDescription].Text := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-  UpdateLCD;
-  Light.LightOne(1, 200);
+  //UpdateLCD;
+  //Light.LightOne(1, 200);
 end;
 
-procedure TScreenMain.UpdateLCD;
+(*
+procedure TScreenMain.UpdateLCD;    //TODO: maybe LCD Support as Plugin?
 begin
+
   case Interaction of
     0:  LCD.WriteText(2, '      sing      ');
     1:  LCD.WriteText(2, '     editor     ');
     2:  LCD.WriteText(2, '    options     ');
     3:  LCD.WriteText(2, '      exit      ');
   end
+
 end;
+*)
 
 procedure TScreenMain.SetAnimationProgress(Progress: real);
 begin

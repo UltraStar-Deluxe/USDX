@@ -20,8 +20,8 @@ uses
     UFiles,
     SysUtils,
     UThemes,
-    ULCD,
-    ULight,
+    //ULCD,
+    //ULight,
     UGraphicClasses;
 
 type

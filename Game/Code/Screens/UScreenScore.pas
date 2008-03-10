@@ -18,7 +18,6 @@ uses
   UThemes,
   OpenGL12,
   math,
-  ULCD,
   UTexture;
 //  OpenGL;
 

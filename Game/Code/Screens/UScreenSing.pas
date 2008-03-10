@@ -23,7 +23,7 @@ uses UMenu,
      TextGL,
      OpenGL12,
      UThemes,
-     ULCD,
+     //ULCD, //TODO: maybe LCD Support as Plugin?
      UGraphicClasses,
      USingScores;
 
@@ -108,7 +108,7 @@ type
       function    Draw: boolean; override;
 
       procedure   Finish; virtual;
-      procedure   UpdateLCD;
+      //procedure   UpdateLCD; //TODO: maybe LCD Support as Plugin?
       procedure   Pause; //Pause Mod(Toggles Pause)
 
       procedure   onSentenceEnd(S: Cardinal);     //OnSentenceEnd for LineBonus + Singbar
@@ -637,7 +637,7 @@ begin
   While (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Lines[0].Line)) do
       Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
 
-  UpdateLCD;
+  //UpdateLCD; //TODO: maybe LCD Support as Plugin?
 
   //Deactivate Pause
   Paused := False;
@@ -1286,7 +1286,8 @@ begin
   SetFontItalic (False);
 end;
 
-procedure TScreenSing.UpdateLCD;
+(*
+procedure TScreenSing.UpdateLCD; //TODO: maybe LCD Support as Plugin?
 var
   T:    string;
 begin
@@ -1302,6 +1303,7 @@ begin
   if Copy(T, Length(T), 1) <> ' ' then T := T + ' ';
   LCD.AddTextBR(T);}
 end;
+*)
 
 procedure TScreenSing.onSentenceEnd(S: Cardinal);
 var

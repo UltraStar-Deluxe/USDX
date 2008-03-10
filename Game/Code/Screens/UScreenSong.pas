@@ -22,8 +22,8 @@ uses
   UThemes,
   UTexture,
   ULanguage,
-  ULCD,
-  ULight,
+  //ULCD, //TODO: maybe LCD Support as Plugin?
+  //ULight, //TODO: maybe Light Support as Plugin?
   USong,
   UIni;
 
@@ -99,7 +99,7 @@ type
       procedure onHide; override;
       procedure SelectNext;
       procedure SelectPrev;
-      procedure UpdateLCD;
+      //procedure UpdateLCD; //TODO: maybe LCD Support as Plugin?
       procedure SkipTo(Target: Cardinal);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
@@ -274,7 +274,7 @@ begin
 
             ChangeMusic;
             SetScroll4;
-            UpdateLCD;
+            //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
             //Break and Exit
             Exit;
           end;
@@ -295,7 +295,7 @@ begin
 
             ChangeMusic;
             SetScroll4;
-            UpdateLCD;
+            //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
 
             //Break and Exit
             Exit;
@@ -565,8 +565,8 @@ begin
 //           SongTarget := Interaction;
             ChangeMusic;
             SetScroll4;
-            UpdateLCD;
-            Light.LightOne(1, 200);
+            //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
+            //Light.LightOne(1, 200); //TODO: maybe Light Support as Plugin?
           end;
         end;
 
@@ -577,8 +577,8 @@ begin
             SelectPrev;
             ChangeMusic;
             SetScroll4;
-            UpdateLCD;
-            Light.LightOne(0, 200);
+            //UpdateLCD; //TODO: maybe LCD Support as Plugin?
+            //Light.LightOne(0, 200); //TODO: maybe Light Support as Plugin?
           end;
         end;
 
@@ -659,7 +659,7 @@ begin
 
             ChangeMusic;
             SetScroll4;
-            UpdateLCD;
+            //UpdateLCD; //TODO: maybe LCD Support as Plugin?
           end;
         end;
 
@@ -1542,7 +1542,7 @@ begin
     end;
 
     SetScroll;
-    UpdateLCD;
+    //UpdateLCD;  //TODO: maybe LCD Support as Plugin?
   end;
 
   //Playlist Mode
@@ -1757,13 +1757,16 @@ begin
   end;
 end;
 
-procedure TScreenSong.UpdateLCD;
+(*
+procedure TScreenSong.UpdateLCD; //TODO: maybe LCD Support as Plugin?
 begin
   LCD.HideCursor;
   LCD.Clear;
   LCD.WriteText(1, Text[TextArtist].Text);
   LCD.WriteText(2, Text[TextTitle].Text);
+
 end;
+*)
 
 //Procedure Change current played Preview
 procedure TScreenSong.ChangeMusic;
@@ -1977,7 +1980,7 @@ begin
   AudioPlayback.PlaySound(SoundLib.Change);
   ChangeMusic;
   SetScroll;
-  UpdateLCD;
+  //UpdateLCD;  //TODO: maybe LCD Support as Plugin?
 end;
 
 procedure TScreenSong.SetJoker;

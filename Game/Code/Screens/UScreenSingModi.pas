@@ -24,7 +24,7 @@ uses UMenu,
      OpenGL12,
 
      UThemes,
-     ULCD,
+     //ULCD, //TODO: maybe LCD Support as Plugin?
      UScreenSing,
      ModiSDK;
 
@@ -71,7 +71,7 @@ type
       function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure Finish; override;
-      //procedure UpdateLCD;
+      //procedure UpdateLCD; //TODO: maybe LCD Support as Plugin?
       //procedure Pause; //Pause Mod(Toggles Pause)
   end;
 

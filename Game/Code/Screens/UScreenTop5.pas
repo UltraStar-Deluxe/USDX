@@ -9,7 +9,7 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, SysUtils, UDisplay, UMusic, USongs, UThemes, ULCD;
+  UMenu, SDL, SysUtils, UDisplay, UMusic, USongs, UThemes;
 
 type
   TScreenTop5 = class(TMenu)
