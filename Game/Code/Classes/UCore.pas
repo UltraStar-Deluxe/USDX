@@ -422,7 +422,9 @@ end;
 // Shows a MessageDialog (lParam: PChar Text, wParam: Symbol)
 //-------------
 Function TCore.ShowMessage(wParam: TwParam; lParam: TlParam): integer;
-// var Params: Cardinal; // Auto Removed, Unused Variable
+{$IFDEF MSWINDOWS}
+var Params: Cardinal; // Auto Removed, Unused Variable
+{$ENDIF}
 begin
   Result := -1;
 
