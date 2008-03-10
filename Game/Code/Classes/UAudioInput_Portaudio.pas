@@ -3,7 +3,6 @@ unit UAudioInput_Portaudio;
 interface
 
 {$IFDEF FPC}
-{$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
 
@@ -137,10 +136,7 @@ var
   paApiInfo:   PPaHostApiInfo;
   deviceName:  string;
   deviceIndex: TPaDeviceIndex;
-  //deviceInfo:  PPaDeviceInfo;
-  //sourceCnt:   integer;
-  sourceIndex: integer;
-  //sourceName:  string;
+  deviceInfo:  PPaDeviceInfo;
   channelCnt:  integer;
   SC:          integer; // soundcard
   err:         TPaError;
@@ -152,7 +148,10 @@ var
   sampleRate:  integer;
   latency:     TPaTime;
   {$IFDEF UsePortmixer}
+  sourceIndex: integer;
   mixer:       PPxMixer;
+  sourceCnt:   integer;
+  sourceName:  string;
   {$ENDIF}
   cbPolls: integer;
   cbWorks: boolean;
