@@ -7073,7 +7073,10 @@ threadvar
 var 
 {$endif}
   LastPixelFormat: Integer; 
-// ActivationRefCount: Integer; // Auto Removed, Unused Variable
+
+{$ifdef Win32}
+  ActivationRefCount: Integer;
+{$endif}
 
 {$ifdef Win32}
 const
