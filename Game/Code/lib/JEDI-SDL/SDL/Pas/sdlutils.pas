@@ -265,7 +265,7 @@ var
   Pitch1, Pitch2 : cardinal;
   TransparentColor1, TransparentColor2 : cardinal;
   tx, ty       : cardinal;
-  StartTick    : cardinal;
+// StartTick    : cardinal; // Auto Removed, Unused Variable
   Color1, Color2 : cardinal;
 begin
   Result := false;
@@ -884,7 +884,7 @@ var
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
   SrcAddr, DestAddr : cardinal;
-  _ebx, _esi, _edi, _esp : cardinal;
+//{*_ebx, *}{*_esi, *}{*_edi, _esp*} : cardinal; // Auto Removed, Unused Variable (_ebx) // Auto Removed, Unused Variable (_esi) // Auto Removed, Unused Variable (_edi)
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   Bits         : cardinal;
@@ -1146,7 +1146,7 @@ var
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
   SrcAddr, DestAddr : cardinal;
-  _ebx, _esi, _edi, _esp : cardinal;
+//{*_ebx, *}{*_esi, *}{*_edi, _esp*} : cardinal; // Auto Removed, Unused Variable (_ebx) // Auto Removed, Unused Variable (_esi) // Auto Removed, Unused Variable (_edi)
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   TransparentColor, SrcColor : cardinal;
@@ -1318,10 +1318,10 @@ var
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
   SrcAddr, DestAddr, TextAddr : cardinal;
-  _ebx, _esi, _edi, _esp : cardinal;
+//{*_ebx, *}{*_esi, *}{*_edi, _esp*}: cardinal; // Auto Removed, Unused Variable (_ebx) // Auto Removed, Unused Variable (_esi) // Auto Removed, Unused Variable (_edi)
   WorkX, WorkY : word;
   SrcMod, DestMod, TextMod : cardinal;
-  SrcColor, TransparentColor, TextureColor : cardinal;
+SrcColor, TransparentColor{*, TextureColor*} : cardinal; // Auto Removed, Unused Variable (TextureColor)
   BPP          : cardinal;
 begin
   if ( SrcSurface = nil ) or ( DestSurface = nil ) then
@@ -3118,7 +3118,7 @@ var
   Pitch1       : cardinal;
   TransparentColor1 : cardinal;
   tx, ty       : cardinal;
-  StartTick    : cardinal;
+// StartTick    : cardinal; // Auto Removed, Unused Variable
   Color1       : cardinal;
 begin
   Result := false;
@@ -3274,7 +3274,7 @@ end;
 procedure SDL_ORSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
-  R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+{*R, *}{*G, *}{*B, *}Pixel1, Pixel2, TransparentColor : cardinal; // Auto Removed, Unused Variable (R) // Auto Removed, Unused Variable (G) // Auto Removed, Unused Variable (B)
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
   SrcAddr, DestAddr : cardinal;
@@ -3480,7 +3480,7 @@ end;
 procedure SDL_ANDSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
   DestSurface : PSDL_Surface; DestRect : PSDL_Rect );
 var
-  R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+{*R, *}{*G, *}{*B, *}Pixel1, Pixel2, TransparentColor : cardinal; // Auto Removed, Unused Variable (R) // Auto Removed, Unused Variable (G) // Auto Removed, Unused Variable (B)
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
   SrcAddr, DestAddr : cardinal;

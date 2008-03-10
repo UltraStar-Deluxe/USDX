@@ -282,7 +282,7 @@ end;
 
 procedure TLog.LogVoice(SoundNr: integer);
 var
-  FileVoice:    File;
+// FileVoice:    File; // Auto Removed, Unused Variable
   FS:           TFileStream;
   FileName:     string;
   Num:          integer;

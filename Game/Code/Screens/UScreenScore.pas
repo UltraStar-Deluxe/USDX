@@ -761,8 +761,8 @@ var
   Score           : integer;
 
   //textures
-  TextureBar   : integer;
-  TextureRound : integer;
+// TextureBar   : integer; // Auto Removed, Unused Variable
+// TextureRound : integer; // Auto Removed, Unused Variable
 begin
   MaxHeight    := aPlayerScoreScreenDatas[PlayerNumber].Bar_Height;
   Width        := aPlayerScoreScreenDatas[PlayerNumber].Bar_Width;

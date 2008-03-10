@@ -340,7 +340,7 @@ function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
   function song_StrtoFloat( aValue : String ) : Extended;
   var
     lValue : String;
-    lOldDecimalSeparator : Char;
+// lOldDecimalSeparator : Char; // Auto Removed, Unused Variable
   begin
     lValue := aValue;
     
@@ -539,8 +539,8 @@ begin
 end;
 
 procedure TSong.ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
-var
-  Space:  boolean;
+//var
+// Space:  boolean; // Auto Removed, Unused Variable
 begin
   case Ini.Solmization of
     1:  // european

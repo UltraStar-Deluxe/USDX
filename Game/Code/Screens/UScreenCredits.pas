@@ -421,18 +421,18 @@ end;
 
 procedure TScreenCredits.DrawCredits;
 var
-  T,I: Cardinal;
-  X: Real;
-  Ver: PChar;
-  RuntimeStr: AnsiString;
+T{*, I*}: Cardinal; // Auto Removed, Unused Variable (I) // Auto Removed, Unused Variable (I)
+// X: Real; // Auto Removed, Unused Variable
+// Ver: PChar; // Auto Removed, Unused Variable
+// RuntimeStr: AnsiString; // Auto Removed, Unused Variable
   Data: TFFTData;
   j,k,l:cardinal;
-  f,g,h: Real;
+f,g{*, h*}: Real; // Auto Removed, Unused Variable (h) // Auto Removed, Unused Variable (h)
   STime:cardinal;
   Delay:cardinal;
 
-  myPixel: longword;
-  myColor: Cardinal;
+// myPixel: longword; // Auto Removed, Unused Variable
+// myColor: Cardinal; // Auto Removed, Unused Variable
   myScale: Real;
   myAngle: Real;
 

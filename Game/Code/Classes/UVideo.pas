@@ -199,9 +199,9 @@ procedure TVideoPlayback_ffmpeg.GetFrame(Time: Extended);
 var
   FrameFinished: Integer;
   AVPacket: TAVPacket;
-  errnum, x, y: Integer;
-  FrameDataPtr: PByteArray;
-  linesize: integer;
+errnum, {*x, *}y: Integer; // Auto Removed, Unused Variable (x)
+// FrameDataPtr: PByteArray; // Auto Removed, Unused Variable
+// linesize: integer; // Auto Removed, Unused Variable
   myTime: Extended;
   DropFrame: Boolean;
   droppedFrames: Integer;
@@ -435,14 +435,14 @@ end;
 
 function TVideoPlayback_ffmpeg.Open(const aFileName : string): boolean; // true if succeed
 var
-  errnum, i, x,y: Integer;
-  lStreamsCount : Integer;
+errnum {*i, x, y*}: Integer; // Auto Removed, Unused Variable (i) // Auto Removed, Unused Variable (x) // Auto Removed, Unused Variable (x) // Auto Removed, Unused Variable (x) // Auto Removed, Unused Variable (y)
+// lStreamsCount : Integer; // Auto Removed, Unused Variable
 
   wanted_spec   ,
-  spec          : TSDL_AudioSpec;
-  aCodec        : pAVCodec;
+// spec          : TSDL_AudioSpec; // Auto Removed, Unused Variable
+// aCodec        : pAVCodec; // Auto Removed, Unused Variable
 
-  sws_dst_w, sws_dst_h: Integer;
+{*sws_dst_w, *}sws_dst_h: Integer; // Auto Removed, Unused Variable (sws_dst_w)
 
 begin
   Result := false;

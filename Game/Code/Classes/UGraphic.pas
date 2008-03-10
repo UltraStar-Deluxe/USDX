@@ -402,12 +402,12 @@ begin
 end;
 
 procedure Initialize3D (Title: string);
-var
+//var
 //  Icon: TIcon;
 //  Res:  TResourceStream;
-  ISurface: PSDL_Surface;
-  Pixel: PByteArray;
-  I: Integer;
+// ISurface: PSDL_Surface; // Auto Removed, Unused Variable
+// Pixel: PByteArray; // Auto Removed, Unused Variable
+// I: Integer; // Auto Removed, Unused Variable
 begin
   Log.LogStatus('LoadOpenGL', 'UGraphic.Initialize3D');
 //  Log.BenchmarkStart(2);

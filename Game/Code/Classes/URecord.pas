@@ -140,8 +140,8 @@ end;
 { TAudioInputDevice }
 
 destructor TAudioInputDevice.Destroy;
-var
-  i: integer;
+//var
+// i: integer; // Auto Removed, Unused Variable
 begin
   Stop();
   Source := nil;
@@ -390,9 +390,9 @@ var
   ChannelBuffer: PChar;         // buffer handled as array of bytes (offset relative to channel)
   SampleBuffer: PSmallIntArray; // buffer handled as array of samples
   Boost:  byte;
-  ChannelCount: integer;
+// ChannelCount: integer; // Auto Removed, Unused Variable
   ChannelIndex: integer;
-  ChannelOffset: integer;
+// ChannelOffset: integer; // Auto Removed, Unused Variable
   CaptureChannel: TCaptureBuffer;
   AudioFormat: TAudioFormatInfo;
   FrameSize: integer;
@@ -535,9 +535,9 @@ end;
 procedure TAudioInputBase.CaptureStop;
 var
   DeviceIndex: integer;
-  Player:  integer;
+// Player:  integer; // Auto Removed, Unused Variable
   Device: TAudioInputDevice;
-  DeviceCfg: PInputDeviceConfig;
+// DeviceCfg: PInputDeviceConfig; // Auto Removed, Unused Variable
 begin
   for DeviceIndex := 0 to High(AudioInputProcessor.Device) do
   begin
@@ -588,8 +588,8 @@ end;
  * calling this function.
  *}
 function TAudioInputBase.UnifyDeviceSourceName(const name: string; const deviceName: string): string;
-var
-  Descr: string;
+//var
+// Descr: string; // Auto Removed, Unused Variable
 begin
   result := name;
 

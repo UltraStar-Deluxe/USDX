@@ -56,7 +56,7 @@ end;
 function TAudioPlayback_SDL.InitializeAudioPlaybackEngine(): boolean;
 var
   desiredAudioSpec, obtainedAudioSpec: TSDL_AudioSpec;
-  err: integer;
+// err: integer; // Auto Removed, Unused Variable
 begin
   result := false;
 

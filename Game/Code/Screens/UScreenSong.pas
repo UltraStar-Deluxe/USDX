@@ -229,7 +229,7 @@ function TScreenSong.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDow
 var
   I:      integer;
   I2:     integer;
-  HS:     integer;
+// HS:     integer; // Auto Removed, Unused Variable
   SDL_ModState:  Word;
   Letter: Char;
 begin
@@ -987,8 +987,8 @@ end;
 procedure TScreenSong.SetScroll1;
 var
   B:      integer;    // button
-  BMin:   integer;    // button min
-  BMax:   integer;    // button max
+// BMin:   integer;    // button min // Auto Removed, Unused Variable
+// BMax:   integer;    // button max // Auto Removed, Unused Variable
   Src:    integer;
 //  Dst:    integer;
   Count:  integer;    // Dst is not used. Count is used.
@@ -1123,8 +1123,8 @@ end;
 procedure TScreenSong.SetScroll2;
 var
   B:      integer;
-  Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu
-  Wsp2:   real;
+// Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu // Auto Removed, Unused Variable
+// Wsp2:   real; // Auto Removed, Unused Variable
 begin
   // liniowe
   for B := 0 to High(Button) do
@@ -1150,8 +1150,8 @@ end;
 procedure TScreenSong.SetScroll3; // with slide
 var
   B:      integer;
-  Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu
-  Wsp2:   real;
+// Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu // Auto Removed, Unused Variable
+// Wsp2:   real; // Auto Removed, Unused Variable
 begin
   SongTarget := Interaction;
 
@@ -1699,7 +1699,7 @@ end;
 procedure TScreenSong.SelectNext;
 var
   Skip:   integer;
-  I:      integer;
+// I:      integer; // Auto Removed, Unused Variable
   VS:     Integer;
 begin
   VS := CatSongs.VisibleSongs;
@@ -1731,7 +1731,7 @@ end;
 procedure TScreenSong.SelectPrev;
 var
   Skip:   integer;
-  I:      integer;
+// I:      integer; // Auto Removed, Unused Variable
   VS:     Integer;
 begin
   VS := CatSongs.VisibleSongs;
@@ -1790,7 +1790,7 @@ end;
 
 procedure TScreenSong.SkipTo(Target: Cardinal); // 0.5.0
 var
-  Skip:   integer;
+// Skip:   integer; // Auto Removed, Unused Variable
   I:      integer;
 begin
   UnLoadDetailedCover;
@@ -1813,7 +1813,7 @@ var
   CurTime: Cardinal;
   PosX, PosY: Integer;
   Pos: Real;
-  lTmp : double;
+// lTmp : double; // Auto Removed, Unused Variable
 begin
   // Nothing to do if no music is played or an equalizer bar consists of no block
   if (AudioPlayback.Finished or (Theme.Song.Equalizer.Length <= 0)) then

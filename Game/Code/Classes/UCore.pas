@@ -422,7 +422,7 @@ end;
 // Shows a MessageDialog (lParam: PChar Text, wParam: Symbol)
 //-------------
 Function TCore.ShowMessage(wParam: TwParam; lParam: TlParam): integer;
-var Params: Cardinal; 
+// var Params: Cardinal; // Auto Removed, Unused Variable
 begin
   Result := -1;
 

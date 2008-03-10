@@ -66,8 +66,8 @@ begin
 end;
 
 constructor TScreenPartyWin.Create;
-var
-  I:    integer;
+//var
+// I:    integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
 
@@ -94,9 +94,10 @@ begin
 end;
 
 procedure TScreenPartyWin.onShow;
-var
-  I: Integer;
-  Placing: Integer;
+//var
+// I: Integer; // Auto Removed, Unused Variable
+// Placing: Integer; // Auto Removed, Unused Variable
+
   Function GetTeamColor(Team: Byte): Cardinal;
   var
     NameString: String;
@@ -105,6 +106,7 @@ var
 
     Result := ColorExists(NameString);
   end;
+
 begin
   inherited;
 

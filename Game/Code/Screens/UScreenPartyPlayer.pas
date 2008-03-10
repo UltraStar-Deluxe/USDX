@@ -40,7 +40,7 @@ uses UGraphic, UMain, UIni, UTexture, UParty;
 
 function TScreenPartyPlayer.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
 var
-  I, J:    integer;
+{*I, *}J:    integer; // Auto Removed, Unused Variable (I)
   SDL_ModState:  Word;
   procedure IntNext;
   begin
@@ -222,8 +222,8 @@ begin
 end;
 
 constructor TScreenPartyPlayer.Create;
-var
-  I:    integer;
+//var
+// I:    integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
 
