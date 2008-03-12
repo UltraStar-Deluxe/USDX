@@ -316,6 +316,9 @@ type
 
     //Linebonus Translations
     LineBonusText:    Array [0..8] of String;
+
+    //Pause Popup
+     PausePopUp:      TThemeStatic;
   end;
 
   TThemeScore = class(TThemeBasic)
@@ -1055,6 +1058,9 @@ begin
       Sing.LineBonusText[6] := Language.Translate('POPUP_GREAT');
       Sing.LineBonusText[7] := Language.Translate('POPUP_AWESOME');
       Sing.LineBonusText[8] := Language.Translate('POPUP_PERFECT');
+
+      //PausePopup
+      ThemeLoadStatic(Sing.PausePopUp, 'PausePopUpStatic');
 
       // Score
       ThemeLoadBasic(Score, 'Score');

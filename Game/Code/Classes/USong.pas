@@ -248,7 +248,7 @@ begin
         Read(SongFile, ParamS);
 
        //Check for ZeroNote
-       if Param2 = 0 then Log.LogError('Error: Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+' '+ParamS+'" -> Note ignored!') else
+       if Param2 = 0 then Log.LogError('Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamS+'" -> Note ignored!') else
        begin
         // add notes
         if not Both then

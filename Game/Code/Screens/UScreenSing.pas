@@ -87,6 +87,7 @@ type
 
       {StaticP3RScoreBG:   integer;
       TextP3RScore:       integer;}
+      StaticPausePopup:   integer;
 
       Tex_Background:     TTexture;
       FadeOut:            boolean;
@@ -202,7 +203,7 @@ end;
 //Pause Mod
 procedure TScreenSing.Pause;
 begin
-  if not paused then  //Pause einschalten
+  if not paused then  //enable Pause
     begin
       // pause Time
       PauseTime := LineState.CurrentTime;
@@ -216,7 +217,7 @@ begin
         fCurrentVideoPlaybackEngine.Pause;
 
     end
-  else              //Pause ausschalten
+  else              //disable Pause
     begin
       LineState.CurrentTime := PauseTime; //Position of Notes
 
@@ -303,6 +304,9 @@ begin
   TextP3RScore          := AddText(Theme.Sing.TextP3RScore);
   StaticP3SingBar       := AddStatic(Theme.Sing.StaticP3SingBar);}
 
+  StaticPausePopup      := AddStatic(Theme.Sing.PausePopUp);
+  Static[StaticPausePopup].Visible := false; //Pausepopup is not visibile at the beginning
+
   if ScreenAct = 2 then begin
       // katze und affe
 
@@ -347,7 +351,7 @@ begin
 
   Scores.Init; //Get Positions for Players
 
-  
+
 
   // prepare players
   SetLength(Player, PlayersPlay);
@@ -1212,8 +1216,7 @@ begin
   if ShowFinish then begin
   if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LineState.CurrentTime*1000 <= CurrentSong.Finish)) then begin
   //Pause Mod:
-    if not Paused then
-    Sing(Self);       // analyze song
+    if not Paused then Sing(Self);       // analyze song
   end else begin
 //    Log.LogError('End');
     if not FadeOut then begin
@@ -1259,6 +1262,16 @@ begin
 
   for T := 0 to 1 do
     Text[T].X := Text[T].X - 10*ScreenX;
+
+  //Draw Pausepopup
+  //I use this workaround that the Static is drawen over the Lyrics, Lines, Scores and Effects
+  //maybe someone could find a better solution
+  if Paused then
+            begin
+              Static[StaticPausePopup].Visible := true;
+              Static[StaticPausePopup].Draw;
+              Static[StaticPausePopup].Visible := false;
+            end;
 
 end;
 
