@@ -163,6 +163,11 @@ begin
           Pause;
         end;
 
+      SDLK_SPACE://Pause Mod
+        begin
+          Pause;
+        end;
+
       SDLK_V: //Show Visualization
         begin
           fShowVisualization := not fShowVisualization;
