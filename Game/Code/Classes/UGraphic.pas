@@ -565,8 +565,6 @@ end;
 procedure Reinitialize3D;
 begin
   InitializeScreen;
-  LoadTextures;
-  LoadScreens;
 end;
 
 procedure InitializeScreen;
