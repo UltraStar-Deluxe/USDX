@@ -337,11 +337,11 @@ begin
   If  Line = nil then
   begin
     // reset all values, if the new line is nil (lines after the last line)
-    LyricLine.Start     := -1;
-    LyricLine.Length    := -1;
+    LyricLine.Start     := 0;
+    LyricLine.Length    := 0;
     LyricLine.CurWord   := -1;
     LyricLine.LastLine  := False;
-    LyricLine.Width     := -1;
+    LyricLine.Width     := 0;
     SetLength(LyricLine.Words, 0);
   end
   else if Length(Line.Note) > 0 then
@@ -551,7 +551,7 @@ var
   }
 begin
   // lines with a width lower than 0, have not to be draw
-  if Line^.Width < 0 then
+  if Line^.Width <= 0 then
     exit;
   
   // this is actually a bit more than the real font size
