@@ -232,6 +232,7 @@ begin
       Lines[Count].NotesGAP   := self.NotesGAP;
       Lines[Count].Line[0].IlNut := 0;
       Lines[Count].Line[0].HighNote := -1;
+      Lines[Count].Line[0].LastLine := False;
     end;
 
   //  TempC := ':';
@@ -318,7 +319,11 @@ begin
       Read(SongFile, TempC);
       Inc(FileLineNo);
     end; // while}
-
+    
+    for Count := 0 to High(Lines) do begin
+      Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
+    end;
+    
     CloseFile(SongFile);
   except
     try
@@ -652,6 +657,8 @@ begin
   end
   else
     Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
+  
+  Lines[LineNumberP].Line[Lines[LineNumberP].High].LastLine := False;
 
   Base[LineNumberP] := 100; // high number
 end;

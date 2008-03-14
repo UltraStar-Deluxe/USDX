@@ -163,7 +163,7 @@ const
 
 
   ILyricsFont:    array[0..2] of string = ('Plain', 'OLine1', 'OLine2');
-  ILyricsEffect:  array[0..3] of string = ('Simple', 'Zoom', 'Slide', 'Ball');
+  ILyricsEffect:  array[0..4] of string = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
   ISolmization:   array[0..3] of string = ('Off', 'Euro', 'Jap', 'American');
 
   IColor:         array[0..8] of string = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');

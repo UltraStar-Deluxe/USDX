@@ -45,6 +45,7 @@ begin
           if SelInteraction = 5 then begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
+			Reinitialize3D();           
             FadeTo(@ScreenOptions);
           end;
         end;

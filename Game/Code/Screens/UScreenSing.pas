@@ -158,11 +158,7 @@ begin
           FadeTo(@ScreenScore);
         end;
 
-      SDLK_P://Pause Mod
-        begin
-          Pause;
-        end;
-
+      SDLK_P,
       SDLK_SPACE://Pause Mod
         begin
           Pause;
@@ -635,17 +631,10 @@ begin
       end;
   end; // case
 
-  case Ini.LyricsEffect of
-    0:  Lyrics.HoverEffekt := 1; // 0 - one selected, 1 - selected all to the current
-    1:  Lyrics.HoverEffekt := 2;
-    2:  Lyrics.HoverEffekt := 3;
-    3:  Lyrics.HoverEffekt := 4;
-  end; // case
-
   // Add Lines to Lyrics
   While (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Lines[0].Line)) do
-      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
-
+    Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
+  
   //UpdateLCD; //TODO: maybe LCD Support as Plugin?
 
   //Deactivate Pause
@@ -1399,17 +1388,21 @@ begin
   GoldenRec.SentenceChange;
   if (Lyrics.LineCounter <= High(Lines[0].Line)) then
   begin
-      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
-      // addline uses display memory
-      // calling draw makes sure, there's the singscreen in it, when the next
-      // swap between onscreen and offscreen buffers is done
-      // (this eliminates the onSentenceChange flickering)
-      // note: maybe it would be better to make sure, a display redraw is done
-      //     right after the sentence change (before buffer swap) or make sure
-      //     onsentencechange is only called right before calling Display.Draw
-      //     (or whatever it was called)
-      Draw;
-  end;
+      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);  
+  end
+  else
+    Lyrics.AddLine(nil);
+  
+  // addline uses display memory
+  // calling draw makes sure, there's the singscreen in it, when the next
+  // swap between onscreen and offscreen buffers is done
+  // (this eliminates the onSentenceChange flickering)
+  // note: maybe it would be better to make sure, a display redraw is done
+  //     right after the sentence change (before buffer swap) or make sure
+  //     onsentencechange is only called right before calling Display.Draw
+  //     (or whatever it was called)
+  Draw;
+
   //GoldenStarsTwinkle Mod End
 end;
 
