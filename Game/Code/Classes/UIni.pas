@@ -76,6 +76,7 @@ type
       LyricsFont:     integer;
       LyricsEffect:   integer;
       Solmization:    integer;
+      NoteLines:      integer;
 
       // Themes
       Theme:          integer;
@@ -165,6 +166,7 @@ const
   ILyricsFont:    array[0..2] of string = ('Plain', 'OLine1', 'OLine2');
   ILyricsEffect:  array[0..4] of string = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
   ISolmization:   array[0..3] of string = ('Off', 'Euro', 'Jap', 'American');
+  INoteLines:     array[0..1] of string = ('Off', 'On');
 
   IColor:         array[0..8] of string = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
 
@@ -598,7 +600,10 @@ begin
 
   // Solmization
   Solmization := GetArrayIndex(ISolmization, IniFile.ReadString('Lyrics', 'Solmization', ISolmization[0]));
-  
+
+  // NoteLines
+  NoteLines := GetArrayIndex(INoteLines, IniFile.ReadString('Lyrics', 'NoteLines', INoteLines[1]));
+
   // Theme
   SetLength(ITheme, 0);
   Log.LogStatus('Searching for Theme : ' + ThemePath + '*.ini', 'Theme');
@@ -767,6 +772,9 @@ begin
 
     // Solmization
     IniFile.WriteString('Lyrics', 'Solmization', ISolmization[Solmization]);
+
+    // NoteLines
+    IniFile.WriteString('Lyrics', 'NoteLines', INoteLines[NoteLines]);
 
     // Theme
     IniFile.WriteString('Themes', 'Theme', ITheme[Theme]);

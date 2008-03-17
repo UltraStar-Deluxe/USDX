@@ -605,16 +605,16 @@ begin
   //eoa TimeBar mod
 
   // rysuje paski pod nutami
-  if PlayersPlay = 1 then
+  if (PlayersPlay = 1) and (Ini.NoteLines = 1) then
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
     
-  if (PlayersPlay = 2) or (PlayersPlay = 4) then
+  if ((PlayersPlay = 2) or (PlayersPlay = 4)) and (Ini.NoteLines = 1) then
   begin
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15);
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
   end;
 
-  if (PlayersPlay = 3) or (PlayersPlay = 6) then begin
+  if ((PlayersPlay = 3) or (PlayersPlay = 6)) and (Ini.NoteLines = 1) then begin
     SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
     SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
     SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);

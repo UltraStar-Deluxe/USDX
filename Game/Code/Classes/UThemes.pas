@@ -415,6 +415,7 @@ type
     SelectLyricsFont:   TThemeSelect;
     SelectLyricsEffect: TThemeSelectSlide;
     SelectSolmization:  TThemeSelect;
+    SelectNoteLines:    TThemeSelect;
     ButtonExit:         TThemeButton;
   end;
 
@@ -1173,6 +1174,7 @@ begin
       ThemeLoadSelect(OptionsLyrics.SelectLyricsFont,   'OptionsLyricsSelectLyricsFont');
       ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsEffect, 'OptionsLyricsSelectLyricsEffect');
       ThemeLoadSelect(OptionsLyrics.SelectSolmization,  'OptionsLyricsSelectSolmization');
+      ThemeLoadSelect(OptionsLyrics.SelectNoteLines,  'OptionsLyricsSelectNoteLines');
       ThemeLoadButton(OptionsLyrics.ButtonExit,         'OptionsLyricsButtonExit');
 
       // Options Themes

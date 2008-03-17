@@ -39,7 +39,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 3 then begin
+          if SelInteraction = 4 then begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
@@ -51,14 +51,14 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 2) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 2) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 3) then begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
@@ -78,6 +78,7 @@ begin
   AddSelect(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFont);
   AddSelectSlide(Theme.OptionsLyrics.SelectLyricsEffect, Ini.LyricsEffect, ILyricsEffect);
   AddSelect(Theme.OptionsLyrics.SelectSolmization, Ini.Solmization, ISolmization);
+  AddSelect(Theme.OptionsLyrics.SelectNoteLines, Ini.NoteLines, INoteLines);
 
 
   AddButton(Theme.OptionsLyrics.ButtonExit);
