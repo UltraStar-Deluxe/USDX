@@ -603,8 +603,9 @@ begin
     end;
 
     {$IFDEF UseSWScale}
+    // what the hell it should do?
     SoftwareScaleContext:=sws_getContext(VideoCodecContext^.width,VideoCodecContext^.height,integer(VideoCodecContext^.pix_fmt),
-                                         dataX, dataY, integer(PIX_FMT_RGB24),
+                                         TexX, TexY, integer(PIX_FMT_RGB24),
                                          SWS_FAST_BILINEAR, nil, nil, nil);
     if SoftwareScaleContext <> Nil then
         writeln('got swscale context')
@@ -635,7 +636,8 @@ begin
         VideoAspect:=VideoAspect*VideoCodecContext^.width/VideoCodecContext^.height;
         ScaledVideoWidth:=800.0;
         ScaledVideoHeight:=800.0/VideoAspect;
-      VideoTimeBase:=VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.den/VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.num;
+        VideoTimeBase:=VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.den/VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.num;
+        writeln(VideoTimeBase);
 {$ifdef DebugDisplay}
       showmessage('framerate: '+inttostr(floor(1/videotimebase))+'fps');
 {$endif}
@@ -687,8 +689,6 @@ begin
   if fVideoSkipTime > 0 then
   begin
     av_seek_frame(VideoFormatContext,VideoStreamIndex,Floor(Time/VideoTimeBase),AVSEEK_FLAG_ANY);
-
-    VideoTime := fVideoSkipTime;
   end;
 end;
 

@@ -1158,7 +1158,7 @@ begin
   end;  }
 
   // draw static menu (BG)
-  DrawBG;
+  //DrawBG;                 // there is no menu and the animated background brakes the video playback because the timecode is in a different format
   //Draw Background
   SingDrawBackground;
   // update and draw movie
