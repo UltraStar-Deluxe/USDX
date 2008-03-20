@@ -7125,16 +7125,15 @@ end;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-{$ifndef VER140}
+// RaiseLastOSError did not exist in Delphi 5
+{$ifdef VER130}
 
 procedure RaiseLastOSError;
 begin
-  {$ifndef FPC}
   RaiseLastWin32Error;
-  {$endif}
 end;
 
-{$endif VER140}
+{$endif}
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -9948,21 +9947,16 @@ begin
 end; 
 
 //----------------------------------------------------------------------------------------------------------------------
-{$ifdef FPC}
-const Default8087CW: Word = $1332;
-
-{$ASMMODE INTEL}
-procedure Set8087CW(NewCW: Word); Assembler;
-asm
-  MOV Default8087CW, AX
-end;
-{$endif}
-
-//----------------------------------------------------------------------------------------------------------------------
 
 initialization
-  ContextList := TThreadList.Create; 
-  Set8087CW($133F); 
+  ContextList := TThreadList.Create;
+  {$IF Defined(CPU386) or Defined(CPUI386) or Defined(CPUX86_64)}
+  // FPC has its own implementation of Set8087CW now. The wrongly
+  // coded (the important asm-directives were missing so it was not of any use!!!)
+  // implementation was removed from this unit so it does not hide the correct FPC version anymore.
+  // This should fix some EDivByZero exceptions in floating-point expressions.
+  Set8087CW($133F);
+  {$IFEND}
 finalization
   CloseOpenGL; 
   ContextList.Free; 
