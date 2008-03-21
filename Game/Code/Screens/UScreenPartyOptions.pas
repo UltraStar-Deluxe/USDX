@@ -30,7 +30,7 @@ type
       NumPlayer1, NumPlayer2, NumPlayer3: Integer;
       
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
       procedure SetPlaylist2;
@@ -48,7 +48,7 @@ implementation
 
 uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USong, UDLLManager, UPlaylist, USongs;
 
-function TScreenPartyOptions.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenPartyOptions.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
   var
     I, J: Integer;
     OnlyMultiPlayer: boolean;

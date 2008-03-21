@@ -28,7 +28,7 @@ type
       TextWinner:        Cardinal;
 
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -37,7 +37,7 @@ implementation
 
 uses UGraphic, UMain, UParty, UScreenSingModi, ULanguage;
 
-function TScreenPartyWin.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenPartyWin.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then

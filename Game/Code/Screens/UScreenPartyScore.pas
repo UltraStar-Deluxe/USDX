@@ -35,7 +35,7 @@ type
       MaxScore:          Word;
       
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -44,7 +44,7 @@ implementation
 
 uses UGraphic, UMain, UParty, UScreenSingModi, ULanguage, UTexture, USkins;
 
-function TScreenPartyScore.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenPartyScore.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then

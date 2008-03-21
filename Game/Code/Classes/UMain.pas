@@ -504,14 +504,14 @@ begin
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
           else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-            done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
+            done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True)
           else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-            done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True)
+            done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True)
           // end of popup hack
           else
           begin
             // check for Screen want to Exit
-            done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, True);
+            done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True);
 
             // If Screen wants to Exit
             if done then

@@ -25,7 +25,7 @@ type
     public
       TextOverview:    integer;
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
 
@@ -47,7 +47,7 @@ uses UGraphic,
      {$ENDIF}
      ULog;
 
-function TScreenStatMain.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenStatMain.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then

@@ -20,7 +20,7 @@ type
       procedure AddBox(X, Y, W, H: real);
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
 //      function Draw: boolean; override;
 //      procedure Finish;
   end;
@@ -28,15 +28,15 @@ type
 implementation
 uses UGraphic, UDraw, UMain, USkins;
 
-function TScreenOpen.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenOpen.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   if (PressedDown) then begin // Key Down
-    case ScanCode of
-      ord('a')..ord('z'), ord('A')..ord('Z'), ord('0')..ord('9'), 32, ord('-'), ord('.'), ord(':'), ord('\'):
+    case CharCode of
+      'a'..'z', 'A'..'Z', '0'..'9', #32, '-', '.', ':', '\':
         begin
           if Interaction = 0 then begin
-            Text[TextN].Text := Text[TextN].Text + chr(ScanCode);
+            Text[TextN].Text := Text[TextN].Text + CharCode;
           end;
         end;
     end;

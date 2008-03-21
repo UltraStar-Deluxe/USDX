@@ -13,7 +13,7 @@ type
       Visible: Boolean; //Whether the Menu should be Drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure ShowPopup(msg: String);
       function Draw: boolean; override;
@@ -27,7 +27,7 @@ type
       Visible: Boolean; //Whether the Menu should be Drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure onHide; override;
       procedure ShowPopup(msg: String);
@@ -43,7 +43,7 @@ implementation
 
 uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, UPlaylist, UDisplay;
 
-function TScreenPopupCheck.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenPopupCheck.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then
@@ -150,7 +150,7 @@ end;
 
 // error popup
 
-function TScreenPopupError.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenPopupError.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then

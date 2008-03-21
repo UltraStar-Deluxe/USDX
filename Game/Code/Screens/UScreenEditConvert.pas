@@ -85,7 +85,7 @@ type
       function SelectedNumber: integer;
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure onHide; override;
   end;
@@ -101,7 +101,7 @@ uses UGraphic,
      OpenGL12,
      USkins;
 
-function TScreenEditConvert.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenEditConvert.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
   T:    integer;
 begin

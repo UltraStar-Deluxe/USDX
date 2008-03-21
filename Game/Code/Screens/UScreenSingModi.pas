@@ -68,7 +68,7 @@ type
       constructor Create; override;
       procedure onShow; override;
       //procedure onShowFinish; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure Finish; override;
       //procedure UpdateLCD; //TODO: maybe LCD Support as Plugin?
@@ -100,7 +100,7 @@ uses UGraphic, UDraw, UMain, Classes, URecord, ULanguage, math, UDLLManager, USk
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSingModi.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenSingModi.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then
@@ -116,7 +116,7 @@ begin
         end;
 
       else
-        Result := inherited ParseInput(PressedKey, ScanCode, PressedDown);
+        Result := inherited ParseInput(PressedKey, CharCode, PressedDown);
     end;
   end;
 end;

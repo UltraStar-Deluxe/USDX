@@ -105,7 +105,7 @@ type
       procedure   onShow; override;
       procedure   onShowFinish; override;
 
-      function    ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function    ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       function    Draw: boolean; override;
 
       procedure   Finish; virtual;
@@ -129,7 +129,7 @@ uses UGraphic,
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSing.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenSing.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then

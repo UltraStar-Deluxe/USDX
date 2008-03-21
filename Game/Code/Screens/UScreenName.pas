@@ -12,7 +12,7 @@ type
     public
       Goto_SingScreen: Boolean; //If True then next Screen in SingScreen
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -21,7 +21,7 @@ implementation
 
 uses UGraphic, UMain, UIni, UTexture;
 
-function TScreenName.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenName.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
   I:    integer;
 SDL_ModState:  Word;
@@ -36,7 +36,7 @@ begin
     case PressedKey of
       SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
         begin
-          Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + chr(ScanCode);
+          Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
         end;
 
       // Templates for Names Mod

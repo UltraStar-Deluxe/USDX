@@ -21,7 +21,7 @@ type
       Fadeout:      boolean;
       constructor Create; override;
       procedure   onShow; override;
-      function    ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function    ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       function    GetBGTexNum: GLUInt;
   end;
 
@@ -30,7 +30,7 @@ implementation
 uses UGraphic,
      UTime;
 
-function TScreenLoading.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenLoading.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
 end;

@@ -51,7 +51,7 @@ type
     public
       constructor Create; override;
       function    Draw: boolean; override;
-      function    ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function    ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure   onShow; override;
       procedure   onHide; override;
   end;
@@ -72,7 +72,7 @@ uses
   UIni,
   ULog;
 
-function TScreenOptionsRecord.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenOptionsRecord.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then

@@ -26,7 +26,7 @@ type
       TextDescriptionLong:    integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       procedure InteractNext; override;
       procedure InteractPrev; override;
@@ -54,7 +54,7 @@ uses
   USkins;
 
 
-function TScreenMain.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
 I: Integer;
 SDL_ModState:  Word;

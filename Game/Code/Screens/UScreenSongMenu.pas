@@ -25,7 +25,7 @@ type
       Visible: Boolean; //Whether the Menu should be Drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       function Draw: boolean; override;
       procedure MenuShow(sMenu: Byte);
@@ -64,7 +64,7 @@ uses UGraphic,
      UPlaylist,
      USongs;
 
-function TScreenSongMenu.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenSongMenu.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then
@@ -74,7 +74,7 @@ begin
       case PressedKey of
         SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
           begin
-            Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + chr(ScanCode);
+            Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
             exit;
           end;
 

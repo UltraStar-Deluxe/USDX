@@ -92,8 +92,8 @@ type
       FadeOut:            boolean;
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
-      function ParseInputEditText(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInputEditText(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
       function Draw: boolean; override;
       procedure onHide; override;
   end;
@@ -103,7 +103,7 @@ uses UGraphic, UDraw, UMain, USkins, ULanguage;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenEditSub.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenEditSub.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
   SDL_ModState:  Word;
   R:    real;
@@ -111,7 +111,7 @@ begin
   Result := true;
 
   if TextEditMode then begin
-    Result := ParseInputEditText(PressedKey, ScanCode, PressedDown);
+    Result := ParseInputEditText(PressedKey, CharCode, PressedDown);
   end else begin
 
   SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
@@ -584,7 +584,7 @@ begin
   end; // if
 end;
 
-function TScreenEditSub.ParseInputEditText(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenEditSub.ParseInputEditText(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
   SDL_ModState:  Word;
 begin
@@ -610,7 +610,7 @@ begin
       SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
         begin
           Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text :=
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text + chr(ScanCode);
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text + CharCode;
         end;
       SDLK_BACKSPACE:
         begin

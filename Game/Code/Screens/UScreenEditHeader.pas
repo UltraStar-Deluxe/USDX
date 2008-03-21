@@ -43,7 +43,7 @@ type
 
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
 {      function Draw: boolean; override;
       procedure Finish;}
   end;
@@ -52,7 +52,7 @@ implementation
 
 uses UGraphic, UMusic, SysUtils, UFiles, USkins;
 
-function TScreenEditHeader.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenEditHeader.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
   T:    integer;
 begin
@@ -122,12 +122,12 @@ begin
         end;
 
     end;
-    case ScanCode of
-      32..255:
+    case CharCode of
+      #32..#255:
         begin
           if (Interaction >= 2) and (Interaction <= 13) then begin
             Text[Interaction - 2 + TextTitle].Text :=
-              Text[Interaction - 2 + TextTitle].Text + chr(ScanCode);
+              Text[Interaction - 2 + TextTitle].Text + CharCode;
             SetRoundButtons;
           end;
         end;

@@ -92,7 +92,7 @@ type
       procedure SetScroll4;
       procedure SetScroll5;
       procedure SetScroll6;
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure GenerateThumbnails();
       procedure onShow; override;
@@ -225,25 +225,25 @@ var I, I2: Integer;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSong.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenSong.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
   I:      integer;
   I2:     integer;
 // HS:     integer; // Auto Removed, Unused Variable
   SDL_ModState:  Word;
-  Letter: Char;
+  Letter: WideChar;
 begin
   Result := true;
 
   //Song Screen Extensions (Jumpto + Menu)
   if (ScreenSongMenu.Visible) then
   begin
-    Result := ScreenSongMenu.ParseInput(PressedKey, ScanCode, PressedDown);
+    Result := ScreenSongMenu.ParseInput(PressedKey, CharCode, PressedDown);
     Exit;
   end
   else if (ScreenSongJumpto.Visible) then
   begin
-    Result := ScreenSongJumpto.ParseInput(PressedKey, ScanCode, PressedDown);
+    Result := ScreenSongJumpto.ParseInput(PressedKey, CharCode, PressedDown);
     Exit;
   end;
 
@@ -256,7 +256,7 @@ begin
     //Jump to Artist/Titel
     if (SDL_ModState and KMOD_LALT <> 0) AND (Mode = smNormal) AND (PressedKey >= SDLK_A) AND (PressedKey <= SDLK_Z) then
     begin
-      Letter := UpCase(Chr(ScanCode));
+      Letter := WideUpperCase(CharCode)[1];
       I2 := Length(CatSongs.Song);
 
       //Jump To Titel
@@ -266,7 +266,7 @@ begin
         begin
           if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
              (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND
-             (widechar(UpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1]) = widechar(Letter)) then
+             (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
@@ -287,7 +287,7 @@ begin
         begin
           if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
              (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND
-             (widechar(uppercase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1]) = widechar(Letter)) then
+             (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
           begin
             SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 

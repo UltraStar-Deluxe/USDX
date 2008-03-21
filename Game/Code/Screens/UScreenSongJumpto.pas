@@ -23,7 +23,7 @@ type
       procedure SetVisible(Value: Boolean);
       property Visible: Boolean read VisibleBool write SetVisible;
 
-      function ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       procedure onShow; override;
       function Draw: boolean; override;
 
@@ -39,7 +39,7 @@ implementation
 
 uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USongs, UScreenSong, ULog;
 
-function TScreenSongJumpto.ParseInput(PressedKey: Cardinal; ScanCode: byte; PressedDown: Boolean): Boolean;
+function TScreenSongJumpto.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then
@@ -49,7 +49,7 @@ begin
         begin
           if Interaction = 0 then
           begin
-            Button[0].Text[0].Text := Button[0].Text[0].Text + chr(ScanCode);
+            Button[0].Text[0].Text := Button[0].Text[0].Text + CharCode;
             SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
           end;
         end;
