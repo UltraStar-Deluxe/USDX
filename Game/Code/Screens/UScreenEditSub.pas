@@ -134,7 +134,7 @@ begin
       SDLK_BACKQUOTE:
         begin
           // Increase Note Length (same as Alt + Right)
-          Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght);
+          Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
           if CurrentNote = Lines[0].Line[Lines[0].Current].HighNote then
             Inc(Lines[0].Line[Lines[0].Current].End_);
         end;
@@ -367,7 +367,7 @@ begin
           AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
           PlayStopTime := (GetTimeFromBeat(
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start +
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght));
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length));
           AudioPlayback.Play;
           LastClick := -100;
         end;
@@ -407,8 +407,8 @@ begin
 
           // ctrl + right
           if SDL_ModState = KMOD_LCTRL then begin
-            if Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght > 1 then begin
-              Dec(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght);
+            if Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length > 1 then begin
+              Dec(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
               Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
               if CurrentNote = 0 then begin
                 Inc(Lines[0].Line[Lines[0].Current].Start);
@@ -430,7 +430,7 @@ begin
 
           // alt + right
           if SDL_ModState = KMOD_LALT then begin
-            Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght);
+            Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
             if CurrentNote = Lines[0].Line[Lines[0].Current].HighNote then
               Inc(Lines[0].Line[Lines[0].Current].End_);
           end;
@@ -456,7 +456,7 @@ begin
           // ctrl + left
           if SDL_ModState = KMOD_LCTRL then begin
             Dec(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
-            Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght);
+            Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
             if CurrentNote = 0 then begin
               Dec(Lines[0].Line[Lines[0].Current].Start);
               Dec(Lines[0].Line[Lines[0].Current].StartNote);
@@ -480,8 +480,8 @@ begin
 
           // alt + left
           if SDL_ModState = KMOD_LALT then begin
-            if Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght > 1 then begin
-              Dec(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght);
+            if Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length > 1 then begin
+              Dec(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
               if CurrentNote = Lines[0].Line[Lines[0].Current].HighNote then
                 Dec(Lines[0].Line[Lines[0].Current].End_);
             end;
@@ -664,7 +664,7 @@ begin
     Lines[0].Line[C].End_ :=    Lines[0].Line[C].End_ div 2;
     for N := 0 to Lines[0].Line[C].HighNote do begin
       Lines[0].Line[C].Note[N].Start :=   Lines[0].Line[C].Note[N].Start div 2;
-      Lines[0].Line[C].Note[N].Lenght := Round(Lines[0].Line[C].Note[N].Lenght / 2);
+      Lines[0].Line[C].Note[N].Length := Round(Lines[0].Line[C].Note[N].Length / 2);
     end; // N
   end; // C
 end;
@@ -681,7 +681,7 @@ begin
     Lines[0].Line[C].End_ :=    Lines[0].Line[C].End_ * 2;
     for N := 0 to Lines[0].Line[C].HighNote do begin
       Lines[0].Line[C].Note[N].Start :=   Lines[0].Line[C].Note[N].Start * 2;
-      Lines[0].Line[C].Note[N].Lenght := Lines[0].Line[C].Note[N].Lenght * 2;
+      Lines[0].Line[C].Note[N].Length := Lines[0].Line[C].Note[N].Length * 2;
     end; // N
   end; // C
 end;
@@ -757,7 +757,7 @@ var
 begin
   for C := 1 to Lines[0].High do begin
     with Lines[0].Line[C-1] do begin
-      Min := Note[HighNote].Start + Note[HighNote].Lenght;
+      Min := Note[HighNote].Start + Note[HighNote].Length;
       Max := Lines[0].Line[C].StartNote;
       case (Max - Min) of
         0:    S := Max;
@@ -822,14 +822,14 @@ begin
     Inc(Lines[0].Line[CNew].IlNut);
     Inc(Lines[0].Line[CNew].HighNote);
     Lines[0].Line[CNew].End_ := Lines[0].Line[CNew].Note[NNewL].Start +
-      Lines[0].Line[CNew].Note[NNewL].Lenght;
+      Lines[0].Line[CNew].Note[NNewL].Length;
   end;
 
   // clear old notes and set sentence counters
   Lines[0].Line[CStart].HighNote := NStart - 1;
   Lines[0].Line[CStart].IlNut := Lines[0].Line[CStart].HighNote + 1;
   Lines[0].Line[CStart].End_ := Lines[0].Line[CStart].Note[NStart-1].Start +
-    Lines[0].Line[CStart].Note[NStart-1].Lenght;
+    Lines[0].Line[CStart].Note[NStart-1].Length;
   SetLength(Lines[0].Line[CStart].Note, Lines[0].Line[CStart].IlNut);
 
   // 0.5.0: modify BaseNote
@@ -869,7 +869,7 @@ begin
   // increase sentence counters
   NDst := Lines[0].Line[C].HighNote;
   Lines[0].Line[C].End_ := Lines[0].Line[C].Note[NDst].Start +
-    Lines[0].Line[C].Note[NDst].Lenght;
+    Lines[0].Line[C].Note[NDst].Length;
 
   // move needed sentences to one backward.
   for C := Lines[0].Current + 1 to Lines[0].High - 1 do
@@ -900,9 +900,9 @@ begin
   end;
 
   // me slightly modify new note
-  Lines[0].Line[C].Note[CurrentNote].Lenght := 1;
+  Lines[0].Line[C].Note[CurrentNote].Length := 1;
   Inc(Lines[0].Line[C].Note[CurrentNote+1].Start);
-  Dec(Lines[0].Line[C].Note[CurrentNote+1].Lenght);
+  Dec(Lines[0].Line[C].Note[CurrentNote+1].Length);
   Lines[0].Line[C].Note[CurrentNote+1].Text := '- ';
   Lines[0].Line[C].Note[CurrentNote+1].Color := 0;
 end;
@@ -1060,12 +1060,12 @@ begin
   Lines[0].Line[Dst].HighNote := Lines[0].Line[Src].HighNote;
   for N := 0 to Lines[0].Line[Src].HighNote do begin
     Lines[0].Line[Dst].Note[N].Text := Lines[0].Line[Src].Note[N].Text;
-    Lines[0].Line[Dst].Note[N].Lenght := Lines[0].Line[Src].Note[N].Lenght;
+    Lines[0].Line[Dst].Note[N].Length := Lines[0].Line[Src].Note[N].Length;
     Lines[0].Line[Dst].Note[N].Tone := Lines[0].Line[Src].Note[N].Tone;
     Lines[0].Line[Dst].Note[N].Start := Lines[0].Line[Src].Note[N].Start + TD;
   end;
   N := Lines[0].Line[Src].HighNote;
-  Lines[0].Line[Dst].End_ := Lines[0].Line[Dst].Note[N].Start + Lines[0].Line[Dst].Note[N].Lenght;
+  Lines[0].Line[Dst].End_ := Lines[0].Line[Dst].Note[N].Start + Lines[0].Line[Dst].Note[N].Length;
 end;
 
 procedure TScreenEditSub.CopySentences(Src, Dst, Num: integer);
@@ -1091,7 +1091,7 @@ begin
     Lines[0].Line[Dst + C].IlNut := 1;
     Lines[0].Line[Dst + C].HighNote := 0;
     Lines[0].Line[Dst + C].Note[0].Start := Lines[0].Line[Dst + C].Start;
-    Lines[0].Line[Dst + C].Note[0].Lenght := 1;
+    Lines[0].Line[Dst + C].Note[0].Length := 1;
     Lines[0].Line[Dst + C].StartNote := Lines[0].Line[Dst + C].Start;
     Lines[0].Line[Dst + C].End_ := Lines[0].Line[Dst + C].Start + 1;
   end;
@@ -1303,7 +1303,7 @@ begin
   begin
     // Note info
     Text[TextNStart].Text :=    IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
-    Text[TextNDlugosc].Text :=  IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Lenght);
+    Text[TextNDlugosc].Text :=  IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
     Text[TextNTon].Text :=      IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' ( ' + GetNoteName(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' )';
     Text[TextNText].Text :=              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
   end;

@@ -341,7 +341,7 @@ begin
 
     // dopisuje
     Lines.Line[C].Note[N].Start := Note[Nu].Start;
-    Lines.Line[C].Note[N].Lenght := Note[Nu].Len;
+    Lines.Line[C].Note[N].Length := Note[Nu].Len;
     Lines.Line[C].Note[N].Tone := Note[Nu].Tone;
     Lines.Line[C].Note[N].Text := Note[Nu].Lyric;
     //All Notes are Freestyle when Converted Fix:

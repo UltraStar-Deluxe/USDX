@@ -349,7 +349,7 @@ begin
     // copy values from SongLine to LyricLine
     CountNotes          := High(Line.Note);
     LyricLine.Start     := Line.Note[0].Start;
-    LyricLine.Length    := Line.Note[CountNotes].Start + Line.Note[CountNotes].Lenght - LyricLine.Start;
+    LyricLine.Length    := Line.Note[CountNotes].Start + Line.Note[CountNotes].Length - LyricLine.Start;
     LyricLine.CurWord   := -1;
     LyricLine.LastLine  := Line.LastLine;
     
@@ -366,7 +366,7 @@ begin
     For I := 0 to CountNotes do
     begin
       LyricLine.Words[I].Start     := Line.Note[I].Start;
-      LyricLine.Words[I].Length    := Line.Note[I].Lenght;
+      LyricLine.Words[I].Length    := Line.Note[I].Length;
       LyricLine.Words[I].Text      := Line.Note[I].Text;
       LyricLine.Words[I].Freestyle := Line.Note[I].FreeStyle;
       

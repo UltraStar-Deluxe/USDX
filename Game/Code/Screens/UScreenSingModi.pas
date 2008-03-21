@@ -156,7 +156,7 @@ begin
     begin
       Result.Sentence[I].Note[J].Color     := Lines.Line[I].Note[J].Color;
       Result.Sentence[I].Note[J].Start     := Lines.Line[I].Note[J].Start;
-      Result.Sentence[I].Note[J].Length    := Lines.Line[I].Note[J].Lenght;
+      Result.Sentence[I].Note[J].Length    := Lines.Line[I].Note[J].Length;
       Result.Sentence[I].Note[J].Tone      := Lines.Line[I].Note[J].Tone;
       Result.Sentence[I].Note[J].ToneGamus := Lines.Line[I].Note[J].ToneGamus;
       //Result.Sentence[I].Note[J].Text      := Lines.Line[I].Note[J].Tekst;

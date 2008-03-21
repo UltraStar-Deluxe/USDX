@@ -59,7 +59,7 @@ type
     IlNut:     integer;
     Note:     array of record
       Start:     integer;
-      Lenght:    integer;
+      Length:    integer;
       Detekt:    real;     // accurate place, detected in the note
       Tone:      real;
       Perfect:   boolean;  // true if the note matches the original one, lit the star
@@ -747,9 +747,9 @@ begin
   for N := 0 to Lines[0].Line[Lines[0].Current].HighNote do
   begin
     if (Lines[0].Line[Lines[0].Current].Note[N].Start <= LineState.MidBeat) and
-       (Lines[0].Line[Lines[0].Current].Note[N].Start + Lines[0].Line[Lines[0].Current].Note[N].Lenght >= LineState.MidBeat) then
+       (Lines[0].Line[Lines[0].Current].Note[N].Start + Lines[0].Line[Lines[0].Current].Note[N].Length >= LineState.MidBeat) then
     begin
-      Done := (LineState.MidBeat - Lines[0].Line[Lines[0].Current].Note[N].Start) / (Lines[0].Line[Lines[0].Current].Note[N].Lenght);
+      Done := (LineState.MidBeat - Lines[0].Line[Lines[0].Current].Note[N].Start) / (Lines[0].Line[Lines[0].Current].Note[N].Length);
     end;
   end;
 
@@ -758,7 +758,7 @@ begin
   // wylacza ostatnia nute po przejsciu
   {// todo: Lyrics
   if (Ini.LyricsEffect = 1) and (Done = 1) and
-    (LineState.MidBeat > Lines[0].Line[Lines[0].Current].Note[N].Start + Lines[0].Line[Lines[0].Current].Note[N].Lenght)
+    (LineState.MidBeat > Lines[0].Line[Lines[0].Current].Note[N].Start + Lines[0].Line[Lines[0].Current].Note[N].Length)
     then Sender.LyricMain.Selected := -1;
 
   if Done > 1 then Done := 1;
@@ -943,9 +943,9 @@ begin
       for Count := 0 to Lines[0].Line[S].HighNote do
       begin
         if ((Lines[0].Line[S].Note[Count].Start <= LineState.CurrentBeatD)
-          and (Lines[0].Line[S].Note[Count].Start + Lines[0].Line[S].Note[Count].Lenght - 1 >= LineState.CurrentBeatD))
+          and (Lines[0].Line[S].Note[Count].Start + Lines[0].Line[S].Note[Count].Length - 1 >= LineState.CurrentBeatD))
           and (not Lines[0].Line[S].Note[Count].FreeStyle) // but don't allow when it's FreeStyle note
-          and (Lines[0].Line[S].Note[Count].Lenght > 0) then // and make sure the note lenghts is at least 1
+          and (Lines[0].Line[S].Note[Count].Length > 0) then // and make sure the note lengths is at least 1
         begin
           SDet := S;
           Mozna := true;
@@ -967,7 +967,7 @@ begin
       begin
         if (Lines[0].Line[S].Note[Count].Start <= LineState.OldBeatD+1) and
            (Lines[0].Line[S].Note[Count].Start +
-            Lines[0].Line[S].Note[Count].Lenght > LineState.OldBeatD+1) then
+            Lines[0].Line[S].Note[Count].Length > LineState.OldBeatD+1) then
         begin
           // to robi, tylko dla pary nut (oryginalnej i gracza)
 
@@ -1027,15 +1027,15 @@ begin
       if S = SMax then
       begin
         New := true;
-        // jezeli ostatnia ma ten sam Tone
+        // if last has the same tone
         if (Player[CP].IlNut > 0 ) and
            (Player[CP].Note[Player[CP].HighNote].Tone = AudioInputProcessor.Sound[CP].Tone) and
-           (Player[CP].Note[Player[CP].HighNote].Start + Player[CP].Note[Player[CP].HighNote].Lenght = LineState.CurrentBeatD) then
+           (Player[CP].Note[Player[CP].HighNote].Start + Player[CP].Note[Player[CP].HighNote].Length = LineState.CurrentBeatD) then
         begin
           New := false;
         end;
 
-        // jezeli jest jakas nowa nuta na sprawdzanym beacie
+        // if is not as new note to control "beacie" (TODO: translate polish "beacie")
         for Count := 0 to Lines[0].Line[S].HighNote do
         begin
           if (Lines[0].Line[S].Note[Count].Start = LineState.CurrentBeatD) then
@@ -1050,7 +1050,7 @@ begin
           Player[CP].HighNote := Player[CP].HighNote + 1;
           SetLength(Player[CP].Note, Player[CP].IlNut);
           Player[CP].Note[Player[CP].HighNote].Start   := LineState.CurrentBeatD;
-          Player[CP].Note[Player[CP].HighNote].Lenght := 1;
+          Player[CP].Note[Player[CP].HighNote].Length := 1;
           Player[CP].Note[Player[CP].HighNote].Tone     := AudioInputProcessor.Sound[CP].Tone; // Ton || TonDokl
           Player[CP].Note[Player[CP].HighNote].Detekt  := LineState.MidBeat;
 
@@ -1062,14 +1062,14 @@ begin
         else
         begin
           // przedluzenie nuty
-          Player[CP].Note[Player[CP].HighNote].Lenght := Player[CP].Note[Player[CP].HighNote].Lenght + 1;
+          Player[CP].Note[Player[CP].HighNote].Length := Player[CP].Note[Player[CP].HighNote].Length + 1;
         end;
 
         // check for perfect note and then lit the star (on Draw)
         for Count := 0 to Lines[0].Line[S].HighNote do
         begin
           if (Lines[0].Line[S].Note[Count].Start = Player[CP].Note[Player[CP].HighNote].Start) and
-             (Lines[0].Line[S].Note[Count].Lenght = Player[CP].Note[Player[CP].HighNote].Lenght) and
+             (Lines[0].Line[S].Note[Count].Length = Player[CP].Note[Player[CP].HighNote].Length) and
              (Lines[0].Line[S].Note[Count].Tone = Player[CP].Note[Player[CP].HighNote].Tone) then
           begin
             Player[CP].Note[Player[CP].HighNote].Perfect := true;
@@ -1085,7 +1085,7 @@ begin
   if (sDet >= low(Lines[0].Line)) and (sDet <= high(Lines[0].Line)) then
   begin
     if assigned( Sender ) and
-       ((Lines[0].Line[SDet].Note[Lines[0].Line[SDet].HighNote].Start + Lines[0].Line[SDet].Note[Lines[0].Line[SDet].HighNote].Lenght - 1) = LineState.CurrentBeatD) then
+       ((Lines[0].Line[SDet].Note[Lines[0].Line[SDet].HighNote].Start + Lines[0].Line[SDet].Note[Lines[0].Line[SDet].HighNote].Length - 1) = LineState.CurrentBeatD) then
     begin
       Sender.onSentenceEnd(sDet);
     end;

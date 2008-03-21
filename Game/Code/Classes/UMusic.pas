@@ -20,7 +20,7 @@ type
     Path:       string;
     Start:      integer;      // start of song in ms
     IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
-    NoteLenght: integer;
+    NoteLength: integer;
   end;
 
   PLine = ^TLine;
@@ -38,7 +38,7 @@ type
     Note:     array of record
       Color:      integer;
       Start:      integer;
-      Lenght:     integer;
+      Length:     integer;
       Tone:       integer;    // full range tone
       ToneGamus:  integer;    // tone unified to one octave
       Text:       string;

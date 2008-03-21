@@ -120,7 +120,7 @@ begin
           1: NoteState := ': ';
           2: NoteState := '* ';
         end; // case
-        S := NoteState + IntToStr(Start-RelativeSubTime) + ' ' + IntToStr(Lenght) + ' ' + IntToStr(Tone) + ' ' + Text;
+        S := NoteState + IntToStr(Start-RelativeSubTime) + ' ' + IntToStr(Length) + ' ' + IntToStr(Tone) + ' ' + Text;
 
 
         WriteLn(SongFile, S);

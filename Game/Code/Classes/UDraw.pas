@@ -305,7 +305,7 @@ begin
 
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == lenght
+        Rec.Right := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == length
 
         glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -407,10 +407,10 @@ var
 
                // Middle part of the note
                Rec.Left := Rec.Right;
-               Rec.Right := X + (Start+Lenght-Lines[0].Line[Lines[0].Current].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
+               Rec.Right := X + (Start+Length-Lines[0].Line[Lines[0].Current].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
 
                // (nowe) - dunno
-               if (Start+Lenght-1 = LineState.CurrentBeatD) then
+               if (Start+Length-1 = LineState.CurrentBeatD) then
                  Rec.Right := Rec.Right - (1-Frac(LineState.MidBeatD)) * TempR;
                // the left note is more right than the right note itself, sounds weird - so we fix that xD
                if Rec.Right <= Rec.Left then Rec.Right := Rec.Left;
@@ -442,8 +442,8 @@ var
             // Perfect note is stored
             if Perfect and (Ini.EffectSing=1) then
               begin
-                A := 1 - 2*(LineState.CurrentTime - GetTimeFromBeat(Start+Lenght));
-                  if not (Start+Lenght-1 = LineState.CurrentBeatD) then
+                A := 1 - 2*(LineState.CurrentTime - GetTimeFromBeat(Start+Length));
+                  if not (Start+Length-1 = LineState.CurrentBeatD) then
 
                   //Star animation counter
                   //inc(Starfr);
@@ -513,7 +513,7 @@ begin
           X2 := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
           X1 := X2-W;
 
-          X3 := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
+          X3 := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
           X4 := X3+W;
 
           // left
@@ -1272,7 +1272,7 @@ begin
 
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Lenght-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
+        Rec.Right := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
 
         glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
         glBegin(GL_QUADS);

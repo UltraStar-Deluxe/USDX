@@ -300,7 +300,7 @@ begin
         Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
         for I := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
         begin
-         Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Lenght * Lines[CP].Line[Lines[CP].High].Note[I].NoteType;
+         Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Length * Lines[CP].Line[Lines[CP].High].Note[I].NoteType;
         end;
         //Total Notes Patch End
       end else begin
@@ -311,7 +311,7 @@ begin
           Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
           for I := low(Lines[Count].Line[Lines[Count].High].Note) to high(Lines[Count].Line[Lines[Count].High].Note) do
           begin
-            Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[I].Lenght * Lines[Count].Line[Lines[Count].High].Note[I].NoteType;
+            Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[I].Length * Lines[Count].Line[Lines[Count].High].Note[I].NoteType;
           end;
           //Total Notes Patch End
         end;
@@ -600,8 +600,8 @@ begin
 //        Start := Note[HighNote].Start;
     end;
 
-    Note[HighNote].Lenght := DurationP;
-    Melody.NoteLenght := Melody.NoteLenght + Note[HighNote].Lenght;
+    Note[HighNote].Length := DurationP;
+    Melody.NoteLength := Melody.NoteLength + Note[HighNote].Length;
 
     // back to the normal system with normal, golden and now freestyle notes
     case TypeP of
@@ -610,7 +610,7 @@ begin
       '*':  Note[HighNote].NoteType := 2;
     end;
 
-    Lines[LineNumber].NoteType := Lines[LineNumber].NoteType + Note[HighNote].Lenght * Note[HighNote].NoteType;
+    Lines[LineNumber].NoteType := Lines[LineNumber].NoteType + Note[HighNote].Length * Note[HighNote].NoteType;
 
     Note[HighNote].Tone := NoteP;
     if Note[HighNote].Tone < Base[LineNumber] then Base[LineNumber] := Note[HighNote].Tone;
@@ -622,7 +622,7 @@ begin
     if TypeP = 'F' then
       Note[HighNote].FreeStyle := true;
 
-    End_ := Note[HighNote].Start + Note[HighNote].Lenght;
+    End_ := Note[HighNote].Start + Note[HighNote].Length;
   end; // with
 end;
 
@@ -639,7 +639,7 @@ begin
   Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
   for I := low(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) to high(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) do
   begin
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Lenght * Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType;
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length * Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType;
   end;
   //Total Notes Patch End
 

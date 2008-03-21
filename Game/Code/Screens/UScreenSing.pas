@@ -223,7 +223,10 @@ begin
       LineState.CurrentTime := PauseTime; //Position of Notes
 
       // Position of Music
+      // FIXME: remove this and provide LineState.CurrentTime as sync-source instead
+      // so every stream can synch itself
       AudioPlayback.Position := PauseTime;
+
       // Play Music
       AudioPlayback.Play;
 
@@ -544,26 +547,32 @@ begin
         Lyrics.LineColor_act.B := 210/256;
         Lyrics.LineColor_act.A := 1;
 
-{        LyricSub.FontStyle := 0;
+        {
+        LyricSub.FontStyle := 0;
         LyricMain.Size := 14; // 13
         LyricSub.Size := 14; // 13
         LyricMain.ColR := Skin_FontR;
         LyricMain.ColG := Skin_FontG;
         LyricMain.ColB := Skin_FontB; //Change für Crazy Joker
-        {LyricMain.ColSR := Skin_FontHighlightR;
+        }
+        {
+        LyricMain.ColSR := Skin_FontHighlightR;
         LyricMain.ColSG := Skin_FontHighlightG;
-        LyricMain.ColSB := Skin_FontHighlightB;1aa5dc}{
+        LyricMain.ColSB := Skin_FontHighlightB;
+        }{
         LyricMain.ColSR := 5/255; //26
         LyricMain.ColSG := 163/255; //165
         LyricMain.ColSB := 210/255;  //220
 
         LyricSub.ColR := 0.4; //0.6
         LyricSub.ColG := 0.4; //0.6
-        LyricSub.ColB := 0.4; //0.6   }
+        LyricSub.ColB := 0.4; //0.6
+        }
       end;
     1:
       begin
- {       LyricMain.FontStyle := 2;
+        {
+        LyricMain.FontStyle := 2;
         LyricSub.FontStyle := 2;
         LyricMain.Size := 14;
         LyricSub.Size := 14;
@@ -575,7 +584,8 @@ begin
         LyricMain.ColSB := 1;
         LyricSub.ColR := 0.8;
         LyricSub.ColG := 0.8;
-        LyricSub.ColB := 0.8;   }
+        LyricSub.ColB := 0.8;
+        }
 
         Lyrics.UpperLineSize := 14;
         Lyrics.LowerLineSize := 14;
@@ -616,7 +626,8 @@ begin
         Lyrics.LineColor_act.G := 0.5;
         Lyrics.LineColor_act.B := 1;
         Lyrics.LineColor_act.A := 1;
-{        LyricSub.FontStyle := 3;
+        {
+        LyricSub.FontStyle := 3;
         LyricMain.Size := 12;
         LyricSub.Size := 12;
         LyricMain.ColR := 0.75;
@@ -627,7 +638,8 @@ begin
         LyricMain.ColSB := 1;
         LyricSub.ColR := 0.8;
         LyricSub.ColG := 0.8;
-        LyricSub.ColB := 0.8;}
+        LyricSub.ColB := 0.8;
+        }
       end;
   end; // case
 
