@@ -28,6 +28,9 @@
  *
  * mem.h:
  *  revision 12218, Mon Feb 25 18:32:55 2008 UTC
+ *
+ * log.h:
+ *  revision 11209, Wed Dec 12 21:48:50 2007 UTC
  *)
 
 unit avutil;
@@ -226,6 +229,59 @@ function av_strdup({const} s: pchar): pchar;
  *)
 procedure av_freep (ptr: pointer);
   cdecl; external av__util;
+
+(* log.h *)
+
+const
+{$IF LIBAVUTIL_VERSION_MAJOR < 50}
+  AV_LOG_QUIET   = -1;
+  AV_LOG_FATAL   =  0;
+  AV_LOG_ERROR   =  0;
+  AV_LOG_WARNING =  1;
+  AV_LOG_INFO    =  1;
+  AV_LOG_VERBOSE =  1;
+  AV_LOG_DEBUG   =  2;
+{$ELSE}
+  AV_LOG_QUIET   = -8;
+
+(**
+ * something went really wrong and we will crash now
+ *)
+  AV_LOG_PANIC   =  0;
+
+(**
+ * something went wrong and recovery is not possible
+ * like no header in a format which depends on it or a combination
+ * of parameters which are not allowed
+ *)
+  AV_LOG_FATAL   =  8;
+
+(**
+ * something went wrong and cannot losslessly be recovered
+ * but not all future data is affected
+ *)
+  AV_LOG_ERROR   = 16;
+
+(**
+ * something somehow does not look correct / something which may or may not
+ * lead to some problems like use of -vstrict -2
+ *)
+  AV_LOG_WARNING = 24;
+
+  AV_LOG_INFO    = 32;
+  AV_LOG_VERBOSE = 40;
+
+(**
+ * stuff which is only useful for libav* developers
+ *)
+  AV_LOG_DEBUG   = 48;
+{$IFEND}
+
+function av_log_get_level(): integer;
+  cdecl; external av__util;
+procedure av_log_set_level(level: integer);
+  cdecl; external av__util;
+
 
 implementation
 
