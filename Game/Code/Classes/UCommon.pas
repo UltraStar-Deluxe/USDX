@@ -66,6 +66,17 @@ function AdaptFilePaths( const aPath : widestring ): widestring;
 
 // eddie: FindFirstW etc are now in UPlatformWindows.pas
 
+(*
+ * Character classes
+ *)
+
+function IsAlphaChar(ch: WideChar): boolean;
+function IsNumericChar(ch: WideChar): boolean;
+function IsAlphaNumericChar(ch: WideChar): boolean;
+function IsPunctuationChar(ch: WideChar): boolean;
+function IsControlChar(ch: WideChar): boolean;
+
+
 implementation
 
 function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
@@ -138,7 +149,7 @@ var
   iCount : Integer;
 begin
   result := nil;
-  
+
   for iCount := 0 to LazarusResources.count -1 do
   begin
     if ( LazarusResources.items[ iCount ].Name      = aName ) AND
@@ -213,5 +224,58 @@ end;
 {$ENDIF} // IFDEF DARWIN
 
 {$ENDIF} // IFDEF FPC
+
+function IsAlphaChar(ch: WideChar): boolean;
+begin
+  // TODO: add chars > 255 when unicode-fonts work?
+  case ch of
+    'A'..'Z',  // A-Z
+    'a'..'z',  // a-z
+    #170,#181,#186,
+    #192..#214,
+    #216..#246,
+    #248..#255:
+      Result := true;
+    else
+      Result := false;
+  end;
+end;
+
+function IsNumericChar(ch: WideChar): boolean;
+begin
+  case ch of
+    '0'..'9':
+      Result := true;
+    else
+      Result := false;
+  end;
+end;
+
+function IsAlphaNumericChar(ch: WideChar): boolean;
+begin
+  Result := (IsAlphaChar(ch) or IsNumericChar(ch));
+end;
+
+function IsPunctuationChar(ch: WideChar): boolean;
+begin
+  // TODO: add chars outside of Latin1 basic (0..127)?
+  case ch of
+    ' '..'/',':'..'@','['..'`','{'..'~':
+      Result := true;
+    else
+      Result := false;
+  end;
+end;
+
+function IsControlChar(ch: WideChar): boolean;
+begin
+  case ch of
+    #0..#31,
+    #127..#159:
+      Result := true;
+    else
+      Result := false;
+  end;
+end;
 
 end.
