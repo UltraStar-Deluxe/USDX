@@ -44,8 +44,10 @@ begin
   Result := true;
   If (PressedDown) Then
   begin // Key Down
-    case PressedKey of
-      SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL, SDLK_LEFTBRACKET, SDLK_SEMICOLON:
+    // check normal keys
+    case CharCode of
+      '0'..'9', 'a'..'z', 'A'..'Z', ' ', '-', '_', '!', ',', '<', '/', '*', '?', '''', '"',
+      '[', '{', ';', ':':
         begin
           if Interaction = 0 then
           begin
@@ -53,7 +55,10 @@ begin
             SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
           end;
         end;
+    end;
 
+    // check special keys
+    case PressedKey of
       SDLK_BACKSPACE:
         begin
           if (Interaction = 0) AND (Length(Button[0].Text[0].Text) > 0) then

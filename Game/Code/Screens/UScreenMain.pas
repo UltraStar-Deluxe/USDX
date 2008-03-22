@@ -73,19 +73,14 @@ begin
 
   If (PressedDown) Then
   begin // Key Down
-    case PressedKey of
-      SDLK_Q:
+    // check normal keys
+    case WideUpperCase(CharCode)[1] of
+      'Q':
         begin
           Result := false;
+          Exit;
         end;
-
-      SDLK_ESCAPE,
-      SDLK_BACKSPACE :
-        begin
-          Result := False;
-        end;
-
-      SDLK_C:
+      'C':
         begin
           if (SDL_ModState = KMOD_LALT) then
           begin
@@ -93,24 +88,37 @@ begin
             //Credits_Alpha := 0;
             //Credits_Visible := True;
             FadeTo(@ScreenCredits , SoundLib.Start );
+            Exit;
           end;
         end;
-      SDLK_M:
+      'M':
         begin
           if (Ini.Players >= 1) AND (Length(DLLMan.Plugins)>=1) then
           begin
             FadeTo(@ScreenPartyOptions, SoundLib.Start);
+            Exit;
           end;
         end;
 
-      SDLK_S:
+      'S':
         begin
           FadeTo(@ScreenStatMain, SoundLib.Start);
+          Exit;
         end;
 
-      SDLK_E:
+      'E':
         begin
           FadeTo(@ScreenEdit, SoundLib.Start);
+          Exit;
+        end;
+    end;
+
+    // check special keys
+    case PressedKey of
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
+        begin
+          Result := False;
         end;
 
       SDLK_RETURN:

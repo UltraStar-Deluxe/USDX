@@ -31,9 +31,11 @@ uses UGraphic, UDraw, UMain, USkins;
 function TScreenOpen.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
+
   if (PressedDown) then begin // Key Down
+    // check normal keys
     case CharCode of
-      'a'..'z', 'A'..'Z', '0'..'9', #32, '-', '.', ':', '\':
+      '0'..'9', 'a'..'z', 'A'..'Z', ' ', '-', '.', ':', '\':
         begin
           if Interaction = 0 then begin
             Text[TextN].Text := Text[TextN].Text + CharCode;
@@ -41,6 +43,7 @@ begin
         end;
     end;
 
+    // check special keys
     case PressedKey of
       SDLK_Q:
         begin

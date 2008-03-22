@@ -134,37 +134,21 @@ begin
   Result := true;
   If (PressedDown) Then
   begin // Key Down
-    case PressedKey of
-      SDLK_Q:
+    // check normal keys
+    case WideUpperCase(CharCode)[1] of
+      'Q':
         begin
           //When not ask before Exit then Finish now
           if (Ini.AskbeforeDel <> 1) then
             Finish
-          //else just Pause and let the Popup make the Work  
+          //else just Pause and let the Popup make the Work
           else if not paused then
             Pause;
-          
+
           Result := false;
+          Exit;
         end;
-
-      SDLK_ESCAPE,
-      SDLK_BACKSPACE :
-        begin
-          //Record Sound Hack:
-          //Sound[0].BufferLong
-
-          Finish;
-          AudioPlayback.PlaySound(SoundLib.Back);
-          FadeTo(@ScreenScore);
-        end;
-
-      SDLK_P,
-      SDLK_SPACE://Pause Mod
-        begin
-          Pause;
-        end;
-
-      SDLK_V: //Show Visualization
+      'V': //Show Visualization
         begin
           fShowVisualization := not fShowVisualization;
 
@@ -176,6 +160,31 @@ begin
           if fShowVisualization then
             fCurrentVideoPlaybackEngine.play;
 
+          Exit;  
+        end;
+      'P':
+        begin
+          Pause;
+          Exit;
+        end;
+    end;
+
+    // check special keys
+    case PressedKey of
+      SDLK_ESCAPE,
+      SDLK_BACKSPACE :
+        begin
+          //Record Sound Hack:
+          //Sound[0].BufferLong
+
+          Finish;
+          AudioPlayback.PlaySound(SoundLib.Back);
+          FadeTo(@ScreenScore);
+        end;
+
+      SDLK_SPACE:
+        begin
+          Pause;
         end;
 
       SDLK_TAB: //Change Visualization Preset

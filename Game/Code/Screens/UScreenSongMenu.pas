@@ -67,17 +67,21 @@ uses UGraphic,
 function TScreenSongMenu.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     if (CurMenu = SM_Playlist_New) AND (Interaction=0) then
     begin
-      case PressedKey of
-        SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
+      // check normal keys
+      case WideUpperCase(CharCode)[1] of
+        '0'..'9', 'A'..'Z', ' ', '-', '_', '!', ',', '<', '/', '*', '?', '''', '"':
           begin
             Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
             exit;
           end;
+      end;
 
+      // check special keys
+      case PressedKey of
         SDLK_BACKSPACE:
           begin
             Button[Interaction].Text[0].DeleteLastL;
@@ -86,13 +90,17 @@ begin
       end;
     end;
 
-    case PressedKey of
-      SDLK_Q:
+    // check normal keys
+    case WideUpperCase(CharCode)[1] of
+      'Q':
         begin
           Result := false;
+          Exit;
         end;
+    end;
 
-
+    // check special keys
+    case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
@@ -149,10 +157,8 @@ begin
             end;
           end;
         end;
-
-
-    end;
-  end;
+    end; // case
+  end; // if
 end;
 
 constructor TScreenSongMenu.Create;

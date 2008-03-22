@@ -37,13 +37,17 @@ function TScreenTop5.ParseInput(PressedKey: Cardinal; CharCode: WideChar; Presse
 begin
   Result := true;
   If (PressedDown) Then begin
-    case PressedKey of
-      SDLK_Q:
+    // check normal keys
+    case WideUpperCase(CharCode)[1] of
+      'Q':
         begin
           Result := false;
+          Exit;
         end;
-
-
+    end;
+    
+    // check special keys
+    case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE,
       SDLK_RETURN:

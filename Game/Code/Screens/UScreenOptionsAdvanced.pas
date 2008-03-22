@@ -17,19 +17,24 @@ type
 
 implementation
 
-uses UGraphic;
+uses UGraphic, SysUtils;
 
 function TScreenOptionsAdvanced.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
   Result := true;
   If (PressedDown) Then
   begin // Key Down
-    case PressedKey of
-      SDLK_Q:
+    // check normal keys
+    case WideUpperCase(CharCode)[1] of
+      'Q':
         begin
           Result := false;
+          Exit;
         end;
-
+    end;
+    
+    // check special keys
+    case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin

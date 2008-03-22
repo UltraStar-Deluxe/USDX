@@ -19,7 +19,8 @@ type
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture;
+uses UGraphic, UMain, UIni, UTexture, UCommon;
+
 
 function TScreenName.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
@@ -33,12 +34,16 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
-    case PressedKey of
-      SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
-        begin
-          Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
-        end;
+    // check normal keys
+    if (IsAlphaNumericChar(CharCode) or
+        (CharCode in [' ','-','_','!',',','<','/','*','?','''','"'])) then
+    begin
+      Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
+      Exit;
+    end;
 
+    // check special keys
+    case PressedKey of
       // Templates for Names Mod
       SDLK_F1:
        if (SDL_ModState = KMOD_LALT) then

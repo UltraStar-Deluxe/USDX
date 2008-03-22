@@ -254,63 +254,192 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     //Jump to Artist/Titel
-    if (SDL_ModState and KMOD_LALT <> 0) AND (Mode = smNormal) AND (PressedKey >= SDLK_A) AND (PressedKey <= SDLK_Z) then
+    if ((SDL_ModState and KMOD_LALT <> 0) AND (Mode = smNormal)) then
     begin
-      Letter := WideUpperCase(CharCode)[1];
-      I2 := Length(CatSongs.Song);
-
-      //Jump To Titel
-      if (SDL_ModState = KMOD_LALT or KMOD_LSHIFT) then
+      if (WideUpperCase(CharCode)[1] in ['A'..'Z']) then
       begin
-        For I := 1 to high(CatSongs.Song) do
+        Letter := WideUpperCase(CharCode)[1];
+        I2 := Length(CatSongs.Song);
+
+        //Jump To Titel
+        if (SDL_ModState = (KMOD_LALT or KMOD_LSHIFT)) then
         begin
-          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
-             (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND
-             (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
+          For I := 1 to high(CatSongs.Song) do
           begin
-            SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+            if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
+               (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND
+               (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
+            begin
+              SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-            AudioPlayback.PlaySound(SoundLib.Change);
+              AudioPlayback.PlaySound(SoundLib.Change);
 
-            ChangeMusic;
-            SetScroll4;
-            //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
-            //Break and Exit
-            Exit;
+              ChangeMusic;
+              SetScroll4;
+              //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
+              //Break and Exit
+              Exit;
+            end;
           end;
-        end;
-      end
-      //Jump to Artist
-      else  if (SDL_ModState = KMOD_LALT) then
-      begin
-        For I := 1 to high(CatSongs.Song) do
+        end
+        //Jump to Artist
+        else  if (SDL_ModState = KMOD_LALT) then
         begin
-          if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
-             (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND
-             (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
+          For I := 1 to high(CatSongs.Song) do
           begin
-            SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+            if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
+               (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND
+               (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
+            begin
+              SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-            AudioPlayback.PlaySound(SoundLib.Change);
+              AudioPlayback.PlaySound(SoundLib.Change);
 
-            ChangeMusic;
-            SetScroll4;
-            //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
+              ChangeMusic;
+              SetScroll4;
+              //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
 
-            //Break and Exit
-            Exit;
+              //Break and Exit
+              Exit;
+            end;
           end;
         end;
       end;
+
       Exit;
     end;
 
-    case PressedKey of
-      SDLK_Q:
+    // check normal keys
+    case WideUpperCase(CharCode)[1] of
+      'Q':
         begin
           Result := false;
+          Exit;
         end;
 
+      'M': //Show SongMenu
+        begin
+          if (Songs.SongList.Count > 0) then begin
+            if (Mode = smNormal) then begin
+              if not CatSongs.Song[Interaction].Main then begin // clicked on Song
+                if CatSongs.CatNumShow = -3 then
+                  ScreenSongMenu.MenuShow(SM_Playlist)
+                else
+                  ScreenSongMenu.MenuShow(SM_Main);
+              end
+              else
+              begin
+                ScreenSongMenu.MenuShow(SM_Playlist_Load);
+              end;
+            end //Party Mode -> Show Party Menu
+            else ScreenSongMenu.MenuShow(SM_Party_Main);
+          end;
+          Exit;
+        end;
+
+      'P': //Show Playlist Menu
+        begin
+          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then begin
+              ScreenSongMenu.MenuShow(SM_Playlist_Load);
+          end;
+          Exit;
+        end;
+
+      'J': //Show Jumpto Menu
+        begin
+          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then
+          begin
+            ScreenSongJumpto.Visible := True;
+          end;
+          Exit;
+        end;
+
+      'E':
+        begin
+          OpenEditor;
+          Exit;
+        end;
+
+      'R':
+        begin
+          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then begin
+
+            if (SDL_ModState = KMOD_LSHIFT) AND (Ini.Tabs_at_startup = 1) then //Random Category
+            begin
+            I2 := 0; //Count Cats
+            for I:= low(CatSongs.Song) to high (CatSongs.Song) do
+              if CatSongs.Song[I].Main then Inc(I2);
+
+            I2 := Random (I2)+1; //Zufall
+
+            //Find Cat:
+            for I:= low(CatSongs.Song) to high (CatSongs.Song) do
+              begin
+              if CatSongs.Song[I].Main then
+                Dec(I2);
+              if (I2<=0) then
+                begin
+                //Show Cat in Top Left Mod
+                ShowCatTL (I);
+
+                Interaction := I;
+
+                CatSongs.ShowCategoryList;
+                CatSongs.ClickCategoryButton(I);
+                SelectNext;
+                FixSelected;
+                break;
+                end;
+              end;
+
+
+            end
+            else if (SDL_ModState = KMOD_LCTRL) AND (Ini.Tabs_at_startup = 1) then //random in All Categorys
+            begin
+            repeat
+              I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
+            until CatSongs.Song[I2].Main = false;
+
+            //Search Cat
+            for I := I2 downto low(CatSongs.Song) do
+              begin
+              if CatSongs.Song[I].Main then
+                break;
+              end;
+            //In I is now the categorie in I2 the song
+
+            //Choose Cat
+            CatSongs.ShowCategoryList;
+
+            //Show Cat in Top Left Mod
+              ShowCatTL (I);
+
+            CatSongs.ClickCategoryButton(I);
+            SelectNext;
+
+            //Fix: Not Existing Song selected:
+            //if (I+1=I2) then Inc(I2);
+
+            //Choose Song
+            SkipTo(I2-I);
+
+            end
+            else //Random in one Category
+            begin
+              SkipTo(Random(CatSongs.VisibleSongs));
+            end;
+            AudioPlayback.PlaySound(SoundLib.Change);
+
+            ChangeMusic;
+            SetScroll4;
+            //UpdateLCD; //TODO: maybe LCD Support as Plugin?
+          end;
+          Exit;
+        end;
+    end; // normal keys
+
+    // check special keys
+    case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
@@ -440,40 +569,6 @@ begin
           end;
         end;
 
-      SDLK_M: //Show SongMenu
-        begin
-          if (Songs.SongList.Count > 0) then begin
-            if (Mode = smNormal) then begin
-              if not CatSongs.Song[Interaction].Main then begin // clicked on Song
-                if CatSongs.CatNumShow = -3 then
-                  ScreenSongMenu.MenuShow(SM_Playlist)
-                else
-                  ScreenSongMenu.MenuShow(SM_Main);
-              end
-              else
-              begin
-                ScreenSongMenu.MenuShow(SM_Playlist_Load);
-              end;
-            end //Party Mode -> Show Party Menu
-            else ScreenSongMenu.MenuShow(SM_Party_Main);
-          end;
-        end;
-
-      SDLK_P: //Show Playlist Menu
-        begin
-          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then begin
-              ScreenSongMenu.MenuShow(SM_Playlist_Load);
-          end;
-        end;
-
-      SDLK_J: //Show Jumpto Menu
-        begin
-          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then
-          begin
-            ScreenSongJumpto.Visible := True;
-          end;
-        end;
-
       SDLK_DOWN:
         begin
           if (Mode = smNormal) then
@@ -579,87 +674,6 @@ begin
             SetScroll4;
             //UpdateLCD; //TODO: maybe LCD Support as Plugin?
             //Light.LightOne(0, 200); //TODO: maybe Light Support as Plugin?
-          end;
-        end;
-
-      SDLK_E:
-        begin
-          OpenEditor;
-        end;
-
-      SDLK_R:
-        begin
-          if (Songs.SongList.Count > 0) AND (Mode = smNormal) then begin
-
-            if (SDL_ModState = KMOD_LSHIFT) AND (Ini.Tabs_at_startup = 1) then //Random Category
-            begin
-            I2 := 0; //Count Cats
-            for I:= low(CatSongs.Song) to high (CatSongs.Song) do
-              if CatSongs.Song[I].Main then Inc(I2);
-
-            I2 := Random (I2)+1; //Zufall
-
-            //Find Cat:
-            for I:= low(CatSongs.Song) to high (CatSongs.Song) do
-              begin
-              if CatSongs.Song[I].Main then
-                Dec(I2);
-              if (I2<=0) then
-                begin
-                //Show Cat in Top Left Mod
-                ShowCatTL (I);
-
-                Interaction := I;
-
-                CatSongs.ShowCategoryList;
-                CatSongs.ClickCategoryButton(I);
-                SelectNext;
-                FixSelected;
-                break;
-                end;
-              end;
-
-
-            end
-            else if (SDL_ModState = KMOD_LCTRL) AND (Ini.Tabs_at_startup = 1) then //random in All Categorys
-            begin
-            repeat
-              I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
-            until CatSongs.Song[I2].Main = false;
-
-            //Search Cat
-            for I := I2 downto low(CatSongs.Song) do
-              begin
-              if CatSongs.Song[I].Main then
-                break;
-              end;
-            //In I is now the categorie in I2 the song
-
-            //Choose Cat
-            CatSongs.ShowCategoryList;
-
-            //Show Cat in Top Left Mod
-              ShowCatTL (I);
-
-            CatSongs.ClickCategoryButton(I);
-            SelectNext;
-
-            //Fix: Not Existing Song selected:
-            //if (I+1=I2) then Inc(I2);
-
-            //Choose Song
-            SkipTo(I2-I);
-
-            end
-            else //Random in one Category
-            begin
-              SkipTo(Random(CatSongs.VisibleSongs));
-            end;
-            AudioPlayback.PlaySound(SoundLib.Change);
-
-            ChangeMusic;
-            SetScroll4;
-            //UpdateLCD; //TODO: maybe LCD Support as Plugin?
           end;
         end;
 

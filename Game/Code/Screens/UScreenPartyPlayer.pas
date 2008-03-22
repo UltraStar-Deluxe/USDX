@@ -64,12 +64,17 @@ begin
     SDL_ModState := 0;
 
   begin // Key Down
-    case PressedKey of
-      SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
+    // check normal keys
+    case CharCode of
+      '0'..'9', 'a'..'z', 'A'..'Z', ' ', '-', '_', '!', ',', '<', '/', '*', '?', '''', '"':
         begin
           Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
+          Exit;
         end;
+    end;
 
+    // check special keys
+    case PressedKey of
       // Templates for Names Mod
       SDLK_F1:
        if (SDL_ModState = KMOD_LALT) then

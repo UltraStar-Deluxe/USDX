@@ -118,17 +118,156 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
 
   If (PressedDown) then begin // Key Down
-    case PressedKey of
+    // check normal keys
+    case WideUpperCase(CharCode)[1] of
+      'Q':
+        begin
+          Result := false;
+          Exit;
+        end;
+      'S':
+        begin
+          // Save Song
+          if SDL_ModState = KMOD_LSHIFT then
+            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, true)
+          else
+            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, false);
 
+          {if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
+            // Save Song
+            SaveSongDebug(CurrentSong, Lines[0], 'C:\song.asm', false);}
+
+          Exit;
+        end;
+      'D':
+        begin
+          // Divide lengths by 2
+          CzesciDivide;
+          Exit;
+        end;
+      'M':
+        begin
+          // Multiply lengths by 2
+          CzesciMultiply;
+          Exit;
+        end;
+      'C':
+        begin
+          // Capitalize letter at the beginning of line
+          if SDL_ModState = 0 then
+            LyricsCapitalize;
+
+          // Correct spaces
+          if SDL_ModState = KMOD_LSHIFT then
+            LyricsCorrectSpaces;
+
+          // Copy sentence
+          if SDL_ModState = KMOD_LCTRL then
+            MarkSrc;
+
+          Exit;
+        end;
+      'V':
+        begin
+          // Paste text
+          if SDL_ModState = KMOD_LCTRL then begin
+            if Lines[0].Line[Lines[0].Current].IlNut >= Lines[0].Line[CopySrc].IlNut then
+              PasteText
+            else
+              beep;
+          end;
+
+          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then begin
+            CopySentence(CopySrc, Lines[0].Current);
+          end;
+        end;
+      'T':
+        begin
+          // Fixes timings between sentences
+          FixTimings;
+          Exit;
+        end;
+      'P':
+        begin
+          if SDL_ModState = 0 then
+          begin
+            // Play Sentence
+            Click := true;
+            AudioPlayback.Stop;
+            R := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
+            if R <= AudioPlayback.Length then
+            begin
+              AudioPlayback.Position := R;
+              PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
+              PlaySentence := true;
+              AudioPlayback.Play;
+              LastClick := -100;
+            end;
+          end
+          else if SDL_ModState = KMOD_LSHIFT then
+          begin
+            PlaySentenceMidi := true;
+
+            MidiTime := USTime.GetTime;
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
+            MidiStop := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
+
+            LastClick := -100;
+          end
+          else if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL then
+          begin
+            PlaySentenceMidi := true;
+            MidiTime  := USTime.GetTime;
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
+            MidiStop  := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
+            LastClick := -100;
+
+            PlaySentence := true;
+            Click := true;
+            AudioPlayback.Stop;
+            AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote)+0{-0.10};
+            PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_)+0;
+            AudioPlayback.Play;
+            LastClick := -100;
+          end;
+          Exit;
+        end;
+      // Golden Note Patch
+      'G':
+        begin
+          case Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType of
+            0: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 2;
+            1: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 2;
+            2: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 1;
+          end; // case
+          Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := False;
+          Exit;
+        end;
+      // Freestyle Note Patch
+      'F':
+        begin
+           case Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType of
+            0:
+            begin;
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 1;
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := False;
+            end;
+            1,2:
+            begin;
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 0;
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := True;
+            end;
+          end; // case
+          Exit;
+        end;
+    end;
+    
+    // check special keys
+    case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
           FadeTo(@ScreenSong);
-        end;
-
-      SDLK_Q:
-        begin
-          Result := false;
         end;
 
       SDLK_BACKQUOTE:
@@ -161,13 +300,32 @@ begin
             CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 25) - 1) / 25;
         end;
 
-      SDLK_0:
+      SDLK_4:
         begin
-          // Increase GAP
-          if SDL_ModState = 0 then
-            CurrentSong.GAP := CurrentSong.GAP + 10;
-          if SDL_ModState = KMOD_LSHIFT then
-            CurrentSong.GAP := CurrentSong.GAP + 1000;
+          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then begin
+            CopySentence(CopySrc, Lines[0].Current);
+            CopySentence(CopySrc+1, Lines[0].Current+1);
+            CopySentence(CopySrc+2, Lines[0].Current+2);
+            CopySentence(CopySrc+3, Lines[0].Current+3);
+          end;
+
+          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then begin
+            CopySentences(CopySrc, Lines[0].Current, 4);
+          end;
+        end;
+      SDLK_5:
+        begin
+          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then begin
+            CopySentence(CopySrc, Lines[0].Current);
+            CopySentence(CopySrc+1, Lines[0].Current+1);
+            CopySentence(CopySrc+2, Lines[0].Current+2);
+            CopySentence(CopySrc+3, Lines[0].Current+3);
+            CopySentence(CopySrc+4, Lines[0].Current+4);
+          end;
+
+          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then begin
+            CopySentences(CopySrc, Lines[0].Current, 5);
+          end;
         end;
 
       SDLK_9:
@@ -177,6 +335,14 @@ begin
             CurrentSong.GAP := CurrentSong.GAP - 10;
           if SDL_ModState = KMOD_LSHIFT then
             CurrentSong.GAP := CurrentSong.GAP - 1000;
+        end;
+      SDLK_0:
+        begin
+          // Increase GAP
+          if SDL_ModState = 0 then
+            CurrentSong.GAP := CurrentSong.GAP + 10;
+          if SDL_ModState = KMOD_LSHIFT then
+            CurrentSong.GAP := CurrentSong.GAP + 1000;
         end;
 
       SDLK_KP_PLUS:
@@ -218,143 +384,10 @@ begin
 
         end;
 
-      SDLK_S:
-        begin
-          // Save Song
-          if SDL_ModState = KMOD_LSHIFT then
-            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, true)
-          else
-            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, false);
-
-          {if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
-            // Save Song
-            SaveSongDebug(CurrentSong, Lines[0], 'C:\song.asm', false);}
-
-        end;
-
-      SDLK_D:
-        begin
-          // Divide lengths by 2
-          CzesciDivide;
-        end;
-
-      SDLK_M:
-        begin
-          // Multiply lengths by 2
-          CzesciMultiply;
-        end;
-
-      SDLK_C:
-        begin
-          // Capitalize letter at the beginning of line
-          if SDL_ModState = 0 then
-            LyricsCapitalize;
-
-          // Correct spaces
-          if SDL_ModState = KMOD_LSHIFT then
-            LyricsCorrectSpaces;
-
-          // Copy sentence
-          if SDL_ModState = KMOD_LCTRL then
-            MarkSrc;
-        end;
-
-      SDLK_V:
-        begin
-          // Paste text
-          if SDL_ModState = KMOD_LCTRL then begin
-            if Lines[0].Line[Lines[0].Current].IlNut >= Lines[0].Line[CopySrc].IlNut then
-              PasteText
-            else
-              beep;
-          end;
-
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then begin
-            CopySentence(CopySrc, Lines[0].Current);
-          end;
-        end;
-
-      SDLK_4:
-        begin
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then begin
-            CopySentence(CopySrc, Lines[0].Current);
-            CopySentence(CopySrc+1, Lines[0].Current+1);
-            CopySentence(CopySrc+2, Lines[0].Current+2);
-            CopySentence(CopySrc+3, Lines[0].Current+3);
-          end;
-
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then begin
-            CopySentences(CopySrc, Lines[0].Current, 4);
-          end;
-        end;
-      SDLK_5:
-        begin
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then begin
-            CopySentence(CopySrc, Lines[0].Current);
-            CopySentence(CopySrc+1, Lines[0].Current+1);
-            CopySentence(CopySrc+2, Lines[0].Current+2);
-            CopySentence(CopySrc+3, Lines[0].Current+3);
-            CopySentence(CopySrc+4, Lines[0].Current+4);
-          end;
-
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then begin
-            CopySentences(CopySrc, Lines[0].Current, 5);
-          end;
-        end;
-
-      SDLK_T:
-        begin
-          // Fixes timings between sentences
-          FixTimings;
-        end;
-
       SDLK_F4:
         begin
           // Enter Text Edit Mode
           TextEditMode := true;
-        end;
-
-      SDLK_P:
-        begin
-          if SDL_ModState = 0 then begin
-            // Play Sentence
-            Click := true;
-            AudioPlayback.Stop;
-            R := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
-            if R <= AudioPlayback.Length then
-            begin
-              AudioPlayback.Position := R;
-              PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
-              PlaySentence := true;
-              AudioPlayback.Play;
-              LastClick := -100;
-            end;
-          end;
-
-          if SDL_ModState = KMOD_LSHIFT then begin
-            PlaySentenceMidi := true;
-
-            MidiTime := USTime.GetTime;
-            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
-            MidiStop := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
-
-            LastClick := -100;
-          end;
-          if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL then begin
-            PlaySentenceMidi := true;
-            MidiTime  := USTime.GetTime;
-            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
-            MidiStop  := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
-            LastClick := -100;
-
-            PlaySentence := true;
-            Click := true;
-            AudioPlayback.Stop;
-            AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote)+0{-0.10};
-            PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_)+0;
-            AudioPlayback.Play;
-            LastClick := -100;
-          end;
         end;
 
       SDLK_SPACE:
@@ -549,37 +582,7 @@ begin
           {$endif}
         end;
 
-      // Golden Note Patch
-      SDLK_G:
-        begin
-          case Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType of
-            0: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 2;
-            1: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 2;
-            2: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 1;
-          end; // case
-          Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := False;
-        end;
-
-      // Freestyle Note Patch
-      SDLK_F:
-        begin
-           case Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType of
-            0:
-            begin;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 1;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := False;
-            end;
-            1,2:
-            begin;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 0;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := True;
-            end;
-          end; // case
-
-        end;
-
-
-      end;
+      end; // case
     end;
   end; // if
 end;
