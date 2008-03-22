@@ -183,7 +183,7 @@ begin
   ModiInfo.ModiDeInit         := ModiDeInit;
 
   //Call Service
-  Result := PluginInterface.CallService('Party/RegisterModi', Integer(@ModiInfo), 0);
+  Result := PluginInterface.CallService('Party/RegisterModi', Integer(@ModiInfo), nil);
 end;
 
 end.
