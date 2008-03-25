@@ -374,6 +374,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2C0199800D99840900974970 /* config-macosx.inc */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = "config-macosx.inc"; path = "../config-macosx.inc"; sourceTree = SOURCE_ROOT; };
 		2C4B70220CF757A400B0F0BD /* Until5000.dpr */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = Until5000.dpr; path = ../../../Modis/5000Points/Until5000.dpr; sourceTree = SOURCE_ROOT; };
 		2C4D9C620CC9EC8C0031092D /* TextGL.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = TextGL.pas; path = ../Classes/TextGL.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCatCovers.pas; path = ../Classes/UCatCovers.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
@@ -795,6 +796,7 @@
 				DDC6851B09F57195004E4BFF /* UltraStarDX.pas */,
 				2CF551A70CDA356800627463 /* UltraStar.dpr */,
 				2C4D9E440CC9F0ED0031092D /* switches.inc */,
+				2C0199800D99840900974970 /* config-macosx.inc */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -1460,7 +1462,7 @@
 					Carbon,
 				);
 				PREBINDING = NO;
-				PRODUCT_NAME = UltraStarDX;
+				PRODUCT_NAME = "UltraStar Deluxe";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};

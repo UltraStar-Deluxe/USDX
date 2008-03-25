@@ -72,7 +72,7 @@ begin
     if (CurMenu = SM_Playlist_New) AND (Interaction=0) then
     begin
       // check normal keys
-      case WideUpperCase(CharCode)[1] of
+      case WideCharUpperCase(CharCode)[1] of
         '0'..'9', 'A'..'Z', ' ', '-', '_', '!', ',', '<', '/', '*', '?', '''', '"':
           begin
             Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
@@ -91,7 +91,7 @@ begin
     end;
 
     // check normal keys
-    case WideUpperCase(CharCode)[1] of
+    case WideCharUpperCase(CharCode)[1] of
       'Q':
         begin
           Result := false;

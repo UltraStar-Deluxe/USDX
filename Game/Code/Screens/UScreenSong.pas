@@ -256,9 +256,9 @@ begin
     //Jump to Artist/Titel
     if ((SDL_ModState and KMOD_LALT <> 0) AND (Mode = smNormal)) then
     begin
-      if (WideUpperCase(CharCode)[1] in ['A'..'Z']) then
+      if (WideCharUpperCase(CharCode)[1] in ['A'..'Z']) then
       begin
-        Letter := WideUpperCase(CharCode)[1];
+        Letter := WideCharUpperCase(CharCode)[1];
         I2 := Length(CatSongs.Song);
 
         //Jump To Titel
@@ -310,7 +310,7 @@ begin
     end;
 
     // check normal keys
-    case WideUpperCase(CharCode)[1] of
+    case WideCharUpperCase(CharCode)[1] of
       'Q':
         begin
           Result := false;

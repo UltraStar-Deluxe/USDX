@@ -219,8 +219,16 @@ begin
       while true do
       begin
         SourceName := BASS_RecordGetInputName(SourceIndex);
-        if (SourceName = nil) then
-          break;
+		{$IFDEF DARWIN}
+		  // Patch for SingStar USB-Microphones:
+	      if ((SourceName = nil) and (SourceIndex = 0) and (Pos('Serial#', Descr) > 0)) then
+			SourceName := 'Microphone'
+		  else
+            break;
+		{$ELSE}
+	      if (SourceName = nil) then
+            break;
+		{$ENDIF}
 
         SetLength(BassDevice.Source, SourceIndex+1);
         BassDevice.Source[SourceIndex].Name :=

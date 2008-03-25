@@ -56,8 +56,7 @@ uses
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
-I: Integer;
-SDL_ModState:  Word;
+	SDL_ModState:  Word;
 begin
   Result := true;
 
@@ -74,7 +73,7 @@ begin
   If (PressedDown) Then
   begin // Key Down
     // check normal keys
-    case WideUpperCase(CharCode)[1] of
+    case WideCharUpperCase(CharCode)[1] of
       'Q':
         begin
           Result := false;

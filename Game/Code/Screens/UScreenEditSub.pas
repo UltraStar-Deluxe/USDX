@@ -119,7 +119,7 @@ begin
 
   If (PressedDown) then begin // Key Down
     // check normal keys
-    case WideUpperCase(CharCode)[1] of
+    case WideCharUpperCase(CharCode)[1] of
       'Q':
         begin
           Result := false;

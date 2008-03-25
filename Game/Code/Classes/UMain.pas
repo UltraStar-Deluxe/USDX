@@ -1104,7 +1104,6 @@ begin
   Player[PlayerNum].ScoreTotalI := 0;
 end;
 
-
 //--------------------
 // Function sets all Absolute Paths e.g. Song Path and makes sure the Directorys exist
 //--------------------

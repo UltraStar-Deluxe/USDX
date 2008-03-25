@@ -4684,6 +4684,7 @@ type
   // GLU functions
   function gluBuild2DMipmaps(target: TGLEnum; components, width, height: TGLint; format, atype: TGLEnum; Data: Pointer): TGLint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external glu32;
   function gluScaleImage(format: TGLEnum; widthin, heightin: TGLint; typein: TGLEnum; datain: Pointer; widthout, heightout: TGLint; typeout: TGLEnum; dataout: Pointer): TGLint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external glu32;
+  function gluErrorString(errCode : GLenum) : PChar;  {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external glu32;
 
   Procedure LoadOpenGL;
   Procedure UnloadOpenGL;

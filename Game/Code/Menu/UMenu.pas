@@ -46,6 +46,7 @@ type
       //constructor Create(Back: string; W, H: integer); overload; virtual; // W and H are the number of overlaps
 
       // interaction
+      function WideCharUpperCase(const wchar : WideChar) : WideString;
       procedure AddInteraction(Typ, Num: integer);
       procedure SetInteraction(Num: integer);
       property Interaction: integer read SelInteraction write SetInteraction;
@@ -1541,6 +1542,16 @@ procedure TMenu.onShowFinish;
 begin
 // nothing
 //  beep;
+end;
+
+function TMenu.WideCharUpperCase(const wchar : WideChar) : WideString;
+begin
+  {$IFDEF DARWIN}
+	// eddie: WideUpperCase crashes on the mac with WideChars.
+	Result := UpperCase(wchar);
+	{$ELSE}
+  Result := WideUpperCase(wchar);
+	{$ENDIF}
 end;
 
 procedure TMenu.onHide;

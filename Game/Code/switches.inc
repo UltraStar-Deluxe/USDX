@@ -44,7 +44,11 @@
 
 {$IF Defined(win32)}
   // include defines but no constants
-  {$I config-win.inc}
+	{$IFDEF DARWIN}
+    {$I config-macosx.inc}
+	{$ELSE}
+    {$I config-win.inc}
+	{$ENDIF}
 
   // audio config
   {$DEFINE WinAudioLib_BASS}

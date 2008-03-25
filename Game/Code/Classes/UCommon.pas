@@ -36,6 +36,10 @@ type
   function LazFindResource( const aName, aType : String ): TLResource;
 {$ENDIF}
 
+{$IFDEF DARWIN}
+  procedure ShowMessage( const msg : String );
+{$ENDIF}
+
 {$IFDEF FPC}
 
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;
@@ -224,6 +228,14 @@ end;
 {$ENDIF} // IFDEF DARWIN
 
 {$ENDIF} // IFDEF FPC
+
+{$IFDEF DARWIN}
+procedure ShowMessage( const msg : String );
+begin
+	//eddie: what to do here?
+end;
+{$ENDIF}
+
 
 function IsAlphaChar(ch: WideChar): boolean;
 begin

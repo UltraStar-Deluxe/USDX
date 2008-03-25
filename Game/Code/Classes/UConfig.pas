@@ -196,7 +196,7 @@ function USDXShortVersionStr(): string;
 implementation
 
 uses
-  StrUtils;
+  StrUtils, Math;
 
 function USDXShortVersionStr(): string;
 begin
