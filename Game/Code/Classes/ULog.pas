@@ -53,6 +53,7 @@ type
   end;
 
 procedure SafeWriteLn(const msg: string); {$IFDEF HasInline}inline;{$ENDIF}
+procedure debugWriteln( aString : String );
 
 var
   Log:    TLog;
@@ -66,8 +67,8 @@ uses
   SysUtils,
   DateUtils,
 //UFiles,
-  UMain,
   URecord,
+  UMain,  
   UTime,
 //UIni,  // JB - Seems to not be needed.
   {$IFDEF FPC}
@@ -136,9 +137,19 @@ begin
   SDL_CondSignal(ConsoleCond);
   SDL_mutexV(ConsoleMutex);
 {$ELSE}
-  WriteLn(msg);
+  debugWriteln(msg);
 {$ENDIF}
 end;
+
+procedure debugWriteln( aString : String );
+begin
+  {$IFDEF CONSOLE}
+    if FindCmdLineSwitch( cDebug ) then
+      writeln( 'DEBUG - '+aString );
+  {$ENDIF}
+
+end;
+
 
 constructor TLog.Create;
 begin

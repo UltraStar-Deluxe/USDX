@@ -22,11 +22,6 @@ uses
   UScreenSing,
   USong,
   OpenGL12,
-  {$IFDEF UseSerialPort}
-  //zlportio, //you can disable it and all PortWriteB calls
-  {$ENDIF}
-  //ULCD,  //TODO: maybe LCD Support as Plugin?
-  //ULight, //TODO: maybe Light Support as Plugin?
   UThemes;
 
 type
@@ -113,8 +108,8 @@ procedure NewBeatC(Sender: TScreenSing); // executed when on then new beat for c
 procedure NewBeatD(Sender: TScreenSing); // executed when on then new beat for detection
 //procedure NewHalf; // executed when in the half between beats
 procedure NewNote(Sender: TScreenSing); // detect note
-function GetMidBeat(Time: real): real;
-function GetTimeFromBeat(Beat: integer): real;
+function  GetMidBeat(Time: real): real;
+function  GetTimeFromBeat(Beat: integer): real;
 procedure ClearScores(PlayerNum: integer);
 
 implementation
@@ -138,6 +133,9 @@ uses
   UGraphicClasses,
   UPluginDefs,
   UPlatform;
+
+
+
 
 procedure Main;
 var
@@ -224,36 +222,6 @@ begin
     Ini.LoadSoundSettings;
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Load Sound Settings', 1);
-
-    // LCD         //TODO: maybe LCD Support as Plugin?
-    //Log.BenchmarkStart(1);
-    //Log.LogStatus('Load LCD', 'Initialization');
-    //LCD := TLCD.Create;
-    (*
-    if Ini.LPT = 1 then
-    begin
-      //LCD.HalfInterface := true;
-      LCD.Enable;
-      LCD.Clear;
-      LCD.WriteText(1, '  UltraStar    ');
-      LCD.WriteText(2, '  Loading...   ');
-    end;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading LCD', 1);
-    *)
-    // Light //TODO: maybe Light Support as Plugin?
-    (*
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Load Light', 'Initialization');
-    Light := TLight.Create;
-    if Ini.LPT = 2 then
-    begin
-      Light.Enable;
-    end;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Light', 1);
-    *)
-
 
     // Theme
     Log.BenchmarkStart(1);

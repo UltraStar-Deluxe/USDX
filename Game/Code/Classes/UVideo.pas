@@ -54,6 +54,7 @@ uses SDL,
      {$endif}
      *)
      UIni,
+     ULog,
      UMusic,
      UGraphic;
 
@@ -126,7 +127,7 @@ type
 
 procedure showmessage( aMessage : String );
 begin
-  writeln( aMessage );
+  debugwriteln( aMessage );
 end;
 
 //{$endif}
@@ -163,14 +164,14 @@ begin
   aFirstAudioStream := -1;
   aFirstVideoStream := -1;
 
-  writeln( ' aFormatCtx.nb_streams : ' + inttostr( aFormatCtx.nb_streams ) );
-  writeln( ' length( aFormatCtx.streams ) : ' + inttostr( length(aFormatCtx.streams) ) );
+  debugwriteln( ' aFormatCtx.nb_streams : ' + inttostr( aFormatCtx.nb_streams ) );
+  debugwriteln( ' length( aFormatCtx.streams ) : ' + inttostr( length(aFormatCtx.streams) ) );
 
   i := 0;
   while ( i < aFormatCtx.nb_streams ) do
 //  while ( i < length(aFormatCtx.streams)-1 ) do
   begin
-    writeln( ' aFormatCtx.streams[i] : ' + inttostr( i ) );
+    debugwriteln( ' aFormatCtx.streams[i] : ' + inttostr( i ) );
     st := aFormatCtx.streams[i];
 
     if(st.codec.codec_type = CODEC_TYPE_VIDEO ) AND
@@ -294,7 +295,7 @@ begin
     else
     if (AVPacket.stream_index = AudioStreamIndex ) then
     begin
-      writeln('Encue Audio packet');
+      debugwriteln('Encue Audio packet');
       audioq.put(AVPacket);
     {$endif}
     *)
@@ -455,10 +456,10 @@ begin
   TimeDifference     := 0;
   VideoFormatContext := nil;
 
-//  writeln( aFileName );
+//  debugwriteln( aFileName );
 
   errnum         := av_open_input_file(VideoFormatContext, pchar( aFileName ), Nil, 0, Nil);
-//  writeln( 'Errnum : ' +inttostr( errnum ));
+//  debugwriteln( 'Errnum : ' +inttostr( errnum ));
   if(errnum <> 0) then
   begin
 {$ifdef DebugDisplay}
@@ -485,8 +486,8 @@ begin
     begin
       find_stream_ids( VideoFormatContext, VideoStreamIndex, AudioStreamIndex );
 
-      writeln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
-      writeln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
+      debugwriteln( 'VideoStreamIndex : ' + inttostr(VideoStreamIndex) );
+      debugwriteln( 'AudioStreamIndex : ' + inttostr(AudioStreamIndex) );
     end;
     // FIXME: AudioStreamIndex is -1 if video has no sound -> memory access error
     // Just a temporary workaround for now
@@ -510,27 +511,27 @@ begin
 
       if (SDL_OpenAudio(@wanted_spec, @spec) < 0) then
       begin
-        writeln('SDL_OpenAudio: '+SDL_GetError());
+        debugwriteln('SDL_OpenAudio: '+SDL_GetError());
         exit;
       end;
 
-      writeln( 'SDL opened audio device' );
+      debugwriteln( 'SDL opened audio device' );
 
       aCodec := avcodec_find_decoder(aCodecCtx.codec_id);
       if (aCodec = nil) then
       begin
-        writeln('Unsupported codec!');
+        debugwriteln('Unsupported codec!');
         exit;
       end;
 
       avcodec_open(aCodecCtx, aCodec);
 
-      writeln( 'Opened the codec' );
+      debugwriteln( 'Opened the codec' );
 
       packet_queue_init( audioq );
       SDL_PauseAudio(0);
 
-      writeln( 'SDL_PauseAudio' );
+      debugwriteln( 'SDL_PauseAudio' );
 
 
     end;
@@ -608,9 +609,9 @@ begin
                                          TexX, TexY, integer(PIX_FMT_RGB24),
                                          SWS_FAST_BILINEAR, nil, nil, nil);
     if SoftwareScaleContext <> Nil then
-        writeln('got swscale context')
+        debugwriteln('got swscale context')
     else begin
-      writeln('ERROR: didn´t get swscale context');
+      debugwriteln('ERROR: didn´t get swscale context');
       av_free(AVFrameRGB);
       av_free(AVFrame);
       avcodec_close(VideoCodecContext);
@@ -637,7 +638,7 @@ begin
         ScaledVideoWidth:=800.0;
         ScaledVideoHeight:=800.0/VideoAspect;
         VideoTimeBase:=VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.den/VideoFormatContext^.streams[VideoStreamIndex]^.r_frame_rate.num;
-        writeln(VideoTimeBase);
+        debugwriteln( floattostr(VideoTimeBase) );
 {$ifdef DebugDisplay}
       showmessage('framerate: '+inttostr(floor(1/videotimebase))+'fps');
 {$endif}

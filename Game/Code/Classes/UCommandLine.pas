@@ -55,6 +55,7 @@ var
   
 const
   cHelp            = 'help';
+  cDebug           = 'debug';
   cMediaInterfaces = 'showinterfaces';
   cUseLocalPaths   = 'localpaths';
 
@@ -72,7 +73,7 @@ uses SysUtils,
 Constructor TCMDParams.Create;
 begin
 
-  if FindCmdLineSwitch( cHelp ) then
+  if FindCmdLineSwitch( cHelp ) or FindCmdLineSwitch( 'h' ) then
     showhelp();
 
   ResetVariables;
@@ -97,6 +98,9 @@ begin
   writeln( '  ----------------------------------------------------------' );
   writeln( '  '+s( cMediaInterfaces ) + #9 + ' : Show in-use media interfaces' );
   writeln( '  '+s( cUseLocalPaths ) + #9 + ' : Use relative paths' );
+  writeln( '  '+s( cDebug ) + #9 + ' : Display Debugging info' );
+
+
 
   writeln( '' );
 

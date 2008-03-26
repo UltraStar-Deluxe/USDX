@@ -337,7 +337,7 @@ begin
   end
   else
     {$IFDEF FPC}
-    writeln( 'could not open file - test.png');
+    debugWriteln( 'could not open file - test.png');
     {$ELSE}
     showmessage('could not open file - test.png');
     {$ENDIF}

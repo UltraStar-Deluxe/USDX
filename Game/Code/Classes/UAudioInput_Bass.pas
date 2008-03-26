@@ -244,11 +244,9 @@ begin
         Inc(SourceIndex);
       end;
 
-      //Writeln('BASS_RecordFree');
       // FIXME: this call hangs in FPC (windows) every 2nd time USDX is called.
       //   Maybe because the sound-device was not released properly?
       BASS_RecordFree;
-      //Writeln('BASS_RecordFree - Done');
 
       Inc(DeviceIndex);
     end;

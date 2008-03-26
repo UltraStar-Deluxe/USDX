@@ -250,14 +250,6 @@ begin
   lTmpA := (Right-Left);
   lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
 
-  {$IFDEF LAZARUS}
-(*
-  writeln( 'UDRAW (Right-Left)    : ' + floattostr( lTmpA ) );
-  writeln( 'UDRAW                 : ' + floattostr( lTmpB ) );
-  writeln( '' );
-*)
-  {$ENDIF}
-
   if ( lTmpA > 0 ) AND
      ( lTmpB > 0 ) THEN
   begin

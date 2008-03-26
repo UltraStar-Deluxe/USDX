@@ -5,14 +5,13 @@ interface
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
-{$I switches.inc}
 
-{$UNDEF DebugDisplay}
+{$I switches.inc}
 
 type
   TTime = class
     constructor Create;
-    function GetTime: real;
+    function    GetTime: real;
   end;
 
 procedure CountSkipTimeSet;
@@ -20,18 +19,17 @@ procedure CountSkipTime;
 procedure CountMidTime;
 
 var
-  USTime:   TTime;
+  USTime      : TTime;
   
-  TimeNew:  int64;
-  TimeOld:  int64;
-  TimeSkip: real;
-  TimeMid:  real;
-  TimeMidTemp:  int64;
+  TimeNew     : int64;
+  TimeOld     : int64;
+  TimeSkip    : real;
+  TimeMid     : real;
+  TimeMidTemp : int64;
 
 implementation
 
 uses
-//  sysutils,
   sdl,
   ucommon;
   
@@ -53,50 +51,27 @@ begin
   CountSkipTimeSet;
 end;
 
-
 procedure CountSkipTimeSet;
 begin
-  TimeNew  := SDL_GetTicks();
-
-  {$IFDEF DebugDisplay}
-  Writeln( 'CountSkipTimeSet : ' + inttostr(trunc(TimeNew)) );
-  {$ENDIF}
+  TimeNew     := SDL_GetTicks();
 end;
-
 
 procedure CountSkipTime;
 begin
-  TimeOld  := TimeNew;
-  TimeNew  := SDL_GetTicks();
-  TimeSkip := (TimeNew-TimeOld) / cSDLCorrectionRatio;
-
-  {$IFDEF DebugDisplay}
-    Writeln( 'TimeNew       : ' + inttostr(trunc(TimeNew)) );
-    Writeln( 'CountSkipTime : ' + inttostr(trunc(TimeSkip)) );
-  {$ENDIF}
+  TimeOld     := TimeNew;
+  TimeNew     := SDL_GetTicks();
+  TimeSkip    := (TimeNew-TimeOld) / cSDLCorrectionRatio;
 end;
-
 
 procedure CountMidTime;
 begin
   TimeMidTemp := SDL_GetTicks();
   TimeMid     := (TimeMidTemp - TimeNew) / cSDLCorrectionRatio;
-
-  {$IFDEF DebugDisplay}
-  Writeln( 'TimeNew      : ' + inttostr(trunc(TimeNew)) );
-  Writeln( 'CountMidTime : ' + inttostr(trunc(TimeMid)) );
-  {$ENDIF}
 end;
-
 
 function TTime.GetTime: real;
 begin
-  Result   := SDL_GetTicks() / cSDLCorrectionRatio;
-
-  {$IFDEF DebugDisplay}
-  Writeln( 'GetTime : ' + inttostr(trunc(Result)) );
-  {$ENDIF}
+  Result      := SDL_GetTicks() / cSDLCorrectionRatio;
 end;
-
 
 end.

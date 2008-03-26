@@ -65,7 +65,9 @@ var
   ServiceManager: TServiceManager; 
 
 implementation
-uses UCore;
+uses
+  ULog,
+  UCore;
 
 //------------
 // Create - Creates Class and Set Standard Values
@@ -85,7 +87,7 @@ begin
   NextHandle := 1;
 
   {$IFDEF DEBUG}
-    WriteLn('ServiceManager: Succesful created!');
+    debugWriteln('ServiceManager: Succesful created!');
   {$ENDIF}
 end;
 
@@ -141,14 +143,14 @@ begin
       LastService := Cur;
 
       {$IFDEF DEBUG}
-      WriteLn('ServiceManager: Service added: ''' + ServiceName + ''', Handle: ' + InttoStr(Cur.Self));
+      debugWriteln('ServiceManager: Service added: ''' + ServiceName + ''', Handle: ' + InttoStr(Cur.Self));
       {$ENDIF}
 
       //Inc Next Handle
       Inc(NextHandle);
     end
     {$IFDEF DEBUG}
-    else WriteLn('ServiceManager: Try to readd Service: ' + ServiceName);
+    else debugWriteln('ServiceManager: Try to readd Service: ' + ServiceName);
     {$ENDIF}
   end;
 end;
@@ -190,7 +192,7 @@ begin
         end;
 
       {$IFDEF DEBUG}
-      WriteLn('ServiceManager: Removed Service succesful: ' + Cur.Name);
+      debugWriteln('ServiceManager: Removed Service succesful: ' + Cur.Name);
       {$ENDIF}
 
       //Free Memory
@@ -237,7 +239,7 @@ begin
   end;
 
   {$IFDEF DEBUG}
-  WriteLn('ServiceManager: Service ''' + ServiceName + ''' called. Result: ' + InttoStr(Result));
+  debugWriteln('ServiceManager: Service ''' + ServiceName + ''' called. Result: ' + InttoStr(Result));
   {$ENDIF}
 end;
 
@@ -288,7 +290,7 @@ begin
         Result := Integer(ServiceCache[I]);
 
         {$IFDEF DEBUG}
-        WriteLn('ServiceManager: Found Service in Cache: ''' + ServiceName + '''');
+        debugWriteln('ServiceManager: Found Service in Cache: ''' + ServiceName + '''');
         {$ENDIF}
 
         Break;
@@ -308,7 +310,7 @@ begin
           Result := Integer(Cur);
 
           {$IFDEF DEBUG}
-          WriteLn('ServiceManager: Found Service in List: ''' + ServiceName + '''');
+          debugWriteln('ServiceManager: Found Service in List: ''' + ServiceName + '''');
           {$ENDIF}
 
           //Add to Cache

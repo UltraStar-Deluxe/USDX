@@ -62,7 +62,10 @@ var
 
 implementation
 
-uses IniFiles, SysUtils;
+uses
+  IniFiles,
+  ULog,
+  SysUtils;
 
 const
   cUS_Scores = 'us_scores';
@@ -74,7 +77,7 @@ const
 
 Procedure TDataBaseSystem.Init(const Filename: string);
 begin
-  writeln( 'TDataBaseSystem.Init ('+Filename+') @ '+ floattostr( now() ) );
+  debugWriteln( 'TDataBaseSystem.Init ('+Filename+') @ '+ floattostr( now() ) );
   
   //Open Database
   ScoreDB   := TSqliteDatabase.Create( Filename );
@@ -85,13 +88,13 @@ begin
     if not ScoreDB.TableExists( cUS_Scores ) then
     begin
       ScoreDB.execsql('CREATE TABLE `'+cUS_Scores+'` (`SongID` INT( 11 ) NOT NULL , `Difficulty` INT( 1 ) NOT NULL , `Player` VARCHAR( 150 ) NOT NULL , `Score` INT( 5 ) NOT NULL );');
-      writeln( 'TDataBaseSystem.Init - CREATED US_Scores' );
+      debugWriteln( 'TDataBaseSystem.Init - CREATED US_Scores' );
     end;
 
     if not ScoreDB.TableExists( cUS_Songs ) then
     begin
       ScoreDB.execsql('CREATE TABLE `'+cUS_Songs+'` (`ID` INTEGER PRIMARY KEY, `Artist` VARCHAR( 255 ) NOT NULL , `Title` VARCHAR( 255 ) NOT NULL , `TimesPlayed` int(5) NOT NULL );');
-      writeln( 'TDataBaseSystem.Init - CREATED US_Songs' );
+      debugWriteln( 'TDataBaseSystem.Init - CREATED US_Songs' );
     end;
     
      //Not possible because of String Limitation to 255 Chars //Need to rewrite Wrapper
@@ -100,8 +103,8 @@ begin
 
 
   finally
-    writeln( cUS_Songs +' Exist : ' + inttostr( integer(ScoreDB.TableExists( cUS_Songs )) ) );
-    writeln( cUS_Scores +' Exist : ' + inttostr( integer(ScoreDB.TableExists( cUS_Scores )) ) );
+    debugWriteln( cUS_Songs +' Exist : ' + inttostr( integer(ScoreDB.TableExists( cUS_Songs )) ) );
+    debugWriteln( cUS_Scores +' Exist : ' + inttostr( integer(ScoreDB.TableExists( cUS_Scores )) ) );
   //ScoreDB.Free;
   end;
 
@@ -112,7 +115,7 @@ end;
 //--------------------
 Destructor TDataBaseSystem.Free;
 begin
-  writeln( 'TDataBaseSystem.Free' );
+  debugWriteln( 'TDataBaseSystem.Free' );
 
   freeandnil( ScoreDB );
 end;

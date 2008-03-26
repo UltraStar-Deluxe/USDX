@@ -82,32 +82,32 @@ begin
   AssignFile(SongFile, Name);
   Rewrite(SongFile);
 
-  WriteLn(SongFile, '#TITLE:' + Song.Title + '');
-  WriteLn(SongFile, '#ARTIST:' + Song.Artist);
+  Writeln(SongFile, '#TITLE:' + Song.Title + '');
+  Writeln(SongFile, '#ARTIST:' + Song.Artist);
 
-  if Song.Creator     <> '' then    WriteLn(SongFile, '#CREATOR:'     + Song.Creator);
-  if Song.Edition     <> 'Unknown' then WriteLn(SongFile, '#EDITION:' + Song.Edition);
-  if Song.Genre       <> 'Unknown' then   WriteLn(SongFile, '#GENRE:' + Song.Genre);
-  if Song.Language    <> 'Unknown' then    WriteLn(SongFile, '#LANGUAGE:'    + Song.Language);
+  if Song.Creator     <> '' then    Writeln(SongFile, '#CREATOR:'     + Song.Creator);
+  if Song.Edition     <> 'Unknown' then Writeln(SongFile, '#EDITION:' + Song.Edition);
+  if Song.Genre       <> 'Unknown' then   Writeln(SongFile, '#GENRE:' + Song.Genre);
+  if Song.Language    <> 'Unknown' then    Writeln(SongFile, '#LANGUAGE:'    + Song.Language);
 
-  WriteLn(SongFile, '#MP3:' + Song.Mp3);
+  Writeln(SongFile, '#MP3:' + Song.Mp3);
 
-  if Song.Cover       <> '' then    WriteLn(SongFile, '#COVER:'       + Song.Cover);
-  if Song.Background  <> '' then    WriteLn(SongFile, '#BACKGROUND:'  + Song.Background);
-  if Song.Video       <> '' then    WriteLn(SongFile, '#VIDEO:'       + Song.Video);
-  if Song.VideoGAP    <> 0  then    WriteLn(SongFile, '#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
-  if Song.Resolution  <> 4  then    WriteLn(SongFile, '#RESOLUTION:'  + IntToStr(Song.Resolution));
-  if Song.NotesGAP    <> 0  then    WriteLn(SongFile, '#NOTESGAP:'    + IntToStr(Song.NotesGAP));
-  if Song.Start       <> 0  then    WriteLn(SongFile, '#START:'       + FloatToStr(Song.Start));
-  if Song.Finish      <> 0  then    WriteLn(SongFile, '#END:'         + IntToStr(Song.Finish));
-  if Relative               then    WriteLn(SongFile, '#RELATIVE:yes');
+  if Song.Cover       <> '' then    Writeln(SongFile, '#COVER:'       + Song.Cover);
+  if Song.Background  <> '' then    Writeln(SongFile, '#BACKGROUND:'  + Song.Background);
+  if Song.Video       <> '' then    Writeln(SongFile, '#VIDEO:'       + Song.Video);
+  if Song.VideoGAP    <> 0  then    Writeln(SongFile, '#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
+  if Song.Resolution  <> 4  then    Writeln(SongFile, '#RESOLUTION:'  + IntToStr(Song.Resolution));
+  if Song.NotesGAP    <> 0  then    Writeln(SongFile, '#NOTESGAP:'    + IntToStr(Song.NotesGAP));
+  if Song.Start       <> 0  then    Writeln(SongFile, '#START:'       + FloatToStr(Song.Start));
+  if Song.Finish      <> 0  then    Writeln(SongFile, '#END:'         + IntToStr(Song.Finish));
+  if Relative               then    Writeln(SongFile, '#RELATIVE:yes');
 
-  WriteLn(SongFile, '#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
-  WriteLn(SongFile, '#GAP:' + FloatToStr(Song.GAP));
+  Writeln(SongFile, '#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
+  Writeln(SongFile, '#GAP:' + FloatToStr(Song.GAP));
 
   RelativeSubTime := 0;
   for B := 1 to High(CurrentSong.BPM) do
-    WriteLn(SongFile, 'B ' + FloatToStr(CurrentSong.BPM[B].StartBeat) + ' ' + FloatToStr(CurrentSong.BPM[B].BPM/4));
+    Writeln(SongFile, 'B ' + FloatToStr(CurrentSong.BPM[B].StartBeat) + ' ' + FloatToStr(CurrentSong.BPM[B].BPM/4));
 
   for C := 0 to Lines.High do begin
     for N := 0 to Lines.Line[C].HighNote do begin
@@ -123,7 +123,7 @@ begin
         S := NoteState + IntToStr(Start-RelativeSubTime) + ' ' + IntToStr(Length) + ' ' + IntToStr(Tone) + ' ' + Text;
 
 
-        WriteLn(SongFile, S);
+        Writeln(SongFile, S);
       end; // with
     end; // N
 
@@ -135,13 +135,13 @@ begin
           ' ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime);
         RelativeSubTime := Lines.Line[C+1].Start;
       end;
-      WriteLn(SongFile, S);
+      Writeln(SongFile, S);
     end;
 
   end; // C
 
 
-  WriteLn(SongFile, 'E');
+  Writeln(SongFile, 'E');
   CloseFile(SongFile);
 end;
 

@@ -423,31 +423,9 @@ begin
   aPlayers[Cur.Player].ScoreDisplayed := aPlayers[Cur.Player].ScoreDisplayed + Cur.ScoreDiff - Cur.ScoreGiven;
 
   //Change Bars Position
-  
-  // TODO : JB_Lazarus - Exception=Invalid floating point operation
-  //                     AT THIS LINE !
-  
-  {$IFDEF LAZARUS}
-(*
-  writeln( 'USINGSCORES-aPlayers[Cur.Player].RBTarget    : ' + floattostr( aPlayers[Cur.Player].RBTarget ) );
-  writeln( 'USINGSCORES-(Cur.ScoreDiff - Cur.ScoreGiven) : ' + floattostr( (Cur.ScoreDiff - Cur.ScoreGiven) ) );
-  writeln( 'USINGSCORES-Cur.ScoreDiff                    : ' + floattostr( Cur.ScoreDiff ) );
-  writeln( 'USINGSCORES-(Cur.Rating / 20 - 0.26)         : ' + floattostr( (Cur.Rating / 20 - 0.26) ) );
-  writeln( '' );
-*)
-  {$ENDIF}
-
   lTempA := ( aPlayers[Cur.Player].RBTarget + (Cur.ScoreDiff - Cur.ScoreGiven) );
   lTempB := ( Cur.ScoreDiff * (Cur.Rating / 20 - 0.26) );
   
-  {$IFDEF LAZARUS}
-(*
-  writeln( 'USINGSCORES-lTempA                           : ' + floattostr( lTempA ) );
-  writeln( 'USINGSCORES-lTempB                           : ' + floattostr( lTempB ) );
-  writeln( '----------------------------------------------------------' );
-*)
-  {$ENDIF}
-
   if ( lTempA > 0 ) AND
      ( lTempB > 0 ) THEN
   begin

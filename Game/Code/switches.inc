@@ -7,6 +7,7 @@
 // So, for Windows-only code use the MSWINDOWS define.
 
 {$IFDEF FPC}
+  {$DEFINE CONSOLE}
   {$IFDEF DARWIN}
     {$H+}
     {$R-}
@@ -26,6 +27,8 @@
   {$DEFINE HasInline}
   {$UNDEF UseSerialPort}
 {$ELSE}
+  {$UNDEF CONSOLE}  // Delphi requires a special app type... no thanks ! :)
+  // {$DEFINE CONSOLE} // -- use for development only !
   {$DEFINE Delphi}
 
   // Delphi version numbers (ignore versions released before Delphi 6 as they miss the $IF directive):
@@ -82,7 +85,9 @@
 
   {$IFDEF DEBUG}
     {$IFNDEF DARWIN}
-      {$APPTYPE CONSOLE}
+      {$IFDEF CONSOLE}
+        {$APPTYPE CONSOLE}
+      {$ENDIF}
     {$ENDIF}
   {$ENDIF}
 

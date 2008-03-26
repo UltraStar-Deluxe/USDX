@@ -157,30 +157,6 @@ begin
     fDirWatch.active       := true;
   {$ENDIF}
 
-  {$IFDEF linux}
-  (*
-    Thankyou to : http://www.linuxjournal.com/article/8478
-                  http://www.tin.org/bin/man.cgi?section=2&topic=inotify_add_watch
-  *)
-(*
-  fNotify := -1;
-  fWatch  := -1;
-  
-  writeln( 'Calling inotify_init' );
-  fNotify := Do_SysCall( syscall_nr_inotify_init );
-  if ( fNotify < 0 ) then
-    writeln( 'Filesystem change notification - disabled' );
-  writeln( 'Calling inotify_init : '+ inttostr(fNotify)  );
-
-  writeln( 'Calling syscall_nr_inotify_init ('+SongPath+')' );
-  fWatch := Do_SysCall( syscall_nr_inotify_init , TSysParam( fNotify ), longint( pchar( SongPath ) ) , IN_MODIFY AND IN_CREATE AND IN_DELETE  );
-  
-  if (fWatch < 0) then
-     writeln ('inotify_add_watch');
-  writeln( 'Calling syscall_nr_inotify_init : '+ inttostr(fWatch)  );
-*)
-  {$endif}
-  
   // now we can start the thread
   Resume();
 end;
@@ -209,7 +185,7 @@ begin
 
     if fParseSongDirectory then
     begin
-      writeln( 'int_LoadSongList' );
+      debugWriteln( 'int_LoadSongList' );
       int_LoadSongList();
     end;
 

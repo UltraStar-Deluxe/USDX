@@ -915,10 +915,7 @@ begin
   if CurrentSong.VideoLoaded then
   begin
     try
-      writeln( 'VideoPlayback.FFmpegGetFrame' );
       fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
-
-      writeln( 'VideoPlayback.FFmpegDrawGL' );
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
 //      PlaySmpeg;
     except

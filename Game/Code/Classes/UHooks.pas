@@ -66,7 +66,9 @@ var
   HookManager: THookManager;
 
 implementation
-uses UCore;
+uses
+  ULog,
+  UCore;
 
 //------------
 // Create - Creates Class and Set Standard Values
@@ -82,7 +84,7 @@ begin
   SpaceinEvents := SpacetoAllocate;
 
   {$IFDEF DEBUG}
-    WriteLn('HookManager: Succesful Created.');
+    debugWriteLn('HookManager: Succesful Created.');
   {$ENDIF}
 end;
 
@@ -109,7 +111,7 @@ begin
         end;
 
       {$IFDEF DEBUG}
-        WriteLn('HookManager: Found Space for Event at Handle: ''' + InttoStr(Result+1) + '');
+        debugWriteLn('HookManager: Found Space for Event at Handle: ''' + InttoStr(Result+1) + '');
       {$ENDIF}
     end
     else
@@ -127,12 +129,12 @@ begin
     Inc(Result);
 
     {$IFDEF DEBUG}
-    WriteLn('HookManager: Add Event succesful: ''' + EventName + '');
+    debugWriteLn('HookManager: Add Event succesful: ''' + EventName + '');
     {$ENDIF}
   end
   {$IFDEF DEBUG}
   else
-    WriteLn('HookManager: Trying to ReAdd Event: ''' + EventName + '');
+    debugWriteLn('HookManager: Trying to ReAdd Event: ''' + EventName + '');
   {$ENDIF}
 end;
 
@@ -160,7 +162,7 @@ begin
     end;
 
     {$IFDEF DEBUG}
-      WriteLn('HookManager: Removed Event succesful: ''' + Events[hEvent].Name + '');
+      debugWriteLn('HookManager: Removed Event succesful: ''' + Events[hEvent].Name + '');
     {$ENDIF}
 
     //Free the Event
@@ -170,7 +172,7 @@ begin
 
   {$IFDEF DEBUG}
   else
-    WriteLn('HookManager: Try to Remove not Existing Event. Handle: ''' + InttoStr(hEvent) + '');
+    debugWriteLn('HookManager: Try to Remove not Existing Event. Handle: ''' + InttoStr(hEvent) + '');
   {$ENDIF}
 end;
 
@@ -239,7 +241,7 @@ begin
       Events[EventIndex].LastSubscriber := Cur;
 
       {$IFDEF DEBUG}
-          WriteLn('HookManager: Add Subscriber to Event ''' + Events[EventIndex].Name + ''' succesful. Handle: ''' + InttoStr(Result) + ''' Owner: ' + InttoStr(Cur.Owner));
+          debugWriteLn('HookManager: Add Subscriber to Event ''' + Events[EventIndex].Name + ''' succesful. Handle: ''' + InttoStr(Result) + ''' Owner: ' + InttoStr(Cur.Owner));
       {$ENDIF}
     end;
   end;
@@ -298,7 +300,7 @@ begin
         FreeSubscriber(EventIndex, Last, Cur);
 
         {$IFDEF DEBUG}
-          WriteLn('HookManager: Del Subscriber from Event ''' + Events[EventIndex].Name + ''' succesful. Handle: ''' + InttoStr(hSubscriber) + '');
+          debugWriteLn('HookManager: Del Subscriber from Event ''' + Events[EventIndex].Name + ''' succesful. Handle: ''' + InttoStr(hSubscriber) + '');
         {$ENDIF}
 
         //Set Result and Break the Loop
@@ -353,7 +355,7 @@ begin
   end;
 
   {$IFDEF DEBUG}
-    WriteLn('HookManager: Called Chain from Event ''' + Events[EventIndex].Name + ''' succesful. Result: ''' + InttoStr(Result) + '');
+    debugWriteLn('HookManager: Called Chain from Event ''' + Events[EventIndex].Name + ''' succesful. Result: ''' + InttoStr(Result) + '');
   {$ENDIF}
 end;
 
