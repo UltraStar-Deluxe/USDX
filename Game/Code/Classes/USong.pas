@@ -403,7 +403,7 @@ begin
 //Try to Parse the Song
 If Parser.ParseSong(Path + PathDelim + FileName) then
     begin
-      Writeln('XML Inputfile Parsed succesful');
+//      Writeln('XML Inputfile Parsed succesful');
     //Start write parsed information to Song
       //Notes Part
       For I := 0 to High(Parser.SongInfo.Sentences) do
