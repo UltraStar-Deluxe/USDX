@@ -81,6 +81,8 @@ type
 
     procedure LoadSongList;     // load all songs
     procedure BrowseDir(Dir: widestring); // should return number of songs in the future
+    procedure BrowseTXTFiles(Dir: widestring);
+    procedure BrowseXMLFiles(Dir: widestring);
     procedure Sort(Order: integer);
     function  FindSongFile(Dir, Mask: widestring): widestring;
     property  Processing : boolean read fProcessing;
@@ -123,7 +125,7 @@ const
      IN_CREATE		    = $00000100;	//* Subfile was created */
      IN_DELETE		    = $00000200;	//* Subfile was deleted */
      IN_DELETE_SELF		= $00000400;	//* Self was deleted */
-  
+
 
 implementation
 
@@ -191,7 +193,7 @@ begin
 
     self.suspend;
   end;
-{$ENDIF}    
+{$ENDIF}
 end;
 
 procedure TSongs.int_LoadSongList;
@@ -232,7 +234,7 @@ begin
 
   finally
     Log.LogError('SongList', 'Search Complete');
-    
+
     fParseSongDirectory := false;
     fProcessing         := false;
   end;
@@ -246,37 +248,73 @@ begin
 end;
 
 procedure TSongs.BrowseDir(Dir: widestring);
+begin
+ BrowseTXTFiles(Dir);
+ BrowseXMLFiles(Dir);
+end;
+
+procedure TSongs.BrowseTXTFiles(Dir: widestring);
 var
-  i     : Integer;
-  Files : TDirectoryEntryArray;
-  lSong : TSong;
+  i       : Integer;
+  Files   : TDirectoryEntryArray;
+  lSong   : TSong;
 begin
 
-	  Files := Platform.DirectoryFindFiles( Dir, '.txt', true);
-    
+	  Files    := Platform.DirectoryFindFiles( Dir, '.txt', true);
+
 		for i := 0 to Length(Files)-1 do
 		begin
 		  if Files[i].IsDirectory then
 			begin
-			  BrowseDir( Dir + Files[i].Name + PathDelim );
+			  BrowseTXTFiles( Dir + Files[i].Name + PathDelim );  //Recursive Call
 			end
 			else
 			begin
         lSong := TSong.create( Dir + Files[i].Name );
 
         if NOT lSong.Analyse then
-				begin
-					Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
-          freeandnil( lSong );
-				end
-				else
-				begin
-          SongList.add( lSong );
-				end;
+				  begin
+					  Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
+            freeandnil( lSong );
+				  end
+          else SongList.add( lSong );
 
 			end;
 		end;
 		SetLength( Files, 0);
+
+end;
+
+procedure TSongs.BrowseXMLFiles(Dir: widestring);
+var
+  i       : Integer;
+  Files   : TDirectoryEntryArray;
+  lSong   : TSong;
+begin
+
+	  Files := Platform.DirectoryFindFiles( Dir, '.xml', true);
+
+		for i := 0 to Length(Files)-1 do
+		begin
+		  if Files[i].IsDirectory then
+			begin
+			  BrowseXMLFiles( Dir + Files[i].Name + PathDelim ); //Recursive Call
+			end
+			else
+			begin
+        lSong := TSong.create( Dir + Files[i].Name );
+
+        if NOT lSong.AnalyseXML then
+				  begin
+					  Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
+            freeandnil( lSong );
+				  end
+          else SongList.add( lSong );
+
+			end;
+		end;
+		SetLength( Files, 0);
+
 end;
 
 procedure TSongs.Sort(Order: integer);

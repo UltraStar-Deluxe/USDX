@@ -462,7 +462,10 @@ begin
 
   // FIXME: bad style, put the try-except into LoadSong() and not here
   try
-    success := CurrentSong.LoadSong();
+  //Check if File is XML
+  if copy(CurrentSong.FileName,length(CurrentSong.FileName)-3,4) = '.xml'
+   then success := CurrentSong.LoadXMLSong()
+   else success := CurrentSong.LoadSong();
   except
     success := false;
   end;

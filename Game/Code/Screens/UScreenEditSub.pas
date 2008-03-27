@@ -1170,7 +1170,10 @@ begin
   ResetSingTemp;
 
   try
-    Error := not CurrentSong.LoadSong();
+  //Check if File is XML
+   if copy(CurrentSong.FileName,length(CurrentSong.FileName)-3,4) = '.xml'
+    then Error := not CurrentSong.LoadXMLSong()
+    else Error := not CurrentSong.LoadSong();
   except
     Error := True;
   end;

@@ -98,6 +98,7 @@ uses
   UTime             in 'Classes\UTime.pas',
   TextGL            in 'Classes\TextGL.pas',
   USong             in 'Classes\USong.pas',
+  UXMLSong          in 'Classes\UXMLSong.pas',
   USongs            in 'Classes\USongs.pas',
   UIni              in 'Classes\UIni.pas',
   ULyrics           in 'Classes\ULyrics.pas',

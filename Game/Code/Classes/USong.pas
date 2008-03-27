@@ -30,7 +30,8 @@ uses
     {$IFDEF USE_PSEUDO_THREAD}
     PseudoThread,
     {$ENDIF}
-    UCatCovers;
+    UCatCovers,
+    UXMLSong;
 
 type
 
@@ -54,6 +55,7 @@ type
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
 
     function ReadTXTHeader( const aFileName : WideString ): boolean;
+    function ReadXMLHeader( const aFileName : WideString ): boolean;
   public
     Path:       widestring;
     Folder:     widestring; // for sorting by folder
@@ -105,7 +107,9 @@ type
 
     constructor create  ( const aFileName : WideString );
     function    LoadSong: boolean;
+    function    LoadXMLSong: boolean;
     function    Analyse(): boolean;
+    function    AnalyseXML(): boolean;
     procedure   clear();
   end;
 
@@ -155,7 +159,7 @@ begin
 
 end;
 
-
+//Load TXT Song
 function TSong.LoadSong(): boolean;
 
 var
@@ -202,7 +206,7 @@ begin
 
     if (self.FileName = '') then
       self.Filename := ExtractFileName(FileName);
-      
+
     Result := False;
 
     Reset(SongFile);
@@ -211,7 +215,7 @@ begin
     repeat
       ReadLn(SongFile, Text);
       Inc(FileLineNo);
-    
+
       if (EoF(SongFile)) then
       begin //Song File Corrupted - No Notes
         CloseFile(SongFile);
@@ -248,6 +252,7 @@ begin
         Read(SongFile, Param3);
         Read(SongFile, ParamS);
 
+
        //Check for ZeroNote
        if Param2 = 0 then Log.LogError('Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamS+'" -> Note ignored!') else
        begin
@@ -260,7 +265,7 @@ begin
           ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
           ParseNote(1, TempC, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
         end;
-       end; //Zeronote check 
+       end; //Zeronote check
       end; // if
 
       if TempC = '-' then
@@ -319,11 +324,11 @@ begin
       Read(SongFile, TempC);
       Inc(FileLineNo);
     end; // while}
-    
+
     for Count := 0 to High(Lines) do begin
       Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
     end;
-    
+
     CloseFile(SongFile);
   except
     try
@@ -339,6 +344,272 @@ begin
   Result := true;
 end;
 
+//Load XML Song
+function TSong.LoadXMLSong(): boolean;
+var
+  //TempC:    char;
+  Text:    string;
+  CP:       integer; // Current Player (0 or 1)
+  Count:      integer;
+  Both:     boolean;
+  Param1:   integer;
+  Param2:   integer;
+  Param3:   integer;
+  ParamS:   string;
+  I,J,X:      Integer;
+
+  NoteType: Char;
+  SentenceEnd, Rest, Time: Integer;
+  Parser: TParser;
+begin
+  Result := false;
+
+  if not FileExists(Path + PathDelim + FileName) then
+  begin
+    Log.LogError('File not found: "' + Path + PathDelim + FileName + '"', 'TSong.LoadSong()');
+    exit;
+  end;
+
+  MultBPM           := 4; // multiply beat-count of note by 4
+  Mult              := 1; // accuracy of measurement of note
+  Base[0]           := 100; // high number
+  Lines[0].NoteType := 0;
+  self.Relative     := false;
+  Rel[0]            := 0;
+  CP                := 0;
+  Both              := false;
+
+  if Length(Player) = 2 then
+    Both := true;
+
+
+  Parser := TParser.Create;
+  Parser.Settings.DashReplacement := '~';
+
+
+    for Count := 0 to High(Lines) do begin
+      SetLength(Lines[Count].Line, 1);
+      Lines[Count].High := 0;
+      Lines[Count].Number := 1;
+      Lines[Count].Current := 0;
+      Lines[Count].Resolution := self.Resolution;
+      Lines[Count].NotesGAP   := self.NotesGAP;
+      Lines[Count].Line[0].IlNut := 0;
+      Lines[Count].Line[0].HighNote := -1;
+      Lines[Count].Line[0].LastLine := False;
+    end;
+
+
+//Try to Parse the Song
+If Parser.ParseSong(Path + PathDelim + FileName) then
+    begin
+      Writeln('XML Inputfile Parsed succesful');
+    //Start write parsed information to Song
+      //Notes Part
+      For I := 0 to High(Parser.SongInfo.Sentences) do
+      begin
+        //Add Notes
+        For J := 0 to High(Parser.SongInfo.Sentences[I].Notes) do
+        begin
+          Case Parser.SongInfo.Sentences[I].Notes[J].NoteTyp of
+            NT_Normal: NoteType := ':';
+            NT_Golden: NoteType := '*';
+            NT_Freestyle: NoteType := 'F';
+          end;
+
+           Param1:=Parser.SongInfo.Sentences[I].Notes[J].Start;       //Note Start
+           Param2:=Parser.SongInfo.Sentences[I].Notes[J].Duration;    //Note Duration
+           Param3:=Parser.SongInfo.Sentences[I].Notes[J].Tone;        //Note Tone
+           ParamS:=' ' + Parser.SongInfo.Sentences[I].Notes[J].Lyric; //Note Lyric
+
+
+           if not Both then
+            // P1
+            ParseNote(0, NoteType, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS)
+           else begin
+            // P1 + P2
+            ParseNote(0, NoteType, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
+            ParseNote(1, NoteType, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
+           end;
+
+
+           if not Both then
+           begin
+            Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
+            Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(PChar(Lines[CP].Line[Lines[CP].High].Lyric));
+            //Total Notes Patch
+            Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
+            for X := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
+            begin
+             Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[X].Length * Lines[CP].Line[Lines[CP].High].Note[X].NoteType;
+            end;
+            //Total Notes Patch End
+          end else begin
+            for Count := 0 to High(Lines) do begin
+              Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
+              Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
+              //Total Notes Patch
+              Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
+              for X := low(Lines[Count].Line[Lines[Count].High].Note) to high(Lines[Count].Line[Lines[Count].High].Note) do
+              begin
+                Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[X].Length * Lines[Count].Line[Lines[Count].High].Note[X].NoteType;
+              end;
+              //Total Notes Patch End
+           end;
+          end;
+
+
+
+        end; //J Forloop
+
+        //Add Sentence break
+        If (I < High(Parser.SongInfo.Sentences)) then
+        begin
+
+          SentenceEnd := Parser.SongInfo.Sentences[I].Notes[High(Parser.SongInfo.Sentences[I].Notes)].Start + Parser.SongInfo.Sentences[I].Notes[High(Parser.SongInfo.Sentences[I].Notes)].Duration;
+          Rest := Parser.SongInfo.Sentences[I+1].Notes[0].Start - SentenceEnd;
+
+          //Calculate Time
+          Case Rest of
+            0, 1: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start;
+            2: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start - 1;
+            3: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start - 2;
+            else
+              If (Rest >= 4) then
+                Time := SentenceEnd + 2
+              Else //Sentence overlapping :/
+                Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start;
+          end;
+          // new sentence
+          if not Both then
+            // P1
+            NewSentence(0, (Time + Rel[0]) * Mult, Param2)
+          else begin
+            // P1 + P2
+            NewSentence(0, (Time + Rel[0]) * Mult, Param2);
+            NewSentence(1, (Time + Rel[1]) * Mult, Param2);
+         end;
+
+        end;
+      end;
+    //End write parsed information to Song
+	Parser.Free;
+	end
+    else
+    begin
+      Log.LogError('Could not parse Inputfile: ' + Path + PathDelim + FileName);
+      exit;
+    end;
+
+    for Count := 0 to High(Lines) do begin
+      Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
+    end;
+
+  Result := true;
+end;
+
+function TSong.ReadXMLHeader(const aFileName : WideString): boolean;
+var
+  Line, Identifier, Value: String;
+  Temp        : word;
+  Done        : byte;
+  Parser      : TParser;
+begin
+  Result := true;
+  Done   := 0;
+
+//Parse XML
+    Parser := TParser.Create;
+    Parser.Settings.DashReplacement := '~';
+
+
+    If Parser.ParseSong(self.Path + self.FileName) then
+    begin
+        //-----------
+        //Required Attributes
+        //-----------
+
+        //Title
+          self.Title := Parser.SongInfo.Header.Title;
+
+          //Add Title Flag to Done
+          Done := Done or 1;
+
+        //Artist
+          self.Artist := Parser.SongInfo.Header.Artist;
+
+          //Add Artist Flag to Done
+          Done := Done or 2;
+
+        //MP3 File //Test if Exists
+        self.Mp3 := platform.FindSongFile(Path, '*.mp3');
+        if (FileExists(self.Path + self.Mp3)) then
+          //Add Mp3 Flag to Done
+          Done := Done or 4;
+
+        //Beats per Minute
+        SetLength(self.BPM, 1);
+          self.BPM[0].StartBeat := 0;
+
+          self.BPM[0].BPM := (Parser.SongInfo.Header.BPM * Parser.SongInfo.Header.Resolution/4  ) * Mult * MultBPM;
+
+          if self.BPM[0].BPM <> 0 then
+            //Add BPM Flag to Done
+            Done := Done or 8;
+
+        //---------
+        //Additional Header Information
+        //---------
+
+        // Gap
+          self.GAP := Parser.SongInfo.Header.Gap;
+
+        //Cover Picture
+          self.Cover := platform.FindSongFile(Path, '*[CO].jpg');
+
+        //Background Picture
+          self.Background := platform.FindSongFile(Path, '*[BG].jpg');
+
+        // Video File
+        //    self.Video := Value
+
+        // Video Gap
+        //  self.VideoGAP := song_StrtoFloat( Value )
+
+        //Genre Sorting
+          self.Genre := Parser.SongInfo.Header.Genre;
+
+        //Edition Sorting
+          self.Edition := Parser.SongInfo.Header.Edition;
+
+        //Year Sorting
+        //Parser.SongInfo.Header.Year
+
+        //Language Sorting
+        self.Language := Parser.SongInfo.Header.Language;
+    end else
+          Log.LogError('File Incomplete or not SingStar XML (A): ' + aFileName);
+
+    Parser.Free;
+
+  //Check if all Required Values are given
+  if (Done <> 15) then
+  begin
+    Result := False;
+    if (Done and 8) = 0 then      //No BPM Flag
+      Log.LogError('BPM Tag Missing: ' + self.FileName)
+    else if (Done and 4) = 0 then //No MP3 Flag
+      Log.LogError('MP3 Tag/File Missing: ' + self.FileName)
+    else if (Done and 2) = 0 then //No Artist Flag
+      Log.LogError('Artist Tag Missing: ' + self.FileName)
+    else if (Done and 1) = 0 then //No Title Flag
+      Log.LogError('Title Tag Missing: ' + self.FileName)
+    else //unknown Error
+      Log.LogError('File Incomplete or not SingStar XML (B - '+ inttostr(Done) +'): ' + aFileName);
+  end;
+
+end;
+
 
 function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
 
@@ -348,7 +619,7 @@ function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
 // lOldDecimalSeparator : Char; // Auto Removed, Unused Variable
   begin
     lValue := aValue;
-    
+
     if (Pos(',', lValue) <> 0) then
       lValue[Pos(',', lValue)] := '.';
 
@@ -398,7 +669,7 @@ begin
 
         {$IFDEF UTF8_FILENAMES}
 		if ((Identifier = 'MP3') or (Identifier = 'BACKGROUND') or (Identifier = 'COVER') or (Identifier = 'VIDEO')) then
-		  Value := Utf8Encode(Value);  
+		  Value := Utf8Encode(Value);
         {$ENDIF}
 
         //Title
@@ -448,7 +719,7 @@ begin
         //Additional Header Information
         //---------
 
-        // Video Gap
+        // Gap
         else if (Identifier = 'GAP') then
           self.GAP := song_StrtoFloat( Value )
 
@@ -657,7 +928,7 @@ begin
   end
   else
     Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
-  
+
   Lines[LineNumberP].Line[Lines[LineNumberP].High].LastLine := False;
 
   Base[LineNumberP] := 100; // high number
@@ -723,5 +994,19 @@ begin
 end;
 
 
+function TSong.AnalyseXML(): boolean;
+begin
+  Result := False;
+
+  //Reset LineNo
+  FileLineNo := 0;
+
+  //Clear old Song Header
+  self.clear;
+
+  //Read Header
+  Result := self.ReadXMLHeader( FileName );
+
+end;
 
 end.
