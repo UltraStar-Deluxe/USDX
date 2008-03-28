@@ -7,6 +7,7 @@ program UltraStar;
 uses
   {$ifdef unix}            // http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial
     cthreads,              // THIS MUST be the first used unit !!
+    cwstring,
   {$endif}
   {$ifdef MSWINDOWS}       // do not initialize the widgets in linux -> see below
   {$ifdef LCL}

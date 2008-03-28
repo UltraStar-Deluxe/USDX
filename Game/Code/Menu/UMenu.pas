@@ -163,6 +163,7 @@ const
 implementation
 
 uses UCommon,
+     ULog,
      UMain,
      UDrawTexture,
      UGraphic,
@@ -1546,12 +1547,32 @@ end;
 
 function TMenu.WideCharUpperCase(const wchar : WideChar) : WideString;
 begin
+  // JB - I got EIntOverflow in this function ( on Linux ), the same as eddie may have...
+  //      after a little investigation I found this info : http://www.hu.freepascal.org/lists/fpc-pascal/2007-October/015233.html
+  //      seems we need "cwstring", which I added to UltraStar.lpr and all seems to work now..
+  //      I assume it will work correcty on Darwin also.   Im not sure if Eddie uses the Ultrastar.lpr file.. if not then maybe we need
+  //      to move some of that stuff to the dpr file with appropriate IFDEF's to make it easier to maintain.
+  
+	{$IFDEF Win32}
+    Result := WideUpperCase(wchar);
+  {$ELSE}
+    debugwriteln( 'WideCharUpperCase('+wchar+'):'+inttostr(length(wchar)) );
+
+    // fpc implementation dosnt seem to like non wide strings... or Empty strings
+    if ( wchar <> emptyWideStr ) then
+      Result := WideUpperCase(wchar)
+    else
+    	Result := UpperCase(wchar);
+  {$ENDIF}
+
+(*
   {$IFDEF DARWIN}
 	// eddie: WideUpperCase crashes on the mac with WideChars.
 	Result := UpperCase(wchar);
 	{$ELSE}
   Result := WideUpperCase(wchar);
-	{$ENDIF}
+  {$ENDIF}
+*)
 end;
 
 procedure TMenu.onHide;
