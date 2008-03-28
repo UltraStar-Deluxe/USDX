@@ -219,6 +219,13 @@ begin
   BackH := H;
 end;   }
 
+function RGBFloatToInt(R, G, B: Double): Cardinal;
+begin
+  Result := (Trunc(255 * R) shl 16) or
+            (Trunc(255 * G) shl  8) or
+             Trunc(255 * B);
+end;
+
 procedure TMenu.AddInteraction(Typ, Num: integer);
 var
   IntNum:   integer;
@@ -433,7 +440,6 @@ begin
     ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2,
     {<0.5.1: Skin.SkinPath + ThemeStatic.Tex, 0.5.1:} Skin.GetTextureFileName(ThemeStatic.Tex),
     'JPG', ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
-    //'Font Black');
 end;
 
 function TMenu.AddStatic(X, Y, W, H: real; Name: string): integer;
@@ -593,15 +599,11 @@ var
   temp:   integer;
   TempR, TempG, TempB, TempR2, TempG2, TempB2: Cardinal;
 begin
-{  Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
-    ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
-    ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
-    ThemeButton.Tex, 'JPG', 'Font Black');}
-
   Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
     ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
     ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
-    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ, ThemeButton.Reflection, ThemeButton.Reflectionspacing, ThemeButton.DeSelectReflectionspacing);
+    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ,
+    ThemeButton.Reflection, ThemeButton.Reflectionspacing, ThemeButton.DeSelectReflectionspacing);
 
   Button[Result].Z := ThemeButton.Z;
 
@@ -1070,8 +1072,8 @@ begin
     ThemeSelect.SBGDColR, ThemeSelect.SBGDColG, ThemeSelect.SBGDColB, ThemeSelect.SBGDInt,
     ThemeSelect.STColR, ThemeSelect.STColG, ThemeSelect.STColB, ThemeSelect.STInt,
     ThemeSelect.STDColR, ThemeSelect.STDColG, ThemeSelect.STDColB, ThemeSelect.STDInt,
-    Skin.GetTextureFileName(ThemeSelect.Tex), 'Font Black',
-    Skin.GetTextureFileName(ThemeSelect.TexSBG), 'Font Black',
+    Skin.GetTextureFileName(ThemeSelect.Tex), TEXTURE_TYPE_COLORIZED,
+    Skin.GetTextureFileName(ThemeSelect.TexSBG), TEXTURE_TYPE_COLORIZED,
     ThemeSelect.Text, Data);
   for SO := 0 to High(Values) do
     AddSelectOption(ThemeSelect.X + ThemeSelect.W + ThemeSelect.SkipX + SO * 100 + 20, ThemeSelect.Y + 20, Values[SO]);
@@ -1090,7 +1092,10 @@ begin
   SetLength(Selects, S + 1);
   Selects[S] := TSelect.Create;
 
-  Selects[S].Texture := Texture.GetTexture(Name, Typ);
+  if (Typ = TEXTURE_TYPE_COLORIZED) then
+    Selects[S].Texture := Texture.LoadTexture(PChar(Name), 'PNG', PChar(Typ), RGBFloatToInt(ColR, ColG, ColB))
+  else
+    Selects[S].Texture := Texture.GetTexture(Name, Typ);
   Selects[S].X := X;
   Selects[S].Y := Y;
   Selects[S].W := W;
@@ -1104,7 +1109,10 @@ begin
   Selects[S].DColB := DColB;
   Selects[S].DInt := DInt;
 
-  Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
+  if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
+    Selects[S].TextureSBG := Texture.LoadTexture(PChar(SBGName), 'PNG', PChar(SBGTyp), RGBFloatToInt(SBGColR, SBGColG, SBGColB))
+  else
+    Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
   Selects[S].TextureSBG.X := X + W + SkipX;
   Selects[S].TextureSBG.Y := Y;
   Selects[S].TextureSBG.W := 450;
@@ -1213,8 +1221,8 @@ begin
     ThemeSelectS.SBGDColR, ThemeSelectS.SBGDColG, ThemeSelectS.SBGDColB, ThemeSelectS.SBGDInt,
     ThemeSelectS.STColR, ThemeSelectS.STColG, ThemeSelectS.STColB, ThemeSelectS.STInt,
     ThemeSelectS.STDColR, ThemeSelectS.STDColG, ThemeSelectS.STDColB, ThemeSelectS.STDInt,
-    Skin.GetTextureFileName(ThemeSelectS.Tex), 'Font Black',
-    Skin.GetTextureFileName(ThemeSelectS.TexSBG), 'Font Black',
+    Skin.GetTextureFileName(ThemeSelectS.Tex), TEXTURE_TYPE_COLORIZED,
+    Skin.GetTextureFileName(ThemeSelectS.TexSBG), TEXTURE_TYPE_COLORIZED,
     ThemeSelectS.Text, Data);
   for SO := 0 to High(Values) do
     AddSelectSlideOption(Values[SO]);
@@ -1244,7 +1252,10 @@ begin
   SetLength(SelectsS, S + 1);
   SelectsS[S] := TSelectSlide.Create;
 
-  SelectsS[S].Texture := Texture.GetTexture(Name, Typ);
+  if (Typ = TEXTURE_TYPE_COLORIZED) then
+    SelectsS[S].Texture := Texture.LoadTexture(PChar(Name), 'PNG', PChar(Typ), RGBFloatToInt(ColR, ColG, ColB))
+  else
+    SelectsS[S].Texture := Texture.GetTexture(Name, Typ);
   SelectsS[S].X := X;
   SelectsS[S].Y := Y;
   SelectsS[S].W := W;
@@ -1259,7 +1270,10 @@ begin
   SelectsS[S].DColB := DColB;
   SelectsS[S].DInt := DInt;
 
-  SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
+  if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
+    SelectsS[S].TextureSBG := Texture.LoadTexture(PChar(SBGName), 'PNG', PChar(SBGTyp), RGBFloatToInt(SBGColR, SBGColG, SBGColB))
+  else
+    SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
   SelectsS[S].TextureSBG.X := X + W + SkipX;
   SelectsS[S].TextureSBG.Y := Y;
   //SelectsS[S].TextureSBG.W := 450;

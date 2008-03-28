@@ -162,7 +162,7 @@ begin
   Fonts[3].Done := -1;
   Fonts[3].Outline := 4;
 
-{  Fonts[4].Tex := Texture.LoadTexture('FontO', 'BMP', 'Arrow', 0); // for score screen
+{  Fonts[4].Tex := Texture.LoadTexture('FontO', 'PNG', 'Transparent', 0); // for score screen
   Fonts[4].Tex.H := 30;
   Fonts[4].AspectW := 0.95;
   Fonts[4].Done := -1;
