@@ -256,7 +256,7 @@ begin
     //Jump to Artist/Titel
     if ((SDL_ModState and KMOD_LALT <> 0) AND (Mode = smNormal)) then
     begin
-      if (WideCharUpperCase(CharCode)[1] in ['A'..'Z']) then
+      if (WideCharUpperCase(CharCode)[1] in ([WideChar('A')..WideChar('Z')]) ) then
       begin
         Letter := WideCharUpperCase(CharCode)[1];
         I2 := Length(CatSongs.Song);

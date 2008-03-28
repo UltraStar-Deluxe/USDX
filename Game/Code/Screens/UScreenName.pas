@@ -36,7 +36,7 @@ begin
 
     // check normal keys
     if (IsAlphaNumericChar(CharCode) or
-        (CharCode in [' ','-','_','!',',','<','/','*','?','''','"'])) then
+        {(CharCode in [' ','-','_','!',',','<','/','*','?','''','"']))} IsPunctuationChar(CharCode)) then
     begin
       Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
       Exit;
