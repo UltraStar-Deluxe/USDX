@@ -114,7 +114,7 @@ type
     Destructor Free;
 
     Procedure Init(const Filename: string);
-    Function ReadScore(Song: Integer): AScore;
+    Function ReadScore(const Song: Integer; const Difficulty: Byte): AScore;
     procedure AddScore(Song: Integer; Level: integer; Name: string; Score: integer);
     procedure WriteScore(Song: Integer);
 
@@ -270,53 +270,46 @@ end;
 //--------------------
 //ReadScore - Read Scores into SongArray
 //--------------------
-Function TDataBaseSystem.ReadScore(Song: Integer): AScore;
+Function TDataBaseSystem.ReadScore(const Song: Integer; const Difficulty: Byte): AScore;
 var
   TableData: TSqliteTable;
-  Difficulty: Integer;
+  I: Integer;
 begin
-  {if not assigned( ScoreDB ) then
-    exit;
+  if (assigned( ScoreDB )) AND (Difficulty < 2) then
+  begin
 
-
-  //ScoreDB := TSqliteDatabase.Create(sFilename);
-  try
+    //ScoreDB := TSqliteDatabase.Create(sFilename);
     try
-    //Search Song in DB
-    TableData := ScoreDB.GetTable('SELECT `Difficulty`, `Player`, `Score` FROM `'+cUS_Scores+'` WHERE `SongID` = (SELECT `ID` FROM `us_songs` WHERE `Artist` = "' + Song.Artist + '" AND `Title` = "' + Song.Title + '" LIMIT 1) ORDER BY `Score` DESC  LIMIT 15');
+      try
+        //Search Song in DB
+        TableData := ScoreDB.GetTable('SELECT `Player`, `Score` FROM `'+cUS_Scores+'` WHERE (`SongID` = ''' + InttoStr(Song) + ''') AND (`Difficulty` = ''' + InttoStr(Difficulty) + ''') ORDER BY `Score` DESC  LIMIT 5');
 
-    //Empty Old Scores
-    SetLength (Song.Score[0], 0);
-    SetLength (Song.Score[1], 0);
-    SetLength (Song.Score[2], 0);
 
-    while not TableData.Eof do //Go through all Entrys
-    begin //Add one Entry to Array
-      Difficulty := StrToIntDef(TableData.FieldAsString(TableData.FieldIndex['Difficulty']), -1);
-      if (Difficulty >= 0) AND (Difficulty <= 2) then
-      begin
-        SetLength(Song.Score[Difficulty], Length(Song.Score[Difficulty]) + 1);
+        I := 0;
+        while not TableData.Eof do //Go through all Entrys
+        begin //Add one Entry to Array
+            Song.Score[Difficulty, high(Song.Score[Difficulty])].Name  :=
+                TableData.FieldAsString(TableData.FieldIndex['Player']);
+            Song.Score[Difficulty, high(Song.Score[Difficulty])].Score :=
+                StrtoInt(TableData.FieldAsString(TableData.FieldIndex['Score']));
 
-        Song.Score[Difficulty, high(Song.Score[Difficulty])].Name  :=
-            TableData.FieldAsString(TableData.FieldIndex['Player']);
-        Song.Score[Difficulty, high(Song.Score[Difficulty])].Score :=
-            StrtoInt(TableData.FieldAsString(TableData.FieldIndex['Score']));
+          TableData.Next;
+          Inc(I);
+        end; // While not TableData.EOF
+
+        If (I < 5) then
+          Result[1].Score := 0; //Place ending Zero
+
+      except
+        Result[0].Name  := 'Error Reading ScoreDB';
+        Result[0].Score := -1;
+        Result[1].Score := 0;
       end;
-      TableData.Next;
-      
-    end; // While not TableData.EOF
 
-    except
-      for Difficulty := 0 to 2 do
-      begin
-        SetLength(Song.Score[Difficulty], 1);
-        Song.Score[Difficulty, 1].Name := 'Error Reading ScoreDB';
-      end;
+    finally
+      //ScoreDb.Free;
     end;
-    
-  finally
-  //ScoreDb.Free;
-  end; }
+  end;
 end;
 
 //--------------------
@@ -327,37 +320,37 @@ var
 ID: Integer;
 TableData: TSqliteTable;
 begin
-  {if not assigned( ScoreDB ) then
-    exit;
-
-  //ScoreDB := TSqliteDatabase.Create(sFilename);
-  try
-  //Prevent 0 Scores from being added
-  if (Score > 0) then
+  if assigned( ScoreDB ) then
   begin
 
-    ID := ScoreDB.GetTableValue('SELECT `ID` FROM `'+cUS_Songs+'` WHERE `Artist` = "' + Song.Artist + '" AND `Title` = "' + Song.Title + '"');
-    if ID = 0 then //Song doesn't exist -> Create
-    begin
-      ScoreDB.ExecSQL ('INSERT INTO `'+cUS_Songs+'` ( `ID` , `Artist` , `Title` , `TimesPlayed` ) VALUES (NULL , "' + Song.Artist + '", "' + Song.Title + '", "0");');
-      ID := ScoreDB.GetTableValue('SELECT `ID` FROM `US_Songs` WHERE `Artist` = "' + Song.Artist + '" AND `Title` = "' + Song.Title + '"');
-      if ID = 0 then //Could not Create Table
-        exit;
-    end;
-    //Create new Entry
-    ScoreDB.ExecSQL('INSERT INTO `'+cUS_Scores+'` ( `SongID` , `Difficulty` , `Player` , `Score` ) VALUES ("' + InttoStr(ID) + '", "' + InttoStr(Level) + '", "' + Name + '", "' + InttoStr(Score) + '");');
+    //ScoreDB := TSqliteDatabase.Create(sFilename);
+    try
+      //Prevent 0 Scores from being added
+      if (Score > 0) then
+      begin
+        {ID := ScoreDB.GetTableValue('SELECT `ID` FROM `'+cUS_Songs+'` WHERE `Artist` = "' + Song.Artist + '" AND `Title` = "' + Song.Title + '"');
+        if ID = 0 then //Song doesn't exist -> Create
+        begin
+          ScoreDB.ExecSQL ('INSERT INTO `'+cUS_Songs+'` ( `ID` , `Artist` , `Title` , `TimesPlayed` ) VALUES (NULL , "' + Song.Artist + '", "' + Song.Title + '", "0");');
+          ID := ScoreDB.GetTableValue('SELECT `ID` FROM `US_Songs` WHERE `Artist` = "' + Song.Artist + '" AND `Title` = "' + Song.Title + '"');
+          if ID = 0 then //Could not Create Table
+            exit;
+        end; }
+        //Create new Entry
+        ScoreDB.ExecSQL('INSERT INTO `'+cUS_Scores+'` ( `SongID` , `Difficulty` , `Player` , `Score` ) VALUES ("' + InttoStr(Song) + '", "' + InttoStr(Level) + '", "' + Name + '", "' + InttoStr(Score) + '");');
 
-    //Delete Last Position when there are more than 5 Entrys
-    if ScoreDB.GetTableValue('SELECT COUNT(`SongID`) FROM `'+cUS_Scores+'` WHERE `SongID` = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'"') > 5 then
-    begin
-      TableData := ScoreDB.GetTable('SELECT `Player`, `Score` FROM `'+cUS_Scores+'` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" ORDER BY `Score` ASC LIMIT 1');
-      ScoreDB.ExecSQL('DELETE FROM `US_Scores` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" AND `Player` = "' + TableData.FieldAsString(TableData.FieldIndex['Player']) + '" AND `Score` = "' + TableData.FieldAsString(TableData.FieldIndex['Score']) + '"');
-    end;
+        //Delete Last Position when there are more than 5 Entrys
+        if ScoreDB.GetTableValue('SELECT COUNT(`SongID`) FROM `'+cUS_Scores+'` WHERE `SongID` = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'"') > 5 then
+        begin
+          TableData := ScoreDB.GetTable('SELECT `Player`, `Score` FROM `'+cUS_Scores+'` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" ORDER BY `Score` ASC LIMIT 1');
+          ScoreDB.ExecSQL('DELETE FROM `US_Scores` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" AND `Player` = "' + TableData.FieldAsString(TableData.FieldIndex['Player']) + '" AND `Score` = "' + TableData.FieldAsString(TableData.FieldIndex['Score']) + '"');
+        end;
 
+      end;
+    finally
+    //ScoreDB.Free;
+    end;
   end;
-  finally
-  //ScoreDB.Free;
-  end; }
 end;
 
 //--------------------
@@ -365,15 +358,15 @@ end;
 //--------------------
 procedure TDataBaseSystem.WriteScore(Song: Integer);
 begin
-  {if not assigned( ScoreDB ) then
-    exit;
-    
-  try
-    //Increase TimesPlayed
-    ScoreDB.ExecSQL ('UPDATE `'+cUS_Songs+'` SET `TimesPlayed` = `TimesPlayed` + "1" WHERE `Title` = "' + Song.Title + '" AND `Artist` = "' + Song.Artist + '";');
-  except
+  if not assigned( ScoreDB ) then
+  begin
+    try
+      //Increase TimesPlayed
+      ScoreDB.ExecSQL ('UPDATE `'+cUS_Songs+'` SET `TimesPlayed` = `TimesPlayed` + ''1'' WHERE `ID` = ''' + InttoStr(Song) + ''';');
+    except
 
-  end; }
+    end;
+  end;
 end;
 
 //--------------------
