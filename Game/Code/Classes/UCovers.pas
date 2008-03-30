@@ -32,25 +32,32 @@ type
   end;
 
   TCovers = class
-    Cover:      array of TCover;
-    W:          word;
-    H:          word;
-    Size:       integer;
-    Data:       array of byte;
-    WritetoFile: Boolean;
+    private
+      Filename:   String;
 
-    constructor Create;
-    procedure Load;
-    procedure Save;
-    procedure AddCover(Name: string);
-    function CoverExists(Name: string): boolean;
-    function CoverNumber(Name: string): integer;
-    procedure PrepareData(Name: string);
+
+
+      WritetoFile: Boolean;
+    public
+      W:          word;
+      H:          word;
+      Size:       integer;
+      Data:       array of byte;
+      Cover:      array of TCover;
+
+      constructor Create;
+      procedure Load;
+      procedure Save;
+      Function AddCover(FileName: string): Integer;    //Returns ID, Checks Cover for Change, Updates Cover if required
+      function CoverExists(FileName: string): boolean;
+      function CoverNumber(FileName: string): integer; //Returns ID by FilePath
+      procedure PrepareData(FileName: string);
+      Procedure LoadTextures;
   end;
 
 var
   Covers:     TCovers;
-
+ // to - do : new Song management
 implementation
 
 uses UMain,
@@ -155,7 +162,7 @@ begin
   CloseFile(F);}
 end;
 
-procedure TCovers.AddCover(Name: string);
+Function TCovers.AddCover(FileName: string): Integer;
 var
   B:      integer;
   F:      File;
@@ -163,10 +170,10 @@ var
   NLen:   word;
   Bits:   byte;
 begin
-  if not CoverExists(Name) then
+  if not CoverExists(FileName) then
   begin
     SetLength(Cover, Length(Cover)+1);
-    Cover[High(Cover)].Name := Name;
+    Cover[High(Cover)].Name := FileName;
 
     Cover[High(Cover)].W := W;
     Cover[High(Cover)].H := H;
@@ -197,9 +204,9 @@ begin
       BlockWrite(F, H, 2);
       BlockWrite(F, Bits, 1);
 
-      NLen := Length(Name);
+      NLen := Length(FileName);
       BlockWrite(F, NLen, 2);
-      BlockWrite(F, Name[1], NLen);
+      BlockWrite(F, FileName[1], NLen);
 
       Cover[High(Cover)].Position := FilePos(F);
       BlockWrite(F, CacheMipmap[0], W*H*(Bits div 8));
@@ -211,7 +218,7 @@ begin
     Cover[High(Cover)].Position := 0;
 end;
 
-function TCovers.CoverExists(Name: string): boolean;
+function TCovers.CoverExists(FileName: string): boolean;
 var
   C:    integer; // cover
 begin
@@ -220,14 +227,14 @@ begin
   
   while (C <= High(Cover)) and (Result = false) do
   begin
-    if Cover[C].Name = Name then
+    if Cover[C].Name = FileName then
       Result := true;
       
     Inc(C);
   end;
 end;
 
-function TCovers.CoverNumber(Name: string): integer;
+function TCovers.CoverNumber(FileName: string): integer;
 var
   C:    integer;
 begin
@@ -236,14 +243,14 @@ begin
   
   while (C <= High(Cover)) and (Result = -1) do
   begin
-    if Cover[C].Name = Name then
+    if Cover[C].Name = FileName then
       Result := C;
       
     Inc(C);
   end;
 end;
 
-procedure TCovers.PrepareData(Name: string);
+procedure TCovers.PrepareData(FileName: string);
 var
   F:  File;
   C:  integer;
@@ -253,13 +260,18 @@ begin
     AssignFile(F, GamePath + 'covers.cache');
     Reset(F, 1);
 
-    C := CoverNumber(Name);
+    C := CoverNumber(FileName);
     SetLength(Data, Cover[C].Size);
     if Length(Data) < 6 then beep;
     Seek(F, Cover[C].Position);
     BlockRead(F, Data[0], Cover[C].Size);
     CloseFile(F);
   end;
+end;
+
+Procedure TCovers.LoadTextures;
+begin
+
 end;
 
 end.

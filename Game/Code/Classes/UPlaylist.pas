@@ -267,13 +267,13 @@ begin
     exit;
 
   //Hide all Songs
-  For I := 0 to high(CatSongs.Song) do
-     CatSongs.Song[I].Visible := False;
+  {For I := 0 to high(CatSongs.Song) do
+     CatSongs.Song[I].Visible := False;}
 
   //Show Songs in PL
   For I := 0 to high(PlayLists[Index].Items) do
   begin
-    CatSongs.Song[PlayLists[Index].Items[I].SongID].Visible := True;
+    //CatSongs.Song[PlayLists[Index].Items[I].SongID].Visible := True;
   end;
 
   //Set CatSongsMode + Playlist Mode
@@ -335,8 +335,8 @@ Procedure   TPlayListManager.DelPlaylist(const Index: Cardinal);
 var
   I: Integer;
   Filename: String;
-begin
-  If Int(Index) > High(Playlists) then
+begin // to - do : new Song management
+  {If Int(Index) > High(Playlists) then
     Exit;
 
   Filename := PlaylistPath + Playlists[Index].Filename;
@@ -368,7 +368,7 @@ begin
     ScreenSong.Interaction := 0;
     ScreenSong.FixSelected;
     ScreenSong.ChangeMusic;
-  end;
+  end;       }
 end;
 
 //----------
@@ -385,8 +385,8 @@ begin
     P := iPlaylist
   else
     exit;
-
-  if (Int(SongID) <= High(CatSongs.Song)) AND (NOT CatSongs.Song[SongID].Main) then
+   // to - do : new Song management
+  {if (Int(SongID) <= High(CatSongs.Song)) AND (NOT CatSongs.Song[SongID].Main) then
   begin
     Len := Length(Playlists[P].Items);
     SetLength(Playlists[P].Items, Len + 1);
@@ -401,7 +401,7 @@ begin
     //Correct Display when Editing current Playlist
     if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
       SetPlaylist(P);
-  end;
+  end; }
 end;
 
 //----------

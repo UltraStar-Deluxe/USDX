@@ -35,27 +35,115 @@ type
           TimesSungtot: Word);
   end;
   AStatResult = Array of TStatResult;
-  
+
+  TDBSongInfo = record
+    FileName:    String;
+    FolderID:    String;
+    FullPath:    String;
+    LastChanged: Integer; //TimeStamp
+
+    //Required Information
+      Title:      widestring;
+      Artist:     widestring;
+
+      Mp3:        widestring;
+
+      Text:       widestring;
+      Creator:    widestring;
+
+      Resolution: integer;
+      BPM:        array of TBPM;
+      GAP:        real; // in miliseconds
+
+      Base    : array[0..1] of integer;
+      Rel     : array[0..1] of integer;
+      Mult    : integer;
+      MultBPM : integer;
+
+    //Some Files
+      Cover:      widestring; //Path to Cover
+      CoverID:    Integer;    //ID of Cover in Covers Cache
+      Background: widestring;
+      Video:      widestring;
+      VideoGAP:   real;
+
+
+    //Additional Information
+      NotesGAP:   integer;
+      Start:      real; // in seconds
+      Finish:     integer; // in miliseconds
+      Relative:   boolean;
+
+    //Sorting
+      Genre:      widestring;
+      Edition:    widestring;
+      Language:   widestring;
+  end;
+
+  TSongListInfo = record //SongInfo used by Songscreen
+    ID:         Integer;
+    Title:      widestring;
+    Artist:     widestring;
+
+    Mp3:        widestring;
+    Video:      widestring;
+    CoverID:    Integer; //Cover ID in CoversCache
+  end;
+  ASongList = Array of TSongListInfo;
+
+  TSongListFilter = record
+    Field:    Byte;    //FieldID //See constants below
+    isSearch: Boolean; //Search Mask(true) or exact Match(False)
+    Filter:   String;
+  end;
+  ASongListFilter = Array of TSongListFilter;
+
   TDataBaseSystem = class
     private
       ScoreDB: TSqliteDatabase;
       sFilename: string;
-      
+
     public
 
 
     property Filename: String read sFilename;
-    
+
     Destructor Free;
 
     Procedure Init(const Filename: string);
-    procedure ReadScore(var Song: TSong);
-    procedure AddScore(var Song: TSong; Level: integer; Name: string; Score: integer);
-    procedure WriteScore(var Song: TSong);
+    procedure ReadScore(Song: Integer);
+    procedure AddScore(Song: Integer; Level: integer; Name: string; Score: integer);
+    procedure WriteScore(Song: Integer);
+
+    Function  GetIDbyPath(const Path: String): Integer;
+    Function  GetIDbyFileName(const Filename: String; FolderID: Integer): Integer;
+    Procedure GetSongData(ID: Integer; var Info: TDBSongInfo);
+    Procedure SetSongData(ID: Integer; var Info: TDBSongInfo);
+    Function  GetLastChangedbyID(const Song: Integer): Integer;
+    Function  GetLastChangedbyFileName(const Filename: String; FolderID: Integer): Integer;
+
+    Function  GetFolderIDbyPath(Path: String): Integer;
+    Function  GetFolderIDbyName(const Name: String; ParentFolder: Integer): Integer;
+
+    Function  GetSongList(var List: ASongList; const Filter: ASongListFilter): Integer;
 
     Function  GetStats(var Stats: AStatResult; const Typ, Count: Byte; const Page: Cardinal; const Reversed: Boolean): Boolean;
     Function  GetTotalEntrys(const Typ: Byte): Cardinal;
   end;
+
+const
+  //Filter FieldIDs
+  SLF_Edition   = 0;
+  SLF_Genre     = 1;
+  SLF_Language  = 2;
+  SLF_Folder    = 3;
+  SLF_Title     = 4;
+  SLF_Artist    = 5;
+  SLF_Year      = 6;
+  SLF_Creator   = 7;
+  SLF_Video     = 8; //Songs w/ Video are returned
+  SLF_NoVideo   = 9; //Songs w/o Video are returned
+  Max_FilterFieldID = SLF_NoVideo;
 
 var
   DataBase: TDataBaseSystem;
@@ -123,12 +211,12 @@ end;
 //--------------------
 //ReadScore - Read Scores into SongArray
 //--------------------
-procedure TDataBaseSystem.ReadScore(var Song: TSong);
+procedure TDataBaseSystem.ReadScore(Song: Integer);
 var
   TableData: TSqliteTable;
   Difficulty: Integer;
 begin
-  if not assigned( ScoreDB ) then
+  {if not assigned( ScoreDB ) then
     exit;
 
 
@@ -169,18 +257,18 @@ begin
     
   finally
   //ScoreDb.Free;
-  end;
+  end; }
 end;
 
 //--------------------
 //AddScore - Add one new Score to DB
 //--------------------
-procedure TDataBaseSystem.AddScore(var Song: TSong; Level: integer; Name: string; Score: integer);
+procedure TDataBaseSystem.AddScore(Song: Integer; Level: integer; Name: string; Score: integer);
 var
 ID: Integer;
 TableData: TSqliteTable;
 begin
-  if not assigned( ScoreDB ) then
+  {if not assigned( ScoreDB ) then
     exit;
 
   //ScoreDB := TSqliteDatabase.Create(sFilename);
@@ -210,15 +298,15 @@ begin
   end;
   finally
   //ScoreDB.Free;
-  end;
+  end; }
 end;
 
 //--------------------
 //WriteScore - Not needed with new System; But used for Increment Played Count
 //--------------------
-procedure TDataBaseSystem.WriteScore(var Song: TSong);
+procedure TDataBaseSystem.WriteScore(Song: Integer);
 begin
-  if not assigned( ScoreDB ) then
+  {if not assigned( ScoreDB ) then
     exit;
     
   try
@@ -226,7 +314,7 @@ begin
     ScoreDB.ExecSQL ('UPDATE `'+cUS_Songs+'` SET `TimesPlayed` = `TimesPlayed` + "1" WHERE `Title` = "' + Song.Title + '" AND `Artist` = "' + Song.Artist + '";');
   except
 
-  end;
+  end; }
 end;
 
 //--------------------
@@ -368,5 +456,53 @@ begin
   end;
 
 end;
+
+Function  TDataBaseSystem.GetIDbyPath(const Path: String): Integer;
+begin
+
+end;
+
+Function  TDataBaseSystem.GetIDbyFileName(const Filename: String; FolderID: Integer): Integer;
+begin
+
+end;
+
+Procedure TDataBaseSystem.GetSongData(ID: Integer; var Info: TDBSongInfo);
+begin
+
+end;
+
+Procedure TDataBaseSystem.SetSongData(ID: Integer; var Info: TDBSongInfo);
+begin
+
+end;
+
+Function  TDataBaseSystem.GetLastChangedbyID(const Song: Integer): Integer;
+begin
+
+end;
+
+Function  TDataBaseSystem.GetLastChangedbyFileName(const Filename: String; FolderID: Integer): Integer;
+begin
+
+end;
+
+
+Function  TDataBaseSystem.GetFolderIDbyPath(Path: String): Integer;
+begin
+
+end;
+
+Function  TDataBaseSystem.GetFolderIDbyName(const Name: String; ParentFolder: Integer): Integer;
+begin
+
+end;
+
+
+Function  TDataBaseSystem.GetSongList(var List: ASongList; const Filter: ASongListFilter): Integer;
+begin
+
+end;
+
 
 end.

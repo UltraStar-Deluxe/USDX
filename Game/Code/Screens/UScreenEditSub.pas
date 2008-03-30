@@ -128,10 +128,11 @@ begin
       'S':
         begin
           // Save Song
-          if SDL_ModState = KMOD_LSHIFT then
+          // to - do : new Song management
+          {if SDL_ModState = KMOD_LSHIFT then
             SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, true)
           else
-            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, false);
+            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, false);}
 
           {if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
             // Save Song
@@ -1169,14 +1170,14 @@ begin
 
   ResetSingTemp;
 
-  try
+  {try  // to - do : new Song management
   //Check if File is XML
    if copy(CurrentSong.FileName,length(CurrentSong.FileName)-3,4) = '.xml'
     then Error := not CurrentSong.LoadXMLSong()
     else Error := not CurrentSong.LoadSong();
-  except
+  except }
     Error := True;
-  end;
+  //end;
 
   if Error then
   begin
@@ -1199,8 +1200,8 @@ begin
     Lines[0].Current := 0;
     CurrentNote := 0;
     Lines[0].Line[0].Note[0].Color := 1;
-
-    AudioPlayback.Open(CurrentSong.Path + CurrentSong.Mp3);
+    // to - do : new Song management
+    AudioPlayback.Open({CurrentSong.Path + }CurrentSong.Mp3);
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(40);
 

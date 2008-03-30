@@ -259,8 +259,8 @@ var
   Files   : TDirectoryEntryArray;
   lSong   : TSong;
 begin
-
-	  Files    := Platform.DirectoryFindFiles( Dir, '.txt', true);
+     // to - do : new Song management
+	  {Files    := Platform.DirectoryFindFiles( Dir, '.txt', true);
 
 		for i := 0 to Length(Files)-1 do
 		begin
@@ -282,7 +282,7 @@ begin
 			end;
 		end;
 		SetLength( Files, 0);
-
+                           }
 end;
 
 procedure TSongs.BrowseXMLFiles(Dir: widestring);
@@ -292,7 +292,7 @@ var
   lSong   : TSong;
 begin
 
-	  Files := Platform.DirectoryFindFiles( Dir, '.xml', true);
+	  {Files := Platform.DirectoryFindFiles( Dir, '.xml', true);
 
 		for i := 0 to Length(Files)-1 do
 		begin
@@ -313,7 +313,7 @@ begin
 
 			end;
 		end;
-		SetLength( Files, 0);
+		SetLength( Files, 0);  }
 
 end;
 
@@ -323,7 +323,7 @@ var
   S2:   integer;
   TempSong:   TSong;
 begin
-  case Order of
+  {case Order of
     sEdition: // by edition
       begin
         for S2 := 0 to SongList.Count -1 do
@@ -422,7 +422,7 @@ begin
             end;
       end;
 
-  end; // case
+  end; // case  }
 end;
 
 function TSongs.FindSongFile(Dir, Mask: widestring): widestring;
@@ -449,7 +449,7 @@ begin
   CatNumShow := -1;
 //  Songs.Sort(0); // by title
 
-case Ini.Sorting of
+{case Ini.Sorting of
     sEdition: begin
           Songs.Sort(sArtist);
           Songs.Sort(sEdition);
@@ -514,7 +514,7 @@ case Ini.Sorting of
 
       {// cover-patch
       if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';//}
+      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';//}{
 
       CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
 
@@ -541,7 +541,7 @@ case Ini.Sorting of
 
       {// cover-patch
       if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
+      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}{
       CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
 
       //CatNumber Patch
@@ -567,7 +567,7 @@ case Ini.Sorting of
 
       {// cover-patch
       if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
+      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}{
       CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
 
       //CatNumber Patch
@@ -597,7 +597,7 @@ case Ini.Sorting of
 
       {// cover-patch
       if FileExists(CoversPath + 'Title' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Title' + Letter + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
+      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}{
       CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
 
       //CatNumber Patch
@@ -625,7 +625,7 @@ case Ini.Sorting of
 
       {// cover-patch
       if FileExists(CoversPath + 'Artist' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Artist' + Letter + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
+      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}{
       CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
 
       //CatNumber Patch
@@ -651,7 +651,7 @@ case Ini.Sorting of
 
       {// cover-patch
       if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
+      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}{
       CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
 
       //CatNumber Patch
@@ -680,7 +680,7 @@ case Ini.Sorting of
 
         {// cover-patch
         if FileExists(CoversPath + 'Title' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Title' + Letter + '.jpg'
-        else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
+        else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}{
         CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
 
         //CatNumber Patch
@@ -710,7 +710,7 @@ case Ini.Sorting of
 
         {// cover-patch
         if FileExists(CoversPath + 'Artist' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Artist' + Letter + '.jpg'
-        else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
+        else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}{
         CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
 
         //CatNumber Patch
@@ -719,7 +719,7 @@ case Ini.Sorting of
           Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
           CatNumber := 0;
         end;
-        
+
         CatSongs.Song[CatLen].Visible := true;
       end;
     end;
@@ -744,45 +744,45 @@ case Ini.Sorting of
 if (ini.Tabs_at_startup = 1) And (high(Song) >=1) then
   Song[CatLen - CatNumber].CatNumber := CatNumber;//Set CatNumber of Categroy
 //CatCount Patch
-CatCount := Order;
+CatCount := Order;   }
 end;
 
 procedure TCatSongs.ShowCategory(Index: integer);
 var
   S:    integer; // song
-begin
-  CatNumShow := Index;
+begin       // to - do : new Song management
+ { CatNumShow := Index;
   for S := 0 to high(CatSongs.Song) do
   begin
     if (CatSongs.Song[S].OrderNum = Index) AND (Not CatSongs.Song[S].Main) then
       CatSongs.Song[S].Visible := true
     else
       CatSongs.Song[S].Visible := false;
-  end;
+  end;  }
 end;
 
 procedure TCatSongs.HideCategory(Index: integer); // hides all songs in category
 var
   S:    integer; // song
-begin
-  for S := 0 to high(CatSongs.Song) do begin
+begin       // to - do : new Song management
+  {for S := 0 to high(CatSongs.Song) do begin
     if not CatSongs.Song[S].Main then
       CatSongs.Song[S].Visible := false // hides all at now
-  end;
+  end;  }
 end;
 
 procedure TCatSongs.ClickCategoryButton(Index: integer);
 var
   Num, S:    integer;
 begin
-  Num := CatSongs.Song[Index].OrderNum;
+ { Num := CatSongs.Song[Index].OrderNum;
   if Num <> CatNumShow then
     begin
     ShowCategory(Num);
     end
   else begin
     ShowCategoryList;
-  end;
+  end;  }
 end;
 
 //Hide Categorys when in Category Hack
@@ -790,7 +790,7 @@ procedure TCatSongs.ShowCategoryList;
 var
   Num, S:    integer;
 begin
-  //Hide All Songs Show All Cats
+  {//Hide All Songs Show All Cats
   for S := 0 to high(CatSongs.Song) do begin
     if CatSongs.Song[S].Main then
       CatSongs.Song[S].Visible := true
@@ -798,7 +798,7 @@ begin
       CatSongs.Song[S].Visible := false
   end;
   CatSongs.Selected := CatNumShow; //Show last shown Category
-  CatNumShow := -1;
+  CatNumShow := -1; }
 end;
 //Hide Categorys when in Category Hack End
 
@@ -808,7 +808,7 @@ var
   I: Integer;
   begin
   Result := -1;
-  I := SearchFrom + 1;
+  I := SearchFrom + 1; {
   while not CatSongs.Song[I].Visible do
     begin
     Inc (I);
@@ -816,7 +816,7 @@ var
       I := low(CatSongs.Song);
     if (I = SearchFrom) then //Make One Round and no song found->quit
       break;
-    end;
+    end;   }
   end;
 //Wrong song selected when tabs on bug End
 
@@ -825,8 +825,8 @@ var
   S:    integer; // song
 begin
   Result := 0;
-  for S := 0 to high(CatSongs.Song) do
-    if CatSongs.Song[S].Visible = true then Inc(Result);
+  {for S := 0 to high(CatSongs.Song) do
+    if CatSongs.Song[S].Visible = true then Inc(Result);  }
 end;
 
 function TCatSongs.VisibleIndex(Index: integer): integer;
@@ -834,8 +834,8 @@ var
   S:    integer; // song
 begin
   Result := 0;
-  for S := 0 to Index-1 do
-    if CatSongs.Song[S].Visible = true then Inc(Result);
+  {for S := 0 to Index-1 do
+    if CatSongs.Song[S].Visible = true then Inc(Result);  }
 end;
 
 function TCatSongs.SetFilter(FilterStr: String; const fType: Byte): Cardinal;
@@ -847,7 +847,7 @@ begin
   {fType: 0: All
           1: Title
           2: Artist}
-  FilterStr := Trim(FilterStr);
+  {FilterStr := Trim(FilterStr);
   if FilterStr<>'' then begin
     Result := 0;
     //Create Search Array
@@ -893,9 +893,9 @@ begin
     for i:=0 to High(Song) do begin
       Song[i].Visible:=(Ini.Tabs=1)=Song[i].Main;
       CatNumShow := -1;
-    end;
+    end;  }
     Result := 0;
-  end;
+  {end; }
 end;
 
 

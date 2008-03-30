@@ -48,7 +48,7 @@ type
     Length:     string;
   end;
 
-  TSong = class
+  {TSong = class
     FileLineNo  : integer;  //Line which is readed at Last, for error reporting
 
     procedure ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
@@ -111,6 +111,76 @@ type
     function    Analyse(): boolean;
     function    AnalyseXML(): boolean;
     procedure   clear();
+  end;    }
+
+  AScore = Array[0..4] of TScore;
+  {*******************
+    New TSong Class.
+    Containing some Methods for DB communication
+    but none for Song laoding, saving, these should be
+    implemented by child classes
+   *******************}
+  TSong = class
+    protected
+      SongID:   Integer; //ID of this Song in the Song Database
+      FolderID: Integer; //ID of the Folder containing this Song
+      FileName: String;  //Filename of this Song w/o Path
+      FullPath: String;  //Path + Filename
+
+      Procedure ResetAttributes; virtual;  //Reset all Attributes of this object
+      Procedure ReadHeader; virtual;       //Reads Fileheader (Implemented by Child only)
+      Procedure ReadFile;   virtual;       //Reads complete File (Header + Notes) (Implemented by Child only)
+      Procedure WriteFile;  virtual;       //Writes complete File (Header + Notes) (Implemented by Child only)
+      Procedure ReadFromDB; virtual;       //Reads all available Information from DB
+      Function  CheckDB: Integer; virtual; //Checks DB for Song. Result > 0 SongExists (ID Returned)
+      Function  UpdateDB: Integer; virtual;//Writes all Header Information set in this Song Object to DB. Returns ID (Required when Updated first Time)
+    public
+      //Required Information
+      Title:      widestring;
+      Artist:     widestring;
+
+      Mp3:        widestring; //Full Path to MP3
+
+      Text:       widestring;
+      Creator:    widestring;
+
+      Resolution: integer;
+      BPM:        array of TBPM;
+      GAP:        real; // in miliseconds
+
+      Base    : array[0..1] of integer;
+      Rel     : array[0..1] of integer;
+      Mult    : integer;
+      MultBPM : integer;
+
+      //Some Files
+      Cover:      widestring; //Full Path to Cover
+      CoverID:    Integer;    //ID of Cover in Covers Cache
+      Background: widestring; //Full Path to BG
+      Video:      widestring; //Full Path to Video
+      VideoGAP:   real;
+
+
+      //Additional Information
+      NotesGAP:   integer;
+      Start:      real; // in seconds
+      Finish:     integer; // in miliseconds
+      Relative:   boolean;
+
+      //Sorting
+      Genre:      widestring;
+      Edition:    widestring;
+      Language:   widestring;
+
+
+      constructor Create(const Path: String = ''; const FolderID: Integer = 0);
+      Procedure LoadbyFile(const Path: String);
+      Procedure LoadbyID(const ID: Integer);
+      Procedure SavetoFile(const Filename: String = '');
+
+      Function Score(const Difficulty: Byte): AScore;
+
+      Procedure Clear;
   end;
 
 implementation
@@ -121,7 +191,120 @@ uses
   UMusic,  //needed for Lines
   UMain;   //needed for Player
 
-constructor TSong.create( const aFileName : WideString );
+constructor TSong.Create(const Path: String = ''; const FolderID: Integer = 0);
+begin
+  If (Length(Path) > 0) AND (FolderID > 0) then
+  begin //Read Song Infos from File or DB
+    FullPath := Path;
+    FileName := ExtractFileName(Path);
+    Self.FolderID := FolderID;
+    SongID := CheckDB;
+
+    If (SongID = 0) then //Check if File has changed
+    begin
+      ResetAttributes;
+      ReadHeader;
+      SongID := UpdateDB;
+      //Get CoverID from Covers by Covers.AddCover(Coverscache checks if the Cover requires update
+    end;
+  end
+  else
+  begin
+    ResetAttributes;
+  end;
+end;
+
+Procedure TSong.LoadbyFile(const Path: String);
+begin
+  //Call all Functions to Load From File
+  //Set Song and Folder ID and Update DB if required
+  //Get CoverID from Covers by Covers.AddCover(Coverscache checks if the Cover requires update
+end;
+
+Procedure TSong.LoadbyID(const ID: Integer);
+begin
+  //Call all Functions to Load Song by ID
+  //Read all Information from file
+  //Get CoverID from Covers by Covers.AddCover(Coverscache checks if the Cover requires update
+end;
+
+Procedure TSong.SavetoFile(const Filename: String = '');
+begin
+  //Save HeaderInformation and Notes to File. If File = '' use File that was read from
+end;
+
+Function TSong.Score(const Difficulty: Byte): AScore;
+begin
+  //Return Score of Difficulty(0..2) Easy to Difficult
+end;
+
+Procedure TSong.Clear;
+begin
+  ResetAttributes;
+end;
+
+//--------
+// Reset all Attributes of this object
+//--------
+Procedure TSong.ResetAttributes;
+begin
+  //to do
+end;
+
+//--------
+// Reads Fileheader (Implemented by Child only)
+//--------
+Procedure TSong.ReadHeader;
+begin
+  //Implented in Childs only!
+end;
+
+//--------
+// Reads complete File (Header + Notes) (Implemented by Child only)
+//--------
+Procedure TSong.ReadFile;
+begin
+  //Implented in Childs only!
+end;
+
+
+//--------
+// Writes complete File (Header + Notes) (Implemented by Child only)
+//--------
+Procedure TSong.WriteFile;
+begin
+  //Implented in Childs only!
+end;
+
+
+//--------
+// Reads all available Information from DB
+//--------
+Procedure TSong.ReadFromDB;
+begin
+  // to- do
+end;
+
+
+//--------
+// Checks DB for Song. Result > 0 SongExists (ID Returned)
+//--------
+Function  TSong.CheckDB: Integer;
+begin
+  // to- do
+end;
+
+
+//--------
+// Writes all Header Information set in this Song Object to DB. Returns ID (Required when Updated first Time)
+//--------
+Function  TSong.UpdateDB: Integer;
+begin
+  // to- do
+end;
+
+
+{constructor TSong.create( const aFileName : WideString );
 begin
 
   Mult    := 1;
@@ -323,7 +506,7 @@ begin
       end;
       Read(SongFile, TempC);
       Inc(FileLineNo);
-    end; // while}
+    end; // while} {
 
     for Count := 0 to High(Lines) do begin
       Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
@@ -667,10 +850,10 @@ begin
         //Required Attributes
         //-----------
 
-        {$IFDEF UTF8_FILENAMES}
+        {$IFDEF UTF8_FILENAMES}   {
 		if ((Identifier = 'MP3') or (Identifier = 'BACKGROUND') or (Identifier = 'COVER') or (Identifier = 'VIDEO')) then
 		  Value := Utf8Encode(Value);
-        {$ENDIF}
+        {$ENDIF}   {
 
         //Title
         if (Identifier = 'TITLE') then
@@ -947,11 +1130,11 @@ begin
 
   //Required Information
   Mp3    := '';
-  {$IFDEF FPC}
+  {$IFDEF FPC} {
   setlength( BPM, 0 );
-  {$ELSE}
+  {$ELSE} {
   BPM    := nil;
-  {$ENDIF}
+  {$ENDIF} {
 
   GAP    := 0;
   Start  := 0;
@@ -1007,6 +1190,6 @@ begin
   //Read Header
   Result := self.ReadXMLHeader( FileName );
 
-end;
+end;  }
 
 end.

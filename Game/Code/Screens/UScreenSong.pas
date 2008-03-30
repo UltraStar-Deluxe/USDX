@@ -148,7 +148,7 @@ uses UGraphic,
 procedure TScreenSong.FixSelected;
 var I, I2: Integer;
   begin
-    if CatSongs.VisibleSongs > 0 then
+    {if CatSongs.VisibleSongs > 0 then
     begin
       I2:= 0;
       for I := low(CatSongs.Song) to High(Catsongs.Song) do
@@ -162,13 +162,13 @@ var I, I2: Integer;
 
       SongCurrent := I2;
       SongTarget  := I2;
-    end;
+    end;  }
   end;
 
 procedure TScreenSong.FixSelected2;
 var I, I2: Integer;
-  begin
-    if CatSongs.VisibleSongs > 0 then
+  begin          // to - do : new Song management
+   { if CatSongs.VisibleSongs > 0 then
     begin
       I2:= 0;
       for I := low(CatSongs.Song) to High(Catsongs.Song) do
@@ -181,7 +181,7 @@ var I, I2: Integer;
       end;
 
       SongTarget  := I2;
-    end;
+    end;}
   end;
 //Show Wrong Song when Tabs on Fix End
 
@@ -266,7 +266,7 @@ begin
         begin
           For I := 1 to high(CatSongs.Song) do
           begin
-            if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
+            {if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
                (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND
                (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
             begin
@@ -279,15 +279,15 @@ begin
               //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
               //Break and Exit
               Exit;
-            end;
+            end;  }
           end;
         end
         //Jump to Artist
         else  if (SDL_ModState = KMOD_LALT) then
         begin
           For I := 1 to high(CatSongs.Song) do
-          begin
-            if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
+          begin    // to - do : new Song management
+            {if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
                (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND
                (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
             begin
@@ -301,7 +301,7 @@ begin
 
               //Break and Exit
               Exit;
-            end;
+            end; }
           end;
         end;
       end;
@@ -320,8 +320,8 @@ begin
       'M': //Show SongMenu
         begin
           if (Songs.SongList.Count > 0) then begin
-            if (Mode = smNormal) then begin
-              if not CatSongs.Song[Interaction].Main then begin // clicked on Song
+            if (Mode = smNormal) then begin     // to - do : new Song management
+              {if not CatSongs.Song[Interaction].Main then begin // clicked on Song
                 if CatSongs.CatNumShow = -3 then
                   ScreenSongMenu.MenuShow(SM_Playlist)
                 else
@@ -330,7 +330,7 @@ begin
               else
               begin
                 ScreenSongMenu.MenuShow(SM_Playlist_Load);
-              end;
+              end;}
             end //Party Mode -> Show Party Menu
             else ScreenSongMenu.MenuShow(SM_Party_Main);
           end;
@@ -366,16 +366,16 @@ begin
 
             if (SDL_ModState = KMOD_LSHIFT) AND (Ini.Tabs_at_startup = 1) then //Random Category
             begin
-            I2 := 0; //Count Cats
-            for I:= low(CatSongs.Song) to high (CatSongs.Song) do
-              if CatSongs.Song[I].Main then Inc(I2);
+            I2 := 0; //Count Cats      // to - do : new Song management
+            {for I:= low(CatSongs.Song) to high (CatSongs.Song) do
+              if CatSongs.Song[I].Main then Inc(I2);}
 
             I2 := Random (I2)+1; //Zufall
 
             //Find Cat:
             for I:= low(CatSongs.Song) to high (CatSongs.Song) do
               begin
-              if CatSongs.Song[I].Main then
+              {if CatSongs.Song[I].Main then
                 Dec(I2);
               if (I2<=0) then
                 begin
@@ -389,23 +389,23 @@ begin
                 SelectNext;
                 FixSelected;
                 break;
-                end;
-              end;
+                end; }
+              end;   // to - do : new Song management
 
 
             end
             else if (SDL_ModState = KMOD_LCTRL) AND (Ini.Tabs_at_startup = 1) then //random in All Categorys
             begin
-            repeat
+            {repeat
               I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
-            until CatSongs.Song[I2].Main = false;
+            until CatSongs.Song[I2].Main = false;  }
 
             //Search Cat
-            for I := I2 downto low(CatSongs.Song) do
+            {for I := I2 downto low(CatSongs.Song) do
               begin
               if CatSongs.Song[I].Main then
                 break;
-              end;
+              end;    }
             //In I is now the categorie in I2 the song
 
             //Choose Cat
@@ -450,12 +450,12 @@ begin
             begin
             //Find Category
             I := Interaction;
-            while not catsongs.Song[I].Main  do
+            {while not catsongs.Song[I].Main  do
               begin
               Dec (I);
               if (I < low(catsongs.Song)) then
                 break;
-              end;
+              end;       }
             if (I<= 1) then
             Interaction := high(catsongs.Song)
             else
@@ -518,8 +518,8 @@ begin
           begin
             {$IFDEF UseSerialPort}
               // PortWriteB($378, 0);
-            {$ENDIF}
-            if CatSongs.Song[Interaction].Main then
+            {$ENDIF}              // to - do : new Song management
+            {if CatSongs.Song[Interaction].Main then
             begin // clicked on Category Button
 
               //Show Cat in Top Left Mod
@@ -535,7 +535,7 @@ begin
             //  SetScroll4;
 
             //Show Wrong Song when Tabs on Fix
-            SelectNext;
+{            SelectNext;
             FixSelected;
 
             //Play Music:
@@ -565,7 +565,7 @@ begin
                 else
                   ScreenSong.StartSong;
               end;
-            end;
+            end;  }
           end;
         end;
 
@@ -582,12 +582,12 @@ begin
                 I := Interaction;
                 if I <= 0 then I := 1;
 
-                while not catsongs.Song[I].Main do
+                {while not catsongs.Song[I].Main do
                 begin
                   Inc (I);
                   if (I > high(catsongs.Song)) then
                     I := low(catsongs.Song);
-                end;
+                end;  }
 
                 Interaction := I;
 
@@ -623,14 +623,14 @@ begin
                 I2 := 0;
                 if I <= 0 then I := 1;
 
-                while not catsongs.Song[I].Main or (I2 = 0) do
+                {while not catsongs.Song[I].Main or (I2 = 0) do
                 begin
                   if catsongs.Song[I].Main then
                     Inc(I2);
                   Dec (I);
                   if (I < low(catsongs.Song)) then
                     I := high(catsongs.Song);
-                end;
+                end; }
 
                 Interaction := I;
 
@@ -808,30 +808,30 @@ begin
         // new
         Texture.Limit := 512;// 256 0.4.2 value, 512 in 0.5.0
 
-        if not FileExists(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover) then
+        if not FileExists({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover) then
           CatSongs.Song[Pet].Cover := ''; // 0.5.0: if cover not found then show 'no cover'
-
+          // to - do : new Song management
         if CatSongs.Song[Pet].Cover = '' then
           AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), 'JPG', 'Plain', Theme.Song.Cover.Reflections)
         else begin
           // cache texture if there is a need to this
-          if not Covers.CoverExists(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover) then
+          if not Covers.CoverExists({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover) then
           begin
             Texture.CreateCacheMipmap := true;
-            Texture.GetTexture(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, 'Plain', true); // preloads textures and creates cache mipmap
+            Texture.GetTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, 'Plain', true); // preloads textures and creates cache mipmap
             Texture.CreateCacheMipmap := false;
 
             // puts this texture to the cache file
-            Covers.AddCover(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover);
+            Covers.AddCover({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover);
 
             // unload full size texture
-            Texture.UnloadTexture(CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, false);
+            Texture.UnloadTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, false);
 
             // we should also add mipmap texture by calling createtexture and use mipmap cache as data source
           end;
 
           // and now load it from cache file (small place for the optimization by eliminating reading it from file, but not here)
-          AddButton(300 + Pet*250, 140, 200, 200, CatSongs.Song[Pet].Path + CatSongs.Song[Pet].Cover, 'JPG', 'Plain', Theme.Song.Cover.Reflections);
+          AddButton(300 + Pet*250, 140, 200, 200,{ CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, 'JPG', 'Plain', Theme.Song.Cover.Reflections);
         end;
         Texture.Limit := 1024*1024;
         I := -1;
@@ -898,7 +898,7 @@ begin
     //Set Texts:
     Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
     Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
-    if (Ini.Tabs_at_startup = 1) And (CatSongs.CatNumShow = -1) then
+    {if (Ini.Tabs_at_startup = 1) And (CatSongs.CatNumShow = -1) then
     begin
       Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].OrderNum) + '/' + IntToStr(CatSongs.CatCount);
       Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
@@ -910,15 +910,15 @@ begin
     else if (Ini.Tabs_at_startup = 1) then
       Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].CatNumber) + '/' + IntToStr(CatSongs.Song[Interaction - CatSongs.Song[Interaction].CatNumber].CatNumber)
     else
-      Text[TextNumber].Text := IntToStr(Interaction+1) + '/' + IntToStr(Length(CatSongs.Song));
+      Text[TextNumber].Text := IntToStr(Interaction+1) + '/' + IntToStr(Length(CatSongs.Song));}
   end
   else
   begin
     Text[TextNumber].Text := '0/0';
     Text[TextArtist].Text := '';
     Text[TextTitle].Text  := '';
-    for B := 0 to High(Button) do
-      Button[B].Visible := False;
+    {for B := 0 to High(Button) do
+      Button[B].Visible := False; }
 
   end;
 end;
@@ -946,12 +946,12 @@ begin
   Placed := 0;
 
   VisCount := 0;
-  for B := 0 to High(Button) do
-    if CatSongs.Song[B].Visible then Inc(VisCount);
+  {for B := 0 to High(Button) do
+    if CatSongs.Song[B].Visible then Inc(VisCount);}
 
   VisInt := 0;
-  for B := 0 to Interaction-1 do
-    if CatSongs.Song[B].Visible then Inc(VisInt);
+  {for B := 0 to Interaction-1 do
+    if CatSongs.Song[B].Visible then Inc(VisInt);  }
 
 
   if VisCount <= 6 then begin
@@ -976,11 +976,11 @@ begin
   end;
 
 
-
+   // to - do : new Song management
   // hide all buttons
   for B := 0 to High(Button) do begin
     Button[B].Visible := false;
-    Button[B].Selectable := CatSongs.Song[B].Visible;
+    //Button[B].Selectable := CatSongs.Song[B].Visible;
   end;
 
 {  for B := Src to Dst do begin
@@ -991,7 +991,7 @@ begin
   end;}
 
 
-  if Typ = 0 then begin
+  {if Typ = 0 then begin
     for B := 0 to High(Button) do begin
       if CatSongs.Song[B].Visible then begin
         Button[B].Visible := true;
@@ -999,9 +999,9 @@ begin
         Inc(Placed);
       end;
     end;
-  end;
+  end;    }
 
-  if Typ = 1 then begin
+  {if Typ = 1 then begin
     B := 0;
     while (Count > 0) do begin
       if CatSongs.Song[B].Visible then begin
@@ -1012,9 +1012,9 @@ begin
       end;
       Inc(B);
     end;
-  end;
+  end;  }
 
-  if Typ = 2 then begin
+  {if Typ = 2 then begin
     B := High(Button);
     while (Count > 0) do begin
       if CatSongs.Song[B].Visible then begin
@@ -1056,7 +1056,7 @@ begin
   end;
 
   if Length(Button) > 0 then
-    Static[1].Texture.Y := Button[Interaction].Y - 5; // selection texture
+    Static[1].Texture.Y := Button[Interaction].Y - 5; // selection texture }
 end;
 
 procedure TScreenSong.SetScroll2;
@@ -1065,7 +1065,7 @@ var
 // Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu // Auto Removed, Unused Variable
 // Wsp2:   real; // Auto Removed, Unused Variable
 begin
-  // liniowe
+  {// liniowe
   for B := 0 to High(Button) do
     Button[B].X := 300 + (B - Interaction) * 260;
 
@@ -1092,7 +1092,7 @@ var
 // Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu // Auto Removed, Unused Variable
 // Wsp2:   real; // Auto Removed, Unused Variable
 begin
-  SongTarget := Interaction;
+  {SongTarget := Interaction;
 
   // liniowe
   for B := 0 to High(Button) do
@@ -1128,7 +1128,7 @@ var
   Z, Z2:      real;
   VS:     integer;
 begin
-  VS := CatSongs.VisibleSongs; // 0.5.0 (I): cached, very important
+  {VS := CatSongs.VisibleSongs; // 0.5.0 (I): cached, very important
 
   // kolowe
   for B := 0 to High(Button) do begin
@@ -1136,7 +1136,7 @@ begin
     if Button[B].Visible then begin // 0.5.0 optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
 
     Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
-
+{
     Z := (1 + cos(Wsp)) / 2;
     Z2 := (1 + 2*Z) / 3;
 
@@ -1146,11 +1146,11 @@ begin
 
     Button[B].W := Theme.Song.Cover.H * Z2;
 
-//    Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
-    Button[B].Y := Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
+//    Button[B].Y := {50 +}{ 140 + 50 - 50 * Z2;
+{    Button[B].Y := Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
     Button[B].H := Button[B].W;
     end;
-  end;
+  end;}
 end;
 
 (*
@@ -1246,7 +1246,7 @@ var
   X:        Real;
   helper: real;
 begin
-  VS := CatSongs.VisibleSongs; // cache Visible Songs
+  {VS := CatSongs.VisibleSongs; // cache Visible Songs
   {Vars
   Theme.Song.CoverW: Radius des Kreises
   Theme.Song.CoverX: X Pos Linke Kante des gewählten Covers
@@ -1254,7 +1254,7 @@ begin
   Theme.Song.CoverH: Höhe der Cover
 
   (CatSongs.VisibleIndex(B) - SongCurrent)/VS = Distance to middle Cover in %
-  }
+  }{
 
   //Change Pos of all Buttons
   for B := low(Button) to high(Button) do
@@ -1268,7 +1268,7 @@ begin
       else if (Pos > VS/2) then
         Pos := Pos - VS;
 
-      if (Abs(Pos) < 2.5) then {fixed Positions}
+      if (Abs(Pos) < 2.5) then {fixed Positions} {
       begin
       Angle := Pi * (Pos / 5);
 //      Button[B].Visible := False;
@@ -1293,7 +1293,7 @@ begin
 
       end
       else
-      begin {Behind the Front Covers}
+      begin {Behind the Front Covers}    {
 
         // limit-bg-covers hack
         if (abs(abs(Pos)-VS/2)>10) then Button[B].Visible:=False;
@@ -1334,7 +1334,7 @@ begin
 //      Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Button[B].H) * 0.7);
 
     end;
-  end;
+  end;              }
 end;
 
 procedure TScreenSong.SetScroll6; // rotate (slotmachine style)
@@ -1348,7 +1348,7 @@ var
   Wsp:    real;
   Z, Z2:      real;
 begin
-  VS := CatSongs.VisibleSongs; // cache Visible Songs
+  {VS := CatSongs.VisibleSongs; // cache Visible Songs
   if VS <=5 then begin
     // kolowe
     for B := 0 to High(Button) do
@@ -1357,7 +1357,7 @@ begin
       if Button[B].Visible then begin // 0.5.0 optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
 
       Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
-
+      {
       Z := (1 + cos(Wsp)) / 2;
       Z2 := (1 + 2*Z) / 3;
 
@@ -1367,9 +1367,9 @@ begin
 
       Button[B].W := Theme.Song.Cover.H * Z2;
 
-//      Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
+//      Button[B].Y := {50 +}{ 140 + 50 - 50 * Z2;
       Button[B].X := Theme.Song.Cover.X  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
-      Button[B].H := Button[B].W;
+      Button[B].H := Button[B].W; {
       end;
     end;
   end
@@ -1387,7 +1387,7 @@ begin
         else if (Pos > VS/2) then
           Pos := Pos - VS;
 
-        if (Abs(Pos) < 2.5) then {fixed Positions}
+        if (Abs(Pos) < 2.5) then {fixed Positions}  {
         begin
           Angle := Pi * (Pos / 5);
 //          Button[B].Visible := False;
@@ -1410,7 +1410,7 @@ begin
           Button[B].Y := Theme.Song.Cover.Y + Theme.Song.Cover.W * X - Diff;
         end
         else
-        begin {Behind the Front Covers}
+        begin {Behind the Front Covers}   {
 
           // limit-bg-covers hack
           if (abs(VS/2-abs(Pos))>10) then Button[B].Visible:=False;
@@ -1439,7 +1439,7 @@ begin
         end;
       end;
     end;
-  end;
+  end;        }
 end;
 
 
@@ -1465,8 +1465,8 @@ begin
   if Length(CatSongs.Song) > 0 then begin
     //Load Music only when Song Preview is activated
     if ( Ini.PreviewVolume   <> 0 ) then
-    begin
-      if(AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3)) then
+    begin                                            // to - do : new Song management
+      if(AudioPlayback.Open({CatSongs.Song[Interaction].Path + }CatSongs.Song[Interaction].Mp3)) then
       begin
         AudioPlayback.SetLoop(false);
         AudioPlayback.Position := AudioPlayback.Length / 4;
@@ -1520,8 +1520,8 @@ begin
     AudioPlayback.SetMusicVolume(100);
 
   //If Preview is deactivated: Load MUsicfile now
-  If (Ini.PreviewVolume = 0) then
-    AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
+  If (Ini.PreviewVolume = 0) then        // to - do : new Song management
+    AudioPlayback.Open({Song[Interaction].Path + } CatSongs.Song[Interaction].Mp3);
 
   //When hide then Stop Music (For Party Mode Popup on Exit)
   if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) and (AudioPlayback <> nil) then
@@ -1577,9 +1577,9 @@ begin
       Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false);
       Button[Interaction].Texture2.Alpha := 1;
     end;
-
+                                                         // to - do : new Song management
     //Song Fade
-    if (CatSongs.VisibleSongs > 0) AND (Ini.PreviewVolume <> 0) AND (Not CatSongs.Song[Interaction].Main) AND (Ini.PreviewFading <> 0) then
+    if (CatSongs.VisibleSongs > 0) AND (Ini.PreviewVolume <> 0) {AND (Not CatSongs.Song[Interaction].Main)} AND (Ini.PreviewFading <> 0) then
     begin
       //Start Song Fade after a little Time, to prevent Song to be Played on Scrolling
       if (CoverTime < 0.2) and (CoverTime + TimeSkip >= 0.2) then
@@ -1648,9 +1648,9 @@ begin
     Skip := 1;
 
     // this 1 could be changed by CatSongs.FindNextVisible
-    while (not CatSongs.Song[(Interaction + Skip) mod Length(Interactions)].Visible) do Inc(Skip);
+    {while (not CatSongs.Song[(Interaction + Skip) mod Length(Interactions)].Visible) do Inc(Skip);
 
-    SongTarget := SongTarget + 1;//Skip;
+    }SongTarget := SongTarget + 1;//Skip;
 
     Interaction := (Interaction + Skip) mod Length(Interactions);
 
@@ -1679,8 +1679,8 @@ begin
 
     Skip := 1;
 
-    while (not CatSongs.Song[(Interaction - Skip + Length(Interactions)) mod Length(Interactions)].Visible) do Inc(Skip);
-    SongTarget := SongTarget - 1;//Skip;
+    {while (not CatSongs.Song[(Interaction - Skip + Length(Interactions)) mod Length(Interactions)].Visible) do Inc(Skip);
+    }SongTarget := SongTarget - 1;//Skip;
 
     Interaction := (Interaction - Skip + Length(Interactions)) mod Length(Interactions);
 
@@ -1711,7 +1711,7 @@ begin
   //When Music Preview is avtivated -> then Change Music
   if (Ini.PreviewVolume <> 0) then
     begin
-    if (NOT CatSongs.Song[Interaction].Main) AND(CatSongs.VisibleSongs > 0) then
+    {if (NOT CatSongs.Song[Interaction].Main) AND(CatSongs.VisibleSongs > 0) then
     begin
       AudioPlayback.Close;
       if AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
@@ -1724,7 +1724,7 @@ begin
       end;
     end
     else
-      AudioPlayback.Stop;
+      AudioPlayback.Stop; }
   end;
 end;
 
@@ -1864,17 +1864,17 @@ begin
         begin
           //When Tabs are activated then use Tab Method
           if (Ini.Tabs_at_startup = 1) then
-          begin
-            repeat
+          begin      // to - do : new Song management
+            {repeat
               I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
-            until CatSongs.Song[I2].Main = false;
+            until CatSongs.Song[I2].Main = false;}
 
             //Search Cat
-            for I := I2 downto low(CatSongs.Song) do
+            {for I := I2 downto low(CatSongs.Song) do
             begin
               if CatSongs.Song[I].Main then
                 break;
-            end;
+            end; }
             //In I ist jetzt die Kategorie in I2 der Song
             //I is the CatNum, I2 is the No of the Song within this Cat
 
@@ -2052,14 +2052,14 @@ begin
 end;
 
 procedure TScreenSong.OpenEditor;
-begin
-  if (Songs.SongList.Count > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = smNormal) then
+begin   // to - do : new Song management
+  {if (Songs.SongList.Count > 0) and (not CatSongs.Song[Interaction].Main) AND (Mode = smNormal) then
   begin
     AudioPlayback.Stop;
     AudioPlayback.PlaySound(SoundLib.Start);
     CurrentSong := CatSongs.Song[Interaction];
     FadeTo(@ScreenEditSub);
-  end;
+  end;  }
 end;
 
 //Team No of Team (0-5)
