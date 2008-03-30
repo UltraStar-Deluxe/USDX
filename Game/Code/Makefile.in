@@ -85,7 +85,7 @@ PDEFINES  = -dLCL -dLCL$(LCL_WIDGET_TYPE)
 
 # The user can overwrite the default flags with
 #   make PFLAGS="myflags"
-PFLAGS = -S2gi
+PFLAGS = -S2gi -vB
 # the user's flags (specified with configure) must be the last in
 # the list to overwrite the defaults (e.g.with the - option: -Xs-).
 PFLAGS += @PFLAGS@
