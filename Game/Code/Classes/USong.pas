@@ -42,12 +42,6 @@ type
     StartBeat:  real;
   end;
 
-  TScore = record
-    Name:       widestring;
-    Score:      integer;
-    Length:     string;
-  end;
-
   {TSong = class
     FileLineNo  : integer;  //Line which is readed at Last, for error reporting
 
@@ -113,7 +107,14 @@ type
     procedure   clear();
   end;    }
 
+  TScore = record
+    Name:       widestring;
+    Score:      integer;
+    Length:     string;
+  end;
+
   AScore = Array[0..4] of TScore;
+
   {*******************
     New TSong Class.
     Containing some Methods for DB communication

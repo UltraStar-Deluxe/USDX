@@ -41,6 +41,7 @@ type
     FolderID:    String;
     FullPath:    String;
     LastChanged: Integer; //TimeStamp
+    TimesPlayed: Integer;
 
     //Required Information
       Title:      widestring;
@@ -49,7 +50,6 @@ type
       Mp3:        widestring;
 
       Text:       widestring;
-      Creator:    widestring;
 
       Resolution: integer;
       BPM:        array of TBPM;
@@ -78,6 +78,8 @@ type
       Genre:      widestring;
       Edition:    widestring;
       Language:   widestring;
+      Year:       widestring;
+      Creator:    widestring;
   end;
 
   TSongListInfo = record //SongInfo used by Songscreen
@@ -102,6 +104,7 @@ type
     private
       ScoreDB: TSqliteDatabase;
       sFilename: string;
+      UpdateFromVer1: Boolean;
 
     public
 
@@ -111,7 +114,7 @@ type
     Destructor Free;
 
     Procedure Init(const Filename: string);
-    procedure ReadScore(Song: Integer);
+    Function ReadScore(Song: Integer): AScore;
     procedure AddScore(Song: Integer; Level: integer; Name: string; Score: integer);
     procedure WriteScore(Song: Integer);
 
@@ -158,6 +161,9 @@ uses
 const
   cUS_Scores = 'us_scores';
   cUS_Songs  = 'us_songs';
+  cUS_Info   = 'us_info';
+  cUS_Directories = 'us_directories';
+  cDB_Version = '2.0.0';
 
 //--------------------
 //Create - Opens Database and Create Tables if not Exist
@@ -168,26 +174,79 @@ begin
   debugWriteln( 'TDataBaseSystem.Init ('+Filename+') @ '+ floattostr( now() ) );
   
   //Open Database
-  ScoreDB   := TSqliteDatabase.Create( Filename );
-  sFilename := Filename;
+  ScoreDB        := TSqliteDatabase.Create( Filename );
+  sFilename      := Filename;
+  UpdateFromVer1 := False;
 
   try
+    //Check for Database Version
+    if not ScoreDB.TableExists( cUS_Info ) then
+    begin
+      If (ScoreDB.TableExists( cUS_Scores ) And ScoreDB.TableExists( cUS_Songs )) And (Not ScoreDB.TableExists( cUS_Directories )) then
+      begin //Update from a Ver. 1.0 - 1.0.1a Database
+        UpdateFromVer1 := True; //This table should be Updated from before Database ver 2.0
+        ScoreDb.ExecSQL('ALTER TABLE `' + cUS_Songs + '` RENAME TO ''' + cUS_Songs + '_old'''); //Rename old Song Table, to achieve old SongIDs
+        debugWriteln( 'TDataBaseSystem.Init - Switched to "Update from DB Version 1" Mode' );
+      end;
+
+      //Create Info Table
+      ScoreDB.ExecSQL('CREATE TABLE `' + cUS_Info + '` ( `Ident` varchar(32) PRIMARY KEY, `Value` varchar(64) NOT NULL default '''');');
+
+      //Write Database Version to Table
+      ScoreDB.ExecSQL('INSERT INTO `' + cUS_Info + '` VALUES (''version'', ''2.0.0'');');
+
+      debugWriteln( 'TDataBaseSystem.Init - CREATED US_Info' );
+    end;
+
     //Look for Tables => When not exist Create them
+
+    if not ScoreDB.TableExists( cUS_Directories ) then
+    begin
+      ScoreDB.execsql('CREATE TABLE `' + cUS_Directories + '` ( `ID` integer NOT NULL PRIMARY KEY AUTOINCREMENT, `Name` varchar(255) NOT NULL default '''', `FullPath` text NOT NULL, `LastChange` int(10) NOT NULL default ''0'');');
+
+      //Add Root Directory
+      ScoreDB.ExecSQL('INSERT INTO `us_directories` VALUES (1, ''root'', '''', ''0'');');
+
+      debugWriteln( 'TDataBaseSystem.Init - CREATED US_Directories' );
+    end;
+
     if not ScoreDB.TableExists( cUS_Scores ) then
     begin
-      ScoreDB.execsql('CREATE TABLE `'+cUS_Scores+'` (`SongID` INT( 11 ) NOT NULL , `Difficulty` INT( 1 ) NOT NULL , `Player` VARCHAR( 150 ) NOT NULL , `Score` INT( 5 ) NOT NULL );');
+      ScoreDB.execsql('CREATE TABLE `'+cUS_Scores+'` (`SongID` INT( 10 ) NOT NULL , `Difficulty` INT( 1 ) NOT NULL , `Player` VARCHAR( 150 ) NOT NULL , `Score` INT( 5 ) NOT NULL );');
+
       debugWriteln( 'TDataBaseSystem.Init - CREATED US_Scores' );
     end;
 
     if not ScoreDB.TableExists( cUS_Songs ) then
     begin
-      ScoreDB.execsql('CREATE TABLE `'+cUS_Songs+'` (`ID` INTEGER PRIMARY KEY, `Artist` VARCHAR( 255 ) NOT NULL , `Title` VARCHAR( 255 ) NOT NULL , `TimesPlayed` int(5) NOT NULL );');
+      // Old 1.0 Style: ScoreDB.execsql('CREATE TABLE `'+cUS_Songs+'` (`ID` INTEGER PRIMARY KEY, `Artist` VARCHAR( 255 ) NOT NULL , `Title` VARCHAR( 255 ) NOT NULL , `TimesPlayed` int(5) NOT NULL );');
+      //New: Dataabse 2.0 Style
+      ScoreDb.ExecSQL('CREATE TABLE `' + cUS_Songs + '` ( ' +
+                      '`ID` integer PRIMARY KEY AUTOINCREMENT, ' +
+                      '`Filename` varchar(255) NOT NULL default '''', ' +
+                      '`FolderID` int(10) NOT NULL default ''0'', ' +
+                      '`FullPath` text NOT NULL, ' +
+                      '`LastChanged` int(10) NOT NULL default ''0'', ' +
+                      '`Artist` varchar(255) NOT NULL default '''', ' +
+                      '`Title` varchar(255) NOT NULL default '''', ' +
+                      '`Mp3` text NOT NULL, ' +
+                      '`Cover` text NOT NULL, ' +
+                      '`CoverID` int(10) NOT NULL default ''0'', ' +
+                      '`Video` text NOT NULL, ' +
+                      '`VideoGap` float NOT NULL default ''0'', ' +
+                      '`Start` float NOT NULL default ''0'', ' +
+                      '`Genre` varchar(255) NOT NULL default '''', ' +
+                      '`Edition` varchar(255) NOT NULL default '''', ' +
+                      '`Language` varchar(255) NOT NULL default '''', ' +
+                      '`Year` varchar(255) NOT NULL default '''', ' +
+                      '`Creator` varchar(255) NOT NULL default '''', ' +
+                      '`TimesPlayed` int(5) NOT NULL default ''0'');');
+
+      //Delete Score Table to avoid wrong IDS
+      ScoreDb.ExecSQL('DELETE FROM `' + cUS_Scores + '`');
+
       debugWriteln( 'TDataBaseSystem.Init - CREATED US_Songs' );
     end;
-    
-     //Not possible because of String Limitation to 255 Chars //Need to rewrite Wrapper
-    {if not ScoreDB.TableExists('US_SongCache') then
-      ScoreDB.ExecSQL('CREATE TABLE `US_SongCache` (`Path` VARCHAR( 255 ) NOT NULL , `Filename` VARCHAR( 255 ) NOT NULL , `Title` VARCHAR( 255 ) NOT NULL , `Artist` VARCHAR( 255 ) NOT NULL , `Folder` VARCHAR( 255 ) NOT NULL , `Genre` VARCHAR( 255 ) NOT NULL , `Edition` VARCHAR( 255 ) NOT NULL , `Language` VARCHAR( 255 ) NOT NULL , `Creator` VARCHAR( 255 ) NOT NULL , `Cover` VARCHAR( 255 ) NOT NULL , `Background` VARCHAR( 255 ) NOT NULL , `Video` VARCHAR( 255 ) NOT NULL , `VideoGap` FLOAT NOT NULL , `Gap` FLOAT NOT NULL , `Start` FLOAT NOT NULL , `Finish` INT( 11 ) NOT NULL , `BPM` INT( 5 ) NOT NULL , `Relative` BOOLEAN NOT NULL , `NotesGap` INT( 11 ) NOT NULL);');}
 
 
   finally
@@ -211,7 +270,7 @@ end;
 //--------------------
 //ReadScore - Read Scores into SongArray
 //--------------------
-procedure TDataBaseSystem.ReadScore(Song: Integer);
+Function TDataBaseSystem.ReadScore(Song: Integer): AScore;
 var
   TableData: TSqliteTable;
   Difficulty: Integer;
