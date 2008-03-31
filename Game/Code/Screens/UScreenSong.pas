@@ -198,10 +198,10 @@ var I, I2: Integer;
     //Change
     Text[TextCat].Text := CatSongs.Song[Cat].Artist;
     //showmessage(CatSongs.Song[Cat].Path + CatSongs.Song[Cat].Cover);
-    //Static[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, 'Plain', true);
+    //Static[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, TEXTURE_TYPE_PLAIN, true);
 
-    Static[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, 'Plain', true);
-    //Texture.GetTexture(Button[Cat].Texture.Name, 'Plain', false);
+    Static[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, TEXTURE_TYPE_PLAIN, true);
+    //Texture.GetTexture(Button[Cat].Texture.Name, TEXTURE_TYPE_PLAIN, false);
     //Button[Cat].
     //Cover
 
@@ -812,13 +812,13 @@ begin
           CatSongs.Song[Pet].Cover := ''; // 0.5.0: if cover not found then show 'no cover'
           // to - do : new Song management
         if CatSongs.Song[Pet].Cover = '' then
-          AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), 'JPG', 'Plain', Theme.Song.Cover.Reflections)
+          AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), 'JPG', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections)
         else begin
           // cache texture if there is a need to this
           if not Covers.CoverExists({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover) then
           begin
             Texture.CreateCacheMipmap := true;
-            Texture.GetTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, 'Plain', true); // preloads textures and creates cache mipmap
+            Texture.GetTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, true); // preloads textures and creates cache mipmap
             Texture.CreateCacheMipmap := false;
 
             // puts this texture to the cache file
@@ -831,7 +831,7 @@ begin
           end;
 
           // and now load it from cache file (small place for the optimization by eliminating reading it from file, but not here)
-          AddButton(300 + Pet*250, 140, 200, 200,{ CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, 'JPG', 'Plain', Theme.Song.Cover.Reflections);
+          AddButton(300 + Pet*250, 140, 200, 200,{ CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, 'JPG', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         end;
         Texture.Limit := 1024*1024;
         I := -1;
@@ -851,7 +851,7 @@ begin
       begin
         Log.LogError('NoCover Cover is damaged!');
         try
-          AddButton(300 + Pet*250, 140, 200, 200, '', 'JPG', 'Plain', Theme.Song.Cover.Reflections);
+          AddButton(300 + Pet*250, 140, 200, 200, '', 'JPG', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         except
           {$IFDEF MSWINDOWS}
           Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);
@@ -1572,9 +1572,9 @@ begin
     if (CoverTime < 1) and (CoverTime + TimeSkip >= 1) then
     begin
       // load new texture
-      Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false);
+      Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
       Button[Interaction].Texture.Alpha := 1;
-      Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false);
+      Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
       Button[Interaction].Texture2.Alpha := 1;
     end;
                                                          // to - do : new Song management
@@ -1662,7 +1662,7 @@ begin
 
   end;
       // Interaction -> Button, ktorego okladke przeczytamy
-      //  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false); // 0.5.0: show uncached texture
+      //  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false); // 0.5.0: show uncached texture
 end;
 
 procedure TScreenSong.SelectPrev;
@@ -1690,7 +1690,7 @@ begin
       SongCurrent := SongCurrent + CatSongs.VisibleSongs;
     end;
 
-  //  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', false); // 0.5.0: show uncached texture
+  //  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false); // 0.5.0: show uncached texture
   end;
 end;
 
@@ -2079,7 +2079,7 @@ procedure TScreenSong.UnLoadDetailedCover;
 begin
   CoverTime := 0;
   
-  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, 'Plain', true); // 0.5.0: show cached texture
+  Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, true); // 0.5.0: show cached texture
   Button[Interaction].Texture2.Alpha := 0;
 
   if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then

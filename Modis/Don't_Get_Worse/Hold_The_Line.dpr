@@ -58,14 +58,14 @@ end;
 function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean; stdcall;
 var
   I: Integer;
-  Texname, TexType: PChar;
+  Texname: PChar;
+  TexType: TTextureType;
 begin
   TexName := CreateStr(PChar('HDL_Pointer'));
-  TexType := CreateStr(PChar('Font Black'));
+  TexType := TEXTURE_TYPE_TRANSPARENT;
   PointerTex := Methods.LoadTex(TexName, TexType);
 
   FreeStr(TexName);
-  FreeStr(TexType);
 
   TexName := CreateStr(PChar('dismissed.mp3'));
   DismissedSound := Methods.LoadSound (TexName);

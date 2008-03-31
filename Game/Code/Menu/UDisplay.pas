@@ -39,6 +39,8 @@ type
 
       OSD_LastError : String;
 
+      PrintScreenData:  array[0..1024*768-1] of longword;
+
       procedure DrawDebugInformation;
     public
       NextScreen   : PMenu;

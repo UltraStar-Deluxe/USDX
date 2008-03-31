@@ -12,7 +12,8 @@ uses
     ULog,
     IniFiles,
     SysUtils,
-    Classes;
+    Classes,
+    UTexture;
 
 type
   TRGB = record
@@ -40,7 +41,7 @@ type
     ColG:   real;
     ColB:   real;
     Tex:    string;
-    Typ:    string;
+    Typ:    TTextureType;
     TexX1:  real;
     TexY1:  real;
     TexX2:  real;
@@ -84,7 +85,7 @@ type
     DColB:  real;
     DInt:   real;
     Tex:    string;
-    Typ:    string;
+    Typ:    TTextureType;
 
     Visible: Boolean;
 
@@ -550,15 +551,15 @@ type
       ChangeTextures:  Boolean;
 
       FirstTexture:    String;
-      FirstTyp:        String;
+      FirstTyp:        TTextureType;
       FirstColor:      String;
 
       SecondTexture:   String;
-      SecondTyp:       String;
+      SecondTyp:       TTextureType;
       SecondColor:     String;
 
       ThirdTexture:    String;
-      ThirdTyp:        String;
+      ThirdTyp:        TTextureType;
       ThirdColor:      String;
     end;
 
@@ -1309,17 +1310,16 @@ begin
 
       //Load Party Score DecoTextures Object
       PartyScore.DecoTextures.ChangeTextures := (ThemeIni.ReadInteger('PartyScoreDecoTextures', 'ChangeTextures', 0) = 1);
-
       PartyScore.DecoTextures.FirstTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'FirstTexture', '');
-      PartyScore.DecoTextures.FirstTyp       :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'FirstTyp', 'Note Black');
+      PartyScore.DecoTextures.FirstTyp       :=  ParseTextureType(ThemeIni.ReadString('PartyScoreDecoTextures', 'FirstTyp', ''), TEXTURE_TYPE_COLORIZED);
       PartyScore.DecoTextures.FirstColor     :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'FirstColor', 'Black');
 
       PartyScore.DecoTextures.SecondTexture  :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'SecondTexture', '');
-      PartyScore.DecoTextures.SecondTyp      :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'SecondTyp', 'Note Black');
+      PartyScore.DecoTextures.SecondTyp      :=  ParseTextureType(ThemeIni.ReadString('PartyScoreDecoTextures', 'SecondTyp', ''), TEXTURE_TYPE_COLORIZED);
       PartyScore.DecoTextures.SecondColor    :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'SecondColor', 'Black');
 
       PartyScore.DecoTextures.ThirdTexture   :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'ThirdTexture', '');
-      PartyScore.DecoTextures.ThirdTyp       :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'ThirdTyp', 'Note Black');
+      PartyScore.DecoTextures.ThirdTyp       :=  ParseTextureType(ThemeIni.ReadString('PartyScoreDecoTextures', 'ThirdTyp', ''), TEXTURE_TYPE_COLORIZED);
       PartyScore.DecoTextures.ThirdColor     :=  ThemeIni.ReadString('PartyScoreDecoTextures',  'ThirdColor', 'Black');
 
       ThemeLoadText (PartyScore.TextWinner, 'PartyScoreTextWinner');
@@ -1503,7 +1503,7 @@ begin
   ThemeStatic.W := ThemeIni.ReadInteger(Name, 'W', 0);
   ThemeStatic.H := ThemeIni.ReadInteger(Name, 'H', 0);
 
-  ThemeStatic.Typ   := ThemeIni.ReadString(Name, 'Type', '');
+  ThemeStatic.Typ   := ParseTextureType(ThemeIni.ReadString(Name, 'Type', ''), TEXTURE_TYPE_PLAIN);
   ThemeStatic.Color := ThemeIni.ReadString(Name, 'Color', '');
 
   C := ColorExists(ThemeStatic.Color);
@@ -1581,8 +1581,7 @@ begin
   ThemeButton.Z := ThemeIni.ReadFloat   (Name, 'Z', 0);
   ThemeButton.W := ThemeIni.ReadInteger (Name, 'W', 0);
   ThemeButton.H := ThemeIni.ReadInteger (Name, 'H', 0);
-
-  ThemeButton.Typ := ThemeIni.ReadString(Name, 'Type', '');
+  ThemeButton.Typ := ParseTextureType(ThemeIni.ReadString(Name, 'Type', ''), TEXTURE_TYPE_PLAIN);
 
   //Reflection Mod
   ThemeButton.Reflection := (ThemeIni.ReadInteger(Name, 'Reflection', 0) = 1);
@@ -2112,7 +2111,7 @@ begin
   ThemeIni.WriteInteger(Name, 'H', ThemeStatic.H);
 
   ThemeIni.WriteString(Name, 'Tex', ThemeStatic.Tex);
-  ThemeIni.WriteString(Name, 'Type', ThemeStatic.Typ);
+  ThemeIni.WriteString(Name, 'Type', TextureTypeToStr(ThemeStatic.Typ));
   ThemeIni.WriteString(Name, 'Color', ThemeStatic.Color);
 
   ThemeIni.WriteFloat(Name, 'TexX1', ThemeStatic.TexX1);
@@ -2163,8 +2162,7 @@ begin
   ThemeIni.WriteInteger(Name, 'Y', ThemeButton.Y);
   ThemeIni.WriteInteger(Name, 'W', ThemeButton.W);
   ThemeIni.WriteInteger(Name, 'H', ThemeButton.H);
-
-  ThemeIni.WriteString(Name, 'Type', ThemeButton.Typ);
+  ThemeIni.WriteString(Name, 'Type', TextureTypeToStr(ThemeButton.Typ));
   ThemeIni.WriteInteger(Name, 'Texts', Length(ThemeButton.Text));
 
   ThemeIni.WriteString(Name, 'Color', ThemeButton.Color);

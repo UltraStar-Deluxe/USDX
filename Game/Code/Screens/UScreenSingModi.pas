@@ -86,7 +86,7 @@ var
   CustomSounds: array of TCustomSoundEntry;
 
 //Procedured for Plugin
-function LoadTex   (const Name, Typ: PChar): TsmallTexture; stdcall;
+function LoadTex   (const Name: PChar; Typ: TTextureType): TsmallTexture; stdcall;
 //function Translate (const Name: PChar): PChar; stdcall;
 procedure Print (const Style, Size: Byte; const X, Y: Real; const Text: PChar); stdcall;       //Procedure to Print Text
 function LoadSound  (const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
@@ -633,7 +633,7 @@ Winner := DllMan.PluginFinish(PlayerInfo);
 //DLLMan.UnLoadPlugin;
 end;
 
-function LoadTex (const Name, Typ: PChar): TsmallTexture; stdcall;
+function LoadTex (const Name: PChar; Typ: TTextureType): TsmallTexture; stdcall;
 var
   Texname, EXT: String;
   Tex: TTexture;
@@ -647,7 +647,7 @@ begin
   else
     Ext := 'BMP';
 
-  Tex := Texture.LoadTexture(PChar(TexName),  PChar(Ext), Typ, 0);
+  Tex := Texture.LoadTexture(PChar(TexName), PChar(Ext), UTexture.TTextureType(Typ), 0);
 
   Result.TexNum := Tex.TexNum;
   Result.W := Tex.W;

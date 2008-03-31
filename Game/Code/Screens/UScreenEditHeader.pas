@@ -50,7 +50,7 @@ type
 
 implementation
 
-uses UGraphic, UMusic, SysUtils, UFiles, USkins;
+uses UGraphic, UMusic, SysUtils, UFiles, USkins, UTexture;
 
 function TScreenEditHeader.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
@@ -184,18 +184,18 @@ begin
   TextGAP   :=  AddText(340, 110 + 13*30, 0, 10, 0, 0, 0, '');
   TextBPM   :=  AddText(340, 110 + 14*30, 0, 10, 0, 0, 0, '');
 
-  StaticTitle      := AddStatic(130, 115 + 0*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticArtist     := AddStatic(130, 115 + 1*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticMp3        := AddStatic(130, 115 + 2*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticBackground := AddStatic(130, 115 + 4*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticVideo      := AddStatic(130, 115 + 5*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticVideoGAP   := AddStatic(130, 115 + 6*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticRelative   := AddStatic(130, 115 + 8*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticResolution := AddStatic(130, 115 + 9*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticNotesGAP   := AddStatic(130, 115 + 10*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticStart      := AddStatic(130, 115 + 12*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticGAP        := AddStatic(130, 115 + 13*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
-  StaticBPM        := AddStatic(130, 115 + 14*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', 'Transparent', $FF00FF);
+  StaticTitle      := AddStatic(130, 115 + 0*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticArtist     := AddStatic(130, 115 + 1*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticMp3        := AddStatic(130, 115 + 2*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticBackground := AddStatic(130, 115 + 4*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticVideo      := AddStatic(130, 115 + 5*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticVideoGAP   := AddStatic(130, 115 + 6*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticRelative   := AddStatic(130, 115 + 8*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticResolution := AddStatic(130, 115 + 9*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticNotesGAP   := AddStatic(130, 115 + 10*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticStart      := AddStatic(130, 115 + 12*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticGAP        := AddStatic(130, 115 + 13*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticBPM        := AddStatic(130, 115 + 14*30, 20, 20, 1, 1, 1, 'RoundButton', 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
 
   AddInteraction(iText, TextTitle);
   AddInteraction(iText, TextArtist);

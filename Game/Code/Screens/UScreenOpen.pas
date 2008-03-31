@@ -106,8 +106,8 @@ end;
 
 procedure TScreenOpen.AddBox(X, Y, W, H: real);
 begin
-  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('Bar'), 'JPG', 'Font Black');
-  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('Bar'), 'JPG', 'Font Black');
+  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
 end;
 
 constructor TScreenOpen.Create;
@@ -115,7 +115,7 @@ begin
   inherited Create;
 
   // linijka
-{  AddStatic(20, 10, 80, 30, 0, 0, 0, 'Bar', 'JPG', 'Font Black');
+{  AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
   AddText(35, 17, 1, 6, 1, 1, 1, 'Linijka');
   TextSentence := AddText(120, 14, 1, 8, 0, 0, 0, '0 / 0');}
 

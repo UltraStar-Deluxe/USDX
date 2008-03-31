@@ -121,8 +121,14 @@ type  //PluginInfo, for Init
   DWORD = Longword;
   HSTREAM = DWORD;
 
+  TTextureType = (
+    TEXTURE_TYPE_PLAIN,        // Plain (alpha = 1)
+    TEXTURE_TYPE_TRANSPARENT,  // Alpha is used
+    TEXTURE_TYPE_COLORIZED     // Alpha is used; Hue of the HSV color-model will be replaced by a new value
+  );
+
   //Routines to gave to the Plugin
-  fModi_LoadTex = function (const Name, Typ: PChar): TsmallTexture; stdcall; //Pointer to Texture Loader
+  fModi_LoadTex = function (const Name: PChar; Typ: TTextureType): TsmallTexture; stdcall; //Pointer to Texture Loader
   //fModi_Translate = function (const Name, Translation: AChar): Integer; stdcall;       //Pointer to Translator
   fModi_Print = procedure (const Style, Size: Byte; const X, Y: Real; const Text: PChar); stdcall;       //Procedure to Print Text   //Now translated automatically
   fModi_LoadSound = function (const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound

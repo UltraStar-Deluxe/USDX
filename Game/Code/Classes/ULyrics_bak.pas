@@ -119,8 +119,8 @@ begin
   //Only 2 Players for now
   For I := 0 to 1 do
   begin
-    PlayerIconTex[I][0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
-    PlayerIconTex[I][1] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
+    PlayerIconTex[I][0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1))),   'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+    PlayerIconTex[I][1] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1))),   'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
   end;
   PlayersActive := Trunc(Power(2, 1)) + 1;
 end;

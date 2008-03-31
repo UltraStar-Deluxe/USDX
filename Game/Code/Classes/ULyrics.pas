@@ -266,16 +266,16 @@ var
 begin
   
   // lyric indicator (bar that indicates when the line start)
-  IndicatorTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', 'Transparent', $FF00FF);
+  IndicatorTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
 
   // ball for current word hover in ball effect
-  BallTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'PNG', 'Transparent', 0);
+  BallTex := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
 
   // duet mode: load player icon
   For I := 0 to 5 do
   begin
-    PlayerIconTex[I][0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
-    PlayerIconTex[I][1] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1))),   'PNG', 'Transparent', 0);
+    PlayerIconTex[I][0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1))),   'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+    PlayerIconTex[I][1] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1))),   'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
   end;
   
   // create line textures

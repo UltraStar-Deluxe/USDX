@@ -20,7 +20,7 @@ type
 
 implementation
 
-uses UGraphic, UTime, USkins;
+uses UGraphic, UTime, USkins, UTexture;
 
 function TScreenWelcome.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
@@ -44,12 +44,12 @@ end;
 constructor TScreenWelcome.Create;
 begin
   inherited Create;
-  AddStatic(-10, -10,    0, 0, 1, 1, 1, Skin.GetTextureFileName('ButtonAlt') , 'JPG', 'Transparent');
-  AddStatic(-500, 440, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', 'Font Black');
-  AddStatic(-500, 472, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', 'Font Black');
-  AddStatic(-500, 504, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', 'Font Black');
-  AddStatic(-500, 536, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', 'Font Black');
-  AddStatic(-500, 568, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', 'Font Black');
+  AddStatic(-10, -10,    0, 0, 1, 1, 1, Skin.GetTextureFileName('ButtonAlt') , 'JPG', TEXTURE_TYPE_TRANSPARENT);
+  AddStatic(-500, 440, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(-500, 472, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(-500, 504, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(-500, 536, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(-500, 568, 200, 5, 0, 0, 0, Skin.GetTextureFileName('Rectangle'), 'JPG', TEXTURE_TYPE_COLORIZED);
   Animation := 0;
   Fadeout := false;
 end;

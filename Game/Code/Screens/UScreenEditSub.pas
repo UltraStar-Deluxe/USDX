@@ -1115,18 +1115,18 @@ begin
   SetLength(Player, 1);
 
   // linijka
-  AddStatic(20, 10, 80, 30, 0, 0, 0, Skin.GetTextureFileName('ButtonF'), 'JPG', 'Font Black');
+  AddStatic(20, 10, 80, 30, 0, 0, 0, Skin.GetTextureFileName('ButtonF'), 'JPG', TEXTURE_TYPE_COLORIZED);
   AddText(40, 17, 1, 6, 1, 1, 1, 'Line');
   TextSentence := AddText(120, 14, 1, 8, 0, 0, 0, '0 / 0');
 
   // Note
-  AddStatic(220, 10, 80, 30, 0, 0, 0, Skin.GetTextureFileName('ButtonF'), 'JPG', 'Font Black');
+  AddStatic(220, 10, 80, 30, 0, 0, 0, Skin.GetTextureFileName('ButtonF'), 'JPG', TEXTURE_TYPE_COLORIZED);
   AddText(242, 17, 1, 6, 1, 1, 1, 'Note');
   TextNote := AddText(320, 14, 1, 8, 0, 0, 0, '0 / 0');
 
   // file info
-  AddStatic(150, 50, 500, 150, 0, 0, 0, Skin.GetTextureFileName('Bar'), 'JPG', 'Font Black');
-  AddStatic(151, 52, 498, 146,  1, 1, 1, Skin.GetTextureFileName('Bar'), 'JPG', 'Font Black');
+  AddStatic(150, 50, 500, 150, 0, 0, 0, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(151, 52, 498, 146,  1, 1, 1, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
   AddText(180, 65,  0, 8, 0, 0, 0, 'Title:');
   AddText(180, 90,  0, 8, 0, 0, 0, 'Artist:');
   AddText(180, 115, 0, 8, 0, 0, 0, 'Mp3:');
