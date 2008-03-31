@@ -46,7 +46,7 @@ type
       //constructor Create(Back: string; W, H: integer); overload; virtual; // W and H are the number of overlaps
 
       // interaction
-      function WideCharUpperCase(const wchar : WideChar) : WideString;
+      function WideCharUpperCase(wchar: WideChar) : WideString;
       procedure AddInteraction(Typ, Num: integer);
       procedure SetInteraction(Num: integer);
       property Interaction: integer read SelInteraction write SetInteraction;
@@ -1546,34 +1546,16 @@ begin
   // nothing
 end;
 
-function TMenu.WideCharUpperCase(const wchar : WideChar) : WideString;
+function TMenu.WideCharUpperCase(wchar: WideChar) : WideString;
 begin
-  // JB - I got EIntOverflow in this function ( on Linux ), the same as eddie may have...
-  //      after a little investigation I found this info : http://www.hu.freepascal.org/lists/fpc-pascal/2007-October/015233.html
-  //      seems we need "cwstring", which I added to UltraStar.lpr and all seems to work now..
-  //      I assume it will work correcty on Darwin also.   Im not sure if Eddie uses the Ultrastar.lpr file.. if not then maybe we need
-  //      to move some of that stuff to the dpr file with appropriate IFDEF's to make it easier to maintain.
-  
-	{$IFDEF Win32}
-    Result := WideUpperCase(wchar);
-  {$ELSE}
-    debugwriteln( 'WideCharUpperCase('+wchar+'):'+inttostr(length(wchar)) );
+  // On Linux and MacOSX the cwstring unit is necessary for Unicode function-calls.
+  // Otherwise you will get an EIntOverflow exception (thrown by unimplementedwidestring()).
 
-    // fpc implementation dosnt seem to like non wide strings... or Empty strings
-    if ( wchar <> emptyWideStr ) then
-      Result := WideUpperCase(wchar)
-    else
-    	Result := UpperCase(wchar);
-  {$ENDIF}
-
-(*
-  {$IFDEF DARWIN}
-	// eddie: WideUpperCase crashes on the mac with WideChars.
-	Result := UpperCase(wchar);
-	{$ELSE}
-  Result := WideUpperCase(wchar);
-  {$ENDIF}
-*)
+  // The FPC implementation of WideUpperCase returns nil if wchar is #0 (e.g. if an arrow key is pressed)
+  if (wchar <> #0) then
+    Result := WideUpperCase(wchar)
+  else
+    Result := #0;
 end;
 
 procedure TMenu.onHide;
