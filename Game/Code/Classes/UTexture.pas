@@ -96,8 +96,8 @@ type
     function GetTexture(const Name: string; Typ: TTextureType): TTexture; overload;
     function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean): TTexture; overload;
     function FindTexture(const Name: string): integer;
-    function LoadTexture(FromRegistry: boolean; const Identifier, Format: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
-    function LoadTexture(const Identifier, Format: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
+    function LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
+    function LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
     function LoadTexture(const Identifier: string): TTexture; overload;
     function CreateTexture(var Data: array of byte; const Name: string; W, H: word; Bits: byte): TTexture;
     procedure UnloadTexture(const Name: string; FromCache: boolean);
@@ -524,7 +524,7 @@ begin
   end;
 end;
 
-function TTextureUnit.LoadTexture(FromRegistry: boolean; const Identifier, Format: string; Typ: TTextureType; Col: LongWord): TTexture;
+function TTextureUnit.LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
 var
   TexSurface: PSDL_Surface;
   MipmapSurface: PSDL_Surface;
@@ -553,7 +553,7 @@ begin
   {$endif}
   if not assigned(TexSurface) then
   begin
-    Log.LogStatus( 'ERROR Could not load texture' , Identifier +' '+ Format +' '+ TextureTypeToStr(Typ) );
+    Log.LogStatus( 'ERROR Could not load texture' , Identifier +' '+ TextureTypeToStr(Typ) );
     Exit;
   end;
   
@@ -736,7 +736,7 @@ begin
 
   Log.BenchmarkEnd(4);
   if Log.BenchmarkTimeLength[4] >= 1 then
-    Log.LogBenchmark('**********> Texture Load Time Warning - ' + Format + '/' + Identifier + '/' + TextureTypeToStr(Typ), 4);
+    Log.LogBenchmark('**********> Texture Load Time Warning - ' + Identifier + '/' + TextureTypeToStr(Typ), 4);
     
   {$ifdef blindydebug}
   Log.LogStatus('',' JB-8');
@@ -787,7 +787,7 @@ begin
       {$ifdef blindydebug}
       Log.LogStatus('...', 'GetTexture('''+Name+''','''+Typ+''')');
       {$endif}
-      TextureDatabase.Texture[T].Texture := LoadTexture(false, pchar(Name), 'JPG', Typ, $0);
+      TextureDatabase.Texture[T].Texture := LoadTexture(false, Name, Typ, $0);
       {$ifdef blindydebug}
       Log.LogStatus('done',' ');
       {$endif}
@@ -824,14 +824,14 @@ begin
       Result := T;
 end;
 
-function TTextureUnit.LoadTexture(const Identifier, Format: string; Typ: TTextureType; Col: LongWord): TTexture;
+function TTextureUnit.LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
 begin
-  Result := LoadTexture(false, Identifier, Format, Typ, Col);
+  Result := LoadTexture(false, Identifier, Typ, Col);
 end;
 
 function TTextureUnit.LoadTexture(const Identifier: string): TTexture;
 begin
-  Result := LoadTexture(false, pchar(Identifier), 'JPG', TEXTURE_TYPE_PLAIN, 0);
+  Result := LoadTexture(false, Identifier, TEXTURE_TYPE_PLAIN, 0);
 end;
 
 function TTextureUnit.CreateTexture(var Data: array of byte; const Name: string; W, H: word; Bits: byte): TTexture;

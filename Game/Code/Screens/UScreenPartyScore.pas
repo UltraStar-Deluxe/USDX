@@ -125,7 +125,7 @@ begin
     DecoColor[0].B := B;
 
     //Load Texture
-    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.FirstTexture)),  'JPG', Theme.PartyScore.DecoTextures.FirstTyp, Color);
+    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.FirstTexture)), Theme.PartyScore.DecoTextures.FirstTyp, Color);
     DecoTex[0] := Tex.TexNum;
 
     //Get Second Color
@@ -136,7 +136,7 @@ begin
     DecoColor[1].B := B;
 
     //Load Second Texture
-    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.SecondTexture)),  'JPG', Theme.PartyScore.DecoTextures.SecondTyp, Color);
+    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.SecondTexture)), Theme.PartyScore.DecoTextures.SecondTyp, Color);
     DecoTex[1] := Tex.TexNum;
 
     //Get Third Color
@@ -147,7 +147,7 @@ begin
     DecoColor[2].B := B;
 
     //Load Third Texture
-    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.ThirdTexture)),  'JPG', Theme.PartyScore.DecoTextures.ThirdTyp, Color);
+    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.ThirdTexture)), Theme.PartyScore.DecoTextures.ThirdTyp, Color);
     DecoTex[2] := Tex.TexNum;
   end;
 

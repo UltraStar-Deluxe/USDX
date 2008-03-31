@@ -647,7 +647,7 @@ begin
   else
     Ext := 'BMP';
 
-  Tex := Texture.LoadTexture(PChar(TexName), PChar(Ext), UTexture.TTextureType(Typ), 0);
+  Tex := Texture.LoadTexture(TexName, UTexture.TTextureType(Typ), 0);
 
   Result.TexNum := Tex.TexNum;
   Result.W := Tex.W;

@@ -106,8 +106,8 @@ end;
 
 procedure TScreenOpen.AddBox(X, Y, W, H: real);
 begin
-  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
-  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
+  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
 end;
 
 constructor TScreenOpen.Create;

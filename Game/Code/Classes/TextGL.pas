@@ -134,7 +134,7 @@ begin
 
   //Log.LogStatus( 'Font' , '---------------------------');
   SetLength(Fonts, 5);
-  Fonts[0].Tex := Texture.LoadTexture(true, 'Font', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  Fonts[0].Tex := Texture.LoadTexture(true, 'Font', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[0].Tex.H := 30;
   Fonts[0].AspectW := 0.9;
   Fonts[0].Done := -1;
@@ -142,27 +142,27 @@ begin
 
   //Log.LogStatus( 'FontB' , '---------------------------');
 
-  Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[1].Tex.H := 30;
   Fonts[1].AspectW := 1;
   Fonts[1].Done := -1;
   Fonts[1].Outline := 0;
 
   //Log.LogStatus( 'FontO' , '---------------------------');
-  Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[2].Tex.H := 30;
   Fonts[2].AspectW := 0.95;
   Fonts[2].Done := -1;
   Fonts[2].Outline := 5;
 
   //Log.LogStatus( 'FontO2' , '---------------------------');
-  Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[3].Tex.H := 30;
   Fonts[3].AspectW := 0.95;
   Fonts[3].Done := -1;
   Fonts[3].Outline := 4;
 
-{  Fonts[4].Tex := Texture.LoadTexture('FontO', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0); // for score screen
+{  Fonts[4].Tex := Texture.LoadTexture('FontO', TEXTURE_TYPE_TRANSPARENT, 0); // for score screen
   Fonts[4].Tex.H := 30;
   Fonts[4].AspectW := 0.95;
   Fonts[4].Done := -1;

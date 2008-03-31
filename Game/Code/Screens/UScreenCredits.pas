@@ -188,32 +188,32 @@ constructor TScreenCredits.Create;
 begin
   inherited Create;
 
-  credits_bg_tex := Texture.LoadTexture(true, 'CRDTS_BG', 'PNG', TEXTURE_TYPE_PLAIN, 0);
-  credits_bg_ovl := Texture.LoadTexture(true, 'CRDTS_OVL', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_bg_tex := Texture.LoadTexture(true, 'CRDTS_BG', TEXTURE_TYPE_PLAIN, 0);
+  credits_bg_ovl := Texture.LoadTexture(true, 'CRDTS_OVL', TEXTURE_TYPE_TRANSPARENT, 0);
 
-  credits_blindguard  := Texture.LoadTexture(true, 'CRDTS_blindguard',  'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_blindy      := Texture.LoadTexture(true, 'CRDTS_blindy',      'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_canni       := Texture.LoadTexture(true, 'CRDTS_canni',       'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_commandio   := Texture.LoadTexture(true, 'CRDTS_commandio',   'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_lazyjoker   := Texture.LoadTexture(true, 'CRDTS_lazyjoker',   'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mog         := Texture.LoadTexture(true, 'CRDTS_mog',         'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mota        := Texture.LoadTexture(true, 'CRDTS_mota',        'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_skillmaster := Texture.LoadTexture(true, 'CRDTS_skillmaster', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_whiteshark  := Texture.LoadTexture(true, 'CRDTS_whiteshark',  'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_blindguard  := Texture.LoadTexture(true, 'CRDTS_blindguard',  TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_blindy      := Texture.LoadTexture(true, 'CRDTS_blindy',      TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_canni       := Texture.LoadTexture(true, 'CRDTS_canni',       TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_commandio   := Texture.LoadTexture(true, 'CRDTS_commandio',   TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_lazyjoker   := Texture.LoadTexture(true, 'CRDTS_lazyjoker',   TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_mog         := Texture.LoadTexture(true, 'CRDTS_mog',         TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_mota        := Texture.LoadTexture(true, 'CRDTS_mota',        TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_skillmaster := Texture.LoadTexture(true, 'CRDTS_skillmaster', TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_whiteshark  := Texture.LoadTexture(true, 'CRDTS_whiteshark',  TEXTURE_TYPE_TRANSPARENT, 0);
 
-  intro_layer01 := Texture.LoadTexture(true, 'INTRO_L01', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer02 := Texture.LoadTexture(true, 'INTRO_L02', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer03 := Texture.LoadTexture(true, 'INTRO_L03', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer04 := Texture.LoadTexture(true, 'INTRO_L04', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer05 := Texture.LoadTexture(true, 'INTRO_L05', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer06 := Texture.LoadTexture(true, 'INTRO_L06', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer07 := Texture.LoadTexture(true, 'INTRO_L07', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer08 := Texture.LoadTexture(true, 'INTRO_L08', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer09 := Texture.LoadTexture(true, 'INTRO_L09', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer01 := Texture.LoadTexture(true, 'INTRO_L01', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer02 := Texture.LoadTexture(true, 'INTRO_L02', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer03 := Texture.LoadTexture(true, 'INTRO_L03', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer04 := Texture.LoadTexture(true, 'INTRO_L04', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer05 := Texture.LoadTexture(true, 'INTRO_L05', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer06 := Texture.LoadTexture(true, 'INTRO_L06', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer07 := Texture.LoadTexture(true, 'INTRO_L07', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer08 := Texture.LoadTexture(true, 'INTRO_L08', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer09 := Texture.LoadTexture(true, 'INTRO_L09', TEXTURE_TYPE_TRANSPARENT, 0);
 
-  outro_bg := Texture.LoadTexture(true, 'OUTRO_BG', 'PNG', TEXTURE_TYPE_PLAIN, 0);
-  outro_esc := Texture.LoadTexture(true, 'OUTRO_ESC', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  outro_exd := Texture.LoadTexture(true, 'OUTRO_EXD', 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+  outro_bg := Texture.LoadTexture(true, 'OUTRO_BG',   TEXTURE_TYPE_PLAIN, 0);
+  outro_esc := Texture.LoadTexture(true, 'OUTRO_ESC', TEXTURE_TYPE_TRANSPARENT, 0);
+  outro_exd := Texture.LoadTexture(true, 'OUTRO_EXD', TEXTURE_TYPE_TRANSPARENT, 0);
 
   CRDTS_Stage:=InitialDelay;
 end;

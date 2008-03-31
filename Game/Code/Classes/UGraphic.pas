@@ -278,9 +278,9 @@ begin
    // zaladowanie tekstur
   Log.LogStatus('Loading Textures', 'LoadTextures');
   
-  Tex_Left[0]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'BMP', TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
-  Tex_Mid[0]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'BMP', TEXTURE_TYPE_PLAIN, 0);           //brauch man die noch?
-  Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'BMP', TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
+  Tex_Left[0]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
+  Tex_Mid[0]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   TEXTURE_TYPE_PLAIN, 0);           //brauch man die noch?
+  Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
 
   Log.LogStatus('Loading Textures - A', 'LoadTextures');
   
@@ -292,25 +292,25 @@ begin
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
     
-    Tex_Left[P]         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Mid[P]          := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Right[P]        := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), 'PNG', TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Left[P]         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Mid[P]          := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Right[P]        := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), TEXTURE_TYPE_COLORIZED, Col);
 
-    Tex_plain_Left[P]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainLeft')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_plain_Mid[P]    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainMid')),   'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_plain_Right[P]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainRight')), 'PNG', TEXTURE_TYPE_COLORIZED, Col);
+    Tex_plain_Left[P]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainLeft')),  TEXTURE_TYPE_COLORIZED, Col);
+    Tex_plain_Mid[P]    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainMid')),   TEXTURE_TYPE_COLORIZED, Col);
+    Tex_plain_Right[P]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainRight')), TEXTURE_TYPE_COLORIZED, Col);
 
-    Tex_BG_Left[P]      := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGLeft')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_BG_Mid[P]       := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGMid')),   'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_BG_Right[P]     := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), 'PNG', TEXTURE_TYPE_COLORIZED, Col);
+    Tex_BG_Left[P]      := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGLeft')),  TEXTURE_TYPE_COLORIZED, Col);
+    Tex_BG_Mid[P]       := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGMid')),   TEXTURE_TYPE_COLORIZED, Col);
+    Tex_BG_Right[P]     := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), TEXTURE_TYPE_COLORIZED, Col);
   end;
 
   Log.LogStatus('Loading Textures - B', 'LoadTextures');
 
-  Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), 'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
-  Tex_Note_Star         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) , 'PNG', TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
-  Tex_Ball              := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')), 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  Tex_Lyric_Help_Bar    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')), 'BMP', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), TEXTURE_TYPE_TRANSPARENT, 0);
+  Tex_Note_Star         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+  Tex_Ball              := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')),            TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  Tex_Lyric_Help_Bar    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')),    TEXTURE_TYPE_TRANSPARENT, $FF00FF);
 
 
   //TimeBar mod
@@ -318,9 +318,9 @@ begin
   //eoa TimeBar mod
 
   //SingBar Mod
-  Tex_SingBar_Back  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBack')),   'JPG', TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Bar   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBar')),   'JPG', TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Front := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarFront')),   'JPG', TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Back  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBack')),  TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Bar   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBar')),   TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Front := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarFront')), TEXTURE_TYPE_PLAIN, 0);
   //end Singbar Mod
 
   Log.LogStatus('Loading Textures - C', 'LoadTextures');
@@ -357,14 +357,14 @@ begin
       End;
 
       Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), 'PNG', TEXTURE_TYPE_COLORIZED, Col);
+      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), TEXTURE_TYPE_COLORIZED, Col);
     end;
 
 //## backgrounds for the scores ##
   for P := 0 to 5 do begin
     LoadColor(R, G, B, 'P' + IntToStr(P+1) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_ScoreBG[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreBG')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
+    Tex_ScoreBG[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreBG')), TEXTURE_TYPE_COLORIZED, Col);
   end;
 
 
@@ -379,23 +379,23 @@ begin
 //NoteBar ScoreBar
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Dark');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark_Round')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarLevel_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarRound_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark_Round')), TEXTURE_TYPE_COLORIZED, Col);
 //LineBonus ScoreBar
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light_Round')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarLevel_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarRound_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light_Round')), TEXTURE_TYPE_COLORIZED, Col);
 //GoldenNotes ScoreBar
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Lightest');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest_Round')),  'PNG', TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarLevel_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarRound_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest_Round')), TEXTURE_TYPE_COLORIZED, Col);
   end;
 
 //## rating pictures that show a picture according to your rate ##
     for P := 0 to 6 do begin
-    Tex_Score_Ratings[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Rating_'+IntToStr(P))),  'PNG', TEXTURE_TYPE_TRANSPARENT, 0);
+    Tex_Score_Ratings[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Rating_'+IntToStr(P))), TEXTURE_TYPE_TRANSPARENT, 0);
   end;
 
   Log.LogStatus('Loading Textures - Done', 'LoadTextures');

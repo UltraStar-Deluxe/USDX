@@ -811,7 +811,7 @@ begin
           CatSongs.Song[Pet].Cover := ''; // 0.5.0: if cover not found then show 'no cover'
           // to - do : new Song management
         if CatSongs.Song[Pet].Cover = '' then
-          AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), 'JPG', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections)
+          AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections)
         else begin
           // cache texture if there is a need to this
           if not Covers.CoverExists({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover) then
@@ -830,7 +830,7 @@ begin
           end;
 
           // and now load it from cache file (small place for the optimization by eliminating reading it from file, but not here)
-          AddButton(300 + Pet*250, 140, 200, 200,{ CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, 'JPG', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
+          AddButton(300 + Pet*250, 140, 200, 200,{ CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         end;
         Texture.Limit := 1024*1024;
         I := -1;
@@ -850,7 +850,7 @@ begin
       begin
         Log.LogError('NoCover Cover is damaged!');
         try
-          AddButton(300 + Pet*250, 140, 200, 200, '', 'JPG', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
+          AddButton(300 + Pet*250, 140, 200, 200, '', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         except
           {$IFDEF MSWINDOWS}
           Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);

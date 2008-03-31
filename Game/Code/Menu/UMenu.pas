@@ -63,12 +63,12 @@ type
       // static
       function AddStatic(ThemeStatic: TThemeStatic): integer; overload;
       function AddStatic(X, Y, W, H: real; const Name: string): integer; overload;
-      function AddStatic(X, Y, W, H: real; const Name, Format: string; Typ: TTextureType): integer; overload;
-      function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType): integer; overload;
-      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType): integer; overload;
-      function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType; Color: integer): integer; overload;
-      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType; Color: integer): integer; overload;
-      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name, Format: string; Typ: TTextureType; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer; overload;
+      function AddStatic(X, Y, W, H: real; const Name: string; Typ: TTextureType): integer; overload;
+      function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType): integer; overload;
+      function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name: string; Typ: TTextureType; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer; overload;
 
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
@@ -80,8 +80,8 @@ type
       Procedure SetButtonLength(Length: Cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
       function AddButton(ThemeButton: TThemeButton): integer; overload;
       function AddButton(X, Y, W, H: real; const Name: String): integer; overload;
-      function AddButton(X, Y, W, H: real; const Name, Format: String; Typ: TTextureType; Reflection: Boolean): integer; overload;
-      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; const Name, Format: String; Typ: TTextureType; Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer; overload;
+      function AddButton(X, Y, W, H: real; const Name: String; Typ: TTextureType; Reflection: Boolean): integer; overload;
+      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; const Name: String; Typ: TTextureType; Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer; overload;
       procedure ClearButtons;
       procedure AddButtonText(AddX, AddY: real; const AddText: string); overload;
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; const AddText: string); overload;
@@ -367,8 +367,8 @@ begin
     TempDCol := RGBFloatToInt(ThemeCollection.Style.DColR, ThemeCollection.Style.DColG, ThemeCollection.Style.DColB);
     // give encoded color to loadtexture
     ButtonCollection[Num] := TButtonCollection.Create(
-      Texture.LoadTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), 'JPG', TEXTURE_TYPE_COLORIZED, TempCol),
-      Texture.LoadTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), 'JPG', TEXTURE_TYPE_COLORIZED, TempDCol));
+      Texture.LoadTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempCol),
+      Texture.LoadTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempDCol));
 
   //  Button[Result] := TButton.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), ((((TempR2 shl 8) or TempG2) shl 8)or TempB2))); // use cache texture
   end
@@ -418,7 +418,7 @@ begin
   ButtonCollection[Num].FadeText := ThemeCollection.Style.FadeText;
   if (ThemeCollection.Style.Typ = TEXTURE_TYPE_COLORIZED) then
     ButtonCollection[Num].FadeTex := Texture.LoadTexture(
-      PChar(Skin.GetTextureFileName(ThemeCollection.Style.FadeTex)), 'JPG', TEXTURE_TYPE_COLORIZED, TempCol)
+      PChar(Skin.GetTextureFileName(ThemeCollection.Style.FadeTex)), TEXTURE_TYPE_COLORIZED, TempCol)
   else
     ButtonCollection[Num].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ, true);
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
@@ -439,29 +439,29 @@ begin
     ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
     ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2,
     Skin.GetTextureFileName(ThemeStatic.Tex),
-    'JPG', ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
+    ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
 end;
 
 function TMenu.AddStatic(X, Y, W, H: real; const Name: string): integer;
 begin
-  Result := AddStatic(X, Y, W, H, Name, 'JPG', TEXTURE_TYPE_PLAIN);
+  Result := AddStatic(X, Y, W, H, Name, TEXTURE_TYPE_PLAIN);
 end;
 
-function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType): integer;
+function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType): integer;
 var
   StatNum:  integer;
 begin
-  Result := AddStatic(X, Y, W, H, ColR, ColG, ColB, Name, Format, Typ, $FFFFFF);
+  Result := AddStatic(X, Y, W, H, ColR, ColG, ColB, Name, Typ, $FFFFFF);
 end;
 
-function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType): integer;
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType): integer;
 var
   StatNum:  integer;
 begin
-  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, Name, Format, Typ, $FFFFFF);
+  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, Name, Typ, $FFFFFF);
 end;
 
-function TMenu.AddStatic(X, Y, W, H: real; const Name, Format: string; Typ: TTextureType): integer;
+function TMenu.AddStatic(X, Y, W, H: real; const Name: string; Typ: TTextureType): integer;
 var
   StatNum:  integer;
 begin
@@ -470,7 +470,7 @@ begin
   SetLength(Static, StatNum + 1);
 //  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), Typ, $FF00FF)); // $FFFFFF
 //  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Skin.SkinReg, PChar(Name), PChar(Format), Typ, $FF00FF)); // new skin system
-  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Format, Typ, $FF00FF)); // new skin
+  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Typ, $FF00FF)); // new skin
 
   // configures static
   Static[StatNum].Texture.X := X;
@@ -481,20 +481,20 @@ begin
   Result := StatNum;
 end;
 
-function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType; Color: integer): integer;
+function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer;
 var
   StatNum:  integer;
 begin
-  Result := AddStatic(X, Y, W, H, 0, ColR, ColG, ColB, Name, Format, Typ, Color);
+  Result := AddStatic(X, Y, W, H, 0, ColR, ColG, ColB, Name, Typ, Color);
 end;
 
-function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name, Format: string; Typ: TTextureType; Color: integer): integer;
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer;
 begin
-  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Format, Typ, Color, False, 0);
+  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Typ, Color, False, 0);
 //
 end;
 
-function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name, Format: string; Typ: TTextureType; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer;
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name: string; Typ: TTextureType; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer;
 var
   StatNum:  integer;
 begin
@@ -506,10 +506,10 @@ begin
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
     // give encoded color to loadtexture
-    Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Format, Typ, RGBFloatToInt(ColR, ColG, ColB)));
+    Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB)));
   end
   else
-    Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Format, Typ, Color)); // new skin
+    Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Typ, Color)); // new skin
   //  Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ));
 
   // configures static
@@ -595,7 +595,7 @@ begin
   Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
     ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
     ThemeButton.DColR, ThemeButton.DColG, ThemeButton.DColB, ThemeButton.DInt,
-    Skin.GetTextureFileName(ThemeButton.Tex), 'JPG', ThemeButton.Typ,
+    Skin.GetTextureFileName(ThemeButton.Tex), ThemeButton.Typ,
     ThemeButton.Reflection, ThemeButton.Reflectionspacing, ThemeButton.DeSelectReflectionspacing);
 
   Button[Result].Z := ThemeButton.Z;
@@ -611,7 +611,7 @@ begin
   Button[Result].FadeText := ThemeButton.FadeText;
   if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then begin
     Button[Result].FadeTex := Texture.LoadTexture(
-      Skin.GetTextureFileName(ThemeButton.FadeTex), 'JPG', TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
+      Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
   end
   else
     Button[Result].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ, true);
@@ -649,16 +649,16 @@ end;
 
 function TMenu.AddButton(X, Y, W, H: real; const Name: String): integer;
 begin
-  Result := AddButton(X, Y, W, H, Name, 'JPG', TEXTURE_TYPE_PLAIN, False);
+  Result := AddButton(X, Y, W, H, Name, TEXTURE_TYPE_PLAIN, False);
 end;
 
-function TMenu.AddButton(X, Y, W, H: real; const Name, Format: String; Typ: TTextureType; Reflection: Boolean): integer;
+function TMenu.AddButton(X, Y, W, H: real; const Name: String; Typ: TTextureType; Reflection: Boolean): integer;
 begin
-  Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, 'JPG', TEXTURE_TYPE_PLAIN, Reflection, 15, 15);
+  Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, TEXTURE_TYPE_PLAIN, Reflection, 15, 15);
 end;
 
 function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real;
-                         const Name, Format: String; Typ: TTextureType;
+                         const Name: String; Typ: TTextureType;
                          Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer;
 begin
   // adds button
@@ -682,8 +682,8 @@ begin
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
     // give encoded color to loadtexture
-    Button[Result] := TButton.Create(Texture.LoadTexture(PChar(Name), PChar(Format), Typ, RGBFloatToInt(ColR, ColG, ColB)),
-                                     Texture.LoadTexture(PChar(Name), PChar(Format), Typ, RGBFloatToInt(DColR, DColG, DColB)));
+    Button[Result] := TButton.Create(Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB)),
+                                     Texture.LoadTexture(Name, Typ, RGBFloatToInt(DColR, DColG, DColB)));
 
   //  Button[Result] := TButton.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), ((((TempR2 shl 8) or TempG2) shl 8)or TempB2))); // use cache texture
   end
@@ -1082,7 +1082,7 @@ begin
   Selects[S] := TSelect.Create;
 
   if (Typ = TEXTURE_TYPE_COLORIZED) then
-    Selects[S].Texture := Texture.LoadTexture(PChar(Name), 'PNG', Typ, RGBFloatToInt(ColR, ColG, ColB))
+    Selects[S].Texture := Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB))
   else
     Selects[S].Texture := Texture.GetTexture(Name, Typ);
   Selects[S].X := X;
@@ -1099,7 +1099,7 @@ begin
   Selects[S].DInt := DInt;
 
   if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
-    Selects[S].TextureSBG := Texture.LoadTexture(PChar(SBGName), 'PNG', SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
+    Selects[S].TextureSBG := Texture.LoadTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
   else
     Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
   Selects[S].TextureSBG.X := X + W + SkipX;
@@ -1242,7 +1242,7 @@ begin
   SelectsS[S] := TSelectSlide.Create;
 
   if (Typ = TEXTURE_TYPE_COLORIZED) then
-    SelectsS[S].Texture := Texture.LoadTexture(PChar(Name), 'PNG', Typ, RGBFloatToInt(ColR, ColG, ColB))
+    SelectsS[S].Texture := Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB))
   else
     SelectsS[S].Texture := Texture.GetTexture(Name, Typ);
   SelectsS[S].X := X;
@@ -1260,7 +1260,7 @@ begin
   SelectsS[S].DInt := DInt;
 
   if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
-    SelectsS[S].TextureSBG := Texture.LoadTexture(PChar(SBGName), 'PNG', SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
+    SelectsS[S].TextureSBG := Texture.LoadTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
   else
     SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
   SelectsS[S].TextureSBG.X := X + W + SkipX;
@@ -1525,8 +1525,8 @@ end;
 
 procedure TMenu.AddBox(X, Y, W, H: real);
 begin
-  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
-  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('MainBar'), 'JPG', TEXTURE_TYPE_COLORIZED);
+  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
+  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
 end;
 
 procedure TMenu.onShow;
