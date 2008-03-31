@@ -36,50 +36,36 @@ type
   end;
   AStatResult = Array of TStatResult;
 
+  PDBSongInfo = ^TDBSongInfo;
   TDBSongInfo = record
     FileName:    String;
-    FolderID:    String;
+    FolderID:    Integer;
     FullPath:    String;
     LastChanged: Integer; //TimeStamp
-    TimesPlayed: Integer;
 
     //Required Information
-      Title:      widestring;
-      Artist:     widestring;
+    Artist:     widestring;
+    Title:      widestring;
 
-      Mp3:        widestring;
-
-      Text:       widestring;
-
-      Resolution: integer;
-      BPM:        array of TBPM;
-      GAP:        real; // in miliseconds
-
-      Base    : array[0..1] of integer;
-      Rel     : array[0..1] of integer;
-      Mult    : integer;
-      MultBPM : integer;
+    Mp3:        widestring;
 
     //Some Files
-      Cover:      widestring; //Path to Cover
-      CoverID:    Integer;    //ID of Cover in Covers Cache
-      Background: widestring;
-      Video:      widestring;
-      VideoGAP:   real;
+    Cover:      widestring; //Path to Cover
+    CoverID:    Integer;    //ID of Cover in Covers Cache
+    Video:      widestring;
+    VideoGAP:   real;
 
 
     //Additional Information
-      NotesGAP:   integer;
-      Start:      real; // in seconds
-      Finish:     integer; // in miliseconds
-      Relative:   boolean;
+    Start:      real; // in seconds
 
     //Sorting
-      Genre:      widestring;
-      Edition:    widestring;
-      Language:   widestring;
-      Year:       widestring;
-      Creator:    widestring;
+    Genre:      widestring;
+    Edition:    widestring;
+    Language:   widestring;
+    Year:       widestring;
+    Creator:    widestring;
+    TimesPlayed:Word;
   end;
 
   TSongListInfo = record //SongInfo used by Songscreen
@@ -120,8 +106,9 @@ type
 
     Function  GetIDbyPath(const Path: String): Integer;
     Function  GetIDbyFileName(const Filename: String; FolderID: Integer): Integer;
-    Procedure GetSongData(ID: Integer; var Info: TDBSongInfo);
-    Procedure SetSongData(ID: Integer; var Info: TDBSongInfo);
+    Function  GetSongData(ID: Integer; const Info: PDBSongInfo): Boolean;
+    Function  SetSongData(ID: Integer; const Info: PDBSongInfo): Boolean;
+    Function  AddSong(ID: Integer; const Info: PDBSongInfo): Boolean;
     Function  GetLastChangedbyID(const Song: Integer): Integer;
     Function  GetLastChangedbyFileName(const Filename: String; FolderID: Integer): Integer;
 
@@ -193,7 +180,7 @@ begin
       ScoreDB.ExecSQL('CREATE TABLE `' + cUS_Info + '` ( `Ident` varchar(32) PRIMARY KEY, `Value` varchar(64) NOT NULL default '''');');
 
       //Write Database Version to Table
-      ScoreDB.ExecSQL('INSERT INTO `' + cUS_Info + '` VALUES (''version'', ''2.0.0'');');
+      ScoreDB.ExecSQL('INSERT INTO `' + cUS_Info + '` VALUES (''version'', ''' + cDB_Version + ''');');
 
       debugWriteln( 'TDataBaseSystem.Init - CREATED US_Info' );
     end;
@@ -288,9 +275,9 @@ begin
         I := 0;
         while not TableData.Eof do //Go through all Entrys
         begin //Add one Entry to Array
-            Song.Score[Difficulty, high(Song.Score[Difficulty])].Name  :=
+            Result[I].Name  :=
                 TableData.FieldAsString(TableData.FieldIndex['Player']);
-            Song.Score[Difficulty, high(Song.Score[Difficulty])].Score :=
+            Result[I].Score :=
                 StrtoInt(TableData.FieldAsString(TableData.FieldIndex['Score']));
 
           TableData.Next;
@@ -516,15 +503,66 @@ end;
 
 Function  TDataBaseSystem.GetIDbyFileName(const Filename: String; FolderID: Integer): Integer;
 begin
-
+  try
+    Result := ScoreDB.GetTableValue('SELECT `ID` FROM `' + cUS_Songs + '` WHERE (`Filename` = ''' + Filename + ''') AND (`FolderID` = ''' + InttoStr(FolderID) + ''')');
+  except
+    Result := 0;
+  end;
 end;
 
-Procedure TDataBaseSystem.GetSongData(ID: Integer; var Info: TDBSongInfo);
+Function TDataBaseSystem.GetSongData(ID: Integer; const Info: PDBSongInfo): Boolean;
+var
+  TableData: TSqliteTable;
 begin
-
+  Result := True;
+  try
+    TableData := ScoreDB.GetTable('SELECT Filename`, `FolderID`, `FullPath`, `LastChanged`, `Artist`, `Title`, `Mp3`, `Cover`, `CoverID`, `Video`, `VideoGap`, `Start`, `Genre`, `Edition`, `Language`, `Year`, `Creator`, `TimesPlayed` FROM `' + cUS_Songs + '` WHERE `ID` = ''' + InttoStr(ID) + ''' ');
+    If (TableData.RowCount > 0) then //All Fieldnames are listed to ensure Field order
+    begin //
+      Info^.FileName    := TableData.Fields[0];
+      Info^.FolderID    := StrToIntDef(TableData.Fields[1], -1);
+      Info^.FullPath    := TableData.Fields[2];
+      Info^.LastChanged := StrToIntDef(TableData.Fields[3], 0);
+      Info^.Artist      := TableData.Fields[4];
+      Info^.Title       := TableData.Fields[5];
+      Info^.Mp3         := TableData.Fields[6];
+      Info^.Cover       := TableData.Fields[7];
+      Info^.CoverID     := StrToIntDef(TableData.Fields[8], -1);
+      Info^.Video       := TableData.Fields[9];
+      Info^.VideoGAP    := StrToFloatDef(TableData.Fields[10], 0);
+      Info^.Start       := StrToFloatDef(TableData.Fields[11], 0);
+      Info^.Genre       := TableData.Fields[12];
+      Info^.Edition     := TableData.Fields[13];
+      Info^.Language    := TableData.Fields[14];
+      Info^.Year        := TableData.Fields[15];
+      Info^.Creator     := TableData.Fields[16];
+      Info^.TimesPlayed := StrToIntDef(TableData.Fields[17], 0);
+    end;
+  except
+    Result := False;
+  end;
 end;
 
-Procedure TDataBaseSystem.SetSongData(ID: Integer; var Info: TDBSongInfo);
+Function  TDataBaseSystem.AddSong(ID: Integer; const Info: PDBSongInfo): Boolean;
+var
+  OldID: Integer;
+begin
+  Result := True;
+  try
+    ScoreDB.ExecSQL('INSERT INTO `us_songs` ( `ID` , `Filename` , `FolderID` , `FullPath` , `LastChanged` , `Artist` , `Title` , `Mp3` , `Cover` , `CoverID` , `Video` , `VideoGap` , `Start` , `Genre` , `Edition` , `Language` , `Year` , `Creator` , `TimesPlayed` ) ' +
+                    'VALUES ( '''', '''+ Info^.FileName +''', '''+ InttoStr(Info^.FolderID) +''', '''+ Info^.FullPath +''', '''+ InttoStr(Info^.LastChanged) +''', '''+ Info^.Artist +''', '''+ Info^.Title +''', '''+ Info^.Mp3 +''', '''+ Info^.Cover +''', '''+ InttoStr(Info^.CoverID) +''', '''+ Info^.Video + ''', '''+ FloattoStr(Info^.VideoGAP) + ''', '''+ FloattoStr(Info^.Start) +''', '''+ Info^.Genre +''', '''+ Info^.Edition +''', '''+ Info^.Language +''', '''+ Info^.Year +''', '''+ Info^.Creator +''', ''0'');');
+
+    //Version 1.0 to 2.0 Update
+    If UpdateFromVer1 then
+    begin //Search for Song w/ same Artist and Title in Old DB
+      OldID := ScoreDB.GetTableValue('SELECT `ID` FROM `US_Songs` WHERE `Artist` = "' + Info^.Artist + '" AND `Title` = "' + Info^.Title + '"');
+    end;
+  except
+    Result := False;
+  end;
+end;
+
+Function  TDataBaseSystem.SetSongData(ID: Integer; const Info: PDBSongInfo): Boolean;
 begin
 
 end;

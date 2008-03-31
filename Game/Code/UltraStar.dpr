@@ -237,6 +237,8 @@ uses
 
 {$IFNDEF FPC}
 begin
+  //Core := TCore.Create('lol', 1234);
   Main;
+  //Core.Run;
 end.
 {$ENDIF}
