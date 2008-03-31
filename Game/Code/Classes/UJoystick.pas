@@ -57,12 +57,15 @@ begin
   {// joystick support
   SDL_JoystickEventState(SDL_IGNORE);
   SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-  if SDL_NumJoysticks <> 1 then beep;
+  if SDL_NumJoysticks <> 1 then
+    Log.LogStatus('Joystick count <> 1', 'TJoy.Create');
 
   SDL_Joy := SDL_JoystickOpen(0);
-  if SDL_Joy = nil then beep;
+  if SDL_Joy = nil then
+    Log.LogError('SDL_JoystickOpen failed', 'TJoy.Create');
 
-  if SDL_JoystickNumButtons(SDL_Joy) <> 16 then beep;
+  if SDL_JoystickNumButtons(SDL_Joy) <> 16 then
+    Log.LogStatus('Joystick button count <> 16', 'TJoy.Create');
 
 //  SDL_JoystickEventState(SDL_ENABLE);
   // Events don't work - thay hang the whole application with SDL_JoystickEventState(SDL_ENABLE)
@@ -109,7 +112,7 @@ begin
     exit;
   end;
   N := SDL_JoystickNumButtons(SDL_Joy);
-  //if N < 6 then beep;
+  //if N < 6 then Log.LogStatus('Joystick button count < 6', 'TJoy.Create');
 
   for B := 0 to 5 do begin
     JoyUnit.Button[B].Enabled := true;

@@ -178,10 +178,6 @@ begin
             Fadeout := true;
           end;
         end;
-{      SDLK_SYSREQ:
-        begin
-          beep;
-        end;}
       SDLK_SYSREQ:
         begin
           Display.PrintScreen;

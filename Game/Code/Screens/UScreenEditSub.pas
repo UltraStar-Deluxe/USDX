@@ -175,7 +175,7 @@ begin
             if Lines[0].Line[Lines[0].Current].IlNut >= Lines[0].Line[CopySrc].IlNut then
               PasteText
             else
-              beep;
+              Log.LogStatus('PasteText: invalid range', 'TScreenEditSub.ParseInput');
           end;
 
           if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then begin

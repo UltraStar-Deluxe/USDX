@@ -1531,8 +1531,7 @@ end;
 
 procedure TMenu.onShow;
 begin
-// nothing
-//  beep;
+  // nothing
 (*
   if fileexists( fFileName ) then
   begin
@@ -1544,8 +1543,7 @@ end;
 
 procedure TMenu.onShowFinish;
 begin
-// nothing
-//  beep;
+  // nothing
 end;
 
 function TMenu.WideCharUpperCase(const wchar : WideChar) : WideString;
@@ -1580,21 +1578,18 @@ end;
 
 procedure TMenu.onHide;
 begin
-// nothing
-//  beep;
+  // nothing
 end;
 
 function TMenu.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
-// nothing
-//  Beep;
+  // nothing
   Result := true;
 end;
 
 procedure TMenu.SetAnimationProgress(Progress: real);
 begin
-// nothing
-//beep;
+  // nothing
 end;
 
 end.

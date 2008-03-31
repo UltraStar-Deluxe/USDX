@@ -297,7 +297,6 @@ begin
       Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
     except
       Log.LogStatus( 'ERROR Could not load from file' , Identifier);
-      beep;
       Exit;
     end;
   end
@@ -323,7 +322,6 @@ begin
             TexRWops.type_   := 2;
           except
             Log.LogStatus( 'ERROR Could not assign resource ('+Identifier+')' , Identifier);
-            beep;
             Exit;
           end;
         
@@ -342,7 +340,6 @@ begin
       if dHandle=0 then
       begin
         Log.LogStatus( 'ERROR Could not find resource' , '  '+ Identifier);
-        beep;
         Exit;
       end;
 
@@ -352,7 +349,6 @@ begin
         TexStream        := TResourceStream.Create(HInstance, Identifier, 'TEX');
       except
         Log.LogStatus( 'ERROR Could not load from resource' , Identifier);
-        beep;
         Exit;
       end;
 
@@ -368,7 +364,6 @@ begin
           TexRWops.type_   := 2;
         except
           Log.LogStatus( 'ERROR Could not assign resource' , Identifier);
-          beep;
           Exit;
         end;
 
@@ -559,7 +554,6 @@ begin
   if not assigned(TexSurface) then
   begin
     Log.LogStatus( 'ERROR Could not load texture' , Identifier +' '+ Format +' '+ TextureTypeToStr(Typ) );
-    beep;
     Exit;
   end;
   
@@ -861,7 +855,8 @@ begin
   glTexImage2D(GL_TEXTURE_2D, 0, 3, W, H, 0, GL_RGB, GL_UNSIGNED_BYTE, @Data[0]);
   if Mipmapping then begin
     Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 3, W, H, GL_RGB, GL_UNSIGNED_BYTE, @Data[0]);
-    if Error > 0 then beep;
+    if Error > 0 then
+      Log.LogError('gluBuild2DMipmaps() failed', 'TTextureUnit.CreateTexture');
   end;
 
   Result.X := 0;

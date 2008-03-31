@@ -262,7 +262,8 @@ begin
 
     C := CoverNumber(FileName);
     SetLength(Data, Cover[C].Size);
-    if Length(Data) < 6 then beep;
+    if Length(Data) < 6 then
+      Log.LogStatus('Length(Data) < 6', 'TCovers.PrepareData');
     Seek(F, Cover[C].Position);
     BlockRead(F, Data[0], Cover[C].Size);
     CloseFile(F);

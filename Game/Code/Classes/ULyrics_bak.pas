@@ -143,7 +143,7 @@ end;
 procedure TLyric.SetAlign(Value: integer);
 begin
   AlignI := Value;
-//  if AlignInt = 0 then beep;
+//  if AlignInt = 0 then Log.LogStatus('AlignInt = 0', 'TLyric.SetAlign');
 end;
 
 function TLyric.GetSize: real;

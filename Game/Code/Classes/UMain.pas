@@ -502,12 +502,12 @@ begin
       {
       SDL_JOYAXISMOTION:
         begin
-          beep
+          // not implemented
         end;
       }
       SDL_JOYBUTTONDOWN:
         begin
-          beep
+          // not implemented
         end;
     end; // Case
   end; // While
@@ -880,8 +880,7 @@ var
   Range:  integer;
   NoteHit:boolean;
 begin
-//  Log.LogStatus('Beat ' + IntToStr(LineState.CurrentBeat) + ' HalfBeat ' + IntToStr(LineState.AktHalf), 'NewBeat');
-//  beep;
+  //  Log.LogStatus('Beat ' + IntToStr(LineState.CurrentBeat) + ' HalfBeat ' + IntToStr(LineState.AktHalf), 'NewBeat');
 
   // On linux we get an AV @ NEWNOTE,  line 600 of Classes/UMain.pas
   if not assigned( AudioInputProcessor.Sound ) then
@@ -1043,7 +1042,7 @@ begin
             Player[CP].Note[Player[CP].HighNote].Perfect := true;
           end;
         end;
-      end;// else beep; // if S = SMax
+      end; // if S = SMax
 
     end; // if moze
   end; // for CP

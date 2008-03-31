@@ -531,7 +531,6 @@ begin
               SongCurrent := SongCurrent - I + I2;
               SongTarget := SongTarget - I + I2; }
 
-//              if I<>I2 then beep;
             //  SetScroll4;
 
             //Show Wrong Song when Tabs on Fix
