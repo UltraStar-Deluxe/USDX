@@ -824,7 +824,7 @@ begin
             Covers.AddCover({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover);
 
             // unload full size texture
-            Texture.UnloadTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, false);
+            Texture.UnloadTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, false);
 
             // we should also add mipmap texture by calling createtexture and use mipmap cache as data source
           end;
@@ -2082,7 +2082,7 @@ begin
   Button[Interaction].Texture2.Alpha := 0;
 
   if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
-    Texture.UnloadTexture(Button[Interaction].Texture.Name, false);
+    Texture.UnloadTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
 end;
 
 procedure TScreenSong.Refresh;

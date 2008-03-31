@@ -68,6 +68,7 @@ type
   TTextureEntry = record
     Name:       string;
     Typ:        TTextureType;
+    Color:      Cardinal;
 
     // we use normal TTexture, it's easier to implement and if needed - we copy ready data
     Texture:        TTexture;
@@ -93,14 +94,17 @@ type
     CreateCacheMipmap:  boolean;
 
 //    function GetNumberFor
-    function GetTexture(const Name: string; Typ: TTextureType): TTexture; overload;
-    function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean): TTexture; overload;
-    function FindTexture(const Name: string): integer;
+    function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean = true): TTexture; overload;
+    function GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean = true): TTexture; overload;
+    function FindTexture(const Name: string; Typ: TTextureType; Col: Cardinal): integer;
     function LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
     function LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
     function LoadTexture(const Identifier: string): TTexture; overload;
     function CreateTexture(var Data: array of byte; const Name: string; W, H: word; Bits: byte): TTexture;
-    procedure UnloadTexture(const Name: string; FromCache: boolean);
+    procedure UnloadTexture(const Name: string; Typ: TTextureType; FromCache: boolean); overload;
+    procedure UnloadTexture(const Name: string; Typ: TTextureType; Col: Cardinal; FromCache: boolean); overload;
+    //procedure FlushTextureDatabase();
+
     Constructor Create;
     Destructor Destroy; override;
   end;
@@ -745,12 +749,12 @@ begin
 end;
 
 
-function TTextureUnit.GetTexture(const Name: string; Typ: TTextureType): TTexture;
+function TTextureUnit.GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean): TTexture;
 begin
-  Result := GetTexture(Name, Typ, true);
+  Result := GetTexture(Name, Typ, 0, FromCache);
 end;
 
-function TTextureUnit.GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean): TTexture;
+function TTextureUnit.GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean): TTexture;
 var
   T:    integer; // texture
   C:    integer; // cover
@@ -761,7 +765,7 @@ begin
     exit;
 
   // find texture entry
-  T := FindTexture(Name);
+  T := FindTexture(Name, Typ, Col);
 
   if T = -1 then
   begin
@@ -769,8 +773,9 @@ begin
     T := Length(TextureDatabase.Texture);
     SetLength(TextureDatabase.Texture, T+1);
 
-    TextureDatabase.Texture[T].Name := Name;
-    TextureDatabase.Texture[T].Typ  := Typ;
+    TextureDatabase.Texture[T].Name  := Name;
+    TextureDatabase.Texture[T].Typ   := Typ;
+    TextureDatabase.Texture[T].Color := Col;
 
     // inform database that no textures have been loaded into memory
     TextureDatabase.Texture[T].Texture.TexNum      := -1;
@@ -787,7 +792,7 @@ begin
       {$ifdef blindydebug}
       Log.LogStatus('...', 'GetTexture('''+Name+''','''+Typ+''')');
       {$endif}
-      TextureDatabase.Texture[T].Texture := LoadTexture(false, Name, Typ, $0);
+      TextureDatabase.Texture[T].Texture := LoadTexture(false, Name, Typ, Col);
       {$ifdef blindydebug}
       Log.LogStatus('done',' ');
       {$endif}
@@ -814,14 +819,23 @@ begin
   end;
 end;
 
-function TTextureUnit.FindTexture(const Name: string): integer;
+function TTextureUnit.FindTexture(const Name: string; Typ: TTextureType; Col: Cardinal): integer;
 var
   T:    integer; // texture
 begin
   Result := -1;
   for T := 0 to high(TextureDatabase.Texture) do
-    if (TextureDatabase.Texture[T].Name = Name) then
-      Result := T;
+    if (TextureDatabase.Texture[T].Name = Name) and
+       (TextureDatabase.Texture[T].Typ = Typ) then
+    begin
+      // colorized textures must match in their color too
+      if (TextureDatabase.Texture[T].Typ <> TEXTURE_TYPE_COLORIZED) or
+         (TextureDatabase.Texture[T].Color = Col) then
+      begin
+        Result := T;
+        break;
+      end;
+    end;
 end;
 
 function TTextureUnit.LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
@@ -886,12 +900,17 @@ begin
   Result.Name := Name;
 end;
 
-procedure TTextureUnit.UnloadTexture(const Name: string; FromCache: boolean);
+procedure TTextureUnit.UnloadTexture(const Name: string; Typ: TTextureType; FromCache: boolean);
+begin
+  UnloadTexture(Name, Typ, 0, FromCache);
+end;
+
+procedure TTextureUnit.UnloadTexture(const Name: string; Typ: TTextureType; Col: Cardinal; FromCache: boolean);
 var
   T:      integer;
   TexNum: integer;
 begin
-  T := FindTexture(Name);
+  T := FindTexture(Name, Typ, Col);
 
   if not FromCache then begin
     TexNum := TextureDatabase.Texture[T].Texture.TexNum;
@@ -909,6 +928,25 @@ begin
     end;
   end;
 end;
+
+(* This needs some work
+procedure TTextureUnit.FlushTextureDatabase();
+var
+  i: integer;
+  Tex: ^TTexture;
+begin
+  for i := 0 to High(TextureDatabase.Texture) do
+  begin
+    // only delete non-cached entries
+    if (TextureDatabase.Texture[i].Texture.TexNum <> -1) then
+    begin
+      Tex := @TextureDatabase.Texture[i].Texture;
+      glDeleteTextures(1, PGLuint(Tex^.TexNum));
+      Tex^.TexNum := -1;
+    end;
+  end;
+end;
+*)
 
 function TextureTypeToStr(TexType: TTextureType): string;
 begin

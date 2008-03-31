@@ -197,8 +197,8 @@ begin
   inherited Create;
 
   if Back <> '' then begin
-//    BackImg := Texture.LoadTexture(true, PChar(Back), 'JPG', TEXTURE_TYPE_PLAIN, 0);
-    BackImg := Texture.LoadTexture(PChar(Back), 'JPG', TEXTURE_TYPE_PLAIN, 0); // new theme system
+//    BackImg := Texture.GetTexture(true, Back, TEXTURE_TYPE_PLAIN, 0);
+    BackImg := Texture.GetTexture(Back, TEXTURE_TYPE_PLAIN, 0); // new theme system
     BackImg.W := 800;//640;
     BackImg.H := 600;//480;
     BackW := 1;
@@ -365,15 +365,15 @@ begin
   begin
     TempCol  := RGBFloatToInt(ThemeCollection.Style.ColR, ThemeCollection.Style.ColG, ThemeCollection.Style.ColB);
     TempDCol := RGBFloatToInt(ThemeCollection.Style.DColR, ThemeCollection.Style.DColG, ThemeCollection.Style.DColB);
-    // give encoded color to loadtexture
+    // give encoded color to GetTexture()
     ButtonCollection[Num] := TButtonCollection.Create(
-      Texture.LoadTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempCol),
-      Texture.LoadTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempDCol));
-
-  //  Button[Result] := TButton.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), ((((TempR2 shl 8) or TempG2) shl 8)or TempB2))); // use cache texture
+      Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempCol),
+      Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempDCol));
   end
   else
+  begin
     ButtonCollection[Num] := TButtonCollection.Create(Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), ThemeCollection.Style.Typ, true)); // use cache texture
+  end;
 
   //Set Parent menu
   ButtonCollection[Num].ScreenButton := @Self.Button;
@@ -417,8 +417,8 @@ begin
   ButtonCollection[Num].Fade := ThemeCollection.Style.Fade;
   ButtonCollection[Num].FadeText := ThemeCollection.Style.FadeText;
   if (ThemeCollection.Style.Typ = TEXTURE_TYPE_COLORIZED) then
-    ButtonCollection[Num].FadeTex := Texture.LoadTexture(
-      PChar(Skin.GetTextureFileName(ThemeCollection.Style.FadeTex)), TEXTURE_TYPE_COLORIZED, TempCol)
+    ButtonCollection[Num].FadeTex := Texture.GetTexture(
+      Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), TEXTURE_TYPE_COLORIZED, TempCol)
   else
     ButtonCollection[Num].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ, true);
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
@@ -468,9 +468,7 @@ begin
   // adds static
   StatNum := Length(Static);
   SetLength(Static, StatNum + 1);
-//  Static[StatNum] := TStatic.Create(Texture.LoadTexture(PChar(Name), PChar(Format), Typ, $FF00FF)); // $FFFFFF
-//  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Skin.SkinReg, PChar(Name), PChar(Format), Typ, $FF00FF)); // new skin system
-  Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Typ, $FF00FF)); // new skin
+  Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ, $FF00FF)); // new skin
 
   // configures static
   Static[StatNum].Texture.X := X;
@@ -491,7 +489,6 @@ end;
 function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer;
 begin
   Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Typ, Color, False, 0);
-//
 end;
 
 function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name: string; Typ: TTextureType; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer;
@@ -505,12 +502,13 @@ begin
   // colorize hack
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
-    // give encoded color to loadtexture
-    Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB)));
+    // give encoded color to GetTexture()
+    Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB)));
   end
   else
-    Static[StatNum] := TStatic.Create(Texture.LoadTexture(Name, Typ, Color)); // new skin
-  //  Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ));
+  begin
+    Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ, Color)); // new skin
+  end;
 
   // configures static
   Static[StatNum].Texture.X := X;
@@ -610,13 +608,16 @@ begin
   Button[Result].Fade := ThemeButton.Fade;
   Button[Result].FadeText := ThemeButton.FadeText;
   if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then begin
-    Button[Result].FadeTex := Texture.LoadTexture(
-      Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
+    Button[Result].FadeTex := Texture.GetTexture(
+      Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED,
+      RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
   end
   else
+  begin
     Button[Result].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ, true);
-  Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
+  end;
 
+  Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
 
   BTLen := Length(ThemeButton.Text);
   for BT := 0 to BTLen-1 do begin
@@ -681,17 +682,14 @@ begin
   // colorize hack
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
-    // give encoded color to loadtexture
-    Button[Result] := TButton.Create(Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB)),
-                                     Texture.LoadTexture(Name, Typ, RGBFloatToInt(DColR, DColG, DColB)));
-
-  //  Button[Result] := TButton.Create(Texture.LoadTexture(PChar(Name), PChar(Format), PChar(Typ), ((((TempR2 shl 8) or TempG2) shl 8)or TempB2))); // use cache texture
+    // give encoded color to GetTexture()
+    Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB)),
+                                     Texture.GetTexture(Name, Typ, RGBFloatToInt(DColR, DColG, DColB)));
   end
   else
-
+  begin
     Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ, true)); // use cache texture
-  //  else
-  //    Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ, false)); // don't use cache texture}
+  end;
 
   // configures button
   Button[Result].X := X;
@@ -1082,7 +1080,7 @@ begin
   Selects[S] := TSelect.Create;
 
   if (Typ = TEXTURE_TYPE_COLORIZED) then
-    Selects[S].Texture := Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB))
+    Selects[S].Texture := Texture.GetTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB))
   else
     Selects[S].Texture := Texture.GetTexture(Name, Typ);
   Selects[S].X := X;
@@ -1099,7 +1097,7 @@ begin
   Selects[S].DInt := DInt;
 
   if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
-    Selects[S].TextureSBG := Texture.LoadTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
+    Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
   else
     Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
   Selects[S].TextureSBG.X := X + W + SkipX;
@@ -1242,7 +1240,7 @@ begin
   SelectsS[S] := TSelectSlide.Create;
 
   if (Typ = TEXTURE_TYPE_COLORIZED) then
-    SelectsS[S].Texture := Texture.LoadTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB))
+    SelectsS[S].Texture := Texture.GetTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB))
   else
     SelectsS[S].Texture := Texture.GetTexture(Name, Typ);
   SelectsS[S].X := X;
@@ -1260,7 +1258,7 @@ begin
   SelectsS[S].DInt := DInt;
 
   if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
-    SelectsS[S].TextureSBG := Texture.LoadTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
+    SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
   else
     SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
   SelectsS[S].TextureSBG.X := X + W + SkipX;

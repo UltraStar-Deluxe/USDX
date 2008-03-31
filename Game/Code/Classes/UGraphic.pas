@@ -278,9 +278,9 @@ begin
    // zaladowanie tekstur
   Log.LogStatus('Loading Textures', 'LoadTextures');
   
-  Tex_Left[0]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
-  Tex_Mid[0]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   TEXTURE_TYPE_PLAIN, 0);           //brauch man die noch?
-  Tex_Right[0] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
+  Tex_Left[0]  := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
+  Tex_Mid[0]   := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_PLAIN, 0);           //brauch man die noch?
+  Tex_Right[0] := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
 
   Log.LogStatus('Loading Textures - A', 'LoadTextures');
   
@@ -292,35 +292,35 @@ begin
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
     
-    Tex_Left[P]         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayLeft')),  TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Mid[P]          := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayMid')),   TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Right[P]        := Texture.LoadTexture(pchar(Skin.GetTextureFileName('GrayRight')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Left[P]         := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Mid[P]          := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Right[P]        := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Col);
 
-    Tex_plain_Left[P]   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainLeft')),  TEXTURE_TYPE_COLORIZED, Col);
-    Tex_plain_Mid[P]    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainMid')),   TEXTURE_TYPE_COLORIZED, Col);
-    Tex_plain_Right[P]  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePlainRight')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_plain_Left[P]   := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainLeft'),  TEXTURE_TYPE_COLORIZED, Col);
+    Tex_plain_Mid[P]    := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainMid'),   TEXTURE_TYPE_COLORIZED, Col);
+    Tex_plain_Right[P]  := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainRight'), TEXTURE_TYPE_COLORIZED, Col);
 
-    Tex_BG_Left[P]      := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGLeft')),  TEXTURE_TYPE_COLORIZED, Col);
-    Tex_BG_Mid[P]       := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGMid')),   TEXTURE_TYPE_COLORIZED, Col);
-    Tex_BG_Right[P]     := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteBGRight')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_BG_Left[P]      := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGLeft'),  TEXTURE_TYPE_COLORIZED, Col);
+    Tex_BG_Mid[P]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMid'),   TEXTURE_TYPE_COLORIZED, Col);
+    Tex_BG_Right[P]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRight'), TEXTURE_TYPE_COLORIZED, Col);
   end;
 
   Log.LogStatus('Loading Textures - B', 'LoadTextures');
 
-  Tex_Note_Perfect_Star := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NotePerfectStar')), TEXTURE_TYPE_TRANSPARENT, 0);
-  Tex_Note_Star         := Texture.LoadTexture(pchar(Skin.GetTextureFileName('NoteStar')) ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
-  Tex_Ball              := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Ball')),            TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  Tex_Lyric_Help_Bar    := Texture.LoadTexture(pchar(Skin.GetTextureFileName('LyricHelpBar')),    TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  Tex_Note_Perfect_Star := Texture.LoadTexture(Skin.GetTextureFileName('NotePerfectStar'), TEXTURE_TYPE_TRANSPARENT, 0);
+  Tex_Note_Star         := Texture.LoadTexture(Skin.GetTextureFileName('NoteStar') ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+  Tex_Ball              := Texture.LoadTexture(Skin.GetTextureFileName('Ball'),            TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  Tex_Lyric_Help_Bar    := Texture.LoadTexture(Skin.GetTextureFileName('LyricHelpBar'),    TEXTURE_TYPE_TRANSPARENT, $FF00FF);
 
 
   //TimeBar mod
-  Tex_TimeProgress := Texture.LoadTexture(pchar(Skin.GetTextureFileName('TimeBar')));
+  Tex_TimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('TimeBar'));
   //eoa TimeBar mod
 
   //SingBar Mod
-  Tex_SingBar_Back  := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBack')),  TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Bar   := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarBar')),   TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Front := Texture.LoadTexture(pchar(Skin.GetTextureFileName('SingBarFront')), TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Back  := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBack'),  TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Bar   := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBar'),   TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Front := Texture.LoadTexture(Skin.GetTextureFileName('SingBarFront'), TEXTURE_TYPE_PLAIN, 0);
   //end Singbar Mod
 
   Log.LogStatus('Loading Textures - C', 'LoadTextures');
