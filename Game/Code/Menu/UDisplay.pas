@@ -9,11 +9,6 @@ interface
 {$I switches.inc}
 
 uses
-  {$IFDEF win32}
-  windows,
-  {$ELSE}
-  LCLType,
-  {$ENDIF}
   ucommon,
   SDL,
   UMenu,
@@ -71,9 +66,6 @@ uses
      ulazjpeg,
      {$ELSE}
      JPEG,
-     {$ENDIF}
-     {$IFNDEF win32}
-     lclintf,
      {$ENDIF}
      graphics,
      TextGL,
@@ -373,6 +365,7 @@ begin
 end;
 
 procedure TDisplay.ScreenShot;
+{
 var
   F : file;
   FileInfo: BITMAPINFOHEADER;
@@ -380,10 +373,11 @@ var
   pPicData:Pointer;
   FileName: String;
   Num: Integer;
+}
 begin
   // FIXME: something broken in here... quick fix... disabled it
   Exit;
-  
+{
   // search image-file
   for Num := 1 to 9999 do
   begin
@@ -398,7 +392,7 @@ begin
  // prepare header memory
  ZeroMemory(@FileHeader, SizeOf(BITMAPFILEHEADER));
  ZeroMemory(@FileInfo  , SizeOf(BITMAPINFOHEADER));
- 
+
  // initialize header-data
  FileHeader.bfType := 19778; // $4D42 = 'BM'
  FileHeader.bfOffBits := SizeOf(BITMAPINFOHEADER)+SizeOf(BITMAPFILEHEADER);
@@ -435,6 +429,7 @@ begin
   // free allocated data ...
   FreeMem(pPicData, FileInfo.biSizeImage);
  end;
+}
 end;
 
 //------------

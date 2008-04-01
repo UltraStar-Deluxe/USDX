@@ -57,11 +57,6 @@ type
 implementation
 
 uses UGraphic,
-     {$IFDEF win32}
-     windows,
-     {$ELSE}
-     lclintf,
-     {$ENDIF}
      StrUtils;
 
 {$IFDEF DARWIN}	 

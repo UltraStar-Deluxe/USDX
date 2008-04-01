@@ -144,11 +144,7 @@ const
 
 implementation
 
-uses {$IFDEF win32}
-     windows,
-     {$ELSE}
-     lclintf,
-     {$ENDIF}
+uses
      ULog,
      UGraphic,
      UMain,

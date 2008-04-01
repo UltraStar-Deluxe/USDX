@@ -89,11 +89,6 @@ var GoldenRec : TEffectManager;
 implementation
 
 uses  sysutils,
-      {$IFDEF win32}
-      windows,
-      {$ELSE}
-      lclintf,
-      {$ENDIF}
       OpenGl12,
       UIni,
       UMain,

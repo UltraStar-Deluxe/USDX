@@ -89,11 +89,6 @@ type
 implementation
 
 uses SysUtils,
-     {$IFDEF win32}
-     windows,
-     {$ELSE}
-     lclintf,
-     {$ENDIF}
      UDrawTexture;
 
 procedure TButton.SetX(Value: real);

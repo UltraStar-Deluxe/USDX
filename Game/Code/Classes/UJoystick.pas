@@ -42,11 +42,6 @@ var
 implementation
 
 uses SysUtils,
-     {$IFDEF win32}
-     windows,
-     {$ELSE}
-     LCLIntf,
-     {$ENDIF}
      ULog;
 
 constructor TJoy.Create;

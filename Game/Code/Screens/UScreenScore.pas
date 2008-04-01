@@ -138,11 +138,6 @@ uses UGraphic,
      UTime,
      UMain,
      UIni,
-     {$IFDEF win32}
-     Windows,
-     {$ELSE}
-     lclintf,
-     {$ENDIF}
      ULanguage;
 
 function TScreenScore.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
