@@ -165,7 +165,7 @@ begin
   end;
 
   //Get Tick
-  Tick := Gettickcount;
+  Tick := SDL_GetTicks();
 
   //Get CoolieHat
   if (SDL_JoystickNumHats(SDL_Joy)>=1) then

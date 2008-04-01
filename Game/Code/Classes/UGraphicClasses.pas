@@ -9,7 +9,7 @@ interface
 
 {$I switches.inc}
 
-uses UTexture;
+uses UTexture,SDL;
 
 const  DelayBetweenFrames : Cardinal = 60;
 type
@@ -348,7 +348,7 @@ constructor TEffectManager.Create;
 var c: Cardinal;
 begin
   inherited;
-  LastTime := GetTickCount;
+  LastTime := SDL_GetTicks();
   for c:=0 to 5 do
   begin
     TwinkleArray[c] := 0;
@@ -370,7 +370,7 @@ var
 //  DelayBetweenFrames : Cardinal = 100;
 begin
 
-  CurrentTime := GetTickCount;
+  CurrentTime := SDL_GetTicks();
   //Manage particle life
   if (CurrentTime - LastTime) > DelayBetweenFrames then
     begin

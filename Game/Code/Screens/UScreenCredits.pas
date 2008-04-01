@@ -451,7 +451,7 @@ begin
 
   Log.LogStatus('',' JB-1');
 
-  T := GetTickCount div 33;
+  T := SDL_GetTicks() div 33;
   if T <> Credits_Time then
   begin
     Credits_Time := T;

@@ -4,7 +4,7 @@ interface
 
 {$I switches.inc}
 
-uses TextGL, UTexture, OpenGL12, UMenuText;
+uses TextGL, UTexture, OpenGL12, UMenuText,SDL;
 
 type
   CButton = class of TButton;
@@ -291,7 +291,7 @@ begin
     begin
       if (FadeProgress < 1) and (FadeProgress > 0) then
       begin
-        Tick := GetTickCount div 16;
+        Tick := SDL_GetTicks() div 16;
         if (Tick <> FadeLastTick) then
         begin
           FadeLastTick := Tick;

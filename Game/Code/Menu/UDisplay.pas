@@ -247,13 +247,13 @@ begin
           if not BlackScreen then
             NextScreen.onShow;
 
-          lastTime:=GetTickCount; // TODO: use cross-plattform SDL_GetTicks() instead
+          lastTime:=SDL_GetTicks();
           if (S=2) or (Screens = 1) then
             myfade:=myfade+1;
         end; // end texture creation in first fading step
 
         //do some time-based fading
-        currentTime:=GetTickCount; // TODO: use cross-plattform SDL_GetTicks() instead
+        currentTime:=SDL_GetTicks();
         if (currentTime > lastTime+30) and (S=1) then
         begin
           myfade:=myfade+4;
@@ -462,7 +462,7 @@ begin
   glColor4f(0, 0, 0, 1);
 
   //Calculate FPS
-  Ticks := GetTickCount; // TODO: use cross-plattform SDL_GetTicks() instead
+  Ticks := SDL_GetTicks();
   if (Ticks >= NextFPSSwap) then
   begin
     LastFPS := FPSCounter * 4;

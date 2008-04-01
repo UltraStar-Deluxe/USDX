@@ -11,7 +11,8 @@ interface
 uses TextGL,
      UTexture,
      OpenGL12,
-     SysUtils;
+     SysUtils,
+     SDL;
 
 type
   TText = class
@@ -102,7 +103,7 @@ begin
   
   //Set Cursor Visible
   SelectBlink := True;
-  STicks := GettickCount div 550;
+  STicks := SDL_GetTicks() div 550;
 end;
 
 procedure TText.SetText(Value: String);
@@ -175,7 +176,7 @@ begin
 
   //Set Cursor Visible
   SelectBlink := True;
-  STicks := GettickCount div 550;
+  STicks := SDL_GetTicks() div 550;
 
   //Exit if there is no Need to Create Tiles
   If (W <= 0) and (Pos('\n', Value) = 0) then
@@ -283,7 +284,7 @@ begin
     //If Selected Set Blink...
     if SelectBool then
     begin
-      I := Gettickcount div 550;
+      I := SDL_GetTicks() div 550;
       if I <> STicks then
       begin //Change Visability
         STicks := I;
