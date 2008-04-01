@@ -542,15 +542,6 @@ begin
   Fonts[ActFont].AspectW := Aspect;
 end;
 
-
-{$IFDEF LAZARUS}
-{$IFDEF win32}
-initialization
-  {$I UltraStar.lrs}
-{$ENDIF}
-{$ENDIF}
-
-
 end.
 
 
