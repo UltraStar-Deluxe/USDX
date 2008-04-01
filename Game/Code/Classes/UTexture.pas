@@ -179,7 +179,6 @@ const
     Alpha:        255
   );
 
-
 Constructor TTextureUnit.Create;
 begin
   inherited Create;
@@ -414,6 +413,7 @@ begin
   Result:=SDL_ScaleSurfaceRect(TempSurface,
                   0,0,TempSurface^.W,TempSurface^.H,
                   W,H);
+  SDL_FreeSurface(TempSurface);
 end;
 
 procedure TTextureUnit.ScaleTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
@@ -776,7 +776,7 @@ begin
   Log.BenchmarkEnd(4);
   if Log.BenchmarkTimeLength[4] >= 1 then
     Log.LogBenchmark('**********> Texture Load Time Warning - ' + Identifier + '/' + TextureTypeToStr(Typ), 4)
-  else Log.LogBenchmark('**********> Texture Load Time ' + Identifier + '/' + TextureTypeToStr(Typ), 4);
+  else Log.LogBenchmark('**********> Texture Load Time ' + ExtractFileName(Identifier) + '/' + TextureTypeToStr(Typ), 4);
   {$ifdef blindydebug}
   Log.LogStatus('',' JB-8');
   {$endif}
