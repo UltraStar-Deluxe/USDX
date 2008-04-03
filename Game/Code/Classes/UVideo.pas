@@ -386,7 +386,7 @@ begin
   glDisable(GL_BLEND);
 
 {$ifdef Info}
-  if VideoSkipTime+VideoTime+VideoTimeBase < 0 then
+  if fVideoSkipTime+VideoTime+VideoTimeBase < 0 then
   begin
     glColor4f(0.7, 1, 0.3, 1);
     SetFontStyle (1);
@@ -603,23 +603,6 @@ begin
       Exit;
     end;
 
-    {$IFDEF UseSWScale}
-    // what the hell it should do?
-    SoftwareScaleContext:=sws_getContext(VideoCodecContext^.width,VideoCodecContext^.height,integer(VideoCodecContext^.pix_fmt),
-                                         TexX, TexY, integer(PIX_FMT_RGB24),
-                                         SWS_FAST_BILINEAR, nil, nil, nil);
-    if SoftwareScaleContext <> Nil then
-        debugwriteln('got swscale context')
-    else begin
-      debugwriteln('ERROR: didn´t get swscale context');
-      av_free(AVFrameRGB);
-      av_free(AVFrame);
-      avcodec_close(VideoCodecContext);
-      av_close_input_file(VideoFormatContext);
-      Exit;
-    end;
-    {$ENDIF}
-
     // this is the errnum from avpicture_fill
     if errnum >=0 then
     begin
@@ -641,7 +624,26 @@ begin
         debugwriteln( floattostr(VideoTimeBase) );
 {$ifdef DebugDisplay}
       showmessage('framerate: '+inttostr(floor(1/videotimebase))+'fps');
-{$endif}
+      {$endif}
+      
+      {$IFDEF UseSWScale}
+      
+      // what the hell it should do?
+      SoftwareScaleContext:=sws_getContext(VideoCodecContext^.width,VideoCodecContext^.height,integer(VideoCodecContext^.pix_fmt),
+                                         TexX, TexY, integer(PIX_FMT_RGB24),
+                                         SWS_FAST_BILINEAR, nil, nil, nil);
+      if SoftwareScaleContext <> Nil then
+        writeln('got swscale context')
+      else begin
+        writeln('ERROR: didn´t get swscale context');
+        av_free(AVFrameRGB);
+        av_free(AVFrame);
+        avcodec_close(VideoCodecContext);
+        av_close_input_file(VideoFormatContext);
+        Exit;
+      end;
+      {$ENDIF}
+
       // hack to get reasonable timebase (for divx and others)
       if VideoTimeBase < 0.02 then // 0.02 <-> 50 fps
       begin
