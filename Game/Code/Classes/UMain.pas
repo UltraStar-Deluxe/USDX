@@ -879,6 +879,7 @@ var
   New:    boolean;
   Range:  integer;
   NoteHit:boolean;
+  MaxPoints: integer; // maximal points without line bonus
 begin
   //  Log.LogStatus('Beat ' + IntToStr(LineState.CurrentBeat) + ' HalfBeat ' + IntToStr(LineState.AktHalf), 'NewBeat');
 
@@ -911,7 +912,7 @@ begin
       begin
         if ((Lines[0].Line[S].Note[Count].Start <= LineState.CurrentBeatD)
           and (Lines[0].Line[S].Note[Count].Start + Lines[0].Line[S].Note[Count].Length - 1 >= LineState.CurrentBeatD))
-          and (not Lines[0].Line[S].Note[Count].FreeStyle) // but don't allow when it's FreeStyle note
+          and (Lines[0].Line[S].Note[Count].NoteType <> ntFreestyle) // but don't allow when it's FreeStyle note
           and (Lines[0].Line[S].Note[Count].Length > 0) then // and make sure the note lengths is at least 1
         begin
           SDet := S;
@@ -959,26 +960,16 @@ begin
 
             // Half size Notes Patch
             NoteHit := true;
-
-            if (Ini.LineBonus = 0) then
-            begin
-              // add points without LineBonus
-              case Lines[0].Line[S].Note[Count].NoteType of
-                1:  Player[CP].Score := Player[CP].Score + 10000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Count].NoteType;
-                2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 10000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Count].NoteType;
-              end;
-            end
-            else
-            begin
-              // add points with Line Bonus
-              case Lines[0].Line[S].Note[Count].NoteType of
-                1:  Player[CP].Score := Player[CP].Score + 9000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Count].NoteType;
-                2:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + 9000 / Lines[0].NoteType *
-                      Lines[0].Line[S].Note[Count].NoteType;
-              end;
+            
+            MaxPoints := 10000;
+            if (Ini.LineBonus <> 0) then
+              MaxPoints := 9000;
+              
+            case Lines[0].Line[S].Note[Count].NoteType of
+              ntNormal:  Player[CP].Score := Player[CP].Score + MaxPoints / Lines[0].ScoreValue *
+                                             Lines[0].Line[S].Note[Count].Length;
+              ntGolden:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + MaxPoints / Lines[0].ScoreValue *
+                                                   (Lines[0].Line[S].Note[Count].Length * 2);
             end;
 
             Player[CP].ScoreI := Floor(Player[CP].Score / 10) * 10;

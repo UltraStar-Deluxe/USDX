@@ -202,16 +202,16 @@ var
   Pet:    integer;
   TempR:  real;
 begin
-  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
+  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start);
   glEnable(GL_BLEND);
   glBegin(GL_LINES);
-  for Pet := Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote to Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ do begin
+  for Pet := Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start to Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ do begin
     if (Pet mod Lines[NrCzesci].Resolution) = Lines[NrCzesci].NotesGAP then
       glColor4f(0, 0, 0, 1)
     else
       glColor4f(0, 0, 0, 0.3);
-    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote), Top);
-    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote), Top + 135);
+    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start), Top);
+    glVertex2f(Left + TempR * (Pet - Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start), Top + 135);
   end;
   glEnd;
   glDisable(GL_BLEND);
@@ -248,7 +248,7 @@ begin
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   lTmpA := (Right-Left);
-  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
+  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start);
 
   if ( lTmpA > 0 ) AND
      ( lTmpB > 0 ) THEN
@@ -264,22 +264,22 @@ begin
   with Lines[NrCzesci].Line[Lines[NrCzesci].Current] do begin
     for Pet := 0 to HighNote do begin
       with Note[Pet] do begin
-        if not FreeStyle then begin
+        if NoteType <> ntFreestyle then begin
 
 
           if Ini.EffectSing = 0 then
           // If Golden note Effect of then Change not Color
           begin
             case NoteType of
-              1: glColor4f(1, 1, 1, 1);   // We set alpha to 1, cause we can control the transparency through the png itself
-              2: glColor4f(1, 1, 0.3, 1); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
+              ntNormal: glColor4f(1, 1, 1, 1);   // We set alpha to 1, cause we can control the transparency through the png itself
+              ntGolden: glColor4f(1, 1, 0.3, 1); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
             end; // case
           end //Else all Notes same Color
           else
             glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
                                           // Czesci == teil, element == piece, element | koniec == end / ending
           // lewa czesc  -  left part
-          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
+          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW;
           Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH;
           Rec.Bottom := Rec.Top + 2 * NotesH;
@@ -297,7 +297,7 @@ begin
 
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == length
+        Rec.Right := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == length
 
         glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -322,7 +322,7 @@ begin
         glEnd;
 
           // Golden Star Patch
-          if (NoteType = 2) AND (Ini.EffectSing=1) then
+          if (NoteType = ntGolden) AND (Ini.EffectSing=1) then
           begin
             GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
           end;
@@ -365,13 +365,13 @@ var
 
 ////  if Player[NrGracza].IlNut > 0 then
     begin
-      TempR := W / (Lines[0].Line[Lines[0].Current].End_ - Lines[0].Line[Lines[0].Current].StartNote);
+      TempR := W / (Lines[0].Line[Lines[0].Current].End_ - Lines[0].Line[Lines[0].Current].Note[0].Start);
         for N := 0 to Player[NrGracza].HighNote do
           begin
             with Player[NrGracza].Note[N] do
               begin
                 // Left part of note
-                Rec.Left := X + (Start-Lines[0].Line[Lines[0].Current].StartNote) * TempR + 0.5 + 10*ScreenX;
+                Rec.Left := X + (Start-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR + 0.5 + 10*ScreenX;
                 Rec.Right := Rec.Left + NotesW;
 
                 // Draw it in half size, if not hit
@@ -399,7 +399,7 @@ var
 
                // Middle part of the note
                Rec.Left := Rec.Right;
-               Rec.Right := X + (Start+Length-Lines[0].Line[Lines[0].Current].StartNote) * TempR - NotesW - 0.5  + 10*ScreenX;
+               Rec.Right := X + (Start+Length-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR - NotesW - 0.5  + 10*ScreenX;
 
                // (nowe) - dunno
                if (Start+Length-1 = LineState.CurrentBeatD) then
@@ -480,7 +480,7 @@ begin
 
 
   lTmpA := (Right-Left);
-  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
+  lTmpB := (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start);
 
 
   if ( lTmpA > 0 ) AND
@@ -496,16 +496,16 @@ begin
   with Lines[NrCzesci].Line[Lines[NrCzesci].Current] do begin
     for Pet := 0 to HighNote do begin
       with Note[Pet] do begin
-        if not FreeStyle then begin
+        if NoteType <> ntFreestyle then begin
           // begin: 14, 20
           // easy: 6, 11
           W := NotesW * 2 + 2;
           H := NotesH * 1.5 + 3.5;
 
-          X2 := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
+          X2 := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
           X1 := X2-W;
 
-          X3 := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
+          X3 := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
           X4 := X3+W;
 
           // left
@@ -1235,22 +1235,22 @@ begin
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote);
+  TempR := (Right-Left) / (Lines[NrCzesci].Line[Lines[NrCzesci].Current].End_ - Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start);
   with Lines[NrCzesci].Line[Lines[NrCzesci].Current] do begin
     for Pet := 0 to HighNote do begin
       with Note[Pet] do begin
 
           // Golden Note Patch
           case NoteType of
-            0: glColor4f(1, 1, 1, 0.35);
-            1: glColor4f(1, 1, 1, 0.85);
-            2: glColor4f(1, 1, 0.3, 0.85);
+            ntFreestyle: glColor4f(1, 1, 1, 0.35);
+            ntNormal: glColor4f(1, 1, 1, 0.85);
+            ntGolden: Glcolor4f(1, 1, 0.3, 0.85);
           end; // case
 
 
 
           // lewa czesc  -  left part
-          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left + 0.5 + 10*ScreenX;
+          Rec.Left := (Start-Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW;
           Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH;
           Rec.Bottom := Rec.Top + 2 * NotesH;
@@ -1264,7 +1264,7 @@ begin
 
          // srodkowa czesc  -  middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].StartNote) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
+        Rec.Right := (Start+Length-Lines[NrCzesci].Line[Lines[NrCzesci].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
 
         glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
         glBegin(GL_QUADS);

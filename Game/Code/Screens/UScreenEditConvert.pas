@@ -349,7 +349,7 @@ begin
     Lines.Line[C].Note[N].Tone := Note[Nu].Tone;
     Lines.Line[C].Note[N].Text := Note[Nu].Lyric;
     //All Notes are Freestyle when Converted Fix:
-    Lines.Line[C].Note[N].NoteType := 1;
+    Lines.Line[C].Note[N].NoteType := ntNormal;
     Inc(N);
   end;
 end;

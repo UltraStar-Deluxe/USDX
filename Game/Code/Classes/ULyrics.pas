@@ -368,9 +368,9 @@ begin
       LyricLine.Words[I].Start     := Line.Note[I].Start;
       LyricLine.Words[I].Length    := Line.Note[I].Length;
       LyricLine.Words[I].Text      := Line.Note[I].Text;
-      LyricLine.Words[I].Freestyle := Line.Note[I].FreeStyle;
+      LyricLine.Words[I].Freestyle := Line.Note[I].NoteType = ntFreestyle;
       
-      LyricLine.HasFreestyle       := LyricLine.HasFreestyle OR Line.Note[I].FreeStyle;
+      LyricLine.HasFreestyle       := LyricLine.HasFreestyle OR LyricLine.Words[I].Freestyle;
       LyricLine.Text               := LyricLine.Text + LyricLine.Words[I].Text;
         
       if (I > 0) AND LyricLine.Words[I-1].Freestyle AND not LyricLine.Words[I].Freestyle then
@@ -556,7 +556,7 @@ begin
   
   // this is actually a bit more than the real font size
   // it helps adjusting the "zoom-center"
-  LyricsHeight:=30 * (Line^.Size/10)+16;
+  LyricsHeight:=30.5 * (Line^.Size/10);
   
   {
   // duet mode
@@ -572,8 +572,8 @@ begin
   LyricX2 := LyricX + Line^.Width;
    
   // maybe center smaller lines
-  LyricY := Y;
-  //LyricY := Y + ((Size / Line.Size - 1) * LyricsHeight) / 2; 
+  //LyricY := Y;
+  LyricY := Y + ((Size / Line.Size - 1) * LyricsHeight) / 2; 
   
   Alpha := 1;
   
@@ -641,7 +641,7 @@ begin
           end;
       end;
     end;
-    
+        
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_TEXTURE_2D);
@@ -661,6 +661,15 @@ begin
       glTexCoord2f((CurWordStart+FreestyleDiff)/1024, 1); glVertex2f(LyricX+CurWordStart+FreestyleDiff, LyricY);
     glEnd;
 
+    // draw rest of sentence
+    glColorRGB(LineColor_en);
+    glBegin(GL_QUADS);
+      glTexCoord2f((CurWordEnd+FreestyleDiff)/1024, 1); glVertex2f(LyricX+CurWordEnd+FreestyleDiff, LyricY);
+      glTexCoord2f(CurWordEnd/1024, 1-LyricsHeight/64); glVertex2f(LyricX+CurWordEnd, LyricY + LyricsHeight);
+      glTexCoord2f(Line^.Width/1024, 1-LyricsHeight/64); glVertex2f(LyricX2, LyricY + LyricsHeight);
+      glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, LyricY);
+    glEnd;
+    
     // draw active word:
     // type 0: simple lyric effect
     // type 3: ball lyric effect
@@ -703,30 +712,20 @@ begin
       glScalef(1.0+(1-progress)/2,1.0+(1-progress)/2,1.0);
       glColor4f(LineColor_en.r,LineColor_en.g,LineColor_en.b,1-progress);
       glBegin(GL_QUADS);
-        glTexCoord2f((CurWordStart+FreestyleDiff)/1024+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
-        glTexCoord2f(CurWordStart/1024+0.0001, 1-LyricsHeight/64); glVertex2f(-(CurWordEnd-CurWordStart)/2, + LyricsHeight/2);
-        glTexCoord2f(CurWordEnd/1024-0.0001, 1-LyricsHeight/64); glVertex2f((CurWordEnd-CurWordStart)/2, + LyricsHeight/2);
-        glTexCoord2f((CurWordEnd+FreestyleDiff)/1024-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
+        glTexCoord2f((CurWordStart+FreestyleDiff)/1024, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
+        glTexCoord2f(CurWordStart/1024, 1-LyricsHeight/64); glVertex2f(-(CurWordEnd-CurWordStart)/2, + LyricsHeight/2);
+        glTexCoord2f(CurWordEnd/1024, 1-LyricsHeight/64); glVertex2f((CurWordEnd-CurWordStart)/2, + LyricsHeight/2);
+        glTexCoord2f((CurWordEnd+FreestyleDiff)/1024, 1); glVertex2f((CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
       glEnd;
       glColor4f(LineColor_act.r,LineColor_act.g,LineColor_act.b,1);
       glBegin(GL_QUADS);
-        glTexCoord2f((CurWordStart+FreestyleDiff)/1024+0.0001, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
-        glTexCoord2f(CurWordStart/1024+0.0001, 1-LyricsHeight/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
-        glTexCoord2f(CurWordEnd/1024-0.0001, 1-LyricsHeight/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
-        glTexCoord2f((CurWordEnd+FreestyleDiff)/1024-0.0001, 1); glVertex2f((CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
+        glTexCoord2f((CurWordStart+FreestyleDiff)/1024, 1); glVertex2f(-(CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
+        glTexCoord2f(CurWordStart/1024, 1-LyricsHeight/64); glVertex2f(-(CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
+        glTexCoord2f(CurWordEnd/1024, 1-LyricsHeight/64); glVertex2f((CurWordEnd-CurWordStart)/2,  + LyricsHeight/2);
+        glTexCoord2f((CurWordEnd+FreestyleDiff)/1024, 1); glVertex2f((CurWordEnd-CurWordStart)/2+FreestyleDiff, -LyricsHeight/2);
       glEnd;
       glPopMatrix;
     end;
-
-    // draw rest of sentence
-    glColorRGB(LineColor_en);
-    glBegin(GL_QUADS);
-      glTexCoord2f((CurWordEnd+FreestyleDiff)/1024, 1); glVertex2f(LyricX+CurWordEnd+FreestyleDiff, LyricY);
-      glTexCoord2f(CurWordEnd/1024, 1-LyricsHeight/64); glVertex2f(LyricX+CurWordEnd, LyricY + LyricsHeight);
-      glTexCoord2f(Line^.Width/1024, 1-LyricsHeight/64); glVertex2f(LyricX2, LyricY + LyricsHeight);
-      glTexCoord2f(Line^.Width/1024, 1); glVertex2f(LyricX2, LyricY);
-    glEnd;
-
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);

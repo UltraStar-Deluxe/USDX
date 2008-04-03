@@ -136,13 +136,13 @@ begin
   Result.Number      := Lines.Number;
   Result.Resolution  := Lines.Resolution;
   Result.NotesGAP    := Lines.NotesGAP;
-  Result.TotalLength := Lines.NoteType;
+  Result.TotalLength := Lines.ScoreValue;
 
   SetLength(Result.Sentence, Length(Lines.Line));
   for I := low(Result.Sentence) to high(Result.Sentence) do
   begin
     Result.Sentence[I].Start      := Lines.Line[I].Start;
-    Result.Sentence[I].StartNote  := Lines.Line[I].StartNote;
+    Result.Sentence[I].StartNote  := Lines.Line[I].Note[0].Start;
     Result.Sentence[I].Lyric      := Lines.Line[I].Lyric;
     Result.Sentence[I].LyricWidth := Lines.Line[I].LyricWidth;
     Result.Sentence[I].End_       := Lines.Line[I].End_;
@@ -158,10 +158,9 @@ begin
       Result.Sentence[I].Note[J].Start     := Lines.Line[I].Note[J].Start;
       Result.Sentence[I].Note[J].Length    := Lines.Line[I].Note[J].Length;
       Result.Sentence[I].Note[J].Tone      := Lines.Line[I].Note[J].Tone;
-      Result.Sentence[I].Note[J].ToneGamus := Lines.Line[I].Note[J].ToneGamus;
       //Result.Sentence[I].Note[J].Text      := Lines.Line[I].Note[J].Tekst;
-      Result.Sentence[I].Note[J].FreeStyle := Lines.Line[I].Note[J].FreeStyle;
-      Result.Sentence[I].Note[J].Typ       := Lines.Line[I].Note[J].NoteType;
+      Result.Sentence[I].Note[J].FreeStyle := (Lines.Line[I].Note[J].NoteType = ntFreestyle);
+      Result.Sentence[I].Note[J].Typ       := Ord(Lines.Line[I].Note[J].NoteType);
     end;
   end;
 end;

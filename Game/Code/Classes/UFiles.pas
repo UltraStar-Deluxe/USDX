@@ -116,9 +116,9 @@ begin
 
         //Golden + Freestyle Note Patch
         case Lines.Line[C].Note[N].NoteType of
-          0: NoteState := 'F ';
-          1: NoteState := ': ';
-          2: NoteState := '* ';
+          ntFreestyle: NoteState := 'F ';
+          ntNormal: NoteState := ': ';
+          ntGolden: NoteState := '* ';
         end; // case
         S := NoteState + IntToStr(Start-RelativeSubTime) + ' ' + IntToStr(Length) + ' ' + IntToStr(Tone) + ' ' + Text;
 

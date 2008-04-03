@@ -1357,7 +1357,7 @@ begin
     //PhrasenBonus - Line Bonus Mod
 
     //Generate Steps 0 to 8
-    A := Floor(A / (B * Lines[0].Line[S].TotalNotes / Lines[0].NoteType) * 8);
+    A := Floor(A / (B * Lines[0].Line[S].TotalNotes / Lines[0].ScoreValue) * 8);
 
     If (Ini.LineBonus > 0) then
     begin

@@ -126,23 +126,28 @@ type
       SongID:   Integer; //ID of this Song in the Song Database
       FolderID: Integer; //ID of the Folder containing this Song
       FileName: String;  //Filename of this Song w/o Path
-      FullPath: String;  //Path + Filename
+      FilePath: String;  //Path of this Song
 
-      Procedure ResetAttributes; virtual;  //Reset all Attributes of this object
-      Procedure ReadHeader; virtual;       //Reads Fileheader (Implemented by Child only)
-      Procedure ReadFile;   virtual;       //Reads complete File (Header + Notes) (Implemented by Child only)
-      Procedure WriteFile;  virtual;       //Writes complete File (Header + Notes) (Implemented by Child only)
-      Procedure ReadFromDB; virtual;       //Reads all available Information from DB
-      Function  CheckDB: Integer; virtual; //Checks DB for Song. Result > 0 SongExists (ID Returned)
-      Function  UpdateDB: Integer; virtual;//Writes all Header Information set in this Song Object to DB. Returns ID (Required when Updated first Time)
-    public
+      Procedure ResetAttributes; virtual;  		//Reset all Attributes of this object
+      Procedure ReadHeader; virtual; abstract;  //Reads Fileheader (Implemented by Child only)
+      Procedure ReadFile;   virtual; abstract;  //Reads complete File (Header + Notes) (Implemented by Child only)
+      Procedure WriteFile;  virtual; abstract;  //Writes complete File (Header + Notes) (Implemented by Child only)
+      Procedure ReadFromDB; virtual;       		//Reads all available Information from DB
+      Function  CheckDB: Integer; virtual; 		//Checks DB for Song. Result > 0 SongExists (ID Returned)
+      Function  UpdateDB: Integer; virtual;		//Writes all Header Information set in this Song Object to DB. Returns ID (Required when Updated first Time)
+      
+      // procedures to manage the lyrics
+      Procedure ResetLyrics;
+      Procedure AddLyricLine(const PlayerID: Integer; const StartBeat: Integer; const RelativeBeat: Integer = -1);
+      Procedure AddNote(const PlayerID: Integer; const NoteType: Char; const NoteStart, NoteLength, NoteTone: Integer; const NoteText: WideString);
+      Function SolmizatLyrics(const NoteTone: Integer; const NoteText: WideString): WideString;
+  public
       //Required Information
       Title:      widestring;
       Artist:     widestring;
 
       Mp3:        widestring; //Full Path to MP3
 
-      Text:       widestring;
       Creator:    widestring;
 
       Resolution: integer;
@@ -150,7 +155,6 @@ type
       GAP:        real; // in miliseconds
 
       Base    : array[0..1] of integer;
-      Rel     : array[0..1] of integer;
       Mult    : integer;
       MultBPM : integer;
 
@@ -189,14 +193,16 @@ implementation
 uses
   TextGL,
   UIni,
-  UMusic,  //needed for Lines
-  UMain;   //needed for Player
+  UMusic;  //needed for Lines
+
+var
+  RelativPosition: array [0..1] of Integer;
 
 constructor TSong.Create(const Path: String = ''; const FolderID: Integer = 0);
 begin
   If (Length(Path) > 0) AND (FolderID > 0) then
   begin //Read Song Infos from File or DB
-    FullPath := Path;
+    FilePath := ExtractFilePath(Path);
     FileName := ExtractFileName(Path);
     Self.FolderID := FolderID;
     SongID := CheckDB;
@@ -249,34 +255,41 @@ end;
 //--------
 Procedure TSong.ResetAttributes;
 begin
-  //to do
+  SongID		:= 0;
+  FolderID		:= 0;
+  FileName		:= '';
+  FilePath		:= '';
+
+  Title			:= '';
+  Artist		:= '';
+  Mp3			:= '';
+  SetLength(BPM, 0);
+
+  Creator		:= '';
+  Resolution	:= 0;
+  GAP			:= 0;
+
+  Base[0]    	:= 100;
+  Base[1]		:= 100;
+  
+  Mult    		:= 1;
+  MultBPM 		:= 4;
+
+  Cover			:= '';
+  CoverID		:= 0;
+  Background	:= '';
+  Video			:= '';
+  VideoGAP		:= 0;
+
+  NotesGAP		:= 0;
+  Start			:= 0;
+  Finish		:= 0;
+  Relative		:= False;
+
+  Genre			:= '';
+  Edition		:= '';
+  Language		:= '';
 end;
-
-//--------
-// Reads Fileheader (Implemented by Child only)
-//--------
-Procedure TSong.ReadHeader;
-begin
-  //Implented in Childs only!
-end;
-
-//--------
-// Reads complete File (Header + Notes) (Implemented by Child only)
-//--------
-Procedure TSong.ReadFile;
-begin
-  //Implented in Childs only!
-end;
-
-
-//--------
-// Writes complete File (Header + Notes) (Implemented by Child only)
-//--------
-Procedure TSong.WriteFile;
-begin
-  //Implented in Childs only!
-end;
-
 
 //--------
 // Reads all available Information from DB
@@ -302,6 +315,154 @@ end;
 Function  TSong.UpdateDB: Integer;
 begin
   // to- do
+end;
+
+Procedure TSong.ResetLyrics;
+var
+  i: Integer;
+begin
+  for i := 0 to High(Lines) do
+  begin
+    SetLength(Lines[i].Line, 0);
+    Lines[i].High := -1;
+  end;
+  
+  for i := 0 to High(RelativPosition) do
+  begin
+    RelativPosition[i] := 0;
+  end;
+end;
+
+Procedure TSong.AddLyricLine(const PlayerID: Integer; const StartBeat: Integer; const RelativeBeat: Integer = -1);
+var
+  NewLineIdx: Integer;
+begin
+  NewLineIdx := High(Lines[PlayerID].Line) + 1;
+  
+  with Lines[PlayerID] do
+  begin
+    // recent added line is not the last of the song
+    if (NewLineIdx > 0) then
+      Lines[PlayerID].Line[NewLineIdx - 1].LastLine := False;
+    
+    // if last line, has no notes, ignore the new line (except for the RelativeBeat)
+    if (NewLineIdx < 1) OR (Lines[PlayerID].Line[NewLineIdx - 1].HighNote > -1) then
+    begin
+      // create lyric line and update references
+      SetLength(Line, NewLineIdx);
+      High :=   NewLineIdx;
+      Number := Number + 1;
+      with Line[High] do
+      begin  
+        // default values
+        TotalNotes := 0;
+        HighNote := -1;
+        LastLine := True;
+        BaseNote := 100;
+          
+        // set start beat count of this new line
+        Start := (RelativPosition[PlayerID] + StartBeat) * Mult;
+      end;
+    end;
+    
+    if Relative then
+    begin
+      if RelativeBeat >= 0 then
+        // if this is a relativ song, we have to update the relativ offset
+        RelativPosition[PlayerID] := (RelativPosition[PlayerID] + RelativeBeat) * Mult
+      else
+        RelativPosition[PlayerID] := (RelativPosition[PlayerID] + StartBeat) * Mult;
+    end;
+  end;
+end;  
+
+Procedure TSong.AddNote(const PlayerID: Integer; const NoteType: Char; const NoteStart, NoteLength, NoteTone: Integer; const NoteText: WideString);
+begin
+  if (High(Lines[PlayerID].Line) < 0) then
+    AddLyricLine(PlayerID, NoteStart, 0);
+  
+  with Lines[PlayerID].Line[Lines[PlayerID].High] do begin
+    // array of Notes expand to have space for new Note
+    HighNote := HighNote + 1;
+    TotalNotes := TotalNotes + 1;
+    SetLength(Note, HighNote + 1);
+    
+    with Note[HighNote] do
+    begin
+      Start := (RelativPosition[PlayerID] + NoteStart) * Mult;
+      Length := NoteLength * Mult;
+      Tone := NoteTone;
+      Text := SolmizatLyrics(NoteTone, NoteText);
+      Lyric := Lyric + Text;
+      
+      // identify lowest note of line
+      if Tone < BaseNote then
+        BaseNote := Tone;
+    end;
+    
+    case NoteType of
+      'F': Note[HighNote].NoteType := ntFreestyle;      
+      ':': Note[HighNote].NoteType := ntNormal;
+      '*': Note[HighNote].NoteType := ntGolden;
+    end;
+    
+    // calculate total score value
+    if (Note[HighNote].NoteType = ntNormal) then
+    begin
+      // normal notes
+      Lines[PlayerID].ScoreValue := Lines[PlayerID].ScoreValue + Note[HighNote].Length;
+      TotalNotes := TotalNotes + Note[HighNote].Length;
+    end    
+    else if (Note[HighNote].NoteType = ntGolden) then
+    begin
+      // golden notes
+      Lines[PlayerID].ScoreValue := Lines[PlayerID].ScoreValue + (Note[HighNote].Length * 2);
+      TotalNotes := TotalNotes + (Note[HighNote].Length * 2);
+    end;
+    
+    // finish of the line
+    End_ := Note[HighNote].Start + Note[HighNote].Length;
+  end; // with
+end;
+
+Function TSong.SolmizatLyrics(const NoteTone: Integer; const NoteText: WideString): WideString;
+begin
+  Result := NoteText;
+  
+  case Ini.Solmization of
+    1:  // european
+      case (NoteTone mod 12) of
+        0..1:  	Result := 'do ';
+        2..3:  	Result := 're ';
+        4:  	Result := 'mi ';
+        5..6:  	Result := 'fa ';
+        7..8:  	Result := 'sol ';
+        9..10:  Result := 'la ';
+        11:  	Result := 'si ';
+      end;
+    
+    2:  // japanese
+      case (NoteTone mod 12) of
+        0..1:  	Result := 'do ';
+        2..3:  	Result := 're ';
+        4:     	Result := 'mi ';
+        5..6:  	Result := 'fa ';
+        7..8:  	Result := 'so ';
+        9..10: 	Result := 'la ';
+        11:    	Result := 'shi ';
+      end;
+
+    3:  // american
+      case (NoteTone mod 12) of
+        0..1:  	Result := 'do ';
+        2..3:  	Result := 're ';
+        4:  	Result := 'mi ';
+        5..6:  	Result := 'fa ';
+        7..8:  	Result := 'sol ';
+        9..10:  Result := 'la ';
+        11:  	Result := 'ti ';
+      end;
+  end; // case Ini.Solmization
 end;
 
 
@@ -996,126 +1157,6 @@ begin
       Log.LogError('File Incomplete or not Ultrastar TxT (B - '+ inttostr(Done) +'): ' + aFileName);
   end;
 
-end;
-
-procedure TSong.ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
-//var
-// Space:  boolean; // Auto Removed, Unused Variable
-begin
-  case Ini.Solmization of
-    1:  // european
-      begin
-        case (NoteP mod 12) of
-          0..1:  LyricS := ' do ';
-          2..3:  LyricS := ' re ';
-          4:  LyricS := ' mi ';
-          5..6:  LyricS := ' fa ';
-          7..8:  LyricS := ' sol ';
-          9..10:  LyricS := ' la ';
-          11:  LyricS := ' si ';
-        end;
-      end;
-    2:  // japanese
-      begin
-        case (NoteP mod 12) of
-          0..1:  LyricS := ' do ';
-          2..3:  LyricS := ' re ';
-          4:  LyricS := ' mi ';
-          5..6:  LyricS := ' fa ';
-          7..8:  LyricS := ' so ';
-          9..10:  LyricS := ' la ';
-          11:  LyricS := ' shi ';
-        end;
-      end;
-    3:  // american
-      begin
-        case (NoteP mod 12) of
-          0..1:  LyricS := ' do ';
-          2..3:  LyricS := ' re ';
-          4:  LyricS := ' mi ';
-          5..6:  LyricS := ' fa ';
-          7..8:  LyricS := ' sol ';
-          9..10:  LyricS := ' la ';
-          11:  LyricS := ' ti ';
-        end;
-      end;
-  end; // case
-
-  with Lines[LineNumber].Line[Lines[LineNumber].High] do begin
-    SetLength(Note, Length(Note) + 1);
-    IlNut := IlNut + 1;
-    HighNote := HighNote + 1;
-    Melody.IlNut := Melody.IlNut + 1;
-
-    Note[HighNote].Start := StartP;
-    if IlNut = 1 then begin
-      StartNote := Note[HighNote].Start;
-      if Lines[LineNumber].Number = 1 then
-        Start := -100;
-//        Start := Note[HighNote].Start;
-    end;
-
-    Note[HighNote].Length := DurationP;
-    Melody.NoteLength := Melody.NoteLength + Note[HighNote].Length;
-
-    // back to the normal system with normal, golden and now freestyle notes
-    case TypeP of
-      'F':  Note[HighNote].NoteType := 0;
-      ':':  Note[HighNote].NoteType := 1;
-      '*':  Note[HighNote].NoteType := 2;
-    end;
-
-    Lines[LineNumber].NoteType := Lines[LineNumber].NoteType + Note[HighNote].Length * Note[HighNote].NoteType;
-
-    Note[HighNote].Tone := NoteP;
-    if Note[HighNote].Tone < Base[LineNumber] then Base[LineNumber] := Note[HighNote].Tone;
-    Note[HighNote].ToneGamus := Note[HighNote].ToneGamus mod 12;
-
-    Note[HighNote].Text := Copy(LyricS, 2, 100);
-    Lyric := Lyric + Note[HighNote].Text;
-
-    if TypeP = 'F' then
-      Note[HighNote].FreeStyle := true;
-
-    End_ := Note[HighNote].Start + Note[HighNote].Length;
-  end; // with
-end;
-
-procedure TSong.NewSentence(LineNumberP: integer; Param1, Param2: integer);
-var
-I: Integer;
-begin
-
-  // stara czesc //Alter Satz //Update Old Part
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := Base[LineNumberP];
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(PChar(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric));
-
-  //Total Notes Patch
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
-  for I := low(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) to high(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) do
-  begin
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length * Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType;
-  end;
-  //Total Notes Patch End
-
-
-  // nowa czesc //Neuer Satz //Update New Part
-  SetLength(Lines[LineNumberP].Line, Lines[LineNumberP].Number + 1);
-  Lines[LineNumberP].High := Lines[LineNumberP].High + 1;
-  Lines[LineNumberP].Number := Lines[LineNumberP].Number + 1;
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote := -1;
-
-  if self.Relative then
-  begin
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
-    Rel[LineNumberP] := Rel[LineNumberP] + Param2;
-  end
-  else
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
-
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].LastLine := False;
-
-  Base[LineNumberP] := 100; // high number
 end;
 
 procedure TSong.clear();

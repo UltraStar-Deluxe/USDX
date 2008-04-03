@@ -110,7 +110,6 @@ type  //PluginInfo, for Init
         Start:     integer;
         Length:    integer;
         Tone:      integer;
-        ToneGamus: integer;
         //Text:      string;
         FreeStyle:  boolean;
         Typ:    integer;    // zwykla nuta x1, zlota nuta x2

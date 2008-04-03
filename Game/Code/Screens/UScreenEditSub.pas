@@ -195,7 +195,7 @@ begin
             // Play Sentence
             Click := true;
             AudioPlayback.Stop;
-            R := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
+            R := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
             if R <= AudioPlayback.Length then
             begin
               AudioPlayback.Position := R;
@@ -210,7 +210,7 @@ begin
             PlaySentenceMidi := true;
 
             MidiTime := USTime.GetTime;
-            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
             MidiStop := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
 
             LastClick := -100;
@@ -219,46 +219,40 @@ begin
           begin
             PlaySentenceMidi := true;
             MidiTime  := USTime.GetTime;
-            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote);
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
             MidiStop  := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_);
             LastClick := -100;
 
             PlaySentence := true;
             Click := true;
             AudioPlayback.Stop;
-            AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].StartNote)+0{-0.10};
+            AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start)+0{-0.10};
             PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_)+0;
             AudioPlayback.Play;
             LastClick := -100;
           end;
           Exit;
         end;
+      
       // Golden Note Patch
       'G':
         begin
-          case Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType of
-            0: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 2;
-            1: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 2;
-            2: Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 1;
-          end; // case
-          Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := False;
+          if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntGolden) then
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
+          else
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntGolden;
+          
           Exit;
         end;
+      
       // Freestyle Note Patch
       'F':
         begin
-           case Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType of
-            0:
-            begin;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 1;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := False;
-            end;
-            1,2:
-            begin;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := 0;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Freestyle := True;
-            end;
-          end; // case
+          if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntFreestyle) then
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
+          else
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntFreestyle;
+          
           Exit;
         end;
     end;
@@ -446,7 +440,6 @@ begin
               Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
               if CurrentNote = 0 then begin
                 Inc(Lines[0].Line[Lines[0].Current].Start);
-                Inc(Lines[0].Line[Lines[0].Current].StartNote);
               end;
             end;
           end;
@@ -456,7 +449,6 @@ begin
             Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
             if CurrentNote = 0 then begin
               Inc(Lines[0].Line[Lines[0].Current].Start);
-              Inc(Lines[0].Line[Lines[0].Current].StartNote);
             end;
             if CurrentNote = Lines[0].Line[Lines[0].Current].HighNote then
               Inc(Lines[0].Line[Lines[0].Current].End_);
@@ -493,7 +485,6 @@ begin
             Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
             if CurrentNote = 0 then begin
               Dec(Lines[0].Line[Lines[0].Current].Start);
-              Dec(Lines[0].Line[Lines[0].Current].StartNote);
             end;
           end;
 
@@ -504,7 +495,6 @@ begin
             // resizing sentences
             if CurrentNote = 0 then begin
               Dec(Lines[0].Line[Lines[0].Current].Start);
-              Dec(Lines[0].Line[Lines[0].Current].StartNote);
             end;
 
             if CurrentNote = Lines[0].Line[Lines[0].Current].HighNote then
@@ -664,7 +654,6 @@ begin
   CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM / 2;
   for C := 0 to Lines[0].High do begin
     Lines[0].Line[C].Start :=     Lines[0].Line[C].Start div 2;
-    Lines[0].Line[C].StartNote := Lines[0].Line[C].StartNote div 2;
     Lines[0].Line[C].End_ :=    Lines[0].Line[C].End_ div 2;
     for N := 0 to Lines[0].Line[C].HighNote do begin
       Lines[0].Line[C].Note[N].Start :=   Lines[0].Line[C].Note[N].Start div 2;
@@ -681,7 +670,6 @@ begin
   CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM * 2;
   for C := 0 to Lines[0].High do begin
     Lines[0].Line[C].Start :=     Lines[0].Line[C].Start * 2;
-    Lines[0].Line[C].StartNote := Lines[0].Line[C].StartNote * 2;
     Lines[0].Line[C].End_ :=    Lines[0].Line[C].End_ * 2;
     for N := 0 to Lines[0].Line[C].HighNote do begin
       Lines[0].Line[C].Note[N].Start :=   Lines[0].Line[C].Note[N].Start * 2;
@@ -762,7 +750,7 @@ begin
   for C := 1 to Lines[0].High do begin
     with Lines[0].Line[C-1] do begin
       Min := Note[HighNote].Start + Note[HighNote].Length;
-      Max := Lines[0].Line[C].StartNote;
+      Max := Lines[0].Line[C].Note[0].Start;
       case (Max - Min) of
         0:    S := Max;
         1:    S := Max;
@@ -806,7 +794,6 @@ begin
   CNew := CStart + 1;
   NStart := CurrentNote;
   Lines[0].Line[CNew].Start := Lines[0].Line[CStart].Note[NStart].Start;
-  Lines[0].Line[CNew].StartNote := Lines[0].Line[CStart].Note[NStart].Start;
   Lines[0].Line[CNew].Lyric := '';
   Lines[0].Line[CNew].LyricWidth := 0;
   Lines[0].Line[CNew].End_ := 0;
@@ -995,7 +982,6 @@ begin
 
       if N = 0 then begin // fix beginning
         Inc(Lines[0].Line[C].Start, Move);
-        Inc(Lines[0].Line[C].StartNote, Move);
       end;
 
       if N = Lines[0].Line[C].HighNote then // fix ending
@@ -1089,14 +1075,13 @@ begin
 
   // prepares new sentences: sets sentence start and create first note
   for C := 1 to Num-1 do begin
-    Lines[0].Line[Dst + C].Start := Lines[0].Line[Dst + C - 1].StartNote +
-      (Lines[0].Line[Src + C].StartNote - Lines[0].Line[Src + C - 1].StartNote);
+    Lines[0].Line[Dst + C].Start := Lines[0].Line[Dst + C - 1].Note[0].Start +
+      (Lines[0].Line[Src + C].Note[0].Start - Lines[0].Line[Src + C - 1].Note[0].Start);
     SetLength(Lines[0].Line[Dst + C].Note, 1);
     Lines[0].Line[Dst + C].IlNut := 1;
     Lines[0].Line[Dst + C].HighNote := 0;
     Lines[0].Line[Dst + C].Note[0].Start := Lines[0].Line[Dst + C].Start;
     Lines[0].Line[Dst + C].Note[0].Length := 1;
-    Lines[0].Line[Dst + C].StartNote := Lines[0].Line[Dst + C].Start;
     Lines[0].Line[Dst + C].End_ := Lines[0].Line[Dst + C].Start + 1;
   end;
 

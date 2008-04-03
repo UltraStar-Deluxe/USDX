@@ -14,19 +14,9 @@ uses
 type
   TNoteType = (ntFreestyle, ntNormal, ntGolden);
 
-  //http://paste.ubuntu-nl.org/51892/
-
-  TMelody = record
-    Path:       string;
-    Start:      integer;      // start of song in ms
-    IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
-    NoteLength: integer;
-  end;
-
   PLine = ^TLine;
   TLine = record
     Start:      integer;
-    StartNote:  integer;
     Lyric:      string;
     LyricWidth: real;
     End_:       integer;
@@ -40,10 +30,8 @@ type
       Start:      integer;
       Length:     integer;
       Tone:       integer;    // full range tone
-      ToneGamus:  integer;    // tone unified to one octave
       Text:       string;
-      FreeStyle:  boolean;
-      NoteType:   integer;    // normal-note: 1, golden-note: 2
+      NoteType:   TNoteType;
     end;
   end;
   ALine = array of TLine;     // (TODO: rename to TLineArray)
@@ -52,10 +40,10 @@ type
   TLines = record
     Current:    integer;      // for drawing of current line
     High:       integer;
-    Number:      integer;
+    Number:     integer;
     Resolution: integer;
     NotesGAP:   integer;
-    NoteType:   integer;
+    ScoreValue: integer;
     Line:       ALine;
   end;
 
@@ -288,9 +276,6 @@ type
   end;
 
 var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
-  // music
-  Melody:   TMelody;
-
   // czesci z nutami;
   Lines:   array of TLines;
 
