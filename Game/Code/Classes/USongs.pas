@@ -224,7 +224,7 @@ begin
       CatCovers.Load;
 
     if assigned( Covers ) then
-      Covers.Load;
+      Covers.Load('covers.cache');
 
     if assigned(ScreenSong)  then
     begin

@@ -233,7 +233,7 @@ begin
     // Covers Cache
     Log.BenchmarkStart(1);
     Log.LogStatus('Creating Covers Cache', 'Initialization');
-    Covers := TCovers.Create;
+    Covers := TCovers.Create('covers.cache');
     Log.LogBenchmark('Loading Covers Cache Array', 1);
     Log.BenchmarkStart(1);
 
@@ -319,16 +319,16 @@ begin
     Log.LogBenchmark('Loading Time', 0);
 
     Log.LogError('Creating Core');
-    Core := TCore.Create(
+    {Core := TCore.Create(
       USDXShortVersionStr,
       MakeVersion(USDX_VERSION_MAJOR,
                   USDX_VERSION_MINOR,
                   USDX_VERSION_RELEASE,
                   chr(0))
-    );
+    );  }
 
     Log.LogError('Running Core');
-    Core.Run;
+    //Core.Run;
 
     //------------------------------
     //Start- Mainloop
@@ -862,11 +862,6 @@ begin
   NewNote(Sender);
 end;
 
-//procedure NewHalf;
-//begin
-//  NewNote;
-//end;
-
 procedure NewNote(Sender: TScreenSing);
 var
   CP:     integer; // current player
@@ -1119,4 +1114,3 @@ begin
 end;
 
 end.
-

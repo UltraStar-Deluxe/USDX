@@ -794,7 +794,7 @@ var
   Pet: integer;  
 Label CreateSongButtons;  
 begin
-  if (length(CatSongs.Song) > 0) then
+  {if (length(CatSongs.Song) > 0) then
   begin
     //Set Length of Button Array one Time Instead of one time for every Song
     SetButtonLength(Length(CatSongs.Song));
@@ -807,30 +807,30 @@ begin
         // new
         Texture.Limit := 512;// 256 0.4.2 value, 512 in 0.5.0
 
-        if not FileExists({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover) then
+        if not FileExists({CatSongs.Song[Pet].Path + }{CatSongs.Song[Pet].Cover) then
           CatSongs.Song[Pet].Cover := ''; // 0.5.0: if cover not found then show 'no cover'
           // to - do : new Song management
         if CatSongs.Song[Pet].Cover = '' then
           AddButton(300 + Pet*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections)
         else begin
           // cache texture if there is a need to this
-          if not Covers.CoverExists({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover) then
+          if not Covers.CoverExists({CatSongs.Song[Pet].Path + }{CatSongs.Song[Pet].Cover) then
           begin
             Texture.CreateCacheMipmap := true;
-            Texture.GetTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, true); // preloads textures and creates cache mipmap
+            Texture.GetTexture({CatSongs.Song[Pet].Path + }{CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, true); // preloads textures and creates cache mipmap
             Texture.CreateCacheMipmap := false;
 
             // puts this texture to the cache file
-            Covers.AddCover({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover);
+            Covers.AddCover({CatSongs.Song[Pet].Path + }{CatSongs.Song[Pet].Cover);
 
             // unload full size texture
-            Texture.UnloadTexture({CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, false);
+            Texture.UnloadTexture({CatSongs.Song[Pet].Path + }{CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, false);
 
             // we should also add mipmap texture by calling createtexture and use mipmap cache as data source
           end;
 
           // and now load it from cache file (small place for the optimization by eliminating reading it from file, but not here)
-          AddButton(300 + Pet*250, 140, 200, 200,{ CatSongs.Song[Pet].Path + }CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
+          AddButton(300 + Pet*250, 140, 200, 200,{ CatSongs.Song[Pet].Path + }{CatSongs.Song[Pet].Cover, TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         end;
         Texture.Limit := 1024*1024;
         I := -1;
@@ -852,14 +852,14 @@ begin
         try
           AddButton(300 + Pet*250, 140, 200, 200, '', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         except
-          {$IFDEF MSWINDOWS}
+          {$IFDEF MSWINDOWS}{
           Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);
-          {$ELSE}
+          {$ELSE} {
           
           // TODO : JB_linux - better handle this message and display to user..
           writeln( 'Cover Image is damaged. Could not Workaround Song Loading, Ultrastar will exit now.');
           Log.LogError( 'No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.' );
-          {$ENDIF}
+          {$ENDIF} {
           Halt;
         end;
         I := Pet + 1;
@@ -869,7 +869,7 @@ begin
     if (I <> -1) then
       GoTo CreateSongButtons;
 
-  end;
+  end;    }
 end;
 
 procedure TScreenSong.SetScroll;
