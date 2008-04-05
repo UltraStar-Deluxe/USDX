@@ -36,8 +36,7 @@ uses OpenGL12,
      {$IFNDEF FPC}
      Graphics,
      {$ENDIF}
-     UThemes,
-     UTexture;
+     UThemes;
 
 const
   cCC_CoverW        = 128;
@@ -140,6 +139,7 @@ implementation
 uses UMain,
      // UFiles,
      ULog,
+     UTexture,
      DateUtils;
 
 constructor TCovers.Create(const Filename: String);
@@ -450,10 +450,10 @@ begin
   begin
     If (Index[I].FileIndex.DataStart <> 0) AND
    {$IFDEF MSWINDOWS}
-       (Uppercase(Index[I].Filename) = Filename) then
+       (Uppercase(Index[I].Filename) = Filename)
    {$ELSE}
        (Index[I].Filename = Filename)
-   {$ENDIF}
+   {$ENDIF}  then
     begin
       Result := I;
       Exit;
@@ -512,8 +512,22 @@ begin
 end;
 
 Procedure TCovers.LoadTextures;
-begin
+var
+  I: Integer;
+  
+  Function LoadCover: Integer;
+  begin
 
+  end;
+begin
+  //Texture.SetCoverSize(cCC_CoverW, cCC_CoverH);
+
+  For I := 0 to HighestID do
+  begin //Load all the Covers
+    {Index[I].TexID
+
+    Index[I].FileIndex.}
+  end;
 end;
 
 end.
