@@ -226,17 +226,7 @@ const
   PNG_INFO_IDAT = $8000;  (* ESR, 1.0.6 *)
 
 
-{$IFDEF FPC}
-{$IF Defined(Linux)}
-var
-  png_libpng_ver    : array[0..11] of char;   cvar; external;
-  png_pass_start    : array[0..6] of integer; cvar; external;
-  png_pass_inc      : array[0..6] of integer; cvar; external;
-  png_pass_ystart   : array[0..6] of integer; cvar; external;
-  png_pass_yinc     : array[0..6] of integer; cvar; external;
-  png_pass_mask     : array[0..6] of integer; cvar; external;
-  png_pass_dsp_mask : array[0..6] of integer; cvar; external;
-{$ELSEIF Defined(Darwin)}
+(*
 var
   png_libpng_ver    : array[0..11] of char;   external LibPng name 'png_libpng_ver';
   png_pass_start    : array[0..6] of integer; external LibPng name 'png_pass_start';
@@ -245,8 +235,7 @@ var
   png_pass_yinc     : array[0..6] of integer; external LibPng name 'png_pass_yinc';
   png_pass_mask     : array[0..6] of integer; external LibPng name 'png_pass_mask';
   png_pass_dsp_mask : array[0..6] of integer; external LibPng name 'png_pass_dsp_mask';
-{$IFEND}
-{$ENDIF}
+*)
 
 type
   (* Three color definitions.  The order of the red, green, and blue, (and the
