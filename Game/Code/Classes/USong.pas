@@ -503,7 +503,8 @@ begin
   end;
 
 end;
-
+}
+(*
 //Load TXT Song
 function TSong.LoadSong(): boolean;
 
@@ -1232,6 +1233,6 @@ begin
   //Read Header
   Result := self.ReadXMLHeader( FileName );
 
-end;  }
+end;  *)
 
 end.

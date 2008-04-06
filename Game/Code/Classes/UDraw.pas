@@ -616,7 +616,7 @@ begin
   ScreenSing.Lyrics.Draw(LineState.MidBeat);
 
   // todo: Lyrics
-{  // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
+(*  // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
   FS := 1.3;
   BarFrom := Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start;
   if BarFrom > 40 then BarFrom := 40;
@@ -654,7 +654,7 @@ begin
     glDisable(GL_BLEND);
 
    end; }
-
+*)
   // oscilloscope
   if Ini.Oscilloscope = 1 then begin
     if PlayersPlay = 1 then

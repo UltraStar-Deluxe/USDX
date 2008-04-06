@@ -449,7 +449,7 @@ begin
   CatNumShow := -1;
 //  Songs.Sort(0); // by title
 
-{case Ini.Sorting of
+(*case Ini.Sorting of
     sEdition: begin
           Songs.Sort(sArtist);
           Songs.Sort(sEdition);
@@ -744,7 +744,7 @@ begin
 if (ini.Tabs_at_startup = 1) And (high(Song) >=1) then
   Song[CatLen - CatNumber].CatNumber := CatNumber;//Set CatNumber of Categroy
 //CatCount Patch
-CatCount := Order;   }
+CatCount := Order;   *)
 end;
 
 procedure TCatSongs.ShowCategory(Index: integer);
