@@ -14,18 +14,6 @@
 //  thanks for your help...
 //
 // ***************************************************************************
-program UltraStar;
 
-{$MODE DELPHI}
-{$I switches.inc}
+{$I UltraStar.dpr}
 
-{$IFDEF MSWINDOWS}
-  {$R 'UltraStar.res' 'UltraStar.rc'}
-{$ENDIF}
-
-uses
-  {$I UltraStar.dpr}
-
-begin
-  main();
-end.

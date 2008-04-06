@@ -1,17 +1,19 @@
-{$IFNDEF FPC}  // This is here, so linux & MacOS X Versions can simply include the uses
-               // from the dpr.  Saves duplicating the uses clause.
 program UltraStar;
 
 {$IFDEF MSWINDOWS}
   {$R 'UltraStar.res' 'UltraStar.rc'}
 {$ENDIF}
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses
-{$ENDIF}
-  {$IFDEF Unix}            // http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial
-    cthreads,              // THIS MUST be the first used unit in FPC!!
+  {$IFDEF Unix}
+    cthreads,              // THIS MUST be the first used unit in FPC if Threads are used!!
+                           // (see http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial)
     cwstring,              // Enable Unicode support
   {$ENDIF}
 
@@ -242,8 +244,7 @@ uses
   {$ENDIF}
   SysUtils;
 
-{$IFNDEF FPC}
 begin
   Main;
 end.
-{$ENDIF}
+

@@ -10,7 +10,7 @@
 {* Paths *}
 
 {$@DEFINE_USE_LOCAL_DIRS@ UseLocalDirs}
-{$IF not Defined(UseLocalDirs) and Defined(IncludeConstants)}
+{$IF (not Defined(UseLocalDirs)) and Defined(IncludeConstants)}
   PathSuffix = WideString('@suffix@');
   LogPath    = WideString('@logrootdir@/'+PathSuffix);
   SharedPath = WideString('@sharerootdir@/'+PathSuffix);
