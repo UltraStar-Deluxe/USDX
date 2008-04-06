@@ -253,6 +253,7 @@ uses  UMain,
       UIni,
       UDisplay,
       UCommandLine,
+      UCovers,
       {$IFNDEF FPC}
       Graphics,
       {$ENDIF}
@@ -538,7 +539,8 @@ begin
   // the mainthread have to know somehow what opengl function have to be called with which parameters like
   // texturetype, textureobjekt, textur-buffer-adress, ...
 
-
+  //Load Covers from Cache and new added/ Updated Covers
+  Covers.LoadTextures;
 
   // wait for loading thread to finish
   // funktioniert so auch noch nicht - currently dos not work this way

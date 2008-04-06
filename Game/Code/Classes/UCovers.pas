@@ -76,7 +76,7 @@ type
 
   TCC_FileIndexHeader = record
     Indicator: Array [1..4] of Char;    //Contains INDE
-    HighestID: Cardinal;                //Highest ID of a Cover
+    HighestID: Integer;                //Highest ID of a Cover
   end;
 
   TCC_FileIndex = record
@@ -108,10 +108,10 @@ type
       IndexNeedRewrite: Boolean; //Index in CacheFile is overwritten by other Data
       CacheReadOnly: Boolean;    //Cache File is read only
 
-      Function WriteHeader:Boolean;
+      Function WriteHeader(const ReWriteCache: Boolean = false):Boolean;
       Function ReadHeader: Boolean;
       Function ReadIndex:  Boolean;
-      Function WriteIndex: Boolean;
+      Function WriteIndex(const ReWriteCache: Boolean = false): Boolean;
       Function AddTexData(Data: PCC_TextureData): Cardinal;
     public
       W:          word;
@@ -124,11 +124,13 @@ type
 
       constructor Create(const Filename: String);
       procedure Load(const Filename: String);
-      Function AddCover(FileName: string): Integer;    //Returns ID, Checks Cover for Change, Updates Cover if required
-      function CoverExists(FileName: string): Integer; //Returns ID by FilePath
+      Function  AddCover(FileName: string): Integer;    //Returns ID, Checks Cover for Change, Updates Cover if required
+      function  CoverExists(FileName: string): Integer; //Returns ID by FilePath
       procedure PrepareData(FileName: string);
       Procedure LoadTextures;
       Function  ReWriteCache: Boolean;                 //Deletes old cover.cache file and writes new one
+
+      Function  GetTexbyID(ID: Cardinal): Integer;
   end;
 
 var
@@ -146,7 +148,7 @@ constructor TCovers.Create(const Filename: String);
 begin
   HighestID := -1;
   SetLength(Index, HighestID + 2);
-  Load(Filename);
+  //Load(Filename);
 end;
 
 //----------------------------------------------
@@ -189,7 +191,7 @@ end;
 //--------
 // Writes Header(Resets File). Returns True if Writing succeed 
 //--------
-Function TCovers.WriteHeader:Boolean;
+Function TCovers.WriteHeader(const ReWriteCache: Boolean):Boolean;
 var
   F: File of TCC_FileHeader;
 begin
@@ -198,7 +200,7 @@ begin
     //Read Header
     AssignFile(F, Filename);
     try
-      If (not FileExists(Filename)) then
+      If (not FileExists(Filename)) OR (ReWriteCache) then
         ReWrite(F)
       else
         Reset(F);
@@ -222,16 +224,16 @@ var
   I: Integer;
 
   Procedure mReadLn(var S: String);
-  var J: Integer;
+  var
+    Len: Integer;
   begin
     S := '';
-    J := 0;
 
-    Repeat
-      Inc(J);
-      SetLength(S, J);
-      Read(F, Byte(S[J]));
-    Until S[J] = #10
+    BlockRead(F, Len, 4); //Read Len of Filename String
+
+    //Read Filename String
+    SetLength(S, Len);
+    BlockRead(F, S[1], Len);
   end;
 begin
   try
@@ -245,21 +247,22 @@ begin
 
         If (IndexHeader.Indicator = cCC_IndexIndicator) then
         begin
-          Result := False;
-
+          Log.LogError('TCovers: loading Cover Index Header. HighestID: ' + InttoStr(IndexHeader.HighestID));
           HighestID := IndexHeader.HighestID;
           SetLength(Index, HighestID + 2);
 
           Count := 0;
           Result := True;
-          If (HighestID > 0) then
+          If (HighestID >= 0) then
           begin
             //Read File Infos until (Eof or Footer)
             I := 0;
-            While (Not Eof(F)) AND ((I <= 0) OR (Index[I].FileIndex.DataStart <> High(Cardinal))) do
-            begin
-              If (I > HighestID) then
+            //While (Not Eof(F)) AND ((I <= 0) OR (Index[I-1].FileIndex.DataStart <> High(Cardinal))) do
+            Repeat
+              Log.LogError('TCovers: loading Cover Index. Position #' + InttoStr(I));
+              If (I > HighestID + 1) then
               begin //Header IndexCOunt was wrong, running out of array
+                Log.LogError('TCovers: Wrong HighestID in Index Header. Running out of Array at Postion #' + InttoStr(I));
                 Inc(HighestID);
                 IndexNeedReWrite := True;
                 SetLength(Index, HighestID + 2);
@@ -268,15 +271,24 @@ begin
               BlockRead(F, Index[I].FileIndex, SizeOf(TCC_FileIndex));
               Index[I].TexID    := -1;
 
-              If (Index[I].FileIndex.DataStart <> High(Cardinal)) AND (Not Eof(F)) then
+              If (Index[I].FileIndex.DataStart = High(Cardinal)) then
+              begin //Found Footer
+                Log.LogError('TCovers: Found footer at Position #' + InttoStr(I));
+                Break;
+              end;
+
+              If (Not Eof(F)) then
               begin
                 //Read Filename
                 mReadLn(Index[I].Filename);
-                Inc(Count);
+
+                Log.LogError('TCovers: Cover loaded: ' + Index[I].Filename);
+                If (Index[I].FileIndex.DataStart <> 0) AND (Index[I].FileIndex.DataStart <> 1) then
+                  Inc(Count);
               end;
 
               Inc(I);
-            end;
+            Until Eof(F);
 
             If (Index[HighestID + 1].FileIndex.DataStart = High(Cardinal)) then
             begin //No Footer found
@@ -297,21 +309,24 @@ end;
 //--------
 // Writes Index. Returns True if Writing succeed
 //--------
-Function TCovers.WriteIndex: Boolean;
+Function TCovers.WriteIndex(const ReWriteCache: Boolean): Boolean;
 var
   F: File of Byte;
   IndexHeader: TCC_FileIndexHeader;
   I: Integer;
 
   Procedure mWriteLn(var S: String);
-  var N: Byte;
+  var Len: Integer;
   begin
-    BlockWrite(F, S, Length(S));
-    N := Byte(#10);
-    Write(F, N);
+    //Write Length of String
+    Len := Length(S);
+    BlockWrite(F, Len, 4);
+
+    //Write String
+    BlockWrite(F, S[1], Len);
   end;
 begin
-  Result := WriteHeader;
+  Result := WriteHeader(ReWriteCache);
 
   If (Result) then
   begin
@@ -338,8 +353,11 @@ begin
         For I := 0 to HighestID+1 do
         begin
           BlockWrite(F, Index[I].FileIndex, SizeOf(TCC_FileIndex));
-          mWriteLn(Index[I].Filename);
+          If (I <= HighestID) then
+            mWriteLn(Index[I].Filename);
         end;
+
+        IndexNeedRewrite := False;
 
       finally
         CloseFile(F);
@@ -363,7 +381,7 @@ begin
       Reset(F);
       Seek(F, Header.DataStart + Header.DataLength);
 
-      BlockWrite(F, Data, SizeOf(TCC_TextureData));
+      BlockWrite(F, Data^, SizeOf(TCC_TextureData));
 
       Result := Header.DataStart + Header.DataLength;
       Inc(Header.DataLength, SizeOf(TCC_TextureData));
@@ -382,6 +400,8 @@ procedure TCovers.Load(const Filename: String);
 var
   Succeed: Boolean;
 begin
+  Log.LogError('TCovers: Load cache from file: ''' + Filename + '''');
+
   Self.Filename := Filename;
   Succeed := False;
   If (FileExists(Filename)) then
@@ -398,7 +418,10 @@ begin
 
   If not Succeed and not CacheReadOnly then
     If not (ReWriteCache) then
+    begin
       CacheReadOnly := True;
+      Log.LogError('TCovers: Cache readonly!');
+    end;
 end;
 
 Function TCovers.AddCover(FileName: string): Integer;
@@ -407,11 +430,13 @@ begin
   Result := CoverExists(Filename);
   If (Result = -1) then
   begin //Add Cover(Does not exist)
+    Log.LogError('TCovers: Adding cover: ''' + Filename + '''');
     If (Count <= HighestID) then
     begin //There is an empty slot, Search It
+      Log.LogError('TCovers: Searching for Empty Slot');
       For I := 0 to HighestID do
         If (Index[I].FileIndex.DataStart = 0) then
-        begin //Found the Slot
+        begin //Found that Slot
           Result := I;
           Break;
         end;
@@ -419,6 +444,7 @@ begin
 
     If (Result = -1) then
     begin //Attach it to the End
+      Log.LogError('TCovers: Attach Cover to the end');
       Inc(HighestID);
       SetLength(Index, HighestID + 2);
       Result := HighestID;
@@ -427,6 +453,7 @@ begin
     Index[Result].Filename := Filename;
     Index[Result].TexID    := -1;
     Index[Result].FileIndex.DataStart := 1;
+    Log.LogError('TCovers: Cover Added, ID: ' + InttoStr(Result));
   end
   else
   begin //Check if File has Changed
@@ -476,6 +503,8 @@ Function  TCovers.ReWriteCache: Boolean;
 begin
   If not CacheReadOnly then
   begin
+    Log.LogError('TCovers: Rewriting Cache');
+    
     Header.FileTyp    := cCC_HeaderText;
     Header.Version    := cCC_HeaderVersion;
     Header.Hash       := MakeHash;
@@ -485,7 +514,10 @@ begin
     Header.DataLength := 0;
     Header.IndexStart := Header.DataStart + Header.DataLength + 4;
 
-    Result := WriteIndex;
+    HighestID := -1;
+    SetLength(Index, HighestID + 2);
+
+    Result := WriteIndex(True);
   end
   else
     Result := False;
@@ -514,20 +546,100 @@ end;
 Procedure TCovers.LoadTextures;
 var
   I: Integer;
-  
+  TexData: PCC_TextureData;
+  CachedData: TCC_TextureData;
+  F: File of Byte;
+
   Function LoadCover: Integer;
   begin
+    Result := -1;
+    
+    If (Index[I].FileIndex.DataStart = 1) then
+    begin //This Texture is new and has to be loaded
+      TexData := Texture.GetCoverThumbnail(Index[I].Filename);
+      If (TexData <> nil) then
+      begin
+        If not (CacheReadonly) then
+        begin //Save this Tex to Cache
+          Index[I].FileIndex.DataStart :=  AddTexData(TexData);
+          If (Index[I].FileIndex.DataStart = 0) then
+          begin
+            CacheReadOnly := True; //Failed to write Data
+            Log.LogError('Failed to Write TextureData to Cache');
+          end;
+        end;
 
+        //Create Texture
+        glGenTextures(1, @Result);
+
+        glBindTexture(GL_TEXTURE_2D, Result);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        //glTexImage2D(GL_TEXTURE_2D, 0, 3, cCC_CoverW, cCC_CoverH, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
+        glTexImage2D(GL_TEXTURE_2D, 0, 3, cCC_CoverW, cCC_CoverH, 0, GL_RGB, GL_UNSIGNED_BYTE, TexData);
+      end
+      else
+        Log.LogError('Couldn''t get Thumbnail Data');
+    end
+    Else If (Index[I].FileIndex.DataStart > 1) then
+    begin //This texture is already in Cache, Load it from there
+      try
+        Log.LogError('TCovers: Loading Cover #' + InttoStr(I) + ' from Cache at Position: ' + InttoStr(Index[I].FileIndex.DataStart));
+        Assign(F, Filename);
+        try
+          Reset(F);
+          Seek(F, Index[I].FileIndex.DataStart);
+          BlockRead(F, CachedData, SizeOf(TCC_TextureData));
+        finally
+          CloseFile(F);
+        end;
+
+
+        //Create Texture
+        glGenTextures(1, @Result);
+
+        if (Result > 0) then
+        begin
+
+          glBindTexture(GL_TEXTURE_2D, Result);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+          //glTexImage2D(GL_TEXTURE_2D, 0, 3, cCC_CoverW, cCC_CoverH, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
+          glTexImage2D(GL_TEXTURE_2D, 0, 3, cCC_CoverW, cCC_CoverH, 0, GL_RGB, GL_UNSIGNED_BYTE, @CachedData[0]);
+        end
+        else
+          Log.LogError('TCovers: Error Generating Texture');
+      except
+        Log.LogError('TCovers: Error during loading');
+      end;
+    end;
   end;
 begin
-  //Texture.SetCoverSize(cCC_CoverW, cCC_CoverH);
+  Texture.SetCoverSize(cCC_CoverW, cCC_CoverH);
+  Log.LogError('TCovers: LoadingTextures');
 
   For I := 0 to HighestID do
   begin //Load all the Covers
-    {Index[I].TexID
+    If (Index[I].FileIndex.DataStart > 0) then
+      Index[I].TexID := LoadCover; //No empty SLot -> Load the Texture
 
-    Index[I].FileIndex.}
+    Log.LogError('TCovers: Texture for ID#' + InttoStr(I) + ': ' + InttoStr(Index[I].TexID));
   end;
+
+  If IndexNeedRewrite then
+    WriteIndex;
+end;
+
+Function  TCovers.GetTexbyID(ID: Cardinal): Integer;
+begin
+  If (ID <= HighestID) then
+    Result := Index[ID].TexID
+  else
+    Result := -1;
 end;
 
 end.

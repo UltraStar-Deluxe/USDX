@@ -81,6 +81,11 @@ type
 
   TTextureUnit = class
     private
+      TnWidth, TnHeight: Cardinal; //Width and Height of the Cover Thumbnails
+
+      TnBuffer:  array of byte;
+      TnSurface: PSDL_Surface;
+
       function LoadImage(const Identifier: string): PSDL_Surface;
       function pixfmt_eq(fmt1,fmt2: PSDL_Pixelformat): boolean;
       procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
@@ -88,7 +93,6 @@ type
       procedure ScaleTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
       procedure FitTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
       procedure ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
-
     public
     Limit:      integer;
     CreateCacheMipmap:  boolean;
@@ -106,6 +110,9 @@ type
     procedure UnloadTexture(const Name: string; Typ: TTextureType; Col: Cardinal; FromCache: boolean); overload;
     //procedure FlushTextureDatabase();
 
+    Function GetCoverThumbnail(const Name: string): Pointer;
+    Procedure SetCoverSize(W, H: Integer);
+
 
     Constructor Create;
     Destructor Destroy; override;
@@ -119,15 +126,10 @@ var
 
   Mipmapping: Boolean;
 
-  CacheMipmap:  array[0..256*256*3-1] of byte; // 3KB
-  CacheMipmapSurface: PSDL_Surface;
-
-
 implementation
 
 uses ULog,
      DateUtils,
-     UCovers,
      UThemes,
      {$ifdef LINUX}
        fileutil,
@@ -521,7 +523,7 @@ begin
     Log.LogStatus( 'ERROR Could not load texture' , Identifier +' '+ TextureTypeToStr(Typ) );
     Exit;
   end;
-  
+
   // convert pixel format as needed
   {$ifdef blindydebug}
   Log.LogStatus('',' AdjustPixelFormat');
@@ -536,7 +538,7 @@ begin
   
   if (newWidth > Limit) then
     newWidth := Limit;
-    
+
   if (newHeight > Limit) then
     newHeight := Limit;
 
@@ -560,36 +562,36 @@ begin
   // don't actually understand, if this is needed...
   // this should definately be changed... together with all this
   // cover cache stuff
-  if (CreateCacheMipmap) and (Typ = TEXTURE_TYPE_PLAIN) then
+  {if (CreateCacheMipmap) and (Typ = TEXTURE_TYPE_PLAIN) then
   begin
-    {$ifdef blindydebug}
+    {$ifdef blindydebug}{
     Log.LogStatus('',' JB-1 : Minimap');
     {$endif}
 
-    if (Covers.W <= 256) and (Covers.H <= 256) then
+    {if (TnWidth <= 256) and (TnHeight <= 256) then
     begin
-      {$ifdef blindydebug}
+      {$ifdef blindydebug}{
       Log.LogStatus('',' GetScaledTexture('''+inttostr(Covers.W)+''','''+inttostr(Covers.H)+''') (for CacheMipmap)');
-      {$endif}
-      MipmapSurface:=GetScaledTexture(TexSurface, Covers.W, Covers.H);
+      {$endif}{
+      MipmapSurface:=GetScaledTexture(TexSurface, TnWidth, TnHeight);
       if assigned(MipmapSurface) then
       begin
-        {$ifdef blindydebug}
+        {$ifdef blindydebug}{
         Log.LogStatus('',' ok');
         Log.LogStatus('',' BlitSurface Stuff');
-        {$endif}
+        {$endif}{
         // creating and freeing the surface could be done once, if Cover.W and Cover.H don't change
-        CacheMipmapSurface:=SDL_CreateRGBSurfaceFrom(@CacheMipmap[0], Covers.W, Covers.H, 24, Covers.W*3, $000000ff, $0000ff00, $00ff0000, 0);
-        SDL_BlitSurface(MipMapSurface, nil, CacheMipmapSurface, nil);
-        SDL_FreeSurface(CacheMipmapSurface);
-        {$ifdef blindydebug}
+        TnSurface:=SDL_CreateRGBSurfaceFrom(@TnBuffer[0], TnWidth, TnHeight, 24, TnWidth*3, $000000ff, $0000ff00, $00ff0000, 0);
+        SDL_BlitSurface(TnSurface, nil, TnSurface, nil);
+        SDL_FreeSurface(TnSurface);
+        {$ifdef blindydebug}{
         Log.LogStatus('',' ok');
         Log.LogStatus('',' SDL_FreeSurface (CacheMipmap)');
-        {$endif}
-        SDL_FreeSurface(MipmapSurface);
-        {$ifdef blindydebug}
+        {$endif}{
+        SDL_FreeSurface(TnSurface);
+        {$ifdef blindydebug}{
         Log.LogStatus('',' ok');
-        {$endif}
+        {$endif}{
       end
       else
       begin
@@ -597,7 +599,7 @@ begin
       end;
     end;
     // should i create a cache texture, if Covers.W/H are larger?
-  end;
+  end; }
 
   {$ifdef blindydebug}
   Log.LogStatus('',' JB-2');
@@ -744,7 +746,7 @@ begin
   end;
 
   // use preloaded texture
-  if (not FromCache) or (FromCache and (Covers.CoverExists(Name) < 0)) then
+  if (not FromCache) or (FromCache{ and (Covers.CoverExists(Name) < 0)}) then
   begin
     // use full texture
     if TextureDatabase.Texture[T].Texture.TexNum = -1 then
@@ -763,7 +765,7 @@ begin
     Result := TextureDatabase.Texture[T].Texture;
   end;
 
-  if FromCache and (Covers.CoverExists(Name) >= 0) then
+  {if FromCache and (Covers.CoverExists(Name) >= 0) then
   begin
     // use cache texture
     C := Covers.CoverExists(Name);
@@ -777,6 +779,91 @@ begin
 
     // use texture
     Result := TextureDatabase.Texture[T].TextureCache;
+  end;}
+end;
+
+//--------
+// Returns Pointer to an Array of Byte containing the Texture Data in the
+// requested Size
+//--------
+Function TTextureUnit.GetCoverThumbnail(const Name: string): Pointer;
+var
+  TexSurface: PSDL_Surface;
+  newHeight, newWidth: Cardinal;
+const
+  Typ = TEXTURE_TYPE_PLAIN;
+begin
+  Result := nil;
+  If (FileExists(Name)) then
+  begin
+    {$ifdef blindydebug}
+    Log.LogStatus('',' ----------------------------------------------------');
+    Log.LogStatus('',' GetCoverThumbnail('''+Name+''')');
+    {$endif}
+    TexSurface := LoadImage(Name);
+    {$ifdef blindydebug}
+    Log.LogStatus('',' ok');
+    {$endif}
+    if assigned(TexSurface) then
+    begin
+      // convert pixel format as needed
+      {$ifdef blindydebug}
+      Log.LogStatus('',' AdjustPixelFormat');
+      {$endif}
+      AdjustPixelFormat(TexSurface, Typ);
+
+      {$ifdef blindydebug}
+      Log.LogStatus('',' ok');
+      {$endif}
+
+      // Scale Texture to Covers Dimensions
+      {$ifdef blindydebug}
+      Log.LogStatus('',' ScaleTexture('''+inttostr(tnWidth)+''','''+inttostr(TnHeight)+''') (for CacheMipmap)');
+      {$endif}
+      ScaleTexture(TexSurface, TnWidth, TnHeight);
+
+      if assigned(TexSurface) AND assigned(TnSurface) then
+      begin
+        {$ifdef blindydebug}
+        Log.LogStatus('',' ok');
+        Log.LogStatus('',' BlitSurface Stuff');
+        {$endif}
+
+        SDL_BlitSurface(TexSurface, nil, TnSurface, nil);
+
+        Result := @TnBuffer[0];
+
+        {$ifdef blindydebug}
+        Log.LogStatus('',' ok');
+        {$endif}
+      end
+      else
+        Log.LogStatus(' Error creating Cover Thumbnail',' LoadTexture('''+Name+''')');
+    end
+    else
+      Log.LogStatus( 'ERROR Could not load texture for Cover Thumbnail: ' , name+' '+ TextureTypeToStr(Typ) );
+
+    SDL_FreeSurface(TexSurface);
+  end;
+end;
+
+//--------
+// Sets Textures Thumbnail Size Vars and Sets LEngth of DataBuffer and Create CoverSurface
+//--------
+Procedure TTextureUnit.SetCoverSize(W, H: Integer);
+begin
+  If (H > 0) AND (W > 0) then
+  begin
+    TnWidth := W;
+    TnHeight := H;
+
+    SetLength(TnBuffer, TnWidth * TnHeight * 3);
+
+    //Free if necesary and Create new Surface at Data
+    If (Assigned(TnSurface)) then
+      SDL_FreeSurface(TnSurface);
+      
+    TnSurface := SDL_CreateRGBSurfaceFrom(@TnBuffer[0], TnWidth, TnHeight, 24, TnWidth*3, $000000ff, $0000ff00, $00ff0000, 0);
   end;
 end;
 
