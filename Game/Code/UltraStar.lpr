@@ -1,6 +1,5 @@
 program UltraStar;
 
-{$DEFINE TRANSLATE}
 {$MODE DELPHI}
 {$I switches.inc}
 
