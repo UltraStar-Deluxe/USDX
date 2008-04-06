@@ -59,7 +59,7 @@ begin
         end;
       SDLK_SYSREQ:
         begin
-          Display.PrintScreen;
+          Display.SaveScreenShot;
         end;
     end;
   end;

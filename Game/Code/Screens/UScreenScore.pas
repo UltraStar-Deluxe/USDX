@@ -175,7 +175,7 @@ begin
         end;
       SDLK_SYSREQ:
         begin
-          Display.PrintScreen;
+          Display.SaveScreenShot;
         end;
     end;
   end;
@@ -619,6 +619,7 @@ begin
   end;
   // end todo
 
+  {{$IFDEF TRANSLATE}
   case (Player[PlayerNumber-1].ScoreTotalI) of
    0..2000:
      begin
@@ -656,6 +657,17 @@ begin
        Rating := 6;
      end;
   end;
+  {{$ELSE}{
+  case (Player[PlayerNumber-1].ScoreTotalI) of
+   0..2000:        Text[TextScore[fu]].Text := 'Tone Deaf';
+   2010..4000:     Text[TextScore[fu]].Text := 'Amateur';
+   4010..6000:     Text[TextScore[fu]].Text := 'Rising Star';
+   6010..8000:     Text[TextScore[fu]].Text := 'Lead Singer';
+   8010..9000:     Text[TextScore[fu]].Text := 'Hit Artist';
+   9010..9800:     Text[TextScore[fu]].Text := 'Superstar';
+   9810..10000:    Text[TextScore[fu]].Text := 'Ultrastar';
+  end;
+  {$ENDIF}
 
   // Bounce the rating picture in
   PosX := aPlayerScoreScreenRatings[PlayerNumber].RatePic_X + (aPlayerScoreScreenRatings[PlayerNumber].RatePic_Width  / 2);

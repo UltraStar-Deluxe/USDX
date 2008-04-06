@@ -18,6 +18,7 @@ uses OpenGL12,
      Classes,
      SysUtils,
      UCommon,
+     UImage,
      SDL,
      sdlutils,
      SDL_Image;
@@ -138,46 +139,6 @@ uses ULog,
      MacResources,
      {$ENDIF}
      StrUtils;
-
-const
-  fmt_rgba: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  32;
-    BytesPerPixel:  4;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:         0;
-    Gshift:         8;
-    Bshift:        16;
-    Ashift:        24;
-    Rmask:  $000000ff;
-    Gmask:  $0000ff00;
-    Bmask:  $00ff0000;
-    Amask:  $ff000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
-  fmt_rgb: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  24;
-    BytesPerPixel:  3;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:         0;
-    Gshift:         8;
-    Bshift:        16;
-    Ashift:         0;
-    Rmask:  $000000ff;
-    Gmask:  $0000ff00;
-    Bmask:  $00ff0000;
-    Amask:  $00000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
 
 
 Constructor TTextureUnit.Create;
@@ -388,14 +349,14 @@ var
   TempSurface: PSDL_Surface;
   NeededPixFmt: PSDL_Pixelformat;
 begin
-  NeededPixFmt:=@fmt_rgba;
-  if (Typ = TEXTURE_TYPE_PLAIN) then NeededPixFmt:=@fmt_rgb
+  NeededPixFmt:=@PixelFmt_RGBA;
+  if      (Typ = TEXTURE_TYPE_PLAIN) then
+    NeededPixFmt:=@PixelFmt_RGB
+  else if (Typ = TEXTURE_TYPE_TRANSPARENT) or
+          (Typ = TEXTURE_TYPE_COLORIZED) then
+    NeededPixFmt:=@PixelFmt_RGBA
   else
-  if (Typ = TEXTURE_TYPE_TRANSPARENT) or
-     (Typ = TEXTURE_TYPE_COLORIZED)
-     then NeededPixFmt:=@fmt_rgba
-  else
-    NeededPixFmt:=@fmt_rgb;
+    NeededPixFmt:=@PixelFmt_RGB;
 
 
   if not pixfmt_eq(TexSurface^.format, NeededPixFmt) then

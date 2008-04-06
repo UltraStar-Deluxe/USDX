@@ -468,7 +468,7 @@ begin
           end
           // ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
           else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
-            Display.ScreenShot
+            Display.SaveScreenShot
           // popup hack... if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
           else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then

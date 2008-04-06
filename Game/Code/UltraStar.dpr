@@ -25,6 +25,9 @@ uses
   sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
 
+  zlib                   in 'lib\zlib\zlib.pas',
+  png                    in 'lib\libpng\png.pas',
+
   {$IFDEF UseBass}
   bass                   in 'lib\bass\delphi\bass.pas',
   UAudioCore_Bass        in 'Classes\UAudioCore_Bass.pas',
@@ -109,6 +112,7 @@ uses
   UXMLSong          in 'Classes\UXMLSong.pas',
   USongs            in 'Classes\USongs.pas',
   UIni              in 'Classes\UIni.pas',
+  UImage            in 'Classes\UImage.pas',
   ULyrics           in 'Classes\ULyrics.pas',
   ULyrics_bak       in 'Classes\ULyrics_bak.pas',
   USkins            in 'Classes\USkins.pas',

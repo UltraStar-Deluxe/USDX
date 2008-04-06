@@ -34,8 +34,6 @@ type
 
       OSD_LastError : String;
 
-      PrintScreenData:  array[0..1024*768-1] of longword;
-
       procedure DrawDebugInformation;
     public
       NextScreen   : PMenu;
@@ -50,8 +48,7 @@ type
       constructor Create;
       destructor  Destroy; override;
 
-      procedure PrintScreen;
-      procedure ScreenShot;
+      procedure SaveScreenShot;
 
       function  Draw: Boolean;
   end;
@@ -62,18 +59,15 @@ var
 implementation
 
 uses
-     {$IFDEF Delphi}
-     JPEG,
-     graphics,
-     {$ENDIF}
-     TextGL,
-//     ULog,
-     UMain,
-     UTexture,
-     UIni,
-     UGraphic,
-     UTime,
-     UCommandLine;
+  UImage,
+  TextGL,
+  ULog,
+  UMain,
+  UTexture,
+  UIni,
+  UGraphic,
+  UTime,
+  UCommandLine;
 
 constructor TDisplay.Create;
 var
@@ -327,111 +321,48 @@ begin
   Result := $FF div FadeStep;
 end;}
 
-procedure TDisplay.PrintScreen;
-(*
+procedure TDisplay.SaveScreenShot;
 var
-  Bitmap:     TBitmap;
-  Jpeg:       TJpegImage;
-  X, Y:       integer;
   Num:        integer;
   FileName:   string;
-*)
+  ScreenData: PChar;
+  Surface:    PSDL_Surface;
+  Success:    boolean;
+  Align:      integer;
+  RowSize:    integer;
 begin
-(*
   for Num := 1 to 9999 do
   begin
     FileName := IntToStr(Num);
     while Length(FileName) < 4 do
       FileName := '0' + FileName;
-    FileName := ScreenshotsPath + 'screenshot' + FileName + '.jpg';
+    FileName := ScreenshotsPath + 'screenshot' + FileName + '.png';
     if not FileExists(FileName) then
       break
   end;
 
-  glReadPixels(0, 0, ScreenW, ScreenH, GL_RGBA, GL_UNSIGNED_BYTE, @PrintScreenData[0]);
-  Bitmap        := TBitmap.Create;
-  Bitmap.Width  := ScreenW;
-  Bitmap.Height := ScreenH;
+  // we must take the row-alignment (4byte by default) into account
+  glGetIntegerv(GL_PACK_ALIGNMENT, @Align);
+  // calc aligned row-size
+  RowSize := ((ScreenW*3 + (Align-1)) div Align) * Align;
 
-  for Y := 0 to ScreenH-1 do
-    for X := 0 to ScreenW-1 do
-      Bitmap.Canvas.Pixels[X, Y] := PrintScreenData[(ScreenH-1-Y) * ScreenW + X] and $00FFFFFF;
+  GetMem(ScreenData, RowSize * ScreenH);
+  glReadPixels(0, 0, ScreenW, ScreenH, GL_BGR, GL_UNSIGNED_BYTE, ScreenData);
+  Surface := SDL_CreateRGBSurfaceFrom(
+      ScreenData, ScreenW, ScreenH, 24, RowSize,
+      //$0000FF, $00FF00, $FF0000, 0);
+      $FF0000, $00FF00, $0000FF, 0);
 
-  Jpeg := TJpegImage.Create;
-  Jpeg.Assign(Bitmap);
-  Bitmap.Free;
-  Jpeg.CompressionQuality := 95;//90;
-  Jpeg.SaveToFile(FileName);
-  Jpeg.Free;
-*)
-end;
+  //Success := WriteJPGImage(FileName, Surface, 95);
+  //Success := WriteBMPImage(FileName, Surface);
+  Success := WritePNGImage(FileName, Surface);
+  if Success then
+    ScreenPopupError.ShowPopup('Screenshot saved: ' + ExtractFileName(FileName))
+  else
+    ScreenPopupError.ShowPopup('Screenshot failed');
 
-procedure TDisplay.ScreenShot;
-{
-var
-  F : file;
-  FileInfo: BITMAPINFOHEADER;
-  FileHeader : BITMAPFILEHEADER;
-  pPicData:Pointer;
-  FileName: String;
-  Num: Integer;
-}
-begin
-  // FIXME: something broken in here... quick fix... disabled it
-  Exit;
-{
-  // search image-file
-  for Num := 1 to 9999 do
-  begin
-    FileName := IntToStr(Num);
-    while Length(FileName) < 4 do
-      FileName := '0' + FileName;
-    FileName := ScreenshotsPath + FileName + '.BMP';
-    if not FileExists(FileName) then
-      break
-  end;
-
- // prepare header memory
- ZeroMemory(@FileHeader, SizeOf(BITMAPFILEHEADER));
- ZeroMemory(@FileInfo  , SizeOf(BITMAPINFOHEADER));
-
- // initialize header-data
- FileHeader.bfType := 19778; // $4D42 = 'BM'
- FileHeader.bfOffBits := SizeOf(BITMAPINFOHEADER)+SizeOf(BITMAPFILEHEADER);
-
- // write bitmap info
- FileInfo.biSize := SizeOf(BITMAPINFOHEADER);
- FileInfo.biWidth := ScreenW;
- FileInfo.biHeight := ScreenH;
- FileInfo.biPlanes := 1;
- FileInfo.biBitCount := 32;
- FileInfo.biSizeImage := FileInfo.biWidth*FileInfo.biHeight*(FileInfo.biBitCount div 8);
-
- // copy size-info to header
- FileHeader.bfSize := FileHeader.bfOffBits + FileInfo.biSizeImage;
-
- // reserve memory for image-data
- GetMem(pPicData, FileInfo.biSizeImage);
- try
-  // retrieve image-data from OpenGL (see above)
-  glReadPixels(0, 0, ScreenW, ScreenH, GL_BGRA, GL_UNSIGNED_BYTE, pPicData);
-
-  // and move the whole stuff into the file ;-)
-  // up-to-date guys use streams for this purpose ...
-  AssignFile(f, Filename);
-  Rewrite( f,1 );
-  try
-   BlockWrite(F, FileHeader, SizeOf(BITMAPFILEHEADER));
-   BlockWrite(F, FileInfo, SizeOf(BITMAPINFOHEADER));
-   BlockWrite(F, pPicData^, FileInfo.biSizeImage );
-  finally
-   CloseFile(f);
-  end;
- finally
-  // free allocated data ...
-  FreeMem(pPicData, FileInfo.biSizeImage);
- end;
-}
+  SDL_FreeSurface(Surface);
+  FreeMem(ScreenData);
 end;
 
 //------------
