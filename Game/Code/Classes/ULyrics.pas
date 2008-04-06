@@ -122,7 +122,6 @@ uses SysUtils,
      TextGL,
      UGraphic,
      UDisplay,
-     dialogs,
      math,
      UIni;
 
@@ -436,8 +435,9 @@ begin
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
     glViewPort(0,0,800,600);
   end;
-  
-  Display.ScreenShot;
+
+  //for debugging, is this used anymore?
+  //Display.ScreenShot;
   
   //Copy to Texture
   glEnable(GL_ALPHA);

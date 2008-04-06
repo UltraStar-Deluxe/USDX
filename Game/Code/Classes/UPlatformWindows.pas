@@ -30,8 +30,7 @@ type
 implementation
 
 uses SysUtils,
-     Windows,
-     Forms;  
+     Windows;
 
 type
 
@@ -212,9 +211,9 @@ begin
   result := ExtractFilePath(ParamStr(0));
 end;
 
-function TPlatformWindows.FindSongFile(Dir, Mask: widestring): widestring;
-var
-  SR:     TSearchRec;   // for parsing song directory
+function TPlatformWindows.FindSongFile(Dir, Mask: widestring): widestring;
+var
+  SR:     TSearchRec;   // for parsing song directory
 begin
   Result := '';
   if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin

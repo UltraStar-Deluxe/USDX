@@ -17,7 +17,6 @@ uses OpenGL12,
      Math,
      Classes,
      SysUtils,
-     Graphics,
      UCommon,
      SDL,
      sdlutils,
@@ -132,14 +131,13 @@ uses ULog,
      {$ifdef LINUX}
        fileutil,
      {$endif}
-     {$IFDEF LAZARUS}
+     {$IFDEF LCL}
      LResources,
      {$ENDIF}
      {$IFDEF DARWIN}
      MacResources,
      {$ENDIF}
-     StrUtils,
-     dialogs;
+     StrUtils;
 
 const
   fmt_rgba: TSDL_Pixelformat = (
@@ -272,7 +270,7 @@ var
   TexRWops:  PSDL_RWops;
   dHandle: THandle;
 
-  {$IFDEF LAZARUS}
+  {$IFDEF LCL}
   lLazRes  : TLResource;
   lResData : TStringStream;
   {$ELSE}
@@ -311,7 +309,7 @@ begin
     Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
 
     // load from resource stream
-    {$IFDEF LAZARUS}
+    {$IFDEF LCL}
       lLazRes := LazFindResource( Identifier, 'TEX' );
       if lLazRes <> nil then
       begin
@@ -969,11 +967,11 @@ begin
       Exit;
     end;
   end;
-  Log.LogError('Unknown texture-type: ' + TypeStr, 'ParseTextureType');
+  Log.LogError('Unknown texture-type: "' + TypeStr + '"', 'ParseTextureType');
   Result := TEXTURE_TYPE_PLAIN;
 end;
 
-{$IFDEF LAZARUS}
+{$IFDEF LCL}
 initialization
   {$I UltraStar.lrs}
 {$ENDIF}

@@ -8,7 +8,6 @@ uses  OpenGL12,
       SDL,
       UTexture,
       Classes,
-      dialogs,
       SDL_ttf,
       ULog;
 

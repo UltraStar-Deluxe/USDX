@@ -153,8 +153,7 @@ uses
      Textgl,
      ULanguage,
      UCommon,
-     Math,
-     dialogs;
+     Math;
 
 
 function TScreenCredits.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
@@ -294,7 +293,6 @@ begin
   mysdlimage:=IMG_Load('test.png');
   if assigned(mysdlimage) then
   begin
-    {$IFNDEF FPC}
     showmessage('opened image via SDL_Image'+#13#10+
                 'Width:   '+inttostr(mysdlimage^.w)+#13#10+
                 'Height:  '+inttostr(mysdlimage^.h)+#13#10+
@@ -319,7 +317,6 @@ begin
       showmessage('equal pixelformats')
     else
       showmessage('different pixelformats');
-    {$ENDIF}
 
     myconvertedsdlimage:=SDL_ConvertSurface(mysdlimage,@sdl32bpprgba,SDL_SWSURFACE);
     glGenTextures(1,@myTex);
@@ -332,11 +329,7 @@ begin
     SDL_FreeSurface(myconvertedsdlimage);
   end
   else
-    {$IFDEF FPC}
-    debugWriteln( 'could not open file - test.png');
-    {$ELSE}
     showmessage('could not open file - test.png');
-    {$ENDIF}
 
 end;
 

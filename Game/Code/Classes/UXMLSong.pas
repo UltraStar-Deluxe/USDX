@@ -81,7 +81,7 @@ const
   DS_Both    = 3;
 
 implementation
-uses SysUtils, StrUtils, Dialogs;
+uses SysUtils, StrUtils;
 
 Constructor TParser.Create;
 begin

@@ -96,12 +96,10 @@ interface
 
 uses
   Windows,
-  Forms,
+  //Forms,
   Messages,
   SysUtils,
-  {$IFDEF LCL}
-  LCLIntf, // used for AllocateHWnd
-  {$ENDIF}
+  UCommon,
   Classes;
 
 type
@@ -941,11 +939,12 @@ begin
     case Msg of
       WM_MULTIMEDIA_TIMER:
       begin
-        try
+        //try
           MidiTimer(self);
-        except
-          Application.HandleException(Self);
-        end;
+        //except
+        // Note: HandleException() is called by default if exception is not handled
+        //  Application.HandleException(Self);
+        //end;
       end;
     else
       begin

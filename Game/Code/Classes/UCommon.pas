@@ -10,21 +10,18 @@ interface
 
 uses
   SysUtils,
-{$IFDEF LAZARUS}
-   lResources,
-{$ENDIF}
-   ULog,
-{$IFDEF DARWIN}
-  messages,
+  Classes,
+  Messages,
+{$IFDEF LCL}
+  lResources,
 {$ENDIF}
 {$IFDEF win32}
-   windows;
-{$ELSE}
-   lcltype,
-   messages;
+  Windows,
 {$ENDIF}
+  ULog;
 
-{$IFNDEF win32}
+{$IFNDEF DARWIN}
+// FIXME: remove this if it is not needed anymore
 type
   hStream        = THandle;
   HGLRC          = THandle;
@@ -32,43 +29,28 @@ type
   TWin32FindData = LongInt;
 {$ENDIF}
 
-{$IFDEF LAZARUS}
+{$IFDEF LCL}
   function LazFindResource( const aName, aType : String ): TLResource;
 {$ENDIF}
 
-{$IFDEF DARWIN}
-  procedure ShowMessage( const msg : String );
-{$ENDIF}
+procedure ShowMessage( const msg : String );
 
 {$IFDEF FPC}
-
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;
+{$ENDIF}
 
-function MaxValue(const Data: array of Double): Double;
-function MinValue(const Data: array of Double): Double;
-
-  {$IFDEF WIN32}
-  type
-    TWndMethod = procedure(var Message: TMessage) of object;
-  function  AllocateHWnd(Method: TWndMethod): HWND;
-  procedure DeallocateHWnd(Wnd: HWND);
-  {$ENDIF} // Win32
-
-{$ENDIF} // FPC Only
+{$IF Defined(MSWINDOWS) and Defined(FPC)}
+function  AllocateHWnd(Method: TWndMethod): HWND;
+procedure DeallocateHWnd(hWnd: HWND);
+{$IFEND}
 
 function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
 function AdaptFilePaths( const aPath : widestring ): widestring;
 
 
 {$IFNDEF win32}
-(*
-  function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER):Bool;
-  function QueryPerformanceFrequency(lpFrequency:TLARGEINTEGER):Bool;
-*)
   procedure ZeroMemory( Destination: Pointer; Length: DWORD );
 {$ENDIF}
-
-// eddie: FindFirstW etc are now in UPlatformWindows.pas
 
 (*
  * Character classes
@@ -82,6 +64,12 @@ function IsControlChar(ch: WideChar): boolean;
 
 
 implementation
+
+uses
+{$IFDEF Delphi}
+  Dialogs,
+{$ENDIF}
+  UConfig;
 
 function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
 var
@@ -146,8 +134,7 @@ end;
 {$ENDIF}
 
 
-{$IFDEF LAZARUS}
-
+{$IFDEF LCL}
 function LazFindResource( const aName, aType : String ): TLResource;
 var
   iCount : Integer;
@@ -167,75 +154,95 @@ end;
 {$ENDIF}
 
 {$IFDEF FPC}
-// FIXME: already exists in FPC
-function MaxValue(const Data: array of Double): Double;
-var
-  I: Integer;
-begin
-  Result := Data[Low(Data)];
-  for I := Low(Data) + 1 to High(Data) do
-    if Result < Data[I] then
-      Result := Data[I];
-end;
-
-// FIXME: already exists in FPC
-function MinValue(const Data: array of Double): Double;
-var
-  I: Integer;
-begin
-  Result := Data[Low(Data)];
-  for I := Low(Data) + 1 to High(Data) do
-    if Result > Data[I] then
-      Result := Data[I];
-end;
-
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;
 begin
-RandomRange := Random(aMax-aMin) + aMin ;
-end;
-
-
-// NOTE !!!!!!!!!!
-// AllocateHWnd is in lclintfh.inc
-
-{$IFDEF MSWINDOWS}
-// TODO : JB this is dodgey and bad... find a REAL solution !
-function AllocateHWnd(Method: TWndMethod): HWND;
-var
-  TempClass: TWndClass;
-  ClassRegistered: Boolean;
-begin
-  Result := CreateWindowEx(WS_EX_TOOLWINDOW, '', '', WS_POPUP , 0, 0, 0, 0, 0, 0, HInstance, nil);
-end;
-
-procedure DeallocateHWnd(Wnd: HWND);
-var
-  Instance: Pointer;
-begin
-  Instance := Pointer(GetWindowLong(Wnd, GWL_WNDPROC));
-  DestroyWindow(Wnd);
+  RandomRange := Random(aMax-aMin) + aMin ;
 end;
 {$ENDIF}
-{$IFDEF DARWIN}
-// TODO : Situation for the mac isn't better !
+
+{$IF Defined(MSWINDOWS) and Defined(FPC)}
+function AllocateHWndCallback(hWnd: HWND; uMsg: UINT; wParam: WPARAM; lParam: LPARAM): LRESULT; stdcall;
+var
+  Msg: TMessage;
+  MethodPtr: ^TWndMethod;
+begin
+  FillChar(Msg, SizeOf(Msg), 0);  
+  Msg.msg := uMsg;
+  Msg.wParam := wParam;
+  Msg.lParam := lParam;
+
+  MethodPtr := Pointer(GetWindowLongPtr(hwnd, GWL_USERDATA));
+  if Assigned(MethodPtr) then
+    MethodPtr^(Msg);
+   
+  Result := DefWindowProc(hwnd, uMsg, wParam, lParam);
+end;
+
 function AllocateHWnd(Method: TWndMethod): HWND;
+var
+  ClassExists: Boolean;
+  WndClass, OldClass: TWndClass;
+  MethodPtr: ^TMethod;
 begin
+  Result := 0;
+
+  // setup class-info
+  FillChar(WndClass, SizeOf(TWndClass), 0);
+  WndClass.hInstance := HInstance;
+  // Important: do not enable AllocateHWndCallback before the msg-handler method is assigned,
+  //   otherwise race-conditions might occur
+  WndClass.lpfnWndProc := @DefWindowProc;
+  WndClass.lpszClassName:= 'USDXUtilWindowClass';
+
+  // check if class is already registered
+  ClassExists := GetClassInfo(HInstance, WndClass.lpszClassName, OldClass);
+  // create window-class shared by all windows created by AllocateHWnd()
+  if (not ClassExists) or (@OldClass.lpfnWndProc <> @DefWindowProc) then
+  begin
+    if ClassExists then
+      UnregisterClass(WndClass.lpszClassName, HInstance);
+    if (RegisterClass(WndClass) = 0) then
+       Exit;
+  end;
+  // create window
+  Result := CreateWindowEx(WS_EX_TOOLWINDOW, WndClass.lpszClassName, '',
+    WS_POPUP, 0, 0, 0, 0, 0, 0, HInstance, nil);
+  if (Result = 0) then
+    Exit;
+  // assign individual callback procedure to the window
+  if Assigned(Method) then
+  begin
+    // TMethod contains two pointers but we can pass just one as USERDATA
+    GetMem(MethodPtr, SizeOf(TMethod));
+    MethodPtr^ := TMethod(Method);
+    SetWindowLongPtr(Result, GWL_USERDATA, LONG_PTR(MethodPtr));
+  end;
+  // now enable AllocateHWndCallback for this window
+  SetWindowLongPtr(Result, GWL_WNDPROC, LONG_PTR(@AllocateHWndCallback));
 end;
 
-procedure DeallocateHWnd(Wnd: HWND);
+procedure DeallocateHWnd(hWnd: HWND);
+var
+  MethodPtr: ^TMethod;
 begin
+  if (hWnd <> 0) then
+  begin
+    MethodPtr := Pointer(GetWindowLongPtr(hWnd, GWL_USERDATA));
+    DestroyWindow(hWnd);
+    if Assigned(MethodPtr) then
+      FreeMem(MethodPtr);
+  end;
 end;
-{$ENDIF} // IFDEF DARWIN
+{$IFEND}
 
-{$ENDIF} // IFDEF FPC
-
-{$IFDEF DARWIN}
 procedure ShowMessage( const msg : String );
 begin
-	//eddie: what to do here?
+{$IF Defined(MSWINDOWS)}
+  MessageBox(0, PChar(msg), PChar(USDXVersionStr()), MB_ICONINFORMATION);
+{$ELSE}
+  debugwriteln(msg);
+{$IFEND}
 end;
-{$ENDIF}
-
 
 function IsAlphaChar(ch: WideChar): boolean;
 begin

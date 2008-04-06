@@ -14,13 +14,6 @@
     {$DEFINE WIN32}
     {$DEFINE TRANSLATE}
 		{$DEFINE UTF8_FILENAMES}
-  {$ELSE}
-    {$DEFINE LAZARUS}
-    {$IFNDEF LCL}
-      // LCL should be defined already
-      {$MESSAGE Warn 'LCL undefined, compile with "fpc -dLCL ..."!'}
-      {$DEFINE LCL}
-    {$ENDIF}
   {$ENDIF}
 
   {$DEFINE DLL_CDECL}

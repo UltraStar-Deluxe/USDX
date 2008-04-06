@@ -48,11 +48,7 @@ uses SDL,
      dialogs,
      {$endif}
      {$ENDIF}
-     (* FIXME
-     {$ifdef UseFFMpegAudio}
-     UAudioDecoder_FFMpeg,
-     {$endif}
-     *)
+     UCommon,
      UIni,
      ULog,
      UMusic,
@@ -121,17 +117,6 @@ type
 
     const
   SDL_AUDIO_BUFFER_SIZE = 1024;
-
-{$ifdef DebugDisplay}
-//{$ifNdef win32}
-
-procedure showmessage( aMessage : String );
-begin
-  debugwriteln( aMessage );
-end;
-
-//{$endif}
-{$ENDIF}
 
 { ------------------------------------------------------------------------------
 asdf

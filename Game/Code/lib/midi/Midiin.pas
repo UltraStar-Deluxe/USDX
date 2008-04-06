@@ -111,9 +111,7 @@ uses
   Messages,
   Windows,
   MMSystem,
-  {$IFDEF LCL}
-  LCLIntf, // used for AllocateHWnd
-  {$ENDIF}
+  UCommon,
   MidiDefs,
   MidiType,
   MidiCons,

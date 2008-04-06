@@ -1,12 +1,19 @@
 {$IFNDEF FPC}  // This is here, so linux & MacOS X Versions can simply include the uses
-               // from the dpr.  Saves dupicating the uses clause.
+               // from the dpr.  Saves duplicating the uses clause.
 program UltraStar;
 
+{$IFDEF MSWINDOWS}
   {$R 'UltraStar.res' 'UltraStar.rc'}
-  {$I switches.inc}
+{$ENDIF}
+
+{$I switches.inc}
 
 uses
 {$ENDIF}
+  {$IFDEF Unix}            // http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial
+    cthreads,              // THIS MUST be the first used unit in FPC!!
+    cwstring,              // Enable Unicode support
+  {$ENDIF}
 
   //------------------------------
   //Includes - 3rd Party Libraries
@@ -32,7 +39,6 @@ uses
 
   {$IFDEF MSWINDOWS}
   midiout       in 'lib\midi\midiout.pas',
-  midiin        in 'lib\midi\midiin.pas',
   CIRCBUF       in 'lib\midi\CIRCBUF.PAS',
   MidiType      in 'lib\midi\MidiType.PAS',
   MidiDefs      in 'lib\midi\MidiDefs.PAS',
@@ -140,11 +146,6 @@ uses
   UPlatformLinux    in 'Classes\UPlatformLinux.pas',
 {$ENDIF}
 
-{$IFDEF FPC}
-  ulazjpeg          in 'Classes\Ulazjpeg.pas',
-{$ENDIF}
-
-
   //------------------------------
   //Includes - Media support classes....
   //           Make sure UMedia always first, then UMedia_dummy
@@ -239,8 +240,6 @@ uses
 
 {$IFNDEF FPC}
 begin
-  //Core := TCore.Create('lol', 1234);
   Main;
-  //Core.Run;
 end.
 {$ENDIF}

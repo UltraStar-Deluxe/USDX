@@ -18,6 +18,7 @@ uses
   UDisplay,
   USongs,
   SysUtils,
+  UCommon,
   ULog,
   UThemes,
   UTexture,
@@ -131,11 +132,6 @@ uses UGraphic,
      UCovers,
      math,
      OpenGL12,
-     {$IFDEF win32}
-     windows,
-     {$ELSE}
-     lclintf,
-     {$ENDIF}
      USkins,
      UDLLManager,
      UParty,
@@ -527,7 +523,6 @@ begin
 
               //I := CatSongs.VisibleIndex(Interaction);
               CatSongs.ClickCategoryButton(Interaction);
-            }
               {I2 := CatSongs.VisibleIndex(Interaction);
               SongCurrent := SongCurrent - I + I2;
               SongTarget := SongTarget - I + I2; }
@@ -795,8 +790,7 @@ var
   Pet: integer;  
 Label CreateSongButtons;  
 begin
-  (*
-  if (length(CatSongs.Song) > 0) then
+  {if (length(CatSongs.Song) > 0) then
   begin
     //Set Length of Button Array one Time Instead of one time for every Song
     SetButtonLength(Length(CatSongs.Song));
@@ -854,14 +848,7 @@ begin
         try
           AddButton(300 + Pet*250, 140, 200, 200, '', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         except
-          {$IFDEF MSWINDOWS}{
-          Messagebox(0, PChar('No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.'), PChar(Language.Translate('US_VERSION')), MB_ICONERROR or MB_OK);
-          {$ELSE} {
-          
-          // TODO : JB_linux - better handle this message and display to user..
-          writeln( 'Cover Image is damaged. Could not Workaround Song Loading, Ultrastar will exit now.');
-          Log.LogError( 'No Cover Image is damage. Could not Workaround Song Loading, Ultrastar will exit now.' );
-          {$ENDIF} {
+          ShowMessage('"No Cover" image is damaged. Ultrastar will exit now.');
           Halt;
         end;
         I := Pet + 1;
@@ -871,8 +858,7 @@ begin
     if (I <> -1) then
       GoTo CreateSongButtons;
 
-  end;
-  *)
+  end;    }
 end;
 
 procedure TScreenSong.SetScroll;
@@ -1078,7 +1064,7 @@ begin
     if Interaction = High(Button) then
       Button[0].X := 300 + 260;
   end;
-  }
+
   // kolowe
 {  for B := 0 to High(Button) do begin
     Wsp := (B - Interaction); // 0 dla srodka, -1 dla lewego, +1 dla prawego itd.
@@ -1105,7 +1091,7 @@ begin
     else
       Button[B].Visible := True;
   end;
-}
+
 {  if Length(Button) >= 3 then begin
     if Interaction = 0 then
       Button[High(Button)].X := 300 - 260;
@@ -1130,7 +1116,6 @@ var
   Z, Z2:      real;
   VS:     integer;
 begin
-(*
   {VS := CatSongs.VisibleSongs; // 0.5.0 (I): cached, very important
 
   // kolowe
@@ -1154,7 +1139,6 @@ begin
     Button[B].H := Button[B].W;
     end;
   end;}
-*)
 end;
 
 (*
@@ -1250,7 +1234,6 @@ var
   X:        Real;
   helper: real;
 begin
-(*
   {VS := CatSongs.VisibleSongs; // cache Visible Songs
   {Vars
   Theme.Song.CoverW: Radius des Kreises
@@ -1340,7 +1323,6 @@ begin
 
     end;
   end;              }
-*)
 end;
 
 procedure TScreenSong.SetScroll6; // rotate (slotmachine style)
@@ -1354,7 +1336,6 @@ var
   Wsp:    real;
   Z, Z2:      real;
 begin
-(*
   {VS := CatSongs.VisibleSongs; // cache Visible Songs
   if VS <=5 then begin
     // kolowe
@@ -1447,7 +1428,6 @@ begin
       end;
     end;
   end;        }
-*)
 end;
 
 

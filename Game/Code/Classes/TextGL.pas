@@ -14,7 +14,6 @@ uses
   SDL,
   UTexture,
   Classes,
-  dialogs,
   SDL_ttf,
   ULog;
 
@@ -78,7 +77,7 @@ uses
   UMain,
   UCommon,
   SysUtils,
-  {$IFDEF LAZARUS}
+  {$IFDEF LCL}
   LResources,
   {$ENDIF}
   {$IFDEF DARWIN}
@@ -89,7 +88,7 @@ uses
 procedure BuildFont;			                // Build Our Bitmap Font
 
   procedure loadfont( aID : integer; aType, aResourceName : String);
-  {$IFDEF LAZARUS}
+  {$IFDEF LCL}
   var
     lLazRes  : TLResource;
     lResData : TStringStream;
@@ -106,7 +105,6 @@ procedure BuildFont;			                // Build Our Bitmap Font
             freeandnil( lResData );
           end;
         end;
-      
   {$ELSE}
   var
     Reg:  TResourceStream;
@@ -387,6 +385,7 @@ begin
    begin
      Log.LogStatus('ERROR Could not find font in ' + FileName , '');
      ShowMessage(  'ERROR Could not find font in ' + FileName );
+     Result := nil;
    end;
 end;
 

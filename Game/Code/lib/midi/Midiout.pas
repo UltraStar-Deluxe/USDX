@@ -105,11 +105,8 @@ uses
   Windows,
   Messages,
   Classes,
-  //Controls,
   MMSystem,
-  {$IFDEF LCL}
-  LCLIntf, // used for AllocateHWnd
-  {$ENDIF}
+  UCommon,
   Circbuf,
   MidiType,
   MidiDefs,

@@ -62,12 +62,10 @@ var
 implementation
 
 uses
-     {$IFDEF LAZARUS}
-     ulazjpeg,
-     {$ELSE}
+     {$IFDEF Delphi}
      JPEG,
-     {$ENDIF}
      graphics,
+     {$ENDIF}
      TextGL,
 //     ULog,
      UMain,
@@ -330,13 +328,16 @@ begin
 end;}
 
 procedure TDisplay.PrintScreen;
+(*
 var
   Bitmap:     TBitmap;
   Jpeg:       TJpegImage;
   X, Y:       integer;
   Num:        integer;
   FileName:   string;
+*)
 begin
+(*
   for Num := 1 to 9999 do
   begin
     FileName := IntToStr(Num);
@@ -362,6 +363,7 @@ begin
   Jpeg.CompressionQuality := 95;//90;
   Jpeg.SaveToFile(FileName);
   Jpeg.Free;
+*)
 end;
 
 procedure TDisplay.ScreenShot;

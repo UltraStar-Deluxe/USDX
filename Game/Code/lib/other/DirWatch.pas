@@ -31,11 +31,7 @@ uses
   Windows,
   Messages,
   SysUtils,
-  {$IFDEF LCL}
-  LCLIntf, // used for AllocateHWnd
-  {$ELSE}
-  Forms,
-  {$ENDIF}
+  UCommon,
   Classes;
 
 type
