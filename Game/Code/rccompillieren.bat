@@ -1,1 +1,0 @@
-BRC32 -r UltraStar.RC
