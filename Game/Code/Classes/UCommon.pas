@@ -11,12 +11,9 @@ interface
 uses
   SysUtils,
   Classes,
-  Messages,
-{$IFDEF LCL}
-  lResources,
-{$ENDIF}
-{$IFDEF win32}
+{$IFDEF MSWINDOWS}
   Windows,
+  Messages,
 {$ENDIF}
   ULog;
 
@@ -29,9 +26,7 @@ type
   TWin32FindData = LongInt;
 {$ENDIF}
 
-{$IFDEF LCL}
-  function LazFindResource( const aName, aType : String ): TLResource;
-{$ENDIF}
+function GetResourceStream(const aName, aType : string): TStream;
 
 procedure ShowMessage( const msg : String );
 
@@ -52,6 +47,8 @@ function AdaptFilePaths( const aPath : widestring ): widestring;
   procedure ZeroMemory( Destination: Pointer; Length: DWORD );
 {$ENDIF}
 
+function FileExistsInsensitive(var FileName: string): boolean;
+
 (*
  * Character classes
  *)
@@ -69,6 +66,7 @@ uses
 {$IFDEF Delphi}
   Dialogs,
 {$ENDIF}
+  UMain,
   UConfig;
 
 function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
@@ -133,25 +131,80 @@ end;
 *)
 {$ENDIF}
 
-
-{$IFDEF LCL}
-function LazFindResource( const aName, aType : String ): TLResource;
+// Checks if a regular files or directory with the given name exists.
+// The comparison is case insensitive.
+function FileExistsInsensitive(var FileName: string): boolean;
 var
-  iCount : Integer;
+  FilePath, LocalFileName: string;
+  SearchInfo: TSearchRec;
 begin
-  result := nil;
-
-  for iCount := 0 to LazarusResources.count -1 do
+{$IFDEF LINUX} // eddie: Changed FPC to LINUX: Windows and Mac OS X dont have case sensitive file systems
+  // speed up standard case
+  if FileExists(FileName) then
   begin
-    if ( LazarusResources.items[ iCount ].Name      = aName ) AND
-       ( LazarusResources.items[ iCount ].ValueType = aType ) THEN
+    Result := true;
+    exit;
+  end;
+
+  Result := false;
+
+  FilePath := ExtractFilePath(FileName);
+  if (FindFirst(FilePath+'*', faAnyFile, SearchInfo) = 0) then
+  begin
+    LocalFileName := ExtractFileName(FileName);
+    repeat
+      if (AnsiSameText(LocalFileName, SearchInfo.Name)) then
+      begin
+        FileName := FilePath + SearchInfo.Name;
+        Result := true;
+        break;
+      end;
+    until (FindNext(SearchInfo) <> 0);
+  end;
+  FindClose(SearchInfo);
+{$ELSE}
+  Result := FileExists(FileName);
+{$ENDIF}
+end;
+
+
+{$IFDEF Linux}
+  // include resource-file info (stored in the constant array "resources")
+  {$I ../resource.inc}
+{$ENDIF}
+
+function GetResourceStream(const aName, aType: string): TStream;
+{$IFDEF Linux}
+var
+  ResIndex: integer;
+  Filename: string;
+{$ENDIF}
+begin
+  Result := nil;
+
+  {$IFDEF Linux}
+  for ResIndex := 0 to High(resources) do
+  begin
+    if (resources[ResIndex][0] = aName ) and
+       (resources[ResIndex][1] = aType ) then
     begin
-      result := LazarusResources.items[ iCount ];
+      try
+        Filename := ResourcesPath + resources[ResIndex][2];
+        Result := TFileStream.Create(Filename, fmOpenRead);
+      except
+        Log.LogError('Failed to open: "'+ resources[ResIndex][2] +'"', 'GetResourceStream');
+      end;
       exit;
     end;
   end;
+  {$ELSE}
+  try
+    Result := TResourceStream.Create(HInstance, aName , PChar(aType));
+  except
+    Log.LogError('Invalid resource: "'+ aType + ':' + aName +'"', 'GetResourceStream');
+  end;
+  {$ENDIF}
 end;
-{$ENDIF}
 
 {$IFDEF FPC}
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;

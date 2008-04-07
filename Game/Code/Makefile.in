@@ -49,29 +49,30 @@ PLIBS = @PLIBS@
 PPLATFORM = @FPC_PLATFORM@
 PPROCESSOR = @FPC_PROCESSOR@
 
+# TODO: remove lazarus stuff
 # lazarus defines
-LAZARUS_DIR = @LAZARUS_DIR@
-LCL_WIDGET_TYPE = @LCL_WIDGET_TYPE@
-PROJ_SUFFIX = .lpr
+#LAZARUS_DIR = @LAZARUS_DIR@
+#LCL_WIDGET_TYPE = @LCL_WIDGET_TYPE@
+#    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)
+#    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE)
 
-# RC to LRS resource compiler
-RESCOMPILER_NAME = USDXResCompiler
-RESCOMPILER_BIN = $(USDX_TOOLS_DIR)/$(RESCOMPILER_NAME)$(EXE_SUFFIX)
-RESCOMPILER_SRC = $(USDX_TOOLS_DIR)/$(RESCOMPILER_NAME)$(PROJ_SUFFIX)
-RESCOMPILER_PFLAGS = -dRELEASE
+# RC resource extraction config
+RESEXTRACTOR_NAME = ResourceExtractor
+RESEXTRACTOR_DIR = $(USDX_TOOLS_DIR)/$(RESEXTRACTOR_NAME)
+RESEXTRACTOR_BIN = $(RESEXTRACTOR_DIR)/$(RESEXTRACTOR_NAME)$(EXE_SUFFIX)
+RESEXTRACTOR_SRC = $(RESEXTRACTOR_DIR)/$(RESEXTRACTOR_NAME).pas
+RESEXTRACTOR_PFLAGS = -dRELEASE
+RESOURCE_DIR = $(usdxrootdir)/Resources
+RESOURCE_FILE = resource.inc
 
 # Directories added to the unit path
 PUNIT_TOKEN = -Fu
 PUNIT_FLAGS = \
-    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM) \
-    $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/images/lib/$(PPROCESSOR)-$(PPLATFORM) \
-    $(PUNIT_TOKEN)$(LAZARUS_DIR)/components/jpeg \
-    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE) \
     $(PUNIT_TOKEN).
-
+    
 # Directory where compiled units (.ppu and .o files) are stored
 PCUNIT_TOKEN = -FU
-PCUNIT_DIR = ./build/$(PPLATFORM)/lazarus
+PCUNIT_DIR = ./build/$(PPLATFORM)/fpc
 PCUNIT_FLAGS = $(PCUNIT_TOKEN)$(PCUNIT_DIR)
 
 # Directories added to the includes path
@@ -79,7 +80,7 @@ PINC_TOKEN = -Fi
 PINC_FLAGS = $(PINC_TOKEN)lib/JEDI-SDL/SDL/Pas
 
 # Defines
-PDEFINES  = -dLCL -dLCL$(LCL_WIDGET_TYPE)
+#PDEFINES  = -dLCL -dLCL$(LCL_WIDGET_TYPE)
 
 # FPC flags
 
@@ -98,8 +99,8 @@ PFLAGS_RELEASE = @PFLAGS_RELEASE@
 PFLAGS_EXTRA =
 PFLAGS += $(PFLAGS_EXTRA)
 
-# lpr project file used as input
-USDX_SRC = $(USDX_PREFIX)$(PROJ_SUFFIX)
+# dpr project file used as input
+USDX_SRC = $(USDX_PREFIX).dpr
 # name of executable
 USDX_BIN_NAME = $(USDX_PREFIX)$(EXE_SUFFIX)
 USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
@@ -108,7 +109,7 @@ USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
 
 all: resources ultrastardx-app
 
-resources: $(USDX_PREFIX).lrs
+resources: $(RESOURCE_FILE)
 
 ultrastardx-app: $(USDX_BIN)
 
@@ -161,6 +162,7 @@ install-data:
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Sounds RECURSIVE_DST_DIR=$(INSTALL_datadir)/Sounds install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Languages RECURSIVE_DST_DIR=$(INSTALL_datadir)/Languages install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Skins RECURSIVE_DST_DIR=$(INSTALL_datadir)/Skins install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Resources RECURSIVE_DST_DIR=$(INSTALL_datadir)/Resources install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/InstallerDependencies/Visuals RECURSIVE_DST_DIR=$(INSTALL_datadir)/Visuals install-data-recursive
 
 install-data-recursive:
@@ -188,6 +190,7 @@ uninstall-data:
 	rm -rf $(INSTALL_datadir)/Sounds
 	rm -rf $(INSTALL_datadir)/Languages
 	rm -rf $(INSTALL_datadir)/Skins
+	rm -rf $(INSTALL_datadir)/Resources
 	rm -rf $(INSTALL_datadir)/Visuals
 	rmdir $(INSTALL_datadir)
 
@@ -246,14 +249,14 @@ clean_obj:
 	rm -f $(USDX_BIN)
 
 clean_res:
-	rm -f $(USDX_PREFIX).lrs
+	rm -f $(RESOURCE_FILE)
 
-$(USDX_PREFIX).lrs: $(RESCOMPILER_BIN) $(USDX_PREFIX).rc
-	$(RESCOMPILER_BIN) $(USDX_PREFIX).rc
+$(RESOURCE_FILE): $(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc
+	$(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc $(RESOURCE_DIR) $(RESOURCE_FILE)
 
-$(RESCOMPILER_BIN): $(RESCOMPILER_SRC)
+$(RESEXTRACTOR_BIN): $(RESEXTRACTOR_SRC)
 	mkdir -p $(PCUNIT_DIR)
-	$(PPC) $(RESCOMPILER_PFLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(RESCOMPILER_SRC)
+	$(PPC) $(RESEXTRACTOR_PFLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(RESEXTRACTOR_SRC)
 
 configure: configure.ac config.inc.in aclocal.m4
 	autoconf

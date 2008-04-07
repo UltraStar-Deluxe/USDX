@@ -78,6 +78,7 @@ var
   LanguagesPath:    string;
   PluginPath:       string;
   VisualsPath:      string;
+  ResourcesPath:    string;
   PlayListPath:     string;
 
   UserSongPath:     string = '';
@@ -1097,7 +1098,7 @@ begin
   initialize_path( LanguagesPath   , Platform.GetGameSharedPath + 'Languages'   + PathDelim );
   initialize_path( PluginPath      , Platform.GetGameSharedPath + 'Plugins'     + PathDelim );
   initialize_path( VisualsPath     , Platform.GetGameSharedPath + 'Visuals'     + PathDelim );
-
+  initialize_path( ResourcesPath   , Platform.GetGameSharedPath + 'Resources'   + PathDelim );
   initialize_path( ScreenshotsPath , Platform.GetGameUserPath + 'Screenshots' + PathDelim );
 
   // Users Song Path ....

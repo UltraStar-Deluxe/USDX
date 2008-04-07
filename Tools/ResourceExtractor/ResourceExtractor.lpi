@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="6"/>
+    <General>
+      <Flags>
+        <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <Units Count="3">
+      <Unit0>
+        <Filename Value="ResourceExtractor.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ResourceExtractor"/>
+        <CursorPos X="1" Y="131"/>
+        <TopLine Value="108"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="21"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="../USDXResCompiler.lpr"/>
+        <UnitName Value="USDXResCompiler"/>
+        <CursorPos X="17" Y="96"/>
+        <TopLine Value="89"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="../../Game/Code/resource.inc"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+    </Units>
+    <JumpHistory Count="8" HistoryIndex="7">
+      <Position1>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="144" Column="23" TopLine="104"/>
+      </Position1>
+      <Position2>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="120" Column="1" TopLine="99"/>
+      </Position2>
+      <Position3>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="140" Column="25" TopLine="105"/>
+      </Position3>
+      <Position4>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="146" Column="32" TopLine="103"/>
+      </Position4>
+      <Position5>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="139" Column="27" TopLine="105"/>
+      </Position5>
+      <Position6>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="140" Column="8" TopLine="105"/>
+      </Position6>
+      <Position7>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="139" Column="27" TopLine="106"/>
+      </Position7>
+      <Position8>
+        <Filename Value="ResourceExtractor.pas"/>
+        <Caret Line="144" Column="7" TopLine="106"/>
+      </Position8>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <SearchPaths>
+      <SrcPath Value="../../Game/Code/"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+</CONFIG>

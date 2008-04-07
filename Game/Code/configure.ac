@@ -37,23 +37,23 @@ AC_ARG_WITH([cfg-dummy1], [
 External Libraries:])
 
 # add lazarus option
-AC_ARG_WITH([lazarus], 
-    [AS_HELP_STRING([--with-lazarus=DIR],
-      [Directory of lazarus @<:@LAZARUSDIR@:>@])],
-    [with_lazarus=$withval], [with_lazarus="yes"])
-if [[ x$with_lazarus = xno ]] ; then
-    AC_MSG_ERROR([Lazarus is required. It is impossible to build without it.]);
-fi
+#AC_ARG_WITH([lazarus], 
+#    [AS_HELP_STRING([--with-lazarus=DIR],
+#      [Directory of lazarus @<:@LAZARUSDIR@:>@])],
+#    [with_lazarus=$withval], [with_lazarus="yes"])
+#if [[ x$with_lazarus = xno ]] ; then
+#    AC_MSG_ERROR([Lazarus is required. It is impossible to build without it.]);
+#fi
 
 # add lazarus widget-type option
 # the result is not used at the moment
-AC_ARG_WITH([lcl-widget-type], 
-    [AS_HELP_STRING([--with-lcl-widget-type=TYPE],
-      [Lazarus LCL Widget  Type @<:@default=check@:>@])],
-    [with_lcl_widget_type=$withval], [with_lcl_widget_type=""])
-if [[ x$with_lcl_widget_type = xno -o x$with_lcl_widget_type = xyes ]] ; then
-    AC_MSG_ERROR([Invalid LCL Widget Type (try one of gtk2/gtk/qt)]);
-fi
+#AC_ARG_WITH([lcl-widget-type], 
+#    [AS_HELP_STRING([--with-lcl-widget-type=TYPE],
+#      [Lazarus LCL Widget  Type @<:@default=check@:>@])],
+#    [with_lcl_widget_type=$withval], [with_lcl_widget_type=""])
+#if [[ x$with_lcl_widget_type = xno -o x$with_lcl_widget_type = xyes ]] ; then
+#    AC_MSG_ERROR([Invalid LCL Widget Type (try one of gtk2/gtk/qt)]);
+#fi
 
 # add portaudio option
 AC_ARG_WITH([portaudio], 
@@ -293,66 +293,66 @@ fi
 # -----------------------------------------
 
 # set dirs to check for lazarus
-if [[ x$with_lazarus = xyes ]]; then
+#if [[ x$with_lazarus = xyes ]]; then
    # use default path (ignore the standard path (PATH) because the lazarus executable might
    # be in /usr/bin, but what we want is the program directory with the libs)   
-   LAZARUS_CHECK_DIRS="/usr/bin/lazarus:/usr/lib/lazarus:/usr/share/lazarus:/opt/lazarus:/usr/local/bin/lazarus:/usr/local/lib/lazarus:/usr/local/share/lazarus"
-else
+#   LAZARUS_CHECK_DIRS="/usr/bin/lazarus:/usr/lib/lazarus:/usr/share/lazarus:/opt/lazarus:/usr/local/bin/lazarus:/usr/local/lib/lazarus:/usr/local/share/lazarus"
+#else
     # check if dir is valid
-    if [[ -d $with_lazarus ]] ; then
-        LAZARUS_CHECK_DIRS=$with_lazarus
-    else
-        AC_MSG_ERROR([LAZARUSDIR is not a directory.]);
-    fi
-fi
+#    if [[ -d $with_lazarus ]] ; then
+#        LAZARUS_CHECK_DIRS=$with_lazarus
+#    else
+#        AC_MSG_ERROR([LAZARUSDIR is not a directory.]);
+#    fi
+#fi
 
 # find lazarus 
-AC_PATH_PROG(LAZARUS, lazarus, no, [$LAZARUS_CHECK_DIRS])
-if [[ $LAZARUS = "no" ]] ; then
-    AC_MSG_ERROR([Could not find lazarus. Please install lazarus and try again.]);
-fi
-LAZARUS_DIR=`AS_DIRNAME(["$LAZARUS"])`
+#AC_PATH_PROG(LAZARUS, lazarus, no, [$LAZARUS_CHECK_DIRS])
+#if [[ $LAZARUS = "no" ]] ; then
+#    AC_MSG_ERROR([Could not find lazarus. Please install lazarus and try again.]);
+#fi
+#LAZARUS_DIR=`AS_DIRNAME(["$LAZARUS"])`
 
 # get lazarus version
-AC_MSG_CHECKING(for version of lazarus)
+#AC_MSG_CHECKING(for version of lazarus)
 # (do this in a temporary shell to prevent a change of directory)
-LAZARUS_VERSION=`(cd "$LAZARUS_DIR/tools/install"; ./get_lazarus_version.sh)`
+#LAZARUS_VERSION=`(cd "$LAZARUS_DIR/tools/install"; ./get_lazarus_version.sh)`
 #LAZARUS_VERSION=`cat ide/version.inc | tr -d "' \t"` 
-AC_SPLIT_VERSION([LAZARUS], [$LAZARUS_VERSION])
-AC_MSG_RESULT(@<:@$LAZARUS_VERSION@:>@)
+#AC_SPLIT_VERSION([LAZARUS], [$LAZARUS_VERSION])
+#AC_MSG_RESULT(@<:@$LAZARUS_VERSION@:>@)
 
 # check if LCL Widget type is valid
-if [[ x$with_lcl_widget_type = x ]]; then
-    # search for standard types
-    LCL_CHECK_WIDGET_TYPES="gtk2 gtk qt win32 carbon"
-else
+#if [[ x$with_lcl_widget_type = x ]]; then
+#    # search for standard types
+#    LCL_CHECK_WIDGET_TYPES="gtk2 gtk qt win32 carbon"
+#else
     # search for user defined type only
-    LCL_CHECK_WIDGET_TYPES="$with_lcl_widget_type"
-fi
+#    LCL_CHECK_WIDGET_TYPES="$with_lcl_widget_type"
+#fi
 
 # LCL widget specific base dir
-LCL_UNIT_DIR="$LAZARUS_DIR/lcl/units/$FPC_PROCESSOR-$FPC_PLATFORM"
+#LCL_UNIT_DIR="$LAZARUS_DIR/lcl/units/$FPC_PROCESSOR-$FPC_PLATFORM"
 
 # check for a supported widget type
-LCL_WIDGET_TYPE=""
-for widget_type in $LCL_CHECK_WIDGET_TYPES; do
-    widget_dir="$LCL_UNIT_DIR/$widget_type"
-    AC_MSG_CHECKING([whether LCL Widget Type "$widget_type" is supported])
-    if [[ -d "$widget_dir" ]]; then
-        LCL_WIDGET_TYPE=$widget_type
-        AC_MSG_RESULT(yes)
-        break
-    else
-        AC_MSG_RESULT(no)
-    fi
-done
+#LCL_WIDGET_TYPE=""
+#for widget_type in $LCL_CHECK_WIDGET_TYPES; do
+#    widget_dir="$LCL_UNIT_DIR/$widget_type"
+#    AC_MSG_CHECKING([whether LCL Widget Type "$widget_type" is supported])
+#    if [[ -d "$widget_dir" ]]; then
+#        LCL_WIDGET_TYPE=$widget_type
+#        AC_MSG_RESULT(yes)
+#        break
+#    else
+#        AC_MSG_RESULT(no)
+#    fi
+#done
 
 # check if a widget type was found
-if [[ x$LCL_WIDGET_TYPE = x ]]; then
-    AC_MSG_ERROR([
-!!! Could not detect the LCL Widget Type. 
-!!! Specify the widget type with the --with-lcl-widget-type option.])
-fi
+#if [[ x$LCL_WIDGET_TYPE = x ]]; then
+#    AC_MSG_ERROR([
+#!!! Could not detect the LCL Widget Type. 
+#!!! Specify the widget type with the --with-lcl-widget-type option.])
+#fi
 
 # -----------------------------------------
 # check for libraries
@@ -428,8 +428,8 @@ AC_SUBST_DEFINE(HAVE_PORTAUDIO, $PORTAUDIO_HAVE)
 AC_SUBST(PORTMIXER_LIB)
 AC_SUBST_DEFINE(HAVE_PORTMIXER, $PORTMIXER_HAVE)
 
-AC_SUBST(LAZARUS_DIR)
-AC_SUBST(LCL_WIDGET_TYPE)
+#AC_SUBST(LAZARUS_DIR)
+#AC_SUBST(LCL_WIDGET_TYPE)
 
 AC_SUBST_DEFINE(USE_LOCAL_DIRS, $enable_dev_build)
 if [[ x$enable_dev_build = xyes ]]; then

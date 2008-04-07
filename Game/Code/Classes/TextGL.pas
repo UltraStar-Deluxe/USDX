@@ -77,9 +77,6 @@ uses
   UMain,
   UCommon,
   SysUtils,
-  {$IFDEF LCL}
-  LResources,
-  {$ENDIF}
   {$IFDEF DARWIN}
   MacResources,
   {$ENDIF}
@@ -87,40 +84,22 @@ uses
 
 procedure BuildFont;			                // Build Our Bitmap Font
 
-  procedure loadfont( aID : integer; aType, aResourceName : String);
-  {$IFDEF LCL}
+  procedure loadfont(aID : integer; const aType, aResourceName: string);
   var
-    lLazRes  : TLResource;
-    lResData : TStringStream;
+    stream:  TStream;
   begin
-      try
-        lLazRes := LazFindResource( aResourceName, aType );
-        if lLazRes <> nil then
-        begin
-          lResData := TStringStream.create( lLazRes.value );
-          try
-            lResData.position := 0;
-            lResData.Read(Fonts[ aID ].Width, 256);
-          finally
-            freeandnil( lResData );
-          end;
-        end;
-  {$ELSE}
-  var
-    Reg:  TResourceStream;
-  begin
-    try
-        Reg := TResourceStream.Create(HInstance, aResourceName , pchar( aType ) );
-        try
-          Reg.Read(Fonts[ aID ].Width, 256);
-        finally
-          Reg.Free;
-        end;
-  {$ENDIF}
-      
-    except
-      Log.LogStatus( 'Could not load font : loadfont( '+ inttostr( aID ) +' , '+aType+' )' , 'ERROR');
+    stream := GetResourceStream(aResourceName, aType);
+    if (not assigned(stream)) then
+    begin
+      Log.LogError('Unknown font['+ inttostr(aID) +': '+aType+']', 'loadfont');
+      Exit;
     end;
+    try
+      stream.Read(Fonts[ aID ].Width, 256);
+    except
+      Log.LogError('Error while reading font['+ inttostr(aID) +': '+aType+']', 'loadfont');
+    end;
+    stream.Free;
   end;
 
 var

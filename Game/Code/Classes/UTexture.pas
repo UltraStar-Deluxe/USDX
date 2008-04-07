@@ -131,12 +131,6 @@ implementation
 uses ULog,
      DateUtils,
      UThemes,
-     {$ifdef LINUX}
-       fileutil,
-     {$endif}
-     {$IFDEF LCL}
-     LResources,
-     {$ENDIF}
      {$IFDEF DARWIN}
      MacResources,
      {$ENDIF}
@@ -186,6 +180,7 @@ end;
     end;
     Result := stream.Seek( offset, origin );
   end;
+  
   function SdlStreamRead( context : PSDL_RWops; Ptr : Pointer; size : Integer; maxnum: Integer ) : Integer; cdecl;
   var
     stream : TStream;
@@ -199,6 +194,7 @@ end;
       Result := -1;
     end;
   end;
+  
   function SDLStreamClose( context : PSDL_RWops ) : Integer; cdecl;
   var
     stream : TStream;
@@ -212,36 +208,10 @@ end;
 // -----------------------------------------------
 
 function TTextureUnit.LoadImage(const Identifier: string): PSDL_Surface;
-
-  function FileExistsInsensative( var aFileName : PChar ): boolean;
-  begin
-{$IFDEF LINUX} // eddie: Changed FPC to LINUX: Windows and Mac OS X dont have case sensitive file systems
-    result := true;
-
-    if FileExists( aFileName ) then
-      exit;
-
-    aFileName := pchar( FindDiskFileCaseInsensitive( aFileName ) );
-    result    := FileExists( aFileName );
-{$ELSE}
-    result := FileExists( aFileName );
-{$ENDIF}
-  end;
-
 var
-
   TexRWops:  PSDL_RWops;
-  dHandle: THandle;
-
-  {$IFDEF LCL}
-  lLazRes  : TLResource;
-  lResData : TStringStream;
-  {$ELSE}
   TexStream: TStream;
-  {$ENDIF}
-  
-  lFileName : pchar;
-
+  FileName: string;
 begin
   Result   := nil;
   TexRWops := nil;
@@ -249,100 +219,61 @@ begin
   if Identifier = '' then
     exit;
     
-  lFileName := PChar(Identifier);
+  //Log.LogStatus( Identifier, 'LoadImage' );
 
-//  Log.LogStatus( Identifier, 'LoadImage' );
+  FileName := Identifier;
 
-//    Log.LogStatus( 'Looking for File ( Loading : '+Identifier+' - '+ FindDiskFileCaseInsensitive(Identifier) +')', '  LoadImage' );
-
-  if ( FileExistsInsensative(lFileName) ) then
+  if (FileExistsInsensitive(FileName)) then
   begin
     // load from file
-    Log.LogStatus( 'Is File ( Loading : '+lFileName+')', '  LoadImage' );
+    //Log.LogStatus( 'Is File ( Loading : '+FileName+')', '  LoadImage' );
     try
-      Result:=IMG_Load(lFileName);
-      Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
+      Result := IMG_Load(PChar(FileName));
+      //Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
     except
-      Log.LogStatus( 'ERROR Could not load from file' , Identifier);
+      Log.LogError('Could not load from file "'+FileName+'"', 'TTextureUnit.LoadImage');
       Exit;
     end;
   end
   else
   begin
-    Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
+    //Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
 
-    // load from resource stream
-    {$IFDEF LCL}
-      lLazRes := LazFindResource( Identifier, 'TEX' );
-      if lLazRes <> nil then
-      begin
-        lResData := TStringStream.create( lLazRes.value );
-        try
-          lResData.position := 0;
-          try
-            TexRWops         := SDL_AllocRW;
-            TexRWops.unknown := TUnknown( lResData );
-            TexRWops.seek    := SDLStreamSeek;
-            TexRWops.read    := SDLStreamRead;
-            TexRWops.write   := nil;
-            TexRWops.close   := SDLStreamClose;
-            TexRWops.type_   := 2;
-          except
-            Log.LogStatus( 'ERROR Could not assign resource ('+Identifier+')' , Identifier);
-            Exit;
-          end;
-        
-          Result := IMG_Load_RW(TexRWops,0);
-          SDL_FreeRW(TexRWops);
-        finally
-          freeandnil( lResData );
-        end;
-      end
-      else
-      begin
-        Log.LogStatus( 'NOT found in Resource ('+Identifier+')', '  LoadImage' );
-      end;
-    {$ELSE}
-      dHandle := FindResource(hInstance, PChar(Identifier), 'TEX');
-      if dHandle=0 then
-      begin
-        Log.LogStatus( 'ERROR Could not find resource' , '  '+ Identifier);
-        Exit;
-      end;
+    TexStream := GetResourceStream(Identifier, 'TEX');
+    if (not assigned(TexStream)) then
+    begin
+      Log.LogError( 'Invalid file or resource "'+ Identifier+'"', 'TTextureUnit.LoadImage');
+      Exit;
+    end;
 
+    TexRWops := SDL_AllocRW();
+    if (TexRWops = nil) then
+    begin
+      Log.LogError( 'Could not assign resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
+      TexStream.Free();
+      Exit;
+    end;
 
-      TexStream := nil;
-      try
-        TexStream        := TResourceStream.Create(HInstance, Identifier, 'TEX');
-      except
-        Log.LogStatus( 'ERROR Could not load from resource' , Identifier);
-        Exit;
-      end;
+    // user defined RW-callbacks
+    with TexRWops^ do
+    begin
+      unknown := TUnknown(TexStream);
+      seek    := SDLStreamSeek;
+      read    := SDLStreamRead;
+      write   := nil;
+      close   := SDLStreamClose;
+      type_   := 2;
+    end;
 
-      try
-        TexStream.position := 0;
-        try
-          TexRWops         := SDL_AllocRW;
-          TexRWops.unknown := TUnknown(TexStream);
-          TexRWops.seek    := SDLStreamSeek;
-          TexRWops.read    := SDLStreamRead;
-          TexRWops.write   := nil;
-          TexRWops.close   := SDLStreamClose;
-          TexRWops.type_   := 2;
-        except
-          Log.LogStatus( 'ERROR Could not assign resource' , Identifier);
-          Exit;
-        end;
+    //Log.LogStatus( 'resource Assigned....' , Identifier);
+    try
+      Result := IMG_Load_RW(TexRWops, 0);
+    except
+      Log.LogError( 'Could not read resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
+    end;
 
-        Log.LogStatus( 'resource Assigned....' , Identifier);        
-        Result:=IMG_Load_RW(TexRWops,0);
-        SDL_FreeRW(TexRWops);
-        
-      finally
-        if assigned( TexStream ) then
-          freeandnil( TexStream );
-      end;
-    {$ENDIF}
+    SDL_FreeRW(TexRWops);
+    TexStream.Free();
   end;
 end;
 
@@ -1018,11 +949,5 @@ begin
   Log.LogError('Unknown texture-type: "' + TypeStr + '"', 'ParseTextureType');
   Result := TEXTURE_TYPE_PLAIN;
 end;
-
-{$IFDEF LCL}
-initialization
-  {$I UltraStar.lrs}
-{$ENDIF}
-
 
 end.
