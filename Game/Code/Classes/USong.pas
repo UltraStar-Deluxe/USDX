@@ -141,6 +141,7 @@ type
       Procedure AddLyricLine(const PlayerID: Integer; const StartBeat: Integer; const RelativeBeat: Integer = -1);
       Procedure AddNote(const PlayerID: Integer; const NoteType: Char; const NoteStart, NoteLength, NoteTone: Integer; const NoteText: WideString);
       Function SolmizatLyrics(const NoteTone: Integer; const NoteText: WideString): WideString;
+      Procedure AddBPM(const StartBeat: Integer; const NewBeat: Extended);
   public
       //Required Information
       Title:      widestring;
@@ -465,6 +466,14 @@ begin
   end; // case Ini.Solmization
 end;
 
+Procedure TSong.AddBPM(const StartBeat: Integer; const NewBeat: Extended);
+begin
+  SetLength(BPM, Length(BPM) + 1);
+  BPM[High(BPM)].StartBeat := StartBeat;
+  BPM[High(BPM)].StartBeat := BPM[High(BPM)].StartBeat + RelativPosition[0];
+
+  BPM[High(BPM)].BPM := NewBeat * Mult * MultBPM;
+end;
 
 {constructor TSong.create( const aFileName : WideString );
 begin

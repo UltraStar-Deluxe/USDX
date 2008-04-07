@@ -353,62 +353,57 @@ begin
     
     // aktuelle Zeile in einzelne Werte aufteilen
     Values := TStringList.Create;
-    ParseDelimited(Values, line, ' ', 5);
-    
     try
-      if (line[1] = '-') then
-        if (not NotesRead) then
-          // skip newline if no notes before
-          continue
-        else
-        begin
-          // new lyric line
-          // param count: 1 (relative: 2)
-          
-          if (Values.Count > 2) then
-          // relativ offset  
-          begin
-            // P1
-            AddLyricLine(0, StrToInt(Values[1]), StrToInt(Values[2]));
-              
-            // P2
-            if Length(Player) = 2 Then
-              AddLyricLine(1, StrToInt(Values[1]), StrToInt(Values[2]))
-          end
+      ParseDelimited(Values, line, ' ', 5);
+    
+      try
+        if (line[1] = '-') then
+          if (not NotesRead) then
+            // skip newline if no notes before
+            continue
           else
           begin
-            AddLyricLine(0, StrToInt(Values[1]));
+            // new lyric line
+            // param count: 1 (relative: 2)
+          
+            if (Values.Count > 2) then
+              // relativ offset  
+            begin
+              // P1
+              AddLyricLine(0, StrToInt(Values[1]), StrToInt(Values[2]));
               
-            // P2
-            if Length(Player) = 2 then
-              AddLyricLine(1, StrToInt(Values[1]))
+              // P2
+              if Length(Player) = 2 Then
+                AddLyricLine(1, StrToInt(Values[1]), StrToInt(Values[2]))
+            end
+            else
+            begin
+              AddLyricLine(0, StrToInt(Values[1]));
+              
+              // P2
+              if Length(Player) = 2 then
+                AddLyricLine(1, StrToInt(Values[1]))
+            end;
           end;
+    
+        // new BPM set
+        if (line[1] = 'B') then
+        begin
+          // param count: 2
+          AddBPM(StrToInt(Values[1]), StrToFloat(Values[2]));
         end;
     
-      // new BPM set
-      if (line[1] = 'B') then
-      begin
-        // param count: 2
-        {SetLength(BPM, Length(BPM) + 1);
-        Read(SongFile, BPM[High(BPM)].StartBeat);
-        BPM[High(BPM)].StartBeat := BPM[High(BPM)].StartBeat + Rel[0];
-
-        ReadLn(SongFile, Text);
-        BPM[High(BPM)].BPM := StrToFloat(Text);
-        BPM[High(BPM)].BPM := BPM[High(BPM)].BPM * Mult * MultBPM;}
-      end;
-    
-      if (line[1] = ':') OR (line[1] = '*') OR (line[1] = 'F') then
-      begin
-        // param count: 4
-        if (Values.Count < 5) then
-          Log.LogError('Error parsing line: ' + line, 'Not enough arguments.')
-        else
+        if (line[1] = ':') OR (line[1] = '*') OR (line[1] = 'F') then
         begin
-          // Check for ZeroNote
-          if StrToInt(Values[2]) = 0 then
-            Log.LogError('Found ZeroNote: "' + line + '" -> Note ignored!')
+          // param count: 4
+          if (Values.Count < 5) then
+            Log.LogError('Error parsing line: ' + line, 'Not enough arguments.')
           else
+          begin
+            // Check for ZeroNote
+            if StrToInt(Values[2]) = 0 then
+              Log.LogError('Found ZeroNote: "' + line + '" -> Note ignored!')
+            else
             begin
               // P1
               AddNote(0, line[1], StrToInt(Values[1]), StrToInt(Values[2]), StrToInt(Values[3]), Values[4]);
@@ -417,11 +412,14 @@ begin
               if Length(Player) = 2 then
                 AddNote(1, line[1], StrToInt(Values[1]), StrToInt(Values[2]), StrToInt(Values[3]), Values[4]);
             end;
+          end;
         end;
+      except
+        on E : Exception do
+          Log.LogError('Error parsing line: ' + line, E.ClassName + ': ' + E.Message);
       end;
-    except
-      on E : Exception do
-        Log.LogError('Error parsing line: ' + line, E.ClassName + ': ' + E.Message);
+    finally
+      Values.Free();
     end;
   end;
   
