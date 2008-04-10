@@ -302,7 +302,6 @@ begin
 
   C := 0;
   N := 0;
-  Lines.Line[C].IlNut := 0;
   Lines.Line[C].HighNote := -1;
 
   for Nu := 0 to High(Note) do begin
@@ -313,7 +312,6 @@ begin
       C := C + 1;
       N := 0;
       SetLength(Lines.Line[C].Note, 0);
-      Lines.Line[C].IlNut := 0;
       Lines.Line[C].HighNote := -1;
 
       //Calculate Start of the Last Sentence
@@ -340,8 +338,6 @@ begin
 
     // tworzy miejsce na nowa nute
     SetLength(Lines.Line[C].Note, Length(Lines.Line[C].Note)+1);
-    Lines.Line[C].IlNut := Lines.Line[C].IlNut + 1;
-    Lines.Line[C].HighNote := Lines.Line[C].HighNote + 1;
 
     // dopisuje
     Lines.Line[C].Note[N].Start := Note[Nu].Start;

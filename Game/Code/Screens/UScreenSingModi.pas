@@ -148,7 +148,6 @@ begin
     Result.Sentence[I].End_       := Lines.Line[I].End_;
     Result.Sentence[I].BaseNote   := Lines.Line[I].BaseNote;
     Result.Sentence[I].HighNote   := Lines.Line[I].HighNote;
-    Result.Sentence[I].IlNut      := Lines.Line[I].IlNut;
     Result.Sentence[I].TotalNotes := Lines.Line[I].TotalNotes;
 
     SetLength(Result.Sentence[I].Note, Length(Lines.Line[I].Note));

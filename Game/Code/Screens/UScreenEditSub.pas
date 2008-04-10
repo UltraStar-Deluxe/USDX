@@ -172,7 +172,7 @@ begin
         begin
           // Paste text
           if SDL_ModState = KMOD_LCTRL then begin
-            if Lines[0].Line[Lines[0].Current].IlNut >= Lines[0].Line[CopySrc].IlNut then
+            if Lines[0].Line[Lines[0].Current].HighNote >= Lines[0].Line[CopySrc].HighNote then
               PasteText
             else
               Log.LogStatus('PasteText: invalid range', 'TScreenEditSub.ParseInput');
@@ -428,7 +428,7 @@ begin
           if SDL_ModState = 0 then begin
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
             Inc(CurrentNote);
-            if CurrentNote = Lines[0].Line[Lines[0].Current].IlNut then CurrentNote := 0;
+            if CurrentNote > Lines[0].Line[Lines[0].Current].HighNote then CurrentNote := 0;
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Lyric.Selected := CurrentNote;
           end;
@@ -619,7 +619,7 @@ begin
           if SDL_ModState = 0 then begin
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
             Inc(CurrentNote);
-            if CurrentNote = Lines[0].Line[Lines[0].Current].IlNut then CurrentNote := 0;
+            if CurrentNote > Lines[0].Line[Lines[0].Current].HighNote then CurrentNote := 0;
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Lyric.Selected := CurrentNote;
           end;
@@ -779,7 +779,6 @@ var
   N:      integer;
   NStart: integer;
   NHigh:  integer;
-  NNewL:  integer;
 begin
   // increase sentence length by 1
   CLen := Length(Lines[0].Line);
@@ -800,42 +799,35 @@ begin
   Lines[0].Line[CNew].LyricWidth := 0;
   Lines[0].Line[CNew].End_ := 0;
   Lines[0].Line[CNew].BaseNote := 0; // 0.5.0: we modify it later in this procedure
-  Lines[0].Line[CNew].IlNut := 0;
   Lines[0].Line[CNew].HighNote := -1;
   SetLength(Lines[0].Line[CNew].Note, 0);
 
   // move right notes to new sentences
   NHigh := Lines[0].Line[CStart].HighNote;
   for N := NStart to NHigh do begin
-    NNewL := Lines[0].Line[CNew].IlNut;
-    SetLength(Lines[0].Line[CNew].Note, NNewL + 1);
-    Lines[0].Line[CNew].Note[NNewL] := Lines[0].Line[CStart].Note[N];
-
     // increase sentence counters
-    Inc(Lines[0].Line[CNew].IlNut);
-    Inc(Lines[0].Line[CNew].HighNote);
-    Lines[0].Line[CNew].End_ := Lines[0].Line[CNew].Note[NNewL].Start +
-      Lines[0].Line[CNew].Note[NNewL].Length;
+    with Lines[0].Line[CNew] do
+    begin
+      Inc(HighNote);
+      SetLength(Note, HighNote + 1);
+      Note[HighNote] := Note[N];
+      End_ := Note[HighNote].Start + Note[HighNote].Length;
+      
+      if Note[HighNote].Tone < BaseNote then
+        BaseNote := Note[HighNote].Tone;
+    end;
   end;
 
   // clear old notes and set sentence counters
   Lines[0].Line[CStart].HighNote := NStart - 1;
-  Lines[0].Line[CStart].IlNut := Lines[0].Line[CStart].HighNote + 1;
   Lines[0].Line[CStart].End_ := Lines[0].Line[CStart].Note[NStart-1].Start +
     Lines[0].Line[CStart].Note[NStart-1].Length;
-  SetLength(Lines[0].Line[CStart].Note, Lines[0].Line[CStart].IlNut);
-
-  // 0.5.0: modify BaseNote
-  Lines[0].Line[CNew].BaseNote := 120;
-  for N := 0 to Lines[0].Line[CNew].IlNut do
-    if Lines[0].Line[CNew].Note[N].Tone < Lines[0].Line[CNew].BaseNote then
-      Lines[0].Line[CNew].BaseNote := Lines[0].Line[CNew].Note[N].Tone;
+  SetLength(Lines[0].Line[CStart].Note, Lines[0].Line[CStart].HighNote + 1);
 
   Lines[0].Current := Lines[0].Current + 1;
   CurrentNote := 0;
   Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
   Lyric.AddCzesc(Lines[0].Current);
-
 end;
 
 procedure TScreenEditSub.JoinSentence;
@@ -848,10 +840,9 @@ begin
   C := Lines[0].Current;
 
   // set new sentence
-  NStart := Lines[0].Line[C].IlNut;
-  Lines[0].Line[C].IlNut := Lines[0].Line[C].IlNut + Lines[0].Line[C+1].IlNut;
-  Lines[0].Line[C].HighNote := Lines[0].Line[C].HighNote + Lines[0].Line[C+1].IlNut;
-  SetLength(Lines[0].Line[C].Note, Lines[0].Line[C].IlNut);
+  NStart := Lines[0].Line[C].HighNote + 1;
+  Lines[0].Line[C].HighNote := Lines[0].Line[C].HighNote + Lines[0].Line[C+1].HighNote + 1;
+  SetLength(Lines[0].Line[C].Note, Lines[0].Line[C].HighNote + 1);
 
   // move right notes to new sentences
   for N := 0 to Lines[0].Line[C+1].HighNote do begin
@@ -878,26 +869,26 @@ procedure TScreenEditSub.DivideNote;
 var
   C:    integer;
   N:    integer;
-  NLen: integer;
 begin
   C := Lines[0].Current;
 
-  NLen := Lines[0].Line[C].IlNut + 1;
-  SetLength(Lines[0].Line[C].Note, NLen);
-  Inc(Lines[0].Line[C].HighNote);
-  Inc(Lines[0].Line[C].IlNut);
+  with Lines[0].Line[C] do
+  begin
+    Inc(HighNote);
+    SetLength(Note, HighNote + 1);
 
-  // we copy all notes including selected one
-  for N := Lines[0].Line[C].HighNote downto CurrentNote+1 do begin
-    Lines[0].Line[C].Note[N] := Lines[0].Line[C].Note[N-1];
+    // we copy all notes including selected one
+    for N := HighNote downto CurrentNote+1 do begin
+      Note[N] := Note[N-1];
+    end;
+
+    // me slightly modify new note
+    Note[CurrentNote].Length := 1;
+    Inc(Note[CurrentNote+1].Start);
+    Dec(Note[CurrentNote+1].Length);
+    Note[CurrentNote+1].Text := '- ';
+    Note[CurrentNote+1].Color := 0;
   end;
-
-  // me slightly modify new note
-  Lines[0].Line[C].Note[CurrentNote].Length := 1;
-  Inc(Lines[0].Line[C].Note[CurrentNote+1].Start);
-  Dec(Lines[0].Line[C].Note[CurrentNote+1].Length);
-  Lines[0].Line[C].Note[CurrentNote+1].Text := '- ';
-  Lines[0].Line[C].Note[CurrentNote+1].Color := 0;
 end;
 
 procedure TScreenEditSub.DeleteNote;
@@ -916,19 +907,17 @@ begin
     for N := CurrentNote+1 to Lines[0].Line[C].HighNote do begin
       Lines[0].Line[C].Note[N-1] := Lines[0].Line[C].Note[N];
     end;
-
-    NLen := Lines[0].Line[C].IlNut - 1;
-
-    if (NLen > 0) then
+    
+    Dec(Lines[0].Line[C].HighNote);
+    if (Lines[0].Line[C].HighNote >= 0) then
     begin
-      SetLength(Lines[0].Line[C].Note, NLen);
-      Dec(Lines[0].Line[C].HighNote);
-      Dec(Lines[0].Line[C].IlNut);
-
+      SetLength(Lines[0].Line[C].Note, Lines[0].Line[C].HighNote + 1);
 
       // me slightly modify new note
-      if CurrentNote > Lines[0].Line[C].HighNote then Dec(CurrentNote);
-        Lines[0].Line[C].Note[CurrentNote].Color := 1;
+      if CurrentNote > Lines[0].Line[C].HighNote then
+        Dec(CurrentNote);
+      
+      Lines[0].Line[C].Note[CurrentNote].Color := 1;
     end
     //Last Note of current Sentence Deleted - > Delete Sentence
     else
@@ -1047,8 +1036,7 @@ begin
   Time2 := Lines[0].Line[Dst].Note[0].Start;
   TD := Time2-Time1;
 
-  SetLength(Lines[0].Line[Dst].Note, Lines[0].Line[Src].IlNut);
-  Lines[0].Line[Dst].IlNut := Lines[0].Line[Src].IlNut;
+  SetLength(Lines[0].Line[Dst].Note, Lines[0].Line[Src].HighNote + 1);
   Lines[0].Line[Dst].HighNote := Lines[0].Line[Src].HighNote;
   for N := 0 to Lines[0].Line[Src].HighNote do begin
     Lines[0].Line[Dst].Note[N].Text := Lines[0].Line[Src].Note[N].Text;
@@ -1080,7 +1068,6 @@ begin
     Lines[0].Line[Dst + C].Start := Lines[0].Line[Dst + C - 1].Note[0].Start +
       (Lines[0].Line[Src + C].Note[0].Start - Lines[0].Line[Src + C - 1].Note[0].Start);
     SetLength(Lines[0].Line[Dst + C].Note, 1);
-    Lines[0].Line[Dst + C].IlNut := 1;
     Lines[0].Line[Dst + C].HighNote := 0;
     Lines[0].Line[Dst + C].Note[0].Start := Lines[0].Line[Dst + C].Start;
     Lines[0].Line[Dst + C].Note[0].Length := 1;
@@ -1288,7 +1275,7 @@ begin
   
 
   Text[TextSentence].Text := IntToStr(Lines[0].Current + 1) + ' / ' + IntToStr(Lines[0].Number);
-  Text[TextNote].Text := IntToStr(CurrentNote + 1) + ' / ' + IntToStr(Lines[0].Line[Lines[0].Current].IlNut);
+  Text[TextNote].Text := IntToStr(CurrentNote + 1) + ' / ' + IntToStr(Lines[0].Line[Lines[0].Current].HighNote + 1);
 
   // Song info
   Text[TextBPM].Text := FloatToStr(CurrentSong.BPM[0].BPM / 4);

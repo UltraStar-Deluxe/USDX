@@ -22,7 +22,6 @@ type
     End_:       integer;
     BaseNote:   integer;
     HighNote:   integer;
-    IlNut:      integer;      // (TODO: Il = tone, Nut(a) = Note)
     TotalNotes: integer;
     LastLine:   boolean;
     Note:     array of record
