@@ -33,43 +33,43 @@ type
   TScreenEditSub = class(TMenu)
     private
       //Variable is True if no Song is loaded
-      Error:        Boolean;
+      Error:            Boolean;
       
-      TextNote:     integer;
-      TextSentence: integer;
-      TextTitle:    integer;
-      TextArtist:   integer;
-      TextMp3:      integer;
-      TextBPM:      integer;
-      TextGAP:      integer;
-      TextDebug:    integer;
-      TextNStart:   integer;
-      TextNDlugosc: integer;
-      TextNTon:     integer;
-      TextNText:    integer;
+      TextNote:         integer;
+      TextSentence:     integer;
+      TextTitle:        integer;
+      TextArtist:       integer;
+      TextMp3:          integer;
+      TextBPM:          integer;
+      TextGAP:          integer;
+      TextDebug:        integer;
+      TextNStart:       integer;
+      TextNLength:      integer;
+      TextNTon:         integer;
+      TextNText:        integer;
       CurrentNote:      integer;
-      PlaySentence: boolean;
+      PlaySentence:     boolean;
       PlaySentenceMidi: boolean;
-      PlayStopTime: real;
-      LastClick:    integer;
-      Click:        boolean;
-      CopySrc:      integer;
+      PlayStopTime:     real;
+      LastClick:        integer;
+      Click:            boolean;
+      CopySrc:          integer;
 
       {$IFDEF UseMIDIPort}
-      MidiOut:      TMidiOutput;
+      MidiOut:         TMidiOutput;
       {$endif}
 
-      MidiStart:    real;
-      MidiStop:     real;
-      MidiTime:     real;
-      MidiPos:      real;
-      MidiLastNote: integer;
+      MidiStart:       real;
+      MidiStop:        real;
+      MidiTime:        real;
+      MidiPos:         real;
+      MidiLastNote:    integer;
 
-      TextEditMode: boolean;
+      TextEditMode:    boolean;
 
       procedure NewBeat;
-      procedure CzesciDivide;
-      procedure CzesciMultiply;
+      procedure DivideBPM;
+      procedure MultiplyBPM;
       procedure LyricsCapitalize;
       procedure LyricsCorrectSpaces;
       procedure FixTimings;
@@ -143,13 +143,13 @@ begin
       'D':
         begin
           // Divide lengths by 2
-          CzesciDivide;
+          DivideBPM;
           Exit;
         end;
       'M':
         begin
           // Multiply lengths by 2
-          CzesciMultiply;
+          MultiplyBPM;
           Exit;
         end;
       'C':
@@ -520,11 +520,13 @@ begin
 
       SDLK_DOWN:
         begin
-          {$IFDEF UseMIDIPort}
+
           // skip to next sentence
           if SDL_ModState = 0 then begin
+            {$IFDEF UseMIDIPort}
             MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
+            {$endif}
 
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
             Inc(Lines[0].Current);
@@ -542,17 +544,18 @@ begin
           if SDL_ModState = KMOD_LCTRL then begin
             TransposeNote(-1);
           end;
-          {$endif}
 
         end;
 
       SDLK_UP:
         begin
-          {$IFDEF UseMIDIPort}
+
           // skip to previous sentence
           if SDL_ModState = 0 then begin
+            {$IFDEF UseMIDIPort}
             MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
+            {$endif}
 
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
             Dec(Lines[0].Current);
@@ -570,7 +573,6 @@ begin
           if SDL_ModState = KMOD_LCTRL then begin
             TransposeNote(1);
           end;
-          {$endif}
         end;
 
       end; // case
@@ -646,7 +648,7 @@ begin
 //    Music.PlayClick;
 end;
 
-procedure TScreenEditSub.CzesciDivide;
+procedure TScreenEditSub.DivideBPM;
 var
   C:    integer;
   N:    integer;
@@ -662,7 +664,7 @@ begin
   end; // C
 end;
 
-procedure TScreenEditSub.CzesciMultiply;
+procedure TScreenEditSub.MultiplyBPM;
 var
   C:    integer;
   N:    integer;
@@ -1137,7 +1139,7 @@ begin
   AddText(20, 265,  0, 8, 0, 0, 0, 'Text:');
 
   TextNStart :=   AddText(120, 190,  0, 8, 0, 0, 0, 'a');
-  TextNDlugosc := AddText(120, 215,  0, 8, 0, 0, 0, 'b');
+  TextNLength := AddText(120, 215,  0, 8, 0, 0, 0, 'b');
   TextNTon :=     AddText(120, 240,  0, 8, 0, 0, 0, 'c');
   TextNText :=    AddText(120, 265,  0, 8, 0, 0, 0, 'd');
 
@@ -1226,15 +1228,16 @@ begin
 
   // midi music
   if PlaySentenceMidi then begin
+   {$IFDEF UseMIDIPort}
     MidiPos := USTime.GetTime - MidiTime + MidiStart;
 
-    {$IFDEF UseMIDIPort}
+
     // stop the music
     if (MidiPos > MidiStop) then begin
       MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
       PlaySentenceMidi := false;
     end;
-    {$ENDIF}
+  {$ENDIF}
 
     // click
     AktBeat := Floor(GetMidBeat(MidiPos - CurrentSong.GAP / 1000));
@@ -1245,8 +1248,9 @@ begin
         if (Lines[0].Line[Lines[0].Current].Note[Pet].Start = AktBeat) then
         begin
 
-          {$IFDEF UseMIDIPort}
+
           LastClick := AktBeat;
+          {$IFDEF UseMIDIPort}
           if Pet > 0 then
             MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[Pet-1].Tone + 60, 127);
           MidiOut.PutShort($91, Lines[0].Line[Lines[0].Current].Note[Pet].Tone + 60, 127);
@@ -1295,7 +1299,7 @@ begin
   begin
     // Note info
     Text[TextNStart].Text :=    IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
-    Text[TextNDlugosc].Text :=  IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
+    Text[TextNLength].Text :=  IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
     Text[TextNTon].Text :=      IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' ( ' + GetNoteName(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' )';
     Text[TextNText].Text :=              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
   end;
