@@ -746,16 +746,20 @@ begin
   BackImg.TexY2 := 1;
   if (BackImg.TexNum <> -1) then
   begin
-  // does anyone know what these loops were for?
-{    // draw texture with overlapping
-    for PetY := 1 to BackH do
-      for PetX := 1 to BackW do begin
-        BackImg.X := (PetX-1)/BackW * 800; //640
-        BackImg.Y := (PetY-1)/BackH * 600; //480
-        DrawTexture(BackImg);
-      end; // for PetX}
-    {BackImg.X:=BackW;
-    BackImg.Y:=BackW;  }
+    // does anyone know what these loops were for?
+    {
+      // draw texture with overlapping
+      for PetY := 1 to BackH do
+        for PetX := 1 to BackW do begin
+          BackImg.X := (PetX-1)/BackW * 800; //640
+          BackImg.Y := (PetY-1)/BackH * 600; //480
+          DrawTexture(BackImg);
+        end; // for PetX
+    }
+    {
+      BackImg.X:=BackW;
+      BackImg.Y:=BackW;
+    }
     BackImg.X := 0;
     BackImg.Y := 0;
     BackImg.Z := 0; // todo: eddie: to the opengl experts: please check this! On the mac z is not initialized???
@@ -765,7 +769,7 @@ begin
   end; // if
 
 
-//  if assigned( VideoPlayback ) then
+  //if assigned( VideoPlayback ) then
   begin
     VideoPlayback.GetFrame( now() );
     VideoPlayback.DrawGL(2);
@@ -802,9 +806,9 @@ begin
   for J := 0 to Length(SelectsS) - 1 do
     SelectsS[J].Draw;
 
- // Third, we draw all our widgets
-//  for J := 0 to Length(WidgetsSrc) - 1 do
-//    SDL_BlitSurface(WidgetsSrc[J], nil, ParentBackBuf, WidgetsRect[J]);
+  // Third, we draw all our widgets
+  //  for J := 0 to Length(WidgetsSrc) - 1 do
+  //    SDL_BlitSurface(WidgetsSrc[J], nil, ParentBackBuf, WidgetsRect[J]);
   Result := True;
 end;
 
@@ -815,15 +819,17 @@ begin
   Result := True;
 end;
 
-{function TMenu.GetNextScreen(): PMenu;
+{
+function TMenu.GetNextScreen(): PMenu;
 begin
   Result := NextScreen;
-end;}
+end;
+}
 
-{function TMenu.AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
+{
+function TMenu.AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
 var
   WidgetNum : Int16;
-
 begin
   If (Assigned(WidgetSrc)) Then
   begin
@@ -843,9 +849,11 @@ begin
   end
   else
     Result := -1;
-end;}
+end;
+}
 
-{procedure TMenu.ClearWidgets(MinNumber : Int16);
+{
+procedure TMenu.ClearWidgets(MinNumber : Int16);
 var
   J : Int16;
 begin
@@ -857,7 +865,8 @@ begin
 
   SetLength(WidgetsSrc, MinNumber);
   SetLength(WidgetsRect, MinNumber);
-end;}
+end;
+}
 
 function TMenu.IsSelectable(Int: Cardinal): Boolean;
 begin

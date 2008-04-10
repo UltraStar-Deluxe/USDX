@@ -363,8 +363,8 @@ begin
   end;
 
   if (SDL_BuildAudioCVT(@cvt,
-    srcFormat, srcFormatInfo.Channels, srcFormatInfo.SampleRate,
-    dstFormat, dstFormatInfo.Channels, dstFormatInfo.SampleRate) = -1) then
+    srcFormat, srcFormatInfo.Channels, Round(srcFormatInfo.SampleRate),
+    dstFormat, dstFormatInfo.Channels, Round(dstFormatInfo.SampleRate)) = -1) then
   begin
     Log.LogError(SDL_GetError(), 'TSoftMixerPlaybackStream.InitFormatConversion');
     Exit;

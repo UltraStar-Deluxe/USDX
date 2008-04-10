@@ -66,7 +66,7 @@ var
   paOutDevice     : TPaDeviceIndex;
   paOutDeviceInfo : PPaDeviceInfo;
   err             : TPaError;
-  sampleRate      : integer;
+  sampleRate      : double;
 begin
   result := false;
 
@@ -83,10 +83,7 @@ begin
   paOutDevice     := paApiInfo^.defaultOutputDevice;
   paOutDeviceInfo := Pa_GetDeviceInfo(paOutDevice);
 
-  if (paOutDeviceInfo^.defaultSampleRate > 0) then
-    sampleRate := Trunc(paOutDeviceInfo^.defaultSampleRate)
-  else
-    sampleRate := 44100;
+  sampleRate := paOutDeviceInfo^.defaultSampleRate;
 
   with paOutParams do begin
     device := paOutDevice;
@@ -96,14 +93,24 @@ begin
     hostApiSpecificStreamInfo := nil;
   end;
 
-  err := Pa_OpenStream(paStream, nil, @paOutParams, sampleRate,
-          paFramesPerBufferUnspecified,
-          paNoFlag, @PortaudioAudioCallback, Self);
-  if(err <> paNoError) then begin
-    Log.LogStatus('Pa_OpenStream: '+Pa_GetErrorText(err), 'UAudioPlayback_Portaudio');
+  // check souncard and adjust sample-rate
+  if not TAudioCore_Portaudio.TestDevice(nil, @paOutParams, sampleRate) then
+  begin
+    Log.LogStatus('TestDevice failed!', 'TAudioPlayback_Portaudio.OpenDevice');
     exit;
   end;
 
+  // open output stream
+  err := Pa_OpenStream(paStream, nil, @paOutParams, sampleRate,
+          paFramesPerBufferUnspecified,
+          paNoFlag, @PortaudioAudioCallback, Self);
+  if(err <> paNoError) then
+  begin
+    Log.LogStatus(Pa_GetErrorText(err), 'TAudioPlayback_Portaudio.OpenDevice');
+    paStream := nil;
+    exit;
+  end;
+  
   FormatInfo := TAudioFormatInfo.Create(
     paOutParams.channelCount,
     sampleRate,

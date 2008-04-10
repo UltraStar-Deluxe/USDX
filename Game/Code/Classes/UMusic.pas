@@ -117,11 +117,11 @@ type
   TAudioFormatInfo = class
     public
       Channels    : byte;
-      SampleRate  : integer;
+      SampleRate  : double;
       Format      : TAudioSampleFormat;
       FrameSize   : integer; // calculated on construction
 
-      constructor Create(Channels: byte; SampleRate: integer; Format: TAudioSampleFormat);
+      constructor Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
   end;
 
 type
@@ -273,6 +273,9 @@ type
 
       constructor Create();
       destructor Destroy(); override;
+
+      procedure LoadSounds();
+      procedure UnloadSounds();
   end;
 
 var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
@@ -302,6 +305,7 @@ uses
   sysutils,
   UMain,
   UCommandLine,
+  URecord,
   ULog;
 
 var
@@ -314,7 +318,7 @@ var
   singleton_AudioManager  : TInterfaceList  = nil;
 
 
-constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: integer; Format: TAudioSampleFormat);
+constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
 begin
   Self.Channels := Channels;
   Self.SampleRate := SampleRate;
@@ -476,11 +480,25 @@ begin
   end;
 end;
 
+
+{ TSoundLibrary }
+
 constructor TSoundLibrary.Create();
 begin
-  //Log.LogStatus('Loading Sounds', 'Music Initialize');
+  LoadSounds();
+end;
 
+destructor TSoundLibrary.Destroy();
+begin
+  UnloadSounds();
+end;
+
+procedure TSoundLibrary.LoadSounds();
+begin
+  //Log.LogStatus('Loading Sounds', 'Music Initialize');
   //Log.BenchmarkStart(4);
+
+  UnloadSounds();
 
   Start   := AudioPlayback.OpenSound(SoundPath + 'Common start.mp3');
   Back    := AudioPlayback.OpenSound(SoundPath + 'Common back.mp3');
@@ -499,7 +517,7 @@ begin
   //Log.LogBenchmark('--> Loading Sounds', 4);
 end;
 
-destructor TSoundLibrary.Destroy();
+procedure TSoundLibrary.UnloadSounds();
 begin
   Start.Free;
   Back.Free;
@@ -515,11 +533,10 @@ begin
   //Shuffle.Free;
 end;
 
-
 initialization
 begin
   singleton_AudioManager := TInterfaceList.Create();
-  
+
 end;
 
 finalization

@@ -114,7 +114,7 @@ begin
   end;
 
   // start capturing
-  RecordStream := BASS_RecordStart(AudioFormat.SampleRate, AudioFormat.Channels,
+  RecordStream := BASS_RecordStart(Round(AudioFormat.SampleRate), AudioFormat.Channels,
                     MakeLong(flags, latency),
                     @MicrophoneCallback, DeviceIndex);
   if (RecordStream = 0) then

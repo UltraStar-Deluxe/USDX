@@ -618,9 +618,9 @@ begin
                                          TexX, TexY, integer(PIX_FMT_RGB24),
                                          SWS_FAST_BILINEAR, nil, nil, nil);
       if SoftwareScaleContext <> Nil then
-        writeln('got swscale context')
+        debugwriteln('got swscale context')
       else begin
-        writeln('ERROR: didn´t get swscale context');
+        debugwriteln('ERROR: didn''t get swscale context');
         av_free(AVFrameRGB);
         av_free(AVFrame);
         avcodec_close(VideoCodecContext);

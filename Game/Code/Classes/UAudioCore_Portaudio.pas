@@ -18,6 +18,7 @@ type
   TAudioCore_Portaudio = class
     public
       class function GetPreferredApiIndex(): TPaHostApiIndex;
+      class function TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
   end;
 
 implementation
@@ -94,6 +95,146 @@ begin
   begin
     result := Pa_GetDefaultHostApi();
   end;
+end;
+
+{*
+ * Portaudio test callback used by TestDevice().
+ *}
+function TestCallback(input: Pointer; output: Pointer; frameCount: Longword;
+      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+      inputDevice: Pointer): Integer; cdecl;
+begin
+  // this callback is called only once
+  result := paAbort;
+end;
+
+(*
+ * Tests if the callback works. Some devices can be opened without
+ * an error but the callback is never called. Calling Pa_StopStream() on such
+ * a stream freezes USDX then. Probably because the callback-thread is deadlocked
+ * due to some bug in portaudio. The blocking Pa_ReadStream() and Pa_WriteStream()
+ * block forever too and though can't be used for testing.
+ *
+ * To avoid freezing Pa_AbortStream (or Pa_CloseStream which calls Pa_AbortStream)
+ * can be used to force the stream to stop. But for some reason this stops debugging
+ * in gdb with a "no process found" message.
+ *
+ * Because freezing devices are non-working devices we test the devices here to
+ * be able to exclude them from the device-selection list.
+ *
+ * Portaudio does not provide any test to check this error case (probably because
+ * it should not even occur). So we have to open the device, start the stream and
+ * check if the callback is called (the stream is stopped if the callback is called
+ * for the first time, so we can poll until the stream is stopped).
+ *
+ * Another error that occurs is that some devices (even the default device) might
+ * work at the beginning but stop after a few calls (maybe 50) of the callback.
+ * For me this problem occurs with the default output-device. The "dmix" or "front"
+ * device must be selected instead. Another problem is that (due to a bug in
+ * portaudio or ALSA) the "front" device is not detected every time portaudio
+ * is started. Sometimes it needs two or more restarts.
+ *
+ * There is no reasonable way to test for these errors. For the first error-case
+ * we could test if the callback is called 50 times but this can take a second
+ * for each device and it can fail in the 51st or even 100th callback call then.
+ *
+ * The second error-case cannot be tested at all. How should we now that one
+ * device is missing if portaudio is not even able to detect it.
+ * We could start and terminate Portaudio for several times and see if the device
+ * count changes but this is ugly.
+ *
+ * Conclusion: We are not able to autodetect a working device with
+ *   portaudio (at least not with the newest v19_20071207) at the moment.
+ *   So we have to provide the possibility to manually select an output device
+ *   in the UltraStar options if we want to use portaudio instead of SDL.
+ *)
+class function TAudioCore_Portaudio.TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
+var
+  stream: PPaStream;
+  err: TPaError;
+  cbWorks: boolean;
+  cbPolls: integer;
+  i: integer;
+const
+  altSampleRates: array[0..1] of Double = (44100, 48000); // alternative sample-rates
+begin
+  Result := false;
+
+  if (sampleRate <= 0) then
+    sampleRate := 44100;
+
+  // check if device supports our input-format
+  err := Pa_IsFormatSupported(inParams, outParams, sampleRate);
+  if(err <> paNoError) then
+  begin
+    // we cannot fix the error -> exit
+    if (err <> paInvalidSampleRate) then
+      Exit;
+
+    // try alternative sample-rates to the detected one
+    sampleRate := 0;
+    for i := 0 to High(altSampleRates) do
+    begin
+      // do not check the detected sample-rate twice
+      if (altSampleRates[i] = sampleRate) then
+        continue;
+      // check alternative
+      err := Pa_IsFormatSupported(inParams, outParams, altSampleRates[i]);
+      if (err = paNoError) then
+      begin
+        // sample-rate works
+        sampleRate := altSampleRates[i];
+        break;
+      end;
+    end;
+    // no working sample-rate found
+    if (sampleRate = 0) then
+      Exit;
+  end;
+
+  // FIXME: for some reason gdb stops after a call of Pa_AbortStream()
+  // which is implicitely called by Pa_CloseStream().
+  // gdb's stops with the message: "ptrace: no process found".
+  // Probably because the callback-thread is killed what confuses gdb.
+  {$IF Defined(Debug) and Defined(Linux)}
+  cbWorks := true;
+  {$ELSE}
+  // open device for testing
+  err := Pa_OpenStream(stream, inParams, outParams, sampleRate,
+          paFramesPerBufferUnspecified,
+          paNoFlag, @TestCallback, nil);
+  if(err <> paNoError) then
+  begin
+    exit;
+  end;
+
+  // start the callback
+  err := Pa_StartStream(stream);
+  if(err <> paNoError) then
+  begin
+    Pa_CloseStream(stream);
+    exit;
+  end;
+
+  cbWorks := false;
+  // check if the callback was called (poll for max. 200ms)
+  for cbPolls := 1 to 20 do
+  begin
+    // if the test-callback was called it should be aborted now
+    if (Pa_IsStreamActive(stream) = 0) then
+    begin
+      cbWorks := true;
+      break;
+    end;
+    // not yet aborted, wait and try (poll) again
+    Pa_Sleep(10);
+  end;
+
+  // finally abort the stream
+  Pa_CloseStream(stream);
+  {$IFEND}
+  
+  Result := cbWorks;
 end;
 
 end.

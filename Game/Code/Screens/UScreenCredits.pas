@@ -1309,9 +1309,9 @@ Log.LogStatus('',' JB-4');
         CTime_hold:=0;
         AudioPlayback.Stop;
         AudioPlayback.Open(soundpath + 'credits-outro-tune.mp3');
-        AudioPlayback.Play;
         AudioPlayback.SetVolume(20);
         AudioPlayback.SetLoop(True);
+        AudioPlayback.Play;
       end;
       if CTime_hold > 231 then begin
         AudioPlayback.Play;

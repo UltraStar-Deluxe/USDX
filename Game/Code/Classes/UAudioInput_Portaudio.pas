@@ -145,7 +145,7 @@ var
   inputParams: TPaStreamParameters;
   stream:      PPaStream;
   streamInfo:  PPaStreamInfo;
-  sampleRate:  integer;
+  sampleRate:  double;
   latency:     TPaTime;
   {$IFDEF UsePortmixer}
   sourceIndex: integer;
@@ -206,10 +206,7 @@ begin
     paDevice.Description := deviceName;
     paDevice.PaDeviceIndex := deviceIndex;
 
-    if (deviceInfo^.defaultSampleRate > 0) then
-      sampleRate := Trunc(deviceInfo^.defaultSampleRate)
-    else
-      sampleRate := 44100;
+    sampleRate := deviceInfo^.defaultSampleRate;
 
     // on vista and xp the defaultLowInputLatency may be set to 0 but it works.
     // TODO: correct too low latencies (what is a too low latency, maybe < 10ms?)
@@ -225,21 +222,17 @@ begin
       hostApiSpecificStreamInfo := nil;
     end;
 
-    // check if device supports our input-format
-    // TODO: retry with input-latency set to 20ms (defaultLowInputLatency might
-    //       not be set correctly in OSS)
-    err := Pa_IsFormatSupported(@inputParams, nil, sampleRate);
-    if(err <> 0) then
+    // check souncard and adjust sample-rate
+    if (not TAudioCore_Portaudio.TestDevice(@inputParams, nil, sampleRate)) then
     begin
-      // format not supported -> skip
-      errMsg := Pa_GetErrorText(err);
-      Log.LogError('Device error: "'+ deviceName +'" ('+ errMsg +')',
-                   'TAudioInput_Portaudio.InitializeRecord');
+      // ignore device if it does not work
+      Log.LogError('Device "'+paDevice.Description+'" does not work',
+                   'TAudioInput_Portaudio.EnumDevices');
       paDevice.Free();
       continue;
     end;
 
-    // check if the device really works
+    // open device for further info
     err := Pa_OpenStream(stream, @inputParams, nil, sampleRate,
         paFramesPerBufferUnspecified, paNoFlag, @MicrophoneTestCallback, nil);
     if(err <> paNoError) then
@@ -247,40 +240,7 @@ begin
       // unable to open device -> skip
       errMsg := Pa_GetErrorText(err);
       Log.LogError('Device error: "'+ deviceName +'" ('+ errMsg +')',
-                   'TAudioInput_Portaudio.InitializeRecord');
-      paDevice.Free();
-      continue;
-    end;
-
-
-    // check if mic-callback works (might not be called on some devices)
-
-    // start the callback
-    Pa_StartStream(stream);
-    
-    cbWorks := false;
-    // check if the callback was called (poll for max. 200ms)
-    for cbPolls := 1 to 20 do
-    begin
-      // if the test-callback was called it should be aborted now
-      if (Pa_IsStreamActive(stream) = 0) then
-      begin
-        cbWorks := true;
-        break;
-      end;
-      // not yet aborted, wait and try (poll) again
-      Pa_Sleep(10);
-    end;
-
-    // finally abort the stream (Note: Pa_StopStream might hang here)
-    Pa_AbortStream(stream);
-
-    // ignore device if callback did not work
-    if (not cbWorks) then
-    begin
-      Log.LogError('Device "'+paDevice.Description+'" does not respond',
-                   'TAudioInput_Portaudio.InitializeRecord');
-      Pa_CloseStream(stream);
+                   'TAudioInput_Portaudio.EnumDevices');
       paDevice.Free();
       continue;
     end;
@@ -289,12 +249,12 @@ begin
     streamInfo := Pa_GetStreamInfo(stream);
     if (streamInfo <> nil) then
     begin
-      if (sampleRate <> Trunc(streamInfo^.sampleRate)) then
+      if (sampleRate <> streamInfo^.sampleRate) then
       begin
-        Log.LogStatus('Portaudio changed Samplerate from ' + IntToStr(sampleRate) +
+        Log.LogStatus('Portaudio changed Samplerate from ' + FloatToStr(sampleRate) +
             ' to ' + FloatToStr(streamInfo^.sampleRate),
             'TAudioInput_Portaudio.InitializeRecord');
-        sampleRate := Trunc(streamInfo^.sampleRate);
+        sampleRate := streamInfo^.sampleRate;
       end;
     end;
     
@@ -308,7 +268,7 @@ begin
 
     Log.LogStatus('InputDevice "'+paDevice.Description+'"@' +
         IntToStr(paDevice.AudioFormat.Channels)+'x'+
-        IntToStr(paDevice.AudioFormat.SampleRate)+'Hz ('+
+        FloatToStr(paDevice.AudioFormat.SampleRate)+'Hz ('+
         FloatTostr(inputParams.suggestedLatency)+'sec)' ,
         'Portaudio.InitializeRecord');
 
