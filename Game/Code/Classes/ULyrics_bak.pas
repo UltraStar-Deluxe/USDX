@@ -86,7 +86,7 @@ type
       constructor Create;
       
       procedure AddWord(Text: string);
-      procedure AddCzesc(NrCzesci: integer);
+      procedure AddLine(NrLine: integer);
 
       function SelectedLetter: integer;  // LCD
       function SelectedLength: integer;  // LCD
@@ -259,15 +259,15 @@ begin
   Refresh;
 end;
 
-procedure TLyric.AddCzesc(NrCzesci: integer);
+procedure TLyric.AddLine(NrLine: integer);
 var
   N:    integer;
 begin
   Clear;
-  for N := 0 to Lines[0].Line[NrCzesci].HighNote do begin
-    Italic := Lines[0].Line[NrCzesci].Note[N].NoteType = ntFreestyle;
-    AddWord(Lines[0].Line[NrCzesci].Note[N].Text);
-    Text := Text + Lines[0].Line[NrCzesci].Note[N].Text;
+  for N := 0 to Lines[0].Line[NrLine].HighNote do begin
+    Italic := Lines[0].Line[NrLine].Note[N].NoteType = ntFreestyle;
+    AddWord(Lines[0].Line[NrLine].Note[N].Text);
+    Text := Text + Lines[0].Line[NrLine].Note[N].Text;
   end;
   Selected := -1;
 end;

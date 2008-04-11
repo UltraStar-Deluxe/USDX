@@ -522,8 +522,7 @@ begin
         begin
 
           // skip to next sentence
-          if SDL_ModState = 0 then begin
-            {$IFDEF UseMIDIPort}
+          if SDL_ModState = 0 then begin                       {$IFDEF UseMIDIPort}
             MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
             {$endif}
@@ -534,7 +533,7 @@ begin
             if Lines[0].Current > Lines[0].High then Lines[0].Current := 0;
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
 
-            Lyric.AddCzesc(Lines[0].Current);
+            Lyric.AddLine(Lines[0].Current);
             Lyric.Selected := 0;
             AudioPlayback.Stop;
             PlaySentence := false;
@@ -563,7 +562,7 @@ begin
             if Lines[0].Current = -1 then Lines[0].Current := Lines[0].High;
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
 
-            Lyric.AddCzesc(Lines[0].Current);
+            Lyric.AddLine(Lines[0].Current);
             Lyric.Selected := 0;
             AudioPlayback.Stop;
             PlaySentence := false;
@@ -827,7 +826,7 @@ begin
   Lines[0].Current := Lines[0].Current + 1;
   CurrentNote := 0;
   Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
-  Lyric.AddCzesc(Lines[0].Current);
+  Lyric.AddLine(Lines[0].Current);
 end;
 
 procedure TScreenEditSub.JoinSentence;
@@ -1191,7 +1190,7 @@ begin
     Lyric.ColSG := Skin_FontHighlightG;
     Lyric.ColSB := Skin_FontHighlightB;
     Lyric.Style := 0;
-    Lyric.AddCzesc(0);
+    Lyric.AddLine(0);
     Lyric.Selected := 0;
 
     NotesH := 7;
@@ -1304,7 +1303,7 @@ begin
   if not Error then
   begin
     SingDrawBeatDelimeters(40, 300, 760, 0);
-    EditDrawCzesc(40, 405, 760, 0, 15);
+    EditDrawLine(40, 405, 760, 0, 15);
   end;
 
   // draw text
