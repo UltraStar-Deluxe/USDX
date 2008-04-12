@@ -179,7 +179,7 @@ uses
 
 const
 {$IFDEF WINDOWS}
-  SDLttfLibName = 'SDL_ttf.dll';
+  SDLttfLibName = 'Libraries\SDL_ttf.dll';
 {$ENDIF}
 
 {$IFDEF UNIX}

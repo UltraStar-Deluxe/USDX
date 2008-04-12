@@ -29,7 +29,7 @@ uses
 const
 {$ifdef MSWINDOWS}
   // use libpng12-0 (Version 1.2.18), delivered wih SDL_Image
-  LibPng = 'libpng12-0'; // 'libpng13';
+  LibPng = 'Libraries\libpng12-0'; // 'libpng13';
   // matching lib version for libpng13.dll, needed for initialization
   PNG_LIBPNG_VER_STRING='1.2.12';
   // define the compiler that was used to built the DLL (necessary for jmp_buf)

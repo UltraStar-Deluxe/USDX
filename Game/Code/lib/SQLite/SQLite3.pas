@@ -15,7 +15,7 @@ interface
 const
 
 {$IFDEF MSWINDOWS}
-  SQLiteDLL = 'sqlite3.dll';
+  SQLiteDLL = 'Libraries\sqlite3.dll';
 {$ENDIF}
 {$IFDEF LINUX}
   SQLiteDLL = 'sqlite3.so';

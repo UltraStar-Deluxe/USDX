@@ -16,7 +16,7 @@ uses
 
 const
 {$IFDEF win32}
-  libprojectM = 'projectM-cwrapper.dll';
+  libprojectM = 'Libraries\projectM-cwrapper.dll';
 {$ELSE}
   libprojectM = 'libprojectM-cwrapper.so';
 {$ENDIF}

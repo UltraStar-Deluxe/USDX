@@ -144,7 +144,7 @@ uses
 
 const
 {$IFDEF WINDOWS}
-  SDL_ImageLibName =  'SDL_Image.dll';
+  SDL_ImageLibName =  'Libraries\SDL_Image.dll';
 {$ENDIF}
 
 {$IFDEF UNIX}

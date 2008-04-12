@@ -357,7 +357,7 @@ uses
 
 const
 {$IFDEF WINDOWS}
-  SDLLibName = 'SDL.dll';
+  SDLLibName = 'Libraries\SDL.dll';
 {$ENDIF}
 
 {$IFDEF UNIX}
