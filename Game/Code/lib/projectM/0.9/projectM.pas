@@ -16,7 +16,7 @@ uses
 
 const
 {$IFDEF win32}
-  libprojectM = 'Libraries\libprojectM';
+  libprojectM = 'libprojectM';
 {$ELSE}
   libprojectM = 'libprojectM.so';
 {$ENDIF}

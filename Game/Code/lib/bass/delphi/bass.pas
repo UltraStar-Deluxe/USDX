@@ -771,7 +771,7 @@ type
 
 // Functions
 const
-  bassdll = 'Libraries\bass.dll';
+  bassdll = 'bass.dll';
 
 function BASS_SetConfig(option, value: DWORD): DWORD; stdcall; external bassdll;
 function BASS_GetConfig(option: DWORD): DWORD; stdcall; external bassdll;

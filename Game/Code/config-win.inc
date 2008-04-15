@@ -16,17 +16,17 @@
 
 {$DEFINE HaveFFMpeg}
 {$IF Defined(HaveFFMpeg) and Defined(IncludeConstants)}
-  av__codec = 'Libraries\avcodec-51';
+  av__codec = 'avcodec-51';
   LIBAVCODEC_VERSION_MAJOR   = 51;
   LIBAVCODEC_VERSION_MINOR   = 16;
   LIBAVCODEC_VERSION_RELEASE = 0;
 
-  av__format = 'Libraries\avformat-50';
+  av__format = 'avformat-50';
   LIBAVFORMAT_VERSION_MAJOR   = 50;
   LIBAVFORMAT_VERSION_MINOR   = 5;
   LIBAVFORMAT_VERSION_RELEASE = 0;
 
-  av__util = 'Libraries\avutil-49';
+  av__util = 'avutil-49';
   LIBAVUTIL_VERSION_MAJOR   = 49;
   LIBAVUTIL_VERSION_MINOR   = 0;
   LIBAVUTIL_VERSION_RELEASE = 0;
@@ -34,7 +34,7 @@
 
 {$UNDEF HaveSWScale}
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
-  sw__scale = 'Libraries\swscale-0';
+  sw__scale = 'swscale-0';
   LIBSWSCALE_VERSION_MAJOR   = 0;
   LIBSWSCALE_VERSION_MINOR   = 5;
   LIBSWSCALE_VERSION_RELEASE = 0;
@@ -48,7 +48,7 @@
   {$DEFINE HaveProjectM}
 {$IFEND}
 {$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
-  libprojectM = 'Libraries\libprojectM';
+  libprojectM = 'libprojectM';
   // Note: Un/Define HaveProjectM_0_9 or HaveProjectM_1_0_PLUS accordingly
   PROJECTM_VERSION_MAJOR   = 0;
   PROJECTM_VERSION_MINOR   = 98;
@@ -57,7 +57,7 @@
 
 {$UNDEF HavePortaudio}
 {$IF Defined(HavePortaudio) and Defined(IncludeConstants)}
-  libportaudio = 'Libraries\portaudio_x86';
+  libportaudio = 'portaudio_x86';
   PORTAUDIO_VERSION_MAJOR   = 19;
   PORTAUDIO_VERSION_MINOR   = 0;
   PORTAUDIO_VERSION_RELEASE = 0;
@@ -65,6 +65,6 @@
 
 {$UNDEF HavePortmixer}
 {$IF Defined(HavePortmixer) and Defined(IncludeConstants)}
-  libportmixer = 'Libraries\portmixer';
+  libportmixer = 'portmixer';
 {$IFEND}
 
