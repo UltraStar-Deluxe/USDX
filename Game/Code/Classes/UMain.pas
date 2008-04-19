@@ -962,10 +962,8 @@ begin
               MaxPoints := 9000;
               
             case Lines[0].Line[S].Note[Count].NoteType of
-              ntNormal:  Player[CP].Score := Player[CP].Score + MaxPoints / Lines[0].ScoreValue *
-                                             Lines[0].Line[S].Note[Count].Length;
-              ntGolden:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + MaxPoints / Lines[0].ScoreValue *
-                                                   (Lines[0].Line[S].Note[Count].Length * 2);
+              ntNormal:  Player[CP].Score := Player[CP].Score + MaxPoints / Lines[0].ScoreValue;
+              ntGolden:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + MaxPoints / Lines[0].ScoreValue;
             end;
 
             Player[CP].ScoreI := Floor(Player[CP].Score / 10) * 10;
