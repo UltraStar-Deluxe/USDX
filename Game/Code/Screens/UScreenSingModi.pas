@@ -159,7 +159,6 @@ begin
       Result.Sentence[I].Note[J].Tone      := Lines.Line[I].Note[J].Tone;
       //Result.Sentence[I].Note[J].Text      := Lines.Line[I].Note[J].Tekst;
       Result.Sentence[I].Note[J].FreeStyle := (Lines.Line[I].Note[J].NoteType = ntFreestyle);
-      Result.Sentence[I].Note[J].Typ       := Ord(Lines.Line[I].Note[J].NoteType);
     end;
   end;
 end;
@@ -645,7 +644,7 @@ begin
   else
     Ext := 'BMP';
 
-  Tex := Texture.LoadTexture(TexName, UTexture.TTextureType(Typ), 0);
+  Tex := Texture.LoadTexture(false, PChar(TexName), UTEXTURE.TTextureType(Typ), 0);
 
   Result.TexNum := Tex.TexNum;
   Result.W := Tex.W;

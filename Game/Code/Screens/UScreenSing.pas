@@ -222,9 +222,9 @@ begin
       // pause Music
       AudioPlayback.Pause;
 
-      // pause Video   // to - do : new Song management
-      {if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
-        fCurrentVideoPlaybackEngine.Pause;}
+      // pause Video
+      if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
+        fCurrentVideoPlaybackEngine.Pause;
 
     end
   else              //disable Pause
@@ -239,9 +239,9 @@ begin
       // Play Music
       AudioPlayback.Play;
 
-      // Video    // to - do : new Song management
-      {if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
-        fCurrentVideoPlaybackEngine.Pause; }
+      // Video
+      if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
+        fCurrentVideoPlaybackEngine.Pause;
 
       Paused := false;
     end;
@@ -461,14 +461,14 @@ begin
   CurrentSong := CatSongs.Song[CatSongs.Selected];
 
   // FIXME: bad style, put the try-except into LoadSong() and not here
-  {try        // to - do : new Song management
+  try
   //Check if File is XML
   if copy(CurrentSong.FileName,length(CurrentSong.FileName)-3,4) = '.xml'
    then success := CurrentSong.LoadXMLSong()
    else success := CurrentSong.LoadSong();
-  except    }
+  except
     success := false;
-  //end;
+  end;
 
   if (not success) then
   begin
@@ -479,7 +479,7 @@ begin
       ScreenSong.SelectRandomSong();
     ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
     // FIXME: do we need this?
-    //CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
+    CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
     Exit;
   end;
 
@@ -492,8 +492,8 @@ begin
   fCurrentVideoPlaybackEngine.Close;
   fCurrentVideoPlaybackEngine := VideoPlayback;
 
-  // set movie  // to - do : new Song management
-  {CurrentSong.VideoLoaded := false;
+  // set movie
+  CurrentSong.VideoLoaded := false;
   fShowVisualization      := false;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
@@ -504,14 +504,14 @@ begin
     fCurrentVideoPlaybackEngine.position := CurrentSong.VideoGAP + CurrentSong.Start;
 
     CurrentSong.VideoLoaded := true;
-  end; }
+  end;
 
   // set background
-  if (CurrentSong.Background <> '') { and (CurrentSong.VideoLoaded = false)} then
+  if (CurrentSong.Background <> '')  and (CurrentSong.VideoLoaded = false) then
     try
-      Tex_Background := Texture.LoadTexture({CurrentSong.Path + }CurrentSong.Background);
+      Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
     except
-      log.LogError('Background could not be loaded: ' + {CurrentSong.Path + }CurrentSong.Background);
+      log.LogError('Background could not be loaded: ' + CurrentSong.Path + CurrentSong.Background);
       Tex_Background.TexNum := -1;
     end
   else
@@ -914,8 +914,8 @@ end;
 procedure TScreenSing.onShowFinish;
 begin
   // play movie (II)
-    // to - do : new Song management
-  {if CurrentSong.VideoLoaded then
+
+  if CurrentSong.VideoLoaded then
   begin
     try
       fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
@@ -939,7 +939,7 @@ begin
        end;
      end;
     end;
-  end; }
+  end;
 
 
   // play music (II)
@@ -1184,8 +1184,8 @@ begin
   SingDrawBackground;
   // update and draw movie
   
-  if ShowFinish and    // to - do : new Song management
-     ( {CurrentSong.VideoLoaded or }fShowVisualization ) then
+  if ShowFinish and
+     ( CurrentSong.VideoLoaded or fShowVisualization ) then
 //  if ShowFinish then
   begin
 //    try
@@ -1303,13 +1303,13 @@ begin
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Creating files', 0);
   end;
-   // to - do : new Song management
-  {if CurrentSong.VideoLoaded then
+
+  if CurrentSong.VideoLoaded then
   begin
 //    CloseSmpeg;
     fCurrentVideoPlaybackEngine.Close;
     CurrentSong.VideoLoaded := false; // to prevent drawing closed video
-  end; }
+  end;
 
   SetFontItalic (False);
 end;

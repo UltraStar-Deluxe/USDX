@@ -98,12 +98,12 @@ begin
           PartySession.Teams.Teaminfo[0].NumPlayers := NumPlayer1+1;
           PartySession.Teams.Teaminfo[1].NumPlayers := NumPlayer2+1;
           PartySession.Teams.Teaminfo[2].NumPlayers := NumPlayer3+1;}
-           // to - do : new Song management
+
           //Save Playlist
           PlaylistMan.Mode := TSingMode( Playlist );
           PlaylistMan.CurPlayList := High(Cardinal);
           //If Category Selected Search Category ID
-          {if Playlist = 1 then
+          if Playlist = 1 then
           begin
             J := -1;
             For I := 0 to high(CatSongs.Song) do
@@ -123,7 +123,7 @@ begin
               Exit;
           end
           else
-            PlaylistMan.CurPlayList := Playlist2;}
+            PlaylistMan.CurPlayList := Playlist2;
 
           //Start Party
           // to-do : Party
@@ -216,7 +216,7 @@ end;
 
 procedure TScreenPartyOptions.SetPlaylist2;
 var I: Integer;
-begin    // to - do : new Song management
+begin
   Case Playlist of
     0:
       begin
@@ -226,14 +226,14 @@ begin    // to - do : new Song management
     1:
       begin
         SetLength(IPlaylist2, 0);
-        {For I := 0 to high(CatSongs.Song) do
+        For I := 0 to high(CatSongs.Song) do
         begin
           If (CatSongs.Song[I].Main) then
           begin
             SetLength(IPlaylist2, Length(IPlaylist2) + 1);
             IPlaylist2[high(IPlaylist2)] := CatSongs.Song[I].Artist;
           end;
-        end; }
+        end;
 
         If (Length(IPlaylist2) = 0) then
         begin
@@ -243,16 +243,16 @@ begin    // to - do : new Song management
       end;
     2:
       begin
-        {if (Length(PlaylistMan.Playlists) > 0) then
+        if (Length(PlaylistMan.Playlists) > 0) then
         begin
           SetLength(IPlaylist2, Length(PlaylistMan.Playlists));
           PlaylistMan.GetNames(IPlaylist2);
         end
         else
-        begin}
+        begin
           SetLength(IPlaylist2, 1);
           IPlaylist2[0] := 'No Playlists found';
-        //end;
+        end;
       end;
   end;
 

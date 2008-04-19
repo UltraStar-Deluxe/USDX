@@ -101,7 +101,6 @@ type
     function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean = true): TTexture; overload;
     function GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean = true): TTexture; overload;
     function FindTexture(const Name: string; Typ: TTextureType; Col: Cardinal): integer;
-
     function LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
     function LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
     function LoadTexture(const Identifier: string): TTexture; overload;
@@ -112,8 +111,7 @@ type
 
     Function GetCoverThumbnail(const Name: string): Pointer;
     Procedure SetCoverSize(W, H: Integer);
-
-
+    
     Constructor Create;
     Destructor Destroy; override;
   end;
@@ -126,16 +124,61 @@ var
 
   Mipmapping: Boolean;
 
+  CacheMipmap:  array[0..256*256*3-1] of byte; // 3KB
+  CacheMipmapSurface: PSDL_Surface;
+
+
 implementation
 
 uses ULog,
      DateUtils,
+     UCovers,
      UThemes,
      {$IFDEF DARWIN}
      MacResources,
      {$ENDIF}
-     StrUtils;
+     StrUtils,
+     dialogs;
 
+const
+  fmt_rgba: TSDL_Pixelformat = (
+    palette:      nil;
+    BitsPerPixel:  32;
+    BytesPerPixel:  4;
+    Rloss:          0;
+    Gloss:          0;
+    Bloss:          0;
+    Aloss:          0;
+    Rshift:         0;
+    Gshift:         8;
+    Bshift:        16;
+    Ashift:        24;
+    Rmask:  $000000ff;
+    Gmask:  $0000ff00;
+    Bmask:  $00ff0000;
+    Amask:  $ff000000;
+    ColorKey:       0;
+    Alpha:        255
+  );
+  fmt_rgb: TSDL_Pixelformat = (
+    palette:      nil;
+    BitsPerPixel:  24;
+    BytesPerPixel:  3;
+    Rloss:          0;
+    Gloss:          0;
+    Bloss:          0;
+    Aloss:          0;
+    Rshift:         0;
+    Gshift:         8;
+    Bshift:        16;
+    Ashift:         0;
+    Rmask:  $000000ff;
+    Gmask:  $0000ff00;
+    Bmask:  $00ff0000;
+    Amask:  $00000000;
+    ColorKey:       0;
+    Alpha:        255
+  );
 
 Constructor TTextureUnit.Create;
 begin
@@ -308,6 +351,7 @@ begin
   Result:=SDL_ScaleSurfaceRect(TempSurface,
                   0,0,TempSurface^.W,TempSurface^.H,
                   W,H);
+  SDL_FreeSurface(TempSurface);
 end;
 
 procedure TTextureUnit.ScaleTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
@@ -355,38 +399,85 @@ procedure TTextureUnit.ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
       hue := hue + 6.0;
     Result := hue;
   end;
-  procedure ColorizePixel(Pix: PByteArray;  hue: Double);
-  var
-    clr: array[0..2] of Double; // [0: R, 1: G, 2: B]
-    hsv: array[0..2] of Double; // [0: H(ue), 1: S(aturation), 2: V(alue)]
-    h_int: Cardinal;
-    delta, f, p, q, t: Double;
-    max: Double;
-  begin
-    clr[0] := Pix[0]/255;
-    clr[1] := Pix[1]/255;
-    clr[2] := Pix[2]/255;
 
+var
+  DestinationHue: Double;
+  PixelIndex: Cardinal;
+  Pixel: PByte;
+    PixelColors: PByteArray;
+//    clr: array[0..2] of Double; // [0: R, 1: G, 2: B]
+    clr2: array[0..2] of Uint32;
+//    hsv: array[0..2] of Double; // [0: H(ue), 1: S(aturation), 2: V(alue)]
+    hsv2: array[0..2] of UInt32;//LongInt;
+    dhue: UInt32;//LongInt;
+    h_int: Cardinal;
+//    delta, f, p, q, t: Double;
+    delta2,f2,p2,q2,t2: Longint;//LongInt;
+//    max: Double;
+    max2: Uint32;
+begin
+  DestinationHue := col2hue(Col);
+
+  dhue:=Trunc(DestinationHue*1024);
+
+  Pixel := TexSurface^.Pixels;
+
+  for PixelIndex := 0 to (TexSurface^.W * TexSurface^.H)-1 do
+  begin
+    PixelColors:=PByteArray(Pixel);
+  // inlined colorize per pixel
+
+  // uses fixed point math
+    // get color values
+    clr2[0]:=PixelColors[0] shl 10;
+    clr2[1]:=PixelColors[1] shl 10;
+    clr2[2]:=PixelColors[2] shl 10;
     //calculate luminance and saturation from rgb
+
+    max2:=clr2[0];
+    if clr2[1]>max2 then max2:=clr2[1];
+    if clr2[2]>max2 then max2:=clr2[2];
+    delta2:=clr2[0];
+    if clr2[1]<delta2 then delta2:=clr2[1];
+    if clr2[2]<delta2 then delta2:=clr2[2];
+    delta2:=max2-delta2;
+    hsv2[0]:=dhue;  // shl 8
+    hsv2[2]:=max2;  // shl 8
+    if (max2=0) then hsv2[1] := 0
+    else             hsv2[1] := (delta2 shl 10) div max2; // shl 8
+      h_int:= hsv2[0] and $fffffC00;
+      f2:= hsv2[0]-h_int; //shl 10
+      p2:= (hsv2[2]*(1024-hsv2[1])) shr 10;
+      q2:= (hsv2[2]*(1024-(hsv2[1]*f2) shr 10)) shr 10;
+      t2:= (hsv2[2]*(1024-(hsv2[1]*(1024-f2)) shr 10)) shr 10;
+      h_int:=h_int shr 10;
+      case h_int of
+        0: begin clr2[0]:=hsv2[2]; clr2[1]:=t2;      clr2[2]:=p2;      end; // (v,t,p)
+        1: begin clr2[0]:=q2;      clr2[1]:=hsv2[2]; clr2[2]:=p2;      end; // (q,v,p)
+        2: begin clr2[0]:=p2;      clr2[1]:=hsv2[2]; clr2[2]:=t2;      end; // (p,v,t)
+        3: begin clr2[0]:=p2;      clr2[1]:=q2;      clr2[2]:=hsv2[2]; end; // (p,q,v)
+        4: begin clr2[0]:=t2;      clr2[1]:=p2;      clr2[2]:=hsv2[2]; end; // (t,p,v)
+        5: begin clr2[0]:=hsv2[2]; clr2[1]:=p2;      clr2[2]:=q2;      end; // (v,p,q)
+      end;
+
+    PixelColors[0]:=clr2[0] shr 10;
+    PixelColors[1]:=clr2[1] shr 10;
+    PixelColors[2]:=clr2[2] shr 10;
+
+    // old floating point version
+(*    clr[0] := PixelColors[0]/255;
+    clr[1] := PixelColors[1]/255;
+    clr[2] := PixelColors[2]/255;
     max := maxvalue(clr);
     delta := max - minvalue(clr);
 
-    hsv[0] := hue; // set H(ue)
+    hsv[0] := DestinationHue; // set H(ue)
     hsv[2] := max; // set V(alue)
     // calc S(aturation)
     if (max = 0.0) then hsv[1] := 0.0
     else                hsv[1] := delta/max;
 
-    // HSV -> RGB (H from color, S ans V from pixel)
-    // transformation according to Gonzalez and Woods
-    { This part does not really improve speed, maybe even slows down
-    if ((hsv[1] = 0.0) or (hsv[2] = 0.0)) then
-    begin
-      clr[0]:=hsv[2]; clr[1]:=hsv[2]; clr[2]:=hsv[2]; // (v,v,v)
-    end
-    else
-    }
-    begin
+//    ColorizePixel(PByteArray(Pixel), DestinationHue);
       h_int := trunc(hsv[0]);             // h_int = |_h_|
       f := hsv[0]-h_int;                  // f = h-h_int
       p := hsv[2]*(1.0-hsv[1]);           // p = v*(1-s)
@@ -400,24 +491,12 @@ procedure TTextureUnit.ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
         4: begin clr[0]:=t;      clr[1]:=p;      clr[2]:=hsv[2]; end; // (t,p,v)
         5: begin clr[0]:=hsv[2]; clr[1]:=p;      clr[2]:=q;      end; // (v,p,q)
       end;
-    end;
 
     // and store new rgb back into the image
-    Pix[0] := trunc(255*clr[0]);
-    Pix[1] := trunc(255*clr[1]);
-    Pix[2] := trunc(255*clr[2]);
-  end;
-
-var
-  DestinationHue: Double;
-  PixelIndex: Cardinal;
-  Pixel: PByte;
-begin
-  DestinationHue := col2hue(Col);
-  Pixel := TexSurface^.Pixels;
-  for PixelIndex := 0 to (TexSurface^.W * TexSurface^.H)-1 do
-  begin
-    ColorizePixel(PByteArray(Pixel), DestinationHue);
+    PixelColors[0] := trunc(255*clr[0]);
+    PixelColors[1] := trunc(255*clr[1]);
+    PixelColors[2] := trunc(255*clr[2]);
+*)
     Inc(Pixel, TexSurface^.format.BytesPerPixel);
   end;
 end;
@@ -466,7 +545,7 @@ begin
   // adjust texture size (scale down, if necessary)
   newWidth   := TexSurface.W;
   newHeight  := TexSurface.H;
-  
+
   if (newWidth > Limit) then
     newWidth := Limit;
 
@@ -634,8 +713,8 @@ begin
 
   Log.BenchmarkEnd(4);
   if Log.BenchmarkTimeLength[4] >= 1 then
-    Log.LogBenchmark('**********> Texture Load Time Warning - ' + Identifier + '/' + TextureTypeToStr(Typ), 4);
-    
+    Log.LogBenchmark('**********> Texture Load Time Warning - ' + Identifier + '/' + TextureTypeToStr(Typ), 4)
+  else Log.LogBenchmark('**********> Texture Load Time ' + ExtractFileName(Identifier) + '/' + TextureTypeToStr(Typ), 4);
   {$ifdef blindydebug}
   Log.LogStatus('',' JB-8');
   {$endif}
@@ -696,10 +775,10 @@ begin
     Result := TextureDatabase.Texture[T].Texture;
   end;
 
-  {if FromCache and (Covers.CoverExists(Name) >= 0) then
+  if FromCache and Covers.CoverExists(Name) then
   begin
     // use cache texture
-    C := Covers.CoverExists(Name);
+    C := Covers.CoverNumber(Name);
 
     if TextureDatabase.Texture[T].TextureCache.TexNum = -1 then
     begin
@@ -710,7 +789,7 @@ begin
 
     // use texture
     Result := TextureDatabase.Texture[T].TextureCache;
-  end;}
+  end;
 end;
 
 //--------
