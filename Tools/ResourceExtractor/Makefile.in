@@ -1,0 +1,19 @@
+PPC = @PPC@
+PFLAGS = -dRELEASE
+
+NAME = ResourceExtractor
+SRC = $(NAME).pas
+BIN = $(NAME)@EXEEXT@
+
+.PHONY: all clean distclean
+
+all: $(BIN)
+
+clean:
+	rm -f $(BIN) *.o *.ppu *.rst *.compiled
+
+distclean: clean
+	rm -rf Makefile *~ *.bak __history
+
+$(BIN): $(SRC)
+	$(PPC) $(PFLAGS) -o$@ $(SRC)
