@@ -20,7 +20,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../projectM"
+				AdditionalIncludeDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.1\projectM&quot;;&quot;D:\daten\ultrastar\libprojectM\libs\pthreads\Pre-built.2\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;PROJECTMCWRAPPER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,9 +61,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="projectM.lib"
+				AdditionalDependencies="libprojectM.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="../projectM/Debug"
+				AdditionalLibraryDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.1\projectM\Release&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,8 +118,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../projectM"
+				AdditionalIncludeDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.1\projectM&quot;;&quot;D:\daten\ultrastar\libprojectM\libs\pthreads\Pre-built.2\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;PROJECTMCWRAPPER_EXPORTS"
+				ExceptionHandling="1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -137,9 +138,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="projectM.lib"
+				AdditionalDependencies="libprojectM.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../projectM/Release"
+				AdditionalLibraryDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.1\projectM\Release&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -181,7 +182,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\projectM.cpp"
+				RelativePath=".\projectM-cwrapper.cpp"
 				>
 			</File>
 		</Filter>
@@ -191,7 +192,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\projectM.h"
+				RelativePath=".\projectM-cwrapper.h"
 				>
 			</File>
 		</Filter>
