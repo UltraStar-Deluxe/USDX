@@ -24,11 +24,6 @@ uses
   OpenGL12,
   SysUtils,
   UIni,
-  {$ifdef DebugDisplay}
-  {$ifdef win32}
-  dialogs,
-  {$endif}
-  {$endif}
   projectM,
   UMusic;
 
@@ -37,25 +32,37 @@ implementation
 uses
   UGraphic,
   UMain,
+  UConfig,
   ULog;
+
+(*
+ * TODO:
+ *   - fix video/visualizer switching and initialisation
+ *   - use GL_EXT_framebuffer_object for rendering to a separate framebuffer,
+ *     this will prevent plugins from messing up our render-context
+ *     (-> no stack corruption anymore, no need for Save/RestoreOpenGLState()).
+ *   - create a generic (C-compatible) interface for visualization plugins
+ *   - create a visualization plugin manager
+ *   - write a plugin for projectM in C/C++ (so we need no wrapper anymore)
+ *)
 
 var
   singleton_VideoProjectM : IVideoPlayback;
 
-const
-  gx           = 32;
-  gy           = 24;
-  fps          = 30;
-  texsize      = 512;
-  
 var
   ProjectMPath : string;
-  presetsDir   : string;
-  fontsDir     : string;
 
   // FIXME: dirty fix needed because the init method is not
   //   called yet.
   inited: boolean;
+
+{$IF PROJECTM_VERSION < 1000000} // < 1.0
+const
+  meshX = 32;
+  meshY = 24;
+  fps   = 30;
+  textureSize = 512;
+{$IFEND}
 
 type
   TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
@@ -67,7 +74,7 @@ type
 
       VisualTex         : glUint;
       PCMData           : TPCMData;
- 
+
       RndPCMcount       : integer;
 
       projMatrix: array[0..3, 0..3] of GLdouble;
@@ -105,7 +112,7 @@ type
 
 constructor TVideoPlayback_ProjectM.Create();
 begin
-  RndPCMcount := 0;
+  inherited;
 end;
 
 
@@ -113,11 +120,13 @@ procedure TVideoPlayback_ProjectM.Init();
 begin
   // FIXME: dirty fix needed because the init method is not
   //   called yet.
+  if (inited) then
+    Exit;
   inited := true;
 
-  ProjectMPath := VisualsPath + 'projectM' + PathDelim;
-  presetsDir := ProjectMPath + 'presets';
-  fontsDir   := ProjectMPath + 'fonts';
+  RndPCMcount := 0;
+
+  ProjectMPath := ProjectM_DataDir + PathDelim;
 
   VisualizerStarted := False;
   VisualizerPaused  := False;
@@ -164,7 +173,8 @@ end;
 
 procedure TVideoPlayback_ProjectM.SetPosition(Time: real);
 begin
-  pm.RandomPreset();
+  if assigned(pm) then
+    pm.NextPreset();
 end;
 
 function  TVideoPlayback_ProjectM.GetPosition: real;
@@ -177,42 +187,42 @@ begin
   // save all OpenGL state-machine attributes
   glPushAttrib(GL_ALL_ATTRIB_BITS);
 
+  // Note: we do not use glPushMatrix() for the GL_PROJECTION and GL_TEXTURE stacks.
+  //   OpenGL specifies the depth of those stacks to be at least 2 but projectM
+  //   already uses 2 stack-entries so overflows might be possible on older hardware.
+  //   In contrast to this the GL_MODELVIEW stack-size is at least 32, so we can
+  //   use glPushMatrix() for this stack.
+  
   // save projection-matrix
   glMatrixMode(GL_PROJECTION);
-  // - WARNING: projection-matrix stack-depth is only 2!
-  // -> overflow might occur if glPopMatrix() is used for this matrix
-  // -> use glGet() instead of glPushMatrix()
+  glGetDoublev(GL_PROJECTION_MATRIX, @projMatrix);
+  {$IF (PROJECTM_VERSION >= 1000000) and (PROJECTM_VERSION < 1010000)} // [1.0..1.1)
+  // bugfix (1.0 and 1.01): projection-matrix is popped without being pushed first
   glPushMatrix();
-  //glGetDoublev(GL_PROJECTION_MATRIX, @projMatrix);
+  {$IFEND}
 
   // save texture-matrix
   glMatrixMode(GL_TEXTURE);
-  // - WARNING: texture-matrix stack-depth is only 2!
-  // -> overflow might occur if glPopMatrix() is used for this matrix
-  // -> use glGet() instead of glPushMatrix() if problems appear
-  glPushMatrix();
-  //glGetDoublev(GL_TEXTURE_MATRIX, @texMatrix);
+  glGetDoublev(GL_TEXTURE_MATRIX, @texMatrix);
 
   // save modelview-matrix
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
+  {$IF (PROJECTM_VERSION >= 1000000) and (PROJECTM_VERSION < 1010000)} // [1.0..1.1)
+  // bugfix (1.0 and 1.01): modelview-matrix is popped without being pushed first
+  glPushMatrix();
+  {$IFEND}
 end;
 
 procedure TVideoPlayback_ProjectM.RestoreOpenGLState();
 begin
   // restore projection-matrix
   glMatrixMode(GL_PROJECTION);
-  // - WARNING: projection-matrix stack-depth is only 2!
-  // -> overflow _occurs_ if glPopMatrix() is used for this matrix
-  // -> use glLoadMatrix() instead of glPopMatrix()
-  glPopMatrix();
-  //glLoadMatrixd(@projMatrix);
+  glLoadMatrixd(@projMatrix);
 
   // restore texture-matrix
-  // -> overflow might occur if glPopMatrix() is used for this matrix
   glMatrixMode(GL_TEXTURE);
-  glPopMatrix();
-  //glLoadMatrixd(@texMatrix);
+  glLoadMatrixd(@texMatrix);
 
   // restore modelview-matrix
   glMatrixMode(GL_MODELVIEW);
@@ -226,17 +236,34 @@ procedure TVideoPlayback_ProjectM.VisualizerStart;
 var
   initResult: Cardinal;
 begin
+  if VisualizerStarted then
+    Exit;
+
   // FIXME: dirty fix needed because the init method is not
   //   called yet.
   if (not inited) then
     Init();
 
+  //try
+    {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
+    pm := TProjectM.Create(ProjectMPath + 'config.inp');
+    {$ELSE}
+    pm := TProjectM.Create(
+      meshX, meshY, fps, textureSize, ScreenW, ScreenH,
+      ProjectMPath + 'presets', ProjectMPath + 'fonts');
+    {$IFEND}
+  //except
+  //writeln('Exception:' + floattostr(test));
+  //  Exit;
+  //end;
+
+writeln('huk');
+
   VisualizerStarted := True;
 
-  pm := TProjectM.Create(gx, gy, fps, texsize, ScreenW, ScreenH,
-                         presetsDir, fontsDir);
-  //initResult := projectM_initRenderToTexture(pm);
-
+  // skip projectM preset
+  pm.RandomPreset();
+  // initialize OpenGL
   SaveOpenGLState();
   pm.ResetGL(ScreenW, ScreenH);
   RestoreOpenGLState();
@@ -244,7 +271,8 @@ end;
 
 procedure TVideoPlayback_ProjectM.VisualizerStop;
 begin
-  if VisualizerStarted then begin
+  if VisualizerStarted then
+  begin
     VisualizerStarted := False;
     pm.Free();
   end;
@@ -260,36 +288,27 @@ var
   nSamples: cardinal;
   stackDepth: Integer;
 begin
-  if not VisualizerStarted then Exit;
-  if VisualizerPaused then Exit;
+  if not VisualizerStarted then
+    Exit;
+
+  if VisualizerPaused then
+    Exit;
 
   // get audio data
   nSamples := AudioPlayback.GetPCMData(PcmData);
 
-  if nSamples = 0 then
+  if (nSamples = 0) then
     nSamples := GetRandomPCMData(PcmData);
 
-  pm.AddPCM16Data(PSmallint(@PcmData), nSamples);
+  if (nSamples > 0) then
+    pm.AddPCM16Data(PSmallInt(@PcmData), nSamples);
 
   // store OpenGL state (might be messed up otherwise)
   SaveOpenGLState();
   pm.ResetGL(ScreenW, ScreenH);
 
-  //glGetIntegerv(GL_PROJECTION_STACK_DEPTH, @stackDepth);
-  //writeln('StackDepth0: ' + inttostr(stackDepth));
-
   // let projectM render a frame
-  try
-    pm.RenderFrame();
-  except
-    // this may happen with some presets ( on linux ) if there is a div by zero
-    // in projectM's getBeatVals() function (file: beat_detect.cc)
-    Log.LogStatus('Div by zero!', 'Visualizer');
-    SetPosition( now );
-  end;
-
-  //glGetIntegerv(GL_PROJECTION_STACK_DEPTH, @stackDepth);
-  //writeln('StackDepth1: ' + inttostr(stackDepth));
+  pm.RenderFrame();
 
   {$IFDEF UseTexture}
   glBindTexture(GL_TEXTURE_2D, VisualTex);
@@ -307,13 +326,16 @@ end;
 procedure TVideoPlayback_ProjectM.DrawGL(Screen: integer);
 begin
   {$IFDEF UseTexture}
-  // have a nice black background to draw on (even if there were errors opening the vid)
-  if Screen=1 then begin
+  // have a nice black background to draw on
+  if (Screen = 1) then
+  begin
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
   end;
+  
   // exit if there's nothing to draw
-  if not VisualizerStarted then Exit;
+  if not VisualizerStarted then
+    Exit;
 
   // setup display
   glMatrixMode(GL_PROJECTION);
@@ -354,30 +376,19 @@ var
   i: integer;
 begin
   // Produce some fake PCM data
-  if ( RndPCMcount mod 500 = 0 ) then
+  if (RndPCMcount mod 500 = 0) then
   begin
-    for i := 0 to 511 do begin
-      data[0][i] := 0;
-      data[1][i] := 0;
-    end;
+    FillChar(data, SizeOf(TPCMData), 0);
   end
-  else begin
-    for i := 0 to 511 do begin
-      if ( i mod 2 = 0 ) then begin
-        data[0][i] := floor(Random * power(2.,14));
-        data[1][i] := floor(Random * power(2.,14));
-      end
-      else begin;
-        data[0][i] := floor(Random * power(2.,14));
-        data[1][i] := floor(Random * power(2.,14));
-      end;
-      if ( i mod 2 = 1 ) then begin
-        data[0][i] := -data[0][i];
-        data[1][i] := -data[1][i];
-      end;
+  else
+  begin
+    for i := 0 to 511 do
+    begin
+      data[i][0] := Random(High(Word)+1);
+      data[i][1] := Random(High(Word)+1);
     end;
   end;
-  Inc( RndPCMcount );
+  Inc(RndPCMcount);
   result := 512;
 end;
 

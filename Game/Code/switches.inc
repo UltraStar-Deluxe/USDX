@@ -6,19 +6,22 @@
 // be used. I changed the WIN32 to MSWINDOWS.
 // So, for Windows-only code use the MSWINDOWS define.
 
+// compiler/IDE dependent config
 {$IFDEF FPC}
   {$DEFINE CONSOLE}
   {$IFDEF DARWIN}
-    {$H+}
-    {$R-}
-    {$DEFINE WIN32}
-    {$DEFINE TRANSLATE}
-		{$DEFINE UTF8_FILENAMES}
+    {$H+} // enables usage of AnsiString as String-type 
+    {$R-} // disables range-checks
+  {$ENDIF}
+
+  // if -dDEBUG is specified on the command-line, FPC uses some default
+  // compiler-flags specified in fpc.cfg -> use -dDEBUG_MODE instead
+  {$IFDEF DEBUG_MODE}
+    {$DEFINE DEBUG}
   {$ENDIF}
 
   {$DEFINE DLL_CDECL}
   {$DEFINE HasInline}
-  {$UNDEF UseSerialPort}
 {$ELSE}
   {$UNDEF CONSOLE}  // Delphi requires a special app type... no thanks ! :)
   // {$DEFINE CONSOLE} // -- use for development only !
@@ -32,89 +35,64 @@
   {$IF not (Defined(VER140) or Defined(VER150) or Defined(VER160))}
     {$DEFINE HasInline}
   {$IFEND}
-
-  {$DEFINE DLL_STDCALL}
-  {$UNDEF UseSerialPort}
 {$ENDIF}
 
 
-{$IF Defined(win32)}
+// platform dependent config
+{$IF Defined(MSWINDOWS)}
   // include defines but no constants
-	{$IFDEF DARWIN}
-    {$I config-macosx.inc}
-	{$ELSE}
-    {$I config-win.inc}
-	{$ENDIF}
-
-  // audio config
-  {$DEFINE WinAudioLib_BASS}
-  {$IFDEF WinAudioLib_BASS}
-    {$DEFINE UseBASSPlayback}
-    {$DEFINE UseBASSInput}
-  {$ELSE}
-    {$DEFINE UseFFMpegDecoder}
-    //{$DEFINE UsePortaudioPlayback}
-    {$DEFINE UseSDLPlayback}
-    {$DEFINE UsePortaudioInput}
-    {$DEFINE UsePortmixer}
-  {$ENDIF}
-  {$UNDEF WinAudioLib_BASS}
-
-  // video config
-  {$IFDEF HaveFFMpeg}
-    {$DEFINE UseFFMpegVideo}
-    {$IFDEF HaveSWScale}
-      {$DEFINE UseSWScale}
-    {$ENDIF}
-  {$ENDIF}
-
-  // misc defines
-
-  {$IF Defined(HaveProjectM_0_9)}
-    {$DEFINE UseProjectM_0_9}
-  {$ELSEIF Defined(HaveProjectM_1_0_PLUS)}
-    {$DEFINE UseProjectM_1_0_PLUS}
-  {$IFEND}
+  {$I config-win.inc}
 
   {$IFDEF DEBUG}
-    {$IFNDEF DARWIN}
-      {$IFDEF CONSOLE}
-        {$APPTYPE CONSOLE}
-      {$ENDIF}
+    {$IFDEF CONSOLE}
+      {$APPTYPE CONSOLE}
     {$ENDIF}
   {$ENDIF}
 
-  {$IFDEF MSWINDOWS}
-    {$DEFINE UseMIDIPort}
-  {$ENDIF}
-{$ELSEIF Defined(Linux)}
+  {$DEFINE HaveBASS}
+  {$UNDEF UseSerialPort}
+  {$DEFINE UseMIDIPort}
+{$ELSEIF Defined(LINUX)}
   // include defines but no constants
   {$I config-linux.inc}
+{$ELSEIF Defined(DARWIN)}
+  // include defines but no constants
+  {$I config-macosx.inc}
 
-  // audio config
-  {$IFDEF HaveFFMpeg}
-    {$DEFINE UseFFMpegDecoder}
-    {$IFDEF HavePortaudio}
-      //{$DEFINE UsePortaudioPlayback}
-      {$DEFINE UseSDLPlayback}
-      {$DEFINE UsePortaudioInput}
-    {$ENDIF}
-  {$ENDIF}
+  {$DEFINE HaveBASS}
+  {$DEFINE DLL_CDECL}
+  {$DEFINE WIN32}
+  {$DEFINE UTF8_FILENAMES}
+{$IFEND}
 
-  // video config
-  {$IFDEF HaveFFMpeg}
-    {$DEFINE UseFFMpegVideo}
-    {$IFDEF HaveSWScale}
-      {$DEFINE UseSWScale}
-    {$ENDIF}
-  {$ENDIF}
-
-  // misc defines
-  {$IFDEF HaveProjectM}
-    // this causes trouble at the moment
-    //{$DEFINE UseProjectM_0_9}
+// audio config
+{$IF Defined(HaveBASS)}
+  {$DEFINE UseBASSPlayback}
+  {$DEFINE UseBASSInput}
+{$ELSEIF Defined(HavePortaudio)}
+  //{$DEFINE UsePortaudioPlayback}
+  {$DEFINE UseSDLPlayback}
+  {$DEFINE UsePortaudioInput}
+  {$IFDEF HavePortmixer}
+    {$DEFINE UsePortmixer}
   {$ENDIF}
 {$IFEND}
+
+// ffmpeg config
+{$IFDEF HaveFFMpeg}
+  {$DEFINE UseFFMpegDecoder}
+  {$DEFINE UseFFMpegVideo}
+  {$IFDEF HaveSWScale}
+    {$DEFINE UseSWScale}
+  {$ENDIF}
+{$ENDIF}
+
+// projectM config
+{$IF Defined(HaveProjectM)}
+  {$DEFINE UseProjectM}
+{$IFEND}
+
+// specify some useful defines
 
 {$IF Defined(UseFFMpegVideo) or Defined(UseFFMpegDecoder)}
   {$DEFINE UseFFMpeg}
@@ -126,9 +104,5 @@
 
 {$IF Defined(UsePortaudioInput) or Defined(UsePortaudioPlayback)}
   {$DEFINE UsePortaudio}
-{$IFEND}
-
-{$IF Defined(UseProjectM_0_9) or Defined(UseProjectM_1_0_PLUS)}
-  {$DEFINE UseProjectM}
 {$IFEND}
 

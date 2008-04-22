@@ -69,11 +69,8 @@ uses
   {$ENDIF}
   {$ENDIF}
 
-  {$IFDEF UseProjectM_0_9}
-  projectM      in 'lib\projectM\0.9\projectM.pas',
-  {$ENDIF}
-  {$IFDEF UseProjectM_1_0_PLUS}
-  projectM      in 'lib\projectM\1.0\projectM.pas',
+  {$IFDEF UseProjectM}
+  projectM      in 'lib\projectM\projectM.pas',
   {$ENDIF}
 
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
@@ -157,6 +154,7 @@ uses
 
   // TODO :  these all need to be renamed like UMedia_********   for consistency
   UMusic          in 'Classes\UMusic.pas',
+  //UAudioPlaybackBase in 'Classes\UAudioPlaybackBase.pas',
   UMedia_dummy    in 'Classes\UMedia_dummy.pas',  // Must be first UMedia Unit, all others will override available interfaces
 {$IFDEF UseProjectM}
   UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... so video can override...
@@ -237,9 +235,6 @@ uses
   UPluginDefs   in '..\..\Modis\SDK\UPluginDefs.pas', //New SDK, not only Modis
   UPartyDefs    in '..\..\Modis\SDK\UPartyDefs.pas', //Headers to register Party Modes
 
-  {$IFDEF win32}
-  Windows,
-  {$ENDIF}
   SysUtils;
 
 begin
