@@ -131,6 +131,7 @@ uses
   UParty,
   UConfig,
   UCore,
+  UCommon,
   UGraphicClasses,
   UPluginDefs,
   UPlatform;
@@ -148,6 +149,11 @@ begin
     if Platform.TerminateIfAlreadyRunning( {var} WndTitle) then
       Exit;
       
+    // fix floating-point exceptions (FPE)
+    DisableFloatingPointExceptions();
+    // fix the locale for string-to-float parsing in C-libs
+    SetDefaultNumericLocale();
+
     //------------------------------
     //StartUp - Create Classes and Load Files
     //------------------------------
@@ -177,7 +183,7 @@ begin
     // SDL
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize SDL', 'Initialization');
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing SDL', 1);
 
