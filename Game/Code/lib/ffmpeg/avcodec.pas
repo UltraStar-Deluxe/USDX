@@ -23,7 +23,7 @@
 
 (*
  * Min. version: 51.16.0
- * Max. version: 51.51.0, revision 12352, Thu Mar 6 17:41:31 2008 UTC
+ * Max. version: 51.54.0, revision 12796, Sun Apr 13 07:48:43 2008 UTC
  *)
 
 unit avcodec;
@@ -47,7 +47,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 51;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 54;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -78,6 +78,8 @@ const
 type
   TCodecID = (
     CODEC_ID_NONE,
+    
+    (* video codecs *)
     CODEC_ID_MPEG1VIDEO,
     CODEC_ID_MPEG2VIDEO, //* prefered ID for MPEG Video 1/2 decoding */
     CODEC_ID_MPEG2VIDEO_XVMC,
@@ -194,6 +196,12 @@ type
     CODEC_ID_SUNRAST,
     CODEC_ID_INDEO4,
     CODEC_ID_INDEO5,
+    CODEC_ID_MIMIC,
+    CODEC_ID_RL2,
+    CODEC_ID_8SVX_EXP,
+    CODEC_ID_8SVX_FIB,
+    CODEC_ID_ESCAPE124,
+    CODEC_ID_DIRAC,
 
     //* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= $10000,
@@ -258,6 +266,7 @@ type
     CODEC_ID_XAN_DPCM,
     CODEC_ID_SOL_DPCM,
 
+    (* audio codecs *)
     CODEC_ID_MP2= $15000,
     CODEC_ID_MP3, ///< preferred ID for decoding MPEG audio layer 1, 2 or 3
     CODEC_ID_AAC,
@@ -312,7 +321,7 @@ type
     CODEC_ID_SSA,
     CODEC_ID_MOV_TEXT,
 
-    (* other specific kind of codecs (generaly used for attachments) *)
+    (* other specific kind of codecs (generally used for attachments) *)
     CODEC_ID_TTF= $18000,
     
     CODEC_ID_MPEG2TS= $20000, {*< _FAKE_ codec to indicate a raw MPEG-2 TS
@@ -651,6 +660,8 @@ type
     age: integer;
     (**
      * is this picture used as reference
+     * The values for this are the same as the MpegEncContext.picture_structure
+     * variable, that is 1->top field, 2->bottom field, 3->frame/both fields.
      * - encoding: unused
      * - decoding: Set by libavcodec. (before get_buffer() call)).
      *)
@@ -1328,7 +1339,7 @@ type
     get_buffer: function (c: PAVCodecContext; pic: PAVFrame): integer; cdecl;
 
     (**
-     * Called to release buffers which where allocated with get_buffer.
+     * Called to release buffers which were allocated with get_buffer.
      * A released buffer can be reused in get_buffer().
      * pic.data[*] must be set to NULL.
      * - encoding: unused
@@ -2294,8 +2305,16 @@ type
     close: function (avctx: PAVCodecContext): integer; cdecl;
     decode: function (avctx: PAVCodecContext; outdata: pointer; outdata_size: PInteger;
                   {const} buf: pchar; buf_size: integer): integer; cdecl;
+    (**
+     * Codec capabilities.
+     * see CODEC_CAP_*
+     *)
     capabilities: integer;
     next: PAVCodec;
+    (**
+     * Flush buffers.
+     * Will be called when seeking
+     *)
     flush: procedure (avctx: PAVCodecContext); cdecl;
     {const} supported_framerates: PAVRational; ///array of supported framerates, or NULL if any, array is terminated by {0,0}
     {const} pix_fmts: PAVPixelFormat;       ///array of supported pixel formats, or NULL if unknown, array is terminanted by -1
@@ -3111,7 +3130,7 @@ procedure  av_free_static ();
  * and should correctly use static arrays
  *)
 procedure av_mallocz_static(size: cardinal);
-  cdecl; external av__codec; deprecated;
+  cdecl; external av__codec; deprecated; {av_malloc_attrib av_alloc_size(1)}
 
 {$IF LIBAVCODEC_VERSION < 51035000} // 51.35.0
 procedure av_realloc_static(ptr: pointer; size: Cardinal);

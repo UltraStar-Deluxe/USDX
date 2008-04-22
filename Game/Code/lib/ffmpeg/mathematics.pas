@@ -21,7 +21,7 @@ For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
 (*
- * Revision: 10765, Wed Oct 17 09:37:46 2007 UTC
+ * revision 12498, Wed Mar 19 06:17:43 2008 UTC
  *)
 
 unit mathematics;
@@ -54,20 +54,20 @@ type
  * a simple a*b/c isn't possible as it can overflow
  *)
 function av_rescale (a, b, c: int64): int64;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 (**
  * rescale a 64bit integer with specified rounding.
  * a simple a*b/c isn't possible as it can overflow
  *)
 function av_rescale_rnd (a, b, c: int64; enum: TAVRounding): int64;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 (**
  * rescale a 64bit integer by 2 rational numbers.
  *)
 function av_rescale_q (a: int64; bq, cq: TAVRational): int64;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 implementation
 

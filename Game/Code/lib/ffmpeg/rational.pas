@@ -23,7 +23,7 @@
  * in the source codes *)
 
 (*
- * Revision: 10765, Wed Oct 17 09:37:46 2007 UTC
+ * revision 12498, Wed Mar 19 06:17:43 2008 UTC
  *)
 
 unit rational;
@@ -88,7 +88,7 @@ function av_reduce(dst_nom: PInteger; dst_den: PInteger; nom: int64; den: int64;
  * @return b*c.
  *)
 function av_mul_q(b: TAVRational; c: TAVRational): TAVRational;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 (**
  * Divides one rational by another.
@@ -97,7 +97,7 @@ function av_mul_q(b: TAVRational; c: TAVRational): TAVRational;
  * @return b/c.
  *)
 function av_div_q(b: TAVRational; c: TAVRational): TAVRational;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 (**
  * Adds two rationals.
@@ -106,7 +106,7 @@ function av_div_q(b: TAVRational; c: TAVRational): TAVRational;
  * @return b+c.
  *)
 function av_add_q(b: TAVRational; c: TAVRational): TAVRational;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 (**
  * Subtracts one rational from another.
@@ -115,7 +115,7 @@ function av_add_q(b: TAVRational; c: TAVRational): TAVRational;
  * @return b-c.
  *)
 function av_sub_q(b: TAVRational; c: TAVRational): TAVRational;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 (**
  * Converts a double precision floating point number to a rational.
@@ -124,7 +124,7 @@ function av_sub_q(b: TAVRational; c: TAVRational): TAVRational;
  * @return (AVRational) d.
  *)
 function av_d2q(d: double; max: integer): TAVRational;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_const}
 
 implementation
 

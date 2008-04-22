@@ -24,7 +24,7 @@ For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
 (*
- * Revision: 11305, Sat Dec 22 16:18:07 2007 UTC
+ * revision 12658, Mon Mar 31 17:31:11 2008 UTC
  *)
 
 unit avio;
@@ -79,6 +79,9 @@ type
   *)
   PURLContext = ^TURLContext;
   TURLContext = record
+    {$IF LIBAVFORMAT_VERSION_MAJOR >= 53}
+    av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
+    {$IFEND}
     prot: PURLProtocol;
     flags: integer;
     is_streamed: integer;  (**< true if streamed (no seek possible), default = false *)
@@ -293,16 +296,41 @@ procedure put_tag(s: PByteIOContext; {const} tag: pchar);
 procedure put_strz(s: PByteIOContext; {const} buf: pchar);
   cdecl; external av__format;
 
+(**
+ * fseek() equivalent for ByteIOContext.
+ * @return new position or AVERROR.
+ *)
 function url_fseek(s: PByteIOContext; offset: TOffset; whence: integer): TOffset;
   cdecl; external av__format;
+
+(**
+ * Skip given number of bytes forward.
+ * @param offset number of bytes
+ *)
 procedure url_fskip(s: PByteIOContext; offset: TOffset);
   cdecl; external av__format;
+
+(**
+ * ftell() equivalent for ByteIOContext.
+ * @return position or AVERROR.
+ *)
 function url_ftell(s: PByteIOContext): TOffset;
   cdecl; external av__format;
+
+(**
+ * Gets the filesize.
+ * @return filesize or AVERROR
+ *)
 function url_fsize(s: PByteIOContext): TOffset;
   cdecl; external av__format;
+
+(**
+ * feof() equivalent for ByteIOContext.
+ * @return non zero if and only if end of file
+ *)
 function url_feof(s: PByteIOContext): integer;
   cdecl; external av__format;
+
 function url_ferror(s: PByteIOContext): integer;
   cdecl; external av__format;
 
@@ -334,8 +362,20 @@ function url_fgets(s: PByteIOContext; buf: PChar; buf_size: integer): PChar;
 procedure put_flush_packet (s: PByteIOContext);
   cdecl; external av__format;
   
+
+(**
+ * Reads size bytes from ByteIOContext into buf.
+ * @returns number of bytes read or AVERROR
+ *)
 function get_buffer(s: PByteIOContext; buf: pchar; size: integer): integer;
   cdecl; external av__format;
+
+(**
+ * Reads size bytes from ByteIOContext into buf.
+ * This reads at most 1 packet. If that is not enough fewer bytes will be
+ * returned.
+ * @returns number of bytes read or AVERROR
+ *)
 function get_partial_buffer(s: PByteIOContext; buf: pchar; size: integer): integer;
   cdecl; external av__format;
 

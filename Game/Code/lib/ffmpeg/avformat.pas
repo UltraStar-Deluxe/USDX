@@ -24,7 +24,7 @@
 
 (*
  * Min. version: 50.5.0
- * Max. version: 52.7.0, revision 12246, Tue Feb 26 20:37:59 2008 UTC
+ * Max. version: 52.13.0, revision 12633, Sun Mar 30 19:17:01 2008 UTC
  *)
 
 unit avformat;
@@ -51,7 +51,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 7;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 13;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -195,6 +195,15 @@ const
   // used by TAVProgram
   AV_PROGRAM_RUNNING = 1;
 
+
+  AV_DISPOSITION_DEFAULT   = $0001;
+  AV_DISPOSITION_DUB       = $0002;
+  AV_DISPOSITION_ORIGINAL  = $0004;
+  AV_DISPOSITION_COMMENT   = $0008;
+  AV_DISPOSITION_LYRICS    = $0010;
+  AV_DISPOSITION_KARAOKE   = $0020;
+  
+  
 type
   PPAVCodecTag = ^PAVCodecTag;
   PAVCodecTag = Pointer;
@@ -322,7 +331,7 @@ type
                   timestamp: int64; flags: integer): integer; cdecl;
     (**
      * gets the next timestamp in stream[stream_index].time_base units.
-     * @return the timestamp or AV_NOPTS_VALUE if an error occured
+     * @return the timestamp or AV_NOPTS_VALUE if an error occurred
      *)
     read_timestamp: function (s: PAVFormatContext; stream_index: integer;
                               pos: pint64; pos_limit: int64): int64; cdecl;
@@ -450,6 +459,10 @@ type
     
     {$IF LIBAVFORMAT_VERSION >= 52006000} // 52.6.0
     filename: PChar; (**< source filename of the stream *)
+    {$IFEND}
+
+    {$IF LIBAVFORMAT_VERSION >= 52008000} // 52.8.0
+    disposition: integer; (**< AV_DISPOSITION_* bitfield *)
     {$IFEND}
   end;
 
@@ -580,6 +593,14 @@ type
      * demuxing: set by user
      *)
     max_index_size: cardinal;
+    {$IFEND}
+    
+    (**
+     * Maximum amount of memory in bytes to use for buffering frames
+     * obtained from real-time capture devices.
+     *)
+    {$IF LIBAVFORMAT_VERSION >= 52009000} // 52.9.0
+    max_picture_buffer: cardinal;
     {$IFEND}
   end;
 
@@ -1073,7 +1094,7 @@ function av_interleaved_write_frame (s: PAVFormatContext; var pkt: TAVPacket): i
  * @param flush 1 if no further packets are available as input and all
  *              remaining packets should be output
  * @return 1 if a packet was output, 0 if no packet could be output,
- *         < 0 if an error occured
+ *         < 0 if an error occurred
  *)
 function av_interleave_packet_per_dts(s: PAVFormatContext; _out: PAVPacket;
                                       pkt: PAVPacket; flush: integer): integer;

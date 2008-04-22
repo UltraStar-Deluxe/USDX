@@ -24,13 +24,13 @@
 (*
  * avutil.h:
  *  Min. version: ?
- *  Max. version: revision 12246, Tue Feb 26 20:37:59 2008 UTC
+ *  Max. version: revision 12410, Mon Mar 10 18:42:09 2008 UTC
  *
  * mem.h:
- *  revision 12218, Mon Feb 25 18:32:55 2008 UTC
+ *  revision 12501, Wed Mar 19 07:43:43 2008 UTC
  *
  * log.h:
- *  revision 11209, Wed Dec 12 21:48:50 2007 UTC
+ *  revision 12790, Fri Apr 11 14:18:33 2008 UTC
  *)
 
 unit avutil;
@@ -171,7 +171,7 @@ const
  * @see av_mallocz()
  *)
 function av_malloc (size: cardinal): pointer;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
  * Allocate or reallocate a block of memory.
@@ -186,7 +186,7 @@ function av_malloc (size: cardinal): pointer;
  * @see av_fast_realloc()
  *)
 function av_realloc (ptr: pointer; size: cardinal): pointer;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_alloc_size(2)}
 
 (**
  * Free a memory block which has been allocated with av_malloc(z)() or
@@ -209,7 +209,7 @@ procedure av_free (ptr: pointer);
  * @see av_malloc()
  *)
 function av_mallocz (size: cardinal): pointer;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
  * Duplicate the string \p s.
@@ -218,7 +218,7 @@ function av_mallocz (size: cardinal): pointer;
  * copy of \p s or NULL if it cannot be allocated.
  *)
 function av_strdup({const} s: pchar): pchar;
-  cdecl; external av__util;
+  cdecl; external av__util; {av_malloc_attrib}
 
 (**
  * Free a memory block which has been allocated with av_malloc(z)() or
