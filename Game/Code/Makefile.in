@@ -13,11 +13,14 @@ srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 datarootdir = @datarootdir@
 VPATH = @srcdir@
-
-usdxrootdir = ../..
+usdxrootdir = @usdxrootdir@
+logrootdir = @logrootdir@
 
 INSTALL_PATH_SUFFIX = @suffix@
 INSTALL_datadir = $(datarootdir)/$(INSTALL_PATH_SUFFIX)
+INSTALL_logdir = $(logrootdir)/$(INSTALL_PATH_SUFFIX)
+
+@SET_MAKE@
 
 # recursive dir creation tool
 MKDIR_P = @MKDIR_P@
@@ -27,9 +30,6 @@ INSTALL_DATA = @INSTALL_DATA@
 # calls "ln -s"
 LN_S = @LN_S@
 
-LDFLAGS = @LDFLAGS@
-LIBS = @LIBS@
-
 # Package configuration
 USDX_PACKAGE_NAME = @PACKAGE_NAME@
 # should be $(USDX_PACKAGE_NAME) instead
@@ -38,66 +38,65 @@ USDX_VERSION = @PACKAGE_VERSION@
 USDX_TARNAME = @PACKAGE_TARNAME@
 
 USDX_TOOLS_DIR = $(usdxrootdir)/Tools
+USDX_LIB_DIR   = ./lib
+USDX_BUILD_DIR = ./build
 
 # file-type suffix of executables (e.g. ".exe" in windows)
 EXE_SUFFIX = @EXEEXT@
 
 # Free Pascal compiler
 PPC = @PPC@
-PLIBS = @PLIBS@
 # FPC target platform and processor
 PPLATFORM = @FPC_PLATFORM@
 PPROCESSOR = @FPC_PROCESSOR@
 
-# TODO: remove lazarus stuff
-# lazarus defines
-#LAZARUS_DIR = @LAZARUS_DIR@
-#LCL_WIDGET_TYPE = @LCL_WIDGET_TYPE@
-#    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)
-#    $(PUNIT_TOKEN)$(LAZARUS_DIR)/lcl/units/$(PPROCESSOR)-$(PPLATFORM)/$(LCL_WIDGET_TYPE)
+EXTRA_SRCDIRS =
 
 # RC resource extraction config
 RESEXTRACTOR_NAME = ResourceExtractor
 RESEXTRACTOR_DIR = $(USDX_TOOLS_DIR)/$(RESEXTRACTOR_NAME)
 RESEXTRACTOR_BIN = $(RESEXTRACTOR_DIR)/$(RESEXTRACTOR_NAME)$(EXE_SUFFIX)
-RESEXTRACTOR_SRC = $(RESEXTRACTOR_DIR)/$(RESEXTRACTOR_NAME).pas
-RESEXTRACTOR_PFLAGS = -dRELEASE
 RESOURCE_DIR = $(usdxrootdir)/Resources
 RESOURCE_FILE = resource.inc
+EXTRA_SRCDIRS += $(RESEXTRACTOR_DIR)
+
+# cwrapper settings
+PROJECTM_CWRAPPER_DIR = $(USDX_LIB_DIR)/projectM/cwrapper
+@COMMENT_PROJECTM_CWRAPPER@EXTRA_SRCDIRS += $(PROJECTM_CWRAPPER_DIR)
 
 # Directories added to the unit path
 PUNIT_TOKEN = -Fu
-PUNIT_FLAGS = \
-    $(PUNIT_TOKEN).
-    
+PUNIT_FLAGS = $(PUNIT_TOKEN).
+
 # Directory where compiled units (.ppu and .o files) are stored
 PCUNIT_TOKEN = -FU
-PCUNIT_DIR = ./build/$(PPLATFORM)/fpc
+PCUNIT_DIR = $(USDX_BUILD_DIR)/$(PPLATFORM)/fpc
 PCUNIT_FLAGS = $(PCUNIT_TOKEN)$(PCUNIT_DIR)
 
 # Directories added to the includes path
 PINC_TOKEN = -Fi
-PINC_FLAGS = $(PINC_TOKEN)lib/JEDI-SDL/SDL/Pas
-
-# Defines
-#PDEFINES  = -dLCL -dLCL$(LCL_WIDGET_TYPE)
+PINC_FLAGS = $(PINC_TOKEN)$(USDX_LIB_DIR)/JEDI-SDL/SDL/Pas
 
 # FPC flags
 
 # The user can overwrite the default flags with
-#   make PFLAGS="myflags"
-PFLAGS = -S2gi -vB
-# the user's flags (specified with configure) must be the last in
-# the list to overwrite the defaults (e.g.with the - option: -Xs-).
-PFLAGS += @PFLAGS@
-
-PFLAGS_DEBUG   = @PFLAGS_DEBUG@
-PFLAGS_RELEASE = @PFLAGS_RELEASE@
-
+#   make PFLAGS_BASE="myflags"
+PFLAGS_BASE = -S2gi -vB
 # The user can specify additional flags with
 #   make PFLAGS_EXTRA="myflags"
-PFLAGS_EXTRA =
-PFLAGS += $(PFLAGS_EXTRA)
+PFLAGS_EXTRA = @PFLAGS_EXTRA@
+PFLAGS_DEBUG   = @PFLAGS_DEBUG@
+PFLAGS_RELEASE = @PFLAGS_RELEASE@
+# the user's flags (specified with configure) must be the last in
+# the list to overwrite the defaults (e.g.with the - option: -Xs-).
+PFLAGS = $(PFLAGS_BASE) @PFLAGS_MAKE@ $(PFLAGS_EXTRA)
+
+LIBS = @LIBS@
+LDFLAGS = @LDFLAGS@
+linkflags = $(strip $(LDFLAGS) $(LIBS))
+ifneq ($(linkflags),)
+PLINKFLAGS = -k"$(linkflags)"
+endif
 
 # dpr project file used as input
 USDX_SRC = $(USDX_PREFIX).dpr
@@ -105,36 +104,42 @@ USDX_SRC = $(USDX_PREFIX).dpr
 USDX_BIN_NAME = $(USDX_PREFIX)$(EXE_SUFFIX)
 USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
 
-.PHONY: all resources ultrastardx-app install install-dev install-release install-data install-data-recursive install-exec uninstall uninstall-dev uninstall-release uninstall-data uninstall-exec clean distclean clean_obj clean_res fetch-sounds dist debian-package
+modfile = lastmod
 
-all: resources ultrastardx-app
+.PHONY: debug release recursive all recursive-all dependencies install install-local install-global install-data install-data-recursive install-exec uninstall uninstall-local uninstall-global uninstall-data uninstall-exec clean recursive-clean distclean recursive-distclean clean_obj clean_res fetch-sounds dist debian-package update-modfile $(EXTRA_SRCDIRS)
 
-resources: $(RESOURCE_FILE)
+debug: PFLAGS = $(PFLAGS_BASE) $(PFLAGS_DEBUG) $(PFLAGS_EXTRA)
+debug: all
 
-ultrastardx-app: $(USDX_BIN)
+release: PFLAGS = $(PFLAGS_BASE) $(PFLAGS_RELEASE) $(PFLAGS_EXTRA)
+release: all
 
-# Clean and rebuild everything because FPC caches some old files
-# (it uses an .inc-files cache for example).
-# As a result FPC misses some changes if it is called without cleaning
-# up first (very annoying while debugging).
-$(USDX_BIN): clean_obj
-#	$(MAKE) clean_obj
+all: recursive-all update-modfile dependencies $(USDX_BIN)
+
+recursive-all: recursive-target = all
+recursive-all: recursive
+
+dependencies: $(RESOURCE_FILE)
+
+# call Makefiles in other source-dirs
+recursive: $(EXTRA_SRCDIRS)
+$(EXTRA_SRCDIRS):
+	$(MAKE) -C $@ $(recursive-target)
+
+# clean old data before compiling, otherwise FPC might miss some changes.
+$(USDX_BIN): lastmod 
+	$(MAKE) clean_obj
 	mkdir -p $(PCUNIT_DIR)
-	$(PPC) $(PFLAGS) $(PDEFINES) $(PLIBS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(USDX_SRC)
+	$(PPC) $(strip $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)) -o$@ $(USDX_SRC)
 
-install: install-@install_type@
-# depends on $(USDX_BIN)
+install: all install-@install_type@
 
 uninstall: uninstall-@install_type@
 
 
-# local development build
+# local build
 
-install-dev:
-	@if [ ! -d "$(usdxrootdir)/Visuals" ]; then \
-	  echo "Copying visualizer data to $(usdxrootdir)/Visuals ..."; \
-	  cp -r "$(usdxrootdir)/InstallerDependencies/Visuals" "$(usdxrootdir)"; \
-	fi
+install-local:
 	@if [ ! -f "$(usdxrootdir)/Sounds/Common start.mp3" ]; then \
 	  echo ""; \
 	  echo "# The sound-files from Sound-directory of the 1.0.1-branch are required."; \
@@ -148,14 +153,17 @@ fetch-sounds:
 	mv tmp-sounds/*.mp3 $(usdxrootdir)/Sounds
 	rm -rf tmp-sounds
 
-uninstall-dev:
+uninstall-local:
 	rm -f $(USDX_BIN)
 
 
+# global build
 
-# global release build
-
-install-release: install-data install-exec
+install-global: install-data install-exec
+# TODO: to which user/group/rights must the logdir be set
+# "drwxrwxrwx" might be too dangerous
+#	$(MKDIR_P) $(INSTALL_logdir)
+#	chmod ??? $(INSTALL_logdir)
 
 install-data:
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Themes RECURSIVE_DST_DIR=$(INSTALL_datadir)/Themes install-data-recursive
@@ -163,12 +171,12 @@ install-data:
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Languages RECURSIVE_DST_DIR=$(INSTALL_datadir)/Languages install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Skins RECURSIVE_DST_DIR=$(INSTALL_datadir)/Skins install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Resources RECURSIVE_DST_DIR=$(INSTALL_datadir)/Resources install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/InstallerDependencies/Visuals RECURSIVE_DST_DIR=$(INSTALL_datadir)/Visuals install-data-recursive
 
 install-data-recursive:
 	$(MKDIR_P) $(RECURSIVE_DST_DIR)
 	@for file in $(RECURSIVE_SRC_DIR)/*; do \
 	  if test -f "$$file"; then \
+	    echo $(INSTALL_DATA) "$$file" $(RECURSIVE_DST_DIR); \
 	    $(INSTALL_DATA) "$$file" $(RECURSIVE_DST_DIR); \
 	  fi; \
 	  if test -d "$$file"; then \
@@ -182,7 +190,8 @@ install-exec:
 	$(MKDIR_P) $(bindir)
 	$(INSTALL) $(USDX_BIN) $(bindir)
 
-uninstall-release: uninstall-data uninstall-exec
+uninstall-global: uninstall-data uninstall-exec
+	rmdir $(INSTALL_logdir)
 
 uninstall-data:
 # TODO: delete the directories created at the first execution of usdx too (like Screenshots/Playlists)
@@ -191,8 +200,7 @@ uninstall-data:
 	rm -rf $(INSTALL_datadir)/Languages
 	rm -rf $(INSTALL_datadir)/Skins
 	rm -rf $(INSTALL_datadir)/Resources
-	rm -rf $(INSTALL_datadir)/Visuals
-	rmdir $(INSTALL_datadir)
+	rmdir $(INSTALL_datadir)	
 
 uninstall-exec:
 	rm -f $(bindir)/$(USDX_BIN_NAME)
@@ -216,7 +224,7 @@ debpkgname = $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
 
 debian-package: $(debpkgname)
 
-$(debpkgname): $(USDX_BIN)
+$(debpkgname): all
 	rm -rf $(debpkgtmpdir)
 	rm -rf $(debpkgoutdir)
 
@@ -232,17 +240,25 @@ $(debpkgname): $(USDX_BIN)
 
 #	rm -rf $(debpkgtmpdir)
 
-clean: clean_obj
+rpm: all
+#	rpm 
+	@echo "Comming soon"
 
-distclean: clean clean_res
+clean: recursive-clean clean_obj
+
+recursive-clean: recursive-target = clean
+recursive-clean: recursive
+
+distclean: recursive-distclean clean clean_res
 	find . -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
 	find . -name "*~" -name "*.bak" -o -name "*.orig" -o -name "*.dcu" | xargs rm -f
 	find . -name "__history" | xargs rm -r -f
 	rm -f $(USDX_PREFIX).res $(USDX_PREFIX).identcache
-	rm -f config.inc config.log config.status configure
-	rm -f Makefile
-	rm -f aclocal.m4 
+	rm -f config.inc Makefile config.log config.status configure aclocal.m4 
 	rm -rf autom4te.cache
+
+recursive-distclean: recursive-target = distclean
+recursive-distclean: recursive
 
 clean_obj:
 	find "$(PCUNIT_DIR)" -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
@@ -251,21 +267,26 @@ clean_obj:
 clean_res:
 	rm -f $(RESOURCE_FILE)
 
-$(RESOURCE_FILE): $(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc
+$(RESOURCE_FILE): $(USDX_PREFIX).rc
 	$(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc $(RESOURCE_DIR) $(RESOURCE_FILE)
 
-$(RESEXTRACTOR_BIN): $(RESEXTRACTOR_SRC)
-	mkdir -p $(PCUNIT_DIR)
-	$(PPC) $(RESEXTRACTOR_PFLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) -o$@ $(RESEXTRACTOR_SRC)
 
-configure: configure.ac config.inc.in aclocal.m4
-	autoconf
-
-aclocal.m4: m4/*
-	aclocal -I m4
+# FPC does not recognize changes correctly. E.g. sometimes changes in .inc-files or
+# conditional .pas dependencies are ignored which results in corrupted builds.
+# So check for changes with a modification timestamp.
+update-modfile:
+	test -e $(modfile) || touch $(modfile)
+	find . \( -name "*.pas" -o -name "*.pp" -o -name "*.inc" -o -name "*.dpr" \) -newer $(modfile) -exec touch $(modfile) \;
+	find $(USDX_LIB_DIR) -name "*.a" -newer $(modfile) -exec touch $(modfile) \;
 
 Makefile: Makefile.in config.status
 	./config.status
 
 config.status: configure
 	./config.status --recheck
+
+configure: configure.ac config.inc.in aclocal.m4
+	autoconf
+
+aclocal.m4: m4/*
+	aclocal -I m4
