@@ -40,7 +40,7 @@
   {$I config-win.inc}
 
   // enable debug-mode. For development only!
-  {$DEFINE DEBUG}
+  //{$DEFINE DEBUG}
   {$IFDEF DEBUG}
     // windows apps are either GUI- or console-apps. Console-apps will open
     // an additional console-window for output. For development only!
