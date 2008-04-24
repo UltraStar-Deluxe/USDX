@@ -137,48 +137,7 @@ uses ULog,
      {$IFDEF DARWIN}
      MacResources,
      {$ENDIF}
-     StrUtils,
-     dialogs;
-
-const
-  fmt_rgba: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  32;
-    BytesPerPixel:  4;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:         0;
-    Gshift:         8;
-    Bshift:        16;
-    Ashift:        24;
-    Rmask:  $000000ff;
-    Gmask:  $0000ff00;
-    Bmask:  $00ff0000;
-    Amask:  $ff000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
-  fmt_rgb: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  24;
-    BytesPerPixel:  3;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:         0;
-    Gshift:         8;
-    Bshift:        16;
-    Ashift:         0;
-    Rmask:  $000000ff;
-    Gmask:  $0000ff00;
-    Bmask:  $00ff0000;
-    Amask:  $00000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
+     StrUtils;
 
 Constructor TTextureUnit.Create;
 begin
@@ -530,7 +489,8 @@ begin
   {$endif}
   if not assigned(TexSurface) then
   begin
-    Log.LogStatus( 'ERROR Could not load texture' , Identifier +' '+ TextureTypeToStr(Typ) );
+    Log.LogError('Could not load texture: "' + Identifier +' '+ TextureTypeToStr(Typ) +'"',
+                 'TTextureUnit.LoadTexture');
     Exit;
   end;
 
@@ -851,7 +811,8 @@ begin
         Log.LogStatus(' Error creating Cover Thumbnail',' LoadTexture('''+Name+''')');
     end
     else
-      Log.LogStatus( 'ERROR Could not load texture for Cover Thumbnail: ' , name+' '+ TextureTypeToStr(Typ) );
+      Log.LogError('Could not load texture for Cover Thumbnail: "' + name+' '+ TextureTypeToStr(Typ) +'"',
+                   'TTextureUnit.GetCoverThumbnail');
 
     SDL_FreeSurface(TexSurface);
   end;
@@ -1025,7 +986,7 @@ begin
       Exit;
     end;
   end;
-  Log.LogError('Unknown texture-type: "' + TypeStr + '"', 'ParseTextureType');
+  Log.LogWarn('Unknown texture-type: "' + TypeStr + '"', 'ParseTextureType');
   Result := TEXTURE_TYPE_PLAIN;
 end;
 

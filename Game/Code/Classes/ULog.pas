@@ -11,21 +11,52 @@ interface
 uses
   Classes;
 
+(*
+ * LOG_LEVEL_[TYPE] defines the "minimum" index for logs of type TYPE. Each
+ * level greater than this BUT less or equal than LOG_LEVEL_[TYPE]_MAX is of this type.  
+ * This means a level "LOG_LEVEL_ERROR >= Level <= LOG_LEVEL_ERROR_MAX" e.g.
+ * "Level := LOG_LEVEL_ERROR+2" is considered an error level.
+ * This is nice for debugging if you have more or less important debug messages.
+ * For example you can assign LOG_LEVEL_DEBUG+10 for the more important ones and
+ * LOG_LEVEL_DEBUG+20 for less important ones and so on. By changing the log-level
+ * you can hide the less important ones.  
+ *)
+const
+  LOG_LEVEL_DEBUG_MAX    = MaxInt;
+  LOG_LEVEL_DEBUG        = 50;
+  LOG_LEVEL_INFO_MAX     = LOG_LEVEL_DEBUG-1;
+  LOG_LEVEL_INFO         = 40;
+  LOG_LEVEL_STATUS_MAX   = LOG_LEVEL_INFO-1;
+  LOG_LEVEL_STATUS       = 30;
+  LOG_LEVEL_WARN_MAX     = LOG_LEVEL_STATUS-1;
+  LOG_LEVEL_WARN         = 20;
+  LOG_LEVEL_ERROR_MAX    = LOG_LEVEL_WARN-1;
+  LOG_LEVEL_ERROR        = 10;
+  LOG_LEVEL_CRITICAL_MAX = LOG_LEVEL_ERROR-1;
+  LOG_LEVEL_CRITICAL     =  0;
+  LOG_LEVEL_NONE         = -1;
+  
+  LOG_LEVEL_DEFAULT = LOG_LEVEL_ERROR;
+
 type
   TLog = class
+  private
+    LogFile:             TextFile;
+    LogFileOpened:       boolean;
+    BenchmarkFile:       TextFile;
+    BenchmarkFileOpened: boolean;
+
+    LogLevel: integer;
+
+    procedure LogToFile(const Text: string);
   public
     BenchmarkTimeStart:   array[0..7] of real;
     BenchmarkTimeLength:  array[0..7] of real;//TDateTime;
 
-    FileBenchmark:    TextFile;
-    FileBenchmarkO:   boolean; // opened
-    FileError:        TextFile;
-    FileErrorO:       boolean; // opened
-
     Title: String; //Application Title
 
-    //Should Log Files be written
-    Enabled:          Boolean;
+    // Write log message to log-file
+    FileOutputEnabled: Boolean;
 
     constructor Create;
 
@@ -35,25 +66,30 @@ type
     // benchmark
     procedure BenchmarkStart(Number: integer);
     procedure BenchmarkEnd(Number: integer);
-    procedure LogBenchmark(Text: string; Number: integer);
+    procedure LogBenchmark(const Text: string; Number: integer);
 
-    // error
-    procedure LogError(Text: string); overload;
+    procedure SetLogLevel(Level: integer);
+    function GetLogLevel(): integer;
 
+    procedure LogMsg(const Text: string; Level: integer); overload;
+    procedure LogMsg(const Msg, Context: string; Level: integer); overload; {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogDebug(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogInfo(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogStatus(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogWarn(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogError(const Text: string); overload; {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogError(const Msg, Context: string); overload; {$IFDEF HasInline}inline;{$ENDIF}
     //Critical Error (Halt + MessageBox)
-    procedure CriticalError(Text: string);
+    procedure LogCritical(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
+    procedure CriticalError(const Text: string); {$IFDEF HasInline}inline;{$ENDIF}
 
     // voice
     procedure LogVoice(SoundNr: integer);
-
-    // compability
-    procedure LogStatus(Log1, Log2: string);
-    procedure LogError(Log1, Log2: string); overload;
-    procedure LogBuffer(const buf : Pointer; const bufLength : Integer; filename : string);
+    // buffer
+    procedure LogBuffer(const buf : Pointer; const bufLength : Integer; const filename : string);
   end;
 
-procedure SafeWriteLn(const msg: string); {$IFDEF HasInline}inline;{$ENDIF}
-procedure debugWriteln( aString : String );
+procedure DebugWriteln(const aString: String);
 
 var
   Log:    TLog;
@@ -61,113 +97,45 @@ var
 implementation
 
 uses
-  {$IFDEF win32}
-  windows,
-  {$ENDIF}
   SysUtils,
   DateUtils,
-//UFiles,
   URecord,
   UMain,  
   UTime,
-//UIni,  // JB - Seems to not be needed.
-  {$IFDEF FPC}
-  sdl,
-  {$ENDIF}
+  UCommon,
   UCommandLine;
 
-{$IFDEF FPC}
-var
-  MessageList: TStringList;
-  ConsoleHandler: TThreadID;
-  ConsoleMutex: PSDL_Mutex;
-  ConsoleCond: PSDL_Cond;
-{$ENDIF}
-
-{$IFDEF FPC}
-{*
- * The console-handlers main-function.
- * TODO: create a quit-event on closing.
- *}
-function ConsoleHandlerFunc(param: pointer): PtrInt;
-var
-  i: integer;
+(*
+ * Write to console if in debug mode (Thread-safe).
+ * If debug-mode is disabled nothing is done. 
+ *)
+procedure DebugWriteln(const aString: string);
 begin
-  while true do
+  {$IFNDEF DEBUG}
+  if Params.Debug then
   begin
-    SDL_mutexP(ConsoleMutex);
-    while (MessageList.Count = 0) do
-      SDL_CondWait(ConsoleCond, ConsoleMutex);
-    for i := 0 to MessageList.Count-1 do
-    begin
-      WriteLn(MessageList[i]);
-    end;
-    MessageList.Clear();
-    SDL_mutexV(ConsoleMutex);
-  end;
-  result := 0;
-end;
-{$ENDIF}
-
-{*
- * With FPC console output is not thread-safe.
- * Using WriteLn() from external threads (like in SDL callbacks)
- *  will damage the heap and crash the program.
- * Most probably FPC uses thread-local-data (TLS) to lock a mutex on
- *  the console-buffer. This does not work with external lib's threads
- *  because these do not have the TLS data and so it crashes while
- *  accessing unallocated memory.
- * The solution is to create an FPC-managed thread which has the TLS data
- *  and use it to handle the console-output (hence it is called Console-Handler)
- * It should be safe to do so, but maybe FPC requires the main-thread to access
- *  the console-buffer only. In this case output should be delegated to it.
- *
- * TODO: - check if it is safe if an FPC-managed thread different than the
- *           main-thread accesses the console-buffer in FPC. 
- *       - check if Delphi's WriteLn is thread-safe.
- *       - check if we need to synchronize file-output too
- *       - Use TEvent and TCriticalSection instead of the SDL equivalents.
- *           Note: If those two objects use TLS they might crash FPC too.
- *}
-procedure SafeWriteLn(const msg: string);
-begin
-{$IFDEF FPC}
-  SDL_mutexP(ConsoleMutex);
-  MessageList.Add(msg);
-  SDL_CondSignal(ConsoleCond);
-  SDL_mutexV(ConsoleMutex);
-{$ELSE}
-  debugWriteln(msg);
-{$ENDIF}
-end;
-
-procedure debugWriteln( aString : String );
-begin
-  {$IFDEF CONSOLE}
-    if FindCmdLineSwitch( cDebug ) then
-      writeln( 'DEBUG - '+aString );
   {$ENDIF}
-
+    ConsoleWriteLn(aString);
+  {$IFNDEF DEBUG}
+  end;
+  {$ENDIF}
 end;
 
 
 constructor TLog.Create;
 begin
-{$IFDEF FPC}
-  // TODO: check for the main-thread?
-  //GetCurrentThreadThreadId();
-  MessageList := TStringList.Create();
-  ConsoleMutex := SDL_CreateMutex();
-  ConsoleCond := SDL_CreateCond();
-  ConsoleHandler := BeginThread(@ConsoleHandlerFunc);
-{$ENDIF}
+  LogLevel := LOG_LEVEL_DEFAULT;
+  FileOutputEnabled := true;
 end;
 
 destructor TLog.Destroy;
 begin
-  if FileBenchmarkO then CloseFile(FileBenchmark);
-//  if FileAnalyzeO then CloseFile(FileAnalyze);
-  if FileErrorO then CloseFile(FileError);
+  if BenchmarkFileOpened then
+    CloseFile(BenchmarkFile);
+  //if AnalyzeFileOpened then
+  //  CloseFile(AnalyzeFile);
+  if LogFileOpened then
+    CloseFile(LogFile);
 end;
 
 procedure TLog.BenchmarkStart(Number: integer);
@@ -180,7 +148,7 @@ begin
   BenchmarkTimeLength[Number] := USTime.GetTime {Time} - BenchmarkTimeStart[Number];
 end;
 
-procedure TLog.LogBenchmark(Text: string; Number: integer);
+procedure TLog.LogBenchmark(const Text: string; Number: integer);
 var
   Minutes:      integer;
   Seconds:      integer;
@@ -192,27 +160,31 @@ var
 
   ValueText:    string;
 begin
-  if Enabled AND (Params.Benchmark) then begin
-    if not FileBenchmarkO then begin
-      FileBenchmarkO := true;
-      AssignFile(FileBenchmark, LogPath + 'Benchmark.log');
+  if (FileOutputEnabled and Params.Benchmark) then
+  begin
+    if not BenchmarkFileOpened then
+    begin
+      BenchmarkFileOpened := true;
+      AssignFile(BenchmarkFile, LogPath + 'Benchmark.log');
       {$I-}
-      Rewrite(FileBenchmark);
-      if IOResult = 0 then FileBenchmarkO := true;
+      Rewrite(BenchmarkFile);
+      if IOResult = 0 then
+        BenchmarkFileOpened := true;
       {$I+}
 
       //If File is opened write Date to Benchmark File
-      If (FileBenchmarkO) then
+      If (BenchmarkFileOpened) then
       begin
-        WriteLn(FileBenchmark, Title + ' Benchmark File');
-        WriteLn(FileBenchmark, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
-        WriteLn(FileBenchmark, '-------------------');
+        WriteLn(BenchmarkFile, Title + ' Benchmark File');
+        WriteLn(BenchmarkFile, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
+        WriteLn(BenchmarkFile, '-------------------');
 
-        Flush(FileBenchmark);
+        Flush(BenchmarkFile);
       end;
     end;
 
-  if FileBenchmarkO then begin
+  if BenchmarkFileOpened then
+  begin
     Miliseconds := Trunc(Frac(BenchmarkTimeLength[Number]) * 1000);
     Seconds := Trunc(BenchmarkTimeLength[Number]) mod 60;
     Minutes := Trunc((BenchmarkTimeLength[Number] - Seconds) / 60);
@@ -232,7 +204,8 @@ begin
 
     if (Minutes = 0) and (Seconds >= 1) then begin
       MilisecondsS := IntToStr(Miliseconds);
-      while Length(MilisecondsS) < 3 do MilisecondsS := '0' + MilisecondsS;
+      while Length(MilisecondsS) < 3 do
+        MilisecondsS := '0' + MilisecondsS;
 
       SecondsS := IntToStr(Seconds);
 
@@ -241,70 +214,166 @@ begin
 
     if Minutes >= 1 then begin
       MilisecondsS := IntToStr(Miliseconds);
-      while Length(MilisecondsS) < 3 do MilisecondsS := '0' + MilisecondsS;
+      while Length(MilisecondsS) < 3 do
+        MilisecondsS := '0' + MilisecondsS;
 
       SecondsS := IntToStr(Seconds);
-      while Length(SecondsS) < 2 do SecondsS := '0' + SecondsS;
+      while Length(SecondsS) < 2 do
+        SecondsS := '0' + SecondsS;
 
       MinutesS := IntToStr(Minutes);
 
       ValueText := MinutesS + ':' + SecondsS + ',' + MilisecondsS + ' minutes';
     end;
 
-    WriteLn(FileBenchmark, Text + ': ' + ValueText);
-    Flush(FileBenchmark);
+    WriteLn(BenchmarkFile, Text + ': ' + ValueText);
+    Flush(BenchmarkFile);
     end;
   end;
 end;
 
-procedure TLog.LogError(Text: string);
+procedure TLog.LogToFile(const Text: string);
 begin
-  if Enabled AND (not FileErrorO) then begin
-    //FileErrorO := true;
-    AssignFile(FileError, LogPath + 'Error.log');
+  if (FileOutputEnabled and not LogFileOpened) then
+  begin
+    AssignFile(LogFile, LogPath + 'Error.log');
     {$I-}
-    Rewrite(FileError);
-    if IOResult = 0 then FileErrorO := true;
+    Rewrite(LogFile);
+    if IOResult = 0 then
+      LogFileOpened := true;
     {$I+}
 
     //If File is opened write Date to Error File
-    If (FileErrorO) then
+    if (LogFileOpened) then
     begin
-      WriteLn(FileError, Title + ' Error Log');
-      WriteLn(FileError, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
-      WriteLn(FileError, '-------------------');
+      WriteLn(LogFile, Title + ' Error Log');
+      WriteLn(LogFile, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
+      WriteLn(LogFile, '-------------------');
 
-      Flush(FileError);
+      Flush(LogFile);
     end;
   end;
 
-  if FileErrorO then begin
+  if LogFileOpened then
+  begin
     try
-      WriteLn(FileError, Text);
-      Flush(FileError);
+      WriteLn(LogFile, Text);
+      Flush(LogFile);
     except
-      FileErrorO := false;
+      LogFileOpened := false;
     end;
   end;
-  {$IFDEF DEBUG}
-  SafeWriteLn('Error: ' + Text);
-  {$ENDIF}
+end;
+
+procedure TLog.SetLogLevel(Level: integer);
+begin
+  LogLevel := Level;
+end;
+
+function TLog.GetLogLevel(): integer;
+begin
+  Result := LogLevel;
+end;
+
+procedure TLog.LogMsg(const Text: string; Level: integer);
+var
+  LogMsg: string;
+begin
+  if (Level <= LogLevel) then
+  begin
+    if (Level <= LOG_LEVEL_CRITICAL_MAX) then
+      LogMsg := 'CRITICAL: ' + Text
+    else if (Level <= LOG_LEVEL_ERROR_MAX) then
+      LogMsg := 'ERROR:  ' + Text
+    else if (Level <= LOG_LEVEL_WARN_MAX) then
+      LogMsg := 'WARN:   ' + Text
+    else if (Level <= LOG_LEVEL_STATUS_MAX) then
+      LogMsg := 'STATUS: ' + Text
+    else if (Level <= LOG_LEVEL_INFO_MAX) then
+      LogMsg := 'INFO:   ' + Text
+    else
+      LogMsg := 'DEBUG:  ' + Text;
+
+    // output log-message
+    DebugWriteLn(LogMsg);
+
+    // actions for error- and more severe levels
+    if (Level <= LOG_LEVEL_ERROR_MAX) then
+    begin
+      // Write message to log-file
+      LogToFile(Text);
+    end;
+
+    // actions for critical- and more severe levels
+    if (Level <= LOG_LEVEL_CRITICAL_MAX) then
+    begin
+      // Show information (window)
+      ShowMessage(Text, mtError);
+      // Exit Application
+      Halt;
+    end;
+  end;
+end;
+
+procedure TLog.LogMsg(const Msg, Context: string; Level: integer);
+begin
+  LogMsg(Msg + ' ['+Context+']', Level);
+end;
+
+procedure TLog.LogDebug(const Msg, Context: string);
+begin
+  LogMsg(Msg, Context, LOG_LEVEL_DEBUG);
+end;
+
+procedure TLog.LogInfo(const Msg, Context: string);
+begin
+  LogMsg(Msg, Context, LOG_LEVEL_INFO);
+end;
+
+procedure TLog.LogStatus(const Msg, Context: string);
+begin
+  LogMsg(Msg, Context, LOG_LEVEL_STATUS);
+end;
+
+procedure TLog.LogWarn(const Msg, Context: string);
+begin
+  LogMsg(Msg, Context, LOG_LEVEL_WARN);
+end;
+
+procedure TLog.LogError(const Msg, Context: string);
+begin
+  LogMsg(Msg, Context, LOG_LEVEL_ERROR);
+end;
+
+procedure TLog.LogError(const Text: string);
+begin
+  LogMsg(Text, LOG_LEVEL_ERROR);
+end;
+
+procedure TLog.CriticalError(const Text: string);
+begin
+  LogMsg(Text, LOG_LEVEL_CRITICAL);
+end;
+
+procedure TLog.LogCritical(const Msg, Context: string);
+begin
+  LogMsg(Msg, Context, LOG_LEVEL_CRITICAL);
 end;
 
 procedure TLog.LogVoice(SoundNr: integer);
 var
-// FileVoice:    File; // Auto Removed, Unused Variable
   FS:           TFileStream;
   FileName:     string;
   Num:          integer;
 begin
   for Num := 1 to 9999 do begin
     FileName := IntToStr(Num);
-    while Length(FileName) < 4 do FileName := '0' + FileName;
+    while Length(FileName) < 4 do
+      FileName := '0' + FileName;
     FileName := LogPath + 'Voice' + FileName + '.raw';
-    if not FileExists(FileName) then break
+    if not FileExists(FileName) then
+      break
   end;
-
 
   FS := TFileStream.Create(FileName, fmCreate);
 
@@ -314,42 +383,7 @@ begin
   FS.Free;
 end;
 
-procedure TLog.LogStatus(Log1, Log2: string);
-begin
-  //Just for Debugging
-  //Comment for Release    
-  //LogError(Log2 + ': ' + Log1);
-
-  //If Debug => Write to Console Output
-  {$IFDEF DEBUG}
-  // SafeWriteLn(Log2 + ': ' + Log1);
-  {$ENDIF}
-end;
-
-procedure TLog.LogError(Log1, Log2: string);
-begin
-  LogError(Log1 + ' ['+Log2+']');
-end;
-
-procedure TLog.CriticalError(Text: string);
-begin
-  //Write Error to Logfile:
-  LogError (Text);
-
-  {$IFDEF MSWINDOWS}
-  //Show Errormessage
-  Messagebox(0, PChar(Text), PChar(Title), MB_ICONERROR or MB_OK);
-  {$ELSE}
-  // TODO - JB_Linux handle critical error so user can see message.
-  SafeWriteLn( 'Critical ERROR :' );
-  SafeWriteLn( Text );
-  {$ENDIF}
-
-  //Exit Application
-  Halt;
-end;
-
-procedure TLog.LogBuffer(const buf: Pointer; const bufLength: Integer; filename: string);
+procedure TLog.LogBuffer(const buf: Pointer; const bufLength: Integer; const filename: string);
 var
   f : TFileStream;
 begin

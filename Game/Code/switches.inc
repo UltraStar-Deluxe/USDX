@@ -8,7 +8,6 @@
 
 // compiler/IDE dependent config
 {$IFDEF FPC}
-  {$DEFINE CONSOLE}
   {$IFDEF DARWIN}
     {$H+} // enables usage of AnsiString as String-type 
     {$R-} // disables range-checks
@@ -20,11 +19,8 @@
     {$DEFINE DEBUG}
   {$ENDIF}
 
-  {$DEFINE DLL_CDECL}
   {$DEFINE HasInline}
 {$ELSE}
-  {$UNDEF CONSOLE}  // Delphi requires a special app type... no thanks ! :)
-  // {$DEFINE CONSOLE} // -- use for development only !
   {$DEFINE Delphi}
 
   // Delphi version numbers (ignore versions released before Delphi 6 as they miss the $IF directive):
@@ -43,10 +39,12 @@
   // include defines but no constants
   {$I config-win.inc}
 
+  // enable debug-mode. For development only!
+  {$DEFINE DEBUG}
   {$IFDEF DEBUG}
-    {$IFDEF CONSOLE}
-      {$APPTYPE CONSOLE}
-    {$ENDIF}
+    // windows apps are either GUI- or console-apps. Console-apps will open
+    // an additional console-window for output. For development only!
+    {$DEFINE CONSOLE}
   {$ENDIF}
 
   {$DEFINE HaveBASS}
@@ -55,9 +53,19 @@
 {$ELSEIF Defined(LINUX)}
   // include defines but no constants
   {$I config-linux.inc}
+
+  // use "configure --enable-debug", "make debug" or
+  // the command-line parameter "-debug" instead of defining DEBUG directly
+  //{$DEFINE DEBUG}
+  // linux apps are always console-apps so leave this defined.
+  {$DEFINE CONSOLE}
 {$ELSEIF Defined(DARWIN)}
   // include defines but no constants
   {$I config-macosx.inc}
+
+  // enable debug-mode. For development only!
+  //{$DEFINE DEBUG}
+  {$DEFINE CONSOLE}
 
   {$DEFINE HaveBASS}
   {$DEFINE DLL_CDECL}

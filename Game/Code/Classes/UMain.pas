@@ -165,7 +165,7 @@ begin
     // Log + Benchmark
     Log := TLog.Create;
     Log.Title := WndTitle;
-    Log.Enabled := not Params.NoLog;
+    Log.FileOutputEnabled := not Params.NoLog;
     Log.BenchmarkStart(0);
 
     // Language

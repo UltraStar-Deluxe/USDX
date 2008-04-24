@@ -1,11 +1,7 @@
 {***************************************************************** 
  * Configuration file for UltraStar Deluxe 1.1
  *****************************************************************}
-
-{* Misc options *}
-
-{$DEFINE DEBUG}
-
+ 
 {* Libraries *}
 
 {$DEFINE HaveFFMpeg}

@@ -10,6 +10,18 @@ program UltraStar;
 
 {$I switches.inc}
 
+// TODO: check if this is needed for MacOSX too
+{$IFDEF MSWINDOWS}
+  // Set global application-type (GUI/CONSOLE) switch for Windows.
+  // CONSOLE is the default for FPC, GUI for Delphi, so we have
+  // to specify one of the two in any case.
+  {$IFDEF CONSOLE}
+    {$APPTYPE CONSOLE}
+  {$ELSE}
+    {$APPTYPE GUI}
+  {$ENDIF}
+{$ENDIF}
+
 uses
   {$IFDEF Unix}
     cthreads,              // THIS MUST be the first used unit in FPC if Threads are used!!

@@ -372,7 +372,7 @@ begin
       if(url_feof(pbIOCtx) <> 0) then
       begin
         {$IFDEF DebugFFMpegDecode}
-        SafeWriteLn('feof');
+        DebugWriteln('feof');
         {$ENDIF}
         eofState := true;
         continue;
@@ -382,7 +382,7 @@ begin
       if(url_ferror(pbIOCtx) = 0) then
       begin
         {$IFDEF DebugFFMpegDecode}
-        SafeWriteLn('Errorf');
+        DebugWriteln('Errorf');
         {$ENDIF}
         // no error -> wait for user input
         SDL_Delay(100);
@@ -397,11 +397,11 @@ begin
       end;
     end;
 
-    //SafeWriteLn( 'ffmpeg - av_read_frame' );
+    //DebugWriteln( 'ffmpeg - av_read_frame' );
 
     if(packet.stream_index = ffmpegStreamIndex) then
     begin
-      //SafeWriteLn( 'packet_queue_put' );
+      //DebugWriteln( 'packet_queue_put' );
       packetQueue.put(@packet);
     end
     else
@@ -425,7 +425,7 @@ begin
   begin
     while (audio_pkt_size > 0) do
     begin
-      //SafeWriteLn( 'got audio packet' );
+      //DebugWriteln( 'got audio packet' );
       data_size := bufSize;
 
       {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
@@ -438,13 +438,13 @@ begin
                   data_size, audio_pkt_data, audio_pkt_size);
       {$IFEND}
 
-      //SafeWriteLn('avcodec_decode_audio : ' + inttostr( len1 ));
+      //DebugWriteln('avcodec_decode_audio : ' + inttostr( len1 ));
 
       if(len1 < 0) then
       begin
         // if error, skip frame
         {$IFDEF DebugFFMpegDecode}
-        SafeWriteLn( 'Skip audio frame' );
+        DebugWriteln( 'Skip audio frame' );
         {$ENDIF}
         audio_pkt_size := 0;
         break;
@@ -482,7 +482,7 @@ begin
     begin
       avcodec_flush_buffers(pCodecCtx);
       {$IFDEF DebugFFMpegDecode}
-      SafeWriteLn('Flush');
+      DebugWriteln('Flush');
       {$ENDIF}
       continue;
     end;
@@ -493,13 +493,13 @@ begin
       // end-of-file reached -> set EOF-flag
       SetEOF(true);
       {$IFDEF DebugFFMpegDecode}
-      SafeWriteLn('EOF');
+      DebugWriteln('EOF');
       {$ENDIF}
       // note: buffer is not (even partially) filled -> no data to return
       exit;
     end;
 
-    //SafeWriteLn( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
+    //DebugWriteln( 'Audio Packet Size - ' + inttostr(audio_pkt_size) );
   end;
 end;
 
@@ -522,14 +522,14 @@ begin
     begin
       // we have already sent all our data; get more
       audio_size := DecodeFrame(audio_buf, sizeof(TAudioBuffer));
-      //SafeWriteLn('audio_decode_frame : '+ inttostr(audio_size));
+      //DebugWriteln('audio_decode_frame : '+ inttostr(audio_size));
 
       if(audio_size < 0) then
       begin
         // if error, output silence
         audio_buf_size := 1024;
         FillChar(audio_buf, audio_buf_size, #0);
-        //SafeWriteLn( 'Silence' );
+        //DebugWriteln( 'Silence' );
       end
       else
       begin
@@ -731,7 +731,7 @@ begin
     Self.lastPkt := pkt1;
     inc(Self.nbPackets);
 
-    //SafeWriteLn('Put: ' + inttostr(nbPackets));
+    //DebugWriteln('Put: ' + inttostr(nbPackets));
 
     Self.size := Self.size + pkt1^.pkt.size;
     SDL_CondSignal(Self.cond);
@@ -765,7 +765,7 @@ begin
           Self.lastPkt := nil;
         dec(Self.nbPackets);
 
-        //SafeWriteLn('Get: ' + inttostr(nbPackets));
+        //DebugWriteln('Get: ' + inttostr(nbPackets));
 
         Self.size := Self.size - pkt1^.pkt.size;
         pkt := pkt1^.pkt;
