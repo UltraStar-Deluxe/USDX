@@ -49,9 +49,9 @@ type
     Destructor Free;
 
     Procedure Init(const Filename: string);
-    procedure ReadScore(var Song: TSong);
-    procedure AddScore(var Song: TSong; Level: integer; Name: string; Score: integer);
-    procedure WriteScore(var Song: TSong);
+    procedure ReadScore(Song: TSong);
+    procedure AddScore(Song: TSong; Level: integer; Name: string; Score: integer);
+    procedure WriteScore(Song: TSong);
 
     Function  GetStats(var Stats: AStatResult; const Typ, Count: Byte; const Page: Cardinal; const Reversed: Boolean): Boolean;
     Function  GetTotalEntrys(const Typ: Byte): Cardinal;
@@ -123,7 +123,7 @@ end;
 //--------------------
 //ReadScore - Read Scores into SongArray
 //--------------------
-procedure TDataBaseSystem.ReadScore(var Song: TSong);
+procedure TDataBaseSystem.ReadScore(Song: TSong);
 var
   TableData: TSqliteTable;
   Difficulty: Integer;
@@ -175,7 +175,7 @@ end;
 //--------------------
 //AddScore - Add one new Score to DB
 //--------------------
-procedure TDataBaseSystem.AddScore(var Song: TSong; Level: integer; Name: string; Score: integer);
+procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; Name: string; Score: integer);
 var
 ID: Integer;
 TableData: TSqliteTable;
@@ -216,7 +216,7 @@ end;
 //--------------------
 //WriteScore - Not needed with new System; But used for Increment Played Count
 //--------------------
-procedure TDataBaseSystem.WriteScore(var Song: TSong);
+procedure TDataBaseSystem.WriteScore(Song: TSong);
 begin
   if not assigned( ScoreDB ) then
     exit;
