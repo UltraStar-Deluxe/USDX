@@ -53,7 +53,6 @@ type
     Length:     string;
   end;
 
-	
 	{$IFDEF USE_PSEUDO_THREAD}
 	TSongs = class( TPseudoThread )
 	{$ELSE}
@@ -72,7 +71,6 @@ type
   protected
     procedure Execute; override;
   public
-//    Song      : array of TSong; // array of songs
     SongList  : TList; // array of songs
     Selected  : integer;        // selected song index
     constructor create();
@@ -96,8 +94,8 @@ type
     CatNumShow: integer; // Category Number being seen
     CatCount:   integer; //Number of Categorys
 
+    procedure SortSongs();
     procedure Refresh; // refreshes arrays by recreating them from Songs array
-//    procedure Sort(Order: integer);
     procedure ShowCategory(Index: integer); // expands all songs in category
     procedure HideCategory(Index: integer); // hides all songs in category
     procedure ClickCategoryButton(Index: integer); // uses ShowCategory and HideCategory when needed
@@ -197,8 +195,6 @@ begin
 end;
 
 procedure TSongs.int_LoadSongList;
-const
-  cUSNGPath = '/usr/share/games/ultrastar-ng/songs';
 begin
   try
     fProcessing := true;
@@ -210,12 +206,6 @@ begin
 
     if UserSongPath <> SongPath then
       BrowseDir(UserSongPath);
-
-(*
-    if ( cUSNGPath <> SongPath     ) AND
-       ( cUSNGPath <> UserSongPath ) then
-      BrowseDir( cUSNGPath );                       // todo : JB this is REAL messy,
-*)                                                    // we should have some sort of path manager that lets us specify X number of extra paths to search
 
     if assigned( CatSongs ) then
       CatSongs.Refresh;
@@ -317,112 +307,69 @@ begin
 
 end;
 
+(*
+ * Comparison functions for sorting
+ *)
+
+function CompareByEdition(Song1, Song2: Pointer): integer;
+begin
+  Result := CompareText(TSong(Song1).Edition, TSong(Song2).Edition);
+end;
+
+function CompareByGenre(Song1, Song2: Pointer): integer;
+begin
+  Result := CompareText(TSong(Song1).Genre, TSong(Song2).Genre);
+end;
+
+function CompareByTitle(Song1, Song2: Pointer): integer;
+begin
+  Result := CompareText(TSong(Song1).Title, TSong(Song2).Title);
+end;
+
+function CompareByArtist(Song1, Song2: Pointer): integer;
+begin
+  Result := CompareText(TSong(Song1).Artist, TSong(Song2).Artist);
+end;
+
+function CompareByFolder(Song1, Song2: Pointer): integer;
+begin
+  Result := CompareText(TSong(Song1).Folder, TSong(Song2).Folder);
+end;
+
+function CompareByLanguage(Song1, Song2: Pointer): integer;
+begin
+  Result := CompareText(TSong(Song1).Language, TSong(Song2).Language);
+end;
+
 procedure TSongs.Sort(Order: integer);
 var
-  S:    integer;
-  S2:   integer;
-  TempSong:   TSong;
+  CompareFunc: TListSortCompare;
 begin
+  // FIXME: what is the difference between artist and artist2, etc.?
   case Order of
     sEdition: // by edition
-      begin
-        for S2 := 0 to SongList.Count -1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Edition, TSong( SongList[S-1] ).Edition) < 0 then
-            begin
-              // zamiana miejscami
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-      end;
+      CompareFunc := CompareByEdition;
     sGenre: // by genre
-      begin
-        for S2 := 0 to SongList.Count-1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Genre, TSong( SongList[S-1] ).Genre) < 0 then
-            begin
-              // zamiana miejscami
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-      end;
+      CompareFunc := CompareByGenre;
     sTitle: // by title
-      begin
-        for S2 := 0 to SongList.Count-1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Title, TSong( SongList[S-1] ).Title) < 0 then
-            begin
-              // zamiana miejscami
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-
-      end;
+      CompareFunc := CompareByTitle;
     sArtist: // by artist
-      begin
-        for S2 := 0 to SongList.Count-1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Artist, TSong( SongList[S-1] ).Artist) < 0 then
-            begin
-              // zamiana miejscami
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-      end;
+      CompareFunc := CompareByArtist;
     sFolder: // by folder
-      begin
-        for S2 := 0 to SongList.Count-1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Folder, TSong( SongList[S-1] ).Folder) < 0 then
-            begin
-              // zamiana miejscami
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-      end;
+      CompareFunc := CompareByFolder;
     sTitle2: // by title2
-      begin
-        for S2 := 0 to SongList.Count-1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Title, TSong( SongList[S-1] ).Title) < 0 then
-            begin
-              // zamiana miejscami
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-
-      end;
+      CompareFunc := CompareByTitle;
     sArtist2: // by artist2
-      begin
-        for S2 := 0 to SongList.Count-1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Artist, TSong( SongList[S-1] ).Artist) < 0 then
-            begin
-              // zamiana miejscami
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-      end;
+      CompareFunc := CompareByArtist;
     sLanguage: // by Language
-      begin
-        for S2 := 0 to SongList.Count-1 do
-          for S := 1 to SongList.Count-1 do
-            if CompareText(TSong( SongList[S] ).Language, TSong( SongList[S-1] ).Language) < 0 then
-            begin
-              TempSong      := SongList[S-1];
-              SongList[S-1] := SongList[S];
-              SongList[S]   := TempSong;
-            end;
-      end;
-
+      CompareFunc := CompareByLanguage;
   end; // case
+
+  // Note: Do not use TList.Sort() as it uses QuickSort which is instable.
+  // For example, if a list is sorted by title first and
+  // by artist afterwards, the songs of an artist will not be sorted by title anymore.
+  // The stable MergeSort guarantees to maintain this order. 
+  MergeSort(SongList, CompareFunc);
 end;
 
 function TSongs.FindSongFile(Dir, Mask: widestring): widestring;
@@ -436,315 +383,245 @@ begin
   FindClose(SR);
 end;
 
+procedure TCatSongs.SortSongs();
+begin
+  case Ini.Sorting of
+    sEdition: begin
+        Songs.Sort(sTitle);
+        Songs.Sort(sArtist);
+        Songs.Sort(sEdition);
+      end;
+    sGenre: begin
+        Songs.Sort(sTitle);
+        Songs.Sort(sArtist);
+        Songs.Sort(sGenre);
+      end;
+    sLanguage: begin
+        Songs.Sort(sTitle);
+        Songs.Sort(sArtist);
+        Songs.Sort(sLanguage);
+      end;
+    sFolder: begin
+        Songs.Sort(sTitle);
+        Songs.Sort(sArtist);
+        Songs.Sort(sFolder);
+      end;
+    sTitle: begin
+        Songs.Sort(sTitle);
+      end;
+    sArtist: begin
+        Songs.Sort(sTitle);
+        Songs.Sort(sArtist);
+      end;
+    sTitle2: begin
+        Songs.Sort(sArtist2);
+        Songs.Sort(sTitle2);
+      end;
+    sArtist2: begin
+        Songs.Sort(sTitle2);
+        Songs.Sort(sArtist2);
+      end;
+  end; // case
+end;
+
 procedure TCatSongs.Refresh;
 var
-  S:        integer; // temporary song index
-  CatLen:   integer; // length of CatSongs.Song
-  Letter:   char; // current letter for sorting using letter
-  SS:       string; // current edition for sorting using edition, genre etc.
-  Order:    integer; // number used for ordernum
-  Letter2:  char; //
-  CatNumber:integer; // Number of Song in Category
+  SongIndex:   integer;
+  CurSong:     TSong;
+  CatIndex:    integer; // index of current song in Song
+  Letter:      char;    // current letter for sorting using letter
+  CurCategory: string;  // current edition for sorting using edition, genre etc.
+  Order:       integer; // number used for ordernum
+  LetterTmp:   char;
+  CatNumber:   integer; // Number of Song in Category
+
+  procedure AddCategoryButton(const CategoryName: string);
+  var
+    PrevCatBtnIndex: integer;
+  begin
+    Inc(Order);
+    CatIndex := Length(Song);
+    SetLength(Song, CatIndex+1);
+    Song[CatIndex] := TSong.Create();
+    Song[CatIndex].Artist := '[' + CategoryName + ']';
+    Song[CatIndex].Main := true;
+    Song[CatIndex].OrderTyp := 0;
+    Song[CatIndex].OrderNum := Order;
+    Song[CatIndex].Cover := CatCovers.GetCover(Ini.Sorting, CategoryName);
+    Song[CatIndex].Visible := true;
+
+    // set number of songs in previous category
+    PrevCatBtnIndex := CatIndex - CatNumber - 1;
+    if ((PrevCatBtnIndex >= 0) and Song[PrevCatBtnIndex].Main) then
+      Song[PrevCatBtnIndex].CatNumber := CatNumber;
+
+    CatNumber := 0;
+ end;
+
 begin
   CatNumShow := -1;
-//  Songs.Sort(0); // by title
 
-case Ini.Sorting of
-    sEdition: begin
-          Songs.Sort(sArtist);
-          Songs.Sort(sEdition);
-        end;
-    sGenre: begin
-          Songs.Sort(sArtist);
-          Songs.Sort(sGenre);
-        end;
-    sLanguage: begin
-          Songs.Sort(sArtist);
-          Songs.Sort(sLanguage);
-        end;
-    sFolder:  begin
-          Songs.Sort(sArtist);
-          Songs.Sort(sFolder);
-        end;
-    sTitle:  Songs.Sort(sTitle);
-    sArtist:  Songs.Sort(sArtist);
-    sTitle2:  Songs.Sort(sTitle2); // by title2
-    sArtist2:  Songs.Sort(sArtist2); // by artist2
+  SortSongs();
 
-  end; // case
-
-
-  Letter := ' ';
-  SS := '';
+  CurCategory := '';
   Order := 0;
   CatNumber := 0;
 
-  //Songs leeren
-  SetLength (Song, 0);
+  // Note: do NOT set Letter to ' ', otherwise no category-button will be
+  // created for songs beginning with ' ' if songs of this category exist.
+  // TODO: trim song-properties so ' ' will not occur as first chararcter. 
+  Letter := #0;
 
-  for S := 0 to Songs.SongList.Count-1 do
+  // clear song-list
+  for SongIndex := 0 to Songs.SongList.Count-1 do
   begin
+    // free category buttons
+    // Note: do NOT delete songs, they are just references to Songs.SongList entries
+    CurSong := TSong(Songs.SongList[SongIndex]);
+    if (CurSong.Main) then
+      CurSong.Free;
+  end;
+  SetLength(Song, 0);
+
+  for SongIndex := 0 to Songs.SongList.Count-1 do
+  begin
+    CurSong := TSong(Songs.SongList[SongIndex]);
+    // if tabs are on, add section buttons for each new section
     if (Ini.Tabs = 1) then
-    if (Ini.Sorting = sEdition) and (CompareText(SS, TSong( Songs.SongList[S] ).Edition) <> 0) then begin
-      // add Category Button
-      Inc(Order);
-      SS := TSong( Songs.SongList[S] ).Edition;
-      CatLen := Length(CatSongs.Song);
-      SetLength(CatSongs.Song, CatLen+1);
-      CatSongs.Song[CatLen].Artist := '[' + SS + ']';
-      CatSongs.Song[CatLen].Main := true;
-      CatSongs.Song[CatLen].OrderTyp := 0;
-      CatSongs.Song[CatLen].OrderNum := Order;
-
-
-
-      // 0.4.3
-      // if SS = 'Singstar' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar.jpg';
-      // if SS = 'Singstar Part 2' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar.jpg';
-      // if SS = 'Singstar German' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar.jpg';
-      // if SS = 'Singstar Spanish' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar.jpg';
-      // if SS = 'Singstar Italian' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar.jpg';
-      // if SS = 'Singstar French' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar.jpg';
-      // if SS = 'Singstar Party' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar Party.jpg';
-      // if SS = 'Singstar Popworld' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar Popworld.jpg';
-      // if SS = 'Singstar 80s' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar 80s.jpg';
-      // if SS = 'Singstar 80s Polish' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar 80s.jpg';
-      // if SS = 'Singstar Rocks' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar Rocks.jpg';
-      // if SS = 'Singstar Anthems' then CatSongs.Song[CatLen].Cover := CoversPath + 'Singstar Anthems.jpg';
-
-      {// cover-patch
-      if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';//}
-
-      CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
-
-      //CatNumber Patch
-      if (SS <> '') then
+    begin
+      if (Ini.Sorting = sEdition) and
+         (CompareText(CurCategory, CurSong.Edition) <> 0) then
       begin
-        Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-        CatNumber := 0;
-      end;
+        CurCategory := CurSong.Edition;
 
-      CatSongs.Song[CatLen].Visible := true;
-    end
+        // TODO: remove this block if it is not needed anymore
+        {
+        if CurSection = 'Singstar Part 2' then CoverName := 'Singstar';
+        if CurSection = 'Singstar German' then CoverName := 'Singstar';
+        if CurSection = 'Singstar Spanish' then CoverName := 'Singstar';
+        if CurSection = 'Singstar Italian' then CoverName := 'Singstar';
+        if CurSection = 'Singstar French' then CoverName := 'Singstar';
+        if CurSection = 'Singstar 80s Polish' then CoverName := 'Singstar 80s';
+        }
 
-    else if (Ini.Sorting = sGenre) and (CompareText(SS, TSong( Songs.SongList[S] ).Genre) <> 0) then begin
-      // add Genre Button
-      Inc(Order);
-      SS := TSong( Songs.SongList[S] ).Genre;
-      CatLen := Length(CatSongs.Song);
-      SetLength(CatSongs.Song, CatLen+1);
-      CatSongs.Song[CatLen].Artist := SS;
-      CatSongs.Song[CatLen].Main := true;
-      CatSongs.Song[CatLen].OrderTyp := 0;
-      CatSongs.Song[CatLen].OrderNum := Order;
+        // add Category Button
+        AddCategoryButton(CurCategory);
+      end
 
-      {// cover-patch
-      if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
-      CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
-
-      //CatNumber Patch
-      if (SS <> '') then
+      else if (Ini.Sorting = sGenre) and
+              (CompareText(CurCategory, CurSong.Genre) <> 0) then
       begin
-        Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-        CatNumber := 0;
-      end;
+        CurCategory := CurSong.Genre;
+        // add Genre Button
+        AddCategoryButton(CurCategory);
+      end
 
-      CatSongs.Song[CatLen].Visible := true;
-    end
-
-    else if (Ini.Sorting = sLanguage) and (CompareText(SS, TSong( Songs.SongList[S] ).Language) <> 0) then begin
-      // add Language Button
-      Inc(Order);
-      SS := TSong( Songs.SongList[S] ).Language;
-      CatLen := Length(CatSongs.Song);
-      SetLength(CatSongs.Song, CatLen+1);
-      CatSongs.Song[CatLen].Artist := SS;
-      CatSongs.Song[CatLen].Main := true;
-      CatSongs.Song[CatLen].OrderTyp := 0;
-      CatSongs.Song[CatLen].OrderNum := Order;
-
-      {// cover-patch
-      if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
-      CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
-
-      //CatNumber Patch
-      if (SS <> '') then
+      else if (Ini.Sorting = sLanguage) and
+              (CompareText(CurCategory, CurSong.Language) <> 0) then
       begin
-        Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-        CatNumber := 0;
-      end;
+        CurCategory := CurSong.Language;
+        // add Language Button
+        AddCategoryButton(CurCategory);
+      end
 
-      CatSongs.Song[CatLen].Visible := true;
-    end
-
-    else if (Ini.Sorting = sTitle) and
-            (Length(TSong( Songs.SongList[S] ).Title)>=1) and
-            (Letter <> UpperCase(TSong( Songs.SongList[S] ).Title)[1]) then begin
-      // add a letter Category Button
-      Inc(Order);
-      Letter := Uppercase(TSong( Songs.SongList[S] ).Title)[1];
-      CatLen := Length(CatSongs.Song);
-      SetLength(CatSongs.Song, CatLen+1);
-      CatSongs.Song[CatLen].Artist := '[' + Letter + ']';
-      CatSongs.Song[CatLen].Main := true;
-      CatSongs.Song[CatLen].OrderTyp := 0;
-//      Order := ord(Letter);
-      CatSongs.Song[CatLen].OrderNum := Order;
-
-
-      {// cover-patch
-      if FileExists(CoversPath + 'Title' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Title' + Letter + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
-      CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
-
-      //CatNumber Patch
-      if (Letter <> ' ') then
+      else if (Ini.Sorting = sTitle) and
+              (Length(CurSong.Title) >= 1) and
+              (Letter <> UpperCase(CurSong.Title)[1]) then
       begin
-        Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-        CatNumber := 0;
-      end;
-
-      CatSongs.Song[CatLen].Visible := true;
-    end
-
-    else if (Ini.Sorting = sArtist) and (Length(TSong( Songs.SongList[S] ).Artist)>=1) and
-            (Letter <> UpperCase(TSong( Songs.SongList[S] ).Artist)[1]) then begin
-      // add a letter Category Button
-      Inc(Order);
-      Letter := UpperCase(TSong( Songs.SongList[S] ).Artist)[1];
-      CatLen := Length(CatSongs.Song);
-      SetLength(CatSongs.Song, CatLen+1);
-      CatSongs.Song[CatLen].Artist := '[' + Letter + ']';
-      CatSongs.Song[CatLen].Main := true;
-      CatSongs.Song[CatLen].OrderTyp := 0;
-//      Order := ord(Letter);
-      CatSongs.Song[CatLen].OrderNum := Order;
-
-      {// cover-patch
-      if FileExists(CoversPath + 'Artist' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Artist' + Letter + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
-      CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
-
-      //CatNumber Patch
-      if (Letter <> ' ') then
-      begin
-        Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-        CatNumber := 0;
-      end;
-
-      CatSongs.Song[CatLen].Visible := true;
-    end
-
-    else if (Ini.Sorting = sFolder) and (CompareText(SS, TSong( Songs.SongList[S] ).Folder) <> 0) then begin
-      // 0.5.0: add folder tab
-      Inc(Order);
-      SS := TSong( Songs.SongList[S] ).Folder;
-      CatLen := Length(CatSongs.Song);
-      SetLength(CatSongs.Song, CatLen+1);
-      CatSongs.Song[CatLen].Artist := SS;
-      CatSongs.Song[CatLen].Main := true;
-      CatSongs.Song[CatLen].OrderTyp := 0;
-      CatSongs.Song[CatLen].OrderNum := Order;
-
-      {// cover-patch
-      if FileExists(CoversPath + SS + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + SS + '.jpg'
-      else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
-      CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, SS);
-
-      //CatNumber Patch
-      if (SS <> '') then
-      begin
-        Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-        CatNumber := 0;
-      end;
-
-      CatSongs.Song[CatLen].Visible := true;
-    end
-
-    else if (Ini.Sorting = sTitle2) AND (Length(TSong( Songs.SongList[S] ).Title)>=1) then begin
-      if (ord(TSong( Songs.SongList[S] ).Title[1]) > 47) and (ord(TSong( Songs.SongList[S] ).Title[1]) < 58) then Letter2 := '#' else Letter2 := UpperCase(TSong( Songs.SongList[S] ).Title)[1];
-      if (Letter <> Letter2) then begin
+        Letter := Uppercase(CurSong.Title)[1];
         // add a letter Category Button
-        Inc(Order);
-        Letter := Letter2;
-        CatLen := Length(CatSongs.Song);
-        SetLength(CatSongs.Song, CatLen+1);
-        CatSongs.Song[CatLen].Artist := '[' + Letter + ']';
-        CatSongs.Song[CatLen].Main := true;
-        CatSongs.Song[CatLen].OrderTyp := 0;
-//      Order := ord(Letter);
-        CatSongs.Song[CatLen].OrderNum := Order;
+        AddCategoryButton(Letter);
+      end
 
-        {// cover-patch
-        if FileExists(CoversPath + 'Title' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Title' + Letter + '.jpg'
-        else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
-        CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
-
-        //CatNumber Patch
-      if (Letter <> ' ') then
+      else if (Ini.Sorting = sArtist) and
+              (Length(CurSong.Artist) >= 1) and
+              (Letter <> UpperCase(CurSong.Artist)[1]) then
       begin
-        Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-        CatNumber := 0;
-      end;
-
-        CatSongs.Song[CatLen].Visible := true;
-      end;
-    end
-
-    else if (Ini.Sorting = sArtist2) AND (Length(TSong( Songs.SongList[S] ).Artist)>=1) then begin
-     if (ord(TSong( Songs.SongList[S] ).Artist[1]) > 47) and (ord(TSong( Songs.SongList[S] ).Artist[1]) < 58) then Letter2 := '#' else Letter2 := UpperCase(TSong( Songs.SongList[S] ).Artist)[1];
-       if (Letter <> Letter2) then begin
+        Letter := UpperCase(CurSong.Artist)[1];
         // add a letter Category Button
-        Inc(Order);
-        Letter := Letter2;
-        CatLen := Length(CatSongs.Song);
-        SetLength(CatSongs.Song, CatLen+1);
-        CatSongs.Song[CatLen].Artist := '[' + Letter + ']';
-        CatSongs.Song[CatLen].Main := true;
-        CatSongs.Song[CatLen].OrderTyp := 0;
-//      Order := ord(Letter);
-        CatSongs.Song[CatLen].OrderNum := Order;
+        AddCategoryButton(Letter);
+      end
 
-        {// cover-patch
-        if FileExists(CoversPath + 'Artist' + Letter + '.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'Artist' + Letter + '.jpg'
-        else if FileExists(CoversPath + 'NoCover.jpg') then CatSongs.Song[CatLen].Cover := CoversPath + 'NoCover.jpg';}
-        CatSongs.Song[CatLen].Cover := CatCovers.GetCover(Ini.Sorting, Letter);
+      else if (Ini.Sorting = sFolder) and
+              (CompareText(CurCategory, CurSong.Folder) <> 0) then
+      begin
+        CurCategory := CurSong.Folder;
+        // add folder tab
+        AddCategoryButton(CurCategory);
+      end
 
-        //CatNumber Patch
-        if (Letter <> ' ') then
+      else if (Ini.Sorting = sTitle2) and
+              (Length(CurSong.Title) >= 1) then
+      begin
+        // pack all numbers into a category named '#'
+        if (CurSong.Title[1] >= '0') and (CurSong.Title[1] <= '9') then
+          LetterTmp := '#'
+        else
+          LetterTmp := UpperCase(CurSong.Title)[1];
+
+        if (Letter <> LetterTmp) then
         begin
-          Song[CatLen - CatNumber - 1].CatNumber := CatNumber;//Set CatNumber of Categroy
-          CatNumber := 0;
+          Letter := LetterTmp;
+          // add a letter Category Button
+          AddCategoryButton(Letter);
         end;
-        
-        CatSongs.Song[CatLen].Visible := true;
+      end
+
+      else if (Ini.Sorting = sArtist2) and
+              (Length(CurSong.Artist)>=1) then
+      begin
+        // pack all numbers into a category named '#'
+        if (CurSong.Artist[1] >= '0') and (CurSong.Artist[1] <= '9') then
+          LetterTmp := '#'
+        else
+          LetterTmp := UpperCase(CurSong.Artist)[1];
+
+        if (Letter <> LetterTmp) then
+        begin
+          Letter := LetterTmp;
+          // add a letter Category Button
+          AddCategoryButton(Letter);
+        end;
       end;
     end;
 
+    CatIndex := Length(Song);
+    SetLength(Song, CatIndex+1);
 
-    CatLen := Length(CatSongs.Song);
-    SetLength(CatSongs.Song, CatLen+1);
+    Inc(CatNumber); // increase number of songs in category
 
-    Inc (CatNumber); //Increase Number in Cat
+    // copy reference to current song
+    Song[CatIndex] := CurSong;
 
-    CatSongs.Song[CatLen] := TSong( Songs.SongList[S] );
-    CatSongs.Song[CatLen].OrderNum := Order; // assigns category
-    CatSongs.Song[CatLen].CatNumber := CatNumber;
+    // set song's category info
+    CurSong.OrderNum := Order; // assigns category
+    CurSong.CatNumber := CatNumber;
 
-    if (Ini.Tabs = 0) then CatSongs.Song[CatLen].Visible := true
-    else if (Ini.Tabs = 1) then CatSongs.Song[CatLen].Visible := false;
-//    if (Ini.Tabs = 1) and (Order = 1) then CatSongs.Song[CatLen].Visible := true; // open first tab
-//CatSongs.Song[CatLen].Visible := true;
-
+    if (Ini.Tabs = 0) then
+      CurSong.Visible := true
+    else if (Ini.Tabs = 1) then
+      CurSong.Visible := false;
+    {
+    if (Ini.Tabs = 1) and (Order = 1) then
+    begin
+      //open first tab
+      CurSong.Visible := true;
+    end;
+    CurSong.Visible := true;
+    }
   end;
-//CatNumber Patch - Set CatNumber of Last Category
-if (ini.Tabs_at_startup = 1) And (high(Song) >=1) then
-  Song[CatLen - CatNumber].CatNumber := CatNumber;//Set CatNumber of Categroy
-//CatCount Patch
-CatCount := Order;
+
+  // set CatNumber of last category
+  if (Ini.Tabs_at_startup = 1) and (High(Song) >= 1) then
+  begin
+    // set number of songs in previous category
+    SongIndex := CatIndex - CatNumber;
+    if ((SongIndex >= 0) and Song[SongIndex].Main) then
+      Song[SongIndex].CatNumber := CatNumber;
+  end;
+
+  // update number of categories
+  CatCount := Order;
 end;
 
 procedure TCatSongs.ShowCategory(Index: integer);
@@ -754,7 +631,7 @@ begin
   CatNumShow := Index;
   for S := 0 to high(CatSongs.Song) do
   begin
-    if (CatSongs.Song[S].OrderNum = Index) AND (Not CatSongs.Song[S].Main) then
+    if (CatSongs.Song[S].OrderNum = Index) and (not CatSongs.Song[S].Main) then
       CatSongs.Song[S].Visible := true
     else
       CatSongs.Song[S].Visible := false;
@@ -777,9 +654,9 @@ var
 begin
   Num := CatSongs.Song[Index].OrderNum;
   if Num <> CatNumShow then
-    begin
+  begin
     ShowCategory(Num);
-    end
+  end
   else begin
     ShowCategoryList;
   end;
@@ -806,18 +683,18 @@ end;
 function TCatSongs.FindNextVisible(SearchFrom:integer): integer;//Find next Visible Song
 var
   I: Integer;
-  begin
+begin
   Result := -1;
   I := SearchFrom + 1;
   while not CatSongs.Song[I].Visible do
-    begin
+  begin
     Inc (I);
     if (I>high(CatSongs.Song)) then
       I := low(CatSongs.Song);
     if (I = SearchFrom) then //Make One Round and no song found->quit
       break;
-    end;
   end;
+end;
 //Wrong song selected when tabs on bug End
 
 function TCatSongs.VisibleSongs: integer;
@@ -842,7 +719,7 @@ function TCatSongs.SetFilter(FilterStr: String; const fType: Byte): Cardinal;
 var
   I, J: Integer;
   cString: String;
-  SearchStr: Array of String;
+  SearchStr: array of String;
 begin
   {fType: 0: All
           1: Title
@@ -853,18 +730,18 @@ begin
     //Create Search Array
     SetLength(SearchStr, 1);
     I := Pos (' ', FilterStr);
-    While (I <> 0) do
+    while (I <> 0) do
     begin
       SetLength (SearchStr, Length(SearchStr) + 1);
       cString := Copy(FilterStr, 1, I-1);
-      if (cString <> ' ') AND (cString <> '') then
+      if (cString <> ' ') and (cString <> '') then
         SearchStr[High(SearchStr)-1] := cString;
       Delete (FilterStr, 1, I);
 
       I := Pos (' ', FilterStr);
     end;
     //Copy last Word
-    if (FilterStr <> ' ') AND (FilterStr <> '') then
+    if (FilterStr <> ' ') and (FilterStr <> '') then
       SearchStr[High(SearchStr)] := FilterStr;
 
     for I:=0 to High(Song) do begin
@@ -877,9 +754,9 @@ begin
         end;
         Song[i].Visible:=True;
         //Look for every Searched Word
-        For J := 0 to High(SearchStr) do
+        for J := 0 to High(SearchStr) do
         begin
-          Song[i].Visible := Song[i].Visible AND AnsiContainsText(cString, SearchStr[J])
+          Song[i].Visible := Song[i].Visible and AnsiContainsText(cString, SearchStr[J])
         end;
         if Song[i].Visible then
           Inc(Result);
@@ -891,7 +768,7 @@ begin
   end
   else begin
     for i:=0 to High(Song) do begin
-      Song[i].Visible:=(Ini.Tabs=1)=Song[i].Main;
+      Song[i].Visible := (Ini.Tabs=1) = Song[i].Main;
       CatNumShow := -1;
     end;
     Result := 0;

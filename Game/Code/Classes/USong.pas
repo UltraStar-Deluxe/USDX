@@ -63,10 +63,10 @@ type
     FileName:   widestring;
 
     // sorting methods
-    Category:   array of widestring; // I think I won't need this
+    Category:   array of widestring; // TODO: do we need this?
     Genre:      widestring;
     Edition:    widestring;
-    Language:   widestring; // 0.5.0: new
+    Language:   widestring;
 
     Title:      widestring;
     Artist:     widestring;
@@ -80,7 +80,7 @@ type
     Background: widestring;
     Video:      widestring;
     VideoGAP:   real;
-    VideoLoaded: boolean; // 0.5.0: true if the video has been loaded
+    VideoLoaded: boolean; // true if the video has been loaded
     NotesGAP:   integer;
     Start:      real; // in seconds
     Finish:     integer; // in miliseconds
@@ -98,19 +98,20 @@ type
     OrderTyp:   integer; // type of sorting for this button (0=name)
     CatNumber:  integer; // Count of Songs in Category for Cats and Number of Song in Category for Songs
 
-    SongFile: TextFile;   // all procedures in this unit operates on this file
+    SongFile: TextFile;   // all procedures in this unit operate on this file
 
     Base    : array[0..1] of integer;
     Rel     : array[0..1] of integer;
     Mult    : integer;
     MultBPM : integer;
 
-    constructor create  ( const aFileName : WideString );
+    constructor Create  (); overload;
+    constructor Create  ( const aFileName : WideString ); overload;
     function    LoadSong: boolean;
     function    LoadXMLSong: boolean;
     function    Analyse(): boolean;
     function    AnalyseXML(): boolean;
-    procedure   clear();
+    procedure   Clear();
   end;
 
 implementation
@@ -121,42 +122,33 @@ uses
   UMusic,  //needed for Lines
   UMain;   //needed for Player
 
-constructor TSong.create( const aFileName : WideString );
+constructor TSong.Create();
 begin
+end;
 
+constructor TSong.Create( const aFileName : WideString );
+begin
   Mult    := 1;
-
   MultBPM := 4;
-
-
   fFileName := aFileName;
 
-
   if fileexists( aFileName ) then
-
   begin
-
     self.Path     := ExtractFilePath( aFileName );
     self.Folder   := ExtractFilePath( aFileName );
     self.FileName := ExtractFileName( aFileName );
-
-(*
-
+    (*
     if ReadTXTHeader( aFileName ) then
-
     begin
-
       LoadSong();
-
     end
     else
     begin
       Log.LogError('Error Loading SongHeader, abort Song Loading');
       Exit;
     end;
-*)
+    *)
   end;
-
 end;
 
 //Load TXT Song

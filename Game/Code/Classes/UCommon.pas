@@ -67,6 +67,9 @@ function IsAlphaNumericChar(ch: WideChar): boolean;
 function IsPunctuationChar(ch: WideChar): boolean;
 function IsControlChar(ch: WideChar): boolean;
 
+// A stable alternative to TList.Sort() (use TList.Sort() if applicable, see below)
+procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
+
 
 implementation
 
@@ -612,6 +615,90 @@ begin
       Result := false;
   end;
 end;
+
+(*
+ * Recursive part of the MergeSort algorithm.
+ * OutList will be either InList or TempList and will be swapped in each
+ * depth-level of recursion. By doing this it we can directly merge into the
+ * output-list. If we only had In- and OutList parameters we had to merge into
+ * InList after the recursive calls and copy the data to the OutList afterwards.
+ *)
+function _MergeSort(InList, TempList, OutList: TList; StartPos, BlockSize: integer;
+                    CompareFunc: TListSortCompare): TList;
+var
+  LeftSize, RightSize: integer; // number of elements in left/right block
+  LeftEnd, RightEnd: integer;   // Index after last element in left/right block
+  MidPos: integer; // index of first element in right block
+  Pos: integer;    // position in output list
+begin
+  LeftSize := BlockSize div 2;
+  RightSize := BlockSize - LeftSize;
+  MidPos := StartPos + LeftSize;
+
+  // sort left and right halves of this block by recursive calls of this function 
+  if (LeftSize >= 2) then
+    _MergeSort(InList, OutList, TempList, StartPos, LeftSize, CompareFunc)
+  else
+    TempList[StartPos] := InList[StartPos];
+  if (RightSize >= 2) then
+    _MergeSort(InList, OutList, TempList, MidPos, RightSize, CompareFunc)
+  else
+    TempList[MidPos] := InList[MidPos];
+
+  // merge sorted left and right sub-lists into output-list 
+  LeftEnd := MidPos;
+  RightEnd := StartPos + BlockSize;
+  Pos := StartPos;
+  while ((StartPos < LeftEnd) and (MidPos < RightEnd)) do
+  begin
+    if (CompareFunc(TempList[StartPos], TempList[MidPos]) <= 0) then
+    begin
+      OutList[Pos] := TempList[StartPos];
+      Inc(StartPos);
+    end
+    else
+    begin
+      OutList[Pos] := TempList[MidPos];
+      Inc(MidPos);
+    end;
+    Inc(Pos);
+  end;
+
+  // copy remaining elements to output-list
+  while (StartPos < LeftEnd) do
+  begin
+    OutList[Pos] := TempList[StartPos];
+    Inc(StartPos);
+    Inc(Pos);
+  end;
+  while (MidPos < RightEnd) do
+  begin
+    OutList[Pos] := TempList[MidPos];
+    Inc(MidPos);
+    Inc(Pos);
+  end;
+end;
+
+(*
+ * Stable alternative to the instable TList.Sort() (uses QuickSort) implementation.
+ * A stable sorting algorithm preserves preordered items. E.g. if sorting by
+ * songs by title first and artist afterwards, the songs of each artist will
+ * be ordered by title. In contrast to this an unstable algorithm (like QuickSort)
+ * may destroy an existing order, so the songs of an artist will not be ordered
+ * by title anymore after sorting by artist in the previous example.
+ * If you do not need a stable algorithm, use TList.Sort() instead.    
+ *)
+procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
+var
+  TempList: TList;
+begin
+  TempList := TList.Create();
+  TempList.Count := List.Count;
+  if (List.Count >= 2) then
+    _MergeSort(List, TempList, List, 0, List.Count, CompareFunc);
+  TempList.Free;
+end;
+
 
 initialization
   InitConsoleOutput();
