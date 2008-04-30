@@ -27,7 +27,7 @@ dnl - Do not use -dDEBUG because this will enable range-checks that will fail wi
 dnl - Disable -Xs which is defined in fpc.cfg (TODO: is this necessary?).
 dnl - For FPC we have to use DEBUG_MODE instead of DEBUG to enable the apps debug-mode 
 dnl   because DEBUG enables some additional compiler-flags in fpc.cfg too
-PFLAGS_DEBUG=${PFLAGS_DEBUG-"-gl -Cit -Xs- -vew -dDEBUG_MODE"}
+PFLAGS_DEBUG=${PFLAGS_DEBUG-"-gl -Xs- -vew -dDEBUG_MODE"}
 dnl -dRELEASE works too but we define our own settings
 PFLAGS_RELEASE=${PFLAGS_RELEASE-"-O2 -Xs -vew"}
 
