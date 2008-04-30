@@ -8,6 +8,9 @@ interface
 
 {$I switches.inc}
 
+{$IFDEF FPC}
+  {$ASMMODE Intel}
+{$ENDIF}
 
 uses
   OpenGL12,
@@ -344,14 +347,27 @@ end;
 
 function NextPowerOfTwo(Value: Integer): Integer;
 // tyty to Asphyre
+// FIXME: check if the non-asm version is fast enough and use it by default if so
 begin
- Result:= 1;
- asm
-  xor ecx, ecx
-  bsr ecx, Value
-  inc ecx
-  shl Result, cl
- end;
+  Result:= 1;
+{$IF Defined(CPUX86_64)}
+  asm
+    mov rcx, -1
+    bsr rcx, Value
+    inc rcx
+    shl Result, cl
+  end;
+{$ELSEIF Defined(CPU386) or Defined(CPUI386)}
+  asm
+    mov ecx, -1
+    bsr ecx, Value
+    inc ecx
+    shl Result, cl
+  end;
+{$ELSE}
+  while (Result <= Value) do
+    Result := 2 * Result;
+{$IFEND}
 end;
 
 function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;

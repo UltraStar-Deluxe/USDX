@@ -8,6 +8,10 @@ interface
 
 {$I switches.inc}
 
+{$IFDEF FPC}
+  {$ASMMODE Intel}
+{$ENDIF}
+
 uses uPluginDefs,
      SysUtils;
 {*********************
@@ -249,19 +253,41 @@ end;
 // Generates the Hash for the given Name
 //------------
 Function TServiceManager.NametoHash(const ServiceName: TServiceName): Integer;
+// FIXME: check if the non-asm version is fast enough and use it by default if so
+{$IF Defined(CPUX86_64)}
+asm
+  { CL: Counter; RAX: Result; RDX: Current Memory Address }
+  Mov RCX, 14
+  Mov RDX, ServiceName {Save Address of String that should be "Hashed"}
+  Mov RAX, [RDX]
+  @FoldLoop: ADD RDX, 4 {jump 4 Byte(32 Bit) to the next tile }
+             ADD RAX, [RDX] {Add the Value of the next 4 Byte of the String to the Hash}
+  LOOP @FoldLoop {Fold again if there are Chars Left}
+end;
+{$ELSEIF Defined(CPU386) or Defined(CPUI386)}
 asm
   { CL: Counter; EAX: Result; EDX: Current Memory Address }
   Mov ECX, 14 {Init Counter, Fold 14 Times to get 4 Bytes out of 60}
-
   Mov EDX, ServiceName {Save Address of String that should be "Hashed"}
-
   Mov EAX, [EDX]
-
   @FoldLoop: ADD EDX, 4 {jump 4 Byte(32 Bit) to the next tile }
              ADD EAX, [EDX] {Add the Value of the next 4 Byte of the String to the Hash}
-
   LOOP @FoldLoop {Fold again if there are Chars Left}
 end;
+{$ELSE}
+var
+  i: integer;
+  ptr: ^integer;
+begin
+  ptr := @ServiceName;
+  Result := 0;
+  for i := 1 to 14 do
+  begin
+    Result := Result + ptr^;
+    Inc(ptr);
+  end;
+end;
+{$IFEND}
 
 
 //------------
