@@ -291,7 +291,7 @@ begin
     DataBase := TDataBaseSystem.Create;
 
     if (Params.ScoreFile = '') then
-      DataBase.Init ('Ultrastar.db')
+      DataBase.Init (Platform.GetGameUserPath + 'Ultrastar.db')
     else
       DataBase.Init (Params.ScoreFile);
 
@@ -325,7 +325,7 @@ begin
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Loading Time', 0);
 
-    Log.LogError('Creating Core');
+    Log.LogStatus('Creating Core', 'Initialization');
     {Core := TCore.Create(
       USDXShortVersionStr,
       MakeVersion(USDX_VERSION_MAJOR,
@@ -334,7 +334,7 @@ begin
                   chr(0))
     );  }
 
-    Log.LogError('Running Core');
+    Log.LogStatus('Running Core', 'Initialization');
     //Core.Run;
 
     //------------------------------
