@@ -387,7 +387,7 @@ begin
   end;
   // create window
   Result := CreateWindowEx(WS_EX_TOOLWINDOW, WndClass.lpszClassName, '',
-    WS_POPUP, 0, 0, 0, 0, 0, 0, HInstance, nil);
+    DWORD(WS_POPUP), 0, 0, 0, 0, 0, 0, HInstance, nil);
   if (Result = 0) then
     Exit;
   // assign individual callback procedure to the window

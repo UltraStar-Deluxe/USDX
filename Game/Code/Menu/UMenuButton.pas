@@ -104,7 +104,7 @@ begin
     Text[T].X := Text[T].X + dY;}
 
   PosX := Value;
-  if (FadeTex.TexNum = -1) then
+  if (FadeTex.TexNum = 0) then
     Texture.X := Value;
 
 end;
@@ -121,7 +121,7 @@ begin
     Text[T].Y := Text[T].Y + dY;}
 
   PosY := Value;
-  if (FadeTex.TexNum = -1) then
+  if (FadeTex.TexNum = 0) then
     Texture.y := Value;
 end;
 
@@ -257,7 +257,7 @@ begin
   DeselectInt := 0.5;
   DeselectTInt := 1;
 
-  FadeTex.TexNum := -1;
+  FadeTex.TexNum := 0;
 
   FadeProgress := 0;
   Fade := False;
@@ -306,7 +306,7 @@ begin
         end;
       end;
       //Method without Fade Texture
-      if (FadeTex.TexNum = -1) then
+      if (FadeTex.TexNum = 0) then
       begin
       Texture.W := DeSelectW + (SelectW - DeSelectW) * FadeProgress;
       Texture.H := DeSelectH + (SelectH - DeSelectH) * FadeProgress;
@@ -413,7 +413,7 @@ begin
       DrawTexture(DeselectTexture);
 
     //Draw FadeTex
-    if (FadeTex.TexNum <> -1) then
+    if (FadeTex.TexNum > 0) then
       DrawTexture(FadeTex);
 
     if Texture2.Alpha > 0 then begin

@@ -82,7 +82,7 @@ var
   Rec:      TRecR;
   TexRec:   TRecR;
 begin
-  if ScreenSing.Tex_Background.TexNum >= 1 then begin
+  if (ScreenSing.Tex_Background.TexNum > 0) then begin
 
   glClearColor (1, 1, 1, 1);
   glColor4f (1, 1, 1, 1);

@@ -216,19 +216,19 @@ begin
   Settings.Phase2Time := 550;  // shift it up        ^[   ]^
   Settings.Phase3Time := 200;  // increase score      [s++]
 
-  Settings.PopUpTex[0].TexNum := High(gluInt);
-  Settings.PopUpTex[1].TexNum := High(gluInt);
-  Settings.PopUpTex[2].TexNum := High(gluInt);
-  Settings.PopUpTex[3].TexNum := High(gluInt);
-  Settings.PopUpTex[4].TexNum := High(gluInt);
-  Settings.PopUpTex[5].TexNum := High(gluInt);
-  Settings.PopUpTex[6].TexNum := High(gluInt);
-  Settings.PopUpTex[7].TexNum := High(gluInt);
-  Settings.PopUpTex[8].TexNum := High(gluInt);
+  Settings.PopUpTex[0].TexNum := 0;
+  Settings.PopUpTex[1].TexNum := 0;
+  Settings.PopUpTex[2].TexNum := 0;
+  Settings.PopUpTex[3].TexNum := 0;
+  Settings.PopUpTex[4].TexNum := 0;
+  Settings.PopUpTex[5].TexNum := 0;
+  Settings.PopUpTex[6].TexNum := 0;
+  Settings.PopUpTex[7].TexNum := 0;
+  Settings.PopUpTex[8].TexNum := 0;
 
-  Settings.RatingBar_BG_Tex.TexNum   := High(gluInt);
-  Settings.RatingBar_FG_Tex.TexNum   := High(gluInt);
-  Settings.RatingBar_Bar_Tex.TexNum  := High(gluInt);
+  Settings.RatingBar_BG_Tex.TexNum   := 0;
+  Settings.RatingBar_FG_Tex.TexNum   := 0;
+  Settings.RatingBar_Bar_Tex.TexNum  := 0;
 end;
 
 //-----------

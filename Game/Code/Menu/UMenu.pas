@@ -183,7 +183,7 @@ begin
   SetLength(Static, 0);
   SetLength(Button, 0);
 
-  BackImg.TexNum := -1;
+  BackImg.TexNum := 0;
 
   //Set ButtonPos to Autoset Length
   ButtonPos := -1;
@@ -204,7 +204,7 @@ begin
     BackW := 1;
     BackH := 1;
   end else
-    BackImg.TexNum := -1;
+    BackImg.TexNum := 0;
 
    //Set ButtonPos to Autoset Length 
    ButtonPos := -1;
@@ -318,7 +318,7 @@ begin
     begin
       BackImg   := Texture.GetTexture( fFileName , TEXTURE_TYPE_PLAIN);
 
-      if ( BackImg.TexNum < 1 )  then
+      if ( BackImg.TexNum = 0 )  then
       begin
         if VideoPlayback.Open( fFileName ) then
           VideoPlayback.Play;
@@ -744,7 +744,7 @@ begin
   BackImg.TexY1 := 0;
   BackImg.TexX2 := 1;
   BackImg.TexY2 := 1;
-  if (BackImg.TexNum <> -1) then
+  if (BackImg.TexNum > 0) then
   begin
     // does anyone know what these loops were for?
     {

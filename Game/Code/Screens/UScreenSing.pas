@@ -512,10 +512,10 @@ begin
       Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
     except
       log.LogError('Background could not be loaded: ' + CurrentSong.Path + CurrentSong.Background);
-      Tex_Background.TexNum := -1;
+      Tex_Background.TexNum := 0;
     end
   else
-    Tex_Background.TexNum := -1;
+    Tex_Background.TexNum := 0;
 
 
 

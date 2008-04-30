@@ -25,7 +25,7 @@ uses OpenGL12,
 
 type
   TTexture = record
-    TexNum:   integer;
+    TexNum:   GLuint;
     X:        real;
     Y:        real;
     Z:        real; // new
@@ -711,15 +711,15 @@ begin
     TextureDatabase.Texture[T].Color := Col;
 
     // inform database that no textures have been loaded into memory
-    TextureDatabase.Texture[T].Texture.TexNum      := -1;
-    TextureDatabase.Texture[T].TextureCache.TexNum := -1;
+    TextureDatabase.Texture[T].Texture.TexNum      := 0;
+    TextureDatabase.Texture[T].TextureCache.TexNum := 0;
   end;
 
   // use preloaded texture
   if (not FromCache) or (FromCache{ and (Covers.CoverExists(Name) < 0)}) then
   begin
     // use full texture
-    if TextureDatabase.Texture[T].Texture.TexNum = -1 then
+    if TextureDatabase.Texture[T].Texture.TexNum = 0 then
     begin
       // load texture
       {$ifdef blindydebug}
@@ -740,7 +740,7 @@ begin
     // use cache texture
     C := Covers.CoverNumber(Name);
 
-    if TextureDatabase.Texture[T].TextureCache.TexNum = -1 then
+    if TextureDatabase.Texture[T].TextureCache.TexNum = 0 then
     begin
       // load texture
       Covers.PrepareData(Name);
@@ -927,22 +927,22 @@ end;
 procedure TTextureUnit.UnloadTexture(const Name: string; Typ: TTextureType; Col: Cardinal; FromCache: boolean);
 var
   T:      integer;
-  TexNum: integer;
+  TexNum: GLuint;
 begin
   T := FindTexture(Name, Typ, Col);
 
   if not FromCache then begin
     TexNum := TextureDatabase.Texture[T].Texture.TexNum;
-    if TexNum >= 0 then begin
+    if TexNum > 0 then begin
       glDeleteTextures(1, PGLuint(@TexNum));
-      TextureDatabase.Texture[T].Texture.TexNum := -1;
+      TextureDatabase.Texture[T].Texture.TexNum := 0;
 //      Log.LogError('Unload texture no '+IntToStr(TexNum));
     end;
   end else begin
     TexNum := TextureDatabase.Texture[T].TextureCache.TexNum;
-    if TexNum >= 0 then begin
+    if TexNum > 0 then begin
       glDeleteTextures(1, @TexNum);
-      TextureDatabase.Texture[T].TextureCache.TexNum := -1;
+      TextureDatabase.Texture[T].TextureCache.TexNum := 0;
 //      Log.LogError('Unload texture cache no '+IntToStr(TexNum));
     end;
   end;
@@ -957,11 +957,11 @@ begin
   for i := 0 to High(TextureDatabase.Texture) do
   begin
     // only delete non-cached entries
-    if (TextureDatabase.Texture[i].Texture.TexNum <> -1) then
+    if (TextureDatabase.Texture[i].Texture.TexNum > 0) then
     begin
       Tex := @TextureDatabase.Texture[i].Texture;
       glDeleteTextures(1, PGLuint(Tex^.TexNum));
-      Tex^.TexNum := -1;
+      Tex^.TexNum := 0;
     end;
   end;
 end;

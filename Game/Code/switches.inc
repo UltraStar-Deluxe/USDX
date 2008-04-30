@@ -9,8 +9,8 @@
 // compiler/IDE dependent config
 {$IFDEF FPC}
   {$IFDEF DARWIN}
-    {$H+} // enables usage of AnsiString as String-type 
-    {$R-} // disables range-checks
+    {$H+} // enables usage of AnsiString as String-type
+    {$R-} // disable range-checks (eddie: please test if this is still necessary)
   {$ENDIF}
 
   // if -dDEBUG is specified on the command-line, FPC uses some default

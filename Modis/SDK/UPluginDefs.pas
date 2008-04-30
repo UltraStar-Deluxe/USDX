@@ -154,7 +154,7 @@ type
 //----------------
 const
   {Returned if Service is not found from CallService}
-  SERVICE_NOT_FOUND=$80000000;
+  SERVICE_NOT_FOUND = LongInt($80000000);
 
   //for use in Service 'Core/ShowMessage' lParam(Symbol)
   CORE_SM_NOSYMBOL= 0;
