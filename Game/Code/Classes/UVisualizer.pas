@@ -244,20 +244,13 @@ begin
   if (not inited) then
     Init();
 
-  //try
-    {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
-    pm := TProjectM.Create(ProjectMPath + 'config.inp');
-    {$ELSE}
-    pm := TProjectM.Create(
-      meshX, meshY, fps, textureSize, ScreenW, ScreenH,
-      ProjectMPath + 'presets', ProjectMPath + 'fonts');
-    {$IFEND}
-  //except
-  //writeln('Exception:' + floattostr(test));
-  //  Exit;
-  //end;
-
-writeln('huk');
+  {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
+  pm := TProjectM.Create(ProjectMPath + 'config.inp');
+  {$ELSE}
+  pm := TProjectM.Create(
+    meshX, meshY, fps, textureSize, ScreenW, ScreenH,
+    ProjectMPath + 'presets', ProjectMPath + 'fonts');
+  {$IFEND}
 
   VisualizerStarted := True;
 
