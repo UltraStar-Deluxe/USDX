@@ -1538,14 +1538,24 @@ end;
 
 procedure TMenu.onShow;
 begin
-  // nothing
-(*
-  if fileexists( fFileName ) then
+  // FIXME: this needs some work. First, there should be a variable like
+  // VideoBackground so we can check whether a video-background is enabled or not.
+  // Second, a video should be stopped if the screen is hidden, but the Video.Stop()
+  // method is not implemented by now. This is necessary for theme-switching too.
+  // At the moment videos cannot be turned off without restarting USDX. 
+
+  // check if a background texture was found
+  if (BackImg.TexNum = 0)  then
   begin
-    if VideoPlayback.Open( fFileName ) then
-      VideoPlayback.Play;
+    // try to open an animated background
+    // Note: newer versions of ffmpeg are able to open images like jpeg
+    //   so do not pass an image's filename to VideoPlayback.Open()
+    if fileexists( fFileName ) then
+    begin
+      if VideoPlayback.Open( fFileName ) then
+        VideoPlayback.Play;
+    end;
   end;
-*)
 end;
 
 procedure TMenu.onShowFinish;
