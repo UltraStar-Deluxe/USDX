@@ -107,6 +107,8 @@ function WriteBMPImage(const FileName: string; Surface: PSDL_Surface): boolean;
 function WriteJPGImage(const FileName: string; Surface: PSDL_Surface; Quality: integer): boolean;
 {$ENDIF}
 
+function LoadImage(const Identifier: string): PSDL_Surface;
+
 implementation
 
 uses
@@ -130,6 +132,8 @@ uses
   png,
   {$ENDIF}
   zlib,
+  sdl_image,
+  UCommon,
   ULog;
 
 function IsRGBSurface(pixelFmt: PSDL_PixelFormat): boolean;
@@ -699,5 +703,67 @@ begin
 end;
 
 {$ENDIF}
+
+(*
+ * Loads an image from the given file or resource
+ *)
+function LoadImage(const Identifier: string): PSDL_Surface;
+var
+  TexRWops:  PSDL_RWops;
+  TexStream: TStream;
+  FileName: string;
+begin
+  Result   := nil;
+  TexRWops := nil;
+
+  if Identifier = '' then
+    exit;
+    
+  //Log.LogStatus( Identifier, 'LoadImage' );
+
+  FileName := Identifier;
+
+  if (FileExistsInsensitive(FileName)) then
+  begin
+    // load from file
+    //Log.LogStatus( 'Is File ( Loading : '+FileName+')', '  LoadImage' );
+    try
+      Result := IMG_Load(PChar(FileName));
+      //Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
+    except
+      Log.LogError('Could not load from file "'+FileName+'"', 'TTextureUnit.LoadImage');
+      Exit;
+    end;
+  end
+  else
+  begin
+    //Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
+
+    TexStream := GetResourceStream(Identifier, 'TEX');
+    if (not assigned(TexStream)) then
+    begin
+      Log.LogError( 'Invalid file or resource "'+ Identifier+'"', 'TTextureUnit.LoadImage');
+      Exit;
+    end;
+
+    TexRWops := RWopsFromStream(TexStream);
+    if (TexRWops = nil) then
+    begin
+      Log.LogError( 'Could not assign resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
+      TexStream.Free();
+      Exit;
+    end;
+
+    //Log.LogStatus( 'resource Assigned....' , Identifier);
+    try
+      Result := IMG_Load_RW(TexRWops, 0);
+    except
+      Log.LogError( 'Could not read resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
+    end;
+
+    SDL_FreeRW(TexRWops);
+    TexStream.Free();
+  end;
+end;
 
 end.

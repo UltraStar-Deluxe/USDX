@@ -15,6 +15,7 @@ uses
   Windows,
   Messages,
   {$ENDIF}
+  sdl,
   ULog;
 
 {$IFNDEF DARWIN}
@@ -34,6 +35,7 @@ procedure ShowMessage( const msg : String; msgType: TMessageType = mtInfo );
 procedure ConsoleWriteLn(const msg: string);
 
 function GetResourceStream(const aName, aType : string): TStream;
+function RWopsFromStream(Stream: TStream): PSDL_RWops;
 
 {$IFDEF FPC}
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;
@@ -80,9 +82,6 @@ uses
   {$ENDIF}
   {$IFDEF LINUX}
   libc,
-  {$ENDIF}
-  {$IFDEF FPC}
-  sdl,
   {$ENDIF}
   UMain,
   UConfig;
@@ -333,6 +332,76 @@ begin
   end;
   {$ENDIF}
 end;
+
+// +++++++++++++++++++++ helpers for RWOpsFromStream() +++++++++++++++
+  function SdlStreamSeek( context : PSDL_RWops; offset : Integer; whence : Integer ) : integer; cdecl;
+  var
+    stream : TStream;
+    origin : Word;
+  begin
+    stream := TStream( context.unknown );
+    if ( stream = nil ) then
+      raise EInvalidContainer.Create( 'SDLStreamSeek on nil' );
+    case whence of
+      0 : origin := soFromBeginning; //	Offset is from the beginning of the resource. Seek moves to the position Offset. Offset must be >= 0.
+      1 : origin := soFromCurrent; //	Offset is from the current position in the resource. Seek moves to Position + Offset.
+      2 : origin := soFromEnd;
+    else
+      origin := soFromBeginning; // just in case
+    end;
+    Result := stream.Seek( offset, origin );
+  end;
+  
+  function SdlStreamRead( context : PSDL_RWops; Ptr : Pointer; size : Integer; maxnum: Integer ) : Integer; cdecl;
+  var
+    stream : TStream;
+  begin
+    stream := TStream( context.unknown );
+    if ( stream = nil ) then
+      raise EInvalidContainer.Create( 'SDLStreamRead on nil' );
+    try
+      Result := stream.read( Ptr^, Size * maxnum ) div size;
+    except
+      Result := -1;
+    end;
+  end;
+  
+  function SDLStreamClose( context : PSDL_RWops ) : Integer; cdecl;
+  var
+    stream : TStream;
+  begin
+    stream := TStream( context.unknown );
+    if ( stream = nil ) then
+      raise EInvalidContainer.Create( 'SDLStreamClose on nil' );
+    stream.Free;
+    Result := 1;
+  end;
+// -----------------------------------------------
+
+(*
+ * Creates an SDL_RWops handle from a TStream.
+ * The stream and RWops must be freed by the user after usage.
+ * Use SDL_FreeRW(...) to free the RWops data-struct. 
+ *)
+function RWopsFromStream(Stream: TStream): PSDL_RWops;
+begin
+  Result := SDL_AllocRW();
+  if (Result = nil) then
+    Exit;
+
+  // set RW-callbacks
+  with Result^ do
+  begin
+    unknown := TUnknown(Stream);
+    seek    := SDLStreamSeek;
+    read    := SDLStreamRead;
+    write   := nil;
+    close   := SDLStreamClose;
+    type_   := 2;
+  end;
+end;
+
+
 
 {$IFDEF FPC}
 function RandomRange(aMin: Integer; aMax: Integer) : Integer;

@@ -16,6 +16,7 @@ uses
   ULog,
   SysUtils,
   ULyrics,
+  UImage,
   UScreenLoading,
   UScreenWelcome,
   UScreenMain,
@@ -249,17 +250,12 @@ function LoadingThreadFunction: integer;
 
 implementation
 
-uses  UMain,
-      UIni,
-      UDisplay,
-      UCommandLine,
-      {$IFNDEF FPC}
-      Graphics,
-      {$ENDIF}
-      {$IFDEF win32}
-      windows,
-      {$ENDIF}
-      Classes;
+uses
+  UMain,
+  UIni,
+  UDisplay,
+  UCommandLine,
+  Classes;
 
 procedure LoadFontTextures;
 begin
@@ -402,79 +398,59 @@ begin
 end;
 
 procedure Initialize3D (Title: string);
-//var
-//  Icon: TIcon;
-//  Res:  TResourceStream;
-// ISurface: PSDL_Surface; // Auto Removed, Unused Variable
-// Pixel: PByteArray; // Auto Removed, Unused Variable
-// I: Integer; // Auto Removed, Unused Variable
+var
+  Icon: PSDL_Surface;
 begin
   Log.LogStatus('LoadOpenGL', 'UGraphic.Initialize3D');
-//  Log.BenchmarkStart(2);
+  //Log.BenchmarkStart(2);
 
   LoadOpenGL;
 
   Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
-  if ( SDL_Init(SDL_INIT_VIDEO)= -1 ) then
+  if ( SDL_InitSubSystem(SDL_INIT_VIDEO) = -1 ) then
   begin
     Log.LogError('SDL_Init Failed', 'UGraphic.Initialize3D');
     exit;
   end;
 
- { //Load Icon
-  Res := TResourceStream.CreateFromID(HInstance, 3, RT_ICON);
-  Icon := TIcon.Create;
-  Icon.LoadFromStream(Res);
-  Res.Free;
-  Icon.
-  //Create icon Surface
-  SDL_CreateRGBSurfaceFrom (
-  SDL_SWSURFACE,
-  Icon.Width,
-  Icon.Height,
-  32,
-  128 or 64,
-  32 or 16,
-  8 or 4,
-  2 or 1);
-  //SDL_BlitSurface(
-
-
-  SDL_WM_SetIcon(SDL_LoadBMP('DEFAULT_WINDOW_ICON'), 0); //}
+  // load icon image (must be 32x32 for win32)
+  Icon := LoadImage('WINDOWICON');
+  if (Icon <> nil) then
+    SDL_WM_SetIcon(Icon, 0);
 
   SDL_WM_SetCaption(PChar(Title), nil);
 
   InitializeScreen;
 
-//  Log.BenchmarkEnd(2);
-//  Log.LogBenchmark('--> Setting Screen', 2);
+  //Log.BenchmarkEnd(2);
+  //Log.LogBenchmark('--> Setting Screen', 2);
 
-  // ladowanie tekstur
-//  Log.BenchmarkStart(2);
+  //Log.BenchmarkStart(2);
   Texture := TTextureUnit.Create;
   Texture.Limit := 1024*1024;
 
-//  LoadTextures;
-//  Log.BenchmarkEnd(2);
-//  Log.LogBenchmark('--> Loading Textures', 2);
+  //LoadTextures;
+  //Log.BenchmarkEnd(2);
+  //Log.LogBenchmark('--> Loading Textures', 2);
 
-{  Log.BenchmarkStart(2);
+  {
+  Log.BenchmarkStart(2);
   Lyric:= TLyric.Create;
   Log.BenchmarkEnd(2);
   Log.LogBenchmark('--> Loading Fonts', 2);
-}
+  }
 
-//  Log.BenchmarkStart(2);
+  //Log.BenchmarkStart(2);
 
   Log.LogStatus('TDisplay.Create', 'UGraphic.Initialize3D');
   Display := TDisplay.Create;
-  
+
   Log.LogStatus('SDL_EnableUnicode', 'UGraphic.Initialize3D');
   SDL_EnableUnicode(1);
-//  Log.BenchmarkEnd(2); Log.LogBenchmark('====> Creating Display', 2);
+  //Log.BenchmarkEnd(2); Log.LogBenchmark('====> Creating Display', 2);
 
-//  Log.LogStatus('Loading Screens', 'Initialize3D');
-//  Log.BenchmarkStart(3);
+  //Log.LogStatus('Loading Screens', 'Initialize3D');
+  //Log.BenchmarkStart(3);
 
   Log.LogStatus('Loading Font Textures', 'UGraphic.Initialize3D');
   LoadFontTextures();
@@ -488,18 +464,14 @@ begin
   LoadTextures; // jb
 
 
-  
+
   // now that we have something to display while loading,
   // start thread that loads the rest of ultrastar
-//  Mutex   := SDL_CreateMutex;
-//  SDL_UnLockMutex(Mutex);
+  //Mutex   := SDL_CreateMutex;
+  //SDL_UnLockMutex(Mutex);
 
-  // funktioniert so noch nicht, da der ladethread unverändert auf opengl zugreifen will
-  // siehe dazu kommentar unten
-  // Englisch Translation:
-  // is currently not working because the loading thread trys to accses opengl unchanged
-  // look comment below
-
+  // does not work this way because the loading thread tries to access opengl.
+  // See comment below
   //LoadingThread  := SDL_CreateThread(@LoadingThread, nil);
 
   // this would be run in the loadingthread
@@ -507,24 +479,8 @@ begin
   LoadScreens;
 
 
-  // TODO!!!!!!1
-  // hier käme jetzt eine schleife, die
-  // * den ladescreen malt (ab und zu)
-  // * den "fortschritt" des ladescreens steuert
-  // * zwischendrin schaut, ob der ladethread texturen geladen hat (mutex prüfen) und
-  //   * die texturen in die opengl lädt, sowie
-  //   * dem ladethread signalisiert, dass der speicher für die textur
-  //     zum laden der nächsten textur weiterverwendet werden kann (über weiteren mutex)
-  // * über einen 3. mutex so lange läuft, bis der ladethread signalisiert,
-  //   dass er alles geladen hat fertig ist
-  //
-  // dafür muss loadtexture so umgeschrieben werden, dass es, statt selbst irgendwelche
-  // opengl funktionen aufzurufen, entsprechend mutexe verändert
-  // der hauptthread muss auch irgendwoher erfahren, was an opengl funktionen auszuführen ist,
-  // mit welchen parametern (texturtyp, entspr. texturobjekt, textur-zwischenspeicher-adresse, ...
-  //
-  // English Translation:
-  // here should be a loop witch
+  // TODO:
+  // here should be a loop which
   // * draws the loading screen (form time to time)
   // * controlls the "process of the loading screen
   // * checks if the loadingthread has loaded textures (check mutex) and
@@ -538,10 +494,8 @@ begin
   // the mainthread have to know somehow what opengl function have to be called with which parameters like
   // texturetype, textureobjekt, textur-buffer-adress, ...
 
-
-
   // wait for loading thread to finish
-  // funktioniert so auch noch nicht - currently dos not work this way
+  // currently does not work this way
   // SDL_WaitThread(LoadingThread, I);
   // SDL_DestroyMutex(Mutex);
 
@@ -611,16 +565,9 @@ begin
   else
     Depth := Ini.Depth;
 
-
-  Log.LogStatus('SDL_SetVideoMode', 'Set Window Icon');
-
-// Okay it's possible to set the title bar / taskbar icon here
-// it's working this way, but just if the bmp is in your exe folder
-  SDL_WM_SetIcon(SDL_LoadBMP('ustar-icon.bmp'), 0);
-
   Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
-//  SDL_SetRefreshrate(85);
-//  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+  //SDL_SetRefreshrate(85);
+  //SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
   {$IFDEF DARWIN}
     // Todo : eddie: remove before realease

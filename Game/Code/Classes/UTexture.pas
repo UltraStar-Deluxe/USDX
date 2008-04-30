@@ -11,9 +11,6 @@ interface
 {$I switches.inc}
 
 uses OpenGL12,
-     {$IFDEF win32}
-     windows,
-     {$ENDIF}
      Math,
      Classes,
      SysUtils,
@@ -86,7 +83,6 @@ type
       TnBuffer:  array of byte;
       TnSurface: PSDL_Surface;
 
-      function LoadImage(const Identifier: string): PSDL_Surface;
       function pixfmt_eq(fmt1,fmt2: PSDL_Pixelformat): boolean;
       procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
       function GetScaledTexture(TexSurface: PSDL_Surface; W,H: Cardinal): PSDL_Surface;
@@ -162,121 +158,6 @@ begin
     Result:=True
   else
     Result:=False;
-end;
-
-// +++++++++++++++++++++ helpers for loadimage +++++++++++++++
-  function SdlStreamSeek( context : PSDL_RWops; offset : Integer; whence : Integer ) : integer; cdecl;
-  var
-    stream : TStream;
-    origin : Word;
-  begin
-    stream := TStream( context.unknown );
-    if ( stream = nil ) then
-      raise EInvalidContainer.Create( 'SDLStreamSeek on nil' );
-    case whence of
-      0 : origin := soFromBeginning; //	Offset is from the beginning of the resource. Seek moves to the position Offset. Offset must be >= 0.
-      1 : origin := soFromCurrent; //	Offset is from the current position in the resource. Seek moves to Position + Offset.
-      2 : origin := soFromEnd;
-    else
-      origin := soFromBeginning; // just in case
-    end;
-    Result := stream.Seek( offset, origin );
-  end;
-  
-  function SdlStreamRead( context : PSDL_RWops; Ptr : Pointer; size : Integer; maxnum: Integer ) : Integer; cdecl;
-  var
-    stream : TStream;
-  begin
-    stream := TStream( context.unknown );
-    if ( stream = nil ) then
-      raise EInvalidContainer.Create( 'SDLStreamRead on nil' );
-    try
-      Result := stream.read( Ptr^, Size * maxnum ) div size;
-    except
-      Result := -1;
-    end;
-  end;
-  
-  function SDLStreamClose( context : PSDL_RWops ) : Integer; cdecl;
-  var
-    stream : TStream;
-  begin
-    stream := TStream( context.unknown );
-    if ( stream = nil ) then
-      raise EInvalidContainer.Create( 'SDLStreamClose on nil' );
-    stream.Free;
-    Result := 1;
-  end;
-// -----------------------------------------------
-
-function TTextureUnit.LoadImage(const Identifier: string): PSDL_Surface;
-var
-  TexRWops:  PSDL_RWops;
-  TexStream: TStream;
-  FileName: string;
-begin
-  Result   := nil;
-  TexRWops := nil;
-
-  if Identifier = '' then
-    exit;
-    
-  //Log.LogStatus( Identifier, 'LoadImage' );
-
-  FileName := Identifier;
-
-  if (FileExistsInsensitive(FileName)) then
-  begin
-    // load from file
-    //Log.LogStatus( 'Is File ( Loading : '+FileName+')', '  LoadImage' );
-    try
-      Result := IMG_Load(PChar(FileName));
-      //Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
-    except
-      Log.LogError('Could not load from file "'+FileName+'"', 'TTextureUnit.LoadImage');
-      Exit;
-    end;
-  end
-  else
-  begin
-    //Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
-
-    TexStream := GetResourceStream(Identifier, 'TEX');
-    if (not assigned(TexStream)) then
-    begin
-      Log.LogError( 'Invalid file or resource "'+ Identifier+'"', 'TTextureUnit.LoadImage');
-      Exit;
-    end;
-
-    TexRWops := SDL_AllocRW();
-    if (TexRWops = nil) then
-    begin
-      Log.LogError( 'Could not assign resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
-      TexStream.Free();
-      Exit;
-    end;
-
-    // user defined RW-callbacks
-    with TexRWops^ do
-    begin
-      unknown := TUnknown(TexStream);
-      seek    := SDLStreamSeek;
-      read    := SDLStreamRead;
-      write   := nil;
-      close   := SDLStreamClose;
-      type_   := 2;
-    end;
-
-    //Log.LogStatus( 'resource Assigned....' , Identifier);
-    try
-      Result := IMG_Load_RW(TexRWops, 0);
-    except
-      Log.LogError( 'Could not read resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
-    end;
-
-    SDL_FreeRW(TexRWops);
-    TexStream.Free();
-  end;
 end;
 
 procedure TTextureUnit.AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);

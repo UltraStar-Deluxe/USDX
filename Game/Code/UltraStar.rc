@@ -11,7 +11,7 @@ FontO2    		TEX "../../Resources/Fonts/Outline 2/Outline 2.png"
 FontO2    		FNT "../../Resources/Fonts/Outline 2/Outline 2.dat"
 
 MAINICON  		ICON "../../Resources/Graphics/ustar-icon_v01.ico"
-//MAINICON      	ICON "../../Resources/Graphics/us.ico"
+WINDOWICON  		TEX  "../../Resources/Graphics/ustar-icon.png"
 
 CRDTS_BG		TEX "../../Resources/Graphics/credits_v5_bg.png"
 CRDTS_OVL		TEX "../../Resources/Graphics/credits_v5_overlay.png"
