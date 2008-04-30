@@ -489,8 +489,9 @@ end;
 var
   MessageList: TStringList;
   ConsoleHandler: TThreadID;
-  ConsoleMutex: PSDL_Mutex;
-  ConsoleCond: PSDL_Cond;
+  // Note: TRTLCriticalSection is defined in the units System and Libc, use System one
+  ConsoleCriticalSection: System.TRTLCriticalSection;
+  ConsoleEvent: PRTLEvent;
   ConsoleQuit: boolean;
 {$ENDIF}
 
@@ -527,10 +528,10 @@ begin
   quit := false;
   while (not quit) do
   begin
-    SDL_mutexP(ConsoleMutex);
     // wait for new output or quit-request
-    while ((MessageList.Count = 0) and (not ConsoleQuit)) do
-      SDL_CondWait(ConsoleCond, ConsoleMutex);
+    RTLeventWaitFor(ConsoleEvent);
+
+    System.EnterCriticalSection(ConsoleCriticalSection);
     // output pending messages
     for i := 0 to MessageList.Count-1 do
     begin
@@ -543,7 +544,8 @@ begin
     if (ConsoleQuit) then
       quit := true;
 
-    SDL_mutexV(ConsoleMutex);
+    RTLeventResetEvent(ConsoleEvent);
+    System.LeaveCriticalSection(ConsoleCriticalSection);
   end;
   result := 0;
 end;
@@ -554,8 +556,8 @@ begin
   {$IFDEF FPC}
   // init thread-safe output
   MessageList := TStringList.Create();
-  ConsoleMutex := SDL_CreateMutex();
-  ConsoleCond := SDL_CreateCond();
+  System.InitCriticalSection(ConsoleCriticalSection);
+  ConsoleEvent := RTLEventCreate();
   ConsoleQuit := false;
   // must be a thread managed by FPC. Otherwise (e.g. SDL-thread)
   // it will crash when using Writeln.
@@ -567,14 +569,14 @@ procedure FinalizeConsoleOutput();
 begin
   {$IFDEF FPC}
   // terminate console-handler
-  SDL_mutexP(ConsoleMutex);
+  System.EnterCriticalSection(ConsoleCriticalSection);
   ConsoleQuit := true;
-  SDL_CondSignal(ConsoleCond);
-  SDL_mutexV(ConsoleMutex);
+  RTLeventSetEvent(ConsoleEvent);
+  System.LeaveCriticalSection(ConsoleCriticalSection);
   WaitForThreadTerminate(ConsoleHandler, 0);
   // free data
-  SDL_DestroyCond(ConsoleCond);
-  SDL_DestroyMutex(ConsoleMutex);
+  System.DoneCriticalsection(ConsoleCriticalSection);
+  RTLeventDestroy(ConsoleEvent);
   MessageList.Free();
   {$ENDIF}
 end;
@@ -593,11 +595,9 @@ end;
  *  the console-buffer only. In this case output should be delegated to it.
  *
  * TODO: - check if it is safe if an FPC-managed thread different than the
- *           main-thread accesses the console-buffer in FPC. 
+ *           main-thread accesses the console-buffer in FPC.
  *       - check if Delphi's WriteLn is thread-safe.
  *       - check if we need to synchronize file-output too
- *       - Use TEvent and TCriticalSection instead of the SDL equivalents.
- *           Note: If those two objects use TLS they might crash FPC too.
  *}
 procedure ConsoleWriteLn(const msg: string);
 begin
@@ -605,10 +605,10 @@ begin
   {$IFDEF FPC}
   // TODO: check for the main-thread and use a simple _ConsoleWriteLn() then?
   //GetCurrentThreadThreadId();
-  SDL_mutexP(ConsoleMutex);
+  System.EnterCriticalSection(ConsoleCriticalSection);
   MessageList.Add(msg);
-  SDL_CondSignal(ConsoleCond);
-  SDL_mutexV(ConsoleMutex);
+  RTLeventSetEvent(ConsoleEvent);
+  System.LeaveCriticalSection(ConsoleCriticalSection);
   {$ELSE}
   _ConsoleWriteLn(msg);
   {$ENDIF}
