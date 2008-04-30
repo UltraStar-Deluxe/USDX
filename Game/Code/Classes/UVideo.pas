@@ -433,6 +433,10 @@ errnum {*i, x, y*}: Integer; // Auto Removed, Unused Variable (i) // Auto Remove
 begin
   Result := false;
 
+  // close previously opened video 
+  if (fVideoOpened) then
+    Close;
+
   fVideoOpened       := False;
   fVideoPaused       := False;
   VideoTimeBase      := 0;
