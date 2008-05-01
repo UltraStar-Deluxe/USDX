@@ -260,7 +260,7 @@ var
   right2, bottom2 : integer;
   Scan1Start, Scan2Start, ScanWidth, ScanHeight : cardinal;
   Mod1, Mod2   : cardinal;
-  Addr1, Addr2 : cardinal;
+  Addr1, Addr2 : PtrUInt;
   BPP          : cardinal;
   Pitch1, Pitch2 : cardinal;
   TransparentColor1, TransparentColor2 : cardinal;
@@ -329,7 +329,7 @@ begin
   with SrcSurface1^ do
   begin
     Pitch1 := Pitch;
-    Addr1 := cardinal( Pixels );
+    Addr1 := PtrUInt( Pixels );
     inc( Addr1, Pitch1 * UInt32( Src_Rect1.y ) );
     with format^ do
     begin
@@ -341,7 +341,7 @@ begin
   begin
     TransparentColor2 := format.colorkey;
     Pitch2 := Pitch;
-    Addr2 := cardinal( Pixels );
+    Addr2 := PtrUInt( Pixels );
     inc( Addr2, Pitch2 * UInt32( Src_Rect2.y ) );
   end;
   Mod1 := Pitch1 - ( ScanWidth * BPP );
@@ -442,14 +442,14 @@ procedure SDL_AddPixel( DstSurface : PSDL_Surface; x : cardinal; y : cardinal; C
   cardinal );
 var
   SrcColor     : cardinal;
-  Addr         : cardinal;
+  Addr         : PtrUInt;
   R, G, B      : cardinal;
 begin
   if Color = 0 then
     exit;
   with DstSurface^ do
   begin
-    Addr := cardinal( Pixels ) + y * Pitch + x * format.BytesPerPixel;
+    Addr := PtrUInt( Pixels ) + y * Pitch + x * format.BytesPerPixel;
     SrcColor := PUInt32( Addr )^;
     case format.BitsPerPixel of
       8 :
@@ -525,14 +525,14 @@ procedure SDL_SubPixel( DstSurface : PSDL_Surface; x : cardinal; y : cardinal; C
   cardinal );
 var
   SrcColor     : cardinal;
-  Addr         : cardinal;
+  Addr         : PtrUInt;
   R, G, B      : cardinal;
 begin
   if Color = 0 then
     exit;
   with DstSurface^ do
   begin
-    Addr := cardinal( Pixels ) + y * Pitch + x * format.BytesPerPixel;
+    Addr := PtrUInt( Pixels ) + y * Pitch + x * format.BytesPerPixel;
     SrcColor := PUInt32( Addr )^;
     case format.BitsPerPixel of
       8 :
@@ -613,7 +613,7 @@ var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr : cardinal;
+  SrcAddr, DestAddr : PtrUInt;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   Bits         : cardinal;
@@ -686,14 +686,14 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := Format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     Bits := Format.BitsPerPixel;
@@ -883,7 +883,7 @@ var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr : cardinal;
+  SrcAddr, DestAddr : PtrUInt;
 //{*_ebx, *}{*_esi, *}{*_edi, _esp*} : cardinal; // Auto Removed, Unused Variable (_ebx) // Auto Removed, Unused Variable (_esi) // Auto Removed, Unused Variable (_edi)
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
@@ -957,14 +957,14 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := Format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     Bits := DestSurface.Format.BitsPerPixel;
@@ -1145,7 +1145,7 @@ procedure SDL_MonoSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
 var
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr : cardinal;
+  SrcAddr, DestAddr : PtrUInt;
 //{*_ebx, *}{*_esi, *}{*_edi, _esp*} : cardinal; // Auto Removed, Unused Variable (_ebx) // Auto Removed, Unused Variable (_esi) // Auto Removed, Unused Variable (_edi)
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
@@ -1220,14 +1220,14 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := Format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     BPP := DestSurface.Format.BytesPerPixel;
@@ -1317,7 +1317,7 @@ procedure SDL_TexturedSurface( SrcSurface : PSDL_Surface; SrcRect : PSDL_Rect;
 var
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr, TextAddr : cardinal;
+  SrcAddr, DestAddr, TextAddr : PtrUInt;
 //{*_ebx, *}{*_esi, *}{*_edi, _esp*}: cardinal; // Auto Removed, Unused Variable (_ebx) // Auto Removed, Unused Variable (_esi) // Auto Removed, Unused Variable (_edi)
   WorkX, WorkY : word;
   SrcMod, DestMod, TextMod : cardinal;
@@ -1392,21 +1392,21 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     BPP := DestSurface.Format.BitsPerPixel;
   end;
   with Texture^ do
   begin
-    TextAddr := cardinal( Pixels ) + UInt32( TextureRect.y ) * Pitch +
+    TextAddr := PtrUInt( Pixels ) + UInt32( TextureRect.y ) * Pitch +
       UInt32( TextureRect.x ) * Format.BytesPerPixel;
     TextMod := Pitch - Src.w * Format.BytesPerPixel;
   end;
@@ -1910,17 +1910,17 @@ begin
     end
     else
       Locked := false;
-    Row1 := pointer( cardinal( DstSurface^.Pixels ) + UInt32( Rect^.y ) *
+    Row1 := pointer( PtrUInt( DstSurface^.Pixels ) + UInt32( Rect^.y ) *
       DstSurface^.Pitch );
-    Row2 := pointer( cardinal( DstSurface^.Pixels ) + ( UInt32( Rect^.y ) + Rect^.h - 1 )
+    Row2 := pointer( PtrUInt( DstSurface^.Pixels ) + ( UInt32( Rect^.y ) + Rect^.h - 1 )
       * DstSurface^.Pitch );
     for y := 0 to FlipLength do
     begin
       Move( Row1^, OneRow, RowLength );
       Move( Row2^, Row1^, RowLength );
       Move( OneRow, Row2^, RowLength );
-      inc( cardinal( Row1 ), DstSurface^.Pitch );
-      dec( cardinal( Row2 ), DstSurface^.Pitch );
+      inc( PtrUInt( Row1 ), DstSurface^.Pitch );
+      dec( PtrUInt( Row2 ), DstSurface^.Pitch );
     end;
     if Locked then
       SDL_UnlockSurface( DstSurface );
@@ -1965,7 +1965,7 @@ begin
     case DstSurface^.format.BytesPerPixel of
       1 :
         begin
-          Row8Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+          Row8Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
             DstSurface^.pitch );
           for y := 1 to Rect^.h do
           begin
@@ -1977,12 +1977,12 @@ begin
               Row8Bit^[ RightSide ] := Pixel;
               dec( RightSide );
             end;
-            inc( cardinal( Row8Bit ), DstSurface^.pitch );
+            inc( PtrUInt( Row8Bit ), DstSurface^.pitch );
           end;
         end;
       2 :
         begin
-          Row16Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+          Row16Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
             DstSurface^.pitch );
           for y := 1 to Rect^.h do
           begin
@@ -1994,12 +1994,12 @@ begin
               Row16Bit^[ RightSide ] := Pixel;
               dec( RightSide );
             end;
-            inc( cardinal( Row16Bit ), DstSurface^.pitch );
+            inc( PtrUInt( Row16Bit ), DstSurface^.pitch );
           end;
         end;
       3 :
         begin
-          Row24Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+          Row24Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
             DstSurface^.pitch );
           for y := 1 to Rect^.h do
           begin
@@ -2011,12 +2011,12 @@ begin
               Row24Bit^[ RightSide ] := Pixel24;
               dec( RightSide );
             end;
-            inc( cardinal( Row24Bit ), DstSurface^.pitch );
+            inc( PtrUInt( Row24Bit ), DstSurface^.pitch );
           end;
         end;
       4 :
         begin
-          Row32Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+          Row32Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
             DstSurface^.pitch );
           for y := 1 to Rect^.h do
           begin
@@ -2028,7 +2028,7 @@ begin
               Row32Bit^[ RightSide ] := Pixel;
               dec( RightSide );
             end;
-            inc( cardinal( Row32Bit ), DstSurface^.pitch );
+            inc( PtrUInt( Row32Bit ), DstSurface^.pitch );
           end;
         end;
     end;
@@ -2088,8 +2088,8 @@ begin
   dx2 := dx shl 1;
   src_pitch := Surface^.pitch;
   dst_pitch := dst_surface^.pitch;
-  src_pixels := PUint8( integer( Surface^.pixels ) + yr * src_pitch + y1 * depth );
-  dst_pixels := PUint8( integer( dst_surface^.pixels ) + yw * dst_pitch + x1 *
+  src_pixels := PUint8( PtrUInt( Surface^.pixels ) + yr * src_pitch + y1 * depth );
+  dst_pixels := PUint8( PtrUInt( dst_surface^.pixels ) + yw * dst_pitch + x1 *
     depth );
   for d := 0 to dx - 1 do
   begin
@@ -2166,9 +2166,9 @@ var
   src_pixels, dst_pixels : PUint8;
   i            : integer;
 begin
-  src_pixels := PUint8( integer( Surface^.pixels ) + Surface^.w * y1 * depth + x2 *
+  src_pixels := PUint8( PtrUInt( Surface^.pixels ) + Surface^.w * y1 * depth + x2 *
     depth );
-  dst_pixels := PUint8( integer( Surface^.pixels ) + Surface^.w * y1 * depth + ( x2
+  dst_pixels := PUint8( PtrUInt( Surface^.pixels ) + Surface^.w * y1 * depth + ( x2
     + xofs ) * depth );
   for i := x2 downto x1 do
   begin
@@ -2187,7 +2187,7 @@ var
 begin
   bpp := SrcSurface.format.BytesPerPixel;
   // Here p is the address to the pixel we want to retrieve
-  p := Pointer( Uint32( SrcSurface.pixels ) + UInt32( y ) * SrcSurface.pitch + UInt32( x ) *
+  p := Pointer( PtrUInt( SrcSurface.pixels ) + UInt32( y ) * SrcSurface.pitch + UInt32( x ) *
     bpp );
   case bpp of
     1 : result := PUint8( p )^;
@@ -2214,7 +2214,7 @@ var
   p            : PInteger;
 begin
   bpp := DstSurface.format.BytesPerPixel;
-  p := Pointer( Uint32( DstSurface.pixels ) + UInt32( y ) * DstSurface.pitch + UInt32( x )
+  p := Pointer( PtrUInt( DstSurface.pixels ) + UInt32( y ) * DstSurface.pitch + UInt32( x )
     * bpp );
   case bpp of
     1 : PUint8( p )^ := pixel;
@@ -2480,7 +2480,7 @@ begin
     BPP := DstSurface.format.BytesPerPixel;
     with DstSurface^ do
     begin
-      Addr := pointer( UInt32( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
+      Addr := pointer( PtrUInt( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
       ModX := Pitch - UInt32( RealRect.w ) * BPP;
     end;
     case DstSurface.format.BitsPerPixel of
@@ -2501,9 +2501,9 @@ begin
               if B > $03 then
                 B := $03;
               PUInt8( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       15 :
@@ -2523,9 +2523,9 @@ begin
               if B > $001F then
                 B := $001F;
               PUInt16( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       16 :
@@ -2545,9 +2545,9 @@ begin
               if B > $001F then
                 B := $001F;
               PUInt16( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       24 :
@@ -2567,9 +2567,9 @@ begin
               if B > $0000FF then
                 B := $0000FF;
               PUInt32( Addr )^ := SrcColor and $FF000000 or R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       32 :
@@ -2589,9 +2589,9 @@ begin
               if B > $0000FF then
                 B := $0000FF;
               PUInt32( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
     end;
@@ -2613,7 +2613,7 @@ begin
     BPP := DstSurface.format.BytesPerPixel;
     with DstSurface^ do
     begin
-      Addr := pointer( UInt32( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
+      Addr := pointer( PtrUInt( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
       ModX := Pitch - UInt32( RealRect.w ) * BPP;
     end;
     case DstSurface.format.BitsPerPixel of
@@ -2634,9 +2634,9 @@ begin
               if B > $03 then
                 B := 0;
               PUInt8( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       15 :
@@ -2656,9 +2656,9 @@ begin
               if B > $001F then
                 B := 0;
               PUInt16( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       16 :
@@ -2678,9 +2678,9 @@ begin
               if B > $001F then
                 B := 0;
               PUInt16( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       24 :
@@ -2700,9 +2700,9 @@ begin
               if B > $0000FF then
                 B := 0;
               PUInt32( Addr )^ := SrcColor and $FF000000 or R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
       32 :
@@ -2722,9 +2722,9 @@ begin
               if B > $0000FF then
                 B := 0;
               PUInt32( Addr )^ := R or G or B;
-              inc( UInt32( Addr ), BPP );
+              inc( PtrUInt( Addr ), BPP );
             end;
-            inc( UInt32( Addr ), ModX );
+            inc( PtrUInt( Addr ), ModX );
           end;
         end;
     end;
@@ -2800,7 +2800,7 @@ end;
 
 procedure SDL_2xBlit( Src, Dest : PSDL_Surface );
 var
-  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
+  ReadAddr, WriteAddr, ReadRow, WriteRow : PtrUInt;
   SrcPitch, DestPitch, x, y : UInt32;
 begin
   if ( Src = nil ) or ( Dest = nil ) then
@@ -2815,8 +2815,8 @@ begin
   if SDL_MustLock( Dest ) then
     SDL_LockSurface( Dest );
 
-  ReadRow := UInt32( Src.Pixels );
-  WriteRow := UInt32( Dest.Pixels );
+  ReadRow := PtrUInt( Src.Pixels );
+  WriteRow := PtrUInt( Dest.Pixels );
 
   SrcPitch := Src.pitch;
   DestPitch := Dest.pitch;
@@ -2835,8 +2835,8 @@ begin
           inc( ReadAddr );
           inc( WriteAddr, 2 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     2 : for y := 1 to Src.h do
       begin
@@ -2851,8 +2851,8 @@ begin
           inc( ReadAddr, 2 );
           inc( WriteAddr, 4 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     3 : for y := 1 to Src.h do
       begin
@@ -2867,8 +2867,8 @@ begin
           inc( ReadAddr, 3 );
           inc( WriteAddr, 6 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     4 : for y := 1 to Src.h do
       begin
@@ -2883,8 +2883,8 @@ begin
           inc( ReadAddr, 4 );
           inc( WriteAddr, 8 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
   end;
 
@@ -2896,7 +2896,7 @@ end;
 
 procedure SDL_Scanline2xBlit( Src, Dest : PSDL_Surface );
 var
-  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
+  ReadAddr, WriteAddr, ReadRow, WriteRow : PtrUInt;
   SrcPitch, DestPitch, x, y : UInt32;
 begin
   if ( Src = nil ) or ( Dest = nil ) then
@@ -2911,8 +2911,8 @@ begin
   if SDL_MustLock( Dest ) then
     SDL_LockSurface( Dest );
 
-  ReadRow := UInt32( Src.Pixels );
-  WriteRow := UInt32( Dest.Pixels );
+  ReadRow := PtrUInt( Src.Pixels );
+  WriteRow := PtrUInt( Dest.Pixels );
 
   SrcPitch := Src.pitch;
   DestPitch := Dest.pitch;
@@ -2929,8 +2929,8 @@ begin
           inc( ReadAddr );
           inc( WriteAddr, 2 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     2 : for y := 1 to Src.h do
       begin
@@ -2943,8 +2943,8 @@ begin
           inc( ReadAddr, 2 );
           inc( WriteAddr, 4 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     3 : for y := 1 to Src.h do
       begin
@@ -2957,8 +2957,8 @@ begin
           inc( ReadAddr, 3 );
           inc( WriteAddr, 6 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     4 : for y := 1 to Src.h do
       begin
@@ -2971,8 +2971,8 @@ begin
           inc( ReadAddr, 4 );
           inc( WriteAddr, 8 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
   end;
 
@@ -2984,7 +2984,7 @@ end;
 
 procedure SDL_50Scanline2xBlit( Src, Dest : PSDL_Surface );
 var
-  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
+  ReadAddr, WriteAddr, ReadRow, WriteRow : PtrUInt;
   SrcPitch, DestPitch, x, y, Color : UInt32;
 begin
   if ( Src = nil ) or ( Dest = nil ) then
@@ -2999,8 +2999,8 @@ begin
   if SDL_MustLock( Dest ) then
     SDL_LockSurface( Dest );
 
-  ReadRow := UInt32( Src.Pixels );
-  WriteRow := UInt32( Dest.Pixels );
+  ReadRow := PtrUInt( Src.Pixels );
+  WriteRow := PtrUInt( Dest.Pixels );
 
   SrcPitch := Src.pitch;
   DestPitch := Dest.pitch;
@@ -3021,8 +3021,8 @@ begin
           inc( ReadAddr );
           inc( WriteAddr, 2 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     15 : for y := 1 to Src.h do
       begin
@@ -3039,8 +3039,8 @@ begin
           inc( ReadAddr, 2 );
           inc( WriteAddr, 4 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     16 : for y := 1 to Src.h do
       begin
@@ -3057,8 +3057,8 @@ begin
           inc( ReadAddr, 2 );
           inc( WriteAddr, 4 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     24 : for y := 1 to Src.h do
       begin
@@ -3075,8 +3075,8 @@ begin
           inc( ReadAddr, 3 );
           inc( WriteAddr, 6 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
     32 : for y := 1 to Src.h do
       begin
@@ -3093,8 +3093,8 @@ begin
           inc( ReadAddr, 4 );
           inc( WriteAddr, 8 );
         end;
-        inc( UInt32( ReadRow ), SrcPitch );
-        inc( UInt32( WriteRow ), DestPitch * 2 );
+        inc( PtrUInt( ReadRow ), SrcPitch );
+        inc( PtrUInt( WriteRow ), DestPitch * 2 );
       end;
   end;
 
@@ -3113,7 +3113,7 @@ var
   right2, bottom2 : integer;
   Scan1Start, {Scan2Start,} ScanWidth, ScanHeight : cardinal;
   Mod1         : cardinal;
-  Addr1        : cardinal;
+  Addr1        : PtrUInt;
   BPP          : cardinal;
   Pitch1       : cardinal;
   TransparentColor1 : cardinal;
@@ -3171,7 +3171,7 @@ begin
   with SrcSurface1^ do
   begin
     Pitch1 := Pitch;
-    Addr1 := cardinal( Pixels );
+    Addr1 := PtrUInt( Pixels );
     inc( Addr1, Pitch1 * UInt32( Src_Rect1.y ) );
     with format^ do
     begin
@@ -3277,7 +3277,7 @@ var
 {*R, *}{*G, *}{*B, *}Pixel1, Pixel2, TransparentColor : cardinal; // Auto Removed, Unused Variable (R) // Auto Removed, Unused Variable (G) // Auto Removed, Unused Variable (B)
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr : cardinal;
+  SrcAddr, DestAddr : PtrUInt;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   Bits         : cardinal;
@@ -3350,14 +3350,14 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := Format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     Bits := Format.BitsPerPixel;
@@ -3483,7 +3483,7 @@ var
 {*R, *}{*G, *}{*B, *}Pixel1, Pixel2, TransparentColor : cardinal; // Auto Removed, Unused Variable (R) // Auto Removed, Unused Variable (G) // Auto Removed, Unused Variable (B)
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr : cardinal;
+  SrcAddr, DestAddr : PtrUInt;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   Bits         : cardinal;
@@ -3556,14 +3556,14 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := Format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     Bits := Format.BitsPerPixel;
@@ -3691,7 +3691,7 @@ var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr : cardinal;
+  SrcAddr, DestAddr : PtrUInt;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   Bits         : cardinal;
@@ -3764,14 +3764,14 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := Format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     Bits := Format.BitsPerPixel;
@@ -3992,7 +3992,7 @@ var
   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
   Src, Dest    : TSDL_Rect;
   Diff         : integer;
-  SrcAddr, DestAddr : cardinal;
+  SrcAddr, DestAddr : PtrUInt;
   WorkX, WorkY : word;
   SrcMod, DestMod : cardinal;
   Bits         : cardinal;
@@ -4065,14 +4065,14 @@ begin
   end;
   with SrcSurface^ do
   begin
-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
       Format.BytesPerPixel;
     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
     TransparentColor := Format.colorkey;
   end;
   with DestSurface^ do
   begin
-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
       Format.BytesPerPixel;
     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
     Bits := Format.BitsPerPixel;

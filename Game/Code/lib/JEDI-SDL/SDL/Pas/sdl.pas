@@ -355,6 +355,12 @@ uses
   GPCMacOSAll;
 {$ENDIF}
 
+{$ifndef FPC}
+type
+  PtrInt = LongInt;
+  PtrUInt = LongWord;
+{$endif}
+
 const
 {$IFDEF WINDOWS}
   SDLLibName = 'SDL.dll';
