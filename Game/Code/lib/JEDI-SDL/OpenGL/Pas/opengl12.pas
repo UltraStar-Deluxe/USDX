@@ -8064,7 +8064,9 @@ begin
 
   if GLUHandle <> INVALID_MODULEHANDLE then
   begin
+    {$IFDEF KYLIX}
     GLHandle := TModuleHandle(GLUHandle); // Kylix compatiblilty trick
+    {$ENDIF}
 
     gluBeginCurve := GetModuleSymbol( GLUHandle, 'gluBeginCurve');
     gluBeginPolygon := GetModuleSymbol( GLUHandle, 'gluBeginPolygon');
