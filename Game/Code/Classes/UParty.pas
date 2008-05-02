@@ -54,7 +54,7 @@ type
     Function Load: Boolean; override;
     Function Init: Boolean; override;
     Procedure DeInit; override;
-    Procedure Free; override;
+    Destructor Destroy; override;
 
     //Register Modi Service
     Function RegisterModi(nothin: TwParam; pModiInfo: TlParam): integer; //Registers a new Modi. wParam: Pointer to TUS_ModiInfo
@@ -147,7 +147,7 @@ end;
 //Is Called if this Module will be unloaded and has been created
 //Should be used to Free Memory
 //-------------
-Procedure TPartySession.Free;
+Destructor TPartySession.Destroy;
 begin
   //Just save some Memory if it wasn't done now..
   SetLength(Modis, 0);

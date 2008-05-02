@@ -53,7 +53,7 @@ type
       Function Load: Boolean; override;
       Function Init: Boolean; override;
       Procedure DeInit; override;
-      Procedure Free; override;
+      Destructor Destroy; override;
 
       //New Methods
       Procedure BrowseDir(Path: String);             //Browses the Path at _Path_ for Plugins
@@ -203,7 +203,7 @@ end;
 //Is Called if this Module will be unloaded and has been created
 //Should be used to Free Memory
 //-------------
-Procedure TPluginLoader.Free;
+Destructor TPluginLoader.Destroy;
 begin
   //Just save some Memory if it wasn't done now..
   SetLength(Plugins, 0);

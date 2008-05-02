@@ -114,7 +114,7 @@ type
       Constructor Create; overload; 
       Constructor Create(ULX,ULY,ULW,ULS,LLX,LLY,LLW,LLS:Real); overload;
       Procedure   LoadTextures;
-      Destructor  Free;
+      Destructor  Destroy; override;
   end;
 
 implementation
@@ -190,9 +190,9 @@ end;
 
 
 //---------------
-// Free - Frees Memory
+// Destroy - Frees Memory
 //---------------
-Destructor  TLyricEngine.Free;
+Destructor  TLyricEngine.Destroy;
 begin
 
 end;

@@ -47,7 +47,7 @@ type
 
       //Is Called if this Module will be unloaded and has been created
       //Should be used to Free Memory
-      Procedure Free; virtual;
+      Destructor Destroy; override;
   end;
   cCoreModule = class of TCoreModule;
 
@@ -118,7 +118,7 @@ end;
 //Is Called if this Module will be unloaded and has been created
 //Should be used to Free Memory
 //-------------
-Procedure TCoreModule.Free;
+Destructor TCoreModule.Destroy;
 begin
   //Dummy ftw!!
 end;

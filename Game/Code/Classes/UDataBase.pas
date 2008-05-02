@@ -46,7 +46,7 @@ type
 
     property Filename: String read sFilename;
     
-    Destructor Free;
+    Destructor Destroy; override;
 
     Procedure Init(const Filename: string);
     procedure ReadScore(Song: TSong);
@@ -114,9 +114,9 @@ begin
 end;
 
 //--------------------
-//Free - Frees Database
+//Destroy - Frees Database
 //--------------------
-Destructor TDataBaseSystem.Free;
+Destructor TDataBaseSystem.Destroy;
 begin
   debugWriteln( 'TDataBaseSystem.Free' );
 
