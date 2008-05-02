@@ -24,9 +24,11 @@ program UltraStar;
 
 uses
   {$IFDEF Unix}
-    cthreads,              // THIS MUST be the first used unit in FPC if Threads are used!!
-                           // (see http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial)
-    cwstring,              // Enable Unicode support
+  cthreads,            // THIS MUST be the first used unit in FPC if Threads are used!!
+                       // (see http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial)
+  {$IFNDEF DARWIN}
+  cwstring,            // Enable Unicode support. MacOSX misses some references to iconv.
+  {$ENDIF}
   {$ENDIF}
 
   //------------------------------

@@ -47,6 +47,7 @@ type
 
       // interaction
       function WideCharUpperCase(wchar: WideChar) : WideString;
+      function WideStringUpperCase(wstring: WideString) : WideString;
       procedure AddInteraction(Typ, Num: integer);
       procedure SetInteraction(Num: integer);
       property Interaction: integer read SelInteraction write SetInteraction;
@@ -1563,16 +1564,39 @@ begin
   // nothing
 end;
 
+(*
+ * Wrapper for WideUpperCase. Needed because some plattforms have problems with
+ * unicode support.
+ *)
 function TMenu.WideCharUpperCase(wchar: WideChar) : WideString;
 begin
   // On Linux and MacOSX the cwstring unit is necessary for Unicode function-calls.
   // Otherwise you will get an EIntOverflow exception (thrown by unimplementedwidestring()).
+  // The Unicode manager cwstring does not work with MacOSX at the moment because
+  // of missing references to iconv. So we have to use Ansi... for the moment.
 
-  // The FPC implementation of WideUpperCase returns nil if wchar is #0 (e.g. if an arrow key is pressed)
-  if (wchar <> #0) then
-    Result := WideUpperCase(wchar)
-  else
-    Result := #0;
+  {$IFNDEF DARWIN}
+    // The FPC implementation of WideUpperCase returns nil if wchar is #0 (e.g. if an arrow key is pressed)
+    if (wchar <> #0) then
+      Result := WideUpperCase(wchar)
+    else
+      Result := #0;
+  {$ELSE}
+    Result := AnsiUpperCase(wchar)
+  {$ENDIF}
+end;
+
+(*
+ * Wrapper for WideUpperCase. Needed because some plattforms have problems with
+ * unicode support.
+ *)
+function TMenu.WideStringUpperCase(wstring: WideString) : WideString;
+begin
+  {$IFNDEF DARWIN}
+    Result := WideUpperCase(wstring)
+  {$ELSE}
+    Result := AnsiUpperCase(wstring);
+  {$ENDIF}
 end;
 
 procedure TMenu.onHide;

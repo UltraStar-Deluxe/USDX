@@ -264,7 +264,7 @@ begin
           begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
                (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND
-               (WideCharUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
+               (WideStringUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
             begin
               SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
@@ -285,7 +285,7 @@ begin
           begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
                (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND
-               (WideCharUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
+               (WideStringUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
             begin
               SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
@@ -848,7 +848,8 @@ begin
         try
           AddButton(300 + Pet*250, 140, 200, 200, '', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
         except
-          ShowMessage('"No Cover" image is damaged. Ultrastar will exit now.');
+          ShowMessage('"No Cover" image is damaged. Ultrastar will exit now.');
+
           Halt;
         end;
         I := Pet + 1;
