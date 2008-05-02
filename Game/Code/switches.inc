@@ -61,7 +61,7 @@
   {$DEFINE CONSOLE}
 {$ELSEIF Defined(DARWIN)}
   // include defines but no constants
-  {$I config-macosx.inc}
+  {$I config-darwin.inc}
 
   // enable debug-mode. For development only!
   //{$DEFINE DEBUG}

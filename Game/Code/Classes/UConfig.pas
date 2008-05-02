@@ -85,7 +85,7 @@ const
   {$ELSEIF Defined(Linux)}
     {$I ../config-linux.inc}
   {$ELSEIF Defined(Darwin)}
-    {$I ../config-macosx.inc}
+    {$I ../config-darwin.inc}
   {$ELSE}
     {$MESSAGE Fatal 'Unknown OS'}
   {$IFEND}

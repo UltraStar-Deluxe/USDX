@@ -445,7 +445,7 @@ AC_SUBST(LIBS)
 # create output files
 # -----------------------------------------
 
-AC_CONFIG_FILES([config-linux.inc:config.inc.in])
+AC_CONFIG_FILES([config-$FPC_PLATFORM.inc:config.inc.in])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([$usdxroot/Tools/ResourceExtractor/Makefile])
 if [[ x$libprojectM_NEEDS_CWRAPPER = xyes ]]; then
