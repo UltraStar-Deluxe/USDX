@@ -10,15 +10,18 @@ interface
 
 {$I switches.inc}
 
-uses OpenGL12,
-     Math,
-     Classes,
-     SysUtils,
-     UCommon,
-     UImage,
-     SDL,
-     sdlutils,
-     SDL_Image;
+uses
+  gl,
+  glu,
+  glext,
+  Math,
+  Classes,
+  SysUtils,
+  UCommon,
+  UImage,
+  SDL,
+  sdlutils,
+  SDL_Image;
 
 type
   TTexture = record

@@ -11,7 +11,8 @@ procedure DrawQuad(X, Y, W, H, ColR, ColG, ColB: real);
 procedure DrawTexture(Texture: TTexture);
 
 implementation
-uses OpenGL12;
+
+uses gl;
 
 procedure DrawLine(X1, Y1, X2, Y2, ColR, ColG, ColB: real);
 begin

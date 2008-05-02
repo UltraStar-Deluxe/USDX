@@ -21,7 +21,7 @@ uses
   ULyrics,
   UScreenSing,
   USong,
-  OpenGL12,
+  gl,
   UThemes;
 
 type
@@ -352,7 +352,6 @@ begin
     // call an uninitialize routine for every initialize step
     // or at least use the corresponding Free-Methods
 
-    UnloadOpenGL;
     //TTF_quit();
     SDL_Quit();
 

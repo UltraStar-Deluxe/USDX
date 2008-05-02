@@ -10,7 +10,7 @@ interface
 
 uses TextGL,
      UTexture,
-     OpenGL12,
+     gl,
      UMenuText;
 
 type

@@ -13,7 +13,7 @@ uses
   SDL,
   SysUtils,
   UThemes,
-  OpenGL12;
+  gl;
 
 type
   TScreenLoading = class(TMenu)

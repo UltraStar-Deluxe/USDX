@@ -10,7 +10,8 @@ interface
 
 uses
   SDL,
-  OpenGL12,
+  gl,
+  glext,
   UTexture,
   TextGL,
   ULog,
@@ -397,15 +398,26 @@ begin
   Log.LogStatus('Loading Textures - Done', 'LoadTextures');
 end;
 
+(*
+ * Load OpenGL extensions. Must be called after SDL_SetVideoMode() and each
+ * time the pixel-format or render-context (RC) changes.
+ *)
+procedure LoadOpenGLExtensions;
+begin
+  // Load OpenGL 1.2 extensions for OpenGL 1.2 compatibility
+  if (not Load_GL_version_1_2()) then
+  begin
+    Log.LogCritical('Failed loading OpenGL 1.2', 'UGraphic.Initialize3D');
+  end;
+
+  // Other extensions e.g. OpenGL 1.3-2.0 or Framebuffer-Object might be loaded here
+  // ...
+end;
+
 procedure Initialize3D (Title: string);
 var
   Icon: PSDL_Surface;
 begin
-  Log.LogStatus('LoadOpenGL', 'UGraphic.Initialize3D');
-  //Log.BenchmarkStart(2);
-
-  LoadOpenGL;
-
   Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
   if ( SDL_InitSubSystem(SDL_INIT_VIDEO) = -1 ) then
   begin
@@ -419,6 +431,8 @@ begin
     SDL_WM_SetIcon(Icon, 0);
 
   SDL_WM_SetCaption(PChar(Title), nil);
+
+  //Log.BenchmarkStart(2);
 
   InitializeScreen;
 
@@ -591,6 +605,8 @@ begin
     Log.LogError('SDL_SetVideoMode Failed', 'Initialize3D');
     exit;
   end;
+
+  LoadOpenGLExtensions();
 
   // clear screen once window is being shown
   glClearColor(1, 1, 1, 1);

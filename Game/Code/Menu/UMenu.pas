@@ -8,7 +8,7 @@ interface
 
 {$I switches.inc}
 
-uses OpenGL12, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
+uses gl, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
   UMenuInteract, UThemes, UMenuButtonCollection, Math, UMusic;
 
 type

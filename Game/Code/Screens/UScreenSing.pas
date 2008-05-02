@@ -21,7 +21,7 @@ uses UMenu,
      UTexture,
      ULyrics,
      TextGL,
-     OpenGL12,
+     gl,
      UThemes,
      //ULCD, //TODO: maybe LCD Support as Plugin?
      UGraphicClasses,

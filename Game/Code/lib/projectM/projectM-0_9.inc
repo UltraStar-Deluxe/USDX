@@ -49,7 +49,7 @@ type
     {$endif}
 
   { Render target texture ID for non-pbuffer systems }
-    textureID: array[0..2] of TGLuint;
+    textureID: array[0..2] of GLuint;
   end;
 
   _PProjectM = ^_TProjectM;

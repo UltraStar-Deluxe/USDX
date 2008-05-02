@@ -61,7 +61,7 @@ implementation
 uses
   SysUtils,
   SDL,
-  OpenGL12,
+  gl,
   UGraphic,
   UDraw,
   UMain,

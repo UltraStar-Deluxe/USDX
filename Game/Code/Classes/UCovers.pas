@@ -8,7 +8,7 @@ interface
 
 {$I switches.inc}
 
-uses OpenGL12,
+uses gl,
      {$IFDEF win32}
      windows,
      {$ENDIF}

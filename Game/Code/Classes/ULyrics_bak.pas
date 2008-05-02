@@ -9,7 +9,7 @@ interface
 {$I switches.inc}
 
 uses SysUtils,
-     OpenGL12,
+     gl,
      UMusic,
      UTexture;
 

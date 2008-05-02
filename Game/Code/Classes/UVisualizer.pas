@@ -21,7 +21,7 @@ uses
   UGraphicClasses,
   textgl,
   math,
-  OpenGL12,
+  gl,
   SysUtils,
   UIni,
   projectM,

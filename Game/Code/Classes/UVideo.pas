@@ -41,7 +41,7 @@ uses SDL,
      swscale,
      {$ENDIF}
      math,
-     OpenGL12,
+     gl,
      SysUtils,
      {$ifdef DebugDisplay}
      {$ifdef win32}

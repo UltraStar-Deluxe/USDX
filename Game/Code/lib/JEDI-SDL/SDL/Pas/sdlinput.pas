@@ -1,6 +1,6 @@
 unit sdlinput;
 {
-  $Id: sdlinput.pas,v 1.7 2004/09/30 22:32:04 savage Exp $
+  $Id: sdlinput.pas,v 1.9 2007/08/22 21:18:43 savage Exp $
   
 }
 {******************************************************************************}
@@ -60,6 +60,12 @@ unit sdlinput;
 { February   02     2004 - DL : Added Custom Cursor Support to the Mouse class }
 {
   $Log: sdlinput.pas,v $
+  Revision 1.9  2007/08/22 21:18:43  savage
+  Thanks to Dean for his MouseDelta patch.
+
+  Revision 1.8  2005/08/03 18:57:32  savage
+  Various updates and additions. Mainly to handle OpenGL 3D Window support and better cursor support for the mouse class
+
   Revision 1.7  2004/09/30 22:32:04  savage
   Updated with slightly different header comments
 
@@ -187,6 +193,41 @@ type
   TSDLMouseMoveEvent =  procedure ( Shift: TSDLMod; CurrentPos : TPoint; RelativePos : TPoint ) {$IFNDEF NOT_OO}of object{$ENDIF};
   TSDLMouseWheelEvent =  procedure ( WheelDelta : Integer; Shift: TSDLMod; MousePos : TPoint ) {$IFNDEF NOT_OO}of object{$ENDIF};
 
+  TSDLCustomCursor = class( TObject )
+  private
+    FFileName : string;
+    FHotPoint: TPoint;
+    procedure SetFileName(const aValue: string );
+    function ScanForChar( str : string; ch : Char; startPos : Integer; lookFor : Boolean ) : Integer;
+  public
+    constructor Create( const aFileName : string; aHotPoint: TPoint );
+    procedure LoadFromFile( const aFileName : string ); virtual; abstract;
+    procedure LoadFromStream( aStream : TStream ); virtual; abstract;
+    procedure Show; virtual; abstract;
+    property FileName : string read FFileName write SetFileName;
+    property HotPoint : TPoint read FHotPoint write FHotPoint;
+  end;
+
+  TSDLXPMCursor = class( TSDLCustomCursor )
+  private
+    FCursor : PSDL_Cursor;
+    procedure FreeCursor;
+  public
+    destructor Destroy; override;
+    procedure LoadFromFile( const aFileName : string ); override;
+    procedure LoadFromStream( aStream : TStream ); override;
+    procedure Show; override;
+  end;
+
+  TSDLCursorList = class( TStringList )
+  protected
+    function GetObject( aIndex : Integer ): TSDLCustomCursor; reintroduce;
+    procedure PutObject( aIndex : Integer; AObject : TSDLCustomCursor); reintroduce;
+  public
+    constructor Create;
+   function AddCursor(const aName : string; aObject : TSDLCustomCursor): Integer; virtual;
+  end;
+
   TSDLMouse = class( TSDLCustomInput )
   private
     FDragging : Boolean;
@@ -195,19 +236,19 @@ type
     FOnMouseDown: TSDLMouseButtonEvent;
     FOnMouseMove: TSDLMouseMoveEvent;
     FOnMouseWheel: TSDLMouseWheelEvent;
-    FCursor : PSDL_Cursor; // Cursor Pointer
+    FCursorList : TSDLCursorList; // Cursor Pointer
     procedure DoMouseMove( Event: TSDL_Event );
     procedure DoMouseDown( Event: TSDL_Event );
     procedure DoMouseUp( Event: TSDL_Event );
     procedure DoMouseWheelScroll( Event: TSDL_Event );
     function GetMousePosition: TPoint;
     procedure SetMousePosition(const Value: TPoint);
+    function GetMouseDelta: TPoint;
   public
     destructor Destroy; override;
     function UpdateInput( event: TSDL_EVENT ) : Boolean; override;
     function MouseIsDown( Button : Integer ) : Boolean;
     function MouseIsUp( Button : Integer ) : Boolean;
-    procedure SetCursor(data, mask: PUInt8; w, h, hot_x, hot_y: Integer);
     procedure ShowCursor;
     procedure HideCursor;
     property OnMouseDown : TSDLMouseButtonEvent read FOnMouseDown write FOnMouseDown;
@@ -215,6 +256,8 @@ type
     property OnMouseMove : TSDLMouseMoveEvent read FOnMouseMove write FOnMouseMove;
     property OnMouseWheel : TSDLMouseWheelEvent read FOnMouseWheel write FOnMouseWheel;
     property MousePosition : TPoint read GetMousePosition write SetMousePosition;
+    property MouseDelta: TPoint read GetMouseDelta;
+    property Cursors : TSDLCursorList read FCursorList write FCursorList;
   end;
 
   TSDLInputManager = class( TObject )
@@ -234,6 +277,9 @@ type
   end;
 
 implementation
+
+uses
+  SysUtils;
 
 { TSDLCustomInput }
 constructor TSDLCustomInput.Create;
@@ -355,8 +401,7 @@ end;
 { TSDLMouse }
 destructor TSDLMouse.Destroy;
 begin
-  if FCursor <> nil then
-    SDL_FreeCursor( FCursor );
+
   inherited;
 end;
 
@@ -415,6 +460,13 @@ begin
   end;
 end;
 
+function TSDLMouse.GetMouseDelta: TPoint;
+begin
+  SDL_PumpEvents;
+  
+  SDL_GetRelativeMouseState( Result.X, Result.Y );
+end;
+
 function TSDLMouse.GetMousePosition: TPoint;
 begin
   SDL_PumpEvents;
@@ -440,17 +492,6 @@ begin
   SDL_PumpEvents;
 
   Result := not ( SDL_GetMouseState( FMousePos.X, FMousePos.Y ) and SDL_BUTTON( Button ) = 0 );
-end;
-
-procedure TSDLMouse.SetCursor(data, mask: PUInt8; w, h, hot_x, hot_y: Integer);
-begin
-  if FCursor <> nil then
-    SDL_FreeCursor( FCursor );
-  // create the cursor
-  FCursor := SDL_CreateCursor( data, mask, w, h, hot_x, hot_y );
-
-  // set the cursor
-  SDL_SetCursor( FCursor );
 end;
 
 procedure TSDLMouse.SetMousePosition(const Value: TPoint);
@@ -687,6 +728,196 @@ begin
       end;
     end;
   end;
+end;
+
+{ TSDLCustomCursor }
+
+constructor TSDLCustomCursor.Create(const aFileName: string;  aHotPoint: TPoint);
+begin
+  inherited Create;
+  FHotPoint := aHotPoint;
+  LoadFromFile( aFileName );
+end;
+
+function TSDLCustomCursor.ScanForChar(str: string; ch: Char;
+  startPos: Integer; lookFor: Boolean): Integer;
+begin
+  Result := -1;
+  while ( ( ( str[ startPos ] = ch ) <> lookFor ) and ( startPos < Length( str ) ) ) do
+    inc( startPos );
+  if startPos <> Length( str ) then
+    Result := startPos;
+end;
+
+procedure TSDLCustomCursor.SetFileName(const aValue: string);
+begin
+  LoadFromFile( aValue );
+end;
+
+{ TSDLXPMCursor }
+
+destructor TSDLXPMCursor.Destroy;
+begin
+  FreeCursor;
+  inherited;
+end;
+
+procedure TSDLXPMCursor.FreeCursor;
+begin
+  if FCursor <> nil then
+  begin
+    SDL_FreeCursor( FCursor );
+    FFileName := ''; 
+  end;
+end;
+
+procedure TSDLXPMCursor.LoadFromFile(const aFileName: string);
+var
+  xpmFile : Textfile;
+  step : Integer;
+  holdPos : Integer;
+  counter : Integer;
+  dimensions : array[ 1..3 ] of Integer;
+  clr, clrNone, clrBlack, clrWhite : Char;
+  data, mask : array of UInt8;
+  i, col : Integer;
+  LineString : string;
+begin
+  FreeCursor;
+  AssignFile( xpmFile, aFileName );
+  Reset( xpmFile );
+  step := 0;
+  i := -1;
+  clrBlack := 'X';
+  clrWhite := ',';
+  clrNone := ' ';
+  counter := 0;
+  while not ( eof( xpmFile ) ) do
+  begin
+    Readln( xpmFile, LineString );
+    // scan for strings
+    if LineString[ 1 ] = '"' then
+    begin
+      case step of
+        0 : // Get dimensions  (should be width height number-of-colors ???)
+          begin
+            HoldPos := 2;
+            counter := ScanForChar( LineString, ' ', HoldPos, False );
+            counter := ScanForChar( LineString, ' ', counter, True );
+            dimensions[ 1 ] := StrToInt( Copy( LineString, HoldPos, counter - HoldPos ) );
+            counter := ScanForChar( LineString, ' ', counter, False );
+            holdPos := counter;
+            counter := ScanForChar( LineString, ' ', counter, True );
+            dimensions[ 2 ] := StrToInt( Copy( LineString, holdPos, counter - HoldPos ) );
+            counter := ScanForChar( LineString, ' ', counter, False );
+            holdPos := counter;
+            counter := ScanForChar( LineString, ' ', counter, True );
+            dimensions[ 3 ] := StrToInt( Copy( LineString, holdPos, counter - HoldPos ) );
+            step := 1;
+            SetLength( data, ( dimensions[ 1 ] * dimensions[ 2 ] ) div 8 );
+            SetLength( mask, ( dimensions[ 1 ] * dimensions[ 2 ] ) div 8 );
+            //Log.LogStatus( 'Length = ' + IntToStr( ( dimensions[ 1 ] * dimensions[ 2 ] ) div 8 ), 'LoadCursorFromFile' );
+          end;
+        1 : // get the symbols for transparent, black and white
+          begin
+            // get the symbol for the color
+            clr := LineString[ 2 ];
+            // look for the 'c' symbol
+            counter := ScanForChar( LineString, 'c', 3, True );
+            inc( counter );
+            counter := ScanForChar( LineString, ' ', counter, False );
+            if LowerCase( Copy( LineString, counter, 4 ) ) = 'none' then
+            begin
+              clrNone := clr;
+            end;
+            if LowerCase( Copy( LineString, counter, 7 ) ) = '#ffffff' then
+            begin
+              clrWhite := clr;
+            end;
+            if LowerCase( Copy( LineString, counter, 7 ) ) = '#000000' then
+            begin
+              clrBlack := clr;
+            end;
+            dec( dimensions[ 3 ] );
+            if dimensions[ 3 ] = 0 then
+            begin
+              step := 2;
+              counter := 0;
+            end;
+          end;
+        2 : // get cursor information -- modified from the SDL
+          // documentation of SDL_CreateCursor.
+          begin
+            for col := 1 to dimensions[1] do
+            begin
+              if ( ( col mod 8 ) <> 1 ) then
+              begin
+                data[ i ] := data[ i ] shl 1;
+                mask[ i ] := mask[ i ] shl 1;
+              end
+              else
+              begin
+                inc( i );
+                data[ i ] := 0;
+                mask[ i ] := 0;
+              end;
+              if LineString[ col ] = clrWhite then
+              begin
+                mask[ i ] := mask[ i ] or $01;
+              end
+              else if LineString[ col ] = clrBlack then
+              begin
+                data[ i ] := data[ i ] or $01;
+                mask[ i ] := mask[ i ] or $01;
+              end
+              else if LineString[ col + 1 ] = clrNone then
+              begin
+                //
+              end;
+            end;
+            inc(counter);
+            if counter = dimensions[2] then
+              step := 4;
+          end;
+      end;
+    end;
+  end;
+  CloseFile( xpmFile );
+  FCursor := SDL_CreateCursor( PUInt8( data ), PUInt8( mask ), dimensions[ 1 ], dimensions[ 2 ], FHotPoint.x, FHotPoint.y );
+end;
+
+procedure TSDLXPMCursor.LoadFromStream(aStream: TStream);
+begin
+  inherited;
+
+end;
+
+procedure TSDLXPMCursor.Show;
+begin
+  inherited;
+  SDL_SetCursor( FCursor );
+end;
+
+{ TSDLCursorList }
+function TSDLCursorList.AddCursor(const aName : string; aObject : TSDLCustomCursor): Integer;
+begin
+  result := inherited AddObject( aName, aObject );
+end;
+
+constructor TSDLCursorList.Create;
+begin
+  inherited;
+  Duplicates := dupIgnore;
+end;
+
+function TSDLCursorList.GetObject(aIndex: Integer): TSDLCustomCursor;
+begin
+  result := TSDLCustomCursor( inherited GetObject( aIndex ) );
+end;
+
+procedure TSDLCursorList.PutObject(aIndex: Integer; aObject: TSDLCustomCursor);
+begin
+  inherited PutObject( aIndex, aObject );
 end;
 
 end.

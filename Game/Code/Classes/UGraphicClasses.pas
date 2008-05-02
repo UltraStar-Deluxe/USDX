@@ -89,7 +89,7 @@ var GoldenRec : TEffectManager;
 implementation
 
 uses  sysutils,
-      OpenGl12,
+      gl,
       UIni,
       UMain,
       UThemes,

@@ -12,7 +12,7 @@ interface
 
 uses
   SysUtils,
-  OpenGL12,
+  gl,
   UConfig;
 
 type

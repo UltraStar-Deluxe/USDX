@@ -13,7 +13,7 @@ interface
 {$ENDIF}
 
 uses
-  OpenGL12,
+  gl,
   SDL,
   UTexture,
   Classes,

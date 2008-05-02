@@ -4,7 +4,7 @@ interface
 
 {$I switches.inc}
 
-uses TextGL, UTexture, OpenGL12, UMenuText,SDL;
+uses TextGL, UTexture, gl, UMenuText,SDL;
 
 type
   CButton = class of TButton;

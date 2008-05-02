@@ -60,7 +60,7 @@ const
 implementation
 
 uses
-  OpenGL12,
+  gl,
   UGraphic,
   SysUtils,
   UMusic,

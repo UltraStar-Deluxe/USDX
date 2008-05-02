@@ -9,7 +9,7 @@ interface
 {$I switches.inc}
 
 uses UThemes,
-     OpenGl12,
+     gl,
      UTexture;
 
 //////////////////////////////////////////////////////////////

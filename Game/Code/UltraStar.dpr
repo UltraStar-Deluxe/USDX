@@ -33,7 +33,9 @@ uses
   //Includes - 3rd Party Libraries
   //------------------------------
   moduleloader           in 'lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
-  opengl12               in 'lib\JEDI-SDL\OpenGL\Pas\opengl12.pas',
+  gl                     in 'lib\JEDI-SDL\OpenGL\Pas\gl.pas',
+  glu                    in 'lib\JEDI-SDL\OpenGL\Pas\glu.pas',
+  glext                  in 'lib\JEDI-SDL\OpenGL\Pas\glext.pas',
   sdl                    in 'lib\JEDI-SDL\SDL\Pas\sdl.pas',
   sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
   sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',

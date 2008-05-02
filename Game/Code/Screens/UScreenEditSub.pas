@@ -23,7 +23,7 @@ uses
     ULyrics_bak,
     ULyrics,
     Math,
-    OpenGL12,
+    gl,
     {$IFDEF UseMIDIPort}
     MidiOut,
     {$ENDIF}

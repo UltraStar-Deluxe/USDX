@@ -16,10 +16,9 @@ uses
   UMusic,
   USongs,
   UThemes,
-  OpenGL12,
+  gl,
   math,
   UTexture;
-//  OpenGL;
 
 const
   ZBars            : real = 0.8; // Z value for the bars

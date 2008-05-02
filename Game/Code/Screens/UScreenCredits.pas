@@ -15,7 +15,7 @@ uses
     SDL_Image,
     UDisplay,
     UTexture,
-    OpenGL12,
+    gl,
     UMusic,
     UFiles,
     SysUtils,

@@ -4,7 +4,7 @@ interface
 
 {$I switches.inc}
 
-uses UTexture, OpenGL12;
+uses UTexture, gl;
 
 type
   TStatic = class

@@ -98,7 +98,7 @@ uses UGraphic,
      UFiles,
      UMain,
      UIni,
-     OpenGL12,
+     gl,
      USkins;
 
 function TScreenEditConvert.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;

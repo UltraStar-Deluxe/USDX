@@ -4,12 +4,13 @@ interface
 
 {$I switches.inc}
 
-uses  OpenGL12,
-      SDL,
-      UTexture,
-      Classes,
-      SDL_ttf,
-      ULog;
+uses
+  gl,
+  SDL,
+  UTexture,
+  Classes,
+  SDL_ttf,
+  ULog;
 
 {
 // okay i just outline what should be here, so we can create a nice and clean implementation of sdl_ttf

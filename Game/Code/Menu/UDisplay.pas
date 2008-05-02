@@ -12,7 +12,8 @@ uses
   ucommon,
   SDL,
   UMenu,
-  OpenGL12,
+  gl,
+  glu,
   SysUtils;
 
 type

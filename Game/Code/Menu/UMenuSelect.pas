@@ -4,7 +4,7 @@ interface
 
 {$I switches.inc}
 
-uses TextGL, UTexture, OpenGL12, UMenuText;
+uses TextGL, UTexture, gl, UMenuText;
 
 type
   PSelect = ^TSelect;
