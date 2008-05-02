@@ -347,11 +347,10 @@ begin
   RowSize := ((ScreenW*3 + (Align-1)) div Align) * Align;
 
   GetMem(ScreenData, RowSize * ScreenH);
-  glReadPixels(0, 0, ScreenW, ScreenH, GL_BGR, GL_UNSIGNED_BYTE, ScreenData);
+  glReadPixels(0, 0, ScreenW, ScreenH, GL_RGB, GL_UNSIGNED_BYTE, ScreenData);
   Surface := SDL_CreateRGBSurfaceFrom(
       ScreenData, ScreenW, ScreenH, 24, RowSize,
-      //$0000FF, $00FF00, $FF0000, 0);
-      $FF0000, $00FF00, $0000FF, 0);
+      $0000FF, $00FF00, $FF0000, 0);
 
   //Success := WriteJPGImage(FileName, Surface, 95);
   //Success := WriteBMPImage(FileName, Surface);
