@@ -35,8 +35,10 @@ const
   LOG_LEVEL_CRITICAL_MAX = LOG_LEVEL_ERROR-1;
   LOG_LEVEL_CRITICAL     =  0;
   LOG_LEVEL_NONE         = -1;
-  
-  LOG_LEVEL_DEFAULT = LOG_LEVEL_ERROR;
+
+  // define level that Log(File)Level is initialized with
+  LOG_LEVEL_DEFAULT      = LOG_LEVEL_INFO;
+  LOG_FILE_LEVEL_DEFAULT = LOG_LEVEL_ERROR;
 
 type
   TLog = class
@@ -47,6 +49,8 @@ type
     BenchmarkFileOpened: boolean;
 
     LogLevel: integer;
+    // level of messages written to the log-file
+    LogFileLevel: integer;
 
     procedure LogToFile(const Text: string);
   public
@@ -125,6 +129,7 @@ end;
 constructor TLog.Create;
 begin
   LogLevel := LOG_LEVEL_DEFAULT;
+  LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
   FileOutputEnabled := true;
 end;
 
@@ -279,6 +284,8 @@ procedure TLog.LogMsg(const Text: string; Level: integer);
 var
   LogMsg: string;
 begin
+  // TODO: what if (LogFileLevel < LogLevel)? Log to file without printing to
+  //  console or do not log at all? At the moment nothing is logged.
   if (Level <= LogLevel) then
   begin
     if (Level <= LOG_LEVEL_CRITICAL_MAX) then
@@ -295,23 +302,24 @@ begin
       LogMsg := 'DEBUG:  ' + Text;
 
     // output log-message
-    DebugWriteLn(LogMsg);
-
-    // actions for error- and more severe levels
-    if (Level <= LOG_LEVEL_ERROR_MAX) then
+    if (Level <= LogLevel) then
     begin
-      // Write message to log-file
-      LogToFile(Text);
+      DebugWriteLn(LogMsg);
     end;
-
-    // actions for critical- and more severe levels
-    if (Level <= LOG_LEVEL_CRITICAL_MAX) then
+    
+    // write message to log-file
+    if (Level <= LogFileLevel) then
     begin
-      // Show information (window)
-      ShowMessage(Text, mtError);
-      // Exit Application
-      Halt;
+      LogToFile(LogMsg);
     end;
+  end;
+
+  // exit application on criticial errors (cannot be turned off)
+  if (Level <= LOG_LEVEL_CRITICAL_MAX) then
+  begin
+    // Show information (window)
+    ShowMessage(Text, mtError);
+    Halt;
   end;
 end;
 

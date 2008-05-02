@@ -65,6 +65,7 @@ implementation
 uses
   IniFiles,
   ULog,
+  StrUtils,
   SysUtils;
 
 const
@@ -77,7 +78,7 @@ const
 
 Procedure TDataBaseSystem.Init(const Filename: string);
 begin
-  debugWriteln( 'TDataBaseSystem.Init ('+Filename+') @ '+ floattostr( now() ) );
+  Log.LogStatus('Initializing database: "'+Filename+'"', 'TDataBaseSystem.Init');
   
   //Open Database
   ScoreDB   := TSqliteDatabase.Create( Filename );
@@ -103,8 +104,10 @@ begin
 
 
   finally
-    debugWriteln( cUS_Songs +' Exist : ' + inttostr( integer(ScoreDB.TableExists( cUS_Songs )) ) );
-    debugWriteln( cUS_Scores +' Exist : ' + inttostr( integer(ScoreDB.TableExists( cUS_Scores )) ) );
+    Log.LogInfo( cUS_Songs +' exists: ' + IfThen(ScoreDB.TableExists(cUS_Songs), 'true', 'false'),
+      'TDataBaseSystem.Init');
+    Log.LogInfo( cUS_Scores +' exists: ' + IfThen(ScoreDB.TableExists(cUS_Scores), 'true', 'false'),
+      'TDataBaseSystem.Init');
   //ScoreDB.Free;
   end;
 

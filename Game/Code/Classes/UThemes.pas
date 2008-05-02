@@ -811,17 +811,13 @@ begin
 
   create_theme_objects();
   
-  debugWriteln( 'TTheme.LoadTheme : '+ FileName );
+  Log.LogStatus('Loading: '+ FileName, 'TTheme.LoadTheme');
 
   FileName := AdaptFilePaths( FileName );
 
   if not FileExists(FileName) then
   begin
-    {$ifndef win32}
-      debugWriteln( 'ERROR !!! Theme does not exist ('+ FileName +')' );
-    {$endif}
-
-    Log.LogStatus( 'ERROR !!! Theme does not exist ('+ FileName +')' , 'TTheme.LoadTheme');
+    Log.LogError('Theme does not exist ('+ FileName +')', 'TTheme.LoadTheme');
   end;
 
   if FileExists(FileName) then

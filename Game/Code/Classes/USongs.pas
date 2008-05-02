@@ -185,7 +185,7 @@ begin
 
     if fParseSongDirectory then
     begin
-      debugWriteln( 'int_LoadSongList' );
+      Log.LogStatus('Calling int_LoadSongList', 'TSongs.Execute');
       int_LoadSongList();
     end;
 
