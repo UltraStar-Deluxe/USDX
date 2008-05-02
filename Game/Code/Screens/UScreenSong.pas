@@ -264,7 +264,7 @@ begin
           begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
                (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) AND
-               (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
+               (WideCharUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
             begin
               SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
@@ -285,7 +285,7 @@ begin
           begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) AND
                (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) AND
-               (WideUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
+               (WideCharUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
             begin
               SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
