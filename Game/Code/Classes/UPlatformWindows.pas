@@ -20,7 +20,7 @@ type
     function  GetGamePath: WideString;
     function  FindSongFile(Dir, Mask: widestring): widestring;
 
-    procedure halt;
+    procedure Halt;
 
     function GetLogPath        : WideString;
     function GetGameSharedPath : WideString;
@@ -191,9 +191,9 @@ begin
   Result := ExtractFilePath(ParamStr(0));
 end;
 
-procedure TPlatformWindows.halt;
+procedure TPlatformWindows.Halt;
 begin
-  halt(); // Application.terminate does NOT do the same thing..
+  System.Halt; // Application.terminate does NOT do the same thing..
 end;
 
 function TPlatformWindows.GetLogPath        : WideString;

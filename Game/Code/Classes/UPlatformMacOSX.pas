@@ -29,7 +29,7 @@ type
   public
     Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
     function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-    procedure halt();
+    procedure Halt();
     function  GetLogPath        : WideString; 
     function  GetGameSharedPath : WideString; 
     function  GetGameUserPath   : WideString; 
@@ -122,9 +122,9 @@ begin
 end;
 
 
-procedure TPlatformMacOSX.halt;
+procedure TPlatformMacOSX.Halt;
 begin
-  halt;
+  System.Halt;
 end;
 
 function TPlatformMacOSX.FindSongFile(Dir, Mask: widestring): widestring;

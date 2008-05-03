@@ -29,7 +29,7 @@ type
     Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
     function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
     function  FindSongFile(Dir, Mask: widestring): widestring;
-    procedure halt;
+    procedure Halt;
     function  GetLogPath        : WideString;
     function  GetGameSharedPath : WideString;
     function  GetGameUserPath   : WideString;
