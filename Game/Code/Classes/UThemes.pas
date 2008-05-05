@@ -46,7 +46,7 @@ type
     TexY1:  real;
     TexX2:  real;
     TexY2:  real;
-    //Reflection Mod
+    //Reflection
     Reflection:           boolean;
     Reflectionspacing:    Real;
   end;
@@ -64,6 +64,9 @@ type
     Size:   integer;
     Align:  integer;
     Text:   string;
+    //Reflection
+    Reflection:           boolean;
+    ReflectionSpacing:    Real;
   end;
   AThemeText = array of TThemeText;
 
@@ -1463,6 +1466,10 @@ begin
   ThemeText.Text  := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
   ThemeText.Color := ThemeIni.ReadString(Name, 'Color', '');
 
+  //Reflection
+  ThemeText.Reflection         := (ThemeIni.ReadInteger(Name, 'Reflection', 0)) = 1;
+  ThemeText.Reflectionspacing  := ThemeIni.ReadFloat(Name, 'ReflectionSpacing', 15);
+
   C := ColorExists(ThemeText.Color);
   if C >= 0 then begin
     ThemeText.ColR := Color[C].RGB.R;
@@ -2125,6 +2132,9 @@ begin
 
   ThemeIni.WriteString(Name, 'Text', ThemeText.Text);
   ThemeIni.WriteString(Name, 'Color', ThemeText.Color);
+
+  ThemeIni.WriteBool(Name, 'Reflection', ThemeText.Reflection);
+  ThemeIni.WriteFloat(Name, 'ReflectionSpacing', ThemeText.ReflectionSpacing);
 end;
 
 procedure TTheme.ThemeSaveTexts(ThemeText: AThemeText; Name: string);

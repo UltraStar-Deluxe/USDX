@@ -40,6 +40,10 @@ type
       Visible:  boolean;
       Align:    integer; // 0 = left, 1 = center, 2 = right
 
+      //Reflection
+      Reflection:           boolean;
+      ReflectionSpacing:    Real;
+
       procedure SetSelect(Value: Boolean);
       property Selected: Boolean read SelectBool write SetSelect;
 
@@ -51,7 +55,7 @@ type
       procedure Draw;
       constructor Create; overload;
       constructor Create(X, Y: real; Tekst: string); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string); overload;
+      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: Boolean; ParReflectionSpacing: Real) overload;
   end;
 
 implementation
@@ -276,6 +280,12 @@ begin
 
     glColor4f(ColR*Int, ColG*Int, ColB*Int, Alpha);
 
+    //Reflection
+    if Reflection = true then
+      SetFontReflection(true,ReflectionSpacing)
+    else
+      SetFontReflection(false,0);
+
     //If Selected Set Blink...
     if SelectBool then
     begin
@@ -346,10 +356,10 @@ end;
 
 constructor TText.Create(X, Y: real; Tekst: string);
 begin
-  Create(X, Y, 0, 0, 10, 0, 0, 0, 0, Tekst);
+  Create(X, Y, 0, 0, 10, 0, 0, 0, 0, Tekst, false, 0);
 end;
 
-constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string);
+constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: Boolean; ParReflectionSpacing: Real);
 begin
   inherited Create;
   Alpha := 1;
@@ -366,6 +376,8 @@ begin
   Align := ParAlign;
   SelectBool := false;
   Visible := true;
+  Reflection:= ParReflection;
+  ReflectionSpacing:= ParReflectionSpacing;
 end;
 
 

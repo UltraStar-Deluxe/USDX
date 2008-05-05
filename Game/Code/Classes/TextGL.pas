@@ -33,7 +33,7 @@ procedure SetFontSize(Size: real);
 procedure SetFontStyle(Style: integer); // sets active font style (normal, bold, etc)
 procedure SetFontItalic(Enable: boolean); // sets italic type letter (works for all fonts)
 procedure SetFontAspectW(Aspect: real);
-
+procedure SetFontReflection(Enable:boolean;Spacing: real); // Enables/Disables text reflection
 // Start of SDL_ttf
 function NextPowerOfTwo(Value: Integer): Integer;
 //Checks if the ttf exists, if yes then a SDL_ttf is returned
@@ -63,6 +63,8 @@ type
     Done:     real;
     Outline:  real;
     Italic:   boolean;
+    Reflection: boolean;
+    ReflectionSpacing: real;
   end;
 
 
@@ -74,6 +76,9 @@ var
   PColG:      real;
   PColB:      real;
 
+  // Colours for the reflection
+  TempColor:    Array[0..3] of GLfloat;
+  PTempColor:   PGLfloat;
 implementation
 
 uses
@@ -208,23 +213,26 @@ procedure glPrintLetter(Letter: char);
 var
   TexX, TexY:   real;
   TexR, TexB:   real;
+  TestHeight: real;
   FWidth:       real;
   PL, PT:       real;
   PR, PB:       real;
   XItal:        real; // X shift for italic type letter
+  ReflectionSpacing:real; // Distance of the reflection
 begin
   with Fonts[ActFont].Tex do
   begin
     FWidth := Fonts[ActFont].Width[Ord(Letter)];
 
     W := FWidth * (H/30) * Fonts[ActFont].AspectW;
-  //  H := 30;
 
     // set texture positions
     TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
-    TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
+    TexY := (ord(Letter) div 16) * 1/16 + 2/1024;
     TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
     TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
+
+    TestHeight := TexB - TexY;
 
     // set vector positions
     PL := X - Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW /2;
@@ -252,10 +260,47 @@ begin
       glEnd;
     end;
 
+    // <mog> Reflection
+    // Yes it would make sense to put this in an extra procedure,
+    // but this works, doesn't take much lines, and is almost lightweight
+    if Fonts[ActFont].Reflection = true then
+      begin
+        ReflectionSpacing := Fonts[ActFont].ReflectionSpacing + H/2;
+
+        glDepthRange(0, 10);
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST);
+
+        glBegin(GL_QUADS);
+        try
+          glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
+          glTexCoord2f(TexX, TexY + TestHeight/2);
+          glVertex3f(PL, PB + ReflectionSpacing - H/2, z);
+
+          glColor4f(TempColor[0], TempColor[1], TempColor[2], Alpha-0.3);
+          glTexCoord2f(TexX, TexB );
+          glVertex3f(PL + XItal, PT + ReflectionSpacing, z);
+
+          glTexCoord2f(TexR, TexB );
+          glVertex3f(PR + XItal, PT + ReflectionSpacing, z);
+
+          glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
+          glTexCoord2f(TexR, TexY + TestHeight/2);
+          glVertex3f(PR, PB + ReflectionSpacing - H/2, z);
+        finally
+          glEnd;
+        end;
+          glDisable(GL_DEPTH_TEST);
+      end; // reflection
+
+      glDisable(GL_TEXTURE_2D);
+      glDisable(GL_BLEND);
+
     X := X + W;
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
-  end; // with
+  end;     // with
+
+  //write the colour back
+  glColor4fv(PTempColor);
 end;
 
 procedure glPrintLetterCut(letter: char; Start, Finish: real);
@@ -333,6 +378,11 @@ begin
     glPrintLetter(Letter);
   end; // while
 *)
+
+//Save the actual color and alpha (for reflection)
+  PTempColor:= @TempColor;
+//I've read that glGetFloat is quite slow, but it seems that there is no alternative
+  glGetFloatv(GL_CURRENT_COLOR, PTempColor);
 
   // This code is better, because doing a Copy of for every
   // letter in a string is a waste of CPU & Memory resources.
@@ -534,6 +584,12 @@ end;
 procedure SetFontAspectW(Aspect: real);
 begin
   Fonts[ActFont].AspectW := Aspect;
+end;
+
+procedure SetFontReflection(Enable:boolean;Spacing: real);
+begin
+  Fonts[ActFont].Reflection        := Enable;
+  Fonts[ActFont].ReflectionSpacing := Spacing;
 end;
 
 end.
