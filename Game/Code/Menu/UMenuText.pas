@@ -55,7 +55,7 @@ type
       procedure Draw;
       constructor Create; overload;
       constructor Create(X, Y: real; Tekst: string); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: Boolean; ParReflectionSpacing: Real) overload;
+      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: Boolean; ParReflectionSpacing: Real); overload;
   end;
 
 implementation
