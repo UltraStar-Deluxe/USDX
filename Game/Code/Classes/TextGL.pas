@@ -213,7 +213,7 @@ procedure glPrintLetter(Letter: char);
 var
   TexX, TexY:   real;
   TexR, TexB:   real;
-  TestHeight: real;
+  TexHeight:    real;
   FWidth:       real;
   PL, PT:       real;
   PR, PB:       real;
@@ -232,7 +232,7 @@ begin
     TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
     TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
 
-    TestHeight := TexB - TexY;
+    TexHeight := TexB - TexY;
 
     // set vector positions
     PL := X - Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW /2;
@@ -274,7 +274,7 @@ begin
         glBegin(GL_QUADS);
         try
           glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
-          glTexCoord2f(TexX, TexY + TestHeight/2);
+          glTexCoord2f(TexX, TexY + TexHeight/2);
           glVertex3f(PL, PB + ReflectionSpacing - H/2, z);
 
           glColor4f(TempColor[0], TempColor[1], TempColor[2], Alpha-0.3);
@@ -285,7 +285,7 @@ begin
           glVertex3f(PR + XItal, PT + ReflectionSpacing, z);
 
           glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
-          glTexCoord2f(TexR, TexY + TestHeight/2);
+          glTexCoord2f(TexR, TexY + TexHeight/2);
           glVertex3f(PR, PB + ReflectionSpacing - H/2, z);
         finally
           glEnd;
