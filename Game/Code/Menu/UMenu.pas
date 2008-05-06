@@ -143,7 +143,8 @@ type
       procedure InteractPrev; virtual;
       procedure InteractInc; virtual;
       procedure InteractDec; virtual;
-
+      procedure InteractNextRow; virtual; // this is for the options screen, so button down makes sense
+      procedure InteractPrevRow; virtual; // this is for the options screen, so button up makes sense
       procedure AddBox(X, Y, W, H: real);
   end;
 
@@ -886,6 +887,53 @@ begin
   end;
 end;
 
+// implemented for the sake of usablility
+// [curser down] picks the button left to the actual atm
+// this behaviour doesn't make sense for two rows of buttons
+procedure TMenu.InteractPrevRow;
+var
+  Int:   Integer;
+begin
+// these two procedures just make sense for at least 5 buttons, because we
+// usually start a second row when there are more than 4 buttons
+  Int := Interaction;
+
+  // change interaction as long as it's needed
+  repeat
+    Int   := int - ceil(Length(Interactions) / 2);
+
+    //If no Interaction is Selectable Simply Select Next
+    if (Int = Interaction) then Break;
+
+  Until IsSelectable(Int);
+
+  //Set Interaction
+  if ((Int < 0) or (Int > Length(Interactions) - 1))
+    then  Int         := Interaction //nonvalid button, keep current one
+    else  Interaction := Int;        //select row above
+end;
+
+procedure TMenu.InteractNextRow;
+var
+  Int:   Integer;
+begin
+  Int := Interaction;
+
+  // change interaction as long as it's needed
+  repeat
+    Int := int + ceil(Length(Interactions) / 2);
+
+    //If no Interaction is Selectable Simply Select Next
+    if (Int = Interaction) then Break;
+
+  Until IsSelectable(Int);
+
+  //Set Interaction
+  if ((Int < 0) or (Int > Length(Interactions) - 1))
+    then  Int         := Interaction //nonvalid button, keep current one
+    else  Interaction := Int;        //select row above
+end;
+
 procedure TMenu.InteractNext;
 var
   Int: Integer;
@@ -904,7 +952,6 @@ begin
   //Set Interaction
   Interaction := Int;
 end;
-
 
 procedure TMenu.InteractPrev;
 var

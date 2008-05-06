@@ -1117,13 +1117,13 @@ begin
       ThemeLoadButton(Options.ButtonAdvanced, 'OptionsButtonAdvanced');
       ThemeLoadButton(Options.ButtonExit,     'OptionsButtonExit');
 
-      Options.Description[0] := Language.Translate('SING_OPTIONS_GAME');
-      Options.Description[1] := Language.Translate('SING_OPTIONS_GRAPHICS');
-      Options.Description[2] := Language.Translate('SING_OPTIONS_SOUND');
-      Options.Description[3] := Language.Translate('SING_OPTIONS_LYRICS');
-      Options.Description[4] := Language.Translate('SING_OPTIONS_THEMES');
-      Options.Description[5] := Language.Translate('SING_OPTIONS_RECORD');
-      Options.Description[6] := Language.Translate('SING_OPTIONS_ADVANCED');
+      Options.Description[0] := Language.Translate('SING_OPTIONS_GAME_DESC');
+      Options.Description[1] := Language.Translate('SING_OPTIONS_GRAPHICS_DESC');
+      Options.Description[2] := Language.Translate('SING_OPTIONS_SOUND_DESC');
+      Options.Description[3] := Language.Translate('SING_OPTIONS_LYRICS_DESC');
+      Options.Description[4] := Language.Translate('SING_OPTIONS_THEMES_DESC');
+      Options.Description[5] := Language.Translate('SING_OPTIONS_RECORD_DESC');
+      Options.Description[6] := Language.Translate('SING_OPTIONS_ADVANCED_DESC');
       Options.Description[7] := Language.Translate('SING_OPTIONS_EXIT');
 
       ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
@@ -1132,13 +1132,13 @@ begin
       // Options Game
       ThemeLoadBasic(OptionsGame, 'OptionsGame');
 
-      ThemeLoadSelect(OptionsGame.SelectPlayers,       'OptionsGameSelectPlayers');
-      ThemeLoadSelect(OptionsGame.SelectDifficulty,    'OptionsGameSelectDifficulty');
-      ThemeLoadSelectSlide(OptionsGame.SelectLanguage, 'OptionsGameSelectSlideLanguage');
-      ThemeLoadSelect(OptionsGame.SelectTabs,          'OptionsGameSelectTabs');
-      ThemeLoadSelectSlide(OptionsGame.SelectSorting,  'OptionsGameSelectSlideSorting');
-      ThemeLoadSelect(OptionsGame.SelectDebug,         'OptionsGameSelectDebug');
-      ThemeLoadButton(OptionsGame.ButtonExit,          'OptionsGameButtonExit');
+      ThemeLoadSelect(OptionsGame.SelectPlayers,    'OptionsGameSelectPlayers');
+      ThemeLoadSelect(OptionsGame.SelectDifficulty, 'OptionsGameSelectDifficulty');
+      ThemeLoadSelectSlide(OptionsGame.SelectLanguage,   'OptionsGameSelectSlideLanguage');
+      ThemeLoadSelect(OptionsGame.SelectTabs,       'OptionsGameSelectTabs');
+      ThemeLoadSelectSlide(OptionsGame.SelectSorting,    'OptionsGameSelectSlideSorting');
+      ThemeLoadSelect(OptionsGame.SelectDebug,      'OptionsGameSelectDebug');
+      ThemeLoadButton(OptionsGame.ButtonExit,            'OptionsGameButtonExit');
 
       // Options Graphics
       ThemeLoadBasic(OptionsGraphics, 'OptionsGraphics');

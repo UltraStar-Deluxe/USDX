@@ -16,6 +16,8 @@ type
       procedure onShow; override;
       procedure InteractNext; override;
       procedure InteractPrev; override;
+      procedure InteractNextRow; override;
+      procedure InteractPrevRow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
@@ -36,13 +38,13 @@ begin
           Exit;
         end;
     end;
-    
+
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Ini.Save;
+//          Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
         end;
@@ -97,8 +99,8 @@ begin
             FadeTo(@ScreenMain);
           end;
         end;
-      SDLK_DOWN:    InteractInc;
-      SDLK_UP:      InteractDec;
+      SDLK_DOWN:    InteractNextRow;
+      SDLK_UP:      InteractPrevRow;
       SDLK_RIGHT:   InteractNext;
       SDLK_LEFT:    InteractPrev;
     end;
@@ -167,6 +169,17 @@ begin
   Text[TextDescription].Text := Theme.Options.Description[Interaction];
 end;
 
+procedure TScreenOptions.InteractNextRow;
+begin
+  inherited InteractNextRow;
+  Text[TextDescription].Text := Theme.Options.Description[Interaction];
+end;
+
+procedure TScreenOptions.InteractPrevRow;
+begin
+  inherited InteractPrevRow;
+  Text[TextDescription].Text := Theme.Options.Description[Interaction];
+end;
 
 procedure TScreenOptions.SetAnimationProgress(Progress: real);
 begin
