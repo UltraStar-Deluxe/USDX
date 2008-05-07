@@ -132,7 +132,9 @@ interface
 uses
 {$IFDEF UNIX}
   Types,
+{$IFNDEF DARWIN}
   Xlib,
+{$ENDIF}
 {$ENDIF}
   SysUtils,
   sdl;
