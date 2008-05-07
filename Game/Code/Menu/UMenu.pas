@@ -898,14 +898,7 @@ begin
 // usually start a second row when there are more than 4 buttons
   Int := Interaction;
 
-  // change interaction as long as it's needed
-  repeat
-    Int   := int - ceil(Length(Interactions) / 2);
-
-    //If no Interaction is Selectable Simply Select Next
-    if (Int = Interaction) then Break;
-
-  Until IsSelectable(Int);
+  Int := Int - ceil(Length(Interactions) / 2);
 
   //Set Interaction
   if ((Int < 0) or (Int > Length(Interactions) - 1))
@@ -919,14 +912,7 @@ var
 begin
   Int := Interaction;
 
-  // change interaction as long as it's needed
-  repeat
-    Int := int + ceil(Length(Interactions) / 2);
-
-    //If no Interaction is Selectable Simply Select Next
-    if (Int = Interaction) then Break;
-
-  Until IsSelectable(Int);
+  Int := Int + ceil(Length(Interactions) / 2);
 
   //Set Interaction
   if ((Int < 0) or (Int > Length(Interactions) - 1))
