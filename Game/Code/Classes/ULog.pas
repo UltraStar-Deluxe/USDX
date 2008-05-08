@@ -37,7 +37,7 @@ const
   LOG_LEVEL_NONE         = -1;
 
   // define level that Log(File)Level is initialized with
-  LOG_LEVEL_DEFAULT      = LOG_LEVEL_INFO;
+  LOG_LEVEL_DEFAULT      = LOG_LEVEL_WARN;
   LOG_FILE_LEVEL_DEFAULT = LOG_LEVEL_ERROR;
 
 type

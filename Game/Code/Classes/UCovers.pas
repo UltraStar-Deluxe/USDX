@@ -9,9 +9,6 @@ interface
 {$I switches.inc}
 
 uses gl,
-     {$IFDEF win32}
-     windows,
-     {$ENDIF}
      Math,
      Classes,
      SysUtils,

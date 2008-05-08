@@ -30,7 +30,7 @@ uses
 
 class function TAudioCore_Bass.ErrorGetString(): string; 
 begin
-  ErrorGetString(BASS_ErrorGetCode());
+  Result := ErrorGetString(BASS_ErrorGetCode());
 end;
 
 class function TAudioCore_Bass.ErrorGetString(errCode: integer): string;
