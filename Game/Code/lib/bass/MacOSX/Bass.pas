@@ -13,6 +13,10 @@ unit Bass;
 
 {$I switches.inc}
 
+{$IFDEF DARWIN}
+  {$DEFINE DLL_CDECL}
+{$ENDIF}
+
 interface
 
 uses

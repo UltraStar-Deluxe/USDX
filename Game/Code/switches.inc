@@ -8,8 +8,9 @@
 
 // compiler/IDE dependent config
 {$IFDEF FPC}
+  {$H+} // use AnsiString instead of ShortString as String-type (default in Delphi)
+
   {$IFDEF DARWIN}
-    {$H+} // enables usage of AnsiString as String-type
     {$R-} // disable range-checks (eddie: please test if this is still necessary)
   {$ENDIF}
 
@@ -68,7 +69,6 @@
   {$DEFINE CONSOLE}
 
   {$DEFINE HaveBASS}
-  {$DEFINE DLL_CDECL}
   {$DEFINE WIN32}
   {$DEFINE UTF8_FILENAMES}
 {$IFEND}

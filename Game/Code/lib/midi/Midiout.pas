@@ -98,6 +98,7 @@ interface
 
 {$IFDEF FPC}
   {$MODE Delphi}
+  {$H+} // use AnsiString
 {$ENDIF}
 
 uses

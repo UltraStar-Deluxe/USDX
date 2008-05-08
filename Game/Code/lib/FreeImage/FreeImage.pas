@@ -32,10 +32,30 @@ interface
 
 uses Windows;
 
-{$MINENUMSIZE 4} // Make sure enums are stored as an integer to be compatible with C/C++
+{$IFDEF FPC}
+  {$MODE DELPHI}
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* C/C++-compatible record packing *)
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
+  {$DEFINE DLL_STDCALL}
+{$ELSE}
+  {$DEFINE DLL_CDECL}
+{$ENDIF}
 
 const
+{$IFDEF MSWINDOWS}
+  FIDLL = 'freeimage.dll';
+{$ENDIF}
+{$IFDEF LINUX}
+  FIDLL = 'libfreeimage.so';
+{$ENDIF}
+{$IFDEF DARWIN}
   FIDLL = 'libfreeimage.dylib';
+{$ENDIF}
 
 // --------------------------------------------------------------------------
 // Bitmap types -------------------------------------------------------------

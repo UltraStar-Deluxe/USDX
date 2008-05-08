@@ -47,9 +47,8 @@ unit UFFT;
 
 {$IFDEF FPC}
   {$MODE Delphi}
+  {$H+} // Use AnsiString
 {$ENDIF}
-
-{$I switches.inc}
 
 interface
 type

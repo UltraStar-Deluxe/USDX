@@ -18,6 +18,11 @@ unit MidiScope;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+  {$H+} // use AnsiString
+{$ENDIF}
+
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs;
 

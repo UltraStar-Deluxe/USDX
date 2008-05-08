@@ -1,8 +1,5 @@
 unit FreeBitmap;
 
-{$I switches.inc}
-
-
 // ==========================================================
 //
 // Delphi wrapper for FreeImage 3
@@ -33,6 +30,11 @@ unit FreeBitmap;
 // FreeImage - FreeImagePlus.
 //
 // ==========================================================
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+  {$H+} // use AnsiString
+{$ENDIF}
 
 interface
 
