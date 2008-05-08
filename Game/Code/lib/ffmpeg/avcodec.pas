@@ -23,7 +23,7 @@
 
 (*
  * Min. version: 51.16.0
- * Max. version: 51.54.0, revision 12796, Sun Apr 13 07:48:43 2008 UTC
+ * Max. version: 51.56.0, revision 13019, Tue Apr 29 14:08:01 2008 UTC
  *)
 
 unit avcodec;
@@ -47,7 +47,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 54;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 56;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -202,6 +202,7 @@ type
     CODEC_ID_8SVX_FIB,
     CODEC_ID_ESCAPE124,
     CODEC_ID_DIRAC,
+    CODEC_ID_BFI,
 
     //* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= $10000,
@@ -251,6 +252,7 @@ type
     CODEC_ID_ADPCM_IMA_EA_SEAD,
     CODEC_ID_ADPCM_IMA_EA_EACS,
     CODEC_ID_ADPCM_EA_XAS,
+    CODEC_ID_ADPCM_EA_MAXIS_XA,
 
     //* AMR */
     CODEC_ID_AMR_NB= $12000,
@@ -937,7 +939,7 @@ const
 
   FF_MB_DECISION_SIMPLE = 0;        ///< uses mb_cmp
   FF_MB_DECISION_BITS   = 1;        ///< chooses the one which needs the fewest bits
-  FF_MB_DECISION_RD     = 2;        ///< rate distoration
+  FF_MB_DECISION_RD     = 2;        ///< rate distortion
 
   FF_AA_AUTO    = 0;
   FF_AA_FASTINT = 1; //not implemented yet
@@ -2316,8 +2318,14 @@ type
      * Will be called when seeking
      *)
     flush: procedure (avctx: PAVCodecContext); cdecl;
-    {const} supported_framerates: PAVRational; ///array of supported framerates, or NULL if any, array is terminated by {0,0}
-    {const} pix_fmts: PAVPixelFormat;       ///array of supported pixel formats, or NULL if unknown, array is terminanted by -1
+    {const} supported_framerates: PAVRational; ///< array of supported framerates, or NULL if any, array is terminated by {0,0}
+    {const} pix_fmts: PAVPixelFormat;       ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
+    {$IF LIBAVCODEC_VERSION >= 51055000} // 51.55.0
+    {const} long_name: PChar;                  ///< descriptive name for the codec, meant to be more human readable than \p name
+    {$IFEND}
+    {$IF LIBAVCODEC_VERSION >= 51056000} // 51.56.0
+    {const} supported_samplerates: PInteger;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
+    {$IFEND}
   end;
 
 (**

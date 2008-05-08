@@ -30,7 +30,7 @@
  *  revision 12501, Wed Mar 19 07:43:43 2008 UTC
  *
  * log.h:
- *  revision 12790, Fri Apr 11 14:18:33 2008 UTC
+ *  revision 13068, Tue May 6 08:41:13 2008 UTC
  *)
 
 unit avutil;
