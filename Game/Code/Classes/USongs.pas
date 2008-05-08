@@ -200,7 +200,7 @@ begin
   try
     fProcessing := true;
 
-    Log.LogError('SongList', 'Searching For Songs');
+    Log.LogStatus('Searching For Songs', 'SongList');
 
     // browse directories
     BrowseDir(SongPath);
@@ -224,7 +224,7 @@ begin
     end;
 
   finally
-    Log.LogError('SongList', 'Search Complete');
+    Log.LogStatus('Search Complete', 'SongList');
 
     fParseSongDirectory := false;
     fProcessing         := false;

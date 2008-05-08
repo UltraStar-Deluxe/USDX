@@ -1088,7 +1088,7 @@ procedure InitializePaths;
     end;
     
     if not lWriteable then
-      Log.LogError('Error: Dir ('+ aLocation +') is Readonly');
+      Log.LogError('Dir ('+ aLocation +') is Readonly', 'initialize_path');
 
     result := lWriteable;
   end;
