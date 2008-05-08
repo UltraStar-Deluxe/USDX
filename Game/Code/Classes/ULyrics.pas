@@ -157,6 +157,8 @@ end;
 //---------------
 Constructor TLyricEngine.Create;
 begin
+  inherited;
+
   BPM := 0;
   Resolution := 0;
   LCounter := 0;
@@ -194,7 +196,7 @@ end;
 //---------------
 Destructor  TLyricEngine.Destroy;
 begin
-
+  inherited;
 end;
 
 //---------------

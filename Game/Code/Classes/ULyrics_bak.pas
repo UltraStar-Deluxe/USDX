@@ -116,6 +116,7 @@ Constructor TLyric.Create;
 var
   I: Integer;
 begin
+  inherited;
   //Only 2 Players for now
   For I := 0 to 1 do
   begin

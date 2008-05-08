@@ -118,9 +118,9 @@ end;
 //--------------------
 Destructor TDataBaseSystem.Destroy;
 begin
-  debugWriteln( 'TDataBaseSystem.Free' );
-
+  Log.LogInfo('TDataBaseSystem.Free', 'TDataBaseSystem.Destroy');
   freeandnil( ScoreDB );
+  inherited;
 end;
 
 //--------------------

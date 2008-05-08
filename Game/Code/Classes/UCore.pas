@@ -128,6 +128,8 @@ uses {$IFDEF win32}
 //-------------
 Constructor TCore.Create(const cName: String; const cVersion: LongWord);
 begin
+  inherited Create;
+
   Name := cName;
   Version := cVersion;
   iLastExecuted := 0;

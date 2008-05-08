@@ -164,6 +164,7 @@ end;
 destructor TSongs.destroy();
 begin
   freeandnil( SongList );
+  inherited;
 end;
 
 procedure TSongs.DoDirChanged(Sender: TObject);

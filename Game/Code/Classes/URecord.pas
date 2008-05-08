@@ -368,6 +368,7 @@ constructor TAudioInputProcessor.Create;
 var
   i:        integer;
 begin
+  inherited;
   SetLength(Sound, 6 {max players});//Ini.Players+1);
   for i := 0 to High(Sound) do
   begin

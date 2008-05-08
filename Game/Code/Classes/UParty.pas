@@ -102,6 +102,7 @@ end;
 //-------------
 Constructor TPartySession.Create;
 begin
+  inherited;
   //UnSet PartyMode
   bPartyMode := False;
 end;
@@ -151,6 +152,7 @@ Destructor TPartySession.Destroy;
 begin
   //Just save some Memory if it wasn't done now..
   SetLength(Modis, 0);
+  inherited;
 end;
 
 //-------------

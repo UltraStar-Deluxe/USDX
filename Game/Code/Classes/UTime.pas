@@ -48,6 +48,7 @@ http://www.gamedev.net/community/forums/topic.asp?topic_id=466145&whichpage=1%EE
 
 constructor TTime.Create;
 begin
+  inherited;
   CountSkipTimeSet;
 end;
 

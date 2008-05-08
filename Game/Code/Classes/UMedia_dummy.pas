@@ -91,6 +91,7 @@ end;
 
 constructor Tmedia_dummy.create();
 begin
+  inherited;
 end;
 
 procedure Tmedia_dummy.init();

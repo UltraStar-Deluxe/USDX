@@ -68,6 +68,8 @@ end;
 
 constructor TProjectM.Create(const configFile: string);
 begin
+  inherited Create();
+
   // we cannot catch C++ exceptions in delphi, so we have to check
   // if configFile is valid first
   if (FileExists(configFile)) then
@@ -166,5 +168,6 @@ destructor TProjectM.Destroy();
 begin
   _projectM_free(data);
   data := nil;
+  inherited;
 end;
 

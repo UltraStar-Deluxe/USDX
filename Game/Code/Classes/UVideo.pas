@@ -407,6 +407,8 @@ end;
 
 constructor TVideoPlayback_ffmpeg.create();
 begin
+  inherited;
+
   av_register_all;
 
   fVideoOpened := False;

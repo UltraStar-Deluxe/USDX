@@ -61,6 +61,8 @@ constructor TLanguage.Create;
 var
   I, J: Integer;
 begin
+  inherited;
+
   LoadList;
 
   //Set Implode Glues for Backward Compatibility

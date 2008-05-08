@@ -76,6 +76,8 @@ uses
 constructor THookManager.Create(const SpacetoAllocate: Word);
 var I: Integer;
 begin
+  inherited Create();
+
   //Get the Space and "Zero" it
   SetLength (Events, SpacetoAllocate);
   For I := 0 to SpacetoAllocate-1 do

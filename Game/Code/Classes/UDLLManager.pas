@@ -68,6 +68,7 @@ uses {$IFDEF MSWINDOWS}
 
 constructor TDLLMan.Create;
 begin
+  inherited;
   SetLength(Plugins, 0);
   SetLength(PluginPaths, Length(Plugins));
   GetPluginList;

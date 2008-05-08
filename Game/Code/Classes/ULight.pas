@@ -82,6 +82,7 @@ uses
 
 constructor TLight.Create;
 begin
+  inherited;
   Enabled := false;
 end;
 

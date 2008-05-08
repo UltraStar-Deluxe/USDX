@@ -130,6 +130,8 @@ end;
 //-------------
 Constructor TPluginLoader.Create;
 begin
+  inherited;
+
   //Init PluginInterface
   //Using Methods from UPluginInterface
   PluginInterface.CreateHookableEvent := CreateHookableEvent;
@@ -207,6 +209,7 @@ Destructor TPluginLoader.Destroy;
 begin
   //Just save some Memory if it wasn't done now..
   SetLength(Plugins, 0);
+  inherited;
 end;
 
 //--------------
@@ -634,6 +637,7 @@ end;
 //-------------
 Constructor TtehPlugins.Create;
 begin
+  inherited;
   PluginLoader := nil;
 end;
 

@@ -91,7 +91,6 @@ type
       procedure RestoreOpenGLState();
 
     public
-      constructor Create();
       procedure   Init();
       function    GetName: String;
 
@@ -108,12 +107,6 @@ type
       procedure   GetFrame(Time: Extended);
       procedure   DrawGL(Screen: integer);
   end;
-
-
-constructor TVideoPlayback_ProjectM.Create();
-begin
-  inherited;
-end;
 
 
 procedure TVideoPlayback_ProjectM.Init();
@@ -392,7 +385,5 @@ initialization
 
 finalization
   AudioManager.Remove( singleton_VideoProjectM );
-
-
 
 end.

@@ -57,6 +57,7 @@ uses UMain,
 
 constructor TCovers.Create;
 begin
+  inherited;
   W := 128;
   H := 128;
   Size := W*H*3;

@@ -83,6 +83,7 @@ uses USongs,
 //----------
 constructor TPlayListManager.Create;
 begin
+  inherited;
   LoadPlayLists;
 end;
 

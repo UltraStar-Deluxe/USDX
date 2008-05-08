@@ -199,6 +199,8 @@ uses SDL,
 //-----------
 Constructor TSingScores.Create;
 begin
+  inherited;
+
   //Clear PopupList Pointers
   FirstPopUp := nil;
   LastPopUp  := nil;

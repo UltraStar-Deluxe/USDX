@@ -119,7 +119,7 @@ end;
 
 constructor TLCD.Create;
 begin
-//
+  inherited;
 end;
 
 procedure TLCD.Enable;

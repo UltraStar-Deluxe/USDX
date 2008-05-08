@@ -78,6 +78,8 @@ uses
 //------------
 Constructor TServiceManager.Create;
 begin
+  inherited;
+
   FirstService := nil;
   LastService := nil;
 
@@ -233,11 +235,9 @@ begin
 
     If (Service.isClass) then
       //Use Proc of Class
-      // FIXME: "function ... of object" does not fit into an integer (2x pointers: object + function-code -> 8byte on x86) 
       Result := Service.ProcOfClass(wParam, lParam)
     Else
       //Use normal Proc
-      // FIXME: will not work with x64 CPUs, pointers will be 64bit there  
       Result := Service.Proc(wParam, lParam);
 
     //Restore CurExecuted

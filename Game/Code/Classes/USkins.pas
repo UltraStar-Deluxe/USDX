@@ -51,6 +51,7 @@ uses IniFiles,
 
 constructor TSkin.Create;
 begin
+  inherited;
   LoadList;
 //  LoadSkin('Lisek');
 //  SkinColor := Color;

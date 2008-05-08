@@ -59,6 +59,7 @@ implementation
 Constructor TCoreModule.Create;
 begin
   //Dummy maaaan ;)
+  inherited;
 end;
 
 //-------------
@@ -121,6 +122,7 @@ end;
 Destructor TCoreModule.Destroy;
 begin
   //Dummy ftw!!
+  inherited;
 end;
 
 end.

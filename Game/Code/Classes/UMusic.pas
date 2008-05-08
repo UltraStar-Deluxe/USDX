@@ -319,6 +319,7 @@ var
 
 constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
 begin
+  inherited Create();
   Self.Channels := Channels;
   Self.SampleRate := SampleRate;
   Self.Format := Format;
@@ -484,12 +485,14 @@ end;
 
 constructor TSoundLibrary.Create();
 begin
+  inherited;
   LoadSounds();
 end;
 
 destructor TSoundLibrary.Destroy();
 begin
   UnloadSounds();
+  inherited;
 end;
 
 procedure TSoundLibrary.LoadSounds();

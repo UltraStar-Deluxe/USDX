@@ -72,7 +72,8 @@ uses SysUtils,
 //-------------
 Constructor TCMDParams.Create;
 begin
-
+  inherited;
+  
   if FindCmdLineSwitch( cHelp ) or FindCmdLineSwitch( 'h' ) then
     showhelp();
 

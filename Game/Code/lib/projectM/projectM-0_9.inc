@@ -321,6 +321,8 @@ constructor TProjectM.Create(gx, gy: integer; fps: integer;
 var
   state: PProjectMState;
 begin
+  inherited Create();
+
   New(state);
   data := state;
 
@@ -420,5 +422,6 @@ destructor TProjectM.Destroy();
 begin
   Dispose(PProjectMState(data));
   data := nil;
+  inherited;
 end;
 

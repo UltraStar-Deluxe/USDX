@@ -48,6 +48,8 @@ constructor TJoy.Create;
 var
   B, N:    integer;
 begin
+  inherited;
+
   //Old Corvus5 Method
   {// joystick support
   SDL_JoystickEventState(SDL_IGNORE);

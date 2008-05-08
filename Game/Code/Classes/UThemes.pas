@@ -767,6 +767,8 @@ end;
 
 constructor TTheme.Create(FileName: string; Color: integer);
 begin
+  inherited Create();
+
   Loading := TThemeLoading.Create;
   Main := TThemeMain.Create;
   Name := TThemeName.Create;

@@ -692,8 +692,8 @@ end;
  * output-list. If we only had In- and OutList parameters we had to merge into
  * InList after the recursive calls and copy the data to the OutList afterwards.
  *)
-function _MergeSort(InList, TempList, OutList: TList; StartPos, BlockSize: integer;
-                    CompareFunc: TListSortCompare): TList;
+procedure _MergeSort(InList, TempList, OutList: TList; StartPos, BlockSize: integer;
+                    CompareFunc: TListSortCompare);
 var
   LeftSize, RightSize: integer; // number of elements in left/right block
   LeftEnd, RightEnd: integer;   // Index after last element in left/right block

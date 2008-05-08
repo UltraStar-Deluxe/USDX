@@ -180,6 +180,8 @@ end;
 
 constructor TMenu.Create;
 begin
+  inherited;
+
   Fade := 0;//fWhite;
 
   SetLength(Static, 0);

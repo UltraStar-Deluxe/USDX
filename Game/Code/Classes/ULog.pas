@@ -128,6 +128,7 @@ end;
 
 constructor TLog.Create;
 begin
+  inherited;
   LogLevel := LOG_LEVEL_DEFAULT;
   LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
   FileOutputEnabled := true;
@@ -141,6 +142,7 @@ begin
   //  CloseFile(AnalyzeFile);
   if LogFileOpened then
     CloseFile(LogFile);
+  inherited;
 end;
 
 procedure TLog.BenchmarkStart(Number: integer);

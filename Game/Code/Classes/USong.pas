@@ -124,10 +124,13 @@ uses
 
 constructor TSong.Create();
 begin
+  inherited;
 end;
 
 constructor TSong.Create( const aFileName : WideString );
 begin
+  inherited Create();
+
   Mult    := 1;
   MultBPM := 4;
   fFileName := aFileName;
