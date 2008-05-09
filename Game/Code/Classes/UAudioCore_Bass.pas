@@ -9,8 +9,12 @@ interface
 {$I switches.inc}
 
 uses
+  {$IFDEF MSWINDOWS}
+  Windows,
+  {$ENDIF}
   Classes,
-  SysUtils;
+  SysUtils,
+  UMusic;
 
 type
   TAudioCore_Bass = class
@@ -18,6 +22,7 @@ type
     public
       class function ErrorGetString(): string; overload;
       class function ErrorGetString(errCode: integer): string; overload;
+      class function ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
   end;
 
   
@@ -111,6 +116,24 @@ begin
     else
       result := 'Unknown error';
     end;
+end;
+
+class function TAudioCore_Bass.ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
+begin
+  case Format of
+    asfS16:
+      Flags := 0;
+    asfFloat:
+      Flags := BASS_SAMPLE_FLOAT;
+    asfU8:
+      Flags := BASS_SAMPLE_8BITS;
+    else begin
+      Result := false;
+      Exit;
+    end;
+  end;
+
+  Result := true;
 end;
 
 end.

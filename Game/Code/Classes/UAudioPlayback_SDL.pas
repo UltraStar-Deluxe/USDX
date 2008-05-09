@@ -25,12 +25,15 @@ uses
 
 type
   TAudioPlayback_SDL = class(TAudioPlayback_SoftMixer)
+    private
+      function EnumDevices(): boolean;
     protected
       function InitializeAudioPlaybackEngine(): boolean; override;
       function StartAudioPlaybackEngine(): boolean;      override;
       procedure StopAudioPlaybackEngine();               override;
+      function FinalizeAudioPlaybackEngine(): boolean;   override;
     public
-      function  GetName: String;                         override;
+      function GetName: String;                          override;
       procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer); override;
   end;
 
@@ -53,14 +56,37 @@ begin
   result := 'SDL_Playback';
 end;
 
+function TAudioPlayback_SDL.EnumDevices(): boolean;
+begin
+  // Note: SDL does not provide Device-Selection capabilities (will be introduced in 1.3)
+  ClearOutputDeviceList();
+  SetLength(OutputDeviceList, 1);
+  OutputDeviceList[0] := TAudioOutputDevice.Create();
+  OutputDeviceList[0].Name := '[SDL Default-Device]';
+  Result := true;
+end;
+
 function TAudioPlayback_SDL.InitializeAudioPlaybackEngine(): boolean;
 var
   desiredAudioSpec, obtainedAudioSpec: TSDL_AudioSpec;
-// err: integer; // Auto Removed, Unused Variable
+  SampleBufferSize: integer;
 begin
   result := false;
 
-  SDL_InitSubSystem(SDL_INIT_AUDIO);
+  EnumDevices();
+
+  if (SDL_InitSubSystem(SDL_INIT_AUDIO) = -1) then
+  begin
+    Log.LogError('SDL_InitSubSystem failed!', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
+    exit;
+  end;
+
+  SampleBufferSize := IAudioOutputBufferSizeVals[Ini.AudioOutputBufferSizeIndex];
+  if (SampleBufferSize <= 0) then
+  begin
+    // Automatic setting defaults to 1024 samples
+    SampleBufferSize := 1024;
+  end;
 
   FillChar(desiredAudioSpec, sizeof(desiredAudioSpec), 0);
   with desiredAudioSpec do
@@ -68,14 +94,14 @@ begin
     freq := 44100;
     format := AUDIO_S16SYS;
     channels := 2;
-    samples := Ini.SDLBufferSize;
+    samples := SampleBufferSize;
     callback := @SDLAudioCallback;
     userdata := Self;
   end;
 
   if(SDL_OpenAudio(@desiredAudioSpec, @obtainedAudioSpec) = -1) then
   begin
-    Log.LogStatus('SDL_OpenAudio: ' + SDL_GetError(), 'UAudioPlayback_SDL');
+    Log.LogStatus('SDL_OpenAudio: ' + SDL_GetError(), 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
     exit;
   end;
 
@@ -85,7 +111,7 @@ begin
     asfS16
   );
 
-  Log.LogStatus('Opened audio device', 'UAudioPlayback_SDL');
+  Log.LogStatus('Opened audio device', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
 
   result := true;
 end;
@@ -98,7 +124,14 @@ end;
 
 procedure TAudioPlayback_SDL.StopAudioPlaybackEngine();
 begin
+  SDL_PauseAudio(1);
+end;
+
+function TAudioPlayback_SDL.FinalizeAudioPlaybackEngine(): boolean;
+begin
   SDL_CloseAudio();
+  SDL_QuitSubSystem(SDL_INIT_AUDIO);
+  Result := true;
 end;
 
 procedure TAudioPlayback_SDL.MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer);
@@ -115,6 +148,5 @@ initialization
 
 finalization
   AudioManager.Remove( singleton_AudioPlaybackSDL );
-
 
 end.

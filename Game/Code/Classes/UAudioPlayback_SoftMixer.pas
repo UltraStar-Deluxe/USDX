@@ -13,7 +13,8 @@ uses
   Classes,
   SysUtils,
   sdl,
-  UMusic;
+  UMusic,
+  UAudioPlaybackBase;
 
 type
   TAudioPlayback_SoftMixer = class;
@@ -35,9 +36,14 @@ type
 
       InternalLock: PSDL_Mutex;
 
+      SoundEffects: TList;
+
+      FadeInStartTime, FadeInTime: cardinal;
+      FadeInStartVolume, FadeInTargetVolume: integer;
+
       procedure Reset();
 
-      class function ConvertAudioFormatToSDL(fmt: TAudioSampleFormat): UInt16;
+      class function ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
       function InitFormatConversion(): boolean;
 
       procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
@@ -51,24 +57,26 @@ type
       procedure Play();                     override;
       procedure Pause();                    override;
       procedure Stop();                     override;
+      procedure FadeIn(Time: real; TargetVolume: integer); override;
+
       procedure Close();                    override;
-      function GetLoop(): boolean;          override;
-      procedure SetLoop(Enabled: boolean);  override;
+
       function GetLength(): real;           override;
       function GetStatus(): TStreamStatus;  override;
-
-      function IsLoaded(): boolean;
-
       function GetVolume(): integer;        override;
       procedure SetVolume(Volume: integer); override;
+      function GetLoop(): boolean;          override;
+      procedure SetLoop(Enabled: boolean);  override;
+      function GetPosition: real;           override;
+      procedure SetPosition(Time: real);    override;
 
-      // functions delegated to the decode stream
-      function GetPosition: real;
-      procedure SetPosition(Time: real);
       function ReadData(Buffer: PChar; BufSize: integer): integer;
 
-      function GetPCMData(var data: TPCMData): Cardinal;
-      procedure GetFFTData(var data: TFFTData);
+      function GetPCMData(var data: TPCMData): Cardinal; override;
+      procedure GetFFTData(var data: TFFTData);          override;
+
+      procedure AddSoundEffect(effect: TSoundEffect);    override;
+      procedure RemoveSoundEffect(effect: TSoundEffect); override;
   end;
 
   TAudioMixerStream = class
@@ -79,7 +87,7 @@ type
       mixerBuffer: PChar;
       internalLock: PSDL_Mutex;
 
-      _volume: integer;
+      appVolume: integer;
 
       procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
       procedure Unlock(); {$IFDEF HasInline}inline;{$ENDIF}
@@ -96,9 +104,8 @@ type
       property Volume: integer READ GetVolume WRITE SetVolume;
   end;
 
-  TAudioPlayback_SoftMixer = class( TInterfacedObject, IAudioPlayback )
+  TAudioPlayback_SoftMixer = class(TAudioPlaybackBase)
     private
-      MusicStream: TGenericPlaybackStream;
       MixerStream: TAudioMixerStream;
     protected
       FormatInfo: TAudioFormatInfo;
@@ -106,45 +113,21 @@ type
       function InitializeAudioPlaybackEngine(): boolean; virtual; abstract;
       function StartAudioPlaybackEngine(): boolean;      virtual; abstract;
       procedure StopAudioPlaybackEngine();               virtual; abstract;
+      function FinalizeAudioPlaybackEngine(): boolean;   virtual; abstract;
       procedure AudioCallback(buffer: PChar; size: integer); {$IFDEF HasInline}inline;{$ENDIF}
+
+      function OpenStream(const Filename: String): TAudioPlaybackStream; override;
     public
-      function  GetName: String;                         virtual; abstract;
+      function GetName: String; override; abstract;
+      function InitializePlayback(): boolean; override;
+      function FinalizePlayback: boolean; override;
 
-      function InitializePlayback(): boolean;
-      destructor Destroy; override;
-
-      function Load(const Filename: String): TGenericPlaybackStream;
-
-      procedure SetVolume(Volume: integer);
-      procedure SetMusicVolume(Volume: integer);
-      procedure SetLoop(Enabled: boolean);
-      function Open(const Filename: string): boolean; // true if succeed
-      procedure Rewind;
-      procedure SetPosition(Time: real);
-      procedure Play;
-      procedure Pause;
-
-      procedure Stop;
-      procedure Close;
-      function Finished: boolean;
-      function Length: real;
-      function GetPosition: real;
-
-      // Equalizer
-      procedure GetFFTData(var data: TFFTData);
-
-      // Interface for Visualizer
-      function GetPCMData(var data: TPCMData): Cardinal;
+      procedure SetAppVolume(Volume: integer); override;
 
       function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
       procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer); virtual;
-
-      // Sounds
-      function OpenSound(const Filename: String): TAudioPlaybackStream;
-      procedure PlaySound(stream: TAudioPlaybackStream);
-      procedure StopSound(stream: TAudioPlaybackStream);
   end;
 
 implementation
@@ -161,11 +144,13 @@ uses
 
 constructor TAudioMixerStream.Create(Engine: TAudioPlayback_SoftMixer);
 begin
+  inherited Create();
+
   Self.Engine := Engine;
 
   activeStreams := TList.Create;
   internalLock := SDL_CreateMutex();
-  _volume := 100;
+  appVolume := 100;
 end;
 
 destructor TAudioMixerStream.Destroy();
@@ -174,6 +159,7 @@ begin
     Freemem(mixerBuffer);
   activeStreams.Free;
   SDL_DestroyMutex(internalLock);
+  inherited;
 end;
 
 procedure TAudioMixerStream.Lock();
@@ -189,14 +175,14 @@ end;
 function TAudioMixerStream.GetVolume(): integer;
 begin
   Lock();
-  result := _volume;
+  result := appVolume;
   Unlock();
 end;
 
 procedure TAudioMixerStream.SetVolume(volume: integer);
 begin
   Lock();
-  _volume := volume;
+  appVolume := volume;
   Unlock();
 end;
 
@@ -270,8 +256,8 @@ begin
     if (size > 0) then
     begin
       // mix stream-data with mixer-buffer
-      // Note: use _volume (Application-Volume) instead of Volume to prevent recursive locking
-      Engine.MixBuffers(Buffer, mixerBuffer, size, _volume * stream.Volume div 100);
+      // Note: use Self.appVolume instead of Self.Volume to prevent recursive locking
+      Engine.MixBuffers(Buffer, mixerBuffer, size, appVolume * stream.Volume div 100);
     end;
   end;
 
@@ -292,6 +278,8 @@ begin
   inherited Create();
   Self.Engine := Engine;
   internalLock := SDL_CreateMutex();
+  SoundEffects := TList.Create;
+  Status := ssStopped;
   Reset();
 end;
 
@@ -299,20 +287,34 @@ destructor TGenericPlaybackStream.Destroy();
 begin
   Close();
   SDL_DestroyMutex(internalLock);
-  inherited Destroy();
+  FreeAndNil(SoundEffects);
+  inherited;
 end;
 
 procedure TGenericPlaybackStream.Reset();
 begin
+  // wake-up sleeping audio-callback threads in the ReadData()-function
+  if assigned(decodeStream) then
+    decodeStream.Close();
+
+  // stop audio-callback on this stream
   Stop();
+
+  // reset and/or free data
+  
   Loop := false;
+
   // TODO: use DecodeStream.Unref() instead of Free();
   FreeAndNil(DecodeStream);
+
   FreeMem(SampleBuffer);
   SampleBuffer := nil;
   SampleBufferPos := 0;
   BytesAvail := 0;
+  
   _volume := 0;
+  SoundEffects.Clear;
+  FadeInTime := 0;
 end;
 
 procedure TGenericPlaybackStream.Lock();
@@ -325,24 +327,27 @@ begin
   SDL_mutexV(internalLock);
 end;
 
-class function TGenericPlaybackStream.ConvertAudioFormatToSDL(fmt: TAudioSampleFormat): UInt16;
+class function TGenericPlaybackStream.ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
 begin
-  case fmt of
-    asfU8:     Result := AUDIO_U8;
-    asfS8:     Result := AUDIO_S8;
-    asfU16LSB: Result := AUDIO_U16LSB;
-    asfS16LSB: Result := AUDIO_S16LSB;
-    asfU16MSB: Result := AUDIO_U16MSB;
-    asfS16MSB: Result := AUDIO_S16MSB;
-    asfU16:    Result := AUDIO_U16;
-    asfS16:    Result := AUDIO_S16;
-    else       Result := 0;
+  case Format of
+    asfU8:     SDLFormat := AUDIO_U8;
+    asfS8:     SDLFormat := AUDIO_S8;
+    asfU16LSB: SDLFormat := AUDIO_U16LSB;
+    asfS16LSB: SDLFormat := AUDIO_S16LSB;
+    asfU16MSB: SDLFormat := AUDIO_U16MSB;
+    asfS16MSB: SDLFormat := AUDIO_S16MSB;
+    asfU16:    SDLFormat := AUDIO_U16;
+    asfS16:    SDLFormat := AUDIO_S16;
+    else begin
+      Result := false;
+      Exit;
+    end;
   end;
+  Result := true;
 end;
 
 function TGenericPlaybackStream.InitFormatConversion(): boolean;
 var
-  //err: integer;
   srcFormat: UInt16;
   dstFormat: UInt16;
   srcFormatInfo: TAudioFormatInfo;
@@ -353,10 +358,8 @@ begin
   srcFormatInfo := DecodeStream.GetAudioFormatInfo();
   dstFormatInfo := Engine.GetAudioFormatInfo();
 
-  srcFormat := ConvertAudioFormatToSDL(srcFormatInfo.Format);
-  dstFormat := ConvertAudioFormatToSDL(dstFormatInfo.Format);
-
-  if ((srcFormat = 0) or (dstFormat = 0)) then
+  if (not ConvertAudioFormatToSDL(srcFormatInfo.Format, srcFormat) or
+      not ConvertAudioFormatToSDL(dstFormatInfo.Format, dstFormat)) then
   begin
     Log.LogError('Audio-format not supported by SDL', 'TSoftMixerPlaybackStream.InitFormatConversion');
     Exit;
@@ -399,7 +402,7 @@ procedure TGenericPlaybackStream.Play();
 var
   mixer: TAudioMixerStream;
 begin
-  if (status <> ssPaused) then
+  if (status = ssPlaying) then
   begin
     // rewind
     if assigned(DecodeStream) then
@@ -410,6 +413,15 @@ begin
   mixer := Engine.GetMixer();
   if (mixer <> nil) then
     mixer.AddStream(Self);
+end;
+
+procedure TGenericPlaybackStream.FadeIn(Time: real; TargetVolume: integer);
+begin
+  FadeInTime := Trunc(Time * 1000);
+  FadeInStartTime := SDL_GetTicks();
+  FadeInStartVolume := _volume;
+  FadeInTargetVolume := TargetVolume;
+  Play();
 end;
 
 procedure TGenericPlaybackStream.Pause();
@@ -427,16 +439,18 @@ procedure TGenericPlaybackStream.Stop();
 var
   mixer: TAudioMixerStream;
 begin
+  if (status = ssStopped) then
+    Exit;
+
   status := ssStopped;
 
   mixer := Engine.GetMixer();
   if (mixer <> nil) then
     mixer.RemoveStream(Self);
-end;
 
-function TGenericPlaybackStream.IsLoaded(): boolean;
-begin
-  result := assigned(DecodeStream);
+  // rewind (note: DecodeStream might be closed already, but this is not a problem)
+  if assigned(DecodeStream) then
+    DecodeStream.Position := 0;
 end;
 
 function TGenericPlaybackStream.GetLoop(): boolean;
@@ -480,6 +494,7 @@ var
   remFrameBytes: integer;
   copyCnt: integer;
   BytesNeeded: integer;
+  i: integer;
 begin
   Result := -1;
 
@@ -543,7 +558,9 @@ begin
 
     // end-of-file reached -> stop playback
     if (DecodeStream.EOF) then
+    begin
       Stop();
+    end;
 
     // resample decoded data
     cvt.buf := PUint8(SampleBuffer);
@@ -552,6 +569,15 @@ begin
       Exit;
 
     SampleBufferCount := cvt.len_cvt;
+
+    // apply effects
+    for i := 0 to SoundEffects.Count-1 do
+    begin
+      if (SoundEffects[i] <> nil) then
+      begin
+        TSoundEffect(SoundEffects[i]).Callback(SampleBuffer, SampleBufferCount);
+      end;
+    end;
   finally
     Unlock();
   end;
@@ -664,9 +690,26 @@ begin
   // resize data to a 0..1 range
   for i := 0 to High(TFFTData) do
   begin
-    // TODO: this might need some work
     data[i] := Sqrt(data[i]) / 100;
   end;
+end;
+
+procedure TGenericPlaybackStream.AddSoundEffect(effect: TSoundEffect);
+begin
+  if (not assigned(effect)) then
+    Exit;
+  Lock();
+  // check if effect is already in list to avoid duplicates
+  if (SoundEffects.IndexOf(Pointer(effect)) = -1) then
+    SoundEffects.Add(Pointer(effect));
+  Unlock();
+end;
+
+procedure TGenericPlaybackStream.RemoveSoundEffect(effect: TSoundEffect);
+begin
+  Lock();
+  SoundEffects.Remove(effect);
+  Unlock();
 end;
 
 function TGenericPlaybackStream.GetPosition: real;
@@ -684,12 +727,37 @@ begin
 end;
 
 function TGenericPlaybackStream.GetVolume(): integer;
+var
+  FadeAmount: Single;
 begin
-  result := _volume;
+  Lock();
+  // adjust volume if fading is enabled
+  if (FadeInTime > 0) then
+  begin
+    FadeAmount := (SDL_GetTicks() - FadeInStartTime) / FadeInTime;
+    // check if fade-target is reached
+    if (FadeAmount >= 1) then
+    begin
+      // target reached -> stop fading
+      FadeInTime := 0;
+      _volume := FadeInTargetVolume;
+    end
+    else
+    begin
+      // fading in progress
+      _volume := Trunc(FadeAmount*FadeInTargetVolume + (1-FadeAmount)*FadeInStartVolume);
+    end;
+  end;
+  // return current volume
+  Result := _volume;
+  Unlock();
 end;
 
 procedure TGenericPlaybackStream.SetVolume(volume: integer);
 begin
+  Lock();
+  // stop fading
+  FadeInTime := 0;
   // clamp volume
   if (volume > 100) then
     _volume := 100
@@ -697,6 +765,7 @@ begin
     _volume := 0
   else
     _volume := volume;
+  Unlock();
 end;
 
 
@@ -719,15 +788,17 @@ begin
   result := true;
 end;
 
-destructor TAudioPlayback_SoftMixer.Destroy;
+function TAudioPlayback_SoftMixer.FinalizePlayback: boolean;
 begin
+  Close;
   StopAudioPlaybackEngine();
 
-  FreeAndNil(MusicStream);
   FreeAndNil(MixerStream);
   FreeAndNil(FormatInfo);
 
-  inherited Destroy();
+  FinalizeAudioPlaybackEngine();
+  inherited FinalizePlayback;
+  Result := true;
 end;
 
 procedure TAudioPlayback_SoftMixer.AudioCallback(buffer: PChar; size: integer);
@@ -745,12 +816,15 @@ begin
   Result := FormatInfo;
 end;
 
-function TAudioPlayback_SoftMixer.Load(const Filename: String): TGenericPlaybackStream;
+function TAudioPlayback_SoftMixer.OpenStream(const Filename: String): TAudioPlaybackStream;
 var
   decodeStream: TAudioDecodeStream;
   playbackStream: TGenericPlaybackStream;
 begin
   Result := nil;
+
+  if (AudioDecoder = nil) then
+    Exit;
 
   decodeStream := AudioDecoder.Open(Filename);
   if not assigned(decodeStream) then
@@ -760,108 +834,26 @@ begin
   end;
 
   playbackStream := TGenericPlaybackStream.Create(Self);
-  if (not playbackStream.SetDecodeStream(decodeStream)) then
+  if (not assigned(playbackStream)) then
+  begin
+    FreeAndNil(decodeStream);
     Exit;
+  end;
+
+  if (not playbackStream.SetDecodeStream(decodeStream)) then
+  begin
+    FreeAndNil(playbackStream);
+    FreeAndNil(decodeStream);
+    Exit;
+  end;
 
   result := playbackStream;
 end;
 
-procedure TAudioPlayback_SoftMixer.SetVolume(Volume: integer);
+procedure TAudioPlayback_SoftMixer.SetAppVolume(Volume: integer);
 begin
   // sets volume only for this application
   MixerStream.Volume := Volume;
-end;
-
-procedure TAudioPlayback_SoftMixer.SetMusicVolume(Volume: Integer);
-begin
-  if assigned(MusicStream) then
-    MusicStream.Volume := Volume;
-end;
-
-procedure TAudioPlayback_SoftMixer.SetLoop(Enabled: boolean);
-begin
-  if assigned(MusicStream) then
-    MusicStream.SetLoop(Enabled);
-end;
-
-function TAudioPlayback_SoftMixer.Open(const Filename: string): boolean;
-//var
-//  decodeStream: TAudioDecodeStream;
-begin
-  Result := false;
-
-  // free old MusicStream
-  MusicStream.Free();
-  // and load new one
-  MusicStream := Load(Filename);
-  if not assigned(MusicStream) then
-    Exit;
-
-  //Set Max Volume
-  SetMusicVolume(100);
-
-  Result := true;
-end;
-
-procedure TAudioPlayback_SoftMixer.Rewind;
-begin
-  SetPosition(0);
-end;
-
-procedure TAudioPlayback_SoftMixer.SetPosition(Time: real);
-begin
-  if assigned(MusicStream) then
-    MusicStream.SetPosition(Time);
-end;
-
-function TAudioPlayback_SoftMixer.GetPosition: real;
-begin
-  if assigned(MusicStream) then
-    Result := MusicStream.GetPosition()
-  else
-    Result := -1;
-end;
-
-function TAudioPlayback_SoftMixer.Length: real;
-begin
-  if assigned(MusicStream) then
-    Result := MusicStream.GetLength()
-  else
-    Result := -1;
-end;
-
-procedure TAudioPlayback_SoftMixer.Play;
-begin
-  if assigned(MusicStream) then
-    MusicStream.Play();
-end;
-
-procedure TAudioPlayback_SoftMixer.Pause;
-begin
-  if assigned(MusicStream) then
-    MusicStream.Pause();
-end;
-
-procedure TAudioPlayback_SoftMixer.Stop;
-begin
-  if assigned(MusicStream) then
-    MusicStream.Stop();
-end;
-
-procedure TAudioPlayback_SoftMixer.Close;
-begin
-  if assigned(MusicStream) then
-  begin
-    MusicStream.Close();
-  end;
-end;
-
-function TAudioPlayback_SoftMixer.Finished: boolean;
-begin
-  if assigned(MusicStream) then
-    Result := (MusicStream.GetStatus() = ssStopped)
-  else
-    Result := true;
 end;
 
 procedure TAudioPlayback_SoftMixer.MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer);
@@ -915,39 +907,5 @@ begin
     end;
   end;
 end;
-
-//Equalizer
-procedure TAudioPlayback_SoftMixer.GetFFTData(var data: TFFTData);
-begin
-  if assigned(MusicStream) then
-    MusicStream.GetFFTData(data);
-end;
-
-// Interface for Visualizer
-function TAudioPlayback_SoftMixer.GetPCMData(var data: TPCMData): Cardinal;
-begin
-  if assigned(MusicStream) then
-    Result := MusicStream.GetPCMData(data)
-  else
-    Result := 0;
-end;
-
-function TAudioPlayback_SoftMixer.OpenSound(const Filename: String): TAudioPlaybackStream;
-begin
-  Result := Load(Filename);
-end;
-
-procedure TAudioPlayback_SoftMixer.PlaySound(stream: TAudioPlaybackStream);
-begin
-  if assigned(stream) then
-    stream.Play();
-end;
-
-procedure TAudioPlayback_SoftMixer.StopSound(stream: TAudioPlaybackStream);
-begin
-  if assigned(stream) then
-    stream.Stop();
-end;
-
 
 end.

@@ -55,7 +55,11 @@ type
       property ToneString: string READ GetToneString;
   end;
 
-  TAudioInputDeviceSource = record
+const
+  DEFAULT_SOURCE_NAME = '[Default]';
+
+type
+  TAudioInputSource = record
     Name:   string;
   end;
 
@@ -63,10 +67,10 @@ type
   TAudioInputDevice = class
     public
       CfgIndex:        integer;   // index of this device in Ini.InputDeviceConfig
-      Description:     string;    // soundcard name/description
-      Source:          array of TAudioInputDeviceSource; // soundcard input(-source)s
-      SourceSelected:  integer;  // unused. What is this good for?
-      MicSource:       integer;  // unused. What is this good for?
+      Name:            string;    // soundcard name
+      Source:          array of TAudioInputSource; // soundcard input-sources
+      SourceRestore:   integer;  // source-index that will be selected after capturing (-1: not detected)
+      MicSource:       integer;  // source-index of mic (-1: none detected)
 
       AudioFormat:     TAudioFormatInfo; // capture format info (e.g. 44.1kHz SInt16 stereo)
       CaptureChannel:  array of TCaptureBuffer; // sound-buffer references used for mono or stereo channel's capture data
@@ -74,17 +78,25 @@ type
       destructor Destroy; override;
 
       procedure LinkCaptureBuffer(ChannelIndex: integer; Sound: TCaptureBuffer);
-      
+
+      // TODO: add Open/Close functions so Start/Stop becomes faster
+      //function Open(): boolean;  virtual; abstract;
+      //function Close(): boolean; virtual; abstract;
       function Start(): boolean; virtual; abstract;
-      procedure Stop();  virtual; abstract;
+      function Stop(): boolean;  virtual; abstract;
+
+      function GetVolume(): integer;        virtual; abstract;
+      procedure SetVolume(Volume: integer); virtual; abstract;
   end;
 
   TAudioInputProcessor = class
     public
       Sound:  array of TCaptureBuffer; // sound-buffers for every player
-      Device: array of TAudioInputDevice;
+      DeviceList: array of TAudioInputDevice;
 
       constructor Create;
+
+      procedure UpdateInputDeviceConfig;
 
       // handle microphone input
       procedure HandleMicrophoneData(Buffer: Pointer; Size: Cardinal;
@@ -96,10 +108,10 @@ type
       Started: boolean;
     protected
       function UnifyDeviceName(const name: string; deviceIndex: integer): string;
-      function UnifyDeviceSourceName(const name: string; const deviceName: string): string;
     public
       function GetName: String;           virtual; abstract;
       function InitializeRecord: boolean; virtual; abstract;
+      function FinalizeRecord: boolean;   virtual;
 
       procedure CaptureStart;
       procedure CaptureStop;
@@ -140,8 +152,6 @@ end;
 { TAudioInputDevice }
 
 destructor TAudioInputDevice.Destroy;
-//var
-// i: integer; // Auto Removed, Unused Variable
 begin
   Stop();
   Source := nil;
@@ -214,6 +224,7 @@ begin
   end;
 
   // move old samples to the beginning of the array (if necessary)
+  // TODO: should be a ring-buffer instead
   for SampleIndex := NumSamples to High(BufferArray) do
     BufferArray[SampleIndex-NumSamples] := BufferArray[SampleIndex];
 
@@ -225,6 +236,10 @@ begin
   // save capture-data to BufferLong if neccessary
   if (Ini.SavePlayback = 1) then
   begin
+    // this is just for debugging (approx 15MB per player for a 3min song!!!)
+    // For an in-game replay-mode we need to compress data so we do not
+    // waste that much memory. Maybe ogg-vorbis with voice-preset in fast-mode?
+    // Or we could use a faster but not that efficient lossless compression.
     BufferNew.Seek(0, soBeginning);
     BufferLong.CopyFrom(BufferNew, BufferNew.Size);
   end;
@@ -250,14 +265,8 @@ begin
        MaxVolume := Volume;
   end;
 
-  case Ini.Threshold of
-    0:   Threshold := 0.05;
-    1:   Threshold := 0.1;
-    2:   Threshold := 0.15;
-    3:   Threshold := 0.2;
-    else Threshold := 0.1;
-  end;
-
+  Threshold := IThresholdVals[Ini.ThresholdIndex];
+  
   // check if signal has an acceptable volume (ignore background-noise)
   if MaxVolume >= Threshold then
   begin
@@ -279,6 +288,7 @@ const
 begin
   // prepare to analyze
   MaxWeight := -1;
+  MaxTone := 0; // this is not needed, but it satifies the compiler
 
   // analyze halftones
   // Note: at the lowest tone (~65Hz) and a buffer-size of 4096
@@ -376,6 +386,78 @@ begin
   end;
 end;
 
+// updates InputDeviceConfig with current input-device information
+// See: TIni.LoadInputDeviceCfg()
+procedure TAudioInputProcessor.UpdateInputDeviceConfig;
+var
+  deviceIndex: integer;
+  newDevice: boolean;
+  deviceIniIndex: integer;
+  deviceCfg: PInputDeviceConfig;
+  device: TAudioInputDevice;
+  channelCount: integer;
+  channelIndex: integer;
+  i: integer;
+begin
+  // Input devices - append detected soundcards
+  for deviceIndex := 0 to High(DeviceList) do
+  begin
+    newDevice := true;
+    //Search for Card in List
+    for deviceIniIndex := 0 to High(Ini.InputDeviceConfig) do
+    begin
+      deviceCfg := @Ini.InputDeviceConfig[deviceIniIndex];
+      device := DeviceList[deviceIndex];
+
+      if (deviceCfg.Name = Trim(device.Name)) then
+      begin
+        newDevice := false;
+
+        // store highest channel index as an offset for the new channels
+        channelIndex := High(deviceCfg.ChannelToPlayerMap);
+        // add missing channels or remove non-existing ones
+        SetLength(deviceCfg.ChannelToPlayerMap, device.AudioFormat.Channels);
+        // initialize added channels to 0
+        for i := channelIndex+1 to High(deviceCfg.ChannelToPlayerMap) do
+        begin
+          deviceCfg.ChannelToPlayerMap[i] := 0;
+        end;
+
+        // associate ini-index with device
+        device.CfgIndex := deviceIniIndex;
+        break;
+      end;
+    end;
+
+    //If not in List -> Add
+    if newDevice then
+    begin
+      // resize list
+      SetLength(Ini.InputDeviceConfig, Length(Ini.InputDeviceConfig)+1);
+      deviceCfg := @Ini.InputDeviceConfig[High(Ini.InputDeviceConfig)];
+      device := DeviceList[deviceIndex];
+
+      // associate ini-index with device
+      device.CfgIndex := High(Ini.InputDeviceConfig);
+
+      deviceCfg.Name := Trim(device.Name);
+      deviceCfg.Input := 0;
+
+      channelCount := device.AudioFormat.Channels;
+      SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
+
+      for channelIndex := 0 to channelCount-1 do
+      begin
+        // set default at first start of USDX (1st device, 1st channel -> player1)
+        if ((channelIndex = 0) and (device.CfgIndex = 0)) then
+          deviceCfg.ChannelToPlayerMap[0] := 1
+        else
+          deviceCfg.ChannelToPlayerMap[channelIndex] := 0;
+      end;
+    end;
+  end;
+end;
+
 {*
  * Handle captured microphone input data.
  * Params:
@@ -391,9 +473,7 @@ var
   ChannelBuffer: PChar;         // buffer handled as array of bytes (offset relative to channel)
   SampleBuffer: PSmallIntArray; // buffer handled as array of samples
   Boost:  byte;
-// ChannelCount: integer; // Auto Removed, Unused Variable
   ChannelIndex: integer;
-// ChannelOffset: integer; // Auto Removed, Unused Variable
   CaptureChannel: TCaptureBuffer;
   AudioFormat: TAudioFormatInfo;
   FrameSize: integer;
@@ -418,7 +498,7 @@ begin
   // results in the analysis phase otherwise)
   if (AudioFormat.Format <> asfS16) then
   begin
-    // this only occurs if a developer choosed a wrong input sample-format
+    // this only occurs if a developer choosed an unsupported input sample-format
     Log.CriticalError('TAudioInputProcessor.HandleMicrophoneData: Wrong sample-format');
     Exit;
   end;
@@ -472,6 +552,15 @@ end;
 
 { TAudioInputBase }
 
+function TAudioInputBase.FinalizeRecord: boolean;
+var
+  i: integer;
+begin
+  for i := 0 to High(AudioInputProcessor.DeviceList) do
+    AudioInputProcessor.DeviceList[i].Free();
+  AudioInputProcessor.DeviceList := nil;
+end;
+
 {*
  * Start capturing on all used input-device.
  *}
@@ -493,9 +582,9 @@ begin
     AudioInputProcessor.Sound[S].Clear;
 
   // start capturing on each used device
-  for DeviceIndex := 0 to High(AudioInputProcessor.Device) do
+  for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
   begin
-    Device := AudioInputProcessor.Device[DeviceIndex];
+    Device := AudioInputProcessor.DeviceList[DeviceIndex];
     if not assigned(Device) then
       continue;
     DeviceCfg := @Ini.InputDeviceConfig[Device.CfgIndex];
@@ -536,13 +625,11 @@ end;
 procedure TAudioInputBase.CaptureStop;
 var
   DeviceIndex: integer;
-// Player:  integer; // Auto Removed, Unused Variable
   Device: TAudioInputDevice;
-// DeviceCfg: PInputDeviceConfig; // Auto Removed, Unused Variable
 begin
-  for DeviceIndex := 0 to High(AudioInputProcessor.Device) do
+  for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
   begin
-    Device := AudioInputProcessor.Device[DeviceIndex];
+    Device := AudioInputProcessor.DeviceList[DeviceIndex];
     if not assigned(Device) then
       continue;
     Device.Stop();
@@ -563,7 +650,7 @@ var
     // search devices with same description
     For i := 0 to deviceIndex-1 do
     begin
-      if (AudioInputProcessor.Device[i].Description = name) then
+      if (AudioInputProcessor.DeviceList[i].Name = name) then
       begin
         Result := True;
         Break;
@@ -581,28 +668,6 @@ begin
     // set description
     result := name + ' ('+IntToStr(count)+')';
   end;
-end;
-
-{*
- * Unifies an input-device's source name.
- * Note: the description member of the device must already be set when
- * calling this function.
- *}
-function TAudioInputBase.UnifyDeviceSourceName(const name: string; const deviceName: string): string;
-//var
-// Descr: string; // Auto Removed, Unused Variable
-begin
-  result := name;
-
-  {$IFDEF DARWIN}
-    // Under MacOSX the SingStar Mics have an empty
-    // InputName. So, we have to add a hard coded
-    // Workaround for this problem
-    if (name = '') and (Pos( 'USBMIC Serial#', deviceName) > 0) then
-    begin
-      result := 'Microphone';
-    end;
-  {$ENDIF}
 end;
 
 end.

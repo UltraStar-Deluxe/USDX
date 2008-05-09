@@ -223,13 +223,6 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing Sound', 1);
 
-    // Load Sound Settings from Ini
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Load Sound Settings', 'Initialization');
-    Ini.LoadSoundSettings;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Load Sound Settings', 1);
-
     // Theme
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Themes', 'Initialization');
@@ -352,7 +345,9 @@ begin
     // call an uninitialize routine for every initialize step
     // or at least use the corresponding Free-Methods
 
-    //TTF_quit();
+    FinalizeSound();
+
+    TTF_Quit();
     SDL_Quit();
 
     (*

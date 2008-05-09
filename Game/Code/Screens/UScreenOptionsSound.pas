@@ -87,7 +87,7 @@ begin
   AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);  // TODO - This need moving to ScreenOptionsRecord
   AddSelect(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
   AddSelect(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
-  AddSelect(Theme.OptionsSound.SelectThreshold, Ini.Threshold, IThreshold);
+  AddSelect(Theme.OptionsSound.SelectThreshold, Ini.ThresholdIndex, IThreshold);
 
   //Song Preview
   AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewVolume, Ini.PreviewVolume, IPreviewVolume);

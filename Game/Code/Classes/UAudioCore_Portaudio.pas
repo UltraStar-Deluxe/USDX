@@ -16,9 +16,12 @@ uses
 
 type
   TAudioCore_Portaudio = class
+    private
+      constructor Create();
     public
-      class function GetPreferredApiIndex(): TPaHostApiIndex;
-      class function TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
+      class function GetInstance(): TAudioCore_Portaudio;
+      function GetPreferredApiIndex(): TPaHostApiIndex;
+      function TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
   end;
 
 implementation
@@ -57,10 +60,24 @@ const
     array[0..0] of TPaHostApiTypeId = ( paDefaultApi );
 {$IFEND}
 
+var
+  Instance: TAudioCore_Portaudio;
 
 { TAudioInput_Portaudio }
 
-class function TAudioCore_Portaudio.GetPreferredApiIndex(): TPaHostApiIndex;
+constructor TAudioCore_Portaudio.Create();
+begin
+  inherited;
+end;
+
+class function TAudioCore_Portaudio.GetInstance(): TAudioCore_Portaudio;
+begin
+  if not assigned(Instance) then
+    Instance := TAudioCore_Portaudio.Create();
+  Result := Instance;
+end;
+
+function TAudioCore_Portaudio.GetPreferredApiIndex(): TPaHostApiIndex;
 var
   i: integer;
   apiIndex: TPaHostApiIndex;
@@ -148,7 +165,7 @@ end;
  *   So we have to provide the possibility to manually select an output device
  *   in the UltraStar options if we want to use portaudio instead of SDL.
  *)
-class function TAudioCore_Portaudio.TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
+function TAudioCore_Portaudio.TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
 var
   stream: PPaStream;
   err: TPaError;

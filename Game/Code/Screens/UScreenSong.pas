@@ -34,6 +34,8 @@ type
       EqualizerData: TFFTData; // moved here to avoid stack overflows
       EqualizerBands: array of Byte;
       EqualizerTime: Cardinal;
+
+      procedure StartMusicPreview(Song: TSong);
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -51,6 +53,8 @@ type
       HighSpeed:    boolean;
       CoverFull:    boolean;
       CoverTime:    real;
+      MusicStartTime: cardinal;
+
       CoverX:       integer;
       CoverY:       integer;
       CoverW:       integer;
@@ -1454,19 +1458,8 @@ begin
   if Length(CatSongs.Song) > 0 then begin
     //Load Music only when Song Preview is activated
     if ( Ini.PreviewVolume   <> 0 ) then
-    begin
-      if(AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3)) then
-      begin
-        AudioPlayback.SetLoop(false);
-        AudioPlayback.Position := AudioPlayback.Length / 4;
-        AudioPlayback.Play;
-
-        //Set Preview Volume
-        AudioPlayback.SetMusicVolume (Ini.PreviewVolume * 10);
-        {//if Music Fade is activated, Set Volume to 0 %
-        if (Ini.PreviewFading <> 0) then
-          Music.SetMusicVolume(0);}
-      end;
+    begin                                            // to - do : new Song management
+      StartMusicPreview(CatSongs.Song[Interaction]);
     end;
 
     SetScroll;
@@ -1506,7 +1499,7 @@ procedure TScreenSong.onHide;
 begin
   //When Music Fading is activated, Turn Music to 100 %
   If (Ini.PreviewVolume <> 100) or (Ini.PreviewFading <> 0) then
-    AudioPlayback.SetMusicVolume(100);
+    AudioPlayback.SetVolume(100);
 
   //If Preview is deactivated: Load MUsicfile now
   If (Ini.PreviewVolume = 0) then
@@ -1557,7 +1550,7 @@ begin
   //Fading Functions, Only if Covertime is under 5 Seconds
   If (CoverTime < 5) then
   begin
-    // 0.5.0: cover fade
+    // cover fade
     if (CoverTime < 1) and (CoverTime + TimeSkip >= 1) then
     begin
       // load new texture
@@ -1568,18 +1561,17 @@ begin
     end;
 
     //Song Fade
-    if (CatSongs.VisibleSongs > 0) AND (Ini.PreviewVolume <> 0) AND (Not CatSongs.Song[Interaction].Main) AND (Ini.PreviewFading <> 0) then
+    if (CatSongs.VisibleSongs > 0) and
+       (not CatSongs.Song[Interaction].Main) and
+       (Ini.PreviewVolume <> 0) and
+       (Ini.PreviewFading <> 0) then
     begin
       //Start Song Fade after a little Time, to prevent Song to be Played on Scrolling
-      if (CoverTime < 0.2) and (CoverTime + TimeSkip >= 0.2) then
-        AudioPlayback.Play;
-
-      //Update Song Volume
-      if (CoverTime < Ini.PreviewFading) then
-        AudioPlayback.SetMusicVolume(Round (CoverTime * Ini.PreviewVolume / Ini.PreviewFading * 10))
-      else
-        AudioPlayback.SetMusicVolume(Ini.PreviewVolume * 10);
-
+      if ((MusicStartTime > 0) and (SDL_GetTicks() >= MusicStartTime)) then
+      begin
+        MusicStartTime := 0;
+        StartMusicPreview(CatSongs.Song[Interaction]);
+      end;
     end;
 
 
@@ -1588,7 +1580,8 @@ begin
 
     //Update Fading Texture
     Button[Interaction].Texture2.Alpha := (CoverTime - 1) * 1.5;
-    if Button[Interaction].Texture2.Alpha > 1 then Button[Interaction].Texture2.Alpha := 1;
+    if Button[Interaction].Texture2.Alpha > 1 then
+      Button[Interaction].Texture2.Alpha := 1;
 
   end;
 
@@ -1694,30 +1687,52 @@ begin
 end;
 *)
 
+procedure TScreenSong.StartMusicPreview(Song: TSong);
+begin
+  AudioPlayback.Close();
+
+  if not assigned(Song) then
+    Exit;
+
+  if AudioPlayback.Open(Song.Path + Song.Mp3) then
+  begin
+    AudioPlayback.Position := AudioPlayback.Length / 4;
+    // set preview volume
+    if (Ini.PreviewFading = 0) then
+    begin
+      // music fade disabled: start with full volume
+      AudioPlayback.SetVolume(Ini.PreviewVolume * 10);
+      AudioPlayback.Play()
+    end
+    else
+    begin
+      // music fade enabled: start muted and fade-in
+      AudioPlayback.SetVolume(0);
+      AudioPlayback.FadeIn(Ini.PreviewFading, Ini.PreviewVolume * 10);
+    end;
+  end;
+end;
+
 //Procedure Change current played Preview
 procedure TScreenSong.ChangeMusic;
 begin
   //When Music Preview is avtivated -> then Change Music
   if (Ini.PreviewVolume <> 0) then
     begin
-    if (NOT CatSongs.Song[Interaction].Main) AND(CatSongs.VisibleSongs > 0) then
+    // Stop previous song
+    AudioPlayback.Stop;
+    // Disable music start delay
+    MusicStartTime := 0;
+
+    if (CatSongs.VisibleSongs > 0) then
     begin
-      AudioPlayback.Close;
-      if AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3) then begin
-        AudioPlayback.Position := AudioPlayback.Length / 4;
-        //If Song Fading is activated then don't Play directly, and Set Volume to Null, else Play normal
-        if (Ini.PreviewFading = 0) then
-          AudioPlayback.Play
-        else
-          AudioPlayback.SetMusicVolume(0);
-      end;
-    end
-    else
-      AudioPlayback.Stop;
+      // delay start of music for 200ms (see Draw())
+      MusicStartTime := SDL_GetTicks() + 200;
+    end;
   end;
 end;
 
-procedure TScreenSong.SkipTo(Target: Cardinal); // 0.5.0
+procedure TScreenSong.SkipTo(Target: Cardinal);
 var
 // Skip:   integer; // Auto Removed, Unused Variable
   I:      integer;

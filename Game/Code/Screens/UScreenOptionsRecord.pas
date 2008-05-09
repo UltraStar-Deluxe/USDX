@@ -15,6 +15,17 @@ uses
   UMenu;
 
 type
+  TDrawState = record
+    ChannelIndex: integer;
+    R, G, B: real;    // mapped player color (normal)
+    RD, GD, BD: real; // mapped player color (dark)
+  end;
+
+  TPeakInfo = record
+    Volume: single;
+    Time: cardinal;
+  end;
+
   TScreenOptionsRecord = class(TMenu)
     private
       // max. count of input-channels determined for all devices
@@ -32,11 +43,11 @@ type
       SelectSlideChannelTheme: array of TThemeSelectSlide;
 
       // indices for widget-updates
-      SelectSlideInputID:   integer;
+      SelectInputSourceID:   integer;
       SelectSlideChannelID: array of integer;
       TextPitchID: array of integer;
 
-      // interaction IDs 
+      // interaction IDs
       ExitButtonIID: integer;
 
       // dummy data for non-available channels
@@ -44,10 +55,19 @@ type
 
       // preview channel-buffers
       PreviewChannel: array of TCaptureBuffer;
+      ChannelPeak: array of TPeakInfo;
+
+      // Device source volume
+      SourceVolume: single;
+      NextVolumePollTime: cardinal;
 
       procedure StartPreview;
       procedure StopPreview;
-      procedure UpdateCard;
+      procedure UpdateInputDevice;
+      procedure ChangeVolume(VolumeChange: integer);
+      procedure DrawVolume(x, y, Width, Height: single);
+      procedure DrawVUMeter(const State: TDrawState; x, y, Width, Height: single);
+      procedure DrawPitch(const State: TDrawState; x, y, Width, Height: single);
     public
       constructor Create; override;
       function    Draw: boolean; override;
@@ -56,10 +76,21 @@ type
       procedure   onHide; override;
   end;
 
+const
+  PeakDecay = 0.2; // strength of peak-decay (reduction after one sec)
+
+const
+  BarHeight  = 11; // height of each bar (volume/vu-meter/pitch)
+  BarUpperSpacing = 1;  // spacing between a bar-area and the previous widget
+  BarLowerSpacing = 3;  // spacing between a bar-area and the next widget
+  SourceBarsTotalHeight = BarHeight + BarUpperSpacing + BarLowerSpacing;
+  ChannelBarsTotalHeight = 2*BarHeight + BarUpperSpacing + BarLowerSpacing;
+
 implementation
 
 uses
   SysUtils,
+  Math,
   SDL,
   gl,
   UGraphic,
@@ -84,8 +115,27 @@ begin
           Result := false;
           Exit;
         end;
+      '+':
+        begin
+          // FIXME: add a nice volume-slider instead
+          // or at least provide visualization and acceleration if the user holds the key pressed.
+          ChangeVolume(2);
+        end;
+      '-':
+        begin
+          // FIXME: add a nice volume-slider instead
+          // or at least provide visualization and acceleration if the user holds the key pressed.
+          ChangeVolume(-2);
+        end;
+      'T':
+        begin
+          if ((SDL_GetModState() and KMOD_SHIFT) <> 0) then
+            Ini.ThresholdIndex := (Ini.ThresholdIndex + Length(IThresholdVals) - 1) mod Length(IThresholdVals)
+          else
+            Ini.ThresholdIndex := (Ini.ThresholdIndex + 1) mod Length(IThresholdVals);
+        end;
     end;
-    
+
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
@@ -115,7 +165,7 @@ begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
-          UpdateCard;
+          UpdateInputDevice;
         end;
       SDLK_LEFT:
         begin
@@ -124,7 +174,7 @@ begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
-          UpdateCard;
+          UpdateInputDevice;
         end;
     end;
   end;
@@ -139,13 +189,14 @@ var
   InputDeviceCfg: PInputDeviceConfig;
   ChannelTheme: ^TThemeSelectSlide;
   ButtonTheme: TThemeButton;
+  WidgetYPos: integer;
 begin
   inherited Create;
 
   LoadFromTheme(Theme.OptionsRecord);
 
   // set CurrentDeviceIndex to a valid device
-  if (Length(AudioInputProcessor.Device) > 0) then
+  if (Length(AudioInputProcessor.DeviceList) > 0) then
     CurrentDeviceIndex := 0
   else
     CurrentDeviceIndex := -1;
@@ -153,16 +204,16 @@ begin
   PreviewDeviceIndex := -1;
 
   // init sliders if at least one device was detected
-  if (Length(AudioInputProcessor.Device) > 0) then
+  if (Length(AudioInputProcessor.DeviceList) > 0) then
   begin
-    InputDevice := AudioInputProcessor.Device[CurrentDeviceIndex];
+    InputDevice := AudioInputProcessor.DeviceList[CurrentDeviceIndex];
     InputDeviceCfg := @Ini.InputDeviceConfig[InputDevice.CfgIndex];
 
     // init device-selection slider
-    SetLength(InputDeviceNames, Length(AudioInputProcessor.Device));
-    for DeviceIndex := 0 to High(AudioInputProcessor.Device) do
+    SetLength(InputDeviceNames, Length(AudioInputProcessor.DeviceList));
+    for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
     begin
-      InputDeviceNames[DeviceIndex] := AudioInputProcessor.Device[DeviceIndex].Description;
+      InputDeviceNames[DeviceIndex] := AudioInputProcessor.DeviceList[DeviceIndex].Name;
     end;
     // add device-selection slider (InteractionID: 0)
     AddSelectSlide(Theme.OptionsRecord.SelectSlideCard, CurrentDeviceIndex, InputDeviceNames);
@@ -174,15 +225,20 @@ begin
       InputSourceNames[SourceIndex] := InputDevice.Source[SourceIndex].Name;
     end;
     // add source-selection slider (InteractionID: 1)
-    SelectSlideInputID := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput,
+    SelectInputSourceID := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput,
         InputDeviceCfg.Input, InputSourceNames);
+
+    // add space for source volume bar
+    WidgetYPos := Theme.OptionsRecord.SelectSlideInput.Y +
+                  Theme.OptionsRecord.SelectSlideInput.H +
+                  SourceBarsTotalHeight;
 
     // find max. channel count of all devices
     MaxChannelCount := 0;
-    for DeviceIndex := 0 to High(AudioInputProcessor.Device) do
+    for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
     begin
-      if (AudioInputProcessor.Device[DeviceIndex].AudioFormat.Channels > MaxChannelCount) then
-        MaxChannelCount := AudioInputProcessor.Device[DeviceIndex].AudioFormat.Channels;
+      if (AudioInputProcessor.DeviceList[DeviceIndex].AudioFormat.Channels > MaxChannelCount) then
+        MaxChannelCount := AudioInputProcessor.DeviceList[DeviceIndex].AudioFormat.Channels;
     end;
 
     // init channel-to-player mapping sliders
@@ -198,7 +254,9 @@ begin
       // set current channel-theme
       ChannelTheme := @SelectSlideChannelTheme[ChannelIndex];
       // adjust vertical position
-      ChannelTheme.Y := ChannelTheme.Y + ChannelIndex * ChannelTheme.H;
+      ChannelTheme.Y := WidgetYPos;
+      // calc size of next slide (add space for bars)
+      WidgetYPos := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
       // append channel index to name
       ChannelTheme.Text := ChannelTheme.Text + IntToStr(ChannelIndex+1);
 
@@ -215,7 +273,7 @@ begin
 
         // add slider
         SelectSlideChannelID[ChannelIndex] := AddSelectSlide(ChannelTheme^,
-          InputDeviceCfg.ChannelToPlayerMap[ChannelIndex], IChannel);
+          InputDeviceCfg.ChannelToPlayerMap[ChannelIndex], IChannelPlayer);
       end
       else
       begin
@@ -223,52 +281,50 @@ begin
 
         // add slider but hide it and assign a dummy variable to it
         SelectSlideChannelID[ChannelIndex] := AddSelectSlide(ChannelTheme^,
-          ChannelToPlayerMapDummy, IChannel);
+          ChannelToPlayerMapDummy, IChannelPlayer);
         SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := false;
 
         // hide pitch label
         Text[TextPitchID[ChannelIndex]].Visible := false;
       end;
     end;
-
-    // TODO: move from sound-options to record-options (Themes must be changed first)
-    //AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);
   end;
 
   // add Exit-button
   ButtonTheme := Theme.OptionsRecord.ButtonExit;
-  ButtonTheme.Y := Theme.OptionsRecord.SelectSlideChannel.Y +
-                   MaxChannelCount *
-                   Theme.OptionsRecord.SelectSlideChannel.H;
+  ButtonTheme.Y := WidgetYPos;
   AddButton(ButtonTheme);
   if (Length(Button[0].Text) = 0) then
     AddButtonText(14, 20, Theme.Options.Description[7]);
   // store InteractionID
-  ExitButtonIID := MaxChannelCount + 2;
+  if (Length(AudioInputProcessor.DeviceList) > 0) then
+    ExitButtonIID := MaxChannelCount + 2
+  else
+    ExitButtonIID := 0;
 
   // set focus
   Interaction := 0;
 end;
 
-procedure TScreenOptionsRecord.UpdateCard;
+procedure TScreenOptionsRecord.UpdateInputDevice;
 var
   SourceIndex: integer;
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
   ChannelIndex: integer;
 begin
-  Log.LogStatus('Update input-device', 'TScreenOptionsRecord.UpdateCard') ;
+  //Log.LogStatus('Update input-device', 'TScreenOptionsRecord.UpdateCard') ;
 
   StopPreview();
 
   // set CurrentDeviceIndex to a valid device
-  if (CurrentDeviceIndex > High(AudioInputProcessor.Device)) then
+  if (CurrentDeviceIndex > High(AudioInputProcessor.DeviceList)) then
     CurrentDeviceIndex := 0;
 
   // update sliders if at least one device was detected
-  if (Length(AudioInputProcessor.Device) > 0) then
+  if (Length(AudioInputProcessor.DeviceList) > 0) then
   begin
-    InputDevice := AudioInputProcessor.Device[CurrentDeviceIndex];
+    InputDevice := AudioInputProcessor.DeviceList[CurrentDeviceIndex];
     InputDeviceCfg := @Ini.InputDeviceConfig[InputDevice.CfgIndex];
 
     // update source-selection slider
@@ -277,7 +333,7 @@ begin
     begin
       InputSourceNames[SourceIndex] := InputDevice.Source[SourceIndex].Name;
     end;
-    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideInput, SelectSlideInputID,
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideInput, SelectInputSourceID,
         InputSourceNames, InputDeviceCfg.Input);
 
     // update channel-to-player mapping sliders
@@ -290,7 +346,7 @@ begin
 
         // show slider
         UpdateSelectSlideOptions(SelectSlideChannelTheme[ChannelIndex],
-          SelectSlideChannelID[ChannelIndex], IChannel,
+          SelectSlideChannelID[ChannelIndex], IChannelPlayer,
           InputDeviceCfg.ChannelToPlayerMap[ChannelIndex]);
         SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := true;
 
@@ -303,7 +359,7 @@ begin
 
         // hide slider and assign a dummy variable to it
         UpdateSelectSlideOptions(SelectSlideChannelTheme[ChannelIndex],
-          SelectSlideChannelID[ChannelIndex], IChannel,
+          SelectSlideChannelID[ChannelIndex], IChannelPlayer,
           ChannelToPlayerMapDummy);
         SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := false;
 
@@ -314,6 +370,31 @@ begin
   end;
 
   StartPreview();
+end;
+
+procedure TScreenOptionsRecord.ChangeVolume(VolumeChange: integer);
+var
+  InputDevice: TAudioInputDevice;
+  Volume: integer;
+begin
+  // validate CurrentDeviceIndex
+  if ((CurrentDeviceIndex < 0) or
+      (CurrentDeviceIndex > High(AudioInputProcessor.DeviceList))) then
+  begin
+    Exit;
+  end;
+
+  InputDevice := AudioInputProcessor.DeviceList[CurrentDeviceIndex];
+  if not assigned(InputDevice) then
+    Exit;
+
+  // set new volume
+  Volume := InputDevice.GetVolume() + VolumeChange;
+  InputDevice.SetVolume(Volume);
+  //DebugWriteln('Volume: ' + inttostr(InputDevice.GetVolume));
+
+  // volume must be polled again 
+  NextVolumePollTime := 0;
 end;
 
 procedure TScreenOptionsRecord.onShow;
@@ -329,6 +410,8 @@ begin
   for ChannelIndex := 0 to High(PreviewChannel) do
     PreviewChannel[ChannelIndex] := TCaptureBuffer.Create();
 
+  SetLength(ChannelPeak, MaxChannelCount);
+
   StartPreview();
 end;
 
@@ -342,6 +425,7 @@ begin
   for ChannelIndex := 0 to High(PreviewChannel) do
     PreviewChannel[ChannelIndex].Free;
   SetLength(PreviewChannel, 0);
+  SetLength(ChannelPeak, 0);
 end;
 
 procedure TScreenOptionsRecord.StartPreview;
@@ -350,17 +434,21 @@ var
   Device: TAudioInputDevice;
 begin
   if ((CurrentDeviceIndex >= 0) and
-      (CurrentDeviceIndex <= High(AudioInputProcessor.Device))) then
+      (CurrentDeviceIndex <= High(AudioInputProcessor.DeviceList))) then
   begin
-    Device := AudioInputProcessor.Device[CurrentDeviceIndex];
+    Device := AudioInputProcessor.DeviceList[CurrentDeviceIndex];
     // set preview channel as active capture channel
     for ChannelIndex := 0 to High(Device.CaptureChannel) do
     begin
       PreviewChannel[ChannelIndex].Clear();
       Device.LinkCaptureBuffer(ChannelIndex, PreviewChannel[ChannelIndex]);
+      FillChar(ChannelPeak[ChannelIndex], SizeOf(TPeakInfo), 0);
     end;
     Device.Start();
     PreviewDeviceIndex := CurrentDeviceIndex;
+
+    // volume must be polled again
+    NextVolumePollTime := 0;
   end;
 end;
 
@@ -370,9 +458,9 @@ var
   Device: TAudioInputDevice;
 begin
   if ((PreviewDeviceIndex >= 0) and
-      (PreviewDeviceIndex <= High(AudioInputProcessor.Device))) then
+      (PreviewDeviceIndex <= High(AudioInputProcessor.DeviceList))) then
   begin
-    Device := AudioInputProcessor.Device[PreviewDeviceIndex];
+    Device := AudioInputProcessor.DeviceList[PreviewDeviceIndex];
     Device.Stop;
     for ChannelIndex := 0 to High(Device.CaptureChannel) do
       Device.CaptureChannel[ChannelIndex] := nil;
@@ -380,137 +468,281 @@ begin
   PreviewDeviceIndex := -1;
 end;
 
+
+procedure TScreenOptionsRecord.DrawVolume(x, y, Width, Height: single);
+var
+  x1, y1, x2, y2: single;
+  VolBarInnerWidth: integer;
+const
+  VolBarInnerHSpacing = 2;
+  VolBarInnerVSpacing = 1;
+begin
+  // coordinates for black rect
+  x1 := x;
+  y1 := y;
+  x2 := x1 + Width;
+  y2 := y1 + Height;
+
+  // draw black background-rect
+  glColor4f(0, 0, 0, 0.8);
+  glBegin(GL_QUADS);
+    glVertex2f(x1, y1);
+    glVertex2f(x2, y1);
+    glVertex2f(x2, y2);
+    glVertex2f(x1, y2);
+  glEnd();
+
+  VolBarInnerWidth := Trunc(Width - 2*VolBarInnerHSpacing);
+
+  // coordinates for first half of the volume bar
+  x1 := x + VolBarInnerHSpacing;
+  x2 := x1 + VolBarInnerWidth * SourceVolume;
+  y1 := y1 + VolBarInnerVSpacing;
+  y2 := y2 - VolBarInnerVSpacing;
+
+  // draw volume-bar
+  glBegin(GL_QUADS);
+    // draw volume bar
+    glColor3f(0.4, 0.3, 0.3);
+    glVertex2f(x1, y1);
+    glVertex2f(x1, y2);
+    glColor3f(1, 0.1, 0.1);
+    glVertex2f(x2, y2);
+    glVertex2f(x2, y1);
+  glEnd();
+
+  { not needed anymore
+  // coordinates for separator
+  x1 := x + VolBarInnerHSpacing;
+  x2 := x1 + VolBarInnerWidth;
+
+  // draw separator
+  glBegin(GL_LINE_STRIP);
+    glColor4f(0.1, 0.1, 0.1, 0.2);
+    glVertex2f(x1,        y2);
+    glColor4f(0.4, 0.4, 0.4, 0.2);
+    glVertex2f((x1+x2)/2, y2);
+    glColor4f(0.1, 0.1, 0.1, 0.2);
+    glVertex2f(x2,        y2);
+  glEnd();
+  }
+end;
+
+procedure TScreenOptionsRecord.DrawVUMeter(const State: TDrawState; x, y, Width, Height: single);
+var
+  x1, y1, x2, y2: single;
+  Volume, PeakVolume: single;
+  Delta: single;
+  VolBarInnerWidth: integer;
+const
+  VolBarInnerHSpacing = 2;
+  VolBarInnerVSpacing = 1;
+begin
+  // coordinates for black rect
+  x1 := x;
+  y1 := y;
+  x2 := x1 + Width;
+  y2 := y1 + Height;
+
+  // draw black background-rect
+  glColor4f(0, 0, 0, 0.8);
+  glBegin(GL_QUADS);
+    glVertex2f(x1, y1);
+    glVertex2f(x2, y1);
+    glVertex2f(x2, y2);
+    glVertex2f(x1, y2);
+  glEnd();
+
+  VolBarInnerWidth := Trunc(Width - 2*VolBarInnerHSpacing);
+
+  // vertical positions
+  y1 := y1 + VolBarInnerVSpacing;
+  y2 := y2 - VolBarInnerVSpacing;
+
+  // coordinates for bevel
+  x1 := x + VolBarInnerHSpacing;
+  x2 := x1 + VolBarInnerWidth;
+
+  glBegin(GL_QUADS);
+    Volume := PreviewChannel[State.ChannelIndex].MaxSampleVolume();
+
+    // coordinates for volume bar
+    x1 := x + VolBarInnerHSpacing;
+    x2 := x1 + VolBarInnerWidth * Volume;
+
+    // draw volume bar
+    glColor3f(State.RD, State.GD, State.BD);
+    glVertex2f(x1, y1);
+    glVertex2f(x1, y2);
+    glColor3f(State.R, State.G, State.B);
+    glVertex2f(x2, y2);
+    glVertex2f(x2, y1);
+
+    Delta := (SDL_GetTicks() - ChannelPeak[State.ChannelIndex].Time)/1000;
+    PeakVolume := ChannelPeak[State.ChannelIndex].Volume - Delta*Delta*PeakDecay;
+
+    // determine new peak-volume
+    if (Volume > PeakVolume) then
+    begin
+      PeakVolume := Volume;
+      ChannelPeak[State.ChannelIndex].Volume := Volume;
+      ChannelPeak[State.ChannelIndex].Time := SDL_GetTicks();
+    end;
+
+    x1 := x + VolBarInnerHSpacing + VolBarInnerWidth * PeakVolume;
+    x2 := x1 + 2;
+
+    // draw peak
+    glColor3f(0.8, 0.8, 0.8);
+    glVertex2f(x1, y1);
+    glVertex2f(x1, y2);
+    glVertex2f(x2, y2);
+    glVertex2f(x2, y1);
+
+    // draw threshold
+    x1 := x + VolBarInnerHSpacing;
+    x2 := x1 + VolBarInnerWidth * IThresholdVals[Ini.ThresholdIndex];
+
+    glColor4f(0.3, 0.3, 0.3, 0.6);
+    glVertex2f(x1, y1);
+    glVertex2f(x1, y2);
+    glVertex2f(x2, y2);
+    glVertex2f(x2, y1);
+  glEnd();
+end;
+
+procedure TScreenOptionsRecord.DrawPitch(const State: TDrawState; x, y, Width, Height: single);
+var
+  x1, y1, x2, y2: single;
+  i: integer;
+  ToneBoxWidth: real;
+const
+  PitchBarInnerHSpacing = 2;
+  PitchBarInnerVSpacing = 1;
+begin
+  // calc tone pitch
+  PreviewChannel[State.ChannelIndex].AnalyzeBuffer();
+
+  // coordinates for black rect
+  x1 := x;
+  y1 := y;
+  x2 := x + Width;
+  y2 := y + Height;
+
+  // draw black background-rect
+  glColor4f(0, 0, 0, 0.8);
+  glBegin(GL_QUADS);
+    glVertex2f(x1, y1);
+    glVertex2f(x2, y1);
+    glVertex2f(x2, y2);
+    glVertex2f(x1, y2);
+  glEnd();
+
+  // coordinates for tone boxes
+  ToneBoxWidth := Width / NumHalftones;
+  y1 := y1 + PitchBarInnerVSpacing;
+  y2 := y2 - PitchBarInnerVSpacing;
+
+  glBegin(GL_QUADS);
+    // draw tone boxes
+    for i := 0 to NumHalftones-1 do
+    begin
+      x1 := x + i * ToneBoxWidth + PitchBarInnerHSpacing;
+      x2 := x1 + ToneBoxWidth - 2*PitchBarInnerHSpacing;
+
+      if ((PreviewChannel[State.ChannelIndex].ToneValid) and
+          (PreviewChannel[State.ChannelIndex].ToneAbs = i)) then
+      begin
+        // highlight current tone-pitch
+        glColor3f(1, i / (NumHalftones-1), 0)
+      end
+      else
+      begin
+        // grey other tone-pitches
+        glColor3f(0.3, i / (NumHalftones-1) * 0.3, 0);
+      end;
+
+      glVertex2f(x1, y1);
+      glVertex2f(x2, y1);
+      glVertex2f(x2, y2);
+      glVertex2f(x1, y2);
+    end;
+  glEnd();
+
+  // update tone-pitch label
+  Text[TextPitchID[State.ChannelIndex]].Text :=
+      PreviewChannel[State.ChannelIndex].ToneString;
+end;
+
 function TScreenOptionsRecord.Draw: boolean;
 var
   i: integer;
-  x1, x2, y1, y2: real;
-  R, G, B, RD, GD, BD: real;
-  ChannelIndex: integer;
   Device: TAudioInputDevice;
   DeviceCfg: PInputDeviceConfig;
   SelectSlide: TSelectSlide;
-  ToneBoxWidth: real;
-  Volume: single;
+  BarXOffset, BarYOffset, BarWidth: real;
+  ChannelIndex: integer;
+  State: TDrawState;
 begin
   DrawBG;
   DrawFG;
 
   if ((PreviewDeviceIndex >= 0) and
-      (PreviewDeviceIndex <= High(AudioInputProcessor.Device))) then
+      (PreviewDeviceIndex <= High(AudioInputProcessor.DeviceList))) then
   begin
-    Device := AudioInputProcessor.Device[PreviewDeviceIndex];
+    Device := AudioInputProcessor.DeviceList[PreviewDeviceIndex];
     DeviceCfg := @Ini.InputDeviceConfig[Device.CfgIndex];
 
-    glBegin(GL_QUADS);
-      for ChannelIndex := 0 to High(Device.CaptureChannel) do
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // update source volume
+    if (SDL_GetTicks() >= NextVolumePollTime) then
+    begin
+      NextVolumePollTime := SDL_GetTicks() + 500; // next poll in 500ms
+      SourceVolume := Device.GetVolume()/100;
+    end;
+
+    // get source select slide
+    SelectSlide := SelectsS[SelectInputSourceID];
+    BarXOffset := SelectSlide.TextureSBG.X;
+    BarYOffset := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H + BarUpperSpacing;
+    BarWidth   := SelectSlide.TextureSBG.W;
+    DrawVolume(SelectSlide.TextureSBG.X, BarYOffset, BarWidth, BarHeight);
+
+    for ChannelIndex := 0 to High(Device.CaptureChannel) do
+    begin
+      // load player color mapped to current input channel
+      if (DeviceCfg.ChannelToPlayerMap[ChannelIndex] > 0) then
       begin
-        // load player color mapped to current input channel
-        if (DeviceCfg.ChannelToPlayerMap[ChannelIndex] > 0) then
-        begin
-          // set mapped channel to corresponding player-color
-          LoadColor(R, G, B, 'P'+ IntToStr(DeviceCfg.ChannelToPlayerMap[ChannelIndex]) + 'Dark');
-        end
-        else
-        begin
-          // set non-mapped channel to white
-          R := 1; G := 1; B := 1;
-        end;
-
-        // dark player colors
-        RD := 0.2 * R;
-        GD := 0.2 * G;
-        BD := 0.2 * B;
-
-        // channel select slide
-        SelectSlide := SelectsS[SelectSlideChannelID[ChannelIndex]];
-
-        //////////
-        // draw Volume
-        //
-
-        // coordinates for black rect
-        x1 := SelectSlide.TextureSBG.X;
-        x2 := x1 + SelectSlide.TextureSBG.W;
-        y2 := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H;
-        y1 := y2 - 11;
-
-        // draw black background-rect
-        glColor3f(0, 0, 0);
-        glVertex2f(x1, y1);
-        glVertex2f(x2, y1);
-        glVertex2f(x2, y2);
-        glVertex2f(x1, y2);
-
-        Volume := PreviewChannel[ChannelIndex].MaxSampleVolume();
-
-        // coordinates for volume bar
-        x1 := x1 + 1;
-        x2 := x1 + Trunc((SelectSlide.TextureSBG.W-4) * Volume) + 1;
-        y1 := y1 + 1;
-        y2 := y2 - 1;
-
-        // draw volume bar
-        glColor3f(RD, GD, BD);
-        glVertex2f(x1, y1);
-        glVertex2f(x1, y2);
-        glColor3f(R, G, B);
-        glVertex2f(x2, y2);
-        glVertex2f(x2, y1);
-
-        //////////
-        // draw Pitch
-        //
-
-        // calc tone pitch
-        PreviewChannel[ChannelIndex].AnalyzeBuffer();
-
-        // coordinates for black rect
-        x1 := SelectSlide.TextureSBG.X;
-        x2 := x1 + SelectSlide.TextureSBG.W;
-        y1 := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H;
-        y2 := y1 + 11;
-
-        // draw black background-rect
-        glColor3f(0, 0, 0);
-        glVertex2f(x1, y1);
-        glVertex2f(x2, y1);
-        glVertex2f(x2, y2);
-        glVertex2f(x1, y2);
-
-        // coordinates for tone boxes
-        ToneBoxWidth := SelectSlide.TextureSBG.W / NumHalftones;
-        y1 := y1 + 1;
-        y2 := y2 - 1;
-
-        // draw tone boxes
-        for i := 0 to NumHalftones-1 do
-        begin
-          x1 := SelectSlide.TextureSBG.X + i * ToneBoxWidth + 2;
-          x2 := x1 + ToneBoxWidth - 4;
-
-          if ((PreviewChannel[ChannelIndex].ToneValid) and
-              (PreviewChannel[ChannelIndex].ToneAbs = i)) then
-          begin
-            // highlight current tone-pitch
-            glColor3f(1, i / (NumHalftones-1), 0)
-          end
-          else
-          begin
-            // grey other tone-pitches
-            glColor3f(0.3, i / (NumHalftones-1) * 0.3, 0);
-          end;
-
-          glVertex2f(x1, y1);
-          glVertex2f(x2, y1);
-          glVertex2f(x2, y2);
-          glVertex2f(x1, y2);
-        end;
-
-        // update tone-pitch label
-        Text[TextPitchID[ChannelIndex]].Text :=
-            PreviewChannel[ChannelIndex].ToneString;
+        // set mapped channel to corresponding player-color
+        LoadColor(State.R, State.G, State.B, 'P'+ IntToStr(DeviceCfg.ChannelToPlayerMap[ChannelIndex]) + 'Dark');
+      end
+      else
+      begin
+        // set non-mapped channel to white
+        State.R := 1; State.G := 1; State.B := 1;
       end;
-    glEnd;
+
+      // dark player colors
+      State.RD := 0.2 * State.R;
+      State.GD := 0.2 * State.G;
+      State.BD := 0.2 * State.B;
+
+      // channel select slide
+      SelectSlide := SelectsS[SelectSlideChannelID[ChannelIndex]];
+
+      BarXOffset := SelectSlide.TextureSBG.X;
+      BarYOffset := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H + BarUpperSpacing;
+      BarWidth   := SelectSlide.TextureSBG.W;
+
+      State.ChannelIndex := ChannelIndex;
+
+      DrawVUMeter(State, BarXOffset, BarYOffset, BarWidth, BarHeight);
+      DrawPitch(State, BarXOffset, BarYOffset+BarHeight, BarWidth, BarHeight);
+    end;
+
+    glDisable(GL_BLEND);
   end;
 
   Result := True;

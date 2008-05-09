@@ -170,7 +170,7 @@ uses
 
   // TODO :  these all need to be renamed like UMedia_********   for consistency
   UMusic          in 'Classes\UMusic.pas',
-  //UAudioPlaybackBase in 'Classes\UAudioPlaybackBase.pas',
+  UAudioPlaybackBase in 'Classes\UAudioPlaybackBase.pas',
   UMedia_dummy    in 'Classes\UMedia_dummy.pas',  // Must be first UMedia Unit, all others will override available interfaces
 {$IFDEF UseProjectM}
   UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... so video can override...

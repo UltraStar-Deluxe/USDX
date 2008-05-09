@@ -30,8 +30,9 @@ var
   singleton_dummy : IVideoPlayback;
 
 type
-    Tmedia_dummy = class( TInterfacedObject, IVideoPlayback, IVideoVisualization, IAudioPlayback, IAudioInput )
+    TMedia_dummy = class( TInterfacedObject, IVideoPlayback, IVideoVisualization, IAudioPlayback, IAudioInput )
     private
+      DummyOutputDeviceList: TAudioOutputDeviceList;
     public
       constructor create();
       function  GetName: String;
@@ -53,6 +54,7 @@ type
 
       // IAudioInput
       function InitializeRecord: boolean;
+      function FinalizeRecord: boolean;
       procedure CaptureStart;
       procedure CaptureStop;
       procedure GetFFTData(var data: TFFTData);
@@ -60,8 +62,12 @@ type
 
       // IAudioPlayback
       function InitializePlayback: boolean;
+      function FinalizePlayback: boolean;
+
+      function GetOutputDeviceList(): TAudioOutputDeviceList;
+      procedure FadeIn(Time: real; TargetVolume: integer);
+      procedure SetAppVolume(Volume: integer);
       procedure SetVolume(Volume: integer);
-      procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
       procedure Rewind;
 
@@ -124,13 +130,18 @@ procedure Tmedia_dummy.SetPosition(Time: real);
 begin
 end;
 
-function  Tmedia_dummy.getPosition: real;
+function  Tmedia_dummy.GetPosition: real;
 begin
   result := 0;
 end;
 
 // IAudioInput
 function Tmedia_dummy.InitializeRecord: boolean;
+begin
+  result := true;
+end;
+
+function Tmedia_dummy.FinalizeRecord: boolean;
 begin
   result := true;
 end;
@@ -155,18 +166,35 @@ end;
 // IAudioPlayback
 function Tmedia_dummy.InitializePlayback: boolean;
 begin
+  SetLength(DummyOutputDeviceList, 1);
+  DummyOutputDeviceList[0] := TAudioOutputDevice.Create();
+  DummyOutputDeviceList[0].Name := '[Dummy Device]';
   result := true;
+end;
+
+function Tmedia_dummy.FinalizePlayback: boolean;
+begin
+  result := true;
+end;
+
+function Tmedia_dummy.GetOutputDeviceList(): TAudioOutputDeviceList;
+begin
+  Result := DummyOutputDeviceList;
+end;
+
+procedure Tmedia_dummy.SetAppVolume(Volume: integer);
+begin
 end;
 
 procedure Tmedia_dummy.SetVolume(Volume: integer);
 begin
 end;
 
-procedure Tmedia_dummy.SetMusicVolume(Volume: integer);
+procedure Tmedia_dummy.SetLoop(Enabled: boolean);
 begin
 end;
 
-procedure Tmedia_dummy.SetLoop(Enabled: boolean);
+procedure Tmedia_dummy.FadeIn(Time: real; TargetVolume: integer);
 begin
 end;
 

@@ -80,6 +80,7 @@ type
   TFFTData  = array[0..(FFTSize div 2)-1] of Single;
 
 type
+  PPCMStereoSample = ^TPCMStereoSample;
   TPCMStereoSample = array[0..1] of SmallInt;
   TPCMData  = array[0..511] of TPCMStereoSample;
 
@@ -124,6 +125,18 @@ type
   end;
 
 type
+  TSoundEffect = class
+    public
+      EngineData: Pointer; // can be used for engine-specific data
+      procedure Callback(Buffer: PChar; BufSize: integer); virtual; abstract;
+  end;
+
+  TVoiceRemoval = class(TSoundEffect)
+    public
+      procedure Callback(Buffer: PChar; BufSize: integer); override;
+  end;
+
+type
   TAudioProcessingStream = class
     public
       procedure Close();                    virtual; abstract;
@@ -131,33 +144,32 @@ type
 
   TAudioPlaybackStream = class(TAudioProcessingStream)
     protected
-      function GetLoop(): boolean;          virtual; abstract;
-      procedure SetLoop(Enabled: boolean);  virtual; abstract;
+      function GetPosition: real;           virtual; abstract;
+      procedure SetPosition(Time: real);    virtual; abstract;
       function GetLength(): real;           virtual; abstract;
       function GetStatus(): TStreamStatus;  virtual; abstract;
       function GetVolume(): integer;        virtual; abstract;
-      procedure SetVolume(volume: integer); virtual; abstract;
+      procedure SetVolume(Volume: integer); virtual; abstract;
+      function GetLoop(): boolean;          virtual; abstract;
+      procedure SetLoop(Enabled: boolean);  virtual; abstract;
     public
       procedure Play();                     virtual; abstract;
       procedure Pause();                    virtual; abstract;
       procedure Stop();                     virtual; abstract;
+      procedure FadeIn(Time: real; TargetVolume: integer);  virtual; abstract;
 
-      property Loop: boolean READ GetLoop WRITE SetLoop;
+      procedure GetFFTData(var data: TFFTData);          virtual; abstract;
+      function GetPCMData(var data: TPCMData): Cardinal; virtual; abstract;
+
+      procedure AddSoundEffect(effect: TSoundEffect);    virtual; abstract;
+      procedure RemoveSoundEffect(effect: TSoundEffect); virtual; abstract;
+
       property Length: real READ GetLength;
+      property Position: real READ GetPosition WRITE SetPosition;
       property Status: TStreamStatus READ GetStatus;
       property Volume: integer READ GetVolume WRITE SetVolume;
+      property Loop: boolean READ GetLoop WRITE SetLoop;
   end;
-
-  (*
-  TAudioMixerStream = class(TAudioProcessingStream)
-    procedure AddStream(stream: TAudioProcessingStream);
-    procedure RemoveStream(stream: TAudioProcessingStream);
-    procedure SetMasterVolume(volume: cardinal);
-    function GetMasterVolume(): cardinal;
-    procedure SetStreamVolume(stream: TAudioProcessingStream; volume: cardinal);
-    function GetStreamVolume(stream: TAudioProcessingStream): cardinal;
-  end;
-  *)
 
   TAudioDecodeStream = class(TAudioProcessingStream)
     protected
@@ -165,6 +177,7 @@ type
       function GetPosition(): real;         virtual; abstract;
       procedure SetPosition(Time: real);    virtual; abstract;
       function IsEOF(): boolean;            virtual; abstract;
+      function IsError(): boolean;          virtual; abstract;
     public
       function ReadData(Buffer: PChar; BufSize: integer): integer; virtual; abstract;
       function GetAudioFormatInfo(): TAudioFormatInfo; virtual; abstract;
@@ -173,6 +186,19 @@ type
       property Position: real READ GetPosition WRITE SetPosition;
       property EOF: boolean READ IsEOF;
   end;
+
+type
+  TAudioVoiceStream = class(TAudioProcessingStream)
+    public
+      function ReadData(Buffer: PChar; BufSize: integer): integer; virtual; abstract;
+      function GetAudioFormatInfo(): TAudioFormatInfo; virtual; abstract;
+  end;
+  // soundcard output-devices information
+  TAudioOutputDevice = class
+    public
+      Name: string; // soundcard name
+  end;
+  TAudioOutputDeviceList = array of TAudioOutputDevice;
 
 type
   IGenericPlayback = Interface
@@ -208,9 +234,13 @@ type
   IAudioPlayback = Interface( IGenericPlayback )
   ['{E4AE0B40-3C21-4DC5-847C-20A87E0DFB96}']
       function InitializePlayback: boolean;
+      function FinalizePlayback: boolean;
+      
+      function GetOutputDeviceList(): TAudioOutputDeviceList;
+      procedure SetAppVolume(Volume: integer);
       procedure SetVolume(Volume: integer);
-      procedure SetMusicVolume(Volume: integer);
       procedure SetLoop(Enabled: boolean);
+      procedure FadeIn(Time: real; TargetVolume: integer);
 
       procedure Rewind;
       function  Finished: boolean;
@@ -232,6 +262,7 @@ type
   ['{557B0E9A-604D-47E4-B826-13769F3E10B7}']
       function GetName(): String;
       function InitializeDecoder(): boolean;
+      function FinalizeDecoder(): boolean;
       //function IsSupported(const Filename: string): boolean;
   end;
 
@@ -251,6 +282,7 @@ type
   ['{A5C8DA92-2A0C-4AB2-849B-2F7448C6003A}']
       function GetName: String;
       function InitializeRecord: boolean;
+      function FinalizeRecord(): boolean;
 
       procedure CaptureStart;
       procedure CaptureStop;
@@ -288,6 +320,7 @@ var // TODO : JB --- THESE SHOULD NOT BE GLOBAL
 
 
 procedure InitializeSound;
+procedure FinalizeSound;
 
 function  Visualization(): IVideoPlayback;
 function  VideoPlayback(): IVideoPlayback;
@@ -360,14 +393,32 @@ begin
   result := singleton_AudioDecoder;
 end;
 
-procedure AssignSingletonObjects(); 
+procedure FilterInterfaceList(const IID: TGUID; InList, OutList: TInterfaceList);
+var
+  i: integer;
+  obj: IInterface;
+begin
+  if (not assigned(OutList)) then
+    Exit;
+
+  OutList.Clear;
+  for i := 0 to InList.Count-1 do
+  begin
+    if assigned(InList[i]) then
+    begin
+      // add object to list if it implements the interface searched for
+      if (InList[i].QueryInterface(IID, obj) = 0) then
+        OutList.Add(obj);
+    end;
+  end;
+end;
+
+procedure AssignSingletonObjects();
 var
   lTmpInterface : IInterface;
   iCount        : Integer;
 begin
   lTmpInterface := nil;
-  
-
 
   for iCount := 0 to AudioManager.Count - 1 do
   begin
@@ -410,7 +461,6 @@ begin
 
     end;
   end;
-
 end;
 
 procedure InitializeSound;
@@ -460,6 +510,8 @@ begin
     end;    
   end;
 
+  // Update input-device list with registered devices
+  AudioInputProcessor.UpdateInputDeviceConfig();
   // Load in-game sounds
   SoundLib := TSoundLibrary.Create;
 
@@ -480,6 +532,50 @@ begin
   end;
 end;
 
+procedure FinalizeSound;
+var
+  i: integer;
+  AudioIntfList: TInterfaceList;
+begin
+  // stop, close and free sounds
+  SoundLib.Free;
+
+  // stop and close music stream
+  if (AudioPlayback <> nil) then
+    AudioPlayback.Close;
+
+  // stop any active captures
+  if (AudioInput <> nil) then
+    AudioInput.CaptureStop;
+
+  singleton_AudioPlayback := nil;
+  singleton_AudioDecoder := nil;
+  singleton_AudioInput := nil;
+
+  // create temporary interface list
+  AudioIntfList := TInterfaceList.Create();
+
+  // finalize audio playback interfaces (should be done before the decoders) 
+  FilterInterfaceList(IAudioPlayback, AudioManager, AudioIntfList);
+  for i := 0 to AudioIntfList.Count-1 do
+    IAudioPlayback(AudioIntfList[i]).FinalizePlayback();
+
+  // finalize audio input interfaces
+  FilterInterfaceList(IAudioInput, AudioManager, AudioIntfList);
+  for i := 0 to AudioIntfList.Count-1 do
+    IAudioInput(AudioIntfList[i]).FinalizeRecord();
+
+  // finalize audio decoder interfaces
+  FilterInterfaceList(IAudioDecoder, AudioManager, AudioIntfList);
+  for i := 0 to AudioIntfList.Count-1 do
+    IAudioDecoder(AudioIntfList[i]).FinalizeDecoder();
+
+  AudioIntfList.Free;
+
+  // free audio interfaces
+  while (AudioManager.Count > 0) do
+    AudioManager.Delete(0);
+end;
 
 { TSoundLibrary }
 
@@ -534,6 +630,32 @@ begin
 
   //Shuffle.Free;
 end;
+
+procedure TVoiceRemoval.Callback(Buffer: PChar; BufSize: integer);
+var
+  FrameIndex, FrameSize: integer;
+  Value: integer;
+  Sample: PPCMStereoSample;
+begin
+  FrameSize := 2 * SizeOf(SmallInt);
+  for FrameIndex := 0 to (BufSize div FrameSize)-1 do
+  begin
+    Sample := PPCMStereoSample(Buffer);
+    // channel difference
+    Value := Sample[0] - Sample[1];
+    // clip
+    if (Value > High(SmallInt)) then
+      Value := High(SmallInt)
+    else if (Value < Low(SmallInt)) then
+      Value := Low(SmallInt);
+    // assign result
+    Sample[0] := Value;
+    Sample[1] := Value;
+    // increase to next frame
+    Inc(Buffer, FrameSize);
+  end;
+end;
+
 
 initialization
 begin

@@ -65,8 +65,8 @@ type
       ClickAssist:    integer;
       BeatClick:      integer;
       SavePlayback:   integer;
-      Threshold:      integer;
-      SDLBufferSize:  integer;
+      ThresholdIndex: integer;
+      AudioOutputBufferSizeIndex:  integer;
 
       //Song Preview
       PreviewVolume: integer;
@@ -105,13 +105,10 @@ type
       LPT:            integer;
 
       procedure Load();
-      procedure LoadSoundSettings();
-      
       procedure Save();
       procedure SaveNames;
       procedure SaveLevel;
   end;
-
 
 var
   Ini:    TIni;
@@ -121,7 +118,9 @@ var
   ISkin:          array of string;
 
 const
-  IPlayers:       array[0..4] of string = ('1', '2', '3', '4', '6');
+  IPlayers:       array[0..4] of string  = ('1', '2', '3', '4', '6');
+  IPlayersVals:   array[0..4] of integer = ( 1 ,  2 ,  3 ,  4 ,  6 );
+
   IDifficulty:    array[0..2] of string = ('Easy', 'Medium', 'Hard');
   ITabs:          array[0..1] of string = ('Off', 'On');
 
@@ -151,16 +150,25 @@ const
   ISpectrograph:  array[0..1] of string = ('Off', 'On');
   IMovieSize:     array[0..2] of string = ('Half', 'Full [Vid]', 'Full [BG+Vid]');
 
-  IMicBoost:      array[0..3] of string = ('Off', '+6dB', '+12dB', '+18dB');
   IClickAssist:   array[0..1] of string = ('Off', 'On');
   IBeatClick:     array[0..1] of string = ('Off', 'On');
   ISavePlayback:  array[0..1] of string = ('Off', 'On');
+
   IThreshold:     array[0..3] of string = ('5%', '10%', '15%', '20%');
-  ISDLBufferSize:    array[0..8] of string = ('256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
-  
+  IThresholdVals: array[0..3] of single = (0.05, 0.10,  0.15,  0.20);
+
+  IAudioOutputBufferSize:     array[0..9] of string  = ('Auto', '256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
+  IAudioOutputBufferSizeVals: array[0..9] of integer = ( 0,      256,   512 ,  1024 ,  2048 ,  4096 ,  8192 ,  16384 ,  32768 ,  65536 );
+
+  IAudioInputBufferSize:     array[0..9] of string  = ('Auto', '256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
+  IAudioInputBufferSizeVals: array[0..9] of integer = ( 0,      256,   512 ,  1024 ,  2048 ,  4096 ,  8192 ,  16384 ,  32768 ,  65536 );
+
   //Song Preview
-  IPreviewVolume: array[0..10] of string = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
-  IPreviewFading: array[0..5] of string  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
+  IPreviewVolume:     array[0..10] of string = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
+  IPreviewVolumeVals: array[0..10] of single = ( 0,   0.10,  0.20,  0.30,  0.40,  0.50,  0.60,  0.70,  0.80,  0.90,   1.00  );
+
+  IPreviewFading:     array[0..5] of string  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
+  IPreviewFadingVals: array[0..5] of integer = ( 0,     1,       2,        3,        4,        5      );
 
 
   ILyricsFont:    array[0..2] of string = ('Plain', 'OLine1', 'OLine2');
@@ -182,7 +190,9 @@ const
   IJoypad:        array[0..1] of string = ('Off', 'On');
   ILPT:           array[0..2] of string = ('Off', 'LCD', 'Lights');
 
-  IChannel:       array[0..6] of string = ('Off', '1', '2', '3', '4', '5', '6');
+  // Recording options
+  IChannelPlayer: array[0..6] of string = ('Off', '1', '2', '3', '4', '5', '6');
+  IMicBoost:      array[0..3] of string = ('Off', '+6dB', '+12dB', '+18dB');
 
 implementation
 
@@ -232,12 +242,10 @@ procedure TIni.LoadInputDeviceCfg(IniFile: TMemIniFile);
 var
   deviceIndex: integer;
   deviceCfg: PInputDeviceConfig;
-  device: TAudioInputDevice;
   deviceIniIndex: integer;
   deviceIniStr: string;
   channelCount: integer;
   channelIndex: integer;
-  newDevice: boolean;
   recordKeys: TStringList;
   i: integer;
 begin
@@ -289,63 +297,10 @@ begin
 
   recordKeys.Free();
 
-  // Input devices - append detected soundcards
-  for deviceIndex := 0 to High(AudioInputProcessor.Device) do
-  begin
-    newDevice := true;
-    for deviceIniIndex := 0 to High(InputDeviceConfig) do
-    begin //Search for Card in List
-      deviceCfg := @InputDeviceConfig[deviceIniIndex];
-      device := AudioInputProcessor.Device[deviceIndex];
-
-      if (deviceCfg.Name = Trim(device.Description)) then
-      begin
-        newDevice := false;
-
-        // store highest channel index as an offset for the new channels
-        channelIndex := High(deviceCfg.ChannelToPlayerMap);
-        // add missing channels or remove non-existing ones
-        SetLength(deviceCfg.ChannelToPlayerMap, device.AudioFormat.Channels);
-        // initialize added channels to 0
-        for i := channelIndex+1 to High(deviceCfg.ChannelToPlayerMap) do
-        begin
-          deviceCfg.ChannelToPlayerMap[i] := 0;
-        end;
-
-        // associate ini-index with device
-        device.CfgIndex := deviceIniIndex;
-        break;
-      end;
-    end;
-
-    //If not in List -> Add
-    if newDevice then
-    begin
-      // resize list
-      SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);
-      deviceCfg := @InputDeviceConfig[High(InputDeviceConfig)];
-      device := AudioInputProcessor.Device[deviceIndex];
-      
-      // associate ini-index with device
-      device.CfgIndex := High(InputDeviceConfig);
-
-      deviceCfg.Name := Trim(device.Description);
-      deviceCfg.Input := 0;
-        
-      channelCount := device.AudioFormat.Channels;
-      SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
-
-      for channelIndex := 0 to channelCount-1 do
-      begin
-        // set default at first start of USDX (1st device, 1st channel -> player1)
-        if ((channelIndex = 0) and (device.CfgIndex = 0)) then
-          deviceCfg.ChannelToPlayerMap[0] := 1
-        else
-          deviceCfg.ChannelToPlayerMap[channelIndex] := 0;
-      end;
-    end;
-  end;
-
+  // MicBoost
+  //MicBoost := GetArrayIndex(IMicBoost, IniFile.ReadString('Record', 'MicBoost', 'Off'));
+  // Threshold
+  //  ThresholdIndex := GetArrayIndex(IThreshold, IniFile.ReadString('Record', 'Threshold', IThreshold[1]));
 end;
 
 procedure TIni.SaveInputDeviceCfg(IniFile: TIniFile);
@@ -369,6 +324,11 @@ begin
                           IntToStr(InputDeviceConfig[deviceIndex].ChannelToPlayerMap[channelIndex]));
     end;
   end;
+
+  // MicBoost
+  //IniFile.WriteString('Record', 'MicBoost', IMicBoost[MicBoost]);
+  // Threshold
+  //IniFile.WriteString('Record', 'Threshold', IThreshold[ThresholdIndex]);
 end;
 
 procedure TIni.Load();
@@ -385,14 +345,14 @@ var
   //Result := copy (S,0,StrRScan (PChar(S),char('.'))+1);
     Result := copy (S,0,Pos ('.ini',S)-1);
   end;
-  
+
   // get index of value V in array a, returns -1 if value is not in array
   function GetArrayIndex(const A: array of String; V: String; caseInsensitiv: Boolean = False): Integer;
   var
     i: Integer;
   begin
     Result := -1;
-    
+
     for i := 0 To High(A) do
       if (A[i] = V) or (caseInsensitiv and (UpperCase(A[i]) = UpperCase(V))) then
       begin
@@ -400,7 +360,20 @@ var
         break;
       end;
   end;
-  
+
+  // get index of IniSeaction:IniProperty in array SearchArray or return the default value
+  function ReadArrayIndex(const SearchArray: array of String; IniSection: String; IniProperty: String; Default: Integer): Integer;
+  var
+    StrValue: string;
+  begin
+    StrValue := IniFile.ReadString('Sound', 'AudioOutputBufferSize', SearchArray[Default]);
+    Result := GetArrayIndex(SearchArray, StrValue);
+    if (Result = -1) then
+    begin
+      Result := Default;
+    end;
+  end;
+
   // swap two strings
   procedure swap(var s1, s2: String);
   var
@@ -564,9 +537,6 @@ begin
   // MovieSize
   MovieSize := GetArrayIndex(IMovieSize, IniFile.ReadString('Graphics', 'MovieSize', IMovieSize[2]));
 
-  // MicBoost
-  MicBoost := GetArrayIndex(IMicBoost, IniFile.ReadString('Sound', 'MicBoost', 'Off'));
-
   // ClickAssist
   ClickAssist := GetArrayIndex(IClickAssist, IniFile.ReadString('Sound', 'ClickAssist', 'Off'));
 
@@ -575,17 +545,10 @@ begin
 
   // SavePlayback
   SavePlayback := GetArrayIndex(ISavePlayback, IniFile.ReadString('Sound', 'SavePlayback', ISavePlayback[0]));
-  
-  // Threshold
-  Threshold := GetArrayIndex(IThreshold, IniFile.ReadString('Sound', 'Threshold', IThreshold[1]));
 
-  // SDLBufferSize
-  SDLBufferSize := GetArrayIndex(ISDLBufferSize, IniFile.ReadString('Sound', 'SDLBufferSize', '1024'));
-  if (SDLBufferSize = -1) then
-    SDLBufferSize := 1024
-  else
-    SDLBufferSize := StrToInt(ISDLBufferSize[SDLBufferSize]);
-       
+  // AudioOutputBufferSize
+  AudioOutputBufferSizeIndex := ReadArrayIndex(IAudioOutputBufferSize, 'Sound', 'AudioOutputBufferSize', 0);
+
   //Preview Volume
   PreviewVolume := GetArrayIndex(IPreviewVolume, IniFile.ReadString('Sound', 'PreviewVolume', IPreviewVolume[7]));
   
@@ -638,15 +601,17 @@ begin
   Theme := GetArrayIndex(ITheme, IniFile.ReadString('Themes', 'Theme', 'DELUXE'), True);
   if (Theme = -1) then
        Theme := 0;
- 
+
   // Skin
   Skin.onThemeChange;
-  
+
   SkinNo := GetArrayIndex(ISkin, IniFile.ReadString('Themes',    'Skin',   ISkin[0]));
 
   // Color
   Color := GetArrayIndex(IColor, IniFile.ReadString('Themes',    'Color',   IColor[0]));
-  
+
+  LoadInputDeviceCfg(IniFile);
+
   // LoadAnimation
   LoadAnimation := GetArrayIndex(ILoadAnimation, IniFile.ReadString('Advanced', 'LoadAnimation', 'On'));
 
@@ -740,20 +705,14 @@ begin
     // Movie Size
     IniFile.WriteString('Graphics', 'MovieSize', IMovieSize[MovieSize]);
 
-    // MicBoost
-    IniFile.WriteString('Sound', 'MicBoost', IMicBoost[MicBoost]);
-
     // ClickAssist
     IniFile.WriteString('Sound', 'ClickAssist', IClickAssist[ClickAssist]);
 
     // BeatClick
     IniFile.WriteString('Sound', 'BeatClick', IBeatClick[BeatClick]);
 
-    // Threshold
-    IniFile.WriteString('Sound', 'Threshold', IThreshold[Threshold]);
-    
-    // SDLBufferSize
-    IniFile.WriteString('Sound', 'SDLBufferSize', IntToStr(SDLBufferSize));
+    // AudioOutputBufferSize
+    IniFile.WriteString('Sound', 'AudioOutputBufferSize', IAudioOutputBufferSize[AudioOutputBufferSizeIndex]);
 
     // Song Preview
     IniFile.WriteString('Sound', 'PreviewVolume', IPreviewVolume[PreviewVolume]);
@@ -813,17 +772,8 @@ begin
     IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);
 
     IniFile.Free;
-    
-  end;
-end;
 
-procedure TIni.LoadSoundSettings;
-var
-  IniFile:	  TMemIniFile;
-begin
-  IniFile := TMemIniFile.Create(Filename);
-  LoadInputDeviceCfg(IniFile);
-  IniFile.Free;
+  end;
 end;
 
 procedure TIni.SaveNames;
