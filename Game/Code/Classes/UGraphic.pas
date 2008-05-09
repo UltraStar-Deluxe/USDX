@@ -171,7 +171,7 @@ var
     Tex_Score_NoteBarLevel_Lightest : array [1..6] of TTexture;
     Tex_Score_NoteBarRound_Lightest : array [1..6] of TTexture;
 
-    Tex_Score_Ratings               : array [0..6] of TTexture;
+    Tex_Score_Ratings               : array [0..7] of TTexture;
     
 const
   Skin_BGColorR = 1;
@@ -391,7 +391,7 @@ begin
   end;
 
 //## rating pictures that show a picture according to your rate ##
-    for P := 0 to 6 do begin
+    for P := 0 to 7 do begin
     Tex_Score_Ratings[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Rating_'+IntToStr(P))), TEXTURE_TYPE_TRANSPARENT, 0);
   end;
 
