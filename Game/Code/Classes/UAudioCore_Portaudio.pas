@@ -60,10 +60,11 @@ const
     array[0..0] of TPaHostApiTypeId = ( paDefaultApi );
 {$IFEND}
 
-var
-  Instance: TAudioCore_Portaudio;
 
 { TAudioInput_Portaudio }
+
+var
+  Instance: TAudioCore_Portaudio;
 
 constructor TAudioCore_Portaudio.Create();
 begin

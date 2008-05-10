@@ -9,36 +9,50 @@ interface
 {$I switches.inc}
 
 uses
-  {$IFDEF MSWINDOWS}
-  Windows,
-  {$ENDIF}
   Classes,
   SysUtils,
-  UMusic;
+  UMusic,
+  bass;     // (Note: DWORD is defined here)
 
 type
   TAudioCore_Bass = class
     private
+      constructor Create();
     public
-      class function ErrorGetString(): string; overload;
-      class function ErrorGetString(errCode: integer): string; overload;
-      class function ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
+      class function GetInstance(): TAudioCore_Bass;
+      function ErrorGetString(): string; overload;
+      function ErrorGetString(errCode: integer): string; overload;
+      function ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
   end;
 
-  
+
 implementation
 
 uses
   UMain,
-  ULog,
-  bass;
+  ULog;
 
-class function TAudioCore_Bass.ErrorGetString(): string; 
+var
+  Instance: TAudioCore_Bass;
+
+constructor TAudioCore_Bass.Create();
+begin
+  inherited;
+end;
+
+class function TAudioCore_Bass.GetInstance(): TAudioCore_Bass;
+begin
+  if not assigned(Instance) then
+    Instance := TAudioCore_Bass.Create();
+  Result := Instance;
+end;
+
+function TAudioCore_Bass.ErrorGetString(): string;
 begin
   Result := ErrorGetString(BASS_ErrorGetCode());
 end;
 
-class function TAudioCore_Bass.ErrorGetString(errCode: integer): string;
+function TAudioCore_Bass.ErrorGetString(errCode: integer): string;
 begin
   case errCode of
     BASS_OK:
@@ -63,8 +77,6 @@ begin
       result := 'Paused/stopped';
     BASS_ERROR_ALREADY:
       result := 'Already created/used';
-    BASS_ERROR_NOPAUSE:
-      result := 'No pause';
     BASS_ERROR_NOCHAN:
       result := 'No free channels';
     BASS_ERROR_ILLTYPE:
@@ -93,8 +105,6 @@ begin
       result := 'Creation error';
     BASS_ERROR_NOFX:
       result := 'DX8 effects unavailable';
-    BASS_ERROR_PLAYING:
-      result := 'Channel is playing';
     BASS_ERROR_NOTAVAIL:
       result := 'Not available';
     BASS_ERROR_DECODE:
@@ -111,6 +121,8 @@ begin
       result := 'Version error';
     BASS_ERROR_CODEC:
       result := 'Codec not available/supported';
+    BASS_ERROR_ENDED:
+      result := 'The channel/file has ended';
     BASS_ERROR_UNKNOWN:
       result := 'Unknown error';
     else
@@ -118,7 +130,7 @@ begin
     end;
 end;
 
-class function TAudioCore_Bass.ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
+function TAudioCore_Bass.ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
 begin
   case Format of
     asfS16:

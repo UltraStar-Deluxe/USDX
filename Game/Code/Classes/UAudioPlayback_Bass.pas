@@ -92,6 +92,7 @@ type
   end;
 
 var
+  AudioCore: TAudioCore_Bass;
   singleton_AudioPlaybackBass : IAudioPlayback;
 
 
@@ -137,7 +138,7 @@ begin
   BASS_ChannelPlay(Handle, true);
 
   // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
-  BASS_ChannelSlideAttributes(Handle, -1, TargetVolume, -101, Trunc(Time * 1000));
+  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume/100, Trunc(Time * 1000));
 end;
 
 procedure TBassPlaybackStream.Pause();
@@ -157,10 +158,16 @@ end;
 
 function TBassPlaybackStream.GetVolume(): integer;
 var
-  volume: cardinal;
+  lVolume: single;
 begin
-  BASS_ChannelGetAttributes(Handle, PCardinal(nil)^, volume, PInteger(nil)^);
-  Result := volume;
+  if (not BASS_ChannelGetAttribute(Handle, BASS_ATTRIB_VOL, lVolume)) then
+  begin
+    Log.LogError('BASS_ChannelGetAttribute: ' + AudioCore.ErrorGetString(),
+      'TBassPlaybackStream.GetVolume');
+    Result := 0;
+    Exit;
+  end;
+  Result := Round(lVolume * 100);
 end;
 
 procedure TBassPlaybackStream.SetVolume(volume: integer);
@@ -171,30 +178,30 @@ begin
   if volume > 100 then
     volume := 100;
   // set volume
-  BASS_ChannelSetAttributes(Handle, -1, volume, -101);
+  BASS_ChannelSetAttribute(Handle, BASS_ATTRIB_VOL, volume/100);
 end;
 
 function TBassPlaybackStream.GetPosition: real;
 var
-  bytes:    integer;
+  bytes: QWORD;
 begin
-  bytes  := BASS_ChannelGetPosition(Handle);
+  bytes  := BASS_ChannelGetPosition(Handle, BASS_POS_BYTE);
   Result := BASS_ChannelBytes2Seconds(Handle, bytes);
 end;
 
 procedure TBassPlaybackStream.SetPosition(Time: real);
 var
-  bytes:    integer;
+  bytes: QWORD;
 begin
   bytes := BASS_ChannelSeconds2Bytes(Handle, Time);
-  BASS_ChannelSetPosition(Handle, bytes);
+  BASS_ChannelSetPosition(Handle, bytes, BASS_POS_BYTE);
 end;
 
 function TBassPlaybackStream.GetLength(): real;
 var
-  bytes: integer;
+  bytes: QWORD;
 begin
-  bytes  := BASS_ChannelGetLength(Handle);
+  bytes  := BASS_ChannelGetLength(Handle, BASS_POS_BYTE);
   Result := BASS_ChannelBytes2Seconds(Handle, bytes);
 end;
 
@@ -219,43 +226,38 @@ end;
 
 function TBassPlaybackStream.GetLoop(): boolean;
 var
-  info: BASS_CHANNELINFO;
+  flags: DWORD;
 begin
-  if not BASS_ChannelGetInfo(Handle, info) then
+  // retrieve channel flags
+  flags := BASS_ChannelFlags(Handle, 0, 0);
+  if (flags = -1) then
   begin
-    Log.LogError('BASS_ChannelGetInfo: ' + TAudioCore_Bass.ErrorGetString(), 'TBassPlaybackStream.GetLoop');
+    Log.LogError('BASS_ChannelFlags: ' + AudioCore.ErrorGetString(), 'TBassPlaybackStream.GetLoop');
     Result := false;
     Exit;
   end;
-  Result := (info.flags and BASS_SAMPLE_LOOP) <> 0;
+  Result := (flags and BASS_SAMPLE_LOOP) <> 0;
 end;
 
 procedure TBassPlaybackStream.SetLoop(Enabled: boolean);
 var
-  info: BASS_CHANNELINFO;
+  flags: DWORD;
 begin
-  // retrieve old flag-bits
-  if not BASS_ChannelGetInfo(Handle, info) then
-  begin
-    Log.LogError('BASS_ChannelGetInfo:' + TAudioCore_Bass.ErrorGetString(), 'TBassPlaybackStream.SetLoop');
-    Exit;
-  end;
-
   // set/unset loop-flag
   if (Enabled) then
-    info.flags := info.flags or BASS_SAMPLE_LOOP
+    flags := BASS_SAMPLE_LOOP
   else
-    info.flags := info.flags and not BASS_SAMPLE_LOOP;
+    flags := 0;
 
   // set new flag-bits
-  if not BASS_ChannelSetFlags(Handle, info.flags) then
+  if (BASS_ChannelFlags(Handle, flags, BASS_SAMPLE_LOOP) = -1) then
   begin
-    Log.LogError('BASS_ChannelSetFlags: ' + TAudioCore_Bass.ErrorGetString(), 'TBassPlaybackStream.SetLoop');
+    Log.LogError('BASS_ChannelFlags: ' + AudioCore.ErrorGetString(), 'TBassPlaybackStream.SetLoop');
     Exit;
   end;
 end;
 
-procedure DSPProcHandler(handle: HDSP; channel: DWORD; buffer: Pointer; length: DWORD; user: DWORD); stdcall;
+procedure DSPProcHandler(handle: HDSP; channel: DWORD; buffer: Pointer; length: DWORD; user: Pointer); {$IFDEF MSWINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 var
   effect: TSoundEffect;
 begin
@@ -274,11 +276,10 @@ begin
     Exit;
   end;
 
-  // FIXME: casting of a pointer to Uint32 will fail on 64bit systems
-  dspHandle := BASS_ChannelSetDSP(Handle, @DSPProcHandler, DWORD(effect), 0);
+  dspHandle := BASS_ChannelSetDSP(Handle, @DSPProcHandler, effect, 0);
   if (dspHandle = 0) then
   begin
-    Log.LogError(TAudioCore_Bass.ErrorGetString(), 'TBassPlaybackStream.AddSoundEffect');
+    Log.LogError(AudioCore.ErrorGetString(), 'TBassPlaybackStream.AddSoundEffect');
     Exit;
   end;
 
@@ -296,7 +297,7 @@ begin
 
   if not BASS_ChannelRemoveDSP(Handle, PHDSP(effect.EngineData)^) then
   begin
-    Log.LogError(TAudioCore_Bass.ErrorGetString(), 'TBassPlaybackStream.RemoveSoundEffect');
+    Log.LogError(AudioCore.ErrorGetString(), 'TBassPlaybackStream.RemoveSoundEffect');
     Exit;
   end;
 
@@ -321,11 +322,10 @@ var
 begin
   Result := 0;
 
-  // Get Channel Data Mono and 256 Values
-  BASS_ChannelGetInfo(Handle, info);
   FillChar(data, sizeof(TPCMData), 0);
 
   // no support for non-stereo files at the moment
+  BASS_ChannelGetInfo(Handle, info);
   if (info.chans <> 2) then
     Exit;
 
@@ -406,7 +406,7 @@ var
   BassDeviceID: DWORD;
   DeviceIndex: integer;
   Device: TBassOutputDevice;
-  Description: PChar;
+  DeviceInfo: BASS_DEVICEINFO;
 begin
   ClearOutputDeviceList();
 
@@ -416,13 +416,12 @@ begin
   while true do
   begin
     // Check for device
-    Description := BASS_GetDeviceDescription(BassDeviceID);
-    if (Description = nil) then
+    if (not BASS_GetDeviceInfo(BassDeviceID, DeviceInfo)) then
       break;
 
     // Set device info
     Device := TBassOutputDevice.Create();
-    Device.Name := Description;
+    Device.Name := DeviceInfo.name;
     Device.BassDeviceID := BassDeviceID;
 
     // Add device to list
@@ -440,14 +439,16 @@ var
 begin
   result := false;
 
+  AudioCore := TAudioCore_Bass.GetInstance();
+
   EnumDevices();
 
   //Log.BenchmarkStart(4);
   //Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
 
-  if not BASS_Init(1, 44100, 0, 0, nil) then
+  if not BASS_Init(-1, 44100, 0, 0, nil) then
   begin
-    Log.LogError('Could not initialize BASS', 'Error');
+    Log.LogError('Could not initialize BASS', 'TAudioPlayback_Bass.InitializePlayback');
     Exit;
   end;
 
@@ -460,7 +461,15 @@ begin
   result := true;
 end;
 
-function DecodeStreamHandler(handle: HSTREAM; buffer: Pointer; length: DWORD; user: DWORD): DWORD; stdcall;
+function TAudioPlayback_Bass.FinalizePlayback(): boolean;
+begin
+  Close;
+  BASS_Free;
+  inherited FinalizePlayback();
+  Result := true;
+end;
+
+function DecodeStreamHandler(handle: HSTREAM; buffer: Pointer; length: DWORD; user: Pointer): DWORD; {$IFDEF MSWINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
 var
   decodeStream: TAudioDecodeStream;
   bytes: integer;
@@ -477,17 +486,8 @@ begin
     Result := bytes;
 end;
 
-function TAudioPlayback_Bass.FinalizePlayback(): boolean;
-begin
-  Close;
-  BASS_Free;
-  inherited FinalizePlayback();
-  Result := true;
-end;
-
 function TAudioPlayback_Bass.OpenStream(const Filename: string): TAudioPlaybackStream;
 var
-  L: Integer;
   stream: HSTREAM;
   playbackStream: TBassExtDecoderPlaybackStream;
   decodeStream: TAudioDecodeStream;
@@ -499,6 +499,8 @@ begin
   Result := nil;
 
   //Log.LogStatus('Loading Sound: "' + Filename + '"', 'LoadSoundFromFile');
+  // TODO: use BASS_STREAM_PRESCAN for accurate seeking in VBR-files?
+  //       disadvantage: seeking will slow down.
   stream := BASS_StreamCreateFile(False, PChar(Filename), 0, 0, 0);
 
   // check if BASS opened some erroneously recognized file-formats
@@ -507,7 +509,8 @@ begin
     if BASS_ChannelGetInfo(stream, channelInfo) then
     begin
       fileExt := ExtractFileExt(Filename);
-      // BASS opens FLV-files although it cannot handle them
+      // BASS opens FLV-files (maybe others too) although it cannot handle them.
+      // Setting BASS_CONFIG_VERIFY to the max. value (100000) does not help.
       if ((fileExt = '.flv') and (channelInfo.ctype = BASS_CTYPE_STREAM_MP1)) then
       begin
         BASS_StreamFree(stream);
@@ -526,7 +529,7 @@ begin
     if (AudioDecoder = nil) then
     begin
       Log.LogError('Failed to open "' + Filename + '", ' +
-                   TAudioCore_Bass.ErrorGetString(BASS_ErrorGetCode()), 'TAudioPlayback_Bass.Load');
+                   AudioCore.ErrorGetString(), 'TAudioPlayback_Bass.Load');
       Exit;
     end;
 
@@ -538,20 +541,19 @@ begin
     end;
 
     formatInfo := decodeStream.GetAudioFormatInfo();
-    if (not TAudioCore_Bass.ConvertAudioFormatToBASSFlags(formatInfo.Format, formatFlags)) then
+    if (not AudioCore.ConvertAudioFormatToBASSFlags(formatInfo.Format, formatFlags)) then
     begin
       Log.LogError('Unhandled sample-format in "' + Filename + '"', 'TAudioPlayback_Bass.Load');
       FreeAndNil(decodeStream);
       Exit;
     end;
 
-    // FIXME: casting of a pointer to Uint32 will fail on 64bit systems
     stream := BASS_StreamCreate(Round(formatInfo.SampleRate), formatInfo.Channels, formatFlags,
-        @DecodeStreamHandler, DWORD(decodeStream));
+        @DecodeStreamHandler, decodeStream);
     if (stream = 0) then
     begin
       Log.LogError('Failed to open "' + Filename + '", ' +
-                   TAudioCore_Bass.ErrorGetString(BASS_ErrorGetCode()), 'TAudioPlayback_Bass.Load');
+                   AudioCore.ErrorGetString(BASS_ErrorGetCode()), 'TAudioPlayback_Bass.Load');
       FreeAndNil(decodeStream);
       Exit;
     end;
@@ -576,8 +578,8 @@ end;
 
 procedure TAudioPlayback_Bass.SetAppVolume(Volume: integer);
 begin
-  // Sets Volume only for this Application
-  BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume);
+  // Sets Volume only for this Application (now ranges from 0..10000)
+  BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume*100);
 end;
 
 

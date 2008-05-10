@@ -1,7 +1,8 @@
-BASS 2.3 - Copyright (c) 1999-2007 Ian Luck. All rights reserved.
+BASS 2.4
+Copyright (c) 1999-2008 Un4seen Developments Ltd. All rights reserved.
 
-Files that you should have found in the BASS "package"
-======================================================
+Files that you should have found in the BASS package
+====================================================
 Win32 version
 -------------
 BASS.TXT        This file
@@ -9,7 +10,7 @@ BASS.DLL        The BASS module
 BASS.CHM        BASS documentation
 MP3-FREE
   BASS.DLL        BASS module using the Windows MP3 decoder
-C\              C/C++ API and samples...
+C\              C/C++ API and examples...
   BASS.H          BASS C/C++ header file
   BASS.LIB        BASS import library
   BASS.DSW        Visual C++ workspace for examples
@@ -23,7 +24,6 @@ C\              C/C++ API and samples...
   BASSTEST\       Simple playback example
     BASSTEST.C
     BASSTEST.RC
-    BASSTEST.H
     BASSTEST.DSP
     MAKEFILE
   CONTEST\        Console example
@@ -52,11 +52,6 @@ C\              C/C++ API and samples...
   LIVESPEC\       "Live" version of spectrum analyser example
     LIVESPEC.C
     LIVESPEC.DSP
-    MAKEFILE
-  LOADNGET\       LoadLibrary/GetProcAddress example
-    LOADNGET.C
-    LOADNGET.RC
-    LOADNGET.DSP
     MAKEFILE
   MULTI\          Multiple device example
     MULTI.C
@@ -104,7 +99,6 @@ C\              C/C++ API and samples...
     FXTEST.EXE
     LIVEFX.EXE
     LIVESPEC.EXE
-    LOADNGET.EXE
     MULTI.EXE
     NETRADIO.EXE
     RECTEST.EXE
@@ -112,8 +106,8 @@ C\              C/C++ API and samples...
     SPECTRUM.EXE
     SYNTH.EXE
     WRITEWAV.EXE
-VB\             Visual Basic API and samples...
-  BASS.BAS        BASS Visual Basic module file
+VB\             Visual Basic API and examples...
+  BASS.BAS        BASS Visual Basic module
   3DTEST\         3D/EAX example
     PRJ3DTEST.VBP
     PRJ3DTEST.FRM
@@ -175,7 +169,7 @@ VB\             Visual Basic API and samples...
     FRMMEMORY.FRM
     SYNCTEST.BAS
     CBASS_TIME.CLS
-DELPHI\         Delphi API and samples...
+DELPHI\         Delphi API and examples...
   BASS.PAS        BASS Delphi unit
   3DTEST\         3D/EAX example
     D3TEST.DPR
@@ -245,7 +239,7 @@ DELPHI\         Delphi API and samples...
     UNITMAIN.DFM
   DYNAMIC\        Dynamic-loading Delphi API
     DYNAMIC_BASS.PAS  Dynamic-loading Delphi unit
-MASM\           MASM API and samples...
+MASM\           MASM API and examples...
   BASS.INC        BASS MASM include file
   PLAYER\         Example MOD player
     PLAYER.EXE
@@ -254,8 +248,8 @@ MASM\           MASM API and samples...
     TOOLBAR.BMP
     COMPILE.BAT
 
-NOTE: To run the sample EXEs, first you'll have to copy BASS.DLL into the
-      same directory as the EXEs.
+NOTE: To run the example EXEs, first you will have to copy BASS.DLL into the
+      same directory as them.
 
 NOTE: To avoid unnecessary bloatage, the BASS DLLs are not digitally signed.
       Signed versions are available on request (email: bass@un4seen.com).
@@ -352,64 +346,61 @@ Intel Macs.
 Main Features
 =============
 * Samples
-- supports WAV/AIFF/MP3/MP2/MP1/OGG and custom generated samples
+  supports WAV/AIFF/MP3/MP2/MP1/OGG and custom generated samples
 
 * Sample streams
-- stream any sample data in 8/16/32 bit
+  stream any sample data in 8/16/32 bit, with both "push" and "pull" systems
 
 * File streams
-- MP3/MP2/MP1/OGG/WAV/AIFF file streaming
+  MP3/MP2/MP1/OGG/WAV/AIFF file streaming
 
 * Internet file streaming
-- stream MP3/MP2/MP1/OGG/WAV/AIFF files from the internet (inc. Shout/Icecast)
+  stream files from the internet, including Shout/Icecast
 
 * User file streaming
-- stream MP3/MP2/MP1/OGG/WAV/AIFF files from anywhere using any delivery method
+  stream files from anywhere using any delivery method
 
 * Multi-channel streaming
-- support for more than plain stereo, including multi-channel OGG/WAV/AIFF files
+  support for more than plain stereo, including multi-channel OGG/WAV/AIFF files
 
 * MOD music
-- uses the same engine as XMPlay = best accuracy, speed and quality
+  uses the same engine as XMPlay = best accuracy, speed, and quality
 
 * MO3 music
-- MP3/OGG compressed MOD music
+  MP3/OGG compressed MOD music
 
 * Add-on system
-- support for more formats is available via add-ons (aka plugins)
+  support for more formats is available via add-ons (aka plugins)
 
 * Multiple outputs
-- simultaneously use multiple soundcards, and move channels between them
+  simultaneously use multiple soundcards, and move channels between them
 
 * Recording
-- flexible recording system, with support for multiple devices
+  flexible recording system, with support for multiple devices
 
 * Decode without playback
-- streams and musics can be outputted in any way you want
+  streams and MOD musics can be outputted in any way you want
 
 * Speaker assignment
-- assign streams and musics to specific speakers
+  assign streams and MOD musics to specific speakers
 
 * High precision synchronization
-- synchronize events in your software to the music
+  synchronize events in your software to the streams and MOD musics
 
 * DirectX 8 effects
-- chorus/compressor/distortion/echo/flanger/gargle/parameq/reverb
+  chorus/compressor/distortion/echo/flanger/gargle/parameq/reverb
 
 * User defined DSP functions
-- custom effects may be applied to musics and streams
+  custom effects may be applied to musics and streams
 
 * 32 bit floating-point decoding and processing
-- floating-point stream/music decoding, DSP, FX, and recording
+  floating-point stream/music decoding, DSP, FX, and recording
 
 * 3D sound
-- play samples/streams/musics in any 3D position, with EAX support
-
-* Expandable 
-- underlying DirectSound object interfaces are accessible 
+  play samples/streams/musics in any 3D position, with EAX support
 
 * Small
-- BASS is under 100KB (on Windows), so won't bloat your distribution
+  BASS is under 100KB (on Windows), so won't bloat your distribution
 
 
 Using BASS
@@ -431,12 +422,6 @@ C/C++, Visual Basic, Delphi and MASM APIs are provided, to use BASS with
 another language you'll first have to convert the header file. Or, as a
 last resort, you could use LoadLibrary and GetProcAddress.
 
-One benefit of the LoadLibrary method is that it allows you to look for
-the correct BASS version, because you can load and unload BASS.DLL at
-any time. This also allows those who'd prefer not to have a separate
-DLL to store it with the program (eg. in a resource), write it to disk,
-load it, use it, free it and delete it.
-
 The downside is that you have to manually import each function that you
 use, with the GetProcAddress function. But it has been made a lot simpler
 to import BASS this way by the use of the BASSDEF #define. Here's a small
@@ -448,8 +433,6 @@ example:
 HINSTANCE bass=LoadLibrary("BASS.DLL"); // load BASS
 BASS_Init=GetProcAddress(bass,"BASS_Init"); // get BASS_Init
 BASS_Init(-1,44100,0,hWnd,NULL); // call BASS_Init
-
-See the LOADNGET.C file for a more complete example.
 
 To use BASS with Borland C++ Builder, you'll first have to create a
 Borland C++ Builder import library for it. This is done by using the
@@ -496,36 +479,36 @@ The latest version of BASS can always be found at the BASS website:
 	www.un4seen.com
 
 
-Copyright, disclaimer, and all that other jazz
-==============================================
-The BASS library is free for non-commercial use. If you are a non-
-commercial entity (eg. an individual) and are not charging for your
-product, and the product has no other commercial purpose, then you
-can use BASS in it for free. If you wish to use BASS in commercial
-products, then please also see the next section.
+Licence
+=======
+BASS is free for non-commercial use. If you are a non-commercial entity
+(eg. an individual) and you are not charging for your product, and the
+product has no other commercial purpose, then you can use BASS in it
+for free. If you wish to use BASS in commercial products, then please
+also see the next section.
 
 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, BASS IS PROVIDED
 "AS IS", WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED,
 INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY
 AND/OR FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS SHALL NOT BE HELD
-LIABLE FOR ANY DAMAGE THAT MAY RESULT FROM THE USE OF BASS. BASICALLY,
-YOU USE BASS ENTIRELY AT YOUR OWN RISK.
+LIABLE FOR ANY DAMAGE THAT MAY RESULT FROM THE USE OF BASS. YOU USE
+BASS ENTIRELY AT YOUR OWN RISK.
 
 Usage of BASS indicates that you agree to the above conditions.
 
 All trademarks and other registered names contained in the BASS
 package are the property of their respective owners.
 
-
-BASS in commercial products?
-============================
+Commercial licensing
+--------------------
 BASS is available for use in your commercial products. The licence
 types available are as follows:
 
 SHAREWARE: Allows the usage of BASS in an unlimited number of your
 shareware products, which must sell for no more than 40 Euros each.
-If you're an individual making and selling your own software (and
-its price is within the limit), this is the licence for you.
+If you are an individual (not a corporation) making and selling your
+own software (and its price is within the limit), this is the licence
+for you.
 
 SINGLE COMMERCIAL: Allows the usage of BASS in a single commercial
 product.
@@ -538,7 +521,7 @@ required.
 Please note the products must be end-user products, eg. not components
 used by other products. 
 
-These licences only cover your own software. not the publishing of
+These licences only cover your own software, not the publishing of
 other's software. If you publish other's software, its developers (or
 the software itself) will need to be licensed to use BASS.
 
@@ -549,7 +532,7 @@ licence covers one person or entity and is not transferable.
 
 These licences do not allow reselling/sublicensing of BASS. For example,
 if a product is a development system, the users of said product are not
-licensed to use BASS in their productions - they will need their own
+licensed to use BASS in their productions; they will need their own
 licences.
 
 If the standard licences do not meet your requirements, or if you have
@@ -559,9 +542,8 @@ Visit the BASS website for the latest pricing:
 
 	www.un4seen.com
 
-
 MP3
-===
+---
 MP3 technology is patented, and Thomson license the use of their and
 Fraunhofer's patents. The inclusion of an MP3 decoder (eg. BASS) in a
 commercial product requires an MP3 patent licence. Contact Thomson for
@@ -569,7 +551,7 @@ details:
 
 	www.mp3licensing.com
 
-Alternatively, the "MP3-FREE" BASS version doesn't include its own MP3
+Alternatively, the "MP3-FREE" BASS version does not include its own MP3
 decoder but instead makes use of the operating system's already licensed
 decoder.
 
@@ -584,6 +566,131 @@ These are the major (and not so major) changes at each version stage.
 There are of course bug fixes and other little improvements made along
 the way too! To make upgrading simpler, all functions affected by a
 change to the BASS interface are listed.
+
+2.4 - 2/4/2008
+--------------
+* "Push" streaming
+	STREAMPROC_PUSH (BASS_StreamCreate "proc")
+	BASS_StreamPutData
+	LIVEFX and MULTI examples updated
+* "Push" buffered file streaming
+	STREAMFILE_BUFFERPUSH (BASS_StreamCreateFileUser system)
+	BASS_StreamPutFileData
+* STREAMFILEPROC replaced by table of callbacks for each file operation
+	BASS_FILEPROCS (FILECLOSEPROC/FILELENPROC/FILEREADPROC/FILESEEKPROC)
+	STREAMFILEPROC *removed*
+* 64-bit file positioning
+	BASS_SampleLoad
+	BASS_MusicLoad
+	BASS_StreamCreateFile
+	BASS_StreamGetFilePosition
+* File buffer level retrieval
+	BASS_FILEPOS_BUFFER (BASS_StreamGetFilePosition mode)
+* Sinc interpolated MOD music mixing
+	BASS_MUSIC_SINCINTER (BASS_MusicLoad flag)
+* MO3 v2.4 support
+	BASS_MusicLoad
+* MOD orders positioning incorporated into channel functions
+	BASS_ChannelGetLength
+	BASS_ChannelSetPosition
+	BASS_ChannelGetPosition
+	BASS_MusicGetOrderPosition *removed*
+	BASS_MusicGetOrders *removed*
+* Channel attribute functions consolidated
+	BASS_ChannelSetAttribute
+	BASS_ChannelGetAttribute
+	BASS_ChannelSlideAttribute
+	BASS_ChannelIsSliding
+	BASS_ChannelSetAttributes *removed*
+	BASS_ChannelGetAttributes *removed*
+	BASS_ChannelSlideAttributes *removed*
+	BASS_ChannelSetEAXMix *removed*
+	BASS_ChannelGetEAXMix *removed*
+	BASS_MusicSetAttribute *removed*
+	BASS_MusicGetAttribute *removed*
+* Floating-point volume and panning
+	BASS_SetVolume
+	BASS_GetVolume
+	BASS_RecordSetInput
+	BASS_RecordGetInput
+	BASS_ATTRIB_PAN/VOL (BASS_ChannelGet/Set/SlideAttribute options)
+	BASS_ATTRIB_MUSIC_VOL_CHAN/INST (BASS_ChannelGet/Set/SlideAttribute options)
+	BASS_SAMPLE (volume/pan/outvol members)
+	BASS_CONFIG_MAXVOL *removed*
+	BASSTEST and RECTEST examples updated
+* Output device volume control on Vista (as on other OS)
+	BASS_SetVolume
+	BASS_GetVolume
+* Multiple update threads
+	BASS_CONFIG_UPDATETHREADS
+	BASSTEST example updated
+* Global volume range increased to 10000
+	BASS_CONFIG_GVOL_SAMPLE/STREAM/MUSIC (BASS_SetConfig options)
+	BASSTEST example updated
+* Setting and retrieving of a sample's data
+	BASS_SampleSetData
+	BASS_SampleGetData
+	BASS_SampleCreate
+	BASS_SampleCreateDone *removed*
+* Channel flag setting mask
+	BASS_ChannelFlags
+	BASS_ChannelSetFlags *removed*
+	SPEAKERS example updated
+* 256 sample FFT
+	BASS_DATA_FFT256 (BASS_ChannelGetDat flag)
+* Channel locking to prevent access by other threads
+	BASS_ChannelLock
+* Manual channel buffer updating
+	BASS_ChannelUpdate
+	BASS_ChannelPreBuf *removed*
+* Configurable manual update length
+	BASS_Update
+* Extended device information retrieval and detection of new/removed devices
+	BASS_GetDeviceInfo
+	BASS_RecordGetDeviceInfo
+	BASS_DEVICEINFO structure
+	BASS_GetDeviceDescription *removed*
+	BASS_RecordGetDeviceDescription *removed*
+	BASS_INFO (driver member) *removed*
+	BASS_RECORDINFO (driver member) *removed*
+	MULTI example updated
+* Default device change tracking on Windows (as on OSX)
+	BASS_Init
+	BASS_RecordInit
+* Speaker detection from Windows control panel
+	BASS_DEVICE_CPSPEAKERS (BASS_Init flag)
+* Channel automatically stopped & resumed for DX8 effects
+	BASS_ChannelSetFX
+	BASS_ChannelRemoveFX
+* "double" precision position conversion
+	BASS_ChannelBytes2Seconds
+	BASS_ChannelSeconds2Bytes
+* Separate config functions for pointers
+	BASS_SetConfigPtr
+	BASS_GetConfigPtr
+	BASS_CONFIG_NET_AGENT/PROXY (BASS_SetConfigPtr options)
+* Configurable file format verification length
+	BASS_CONFIG_VERIFY (BASS_SetConfig option)
+* Stream filename retrieval
+	BASS_CHANNELINFO (file member)
+* Channel sample retrieval
+	BASS_CHANNELINFO (sample member)
+* META syncs no longer receive metadata in the "data" parameter
+	BASS_SYNC_META (BASS_ChannelSetSync type)
+* Separate sync for OGG logical bitstream changes (instead of BASS_SYNC_META)
+	BASS_SYNC_OGG_CHANGE (BASS_ChannelSetSync type)
+	NETRADIO example updated (C version)
+* Message syncing removed (use PostMessage instead)
+	BASS_SYNC_MESSAGE (BASS_ChannelSetSync flag) *removed*
+* Data retrieval from stopped/paused channels
+	BASS_ChannelGetData
+* Callback "user" parameters changed to pointers
+	BASS_StreamCreate / STREAMPROC
+	BASS_StreamCreateFileUser
+	BASS_StreamCreateURL / DOWNLOADPROC
+	BASS_RecordStart / RECORDPROC
+	BASS_ChannelSetDSP / DSPPROC
+	BASS_ChannelSetSync / SYNCPROC
 
 2.3.0.3 - 30/7/2007
 -------------------
@@ -1526,21 +1633,26 @@ change to the BASS interface are listed.
 * First public release
 
 
-Credits - API/Sample Contributors
-=================================
-Visual Basic - Adam Hoult, Hendrik Knaepen, Arthur Aminov,
-               Peter Hebels
-Delphi - Titus Miloi, Rogier Timmermans, Alessandro Cappellozza,
-         Jesse Naranjo, Chris Troesken
-MASM - Octavian Chis
+Credits
+=======
+Ogg Vorbis decoding is based on libogg/vorbis,
+Copyright (c) 2002-2004 Xiph.org Foundation
 
-CHMOX is (c)2004 Stéphane Boisson, http://chmox.sourceforge.net/
+CHMOX is (c) 2004 Stéphane Boisson, http://chmox.sourceforge.net/
+
+API/Sample contributors
+-----------------------
+Visual Basic: Adam Hoult, Hendrik Knaepen, Arthur Aminov,
+              Peter Hebels
+Delphi: Titus Miloi, Rogier Timmermans, Alessandro Cappellozza,
+        Jesse Naranjo, Chris Troesken
+MASM: Octavian Chis
 
 
 Bug reports, Suggestions, Comments, Enquiries, etc...
 =====================================================
-If you have any of the aforementioned please see the BASS forum (at
-the website). If you can't find an answer there, you can email:
+If you have any of the aforementioned please visit the BASS forum at
+the website. If you can't find an answer there, you can also email:
 
 	bass@un4seen.com
 

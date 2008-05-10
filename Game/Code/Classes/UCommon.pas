@@ -53,8 +53,16 @@ procedure DisableFloatingPointExceptions();
 procedure SetDefaultNumericLocale();
 procedure RestoreNumericLocale();
 
-{$IFNDEF win32}
+{$IFNDEF MSWINDOWS}
   procedure ZeroMemory( Destination: Pointer; Length: DWORD );
+  function MakeLong(a, b: Word): Longint;
+  (*
+  #define LOBYTE(a) (BYTE)(a)
+  #define HIBYTE(a) (BYTE)((a)>>8)
+  #define LOWORD(a) (WORD)(a)
+  #define HIWORD(a) (WORD)((a)>>16)
+  #define MAKEWORD(a,b) (WORD)(((a)&0xff)|((b)<<8))
+  *)
 {$ENDIF}
 
 function FileExistsInsensitive(var FileName: string): boolean;
@@ -233,7 +241,12 @@ end;
 procedure ZeroMemory( Destination: Pointer; Length: DWORD );
 begin
   FillChar( Destination^, Length, 0 );
-end; //ZeroMemory
+end;
+
+function MakeLong(A, B: Word): Longint;
+begin
+  Result := (LongInt(B) shl 16) + A;
+end;
 
 (*
 function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER):Bool;
@@ -755,7 +768,7 @@ end;
  * be ordered by title. In contrast to this an unstable algorithm (like QuickSort)
  * may destroy an existing order, so the songs of an artist will not be ordered
  * by title anymore after sorting by artist in the previous example.
- * If you do not need a stable algorithm, use TList.Sort() instead.    
+ * If you do not need a stable algorithm, use TList.Sort() instead.
  *)
 procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
 var

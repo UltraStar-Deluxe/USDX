@@ -1,0 +1,368 @@
+--- D:/daten/bass.pas	Sun Mar 23 18:58:56 2008
++++ D:/daten/Projekte/UltraStarDX/Kopie von trunk/Game/Code/lib/bass/delphi/bass.pas	Sat May 03 03:52:56 2008
+@@ -13,8 +13,20 @@
+ 
+ interface
+ 
++{$IFDEF FPC}
++  {$PACKRECORDS C}
++{$ENDIF}
++
++{$IFDEF MSWINDOWS}
++  {$DEFINE DLL_STDCALL}
++{$ELSE}
++  {$DEFINE DLL_CDECL}
++{$ENDIF}
++
++{$IFDEF MSWINDOWS}
+ uses
+   Windows;
++{$ENDIF}
+ 
+ const
+   BASSVERSION = $204;             // API version
+@@ -231,6 +243,7 @@
+   BASS_3DALG_FULL         = 2;
+   BASS_3DALG_LIGHT        = 3;
+ 
++{$IFDEF MSWINDOWS}
+   // EAX environments, use with BASS_SetEAXParameters
+   EAX_ENVIRONMENT_GENERIC           = 0;
+   EAX_ENVIRONMENT_PADDEDCELL        = 1;
+@@ -260,6 +273,7 @@
+   EAX_ENVIRONMENT_PSYCHOTIC         = 25;
+   // total number of environments
+   EAX_ENVIRONMENT_COUNT             = 26;
++{$ENDIF}
+ 
+   BASS_STREAMPROC_END = $80000000; // end of user stream flag
+ 
+@@ -487,10 +501,10 @@
+   end;
+ 
+   // User file stream callback functions
+-  FILECLOSEPROC = procedure(user: Pointer); stdcall;
+-  FILELENPROC = function(user: Pointer): QWORD; stdcall;
+-  FILEREADPROC = function(buffer: Pointer; length: DWORD; user: Pointer): DWORD; stdcall;
+-  FILESEEKPROC = function(offset: QWORD; user: Pointer): BOOL; stdcall;
++  FILECLOSEPROC = procedure(user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
++  FILELENPROC = function(user: Pointer): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
++  FILEREADPROC = function(buffer: Pointer; length: DWORD; user: Pointer): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
++  FILESEEKPROC = function(offset: QWORD; user: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+ 
+   BASS_FILEPROCS = record
+     close: FILECLOSEPROC;
+@@ -578,7 +592,7 @@
+   end;
+ 
+   // callback function types
+-  STREAMPROC = function(handle: HSTREAM; buffer: Pointer; length: DWORD; user: Pointer): DWORD; stdcall;
++  STREAMPROC = function(handle: HSTREAM; buffer: Pointer; length: DWORD; user: Pointer): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+   {
+     User stream callback function. NOTE: A stream function should obviously be as
+     quick as possible, other streams (and MOD musics) can't be mixed until
+@@ -593,12 +607,12 @@
+ 
+ const
+   // special STREAMPROCs
+-  STREAMPROC_DUMMY : STREAMPROC = STREAMPROC(0);  // "dummy" stream
+-  STREAMPROC_PUSH  : STREAMPROC = STREAMPROC(-1); // push stream
++  STREAMPROC_DUMMY {: STREAMPROC} = Pointer(0);  // "dummy" stream
++  STREAMPROC_PUSH  {: STREAMPROC} = Pointer(-1); // push stream
+ 
+ type
+ 
+-  DOWNLOADPROC = procedure(buffer: Pointer; length: DWORD; user: Pointer); stdcall;
++  DOWNLOADPROC = procedure(buffer: Pointer; length: DWORD; user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+   {
+     Internet stream download callback function.
+     buffer : Buffer containing the downloaded data... NULL=end of download
+@@ -606,7 +620,7 @@
+     user   : The 'user' parameter value given when calling BASS_StreamCreateURL
+   }
+ 
+-  SYNCPROC = procedure(handle: HSYNC; channel, data: DWORD; user: Pointer); stdcall;
++  SYNCPROC = procedure(handle: HSYNC; channel, data: DWORD; user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+   {
+     Sync callback function. NOTE: a sync callback function should be very
+     quick as other syncs cannot be processed until it has finished. If the
+@@ -618,7 +632,7 @@
+     user   : The 'user' parameter given when calling BASS_ChannelSetSync
+   }
+ 
+-  DSPPROC = procedure(handle: HDSP; channel: DWORD; buffer: Pointer; length: DWORD; user: Pointer); stdcall;
++  DSPPROC = procedure(handle: HDSP; channel: DWORD; buffer: Pointer; length: DWORD; user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+   {
+     DSP callback function. NOTE: A DSP function should obviously be as quick
+     as possible... other DSP functions, streams and MOD musics can not be
+@@ -630,7 +644,7 @@
+     user   : The 'user' parameter given when calling BASS_ChannelSetDSP
+   }
+ 
+-  RECORDPROC = function(handle: HRECORD; buffer: Pointer; length: DWORD; user: Pointer): BOOL; stdcall;
++  RECORDPROC = function(handle: HRECORD; buffer: Pointer; length: DWORD; user: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+   {
+     Recording callback function.
+     handle : The recording handle
+@@ -643,116 +657,130 @@
+ 
+ // Functions
+ const
++{$IFDEF MSWINDOWS}
+   bassdll = 'bass.dll';
+-
+-function BASS_SetConfig(option, value: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_GetConfig(option: DWORD): DWORD; stdcall; external bassdll;
+-function BASS_SetConfigPtr(option: DWORD; value: Pointer): BOOL; stdcall; external bassdll;
+-function BASS_GetConfigPtr(option: DWORD): Pointer; stdcall; external bassdll;
+-function BASS_GetVersion: DWORD; stdcall; external bassdll;
+-function BASS_ErrorGetCode: Integer; stdcall; external bassdll;
+-function BASS_GetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; stdcall; external bassdll;
+-function BASS_Init(device: Integer; freq, flags: DWORD; win: HWND; clsid: PGUID): BOOL; stdcall; external bassdll;
+-function BASS_SetDevice(device: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_GetDevice: DWORD; stdcall; external bassdll;
+-function BASS_Free: BOOL; stdcall; external bassdll;
+-function BASS_GetDSoundObject(obj: DWORD): Pointer; stdcall; external bassdll;
+-function BASS_GetInfo(var info: BASS_INFO): BOOL; stdcall; external bassdll;
+-function BASS_Update(length: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_GetCPU: FLOAT; stdcall; external bassdll;
+-function BASS_Start: BOOL; stdcall; external bassdll;
+-function BASS_Stop: BOOL; stdcall; external bassdll;
+-function BASS_Pause: BOOL; stdcall; external bassdll;
+-function BASS_SetVolume(volume: FLOAT): BOOL; stdcall; external bassdll;
+-function BASS_GetVolume: FLOAT; stdcall; external bassdll;
+-
+-function BASS_PluginLoad(filename: PChar; flags: DWORD): HPLUGIN; stdcall; external bassdll;
+-function BASS_PluginFree(handle: HPLUGIN): BOOL; stdcall; external bassdll;
+-function BASS_PluginGetInfo(handle: HPLUGIN): PBASS_PLUGININFO; stdcall; external bassdll;
+-
+-function BASS_Set3DFactors(distf, rollf, doppf: FLOAT): BOOL; stdcall; external bassdll;
+-function BASS_Get3DFactors(var distf, rollf, doppf: FLOAT): BOOL; stdcall; external bassdll;
+-function BASS_Set3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; stdcall; external bassdll;
+-function BASS_Get3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; stdcall; external bassdll;
+-procedure BASS_Apply3D; stdcall; external bassdll;
+-function BASS_SetEAXParameters(env: Integer; vol, decay, damp: FLOAT): BOOL; stdcall; external bassdll;
+-function BASS_GetEAXParameters(var env: DWORD; var vol, decay, damp: FLOAT): BOOL; stdcall; external bassdll;
+-
+-function BASS_MusicLoad(mem: BOOL; f: Pointer; offset: QWORD; length, flags, freq: DWORD): HMUSIC; stdcall; external bassdll;
+-function BASS_MusicFree(handle: HMUSIC): BOOL; stdcall; external bassdll;
+-
+-function BASS_SampleLoad(mem: BOOL; f: Pointer; offset: QWORD; length, max, flags: DWORD): HSAMPLE; stdcall; external bassdll;
+-function BASS_SampleCreate(length, freq, chans, max, flags: DWORD): HSAMPLE; stdcall; external bassdll;
+-function BASS_SampleFree(handle: HSAMPLE): BOOL; stdcall; external bassdll;
+-function BASS_SampleSetData(handle: HSAMPLE; buffer: Pointer): BOOL; stdcall; external bassdll;
+-function BASS_SampleGetData(handle: HSAMPLE; buffer: Pointer): BOOL; stdcall; external bassdll;
+-function BASS_SampleGetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; stdcall; external bassdll;
+-function BASS_SampleSetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; stdcall; external bassdll;
+-function BASS_SampleGetChannel(handle: HSAMPLE; onlynew: BOOL): HCHANNEL; stdcall; external bassdll;
+-function BASS_SampleGetChannels(handle: HSAMPLE; channels: Pointer): DWORD; stdcall; external bassdll;
+-function BASS_SampleStop(handle: HSAMPLE): BOOL; stdcall; external bassdll;
+-
+-function BASS_StreamCreate(freq, chans, flags: DWORD; proc: STREAMPROC; user: Pointer): HSTREAM; stdcall; external bassdll;
+-function BASS_StreamCreateFile(mem: BOOL; f: Pointer; offset, length: QWORD; flags: DWORD): HSTREAM; stdcall; external bassdll;
+-function BASS_StreamCreateURL(url: PChar; offset: DWORD; flags: DWORD; proc: DOWNLOADPROC; user: Pointer):HSTREAM; stdcall; external bassdll;
+-function BASS_StreamCreateFileUser(system, flags: DWORD; var procs: BASS_FILEPROCS; user: Pointer): HSTREAM; stdcall; external bassdll;
+-function BASS_StreamFree(handle: HSTREAM): BOOL; stdcall; external bassdll;
+-function BASS_StreamGetFilePosition(handle: HSTREAM; mode: DWORD): QWORD; stdcall; external bassdll;
+-function BASS_StreamPutData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; stdcall; external bassdll;
+-function BASS_StreamPutFileData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; stdcall; external bassdll;
+-
+-function BASS_RecordGetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; stdcall; external bassdll;
+-function BASS_RecordInit(device: Integer):BOOL; stdcall; external bassdll;
+-function BASS_RecordSetDevice(device: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_RecordGetDevice: DWORD; stdcall; external bassdll;
+-function BASS_RecordFree: BOOL; stdcall; external bassdll;
+-function BASS_RecordGetInfo(var info: BASS_RECORDINFO): BOOL; stdcall; external bassdll;
+-function BASS_RecordGetInputName(input: Integer): PChar; stdcall; external bassdll;
+-function BASS_RecordSetInput(input: Integer; flags: DWORD; volume: FLOAT): BOOL; stdcall; external bassdll;
+-function BASS_RecordGetInput(input: Integer; var volume: FLOAT): DWORD; stdcall; external bassdll;
+-function BASS_RecordStart(freq, chans, flags: DWORD; proc: RECORDPROC; user: Pointer): HRECORD; stdcall; external bassdll;
+-
+-function BASS_ChannelBytes2Seconds(handle: DWORD; pos: QWORD): Double; stdcall;external bassdll;
+-function BASS_ChannelSeconds2Bytes(handle: DWORD; pos: Double): QWORD; stdcall;external bassdll;
+-function BASS_ChannelGetDevice(handle: DWORD): DWORD; stdcall; external bassdll;
+-function BASS_ChannelSetDevice(handle, device: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelIsActive(handle: DWORD): DWORD; stdcall;external bassdll;
+-function BASS_ChannelGetInfo(handle: DWORD; var info: BASS_CHANNELINFO):BOOL;stdcall;external bassdll;
+-function BASS_ChannelGetTags(handle: HSTREAM; tags: DWORD): PChar; stdcall; external bassdll;
+-function BASS_ChannelFlags(handle, flags, mask: DWORD): DWORD; stdcall; external bassdll;
+-function BASS_ChannelUpdate(handle, length: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelLock(handle: DWORD; lock: BOOL): BOOL; stdcall; external bassdll;
+-function BASS_ChannelPlay(handle: DWORD; restart: BOOL): BOOL; stdcall; external bassdll;
+-function BASS_ChannelStop(handle: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelPause(handle: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelSetAttribute(handle, attrib: DWORD; value: FLOAT): BOOL; stdcall; external bassdll;
+-function BASS_ChannelGetAttribute(handle, attrib: DWORD; var value: FLOAT): BOOL; stdcall; external bassdll;
+-function BASS_ChannelSlideAttribute(handle, attrib: DWORD; value: FLOAT; time: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelIsSliding(handle, attrib: DWORD): BOOL; stdcall;external bassdll;
+-function BASS_ChannelSet3DAttributes(handle: DWORD; mode: Integer; min, max: FLOAT; iangle, oangle, outvol: Integer): BOOL; stdcall; external bassdll;
+-function BASS_ChannelGet3DAttributes(handle: DWORD; var mode: DWORD; var min, max: FLOAT; var iangle, oangle, outvol: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelSet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; stdcall; external bassdll;
+-function BASS_ChannelGet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; stdcall; external bassdll;
+-function BASS_ChannelGetLength(handle, mode: DWORD): QWORD; stdcall; external bassdll;
+-function BASS_ChannelSetPosition(handle: DWORD; pos: QWORD; mode: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelGetPosition(handle, mode: DWORD): QWORD; stdcall; external bassdll;
+-function BASS_ChannelGetLevel(handle: DWORD): DWORD; stdcall; external bassdll;
+-function BASS_ChannelGetData(handle: DWORD; buffer: Pointer; length: DWORD): DWORD; stdcall; external bassdll;
+-function BASS_ChannelSetSync(handle: DWORD; type_: DWORD; param: QWORD; proc: SYNCPROC; user: Pointer): HSYNC; stdcall; external bassdll;
+-function BASS_ChannelRemoveSync(handle: DWORD; sync: HSYNC): BOOL; stdcall; external bassdll;
+-function BASS_ChannelSetDSP(handle: DWORD; proc: DSPPROC; user: Pointer; priority: Integer): HDSP; stdcall; external bassdll;
+-function BASS_ChannelRemoveDSP(handle: DWORD; dsp: HDSP): BOOL; stdcall; external bassdll;
+-function BASS_ChannelSetLink(handle, chan: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelRemoveLink(handle, chan: DWORD): BOOL; stdcall; external bassdll;
+-function BASS_ChannelSetFX(handle, type_: DWORD; priority: Integer): HFX; stdcall; external bassdll;
+-function BASS_ChannelRemoveFX(handle: DWORD; fx: HFX): BOOL; stdcall; external bassdll;
+-
+-function BASS_FXSetParameters(handle: HFX; par: Pointer): BOOL; stdcall; external bassdll;
+-function BASS_FXGetParameters(handle: HFX; par: Pointer): BOOL; stdcall; external bassdll;
+-function BASS_FXReset(handle: HFX): BOOL; stdcall; external bassdll;
++{$ENDIF}
++{$IFDEF DARWIN}
++  bassdll = 'libbass.dylib';
++{$ENDIF}
++
++function BASS_SetConfig(option, value: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetConfig(option: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SetConfigPtr(option: DWORD; value: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetConfigPtr(option: DWORD): Pointer; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetVersion: DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ErrorGetCode: Integer; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++{$IFDEF MSWINDOWS}
++function BASS_Init(device: Integer; freq, flags: DWORD; win: HWND; clsid: PGUID): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++{$ELSE}
++function BASS_Init(device: Integer; freq, flags: DWORD; win: Pointer; clsid: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++{$ENDIF}
++function BASS_SetDevice(device: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetDevice: DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Free: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++{$IFDEF MSWINDOWS}
++function BASS_GetDSoundObject(obj: DWORD): Pointer; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++{$ENDIF}
++function BASS_GetInfo(var info: BASS_INFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Update(length: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetCPU: FLOAT; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Start: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Stop: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Pause: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SetVolume(volume: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetVolume: FLOAT; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++
++function BASS_PluginLoad(filename: PChar; flags: DWORD): HPLUGIN; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_PluginFree(handle: HPLUGIN): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_PluginGetInfo(handle: HPLUGIN): PBASS_PLUGININFO; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++
++function BASS_Set3DFactors(distf, rollf, doppf: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Get3DFactors(var distf, rollf, doppf: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Set3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_Get3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++procedure BASS_Apply3D; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++{$IFDEF MSWINDOWS}
++function BASS_SetEAXParameters(env: Integer; vol, decay, damp: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_GetEAXParameters(var env: DWORD; var vol, decay, damp: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++{$ENDIF}
++
++function BASS_MusicLoad(mem: BOOL; f: Pointer; offset: QWORD; length, flags, freq: DWORD): HMUSIC; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_MusicFree(handle: HMUSIC): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++
++function BASS_SampleLoad(mem: BOOL; f: Pointer; offset: QWORD; length, max, flags: DWORD): HSAMPLE; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleCreate(length, freq, chans, max, flags: DWORD): HSAMPLE; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleFree(handle: HSAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleSetData(handle: HSAMPLE; buffer: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleGetData(handle: HSAMPLE; buffer: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleGetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleSetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleGetChannel(handle: HSAMPLE; onlynew: BOOL): HCHANNEL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleGetChannels(handle: HSAMPLE; channels: Pointer): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_SampleStop(handle: HSAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++
++function BASS_StreamCreate(freq, chans, flags: DWORD; proc: STREAMPROC; user: Pointer): HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_StreamCreateFile(mem: BOOL; f: Pointer; offset, length: QWORD; flags: DWORD): HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_StreamCreateURL(url: PChar; offset: DWORD; flags: DWORD; proc: DOWNLOADPROC; user: Pointer):HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_StreamCreateFileUser(system, flags: DWORD; var procs: BASS_FILEPROCS; user: Pointer): HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_StreamFree(handle: HSTREAM): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_StreamGetFilePosition(handle: HSTREAM; mode: DWORD): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_StreamPutData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_StreamPutFileData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++
++function BASS_RecordGetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordInit(device: Integer):BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordSetDevice(device: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordGetDevice: DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordFree: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordGetInfo(var info: BASS_RECORDINFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordGetInputName(input: Integer): PChar; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordSetInput(input: Integer; flags: DWORD; volume: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordGetInput(input: Integer; var volume: FLOAT): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_RecordStart(freq, chans, flags: DWORD; proc: RECORDPROC; user: Pointer): HRECORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++
++function BASS_ChannelBytes2Seconds(handle: DWORD; pos: QWORD): Double; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
++function BASS_ChannelSeconds2Bytes(handle: DWORD; pos: Double): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
++function BASS_ChannelGetDevice(handle: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSetDevice(handle, device: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelIsActive(handle: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
++function BASS_ChannelGetInfo(handle: DWORD; var info: BASS_CHANNELINFO):BOOL;{$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
++function BASS_ChannelGetTags(handle: HSTREAM; tags: DWORD): PChar; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelFlags(handle, flags, mask: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelUpdate(handle, length: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelLock(handle: DWORD; lock: BOOL): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelPlay(handle: DWORD; restart: BOOL): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelStop(handle: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelPause(handle: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSetAttribute(handle, attrib: DWORD; value: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelGetAttribute(handle, attrib: DWORD; var value: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSlideAttribute(handle, attrib: DWORD; value: FLOAT; time: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelIsSliding(handle, attrib: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
++function BASS_ChannelSet3DAttributes(handle: DWORD; mode: Integer; min, max: FLOAT; iangle, oangle, outvol: Integer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelGet3DAttributes(handle: DWORD; var mode: DWORD; var min, max: FLOAT; var iangle, oangle, outvol: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelGet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelGetLength(handle, mode: DWORD): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSetPosition(handle: DWORD; pos: QWORD; mode: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelGetPosition(handle, mode: DWORD): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelGetLevel(handle: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelGetData(handle: DWORD; buffer: Pointer; length: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSetSync(handle: DWORD; type_: DWORD; param: QWORD; proc: SYNCPROC; user: Pointer): HSYNC; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelRemoveSync(handle: DWORD; sync: HSYNC): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSetDSP(handle: DWORD; proc: DSPPROC; user: Pointer; priority: Integer): HDSP; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelRemoveDSP(handle: DWORD; dsp: HDSP): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSetLink(handle, chan: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelRemoveLink(handle, chan: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelSetFX(handle, type_: DWORD; priority: Integer): HFX; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_ChannelRemoveFX(handle: DWORD; fx: HFX): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++
++function BASS_FXSetParameters(handle: HFX; par: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_FXGetParameters(handle: HFX; par: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
++function BASS_FXReset(handle: HFX): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+ 
+ 
+ function BASS_SPEAKER_N(n: DWORD): DWORD;
++{$IFDEF MSWINDOWS}
+ function BASS_SetEAXPreset(env: Integer): BOOL;
+ {
+   This function is defined in the implementation part of this unit.
+@@ -760,7 +788,7 @@
+   to set the predefined EAX environments.
+   env    : a EAX_ENVIRONMENT_xxx constant
+ }
+-
++{$ENDIF}
+ 
+ implementation
+ 
+@@ -769,6 +797,7 @@
+   Result := n shl 24;
+ end;
+ 
++{$IFDEF MSWINDOWS}
+ function BASS_SetEAXPreset(env: Integer): BOOL;
+ begin
+   case (env) of
+@@ -828,6 +857,7 @@
+       Result := FALSE;
+   end;
+ end;
++{$ENDIF}
+ 
+ end.
+ // END OF FILE /////////////////////////////////////////////////////////////////
