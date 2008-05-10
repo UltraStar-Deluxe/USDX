@@ -51,8 +51,8 @@ type
       function Start(): boolean; override;
       function Stop(): boolean;  override;
 
-      function GetVolume(): integer;        override;
-      procedure SetVolume(Volume: integer); override;
+      function GetVolume(): single;        override;
+      procedure SetVolume(Volume: single); override;
   end;
 
 function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longword;
@@ -214,33 +214,26 @@ begin
   RecordStream := nil;
 end;
 
-function TPortaudioInputDevice.GetVolume(): integer;
+function TPortaudioInputDevice.GetVolume(): single;
 begin
   Result := 0;
   {$IFDEF UsePortmixer}
     if (Mixer <> nil) then
-    begin
-      Result := Round(Px_GetInputVolume(Mixer) * 100);
-      // clip to valid range
-      if (Result > 100) then
-        Result := 100
-      else if (Result < 0) then
-        Result := 0;
-    end;
+      Result := Px_GetInputVolume(Mixer);
   {$ENDIF}
 end;
 
-procedure TPortaudioInputDevice.SetVolume(Volume: integer);
+procedure TPortaudioInputDevice.SetVolume(Volume: single);
 begin
   {$IFDEF UsePortmixer}
     if (Mixer <> nil) then
     begin
       // clip to valid range
-      if (Volume > 100) then
-        Volume := 100
+      if (Volume > 1.0) then
+        Volume := 1.0
       else if (Volume < 0) then
         Volume := 0;
-      Px_SetInputVolume(Mixer, Volume / 100);
+      Px_SetInputVolume(Mixer, Volume);
     end;
   {$ENDIF}
 end;

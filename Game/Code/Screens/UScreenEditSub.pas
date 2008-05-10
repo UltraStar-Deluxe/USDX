@@ -1174,7 +1174,7 @@ begin
     Lines[0].Line[0].Note[0].Color := 1;
     AudioPlayback.Open(CurrentSong.Path + CurrentSong.Mp3);
     //Set Down Music Volume for Better hearability of Midi Sounds
-    //Music.SetVolume(40);
+    //Music.SetVolume(0.4);
 
     Lyric.Clear;
     Lyric.X := 400;
@@ -1315,7 +1315,7 @@ begin
   MidiOut.Close;
   MidiOut.Free;
   {$ENDIF}
-  //Music.SetVolume(100);
+  //Music.SetVolume(1.0);
 end;
 
 function TScreenEditSub.GetNoteName(Note: Integer): String;

@@ -1309,7 +1309,7 @@ Log.LogStatus('',' JB-4');
         CTime_hold:=0;
         AudioPlayback.Stop;
         AudioPlayback.Open(soundpath + 'credits-outro-tune.mp3');
-        AudioPlayback.SetVolume(20);
+        AudioPlayback.SetVolume(0.2);
         AudioPlayback.SetLoop(True);
         AudioPlayback.Play;
       end;

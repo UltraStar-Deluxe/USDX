@@ -148,15 +148,15 @@ type
       procedure SetPosition(Time: real);    virtual; abstract;
       function GetLength(): real;           virtual; abstract;
       function GetStatus(): TStreamStatus;  virtual; abstract;
-      function GetVolume(): integer;        virtual; abstract;
-      procedure SetVolume(Volume: integer); virtual; abstract;
+      function GetVolume(): single;         virtual; abstract;
+      procedure SetVolume(Volume: single);  virtual; abstract;
       function GetLoop(): boolean;          virtual; abstract;
       procedure SetLoop(Enabled: boolean);  virtual; abstract;
     public
       procedure Play();                     virtual; abstract;
       procedure Pause();                    virtual; abstract;
       procedure Stop();                     virtual; abstract;
-      procedure FadeIn(Time: real; TargetVolume: integer);  virtual; abstract;
+      procedure FadeIn(Time: real; TargetVolume: single);  virtual; abstract;
 
       procedure GetFFTData(var data: TFFTData);          virtual; abstract;
       function GetPCMData(var data: TPCMData): Cardinal; virtual; abstract;
@@ -167,7 +167,7 @@ type
       property Length: real READ GetLength;
       property Position: real READ GetPosition WRITE SetPosition;
       property Status: TStreamStatus READ GetStatus;
-      property Volume: integer READ GetVolume WRITE SetVolume;
+      property Volume: single READ GetVolume WRITE SetVolume;
       property Loop: boolean READ GetLoop WRITE SetLoop;
   end;
 
@@ -237,10 +237,10 @@ type
       function FinalizePlayback: boolean;
       
       function GetOutputDeviceList(): TAudioOutputDeviceList;
-      procedure SetAppVolume(Volume: integer);
-      procedure SetVolume(Volume: integer);
+      procedure SetAppVolume(Volume: single);
+      procedure SetVolume(Volume: single);
       procedure SetLoop(Enabled: boolean);
-      procedure FadeIn(Time: real; TargetVolume: integer);
+      procedure FadeIn(Time: real; TargetVolume: single);
 
       procedure Rewind;
       function  Finished: boolean;

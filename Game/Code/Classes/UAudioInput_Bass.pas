@@ -52,8 +52,8 @@ type
       function Start(): boolean; override;
       function Stop(): boolean;  override;
 
-      function GetVolume(): integer;        override;
-      procedure SetVolume(Volume: integer); override;
+      function GetVolume(): single;        override;
+      procedure SetVolume(Volume: single); override;
   end;
 
 var
@@ -270,7 +270,7 @@ begin
   RecordStream := 0;
 end;
 
-function TBassInputDevice.GetVolume(): integer;
+function TBassInputDevice.GetVolume(): single;
 var
   SourceIndex: integer;
   lVolume: Single;
@@ -291,10 +291,10 @@ begin
     Log.LogError('BASS_RecordGetInput: ' + AudioCore.ErrorGetString() , 'TBassInputDevice.GetVolume');
     Exit;
   end;
-  Result := Round(lVolume * 100);
+  Result := lVolume;
 end;
 
-procedure TBassInputDevice.SetVolume(Volume: integer);
+procedure TBassInputDevice.SetVolume(Volume: single);
 var
   SourceIndex: integer;
 begin
@@ -308,12 +308,12 @@ begin
   end;
 
   // clip volume to valid range
-  if (Volume > 100) then
-    Volume := 100
+  if (Volume > 1.0) then
+    Volume := 1.0
   else if (Volume < 0) then
     Volume := 0;
 
-  if (not BASS_RecordSetInput(SourceIndex, 0, Volume/100)) then
+  if (not BASS_RecordSetInput(SourceIndex, 0, Volume)) then
   begin
     Log.LogError('BASS_RecordSetInput: ' + AudioCore.ErrorGetString() , 'TBassInputDevice.SetVolume');
   end;

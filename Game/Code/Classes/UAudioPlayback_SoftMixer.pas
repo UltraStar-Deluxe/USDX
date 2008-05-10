@@ -32,14 +32,15 @@ type
 
       Status:   TStreamStatus;
       Loop:     boolean;
-      _volume: integer;
 
       InternalLock: PSDL_Mutex;
 
       SoundEffects: TList;
 
+      _volume: single;
+
       FadeInStartTime, FadeInTime: cardinal;
-      FadeInStartVolume, FadeInTargetVolume: integer;
+      FadeInStartVolume, FadeInTargetVolume: single;
 
       procedure Reset();
 
@@ -57,14 +58,14 @@ type
       procedure Play();                     override;
       procedure Pause();                    override;
       procedure Stop();                     override;
-      procedure FadeIn(Time: real; TargetVolume: integer); override;
+      procedure FadeIn(Time: real; TargetVolume: single); override;
 
       procedure Close();                    override;
 
       function GetLength(): real;           override;
       function GetStatus(): TStreamStatus;  override;
-      function GetVolume(): integer;        override;
-      procedure SetVolume(Volume: integer); override;
+      function GetVolume(): single;         override;
+      procedure SetVolume(Volume: single);  override;
       function GetLoop(): boolean;          override;
       procedure SetLoop(Enabled: boolean);  override;
       function GetPosition: real;           override;
@@ -87,13 +88,13 @@ type
       mixerBuffer: PChar;
       internalLock: PSDL_Mutex;
 
-      appVolume: integer;
+      appVolume: single;
 
       procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
       procedure Unlock(); {$IFDEF HasInline}inline;{$ENDIF}
 
-      function GetVolume(): integer;
-      procedure SetVolume(volume: integer);
+      function GetVolume(): single;
+      procedure SetVolume(volume: single);
     public
       constructor Create(Engine: TAudioPlayback_SoftMixer);
       destructor Destroy(); override;
@@ -101,7 +102,7 @@ type
       procedure RemoveStream(stream: TAudioPlaybackStream);
       function ReadData(Buffer: PChar; BufSize: integer): integer;
 
-      property Volume: integer READ GetVolume WRITE SetVolume;
+      property Volume: single READ GetVolume WRITE SetVolume;
   end;
 
   TAudioPlayback_SoftMixer = class(TAudioPlaybackBase)
@@ -122,12 +123,12 @@ type
       function InitializePlayback(): boolean; override;
       function FinalizePlayback: boolean; override;
 
-      procedure SetAppVolume(Volume: integer); override;
+      procedure SetAppVolume(Volume: single); override;
 
       function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
-      procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer); virtual;
+      procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Single); virtual;
   end;
 
 implementation
@@ -150,7 +151,7 @@ begin
 
   activeStreams := TList.Create;
   internalLock := SDL_CreateMutex();
-  appVolume := 100;
+  appVolume := 1.0;
 end;
 
 destructor TAudioMixerStream.Destroy();
@@ -172,14 +173,14 @@ begin
   SDL_mutexV(internalLock);
 end;
 
-function TAudioMixerStream.GetVolume(): integer;
+function TAudioMixerStream.GetVolume(): single;
 begin
   Lock();
   result := appVolume;
   Unlock();
 end;
 
-procedure TAudioMixerStream.SetVolume(volume: integer);
+procedure TAudioMixerStream.SetVolume(volume: single);
 begin
   Lock();
   appVolume := volume;
@@ -257,7 +258,7 @@ begin
     begin
       // mix stream-data with mixer-buffer
       // Note: use Self.appVolume instead of Self.Volume to prevent recursive locking
-      Engine.MixBuffers(Buffer, mixerBuffer, size, appVolume * stream.Volume div 100);
+      Engine.MixBuffers(Buffer, mixerBuffer, size, appVolume * stream.Volume);
     end;
   end;
 
@@ -388,7 +389,7 @@ begin
   if not InitFormatConversion() then
     Exit;
 
-  _volume := 100;
+  _volume := 1.0;
 
   result := true;
 end;
@@ -415,7 +416,7 @@ begin
     mixer.AddStream(Self);
 end;
 
-procedure TGenericPlaybackStream.FadeIn(Time: real; TargetVolume: integer);
+procedure TGenericPlaybackStream.FadeIn(Time: real; TargetVolume: single);
 begin
   FadeInTime := Trunc(Time * 1000);
   FadeInStartTime := SDL_GetTicks();
@@ -726,7 +727,7 @@ begin
     DecodeStream.Position := Time;
 end;
 
-function TGenericPlaybackStream.GetVolume(): integer;
+function TGenericPlaybackStream.GetVolume(): single;
 var
   FadeAmount: Single;
 begin
@@ -745,7 +746,7 @@ begin
     else
     begin
       // fading in progress
-      _volume := Trunc(FadeAmount*FadeInTargetVolume + (1-FadeAmount)*FadeInStartVolume);
+      _volume := FadeAmount*FadeInTargetVolume + (1-FadeAmount)*FadeInStartVolume;
     end;
   end;
   // return current volume
@@ -753,14 +754,14 @@ begin
   Unlock();
 end;
 
-procedure TGenericPlaybackStream.SetVolume(volume: integer);
+procedure TGenericPlaybackStream.SetVolume(volume: single);
 begin
   Lock();
   // stop fading
   FadeInTime := 0;
   // clamp volume
-  if (volume > 100) then
-    _volume := 100
+  if (volume > 1.0) then
+    _volume := 1.0
   else if (volume < 0) then
     _volume := 0
   else
@@ -850,13 +851,13 @@ begin
   result := playbackStream;
 end;
 
-procedure TAudioPlayback_SoftMixer.SetAppVolume(Volume: integer);
+procedure TAudioPlayback_SoftMixer.SetAppVolume(Volume: single);
 begin
   // sets volume only for this application
   MixerStream.Volume := Volume;
 end;
 
-procedure TAudioPlayback_SoftMixer.MixBuffers(dst, src: PChar; size: Cardinal; volume: Integer);
+procedure TAudioPlayback_SoftMixer.MixBuffers(dst, src: PChar; size: Cardinal; volume: Single);
 var
   SampleIndex: Cardinal;
   SampleInt: Integer;
@@ -872,7 +873,7 @@ begin
       while (SampleIndex < size) do
       begin
         // apply volume and sum with previous mixer value
-        SampleInt := PSmallInt(@dst[SampleIndex])^ + PSmallInt(@src[SampleIndex])^ * volume div 100;
+        SampleInt := PSmallInt(@dst[SampleIndex])^ + Round(PSmallInt(@src[SampleIndex])^ * volume);
         // clip result
         if (SampleInt > High(SmallInt)) then
           SampleInt := High(SmallInt)
@@ -889,7 +890,7 @@ begin
       while (SampleIndex < size) do
       begin
         // apply volume and sum with previous mixer value
-        SampleFlt := PSingle(@dst[SampleIndex])^ + PSingle(@src[SampleIndex])^ * volume/100;
+        SampleFlt := PSingle(@dst[SampleIndex])^ + PSingle(@src[SampleIndex])^ * volume;
         // clip result
         if (SampleFlt > 1.0) then
           SampleFlt := 1.0

@@ -64,7 +64,7 @@ type
       procedure StartPreview;
       procedure StopPreview;
       procedure UpdateInputDevice;
-      procedure ChangeVolume(VolumeChange: integer);
+      procedure ChangeVolume(VolumeChange: single);
       procedure DrawVolume(x, y, Width, Height: single);
       procedure DrawVUMeter(const State: TDrawState; x, y, Width, Height: single);
       procedure DrawPitch(const State: TDrawState; x, y, Width, Height: single);
@@ -119,13 +119,13 @@ begin
         begin
           // FIXME: add a nice volume-slider instead
           // or at least provide visualization and acceleration if the user holds the key pressed.
-          ChangeVolume(2);
+          ChangeVolume(0.02);
         end;
       '-':
         begin
           // FIXME: add a nice volume-slider instead
           // or at least provide visualization and acceleration if the user holds the key pressed.
-          ChangeVolume(-2);
+          ChangeVolume(-0.02);
         end;
       'T':
         begin
@@ -202,6 +202,8 @@ begin
     CurrentDeviceIndex := -1;
 
   PreviewDeviceIndex := -1;
+
+  WidgetYPos := 0;
 
   // init sliders if at least one device was detected
   if (Length(AudioInputProcessor.DeviceList) > 0) then
@@ -292,7 +294,9 @@ begin
 
   // add Exit-button
   ButtonTheme := Theme.OptionsRecord.ButtonExit;
-  ButtonTheme.Y := WidgetYPos;
+  // adjust button position
+  if (WidgetYPos <> 0) then
+    ButtonTheme.Y := WidgetYPos;
   AddButton(ButtonTheme);
   if (Length(Button[0].Text) = 0) then
     AddButtonText(14, 20, Theme.Options.Description[7]);
@@ -372,10 +376,10 @@ begin
   StartPreview();
 end;
 
-procedure TScreenOptionsRecord.ChangeVolume(VolumeChange: integer);
+procedure TScreenOptionsRecord.ChangeVolume(VolumeChange: single);
 var
   InputDevice: TAudioInputDevice;
-  Volume: integer;
+  Volume: single;
 begin
   // validate CurrentDeviceIndex
   if ((CurrentDeviceIndex < 0) or
@@ -391,7 +395,7 @@ begin
   // set new volume
   Volume := InputDevice.GetVolume() + VolumeChange;
   InputDevice.SetVolume(Volume);
-  //DebugWriteln('Volume: ' + inttostr(InputDevice.GetVolume));
+  //DebugWriteln('Volume: ' + floattostr(InputDevice.GetVolume));
 
   // volume must be polled again 
   NextVolumePollTime := 0;
@@ -700,7 +704,7 @@ begin
     if (SDL_GetTicks() >= NextVolumePollTime) then
     begin
       NextVolumePollTime := SDL_GetTicks() + 500; // next poll in 500ms
-      SourceVolume := Device.GetVolume()/100;
+      SourceVolume := Device.GetVolume();
     end;
 
     // get source select slide

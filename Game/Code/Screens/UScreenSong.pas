@@ -1497,17 +1497,21 @@ end;
 
 procedure TScreenSong.onHide;
 begin
-  //When Music Fading is activated, Turn Music to 100 %
-  If (Ini.PreviewVolume <> 100) or (Ini.PreviewFading <> 0) then
-    AudioPlayback.SetVolume(100);
+  // if music fading is activated, turn music to 100%
+  If (IPreviewVolumeVals[Ini.PreviewVolume] <> 1.0) or (Ini.PreviewFading <> 0) then
+    AudioPlayback.SetVolume(1.0);
 
-  //If Preview is deactivated: Load MUsicfile now
-  If (Ini.PreviewVolume = 0) then
+  // if preview is deactivated: load musicfile now
+  If (IPreviewVolumeVals[Ini.PreviewVolume] = 0) then
     AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
 
-  //When hide then Stop Music (For Party Mode Popup on Exit)
-  if (Display.NextScreen <> @ScreenSing) and (Display.NextScreen <> @ScreenSingModi) and (AudioPlayback <> nil) then
-    AudioPlayback.Stop;
+  // if hide then stop music (for party mode popup on exit)
+  if (Display.NextScreen <> @ScreenSing) and
+     (Display.NextScreen <> @ScreenSingModi) then
+  begin
+    if (AudioPlayback <> nil) then
+      AudioPlayback.Stop;
+  end;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -1613,6 +1617,7 @@ begin
 
   DrawExtensions;
 
+  Result := true;
 end;
 
 procedure TScreenSong.SelectNext;
@@ -1701,14 +1706,14 @@ begin
     if (Ini.PreviewFading = 0) then
     begin
       // music fade disabled: start with full volume
-      AudioPlayback.SetVolume(Ini.PreviewVolume * 10);
+      AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
       AudioPlayback.Play()
     end
     else
     begin
       // music fade enabled: start muted and fade-in
       AudioPlayback.SetVolume(0);
-      AudioPlayback.FadeIn(Ini.PreviewFading, Ini.PreviewVolume * 10);
+      AudioPlayback.FadeIn(Ini.PreviewFading, IPreviewVolumeVals[Ini.PreviewVolume]);
     end;
   end;
 end;

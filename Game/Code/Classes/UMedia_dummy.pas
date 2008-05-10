@@ -65,9 +65,9 @@ type
       function FinalizePlayback: boolean;
 
       function GetOutputDeviceList(): TAudioOutputDeviceList;
-      procedure FadeIn(Time: real; TargetVolume: integer);
-      procedure SetAppVolume(Volume: integer);
-      procedure SetVolume(Volume: integer);
+      procedure FadeIn(Time: real; TargetVolume: single);
+      procedure SetAppVolume(Volume: single);
+      procedure SetVolume(Volume: single);
       procedure SetLoop(Enabled: boolean);
       procedure Rewind;
 
@@ -182,11 +182,11 @@ begin
   Result := DummyOutputDeviceList;
 end;
 
-procedure Tmedia_dummy.SetAppVolume(Volume: integer);
+procedure Tmedia_dummy.SetAppVolume(Volume: single);
 begin
 end;
 
-procedure Tmedia_dummy.SetVolume(Volume: integer);
+procedure Tmedia_dummy.SetVolume(Volume: single);
 begin
 end;
 
@@ -194,7 +194,7 @@ procedure Tmedia_dummy.SetLoop(Enabled: boolean);
 begin
 end;
 
-procedure Tmedia_dummy.FadeIn(Time: real; TargetVolume: integer);
+procedure Tmedia_dummy.FadeIn(Time: real; TargetVolume: single);
 begin
 end;
 

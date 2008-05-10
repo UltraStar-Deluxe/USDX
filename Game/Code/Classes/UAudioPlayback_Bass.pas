@@ -38,7 +38,7 @@ type
       procedure Play();                     override;
       procedure Pause();                    override;
       procedure Stop();                     override;
-      procedure FadeIn(Time: real; TargetVolume: integer); override;
+      procedure FadeIn(Time: real; TargetVolume: single); override;
 
       procedure Close();                    override;
 
@@ -46,8 +46,8 @@ type
       procedure SetLoop(Enabled: boolean);  override;
       function GetLength(): real;           override;
       function GetStatus(): TStreamStatus;  override;
-      function GetVolume(): integer;        override;
-      procedure SetVolume(volume: integer); override;
+      function GetVolume(): single;         override;
+      procedure SetVolume(volume: single);  override;
 
       procedure AddSoundEffect(effect: TSoundEffect);    override;
       procedure RemoveSoundEffect(effect: TSoundEffect); override;
@@ -83,7 +83,7 @@ type
       function GetName: String; override;
       function InitializePlayback(): boolean; override;
       function FinalizePlayback: boolean; override;
-      procedure SetAppVolume(Volume: integer); override;
+      procedure SetAppVolume(Volume: single); override;
   end;
 
   TBassOutputDevice = class(TAudioOutputDevice)
@@ -132,13 +132,13 @@ begin
   BASS_ChannelPlay(Handle, restart);
 end;
 
-procedure TBassPlaybackStream.FadeIn(Time: real; TargetVolume: integer);
+procedure TBassPlaybackStream.FadeIn(Time: real; TargetVolume: single);
 begin
   // start stream
   BASS_ChannelPlay(Handle, true);
 
   // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
-  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume/100, Trunc(Time * 1000));
+  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume, Trunc(Time * 1000));
 end;
 
 procedure TBassPlaybackStream.Pause();
@@ -156,7 +156,7 @@ begin
   Reset();
 end;
 
-function TBassPlaybackStream.GetVolume(): integer;
+function TBassPlaybackStream.GetVolume(): single;
 var
   lVolume: single;
 begin
@@ -167,18 +167,18 @@ begin
     Result := 0;
     Exit;
   end;
-  Result := Round(lVolume * 100);
+  Result := Round(lVolume);
 end;
 
-procedure TBassPlaybackStream.SetVolume(volume: integer);
+procedure TBassPlaybackStream.SetVolume(volume: single);
 begin
   // clamp volume
   if volume < 0 then
     volume := 0;
-  if volume > 100 then
-    volume := 100;
+  if volume > 1.0 then
+    volume := 1.0;
   // set volume
-  BASS_ChannelSetAttribute(Handle, BASS_ATTRIB_VOL, volume/100);
+  BASS_ChannelSetAttribute(Handle, BASS_ATTRIB_VOL, volume);
 end;
 
 function TBassPlaybackStream.GetPosition: real;
@@ -576,10 +576,10 @@ begin
   end;
 end;
 
-procedure TAudioPlayback_Bass.SetAppVolume(Volume: integer);
+procedure TAudioPlayback_Bass.SetAppVolume(Volume: single);
 begin
   // Sets Volume only for this Application (now ranges from 0..10000)
-  BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Volume*100);
+  BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, Round(Volume*10000));
 end;
 
 

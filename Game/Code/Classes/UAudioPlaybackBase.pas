@@ -28,7 +28,7 @@ type
       procedure Play;
       procedure Pause;
       procedure Stop;
-      procedure FadeIn(Time: real; TargetVolume: integer);
+      procedure FadeIn(Time: real; TargetVolume: single);
 
       procedure SetPosition(Time: real);
       function  GetPosition: real;
@@ -39,8 +39,8 @@ type
       //      function SetOutputDevice(Device: TAudioOutputDevice): boolean;
       function GetOutputDeviceList(): TAudioOutputDeviceList;
 
-      procedure SetAppVolume(Volume: integer); virtual; abstract;
-      procedure SetVolume(Volume: integer);
+      procedure SetAppVolume(Volume: single); virtual; abstract;
+      procedure SetVolume(Volume: single);
       procedure SetLoop(Enabled: boolean);
 
       procedure Rewind;
@@ -149,13 +149,13 @@ begin
     Result := true;
 end;
 
-procedure TAudioPlaybackBase.SetVolume(Volume: Integer);
+procedure TAudioPlaybackBase.SetVolume(Volume: single);
 begin
   if assigned(MusicStream) then
     MusicStream.Volume := Volume;
 end;
 
-procedure TAudioPlaybackBase.FadeIn(Time: real; TargetVolume: integer);
+procedure TAudioPlaybackBase.FadeIn(Time: real; TargetVolume: single);
 begin
   if assigned(MusicStream) then
     MusicStream.FadeIn(Time, TargetVolume);

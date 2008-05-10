@@ -85,8 +85,8 @@ type
       function Start(): boolean; virtual; abstract;
       function Stop(): boolean;  virtual; abstract;
 
-      function GetVolume(): integer;        virtual; abstract;
-      procedure SetVolume(Volume: integer); virtual; abstract;
+      function GetVolume(): single;        virtual; abstract;
+      procedure SetVolume(Volume: single); virtual; abstract;
   end;
 
   TAudioInputProcessor = class
@@ -247,10 +247,10 @@ end;
 
 procedure TCaptureBuffer.AnalyzeBuffer;
 var
-  Volume:    real;
-  MaxVolume: real;
+  Volume:    single;
+  MaxVolume: single;
   SampleIndex: integer;
-  Threshold: real;
+  Threshold: single;
 begin
   ToneValid := false;
   ToneAbs := -1;
