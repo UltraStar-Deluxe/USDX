@@ -167,6 +167,8 @@ begin
         NoLog       := True
       else if (Command = 'fullscreen') then
         Fullscreen  := True
+      else if (Command = 'window') then
+        Fullscreen  := False
       else if (Command = 'joypad') then
         Joypad    := True
 

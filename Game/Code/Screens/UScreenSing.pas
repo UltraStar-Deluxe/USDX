@@ -1082,8 +1082,7 @@ begin
   Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;}
 // end of weird stuff
 
- for S := 1 to 1 do              //wtf?
-    Static[S].Texture.X := Static[S].Texture.X + 10*ScreenX;
+  Static[1].Texture.X := Static[1].Texture.X + 10*ScreenX;
 
   for T := 0 to 1 do
     Text[T].X := Text[T].X + 10*ScreenX;
@@ -1272,8 +1271,7 @@ begin
   Text[TextP2RScore].X               := Text[TextP2RScore].X - 10*ScreenX;}
 //weird end
 
-  for S := 1 to 1 do   // wtf?
-    Static[S].Texture.X := Static[S].Texture.X - 10*ScreenX;
+  Static[1].Texture.X := Static[1].Texture.X - 10*ScreenX;
 
   for T := 0 to 1 do
     Text[T].X := Text[T].X - 10*ScreenX;
