@@ -54,8 +54,8 @@ type
 
     procedure LogToFile(const Text: string);
   public
-    BenchmarkTimeStart:   array[0..7] of real;
-    BenchmarkTimeLength:  array[0..7] of real;//TDateTime;
+    BenchmarkTimeStart:   array[0..31] of real;
+    BenchmarkTimeLength:  array[0..31] of real;//TDateTime;
 
     Title: String; //Application Title
 
