@@ -119,8 +119,6 @@ var
   Texture:          TTextureUnit;
   TextureDatabase:  TTextureDatabase;
 
-  ActTex:     GLuint;
-
   Mipmapping: Boolean;
 
   CacheMipmap:  array[0..256*256*3-1] of byte; // 3KB
@@ -133,9 +131,6 @@ uses ULog,
      DateUtils,
      UCovers,
      UThemes,
-     {$IFDEF DARWIN}
-     MacResources,
-     {$ENDIF}
      StrUtils;
 
 Constructor TTextureUnit.Create;
@@ -350,6 +345,7 @@ var
   MipmapSurface: PSDL_Surface;
   newWidth, newHeight: Cardinal;
   oldWidth, oldHeight: Cardinal;
+  ActTex: GLuint;
 begin
   Log.BenchmarkStart(4);
   Mipmapping := true;
@@ -488,13 +484,6 @@ begin
   // and could now create our openGL texture from it
 
  // prepare OpenGL texture
-
-  // JB_linux : this is causing AV's on linux... ActText seems to be nil !
-//  {$IFnDEF win32}
-//  if pointer(ActTex) = nil then
-//    exit;
-//  {$endif}
-
   glGenTextures(1, @ActTex);
 
   glBindTexture(GL_TEXTURE_2D, ActTex);
@@ -760,6 +749,7 @@ var
   PPix:       PByteArray;
   TempA:      integer;
   Error:      integer;
+  ActTex:     GLuint;
 begin
   Mipmapping := false;
 
