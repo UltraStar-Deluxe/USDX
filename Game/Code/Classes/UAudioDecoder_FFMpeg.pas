@@ -102,6 +102,7 @@ type
       seekRequest: boolean;
       seekFlags  : integer;
       seekPos    : int64;
+      seekCond   : PSDL_Cond;
 
       parseThread: PSDL_Thread;
       packetQueue: TPacketQueue;
@@ -221,6 +222,7 @@ begin
   decoderLock := SDL_CreateMutex();
   parserLock := SDL_CreateMutex();
   resumeCond := SDL_CreateCond();
+  seekCond := SDL_CreateCond();
 
   parseThread := SDL_CreateThread(@DecodeThreadMain, Self);
 end;
@@ -278,7 +280,7 @@ begin
   // abort parse-thread
   LockParser();
   quitRequest := true;
-  SDL_CondSignal(resumeCond);
+  SDL_CondBroadcast(resumeCond);
   UnlockParser();
   // and wait until it terminates
   if (parseThread <> nil) then
@@ -355,6 +357,22 @@ begin
   UnlockDecoder();
 end;
 
+(*
+procedure TFFMpegDecodeStream.SetError(state: boolean);
+begin
+  LockDecoder();
+  ErrorState := state;
+  UnlockDecoder();
+end;
+
+function TFFMpegDecodeStream.IsSeeking(): boolean;
+begin
+  LockDecoder();
+  Result := seekRequest;
+  UnlockDecoder();
+end;
+*)
+
 function TFFMpegDecodeStream.GetPosition(): real;
 begin
   // FIXME: the audio-clock might not be that accurate
@@ -378,9 +396,14 @@ begin
     seekFlags := AVSEEK_FLAG_BACKWARD;
   seekFlags := AVSEEK_FLAG_ANY;
 
+LockDecoder();
   seekRequest := true;
+UnlockDecoder();
   SDL_CondSignal(resumeCond);
-
+  (*
+  while ((not quitRequest) and seekRequest) do
+    SDL_CondWait(seekCond, GetParserMutex());
+  *)
   UnlockParser();
 end;
 
@@ -446,7 +469,10 @@ begin
         packetQueue.Flush();
         packetQueue.PutStatus(PKT_STATUS_FLAG_FLUSH, nil);
       end;
+  LockDecoder();
       seekRequest := false;
+  UnlockDecoder();
+      SDL_CondSignal(seekCond);
     end;
 
     UnlockParser();
@@ -517,20 +543,15 @@ begin
     begin
       data_size := bufSize;
 
-      try
-        {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
-        len1 := avcodec_decode_audio2(pCodecCtx, @buffer,
-                    data_size, audio_pkt_data, audio_pkt_size);
-        {$ELSE}
-        // FIXME: with avcodec_decode_audio a package could contain several frames
-        //        this is not handled yet
-        len1 := avcodec_decode_audio(pCodecCtx, @buffer,
-                    data_size, audio_pkt_data, audio_pkt_size);
-        {$IFEND}
-      except
-        Log.LogError('Exception at avcodec_decode_audio(2)!', 'TFFMpegDecodeStream.DecodeFrame');
-        len1 := -1;
-      end;
+      {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
+      len1 := avcodec_decode_audio2(pCodecCtx, @buffer,
+                  data_size, audio_pkt_data, audio_pkt_size);
+      {$ELSE}
+      // FIXME: with avcodec_decode_audio a package could contain several frames
+      //        this is not handled yet
+      len1 := avcodec_decode_audio(pCodecCtx, @buffer,
+                  data_size, audio_pkt_data, audio_pkt_size);
+      {$IFEND}
 
       if(len1 < 0) then
       begin
@@ -632,6 +653,17 @@ begin
   if EOF then
     exit;
 
+  LockDecoder();
+  try
+    if (seekRequest) then
+    begin
+      Result := 0;
+      Exit;
+    end;
+  finally
+    UnlockDecoder();
+  end;
+
   // copy data to output buffer
   while (nBytesRemain > 0) do begin
     // check if we need more data
@@ -725,20 +757,27 @@ begin
 
   if (not FileExists(Filename)) then
   begin
-    Log.LogStatus('LoadSoundFromFile: Sound not found "' + Filename + '"', 'UAudio_FFMpeg');
+    Log.LogError('Audio-file does not exist: "' + Filename + '"', 'UAudio_FFMpeg');
     exit;
   end;
 
   // open audio file
   if (av_open_input_file(pFormatCtx, PChar(Filename), nil, 0, nil) <> 0) then
+  begin
+    Log.LogError('av_open_input_file failed: "' + Filename + '"', 'UAudio_FFMpeg');
     exit;
+  end;
 
   // TODO: do we need to generate PTS values if they do not exist?
   //pFormatCtx^.flags := pFormatCtx^.flags or AVFMT_FLAG_GENPTS;
-  
+
   // retrieve stream information
   if (av_find_stream_info(pFormatCtx) < 0) then
+  begin
+    Log.LogError('av_find_stream_info failed: "' + Filename + '"', 'UAudio_FFMpeg');
+    av_close_input_file(pFormatCtx);
     exit;
+  end;
 
   // FIXME: hack used by ffplay. Maybe should not use url_feof() to test for the end
   pFormatCtx^.pb.eof_reached := 0;
@@ -749,7 +788,11 @@ begin
 
   ffmpegStreamID := FindAudioStreamIndex(pFormatCtx);
   if (ffmpegStreamID < 0) then
+  begin
+    Log.LogError('FindAudioStreamIndex: No Audio-stream found "' + Filename + '"', 'UAudio_FFMpeg');
+    av_close_input_file(pFormatCtx);
     exit;
+  end;
 
   //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFMpeg');
 
@@ -759,7 +802,8 @@ begin
   pCodec := avcodec_find_decoder(pCodecCtx^.codec_id);
   if (pCodec = nil) then
   begin
-    Log.LogStatus('Unsupported codec!', 'UAudio_FFMpeg');
+    Log.LogError('Unsupported codec!', 'UAudio_FFMpeg');
+    av_close_input_file(pFormatCtx);
     exit;
   end;
 
@@ -777,7 +821,7 @@ begin
   // Note: avcodec_open() is not thread-safe!
   if (avcodec_open(pCodecCtx, pCodec) < 0) then
   begin
-    Log.LogStatus('avcodec_open failed!', 'UAudio_FFMpeg');
+    Log.LogError('avcodec_open failed!', 'UAudio_FFMpeg');
     exit;
   end;
 

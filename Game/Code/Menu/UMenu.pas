@@ -171,6 +171,7 @@ uses UCommon,
      UGraphic,
      UDisplay,
      UCovers,
+     UTime,
      USkins;
 
 destructor TMenu.Destroy;
@@ -325,7 +326,10 @@ begin
       if ( BackImg.TexNum = 0 )  then
       begin
         if VideoPlayback.Open( fFileName ) then
+        begin
+          VideoBGTimer.SetTime(0);
           VideoPlayback.Play;
+        end;
       end;
 
       BackImg.W := 800;
@@ -740,7 +744,6 @@ var
   PetX:   integer;
   PetY:   integer;
 begin
-
   BackImg.ColR := 1;
   BackImg.ColG := 1;
   BackImg.ColB := 1;
@@ -748,34 +751,20 @@ begin
   BackImg.TexY1 := 0;
   BackImg.TexX2 := 1;
   BackImg.TexY2 := 1;
+
   if (BackImg.TexNum > 0) then
   begin
-    // does anyone know what these loops were for?
-    {
-      // draw texture with overlapping
-      for PetY := 1 to BackH do
-        for PetX := 1 to BackW do begin
-          BackImg.X := (PetX-1)/BackW * 800; //640
-          BackImg.Y := (PetY-1)/BackH * 600; //480
-          DrawTexture(BackImg);
-        end; // for PetX
-    }
-    {
-      BackImg.X:=BackW;
-      BackImg.Y:=BackW;
-    }
     BackImg.X := 0;
     BackImg.Y := 0;
     BackImg.Z := 0; // todo: eddie: to the opengl experts: please check this! On the mac z is not initialized???
     BackImg.W := 800;
     BackImg.H := 600;
     DrawTexture(BackImg);
-  end; // if
-
-
-  //if assigned( VideoPlayback ) then
+  end
+  else if (VideoPlayback <> nil) then
   begin
-    VideoPlayback.GetFrame( now() );
+    VideoPlayback.GetFrame(VideoBGTimer.GetTime());
+    // FIXME: why do we draw on screen 2? Seems to be wrong.
     VideoPlayback.DrawGL(2);
   end;
 
@@ -1589,7 +1578,10 @@ begin
     if fileexists( fFileName ) then
     begin
       if VideoPlayback.Open( fFileName ) then
+      begin
+        VideoBGTimer.SetTime(0);
         VideoPlayback.Play;
+      end;
     end;
   end;
 end;

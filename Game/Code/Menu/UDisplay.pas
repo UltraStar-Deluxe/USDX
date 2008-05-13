@@ -165,7 +165,6 @@ begin
 //    if (Screens = 2) and (S = 2) then ScreenX := 1;
     ScreenX := 0;
 
-    if S = 2 then TimeSkip := 0 else;
     glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
     //popup hack

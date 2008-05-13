@@ -157,7 +157,13 @@ begin
     //------------------------------
     //StartUp - Create Classes and Load Files
     //------------------------------
+
+    // Initialize SDL
+    // Without SDL_INIT_TIMER SDL_GetTicks() might return strange values
+    SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
+
     USTime := TTime.Create;
+    VideoBGTimer := TRelativeTimer.Create;
 
     // Commandline Parameter Parser
     Params := TCMDParams.Create;
@@ -174,18 +180,11 @@ begin
     InitializePaths;
     Log.LogStatus('Load Language', 'Initialization');
     Language := TLanguage.Create;
-    
+
     // Add Const Values:
     Language.AddConst('US_VERSION', USDXVersionStr);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Language', 1);
-
-    // SDL
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize SDL', 'Initialization');
-    SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing SDL', 1);
 
     // SDL_ttf
     Log.BenchmarkStart(1);
@@ -222,6 +221,9 @@ begin
     InitializeSound();
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing Sound', 1);
+
+    // Lyrics-engine with media reference timer
+    LineState := TLineState.Create();
 
     // Theme
     Log.BenchmarkStart(1);
@@ -370,6 +372,8 @@ end;
 procedure MainLoop;
 var
   Delay:    integer;
+const
+  MAX_FPS = 100;
 begin
   Delay := 0;
   SDL_EnableKeyRepeat(125, 125);
@@ -394,7 +398,7 @@ begin
     // delay
     CountMidTime;
 
-    Delay := Floor(1000 / 100 - 1000 * TimeMid);
+    Delay := Floor(1000 / MAX_FPS - 1000 * TimeMid);
 
     if Delay >= 1 then
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
@@ -655,8 +659,6 @@ var
   Done:     real;
   N:        integer;
 begin
-  LineState.CurrentTime := LineState.CurrentTime + TimeSkip;
-
   LineState.OldBeat := LineState.CurrentBeat;
   LineState.MidBeat := GetMidBeat(LineState.CurrentTime - (CurrentSong.Gap{ + 90 I've forgotten for what it is}) / 1000); // new system with variable BPM in function
   LineState.CurrentBeat := Floor(LineState.MidBeat);

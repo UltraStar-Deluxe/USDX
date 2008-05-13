@@ -31,7 +31,6 @@ type
   TScreenSing = class(TMenu)
     protected
       paused: boolean; //Pause Mod
-      PauseTime: Real;
       NumEmptySentences: integer;
     public
       //TextTime:           integer;
@@ -216,8 +215,9 @@ begin
   if not paused then  //enable Pause
     begin
       // pause Time
-      PauseTime := LineState.CurrentTime;
       Paused    := true;
+
+      LineState.Pause();
 
       // pause Music
       AudioPlayback.Pause;
@@ -229,12 +229,12 @@ begin
     end
   else              //disable Pause
     begin
-      LineState.CurrentTime := PauseTime; //Position of Notes
+      LineState.Resume();
 
       // Position of Music
       // FIXME: remove this and provide LineState.CurrentTime as sync-source instead
       // so every stream can synch itself
-      AudioPlayback.Position := PauseTime;
+      AudioPlayback.Position := LineState.CurrentTime;
 
       // Play Music
       AudioPlayback.Play;
@@ -528,7 +528,9 @@ begin
 //  CountSkipTimeSet;
   LineState.CurrentTime := CurrentSong.Start;
   LineState.TotalTime := AudioPlayback.Length;
-  if (CurrentSong.Finish > 0) then LineState.TotalTime := CurrentSong.Finish / 1000;
+
+  if (CurrentSong.Finish > 0) then
+    LineState.TotalTime := CurrentSong.Finish / 1000;
   LineState.OldBeat := -1;
   for P := 0 to High(Player) do
     ClearScores(P);

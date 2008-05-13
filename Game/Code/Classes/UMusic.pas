@@ -9,6 +9,7 @@ interface
 {$I switches.inc}
 
 uses
+  UTime,
   Classes;
 
 type
@@ -35,7 +36,6 @@ type
   end;
   ALine = array of TLine;     // (TODO: rename to TLineArray)
 
-  // (TCzesci = TSentences)  TCzesci changed to TLines because TSentences exist elseware in incompatible form
   TLines = record
     Current:    integer;      // for drawing of current line
     High:       integer;
@@ -46,31 +46,39 @@ type
     Line:       ALine;
   end;
 
-  // (TODO: rename TCzas to something like T(Line/Sentence)Time/TLinePosition/TLineState)
-  // (Czas = time)
-  TLineState = record        // all that concerns the current frames
-    OldBeat:      integer;    // previous discovered beat
-    CurrentBeat:  integer;
-    MidBeat:      real;       // like CurrentBeat
+  TLineState = class        // all that concerns the current frames
+    private
+      Timer:        TRelativeTimer; // keeps track of the current time
+    public
+      OldBeat:      integer;    // previous discovered beat
+      CurrentBeat:  integer;
+      MidBeat:      real;       // like CurrentBeat
 
-    // now we use this for super synchronization!
-    // only used when analyzing voice
-    OldBeatD:     integer;    // previous discovered beat
-    CurrentBeatD: integer;
-    MidBeatD:     real;       // like CurrentBeatD
-    FracBeatD:    real;       // fractional part of MidBeatD
+      // now we use this for super synchronization!
+      // only used when analyzing voice
+      OldBeatD:     integer;    // previous discovered beat
+      CurrentBeatD: integer;
+      MidBeatD:     real;       // like CurrentBeatD
+      FracBeatD:    real;       // fractional part of MidBeatD
 
-    // we use this for audible clicks
-    OldBeatC:     integer;    // previous discovered beat
-    CurrentBeatC: integer;
-    MidBeatC:     real;       // like CurrentBeatC
-    FracBeatC:    real;       // fractional part of MidBeatC
+      // we use this for audible clicks
+      OldBeatC:     integer;    // previous discovered beat
+      CurrentBeatC: integer;
+      MidBeatC:     real;       // like CurrentBeatC
+      FracBeatC:    real;       // fractional part of MidBeatC
 
+      OldLine:      integer;    // previous displayed sentence
 
-    OldLine:      integer;    // previous displayed sentence
+      TotalTime:    real;       // total song time
 
-    CurrentTime:  real;
-    TotalTime:    real;
+      constructor Create();
+      procedure Pause();
+      procedure Resume();
+      function GetCurrentTime(): real;
+      procedure SetCurrentTime(Time: real);
+
+      // current song time used as base-timer for lyrics etc.
+      property CurrentTime: real READ GetCurrentTime WRITE SetCurrentTime;
   end;
 
 
@@ -654,6 +662,31 @@ begin
     // increase to next frame
     Inc(Buffer, FrameSize);
   end;
+end;
+
+constructor TLineState.Create();
+begin
+  Timer := TRelativeTimer.Create();
+end;
+
+procedure TLineState.Pause();
+begin
+  Timer.Pause();
+end;
+
+procedure TLineState.Resume();
+begin
+  Timer.Resume();
+end;
+
+procedure TLineState.SetCurrentTime(Time: real);
+begin
+  Timer.SetTime(Time);
+end;
+
+function TLineState.GetCurrentTime(): real;
+begin
+  Result := Timer.GetTime();
 end;
 
 
