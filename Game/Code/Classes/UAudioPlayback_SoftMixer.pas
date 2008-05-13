@@ -302,7 +302,7 @@ begin
   Stop();
 
   // reset and/or free data
-
+  
   Loop := false;
 
   // TODO: use DecodeStream.Unref() instead of Free();
@@ -450,8 +450,8 @@ begin
     mixer.RemoveStream(Self);
 
   // rewind (note: DecodeStream might be closed already, but this is not a problem)
-//  if assigned(DecodeStream) then
-//    DecodeStream.Position := 0;
+  if assigned(DecodeStream) then
+    DecodeStream.Position := 0;
 end;
 
 function TGenericPlaybackStream.GetLoop(): boolean;
