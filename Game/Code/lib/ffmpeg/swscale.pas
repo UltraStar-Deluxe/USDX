@@ -66,12 +66,6 @@ type
   PPByteArray = ^TPByteArray;
 
 const
-  LIBSWSCALE_VERSION_INT = ((0 shl 16)+(5 shl 8))+0;
-  LIBSWSCALE_VERSION = '0.5.0';
-  LIBSWSCALE_BUILD = LIBSWSCALE_VERSION_INT;
-
-  LIBSWSCALE_IDENT = 'SwS'+LIBSWSCALE_VERSION;
-
   {* values for the flags, the stuff on the command line is different *}
   SWS_FAST_BILINEAR =    1;
   SWS_BILINEAR      =    2;

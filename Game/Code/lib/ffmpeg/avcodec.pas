@@ -42,6 +42,9 @@ uses
   avutil,
   rational,
   opt,
+  {$IFDEF UNIX}
+  BaseUnix,
+  {$ENDIF}
   UConfig;
 
 const
@@ -3223,8 +3226,32 @@ function av_parse_video_frame_rate(frame_rate: PAVRational; {const} str: PChar):
   cdecl; external av__codec;
 {$IFEND}
 
-(*
 {* error handling *}
+
+{$IFNDEF UNIX}
+const
+  ENOENT = 2;
+  EIO    = 5;
+  ENOMEM = 12;
+  EINVAL = 22;
+  EDOM   = 33;
+  {$IFDEF MSWINDOWS}
+  // Note: we assume that ffmpeg was compiled with MinGW.
+  // This must be changed if DLLs were compiled with cygwin.
+  ENOSYS = 40;  // MSVC/MINGW: 40, CYGWIN: 88,  LINUX/FPC: 38
+  EILSEQ = 42;  // MSVC/MINGW: 42, CYGWIN: 138, LINUX/FPC: 84
+  {$ENDIF}
+{$ENDIF}
+
+const
+{$IF EINVAL > 0}
+  AVERROR_SIGN = -1;
+{$ELSE}
+  {* Some platforms have E* and errno already negated. *}
+  AVERROR_SIGN =  1;
+{$IFEND}
+
+(*
 #if EINVAL > 0
 #define AVERROR(e) (-(e)) {**< Returns a negative error code from a POSIX error code, to return from library functions. *}
 #define AVUNERROR(e) (-(e)) {**< Returns a POSIX error code from a library function error return value. *}
@@ -3233,27 +3260,18 @@ function av_parse_video_frame_rate(frame_rate: PAVRational; {const} str: PChar):
 #define AVERROR(e) (e)
 #define AVUNERROR(e) (e)
 #endif
-
-const
-  AVERROR_UNKNOWN     AVERROR(EINVAL)  {**< unknown error *}
-  AVERROR_IO          AVERROR(EIO)     {**< I/O error *}
-  AVERROR_NUMEXPECTED AVERROR(EDOM)    {**< Number syntax expected in filename. *}
-  AVERROR_INVALIDDATA AVERROR(EINVAL)  {**< invalid data found *}
-  AVERROR_NOMEM       AVERROR(ENOMEM)  {**< not enough memory *}
-  AVERROR_NOFMT       AVERROR(EILSEQ)  {**< unknown format *}
-  AVERROR_NOTSUPP     AVERROR(ENOSYS)  {**< Operation not supported. *}
-  AVERROR_NOENT       AVERROR(ENOENT)  {**< No such file or directory. *}
-  AVERROR_PATCHWELCOME    -MKTAG('P','A','W','E') {**< Not yet implemented in FFmpeg. Patches welcome. *}
 *)
 
 const
-  AVERROR_UNKNOWN     =(-1);  (* unknown error *)
-  AVERROR_IO          =(-2);  (* i/o error *)
-  AVERROR_NUMEXPECTED =(-3);  (* number syntax expected in filename *)
-  AVERROR_INVALIDDATA =(-4);  (* invalid data found *)
-  AVERROR_NOMEM       =(-5);  (* not enough memory *)
-  AVERROR_NOFMT       =(-6);  (* unknown format *)
-  AVERROR_NOTSUPP     =(-7);  (* operation not supported *)
+  AVERROR_UNKNOWN     = AVERROR_SIGN * EINVAL;  (**< unknown error *)
+  AVERROR_IO          = AVERROR_SIGN * EIO;     (**< I/O error *)
+  AVERROR_NUMEXPECTED = AVERROR_SIGN * EDOM;    (**< Number syntax expected in filename. *)
+  AVERROR_INVALIDDATA = AVERROR_SIGN * EINVAL;  (**< invalid data found *)
+  AVERROR_NOMEM       = AVERROR_SIGN * ENOMEM;  (**< not enough memory *)
+  AVERROR_NOFMT       = AVERROR_SIGN * EILSEQ;  (**< unknown format *)
+  AVERROR_NOTSUPP     = AVERROR_SIGN * ENOSYS;  (**< Operation not supported. *)
+  AVERROR_NOENT       = AVERROR_SIGN * ENOENT;  {**< No such file or directory. *}
+  //AVERROR_PATCHWELCOME    -MKTAG('P','A','W','E') {**< Not yet implemented in FFmpeg. Patches welcome. *}
 
 implementation
 
