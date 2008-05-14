@@ -47,6 +47,7 @@ uses
   {$ENDIF}
   math,
   gl,
+  glext,
   SysUtils,
   UCommon,
   UConfig,

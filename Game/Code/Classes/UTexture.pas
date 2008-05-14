@@ -93,26 +93,26 @@ type
       procedure FitTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
       procedure ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
     public
-    Limit:      integer;
-    CreateCacheMipmap:  boolean;
+      Limit:      integer;
+      CreateCacheMipmap:  boolean;
 
-//    function GetNumberFor
-    function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean = true): TTexture; overload;
-    function GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean = true): TTexture; overload;
-    function FindTexture(const Name: string; Typ: TTextureType; Col: Cardinal): integer;
-    function LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
-    function LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
-    function LoadTexture(const Identifier: string): TTexture; overload;
-    function CreateTexture(var Data: array of byte; const Name: string; W, H: word; Bits: byte): TTexture;
-    procedure UnloadTexture(const Name: string; Typ: TTextureType; FromCache: boolean); overload;
-    procedure UnloadTexture(const Name: string; Typ: TTextureType; Col: Cardinal; FromCache: boolean); overload;
-    //procedure FlushTextureDatabase();
+      //function GetNumberFor
+      function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean = true): TTexture; overload;
+      function GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean = true): TTexture; overload;
+      function FindTexture(const Name: string; Typ: TTextureType; Col: Cardinal): integer;
+      function LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
+      function LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
+      function LoadTexture(const Identifier: string): TTexture; overload;
+      function CreateTexture(var Data: array of byte; const Name: string; W, H: word; Bits: byte): TTexture;
+      procedure UnloadTexture(const Name: string; Typ: TTextureType; FromCache: boolean); overload;
+      procedure UnloadTexture(const Name: string; Typ: TTextureType; Col: Cardinal; FromCache: boolean); overload;
+      //procedure FlushTextureDatabase();
 
-    Function GetCoverThumbnail(const Name: string): Pointer;
-    Procedure SetCoverSize(W, H: Integer);
-    
-    Constructor Create;
-    Destructor Destroy; override;
+      Function GetCoverThumbnail(const Name: string): Pointer;
+      Procedure SetCoverSize(W, H: Integer);
+
+      Constructor Create;
+      Destructor Destroy; override;
   end;
 
 var
@@ -349,16 +349,11 @@ var
 begin
   Log.BenchmarkStart(4);
   Mipmapping := true;
-(*
-  Log.LogStatus( '', '' );
 
-  if Identifier = nil then
-    Log.LogStatus(' ERROR unknown Identifier', 'Id:'''+Identifier+''' Fmt:'''+Format+''' Typ:'''+Typ+'''')
-  else
-    Log.LogStatus(' should be ok - trying to load', 'Id:'''+Identifier+''' Fmt:'''+Format+''' Typ:'''+Typ+'''');
-*)
+  // zero texture data
+  FillChar(Result, SizeOf(Result), 0);
 
- // load texture data into memory
+  // load texture data into memory
   {$ifdef blindydebug}
   Log.LogStatus('',' ----------------------------------------------------');
   Log.LogStatus('',' LoadImage('''+Identifier+''') (called by '+Format+')');
@@ -408,40 +403,41 @@ begin
   {$endif}
 
 
+  (*
 
   // don't actually understand, if this is needed...
   // this should definately be changed... together with all this
   // cover cache stuff
-  {if (CreateCacheMipmap) and (Typ = TEXTURE_TYPE_PLAIN) then
+  if (CreateCacheMipmap) and (Typ = TEXTURE_TYPE_PLAIN) then
   begin
-    {$ifdef blindydebug}{
+    {$ifdef blindydebug}
     Log.LogStatus('',' JB-1 : Minimap');
     {$endif}
 
-    {if (TnWidth <= 256) and (TnHeight <= 256) then
+    if (TnWidth <= 256) and (TnHeight <= 256) then
     begin
-      {$ifdef blindydebug}{
+      {$ifdef blindydebug}
       Log.LogStatus('',' GetScaledTexture('''+inttostr(Covers.W)+''','''+inttostr(Covers.H)+''') (for CacheMipmap)');
-      {$endif}{
+      {$endif}
       MipmapSurface:=GetScaledTexture(TexSurface, TnWidth, TnHeight);
       if assigned(MipmapSurface) then
       begin
-        {$ifdef blindydebug}{
+        {$ifdef blindydebug}
         Log.LogStatus('',' ok');
         Log.LogStatus('',' BlitSurface Stuff');
-        {$endif}{
+        {$endif}
         // creating and freeing the surface could be done once, if Cover.W and Cover.H don't change
         TnSurface:=SDL_CreateRGBSurfaceFrom(@TnBuffer[0], TnWidth, TnHeight, 24, TnWidth*3, $000000ff, $0000ff00, $00ff0000, 0);
         SDL_BlitSurface(TnSurface, nil, TnSurface, nil);
         SDL_FreeSurface(TnSurface);
-        {$ifdef blindydebug}{
+        {$ifdef blindydebug}
         Log.LogStatus('',' ok');
         Log.LogStatus('',' SDL_FreeSurface (CacheMipmap)');
-        {$endif}{
+        {$endif}
         SDL_FreeSurface(TnSurface);
-        {$ifdef blindydebug}{
+        {$ifdef blindydebug}
         Log.LogStatus('',' ok');
-        {$endif}{
+        {$endif}
       end
       else
       begin
@@ -449,7 +445,9 @@ begin
       end;
     end;
     // should i create a cache texture, if Covers.W/H are larger?
-  end; }
+  end;
+
+  *)
 
   {$ifdef blindydebug}
   Log.LogStatus('',' JB-2');
@@ -507,35 +505,39 @@ begin
   {$endif}
 
 
-  Result.X := 0;
-  Result.Y := 0;
-  Result.Z := 0;
-  Result.W := 0;
-  Result.H := 0;
-  Result.ScaleW := 1;
-  Result.ScaleH := 1;
-  Result.Rot := 0;
-  Result.TexNum := ActTex;
-  Result.TexW := oldWidth / newWidth;
-  Result.TexH := oldHeight / newHeight;
+  // setup texture struct
+  with Result do
+  begin
+    X := 0;
+    Y := 0;
+    Z := 0;
+    W := 0;
+    H := 0;
+    ScaleW := 1;
+    ScaleH := 1;
+    Rot := 0;
+    TexNum := ActTex;
+    TexW := oldWidth / newWidth;
+    TexH := oldHeight / newHeight;
 
-  Result.Int   := 1;
-  Result.ColR  := 1;
-  Result.ColG  := 1;
-  Result.ColB  := 1;
-  Result.Alpha := 1;
+    Int   := 1;
+    ColR  := 1;
+    ColG  := 1;
+    ColB  := 1;
+    Alpha := 1;
 
-  // new test - default use whole texure, taking TexW and TexH as const and changing these
-  Result.TexX1 := 0;
-  Result.TexY1 := 0;
-  Result.TexX2 := 1;
-  Result.TexY2 := 1;
+    // new test - default use whole texure, taking TexW and TexH as const and changing these
+    TexX1 := 0;
+    TexY1 := 0;
+    TexX2 := 1;
+    TexY2 := 1;
+
+    Name := Identifier;
+  end;
 
   {$ifdef blindydebug}
   Log.LogStatus('',' JB-6');
   {$endif}
-
-  Result.Name := Identifier;
 
   SDL_FreeSurface(TexSurface);
 
