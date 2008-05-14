@@ -3228,8 +3228,16 @@ function av_parse_video_frame_rate(frame_rate: PAVRational; {const} str: PChar):
 
 {* error handling *}
 
-{$IFNDEF UNIX}
 const
+{$IFDEF UNIX}
+  ENOENT = ESysENOENT;
+  EIO    = ESysEIO;
+  ENOMEM = ESysENOMEM;
+  EINVAL = ESysEINVAL;
+  EDOM   = ESysEDOM;
+  ENOSYS = ESysENOSYS;
+  EILSEQ = ESysEILSEQ;
+{$ELSE}
   ENOENT = 2;
   EIO    = 5;
   ENOMEM = 12;
