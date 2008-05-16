@@ -37,7 +37,9 @@ unit avformat;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
-{$I switches.inc}
+{$IFDEF DARWIN}
+  {$linklib libavformat}
+{$ENDIF}
 
 interface
 
