@@ -11,6 +11,10 @@
 
 unit Bass;
 
+{$IFDEF DARWIN}
+  {$linklib libbass}
+{$ENDIF}
+
 interface
 
 {$IFDEF FPC}
