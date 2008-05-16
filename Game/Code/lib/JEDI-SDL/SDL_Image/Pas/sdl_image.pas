@@ -150,6 +150,7 @@ const
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
   SDL_ImageLibName = 'libSDL_image-1.2.0.dylib';
+  {$linklib libSDL_image}
 {$ELSE}
   {$IFDEF FPC}
     SDL_ImageLibName = 'libSDL_image.so';
