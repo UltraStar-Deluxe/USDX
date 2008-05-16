@@ -22,6 +22,7 @@ const
 {$ENDIF}
 {$IFDEF DARWIN}
   SQLiteDLL = 'libsqlite3.dylib';
+  {$linklib libsqlite3}
 {$ENDIF}
 
 // Return values for sqlite3_exec() and sqlite3_step()
