@@ -86,7 +86,7 @@ uses
   UCommon,
   SysUtils,
   {$IFDEF DARWIN}
-  MacResources,
+//  MacResources,
   {$ENDIF}
   UGraphic;
 

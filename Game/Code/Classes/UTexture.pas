@@ -131,6 +131,9 @@ uses ULog,
      DateUtils,
      UCovers,
      UThemes,
+     {$IFDEF DARWIN}
+ //    MacResources,
+     {$ENDIF}
      StrUtils;
 
 Constructor TTextureUnit.Create;
