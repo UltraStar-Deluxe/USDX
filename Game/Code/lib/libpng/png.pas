@@ -8,6 +8,11 @@
   {$smartlink on}
   {$endif}
 {$ENDIF}
+
+{$IFDEF DARWIN}
+  {$linklib libpng}
+{$ENDIF}
+
 unit png;
 
 interface
