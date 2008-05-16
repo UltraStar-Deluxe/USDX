@@ -185,6 +185,7 @@ const
 {$IFDEF UNIX}
 {$IFDEF DARWIN}
   SDLttfLibName = 'libSDL_ttf-2.0.0.dylib';
+  {$linklib libSDL_ttf}
 {$ELSE}
   {$IFDEF FPC}
     SDLttfLibName = 'libSDL_ttf.so';
