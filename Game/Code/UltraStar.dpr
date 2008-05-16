@@ -50,6 +50,9 @@ uses
   bass                   in 'lib\bass\delphi\bass.pas',
   UAudioCore_Bass        in 'Classes\UAudioCore_Bass.pas',
   {$ENDIF}
+  {$IFDEF DARWIN}
+  PseudoThread           in 'MacOSX/Wrapper/PseudoThread.pas',
+  {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\delphi\portaudio.pas',
   UAudioCore_Portaudio   in 'Classes\UAudioCore_Portaudio.pas',
@@ -156,11 +159,14 @@ uses
 
   UParty            in 'Classes\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
   UPlatform         in 'Classes\UPlatform.pas',
-{$IFDEF WIN32}
+{$IFDEF Windows}
   UPlatformWindows  in 'Classes\UPlatformWindows.pas',
 {$ENDIF}
 {$IFDEF LINUX}
   UPlatformLinux    in 'Classes\UPlatformLinux.pas',
+{$ENDIF}
+{$IFDEF DARWIN}
+  UPlatformMacOSX   in 'Classes/UPlatformMacOSX.pas',
 {$ENDIF}
 
   //------------------------------
