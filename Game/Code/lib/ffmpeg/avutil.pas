@@ -43,6 +43,10 @@ unit avutil;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$IFDEF DARWIN}
+  {$linklib libavutil}
+{$ENDIF}
+
 interface
 
 uses
