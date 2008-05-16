@@ -308,13 +308,13 @@ begin
 end;
 
 
-{$IFDEF Linux}
+{$IFDEF Unix}
   // include resource-file info (stored in the constant array "resources")
   {$I ../resource.inc}
 {$ENDIF}
 
 function GetResourceStream(const aName, aType: string): TStream;
-{$IFDEF Linux}
+{$IFDEF Unix}
 var
   ResIndex: integer;
   Filename: string;
@@ -322,7 +322,7 @@ var
 begin
   Result := nil;
 
-  {$IFDEF Linux}
+  {$IFDEF Unix}
   for ResIndex := 0 to High(resources) do
   begin
     if (resources[ResIndex][0] = aName ) and
