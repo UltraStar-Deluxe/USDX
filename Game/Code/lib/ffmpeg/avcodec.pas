@@ -36,6 +36,10 @@ unit avcodec;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$IFDEF DARWIN}
+  {$linklib libavcodec}
+{$ENDIF}
+
 interface
 
 uses
