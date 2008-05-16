@@ -27,6 +27,10 @@ const
   libz = 'z';
 {$endif}
 
+{$IFDEF DARWIN}
+  {$linklib libz}
+{$ENDIF}
+
 type
   { Compatible with paszlib }
   Uint    = Cardinal;
