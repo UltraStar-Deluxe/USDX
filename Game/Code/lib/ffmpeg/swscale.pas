@@ -37,6 +37,10 @@ unit swscale;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$IFDEF DARWIN}
+  {$linklib libswscale}
+{$ENDIF}
+
 interface
 
 uses
