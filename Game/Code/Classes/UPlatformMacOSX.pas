@@ -25,15 +25,15 @@ uses Classes, UPlatform;
 
 type
 
-  TPlatformMacOSX = class( TInterfacedObject, IPlatform)
+  TPlatformMacOSX = class(TInterfacedObject, IPlatform)
   public
-    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; 
-    function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+    function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : boolean) : TDirectoryEntryArray; 
+    function  TerminateIfAlreadyRunning(var WndTitle : string) : boolean;
     procedure Halt();
     function  GetLogPath        : WideString; 
     function  GetGameSharedPath : WideString; 
     function  GetGameUserPath   : WideString; 
-    function  FindSongFile(Dir, Mask: widestring): widestring;
+    function  FindSongFile(Dir, Mask: WideString): WideString;
   end;
 
 implementation
@@ -43,100 +43,101 @@ uses SysUtils, baseunix;
 // Mac applications are packaged in directories.
 // We have to cut the last two directories
 // to get the application directory.
-Function GetBundlePath : WideString;
+
+function GetBundlePath : WideString;
 var
-	x,
-	i : integer;
+  i, pos : integer;
 begin
   Result := ExtractFilePath(ParamStr(0));
-  for x := 0 to 2 do begin
-    i := Length(Result);
+  for i := 1 to 2 do
+  begin
+    pos := Length(Result);
     repeat
-      Delete( Result, i, 1);
-      i := Length(Result);
-    until (i = 0) or (Result[i] = '/');
+      Delete(Result, pos, 1);
+      pos := Length(Result);
+    until (pos = 0) or (Result[pos] = '/');
   end;
 end;
 
 function TPlatformMacOSX.GetLogPath        : WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
-  Result := GetBundlePath + '/Logs';
+  Result := GetBundlePath + 'Contents/Resources/Logs';
 end;
 
 function TPlatformMacOSX.GetGameSharedPath : WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
-  Result := GetBundlePath;
+  Result := GetBundlePath + 'Contents/Resources/';
 end;
 
 function TPlatformMacOSX.GetGameUserPath   : WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
-  Result := GetBundlePath;
+  Result := GetBundlePath + 'Contents/Resources/';
 end;
 
-Function TPlatformMacOSX.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
+function TPlatformMacOSX.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : boolean) : TDirectoryEntryArray;
 var
-    i : Integer;
-    TheDir  : pdir;
-    ADirent : pDirent;
-    lAttrib   : integer;		
+  i       : integer;
+  TheDir  : pdir;
+  ADirent : pDirent;
+  lAttrib : integer;		
 begin
   i := 0;
   Filter := LowerCase(Filter);
 
-	TheDir := FPOpenDir(Dir);     
-	if Assigned(TheDir) then
-  repeat
-		ADirent := FPReadDir(TheDir);
+  TheDir := FPOpenDir(Dir);     
+  if Assigned(TheDir) then
+    repeat
+      ADirent := FPReadDir(TheDir);
 
-	  If Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
-		begin
-			lAttrib := FileGetAttr(Dir + ADirent^.d_name);
-			if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
-			begin
-			  SetLength( Result, i + 1);
-				Result[i].Name        := ADirent^.d_name;
-				Result[i].IsDirectory := true;
-				Result[i].IsFile      := false;
-				i := i + 1;
-			end
-			else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.d_name)) > 0) then
-	    begin
-			  SetLength( Result, i + 1);
-				Result[i].Name        := ADirent^.d_name;
-				Result[i].IsDirectory := false;
-				Result[i].IsFile      := true;
-				i := i + 1;
-			end;
-		end;
-	Until ADirent = nil;
+      if Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
+      begin
+	lAttrib := FileGetAttr(Dir + ADirent^.d_name);
+	if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
+	begin
+	  SetLength(Result, i + 1);
+	  Result[i].Name        := ADirent^.d_name;
+	  Result[i].IsDirectory := true;
+	  Result[i].IsFile      := false;
+	  i := i + 1;
+	end
+	else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.d_name)) > 0) then
+	begin
+	  SetLength(Result, i + 1);
+	  Result[i].Name        := ADirent^.d_name;
+	  Result[i].IsDirectory := false;
+	  Result[i].IsFile      := true;
+	  i := i + 1;
+	end;
+      end;
+    until ADirent = nil;
 
-	FPCloseDir(TheDir);
+  FPCloseDir(TheDir);
 end;
 
-function TPlatformMacOSX.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+function TPlatformMacOSX.TerminateIfAlreadyRunning(var WndTitle : string) : boolean;
 begin
   result := false;
 end;
-
 
 procedure TPlatformMacOSX.Halt;
 begin
   System.Halt;
 end;
 
-function TPlatformMacOSX.FindSongFile(Dir, Mask: widestring): widestring;
+function TPlatformMacOSX.FindSongFile(Dir, Mask: WideString): WideString;
 var
-  SR:     TSearchRec;   // for parsing song directory
+  SR : TSearchRec;   // for parsing song directory
 begin
   Result := '';
-  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin
+  // faDirectory = $00000010; Attribute of a Þle, meaning the Þle is a directory.
+  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then
+  begin
     Result := SR.Name;
   end; // if
   SysUtils.FindClose(SR);
 end;
-
 
 end.
