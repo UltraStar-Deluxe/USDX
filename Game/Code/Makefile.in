@@ -242,7 +242,70 @@ $(debpkgname): all
 
 rpm: all
 #	rpm 
-	@echo "Comming soon"
+	@echo "Coming soon"
+
+macosx_bundle_path = ../../UltraStar\ Deluxe.app/Contents
+macosx-app: all 
+# Create double clickable Mac OS X application.
+
+	@echo ""
+	@echo "Creating the Mac OS X application"
+	@echo ""
+	install -d $(macosx_bundle_path)/MacOS
+	install -d $(macosx_bundle_path)/Resources
+
+# Strip symbols and copy the binary.
+	install -s ../../UltraStar	$(macosx_bundle_path)/MacOS
+
+# Put the icon file into its particular place. 
+# Must be done BEFORE info.plist is created.
+	install ../../Resources/Graphics/ustar-icon_v01.icns	$(macosx_bundle_path)/Resources/
+
+# the info.plist file
+	install MacOSX/Info.plist	$(macosx_bundle_path)/
+
+# Copy the resources. 
+# This should be replaced by something like install-data and 
+# install-data-recursive and an adjusted prefix or so
+	install -d 				$(macosx_bundle_path)/Resources/Artwork
+	install ../../Artwork/*			$(macosx_bundle_path)/Resources/Artwork
+	install -d 				$(macosx_bundle_path)/Resources/Languages
+	install ../../Languages/*		$(macosx_bundle_path)/Resources/Languages
+	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Bold
+	install ../../Resources/Fonts/Bold/*		$(macosx_bundle_path)/Resources/Resources/Fonts/Bold/
+	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Normal
+	install ../../Resources/Fonts/Normal/*		$(macosx_bundle_path)/Resources/Resources/Fonts/Normal/
+	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 1
+	install ../../Resources/Fonts/Outline\ 1/*	$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 1/
+	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 2
+	install ../../Resources/Fonts/Outline\ 2/*	$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 2/
+	install -d 				$(macosx_bundle_path)/Resources/Resources/Graphics
+	install ../../Resources/Graphics/*	$(macosx_bundle_path)/Resources/Resources/Graphics/
+	install -d 				$(macosx_bundle_path)/Resources/Resources/Sounds
+	install ../../Resources/Sounds/*	$(macosx_bundle_path)/Resources/Resources/Sounds/
+	install -d 				$(macosx_bundle_path)/Resources/Sounds
+	install ../../Sounds/*			$(macosx_bundle_path)/Resources/Sounds
+	install -d 				$(macosx_bundle_path)/Resources/Themes/Classic
+	install ../../Themes/Classic/*		$(macosx_bundle_path)/Resources/Themes/Classic/
+	install ../../Themes/Classic.ini	$(macosx_bundle_path)/Resources/Themes
+	install -d 				$(macosx_bundle_path)/Resources/Themes/Deluxe
+	install ../../Themes/Deluxe/*		$(macosx_bundle_path)/Resources/Themes/Deluxe/
+	install ../../Themes/Deluxe.ini		$(macosx_bundle_path)/Resources/Themes
+	install ../../License.txt		$(macosx_bundle_path)/Resources/
+
+# the empty dirs
+	install -d $(macosx_bundle_path)/Resources/Covers
+	install -d $(macosx_bundle_path)/Resources/Logs
+	install -d $(macosx_bundle_path)/Resources/Plugins
+	install -d $(macosx_bundle_path)/Resources/Screenshots
+	install -d $(macosx_bundle_path)/Resources/Visuals
+
+# final messages
+	@echo ""
+	@echo "Mac OS X application created."
+	@echo "Please report issues to the developer team, preferably mischi."
+	@echo "Have fun."
+	@echo ""
 
 clean: recursive-clean clean_obj
 

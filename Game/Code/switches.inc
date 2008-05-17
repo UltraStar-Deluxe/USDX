@@ -67,9 +67,6 @@
   // enable debug-mode. For development only!
   //{$DEFINE DEBUG}
   {$DEFINE CONSOLE}
-
-  {$DEFINE HaveBASS}
-  {$DEFINE WIN32}
   {$DEFINE UTF8_FILENAMES}
 {$IFEND}
 
@@ -113,4 +110,3 @@
 {$IF Defined(UsePortaudioInput) or Defined(UsePortaudioPlayback)}
   {$DEFINE UsePortaudio}
 {$IFEND}
-
