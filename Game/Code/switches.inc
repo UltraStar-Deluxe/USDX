@@ -41,7 +41,7 @@
   {$I config-win.inc}
 
   // enable debug-mode. For development only!
-  //{$DEFINE DEBUG}
+  {.$DEFINE DEBUG}
   {$IFDEF DEBUG}
     // windows apps are either GUI- or console-apps. Console-apps will open
     // an additional console-window for output. For development only!
@@ -57,7 +57,7 @@
 
   // use "configure --enable-debug", "make debug" or
   // the command-line parameter "-debug" instead of defining DEBUG directly
-  //{$DEFINE DEBUG}
+  {.$DEFINE DEBUG}
   // linux apps are always console-apps so leave this defined.
   {$DEFINE CONSOLE}
 {$ELSEIF Defined(DARWIN)}
@@ -65,8 +65,9 @@
   {$I config-darwin.inc}
 
   // enable debug-mode. For development only!
-  //{$DEFINE DEBUG}
+  {.$DEFINE DEBUG}
   {$DEFINE CONSOLE}
+  {.$DEFINE HaveBASS}
   {$DEFINE UTF8_FILENAMES}
 {$IFEND}
 
@@ -75,7 +76,7 @@
   {$DEFINE UseBASSPlayback}
   {$DEFINE UseBASSInput}
 {$ELSEIF Defined(HavePortaudio)}
-  //{$DEFINE UsePortaudioPlayback}
+  {.$DEFINE UsePortaudioPlayback}
   {$DEFINE UseSDLPlayback}
   {$DEFINE UsePortaudioInput}
   {$IFDEF HavePortmixer}

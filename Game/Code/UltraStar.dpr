@@ -159,7 +159,7 @@ uses
 
   UParty            in 'Classes\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
   UPlatform         in 'Classes\UPlatform.pas',
-{$IFDEF Windows}
+{$IFDEF MSWINDOWS}
   UPlatformWindows  in 'Classes\UPlatformWindows.pas',
 {$ENDIF}
 {$IFDEF LINUX}

@@ -9,10 +9,6 @@
   {$endif}
 {$ENDIF}
 
-{$IFDEF DARWIN}
-  {$linklib libpng}
-{$ENDIF}
-
 unit png;
 
 interface
@@ -32,7 +28,7 @@ uses
   zlib;
 
 const
-{$ifdef MSWINDOWS}
+{$IFDEF MSWINDOWS}
   // use libpng12-0 (Version 1.2.18), delivered wih SDL_Image
   LibPng = 'libpng12-0'; // 'libpng13';
   // matching lib version for libpng13.dll, needed for initialization
@@ -40,26 +36,29 @@ const
   // define the compiler that was used to built the DLL (necessary for jmp_buf)
   // SDL_Image was compiled with GCC
   //{$define MSVC_DLL} // MS Visual C++
-  {$define GCC_DLL}  // GCC
-{$else}
+  {$DEFINE GCC_DLL}  // GCC
+{$ELSE}
   LibPng = 'png';
   // matching lib version for libpng, needed for initialization
   PNG_LIBPNG_VER_STRING='1.2.12';
-{$endif}
+  {$IFDEF DARWIN}
+    {$linklib libpng}
+  {$ENDIF}
+{$ENDIF}
 
 
-{$ifdef MSWINDOWS}
+{$IFDEF MSWINDOWS}
 const
    // JB_LEN (#elements in jmp_buf) depends on the compiler used to compile the DLL
    //   MSVC++: 16 (x86/AMD64), GCC: 52
-   {$if Defined(MSVC_DLL)}
+   {$IF Defined(MSVC_DLL)}
    JB_LEN = 16;
-   {$elseif Defined(GCC_DLL)}
+   {$ELSEIF Defined(GCC_DLL)}
    JB_LEN = 52;
-   {$else}
+   {$ELSE}
    JB_LEN = 0;
-   {$ifend}
-{$endif}
+   {$IFEND}
+{$ENDIF}
 
 type
    {$IFNDEF FPC}

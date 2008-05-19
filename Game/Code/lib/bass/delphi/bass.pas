@@ -11,10 +11,6 @@
 
 unit Bass;
 
-{$IFDEF DARWIN}
-  {$linklib libbass}
-{$ENDIF}
-
 interface
 
 {$IFDEF FPC}
@@ -666,6 +662,7 @@ const
 {$ENDIF}
 {$IFDEF DARWIN}
   bassdll = 'libbass.dylib';
+  {$linklib libbass}
 {$ENDIF}
 
 function BASS_SetConfig(option, value: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;

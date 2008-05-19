@@ -25,11 +25,10 @@ const
   libz = 'zlib1';
 {$else}
   libz = 'z';
+  {$IFDEF DARWIN}
+    {$linklib libz}
+  {$ENDIF}
 {$endif}
-
-{$IFDEF DARWIN}
-  {$linklib libz}
-{$ENDIF}
 
 type
   { Compatible with paszlib }
