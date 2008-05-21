@@ -443,8 +443,8 @@ begin
       begin
         ScreenW := Event.resize.w;
         ScreenH := Event.resize.h;
-
-        screen  := SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+        // Note: do NOT call SDL_SetVideoMode here. This would create a new
+        // OpenGL render-context and all texture data would be invalidated.
       end;
       SDL_KEYDOWN:
         begin
@@ -461,11 +461,17 @@ begin
             if boolean( Ini.FullScreen ) then
             begin
               SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+              // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
+              // reload all texture data (-> whitescreen bug).
+              // Only Linux is able to handle screen-switching this way.
               SDL_ShowCursor(0);
             end
             else
             begin
               SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+              // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
+              // reload all texture data (-> whitescreen bug).
+              // Only Linux is able to handle screen-switching this way.
               SDL_ShowCursor(1);
             end;
 
