@@ -1145,7 +1145,7 @@ type
 
     (* audio only *)
     sample_rate: integer; ///< samples per second
-    channels: integer;
+    channels: integer;    ///< number of audio channels
     
     (**
      * audio sample format
@@ -3283,7 +3283,9 @@ const
   AVERROR_NOFMT       = AVERROR_SIGN * EILSEQ;  (**< unknown format *)
   AVERROR_NOTSUPP     = AVERROR_SIGN * ENOSYS;  (**< Operation not supported. *)
   AVERROR_NOENT       = AVERROR_SIGN * ENOENT;  {**< No such file or directory. *}
-  //AVERROR_PATCHWELCOME    -MKTAG('P','A','W','E') {**< Not yet implemented in FFmpeg. Patches welcome. *}
+  // Note: function calls as constant-initializers are invalid
+  //AVERROR_PATCHWELCOME = -MKTAG('P','A','W','E'); {**< Not yet implemented in FFmpeg. Patches welcome. *}
+  AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
 
 implementation
 

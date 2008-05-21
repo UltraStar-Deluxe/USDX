@@ -164,6 +164,10 @@ const
   PIX_FMT_YUV422  = PIX_FMT_YUYV422;
 {$IFEND}
 
+(* common.h *)
+
+function MKTAG(a,b,c,d: char): integer;
+
 (* mem.h *)
 
 (**
@@ -288,5 +292,10 @@ procedure av_log_set_level(level: integer);
 
 
 implementation
+
+function MKTAG(a,b,c,d: char): integer;
+begin
+  Result := (ord(a) or (ord(b) shl 8) or (ord(c) shl 16) or (ord(d) shl 24));
+end;
 
 end.
