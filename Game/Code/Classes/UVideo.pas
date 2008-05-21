@@ -87,8 +87,7 @@ type
 
     fVideoTex: GLuint;
     TexWidth, TexHeight: Cardinal;
-    ScaledVideoWidth, ScaledVideoHeight: Real;
-    
+
     VideoAspect: Real;
     VideoTimeBase, VideoTime: Extended;
     fLoopTime: Extended;
@@ -135,6 +134,7 @@ begin
     AVERROR_NOFMT:   Result := 'AVERROR_NOFMT';
     AVERROR_NOTSUPP: Result := 'AVERROR_NOTSUPP';
     AVERROR_NOENT:   Result := 'AVERROR_NOENT';
+    AVERROR_PATCHWELCOME: Result := 'AVERROR_PATCHWELCOME';
     else Result := 'AVERROR_#'+inttostr(Errnum);
   end;
 end;
@@ -469,9 +469,9 @@ var
   TexVideoRightPos, TexVideoLowerPos: Single;
   ScreenLeftPos,  ScreenRightPos: Single;
   ScreenUpperPos, ScreenLowerPos: Single;
-const
-  ScreenMidPosX = 400.0;
-  ScreenMidPosY = 300.0;
+  ScaledVideoWidth, ScaledVideoHeight: Single;
+  ScreenMidPosX, ScreenMidPosY: Single;
+  ScreenAspect, RenderAspect: Single;
 begin
   // have a nice black background to draw on (even if there were errors opening the vid)
   if (Screen = 1) then
@@ -488,17 +488,32 @@ begin
   Log.BenchmarkStart(15);
   {$ENDIF}
 
-  TexVideoRightPos := VideoCodecContext^.width  / TexWidth;
-  TexVideoLowerPos := VideoCodecContext^.height / TexHeight;
+  ScreenAspect := ScreenW / ScreenH;
+  RenderAspect := RenderW / RenderH;
+  ScaledVideoWidth := RenderW;
+  ScaledVideoHeight := ScaledVideoWidth/VideoAspect * ScreenAspect/RenderAspect;
+
+  // Note: Scaling the width does not look good because the video might contain
+  // black borders at the top already 
+  //ScaledVideoHeight := RenderH;
+  //ScaledVideoWidth := ScaledVideoHeight*VideoAspect * RenderAspect/ScreenAspect;
+
+  // center the video
+  ScreenMidPosX := RenderW/2;
+  ScreenMidPosY := RenderH/2;
   ScreenLeftPos  := ScreenMidPosX - ScaledVideoWidth/2;
   ScreenRightPos := ScreenMidPosX + ScaledVideoWidth/2;
   ScreenUpperPos := ScreenMidPosY - ScaledVideoHeight/2;
   ScreenLowerPos := ScreenMidPosY + ScaledVideoHeight/2;
+  // the video-texture contains empty borders because its width and height must be
+  // a power of 2. So we have to determine the texture coords of the video.
+  TexVideoRightPos := VideoCodecContext^.width  / TexWidth;
+  TexVideoLowerPos := VideoCodecContext^.height / TexHeight;
 
   // we could use blending for brightness control, but do we need this?
   glDisable(GL_BLEND);
 
-  // TODO: disable other stuff like lightning, etc. 
+  // TODO: disable other stuff like lightning, etc.
 
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, fVideoTex);
@@ -720,9 +735,6 @@ begin
   else
     VideoAspect := VideoAspect * VideoCodecContext^.width /
                                  VideoCodecContext^.height;
-
-  ScaledVideoWidth := 800.0;
-  ScaledVideoHeight := 800.0 / VideoAspect;
 
   VideoTimeBase := 1/av_q2d(VideoStream^.r_frame_rate);
 
