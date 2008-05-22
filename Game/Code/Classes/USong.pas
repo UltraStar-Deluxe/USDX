@@ -43,7 +43,7 @@ type
   end;
 
   TScore = record
-    Name:       widestring;
+    Name:       WideString;
     Score:      integer;
     Length:     string;
   end;
@@ -57,28 +57,28 @@ type
     function ReadTXTHeader( const aFileName : WideString ): boolean;
     function ReadXMLHeader( const aFileName : WideString ): boolean;
   public
-    Path:       widestring;
-    Folder:     widestring; // for sorting by folder
+    Path:       WideString;
+    Folder:     WideString; // for sorting by folder
     fFileName,
-    FileName:   widestring;
+    FileName:   WideString;
 
     // sorting methods
-    Category:   array of widestring; // TODO: do we need this?
-    Genre:      widestring;
-    Edition:    widestring;
-    Language:   widestring;
+    Category:   array of WideString; // TODO: do we need this?
+    Genre:      WideString;
+    Edition:    WideString;
+    Language:   WideString;
 
-    Title:      widestring;
-    Artist:     widestring;
+    Title:      WideString;
+    Artist:     WideString;
 
-    Text:       widestring;
-    Creator:    widestring;
+    Text:       WideString;
+    Creator:    WideString;
 
-    Cover:      widestring;
+    Cover:      WideString;
     CoverTex:   TTexture;
-    Mp3:        widestring;
-    Background: widestring;
-    Video:      widestring;
+    Mp3:        WideString;
+    Background: WideString;
+    Video:      WideString;
     VideoGAP:   real;
     VideoLoaded: boolean; // true if the video has been loaded
     NotesGAP:   integer;
@@ -159,15 +159,15 @@ function TSong.LoadSong(): boolean;
 
 var
   TempC:    char;
-  Text:    string;
+  Text:     string;
   CP:       integer; // Current Player (0 or 1)
-  Count:      integer;
+  Count:    integer;
   Both:     boolean;
   Param1:   integer;
   Param2:   integer;
   Param3:   integer;
   ParamS:   string;
-  I: Integer;
+  I:        integer;
 begin
   Result := false;
 
@@ -222,7 +222,8 @@ begin
     until ((TempC = ':') or (TempC = 'F') or (TempC = '*'));
 
     SetLength(Lines, 2);
-    for Count := 0 to High(Lines) do begin
+    for Count := 0 to High(Lines) do
+    begin
       SetLength(Lines[Count].Line, 1);
       Lines[Count].High := 0;
       Lines[Count].Number := 1;
@@ -239,7 +240,8 @@ begin
     while (TempC <> 'E') AND (not EOF(SongFile)) do
     begin
 
-      if (TempC = ':') or (TempC = '*') or (TempC = 'F') then begin
+      if (TempC = ':') or (TempC = '*') or (TempC = 'F') then
+      begin
         // read notes
         Read(SongFile, Param1);
         Read(SongFile, Param2);
@@ -247,19 +249,19 @@ begin
         Read(SongFile, ParamS);
 
 
-       //Check for ZeroNote
-       if Param2 = 0 then Log.LogError('Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamS+'" -> Note ignored!') else
-       begin
-        // add notes
-        if not Both then
-          // P1
-          ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS)
-        else begin
-          // P1 + P2
-          ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
-          ParseNote(1, TempC, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
-        end;
-       end; //Zeronote check
+	//Check for ZeroNote
+	if Param2 = 0 then Log.LogError('Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamS+'" -> Note ignored!') else
+	begin
+	 // add notes
+	 if not Both then
+	   // P1
+	   ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS)
+	 else begin
+	   // P1 + P2
+	   ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
+	   ParseNote(1, TempC, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
+	 end;
+	end; //Zeronote check
       end; // if
 
       if TempC = '-' then
@@ -307,7 +309,8 @@ begin
         end;
         //Total Notes Patch End
       end else begin
-        for Count := 0 to High(Lines) do begin
+        for Count := 0 to High(Lines) do
+	begin
           Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
           Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
           //Total Notes Patch
@@ -326,7 +329,8 @@ begin
       Inc(FileLineNo);
     end; // while}
 
-    for Count := 0 to High(Lines) do begin
+    for Count := 0 to High(Lines) do
+    begin
       Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
     end;
 
@@ -349,15 +353,15 @@ end;
 function TSong.LoadXMLSong(): boolean;
 var
   //TempC:    char;
-  Text:    string;
+  Text:     string;
   CP:       integer; // Current Player (0 or 1)
-  Count:      integer;
+  Count:    integer;
   Both:     boolean;
   Param1:   integer;
   Param2:   integer;
   Param3:   integer;
   ParamS:   string;
-  I,J,X:      Integer;
+  I,J,X:    integer;
 
   NoteType: Char;
   SentenceEnd, Rest, Time: Integer;
@@ -383,142 +387,143 @@ begin
   if Length(Player) = 2 then
     Both := true;
 
-
   Parser := TParser.Create;
   Parser.Settings.DashReplacement := '~';
 
-
-    for Count := 0 to High(Lines) do begin
-      SetLength(Lines[Count].Line, 1);
-      Lines[Count].High := 0;
-      Lines[Count].Number := 1;
-      Lines[Count].Current := 0;
-      Lines[Count].Resolution := self.Resolution;
-      Lines[Count].NotesGAP   := self.NotesGAP;
-      Lines[Count].Line[0].HighNote := -1;
-      Lines[Count].Line[0].LastLine := False;
-    end;
-
+  for Count := 0 to High(Lines) do
+  begin
+    SetLength(Lines[Count].Line, 1);
+    Lines[Count].High := 0;
+    Lines[Count].Number := 1;
+    Lines[Count].Current := 0;
+    Lines[Count].Resolution := self.Resolution;
+    Lines[Count].NotesGAP   := self.NotesGAP;
+    Lines[Count].Line[0].HighNote := -1;
+    Lines[Count].Line[0].LastLine := False;
+  end;
 
 //Try to Parse the Song
-If Parser.ParseSong(Path + PathDelim + FileName) then
-    begin
-//      Writeln('XML Inputfile Parsed succesful');
+
+  if Parser.ParseSong(Path + PathDelim + FileName) then
+  begin
+//    Writeln('XML Inputfile Parsed succesful');
     //Start write parsed information to Song
-      //Notes Part
-      For I := 0 to High(Parser.SongInfo.Sentences) do
-      begin
-        //Add Notes
-        For J := 0 to High(Parser.SongInfo.Sentences[I].Notes) do
-        begin
-          Case Parser.SongInfo.Sentences[I].Notes[J].NoteTyp of
-            NT_Normal: NoteType := ':';
-            NT_Golden: NoteType := '*';
-            NT_Freestyle: NoteType := 'F';
-          end;
-
-           Param1:=Parser.SongInfo.Sentences[I].Notes[J].Start;       //Note Start
-           Param2:=Parser.SongInfo.Sentences[I].Notes[J].Duration;    //Note Duration
-           Param3:=Parser.SongInfo.Sentences[I].Notes[J].Tone;        //Note Tone
-           ParamS:=' ' + Parser.SongInfo.Sentences[I].Notes[J].Lyric; //Note Lyric
-
-
-           if not Both then
-            // P1
-            ParseNote(0, NoteType, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS)
-           else begin
-            // P1 + P2
-            ParseNote(0, NoteType, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
-            ParseNote(1, NoteType, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
-           end;
-
-
-           if not Both then
-           begin
-            Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
-            Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(PChar(Lines[CP].Line[Lines[CP].High].Lyric));
-            //Total Notes Patch
-            Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
-            for X := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
-            begin
-              if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType = ntGolden) then
-                Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[X].Length;
-              
-              if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType <> ntFreestyle) then
-                Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[X].Length;
-            end;
-            //Total Notes Patch End
-          end else begin
-            for Count := 0 to High(Lines) do begin
-              Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
-              Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
-              //Total Notes Patch
-              Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
-              for X := low(Lines[Count].Line[Lines[Count].High].Note) to high(Lines[Count].Line[Lines[Count].High].Note) do
-              begin
-                if (Lines[Count].Line[Lines[Count].High].Note[I].NoteType = ntGolden) then
-                  Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[X].Length;
-                if (Lines[Count].Line[Lines[Count].High].Note[I].NoteType <> ntFreestyle) then
-                  Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[X].Length;
-
-               end;
-              //Total Notes Patch End
-           end;
-          end;
-
-
-
-        end; //J Forloop
-
-        //Add Sentence break
-        If (I < High(Parser.SongInfo.Sentences)) then
-        begin
-
-          SentenceEnd := Parser.SongInfo.Sentences[I].Notes[High(Parser.SongInfo.Sentences[I].Notes)].Start + Parser.SongInfo.Sentences[I].Notes[High(Parser.SongInfo.Sentences[I].Notes)].Duration;
-          Rest := Parser.SongInfo.Sentences[I+1].Notes[0].Start - SentenceEnd;
-
-          //Calculate Time
-          Case Rest of
-            0, 1: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start;
-            2: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start - 1;
-            3: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start - 2;
-            else
-              If (Rest >= 4) then
-                Time := SentenceEnd + 2
-              Else //Sentence overlapping :/
-                Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start;
-          end;
-          // new sentence
-          if not Both then
-            // P1
-            NewSentence(0, (Time + Rel[0]) * Mult, Param2)
-          else begin
-            // P1 + P2
-            NewSentence(0, (Time + Rel[0]) * Mult, Param2);
-            NewSentence(1, (Time + Rel[1]) * Mult, Param2);
-         end;
-
-        end;
-      end;
-    //End write parsed information to Song
-	Parser.Free;
-	end
-    else
+    //Notes Part
+    for I := 0 to High(Parser.SongInfo.Sentences) do
     begin
-      Log.LogError('Could not parse Inputfile: ' + Path + PathDelim + FileName);
-      exit;
-    end;
+      //Add Notes
+      for J := 0 to High(Parser.SongInfo.Sentences[I].Notes) do
+      begin
+	case Parser.SongInfo.Sentences[I].Notes[J].NoteTyp of
+	  NT_Normal: NoteType := ':';
+	  NT_Golden: NoteType := '*';
+	  NT_Freestyle: NoteType := 'F';
+	end;
 
-    for Count := 0 to High(Lines) do begin
-      Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
+	Param1:=Parser.SongInfo.Sentences[I].Notes[J].Start;       //Note Start
+	Param2:=Parser.SongInfo.Sentences[I].Notes[J].Duration;    //Note Duration
+	Param3:=Parser.SongInfo.Sentences[I].Notes[J].Tone;        //Note Tone
+	ParamS:=' ' + Parser.SongInfo.Sentences[I].Notes[J].Lyric; //Note Lyric
+
+	if not Both then
+	  // P1
+	  ParseNote(0, NoteType, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS)
+	else
+	begin
+	  // P1 + P2
+	  ParseNote(0, NoteType, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
+	  ParseNote(1, NoteType, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
+	end;
+
+	if not Both then
+	begin
+	  Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
+	  Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(PChar(Lines[CP].Line[Lines[CP].High].Lyric));
+	  //Total Notes Patch
+	  Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
+	  for X := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
+	  begin
+	    if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType = ntGolden) then
+	      Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[X].Length;
+	    
+	    if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType <> ntFreestyle) then
+	      Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[X].Length;
+	  end;
+	  //Total Notes Patch End
+	end
+	else
+	begin
+	  for Count := 0 to High(Lines) do
+	  begin
+	    Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
+	    Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
+	    //Total Notes Patch
+	    Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
+	    for X := low(Lines[Count].Line[Lines[Count].High].Note) to high(Lines[Count].Line[Lines[Count].High].Note) do
+	    begin
+	      if (Lines[Count].Line[Lines[Count].High].Note[I].NoteType = ntGolden) then
+		Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[X].Length;
+	      if (Lines[Count].Line[Lines[Count].High].Note[I].NoteType <> ntFreestyle) then
+		Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[X].Length;
+
+	    end;
+	    //Total Notes Patch End
+	  end;
+	end; { end of for loop }
+
+      end; //J Forloop
+
+    //Add Sentence break
+      if (I < High(Parser.SongInfo.Sentences)) then
+      begin
+
+	SentenceEnd := Parser.SongInfo.Sentences[I].Notes[High(Parser.SongInfo.Sentences[I].Notes)].Start + Parser.SongInfo.Sentences[I].Notes[High(Parser.SongInfo.Sentences[I].Notes)].Duration;
+	Rest := Parser.SongInfo.Sentences[I+1].Notes[0].Start - SentenceEnd;
+
+	//Calculate Time
+	case Rest of
+	  0, 1: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start;
+	  2: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start - 1;
+	  3: Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start - 2;
+	  else
+	    if (Rest >= 4) then
+	      Time := SentenceEnd + 2
+	    else //Sentence overlapping :/
+	      Time := Parser.SongInfo.Sentences[I+1].Notes[0].Start;
+	end;
+	// new sentence
+	if not Both then
+	  // P1
+	  NewSentence(0, (Time + Rel[0]) * Mult, Param2)
+	else
+	begin
+	  // P1 + P2
+	  NewSentence(0, (Time + Rel[0]) * Mult, Param2);
+	  NewSentence(1, (Time + Rel[1]) * Mult, Param2);
+	end;
+
+      end;
     end;
+    //End write parsed information to Song
+    Parser.Free;
+  end
+  else
+  begin
+    Log.LogError('Could not parse Inputfile: ' + Path + PathDelim + FileName);
+    exit;
+  end;
+
+  for Count := 0 to High(Lines) do
+  begin
+    Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
+  end;
 
   Result := true;
 end;
 
 function TSong.ReadXMLHeader(const aFileName : WideString): boolean;
 var
-  Line, Identifier, Value: String;
+  Line, Identifier, Value: string;
   Temp        : word;
   Done        : byte;
   Parser      : TParser;
@@ -531,72 +536,72 @@ begin
     Parser.Settings.DashReplacement := '~';
 
 
-    If Parser.ParseSong(self.Path + self.FileName) then
+    if Parser.ParseSong(self.Path + self.FileName) then
     begin
-        //-----------
-        //Required Attributes
-        //-----------
+      //-----------
+      //Required Attributes
+      //-----------
+      
+      //Title
+      self.Title := Parser.SongInfo.Header.Title;
 
-        //Title
-          self.Title := Parser.SongInfo.Header.Title;
+      //Add Title Flag to Done
+      Done := Done or 1;
 
-          //Add Title Flag to Done
-          Done := Done or 1;
+      //Artist
+      self.Artist := Parser.SongInfo.Header.Artist;
 
-        //Artist
-          self.Artist := Parser.SongInfo.Header.Artist;
+      //Add Artist Flag to Done
+      Done := Done or 2;
 
-          //Add Artist Flag to Done
-          Done := Done or 2;
+      //MP3 File //Test if Exists
+      self.Mp3 := platform.FindSongFile(Path, '*.mp3');
+      if (FileExists(self.Path + self.Mp3)) then
+	//Add Mp3 Flag to Done
+	Done := Done or 4;
 
-        //MP3 File //Test if Exists
-        self.Mp3 := platform.FindSongFile(Path, '*.mp3');
-        if (FileExists(self.Path + self.Mp3)) then
-          //Add Mp3 Flag to Done
-          Done := Done or 4;
+      //Beats per Minute
+      SetLength(self.BPM, 1);
+      self.BPM[0].StartBeat := 0;
 
-        //Beats per Minute
-        SetLength(self.BPM, 1);
-          self.BPM[0].StartBeat := 0;
+      self.BPM[0].BPM := (Parser.SongInfo.Header.BPM * Parser.SongInfo.Header.Resolution/4  ) * Mult * MultBPM;
 
-          self.BPM[0].BPM := (Parser.SongInfo.Header.BPM * Parser.SongInfo.Header.Resolution/4  ) * Mult * MultBPM;
+      if self.BPM[0].BPM <> 0 then
+	//Add BPM Flag to Done
+	Done := Done or 8;
 
-          if self.BPM[0].BPM <> 0 then
-            //Add BPM Flag to Done
-            Done := Done or 8;
+      //---------
+      //Additional Header Information
+      //---------
 
-        //---------
-        //Additional Header Information
-        //---------
+      // Gap
+      self.GAP := Parser.SongInfo.Header.Gap;
 
-        // Gap
-          self.GAP := Parser.SongInfo.Header.Gap;
+      //Cover Picture
+      self.Cover := platform.FindSongFile(Path, '*[CO].jpg');
 
-        //Cover Picture
-          self.Cover := platform.FindSongFile(Path, '*[CO].jpg');
+      //Background Picture
+      self.Background := platform.FindSongFile(Path, '*[BG].jpg');
 
-        //Background Picture
-          self.Background := platform.FindSongFile(Path, '*[BG].jpg');
+      // Video File
+      //    self.Video := Value
 
-        // Video File
-        //    self.Video := Value
+      // Video Gap
+      //  self.VideoGAP := song_StrtoFloat( Value )
 
-        // Video Gap
-        //  self.VideoGAP := song_StrtoFloat( Value )
+      //Genre Sorting
+      self.Genre := Parser.SongInfo.Header.Genre;
 
-        //Genre Sorting
-          self.Genre := Parser.SongInfo.Header.Genre;
+      //Edition Sorting
+      self.Edition := Parser.SongInfo.Header.Edition;
 
-        //Edition Sorting
-          self.Edition := Parser.SongInfo.Header.Edition;
+      //Year Sorting
+      //Parser.SongInfo.Header.Year
 
-        //Year Sorting
-        //Parser.SongInfo.Header.Year
-
-        //Language Sorting
-        self.Language := Parser.SongInfo.Header.Language;
+      //Language Sorting
+      self.Language := Parser.SongInfo.Header.Language;
     end else
-          Log.LogError('File Incomplete or not SingStar XML (A): ' + aFileName);
+      Log.LogError('File Incomplete or not SingStar XML (A): ' + aFileName);
 
     Parser.Free;
 
@@ -621,9 +626,9 @@ end;
 
 function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
 
-  function song_StrtoFloat( aValue : String ) : Extended;
+  function song_StrtoFloat( aValue : string ) : Extended;
   var
-    lValue : String;
+    lValue : string;
 // lOldDecimalSeparator : Char; // Auto Removed, Unused Variable
   begin
     lValue := aValue;
@@ -635,7 +640,7 @@ function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
   end;
 
 var
-  Line, Identifier, Value: String;
+  Line, Identifier, Value: string;
   Temp        : word;
   Done        : byte;
 begin
@@ -653,8 +658,8 @@ begin
   end;
 
   //Read Lines while Line starts with # or its empty
-  While ( Length(Line) = 0   ) OR
-        ( Line[1]      = '#' ) DO
+  while ( Length(Line) = 0   ) or
+        ( Line[1]      = '#' ) do
   begin
     //Increase Line Number
     Inc (FileLineNo);
@@ -676,8 +681,8 @@ begin
         //-----------
 
         {$IFDEF UTF8_FILENAMES}
-		if ((Identifier = 'MP3') or (Identifier = 'BACKGROUND') or (Identifier = 'COVER') or (Identifier = 'VIDEO')) then
-		  Value := Utf8Encode(Value);
+	if ((Identifier = 'MP3') or (Identifier = 'BACKGROUND') or (Identifier = 'COVER') or (Identifier = 'VIDEO')) then
+	  Value := Utf8Encode(Value);
         {$ENDIF}
 
         //Title
@@ -830,47 +835,49 @@ begin
     1:  // european
       begin
         case (NoteP mod 12) of
-          0..1:  LyricS := ' do ';
-          2..3:  LyricS := ' re ';
-          4:  LyricS := ' mi ';
-          5..6:  LyricS := ' fa ';
-          7..8:  LyricS := ' sol ';
+          0..1:   LyricS := ' do ';
+          2..3:   LyricS := ' re ';
+          4:      LyricS := ' mi ';
+          5..6:   LyricS := ' fa ';
+          7..8:   LyricS := ' sol ';
           9..10:  LyricS := ' la ';
-          11:  LyricS := ' si ';
+          11:     LyricS := ' si ';
         end;
       end;
     2:  // japanese
       begin
         case (NoteP mod 12) of
-          0..1:  LyricS := ' do ';
-          2..3:  LyricS := ' re ';
-          4:  LyricS := ' mi ';
-          5..6:  LyricS := ' fa ';
-          7..8:  LyricS := ' so ';
+          0..1:   LyricS := ' do ';
+          2..3:   LyricS := ' re ';
+          4:      LyricS := ' mi ';
+          5..6:   LyricS := ' fa ';
+          7..8:   LyricS := ' so ';
           9..10:  LyricS := ' la ';
-          11:  LyricS := ' shi ';
+          11:     LyricS := ' shi ';
         end;
       end;
     3:  // american
       begin
         case (NoteP mod 12) of
-          0..1:  LyricS := ' do ';
-          2..3:  LyricS := ' re ';
-          4:  LyricS := ' mi ';
-          5..6:  LyricS := ' fa ';
-          7..8:  LyricS := ' sol ';
+          0..1:   LyricS := ' do ';
+          2..3:   LyricS := ' re ';
+          4:      LyricS := ' mi ';
+          5..6:   LyricS := ' fa ';
+          7..8:   LyricS := ' sol ';
           9..10:  LyricS := ' la ';
-          11:  LyricS := ' ti ';
+          11:     LyricS := ' ti ';
         end;
       end;
   end; // case
 
-  with Lines[LineNumber].Line[Lines[LineNumber].High] do begin
+  with Lines[LineNumber].Line[Lines[LineNumber].High] do
+  begin
     SetLength(Note, Length(Note) + 1);
     HighNote := High(Note);
     
     Note[HighNote].Start := StartP;
-    if HighNote = 0 then begin
+    if HighNote = 0 then
+    begin
       if Lines[LineNumber].Number = 1 then
         Start := -100;
 //        Start := Note[HighNote].Start;
@@ -903,7 +910,7 @@ end;
 
 procedure TSong.NewSentence(LineNumberP: integer; Param1, Param2: integer);
 var
-I: Integer;
+  I: integer;
 begin
 
   // stara czesc //Alter Satz //Update Old Part
