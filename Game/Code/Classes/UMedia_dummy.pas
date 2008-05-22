@@ -25,7 +25,6 @@ uses
      math,
      UMusic;
 
-
 var
   singleton_dummy : IVideoPlayback;
 
@@ -35,7 +34,7 @@ type
       DummyOutputDeviceList: TAudioOutputDeviceList;
     public
       constructor create();
-      function  GetName: String;
+      function  GetName: string;
 
       procedure init();
 
@@ -74,18 +73,15 @@ type
       function Finished: boolean;
       function Length: real;
 
-      function OpenSound(const Filename: String): TAudioPlaybackStream;
+      function OpenSound(const Filename: string): TAudioPlaybackStream;
       procedure PlaySound(stream: TAudioPlaybackStream);
       procedure StopSound(stream: TAudioPlaybackStream);
     end;
 
-
-
-function  Tmedia_dummy.GetName: String;
+function  Tmedia_dummy.GetName: string;
 begin
   result := 'dummy';
 end;
-
 
 procedure Tmedia_dummy.GetFrame(Time: Extended);
 begin
@@ -103,7 +99,6 @@ end;
 procedure Tmedia_dummy.init();
 begin
 end;
-
 
 function Tmedia_dummy.Open(const aFileName : string): boolean; // true if succeed
 begin
@@ -212,7 +207,7 @@ begin
   Result := 60;
 end;
 
-function Tmedia_dummy.OpenSound(const Filename: String): TAudioPlaybackStream;
+function Tmedia_dummy.OpenSound(const Filename: string): TAudioPlaybackStream;
 begin
  result := nil;
 end;
