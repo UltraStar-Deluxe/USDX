@@ -35,7 +35,7 @@ procedure SetFontItalic(Enable: boolean); // sets italic type letter (works for 
 procedure SetFontAspectW(Aspect: real);
 procedure SetFontReflection(Enable:boolean;Spacing: real); // Enables/Disables text reflection
 // Start of SDL_ttf
-function NextPowerOfTwo(Value: Integer): Integer;
+function NextPowerOfTwo(Value: integer): integer;
 //Checks if the ttf exists, if yes then a SDL_ttf is returned
 function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
 
@@ -77,7 +77,7 @@ var
   PColB:      real;
 
   // Colours for the reflection
-  TempColor:    Array[0..3] of GLfloat;
+  TempColor:    array[0..3] of GLfloat;
   PTempColor:   PGLfloat;
 implementation
 
@@ -111,7 +111,7 @@ procedure BuildFont;			                // Build Our Bitmap Font
   end;
 
 var
-  Count:      integer;
+  Count: integer;
 begin
   ActFont := 0;
 
@@ -211,14 +211,14 @@ end;
 
 procedure glPrintLetter(Letter: char);
 var
-  TexX, TexY:   real;
-  TexR, TexB:   real;
-  TexHeight:    real;
-  FWidth:       real;
-  PL, PT:       real;
-  PR, PB:       real;
-  XItal:        real; // X shift for italic type letter
-  ReflectionSpacing:real; // Distance of the reflection
+  TexX, TexY:        real;
+  TexR, TexB:        real;
+  TexHeight:         real;
+  FWidth:            real;
+  PL, PT:            real;
+  PR, PB:            real;
+  XItal:             real; // X shift for italic type letter
+  ReflectionSpacing: real; // Distance of the reflection
 begin
   with Fonts[ActFont].Tex do
   begin
@@ -314,46 +314,47 @@ var
   OutTemp:      real;
   XItal:        real;
 begin
-  with Fonts[ActFont].Tex do begin
-  FWidth := Fonts[ActFont].Width[Ord(Letter)];
+  with Fonts[ActFont].Tex do 
+  begin
+    FWidth := Fonts[ActFont].Width[Ord(Letter)];
 
-  W := FWidth * (H/30) * Fonts[ActFont].AspectW;
-//  H := 30;
-  OutTemp := Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW;
+    W := FWidth * (H/30) * Fonts[ActFont].AspectW;
+//    H := 30;
+    OutTemp := Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW;
 
-  // set texture positions
-  TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
-  TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
-  TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
-  TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
+    // set texture positions
+    TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
+    TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
+    TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
+    TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
 
-  TexTemp := TexX + Start * (TexR - TexX);
-  TexR := TexX + Finish * (TexR - TexX);
-  TexX := TexTemp;
+    TexTemp := TexX + Start * (TexR - TexX);
+    TexR := TexX + Finish * (TexR - TexX);
+    TexX := TexTemp;
 
-  // set vector positions
-  PL := X - OutTemp / 2 + OutTemp * Start;
-  PT := Y;
-  PR := PL + (W + OutTemp) * (Finish - Start);
-  PB := PT + H;
-  if Fonts[ActFont].Italic = false then
-    XItal := 0
-  else
-    XItal := 12;
+    // set vector positions
+    PL := X - OutTemp / 2 + OutTemp * Start;
+    PT := Y;
+    PR := PL + (W + OutTemp) * (Finish - Start);
+    PB := PT + H;
+    if Fonts[ActFont].Italic = false then
+      XItal := 0
+    else
+      XItal := 12;
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, TexNum);
-  glBegin(GL_QUADS);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindTexture(GL_TEXTURE_2D, TexNum);
+    glBegin(GL_QUADS);
     glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
     glTexCoord2f(TexX, TexB); glVertex2f(PL,        PB);
     glTexCoord2f(TexR, TexB); glVertex2f(PR,        PB);
     glTexCoord2f(TexR, TexY); glVertex2f(PR+XItal,  PT); // not tested with XItal
-  glEnd;
-  X := X + W * (Finish - Start);
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
+    glEnd;
+    X := X + W * (Finish - Start);
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
   end; // with
 
 end;
@@ -361,7 +362,7 @@ end;
 procedure glPrint(text: pchar);	                // Custom GL "Print" Routine
 var
 //  Letter :       char;
-  iPos   : Integer;
+  iPos   : integer;
 
 begin
   if (Text = '') then     // If There's No Text
@@ -395,7 +396,7 @@ begin
 
 end;
 
-function NextPowerOfTwo(Value: Integer): Integer;
+function NextPowerOfTwo(Value: integer): integer;
 // tyty to Asphyre
 // FIXME: check if the non-asm version is fast enough and use it by default if so
 begin
@@ -454,33 +455,33 @@ var
   w,h                : integer;
 begin
 
-font := LoadFont('fonts\comicbd.ttf', 42);
+  font := LoadFont('fonts\comicbd.ttf', 42);
 
-clrFg.r := 255;
-clrFg.g := 255;
-clrFg.b := 255;
-clrFg.unused := 255;
+  clrFg.r := 255;
+  clrFg.g := 255;
+  clrFg.b := 255;
+  clrFg.unused := 255;
 
-clrBg.r := 255;
-clrbg.g := 0;
-clrbg.b := 255;
-clrbg.unused := 0;
+  clrBg.r := 255;
+  clrbg.g := 0;
+  clrbg.b := 255;
+  clrbg.unused := 0;
 
   sText := RenderText(font, 'katzeeeeeee', $fe198e);
-//sText :=  TTF_RenderText_Blended( font, 'huuuuuuuuuund', clrFG);
+//  sText :=  TTF_RenderText_Blended( font, 'huuuuuuuuuund', clrFG);
 
-  // Convert the rendered text to a known format
-  w :=  nextpoweroftwo(sText.w);
-  h :=  nextpoweroftwo(sText.h);
+// Convert the rendered text to a known format
+  w := nextpoweroftwo(sText.w);
+  h := nextpoweroftwo(sText.h);
 
-intermediary := SDL_CreateRGBSurface(0, w, h, 32,
-			$000000ff, $0000ff00, $00ff0000, $ff000000);
+  intermediary := SDL_CreateRGBSurface(0, w, h, 32,
+			  $000000ff, $0000ff00, $00ff0000, $ff000000);
 
- SDL_SetAlpha(intermediary, 0, 255);
- SDL_SetAlpha(sText, 0, 255);
- SDL_BlitSurface(sText, nil, intermediary, nil);
+  SDL_SetAlpha(intermediary, 0, 255);
+  SDL_SetAlpha(sText,        0, 255);
+  SDL_BlitSurface(sText, nil, intermediary, nil);
 
- glGenTextures(1, @texture);
+  glGenTextures(1, @texture);
 
   glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -489,32 +490,26 @@ intermediary := SDL_CreateRGBSurface(0, w, h, 32,
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+  glEnable(GL_TEXTURE_2D);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glColor4f(1, 0, 1, 1);
 
+  glbegin(gl_quads);
+  glTexCoord2f(0, 0);                 glVertex2f(200          , 300          );
+  glTexCoord2f(0, sText.h/h);         glVertex2f(200          , 300 + sText.h);
+  glTexCoord2f(sText.w/w, sText.h/h); glVertex2f(200 + sText.w, 300 + sText.h);
+  glTexCoord2f(sText.w/w, 0);         glVertex2f(200 + sText.w, 300          );
+  glEnd;
+  glfinish();
+  glDisable(GL_BLEND);
+  gldisable(gl_texture_2d);
 
-
-      glEnable(GL_TEXTURE_2D);
-      glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glColor4f(1, 0, 1, 1);
-
-      glbegin(gl_quads);
-        glTexCoord2f(0,0); glVertex2f(200,     300);
-        glTexCoord2f(0,sText.h/h); glVertex2f(200    , 300 + sText.h);
-        glTexCoord2f(sText.w/w,sText.h/h); glVertex2f(200 + sText.w, 300 + sText.h);
-        glTexCoord2f(sText.w/w,0); glVertex2f(200 + sText.w, 300);
-      glEnd;
-      glfinish();
-      glDisable(GL_BLEND);
-      gldisable(gl_texture_2d);
-
-
-
-
-SDL_FreeSurface( sText );
-SDL_FreeSurface( intermediary );
-glDeleteTextures(1, @texture);
-TTF_CloseFont( font );
+  SDL_FreeSurface(sText);
+  SDL_FreeSurface(intermediary);
+  glDeleteTextures(1, @texture);
+  TTF_CloseFont(font);
 
 end;
 
@@ -527,12 +522,13 @@ var
   S:            string;
 begin
   if (Text = '') then   			        // If There's No Text
-                Exit;					        // Do Nothing
+     Exit;					        // Do Nothing
 
   PTotWidth := glTextWidth(Text);
   PToDo := Fonts[ActFont].Done;
 
-  while (length(text) > 0) do begin
+  while (length(text) > 0) do
+  begin
     // cut
     Letter := Text[0];
     Text := pchar(Copy(Text, 2, Length(Text)-1));
@@ -545,7 +541,8 @@ begin
     if (PToDo > 0) and (PDoingNow <= PToDo) then
       glPrintLetter(Letter);
 
-    if (PToDo > 0) and (PDoingNow > PToDo) then begin
+    if (PToDo > 0) and (PDoingNow > PToDo) then
+    begin
       glPrintLetterCut(Letter, 0, PToDo / PDoingNow);
       glColor3f(PColR, PColG,  PColB);
       glPrintLetterCut(Letter, PToDo / PDoingNow, 1);
@@ -586,7 +583,7 @@ begin
   Fonts[ActFont].AspectW := Aspect;
 end;
 
-procedure SetFontReflection(Enable:boolean;Spacing: real);
+procedure SetFontReflection(Enable: boolean; Spacing: real);
 begin
   Fonts[ActFont].Reflection        := Enable;
   Fonts[ActFont].ReflectionSpacing := Spacing;
