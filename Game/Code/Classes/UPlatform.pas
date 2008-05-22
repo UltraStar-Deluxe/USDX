@@ -18,17 +18,17 @@ uses Classes;
 type
   TDirectoryEntry = Record
                       Name        : WideString;
-                      IsDirectory : Boolean;
-                      IsFile      : Boolean;
+                      IsDirectory : boolean;
+                      IsFile      : boolean;
                     end;
  
-  TDirectoryEntryArray = Array of TDirectoryEntry;
+  TDirectoryEntryArray = array of TDirectoryEntry;
 	
-  IPlatform = Interface
+  IPlatform = interface
   ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCA23DF}']
-    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
-    function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-    function  FindSongFile(Dir, Mask: widestring): widestring;
+    function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : boolean) : TDirectoryEntryArray;
+    function  TerminateIfAlreadyRunning(var WndTitle : string) : boolean;
+    function  FindSongFile(Dir, Mask: WideString): WideString;
     procedure Halt;
     function  GetLogPath        : WideString;
     function  GetGameSharedPath : WideString;
