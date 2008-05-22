@@ -113,7 +113,6 @@ type
       procedure AddSelectSlideOption(SelectNo: Cardinal; const AddText: string); overload;
       procedure UpdateSelectSlideOptions(ThemeSelectSlide: TThemeSelectSlide; SelectNum: integer; Values: array of string; var Data: integer);
 
-
 //      function AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
 //      procedure ClearWidgets(MinNumber : Int16);
       procedure FadeTo(Screen: PMenu); overload;
@@ -128,8 +127,6 @@ type
       // FIXME: ParseMouse is not implemented in any subclass and not even used anywhere in the code
       //   -> do this before activation of this method
       //function ParseMouse(Typ: integer; X: integer; Y: integer): Boolean; virtual; abstract;
-      function InRegion(X1, Y1, X2, Y2, X, Y: real): Boolean;
-      function InStaticRegion(StaticNr: integer; X, Y: integer): Boolean;
       procedure onShow; virtual;
       procedure onShowFinish; virtual;
       procedure onHide; virtual;
@@ -1416,25 +1413,6 @@ begin
 
   SelectsS[SelectNum].PData := @Data;
   SelectsS[SelectNum].SelectedOption := Data;
-end;
-
-function TMenu.InRegion(X1, Y1, X2, Y2, X, Y: real): boolean;
-var
-  scaled_x, scaled_y : real;
-begin
-  { RenderW and RenderH are defined in Classes/UGraphic.pas }
-  scaled_x := x*640.0/RenderW;
-  scaled_y := x*480.0/RenderH;
-  Result := (X1 <= scaled_x) and (scaled_x <= X2) and (Y1 <= scaled_y) and (scaled_y <= Y2);
-end;
-
-function TMenu.InStaticRegion(StaticNr: integer; X, Y: integer): boolean;
-begin
-  Result := InRegion(Static[StaticNr].Texture.X,
-    Static[StaticNr].Texture.Y,
-    Static[StaticNr].Texture.X + Static[StaticNr].Texture.W - 1,
-    Static[StaticNr].Texture.Y + Static[StaticNr].Texture.H - 1,
-    X, Y);
 end;
 
 procedure TMenu.InteractInc;
