@@ -456,15 +456,11 @@ begin
 end;
 
 function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType): integer;
-var
-  StatNum:  integer;
 begin
   Result := AddStatic(X, Y, W, H, ColR, ColG, ColB, Name, Typ, $FFFFFF);
 end;
 
 function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType): integer;
-var
-  StatNum:  integer;
 begin
   Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, Name, Typ, $FFFFFF);
 end;
@@ -488,8 +484,6 @@ begin
 end;
 
 function TMenu.AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer;
-var
-  StatNum:  integer;
 begin
   Result := AddStatic(X, Y, W, H, 0, ColR, ColG, ColB, Name, Typ, Color);
 end;
@@ -524,7 +518,8 @@ begin
   Static[StatNum].Texture.W := W;
   Static[StatNum].Texture.H := H;
   Static[StatNum].Texture.Z := Z;
-  if (Typ <> TEXTURE_TYPE_COLORIZED) then begin
+  if (Typ <> TEXTURE_TYPE_COLORIZED) then
+  begin
     Static[StatNum].Texture.ColR := ColR;
     Static[StatNum].Texture.ColG := ColG;
     Static[StatNum].Texture.ColB := ColB;
@@ -595,8 +590,6 @@ function TMenu.AddButton(ThemeButton: TThemeButton): integer;
 var
   BT:     integer;
   BTLen:  integer;
-  temp:   integer;
-  TempR, TempG, TempB, TempR2, TempG2, TempB2: Cardinal;
 begin
   Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
     ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
@@ -615,7 +608,8 @@ begin
 
   Button[Result].Fade := ThemeButton.Fade;
   Button[Result].FadeText := ThemeButton.FadeText;
-  if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then begin
+  if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then
+  begin
     Button[Result].FadeTex := Texture.GetTexture(
       Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED,
       RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
@@ -628,7 +622,8 @@ begin
   Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
 
   BTLen := Length(ThemeButton.Text);
-  for BT := 0 to BTLen-1 do begin
+  for BT := 0 to BTLen-1 do
+  begin
     AddButtonText(ThemeButton.Text[BT].X, ThemeButton.Text[BT].Y,
       ThemeButton.Text[BT].ColR, ThemeButton.Text[BT].ColG, ThemeButton.Text[BT].ColB,
       ThemeButton.Text[BT].Font, ThemeButton.Text[BT].Size, ThemeButton.Text[BT].Align,
@@ -704,7 +699,8 @@ begin
   Button[Result].Y := Y;
   Button[Result].W := W;
   Button[Result].H := H;
-  if (Typ <> TEXTURE_TYPE_COLORIZED) then begin
+  if (Typ <> TEXTURE_TYPE_COLORIZED) then
+  begin
     Button[Result].SelectColR := ColR;
     Button[Result].SelectColG := ColG;
     Button[Result].SelectColB := ColB;
@@ -740,9 +736,6 @@ end;
 
 // Method to draw our TMenu and all his child buttons
 function TMenu.DrawBG: boolean;
-var
-  PetX:   integer;
-  PetY:   integer;
 begin
   BackImg.ColR := 1;
   BackImg.ColG := 1;
@@ -785,7 +778,7 @@ begin
 
 
   //  Draw all ButtonCollections
-  For J := 0 to High(ButtonCollection) do
+  for J := 0 to High(ButtonCollection) do
     ButtonCollection[J].Draw;
 
   // Second, we draw all of our buttons
@@ -809,7 +802,7 @@ function TMenu.Draw: boolean;
 begin
   DrawBG;
   DrawFG;
-  Result := True;
+  Result := true;
 end;
 
 {
@@ -824,7 +817,7 @@ function TMenu.AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
 var
   WidgetNum : Int16;
 begin
-  If (Assigned(WidgetSrc)) Then
+  if (Assigned(WidgetSrc)) then
   begin
     WidgetNum := Length(WidgetsSrc);
 
@@ -850,7 +843,7 @@ procedure TMenu.ClearWidgets(MinNumber : Int16);
 var
   J : Int16;
 begin
-  For J := MinNumber to (Length(WidgetsSrc) - 1) do
+  for J := MinNumber to (Length(WidgetsSrc) - 1) do
   begin
     SDL_FreeSurface(WidgetsSrc[J]);
     dispose(WidgetsRect[J]);
@@ -864,17 +857,17 @@ end;
 function TMenu.IsSelectable(Int: Cardinal): Boolean;
 begin
   Result := True;
-  Case Interactions[Int].Typ of
+  case Interactions[Int].Typ of
     //Button
     iButton: Result := Button[Interactions[Int].Num].Visible and Button[Interactions[Int].Num].Selectable;
     //Select
-    iSelect: Result := True;
+    iSelect: Result := true;
     //Select Slide
     iSelectS: Result := SelectsS[Interactions[Int].Num].Visible;
 
     //ButtonCollection Child
     iBCollectionChild:
-      Result := (ButtonCollection[Button[Interactions[Int].Num].Parent - 1].FirstChild - 1 = Int) AND ((Interactions[Interaction].Typ <> iBCollectionChild) OR (Button[Interactions[Interaction].Num].Parent <> Button[Interactions[Int].Num].Parent));
+      Result := (ButtonCollection[Button[Interactions[Int].Num].Parent - 1].FirstChild - 1 = Int) and ((Interactions[Interaction].Typ <> iBCollectionChild) or (Button[Interactions[Interaction].Num].Parent <> Button[Interactions[Int].Num].Parent));
   end;
 end;
 
@@ -883,7 +876,7 @@ end;
 // this behaviour doesn't make sense for two rows of buttons
 procedure TMenu.InteractPrevRow;
 var
-  Int:   Integer;
+  Int:   integer;
 begin
 // these two procedures just make sense for at least 5 buttons, because we
 // usually start a second row when there are more than 4 buttons
@@ -899,7 +892,7 @@ end;
 
 procedure TMenu.InteractNextRow;
 var
-  Int:   Integer;
+  Int:   integer;
 begin
   Int := Interaction;
 
@@ -913,18 +906,18 @@ end;
 
 procedure TMenu.InteractNext;
 var
-  Int: Integer;
+  Int: integer;
 begin
   Int := Interaction;
 
   // change interaction as long as it's needed
   repeat
-    Int := (Int + 1) Mod Length(Interactions);
+    Int := (Int + 1) mod Length(Interactions);
 
     //If no Interaction is Selectable Simply Select Next
     if (Int = Interaction) then Break;
 
-  Until IsSelectable(Int);
+  until IsSelectable(Int);
 
   //Set Interaction
   Interaction := Int;
@@ -932,7 +925,7 @@ end;
 
 procedure TMenu.InteractPrev;
 var
-  Int: Integer;
+  Int: integer;
 begin
   Int := Interaction;
 
@@ -943,7 +936,7 @@ begin
 
     //If no Interaction is Selectable Simply Select Next
     if (Int = Interaction) then Break;
-  Until IsSelectable(Int);
+  until IsSelectable(Int);
 
   //Set Interaction
   Interaction := Int
@@ -951,10 +944,12 @@ end;
 
 
 procedure TMenu.InteractCustom(CustomSwitch: integer);
+{ needed only for below
 var
   Num:    integer;
   Typ:    integer;
   Again:  boolean;
+}
 begin
   //Code Commented atm, because it needs to be Rewritten
   //it doesn't work with Button Collections
@@ -1423,18 +1418,18 @@ begin
   SelectsS[SelectNum].SelectedOption := Data;
 end;
 
-function TMenu.InRegion(X1, Y1, X2, Y2, X, Y: real): Boolean;
+function TMenu.InRegion(X1, Y1, X2, Y2, X, Y: real): boolean;
+var
+  scaled_x, scaled_y : real;
 begin
   Result := false;
-  X1 := X1 * RenderW/640;
-  X2 := X2 * RenderW/640;
-  Y1 := Y1 * RenderH/480;
-  Y2 := Y2 * RenderH/480;
-  if (X >= X1) and (X <= X2) and (Y >= Y1) and (Y <= Y2) then
+  scaled_x := x*640.0/RenderW;
+  scaled_y := x*480.0/RenderH;
+  if (X1 <= scaled_x) and (scaled_x <= X2) and (Y1 <= scaled_y) and (scaled_y <= Y2) then
     Result := true;
 end;
 
-function TMenu.InStaticRegion(StaticNr: integer; X, Y: integer): Boolean;
+function TMenu.InStaticRegion(StaticNr: integer; X, Y: integer): boolean;
 begin
   Result := InRegion(Static[StaticNr].Texture.X,
     Static[StaticNr].Texture.Y,
