@@ -273,15 +273,15 @@ end;
  *)
 function WritePNGImage(const FileName: string; Surface: PSDL_Surface): boolean;
 var
-  png_ptr: png_structp;
-  info_ptr: png_infop;
-  pngFile: TFileStream;
-  row: integer;
-  rowData: array of png_bytep;
-  rowStride: integer;
+  png_ptr:   png_structp;
+  info_ptr:  png_infop;
+  pngFile:   TFileStream;
+  row:       integer;
+  rowData:   array of png_bytep;
+//  rowStride: integer;
   converted: boolean;
   colorType: integer;
-  //time: png_time;
+//  time:      png_time;
 begin
   Result := false;
 
