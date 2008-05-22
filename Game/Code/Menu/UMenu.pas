@@ -1422,11 +1422,10 @@ function TMenu.InRegion(X1, Y1, X2, Y2, X, Y: real): boolean;
 var
   scaled_x, scaled_y : real;
 begin
-  Result := false;
+  { RenderW and RenderH are defined in Classes/UGraphic.pas }
   scaled_x := x*640.0/RenderW;
   scaled_y := x*480.0/RenderH;
-  if (X1 <= scaled_x) and (scaled_x <= X2) and (Y1 <= scaled_y) and (scaled_y <= Y2) then
-    Result := true;
+  Result := (X1 <= scaled_x) and (scaled_x <= X2) and (Y1 <= scaled_y) and (scaled_y <= Y2);
 end;
 
 function TMenu.InStaticRegion(StaticNr: integer; X, Y: integer): boolean;
