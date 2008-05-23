@@ -10,7 +10,8 @@ interface
 
 uses TextGL,
      UTexture,
-     gl,
+     gl, 
+     math,
      SysUtils,
      SDL;
 
@@ -18,17 +19,17 @@ type
   TText = class
     private
       SelectBool:   boolean;
-      TextString:   String;
-      TextTiles:    Array of String;
+      TextString:   string;
+      TextTiles:    array of string;
 
       STicks:       Cardinal;
-      SelectBlink:  Boolean;
+      SelectBlink:  boolean;
     public
       X:      real;
       Y:      real;
-      MoveX:  real;       //Some Modifier for X - Position that don't Affect the Real Y
-      MoveY:  real;       //Some Modifier for Y - Position that don't Affect the Real Y
-      W:      real;       // if text is wider than W then it is breaked
+      MoveX:  real;       //Some Modifier for X - Position that don't affect the real Y
+      MoveY:  real;       //Some Modifier for Y - Position that don't affect the real Y
+      W:      real;       //text wider than W is broken
 //      H:      real;
       Size:   real;
       ColR:   real;
@@ -42,20 +43,20 @@ type
 
       //Reflection
       Reflection:           boolean;
-      ReflectionSpacing:    Real;
+      ReflectionSpacing:    real;
 
-      procedure SetSelect(Value: Boolean);
-      property Selected: Boolean read SelectBool write SetSelect;
+      procedure SetSelect(Value: boolean);
+      property Selected: boolean read SelectBool write SetSelect;
 
-      procedure SetText(Value: String);
-      property  Text: String read TextString write SetText;
+      procedure SetText(Value: string);
+      property  Text: string read TextString write SetText;
 
       procedure DeleteLastL; //Procedure to Delete Last Letter
 
       procedure Draw;
       constructor Create; overload;
       constructor Create(X, Y: real; Tekst: string); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: Boolean; ParReflectionSpacing: Real); overload;
+      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real); overload;
   end;
 
 implementation
@@ -64,10 +65,11 @@ uses UGraphic,
      StrUtils;
 
 {$IFDEF DARWIN}	 
-function PosEx(const SubStr, S: string; Offset: Cardinal = 1): Integer;
+{ Why is this needed? Is PosEx from StrUtils different?
+function PosEx(const SubStr, S: string; Offset: Cardinal = 1): integer;
 var
-  I,X: Integer;
-  Len, LenSubStr: Integer;
+  I, X: integer;
+  Len, LenSubStr: integer;
 begin
   if Offset = 1 then
     Result := Pos(SubStr, S)
@@ -94,9 +96,10 @@ begin
     Result := 0;
   end;
 end;
+}
 {$ENDIF}	 
 
-procedure TText.SetSelect(Value: Boolean);
+procedure TText.SetSelect(Value: boolean);
 begin
   SelectBool := Value;
   
@@ -105,23 +108,16 @@ begin
   STicks := SDL_GetTicks() div 550;
 end;
 
-procedure TText.SetText(Value: String);
+procedure TText.SetText(Value: string);
 var
-  NextPos: Cardinal;    //NextPos of a Space etc.
-  LastPos: Cardinal;    //LastPos "
+  NextPos:   Cardinal;  //NextPos of a Space etc.
+  LastPos:   Cardinal;  //LastPos "
   LastBreak: Cardinal;  //Last Break
-  isBreak: Boolean;     //True if the Break is not Caused because the Text is out of the area
+  isBreak:   boolean;   //True if the Break is not Caused because the Text is out of the area
   FirstWord: Word;      //Is First Word after Break?
   Len:       Word;      //Length of the Tiles Array
-  Function Smallest(const A, B: Cardinal):Cardinal;
-  begin
-    if (A < B) then
-      Result := A
-    else
-      Result := B;
-  end;
 
-  Function GetNextPos: Boolean;
+  function GetNextPos: boolean;
   var
     T1, T2, T3: Cardinal;
   begin
@@ -146,7 +142,7 @@ var
       T3 := Length(Value);
 
     //Get Nearest Pos
-    NextPos := Smallest(T1, T3{Smallest(T2, T3)});
+    NextPos := min(T1, T3{min(T2, T3)});
 
     if (LastPos = Length(Value)) then
       NextPos := 0;
@@ -154,6 +150,7 @@ var
     isBreak := (NextPos = T3) AND (NextPos <> Length(Value));
     Result := (NextPos <> 0);
   end;
+
   procedure AddBreak(const From, bTo: Cardinal);
   begin
     if (isBreak) OR (bTo - From >= 1) then
@@ -169,6 +166,7 @@ var
       FirstWord := 0;
     end;
   end;
+
 begin
   //Set TExtstring
   TextString := Value;
@@ -178,7 +176,7 @@ begin
   STicks := SDL_GetTicks() div 550;
 
   //Exit if there is no Need to Create Tiles
-  If (W <= 0) and (Pos('\n', Value) = 0) then
+  if (W <= 0) and (Pos('\n', Value) = 0) then
   begin
     SetLength (TextTiles, 1);
     TextTiles[0] := Value;
@@ -196,16 +194,15 @@ begin
   LastBreak := 1;
   FirstWord := 1;
 
-
   if (W > 0) then
   begin
-    //Set Font Propertys
+    //Set Font Properties
     SetFontStyle(Style);
     SetFontSize(Size);
   end;
 
   //go Through Text
-  While (GetNextPos) do
+  while (GetNextPos) do
   begin
       //Break in Text
       if isBreak then
@@ -217,7 +214,7 @@ begin
           //Not the First word after Break, so we don't have to break within a word
           if (FirstWord > 1) then
           begin
-            //Add Break before actual Position, because there the  Text fits the Area
+            //Add Break before actual Position, because there the Text fits the Area
             AddBreak(LastBreak, LastPos);
           end
           else //First Word after Break Break within the Word
@@ -253,10 +250,10 @@ begin
   AddBreak(LastBreak, Length(Value)+1);
 end;
 
-Procedure TText.DeleteLastL;
+procedure TText.DeleteLastL;
 var
-  S: String;
-  L: Integer;
+  S: string;
+  L: integer;
 begin
   S := TextString;
   L := Length(S);
@@ -268,9 +265,9 @@ end;
 
 procedure TText.Draw;
 var
-  X2, Y2:     real;
+  X2, Y2: real;
   Text2:  string;
-  I:      Integer;
+  I:      integer;
 begin
   if Visible then
   begin
@@ -282,11 +279,11 @@ begin
 
     //Reflection
     if Reflection = true then
-      SetFontReflection(true,ReflectionSpacing)
+      SetFontReflection(true, ReflectionSpacing)
     else
       SetFontReflection(false,0);
 
-    //If Selected Set Blink...
+    //if selected set blink...
     if SelectBool then
     begin
       I := SDL_GetTicks() div 550;
@@ -297,7 +294,7 @@ begin
       end;
     end;
 
-    {if (False) then //No Width set Draw as one Long String
+    {if (False) then //no width set draw as one long string
     begin
       if not (SelectBool AND SelectBlink) then
         Text2 := Text
@@ -316,12 +313,12 @@ begin
     end
     else
     begin}
-    //Now Use allways:
-    //Draw Text as Many Strings
+    //now use allways:
+    //draw text as many strings
       Y2 := Y + MoveY;
       for I := 0 to high(TextTiles) do
       begin
-        if (not (SelectBool AND SelectBlink)) OR (I <> high(TextTiles)) then
+        if (not (SelectBool and SelectBlink)) or (I <> high(TextTiles)) then
           Text2 := TextTiles[I]
         else
           Text2 := TextTiles[I] + '|';
@@ -359,7 +356,7 @@ begin
   Create(X, Y, 0, 0, 10, 0, 0, 0, 0, Tekst, false, 0);
 end;
 
-constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: Boolean; ParReflectionSpacing: Real);
+constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real);
 begin
   inherited Create;
   Alpha := 1;
@@ -379,6 +376,5 @@ begin
   Reflection:= ParReflection;
   ReflectionSpacing:= ParReflectionSpacing;
 end;
-
 
 end.
