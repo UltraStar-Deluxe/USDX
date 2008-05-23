@@ -3,8 +3,6 @@ unit FreeImage;
 {$I switches.inc}
 
 
-
-
 // ==========================================================
 // Delphi wrapper for FreeImage 3
 //
@@ -98,18 +96,18 @@ const
 // --------------------------------------------------------------------------
 
 const
-  FI16_555_RED_MASK		 = $7C00;
-  FI16_555_GREEN_MASK	 = $03E0;
-  FI16_555_BLUE_MASK	 = $001F;
-  FI16_555_RED_SHIFT	 = 10;
-  FI16_555_GREEN_SHIFT = 5;
-  FI16_555_BLUE_SHIFT	 = 0;
-  FI16_565_RED_MASK		 = $F800;
-  FI16_565_GREEN_MASK	 = $07E0;
-  FI16_565_BLUE_MASK	 = $001F;
-  FI16_565_RED_SHIFT	 = 11;
-  FI16_565_GREEN_SHIFT = 5;
-  FI16_565_BLUE_SHIFT	 = 0;
+  FI16_555_RED_MASK     = $7C00;
+  FI16_555_GREEN_MASK   = $03E0;
+  FI16_555_BLUE_MASK    = $001F;
+  FI16_555_RED_SHIFT    = 10;
+  FI16_555_GREEN_SHIFT  = 5;
+  FI16_555_BLUE_SHIFT   = 0;
+  FI16_565_RED_MASK     = $F800;
+  FI16_565_GREEN_MASK   = $07E0;
+  FI16_565_BLUE_MASK    = $001F;
+  FI16_565_RED_SHIFT    = 11;
+  FI16_565_GREEN_SHIFT  = 5;
+  FI16_565_BLUE_SHIFT   = 0;
 
 // --------------------------------------------------------------------------
 // ICC profile support ------------------------------------------------------
@@ -117,7 +115,7 @@ const
 
 const
   FIICC_DEFAULT = $0;
-  FIICC_COLOR_IS_CMYK	= $1;
+  FIICC_COLOR_IS_CMYK   = $1;
 
 type
   FIICCPROFILE = record
@@ -180,18 +178,18 @@ const
 
   // Image type used in FreeImage.
   FIT_UNKNOWN = FREE_IMAGE_TYPE(0);  // unknown type
-  FIT_BITMAP  = FREE_IMAGE_TYPE(1);	 // standard image: 1-, 4-, 8-, 16-, 24-, 32-bit
-  FIT_UINT16  = FREE_IMAGE_TYPE(2);	 // array of unsigned short: unsigned 16-bit
+  FIT_BITMAP  = FREE_IMAGE_TYPE(1);  // standard image: 1-, 4-, 8-, 16-, 24-, 32-bit
+  FIT_UINT16  = FREE_IMAGE_TYPE(2);  // array of unsigned short: unsigned 16-bit
   FIT_INT16   = FREE_IMAGE_TYPE(3);  // array of short: signed 16-bit
-  FIT_UINT32  = FREE_IMAGE_TYPE(4);	 // array of unsigned long: unsigned 32-bit
-  FIT_INT32   = FREE_IMAGE_TYPE(5);	 // array of long: signed 32-bit
-  FIT_FLOAT   = FREE_IMAGE_TYPE(6);	 // array of float: 32-bit IEEE floating point
-  FIT_DOUBLE  = FREE_IMAGE_TYPE(7);	 // array of double: 64-bit IEEE floating point
-  FIT_COMPLEX = FREE_IMAGE_TYPE(8);	 // array of FICOMPLEX: 2 x 64-bit IEEE floating point
-  FIT_RGB16	  = FREE_IMAGE_TYPE(9);	 // 48-bit RGB image: 3 x 16-bit
-	FIT_RGBA16	= FREE_IMAGE_TYPE(10); // 64-bit RGBA image: 4 x 16-bit
-	FIT_RGBF	  = FREE_IMAGE_TYPE(11); // 96-bit RGB float image: 3 x 32-bit IEEE floating point
-	FIT_RGBAF	  = FREE_IMAGE_TYPE(12); // 128-bit RGBA float image: 4 x 32-bit IEEE floating point
+  FIT_UINT32  = FREE_IMAGE_TYPE(4);  // array of unsigned long: unsigned 32-bit
+  FIT_INT32   = FREE_IMAGE_TYPE(5);  // array of long: signed 32-bit
+  FIT_FLOAT   = FREE_IMAGE_TYPE(6);  // array of float: 32-bit IEEE floating point
+  FIT_DOUBLE  = FREE_IMAGE_TYPE(7);  // array of double: 64-bit IEEE floating point
+  FIT_COMPLEX = FREE_IMAGE_TYPE(8);  // array of FICOMPLEX: 2 x 64-bit IEEE floating point
+  FIT_RGB16   = FREE_IMAGE_TYPE(9);  // 48-bit RGB image: 3 x 16-bit
+  FIT_RGBA16  = FREE_IMAGE_TYPE(10); // 64-bit RGBA image: 4 x 16-bit
+  FIT_RGBF    = FREE_IMAGE_TYPE(11); // 96-bit RGB float image: 3 x 32-bit IEEE floating point
+  FIT_RGBAF   = FREE_IMAGE_TYPE(12); // 128-bit RGBA float image: 4 x 32-bit IEEE floating point
 
   // Image color type used in FreeImage.
   FIC_MINISWHITE = FREE_IMAGE_COLOR_TYPE(0); // min value is white
@@ -202,38 +200,38 @@ const
   FIC_CMYK       = FREE_IMAGE_COLOR_TYPE(5); // CMYK color model
 
   // Color quantization algorithms. Constants used in FreeImage_ColorQuantize.
-  FIQ_WUQUANT = FREE_IMAGE_QUANTIZE(0);	// Xiaolin Wu color quantization algorithm
-  FIQ_NNQUANT = FREE_IMAGE_QUANTIZE(1);	// NeuQuant neural-net quantization algorithm by Anthony Dekker
+  FIQ_WUQUANT = FREE_IMAGE_QUANTIZE(0); // Xiaolin Wu color quantization algorithm
+  FIQ_NNQUANT = FREE_IMAGE_QUANTIZE(1); // NeuQuant neural-net quantization algorithm by Anthony Dekker
 
   // Dithering algorithms. Constants used FreeImage_Dither.
-  FID_FS            = FREE_IMAGE_DITHER(0);	// Floyd & Steinberg error diffusion
-  FID_BAYER4x4      = FREE_IMAGE_DITHER(1);	// Bayer ordered dispersed dot dithering (order 2 dithering matrix)
-  FID_BAYER8x8      = FREE_IMAGE_DITHER(2);	// Bayer ordered dispersed dot dithering (order 3 dithering matrix)
-  FID_CLUSTER6x6    = FREE_IMAGE_DITHER(3);	// Ordered clustered dot dithering (order 3 - 6x6 matrix)
-  FID_CLUSTER8x8    = FREE_IMAGE_DITHER(4);	// Ordered clustered dot dithering (order 4 - 8x8 matrix)
+  FID_FS            = FREE_IMAGE_DITHER(0); // Floyd & Steinberg error diffusion
+  FID_BAYER4x4      = FREE_IMAGE_DITHER(1); // Bayer ordered dispersed dot dithering (order 2 dithering matrix)
+  FID_BAYER8x8      = FREE_IMAGE_DITHER(2); // Bayer ordered dispersed dot dithering (order 3 dithering matrix)
+  FID_CLUSTER6x6    = FREE_IMAGE_DITHER(3); // Ordered clustered dot dithering (order 3 - 6x6 matrix)
+  FID_CLUSTER8x8    = FREE_IMAGE_DITHER(4); // Ordered clustered dot dithering (order 4 - 8x8 matrix)
   FID_CLUSTER16x16  = FREE_IMAGE_DITHER(5); // Ordered clustered dot dithering (order 8 - 16x16 matrix)
 
   // Lossless JPEG transformations Constants used in FreeImage_JPEGTransform
-	FIJPEG_OP_NONE			  = FREE_IMAGE_JPEG_OPERATION(0);	// no transformation
-	FIJPEG_OP_FLIP_H		  = FREE_IMAGE_JPEG_OPERATION(1);	// horizontal flip
-	FIJPEG_OP_FLIP_V		  = FREE_IMAGE_JPEG_OPERATION(2);	// vertical flip
-	FIJPEG_OP_TRANSPOSE		= FREE_IMAGE_JPEG_OPERATION(3);	// transpose across UL-to-LR axis
-	FIJPEG_OP_TRANSVERSE	= FREE_IMAGE_JPEG_OPERATION(4);	// transpose across UR-to-LL axis
-	FIJPEG_OP_ROTATE_90		= FREE_IMAGE_JPEG_OPERATION(5);	// 90-degree clockwise rotation
-	FIJPEG_OP_ROTATE_180	= FREE_IMAGE_JPEG_OPERATION(6);	// 180-degree rotation
-	FIJPEG_OP_ROTATE_270	= FREE_IMAGE_JPEG_OPERATION(7); // 270-degree clockwise (or 90 ccw)
+  FIJPEG_OP_NONE        = FREE_IMAGE_JPEG_OPERATION(0); // no transformation
+  FIJPEG_OP_FLIP_H      = FREE_IMAGE_JPEG_OPERATION(1); // horizontal flip
+  FIJPEG_OP_FLIP_V      = FREE_IMAGE_JPEG_OPERATION(2); // vertical flip
+  FIJPEG_OP_TRANSPOSE   = FREE_IMAGE_JPEG_OPERATION(3); // transpose across UL-to-LR axis
+  FIJPEG_OP_TRANSVERSE  = FREE_IMAGE_JPEG_OPERATION(4); // transpose across UR-to-LL axis
+  FIJPEG_OP_ROTATE_90   = FREE_IMAGE_JPEG_OPERATION(5); // 90-degree clockwise rotation
+  FIJPEG_OP_ROTATE_180  = FREE_IMAGE_JPEG_OPERATION(6); // 180-degree rotation
+  FIJPEG_OP_ROTATE_270  = FREE_IMAGE_JPEG_OPERATION(7); // 270-degree clockwise (or 90 ccw)
 
   // Tone mapping operators. Constants used in FreeImage_ToneMapping.
-  FITMO_DRAGO03	   = FREE_IMAGE_TMO(0);	// Adaptive logarithmic mapping (F. Drago, 2003)
-	FITMO_REINHARD05 = FREE_IMAGE_TMO(1);	// Dynamic range reduction inspired by photoreceptor physiology (E. Reinhard, 2005)
+  FITMO_DRAGO03    = FREE_IMAGE_TMO(0); // Adaptive logarithmic mapping (F. Drago, 2003)
+  FITMO_REINHARD05 = FREE_IMAGE_TMO(1); // Dynamic range reduction inspired by photoreceptor physiology (E. Reinhard, 2005)
 
   // Upsampling / downsampling filters. Constants used in FreeImage_Rescale.
-  FILTER_BOX	      = FREE_IMAGE_FILTER(0);	// Box, pulse, Fourier window, 1st order (constant) b-spline
-  FILTER_BICUBIC    = FREE_IMAGE_FILTER(1);	// Mitchell & Netravali's two-param cubic filter
-  FILTER_BILINEAR   = FREE_IMAGE_FILTER(2);	// Bilinear filter
-  FILTER_BSPLINE    = FREE_IMAGE_FILTER(3);	// 4th order (cubic) b-spline
-  FILTER_CATMULLROM = FREE_IMAGE_FILTER(4);	// Catmull-Rom spline, Overhauser spline
-  FILTER_LANCZOS3   = FREE_IMAGE_FILTER(5);	// Lanczos3 filter
+  FILTER_BOX        = FREE_IMAGE_FILTER(0); // Box, pulse, Fourier window, 1st order (constant) b-spline
+  FILTER_BICUBIC    = FREE_IMAGE_FILTER(1); // Mitchell & Netravali's two-param cubic filter
+  FILTER_BILINEAR   = FREE_IMAGE_FILTER(2); // Bilinear filter
+  FILTER_BSPLINE    = FREE_IMAGE_FILTER(3); // 4th order (cubic) b-spline
+  FILTER_CATMULLROM = FREE_IMAGE_FILTER(4); // Catmull-Rom spline, Overhauser spline
+  FILTER_LANCZOS3   = FREE_IMAGE_FILTER(5); // Lanczos3 filter
 
   // Color channels. Constants used in color manipulation routines.
   FICC_RGB   = FREE_IMAGE_COLOR_CHANNEL(0); // Use red, green and blue channels
@@ -245,38 +243,38 @@ const
   FICC_REAL  = FREE_IMAGE_COLOR_CHANNEL(6); // Complex images: use real part
   FICC_IMAG  = FREE_IMAGE_COLOR_CHANNEL(7); // Complex images: use imaginary part
   FICC_MAG   = FREE_IMAGE_COLOR_CHANNEL(8); // Complex images: use magnitude
-  FICC_PHASE = FREE_IMAGE_COLOR_CHANNEL(9);	// Complex images: use phase
+  FICC_PHASE = FREE_IMAGE_COLOR_CHANNEL(9);     // Complex images: use phase
 
   // Tag data type information (based on TIFF specifications)
-  FIDT_NOTYPE	   = FREE_IMAGE_MDTYPE(0);	// placeholder
-  FIDT_BYTE	     = FREE_IMAGE_MDTYPE(1);	// 8-bit unsigned integer
-  FIDT_ASCII	   = FREE_IMAGE_MDTYPE(2);	// 8-bit bytes w/ last byte null
-  FIDT_SHORT	   = FREE_IMAGE_MDTYPE(3);	// 16-bit unsigned integer
-  FIDT_LONG	     = FREE_IMAGE_MDTYPE(4);	// 32-bit unsigned integer
-  FIDT_RATIONAL  = FREE_IMAGE_MDTYPE(5);	// 64-bit unsigned fraction
-  FIDT_SBYTE	   = FREE_IMAGE_MDTYPE(6);	// 8-bit signed integer
-  FIDT_UNDEFINED = FREE_IMAGE_MDTYPE(7);	// 8-bit untyped data
-  FIDT_SSHORT	   = FREE_IMAGE_MDTYPE(8);	// 16-bit signed integer
-  FIDT_SLONG	   = FREE_IMAGE_MDTYPE(9);	// 32-bit signed integer
+  FIDT_NOTYPE    = FREE_IMAGE_MDTYPE(0);  // placeholder
+  FIDT_BYTE      = FREE_IMAGE_MDTYPE(1);  // 8-bit unsigned integer
+  FIDT_ASCII     = FREE_IMAGE_MDTYPE(2);  // 8-bit bytes w/ last byte null
+  FIDT_SHORT     = FREE_IMAGE_MDTYPE(3);  // 16-bit unsigned integer
+  FIDT_LONG      = FREE_IMAGE_MDTYPE(4);  // 32-bit unsigned integer
+  FIDT_RATIONAL  = FREE_IMAGE_MDTYPE(5);  // 64-bit unsigned fraction
+  FIDT_SBYTE     = FREE_IMAGE_MDTYPE(6);  // 8-bit signed integer
+  FIDT_UNDEFINED = FREE_IMAGE_MDTYPE(7);  // 8-bit untyped data
+  FIDT_SSHORT    = FREE_IMAGE_MDTYPE(8);  // 16-bit signed integer
+  FIDT_SLONG     = FREE_IMAGE_MDTYPE(9);  // 32-bit signed integer
   FIDT_SRATIONAL = FREE_IMAGE_MDTYPE(10); // 64-bit signed fraction
-  FIDT_FLOAT	   = FREE_IMAGE_MDTYPE(11); // 32-bit IEEE floating point
-  FIDT_DOUBLE	   = FREE_IMAGE_MDTYPE(12); // 64-bit IEEE floating point
-  FIDT_IFD	     = FREE_IMAGE_MDTYPE(13);	// 32-bit unsigned integer (offset)
-  FIDT_PALETTE	 = FREE_IMAGE_MDTYPE(14);	// 32-bit RGBQUAD
+  FIDT_FLOAT     = FREE_IMAGE_MDTYPE(11); // 32-bit IEEE floating point
+  FIDT_DOUBLE    = FREE_IMAGE_MDTYPE(12); // 64-bit IEEE floating point
+  FIDT_IFD       = FREE_IMAGE_MDTYPE(13); // 32-bit unsigned integer (offset)
+  FIDT_PALETTE   = FREE_IMAGE_MDTYPE(14); // 32-bit RGBQUAD
 
   // Metadata models supported by FreeImage
-  FIMD_NODATA	        = FREE_IMAGE_MDMODEL(-1);
-  FIMD_COMMENTS	      = FREE_IMAGE_MDMODEL(0);  // single comment or keywords
+  FIMD_NODATA         = FREE_IMAGE_MDMODEL(-1);
+  FIMD_COMMENTS       = FREE_IMAGE_MDMODEL(0);  // single comment or keywords
   FIMD_EXIF_MAIN      = FREE_IMAGE_MDMODEL(1);  // Exif-TIFF metadata
   FIMD_EXIF_EXIF      = FREE_IMAGE_MDMODEL(2);  // Exif-specific metadata
-  FIMD_EXIF_GPS	      = FREE_IMAGE_MDMODEL(3);  // Exif GPS metadata
+  FIMD_EXIF_GPS       = FREE_IMAGE_MDMODEL(3);  // Exif GPS metadata
   FIMD_EXIF_MAKERNOTE = FREE_IMAGE_MDMODEL(4);  // Exif maker note metadata
   FIMD_EXIF_INTEROP   = FREE_IMAGE_MDMODEL(5);  // Exif interoperability metadata
-  FIMD_IPTC	          = FREE_IMAGE_MDMODEL(6);  // IPTC/NAA metadata
-  FIMD_XMP	          = FREE_IMAGE_MDMODEL(7);  // Abobe XMP metadata
-  FIMD_GEOTIFF	      = FREE_IMAGE_MDMODEL(8);  // GeoTIFF metadata (to be implemented)
-  FIMD_ANIMATION		  = FREE_IMAGE_MDMODEL(9);  // Animation metadata
-  FIMD_CUSTOM	        = FREE_IMAGE_MDMODEL(10); // Used to attach other metadata types to a dib
+  FIMD_IPTC           = FREE_IMAGE_MDMODEL(6);  // IPTC/NAA metadata
+  FIMD_XMP            = FREE_IMAGE_MDMODEL(7);  // Abobe XMP metadata
+  FIMD_GEOTIFF        = FREE_IMAGE_MDMODEL(8);  // GeoTIFF metadata (to be implemented)
+  FIMD_ANIMATION      = FREE_IMAGE_MDMODEL(9);  // Animation metadata
+  FIMD_CUSTOM         = FREE_IMAGE_MDMODEL(10); // Used to attach other metadata types to a dib
 
 //{$endif}
 
@@ -411,15 +409,15 @@ const
   TARGA_DEFAULT       = 0;
   TARGA_LOAD_RGB888   = 1;     // If set the loader converts RGB555 and ARGB8888 -> RGB888.
   TIFF_DEFAULT        = 0;
-  TIFF_CMYK	          = $0001;  // reads/stores tags for separated CMYK (use | to combine with compression flags)
-  TIFF_PACKBITS       = $0100;  // save using PACKBITS compression
-  TIFF_DEFLATE        = $0200;  // save using DEFLATE compression
-  TIFF_ADOBE_DEFLATE  = $0400;  // save using ADOBE DEFLATE compression
-  TIFF_NONE           = $0800;  // save without any compression
-  TIFF_CCITTFAX3		  = $1000;  // save using CCITT Group 3 fax encoding
-  TIFF_CCITTFAX4		  = $2000;  // save using CCITT Group 4 fax encoding
-  TIFF_LZW			      = $4000; 	// save using LZW compression
-  TIFF_JPEG			      = $8000;	// save using JPEG compression
+  TIFF_CMYK           = $0001; // reads/stores tags for separated CMYK (use | to combine with compression flags)
+  TIFF_PACKBITS       = $0100; // save using PACKBITS compression
+  TIFF_DEFLATE        = $0200; // save using DEFLATE compression
+  TIFF_ADOBE_DEFLATE  = $0400; // save using ADOBE DEFLATE compression
+  TIFF_NONE           = $0800; // save without any compression
+  TIFF_CCITTFAX       = $1000; // save using CCITT Group 3 fax encoding
+  TIFF_CCITTFAX4      = $2000; // save using CCITT Group 4 fax encoding
+  TIFF_LZW            = $4000; // save using LZW compression
+  TIFF_JPEG           = $8000; // save using JPEG compression
   WBMP_DEFAULT        = 0;
   XBM_DEFAULT         = 0;
   XPM_DEFAULT         = 0;
