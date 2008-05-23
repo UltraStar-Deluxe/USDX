@@ -6,7 +6,7 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$I ../switches.inc}
+{$I switches.inc}
 
 uses
   SDL;
