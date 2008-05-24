@@ -38,9 +38,6 @@
 unit portmixer;
 
 {$IFDEF FPC}
-  {$IFNDEF win32}
-  {$LINKLIB libportaudio}
-  {$ENDIF}
   {$PACKRECORDS C}    (* GCC/Visual C/C++ compatible record packing *)
   {$MODE DELPHI }
 {$ENDIF}
@@ -51,14 +48,15 @@ uses
   portaudio;
 
 const
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
   LibName = 'portmixer.dll';
 {$ENDIF}
 {$IFDEF LINUX}
   LibName = 'libportmixer.so';
 {$ENDIF}
-{$IFDEF MACOS}
-  LibName = 'libportmixer.dylib';
+{$IFDEF DARWIN}
+//  LibName = 'libportmixer.dylib';
+//  {$LINKLIB libportaudio}
 {$ENDIF}
 
 type

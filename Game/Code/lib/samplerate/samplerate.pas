@@ -24,9 +24,6 @@
 unit samplerate;
 
 {$IFDEF FPC}
-  {$IFNDEF win32}
-  {$LINKLIB libsamplerate}
-  {$ENDIF}
   {$PACKRECORDS C} (* GCC/Visual C/C++ compatible record packing *)
   {$MODE DELPHI}
 {$ENDIF}
@@ -34,14 +31,15 @@ unit samplerate;
 interface
 
 const
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
   LibName = 'libsamplerate.dll';
 {$ENDIF}
 {$IFDEF LINUX}
   LibName = 'samplerate';
 {$ENDIF}
-{$IFDEF MACOS}
-  {LibName = 'unknown';}
+{$IFDEF DARWIN}
+//  LibName = 'libsamplerate.dylib';
+//  {$LINKLIB libsamplerate}
 {$ENDIF}
 
 { Opaque data type SRC_STATE. }
