@@ -85,9 +85,6 @@ uses
   UMain,
   UCommon,
   SysUtils,
-  {$IFDEF DARWIN}
-//  MacResources,
-  {$ENDIF}
   UGraphic;
 
 procedure BuildFont;			                // Build Our Bitmap Font
@@ -590,5 +587,3 @@ begin
 end;
 
 end.
-
-
