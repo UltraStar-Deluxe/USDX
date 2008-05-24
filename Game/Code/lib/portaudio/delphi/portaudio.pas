@@ -44,9 +44,6 @@
 unit portaudio;
 
 {$IFDEF FPC}
-  {$IFNDEF win32}
-  {$LINKLIB libportaudio}
-  {$ENDIF}
   {$PACKRECORDS C}    (* GCC/Visual C/C++ compatible record packing *)
   {$MODE DELPHI }
 {$ENDIF}
@@ -56,14 +53,16 @@ interface
 //uses;
 
 const
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
   LibName = 'portaudio_x86.dll';
 {$ENDIF}
 {$IFDEF LINUX}
   LibName = 'libportaudio.so';
 {$ENDIF}
 {$IFDEF DARWIN}
-  LibName = 'libportaudio.dylib';
+// this is for portaudio version 19
+  LibName = 'libportaudio.2.dylib';
+  {$LINKLIB libportaudio.2}
 {$ENDIF}
 
 {** Retrieve the release number of the currently running PortAudio build,
