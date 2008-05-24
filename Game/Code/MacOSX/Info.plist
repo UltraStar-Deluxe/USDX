@@ -5,11 +5,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>UltraStar Deluxe</string>
+	<string>UltraStarDeluxe</string>
 	<key>CFBundleExecutable</key>
 	<string>UltraStar</string>
 	<key>CFBundleGetInfoString</key>
-	<string>UltraStar Deluxe, a SingStar clone</string>
+	<string>UltraStarDeluxe, a SingStar clone</string>
 	<key>CFBundleIconFile</key>
 	<string>ustar-icon_v01</string>
 	<key>CFBundleIdentifier</key>
@@ -17,7 +17,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>UltraStar Deluxe</string>
+	<string>UltraStarDeluxe</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

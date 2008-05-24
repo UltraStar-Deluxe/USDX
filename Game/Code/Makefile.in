@@ -244,7 +244,7 @@ rpm: all
 #	rpm 
 	@echo "Coming soon"
 
-macosx_bundle_path = ../../UltraStar\ Deluxe.app/Contents
+macosx_bundle_path = ../../UltraStarDeluxe.app/Contents
 macosx-app: all 
 # Create double clickable Mac OS X application.
 
