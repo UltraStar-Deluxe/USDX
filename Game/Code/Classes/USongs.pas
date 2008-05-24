@@ -9,9 +9,9 @@ interface
 {$I switches.inc}
 
 {$IFDEF DARWIN}
-	{$IFDEF DEBUG}
-		{$DEFINE USE_PSEUDO_THREAD}
-	{$ENDIF}
+  {$IFDEF DEBUG}
+    {$DEFINE USE_PSEUDO_THREAD}
+  {$ENDIF}
 {$ENDIF}
 
 uses
@@ -53,14 +53,13 @@ type
     Length:     string;
   end;
 
-	{$IFDEF USE_PSEUDO_THREAD}
-	TSongs = class( TPseudoThread )
-	{$ELSE}
-  TSongs = class( TThread )
-	{$ENDIF}
+  {$IFDEF USE_PSEUDO_THREAD}
+    TSongs = class( TPseudoThread )
+  {$ELSE}
+    TSongs = class( TThread )
+  {$ENDIF}
   private
-    fNotify   ,
-    fWatch    : longint;
+    fNotify, fWatch     : longint;
     fParseSongDirectory : boolean;
     fProcessing         : boolean;
     {$ifdef MSWINDOWS}
@@ -71,7 +70,7 @@ type
   protected
     procedure Execute; override;
   public
-    SongList  : TList; // array of songs
+    SongList  : TList;          // array of songs
     Selected  : integer;        // selected song index
     constructor create();
     destructor  destroy(); override;
@@ -104,25 +103,25 @@ type
     function VisibleSongs: integer; // returns number of visible songs (for tabs)
     function VisibleIndex(Index: integer): integer; // returns visible song index (skips invisible)
 
-    function SetFilter(FilterStr: String; const fType: Byte): Cardinal;
+    function SetFilter(FilterStr: string; const fType: Byte): Cardinal;
   end;
 
 var
-  Songs:      TSongs; // all songs
+  Songs:      TSongs;    // all songs
   CatSongs:   TCatSongs; // categorized songs
 
 const
-     IN_ACCESS		    = $00000001;	//* File was accessed */
-     IN_MODIFY		    = $00000002;	//* File was modified */
-     IN_ATTRIB		    = $00000004;	//* Metadata changed */
-     IN_CLOSE_WRITE		= $00000008;	//* Writtable file was closed */
-     IN_CLOSE_NOWRITE	= $00000010;	//* Unwrittable file closed */
-     IN_OPEN			    = $00000020;	//* File was opened */
-     IN_MOVED_FROM		= $00000040;	//* File was moved from X */
-     IN_MOVED_TO		  = $00000080;	//* File was moved to Y */
-     IN_CREATE		    = $00000100;	//* Subfile was created */
-     IN_DELETE		    = $00000200;	//* Subfile was deleted */
-     IN_DELETE_SELF		= $00000400;	//* Self was deleted */
+  IN_ACCESS        = $00000001; //* File was accessed */
+  IN_MODIFY        = $00000002; //* File was modified */
+  IN_ATTRIB        = $00000004; //* Metadata changed */
+  IN_CLOSE_WRITE   = $00000008; //* Writtable file was closed */
+  IN_CLOSE_NOWRITE = $00000010; //* Unwrittable file closed */
+  IN_OPEN          = $00000020; //* File was opened */
+  IN_MOVED_FROM    = $00000040; //* File was moved from X */
+  IN_MOVED_TO      = $00000080; //* File was moved to Y */
+  IN_CREATE        = $00000100; //* Subfile was created */
+  IN_DELETE        = $00000200; //* Subfile was deleted */
+  IN_DELETE_SELF   = $00000400; //* Self was deleted */
 
 
 implementation
@@ -133,13 +132,6 @@ uses StrUtils,
      UFiles,
      UMain,
      UIni;
-
-{$IFDEF DARWIN}
-function AnsiContainsText(const AText, ASubText: string): Boolean;
-begin
-  Result := AnsiPos(AnsiUppercase(ASubText), AnsiUppercase(AText)) > 0;
-end;
-{$ENDIF}
 
 constructor TSongs.create();
 begin
@@ -246,65 +238,67 @@ end;
 
 procedure TSongs.BrowseTXTFiles(Dir: widestring);
 var
-  i       : Integer;
+  i       : integer;
   Files   : TDirectoryEntryArray;
   lSong   : TSong;
 begin
 
-	  Files    := Platform.DirectoryFindFiles( Dir, '.txt', true);
+  Files    := Platform.DirectoryFindFiles( Dir, '.txt', true);
 
-		for i := 0 to Length(Files)-1 do
-		begin
-		  if Files[i].IsDirectory then
-			begin
-			  BrowseTXTFiles( Dir + Files[i].Name + PathDelim );  //Recursive Call
-			end
-			else
-			begin
-        lSong := TSong.create( Dir + Files[i].Name );
+  for i := 0 to Length(Files)-1 do
+  begin
+    if Files[i].IsDirectory then
+    begin
+      BrowseTXTFiles( Dir + Files[i].Name + PathDelim );  //Recursive Call
+    end
+    else
+    begin
+      lSong := TSong.create( Dir + Files[i].Name );
 
-        if NOT lSong.Analyse then
-				  begin
-					  Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
-            freeandnil( lSong );
-				  end
-          else SongList.add( lSong );
+      if lSong.Analyse then
+        SongList.add( lSong )
+      else
+      begin
+        Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
+        freeandnil( lSong );
+      end;
 
-			end;
-		end;
-		SetLength( Files, 0);
+    end;
+  end;
+  SetLength( Files, 0);
 
 end;
 
 procedure TSongs.BrowseXMLFiles(Dir: widestring);
 var
-  i       : Integer;
+  i       : integer;
   Files   : TDirectoryEntryArray;
   lSong   : TSong;
 begin
 
-	  Files := Platform.DirectoryFindFiles( Dir, '.xml', true);
+  Files := Platform.DirectoryFindFiles( Dir, '.xml', true);
 
-		for i := 0 to Length(Files)-1 do
-		begin
-		  if Files[i].IsDirectory then
-			begin
-			  BrowseXMLFiles( Dir + Files[i].Name + PathDelim ); //Recursive Call
-			end
-			else
-			begin
-        lSong := TSong.create( Dir + Files[i].Name );
+  for i := 0 to Length(Files)-1 do
+  begin
+    if Files[i].IsDirectory then
+    begin
+      BrowseXMLFiles( Dir + Files[i].Name + PathDelim ); //Recursive Call
+    end
+    else
+    begin
+      lSong := TSong.create( Dir + Files[i].Name );
 
-        if NOT lSong.AnalyseXML then
-				  begin
-					  Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
-            freeandnil( lSong );
-				  end
-          else SongList.add( lSong );
+      if lSong.AnalyseXML then
+	SongList.add( lSong )
+      else
+      begin
+	Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
+	freeandnil( lSong );
+      end;
 
-			end;
-		end;
-		SetLength( Files, 0);
+    end;
+  end;
+  SetLength( Files, 0);
 
 end;
 
@@ -378,7 +372,8 @@ var
   SR:     TSearchRec;   // for parsing song directory
 begin
   Result := '';
-  if FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin
+  if FindFirst(Dir + Mask, faDirectory, SR) = 0 then
+  begin
     Result := SR.Name;
   end; // if
   FindClose(SR);
@@ -602,6 +597,7 @@ begin
       CurSong.Visible := true
     else if (Ini.Tabs = 1) then
       CurSong.Visible := false;
+
     {
     if (Ini.Tabs = 1) and (Order = 1) then
     begin
@@ -632,10 +628,14 @@ begin
   CatNumShow := Index;
   for S := 0 to high(CatSongs.Song) do
   begin
+{
     if (CatSongs.Song[S].OrderNum = Index) and (not CatSongs.Song[S].Main) then
       CatSongs.Song[S].Visible := true
     else
       CatSongs.Song[S].Visible := false;
+}
+//  KMS: This should be the same, but who knows :-)
+    CatSongs.Song[S].Visible := ( (CatSongs.Song[S].OrderNum = Index) and (not CatSongs.Song[S].Main) );
   end;
 end;
 
@@ -643,7 +643,8 @@ procedure TCatSongs.HideCategory(Index: integer); // hides all songs in category
 var
   S:    integer; // song
 begin
-  for S := 0 to high(CatSongs.Song) do begin
+  for S := 0 to high(CatSongs.Song) do
+  begin
     if not CatSongs.Song[S].Main then
       CatSongs.Song[S].Visible := false // hides all at now
   end;
@@ -658,7 +659,8 @@ begin
   begin
     ShowCategory(Num);
   end
-  else begin
+  else
+  begin
     ShowCategoryList;
   end;
 end;
@@ -668,13 +670,9 @@ procedure TCatSongs.ShowCategoryList;
 var
   Num, S:    integer;
 begin
-  //Hide All Songs Show All Cats
-  for S := 0 to high(CatSongs.Song) do begin
-    if CatSongs.Song[S].Main then
-      CatSongs.Song[S].Visible := true
-    else
-      CatSongs.Song[S].Visible := false
-  end;
+  // Hide All Songs Show All Cats
+  for S := 0 to high(CatSongs.Song) do
+    CatSongs.Song[S].Visible := CatSongs.Song[S].Main;
   CatSongs.Selected := CatNumShow; //Show last shown Category
   CatNumShow := -1;
 end;
@@ -683,7 +681,7 @@ end;
 //Wrong song selected when tabs on bug
 function TCatSongs.FindNextVisible(SearchFrom:integer): integer;//Find next Visible Song
 var
-  I: Integer;
+  I: integer;
 begin
   Result := -1;
   I := SearchFrom + 1;
@@ -716,17 +714,18 @@ begin
     if CatSongs.Song[S].Visible = true then Inc(Result);
 end;
 
-function TCatSongs.SetFilter(FilterStr: String; const fType: Byte): Cardinal;
+function TCatSongs.SetFilter(FilterStr: string; const fType: Byte): Cardinal;
 var
-  I, J: Integer;
-  cString: String;
-  SearchStr: array of String;
+  I, J: integer;
+  cString: string;
+  SearchStr: array of string;
 begin
   {fType: 0: All
           1: Title
           2: Artist}
   FilterStr := Trim(FilterStr);
-  if FilterStr<>'' then begin
+  if FilterStr<>'' then
+  begin
     Result := 0;
     //Create Search Array
     SetLength(SearchStr, 1);
@@ -745,7 +744,8 @@ begin
     if (FilterStr <> ' ') and (FilterStr <> '') then
       SearchStr[High(SearchStr)] := FilterStr;
 
-    for I:=0 to High(Song) do begin
+    for I:=0 to High(Song) do
+    begin
       if not Song[i].Main then
       begin
         case fType of
@@ -767,8 +767,10 @@ begin
     end;
     CatNumShow := -2;
   end
-  else begin
-    for i:=0 to High(Song) do begin
+  else
+  begin
+    for i:=0 to High(Song) do
+    begin
       Song[i].Visible := (Ini.Tabs=1) = Song[i].Main;
       CatNumShow := -1;
     end;
@@ -776,11 +778,6 @@ begin
   end;
 end;
 
-
-
 // -----------------------------------------------------------------------------
-
-
-
 
 end.
