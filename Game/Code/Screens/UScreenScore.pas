@@ -367,15 +367,15 @@ begin
 
   inherited Draw;
 {*
-  player[0].ScoreI       := 7000;
-  player[0].ScoreLineI   := 2000;
-  player[0].ScoreGoldenI := 1000;
-  player[0].ScoreTotalI  := 10000;
+  player[0].ScoreInt       := 7000;
+  player[0].ScoreLineInt   := 2000;
+  player[0].ScoreGoldenInt := 1000;
+  player[0].ScoreTotalInt  := 10000;
 
-  player[1].ScoreI       := 2500;
-  player[1].ScoreLineI   := 1100;
-  player[1].ScoreGoldenI :=  900;
-  player[1].ScoreTotalI  := 4500;
+  player[1].ScoreInt       := 2500;
+  player[1].ScoreLineInt   := 1100;
+  player[1].ScoreGoldenInt :=  900;
+  player[1].ScoreTotalInt  := 4500;
 *}
   // Let's start to arise the bars
   CurrentTime := SDL_GetTicks();
@@ -486,7 +486,7 @@ begin
 
   ThemeIndex := PlayerNumber + ArrayStartModifier;
 
-  case (Player[PlayerNumber-1].ScoreTotalI) of
+  case (Player[PlayerNumber-1].ScoreTotalInt) of
    0..2009:
      begin
        Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
@@ -633,25 +633,25 @@ begin
   // EaseOut_Step is the actual step in the raising process, like the 20iest step of EaseOut_MaxSteps
   if (BarType = 'Note') then
     begin
-      Score        := Player[PlayerNumber - 1].ScoreI;
+      Score        := Player[PlayerNumber - 1].ScoreInt;
       RaiseStep    := BarScore_EaseOut_Step;
       BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y + MaxHeight;
     end;
   if (BarType = 'Line') then
     begin
-      Score        := Player[PlayerNumber - 1].ScoreLineI;
+      Score        := Player[PlayerNumber - 1].ScoreLineInt;
       RaiseStep    := BarPhrase_EaseOut_Step;
       BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight + MaxHeight;
     end;
   if (BarType = 'Golden') then
     begin
-      Score        := Player[PlayerNumber - 1].ScoreGoldenI;
+      Score        := Player[PlayerNumber - 1].ScoreGoldenInt;
       RaiseStep    := BarGolden_EaseOut_Step;
       BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight - aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight + MaxHeight;
     end;
 
   // the height dependend of the score
-  Height2Reach := (Score / 10000) * MaxHeight;
+  Height2Reach := (Score / MAX_SONG_SCORE) * MaxHeight;
 
     if (aPlayerScoreScreenDatas[PlayerNumber].Bar_Actual_Height < Height2Reach) then
       begin
@@ -751,19 +751,19 @@ begin
   begin
     EaseOut_Step     := BarScore_EaseOut_Step;
     ActualScoreValue := TextScore_ActualValue[PlayerNumber];
-    ScoreReached     := Player[PlayerNumber-1].ScoreI;
+    ScoreReached     := Player[PlayerNumber-1].ScoreInt;
   end;
   if (ScoreType = 'Line') then
   begin
     EaseOut_Step     := BarPhrase_EaseOut_Step;
     ActualScoreValue := TextPhrase_ActualValue[PlayerNumber];
-    ScoreReached     := Player[PlayerNumber-1].ScoreLineI;
+    ScoreReached     := Player[PlayerNumber-1].ScoreLineInt;
   end;
   if (ScoreType = 'Golden') then
   begin
     EaseOut_Step     := BarGolden_EaseOut_Step;
     ActualScoreValue := TextGolden_ActualValue[PlayerNumber];
-    ScoreReached     := Player[PlayerNumber-1].ScoreGoldenI;
+    ScoreReached     := Player[PlayerNumber-1].ScoreGoldenInt;
   end;
 
   // EaseOut_Step is the actual step in the raising process, like the 20iest step of EaseOut_MaxSteps
@@ -815,17 +815,17 @@ begin
 
   //fixed: line bonus and golden notes don't show up,
   //       another bug: total score was shown without added golden-, linebonus
-  S := IntToStr(Player[P].ScoreTotalI);
+  S := IntToStr(Player[P].ScoreTotalInt);
   while (Length(S)<5) do
     S := '0' + S;
   Text[TextTotalScore[Item]].Text := S;
 
-  S := IntToStr(Player[P].ScoreLineI);
+  S := IntToStr(Player[P].ScoreLineInt);
   while (Length(S)<4) do
     S := '0' + S;
   Text[TextLineBonusScore[Item]].Text := S;
 
-  S := IntToStr(Player[P].ScoreGoldenI);
+  S := IntToStr(Player[P].ScoreGoldenInt);
   while (Length(S)<4) do
     S := '0' + S;
   Text[TextGoldenNotesScore[Item]].Text := S;

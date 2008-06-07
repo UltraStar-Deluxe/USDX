@@ -165,7 +165,7 @@ begin
           if Interaction = 3 then begin
             if SelectedNumber > 0 then begin
               Extract;
-              SaveSong(Song, Lines, ChangeFileExt(FileName, '.txt'), false);
+              SaveSong(Song, Lines, ChangeFileExt(ConversionFileName, '.txt'), false);
             end;
           end;
 
@@ -396,7 +396,7 @@ begin
   MidiOut.Open;
 //  MidiOut.SetVolume(100, 100); // temporary}
 
-  FileName := GamePath + 'file.mid';
+  ConversionFileName := GamePath + 'file.mid';
   {$IFDEF UseMIDIPort}
   MidiFile := TMidiFile.Create(nil);
   {$ENDIF}
@@ -426,9 +426,9 @@ begin
   MidiOut.Open;
 
 
-  if FileExists(FileName) then
+  if FileExists(ConversionFileName) then
   begin
-    MidiFile.Filename := FileName;
+    MidiFile.Filename := ConversionFileName;
     MidiFile.ReadFile;
 
 

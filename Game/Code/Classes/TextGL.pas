@@ -20,23 +20,24 @@ uses
   SDL_ttf,
   ULog;
 
-procedure BuildFont;			                // Build Our Bitmap Font
-procedure KillFont;     		                // Delete The Font
-function  glTextWidth(text: pchar): real;     // Returns Text Width
+procedure BuildFont;                          // build our bitmap font
+procedure KillFont;                           // delete the font
+function  glTextWidth(text: pchar): real;     // returns text width
 procedure glPrintDone(text: pchar; Done: real; ColR, ColG, ColB: real);
 procedure glPrintLetter(letter: char);
 procedure glPrintLetterCut(letter: char; Start, Finish: real);
-procedure glPrint(text: pchar);	                  // Custom GL "Print" Routine
+procedure glPrint(text: pchar);               // custom GL "Print" routine
 procedure glPrintCut(text: pchar);
-procedure SetFontPos(X, Y: real);                     // Sets X And Y
+procedure SetFontPos(X, Y: real);             // sets X and Y
 procedure SetFontSize(Size: real);
-procedure SetFontStyle(Style: integer); // sets active font style (normal, bold, etc)
-procedure SetFontItalic(Enable: boolean); // sets italic type letter (works for all fonts)
+procedure SetFontStyle(Style: integer);       // sets active font style (normal, bold, etc)
+procedure SetFontItalic(Enable: boolean);     // sets italic type letter (works for all fonts)
 procedure SetFontAspectW(Aspect: real);
 procedure SetFontReflection(Enable:boolean;Spacing: real); // Enables/Disables text reflection
+
 // Start of SDL_ttf
 function NextPowerOfTwo(Value: integer): integer;
-//Checks if the ttf exists, if yes then a SDL_ttf is returned
+// Checks if the ttf exists, if yes then a SDL_ttf is returned
 function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
 
 // Does the renderstuff, color is in $ffeecc style
@@ -69,7 +70,7 @@ type
 
 
 var
-  base:       GLuint;			                // Base Display List For The Font Set
+  base:       GLuint; // base display list for the font set
   Fonts:      array of TFont;
   ActFont:    integer;
   PColR:      real;  // temps for glPrintDone
@@ -79,6 +80,7 @@ var
   // Colours for the reflection
   TempColor:    array[0..3] of GLfloat;
   PTempColor:   PGLfloat;
+  
 implementation
 
 uses
@@ -87,26 +89,26 @@ uses
   SysUtils,
   UGraphic;
 
-procedure BuildFont;			                // Build Our Bitmap Font
-
-  procedure loadfont(aID : integer; const aType, aResourceName: string);
-  var
-    stream:  TStream;
+procedure LoadBitmapFontInfo(aID : integer; const aType, aResourceName: string);
+var
+  stream:  TStream;
+begin
+  stream := GetResourceStream(aResourceName, aType);
+  if (not assigned(stream)) then
   begin
-    stream := GetResourceStream(aResourceName, aType);
-    if (not assigned(stream)) then
-    begin
-      Log.LogError('Unknown font['+ inttostr(aID) +': '+aType+']', 'loadfont');
-      Exit;
-    end;
-    try
-      stream.Read(Fonts[ aID ].Width, 256);
-    except
-      Log.LogError('Error while reading font['+ inttostr(aID) +': '+aType+']', 'loadfont');
-    end;
-    stream.Free;
+    Log.LogError('Unknown font['+ inttostr(aID) +': '+aType+']', 'loadfont');
+    Exit;
   end;
+  try
+    stream.Read(Fonts[ aID ].Width, 256);
+  except
+    Log.LogError('Error while reading font['+ inttostr(aID) +': '+aType+']', 'loadfont');
+  end;
+  stream.Free;
+end;
 
+// Builds bitmap fonts
+procedure BuildFont;
 var
   Count: integer;
 begin
@@ -150,16 +152,11 @@ begin
   Fonts[4].Done := -1;
   Fonts[4].Outline := 5;}
 
-
-
-  loadfont( 0, 'FNT', 'Font'   );
-  loadfont( 1, 'FNT', 'FontB'  );
-  loadfont( 2, 'FNT', 'FontO'  );
-  loadfont( 3, 'FNT', 'FontO2' );
-
-{  Reg := TResourceStream.Create(HInstance, 'FontO', 'FNT');
-  Reg.Read(Fonts[4].Width, 256);
-  Reg.Free;}
+  // load font info
+  LoadBitmapFontInfo( 0, 'FNT', 'Font'   );
+  LoadBitmapFontInfo( 1, 'FNT', 'FontB'  );
+  LoadBitmapFontInfo( 2, 'FNT', 'FontO'  );
+  LoadBitmapFontInfo( 3, 'FNT', 'FontO2' );
 
   for Count := 0 to 255 do
     Fonts[1].Width[Count] := Fonts[1].Width[Count] div 2;
@@ -175,9 +172,11 @@ begin
 
 end;
 
-procedure KillFont;     		                // Delete The Font
+// Deletes the font
+procedure KillFont;
 begin
-//  glDeleteLists(base, 256); 		                // Delete All 96 Characters
+  // delete all characters
+  //glDeleteLists(base, 256);
 end;
 
 function glTextWidth(text: pchar): real;
@@ -185,13 +184,10 @@ var
   Letter: char;
   i: integer;
 begin
-//  Log.LogStatus(Text, 'glTextWidth');
   Result := 0;
-  for i := 0 to Length(text) -1 do  //  Patched by AlexanderS : bug with wrong sliced text lines
+  for i := 0 to Length(text) -1 do
   begin
     Letter := Text[i];
-    // Bugfix: does not work with FPC, probably because a part of text is assigned to itself
-    //text := pchar(Copy(text, 2, Length(text)-1));
     Result := Result + Fonts[ActFont].Width[Ord(Letter)] * Fonts[ActFont].Tex.H / 30 * Fonts[ActFont].AspectW;
   end;
 end;
@@ -316,7 +312,7 @@ begin
     FWidth := Fonts[ActFont].Width[Ord(Letter)];
 
     W := FWidth * (H/30) * Fonts[ActFont].AspectW;
-//    H := 30;
+    //H := 30;
     OutTemp := Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW;
 
     // set texture positions
@@ -356,14 +352,14 @@ begin
 
 end;
 
-procedure glPrint(text: pchar);	                // Custom GL "Print" Routine
+// Custom GL "Print" Routine
+procedure glPrint(text: pchar);
 var
-//  Letter :       char;
+  //Letter :       char;
   iPos   : integer;
-
 begin
   if (Text = '') then     // If There's No Text
-    Exit;					        // Do Nothing
+    Exit;                 // Do Nothing
 
 (*
   while (length(text) > 0) do
@@ -377,9 +373,9 @@ begin
   end; // while
 *)
 
-//Save the actual color and alpha (for reflection)
+  //Save the actual color and alpha (for reflection)
   PTempColor:= @TempColor;
-//I've read that glGetFloat is quite slow, but it seems that there is no alternative
+  //I've read that glGetFloat is quite slow, but it seems that there is no alternative
   glGetFloatv(GL_CURRENT_COLOR, PTempColor);
 
   // This code is better, because doing a Copy of for every
@@ -393,9 +389,9 @@ begin
 
 end;
 
-function NextPowerOfTwo(Value: integer): integer;
 // tyty to Asphyre
 // FIXME: check if the non-asm version is fast enough and use it by default if so
+function NextPowerOfTwo(Value: integer): integer;
 begin
   Result:= 1;
 {$IF Defined(CPUX86_64)}
@@ -465,14 +461,14 @@ begin
   clrbg.unused := 0;
 
   sText := RenderText(font, 'katzeeeeeee', $fe198e);
-//  sText :=  TTF_RenderText_Blended( font, 'huuuuuuuuuund', clrFG);
+  //sText :=  TTF_RenderText_Blended( font, 'huuuuuuuuuund', clrFG);
 
-// Convert the rendered text to a known format
+  // Convert the rendered text to a known format
   w := nextpoweroftwo(sText.w);
   h := nextpoweroftwo(sText.h);
 
   intermediary := SDL_CreateRGBSurface(0, w, h, 32,
-			  $000000ff, $0000ff00, $00ff0000, $ff000000);
+      $000000ff, $0000ff00, $00ff0000, $ff000000);
 
   SDL_SetAlpha(intermediary, 0, 255);
   SDL_SetAlpha(sText,        0, 255);
@@ -518,8 +514,8 @@ var
   PDoingNow:    real;
   S:            string;
 begin
-  if (Text = '') then   			        // If There's No Text
-     Exit;					        // Do Nothing
+  if (Text = '') then  // If There's No Text
+     Exit;             // Do Nothing
 
   PTotWidth := glTextWidth(Text);
   PToDo := Fonts[ActFont].Done;

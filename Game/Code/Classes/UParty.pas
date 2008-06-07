@@ -450,12 +450,12 @@ begin
       begin
         // to-do : recode Percentage stuff
         //PlayerInfo.Playerinfo[I].Percentage := PlayerInfo.Playerinfo[I].Score div 9999;
-        if (Player[I].ScoreTotalI > MaxScore) then
+        if (Player[I].ScoreTotalInt > MaxScore) then
         begin
-          MaxScore := Player[I].ScoreTotalI;
+          MaxScore := Player[I].ScoreTotalInt;
           Rounds[CurRound].Winner := 1 shl I;
         end
-        else if (Player[I].ScoreTotalI = MaxScore) AND (Player[I].ScoreTotalI <> 0) then
+        else if (Player[I].ScoreTotalInt = MaxScore) AND (Player[I].ScoreTotalInt <> 0) then
         begin
           Rounds[CurRound].Winner := Rounds[CurRound].Winner or (1 shl I);
         end;

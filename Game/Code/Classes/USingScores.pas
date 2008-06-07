@@ -22,7 +22,7 @@ uses UThemes,
 // but not testet yet                                       //
 //////////////////////////////////////////////////////////////
 
-//Some Constances containing Options that could change by time
+//Some constants containing options that could change by time
 const
   MaxPlayers = 6;   //Maximum of Players that could be added
   MaxPositions = 6; //Maximum of Score Positions that could be added
@@ -853,14 +853,16 @@ var
   Diff: Real;
 begin
   //Only Draw if Player has a Position
-  If Players[Index].Position <> high(byte) then
+  if Players[Index].Position <> high(byte) then
   begin
     //Only Draw if Player is on Cur Screen
-    If ((Players[Index].Position AND 128) = 0) = (ScreenAct = 1) AND (Players[index].RBVisible AND Players[index].Visible) then
+    if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1) and
+        Players[index].RBVisible and
+        Players[index].Visible) then
     begin
       Position := @Positions[Players[Index].Position and 127];
 
-      If (Enabled AND Players[Index].Enabled) then
+      if (Enabled AND Players[Index].Enabled) then
       begin
         //Move Position if Enabled
         Diff := Players[Index].RBTarget - Players[Index].RBPos;
@@ -871,25 +873,25 @@ begin
       end;
 
       //Get Colors for RatingBar
-      If Players[index].RBPos <=0.22 then
+      if (Players[index].RBPos <= 0.22) then
       begin
         R := 1;
         G := 0;
         B := 0;
       end
-      Else If Players[index].RBPos <=0.42 then
+      else if (Players[index].RBPos <= 0.42) then
       begin
         R := 1;
         G := Players[index].RBPos*5;
         B := 0;
       end
-      Else If Players[index].RBPos <=0.57 then
+      else if (Players[index].RBPos <= 0.57) then
       begin
         R := 1;
         G := 1;
         B := 0;
       end
-      Else If Players[index].RBPos <=0.77 then
+      else if (Players[index].RBPos <= 0.77) then
       begin
         R := 1-(Players[index].RBPos-0.57)*5;
         G := 1;

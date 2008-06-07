@@ -19,8 +19,8 @@ procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
 procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
 procedure SingDrawBeatDelimeters(Left, Top, Right: real; NrLines: integer);
 procedure SingDrawLine(Left, Top, Right: real; NrLines: integer; Space: integer);
-procedure SingDrawPlayerLine(X, Y, W: real; NrGracza: integer; Space: integer);
-procedure SingDrawPlayerBGLine(Left, Top, Right: real; NrLines, NrGracza: integer; Space: integer);
+procedure SingDrawPlayerLine(X, Y, W: real; PlayerIndex: integer; Space: integer);
+procedure SingDrawPlayerBGLine(Left, Top, Right: real; NrLines, PlayerIndex: integer; Space: integer);
 
 // TimeBar 
 procedure SingDrawTimeBar();
@@ -338,129 +338,122 @@ end;
 
 
 // draw sung notes
-procedure SingDrawPlayerLine(X, Y, W: real; NrGracza: integer; Space: integer);
+procedure SingDrawPlayerLine(X, Y, W: real; PlayerIndex: integer; Space: integer);
 var
-  TempR:    real;
-  Rec:      TRecR;
-  N:        integer;
-  R:        real;
-  G:        real;
-  B:        real;
-  A:        real;
-  NotesH2:  real;
-  begin
-//  Log.LogStatus('Player notes', 'SingDraw');
+  TempR:      real;
+  Rec:        TRecR;
+  N:          integer;
+  R, G, B, A: real;
+  NotesH2:    real;
+begin
+  //Log.LogStatus('Player notes', 'SingDraw');
 
-//  if NrGracza = 0 then LoadColor(R, G, B, 'P1Light')
-//  else LoadColor(R, G, B, 'P2Light');
+  //if NrGracza = 0 then LoadColor(R, G, B, 'P1Light')
+  //else LoadColor(R, G, B, 'P2Light');
 
-//  R := 71/255;
-//  G := 175/255;
-//  B := 247/255;
+  //R := 71/255;
+  //G := 175/255;
+  //B := 247/255;
 
   glColor3f(1, 1, 1);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-////  if Player[NrGracza].IlNut > 0 then
+  //if Player[NrGracza].LengthNote > 0 then
+  begin
+    TempR := W / (Lines[0].Line[Lines[0].Current].End_ - Lines[0].Line[Lines[0].Current].Note[0].Start);
+    for N := 0 to Player[PlayerIndex].HighNote do
     begin
-      TempR := W / (Lines[0].Line[Lines[0].Current].End_ - Lines[0].Line[Lines[0].Current].Note[0].Start);
-        for N := 0 to Player[NrGracza].HighNote do
+      with Player[PlayerIndex].Note[N] do
+      begin
+        // Left part of note
+        Rec.Left := X + (Start-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR + 0.5 + 10*ScreenX;
+        Rec.Right := Rec.Left + NotesW;
+
+        // Draw it in half size, if not hit
+        if Hit then
+        begin
+          NotesH2 := NotesH
+        end
+        else
+        begin
+          NotesH2 := int(NotesH * 0.65);
+        end;
+
+        Rec.Top    := Y - (Tone-Lines[0].Line[Lines[0].Current].BaseNote)*Space/2 - NotesH2;
+        Rec.Bottom := Rec.Top + 2 *NotesH2;
+
+        // draw the left part
+        glColor3f(1, 1, 1);
+        glBindTexture(GL_TEXTURE_2D, Tex_Left[PlayerIndex+1].TexNum);
+        glBegin(GL_QUADS);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+        glEnd;
+
+        // Middle part of the note
+        Rec.Left := Rec.Right;
+        Rec.Right := X + (Start+Length-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR - NotesW - 0.5  + 10*ScreenX;
+
+        // (nowe) - dunno
+        if (Start+Length-1 = LineState.CurrentBeatD) then
+          Rec.Right := Rec.Right - (1-Frac(LineState.MidBeatD)) * TempR;
+        // the left note is more right than the right note itself, sounds weird - so we fix that xD
+        if Rec.Right <= Rec.Left then
+          Rec.Right := Rec.Left;
+
+        // draw the middle part
+        glBindTexture(GL_TEXTURE_2D, Tex_Mid[PlayerIndex+1].TexNum);
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        glBegin(GL_QUADS);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
+        glEnd;
+        glColor3f(1, 1, 1);
+
+        // the right part of the note
+        Rec.Left := Rec.Right;
+        Rec.Right := Rec.Right + NotesW;
+
+        glBindTexture(GL_TEXTURE_2D, Tex_Right[PlayerIndex+1].TexNum);
+        glBegin(GL_QUADS);
+          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+        glEnd;
+
+        // Perfect note is stored
+        if Perfect and (Ini.EffectSing=1) then
+        begin
+          A := 1 - 2*(LineState.CurrentTime - GetTimeFromBeat(Start+Length));
+          if not (Start+Length-1 = LineState.CurrentBeatD) then
           begin
-            with Player[NrGracza].Note[N] do
-              begin
-                // Left part of note
-                Rec.Left := X + (Start-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR + 0.5 + 10*ScreenX;
-                Rec.Right := Rec.Left + NotesW;
+            //Star animation counter
+            //inc(Starfr);
+            //Starfr := Starfr mod 128;
+            GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
+          end;
+        end;
+      end; // with
+    end; // for
 
-                // Draw it in half size, if not hit
-               if Hit then
-                 begin
-                   NotesH2 := NotesH
-                 end
-               else
-                 begin
-                   NotesH2 := int(NotesH * 0.65);
-                 end;
+    // actually we need a comparison here, to determine if the singing process
+    // is ahead Rec.Right even if there is no singing
 
-                Rec.Top    := Y - (Tone-Lines[0].Line[Lines[0].Current].BaseNote)*Space/2 - NotesH2;
-                Rec.Bottom := Rec.Top + 2 *NotesH2;
-
-                // draw the left part
-                glColor3f(1, 1, 1);
-                glBindTexture(GL_TEXTURE_2D, Tex_Left[NrGracza+1].TexNum);
-                glBegin(GL_QUADS);
-                  glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-                  glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-                  glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-                  glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-                glEnd;
-
-               // Middle part of the note
-               Rec.Left := Rec.Right;
-               Rec.Right := X + (Start+Length-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR - NotesW - 0.5  + 10*ScreenX;
-
-               // (nowe) - dunno
-               if (Start+Length-1 = LineState.CurrentBeatD) then
-                 Rec.Right := Rec.Right - (1-Frac(LineState.MidBeatD)) * TempR;
-               // the left note is more right than the right note itself, sounds weird - so we fix that xD
-               if Rec.Right <= Rec.Left then Rec.Right := Rec.Left;
-
-               // draw the middle part
-               glBindTexture(GL_TEXTURE_2D, Tex_Mid[NrGracza+1].TexNum);
-               glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-               glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-               glBegin(GL_QUADS);
-                 glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-                 glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-                 glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
-                 glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
-               glEnd;
-               glColor3f(1, 1, 1);
-
-               // the right part of the note
-               Rec.Left := Rec.Right;
-               Rec.Right := Rec.Right + NotesW;
-
-               glBindTexture(GL_TEXTURE_2D, Tex_Right[NrGracza+1].TexNum);
-               glBegin(GL_QUADS);
-                 glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-                 glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-                 glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-                 glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-               glEnd;
-
-            // Perfect note is stored
-            if Perfect and (Ini.EffectSing=1) then
-              begin
-                A := 1 - 2*(LineState.CurrentTime - GetTimeFromBeat(Start+Length));
-                  if not (Start+Length-1 = LineState.CurrentBeatD) then
-
-                  //Star animation counter
-                  //inc(Starfr);
-                  //Starfr := Starfr mod 128;
-                  GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
-              end;
-            end; // with
-        end; // for
-    // eigentlich brauchen wir hier einen vergleich, um festzustellen, ob wir mit
-    // singen schon weiter wären, als bei Rec.Right, _auch, wenn nicht gesungen wird_
-    // English Translation:
-    // actually we need a compare here, to determine if the singing process is ahead Rec.Right
-    // even if there is no singing
-
-
-    // passing on NrGracza... hope this is really something like the player-number, not only
-    // some kind of weird index into a colour-table
-
-        if (Ini.EffectSing=1) then
-          GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, NrGracza);
+    if (Ini.EffectSing = 1) then
+      GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, PlayerIndex);
   end; // if
 end;
 
 //draw Note glow
-procedure SingDrawPlayerBGLine(Left, Top, Right: real; NrLines, NrGracza: integer; Space: integer);
+procedure SingDrawPlayerBGLine(Left, Top, Right: real; NrLines, PlayerIndex: integer; Space: integer);
 var
   Rec:      TRecR;
   Count:      integer;
@@ -472,87 +465,89 @@ var
   lTmpA  ,
   lTmpB  : real;
 begin
-  if (Player[NrGracza].ScoreTotalI >= 0) then begin
-  glColor4f(1, 1, 1, sqrt((1+sin( AudioPlayback.Position * 3))/4)/ 2 + 0.5 );
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
-  lTmpA := (Right-Left);
-  lTmpB := (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
-
-
-  if ( lTmpA > 0 ) AND
-     ( lTmpB > 0 ) THEN
+  if (Player[PlayerIndex].ScoreTotalInt >= 0) then
   begin
-    TempR := lTmpA / lTmpB;
-  end
-  else
-  begin
-    TempR := 0;
-  end;
+    glColor4f(1, 1, 1, sqrt((1+sin( AudioPlayback.Position * 3))/4)/ 2 + 0.5 );
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  with Lines[NrLines].Line[Lines[NrLines].Current] do begin
-    for Count := 0 to HighNote do begin
-      with Note[Count] do begin
-        if NoteType <> ntFreestyle then begin
-          // begin: 14, 20
-          // easy: 6, 11
-          W := NotesW * 2 + 2;
-          H := NotesH * 1.5 + 3.5;
+    lTmpA := (Right-Left);
+    lTmpB := (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
 
-          X2 := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
-          X1 := X2-W;
+    if ( lTmpA > 0 ) and
+       ( lTmpB > 0 ) then
+    begin
+      TempR := lTmpA / lTmpB;
+    end
+    else
+    begin
+      TempR := 0;
+    end;
 
-          X3 := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
-          X4 := X3+W;
+    with Lines[NrLines].Line[Lines[NrLines].Current] do
+    begin
+      for Count := 0 to HighNote do
+      begin
+        with Note[Count] do
+        begin
+          if NoteType <> ntFreestyle then
+          begin
+            // begin: 14, 20
+            // easy: 6, 11
+            W := NotesW * 2 + 2;
+            H := NotesH * 1.5 + 3.5;
 
-          // left
-          Rec.Left := X1;
-          Rec.Right := X2;
-          Rec.Top := Top - (Tone-BaseNote)*Space/2 - H;
-          Rec.Bottom := Rec.Top + 2 * H;
+            X2 := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
+            X1 := X2-W;
 
-          glBindTexture(GL_TEXTURE_2D, Tex_BG_Left[NrGracza+1].TexNum);
-          glBegin(GL_QUADS);
-            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-          glEnd;
+            X3 := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
+            X4 := X3+W;
 
+            // left
+            Rec.Left := X1;
+            Rec.Right := X2;
+            Rec.Top := Top - (Tone-BaseNote)*Space/2 - H;
+            Rec.Bottom := Rec.Top + 2 * H;
 
-        // srodkowa czesc
-        Rec.Left := X2;
-        Rec.Right := X3;
+            glBindTexture(GL_TEXTURE_2D, Tex_BG_Left[PlayerIndex+1].TexNum);
+            glBegin(GL_QUADS);
+              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+              glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+              glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+            glEnd;
 
-        glBindTexture(GL_TEXTURE_2D, Tex_BG_Mid[NrGracza+1].TexNum);
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
+            // srodkowa czesc
+            Rec.Left := X2;
+            Rec.Right := X3;
 
-        // prawa czesc
-        Rec.Left := X3;
-        Rec.Right := X4;
+            glBindTexture(GL_TEXTURE_2D, Tex_BG_Mid[PlayerIndex+1].TexNum);
+            glBegin(GL_QUADS);
+              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+              glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+              glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+            glEnd;
 
-        glBindTexture(GL_TEXTURE_2D, Tex_BG_Right[NrGracza+1].TexNum);
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
-        end; // if not FreeStyle
-      end; // with
-    end; // for
-  end; // with                      1
+            // prawa czesc
+            Rec.Left := X3;
+            Rec.Right := X4;
 
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, Tex_BG_Right[PlayerIndex+1].TexNum);
+            glBegin(GL_QUADS);
+              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+              glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+              glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+            glEnd;
+          end; // if not FreeStyle
+        end; // with
+      end; // for
+    end; // with
+
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
   end;
 end;
 

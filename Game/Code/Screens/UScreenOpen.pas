@@ -61,7 +61,7 @@ begin
       SDLK_ESCAPE :
         begin
           //Empty Filename and go to last Screen
-            FileName := '';
+            ConversionFileName := '';
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(BackScreen);
         end;
@@ -70,14 +70,14 @@ begin
         begin
           if (Interaction = 2) then begin
             //Update Filename and go to last Screen
-            FileName := Text[TextN].Text;
+            ConversionFileName := Text[TextN].Text;
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(BackScreen);
           end
           else if (Interaction = 1) then
           begin
             //Empty Filename and go to last Screen
-            FileName := '';
+            ConversionFileName := '';
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(BackScreen);
           end;
@@ -127,7 +127,7 @@ begin
 
   // file name
   AddBox(20, 540, 500, 40);
-  TextN := AddText(50, 548, 0, 8, 0, 0, 0, FileName);
+  TextN := AddText(50, 548, 0, 8, 0, 0, 0, ConversionFileName);
   AddInteraction(iText, TextN);
 
   // buttons

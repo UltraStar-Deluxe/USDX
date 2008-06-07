@@ -35,10 +35,9 @@ type
     public
       //TextTime:           integer;
 
-      //TimeBar mod
-       StaticTimeProgress:  integer;
-       TextTimeText:        integer;
-      //eoa TimeBar mod
+      // TimeBar fields
+      StaticTimeProgress:  integer;
+      TextTimeText:        integer;
 
       StaticP1:           integer;
       TextP1:             integer;
@@ -90,8 +89,8 @@ type
 
       Tex_Background:     TTexture;
       FadeOut:            boolean;
-//      LyricMain:          TLyric;
-//      LyricSub:           TLyric;
+      //LyricMain:          TLyric;
+      //LyricSub:           TLyric;
       Lyrics:             TLyricEngine;
 
       //Score Manager:
@@ -111,8 +110,8 @@ type
       //procedure   UpdateLCD; //TODO: maybe LCD Support as Plugin?
       procedure   Pause; //Pause Mod(Toggles Pause)
 
-      procedure   onSentenceEnd(S: Cardinal);     //OnSentenceEnd for LineBonus + Singbar
-      procedure   onSentenceChange(S: Cardinal);  //OnSentenceChange (for Golden Notes)
+      procedure   OnSentenceEnd(SentenceIndex: Cardinal);     //OnSentenceEnd for LineBonus + Singbar
+      procedure   OnSentenceChange(SentenceIndex: Cardinal);  //OnSentenceChange (for Golden Notes)
   end;
 
 implementation
@@ -349,15 +348,17 @@ begin
   inherited;
 
   Log.LogStatus('Begin', 'onShow');
-  FadeOut := false; // 0.5.0: early 0.5.0 problems were by this line commented
+  FadeOut := false;
 
   // reset video playback engine, to play Video Clip...
   fCurrentVideoPlaybackEngine := VideoPlayback;
 
-  //SetUp Score Manager
-  Scores.ClearPlayers; //Clear Old Player Values
-  Color.R := 0; Color.G := 0; Color.B := 0; //Dummy atm
-  For P := 0 to PlayersPlay -1 do //Add new Ones
+  // setup score manager
+  Scores.ClearPlayers; // clear old player values
+  Color.R := 0; Color.G := 0; Color.B := 0; // dummy atm
+
+  // add new players
+  for P := 0 to PlayersPlay-1 do
   begin
     Scores.AddPlayer(Tex_ScoreBG[P], Color);
   end;
@@ -368,7 +369,7 @@ begin
 
   // prepare players
   SetLength(Player, PlayersPlay);
-//  Player[0].ScoreTotalI := 0;
+  //Player[0].ScoreTotalInt := 0;
 
   case PlayersPlay of
     1:  begin
@@ -462,20 +463,20 @@ begin
 
   // FIXME: bad style, put the try-except into LoadSong() and not here
   try
-  //Check if File is XML
-  if copy(CurrentSong.FileName,length(CurrentSong.FileName)-3,4) = '.xml'
-   then success := CurrentSong.LoadXMLSong()
-   else success := CurrentSong.LoadSong();
+    // Check if file is XML
+    if copy(CurrentSong.FileName,length(CurrentSong.FileName)-3,4) = '.xml'
+     then success := CurrentSong.LoadXMLSong()
+     else success := CurrentSong.LoadSong();
   except
     success := false;
   end;
 
   if (not success) then
   begin
-    //Error Loading Song -> Go back to Song Screen and Show some Error Message
+    // error loading song -> go back to song screen and show some error message
     FadeTo(@ScreenSong);
-    //Select New Song in Party Mode
-      if ScreenSong.Mode = smPartyMode then
+    // select new song in party mode
+    if ScreenSong.Mode = smPartyMode then
       ScreenSong.SelectRandomSong();
     ScreenPopupError.ShowPopup (Language.Translate('ERROR_CORRUPT_SONG'));
     // FIXME: do we need this?
@@ -485,7 +486,7 @@ begin
 
 
 
-  // reset video playback engine, to play Video Clip...
+  // reset video playback engine, to play video clip...
 
   Visualization.Init();
 
@@ -497,12 +498,9 @@ begin
   fShowVisualization      := false;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
-    // todo: VideoGap and Start time verwursten
-    
+    // TODO: use VideoGap and start time
     fCurrentVideoPlaybackEngine.Open( CurrentSong.Path + CurrentSong.Video );
-
-    fCurrentVideoPlaybackEngine.position := CurrentSong.VideoGAP + CurrentSong.Start;
-
+    fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
     CurrentSong.VideoLoaded := true;
   end;
 
@@ -657,21 +655,19 @@ begin
       end;
   end; // case
 
-  // Add Lines to Lyrics
-  While (not Lyrics.LineinQueue) AND (Lyrics.LineCounter <= High(Lines[0].Line)) do
+  // Add lines to lyrics
+  while (not Lyrics.LineinQueue) and (Lyrics.LineCounter <= High(Lines[0].Line)) do
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   
   //UpdateLCD; //TODO: maybe LCD Support as Plugin?
 
-  //Deactivate Pause
+  // Deactivate pause
   Paused := False;
 
-  //Kill all Stars not Killed yet
-  //GoldenStarsTwinkle Mod
-    GoldenRec.SentenceChange;
-  //GoldenStarsTwinkle Mod End
+  // Kill all stars not killed yet (GoldenStarsTwinkle Mod)
+  GoldenRec.SentenceChange;
 
-  {//Set Position of Line Bonus - PhrasenBonus
+  {//Set Position of Line Bonus - Line Bonus start
   if (Ini.LineBonus = 1) then //Show Line Bonus at Scores
   begin
   Case PlayersPlay of
@@ -904,10 +900,10 @@ begin
   end;
   end; }
   
-  //Set Position of Line Bonus - PhrasenBonus End
-  //Set Num of Empty Sentences for Phrasen Bonus
+  // set Position of Line Bonus - Line Bonus end
+  // set number of empty sentences for Line Bonus
   NumEmptySentences := 0;
-  for P := low(Lines[0].Line) to high(Lines[0].Line) do
+  for P := Low(Lines[0].Line) to High(Lines[0].Line) do
     if Lines[0].Line[P].TotalNotes = 0 then Inc(NumEmptySentences);
 
   Log.LogStatus('End', 'onShow');
@@ -922,24 +918,17 @@ begin
     try
       fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
-//      PlaySmpeg;
-    except
-
-     on E : Exception do
-     begin
-       //If an Error occurs Reading Video: prevent Video from being Drawn again and Close Video
+    except on E : Exception do
+    begin
+       //If an error occurs reading video: prevent video from being drawn again and close video
        CurrentSong.VideoLoaded := False;
        Log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
        Log.LogError('Error Message : '+ E.message );
        Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.onShowFinish)' );
        Log.LogError('Corrupted File: ' + CurrentSong.Video);
-       try
-//         CloseSmpeg;
-         fCurrentVideoPlaybackEngine.Close;
-       except
 
-       end;
-     end;
+       fCurrentVideoPlaybackEngine.Close;
+    end;
     end;
   end;
 
@@ -960,12 +949,12 @@ var
   S:      integer;
   T:      integer;
 begin
-
-
-
-  //ScoreBG Mod | den wirren Scheiss hier brauch mer nimmer, wir haben colorized png's - no need for wirrness also
-  // set player colors  - macht nichts weiter als die farben des statics zu wechseln, was zu unschönen effekten bei colorized png führt
-{  if PlayersPlay = 4 then begin
+  // ScoreBG Mod
+  // TODO: remove this commented out section as we do not need it anymore.
+  //  We use colorized png's now. Set player colors does nothing than changing
+  //  the colors of the statics which will lead to ugly effects on colorized pngs
+  {
+  if PlayersPlay = 4 then begin
     if ScreenAct = 1 then begin
       LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
       Static[StaticP1TwoP].Texture.ColB, 'P1Dark');
@@ -1038,7 +1027,8 @@ begin
 
   if ScreenAct = 2 then begin
     case PlayersPlay of
-{        1:  begin
+      {
+        1:  begin
               Text[TextP1].Text := 'P2';
             end;
         2:  begin
@@ -1049,8 +1039,8 @@ begin
               Text[TextP1].Text := 'P4';
               Text[TextP2M].Text := 'P5';
               Text[TextP3R].Text := 'P6';
-            end;}
-
+            end;
+      }
       4:  begin
             Text[TextP1TwoP].Text   := 'P3';
             Text[TextP2R].Text      := 'P4';
@@ -1063,11 +1053,15 @@ begin
     end; // case
   end; // if
 
-  // stereo
 
-// weird stuff, maybe this is for "dual screen?", but where is player three then? | okay, i commented the stuff out the other day - nothing was missing on screen w/ 6 players - so do we even need this stuff?
-// okay this stuff appears again some lines beneath this one, I commented it out for testing what it does - seems like it's doing nothing
-// but I might be wrong, so what is this stuff here doing? O.o
+  ////
+  // dual screen, part 1
+  ////////////////////////
+
+  // Note: ScreenX is the offset of the current screen in dual-screen mode so we
+  // will move the statics and texts to the correct screen here.
+  // FIXME: clean up this weird stuff. Commenting this stuff out, nothing
+  //   was missing on screen w/ 6 players - so do we even need this stuff?
   Static[StaticP1].Texture.X         := Static[StaticP1].Texture.X + 10*ScreenX;
 
   Text[TextP1].X                     := Text[TextP1].X + 10*ScreenX;
@@ -1082,7 +1076,8 @@ begin
 
   {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
   Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;}
-// end of weird stuff
+
+  // end of weird stuff
 
   Static[1].Texture.X := Static[1].Texture.X + 10*ScreenX;
 
@@ -1180,31 +1175,28 @@ begin
   end;  }
 
   // draw static menu (BG)
-  //DrawBG;                 // there is no menu and the animated background brakes the video playback because the timecode is in a different format
-  //Draw Background
-  SingDrawBackground;
-  // update and draw movie
-  
-  if ShowFinish and
-     ( CurrentSong.VideoLoaded or fShowVisualization ) then
-//  if ShowFinish then
-  begin
-//    try
-//      UpdateSmpeg; // this only draws
-      // todo: find a way to determine, when a new frame is needed
-      // toto: same for the need to skip frames
+  // Note: there is no menu and the animated background brakes the video playback
+  //DrawBG;
 
+  // Draw Background
+  SingDrawBackground;
+
+  // update and draw movie
+  if (ShowFinish and
+      (CurrentSong.VideoLoaded or fShowVisualization)) then
+  begin
+    //try
+      // TODO: find a way to determine, when a new frame is needed
+      // TODO: same for the need to skip frames
       if assigned( fCurrentVideoPlaybackEngine ) then
       begin
         fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
         fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
       end;
-
-(*
+    (*
     except
       on E : Exception do
       begin
-
         //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
         CurrentSong.VideoLoaded := False;
         log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
@@ -1212,53 +1204,54 @@ begin
         Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.Draw)' );
 
         Log.LogError('Corrupted File: ' + CurrentSong.Video);
-        try
-//        CloseSmpeg;
-          fCurrentVideoPlaybackEngine.Close;
-        except
-
-        end;
+        fCurrentVideoPlaybackEngine.Close;
       end;
     end;
-*)
-
+    *)
   end;
 
   // draw static menu (FG)
   DrawFG;
 
   // check for music finish
-//  Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LineState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
-  if ShowFinish then begin
-  if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LineState.CurrentTime*1000 <= CurrentSong.Finish)) then begin
-  //Pause Mod:
-    if not Paused then Sing(Self);       // analyze song
-  end else begin
-//    Log.LogError('End');
-    if not FadeOut then begin
-//      Log.LogError('End2');
-      Finish;
-      FadeOut := true;
-      FadeTo(@ScreenScore);
+  //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LineState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
+  if ShowFinish then
+  begin
+    if (not AudioPlayback.Finished) and
+       ((CurrentSong.Finish = 0) or (LineState.CurrentTime*1000 <= CurrentSong.Finish)) then
+    begin
+      // analyze song if not paused
+      if (not Paused) then
+        Sing(Self);
+    end
+    else
+    begin
+      if (not FadeOut) then
+      begin
+        Finish;
+        FadeOut := true;
+        FadeTo(@ScreenScore);
+      end;
     end;
   end;
-  end;
 
-  // draw custom items
-  SingDraw;  // always draw
+  // always draw custom items
+  SingDraw;
 
-//GoldenNoteStarsTwinkle Mod
+  //GoldenNoteStarsTwinkle
   GoldenRec.SpawnRec;
-//GoldenNoteStarsTwinkle Mod
 
   //Draw Scores
   Scores.Draw;
 
-  // back stereo
+  ////
+  // dual screen, part 2
+  ////////////////////////
 
-// weird stuff, maybe this is for "dual screen?", but where is player three then?
-// okay this stuff appears again some lines above this one, I commented it out for testing what it does - seems like it's doing nothing
-// but I might be wrong, so what is this stuff here doing? O.o
+  // Note: ScreenX is the offset of the current screen in dual-screen mode so we
+  // will move the statics and texts to the correct screen here.
+  // FIXME: clean up this weird stuff
+
   Static[StaticP1].Texture.X         := Static[StaticP1].Texture.X - 10*ScreenX;
   Text[TextP1].X                     := Text[TextP1].X - 10*ScreenX;
 
@@ -1271,22 +1264,23 @@ begin
 
   {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X - 10*ScreenX;
   Text[TextP2RScore].X               := Text[TextP2RScore].X - 10*ScreenX;}
-//weird end
+
+  //end of weird
 
   Static[1].Texture.X := Static[1].Texture.X - 10*ScreenX;
 
   for T := 0 to 1 do
     Text[T].X := Text[T].X - 10*ScreenX;
 
-  //Draw Pausepopup
-  //I use this workaround that the Static is drawen over the Lyrics, Lines, Scores and Effects
-  //maybe someone could find a better solution
+  // Draw Pausepopup
+  // FIXME: this is a workaround that the Static is drawn over the Lyrics, Lines, Scores and Effects
+  // maybe someone could find a better solution
   if Paused then
-            begin
-              Static[StaticPausePopup].Visible := true;
-              Static[StaticPausePopup].Draw;
-              Static[StaticPausePopup].Visible := false;
-            end;
+  begin
+    Static[StaticPausePopup].Visible := true;
+    Static[StaticPausePopup].Draw;
+    Static[StaticPausePopup].Visible := false;
+  end;
 
 end;
 
@@ -1295,7 +1289,7 @@ begin
   AudioInput.CaptureStop;
   AudioPlayback.Stop;
 
-  if Ini.SavePlayback = 1 then begin
+  if (Ini.SavePlayback = 1) then begin
     Log.BenchmarkStart(0);
     Log.LogVoice(0);
     Log.LogVoice(1);
@@ -1306,7 +1300,6 @@ begin
 
   if CurrentSong.VideoLoaded then
   begin
-//    CloseSmpeg;
     fCurrentVideoPlaybackEngine.Close;
     CurrentSong.VideoLoaded := false; // to prevent drawing closed video
   end;
@@ -1333,77 +1326,93 @@ begin
 end;
 *)
 
-procedure TScreenSing.onSentenceEnd(S: Cardinal);
+procedure TScreenSing.OnSentenceEnd(SentenceIndex: Cardinal);
 var
-I: Integer;
-A: Real;
-B: integer; //Max Points for Notes
+  PlayerIndex: Integer;
+  CurrentPlayer: PPLayer;
+  CurrentScore: Real;
+  Line: PLine;
+  LinePerfection: Real;  // perfection of singing performance on the current line
+  Rating: integer;
+  LineScore: Real;
+  LineBonus: Real;
+  MaxSongScore: integer; // max. points for the song (without line bonus)
+  MaxLineScore: Real;    // max. points for the current line
+const
+  // TODO: move this to a better place
+  MAX_LINE_RATING = 8;        // max. rating for singing performance
 begin
+  Line := @Lines[0].Line[SentenceIndex];
 
-  //Check for Empty Sentence
-  if (Lines[0].Line[S].TotalNotes<=0) then
-    exit;
+  // check for empty sentence
+  if (Line.TotalNotes <= 0) then
+    Exit;
 
-  //Set Max Note Points
-  if (Ini.LineBonus > 0) then
-    B :=  9000
+  // set max song score
+  if (Ini.LineBonus = 0) then
+    MaxSongScore := MAX_SONG_SCORE
   else
-    B := 10000;
+    MaxSongScore := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
 
-  for I := 0 to High(Player) do begin
-    A := Player[I].Score + Player[I].ScoreGolden - Player[I].ScoreLast + 2;
+  // Note: ScoreValue is the sum of all note values of the song
+  MaxLineScore := MaxSongScore * (Line.TotalNotes / Lines[0].ScoreValue);
 
+  for PlayerIndex := 0 to High(Player) do
+  begin
+    CurrentPlayer := @Player[PlayerIndex];
+    CurrentScore := CurrentPlayer.Score + CurrentPlayer.ScoreGolden;
 
-    //PhrasenBonus - Line Bonus Mod
+    // Line Bonus
 
-    //Generate Steps 0 to 8
-    A := Floor(A / (B * Lines[0].Line[S].TotalNotes / Lines[0].ScoreValue) * 8);
+    // points for this line
+    LineScore := CurrentScore - CurrentPlayer.ScoreLast;
 
-    If (Ini.LineBonus > 0) then
+    // determine LinePerfection
+    // Note: the "+2" extra points are a little bonus so the player does not
+    //   have to be that perfect to reach the bonus steps.
+    LinePerfection := (LineScore + 2) / MaxLineScore;
+
+    // clamp LinePerfection to range [0..1]
+    if (LinePerfection < 0) then
+      LinePerfection := 0
+    else if (LinePerfection > 1) then
+      LinePerfection := 1;
+
+    // add line-bonus if enabled
+    if (Ini.LineBonus > 0) then
     begin
-      //PhrasenBonus give Points
-      Player[I].ScoreLine := Player[I].ScoreLine + (1000 / (Length(Lines[0].Line) - NumEmptySentences) * A / 8);
-      Player[I].ScoreLineI := Round(Player[I].ScoreLine / 10) * 10;
-      //Update Total Score
-      Player[I].ScoreTotalI := Player[I].ScoreI + Player[I].ScoreGoldenI + Player[I].ScoreLineI;
+      // line-bonus points (same for each line, no matter how long the line is)
+      LineBonus := MAX_SONG_LINE_BONUS /
+                   (Length(Lines[0].Line) - NumEmptySentences);
+      // apply line-bonus
+      CurrentPlayer.ScoreLine := CurrentPlayer.ScoreLine +
+                                 LineBonus * LinePerfection;
+      CurrentPlayer.ScoreLineInt := Round(CurrentPlayer.ScoreLine / 10) * 10;
+      // update total score
+      CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
+                                     CurrentPlayer.ScoreGoldenInt +
+                                     CurrentPlayer.ScoreLineInt;
 
-      //Spawn PopUp
-      If (A >= 8) then
-        A := 8
-      else IF A < 0 then
-        A := 0;
-        
-      Scores.SpawnPopUp(I, Floor(A), Player[I].ScoreTotalI);
+      // spawn rating pop-up
+      Rating := Round(LinePerfection * MAX_LINE_RATING);
+      Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
     end;
-    //PhrasenBonus - Line Bonus Mod End// }
 
-    //PerfectLineTwinkle Mod (effect) Pt.1
-    If (Ini.EffectSing=1) then
-    begin
-      if A >= 8 then Player[I].LastSentencePerfect := True
-      else Player[I].LastSentencePerfect := False;
-    end;
-    //PerfectLineTwinkle Mod end
+    // PerfectLineTwinkle (effect), Part 1
+    If (Ini.EffectSing = 1) then
+      CurrentPlayer.LastSentencePerfect := (LinePerfection >= 1);
 
-  //Refresh LastScore
-  Player[I].ScoreLast := Player[I].Score + Player[I].ScoreGolden;
-
+    // refresh last score
+    CurrentPlayer.ScoreLast := CurrentScore;
   end;
 
-  //PerfectLineTwinkle Mod (effect) Pt.2
-  if Ini.EffectSing=1 then
+  // PerfectLineTwinkle (effect), Part 2
+  if (Ini.EffectSing = 1) then
     GoldenRec.SpawnPerfectLineTwinkle;
-  //PerfectLineTwinkle Mod end
-
-
-  // if we are shoing a visualization... change to a new preset after each sentence..
-  // Maybe we should make this less often or something... just a
-  if fShowVisualization then
-    fCurrentVideoPlaybackEngine.Position := now; // move to a random position
 end;
 
 //Called on Sentence Change S= New Current Sentence
-procedure TScreenSing.onSentenceChange(S: Cardinal);
+procedure TScreenSing.OnSentenceChange(SentenceIndex: Cardinal);
 begin
   //GoldenStarsTwinkle Mod
   GoldenRec.SentenceChange;

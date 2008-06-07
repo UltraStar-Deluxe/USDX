@@ -275,7 +275,7 @@ begin
   end; // if PlaySentence
 
   Text[TextSentence].Text := IntToStr(Czesci[0].Akt + 1) + ' / ' + IntToStr(Czesci[0].Ilosc);
-  Text[TextNote].Text := IntToStr(AktNuta + 1) + ' / ' + IntToStr(Czesci[0].Czesc[Czesci[0].Akt].IlNut);
+  Text[TextNote].Text := IntToStr(AktNuta + 1) + ' / ' + IntToStr(Czesci[0].Czesc[Czesci[0].Akt].LengthNote);
 
   // Song info
   Text[TextBPM].Text := FloatToStr(CurrentSong.BPM[0].BPM / 4);

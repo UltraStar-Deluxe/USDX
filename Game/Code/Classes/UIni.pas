@@ -15,6 +15,21 @@ uses
   SysUtils;
 
 type
+  // TInputDeviceConfig stores the configuration for an input device.
+  // Configurations will be stored in the InputDeviceConfig array.
+  // Note that not all devices listed in InputDeviceConfig are active devices.
+  // Some might be unplugged and hence unavailable.
+  // Available devices are held in TAudioInputProcessor.DeviceList. Each
+  // TAudioInputDevice listed there has a CfgIndex field which is the index to
+  // its configuration in the InputDeviceConfig array.
+  // Name:
+  //   the name of the input device
+  // Input:
+  //   the index of the input source to use for recording
+  // ChannelToPlayerMap:
+  //   mapping of recording channels to players, e.g. ChannelToPlayerMap[0] = 2
+  //   maps the channel 0 (left) to player 2. A player index of 0 means that
+  //   the channel is not assigned to a player.
   PInputDeviceConfig = ^TInputDeviceConfig;
   TInputDeviceConfig = record
     Name:               string;

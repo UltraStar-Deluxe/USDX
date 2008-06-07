@@ -289,8 +289,8 @@ begin
     PlayerInfo.Playerinfo[I].Name := PChar(Player[I].Name);
     if PlayerInfo.Playerinfo[I].Enabled then
     begin
-      if (Player[I].ScoreTotalI<=10000) then
-        PlayerInfo.Playerinfo[I].Score:=  Player[I].ScoreTotalI;
+      if (Player[I].ScoreTotalInt <= MAX_SONG_SCORE) then
+        PlayerInfo.Playerinfo[I].Score:=  Player[I].ScoreTotalInt;
       PlayerInfo.Playerinfo[I].Bar :=  Round(Scores.Players[I].RBPos * 100);
     end;
   end;
@@ -567,7 +567,7 @@ begin
     if PlayerInfo.Playerinfo[I].Enabled then
     begin
       //PlayerInfo.Playerinfo[I].Bar :=  Player[I].ScorePercent;
-      PlayerInfo.Playerinfo[I].Score := Player[I].ScoreTotalI;
+      PlayerInfo.Playerinfo[I].Score := Player[I].ScoreTotalInt;
     end;
   end;
 
@@ -586,10 +586,10 @@ begin
   //Change PlayerInfo/Changeables
   for I := 0 to PlayerInfo.NumPlayers-1 do
   begin
-    if (Player[I].ScoreTotalI <> PlayerInfo.Playerinfo[I].Score) then
+    if (Player[I].ScoreTotalInt <> PlayerInfo.Playerinfo[I].Score) then
     begin
       //Player[I].ScoreTotal   := Player[I].ScoreTotal + (PlayerInfo.Playerinfo[I].Score - Player[I].ScoreTotalI);
-      Player[I].ScoreTotalI := PlayerInfo.Playerinfo[I].Score;
+      Player[I].ScoreTotalInt := PlayerInfo.Playerinfo[I].Score;
     end;
     {if (PlayerInfo.Playerinfo[I].Bar <> Player[I].ScorePercent) then
       Player[I].ScorePercentTarget := PlayerInfo.Playerinfo[I].Bar; }
@@ -656,7 +656,7 @@ begin
   Result := PChar(Language.Translate(String(Name)));
 end; }
 
-procedure Print (const Style, Size: Byte; const X, Y: Real; const Text: PChar); stdcall;       //Procedure to Print Text
+procedure Print(const Style, Size: Byte; const X, Y: Real; const Text: PChar); stdcall;       //Procedure to Print Text
 begin
   SetFontItalic ((Style and 128) = 128);
   SetFontStyle(Style and 7);
@@ -665,31 +665,36 @@ begin
   glPrint (PChar(Language.Translate(String(Text))));
 end;
 
-function LoadSound  (const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
+function LoadSound(const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
 var
-  S: TAudioPlaybackStream;
-  I: Integer;
-  F: String;
+  Stream: TAudioPlaybackStream;
+  i: Integer;
+  Filename: String;
 begin
   //Search for Sound in already loaded Sounds
-  F := UpperCase(SoundPath + FileName);
-  For I := 0 to High(CustomSounds) do
+  Filename := UpperCase(SoundPath + Name);
+  for i := 0 to High(CustomSounds) do
   begin
-    if (UpperCase(CustomSounds[I].Filename) = F) then
+    if (UpperCase(CustomSounds[i].Filename) = Filename) then
     begin
-      Result := I;
+      Result := i;
       Exit;
     end;
   end;
 
-  S := AudioPlayback.OpenSound(SoundPath + String(Name));
-  if (S <> nil) then
-    Result := High(CustomSounds)
-  else
+  Stream := AudioPlayback.OpenSound(SoundPath + String(Name));
+  if (Stream = nil) then
+  begin
     Result := 0;
+    Exit;
+  end;
+
+  SetLength(CustomSounds, Length(CustomSounds)+1);
+  CustomSounds[High(CustomSounds)].Stream := Stream;
+  Result := High(CustomSounds);
 end;
 
-procedure PlaySound (const Index: Cardinal); stdcall;       //Plays a Custom Sound
+procedure PlaySound(const Index: Cardinal); stdcall;       //Plays a Custom Sound
 begin
   if (Index <= High(CustomSounds)) then
     AudioPlayback.PlaySound(CustomSounds[Index].Stream);

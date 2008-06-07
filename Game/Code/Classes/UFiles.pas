@@ -47,7 +47,7 @@ begin
     Lines[Count].Line[0].Lyric := '';
     Lines[Count].Line[0].LyricWidth := 0;
     Player[Count].Score := 0;
-    Player[Count].IlNut := 0;
+    Player[Count].LengthNote := 0;
     Player[Count].HighNote := -1;
   end;
 

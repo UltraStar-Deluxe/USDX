@@ -15,6 +15,25 @@ uses
 type
   TNoteType = (ntFreestyle, ntNormal, ntGolden);
 
+  (**
+   * TLineFragment represents a fragment of a lyrics line.
+   * This is a text-fragment (e.g. a syllable) assigned to a note pitch,
+   * represented by a bar in the sing-screen.
+   *)
+  PLineFragment = ^TLineFragment;
+  TLineFragment = record
+    Color:      integer;
+    Start:      integer;    // beat the fragment starts at
+    Length:     integer;    // length in beats
+    Tone:       integer;    // full range tone
+    Text:       string;     // text assigned to this fragment (a syllable, word, etc.)
+    NoteType:   TNoteType;  // note-type: golden-note/freestyle etc.
+  end;
+
+  (**
+   * TLine represents one lyrics line and consists of multiple
+   * notes.
+   *)
   PLine = ^TLine;
   TLine = record
     Start:      integer;
@@ -22,31 +41,31 @@ type
     LyricWidth: real;
     End_:       integer;
     BaseNote:   integer;
-    HighNote:   integer;
-    TotalNotes: integer;
+    HighNote:   integer; // index of last note in line (= High(Note)?)
+    TotalNotes: integer; // value of all notes in the line
     LastLine:   boolean;
-    Note:     array of record
-      Color:      integer;
-      Start:      integer;
-      Length:     integer;
-      Tone:       integer;    // full range tone
-      Text:       string;
-      NoteType:   TNoteType;
-    end;
+    Note:       array of TLineFragment;
   end;
-  ALine = array of TLine;     // (TODO: rename to TLineArray)
 
+  (**
+   * TLines stores sets of lyric lines and information on them.
+   * Normally just one set is defined but in duet mode it might for example
+   * contain two sets.  
+   *)
   TLines = record
-    Current:    integer;      // for drawing of current line
-    High:       integer;
+    Current:    integer;  // for drawing of current line
+    High:       integer;  // (= High(Line)?)
     Number:     integer;
     Resolution: integer;
     NotesGAP:   integer;
     ScoreValue: integer;
-    Line:       ALine;
+    Line:       array of TLine;
   end;
 
-  TLineState = class        // all that concerns the current frames
+  (**
+   * TLineState contains all information that concerns the current frames
+   *)
+  TLineState = class
     private
       Timer:        TRelativeTimer; // keeps track of the current time
     public
@@ -56,12 +75,14 @@ type
 
       // now we use this for super synchronization!
       // only used when analyzing voice
+      // TODO: change ...D to ...Detect(ed)
       OldBeatD:     integer;    // previous discovered beat
       CurrentBeatD: integer;
       MidBeatD:     real;       // like CurrentBeatD
       FracBeatD:    real;       // fractional part of MidBeatD
 
       // we use this for audible clicks
+      // TODO: Change ...C to ...Click
       OldBeatC:     integer;    // previous discovered beat
       CurrentBeatC: integer;
       MidBeatC:     real;       // like CurrentBeatC

@@ -25,6 +25,17 @@ uses
   UThemes;
 
 type
+  PPLayerNote = ^TPlayerNote;
+  TPlayerNote = record
+    Start:     integer;
+    Length:    integer;
+    Detect:    real;    // accurate place, detected in the note
+    Tone:      real;
+    Perfect:   boolean; // true if the note matches the original one, lit the star
+    Hit:       boolean; // true if the note Hits the Line
+  end;
+
+  PPLayer = ^TPlayer;
   TPlayer = record
     Name:         string;
 
@@ -37,10 +48,10 @@ type
     ScoreLine:    real;
     ScoreGolden:  real;
 
-    ScoreI:       integer;
-    ScoreLineI:   integer;
-    ScoreGoldenI: integer;
-    ScoreTotalI:  integer;
+    ScoreInt:       integer;
+    ScoreLineInt:   integer;
+    ScoreGoldenInt: integer;
+    ScoreTotalInt:  integer;
 
     // LineBonus Mod
     ScoreLast:    Real;//Last Line Score
@@ -50,18 +61,9 @@ type
 
     //Meter:        real;
 
-    HighNote:  integer;
-    IlNut:     integer;
-    Note:     array of record
-      Start:     integer;
-      Length:    integer;
-      Detekt:    real;     // accurate place, detected in the note
-      Tone:      real;
-      Perfect:   boolean;  // true if the note matches the original one, lit the star
-
-      // Half size Notes Patch
-      Hit:        boolean; // true if the note Hits the Line
-    end;
+    HighNote:   integer; // index of last note (= High(Note)?)
+    LengthNote: integer; // number of notes (= Length(Note)?).
+    Note:       array of TPlayerNote;
   end;
 
 
@@ -85,10 +87,10 @@ var
   UserCoversPath:   string = '';
   UserPlaylistPath: string = '';
 
-  OGL:      Boolean;
   Done:     Boolean;
   Event:    TSDL_event;
-  FileName: string;
+  // FIXME: ConversionFileName should not be global
+  ConversionFileName: string;
   Restart:  boolean;
 
   // player and music info
@@ -97,18 +99,22 @@ var
 
   CurrentSong : TSong;
 
+const
+  MAX_SONG_SCORE = 10000;     // max. achievable points per song
+  MAX_SONG_LINE_BONUS = 1000; // max. achievable line bonus per song
+
 procedure InitializePaths;
 
 Procedure Main;
 procedure MainLoop;
 procedure CheckEvents;
-procedure Sing(Sender: TScreenSing);
-procedure NewSentence(Sender: TScreenSing);
-procedure NewBeat(Sender: TScreenSing); // executed when on then new beat
-procedure NewBeatC(Sender: TScreenSing); // executed when on then new beat for click
-procedure NewBeatD(Sender: TScreenSing); // executed when on then new beat for detection
+procedure Sing(Screen: TScreenSing);
+procedure NewSentence(Screen: TScreenSing);
+procedure NewBeat(Screen: TScreenSing); // executed when on then new beat
+procedure NewBeatClick(Screen: TScreenSing); // executed when on then new beat for click
+procedure NewBeatDetect(Screen: TScreenSing); // executed when on then new beat for detection
 //procedure NewHalf; // executed when in the half between beats
-procedure NewNote(Sender: TScreenSing); // detect note
+procedure NewNote(Screen: TScreenSing); // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer): real;
 procedure ClearScores(PlayerNum: integer);
@@ -206,7 +212,7 @@ begin
     Ini := TIni.Create;
     Ini.Load;
 
-    //Load Languagefile
+    // Load Languagefile
     if (Params.Language <> -1) then
       Language.ChangeLanguage(ILanguage[Params.Language])
     else
@@ -477,30 +483,29 @@ begin
 
             glViewPort(0, 0, ScreenW, ScreenH);
           end
-          // ScreenShot hack. If Print is pressed-> Make screenshot and Save to Screenshots Path
+          // if print is pressed -> make screenshot and save to screenshot path
           else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
             Display.SaveScreenShot
-          // popup hack... if there is a visible popup then let it handle input instead of underlying screen
+          // if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
           else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
             done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True)
           else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
             done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True)
-          // end of popup hack
           else
           begin
-            // check for Screen want to Exit
+            // check if screen wants to exit
             done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True);
 
-            // If Screen wants to Exit
+            // if screen wants to exit
             if done then
             begin
-              // If Question Option is enabled then Show Exit Popup
+              // if question option is enabled then show exit popup
               if (Ini.AskbeforeDel = 1) then
               begin
                 Display.CurrentScreen^.CheckFadeTo(nil,'MSG_QUIT_USDX');
               end
-              else // When asking for exit is disabled then simply exit
+              else // if ask-for-exit is disabled then simply exit
               begin
                 Display.Fade := 0;
                 Display.NextScreenWithCheck := nil;
@@ -510,18 +515,16 @@ begin
 
           end;
         end;
-      {
       SDL_JOYAXISMOTION:
         begin
           // not implemented
         end;
-      }
       SDL_JOYBUTTONDOWN:
         begin
           // not implemented
         end;
-    end; // Case
-  end; // While
+    end; // case
+  end; // while
 end;
 
 function GetTimeForBeats(BPM, Beats: real): real;
@@ -570,17 +573,18 @@ function GetMidBeat(Time: real): real;
 var
   CurBeat:  real;
   CurBPM:   integer;
-//  TopBeat:  real;
-//  TempBeat: real;
-//  TempTime: real;
+  //TopBeat:  real;
+  //TempBeat: real;
+  //TempTime: real;
 begin
   Result := 0;
   if Length(CurrentSong.BPM) = 1 then
     Result := Time * CurrentSong.BPM[0].BPM / 60;
 
-  (* 2 BPMs *)
-{  if Length(CurrentSong.BPM) > 1 then begin
-    (* new system *)
+  // 2 BPMs
+  {
+  if Length(CurrentSong.BPM) > 1 then begin
+    // new system
     CurBeat := 0;
     TopBeat := GetBeats(CurrentSong.BPM[0].BPM, Time);
     if TopBeat > CurrentSong.BPM[1].StartBeat then begin
@@ -593,12 +597,13 @@ begin
     end
     else
     begin
-      (* pierwszy przedzial *)
+      // first part
       Result := TopBeat;
     end;
-  end;}
+  end;
+  }
 
-  (* more BPMs *)
+  // more BPMs
   if Length(CurrentSong.BPM) > 1 then
   begin
     CurBeat := 0;
@@ -621,7 +626,7 @@ begin
   if Length(CurrentSong.BPM) = 1 then
     Result := CurrentSong.GAP / 1000 + Beat * 60 / CurrentSong.BPM[0].BPM;
 
-  (* more BPMs *)
+  // more BPMs
   if Length(CurrentSong.BPM) > 1 then
   begin
     Result := CurrentSong.GAP / 1000;
@@ -657,7 +662,7 @@ begin
   end; // if}
 end;
 
-procedure Sing(Sender: TScreenSing);
+procedure Sing(Screen: TScreenSing);
 var
   Count:    integer;
   CountGr:  integer;
@@ -666,19 +671,22 @@ var
   N:        integer;
 begin
   LineState.OldBeat := LineState.CurrentBeat;
-  LineState.MidBeat := GetMidBeat(LineState.CurrentTime - (CurrentSong.Gap{ + 90 I've forgotten for what it is}) / 1000); // new system with variable BPM in function
+  // new system with variable BPM in function
+  LineState.MidBeat := GetMidBeat(LineState.CurrentTime -
+                                  (CurrentSong.Gap {+ 90 I've forgotten for what it is}) / 1000);
   LineState.CurrentBeat := Floor(LineState.MidBeat);
 
-//  LineState.OldHalf := LineState.AktHalf;
-//  LineState.MidHalf := LineState.MidBeat + 0.5;
-//  LineState.AktHalf := Floor(LineState.MidHalf);
+  //LineState.OldHalf := LineState.AktHalf;
+  //LineState.MidHalf := LineState.MidBeat + 0.5;
+  //LineState.AktHalf := Floor(LineState.MidHalf);
 
   LineState.OldBeatC := LineState.CurrentBeatC;
   LineState.MidBeatC := GetMidBeat(LineState.CurrentTime - (CurrentSong.Gap) / 1000);
   LineState.CurrentBeatC := Floor(LineState.MidBeatC);
 
   LineState.OldBeatD := LineState.CurrentBeatD;
-  LineState.MidBeatD := -0.5+GetMidBeat(LineState.CurrentTime - (CurrentSong.Gap + 120 + 20) / 1000); // MidBeat with addition GAP
+  // MidBeat with additional GAP
+  LineState.MidBeatD := -0.5+GetMidBeat(LineState.CurrentTime - (CurrentSong.Gap + 120 + 20) / 1000);
   LineState.CurrentBeatD := Floor(LineState.MidBeatD);
   LineState.FracBeatD := Frac(LineState.MidBeatD);
 
@@ -686,40 +694,40 @@ begin
   for CountGr := 0 to 0 do //High(Gracz)
   begin;
     CP := CountGr;
-    // ustawianie starej parts
+    // old parts
     LineState.OldLine := Lines[CP].Current;
 
-    // wybieranie aktualnej parts
+    // choose current parts
     for Count := 0 to Lines[CP].High do
     begin
       if LineState.CurrentBeat >= Lines[CP].Line[Count].Start then
         Lines[CP].Current := Count;
     end;
 
-    // czysczenie nut gracza, gdy to jest nowa plansza
-    // (optymizacja raz na halfbeat jest zla)
+    // clean player note if there is a new line 
+    // (optimization on halfbeat time)
     if Lines[CP].Current <> LineState.OldLine then
-      NewSentence(Sender);
+      NewSentence(Screen);
 
   end; // for CountGr
 
-  // wykonuje operacje raz na beat
+  // execute operations on beat 
   if (LineState.CurrentBeat >= 0) and (LineState.OldBeat <> LineState.CurrentBeat) then
-    NewBeat(Sender);
+    NewBeat(Screen);
 
   // make some operations on clicks
   if {(LineState.CurrentBeatC >= 0) and }(LineState.OldBeatC <> LineState.CurrentBeatC) then
-    NewBeatC(Sender);
+    NewBeatClick(Screen);
 
   // make some operations when detecting new voice pitch
   if (LineState.CurrentBeatD >= 0) and (LineState.OldBeatD <> LineState.CurrentBeatD) then
-    NewBeatD(Sender);
+    NewBeatDetect(Screen);
 
-  // wykonuje operacje w polowie beatu
+  // execute operations on beat field 
 //  if (LineState.AktHalf >= 1) and (LineState.OldHalf <> LineState.AktHalf) then
 //    NewHalf;
 
-  // plynnie przesuwa text
+  // remove moving text
   Done := 1;
   for N := 0 to Lines[0].Line[Lines[0].Current].HighNote do
   begin
@@ -732,40 +740,41 @@ begin
 
   N := Lines[0].Line[Lines[0].Current].HighNote;
 
-  // wylacza ostatnia nute po przejsciu
+  // if last note is used
   {// todo: Lyrics
   if (Ini.LyricsEffect = 1) and (Done = 1) and
     (LineState.MidBeat > Lines[0].Line[Lines[0].Current].Note[N].Start + Lines[0].Line[Lines[0].Current].Note[N].Length)
-    then Sender.LyricMain.Selected := -1;
+    then Screen.LyricMain.Selected := -1;
 
   if Done > 1 then Done := 1;
-  Sender.LyricMain.Done := Done;  }
+  Screen.LyricMain.Done := Done;
+  }
 
   // use Done with LCD
-{  with ScreenSing do begin
+  {
+  with ScreenSing do begin
     if LyricMain.Selected >= 0 then begin
       LCD.MoveCursor(1, LyricMain.SelectedLetter + Round((LyricMain.SelectedLength-1) * Done));
       LCD.ShowCursor;
     end;
-  end;}
-
-
+  end;
+  }
 end;
 
-procedure NewSentence(Sender: TScreenSing);
+procedure NewSentence(Screen: TScreenSing);
 var
-G: Integer;
+  i: Integer;
 begin
-  // czyszczenie nut graczy
-  for G := 0 to High(Player) do
+  // clean note of player
+  for i := 0 to High(Player) do
   begin
-    Player[G].IlNut := 0;
-    Player[G].HighNote := -1;
-    SetLength(Player[G].Note, 0);
+    Player[i].LengthNote := 0;
+    Player[i].HighNote := -1;
+    SetLength(Player[i].Note, 0);
   end;
 
-  // Add Words to Lyrics
-  with Sender do
+  // add words to lyrics
+  with Screen do
   begin
     {LyricMain.AddCzesc(Lines[0].Current);
     if Lines[0].Current < Lines[0].High then
@@ -776,19 +785,19 @@ begin
       Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
 
-  //Sender.UpdateLCD;
+  //Screen.UpdateLCD;
   
-  //On Sentence Change...
-  Sender.onSentenceChange(Lines[0].Current);
+  // on sentence change...
+  Screen.onSentenceChange(Lines[0].Current);
 end;
 
-procedure NewBeat(Sender: TScreenSing);
+procedure NewBeat(Screen: TScreenSing);
 var
   Count:      integer;
-//  TempBeat: integer;
+  //TempBeat: integer;
 begin
-  // ustawia zaznaczenie tekstu
-//  SingScreen.LyricMain.Selected := -1;
+  // add a text mark
+  //SingScreen.LyricMain.Selected := -1;
   for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
     if (Lines[0].Line[Lines[0].Current].Note[Count].Start = LineState.CurrentBeat) then
     begin
@@ -796,45 +805,48 @@ begin
       //Todo: Lyrics
       //Sender.LyricMain.Selected := Count;
 
-//      LCD.MoveCursor(1, ScreenSing.LyricMain.SelectedLetter);
-//      LCD.ShowCursor;
+      //LCD.MoveCursor(1, ScreenSing.LyricMain.SelectedLetter);
+      //LCD.ShowCursor;
 
       //LCD.MoveCursorBR(Sender.LyricMain.SelectedLetter);
       //LCD.ShowCursor;
     end;
 end;
 
-procedure NewBeatC;
+procedure NewBeatClick;
 var
   Count:    integer;
-//  LPT_1:  integer;
-//  LPT_2:  integer;
+  //LPT_1:  integer;
+  //LPT_2:  integer;
 begin
-//  LPT_1 := 1;
-//  LPT_2 := 1;
+  //LPT_1 := 1;
+  //LPT_2 := 1;
 
   // beat click
-  if (Ini.BeatClick = 1) and ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0) then
+  if ((Ini.BeatClick = 1) and
+      ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0)) then
+  begin
     AudioPlayback.PlaySound(SoundLib.Click);
+  end;
 
+  {
   // debug system on LPT
   if ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0) then
   begin
-    //LPT_1 := 0;
-//    Light.LightOne(0, 150);
+    LPT_1 := 0;
+    Light.LightOne(0, 150);
 
-    (*
     Light.LightOne(1, 200); // beat light
     if ParamStr(1) = '-doublelights' then
       Light.LightOne(0, 200); // beat light
-    *)
 
 
-{    if ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod (Lines[0].Resolution * 2) = 0) then
+    if ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod (Lines[0].Resolution * 2) = 0) then
       Light.LightOne(0, 150)
     else
-      Light.LightOne(1, 150)}
+      Light.LightOne(1, 150)
   end;
+  }
 
   for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
   begin
@@ -844,113 +856,127 @@ begin
       if Ini.ClickAssist = 1 then
         AudioPlayback.PlaySound(SoundLib.Click);
 
+      {
       //LPT_2 := 0;
-      (*
       if ParamStr(1) <> '-doublelights' then
         Light.LightOne(0, 150); //125
-      *)
+      }
 
       // drum machine
       (*
       TempBeat := LineState.CurrentBeat;// + 2;
       if (TempBeat mod 8 = 0) then Music.PlayDrum;
       if (TempBeat mod 8 = 4) then Music.PlayClap;
-//      if (TempBeat mod 4 = 2) then Music.PlayHihat;
+      //if (TempBeat mod 4 = 2) then Music.PlayHihat;
       if (TempBeat mod 4 <> 0) then Music.PlayHihat;
       *)
     end;
   end;
 
   {$IFDEF UseSerialPort}
-    // PortWriteB($378, LPT_1 + LPT_2 * 2); // 0 zapala
+    // PortWriteB($378, LPT_1 + LPT_2 * 2); // 0 light
   {$ENDIF}
 end;
 
-procedure NewBeatD(Sender: TScreenSing);
+procedure NewBeatDetect(Screen: TScreenSing);
 begin
-  NewNote(Sender);
+  NewNote(Screen);
 end;
 
-procedure NewNote(Sender: TScreenSing);
+procedure NewNote(Screen: TScreenSing);
 var
-  CP:     integer; // current player
-  S:      integer; // sentence
-  SMin:   integer;
-  SMax:   integer;
-  SDet:   integer; // temporary: sentence of detected note
-  Count:  integer;
-  Mozna:  boolean;
-  New:    boolean;
-  Range:  integer;
-  NoteHit:boolean;
-  MaxPoints: integer; // maximal points without line bonus
+  LineFragmentIndex: integer;
+  CurrentLineFragment: PLineFragment;
+  PlayerIndex: integer;
+  CurrentSound: TCaptureBuffer;
+  CurrentPlayer: PPlayer;
+  LastPlayerNote: PPLayerNote;
+  Line: PLine;
+  SentenceIndex: integer;
+  SentenceMin: integer;
+  SentenceMax: integer;
+  SentenceDetected: integer; // sentence of detected note
+  NoteAvailable: boolean;
+  NewNote: boolean;
+  Range: integer;
+  NoteHit: boolean;
+  MaxSongPoints: integer; // max. points for the song (without line bonus)
+  MaxLinePoints: Real;    // max. points for the current line
 begin
-  //  Log.LogStatus('Beat ' + IntToStr(LineState.CurrentBeat) + ' HalfBeat ' + IntToStr(LineState.AktHalf), 'NewBeat');
+  //Log.LogStatus('Beat ' + IntToStr(LineState.CurrentBeat) + ' HalfBeat ' + IntToStr(LineState.AktHalf), 'NewBeat');
 
-  // On linux we get an AV @ NEWNOTE,  line 600 of Classes/UMain.pas
-  if not assigned( AudioInputProcessor.Sound ) then
-    exit;
+  // TODO: add duet mode support
+  // use Lines[LineSetIndex] with LineSetIndex depending on the current player
 
-  // analizuje dla obu graczy ten sam sygnal (Sound.OneSrcForBoth)
-  // albo juz lepiej nie
-  for CP := 0 to PlayersPlay-1 do
+  // count min and max sentence range for checking (detection is delayed to the notes we see on the screen)
+  SentenceMin := Lines[0].Current-1;
+  if (SentenceMin < 0) then
+    SentenceMin := 0;
+  SentenceMax := Lines[0].Current;
+
+  // check for an active note at the current time defined in the lyrics
+  NoteAvailable := false;
+  SentenceDetected := SentenceMin;
+  for SentenceIndex := SentenceMin to SentenceMax do
   begin
-    // analyze buffer
-    AudioInputProcessor.Sound[CP].AnalyzeBuffer;
-
-    // adds some noise
-    //LineState.Tone := LineState.Tone + Round(Random(3)) - 1;
-
-    // count min and max sentence range for checking (detection is delayed to the notes we see on the screen)
-    SMin := Lines[0].Current-1;
-    if SMin < 0 then
-      SMin := 0;
-    SMax := Lines[0].Current;
-
-    // check if we can add new note
-    Mozna := false;
-    SDet:=SMin;
-    for S := SMin to SMax do
+    Line := @Lines[0].Line[SentenceIndex];
+    for LineFragmentIndex := 0 to Line.HighNote do
     begin
-      for Count := 0 to Lines[0].Line[S].HighNote do
+      CurrentLineFragment := @Line.Note[LineFragmentIndex];
+      // check if line is active
+      if ((CurrentLineFragment.Start <= LineState.CurrentBeatD) and
+          (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= LineState.CurrentBeatD)) and
+         (CurrentLineFragment.NoteType <> ntFreestyle) and // but ignore FreeStyle notes
+         (CurrentLineFragment.Length > 0) then // and make sure the note lengths is at least 1
       begin
-        if ((Lines[0].Line[S].Note[Count].Start <= LineState.CurrentBeatD)
-          and (Lines[0].Line[S].Note[Count].Start + Lines[0].Line[S].Note[Count].Length - 1 >= LineState.CurrentBeatD))
-          and (Lines[0].Line[S].Note[Count].NoteType <> ntFreestyle) // but don't allow when it's FreeStyle note
-          and (Lines[0].Line[S].Note[Count].Length > 0) then // and make sure the note lengths is at least 1
-        begin
-          SDet := S;
-          Mozna := true;
-          Break;
-        end;
+        SentenceDetected := SentenceIndex;
+        NoteAvailable := true;
+        Break;
       end;
     end;
+    // TODO: break here, if NoteAvailable is true? We would then use the first instead
+    // of the last note matching the current beat if notes overlap. But notes
+    // should not overlap at all.
+    //if (NoteAvailable) then
+    //  Break;
+  end;
 
-    S := SDet;
+  // analyze player signals
+  for PlayerIndex := 0 to PlayersPlay-1 do
+  begin
+    CurrentPlayer := @Player[PlayerIndex];
+    CurrentSound := AudioInputProcessor.Sound[PlayerIndex];
+    LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
 
-    //Czas.SzczytJest := true;
-    //Czas.Tone := 27;
+    // analyze buffer
+    CurrentSound.AnalyzeBuffer;
 
-    // gdy moze, to dodaje nute - When Mozna, it adds note (?)
-    if (AudioInputProcessor.Sound[CP].ToneValid) and (Mozna) then
+    // add some noise
+    // TODO: do we need this?
+    //LineState.Tone := LineState.Tone + Round(Random(3)) - 1;
+
+    // add note if possible
+    if (CurrentSound.ToneValid and NoteAvailable) then
     begin
-      // operowanie na ostatniej nucie
-      for Count := 0 to Lines[0].Line[S].HighNote do
+      Line := @Lines[0].Line[SentenceDetected];
+      
+      // process until last note
+      for LineFragmentIndex := 0 to Line.HighNote do
       begin
-        if (Lines[0].Line[S].Note[Count].Start <= LineState.OldBeatD+1) and
-           (Lines[0].Line[S].Note[Count].Start +
-            Lines[0].Line[S].Note[Count].Length > LineState.OldBeatD+1) then
+        CurrentLineFragment := @Line.Note[LineFragmentIndex];
+        if (CurrentLineFragment.Start <= LineState.OldBeatD+1) and
+           (CurrentLineFragment.Start + CurrentLineFragment.Length > LineState.OldBeatD+1) then
         begin
-          // to robi, tylko dla pary nut (oryginalnej i gracza)
+          // compare notes (from song-file and from player)
 
-          // przesuwanie tonu w odpowiednia game
-          while (AudioInputProcessor.Sound[CP].Tone - Lines[0].Line[S].Note[Count].Tone > 6) do
-            AudioInputProcessor.Sound[CP].Tone := AudioInputProcessor.Sound[CP].Tone - 12;
+          // move players tone to proper octave
+          while (CurrentSound.Tone - CurrentLineFragment.Tone > 6) do
+            CurrentSound.Tone := CurrentSound.Tone - 12;
 
-          while (AudioInputProcessor.Sound[CP].Tone - Lines[0].Line[S].Note[Count].Tone < -6) do
-            AudioInputProcessor.Sound[CP].Tone := AudioInputProcessor.Sound[CP].Tone + 12;
+          while (CurrentSound.Tone - CurrentLineFragment.Tone < -6) do
+            CurrentSound.Tone := CurrentSound.Tone + 12;
 
-          // Half size Notes Patch
+          // half size notes patch
           NoteHit := false;
 
           //if Ini.Difficulty = 0 then Range := 2;
@@ -958,96 +984,115 @@ begin
           //if Ini.Difficulty = 2 then Range := 0;
           Range := 2 - Ini.Difficulty;
 
-          if abs(Lines[0].Line[S].Note[Count].Tone - AudioInputProcessor.Sound[CP].Tone) <= Range then
+          // check if the player hit the correct tone within the tolerated range
+          if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) then
           begin
-            AudioInputProcessor.Sound[CP].Tone := Lines[0].Line[S].Note[Count].Tone;
+            // adjust the players tone to the correct one
+            // TODO: do we need to do this?
+            CurrentSound.Tone := CurrentLineFragment.Tone;
 
-            // Half size Notes Patch
+            // half size notes patch
             NoteHit := true;
-            
-            MaxPoints := 10000;
-            if (Ini.LineBonus <> 0) then
-              MaxPoints := 9000;
-              
-            case Lines[0].Line[S].Note[Count].NoteType of
-              ntNormal:  Player[CP].Score := Player[CP].Score + MaxPoints / Lines[0].ScoreValue;
-              ntGolden:  Player[CP].ScoreGolden := Player[CP].ScoreGolden + MaxPoints / Lines[0].ScoreValue;
+
+            if (Ini.LineBonus > 0) then
+              MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS
+            else
+              MaxSongPoints := MAX_SONG_SCORE;
+
+            // Note: ScoreValue is the sum of all note values of the song
+            MaxLinePoints := MaxSongPoints / Lines[0].ScoreValue;
+
+            // FIXME: is this correct? Why do we add the points for a whole line
+            // if just one note is correct?
+            case CurrentLineFragment.NoteType of
+              ntNormal:  CurrentPlayer.Score := CurrentPlayer.Score + MaxLinePoints;
+              ntGolden:  CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + MaxLinePoints;
             end;
 
-            Player[CP].ScoreI := Floor(Player[CP].Score / 10) * 10;
-            Player[CP].ScoreGoldenI := Floor(Player[CP].ScoreGolden / 10) * 10;
+            CurrentPlayer.ScoreInt := Floor(CurrentPlayer.Score / 10) * 10;
+            CurrentPlayer.ScoreGoldenInt := Floor(CurrentPlayer.ScoreGolden / 10) * 10;
 
-            Player[CP].ScoreTotalI := Player[CP].ScoreI + Player[CP].ScoreGoldenI + Player[CP].ScoreLineI;
+            CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
+                                           CurrentPlayer.ScoreGoldenInt +
+                                           CurrentPlayer.ScoreLineInt;
           end;
 
-        end; // operowanie
+        end; // operation
       end; // for
 
-      // sprawdzanie czy to nowa nuta, czy przedluzenie
-      if S = SMax then
+      // check if we have to add a new note or extend the note's length
+      if (SentenceDetected = SentenceMax) then
       begin
-        New := true;
+        // we will add a new note
+        NewNote := true;
         // if last has the same tone
-        if (Player[CP].IlNut > 0 ) and
-           (Player[CP].Note[Player[CP].HighNote].Tone = AudioInputProcessor.Sound[CP].Tone) and
-           (Player[CP].Note[Player[CP].HighNote].Start + Player[CP].Note[Player[CP].HighNote].Length = LineState.CurrentBeatD) then
+        if ((CurrentPlayer.LengthNote > 0) and
+            (LastPlayerNote.Tone = CurrentSound.Tone) and
+            ((LastPlayerNote.Start + LastPlayerNote.Length) = LineState.CurrentBeatD)) then
         begin
-          New := false;
+          NewNote := false;
         end;
 
-        // if is not as new note to control "beacie" (TODO: translate polish "beacie")
-        for Count := 0 to Lines[0].Line[S].HighNote do
+        // if is not as new note to control
+        for LineFragmentIndex := 0 to Line.HighNote do
         begin
-          if (Lines[0].Line[S].Note[Count].Start = LineState.CurrentBeatD) then
-            New := true;
+          if (Line.Note[LineFragmentIndex].Start = LineState.CurrentBeatD) then
+            NewNote := true;
         end;
 
-        // dodawanie nowej nuty
-        if New then
+        // add new note
+        if NewNote then
         begin
-          // New Note
-          Player[CP].IlNut := Player[CP].IlNut + 1;
-          Player[CP].HighNote := Player[CP].HighNote + 1;
-          SetLength(Player[CP].Note, Player[CP].IlNut);
-          Player[CP].Note[Player[CP].HighNote].Start   := LineState.CurrentBeatD;
-          Player[CP].Note[Player[CP].HighNote].Length := 1;
-          Player[CP].Note[Player[CP].HighNote].Tone     := AudioInputProcessor.Sound[CP].Tone; // Ton || TonDokl
-          Player[CP].Note[Player[CP].HighNote].Detekt  := LineState.MidBeat;
+          // new note
+          Inc(CurrentPlayer.LengthNote);
+          Inc(CurrentPlayer.HighNote);
+          SetLength(CurrentPlayer.Note, CurrentPlayer.LengthNote);
 
-          // Half Note Patch
-          Player[CP].Note[Player[CP].HighNote].Hit := NoteHit;
-
-          //Log.LogStatus('New Note ' + IntToStr(Gracz.Note[Gracz.HighNote].Start), 'NewBeat');
+          // update player's last note
+          LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
+          with LastPlayerNote^ do
+          begin
+            Start  := LineState.CurrentBeatD;
+            Length := 1;
+            Tone   := CurrentSound.Tone; // Tone || ToneAbs
+            Detect := LineState.MidBeat;
+            Hit    := NoteHit; // half note patch
+          end;
         end
         else
         begin
-          // przedluzenie nuty
-          Player[CP].Note[Player[CP].HighNote].Length := Player[CP].Note[Player[CP].HighNote].Length + 1;
+          // extend note length
+          Inc(LastPlayerNote.Length);
         end;
 
         // check for perfect note and then lit the star (on Draw)
-        for Count := 0 to Lines[0].Line[S].HighNote do
+        for LineFragmentIndex := 0 to Line.HighNote do
         begin
-          if (Lines[0].Line[S].Note[Count].Start = Player[CP].Note[Player[CP].HighNote].Start) and
-             (Lines[0].Line[S].Note[Count].Length = Player[CP].Note[Player[CP].HighNote].Length) and
-             (Lines[0].Line[S].Note[Count].Tone = Player[CP].Note[Player[CP].HighNote].Tone) then
+          CurrentLineFragment := @Line.Note[LineFragmentIndex];
+          if (CurrentLineFragment.Start = LastPlayerNote.Start) and
+             (CurrentLineFragment.Length = LastPlayerNote.Length) and
+             (CurrentLineFragment.Tone = LastPlayerNote.Tone) then
           begin
-            Player[CP].Note[Player[CP].HighNote].Perfect := true;
+            LastPlayerNote.Perfect := true;
           end;
         end;
-      end; // if S = SMax
+      end; // if SentenceDetected = SentenceMax
 
-    end; // if moze
-  end; // for CP
-  //  Log.LogStatus('EndBeat', 'NewBeat');
+    end; // if Detected
+  end; // for PlayerIndex
 
-  //On Sentence End -> For LineBonus + SingBar
-  if (sDet >= low(Lines[0].Line)) and (sDet <= high(Lines[0].Line)) then
+  //Log.LogStatus('EndBeat', 'NewBeat');
+
+  // on sentence end -> for LineBonus and display of SingBar (rating pop-up)
+  if (SentenceDetected >= Low(Lines[0].Line)) and
+     (SentenceDetected <= High(Lines[0].Line)) then
   begin
-    if assigned( Sender ) and
-       ((Lines[0].Line[SDet].Note[Lines[0].Line[SDet].HighNote].Start + Lines[0].Line[SDet].Note[Lines[0].Line[SDet].HighNote].Length - 1) = LineState.CurrentBeatD) then
+    Line := @Lines[0].Line[SentenceDetected];
+    CurrentLineFragment := @Line.Note[Line.HighNote];
+    if ((CurrentLineFragment.Start + CurrentLineFragment.Length - 1) = LineState.CurrentBeatD) then
     begin
-      Sender.onSentenceEnd(sDet);
+      if assigned(Screen) then
+        Screen.OnSentenceEnd(SentenceDetected);
     end;
   end;
 
@@ -1055,22 +1100,25 @@ end;
 
 procedure ClearScores(PlayerNum: integer);
 begin
-  Player[PlayerNum].Score := 0;
-  Player[PlayerNum].ScoreI := 0;
-  Player[PlayerNum].ScoreLine := 0;
-  Player[PlayerNum].ScoreLineI := 0;
-  Player[PlayerNum].ScoreGolden := 0;
-  Player[PlayerNum].ScoreGoldenI := 0;
-  Player[PlayerNum].ScoreTotalI := 0;
+  with Player[PlayerNum] do
+  begin
+    Score := 0;
+    ScoreInt := 0;
+    ScoreLine := 0;
+    ScoreLineInt := 0;
+    ScoreGolden := 0;
+    ScoreGoldenInt := 0;
+    ScoreTotalInt := 0;
+  end;
 end;
 
 //--------------------
-// Function sets all Absolute Paths e.g. Song Path and makes sure the Directorys exist
+// Function sets all absolute paths e.g. song path and makes sure the directorys exist
 //--------------------
 procedure InitializePaths;
 
-  // Initialize a Path Variable
-  // After Setting Paths, make sure that Paths exist
+  // Initialize a path variable
+  // After setting paths, make sure that paths exist
   function initialize_path( out aPathVar : string; const aLocation : string ): boolean;
   var
     lWriteable: Boolean;
