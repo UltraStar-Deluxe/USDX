@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<CONFIG>
-  <Compiler Value="/usr/bin/ppc386" Date="1188503747"/>
-  <Params Value=" -S2cgi -OG1 -gl -vewnhi -l -Fu../../../../../../.lazarus/lib/fpcunitconsolerunner/i386-linux/ -Fu/usr/share/lazarus/packager/units/i386-linux/ -Fu. -otest_libraries test_libraries.lpr"/>
-</CONFIG>
