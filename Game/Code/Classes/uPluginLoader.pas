@@ -14,7 +14,9 @@ interface
 
 {$I switches.inc}
 
-uses UPluginDefs, UCoreModule;
+uses
+  UPluginDefs,
+  UCoreModule;
 
 type
   TPluginListItem = record
@@ -42,33 +44,33 @@ type
       sGetPluginInfo:   THandle;
       sGetPluginState:  THandle;
 
-      Procedure FreePlugin(Index: Cardinal);
+      procedure FreePlugin(Index: Cardinal);
     public
       PluginInterface: TUS_PluginInterface;
-      Plugins: Array of TPluginListItem;
+      Plugins: array of TPluginListItem;
 
       //TCoreModule methods to inherit
-      Constructor Create; override;
-      Procedure Info(const pInfo: PModuleInfo); override;
-      Function Load: Boolean; override;
-      Function Init: Boolean; override;
-      Procedure DeInit; override;
+      constructor Create; override;
+      procedure Info(const pInfo: PModuleInfo); override;
+      function Load: Boolean; override;
+      function Init: Boolean; override;
+      procedure DeInit; override;
       Destructor Destroy; override;
 
       //New Methods
-      Procedure BrowseDir(Path: String);             //Browses the Path at _Path_ for Plugins
-      Function  PluginExists(Name: String): Integer; //If Plugin Exists: Index of Plugin, else -1
-      Procedure AddPlugin(Filename: String);//Adds Plugin to the Array
+      procedure BrowseDir(Path: String);             //Browses the Path at _Path_ for Plugins
+      function  PluginExists(Name: String): integer; //If Plugin Exists: Index of Plugin, else -1
+      procedure AddPlugin(Filename: String);//Adds Plugin to the Array
 
-      Function  CallLoad(Index: Cardinal): Integer;
-      Function  CallInit(Index: Cardinal): Integer;
-      Procedure CallDeInit(Index: Cardinal);
+      function  CallLoad(Index: Cardinal): integer;
+      function  CallInit(Index: Cardinal): integer;
+      procedure CallDeInit(Index: Cardinal);
 
       //Services offered
-      Function LoadPlugin(wParam: TwParam; lParam: TlParam): Integer; //wParam PChar(PluginName/PluginPath) | lParam (if wParam = nil) ID of the Plugin
-      Function UnloadPlugin(wParam: TwParam; lParam: TlParam): Integer; //wParam PChar(PluginName/PluginPath) | lParam (if wParam = nil) ID of the Plugin
-      Function GetPluginInfo(wParam: TwParam; lParam: TlParam): Integer; //If wParam = -1 then (If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TUS_PluginInfo to address at lparam) Else (Get PluginInfo of Plugin with Index(wParam) to Address at lParam)
-      Function GetPluginState(wParam: TwParam; lParam: TlParam): Integer; //If wParam = -1 then (If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TUS_PluginInfo to address at lparam) Else (Return PluginInfo of Plugin with Index(wParam))
+      function LoadPlugin(wParam: TwParam; lParam: TlParam): integer; //wParam PChar(PluginName/PluginPath) | lParam (if wParam = nil) ID of the Plugin
+      function UnloadPlugin(wParam: TwParam; lParam: TlParam): integer; //wParam PChar(PluginName/PluginPath) | lParam (if wParam = nil) ID of the Plugin
+      function GetPluginInfo(wParam: TwParam; lParam: TlParam): integer; //If wParam = -1 then (If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TUS_PluginInfo to address at lparam) else (Get PluginInfo of Plugin with Index(wParam) to Address at lParam)
+      function GetPluginState(wParam: TwParam; lParam: TlParam): integer; //If wParam = -1 then (If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TUS_PluginInfo to address at lparam) else (Return PluginInfo of Plugin with Index(wParam))
 
   end;
 
@@ -82,12 +84,12 @@ type
       PluginLoader: PPluginLoader;
     public
       //TCoreModule methods to inherit
-      Constructor Create; override;
+      constructor Create; override;
       
-      Procedure Info(const pInfo: PModuleInfo); override;
-      Function Load: Boolean; override;
-      Function Init: Boolean; override;
-      Procedure DeInit; override;
+      procedure Info(const pInfo: PModuleInfo); override;
+      function Load: Boolean; override;
+      function Init: Boolean; override;
+      procedure DeInit; override;
   end;
 
 const
@@ -102,13 +104,17 @@ const
   {$ENDIF}
 
 implementation
-uses UCore, UPluginInterface,
+
+uses
+  UCore,
+  UPluginInterface,
 {$IFDEF MSWINDOWS}
   windows,
 {$ELSE}
   dynlibs,
 {$ENDIF}
-UMain, SysUtils;
+  UMain,
+  SysUtils;
 
 {*********************
   TPluginLoader
@@ -116,9 +122,9 @@ UMain, SysUtils;
 *********************}
 
 //-------------
-// Function that gives some Infos about the Module to the Core
+// function that gives some Infos about the Module to the Core
 //-------------
-Procedure TPluginLoader.Info(const pInfo: PModuleInfo);
+procedure TPluginLoader.Info(const pInfo: PModuleInfo);
 begin
   pInfo^.Name := 'TPluginLoader';
   pInfo^.Version := MakeVersion(1,0,0,chr(0));
@@ -128,7 +134,7 @@ end;
 //-------------
 // Just the Constructor
 //-------------
-Constructor TPluginLoader.Create;
+constructor TPluginLoader.Create;
 begin
   inherited;
 
@@ -156,16 +162,16 @@ end;
 //to offer them to other Modules or Plugins during the Init process
 //If False is Returned this will cause a Forced Exit
 //-------------
-Function TPluginLoader.Load: Boolean;
+function TPluginLoader.Load: Boolean;
 begin
   Result := True;
 
-  Try
+  try
     //Start Searching for Plugins
     BrowseDir(PluginPath);
-  Except
+  except
     Result := False;
-    Core.ReportError(Integer(PChar('Error Browsing and Loading.')), PChar('TPluginLoader'));
+    Core.ReportError(integer(PChar('Error Browsing and Loading.')), PChar('TPluginLoader'));
   end;
 end;
 
@@ -175,7 +181,7 @@ end;
 //your Classes, Variables etc.
 //If False is Returned this will cause a Forced Exit
 //-------------
-Function TPluginLoader.Init: Boolean;
+function TPluginLoader.Init: Boolean;
 begin
   //Just set Prvate Var to true.
   LoadingProcessFinished := True;
@@ -186,15 +192,15 @@ end;
 //Is Called if this Module has been Inited and there is a Exit.
 //Deinit is in backwards Initing Order
 //-------------
-Procedure TPluginLoader.DeInit;
+procedure TPluginLoader.DeInit;
 var
-  I: Integer;
+  I: integer;
 begin
   //Force DeInit
   //If some Plugins aren't DeInited for some Reason o0
-  For I := 0 to High(Plugins) do
+  for I := 0 to High(Plugins) do
   begin
-    If (Plugins[I].State < 4) then
+    if (Plugins[I].State < 4) then
       FreePlugin(I);
   end;
 
@@ -215,7 +221,7 @@ end;
 //--------------
 // Browses the Path at _Path_ for Plugins
 //--------------
-Procedure TPluginLoader.BrowseDir(Path: String);
+procedure TPluginLoader.BrowseDir(Path: String);
 var
   SR: TSearchRec;
 begin
@@ -241,15 +247,15 @@ end;
 //--------------
 // If Plugin Exists: Index of Plugin, else -1
 //--------------
-Function  TPluginLoader.PluginExists(Name: String): Integer;
+function  TPluginLoader.PluginExists(Name: String): integer;
 var
-  I: Integer;
+  I: integer;
 begin
   Result := -1;
 
-  If (Length(Name) <= 32 { =>Length(TUS_PluginInfo.Name)}) then
+  if (Length(Name) <= 32 { =>Length(TUS_PluginInfo.Name)}) then
   begin
-    For I := 0 to High(Plugins) do
+    for I := 0 to High(Plugins) do
       if (Plugins[I].Info.Name = Name) then
       begin //Found the Plugin
         Result := I;
@@ -261,39 +267,39 @@ end;
 //--------------
 // Adds Plugin to the Array
 //--------------
-Procedure TPluginLoader.AddPlugin(Filename: String);
+procedure TPluginLoader.AddPlugin(Filename: String);
 var
   hLib: THandle;
   PInfo: Proc_PluginInfo;
   Info: TUS_PluginInfo;
-  PluginID: Integer;
+  PluginID: integer;
 begin
-  If (FileExists(Filename)) then
+  if (FileExists(Filename)) then
   begin //Load Libary
     hLib := LoadLibrary(PChar(Filename));
-    If (hLib <> 0) then
+    if (hLib <> 0) then
     begin //Try to get Address of the Info Proc
       PInfo := GetProcAddress (hLib, PChar('USPlugin_Info'));
-      If (@PInfo <> nil) then
+      if (@PInfo <> nil) then
       begin
         Info.cbSize := SizeOf(TUS_PluginInfo);
 
-        Try //Call Info Proc
+        try //Call Info Proc
           PInfo(@Info);
-        Except
+        except
           Info.Name := '';
-          Core.ReportError(Integer(PChar('Error getting Plugin Info: ' + Filename)), PChar('TPluginLoader'));
+          Core.ReportError(integer(PChar('Error getting Plugin Info: ' + Filename)), PChar('TPluginLoader'));
         end;
 
         //Is Name set ?
-        If (Trim(Info.Name) <> '') then
+        if (Trim(Info.Name) <> '') then
         begin
           PluginID := PluginExists(Info.Name);
 
-          If (PluginID > 0) AND (Plugins[PluginID].State >=4) then
+          if (PluginID > 0) and (Plugins[PluginID].State >=4) then
             PluginID := -1;
 
-          If (PluginID = -1) then
+          if (PluginID = -1) then
           begin
             //Add new item to array
             PluginID := Length(Plugins);
@@ -311,25 +317,25 @@ begin
             Plugins[PluginID].Procs.Init   := GetProcAddress (hLib, PChar('USPlugin_Init'));
             Plugins[PluginID].Procs.DeInit := GetProcAddress (hLib, PChar('USPlugin_DeInit'));
 
-            If (@Plugins[PluginID].Procs.Load = nil) OR (@Plugins[PluginID].Procs.Init = nil) OR (@Plugins[PluginID].Procs.DeInit = nil) then
+            if (@Plugins[PluginID].Procs.Load = nil) OR (@Plugins[PluginID].Procs.Init = nil) OR (@Plugins[PluginID].Procs.DeInit = nil) then
             begin
               Plugins[PluginID].State := 255;
               FreeLibrary(hLib);
-              Core.ReportError(Integer(PChar('Can''t get Plugin Procs from Libary: "' + Info.Name + '" ' + Filename)), PChar('TPluginLoader'));
+              Core.ReportError(integer(PChar('Can''t get Plugin Procs from Libary: "' + Info.Name + '" ' + Filename)), PChar('TPluginLoader'));
             end;
 
             //Emulate loading process if this Plugin is loaded to late
-            If (LoadingProcessFinished) then
+            if (LoadingProcessFinished) then
             begin
               CallLoad(PluginID);
               CallInit(PluginID);
             end;
           end
-          Else If (LoadingProcessFinished = False) then
+          else if (LoadingProcessFinished = False) then
           begin
-            If (Plugins[PluginID].Info.Version < Info.Version) then
+            if (Plugins[PluginID].Info.Version < Info.Version) then
             begin //Found newer Version of this Plugin
-              Core.ReportDebug(Integer(PChar('Found a newer Version of Plugin: ' + String(Info.Name))), PChar('TPluginLoader'));
+              Core.ReportDebug(integer(PChar('Found a newer Version of Plugin: ' + String(Info.Name))), PChar('TPluginLoader'));
 
               //Unload Old Plugin
               UnloadPlugin(PluginID, nil);
@@ -346,11 +352,11 @@ begin
               Plugins[PluginID].Procs.Init   := GetProcAddress (hLib, PChar('USPlugin_Init'));
               Plugins[PluginID].Procs.DeInit := GetProcAddress (hLib, PChar('USPlugin_DeInit'));
 
-              If (@Plugins[PluginID].Procs.Load = nil) OR (@Plugins[PluginID].Procs.Init = nil) OR (@Plugins[PluginID].Procs.DeInit = nil) then
+              if (@Plugins[PluginID].Procs.Load = nil) OR (@Plugins[PluginID].Procs.Init = nil) OR (@Plugins[PluginID].Procs.DeInit = nil) then
               begin
                 FreeLibrary(hLib);
                 Plugins[PluginID].State := 255;
-                Core.ReportError(Integer(PChar('Can''t get Plugin Procs from Libary: "' + Info.Name + '" ' + Filename)), PChar('TPluginLoader'));
+                Core.ReportError(integer(PChar('Can''t get Plugin Procs from Libary: "' + Info.Name + '" ' + Filename)), PChar('TPluginLoader'));
               end;
             end
             else
@@ -361,49 +367,49 @@ begin
           else
           begin
             FreeLibrary(hLib);
-            Core.ReportError(Integer(PChar('Plugin with this Name already exists: ' + String(Info.Name))), PChar('TPluginLoader'));
+            Core.ReportError(integer(PChar('Plugin with this Name already exists: ' + String(Info.Name))), PChar('TPluginLoader'));
           end;
         end
         else
         begin
           FreeLibrary(hLib);
-          Core.ReportError(Integer(PChar('No name reported: ' + Filename)), PChar('TPluginLoader'));
+          Core.ReportError(integer(PChar('No name reported: ' + Filename)), PChar('TPluginLoader'));
         end;
       end
       else
       begin
         FreeLibrary(hLib);
-        Core.ReportError(Integer(PChar('Can''t find Info Procedure: ' + Filename)), PChar('TPluginLoader'));
+        Core.ReportError(integer(PChar('Can''t find Info procedure: ' + Filename)), PChar('TPluginLoader'));
       end;
     end
     else
-      Core.ReportError(Integer(PChar('Can''t load Plugin Libary: ' + Filename)), PChar('TPluginLoader'));
+      Core.ReportError(integer(PChar('Can''t load Plugin Libary: ' + Filename)), PChar('TPluginLoader'));
   end;
 end;
 
 //--------------
 // Calls Load Func of Plugin with the given Index
 //--------------
-Function  TPluginLoader.CallLoad(Index: Cardinal): Integer;
+function  TPluginLoader.CallLoad(Index: Cardinal): integer;
 begin
   Result := -2;
-  If(Index < Length(Plugins)) then
+  if(Index < Length(Plugins)) then
   begin
-    If (@Plugins[Index].Procs.Load <> nil) AND (Plugins[Index].State = 0) then
+    if (@Plugins[Index].Procs.Load <> nil) and (Plugins[Index].State = 0) then
     begin
-      Try
+      try
         Result := Plugins[Index].Procs.Load(@PluginInterface);
-      Except
+      except
         Result := -3;
       End;
 
-      If (Result = 0) then
+      if (Result = 0) then
         Plugins[Index].State := 1
-      Else
+      else
       begin
         FreePlugin(Index);
         Plugins[Index].State := 255;
-        Core.ReportError(Integer(PChar('Error calling Load Function from Plugin: ' + String(Plugins[Index].Info.Name))), PChar('TPluginLoader'));
+        Core.ReportError(integer(PChar('Error calling Load function from Plugin: ' + String(Plugins[Index].Info.Name))), PChar('TPluginLoader'));
       end;
     end;
   end;
@@ -412,29 +418,29 @@ end;
 //--------------
 // Calls Init Func of Plugin with the given Index
 //--------------
-Function  TPluginLoader.CallInit(Index: Cardinal): Integer;
+function  TPluginLoader.CallInit(Index: Cardinal): integer;
 begin
   Result := -2;
-  If(Index < Length(Plugins)) then
+  if(Index < Length(Plugins)) then
   begin
-    If (@Plugins[Index].Procs.Init <> nil) AND (Plugins[Index].State = 1) then
+    if (@Plugins[Index].Procs.Init <> nil) and (Plugins[Index].State = 1) then
     begin
-      Try
+      try
         Result := Plugins[Index].Procs.Init(@PluginInterface);
-      Except
+      except
         Result := -3;
       End;
       
-      If (Result = 0) then
+      if (Result = 0) then
       begin
         Plugins[Index].State := 2;
         Plugins[Index].NeedsDeInit := True;
       end
-      Else
+      else
       begin
         FreePlugin(Index);
         Plugins[Index].State := 255;
-        Core.ReportError(Integer(PChar('Error calling Init Function from Plugin: ' + String(Plugins[Index].Info.Name))), PChar('TPluginLoader'));
+        Core.ReportError(integer(PChar('Error calling Init function from Plugin: ' + String(Plugins[Index].Info.Name))), PChar('TPluginLoader'));
       end;
     end;
   end;
@@ -443,16 +449,16 @@ end;
 //--------------
 // Calls DeInit Proc of Plugin with the given Index
 //--------------
-Procedure TPluginLoader.CallDeInit(Index: Cardinal);
+procedure TPluginLoader.CallDeInit(Index: Cardinal);
 begin
-  If(Index < Length(Plugins)) then
+  if(Index < Length(Plugins)) then
   begin
-    If (Plugins[Index].State < 4) then
+    if (Plugins[Index].State < 4) then
     begin
-      If (@Plugins[Index].Procs.DeInit <> nil) and (Plugins[Index].NeedsDeInit) then
-        Try
+      if (@Plugins[Index].Procs.DeInit <> nil) and (Plugins[Index].NeedsDeInit) then
+        try
           Plugins[Index].Procs.DeInit(@PluginInterface);
-        Except
+        except
 
         End;
 
@@ -467,14 +473,14 @@ end;
 //--------------
 // Frees all Plugin Sources (Procs and Handles) - Helper for Deiniting Functions
 //--------------
-Procedure TPluginLoader.FreePlugin(Index: Cardinal);
+procedure TPluginLoader.FreePlugin(Index: Cardinal);
 begin
   Plugins[Index].State := 4;
   Plugins[Index].Procs.Load := nil;
   Plugins[Index].Procs.Init := nil;
   Plugins[Index].Procs.DeInit := nil;
 
-  If (Plugins[Index].hLib <> 0) then
+  if (Plugins[Index].hLib <> 0) then
     FreeLibrary(Plugins[Index].hLib);
 end;
 
@@ -483,15 +489,15 @@ end;
 //--------------
 // wParam PChar(PluginName/PluginPath) | wParam (if lParam = nil) ID of the Plugin
 //--------------
-Function TPluginLoader.LoadPlugin(wParam: TwParam; lParam: TlParam): Integer;
+function TPluginLoader.LoadPlugin(wParam: TwParam; lParam: TlParam): integer;
 var
-  Index: Integer;
+  Index: integer;
   sFile: String;
 begin
   Result := -1;
   sFile := '';
   //lParam is ID
-  If (lParam = nil) then
+  if (lParam = nil) then
   begin
     Index := wParam;
   end
@@ -500,7 +506,7 @@ begin
     try
       sFile := String(PChar(lParam));
       Index := PluginExists(sFile);
-      If (Index < 0) And FileExists(sFile) then
+      if (Index < 0) And FileExists(sFile) then
       begin //Is Filename
         AddPlugin(sFile);
         Result := Plugins[High(Plugins)].State;
@@ -511,7 +517,7 @@ begin
   end;
 
 
-  If (Index >= 0) and (Index < Length(Plugins)) then
+  if (Index >= 0) and (Index < Length(Plugins)) then
   begin
     AddPlugin(Plugins[Index].Path);
     Result := Plugins[Index].State;
@@ -521,14 +527,14 @@ end;
 //--------------
 // wParam PChar(PluginName/PluginPath) | wParam (if lParam = nil) ID of the Plugin
 //--------------
-Function TPluginLoader.UnloadPlugin(wParam: TwParam; lParam: TlParam): Integer;
+function TPluginLoader.UnloadPlugin(wParam: TwParam; lParam: TlParam): integer;
 var
-  Index: Integer;
+  Index: integer;
   sName: String;
 begin
   Result := -1;
   //lParam is ID
-  If (lParam = nil) then
+  if (lParam = nil) then
   begin
     Index := wParam;
   end
@@ -543,72 +549,72 @@ begin
   end;
 
 
-  If (Index >= 0) and (Index < Length(Plugins)) then
+  if (Index >= 0) and (Index < Length(Plugins)) then
       CallDeInit(Index)
 end;
 
 //--------------
-// If wParam = -1 then (If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TUS_PluginInfo to address at lparam) Else (Get PluginInfo of Plugin with Index(wParam) to Address at lParam)
+// if wParam = -1 then (if lParam = nil then get length of Moduleinfo Array. if lparam <> nil then write array of TUS_PluginInfo to address at lparam) else (Get PluginInfo of Plugin with Index(wParam) to Address at lParam)
 //--------------
-Function TPluginLoader.GetPluginInfo(wParam: TwParam; lParam: TlParam): Integer;
-var I: Integer;
+function TPluginLoader.GetPluginInfo(wParam: TwParam; lParam: TlParam): integer;
+var I: integer;
 begin
   Result := 0;
-  If (wParam > 0) then
+  if (wParam > 0) then
   begin //Get Info of 1 Plugin
-    If (lParam <> nil) AND (wParam < Length(Plugins)) then
+    if (lParam <> nil) and (wParam < Length(Plugins)) then
     begin
-      Try
+      try
         Result := 1;
         PUS_PluginInfo(lParam)^ := Plugins[wParam].Info;
-      Except
+      except
 
       End;
     end;
   end
-  Else If (lParam = nil) then
+  else if (lParam = nil) then
   begin //Get Length of Plugin (Info) Array
     Result := Length(Plugins);
   end
-  Else //Write PluginInfo Array to Address in lParam
+  else //Write PluginInfo Array to Address in lParam
   begin
-    Try
-      For I := 0 to high(Plugins) do
+    try
+      for I := 0 to high(Plugins) do
         PAUS_PluginInfo(lParam)^[I] := Plugins[I].Info;
       Result := Length(Plugins);
-    Except
-      Core.ReportError(Integer(PChar('Could not write PluginInfo Array')), PChar('TPluginLoader'));
+    except
+      Core.ReportError(integer(PChar('Could not write PluginInfo Array')), PChar('TPluginLoader'));
     End;
   end;
 
 end;
 
 //--------------
-// If wParam = -1 then (If lParam = nil then get length of Plugin State Array. If lparam <> nil then write array of Byte to address at lparam) Else (Return State of Plugin with Index(wParam))
+// if wParam = -1 then (if lParam = nil then get length of Plugin State Array. if lparam <> nil then write array of Byte to address at lparam) else (Return State of Plugin with Index(wParam))
 //--------------
-Function TPluginLoader.GetPluginState(wParam: TwParam; lParam: TlParam): Integer;
-var I: Integer;
+function TPluginLoader.GetPluginState(wParam: TwParam; lParam: TlParam): integer;
+var I: integer;
 begin
   Result := -1;
-  If (wParam > 0) then
+  if (wParam > 0) then
   begin //Get State of 1 Plugin
-    If (wParam < Length(Plugins)) then
+    if (wParam < Length(Plugins)) then
     begin
       Result := Plugins[wParam].State;
     end;
   end
-  Else If (lParam = nil) then
+  else if (lParam = nil) then
   begin //Get Length of Plugin (Info) Array
     Result := Length(Plugins);
   end
-  Else //Write PluginInfo Array to Address in lParam
+  else //Write PluginInfo Array to Address in lParam
   begin
-    Try
-      For I := 0 to high(Plugins) do
-        Byte(Pointer(Integer(lParam) + I)^) := Plugins[I].State;
+    try
+      for I := 0 to high(Plugins) do
+        Byte(Pointer(integer(lParam) + I)^) := Plugins[I].State;
       Result := Length(Plugins);
-    Except
-      Core.ReportError(Integer(PChar('Could not write PluginState Array')), PChar('TPluginLoader'));
+    except
+      Core.ReportError(integer(PChar('Could not write PluginState Array')), PChar('TPluginLoader'));
     End;
   end;
 end;
@@ -620,9 +626,9 @@ end;
 *********************}
 
 //-------------
-// Function that gives some Infos about the Module to the Core
+// function that gives some Infos about the Module to the Core
 //-------------
-Procedure TtehPlugins.Info(const pInfo: PModuleInfo);
+procedure TtehPlugins.Info(const pInfo: PModuleInfo);
 begin
   pInfo^.Name := 'TtehPlugins';
   pInfo^.Version := MakeVersion(1,0,0,chr(0));
@@ -632,7 +638,7 @@ end;
 //-------------
 // Just the Constructor
 //-------------
-Constructor TtehPlugins.Create;
+constructor TtehPlugins.Create;
 begin
   inherited;
   PluginLoader := nil;
@@ -644,19 +650,17 @@ end;
 //to offer them to other Modules or Plugins during the Init process
 //If False is Returned this will cause a Forced Exit
 //-------------
-Function TtehPlugins.Load: Boolean;
-
+function TtehPlugins.Load: Boolean;
 var
-  i: Integer; //Counter
-  CurExecutedBackup: Integer; //backup of Core.CurExecuted Attribute
-
+  i: integer; //Counter
+  CurExecutedBackup: integer; //backup of Core.CurExecuted Attribute
 begin
   //Get Pointer to PluginLoader
   PluginLoader := PPluginLoader(Core.GetModulebyName('TPluginLoader'));
   if (PluginLoader = nil) then
   begin
     Result := false;
-    Core.ReportError(Integer(PChar('Could not get Pointer to PluginLoader')), PChar('TtehPlugins'));
+    Core.ReportError(integer(PChar('Could not get Pointer to PluginLoader')), PChar('TtehPlugins'));
   end
   else
   begin
@@ -667,28 +671,32 @@ begin
 
     //Start Loading the Plugins
     for i := 0 to High(PluginLoader.Plugins) do
-      try
-        Core.CurExecuted := -1 - i;
+    begin
+      Core.CurExecuted := -1 - i;
 
+      try
         //Unload Plugin if not correctly Executed
         if (PluginLoader.CallLoad(i) <> 0) then
         begin
           PluginLoader.CallDeInit(i);
           PluginLoader.Plugins[i].State := 254; //Plugin asks for unload
-          Core.ReportDebug(Integer(PChar('Plugin Selfabort during loading process: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
+          Core.ReportDebug(integer(PChar('Plugin Selfabort during loading process: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
         end
         else
-          Core.ReportDebug(Integer(PChar('Plugin loaded succesful: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
+        begin
+          Core.ReportDebug(integer(PChar('Plugin loaded succesful: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
+        end;
       except
-	//Plugin could not be loaded.
-	// => Show Error Message, then ShutDown Plugin
-	on E: Exception do
-	begin
-	  PluginLoader.CallDeInit(i);
-	  PluginLoader.Plugins[i].State := 255; //Plugin causes Error
-	  Core.ReportError(Integer(PChar('Plugin causes Error during loading process: ' + PluginLoader.Plugins[i].Info.Name + ', ErrorMsg: "' + E.Message + '"')), PChar('TtehPlugins'));
-	end;
+        //Plugin could not be loaded.
+        // => Show Error Message, then ShutDown Plugin
+        on E: Exception do
+        begin
+          PluginLoader.CallDeInit(i);
+          PluginLoader.Plugins[i].State := 255; //Plugin causes Error
+          Core.ReportError(integer(PChar('Plugin causes Error during loading process: ' + PluginLoader.Plugins[i].Info.Name + ', ErrorMsg: "' + E.Message + '"')), PChar('TtehPlugins'));
+        end;
       end;
+    end;
 
     //Reset CurExecuted  
     Core.CurExecuted := CurExecutedBackup;
@@ -701,12 +709,10 @@ end;
 //your Classes, Variables etc.
 //If False is Returned this will cause a Forced Exit
 //-------------
-Function TtehPlugins.Init: Boolean;
-
+function TtehPlugins.Init: Boolean;
 var
-  i: Integer; //Counter
-  CurExecutedBackup: Integer; //backup of Core.CurExecuted Attribute
-
+  i: integer; //Counter
+  CurExecutedBackup: integer; //backup of Core.CurExecuted Attribute
 begin
   Result := true;
 
@@ -723,16 +729,16 @@ begin
       begin
         PluginLoader.CallDeInit(i);
         PluginLoader.Plugins[i].State := 254; //Plugin asks for unload
-        Core.ReportDebug(Integer(PChar('Plugin Selfabort during init process: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
+        Core.ReportDebug(integer(PChar('Plugin Selfabort during init process: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
       end
       else
-        Core.ReportDebug(Integer(PChar('Plugin inited succesful: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
+        Core.ReportDebug(integer(PChar('Plugin inited succesful: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
     except
       //Plugin could not be loaded.
       // => Show Error Message, then ShutDown Plugin
       PluginLoader.CallDeInit(i);
       PluginLoader.Plugins[i].State := 255; //Plugin causes Error
-      Core.ReportError(Integer(PChar('Plugin causes Error during init process: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
+      Core.ReportError(integer(PChar('Plugin causes Error during init process: ' + String(PluginLoader.Plugins[i].Info.Name))), PChar('TtehPlugins'));
     end;
 
   //Reset CurExecuted
@@ -743,24 +749,24 @@ end;
 //Is Called if this Module has been Inited and there is a Exit.
 //Deinit is in backwards Initing Order
 //-------------
-Procedure TtehPlugins.DeInit;
-
+procedure TtehPlugins.DeInit;
 var
-  i: Integer; //Counter
-  CurExecutedBackup: Integer; //backup of Core.CurExecuted Attribute
-
+  i: integer; //Counter
+  CurExecutedBackup: integer; //backup of Core.CurExecuted Attribute
 begin
   //Backup CurExecuted
   CurExecutedBackup := Core.CurExecuted;
 
   //Start Loop
   
-  for i := 0 to High(PluginLoader.Plugins)) do
+  for i := 0 to High(PluginLoader.Plugins) do
+  begin
     try
       //DeInit Plugin
       PluginLoader.CallDeInit(i);
     except
     end;
+  end;
 
   //Reset CurExecuted
   Core.CurExecuted := CurExecutedBackup;
