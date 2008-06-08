@@ -13,17 +13,18 @@ uses Classes, UPlatform;
 type
 
   TPlatformLinux = class(TInterfacedObject, IPlatform)
-    function get_homedir(): string;
-  public
-    function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
-    function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-    function FindSongFile(Dir, Mask: widestring): widestring;
+    private
+      function GetHomedir(): string;
+    public
+      function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
+      function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+      function FindSongFile(Dir, Mask: widestring): widestring;
 
-    procedure Halt;
+      procedure Halt;
 
-    function GetLogPath        : WideString;
-    function GetGameSharedPath : WideString;
-    function GetGameUserPath   : WideString;
+      function GetLogPath        : WideString;
+      function GetGameSharedPath : WideString;
+      function GetGameUserPath   : WideString;
   end;
 
 implementation
@@ -37,7 +38,7 @@ implementation
   
 uses 
   libc,
-  uCommandLine,
+  UCommandLine,
   BaseUnix,
   SysUtils,
   ULog,
@@ -132,7 +133,7 @@ begin
   end;
 end;
 
-function TPlatformLinux.get_homedir(): string;
+function TPlatformLinux.GetHomedir(): string;
 var
   pPasswdEntry : Ppasswd;
   lUserName    : String;
