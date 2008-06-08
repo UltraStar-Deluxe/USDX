@@ -329,28 +329,20 @@ end;
 //-------------
 //DeInits Core and all Modules
 //-------------
-Function TCore.DeInit: Boolean;
+Function TCore.DeInit: boolean;
+
 var
-  I: Integer;
-label Continue;
+  i: integer;
+
 begin
-  I := High(CORE_MODULES_TO_LOAD);
 
-  Continue:
-  Try
-    While (I >= 0) do
-    begin
-      If (Modules[I].NeedsDeInit) then
-        Modules[I].Module.DeInit;
-
-      Dec(I);
+  for i :=  High(CORE_MODULES_TO_LOAD) downto 0 do
+    try
+      if (Modules[i].NeedsDeInit) then
+        Modules[i].Module.DeInit;
+    except
     end;
-  Except
-
-
   end;
-  If (I >= 0) then
-    GoTo Continue;
 
   DeInitCore;
 
