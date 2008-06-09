@@ -185,15 +185,16 @@ end;
 
 {$IFDEF Unix}
 uses
-{$ifdef Linux}
-  Types,
-  Libc;
-{$else}
+{$ifdef FPC}
   dl,
   Types,
   Baseunix,
   Unix;
+{$else}
+  Types,
+  Libc;
 {$endif}
+
 type
   // Handle to a loaded .so
   TModuleHandle = Pointer;

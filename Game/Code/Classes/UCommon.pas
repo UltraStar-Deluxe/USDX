@@ -88,14 +88,25 @@ uses
   {$IFDEF Delphi}
   Dialogs,
   {$ENDIF}
-  {$IFDEF LINUX}
-  libc,
+  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  clocale,
   {$ENDIF}
   UMain,
   UConfig;
 
+
+// data used by the ...Locale() functions
+{$IFDEF LINUX}
 var
   PrevNumLocale: string;
+
+{$IFNDEF FPC_VERSION_2_2_2_PLUS}
+const
+  __LC_NUMERIC  = 1;
+
+function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c' name 'setlocale';
+{$ENDIF}
+{$ENDIF}
 
 // In Linux and maybe MacOSX some units (like cwstring) call setlocale(LC_ALL, '')
 // to set the language/country specific locale (e.g. charset) for this application.
@@ -116,15 +127,15 @@ var
 procedure SetDefaultNumericLocale();
 begin
   {$ifdef LINUX}
-  PrevNumLocale := setlocale(LC_NUMERIC, nil);
-  setlocale(LC_NUMERIC, 'C');
+  PrevNumLocale := setlocale(__LC_NUMERIC, nil);
+  setlocale(__LC_NUMERIC, 'C');
   {$endif}
 end;
 
 procedure RestoreNumericLocale();
 begin
   {$ifdef LINUX}
-  setlocale(LC_NUMERIC, PChar(PrevNumLocale));
+  setlocale(__LC_NUMERIC, PChar(PrevNumLocale));
   {$endif}
 end;
 
@@ -258,13 +269,14 @@ function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER):Bool;
   end;
 
 begin
-  // Use clock_gettime  here maybe ... from libc
+  // Use clock_gettime(CLOCK_REALTIME, ...) here (but not from the libc unit)
   lpPerformanceCount := RDTSC();
   result := true;
 end;
 
 function QueryPerformanceFrequency(lpFrequency:TLARGEINTEGER):Bool;
 begin
+  // clock_getres(CLOCK_REALTIME, ...)
   lpFrequency := 0;
   result := true;
 end;

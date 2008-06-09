@@ -8,13 +8,15 @@ interface
 
 {$I switches.inc}
 
-uses Classes, UPlatform;
+uses
+  Classes,
+  UPlatform;
 
 type
 
   TPlatformLinux = class(TInterfacedObject, IPlatform)
     private
-      function GetHomedir(): string;
+      function GetHomeDir(): string;
     public
       function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
       function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
@@ -29,28 +31,23 @@ type
 
 implementation
 
-// check for version of FPC >= 2.2.0
-{$IFDEF FPC}
-  {$IF (FPC_VERSION > 2) or ((FPC_VERSION = 2) and (FPC_RELEASE >= 2))}
-    {$DEFINE FPC_VERSION_2_2_0_PLUS}
-  {$IFEND}
-{$ENDIF}
-  
-uses 
-  libc,
+uses
   UCommandLine,
   BaseUnix,
+  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  pwd,
+  {$ENDIF}
   SysUtils,
   ULog,
   UConfig;
 
 function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
 var
-    i : Integer;
-    TheDir  : pDir;
-    ADirent : pDirent;
-    Entry   : Longint;
-    lAttrib : integer;
+  i : Integer;
+  TheDir  : pDir;
+  ADirent : pDirent;
+  Entry   : Longint;
+  lAttrib : integer;
 begin
   i := 0;
   Filter := LowerCase(Filter);
@@ -61,7 +58,7 @@ begin
     repeat
       ADirent :=  FpReadDir(TheDir^);
 
-      If Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
+      if Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
       begin
         lAttrib := FileGetAttr(Dir + ADirent^.d_name);
         if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
@@ -91,14 +88,14 @@ function TPlatformLinux.GetLogPath        : WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
   begin
-    result := ExtractFilePath(ParamStr(0));
+    Result := ExtractFilePath(ParamStr(0));
   end
   else
   begin
     {$IFDEF UseLocalDirs}
-      result := ExtractFilePath(ParamStr(0));
+      Result := ExtractFilePath(ParamStr(0));
     {$ELSE}
-      result := LogPath+'/';
+      Result := LogPath + PathDelim;
     {$ENDIF}
   end;
 
@@ -108,43 +105,63 @@ end;
 function TPlatformLinux.GetGameSharedPath : WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
-    result := ExtractFilePath(ParamStr(0))
+    Result := ExtractFilePath(ParamStr(0))
   else
   begin
-{$IFDEF UseLocalDirs}
-    result := ExtractFilePath(ParamStr(0));
-{$ELSE}
-    result := SharedPath+'/';
-{$ENDIF}
+    {$IFDEF UseLocalDirs}
+    Result := ExtractFilePath(ParamStr(0));
+    {$ELSE}
+    Result := SharedPath + PathDelim;
+    {$ENDIF}
   end;
 end;
 
-function TPlatformLinux.GetGameUserPath   : WideString;
+function TPlatformLinux.GetGameUserPath: WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
-    result := ExtractFilePath(ParamStr(0))
+    Result := ExtractFilePath(ParamStr(0))
   else
   begin
-{$IFDEF UseLocalDirs}
-    result := ExtractFilePath(ParamStr(0));
-{$ELSE}
-    result := get_homedir()+'/.'+PathSuffix+'/';
-{$ENDIF}
+    {$IFDEF UseLocalDirs}
+    Result := ExtractFilePath(ParamStr(0));
+    {$ELSE}
+    Result := GetHomeDir() + '.'+PathSuffix + PathDelim;
+    {$ENDIF}
   end;
 end;
 
-function TPlatformLinux.GetHomedir(): string;
+(**
+ * Returns the user's home directory terminated by a path delimiter
+ *)
+function TPlatformLinux.GetHomeDir(): string;
+{$IFDEF FPC_VERSION_2_2_2_PLUS}
 var
-  pPasswdEntry : Ppasswd;
-  lUserName    : String;
+  PasswdEntry: PPasswd;
+{$ENDIF}
 begin
-  pPasswdEntry := getpwuid( getuid() );
-  result       := pPasswdEntry^.pw_dir;
+  Result := '';
+
+  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  // try to retrieve the info from passwd
+  PasswdEntry := FpGetpwuid(FpGetuid());
+  if (PasswdEntry <> nil) then
+    Result := PasswdEntry.pw_dir;
+  {$ENDIF}
+  // fallback if passwd does not contain the path
+  if (Result = '') then
+    Result := GetEnvironmentVariable('HOME');
+  // add trailing path delimiter (normally '/')
+  if (Result <> '') then
+    Result := IncludeTrailingPathDelimiter(Result);
+
+  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  // GetUserDir() is another function that returns a user path.
+  // It uses env-var HOME or a fallback to a temp-dir.
+  //Result := GetUserDir();
+  {$ENDIF}
 end;
 
-// FIXME: just a dirty-fix to make the linux build work again.
-//        This i the same as the corresponding function for MacOSX.
-//        Maybe this should be TPlatformBase.Halt()
+// FIXME: Maybe this should be TPlatformBase.Halt() for all platforms
 procedure TPlatformLinux.Halt;
 begin
   System.Halt;
@@ -152,7 +169,7 @@ end;
 
 function TPlatformLinux.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
 begin
-  // Linux and Mac don't check for running apps at the moment
+  // Linux does not check for running apps at the moment
   Result := false;
 end;
 
