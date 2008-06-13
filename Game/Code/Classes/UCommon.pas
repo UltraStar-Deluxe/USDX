@@ -215,7 +215,7 @@ begin
                     exOverflow, exUnderflow, exPrecision]);
 end;
 
-function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
+function StringReplaceW(text : WideString; search, rep: WideChar) : WideString;
 var
   iPos  : integer;
 //  sTemp : WideString;
@@ -235,10 +235,10 @@ begin
   if search = rep then
     exit;
 
-  for iPos := 0 to length( result ) - 1 do
+  for iPos := 1 to length(result) do
   begin
-    if result[ iPos ] = search then
-      result[ iPos ] := rep;
+    if result[iPos] = search then
+      result[iPos] := rep;
   end;
 end;
 
