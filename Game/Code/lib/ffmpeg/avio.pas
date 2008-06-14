@@ -101,7 +101,7 @@ type
 
   TURLProtocol = record
     name: pchar;
-    url_open: function (h: PURLContext; {const} filename: pchar; flags: integer): integer; cdecl;
+    url_open: function (h: PURLContext; filename: {const} pchar; flags: integer): integer; cdecl;
     url_read: function (h: PURLContext; buf: pchar; size: integer): integer; cdecl;
     url_write: function (h: PURLContext; buf: pchar; size: integer): integer; cdecl;
     url_seek: function (h: PURLContext; pos: TOffset; whence: integer): TOffset; cdecl;
@@ -145,7 +145,7 @@ type
     max_packet_size: integer;
     checksum: longword;
     checksum_ptr: pchar;
-    update_checksum: function (checksum: Longword; {const} buf: pchar; size: cardinal): Longword; cdecl;
+    update_checksum: function (checksum: Longword; buf: {const} pchar; size: cardinal): Longword; cdecl;
     error: integer;         ///< contains the error code or 0 if no error happened
     {$IF (LIBAVFORMAT_VERSION >= 52001000) and (LIBAVFORMAT_VERSION < 52004000)} // 52.1.0 .. 52.4.0
     read_play: function(opaque: Pointer): integer; cdecl;
@@ -160,7 +160,7 @@ type
     {$IFEND}
   end;
 
-function url_open(h: PPointer; {const} filename: pchar; flags: integer): integer;
+function url_open(h: PPointer; filename: {const} pchar; flags: integer): integer;
   cdecl; external av__format;
 function url_read (h: PURLContext; buf: pchar; size: integer): integer;
   cdecl; external av__format;
@@ -170,7 +170,7 @@ function url_seek (h: PURLContext; pos: TOffset; whence: integer): TOffset;
   cdecl; external av__format;
 function url_close (h: PURLContext): integer;
   cdecl; external av__format;
-function url_exist(const filename: pchar): integer;
+function url_exist(filename: {const} pchar): integer;
   cdecl; external av__format;
 function url_filesize (h: PURLContext): TOffset;
   cdecl; external av__format;
@@ -274,7 +274,7 @@ function av_alloc_put_byte(
 
 procedure put_byte(s: PByteIOContext; b: integer);
   cdecl; external av__format;
-procedure put_buffer (s: PByteIOContext; {const} buf: pchar; size: integer);
+procedure put_buffer (s: PByteIOContext; buf: {const} pchar; size: integer);
   cdecl; external av__format;
 procedure put_le64(s: PByteIOContext; val: int64);
   cdecl; external av__format;
@@ -292,10 +292,10 @@ procedure put_le16(s: PByteIOContext; val: cardinal);
   cdecl; external av__format;
 procedure put_be16(s: PByteIOContext; val: cardinal);
   cdecl; external av__format;
-procedure put_tag(s: PByteIOContext; {const} tag: pchar);
+procedure put_tag(s: PByteIOContext; tag: {const} pchar);
   cdecl; external av__format;
 
-procedure put_strz(s: PByteIOContext; {const} buf: pchar);
+procedure put_strz(s: PByteIOContext; buf: {const} pchar);
   cdecl; external av__format;
 
 (**
@@ -353,7 +353,7 @@ function url_fgetc(s: PByteIOContext): integer;
   cdecl; external av__format;
 
 (** @warning currently size is limited *)
-function url_fprintf(s: PByteIOContext; {const} fmt: PChar; args: array of const): integer;
+function url_fprintf(s: PByteIOContext; fmt: {const} PChar; args: array of const): integer;
   cdecl; external av__format;
 
 (** @note unlike fgets, the EOL character is not returned and a whole
@@ -437,9 +437,9 @@ function url_resetbuf(s: PByteIOContext; flags: integer): integer;
 (** @note when opened as read/write, the buffers are only used for
    writing *)
 {$IF LIBAVFORMAT_VERSION >= 52000000} // 52.0.0
-function url_fopen(var s: PByteIOContext; const filename: pchar; flags: integer): integer;
+function url_fopen(var s: PByteIOContext; filename: {const} pchar; flags: integer): integer;
 {$ELSE}
-function url_fopen(s: PByteIOContext; const filename: pchar; flags: integer): integer;
+function url_fopen(s: PByteIOContext; filename: {const} pchar; flags: integer): integer;
 {$IFEND}
   cdecl; external av__format;
 function url_fclose(s: PByteIOContext): integer;
@@ -509,7 +509,7 @@ function url_close_dyn_buf(s: PByteIOContext; pbuffer:PPointer): integer;
   cdecl; external av__format;
 
 {$IF LIBAVFORMAT_VERSION >= 51017001} // 51.17.1
-function ff_crc04C11DB7_update(checksum: longword; {const} buf: PChar; len: cardinal): longword;
+function ff_crc04C11DB7_update(checksum: longword; buf: {const} PChar; len: cardinal): longword;
   cdecl; external av__format;
 {$IFEND}
 function get_checksum(s: PByteIOContext): cardinal;
@@ -518,7 +518,7 @@ procedure init_checksum (s: PByteIOContext; update_checksum: pointer; checksum: 
   cdecl; external av__format;
 
 (* udp.c *)
-function udp_set_remote_url(h: PURLContext; {const} uri: pchar): integer;
+function udp_set_remote_url(h: PURLContext; uri: {const} pchar): integer;
   cdecl; external av__format;
 function udp_get_local_port(h: PURLContext): integer;
   cdecl; external av__format;

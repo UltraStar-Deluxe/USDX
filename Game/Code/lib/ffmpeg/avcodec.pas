@@ -1146,7 +1146,7 @@ type
      * @param offset offset into the AVFrame.data from which the slice should be read
      *)
     draw_horiz_band: procedure (s: PAVCodecContext;
-                                {const} src: PAVFrame; offset: PQuadIntArray;
+                                src: {const} PAVFrame; offset: PQuadIntArray;
                                 y: integer; type_: integer; height: integer); cdecl;
 
     (* audio only *)
@@ -1425,7 +1425,7 @@ type
      * - encoding: Set by user
      * - decoding: unused
      *)
-    rc_eq: pchar; {const char*}
+    rc_eq: {const} pchar; 
 
     (**
      * maximum bitrate
@@ -1698,7 +1698,7 @@ type
      * - encoding: unused
      * - decoding: Set by user, if not set the native format will be chosen.
      *)
-    get_format: function (s: PAVCodecContext; {const} fmt: PAVPixelFormat): TAVPixelFormat; cdecl;
+    get_format: function (s: PAVCodecContext; fmt: {const} PAVPixelFormat): TAVPixelFormat; cdecl;
 
     (**
      * DTG active format information (additional aspect ratio
@@ -2319,7 +2319,7 @@ type
     encode: function (avctx: PAVCodecContext; buf: pchar; buf_size: integer; data: pointer): integer; cdecl;
     close: function (avctx: PAVCodecContext): integer; cdecl;
     decode: function (avctx: PAVCodecContext; outdata: pointer; outdata_size: PInteger;
-                  {const} buf: pchar; buf_size: integer): integer; cdecl;
+                      buf: {const} pchar; buf_size: integer): integer; cdecl;
     (**
      * Codec capabilities.
      * see CODEC_CAP_*
@@ -2331,17 +2331,17 @@ type
      * Will be called when seeking
      *)
     flush: procedure (avctx: PAVCodecContext); cdecl;
-    {const} supported_framerates: PAVRational; ///< array of supported framerates, or NULL if any, array is terminated by {0,0}
-    {const} pix_fmts: PAVPixelFormat;       ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
+    supported_framerates: {const} PAVRational; ///< array of supported framerates, or NULL if any, array is terminated by {0,0}
+    pix_fmts: {const} PAVPixelFormat;       ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
     {$IF LIBAVCODEC_VERSION >= 51055000} // 51.55.0
     (**
      * Descriptive name for the codec, meant to be more human readable than \p name.
      * You \e should use the NULL_IF_CONFIG_SMALL() macro to define it.
      *)
-    {const} long_name: PChar;
+    long_name: {const} PChar;
     {$IFEND}
     {$IF LIBAVCODEC_VERSION >= 51056000} // 51.56.0
-    {const} supported_samplerates: PInteger;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
+    supported_samplerates: {const} PInteger;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
     {$IFEND}
   end;
 
@@ -2435,7 +2435,7 @@ function img_resample_full_init (owidth: integer; oheight: integer;
 (**
  * @deprecated Use the software scaler (swscale) instead.
  *)
-procedure img_resample (s: PImgReSampleContext; output: PAVPicture; {const} input: PAVPicture);
+procedure img_resample (s: PImgReSampleContext; output: PAVPicture; input: {const} PAVPicture);
   cdecl; external av__codec; deprecated;
 
 (**
@@ -2487,7 +2487,7 @@ function avpicture_fill (picture: PAVPicture; ptr: pointer;
                  pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
   cdecl; external av__codec;
 
-function avpicture_layout ({const} src: PAVPicture; pix_fmt: TAVPixelFormat;
+function avpicture_layout (src: {const} PAVPicture; pix_fmt: TAVPixelFormat;
                    width: integer; height: integer;
                    dest: pchar; dest_size: integer): integer;
   cdecl; external av__codec;
@@ -2513,7 +2513,7 @@ function avcodec_get_pix_fmt_name(pix_fmt: TAVPixelFormat): pchar;
 procedure avcodec_set_dimensions(s: PAVCodecContext; width: integer; height: integer);
   cdecl; external av__codec;
 
-function avcodec_get_pix_fmt(const name: pchar): TAVPixelFormat;
+function avcodec_get_pix_fmt(name: {const} pchar): TAVPixelFormat;
   cdecl; external av__codec;
 
 function avcodec_pix_fmt_to_codec_tag(p: TAVPixelFormat): cardinal;
@@ -2597,7 +2597,7 @@ const
  * Tell if an image really has transparent alpha values.
  * @return ored mask of FF_ALPHA_xxx constants
  *)
-function img_get_alpha_info ({const} src: PAVPicture;
+function img_get_alpha_info (src: {const} PAVPicture;
                              pix_fmt: TAVPixelFormat;
                              width: integer; height: integer): integer;
   cdecl; external av__codec;
@@ -2608,14 +2608,14 @@ function img_get_alpha_info ({const} src: PAVPicture;
  * @deprecated Use the software scaler (swscale) instead.
  *)
 function img_convert (dst: PAVPicture; dst_pix_fmt: TAVPixelFormat;
-              const src: PAVPicture; pix_fmt: TAVPixelFormat;
+              src: {const} PAVPicture; pix_fmt: TAVPixelFormat;
               width: integer; height: integer): integer;
   cdecl; external av__codec; deprecated;
 {$IFEND}
 
 (* deinterlace a picture *)
 (* deinterlace - if not supported return -1 *)
-function avpicture_deinterlace (dst: PAVPicture; const src: PAVPicture;
+function avpicture_deinterlace (dst: PAVPicture; src: {const} PAVPicture;
                         pix_fmt: TAVPixelFormat; width: integer; height: integer): integer;
   cdecl; external av__codec;
 
@@ -2760,7 +2760,7 @@ procedure avcodec_align_dimensions(s: PAVCodecContext; width: Pinteger; height: 
  *)
 function avcodec_check_dimensions (av_log_ctx: pointer; w: cardinal; h: cardinal): integer;
   cdecl; external av__codec;
-function avcodec_default_get_format(s: PAVCodecContext; const fmt: PAVPixelFormat): TAVPixelFormat;
+function avcodec_default_get_format(s: PAVCodecContext; fmt: {const} PAVPixelFormat): TAVPixelFormat;
   cdecl; external av__codec;
 
 function avcodec_thread_init (s: PAVCodecContext; thread_count: integer): integer;
@@ -2808,7 +2808,7 @@ function avcodec_open (avctx: PAVCodecContext; codec: PAVCodec): integer;
  *)
 function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
                            var frame_size_ptr: integer;
-                           {const} buf: pchar; buf_size: integer): integer;
+                           buf: {const} pchar; buf_size: integer): integer;
   cdecl; external av__codec;
 
 {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
@@ -2850,7 +2850,7 @@ function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
  *)
 function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PSmallint;
                var frame_size_ptr : integer;
-               {const} buf: pchar; buf_size: integer): integer;
+               buf: {const} pchar; buf_size: integer): integer;
   cdecl; external av__codec;
 {$IFEND}
 
@@ -2887,7 +2887,7 @@ function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PSmallint;
  *)
 function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
                        var got_picture_ptr: integer;
-                       {const} buf: PByte; buf_size: integer): integer;
+                       buf: {const} PByte; buf_size: integer): integer;
   cdecl; external av__codec;
 
 (* Decode a subtitle message. Return -1 if error, otherwise return the
@@ -2895,7 +2895,7 @@ function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
  * got_sub_ptr is zero. Otherwise, the subtitle is stored in *sub. *)
 function avcodec_decode_subtitle (avctx: PAVCodecContext; sub: PAVSubtitle;
                           var got_sub_ptr: integer;
-                          {const} buf: pchar; buf_size: integer): integer;
+                          buf: {const} pchar; buf_size: integer): integer;
   cdecl; external av__codec;
 function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
                       data_size_ptr: pinteger;
@@ -2923,7 +2923,7 @@ function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
  * of bytes used to encode the data read from the input buffer.
  *)
 function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
-                      buf_size: integer; {const} samples: PWord): integer;
+                      buf_size: integer; samples: {const} PWord): integer;
   cdecl; external av__codec;
 
 (**
@@ -2945,7 +2945,7 @@ function avcodec_encode_video (avctx: PAVCodecContext; buf: PByte;
                       buf_size: integer; pict: PAVFrame): integer;
   cdecl; external av__codec;
 function avcodec_encode_subtitle (avctx: PAVCodecContext; buf: pchar;
-                      buf_size: integer; {const} sub: PAVSubtitle): integer;
+                      buf_size: integer; sub: {const} PAVSubtitle): integer;
   cdecl; external av__codec;
 
 function avcodec_close (avctx: PAVCodecContext): integer;
@@ -3040,10 +3040,10 @@ type
     priv_data_size: integer;
     parser_init: function (s: PAVCodecParserContext): integer; cdecl;
     parser_parse: function (s: PAVCodecParserContext; avctx: PAVCodecContext;
-                            {const} poutbuf: PPointer; poutbuf_size: PInteger;
-                            {const} buf: pchar; buf_size: integer): integer; cdecl;
+                            poutbuf: {const} PPointer; poutbuf_size: PInteger;
+                            buf: {const} pchar; buf_size: integer): integer; cdecl;
     parser_close: procedure (s: PAVCodecParserContext); cdecl;
-    split: function (avctx: PAVCodecContext; {const} buf: pchar;
+    split: function (avctx: PAVCodecContext; buf: {const} pchar;
                      buf_size: integer): integer; cdecl;
     next: PAVCodecParser;
   end;
@@ -3070,13 +3070,13 @@ function av_parser_init (codec_id: integer): PAVCodecParserContext;
 function av_parser_parse (s: PAVCodecParserContext;
                   avctx: PAVCodecContext;
                   poutbuf: PPointer; poutbuf_size: pinteger;
-                  const buf: pchar; buf_size: integer;
+                  buf: {const} pchar; buf_size: integer;
                   pts: int64; dts: int64): integer;
   cdecl; external av__codec;
 function av_parser_change (s: PAVCodecParserContext;
                    avctx: PAVCodecContext;
                    poutbuf: PPointer; poutbuf_size: PInteger;
-                   const buf: pchar; buf_size: integer; keyframe: integer): integer;
+                   buf: {const} pchar; buf_size: integer; keyframe: integer): integer;
   cdecl; external av__codec;
 procedure av_parser_close (s: PAVCodecParserContext);
   cdecl; external av__codec;
@@ -3173,21 +3173,21 @@ procedure av_realloc_static(ptr: pointer; size: Cardinal);
 (**
  * Copy image 'src' to 'dst'.
  *)
-procedure av_picture_copy(dst: PAVPicture; {const} src: PAVPicture;
+procedure av_picture_copy(dst: PAVPicture; src: {const} PAVPicture;
               pix_fmt: integer; width: integer; height: integer);
   cdecl; external av__codec;
 
 (**
  * Crop image top and left side.
  *)
-function av_picture_crop(dst: PAVPicture; {const} src: PAVPicture;
+function av_picture_crop(dst: PAVPicture; src: {const} PAVPicture;
              pix_fmt: integer; top_band: integer; left_band: integer): integer;
   cdecl; external av__codec;
 
 (**
  * Pad image.
  *)
-function av_picture_pad(dst: PAVPicture; {const} src: PAVPicture; height: integer; width: integer; pix_fmt: integer;
+function av_picture_pad(dst: PAVPicture; src: {const} PAVPicture; height: integer; width: integer; pix_fmt: integer;
             padtop: integer; padbottom: integer; padleft: integer; padright: integer; color: PInteger): integer;
   cdecl; external av__codec;
 {$IFEND}
@@ -3196,21 +3196,21 @@ function av_picture_pad(dst: PAVPicture; {const} src: PAVPicture; height: intege
 (**
  * @deprecated Use the software scaler (swscale) instead.
  *)
-procedure img_copy (dst: PAVPicture; const src: PAVPicture;
+procedure img_copy (dst: PAVPicture; src: {const} PAVPicture;
                     pix_fmt: TAVPixelFormat; width: integer; height: integer);
   cdecl; external av__codec; deprecated;
 
 (**
  * @deprecated Use the software scaler (swscale) instead.
  *)
-function img_crop (dst: PAVPicture; const src: PAVPicture;
+function img_crop (dst: PAVPicture; src: {const} PAVPicture;
            pix_fmt: TAVPixelFormat; top_band, left_band: integer): integer;
   cdecl; external av__codec; deprecated;
 
 (**
  * @deprecated Use the software scaler (swscale) instead.
  *)
-function img_pad (dst: PAVPicture; const src: PAVPicture; height, width: integer;
+function img_pad (dst: PAVPicture; src: {const} PAVPicture; height, width: integer;
                   pix_fmt: TAVPixelFormat; padtop, padbottom, padleft, padright: integer;
                   color: PInteger): integer;
   cdecl; external av__codec; deprecated;
@@ -3231,7 +3231,7 @@ function av_xiphlacing(s: PByte; v: Cardinal): Cardinal;
  * @param[in,out] height_ptr pointer to the variable which will contain the detected
  * frame height value
  *)
-function av_parse_video_frame_size(width_ptr: PInteger; height_ptr: PInteger; {const} str: PChar): integer;
+function av_parse_video_frame_size(width_ptr: PInteger; height_ptr: PInteger; str: {const} PChar): integer;
   cdecl; external av__codec;
 
 (**
@@ -3243,7 +3243,7 @@ function av_parse_video_frame_size(width_ptr: PInteger; height_ptr: PInteger; {c
  * @param[in,out] frame_rate pointer to the AVRational which will contain the detected
  * frame rate
  *)
-function av_parse_video_frame_rate(frame_rate: PAVRational; {const} str: PChar): integer;
+function av_parse_video_frame_rate(frame_rate: PAVRational; str: {const} PChar): integer;
   cdecl; external av__codec;
 {$IFEND}
 

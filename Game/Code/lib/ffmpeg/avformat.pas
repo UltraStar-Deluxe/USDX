@@ -744,7 +744,7 @@ function av_oformat_next(f: PAVOutputFormat): PAVOutputFormat;
     cdecl; external av__format;
 {$IFEND}
 
-function av_guess_image2_codec({const} filename: PChar): TCodecID;
+function av_guess_image2_codec(filename: {const} PChar): TCodecID;
     cdecl; external av__format;
 
 (* XXX: use automatic init with either ELF sections or C file parser *)
