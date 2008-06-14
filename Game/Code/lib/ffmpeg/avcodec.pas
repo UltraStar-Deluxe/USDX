@@ -22,8 +22,9 @@
  * in the source codes *)
 
 (*
+ * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0
- * Max. version: 51.56.0, revision 13019, Tue Apr 29 14:08:01 2008 UTC
+ * Max. version: 51.57.2, revision 13759, Thu Jun 12 21:50:13 2008 UTC
  *)
 
 unit avcodec;
@@ -54,8 +55,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 56;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 57;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 2;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -231,6 +232,7 @@ type
     CODEC_ID_PCM_S24DAUD,
     CODEC_ID_PCM_ZORK,
     CODEC_ID_PCM_S16LE_PLANAR,
+    CODEC_ID_PCM_DVD,
 
     //* various ADPCM codecs */
     CODEC_ID_ADPCM_IMA_QT= $11000,
@@ -321,6 +323,7 @@ type
     CODEC_ID_WMAVOICE,
     CODEC_ID_WMAPRO,
     CODEC_ID_WMALOSSLESS,
+    CODEC_ID_ATRAC3P,
 
     //* subtitle codecs */
     CODEC_ID_DVD_SUBTITLE= $17000,
@@ -402,7 +405,8 @@ type
     ME_X1,        ///< reserved for experiments
     ME_HEX,       ///< hexagon based search
     ME_UMH,       ///< uneven multi-hexagon search
-    ME_ITER       ///< iterative search
+    ME_ITER,      ///< iterative search
+    ME_TESA       ///< transformed exhaustive search algorithm
   );
 
   TAVDiscard = (
@@ -456,11 +460,13 @@ const
   CODEC_FLAG_INTERLACED_DCT = $00040000; ///< use interlaced dct
   CODEC_FLAG_LOW_DELAY      = $00080000; ///< force low delay
   CODEC_FLAG_ALT_SCAN       = $00100000; ///< use alternate scan
+  {$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
   CODEC_FLAG_TRELLIS_QUANT  = $00200000; ///< use trellis quantization
+  {$IFEND}
   CODEC_FLAG_GLOBAL_HEADER  = $00400000; ///< place global headers in extradata instead of every keyframe
   CODEC_FLAG_BITEXACT       = $00800000; ///< use only bitexact stuff (except (i)dct)
   {* Fx : Flag for h263+ extra options *}
-  {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+  {$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
   CODEC_FLAG_H263P_AIC      = $01000000; ///< H263 Advanced intra coding / MPEG4 AC prediction (remove this)
   {$IFEND}
   CODEC_FLAG_AC_PRED        = $01000000; ///< H263 Advanced intra coding / MPEG4 AC prediction
@@ -1065,7 +1071,7 @@ type
     (**
      * Motion estimation algorithm used for video coding.
      * 1 (zero), 2 (full), 3 (log), 4 (phods), 5 (epzs), 6 (x1), 7 (hex),
-     * 8 (umh), 9 (iter) [7, 8 are x264 specific, 9 is snow specific]
+     * 8 (umh), 9 (iter), 10 (tesa) [7, 8, 10 are x264 specific, 9 is snow specific]
      * - encoding: MUST be set by user.
      * - decoding: unused
      *)
@@ -2328,7 +2334,11 @@ type
     {const} supported_framerates: PAVRational; ///< array of supported framerates, or NULL if any, array is terminated by {0,0}
     {const} pix_fmts: PAVPixelFormat;       ///< array of supported pixel formats, or NULL if unknown, array is terminated by -1
     {$IF LIBAVCODEC_VERSION >= 51055000} // 51.55.0
-    {const} long_name: PChar;                  ///< descriptive name for the codec, meant to be more human readable than \p name
+    (**
+     * Descriptive name for the codec, meant to be more human readable than \p name.
+     * You \e should use the NULL_IF_CONFIG_SMALL() macro to define it.
+     *)
+    {const} long_name: PChar;
     {$IFEND}
     {$IF LIBAVCODEC_VERSION >= 51056000} // 51.56.0
     {const} supported_samplerates: PInteger;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
@@ -2907,6 +2917,8 @@ function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
  * @param[in] samples the input buffer containing the samples
  * The number of samples read from this buffer is frame_size*channels,
  * both of which are defined in \p avctx.
+ * For PCM audio the number of samples read from \p samples is equal to
+ * \p buf_size * input_sample_size / output_sample_size.
  * @return On error a negative value is returned, on success zero or the number
  * of bytes used to encode the data read from the input buffer.
  *)
@@ -2996,7 +3008,7 @@ type
     parser: PAVCodecParser;
     frame_offset: int64; (* offset of the current frame *)
     cur_offset: int64; (* current offset (incremented by each av_parser_parse()) *)
-    last_frame_offset: int64; (* offset of the last frame *)
+    next_frame_offset: int64; (* offset of the next frame *)
     (* video info *)
     pict_type: integer; (* XXX: put it back in AVCodecContext *)
     repeat_pict: integer; (* XXX: put it back in AVCodecContext *)
@@ -3017,7 +3029,9 @@ type
 
     {$IF LIBAVCODEC_VERSION >= 51040003} // 51.40.3
     offset: int64;      ///< byte offset from starting packet start
-    last_offset: int64;
+    {$IFEND}
+    {$IF LIBAVCODEC_VERSION >= 51057001} // 51.57.1
+    cur_frame_end: array [0..AV_PARSER_PTS_NB - 1] of int64;
     {$IFEND}
   end;
 
@@ -3120,7 +3134,9 @@ function av_bitstream_filter_next(f: PAVBitStreamFilter): PAVBitStreamFilter;
  *)
 procedure av_fast_realloc (ptr: pointer; size: PCardinal; min_size: Cardinal);
   cdecl; external av__codec;
-  
+
+
+{$IF LIBAVCODEC_VERSION < 51057000} // 51.57.0
 (* for static data only *)
 
 (**
@@ -3146,6 +3162,7 @@ procedure  av_free_static ();
  *)
 procedure av_mallocz_static(size: cardinal);
   cdecl; external av__codec; deprecated; {av_malloc_attrib av_alloc_size(1)}
+{$IFEND}
 
 {$IF LIBAVCODEC_VERSION < 51035000} // 51.35.0
 procedure av_realloc_static(ptr: pointer; size: Cardinal);

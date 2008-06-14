@@ -24,6 +24,7 @@
  *)
 
 (*
+ * Conversion of libswscale/swscale.h
  * revision 26183, Thu Mar 6 11:32:25 2008 UTC
  *)
  

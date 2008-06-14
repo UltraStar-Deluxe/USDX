@@ -23,7 +23,8 @@
  * in the source codes *)
 
 (*
- * revision 12194, Mon Feb 25 09:22:11 2008 UTC
+ * Conversion of libavcodec/opt.h
+ * revision 13669, Fri Jun 6 07:00:42 2008 UTC
  *)
 
 unit opt;
@@ -65,15 +66,15 @@ const
 
 type
   (**
-   * AVOption.
+   * AVOption
    *)
   PAVOption = ^TAVOption;
   TAVOption = record
     name: pchar;
     
     (**
-     * short English text help.
-     * @todo what about other languages
+     * short English help text
+     * @todo What about other languages?
      *)
     help: pchar;
     offset: integer;             ///< offset to context structure where the parsed value should be stored

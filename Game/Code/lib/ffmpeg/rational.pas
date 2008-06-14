@@ -23,6 +23,7 @@
  * in the source codes *)
 
 (*
+ * Conversion of libavutil/rational.h
  * revision 12498, Wed Mar 19 06:17:43 2008 UTC
  *)
 

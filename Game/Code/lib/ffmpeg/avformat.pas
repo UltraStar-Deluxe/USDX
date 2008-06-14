@@ -23,8 +23,9 @@
  * in the source codes *)
 
 (*
+ * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0
- * Max. version: 52.13.0, revision 12946, Thu Apr 24 23:21:58 2008 UTC
+ * Max. version: 52.16.0, revision 13728, Mon Jun 9 13:38:56 2008 UTC
  *)
 
 unit avformat;
@@ -55,7 +56,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 13;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 16;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -74,8 +75,23 @@ type
 type
   PAVPacket = ^TAVPacket;
   TAVPacket = record
-    pts: int64;                            ///< presentation time stamp in time_base units
-    dts: int64;                            ///< decompression time stamp in time_base units
+    (**
+     * Presentation time stamp in time_base units.
+     * This is the time at which the decompressed packet will be presented
+     * to the user.
+     * Can be AV_NOPTS_VALUE if it is not stored in the file.
+     * pts MUST be larger or equal to dts as presentation can not happen before
+     * decompression, unless one wants to view hex dumps. Some formats misuse
+     * the terms dts and pts/cts to mean something different, these timestamps
+     * must be converted to true pts/dts before they are stored in AVPacket.
+     *)
+    pts: int64;
+    (**
+     * Decompression time stamp in time_base units.
+     * This is the time at which the packet is decompressed.
+     * Can be AV_NOPTS_VALUE if it is not stored in the file.
+     *)
+    dts: int64;
     data: PByte;
     size: integer;
     stream_index: integer;
@@ -206,8 +222,10 @@ const
   AV_DISPOSITION_COMMENT   = $0008;
   AV_DISPOSITION_LYRICS    = $0010;
   AV_DISPOSITION_KARAOKE   = $0020;
-  
-  
+
+  // used by TAVFormatContext.debug
+  FF_FDEBUG_TS       = 0001;
+
 type
   PPAVCodecTag = ^PAVCodecTag;
   PAVCodecTag = Pointer;
@@ -233,6 +251,16 @@ type
   PAVImageFormat = ^TAVImageFormat;
   PAVImageInfo = ^TAVImageInfo;
   {$IFEND}
+
+  PAVChapter = ^TAVChapter;
+  TAVChapter = record
+    id: integer;              ///< Unique id to identify the chapter
+    time_base: TAVRational;   ///< Timebase in which the start/end timestamps are specified
+    start, end_: int64;       ///< chapter start/end time in time_base units
+    title: PChar;             ///< chapter title
+  end;
+  TAVChapterArray = array[0..(MaxInt div SizeOf(TAVChapter))-1] of TAVChapter;
+  PAVChapterArray = ^TAVChapterArray;
 
   TAVFormatParameters = record
     time_base: TAVRational;
@@ -267,6 +295,11 @@ type
 
   TAVOutputFormat = record
     name: pchar;
+    (**
+     * Descriptive name for the format, meant to be more human-readable
+     * than \p name. You \e should use the NULL_IF_CONFIG_SMALL() macro
+     * to define it.
+     *)
     long_name: pchar;
     mime_type: pchar;
     extensions: pchar; (*< comma separated filename extensions *)
@@ -302,6 +335,11 @@ type
 
   TAVInputFormat = record
     name: pchar;
+    (**
+     * Descriptive name for the format, meant to be more human-readable
+     * than \p name. You \e should use the NULL_IF_CONFIG_SMALL() macro
+     * to define it.
+     *)
     long_name: pchar;
     (* size of private data so that it can be allocated in the wrapper *)
     priv_data_size: integer;
@@ -598,13 +636,25 @@ type
      *)
     max_index_size: cardinal;
     {$IFEND}
-    
+
+    {$IF LIBAVFORMAT_VERSION >= 52009000} // 52.9.0
     (**
      * Maximum amount of memory in bytes to use for buffering frames
      * obtained from real-time capture devices.
      *)
-    {$IF LIBAVFORMAT_VERSION >= 52009000} // 52.9.0
     max_picture_buffer: cardinal;
+    {$IFEND}
+
+    {$IF LIBAVFORMAT_VERSION >= 52014000} // 52.14.0
+    nb_chapters: cardinal;
+    chapters: PAVChapterArray;
+    {$IFEND}
+
+    {$IF LIBAVFORMAT_VERSION >= 52016000} // 52.16.0
+    (**
+     * Flags to enable debuging.
+     *)
+    debug: integer;
     {$IFEND}
   end;
 
@@ -945,6 +995,24 @@ function av_new_stream (s: PAVFormatContext; id: integer): PAVStream;
   cdecl; external av__format;
 {$IF LIBAVFORMAT_VERSION >= 51014000} // 51.14.0
 function av_new_program(s: PAVFormatContext; id: integer): PAVProgram;
+  cdecl; external av__format;
+{$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52014000} // 52.14.0
+(**
+ * Add a new chapter.
+ * This function is NOT part of the public API
+ * and should be ONLY used by demuxers.
+ *
+ * @param s media file handle
+ * @param id unique id for this chapter
+ * @param start chapter start time in time_base units
+ * @param end chapter end time in time_base units
+ * @param title chapter title
+ *
+ * @return AVChapter or NULL if error.
+ *)
+function ff_new_chapter(s: PAVFormatContext; id: integer; time_base: TAVRational; start, end_: int64; title: {const} Pchar): PAVChapter;
   cdecl; external av__format;
 {$IFEND}
 

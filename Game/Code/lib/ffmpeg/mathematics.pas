@@ -21,6 +21,7 @@ For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
 (*
+ * Conversion of libavutil/mathematics.h
  * revision 12498, Wed Mar 19 06:17:43 2008 UTC
  *)
 

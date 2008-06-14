@@ -22,14 +22,16 @@
  * in the source codes *)
 
 (*
- * avutil.h:
+ * Conversions of
+ *
+ * libavutil/avutil.h:
  *  Min. version: ?
- *  Max. version: revision 12410, Mon Mar 10 18:42:09 2008 UTC
+ *  Max. version: revision 13595, Sun Jun 1 07:37:43 2008 UTC
  *
- * mem.h:
- *  revision 12501, Wed Mar 19 07:43:43 2008 UTC
+ * libavutil/mem.h:
+ *  revision 13665, Thu Jun 5 19:49:47 2008 UTC
  *
- * log.h:
+ * libavutil/log.h:
  *  revision 13068, Tue May 6 08:41:13 2008 UTC
  *)
 
@@ -57,7 +59,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 49;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 6;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 7;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +

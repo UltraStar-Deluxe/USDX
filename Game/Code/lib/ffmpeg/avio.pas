@@ -24,6 +24,7 @@ For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
 in the source codes *)
 
 (*
+ * Conversion of libavformat/avio.h
  * revision 12658, Mon Mar 31 17:31:11 2008 UTC
  *)
 
@@ -42,7 +43,8 @@ unit avio;
 interface
 
 uses
-  avutil,   // for uint64
+  avutil,
+  avcodec,
   UConfig;
 
 (* output byte stream handling *)
