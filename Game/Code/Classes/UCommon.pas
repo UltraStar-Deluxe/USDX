@@ -660,27 +660,19 @@ end;
 function IsAlphaChar(ch: WideChar): boolean;
 begin
   // TODO: add chars > 255 when unicode-fonts work?
-  case ch of
-    'A'..'Z',  // A-Z
-    'a'..'z',  // a-z
-    #170,#181,#186,
-    #192..#214,
-    #216..#246,
-    #248..#255:
-      Result := true;
-    else
-      Result := false;
-  end;
+  Result := ch in
+    ['A'..'Z',  // A-Z
+     'a'..'z',  // a-z
+     #170, #181, #186,
+     #192..#214,
+	 #216..#246,
+	 #248..#255
+    ];
 end;
 
 function IsNumericChar(ch: WideChar): boolean;
 begin
-  case ch of
-    '0'..'9':
-      Result := true;
-    else
-      Result := false;
-  end;
+  Result := ch in ['0'..'9'];
 end;
 
 function IsAlphaNumericChar(ch: WideChar): boolean;
@@ -691,23 +683,12 @@ end;
 function IsPunctuationChar(ch: WideChar): boolean;
 begin
   // TODO: add chars outside of Latin1 basic (0..127)?
-  case ch of
-    ' '..'/',':'..'@','['..'`','{'..'~':
-      Result := true;
-    else
-      Result := false;
-  end;
+  Result := ch in [ ' '..'/', ':'..'@', '['..'`', '{'..'~' ];
 end;
 
 function IsControlChar(ch: WideChar): boolean;
 begin
-  case ch of
-    #0..#31,
-    #127..#159:
-      Result := true;
-    else
-      Result := false;
-  end;
+  Result := ch in [ #0..#31, #127..#159 ];
 end;
 
 (*
