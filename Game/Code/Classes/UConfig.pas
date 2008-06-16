@@ -59,6 +59,7 @@ interface
 
 {$IFDEF FPC}
   {$MODE Delphi}
+  {$MACRO ON} // for evaluation of FPC_VERSION/RELEASE/PATCH
 {$ENDIF}
 
 {$I switches.inc}
@@ -106,41 +107,15 @@ const
   USDX_STRING = 'UltraStar Deluxe';
 
   (*
-   * FPC_VERSION is already defined as a macro by FPC itself.
-   * You should use the built-in macros
-   *   FPC_VERSION (=PPC_MAJOR)
-   *   FPC_RELEASE (=PPC_MINOR)
-   *   FPC_PATCH   (=PPC_RELEASE)
-   * instead of the PPC_* ones defined here.
-   * This way Windows users do not need to set this.
-   *
-   * Note: It might be necessary to enable macros ({$MACRO ON} or -Sm) 
-   *   first if you want to use the FPC_* macros. 
-   *   In FPC 2.2.0 they work even without macros being enabled but 
-   *   this might be different in other versions.
-   *
-   * Example (Check for version >= 2.0.1):
-   *   {$IF (FPC_VERSION > 2) or ((FPC_VERSION = 2) and 
-   *      ( (FPC_RELEASE > 0) or ((FPC_RELEASE = 0) and 
-   *        (FPC_PATCH  >= 1)) ))}
-   *     {$DEFINE FPC_VER_201_PLUS}
-   *   {$ENDIF}   
-   *
-   * IMPORTANT: do NOT check this way:
-   *   {$IF (FPC_VERSION >= 2) and (FPC_RELEASE >= 0) and (FPC_PATCH >= 1)}
-   *     ...
-   *   In this case version 3.0.0 does not match because Patch 0 is less than 1.
+   * FPC version numbers are already defined as built-in macros:
+   *   FPC_VERSION (MAJOR)
+   *   FPC_RELEASE (MINOR)
+   *   FPC_PATCH   (RELEASE)
+   * Since FPC_VERSION is already defined, we will use FPC_VERSION_INT as
+   * composed version number.
    *)
-
-  //PPC_VERSION_MAJOR   = @PPC_VERSION_MAJOR@;
-  //PPC_VERSION_MINOR   = @PPC_VERSION_MINOR@;
-  //PPC_VERSION_RELEASE = @PPC_VERSION_RELEASE@;
-  //PPC_VERSION = (PPC_VERSION_MAJOR * VERSION_MAJOR) +
-  //              (PPC_VERSION_MINOR * VERSION_MINOR) +
-  //              (PPC_VERSION_RELEASE * VERSION_RELEASE);
-
-  {$IFDEF Delphi}
-  // Delphi evaluates every $IF-directive even if it is disabled by a surrounding
+  {$IFNDEF FPC}
+  // Delphi 7 evaluates every $IF-directive even if it is disabled by a surrounding
   // $IF or $IFDEF so the follwing will give you an error in delphi:
   //   {$IFDEF FPC}{$IF (FPC_VERSION > 2)}...{$IFEND}{$ENDIF}
   // The reason for this error is that FPC_VERSION is not a valid constant.
@@ -149,6 +124,11 @@ const
   FPC_RELEASE = 0;
   FPC_PATCH   = 0;
   {$ENDIF}
+  
+  FPC_VERSION_INT = (FPC_VERSION * VERSION_MAJOR) +
+                    (FPC_RELEASE * VERSION_MINOR) +
+                    (FPC_PATCH * VERSION_RELEASE);
+
 
   {$IFDEF HaveFFMpeg}
 

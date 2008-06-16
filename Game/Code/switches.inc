@@ -20,12 +20,6 @@
     {$DEFINE DEBUG}
   {$ENDIF}
 
-  // for transition from 2.2.0 to 2.2.2
-  // remove 2.2.0 support as soon as packages for all distributions are available
-  {$IF (FPC_VERSION > 2) or ((FPC_VERSION = 2) and ((FPC_RELEASE > 2) or ((FPC_RELEASE = 2) and (FPC_PATCH >= 2))))}
-    {$DEFINE FPC_VERSION_2_2_2_PLUS}
-  {$IFEND}
-
   {$DEFINE HasInline}
 {$ELSE}
   {$DEFINE Delphi}

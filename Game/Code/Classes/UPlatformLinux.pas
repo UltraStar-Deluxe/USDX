@@ -10,7 +10,8 @@ interface
 
 uses
   Classes,
-  UPlatform;
+  UPlatform,
+  UConfig;
 
 type
 
@@ -34,12 +35,11 @@ implementation
 uses
   UCommandLine,
   BaseUnix,
-  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  {$IF FPC_VERSION_INT >= 2002002}
   pwd,
-  {$ENDIF}
+  {$IFEND}
   SysUtils,
-  ULog,
-  UConfig;
+  ULog;
 
 function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
 var
@@ -134,19 +134,19 @@ end;
  * Returns the user's home directory terminated by a path delimiter
  *)
 function TPlatformLinux.GetHomeDir(): string;
-{$IFDEF FPC_VERSION_2_2_2_PLUS}
+{$IF FPC_VERSION_INT >= 2002002}
 var
   PasswdEntry: PPasswd;
-{$ENDIF}
+{$IFEND}
 begin
   Result := '';
 
-  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  {$IF FPC_VERSION_INT >= 2002002}
   // try to retrieve the info from passwd
   PasswdEntry := FpGetpwuid(FpGetuid());
   if (PasswdEntry <> nil) then
     Result := PasswdEntry.pw_dir;
-  {$ENDIF}
+  {$IFEND}
   // fallback if passwd does not contain the path
   if (Result = '') then
     Result := GetEnvironmentVariable('HOME');
@@ -154,11 +154,11 @@ begin
   if (Result <> '') then
     Result := IncludeTrailingPathDelimiter(Result);
 
-  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  {$IF FPC_VERSION_INT >= 2002002}
   // GetUserDir() is another function that returns a user path.
   // It uses env-var HOME or a fallback to a temp-dir.
   //Result := GetUserDir();
-  {$ENDIF}
+  {$IFEND}
 end;
 
 // FIXME: Maybe this should be TPlatformBase.Halt() for all platforms

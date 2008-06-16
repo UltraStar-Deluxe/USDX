@@ -71,10 +71,10 @@ const
 {$IFEND}
 
 {$IFDEF FPC}
-  // check for version of FPC < 2.2.0
-  {$IF (FPC_VERSION < 2) or ((FPC_VERSION = 2) and (FPC_RELEASE < 2))}
-    type uint64 = QWord;
-  {$IFEND}
+{$IF FPC_VERSION_INT < 2002000} // < 2.2.0
+type
+  uint64 = QWord;
+{$IFEND}
 {$ENDIF}
 
 type

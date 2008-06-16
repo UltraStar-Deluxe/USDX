@@ -16,6 +16,7 @@ uses
   Messages,
   {$ENDIF}
   sdl,
+  UConfig,
   ULog;
 
 {$IFNDEF DARWIN}
@@ -88,11 +89,12 @@ uses
   {$IFDEF Delphi}
   Dialogs,
   {$ENDIF}
-  {$IFDEF FPC_VERSION_2_2_2_PLUS}
+  {$IFDEF FPC}
+  {$IF FPC_VERSION_INT >= 2002002} // >= 2.2.2
   clocale,
+  {$IFEND}
   {$ENDIF}
-  UMain,
-  UConfig;
+  UMain;
 
 
 // data used by the ...Locale() functions
@@ -100,11 +102,13 @@ uses
 var
   PrevNumLocale: string;
 
-{$IFNDEF FPC_VERSION_2_2_2_PLUS}
+{$IFDEF FPC}
+{$IF FPC_VERSION_INT < 2002002} // < 2.2.2
 const
   __LC_NUMERIC  = 1;
 
 function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c' name 'setlocale';
+{$IFEND}
 {$ENDIF}
 {$ENDIF}
 
@@ -660,19 +664,27 @@ end;
 function IsAlphaChar(ch: WideChar): boolean;
 begin
   // TODO: add chars > 255 when unicode-fonts work?
-  Result := ch in
-    ['A'..'Z',  // A-Z
-     'a'..'z',  // a-z
-     #170, #181, #186,
-     #192..#214,
-	 #216..#246,
-	 #248..#255
-    ];
+  case ch of
+    'A'..'Z',  // A-Z
+    'a'..'z',  // a-z
+    #170,#181,#186,
+    #192..#214,
+    #216..#246,
+    #248..#255:
+      Result := true;
+    else
+      Result := false;
+  end;
 end;
 
 function IsNumericChar(ch: WideChar): boolean;
 begin
-  Result := ch in ['0'..'9'];
+  case ch of
+    '0'..'9':
+      Result := true;
+    else
+      Result := false;
+  end;
 end;
 
 function IsAlphaNumericChar(ch: WideChar): boolean;
@@ -683,12 +695,23 @@ end;
 function IsPunctuationChar(ch: WideChar): boolean;
 begin
   // TODO: add chars outside of Latin1 basic (0..127)?
-  Result := ch in [ ' '..'/', ':'..'@', '['..'`', '{'..'~' ];
+  case ch of
+    ' '..'/',':'..'@','['..'`','{'..'~':
+      Result := true;
+    else
+      Result := false;
+  end;
 end;
 
 function IsControlChar(ch: WideChar): boolean;
 begin
-  Result := ch in [ #0..#31, #127..#159 ];
+  case ch of
+    #0..#31,
+    #127..#159:
+      Result := true;
+    else
+      Result := false;
+  end;
 end;
 
 (*
