@@ -23,7 +23,7 @@
 
 (*
  * Conversion of libavcodec/avcodec.h
- * Min. version: 51.16.0
+ * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
  * Max. version: 51.57.2, revision 13759, Thu Jun 12 21:50:13 2008 UTC
  *)
 
@@ -61,6 +61,19 @@ const
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
+  (* Min. supported version by this header *)
+  LIBAVCODEC_MIN_VERSION_MAJOR   = 51;
+  LIBAVCODEC_MIN_VERSION_MINOR   = 16;
+  LIBAVCODEC_MIN_VERSION_RELEASE = 0;
+  LIBAVCODEC_MIN_VERSION = (LIBAVCODEC_MIN_VERSION_MAJOR * VERSION_MAJOR) +
+                            (LIBAVCODEC_MIN_VERSION_MINOR * VERSION_MINOR) +
+                            (LIBAVCODEC_MIN_VERSION_RELEASE * VERSION_RELEASE);
+
+(* Check if linked versions are supported *)
+{$IF (LIBAVCODEC_VERSION < LIBAVCODEC_MIN_VERSION)}
+  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
+{$IFEND}
+
 (* Check if linked version is supported *)
 {$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
   {$MESSAGE Warn 'Linked version of libavcodec may be unsupported!'}
@@ -69,7 +82,7 @@ const
 const
   AV_NOPTS_VALUE: int64   = $8000000000000000;
   AV_TIME_BASE            = 1000000;
-  AV_TIME_BASE_Q          : TAVRational = (num:1; den:AV_TIME_BASE); (* added by CAT *)
+  AV_TIME_BASE_Q          : TAVRational = (num:1; den:AV_TIME_BASE);
 
 (**
  * Identifies the syntax and semantics of the bitstream.
@@ -1810,14 +1823,14 @@ type
      * - encoding: Set by user, can be NULL.
      * - decoding: Set by libavcodec.
      *)
-    intra_matrix: Pword;
+    intra_matrix: PWord;
 
     (**
      * custom inter quantization matrix
      * - encoding: Set by user, can be NULL.
      * - decoding: Set by libavcodec.
      *)
-    inter_matrix: Pword;
+    inter_matrix: PWord;
 
     (**
      * fourcc from the AVI stream header (LSB first, so "ABCD" -> ('D'<<24) + ('C'<<16) + ('B'<<8) + 'A').
@@ -2806,7 +2819,7 @@ function avcodec_open (avctx: PAVCodecContext; codec: PAVCodec): integer;
 (**
  * @deprecated Use avcodec_decode_audio2() instead.
  *)
-function avcodec_decode_audio (avctx: PAVCodecContext; samples: Pword;
+function avcodec_decode_audio (avctx: PAVCodecContext; samples: PSmallint;
                            var frame_size_ptr: integer;
                            buf: {const} pchar; buf_size: integer): integer;
   cdecl; external av__codec;
@@ -2923,7 +2936,7 @@ function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
  * of bytes used to encode the data read from the input buffer.
  *)
 function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
-                      buf_size: integer; samples: {const} PWord): integer;
+                      buf_size: integer; samples: {const} PSmallint): integer;
   cdecl; external av__codec;
 
 (**

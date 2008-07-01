@@ -25,8 +25,8 @@
  * Conversions of
  *
  * libavutil/avutil.h:
- *  Min. version: ?
- *  Max. version: revision 13595, Sun Jun 1 07:37:43 2008 UTC
+ *  Min. version: 49.0.1, revision 6577,  Sat Oct 7 15:30:46 2006 UTC
+ *  Max. version: 49.7.0, revision 13595, Sun Jun 1 07:37:43 2008 UTC
  *
  * libavutil/mem.h:
  *  revision 13665, Thu Jun 5 19:49:47 2008 UTC
@@ -65,10 +65,23 @@ const
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
                           (LIBAVUTIL_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
+  (* Min. supported version by this header *)
+  LIBAVUTIL_MIN_VERSION_MAJOR   = 49;
+  LIBAVUTIL_MIN_VERSION_MINOR   = 0;
+  LIBAVUTIL_MIN_VERSION_RELEASE = 1;
+  LIBAVUTIL_MIN_VERSION = (LIBAVUTIL_MIN_VERSION_MAJOR * VERSION_MAJOR) +
+                          (LIBAVUTIL_MIN_VERSION_MINOR * VERSION_MINOR) +
+                          (LIBAVUTIL_MIN_VERSION_RELEASE * VERSION_RELEASE);
+
 (* Check if linked versions are supported *)
+{$IF (LIBAVUTIL_VERSION < LIBAVUTIL_MIN_VERSION)}
+  {$MESSAGE Error 'Linked version of libavutil is too old!'}
+{$IFEND}
+
 {$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
   {$MESSAGE Warn 'Linked version of libavutil may be unsupported!'}
 {$IFEND}
+
 
 {$IFDEF FPC}
 {$IF FPC_VERSION_INT < 2002000} // < 2.2.0

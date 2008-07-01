@@ -24,7 +24,7 @@
 
 (*
  * Conversion of libavformat/avformat.h
- * Min. version: 50.5.0
+ * Min. version: 50.5.0 , revision 6577,  Sat Oct 7 15:30:46 2006 UTC
  * Max. version: 52.16.0, revision 13728, Mon Jun 9 13:38:56 2008 UTC
  *)
 
@@ -61,6 +61,19 @@ const
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
+
+  (* Min. supported version by this header *)
+  LIBAVFORMAT_MIN_VERSION_MAJOR   = 50;
+  LIBAVFORMAT_MIN_VERSION_MINOR   = 5;
+  LIBAVFORMAT_MIN_VERSION_RELEASE = 0;
+  LIBAVFORMAT_MIN_VERSION = (LIBAVFORMAT_MIN_VERSION_MAJOR * VERSION_MAJOR) +
+                            (LIBAVFORMAT_MIN_VERSION_MINOR * VERSION_MINOR) +
+                            (LIBAVFORMAT_MIN_VERSION_RELEASE * VERSION_RELEASE);
+
+(* Check if linked versions are supported *)
+{$IF (LIBAVFORMAT_VERSION < LIBAVFORMAT_MIN_VERSION)}
+  {$MESSAGE Error 'Linked version of libavformat is too old!'}
+{$IFEND}
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
