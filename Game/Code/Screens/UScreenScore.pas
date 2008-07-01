@@ -24,7 +24,7 @@ const
   ZBars            : real = 0.8; // Z value for the bars
   ZRatingPic       : real = 0.8; // Z value for the rating pictures
 
-  EaseOut_MaxSteps : real = 40;  // that's the speed of the bars (10 is fast | 100 is slower)
+  EaseOut_MaxSteps : real = 10;  // that's the speed of the bars (10 is fast | 100 is slower)
 
   BarRaiseSpeed    : cardinal = 0; // Time for raising the bar one step higher (in ms)
 
