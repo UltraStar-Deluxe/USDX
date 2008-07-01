@@ -24,36 +24,43 @@
 unit samplerate;
 
 {$IFDEF FPC}
-  {$PACKRECORDS C} (* GCC/Visual C/C++ compatible record packing *)
   {$MODE DELPHI}
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* GCC/Visual C/C++ compatible record packing *)
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
+
 
 interface
 
+uses
+  UConfig;
+
 const
 {$IFDEF MSWINDOWS}
-  LibName = 'libsamplerate.dll';
+  LibName = 'libsamplerate-0.dll';
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
   LibName = 'samplerate';
-{$ENDIF}
-{$IFDEF DARWIN}
-//  LibName = 'libsamplerate.dylib';
-//  {$LINKLIB libsamplerate}
+  {$IFDEF DARWIN}
+    {$LINKLIB libsamplerate}
+  {$ENDIF}
 {$ENDIF}
 
 { Opaque data type SRC_STATE. }
 type
   PSRC_STATE = ^SRC_STATE;
   SRC_STATE = record
+    // opaque
   end;
 
 { SRC_DATA is used to pass data to src_simple() and src_process().  }
 type
   PSRC_DATA = ^SRC_DATA;
   SRC_DATA = record
-    data_in: Pdouble;
-    data_out: Pdouble;
+    data_in: PSingle;
+    data_out: PSingle;
     input_frames: longint;
     output_frames: longint;
     input_frames_used: longint;
@@ -69,9 +76,6 @@ type
     data_in: Psingle;
   end;
 
-type
-  PPsingle = ^Psingle;
-
 {*
 ** User supplied callback function type for use with src_callback_new()
 ** and src_callback_read(). First parameter is the same pointer that was
@@ -80,7 +84,7 @@ type
 ** point to the start of the user supplied float array. The user supplied
 ** function must return the number of frames that **data points to.
 *}
-src_callback_t = function (cb_data: pointer; data: PPsingle): longint; cdecl;
+src_callback_t = function (cb_data: pointer; var data: Psingle): longint; cdecl;
 
 {*
 ** Standard initialisation function : return an anonymous pointer to the
@@ -134,14 +138,9 @@ function src_simple(data: PSRC_DATA; converter_type: integer; channels: integer)
 ** sample rate converter or NULL if no sample rate converter exists for
 ** the given value. The converters are sequentially numbered from 0 to N.
 *}
-(* Const before type ignored *)
-function src_get_name(converter_type: integer): Pchar; cdecl; external LibName;
-
-(* Const before type ignored *)
-function src_get_description(converter_type: integer): Pchar; cdecl; external LibName;
-
-(* Const before type ignored *)
-function src_get_version(): Pchar; cdecl; external LibName;
+function src_get_name(converter_type: integer): {const} Pchar; cdecl; external LibName;
+function src_get_description(converter_type: integer): {const} Pchar; cdecl; external LibName;
+function src_get_version(): {const} Pchar; cdecl; external LibName;
 
 {*
 ** Set a new SRC ratio. This allows step responses
@@ -172,31 +171,30 @@ function src_error(state: PSRC_STATE): integer; cdecl; external LibName;
 {*
 ** Convert the error number into a string.
 *}
-(* Const before type ignored *)
-function src_strerror(error: integer): Pchar; cdecl; external LibName;
+function src_strerror(error: integer): {const} Pchar; cdecl; external LibName;
 
 {*
 ** The following enums can be used to set the interpolator type
 ** using the function src_set_converter().
 *}
-type TConverterType = {enum}integer; const
-{enum_begin TConverterType}
+const
   SRC_SINC_BEST_QUALITY   = 0;
   SRC_SINC_MEDIUM_QUALITY = 1;
   SRC_SINC_FASTEST        = 2;
   SRC_ZERO_ORDER_HOLD     = 3;
   SRC_LINEAR              = 4;
-{enum_end TConverterType}
 
 {*
 ** Extra helper functions for converting from short to float and
 ** back again.
 *}
-(* Const before type ignored *)
-procedure src_short_to_float_array(input: Psmallint; output: Psingle; len: integer); cdecl; external LibName;
+procedure src_short_to_float_array(input: {const} Psmallint; output: Psingle; len: integer); cdecl; external LibName;
+procedure src_float_to_short_array(input: {const} Psingle; output: Psmallint; len: integer); cdecl; external LibName;
 
-(* Const before type ignored *)
-procedure src_float_to_short_array(input: Psingle; output: Psmallint; len: integer); cdecl; external LibName;
+{$IF LIBSAMPLERATE_VERSION >= 1003} // 0.1.3
+procedure src_int_to_float_array(input: {const} Pinteger; output: Psingle; len: integer); cdecl; external LibName;
+procedure src_float_to_int_array(input: {const} Psingle; output: Pinteger; len: integer); cdecl; external LibName;
+{$IFEND}
 
 implementation
 
