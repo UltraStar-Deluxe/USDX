@@ -464,24 +464,23 @@ begin
           begin
             Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
 
+            // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
+            // reload all texture data (-> whitescreen bug).
+            // Only Linux is able to handle screen-switching this way.
+            {$IFDEF LINUX}
             if boolean( Ini.FullScreen ) then
             begin
               SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
-              // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
-              // reload all texture data (-> whitescreen bug).
-              // Only Linux is able to handle screen-switching this way.
               SDL_ShowCursor(0);
             end
             else
             begin
               SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
-              // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
-              // reload all texture data (-> whitescreen bug).
-              // Only Linux is able to handle screen-switching this way.
               SDL_ShowCursor(1);
             end;
 
             glViewPort(0, 0, ScreenW, ScreenH);
+            {$ENDIF}
           end
           // if print is pressed -> make screenshot and save to screenshot path
           else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
