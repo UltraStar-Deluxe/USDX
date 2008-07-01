@@ -45,7 +45,6 @@ type
       // indices for widget-updates
       SelectInputSourceID:   integer;
       SelectSlideChannelID: array of integer;
-      TextPitchID: array of integer;
 
       // interaction IDs
       ExitButtonIID: integer;
@@ -93,6 +92,7 @@ uses
   Math,
   SDL,
   gl,
+  TextGL,
   UGraphic,
   UDraw,
   UMain,
@@ -246,7 +246,6 @@ begin
     // init channel-to-player mapping sliders
     SetLength(SelectSlideChannelID, MaxChannelCount);
     SetLength(SelectSlideChannelTheme, MaxChannelCount);
-    SetLength(TextPitchID, MaxChannelCount);
 
     for ChannelIndex := 0 to MaxChannelCount-1 do
     begin
@@ -261,12 +260,6 @@ begin
       WidgetYPos := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
       // append channel index to name
       ChannelTheme.Text := ChannelTheme.Text + IntToStr(ChannelIndex+1);
-
-      // add tone-pitch label
-      TextPitchID[ChannelIndex] := AddText(
-          ChannelTheme.X + ChannelTheme.W,
-          ChannelTheme.Y + ChannelTheme.H/2,
-          '-');
 
       // show/hide widgets depending on whether the channel exists
       if (ChannelIndex < Length(InputDeviceCfg.ChannelToPlayerMap)) then
@@ -285,9 +278,6 @@ begin
         SelectSlideChannelID[ChannelIndex] := AddSelectSlide(ChannelTheme^,
           ChannelToPlayerMapDummy, IChannelPlayer);
         SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := false;
-
-        // hide pitch label
-        Text[TextPitchID[ChannelIndex]].Visible := false;
       end;
     end;
   end;
@@ -353,9 +343,6 @@ begin
           SelectSlideChannelID[ChannelIndex], IChannelPlayer,
           InputDeviceCfg.ChannelToPlayerMap[ChannelIndex]);
         SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := true;
-
-        // show pitch label
-        Text[TextPitchID[ChannelIndex]].Visible := true;
       end
       else
       begin
@@ -366,9 +353,6 @@ begin
           SelectSlideChannelID[ChannelIndex], IChannelPlayer,
           ChannelToPlayerMapDummy);
         SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := false;
-
-        // hide pitch label
-        Text[TextPitchID[ChannelIndex]].Visible := false;
       end;
     end;
   end;
@@ -467,7 +451,7 @@ begin
     Device := AudioInputProcessor.DeviceList[PreviewDeviceIndex];
     Device.Stop;
     for ChannelIndex := 0 to High(Device.CaptureChannel) do
-      Device.CaptureChannel[ChannelIndex] := nil;
+      Device.LinkCaptureBuffer(ChannelIndex, nil);
   end;
   PreviewDeviceIndex := -1;
 end;
@@ -477,6 +461,7 @@ procedure TScreenOptionsRecord.DrawVolume(x, y, Width, Height: single);
 var
   x1, y1, x2, y2: single;
   VolBarInnerWidth: integer;
+  Volume: single;
 const
   VolBarInnerHSpacing = 2;
   VolBarInnerVSpacing = 1;
@@ -486,6 +471,10 @@ begin
   y1 := y;
   x2 := x1 + Width;
   y2 := y1 + Height;
+
+  // init blend mode
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
 
   // draw black background-rect
   glColor4f(0, 0, 0, 0.8);
@@ -498,9 +487,15 @@ begin
 
   VolBarInnerWidth := Trunc(Width - 2*VolBarInnerHSpacing);
 
+  // TODO: if no volume is available, show some info (a blue bar maybe)
+  if (SourceVolume >= 0) then
+    Volume := SourceVolume
+  else
+    Volume := 0;
+
   // coordinates for first half of the volume bar
   x1 := x + VolBarInnerHSpacing;
-  x2 := x1 + VolBarInnerWidth * SourceVolume;
+  x2 := x1 + VolBarInnerWidth * Volume;
   y1 := y1 + VolBarInnerVSpacing;
   y2 := y2 - VolBarInnerVSpacing;
 
@@ -530,6 +525,8 @@ begin
     glVertex2f(x2,        y2);
   glEnd();
   }
+
+  glDisable(GL_BLEND);
 end;
 
 procedure TScreenOptionsRecord.DrawVUMeter(const State: TDrawState; x, y, Width, Height: single);
@@ -547,6 +544,10 @@ begin
   y1 := y;
   x2 := x1 + Width;
   y2 := y1 + Height;
+
+  // init blend mode
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
 
   // draw black background-rect
   glColor4f(0, 0, 0, 0.8);
@@ -613,6 +614,8 @@ begin
     glVertex2f(x2, y2);
     glVertex2f(x2, y1);
   glEnd();
+
+  glDisable(GL_BLEND);
 end;
 
 procedure TScreenOptionsRecord.DrawPitch(const State: TDrawState; x, y, Width, Height: single);
@@ -620,6 +623,10 @@ var
   x1, y1, x2, y2: single;
   i: integer;
   ToneBoxWidth: real;
+  ToneString: PChar;
+  ToneStringWidth, ToneStringHeight: real;
+  ToneStringMaxWidth: real;
+  ToneStringCenterXOffset: real;
 const
   PitchBarInnerHSpacing = 2;
   PitchBarInnerVSpacing = 1;
@@ -632,6 +639,10 @@ begin
   y1 := y;
   x2 := x + Width;
   y2 := y + Height;
+
+  // init blend mode
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
 
   // draw black background-rect
   glColor4f(0, 0, 0, 0.8);
@@ -673,9 +684,29 @@ begin
     end;
   glEnd();
 
-  // update tone-pitch label
-  Text[TextPitchID[State.ChannelIndex]].Text :=
-      PreviewChannel[State.ChannelIndex].ToneString;
+  glDisable(GL_BLEND);
+
+  ///
+  // draw the name of the tone
+  ///////
+
+  ToneString := PChar(PreviewChannel[State.ChannelIndex].ToneString);
+  ToneStringHeight := ChannelBarsTotalHeight;
+
+  // initialize font
+  // TODO: what about reflection, italic etc.?
+  SetFontSize(ToneStringHeight/3);
+
+  // center
+  // Note: for centering let us assume that G#4 has the max. horizontal extent
+  ToneStringWidth := glTextWidth(ToneString);
+  ToneStringMaxWidth := glTextWidth('G#4');
+  ToneStringCenterXOffset := (ToneStringMaxWidth-ToneStringWidth) / 2;
+
+  // draw
+  SetFontPos(x-ToneStringWidth-ToneStringCenterXOffset, y-ToneStringHeight/2);
+  glColor3f(0, 0, 0);
+  glPrint(ToneString);
 end;
 
 function TScreenOptionsRecord.Draw: boolean;
@@ -696,9 +727,6 @@ begin
   begin
     Device := AudioInputProcessor.DeviceList[PreviewDeviceIndex];
     DeviceCfg := @Ini.InputDeviceConfig[Device.CfgIndex];
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // update source volume
     if (SDL_GetTicks() >= NextVolumePollTime) then
@@ -745,8 +773,6 @@ begin
       DrawVUMeter(State, BarXOffset, BarYOffset, BarWidth, BarHeight);
       DrawPitch(State, BarXOffset, BarYOffset+BarHeight, BarWidth, BarHeight);
     end;
-
-    glDisable(GL_BLEND);
   end;
 
   Result := True;
