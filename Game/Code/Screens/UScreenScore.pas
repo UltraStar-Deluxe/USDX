@@ -471,7 +471,7 @@ begin
 
   Text[TextTotal[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
 
-  if(BarGolden_EaseOut_Step > 100) then
+  if(BarGolden_EaseOut_Step = 100) then
   begin
     ShowRating(PlayerNumber);
   end;
