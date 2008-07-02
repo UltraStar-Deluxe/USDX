@@ -190,51 +190,52 @@ begin
       end;
     end;
 
-  if BenchmarkFileOpened then
-  begin
-    Miliseconds := Trunc(Frac(BenchmarkTimeLength[Number]) * 1000);
-    Seconds := Trunc(BenchmarkTimeLength[Number]) mod 60;
-    Minutes := Trunc((BenchmarkTimeLength[Number] - Seconds) / 60);
-//    ValueText := FloatToStr(BenchmarkTimeLength[Number]);
+    if BenchmarkFileOpened then
+    begin
+      Miliseconds := Trunc(Frac(BenchmarkTimeLength[Number]) * 1000);
+      Seconds := Trunc(BenchmarkTimeLength[Number]) mod 60;
+      Minutes := Trunc((BenchmarkTimeLength[Number] - Seconds) / 60);
+      //ValueText := FloatToStr(BenchmarkTimeLength[Number]);
 
-{    ValueText := FloatToStr(
-      SecondOf(BenchmarkTimeLength[Number]) + MilliSecondOf(BenchmarkTimeLength[Number])/1000
-      );
-    if MinuteOf(BenchmarkTimeLength[Number]) >= 1 then
-      ValueText := IntToStr(MinuteOf(BenchmarkTimeLength[Number])) + ':' + ValueText;
-    WriteLn(FileBenchmark, Text + ': ' + ValueText + ' seconds');}
+      {
+      ValueText := FloatToStr(SecondOf(BenchmarkTimeLength[Number]) +
+                              MilliSecondOf(BenchmarkTimeLength[Number])/1000);
+      if MinuteOf(BenchmarkTimeLength[Number]) >= 1 then
+        ValueText := IntToStr(MinuteOf(BenchmarkTimeLength[Number])) + ':' + ValueText;
+      WriteLn(FileBenchmark, Text + ': ' + ValueText + ' seconds');
+      }
 
-    if (Minutes = 0) and (Seconds = 0) then begin
-      MilisecondsS := IntToStr(Miliseconds);
-      ValueText := MilisecondsS + ' miliseconds';
-    end;
+      if (Minutes = 0) and (Seconds = 0) then begin
+        MilisecondsS := IntToStr(Miliseconds);
+        ValueText := MilisecondsS + ' miliseconds';
+      end;
 
-    if (Minutes = 0) and (Seconds >= 1) then begin
-      MilisecondsS := IntToStr(Miliseconds);
-      while Length(MilisecondsS) < 3 do
-        MilisecondsS := '0' + MilisecondsS;
+      if (Minutes = 0) and (Seconds >= 1) then begin
+        MilisecondsS := IntToStr(Miliseconds);
+        while Length(MilisecondsS) < 3 do
+          MilisecondsS := '0' + MilisecondsS;
 
-      SecondsS := IntToStr(Seconds);
+        SecondsS := IntToStr(Seconds);
 
-      ValueText := SecondsS + ',' + MilisecondsS + ' seconds';
-    end;
+        ValueText := SecondsS + ',' + MilisecondsS + ' seconds';
+      end;
 
-    if Minutes >= 1 then begin
-      MilisecondsS := IntToStr(Miliseconds);
-      while Length(MilisecondsS) < 3 do
-        MilisecondsS := '0' + MilisecondsS;
+      if Minutes >= 1 then begin
+        MilisecondsS := IntToStr(Miliseconds);
+        while Length(MilisecondsS) < 3 do
+          MilisecondsS := '0' + MilisecondsS;
 
-      SecondsS := IntToStr(Seconds);
-      while Length(SecondsS) < 2 do
-        SecondsS := '0' + SecondsS;
+        SecondsS := IntToStr(Seconds);
+        while Length(SecondsS) < 2 do
+          SecondsS := '0' + SecondsS;
 
-      MinutesS := IntToStr(Minutes);
+        MinutesS := IntToStr(Minutes);
 
-      ValueText := MinutesS + ':' + SecondsS + ',' + MilisecondsS + ' minutes';
-    end;
+        ValueText := MinutesS + ':' + SecondsS + ',' + MilisecondsS + ' minutes';
+      end;
 
-    WriteLn(BenchmarkFile, Text + ': ' + ValueText);
-    Flush(BenchmarkFile);
+      WriteLn(BenchmarkFile, Text + ': ' + ValueText);
+      Flush(BenchmarkFile);
     end;
   end;
 end;
