@@ -63,9 +63,6 @@ function MicrophoneTestCallback(input: Pointer; output: Pointer; frameCount: Lon
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
       inputDevice: Pointer): Integer; cdecl; forward;
 
-var
-  singleton_AudioInputPortaudio : IAudioInput;
-
 
 { TPortaudioInputDevice }
 
@@ -472,10 +469,6 @@ end;
 
 
 initialization
-  singleton_AudioInputPortaudio := TAudioInput_Portaudio.create();
-  AudioManager.add( singleton_AudioInputPortaudio );
-
-finalization
-  AudioManager.Remove( singleton_AudioInputPortaudio );
+  MediaManager.add(TAudioInput_Portaudio.Create);
 
 end.

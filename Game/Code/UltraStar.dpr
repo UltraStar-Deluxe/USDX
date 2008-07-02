@@ -42,6 +42,7 @@ uses
   sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
   sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
+  UMediaCore_SDL         in 'Classes\UMediaCore_SDL.pas',
 
   zlib                   in 'lib\zlib\zlib.pas',
   png                    in 'lib\libpng\png.pas',
@@ -76,16 +77,21 @@ uses
   {$ENDIF}
 
   {$IFDEF UseFFMpeg}
-  avcodec       in 'lib\ffmpeg\avcodec.pas',
-  avformat      in 'lib\ffmpeg\avformat.pas',
-  avutil        in 'lib\ffmpeg\avutil.pas',
-  rational      in 'lib\ffmpeg\rational.pas',
-  opt           in 'lib\ffmpeg\opt.pas',
-  avio          in 'lib\ffmpeg\avio.pas',
-  mathematics   in 'lib\ffmpeg\mathematics.pas',
+  avcodec                in 'lib\ffmpeg\avcodec.pas',
+  avformat               in 'lib\ffmpeg\avformat.pas',
+  avutil                 in 'lib\ffmpeg\avutil.pas',
+  rational               in 'lib\ffmpeg\rational.pas',
+  opt                    in 'lib\ffmpeg\opt.pas',
+  avio                   in 'lib\ffmpeg\avio.pas',
+  mathematics            in 'lib\ffmpeg\mathematics.pas',
+  UMediaCore_FFMpeg      in 'Classes\UMediaCore_FFMpeg.pas',
   {$IFDEF UseSWScale}
-  swscale       in 'lib\ffmpeg\swscale.pas',
+  swscale                in 'lib\ffmpeg\swscale.pas',
   {$ENDIF}
+  {$ENDIF}
+
+  {$IFDEF UseSRCResample}
+  samplerate                in 'lib\samplerate\samplerate.pas',
   {$ENDIF}
 
   {$IFDEF UseProjectM}
@@ -145,6 +151,7 @@ uses
   UDLLManager       in 'Classes\UDLLManager.pas',
   UPlaylist         in 'Classes\UPlaylist.pas',
   UCommandLine      in 'Classes\UCommandLine.pas',
+  URingBuffer       in 'Classes\URingBuffer.pas',
   UTextClasses      in 'Classes\UTextClasses.pas',
   USingScores       in 'Classes\USingScores.pas',
   USingNotes        in 'Classes\USingNotes.pas',
@@ -170,43 +177,56 @@ uses
 {$ENDIF}
 
   //------------------------------
-  //Includes - Media support classes....
-  //           Make sure UMedia always first, then UMedia_dummy
+  //Includes - Media
   //------------------------------
 
-  // TODO :  these all need to be renamed like UMedia_********   for consistency
   UMusic          in 'Classes\UMusic.pas',
   UAudioPlaybackBase in 'Classes\UAudioPlaybackBase.pas',
-  UMedia_dummy    in 'Classes\UMedia_dummy.pas',  // Must be first UMedia Unit, all others will override available interfaces
-{$IFDEF UseProjectM}
-  UVisualizer     in 'Classes\UVisualizer.pas',   // MUST be before Video... so video can override...
-{$ENDIF}
-{$IFDEF UseFFMpegVideo}
-  UVideo          in 'Classes\UVideo.pas',
-{$ENDIF}
-{$IFDEF UseFFMpegDecoder}
-  UAudioDecoder_FFMpeg   in 'Classes\UAudioDecoder_FFMpeg.pas',  // MUST be before Playback-classes
-{$ENDIF}
-{$IFDEF UseBASSInput}
-  UAudioInput_Bass       in 'Classes\UAudioInput_Bass.pas',
-{$ENDIF}
-{$IFDEF UseBASSPlayback}
-  UAudioPlayback_Bass    in 'Classes\UAudioPlayback_Bass.pas',
-{$ENDIF}
-{$IFDEF UsePortaudioInput}
-  UAudioInput_Portaudio  in 'Classes\UAudioInput_Portaudio.pas',
-{$ENDIF}
 {$IF Defined(UsePortaudioPlayback) or Defined(UseSDLPlayback)}
   UFFT                      in 'lib\fft\UFFT.pas',
-  //samplerate                in 'lib\samplerate\samplerate.pas',
   UAudioPlayback_Softmixer  in 'Classes\UAudioPlayback_SoftMixer.pas',
 {$IFEND}
-{$IFDEF UsePortaudioPlayback}
-  UAudioPlayback_Portaudio  in 'Classes\UAudioPlayback_Portaudio.pas',
+  UAudioConverter           in 'Classes\UAudioConverter.pas',
+
+  //******************************
+  //Pluggable media modules
+  // The modules are prioritized as in the include list below.
+  // This means the first entry has highest priority, the last lowest.
+  //******************************
+
+  // TODO :  these all should be moved to a media folder
+
+{$IFDEF UseFFMpegVideo}
+  UVideo                    in 'Classes\UVideo.pas',
+{$ENDIF}
+{$IFDEF UseProjectM}
+  // must be after UVideo, so it will not be the default video module
+  UVisualizer               in 'Classes\UVisualizer.pas',
+{$ENDIF}
+{$IFDEF UseBASSInput}
+  UAudioInput_Bass          in 'Classes\UAudioInput_Bass.pas',
+{$ENDIF}
+{$IFDEF UseBASSDecoder}
+  // prefer Bass to FFMpeg if possible 
+  UAudioDecoder_Bass        in 'Classes\UAudioDecoder_Bass.pas',
+{$ENDIF}
+{$IFDEF UseBASSPlayback}
+  UAudioPlayback_Bass       in 'Classes\UAudioPlayback_Bass.pas',
 {$ENDIF}
 {$IFDEF UseSDLPlayback}
   UAudioPlayback_SDL        in 'Classes\UAudioPlayback_SDL.pas',
 {$ENDIF}
+{$IFDEF UsePortaudioInput}
+  UAudioInput_Portaudio     in 'Classes\UAudioInput_Portaudio.pas',
+{$ENDIF}
+{$IFDEF UsePortaudioPlayback}
+  UAudioPlayback_Portaudio  in 'Classes\UAudioPlayback_Portaudio.pas',
+{$ENDIF}
+{$IFDEF UseFFMpegDecoder}
+  UAudioDecoder_FFMpeg      in 'Classes\UAudioDecoder_FFMpeg.pas',
+{$ENDIF}
+  // fallback dummy, must be last
+  UMedia_dummy              in 'Classes\UMedia_dummy.pas',
 
 
   //------------------------------

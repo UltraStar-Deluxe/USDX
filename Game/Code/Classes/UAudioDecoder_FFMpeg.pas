@@ -1,15 +1,15 @@
 unit UAudioDecoder_FFMpeg;
 
 (*******************************************************************************
-
-This unit is primarily based upon -
-    http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
-
-    and tutorial03.c
-
-    http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
-
-*******************************************************************************)
+ *
+ * This unit is primarily based upon -
+ *   http://www.dranger.com/ffmpeg/ffmpegtutorial_all.html
+ *
+ *   and tutorial03.c
+ *
+ *   http://www.inb.uni-luebeck.de/~boehme/using_libavcodec.html
+ *
+ *******************************************************************************)
 
 interface
 
@@ -19,682 +19,1032 @@ interface
 
 {$I switches.inc}
 
-//{$DEFINE DebugFFMpegDecode}
-
-uses
-  Classes,
-  SysUtils,
-  UMusic;
+{.$DEFINE DebugFFMpegDecode}
 
 implementation
 
 uses
+  Classes,
+  SysUtils,
+  Math,
+  UMusic,
   UIni,
   UMain,
-  avcodec,     // FFMpeg Audio file decoding
+  avcodec,
   avformat,
   avutil,
-  avio,        // used for url_ferror
+  avio,
   mathematics, // used for av_rescale_q
   rational,
+  UMediaCore_FFMpeg,
   SDL,
   ULog,
   UCommon,
   UConfig;
 
-type
-  PPacketQueue = ^TPacketQueue;
-  TPacketQueue = class
-    private
-      firstPkt,
-      lastPkt    : PAVPacketList;
-      nbPackets  : integer;
-      size       : integer;
-      mutex      : PSDL_Mutex;
-      cond       : PSDL_Cond;
-      abortRequest: boolean;
-
-    public
-      constructor Create();
-      destructor Destroy(); override;
-
-      function Put(pkt : PAVPacket): integer;
-      function PutStatus(statusFlag: integer; statusInfo: Pointer): integer;
-      function Get(var pkt: TAVPacket; block: boolean): integer;
-      procedure Flush();
-      procedure Abort();
-  end;
-
 const
   MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
 
 const
-  STATUS_PACKET: PChar = 'STATUS_PACKET';
-const
-  PKT_STATUS_FLAG_EOF   = 1;
-  PKT_STATUS_FLAG_FLUSH = 2;
-  PKT_STATUS_FLAG_ERROR = 3;
-
-type
-  PAudioBuffer = ^TAudioBuffer;
-  // TODO: should (or must?) be aligned at a 2-byte boundary.
-  //   ffmpeg provides a C-macro called DECLARE_ALIGNED for this.
-  //   Records can be aligned with the $PACKRECORDS compiler-directive but
-  //   are already aligned at a 2-byte boundary by default in FPC.
-  //   But what about arrays, are they aligned by a 2-byte boundary too?
-  //   Or maybe we have to define a fake record with only an array in it?
-  TAudioBuffer = array[0 .. (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3 div 2)-1] of byte;
+  // TODO: The factor 3/2 might not be necessary as we do not need extra
+  // space for synchronizing as in the tutorial.
+  AUDIO_BUFFER_SIZE = (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) div 2;
 
 type
   TFFMpegDecodeStream = class(TAudioDecodeStream)
     private
-      decoderLock : PSDL_Mutex;
-      parserLock : PSDL_Mutex;
-      myint: integer;
+      StateLock:   PSDL_Mutex;
 
-      EOFState: boolean; // end-of-stream flag
-      ErrorState: boolean;
+      EOFState:   boolean; // end-of-stream flag (locked by StateLock)
+      ErrorState: boolean; // error flag (locked by StateLock)
 
-      resumeCond   : PSDL_Cond;
+      QuitRequest: boolean; // (locked by StateLock)
+      ParserIdleCond: PSDL_Cond;
 
-      quitRequest : boolean;
+      // parser pause/resume data
+      ParserLocked:            boolean;
+      ParserPauseRequestCount: integer;
+      ParserUnlockedCond:      PSDL_Cond;
+      ParserResumeCond:        PSDL_Cond;
 
-      seekRequest: boolean;
-      seekFlags  : integer;
-      seekPos    : int64;
-      seekCond   : PSDL_Cond;
+      SeekRequest: boolean; // (locked by StateLock)
+      SeekFlags:   integer; // (locked by StateLock)
+      SeekPos:     double;    // stream position to seek for (in secs) (locked by StateLock)
+      SeekFlush:   boolean;   // true if the buffers should be flushed after seeking (locked by StateLock)
+      SeekFinishedCond: PSDL_Cond;
 
-      parseThread: PSDL_Thread;
-      packetQueue: TPacketQueue;
+      Loop: boolean; // (locked by StateLock)
 
-      formatInfo : TAudioFormatInfo;
+      ParseThread: PSDL_Thread;
+      PacketQueue: TPacketQueue;
 
-      // FFMpeg internal data
-      pFormatCtx     : PAVFormatContext;
-      pCodecCtx      : PAVCodecContext;
-      pCodec         : PAVCodec;
-      ffmpegStreamIndex : Integer;
-      ffmpegStream      : PAVStream;
+      FormatInfo: TAudioFormatInfo;
 
-      audioClock: double; // stream position in seconds
+      // FFMpeg specific data
+      FormatCtx: PAVFormatContext;
+      CodecCtx:  PAVCodecContext;
+      Codec:     PAVCodec;
 
-      // state-vars for DecodeFrame
-      pkt             : TAVPacket;
-      audio_pkt_data  : PChar;
-      audio_pkt_size  : integer;
+      AudioStreamIndex: integer;
+      AudioStream: PAVStream;
+      AudioStreamPos: double; // stream position in seconds (locked by DecoderLock)
 
-      // state-vars for AudioCallback
-      audio_buf_index : integer;
-      audio_buf_size  : integer;
-      audio_buf       : TAudioBuffer;
+      // decoder pause/resume data
+      DecoderLocked:            boolean;
+      DecoderPauseRequestCount: integer;
+      DecoderUnlockedCond:      PSDL_Cond;
+      DecoderResumeCond:        PSDL_Cond;
 
-      procedure LockParser();   {$IFDEF HasInline}inline;{$ENDIF}
-      procedure UnlockParser(); {$IFDEF HasInline}inline;{$ENDIF}
-      function GetParserMutex(): PSDL_Mutex; {$IFDEF HasInline}inline;{$ENDIF}
+      // state-vars for DecodeFrame (locked by DecoderLock)
+      AudioPaket:        TAVPacket;
+      AudioPaketData:    PChar;
+      AudioPaketSize:    integer;
+      AudioPaketSilence: integer; // number of bytes of silence to return
 
-      procedure LockDecoder();   {$IFDEF HasInline}inline;{$ENDIF}
-      procedure UnlockDecoder(); {$IFDEF HasInline}inline;{$ENDIF}
+      // state-vars for AudioCallback (locked by DecoderLock)
+      AudioBufferPos:  integer;
+      AudioBufferSize: integer;
+      AudioBuffer:     PChar;
 
-      procedure SetEOF(state: boolean);   {$IFDEF HasInline}inline;{$ENDIF}
-      procedure SetError(state: boolean); {$IFDEF HasInline}inline;{$ENDIF}
+      Filename: string;
 
-      procedure ParseAudio();
-      function DecodeFrame(var buffer: TAudioBuffer; bufSize: integer): integer;
+      procedure SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
+      procedure SetEOF(State: boolean);   {$IFDEF HasInline}inline;{$ENDIF}
+      procedure SetError(State: boolean); {$IFDEF HasInline}inline;{$ENDIF}
+      function IsSeeking(): boolean;
+      function IsQuit(): boolean;
+
+      procedure Reset();
+
+      procedure Parse();
+      function ParseLoop(): boolean;
+      procedure PauseParser();
+      procedure ResumeParser();
+
+      function DecodeFrame(Buffer: PChar; BufferSize: integer): integer;
+      procedure FlushCodecBuffers();
+      procedure PauseDecoder();
+      procedure ResumeDecoder();
     public
-      constructor Create(pFormatCtx: PAVFormatContext;
-                         pCodecCtx: PAVCodecContext; pCodec: PAVCodec;
-                         ffmpegStreamIndex: Integer; ffmpegStream: PAVStream);
+      constructor Create();
       destructor Destroy(); override;
 
+      function Open(const Filename: string): boolean;
       procedure Close();                     override;
 
       function GetLength(): real;            override;
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
       function GetPosition: real;            override;
       procedure SetPosition(Time: real);     override;
+      function GetLoop(): boolean;           override;
+      procedure SetLoop(Enabled: boolean);   override;
       function IsEOF(): boolean;             override;
       function IsError(): boolean;           override;
 
-      function ReadData(Buffer: PChar; BufSize: integer): integer; override;
+      function ReadData(Buffer: PChar; BufferSize: integer): integer; override;
   end;
 
 type
   TAudioDecoder_FFMpeg = class( TInterfacedObject, IAudioDecoder )
-    private
-      class function FindAudioStreamIndex(pFormatCtx : PAVFormatContext): integer;
     public
-      function GetName: String;
+      function GetName: string;
 
       function InitializeDecoder(): boolean;
       function FinalizeDecoder(): boolean;
       function Open(const Filename: string): TAudioDecodeStream;
   end;
 
-function DecodeThreadMain(streamPtr: Pointer): integer; cdecl; forward;
-
 var
-  singleton_AudioDecoderFFMpeg : IAudioDecoder;
+  FFMpegCore: TMediaCore_FFMpeg;
+
+function ParseThreadMain(Data: Pointer): integer; cdecl; forward;
 
 
 { TFFMpegDecodeStream }
 
-constructor TFFMpegDecodeStream.Create(pFormatCtx: PAVFormatContext;
-                   pCodecCtx: PAVCodecContext; pCodec: PAVCodec;
-                   ffmpegStreamIndex : Integer; ffmpegStream: PAVStream);
-var
-  sampleFormat: TAudioSampleFormat;
+constructor TFFMpegDecodeStream.Create();
 begin
   inherited Create();
 
-  packetQueue := TPacketQueue.Create();
+  StateLock := SDL_CreateMutex();
+  ParserUnlockedCond := SDL_CreateCond();
+  ParserResumeCond := SDL_CreateCond();
+  ParserIdleCond := SDL_CreateCond();
+  SeekFinishedCond := SDL_CreateCond();
+  DecoderUnlockedCond := SDL_CreateCond();
+  DecoderResumeCond := SDL_CreateCond();
 
-  audio_pkt_data := nil;
-  audio_pkt_size := 0;
+  // according to the documentation of avcodec_decode_audio(2), sample-data
+  // should be aligned on a 16 byte boundary. Otherwise internal calls
+  // (e.g. to SSE or Altivec operations) might fail or lack performance on some
+  // CPUs. Although GetMem() in Delphi and FPC seems to use a 16 byte or higher
+  // alignment for buffers of this size (alignment depends on the size of the
+  // requested buffer), we will set the alignment explicitly as the minimum
+  // alignment used by Delphi and FPC is on an 8 byte boundary.
+  // 
+  // Note: AudioBuffer was previously defined as a field of type TAudioBuffer
+  // (array[0..AUDIO_BUFFER_SIZE-1] of byte) and hence statically allocated.
+  // Fields of records are aligned different to memory allocated with GetMem(),
+  // aligning depending on the type but will be at least 2 bytes.
+  // AudioBuffer was not aligned to a 16 byte boundary. The {$ALIGN x} directive
+  // was not applicable as Delphi in contrast to FPC provides at most 8 byte
+  // alignment ({$ALIGN 16} is not supported) by this directive.
+  AudioBuffer := GetAlignedMem(AUDIO_BUFFER_SIZE, 16);
 
-  audio_buf_index := 0;
-  audio_buf_size  := 0;
+  Reset();
+end;
 
-  FillChar(pkt, sizeof(TAVPacket), 0);
-
-  Self.pFormatCtx := pFormatCtx;
-  Self.pCodecCtx := pCodecCtx;
-  Self.pCodec    := pCodec;
-  Self.ffmpegStreamIndex := ffmpegStreamIndex;
-  Self.ffmpegStream      := ffmpegStream;
-
-  case pCodecCtx^.sample_fmt of
-    SAMPLE_FMT_U8:  sampleFormat := asfU8;
-    SAMPLE_FMT_S16: sampleFormat := asfS16;
-    SAMPLE_FMT_S24: sampleFormat := asfS24;
-    SAMPLE_FMT_S32: sampleFormat := asfS32;
-    SAMPLE_FMT_FLT: sampleFormat := asfFloat;
-    else            sampleFormat := asfS16; // try standard format
-  end;
-
-  formatInfo := TAudioFormatInfo.Create(
-    pCodecCtx^.channels,
-    pCodecCtx^.sample_rate,
-    sampleFormat
-  );
+procedure TFFMpegDecodeStream.Reset();
+begin
+  ParseThread := nil;
 
   EOFState := false;
   ErrorState := false;
-  decoderLock := SDL_CreateMutex();
-  parserLock := SDL_CreateMutex();
-  resumeCond := SDL_CreateCond();
-  seekCond := SDL_CreateCond();
+  Loop := false;
+  QuitRequest := false;
 
-  parseThread := SDL_CreateThread(@DecodeThreadMain, Self);
+  AudioPaketData := nil;
+  AudioPaketSize := 0;
+  AudioPaketSilence := 0;
+
+  AudioBufferPos := 0;
+  AudioBufferSize := 0;
+
+  ParserLocked := false;
+  ParserPauseRequestCount := 0;
+  DecoderLocked := false;
+  DecoderPauseRequestCount := 0;
+
+  FillChar(AudioPaket, SizeOf(TAVPacket), 0);
 end;
 
 {*
  * Frees the decode-stream data.
- * IMPORTANT: call Close() before freeing the decode-stream to avoid dead-locks.
- * This wakes-up every waiting audio-thread waiting in the packet-queue while
- * performing a ReadData() request.
- * Then assure that no thread uses ReadData anymore (e.g. by stopping the audio-callback).
- * Now you can free the decode-stream.
  *}
 destructor TFFMpegDecodeStream.Destroy();
 begin
-  // wake-up and terminate threads
-  // Note: should be called by the caller before Destroy() was called instead
-  //   to wake-up a waiting audio-callback thread in the packet-queue.
-  //   Otherwise dead-locks are possible.
   Close();
 
-  // Close the codec
-  if (pCodecCtx <> nil) then
-  begin
-    avcodec_close(pCodecCtx);
-    pCodecCtx := nil;
-  end;
+  SDL_DestroyMutex(StateLock);
+  SDL_DestroyCond(ParserUnlockedCond);
+  SDL_DestroyCond(ParserResumeCond);
+  SDL_DestroyCond(ParserIdleCond);
+  SDL_DestroyCond(SeekFinishedCond);
+  SDL_DestroyCond(DecoderUnlockedCond);
+  SDL_DestroyCond(DecoderResumeCond);
 
-  // Close the video file
-  if (pFormatCtx <> nil) then
-  begin
-    av_close_input_file(pFormatCtx);
-    pFormatCtx := nil;
-  end;
-
-  FreeAndNil(packetQueue);
-  FreeAndNil(formatInfo);
-
-  SDL_DestroyMutex(decoderLock);
-  decoderLock := nil;
-  SDL_DestroyMutex(parserLock);
-  parserLock := nil;
-  SDL_DestroyCond(resumeCond);
-  resumeCond := nil;
+  FreeAlignedMem(AudioBuffer);
 
   inherited;
 end;
 
-procedure TFFMpegDecodeStream.Close();
+function TFFMpegDecodeStream.Open(const Filename: string): boolean;
 var
-  status: integer;
+  SampleFormat: TAudioSampleFormat;
+  AVResult: integer;
 begin
-  // wake threads waiting for packet-queue data
-  packetQueue.Abort();
+  Result := false;
 
-  // abort parse-thread
-  LockParser();
-  quitRequest := true;
-  SDL_CondBroadcast(resumeCond);
-  UnlockParser();
-  // and wait until it terminates
-  if (parseThread <> nil) then
+  Close();
+  Reset();
+
+  if (not FileExists(Filename)) then
   begin
-    SDL_WaitThread(parseThread, status);
-    parseThread := nil;
+    Log.LogError('Audio-file does not exist: "' + Filename + '"', 'UAudio_FFMpeg');
+    Exit;
   end;
 
-  // NOTE: we cannot free the codecCtx or formatCtx here because
-  // a formerly waiting thread in the packet-queue might require them
-  // and crash if it tries to access them.
+  Self.Filename := Filename;
+
+  // open audio file
+  if (av_open_input_file(FormatCtx, PChar(Filename), nil, 0, nil) <> 0) then
+  begin
+    Log.LogError('av_open_input_file failed: "' + Filename + '"', 'UAudio_FFMpeg');
+    Exit;
+  end;
+
+  // generate PTS values if they do not exist
+  FormatCtx^.flags := FormatCtx^.flags or AVFMT_FLAG_GENPTS;
+
+  // retrieve stream information
+  if (av_find_stream_info(FormatCtx) < 0) then
+  begin
+    Log.LogError('av_find_stream_info failed: "' + Filename + '"', 'UAudio_FFMpeg');
+    Close();
+    Exit;
+  end;
+
+  // FIXME: hack used by ffplay. Maybe should not use url_feof() to test for the end
+  FormatCtx^.pb.eof_reached := 0;
+
+  {$IFDEF DebugFFMpegDecode}
+  dump_format(FormatCtx, 0, pchar(Filename), 0);
+  {$ENDIF}
+
+  AudioStreamIndex := FFMpegCore.FindAudioStreamIndex(FormatCtx);
+  if (AudioStreamIndex < 0) then
+  begin
+    Log.LogError('FindAudioStreamIndex: No Audio-stream found "' + Filename + '"', 'UAudio_FFMpeg');
+    Close();
+    Exit;
+  end;
+
+  //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFMpeg');
+
+  AudioStream := FormatCtx.streams[AudioStreamIndex];
+  CodecCtx := AudioStream^.codec;
+
+  // TODO: should we use this or not? Should we allow 5.1 channel audio?
+  (*
+  {$IF LIBAVCODEC_VERSION >= 51042000}
+  if (CodecCtx^.channels > 0) then
+    CodecCtx^.request_channels := Min(2, CodecCtx^.channels)
+  else
+    CodecCtx^.request_channels := 2;
+  {$IFEND}
+  *)
+
+  Codec := avcodec_find_decoder(CodecCtx^.codec_id);
+  if (Codec = nil) then
+  begin
+    Log.LogError('Unsupported codec!', 'UAudio_FFMpeg');
+    CodecCtx := nil;
+    Close();
+    Exit;
+  end;
+
+  // set debug options
+  CodecCtx^.debug_mv := 0;
+  CodecCtx^.debug := 0;
+
+  // detect bug-workarounds automatically
+  CodecCtx^.workaround_bugs := FF_BUG_AUTODETECT;
+  // error resilience strategy (careful/compliant/agressive/very_aggressive)
+  //CodecCtx^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
+  // allow non spec compliant speedup tricks.
+  //CodecCtx^.flags2 := CodecCtx^.flags2 or CODEC_FLAG2_FAST;
+
+  // Note: avcodec_open() and avcodec_close() are not thread-safe and will
+  // fail if called concurrently by different threads.
+  FFMpegCore.LockAVCodec();
+  try
+    AVResult := avcodec_open(CodecCtx, Codec);
+  finally
+    FFMpegCore.UnlockAVCodec();
+  end;
+  if (AVResult < 0) then
+  begin
+    Log.LogError('avcodec_open failed!', 'UAudio_FFMpeg');
+    Close();
+    Exit;
+  end;
+
+  // now initialize the audio-format
+
+  if (not FFMpegCore.ConvertFFMpegToAudioFormat(CodecCtx^.sample_fmt, SampleFormat)) then
+  begin
+    // try standard format
+    SampleFormat := asfS16;
+  end;
+
+  FormatInfo := TAudioFormatInfo.Create(
+    CodecCtx^.channels,
+    CodecCtx^.sample_rate,
+    SampleFormat
+  );
+
+
+  PacketQueue := TPacketQueue.Create();
+
+  // finally start the decode thread
+  ParseThread := SDL_CreateThread(@ParseThreadMain, Self);
+
+  Result := true;
 end;
 
-procedure TFFMpegDecodeStream.LockParser();
+procedure TFFMpegDecodeStream.Close();
+var
+  ThreadResult: integer;
 begin
-  SDL_mutexP(parserLock);
-end;
+  // wake threads waiting for packet-queue data
+  // Note: normally, there are no waiting threads. If there were waiting
+  // ones, they would block the audio-callback thread.
+  if (assigned(PacketQueue)) then
+    PacketQueue.Abort();
 
-procedure TFFMpegDecodeStream.UnlockParser();
-begin
-  SDL_mutexV(parserLock);
-end;
+  // send quit request (to parse-thread etc)
+  SDL_mutexP(StateLock);
+  QuitRequest := true;
+  SDL_CondBroadcast(ParserIdleCond);
+  SDL_mutexV(StateLock);
 
-function TFFMpegDecodeStream.GetParserMutex(): PSDL_Mutex;
-begin
-  Result := parserLock;
-end;
+  // abort parse-thread
+  if (ParseThread <> nil) then
+  begin
+    // and wait until it terminates
+    SDL_WaitThread(ParseThread, ThreadResult);
+    ParseThread := nil;
+  end;
 
-procedure TFFMpegDecodeStream.LockDecoder();
-begin
-  SDL_mutexP(decoderLock);
-end;
+  // Close the codec
+  if (CodecCtx <> nil) then
+  begin
+    // avcodec_close() is not thread-safe
+    FFMpegCore.LockAVCodec();
+    try
+      avcodec_close(CodecCtx);
+    finally
+      FFMpegCore.UnlockAVCodec();
+    end;
+    CodecCtx := nil;
+  end;
 
-procedure TFFMpegDecodeStream.UnlockDecoder();
-begin
-  SDL_mutexV(decoderLock);
+  // Close the video file
+  if (FormatCtx <> nil) then
+  begin
+    av_close_input_file(FormatCtx);
+    FormatCtx := nil;
+  end;
+
+  PerformOnClose();
+  
+  FreeAndNil(PacketQueue);
+  FreeAndNil(FormatInfo);
 end;
 
 function TFFMpegDecodeStream.GetLength(): real;
 begin
-  Result := pFormatCtx^.duration / AV_TIME_BASE;
+  // do not forget to consider the start_time value here 
+  Result := (FormatCtx^.start_time + FormatCtx^.duration) / AV_TIME_BASE;
 end;
 
 function TFFMpegDecodeStream.GetAudioFormatInfo(): TAudioFormatInfo;
 begin
-  Result := formatInfo;
+  Result := FormatInfo;
 end;
 
 function TFFMpegDecodeStream.IsEOF(): boolean;
 begin
-  LockDecoder();
+  SDL_mutexP(StateLock);
   Result := EOFState;
-  UnlockDecoder();
+  SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.SetEOF(state: boolean);
+procedure TFFMpegDecodeStream.SetEOF(State: boolean);
 begin
-  LockDecoder();
-  EOFState := state;
-  UnlockDecoder();
+  SDL_mutexP(StateLock);
+  EOFState := State;
+  SDL_mutexV(StateLock);
 end;
 
 function TFFMpegDecodeStream.IsError(): boolean;
 begin
-  LockDecoder();
+  SDL_mutexP(StateLock);
   Result := ErrorState;
-  UnlockDecoder();
+  SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.SetError(state: boolean);
+procedure TFFMpegDecodeStream.SetError(State: boolean);
 begin
-  LockDecoder();
-  ErrorState := state;
-  UnlockDecoder();
-end;
-
-(*
-procedure TFFMpegDecodeStream.SetError(state: boolean);
-begin
-  LockDecoder();
-  ErrorState := state;
-  UnlockDecoder();
+  SDL_mutexP(StateLock);
+  ErrorState := State;
+  SDL_mutexV(StateLock);
 end;
 
 function TFFMpegDecodeStream.IsSeeking(): boolean;
 begin
-  LockDecoder();
-  Result := seekRequest;
-  UnlockDecoder();
+  SDL_mutexP(StateLock);
+  Result := SeekRequest;
+  SDL_mutexV(StateLock);
 end;
-*)
+
+function TFFMpegDecodeStream.IsQuit(): boolean;
+begin
+  SDL_mutexP(StateLock);
+  Result := QuitRequest;
+  SDL_mutexV(StateLock);
+end;
 
 function TFFMpegDecodeStream.GetPosition(): real;
+var
+  BufferSizeSec: double;
 begin
-  // FIXME: the audio-clock might not be that accurate
-  // see: tutorial on synching (audio-clock)
-  Result := audioClock;
+  PauseDecoder();
+
+  // ReadData() does not return all of the buffer retrieved by DecodeFrame().
+  // Determine the size of the unused part of the decode-buffer.
+  BufferSizeSec := (AudioBufferSize - AudioBufferPos) /
+                   FormatInfo.BytesPerSec;
+
+  // subtract the size of unused buffer-data from the audio clock.
+  Result := AudioStreamPos - BufferSizeSec;
+
+  ResumeDecoder();
 end;
 
 procedure TFFMpegDecodeStream.SetPosition(Time: real);
 begin
-  LockParser();
+  SetPositionIntern(Time, true, true);
+end;
 
-  seekPos := Trunc(Time * AV_TIME_BASE);
+function TFFMpegDecodeStream.GetLoop(): boolean;
+begin
+  SDL_mutexP(StateLock);
+  Result := Loop;
+  SDL_mutexV(StateLock);
+end;
 
-  seekFlags := 0;
+procedure TFFMpegDecodeStream.SetLoop(Enabled: boolean);
+begin
+  SDL_mutexP(StateLock);
+  Loop := Enabled;
+  SDL_mutexV(StateLock);
+end;
+
+
+(********************************************
+ * Parser section
+ ********************************************)
+
+procedure TFFMpegDecodeStream.PauseParser();
+begin
+  if (SDL_ThreadID() = ParseThread.threadid) then
+    Exit;
+    
+  SDL_mutexP(StateLock);
+  Inc(ParserPauseRequestCount);
+  while (ParserLocked) do
+    SDL_CondWait(ParserUnlockedCond, StateLock);
+  SDL_mutexV(StateLock);
+end;
+
+procedure TFFMpegDecodeStream.ResumeParser();
+begin
+  if (SDL_ThreadID() = ParseThread.threadid) then
+    Exit;
+
+  SDL_mutexP(StateLock);
+  Dec(ParserPauseRequestCount);
+  SDL_CondSignal(ParserResumeCond);
+  SDL_mutexV(StateLock);
+end;
+
+procedure TFFMpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
+begin
+  // - Pause the parser first to prevent it from putting obsolete packages
+  //   into the queue after the queue was flushed and before seeking is done.
+  //   Otherwise we will hear fragments of old data, if the stream was seeked
+  //   in stopped mode and resumed afterwards (applies to non-blocking mode only).
+  // - Pause the decoder to avoid race-condition that might occur otherwise.
+  // - Last lock the state lock because we are manipulating some shared state-vars.
+  PauseParser();
+  PauseDecoder();
+  SDL_mutexP(StateLock);
+
+  // configure seek parameters
+  SeekPos := Time;
+  SeekFlush := Flush;
+  SeekFlags := AVSEEK_FLAG_ANY;
+  SeekRequest := true;
+
   // Note: the BACKWARD-flag seeks to the first position <= the position
   // searched for. Otherwise e.g. position 0 might not be seeked correct.
   // For some reason ffmpeg sometimes doesn't use position 0 but the key-frame
   // following. In streams with few key-frames (like many flv-files) the next
   // key-frame after 0 might be 5secs ahead.
-  if (Time < audioClock) then
-    seekFlags := AVSEEK_FLAG_BACKWARD;
-  seekFlags := AVSEEK_FLAG_ANY;
+  if (Time < AudioStreamPos) then
+    SeekFlags := SeekFlags or AVSEEK_FLAG_BACKWARD;
 
-LockDecoder();
-  seekRequest := true;
-UnlockDecoder();
-  SDL_CondSignal(resumeCond);
-  (*
-  while ((not quitRequest) and seekRequest) do
-    SDL_CondWait(seekCond, GetParserMutex());
-  *)
-  UnlockParser();
+  EOFState := false;
+  ErrorState := false;
+
+  // send a reuse signal in case the parser was stopped (e.g. because of an EOF)
+  SDL_CondSignal(ParserIdleCond);
+
+  SDL_mutexV(StateLock);
+  ResumeDecoder();
+  ResumeParser();
+
+  // in blocking mode, wait until seeking is done
+  if (Blocking) then
+  begin
+    SDL_mutexP(StateLock);
+    while (SeekRequest) do
+      SDL_CondWait(SeekFinishedCond, StateLock);
+    SDL_mutexV(StateLock);
+  end;
 end;
 
-function DecodeThreadMain(streamPtr: Pointer): integer; cdecl;
+function ParseThreadMain(Data: Pointer): integer; cdecl;
 var
-  stream: TFFMpegDecodeStream;
+  Stream: TFFMpegDecodeStream;
 begin
-  stream := TFFMpegDecodeStream(streamPtr);
-  stream.ParseAudio();
-  result := 0;
+  Stream := TFFMpegDecodeStream(Data);
+  if (Stream <> nil) then
+    Stream.Parse();
+  Result := 0;
 end;
 
-procedure TFFMpegDecodeStream.ParseAudio();
-var
-  packet: TAVPacket;
-  statusPacket: PAVPacket;
-  seekTarget: int64;
-  stopParsing: boolean;
-  pbIOCtx: PByteIOContext;
-  err: integer;
-  index: integer;
+procedure TFFMpegDecodeStream.Parse();
 begin
-  stopParsing := false;
+  // reuse thread as long as the stream is not terminated
+  while (ParseLoop()) do
+  begin
+    // wait for reuse or destruction of stream
+    SDL_mutexP(StateLock);
+    while (not (SeekRequest or QuitRequest)) do
+      SDL_CondWait(ParserIdleCond, StateLock);
+    SDL_mutexV(StateLock);
+  end;
+end;
+
+(**
+ * Parser main loop.
+ * Will not return until parsing of the stream is finished.
+ * Reasons for the parser to return are:
+ * - the end-of-file is reached
+ * - an error occured
+ * - the stream was quited (received a quit-request)
+ * Returns true if the stream can be resumed or false if the stream has to
+ * be terminated.
+ *)
+function TFFMpegDecodeStream.ParseLoop(): boolean;
+var
+  Packet: TAVPacket;
+  StatusPacket: PAVPacket;
+  SeekTarget: int64;
+  ByteIOCtx: PByteIOContext;
+  ErrorCode: integer;
+  StartSilence: double;       // duration of silence at start of stream
+  StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
+
+  // Note: pthreads wakes threads waiting on a mutex in the order of their
+  // priority and not in FIFO order. SDL does not provide any option to
+  // control priorities. This might (and already did) starve threads waiting
+  // on the mutex (e.g. SetPosition) making usdx look like it was froozen.
+  // Instead of simply locking the critical section we set a ParserLocked flag
+  // instead and give priority to the threads requesting the parser to pause.
+  procedure LockParser();
+  begin
+    SDL_mutexP(StateLock);
+    while (ParserPauseRequestCount > 0) do
+      SDL_CondWait(ParserResumeCond, StateLock);
+    ParserLocked := true;
+    SDL_mutexV(StateLock);
+  end;
+
+  procedure UnlockParser();
+  begin
+    SDL_mutexP(StateLock);
+    ParserLocked := false;
+    SDL_CondBroadcast(ParserUnlockedCond);
+    SDL_mutexV(StateLock);
+  end;
+
+begin
+  Result := true;
 
   while (true) do
   begin
     LockParser();
+    try
 
-    // wait if end-of-file reached
-    if (stopParsing) then
-    begin
-      // wait for reuse or destruction of stream
-      while not (seekRequest or quitRequest) do
-        SDL_CondWait(resumeCond, GetParserMutex());
-    end;
-
-    if (quitRequest) then
-    begin
-      UnlockParser();
-      break;
-    end;
-
-    // handle seek-request
-    if (seekRequest) then
-    begin
-      // reset status
-      SetEOF(false);
-      SetError(false);
-      stopParsing := false;
-
-      seekTarget := av_rescale_q(seekPos, AV_TIME_BASE_Q, ffmpegStream^.time_base);
-      err := av_seek_frame(pFormatCtx, ffmpegStreamIndex, seekTarget, seekFlags);
-      // seeking failed -> retry with the default stream (necessary for flv-videos and some ogg-files)
-      if (err < 0) then
-        err := av_seek_frame(pFormatCtx, -1, seekPos, seekFlags);
-      // check if seeking failed
-      if (err < 0) then
+      if (IsQuit()) then
       begin
-        Log.LogStatus('Seek Error in "'+pFormatCtx^.filename+'"', 'UAudioDecoder_FFMpeg');
-      end
+        Result := false;
+        Exit;
+      end;
+
+      // handle seek-request (Note: no need to lock SeekRequest here)
+      if (SeekRequest) then
+      begin
+        // first try: seek on the audio stream
+        SeekTarget := Round(SeekPos / av_q2d(AudioStream^.time_base));
+        StartSilence := 0;
+        if (SeekTarget < AudioStream^.start_time) then
+          StartSilence := (AudioStream^.start_time - SeekTarget) * av_q2d(AudioStream^.time_base);
+        ErrorCode := av_seek_frame(FormatCtx, AudioStreamIndex, SeekTarget, SeekFlags);
+
+        if (ErrorCode < 0) then
+        begin
+          // second try: seek on the default stream (necessary for flv-videos and some ogg-files)
+          SeekTarget := Round(SeekPos * AV_TIME_BASE);
+          StartSilence := 0;
+          if (SeekTarget < FormatCtx^.start_time) then
+            StartSilence := (FormatCtx^.start_time - SeekTarget) / AV_TIME_BASE;
+          ErrorCode := av_seek_frame(FormatCtx, -1, SeekTarget, SeekFlags);
+        end;
+
+        // pause decoder and lock state (keep the lock-order to avoid deadlocks).
+        // Note that the decoder does not block in the packet-queue in seeking state,
+        // so locking the decoder here does not cause a dead-lock.
+        PauseDecoder();
+        SDL_mutexP(StateLock);
+        try
+          if (ErrorCode < 0) then
+          begin
+            // seeking failed
+            ErrorState := true;
+            Log.LogStatus('Seek Error in "'+FormatCtx^.filename+'"', 'UAudioDecoder_FFMpeg');
+          end
+          else
+          begin
+            if (SeekFlush) then
+            begin
+              // flush queue (we will send a Flush-Packet when seeking is finished)
+              PacketQueue.Flush();
+
+              // flush the decode buffers
+              AudioBufferSize := 0;
+              AudioBufferPos := 0;
+              AudioPaketSize := 0;
+              AudioPaketSilence := 0;
+              FlushCodecBuffers();
+              
+              // Set preliminary stream position. The position will be set to
+              // the correct value as soon as the first packet is decoded.
+              AudioStreamPos := SeekPos;
+            end
+            else
+            begin
+              // request avcodec buffer flush
+              PacketQueue.PutStatus(PKT_STATUS_FLAG_FLUSH, nil);
+            end;
+
+            // fill the gap between position 0 and start_time with silence
+            // but not if we are in loop mode
+            if ((StartSilence > 0) and (not Loop)) then
+            begin
+              GetMem(StartSilencePtr, SizeOf(StartSilence));
+              StartSilencePtr^ := StartSilence;
+              PacketQueue.PutStatus(PKT_STATUS_FLAG_EMPTY, StartSilencePtr);
+            end;
+          end;
+
+          SeekRequest := false;
+          SDL_CondBroadcast(SeekFinishedCond);
+        finally
+          SDL_mutexV(StateLock);
+          ResumeDecoder();
+        end;
+      end;
+
+      if (PacketQueue.GetSize() > MAX_AUDIOQ_SIZE) then
+      begin
+        SDL_Delay(10);
+        Continue;
+      end;
+
+      if (av_read_frame(FormatCtx, Packet) < 0) then
+      begin
+        // failed to read a frame, check reason
+        {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
+        ByteIOCtx := FormatCtx^.pb;
+        {$ELSE}
+        ByteIOCtx := @FormatCtx^.pb;
+        {$IFEND}
+
+        // check for end-of-file (eof is not an error)
+        if (url_feof(ByteIOCtx) <> 0) then
+        begin
+          if (GetLoop()) then
+          begin
+            // rewind stream (but do not flush)
+            SetPositionIntern(0, false, false);
+            Continue;
+          end
+          else
+          begin
+            // signal end-of-file
+            PacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
+            Exit;
+          end;
+        end;
+
+        // check for errors
+        if (url_ferror(ByteIOCtx) <> 0) then
+        begin
+          // an error occured -> abort and wait for repositioning or termination
+          PacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
+          Exit;
+        end;
+
+        // no error -> wait for user input
+        SDL_Delay(100);
+        Continue;
+      end;
+
+      if (Packet.stream_index = AudioStreamIndex) then
+        PacketQueue.Put(@Packet)
       else
-      begin
-        packetQueue.Flush();
-        packetQueue.PutStatus(PKT_STATUS_FLAG_FLUSH, nil);
-      end;
-  LockDecoder();
-      seekRequest := false;
-  UnlockDecoder();
-      SDL_CondSignal(seekCond);
-    end;
+        av_free_packet(@Packet);
 
-    UnlockParser();
-
-    if (packetQueue.size > MAX_AUDIOQ_SIZE) then
-    begin
-      SDL_Delay(10);
-      continue;
-    end;
-
-    if (av_read_frame(pFormatCtx, packet) < 0) then
-    begin
-      // failed to read a frame, check reason
-
-      {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
-      pbIOCtx := pFormatCtx^.pb;
-      {$ELSE}
-      pbIOCtx := @pFormatCtx^.pb;
-      {$IFEND}
-
-      // check for end-of-file (eof is not an error)
-      if (url_feof(pbIOCtx) <> 0) then
-      begin
-        // signal end-of-file
-        packetQueue.putStatus(PKT_STATUS_FLAG_EOF, nil);
-        stopParsing := true;
-        continue;
-      end;
-
-      // check for errors
-      if (url_ferror(pbIOCtx) <> 0) then
-      begin
-        // an error occured -> abort and wait for repositioning or termination
-        packetQueue.putStatus(PKT_STATUS_FLAG_ERROR, nil);
-        stopParsing := true;
-        continue;
-      end;
-
-      // no error -> wait for user input
-      SDL_Delay(100);
-      continue;
-    end;
-
-    if (packet.stream_index = ffmpegStreamIndex) then
-    begin
-      packetQueue.put(@packet);
-    end
-    else
-    begin
-      av_free_packet(@packet);
+    finally
+      UnlockParser();
     end;
   end;
 end;
 
-function TFFMpegDecodeStream.DecodeFrame(var buffer: TAudioBuffer; bufSize: integer): integer;
-var
-  len1,
-  data_size: integer;
-begin
-  result := -1;
 
-  if EOF then
-    exit;
+(********************************************
+ * Decoder section
+ ********************************************)
+
+procedure TFFMpegDecodeStream.PauseDecoder();
+begin
+  SDL_mutexP(StateLock);
+  Inc(DecoderPauseRequestCount);
+  while (DecoderLocked) do
+    SDL_CondWait(DecoderUnlockedCond, StateLock);
+  SDL_mutexV(StateLock);
+end;
+
+procedure TFFMpegDecodeStream.ResumeDecoder();
+begin
+  SDL_mutexP(StateLock);
+  Dec(DecoderPauseRequestCount);
+  SDL_CondSignal(DecoderResumeCond);
+  SDL_mutexV(StateLock);
+end;
+
+procedure TFFMpegDecodeStream.FlushCodecBuffers();
+begin
+  // if no flush operation is specified, avcodec_flush_buffers will not do anything.
+  if (@CodecCtx.codec.flush <> nil) then
+  begin
+    // flush buffers used by avcodec_decode_audio, etc.
+    avcodec_flush_buffers(CodecCtx);
+  end
+  else
+  begin
+    // we need a Workaround to avoid plopping noise with ogg-vorbis and
+    // mp3 (in older versions of FFMpeg).
+    // We will just reopen the codec.
+    FFMpegCore.LockAVCodec();
+    try
+      avcodec_close(CodecCtx);
+      avcodec_open(CodecCtx, Codec);
+    finally
+      FFMpegCore.UnlockAVCodec();
+    end;
+  end;
+end;
+
+function TFFMpegDecodeStream.DecodeFrame(Buffer: PChar; BufferSize: integer): integer;
+var
+  PaketDecodedSize: integer; // size of packet data used for decoding
+  DataSize: integer;         // size of output data decoded by FFMpeg
+  BlockQueue: boolean;
+  SilenceDuration: double;
+  {$IFDEF DebugFFMpegDecode}
+  TmpPos: double;
+  {$ENDIF}
+begin
+  Result := -1;
+
+  if (EOF) then
+    Exit;
 
   while(true) do
   begin
-    while (audio_pkt_size > 0) do
+    // for titles with start_time > 0 we have to generate silence
+    // until we reach the pts of the first data packet.
+    if (AudioPaketSilence > 0) then
     begin
-      data_size := bufSize;
+      DataSize := Min(AudioPaketSilence, BufferSize);
+      FillChar(Buffer[0], DataSize, 0);
+      Dec(AudioPaketSilence, DataSize);
+      AudioStreamPos := AudioStreamPos + DataSize / FormatInfo.BytesPerSec; 
+      Result := DataSize;
+      Exit;
+    end;
+
+    // read packet data
+    while (AudioPaketSize > 0) do
+    begin
+      DataSize := BufferSize;
 
       {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
-      len1 := avcodec_decode_audio2(pCodecCtx, @buffer,
-                  data_size, audio_pkt_data, audio_pkt_size);
+      PaketDecodedSize := avcodec_decode_audio2(CodecCtx, PSmallint(Buffer),
+                  DataSize, AudioPaketData, AudioPaketSize);
       {$ELSE}
-      // FIXME: with avcodec_decode_audio a package could contain several frames
-      //        this is not handled yet
-      len1 := avcodec_decode_audio(pCodecCtx, @buffer,
-                  data_size, audio_pkt_data, audio_pkt_size);
+      PaketDecodedSize := avcodec_decode_audio(CodecCtx, PSmallint(Buffer),
+                  DataSize, AudioPaketData, AudioPaketSize);
       {$IFEND}
 
-      if(len1 < 0) then
+      if(PaketDecodedSize < 0) then
       begin
         // if error, skip frame
         {$IFDEF DebugFFMpegDecode}
-        DebugWriteln( 'Skip audio frame' );
+        DebugWriteln('Skip audio frame');
         {$ENDIF}
-        audio_pkt_size := 0;
-        break;
+        AudioPaketSize := 0;
+        Break;
       end;
 
-      Inc(audio_pkt_data, len1);
-      Dec(audio_pkt_size, len1);
+      Inc(AudioPaketData, PaketDecodedSize);
+      Dec(AudioPaketSize, PaketDecodedSize);
 
-      if (data_size <= 0) then
-      begin
-        // no data yet, get more frames
-        continue;
-      end;
+      // check if avcodec_decode_audio returned data, otherwise fetch more frames
+      if (DataSize <= 0) then
+        Continue;
 
-      //pts := audioClock;
-      audioClock := audioClock + data_size /
-          (1.0 * formatInfo.FrameSize * formatInfo.SampleRate);
-
+      // update stream position by the amount of fetched data
+      AudioStreamPos := AudioStreamPos + DataSize / FormatInfo.BytesPerSec;
+      
       // we have data, return it and come back for more later
-      result := data_size;
-      exit;
+      Result := DataSize;
+      Exit;
     end;
 
-    if (pkt.data <> nil) then
-    begin
-      av_free_packet(@pkt);
-    end;
+    // free old packet data
+    if (AudioPaket.data <> nil) then
+      av_free_packet(@AudioPaket);
 
-    // do not use an aborted queue
-    if (packetQueue.abortRequest) then
-      exit;
+    // do not block queue on seeking (to avoid deadlocks on the DecoderLock)
+    if (IsSeeking()) then
+      BlockQueue := false
+    else
+      BlockQueue := true;
 
-    // request a new packet and block if non available.
+    // request a new packet and block if none available.
     // If this fails, the queue was aborted.
-    if (packetQueue.Get(pkt, true) < 0) then
-      exit;
+    if (PacketQueue.Get(AudioPaket, BlockQueue) <= 0) then
+      Exit;
 
     // handle Status-packet
-    if (PChar(pkt.data) = STATUS_PACKET) then
+    if (PChar(AudioPaket.data) = STATUS_PACKET) then
     begin
-      pkt.data := nil;
-      audio_pkt_data := nil;
-      audio_pkt_size := 0;
+      AudioPaket.data := nil;
+      AudioPaketData := nil;
+      AudioPaketSize := 0;
 
-      case (pkt.flags) of
+      case (AudioPaket.flags) of
         PKT_STATUS_FLAG_FLUSH:
         begin
-          avcodec_flush_buffers(pCodecCtx);
+          // just used if SetPositionIntern was called without the flush flag.
+          FlushCodecBuffers;
         end;
         PKT_STATUS_FLAG_EOF: // end-of-file
         begin
-          SetEOF(true);
+          // ignore EOF while seeking
+          if (not IsSeeking()) then
+            SetEOF(true);
           // buffer contains no data -> result = -1
-          exit;
+          Exit;
         end;
         PKT_STATUS_FLAG_ERROR:
         begin
           SetError(true);
           Log.LogStatus('I/O Error', 'TFFMpegDecodeStream.DecodeFrame');
-          exit;
+          Exit;
         end;
+        PKT_STATUS_FLAG_EMPTY:
+        begin
+          SilenceDuration := PDouble(PacketQueue.GetStatusInfo(AudioPaket))^;
+          AudioPaketSilence := Round(SilenceDuration * FormatInfo.SampleRate) * FormatInfo.FrameSize;
+          PacketQueue.FreeStatusInfo(AudioPaket);
+        end
         else
         begin
           Log.LogStatus('Unknown status', 'TFFMpegDecodeStream.DecodeFrame');
         end;
       end;
 
-      continue;
+      Continue;
     end;
 
-    audio_pkt_data := PChar(pkt.data);
-    audio_pkt_size := pkt.size;
+    AudioPaketData := PChar(AudioPaket.data);
+    AudioPaketSize := AudioPaket.size;
 
-    // if available, update the audio clock with pts
-    if(pkt.pts <> AV_NOPTS_VALUE) then
+    // if available, update the stream position to the presentation time of this package
+    if(AudioPaket.pts <> AV_NOPTS_VALUE) then
     begin
-      audioClock := av_q2d(ffmpegStream^.time_base) * pkt.pts;
+      {$IFDEF DebugFFMpegDecode}
+      TmpPos := AudioStreamPos;
+      {$ENDIF}
+      AudioStreamPos := av_q2d(AudioStream^.time_base) * AudioPaket.pts;
+      {$IFDEF DebugFFMpegDecode}
+      DebugWriteln('Timestamp: ' + floattostrf(AudioStreamPos, ffFixed, 15, 3) + ' ' +
+                   '(Calc: ' + floattostrf(TmpPos, ffFixed, 15, 3) + '), ' +
+                   'Diff: ' + floattostrf(AudioStreamPos-TmpPos, ffFixed, 15, 3));
+      {$ENDIF}
     end;
   end;
 end;
 
-function TFFMpegDecodeStream.ReadData(Buffer : PChar; BufSize: integer): integer;
+function TFFMpegDecodeStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
 var
-  nBytesCopy:   integer; // number of bytes to copy
-  nBytesRemain: integer; // number of bytes left (remaining) to read
+  CopyByteCount:   integer; // number of bytes to copy
+  RemainByteCount: integer; // number of bytes left (remain) to read
+  BufferPos: integer;
+
+  // prioritize pause requests
+  procedure LockDecoder();
+  begin
+    SDL_mutexP(StateLock);
+    while (DecoderPauseRequestCount > 0) do
+      SDL_CondWait(DecoderResumeCond, StateLock);
+    DecoderLocked := true;
+    SDL_mutexV(StateLock);
+  end;
+
+  procedure UnlockDecoder();
+  begin
+    SDL_mutexP(StateLock);
+    DecoderLocked := false;
+    SDL_CondBroadcast(DecoderUnlockedCond);
+    SDL_mutexV(StateLock);
+  end;
+
 begin
-  result := -1;
+  Result := -1;
 
-  // init number of bytes left to copy to the output buffer
-  nBytesRemain := BufSize;
-
-  // leave if end-of-file was reached previously
-  if EOF then
-    exit;
+  // set number of bytes to copy to the output buffer
+  BufferPos := 0;
 
   LockDecoder();
   try
-    if (seekRequest) then
-    begin
-      Result := 0;
+    // leave if end-of-file is reached
+    if (EOF) then
       Exit;
+
+    // copy data to output buffer
+    while (BufferPos < BufferSize) do
+    begin
+      // check if we need more data
+      if (AudioBufferPos >= AudioBufferSize) then
+      begin
+        AudioBufferPos := 0;
+
+        // we have already sent all our data; get more
+        AudioBufferSize := DecodeFrame(AudioBuffer, AUDIO_BUFFER_SIZE);
+
+        // check for errors or EOF
+        if(AudioBufferSize < 0) then
+        begin
+          Result := BufferPos;
+          Exit;
+        end;
+      end;
+
+      // calc number of new bytes in the decode-buffer
+      CopyByteCount := AudioBufferSize - AudioBufferPos;
+      // resize copy-count if more bytes available than needed (remaining bytes are used the next time)
+      RemainByteCount := BufferSize - BufferPos;
+      if (CopyByteCount > RemainByteCount) then
+        CopyByteCount := RemainByteCount;
+
+      Move(AudioBuffer[AudioBufferPos], Buffer[BufferPos], CopyByteCount);
+
+      Inc(BufferPos,      CopyByteCount);
+      Inc(AudioBufferPos, CopyByteCount);
     end;
   finally
     UnlockDecoder();
   end;
 
-  // copy data to output buffer
-  while (nBytesRemain > 0) do begin
-    // check if we need more data
-    if (audio_buf_index >= audio_buf_size) then
-    begin
-      // we have already sent all our data; get more
-      audio_buf_size := DecodeFrame(audio_buf, sizeof(TAudioBuffer));
-      // check for errors or EOF
-      if(audio_buf_size < 0) then
-      begin
-        // fill decode-buffer with silence
-        audio_buf_size := 1024;
-        FillChar(audio_buf, audio_buf_size, #0);
-      end;
-      audio_buf_index := 0;
-    end;
-
-    // calc number of new bytes in the decode-buffer
-    nBytesCopy := audio_buf_size - audio_buf_index;
-    // resize copy-count if more bytes available than needed (remaining bytes are used the next time)
-    if (nBytesCopy > nBytesRemain) then
-      nBytesCopy := nBytesRemain;
-
-    Move(audio_buf[audio_buf_index], Buffer[0], nBytesCopy);
-
-    Dec(nBytesRemain,    nBytesCopy);
-    Inc(Buffer,          nBytesCopy);
-    Inc(audio_buf_index, nBytesCopy);
-  end;
-
-  Result := BufSize;
+  Result := BufferSize;
 end;
 
 
@@ -708,9 +1058,8 @@ end;
 function TAudioDecoder_FFMpeg.InitializeDecoder: boolean;
 begin
   //Log.LogStatus('InitializeDecoder', 'UAudioDecoder_FFMpeg');
-
+  FFMpegCore := TMediaCore_FFMpeg.GetInstance();
   av_register_all();
-
   Result := true;
 end;
 
@@ -719,293 +1068,24 @@ begin
   Result := true;
 end;
 
-class function TAudioDecoder_FFMpeg.FindAudioStreamIndex(pFormatCtx : PAVFormatContext): integer;
-var
-  i : integer;
-  streamIndex: integer;
-  stream : PAVStream;
-begin
-  // find the first audio stream
-  streamIndex := -1;
-
-  for i := 0 to pFormatCtx^.nb_streams-1 do
-  begin
-    //Log.LogStatus('aFormatCtx.streams[i] : ' + inttostr(i), 'UAudio_FFMpeg');
-    stream := pFormatCtx^.streams[i];
-
-    if ( stream.codec^.codec_type = CODEC_TYPE_AUDIO ) then
-    begin
-      //Log.LogStatus('Found Audio Stream', 'UAudio_FFMpeg');
-      streamIndex := i;
-      break;
-    end;
-  end;
-
-  Result := streamIndex;
-end;
-
 function TAudioDecoder_FFMpeg.Open(const Filename: string): TAudioDecodeStream;
 var
-  pFormatCtx     : PAVFormatContext;
-  pCodecCtx      : PAVCodecContext;
-  pCodec         : PAVCodec;
-  ffmpegStreamID : Integer;
-  ffmpegStream   : PAVStream;
-  stream         : TFFMpegDecodeStream;
+  Stream: TFFMpegDecodeStream;
 begin
   Result := nil;
 
-  if (not FileExists(Filename)) then
+  Stream := TFFMpegDecodeStream.Create();
+  if (not Stream.Open(Filename)) then
   begin
-    Log.LogError('Audio-file does not exist: "' + Filename + '"', 'UAudio_FFMpeg');
-    exit;
-  end;
-
-  // open audio file
-  if (av_open_input_file(pFormatCtx, PChar(Filename), nil, 0, nil) <> 0) then
-  begin
-    Log.LogError('av_open_input_file failed: "' + Filename + '"', 'UAudio_FFMpeg');
-    exit;
-  end;
-
-  // TODO: do we need to generate PTS values if they do not exist?
-  //pFormatCtx^.flags := pFormatCtx^.flags or AVFMT_FLAG_GENPTS;
-
-  // retrieve stream information
-  if (av_find_stream_info(pFormatCtx) < 0) then
-  begin
-    Log.LogError('av_find_stream_info failed: "' + Filename + '"', 'UAudio_FFMpeg');
-    av_close_input_file(pFormatCtx);
-    exit;
-  end;
-
-  // FIXME: hack used by ffplay. Maybe should not use url_feof() to test for the end
-  pFormatCtx^.pb.eof_reached := 0;
-
-  {$IFDEF DebugFFMpegDecode}
-  dump_format(pFormatCtx, 0, pchar(Filename), 0);
-  {$ENDIF}
-
-  ffmpegStreamID := FindAudioStreamIndex(pFormatCtx);
-  if (ffmpegStreamID < 0) then
-  begin
-    Log.LogError('FindAudioStreamIndex: No Audio-stream found "' + Filename + '"', 'UAudio_FFMpeg');
-    av_close_input_file(pFormatCtx);
-    exit;
-  end;
-
-  //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFMpeg');
-
-  ffmpegStream := pFormatCtx.streams[ffmpegStreamID];
-  pCodecCtx := ffmpegStream^.codec;
-
-  pCodec := avcodec_find_decoder(pCodecCtx^.codec_id);
-  if (pCodec = nil) then
-  begin
-    Log.LogError('Unsupported codec!', 'UAudio_FFMpeg');
-    av_close_input_file(pFormatCtx);
-    exit;
-  end;
-
-  // set debug options
-  pCodecCtx^.debug_mv := 0;
-  pCodecCtx^.debug := 0;
-
-  // detect bug-workarounds automatically
-  pCodecCtx^.workaround_bugs := FF_BUG_AUTODETECT;
-  // error resilience strategy (careful/compliant/agressive/very_aggressive)
-  //pCodecCtx^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
-  // allow non spec compliant speedup tricks.
-  //pCodecCtx^.flags2 := pCodecCtx^.flags2 or CODEC_FLAG2_FAST;
-
-  // Note: avcodec_open() is not thread-safe!
-  if (avcodec_open(pCodecCtx, pCodec) < 0) then
-  begin
-    Log.LogError('avcodec_open failed!', 'UAudio_FFMpeg');
-    exit;
-  end;
-
-  // TODO: what about pCodecCtx^.start_time? Should we seek to this position here?
-  // ...
-
-  stream := TFFMpegDecodeStream.Create(pFormatCtx, pCodecCtx, pCodec,
-              ffmpegStreamID, ffmpegStream);
-
-  Result := stream;
-end;
-
-
-{ TPacketQueue }
-
-constructor TPacketQueue.Create();
-begin
-  inherited;
-
-  firstPkt := nil;
-  lastPkt  := nil;
-  nbPackets := 0;
-  size := 0;
-
-  mutex := SDL_CreateMutex();
-  cond  := SDL_CreateCond();
-end;
-
-destructor TPacketQueue.Destroy();
-begin
-  Flush();
-  SDL_DestroyMutex(mutex);
-  SDL_DestroyCond(cond);
-  inherited;
-end;
-
-procedure TPacketQueue.Abort();
-begin
-  SDL_LockMutex(mutex);
-
-  abortRequest := true;
-
-  SDL_CondSignal(cond);
-  SDL_UnlockMutex(mutex);
-end;
-
-function TPacketQueue.Put(pkt : PAVPacket): integer;
-var
-  pkt1 : PAVPacketList;
-begin
-  result := -1;
-
-  if (pkt = nil) then
-    exit;
-  
-  if (PChar(pkt^.data) <> STATUS_PACKET) then
-  begin
-    if (av_dup_packet(pkt) < 0) then
-      exit;
-  end;
-
-  pkt1 := av_malloc(sizeof(TAVPacketList));
-  if (pkt1 = nil) then
-    exit;
-
-  pkt1^.pkt  := pkt^;
-  pkt1^.next := nil;
-
-  SDL_LockMutex(Self.mutex);
-  try
-    if (Self.lastPkt = nil) then
-      Self.firstPkt := pkt1
-    else
-      Self.lastPkt^.next := pkt1;
-
-    Self.lastPkt := pkt1;
-    inc(Self.nbPackets);
-
-    Self.size := Self.size + pkt1^.pkt.size;
-    SDL_CondSignal(Self.cond);
-  finally
-    SDL_UnlockMutex(Self.mutex);
-  end;
-
-  Result := 0;
-end;
-
-function TPacketQueue.PutStatus(statusFlag: integer; statusInfo: Pointer): integer;
-var
-  pkt: PAVPacket;
-begin
-  // create temp. package
-  pkt := av_malloc(SizeOf(TAVPacket));
-  if (pkt = nil) then
-  begin
-    Result := -1;
+    Stream.Free;
     Exit;
   end;
-  // init package
-  av_init_packet(pkt^);
-  pkt^.data  := Pointer(STATUS_PACKET);
-  pkt^.flags := statusFlag;
-  pkt^.priv  := statusInfo;
-  // put a copy of the package into the queue
-  Result := Put(pkt);
-  // data has been copied -> delete temp. package
-  av_free(pkt);
-end;
 
-function TPacketQueue.Get(var pkt: TAVPacket; block: boolean): integer;
-var
-  pkt1 : PAVPacketList;
-begin
-  Result := -1;
-
-  SDL_LockMutex(Self.mutex);
-  try
-    while true do
-    begin
-      if (abortRequest) then
-        exit;
-
-      pkt1 := Self.firstPkt;
-      if (pkt1 <> nil) then
-      begin
-        Self.firstPkt := pkt1^.next;
-        if (Self.firstPkt = nil) then
-          Self.lastPkt := nil;
-        dec(Self.nbPackets);
-
-        Self.size := Self.size - pkt1^.pkt.size;
-        pkt := pkt1^.pkt;
-        av_free(pkt1);
-
-        result := 1;
-        break;
-      end
-      else if (not block) then
-      begin
-        result := 0;
-        break;
-      end
-      else
-      begin
-        SDL_CondWait(Self.cond, Self.mutex);
-      end;
-    end;
-  finally
-    SDL_UnlockMutex(Self.mutex);
-  end;
-end;
-
-procedure TPacketQueue.Flush();
-var
-  pkt, pkt1: PAVPacketList;
-begin
-  SDL_LockMutex(Self.mutex);
-
-  pkt := Self.firstPkt;
-  while(pkt <> nil) do
-  begin
-    pkt1 := pkt^.next;
-    av_free_packet(@pkt^.pkt);
-    // Note: param must be a pointer to a pointer!
-    av_freep(@pkt);
-    pkt := pkt1;
-  end;
-  Self.lastPkt := nil;
-  Self.firstPkt := nil;
-  Self.nbPackets := 0;
-  Self.size := 0;
-
-  SDL_UnlockMutex(Self.mutex);
+  Result := Stream;
 end;
 
 
 initialization
-  singleton_AudioDecoderFFMpeg := TAudioDecoder_FFMpeg.create();
-
-  //writeln( 'UAudioDecoder_FFMpeg - Register Decoder' );
-  AudioManager.add( singleton_AudioDecoderFFMpeg );
-
-finalization
-  AudioManager.Remove( singleton_AudioDecoderFFMpeg );
-
+  MediaManager.Add(TAudioDecoder_FFMpeg.Create);
 
 end.

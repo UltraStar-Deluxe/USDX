@@ -19,7 +19,7 @@
   av__util = 'avutil-49';
   LIBAVUTIL_VERSION_MAJOR   = 49;
   LIBAVUTIL_VERSION_MINOR   = 0;
-  LIBAVUTIL_VERSION_RELEASE = 0;
+  LIBAVUTIL_VERSION_RELEASE = 1;
 {$IFEND}
 
 {$UNDEF HaveSWScale}
@@ -46,4 +46,11 @@
 {$IFEND}
 
 {$UNDEF HavePortmixer}
+
+{$UNDEF HaveLibsamplerate}
+{$IF Defined(HaveLibsamplerate) and Defined(IncludeConstants)}
+  LIBSAMPLERATE_VERSION_MAJOR   = 0;
+  LIBSAMPLERATE_VERSION_MINOR   = 1;
+  LIBSAMPLERATE_VERSION_RELEASE = 3;
+{$IFEND}
 

@@ -8,6 +8,8 @@ interface
 
 {$I switches.inc}
 
+{.$DEFINE VOICE_PASSTHROUGH}
+
 uses Classes,
      Math,
      SysUtils,
@@ -22,7 +24,7 @@ const
 type
   TCaptureBuffer = class
     private
-      BufferNew:    TMemoryStream; // buffer for newest samples
+      VoiceStream:  TAudioVoiceStream; // stream for voice passthrough
 
       function GetToneString: string; // converts a tone to its string represenatation;
     public
@@ -33,6 +35,7 @@ type
       AudioFormat: TAudioFormatInfo;
 
       // pitch detection
+      // TODO: remove ToneValid, set Tone/ToneAbs=-1 if invalid instead
       ToneValid:    boolean;    // true if Tone contains a valid value (otherwise it contains noise)
       Tone:         integer;    // tone relative to one octave (e.g. C2=C3=C4). Range: 0-11
       ToneAbs:      integer;    // absolute (full range) tone (e.g. C2<>C3). Range: 0..NumHalftones-1
@@ -43,7 +46,9 @@ type
 
       procedure Clear;
 
-      procedure ProcessNewBuffer;
+      procedure BoostBuffer(Buffer: PChar; Size: Cardinal);
+      procedure ProcessNewBuffer(Buffer: PChar; BufferSize: integer);
+      
       // use to analyze sound from buffers to get new pitch
       procedure AnalyzeBuffer;
       // we call it to analyze sound by checking Autocorrelation
@@ -95,11 +100,12 @@ type
       DeviceList: array of TAudioInputDevice;
 
       constructor Create;
+      destructor Destroy; override;
 
       procedure UpdateInputDeviceConfig;
 
       // handle microphone input
-      procedure HandleMicrophoneData(Buffer: Pointer; Size: Cardinal;
+      procedure HandleMicrophoneData(Buffer: PChar; Size: Cardinal;
                                      InputDevice: TAudioInputDevice);
   end;
 
@@ -118,8 +124,8 @@ type
   end;
 
 
-  SmallIntArray = array [0..maxInt shr 1-1] of smallInt;
-  PSmallIntArray = ^SmallIntArray;
+  TSmallIntArray = array [0..(MaxInt div SizeOf(SmallInt))-1] of SmallInt;
+  PSmallIntArray = ^TSmallIntArray;
 
   function AudioInputProcessor(): TAudioInputProcessor;
 
@@ -133,9 +139,9 @@ var
   singleton_AudioInputProcessor : TAudioInputProcessor = nil;
 
 
-// FIXME: Race-Conditions between Callback-thread and main-thread
-//        on BufferArray (maybe BufferNew also).
-//        Use SDL-mutexes to solve this problem.
+// FIXME:
+// Race-Conditions between Callback-thread and main-thread on BufferArray.
+// Use mutexes to solve this problem.
 
 
 { Global }
@@ -161,20 +167,41 @@ begin
 end;
 
 procedure TAudioInputDevice.LinkCaptureBuffer(ChannelIndex: integer; Sound: TCaptureBuffer);
+var
+  DeviceCfg: PInputDeviceConfig;
+  OldSound: TCaptureBuffer;
 begin
   // check bounds
   if ((ChannelIndex < 0) or (ChannelIndex > High(CaptureChannel))) then
     Exit;
 
-  // reset audio-format of old capture-buffer
-  if (CaptureChannel[ChannelIndex] <> nil) then
-    CaptureChannel[ChannelIndex].AudioFormat := nil;
+  // reset previously assigned (old) capture-buffer
+  OldSound := CaptureChannel[ChannelIndex];
+  if (OldSound <> nil) then
+  begin
+    // close voice stream
+    FreeAndNil(OldSound.VoiceStream);
+    // free old audio-format info
+    FreeAndNil(OldSound.AudioFormat);
+  end;
 
   // set audio-format of new capture-buffer
   if (Sound <> nil) then
-    Sound.AudioFormat := AudioFormat;
+  begin
+    // copy the input-device audio-format ...
+    Sound.AudioFormat := AudioFormat.Copy;
+    // and adjust it because capture buffers are always mono
+    Sound.AudioFormat.Channels := 1;
+    DeviceCfg := @Ini.InputDeviceConfig[CfgIndex];
+// TODO: make this an ini-var, e.g. VoicePassthrough, VoiceRepeat or LiveVoice
+{$IFDEF VOICE_PASSTHROUGH}
+    // create a voice-stream for passthrough
+    // TODO: map odd players to the left and even players to the right speaker
+    Sound.VoiceStream := AudioPlayback.CreateVoiceStream(CHANNELMAP_FRONT, AudioFormat);
+{$ENDIF}
+  end;
 
-  // replace old with new buffer
+  // replace old with new buffer (Note: Sound might be nil)
   CaptureChannel[ChannelIndex] := Sound;
 end;
 
@@ -183,65 +210,72 @@ end;
 constructor TCaptureBuffer.Create;
 begin
   inherited;
-  BufferNew := TMemoryStream.Create;
   BufferLong := TMemoryStream.Create;
   AnalysisBufferSize := Min(4*1024, Length(BufferArray));
 end;
 
 destructor TCaptureBuffer.Destroy;
 begin
-  AudioFormat := nil;
-  FreeAndNil(BufferNew);
   FreeAndNil(BufferLong);
+  FreeAndNil(VoiceStream);
+  FreeAndNil(AudioFormat);
   inherited;
 end;
 
 procedure TCaptureBuffer.Clear;
 begin
-  if assigned(BufferNew) then
-    BufferNew.Clear;
   if assigned(BufferLong) then
     BufferLong.Clear;
   FillChar(BufferArray[0], Length(BufferArray) * SizeOf(SmallInt), 0);
 end;
 
-procedure TCaptureBuffer.ProcessNewBuffer;
+procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PChar; BufferSize: integer);
 var
-  SkipCount:   integer;
-  NumSamples:  integer;
-  SampleIndex: integer;
+  BufferOffset: integer;
+  SampleCount: integer;
+  i: integer;
 begin
+  // apply software boost
+  //BoostBuffer(Buffer, Size);
+
+  // voice passthrough (send data to playback-device)
+  if (assigned(VoiceStream)) then
+    VoiceStream.WriteData(Buffer, BufferSize);
+
+  // we assume that samples are in S16Int format
+  // TODO: support float too
+  if (AudioFormat.Format <> asfS16) then
+    Exit;
+
   // process BufferArray
-  SkipCount := 0;
-  NumSamples := BufferNew.Size div 2;
+  BufferOffset := 0;
+
+  SampleCount := BufferSize div SizeOf(SmallInt);
 
   // check if we have more new samples than we can store
-  if (NumSamples > Length(BufferArray)) then
+  if (SampleCount > Length(BufferArray)) then
   begin
     // discard the oldest of the new samples
-    SkipCount := NumSamples - Length(BufferArray);
-    NumSamples := Length(BufferArray);
+    BufferOffset := (SampleCount - Length(BufferArray)) * SizeOf(SmallInt);
+    SampleCount := Length(BufferArray);
   end;
 
   // move old samples to the beginning of the array (if necessary)
-  // TODO: should be a ring-buffer instead
-  for SampleIndex := NumSamples to High(BufferArray) do
-    BufferArray[SampleIndex-NumSamples] := BufferArray[SampleIndex];
+  for i := 0 to High(BufferArray)-SampleCount do
+    BufferArray[i] := BufferArray[i+SampleCount];
 
-  // skip samples if necessary
-  BufferNew.Seek(2*SkipCount, soBeginning);
-  // copy samples
-  BufferNew.ReadBuffer(BufferArray[Length(BufferArray)-NumSamples], 2*NumSamples);
+  // copy samples to analysis buffer
+  Move(Buffer[BufferOffset], BufferArray[Length(BufferArray)-SampleCount],
+       SampleCount * SizeOf(SmallInt));
 
-  // save capture-data to BufferLong if neccessary
+  // save capture-data to BufferLong if enabled
   if (Ini.SavePlayback = 1) then
   begin
     // this is just for debugging (approx 15MB per player for a 3min song!!!)
     // For an in-game replay-mode we need to compress data so we do not
     // waste that much memory. Maybe ogg-vorbis with voice-preset in fast-mode?
     // Or we could use a faster but not that efficient lossless compression.
-    BufferNew.Seek(0, soBeginning);
-    BufferLong.CopyFrom(BufferNew, BufferNew.Size);
+    BufferLong.WriteBuffer(Buffer, BufferSize);
   end;
 end;
 
@@ -371,19 +405,71 @@ begin
     Result := '-';
 end;
 
+procedure TCaptureBuffer.BoostBuffer(Buffer: PChar; Size: Cardinal);
+var
+  i: integer;
+  Value: Longint;
+  SampleCount: integer;
+  SampleBuffer: PSmallIntArray; // buffer handled as array of samples
+  Boost:  byte;
+begin
+  // TODO: set boost per device
+  {
+  case Ini.MicBoost of
+    0:   Boost := 1;
+    1:   Boost := 2;
+    2:   Boost := 4;
+    3:   Boost := 8;
+    else Boost := 1;
+  end;
+  }
+  Boost := 1;
+
+  // at the moment we will boost SInt16 data only
+  if (AudioFormat.Format = asfS16) then
+  begin
+    // interpret buffer as buffer of bytes
+    SampleBuffer := PSmallIntArray(Buffer);
+    SampleCount := Size div AudioFormat.FrameSize;
+
+    // boost buffer
+    for i := 0 to SampleCount-1 do
+    begin
+      Value := SampleBuffer^[i] * Boost;
+
+      // TODO :  JB -  This will clip the audio... cant we reduce the "Boost" if the data clips ??
+      if Value > High(Smallint) then
+        Value := High(Smallint);
+
+      if Value < Low(Smallint) then
+        Value := Low(Smallint);
+
+      SampleBuffer^[i] := Value;
+    end;
+  end;
+end;
+
 
 { TAudioInputProcessor }
 
 constructor TAudioInputProcessor.Create;
 var
-  i:        integer;
+  i: integer;
 begin
   inherited;
   SetLength(Sound, 6 {max players});//Ini.Players+1);
   for i := 0 to High(Sound) do
-  begin
     Sound[i] := TCaptureBuffer.Create;
-  end;
+end;
+
+destructor TAudioInputProcessor.Destroy;
+var
+  i: integer;
+begin
+  for i := 0 to High(Sound) do
+    Sound[i].Free;
+  SetLength(Sound, 0);
+  inherited;
 end;
 
 // updates InputDeviceConfig with current input-device information
@@ -459,7 +545,7 @@ begin
 end;
 
 {*
- * Handle captured microphone input data.
+ * Handles captured microphone input data.
  * Params:
  *   Buffer - buffer of signed 16bit interleaved stereo PCM-samples.
  *     Interleaved means that a right-channel sample follows a left-
@@ -467,86 +553,48 @@ end;
  *   Length - number of bytes in Buffer
  *   Input - Soundcard-Input used for capture
  *}
-procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: Pointer; Size: Cardinal; InputDevice: TAudioInputDevice);
+procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: PChar; Size: Cardinal; InputDevice: TAudioInputDevice);
 var
-  Value:        integer;
-  ChannelBuffer: PChar;         // buffer handled as array of bytes (offset relative to channel)
-  SampleBuffer: PSmallIntArray; // buffer handled as array of samples
-  Boost:  byte;
+  MultiChannelBuffer: PChar;  // buffer handled as array of bytes (offset relative to channel)
+  SingleChannelBuffer: PChar; // temporary buffer for new samples per channel
+  SingleChannelBufferSize: integer;
   ChannelIndex: integer;
   CaptureChannel: TCaptureBuffer;
   AudioFormat: TAudioFormatInfo;
-  FrameSize: integer;
-  NumSamples: integer;
-  NumFrames: integer; // number of frames (stereo: 2xsamples)
+  SampleSize: integer;
+  SampleCount: integer;
+  SamplesPerChannel: integer;
   i: integer;
 begin
-  // set boost
-  case Ini.MicBoost of
-    0:   Boost := 1;
-    1:   Boost := 2;
-    2:   Boost := 4;
-    3:   Boost := 8;
-    else Boost := 1;
-  end;
-
   AudioFormat := InputDevice.AudioFormat;
+  SampleSize := AudioSampleSize[AudioFormat.Format];
+  SampleCount := Size div SampleSize;
+  SamplesPerChannel := Size div AudioFormat.FrameSize;
 
-  // FIXME: At the moment we assume a SInt16 format
-  // TODO:  use SDL_AudioConvert to convert to SInt16 but do NOT change the
-  // samplerate (SDL does not convert 44.1kHz to 48kHz so we might get wrong
-  // results in the analysis phase otherwise)
-  if (AudioFormat.Format <> asfS16) then
-  begin
-    // this only occurs if a developer choosed an unsupported input sample-format
-    Log.CriticalError('TAudioInputProcessor.HandleMicrophoneData: Wrong sample-format');
-    Exit;
-  end;
-
-  // interpret buffer as buffer of bytes
-  SampleBuffer := Buffer;
-
-  NumSamples := Size div SizeOf(Smallint);
-
-  // boost buffer
-  // TODO: remove this senseless stuff - adjust the threshold instead
-  for i := 0 to NumSamples-1 do
-  begin
-    Value := SampleBuffer^[i] * Boost;
-
-    // TODO :  JB -  This will clip the audio... cant we reduce the "Boost" if the data clips ??
-    if Value > High(Smallint) then
-      Value := High(Smallint);
-
-    if Value < Low(Smallint) then
-      Value := Low(Smallint);
-
-    SampleBuffer^[i] := Value;
-  end;
-
-  // samples per channel
-  FrameSize := AudioFormat.Channels * SizeOf(SmallInt);
-  NumFrames := Size div FrameSize;
+  SingleChannelBufferSize := SamplesPerChannel * SampleSize;
+  GetMem(SingleChannelBuffer, SingleChannelBufferSize);
 
   // process channels
   for ChannelIndex := 0 to High(InputDevice.CaptureChannel) do
   begin
     CaptureChannel := InputDevice.CaptureChannel[ChannelIndex];
+    // check if a capture buffer was assigned, otherwise there is nothing to do
     if (CaptureChannel <> nil) then
     begin
       // set offset according to channel index
-      ChannelBuffer := @PChar(Buffer)[ChannelIndex * SizeOf(SmallInt)];
-
-      // TODO: remove BufferNew and write to BufferArray directly
-
-      CaptureChannel.BufferNew.Clear;
-      for i := 0 to NumFrames-1 do
+      MultiChannelBuffer := @Buffer[ChannelIndex * SampleSize];
+      // seperate channel-data from interleaved multi-channel (e.g. stereo) data
+      for i := 0 to SamplesPerChannel-1 do
       begin
-        CaptureChannel.BufferNew.Write(ChannelBuffer[i*FrameSize], SizeOf(SmallInt));
+        Move(MultiChannelBuffer[i*AudioFormat.FrameSize],
+             SingleChannelBuffer[i*SampleSize],
+             SampleSize);
       end;
-      CaptureChannel.ProcessNewBuffer();
+      CaptureChannel.ProcessNewBuffer(SingleChannelBuffer, SingleChannelBufferSize);
     end;
   end;
+
+  FreeMem(SingleChannelBuffer);
 end;
 
 
@@ -559,6 +607,7 @@ begin
   for i := 0 to High(AudioInputProcessor.DeviceList) do
     AudioInputProcessor.DeviceList[i].Free();
   AudioInputProcessor.DeviceList := nil;
+  Result := true;
 end;
 
 {*
@@ -625,14 +674,22 @@ end;
 procedure TAudioInputBase.CaptureStop;
 var
   DeviceIndex: integer;
+  ChannelIndex: integer;
   Device: TAudioInputDevice;
+  DeviceCfg: PInputDeviceConfig;
 begin
   for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
   begin
     Device := AudioInputProcessor.DeviceList[DeviceIndex];
     if not assigned(Device) then
       continue;
+
     Device.Stop();
+
+    // disconnect capture buffers
+    DeviceCfg := @Ini.InputDeviceConfig[Device.CfgIndex];
+    for ChannelIndex := 0 to High(DeviceCfg.ChannelToPlayerMap) do
+      Device.LinkCaptureBuffer(ChannelIndex, nil);
   end;
 
   Started := false;

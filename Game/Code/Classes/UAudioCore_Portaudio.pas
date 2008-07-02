@@ -16,9 +16,8 @@ uses
 
 type
   TAudioCore_Portaudio = class
-    private
-      constructor Create();
     public
+      constructor Create();
       class function GetInstance(): TAudioCore_Portaudio;
       function GetPreferredApiIndex(): TPaHostApiIndex;
       function TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;

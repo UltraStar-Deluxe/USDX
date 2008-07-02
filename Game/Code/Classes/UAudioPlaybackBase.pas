@@ -16,13 +16,17 @@ type
     protected
       OutputDeviceList: TAudioOutputDeviceList;
       MusicStream: TAudioPlaybackStream;
-      // open sound or music stream (used by Open() and OpenSound())
-      function OpenStream(const Filename: string): TAudioPlaybackStream; virtual; abstract;
+      function CreatePlaybackStream(): TAudioPlaybackStream; virtual; abstract;
       procedure ClearOutputDeviceList();
-    public
-      function GetName: String; virtual; abstract;
+      function GetLatency(): double; virtual; abstract;
 
-      function  Open(const Filename: string): boolean; // true if succeed
+      // open sound or music stream (used by Open() and OpenSound())
+      function OpenStream(const Filename: string): TAudioPlaybackStream;
+      function OpenDecodeStream(const Filename: string): TAudioDecodeStream;
+    public
+      function GetName: string; virtual; abstract;
+
+      function Open(const Filename: string): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -30,13 +34,15 @@ type
       procedure Stop;
       procedure FadeIn(Time: real; TargetVolume: single);
 
+      procedure SetSyncSource(SyncSource: TSyncSource);
+
       procedure SetPosition(Time: real);
       function  GetPosition: real;
 
       function InitializePlayback: boolean; virtual; abstract;
       function FinalizePlayback: boolean; virtual;
 
-      //      function SetOutputDevice(Device: TAudioOutputDevice): boolean;
+      //function SetOutputDevice(Device: TAudioOutputDevice): boolean;
       function GetOutputDeviceList(): TAudioOutputDeviceList;
 
       procedure SetAppVolume(Volume: single); virtual; abstract;
@@ -48,21 +54,24 @@ type
       function  Length: real;
 
       // Sounds
-      function OpenSound(const Filename: String): TAudioPlaybackStream;
-      procedure PlaySound(stream: TAudioPlaybackStream);
-      procedure StopSound(stream: TAudioPlaybackStream);
+      function OpenSound(const Filename: string): TAudioPlaybackStream;
+      procedure PlaySound(Stream: TAudioPlaybackStream);
+      procedure StopSound(Stream: TAudioPlaybackStream);
 
       // Equalizer
-      procedure GetFFTData(var data: TFFTData);
+      procedure GetFFTData(var Data: TFFTData);
 
       // Interface for Visualizer
-      function GetPCMData(var data: TPCMData): Cardinal;
+      function GetPCMData(var Data: TPCMData): Cardinal;
+
+      function CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream; virtual; abstract;
   end;
 
 
 implementation
 
 uses
+  ULog,
   SysUtils;
 
 { TAudioPlaybackBase }
@@ -71,6 +80,7 @@ function TAudioPlaybackBase.FinalizePlayback: boolean;
 begin
   FreeAndNil(MusicStream);
   ClearOutputDeviceList();
+  Result := true;
 end;
 
 function TAudioPlaybackBase.Open(const Filename: string): boolean;
@@ -92,8 +102,64 @@ end;
 
 procedure TAudioPlaybackBase.Close;
 begin
-  if assigned(MusicStream) then
-    MusicStream.Close();
+  FreeAndNil(MusicStream);
+end;
+
+function TAudioPlaybackBase.OpenDecodeStream(const Filename: String): TAudioDecodeStream;
+var
+  i: integer;
+begin
+  for i := 0 to AudioDecoders.Count-1 do
+  begin
+    Result := IAudioDecoder(AudioDecoders[i]).Open(Filename);
+    if (assigned(Result)) then
+    begin
+      Log.LogInfo('Using decoder ' + IAudioDecoder(AudioDecoders[i]).GetName() +
+        ' for "' + Filename + '"', 'TAudioPlaybackBase.OpenDecodeStream');
+      Exit;
+    end;
+  end;
+  Result := nil;
+end;
+
+procedure OnClosePlaybackStream(Stream: TAudioProcessingStream);
+var
+  PlaybackStream: TAudioPlaybackStream;
+  SourceStream: TAudioSourceStream;
+begin
+  PlaybackStream := TAudioPlaybackStream(Stream);
+  SourceStream := PlaybackStream.GetSourceStream();
+  SourceStream.Free;
+end;
+
+function TAudioPlaybackBase.OpenStream(const Filename: string): TAudioPlaybackStream;
+var
+  PlaybackStream: TAudioPlaybackStream;
+  DecodeStream: TAudioDecodeStream;
+begin
+  Result := nil;
+
+  //Log.LogStatus('Loading Sound: "' + Filename + '"', 'TAudioPlayback_Bass.OpenStream');
+
+  DecodeStream := OpenDecodeStream(Filename);
+  if (not assigned(DecodeStream)) then
+  begin
+    Log.LogStatus('Could not open "' + Filename + '"', 'TAudioPlayback_Bass.OpenStream');
+    Exit;
+  end;
+
+  // create a matching playback-stream for the decoder
+  PlaybackStream := CreatePlaybackStream();
+  if (not PlaybackStream.Open(DecodeStream)) then
+  begin
+    FreeAndNil(PlaybackStream);
+    FreeAndNil(DecodeStream);
+    Exit;
+  end;
+
+  PlaybackStream.AddOnCloseHandler(OnClosePlaybackStream);
+
+  Result := PlaybackStream;
 end;
 
 procedure TAudioPlaybackBase.Play;
@@ -134,6 +200,12 @@ procedure TAudioPlaybackBase.SetPosition(Time: real);
 begin
   if assigned(MusicStream) then
     MusicStream.Position := Time;
+end;
+
+procedure TAudioPlaybackBase.SetSyncSource(SyncSource: TSyncSource);
+begin
+  if assigned(MusicStream) then
+    MusicStream.SetSyncSource(SyncSource);
 end;
 
 procedure TAudioPlaybackBase.Rewind;

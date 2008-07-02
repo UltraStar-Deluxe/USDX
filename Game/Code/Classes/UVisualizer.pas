@@ -1,12 +1,14 @@
-{############################################################################
-#                   Visualizer support for UltraStar deluxe                 #
-#                                                                           #
-#   Created by hennymcc                                                     #
-#   Slight modifications by Jay Binks                                       #
-#   based on UVideo.pas                                                     #
-#############################################################################}
-
 unit UVisualizer;
+
+(* TODO:
+ *   - fix video/visualizer switching
+ *   - use GL_EXT_framebuffer_object for rendering to a separate framebuffer,
+ *     this will prevent plugins from messing up our render-context
+ *     (-> no stack corruption anymore, no need for Save/RestoreOpenGLState()).
+ *   - create a generic (C-compatible) interface for visualization plugins
+ *   - create a visualization plugin manager
+ *   - write a plugin for projectM in C/C++ (so we need no wrapper anymore)
+ *)
 
 interface
 
@@ -35,27 +37,6 @@ uses
   UConfig,
   ULog;
 
-(*
- * TODO:
- *   - fix video/visualizer switching and initialisation
- *   - use GL_EXT_framebuffer_object for rendering to a separate framebuffer,
- *     this will prevent plugins from messing up our render-context
- *     (-> no stack corruption anymore, no need for Save/RestoreOpenGLState()).
- *   - create a generic (C-compatible) interface for visualization plugins
- *   - create a visualization plugin manager
- *   - write a plugin for projectM in C/C++ (so we need no wrapper anymore)
- *)
-
-var
-  singleton_VideoProjectM : IVideoPlayback;
-
-var
-  ProjectMPath : string;
-
-  // FIXME: dirty fix needed because the init method is not
-  //   called yet.
-  inited: boolean;
-
 {$IF PROJECTM_VERSION < 1000000} // < 1.0
 const
   meshX = 32;
@@ -67,15 +48,16 @@ const
 type
   TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
     private
-      pm                : TProjectM;
+      pm: TProjectM;
+      ProjectMPath : string;
+      Initialized: boolean;
 
-      VisualizerStarted ,
-      VisualizerPaused  : Boolean;
+      VisualizerStarted: boolean;
+      VisualizerPaused: boolean;
 
-      VisualTex         : glUint;
-      PCMData           : TPCMData;
-
-      RndPCMcount       : integer;
+      VisualTex: GLuint;
+      PCMData: TPCMData;
+      RndPCMcount: integer;
 
       projMatrix: array[0..3, 0..3] of GLdouble;
       texMatrix:  array[0..3, 0..3] of GLdouble;
@@ -91,31 +73,38 @@ type
       procedure RestoreOpenGLState();
 
     public
-      procedure   Init();
-      function    GetName: String;
+      function GetName: String;
 
-      function    Open(const aFileName : string): boolean; // true if succeed
-      procedure   Close;
+      function Init(): boolean;
+      function Finalize(): boolean;
 
-      procedure   Play;
-      procedure   Pause;
-      procedure   Stop;
+      function Open(const aFileName : string): boolean; // true if succeed
+      procedure Close;
 
-      procedure   SetPosition(Time: real);
-      function    GetPosition: real;
+      procedure Play;
+      procedure Pause;
+      procedure Stop;
 
-      procedure   GetFrame(Time: Extended);
-      procedure   DrawGL(Screen: integer);
+      procedure SetPosition(Time: real);
+      function GetPosition: real;
+
+      procedure GetFrame(Time: Extended);
+      procedure DrawGL(Screen: integer);
   end;
 
 
-procedure TVideoPlayback_ProjectM.Init();
+function  TVideoPlayback_ProjectM.GetName: String;
 begin
-  // FIXME: dirty fix needed because the init method is not
-  //   called yet.
-  if (inited) then
+  result := 'ProjectM';
+end;
+
+function TVideoPlayback_ProjectM.Init(): boolean;
+begin
+  Result := true;
+
+  if (Initialized) then
     Exit;
-  inited := true;
+  Initialized := true;
 
   RndPCMcount := 0;
 
@@ -133,20 +122,23 @@ begin
   {$ENDIF}
 end;
 
-function  TVideoPlayback_ProjectM.GetName: String;
+function TVideoPlayback_ProjectM.Finalize(): boolean;
 begin
-  result := 'ProjectM';
+  VisualizerStop();
+  {$IFDEF UseTexture}
+  glDeleteTextures(1, PglUint(@VisualTex));
+  {$ENDIF}
+  Result := true;
 end;
-
 
 function TVideoPlayback_ProjectM.Open(const aFileName : string): boolean; // true if succeed
 begin
-  VisualizerStart();
-  result := true;
+  result := false;
 end;
 
 procedure TVideoPlayback_ProjectM.Close;
 begin
+  VisualizerStop();
 end;
 
 procedure TVideoPlayback_ProjectM.Play;
@@ -232,18 +224,21 @@ begin
   if VisualizerStarted then
     Exit;
 
-  // FIXME: dirty fix needed because the init method is not
-  //   called yet.
-  if (not inited) then
-    Init();
-
-  {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
-  pm := TProjectM.Create(ProjectMPath + 'config.inp');
-  {$ELSE}
-  pm := TProjectM.Create(
-    meshX, meshY, fps, textureSize, ScreenW, ScreenH,
-    ProjectMPath + 'presets', ProjectMPath + 'fonts');
-  {$IFEND}
+  try
+    {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
+    pm := TProjectM.Create(ProjectMPath + 'config.inp');
+    {$ELSE}
+    pm := TProjectM.Create(
+      meshX, meshY, fps, textureSize, ScreenW, ScreenH,
+      ProjectMPath + 'presets', ProjectMPath + 'fonts');
+    {$IFEND}
+  except on E: Exception do
+  begin
+    // Create() might fail if the config-file is not found
+    Log.LogError('TProjectM.Create: ' + E.Message, 'TVideoPlayback_ProjectM.VisualizerStart');
+    Exit;
+  end;
+  end;
 
   VisualizerStarted := True;
 
@@ -260,7 +255,7 @@ begin
   if VisualizerStarted then
   begin
     VisualizerStarted := False;
-    pm.Free();
+    FreeAndNil(pm);
   end;
 end;
 
@@ -380,10 +375,6 @@ end;
 
 
 initialization
-  singleton_VideoProjectM := TVideoPlayback_ProjectM.create();
-  AudioManager.add( singleton_VideoProjectM );
-
-finalization
-  AudioManager.Remove( singleton_VideoProjectM );
+  MediaManager.Add(TVideoPlayback_ProjectM.Create);
 
 end.

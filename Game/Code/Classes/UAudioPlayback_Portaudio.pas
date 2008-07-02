@@ -29,6 +29,7 @@ type
     private
       paStream:  PPaStream;
       AudioCore: TAudioCore_Portaudio;
+      Latency: double;
       function OpenDevice(deviceIndex: TPaDeviceIndex): boolean;
       function EnumDevices(): boolean;
     protected
@@ -36,6 +37,7 @@ type
       function StartAudioPlaybackEngine(): boolean;      override;
       procedure StopAudioPlaybackEngine();               override;
       function FinalizeAudioPlaybackEngine(): boolean;   override;
+      function GetLatency(): double;                     override;
     public
       function GetName: String;                          override;
   end;
@@ -45,9 +47,6 @@ type
       PaDeviceIndex:  TPaDeviceIndex;
   end;
 
-var
-  singleton_AudioPlaybackPortaudio : IAudioPlayback;
-
 
 { TAudioPlayback_Portaudio }
 
@@ -55,63 +54,74 @@ function PortaudioAudioCallback(input: Pointer; output: Pointer; frameCount: Lon
     timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
     userData: Pointer): Integer; cdecl;
 var
-  engine: TAudioPlayback_Portaudio;
+  Engine: TAudioPlayback_Portaudio;
 begin
-  engine := TAudioPlayback_Portaudio(userData);
-  engine.AudioCallback(output, frameCount * engine.FormatInfo.FrameSize);
-  result := paContinue;
+  Engine := TAudioPlayback_Portaudio(userData);
+  // update latency
+  Engine.Latency := timeInfo.outputBufferDacTime - timeInfo.currentTime;
+  // call superclass callback
+  Engine.AudioCallback(output, frameCount * Engine.FormatInfo.FrameSize);
+  Result := paContinue;
 end;
 
 function TAudioPlayback_Portaudio.GetName: String;
 begin
-  result := 'Portaudio_Playback';
+  Result := 'Portaudio_Playback';
 end;
 
 function TAudioPlayback_Portaudio.OpenDevice(deviceIndex: TPaDeviceIndex): boolean;
 var
-  deviceInfo : PPaDeviceInfo;
-  sampleRate : double;
-  outParams  : TPaStreamParameters;
+  DeviceInfo : PPaDeviceInfo;
+  SampleRate : double;
+  OutParams  : TPaStreamParameters;
+  StreamInfo : PPaStreamInfo;
   err        : TPaError;
 begin
   Result := false;
 
-  deviceInfo := Pa_GetDeviceInfo(deviceIndex);
+  DeviceInfo := Pa_GetDeviceInfo(deviceIndex);
 
-  Log.LogInfo('Audio-Output Device: ' + deviceInfo^.name, 'TAudioPlayback_Portaudio.OpenDevice');
+  Log.LogInfo('Audio-Output Device: ' + DeviceInfo^.name, 'TAudioPlayback_Portaudio.OpenDevice');
 
-  sampleRate := deviceInfo^.defaultSampleRate;
+  SampleRate := DeviceInfo^.defaultSampleRate;
 
-  with outParams do
+  with OutParams do
   begin
     device := deviceIndex;
     channelCount := 2;
     sampleFormat := paInt16;
-    suggestedLatency := deviceInfo^.defaultLowOutputLatency;
+    suggestedLatency := DeviceInfo^.defaultLowOutputLatency;
     hostApiSpecificStreamInfo := nil;
   end;
 
   // check souncard and adjust sample-rate
-  if not AudioCore.TestDevice(nil, @outParams, sampleRate) then
+  if not AudioCore.TestDevice(nil, @OutParams, SampleRate) then
   begin
     Log.LogStatus('TestDevice failed!', 'TAudioPlayback_Portaudio.OpenDevice');
-    exit;
+    Exit;
   end;
 
   // open output stream
-  err := Pa_OpenStream(paStream, nil, @outParams, sampleRate,
+  err := Pa_OpenStream(paStream, nil, @OutParams, SampleRate,
           paFramesPerBufferUnspecified,
           paNoFlag, @PortaudioAudioCallback, Self);
   if(err <> paNoError) then
   begin
     Log.LogStatus(Pa_GetErrorText(err), 'TAudioPlayback_Portaudio.OpenDevice');
     paStream := nil;
-    exit;
+    Exit;
   end;
-  
+
+  // get estimated latency (will be updated with real latency in the callback)
+  StreamInfo := Pa_GetStreamInfo(paStream);
+  if (StreamInfo <> nil) then
+    Latency := StreamInfo^.outputLatency
+  else
+    Latency := 0;
+
   FormatInfo := TAudioFormatInfo.Create(
-    outParams.channelCount,
-    sampleRate,
+    OutParams.channelCount,
+    SampleRate,
     asfS16 // FIXME: is paInt16 system-dependant or -independant?
   );
 
@@ -131,7 +141,7 @@ var
   err:         TPaError;
   errMsg:      string;
   paDevice:    TPortaudioOutputDevice;
-  inputParams: TPaStreamParameters;
+  outputParams: TPaStreamParameters;
   stream:      PPaStream;
   streamInfo:  PPaStreamInfo;
   sampleRate:  double;
@@ -140,6 +150,7 @@ var
   cbWorks: boolean;
 begin
   Result := false;
+
 (*
   // choose the best available Audio-API
   paApiIndex := AudioCore.GetPreferredApiIndex();
@@ -190,10 +201,10 @@ begin
     // TODO: correct too low latencies (what is a too low latency, maybe < 10ms?)
     latency := deviceInfo^.defaultLowInputLatency;
 
-    // setup desired input parameters
-    // TODO: retry with input-latency set to 20ms (defaultLowInputLatency might
+    // setup desired output parameters
+    // TODO: retry with input-latency set to 20ms (defaultLowOutputLatency might
     //       not be set correctly in OSS)
-    with inputParams do
+    with outputParams do
     begin
       device := deviceIndex;
       channelCount := channelCnt;
@@ -203,24 +214,24 @@ begin
     end;
 
     // check if mic-callback works (might not be called on some devices)
-    if (not TAudioCore_Portaudio.TestDevice(@inputParams, nil, sampleRate)) then
+    if (not TAudioCore_Portaudio.TestDevice(nil, @outputParams, sampleRate)) then
     begin
       // ignore device if callback did not work
       Log.LogError('Device "'+paDevice.Name+'" does not respond',
-                   'TAudioInput_Portaudio.InitializeRecord');
+                   'TAudioPlayback_Portaudio.InitializeRecord');
       paDevice.Free();
       continue;
     end;
 
     // open device for further info
-    err := Pa_OpenStream(stream, @inputParams, nil, sampleRate,
+    err := Pa_OpenStream(stream, nil, @outputParams, sampleRate,
         paFramesPerBufferUnspecified, paNoFlag, @MicrophoneTestCallback, nil);
     if(err <> paNoError) then
     begin
       // unable to open device -> skip
       errMsg := Pa_GetErrorText(err);
       Log.LogError('Device error: "'+ deviceName +'" ('+ errMsg +')',
-                   'TAudioInput_Portaudio.InitializeRecord');
+                   'TAudioPlayback_Portaudio.InitializeRecord');
       paDevice.Free();
       continue;
     end;
@@ -237,7 +248,7 @@ begin
         sampleRate := streamInfo^.sampleRate;
       end;
     end;
-    
+
     // create audio-format info and resize capture-buffer array
     paDevice.AudioFormat := TAudioFormatInfo.Create(
         channelCnt,
@@ -246,11 +257,11 @@ begin
     );
     SetLength(paDevice.CaptureChannel, paDevice.AudioFormat.Channels);
 
-    Log.LogStatus('InputDevice "'+paDevice.Name+'"@' +
+    Log.LogStatus('OutputDevice "'+paDevice.Name+'"@' +
         IntToStr(paDevice.AudioFormat.Channels)+'x'+
         FloatToStr(paDevice.AudioFormat.SampleRate)+'Hz ('+
-        FloatTostr(inputParams.suggestedLatency)+'sec)' ,
-        'Portaudio.InitializeRecord');
+        FloatTostr(outputParams.suggestedLatency)+'sec)' ,
+        'TAudioInput_Portaudio.InitializeRecord');
 
     // close test-stream
     Pa_CloseStream(stream);
@@ -262,9 +273,9 @@ begin
   SetLength(OutputDeviceList, SC);
 
   Log.LogStatus('#Output-Devices: ' + inttostr(SC), 'Portaudio');
+*)
 
   Result := true;
-  *)
 end;
 
 function TAudioPlayback_Portaudio.InitializeAudioPlaybackEngine(): boolean;
@@ -274,7 +285,7 @@ var
   paOutDevice     : TPaDeviceIndex;
   err: TPaError;
 begin
-  result := false;
+  Result := false;
 
   AudioCore := TAudioCore_Portaudio.GetInstance();
 
@@ -304,14 +315,14 @@ begin
     Exit;
   end;
 
-  result := true;
+  Result := true;
 end;
 
 function TAudioPlayback_Portaudio.StartAudioPlaybackEngine(): boolean;
 var
   err: TPaError;
 begin
-  result := false;
+  Result := false;
 
   if (paStream = nil) then
     Exit;
@@ -320,10 +331,10 @@ begin
   if(err <> paNoError) then
   begin
     Log.LogStatus('Pa_StartStream: '+Pa_GetErrorText(err), 'UAudioPlayback_Portaudio');
-    exit;
+    Exit;
   end;
 
-  result := true;
+  Result := true;
 end;
 
 procedure TAudioPlayback_Portaudio.StopAudioPlaybackEngine();
@@ -338,13 +349,13 @@ begin
   Result := true;
 end;
 
+function TAudioPlayback_Portaudio.GetLatency(): double;
+begin
+  Result := Latency;
+end;
+
 
 initialization
-  singleton_AudioPlaybackPortaudio := TAudioPlayback_Portaudio.create();
-  AudioManager.add( singleton_AudioPlaybackPortaudio );
-
-finalization
-  AudioManager.Remove( singleton_AudioPlaybackPortaudio );
-
+  MediaManager.Add(TAudioPlayback_Portaudio.Create);
 
 end.

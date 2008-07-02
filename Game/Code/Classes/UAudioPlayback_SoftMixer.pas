@@ -13,6 +13,7 @@ uses
   Classes,
   SysUtils,
   sdl,
+  URingBuffer,
   UMusic,
   UAudioPlaybackBase;
 
@@ -23,86 +24,90 @@ type
     private
       Engine: TAudioPlayback_SoftMixer;
 
-      DecodeStream: TAudioDecodeStream;
-      SampleBuffer    : PChar;
+      SampleBuffer:      PChar;
+      SampleBufferSize:  integer;
       SampleBufferCount: integer; // number of available bytes in SampleBuffer
-      SampleBufferPos : cardinal;
-      BytesAvail: integer;
-      cvt: TSDL_AudioCVT;
+      SampleBufferPos:   cardinal;
 
+      SourceBuffer:      PChar;
+      SourceBufferSize:  integer;
+      SourceBufferCount: integer; // number of available bytes in SourceBuffer
+
+      Converter: TAudioConverter;
       Status:   TStreamStatus;
-      Loop:     boolean;
-
       InternalLock: PSDL_Mutex;
-
       SoundEffects: TList;
-
-      _volume: single;
+      fVolume: single;
 
       FadeInStartTime, FadeInTime: cardinal;
       FadeInStartVolume, FadeInTargetVolume: single;
 
+      NeedsRewind: boolean;
+
       procedure Reset();
 
-      class function ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
+      procedure ApplySoundEffects(Buffer: PChar; BufferSize: integer);
       function InitFormatConversion(): boolean;
+      procedure FlushBuffers();
 
-      procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
-      procedure Unlock(); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure LockSampleBuffer(); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure UnlockSampleBuffer(); {$IFDEF HasInline}inline;{$ENDIF}
+    protected
+      function GetLatency(): double;        override;
+      function GetStatus(): TStreamStatus;  override;
+      function GetVolume(): single;         override;
+      procedure SetVolume(Volume: single);  override;
+      function GetLength(): real;           override;
+      function GetLoop(): boolean;          override;
+      procedure SetLoop(Enabled: boolean);  override;
+      function GetPosition: real;           override;
+      procedure SetPosition(Time: real);    override;
     public
       constructor Create(Engine: TAudioPlayback_SoftMixer);
       destructor Destroy(); override;
 
-      function SetDecodeStream(decodeStream: TAudioDecodeStream): boolean;
+      function Open(SourceStream: TAudioSourceStream): boolean; override;
+      procedure Close();                    override;
 
       procedure Play();                     override;
       procedure Pause();                    override;
       procedure Stop();                     override;
       procedure FadeIn(Time: real; TargetVolume: single); override;
 
-      procedure Close();                    override;
+      function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
-      function GetLength(): real;           override;
-      function GetStatus(): TStreamStatus;  override;
-      function GetVolume(): single;         override;
-      procedure SetVolume(Volume: single);  override;
-      function GetLoop(): boolean;          override;
-      procedure SetLoop(Enabled: boolean);  override;
-      function GetPosition: real;           override;
-      procedure SetPosition(Time: real);    override;
+      function ReadData(Buffer: PChar; BufferSize: integer): integer;
 
-      function ReadData(Buffer: PChar; BufSize: integer): integer;
+      function GetPCMData(var Data: TPCMData): Cardinal; override;
+      procedure GetFFTData(var Data: TFFTData);          override;
 
-      function GetPCMData(var data: TPCMData): Cardinal; override;
-      procedure GetFFTData(var data: TFFTData);          override;
-
-      procedure AddSoundEffect(effect: TSoundEffect);    override;
-      procedure RemoveSoundEffect(effect: TSoundEffect); override;
+      procedure AddSoundEffect(Effect: TSoundEffect);    override;
+      procedure RemoveSoundEffect(Effect: TSoundEffect); override;
   end;
 
   TAudioMixerStream = class
     private
       Engine: TAudioPlayback_SoftMixer;
 
-      activeStreams: TList;
-      mixerBuffer: PChar;
-      internalLock: PSDL_Mutex;
+      ActiveStreams: TList;
+      MixerBuffer: PChar;
+      InternalLock: PSDL_Mutex;
 
-      appVolume: single;
+      AppVolume: single;
 
       procedure Lock(); {$IFDEF HasInline}inline;{$ENDIF}
       procedure Unlock(); {$IFDEF HasInline}inline;{$ENDIF}
 
       function GetVolume(): single;
-      procedure SetVolume(volume: single);
+      procedure SetVolume(Volume: single);
     public
       constructor Create(Engine: TAudioPlayback_SoftMixer);
       destructor Destroy(); override;
-      procedure AddStream(stream: TAudioPlaybackStream);
-      procedure RemoveStream(stream: TAudioPlaybackStream);
-      function ReadData(Buffer: PChar; BufSize: integer): integer;
+      procedure AddStream(Stream: TAudioPlaybackStream);
+      procedure RemoveStream(Stream: TAudioPlaybackStream);
+      function ReadData(Buffer: PChar; BufferSize: integer): integer;
 
-      property Volume: single READ GetVolume WRITE SetVolume;
+      property Volume: single read GetVolume write SetVolume;
   end;
 
   TAudioPlayback_SoftMixer = class(TAudioPlaybackBase)
@@ -115,9 +120,9 @@ type
       function StartAudioPlaybackEngine(): boolean;      virtual; abstract;
       procedure StopAudioPlaybackEngine();               virtual; abstract;
       function FinalizeAudioPlaybackEngine(): boolean;   virtual; abstract;
-      procedure AudioCallback(buffer: PChar; size: integer); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure AudioCallback(Buffer: PChar; Size: integer); {$IFDEF HasInline}inline;{$ENDIF}
 
-      function OpenStream(const Filename: String): TAudioPlaybackStream; override;
+      function CreatePlaybackStream(): TAudioPlaybackStream; override;
     public
       function GetName: String; override; abstract;
       function InitializePlayback(): boolean; override;
@@ -125,20 +130,46 @@ type
 
       procedure SetAppVolume(Volume: single); override;
 
+      function CreateVoiceStream(ChannelMap: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream; override;
+
       function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
-      procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Single); virtual;
+      procedure MixBuffers(DstBuffer, SrcBuffer: PChar; Size: Cardinal; Volume: Single); virtual;
   end;
+
+type
+  TGenericVoiceStream = class(TAudioVoiceStream)
+    private
+      VoiceBuffer: TRingBuffer;
+      BufferLock: PSDL_Mutex;
+      PlaybackStream: TGenericPlaybackStream;
+      Engine: TAudioPlayback_SoftMixer;
+    public
+      constructor Create(Engine: TAudioPlayback_SoftMixer);
+
+      function Open(ChannelMap: integer; FormatInfo: TAudioFormatInfo): boolean; override;
+      procedure Close(); override;
+      procedure WriteData(Buffer: PChar; BufferSize: integer); override;
+      function ReadData(Buffer: PChar; BufferSize: integer): integer; override;
+      function IsEOF(): boolean; override;
+      function IsError(): boolean; override;
+  end;
+
+const
+  SOURCE_BUFFER_FRAMES = 4096;
+
+const
+  MAX_VOICE_DELAY = 0.500; // 20ms
 
 implementation
 
 uses
   Math,
-  //samplerate,
-  UFFT,
   ULog,
   UIni,
+  UFFT,
+  UAudioConverter,
   UMain;
 
 { TAudioMixerStream }
@@ -149,123 +180,123 @@ begin
 
   Self.Engine := Engine;
 
-  activeStreams := TList.Create;
-  internalLock := SDL_CreateMutex();
-  appVolume := 1.0;
+  ActiveStreams := TList.Create;
+  InternalLock := SDL_CreateMutex();
+  AppVolume := 1.0;
 end;
 
 destructor TAudioMixerStream.Destroy();
 begin
-  if assigned(mixerBuffer) then
-    Freemem(mixerBuffer);
-  activeStreams.Free;
-  SDL_DestroyMutex(internalLock);
+  if assigned(MixerBuffer) then
+    Freemem(MixerBuffer);
+  ActiveStreams.Free;
+  SDL_DestroyMutex(InternalLock);
   inherited;
 end;
 
 procedure TAudioMixerStream.Lock();
 begin
-  SDL_mutexP(internalLock);
+  SDL_mutexP(InternalLock);
 end;
 
 procedure TAudioMixerStream.Unlock();
 begin
-  SDL_mutexV(internalLock);
+  SDL_mutexV(InternalLock);
 end;
 
 function TAudioMixerStream.GetVolume(): single;
 begin
   Lock();
-  result := appVolume;
+  Result := AppVolume;
   Unlock();
 end;
 
-procedure TAudioMixerStream.SetVolume(volume: single);
+procedure TAudioMixerStream.SetVolume(Volume: single);
 begin
   Lock();
-  appVolume := volume;
+  AppVolume := Volume;
   Unlock();
 end;
 
-procedure TAudioMixerStream.AddStream(stream: TAudioPlaybackStream);
+procedure TAudioMixerStream.AddStream(Stream: TAudioPlaybackStream);
 begin
-  if not assigned(stream) then
+  if not assigned(Stream) then
     Exit;
 
   Lock();
   // check if stream is already in list to avoid duplicates
-  if (activeStreams.IndexOf(Pointer(stream)) = -1) then
-    activeStreams.Add(Pointer(stream));
+  if (ActiveStreams.IndexOf(Pointer(Stream)) = -1) then
+    ActiveStreams.Add(Pointer(Stream));
   Unlock();
 end;
 
 (*
- * Sets the entry of stream in the activeStreams-List to nil
- * but does not remove it from the list (count is not changed!).
+ * Sets the entry of stream in the ActiveStreams-List to nil
+ * but does not remove it from the list (Count is not changed!).
  * Otherwise iterations over the elements might fail due to a
- * changed count-property.
- * Call activeStreams.Pack() to remove the nil-pointers
- * or check for nil-pointers when accessing activeStreams.
+ * changed Count-property.
+ * Call ActiveStreams.Pack() to remove the nil-pointers
+ * or check for nil-pointers when accessing ActiveStreams.
  *)
-procedure TAudioMixerStream.RemoveStream(stream: TAudioPlaybackStream);
+procedure TAudioMixerStream.RemoveStream(Stream: TAudioPlaybackStream);
 var
-  index: integer;
+  Index: integer;
 begin
   Lock();
-  index := activeStreams.IndexOf(Pointer(stream));
-  if (index <> -1) then
+  Index := activeStreams.IndexOf(Pointer(Stream));
+  if (Index <> -1) then
   begin
     // remove entry but do not decrease count-property
-    activeStreams[index] := nil;
+    ActiveStreams[Index] := nil;
   end;
   Unlock();
 end;
 
-function TAudioMixerStream.ReadData(Buffer: PChar; BufSize: integer): integer;
+function TAudioMixerStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
 var
   i: integer;
-  size: integer;
-  stream: TGenericPlaybackStream;
-  needsPacking: boolean;
+  Size: integer;
+  Stream: TGenericPlaybackStream;
+  NeedsPacking: boolean;
 begin
-  result := BufSize;
+  Result := BufferSize;
 
   // zero target-buffer (silence)
-  FillChar(Buffer^, BufSize, 0);
+  FillChar(Buffer^, BufferSize, 0);
 
   // resize mixer-buffer if necessary
-  ReallocMem(mixerBuffer, BufSize);
-  if not assigned(mixerBuffer) then
+  ReallocMem(MixerBuffer, BufferSize);
+  if not assigned(MixerBuffer) then
     Exit;
 
   Lock();
 
-  needsPacking := false;
+  NeedsPacking := false;
 
   // mix streams to one stream
-  for i := 0 to activeStreams.Count-1 do
+  for i := 0 to ActiveStreams.Count-1 do
   begin
-    if (activeStreams[i] = nil) then
+    if (ActiveStreams[i] = nil) then
     begin
-      needsPacking := true;
+      NeedsPacking := true;
       continue;
     end;
 
-    stream := TGenericPlaybackStream(activeStreams[i]);
+    Stream := TGenericPlaybackStream(ActiveStreams[i]);
     // fetch data from current stream
-    size := stream.ReadData(mixerBuffer, BufSize);
-    if (size > 0) then
+    Size := Stream.ReadData(MixerBuffer, BufferSize);
+    if (Size > 0) then
     begin
       // mix stream-data with mixer-buffer
       // Note: use Self.appVolume instead of Self.Volume to prevent recursive locking
-      Engine.MixBuffers(Buffer, mixerBuffer, size, appVolume * stream.Volume);
+      Engine.MixBuffers(Buffer, MixerBuffer, Size, AppVolume * Stream.Volume);
     end;
   end;
 
   // remove nil-pointers from list
-  if (needsPacking) then
+  if (NeedsPacking) then
   begin
-    activeStreams.Pack();
+    ActiveStreams.Pack();
   end;
 
   Unlock();
@@ -278,7 +309,7 @@ constructor TGenericPlaybackStream.Create(Engine: TAudioPlayback_SoftMixer);
 begin
   inherited Create();
   Self.Engine := Engine;
-  internalLock := SDL_CreateMutex();
+  InternalLock := SDL_CreateMutex();
   SoundEffects := TList.Create;
   Status := ssStopped;
   Reset();
@@ -287,342 +318,419 @@ end;
 destructor TGenericPlaybackStream.Destroy();
 begin
   Close();
-  SDL_DestroyMutex(internalLock);
+  SDL_DestroyMutex(InternalLock);
   FreeAndNil(SoundEffects);
   inherited;
 end;
 
 procedure TGenericPlaybackStream.Reset();
 begin
-  // wake-up sleeping audio-callback threads in the ReadData()-function
-  if assigned(decodeStream) then
-    decodeStream.Close();
+  SourceStream := nil;
 
-  // stop audio-callback on this stream
-  Stop();
-
-  // reset and/or free data
-  
-  Loop := false;
-
-  // TODO: use DecodeStream.Unref() instead of Free();
-  FreeAndNil(DecodeStream);
+  FreeAndNil(Converter);
 
   FreeMem(SampleBuffer);
   SampleBuffer := nil;
   SampleBufferPos := 0;
-  BytesAvail := 0;
-  
-  _volume := 0;
+  SampleBufferSize := 0;
+  SampleBufferCount := 0;
+
+  FreeMem(SourceBuffer);
+  SourceBuffer := nil;
+  SourceBufferSize := 0;
+  SourceBufferCount := 0;
+
+  NeedsRewind := false;
+
+  fVolume := 0;
   SoundEffects.Clear;
   FadeInTime := 0;
 end;
 
-procedure TGenericPlaybackStream.Lock();
-begin
-  SDL_mutexP(internalLock);
-end;
-
-procedure TGenericPlaybackStream.Unlock();
-begin
-  SDL_mutexV(internalLock);
-end;
-
-class function TGenericPlaybackStream.ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
-begin
-  case Format of
-    asfU8:     SDLFormat := AUDIO_U8;
-    asfS8:     SDLFormat := AUDIO_S8;
-    asfU16LSB: SDLFormat := AUDIO_U16LSB;
-    asfS16LSB: SDLFormat := AUDIO_S16LSB;
-    asfU16MSB: SDLFormat := AUDIO_U16MSB;
-    asfS16MSB: SDLFormat := AUDIO_S16MSB;
-    asfU16:    SDLFormat := AUDIO_U16;
-    asfS16:    SDLFormat := AUDIO_S16;
-    else begin
-      Result := false;
-      Exit;
-    end;
-  end;
-  Result := true;
-end;
-
-function TGenericPlaybackStream.InitFormatConversion(): boolean;
-var
-  srcFormat: UInt16;
-  dstFormat: UInt16;
-  srcFormatInfo: TAudioFormatInfo;
-  dstFormatInfo: TAudioFormatInfo;
+function TGenericPlaybackStream.Open(SourceStream: TAudioSourceStream): boolean;
 begin
   Result := false;
 
-  srcFormatInfo := DecodeStream.GetAudioFormatInfo();
-  dstFormatInfo := Engine.GetAudioFormatInfo();
+  Close();
 
-  if (not ConvertAudioFormatToSDL(srcFormatInfo.Format, srcFormat) or
-      not ConvertAudioFormatToSDL(dstFormatInfo.Format, dstFormat)) then
+  if (not assigned(SourceStream)) then
+    Exit;
+  Self.SourceStream := SourceStream;
+
+  if (not InitFormatConversion()) then
   begin
-    Log.LogError('Audio-format not supported by SDL', 'TSoftMixerPlaybackStream.InitFormatConversion');
+    // reset decode-stream so it will not be freed on destruction
+    Self.SourceStream := nil;
     Exit;
   end;
 
-  if (SDL_BuildAudioCVT(@cvt,
-    srcFormat, srcFormatInfo.Channels, Round(srcFormatInfo.SampleRate),
-    dstFormat, dstFormatInfo.Channels, Round(dstFormatInfo.SampleRate)) = -1) then
-  begin
-    Log.LogError(SDL_GetError(), 'TSoftMixerPlaybackStream.InitFormatConversion');
-    Exit;
-  end;
+  SourceBufferSize := SOURCE_BUFFER_FRAMES * SourceStream.GetAudioFormatInfo().FrameSize;
+  GetMem(SourceBuffer, SourceBufferSize);
+  fVolume := 1.0;
 
   Result := true;
-end;
-
-function TGenericPlaybackStream.SetDecodeStream(decodeStream: TAudioDecodeStream): boolean;
-begin
-  result := false;
-
-  Reset();
-
-  if not assigned(decodeStream) then
-    Exit;
-  Self.DecodeStream := decodeStream;
-  if not InitFormatConversion() then
-    Exit;
-
-  _volume := 1.0;
-
-  result := true;
 end;
 
 procedure TGenericPlaybackStream.Close();
 begin
+  // stop audio-callback on this stream
+  Stop();
+
+  // Note: PerformOnClose must be called before SourceStream is invalidated
+  PerformOnClose();
+  // and free data
   Reset();
+end;
+
+procedure TGenericPlaybackStream.LockSampleBuffer();
+begin
+  SDL_mutexP(InternalLock);
+end;
+
+procedure TGenericPlaybackStream.UnlockSampleBuffer();
+begin
+  SDL_mutexV(InternalLock);
+end;
+
+function TGenericPlaybackStream.InitFormatConversion(): boolean;
+var
+  SrcFormatInfo: TAudioFormatInfo;
+  DstFormatInfo: TAudioFormatInfo;
+begin
+  Result := false;
+
+  SrcFormatInfo := SourceStream.GetAudioFormatInfo();
+  DstFormatInfo := GetAudioFormatInfo();
+
+  // TODO: selection should not be done here, use a factory (TAudioConverterFactory) instead 
+  {$IF Defined(UseFFMpegResample)}
+  Converter := TAudioConverter_FFMpeg.Create();
+  {$ELSEIF Defined(UseSRCResample)}
+  Converter := TAudioConverter_SRC.Create();
+  {$ELSE}
+  Converter := TAudioConverter_SDL.Create();
+  {$IFEND}
+
+  Result := Converter.Init(SrcFormatInfo, DstFormatInfo);
 end;
 
 procedure TGenericPlaybackStream.Play();
 var
-  mixer: TAudioMixerStream;
+  Mixer: TAudioMixerStream;
 begin
-  if (status = ssPlaying) then
-  begin
-    // rewind
-    if assigned(DecodeStream) then
-      DecodeStream.Position := 0;
-  end;
-  status := ssPlaying;
+  // only paused streams are not flushed
+  if (Status = ssPaused) then
+    NeedsRewind := false;
 
-  mixer := Engine.GetMixer();
-  if (mixer <> nil) then
-    mixer.AddStream(Self);
+  // rewind if necessary. Cases that require no rewind are:
+  // - stream was created and never played
+  // - stream was paused and is resumed now
+  // - stream was stopped and set to a new position already
+  if (NeedsRewind) then
+    SetPosition(0);
+
+  // update status
+  Status := ssPlaying;
+
+  NeedsRewind := true;
+
+  // add this stream to the mixer
+  Mixer := Engine.GetMixer();
+  if (Mixer <> nil) then
+    Mixer.AddStream(Self);
 end;
 
 procedure TGenericPlaybackStream.FadeIn(Time: real; TargetVolume: single);
 begin
   FadeInTime := Trunc(Time * 1000);
   FadeInStartTime := SDL_GetTicks();
-  FadeInStartVolume := _volume;
+  FadeInStartVolume := fVolume;
   FadeInTargetVolume := TargetVolume;
   Play();
 end;
 
 procedure TGenericPlaybackStream.Pause();
 var
-  mixer: TAudioMixerStream;
+  Mixer: TAudioMixerStream;
 begin
-  status := ssPaused;
+  if (Status <> ssPlaying) then
+    Exit;
 
-  mixer := Engine.GetMixer();
-  if (mixer <> nil) then
-    mixer.RemoveStream(Self);
+  Status := ssPaused;
+
+  Mixer := Engine.GetMixer();
+  if (Mixer <> nil) then
+    Mixer.RemoveStream(Self);
 end;
 
 procedure TGenericPlaybackStream.Stop();
 var
-  mixer: TAudioMixerStream;
+  Mixer: TAudioMixerStream;
 begin
-  if (status = ssStopped) then
+  if (Status = ssStopped) then
     Exit;
 
-  status := ssStopped;
+  Status := ssStopped;
 
-  mixer := Engine.GetMixer();
-  if (mixer <> nil) then
-    mixer.RemoveStream(Self);
-
-  // rewind (note: DecodeStream might be closed already, but this is not a problem)
-  if assigned(DecodeStream) then
-    DecodeStream.Position := 0;
+  Mixer := Engine.GetMixer();
+  if (Mixer <> nil) then
+    Mixer.RemoveStream(Self);
 end;
 
 function TGenericPlaybackStream.GetLoop(): boolean;
 begin
-  result := Loop;
+  if assigned(SourceStream) then
+    Result := SourceStream.Loop
+  else
+    Result := false;
 end;
 
 procedure TGenericPlaybackStream.SetLoop(Enabled: boolean);
 begin
-  Loop := Enabled;
+  if assigned(SourceStream) then
+    SourceStream.Loop := Enabled;
 end;
 
 function TGenericPlaybackStream.GetLength(): real;
 begin
-  if assigned(DecodeStream) then
-    result := DecodeStream.Length
+  if assigned(SourceStream) then
+    Result := SourceStream.Length
   else
-    result := -1;
+    Result := -1;
+end;
+
+function TGenericPlaybackStream.GetLatency(): double;
+begin
+  Result := Engine.GetLatency();
 end;
 
 function TGenericPlaybackStream.GetStatus(): TStreamStatus;
 begin
-  result := status;
+  Result := Status;
 end;
 
-{*
- * Note: 44.1kHz to 48kHz conversion or vice versa is not supported
- *  by SDL at the moment. No conversion takes place in this cases.
- *  This is because SDL just converts differences in powers of 2.
- *  So the result might not be that accurate. Although this is not
- *  audible in most cases it needs synchronization with the video
- *  or the lyrics timer.
- *  Using libsamplerate might give better results.
- *}
-function TGenericPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
+function TGenericPlaybackStream.GetAudioFormatInfo(): TAudioFormatInfo;
+begin
+  Result := Engine.GetAudioFormatInfo();
+end;
+
+procedure TGenericPlaybackStream.FlushBuffers();
+begin
+  SampleBufferCount := 0;
+  SampleBufferPos := 0;
+  SourceBufferCount := 0;
+end;
+
+procedure TGenericPlaybackStream.ApplySoundEffects(Buffer: PChar; BufferSize: integer);
 var
-  decodeBufSize: integer;
-  sampleBufSize: integer;
-  nBytesDecoded: integer;
-  frameSize: integer;
-  remFrameBytes: integer;
-  copyCnt: integer;
-  BytesNeeded: integer;
+  i: integer;
+begin
+  for i := 0 to SoundEffects.Count-1 do
+  begin
+    if (SoundEffects[i] <> nil) then
+    begin
+      TSoundEffect(SoundEffects[i]).Callback(Buffer, BufferSize);
+    end;
+  end;
+end;
+
+function TGenericPlaybackStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+var
+  ConversionInputCount: integer;
+  ConversionOutputSize: integer;   // max. number of converted data (= buffer size)
+  ConversionOutputCount: integer;  // actual number of converted data
+  SourceSize: integer;
+  RequestedSourceSize: integer;
+  NeededSampleBufferSize: integer;
+  BytesNeeded, BytesAvail: integer;
+  SourceFormatInfo, OutputFormatInfo: TAudioFormatInfo;
+  SourceFrameSize, OutputFrameSize: integer;
+  SkipOutputCount: integer;  // number of output-data bytes to skip
+  SkipSourceCount: integer;  // number of source-data bytes to skip
+  FillCount: integer;  // number of bytes to fill with padding data
+  CopyCount: integer;
+  PadFrame: PChar;
   i: integer;
 begin
   Result := -1;
 
-  BytesNeeded := BufSize;
+  // sanity check for the source-stream
+  if (not assigned(SourceStream)) then
+    Exit;
+  
+  SkipOutputCount := 0;
+  SkipSourceCount := 0;
+  FillCount := 0;
 
-  // copy remaining data from the last call to the result-buffer
-  if (BytesAvail > 0) then
+  SourceFormatInfo := SourceStream.GetAudioFormatInfo();
+  SourceFrameSize := SourceFormatInfo.FrameSize;
+  OutputFormatInfo := GetAudioFormatInfo();
+  OutputFrameSize := OutputFormatInfo.FrameSize;
+
+  // synchronize (adjust buffer size)
+  BytesNeeded := Synchronize(BufferSize, OutputFormatInfo);
+  if (BytesNeeded > BufferSize) then
   begin
-    copyCnt := Min(BufSize, BytesAvail);
-    Move(SampleBuffer[SampleBufferPos], Buffer[0], copyCnt);
-    Dec(BytesAvail,  copyCnt);
-    Dec(BytesNeeded, copyCnt);
-    if (BytesNeeded = 0) then
-    begin
-      // Result-Buffer is full -> no need to decode more data.
-      // The sample-buffer might even contain some data for the next call
-      Inc(SampleBufferPos, copyCnt);
-      Result := BufSize;
-      Exit;
-    end;
+    SkipOutputCount := BytesNeeded - BufferSize;
+    BytesNeeded := BufferSize;
+  end
+  else if (BytesNeeded < BufferSize) then
+  begin
+    FillCount := BufferSize - BytesNeeded;
   end;
 
-  if not assigned(DecodeStream) then
-    Exit;
-
-  // calc number of bytes to decode
-  decodeBufSize := Ceil(BufSize / cvt.len_ratio);
-  // assure that the decode-size is a multiple of the frame size
-  frameSize := DecodeStream.GetAudioFormatInfo().FrameSize;
-  remFrameBytes := decodeBufSize mod frameSize;
-  if (remFrameBytes > 0) then
-    decodeBufSize := decodeBufSize + (frameSize - remFrameBytes);
-
-  Lock();
+  // lock access to sample-buffer
+  LockSampleBuffer();
   try
-    // calc buffer size
-    sampleBufSize := decodeBufSize * cvt.len_mult;
 
-    // resize buffer if necessary.
-    // The required buffer-size will be smaller than the result-buffer
-    // in most cases (if the decoded signal is mono or has a lesser bitrate).
-    // If the output-rate is 44.1kHz and the decode-rate is 48kHz or 96kHz it
-    // will be ~1.09 or ~2.18 times bigger. Those extra memory consumption
-    // should be reasonable. If not we should call TDecodeStream.ReadData()
-    // multiple times.
-    // Note: we do not decrease the buffer by the count of bytes used from
-    //   the previous call of this function (bytesAvail). Otherwise the
-    //   buffer will be reallocated each time this function is called just to
-    //   add or remove a few bytes from the buffer.
-    //   By not doing this the buffer's size should be rather stable and it
-    //   will not be reallocated/resized at all if the BufSize params does not
-    //   change in consecutive calls.
-    ReallocMem(SampleBuffer, sampleBufSize);
-    if not assigned(SampleBuffer) then
-      Exit;
+    // skip sample-buffer data
+    SampleBufferPos := SampleBufferPos + SkipOutputCount;
+    // size of available bytes in SampleBuffer after skipping
+    SampleBufferCount := SampleBufferCount - SampleBufferPos;
+    // update byte skip-count
+    SkipOutputCount := -SampleBufferCount;
 
-    // decode data
-    nBytesDecoded := DecodeStream.ReadData(SampleBuffer, decodeBufSize);
-    if (nBytesDecoded = -1) then
-      Exit;
-
-    // end-of-file reached -> stop playback
-    if (DecodeStream.EOF) then
+    // now that we skipped all buffered data from the last pass, we have to skip
+    // data directly after fetching it from the source-stream.
+    if (SkipOutputCount > 0) then
     begin
-      Stop();
+      SampleBufferCount := 0;
+      // convert skip-count to source-format units and resize to a multiple of
+      // the source frame-size.
+      SkipSourceCount := Round((SkipOutputCount * OutputFormatInfo.GetRatio(SourceFormatInfo)) /
+                               SourceFrameSize) * SourceFrameSize;
+      SkipOutputCount := 0;
     end;
 
-    // resample decoded data
-    cvt.buf := PUint8(SampleBuffer);
-    cvt.len := nBytesDecoded;
-    if (SDL_ConvertAudio(@cvt) = -1) then
-      Exit;
+    // copy data to front of buffer
+    if ((SampleBufferCount > 0) and (SampleBufferPos > 0)) then
+      Move(SampleBuffer[SampleBufferPos], SampleBuffer[0], SampleBufferCount);
+    SampleBufferPos := 0;
 
-    SampleBufferCount := cvt.len_cvt;
+    // resize buffer to a reasonable size
+    if (BufferSize > SampleBufferCount) then
+    begin
+      // Note: use BufferSize instead of BytesNeeded to minimize the need for resizing
+      SampleBufferSize := BufferSize;
+      ReallocMem(SampleBuffer, SampleBufferSize);
+      if (not assigned(SampleBuffer)) then
+        Exit;
+    end;
+
+    // fill sample-buffer (fetch and convert one block of source data per loop)
+    while (SampleBufferCount < BytesNeeded) do
+    begin
+      // move remaining source data from the previous pass to front of buffer
+      if (SourceBufferCount > 0) then
+      begin
+        Move(SourceBuffer[SourceBufferSize-SourceBufferCount],
+             SourceBuffer[0],
+             SourceBufferCount);
+      end;
+
+      SourceSize := SourceStream.ReadData(
+          @SourceBuffer[SourceBufferCount], SourceBufferSize-SourceBufferCount);
+      // break on error (-1) or if no data is available (0), e.g. while seeking
+      if (SourceSize <= 0) then
+      begin
+        // if we do not have data -> exit
+        if (SourceBufferCount = 0) then
+        begin
+          FlushBuffers();
+          Exit;
+        end;
+        // if we have some data, stop retrieving data from the source stream
+        // and use the data we have so far
+        Break;
+      end;
+
+      SourceBufferCount := SourceBufferCount + SourceSize;
+
+      // end-of-file reached -> stop playback
+      if (SourceStream.EOF) then
+      begin
+        if (Loop) then
+          SourceStream.Position := 0
+        else
+          Stop();
+      end;
+
+      if (SkipSourceCount > 0) then
+      begin
+        // skip data and update source buffer count
+        SourceBufferCount := SourceBufferCount - SkipSourceCount;
+        SkipSourceCount := -SourceBufferCount;
+        // continue with next pass if we skipped all data
+        if (SourceBufferCount <= 0) then
+        begin
+          SourceBufferCount := 0;
+          Continue;
+        end;
+      end;
+
+      // calc buffer size (might be bigger than actual resampled byte count)
+      ConversionOutputSize := Converter.GetOutputBufferSize(SourceBufferCount);
+      NeededSampleBufferSize := SampleBufferCount + ConversionOutputSize;
+
+      // resize buffer if necessary
+      if (SampleBufferSize < NeededSampleBufferSize) then
+      begin
+        SampleBufferSize := NeededSampleBufferSize;
+        ReallocMem(SampleBuffer, SampleBufferSize);
+        if (not assigned(SampleBuffer)) then
+        begin
+          FlushBuffers();
+          Exit;
+        end;
+      end;
+
+      // resample source data (Note: ConversionInputCount might be adjusted by Convert())
+      ConversionInputCount := SourceBufferCount;
+      ConversionOutputCount := Converter.Convert(
+          SourceBuffer, @SampleBuffer[SampleBufferCount], ConversionInputCount);
+      if (ConversionOutputCount = -1) then
+      begin
+        FlushBuffers();
+        Exit;
+      end;
+
+      // adjust sample- and source-buffer count by the number of converted bytes
+      SampleBufferCount := SampleBufferCount + ConversionOutputCount;
+      SourceBufferCount := SourceBufferCount - ConversionInputCount;
+    end;
 
     // apply effects
-    for i := 0 to SoundEffects.Count-1 do
-    begin
-      if (SoundEffects[i] <> nil) then
-      begin
-        TSoundEffect(SoundEffects[i]).Callback(SampleBuffer, SampleBufferCount);
-      end;
-    end;
+    ApplySoundEffects(SampleBuffer, SampleBufferCount);
+
+    // copy data to result buffer
+    CopyCount := Min(BytesNeeded, SampleBufferCount);
+    Move(SampleBuffer[0], Buffer[BufferSize - BytesNeeded], CopyCount);
+    Dec(BytesNeeded, CopyCount);
+    SampleBufferPos := CopyCount;
+
+  // release buffer lock
   finally
-    Unlock();
+    UnlockSampleBuffer();
   end;
 
-  BytesAvail := SampleBufferCount;
-  SampleBufferPos := 0;
-
-  // copy data to result buffer
-  copyCnt := Min(BytesNeeded, BytesAvail);
-  Move(SampleBuffer[0], Buffer[BufSize - BytesNeeded], copyCnt);
-  Dec(BytesAvail,  copyCnt);
-  Dec(BytesNeeded, copyCnt);
-  Inc(SampleBufferPos, copyCnt);
-
-  Result := BufSize - BytesNeeded;
-end;
-
-(* TODO: libsamplerate support
-function TGenericPlaybackStream.ReadData(Buffer: PChar; BufSize: integer): integer;
-var
-  convState: PSRC_STATE;
-  convData: SRC_DATA;
-  error: integer;
-begin
-  // Note: needs mono->stereo conversion, multi-channel->stereo, etc.
-  // maybe we should use SDL for the channel-conversion stuff
-  // and use libsamplerate afterwards for the frequency-conversion
-
-  //convState := src_new(SRC_SINC_MEDIUM_QUALITY, 2, @error);
-  //src_short_to_float_array(input, output, len);
-  convData.
-  if (src_process(convState, @convData) <> 0) then
+  // pad the buffer with the last frame if we are to fast
+  if (FillCount > 0) then
   begin
-    Log.LogError(src_strerror(src_error(convState)), 'TSoftMixerPlaybackStream.ReadData');
-    Exit;
+    if (CopyCount >= OutputFrameSize) then
+      PadFrame := @Buffer[CopyCount-OutputFrameSize]
+    else
+      PadFrame := nil;
+    FillBufferWithFrame(@Buffer[CopyCount], FillCount,
+                        PadFrame, OutputFrameSize);
   end;
-  src_float_to_short_array();
-  //src_delete(convState);
-end;
-*)
 
-function TGenericPlaybackStream.GetPCMData(var data: TPCMData): Cardinal;
+  // BytesNeeded now contains the number of remaining bytes we were not able to fetch
+  Result := BufferSize - BytesNeeded;
+end;
+
+function TGenericPlaybackStream.GetPCMData(var Data: TPCMData): Cardinal;
 var
-  nBytes: integer;
+  ByteCount: integer;
 begin
   Result := 0;
 
@@ -634,23 +742,23 @@ begin
   end;
 
   // zero memory
-  FillChar(data, SizeOf(data), 0);
+  FillChar(Data, SizeOf(Data), 0);
 
   // TODO: At the moment just the first samples of the SampleBuffer
   // are returned, even if there is newer data in the upper samples.
 
-  Lock();
-  nBytes := Min(SizeOf(data), SampleBufferCount);
-  if (nBytes > 0) then
+  LockSampleBuffer();
+  ByteCount := Min(SizeOf(Data), SampleBufferCount);
+  if (ByteCount > 0) then
   begin
-    Move(SampleBuffer[0], data, nBytes);
+    Move(SampleBuffer[0], Data, ByteCount);
   end;
-  Unlock();
+  UnlockSampleBuffer();
   
-  Result := nBytes div SizeOf(TPCMStereoSample);
+  Result := ByteCount div SizeOf(TPCMStereoSample);
 end;
 
-procedure TGenericPlaybackStream.GetFFTData(var data: TFFTData);
+procedure TGenericPlaybackStream.GetFFTData(var Data: TFFTData);
 var
   i: integer;
   Frames: integer;
@@ -658,16 +766,14 @@ var
   AudioFormat: TAudioFormatInfo;
 begin
   // only works with SInt16 and Float values at the moment
-  AudioFormat := Engine.GetAudioFormatInfo();
+  AudioFormat := GetAudioFormatInfo();
 
   DataIn := AllocMem(FFTSize * SizeOf(Single));
   if (DataIn = nil) then
     Exit;
 
-  Lock();
+  LockSampleBuffer();
   // TODO: We just use the first Frames frames, the others are ignored.
-  // This is OK for the equalizer display but not if we want to use
-  // this function for voice-analysis someday (I don't think we want).
   Frames := Min(FFTSize, SampleBufferCount div AudioFormat.FrameSize);
   // use only first channel and convert data to float-values
   case AudioFormat.Format of
@@ -682,56 +788,84 @@ begin
         DataIn[i] := PSingle(@SampleBuffer[i*AudioFormat.FrameSize])^;
     end;
   end;
-  Unlock();
+  UnlockSampleBuffer();
 
   WindowFunc(fwfHanning, FFTSize, DataIn);
-  PowerSpectrum(FFTSize, DataIn, @data);
+  PowerSpectrum(FFTSize, DataIn, @Data);
   FreeMem(DataIn);
 
   // resize data to a 0..1 range
   for i := 0 to High(TFFTData) do
   begin
-    data[i] := Sqrt(data[i]) / 100;
+    Data[i] := Sqrt(Data[i]) / 100;
   end;
 end;
 
-procedure TGenericPlaybackStream.AddSoundEffect(effect: TSoundEffect);
+procedure TGenericPlaybackStream.AddSoundEffect(Effect: TSoundEffect);
 begin
-  if (not assigned(effect)) then
+  if (not assigned(Effect)) then
     Exit;
-  Lock();
+
+  LockSampleBuffer();
   // check if effect is already in list to avoid duplicates
-  if (SoundEffects.IndexOf(Pointer(effect)) = -1) then
-    SoundEffects.Add(Pointer(effect));
-  Unlock();
+  if (SoundEffects.IndexOf(Pointer(Effect)) = -1) then
+    SoundEffects.Add(Pointer(Effect));
+  UnlockSampleBuffer();
 end;
 
-procedure TGenericPlaybackStream.RemoveSoundEffect(effect: TSoundEffect);
+procedure TGenericPlaybackStream.RemoveSoundEffect(Effect: TSoundEffect);
 begin
-  Lock();
-  SoundEffects.Remove(effect);
-  Unlock();
+  LockSampleBuffer();
+  SoundEffects.Remove(Effect);
+  UnlockSampleBuffer();
 end;
 
 function TGenericPlaybackStream.GetPosition: real;
+var
+  BufferedTime: double;
 begin
-  if assigned(DecodeStream) then
-    result := DecodeStream.Position
+  if assigned(SourceStream) then
+  begin
+    LockSampleBuffer();
+
+    // calc the time of source data that is buffered (in the SampleBuffer and SourceBuffer)
+    // but not yet outputed
+    BufferedTime := (SampleBufferCount - SampleBufferPos) / Engine.FormatInfo.BytesPerSec +
+                    SourceBufferCount / SourceStream.GetAudioFormatInfo().BytesPerSec;
+    // and subtract it from the source position
+    Result := SourceStream.Position - BufferedTime;
+
+    UnlockSampleBuffer();
+  end
   else
-    result := -1;
+  begin
+    Result := -1;
+  end;
 end;
 
 procedure TGenericPlaybackStream.SetPosition(Time: real);
 begin
-  if assigned(DecodeStream) then
-    DecodeStream.Position := Time;
+  if assigned(SourceStream) then
+  begin
+    LockSampleBuffer();
+
+    SourceStream.Position := Time;
+    if (Status = ssStopped) then
+      NeedsRewind := false;
+    // do not use outdated data
+    FlushBuffers();
+
+    AvgSyncDiff := -1;
+    
+    UnlockSampleBuffer();
+  end;
 end;
 
 function TGenericPlaybackStream.GetVolume(): single;
 var
   FadeAmount: Single;
 begin
-  Lock();
+  LockSampleBuffer();
   // adjust volume if fading is enabled
   if (FadeInTime > 0) then
   begin
@@ -741,32 +875,131 @@ begin
     begin
       // target reached -> stop fading
       FadeInTime := 0;
-      _volume := FadeInTargetVolume;
+      fVolume := FadeInTargetVolume;
     end
     else
     begin
       // fading in progress
-      _volume := FadeAmount*FadeInTargetVolume + (1-FadeAmount)*FadeInStartVolume;
+      fVolume := FadeAmount*FadeInTargetVolume + (1-FadeAmount)*FadeInStartVolume;
     end;
   end;
   // return current volume
-  Result := _volume;
-  Unlock();
+  Result := fVolume;
+  UnlockSampleBuffer();
 end;
 
-procedure TGenericPlaybackStream.SetVolume(volume: single);
+procedure TGenericPlaybackStream.SetVolume(Volume: single);
 begin
-  Lock();
+  LockSampleBuffer();
   // stop fading
   FadeInTime := 0;
   // clamp volume
-  if (volume > 1.0) then
-    _volume := 1.0
-  else if (volume < 0) then
-    _volume := 0
+  if (Volume > 1.0) then
+    fVolume := 1.0
+  else if (Volume < 0) then
+    fVolume := 0
   else
-    _volume := volume;
-  Unlock();
+    fVolume := Volume;
+  UnlockSampleBuffer();
+end;
+
+
+{ TGenericVoiceStream }
+
+constructor TGenericVoiceStream.Create(Engine: TAudioPlayback_SoftMixer);
+begin
+  inherited Create();
+  Self.Engine := Engine;
+end;
+
+function TGenericVoiceStream.Open(ChannelMap: integer; FormatInfo: TAudioFormatInfo): boolean;
+var
+  BufferSize: integer;
+begin
+  Result := false;
+
+  Close();
+
+  if (not inherited Open(ChannelMap, FormatInfo)) then
+    Exit;
+
+  // Note:
+  // - use Self.FormatInfo instead of FormatInfo as the latter one might have a
+  //   channel size of 2.
+  // - the buffer-size must be a multiple of the FrameSize
+  BufferSize := (Ceil(MAX_VOICE_DELAY * Self.FormatInfo.BytesPerSec) div Self.FormatInfo.FrameSize) *
+                Self.FormatInfo.FrameSize;
+  VoiceBuffer := TRingBuffer.Create(BufferSize);
+
+  BufferLock := SDL_CreateMutex();
+
+
+  // create a matching playback stream for the voice-stream
+  PlaybackStream := TGenericPlaybackStream.Create(Engine);
+  // link voice- and playback-stream
+  if (not PlaybackStream.Open(Self)) then
+  begin
+    PlaybackStream.Free;
+    Exit;
+  end;
+
+  // start voice passthrough
+  PlaybackStream.Play();
+
+  Result := true;
+end;
+
+procedure TGenericVoiceStream.Close();
+begin
+  // stop and free the playback stream
+  FreeAndNil(PlaybackStream);
+
+  // free data
+  FreeAndNil(VoiceBuffer);
+  if (BufferLock <> nil) then
+    SDL_DestroyMutex(BufferLock);
+
+  inherited Close();
+end;
+
+procedure TGenericVoiceStream.WriteData(Buffer: PChar; BufferSize: integer);
+begin
+  // lock access to buffer
+  SDL_mutexP(BufferLock);
+  try
+    if (VoiceBuffer = nil) then
+      Exit;
+    VoiceBuffer.Write(Buffer, BufferSize);
+  finally
+    SDL_mutexV(BufferLock);
+  end;
+end;
+
+function TGenericVoiceStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+begin
+  Result := -1;
+
+  // lock access to buffer
+  SDL_mutexP(BufferLock);
+  try
+    if (VoiceBuffer = nil) then
+      Exit;
+    Result := VoiceBuffer.Read(Buffer, BufferSize);
+  finally
+    SDL_mutexV(BufferLock);
+  end;
+end;
+
+function TGenericVoiceStream.IsEOF(): boolean;
+begin
+  SDL_mutexP(BufferLock);
+  Result := (VoiceBuffer = nil);
+  SDL_mutexV(BufferLock);
+end;
+
+function TGenericVoiceStream.IsError(): boolean;
+begin
+  Result := false;
 end;
 
 
@@ -774,7 +1007,7 @@ end;
 
 function TAudioPlayback_SoftMixer.InitializePlayback: boolean;
 begin
-  result := false;
+  Result := false;
 
   //Log.LogStatus('InitializePlayback', 'UAudioPlayback_SoftMixer');
 
@@ -786,7 +1019,7 @@ begin
   if(not StartAudioPlaybackEngine()) then
     Exit;
 
-  result := true;
+  Result := true;
 end;
 
 function TAudioPlayback_SoftMixer.FinalizePlayback: boolean;
@@ -802,9 +1035,9 @@ begin
   Result := true;
 end;
 
-procedure TAudioPlayback_SoftMixer.AudioCallback(buffer: PChar; size: integer);
+procedure TAudioPlayback_SoftMixer.AudioCallback(Buffer: PChar; Size: integer);
 begin
-  MixerStream.ReadData(buffer, size);
+  MixerStream.ReadData(Buffer, Size);
 end;
 
 function TAudioPlayback_SoftMixer.GetMixer(): TAudioMixerStream;
@@ -817,38 +1050,26 @@ begin
   Result := FormatInfo;
 end;
 
-function TAudioPlayback_SoftMixer.OpenStream(const Filename: String): TAudioPlaybackStream;
+function TAudioPlayback_SoftMixer.CreatePlaybackStream(): TAudioPlaybackStream;
+begin
+  Result := TGenericPlaybackStream.Create(Self);
+end;
+
+function TAudioPlayback_SoftMixer.CreateVoiceStream(ChannelMap: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
 var
-  decodeStream: TAudioDecodeStream;
-  playbackStream: TGenericPlaybackStream;
+  VoiceStream: TGenericVoiceStream;
 begin
   Result := nil;
 
-  if (AudioDecoder = nil) then
-    Exit;
-
-  decodeStream := AudioDecoder.Open(Filename);
-  if not assigned(decodeStream) then
+  // create a voice stream
+  VoiceStream := TGenericVoiceStream.Create(Self);
+  if (not VoiceStream.Open(ChannelMap, FormatInfo)) then
   begin
-    Log.LogStatus('LoadSoundFromFile: Sound not found "' + Filename + '"', 'UAudioPlayback_SoftMixer');
+    VoiceStream.Free;
     Exit;
   end;
 
-  playbackStream := TGenericPlaybackStream.Create(Self);
-  if (not assigned(playbackStream)) then
-  begin
-    FreeAndNil(decodeStream);
-    Exit;
-  end;
-
-  if (not playbackStream.SetDecodeStream(decodeStream)) then
-  begin
-    FreeAndNil(playbackStream);
-    FreeAndNil(decodeStream);
-    Exit;
-  end;
-
-  result := playbackStream;
+  Result := VoiceStream;
 end;
 
 procedure TAudioPlayback_SoftMixer.SetAppVolume(Volume: single);
@@ -857,47 +1078,46 @@ begin
   MixerStream.Volume := Volume;
 end;
 
-procedure TAudioPlayback_SoftMixer.MixBuffers(dst, src: PChar; size: Cardinal; volume: Single);
+procedure TAudioPlayback_SoftMixer.MixBuffers(DstBuffer, SrcBuffer: PChar; Size: Cardinal; Volume: Single);
 var
   SampleIndex: Cardinal;
   SampleInt: Integer;
   SampleFlt: Single;
 begin
-
-  // TODO: optimize this code, e.g. with assembler (MMX)
-
   SampleIndex := 0;
   case FormatInfo.Format of
     asfS16:
     begin
-      while (SampleIndex < size) do
+      while (SampleIndex < Size) do
       begin
         // apply volume and sum with previous mixer value
-        SampleInt := PSmallInt(@dst[SampleIndex])^ + Round(PSmallInt(@src[SampleIndex])^ * volume);
+        SampleInt := PSmallInt(@DstBuffer[SampleIndex])^ +
+                     Round(PSmallInt(@SrcBuffer[SampleIndex])^ * Volume);
         // clip result
         if (SampleInt > High(SmallInt)) then
           SampleInt := High(SmallInt)
         else if (SampleInt < Low(SmallInt)) then
           SampleInt := Low(SmallInt);
         // assign result
-        PSmallInt(@dst[SampleIndex])^ := SampleInt;
+        PSmallInt(@DstBuffer[SampleIndex])^ := SampleInt;
         // increase index by one sample
         Inc(SampleIndex, SizeOf(SmallInt));
       end;
     end;
     asfFloat:
     begin
-      while (SampleIndex < size) do
+      while (SampleIndex < Size) do
       begin
         // apply volume and sum with previous mixer value
-        SampleFlt := PSingle(@dst[SampleIndex])^ + PSingle(@src[SampleIndex])^ * volume;
+        SampleFlt := PSingle(@DstBuffer[SampleIndex])^ +
+                     PSingle(@SrcBuffer[SampleIndex])^ * Volume;
         // clip result
         if (SampleFlt > 1.0) then
           SampleFlt := 1.0
         else if (SampleFlt < -1.0) then
           SampleFlt := -1.0;
         // assign result
-        PSingle(@dst[SampleIndex])^ := SampleFlt;
+        PSingle(@DstBuffer[SampleIndex])^ := SampleFlt;
         // increase index by one sample
         Inc(SampleIndex, SizeOf(Single));
       end;

@@ -18,6 +18,7 @@ uses
   SysUtils,
   ULyrics,
   UImage,
+  UMusic,
   UScreenLoading,
   UScreenWelcome,
   UScreenMain,
@@ -454,13 +455,15 @@ begin
   Log.LogBenchmark('--> Loading Fonts', 2);
   }
 
+  // Note: do not initialize video modules earlier. They might depend on some
+  // SDL video functions or OpenGL extensions initialized in InitializeScreen()
+  InitializeVideo();
+
   //Log.BenchmarkStart(2);
 
   Log.LogStatus('TDisplay.Create', 'UGraphic.Initialize3D');
   Display := TDisplay.Create;
 
-  Log.LogStatus('SDL_EnableUnicode', 'UGraphic.Initialize3D');
-  SDL_EnableUnicode(1);
   //Log.BenchmarkEnd(2); Log.LogBenchmark('====> Creating Display', 2);
 
   //Log.LogStatus('Loading Screens', 'Initialize3D');
@@ -551,8 +554,13 @@ begin
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    5);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     5);
   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,    5);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16); // Z-Buffer depth
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
+
+  // VSYNC works for windows only at the moment. SDL_GL_SWAP_CONTROL under
+  // linux uses GLX_MESA_swap_control which is not supported by nvidea cards.
+  // Maybe use glXSwapIntervalSGI(1) from the GLX_SGI_swap_control extension instead.
+  //SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL,  1); // VSYNC (currently Windows only)
 
   // If there is a resolution in Parameters, use it, else use the Ini value
   I := Params.Resolution;

@@ -16,13 +16,13 @@ uses
 
 type
   TAudioCore_Bass = class
-    private
-      constructor Create();
     public
+      constructor Create();
       class function GetInstance(): TAudioCore_Bass;
       function ErrorGetString(): string; overload;
       function ErrorGetString(errCode: integer): string; overload;
       function ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
+      function ConvertBASSFlagsToAudioFormat(Flags: DWORD; out Format: TAudioSampleFormat): boolean;
   end;
 
 implementation
@@ -41,7 +41,7 @@ end;
 
 class function TAudioCore_Bass.GetInstance(): TAudioCore_Bass;
 begin
-  if not assigned(Instance) then
+  if (not Assigned(Instance)) then
     Instance := TAudioCore_Bass.Create();
   Result := Instance;
 end;
@@ -104,6 +104,18 @@ begin
       Exit;
     end;
   end;
+
+  Result := true;
+end;
+
+function TAudioCore_Bass.ConvertBASSFlagsToAudioFormat(Flags: DWORD; out Format: TAudioSampleFormat): boolean;
+begin
+  if ((Flags and BASS_SAMPLE_FLOAT) <> 0) then
+    Format := asfFloat
+  else if ((Flags and BASS_SAMPLE_8BITS) <> 0) then
+    Format := asfU8
+  else
+    Format := asfS16;
 
   Result := true;
 end;

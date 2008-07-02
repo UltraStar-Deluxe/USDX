@@ -189,9 +189,6 @@ begin
 
   //Set ButtonPos to Autoset Length
   ButtonPos := -1;
-
-
-  VideoPlayback.Init;
 end;
 {
 constructor TMenu.Create(Back: String);

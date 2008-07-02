@@ -1,14 +1,4 @@
 unit UMedia_dummy;
-{< #############################################################################
-#                    FFmpeg support for UltraStar deluxe                       #
-#                                                                              #
-#    Created by b1indy                                                         #
-#    based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)    #
-#                                                                              #
-# http://www.mail-archive.com/fpc-pascal@lists.freepascal.org/msg09949.html    #
-# http://www.nabble.com/file/p11795857/mpegpas01.zip                           #
-#                                                                              #
-############################################################################## }
 
 interface
 
@@ -25,18 +15,16 @@ uses
      math,
      UMusic;
 
-var
-  singleton_dummy : IVideoPlayback;
-
 type
     TMedia_dummy = class( TInterfacedObject, IVideoPlayback, IVideoVisualization, IAudioPlayback, IAudioInput )
     private
       DummyOutputDeviceList: TAudioOutputDeviceList;
     public
-      constructor create();
+      constructor Create();
       function  GetName: string;
 
-      procedure init();
+      function Init(): boolean;
+      function Finalize(): boolean;
 
       function  Open(const aFileName : string): boolean; // true if succeed
       procedure Close;
@@ -47,6 +35,8 @@ type
 
       procedure SetPosition(Time: real);
       function  GetPosition: real;
+
+      procedure SetSyncSource(SyncSource: TSyncSource);
 
       procedure GetFrame(Time: Extended);
       procedure DrawGL(Screen: integer);
@@ -74,157 +64,180 @@ type
       function Length: real;
 
       function OpenSound(const Filename: string): TAudioPlaybackStream;
+      procedure CloseSound(var PlaybackStream: TAudioPlaybackStream);
       procedure PlaySound(stream: TAudioPlaybackStream);
       procedure StopSound(stream: TAudioPlaybackStream);
+
+      function CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+      procedure CloseVoiceStream(var VoiceStream: TAudioVoiceStream);
     end;
 
-function  Tmedia_dummy.GetName: string;
+function  TMedia_dummy.GetName: string;
 begin
-  result := 'dummy';
+  Result := 'dummy';
 end;
 
-procedure Tmedia_dummy.GetFrame(Time: Extended);
-begin
-end;
-
-procedure Tmedia_dummy.DrawGL(Screen: integer);
+procedure TMedia_dummy.GetFrame(Time: Extended);
 begin
 end;
 
-constructor Tmedia_dummy.create();
+procedure TMedia_dummy.DrawGL(Screen: integer);
+begin
+end;
+
+constructor TMedia_dummy.Create();
 begin
   inherited;
 end;
 
-procedure Tmedia_dummy.init();
+function TMedia_dummy.Init(): boolean;
+begin
+  Result := true;
+end;
+
+function TMedia_dummy.Finalize(): boolean;
+begin
+  Result := true;
+end;
+
+function TMedia_dummy.Open(const aFileName : string): boolean; // true if succeed
+begin
+  Result := false;
+end;
+
+procedure TMedia_dummy.Close;
 begin
 end;
 
-function Tmedia_dummy.Open(const aFileName : string): boolean; // true if succeed
-begin
-  result := false;
-end;
-
-procedure Tmedia_dummy.Close;
+procedure TMedia_dummy.Play;
 begin
 end;
 
-procedure Tmedia_dummy.Play;
+procedure TMedia_dummy.Pause;
 begin
 end;
 
-procedure Tmedia_dummy.Pause;
+procedure TMedia_dummy.Stop;
 begin
 end;
 
-procedure Tmedia_dummy.Stop;
+procedure TMedia_dummy.SetPosition(Time: real);
 begin
 end;
 
-procedure Tmedia_dummy.SetPosition(Time: real);
+function  TMedia_dummy.GetPosition: real;
 begin
+  Result := 0;
 end;
 
-function  Tmedia_dummy.GetPosition: real;
+procedure TMedia_dummy.SetSyncSource(SyncSource: TSyncSource);
 begin
-  result := 0;
 end;
 
 // IAudioInput
-function Tmedia_dummy.InitializeRecord: boolean;
+function TMedia_dummy.InitializeRecord: boolean;
 begin
-  result := true;
+  Result := true;
 end;
 
-function Tmedia_dummy.FinalizeRecord: boolean;
+function TMedia_dummy.FinalizeRecord: boolean;
 begin
-  result := true;
+  Result := true;
 end;
 
-procedure Tmedia_dummy.CaptureStart;
-begin
-end;
-
-procedure Tmedia_dummy.CaptureStop;
+procedure TMedia_dummy.CaptureStart;
 begin
 end;
 
-procedure Tmedia_dummy.GetFFTData(var data: TFFTData);
+procedure TMedia_dummy.CaptureStop;
 begin
 end;
 
-function  Tmedia_dummy.GetPCMData(var data: TPCMData): Cardinal;
+procedure TMedia_dummy.GetFFTData(var data: TFFTData);
 begin
-  result := 0;
+end;
+
+function  TMedia_dummy.GetPCMData(var data: TPCMData): Cardinal;
+begin
+  Result := 0;
 end;
 
 // IAudioPlayback
-function Tmedia_dummy.InitializePlayback: boolean;
+function TMedia_dummy.InitializePlayback: boolean;
 begin
   SetLength(DummyOutputDeviceList, 1);
   DummyOutputDeviceList[0] := TAudioOutputDevice.Create();
   DummyOutputDeviceList[0].Name := '[Dummy Device]';
-  result := true;
+  Result := true;
 end;
 
-function Tmedia_dummy.FinalizePlayback: boolean;
+function TMedia_dummy.FinalizePlayback: boolean;
 begin
-  result := true;
+  Result := true;
 end;
 
-function Tmedia_dummy.GetOutputDeviceList(): TAudioOutputDeviceList;
+function TMedia_dummy.GetOutputDeviceList(): TAudioOutputDeviceList;
 begin
   Result := DummyOutputDeviceList;
 end;
 
-procedure Tmedia_dummy.SetAppVolume(Volume: single);
+procedure TMedia_dummy.SetAppVolume(Volume: single);
 begin
 end;
 
-procedure Tmedia_dummy.SetVolume(Volume: single);
+procedure TMedia_dummy.SetVolume(Volume: single);
 begin
 end;
 
-procedure Tmedia_dummy.SetLoop(Enabled: boolean);
+procedure TMedia_dummy.SetLoop(Enabled: boolean);
 begin
 end;
 
-procedure Tmedia_dummy.FadeIn(Time: real; TargetVolume: single);
+procedure TMedia_dummy.FadeIn(Time: real; TargetVolume: single);
 begin
 end;
 
-procedure Tmedia_dummy.Rewind;
+procedure TMedia_dummy.Rewind;
 begin
 end;
 
-function Tmedia_dummy.Finished: boolean;
+function TMedia_dummy.Finished: boolean;
 begin
-  result := false;
+  Result := false;
 end;
 
-function Tmedia_dummy.Length: real;
+function TMedia_dummy.Length: real;
 begin
   Result := 60;
 end;
 
-function Tmedia_dummy.OpenSound(const Filename: string): TAudioPlaybackStream;
+function TMedia_dummy.OpenSound(const Filename: string): TAudioPlaybackStream;
 begin
- result := nil;
+ Result := nil;
 end;
 
-procedure Tmedia_dummy.PlaySound(stream: TAudioPlaybackStream);
+procedure TMedia_dummy.CloseSound(var PlaybackStream: TAudioPlaybackStream);
 begin
 end;
 
-procedure Tmedia_dummy.StopSound(stream: TAudioPlaybackStream);
+procedure TMedia_dummy.PlaySound(stream: TAudioPlaybackStream);
+begin
+end;
+
+procedure TMedia_dummy.StopSound(stream: TAudioPlaybackStream);
+begin
+end;
+
+function TMedia_dummy.CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+begin
+  Result := nil;
+end;
+
+procedure TMedia_dummy.CloseVoiceStream(var VoiceStream: TAudioVoiceStream);
 begin
 end;
 
 initialization
-  singleton_dummy := Tmedia_dummy.create();
-  AudioManager.add( singleton_dummy );
-
-finalization
-  AudioManager.Remove( singleton_dummy );
+  MediaManager.Add(TMedia_dummy.Create);
 
 end.

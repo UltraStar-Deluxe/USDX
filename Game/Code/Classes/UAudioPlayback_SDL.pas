@@ -26,34 +26,33 @@ uses
 type
   TAudioPlayback_SDL = class(TAudioPlayback_SoftMixer)
     private
+      Latency: double;
       function EnumDevices(): boolean;
     protected
       function InitializeAudioPlaybackEngine(): boolean; override;
       function StartAudioPlaybackEngine(): boolean;      override;
       procedure StopAudioPlaybackEngine();               override;
       function FinalizeAudioPlaybackEngine(): boolean;   override;
+      function GetLatency(): double;                     override;
     public
       function GetName: String;                          override;
       procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Single); override;
   end;
-
-var
-  singleton_AudioPlaybackSDL : IAudioPlayback;
 
   
 { TAudioPlayback_SDL }
 
 procedure SDLAudioCallback(userdata: Pointer; stream: PChar; len: integer); cdecl;
 var
-  engine: TAudioPlayback_SDL;
+  Engine: TAudioPlayback_SDL;
 begin
-  engine := TAudioPlayback_SDL(userdata);
-  engine.AudioCallback(stream, len);
+  Engine := TAudioPlayback_SDL(userdata);
+  Engine.AudioCallback(stream, len);
 end;
 
 function TAudioPlayback_SDL.GetName: String;
 begin
-  result := 'SDL_Playback';
+  Result := 'SDL_Playback';
 end;
 
 function TAudioPlayback_SDL.EnumDevices(): boolean;
@@ -68,28 +67,29 @@ end;
 
 function TAudioPlayback_SDL.InitializeAudioPlaybackEngine(): boolean;
 var
-  desiredAudioSpec, obtainedAudioSpec: TSDL_AudioSpec;
+  DesiredAudioSpec, ObtainedAudioSpec: TSDL_AudioSpec;
   SampleBufferSize: integer;
 begin
-  result := false;
+  Result := false;
 
   EnumDevices();
 
   if (SDL_InitSubSystem(SDL_INIT_AUDIO) = -1) then
   begin
     Log.LogError('SDL_InitSubSystem failed!', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
-    exit;
+    Exit;
   end;
 
   SampleBufferSize := IAudioOutputBufferSizeVals[Ini.AudioOutputBufferSizeIndex];
   if (SampleBufferSize <= 0) then
   begin
-    // Automatic setting defaults to 1024 samples
-    SampleBufferSize := 1024;
+    // Automatic setting default
+    // FIXME: too much glitches with 1024 samples
+    SampleBufferSize := 2048; //1024;
   end;
 
-  FillChar(desiredAudioSpec, sizeof(desiredAudioSpec), 0);
-  with desiredAudioSpec do
+  FillChar(DesiredAudioSpec, SizeOf(DesiredAudioSpec), 0);
+  with DesiredAudioSpec do
   begin
     freq := 44100;
     format := AUDIO_S16SYS;
@@ -99,27 +99,36 @@ begin
     userdata := Self;
   end;
 
-  if(SDL_OpenAudio(@desiredAudioSpec, @obtainedAudioSpec) = -1) then
+  // Note: always use the "obtained" parameter, otherwise SDL might try to convert
+  // the samples itself if the desired format is not available. This might lead
+  // to problems if for example ALSA does not support 44100Hz and proposes 48000Hz.
+  // Without the obtained parameter, SDL would try to convert 44.1kHz to 48kHz with
+  // its crappy (non working) converter resulting in a wrong (too high) pitch.
+  if(SDL_OpenAudio(@DesiredAudioSpec, @ObtainedAudioSpec) = -1) then
   begin
     Log.LogStatus('SDL_OpenAudio: ' + SDL_GetError(), 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
-    exit;
+    Exit;
   end;
 
   FormatInfo := TAudioFormatInfo.Create(
-    obtainedAudioSpec.channels,
-    obtainedAudioSpec.freq,
+    ObtainedAudioSpec.channels,
+    ObtainedAudioSpec.freq,
     asfS16
   );
 
+  // Note: SDL does not provide info of the internal buffer state.
+  // So we use the average buffer-size.
+  Latency := (ObtainedAudioSpec.samples/2) / FormatInfo.SampleRate;
+
   Log.LogStatus('Opened audio device', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
 
-  result := true;
+  Result := true;
 end;
 
 function TAudioPlayback_SDL.StartAudioPlaybackEngine(): boolean;
 begin
   SDL_PauseAudio(0);
-  result := true;
+  Result := true;
 end;
 
 procedure TAudioPlayback_SDL.StopAudioPlaybackEngine();
@@ -134,6 +143,11 @@ begin
   Result := true;
 end;
 
+function TAudioPlayback_SDL.GetLatency(): double;
+begin
+  Result := Latency;
+end;
+
 procedure TAudioPlayback_SDL.MixBuffers(dst, src: PChar; size: Cardinal; volume: Single);
 begin
   SDL_MixAudio(PUInt8(dst), PUInt8(src), size, Round(volume * SDL_MIX_MAXVOLUME));
@@ -141,10 +155,6 @@ end;
 
 
 initialization
-  singleton_AudioPlaybackSDL := TAudioPlayback_SDL.create();
-  AudioManager.add( singleton_AudioPlaybackSDL );
-
-finalization
-  AudioManager.Remove( singleton_AudioPlaybackSDL );
+  MediaManager.add(TAudioPlayback_SDL.Create);
 
 end.

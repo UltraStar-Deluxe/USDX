@@ -10,7 +10,6 @@ interface
 
 uses
   SDL,
-  UGraphic,
   UMusic,
   URecord,
   UTime,
@@ -21,8 +20,7 @@ uses
   ULyrics,
   UScreenSing,
   USong,
-  gl,
-  UThemes;
+  gl;
 
 type
   PPLayerNote = ^TPlayerNote;
@@ -138,9 +136,11 @@ uses
   UConfig,
   UCore,
   UCommon,
+  UGraphic,
   UGraphicClasses,
   UPluginDefs,
-  UPlatform;
+  UPlatform,
+  UThemes;
 
 
 
@@ -167,6 +167,7 @@ begin
     // Initialize SDL
     // Without SDL_INIT_TIMER SDL_GetTicks() might return strange values
     SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
+    SDL_EnableUnicode(1);
 
     USTime := TTime.Create;
     VideoBGTimer := TRelativeTimer.Create;
@@ -353,7 +354,7 @@ begin
     // call an uninitialize routine for every initialize step
     // or at least use the corresponding Free-Methods
 
-    FinalizeSound();
+    FinalizeMedia();
 
     TTF_Quit();
     SDL_Quit();

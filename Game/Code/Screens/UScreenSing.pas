@@ -28,9 +28,15 @@ uses UMenu,
      USingScores;
 
 type
+  TLyricsSyncSource = class(TSyncSource)
+    function GetClock(): real; override;
+  end;
+
+type
   TScreenSing = class(TMenu)
     protected
-      paused: boolean; //Pause Mod
+      Paused: boolean; //Pause Mod
+      LyricsSync: TLyricsSyncSource;
       NumEmptySentences: integer;
     public
       //TextTime:           integer;
@@ -140,7 +146,7 @@ begin
           if (Ini.AskbeforeDel <> 1) then
             Finish
           //else just Pause and let the Popup make the Work
-          else if not paused then
+          else if not Paused then
             Pause;
 
           Result := false;
@@ -211,10 +217,10 @@ end;
 //Pause Mod
 procedure TScreenSing.Pause;
 begin
-  if not paused then  //enable Pause
+  if (not Paused) then  //enable Pause
     begin
       // pause Time
-      Paused    := true;
+      Paused := true;
 
       LineState.Pause();
 
@@ -229,11 +235,6 @@ begin
   else              //disable Pause
     begin
       LineState.Resume();
-
-      // Position of Music
-      // FIXME: remove this and provide LineState.CurrentTime as sync-source instead
-      // so every stream can synch itself
-      AudioPlayback.Position := LineState.CurrentTime;
 
       // Play Music
       AudioPlayback.Play;
@@ -326,8 +327,7 @@ begin
 
   Lyrics := TLyricEngine.Create(80,Skin_LyricsT,640,12,80,Skin_LyricsT+36,640,12);
 
-  if assigned( fCurrentVideoPlaybackEngine ) then
-    fCurrentVideoPlaybackEngine.Init();
+  LyricsSync := TLyricsSyncSource.Create();
 end;
 
 procedure TScreenSing.onShow;
@@ -487,9 +487,6 @@ begin
 
 
   // reset video playback engine, to play video clip...
-
-  Visualization.Init();
-
   fCurrentVideoPlaybackEngine.Close;
   fCurrentVideoPlaybackEngine := VideoPlayback;
 
@@ -515,17 +512,19 @@ begin
   else
     Tex_Background.TexNum := 0;
 
-
-
-  // play music (I)
-  AudioInput.CaptureStart;
-  AudioPlayback.Position := CurrentSong.Start;
-//  Music.Play;
-
-  // prepare timer (I)
-//  CountSkipTimeSet;
+  // prepare lyrics timer
+  LineState.Pause();
   LineState.CurrentTime := CurrentSong.Start;
   LineState.TotalTime := AudioPlayback.Length;
+
+  // prepare music
+  AudioPlayback.Stop();
+  AudioPlayback.Position := CurrentSong.Start;
+  // synchronize music to the lyrics
+  AudioPlayback.SetSyncSource(LyricsSync);
+
+  // prepare and start voice-capture
+  AudioInput.CaptureStart;
 
   if (CurrentSong.Finish > 0) then
     LineState.TotalTime := CurrentSong.Finish / 1000;
@@ -911,32 +910,13 @@ end;
 
 procedure TScreenSing.onShowFinish;
 begin
-  // play movie (II)
+  // start lyrics
+  LineState.Resume();
 
-  if CurrentSong.VideoLoaded then
-  begin
-    try
-      fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
-      fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
-    except on E : Exception do
-    begin
-       //If an error occurs reading video: prevent video from being drawn again and close video
-       CurrentSong.VideoLoaded := False;
-       Log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
-       Log.LogError('Error Message : '+ E.message );
-       Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.onShowFinish)' );
-       Log.LogError('Corrupted File: ' + CurrentSong.Video);
+  // start music
+  AudioPlayback.Play();
 
-       fCurrentVideoPlaybackEngine.Close;
-    end;
-    end;
-  end;
-
-
-  // play music (II)
-  AudioPlayback.Play;
-
-  // prepare timer (II)
+  // start timer
   CountSkipTimeSet;
 end;
 
@@ -1185,29 +1165,11 @@ begin
   if (ShowFinish and
       (CurrentSong.VideoLoaded or fShowVisualization)) then
   begin
-    //try
-      // TODO: find a way to determine, when a new frame is needed
-      // TODO: same for the need to skip frames
-      if assigned( fCurrentVideoPlaybackEngine ) then
-      begin
-        fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
-        fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
-      end;
-    (*
-    except
-      on E : Exception do
-      begin
-        //If an Error occurs drawing: prevent Video from being Drawn again and Close Video
-        CurrentSong.VideoLoaded := False;
-        log.LogError('Error drawing Video, Video has been disabled for this Song/Session.');
-        Log.LogError('Error Message : '+ E.message );
-        Log.LogError('      In      : '+ E.ClassName +' (TScreenSing.Draw)' );
-
-        Log.LogError('Corrupted File: ' + CurrentSong.Video);
-        fCurrentVideoPlaybackEngine.Close;
-      end;
+    if assigned( fCurrentVideoPlaybackEngine ) then
+    begin
+      fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
+      fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     end;
-    *)
   end;
 
   // draw static menu (FG)
@@ -1288,6 +1250,7 @@ procedure TScreenSing.Finish;
 begin
   AudioInput.CaptureStop;
   AudioPlayback.Stop;
+  AudioPlayback.SetSyncSource(nil);
 
   if (Ini.SavePlayback = 1) then begin
     Log.BenchmarkStart(0);
@@ -1434,6 +1397,11 @@ begin
   Draw;
 
   //GoldenStarsTwinkle Mod End
+end;
+
+function TLyricsSyncSource.GetClock(): real;
+begin
+  Result := LineState.CurrentTime;
 end;
 
 end.

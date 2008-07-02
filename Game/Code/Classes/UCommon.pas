@@ -81,6 +81,9 @@ function IsControlChar(ch: WideChar): boolean;
 // A stable alternative to TList.Sort() (use TList.Sort() if applicable, see below)
 procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
 
+function GetAlignedMem(Size: cardinal; Alignment: integer): Pointer;
+procedure FreeAlignedMem(P: Pointer);
+
 
 implementation
 
@@ -733,7 +736,7 @@ begin
   RightSize := BlockSize - LeftSize;
   MidPos := StartPos + LeftSize;
 
-  // sort left and right halves of this block by recursive calls of this function 
+  // sort left and right halves of this block by recursive calls of this function
   if (LeftSize >= 2) then
     _MergeSort(InList, OutList, TempList, StartPos, LeftSize, CompareFunc)
   else
@@ -795,6 +798,62 @@ begin
   if (List.Count >= 2) then
     _MergeSort(List, TempList, List, 0, List.Count, CompareFunc);
   TempList.Free;
+end;
+
+
+type
+  // stores the unaligned pointer of data allocated by GetAlignedMem()
+  PMemAlignHeader = ^TMemAlignHeader;
+  TMemAlignHeader = Pointer;
+
+(**
+ * Use this function to assure that allocated memory is aligned on a specific
+ * byte boundary.
+ * Alignment must be a power of 2.
+ *
+ * Important: Memory allocated with GetAlignedMem() MUST be freed with
+ * FreeAlignedMem(), FreeMem() will cause a segmentation fault.
+ *
+ * Hint: If you do not need dynamic memory, consider to allocate memory
+ * statically and use the {$ALIGN x} compiler directive. Note that delphi
+ * supports an alignment "x" of up to 8 bytes only whereas FPC supports
+ * alignments on 16 and 32 byte boundaries too.
+ *)
+function GetAlignedMem(Size: cardinal; Alignment: integer): Pointer;
+var
+  OrigPtr: Pointer;
+const
+  MIN_ALIGNMENT = 16;
+begin
+  // Delphi and FPC (tested with 2.2.0) align memory blocks allocated with
+  // GetMem() at least on 8 byte boundaries. Delphi uses a minimal alignment
+  // of either 8 or 16 bytes depending on the size of the requested block
+  // (see System.GetMinimumBlockAlignment). As we do not want to change the
+  // boundary for the worse, we align at least on MIN_ALIGN.
+  if (Alignment < MIN_ALIGNMENT) then
+    Alignment := MIN_ALIGNMENT;
+
+  // allocate unaligned memory
+  GetMem(OrigPtr, SizeOf(TMemAlignHeader) + Size + Alignment);
+  if (OrigPtr = nil) then
+  begin
+    Result := nil;
+    Exit;
+  end;
+
+  // reserve space for the header
+  Result := Pointer(PtrUInt(OrigPtr) + SizeOf(TMemAlignHeader));
+  // align memory
+  Result := Pointer(PtrUInt(Result) + Alignment - PtrUInt(Result) mod Alignment);
+
+  // set header with info on old pointer for FreeMem
+  PMemAlignHeader(PtrUInt(Result) - SizeOf(TMemAlignHeader))^ := OrigPtr;
+end;
+
+procedure FreeAlignedMem(P: Pointer);
+begin
+  if (P <> nil) then
+    FreeMem(PMemAlignHeader(PtrUInt(P) - SizeOf(TMemAlignHeader))^);
 end;
 
 

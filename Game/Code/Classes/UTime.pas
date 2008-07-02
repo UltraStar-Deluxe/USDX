@@ -20,12 +20,15 @@ type
       AbsoluteTime: int64;      // system-clock reference time for calculation of CurrentTime
       RelativeTimeOffset: real;
       Paused: boolean;
+      TriggerMode: boolean;
     public
-      constructor Create;
+      constructor Create(TriggerMode: boolean = false);
       procedure Pause();
       procedure Resume();
       function GetTime(): real;
-      procedure SetTime(Time: real);
+      function GetAndResetTime(): real;
+      procedure SetTime(Time: real; Trigger: boolean = true);
+      procedure Reset();
   end;
 
 procedure CountSkipTimeSet;
@@ -98,11 +101,18 @@ end;
  * TRelativeTimer
  **}
 
-constructor TRelativeTimer.Create;
+(*
+ * Creates a new timer.
+ * If TriggerMode is false (default), the timer
+ * will immediately begin with counting.
+ * If TriggerMode is true, it will wait until Get/SetTime() or Pause() is called
+ * for the first time.
+ *)
+constructor TRelativeTimer.Create(TriggerMode: boolean);
 begin
-  inherited;
-  RelativeTimeOffset := 0;
-  AbsoluteTime := SDL_GetTicks();
+  inherited Create();
+  Self.TriggerMode := TriggerMode;
+  Reset();
   Paused := false;
 end;
 
@@ -118,19 +128,58 @@ begin
   Paused := false;
 end;
 
+(*
+ * Returns the counter of the timer.
+ * If in TriggerMode it will return 0 and start the counter on the first call.
+ *)
 function TRelativeTimer.GetTime: real;
 begin
+  // initialize absolute time on first call in triggered mode
+  if (TriggerMode and (AbsoluteTime = 0)) then
+  begin
+    AbsoluteTime := SDL_GetTicks();
+    Result := RelativeTimeOffset;
+    Exit;
+  end;
+
   if Paused then
     Result := RelativeTimeOffset
   else
     Result := RelativeTimeOffset + (SDL_GetTicks() - AbsoluteTime) / cSDLCorrectionRatio;
 end;
 
-procedure TRelativeTimer.SetTime(Time: real);
+(*
+ * Returns the counter of the timer and resets the counter to 0 afterwards.
+ * Note: In TriggerMode the counter will not be stopped as with Reset().
+ *)
+function TRelativeTimer.GetAndResetTime(): real;
 begin
-  RelativeTimeOffset := Time;
-  AbsoluteTime := SDL_GetTicks();
+  Result := GetTime();
+  SetTime(0);
 end;
 
+(*
+ * Sets the timer to the given time. This will trigger in TriggerMode if
+ * Trigger is set to true. Otherwise the counter's state will not change.
+ *)
+procedure TRelativeTimer.SetTime(Time: real; Trigger: boolean);
+begin
+  RelativeTimeOffset := Time;
+  if ((not TriggerMode) or Trigger) then
+    AbsoluteTime := SDL_GetTicks();
+end;
+
+(*
+ * Resets the counter of the timer to 0.
+ * If in TriggerMode the timer will not start counting until it is triggered again.
+ *)
+procedure TRelativeTimer.Reset();
+begin
+  RelativeTimeOffset := 0;
+  if (TriggerMode) then
+    AbsoluteTime := 0
+  else
+    AbsoluteTime := SDL_GetTicks();
+end;
 
 end.

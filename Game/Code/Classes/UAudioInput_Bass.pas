@@ -57,8 +57,7 @@ type
   end;
 
 var
-  AudioCore: TAudioCore_Bass;
-  singleton_AudioInputBass : IAudioInput;
+  BassCore: TAudioCore_Bass;
 
 
 { Global }
@@ -96,9 +95,9 @@ begin
   begin
     // get input settings
     flags := BASS_RecordGetInput(i, PSingle(nil)^);
-    if (flags = -1) then
+    if (flags = DWORD(-1)) then
     begin
-      Log.LogError('BASS_RecordGetInput: ' + AudioCore.ErrorGetString(), 'TBassInputDevice.GetInputSource');
+      Log.LogError('BASS_RecordGetInput: ' + BassCore.ErrorGetString(), 'TBassInputDevice.GetInputSource');
       Exit;
     end;
 
@@ -130,7 +129,7 @@ begin
   // turn on selected source (turns off the others for single-in devices)
   if (not BASS_RecordSetInput(SourceIndex, BASS_INPUT_ON, -1)) then
   begin
-    Log.LogError('BASS_RecordSetInput: ' + AudioCore.ErrorGetString(), 'TBassInputDevice.Start');
+    Log.LogError('BASS_RecordSetInput: ' + BassCore.ErrorGetString(), 'TBassInputDevice.Start');
     Exit;
   end;
 
@@ -143,9 +142,9 @@ begin
         continue;
       // get input settings
       flags := BASS_RecordGetInput(i, PSingle(nil)^);
-      if (flags = -1) then
+      if (flags = DWORD(-1)) then
       begin
-        Log.LogError('BASS_RecordGetInput: ' + AudioCore.ErrorGetString(), 'TBassInputDevice.GetInputSource');
+        Log.LogError('BASS_RecordGetInput: ' + BassCore.ErrorGetString(), 'TBassInputDevice.GetInputSource');
         Exit;
       end;
       // deselect source if selected
@@ -169,11 +168,11 @@ begin
   if (not BASS_RecordInit(BassDeviceID)) then
   begin
     Log.LogError('BASS_RecordInit['+Name+']: ' +
-                 AudioCore.ErrorGetString(), 'TBassInputDevice.Open');
+                 BassCore.ErrorGetString(), 'TBassInputDevice.Open');
     Exit;
   end;
 
-  if (not AudioCore.ConvertAudioFormatToBASSFlags(AudioFormat.Format, FormatFlags)) then
+  if (not BassCore.ConvertAudioFormatToBASSFlags(AudioFormat.Format, FormatFlags)) then
   begin
     Log.LogError('Unhandled sample-format', 'TBassInputDevice.Open');
     Exit;
@@ -185,7 +184,7 @@ begin
                     @MicrophoneCallback, Self);
   if (RecordStream = 0) then
   begin
-    Log.LogError('BASS_RecordStart: ' + AudioCore.ErrorGetString(), 'TBassInputDevice.Open');
+    Log.LogError('BASS_RecordStart: ' + BassCore.ErrorGetString(), 'TBassInputDevice.Open');
     BASS_RecordFree;
     Exit;
   end;
@@ -222,7 +221,7 @@ begin
 
   if (not BASS_ChannelPlay(RecordStream, true)) then
   begin
-    Log.LogError('BASS_ChannelPlay: ' + AudioCore.ErrorGetString(), 'TBassInputDevice.Start');
+    Log.LogError('BASS_ChannelPlay: ' + BassCore.ErrorGetString(), 'TBassInputDevice.Start');
     Exit;
   end;
 
@@ -241,7 +240,7 @@ begin
 
   if (not BASS_ChannelStop(RecordStream)) then
   begin
-    Log.LogError('BASS_ChannelStop: ' + AudioCore.ErrorGetString(), 'TBassInputDevice.Stop');
+    Log.LogError('BASS_ChannelStop: ' + BassCore.ErrorGetString(), 'TBassInputDevice.Stop');
   end;
 
   // TODO: Do not close the device here (takes too much time).
@@ -259,7 +258,7 @@ begin
   // free data
   if (not BASS_RecordFree()) then
   begin
-    Log.LogError('BASS_RecordFree: ' + AudioCore.ErrorGetString(), 'TBassInputDevice.Close');
+    Log.LogError('BASS_RecordFree: ' + BassCore.ErrorGetString(), 'TBassInputDevice.Close');
     Result := false;
   end
   else
@@ -286,9 +285,9 @@ begin
       Exit;
   end;
 
-  if (BASS_RecordGetInput(SourceIndex, lVolume) = -1) then
+  if (BASS_RecordGetInput(SourceIndex, lVolume) = DWORD(-1)) then
   begin
-    Log.LogError('BASS_RecordGetInput: ' + AudioCore.ErrorGetString() , 'TBassInputDevice.GetVolume');
+    Log.LogError('BASS_RecordGetInput: ' + BassCore.ErrorGetString() , 'TBassInputDevice.GetVolume');
     Exit;
   end;
   Result := lVolume;
@@ -315,7 +314,7 @@ begin
 
   if (not BASS_RecordSetInput(SourceIndex, 0, Volume)) then
   begin
-    Log.LogError('BASS_RecordSetInput: ' + AudioCore.ErrorGetString() , 'TBassInputDevice.SetVolume');
+    Log.LogError('BASS_RecordSetInput: ' + BassCore.ErrorGetString() , 'TBassInputDevice.SetVolume');
   end;
 end;
 
@@ -465,7 +464,7 @@ end;
 
 function TAudioInput_Bass.InitializeRecord(): boolean;
 begin
-  AudioCore := TAudioCore_Bass.GetInstance();
+  BassCore := TAudioCore_Bass.GetInstance();
   Result := EnumDevices();
 end;
 
@@ -477,10 +476,6 @@ end;
 
 
 initialization
-  singleton_AudioInputBass := TAudioInput_Bass.create();
-  AudioManager.add( singleton_AudioInputBass );
-
-finalization
-  AudioManager.Remove( singleton_AudioInputBass );
+  MediaManager.Add(TAudioInput_Bass.Create);
 
 end.

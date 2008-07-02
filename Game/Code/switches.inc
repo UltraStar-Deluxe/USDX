@@ -74,10 +74,11 @@
 // audio config
 {$IF Defined(HaveBASS)}
   {$DEFINE UseBASSPlayback}
+  {$DEFINE UseBASSDecoder}
   {$DEFINE UseBASSInput}
 {$ELSEIF Defined(HavePortaudio)}
-  {.$DEFINE UsePortaudioPlayback}
   {$DEFINE UseSDLPlayback}
+  {.$DEFINE UsePortaudioPlayback}
   {$DEFINE UsePortaudioInput}
   {$IFDEF HavePortmixer}
     {$DEFINE UsePortmixer}
@@ -87,10 +88,15 @@
 // ffmpeg config
 {$IFDEF HaveFFMpeg}
   {$DEFINE UseFFMpegDecoder}
+  {$DEFINE UseFFMpegResample}
   {$DEFINE UseFFMpegVideo}
   {$IFDEF HaveSWScale}
     {$DEFINE UseSWScale}
   {$ENDIF}
+{$ENDIF}
+
+{$IFDEF HaveLibsamplerate}
+  {$DEFINE UseSRCResample}
 {$ENDIF}
 
 // projectM config
@@ -104,7 +110,7 @@
   {$DEFINE UseFFMpeg}
 {$IFEND}
 
-{$IF Defined(UseBASSInput) or Defined(UseBASSPlayback)}
+{$IF Defined(UseBASSInput) or Defined(UseBASSPlayback) or Defined(UseBASSDecoder)}
   {$DEFINE UseBASS}
 {$IFEND}
 

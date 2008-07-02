@@ -164,6 +164,12 @@ const
                       (PORTAUDIO_VERSION_RELEASE * VERSION_RELEASE);
   {$ENDIF}
 
+  {$IFDEF HaveLibsamplerate}
+  LIBSAMPLERATE_VERSION = (LIBSAMPLERATE_VERSION_MAJOR * VERSION_MAJOR) +
+                          (LIBSAMPLERATE_VERSION_MINOR * VERSION_MINOR) +
+                          (LIBSAMPLERATE_VERSION_RELEASE * VERSION_RELEASE);
+  {$ENDIF}
+
 function USDXVersionStr(): string;
 function USDXShortVersionStr(): string;
 
