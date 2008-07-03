@@ -45,6 +45,7 @@ unit portmixer;
 interface
 
 uses
+  ctypes,
   portaudio;
 
 const
@@ -61,15 +62,15 @@ const
 
 type
   PPxMixer = Pointer;
-  TPxVolume = Single; {* 0.0 (min) --> 1.0 (max) *}
-  TPxBalance = Single; {* -1.0 (left) --> 1.0 (right) *}
+  TPxVolume = cfloat; {* 0.0 (min) --> 1.0 (max) *}
+  TPxBalance = cfloat; {* -1.0 (left) --> 1.0 (right) *}
 
 {*
  Px_OpenMixer() returns a mixer which will work with the given PortAudio
  audio device.  Pass 0 as the index for the first (default) mixer.
 *}
 
-function Px_OpenMixer( pa_stream: Pointer; i: Integer ): PPxMixer; cdecl; external LibName;
+function Px_OpenMixer( pa_stream: Pointer; i: cint ): PPxMixer; cdecl; external LibName;
 
 {*
  Px_CloseMixer() closes a mixer opened using Px_OpenMixer and frees any
@@ -86,8 +87,8 @@ procedure Px_CloseMixer( mixer: PPxMixer ); cdecl; external LibName;
  which are independent of any particular PortAudio device.
 *}
 
-function Px_GetNumMixers( mixer: PPxMixer ): Integer; cdecl; external LibName;
-function Px_GetMixerName( mixer: PPxMixer; i: Integer ): PChar; cdecl; external LibName;
+function Px_GetNumMixers( mixer: PPxMixer ): cint; cdecl; external LibName;
+function Px_GetMixerName( mixer: PPxMixer; i: cint ): PChar; cdecl; external LibName;
 
 {*
  Master (output) volume
@@ -102,25 +103,25 @@ procedure Px_SetMasterVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl; exter
 
 function Px_GetPCMOutputVolume( mixer: PPxMixer ): TPxVolume; cdecl; external LibName;
 procedure Px_SetPCMOutputVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl; external LibName;
-function Px_SupportsPCMOutputVolume( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_SupportsPCMOutputVolume( mixer: PPxMixer ): cint; cdecl; external LibName;
 
 {*
  All output volumes
 *}
 
-function Px_GetNumOutputVolumes( mixer: PPxMixer ): Integer; cdecl; external LibName;
-function Px_GetOutputVolumeName( mixer: PPxMixer; i: Integer ): PChar; cdecl; external LibName;
-function Px_GetOutputVolume( mixer: PPxMixer; i: Integer ): TPxVolume; cdecl; external LibName;
-procedure Px_SetOutputVolume( mixer: PPxMixer; i: Integer; volume: TPxVolume ); cdecl; external LibName;
+function Px_GetNumOutputVolumes( mixer: PPxMixer ): cint; cdecl; external LibName;
+function Px_GetOutputVolumeName( mixer: PPxMixer; i: cint ): PChar; cdecl; external LibName;
+function Px_GetOutputVolume( mixer: PPxMixer; i: cint ): TPxVolume; cdecl; external LibName;
+procedure Px_SetOutputVolume( mixer: PPxMixer; i: cint; volume: TPxVolume ); cdecl; external LibName;
 
 {*
  Input source
 *}
 
-function Px_GetNumInputSources( mixer: PPxMixer ): Integer; cdecl; external LibName;
-function Px_GetInputSourceName( mixer: PPxMixer; i: Integer): PChar; cdecl; external LibName;
-function Px_GetCurrentInputSource( mixer: PPxMixer ): Integer; cdecl; external LibName; {* may return -1 == none *}
-procedure Px_SetCurrentInputSource( mixer: PPxMixer; i: Integer ); cdecl; external LibName;
+function Px_GetNumInputSources( mixer: PPxMixer ): cint; cdecl; external LibName;
+function Px_GetInputSourceName( mixer: PPxMixer; i: cint): PChar; cdecl; external LibName;
+function Px_GetCurrentInputSource( mixer: PPxMixer ): cint; cdecl; external LibName; {* may return -1 == none *}
+procedure Px_SetCurrentInputSource( mixer: PPxMixer; i: cint ); cdecl; external LibName;
 
 {*
  Input volume
@@ -133,7 +134,7 @@ procedure Px_SetInputVolume( mixer: PPxMixer; volume: TPxVolume ); cdecl; extern
   Balance
 *}
 
-function Px_SupportsOutputBalance( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_SupportsOutputBalance( mixer: PPxMixer ): cint; cdecl; external LibName;
 function Px_GetOutputBalance( mixer: PPxMixer ): TPxBalance; cdecl; external LibName;
 procedure Px_SetOutputBalance( mixer: PPxMixer; balance: TPxBalance ); cdecl; external LibName;
 
@@ -141,7 +142,7 @@ procedure Px_SetOutputBalance( mixer: PPxMixer; balance: TPxBalance ); cdecl; ex
   Playthrough
 *}
 
-function Px_SupportsPlaythrough( mixer: PPxMixer ): Integer; cdecl; external LibName;
+function Px_SupportsPlaythrough( mixer: PPxMixer ): cint; cdecl; external LibName;
 function Px_GetPlaythrough( mixer: PPxMixer ): TPxVolume; cdecl; external LibName;
 procedure Px_SetPlaythrough( mixer: PPxMixer; volume: TPxVolume ); cdecl; external LibName;
 

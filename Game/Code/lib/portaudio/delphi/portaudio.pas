@@ -44,13 +44,17 @@
 unit portaudio;
 
 {$IFDEF FPC}
-  {$PACKRECORDS C}    (* GCC/Visual C/C++ compatible record packing *)
+  {$PACKENUM 4}    (* use 4-byte enums *)
+  {$PACKRECORDS C} (* C/C++-compatible record packing *)
   {$MODE DELPHI }
+{$ELSE}
+  {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
 interface
 
-//uses;
+uses
+  ctypes;
 
 const
 {$IFDEF MSWINDOWS}
@@ -68,7 +72,7 @@ const
 {** Retrieve the release number of the currently running PortAudio build,
  eg 1900.
 *}
-function Pa_GetVersion(): Integer; cdecl; external LibName;
+function Pa_GetVersion(): cint; cdecl; external LibName;
 
 
 {** Retrieve a textual description of the current PortAudio build,
@@ -81,8 +85,8 @@ function Pa_GetVersionText(): PChar; cdecl; external LibName;
  Note that with the exception of paNoError, all PaErrorCodes are negative.
 *}
 
-type TPaError = Integer;
-type TPaErrorCode = {enum}Integer; const
+type TPaError = cint;
+type TPaErrorCode = {enum}cint; const
 {enum_begin PaErrorCode}
     paNoError = 0;
 
@@ -172,7 +176,7 @@ function Pa_Terminate(): TPaError; cdecl; external LibName;
 
  @see Pa_GetDeviceCount, paNoDevice, paUseHostApiSpecificDeviceSpecification
 *}
-type TPaDeviceIndex = Integer;
+type TPaDeviceIndex = cint;
 
 
 {** A special PaDeviceIndex value indicating that no device is available,
@@ -198,7 +202,7 @@ const paUseHostApiSpecificDeviceSpecification = TPaDeviceIndex(-2);
 
  @see Pa_GetHostApiCount
 *}
-type TPaHostApiIndex = Integer;
+type TPaHostApiIndex = cint;
 
 {** Retrieve the number of available host APIs. Even if a host API is
  available it may have no devices available.
@@ -234,7 +238,7 @@ function Pa_GetDefaultHostApi(): TPaHostApiIndex; cdecl; external LibName;
 
  @see PaHostApiInfo
 *}
-type TPaHostApiTypeId = {enum}Integer; const
+type TPaHostApiTypeId = {enum}cint; const
 {enum_begin PaHostApiTypeId}
     paInDevelopment=0; {* use while developing support for a new host API *}
     paDirectSound=1;
@@ -258,7 +262,7 @@ type
   PPaHostApiInfo = ^TPaHostApiInfo;
   TPaHostApiInfo = record
       {** this is struct version 1 *}
-      structVersion: Integer;
+      structVersion: cint;
       {** The well known unique identifier of this host API @see PaHostApiTypeId *}
       _type: TPaHostApiTypeId;
       {** A textual description of the host API for display on user interfaces. *}
@@ -269,7 +273,7 @@ type
        all devices for this host API.
        @see Pa_HostApiDeviceIndexToDeviceIndex
       *}
-      deviceCount: Integer;
+      deviceCount: cint;
 
       {** The default input device for this host API. The value will be a
        device index ranging from 0 to (Pa_GetDeviceCount()-1), or paNoDevice
@@ -341,7 +345,7 @@ function Pa_HostApiTypeIdToHostApiIndex( _type: TPaHostApiTypeId ): TPaHostApiIn
  @see PaHostApiInfo
 *}
 function Pa_HostApiDeviceIndexToDeviceIndex( hostApi: TPaHostApiIndex;
-        hostApiDeviceIndex: Integer ): TPaDeviceIndex; cdecl; external LibName;
+        hostApiDeviceIndex: cint ): TPaDeviceIndex; cdecl; external LibName;
 
 
 
@@ -351,8 +355,8 @@ type
   PPaHostErrorInfo = ^TPaHostErrorInfo;
   TPaHostErrorInfo = record
       hostApiType: TPaHostApiTypeId;    {**< the host API which returned the error code *}
-      errorCode: Longint;                 {**< the error code returned *}
-      errorText: PChar;                {**< a textual description of the error if available, otherwise a zero-length string *}
+      errorCode: clong;                 {**< the error code returned *}
+      errorText: PChar;                 {**< a textual description of the error if available, otherwise a zero-length string *}
   end;
 
 
@@ -418,7 +422,7 @@ function Pa_GetDefaultOutputDevice(): TPaDeviceIndex; cdecl; external LibName;
      
  @see PaStreamCallback, Pa_GetStreamTime
 *}
-type TPaTime = Double;
+type TPaTime = cdouble;
 
 
 {** A type used to specify one or more sample formats. Each value indicates
@@ -440,7 +444,7 @@ type TPaTime = Double;
  @see paFloat32, paInt16, paInt32, paInt24, paInt8
  @see paUInt8, paCustomFormat, paNonInterleaved
 *}
-type TPaSampleFormat = Longword;
+type TPaSampleFormat = culong;
 const
   paFloat32        = TPaSampleFormat($00000001); {**< @see PaSampleFormat *}
   paInt32          = TPaSampleFormat($00000002); {**< @see PaSampleFormat *}
@@ -457,12 +461,12 @@ const
 type
   PPaDeviceInfo = ^TPaDeviceInfo;
   TPaDeviceInfo = record
-      structVersion: Integer;  {* this is struct version 2 *}
+      structVersion: cint;  {* this is struct version 2 *}
       name: PChar;
       hostApi: TPaHostApiIndex; {* note this is a host API index, not a type id*}
 
-      maxInputChannels: Integer;
-      maxOutputChannels: Integer;
+      maxInputChannels: cint;
+      maxOutputChannels: cint;
 
       {* Default latency values for interactive performance. *}
       defaultLowInputLatency: TPaTime;
@@ -471,7 +475,7 @@ type
       defaultHighInputLatency: TPaTime;
       defaultHighOutputLatency: TPaTime;
 
-      defaultSampleRate: Double;
+      defaultSampleRate: cdouble;
   end;
 
 
@@ -509,7 +513,7 @@ type
        It can range from 1 to the value of maxInputChannels in the
        PaDeviceInfo record for the device specified by the device parameter.
       *}
-      channelCount: Integer;
+      channelCount: cint;
 
       {** The sample format of the buffer provided to the stream callback,
        a_ReadStream() or Pa_WriteStream(). It may be any of the formats described
@@ -566,7 +570,7 @@ const paFormatIsSupported = (0);
 *}
 function Pa_IsFormatSupported( inputParameters: PPaStreamParameters;
                               outputParameters: PPaStreamParameters;
-                              sampleRate: Double ): TPaError; cdecl; external LibName;
+                              sampleRate: cdouble ): TPaError; cdecl; external LibName;
 
 
 
@@ -608,7 +612,7 @@ const paFramesPerBufferUnspecified = (0);
  @see paNoFlag, paClipOff, paDitherOff, paNeverDropInput,
   paPrimeOutputBuffersUsingStreamCallback, paPlatformSpecificFlags
 *}
-type TPaStreamFlags = Longword;
+type TPaStreamFlags = culong;
 
 {** @see PaStreamFlags *}
 const   paNoFlag          = TPaStreamFlags(0);
@@ -665,7 +669,7 @@ type
  @see paInputUnderflow, paInputOverflow, paOutputUnderflow, paOutputOverflow,
  paPrimingOutput
 *}
-type TPaStreamCallbackFlags = Longword;
+type TPaStreamCallbackFlags = culong;
 
 {** In a stream opened with paFramesPerBufferUnspecified, indicates that
  input data is all silence (zeros) because no real data is available. In a
@@ -706,7 +710,7 @@ const paPrimingOutput    = TPaStreamCallbackFlags($00000010);
  Allowable return values for the PaStreamCallback.
  @see PaStreamCallback
 *}
-type TPaStreamCallbackResult = {enum}Integer; const
+type TPaStreamCallbackResult = {enum}cint; const
 {enum_begin PaStreamCallbackResult}
     paContinue=0;
     paComplete=1;
@@ -761,10 +765,10 @@ type
   PPaStreamCallback = ^TPaStreamCallback;
   TPaStreamCallback = function(
       input: Pointer; output: Pointer;
-      frameCount: Longword;
+      frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo;
       statusFlags: TPaStreamCallbackFlags;
-      userData: Pointer ): Integer; cdecl;
+      userData: Pointer ): cint; cdecl;
 
 
 {** Opens a stream for either input, output or both.
@@ -824,8 +828,8 @@ type
 function Pa_OpenStream( var stream: PPaStream;
                        inputParameters: PPaStreamParameters;
                        outputParameters: PPaStreamParameters;
-                       sampleRate: Double;
-                       framesPerBuffer: Longword;
+                       sampleRate: cdouble;
+                       framesPerBuffer: culong;
                        streamFlags: TPaStreamFlags;
                        streamCallback: PPaStreamCallback;
                        userData: Pointer ): TPaError; cdecl; external LibName;
@@ -862,11 +866,11 @@ function Pa_OpenStream( var stream: PPaStream;
  @see Pa_OpenStream, PaStreamCallback
 *}
 function Pa_OpenDefaultStream( var stream: PPaStream;
-                              numInputChannels: Integer;
-                              numOutputChannels: Integer;
+                              numInputChannels: cint;
+                              numOutputChannels: cint;
                               sampleFormat: TPaSampleFormat;
-                              sampleRate: Double;
-                              framesPerBuffer: Longword;
+                              sampleRate: cdouble;
+                              framesPerBuffer: culong;
                               streamCallback: PPaStreamCallback;
                               userData: Pointer ): TPaError; cdecl; external LibName;
 
@@ -974,7 +978,7 @@ type
   PPaStreamInfo = ^TPaStreamInfo;
   TPaStreamInfo = record
       {** this is struct version 1 *}
-      structVersion: Integer;
+      structVersion: cint;
 
       {** The input latency of the stream in seconds. This value provides the most
        accurate estimate of input latency available to the implementation. It may
@@ -999,7 +1003,7 @@ type
        rate is not available, this field will have the same value as the sampleRate
        parameter passed to Pa_OpenStream().
       *}
-      sampleRate: Double;
+      sampleRate: cdouble;
   end;
 
 
@@ -1046,7 +1050,7 @@ function Pa_GetStreamTime( stream: PPaStream ): TPaTime; cdecl; external LibName
  return value may exceed 1.0. A value of 0.0 will always be returned for a
  blocking read/write stream, or if an error occurrs.
 *}
-function Pa_GetStreamCpuLoad( stream: PPaStream ): Double; cdecl; external LibName;
+function Pa_GetStreamCpuLoad( stream: PPaStream ): cdouble; cdecl; external LibName;
 
 
 {** Read samples from an input stream. The function doesn't return until
@@ -1072,7 +1076,7 @@ function Pa_GetStreamCpuLoad( stream: PPaStream ): Double; cdecl; external LibNa
 *}
 function Pa_ReadStream( stream: PPaStream;
                        buffer: Pointer;
-                       frames: Longword ): TPaError; cdecl; external LibName;
+                       frames: culong ): TPaError; cdecl; external LibName;
 
 
 {** Write samples to an output stream. This function doesn't return until the
@@ -1099,7 +1103,7 @@ function Pa_ReadStream( stream: PPaStream;
 *}
 function Pa_WriteStream( stream: PPaStream;
                         buffer: Pointer;
-                        frames: Longword ): TPaError; cdecl; external LibName;
+                        frames: culong ): TPaError; cdecl; external LibName;
 
 
 {** Retrieve the number of frames that can be read from the stream without
@@ -1110,7 +1114,7 @@ function Pa_WriteStream( stream: PPaStream;
  PaErrorCode (which are always negative) if PortAudio is not initialized or an
  error is encountered.
 *}
-function Pa_GetStreamReadAvailable( stream: PPaStream ): Longint; cdecl; external LibName;
+function Pa_GetStreamReadAvailable( stream: PPaStream ): cslong; cdecl; external LibName;
 
 
 {** Retrieve the number of frames that can be written to the stream without
@@ -1121,7 +1125,7 @@ function Pa_GetStreamReadAvailable( stream: PPaStream ): Longint; cdecl; externa
  PaErrorCode (which are always negative) if PortAudio is not initialized or an
  error is encountered.
 *}
-function Pa_GetStreamWriteAvailable( stream: PPaStream ): Longint; cdecl; external LibName;
+function Pa_GetStreamWriteAvailable( stream: PPaStream ): cslong; cdecl; external LibName;
 
 
 {** Retrieve the host type handling an open stream.
@@ -1151,7 +1155,7 @@ function Pa_GetSampleSize( format: TPaSampleFormat ): TPaError; cdecl; external 
  The function may sleep longer than requested so don't rely on this for accurate
  musical timing.
 *}
-procedure Pa_Sleep( msec: Longint ); cdecl; external LibName;
+procedure Pa_Sleep( msec: clong ); cdecl; external LibName;
 
 implementation
 
