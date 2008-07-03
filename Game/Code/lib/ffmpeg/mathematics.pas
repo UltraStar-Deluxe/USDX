@@ -38,6 +38,7 @@ unit mathematics;
 interface
 
 uses
+  ctypes,
   rational,
   UConfig;
 
@@ -54,20 +55,20 @@ type
  * rescale a 64bit integer with rounding to nearest.
  * a simple a*b/c isn't possible as it can overflow
  *)
-function av_rescale (a, b, c: int64): int64;
+function av_rescale (a, b, c: cint64): cint64;
   cdecl; external av__util; {av_const}
 
 (**
  * rescale a 64bit integer with specified rounding.
  * a simple a*b/c isn't possible as it can overflow
  *)
-function av_rescale_rnd (a, b, c: int64; enum: TAVRounding): int64;
+function av_rescale_rnd (a, b, c: cint64; enum: TAVRounding): cint64;
   cdecl; external av__util; {av_const}
 
 (**
  * rescale a 64bit integer by 2 rational numbers.
  *)
-function av_rescale_q (a: int64; bq, cq: TAVRational): int64;
+function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
   cdecl; external av__util; {av_const}
 
 implementation

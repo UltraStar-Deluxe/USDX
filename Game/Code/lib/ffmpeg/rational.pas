@@ -42,6 +42,7 @@ unit rational;
 interface
 
 uses
+  ctypes,
   UConfig;
 
 type
@@ -50,8 +51,8 @@ type
  *)
   PAVRational = ^TAVRational;
   TAVRational = record
-    num: integer; ///< numerator
-    den: integer; ///< denominator
+    num: cint; ///< numerator
+    den: cint; ///< denominator
   end;
 
 (**
@@ -60,14 +61,14 @@ type
  * @param b second rational
  * @return 0 if a==b, 1 if a>b and -1 if a<b.
  *)
-function av_cmp_q(a: TAVRational; b: TAVRational): integer; {$IFDEF HasInline}inline;{$ENDIF}
+function av_cmp_q(a: TAVRational; b: TAVRational): cint; {$IFDEF HasInline}inline;{$ENDIF}
 
 (**
  * Rational to double conversion.
  * @param a rational to convert
  * @return (double) a
  *)
-function av_q2d(a: TAVRational): double; {$IFDEF HasInline}inline;{$ENDIF}
+function av_q2d(a: TAVRational): cdouble; {$IFDEF HasInline}inline;{$ENDIF}
 
 (**
  * Reduce a fraction.
@@ -79,7 +80,7 @@ function av_q2d(a: TAVRational): double; {$IFDEF HasInline}inline;{$ENDIF}
  * @param max the maximum allowed for dst_nom & dst_den
  * @return 1 if exact, 0 otherwise
  *)
-function av_reduce(dst_nom: PInteger; dst_den: PInteger; nom: int64; den: int64; max: int64): integer;
+function av_reduce(dst_nom: PCint; dst_den: PCint; nom: cint64; den: cint64; max: cint64): cint;
   cdecl; external av__util;
 
 (**
@@ -124,16 +125,16 @@ function av_sub_q(b: TAVRational; c: TAVRational): TAVRational;
  * @param max the maximum allowed numerator and denominator
  * @return (AVRational) d.
  *)
-function av_d2q(d: double; max: integer): TAVRational;
+function av_d2q(d: cdouble; max: cint): TAVRational;
   cdecl; external av__util; {av_const}
 
 implementation
 
-function av_cmp_q (a: TAVRational; b: TAVRational): integer;
+function av_cmp_q (a: TAVRational; b: TAVRational): cint;
 var
-  tmp: int64;
+  tmp: cint64;
 begin
-  tmp := a.num * int64(b.den) - b.num * int64(a.den);
+  tmp := a.num * cint64(b.den) - b.num * cint64(a.den);
 
   if (tmp <> 0) then
     Result := (tmp shr 63) or 1
@@ -141,7 +142,7 @@ begin
     Result := 0
 end;
 
-function av_q2d(a: TAVRational): double;
+function av_q2d(a: TAVRational): cdouble;
 begin
   Result := a.num / a.den;
 end;

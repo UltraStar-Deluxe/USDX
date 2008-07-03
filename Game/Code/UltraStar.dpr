@@ -31,6 +31,10 @@ uses
   {$ENDIF}
   {$ENDIF}
 
+  {$IFNDEF FPC}
+  ctypes                 in 'lib\ctypes\ctypes.pas', // FPC compatibility types for C libs
+  {$ENDIF}
+
   //------------------------------
   //Includes - 3rd Party Libraries
   //------------------------------

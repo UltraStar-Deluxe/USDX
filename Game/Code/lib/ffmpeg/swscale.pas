@@ -63,12 +63,12 @@ const
 {$IFEND}
 
 type
-  TQuadIntArray = array[0..3] of integer;
+  TQuadIntArray = array[0..3] of cint;
   PQuadIntArray = ^TQuadIntArray;
-  TIntArray = array[0..0] of integer;
-  PIntArray = ^TIntArray;
-  TPByteArray = array[0..0] of Pbyte;
-  PPByteArray = ^TPByteArray;
+  TCintArray = array[0..0] of cint;
+  PCintArray = ^TCintArray;
+  TPUint8Array = array[0..0] of PCuint8;
+  PPUint8Array = ^TPUint8Array;
 
 const
   {* values for the flags, the stuff on the command line is different *}
@@ -122,8 +122,8 @@ type
   // coeffs cannot be shared between vectors
   PSwsVector = ^TSwsVector;
   TSwsVector = record
-    coeff: Pdouble;
-    length: integer;
+    coeff: PCdouble;
+    length: cint;
   end;
 
   // vectors can be shared
@@ -137,16 +137,6 @@ type
 
   PSwsContext = ^TSwsContext;
   TSwsContext = record
-    av_class: Pointer;
-    swScale: Pointer;
-    srxW,srcH, dstH: integer;
-    chrSrcW, chrSrcH, chrDstW, chrDstH: integer;
-    lumXInc, chrXInc, lumYInc, chrYInc: integer;
-    dstFormat, srcFormat, origDstFormat, origSrcFormat: integer;
-    chrSrcHSubSample, chrSrcVSubSample, chrIntHSubSample, chrIntVSubSample: integer;
-    chrDstHSubSample, chrDstVSubSample: integer;
-    vChrDrop, sliceDir: integer;
-    param: array[0..1] of double;
     {internal structure}
   end;
 
@@ -154,31 +144,31 @@ type
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
-function sws_getContext(srcW: integer; srcH: integer; srcFormat: integer; dstW: integer; dstH: integer;dstFormat: integer; flags: integer;
-              srcFilter: PSwsFilter; dstFilter: PSwsFilter; param: Pdouble): PSwsContext;
+function sws_getContext(srcW: cint; srcH: cint; srcFormat: cint; dstW: cint; dstH: cint; dstFormat: cint; flags: cint;
+              srcFilter: PSwsFilter; dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
-function sws_scale(context: PSwsContext; src: PPByteArray; srcStride: PIntArray; srcSliceY: integer; srcSliceH: integer;
-              dst: PPByteArray; dstStride: PIntArray): integer;
+function sws_scale(context: PSwsContext; src: PPUint8Array; srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
+              dst: PPUint8Array; dstStride: PCintArray): cint;
   cdecl; external sw__scale;
-function sws_scale_ordered(context: PSwsContext; src: PPByteArray; srcStride: PIntArray; srcSliceY: integer;
-              srcSliceH: integer; dst: PPByteArray; dstStride: PIntArray): integer;
+function sws_scale_ordered(context: PSwsContext; src: PPByteArray; srcStride: PCintArray; srcSliceY: cint;
+              srcSliceH: cint; dst: PPByteArray; dstStride: PCintArray): cint;
   cdecl; external sw__scale; deprecated;
 
-function sws_setColorspaceDetails(c: PSwsContext; inv_table: PQuadIntArray; srcRange: integer; table: PQuadIntArray; dstRange: integer;
-              brightness: integer; contrast: integer; saturation: integer): integer;
+function sws_setColorspaceDetails(c: PSwsContext; inv_table: PQuadIntArray; srcRange: cint; table: PQuadIntArray; dstRange: cint;
+              brightness: cint; contrast: cint; saturation: cint): cint;
   cdecl; external sw__scale;
-function sws_getColorspaceDetails(c: PSwsContext; var inv_table: PQuadIntArray; var srcRange: integer; var table: PQuadIntArray; var dstRange: integer;
-              var brightness: integer; var contrast: integer; var saturation: integer): integer;
+function sws_getColorspaceDetails(c: PSwsContext; var inv_table: PQuadIntArray; var srcRange: cint; var table: PQuadIntArray; var dstRange: cint;
+              var brightness: cint; var contrast: cint; var saturation: cint): cint;
   cdecl; external sw__scale;
-function sws_getGaussianVec(variance: double; quality: double): PSwsVector;
+function sws_getGaussianVec(variance: cdouble; quality: cdouble): PSwsVector;
   cdecl; external sw__scale;
-function sws_getConstVec(c: double; length: integer): PSwsVector;
+function sws_getConstVec(c: cdouble; length: cint): PSwsVector;
   cdecl; external sw__scale;
 function sws_getIdentityVec: PSwsVector;
   cdecl; external sw__scale;
-procedure sws_scaleVec(a: PSwsVector; scalar: double);
+procedure sws_scaleVec(a: PSwsVector; scalar: cdouble);
   cdecl; external sw__scale;
-procedure sws_normalizeVec(a: PSwsVector; height: double);
+procedure sws_normalizeVec(a: PSwsVector; height: cdouble);
   cdecl; external sw__scale;
 procedure sws_convVec(a: PSwsVector; b: PSwsVector);
   cdecl; external sw__scale;
@@ -186,7 +176,7 @@ procedure sws_addVec(a: PSwsVector; b: PSwsVector);
   cdecl; external sw__scale;
 procedure sws_subVec(a: PSwsVector; b: PSwsVector);
   cdecl; external sw__scale;
-procedure sws_shiftVec(a: PSwsVector; shift: integer);
+procedure sws_shiftVec(a: PSwsVector; shift: cint);
   cdecl; external sw__scale;
 function sws_cloneVec(a: PSwsVector): PSwsVector;
   cdecl; external sw__scale;
@@ -196,16 +186,16 @@ procedure sws_printVec(a: PSwsVector);
 procedure sws_freeVec(a: PSwsVector);
   cdecl; external sw__scale;
 
-function sws_getDefaultFilter(lumaGBlur: single; chromaGBlur: single; lumaSarpen: single; chromaSharpen: single; chromaHShift: single;
-              chromaVShift: single; verbose: integer): PSwsFilter;
+function sws_getDefaultFilter(lumaGBlur: cfloat; chromaGBlur: cfloat; lumaSarpen: cfloat; chromaSharpen: cfloat; chromaHShift: cfloat;
+              chromaVShift: cfloat; verbose: cint): PSwsFilter;
   cdecl; external sw__scale;
 procedure sws_freeFilter(filter: PSwsFilter);
   cdecl; external sw__scale;
 
 function sws_getCachedContext(context: PSwsContext;
-              srcW: integer; srcH: integer; srcFormat: integer;
-              dstW: integer; dstH: integer; dstFormat: integer; flags: integer;
-              srcFilter: PSwsFilter; dstFilter: PSwsFilter; param: Pdouble): PSwsContext;
+              srcW: cint; srcH: cint; srcFormat: cint;
+              dstW: cint; dstH: cint; dstFormat: cint; flags: cint;
+              srcFilter: PSwsFilter; dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
 
 implementation

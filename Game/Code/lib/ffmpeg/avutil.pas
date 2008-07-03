@@ -52,6 +52,7 @@ unit avutil;
 interface
 
 uses
+  ctypes,
   mathematics,
   rational,
   UConfig;
@@ -81,14 +82,6 @@ const
 {$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
   {$MESSAGE Warn 'Linked version of libavutil may be unsupported!'}
 {$IFEND}
-
-
-{$IFDEF FPC}
-{$IF FPC_VERSION_INT < 2002000} // < 2.2.0
-type
-  uint64 = QWord;
-{$IFEND}
-{$ENDIF}
 
 type
 (**
@@ -193,7 +186,7 @@ function MKTAG(a,b,c,d: char): integer;
  * it.
  * @see av_mallocz()
  *)
-function av_malloc (size: cardinal): pointer;
+function av_malloc(size: cuint): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
@@ -208,7 +201,7 @@ function av_malloc (size: cardinal): pointer;
  * reallocate or the function is used to free the memory block.
  * @see av_fast_realloc()
  *)
-function av_realloc (ptr: pointer; size: cardinal): pointer;
+function av_realloc(ptr: pointer; size: cuint): pointer;
   cdecl; external av__util; {av_alloc_size(2)}
 
 (**
@@ -219,7 +212,7 @@ function av_realloc (ptr: pointer; size: cardinal): pointer;
  * @note It is recommended that you use av_freep() instead.
  * @see av_freep()
  *)
-procedure av_free (ptr: pointer);
+procedure av_free(ptr: pointer);
   cdecl; external av__util;
 
 (**
@@ -231,7 +224,7 @@ procedure av_free (ptr: pointer);
  * it.
  * @see av_malloc()
  *)
-function av_mallocz (size: cardinal): pointer;
+function av_mallocz(size: cuint): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
@@ -240,7 +233,7 @@ function av_mallocz (size: cardinal): pointer;
  * @return Pointer to a newly allocated string containing a
  * copy of \p s or NULL if it cannot be allocated.
  *)
-function av_strdup({const} s: pchar): pchar;
+function av_strdup({const} s: PChar): PChar;
   cdecl; external av__util; {av_malloc_attrib}
 
 (**
@@ -300,9 +293,9 @@ const
   AV_LOG_DEBUG   = 48;
 {$IFEND}
 
-function av_log_get_level(): integer;
+function av_log_get_level(): cint;
   cdecl; external av__util;
-procedure av_log_set_level(level: integer);
+procedure av_log_set_level(level: cint);
   cdecl; external av__util;
 
 

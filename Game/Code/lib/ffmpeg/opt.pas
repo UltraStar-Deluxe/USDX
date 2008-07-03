@@ -40,6 +40,7 @@ unit opt;
 interface
 
 uses
+  ctypes,
   rational,
   UConfig;
 
@@ -70,65 +71,65 @@ type
    *)
   PAVOption = ^TAVOption;
   TAVOption = record
-    name: pchar;
+    name: {const} PChar;
     
     (**
      * short English help text
      * @todo What about other languages?
      *)
-    help: pchar;
-    offset: integer;             ///< offset to context structure where the parsed value should be stored
+    help: {const} PChar;
+    offset: cint;             ///< offset to context structure where the parsed value should be stored
     type_: TAVOptionType;
 
-    default_val: double;
-    min: double;
-    max: double;
+    default_val: cdouble;
+    min: cdouble;
+    max: cdouble;
 
-    flags: integer;
+    flags: cint;
 //FIXME think about enc-audio, ... style flags
-    unit_: pchar;
+    unit_: {const} PChar;
   end;
 
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
-function av_find_opt (obj: Pointer; {const} name: PChar; {const} unit_: PChar; mask: integer; flags: integer): {const} PAVOption;
+function av_find_opt (obj: Pointer; {const} name: {const} PChar; {const} unit_: PChar; mask: cint; flags: cint): {const} PAVOption;
   cdecl; external av__codec;
 {$IFEND}
 
-function av_set_string (obj: pointer; name: pchar; val: pchar): PAVOption;
+function av_set_string (obj: pointer; name: {const} pchar; val: {const} pchar): PAVOption;
   cdecl; external av__codec;
 
-function av_set_double (obj: pointer; name: pchar; n: double): PAVOption;
+function av_set_double (obj: pointer; name: {const} pchar; n: cdouble): PAVOption;
   cdecl; external av__codec;
 
-function av_set_q (obj: pointer; name: pchar; n: TAVRational): PAVOption;
+function av_set_q (obj: pointer; name: {const} pchar; n: TAVRational): PAVOption;
   cdecl; external av__codec;
 
-function av_set_int (obj: pointer; name: pchar; n: int64): PAVOption;
+function av_set_int (obj: pointer; name: {const} pchar; n: cint64): PAVOption;
   cdecl; external av__codec;
 
-function av_get_double (obj: pointer; name: pchar; o_out: PPointer): double;
+function av_get_double (obj: pointer; name: {const} pchar; var o_out: PAVOption): cdouble;
   cdecl; external av__codec;
 
-function av_get_q (obj: pointer; name: pchar; o_out: PPointer): TAVRational;
+function av_get_q (obj: pointer; name: {const} pchar; var o_out: PAVOption): TAVRational;
   cdecl; external av__codec;
 
-function av_get_int (obj: pointer; name: pchar; o_out: PPointer): int64;
+function av_get_int (obj: pointer; name: {const} pchar; var o_out: {const} PAVOption): cint64;
   cdecl; external av__codec;
 
-function av_get_string (obj: pointer; name: pchar; o_out: PPOinter; buf: pchar; buf_len: integer): pchar;
+function av_get_string (obj: pointer; name: {const} pchar; var o_out: {const} PAVOption; buf: pchar; buf_len: cint): pchar;
   cdecl; external av__codec;
 
-function av_next_option (obj: pointer; last: PAVOption): PAVOption;
+function av_next_option (obj: pointer; last: {const} PAVOption): PAVOption;
   cdecl; external av__codec;
 
-function av_opt_show (obj: pointer; av_log_obj: pointer): integer;
+function av_opt_show (obj: pointer; av_log_obj: pointer): cint;
   cdecl; external av__codec;
 
 procedure av_opt_set_defaults (s: pointer);
   cdecl; external av__codec;
 
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
-procedure av_opt_set_defaults2 (s: Pointer; mask: integer; flags: integer);
+procedure av_opt_set_defaults2 (s: Pointer; mask: cint; flags: cint);
   cdecl; external av__codec;
 {$IFEND}
 
