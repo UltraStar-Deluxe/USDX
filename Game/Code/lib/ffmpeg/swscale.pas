@@ -45,6 +45,7 @@ unit swscale;
 interface
 
 uses
+  ctypes,
   avutil,
   UConfig;
 
@@ -63,12 +64,12 @@ const
 {$IFEND}
 
 type
-  TQuadIntArray = array[0..3] of cint;
-  PQuadIntArray = ^TQuadIntArray;
+  TQuadCintArray = array[0..3] of cint;
+  PQuadCintArray = ^TQuadCintArray;
   TCintArray = array[0..0] of cint;
   PCintArray = ^TCintArray;
-  TPUint8Array = array[0..0] of PCuint8;
-  PPUint8Array = ^TPUint8Array;
+  TPCuint8Array = array[0..0] of PCuint8;
+  PPCuint8Array = ^TPCuint8Array;
 
 const
   {* values for the flags, the stuff on the command line is different *}
@@ -147,17 +148,17 @@ procedure sws_freeContext(swsContext: PSwsContext);
 function sws_getContext(srcW: cint; srcH: cint; srcFormat: cint; dstW: cint; dstH: cint; dstFormat: cint; flags: cint;
               srcFilter: PSwsFilter; dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
-function sws_scale(context: PSwsContext; src: PPUint8Array; srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
-              dst: PPUint8Array; dstStride: PCintArray): cint;
+function sws_scale(context: PSwsContext; src: PPCuint8Array; srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
+              dst: PPCuint8Array; dstStride: PCintArray): cint;
   cdecl; external sw__scale;
-function sws_scale_ordered(context: PSwsContext; src: PPByteArray; srcStride: PCintArray; srcSliceY: cint;
-              srcSliceH: cint; dst: PPByteArray; dstStride: PCintArray): cint;
+function sws_scale_ordered(context: PSwsContext; src: PPCuint8Array; srcStride: PCintArray; srcSliceY: cint;
+              srcSliceH: cint; dst: PPCuint8Array; dstStride: PCintArray): cint;
   cdecl; external sw__scale; deprecated;
 
-function sws_setColorspaceDetails(c: PSwsContext; inv_table: PQuadIntArray; srcRange: cint; table: PQuadIntArray; dstRange: cint;
+function sws_setColorspaceDetails(c: PSwsContext; inv_table: PQuadCintArray; srcRange: cint; table: PQuadCintArray; dstRange: cint;
               brightness: cint; contrast: cint; saturation: cint): cint;
   cdecl; external sw__scale;
-function sws_getColorspaceDetails(c: PSwsContext; var inv_table: PQuadIntArray; var srcRange: cint; var table: PQuadIntArray; var dstRange: cint;
+function sws_getColorspaceDetails(c: PSwsContext; var inv_table: PQuadCintArray; var srcRange: cint; var table: PQuadCintArray; var dstRange: cint;
               var brightness: cint; var contrast: cint; var saturation: cint): cint;
   cdecl; external sw__scale;
 function sws_getGaussianVec(variance: cdouble; quality: cdouble): PSwsVector;
