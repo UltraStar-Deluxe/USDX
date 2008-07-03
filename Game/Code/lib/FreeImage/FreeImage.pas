@@ -5,7 +5,7 @@ unit FreeImage;
 
 // ==========================================================
 // Delphi wrapper for FreeImage 3
-//
+// 
 // Design and implementation by
 // - Simon Beavis
 // - Peter Byström
@@ -28,7 +28,11 @@ unit FreeImage;
 
 interface
 
-uses Windows;
+uses
+  {$IFDEF MSWINDOWS}
+  Windows,
+  {$ENDIF}
+  ctypes;
 
 {$IFDEF FPC}
   {$MODE DELPHI}
@@ -53,6 +57,16 @@ const
 {$ENDIF}
 {$IFDEF DARWIN}
   FIDLL = 'libfreeimage.dylib';
+{$ENDIF}
+
+{$IFNDEF MSWINDOWS}
+type
+  // define portable types for 32-bit / 64-bit OS
+  BOOL  = cint32;
+  BYTE  = cuint8;
+  WORD  = cuint16;
+  DWORD = cuint32;
+  LONG  = cint32;
 {$ENDIF}
 
 // --------------------------------------------------------------------------
@@ -130,17 +144,17 @@ type
 // --------------------------------------------------------------------------
 
 type
-  FREE_IMAGE_FORMAT         = type Integer;
-  FREE_IMAGE_TYPE           = type Integer;
-  FREE_IMAGE_COLOR_TYPE     = type Integer;
-  FREE_IMAGE_QUANTIZE       = type Integer;
-  FREE_IMAGE_DITHER         = type Integer;
-  FREE_IMAGE_FILTER         = type Integer;
-  FREE_IMAGE_COLOR_CHANNEL  = type Integer;
-  FREE_IMAGE_MDTYPE         = type Integer;
-  FREE_IMAGE_MDMODEL        = type Integer;
-  FREE_IMAGE_JPEG_OPERATION = type Integer;
-  FREE_IMAGE_TMO            = type Integer;
+  FREE_IMAGE_FORMAT         = cint;
+  FREE_IMAGE_TYPE           = cint;
+  FREE_IMAGE_COLOR_TYPE     = cint;
+  FREE_IMAGE_QUANTIZE       = cint;
+  FREE_IMAGE_DITHER         = cint;
+  FREE_IMAGE_FILTER         = cint;
+  FREE_IMAGE_COLOR_CHANNEL  = cint;
+  FREE_IMAGE_MDTYPE         = cint;
+  FREE_IMAGE_MDMODEL        = cint;
+  FREE_IMAGE_JPEG_OPERATION = cint;
+  FREE_IMAGE_TMO            = cint;
 
 const
   // I/O image format identifiers.
@@ -297,13 +311,11 @@ type
 
 type
   FI_Handle = Pointer;
-  PCardinal = ^Cardinal;
-  PInt = ^Integer;
 
-  FI_ReadProc = function(buffer : pointer; size : Cardinal; count : Cardinal; handle : fi_handle) : PCardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_WriteProc = function(buffer : pointer; size, count : Cardinal; handle : FI_Handle) : PCardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_SeekProc = function(handle : fi_handle; offset : longint; origin : integer) : pint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_TellProc = function(handle : fi_handle) : PCardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_ReadProc = function(buffer : pointer; size : cuint; count : cuint; handle : fi_handle) : cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_WriteProc = function(buffer : pointer; size, count : cuint; handle : FI_Handle) : cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_SeekProc = function(handle : fi_handle; offset : clong; origin : cint) : cint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_TellProc = function(handle : fi_handle) : clong; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
 
   FreeImageIO = packed record
     read_proc : FI_ReadProc;     // pointer to the function used to read data
@@ -332,22 +344,22 @@ const
 type
   PPluginStruct = ^PluginStruct;
 
-  FI_InitProc = procedure(Plugin: PPluginStruct; Format_ID: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_InitProc = procedure(Plugin: PPluginStruct; Format_ID: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
   FI_FormatProc = function: PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
   FI_DescriptionProc = function: PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
   FI_ExtensionListProc = function: PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
   FI_RegExprProc = function: PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_OpenProc = function(IO: PFreeImageIO; Handle: FI_Handle; Read: Boolean): Pointer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_OpenProc = function(IO: PFreeImageIO; Handle: FI_Handle; Read: BOOL): Pointer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
   FI_CloseProc = procedure(IO: PFreeImageIO; Handle: FI_Handle; Data: Pointer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_PageCountProc = function(IO: PFreeImageIO; Handle: FI_Handle; Data: Pointer): Integer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_PageCapabilityProc = function(IO: PFreeImageIO; Handle: FI_Handle; Data: Pointer): integer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_LoadProc = function(IO: PFreeImageIO; Handle: FI_Handle; Page, Flags: Integer; data: pointer): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_SaveProc = function(IO: PFreeImageIO; Dib: PFIBITMAP; Handle: FI_Handle; Page, Flags: Integer; Data: Pointer): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_ValidateProc = function(IO: PFreeImageIO; Handle: FI_Handle): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_PageCountProc = function(IO: PFreeImageIO; Handle: FI_Handle; Data: Pointer): cint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_PageCapabilityProc = function(IO: PFreeImageIO; Handle: FI_Handle; Data: Pointer): cint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_LoadProc = function(IO: PFreeImageIO; Handle: FI_Handle; Page, Flags: cint; data: pointer): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_SaveProc = function(IO: PFreeImageIO; Dib: PFIBITMAP; Handle: FI_Handle; Page, Flags: cint; Data: Pointer): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_ValidateProc = function(IO: PFreeImageIO; Handle: FI_Handle): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
   FI_MimeProc = function: PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_SupportsExportBPPProc = function(Bpp: integer): boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_SupportsExportTypeProc = function(AType: FREE_IMAGE_TYPE): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
-  FI_SupportsICCProfilesProc = function: Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_SupportsExportBPPProc = function(Bpp: cint): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_SupportsExportTypeProc = function(AType: FREE_IMAGE_TYPE): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
+  FI_SupportsICCProfilesProc = function: BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
 
   PluginStruct = record
     format_proc: FI_FormatProc;
@@ -426,7 +438,7 @@ const
 // Init/Error routines ------------------------------------------------------
 // --------------------------------------------------------------------------
 
-procedure FreeImage_Initialise(load_local_plugins_only : boolean = False); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_Initialise(load_local_plugins_only : BOOL = False); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 procedure FreeImage_DeInitialise; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
@@ -440,7 +452,7 @@ function FreeImage_GetCopyrightMessage : PChar; {$IFDEF DLL_STDCALL} stdcall; {$
 // Message output functions -------------------------------------------------
 // --------------------------------------------------------------------------
 
-procedure FreeImage_OutPutMessageProc(fif: Integer; fmt: PChar); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_OutPutMessageProc(fif: cint; fmt: PChar); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 type FreeImage_OutputMessageFunction = function(fif: FREE_IMAGE_FORMAT; msg: PChar): pointer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF}
 procedure FreeImage_SetOutputMessage(omf: FreeImage_OutputMessageFunction); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
@@ -448,8 +460,8 @@ procedure FreeImage_SetOutputMessage(omf: FreeImage_OutputMessageFunction); {$IF
 // Allocate/Unload routines -------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_Allocate(width, height, bpp: integer; red_mask: Cardinal = 0; green_mask: Cardinal = 0; blue_mask: Cardinal = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_AllocateT(Atype: FREE_IMAGE_TYPE; Width, Height: Integer; bpp: Integer = 8; red_mask: Cardinal = 0; green_mask: Cardinal = 0; blue_mask: Cardinal = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_Allocate(width, height, bpp: cint; red_mask: cuint = 0; green_mask: cuint = 0; blue_mask: cuint = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_AllocateT(Atype: FREE_IMAGE_TYPE; Width, Height: cint; bpp: cint = 8; red_mask: cuint = 0; green_mask: cuint = 0; blue_mask: cuint = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_Clone(dib: PFIBITMAP): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 procedure FreeImage_Unload(dib: PFIBITMAP); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
@@ -457,12 +469,12 @@ procedure FreeImage_Unload(dib: PFIBITMAP); {$IFDEF DLL_STDCALL} stdcall; {$ENDI
 // Load / Save routines -----------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_Load(fif: FREE_IMAGE_FORMAT; const filename: PChar; flags: integer = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_LoadU(fif: FREE_IMAGE_FORMAT; const filename: PWideChar; flags: Integer = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_LoadFromHandle(fif: FREE_IMAGE_FORMAT; io: PFreeImageIO; handle: fi_handle; flags: integer = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_Save(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; filename: PChar; flags: integer = 0): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SaveU(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; const filename: PWideChar; flags: Integer = 0): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SaveToHandle(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; io : PFreeImageIO; handle : fi_handle; flags : integer = 0) : Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_Load(fif: FREE_IMAGE_FORMAT; const filename: PChar; flags: cint = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_LoadU(fif: FREE_IMAGE_FORMAT; const filename: PWideChar; flags: cint = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_LoadFromHandle(fif: FREE_IMAGE_FORMAT; io: PFreeImageIO; handle: fi_handle; flags: cint = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_Save(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; filename: PChar; flags: cint = 0): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SaveU(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; const filename: PWideChar; flags: cint = 0): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SaveToHandle(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; io : PFreeImageIO; handle : fi_handle; flags : cint = 0) : BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // Memory I/O stream routines -----------------------------------------------
@@ -470,11 +482,11 @@ function FreeImage_SaveToHandle(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; io : PFr
 
 function FreeImage_OpenMemory(data: PByte = nil; size_in_bytes: DWORD = 0): PFIMEMORY; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 procedure FreeImage_CloseMemory(stream: PFIMEMORY); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_LoadFromMemory(fif: FREE_IMAGE_FORMAT; stream: PFIMEMORY; flags: Integer = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SaveToMemory(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; stream: PFIMEMORY; flags: Integer = 0): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_TellMemory(stream: PFIMEMORY): Longint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SeekMemory(stream: PFIMEMORY; offset: Longint; origin: Integer): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_AcquireMemory(stream: PFIMEMORY; var data: PByte; var size_in_bytes: DWORD): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_LoadFromMemory(fif: FREE_IMAGE_FORMAT; stream: PFIMEMORY; flags: cint = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SaveToMemory(fif: FREE_IMAGE_FORMAT; dib: PFIBITMAP; stream: PFIMEMORY; flags: cint = 0): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_TellMemory(stream: PFIMEMORY): clong; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SeekMemory(stream: PFIMEMORY; offset: clong; origin: cint): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_AcquireMemory(stream: PFIMEMORY; var data: PByte; var size_in_bytes: DWORD): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // Plugin Interface ---------------------------------------------------------
@@ -482,9 +494,9 @@ function FreeImage_AcquireMemory(stream: PFIMEMORY; var data: PByte; var size_in
 
 function FreeImage_RegisterLocalPlugin(proc_address: FI_InitProc; format, description, extension, regexpr: PChar): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_RegisterExternalPlugin(path, format, description, extension, regexpr: PChar): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetFIFCount: Integer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_SetPluginEnabled(fif: FREE_IMAGE_FORMAT; enable: Boolean); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_IsPluginEnabled(fif: FREE_IMAGE_FORMAT): Integer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetFIFCount: cint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_SetPluginEnabled(fif: FREE_IMAGE_FORMAT; enable: BOOL); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_IsPluginEnabled(fif: FREE_IMAGE_FORMAT): cint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetFIFFromFormat(const format: PChar): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetFIFFromMime(const format: PChar): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetFormatFromFIF(fif: FREE_IMAGE_FORMAT): PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
@@ -493,35 +505,35 @@ function FreeImage_GetFIFDescription(fif: FREE_IMAGE_FORMAT): PChar; {$IFDEF DLL
 function FreeImage_GetFIFRegExpr(fif: FREE_IMAGE_FORMAT): PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetFIFFromFilename(const fname: PChar): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetFIFFromFilenameU(const fname:PWideChar): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FIFSupportsReading(fif: FREE_IMAGE_FORMAT): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FIFSupportsWriting(fif: FREE_IMAGE_FORMAT): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FIFSupportsExportBPP(fif: FREE_IMAGE_FORMAT; bpp: Integer): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FIFSupportsICCProfiles(fif: FREE_IMAGE_FORMAT): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FIFSupportsExportType(fif: FREE_IMAGE_FORMAT; image_type: FREE_IMAGE_TYPE): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FIFSupportsReading(fif: FREE_IMAGE_FORMAT): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FIFSupportsWriting(fif: FREE_IMAGE_FORMAT): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FIFSupportsExportBPP(fif: FREE_IMAGE_FORMAT; bpp: cint): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FIFSupportsICCProfiles(fif: FREE_IMAGE_FORMAT): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FIFSupportsExportType(fif: FREE_IMAGE_FORMAT; image_type: FREE_IMAGE_TYPE): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // Multipaging interface ----------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_OpenMultiBitmap(fif: FREE_IMAGE_FORMAT; filename: PChar; create_new, read_only, keep_cache_in_memory: Boolean; flags: integer = 0): PFIMULTIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_CloseMultiBitmap(bitmap: PFIMULTIBITMAP; flags: Integer = 0): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetPageCount(bitmap: PFIMULTIBITMAP): Integer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_OpenMultiBitmap(fif: FREE_IMAGE_FORMAT; filename: PChar; create_new, read_only, keep_cache_in_memory: BOOL; flags: cint = 0): PFIMULTIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_CloseMultiBitmap(bitmap: PFIMULTIBITMAP; flags: cint = 0): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetPageCount(bitmap: PFIMULTIBITMAP): cint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 procedure FreeImage_AppendPage(bitmap: PFIMULTIBITMAP; data: PFIBITMAP); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_InsertPage(bitmap: PFIMULTIBITMAP; page: Integer; data: PFIBITMAP); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_DeletePage(bitmap: PFIMULTIBITMAP; page: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_LockPage(bitmap: PFIMULTIBITMAP; page: Integer): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_UnlockPage(bitmap: PFIMULTIBITMAP; page: PFIBITMAP; changed: boolean); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_MovePage(bitmap: PFIMULTIBITMAP; target, source: Integer): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetLockedPageNumbers(bitmap: PFIMULTIBITMAP; var pages: Integer; var count : integer): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_InsertPage(bitmap: PFIMULTIBITMAP; page: cint; data: PFIBITMAP); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_DeletePage(bitmap: PFIMULTIBITMAP; page: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_LockPage(bitmap: PFIMULTIBITMAP; page: cint): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_UnlockPage(bitmap: PFIMULTIBITMAP; page: PFIBITMAP; changed: BOOL); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_MovePage(bitmap: PFIMULTIBITMAP; target, source: cint): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetLockedPageNumbers(bitmap: PFIMULTIBITMAP; var pages: cint; var count : cint): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // Filetype request routines ------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_GetFileType(const filename: PChar; size: Integer): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetFileTypeU(const filename: PWideChar; size: Integer): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetFileTypeFromHandle(io: PFreeImageIO; handle: FI_Handle; size: Integer = 0): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetFileTypeFromMemory(stream: PFIMEMORY; size: Integer = 0): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL; 
+function FreeImage_GetFileType(const filename: PChar; size: cint): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetFileTypeU(const filename: PWideChar; size: cint): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetFileTypeFromHandle(io: PFreeImageIO; handle: FI_Handle; size: cint = 0): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetFileTypeFromMemory(stream: PFIMEMORY; size: cint = 0): FREE_IMAGE_FORMAT; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL; 
 
 // --------------------------------------------------------------------------
 // ImageType request routine ------------------------------------------------
@@ -533,111 +545,111 @@ function FreeImage_GetImageType(dib: PFIBITMAP): FREE_IMAGE_TYPE; {$IFDEF DLL_ST
 // FreeImage helper routines ------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_IsLittleEndian: Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_LookupX11Color(const szColor: PChar; var nRed, nGreen, nBlue: PByte): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_LookupSVGColor(const szColor: PChar; var nRed, nGreen, nBlue: PByte): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_IsLittleEndian: BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_LookupX11Color(const szColor: PChar; var nRed, nGreen, nBlue: PByte): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_LookupSVGColor(const szColor: PChar; var nRed, nGreen, nBlue: PByte): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // Pixels access routines ---------------------------------------------------
 // --------------------------------------------------------------------------
 
 function FreeImage_GetBits(dib: PFIBITMAP): PByte; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetScanLine(dib: PFIBITMAP; scanline: Integer): PByte; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetScanLine(dib: PFIBITMAP; scanline: cint): PByte; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_GetPixelIndex(dib: PFIBITMAP; X, Y: Longint; Value: PByte): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetPixelColor(dib: PFIBITMAP; X, Y: Longint; Value: PRGBQuad): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetPixelIndex(dib: PFIBITMAP; X, Y: Longint; Value: PByte): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetPixelColor(dib: PFIBITMAP; X, Y: Longint; Value: PRGBQuad): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetPixelIndex(dib: PFIBITMAP; X, Y: cuint; Value: PByte): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetPixelColor(dib: PFIBITMAP; X, Y: cuint; Value: PRGBQuad): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetPixelIndex(dib: PFIBITMAP; X, Y: cuint; Value: PByte): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetPixelColor(dib: PFIBITMAP; X, Y: cuint; Value: PRGBQuad): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // DIB info routines --------------------------------------------------------
 // --------------------------------------------------------------------------
 
-function FreeImage_GetColorsUsed(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetBPP(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetWidth(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetHeight(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetLine(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetPitch(dib : PFIBITMAP) : Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetDIBSize(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetColorsUsed(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetBPP(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetWidth(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetHeight(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetLine(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetPitch(dib : PFIBITMAP) : cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetDIBSize(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetPalette(dib: PFIBITMAP): PRGBQUAD; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_GetDotsPerMeterX(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetDotsPerMeterY(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_SetDotsPerMeterX(dib: PFIBITMAP; res: Cardinal); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_SetDotsPerMeterY(dib: PFIBITMAP; res: Cardinal); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetDotsPerMeterX(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetDotsPerMeterY(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_SetDotsPerMeterX(dib: PFIBITMAP; res: cuint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_SetDotsPerMeterY(dib: PFIBITMAP; res: cuint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 function FreeImage_GetInfoHeader(dib: PFIBITMAP): PBITMAPINFOHEADER; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetInfo(var dib: FIBITMAP): PBITMAPINFO; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetColorType(dib: PFIBITMAP): FREE_IMAGE_COLOR_TYPE; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_GetRedMask(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetGreenMask(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetBlueMask(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetRedMask(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetGreenMask(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetBlueMask(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_GetTransparencyCount(dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetTransparencyCount(dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetTransparencyTable(dib: PFIBITMAP): PByte; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_SetTransparent(dib: PFIBITMAP; enabled: boolean); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_SetTransparencyTable(dib: PFIBITMAP; table: PByte; count: integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_IsTransparent(dib: PFIBITMAP): boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_SetTransparent(dib: PFIBITMAP; enabled: BOOL); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_SetTransparencyTable(dib: PFIBITMAP; table: PByte; count: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_IsTransparent(dib: PFIBITMAP): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_HasBackgroundColor(dib: PFIBITMAP): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetBackgroundColor(dib: PFIBITMAP; var bkcolor: PRGBQUAD): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetBackgroundColor(dib: PFIBITMAP; bkcolor: PRGBQUAD): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_HasBackgroundColor(dib: PFIBITMAP): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetBackgroundColor(dib: PFIBITMAP; var bkcolor: PRGBQUAD): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetBackgroundColor(dib: PFIBITMAP; bkcolor: PRGBQUAD): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // ICC profile routines -----------------------------------------------------
 // --------------------------------------------------------------------------
 
 function FreeImage_GetICCProfile(var dib: FIBITMAP): PFIICCPROFILE; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_CreateICCProfile(var dib: FIBITMAP; data: Pointer; size: Longint): PFIICCPROFILE; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_CreateICCProfile(var dib: FIBITMAP; data: Pointer; size: clong): PFIICCPROFILE; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 procedure FreeImage_DestroyICCProfile(var dib : FIBITMAP); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // Line conversion routines -------------------------------------------------
 // --------------------------------------------------------------------------
 
-procedure FreeImage_ConvertLine1To4(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine8To4(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQuad);  {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To4_555(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To4_565(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine24To4(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine32To4(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine1To4(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine8To4(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQuad);  {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To4_555(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To4_565(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine24To4(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine32To4(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-procedure FreeImage_ConvertLine1To8(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine4To8(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To8_555(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To8_565(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine24To8(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine32To8(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine1To8(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine4To8(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To8_555(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To8_565(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine24To8(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine32To8(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-procedure FreeImage_ConvertLine1To16_555(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine4To16_555(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine8To16_555(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16_565_To16_555(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine24To16_555(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine32To16_555(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine1To16_555(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine4To16_555(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine8To16_555(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16_565_To16_555(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine24To16_555(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine32To16_555(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-procedure FreeImage_ConvertLine1To16_565(target, source : PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine4To16_565(target, source : PBYTE; width_in_pixels : Integer; palette : PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine8To16_565(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16_555_To16_565(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine24To16_565(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine32To16_565(target, source : PBYTE; width_in_pixels : Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine1To16_565(target, source : PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine4To16_565(target, source : PBYTE; width_in_pixels : cint; palette : PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine8To16_565(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16_555_To16_565(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine24To16_565(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine32To16_565(target, source : PBYTE; width_in_pixels : cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-procedure FreeImage_ConvertLine1To24(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine4To24(target, source : PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine8To24(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To24_555(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To24_565(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine32To24(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine1To24(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine4To24(target, source : PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine8To24(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To24_555(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To24_565(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine32To24(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-procedure FreeImage_ConvertLine1To32(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine4To32(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine8To32(target, source: PBYTE; width_in_pixels: Integer; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To32_555(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine16To32_565(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertLine24To32(target, source: PBYTE; width_in_pixels: Integer); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine1To32(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine4To32(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine8To32(target, source: PBYTE; width_in_pixels: cint; palette: PRGBQUAD); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To32_555(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine16To32_565(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertLine24To32(target, source: PBYTE; width_in_pixels: cint); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // Smart conversion routines ------------------------------------------------
@@ -651,22 +663,22 @@ function FreeImage_ConvertTo16Bits565(dib: PFIBITMAP): PFIBITMAP; {$IFDEF DLL_ST
 function FreeImage_ConvertTo24Bits(dib: PFIBITMAP): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_ConvertTo32Bits(dib: PFIBITMAP): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_ColorQuantize(dib: PFIBITMAP; quantize: FREE_IMAGE_QUANTIZE): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_ColorQuantizeEx(dib: PFIBITMAP; quantize: FREE_IMAGE_QUANTIZE = FIQ_WUQUANT; PaletteSize: Integer = 256; ReserveSize: Integer = 0; ReservePalette: PRGBQuad = nil): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_ColorQuantizeEx(dib: PFIBITMAP; quantize: FREE_IMAGE_QUANTIZE = FIQ_WUQUANT; PaletteSize: cint = 256; ReserveSize: cint = 0; ReservePalette: PRGBQuad = nil): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_Threshold(dib: PFIBITMAP; T: Byte): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_Dither(dib: PFIBITMAP; algorithm: FREE_IMAGE_DITHER): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_ConvertFromRawBits(bits: PBYTE; width, height, pitch: Integer; bpp, red_mask, green_mask, blue_mask: LongWord; topdown: Boolean): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-procedure FreeImage_ConvertToRawBits(bits: PBYTE; dib: PFIBITMAP; pitch: Integer; bpp, red_mask, green_mask, blue_mask: LongWord; topdown: Boolean); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_ConvertFromRawBits(bits: PBYTE; width, height, pitch: cint; bpp, red_mask, green_mask, blue_mask: cuint; topdown: BOOL): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+procedure FreeImage_ConvertToRawBits(bits: PBYTE; dib: PFIBITMAP; pitch: cint; bpp, red_mask, green_mask, blue_mask: cuint; topdown: BOOL); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 function FreeImage_ConvertToRGBF(dib: PFIBITMAP): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_ConvertToStandardType(src: PFIBITMAP; scale_linear: Boolean = True): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_ConvertToType(src: PFIBITMAP; dst_type: FREE_IMAGE_TYPE; scale_linear: Boolean = True): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_ConvertToStandardType(src: PFIBITMAP; scale_linear: BOOL = True): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_ConvertToType(src: PFIBITMAP; dst_type: FREE_IMAGE_TYPE; scale_linear: BOOL = True): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // tone mapping operators
-function FreeImage_ToneMapping(dib: PFIBITMAP; tmo: FREE_IMAGE_TMO; first_param: Double = 0; second_param: Double = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_TmoDrago03(src: PFIBITMAP; gamma: Double = 2.2; exposure: Double = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_TmoReinhard05(src: PFIBITMAP; intensity: Double = 0; contrast: Double = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_ToneMapping(dib: PFIBITMAP; tmo: FREE_IMAGE_TMO; first_param: cdouble = 0; second_param: cdouble = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_TmoDrago03(src: PFIBITMAP; gamma: cdouble = 2.2; exposure: cdouble = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_TmoReinhard05(src: PFIBITMAP; intensity: cdouble = 0; contrast: cdouble = 0): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // --------------------------------------------------------------------------
 // ZLib interface -----------------------------------------------------------
@@ -697,25 +709,25 @@ function FreeImage_GetTagCount(tag: PFITAG): DWORD; {$IFDEF DLL_STDCALL} stdcall
 function FreeImage_GetTagLength(tag: PFITAG): DWORD; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetTagValue(tag: PFITAG): Pointer; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
-function FreeImage_SetTagKey(tag: PFITAG; const key: PChar): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetTagDescription(tag: PFITAG; const description: PChar): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetTagID(tag: PFITAG; id: Word): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetTagType(tag: PFITAG; atype: FREE_IMAGE_MDTYPE): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetTagCount(tag: PFITAG; count: DWORD): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetTagLength(tag: PFITAG; length: DWORD): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetTagValue(tag: PFITAG; const value: Pointer): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetTagKey(tag: PFITAG; const key: PChar): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetTagDescription(tag: PFITAG; const description: PChar): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetTagID(tag: PFITAG; id: Word): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetTagType(tag: PFITAG; atype: FREE_IMAGE_MDTYPE): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetTagCount(tag: PFITAG; count: DWORD): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetTagLength(tag: PFITAG; length: DWORD): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetTagValue(tag: PFITAG; const value: Pointer): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // iterator
 function FreeImage_FindFirstMetadata(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; var tag: PFITAG): PFIMETADATA; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FindNextMetadata(mdhandle: PFIMETADATA; var tag: PFITAG): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FindNextMetadata(mdhandle: PFIMETADATA; var tag: PFITAG): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 procedure FreeImage_FindCloseMetadata(mdhandle: PFIMETADATA); {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // metadata setter and getter
-function FreeImage_SetMetadata(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PChar; tag: PFITAG): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetMetadata(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PChar; var tag: PFITAG): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetMetadata(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PChar; tag: PFITAG): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetMetadata(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP; const key: PChar; var tag: PFITAG): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // helpers
-function FreeImage_GetMetadataCount(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP): Cardinal; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetMetadataCount(model: FREE_IMAGE_MDMODEL; dib: PFIBITMAP): cuint; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // tag to C string conversion
 function FreeImage_TagToString(model: FREE_IMAGE_MDMODEL; tag: PFITAG; Make: PChar = nil): PChar; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
@@ -725,35 +737,35 @@ function FreeImage_TagToString(model: FREE_IMAGE_MDMODEL; tag: PFITAG; Make: PCh
 // --------------------------------------------------------------------------
 
 // rotation and flipping
-function FreeImage_RotateClassic(dib: PFIBITMAP; angle: Double): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_RotateEx(dib: PFIBITMAP; angle, x_shift, y_shift, x_origin, y_origin: Double; use_mask: Boolean): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FlipHorizontal(dib: PFIBITMAP): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_FlipVertical(dib: PFIBITMAP): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_JPEGTransform(const src_file: PChar; const dst_file: PChar; operation: FREE_IMAGE_JPEG_OPERATION; perfect: Boolean = False): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_RotateClassic(dib: PFIBITMAP; angle: cdouble): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_RotateEx(dib: PFIBITMAP; angle, x_shift, y_shift, x_origin, y_origin: cdouble; use_mask: BOOL): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FlipHorizontal(dib: PFIBITMAP): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_FlipVertical(dib: PFIBITMAP): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_JPEGTransform(const src_file: PChar; const dst_file: PChar; operation: FREE_IMAGE_JPEG_OPERATION; perfect: BOOL = False): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // upsampling / downsampling
-function FreeImage_Rescale(dib: PFIBITMAP; dst_width, dst_height: Integer; filter: FREE_IMAGE_FILTER): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_MakeThumbnail(dib: PFIBITMAP; max_pixel_size: Integer; convert:boolean = TRUE): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL; 
+function FreeImage_Rescale(dib: PFIBITMAP; dst_width, dst_height: cint; filter: FREE_IMAGE_FILTER): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_MakeThumbnail(dib: PFIBITMAP; max_pixel_size: cint; convert:BOOL = TRUE): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // color manipulation routines (point operations)
-function FreeImage_AdjustCurve(dib: PFIBITMAP; LUT: PBYTE; channel: FREE_IMAGE_COLOR_CHANNEL): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_AdjustGamma(dib: PFIBITMAP; gamma: Double): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_AdjustBrightness(dib: PFIBITMAP; percentage: Double): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_AdjustContrast(dib: PFIBITMAP; percentage: Double): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_Invert(dib: PFIBITMAP): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_GetHistogram(dib: PFIBITMAP; histo: PDWORD; channel: FREE_IMAGE_COLOR_CHANNEL = FICC_BLACK): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_AdjustCurve(dib: PFIBITMAP; LUT: PBYTE; channel: FREE_IMAGE_COLOR_CHANNEL): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_AdjustGamma(dib: PFIBITMAP; gamma: cdouble): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_AdjustBrightness(dib: PFIBITMAP; percentage: cdouble): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_AdjustContrast(dib: PFIBITMAP; percentage: cdouble): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_Invert(dib: PFIBITMAP): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_GetHistogram(dib: PFIBITMAP; histo: PDWORD; channel: FREE_IMAGE_COLOR_CHANNEL = FICC_BLACK): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // channel processing routines
 function FreeImage_GetChannel(dib: PFIBITMAP; channel: FREE_IMAGE_COLOR_CHANNEL): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetChannel(dib, dib8: PFIBITMAP; channel: FREE_IMAGE_COLOR_CHANNEL): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetChannel(dib, dib8: PFIBITMAP; channel: FREE_IMAGE_COLOR_CHANNEL): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 function FreeImage_GetComplexChannel(src: PFIBITMAP; channel: FREE_IMAGE_COLOR_CHANNEL): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_SetComplexChannel(src: PFIBITMAP; channel: FREE_IMAGE_COLOR_CHANNEL): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_SetComplexChannel(src: PFIBITMAP; channel: FREE_IMAGE_COLOR_CHANNEL): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
 
 // copy / paste / composite routines
 
-function FreeImage_Copy(dib: PFIBITMAP; left, top, right, bottom: Integer): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_Paste(dst, src: PFIBITMAP; left, top, alpha: Integer): Boolean; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
-function FreeImage_Composite(fg: PFIBITMAP; useFileBkg: Boolean = False; appBkColor: PRGBQUAD = nil; bg: PFIBITMAP = nil): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_Copy(dib: PFIBITMAP; left, top, right, bottom: cint): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_Paste(dst, src: PFIBITMAP; left, top, alpha: cint): BOOL; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
+function FreeImage_Composite(fg: PFIBITMAP; useFileBkg: BOOL = False; appBkColor: PRGBQUAD = nil; bg: PFIBITMAP = nil): PFIBITMAP; {$IFDEF DLL_STDCALL} stdcall; {$ENDIF} {$IFDEF DLL_CDECL} cdecl; {$ENDIF} external FIDLL;
   
 {$MINENUMSIZE 1}
 implementation
