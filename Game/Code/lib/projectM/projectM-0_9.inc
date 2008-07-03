@@ -14,10 +14,10 @@ const
 
 
 type
-  PPSingle = ^PSingle;
+  PPCfloat = ^PCfloat;
 
 type
-  _TContextType = Integer;
+  _TContextType = cint;
 const
   AGL_CONTEXT   = 0;
   CGL_CONTEXT   = 1;
@@ -29,12 +29,12 @@ type
   _PRenderTarget = ^_TRenderTarget;
   _TRenderTarget = record
     { Texture size }
-    texsize: Integer;
+    texsize: cint;
 
     { Application context }
     origContextType: _TContextType;
 
-    usePbuffers: Integer;
+    usePbuffers: cint;
 
     {$ifdef LINUX}
       lock_func: procedure(); cdecl;
@@ -58,20 +58,20 @@ type
     presetName: PChar;
     fontURL: PChar;
 
-    hasInit: Integer;
+    hasInit: cint;
 
-    noSwitch: Integer;
-    pcmframes: Integer;
-    freqframes: Integer;
-    totalframes: Integer;
+    noSwitch: cint;
+    pcmframes: cint;
+    freqframes: cint;
+    totalframes: cint;
 
-    showfps: Integer;
-    showtitle: Integer;
-    showpreset: Integer;
-    showhelp: Integer;
-    showstats: Integer;
+    showfps: cint;
+    showtitle: cint;
+    showpreset: cint;
+    showhelp: cint;
+    showstats: cint;
 
-    studio: Integer;
+    studio: cint;
 
     fbuffer: PGLubyte;
 
@@ -79,206 +79,206 @@ type
     { The first ticks value of the application }
     startTime: timeval;
     {$ELSE}
-    startTime: Longint;
+    startTime: clong;
     {$ENDIF}
-    Time: Single;
+    Time: cfloat;
 
     { Render target texture ID }
     renderTarget: _PRenderTarget;
 
     disp: array[0..79] of Char;
 
-    wave_o: Single;
+    wave_o: cfloat;
 
     //int texsize=1024;   //size of texture to do actual graphics
-    fvw: Integer;   //fullscreen dimensions
-    fvh: Integer;
-    wvw: Integer;   //windowed dimensions
-    wvh: Integer;
-    vw: Integer;    //runtime dimensions
-    vh: Integer;
-    fullscreen: Integer;
+    fvw: cint;   //fullscreen dimensions
+    fvh: cint;
+    wvw: cint;   //windowed dimensions
+    wvh: cint;
+    vw: cint;    //runtime dimensions
+    vh: cint;
+    fullscreen: cint;
 
-    maxsamples: Integer;  //size of PCM buffer
-    numsamples: Integer;  //size of new PCM info
-    pcmdataL: PSingle;     //holder for most recent pcm data
-    pcmdataR: PSingle;     //holder for most recent pcm data
+    maxsamples: cint;  //size of PCM buffer
+    numsamples: cint;  //size of new PCM info
+    pcmdataL: PCfloat;     //holder for most recent pcm data
+    pcmdataR: PCfloat;     //holder for most recent pcm data
 
-    avgtime: Integer;     //# frames per preset
+    avgtime: cint;     //# frames per preset
     
     title: PChar;
-    drawtitle: Integer;
+    drawtitle: cint;
 
-    correction: Integer;
+    correction: cint;
 
-    vol: Single;
+    vol: cfloat;
 
     //per pixel equation variables
-    gridx: PPSingle;     //grid containing interpolated mesh
-    gridy: PPSingle;
-    origtheta: PPSingle; //grid containing interpolated mesh reference values
-    origrad: PPSingle;
-    origx: PPSingle;     //original mesh
-    origy: PPSingle;
-    origx2: PPSingle;    //original mesh
-    origy2: PPSingle;
+    gridx: PPCfloat;     //grid containing interpolated mesh
+    gridy: PPCfloat;
+    origtheta: PPCfloat; //grid containing interpolated mesh reference values
+    origrad: PPCfloat;
+    origx: PPCfloat;     //original mesh
+    origy: PPCfloat;
+    origx2: PPCfloat;    //original mesh
+    origy2: PPCfloat;
 
     { Timing information }
-    mspf: Integer;
-    timed: Integer;
-    timestart: Integer;
-    nohard: Integer;
-    count: Integer;
+    mspf: cint;
+    timed: cint;
+    timestart: cint;
+    nohard: cint;
+    count: cint;
     realfps,
-      fpsstart: Single;
+    fpsstart: cfloat;
 
     { PCM data }
-    vdataL: array[0..511] of Single;  //holders for FFT data (spectrum)
-    vdataR: array[0..511] of Single;
+    vdataL: array[0..511] of cfloat;  //holders for FFT data (spectrum)
+    vdataR: array[0..511] of cfloat;
 
     { Various toggles }
-    doPerPixelEffects: Integer;
-    doIterative: Integer;
+    doPerPixelEffects: cint;
+    doIterative: cint;
 
     { ENGINE VARIABLES }
     { From engine_vars.h }
     preset_name: array[0..255] of Char;
 
     { PER FRAME CONSTANTS BEGIN }
-    zoom: Single;
-    zoomexp: Single;
-    rot: Single;
-    warp: Single;
+    zoom: cfloat;
+    zoomexp: cfloat;
+    rot: cfloat;
+    warp: cfloat;
 
-    sx: Single;
-    sy: Single;
-    dx: Single;
-    dy: Single;
-    cx: Single;
-    cy: Single;
+    sx: cfloat;
+    sy: cfloat;
+    dx: cfloat;
+    dy: cfloat;
+    cx: cfloat;
+    cy: cfloat;
 
-    gy: Integer;
-    gx: Integer;
+    gy: cint;
+    gx: cint;
 
-    decay: Single;
+    decay: cfloat;
 
-    wave_r: Single;
-    wave_g: Single;
-    wave_b: Single;
-    wave_x: Single;
-    wave_y: Single;
-    wave_mystery: Single;
+    wave_r: cfloat;
+    wave_g: cfloat;
+    wave_b: cfloat;
+    wave_x: cfloat;
+    wave_y: cfloat;
+    wave_mystery: cfloat;
 
-    ob_size: Single;
-    ob_r: Single;
-    ob_g: Single;
-    ob_b: Single;
-    ob_a: Single;
+    ob_size: cfloat;
+    ob_r: cfloat;
+    ob_g: cfloat;
+    ob_b: cfloat;
+    ob_a: cfloat;
 
-    ib_size: Single;
-    ib_r: Single;
-    ib_g: Single;
-    ib_b: Single;
-    ib_a: Single;
+    ib_size: cfloat;
+    ib_r: cfloat;
+    ib_g: cfloat;
+    ib_b: cfloat;
+    ib_a: cfloat;
 
-    meshx: Integer;
-    meshy: Integer;
+    meshx: cint;
+    meshy: cint;
 
-    mv_a: Single;
-    mv_r: Single;
-    mv_g: Single;
-    mv_b: Single;
-    mv_l: Single;
-    mv_x: Single;
-    mv_y: Single;
-    mv_dy: Single;
-    mv_dx: Single;
+    mv_a: cfloat;
+    mv_r: cfloat;
+    mv_g: cfloat;
+    mv_b: cfloat;
+    mv_l: cfloat;
+    mv_x: cfloat;
+    mv_y: cfloat;
+    mv_dy: cfloat;
+    mv_dx: cfloat;
 
-    treb: Single;
-    mid: Single;
-    bass: Single;
-    bass_old: Single;
-    beat_sensitivity: Single;
-    treb_att: Single;
-    mid_att: Single;
-    bass_att: Single;
-    progress: Single;
-    frame: Integer;
+    treb: cfloat;
+    mid: cfloat;
+    bass: cfloat;
+    bass_old: cfloat;
+    beat_sensitivity: cfloat;
+    treb_att: cfloat;
+    mid_att: cfloat;
+    bass_att: cfloat;
+    progress: cfloat;
+    frame: cint;
 
     { PER_FRAME CONSTANTS END }
 
     { PER_PIXEL CONSTANTS BEGIN }
 
-    x_per_pixel: Single;
-    y_per_pixel: Single;
-    rad_per_pixel: Single;
-    ang_per_pixel: Single;
+    x_per_pixel: cfloat;
+    y_per_pixel: cfloat;
+    rad_per_pixel: cfloat;
+    ang_per_pixel: cfloat;
 
     { PER_PIXEL CONSTANT END }
 
 
-    fRating: Single;
-    fGammaAdj: Single;
-    fVideoEchoZoom: Single;
-    fVideoEchoAlpha: Single;
+    fRating: cfloat;
+    fGammaAdj: cfloat;
+    fVideoEchoZoom: cfloat;
+    fVideoEchoAlpha: cfloat;
 
-    nVideoEchoOrientation: Integer;
-    nWaveMode: Integer;
-    bAdditiveWaves: Integer;
-    bWaveDots: Integer;
-    bWaveThick: Integer;
-    bModWaveAlphaByVolume: Integer;
-    bMaximizeWaveColor: Integer;
-    bTexWrap: Integer;
-    bDarkenCenter: Integer;
-    bRedBlueStereo: Integer;
-    bBrighten: Integer;
-    bDarken: Integer;
-    bSolarize: Integer;
-    bInvert: Integer;
-    bMotionVectorsOn: Integer;
-    fps: Integer;
+    nVideoEchoOrientation: cint;
+    nWaveMode: cint;
+    bAdditiveWaves: cint;
+    bWaveDots: cint;
+    bWaveThick: cint;
+    bModWaveAlphaByVolume: cint;
+    bMaximizeWaveColor: cint;
+    bTexWrap: cint;
+    bDarkenCenter: cint;
+    bRedBlueStereo: cint;
+    bBrighten: cint;
+    bDarken: cint;
+    bSolarize: cint;
+    bInvert: cint;
+    bMotionVectorsOn: cint;
+    fps: cint;
 
-    fWaveAlpha: Single;
-    fWaveScale: Single;
-    fWaveSmoothing: Single;
-    fWaveParam: Single;
-    fModWaveAlphaStart: Single;
-    fModWaveAlphaEnd: Single;
-    fWarpAnimSpeed: Single;
-    fWarpScale: Single;
-    fShader: Single;
+    fWaveAlpha: cfloat;
+    fWaveScale: cfloat;
+    fWaveSmoothing: cfloat;
+    fWaveParam: cfloat;
+    fModWaveAlphaStart: cfloat;
+    fModWaveAlphaEnd: cfloat;
+    fWarpAnimSpeed: cfloat;
+    fWarpScale: cfloat;
+    fShader: cfloat;
 
     
     { Q VARIABLES START }
 
-    q1: Single;
-    q2: Single;
-    q3: Single;
-    q4: Single;
-    q5: Single;
-    q6: Single;
-    q7: Single;
-    q8: Single;
+    q1: cfloat;
+    q2: cfloat;
+    q3: cfloat;
+    q4: cfloat;
+    q5: cfloat;
+    q6: cfloat;
+    q7: cfloat;
+    q8: cfloat;
 
 
     { Q VARIABLES END }
 
-    zoom_mesh: PPSingle;
-    zoomexp_mesh: PPSingle;
-    rot_mesh: PPSingle;
+    zoom_mesh: PPCfloat;
+    zoomexp_mesh: PPCfloat;
+    rot_mesh: PPCfloat;
 
-    sx_mesh: PPSingle;
-    sy_mesh: PPSingle;
-    dx_mesh: PPSingle;
-    dy_mesh: PPSingle;
-    cx_mesh: PPSingle;
-    cy_mesh: PPSingle;
+    sx_mesh: PPCfloat;
+    sy_mesh: PPCfloat;
+    dx_mesh: PPCfloat;
+    dy_mesh: PPCfloat;
+    cx_mesh: PPCfloat;
+    cy_mesh: PPCfloat;
 
-    x_mesh: PPSingle;
-    y_mesh: PPSingle;
-    rad_mesh: PPSingle;
-    theta_mesh: PPSingle;
+    x_mesh: PPCfloat;
+    y_mesh: PPCfloat;
+    rad_mesh: PPCfloat;
+    theta_mesh: PPCfloat;
   end;
 
   PProjectMState = ^TProjectMState;
@@ -292,14 +292,14 @@ type
 { projectM.h declarations }
 procedure _projectM_init(pm: _PProjectM); cdecl; external libprojectM name 'projectM_init';
 procedure _projectM_reset(pm: _PProjectM); cdecl; external libprojectM name 'projectM_reset';
-procedure _projectM_resetGL(pm: _PProjectM; width: Integer; height: Integer); cdecl; external libprojectM name 'projectM_resetGL';
+procedure _projectM_resetGL(pm: _PProjectM; width: cint; height: cint); cdecl; external libprojectM name 'projectM_resetGL';
 procedure _projectM_setTitle(pm: _PProjectM; title: PChar); cdecl; external libprojectM name 'projectM_setTitle';
 procedure _renderFrame(pm: _PProjectM); cdecl; external libprojectM name 'renderFrame';
 
 { PCM.h declarations }
-procedure _addPCMfloat(pcm_data: PSingle; samples: integer); cdecl; external libprojectM name 'addPCMfloat';
+procedure _addPCMfloat(pcm_data: PCfloat; samples: cint); cdecl; external libprojectM name 'addPCMfloat';
 procedure _addPCM16(pcm_data: PPCM16); cdecl; external libprojectM name 'addPCM16';
-procedure _addPCM16Data(pcm_data: PSmallint; samples: Smallint); cdecl; external libprojectM name 'addPCM16Data';
+procedure _addPCM16Data(pcm_data: PCshort; samples: cshort); cdecl; external libprojectM name 'addPCM16Data';
 procedure _addPCM8_512(pcm_data: PPCM8_512); cdecl; external libprojectM name 'addPCM8';
 
 { console_interface.h declarations }
@@ -314,7 +314,7 @@ procedure _key_handler(pm: _PProjectM;
 {**************** EXTERNAL SECTION ****************}
 
 
-constructor TProjectM.Create(gx, gy: integer; fps: integer;
+constructor TProjectM.Create(gx, gy: cint; fps: integer;
   texsize: integer; width, height: integer;
   const presetsDir, fontsDir: string;
   const titleFont, menuFont: string);
@@ -344,11 +344,11 @@ begin
     pm.fontURL   := PChar(fontURLStr);
     pm.presetURL := PChar(presetURLStr);
 
-  	_projectM_init(@pm);
+    _projectM_init(@pm);
   end;
 end;
 
-procedure TProjectM.ResetGL(width, height: Integer);
+procedure TProjectM.ResetGL(width, height: integer);
 begin
   _projectM_resetGL(@PProjectMState(data).pm, width, height);
 end;
@@ -373,7 +373,7 @@ end;
 
 procedure TProjectM.AddPCMfloat(pcmData: PSingle; samples: integer);
 begin
-  _addPCMfloat(pcmData, samples);
+  _addPCMfloat(PCfloat(pcmData), samples);
 end;
 
 procedure TProjectM.AddPCM16(pcmData: PPCM16);
@@ -383,7 +383,7 @@ end;
 
 procedure TProjectM.AddPCM16Data(pcmData: PSmallint; samples: Smallint);
 begin
-  _addPCM16Data(pcmData, samples);
+  _addPCM16Data(PCshort(pcmData), samples);
 end;
 
 procedure TProjectM.AddPCM8_512(pcmData: PPCM8_512);

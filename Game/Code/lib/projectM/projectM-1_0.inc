@@ -22,15 +22,15 @@ type
 { projectM.hpp declarations }
 function _projectM_create1(config_file: PChar): _PProjectM; cdecl; external libprojectM_cwrapper name 'projectM_create1';
 {$IF PROJECTM_VERSION < 1010000}
-function _projectM_create2(gx: integer; gy: integer; fps: integer;
-  texsize: integer; width: integer; height: integer;
+function _projectM_create2(gx: cint; gy: cint; fps: cint;
+  texsize: cint; width: cint; height: cint;
   preset_url: PChar; title_fonturl: PChar; title_menuurl: PChar): _PProjectM; cdecl; external libprojectM_cwrapper name 'projectM_create2';
 {$IFEND}
 
-procedure _projectM_resetGL(pm: _PProjectM; width: integer; height: integer); cdecl; external libprojectM_cwrapper name 'projectM_resetGL';
+procedure _projectM_resetGL(pm: _PProjectM; width: cint; height: cint); cdecl; external libprojectM_cwrapper name 'projectM_resetGL';
 procedure _projectM_setTitle(pm: _PProjectM; title: PChar); cdecl; external libprojectM_cwrapper name 'projectM_setTitle';
 procedure _projectM_renderFrame(pm: _PProjectM); cdecl; external libprojectM_cwrapper name 'projectM_renderFrame';
-function _projectM_initRenderToTexture(pm: _PProjectM): Cardinal; cdecl; external libprojectM_cwrapper name 'projectM_initRenderToTexture';
+function _projectM_initRenderToTexture(pm: _PProjectM): cuint; cdecl; external libprojectM_cwrapper name 'projectM_initRenderToTexture';
 
 procedure _projectM_free(pm: _PProjectM); cdecl; external libprojectM_cwrapper name 'projectM_free';
 
@@ -42,9 +42,9 @@ procedure _projectM_settings(pm: _PProjectM; settings: PSettings); cdecl; extern
 {$IFEND}
 
 { PCM.hpp declarations }
-procedure _PCM_addPCMfloat(pm: _PProjectM; pcm_data: PSingle; samples: integer); cdecl; external libprojectM_cwrapper name 'PCM_addPCMfloat';
+procedure _PCM_addPCMfloat(pm: _PProjectM; pcm_data: PSingle; samples: cint); cdecl; external libprojectM_cwrapper name 'PCM_addPCMfloat';
 procedure _PCM_addPCM16(pm: _PProjectM; pcm_data: PPCM16); cdecl; external libprojectM_cwrapper name 'PCM_addPCM16';
-procedure _PCM_addPCM16Data(pm: _PProjectM; pcm_data: PSmallint; samples: Smallint); cdecl; external libprojectM_cwrapper name 'PCM_addPCM16Data';
+procedure _PCM_addPCM16Data(pm: _PProjectM; pcm_data: PCshort; samples: cshort); cdecl; external libprojectM_cwrapper name 'PCM_addPCM16Data';
 procedure _PCM_addPCM8_512(pm: _PProjectM; pcm_data: PPCM8_512); cdecl; external libprojectM_cwrapper name 'PCM_addPCM8_512';
 procedure _PCM_addPCM8_1024(pm: _PProjectM; pcm_data: PPCM8_1024); cdecl; external libprojectM_cwrapper name 'PCM_addPCM8';
 
@@ -108,7 +108,7 @@ end;
  *}
 procedure TProjectM.AddPCM16Data(pcmData: PSmallint; samples: Smallint);
 begin
-  _PCM_addPCM16Data(data, pcmData, samples);
+  _PCM_addPCM16Data(data, PCshort(pcmData), samples);
 end;
 
 procedure TProjectM.AddPCM8_512(pcmData: PPCM8_512);
