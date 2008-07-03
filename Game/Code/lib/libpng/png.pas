@@ -19,6 +19,7 @@ interface
 {$ENDIF}
 
 uses
+  ctypes,
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
@@ -63,27 +64,27 @@ const
 type
    {$IFNDEF FPC}
    // defines for Delphi
-   size_t = longword;
+   size_t = culong;
    {$ENDIF}
 
    {$ifdef MSWINDOWS}
      {$if JB_LEN > 0}
-     jmp_buf = array[0..JB_LEN-1] of integer;
+     jmp_buf = array[0..JB_LEN-1] of cint;
      // the png_struct cannot be accessed if the size of jmp_buf is unknown
      {$define UsePngStruct}
      {$ifend}
      // Do NOT use time_t on windows! It might be 32 or 64bit, depending on the compiler and system.
      // MSVS-2005 starts using 64bit for time_t on x86 by default, but GCC uses just 32bit.
-     //time_t = longint;
+     //time_t = clong;
    {$endif}
 
    z_stream = TZStream;
 
-   png_uint_32 = dword;
-   png_int_32 = longint;
-   png_uint_16 = word;
-   png_int_16 = smallint;
-   png_byte = byte;
+   png_uint_32 = cuint32;
+   png_int_32 = cint32;
+   png_uint_16 = cuint16;
+   png_int_16 = cint16;
+   png_byte = cuint8;
    ppng_uint_32 = ^png_uint_32;
    ppng_int_32 = ^png_int_32;
    ppng_uint_16 = ^png_uint_16;
@@ -111,7 +112,7 @@ type
    ppng_charp = ^png_charp;
    png_fixed_point_p = Ppng_fixed_point;
    png_FILE_p = Pointer;
-   png_doublep = Pdouble;
+   png_doublep = PCdouble;
    png_bytepp = PPpng_byte;
    png_uint_32pp = PPpng_uint_32;
    png_int_32pp = PPpng_int_32;
@@ -121,14 +122,14 @@ type
    png_charpp = PPchar;
    ppng_charpp = ^png_charpp;
    png_fixed_point_pp = PPpng_fixed_point;
-   PPDouble = ^PDouble;
-   png_doublepp = PPdouble;
-   PPPChar = ^PPCHar;
-   png_charppp = PPPchar;
-   Pcharf = Pchar;
-   PPcharf = ^Pcharf;
-   png_zcharp = Pcharf;
-   png_zcharpp = PPcharf;
+   PPCdouble = ^PCdouble;
+   png_doublepp = PPCdouble;
+   PPPChar = ^PPChar;
+   png_charppp = PPPChar;
+   PCharf = PChar;
+   PPCharf = ^PCharf;
+   png_zcharp = PCharf;
+   png_zcharpp = PPCharf;
    png_zstreamp = Pzstream;
 
 const
@@ -232,13 +233,13 @@ const
 
 (*
 var
-  png_libpng_ver    : array[0..11] of char;   external LibPng name 'png_libpng_ver';
-  png_pass_start    : array[0..6] of integer; external LibPng name 'png_pass_start';
-  png_pass_inc      : array[0..6] of integer; external LibPng name 'png_pass_inc';
-  png_pass_ystart   : array[0..6] of integer; external LibPng name 'png_pass_ystart';
-  png_pass_yinc     : array[0..6] of integer; external LibPng name 'png_pass_yinc';
-  png_pass_mask     : array[0..6] of integer; external LibPng name 'png_pass_mask';
-  png_pass_dsp_mask : array[0..6] of integer; external LibPng name 'png_pass_dsp_mask';
+  png_libpng_ver    : array[0..11] of char; external LibPng name 'png_libpng_ver';
+  png_pass_start    : array[0..6] of cint; external LibPng name 'png_pass_start';
+  png_pass_inc      : array[0..6] of cint; external LibPng name 'png_pass_inc';
+  png_pass_ystart   : array[0..6] of cint; external LibPng name 'png_pass_ystart';
+  png_pass_yinc     : array[0..6] of cint; external LibPng name 'png_pass_yinc';
+  png_pass_mask     : array[0..6] of cint; external LibPng name 'png_pass_mask';
+  png_pass_dsp_mask : array[0..6] of cint; external LibPng name 'png_pass_dsp_mask';
 *)
 
 type
@@ -329,7 +330,7 @@ type
    * so they can be safely used in printf() and other string-handling functions.
    *)
   png_text = record
-       compression : integer;    (* compression value:
+       compression : cint;       (* compression value:
                                    -1: tEXt, none
                                     0: zTXt, deflate
                                     1: iTXt, none
@@ -455,10 +456,10 @@ type
         * and initialize the appropriate fields below.
         *)
         
-       gamma : single;
+       gamma : cfloat;
        srgb_intent : png_byte;
-       num_text : integer;
-       max_text : integer;
+       num_text : cint;
+       max_text : cint;
        text : png_textp;
        mod_time : png_time;
        sig_bit : png_color_8;
@@ -472,14 +473,14 @@ type
        y_pixels_per_unit : png_uint_32;
        phys_unit_type : png_byte;
        hist : png_uint_16p;
-       x_white : single;
-       y_white : single;
-       x_red : single;
-       y_red : single;
-       x_green : single;
-       y_green : single;
-       x_blue : single;
-       y_blue : single;
+       x_white : cfloat;
+       y_white : cfloat;
+       x_red : cfloat;
+       y_red : cfloat;
+       x_green : cfloat;
+       y_green : cfloat;
+       x_blue : cfloat;
+       y_blue : cfloat;
        pcal_purpose : png_charp;
        pcal_X0 : png_int_32;
        pcal_X1 : png_int_32;
@@ -497,8 +498,8 @@ type
        splt_palettes : png_sPLT_tp;
        splt_palettes_num : png_uint_32;
        scal_unit : png_byte;
-       scal_pixel_width : double;
-       scal_pixel_height : double;
+       scal_pixel_width : cdouble;
+       scal_pixel_height : cdouble;
        scal_s_width : png_charp;
        scal_s_height : png_charp;
        row_pointers : png_bytepp;
@@ -544,19 +545,19 @@ type
    * and error functions, while the png_rw_ptr type should match that of the
    * user read/write data functions.
    *)
-  png_error_ptr = procedure(Arg1 : png_structp; Arg2 : png_const_charp);cdecl;
-  png_rw_ptr = procedure(Arg1 : png_structp; Arg2 : png_bytep; Arg3 : png_size_t);cdecl;
-  png_flush_ptr = procedure (Arg1 : png_structp) ;cdecl;
-  png_read_status_ptr = procedure (Arg1 : png_structp; Arg2 : png_uint_32; Arg3: integer);cdecl;
-  png_write_status_ptr = procedure (Arg1 : png_structp; Arg2:png_uint_32;Arg3 : integer) ;cdecl;
-  png_progressive_info_ptr = procedure (Arg1 : png_structp; Arg2 : png_infop) ;cdecl;
-  png_progressive_end_ptr = procedure (Arg1 : png_structp; Arg2 : png_infop) ;cdecl;
-  png_progressive_row_ptr = procedure (Arg1 : png_structp; Arg2 : png_bytep; Arg3 : png_uint_32; Arg4 : integer) ;cdecl;
-  png_user_transform_ptr = procedure (Arg1 : png_structp; Arg2 : png_row_infop; Arg3 : png_bytep) ;cdecl;
-  png_user_chunk_ptr = function (Arg1 : png_structp; Arg2 : png_unknown_chunkp): integer;cdecl;
-  png_unknown_chunk_ptr = procedure (Arg1 : png_structp);cdecl;
-  png_malloc_ptr = function (Arg1 : png_structp; Arg2 : png_size_t) : png_voidp ;cdecl;
-  png_free_ptr = procedure (Arg1 : png_structp; Arg2 : png_voidp) ; cdecl;
+  png_error_ptr = procedure(Arg1 : png_structp; Arg2 : png_const_charp); cdecl;
+  png_rw_ptr = procedure(Arg1 : png_structp; Arg2 : png_bytep; Arg3 : png_size_t); cdecl;
+  png_flush_ptr = procedure (Arg1 : png_structp); cdecl;
+  png_read_status_ptr = procedure (Arg1 : png_structp; Arg2 : png_uint_32; Arg3: cint); cdecl;
+  png_write_status_ptr = procedure (Arg1 : png_structp; Arg2:png_uint_32;Arg3 : cint); cdecl;
+  png_progressive_info_ptr = procedure (Arg1 : png_structp; Arg2 : png_infop); cdecl;
+  png_progressive_end_ptr = procedure (Arg1 : png_structp; Arg2 : png_infop); cdecl;
+  png_progressive_row_ptr = procedure (Arg1 : png_structp; Arg2 : png_bytep; Arg3 : png_uint_32; Arg4 : cint); cdecl;
+  png_user_transform_ptr = procedure (Arg1 : png_structp; Arg2 : png_row_infop; Arg3 : png_bytep); cdecl;
+  png_user_chunk_ptr = function (Arg1 : png_structp; Arg2 : png_unknown_chunkp): cint; cdecl;
+  png_unknown_chunk_ptr = procedure (Arg1 : png_structp); cdecl;
+  png_malloc_ptr = function (Arg1 : png_structp; Arg2 : png_size_t) : png_voidp; cdecl;
+  png_free_ptr = procedure (Arg1 : png_structp; Arg2 : png_voidp); cdecl;
 
   png_struct_def = record
         {$ifdef UsePngStruct}
@@ -584,11 +585,11 @@ type
         zstream : z_stream;          (* pointer to decompression structure (below) *)
         zbuf : png_bytep;            (* buffer for zlib *)
         zbuf_size : png_size_t;      (* size of zbuf *)
-        zlib_level : integer;        (* holds zlib compression level *)
-        zlib_method : integer;       (* holds zlib compression method *)
-        zlib_window_bits : integer;  (* holds zlib compression window bits *)
-        zlib_mem_level : integer;    (* holds zlib compression memory level *)
-        zlib_strategy : integer;     (* holds zlib compression strategy *)
+        zlib_level : cint;        (* holds zlib compression level *)
+        zlib_method : cint;       (* holds zlib compression method *)
+        zlib_window_bits : cint;  (* holds zlib compression window bits *)
+        zlib_mem_level : cint;    (* holds zlib compression memory level *)
+        zlib_strategy : cint;     (* holds zlib compression strategy *)
 
         width : png_uint_32;         (* width of image in pixels *)
         height : png_uint_32;        (* height of image in pixels *)
@@ -628,15 +629,15 @@ type
         filler : png_uint_16;
 
         background_gamma_type : png_byte;
-        background_gamma : single;
+        background_gamma : cfloat;
         background : png_color_16;
         background_1 : png_color_16;
         output_flush_fn : png_flush_ptr;
         flush_dist : png_uint_32;
         flush_rows : png_uint_32;
-        gamma_shift : integer;
-        gamma : single;
-        screen_gamma : single;
+        gamma_shift : cint;
+        gamma : cfloat;
+        screen_gamma : cfloat;
         gamma_table : png_bytep;
         gamma_from_1 : png_bytep;
         gamma_to_1 : png_bytep;
@@ -662,8 +663,8 @@ type
         save_buffer_max : png_size_t;
         buffer_size : png_size_t;
         current_buffer_size : png_size_t;
-        process_mode : integer;
-        cur_palette : integer;
+        process_mode : cint;
+        cur_palette : cint;
         current_text_size : png_size_t;
         current_text_left : png_size_t;
         current_text : png_charp;
@@ -682,7 +683,7 @@ type
         free_me : png_uint_32;
         user_chunk_ptr : png_voidp;
         read_user_chunk_fn : png_user_chunk_ptr;
-        num_chunk_list : integer;
+        num_chunk_list : cint;
         chunk_list : png_bytep;
         rgb_to_gray_status : png_byte;
         rgb_to_gray_red_coeff : png_uint_16;
@@ -701,127 +702,127 @@ type
    version_1_0_8 = png_structp;
    png_structpp = PPpng_struct;
 
-function png_access_version_number:png_uint_32;cdecl; external LibPng;
+function png_access_version_number:png_uint_32; cdecl; external LibPng;
 
-procedure png_set_sig_bytes(png_ptr:png_structp; num_bytes:integer);cdecl; external LibPng;
-function png_sig_cmp(sig:png_bytep; start:png_size_t; num_to_check:png_size_t):integer;cdecl; external LibPng;
-function png_check_sig(sig:png_bytep; num:integer):integer;cdecl; external LibPng;
+procedure png_set_sig_bytes(png_ptr:png_structp; num_bytes:cint); cdecl; external LibPng;
+function png_sig_cmp(sig:png_bytep; start:png_size_t; num_to_check:png_size_t):cint; cdecl; external LibPng;
+function png_check_sig(sig:png_bytep; num:cint):cint; cdecl; external LibPng;
 
 (* Allocate and initialize png_ptr struct for reading, and any other memory. *)
-function png_create_read_struct(user_png_ver:png_const_charp; error_ptr:png_voidp; error_fn:png_error_ptr; warn_fn:png_error_ptr):png_structp;cdecl; external LibPng;
+function png_create_read_struct(user_png_ver:png_const_charp; error_ptr:png_voidp; error_fn:png_error_ptr; warn_fn:png_error_ptr):png_structp; cdecl; external LibPng;
 
 (* Allocate and initialize png_ptr struct for writing, and any other memory *)
-function png_create_write_struct(user_png_ver:png_const_charp; error_ptr:png_voidp; error_fn:png_error_ptr; warn_fn:png_error_ptr):png_structp;cdecl; external LibPng;
+function png_create_write_struct(user_png_ver:png_const_charp; error_ptr:png_voidp; error_fn:png_error_ptr; warn_fn:png_error_ptr):png_structp; cdecl; external LibPng;
 
-function png_get_compression_buffer_size(png_ptr:png_structp):png_uint_32;cdecl; external LibPng;
-procedure png_set_compression_buffer_size(png_ptr:png_structp; size:png_uint_32);cdecl; external LibPng;
-function png_reset_zstream(png_ptr:png_structp):integer;cdecl; external LibPng;
+function png_get_compression_buffer_size(png_ptr:png_structp):png_uint_32; cdecl; external LibPng;
+procedure png_set_compression_buffer_size(png_ptr:png_structp; size:png_uint_32); cdecl; external LibPng;
+function png_reset_zstream(png_ptr:png_structp):cint; cdecl; external LibPng;
 
-procedure png_write_chunk(png_ptr:png_structp; chunk_name:png_bytep; data:png_bytep; length:png_size_t);cdecl; external LibPng;
-procedure png_write_chunk_start(png_ptr:png_structp; chunk_name:png_bytep; length:png_uint_32);cdecl; external LibPng;
-procedure png_write_chunk_data(png_ptr:png_structp; data:png_bytep; length:png_size_t);cdecl; external LibPng;
-procedure png_write_chunk_end(png_ptr:png_structp);cdecl; external LibPng;
+procedure png_write_chunk(png_ptr:png_structp; chunk_name:png_bytep; data:png_bytep; length:png_size_t); cdecl; external LibPng;
+procedure png_write_chunk_start(png_ptr:png_structp; chunk_name:png_bytep; length:png_uint_32); cdecl; external LibPng;
+procedure png_write_chunk_data(png_ptr:png_structp; data:png_bytep; length:png_size_t); cdecl; external LibPng;
+procedure png_write_chunk_end(png_ptr:png_structp); cdecl; external LibPng;
 
 (* Allocate and initialize the info structure *)
-function png_create_info_struct(png_ptr:png_structp):png_infop;cdecl; external LibPng;
+function png_create_info_struct(png_ptr:png_structp):png_infop; cdecl; external LibPng;
 
 (* Initialize the info structure (old interface - DEPRECATED) *)
-procedure png_info_init(info_ptr:png_infop);cdecl; external LibPng;
+procedure png_info_init(info_ptr:png_infop); cdecl; external LibPng;
 
 (* Writes all the PNG information before the image. *)
-procedure png_write_info_before_PLTE(png_ptr:png_structp; info_ptr:png_infop);cdecl; external LibPng;
-procedure png_write_info(png_ptr:png_structp; info_ptr:png_infop);cdecl; external LibPng;
+procedure png_write_info_before_PLTE(png_ptr:png_structp; info_ptr:png_infop); cdecl; external LibPng;
+procedure png_write_info(png_ptr:png_structp; info_ptr:png_infop); cdecl; external LibPng;
 
 (* read the information before the actual image data. *)
-procedure png_read_info(png_ptr:png_structp; info_ptr:png_infop);cdecl; external LibPng;
+procedure png_read_info(png_ptr:png_structp; info_ptr:png_infop); cdecl; external LibPng;
 
-function png_convert_to_rfc1123(png_ptr:png_structp; ptime:png_timep):png_charp;cdecl; external LibPng;
-procedure png_convert_from_struct_tm(ptime:png_timep; ttime:Pointer);cdecl; external LibPng;
+function png_convert_to_rfc1123(png_ptr:png_structp; ptime:png_timep):png_charp; cdecl; external LibPng;
+procedure png_convert_from_struct_tm(ptime:png_timep; ttime:Pointer); cdecl; external LibPng;
 {$IFDEF UNIX}
-procedure png_convert_from_time_t(ptime:png_timep; ttime:time_t);cdecl; external LibPng;
+procedure png_convert_from_time_t(ptime:png_timep; ttime:time_t); cdecl; external LibPng;
 {$ENDIF}
-procedure png_set_expand(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_gray_1_2_4_to_8(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_palette_to_rgb(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_tRNS_to_alpha(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_bgr(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_gray_to_rgb(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_rgb_to_gray(png_ptr:png_structp; error_action:integer; red:double; green:double);cdecl; external LibPng;
-procedure png_set_rgb_to_gray_fixed(png_ptr:png_structp; error_action:integer; red:png_fixed_point; green:png_fixed_point);cdecl; external LibPng;
-function png_get_rgb_to_gray_status(png_ptr:png_structp):png_byte;cdecl; external LibPng;
-procedure png_build_grayscale_palette(bit_depth:integer; palette:png_colorp);cdecl; external LibPng;
-procedure png_set_strip_alpha(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_swap_alpha(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_invert_alpha(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_filler(png_ptr:png_structp; filler:png_uint_32; flags:integer);cdecl; external LibPng;
-procedure png_set_swap(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_packing(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_packswap(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_shift(png_ptr:png_structp; true_bits:png_color_8p);cdecl; external LibPng;
-function png_set_interlace_handling(png_ptr:png_structp):integer;cdecl; external LibPng;
-procedure png_set_invert_mono(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_background(png_ptr:png_structp; background_color:png_color_16p; background_gamma_code:integer; need_expand:integer; background_gamma:double);cdecl; external LibPng;
-procedure png_set_strip_16(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_set_dither(png_ptr:png_structp; palette:png_colorp; num_palette:integer; maximum_colors:integer; histogram:png_uint_16p;
-            full_dither:integer);cdecl; external LibPng;
-procedure png_set_gamma(png_ptr:png_structp; screen_gamma:double; default_file_gamma:double);cdecl; external LibPng;
-procedure png_permit_empty_plte(png_ptr:png_structp; empty_plte_permitted:integer);cdecl; external LibPng;
-procedure png_set_flush(png_ptr:png_structp; nrows:integer);cdecl; external LibPng;
-procedure png_write_flush(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_start_read_image(png_ptr:png_structp);cdecl; external LibPng;
-procedure png_read_update_info(png_ptr:png_structp; info_ptr:png_infop);cdecl; external LibPng;
+procedure png_set_expand(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_gray_1_2_4_to_8(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_palette_to_rgb(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_tRNS_to_alpha(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_bgr(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_gray_to_rgb(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_rgb_to_gray(png_ptr:png_structp; error_action:cint; red:cdouble; green:cdouble); cdecl; external LibPng;
+procedure png_set_rgb_to_gray_fixed(png_ptr:png_structp; error_action:cint; red:png_fixed_point; green:png_fixed_point); cdecl; external LibPng;
+function png_get_rgb_to_gray_status(png_ptr:png_structp):png_byte; cdecl; external LibPng;
+procedure png_build_grayscale_palette(bit_depth:cint; palette:png_colorp); cdecl; external LibPng;
+procedure png_set_strip_alpha(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_swap_alpha(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_invert_alpha(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_filler(png_ptr:png_structp; filler:png_uint_32; flags:cint); cdecl; external LibPng;
+procedure png_set_swap(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_packing(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_packswap(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_shift(png_ptr:png_structp; true_bits:png_color_8p); cdecl; external LibPng;
+function png_set_interlace_handling(png_ptr:png_structp):cint; cdecl; external LibPng;
+procedure png_set_invert_mono(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_background(png_ptr:png_structp; background_color:png_color_16p; background_gamma_code:cint; need_expand:cint; background_gamma:cdouble); cdecl; external LibPng;
+procedure png_set_strip_16(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_set_dither(png_ptr:png_structp; palette:png_colorp; num_palette:cint; maximum_colors:cint; histogram:png_uint_16p;
+            full_dither:cint); cdecl; external LibPng;
+procedure png_set_gamma(png_ptr:png_structp; screen_gamma:cdouble; default_file_gamma:cdouble); cdecl; external LibPng;
+procedure png_permit_empty_plte(png_ptr:png_structp; empty_plte_permitted:cint); cdecl; external LibPng;
+procedure png_set_flush(png_ptr:png_structp; nrows:cint); cdecl; external LibPng;
+procedure png_write_flush(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_start_read_image(png_ptr:png_structp); cdecl; external LibPng;
+procedure png_read_update_info(png_ptr:png_structp; info_ptr:png_infop); cdecl; external LibPng;
 
 (* read one or more rows of image data. *)
-procedure png_read_rows(png_ptr:png_structp; row:png_bytepp; display_row:png_bytepp; num_rows:png_uint_32);cdecl; external LibPng;
+procedure png_read_rows(png_ptr:png_structp; row:png_bytepp; display_row:png_bytepp; num_rows:png_uint_32); cdecl; external LibPng;
 
 (* read a row of data. *)
-procedure png_read_row(png_ptr:png_structp; row:png_bytep; display_row:png_bytep);cdecl; external LibPng;
+procedure png_read_row(png_ptr:png_structp; row:png_bytep; display_row:png_bytep); cdecl; external LibPng;
 
 (* read the whole image into memory at once. *)
-procedure png_read_image(png_ptr:png_structp; image:png_bytepp);cdecl; external LibPng;
+procedure png_read_image(png_ptr:png_structp; image:png_bytepp); cdecl; external LibPng;
 
 (* write a row of image data *)
-procedure png_write_row(png_ptr:png_structp; row:png_bytep);cdecl; external LibPng;
+procedure png_write_row(png_ptr:png_structp; row:png_bytep); cdecl; external LibPng;
 
 (* write a few rows of image data *)
-procedure png_write_rows(png_ptr:png_structp; row:png_bytepp; num_rows:png_uint_32);cdecl; external LibPng;
+procedure png_write_rows(png_ptr:png_structp; row:png_bytepp; num_rows:png_uint_32); cdecl; external LibPng;
 
 (* write the image data *)
-procedure png_write_image(png_ptr:png_structp; image:png_bytepp);cdecl; external LibPng;
+procedure png_write_image(png_ptr:png_structp; image:png_bytepp); cdecl; external LibPng;
 
 (* writes the end of the PNG file. *)
-procedure png_write_end(png_ptr:png_structp; info_ptr:png_infop);cdecl; external LibPng;
+procedure png_write_end(png_ptr:png_structp; info_ptr:png_infop); cdecl; external LibPng;
 
 (* read the end of the PNG file. *)
-procedure png_read_end(png_ptr:png_structp; info_ptr:png_infop);cdecl; external LibPng;
+procedure png_read_end(png_ptr:png_structp; info_ptr:png_infop); cdecl; external LibPng;
 
 (* free any memory associated with the png_info_struct *)
-procedure png_destroy_info_struct(png_ptr:png_structp; info_ptr_ptr:png_infopp);cdecl; external LibPng;
+procedure png_destroy_info_struct(png_ptr:png_structp; info_ptr_ptr:png_infopp); cdecl; external LibPng;
 
 (* free any memory associated with the png_struct and the png_info_structs *)
-procedure png_destroy_read_struct(png_ptr_ptr:png_structpp; info_ptr_ptr:png_infopp; end_info_ptr_ptr:png_infopp);cdecl; external LibPng;
+procedure png_destroy_read_struct(png_ptr_ptr:png_structpp; info_ptr_ptr:png_infopp; end_info_ptr_ptr:png_infopp); cdecl; external LibPng;
 
 (* free all memory used by the read (old method - NOT DLL EXPORTED) *)
-procedure png_read_destroy(png_ptr:png_structp; info_ptr:png_infop; end_info_ptr:png_infop);cdecl; external LibPng;
+procedure png_read_destroy(png_ptr:png_structp; info_ptr:png_infop; end_info_ptr:png_infop); cdecl; external LibPng;
 
 (* free any memory associated with the png_struct and the png_info_structs *)
-procedure png_destroy_write_struct(png_ptr_ptr:png_structpp; info_ptr_ptr:png_infopp);cdecl; external LibPng;
+procedure png_destroy_write_struct(png_ptr_ptr:png_structpp; info_ptr_ptr:png_infopp); cdecl; external LibPng;
 
-procedure png_write_destroy_info(info_ptr:png_infop);cdecl; external LibPng;
-procedure png_write_destroy(png_ptr:png_structp);cdecl; external LibPng;
+procedure png_write_destroy_info(info_ptr:png_infop); cdecl; external LibPng;
+procedure png_write_destroy(png_ptr:png_structp); cdecl; external LibPng;
 
-procedure png_set_crc_action(png_ptr:png_structp; crit_action:integer; ancil_action:integer);cdecl; external LibPng;
+procedure png_set_crc_action(png_ptr:png_structp; crit_action:cint; ancil_action:cint); cdecl; external LibPng;
 
-procedure png_set_filter(png_ptr:png_structp; method:integer; filters:integer);cdecl; external LibPng;
-procedure png_set_filter_heuristics(png_ptr:png_structp; heuristic_method:integer; num_weights:integer; filter_weights:png_doublep; filter_costs:png_doublep);cdecl; external LibPng;
+procedure png_set_filter(png_ptr:png_structp; method:cint; filters:cint); cdecl; external LibPng;
+procedure png_set_filter_heuristics(png_ptr:png_structp; heuristic_method:cint; num_weights:cint; filter_weights:png_doublep; filter_costs:png_doublep); cdecl; external LibPng;
 
-procedure png_set_compression_level(png_ptr:png_structp; level:integer);cdecl; external LibPng;
-procedure png_set_compression_mem_level(png_ptr:png_structp; mem_level:integer);cdecl; external LibPng;
-procedure png_set_compression_strategy(png_ptr:png_structp; strategy:integer);cdecl; external LibPng;
-procedure png_set_compression_window_bits(png_ptr:png_structp; window_bits:integer);cdecl; external LibPng;
-procedure png_set_compression_method(png_ptr:png_structp; method:integer);cdecl; external LibPng;
+procedure png_set_compression_level(png_ptr:png_structp; level:cint); cdecl; external LibPng;
+procedure png_set_compression_mem_level(png_ptr:png_structp; mem_level:cint); cdecl; external LibPng;
+procedure png_set_compression_strategy(png_ptr:png_structp; strategy:cint); cdecl; external LibPng;
+procedure png_set_compression_window_bits(png_ptr:png_structp; window_bits:cint); cdecl; external LibPng;
+procedure png_set_compression_method(png_ptr:png_structp; method:cint); cdecl; external LibPng;
 
-procedure png_init_io(png_ptr:png_structp; fp:png_FILE_p);cdecl; external LibPng;
+procedure png_init_io(png_ptr:png_structp; fp:png_FILE_p); cdecl; external LibPng;
 
 (* Replace the (error and abort), and warning functions with user
  * supplied functions.  If no messages are to be printed you must still
@@ -830,112 +831,112 @@ procedure png_init_io(png_ptr:png_structp; fp:png_FILE_p);cdecl; external LibPng
  * method of error handling.  If error_fn or warning_fn is NULL, the
  * default function will be used.
  *)
-procedure png_set_error_fn(png_ptr:png_structp; error_ptr:png_voidp; error_fn:png_error_ptr; warning_fn:png_error_ptr);cdecl; external LibPng;
+procedure png_set_error_fn(png_ptr:png_structp; error_ptr:png_voidp; error_fn:png_error_ptr; warning_fn:png_error_ptr); cdecl; external LibPng;
 
 (* Return the user pointer associated with the error functions *)
-function png_get_error_ptr(png_ptr:png_structp):png_voidp;cdecl; external LibPng;
+function png_get_error_ptr(png_ptr:png_structp):png_voidp; cdecl; external LibPng;
 
 (* Replace the default data output functions with a user supplied one(s).
  * If buffered output is not used, then output_flush_fn can be set to NULL.
  * If PNG_WRITE_FLUSH_SUPPORTED is not defined at libpng compile time
  * output_flush_fn will be ignored (and thus can be NULL).
  *)
-procedure png_set_write_fn(png_ptr:png_structp; io_ptr:png_voidp; write_data_fn:png_rw_ptr; output_flush_fn:png_flush_ptr);cdecl; external LibPng;
+procedure png_set_write_fn(png_ptr:png_structp; io_ptr:png_voidp; write_data_fn:png_rw_ptr; output_flush_fn:png_flush_ptr); cdecl; external LibPng;
 
 (* Replace the default data input function with a user supplied one. *)
-procedure png_set_read_fn(png_ptr:png_structp; io_ptr:png_voidp; read_data_fn:png_rw_ptr);cdecl; external LibPng;
+procedure png_set_read_fn(png_ptr:png_structp; io_ptr:png_voidp; read_data_fn:png_rw_ptr); cdecl; external LibPng;
 
 (* Return the user pointer associated with the I/O functions *)
-function png_get_io_ptr(png_ptr:png_structp):png_voidp;cdecl; external LibPng;
+function png_get_io_ptr(png_ptr:png_structp):png_voidp; cdecl; external LibPng;
 
-procedure png_set_read_status_fn(png_ptr:png_structp; read_row_fn:png_read_status_ptr);cdecl; external LibPng;
-procedure png_set_write_status_fn(png_ptr:png_structp; write_row_fn:png_write_status_ptr);cdecl; external LibPng;
-procedure png_set_read_user_transform_fn(png_ptr:png_structp; read_user_transform_fn:png_user_transform_ptr);cdecl; external LibPng;
-procedure png_set_write_user_transform_fn(png_ptr:png_structp; write_user_transform_fn:png_user_transform_ptr);cdecl; external LibPng;
-procedure png_set_user_transform_info(png_ptr:png_structp; user_transform_ptr:png_voidp; user_transform_depth:integer; user_transform_channels:integer);cdecl; external LibPng;
-function png_get_user_transform_ptr(png_ptr:png_structp):png_voidp;cdecl; external LibPng;
-procedure png_set_read_user_chunk_fn(png_ptr:png_structp; user_chunk_ptr:png_voidp; read_user_chunk_fn:png_user_chunk_ptr);cdecl; external LibPng;
-function png_get_user_chunk_ptr(png_ptr:png_structp):png_voidp;cdecl; external LibPng;
-procedure png_set_progressive_read_fn(png_ptr:png_structp; progressive_ptr:png_voidp; info_fn:png_progressive_info_ptr; row_fn:png_progressive_row_ptr; end_fn:png_progressive_end_ptr);cdecl; external LibPng;
-function png_get_progressive_ptr(png_ptr:png_structp):png_voidp;cdecl; external LibPng;
-procedure png_process_data(png_ptr:png_structp; info_ptr:png_infop; buffer:png_bytep; buffer_size:png_size_t);cdecl; external LibPng;
-procedure png_progressive_combine_row(png_ptr:png_structp; old_row:png_bytep; new_row:png_bytep);cdecl; external LibPng;
-function png_malloc(png_ptr:png_structp; size:png_uint_32):png_voidp;cdecl; external LibPng;
-procedure png_free(png_ptr:png_structp; ptr:png_voidp);cdecl; external LibPng;
-procedure png_free_data(png_ptr:png_structp; info_ptr:png_infop; free_me:png_uint_32; num:integer);cdecl; external LibPng;
-procedure png_data_freer(png_ptr:png_structp; info_ptr:png_infop; freer:integer; mask:png_uint_32);cdecl; external LibPng;
-function png_memcpy_check(png_ptr:png_structp; s1:png_voidp; s2:png_voidp; size:png_uint_32):png_voidp;cdecl; external LibPng;
-function png_memset_check(png_ptr:png_structp; s1:png_voidp; value:integer; size:png_uint_32):png_voidp;cdecl; external LibPng;
-procedure png_error(png_ptr:png_structp; error:png_const_charp);cdecl; external LibPng;
-procedure png_chunk_error(png_ptr:png_structp; error:png_const_charp);cdecl; external LibPng;
-procedure png_warning(png_ptr:png_structp; message:png_const_charp);cdecl; external LibPng;
-procedure png_chunk_warning(png_ptr:png_structp; message:png_const_charp);cdecl; external LibPng;
-function png_get_valid(png_ptr:png_structp; info_ptr:png_infop; flag:png_uint_32):png_uint_32;cdecl; external LibPng;
-function png_get_rowbytes(png_ptr:png_structp; info_ptr:png_infop):png_uint_32;cdecl; external LibPng;
-function png_get_rows(png_ptr:png_structp; info_ptr:png_infop):png_bytepp;cdecl; external LibPng;
-procedure png_set_rows(png_ptr:png_structp; info_ptr:png_infop; row_pointers:png_bytepp);cdecl; external LibPng;
-function png_get_channels(png_ptr:png_structp; info_ptr:png_infop):png_byte;cdecl; external LibPng;
-function png_get_image_width(png_ptr:png_structp; info_ptr:png_infop):png_uint_32;cdecl; external LibPng;
-function png_get_image_height(png_ptr:png_structp; info_ptr:png_infop):png_uint_32;cdecl; external LibPng;
-function png_get_bit_depth(png_ptr:png_structp; info_ptr:png_infop):png_byte;cdecl; external LibPng;
-function png_get_color_type(png_ptr:png_structp; info_ptr:png_infop):png_byte;cdecl; external LibPng;
-function png_get_filter_type(png_ptr:png_structp; info_ptr:png_infop):png_byte;cdecl; external LibPng;
-function png_get_interlace_type(png_ptr:png_structp; info_ptr:png_infop):png_byte;cdecl; external LibPng;
-function png_get_compression_type(png_ptr:png_structp; info_ptr:png_infop):png_byte;cdecl; external LibPng;
-function png_get_pixels_per_meter(png_ptr:png_structp; info_ptr:png_infop):png_uint_32;cdecl; external LibPng;
-function png_get_x_pixels_per_meter(png_ptr:png_structp; info_ptr:png_infop):png_uint_32;cdecl; external LibPng;
-function png_get_y_pixels_per_meter(png_ptr:png_structp; info_ptr:png_infop):png_uint_32;cdecl; external LibPng;
-function png_get_pixel_aspect_ratio(png_ptr:png_structp; info_ptr:png_infop):single;cdecl; external LibPng;
-function png_get_x_offset_pixels(png_ptr:png_structp; info_ptr:png_infop):png_int_32;cdecl; external LibPng;
-function png_get_y_offset_pixels(png_ptr:png_structp; info_ptr:png_infop):png_int_32;cdecl; external LibPng;
-function png_get_x_offset_microns(png_ptr:png_structp; info_ptr:png_infop):png_int_32;cdecl; external LibPng;
-function png_get_y_offset_microns(png_ptr:png_structp; info_ptr:png_infop):png_int_32;cdecl; external LibPng;
-function png_get_signature(png_ptr:png_structp; info_ptr:png_infop):png_bytep;cdecl; external LibPng;
+procedure png_set_read_status_fn(png_ptr:png_structp; read_row_fn:png_read_status_ptr); cdecl; external LibPng;
+procedure png_set_write_status_fn(png_ptr:png_structp; write_row_fn:png_write_status_ptr); cdecl; external LibPng;
+procedure png_set_read_user_transform_fn(png_ptr:png_structp; read_user_transform_fn:png_user_transform_ptr); cdecl; external LibPng;
+procedure png_set_write_user_transform_fn(png_ptr:png_structp; write_user_transform_fn:png_user_transform_ptr); cdecl; external LibPng;
+procedure png_set_user_transform_info(png_ptr:png_structp; user_transform_ptr:png_voidp; user_transform_depth:cint; user_transform_channels:cint); cdecl; external LibPng;
+function png_get_user_transform_ptr(png_ptr:png_structp):png_voidp; cdecl; external LibPng;
+procedure png_set_read_user_chunk_fn(png_ptr:png_structp; user_chunk_ptr:png_voidp; read_user_chunk_fn:png_user_chunk_ptr); cdecl; external LibPng;
+function png_get_user_chunk_ptr(png_ptr:png_structp):png_voidp; cdecl; external LibPng;
+procedure png_set_progressive_read_fn(png_ptr:png_structp; progressive_ptr:png_voidp; info_fn:png_progressive_info_ptr; row_fn:png_progressive_row_ptr; end_fn:png_progressive_end_ptr); cdecl; external LibPng;
+function png_get_progressive_ptr(png_ptr:png_structp):png_voidp; cdecl; external LibPng;
+procedure png_process_data(png_ptr:png_structp; info_ptr:png_infop; buffer:png_bytep; buffer_size:png_size_t); cdecl; external LibPng;
+procedure png_progressive_combine_row(png_ptr:png_structp; old_row:png_bytep; new_row:png_bytep); cdecl; external LibPng;
+function png_malloc(png_ptr:png_structp; size:png_uint_32):png_voidp; cdecl; external LibPng;
+procedure png_free(png_ptr:png_structp; ptr:png_voidp); cdecl; external LibPng;
+procedure png_free_data(png_ptr:png_structp; info_ptr:png_infop; free_me:png_uint_32; num:cint); cdecl; external LibPng;
+procedure png_data_freer(png_ptr:png_structp; info_ptr:png_infop; freer:cint; mask:png_uint_32); cdecl; external LibPng;
+function png_memcpy_check(png_ptr:png_structp; s1:png_voidp; s2:png_voidp; size:png_uint_32):png_voidp; cdecl; external LibPng;
+function png_memset_check(png_ptr:png_structp; s1:png_voidp; value:cint; size:png_uint_32):png_voidp; cdecl; external LibPng;
+procedure png_error(png_ptr:png_structp; error:png_const_charp); cdecl; external LibPng;
+procedure png_chunk_error(png_ptr:png_structp; error:png_const_charp); cdecl; external LibPng;
+procedure png_warning(png_ptr:png_structp; message:png_const_charp); cdecl; external LibPng;
+procedure png_chunk_warning(png_ptr:png_structp; message:png_const_charp); cdecl; external LibPng;
+function png_get_valid(png_ptr:png_structp; info_ptr:png_infop; flag:png_uint_32):png_uint_32; cdecl; external LibPng;
+function png_get_rowbytes(png_ptr:png_structp; info_ptr:png_infop):png_uint_32; cdecl; external LibPng;
+function png_get_rows(png_ptr:png_structp; info_ptr:png_infop):png_bytepp; cdecl; external LibPng;
+procedure png_set_rows(png_ptr:png_structp; info_ptr:png_infop; row_pointers:png_bytepp); cdecl; external LibPng;
+function png_get_channels(png_ptr:png_structp; info_ptr:png_infop):png_byte; cdecl; external LibPng;
+function png_get_image_width(png_ptr:png_structp; info_ptr:png_infop):png_uint_32; cdecl; external LibPng;
+function png_get_image_height(png_ptr:png_structp; info_ptr:png_infop):png_uint_32; cdecl; external LibPng;
+function png_get_bit_depth(png_ptr:png_structp; info_ptr:png_infop):png_byte; cdecl; external LibPng;
+function png_get_color_type(png_ptr:png_structp; info_ptr:png_infop):png_byte; cdecl; external LibPng;
+function png_get_filter_type(png_ptr:png_structp; info_ptr:png_infop):png_byte; cdecl; external LibPng;
+function png_get_interlace_type(png_ptr:png_structp; info_ptr:png_infop):png_byte; cdecl; external LibPng;
+function png_get_compression_type(png_ptr:png_structp; info_ptr:png_infop):png_byte; cdecl; external LibPng;
+function png_get_pixels_per_meter(png_ptr:png_structp; info_ptr:png_infop):png_uint_32; cdecl; external LibPng;
+function png_get_x_pixels_per_meter(png_ptr:png_structp; info_ptr:png_infop):png_uint_32; cdecl; external LibPng;
+function png_get_y_pixels_per_meter(png_ptr:png_structp; info_ptr:png_infop):png_uint_32; cdecl; external LibPng;
+function png_get_pixel_aspect_ratio(png_ptr:png_structp; info_ptr:png_infop):cfloat; cdecl; external LibPng;
+function png_get_x_offset_pixels(png_ptr:png_structp; info_ptr:png_infop):png_int_32; cdecl; external LibPng;
+function png_get_y_offset_pixels(png_ptr:png_structp; info_ptr:png_infop):png_int_32; cdecl; external LibPng;
+function png_get_x_offset_microns(png_ptr:png_structp; info_ptr:png_infop):png_int_32; cdecl; external LibPng;
+function png_get_y_offset_microns(png_ptr:png_structp; info_ptr:png_infop):png_int_32; cdecl; external LibPng;
+function png_get_signature(png_ptr:png_structp; info_ptr:png_infop):png_bytep; cdecl; external LibPng;
 
-function png_get_bKGD(png_ptr:png_structp; info_ptr:png_infop; background:Ppng_color_16p):png_uint_32;cdecl; external LibPng;
-procedure png_set_bKGD(png_ptr:png_structp; info_ptr:png_infop; background:png_color_16p);cdecl; external LibPng;
-function png_get_cHRM(png_ptr:png_structp; info_ptr:png_infop; white_x:Pdouble; white_y:Pdouble; red_x:Pdouble;
-           red_y:Pdouble; green_x:Pdouble; green_y:Pdouble; blue_x:Pdouble; blue_y:Pdouble):png_uint_32;cdecl; external LibPng;
+function png_get_bKGD(png_ptr:png_structp; info_ptr:png_infop; background:Ppng_color_16p):png_uint_32; cdecl; external LibPng;
+procedure png_set_bKGD(png_ptr:png_structp; info_ptr:png_infop; background:png_color_16p); cdecl; external LibPng;
+function png_get_cHRM(png_ptr:png_structp; info_ptr:png_infop; white_x:PCdouble; white_y:PCdouble; red_x:PCdouble;
+           red_y:PCdouble; green_x:PCdouble; green_y:PCdouble; blue_x:PCdouble; blue_y:PCdouble):png_uint_32; cdecl; external LibPng;
 function png_get_cHRM_fixed(png_ptr:png_structp; info_ptr:png_infop; int_white_x:Ppng_fixed_point; int_white_y:Ppng_fixed_point; int_red_x:Ppng_fixed_point;
-           int_red_y:Ppng_fixed_point; int_green_x:Ppng_fixed_point; int_green_y:Ppng_fixed_point; int_blue_x:Ppng_fixed_point; int_blue_y:Ppng_fixed_point):png_uint_32;cdecl; external LibPng;
-procedure png_set_cHRM(png_ptr:png_structp; info_ptr:png_infop; white_x:double; white_y:double; red_x:double;
-            red_y:double; green_x:double; green_y:double; blue_x:double; blue_y:double);cdecl; external LibPng;
+           int_red_y:Ppng_fixed_point; int_green_x:Ppng_fixed_point; int_green_y:Ppng_fixed_point; int_blue_x:Ppng_fixed_point; int_blue_y:Ppng_fixed_point):png_uint_32; cdecl; external LibPng;
+procedure png_set_cHRM(png_ptr:png_structp; info_ptr:png_infop; white_x:cdouble; white_y:cdouble; red_x:cdouble;
+            red_y:cdouble; green_x:cdouble; green_y:cdouble; blue_x:cdouble; blue_y:cdouble); cdecl; external LibPng;
 procedure png_set_cHRM_fixed(png_ptr:png_structp; info_ptr:png_infop; int_white_x:png_fixed_point; int_white_y:png_fixed_point; int_red_x:png_fixed_point;
-            int_red_y:png_fixed_point; int_green_x:png_fixed_point; int_green_y:png_fixed_point; int_blue_x:png_fixed_point; int_blue_y:png_fixed_point);cdecl; external LibPng;
-function png_get_gAMA(png_ptr:png_structp; info_ptr:png_infop; file_gamma:Pdouble):png_uint_32;cdecl; external LibPng;
-function png_get_gAMA_fixed(png_ptr:png_structp; info_ptr:png_infop; int_file_gamma:Ppng_fixed_point):png_uint_32;cdecl; external LibPng;
-procedure png_set_gAMA(png_ptr:png_structp; info_ptr:png_infop; file_gamma:double);cdecl; external LibPng;
-procedure png_set_gAMA_fixed(png_ptr:png_structp; info_ptr:png_infop; int_file_gamma:png_fixed_point);cdecl; external LibPng;
-function png_get_hIST(png_ptr:png_structp; info_ptr:png_infop; hist:Ppng_uint_16p):png_uint_32;cdecl; external LibPng;
-procedure png_set_hIST(png_ptr:png_structp; info_ptr:png_infop; hist:png_uint_16p);cdecl; external LibPng;
-function png_get_IHDR(png_ptr:png_structp; info_ptr:png_infop; width:Ppng_uint_32; height:Ppng_uint_32; bit_depth:Pinteger;
-           color_type:Pinteger; interlace_type:Pinteger; compression_type:Pinteger; filter_type:Pinteger):png_uint_32;cdecl; external LibPng;
-procedure png_set_IHDR(png_ptr:png_structp; info_ptr:png_infop; width:png_uint_32; height:png_uint_32; bit_depth:integer;
-            color_type:integer; interlace_type:integer; compression_type:integer; filter_type:integer);cdecl; external LibPng;
-function png_get_oFFs(png_ptr:png_structp; info_ptr:png_infop; offset_x:Ppng_int_32; offset_y:Ppng_int_32; unit_type:Pinteger):png_uint_32;cdecl; external LibPng;
-procedure png_set_oFFs(png_ptr:png_structp; info_ptr:png_infop; offset_x:png_int_32; offset_y:png_int_32; unit_type:integer);cdecl; external LibPng;
+            int_red_y:png_fixed_point; int_green_x:png_fixed_point; int_green_y:png_fixed_point; int_blue_x:png_fixed_point; int_blue_y:png_fixed_point); cdecl; external LibPng;
+function png_get_gAMA(png_ptr:png_structp; info_ptr:png_infop; file_gamma:PCdouble):png_uint_32; cdecl; external LibPng;
+function png_get_gAMA_fixed(png_ptr:png_structp; info_ptr:png_infop; int_file_gamma:Ppng_fixed_point):png_uint_32; cdecl; external LibPng;
+procedure png_set_gAMA(png_ptr:png_structp; info_ptr:png_infop; file_gamma:cdouble); cdecl; external LibPng;
+procedure png_set_gAMA_fixed(png_ptr:png_structp; info_ptr:png_infop; int_file_gamma:png_fixed_point); cdecl; external LibPng;
+function png_get_hIST(png_ptr:png_structp; info_ptr:png_infop; hist:Ppng_uint_16p):png_uint_32; cdecl; external LibPng;
+procedure png_set_hIST(png_ptr:png_structp; info_ptr:png_infop; hist:png_uint_16p); cdecl; external LibPng;
+function png_get_IHDR(png_ptr:png_structp; info_ptr:png_infop; width:Ppng_uint_32; height:Ppng_uint_32; bit_depth:PCint;
+           color_type:PCint; interlace_type:PCint; compression_type:PCint; filter_type:PCint):png_uint_32; cdecl; external LibPng;
+procedure png_set_IHDR(png_ptr:png_structp; info_ptr:png_infop; width:png_uint_32; height:png_uint_32; bit_depth:cint;
+            color_type:cint; interlace_type:cint; compression_type:cint; filter_type:cint); cdecl; external LibPng;
+function png_get_oFFs(png_ptr:png_structp; info_ptr:png_infop; offset_x:Ppng_int_32; offset_y:Ppng_int_32; unit_type:PCint):png_uint_32; cdecl; external LibPng;
+procedure png_set_oFFs(png_ptr:png_structp; info_ptr:png_infop; offset_x:png_int_32; offset_y:png_int_32; unit_type:cint); cdecl; external LibPng;
 function png_get_pCAL(png_ptr:png_structp; info_ptr:png_infop; purpose:Ppng_charp; X0:Ppng_int_32; X1:Ppng_int_32;
-           atype:Pinteger; nparams:Pinteger; units:Ppng_charp; params:Ppng_charpp):png_uint_32;cdecl; external LibPng;
+           atype:PCint; nparams:PCint; units:Ppng_charp; params:Ppng_charpp):png_uint_32; cdecl; external LibPng;
 procedure png_set_pCAL(png_ptr:png_structp; info_ptr:png_infop; purpose:png_charp; X0:png_int_32; X1:png_int_32;
-            atype:integer; nparams:integer; units:png_charp; params:png_charpp);cdecl; external LibPng;
-function png_get_pHYs(png_ptr:png_structp; info_ptr:png_infop; res_x:Ppng_uint_32; res_y:Ppng_uint_32; unit_type:Pinteger):png_uint_32;cdecl; external LibPng;
-procedure png_set_pHYs(png_ptr:png_structp; info_ptr:png_infop; res_x:png_uint_32; res_y:png_uint_32; unit_type:integer);cdecl; external LibPng;
-function png_get_PLTE(png_ptr:png_structp; info_ptr:png_infop; palette:Ppng_colorp; num_palette:Pinteger):png_uint_32;cdecl; external LibPng;
-procedure png_set_PLTE(png_ptr:png_structp; info_ptr:png_infop; palette:png_colorp; num_palette:integer);cdecl; external LibPng;
-function png_get_sBIT(png_ptr:png_structp; info_ptr:png_infop; sig_bit:Ppng_color_8p):png_uint_32;cdecl; external LibPng;
-procedure png_set_sBIT(png_ptr:png_structp; info_ptr:png_infop; sig_bit:png_color_8p);cdecl; external LibPng;
-function png_get_sRGB(png_ptr:png_structp; info_ptr:png_infop; intent:Pinteger):png_uint_32;cdecl; external LibPng;
-procedure png_set_sRGB(png_ptr:png_structp; info_ptr:png_infop; intent:integer);cdecl; external LibPng;
-procedure png_set_sRGB_gAMA_and_cHRM(png_ptr:png_structp; info_ptr:png_infop; intent:integer);cdecl; external LibPng;
-function png_get_iCCP(png_ptr:png_structp; info_ptr:png_infop; name:png_charpp; compression_type:Pinteger; profile:png_charpp;
-           proflen:Ppng_uint_32):png_uint_32;cdecl; external LibPng;
-procedure png_set_iCCP(png_ptr:png_structp; info_ptr:png_infop; name:png_charp; compression_type:integer; profile:png_charp;
-            proflen:png_uint_32);cdecl; external LibPng;
-function png_get_sPLT(png_ptr:png_structp; info_ptr:png_infop; entries:png_sPLT_tpp):png_uint_32;cdecl; external LibPng;
-procedure png_set_sPLT(png_ptr:png_structp; info_ptr:png_infop; entries:png_sPLT_tp; nentries:integer);cdecl; external LibPng;
+            atype:cint; nparams:cint; units:png_charp; params:png_charpp); cdecl; external LibPng;
+function png_get_pHYs(png_ptr:png_structp; info_ptr:png_infop; res_x:Ppng_uint_32; res_y:Ppng_uint_32; unit_type:PCint):png_uint_32; cdecl; external LibPng;
+procedure png_set_pHYs(png_ptr:png_structp; info_ptr:png_infop; res_x:png_uint_32; res_y:png_uint_32; unit_type:cint); cdecl; external LibPng;
+function png_get_PLTE(png_ptr:png_structp; info_ptr:png_infop; palette:Ppng_colorp; num_palette:PCint):png_uint_32; cdecl; external LibPng;
+procedure png_set_PLTE(png_ptr:png_structp; info_ptr:png_infop; palette:png_colorp; num_palette:cint); cdecl; external LibPng;
+function png_get_sBIT(png_ptr:png_structp; info_ptr:png_infop; sig_bit:Ppng_color_8p):png_uint_32; cdecl; external LibPng;
+procedure png_set_sBIT(png_ptr:png_structp; info_ptr:png_infop; sig_bit:png_color_8p); cdecl; external LibPng;
+function png_get_sRGB(png_ptr:png_structp; info_ptr:png_infop; intent:PCint):png_uint_32; cdecl; external LibPng;
+procedure png_set_sRGB(png_ptr:png_structp; info_ptr:png_infop; intent:cint); cdecl; external LibPng;
+procedure png_set_sRGB_gAMA_and_cHRM(png_ptr:png_structp; info_ptr:png_infop; intent:cint); cdecl; external LibPng;
+function png_get_iCCP(png_ptr:png_structp; info_ptr:png_infop; name:png_charpp; compression_type:PCint; profile:png_charpp;
+           proflen:Ppng_uint_32):png_uint_32; cdecl; external LibPng;
+procedure png_set_iCCP(png_ptr:png_structp; info_ptr:png_infop; name:png_charp; compression_type:cint; profile:png_charp;
+            proflen:png_uint_32); cdecl; external LibPng;
+function png_get_sPLT(png_ptr:png_structp; info_ptr:png_infop; entries:png_sPLT_tpp):png_uint_32; cdecl; external LibPng;
+procedure png_set_sPLT(png_ptr:png_structp; info_ptr:png_infop; entries:png_sPLT_tp; nentries:cint); cdecl; external LibPng;
 
 (* png_get_text also returns the number of text chunks in *num_text *)
-function png_get_text(png_ptr:png_structp; info_ptr:png_infop; text_ptr:Ppng_textp; num_text:Pinteger):png_uint_32;cdecl; external LibPng;
+function png_get_text(png_ptr:png_structp; info_ptr:png_infop; text_ptr:Ppng_textp; num_text:PCint):png_uint_32; cdecl; external LibPng;
 
 (*
  *  Note while png_set_text() will accept a structure whose text,
@@ -944,29 +945,29 @@ function png_get_text(png_ptr:png_structp; info_ptr:png_infop; text_ptr:Ppng_tex
  *  zero-terminated C strings.  They might be empty strings but
  *  they will never be NULL pointers.
  *)
-procedure png_set_text(png_ptr:png_structp; info_ptr:png_infop; text_ptr:png_textp; num_text:integer);cdecl; external LibPng;
+procedure png_set_text(png_ptr:png_structp; info_ptr:png_infop; text_ptr:png_textp; num_text:cint); cdecl; external LibPng;
 
-function png_get_tIME(png_ptr:png_structp; info_ptr:png_infop; mod_time:Ppng_timep):png_uint_32;cdecl; external LibPng;
-procedure png_set_tIME(png_ptr:png_structp; info_ptr:png_infop; mod_time:png_timep);cdecl; external LibPng;
-function png_get_tRNS(png_ptr:png_structp; info_ptr:png_infop; trans:Ppng_bytep; num_trans:Pinteger; trans_values:Ppng_color_16p):png_uint_32;cdecl; external LibPng;
-procedure png_set_tRNS(png_ptr:png_structp; info_ptr:png_infop; trans:png_bytep; num_trans:integer; trans_values:png_color_16p);cdecl; external LibPng;
-function png_get_sCAL(png_ptr:png_structp; info_ptr:png_infop; aunit:Pinteger; width:Pdouble; height:Pdouble):png_uint_32;cdecl; external LibPng;
-procedure png_set_sCAL(png_ptr:png_structp; info_ptr:png_infop; aunit:integer; width:double; height:double);cdecl; external LibPng;
-procedure png_set_sCAL_s(png_ptr:png_structp; info_ptr:png_infop; aunit:integer; swidth:png_charp; sheight:png_charp);cdecl; external LibPng;
+function png_get_tIME(png_ptr:png_structp; info_ptr:png_infop; mod_time:Ppng_timep):png_uint_32; cdecl; external LibPng;
+procedure png_set_tIME(png_ptr:png_structp; info_ptr:png_infop; mod_time:png_timep); cdecl; external LibPng;
+function png_get_tRNS(png_ptr:png_structp; info_ptr:png_infop; trans:Ppng_bytep; num_trans:PCint; trans_values:Ppng_color_16p):png_uint_32; cdecl; external LibPng;
+procedure png_set_tRNS(png_ptr:png_structp; info_ptr:png_infop; trans:png_bytep; num_trans:cint; trans_values:png_color_16p); cdecl; external LibPng;
+function png_get_sCAL(png_ptr:png_structp; info_ptr:png_infop; aunit:PCint; width:PCdouble; height:PCdouble):png_uint_32; cdecl; external LibPng;
+procedure png_set_sCAL(png_ptr:png_structp; info_ptr:png_infop; aunit:cint; width:cdouble; height:cdouble); cdecl; external LibPng;
+procedure png_set_sCAL_s(png_ptr:png_structp; info_ptr:png_infop; aunit:cint; swidth:png_charp; sheight:png_charp); cdecl; external LibPng;
 
-procedure png_set_keep_unknown_chunks(png_ptr:png_structp; keep:integer; chunk_list:png_bytep; num_chunks:integer);cdecl; external LibPng;
-procedure png_set_unknown_chunks(png_ptr:png_structp; info_ptr:png_infop; unknowns:png_unknown_chunkp; num_unknowns:integer);cdecl; external LibPng;
-procedure png_set_unknown_chunk_location(png_ptr:png_structp; info_ptr:png_infop; chunk:integer; location:integer);cdecl; external LibPng;
-function png_get_unknown_chunks(png_ptr:png_structp; info_ptr:png_infop; entries:png_unknown_chunkpp):png_uint_32;cdecl; external LibPng;
+procedure png_set_keep_unknown_chunks(png_ptr:png_structp; keep:cint; chunk_list:png_bytep; num_chunks:cint); cdecl; external LibPng;
+procedure png_set_unknown_chunks(png_ptr:png_structp; info_ptr:png_infop; unknowns:png_unknown_chunkp; num_unknowns:cint); cdecl; external LibPng;
+procedure png_set_unknown_chunk_location(png_ptr:png_structp; info_ptr:png_infop; chunk:cint; location:cint); cdecl; external LibPng;
+function png_get_unknown_chunks(png_ptr:png_structp; info_ptr:png_infop; entries:png_unknown_chunkpp):png_uint_32; cdecl; external LibPng;
 
-procedure png_set_invalid(png_ptr:png_structp; info_ptr:png_infop; mask:integer);cdecl; external LibPng;
+procedure png_set_invalid(png_ptr:png_structp; info_ptr:png_infop; mask:cint); cdecl; external LibPng;
 
-procedure png_read_png(png_ptr:png_structp; info_ptr:png_infop; transforms:integer; params:png_voidp);cdecl; external LibPng;
-procedure png_write_png(png_ptr:png_structp; info_ptr:png_infop; transforms:integer; params:png_voidp);cdecl; external LibPng;
+procedure png_read_png(png_ptr:png_structp; info_ptr:png_infop; transforms:cint; params:png_voidp); cdecl; external LibPng;
+procedure png_write_png(png_ptr:png_structp; info_ptr:png_infop; transforms:cint; params:png_voidp); cdecl; external LibPng;
 
-function png_get_header_ver(png_ptr:png_structp):png_charp;cdecl; external LibPng;
-function png_get_header_version(png_ptr:png_structp):png_charp;cdecl; external LibPng;
-function png_get_libpng_ver(png_ptr:png_structp):png_charp;cdecl; external LibPng;
+function png_get_header_ver(png_ptr:png_structp):png_charp; cdecl; external LibPng;
+function png_get_header_version(png_ptr:png_structp):png_charp; cdecl; external LibPng;
+function png_get_libpng_ver(png_ptr:png_structp):png_charp; cdecl; external LibPng;
 
 implementation
 

@@ -11,6 +11,7 @@ interface
 uses
   UMusic,
   ULog,
+  ctypes,
   {$IFDEF UseSRCResample}
   samplerate,
   {$ENDIF}
@@ -373,7 +374,7 @@ begin
   end else begin
     NumSamples := InputSize div AudioSampleSize[SrcFormatInfo.Format];
     GetMem(FloatInputBuffer, NumSamples * SizeOf(Single));
-    src_short_to_float_array(PSmallInt(InputBuffer), FloatInputBuffer, NumSamples);
+    src_short_to_float_array(PCshort(InputBuffer), PCfloat(FloatInputBuffer), NumSamples);
   end;
 
   // calculate approx. output size
@@ -389,9 +390,9 @@ begin
 
   with ConversionData do
   begin
-    data_in := FloatInputBuffer;
+    data_in := PCFloat(FloatInputBuffer);
     input_frames := InputSize div SrcFormatInfo.FrameSize;
-    data_out := FloatOutputBuffer;
+    data_out := PCFloat(FloatOutputBuffer);
     output_frames := OutputSize div DstFormatInfo.FrameSize;
     // TODO: set this to 1 at end of file-playback
     end_of_input := 0;
@@ -416,7 +417,7 @@ begin
   if (DstFormatInfo.Format <> asfFloat) then
   begin
     NumSamples := ConversionData.output_frames_gen * DstFormatInfo.Channels;
-    src_float_to_short_array(FloatOutputBuffer, PSmallInt(OutputBuffer), NumSamples);
+    src_float_to_short_array(PCfloat(FloatOutputBuffer), PCshort(OutputBuffer), NumSamples);
     FreeMem(FloatOutputBuffer);
   end;
 

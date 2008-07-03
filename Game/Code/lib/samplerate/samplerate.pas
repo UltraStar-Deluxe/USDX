@@ -35,6 +35,7 @@ unit samplerate;
 interface
 
 uses
+  ctypes,
   UConfig;
 
 const
@@ -59,21 +60,18 @@ type
 type
   PSRC_DATA = ^SRC_DATA;
   SRC_DATA = record
-    data_in: PSingle;
-    data_out: PSingle;
-    input_frames: longint;
-    output_frames: longint;
-    input_frames_used: longint;
-    output_frames_gen: longint;
-    end_of_input: integer;
-    src_ratio: double;
+    data_in, data_out: PCfloat;
+    input_frames, output_frames: clong;
+    input_frames_used, output_frames_gen: clong;
+    end_of_input: cint;
+    src_ratio: cdouble;
   end;
 
 { SRC_CB_DATA is used with callback based API.  }
 type
   SRC_CB_DATA = record
-    frames: longint;
-    data_in: Psingle;
+    frames: clong;
+    data_in: PCfloat;
   end;
 
 {*
@@ -84,14 +82,14 @@ type
 ** point to the start of the user supplied float array. The user supplied
 ** function must return the number of frames that **data points to.
 *}
-src_callback_t = function (cb_data: pointer; var data: Psingle): longint; cdecl;
+src_callback_t = function (cb_data: pointer; var data: PCfloat): clong; cdecl;
 
 {*
 ** Standard initialisation function : return an anonymous pointer to the
 ** internal state of the converter. Choose a converter from the enums below.
 ** Error returned in *error.
 *}
-function src_new(converter_type: integer; channels: integer; error: Pinteger): PSRC_STATE; cdecl; external LibName;
+function src_new(converter_type: cint; channels: cint; error: PCint): PSRC_STATE; cdecl; external LibName;
 
 {*
 ** Initilisation for callback based API : return an anonymous pointer to the
@@ -100,7 +98,7 @@ function src_new(converter_type: integer; channels: integer; error: Pinteger): P
 ** value, when processing, user supplied function "func" gets called with
 ** cb_data as first parameter.
 *}
-function src_callback_new(func: src_callback_t; converter_type: integer; channels: integer;
+function src_callback_new(func: src_callback_t; converter_type: cint; channels: cint;
             error: Pinteger; cb_data: pointer): PSRC_STATE; cdecl; external LibName;
 
 {*
@@ -113,14 +111,14 @@ function src_delete(state: PSRC_STATE): PSRC_STATE; cdecl; external LibName;
 ** Standard processing function.
 ** Returns non zero on error.
 *}
-function src_process(state: PSRC_STATE; data: PSRC_DATA): integer; cdecl; external LibName;
+function src_process(state: PSRC_STATE; data: PSRC_DATA): cint; cdecl; external LibName;
 
 {*
 ** Callback based processing function. Read up to frames worth of data from
 ** the converter int *data and return frames read or -1 on error.
 *}
-function src_callback_read(state: PSRC_STATE; src_ratio: double;
-            frames: longint; data: Psingle): longint; cdecl; external LibName;
+function src_callback_read(state: PSRC_STATE; src_ratio: cdouble;
+            frames: clong; data: PCfloat): clong; cdecl; external LibName;
 
 {*
 ** Simple interface for performing a single conversion from input buffer to
@@ -128,7 +126,7 @@ function src_callback_read(state: PSRC_STATE; src_ratio: double;
 ** Simple interface does not require initialisation as it can only operate on
 ** a single buffer worth of audio.
 *}
-function src_simple(data: PSRC_DATA; converter_type: integer; channels: integer): integer; cdecl; external LibName;
+function src_simple(data: PSRC_DATA; converter_type: cint; channels: cint): cint; cdecl; external LibName;
 
 {*
 ** This library contains a number of different sample rate converters,
@@ -138,8 +136,8 @@ function src_simple(data: PSRC_DATA; converter_type: integer; channels: integer)
 ** sample rate converter or NULL if no sample rate converter exists for
 ** the given value. The converters are sequentially numbered from 0 to N.
 *}
-function src_get_name(converter_type: integer): {const} Pchar; cdecl; external LibName;
-function src_get_description(converter_type: integer): {const} Pchar; cdecl; external LibName;
+function src_get_name(converter_type: cint): {const} Pchar; cdecl; external LibName;
+function src_get_description(converter_type: cint): {const} Pchar; cdecl; external LibName;
 function src_get_version(): {const} Pchar; cdecl; external LibName;
 
 {*
@@ -147,7 +145,7 @@ function src_get_version(): {const} Pchar; cdecl; external LibName;
 ** in the conversion ratio.
 ** Returns non zero on error.
 *}
-function src_set_ratio(state: PSRC_STATE; new_ratio: double): integer; cdecl; external LibName;
+function src_set_ratio(state: PSRC_STATE; new_ratio: cdouble): cint; cdecl; external LibName;
 
 {*
 ** Reset the internal SRC state.
@@ -155,23 +153,23 @@ function src_set_ratio(state: PSRC_STATE; new_ratio: double): integer; cdecl; ex
 ** Does not free any memory allocations.
 ** Returns non zero on error.
 *}
-function src_reset(state: PSRC_STATE): integer; cdecl; external LibName;
+function src_reset(state: PSRC_STATE): cint; cdecl; external LibName;
 
 {*
 ** Return TRUE if ratio is a valid conversion ratio, FALSE
 ** otherwise.
 *}
-function src_is_valid_ratio(ratio: double): integer; cdecl; external LibName;
+function src_is_valid_ratio(ratio: cdouble): cint; cdecl; external LibName;
 
 {*
 ** Return an error number.
 *}
-function src_error(state: PSRC_STATE): integer; cdecl; external LibName;
+function src_error(state: PSRC_STATE): cint; cdecl; external LibName;
 
 {*
 ** Convert the error number into a string.
 *}
-function src_strerror(error: integer): {const} Pchar; cdecl; external LibName;
+function src_strerror(error: cint): {const} Pchar; cdecl; external LibName;
 
 {*
 ** The following enums can be used to set the interpolator type
@@ -188,12 +186,12 @@ const
 ** Extra helper functions for converting from short to float and
 ** back again.
 *}
-procedure src_short_to_float_array(input: {const} Psmallint; output: Psingle; len: integer); cdecl; external LibName;
-procedure src_float_to_short_array(input: {const} Psingle; output: Psmallint; len: integer); cdecl; external LibName;
+procedure src_short_to_float_array(input: {const} PCshort; output: PCfloat; len: cint); cdecl; external LibName;
+procedure src_float_to_short_array(input: {const} PCfloat; output: PCshort; len: cint); cdecl; external LibName;
 
 {$IF LIBSAMPLERATE_VERSION >= 1003} // 0.1.3
-procedure src_int_to_float_array(input: {const} Pinteger; output: Psingle; len: integer); cdecl; external LibName;
-procedure src_float_to_int_array(input: {const} Psingle; output: Pinteger; len: integer); cdecl; external LibName;
+procedure src_int_to_float_array(input: {const} PCint; output: PCfloat; len: cint); cdecl; external LibName;
+procedure src_float_to_int_array(input: {const} PCfloat; output: PCint; len: cint); cdecl; external LibName;
 {$IFEND}
 
 implementation

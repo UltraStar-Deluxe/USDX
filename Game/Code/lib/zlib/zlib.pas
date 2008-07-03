@@ -18,6 +18,9 @@ interface
   {$PACKRECORDS C}
 {$endif}
 
+uses
+  ctypes;
+
 const
   ZLIB_VERSION = '1.2.3';
 
@@ -32,13 +35,14 @@ const
 
 type
   { Compatible with paszlib }
-  Uint    = Cardinal;
-  Ulong   = Longword;
-  Ulongf  = Longword;
-  Pulongf = ^Ulongf;
-  z_off_t = longint;
+  uInt    = cuint;
+  uLong   = culong;
+  uLongf  = uLong; {FAR}
+  PuLongf = ^uLongf;
+  z_off_t = clong;
   pbyte   = ^byte;
-  pbytef  = ^byte;
+  bytef   = byte; {FAR}
+  pbytef  = ^byte; 
   voidpf  = pointer;
 
   TAllocfunc = function (opaque: voidpf; items: uInt; size: uInt): voidpf; cdecl;
@@ -60,7 +64,7 @@ type
     zalloc:    TAllocFunc;
     zfree:     TFreeFunc;
     opaque:    voidpf;
-    data_type: integer;
+    data_type: cint;
     adler:     uLong;
     reserved:  uLong;
   end;
