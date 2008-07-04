@@ -50,7 +50,12 @@ begin
           if SelInteraction = 5 then begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
-			Reinitialize3D();           
+            // FIXME: changing the video mode does not work this way in windows
+            // and MacOSX as all textures will be invalidated through this.
+            // See the ALT+TAB code too.
+            {$IFDEF Linux}
+            Reinitialize3D();
+            {$ENDIF}
             FadeTo(@ScreenOptions);
           end;
         end;
