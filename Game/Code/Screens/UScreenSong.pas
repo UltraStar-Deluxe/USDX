@@ -35,7 +35,8 @@ type
       EqualizerBands: array of Byte;
       EqualizerTime: Cardinal;
 
-      procedure StartMusicPreview(Song: TSong);
+      procedure StartMusicPreview();
+      procedure StopMusicPreview();
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -53,7 +54,7 @@ type
       HighSpeed:    boolean;
       CoverFull:    boolean;
       CoverTime:    real;
-      MusicStartTime: cardinal;
+      MusicPreviewTimer: PSDL_TimerID;
 
       CoverX:       integer;
       CoverY:       integer;
@@ -468,7 +469,7 @@ begin
               Interaction := I - 1;
 
               //Stop Music
-              AudioPlayback.Stop;
+              StopMusicPreview();
 
               CatSongs.ShowCategoryList;
 
@@ -503,7 +504,7 @@ begin
               end
               else
               begin
-                AudioPlayback.Stop;
+                StopMusicPreview();
                 AudioPlayback.PlaySound(SoundLib.Back);
 
                 FadeTo(@ScreenMain);
@@ -1472,10 +1473,8 @@ begin
   if Length(CatSongs.Song) > 0 then
   begin
     //Load Music only when Song Preview is activated
-    if ( Ini.PreviewVolume   <> 0 ) then
-    begin                                            // to - do : new Song management
-      StartMusicPreview(CatSongs.Song[Interaction]);
-    end;
+    if ( Ini.PreviewVolume <> 0 ) then
+      StartMusicPreview();
 
     SetScroll;
     //UpdateLCD;  //TODO: maybe LCD Support as Plugin?
@@ -1509,9 +1508,8 @@ end;
 
 procedure TScreenSong.onHide;
 begin
-  // if music fading is activated, turn music to 100%
-  If (IPreviewVolumeVals[Ini.PreviewVolume] <> 1.0) or (Ini.PreviewFading <> 0) then
-    AudioPlayback.SetVolume(1.0);
+  // turn music volume to 100%
+  AudioPlayback.SetVolume(1.0);
 
   // if preview is deactivated: load musicfile now
   If (IPreviewVolumeVals[Ini.PreviewVolume] = 0) then
@@ -1521,8 +1519,7 @@ begin
   if (Display.NextScreen <> @ScreenSing) and
      (Display.NextScreen <> @ScreenSingModi) then
   begin
-    if (AudioPlayback <> nil) then
-      AudioPlayback.Stop;
+    StopMusicPreview();
   end;
 end;
 
@@ -1579,21 +1576,6 @@ begin
       Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
       Button[Interaction].Texture2.Alpha := 1;
     end;
-
-    //Song Fade
-    if (CatSongs.VisibleSongs > 0) and
-       (not CatSongs.Song[Interaction].Main) and
-       (Ini.PreviewVolume <> 0) and
-       (Ini.PreviewFading <> 0) then
-    begin
-      //Start Song Fade after a little Time, to prevent Song to be Played on Scrolling
-      if ((MusicStartTime > 0) and (SDL_GetTicks() >= MusicStartTime)) then
-      begin
-        MusicStartTime := 0;
-        StartMusicPreview(CatSongs.Song[Interaction]);
-      end;
-    end;
-
 
     //Update Fading Time
     CoverTime := CoverTime + TimeSkip;
@@ -1708,10 +1690,13 @@ begin
 end;
 *)
 
-procedure TScreenSong.StartMusicPreview(Song: TSong);
+procedure TScreenSong.StartMusicPreview();
+var
+  Song: TSong;
 begin
   AudioPlayback.Close();
 
+  Song := CatSongs.Song[Interaction];
   if not assigned(Song) then
     Exit;
 
@@ -1734,22 +1719,37 @@ begin
   end;
 end;
 
-//Procedure Change current played Preview
+procedure TScreenSong.StopMusicPreview();
+begin
+  // Cancel pending preview requests
+  SDL_RemoveTimer(MusicPreviewTimer);
+
+  // Stop preview of previous song
+  AudioPlayback.Stop;
+end;
+
+function MusicPreviewTimerCallback(interval: UInt32; param: Pointer): UInt32; cdecl;
+var
+  ScreenSong: TScreenSong;
+begin
+  ScreenSong := TScreenSong(param);
+  if (ScreenSong <> nil) then
+    ScreenSong.StartMusicPreview();
+  Result := 0;
+end;
+
+// Changes previewed song
 procedure TScreenSong.ChangeMusic;
 begin
-  //When Music Preview is avtivated -> then Change Music
-  if (Ini.PreviewVolume <> 0) then
-    begin
-    // Stop previous song
-    AudioPlayback.Stop;
-    // Disable music start delay
-    MusicStartTime := 0;
+  StopMusicPreview();
 
-    if (CatSongs.VisibleSongs > 0) then
-    begin
-      // delay start of music for 200ms (see Draw())
-      MusicStartTime := SDL_GetTicks() + 200;
-    end;
+  // Preview song if activated and current selection is not a category cover
+  if (CatSongs.VisibleSongs > 0) and
+     (not CatSongs.Song[Interaction].Main) and
+     (Ini.PreviewVolume <> 0) then
+  begin
+    // Delay song fading to prevent the song from being played while scrolling
+    MusicPreviewTimer := SDL_AddTimer(200, MusicPreviewTimerCallback, Self);
   end;
 end;
 
@@ -2053,7 +2053,8 @@ end;
 procedure TScreenSong.StartSong;
 begin
   CatSongs.Selected := Interaction;
-  AudioPlayback.Stop;
+  StopMusicPreview();
+
   //Party Mode
   if (Mode = smPartyMode) then
   begin
@@ -2068,7 +2069,7 @@ end;
 procedure TScreenSong.SelectPlayers;
 begin
   CatSongs.Selected := Interaction;
-  AudioPlayback.Stop;
+  StopMusicPreview();
 
   ScreenName.Goto_SingScreen := True;
   FadeTo(@ScreenName);
@@ -2080,7 +2081,7 @@ begin
      (not CatSongs.Song[Interaction].Main) and
      (Mode = smNormal) then
   begin
-    AudioPlayback.Stop;
+    StopMusicPreview();
     AudioPlayback.PlaySound(SoundLib.Start);
     CurrentSong := CatSongs.Song[Interaction];
     FadeTo(@ScreenEditSub);
