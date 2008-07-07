@@ -106,7 +106,7 @@ USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
 
 modfile = lastmod
 
-.PHONY: debug release recursive all recursive-all dependencies install install-local install-global install-data install-data-recursive install-exec uninstall uninstall-local uninstall-global uninstall-data uninstall-exec clean recursive-clean distclean recursive-distclean clean_obj clean_res fetch-sounds dist debian-package update-modfile $(EXTRA_SRCDIRS)
+.PHONY: debug release recursive all recursive-all dependencies install install-local install-global install-data install-data-recursive install-exec uninstall uninstall-local uninstall-global uninstall-data uninstall-exec clean recursive-clean distclean recursive-distclean clean_obj clean_res dist debian-package update-modfile $(EXTRA_SRCDIRS)
 
 debug: PFLAGS = $(PFLAGS_BASE) $(PFLAGS_DEBUG) $(PFLAGS_EXTRA)
 debug: all
@@ -129,7 +129,7 @@ $(EXTRA_SRCDIRS):
 # clean old data before compiling, otherwise FPC might miss some changes.
 $(USDX_BIN): lastmod 
 	$(MAKE) clean_obj
-	mkdir -p $(PCUNIT_DIR)
+	mkdir -p "$(PCUNIT_DIR)"
 	$(PPC) $(strip $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)) -o$@ $(USDX_SRC)
 
 install: all install-@install_type@
@@ -140,21 +140,9 @@ uninstall: uninstall-@install_type@
 # local build
 
 install-local:
-	@if [ ! -f "$(usdxrootdir)/Sounds/Common start.mp3" ]; then \
-	  echo ""; \
-	  echo "# The sound-files from Sound-directory of the 1.0.1-branch are required."; \
-	  echo "# Copy them yourself to \"$(usdxrootdir)/Sounds\""; \
-	  echo "# or if you are connected to the web try:"; \
-	  echo "#  make fetch-sounds"; \
-	fi
-
-fetch-sounds:
-	svn co https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/branches/1.0.1/Sounds tmp-sounds
-	mv tmp-sounds/*.mp3 $(usdxrootdir)/Sounds
-	rm -rf tmp-sounds
 
 uninstall-local:
-	rm -f $(USDX_BIN)
+	rm -f "$(USDX_BIN)"
 
 
 # global build
@@ -166,18 +154,18 @@ install-global: install-data install-exec
 #	chmod ??? $(INSTALL_logdir)
 
 install-data:
-	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Themes RECURSIVE_DST_DIR=$(INSTALL_datadir)/Themes install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Sounds RECURSIVE_DST_DIR=$(INSTALL_datadir)/Sounds install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Languages RECURSIVE_DST_DIR=$(INSTALL_datadir)/Languages install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Skins RECURSIVE_DST_DIR=$(INSTALL_datadir)/Skins install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR=$(usdxrootdir)/Resources RECURSIVE_DST_DIR=$(INSTALL_datadir)/Resources install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Themes" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Themes" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Sounds" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Sounds" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Languages" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Languages" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Skins" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Skins" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Resources" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Resources" install-data-recursive
 
 install-data-recursive:
-	$(MKDIR_P) $(RECURSIVE_DST_DIR)
-	@for file in $(RECURSIVE_SRC_DIR)/*; do \
+	$(MKDIR_P) "$(RECURSIVE_DST_DIR)"
+	@for file in "$(RECURSIVE_SRC_DIR)"/*; do \
 	  if test -f "$$file"; then \
-	    echo $(INSTALL_DATA) "$$file" $(RECURSIVE_DST_DIR); \
-	    $(INSTALL_DATA) "$$file" $(RECURSIVE_DST_DIR); \
+	    echo $(INSTALL_DATA) "$$file" "$(RECURSIVE_DST_DIR)"; \
+	    $(INSTALL_DATA) "$$file" "$(RECURSIVE_DST_DIR)"; \
 	  fi; \
 	  if test -d "$$file"; then \
 	    subdir="$$file"; \
@@ -187,23 +175,23 @@ install-data-recursive:
 	done
 
 install-exec:
-	$(MKDIR_P) $(bindir)
-	$(INSTALL) $(USDX_BIN) $(bindir)
+	$(MKDIR_P) "$(bindir)"
+	$(INSTALL) "$(USDX_BIN)" "$(bindir)"
 
 uninstall-global: uninstall-data uninstall-exec
-	rmdir $(INSTALL_logdir)
+	rmdir "$(INSTALL_logdir)"
 
 uninstall-data:
 # TODO: delete the directories created at the first execution of usdx too (like Screenshots/Playlists)
-	rm -rf $(INSTALL_datadir)/Themes
-	rm -rf $(INSTALL_datadir)/Sounds
-	rm -rf $(INSTALL_datadir)/Languages
-	rm -rf $(INSTALL_datadir)/Skins
-	rm -rf $(INSTALL_datadir)/Resources
-	rmdir $(INSTALL_datadir)	
+	rm -rf "$(INSTALL_datadir)/Themes"
+	rm -rf "$(INSTALL_datadir)/Sounds"
+	rm -rf "$(INSTALL_datadir)/Languages"
+	rm -rf "$(INSTALL_datadir)/Skins"
+	rm -rf "$(INSTALL_datadir)/Resources"
+	rmdir "$(INSTALL_datadir)"
 
 uninstall-exec:
-	rm -f $(bindir)/$(USDX_BIN_NAME)
+	rm -f "$(bindir)/$(USDX_BIN_NAME)"
 
 disttmpdir = ./distdir
 
@@ -316,7 +304,7 @@ distclean: recursive-distclean clean clean_res
 	find . -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
 	find . -name "*~" -name "*.bak" -o -name "*.orig" -o -name "*.dcu" | xargs rm -f
 	find . -name "__history" | xargs rm -r -f
-	rm -f $(USDX_PREFIX).res $(USDX_PREFIX).identcache
+	rm -f "$(USDX_PREFIX).res" "$(USDX_PREFIX).identcache"
 	rm -f config.inc Makefile config.log config.status configure aclocal.m4 
 	rm -rf autom4te.cache
 
@@ -325,10 +313,10 @@ recursive-distclean: recursive
 
 clean_obj:
 	find "$(PCUNIT_DIR)" -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
-	rm -f $(USDX_BIN)
+	rm -f "$(USDX_BIN)"
 
 clean_res:
-	rm -f $(RESOURCE_FILE)
+	rm -f "$(RESOURCE_FILE)"
 
 $(RESOURCE_FILE): $(USDX_PREFIX).rc
 	$(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc $(RESOURCE_DIR) $(RESOURCE_FILE)
