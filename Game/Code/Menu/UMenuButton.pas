@@ -8,6 +8,7 @@ uses TextGL, UTexture, gl, UMenuText,SDL;
 
 type
   CButton = class of TButton;
+
   TButton = class
     protected
       SelectBool:           Boolean;
@@ -15,56 +16,53 @@ type
       FadeProgress:         Real;
       FadeLastTick:         Cardinal;
 
-      DeSelectW:            Real;
-      DeSelectH:            Real;
-      PosX:                 Real;
+      DeSelectW,
+      DeSelectH,
+      PosX,
       PosY:                 Real;
 
       constructor Create(); overload;
 
     public
-      Text:                 Array of TText;
-      Texture:              TTexture; // Button Screen position and size
-      Texture2:             TTexture; // second texture only used for fading full resolution covers
-      //colorized hack
+      Text:                      Array of TText;
+      Texture:                   TTexture; // Button Screen position and size
+      Texture2:                  TTexture; // second texture only used for fading full resolution covers
+
       Colorized: Boolean;
-      DeSelectTexture:      TTexture; // texture for colorized hack
+      DeSelectTexture:           TTexture; // texture for colorized hack
 
-      FadeTex:              TTexture; //Texture for beautiful fading
-      FadeTexPos:           byte;     //Pos of the FadeTexture (0: Top, 1: Left, 2: Bottom, 3: Right)
-//      Texture2Blend:        real; // blending factor for second texture (0=invisible, 1=visible)
-      // now uses alpha
+      FadeTex:                   TTexture; //Texture for beautiful fading
+      FadeTexPos:                byte;     //Pos of the FadeTexture (0: Top, 1: Left, 2: Bottom, 3: Right)
 
-      DeselectType:         integer; // not used yet
-      Visible:              boolean;
-      //Reflection Mod
-      Reflection:           boolean;
-      Reflectionspacing:    Real;
+      DeselectType:              integer;  // not used yet
+      Visible:                   boolean;
+
+      Reflection:                boolean;
+      Reflectionspacing,
       DeSelectReflectionspacing: Real;
 
-      //Fade Mod
-      Fade: Boolean;
-      FadeText: Boolean;
+      Fade,
+      FadeText:                  Boolean;
 
-      Selectable:           boolean;
+      Selectable:                boolean;
 
-      //No of the Parent Collection, 0 if in no Collection
+      //Number of the Parent Collection, 0 if in no Collection
       Parent:  Byte;
 
-      SelectColR:   real;
-      SelectColG:   real;
-      SelectColB:   real;
-      SelectInt:    real;
+      SelectColR,
+      SelectColG,
+      SelectColB,
+      SelectInt,
       SelectTInt:   real;
       //Fade Mod
       SelectW:      real;
       SelectH:      real;
 
-      DeselectColR:   real;
-      DeselectColG:   real;
-      DeselectColB:   real;
-      DeselectInt:    real;
-      DeselectTInt:   real;
+      DeselectColR,
+      DeselectColG,
+      DeselectColB,
+      DeselectInt,
+      DeselectTInt: real;
 
       procedure SetY(Value: real);
       procedure SetX(Value: real);
@@ -79,11 +77,11 @@ type
       property H: real read DeSelectH write SetH;
       property Selected: Boolean read SelectBool write SetSelect;
 
-      procedure Draw; virtual;
+      procedure   Draw; virtual;
 
       constructor Create(Textura: TTexture); overload;
       constructor Create(Textura, DSTexture: TTexture); overload;
-      destructor Destroy; override;
+      destructor  Destroy; override;
   end;
 
 implementation
@@ -162,16 +160,18 @@ var
   T:    integer;
 begin
   SelectBool := Value;
-  if (Value) then begin
-    Texture.ColR := SelectColR;
-    Texture.ColG := SelectColG;
-    Texture.ColB := SelectColB;
-    Texture.Int := SelectInt;
+
+  if (Value) then
+  begin
+    Texture.ColR  := SelectColR;
+    Texture.ColG  := SelectColG;
+    Texture.ColB  := SelectColB;
+    Texture.Int   := SelectInt;
 
     Texture2.ColR := SelectColR;
     Texture2.ColG := SelectColG;
     Texture2.ColB := SelectColB;
-    Texture2.Int := SelectInt;
+    Texture2.Int  := SelectInt;
 
     for T := 0 to High(Text) do
       Text[T].Int := SelectTInt;
@@ -187,16 +187,18 @@ begin
       Texture.W := SelectW;
       Texture.H := SelectH;
     end;
-  end else begin
-    Texture.ColR := DeselectColR;
-    Texture.ColG := DeselectColG;
-    Texture.ColB := DeselectColB;
-    Texture.Int := DeselectInt;
+  end
+  else
+  begin
+    Texture.ColR  := DeselectColR;
+    Texture.ColG  := DeselectColG;
+    Texture.ColB  := DeselectColB;
+    Texture.Int   := DeselectInt;
 
     Texture2.ColR := DeselectColR;
     Texture2.ColG := DeselectColG;
     Texture2.ColB := DeselectColB;
-    Texture2.Int := DeselectInt;
+    Texture2.Int  := DeselectInt;
 
     for T := 0 to High(Text) do
       Text[T].Int := DeselectTInt;
@@ -219,56 +221,36 @@ constructor TButton.Create();
 begin
   inherited Create;
   // We initialize all to 0, nil or false
-  Visible := true;
-  SelectBool := false;
-  DeselectType := 0;
-  Selectable := true;
-  //Reflection Mod
-  Reflection := true;
+  Visible        := true;
+  SelectBool     := false;
+  DeselectType   := 0;
+  Selectable     := true;
+  Reflection     := false;
+  Colorized      := false;
 
-  //colorized hack
-  Colorized:=False;
+  SelectColR     := 1;
+  SelectColG     := 1;
+  SelectColB     := 1;
+  SelectInt      := 1;
+  SelectTInt     := 1;
 
-  // Default
-//  SelectInt := 1;
-//  DeselectInt := 0.5;
+  DeselectColR   := 1;
+  DeselectColG   := 1;
+  DeselectColB   := 1;
+  DeselectInt    := 0.5;
+  DeselectTInt   := 1;
 
-{  SelectColR := 0.5;
-  SelectColG := 0.75;
-  SelectColB := 0;
-  SelectInt := 1;
-  SelectTInt := 1;
-
-  DeselectColR := 1;
-  DeselectColG := 1;
-  DeselectColB := 1;
-  DeselectInt := 0.5;
-  DeselectTInt := 1;}
-
-  SelectColR := 1;
-  SelectColG := 1;
-  SelectColB := 1;
-  SelectInt := 1;
-  SelectTInt := 1;
-
-  DeselectColR := 1;
-  DeselectColG := 1;
-  DeselectColB := 1;
-  DeselectInt := 0.5;
-  DeselectTInt := 1;
-
+  Fade           := false;
   FadeTex.TexNum := 0;
+  FadeProgress   := 0;
+  FadeText       := false;
+  SelectW        := DeSelectW;
+  SelectH        := DeSelectH;
 
-  FadeProgress := 0;
-  Fade := False;
-  FadeText := False;
-  SelectW := DeSelectW;
-  SelectH := DeSelectH;
+  PosX           := 0;
+  PosY           := 0;
 
-  PosX := 0;
-  PosY := 0;
-
-  Parent := 0;
+  Parent         := 0;
 end;
 
 // ***** Public methods ****** //
@@ -279,7 +261,8 @@ var
   Tick: Cardinal;
   Spacing: Real;
 begin
-  if Visible then begin
+  if Visible then
+  begin
     //Fade Mod
     T:=0;
     if Fade then
@@ -290,6 +273,7 @@ begin
         if (Tick <> FadeLastTick) then
         begin
           FadeLastTick := Tick;
+
           if SelectBool then
             FadeProgress := FadeProgress + 0.125
           else
@@ -303,35 +287,37 @@ begin
               Text[T].MoveY := (SelectH - DeSelectH) * FadeProgress;
             end;
           end;
+
         end;
       end;
+
       //Method without Fade Texture
       if (FadeTex.TexNum = 0) then
       begin
-      Texture.W := DeSelectW + (SelectW - DeSelectW) * FadeProgress;
-      Texture.H := DeSelectH + (SelectH - DeSelectH) * FadeProgress;
-      DeselectTexture.W := Texture.W;
-      DeselectTexture.H := Texture.H;
+        Texture.W         := DeSelectW + (SelectW - DeSelectW) * FadeProgress;
+        Texture.H         := DeSelectH + (SelectH - DeSelectH) * FadeProgress;
+        DeSelectTexture.W := Texture.W;
+        DeSelectTexture.H := Texture.H;
       end
       else //method with Fade Texture
       begin
-        Texture.W := DeSelectW;
-        Texture.H := DeSelectH;
-        DeselectTexture.W := Texture.W;
-        DeselectTexture.H := Texture.H;
+        Texture.W         := DeSelectW;
+        Texture.H         := DeSelectH;
+        DeSelectTexture.W := Texture.W;
+        DeSelectTexture.H := Texture.H;
 
-        FadeTex.ColR := Texture.ColR;
-        FadeTex.ColG := Texture.ColG;
-        FadeTex.ColB := Texture.ColB;
-        FadeTex.Int := Texture.Int;
+        FadeTex.ColR      := Texture.ColR;
+        FadeTex.ColG      := Texture.ColG;
+        FadeTex.ColB      := Texture.ColB;
+        FadeTex.Int       := Texture.Int;
 
-        FadeTex.Z := Texture.Z;
+        FadeTex.Z         := Texture.Z;
 
-        FadeTex.Alpha := Texture.Alpha;
-        FadeTex.TexX1 := 0;
-        FadeTex.TexX2 := 1;
-        FadeTex.TexY1 := 0;
-        FadeTex.TexY2 := 1;
+        FadeTex.Alpha     := Texture.Alpha;
+        FadeTex.TexX1     := 0;
+        FadeTex.TexX2     := 1;
+        FadeTex.TexY1     := 0;
+        FadeTex.TexY2     := 1;
 
         Case FadeTexPos of
           0: //FadeTex on Top
@@ -339,8 +325,8 @@ begin
               //Standard Texture
               Texture.X := PosX;
               Texture.Y := PosY + (SelectH - DeSelectH) * FadeProgress;
-              DeselectTexture.X := Texture.X;
-              DeselectTexture.Y := Texture.Y;
+              DeSelectTexture.X := Texture.X;
+              DeSelectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX;
               FadeTex.Y := PosY;
@@ -355,8 +341,8 @@ begin
               //Standard Texture
               Texture.X := PosX + (SelectW - DeSelectW) * FadeProgress;
               Texture.Y := PosY;
-              DeselectTexture.X := Texture.X;
-              DeselectTexture.Y := Texture.Y;
+              DeSelectTexture.X := Texture.X;
+              DeSelectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX;
               FadeTex.Y := PosY;
@@ -371,8 +357,8 @@ begin
               //Standard Texture
               Texture.X := PosX;
               Texture.Y := PosY;
-              DeselectTexture.X := Texture.X;
-              DeselectTexture.Y := Texture.Y;
+              DeSelectTexture.X := Texture.X;
+              DeSelectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX;
               FadeTex.Y := PosY  + (SelectH - DeSelectH) * FadeProgress;;
@@ -387,8 +373,8 @@ begin
               //Standard Texture
               Texture.X := PosX;
               Texture.Y := PosY;
-              DeselectTexture.X := Texture.X;
-              DeselectTexture.Y := Texture.Y;
+              DeSelectTexture.X := Texture.X;
+              DeSelectTexture.Y := Texture.Y;
               //Fade Tex
               FadeTex.X := PosX + (SelectW - DeSelectW) * FadeProgress;
               FadeTex.Y := PosY;
@@ -410,13 +396,20 @@ begin
     if SelectBool or (FadeProgress > 0) or not Colorized then
       DrawTexture(Texture)
     else
-      DrawTexture(DeselectTexture);
+    begin
+      DeSelectTexture.X := Texture.X;
+      DeSelectTexture.Y := Texture.Y;
+      DeSelectTexture.H := Texture.H;
+      DeSelectTexture.W := Texture.W;
+      DrawTexture(DeSelectTexture);
+    end;
 
     //Draw FadeTex
     if (FadeTex.TexNum > 0) then
       DrawTexture(FadeTex);
 
-    if Texture2.Alpha > 0 then begin
+    if Texture2.Alpha > 0 then
+    begin
       Texture2.ScaleW := Texture.ScaleW;
       Texture2.ScaleH := Texture.ScaleH;
 
@@ -488,7 +481,7 @@ begin
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
       end else
-      with DeselectTexture do
+      with DeSelectTexture do
         begin
         //Bind Tex and GL Attributes
         glEnable(GL_TEXTURE_2D);
@@ -511,7 +504,6 @@ begin
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX1*TexW, TexY1+TexH*0.5);
           glVertex3f(x, y+h*scaleH + h*scaleH/2 + Spacing, z);
-
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
@@ -536,7 +528,6 @@ begin
   end;
 end;
 
-// *****  ****** //
 
 destructor TButton.Destroy;
 begin
@@ -546,25 +537,28 @@ end;
 constructor TButton.Create(Textura: TTexture);
 begin
   Create();
-  Texture := Textura;
-  DeselectTexture:=Textura;
-  Texture.ColR := 0;
-  Texture.ColG := 0.5;
-  Texture.ColB := 0;
-  Texture.Int := 1;
-  Colorized:=False;
+  Texture         := Textura;
+  DeSelectTexture := Textura;
+  Texture.ColR    := 0;
+  Texture.ColG    := 0.5;
+  Texture.ColB    := 0;
+  Texture.Int     := 1;
+  Colorized       := False;
 end;
 
+// Button has the texture-type "colorized"
+// Two textures are generated, one with Col the other one with DCol
+// Check UMenu.pas line 680 to see the call ( AddButton() )
 constructor TButton.Create(Textura, DSTexture: TTexture);
 begin
   Create();
-  Texture := Textura;
-  DeselectTexture := DSTexture;
-  Texture.ColR := 1;
-  Texture.ColG := 1;
-  Texture.ColB := 1;
-  Texture.Int := 1;
-  Colorized:=True;
+  Texture         := Textura;
+  DeSelectTexture := DSTexture;
+  Texture.ColR    := 1;
+  Texture.ColG    := 1;
+  Texture.ColB    := 1;
+  Texture.Int     := 1;
+  Colorized       := True;
 end;
 
 end.
