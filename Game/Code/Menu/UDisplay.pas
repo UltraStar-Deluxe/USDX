@@ -74,7 +74,6 @@ uses
 constructor TDisplay.Create;
 var
   i: integer;
-  errcode: GLenum;
 begin
   inherited Create;
 
