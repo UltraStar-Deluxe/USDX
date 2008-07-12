@@ -172,37 +172,7 @@ var
   A4, A5: String;
   Result1, Result2: AStatResult;
   ResetTime: TSystemTime;
-  
-  {$IFDEF MSWINDOWS}
-  function GetFileCreation(Filename: String): TSystemTime;
-  var
-    FindData: TWin32FindData;
-    Handle: THandle;
-  begin
-    Handle := FindFirstFile(PChar(Filename), FindData);
-    if Handle <> INVALID_HANDLE_VALUE then
-    begin
-      FileTimeToSystemTime(FindData.ftCreationTime, Result);
-      windows.FindClose(Handle);
-    end;
-  end;
 
-  {$ELSE}
-  
-  function GetFileCreation(Filename: String): TSystemTime;
-  Var
-    F,D : Longint;
-  Begin
-    F:=FileCreate( Filename );
-    try
-      D:=FileGetDate(F);
-      DateTimeToSystemTime( FileDateToDateTime(D) , result);
-    finally
-      FileClose(F);
-    end;
-  end;
-  {$ENDIF}
-  
 begin
   //Song Overview
 
@@ -214,7 +184,8 @@ begin
     %2:d Month of Reset (A2)
     %3:d Year of Reset (A3)*)
 
-  ResetTime := GetFileCreation(Database.Filename);
+  DateTimeToSystemTime(Database.GetStatReset, ResetTime);
+//  ResetTime := GetFileCreation(Database.Filename);
 
   {$IFDEF MSWINDOWS}
     A1 := ResetTime.wDay;
