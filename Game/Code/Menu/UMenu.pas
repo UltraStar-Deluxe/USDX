@@ -75,7 +75,7 @@ type
       function AddText(ThemeText: TThemeText): integer; overload;
       function AddText(X, Y: real; const Text_: string): integer; overload;
       function AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; const Text: string): integer; overload;
-      function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: Boolean; ReflectionSpacing_: Real): integer; overload;
+      function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: Boolean; ReflectionSpacing_: Real; Z : Real): integer; overload;
 
       // button
       Procedure SetButtonLength(Length: Cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
@@ -535,7 +535,7 @@ end;
 function TMenu.AddText(ThemeText: TThemeText): integer;
 begin
   Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.W, ThemeText.Font, ThemeText.Size,
-    ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text, ThemeText.Reflection, ThemeText.ReflectionSpacing);
+    ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z);
 end;
 
 function TMenu.AddText(X, Y: real; const Text_: string): integer;
@@ -551,17 +551,17 @@ end;
 
 function TMenu.AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; const Text: string): integer;
 begin
-  Result := AddText(X, Y, 0, Style, Size, ColR, ColG, ColB, 0, Text, false, 0);
+  Result := AddText(X, Y, 0, Style, Size, ColR, ColG, ColB, 0, Text, false, 0, 0);
 end;
 
-function TMenu.AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: Boolean; ReflectionSpacing_: Real): integer;
+function TMenu.AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: Boolean; ReflectionSpacing_: Real; Z : Real): integer;
 var
   TextNum:  integer;
 begin
   // adds text
   TextNum := Length(Text);
   SetLength(Text, TextNum + 1);
-  Text[TextNum] := TText.Create(X, Y, W, Style, Size, ColR, ColG, ColB, Align, Text_, Reflection_, ReflectionSpacing_);
+  Text[TextNum] := TText.Create(X, Y, W, Style, Size, ColR, ColG, ColB, Align, Text_, Reflection_, ReflectionSpacing_, Z);
   Result := TextNum;
 end;
 

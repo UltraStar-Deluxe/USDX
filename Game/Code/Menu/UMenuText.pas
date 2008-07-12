@@ -27,6 +27,7 @@ type
     public
       X:      real;
       Y:      real;
+      Z:      real;
       MoveX:  real;       //Some Modifier for X - Position that don't affect the real Y
       MoveY:  real;       //Some Modifier for Y - Position that don't affect the real Y
       W:      real;       //text wider than W is broken
@@ -56,7 +57,7 @@ type
       procedure Draw;
       constructor Create; overload;
       constructor Create(X, Y: real; Tekst: string); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real); overload;
+      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real); overload;
   end;
 
 implementation
@@ -295,6 +296,9 @@ begin
         end;
 
         SetFontPos(X2, Y2);
+
+        SetFontZ(Z);
+
         glPrint(PChar(Text2));
 
         {if Size >= 10 then
@@ -318,16 +322,17 @@ end;
 
 constructor TText.Create(X, Y: real; Tekst: string);
 begin
-  Create(X, Y, 0, 0, 10, 0, 0, 0, 0, Tekst, false, 0);
+  Create(X, Y, 0, 0, 10, 0, 0, 0, 0, Tekst, false, 0, 0);
 end;
 
-constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real);
+constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ:real);
 begin
   inherited Create;
   Alpha := 1;
   X := ParX;
   Y := ParY;
   W := ParW;
+  Z := ParZ;
   Style := ParStyle;
   Size := ParSize;
   Text := ParTekst;

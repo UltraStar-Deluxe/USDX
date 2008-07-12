@@ -38,7 +38,8 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Ini.Save;
+          // Escape -> save nothing - just leave this screen
+          
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
@@ -88,12 +89,12 @@ begin
 
   //SelectLoadAnimation Hidden because it is useless atm
   //AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimation);
-  AddSelect(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFade);
-  AddSelect(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSing);
-  AddSelect(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonus);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFade);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSing);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonus);
   AddSelectSlide(Theme.OptionsAdvanced.SelectOnSongClick, Ini.OnSongClick, IOnSongClick);
-  AddSelect(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskbeforeDel, IAskbeforeDel);
-  AddSelect(Theme.OptionsAdvanced.SelectPartyPopup, Ini.PartyPopup, IPartyPopup);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskbeforeDel, IAskbeforeDel);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectPartyPopup, Ini.PartyPopup, IPartyPopup);
 
   AddButton(Theme.OptionsAdvanced.ButtonExit);
   if (Length(Button[0].Text)=0) then

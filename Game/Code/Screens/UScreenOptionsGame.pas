@@ -42,6 +42,7 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           RefreshSongs;
+
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
@@ -77,8 +78,6 @@ begin
 end;
 
 constructor TScreenOptionsGame.Create;
-//var
-// I:      integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
 
@@ -88,13 +87,12 @@ begin
   old_Sorting := Ini.Sorting;
   old_Tabs    := Ini.Tabs;
 
-  AddSelect(Theme.OptionsGame.SelectPlayers, Ini.Players, IPlayers);
-  AddSelect(Theme.OptionsGame.SelectDifficulty, Ini.Difficulty, IDifficulty);
-  AddSelectSlide(Theme.OptionsGame.SelectLanguage, Ini.Language, ILanguage);
-  AddSelect(Theme.OptionsGame.SelectTabs, Ini.Tabs, ITabs);
-  AddSelectSlide(Theme.OptionsGame.SelectSorting, Ini.Sorting, ISorting);
-  AddSelect(Theme.OptionsGame.SelectDebug, Ini.Debug, IDebug);
-
+  AddSelectSlide(Theme.OptionsGame.SelectPlayers,    Ini.Players,    IPlayers);
+  AddSelectSlide(Theme.OptionsGame.SelectDifficulty, Ini.Difficulty, IDifficulty);
+  AddSelectSlide(Theme.OptionsGame.SelectLanguage,   Ini.Language,   ILanguage);
+  AddSelectSlide(Theme.OptionsGame.SelectTabs,       Ini.Tabs,       ITabs);
+  AddSelectSlide(Theme.OptionsGame.SelectSorting,    Ini.Sorting,    ISorting);
+  AddSelectSlide(Theme.OptionsGame.SelectDebug,      Ini.Debug,      IDebug);
 
   AddButton(Theme.OptionsGame.ButtonExit);
   if (Length(Button[0].Text)=0) then

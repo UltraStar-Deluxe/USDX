@@ -38,13 +38,14 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Ini.Save;
+          // Escape -> save nothing - just leave this screen
+          
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 4 then begin
+          if SelInteraction = 3 then begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
@@ -80,10 +81,10 @@ begin
 
   LoadFromTheme(Theme.OptionsLyrics);
 
-  AddSelect(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFont);
+  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFont);
   AddSelectSlide(Theme.OptionsLyrics.SelectLyricsEffect, Ini.LyricsEffect, ILyricsEffect);
-  AddSelect(Theme.OptionsLyrics.SelectSolmization, Ini.Solmization, ISolmization);
-  AddSelect(Theme.OptionsLyrics.SelectNoteLines, Ini.NoteLines, INoteLines);
+  //AddSelect(Theme.OptionsLyrics.SelectSolmization, Ini.Solmization, ISolmization); GAH!!!!11 DIE!!!
+  AddSelectSlide(Theme.OptionsLyrics.SelectNoteLines, Ini.NoteLines, INoteLines);
 
 
   AddButton(Theme.OptionsLyrics.ButtonExit);

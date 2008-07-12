@@ -56,6 +56,7 @@ type
     X:      integer;
     Y:      integer;
     W:      integer;
+    Z:      real;
     Color:  string;
     ColR:   real;
     ColG:   real;
@@ -385,41 +386,40 @@ type
   end;
 
   TThemeOptionsGame = class(TThemeBasic)
-    SelectPlayers:      TThemeSelect;
-    SelectDifficulty:   TThemeSelect;
+    SelectPlayers:      TThemeSelectSlide;
+    SelectDifficulty:   TThemeSelectSlide;
     SelectLanguage:     TThemeSelectSlide;
-    SelectTabs:         TThemeSelect;
+    SelectTabs:         TThemeSelectSlide;
     SelectSorting:      TThemeSelectSlide;
-    SelectDebug:        TThemeSelect;
+    SelectDebug:        TThemeSelectSlide;
     ButtonExit:         TThemeButton;
   end;
 
   TThemeOptionsGraphics = class(TThemeBasic)
-    SelectFullscreen:       TThemeSelect;
-    SelectSlideResolution:  TThemeSelectSlide;
-    SelectDepth:            TThemeSelect;
-    SelectOscilloscope:     TThemeSelect;
-    SelectLineBonus:        TThemeSelect;
-    SelectMovieSize:        TThemeSelect;
+    SelectFullscreen:       TThemeSelectSlide;
+    SelectResolution:       TThemeSelectSlide;
+    SelectDepth:            TThemeSelectSlide;
+    SelectOscilloscope:     TThemeSelectSlide;
+    SelectLineBonus:        TThemeSelectSlide;
+    SelectMovieSize:        TThemeSelectSlide;
     ButtonExit:             TThemeButton;
   end;
 
   TThemeOptionsSound = class(TThemeBasic)
-    SelectMicBoost:       TThemeSelect;
-    SelectClickAssist:    TThemeSelect;
-    SelectBeatClick:      TThemeSelect;
-    SelectThreshold:      TThemeSelect;
-    //Song Preview
+    SelectMicBoost:           TThemeSelectSlide;
+    SelectClickAssist:        TThemeSelectSlide;
+    SelectBeatClick:          TThemeSelectSlide;
+    SelectThreshold:          TThemeSelectSlide;
     SelectSlidePreviewVolume: TThemeSelectSlide;
     SelectSlidePreviewFading: TThemeSelectSlide;
-    ButtonExit:           TThemeButton;
+    ButtonExit:               TThemeButton;
   end;
 
   TThemeOptionsLyrics = class(TThemeBasic)
-    SelectLyricsFont:   TThemeSelect;
+    SelectLyricsFont:   TThemeSelectSlide;
     SelectLyricsEffect: TThemeSelectSlide;
-    SelectSolmization:  TThemeSelect;
-    SelectNoteLines:    TThemeSelect;
+//    SelectSolmization:  TThemeSelectSlide;
+    SelectNoteLines:    TThemeSelectSlide;
     ButtonExit:         TThemeButton;
   end;
 
@@ -438,13 +438,13 @@ type
   end;
 
   TThemeOptionsAdvanced = class(TThemeBasic)
-    SelectLoadAnimation:  TThemeSelect;
-    SelectEffectSing:     TThemeSelect;
-    SelectScreenFade:     TThemeSelect;
-    SelectLineBonus:      TThemeSelect;
-    SelectAskbeforeDel:   TThemeSelect;
+    SelectLoadAnimation:  TThemeSelectSlide;
+    SelectEffectSing:     TThemeSelectSlide;
+    SelectScreenFade:     TThemeSelectSlide;
+    SelectLineBonus:      TThemeSelectSlide;
+    SelectAskbeforeDel:   TThemeSelectSlide;
     SelectOnSongClick:    TThemeSelectSlide;
-    SelectPartyPopup:     TThemeSelect;
+    SelectPartyPopup:     TThemeSelectSlide;
     ButtonExit:           TThemeButton;
   end;
 
@@ -1134,32 +1134,32 @@ begin
       // Options Game
       ThemeLoadBasic(OptionsGame, 'OptionsGame');
 
-      ThemeLoadSelect(OptionsGame.SelectPlayers,    'OptionsGameSelectPlayers');
-      ThemeLoadSelect(OptionsGame.SelectDifficulty, 'OptionsGameSelectDifficulty');
+      ThemeLoadSelectSlide(OptionsGame.SelectPlayers,    'OptionsGameSelectPlayers');
+      ThemeLoadSelectSlide(OptionsGame.SelectDifficulty, 'OptionsGameSelectDifficulty');
       ThemeLoadSelectSlide(OptionsGame.SelectLanguage,   'OptionsGameSelectSlideLanguage');
-      ThemeLoadSelect(OptionsGame.SelectTabs,       'OptionsGameSelectTabs');
+      ThemeLoadSelectSlide(OptionsGame.SelectTabs,       'OptionsGameSelectTabs');
       ThemeLoadSelectSlide(OptionsGame.SelectSorting,    'OptionsGameSelectSlideSorting');
-      ThemeLoadSelect(OptionsGame.SelectDebug,      'OptionsGameSelectDebug');
+      ThemeLoadSelectSlide(OptionsGame.SelectDebug,      'OptionsGameSelectDebug');
       ThemeLoadButton(OptionsGame.ButtonExit,            'OptionsGameButtonExit');
 
       // Options Graphics
       ThemeLoadBasic(OptionsGraphics, 'OptionsGraphics');
 
-      ThemeLoadSelect(OptionsGraphics.SelectFullscreen,           'OptionsGraphicsSelectFullscreen');
-      ThemeLoadSelectSlide(OptionsGraphics.SelectSlideResolution, 'OptionsGraphicsSelectSlideResolution');
-      ThemeLoadSelect(OptionsGraphics.SelectDepth,                'OptionsGraphicsSelectDepth');
-      ThemeLoadSelect(OptionsGraphics.SelectOscilloscope,         'OptionsGraphicsSelectOscilloscope');
-      ThemeLoadSelect(OptionsGraphics.SelectLineBonus,            'OptionsGraphicsSelectLineBonus');
-      ThemeLoadSelect(OptionsGraphics.SelectMovieSize,            'OptionsGraphicsSelectMovieSize');
-      ThemeLoadButton(OptionsGraphics.ButtonExit,                 'OptionsGraphicsButtonExit');
+      ThemeLoadSelectSlide(OptionsGraphics.SelectFullscreen,   'OptionsGraphicsSelectFullscreen');
+      ThemeLoadSelectSlide(OptionsGraphics.SelectResolution,   'OptionsGraphicsSelectSlideResolution');
+      ThemeLoadSelectSlide(OptionsGraphics.SelectDepth,        'OptionsGraphicsSelectDepth');
+      ThemeLoadSelectSlide(OptionsGraphics.SelectOscilloscope, 'OptionsGraphicsSelectOscilloscope');
+      ThemeLoadSelectSlide(OptionsGraphics.SelectLineBonus,    'OptionsGraphicsSelectLineBonus');
+      ThemeLoadSelectSlide(OptionsGraphics.SelectMovieSize,    'OptionsGraphicsSelectMovieSize');
+      ThemeLoadButton(OptionsGraphics.ButtonExit,              'OptionsGraphicsButtonExit');
 
       // Options Sound
       ThemeLoadBasic(OptionsSound, 'OptionsSound');
 
-      ThemeLoadSelect(OptionsSound.SelectMicBoost,    'OptionsSoundSelectMicBoost');
-      ThemeLoadSelect(OptionsSound.SelectClickAssist, 'OptionsSoundSelectClickAssist');
-      ThemeLoadSelect(OptionsSound.SelectBeatClick,   'OptionsSoundSelectBeatClick');
-      ThemeLoadSelect(OptionsSound.SelectThreshold,   'OptionsSoundSelectThreshold');
+      ThemeLoadSelectSlide(OptionsSound.SelectMicBoost,           'OptionsSoundSelectMicBoost');
+      ThemeLoadSelectSlide(OptionsSound.SelectClickAssist,        'OptionsSoundSelectClickAssist');
+      ThemeLoadSelectSlide(OptionsSound.SelectBeatClick,          'OptionsSoundSelectBeatClick');
+      ThemeLoadSelectSlide(OptionsSound.SelectThreshold,          'OptionsSoundSelectThreshold');
       //Song Preview
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume, 'OptionsSoundSelectSlidePreviewVolume');
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading, 'OptionsSoundSelectSlidePreviewFading');
@@ -1169,11 +1169,11 @@ begin
       // Options Lyrics
       ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
 
-      ThemeLoadSelect(OptionsLyrics.SelectLyricsFont,   'OptionsLyricsSelectLyricsFont');
+      ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsFont,   'OptionsLyricsSelectLyricsFont');
       ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsEffect, 'OptionsLyricsSelectLyricsEffect');
-      ThemeLoadSelect(OptionsLyrics.SelectSolmization,  'OptionsLyricsSelectSolmization');
-      ThemeLoadSelect(OptionsLyrics.SelectNoteLines,  'OptionsLyricsSelectNoteLines');
-      ThemeLoadButton(OptionsLyrics.ButtonExit,         'OptionsLyricsButtonExit');
+      //ThemeLoadSelectSlide(OptionsLyrics.SelectSolmization,     'OptionsLyricsSelectSolmization');
+      ThemeLoadSelectSlide(OptionsLyrics.SelectNoteLines,    'OptionsLyricsSelectNoteLines');
+      ThemeLoadButton(OptionsLyrics.ButtonExit,              'OptionsLyricsButtonExit');
 
       // Options Themes
       ThemeLoadBasic(OptionsThemes, 'OptionsThemes');
@@ -1194,14 +1194,14 @@ begin
       //Options Advanced
       ThemeLoadBasic(OptionsAdvanced, 'OptionsAdvanced');
 
-      ThemeLoadSelect       (OptionsAdvanced.SelectLoadAnimation, 'OptionsAdvancedSelectLoadAnimation');
-      ThemeLoadSelect       (OptionsAdvanced.SelectScreenFade,    'OptionsAdvancedSelectScreenFade');
-      ThemeLoadSelect       (OptionsAdvanced.SelectEffectSing,    'OptionsAdvancedSelectEffectSing');
-      ThemeLoadSelect       (OptionsAdvanced.SelectLineBonus,     'OptionsAdvancedSelectLineBonus');
-      ThemeLoadSelectSlide  (OptionsAdvanced.SelectOnSongClick,   'OptionsAdvancedSelectSlideOnSongClick');
-      ThemeLoadSelect       (OptionsAdvanced.SelectAskbeforeDel,  'OptionsAdvancedSelectAskbeforeDel');
-      ThemeLoadSelect       (OptionsAdvanced.SelectPartyPopup,    'OptionsAdvancedSelectPartyPopup');
-      ThemeLoadButton       (OptionsAdvanced.ButtonExit,          'OptionsAdvancedButtonExit');
+      ThemeLoadSelectSlide(OptionsAdvanced.SelectLoadAnimation, 'OptionsAdvancedSelectLoadAnimation');
+      ThemeLoadSelectSlide(OptionsAdvanced.SelectScreenFade,    'OptionsAdvancedSelectScreenFade');
+      ThemeLoadSelectSlide(OptionsAdvanced.SelectEffectSing,    'OptionsAdvancedSelectEffectSing');
+      ThemeLoadSelectSlide(OptionsAdvanced.SelectLineBonus,     'OptionsAdvancedSelectLineBonus');
+      ThemeLoadSelectSlide(OptionsAdvanced.SelectOnSongClick,   'OptionsAdvancedSelectSlideOnSongClick');
+      ThemeLoadSelectSlide(OptionsAdvanced.SelectAskbeforeDel,  'OptionsAdvancedSelectAskbeforeDel');
+      ThemeLoadSelectSlide(OptionsAdvanced.SelectPartyPopup,    'OptionsAdvancedSelectPartyPopup');
+      ThemeLoadButton     (OptionsAdvanced.ButtonExit,          'OptionsAdvancedButtonExit');
 
       //error and check popup
       ThemeLoadBasic (ErrorPopup, 'ErrorPopup');
@@ -1456,6 +1456,8 @@ begin
   ThemeText.X     := ThemeIni.ReadInteger(Name, 'X', 0);
   ThemeText.Y     := ThemeIni.ReadInteger(Name, 'Y', 0);
   ThemeText.W     := ThemeIni.ReadInteger(Name, 'W', 0);
+
+  ThemeText.Z     := ThemeIni.ReadFloat(Name, 'Z', 0);
 
   ThemeText.ColR  := ThemeIni.ReadFloat(Name, 'ColR', 0);
   ThemeText.ColG  := ThemeIni.ReadFloat(Name, 'ColG', 0);

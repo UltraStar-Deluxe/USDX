@@ -42,7 +42,8 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Ini.Save;
+          // Escape -> save nothing - just leave this screen
+          
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
@@ -84,10 +85,10 @@ begin
 
   LoadFromTheme(Theme.OptionsSound);
 
-  AddSelect(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);  // TODO - This need moving to ScreenOptionsRecord
-  AddSelect(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
-  AddSelect(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
-  AddSelect(Theme.OptionsSound.SelectThreshold, Ini.ThresholdIndex, IThreshold);
+  AddSelectSlide(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);  // TODO - This need moving to ScreenOptionsRecord
+  AddSelectSlide(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
+  AddSelectSlide(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
+  AddSelectSlide(Theme.OptionsSound.SelectThreshold, Ini.ThresholdIndex, IThreshold);
 
   //Song Preview
   AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewVolume, Ini.PreviewVolume, IPreviewVolume);

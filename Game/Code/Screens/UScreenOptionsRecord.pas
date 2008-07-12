@@ -141,7 +141,8 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
         begin
-          Ini.Save;
+          // Escape -> save nothing - just leave this screen
+          
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
@@ -188,7 +189,7 @@ var
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
   ChannelTheme: ^TThemeSelectSlide;
-  ButtonTheme: TThemeButton;
+  //ButtonTheme: TThemeButton;
   WidgetYPos: integer;
 begin
   inherited Create;
@@ -283,11 +284,13 @@ begin
   end;
 
   // add Exit-button
-  ButtonTheme := Theme.OptionsRecord.ButtonExit;
+  //ButtonTheme := Theme.OptionsRecord.ButtonExit;
   // adjust button position
-  if (WidgetYPos <> 0) then
-    ButtonTheme.Y := WidgetYPos;
-  AddButton(ButtonTheme);
+  //if (WidgetYPos <> 0) then
+  //  ButtonTheme.Y := WidgetYPos;
+  //AddButton(ButtonTheme);
+  // <mog> I uncommented the stuff above, because it's not skinable :X 
+  AddButton(Theme.OptionsRecord.ButtonExit);
   if (Length(Button[0].Text) = 0) then
     AddButtonText(14, 20, Theme.Options.Description[7]);
   // store InteractionID

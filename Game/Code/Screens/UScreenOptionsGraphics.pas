@@ -38,7 +38,8 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Ini.Save;
+          // Escape -> save nothing - just leave this screen
+          
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
@@ -89,11 +90,11 @@ begin
 
   LoadFromTheme(Theme.OptionsGraphics);
 
-  AddSelectSlide(Theme.OptionsGraphics.SelectSlideResolution, Ini.Resolution, IResolution);
-  AddSelect(Theme.OptionsGraphics.SelectFullscreen, Ini.Fullscreen, IFullscreen);
-  AddSelect(Theme.OptionsGraphics.SelectDepth, Ini.Depth, IDepth);
-  AddSelect(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscope);
-  AddSelect(Theme.OptionsGraphics.SelectMovieSize, Ini.MovieSize, IMovieSize);
+  AddSelectSlide(Theme.OptionsGraphics.SelectResolution, Ini.Resolution, IResolution);
+  AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen, Ini.Fullscreen, IFullscreen);
+  AddSelectSlide(Theme.OptionsGraphics.SelectDepth, Ini.Depth, IDepth);
+  AddSelectSlide(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscope);
+  AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize, Ini.MovieSize, IMovieSize);
 
 
   AddButton(Theme.OptionsGraphics.ButtonExit);

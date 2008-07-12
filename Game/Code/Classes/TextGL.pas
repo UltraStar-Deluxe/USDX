@@ -29,6 +29,7 @@ procedure glPrintLetterCut(letter: char; Start, Finish: real);
 procedure glPrint(text: pchar);               // custom GL "Print" routine
 procedure glPrintCut(text: pchar);
 procedure SetFontPos(X, Y: real);             // sets X and Y
+procedure SetFontZ(Z: real);                  // sets Z
 procedure SetFontSize(Size: real);
 procedure SetFontStyle(Style: integer);       // sets active font style (normal, bold, etc)
 procedure SetFontItalic(Enable: boolean);     // sets italic type letter (works for all fonts)
@@ -36,19 +37,20 @@ procedure SetFontAspectW(Aspect: real);
 procedure SetFontReflection(Enable:boolean;Spacing: real); // Enables/Disables text reflection
 
 // Start of SDL_ttf
-function NextPowerOfTwo(Value: integer): integer;
+//function NextPowerOfTwo(Value: integer): integer;
 // Checks if the ttf exists, if yes then a SDL_ttf is returned
-function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
+//function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
 
 // Does the renderstuff, color is in $ffeecc style
-function RenderText(font: PTTF_Font; Text:PAnsiChar; Color: Cardinal):PSDL_Surface;
-procedure printrandomtext();
+//function RenderText(font: PTTF_Font; Text:PAnsiChar; Color: Cardinal):PSDL_Surface;
+//procedure printrandomtext();
 // End of SDL_ttf
 
 type
   TTextGL = record
     X:        real;
     Y:        real;
+    Z:        real;
     Text:     string;
     Size:     real;
     ColR:     real;
@@ -307,7 +309,7 @@ var
   OutTemp:      real;
   XItal:        real;
 begin
-  with Fonts[ActFont].Tex do 
+  with Fonts[ActFont].Tex do
   begin
     FWidth := Fonts[ActFont].Width[Ord(Letter)];
 
@@ -389,31 +391,36 @@ begin
 
 end;
 
+{*
+<mog> I uncommented this, because it was some kind of after hour hack together with blindy
+it's actually just a prove of concept, as it's having some flaws
+- instead nice and clean ttf code should be placed here :)
+*}
 // tyty to Asphyre
 // FIXME: check if the non-asm version is fast enough and use it by default if so
-function NextPowerOfTwo(Value: integer): integer;
-begin
-  Result:= 1;
-{$IF Defined(CPUX86_64)}
-  asm
-    mov rcx, -1
-    bsr rcx, Value
-    inc rcx
-    shl Result, cl
-  end;
-{$ELSEIF Defined(CPU386) or Defined(CPUI386)}
-  asm
-    mov ecx, -1
-    bsr ecx, Value
-    inc ecx
-    shl Result, cl
-  end;
-{$ELSE}
-  while (Result <= Value) do
-    Result := 2 * Result;
-{$IFEND}
-end;
-
+//function NextPowerOfTwo(Value: integer): integer;
+//begin
+//  Result:= 1;
+//{$IF Defined(CPUX86_64)}
+//  asm
+//    mov rcx, -1
+//    bsr rcx, Value
+//    inc rcx
+//    shl Result, cl
+//  end;
+//{$ELSEIF Defined(CPU386) or Defined(CPUI386)}
+//  asm
+//    mov ecx, -1
+//    bsr ecx, Value
+//    inc ecx
+//    shl Result, cl
+//  end;
+//{$ELSE}
+//  while (Result <= Value) do
+//    Result := 2 * Result;
+//{$IFEND}
+//end;
+{*
 function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
 begin
  if (FileExists(FileName)) then
@@ -505,7 +512,7 @@ begin
   TTF_CloseFont(font);
 
 end;
-
+*}
 procedure glPrintCut(text: pchar);
 var
   Letter:       char;
@@ -554,6 +561,11 @@ procedure SetFontPos(X, Y: real);
 begin
   Fonts[ActFont].Tex.X := X;
   Fonts[ActFont].Tex.Y := Y;
+end;
+
+procedure SetFontZ(Z: real);
+begin
+  Fonts[ActFont].Tex.Z := Z;
 end;
 
 procedure SetFontSize(Size: real);
