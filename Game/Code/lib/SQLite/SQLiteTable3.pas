@@ -353,8 +353,8 @@ var
   ds: TSqliteTable;
 begin
   //returns true if table exists in the database
-  sql := 'select [sql] from sqlite_master where [type] = ''table'' and lower(name) = ''' +
-    lowercase(TableName) + ''' ';
+  sql := 'select [sql] from sqlite_master where [type] = "table" and lower(name) = "' +
+    lowercase(TableName) + '"';
   ds := self.GetTable(sql);
   try
     Result := (ds.Count > 0);
