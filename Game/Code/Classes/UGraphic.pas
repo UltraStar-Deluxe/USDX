@@ -442,6 +442,8 @@ begin
 
   //Log.BenchmarkStart(2);
   Texture := TTextureUnit.Create;
+  // FIXME: this does not seem to be correct as Limit is the max. of either
+  // width or height.
   Texture.Limit := 1024*1024;
 
   //LoadTextures;
@@ -573,28 +575,13 @@ begin
   W := StrToInt(Copy(S, 1, I-1)) * Screens;
   H := StrToInt(Copy(S, I+1, 1000));
 
-  {if ParamStr(1) = '-fsblack' then begin
-    W := 800;
-    H := 600;
-  end;
-  if ParamStr(1) = '-320x240' then begin
-    W := 320;
-    H := 240;
-  end; }
-
-  If (Params.Depth <> -1) then
+  if (Params.Depth <> -1) then
     Depth := Params.Depth
   else
     Depth := Ini.Depth;
 
   Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
-  //SDL_SetRefreshrate(85);
   //SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-
-  {$IFDEF DARWIN}
-    // Todo : eddie: remove before realease
-    Ini.FullScreen := 0;
-  {$ENDIF}
 
   if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
   begin
@@ -607,7 +594,7 @@ begin
     screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN );
     SDL_ShowCursor(0);
   end;
-  
+
   if (screen = nil) then
   begin
     Log.LogError('SDL_SetVideoMode Failed', 'Initialize3D');
@@ -616,16 +603,17 @@ begin
 
   LoadOpenGLExtensions();
 
-  // clear screen once window is being shown
-  glClearColor(1, 1, 1, 1);
-  glClear(GL_COLOR_BUFFER_BIT);
-  SwapBuffers;
-
-  // zmienne
+  // define virtual (Render) and real (Screen) screen size
   RenderW := 800;
   RenderH := 600;
   ScreenW := W;
   ScreenH := H;
+
+  // clear screen once window is being shown
+  // Note: SwapBuffers uses RenderW/H, so they must be defined before
+  glClearColor(1, 1, 1, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  SwapBuffers;
 end;
 
 procedure LoadLoadingScreen;
