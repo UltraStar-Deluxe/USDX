@@ -696,22 +696,35 @@ begin
 end;
 //Wrong song selected when tabs on bug End
 
+(**
+ * Returns the number of visible songs.
+ *)
 function TCatSongs.VisibleSongs: integer;
 var
-  S:    integer; // song
+  SongIndex: integer;
 begin
   Result := 0;
-  for S := 0 to high(CatSongs.Song) do
-    if CatSongs.Song[S].Visible = true then Inc(Result);
+  for SongIndex := 0 to High(CatSongs.Song) do
+  begin
+    if (CatSongs.Song[SongIndex].Visible) then
+      Inc(Result);
+  end;
 end;
 
+(**
+ * Returns the index of a song in the subset of all visible songs.
+ * If all songs are visible, the result will be equal to the Index parameter. 
+ *)
 function TCatSongs.VisibleIndex(Index: integer): integer;
 var
-  S:    integer; // song
+  SongIndex: integer;
 begin
   Result := 0;
-  for S := 0 to Index-1 do
-    if CatSongs.Song[S].Visible = true then Inc(Result);
+  for SongIndex := 0 to Index-1 do
+  begin
+    if (CatSongs.Song[SongIndex].Visible) then
+      Inc(Result);
+  end;
 end;
 
 function TCatSongs.SetFilter(FilterStr: string; const fType: Byte): Cardinal;
