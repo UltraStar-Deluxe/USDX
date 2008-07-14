@@ -36,9 +36,11 @@ type
    *)
   PLine = ^TLine;
   TLine = record
-    Start:      integer;
+    Start:      integer; // the start beat of this line (<> start beat of the first note of this line)
     Lyric:      string;
-    LyricWidth: real;
+    LyricWidth: real;    // @deprecated: width of the line in pixels.
+                         // Do not use this as the width is not correct.
+                         // Use TLyricsEngine.GetUpperLine().Width instead. 
     End_:       integer;
     BaseNote:   integer;
     HighNote:   integer; // index of last note in line (= High(Note)?)
