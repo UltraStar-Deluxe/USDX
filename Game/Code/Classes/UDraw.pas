@@ -8,21 +8,23 @@ interface
 
 {$I switches.inc}
 
-uses UThemes,
-     ModiSDK,
-     UGraphicClasses;
+uses
+  UThemes,
+  ModiSDK,
+  UGraphicClasses;
 
 procedure SingDraw;
 procedure SingModiDraw (PlayerInfo: TPlayerInfo);
 procedure SingDrawBackground;
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
 procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
+procedure SingDrawLyricHelper(Left, LyricsMid: real);
 procedure SingDrawBeatDelimeters(Left, Top, Right: real; NrLines: integer);
 procedure SingDrawLine(Left, Top, Right: real; NrLines: integer; Space: integer);
 procedure SingDrawPlayerLine(X, Y, W: real; PlayerIndex: integer; Space: integer);
 procedure SingDrawPlayerBGLine(Left, Top, Right: real; NrLines, PlayerIndex: integer; Space: integer);
 
-// TimeBar 
+// TimeBar
 procedure SingDrawTimeBar();
 
 //Draw Editor NoteLines
@@ -221,7 +223,7 @@ end;
 procedure SingDrawLine(Left, Top, Right: real; NrLines: integer; Space: integer);
 var
   Rec:      TRecR;
-  Count:      integer;
+  Count:    integer;
   TempR:    real;
   R,G,B:    real;
 
@@ -551,50 +553,133 @@ begin
   end;
 end;
 
+(**
+ * Draws the lyrics helper bar.
+ * Left: position the bar starts at
+ * LyricsMid: the middle of the lyrics relative to the position Left 
+ *)
+procedure SingDrawLyricHelper(Left, LyricsMid: real);
+var
+  Bounds: TRecR;           // bounds of the lyric help bar
+  BarProgress: real;       // progress of the lyrics helper
+  BarMoveDelta: real;      // current beat relative to the beat the bar starts to move at
+  BarAlpha: real;          // transparency
+  CurLine:  PLine;         // current lyric line (beat specific)
+  LineWidth: real;         // lyric line width
+  FirstNoteBeat: integer;  // beat of the first note in the current line
+  FirstNoteDelta: integer; // time in beats between the start of the current line and its first note
+  MoveStartX: real;        // x-pos. the bar starts to move from
+  MoveDist: real;          // number of pixels the bar will move
+  LyricEngine: TLyricEngine;
+const
+  BarWidth  = 50; // width  of the lyric helper bar
+  BarHeight = 30; // height of the lyric helper bar
+  BarMoveLimit = 40; // max. number of beats remaining before the bar starts to move
+begin
+  // get current lyrics line and the time in beats of its first note
+  CurLine := @Lines[0].Line[Lines[0].Current];
+
+  // FIXME: accessing ScreenSing is not that generic
+  LyricEngine := ScreenSing.Lyrics;
+  
+  // do not draw the lyrics helper if the current line does not contain any note
+  if (Length(CurLine.Note) > 0) then
+  begin
+    // start beat of the first note of this line
+    FirstNoteBeat := CurLine.Note[0].Start;
+    // time in beats between the start of the current line and its first note
+    FirstNoteDelta := FirstNoteBeat - CurLine.Start;
+
+    // beats from current beat to the first note of the line
+    BarMoveDelta := FirstNoteBeat - LineState.MidBeat;
+
+    if (FirstNoteDelta > 8) and  // if the wait-time is large enough
+       (BarMoveDelta > 0) then   // and the first note of the line is not reached
+    begin
+      // let the bar blink to the beat
+      BarAlpha := 0.75 + cos(BarMoveDelta/2) * 0.25;
+
+      // if the number of beats to the first note is too big,
+      // the bar stays on the left side.
+      if (BarMoveDelta > BarMoveLimit) then
+        BarMoveDelta := BarMoveLimit;
+
+      // limit number of beats the bar moves
+      if (FirstNoteDelta > BarMoveLimit) then
+        FirstNoteDelta := BarMoveLimit;
+
+      // calc bar progress
+      BarProgress := 1 - BarMoveDelta / FirstNoteDelta;
+
+      // retrieve the width of the upper lyrics line on the display
+      if (LyricEngine.GetUpperLine() <> nil) then
+        LineWidth := LyricEngine.GetUpperLine().Width
+      else
+        LineWidth := 0;
+
+      // distance the bar will move (LyricRec.Left to beginning of text)
+      MoveDist := LyricsMid - LineWidth / 2 - BarWidth;
+      // if the line is too long the helper might move from right to left
+      // so we have to assure the start position is left of the text.
+      if (MoveDist >= 0) then
+        MoveStartX := Left
+      else
+        MoveStartX := Left + MoveDist;
+
+      // determine lyric help bar position and size
+      Bounds.Left := MoveStartX + BarProgress * MoveDist;
+      Bounds.Right := Bounds.Left + BarWidth;
+      Bounds.Top := Skin_LyricsT + 3;
+      Bounds.Bottom := Bounds.Top + BarHeight + 3;
+
+      // draw lyric help bar
+      glEnable(GL_TEXTURE_2D);
+      glEnable(GL_BLEND);
+      glColor4f(1, 1, 1, BarAlpha);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex2f(Bounds.Left,  Bounds.Top);
+        glTexCoord2f(0, 1); glVertex2f(Bounds.Left,  Bounds.Bottom);
+        glTexCoord2f(1, 1); glVertex2f(Bounds.Right, Bounds.Bottom);
+        glTexCoord2f(1, 0); glVertex2f(Bounds.Right, Bounds.Top);
+      glEnd;
+      glDisable(GL_BLEND);
+    end;
+  end;
+end;
+
 procedure SingDraw;
 var
-  Count:      integer;
-  Pet2:     integer;
-  TempR:    real;
-  Rec:      TRecR;
-  TexRec:   TRecR;
-  NR:       TRecR;
-  FS:       real;
-  BarFrom:  integer;
-  BarAlpha: real;
-  BarWspol: real;
-  TempCol:  real;
-  Tekst:    string;
-  PetCz:    integer;
-
+  NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
+  LyricEngine: TLyricEngine;
 begin
   // positions
   if Ini.SingWindow = 0 then
-  begin
-    NR.Left := 120;
-  end
+    NR.Left := 120
   else
-  begin
     NR.Left := 20;
-  end;
-  
+
   NR.Right := 780;
 
   NR.Width := NR.Right - NR.Left;
   NR.WMid  := NR.Width / 2;
   NR.Mid   := NR.Left + NR.WMid;
 
+  // FIXME: accessing ScreenSing is not that generic
+  LyricEngine := ScreenSing.Lyrics;
+
   // background  //BG Fullsize Mod
   //SingDrawBackground;
 
-  //TimeBar mod
+  // draw time-bar
   SingDrawTimeBar();
-  //eoa TimeBar mod
 
-  // rysuje paski pod nutami
+  // draw note-lines
+
   if (PlayersPlay = 1) and (Ini.NoteLines = 1) then
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
-    
+
   if ((PlayersPlay = 2) or (PlayersPlay = 4)) and (Ini.NoteLines = 1) then
   begin
     SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15);
@@ -607,49 +692,10 @@ begin
     SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
   end;
 
-  // Draw Lyrics
-  ScreenSing.Lyrics.Draw(LineState.MidBeat);
+  // draw Lyrics
+  LyricEngine.Draw(LineState.MidBeat);
+  SingDrawLyricHelper(NR.Left, NR.WMid);
 
-  // todo: Lyrics
-(*  // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
-  FS := 1.3;
-  BarFrom := Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start;
-  if BarFrom > 40 then BarFrom := 40;
-  if (Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
-    (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat > 0) and                     // przed tekstem
-    (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat < 40) then begin            // ale nie za wczesnie
-    BarWspol := (LineState.MidBeat - (Lines[0].Line[Lines[0].Current].StartNote - BarFrom)) / BarFrom;
-    Rec.Left := NR.Left + BarWspol *
-//      (NR.WMid - Lines[0].Line[Lines[0].Current].LyricWidth / 2 * FS - 50);
-      (ScreenSing.LyricMain.ClientX - NR.Left - 50) + 10*ScreenX;
-    Rec.Right := Rec.Left + 50;
-    Rec.Top := Skin_LyricsT + 3;
-    Rec.Bottom := Rec.Top + 33;//SingScreen.LyricMain.Size * 3;
-{    // zapalanie
-    BarAlpha := (BarWspol*10) * 0.5;
-    if BarAlpha > 0.5 then BarAlpha := 0.5;
-
-    // gaszenie
-    if BarWspol > 0.95 then BarAlpha := 0.5 * (1 - (BarWspol - 0.95) * 20);}{
-
-    //Change fuer Crazy Joker
-
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
-  glBegin(GL_QUADS);
-    glColor4f(1, 1, 1, 0);
-    glTexCoord2f(0, 0); glVertex2f(Rec.Left, Rec.Top);
-    glTexCoord2f(0, 1); glVertex2f(Rec.Left, Rec.Bottom);
-    glColor4f(1, 1, 1, 0.5);
-    glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-    glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-    glEnd;
-    glDisable(GL_BLEND);
-
-   end; }
-*)
   // oscilloscope
   if Ini.Oscilloscope = 1 then begin
     if PlayersPlay = 1 then
@@ -692,7 +738,7 @@ begin
 
   end;
 
-// Set the note heights according to the difficulty level
+  // Set the note heights according to the difficulty level
   case Ini.Difficulty of
     0:
       begin
@@ -711,7 +757,7 @@ begin
       end;
   end;
 
-// Draw the Notes
+  // Draw the Notes
   if PlayersPlay = 1 then begin
     SingDrawPlayerBGLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 0, 15);  // Background glow    - colorized in playercolor
     SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 15);             // Plain unsung notes - colorized in playercolor
