@@ -347,11 +347,11 @@ end;
 
 procedure TIni.Load();
 var
-  IniFile:    	TMemIniFile;
-  ThemeIni:   	TMemIniFile;
-  ThemeName:  	string;
-  I:          	integer;
-  Modes:      	PPSDL_Rect;
+  IniFile:      TMemIniFile;
+  ThemeIni:     TMemIniFile;
+  ThemeName:    string;
+  I:            integer;
+  Modes:        PPSDL_Rect;
   searchResult: TSearchRec;
     // returns name without fileextension
 
@@ -456,65 +456,62 @@ begin
   SetLength(IResolution, 0);
   
   // Check if there are any modes available
+  // TODO: we should seperate windowed and fullscreen modes. Otherwise it is not
+  // possible to select a reasonable fullscreen mode when in windowed mode
   if IFullScreen[FullScreen] = 'On' then
     Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN or SDL_RESIZABLE)
   else 
-    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE ) ;  
+    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE) ;
   
-  if integer( Modes ) = 0 then
+  if (Modes = nil) then
   begin
     Log.LogStatus( 'No resolutions Found' , 'Video');
   end
+  else if (Modes = PPSDL_Rect(-1)) then
+  begin
+    // Fallback to some standard resolutions
+    SetLength(IResolution, 10);
+    IResolution[0] := '640x480';
+    IResolution[1] := '800x600';
+    IResolution[2] := '1024x768';
+    IResolution[3] := '1152x864';
+    IResolution[4] := '1280x800';
+    IResolution[5] := '1280x960';
+    IResolution[6] := '1400x1050';
+    IResolution[7] := '1440x900';
+    IResolution[8] := '1600x1200';
+    IResolution[9] := '1680x1050';
+      
+    Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
+    if Resolution = -1 then
+    begin
+      SetLength(IResolution, Length(IResolution) + 1);
+      IResolution[High(IResolution)] := IniFile.ReadString('Graphics', 'Resolution', '800x600');
+      Resolution := High(IResolution);
+    end;
+  end
   else
   begin
-    if integer( Modes ) = -1 then
+    while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
     begin
-      Log.LogStatus( 'ANY resolutions can be used - Fallback to some standard resolutions' , 'Video');
-    
-      // Fallback to some standard resolutions
-      SetLength(IResolution, 10);
-      IResolution[0] := '640x480';
-      IResolution[1] := '800x600';
-      IResolution[2] := '1024x768';
-      IResolution[3] := '1152x864';
-      IResolution[4] := '1280x800';
-      IResolution[5] := '1280x960';
-      IResolution[6] := '1400x1050';
-      IResolution[7] := '1440x900';
-      IResolution[8] := '1600x1200';
-      IResolution[9] := '1680x1050';
-      
-      Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
-      if Resolution = -1 then
-      begin
-        SetLength(IResolution, Length(IResolution) + 1);
-        IResolution[High(IResolution)] := IniFile.ReadString('Graphics', 'Resolution', '800x600');
-        Resolution := High(IResolution);
-      end;
-    end
-    else
+      Log.LogStatus( 'Found Video Mode : ' + IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h) , 'Video');
+      SetLength(IResolution, Length(IResolution) + 1);
+      IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
+      Inc(Modes);
+    end;
+
+    // reverse order
+    for I := 0 to (Length(IResolution) div 2) - 1 do
     begin
-      while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
-      begin
-        Log.LogStatus( 'Found Video Mode : ' + IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h) , 'Video');
-        SetLength(IResolution, Length(IResolution) + 1);
-        IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
-        Inc(Modes);
-      end;
-      
-      // reverse order
-      for I := 0 to (Length(IResolution) div 2) - 1 do
-      begin
-        swap(IResolution[I], IResolution[High(IResolution)-I]);
-      end;
-      Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
-      
+      swap(IResolution[I], IResolution[High(IResolution)-I]);
+    end;
+    Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
+
+    if Resolution = -1 then
+    begin
+      Resolution := GetArrayIndex(IResolution, '800x600');
       if Resolution = -1 then
-      begin
-        Resolution := GetArrayIndex(IResolution, '800x600');
-        if Resolution = -1 then
-          Resolution := 0;
-      end;
+        Resolution := 0;
     end;
   end;
 
