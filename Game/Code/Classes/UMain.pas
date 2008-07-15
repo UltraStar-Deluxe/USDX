@@ -125,7 +125,7 @@ uses
   math,
   UCommandLine,
   ULanguage,
-  SDL_ttf,
+//  SDL_ttf,
   USkins,
   UCovers,
   UCatCovers,
@@ -194,11 +194,11 @@ begin
     Log.LogBenchmark('Loading Language', 1);
 
     // SDL_ttf
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize SDL_ttf', 'Initialization');
-    TTF_Init();
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing SDL_ttf', 1);
+//    Log.BenchmarkStart(1);
+//    Log.LogStatus('Initialize SDL_ttf', 'Initialization');
+//    TTF_Init();
+//    Log.BenchmarkEnd(1);
+//    Log.LogBenchmark('Initializing SDL_ttf', 1);
 
     // Skin
     Log.BenchmarkStart(1);
@@ -356,7 +356,7 @@ begin
 
     FinalizeMedia();
 
-    TTF_Quit();
+//    TTF_Quit();
     SDL_Quit();
 
     (*

@@ -9,7 +9,7 @@ uses
   SDL,
   UTexture,
   Classes,
-  SDL_ttf,
+//  SDL_ttf,
   ULog;
 
 {

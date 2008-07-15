@@ -10,6 +10,8 @@ program UltraStar;
 
 {$I switches.inc}
 
+//{$DEFINE CONSOLE}
+
 // TODO: check if this is needed for MacOSX too
 {$IFDEF MSWINDOWS}
   // Set global application-type (GUI/CONSOLE) switch for Windows.
@@ -44,7 +46,7 @@ uses
   glext                  in 'lib\JEDI-SDL\OpenGL\Pas\glext.pas',
   sdl                    in 'lib\JEDI-SDL\SDL\Pas\sdl.pas',
   sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
-  sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
+//  sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
   UMediaCore_SDL         in 'Classes\UMediaCore_SDL.pas',
 
