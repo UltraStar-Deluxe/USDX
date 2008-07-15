@@ -1,17 +1,40 @@
 unit UPlatformMacOSX;
 
-// Note on directories (by eddie):
-// We use subfolders of the application directory on tha mac, because:
-// 1. Installation on the mac works as follows: Extract and copy an application
-//    and if you don't like or need the application anymore you move the folder
-//    to the trash - and you're done.
-// 2. If we would use subfolders of the home directory we would have to spread our
-//    files to many directories - these directories are defined by Apple, but the 
-//    average user doesn't know them, beacuse he or she doesn't need to know them.
-//    But for UltraStar the user must at least know the songs directory...
-// 
-//    Creating a subfolder directly under the home directory is not acceptable.
-// 
+{
+ Note on directories (by eddie):
+ We use subfolders of the application directory on tha mac, because:
+ 1. Installation on the mac works as follows: Extract and copy an application
+    and if you don't like or need the application anymore you move the folder
+    to the trash - and you're done.
+ 2. If we would use subfolders of the home directory we would have to spread our
+    files to many directories - these directories are defined by Apple, but the 
+    average user doesn't know them, beacuse he or she doesn't need to know them.
+    But for UltraStar the user must at least know the songs directory...
+ 
+    Creating a subfolder directly under the home directory is not acceptable.
+
+ More on this from KMS aka mischi
+
+ Handling of resources and folders should follow these lines.
+
+ Acceptable places for files are folders named UltraStarDeluxe either in
+ /Library/Application Support/
+ or 
+ ~/Library/Application Support/
+ 
+ Then 
+ GetGameSharedPath could return 
+ /Library/Application Support/UltraStarDeluxe/Resources/
+ GetGameUserPath could return 
+ ~/Library/Application Support/UltraStarDeluxe/Resources/
+
+ USDX checks, whether GetGameUserPath exists. If not, USDX creates its.
+ The existance of needed files is then checked and if a file is missing
+ it is copied to there from within the Resources folder in the Application 
+ bundle, which contains the default files. USDX should not delete files or 
+ folders in Application Support/UltraStarDeluxe automatically or without 
+ user confirmation.
+}
 
 interface
 
@@ -59,22 +82,29 @@ begin
   end;
 end;
 
+function GetApplicationSupportPath : WideString;
+const
+  PathName : string = '/Library/Application Support/UltraStarDeluxe/Resources';
+begin
+  Result := GetEnvironmentVariable('HOME') + PathName + '/';
+end;
+
 function TPlatformMacOSX.GetLogPath        : WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
-  Result := GetBundlePath + 'Contents/Resources/Logs';
+  Result := GetApplicationSupportPath + 'Logs';
 end;
 
 function TPlatformMacOSX.GetGameSharedPath : WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
-  Result := GetBundlePath + 'Contents/Resources/';
+  Result := GetApplicationSupportPath;
 end;
 
 function TPlatformMacOSX.GetGameUserPath   : WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
-  Result := GetBundlePath + 'Contents/Resources/';
+  Result := GetApplicationSupportPath;
 end;
 
 function TPlatformMacOSX.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : boolean) : TDirectoryEntryArray;

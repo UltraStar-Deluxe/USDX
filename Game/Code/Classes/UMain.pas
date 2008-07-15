@@ -20,6 +20,9 @@ uses
   ULyrics,
   UScreenSing,
   USong,
+{$IFDEF DARWIN}
+  UMacResources,
+{$ENDIF}
   gl;
 
 type
@@ -149,6 +152,9 @@ procedure Main;
 var
   WndTitle: string;
 begin
+{$IFDEF DARWIN}
+    UMacResources.init;
+{$ENDIF}
   try
     WndTitle := USDXVersionStr;
 
