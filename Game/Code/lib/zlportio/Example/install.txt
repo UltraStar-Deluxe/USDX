@@ -1,6 +1,0 @@
-
-Installation:
-
-Copy files: zlportio.pas, ddkint.pas to your project directory 
-or common unit directory.
-

@@ -1,8 +1,0 @@
-
-Installation:
-
-Copy files: zlportio.pas, ddkint.pas to your project directory 
-or common unit directory.
-
-Copy file zlportio.sys to your project directory.
-It should be in the one directory with you application.
