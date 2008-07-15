@@ -33,8 +33,8 @@
 {$DEFINE HaveProjectM}
 {$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
   ProjectM_DataDir = 'Visuals\projectM';
-  PROJECTM_VERSION_MAJOR   = 0;
-  PROJECTM_VERSION_MINOR   = 98;
+  PROJECTM_VERSION_MAJOR   = 1;
+  PROJECTM_VERSION_MINOR   = 10;
   PROJECTM_VERSION_RELEASE = 0;
 {$IFEND}
 
