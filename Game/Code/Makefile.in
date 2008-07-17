@@ -1,7 +1,7 @@
-##
+#################################################
 # Makefile for @PACKAGE_STRING@
 # @configure_input@
-##
+#################################################
 
 # general definitions
 prefix = @prefix@
@@ -14,11 +14,9 @@ top_srcdir = @top_srcdir@
 datarootdir = @datarootdir@
 VPATH = @srcdir@
 usdxrootdir = @usdxrootdir@
-logrootdir = @logrootdir@
 
 INSTALL_PATH_SUFFIX = @suffix@
 INSTALL_datadir = $(datarootdir)/$(INSTALL_PATH_SUFFIX)
-INSTALL_logdir = $(logrootdir)/$(INSTALL_PATH_SUFFIX)
 
 @SET_MAKE@
 
@@ -104,7 +102,12 @@ USDX_SRC = $(USDX_PREFIX).dpr
 USDX_BIN_NAME = $(USDX_PREFIX)$(EXE_SUFFIX)
 USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
 
+# name of the modification timestamp filename 
 modfile = lastmod
+
+#################################################
+# general targets
+#################################################
 
 .PHONY: debug release recursive all recursive-all dependencies install install-local install-global install-data install-data-recursive install-exec uninstall uninstall-local uninstall-global uninstall-data uninstall-exec clean recursive-clean distclean recursive-distclean clean_obj clean_res dist debian-package update-modfile $(EXTRA_SRCDIRS)
 
@@ -126,11 +129,19 @@ recursive: $(EXTRA_SRCDIRS)
 $(EXTRA_SRCDIRS):
 	$(MAKE) -C $@ $(recursive-target)
 
+#################################################
+# build
+#################################################
+	
 # clean old data before compiling, otherwise FPC might miss some changes.
 $(USDX_BIN): lastmod 
 	$(MAKE) clean_obj
 	mkdir -p "$(PCUNIT_DIR)"
 	$(PPC) $(strip $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)) -o$@ $(USDX_SRC)
+
+#################################################
+# install/uninstall
+#################################################
 
 install: all install-@install_type@
 
@@ -148,17 +159,14 @@ uninstall-local:
 # global build
 
 install-global: install-data install-exec
-# TODO: to which user/group/rights must the logdir be set
-# "drwxrwxrwx" might be too dangerous
-#	$(MKDIR_P) $(INSTALL_logdir)
-#	chmod ??? $(INSTALL_logdir)
 
 install-data:
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Themes" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Themes" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Sounds" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Sounds" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Artwork" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Artwork" install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Languages" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Languages" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Skins" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Skins" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Sounds" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Sounds" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Themes" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Themes" install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Resources" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Resources" install-data-recursive
+	$(INSTALL_DATA) "$(usdxrootdir)/License.txt" "$(INSTALL_datadir)"
 
 install-data-recursive:
 	$(MKDIR_P) "$(RECURSIVE_DST_DIR)"
@@ -179,30 +187,35 @@ install-exec:
 	$(INSTALL) "$(USDX_BIN)" "$(bindir)"
 
 uninstall-global: uninstall-data uninstall-exec
-	rmdir "$(INSTALL_logdir)"
 
 uninstall-data:
-# TODO: delete the directories created at the first execution of usdx too (like Screenshots/Playlists)
-	rm -rf "$(INSTALL_datadir)/Themes"
-	rm -rf "$(INSTALL_datadir)/Sounds"
+	rm -rf "$(INSTALL_datadir)/Artwork"
 	rm -rf "$(INSTALL_datadir)/Languages"
-	rm -rf "$(INSTALL_datadir)/Skins"
+	rm -rf "$(INSTALL_datadir)/Sounds"
+	rm -rf "$(INSTALL_datadir)/Themes"
 	rm -rf "$(INSTALL_datadir)/Resources"
-	rmdir "$(INSTALL_datadir)"
+	rm -f  "$(INSTALL_datadir)/License.txt"
+	-rmdir "$(INSTALL_datadir)"
 
 uninstall-exec:
 	rm -f "$(bindir)/$(USDX_BIN_NAME)"
 
+#################################################
+# Distributable source-package (TODO)
+#################################################
+	
 disttmpdir = ./distdir
 
 dist:
-# TODO: this needs some work
 #	$(MKDIR_P) $(disttmpdir)
 #	acm $(usdxrootdir) $(disttmpdir)
 #	$(MAKE) -C $(disttmpdir)/Game/Code distclean 
 #	tar cvzf $(USDX_TARNAME)-$(USDX_VERSION).tar.gz $(usdxrootdir)
 	@echo "Comming soon"
 
+#################################################
+# Debian package
+#################################################
 
 debpkgoutdir = $(usdxrootdir)/packages
 debpkgtmpdir = $(debpkgoutdir)/deb-package
@@ -228,66 +241,37 @@ $(debpkgname): all
 
 #	rm -rf $(debpkgtmpdir)
 
+#################################################
+# RPM (TODO)
+#################################################
+
 rpm: all
-#	rpm 
 	@echo "Coming soon"
 
-macosx_bundle_path = ../../UltraStarDeluxe.app/Contents
+#################################################
+# Mac OS X app-bundle
+#################################################
+	
+macosx_bundle_path = $(usdxrootdir)/UltraStarDeluxe.app/Contents
 macosx-app: all 
 # Create double clickable Mac OS X application.
 
 	@echo ""
 	@echo "Creating the Mac OS X application"
 	@echo ""
-	install -d $(macosx_bundle_path)/MacOS
-	install -d $(macosx_bundle_path)/Resources
 
-# Strip symbols and copy the binary.
-	install -s ../../UltraStar	$(macosx_bundle_path)/MacOS
+	$(MKDIR_P) $(macosx_bundle_path)/Resources
 
 # Put the icon file into its particular place. 
 # Must be done BEFORE info.plist is created.
-	install ../../Resources/Graphics/ustar-icon_v01.icns	$(macosx_bundle_path)/Resources/
+	$(INSTALL_DATA) $(usdxrootdir)/Resources/Graphics/ustar-icon_v01.icns $(macosx_bundle_path)/Resources/
 
 # the info.plist file
-	install MacOSX/Info.plist	$(macosx_bundle_path)/
+	$(INSTALL_DATA) MacOSX/Info.plist $(macosx_bundle_path)/
 
 # Copy the resources. 
-# This should be replaced by something like install-data and 
-# install-data-recursive and an adjusted prefix or so
-	install -d 				$(macosx_bundle_path)/Resources/Artwork
-	install ../../Artwork/*			$(macosx_bundle_path)/Resources/Artwork
-	install -d 				$(macosx_bundle_path)/Resources/Languages
-	install ../../Languages/*		$(macosx_bundle_path)/Resources/Languages
-	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Bold
-	install ../../Resources/Fonts/Bold/*		$(macosx_bundle_path)/Resources/Resources/Fonts/Bold/
-	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Normal
-	install ../../Resources/Fonts/Normal/*		$(macosx_bundle_path)/Resources/Resources/Fonts/Normal/
-	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 1
-	install ../../Resources/Fonts/Outline\ 1/*	$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 1/
-	install -d 					$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 2
-	install ../../Resources/Fonts/Outline\ 2/*	$(macosx_bundle_path)/Resources/Resources/Fonts/Outline\ 2/
-	install -d 				$(macosx_bundle_path)/Resources/Resources/Graphics
-	install ../../Resources/Graphics/*	$(macosx_bundle_path)/Resources/Resources/Graphics/
-	install -d 				$(macosx_bundle_path)/Resources/Resources/Sounds
-	install ../../Resources/Sounds/*	$(macosx_bundle_path)/Resources/Resources/Sounds/
-	install -d 				$(macosx_bundle_path)/Resources/Sounds
-	install ../../Sounds/*			$(macosx_bundle_path)/Resources/Sounds
-	install -d 				$(macosx_bundle_path)/Resources/Themes/Classic
-	install ../../Themes/Classic/*		$(macosx_bundle_path)/Resources/Themes/Classic/
-	install ../../Themes/Classic.ini	$(macosx_bundle_path)/Resources/Themes
-	install -d 				$(macosx_bundle_path)/Resources/Themes/Deluxe
-	install ../../Themes/Deluxe/*		$(macosx_bundle_path)/Resources/Themes/Deluxe/
-	install ../../Themes/Deluxe.ini		$(macosx_bundle_path)/Resources/Themes
-	install ../../License.txt		$(macosx_bundle_path)/Resources/
-
-# the empty dirs
-	install -d $(macosx_bundle_path)/Resources/Covers
-	install -d $(macosx_bundle_path)/Resources/Logs
-	install -d $(macosx_bundle_path)/Resources/Plugins
-	install -d $(macosx_bundle_path)/Resources/Screenshots
-	install -d $(macosx_bundle_path)/Resources/Visuals
-
+	$(MAKE) install-global INSTALL_datadir=$(macosx_bundle_path)/Resources bindir=$(macosx_bundle_path)/MacOS
+	
 # final messages
 	@echo ""
 	@echo "Mac OS X application created."
@@ -295,6 +279,10 @@ macosx-app: all
 	@echo "Have fun."
 	@echo ""
 
+#################################################
+# clean-up
+#################################################
+	
 clean: recursive-clean clean_obj
 
 recursive-clean: recursive-target = clean
@@ -315,12 +303,19 @@ clean_obj:
 	find "$(PCUNIT_DIR)" -name "*.o" -o -name "*.ppu" -o -name "*.rst" -o -name "*.compiled" | xargs rm -f
 	rm -f "$(USDX_BIN)"
 
-clean_res:
-	rm -f "$(RESOURCE_FILE)"
-
+#################################################
+# Resource-file
+#################################################
+	
 $(RESOURCE_FILE): $(USDX_PREFIX).rc
 	$(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc $(RESOURCE_DIR) $(RESOURCE_FILE)
 
+clean_res:
+	rm -f "$(RESOURCE_FILE)"
+	
+#################################################
+# auto-update
+#################################################
 
 # FPC does not recognize changes correctly. E.g. sometimes changes in .inc-files or
 # conditional .pas dependencies are ignored which results in corrupted builds.
@@ -329,7 +324,7 @@ update-modfile:
 	test -e $(modfile) || touch $(modfile)
 	find . \( -name "*.pas" -o -name "*.pp" -o -name "*.inc" -o -name "*.dpr" \) -newer $(modfile) -exec touch $(modfile) \;
 	find $(USDX_LIB_DIR) -name "*.a" -newer $(modfile) -exec touch $(modfile) \;
-
+	
 Makefile: Makefile.in config.status
 	./config.status
 
