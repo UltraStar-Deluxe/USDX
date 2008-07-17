@@ -59,7 +59,6 @@ uses
   {$ENDIF}
   {$IFDEF DARWIN}
   PseudoThread           in 'MacOSX/Wrapper/PseudoThread.pas',
-  UMacResources		 in 'MacOSX/Wrapper/UMacResources.pp',
   {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\delphi\portaudio.pas',

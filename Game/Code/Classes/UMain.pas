@@ -20,9 +20,6 @@ uses
   ULyrics,
   UScreenSing,
   USong,
-{$IFDEF DARWIN}
-  UMacResources,
-{$ENDIF}
   gl;
 
 type
