@@ -44,30 +44,110 @@ interface
 
 {$I switches.inc}
 
-uses Classes, UPlatform;
+uses
+  Classes,
+  UPlatform;
 
 type
+  TPlatformMacOSX = class(TPlatform)
+    private
+      function GetBundlePath: WideString;
+      function GetApplicationSupportPath: WideString;
+      procedure CreateUserFolders();
+    public
+      procedure Init; override;
 
-  TPlatformMacOSX = class(TInterfacedObject, IPlatform)
-  public
-    function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : boolean) : TDirectoryEntryArray; 
-    function  TerminateIfAlreadyRunning(var WndTitle : string) : boolean;
-    procedure Halt();
-    function  GetLogPath        : WideString; 
-    function  GetGameSharedPath : WideString; 
-    function  GetGameUserPath   : WideString; 
-    function  FindSongFile(Dir, Mask: WideString): WideString;
+      function  DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: boolean): TDirectoryEntryArray; override;
+
+      function  GetLogPath        : WideString; override;
+      function  GetGameSharedPath : WideString; override;
+      function  GetGameUserPath   : WideString; override;
   end;
 
 implementation
 
-uses SysUtils, baseunix;
+uses
+  SysUtils,
+  baseunix;
+
+procedure TPlatformMacOSX.Init;
+begin
+  CreateUserFolders();
+end;
+
+procedure TPlatformMacOSX.CreateUserFolders();
+var
+  RelativePath, BaseDir, OldBaseDir: string;
+  SearchInfo: TSearchRec;
+  DirectoryList, FileList: TStringList;
+  DirectoryIsFinished: longint;
+  counter: longint;
+
+  UserPathName: string;
+  SourceFile, TargetFile: TFileStream;
+  FileCopyBuffer: array [1..4096] of byte;
+  NumberOfBytes: integer;
+const
+  PathName: string = '/Library/Application Support/UltraStarDeluxe/Resources';
+begin
+  getdir (0, OldBaseDir);
+  BaseDir := OldBaseDir + '/UltraStarDeluxe.app/Contents/Resources';
+  chdir (BaseDir);
+  UserPathName := GetEnvironmentVariable('HOME') + PathName;
+
+  DirectoryIsFinished := 0;
+  DirectoryList := TStringList.Create();
+  FileList := TStringList.Create();
+  DirectoryList.Add('.');
+  repeat
+    RelativePath := DirectoryList[DirectoryIsFinished];
+    chdir (BaseDir + '/' + RelativePath);
+    if (FindFirst('*', faAnyFile, SearchInfo) = 0) then
+    begin
+      repeat
+        if DirectoryExists(SearchInfo.Name) then
+        begin
+          if (SearchInfo.Name <> '.') and (SearchInfo.Name <> '..')  then
+            DirectoryList.Add(RelativePath + '/' + SearchInfo.Name);
+        end
+        else
+          Filelist.Add(RelativePath + '/' + SearchInfo.Name);
+      until (FindNext(SearchInfo) <> 0);
+    end;
+    FindClose(SearchInfo);
+    DirectoryIsFinished := succ(DirectoryIsFinished);
+  until (DirectoryIsFinished = DirectoryList.Count);
+
+  if not DirectoryExists(UserPathName) then
+    mkdir (UserPathName);
+
+  for counter := 0 to DirectoryList.Count-1 do
+    if not DirectoryExists(UserPathName + '/' + DirectoryList[counter]) then
+      mkdir (UserPathName + '/' + DirectoryList[counter]);
+  DirectoryList.Free();
+
+  for counter := 0 to Filelist.Count-1 do
+    if not FileExists(UserPathName + '/' + Filelist[counter]) then
+    begin
+      SourceFile := TFileStream.Create(BaseDir      + '/' + Filelist[counter], fmOpenRead);
+      TargetFile := TFileStream.Create(UserPathName + '/' + Filelist[counter], fmCreate);
+      repeat
+        NumberOfBytes := SourceFile.Read(FileCopyBuffer, SizeOf(FileCopyBuffer));
+        TargetFile.Write(FileCopyBuffer, NumberOfBytes);
+      until (NumberOfBytes < SizeOf(FileCopyBuffer));
+      SourceFile.Free;
+      TargetFile.Free;
+    end;
+  FileList.Free();
+
+  chdir (OldBaseDir);
+end;
 
 // Mac applications are packaged in directories.
 // We have to cut the last two directories
 // to get the application directory.
 
-function GetBundlePath : WideString;
+function TPlatformMacOSX.GetBundlePath: WideString;
 var
   i, pos : integer;
 begin
@@ -82,37 +162,37 @@ begin
   end;
 end;
 
-function GetApplicationSupportPath : WideString;
+function TPlatformMacOSX.GetApplicationSupportPath: WideString;
 const
   PathName : string = '/Library/Application Support/UltraStarDeluxe/Resources';
 begin
   Result := GetEnvironmentVariable('HOME') + PathName + '/';
 end;
 
-function TPlatformMacOSX.GetLogPath        : WideString;
+function TPlatformMacOSX.GetLogPath: WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
   Result := GetApplicationSupportPath + 'Logs';
 end;
 
-function TPlatformMacOSX.GetGameSharedPath : WideString;
+function TPlatformMacOSX.GetGameSharedPath: WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
   Result := GetApplicationSupportPath;
 end;
 
-function TPlatformMacOSX.GetGameUserPath   : WideString;
+function TPlatformMacOSX.GetGameUserPath: WideString;
 begin
   // eddie: Please read the note at the top of this file, why we use the application directory and not the user directory.
   Result := GetApplicationSupportPath;
 end;
 
-function TPlatformMacOSX.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : boolean) : TDirectoryEntryArray;
+function TPlatformMacOSX.DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: boolean): TDirectoryEntryArray;
 var
   i       : integer;
   TheDir  : pdir;
   ADirent : pDirent;
-  lAttrib : integer;		
+  lAttrib : integer;
 begin
   i := 0;
   Filter := LowerCase(Filter);
@@ -124,50 +204,27 @@ begin
 
       if Assigned(ADirent) and (ADirent^.d_name <> '.') and (ADirent^.d_name <> '..') then
       begin
-	lAttrib := FileGetAttr(Dir + ADirent^.d_name);
-	if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
-	begin
-	  SetLength(Result, i + 1);
-	  Result[i].Name        := ADirent^.d_name;
-	  Result[i].IsDirectory := true;
-	  Result[i].IsFile      := false;
-	  i := i + 1;
-	end
-	else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.d_name)) > 0) then
-	begin
-	  SetLength(Result, i + 1);
-	  Result[i].Name        := ADirent^.d_name;
-	  Result[i].IsDirectory := false;
-	  Result[i].IsFile      := true;
-	  i := i + 1;
-	end;
+        lAttrib := FileGetAttr(Dir + ADirent^.d_name);
+        if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
+        begin
+          SetLength(Result, i + 1);
+          Result[i].Name        := ADirent^.d_name;
+          Result[i].IsDirectory := true;
+          Result[i].IsFile      := false;
+          i := i + 1;
+        end
+        else if (Length(Filter) = 0) or (Pos( Filter, LowerCase(ADirent^.d_name)) > 0) then
+        begin
+          SetLength(Result, i + 1);
+          Result[i].Name        := ADirent^.d_name;
+          Result[i].IsDirectory := false;
+          Result[i].IsFile      := true;
+          i := i + 1;
+        end;
       end;
     until ADirent = nil;
 
   FPCloseDir(TheDir);
-end;
-
-function TPlatformMacOSX.TerminateIfAlreadyRunning(var WndTitle : string) : boolean;
-begin
-  result := false;
-end;
-
-procedure TPlatformMacOSX.Halt;
-begin
-  System.Halt;
-end;
-
-function TPlatformMacOSX.FindSongFile(Dir, Mask: WideString): WideString;
-var
-  SR : TSearchRec;   // for parsing song directory
-begin
-  Result := '';
-  // faDirectory = $00000010; Attribute of a Þle, meaning the Þle is a directory.
-  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then
-  begin
-    Result := SR.Name;
-  end; // if
-  SysUtils.FindClose(SR);
 end;
 
 end.

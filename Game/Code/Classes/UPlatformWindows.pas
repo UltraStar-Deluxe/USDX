@@ -8,32 +8,30 @@ interface
 
 {$I switches.inc}
 
-uses Classes,
-     UPlatform;
+uses
+  Classes,
+  UPlatform;
 
 type
+  TPlatformWindows = class(TPlatform)
+    private
+      function GetGamePath: WideString;
+    public
+      function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
+      function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean; override;
 
-  TPlatformWindows = class( TInterfacedObject, IPlatform)
-  public
-    Function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
-    function  TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-    function  GetGamePath: WideString;
-    function  FindSongFile(Dir, Mask: widestring): widestring;
-
-    procedure Halt;
-
-    function GetLogPath        : WideString;
-    function GetGameSharedPath : WideString;
-    function GetGameUserPath   : WideString;
+      function GetLogPath        : WideString; override;
+      function GetGameSharedPath : WideString; override;
+      function GetGameUserPath   : WideString; override;
   end;
 
 implementation
 
-uses SysUtils,
-     Windows;
+uses
+  SysUtils,
+  Windows;
 
 type
-
   TSearchRecW = record
     Time: Integer;
     Size: Integer;
@@ -191,11 +189,6 @@ begin
   Result := ExtractFilePath(ParamStr(0));
 end;
 
-procedure TPlatformWindows.Halt;
-begin
-  System.Halt; // Application.terminate does NOT do the same thing..
-end;
-
 function TPlatformWindows.GetLogPath        : WideString;
 begin
   result := ExtractFilePath(ParamStr(0));
@@ -210,17 +203,5 @@ function TPlatformWindows.GetGameUserPath   : WideString;
 begin
   result := ExtractFilePath(ParamStr(0));
 end;
-
-function TPlatformWindows.FindSongFile(Dir, Mask: widestring): widestring;
-var
-  SR:     TSearchRec;   // for parsing song directory
-begin
-  Result := '';
-  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then begin
-    Result := SR.Name;
-  end; // if
-  SysUtils.FindClose(SR);
-end;
-
 
 end.

@@ -16,26 +16,26 @@ interface
 uses Classes;
 
 type
-  TDirectoryEntry = Record
-                      Name        : WideString;
-                      IsDirectory : boolean;
-                      IsFile      : boolean;
-                    end;
- 
-  TDirectoryEntryArray = array of TDirectoryEntry;
-	
-  IPlatform = interface
-  ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCA23DF}']
-    function  DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : boolean) : TDirectoryEntryArray;
-    function  TerminateIfAlreadyRunning(var WndTitle : string) : boolean;
-    function  FindSongFile(Dir, Mask: WideString): WideString;
-    procedure Halt;
-    function  GetLogPath        : WideString;
-    function  GetGameSharedPath : WideString;
-    function  GetGameUserPath   : WideString;
+  TDirectoryEntry = record
+    Name        : WideString;
+    IsDirectory : boolean;
+    IsFile      : boolean;
   end;
 
-  function Platform : IPlatform;
+  TDirectoryEntryArray = array of TDirectoryEntry;
+
+  TPlatform = class
+    procedure Init; virtual;
+    function  DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: boolean): TDirectoryEntryArray; virtual; abstract;
+    function  TerminateIfAlreadyRunning(var WndTitle : string): boolean; virtual;
+    function  FindSongFile(Dir, Mask: WideString): WideString; virtual;
+    procedure Halt; virtual;
+    function  GetLogPath        : WideString; virtual; abstract;
+    function  GetGameSharedPath : WideString; virtual; abstract;
+    function  GetGameUserPath   : WideString; virtual; abstract;
+  end;
+
+  function Platform(): TPlatform;
 
 implementation
 
@@ -56,25 +56,65 @@ uses
 // so that this variable can NOT be overwritten from anywhere else in the application.
 // the accessor function platform, emulates all previous calls to work the same way.  
 var
-  Platform_singleton : IPlatform;
+  Platform_singleton : TPlatform;
 
-function Platform : IPlatform;
+function Platform : TPlatform;
 begin
-  result := Platform_singleton;
+  Result := Platform_singleton;
+end;
+
+(**
+ * Default Init() implementation
+ *)
+procedure TPlatform.Init;
+begin
+end;
+
+(**
+ * Default Halt() implementation
+ *)
+procedure TPlatform.Halt;
+begin
+  // Note: Application.terminate is NOT the same
+  System.Halt;
+end;
+
+(**
+ * Default TerminateIfAlreadyRunning() implementation
+ *)
+function TPlatform.TerminateIfAlreadyRunning(var WndTitle : string): Boolean;
+begin
+  Result := false;
+end;
+
+(**
+ * Default FindSongFile() implementation
+ *)
+function TPlatform.FindSongFile(Dir, Mask: WideString): WideString;
+var
+  SR: TSearchRec;   // for parsing song directory
+begin
+  Result := '';
+  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then
+  begin
+    Result := SR.Name;
+  end;
+  SysUtils.FindClose(SR);
 end;
 
 
 initialization
-  {$IFDEF MSWINDOWS}
-    Platform_singleton := TPlatformWindows.Create;
-  {$ENDIF}
-  {$IFDEF LINUX}
-    Platform_singleton := TPlatformLinux.Create;
-  {$ENDIF}
-  {$IFDEF DARWIN}
-    Platform_singleton := TPlatformMacOSX.Create;
-  {$ENDIF}
+{$IFDEF MSWINDOWS}
+  Platform_singleton := TPlatformWindows.Create;
+{$ENDIF}
+{$IFDEF LINUX}
+  Platform_singleton := TPlatformLinux.Create;
+{$ENDIF}
+{$IFDEF DARWIN}
+  Platform_singleton := TPlatformMacOSX.Create;
+{$ENDIF}
 
 finalization
-    Platform_singleton := nil;
+  Platform_singleton.Free;
+
 end.

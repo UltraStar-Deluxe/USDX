@@ -152,13 +152,12 @@ procedure Main;
 var
   WndTitle: string;
 begin
-{$IFDEF DARWIN}
-    UMacResources.init;
-{$ENDIF}
   try
     WndTitle := USDXVersionStr;
 
-    if Platform.TerminateIfAlreadyRunning( {var} WndTitle) then
+    Platform.Init;
+
+    if Platform.TerminateIfAlreadyRunning(WndTitle) then
       Exit;
       
     // fix floating-point exceptions (FPE)

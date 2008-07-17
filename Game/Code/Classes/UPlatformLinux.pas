@@ -14,20 +14,15 @@ uses
   UConfig;
 
 type
-
-  TPlatformLinux = class(TInterfacedObject, IPlatform)
+  TPlatformLinux = class(TPlatform)
     private
       function GetHomeDir(): string;
     public
-      function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
-      function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-      function FindSongFile(Dir, Mask: widestring): widestring;
+      function DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: Boolean): TDirectoryEntryArray; override;
 
-      procedure Halt;
-
-      function GetLogPath        : WideString;
-      function GetGameSharedPath : WideString;
-      function GetGameUserPath   : WideString;
+      function GetLogPath        : WideString; override;
+      function GetGameSharedPath : WideString; override;
+      function GetGameUserPath   : WideString; override;
   end;
 
 implementation
@@ -41,9 +36,9 @@ uses
   SysUtils,
   ULog;
 
-function TPlatformLinux.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
+function TPlatformLinux.DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: Boolean): TDirectoryEntryArray;
 var
-  i : Integer;
+  i: Integer;
   TheDir  : pDir;
   ADirent : pDirent;
   Entry   : Longint;
@@ -84,7 +79,7 @@ begin
   end;
 end;
 
-function TPlatformLinux.GetLogPath        : WideString;
+function TPlatformLinux.GetLogPath: WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
   begin
@@ -99,10 +94,11 @@ begin
     {$ENDIF}
   end;
 
-  forcedirectories( result );
+  // create non-existing directories
+  ForceDirectories(Result);
 end;
 
-function TPlatformLinux.GetGameSharedPath : WideString;
+function TPlatformLinux.GetGameSharedPath: WideString;
 begin
   if FindCmdLineSwitch( cUseLocalPaths ) then
     Result := ExtractFilePath(ParamStr(0))
@@ -159,34 +155,6 @@ begin
   // It uses env-var HOME or a fallback to a temp-dir.
   //Result := GetUserDir();
   {$IFEND}
-end;
-
-// FIXME: Maybe this should be TPlatformBase.Halt() for all platforms
-procedure TPlatformLinux.Halt;
-begin
-  System.Halt;
-end;
-
-function TPlatformLinux.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
-begin
-  // Linux does not check for running apps at the moment
-  Result := false;
-end;
-
-// FIXME: just a dirty-fix to make the linux build work again.
-//        This i the same as the corresponding function for windows
-//        (and MacOSX?).
-//        Maybe this should be TPlatformBase.FindSongFile()
-function TPlatformLinux.FindSongFile(Dir, Mask: widestring): widestring;
-var
-  SR:     TSearchRec;   // for parsing song directory
-begin
-  Result := '';
-  if SysUtils.FindFirst(Dir + Mask, faDirectory, SR) = 0 then 
-  begin
-    Result := SR.Name;
-  end; // if
-  SysUtils.FindClose(SR);
 end;
 
 end.
