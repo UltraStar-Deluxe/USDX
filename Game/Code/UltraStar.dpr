@@ -98,7 +98,7 @@ uses
   {$ENDIF}
 
   {$IFDEF UseSRCResample}
-  samplerate                in 'lib\samplerate\samplerate.pas',
+  samplerate             in 'lib\samplerate\samplerate.pas',
   {$ENDIF}
 
   {$IFDEF UseProjectM}
@@ -143,7 +143,7 @@ uses
   UIni              in 'Classes\UIni.pas',
   UImage            in 'Classes\UImage.pas',
   ULyrics           in 'Classes\ULyrics.pas',
-  ULyrics_bak       in 'Classes\ULyrics_bak.pas',
+  UEditorLyrics     in 'Classes\UEditorLyrics.pas',
   USkins            in 'Classes\USkins.pas',
   UThemes           in 'Classes\UThemes.pas',
   ULog              in 'Classes\ULog.pas',

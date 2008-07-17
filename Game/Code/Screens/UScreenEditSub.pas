@@ -20,8 +20,7 @@ uses
     ULog,
     UTexture,
     UMenuText,
-    ULyrics_bak,
-    ULyrics,
+    UEditorLyrics,
     Math,
     gl,
     {$IFDEF UseMIDIPort}
@@ -67,6 +66,8 @@ type
 
       TextEditMode:    boolean;
 
+      Lyric:    TEditorLyrics;
+
       procedure NewBeat;
       procedure DivideBPM;
       procedure MultiplyBPM;
@@ -99,7 +100,13 @@ type
   end;
 
 implementation
-uses UGraphic, UDraw, UMain, USkins, ULanguage;
+
+uses
+  UGraphic,
+  UDraw,
+  UMain,
+  USkins,
+  ULanguage;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
@@ -1050,9 +1057,6 @@ procedure TScreenEditSub.CopySentences(Src, Dst, Num: integer);
 var
   C:      integer;
 begin
-//  Lyric := TLyric.Create;
-
-
   // create place for new sentences
   SetLength(Lines[0].Line, Lines[0].Number + Num - 1);
 
@@ -1138,7 +1142,7 @@ begin
   inherited;
 
   Log.LogStatus('Initializing', 'TEditScreen.onShow');
-  Lyric := TLyric.Create;
+  Lyric := TEditorLyrics.Create;
 
   ResetSingTemp;
 
@@ -1187,7 +1191,6 @@ begin
     Lyric.ColSR := Skin_FontHighlightR;
     Lyric.ColSG := Skin_FontHighlightG;
     Lyric.ColSB := Skin_FontHighlightB;
-    Lyric.Style := 0;
     Lyric.AddLine(0);
     Lyric.Selected := 0;
 
@@ -1306,7 +1309,6 @@ begin
 
   // draw text
   Lyric.Draw;
-
 end;
 
 procedure TScreenEditSub.onHide;
@@ -1315,6 +1317,7 @@ begin
   MidiOut.Close;
   MidiOut.Free;
   {$ENDIF}
+  Lyric.Free;
   //Music.SetVolume(1.0);
 end;
 
