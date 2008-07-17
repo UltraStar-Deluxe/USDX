@@ -365,6 +365,18 @@ if [[ x$PKG_CONFIG = x ]]; then
 !!! Install it and try again.])
 fi
 
+
+# -----------------------------------------
+# check for OS
+# -----------------------------------------
+
+if [[ x$FPC_PLATFORM = xdarwin ]]; then
+   AC_MSG_CHECKING([for Mac OS X version])
+   MACOSX_VERSION=`sw_vers -productVersion`
+   AC_SPLIT_VERSION(MACOSX, $MACOSX_VERSION)
+   AC_MSG_RESULT(@<:@$MACOSX_VERSION@:>@)
+fi
+
 # -----------------------------------------
 # check for libraries
 # -----------------------------------------
