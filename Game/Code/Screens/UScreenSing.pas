@@ -1174,7 +1174,7 @@ begin
   begin
     if assigned( fCurrentVideoPlaybackEngine ) then
     begin
-      fCurrentVideoPlaybackEngine.GetFrame(LineState.GetCurrentTime());
+      fCurrentVideoPlaybackEngine.GetFrame(LyricsState.GetCurrentTime());
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     end;
   end;
@@ -1183,11 +1183,11 @@ begin
   DrawFG;
 
   // check for music finish
-  //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LineState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
+  //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LyricsState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
   if ShowFinish then
   begin
     if (not AudioPlayback.Finished) and
-       ((CurrentSong.Finish = 0) or (LineState.GetCurrentTime()*1000 <= CurrentSong.Finish)) then
+       ((CurrentSong.Finish = 0) or (LyricsState.GetCurrentTime()*1000 <= CurrentSong.Finish)) then
     begin
       // analyze song if not paused
       if (not Paused) then
@@ -1395,7 +1395,7 @@ end;
 
 function TLyricsSyncSource.GetClock(): real;
 begin
-  Result := LineState.GetCurrentTime();
+  Result := LyricsState.GetCurrentTime();
 end;
 
 end.

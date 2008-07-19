@@ -731,7 +731,7 @@ begin
 
       // drum machine
       (*
-      TempBeat := LineState.CurrentBeat;// + 2;
+      TempBeat := LyricsState.CurrentBeat;// + 2;
       if (TempBeat mod 8 = 0) then Music.PlayDrum;
       if (TempBeat mod 8 = 4) then Music.PlayClap;
       //if (TempBeat mod 4 = 2) then Music.PlayHihat;
@@ -814,7 +814,7 @@ begin
 
     // add some noise
     // TODO: do we need this?
-    //LineState.Tone := LineState.Tone + Round(Random(3)) - 1;
+    //LyricsState.Tone := LyricsState.Tone + Round(Random(3)) - 1;
 
     // add note if possible
     if (CurrentSound.ToneValid and NoteAvailable) then
