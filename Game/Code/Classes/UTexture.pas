@@ -1,6 +1,4 @@
 unit UTexture;
-// added for easier debug disabling
-{$undef blindydebug}
 
 interface
 
@@ -24,11 +22,12 @@ uses
   SDL_Image;
 
 type
+  PTexture = ^TTexture;
   TTexture = record
     TexNum:   GLuint;
     X:        real;
     Y:        real;
-    Z:        real; // new
+    Z:        real;
     W:        real;
     H:        real;
     ScaleW:   real; // for dynamic scalling while leaving width constant
@@ -38,14 +37,14 @@ type
     ColR:     real;
     ColG:     real;
     ColB:     real;
-    TexW:     real; // used?
-    TexH:     real; // used?
+    TexW:     real; // percentage of width to use [0..1]
+    TexH:     real; // percentage of height to use [0..1]
     TexX1:    real;
     TexY1:    real;
     TexX2:    real;
     TexY2:    real;
     Alpha:    real;
-    Name:     string; // 0.5.0: experimental for handling cache images. maybe it's useful for dynamic skins
+    Name:     string; // experimental for handling cache images. maybe it's useful for dynamic skins
   end;
 
 type
@@ -54,6 +53,7 @@ type
     TEXTURE_TYPE_TRANSPARENT,  // Alpha is used
     TEXTURE_TYPE_COLORIZED     // Alpha is used; Hue of the HSV color-model will be replaced by a new value
   );
+
 const
   TextureTypeStr: array[TTextureType] of string = (
     'Plain',
@@ -65,14 +65,15 @@ function TextureTypeToStr(TexType: TTextureType): string;
 function ParseTextureType(const TypeStr: string; Default: TTextureType): TTextureType;
 
 type
+  PTextureEntry = ^TTextureEntry;
   TTextureEntry = record
     Name:         string;
     Typ:          TTextureType;
     Color:        Cardinal;
 
     // we use normal TTexture, it's easier to implement and if needed - we copy ready data
-    Texture:      TTexture;
-    TextureCache: TTexture;
+    Texture:      TTexture; // Full-size texture
+    TextureCache: TTexture; // Thumbnail texture
   end;
 
   TTextureDatabase = record
