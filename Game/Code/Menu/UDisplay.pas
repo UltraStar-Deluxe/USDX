@@ -258,7 +258,7 @@ begin
         CurrentScreen.ShowFinish := False;
         CurrentScreen := NextScreen;
         NextScreen := nil;
-        if not blackscreen then
+        if not BlackScreen then
         begin
           CurrentScreen.onShowFinish;
           CurrentScreen.ShowFinish := true;
@@ -275,8 +275,6 @@ begin
     if ((Ini.Debug = 1) or (Params.Debug)) and (S = 1) then
       DrawDebugInformation;      
   end; // for
-
-  // SDL_GL_SwapBuffers();
 end;
 
 procedure TDisplay.SaveScreenShot;

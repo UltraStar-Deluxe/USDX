@@ -51,13 +51,11 @@ type
     ScoreGoldenInt: integer;
     ScoreTotalInt:  integer;
 
-    // LineBonus Mod
+    // LineBonus
     ScoreLast:    Real;//Last Line Score
 
-    // PerfectLineTwinkle Mod (effect)
+    // PerfectLineTwinkle (effect)
     LastSentencePerfect: Boolean;
-
-    //Meter:        real;
 
     HighNote:   integer; // index of last note (= High(Note)?)
     LengthNote: integer; // number of notes (= Length(Note)?).
@@ -108,10 +106,8 @@ procedure MainLoop;
 procedure CheckEvents;
 procedure Sing(Screen: TScreenSing);
 procedure NewSentence(Screen: TScreenSing);
-procedure NewBeat(Screen: TScreenSing); // executed when on then new beat
 procedure NewBeatClick(Screen: TScreenSing); // executed when on then new beat for click
 procedure NewBeatDetect(Screen: TScreenSing); // executed when on then new beat for detection
-//procedure NewHalf; // executed when in the half between beats
 procedure NewNote(Screen: TScreenSing); // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer): real;
@@ -125,7 +121,7 @@ uses
   math,
   UCommandLine,
   ULanguage,
-//  SDL_ttf,
+  //SDL_ttf,
   USkins,
   UCovers,
   UCatCovers,
@@ -161,6 +157,7 @@ begin
     DisableFloatingPointExceptions();
     // fix the locale for string-to-float parsing in C-libs
     SetDefaultNumericLocale();
+    DecimalSeparator := '.';
 
     //------------------------------
     //StartUp - Create Classes and Load Files
@@ -195,12 +192,14 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Language', 1);
 
-    // SDL_ttf
-//    Log.BenchmarkStart(1);
-//    Log.LogStatus('Initialize SDL_ttf', 'Initialization');
-//    TTF_Init();
-//    Log.BenchmarkEnd(1);
-//    Log.LogBenchmark('Initializing SDL_ttf', 1);
+    {
+    // SDL_ttf (Not used yet, maybe in version 1.5)
+    Log.BenchmarkStart(1);
+    Log.LogStatus('Initialize SDL_ttf', 'Initialization');
+    TTF_Init();
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Initializing SDL_ttf', 1);
+    }
 
     // Skin
     Log.BenchmarkStart(1);
@@ -358,17 +357,8 @@ begin
 
     FinalizeMedia();
 
-//    TTF_Quit();
+    //TTF_Quit();
     SDL_Quit();
-
-    (*
-    {$ifdef WIN32}
-      if assigned(LCD) and (Ini.LPT = 1) then
-        LCD.Clear;
-      if assigned(Light) and (Ini.LPT = 2) then
-        Light.TurnOff;
-    {$endif}
-     *)
 
     if assigned(Log) then
     begin
@@ -400,9 +390,6 @@ begin
     // display
     done := not Display.Draw;
     SwapBuffers;
-
-    // light
-    //Light.Refresh;
 
     // delay
     CountMidTime;
@@ -575,38 +562,14 @@ function GetMidBeat(Time: real): real;
 var
   CurBeat:  real;
   CurBPM:   integer;
-  //TopBeat:  real;
-  //TempBeat: real;
-  //TempTime: real;
 begin
-  Result := 0;
+  // static BPM
   if Length(CurrentSong.BPM) = 1 then
+  begin
     Result := Time * CurrentSong.BPM[0].BPM / 60;
-
-  // 2 BPMs
-  {
-  if Length(CurrentSong.BPM) > 1 then begin
-    // new system
-    CurBeat := 0;
-    TopBeat := GetBeats(CurrentSong.BPM[0].BPM, Time);
-    if TopBeat > CurrentSong.BPM[1].StartBeat then begin
-      // analyze second BPM
-      Time := Time - GetTimeForBeats(CurrentSong.BPM[0].BPM, CurrentSong.BPM[1].StartBeat - CurBeat);
-      CurBeat := CurrentSong.BPM[1].StartBeat;
-      TopBeat := GetBeats(CurrentSong.BPM[1].BPM, Time);
-      Result := CurBeat + TopBeat;
-
-    end
-    else
-    begin
-      // first part
-      Result := TopBeat;
-    end;
-  end;
-  }
-
-  // more BPMs
-  if Length(CurrentSong.BPM) > 1 then
+  end
+  // variable BPM
+  else if Length(CurrentSong.BPM) > 1 then
   begin
     CurBeat := 0;
     CurBPM := 0;
@@ -617,6 +580,11 @@ begin
     end;
 
     Result := CurBeat;
+  end
+  // invalid BPM
+  else
+  begin
+    Result := 0;
   end;
 end;
 
@@ -624,12 +592,13 @@ function GetTimeFromBeat(Beat: integer): real;
 var
   CurBPM:   integer;
 begin
-  Result := 0;
+  // static BPM
   if Length(CurrentSong.BPM) = 1 then
+  begin
     Result := CurrentSong.GAP / 1000 + Beat * 60 / CurrentSong.BPM[0].BPM;
-
-  // more BPMs
-  if Length(CurrentSong.BPM) > 1 then
+  end
+  // variable BPM
+  else if Length(CurrentSong.BPM) > 1 then
   begin
     Result := CurrentSong.GAP / 1000;
     CurBPM := 0;
@@ -661,7 +630,12 @@ begin
       Inc(CurBPM);
     end;
     }
-  end; // if}
+  end
+  // invalid BPM
+  else
+  begin
+    Result := 0;
+  end;
 end;
 
 procedure Sing(Screen: TScreenSing);
@@ -736,62 +710,16 @@ begin
   Screen.onSentenceChange(Lines[0].Current);
 end;
 
-procedure NewBeat(Screen: TScreenSing);
-var
-  Count:      integer;
-  //TempBeat: integer;
-begin
-  // add a text mark
-  //SingScreen.LyricMain.Selected := -1;
-  for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
-    if (Lines[0].Line[Lines[0].Current].Note[Count].Start = LineState.CurrentBeat) then
-    begin
-      // operates on currently beated note
-      //Todo: Lyrics
-      //Sender.LyricMain.Selected := Count;
-
-      //LCD.MoveCursor(1, ScreenSing.LyricMain.SelectedLetter);
-      //LCD.ShowCursor;
-
-      //LCD.MoveCursorBR(Sender.LyricMain.SelectedLetter);
-      //LCD.ShowCursor;
-    end;
-end;
-
 procedure NewBeatClick;
 var
   Count:    integer;
-  //LPT_1:  integer;
-  //LPT_2:  integer;
 begin
-  //LPT_1 := 1;
-  //LPT_2 := 1;
-
   // beat click
   if ((Ini.BeatClick = 1) and
       ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0)) then
   begin
     AudioPlayback.PlaySound(SoundLib.Click);
   end;
-
-  {
-  // debug system on LPT
-  if ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0) then
-  begin
-    LPT_1 := 0;
-    Light.LightOne(0, 150);
-
-    Light.LightOne(1, 200); // beat light
-    if ParamStr(1) = '-doublelights' then
-      Light.LightOne(0, 200); // beat light
-
-
-    if ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod (Lines[0].Resolution * 2) = 0) then
-      Light.LightOne(0, 150)
-    else
-      Light.LightOne(1, 150)
-  end;
-  }
 
   for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
   begin
@@ -800,12 +728,6 @@ begin
       // click assist
       if Ini.ClickAssist = 1 then
         AudioPlayback.PlaySound(SoundLib.Click);
-
-      {
-      //LPT_2 := 0;
-      if ParamStr(1) <> '-doublelights' then
-        Light.LightOne(0, 150); //125
-      }
 
       // drum machine
       (*
@@ -817,10 +739,6 @@ begin
       *)
     end;
   end;
-
-  {$IFDEF UseSerialPort}
-    // PortWriteB($378, LPT_1 + LPT_2 * 2); // 0 light
-  {$ENDIF}
 end;
 
 procedure NewBeatDetect(Screen: TScreenSing);
@@ -848,8 +766,6 @@ var
   MaxSongPoints: integer; // max. points for the song (without line bonus)
   MaxLinePoints: Real;    // max. points for the current line
 begin
-  //Log.LogStatus('Beat ' + IntToStr(LineState.CurrentBeat) + ' HalfBeat ' + IntToStr(LineState.AktHalf), 'NewBeat');
-
   // TODO: add duet mode support
   // use Lines[LineSetIndex] with LineSetIndex depending on the current player
 
@@ -1093,7 +1009,7 @@ begin
   initialize_path( LogPath         , Platform.GetLogPath                             );
   initialize_path( SoundPath       , Platform.GetGameSharedPath + 'Sounds'      + PathDelim );
   initialize_path( ThemePath       , Platform.GetGameSharedPath + 'Themes'      + PathDelim );
-  initialize_path( SkinsPath       , Platform.GetGameSharedPath + 'Themes'       + PathDelim );
+  initialize_path( SkinsPath       , Platform.GetGameSharedPath + 'Themes'      + PathDelim );
   initialize_path( LanguagesPath   , Platform.GetGameSharedPath + 'Languages'   + PathDelim );
   initialize_path( PluginPath      , Platform.GetGameSharedPath + 'Plugins'     + PathDelim );
   initialize_path( VisualsPath     , Platform.GetGameSharedPath + 'Visuals'     + PathDelim );
@@ -1109,8 +1025,6 @@ begin
   initialize_path( SongPath        , Platform.GetGameSharedPath + 'Songs'       + PathDelim );
   initialize_path( CoversPath      , Platform.GetGameSharedPath + 'Covers'      + PathDelim );
   initialize_path( PlaylistPath    , Platform.GetGameSharedPath + 'Playlists'   + PathDelim );
-
-  DecimalSeparator := '.';
 end;
 
 end.
