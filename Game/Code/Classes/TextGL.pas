@@ -34,7 +34,8 @@ procedure SetFontSize(Size: real);
 procedure SetFontStyle(Style: integer);       // sets active font style (normal, bold, etc)
 procedure SetFontItalic(Enable: boolean);     // sets italic type letter (works for all fonts)
 procedure SetFontAspectW(Aspect: real);
-procedure SetFontReflection(Enable:boolean;Spacing: real); // Enables/Disables text reflection
+procedure SetFontReflection(Enable:boolean;Spacing: real); // enables/disables text reflection
+procedure SetFontBlend(Enable: boolean);      // enables/disables blending
 
 // Start of SDL_ttf
 //function NextPowerOfTwo(Value: integer): integer;
@@ -58,6 +59,7 @@ type
     ColB:     real;
   end;
 
+  PFont = ^TFont;
   TFont = record
     Tex:      TTexture;
     Width:    array[0..255] of byte;
@@ -68,6 +70,7 @@ type
     Italic:   boolean;
     Reflection: boolean;
     ReflectionSpacing: real;
+    Blend: boolean;
   end;
 
 
@@ -82,7 +85,7 @@ var
   // Colours for the reflection
   TempColor:    array[0..3] of GLfloat;
   PTempColor:   PGLfloat;
-  
+
 implementation
 
 uses
@@ -172,6 +175,9 @@ begin
 {  for Count := 0 to 255 do
     Fonts[4].Width[Count] := Fonts[4].Width[Count] div 2 + 2;}
 
+  // enable blending by default
+  for Count := 0 to High(Fonts) do
+    Fonts[Count].Blend := true;
 end;
 
 // Deletes the font
@@ -214,85 +220,87 @@ var
   PR, PB:            real;
   XItal:             real; // X shift for italic type letter
   ReflectionSpacing: real; // Distance of the reflection
+  Font:              PFont;
+  Tex:               PTexture;
 begin
-  with Fonts[ActFont].Tex do
+  Font := @Fonts[ActFont];
+  Tex := @Font.Tex;
+
+  FWidth := Font.Width[Ord(Letter)];
+
+  Tex.W := FWidth * (Tex.H/30) * Font.AspectW;
+
+  // set texture positions
+  TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Font.Outline/1024;
+  TexY := (ord(Letter) div 16) * 1/16 + 2/1024;
+  TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Font.Outline/1024;
+  TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
+
+  TexHeight := TexB - TexY;
+
+  // set vector positions
+  PL := Tex.X - Font.Outline * (Tex.H/30) * Font.AspectW /2;
+  PT := Tex.Y;
+  PR := PL + Tex.W + Font.Outline * (Tex.H/30) * Font.AspectW;
+  PB := PT + Tex.H;
+
+  if Font.Italic = false then
+    XItal := 0
+  else
+    XItal := 12;
+
+  if (Font.Blend) then
   begin
-    FWidth := Fonts[ActFont].Width[Ord(Letter)];
-
-    W := FWidth * (H/30) * Fonts[ActFont].AspectW;
-
-    // set texture positions
-    TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
-    TexY := (ord(Letter) div 16) * 1/16 + 2/1024;
-    TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
-    TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
-
-    TexHeight := TexB - TexY;
-
-    // set vector positions
-    PL := X - Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW /2;
-    PT := Y;
-    PR := PL + W + Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW;
-    PB := PT + H;
-
-    if Fonts[ActFont].Italic = false then
-      XItal := 0
-    else
-      XItal := 12;
-
-    glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBindTexture(GL_TEXTURE_2D, TexNum);
+  end;
+
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
+  
+  glBegin(GL_QUADS);
+    glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
+    glTexCoord2f(TexX, TexB); glVertex2f(PL,        PB);
+    glTexCoord2f(TexR, TexB); glVertex2f(PR,        PB);
+    glTexCoord2f(TexR, TexY); glVertex2f(PR+XItal,  PT);
+  glEnd;
+
+  // <mog> Reflection
+  // Yes it would make sense to put this in an extra procedure,
+  // but this works, doesn't take much lines, and is almost lightweight
+  if Font.Reflection = true then
+  begin
+    ReflectionSpacing := Font.ReflectionSpacing + Tex.H/2;
+
+    glDepthRange(0, 10);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_DEPTH_TEST);
 
     glBegin(GL_QUADS);
-    try
-      glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
-      glTexCoord2f(TexX, TexB); glVertex2f(PL,        PB);
-      glTexCoord2f(TexR, TexB); glVertex2f(PR,        PB);
-      glTexCoord2f(TexR, TexY); glVertex2f(PR+XItal,  PT);
-    finally
-      glEnd;
-    end;
+      glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
+      glTexCoord2f(TexX, TexY + TexHeight/2);
+      glVertex3f(PL, PB + ReflectionSpacing - Tex.H/2, Tex.z);
 
-    // <mog> Reflection
-    // Yes it would make sense to put this in an extra procedure,
-    // but this works, doesn't take much lines, and is almost lightweight
-    if Fonts[ActFont].Reflection = true then
-      begin
-        ReflectionSpacing := Fonts[ActFont].ReflectionSpacing + H/2;
+      glColor4f(TempColor[0], TempColor[1], TempColor[2], Tex.Alpha-0.3);
+      glTexCoord2f(TexX, TexB );
+      glVertex3f(PL + XItal, PT + ReflectionSpacing, Tex.z);
 
-        glDepthRange(0, 10);
-        glDepthFunc(GL_LEQUAL);
-        glEnable(GL_DEPTH_TEST);
+      glTexCoord2f(TexR, TexB );
+      glVertex3f(PR + XItal, PT + ReflectionSpacing, Tex.z);
 
-        glBegin(GL_QUADS);
-        try
-          glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
-          glTexCoord2f(TexX, TexY + TexHeight/2);
-          glVertex3f(PL, PB + ReflectionSpacing - H/2, z);
+      glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
+      glTexCoord2f(TexR, TexY + TexHeight/2);
+      glVertex3f(PR, PB + ReflectionSpacing - Tex.H/2, Tex.z);
+    glEnd;
 
-          glColor4f(TempColor[0], TempColor[1], TempColor[2], Alpha-0.3);
-          glTexCoord2f(TexX, TexB );
-          glVertex3f(PL + XItal, PT + ReflectionSpacing, z);
+    glDisable(GL_DEPTH_TEST);
+  end; // reflection
 
-          glTexCoord2f(TexR, TexB );
-          glVertex3f(PR + XItal, PT + ReflectionSpacing, z);
+  glDisable(GL_TEXTURE_2D);
+  if (Font.Blend) then
+    glDisable(GL_BLEND);
 
-          glColor4f(TempColor[0], TempColor[1], TempColor[2], 0);
-          glTexCoord2f(TexR, TexY + TexHeight/2);
-          glVertex3f(PR, PB + ReflectionSpacing - H/2, z);
-        finally
-          glEnd;
-        end;
-          glDisable(GL_DEPTH_TEST);
-      end; // reflection
-
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_BLEND);
-
-    X := X + W;
-  end;     // with
+  Tex.X := Tex.X + Tex.W;
 
   //write the colour back
   glColor4fv(PTempColor);
@@ -308,50 +316,59 @@ var
   PR, PB:       real;
   OutTemp:      real;
   XItal:        real;
+  Font:              PFont;
+  Tex:               PTexture;
 begin
-  with Fonts[ActFont].Tex do
+  Font := @Fonts[ActFont];
+  Tex := @Font.Tex;
+
+  FWidth := Fonts[ActFont].Width[Ord(Letter)];
+
+  Tex.W := FWidth * (Tex.H/30) * Fonts[ActFont].AspectW;
+  //Tex.H := 30;
+  OutTemp := Fonts[ActFont].Outline * (Tex.H/30) * Fonts[ActFont].AspectW;
+
+  // set texture positions
+  TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
+  TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
+  TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
+  TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
+
+  TexTemp := TexX + Start * (TexR - TexX);
+  TexR := TexX + Finish * (TexR - TexX);
+  TexX := TexTemp;
+
+  // set vector positions
+  PL := Tex.X - OutTemp / 2 + OutTemp * Start;
+  PT := Tex.Y;
+  PR := PL + (Tex.W + OutTemp) * (Finish - Start);
+  PB := PT + Tex.H;
+  if Fonts[ActFont].Italic = false then
+    XItal := 0
+  else
+    XItal := 12;
+
+  if (Font.Blend) then
   begin
-    FWidth := Fonts[ActFont].Width[Ord(Letter)];
-
-    W := FWidth * (H/30) * Fonts[ActFont].AspectW;
-    //H := 30;
-    OutTemp := Fonts[ActFont].Outline * (H/30) * Fonts[ActFont].AspectW;
-
-    // set texture positions
-    TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
-    TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
-    TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
-    TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
-
-    TexTemp := TexX + Start * (TexR - TexX);
-    TexR := TexX + Finish * (TexR - TexX);
-    TexX := TexTemp;
-
-    // set vector positions
-    PL := X - OutTemp / 2 + OutTemp * Start;
-    PT := Y;
-    PR := PL + (W + OutTemp) * (Finish - Start);
-    PB := PT + H;
-    if Fonts[ActFont].Italic = false then
-      XItal := 0
-    else
-      XItal := 12;
-
-    glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBindTexture(GL_TEXTURE_2D, TexNum);
-    glBegin(GL_QUADS);
+  end;
+
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
+
+  glBegin(GL_QUADS);
     glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
     glTexCoord2f(TexX, TexB); glVertex2f(PL,        PB);
     glTexCoord2f(TexR, TexB); glVertex2f(PR,        PB);
     glTexCoord2f(TexR, TexY); glVertex2f(PR+XItal,  PT); // not tested with XItal
-    glEnd;
-    X := X + W * (Finish - Start);
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
-  end; // with
+  glEnd;
 
+  Tex.X := Tex.X + Tex.W * (Finish - Start);
+
+  glDisable(GL_TEXTURE_2D);
+  if (Font.Blend) then 
+    glDisable(GL_BLEND);
 end;
 
 // Custom GL "Print" Routine
@@ -363,18 +380,6 @@ begin
   if (Text = '') then     // If There's No Text
     Exit;                 // Do Nothing
 
-(*
-  while (length(text) > 0) do
-  begin
-    // cut
-    Letter := Text[0];
-    Text   := pchar(Copy(Text, 2, Length(Text)-1));
-
-    // print
-    glPrintLetter(Letter);
-  end; // while
-*)
-
   //Save the actual color and alpha (for reflection)
   PTempColor:= @TempColor;
   //I've read that glGetFloat is quite slow, but it seems that there is no alternative
@@ -384,7 +389,7 @@ begin
   // letter in a string is a waste of CPU & Memory resources.
   // Copy operations are quite memory intensive, and this simple
   // code achieves the same result.
-  for iPos := 0 to length( text ) - 1 do
+  for iPos := 0 to Length(text) - 1 do
   begin
     glPrintLetter( Text[iPos] );
   end;
@@ -592,6 +597,11 @@ procedure SetFontReflection(Enable: boolean; Spacing: real);
 begin
   Fonts[ActFont].Reflection        := Enable;
   Fonts[ActFont].ReflectionSpacing := Spacing;
+end;
+
+procedure SetFontBlend(Enable: boolean);
+begin
+  Fonts[ActFont].Blend := Enable;
 end;
 
 end.
