@@ -101,7 +101,7 @@ begin
   //ReadScore(CurrentSong);
 
   PMax := Ini.Players;
-  if Ini.Players = 4 then Ini.Players := 5;
+  if PMax = 4 then PMax := 5;
   for I := 0 to PMax do
     DataBase.AddScore(CurrentSong, Ini.Difficulty, Ini.Name[I], Round(Player[I].ScoreTotalInt));
 
