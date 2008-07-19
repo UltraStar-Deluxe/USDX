@@ -155,10 +155,10 @@ begin
     SetLength (Song.Score[1], 0);
     SetLength (Song.Score[2], 0);
 
-    while not TableData.Eof do //Go through all Entrys
+    while (not TableData.Eof) do //Go through all Entrys
     begin //Add one Entry to Array
           Difficulty := StrToIntDef(TableData.FieldAsString(TableData.FieldIndex['Difficulty']), -1);
-      if (Difficulty >= 0) AND (Difficulty <= 2) then
+      if ((Difficulty >= 0) AND (Difficulty <= 2)) AND (Length(Song.Score[Difficulty]) < 5) then
       begin
         SetLength(Song.Score[Difficulty], Length(Song.Score[Difficulty]) + 1);
 
@@ -212,12 +212,23 @@ begin
     //Create new Entry
     ScoreDB.ExecSQL('INSERT INTO `'+cUS_Scores+'` ( `SongID` , `Difficulty` , `Player` , `Score` ) VALUES ("' + InttoStr(ID) + '", "' + InttoStr(Level) + '", "' + Name + '", "' + InttoStr(Score) + '");');
 
-    //Delete Last Position when there are more than 5 Entrys
+    {//Old Deletion
     if ScoreDB.GetTableValue('SELECT COUNT(`SongID`) FROM `'+cUS_Scores+'` WHERE `SongID` = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'"') > 5 then
     begin
       TableData := ScoreDB.GetTable('SELECT `Player`, `Score` FROM `'+cUS_Scores+'` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" ORDER BY `Score` ASC LIMIT 1');
       ScoreDB.ExecSQL('DELETE FROM `US_Scores` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" AND `Player` = "' + TableData.FieldAsString(TableData.FieldIndex['Player']) + '" AND `Score` = "' + TableData.FieldAsString(TableData.FieldIndex['Score']) + '"');
+    end;}
+
+    //Delete Last Position when there are more than 5 Entrys - Fixes Crash when there are > 5 ScoreEntrys 
+    TableData := ScoreDB.GetTable('SELECT `Player`, `Score` FROM `'+cUS_Scores+'` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" ORDER BY `Score` DESC LIMIT -1 OFFSET 5');
+
+    While not TableData.Eof do
+    begin
+      ScoreDB.ExecSQL('DELETE FROM `US_Scores` WHERE SongID = "' + InttoStr(ID) + '" AND `Difficulty` = "' + InttoStr(Level) +'" AND `Player` = "' + TableData.FieldAsString(TableData.FieldIndex['Player']) + '" AND `Score` = "' + TableData.FieldAsString(TableData.FieldIndex['Score']) + '"');
+
+      TableData.Next;
     end;
+
 
   end;
   finally
