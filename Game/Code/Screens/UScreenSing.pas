@@ -23,7 +23,6 @@ uses UMenu,
      TextGL,
      gl,
      UThemes,
-     //ULCD, //TODO: maybe LCD Support as Plugin?
      UGraphicClasses,
      USingScores;
 
@@ -113,11 +112,10 @@ type
       function    Draw: boolean; override;
 
       procedure   Finish; virtual;
-      //procedure   UpdateLCD; //TODO: maybe LCD Support as Plugin?
-      procedure   Pause; //Pause Mod(Toggles Pause)
+      procedure   Pause; // Toggle Pause
 
-      procedure   OnSentenceEnd(SentenceIndex: Cardinal);     //OnSentenceEnd for LineBonus + Singbar
-      procedure   OnSentenceChange(SentenceIndex: Cardinal);  //OnSentenceChange (for Golden Notes)
+      procedure   OnSentenceEnd(SentenceIndex: Cardinal);     // for LineBonus + Singbar
+      procedure   OnSentenceChange(SentenceIndex: Cardinal);  // for Golden Notes
   end;
 
 implementation
@@ -495,7 +493,6 @@ begin
   fShowVisualization      := false;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
-    // TODO: use VideoGap and start time
     fCurrentVideoPlaybackEngine.Open( CurrentSong.Path + CurrentSong.Video );
     fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
     CurrentSong.VideoLoaded := true;
@@ -506,16 +503,21 @@ begin
     try
       Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
     except
-      log.LogError('Background could not be loaded: ' + CurrentSong.Path + CurrentSong.Background);
+      Log.LogError('Background could not be loaded: ' + CurrentSong.Path + CurrentSong.Background);
       Tex_Background.TexNum := 0;
     end
   else
     Tex_Background.TexNum := 0;
 
   // prepare lyrics timer
-  LineState.Pause();
-  LineState.CurrentTime := CurrentSong.Start;
-  LineState.TotalTime := AudioPlayback.Length;
+  LineState.Reset();
+  LineState.SetCurrentTime(CurrentSong.Start);
+  LineState.StartTime := CurrentSong.Gap;
+  if (CurrentSong.Finish > 0) then
+    LineState.TotalTime := CurrentSong.Finish / 1000
+  else
+    LineState.TotalTime := AudioPlayback.Length;
+  LineState.UpdateBeats();
 
   // prepare music
   AudioPlayback.Stop();
@@ -526,9 +528,6 @@ begin
   // prepare and start voice-capture
   AudioInput.CaptureStart;
 
-  if (CurrentSong.Finish > 0) then
-    LineState.TotalTime := CurrentSong.Finish / 1000;
-  LineState.OldBeat := -1;
   for P := 0 to High(Player) do
     ClearScores(P);
 
@@ -654,11 +653,12 @@ begin
       end;
   end; // case
 
-  // Add lines to lyrics
-  while (not Lyrics.LineinQueue) and (Lyrics.LineCounter <= High(Lines[0].Line)) do
+  // Initialize lyrics by filling its queue
+  while (not Lyrics.IsQueueFull) and
+        (Lyrics.LineCounter <= High(Lines[0].Line)) do
+  begin
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
-  
-  //UpdateLCD; //TODO: maybe LCD Support as Plugin?
+  end;
 
   // Deactivate pause
   Paused := False;
@@ -928,6 +928,7 @@ var
   Flash:  real;
   S:      integer;
   T:      integer;
+  CurLyricsTime: real;
 begin
   // ScoreBG Mod
   // TODO: remove this commented out section as we do not need it anymore.
@@ -1064,9 +1065,15 @@ begin
   for T := 0 to 1 do
     Text[T].X := Text[T].X + 10*ScreenX;
 
+
+
+  // retrieve current lyrics time, we have to store the value to avoid
+  // that min- and sec-values do not match 
+  CurLyricsTime := LineState.GetCurrentTime();
+  Min := Round(CurLyricsTime) div 60;
+  Sec := Round(CurLyricsTime) mod 60;
+
   // update static menu with time ...
-  Min := Round(LineState.CurrentTime) div 60;
-  Sec := Round(LineState.CurrentTime) mod 60;
   Text[TextTimeText].Text := '';
   if Min < 10 then Text[TextTimeText].Text := '0';
   Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
@@ -1167,7 +1174,7 @@ begin
   begin
     if assigned( fCurrentVideoPlaybackEngine ) then
     begin
-      fCurrentVideoPlaybackEngine.GetFrame(LineState.CurrentTime);
+      fCurrentVideoPlaybackEngine.GetFrame(LineState.GetCurrentTime());
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     end;
   end;
@@ -1180,7 +1187,7 @@ begin
   if ShowFinish then
   begin
     if (not AudioPlayback.Finished) and
-       ((CurrentSong.Finish = 0) or (LineState.CurrentTime*1000 <= CurrentSong.Finish)) then
+       ((CurrentSong.Finish = 0) or (LineState.GetCurrentTime()*1000 <= CurrentSong.Finish)) then
     begin
       // analyze song if not paused
       if (not Paused) then
@@ -1270,25 +1277,6 @@ begin
   SetFontItalic (False);
 end;
 
-(*
-procedure TScreenSing.UpdateLCD; //TODO: maybe LCD Support as Plugin?
-var
-  T:    string;
-begin
-  //Todo: Lyrics
-{  LCD.HideCursor;
-  LCD.Clear;
-
-  T := LyricMain.Text;
-  if Copy(T, Length(T), 1) <> ' ' then T := T + ' ';
-  LCD.AddTextBR(T);
-
-  T := LyricSub.Text;
-  if Copy(T, Length(T), 1) <> ' ' then T := T + ' ';
-  LCD.AddTextBR(T);}
-end;
-*)
-
 procedure TScreenSing.OnSentenceEnd(SentenceIndex: Cardinal);
 var
   PlayerIndex: Integer;
@@ -1374,34 +1362,40 @@ begin
     GoldenRec.SpawnPerfectLineTwinkle;
 end;
 
-//Called on Sentence Change S= New Current Sentence
+// Called on sentence change
+// SentenceIndex: index of the new active sentence
 procedure TScreenSing.OnSentenceChange(SentenceIndex: Cardinal);
+var
+  LyricEngine: TLyricEngine;
 begin
-  //GoldenStarsTwinkle Mod
+  //GoldenStarsTwinkle
   GoldenRec.SentenceChange;
-  if (Lyrics.LineCounter <= High(Lines[0].Line)) then
-  begin
-      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);  
-  end
-  else
-    Lyrics.AddLine(nil);
-  
-  // addline uses display memory
-  // calling draw makes sure, there's the singscreen in it, when the next
-  // swap between onscreen and offscreen buffers is done
-  // (this eliminates the onSentenceChange flickering)
-  // note: maybe it would be better to make sure, a display redraw is done
-  //     right after the sentence change (before buffer swap) or make sure
-  //     onsentencechange is only called right before calling Display.Draw
-  //     (or whatever it was called)
-  Draw;
 
-  //GoldenStarsTwinkle Mod End
+  // Fill lyrics queue and set upper line to the current sentence
+  while (Lyrics.GetUpperLineIndex() < SentenceIndex) or
+        (not Lyrics.IsQueueFull) do
+  begin
+    // Add the next line to the queue or a dummy if no more lines are available
+    if (Lyrics.LineCounter <= High(Lines[0].Line)) then
+      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter])
+    else
+      Lyrics.AddLine(nil);
+  end;
+
+  // AddLine draws the passed line to the back-buffer of the render context
+  // and copies it into a texture afterwards (offscreen rendering).
+  // This leaves an in invalidated screen. Calling Draw() makes sure,
+  // that the back-buffer stores the sing-screen, when the next
+  // swap between the back- and front-buffer is done (eliminates flickering)
+  // 
+  // Note: calling AddLine() right before the regular screen update (Display.Draw)
+  // would be a better solution.
+  Draw;
 end;
 
 function TLyricsSyncSource.GetClock(): real;
 begin
-  Result := LineState.CurrentTime;
+  Result := LineState.GetCurrentTime();
 end;
 
 end.

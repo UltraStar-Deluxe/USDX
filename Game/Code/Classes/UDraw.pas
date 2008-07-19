@@ -434,7 +434,7 @@ begin
         // Perfect note is stored
         if Perfect and (Ini.EffectSing=1) then
         begin
-          A := 1 - 2*(LineState.CurrentTime - GetTimeFromBeat(Start+Length));
+          A := 1 - 2*(LineState.GetCurrentTime() - GetTimeFromBeat(Start+Length));
           if not (Start+Length-1 = LineState.CurrentBeatD) then
           begin
             //Star animation counter
@@ -1336,13 +1336,15 @@ begin
 end;
 
 procedure SingDrawTimeBar();
-var x,y:           real;
-    width, height: real;
-    lTmp         : real;
+var
+  x,y:            real;
+  width, height:  real;
+  LyricsProgress: real;
+  CurLyricsTime:  real;
 begin
   x := Theme.Sing.StaticTimeProgress.x;
   y := Theme.Sing.StaticTimeProgress.y;
-  
+
   width  := Theme.Sing.StaticTimeProgress.w;
   height := Theme.Sing.StaticTimeProgress.h;
 
@@ -1356,30 +1358,28 @@ begin
   glBindTexture(GL_TEXTURE_2D, Tex_TimeProgress.TexNum);
 
   glBegin(GL_QUADS);
-  try
     glTexCoord2f(0, 0);
-    glVertex2f(x,y);
-    
-    if ( LineState.CurrentTime > 0 ) AND
-       ( LineState.TotalTime > 0 ) THEN
-    BEGIN
-      lTmp := LineState.CurrentTime/LineState.TotalTime;
-      glTexCoord2f((width*LineState.CurrentTime/LineState.TotalTime)/8, 0);
-      glVertex2f(x+width*LineState.CurrentTime/LineState.TotalTime, y);
+    glVertex2f(x, y);
 
-      glTexCoord2f((width*LineState.CurrentTime/LineState.TotalTime)/8, 1);
-      glVertex2f(x+width*LineState.CurrentTime/LineState.TotalTime, y+height);
-    END;
+    CurLyricsTime := LineState.GetCurrentTime();
+    if (CurLyricsTime > 0) and
+       (LineState.TotalTime > 0) then
+    begin
+      LyricsProgress := CurLyricsTime / LineState.TotalTime;
+      glTexCoord2f((width * LyricsProgress) / 8, 0);
+      glVertex2f(x + width * LyricsProgress, y);
+
+      glTexCoord2f((width * LyricsProgress) / 8, 1);
+      glVertex2f(x + width * LyricsProgress, y + height);
+    end;
 
     glTexCoord2f(0, 1);
-    glVertex2f(x, y+height);
-  finally
-    glEnd;
-  end;
+    glVertex2f(x, y + height);
+  glEnd;
 
  glDisable(GL_TEXTURE_2D);
  glDisable(GL_BLEND);
- glcolor4f(1,1,1,1);
+ glcolor4f(1, 1, 1, 1);
 end;
 
 end.

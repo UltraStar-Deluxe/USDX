@@ -277,8 +277,9 @@ var
   Min:    integer;
   Sec:    integer;
   Tekst:  string;
-  S, I:      integer;
+  S, I:   integer;
   T:      integer;
+  CurLyricsTime: real;
 begin
   Result := false;
 
@@ -511,8 +512,10 @@ begin
   if DLLMan.Selected.LoadSong then
   begin
     // update static menu with time ...
-    Min := Round(LineState.CurrentTime) div 60;
-    Sec := Round(LineState.CurrentTime) mod 60;
+    CurLyricsTime := LineState.GetCurrentTime();
+    Min := Round(CurLyricsTime) div 60;
+    Sec := Round(CurLyricsTime) mod 60;
+
     Text[TextTimeText].Text := '';
     if Min < 10 then Text[TextTimeText].Text := '0';
     Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
@@ -540,7 +543,7 @@ begin
   if ShowFinish then begin
     if DllMan.Selected.LoadSong then
     begin
-      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LineState.CurrentTime*1000 <= CurrentSong.Finish)) then begin
+      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LineState.GetCurrentTime*1000 <= CurrentSong.Finish)) then begin
         //Pause Mod:
         if not Paused then
           Sing(Self);       // analyze song

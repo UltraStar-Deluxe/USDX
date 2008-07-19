@@ -65,46 +65,47 @@ type
   end;
 
   (**
-   * TLineState contains all information that concerns the current frames
+   * TLineState contains all information that concerns the
+   * state of the lyrics.
    *)
   TLineState = class
     private
       Timer:        TRelativeTimer; // keeps track of the current time
-
-      function GetCurrentTime(): real;
-      procedure SetCurrentTime(Time: real);
     public
       OldBeat:      integer;    // previous discovered beat
-      CurrentBeat:  integer;
-      MidBeat:      real;       // like CurrentBeat
+      CurrentBeat:  integer;    // current beat (rounded)
+      MidBeat:      real;       // current beat (float)
 
       // now we use this for super synchronization!
       // only used when analyzing voice
       // TODO: change ...D to ...Detect(ed)
       OldBeatD:     integer;    // previous discovered beat
-      CurrentBeatD: integer;
-      MidBeatD:     real;       // like CurrentBeatD
-      FracBeatD:    real;       // fractional part of MidBeatD
+      CurrentBeatD: integer;    // current discovered beat (rounded)
+      MidBeatD:     real;       // current discovered beat (float)
 
       // we use this for audible clicks
       // TODO: Change ...C to ...Click
       OldBeatC:     integer;    // previous discovered beat
       CurrentBeatC: integer;
       MidBeatC:     real;       // like CurrentBeatC
-      FracBeatC:    real;       // fractional part of MidBeatC
 
       OldLine:      integer;    // previous displayed sentence
 
+      StartTime:    real;       // time till start of lyrics (= Gap)
       TotalTime:    real;       // total song time
 
       constructor Create();
       procedure Pause();
       procedure Resume();
 
+      procedure Reset();
+      procedure UpdateBeats();
+
       (**
-       * current song time used as base-timer for lyrics etc.
+       * current song time (in seconds) used as base-timer for lyrics etc.
        *)
-      property CurrentTime: real read GetCurrentTime write SetCurrentTime;
+      function GetCurrentTime(): real;
+      procedure SetCurrentTime(Time: real);
   end;
 
 
@@ -926,11 +927,17 @@ begin
   end;
 end;
 
+
+{ TVoiceRemoval }
+
 constructor TLineState.Create();
 begin
   // create a triggered timer, so we can Pause() it, set the time
   // and Resume() it afterwards for better synching.
   Timer := TRelativeTimer.Create(true);
+
+  // reset state
+  Reset();
 end;
 
 procedure TLineState.Pause();
@@ -953,6 +960,56 @@ end;
 function TLineState.GetCurrentTime(): real;
 begin
   Result := Timer.GetTime();
+end;
+
+(**
+ * Resets the timer and state of the lyrics.
+ * The timer will be stopped afterwards so you have to call Resume()
+ * to start the lyrics timer. 
+ *)
+procedure TLineState.Reset();
+begin
+  Pause();
+  SetCurrentTime(0);
+
+  StartTime := 0;
+  TotalTime := 0;
+
+  OldBeat      := -1;
+  MidBeat      := -1;
+  CurrentBeat  := -1;
+
+  OldBeatC     := -1;
+  MidBeatC     := -1;
+  CurrentBeatC := -1;
+
+  OldBeatD     := -1;
+  MidBeatD     := -1;
+  CurrentBeatD := -1;
+end;
+
+(**
+ * Updates the beat information (CurrentBeat/MidBeat/...) according to the
+ * current lyric time.
+ *)
+procedure TLineState.UpdateBeats();
+var
+  CurLyricsTime: real;
+begin
+  CurLyricsTime := GetCurrentTime();
+
+  OldBeat := CurrentBeat;
+  MidBeat := GetMidBeat(CurLyricsTime - StartTime / 1000);
+  CurrentBeat := Floor(MidBeat);
+
+  OldBeatC := CurrentBeatC;
+  MidBeatC := GetMidBeat(CurLyricsTime - StartTime / 1000);
+  CurrentBeatC := Floor(MidBeatC);
+
+  OldBeatD := CurrentBeatD;
+  // MidBeatD = MidBeat with additional GAP
+  MidBeatD := -0.5 + GetMidBeat(CurLyricsTime - (StartTime + 120 + 20) / 1000);
+  CurrentBeatD := Floor(MidBeatD);
 end;
 
 

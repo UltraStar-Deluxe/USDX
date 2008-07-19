@@ -671,29 +671,13 @@ var
   CP:       integer;
   Done:     real;
   N:        integer;
+  CurLine:  PLine;
+  CurNote:  PLineFragment;
 begin
-  LineState.OldBeat := LineState.CurrentBeat;
-  // new system with variable BPM in function
-  LineState.MidBeat := GetMidBeat(LineState.CurrentTime -
-                                  (CurrentSong.Gap {+ 90 I've forgotten for what it is}) / 1000);
-  LineState.CurrentBeat := Floor(LineState.MidBeat);
-
-  //LineState.OldHalf := LineState.AktHalf;
-  //LineState.MidHalf := LineState.MidBeat + 0.5;
-  //LineState.AktHalf := Floor(LineState.MidHalf);
-
-  LineState.OldBeatC := LineState.CurrentBeatC;
-  LineState.MidBeatC := GetMidBeat(LineState.CurrentTime - (CurrentSong.Gap) / 1000);
-  LineState.CurrentBeatC := Floor(LineState.MidBeatC);
-
-  LineState.OldBeatD := LineState.CurrentBeatD;
-  // MidBeat with additional GAP
-  LineState.MidBeatD := -0.5+GetMidBeat(LineState.CurrentTime - (CurrentSong.Gap + 120 + 20) / 1000);
-  LineState.CurrentBeatD := Floor(LineState.MidBeatD);
-  LineState.FracBeatD := Frac(LineState.MidBeatD);
+  LineState.UpdateBeats();
 
   // sentences routines
-  for CountGr := 0 to 0 do //High(Gracz)
+  for CountGr := 0 to 0 do //High(Lines)
   begin;
     CP := CountGr;
     // old parts
@@ -713,10 +697,6 @@ begin
 
   end; // for CountGr
 
-  // execute operations on beat 
-  if (LineState.CurrentBeat >= 0) and (LineState.OldBeat <> LineState.CurrentBeat) then
-    NewBeat(Screen);
-
   // make some operations on clicks
   if {(LineState.CurrentBeatC >= 0) and }(LineState.OldBeatC <> LineState.CurrentBeatC) then
     NewBeatClick(Screen);
@@ -725,42 +705,19 @@ begin
   if (LineState.CurrentBeatD >= 0) and (LineState.OldBeatD <> LineState.CurrentBeatD) then
     NewBeatDetect(Screen);
 
-  // execute operations on beat field 
-//  if (LineState.AktHalf >= 1) and (LineState.OldHalf <> LineState.AktHalf) then
-//    NewHalf;
+  CurLine := @Lines[0].Line[Lines[0].Current];
 
   // remove moving text
   Done := 1;
-  for N := 0 to Lines[0].Line[Lines[0].Current].HighNote do
+  for N := 0 to CurLine.HighNote do
   begin
-    if (Lines[0].Line[Lines[0].Current].Note[N].Start <= LineState.MidBeat) and
-       (Lines[0].Line[Lines[0].Current].Note[N].Start + Lines[0].Line[Lines[0].Current].Note[N].Length >= LineState.MidBeat) then
+    CurNote := @CurLine.Note[N];
+    if (CurNote.Start <= LineState.MidBeat) and
+       (CurNote.Start + CurNote.Length >= LineState.MidBeat) then
     begin
-      Done := (LineState.MidBeat - Lines[0].Line[Lines[0].Current].Note[N].Start) / (Lines[0].Line[Lines[0].Current].Note[N].Length);
+      Done := (LineState.MidBeat - CurNote.Start) / CurNote.Length;
     end;
   end;
-
-  N := Lines[0].Line[Lines[0].Current].HighNote;
-
-  // if last note is used
-  {// todo: Lyrics
-  if (Ini.LyricsEffect = 1) and (Done = 1) and
-    (LineState.MidBeat > Lines[0].Line[Lines[0].Current].Note[N].Start + Lines[0].Line[Lines[0].Current].Note[N].Length)
-    then Screen.LyricMain.Selected := -1;
-
-  if Done > 1 then Done := 1;
-  Screen.LyricMain.Done := Done;
-  }
-
-  // use Done with LCD
-  {
-  with ScreenSing do begin
-    if LyricMain.Selected >= 0 then begin
-      LCD.MoveCursor(1, LyricMain.SelectedLetter + Round((LyricMain.SelectedLength-1) * Done));
-      LCD.ShowCursor;
-    end;
-  end;
-  }
 end;
 
 procedure NewSentence(Screen: TScreenSing);
@@ -775,20 +732,6 @@ begin
     SetLength(Player[i].Note, 0);
   end;
 
-  // add words to lyrics
-  with Screen do
-  begin
-    {LyricMain.AddCzesc(Lines[0].Current);
-    if Lines[0].Current < Lines[0].High then
-      LyricSub.AddCzesc(Lines[0].Current+1)
-    else
-      LyricSub.Clear;}
-    while (not Lyrics.LineinQueue) and (Lyrics.LineCounter <= High(Lines[0].Line)) do
-      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
-  end;
-
-  //Screen.UpdateLCD;
-  
   // on sentence change...
   Screen.onSentenceChange(Lines[0].Current);
 end;
