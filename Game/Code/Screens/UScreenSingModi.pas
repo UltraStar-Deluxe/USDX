@@ -512,7 +512,7 @@ begin
   if DLLMan.Selected.LoadSong then
   begin
     // update static menu with time ...
-    CurLyricsTime := LineState.GetCurrentTime();
+    CurLyricsTime := LyricsState.GetCurrentTime();
     Min := Round(CurLyricsTime) div 60;
     Sec := Round(CurLyricsTime) mod 60;
 
@@ -543,7 +543,7 @@ begin
   if ShowFinish then begin
     if DllMan.Selected.LoadSong then
     begin
-      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LineState.GetCurrentTime*1000 <= CurrentSong.Finish)) then begin
+      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LyricsState.GetCurrentTime*1000 <= CurrentSong.Finish)) then begin
         //Pause Mod:
         if not Paused then
           Sing(Self);       // analyze song

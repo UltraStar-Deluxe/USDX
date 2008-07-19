@@ -401,8 +401,8 @@ begin
         Rec.Right := X + (Start+Length-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR - NotesW - 0.5  + 10*ScreenX;
 
         // (nowe) - dunno
-        if (Start+Length-1 = LineState.CurrentBeatD) then
-          Rec.Right := Rec.Right - (1-Frac(LineState.MidBeatD)) * TempR;
+        if (Start+Length-1 = LyricsState.CurrentBeatD) then
+          Rec.Right := Rec.Right - (1-Frac(LyricsState.MidBeatD)) * TempR;
         // the left note is more right than the right note itself, sounds weird - so we fix that xD
         if Rec.Right <= Rec.Left then
           Rec.Right := Rec.Left;
@@ -434,8 +434,8 @@ begin
         // Perfect note is stored
         if Perfect and (Ini.EffectSing=1) then
         begin
-          A := 1 - 2*(LineState.GetCurrentTime() - GetTimeFromBeat(Start+Length));
-          if not (Start+Length-1 = LineState.CurrentBeatD) then
+          A := 1 - 2*(LyricsState.GetCurrentTime() - GetTimeFromBeat(Start+Length));
+          if not (Start+Length-1 = LyricsState.CurrentBeatD) then
           begin
             //Star animation counter
             //inc(Starfr);
@@ -591,7 +591,7 @@ begin
     FirstNoteDelta := FirstNoteBeat - CurLine.Start;
 
     // beats from current beat to the first note of the line
-    BarMoveDelta := FirstNoteBeat - LineState.MidBeat;
+    BarMoveDelta := FirstNoteBeat - LyricsState.MidBeat;
 
     if (FirstNoteDelta > 8) and  // if the wait-time is large enough
        (BarMoveDelta > 0) then   // and the first note of the line is not reached
@@ -693,7 +693,7 @@ begin
   end;
 
   // draw Lyrics
-  LyricEngine.Draw(LineState.MidBeat);
+  LyricEngine.Draw(LyricsState.MidBeat);
   SingDrawLyricHelper(NR.Left, NR.WMid);
 
   // oscilloscope
@@ -911,7 +911,7 @@ begin
   end;
 
     // Draw Lyrics
-    ScreenSingModi.Lyrics.Draw(LineState.MidBeat);
+    ScreenSingModi.Lyrics.Draw(LyricsState.MidBeat);
 
     // todo: Lyrics
 {    // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
@@ -919,9 +919,9 @@ begin
     BarFrom := Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start;
     if BarFrom > 40 then BarFrom := 40;
     if (Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
-       (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat > 0) and                     // przed tekstem
-       (Lines[0].Line[Lines[0].Current].StartNote - LineState.MidBeat < 40) then begin            // ale nie za wczesnie
-         BarWspol := (LineState.MidBeat - (Lines[0].Line[Lines[0].Current].StartNote - BarFrom)) / BarFrom;
+       (Lines[0].Line[Lines[0].Current].StartNote - LyricsState.MidBeat > 0) and                     // przed tekstem
+       (Lines[0].Line[Lines[0].Current].StartNote - LyricsState.MidBeat < 40) then begin            // ale nie za wczesnie
+         BarWspol := (LyricsState.MidBeat - (Lines[0].Line[Lines[0].Current].StartNote - BarFrom)) / BarFrom;
          Rec.Left := NR.Left + BarWspol * (ScreenSingModi.LyricMain.ClientX - NR.Left - 50) + 10*ScreenX;
          Rec.Right := Rec.Left + 50;
          Rec.Top := Skin_LyricsT + 3;
@@ -1361,11 +1361,11 @@ begin
     glTexCoord2f(0, 0);
     glVertex2f(x, y);
 
-    CurLyricsTime := LineState.GetCurrentTime();
+    CurLyricsTime := LyricsState.GetCurrentTime();
     if (CurLyricsTime > 0) and
-       (LineState.TotalTime > 0) then
+       (LyricsState.TotalTime > 0) then
     begin
-      LyricsProgress := CurLyricsTime / LineState.TotalTime;
+      LyricsProgress := CurLyricsTime / LyricsState.TotalTime;
       glTexCoord2f((width * LyricsProgress) / 8, 0);
       glVertex2f(x + width * LyricsProgress, y);
 

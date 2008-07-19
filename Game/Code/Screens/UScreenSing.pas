@@ -220,7 +220,7 @@ begin
       // pause Time
       Paused := true;
 
-      LineState.Pause();
+      LyricsState.Pause();
 
       // pause Music
       AudioPlayback.Pause;
@@ -232,7 +232,7 @@ begin
     end
   else              //disable Pause
     begin
-      LineState.Resume();
+      LyricsState.Resume();
 
       // Play Music
       AudioPlayback.Play;
@@ -510,14 +510,14 @@ begin
     Tex_Background.TexNum := 0;
 
   // prepare lyrics timer
-  LineState.Reset();
-  LineState.SetCurrentTime(CurrentSong.Start);
-  LineState.StartTime := CurrentSong.Gap;
+  LyricsState.Reset();
+  LyricsState.SetCurrentTime(CurrentSong.Start);
+  LyricsState.StartTime := CurrentSong.Gap;
   if (CurrentSong.Finish > 0) then
-    LineState.TotalTime := CurrentSong.Finish / 1000
+    LyricsState.TotalTime := CurrentSong.Finish / 1000
   else
-    LineState.TotalTime := AudioPlayback.Length;
-  LineState.UpdateBeats();
+    LyricsState.TotalTime := AudioPlayback.Length;
+  LyricsState.UpdateBeats();
 
   // prepare music
   AudioPlayback.Stop();
@@ -911,7 +911,7 @@ end;
 procedure TScreenSing.onShowFinish;
 begin
   // start lyrics
-  LineState.Resume();
+  LyricsState.Resume();
 
   // start music
   AudioPlayback.Play();
@@ -1069,7 +1069,7 @@ begin
 
   // retrieve current lyrics time, we have to store the value to avoid
   // that min- and sec-values do not match 
-  CurLyricsTime := LineState.GetCurrentTime();
+  CurLyricsTime := LyricsState.GetCurrentTime();
   Min := Round(CurLyricsTime) div 60;
   Sec := Round(CurLyricsTime) mod 60;
 

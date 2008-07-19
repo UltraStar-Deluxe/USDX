@@ -65,10 +65,10 @@ type
   end;
 
   (**
-   * TLineState contains all information that concerns the
-   * state of the lyrics.
+   * TLyricsState contains all information concerning the
+   * state of the lyrics, e.g. the current beat or duration of the lyrics.
    *)
-  TLineState = class
+  TLyricsState = class
     private
       Timer:        TRelativeTimer; // keeps track of the current time
     public
@@ -513,7 +513,7 @@ type
 var
   // TODO: JB --- THESE SHOULD NOT BE GLOBAL
   Lines: array of TLines;
-  LineState: TLineState;
+  LyricsState: TLyricsState;
   SoundLib: TSoundLibrary;
 
 
@@ -930,7 +930,7 @@ end;
 
 { TVoiceRemoval }
 
-constructor TLineState.Create();
+constructor TLyricsState.Create();
 begin
   // create a triggered timer, so we can Pause() it, set the time
   // and Resume() it afterwards for better synching.
@@ -940,24 +940,24 @@ begin
   Reset();
 end;
 
-procedure TLineState.Pause();
+procedure TLyricsState.Pause();
 begin
   Timer.Pause();
 end;
 
-procedure TLineState.Resume();
+procedure TLyricsState.Resume();
 begin
   Timer.Resume();
 end;
 
-procedure TLineState.SetCurrentTime(Time: real);
+procedure TLyricsState.SetCurrentTime(Time: real);
 begin
   // do not start the timer (if not started already),
   // after setting the current time
   Timer.SetTime(Time, false);
 end;
 
-function TLineState.GetCurrentTime(): real;
+function TLyricsState.GetCurrentTime(): real;
 begin
   Result := Timer.GetTime();
 end;
@@ -967,7 +967,7 @@ end;
  * The timer will be stopped afterwards so you have to call Resume()
  * to start the lyrics timer. 
  *)
-procedure TLineState.Reset();
+procedure TLyricsState.Reset();
 begin
   Pause();
   SetCurrentTime(0);
@@ -992,7 +992,7 @@ end;
  * Updates the beat information (CurrentBeat/MidBeat/...) according to the
  * current lyric time.
  *)
-procedure TLineState.UpdateBeats();
+procedure TLyricsState.UpdateBeats();
 var
   CurLyricsTime: real;
 begin

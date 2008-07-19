@@ -231,7 +231,7 @@ begin
     Log.LogBenchmark('Initializing Sound', 1);
 
     // Lyrics-engine with media reference timer
-    LineState := TLineState.Create();
+    LyricsState := TLyricsState.Create();
 
     // Theme
     Log.BenchmarkStart(1);
@@ -648,35 +648,35 @@ var
   CurLine:  PLine;
   CurNote:  PLineFragment;
 begin
-  LineState.UpdateBeats();
+  LyricsState.UpdateBeats();
 
   // sentences routines
   for CountGr := 0 to 0 do //High(Lines)
   begin;
     CP := CountGr;
     // old parts
-    LineState.OldLine := Lines[CP].Current;
+    LyricsState.OldLine := Lines[CP].Current;
 
     // choose current parts
     for Count := 0 to Lines[CP].High do
     begin
-      if LineState.CurrentBeat >= Lines[CP].Line[Count].Start then
+      if LyricsState.CurrentBeat >= Lines[CP].Line[Count].Start then
         Lines[CP].Current := Count;
     end;
 
     // clean player note if there is a new line 
     // (optimization on halfbeat time)
-    if Lines[CP].Current <> LineState.OldLine then
+    if Lines[CP].Current <> LyricsState.OldLine then
       NewSentence(Screen);
 
   end; // for CountGr
 
   // make some operations on clicks
-  if {(LineState.CurrentBeatC >= 0) and }(LineState.OldBeatC <> LineState.CurrentBeatC) then
+  if {(LyricsState.CurrentBeatC >= 0) and }(LyricsState.OldBeatC <> LyricsState.CurrentBeatC) then
     NewBeatClick(Screen);
 
   // make some operations when detecting new voice pitch
-  if (LineState.CurrentBeatD >= 0) and (LineState.OldBeatD <> LineState.CurrentBeatD) then
+  if (LyricsState.CurrentBeatD >= 0) and (LyricsState.OldBeatD <> LyricsState.CurrentBeatD) then
     NewBeatDetect(Screen);
 
   CurLine := @Lines[0].Line[Lines[0].Current];
@@ -686,10 +686,10 @@ begin
   for N := 0 to CurLine.HighNote do
   begin
     CurNote := @CurLine.Note[N];
-    if (CurNote.Start <= LineState.MidBeat) and
-       (CurNote.Start + CurNote.Length >= LineState.MidBeat) then
+    if (CurNote.Start <= LyricsState.MidBeat) and
+       (CurNote.Start + CurNote.Length >= LyricsState.MidBeat) then
     begin
-      Done := (LineState.MidBeat - CurNote.Start) / CurNote.Length;
+      Done := (LyricsState.MidBeat - CurNote.Start) / CurNote.Length;
     end;
   end;
 end;
@@ -716,14 +716,14 @@ var
 begin
   // beat click
   if ((Ini.BeatClick = 1) and
-      ((LineState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0)) then
+      ((LyricsState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0)) then
   begin
     AudioPlayback.PlaySound(SoundLib.Click);
   end;
 
   for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
   begin
-    if (Lines[0].Line[Lines[0].Current].Note[Count].Start = LineState.CurrentBeatC) then
+    if (Lines[0].Line[Lines[0].Current].Note[Count].Start = LyricsState.CurrentBeatC) then
     begin
       // click assist
       if Ini.ClickAssist = 1 then
@@ -785,8 +785,8 @@ begin
     begin
       CurrentLineFragment := @Line.Note[LineFragmentIndex];
       // check if line is active
-      if ((CurrentLineFragment.Start <= LineState.CurrentBeatD) and
-          (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= LineState.CurrentBeatD)) and
+      if ((CurrentLineFragment.Start <= LyricsState.CurrentBeatD) and
+          (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= LyricsState.CurrentBeatD)) and
          (CurrentLineFragment.NoteType <> ntFreestyle) and // but ignore FreeStyle notes
          (CurrentLineFragment.Length > 0) then // and make sure the note lengths is at least 1
       begin
@@ -825,8 +825,8 @@ begin
       for LineFragmentIndex := 0 to Line.HighNote do
       begin
         CurrentLineFragment := @Line.Note[LineFragmentIndex];
-        if (CurrentLineFragment.Start <= LineState.OldBeatD+1) and
-           (CurrentLineFragment.Start + CurrentLineFragment.Length > LineState.OldBeatD+1) then
+        if (CurrentLineFragment.Start <= LyricsState.OldBeatD+1) and
+           (CurrentLineFragment.Start + CurrentLineFragment.Length > LyricsState.OldBeatD+1) then
         begin
           // compare notes (from song-file and from player)
 
@@ -889,7 +889,7 @@ begin
         // if last has the same tone
         if ((CurrentPlayer.LengthNote > 0) and
             (LastPlayerNote.Tone = CurrentSound.Tone) and
-            ((LastPlayerNote.Start + LastPlayerNote.Length) = LineState.CurrentBeatD)) then
+            ((LastPlayerNote.Start + LastPlayerNote.Length) = LyricsState.CurrentBeatD)) then
         begin
           NewNote := false;
         end;
@@ -897,7 +897,7 @@ begin
         // if is not as new note to control
         for LineFragmentIndex := 0 to Line.HighNote do
         begin
-          if (Line.Note[LineFragmentIndex].Start = LineState.CurrentBeatD) then
+          if (Line.Note[LineFragmentIndex].Start = LyricsState.CurrentBeatD) then
             NewNote := true;
         end;
 
@@ -913,10 +913,10 @@ begin
           LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
           with LastPlayerNote^ do
           begin
-            Start  := LineState.CurrentBeatD;
+            Start  := LyricsState.CurrentBeatD;
             Length := 1;
             Tone   := CurrentSound.Tone; // Tone || ToneAbs
-            Detect := LineState.MidBeat;
+            Detect := LyricsState.MidBeat;
             Hit    := NoteHit; // half note patch
           end;
         end
@@ -950,7 +950,7 @@ begin
   begin
     Line := @Lines[0].Line[SentenceDetected];
     CurrentLineFragment := @Line.Note[Line.HighNote];
-    if ((CurrentLineFragment.Start + CurrentLineFragment.Length - 1) = LineState.CurrentBeatD) then
+    if ((CurrentLineFragment.Start + CurrentLineFragment.Length - 1) = LyricsState.CurrentBeatD) then
     begin
       if assigned(Screen) then
         Screen.OnSentenceEnd(SentenceDetected);
