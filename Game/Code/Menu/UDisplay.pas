@@ -177,7 +177,8 @@ begin
         //Create Fading texture if we're just starting
         if FadeState = 0 then
         begin
-          // resize viewport to fit texture
+          // save old viewport and resize to fit texture
+          glPushAttrib(GL_VIEWPORT_BIT);
           glViewPort(0, 0, 512, 512);
 
           // draw screen that will be faded
@@ -196,7 +197,9 @@ begin
             FadeFailed := true;
             Log.LogWarn('Fading disabled: ' + gluErrorString(glError), 'TDisplay.Draw');
           end;
-          glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
+
+          // restore viewport
+          glPopAttrib();
 
           // blackscreen-hack
           if not BlackScreen then
