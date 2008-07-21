@@ -92,10 +92,12 @@ uses
   {$IFDEF Delphi}
   Dialogs,
   {$ENDIF}
+  {$IFDEF LINUX}
   {$IFDEF FPC}
   {$IF FPC_VERSION_INT >= 2002002} // >= 2.2.2
   clocale,
   {$IFEND}
+  {$ENDIF}
   {$ENDIF}
   UMain;
 
