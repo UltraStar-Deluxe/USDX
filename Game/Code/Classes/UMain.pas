@@ -214,6 +214,10 @@ begin
     Ini := TIni.Create;
     Ini.Load;
 
+    //it's possible that this is the first run, create a .ini file if neccessary
+    Log.LogStatus('Write Ini', 'Initialization');
+    Ini.Save;
+
     // Load Languagefile
     if (Params.Language <> -1) then
       Language.ChangeLanguage(ILanguage[Params.Language])
@@ -313,7 +317,7 @@ begin
     Log.LogStatus('Effect Manager', 'Initialization');
     GoldenRec := TEffectManager.Create;
     Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Particel System', 1);
+    Log.LogBenchmark('Loading Particle System', 1);
 
     // Joypad
     if (Ini.Joypad = 1) OR (Params.Joypad) then
