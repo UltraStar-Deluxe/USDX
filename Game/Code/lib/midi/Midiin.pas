@@ -112,7 +112,9 @@ uses
   Messages,
   Windows,
   MMSystem,
-  UCommon,
+  {$IFDEF FPC}
+  WinAllocation,
+  {$ENDIF}
   MidiDefs,
   MidiType,
   MidiCons,

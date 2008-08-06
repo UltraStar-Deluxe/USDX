@@ -107,7 +107,9 @@ uses
   Messages,
   Classes,
   MMSystem,
-  UCommon,
+  {$IFDEF FPC}
+  WinAllocation,
+  {$ENDIF}
   Circbuf,
   MidiType,
   MidiDefs,

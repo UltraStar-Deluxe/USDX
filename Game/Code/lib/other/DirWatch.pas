@@ -31,9 +31,11 @@ interface
 uses
   Windows,
   Messages,
-  SysUtils,
-  UCommon,
-  Classes;
+  Classes,
+  {$IFDEF FPC}
+  WinAllocation,
+  {$ENDIF}
+  SysUtils;
 
 type
   TNotifyFilters = set of (nfFilename, nfDirname, nfAttrib,

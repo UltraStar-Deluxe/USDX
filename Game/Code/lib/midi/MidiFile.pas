@@ -99,9 +99,11 @@ uses
   Windows,
   //Forms,
   Messages,
-  SysUtils,
-  UCommon,
-  Classes;
+  Classes,
+  {$IFDEF FPC}
+  WinAllocation,
+  {$ENDIF}
+  SysUtils;
 
 type
   TChunkType = (illegal, header, track);

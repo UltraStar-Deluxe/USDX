@@ -46,7 +46,7 @@ uses
   glext                  in 'lib\JEDI-SDL\OpenGL\Pas\glext.pas',
   sdl                    in 'lib\JEDI-SDL\SDL\Pas\sdl.pas',
   sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
-//  sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
+  //sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
   UMediaCore_SDL         in 'Classes\UMediaCore_SDL.pas',
 
@@ -57,29 +57,12 @@ uses
   bass                   in 'lib\bass\delphi\bass.pas',
   UAudioCore_Bass        in 'Classes\UAudioCore_Bass.pas',
   {$ENDIF}
-  {$IFDEF DARWIN}
-  PseudoThread           in 'MacOSX/Wrapper/PseudoThread.pas',
-  {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\delphi\portaudio.pas',
   UAudioCore_Portaudio   in 'Classes\UAudioCore_Portaudio.pas',
   {$ENDIF}
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\delphi\portmixer.pas',
-  {$ENDIF}
-
-  {$IFDEF MSWINDOWS}
-  midiout       in 'lib\midi\midiout.pas',
-  CIRCBUF       in 'lib\midi\CIRCBUF.PAS',
-  MidiType      in 'lib\midi\MidiType.PAS',
-  MidiDefs      in 'lib\midi\MidiDefs.PAS',
-  MidiCons      in 'lib\midi\MidiCons.PAS',
-  MidiFile      in 'lib\midi\MidiFile.PAS',
-  Delphmcb      in 'lib\midi\Delphmcb.PAS',
-  {$ENDIF}
-
-  {$IFDEF MSWINDOWS}
-  DirWatch      in 'lib\other\DirWatch.pas',
   {$ENDIF}
 
   {$IFDEF UseFFMpeg}
@@ -104,6 +87,27 @@ uses
   projectM      in 'lib\projectM\projectM.pas',
   {$ENDIF}
 
+  {$IFDEF MSWINDOWS}
+  {$IFDEF FPC}
+  // FPC compatibility file for Allocate/DeallocateHWnd
+  WinAllocation in 'lib\other\WinAllocation.pas',
+  {$ENDIF}
+
+  midiout       in 'lib\midi\midiout.pas',
+  CIRCBUF       in 'lib\midi\CIRCBUF.PAS',
+  MidiType      in 'lib\midi\MidiType.PAS',
+  MidiDefs      in 'lib\midi\MidiDefs.PAS',
+  MidiCons      in 'lib\midi\MidiCons.PAS',
+  MidiFile      in 'lib\midi\MidiFile.PAS',
+  Delphmcb      in 'lib\midi\Delphmcb.PAS',
+
+  DirWatch      in 'lib\other\DirWatch.pas',
+  {$ENDIF}
+
+  {$IFDEF DARWIN}
+  PseudoThread           in 'MacOSX/Wrapper/PseudoThread.pas',
+  {$ENDIF}
+  
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3       in 'lib\SQLite\SQLite3.pas',
 
