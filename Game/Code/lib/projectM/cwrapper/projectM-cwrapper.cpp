@@ -2,7 +2,7 @@
 
 #define PM_CLASS(pm) ((projectM*)pm)
 
-#if (PROJECTM_VERSION_INT >= 1010000)
+#if (PROJECTM_VERSION_INT > 1000000)
 #define	PM_PCM(pm) (PM_CLASS(pm)->pcm())
 #else
 #define	PM_PCM(pm) (PM_CLASS(pm)->pcm)
@@ -13,7 +13,7 @@ projectM_ptr projectM_create1(char* config_file)
     return projectM_ptr(new projectM(config_file));
 }
 
-#if (PROJECTM_VERSION_INT < 1010000)
+#if (PROJECTM_VERSION_INT < 1000000)
 projectM_ptr projectM_create2(int gx, int gy, int fps, int texsize, 
 			      int width, int height, char* preset_url, 
 			      char* title_fonturl, char* title_menuurl)
@@ -80,7 +80,7 @@ void PCM_addPCM8_512(projectM_ptr pm, const unsigned char pcm_data[2][512])
 
 #define COPY_FIELD(c_ptr, s, fld) (c_ptr->fld = s.fld)
 
-#if (PROJECTM_VERSION_INT >= 1010000)
+#if (PROJECTM_VERSION_INT > 1000000)
 void projectM_settings(projectM_ptr pm, Settings* settings)
 {
     const projectM::Settings& pmSettings = PM_CLASS(pm)->settings();

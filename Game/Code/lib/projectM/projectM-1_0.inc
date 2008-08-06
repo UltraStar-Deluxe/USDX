@@ -1,5 +1,18 @@
 //uses
 
+(**
+ * Note: be careful with ProjectM's versioning scheme.
+ *
+ * Version  | Version in pkg-config .pc file
+ * ---------+--------------------------------------------
+ * 1.00     | 1.00
+ * 1.01     | 1.00
+ * 1.1      | 1.10
+ * 1.2      | 1.2 (= 1.02)
+ *
+ * So the version number of 1.1 is bigger than that of 1.2.
+ *)
+
 const
 {$IFDEF MSWINDOWS}
   // Note: static linking is not possible with delphi because it does neither
@@ -21,7 +34,7 @@ type
 
 { projectM.hpp declarations }
 function _projectM_create1(config_file: PChar): _PProjectM; cdecl; external libprojectM_cwrapper name 'projectM_create1';
-{$IF PROJECTM_VERSION < 1010000}
+{$IF PROJECTM_VERSION < 1000000} // 0.9x
 function _projectM_create2(gx: cint; gy: cint; fps: cint;
   texsize: cint; width: cint; height: cint;
   preset_url: PChar; title_fonturl: PChar; title_menuurl: PChar): _PProjectM; cdecl; external libprojectM_cwrapper name 'projectM_create2';
@@ -37,7 +50,7 @@ procedure _projectM_free(pm: _PProjectM); cdecl; external libprojectM_cwrapper n
 procedure _projectM_key_handler(pm: _PProjectM; event: TProjectMEvent;
   keycode: TProjectMKeycode; modifier: TProjectMModifier); cdecl; external libprojectM_cwrapper name 'projectM_key_handler';
 
-{$IF PROJECTM_VERSION >= 1010000}
+{$IF PROJECTM_VERSION > 1000000} // > 1.01
 procedure _projectM_settings(pm: _PProjectM; settings: PSettings); cdecl; external libprojectM_cwrapper name 'projectM_settings';
 {$IFEND}
 
@@ -157,7 +170,7 @@ begin
   KeyHandler(PROJECTM_KEYDOWN, PROJECTM_K_F3, PROJECTM_KMOD_LSHIFT);
 end;
                        
-{$IF PROJECTM_VERSION >= 1010000}
+{$IF PROJECTM_VERSION > 1000000} // > 1.01
 procedure TProjectM.Settings(var settings: TSettings);
 begin
   _projectM_settings(data, @settings);

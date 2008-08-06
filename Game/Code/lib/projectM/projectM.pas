@@ -178,7 +178,7 @@ type
     private
       data: Pointer;
     public
-      {$IF PROJECTM_VERSION < 1000000}
+      {$IF PROJECTM_VERSION < 1000000} // 0.9x
       constructor Create(gx, gy: integer; fps: integer;
         texsize: integer; width, height: integer;
         const presetsDir, fontsDir: string;
@@ -214,7 +214,7 @@ type
                            keycode:  TProjectMKeycode;
                            modifier: TProjectMModifier);
 
-      {$IF PROJECTM_VERSION >= 1010000}
+      {$IF PROJECTM_VERSION > 1000000} // > 1.01
       procedure Settings(var settings: TSettings);
       {$IFEND}
 
