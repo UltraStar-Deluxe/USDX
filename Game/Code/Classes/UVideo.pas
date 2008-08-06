@@ -611,6 +611,12 @@ begin
     Exit;
   end;
 
+  // TODO: support for pan&scan
+  //if (AVFrame.pan_scan <> nil) then
+  //begin
+  //  Writeln(Format('PanScan: %d/%d', [AVFrame.pan_scan.width, AVFrame.pan_scan.height]));
+  //end;
+
   // otherwise we convert the pixeldata from YUV to RGB
   {$IFDEF UseSWScale}
   errnum := sws_scale(SoftwareScaleContext, @(AVFrame.data), @(AVFrame.linesize),
@@ -661,7 +667,7 @@ var
   ScreenUpperPos, ScreenLowerPos: Single;
   ScaledVideoWidth, ScaledVideoHeight: Single;
   ScreenMidPosX, ScreenMidPosY: Single;
-  ScreenAspect, RenderAspect: Single;
+  ScreenAspect: Single;
 begin
   // have a nice black background to draw on (even if there were errors opening the vid)
   if (Screen = 1) then
@@ -683,14 +689,13 @@ begin
   // correction because of the white bars at the top and bottom.
   
   ScreenAspect := ScreenW / ScreenH;
-  RenderAspect := RenderW / RenderH;
   ScaledVideoWidth := RenderW;
-  ScaledVideoHeight := ScaledVideoWidth/VideoAspect * ScreenAspect/RenderAspect;
+  ScaledVideoHeight := RenderH * ScreenAspect/VideoAspect;
 
   // Note: Scaling the width does not look good because the video might contain
   // black borders at the top already 
   //ScaledVideoHeight := RenderH;
-  //ScaledVideoWidth := ScaledVideoHeight*VideoAspect * RenderAspect/ScreenAspect;
+  //ScaledVideoWidth  := RenderW * VideoAspect/ScreenAspect;
 
   // center the video
   ScreenMidPosX := RenderW/2;
