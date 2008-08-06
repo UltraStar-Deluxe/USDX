@@ -790,6 +790,9 @@ procedure TVideoPlayback_FFMpeg.SetPosition(Time: real);
 var
   SeekFlags: integer;
 begin
+  if not fVideoOpened then
+    Exit;
+
   if (Time < 0) then
     Time := 0;
 
