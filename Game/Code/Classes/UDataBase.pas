@@ -16,23 +16,35 @@ uses USongs,
 //DataBaseSystem - Class including all DB Methods
 //--------------------
 type
+  TStatType = (
+    stBestScores,   // Best Scores
+    stBestSingers,  // Best Singers
+    stMostSungSong, // Most sung Songs
+    stMostPopBand   // Most popular Band
+  );
+
   TStatResult = record
-    case Typ: Byte of
-      0: (Singer:       ShortString;
-          Score:        Word;
-          Difficulty:   Byte;
-          SongArtist:   ShortString;
-          SongTitle:    ShortString);
-
-      1: (Player:       ShortString;
-          AverageScore: Word);
-
-      2: (Artist:       ShortString;
-          Title:        ShortString;
-          TimesSung:    Word);
-
-      3: (ArtistName:   ShortString;
-          TimesSungTot: Word);
+    case Typ: TStatType of
+      stBestScores: (
+        Singer:       ShortString;
+        Score:        Word;
+        Difficulty:   Byte;
+        SongArtist:   ShortString;
+        SongTitle:    ShortString
+      );
+      stBestSingers: (
+        Player:       ShortString;
+        AverageScore: Word
+      );
+      stMostSungSong: (
+        Artist:       ShortString;
+        Title:        ShortString;
+        TimesSung:    Word
+      );
+      stMostPopBand: (
+        ArtistName:   ShortString;
+        TimesSungTot: Word
+      );
   end;
   AStatResult = array of TStatResult;
 
@@ -68,8 +80,8 @@ type
       procedure AddScore(Song: TSong; Level: integer; const Name: WideString; Score: integer);
       procedure WriteScore(Song: TSong);
 
-      function GetStats(var Stats: AStatResult; Typ, Count: Byte; Page: Cardinal; Reversed: Boolean): Boolean;
-      function GetTotalEntrys(Typ: Byte): Cardinal;
+      function GetStats(var Stats: AStatResult; Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): Boolean;
+      function GetTotalEntrys(Typ: TStatType): Cardinal;
       function GetStatReset: TDateTime;
   end;
 
@@ -88,10 +100,9 @@ const
   cUS_Songs  = 'us_songs';
   cUS_Statistics_Info  = 'us_statistics_info';
 
-//--------------------
-//Create - Opens Database and Create Tables if not Exist
-//--------------------
-
+(**
+ * Opens Database and Create Tables if not Exist
+ *)
 procedure TDataBaseSystem.Init(const Filename: string);
 begin
   if Assigned(ScoreDB) then
@@ -105,6 +116,14 @@ begin
     ScoreDB   := TSQLiteDatabase.Create(Filename);
     fFilename := Filename;
 
+    // SQLite does not handle VARCHAR(n) or INT(n) as expected.
+    // Texts do not have a restricted length, no matter which type is used,
+    // so use the native TEXT type. INT(n) is always INTEGER.
+    // In addition, SQLiteTable3 will fail if other types than the native SQLite
+    // types are used (especially FieldAsInteger). Also take care to write the
+    // types in upper-case letters although SQLite does not care about this -
+    // SQLiteTable3 is very sensitive in this regard.
+     
     ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Scores+'] (' +
                       '[SongID] INTEGER NOT NULL, ' +
                       '[Difficulty] INTEGER NOT NULL, ' +
@@ -139,9 +158,9 @@ begin
 
 end;
 
-//--------------------
-//Destroy - Frees Database
-//--------------------
+(**
+ * Frees Database
+ *)
 destructor TDataBaseSystem.Destroy;
 begin
   Log.LogInfo('TDataBaseSystem.Free', 'TDataBaseSystem.Destroy');
@@ -149,12 +168,12 @@ begin
   inherited;
 end;
 
-//--------------------
-//ReadScore - Read Scores into SongArray
-//--------------------
+(**
+ * Read Scores into SongArray
+ *)
 procedure TDataBaseSystem.ReadScore(Song: TSong);
 var
-  TableData: TSqliteTable;
+  TableData: TSQLiteUniTable;
   Difficulty: Integer;
 begin
   if not Assigned(ScoreDB) then
@@ -164,7 +183,7 @@ begin
 
   try
     // Search Song in DB
-    TableData := ScoreDB.GetTable(
+    TableData := ScoreDB.GetUniTable(
       'SELECT [Difficulty], [Player], [Score] FROM ['+cUS_Scores+'] ' +
       'WHERE [SongID] = (' +
         'SELECT [ID] FROM ['+cUS_Songs+'] ' +
@@ -182,18 +201,18 @@ begin
     while (not TableData.EOF) do
     begin
       // Add one Entry to Array
-      Difficulty := StrToIntDef(TableData.FieldAsString(TableData.FieldIndex['Difficulty']), -1);
+      Difficulty := TableData.FieldAsInteger(TableData.FieldIndex['Difficulty']);
       if ((Difficulty >= 0) and (Difficulty <= 2)) and
          (Length(Song.Score[Difficulty]) < 5) then
       begin
         SetLength(Song.Score[Difficulty], Length(Song.Score[Difficulty]) + 1);
 
         Song.Score[Difficulty, High(Song.Score[Difficulty])].Name  :=
-            UTF8Decode(TableData.FieldAsString(TableData.FieldIndex['Player']));
+            UTF8Decode(TableData.FieldByName['Player']);
         Song.Score[Difficulty, High(Song.Score[Difficulty])].Score :=
-            StrtoInt(TableData.FieldAsString(TableData.FieldIndex['Score']));
+            TableData.FieldAsInteger(TableData.FieldIndex['Score']);
       end;
-      
+
       TableData.Next;
     end; // while
 
@@ -208,9 +227,9 @@ begin
   TableData.Free;
 end;
 
-//--------------------
-//AddScore - Add one new Score to DB
-//--------------------
+(**
+ * Adds one new score to DB
+ *)
 procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: WideString; Score: integer);
 var
   ID: Integer;
@@ -219,7 +238,7 @@ begin
   if not Assigned(ScoreDB) then
     Exit;
 
-  //Prevent 0 Scores from being added
+  // Prevent 0 Scores from being added
   if (Score <= 0) then
     Exit;
 
@@ -231,43 +250,47 @@ begin
         'SELECT [ID] FROM ['+cUS_Songs+'] ' +
         'WHERE [Artist] = ? AND [Title] = ?',
         [UTF8Encode(Song.Artist), UTF8Encode(Song.Title)]);
-    if ID = 0 then //Song doesn't exist -> Create
+    if (ID = 0) then
     begin
-      ScoreDB.ExecSQL (
+      // Create song if it does not exist
+      ScoreDB.ExecSQL(
           'INSERT INTO ['+cUS_Songs+'] ' +
           '([ID], [Artist], [Title], [TimesPlayed]) VALUES ' +
           '(NULL, ?, ?, 0);',
           [UTF8Encode(Song.Artist), UTF8Encode(Song.Title)]);
-      ID := ScoreDB.GetTableValue(
-          'SELECT [ID] FROM ['+cUS_Songs+'] ' +
-          'WHERE [Artist] = ? AND [Title] = ?',
-          [UTF8Encode(Song.Artist), UTF8Encode(Song.Title)]);
-      if ID = 0 then //Could not Create Table
-        Exit;
+      // Get song-ID
+      ID := ScoreDB.GetLastInsertRowID();
     end;
-    //Create new Entry
+    // Create new entry
     ScoreDB.ExecSQL(
         'INSERT INTO ['+cUS_Scores+'] ' +
         '([SongID] ,[Difficulty], [Player], [Score]) VALUES ' +
         '(?, ?, ?, ?);',
         [ID, Level, UTF8Encode(Name), Score]);
 
-    //Delete Last Position when there are more than 5 Entrys - Fixes Crash when there are > 5 ScoreEntrys
+    // Delete last position when there are more than 5 entrys.
+    // Fixes crash when there are > 5 ScoreEntrys
+    // Note: GetUniTable is not applicable here, as the results are used while
+    // table entries are deleted.
     TableData := ScoreDB.GetTable(
         'SELECT [Player], [Score] FROM ['+cUS_Scores+'] ' +
         'WHERE [SongID] = ' + InttoStr(ID) + ' AND ' +
               '[Difficulty] = ' + InttoStr(Level) +' ' +
         'ORDER BY [Score] DESC LIMIT -1 OFFSET 5');
 
-    while not TableData.EOF do
+    while (not TableData.EOF) do
     begin
+      // Note: Score is an int-value, so in contrast to Player, we do not bind
+      // this value. Otherwise we had to convert the string to an int to avoid
+      // an automatic cast of this field to the TEXT type (although it might even
+      // work that way).
       ScoreDB.ExecSQL(
           'DELETE FROM ['+cUS_Scores+'] ' +
           'WHERE [SongID] = ' + InttoStr(ID) + ' AND ' +
                 '[Difficulty] = ' + InttoStr(Level) +' AND ' +
-                '[Player] = ? AND [Score] = ?',
-          [TableData.FieldAsString(TableData.FieldIndex['Player']),
-           TableData.FieldAsString(TableData.FieldIndex['Score'])]);
+                '[Player] = ? AND ' +
+                '[Score] = ' + TableData.FieldByName['Score'],
+          [TableData.FieldByName['Player']]);
 
       TableData.Next;
     end;
@@ -279,16 +302,17 @@ begin
   TableData.Free;
 end;
 
-//--------------------
-//WriteScore - Not needed with new System; But used for Increment Played Count
-//--------------------
+(**
+ * Not needed with new System.
+ * Used for increment played count
+ *)
 procedure TDataBaseSystem.WriteScore(Song: TSong);
 begin
   if not Assigned(ScoreDB) then
     Exit;
     
   try
-    //Increase TimesPlayed
+    // Increase TimesPlayed
     ScoreDB.ExecSQL(
         'UPDATE ['+cUS_Songs+'] ' +
         'SET [TimesPlayed] = [TimesPlayed] + 1 ' +
@@ -299,18 +323,14 @@ begin
   end;
 end;
 
-//--------------------
-//GetStats - Write some Stats to Array, Returns True if Chossen Page has Entrys
-//Case Typ of
-//0 - Best Scores
-//1 - Best Singers
-//2 - Most sung Songs
-//3 - Most popular Band
-//--------------------
-function TDataBaseSystem.GetStats(var Stats: AStatResult; Typ, Count: Byte; Page: Cardinal; Reversed: Boolean): Boolean;
+(**
+ * Writes some stats to array.
+ * Returns true if choosen page has entrys
+ *)
+function TDataBaseSystem.GetStats(var Stats: AStatResult; Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): Boolean;
 var
   Query: String;
-  TableData: TSqliteTable;
+  TableData: TSQLiteUniTable;
 begin
   Result := False;
 
@@ -320,37 +340,37 @@ begin
   if (Length(Stats) < Count) then
     Exit;
 
-  {Todo:  Add Prevention that only Players with more than 5 Scores are Selected at Typ 2}
+  {Todo:  Add Prevention that only players with more than 5 scores are selected at type 2}
 
-  //Create Query
+  // Create query
   case Typ of
-    0: begin
+    stBestScores: begin
       Query := 'SELECT [Player], [Difficulty], [Score], [Artist], [Title] FROM ['+cUS_Scores+'] ' +
                'INNER JOIN ['+cUS_Songs+'] ON ([SongID] = [ID]) ORDER BY [Score]';
     end;
-    1: begin
+    stBestSingers: begin
       Query := 'SELECT [Player], ROUND(AVG([Score])) FROM ['+cUS_Scores+'] ' +
                'GROUP BY [Player] ORDER BY AVG([Score])';
     end;
-    2: begin
+    stMostSungSong: begin
       Query := 'SELECT [Artist], [Title], [TimesPlayed] FROM ['+cUS_Songs+'] ' +
                'ORDER BY [TimesPlayed]';
     end;
-    3: begin
+    stMostPopBand: begin
       Query := 'SELECT [Artist], SUM([TimesPlayed]) FROM ['+cUS_Songs+'] ' +
                'GROUP BY [Artist] ORDER BY SUM([TimesPlayed])';
     end;
   end;
 
-  //Add Order Direction
+  // Add order direction
   Query := Query + IfThen(Reversed, ' ASC', ' DESC');
 
-  //Add Limit
+  // Add limit
   Query := Query + ' LIMIT ' + InttoStr(Count * Page) + ', ' + InttoStr(Count) + ';';
 
-  //Execute Query
+  // Execute query
   try
-    TableData := ScoreDB.GetTable(Query);
+    TableData := ScoreDB.GetUniTable(Query);
   except
     on E: Exception do
     begin
@@ -359,42 +379,38 @@ begin
     end;
   end;
 
-  //if result is empty -> Exit
-  if (TableData.RowCount < 1) then
+  if (TableData.EOF) then
+  begin
+    TableData.Free;
     Exit;
+  end;
 
-  //Copy Result to Stats Array
+  // Copy result to stats array
   while not TableData.EOF do
   begin
     Stats[TableData.Row].Typ := Typ;
 
     case Typ of
-      0:begin
-          Stats[TableData.Row].Singer := UTF8Decode(TableData.Fields[0]);
-
-          Stats[TableData.Row].Difficulty := StrtoIntDef(TableData.Fields[1], 0);
-
-          Stats[TableData.Row].Score := StrtoIntDef(TableData.Fields[2], 0){TableData.FieldAsInteger(2)};
-          Stats[TableData.Row].SongArtist := UTF8Decode(TableData.Fields[3]);
-          Stats[TableData.Row].SongTitle := UTF8Decode(TableData.Fields[4]);
-        end;
-
-        1:begin
-          Stats[TableData.Row].Player := UTF8Decode(TableData.Fields[0]);
-          Stats[TableData.Row].AverageScore := StrtoIntDef(TableData.Fields[1], 0);
-        end;
-
-        2:begin
-          Stats[TableData.Row].Artist := UTF8Decode(TableData.Fields[0]);
-          Stats[TableData.Row].Title  := UTF8Decode(TableData.Fields[1]);
-          Stats[TableData.Row].TimesSung  := StrtoIntDef(TableData.Fields[2], 0);
-        end;
-
-        3:begin
-          Stats[TableData.Row].ArtistName := UTF8Decode(TableData.Fields[0]);
-          Stats[TableData.Row].TimesSungTot := StrtoIntDef(TableData.Fields[1], 0);
-        end;
-
+      stBestScores: begin
+        Stats[TableData.Row].Singer := UTF8Decode(TableData.Fields[0]);
+        Stats[TableData.Row].Difficulty := TableData.FieldAsInteger(1);
+        Stats[TableData.Row].Score := TableData.FieldAsInteger(2);
+        Stats[TableData.Row].SongArtist := UTF8Decode(TableData.Fields[3]);
+        Stats[TableData.Row].SongTitle := UTF8Decode(TableData.Fields[4]);
+      end;
+      stBestSingers: begin
+        Stats[TableData.Row].Player := UTF8Decode(TableData.Fields[0]);
+        Stats[TableData.Row].AverageScore := TableData.FieldAsInteger(1);
+      end;
+      stMostSungSong: begin
+        Stats[TableData.Row].Artist := UTF8Decode(TableData.Fields[0]);
+        Stats[TableData.Row].Title  := UTF8Decode(TableData.Fields[1]);
+        Stats[TableData.Row].TimesSung  := TableData.FieldAsInteger(2);
+      end;
+      stMostPopBand: begin
+        Stats[TableData.Row].ArtistName := UTF8Decode(TableData.Fields[0]);
+        Stats[TableData.Row].TimesSungTot := TableData.FieldAsInteger(1);
+      end;
     end;
 
     TableData.Next;
@@ -404,10 +420,10 @@ begin
   Result := True;
 end;
 
-//--------------------
-//GetTotalEntrys - Get Total Num of entrys for a Stats Query
-//--------------------
-function  TDataBaseSystem.GetTotalEntrys(Typ: Byte): Cardinal;
+(**
+ * Gets total number of entrys for a stats query
+ *)
+function  TDataBaseSystem.GetTotalEntrys(Typ: TStatType): Cardinal;
 var
   Query: String;
 begin
@@ -417,12 +433,16 @@ begin
     Exit;
 
   try
-    //Create Query
+    // Create query
     case Typ of
-      0: Query := 'SELECT COUNT([SongID]) FROM ['+cUS_Scores+'];';
-      1: Query := 'SELECT COUNT(DISTINCT [Player]) FROM ['+cUS_Scores+'];';
-      2: Query := 'SELECT COUNT([ID]) FROM ['+cUS_Songs+'];';
-      3: Query := 'SELECT COUNT(DISTINCT [Artist]) FROM ['+cUS_Songs+'];';
+      stBestScores:
+        Query := 'SELECT COUNT([SongID]) FROM ['+cUS_Scores+'];';
+      stBestSingers:
+        Query := 'SELECT COUNT(DISTINCT [Player]) FROM ['+cUS_Scores+'];';
+      stMostSungSong:
+        Query := 'SELECT COUNT([ID]) FROM ['+cUS_Songs+'];';
+      stMostPopBand:
+        Query := 'SELECT COUNT(DISTINCT [Artist]) FROM ['+cUS_Songs+'];';
     end;
 
     Result := ScoreDB.GetTableValue(Query);
@@ -432,13 +452,13 @@ begin
 
 end;
 
-//--------------------
-//GetStatReset - Get reset date of statistic data
-//--------------------
+(**
+ * Gets reset date of statistic data
+ *)
 function TDataBaseSystem.GetStatReset: TDateTime;
 var
   Query: string;
-  TableData: TSQLiteTable;
+  TableData: TSQLiteUniTable;
 begin
   Result := 0;
 
@@ -449,7 +469,7 @@ begin
 
   try
     Query := 'SELECT [ResetTime] FROM ['+cUS_Statistics_Info+'];';
-    TableData := ScoreDB.GetTable(Query);
+    TableData := ScoreDB.GetUniTable(Query);
     Result := StrToDateTime(TableData.Fields[0]);
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.GetStatReset');

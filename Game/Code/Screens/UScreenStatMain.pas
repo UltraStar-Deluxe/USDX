@@ -81,7 +81,7 @@ begin
           else //One of the Stats Buttons Pressed
           begin
             AudioPlayback.PlaySound(SoundLib.Back);
-            ScreenStatDetail.Typ := Interaction;
+            ScreenStatDetail.Typ := TStatType(Interaction);
             FadeTo(@ScreenStatDetail);
           end;
         end;
@@ -213,12 +213,12 @@ begin
     %3:d Count of Songs with Video (A3)
     %4:s Name of the most popular Song}
   A1 := Songs.SongList.Count;
-  A2 := Database.GetTotalEntrys(2);
+  A2 := Database.GetTotalEntrys(stMostSungSong);
 
   A3 := SongswithVid;
 
   SetLength(Result1, 1);
-  Database.GetStats(Result1, 2, 1, 0, False);
+  Database.GetStats(Result1, stMostSungSong, 1, 0, False);
   A4 := Result1[0].Artist;
   A5 := Result1[0].Title;
 
@@ -237,13 +237,13 @@ begin
     %2:d Best Players Score
     %3:s Best Score Player (Result2)
     %4:d Best Score}
-  A1 := Database.GetTotalEntrys(1);
+  A1 := Database.GetTotalEntrys(stBestSingers);
 
   SetLength(Result1, 1);
-  Database.GetStats(Result1, 1, 1, 0, False);
+  Database.GetStats(Result1, stBestSingers, 1, 0, False);
 
   SetLength(Result2, 1);
-  Database.GetStats(Result2, 0, 1, 0, False);
+  Database.GetStats(Result2, stBestScores, 1, 0, False);
 
   try
     Overview := Overview + '\n \n' + Format(Formatstr, [A1, Result1[0].Player, Result1[0].AverageScore, Result2[0].Singer, Result2[0].Score]);

@@ -5,12 +5,19 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, SysUtils, UDisplay, UMusic, UIni, UThemes;
+  UMenu,
+  SDL,
+  SysUtils,
+  UDisplay,
+  UMusic,
+  UIni,
+  UDataBase,
+  UThemes;
 
 type
   TScreenStatDetail = class(TMenu)
     public
-      Typ:  Byte;
+      Typ:  TStatType;
       Page: CardinaL;
       Count: Byte;
       Reversed: Boolean;
@@ -30,14 +37,11 @@ type
 
 implementation
 
-{Stat Screens:
-  0 - Best Scores
-  1 - Best Singers
-  2 - Most sung Songs
-  3 - Most popular Band
-}
-
-uses UGraphic, UDataBase, ULanguage, math, ULog;
+uses
+  UGraphic,
+  ULanguage,
+  math,
+  ULog;
 
 function TScreenStatDetail.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
@@ -138,7 +142,7 @@ begin
     AddButtonText(14, 20, Theme.Options.Description[7]);
 
   Interaction := 0;
-  Typ := 0;
+  Typ := TStatType(0);
 end;
 
 procedure TScreenStatDetail.onShow;
@@ -148,8 +152,10 @@ begin
   //Set Tot Entrys and PAges
   TotEntrys := DataBase.GetTotalEntrys(Typ);
   TotPages := Ceil(TotEntrys / Count);
+
   //Show correct Title
   SetTitle;
+
   //Show First Page
   Reversed := False;
   SetPage(0);
@@ -157,14 +163,13 @@ end;
 
 procedure TScreenStatDetail.SetTitle;
 begin
-  //Set Title
-  Case Reversed of
-    True: Text[Count].Text := Theme.StatDetail.DescriptionR[Typ];
-    False: Text[Count].Text := Theme.StatDetail.Description[Typ];
-  end;
+  if Reversed then
+    Text[Count].Text := Theme.StatDetail.DescriptionR[Ord(Typ)]
+  else
+    Text[Count].Text := Theme.StatDetail.Description[Ord(Typ)];
 end;
 
-Procedure TScreenStatDetail.SetPage(NewPage: Cardinal);
+procedure TScreenStatDetail.SetPage(NewPage: Cardinal);
 var
   Result: AStatResult;
   I: Integer;
@@ -176,16 +181,16 @@ begin
   begin
     Page := NewPage;
 
-    FormatStr := Theme.StatDetail.FormatStr[Typ];
+    FormatStr := Theme.StatDetail.FormatStr[Ord(Typ)];
 
     //refresh Texts
-    For I := 0 to Count-1 do
+    for I := 0 to Count-1 do
     begin
       try
         case Typ of
-          0:begin //Best Scores
+          stBestScores: begin //Best Scores
             //Set Texts
-            if (Result[I].Score>0) then
+            if (Result[I].Score > 0) then
               Text[I].Text := Format(FormatStr, [Result[I].Singer,
                                                 Result[I].Score,
                                                 Theme.ILevel[Result[I].Difficulty],
@@ -195,18 +200,18 @@ begin
               Text[I].Text := '';
           end;
 
-          1:begin //Best Singers
+          stBestSingers: begin //Best Singers
             //Set Texts
-            if (Result[I].AverageScore>0) then
+            if (Result[I].AverageScore > 0) then
               Text[I].Text := Format(FormatStr, [Result[I].Player,
                                                 Result[I].AverageScore])
             else
               Text[I].Text := '';
           end;
 
-          2:begin //Popular Songs
+          stMostSungSong: begin //Popular Songs
             //Set Texts
-            if (Result[I].Artist<>'') then
+            if (Result[I].Artist <> '') then
               Text[I].Text := Format(FormatStr, [Result[I].Artist,
                                                  Result[I].Title,
                                                 Result[I].TimesSung])
@@ -214,9 +219,9 @@ begin
               Text[I].Text := '';
           end;
 
-          3:begin //Popular Bands
+          stMostPopBand: begin //Popular Bands
             //Set Texts
-            if (Result[I].ArtistName<>'') then
+            if (Result[I].ArtistName <> '') then
               Text[I].Text := Format(FormatStr, [Result[I].ArtistName,
                                                 Result[I].TimesSungtot])
             else
@@ -229,19 +234,16 @@ begin
       end;
     end;
 
-    if (Page + 1 = TotPages) AND (TotEntrys Mod Count <> 0) then
-      PerPage := (TotEntrys Mod Count)
+    if (Page + 1 = TotPages) and (TotEntrys mod Count <> 0) then
+      PerPage := (TotEntrys mod Count)
     else
       PerPage := Count;
 
-    Text[Count+1].Text := Format(Theme.StatDetail.PageStr, [Page + 1,
-                                                            TotPages,
-                                                            PerPage,
-                                                            TotEntrys]);
+    Text[Count+1].Text := Format(Theme.StatDetail.PageStr,
+        [Page + 1, TotPages, PerPage, TotEntrys]);
 
     //Show correct Title
     SetTitle;
-
   end;
 
 end;
@@ -250,7 +252,7 @@ end;
 procedure TScreenStatDetail.SetAnimationProgress(Progress: real);
 var I: Integer;
 begin
-  For I := 0 to high(Button) do
+  for I := 0 to High(Button) do
     Button[I].Texture.ScaleW := Progress;
 end;
 
