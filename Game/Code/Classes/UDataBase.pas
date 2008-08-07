@@ -329,16 +329,16 @@ begin
                'INNER JOIN ['+cUS_Songs+'] ON ([SongID] = [ID]) ORDER BY [Score]';
     end;
     1: begin
-      Query := 'SELECT [Player], ROUND (Sum([Score]) / COUNT([Score])) FROM ['+cUS_Scores+'] ' +
-               'GROUP BY [Player] ORDER BY (Sum([Score]) / COUNT([Score]))';
+      Query := 'SELECT [Player], ROUND(AVG([Score])) FROM ['+cUS_Scores+'] ' +
+               'GROUP BY [Player] ORDER BY AVG([Score])';
     end;
     2: begin
       Query := 'SELECT [Artist], [Title], [TimesPlayed] FROM ['+cUS_Songs+'] ' +
                'ORDER BY [TimesPlayed]';
     end;
     3: begin
-      Query := 'SELECT [Artist], Sum([TimesPlayed]) FROM ['+cUS_Songs+'] ' +
-               'GROUP BY [Artist] ORDER BY Sum([TimesPlayed])';
+      Query := 'SELECT [Artist], SUM([TimesPlayed]) FROM ['+cUS_Songs+'] ' +
+               'GROUP BY [Artist] ORDER BY SUM([TimesPlayed])';
     end;
   end;
 
@@ -359,7 +359,7 @@ begin
     end;
   end;
 
-  //if Result empty -> Exit
+  //if result is empty -> Exit
   if (TableData.RowCount < 1) then
     Exit;
 
