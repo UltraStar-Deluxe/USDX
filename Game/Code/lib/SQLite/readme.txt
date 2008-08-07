@@ -1,3 +1,15 @@
+5 June 2008
+Updated DLL to version 3.5.9 (built with MSVC 6.0)
+Added code from Andrew Retmanski to support prepared queries (see comments in SQLIteTable3.pas
+Lukas added support for named parameters - see comments in code
+User nebula enhanced error message; also modified code to call sqlite3_reset before checking error message
+
+
+27 Aug 2007
+Amended TSQLiteDatabase constructor to convert filename to UTF8,for compatibility with latest SQLite3 DLL.
+
+Updated DLL to version 3.4.2 (built with MSVC 6.0).
+
 14 Aug 2005
 
 The following changes were made by Lukas Gebauer (geby@volny.cz). In addition, some changes from a previous D5-compatible version were merged, and the supplied sqlite3.dll is updated to version 3.2.2
@@ -10,8 +22,7 @@ Notes from Lukas:
 
 - removed dependency on strutils
 
-- code is reformated to better look (official borland formationg
-rules)
+- code is reformatted to better look (official borland formatting rules)
 
 - added some pragma's after database is open (temp is in memory)
 

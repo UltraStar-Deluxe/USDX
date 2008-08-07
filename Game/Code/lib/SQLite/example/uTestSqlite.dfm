@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 242
-  Top = 242
+  Left = 199
+  Top = 280
   Width = 541
   Height = 308
   Caption = 'Test SQLite 3'
