@@ -18,7 +18,7 @@ type
   TScreenStatDetail = class(TMenu)
     public
       Typ:  TStatType;
-      Page: CardinaL;
+      Page: Cardinal;
       Count: Byte;
       Reversed: Boolean;
 

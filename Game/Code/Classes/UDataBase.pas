@@ -70,6 +70,9 @@ type
     private
       ScoreDB: TSqliteDatabase;
       fFilename: string;
+
+      function GetVersion(): integer;
+      procedure SetVersion(Version: integer);
     public
       property Filename: string read fFilename;
 
@@ -92,10 +95,12 @@ implementation
 
 uses
   ULog,
+  DateUtils,
   StrUtils,
   SysUtils;
 
 const
+  cDBVersion = 01; // 0.1
   cUS_Scores = 'us_scores';
   cUS_Songs  = 'us_songs';
   cUS_Statistics_Info  = 'us_statistics_info';
@@ -104,6 +109,8 @@ const
  * Opens Database and Create Tables if not Exist
  *)
 procedure TDataBaseSystem.Init(const Filename: string);
+var
+  Version: integer;
 begin
   if Assigned(ScoreDB) then
     Exit;
@@ -112,9 +119,28 @@ begin
 
   try
   
-    //Open Database
+    // Open Database
     ScoreDB   := TSQLiteDatabase.Create(Filename);
     fFilename := Filename;
+
+    // Close and delete outdated file
+    Version := GetVersion();
+    if ((Version <> 0) and (Version <> cDBVersion)) then
+    begin
+      Log.LogInfo('Outdated cover-database file found', 'TDataBaseSystem.Init');
+      // Close and delete outdated file
+      ScoreDB.Free;
+      if (not DeleteFile(Filename)) then
+        raise Exception.Create('Could not delete ' + Filename);
+      // Reopen
+      ScoreDB := TSQLiteDatabase.Create(Filename);
+      Version := 0;
+    end;
+    
+    // Set version number after creation
+    if (Version = 0) then
+      SetVersion(cDBVersion);
+    
 
     // SQLite does not handle VARCHAR(n) or INT(n) as expected.
     // Texts do not have a restricted length, no matter which type is used,
@@ -141,11 +167,12 @@ begin
     if not ScoreDB.TableExists(cUS_Statistics_Info) then
     begin
       ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Statistics_Info+'] (' +
-                        '[ResetTime] TEXT' +
+                        '[ResetTime] INTEGER' +
                       ');');
-      ScoreDB.ExecSQL('INSERT INTO ['+cUS_Statistics_Info+'] ' +
-                      '([ResetTime]) VALUES ' +
-                      '('''+DateTimeToStr(now)+''');');
+      // insert creation timestamp
+      ScoreDB.ExecSQL(Format('INSERT INTO ['+cUS_Statistics_Info+'] ' +
+                            '([ResetTime]) VALUES(%d);',
+                            [DateTimeToUnix(Now())]));
     end;
 
   except
@@ -458,24 +485,29 @@ end;
 function TDataBaseSystem.GetStatReset: TDateTime;
 var
   Query: string;
-  TableData: TSQLiteUniTable;
+  ResetTime: int64;
 begin
   Result := 0;
 
   if not Assigned(ScoreDB) then
     Exit;
 
-  TableData := nil;
-
   try
     Query := 'SELECT [ResetTime] FROM ['+cUS_Statistics_Info+'];';
-    TableData := ScoreDB.GetUniTable(Query);
-    Result := StrToDateTime(TableData.Fields[0]);
+    Result := UnixToDateTime(ScoreDB.GetTableValue(Query));
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.GetStatReset');
   end;
+end;
 
-  TableData.Free;
+function TDataBaseSystem.GetVersion(): integer;
+begin
+  Result := ScoreDB.GetTableValue('PRAGMA user_version');
+end;
+
+procedure TDataBaseSystem.SetVersion(Version: integer);
+begin
+  ScoreDB.ExecSQL(Format('PRAGMA user_version = %d', [Version]));
 end;
 
 end.
