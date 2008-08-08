@@ -443,8 +443,16 @@ begin
       begin
         ScreenW := Event.resize.w;
         ScreenH := Event.resize.h;
-        // Note: do NOT call SDL_SetVideoMode here. This would create a new
-        // OpenGL render-context and all texture data would be invalidated.
+        // Note: do NOT call SDL_SetVideoMode on Windows and MacOSX here.
+        // This would create a new OpenGL render-context and all texture data
+        // would be invalidated.
+        // On Linux the mode MUST be resetted, otherwise graphics will be corrupted.
+        {$IFDEF LINUX}
+        if boolean( Ini.FullScreen ) then
+          SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN)
+        else
+          SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+        {$ENDIF}
       end;
       SDL_KEYDOWN:
         begin
