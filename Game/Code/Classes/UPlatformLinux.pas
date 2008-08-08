@@ -90,7 +90,7 @@ begin
     {$IFDEF UseLocalDirs}
       Result := ExtractFilePath(ParamStr(0));
     {$ELSE}
-      Result := LogPath + PathDelim;
+      Result := GetGameUserPath() + 'logs' + PathDelim;
     {$ENDIF}
   end;
 

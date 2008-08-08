@@ -21,7 +21,7 @@ PACKAGE_IRC="#ultrastardx at quakenet.org"
 AC_SUBST(PACKAGE_IRC)
 
 # Specify a source-file so autoconf can check if the source-dir exists
-AC_CONFIG_SRCDIR(UltraStar.lpr)
+AC_CONFIG_SRCDIR(UltraStar.dpr)
 
 # This one is not used by autoconf at the moment.
 # When it is used maybe we don't need aclocal's -I parameter anymore.
@@ -292,13 +292,6 @@ if [[ x$suffix = xno -o x$suffix = xyes ]] ; then
 fi
 AC_SUBST(suffix)
 
-# add logdir option
-AC_ARG_WITH([logrootdir], 
-    [AS_HELP_STRING([--with-logrootdir=DIR],
-      [logging root directory @<:@default=/var/log@:>@])],
-    [with_logrootdir=$withval], [with_logrootdir="/var/log"])
-AC_SUBST(logrootdir, [$with_logrootdir])
-
 # print misc options header
 AC_ARG_WITH([cfg-dummy3], [
 Development options:])
@@ -489,10 +482,6 @@ AC_MSG_NOTICE([
 !!! Bugs might already be fixed in the developers' working copies.
 !!! If you want to contribute, visit the IRC-Channel instead:
 !!!   $PACKAGE_IRC
-!!!
-!!! Known issues:
-!!! - Audio-output and -input are not working yet
-!!! - The editor is broken
 !!!
 !!! PLEASE DO NOT SEND BUGREPORTS FOR THIS VERSION.
 !!!
