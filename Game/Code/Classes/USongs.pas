@@ -358,6 +358,9 @@ begin
       CompareFunc := CompareByArtist;
     sLanguage: // by Language
       CompareFunc := CompareByLanguage;
+    else
+      Log.LogCritical('Unsupported comparison', 'TSongs.Sort');
+      Exit; // suppress warning
   end; // case
 
   // Note: Do not use TList.Sort() as it uses QuickSort which is instable.
