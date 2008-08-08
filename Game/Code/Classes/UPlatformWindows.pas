@@ -8,6 +8,9 @@ interface
 
 {$I switches.inc}
 
+// turn off messages for platform specific symbols
+{$WARN SYMBOL_PLATFORM OFF}
+
 uses
   Classes,
   UPlatform;
