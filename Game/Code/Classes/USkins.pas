@@ -94,7 +94,7 @@ begin
   S := Length(Skin);
   SetLength(Skin, S+1);
   
-  Skin[S].Path     := IncludeTrailingBackslash(ExtractFileDir(FileName));
+  Skin[S].Path     := IncludeTrailingPathDelimiter(ExtractFileDir(FileName));
   Skin[S].FileName := ExtractFileName(FileName);
   Skin[S].Theme    := SkinIni.ReadString('Skin', 'Theme', '');
   Skin[S].Name     := SkinIni.ReadString('Skin', 'Name', '');
