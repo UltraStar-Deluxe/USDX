@@ -1,0 +1,17 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+
+Name=UltraStar Deluxe
+Comment=Karaoke program that evaluates your performance
+Comment[de]=Singe Karaoke und messe dich mit anderen Spielern
+
+Icon=ultrastardx
+
+TryExec=ultrastardx
+Exec=ultrastardx
+StartupNotify=false
+Terminal=false
+
+Type=Application
+Categories=Application;Game;ArcadeGame;

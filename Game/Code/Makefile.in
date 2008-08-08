@@ -132,7 +132,7 @@ $(EXTRA_SRCDIRS):
 #################################################
 # build
 #################################################
-	
+
 # clean old data before compiling, otherwise FPC might miss some changes.
 $(USDX_BIN): lastmod 
 	$(MAKE) clean_obj
@@ -203,7 +203,7 @@ uninstall-exec:
 #################################################
 # Distributable source-package (TODO)
 #################################################
-	
+
 disttmpdir = ./distdir
 
 dist:
@@ -220,12 +220,10 @@ dist:
 debpkgoutdir = $(usdxrootdir)/packages
 debpkgtmpdir = $(debpkgoutdir)/deb-package
 # should be $(USDX_PACKAGE_NAME) instead
-debpkgprefix = UltraStarDeluxe
+debpkgprefix = ultrastardx
 debpkgname = $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
 
-debian-package: $(debpkgname)
-
-$(debpkgname): all
+debian-pkg: all
 	rm -rf $(debpkgtmpdir)
 	rm -rf $(debpkgoutdir)
 
@@ -239,7 +237,7 @@ $(debpkgname): all
 	dpkg-deb --build $(debpkgtmpdir)
 	mv $(debpkgtmpdir)/../deb-package.deb $(debpkgoutdir)/$(debpkgname)
 
-#	rm -rf $(debpkgtmpdir)
+	rm -rf $(debpkgtmpdir)
 
 #################################################
 # RPM (TODO)
@@ -251,7 +249,7 @@ rpm: all
 #################################################
 # Mac OS X app-bundle
 #################################################
-	
+
 macosx_bundle_path = $(usdxrootdir)/UltraStarDeluxe.app/Contents
 macosx-app: all 
 # Create double clickable Mac OS X application.
@@ -271,7 +269,7 @@ macosx-app: all
 
 # Copy the resources. 
 	$(MAKE) install-global INSTALL_datadir=$(macosx_bundle_path)/Resources bindir=$(macosx_bundle_path)/MacOS
-	
+
 # final messages
 	@echo ""
 	@echo "Mac OS X application created."
@@ -282,7 +280,7 @@ macosx-app: all
 #################################################
 # clean-up
 #################################################
-	
+
 clean: recursive-clean clean_obj
 
 recursive-clean: recursive-target = clean
@@ -306,13 +304,13 @@ clean_obj:
 #################################################
 # Resource-file
 #################################################
-	
+
 $(RESOURCE_FILE): $(USDX_PREFIX).rc
 	$(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc $(RESOURCE_DIR) $(RESOURCE_FILE)
 
 clean_res:
 	rm -f "$(RESOURCE_FILE)"
-	
+
 #################################################
 # auto-update
 #################################################
@@ -324,7 +322,7 @@ update-modfile:
 	test -e $(modfile) || touch $(modfile)
 	find . \( -name "*.pas" -o -name "*.pp" -o -name "*.inc" -o -name "*.dpr" \) -newer $(modfile) -exec touch $(modfile) \;
 	find $(USDX_LIB_DIR) -name "*.a" -newer $(modfile) -exec touch $(modfile) \;
-	
+
 Makefile: Makefile.in config.status
 	./config.status
 
