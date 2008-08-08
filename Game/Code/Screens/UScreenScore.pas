@@ -135,6 +135,7 @@ uses UGraphic,
      UTime,
      UMain,
      UIni,
+     ULog,
      ULanguage;
 
 function TScreenScore.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
@@ -624,61 +625,63 @@ var
 
   lTmp            : real;
   Score           : integer;
-
 begin
-
-
   MaxHeight    := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].H;
 
   // let's get the points according to the bar we draw
   // score array starts at 0, which means the score for player 1 is in score[0]
   // EaseOut_Step is the actual step in the raising process, like the 20iest step of EaseOut_MaxSteps
   if (BarType = 'Note') then
-    begin
-      Score        := Player[PlayerNumber - 1].ScoreInt;
-      RaiseStep    := BarScore_EaseOut_Step;
-      BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y + MaxHeight;
-    end;
-  if (BarType = 'Line') then
-    begin
-      Score        := Player[PlayerNumber - 1].ScoreLineInt;
-      RaiseStep    := BarPhrase_EaseOut_Step;
-      BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight + MaxHeight;
-    end;
-  if (BarType = 'Golden') then
-    begin
-      Score        := Player[PlayerNumber - 1].ScoreGoldenInt;
-      RaiseStep    := BarGolden_EaseOut_Step;
-      BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight - aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight + MaxHeight;
-    end;
+  begin
+    Score        := Player[PlayerNumber - 1].ScoreInt;
+    RaiseStep    := BarScore_EaseOut_Step;
+    BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y + MaxHeight;
+  end
+  else if (BarType = 'Line') then
+  begin
+    Score        := Player[PlayerNumber - 1].ScoreLineInt;
+    RaiseStep    := BarPhrase_EaseOut_Step;
+    BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight + MaxHeight;
+  end
+  else if (BarType = 'Golden') then
+  begin
+    Score        := Player[PlayerNumber - 1].ScoreGoldenInt;
+    RaiseStep    := BarGolden_EaseOut_Step;
+    BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight - aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight + MaxHeight;
+  end
+  else
+  begin
+    Log.LogCritical('Unknown bar-type: ' + BarType, 'TScreenScore.EaseBarIn');
+    Exit; // suppress warnings
+  end;
 
   // the height dependend of the score
   Height2Reach := (Score / MAX_SONG_SCORE) * MaxHeight;
 
-    if (aPlayerScoreScreenDatas[PlayerNumber].Bar_Actual_Height < Height2Reach) then
-      begin
-      // Check http://proto.layer51.com/d.aspx?f=400 for more info on easing functions
-      // Calculate the actual step according to the maxsteps
-      RaiseStep := RaiseStep / EaseOut_MaxSteps;
+  if (aPlayerScoreScreenDatas[PlayerNumber].Bar_Actual_Height < Height2Reach) then
+  begin
+    // Check http://proto.layer51.com/d.aspx?f=400 for more info on easing functions
+    // Calculate the actual step according to the maxsteps
+    RaiseStep := RaiseStep / EaseOut_MaxSteps;
 
-      // quadratic easing out - decelerating to zero velocity
-      // -end_position * current_time * ( current_time - 2 ) + start_postion
-      lTmp := (-Height2Reach * RaiseStep * (RaiseStep - 20) + BarStartPosY);
+    // quadratic easing out - decelerating to zero velocity
+    // -end_position * current_time * ( current_time - 2 ) + start_postion
+    lTmp := (-Height2Reach * RaiseStep * (RaiseStep - 20) + BarStartPosY);
 
-      if ( RaiseSmoothness > 0 ) AND ( lTmp > 0 ) then
-        NewHeight := lTmp / RaiseSmoothness;
+    if ( RaiseSmoothness > 0 ) and ( lTmp > 0 ) then
+      NewHeight := lTmp / RaiseSmoothness;
 
-      end
-    else
-      NewHeight := Height2Reach;
+  end
+  else
+    NewHeight := Height2Reach;
 
   DrawBar(BarType, PlayerNumber, BarStartPosY, NewHeight);
 
   if (BarType = 'Note') then
-    aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight  := NewHeight;
-  if (BarType = 'Line') then
-    aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight   := NewHeight;
-  if (BarType = 'Golden') then
+    aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight  := NewHeight
+  else if (BarType = 'Line') then
+    aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight   := NewHeight
+  else if (BarType = 'Golden') then
     aPlayerScoreScreenDatas[PlayerNumber].BarGolden_ActualHeight := NewHeight;
 end;
 

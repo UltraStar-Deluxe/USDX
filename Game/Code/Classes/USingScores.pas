@@ -523,19 +523,20 @@ var
   end;
 
 begin
+  MaxPlayersPerScreen := 0;
 
   For I := 1 to 6 do
   begin
     //If there are enough Positions -> Write to MaxPlayers
     If (GetPositionCountbyPlayerCount(I) = I) then
-      MaxPlayersperScreen := I
+      MaxPlayersPerScreen := I
     else
       Break;
   end;
 
 
   //Split Players to both Screen or Display on One Screen
-  if (Screens = 2) and (MaxPlayersperScreen < PlayerCount) then
+  if (Screens = 2) and (MaxPlayersPerScreen < PlayerCount) then
   begin
     PlC[0] := PlayerCount div 2 + PlayerCount mod 2;
     PlC[1] := PlayerCount div 2;

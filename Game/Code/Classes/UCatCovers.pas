@@ -51,6 +51,9 @@ var
   I, J: Integer;
   Name, Filename, Temp: string;
 begin
+  Ini := nil;
+  List := nil;
+
   try
     Ini  := TMemIniFile.Create(CoversPath + 'covers.ini');
     List := TStringlist.Create;

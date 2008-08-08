@@ -530,10 +530,10 @@ procedure TLyricEngine.DrawPlayerIcon(Player: Byte; Enabled: Boolean; X, Y, Size
 var
   IEnabled: Byte;
 begin
-  case Enabled of
-    True:   IEnabled := 0;
-    False:  IEnabled := 1;
-  end;
+  if Enabled then
+    IEnabled := 0
+  else
+    IEnabled := 1;
 
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);

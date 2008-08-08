@@ -479,6 +479,8 @@ end;
 // If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TModuleInfo to address at lparam
 //-------------
 function TCore.GetModuleInfo(wParam: TwParam; lParam: TlParam): integer;
+var
+  I: integer;
 begin
   if (Pointer(lParam) = nil) then
   begin
@@ -487,12 +489,13 @@ begin
   else
   begin
     try
-      for Result := 0 to High(Modules) do
+      for I := 0 to High(Modules) do
       begin
-        AModuleInfo(Pointer(lParam))[Result].Name := Modules[Result].Info.Name;
-        AModuleInfo(Pointer(lParam))[Result].Version := Modules[Result].Info.Version;
-        AModuleInfo(Pointer(lParam))[Result].Description := Modules[Result].Info.Description;
+        AModuleInfo(Pointer(lParam))[I].Name := Modules[I].Info.Name;
+        AModuleInfo(Pointer(lParam))[I].Version := Modules[I].Info.Version;
+        AModuleInfo(Pointer(lParam))[I].Description := Modules[I].Info.Description;
       end;
+      Result := Length(Modules);
     except
       Result := -1;
     end;
