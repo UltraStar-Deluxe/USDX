@@ -437,6 +437,9 @@ begin
   LastErrorString   := String(PChar(Pointer(wParam)));
   
   Hooks.CallEventChain(hError, wParam, lParam);
+
+  // FIXME: return a correct result
+  Result := 0;
 end;
 
 //-------------
@@ -445,6 +448,9 @@ end;
 function TCore.ReportDebug(wParam: TwParam; lParam: TlParam): integer;
 begin
   Hooks.CallEventChain(hDebug, wParam, lParam);
+
+  // FIXME: return a correct result
+  Result := 0;
 end;
 
 //-------------
@@ -453,6 +459,9 @@ end;
 function TCore.Retranslate(wParam: TwParam; lParam: TlParam): integer;
 begin
   Hooks.CallEventChain(hTranslate, 1, nil);
+
+  // FIXME: return a correct result
+  Result := 0;
 end;
 
 //-------------
@@ -461,6 +470,9 @@ end;
 function TCore.ReloadTextures(wParam: TwParam; lParam: TlParam): integer;
 begin
   Hooks.CallEventChain(hLoadTextures, 1, nil);
+
+  // FIXME: return a correct result
+  Result := 0;
 end;
 
 //-------------

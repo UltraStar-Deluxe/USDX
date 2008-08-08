@@ -143,6 +143,8 @@ begin
 
   Writeln(SongFile, 'E');
   CloseFile(SongFile);
+
+  Result := true;
 end;
 
 end.

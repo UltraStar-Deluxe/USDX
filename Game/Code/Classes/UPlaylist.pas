@@ -468,14 +468,14 @@ var
   P: Integer;
   I: Integer;
 begin
+  Result := -1;
+
   if iPlaylist = -1 then
     P := CurPlaylist
   else if (iPlaylist >= 0) AND (iPlaylist <= high(Playlists)) then
     P := iPlaylist
   else
     exit;
-
-  Result := -1;
 
   For I := 0 to high(Playlists[P].Items) do
   begin

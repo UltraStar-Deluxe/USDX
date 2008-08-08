@@ -77,6 +77,7 @@ uses
   {$IFDEF Delphi}
   Dialogs,
   {$ENDIF}
+  {$WARNINGS OFF}
   {$IFDEF LINUX}
   {$IFDEF FPC}
   {$IF FPC_VERSION_INT >= 2002002} // >= 2.2.2
@@ -84,9 +85,11 @@ uses
   {$IFEND}
   {$ENDIF}
   {$ENDIF}
+  {$WARNINGS ON}
   UMain;
 
 
+{$WARNINGS OFF}
 // data used by the ...Locale() functions
 {$IFDEF LINUX}
 var
@@ -101,6 +104,7 @@ function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c'
 {$IFEND}
 {$ENDIF}
 {$ENDIF}
+{$WARNINGS ON}
 
 // In Linux and maybe MacOSX some units (like cwstring) call setlocale(LC_ALL, '')
 // to set the language/country specific locale (e.g. charset) for this application.

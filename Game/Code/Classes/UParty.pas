@@ -175,6 +175,9 @@ begin
   end
   else
     Core.ReportError(Integer(PChar('Plugins try to Register Modi with wrong Pointer, or wrong TUS_ModiInfo Record.')), PChar('TPartySession'));
+
+  // FIXME: return a valid result
+  Result := 0;
 end;
 
 //----------
@@ -366,6 +369,9 @@ begin
     //Set Players to play this Round
     for I := 0 to Teams.NumTeams-1 do
       Teams.Teaminfo[I].CurPlayer := GetRandomPlayer(I);
+      
+    // FIXME: return a valid result
+    Result := 0;
   end
   else
     Result := -1;
@@ -427,6 +433,9 @@ begin
       end;
     end;
   End;
+
+  // FIXME: return a valid result
+  Result := 0;
 end;
 
 //----------
@@ -480,6 +489,9 @@ begin
   end
   else if (@Modis[Rounds[CurRound].Modi].Info.ModiDeInit <> nil) then
     Modis[Rounds[CurRound].Modi].Info.ModiDeInit(Modis[Rounds[CurRound].Modi].Info.ID);
+
+  // FIXME: return a valid result
+  Result := 0;
 end;
 
 //----------

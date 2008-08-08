@@ -401,6 +401,7 @@ begin
   end;
 
   Result := TList.Create;
+  Stat := nil;
 
   // Copy result to stats array
   while not TableData.EOF do
@@ -441,7 +442,9 @@ begin
           ArtistName := UTF8Decode(TableData.Fields[0]);
           TimesSungTot := TableData.FieldAsInteger(1);
         end;
-      end;
+      end
+      else
+        Log.LogCritical('Unknown stat-type', 'TDataBaseSystem.GetStats');
     end;
 
     Stat.Typ := Typ;
