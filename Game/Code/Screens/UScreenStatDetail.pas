@@ -40,7 +40,8 @@ implementation
 uses
   UGraphic,
   ULanguage,
-  math,
+  Math,
+  Classes,
   ULog;
 
 function TScreenStatDetail.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
@@ -171,61 +172,65 @@ end;
 
 procedure TScreenStatDetail.SetPage(NewPage: Cardinal);
 var
-  Result: AStatResult;
+  StatList: TList;
   I: Integer;
   FormatStr: String;
   PerPage: Byte;
 begin
-  SetLength(Result, Count);
-  if (Database.GetStats(Result, Typ, Count, NewPage, Reversed)) then
+  // fetch statistics
+  StatList := Database.GetStats(Typ, Count, NewPage, Reversed);
+  if ((StatList <> nil) and (StatList.Count > 0)) then
   begin
     Page := NewPage;
+
+    // reset texts
+    for I := 0 to Count-1 do
+      Text[I].Text := '';
 
     FormatStr := Theme.StatDetail.FormatStr[Ord(Typ)];
 
     //refresh Texts
-    for I := 0 to Count-1 do
+    for I := 0 to StatList.Count-1 do
     begin
       try
         case Typ of
           stBestScores: begin //Best Scores
-            //Set Texts
-            if (Result[I].Score > 0) then
-              Text[I].Text := Format(FormatStr, [Result[I].Singer,
-                                                Result[I].Score,
-                                                Theme.ILevel[Result[I].Difficulty],
-                                                Result[I].SongArtist,
-                                                Result[I].SongTitle])
-            else
-              Text[I].Text := '';
+            with TStatResultBestScores(StatList[I]) do
+            begin
+              //Set Texts
+              if (Score > 0) then
+              begin
+                Text[I].Text := Format(FormatStr,
+                  [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle]);
+              end;
+            end;
           end;
 
           stBestSingers: begin //Best Singers
-            //Set Texts
-            if (Result[I].AverageScore > 0) then
-              Text[I].Text := Format(FormatStr, [Result[I].Player,
-                                                Result[I].AverageScore])
-            else
-              Text[I].Text := '';
+            with TStatResultBestSingers(StatList[I]) do
+            begin
+              //Set Texts
+              if (AverageScore > 0) then
+                Text[I].Text := Format(FormatStr, [Player, AverageScore]);
+            end;
           end;
 
           stMostSungSong: begin //Popular Songs
-            //Set Texts
-            if (Result[I].Artist <> '') then
-              Text[I].Text := Format(FormatStr, [Result[I].Artist,
-                                                 Result[I].Title,
-                                                Result[I].TimesSung])
-            else
-              Text[I].Text := '';
+            with TStatResultMostSungSong(StatList[I]) do
+            begin
+              //Set Texts
+              if (Artist <> '') then
+                Text[I].Text := Format(FormatStr, [Artist, Title, TimesSung]);
+            end;
           end;
 
           stMostPopBand: begin //Popular Bands
-            //Set Texts
-            if (Result[I].ArtistName <> '') then
-              Text[I].Text := Format(FormatStr, [Result[I].ArtistName,
-                                                Result[I].TimesSungtot])
-            else
-              Text[I].Text := '';
+            with TStatResultMostPopBand(StatList[I]) do
+            begin
+              //Set Texts
+              if (ArtistName <> '') then
+                Text[I].Text := Format(FormatStr, [ArtistName, TimesSungtot]);
+            end;
           end;
         end;
       except
@@ -239,13 +244,19 @@ begin
     else
       PerPage := Count;
 
-    Text[Count+1].Text := Format(Theme.StatDetail.PageStr,
-        [Page + 1, TotPages, PerPage, TotEntrys]);
+    try      
+      Text[Count+1].Text := Format(Theme.StatDetail.PageStr,
+          [Page + 1, TotPages, PerPage, TotEntrys]);
+    except
+      on E: EConvertError do
+        Log.LogError('Error Parsing FormatString in UScreenStatDetail: ' + E.Message);
+    end;
 
     //Show correct Title
     SetTitle;
   end;
 
+  Database.FreeStats(StatList);
 end;
 
 

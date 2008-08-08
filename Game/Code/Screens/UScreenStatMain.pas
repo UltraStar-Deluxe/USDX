@@ -21,7 +21,10 @@ type
   TScreenStatMain = class(TMenu)
     private
       //Some Stat Value that don't need to be calculated 2 times
-      SongswithVid: Cardinal;
+      SongsWithVid: Cardinal;
+      function FormatOverviewIntro(FormatStr: string): string;
+      function FormatSongOverview(FormatStr: string): string;
+      function FormatPlayerOverview(FormatStr: string): string;
     public
       TextOverview:    integer;
       constructor Create; override;
@@ -40,6 +43,7 @@ uses UGraphic,
      USong,
      ULanguage,
      UCommon,
+     Classes,
      {$IFDEF win32}
      windows,
      {$ELSE}
@@ -138,10 +142,10 @@ begin
   Interaction := 0;
 
   //Set Songs with Vid
-  SongswithVid := 0;
+  SongsWithVid := 0;
   For I := 0 to Songs.SongList.Count -1 do
     if (TSong(Songs.SongList[I]).Video <> '') then
-      Inc(SongswithVid);
+      Inc(SongsWithVid);
 end;
 
 procedure TScreenStatMain.onShow;
@@ -152,106 +156,137 @@ begin
   SetOverview;
 end;
 
-procedure TScreenStatMain.SetOverview;
-type
-  TwSystemTime = record
-    wYear,
-    wMonth,
-    wDayOfWeek,
-    wDay,
-    wHour,
-    wMinute,
-    wSecond,
-    wMilliseconds: Word;
-  end;
+function TScreenStatMain.FormatOverviewIntro(FormatStr: string): string;
 var
-  Overview, Formatstr: String;
-  I: Integer;
-  //Some Vars to Save Attributes to
-  A1, A2, A3: Integer;
-  A4, A5: String;
-  Result1, Result2: AStatResult;
-  ResetTime: TSystemTime;
-
+  Year, Month, Day: Word;
 begin
-  //Song Overview
-
-  //Introduction
-  Formatstr := Language.Translate ('STAT_OVERVIEW_INTRO');
-  (*Format:
+  {Format:
     %0:d Ultrastar Version
-    %1:d Day of Reset (A1)
-    %2:d Month of Reset (A2)
-    %3:d Year of Reset (A3)*)
+    %1:d Day of Reset
+    %2:d Month of Reset
+    %3:d Year of Reset}
 
-  DateTimeToSystemTime(Database.GetStatReset, ResetTime);
-//  ResetTime := GetFileCreation(Database.Filename);
+  Result := '';
 
-  {$IFDEF MSWINDOWS}
-    A1 := ResetTime.wDay;
-    A2 := ResetTime.wMonth;
-    A3 := ResetTime.wYear;
-  {$ELSE}
-    A1 := ResetTime.Day;
-    A2 := ResetTime.Month;
-    A3 := ResetTime.Year;
-  {$ENDIF}
-  
-  
   try
-    Overview := Format(Formatstr, [Language.Translate('US_VERSION'), A1, A2, A3]);
+    DecodeDate(Database.GetStatReset(), Year, Month, Day);
+    Result := Format(FormatStr, [Language.Translate('US_VERSION'), Day, Month, Year]);
   except
     on E: EConvertError do
       Log.LogError('Error Parsing FormatString "STAT_OVERVIEW_INTRO": ' + E.Message);
   end;
+end;
 
-  Formatstr := Language.Translate ('STAT_OVERVIEW_SONG');
+function TScreenStatMain.FormatSongOverview(FormatStr: string): string;
+var
+  CntSongs, CntSungSongs, CntVidSongs: Integer;
+  MostPopSongArtist, MostPopSongTitle: String;
+  StatList: TList;
+  MostSungSong: TStatResultMostSungSong;
+begin
   {Format:
-    %0:d Count Songs (A1)
-    %1:d Count of Sung Songs (A2)
+    %0:d Count Songs
+    %1:d Count of Sung Songs
     %2:d Count of UnSung Songs
-    %3:d Count of Songs with Video (A3)
+    %3:d Count of Songs with Video
     %4:s Name of the most popular Song}
-  A1 := Songs.SongList.Count;
-  A2 := Database.GetTotalEntrys(stMostSungSong);
 
-  A3 := SongswithVid;
+  CntSongs := Songs.SongList.Count;
+  CntSungSongs := Database.GetTotalEntrys(stMostSungSong);
+  CntVidSongs := SongsWithVid;
 
-  SetLength(Result1, 1);
-  Database.GetStats(Result1, stMostSungSong, 1, 0, False);
-  A4 := Result1[0].Artist;
-  A5 := Result1[0].Title;
+  StatList := Database.GetStats(stMostSungSong, 1, 0, False);
+  if ((StatList <> nil) and (StatList.Count > 0)) then
+  begin
+    MostSungSong := StatList[0];
+    MostPopSongArtist := MostSungSong.Artist;
+    MostPopSongTitle := MostSungSong.Title;
+  end
+  else
+  begin
+    MostPopSongArtist := '-';
+    MostPopSongTitle := '-';
+  end;
+  Database.FreeStats(StatList);
 
+  Result := '';
+  
   try
-    Overview := Overview + '\n \n' + Format(Formatstr, [A1, A2, A1-A2, A3, A4, A5]);
+    Result := Format(FormatStr, [
+        CntSongs, CntSungSongs, CntSongs-CntSungSongs, CntVidSongs,
+        MostPopSongArtist, MostPopSongTitle]);
   except
     on E: EConvertError do
       Log.LogError('Error Parsing FormatString "STAT_OVERVIEW_SONG": ' + E.Message);
   end;
+end;
 
-  //Player Overview
-  Formatstr := Language.Translate ('STAT_OVERVIEW_PLAYER');
+function TScreenStatMain.FormatPlayerOverview(FormatStr: string): string;
+var
+  CntPlayers: Integer;
+  BestScoreStat:    TStatResultBestScores;
+  BestSingerStat:   TStatResultBestSingers;
+  BestPlayer, BestScorePlayer: String;
+  BestPlayerScore, BestScore: Integer;
+  SingerStats, ScoreStats: TList;
+begin
   {Format:
-    %0:d Count Players (A1)
-    %1:s Best Player (Result)
+    %0:d Count Players
+    %1:s Best Player
     %2:d Best Players Score
-    %3:s Best Score Player (Result2)
+    %3:s Best Score Player
     %4:d Best Score}
-  A1 := Database.GetTotalEntrys(stBestSingers);
 
-  SetLength(Result1, 1);
-  Database.GetStats(Result1, stBestSingers, 1, 0, False);
+  CntPlayers := Database.GetTotalEntrys(stBestSingers);
 
-  SetLength(Result2, 1);
-  Database.GetStats(Result2, stBestScores, 1, 0, False);
+  SingerStats := Database.GetStats(stBestSingers, 1, 0, False);
+  if ((SingerStats <> nil) and (SingerStats.Count > 0)) then
+  begin
+    BestSingerStat := SingerStats[0];
+    BestPlayer := BestSingerStat.Player;
+    BestPlayerScore := BestSingerStat.AverageScore;
+  end
+  else
+  begin
+    BestPlayer := '-';
+    BestPlayerScore := 0;
+  end;
+  Database.FreeStats(SingerStats);
+
+  ScoreStats  := Database.GetStats(stBestScores, 1, 0, False);
+  if ((ScoreStats <> nil) and (ScoreStats.Count > 0)) then
+  begin
+    BestScoreStat := ScoreStats[0];
+    BestScorePlayer := BestScoreStat.Singer;
+    BestScore := BestScoreStat.Score;
+  end
+  else
+  begin
+    BestScorePlayer := '-';
+    BestScore := 0;
+  end;
+  Database.FreeStats(ScoreStats);
+
+  Result := '';
 
   try
-    Overview := Overview + '\n \n' + Format(Formatstr, [A1, Result1[0].Player, Result1[0].AverageScore, Result2[0].Singer, Result2[0].Score]);
+    Result := Format(Formatstr, [
+        CntPlayers, BestPlayer, BestPlayerScore,
+        BestScorePlayer, BestScore]);
   except
     on E: EConvertError do
       Log.LogError('Error Parsing FormatString "STAT_OVERVIEW_PLAYER": ' + E.Message);
   end;
+end;
 
+procedure TScreenStatMain.SetOverview;
+var
+  Overview: String;
+begin
+  // Format overview
+  Overview := FormatOverviewIntro(Language.Translate('STAT_OVERVIEW_INTRO')) + '\n \n' + 
+              FormatSongOverview(Language.Translate('STAT_OVERVIEW_SONG')) + '\n \n' + 
+              FormatPlayerOverview(Language.Translate('STAT_OVERVIEW_PLAYER'));
   Text[0].Text := Overview;
 end;
 

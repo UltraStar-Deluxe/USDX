@@ -10,6 +10,7 @@ interface
 
 uses USongs,
      USong,
+     Classes,
      SQLiteTable3;
 
 //--------------------
@@ -23,52 +24,44 @@ type
     stMostPopBand   // Most popular Band
   );
 
-  TStatResult = record
-    case Typ: TStatType of
-      stBestScores: (
-        Singer:       ShortString;
-        Score:        Word;
-        Difficulty:   Byte;
-        SongArtist:   ShortString;
-        SongTitle:    ShortString
-      );
-      stBestSingers: (
-        Player:       ShortString;
-        AverageScore: Word
-      );
-      stMostSungSong: (
-        Artist:       ShortString;
-        Title:        ShortString;
-        TimesSung:    Word
-      );
-      stMostPopBand: (
-        ArtistName:   ShortString;
-        TimesSungTot: Word
-      );
+  // abstract super-class for statistic results
+  TStatResult = class
+    public
+      Typ: TStatType;
   end;
-  AStatResult = array of TStatResult;
 
-(*
-      0: (Singer:       WideString;
-          Score:        Word;
-          Difficulty:   Byte;
-          SongArtist:   WideString;
-          SongTitle:    WideString);
+  TStatResultBestScores = class(TStatResult)
+    public
+      Singer:       WideString;
+      Score:        Word;
+      Difficulty:   Byte;
+      SongArtist:   WideString;
+      SongTitle:    WideString;
+  end;
 
-      1: (Player:       WideString;
-          AverageScore: Word);
+  TStatResultBestSingers = class(TStatResult)
+    public
+      Player:       WideString;
+      AverageScore: Word;
+  end;
 
-      2: (Artist:       WideString;
-          Title:        WideString;
-          TimesSung:    Word);
+  TStatResultMostSungSong = class(TStatResult)
+    public
+      Artist:       WideString;
+      Title:        WideString;
+      TimesSung:    Word;
+  end;
 
-      3: (ArtistName:   WideString;
-          TimesSungTot: Word);
-*)  
+  TStatResultMostPopBand = class(TStatResult)
+    public
+      ArtistName:   WideString;
+      TimesSungTot: Word;
+  end;
 
+  
   TDataBaseSystem = class
     private
-      ScoreDB: TSqliteDatabase;
+      ScoreDB: TSQLiteDatabase;
       fFilename: string;
 
       function GetVersion(): integer;
@@ -83,7 +76,8 @@ type
       procedure AddScore(Song: TSong; Level: integer; const Name: WideString; Score: integer);
       procedure WriteScore(Song: TSong);
 
-      function GetStats(var Stats: AStatResult; Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): Boolean;
+      function GetStats(Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): TList;
+      procedure FreeStats(StatList: TList);
       function GetTotalEntrys(Typ: TStatType): Cardinal;
       function GetStatReset: TDateTime;
   end;
@@ -352,19 +346,19 @@ end;
 
 (**
  * Writes some stats to array.
- * Returns true if choosen page has entrys
+ * Returns nil if the database is not ready or a list with zero or more statistic
+ * entries.
+ * Free the result-list with FreeStats() after usage to avoid memory leaks.
  *)
-function TDataBaseSystem.GetStats(var Stats: AStatResult; Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): Boolean;
+function TDataBaseSystem.GetStats(Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): TList;
 var
   Query: String;
   TableData: TSQLiteUniTable;
+  Stat: TStatResult;
 begin
-  Result := False;
+  Result := nil;
 
   if not Assigned(ScoreDB) then
-    Exit;
-
-  if (Length(Stats) < Count) then
     Exit;
 
   {Todo:  Add Prevention that only players with more than 5 scores are selected at type 2}
@@ -406,45 +400,68 @@ begin
     end;
   end;
 
-  if (TableData.EOF) then
-  begin
-    TableData.Free;
-    Exit;
-  end;
+  Result := TList.Create;
 
   // Copy result to stats array
   while not TableData.EOF do
   begin
-    Stats[TableData.Row].Typ := Typ;
-
     case Typ of
       stBestScores: begin
-        Stats[TableData.Row].Singer := UTF8Decode(TableData.Fields[0]);
-        Stats[TableData.Row].Difficulty := TableData.FieldAsInteger(1);
-        Stats[TableData.Row].Score := TableData.FieldAsInteger(2);
-        Stats[TableData.Row].SongArtist := UTF8Decode(TableData.Fields[3]);
-        Stats[TableData.Row].SongTitle := UTF8Decode(TableData.Fields[4]);
+        Stat := TStatResultBestScores.Create;
+        with TStatResultBestScores(Stat) do
+        begin
+          Singer := UTF8Decode(TableData.Fields[0]);
+          Difficulty := TableData.FieldAsInteger(1);
+          Score := TableData.FieldAsInteger(2);
+          SongArtist := UTF8Decode(TableData.Fields[3]);
+          SongTitle := UTF8Decode(TableData.Fields[4]);
+        end;
       end;
       stBestSingers: begin
-        Stats[TableData.Row].Player := UTF8Decode(TableData.Fields[0]);
-        Stats[TableData.Row].AverageScore := TableData.FieldAsInteger(1);
+        Stat := TStatResultBestSingers.Create;
+        with TStatResultBestSingers(Stat) do
+        begin
+          Player := UTF8Decode(TableData.Fields[0]);
+          AverageScore := TableData.FieldAsInteger(1);
+        end;
       end;
       stMostSungSong: begin
-        Stats[TableData.Row].Artist := UTF8Decode(TableData.Fields[0]);
-        Stats[TableData.Row].Title  := UTF8Decode(TableData.Fields[1]);
-        Stats[TableData.Row].TimesSung  := TableData.FieldAsInteger(2);
+        Stat := TStatResultMostSungSong.Create;
+        with TStatResultMostSungSong(Stat) do
+        begin
+          Artist := UTF8Decode(TableData.Fields[0]);
+          Title  := UTF8Decode(TableData.Fields[1]);
+          TimesSung  := TableData.FieldAsInteger(2);
+        end;
       end;
       stMostPopBand: begin
-        Stats[TableData.Row].ArtistName := UTF8Decode(TableData.Fields[0]);
-        Stats[TableData.Row].TimesSungTot := TableData.FieldAsInteger(1);
+        Stat := TStatResultMostPopBand.Create;
+        with TStatResultMostPopBand(Stat) do
+        begin
+          ArtistName := UTF8Decode(TableData.Fields[0]);
+          TimesSungTot := TableData.FieldAsInteger(1);
+        end;
       end;
     end;
+
+    Stat.Typ := Typ;
+    Result.Add(Stat);
 
     TableData.Next;
   end;
 
   TableData.Free;
-  Result := True;
+end;
+
+procedure TDataBaseSystem.FreeStats(StatList: TList);
+var
+  I: integer;
+begin
+  if (StatList = nil) then
+    Exit;
+  for I := 0 to StatList.Count-1 do
+    TStatResult(StatList[I]).Free;
+  StatList.Free;
 end;
 
 (**
