@@ -38,7 +38,7 @@
   <CompilerOptions>
     <Version Value="5"/>
     <Target>
-      <Filename Value="../../UltraStar"/>
+      <Filename Value="../../ultrastardx"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="lib/JEDI-SDL/SDL/Pas/"/>
