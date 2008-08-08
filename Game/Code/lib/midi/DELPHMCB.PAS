@@ -5,7 +5,9 @@
 unit Delphmcb;
 
 { These segment options required for the MIDI callback functions }
+{$IFNDEF FPC}
 {$C PRELOAD FIXED PERMANENT}
+{$ENDIF}
 
 interface
 
