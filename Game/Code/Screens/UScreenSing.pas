@@ -1251,6 +1251,7 @@ begin
     Static[StaticPausePopup].Visible := false;
   end;
 
+  Result := true;
 end;
 
 procedure TScreenSing.Finish;

@@ -1309,6 +1309,8 @@ begin
 
   // draw text
   Lyric.Draw;
+
+  Result := true;
 end;
 
 procedure TScreenEditSub.onHide;

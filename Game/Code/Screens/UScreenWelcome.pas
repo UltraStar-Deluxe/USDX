@@ -116,7 +116,7 @@ begin
     Fadeout := true;
   end;
 
-  inherited Draw;
+  Result := inherited Draw;
 end;
 
 end.

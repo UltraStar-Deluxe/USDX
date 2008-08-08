@@ -200,7 +200,7 @@ end;
 
 function TScreenSongMenu.Draw: boolean;
 begin
-  inherited Draw;
+  Result := inherited Draw;
 end;
 
 procedure TScreenSongMenu.onShow;

@@ -430,6 +430,8 @@ begin
     for I := 0 to Length(Text) - 1 do
       Text[I].Draw;
 *)
+
+  Result := true;
 end;
 
 procedure TscreenScore.FillPlayerItems(PlayerNumber : Integer; ScoreType: String);

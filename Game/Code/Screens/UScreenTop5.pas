@@ -169,7 +169,7 @@ begin
     end;
   end; *)
 
-  inherited Draw;
+  Result := inherited Draw;
 end;
 
 end.

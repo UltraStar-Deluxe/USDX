@@ -570,7 +570,7 @@ begin
   {$ENDIF}
   DrawLine(X, Y, X, Bottom, 0.3, 0.3, 0.3);
 
-
+  Result := true;
 end;
 
 procedure TScreenEditConvert.onHide;
