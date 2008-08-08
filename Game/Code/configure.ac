@@ -10,7 +10,7 @@
 AC_PREREQ(2.61)
 
 # Init autoconf
-AC_INIT([UltraStar-Deluxe], 
+AC_INIT([ultrastardx], 
         [1.1-alpha], 
         [http://sourceforge.net/tracker/?group_id=191560&atid=937872])
 # specify the website here
@@ -478,8 +478,6 @@ AC_MSG_NOTICE([
 !!!
 !!! DO NOT EXPECT THE MAKEFILE OR THE PROGRAM ITSELF TO WORK
 !!!
-!!! and do not waste your time with bugfixing this version.
-!!! Bugs might already be fixed in the developers' working copies.
 !!! If you want to contribute, visit the IRC-Channel instead:
 !!!   $PACKAGE_IRC
 !!!
