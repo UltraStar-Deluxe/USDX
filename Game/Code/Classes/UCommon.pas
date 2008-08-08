@@ -736,6 +736,7 @@ type
  * supports an alignment "x" of up to 8 bytes only whereas FPC supports
  * alignments on 16 and 32 byte boundaries too.
  *)
+{$WARNINGS OFF}
 function GetAlignedMem(Size: cardinal; Alignment: integer): Pointer;
 var
   OrigPtr: Pointer;
@@ -766,12 +767,15 @@ begin
   // set header with info on old pointer for FreeMem
   PMemAlignHeader(PtrUInt(Result) - SizeOf(TMemAlignHeader))^ := OrigPtr;
 end;
+{$WARNINGS ON}
 
+{$WARNINGS OFF}
 procedure FreeAlignedMem(P: Pointer);
 begin
   if (P <> nil) then
     FreeMem(PMemAlignHeader(PtrUInt(P) - SizeOf(TMemAlignHeader))^);
 end;
+{$WARNINGS ON}
 
 
 initialization

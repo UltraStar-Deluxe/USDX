@@ -984,6 +984,7 @@ procedure InitializePaths;
 
   // Initialize a path variable
   // After setting paths, make sure that paths exist
+  {$WARN SYMBOL_PLATFORM OFF}
   function initialize_path( out aPathVar : string; const aLocation : string ): boolean;
   var
     lWriteable: Boolean;
@@ -1002,12 +1003,13 @@ procedure InitializePaths;
       lWriteable := (lAttrib and faDirectory <> 0) and
                 not (lAttrib and faReadOnly  <> 0)
     end;
-    
+
     if not lWriteable then
       Log.LogError('Dir ('+ aLocation +') is Readonly', 'initialize_path');
 
     result := lWriteable;
   end;
+  {$WARN SYMBOL_PLATFORM ON}
 
 begin
   initialize_path( LogPath         , Platform.GetLogPath                             );
