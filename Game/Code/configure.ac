@@ -1,5 +1,5 @@
 #
-# UltraStar-DX configure.ac script
+# ultrastardx configure.ac script
 #
 # by UltraStar Deluxe Team
 #
@@ -285,8 +285,8 @@ Additional directories:])
 # add suffix option
 AC_ARG_WITH([suffix], 
     [AS_HELP_STRING([--with-suffix=SUFFIX],
-      [path suffix @<:@default=UltraStarDeluxe@:>@])],
-    [suffix=$withval], [suffix="UltraStarDeluxe"])
+      [path suffix @<:@default=ultrastardx@:>@])],
+    [suffix=$withval], [suffix="ultrastardx"])
 if [[ x$suffix = xno -o x$suffix = xyes ]] ; then
     AC_MSG_ERROR([Invalid suffix.]);
 fi
