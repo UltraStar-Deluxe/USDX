@@ -31,7 +31,7 @@ LN_S = @LN_S@
 # Package configuration
 USDX_PACKAGE_NAME = @PACKAGE_NAME@
 # should be $(USDX_PACKAGE_NAME) instead
-USDX_PREFIX = UltraStar
+USDX_PREFIX = ultrastardx
 USDX_VERSION = @PACKAGE_VERSION@
 USDX_TARNAME = @PACKAGE_TARNAME@
 
@@ -56,6 +56,7 @@ RESEXTRACTOR_DIR = $(USDX_TOOLS_DIR)/$(RESEXTRACTOR_NAME)
 RESEXTRACTOR_BIN = $(RESEXTRACTOR_DIR)/$(RESEXTRACTOR_NAME)$(EXE_SUFFIX)
 RESOURCE_DIR = $(usdxrootdir)/Resources
 RESOURCE_FILE = resource.inc
+RC_FILE = UltraStar.rc
 EXTRA_SRCDIRS += $(RESEXTRACTOR_DIR)
 
 # cwrapper settings
@@ -97,7 +98,7 @@ PLINKFLAGS = -k"$(linkflags)"
 endif
 
 # dpr project file used as input
-USDX_SRC = $(USDX_PREFIX).dpr
+USDX_SRC = UltraStar.dpr
 # name of executable
 USDX_BIN_NAME = $(USDX_PREFIX)$(EXE_SUFFIX)
 USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
@@ -305,8 +306,8 @@ clean_obj:
 # Resource-file
 #################################################
 
-$(RESOURCE_FILE): $(USDX_PREFIX).rc
-	$(RESEXTRACTOR_BIN) $(USDX_PREFIX).rc $(RESOURCE_DIR) $(RESOURCE_FILE)
+$(RESOURCE_FILE): $(RC_FILE)
+	$(RESEXTRACTOR_BIN) $(RC_FILE) $(RESOURCE_DIR) $(RESOURCE_FILE)
 
 clean_res:
 	rm -f "$(RESOURCE_FILE)"
