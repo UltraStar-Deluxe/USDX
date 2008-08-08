@@ -169,7 +169,7 @@ cdecl; external SQLiteDLL name 'sqlite3_bind_text';
 function sqlite3_bind_double(hStmt: TSqliteStmt; ParamNum: integer; Data: Double): integer;
   cdecl; external SQLiteDLL name 'sqlite3_bind_double';
 function sqlite3_bind_int(hStmt: TSqLiteStmt; ParamNum: integer; Data: integer): integer;
-  cdecl; external 'sqlite3.dll' name 'sqlite3_bind_int';
+  cdecl; external SQLiteDLL name 'sqlite3_bind_int';
 function sqlite3_bind_int64(hStmt: TSqliteStmt; ParamNum: integer; Data: int64): integer;
   cdecl; external SQLiteDLL name 'sqlite3_bind_int64';
 function sqlite3_bind_null(hStmt: TSqliteStmt; ParamNum: integer): integer;
