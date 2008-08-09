@@ -16,15 +16,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *)
 
-(* This is a part of Pascal porting of ffmpeg.
- * Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
- * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
- * in the source codes *)
+(*
+ * This is a part of Pascal porting of ffmpeg.
+ * - Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+ * - For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+ *   in the source codes.
+ * - Changes and updates by the UltraStar Deluxe Team
+ *)
 
 (*
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 51.57.2, revision 13759, Thu Jun 12 21:50:13 2008 UTC
+ * Max. version: 51.63.0, revision 14666, Fri Aug 8 18:34:27 2008 UTC 
  *)
 
 unit avcodec;
@@ -56,8 +59,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 57;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 2;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 63;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -225,6 +228,9 @@ type
     CODEC_ID_ESCAPE124,
     CODEC_ID_DIRAC,
     CODEC_ID_BFI,
+    CODEC_ID_CMV,
+    CODEC_ID_MOTIONPIXELS,
+    CODEC_ID_TGV,
 
     //* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= $10000,
@@ -247,6 +253,7 @@ type
     CODEC_ID_PCM_ZORK,
     CODEC_ID_PCM_S16LE_PLANAR,
     CODEC_ID_PCM_DVD,
+    CODEC_ID_PCM_F32BE,
 
     //* various ADPCM codecs */
     CODEC_ID_ADPCM_IMA_QT= $11000,
@@ -349,7 +356,9 @@ type
 
     (* other specific kind of codecs (generally used for attachments) *)
     CODEC_ID_TTF= $18000,
-    
+
+    CODEC_ID_PROBE= $19000, ///< codec_id is not known (like CODEC_ID_NONE) but lavf should attempt to identify it
+
     CODEC_ID_MPEG2TS= $20000, {*< _FAKE_ codec to indicate a raw MPEG-2 TS
                               * stream (only used by libavformat) *}
     __CODEC_ID_4BYTE = $FFFFF  // ensure 4-byte enum
@@ -384,8 +393,11 @@ type
     SAMPLE_FMT_S16,             ///< signed 16 bits
     SAMPLE_FMT_S24,             ///< signed 24 bits
     SAMPLE_FMT_S32,             ///< signed 32 bits
-    SAMPLE_FMT_FLT              ///< float
+    SAMPLE_FMT_FLT,             ///< float
+    SAMPLE_FMT_NB               ///< Number of sample formats. DO NOT USE if dynamically linking to libavcodec
   );
+  _TSampleFormatArray = array [0 .. MaxInt div SizeOf(TSampleFormat)-1] of TSampleFormat;
+  PSampleFormatArray = ^_TSampleFormatArray;
 
 const
   {* in bytes *}
@@ -915,6 +927,7 @@ const
   FF_DEBUG_BUGS         = $00001000;
   FF_DEBUG_VIS_QP       = $00002000;
   FF_DEBUG_VIS_MB_TYPE  = $00004000;
+  FF_DEBUG_BUFFERS      = $00008000;
 
   FF_DEBUG_VIS_MV_P_FOR  = $00000001; //visualize forward predicted MVs of P frames
   FF_DEBUG_VIS_MV_B_FOR  = $00000002; //visualize forward predicted MVs of B frames
@@ -1225,6 +1238,8 @@ type
 
     (**
      * qscale factor between IP and B-frames
+     * If > 0 then the last P-frame quantizer will be used (q= lastp_q*factor+offset).
+     * If < 0 then normal ratecontrol will be done (q= -normal_q*factor+offset).
      * - encoding: Set by user.
      * - decoding: unused
      *)
@@ -1336,14 +1351,19 @@ type
     (**
      * strictly follow the standard (MPEG4, ...).
      * - encoding: Set by user.
-     * - decoding: unused
+     * - decoding: Set by user.
+     * Setting this to STRICT or higher means the encoder and decoder will
+     * generally do stupid things. While setting it to inofficial or lower
+     * will mean the encoder might use things that are not supported by all
+     * spec compliant decoders. Decoders make no difference between normal,
+     * inofficial and experimental, that is they always try to decode things
+     * when they can unless they are explicitly asked to behave stupid
+     * (=strictly conform to the specs)
      *)
     strict_std_compliance: cint;
 
     (**
      * qscale offset between IP and B-frames
-     * If > 0 then the last P-frame quantizer will be used (q= lastp_q*factor+offset).
-     * If < 0 then normal ratecontrol will be done (q= -normal_q*factor+offset).
      * - encoding: Set by user.
      * - decoding: unused
      *)
@@ -2357,6 +2377,9 @@ type
     {$IF LIBAVCODEC_VERSION >= 51056000} // 51.56.0
     supported_samplerates: {const} PCint;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
     {$IFEND}
+    {$IF LIBAVCODEC_VERSION >= 51062000} // 51.62.0
+    sample_fmts: {const} PSampleFormatArray;   ///< array of supported sample formats, or NULL if unknown, array is terminated by -1
+    {$IFEND}
   end;
 
 (**
@@ -2647,13 +2670,17 @@ function av_codec_next(c: PAVCodec): PAVCodec;
   cdecl; external av__codec;
 {$IFEND}
 
-(* returns LIBAVCODEC_VERSION_INT constant *)
-function avcodec_version (): cuint;
+(**
+ * Returns the LIBAVCODEC_VERSION_INT constant.
+ *)
+function avcodec_version(): cuint;
   cdecl; external av__codec;
 
+{$IF LIBAVCODEC_VERSION < 52008000} // 52.8.0
 (* returns LIBAVCODEC_BUILD constant *)
-function avcodec_build (): cuint;
-  cdecl; external av__codec;
+function avcodec_build(): cuint;
+  cdecl; external av__codec; deprecated;
+{$IFEND}
 
 (**
  * Initializes libavcodec.
@@ -2661,10 +2688,10 @@ function avcodec_build (): cuint;
  * @warning This function \e must be called before any other libavcodec
  * function.
  *)
-procedure avcodec_init ();
+procedure avcodec_init();
   cdecl; external av__codec;
 
-procedure register_avcodec (format: PAVCodec);
+procedure register_avcodec(format: PAVCodec);
   cdecl; external av__codec;
 
 (**
@@ -2673,7 +2700,7 @@ procedure register_avcodec (format: PAVCodec);
  * @param id CodecID of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
  *)
-function avcodec_find_encoder (id: TCodecID): PAVCodec;
+function avcodec_find_encoder(id: TCodecID): PAVCodec;
   cdecl; external av__codec;
 
 (**
@@ -2682,7 +2709,7 @@ function avcodec_find_encoder (id: TCodecID): PAVCodec;
  * @param name name of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
  *)
-function avcodec_find_encoder_by_name (name: pchar): PAVCodec;
+function avcodec_find_encoder_by_name(name: pchar): PAVCodec;
   cdecl; external av__codec;
 
 (**
@@ -2700,7 +2727,7 @@ function avcodec_find_decoder(id: TCodecID): PAVCodec;
  * @param name name of the requested decoder
  * @return A decoder if one was found, NULL otherwise.
  *)
-function avcodec_find_decoder_by_name (name: pchar): PAVCodec;
+function avcodec_find_decoder_by_name(name: pchar): PAVCodec;
   cdecl; external av__codec;
 procedure avcodec_string(buf: pchar; buf_size: cint; enc: PAVCodecContext; encode: cint);
   cdecl; external av__codec;
@@ -2710,7 +2737,7 @@ procedure avcodec_string(buf: pchar; buf_size: cint; enc: PAVCodecContext; encod
  *
  * @param s The AVCodecContext of which the fields should be set to default values.
  *)
-procedure avcodec_get_context_defaults (s: PAVCodecContext);
+procedure avcodec_get_context_defaults(s: PAVCodecContext);
   cdecl; external av__codec;
 
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0

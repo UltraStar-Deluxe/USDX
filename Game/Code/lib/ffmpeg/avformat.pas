@@ -1,8 +1,6 @@
 (*
  * copyright (c) 2001 Fabrice Bellard
  *
- * This file is part of FFmpeg.
- *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -20,14 +18,16 @@
 
 (*
  * This is a part of Pascal porting of ffmpeg.
- * Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
- * For Mac OS X, some modifications were made by The Creative CAT in the source codes.
+ * - Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+ * - For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+ *   in the source codes.
+ * - Changes and updates by the UltraStar Deluxe Team
  *)
 
 (*
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision 6577,  Sat Oct 7 15:30:46 2006 UTC
- * Max. version: 52.16.0, revision 13728, Mon Jun 9 13:38:56 2008 UTC
+ * Max. version: 52.20.0, revision 14667, Fri Aug 8 18:40:50 2008 UTC
  *)
 
 unit avformat;
@@ -59,7 +59,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 16;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 20;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -82,6 +82,15 @@ const
 {$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
   {$MESSAGE Warn 'Linked version of libavformat may be unsupported!'}
 {$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52020000} // 52.20.0
+(**
+ * Returns the LIBAVFORMAT_VERSION_INT constant.
+ *)
+function avformat_version(): cuint;
+  cdecl; external av__format;
+{$IFEND}
+
 
 type
   PAVFile = Pointer;
@@ -294,13 +303,13 @@ type
     {$IFEND}
     standard: pchar; (* tv standard, NTSC, PAL, SECAM *)
     { Delphi does not support bit fields -> use bf_flags instead
-    int mpeg2ts_raw:1;  (* force raw MPEG2 transport stream output, if possible *)
-    int mpeg2ts_compute_pcr:1; (* compute exact PCR for each transport
+    unsigned int mpeg2ts_raw:1;  /**< force raw MPEG2 transport stream output, if possible */
+    unsigned int mpeg2ts_compute_pcr:1; /**< compute exact PCR for each transport
                                   stream packet (only meaningful if
-                                  mpeg2ts_raw is TRUE *)
-    int initial_pause:1;       (* do not begin to play the stream
-                                  immediately (RTSP only) *)
-    int prealloced_context:1;
+                                  mpeg2ts_raw is TRUE) */
+    unsigned int initial_pause:1;       /**< do not begin to play the stream
+                                        immediately (RTSP only) */
+    unsigned int prealloced_context:1;
     }
     bf_flags: byte; // 0:mpeg2ts_raw/1:mpeg2ts_compute_pcr/2:initial_pause/3:prealloced_context
     {$IF LIBAVFORMAT_VERSION_MAJOR < 53}
@@ -522,6 +531,10 @@ type
     {$IF LIBAVFORMAT_VERSION >= 52008000} // 52.8.0
     disposition: cint; (**< AV_DISPOSITION_* bitfield *)
     {$IFEND}
+
+    {$IF LIBAVFORMAT_VERSION >= 52019000} // 52.19.0
+    probe_data: TAVProbeData;
+    {$IFEND}
   end;
 
  (**
@@ -671,6 +684,19 @@ type
      * Flags to enable debuging.
      *)
     debug: cint;
+    {$IFEND}
+
+    {$IF LIBAVFORMAT_VERSION >= 52019000} // 52.19.0
+    (**
+     * raw packets from the demuxer, prior to parsing and decoding.
+     * This buffer is used for buffering packets until the codec can
+     * be identified, as parsing cannot be done without knowing the
+     * codec.
+     *)
+    raw_packet_buffer: PAVPacketList;
+    raw_packet_buffer_end: PAVPacketList;
+
+    packet_buffer_end: PAVPacketList;
     {$IFEND}
   end;
 

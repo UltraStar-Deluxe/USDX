@@ -1,8 +1,6 @@
 (*
  * Copyright (C) 2001-2003 Michael Niedermayer <michaelni@gmx.at>
  *
- * This file is part of FFmpeg.
- *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -17,10 +15,10 @@
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
+
 (*
- * @file swscale.h
- * @brief
- *     external api for the swscale stuff
+ * FFmpeg Pascal port
+ * - Ported by the UltraStar Deluxe Team
  *)
 
 (*

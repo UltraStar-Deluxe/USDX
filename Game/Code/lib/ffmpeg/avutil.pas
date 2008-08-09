@@ -16,17 +16,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
-(* This is a part of Pascal porting of ffmpeg.
- * Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
- * For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
- * in the source codes *)
+(*
+ * This is a part of Pascal porting of ffmpeg.
+ * - Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
+ * - For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
+ *   in the source codes.
+ * - Changes and updates by the UltraStar Deluxe Team
+ *)
 
 (*
  * Conversions of
  *
  * libavutil/avutil.h:
  *  Min. version: 49.0.1, revision 6577,  Sat Oct 7 15:30:46 2006 UTC
- *  Max. version: 49.7.0, revision 13595, Sun Jun 1 07:37:43 2008 UTC
+ *  Max. version: 49.8.0, revision 14665, Fri Aug 8 18:32:20 2008 UTC
  *
  * libavutil/mem.h:
  *  revision 13665, Thu Jun 5 19:49:47 2008 UTC
@@ -60,7 +63,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 49;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 7;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 8;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -81,6 +84,14 @@ const
 
 {$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
   {$MESSAGE Warn 'Linked version of libavutil may be unsupported!'}
+{$IFEND}
+
+{$IF LIBAVUTIL_VERSION >= 49008000} // 49.8.0
+(**
+ * Returns the LIBAVUTIL_VERSION_INT constant.
+ *)
+function avutil_version(): cuint;
+  cdecl; external av__format;
 {$IFEND}
 
 type
