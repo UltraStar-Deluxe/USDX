@@ -493,9 +493,11 @@ begin
   fShowVisualization      := false;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
-    fCurrentVideoPlaybackEngine.Open( CurrentSong.Path + CurrentSong.Video );
-    fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
-    CurrentSong.VideoLoaded := true;
+    if (fCurrentVideoPlaybackEngine.Open( CurrentSong.Path + CurrentSong.Video )) then
+    begin
+      fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
+      CurrentSong.VideoLoaded := true;
+    end;
   end;
 
   // set background
