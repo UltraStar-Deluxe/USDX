@@ -157,6 +157,10 @@ begin
     DisableFloatingPointExceptions();
     // fix the locale for string-to-float parsing in C-libs
     SetDefaultNumericLocale();
+
+    // setup separators for parsing
+    // Note: ThousandSeparator must be set because of a bug in TIniFile.ReadFloat
+    ThousandSeparator := ',';
     DecimalSeparator := '.';
 
     //------------------------------
