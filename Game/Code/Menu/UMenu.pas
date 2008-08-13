@@ -374,7 +374,8 @@ begin
   end
   else
   begin
-    ButtonCollection[Num] := TButtonCollection.Create(Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), ThemeCollection.Style.Typ, true)); // use cache texture
+    ButtonCollection[Num] := TButtonCollection.Create(Texture.GetTexture(
+      Skin.GetTextureFileName(ThemeCollection.Style.Tex), ThemeCollection.Style.Typ));
   end;
 
   //Set Parent menu
@@ -419,10 +420,13 @@ begin
   ButtonCollection[Num].Fade := ThemeCollection.Style.Fade;
   ButtonCollection[Num].FadeText := ThemeCollection.Style.FadeText;
   if (ThemeCollection.Style.Typ = TEXTURE_TYPE_COLORIZED) then
+  begin
     ButtonCollection[Num].FadeTex := Texture.GetTexture(
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), TEXTURE_TYPE_COLORIZED, TempCol)
-  else
-    ButtonCollection[Num].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ, true);
+  end else begin
+    ButtonCollection[Num].FadeTex := Texture.GetTexture(
+      Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ);
+  end;
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
 
 
@@ -610,7 +614,8 @@ begin
   end
   else
   begin
-    Button[Result].FadeTex := Texture.GetTexture(Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ, true);
+    Button[Result].FadeTex := Texture.GetTexture(
+      Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
   end;
 
   Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
@@ -671,11 +676,7 @@ begin
     Result := Length(Button);
     SetLength(Button, Result + 1);
   end;
-  //  Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ));
 
-  // check here for cache
-  //  Texture.GetTexture(Name, Typ, false); // preloads textures and creates cahce mipmap when needed
-  //  if Covers.CoverExists(Name) then
   // colorize hack
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
@@ -685,7 +686,7 @@ begin
   end
   else
   begin
-    Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ, true)); // use cache texture
+    Button[Result] := TButton.Create(Texture.GetTexture(Name, Typ));
   end;
 
   // configures button
