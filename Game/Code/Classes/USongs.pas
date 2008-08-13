@@ -213,8 +213,8 @@ begin
     if assigned( CatCovers ) then
       CatCovers.Load;
 
-    if assigned( Covers ) then
-      Covers.Load;
+    //if assigned( Covers ) then
+    //  Covers.Load;
 
     if assigned(ScreenSong)  then
     begin
