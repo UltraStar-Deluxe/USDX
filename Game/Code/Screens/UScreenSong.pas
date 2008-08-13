@@ -143,6 +143,7 @@ uses
   UDLLManager,
   UParty,
   UPlaylist,
+  UMenuButton,
   UScreenSongMenu;
 
 // ***** Public methods ****** //
@@ -795,8 +796,13 @@ end;
 procedure TScreenSong.GenerateThumbnails();
 var
   I: Integer;
-  LoadNoCover: boolean;
   OldTextureLimit: integer;
+  CoverButtonIndex: integer;
+  CoverButton: TButton;
+  CoverName: string;
+  CoverTexture: TTexture;
+  Cover: TCover;
+  Song: TSong;
 begin
   if (Length(CatSongs.Song) <= 0) then
     Exit;
@@ -804,71 +810,49 @@ begin
   // set length of button array once instead for every song
   SetButtonLength(Length(CatSongs.Song));
 
-  // backup and set texture limit
-  OldTextureLimit := Texture.Limit;
-  Texture.Limit := 512;
-
   // create all buttons
   for I := 0 to High(CatSongs.Song) do
   begin
-    // if cover not found then show 'no cover'
-    if (not FileExists(CatSongs.Song[I].Path + CatSongs.Song[I].Cover)) then
-      CatSongs.Song[I].Cover := '';
+    CoverButton := nil;
 
-    if (CatSongs.Song[I].Cover = '') then
-    begin
-      LoadNoCover := true;
-    end
+    // create a clickable cover
+    CoverButtonIndex := AddButton(300 + I*250, 140, 200, 200, '', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
+    if (CoverButtonIndex > -1) then
+      CoverButton := Button[CoverButtonIndex];
+    if (CoverButton = nil) then
+      Continue;
+
+    Song := CatSongs.Song[I];
+
+    // if cover-image is not found then show 'no cover'
+    if (not FileExists(Song.Path + Song.Cover)) then
+      Song.Cover := '';
+
+    if (Song.Cover = '') then
+      CoverName := Skin.GetTextureFileName('SongCover')
     else
+      CoverName := Song.Path + Song.Cover;
+
+    // load cover and cache its texture
+    Cover := Covers.FindCover(CoverName);
+    if (Cover = nil) then
+      Cover := Covers.AddCover(CoverName);
+
+    // use the cached texture
+    // TODO: this is a workaround until the new song-loading works.
+    // The TCover object should be added to the song-object. The thumbnails
+    // should be loaded each time the song-screen is shown (it is real fast).
+    // This way, we will not waste that much memory and have a link between
+    // song and cover.
+    if (Cover <> nil) then
     begin
-      // cache texture if there is a need to this
-      if (not Covers.CoverExists(CatSongs.Song[I].Path + CatSongs.Song[I].Cover)) then
-      begin
-        Texture.GetTexture(CatSongs.Song[I].Path + CatSongs.Song[I].Cover, TEXTURE_TYPE_PLAIN, true); // preloads textures and creates cache mipmap
-
-        // puts this texture to the cache file
-        Covers.AddCover(CatSongs.Song[I].Path + CatSongs.Song[I].Cover);
-
-        // unload full size texture
-        Texture.UnloadTexture(CatSongs.Song[I].Path + CatSongs.Song[I].Cover, TEXTURE_TYPE_PLAIN, false);
-
-        // TODO: we should also add mipmap texture by calling createtexture and use mipmap cache as data source
-      end;
-
-      // and now load it from cache file (small place for the optimization by eliminating reading it from file, but not here)
-      try
-        // FIXME: do we really need try-except here? AddButton does not seem to throw exceptions if it fails.
-        AddButton(300 + I*250, 140, 200, 200, CatSongs.Song[I].Path + CatSongs.Song[I].Cover, TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
-        LoadNoCover := false;
-      except
-        // report error and change cover to NoCover
-        Log.LogError('Could not load Cover: ' + CatSongs.Song[I].Cover);
-        LoadNoCover := true;
-      end;
+      CoverTexture := Cover.GetPreviewTexture();
+      Texture.AddTexture(CoverTexture, TEXTURE_TYPE_PLAIN, true);
+      CoverButton.Texture := CoverTexture;
     end;
 
-    if (LoadNoCover) then
-    begin
-      try
-        // FIXME: do we really need try-except here? AddButton does not seem to throw exceptions if it fails.
-        AddButton(300 + I*250, 140, 200, 200, Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections)
-      except
-        // NoSong Cover is damaged
-        Log.LogError('NoCover Cover is damaged!');
-        // set a dummy cover and start loading next Song
-        try
-          // FIXME: do we really need try-except here? AddButton does not seem to throw exceptions if it fails.
-          AddButton(300 + I*250, 140, 200, 200, '', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
-        except
-          ShowMessage('"No Cover" image is damaged. Ultrastar will exit now.');
-          Halt;
-        end;
-      end;
-    end;
+    Cover.Free;
   end;
-
-  // restore texture limit
-  Texture.Limit := OldTextureLimit;
 end;
 
 procedure TScreenSong.SetScroll;

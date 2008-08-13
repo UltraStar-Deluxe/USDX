@@ -154,7 +154,10 @@ const
   IScreens:       array[0..1] of string = ('1', '2');
   IFullScreen:    array[0..1] of string = ('Off', 'On');
   IDepth:         array[0..1] of string = ('16 bit', '32 bit');
-  ITextureSize:   array[0..2] of string = ('128', '256', '512');
+
+  ITextureSize:     array[0..2] of string  = ('128', '256', '512');
+  ITextureSizeVals: array[0..2] of integer = ( 128,   256,   512);
+
   ISingWindow:    array[0..1] of string = ('Small', 'Big');
 
   //SingBar Mod

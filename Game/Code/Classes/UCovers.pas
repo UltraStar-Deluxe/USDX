@@ -1,5 +1,15 @@
 unit UCovers;
 
+{
+  TODO:
+  - adjust database to new song-loading (e.g. use SongIDs)
+  - support for deletion of outdated covers
+  - support for update of changed covers
+  - use paths relative to the song for removable disks support
+    (a drive might have a different drive-name the next time it is connected,
+     so "H:/songs/..." will not match "I:/songs/...") 
+}
+
 interface
 
 {$IFDEF FPC}
@@ -8,255 +18,413 @@ interface
 
 {$I switches.inc}
 
-uses gl,
-     Math,
-     Classes,
-     SysUtils,
-     {$IFNDEF FPC}
-     Graphics,
-     {$ENDIF}
-     UThemes,
-     UTexture;
+uses
+  sdl,
+  SQLite3,
+  SQLiteTable3,
+  SysUtils,
+  Classes,
+  UImage,
+  UTexture;
 
 type
-  TCover = record
-    Name:       string;
-    W:          word;
-    H:          word;
-    Size:       integer;
-    Position:   integer; // position of picture in the cache file
-//    Data:       array of byte;
+  ECoverDBException = class(Exception)
   end;
 
-  TCovers = class
-    Cover:      array of TCover;
-    W:          word;
-    H:          word;
-    Size:       integer;
-    Data:       array of byte;
-    WritetoFile: Boolean;
+  TCover = class
+    private
+      ID: int64;
+      Filename: WideString;
+    public
+      constructor Create(ID: int64; Filename: WideString);
+      function GetPreviewTexture(): TTexture;
+      function GetTexture(): TTexture;
+  end;
 
-    constructor Create;
-    procedure Load;
-    procedure Save;
-    procedure AddCover(Name: string);
-    function CoverExists(Name: string): boolean;
-    function CoverNumber(Name: string): integer;
-    procedure PrepareData(Name: string);
+  TThumbnailInfo = record
+    CoverWidth: integer;         // Original width of cover
+    CoverHeight: integer;        // Original height of cover
+    PixelFormat: TImagePixelFmt; // Pixel-format of thumbnail
+  end;
+  
+  TCoverDatabase = class
+    private
+      DB: TSQLiteDatabase;
+      procedure InitCoverDatabase();
+      function CreateThumbnail(const Filename: WideString; var Info: TThumbnailInfo): PSDL_Surface;
+      function LoadCover(CoverID: int64): TTexture;
+      procedure DeleteCover(CoverID: int64);
+      function FindCoverIntern(const Filename: WideString): int64;
+      procedure Open();
+      function GetVersion(): integer;
+      procedure SetVersion(Version: integer);
+    public
+      constructor Create();
+      destructor Destroy; override;
+      function AddCover(const Filename: WideString): TCover;
+      function FindCover(const Filename: WideString): TCover;
+      function CoverExists(const Filename: WideString): boolean;
+      function GetMaxCoverSize(): integer;
+      procedure SetMaxCoverSize(Size: integer);
+  end;
+
+  TBlobWrapper = class(TCustomMemoryStream)
+     function Write(const Buffer; Count: Integer): Integer; override;
   end;
 
 var
-  Covers:     TCovers;
+  Covers: TCoverDatabase;
 
 implementation
 
-uses UMain,
-     // UFiles,
-     ULog,
-     DateUtils;
+uses
+  UMain,
+  ULog,
+  UPlatform,
+  UIni,
+  Math,
+  DateUtils;
 
-constructor TCovers.Create;
+const
+  COVERDB_FILENAME = 'cover.db';
+  COVERDB_VERSION = 01; // 0.1
+  COVER_TBL = 'Cover';
+  COVER_THUMBNAIL_TBL = 'CoverThumbnail';
+  COVER_IDX = 'Cover_Filename_IDX';
+
+// Note: DateUtils.DateTimeToUnix() will throw an exception in FPC
+function DateTimeToUnixTime(time: TDateTime): int64;
+begin
+  Result := Round((time - UnixDateDelta) * SecsPerDay);
+end;
+
+// Note: DateUtils.UnixToDateTime() will throw an exception in FPC
+function UnixTimeToDateTime(timestamp: int64): TDateTime;
+begin
+  Result := timestamp / SecsPerDay + UnixDateDelta;
+end;
+
+
+{ TBlobWrapper }
+
+function TBlobWrapper.Write(const Buffer; Count: Integer): Integer;
+begin
+  SetPointer(Pointer(Buffer), Count);
+  Result := Count;
+end;
+
+
+{ TCover }
+
+constructor TCover.Create(ID: int64; Filename: WideString);
+begin
+  Self.ID := ID;
+  Self.Filename := Filename;
+end;
+
+function TCover.GetPreviewTexture(): TTexture;
+begin
+  Result := Covers.LoadCover(ID);
+end;
+
+function TCover.GetTexture(): TTexture;
+begin
+  Result := Texture.LoadTexture(Filename);
+end;
+
+
+{ TCoverDatabase }
+
+constructor TCoverDatabase.Create();
 begin
   inherited;
-  W := 128;
-  H := 128;
-  Size := W*H*3;
-  Load;
-  WritetoFile := True;
+
+  Open();
+  InitCoverDatabase();
 end;
 
-procedure TCovers.Load;
-var
-  F:      File;
-  C:      integer; // cover number
-  W:      word;
-  H:      word;
-  Bits:   byte;
-  NLen:   word;
-  Name:   string;
-//  Data:   array of byte;
+destructor TCoverDatabase.Destroy;
 begin
-  if FileExists(GamePath + 'covers.cache') then
+  DB.Free;
+  inherited;
+end;
+
+function TCoverDatabase.GetVersion(): integer;
+begin
+  Result := DB.GetTableValue('PRAGMA user_version');
+end;
+
+procedure TCoverDatabase.SetVersion(Version: integer);
+begin
+  DB.ExecSQL(Format('PRAGMA user_version = %d', [Version]));
+end;
+
+function TCoverDatabase.GetMaxCoverSize(): integer;
+begin
+  Result := ITextureSizeVals[Ini.TextureSize];
+end;
+
+procedure TCoverDatabase.SetMaxCoverSize(Size: integer);
+var
+  I: integer;
+begin
+  // search for first valid cover-size > Size
+  for I := 0 to Length(ITextureSizeVals)-1 do
   begin
-    AssignFile(F, GamePath + 'covers.cache');
-    Reset(F, 1);
-
-    WritetoFile := not FileIsReadOnly(GamePath + 'covers.cache');
-
-    SetLength(Cover, 0);
-
-    while not EOF(F) do
+    if (Size <= ITextureSizeVals[I]) then
     begin
-      SetLength(Cover, Length(Cover)+1);
-
-      BlockRead(F, W, 2);
-      Cover[High(Cover)].W := W;
-
-      BlockRead(F, H, 2);
-      Cover[High(Cover)].H := H;
-
-      BlockRead(F, Bits, 1);
-
-      Cover[High(Cover)].Size := W * H * (Bits div 8);
-
-      // test
-  //    W := 128;
-  //    H := 128;
-  //    Bits := 24;
-  //    Seek(F, FilePos(F) + 3);
-
-      BlockRead(F, NLen, 2);
-      SetLength(Name, NLen);
-
-      BlockRead(F, Name[1], NLen);
-      Cover[High(Cover)].Name := Name;
-
-      Cover[High(Cover)].Position := FilePos(F);
-      Seek(F, FilePos(F) + W*H*(Bits div 8));
-
-  //    SetLength(Cover[High(Cover)].Data, W*H*(Bits div 8));
-  //    BlockRead(F, Cover[High(Cover)].Data[0], W*H*(Bits div 8));
-
-    end; // While
-
-    CloseFile(F);
-  end; // fileexists
-end;
-
-procedure TCovers.Save;
-var
-  F:      File;
-  C:      integer; // cover number
-  W:      word;
-  H:      word;
-  NLen:   word;
-  Bits:   byte;
-begin
-{  AssignFile(F, GamePath + 'covers.cache');
-  Rewrite(F, 1);
-
-  Bits := 24;
-  for C := 0 to High(Cover) do begin
-    W := Cover[C].W;
-    H := Cover[C].H;
-
-    BlockWrite(F, W, 2);
-    BlockWrite(F, H, 2);
-    BlockWrite(F, Bits, 1);
-
-    NLen := Length(Cover[C].Name);
-    BlockWrite(F, NLen, 2);
-    BlockWrite(F, Cover[C].Name[1], NLen);
-    BlockWrite(F, Cover[C].Data[0], W*H*(Bits div 8));
+      Ini.TextureSize := I;
+      Exit;
+    end;
   end;
 
-  CloseFile(F);}
+  // fall-back to highest size
+  Ini.TextureSize := High(ITextureSizeVals);
 end;
 
-procedure TCovers.AddCover(Name: string);
+procedure TCoverDatabase.Open();
 var
-  B:      integer;
-  F:      File;
-  C:      integer; // cover number
-  NLen:   word;
-  Bits:   byte;
+  Version: integer;
+  Filename: string;
 begin
-  if not CoverExists(Name) then
+  Filename := UTF8Encode(Platform.GetGameUserPath() + COVERDB_FILENAME);
+
+  DB := TSQLiteDatabase.Create(Filename);
+  Version := GetVersion();
+
+  // check version, if version is too old/new, delete database file
+  if ((Version <> 0) and (Version <> COVERDB_VERSION)) then
   begin
-    SetLength(Cover, Length(Cover)+1);
-    Cover[High(Cover)].Name := Name;
+    Log.LogInfo('Outdated cover-database file found', 'TCoverDatabase.Open');
+    // close and delete outdated file
+    DB.Free;
+    if (not DeleteFile(Filename)) then
+      raise ECoverDBException.Create('Could not delete ' + Filename);
+    // reopen
+    DB := TSQLiteDatabase.Create(Filename);
+    Version := 0;
+  end;
 
-    Cover[High(Cover)].W := W;
-    Cover[High(Cover)].H := H;
-    Cover[High(Cover)].Size := Size;
+  // set version number after creation
+  if (Version = 0) then
+    SetVersion(COVERDB_VERSION);
 
-    // do not copy data. write them directly to file
-//    SetLength(Cover[High(Cover)].Data, Size);
-//    for B := 0 to Size-1 do
-//      Cover[High(Cover)].Data[B] := CacheMipmap[B];
-
-    if WritetoFile then
-    begin
-      AssignFile(F, GamePath + 'covers.cache');
-      
-      if FileExists(GamePath + 'covers.cache') then
-      begin
-        Reset(F, 1);
-        Seek(F, FileSize(F));
-      end
-      else
-      begin
-        Rewrite(F, 1);
-      end;
-
-      Bits := 24;
-
-      BlockWrite(F, W, 2);
-      BlockWrite(F, H, 2);
-      BlockWrite(F, Bits, 1);
-
-      NLen := Length(Name);
-      BlockWrite(F, NLen, 2);
-      BlockWrite(F, Name[1], NLen);
-
-      Cover[High(Cover)].Position := FilePos(F);
-      //BlockWrite(F, CacheMipmap[0], W*H*(Bits div 8));
-
-      CloseFile(F);
-    end;
-  end
-  else
-    Cover[High(Cover)].Position := 0;
+  // speed-up disk-writing. The default FULL-synchronous mode is too slow.
+  // With this option disk-writing is approx. 4 times faster but the database
+  // might be corrupted if the OS crashes, although this is very unlikely.
+  DB.ExecSQL('PRAGMA synchronous = OFF;');
+  
+  // the next line rather gives a slow-down instead of a speed-up, so we do not use it
+  //DB.ExecSQL('PRAGMA temp_store = MEMORY;');
 end;
 
-function TCovers.CoverExists(Name: string): boolean;
+procedure TCoverDatabase.InitCoverDatabase();
+begin
+  DB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+COVER_TBL+'] (' +
+               '[ID] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT, ' +
+               '[Filename] TEXT  UNIQUE NOT NULL, ' +
+               '[Date] INTEGER  NOT NULL, ' +
+               '[Width] INTEGER  NOT NULL, ' +
+               '[Height] INTEGER  NOT NULL ' +
+             ')');
+
+  DB.ExecSQL('CREATE INDEX IF NOT EXISTS ['+COVER_IDX+'] ON ['+COVER_TBL+'](' +
+               '[Filename]  ASC' +
+             ')');
+
+  DB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+COVER_THUMBNAIL_TBL+'] (' +
+               '[ID] INTEGER  NOT NULL PRIMARY KEY, ' +
+               '[Format] INTEGER  NOT NULL, ' +
+               '[Width] INTEGER  NOT NULL, ' +
+               '[Height] INTEGER  NOT NULL, ' +
+               '[Data] BLOB  NULL' +
+             ')');
+end;
+
+function TCoverDatabase.FindCoverIntern(const Filename: WideString): int64;
+begin
+  Result := DB.GetTableValue('SELECT [ID] FROM ['+COVER_TBL+'] ' +
+                             'WHERE [Filename] = ?',
+                             [UTF8Encode(Filename)]);
+end;
+
+function TCoverDatabase.FindCover(const Filename: WideString): TCover;
 var
-  C:    integer; // cover
+  CoverID: int64;
+begin
+  Result := nil;
+  try
+    CoverID := FindCoverIntern(Filename);
+    if (CoverID > 0) then
+      Result := TCover.Create(CoverID, Filename);
+  except on E: Exception do
+    Log.LogError(E.Message, 'TCoverDatabase.FindCover');
+  end;
+end;
+
+function TCoverDatabase.CoverExists(const Filename: WideString): boolean;
 begin
   Result := false;
-  C      := 0;
-  
-  while (C <= High(Cover)) and (Result = false) do
-  begin
-    if Cover[C].Name = Name then
-      Result := true;
-      
-    Inc(C);
+  try
+    Result := (FindCoverIntern(Filename) > 0);
+  except on E: Exception do
+    Log.LogError(E.Message, 'TCoverDatabase.CoverExists');
   end;
 end;
 
-function TCovers.CoverNumber(Name: string): integer;
+function TCoverDatabase.AddCover(const Filename: WideString): TCover;
 var
-  C:    integer;
+  CoverID: int64;
+  Thumbnail: PSDL_Surface;
+  CoverData: TBlobWrapper;
+  FileDate: TDateTime;
+  Info: TThumbnailInfo;
 begin
-  Result := -1;
-  C      := 0;
-  
-  while (C <= High(Cover)) and (Result = -1) do
-  begin
-    if Cover[C].Name = Name then
-      Result := C;
-      
-    Inc(C);
+  Result := nil;
+
+  //if (not FileExists(Filename)) then
+  //  Exit;
+
+  // TODO: replace '\' with '/' in filename
+  FileDate := Now(); //FileDateToDateTime(FileAge(Filename));
+
+  Thumbnail := CreateThumbnail(Filename, Info);
+  if (Thumbnail = nil) then
+    Exit;
+
+  CoverData := TBlobWrapper.Create;
+  CoverData.Write(Thumbnail^.pixels, Thumbnail^.h * Thumbnail^.pitch);
+
+  try
+    // Note: use a transaction to speed-up file-writing.
+    // Without data written by the first INSERT might be moved at the second INSERT. 
+    DB.BeginTransaction();
+
+    // add general cover info
+    DB.ExecSQL('INSERT INTO ['+COVER_TBL+'] ' +
+               '([Filename], [Date], [Width], [Height]) VALUES' +
+               '(?, ?, ?, ?)',
+               [UTF8Encode(Filename), DateTimeToUnixTime(FileDate),
+                Info.CoverWidth, Info.CoverHeight]);
+
+    // get auto-generated cover ID
+    CoverID := DB.GetLastInsertRowID();
+
+    // add thumbnail info
+    DB.ExecSQL('INSERT INTO ['+COVER_THUMBNAIL_TBL+'] ' +
+               '([ID], [Format], [Width], [Height], [Data]) VALUES' +
+               '(?, ?, ?, ?, ?)',
+               [CoverID, Ord(Info.PixelFormat),
+                Thumbnail^.w, Thumbnail^.h, CoverData]);
+
+    Result := TCover.Create(CoverID, Filename);
+  except on E: Exception do
+    Log.LogError(E.Message, 'TCoverDatabase.AddCover');
   end;
+
+  DB.Commit();
+  CoverData.Free;
+  SDL_FreeSurface(Thumbnail);
 end;
 
-procedure TCovers.PrepareData(Name: string);
+function TCoverDatabase.LoadCover(CoverID: int64): TTexture;
 var
-  F:  File;
-  C:  integer;
+  Width, Height: integer;
+  PixelFmt: TImagePixelFmt;
+  Data: PChar;
+  DataSize: integer;
+  Filename: WideString;
+  Table: TSQLiteUniTable;
 begin
-  if FileExists(GamePath + 'covers.cache') then
-  begin
-    AssignFile(F, GamePath + 'covers.cache');
-    Reset(F, 1);
+  Table := nil;
 
-    C := CoverNumber(Name);
-    SetLength(Data, Cover[C].Size);
-    Seek(F, Cover[C].Position);
-    BlockRead(F, Data[0], Cover[C].Size);
-    CloseFile(F);
+  try
+    Table := DB.GetUniTable(Format(
+      'SELECT C.[Filename], T.[Format], T.[Width], T.[Height], T.[Data] ' +
+      'FROM ['+COVER_TBL+'] C ' +
+        'INNER JOIN ['+COVER_THUMBNAIL_TBL+'] T ' +
+        'USING(ID) ' +
+      'WHERE [ID] = %d', [CoverID]));
+
+    Filename := UTF8Decode(Table.FieldAsString(0));
+    PixelFmt := TImagePixelFmt(Table.FieldAsInteger(1));
+    Width    := Table.FieldAsInteger(2);
+    Height   := Table.FieldAsInteger(3);
+
+    Data := Table.FieldAsBlobPtr(4, DataSize);
+    if (Data <> nil) and
+       (PixelFmt = ipfRGB) then
+    begin
+      Result := Texture.CreateTexture(Data, Filename, Width, Height, 24)
+    end
+    else
+    begin
+      FillChar(Result, SizeOf(TTexture), 0);
+    end;
+  except on E: Exception do
+    Log.LogError(E.Message, 'TCoverDatabase.LoadCover');
   end;
+
+  Table.Free;
+end;
+
+procedure TCoverDatabase.DeleteCover(CoverID: int64);
+begin
+  DB.ExecSQL(Format('DELETE FROM ['+COVER_TBL+'] WHERE [ID] = %d', [CoverID]));
+  DB.ExecSQL(Format('DELETE FROM ['+COVER_THUMBNAIL_TBL+'] WHERE [ID] = %d', [CoverID]));
+end;
+
+(**
+ * Returns a pointer to an array of bytes containing the texture data in the
+ * requested size
+ *)
+function TCoverDatabase.CreateThumbnail(const Filename: WideString; var Info: TThumbnailInfo): PSDL_Surface;
+var
+  TargetAspect, SourceAspect: double;
+  //TargetWidth, TargetHeight: integer;
+  Thumbnail: PSDL_Surface;
+  MaxSize: integer;
+begin
+  Result := nil;
+
+  MaxSize := GetMaxCoverSize();
+
+  Thumbnail := LoadImage(Filename);
+  if (not assigned(Thumbnail)) then
+  begin
+    Log.LogError('Could not load cover: "'+ Filename +'"', 'TCoverDatabase.AddCover');
+    Exit;
+  end;
+
+  // Convert pixel format as needed
+  AdjustPixelFormat(Thumbnail, TEXTURE_TYPE_PLAIN);
+
+  Info.CoverWidth  := Thumbnail^.w;
+  Info.CoverHeight := Thumbnail^.h;
+  Info.PixelFormat := ipfRGB;
+
+  (* TODO: keep aspect ratio
+  TargetAspect := Width / Height;
+  SourceAspect := TexSurface.w / TexSurface.h;
+
+  // Scale texture to covers dimensions (keep aspect)
+  if (SourceAspect >= TargetAspect) then
+  begin
+    TargetWidth := Width;
+    TargetHeight := Trunc(Width / SourceAspect);
+  end
+  else
+  begin
+    TargetHeight := Height;
+    TargetWidth := Trunc(Height * SourceAspect);
+  end;
+  *)
+
+  // TODO: do not scale if image is smaller
+  ScaleImage(Thumbnail, MaxSize, MaxSize);
+  
+  Result := Thumbnail;
 end;
 
 end.
+

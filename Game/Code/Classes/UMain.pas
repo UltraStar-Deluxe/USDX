@@ -251,7 +251,7 @@ begin
     // Covers Cache
     Log.BenchmarkStart(1);
     Log.LogStatus('Creating Covers Cache', 'Initialization');
-    Covers := TCovers.Create;
+    Covers := TCoverDatabase.Create;
     Log.LogBenchmark('Loading Covers Cache Array', 1);
     Log.BenchmarkStart(1);
 
