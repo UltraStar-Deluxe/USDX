@@ -96,6 +96,14 @@ const
     Alpha:        255
   );
 
+type
+  TImagePixelFmt = (
+    ipfRGBA, ipfRGB, ipfBGRA, ipfBGR
+  );
+
+(*******************************************************
+ * Image saving
+ *******************************************************)
 
 {$IFDEF HavePNG}
 function WritePNGImage(const FileName: string; Surface: PSDL_Surface): boolean;
@@ -107,13 +115,28 @@ function WriteBMPImage(const FileName: string; Surface: PSDL_Surface): boolean;
 function WriteJPGImage(const FileName: string; Surface: PSDL_Surface; Quality: integer): boolean;
 {$ENDIF}
 
+(*******************************************************
+ * Image loading
+ *******************************************************)
+
 function LoadImage(const Identifier: string): PSDL_Surface;
+
+(*******************************************************
+ * Image manipulation
+ *******************************************************)
+
+function PixelFormatEquals(fmt1, fmt2: PSDL_PixelFormat): boolean;
+procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
+procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
+procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: Cardinal);
+
 
 implementation
 
 uses
   SysUtils,
   Classes,
+  Math,
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
@@ -133,8 +156,10 @@ uses
   {$ENDIF}
   zlib,
   sdl_image,
+  sdlutils,
   UCommon,
   ULog;
+
 
 function IsRGBSurface(pixelFmt: PSDL_PixelFormat): boolean;
 begin
@@ -215,6 +240,11 @@ begin
     Converted := true;
   end;
 end;
+
+
+(*******************************************************
+ * Image saving
+ *******************************************************)
 
 (***************************
  * PNG section
@@ -704,6 +734,12 @@ end;
 
 {$ENDIF}
 
+
+(*******************************************************
+ * Image loading
+ *******************************************************)
+
+
 (*
  * Loads an image from the given file or resource
  *)
@@ -718,7 +754,7 @@ begin
 
   if Identifier = '' then
     exit;
-    
+
   //Log.LogStatus( Identifier, 'LoadImage' );
 
   FileName := Identifier;
@@ -731,7 +767,7 @@ begin
       Result := IMG_Load(PChar(FileName));
       //Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
     except
-      Log.LogError('Could not load from file "'+FileName+'"', 'TTextureUnit.LoadImage');
+      Log.LogError('Could not load from file "'+FileName+'"', 'LoadImage');
       Exit;
     end;
   end
@@ -742,14 +778,14 @@ begin
     TexStream := GetResourceStream(Identifier, 'TEX');
     if (not assigned(TexStream)) then
     begin
-      Log.LogError( 'Invalid file or resource "'+ Identifier+'"', 'TTextureUnit.LoadImage');
+      Log.LogError( 'Invalid file or resource "'+ Identifier+'"', 'LoadImage');
       Exit;
     end;
 
     TexRWops := RWopsFromStream(TexStream);
     if (TexRWops = nil) then
     begin
-      Log.LogError( 'Could not assign resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
+      Log.LogError( 'Could not assign resource "'+Identifier+'"', 'LoadImage');
       TexStream.Free();
       Exit;
     end;
@@ -758,11 +794,199 @@ begin
     try
       Result := IMG_Load_RW(TexRWops, 0);
     except
-      Log.LogError( 'Could not read resource "'+Identifier+'"', 'TTextureUnit.LoadImage');
+      Log.LogError( 'Could not read resource "'+Identifier+'"', 'LoadImage');
     end;
 
     SDL_FreeRW(TexRWops);
     TexStream.Free();
+  end;
+end;
+
+
+(*******************************************************
+ * Image manipulation
+ *******************************************************)
+
+ 
+function PixelFormatEquals(fmt1, fmt2: PSDL_PixelFormat): boolean;
+begin
+  if (fmt1^.BitsPerPixel = fmt2^.BitsPerPixel) and
+     (fmt1^.BytesPerPixel = fmt2^.BytesPerPixel) and
+     (fmt1^.Rloss = fmt2^.Rloss) and (fmt1^.Gloss = fmt2^.Gloss) and
+     (fmt1^.Bloss = fmt2^.Bloss) and (fmt1^.Rmask = fmt2^.Rmask) and
+     (fmt1^.Gmask = fmt2^.Gmask) and (fmt1^.Bmask = fmt2^.Bmask) and
+     (fmt1^.Rshift = fmt2^.Rshift) and (fmt1^.Gshift = fmt2^.Gshift) and
+     (fmt1^.Bshift = fmt2^.Bshift)
+  then
+    Result := true
+  else
+    Result := false;
+end;
+
+procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
+var
+  TempSurface: PSDL_Surface;
+begin
+  TempSurface := ImgSurface;
+  ImgSurface := SDL_ScaleSurfaceRect(TempSurface,
+                  0, 0, TempSurface^.W,TempSurface^.H,
+                  Width, Height);
+  SDL_FreeSurface(TempSurface);
+end;
+
+procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
+var
+  TempSurface: PSDL_Surface;
+  ImgFmt: PSDL_PixelFormat; 
+begin
+  TempSurface := ImgSurface;
+
+  // create a new surface with given width and height
+  ImgFmt := TempSurface^.format;
+  ImgSurface := SDL_CreateRGBSurface(
+    SDL_SWSURFACE, Width, Height, ImgFmt^.BitsPerPixel,
+    ImgFmt^.RMask, ImgFmt^.GMask, ImgFmt^.BMask, ImgFmt^.AMask);
+
+  // copy image from temp- to new surface
+  SDL_SetAlpha(ImgSurface, 0, 255);
+  SDL_SetAlpha(TempSurface, 0, 255);
+  SDL_BlitSurface(TempSurface, nil, ImgSurface, nil);
+
+  SDL_FreeSurface(TempSurface);
+end;
+
+(*
+// Old slow floating point version of ColorizeTexture.
+// For an easier understanding of the faster fixed point version below.
+procedure ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
+var
+  clr: array[0..2] of Double; // [0: R, 1: G, 2: B]
+  hsv: array[0..2] of Double; // [0: H(ue), 1: S(aturation), 2: V(alue)]
+  delta, f, p, q, t: Double;
+  max: Double;
+begin
+  clr[0] := PixelColors[0]/255;
+  clr[1] := PixelColors[1]/255;
+  clr[2] := PixelColors[2]/255;
+  max := maxvalue(clr);
+  delta := max - minvalue(clr);
+
+  hsv[0] := DestinationHue; // set H(ue)
+  hsv[2] := max; // set V(alue)
+  // calc S(aturation)
+  if (max = 0.0) then
+    hsv[1] := 0.0
+  else
+    hsv[1] := delta/max;
+
+  //ColorizePixel(PByteArray(Pixel), DestinationHue);
+  h_int := trunc(hsv[0]);             // h_int = |_h_|
+  f := hsv[0]-h_int;                  // f = h-h_int
+  p := hsv[2]*(1.0-hsv[1]);           // p = v*(1-s)
+  q := hsv[2]*(1.0-(hsv[1]*f));       // q = v*(1-s*f)
+  t := hsv[2]*(1.0-(hsv[1]*(1.0-f))); // t = v*(1-s*(1-f))
+  case h_int of
+    0: begin clr[0] := hsv[2]; clr[1] := t;      clr[2] := p;      end; // (v,t,p)
+    1: begin clr[0] := q;      clr[1] := hsv[2]; clr[2] := p;      end; // (q,v,p)
+    2: begin clr[0] := p;      clr[1] := hsv[2]; clr[2] := t;      end; // (p,v,t)
+    3: begin clr[0] := p;      clr[1] := q;      clr[2] := hsv[2]; end; // (p,q,v)
+    4: begin clr[0] := t;      clr[1] := p;      clr[2] := hsv[2]; end; // (t,p,v)
+    5: begin clr[0] := hsv[2]; clr[1] := p;      clr[2] := q;      end; // (v,p,q)
+  end;
+
+  // and store new rgb back into the image
+  PixelColors[0] := trunc(255*clr[0]);
+  PixelColors[1] := trunc(255*clr[1]);
+  PixelColors[2] := trunc(255*clr[2]);
+end;
+*)
+
+procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: Cardinal);
+
+  //returns hue within range [0.0-6.0)
+  function col2hue(Color:Cardinal): double;
+  var
+    clr: array[0..2] of double;
+    hue, max, delta: double;
+  begin
+    clr[0] := ((Color and $ff0000) shr 16)/255; // R
+    clr[1] := ((Color and   $ff00) shr  8)/255; // G
+    clr[2] :=  (Color and     $ff)        /255; // B
+    max := maxvalue(clr);
+    delta := max - minvalue(clr);
+    // calc hue
+    if (delta = 0.0) then       hue := 0
+    else if (clr[0] = max) then hue :=     (clr[1]-clr[2])/delta
+    else if (clr[1] = max) then hue := 2.0+(clr[2]-clr[0])/delta
+    else if (clr[2] = max) then hue := 4.0+(clr[0]-clr[1])/delta;
+    if (hue < 0.0) then
+      hue := hue + 6.0;
+    Result := hue;
+  end;
+
+var
+  DestinationHue: Double;
+  PixelIndex: Cardinal;
+  Pixel: PByte;
+  PixelColors: PByteArray;
+  clr: array[0..2] of UInt32; // [0: R, 1: G, 2: B]
+  hsv: array[0..2] of UInt32; // [0: H(ue), 1: S(aturation), 2: V(alue)]
+  dhue: UInt32;
+  h_int: Cardinal;
+  delta, f, p, q, t: Longint;
+  max: Uint32;
+begin
+  DestinationHue := col2hue(NewColor);
+
+  dhue := Trunc(DestinationHue*1024);
+
+  Pixel := ImgSurface^.Pixels;
+
+  for PixelIndex := 0 to (ImgSurface^.W * ImgSurface^.H)-1 do
+  begin
+    PixelColors := PByteArray(Pixel);
+    // inlined colorize per pixel
+
+    // uses fixed point math
+    // get color values
+    clr[0] := PixelColors[0] shl 10;
+    clr[1] := PixelColors[1] shl 10;
+    clr[2] := PixelColors[2] shl 10;
+    //calculate luminance and saturation from rgb
+
+    max := clr[0];
+    if clr[1] > max then max := clr[1];
+    if clr[2] > max then max := clr[2];
+    delta := clr[0];
+    if clr[1] < delta then delta := clr[1];
+    if clr[2] < delta then delta := clr[2];
+    delta := max-delta;
+    hsv[0] := dhue;  // shl 8
+    hsv[2] := max;  // shl 8
+    if (max = 0) then
+      hsv[1] := 0
+    else
+      hsv[1] := (delta shl 10) div max; // shl 8
+    h_int := hsv[0] and $fffffC00;
+    f := hsv[0]-h_int; //shl 10
+    p := (hsv[2]*(1024-hsv[1])) shr 10;
+    q := (hsv[2]*(1024-(hsv[1]*f) shr 10)) shr 10;
+    t := (hsv[2]*(1024-(hsv[1]*(1024-f)) shr 10)) shr 10;
+    h_int := h_int shr 10;
+    case h_int of
+      0: begin clr[0] := hsv[2]; clr[1] := t;      clr[2] := p;      end; // (v,t,p)
+      1: begin clr[0] := q;      clr[1] := hsv[2]; clr[2] := p;      end; // (q,v,p)
+      2: begin clr[0] := p;      clr[1] := hsv[2]; clr[2] := t;      end; // (p,v,t)
+      3: begin clr[0] := p;      clr[1] := q;      clr[2] := hsv[2]; end; // (p,q,v)
+      4: begin clr[0] := t;      clr[1] := p;      clr[2] := hsv[2]; end; // (t,p,v)
+      5: begin clr[0] := hsv[2]; clr[1] := p;      clr[2] := q;      end; // (v,p,q)
+    end;
+
+    PixelColors[0] := clr[0] shr 10;
+    PixelColors[1] := clr[1] shr 10;
+    PixelColors[2] := clr[2] shr 10;
+
+    Inc(Pixel, ImgSurface^.format.BytesPerPixel);
   end;
 end;
 

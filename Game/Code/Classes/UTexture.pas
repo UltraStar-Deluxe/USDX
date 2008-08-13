@@ -12,13 +12,10 @@ uses
   gl,
   glu,
   glext,
-  Math,
   Classes,
   SysUtils,
   UCommon,
-  UImage,
   SDL,
-  sdlutils,
   SDL_Image;
 
 type
@@ -64,6 +61,8 @@ const
 function TextureTypeToStr(TexType: TTextureType): string;
 function ParseTextureType(const TypeStr: string; Default: TTextureType): TTextureType;
 
+procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
+
 type
   PTextureEntry = ^TTextureEntry;
   TTextureEntry = record
@@ -76,95 +75,55 @@ type
     TextureCache: TTexture; // Thumbnail texture
   end;
 
-  TTextureDatabase = record
-    Texture: array of TTextureEntry;
+  TTextureDatabase = class
+    private
+      Texture: array of TTextureEntry;
+    public
+      procedure AddTexture(var Tex: TTexture; Typ: TTextureType; Color: Cardinal; Cache: boolean);
+      function FindTexture(const Name: string; Typ: TTextureType; Color: Cardinal): integer;
   end;
 
   TTextureUnit = class
     private
-      TnWidth, TnHeight: Cardinal; //width and height of the cover thumbnails
-
-      TnBuffer:  array of byte;
-      TnSurface: PSDL_Surface;
-
-      function pixfmt_eq(fmt1,fmt2: PSDL_Pixelformat): boolean;
-      procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
-      function GetScaledTexture(TexSurface: PSDL_Surface; W,H: Cardinal): PSDL_Surface;
-      procedure ScaleTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
-      procedure FitTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
-      procedure ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
+      TextureDatabase: TTextureDatabase;
     public
       Limit: integer;
-      CreateCacheMipmap: boolean;
 
-      //function GetNumberFor
-      function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean = true): TTexture; overload;
-      function GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean = true): TTexture; overload;
-      function FindTexture(const Name: string; Typ: TTextureType; Col: Cardinal): integer;
+      procedure AddTexture(var Tex: TTexture; Typ: TTextureType; Cache: boolean = false); overload;
+      procedure AddTexture(var Tex: TTexture; Typ: TTextureType; Color: Cardinal; Cache: boolean = false); overload;
+      function GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean = false): TTexture; overload;
+      function GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean = false): TTexture; overload;
       function LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
       function LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture; overload;
       function LoadTexture(const Identifier: string): TTexture; overload;
-      function CreateTexture(var Data: array of byte; const Name: string; W, H: word; Bits: byte): TTexture;
+      function CreateTexture(Data: PChar; const Name: string; Width, Height: word; BitsPerPixel: byte): TTexture;
       procedure UnloadTexture(const Name: string; Typ: TTextureType; FromCache: boolean); overload;
       procedure UnloadTexture(const Name: string; Typ: TTextureType; Col: Cardinal; FromCache: boolean); overload;
       //procedure FlushTextureDatabase();
 
-      function GetCoverThumbnail(const Name: string): Pointer;
-      procedure SetCoverSize(width, height: Integer);
-
-      Constructor Create;
-      Destructor Destroy; override;
+      constructor Create;
+      destructor Destroy; override;
   end;
 
 var
-  Texture:         TTextureUnit;
-  TextureDatabase: TTextureDatabase;
-
-  Mipmapping: boolean;
-
-  CacheMipmap: array[0..256*256*3-1] of byte; // 3KB
-  CacheMipmapSurface: PSDL_Surface;
-
+  Texture: TTextureUnit;
 
 implementation
 
-uses ULog,
-     DateUtils,
-     UCovers,
-     UThemes,
-     StrUtils;
+uses
+  DateUtils,
+  StrUtils,
+  Math,
+  ULog,
+  UCovers,
+  UThemes,
+  UImage;
 
-Constructor TTextureUnit.Create;
-begin
-  inherited Create;
-end;
-
-Destructor TTextureUnit.Destroy;
-begin
-  inherited Destroy;
-end;
-
-function TTextureUnit.pixfmt_eq(fmt1,fmt2: PSDL_Pixelformat): boolean;
-begin
-  if (fmt1^.BitsPerPixel = fmt2^.BitsPerPixel) and
-     (fmt1^.BytesPerPixel = fmt2^.BytesPerPixel) and
-     (fmt1^.Rloss = fmt2^.Rloss) and (fmt1^.Gloss = fmt2^.Gloss) and
-     (fmt1^.Bloss = fmt2^.Bloss) and (fmt1^.Rmask = fmt2^.Rmask) and
-     (fmt1^.Gmask = fmt2^.Gmask) and (fmt1^.Bmask = fmt2^.Bmask) and
-     (fmt1^.Rshift = fmt2^.Rshift) and (fmt1^.Gshift = fmt2^.Gshift) and
-     (fmt1^.Bshift = fmt2^.Bshift)
-   then
-    Result := true
-  else
-    Result := false;
-end;
-
-procedure TTextureUnit.AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
+procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
 var
   TempSurface: PSDL_Surface;
   NeededPixFmt: PSDL_Pixelformat;
 begin
-  NeededPixFmt := @PixelFmt_RGBA;
   if      (Typ = TEXTURE_TYPE_PLAIN) then
     NeededPixFmt := @PixelFmt_RGB
   else if (Typ = TEXTURE_TYPE_TRANSPARENT) or
@@ -173,179 +132,98 @@ begin
   else
     NeededPixFmt := @PixelFmt_RGB;
 
-
-  if not pixfmt_eq(TexSurface^.format, NeededPixFmt) then
+  if not PixelformatEquals(TexSurface^.format, NeededPixFmt) then
   begin
     TempSurface := TexSurface;
     TexSurface := SDL_ConvertSurface(TempSurface, NeededPixFmt, SDL_SWSURFACE);
     SDL_FreeSurface(TempSurface);
   end;
 end;
+  
+{ TTextureDatabase }
 
-function TTextureUnit.GetScaledTexture(TexSurface: PSDL_Surface; W,H: Cardinal): PSDL_Surface;
+procedure TTextureDatabase.AddTexture(var Tex: TTexture; Typ: TTextureType; Color: Cardinal; Cache: boolean);
 var
-  TempSurface: PSDL_Surface;
+  TextureIndex: integer;
 begin
-  TempSurface := TexSurface;
-  Result := SDL_ScaleSurfaceRect(TempSurface,
-                  0, 0, TempSurface^.W,TempSurface^.H,
-                  W, H);
-  SDL_FreeSurface(TempSurface);
-end;
-
-procedure TTextureUnit.ScaleTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
-var
-  TempSurface: PSDL_Surface;
-begin
-  TempSurface := TexSurface;
-  TexSurface := SDL_ScaleSurfaceRect(TempSurface,
-                  0, 0, TempSurface^.W,TempSurface^.H,
-                  W, H);
-  SDL_FreeSurface(TempSurface);
-end;
-
-procedure TTextureUnit.FitTexture(var TexSurface: PSDL_Surface; W,H: Cardinal);
-var
-  TempSurface: PSDL_Surface;
-begin
-  TempSurface := TexSurface;
-  with TempSurface^.format^ do
-    TexSurface := SDL_CreateRGBSurface(SDL_SWSURFACE, W, H, BitsPerPixel, RMask, GMask, BMask, AMask);
-  SDL_SetAlpha(TexSurface, 0, 255);
-  SDL_SetAlpha(TempSurface, 0, 255);
-  SDL_BlitSurface(TempSurface, nil, TexSurface, nil);
-  SDL_FreeSurface(TempSurface);
-end;
-
-procedure TTextureUnit.ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
-  //returns hue within range [0.0-6.0)
-  function col2hue(Color:Cardinal): double;
-  var
-    clr: array[0..2] of double;
-    hue, max, delta: double;
+  TextureIndex := FindTexture(Tex.Name, Typ, Color);
+  if (TextureIndex = -1) then
   begin
-    clr[0] := ((Color and $ff0000) shr 16)/255; // R
-    clr[1] := ((Color and   $ff00) shr  8)/255; // G
-    clr[2] :=  (Color and     $ff)        /255; // B
-    max := maxvalue(clr);
-    delta := max - minvalue(clr);
-    // calc hue
-    if (delta = 0.0) then       hue := 0
-    else if (clr[0] = max) then hue :=     (clr[1]-clr[2])/delta
-    else if (clr[1] = max) then hue := 2.0+(clr[2]-clr[0])/delta
-    else if (clr[2] = max) then hue := 4.0+(clr[0]-clr[1])/delta;
-    if (hue < 0.0) then
-      hue := hue + 6.0;
-    Result := hue;
+    TextureIndex := Length(Texture);
+    SetLength(Texture, TextureIndex+1);
+
+    Texture[TextureIndex].Name  := Tex.Name;
+    Texture[TextureIndex].Typ   := Typ;
+    Texture[TextureIndex].Color := Color;
   end;
 
+  if (Cache) then
+    Texture[TextureIndex].TextureCache := Tex
+  else
+    Texture[TextureIndex].Texture      := Tex;
+end;
+
+function TTextureDatabase.FindTexture(const Name: string; Typ: TTextureType; Color: Cardinal): integer;
 var
-  DestinationHue: Double;
-  PixelIndex: Cardinal;
-  Pixel: PByte;
-    PixelColors: PByteArray;
-//    clr: array[0..2] of Double; // [0: R, 1: G, 2: B]
-    clr2: array[0..2] of Uint32;
-//    hsv: array[0..2] of Double; // [0: H(ue), 1: S(aturation), 2: V(alue)]
-    hsv2: array[0..2] of UInt32;//LongInt;
-    dhue: UInt32;//LongInt;
-    h_int: Cardinal;
-//    delta, f, p, q, t: Double;
-    delta2,f2,p2,q2,t2: Longint;//LongInt;
-//    max: Double;
-    max2: Uint32;
+  TextureIndex: integer;
+  CurrentTexture: PTextureEntry;
 begin
-  DestinationHue := col2hue(Col);
-
-  dhue := Trunc(DestinationHue*1024);
-
-  Pixel := TexSurface^.Pixels;
-
-  for PixelIndex := 0 to (TexSurface^.W * TexSurface^.H)-1 do
+  Result := -1;
+  for TextureIndex := 0 to High(Texture) do
   begin
-    PixelColors := PByteArray(Pixel);
-    // inlined colorize per pixel
-
-    // uses fixed point math
-    // get color values
-    clr2[0] := PixelColors[0] shl 10;
-    clr2[1] := PixelColors[1] shl 10;
-    clr2[2] := PixelColors[2] shl 10;
-    //calculate luminance and saturation from rgb
-
-    max2 := clr2[0];
-    if clr2[1] > max2 then max2 := clr2[1];
-    if clr2[2] > max2 then max2 := clr2[2];
-    delta2 := clr2[0];
-    if clr2[1] < delta2 then delta2 := clr2[1];
-    if clr2[2] < delta2 then delta2 := clr2[2];
-    delta2 := max2-delta2;
-    hsv2[0] := dhue;  // shl 8
-    hsv2[2] := max2;  // shl 8
-    if (max2 = 0) then
-      hsv2[1] := 0
-    else
-      hsv2[1] := (delta2 shl 10) div max2; // shl 8
-    h_int := hsv2[0] and $fffffC00;
-    f2 := hsv2[0]-h_int; //shl 10
-    p2 := (hsv2[2]*(1024-hsv2[1])) shr 10;
-    q2 := (hsv2[2]*(1024-(hsv2[1]*f2) shr 10)) shr 10;
-    t2 := (hsv2[2]*(1024-(hsv2[1]*(1024-f2)) shr 10)) shr 10;
-    h_int := h_int shr 10;
-    case h_int of
-      0: begin clr2[0] := hsv2[2]; clr2[1] := t2;      clr2[2] := p2;      end; // (v,t,p)
-      1: begin clr2[0] := q2;      clr2[1] := hsv2[2]; clr2[2] := p2;      end; // (q,v,p)
-      2: begin clr2[0] := p2;      clr2[1] := hsv2[2]; clr2[2] := t2;      end; // (p,v,t)
-      3: begin clr2[0] := p2;      clr2[1] := q2;      clr2[2] := hsv2[2]; end; // (p,q,v)
-      4: begin clr2[0] := t2;      clr2[1] := p2;      clr2[2] := hsv2[2]; end; // (t,p,v)
-      5: begin clr2[0] := hsv2[2]; clr2[1] := p2;      clr2[2] := q2;      end; // (v,p,q)
+    CurrentTexture := @Texture[TextureIndex];
+    if (CurrentTexture.Name = Name) and
+       (CurrentTexture.Typ = Typ) then
+    begin
+      // colorized textures must match in their color too
+      if (CurrentTexture.Typ <> TEXTURE_TYPE_COLORIZED) or
+         (CurrentTexture.Color = Color) then
+      begin
+        Result := TextureIndex;
+        Break;
+      end;
     end;
-
-    PixelColors[0] := clr2[0] shr 10;
-    PixelColors[1] := clr2[1] shr 10;
-    PixelColors[2] := clr2[2] shr 10;
-
-    // old floating point version
-(*
-    clr[0] := PixelColors[0]/255;
-    clr[1] := PixelColors[1]/255;
-    clr[2] := PixelColors[2]/255;
-    max := maxvalue(clr);
-    delta := max - minvalue(clr);
-
-    hsv[0] := DestinationHue; // set H(ue)
-    hsv[2] := max; // set V(alue)
-    // calc S(aturation)
-    if (max = 0.0) then
-      hsv[1] := 0.0
-    else
-      hsv[1] := delta/max;
-
-//    ColorizePixel(PByteArray(Pixel), DestinationHue);
-    h_int := trunc(hsv[0]);             // h_int = |_h_|
-    f := hsv[0]-h_int;                  // f = h-h_int
-    p := hsv[2]*(1.0-hsv[1]);           // p = v*(1-s)
-    q := hsv[2]*(1.0-(hsv[1]*f));       // q = v*(1-s*f)
-    t := hsv[2]*(1.0-(hsv[1]*(1.0-f))); // t = v*(1-s*(1-f))
-    case h_int of
-      0: begin clr[0] := hsv[2]; clr[1] := t;      clr[2] := p;      end; // (v,t,p)
-      1: begin clr[0] := q;      clr[1] := hsv[2]; clr[2] := p;      end; // (q,v,p)
-      2: begin clr[0] := p;      clr[1] := hsv[2]; clr[2] := t;      end; // (p,v,t)
-      3: begin clr[0] := p;      clr[1] := q;      clr[2] := hsv[2]; end; // (p,q,v)
-      4: begin clr[0] := t;      clr[1] := p;      clr[2] := hsv[2]; end; // (t,p,v)
-      5: begin clr[0] := hsv[2]; clr[1] := p;      clr[2] := q;      end; // (v,p,q)
-    end;
-
-    // and store new rgb back into the image
-    PixelColors[0] := trunc(255*clr[0]);
-    PixelColors[1] := trunc(255*clr[1]);
-    PixelColors[2] := trunc(255*clr[2]);
-*)
-    Inc(Pixel, TexSurface^.format.BytesPerPixel);
   end;
+end;
+
+
+{ TTextureUnit }
+
+constructor TTextureUnit.Create;
+begin
+  inherited Create;
+  TextureDatabase := TTextureDatabase.Create;
+end;
+
+destructor TTextureUnit.Destroy;
+begin
+  TextureDatabase.Free;
+  inherited Destroy;
+end;
+
+
+procedure TTextureUnit.AddTexture(var Tex: TTexture; Typ: TTextureType; Cache: boolean);
+begin
+  TextureDatabase.AddTexture(Tex, Typ, 0, Cache);
+end;
+
+procedure TTextureUnit.AddTexture(var Tex: TTexture; Typ: TTextureType; Color: Cardinal; Cache: boolean);
+begin
+  TextureDatabase.AddTexture(Tex, Typ, Color, Cache);
 end;
 
 function TTextureUnit.LoadTexture(FromRegistry: boolean; const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
+begin
+  // FIXME: what is the FromRegistry parameter supposed to do?
+  Result := LoadTexture(Identifier, Typ, Col);
+end;
+
+function TTextureUnit.LoadTexture(const Identifier: string): TTexture;
+begin
+  Result := LoadTexture(Identifier, TEXTURE_TYPE_PLAIN, 0);
+end;
+
+function TTextureUnit.LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
 var
   TexSurface: PSDL_Surface;
   MipmapSurface: PSDL_Surface;
@@ -353,21 +231,11 @@ var
   oldWidth, oldHeight: Cardinal;
   ActTex: GLuint;
 begin
-  Log.BenchmarkStart(4);
-  Mipmapping := true;
-
   // zero texture data
   FillChar(Result, SizeOf(Result), 0);
 
   // load texture data into memory
-  {$ifdef blindydebug}
-  Log.LogStatus('', ' ----------------------------------------------------');
-  Log.LogStatus('', ' LoadImage('''+Identifier+''') (called by '+Format+')');
-  {$endif}
   TexSurface := LoadImage(Identifier);
-  {$ifdef blindydebug}
-  Log.LogStatus('',' ok');
-  {$endif}
   if not assigned(TexSurface) then
   begin
     Log.LogError('Could not load texture: "' + Identifier +' '+ TextureTypeToStr(Typ) +'"',
@@ -376,13 +244,8 @@ begin
   end;
 
   // convert pixel format as needed
-  {$ifdef blindydebug}
-  Log.LogStatus('', ' AdjustPixelFormat');
-  {$endif}
   AdjustPixelFormat(TexSurface, Typ);
-  {$ifdef blindydebug}
-  Log.LogStatus('',' ok');
-  {$endif}
+
   // adjust texture size (scale down, if necessary)
   newWidth   := TexSurface.W;
   newHeight  := TexSurface.H;
@@ -394,100 +257,32 @@ begin
     newHeight := Limit;
 
   if (TexSurface.W > newWidth) or (TexSurface.H > newHeight) then
-  begin
-    {$ifdef blindydebug}
-    Log.LogStatus('', ' ScaleTexture');
-    {$endif}
-    ScaleTexture(TexSurface, newWidth, newHeight);
-    {$ifdef blindydebug}
-    Log.LogStatus('', ' ok');
-    {$endif}
-  end;
+    ScaleImage(TexSurface, newWidth, newHeight);
 
-  {$ifdef blindydebug}
-  Log.LogStatus('', ' JB-1 : typ='+Typ);
-  {$endif}
-
-
-  (*
-
-  // don't actually understand, if this is needed...
-  // this should definately be changed... together with all this
-  // cover cache stuff
-  if (CreateCacheMipmap) and (Typ = TEXTURE_TYPE_PLAIN) then
-  begin
-    {$ifdef blindydebug}
-    Log.LogStatus('', ' JB-1 : Minimap');
-    {$endif}
-
-    if (TnWidth <= 256) and (TnHeight <= 256) then
-    begin
-      {$ifdef blindydebug}
-      Log.LogStatus('', ' GetScaledTexture('''+inttostr(Covers.W)+''', '''+inttostr(Covers.H)+''') (for CacheMipmap)');
-      {$endif}
-      MipmapSurface := GetScaledTexture(TexSurface, TnWidth, TnHeight);
-      if assigned(MipmapSurface) then
-      begin
-        {$ifdef blindydebug}
-        Log.LogStatus('', ' ok');
-        Log.LogStatus('', ' BlitSurface Stuff');
-        {$endif}
-        // creating and freeing the surface could be done once, if Cover.W and Cover.H don't change
-        TnSurface := SDL_CreateRGBSurfaceFrom(@TnBuffer[0], TnWidth, TnHeight, 24, TnWidth*3, $000000ff, $0000ff00, $00ff0000, 0);
-        SDL_BlitSurface(TnSurface, nil, TnSurface, nil);
-        SDL_FreeSurface(TnSurface);
-        {$ifdef blindydebug}
-        Log.LogStatus('', ' ok');
-        Log.LogStatus('', ' SDL_FreeSurface (CacheMipmap)');
-        {$endif}
-        SDL_FreeSurface(TnSurface);
-        {$ifdef blindydebug}
-        Log.LogStatus('', ' ok');
-        {$endif}
-      end
-      else
-      begin
-        Log.LogStatus(' Error creating CacheMipmap', ' LoadTexture('''+Identifier+''')');
-      end;
-    end;
-    // should i create a cache texture, if Covers.W/H are larger?
-  end;
-
-  *)
-
-  {$ifdef blindydebug}
-  Log.LogStatus('',' JB-2');
-  {$endif}
-
-
- // now we might colorize the whole thing
+  // now we might colorize the whole thing
   if (Typ = TEXTURE_TYPE_COLORIZED) then
-    ColorizeTexture(TexSurface, Col);
+    ColorizeImage(TexSurface, Col);
 
- // save actual dimensions of our texture
+  // save actual dimensions of our texture
   oldWidth  := newWidth;
   oldHeight := newHeight;
- // make texture dimensions be powers of 2
+
+  // make texture dimensions be powers of 2
   newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
   newHeight := Round(Power(2, Ceil(Log2(newHeight))));
   if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
-    FitTexture(TexSurface, newWidth, newHeight);
+    FitImage(TexSurface, newWidth, newHeight);
 
   // at this point we have the image in memory...
   // scaled to be at most 1024x1024 pixels large
   // scaled so that dimensions are powers of 2
   // and converted to either RGB or RGBA
 
-  {$ifdef blindydebug}
-  Log.LogStatus('',' JB-3');
-  {$endif}
-
-
   // if we got a Texture of Type Plain, Transparent or Colorized,
   // then we're done manipulating it
   // and could now create our openGL texture from it
 
- // prepare OpenGL texture
+  // prepare OpenGL texture
   glGenTextures(1, @ActTex);
 
   glBindTexture(GL_TEXTURE_2D, ActTex);
@@ -505,11 +300,6 @@ begin
   begin
     glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
   end;
-
-  {$ifdef blindydebug}
-  Log.LogStatus('',' JB-5');
-  {$endif}
-
 
   // setup texture struct
   with Result do
@@ -541,26 +331,7 @@ begin
     Name := Identifier;
   end;
 
-  {$ifdef blindydebug}
-  Log.LogStatus('',' JB-6');
-  {$endif}
-
   SDL_FreeSurface(TexSurface);
-
-  {$ifdef blindydebug}
-  Log.LogStatus('',' JB-7');
-  {$endif}
-
-
-  Log.BenchmarkEnd(4);
-  if Log.BenchmarkTimeLength[4] >= 1 then
-    Log.LogBenchmark('**********> Texture Load Time Warning - ' + Identifier + '/' + TextureTypeToStr(Typ), 4)
-  else
-    Log.LogBenchmark('**********> Texture Load Time ' + ExtractFileName(Identifier) + '/' + TextureTypeToStr(Typ), 4);
-  {$ifdef blindydebug}
-  Log.LogStatus('',' JB-8');
-  {$endif}
-
 end;
 
 function TTextureUnit.GetTexture(const Name: string; Typ: TTextureType; FromCache: boolean): TTexture;
@@ -570,207 +341,87 @@ end;
 
 function TTextureUnit.GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean): TTexture;
 var
-  texture: integer;
-  cover:   integer;
+  TextureIndex: integer;
+  CoverIndex:   integer;
 begin
-
-  if Name = '' then
-    exit;
-
-  // find texture entry
-  texture := FindTexture(Name, Typ, Col);
-
-  if texture = -1 then
+  if (Name = '') then
   begin
-    // create texture entry
-    texture := Length(TextureDatabase.Texture);
-    SetLength(TextureDatabase.Texture, texture+1);
-
-    TextureDatabase.Texture[texture].Name  := Name;
-    TextureDatabase.Texture[texture].Typ   := Typ;
-    TextureDatabase.Texture[texture].Color := Col;
-
-    // inform database that no textures have been loaded into memory
-    TextureDatabase.Texture[texture].Texture.TexNum      := 0;
-    TextureDatabase.Texture[texture].TextureCache.TexNum := 0;
+    // zero texture data
+    FillChar(Result, SizeOf(Result), 0);
+    Exit;
   end;
 
-  // use preloaded texture
-  if (not FromCache) or (FromCache{ and (Covers.CoverExists(Name) < 0)}) then
+  if (FromCache) then
   begin
-    // use full texture
-    if TextureDatabase.Texture[texture].Texture.TexNum = 0 then
-    begin
-      // load texture
-      {$ifdef blindydebug}
-      Log.LogStatus('...', 'GetTexture('''+Name+''','''+Typ+''')');
-      {$endif}
-      TextureDatabase.Texture[texture].Texture := LoadTexture(false, Name, Typ, Col);
-      {$ifdef blindydebug}
-      Log.LogStatus('done',' ');
-      {$endif}
-    end;
-
-    // use texture
-    Result := TextureDatabase.Texture[texture].Texture;
-  end;
-
-  if FromCache and Covers.CoverExists(Name) then
-  begin
+    (*
     // use cache texture
-    cover := Covers.CoverNumber(Name);
+    CoverIndex := Covers.FindCover(Name);
 
-    if TextureDatabase.Texture[texture].TextureCache.TexNum = 0 then
+    if TextureDatabase.Texture[TextureIndex].TextureCache.TexNum = 0 then
     begin
       // load texture
       Covers.PrepareData(Name);
-      TextureDatabase.Texture[texture].TextureCache := CreateTexture(Covers.Data, Name, Covers.Cover[cover].W, Covers.Cover[cover].H, 24);
+      TextureDatabase.Texture[TextureIndex].TextureCache := CreateTexture(Covers.Data, Name, Covers.Cover[CoverIndex].Width, Covers.Cover[CoverIndex].Height, 24);
     end;
+    *)
 
     // use texture
-    Result := TextureDatabase.Texture[texture].TextureCache;
+    TextureIndex := TextureDatabase.FindTexture(Name, Typ, Col);
+    if (TextureIndex > -1) then
+      Result := TextureDatabase.Texture[TextureIndex].TextureCache;
+    Exit;
   end;
-end;
 
-//--------
-// Returns Pointer to an Array of Byte containing the Texture Data in the
-// requested Size
-//--------
-function TTextureUnit.GetCoverThumbnail(const Name: string): Pointer;
-var
-  TexSurface: PSDL_Surface;
-const
-  Typ = TEXTURE_TYPE_PLAIN;
-begin
-  Result := nil;
-  if (FileExists(Name)) then
+  // find texture entry in database
+  TextureIndex := TextureDatabase.FindTexture(Name, Typ, Col);
+  if (TextureIndex = -1) then
   begin
-    {$ifdef blindydebug}
-    Log.LogStatus('',' ----------------------------------------------------');
-    Log.LogStatus('',' GetCoverThumbnail('''+Name+''')');
-    {$endif}
-    TexSurface := LoadImage(Name);
-    {$ifdef blindydebug}
-    Log.LogStatus('',' ok');
-    {$endif}
-    if assigned(TexSurface) then
-    begin
-      // convert pixel format as needed
-      {$ifdef blindydebug}
-      Log.LogStatus('',' AdjustPixelFormat');
-      {$endif}
-      AdjustPixelFormat(TexSurface, Typ);
+    // create texture entry in database
+    TextureIndex := Length(TextureDatabase.Texture);
+    SetLength(TextureDatabase.Texture, TextureIndex+1);
 
-      {$ifdef blindydebug}
-      Log.LogStatus('',' ok');
-      {$endif}
+    TextureDatabase.Texture[TextureIndex].Name  := Name;
+    TextureDatabase.Texture[TextureIndex].Typ   := Typ;
+    TextureDatabase.Texture[TextureIndex].Color := Col;
 
-      // Scale Texture to Covers Dimensions
-      {$ifdef blindydebug}
-      Log.LogStatus('',' ScaleTexture('''+inttostr(tnWidth)+''','''+inttostr(TnHeight)+''') (for CacheMipmap)');
-      {$endif}
-      ScaleTexture(TexSurface, TnWidth, TnHeight);
-
-      if assigned(TexSurface) AND assigned(TnSurface) then
-      begin
-        {$ifdef blindydebug}
-        Log.LogStatus('',' ok');
-        Log.LogStatus('',' BlitSurface Stuff');
-        {$endif}
-
-        SDL_BlitSurface(TexSurface, nil, TnSurface, nil);
-
-        Result := @TnBuffer[0];
-
-        {$ifdef blindydebug}
-        Log.LogStatus('',' ok');
-        {$endif}
-      end
-      else
-        Log.LogStatus(' Error creating Cover Thumbnail',' LoadTexture('''+Name+''')');
-    end
-    else
-      Log.LogError('Could not load texture for Cover Thumbnail: "' + name+' '+ TextureTypeToStr(Typ) +'"',
-                   'TTextureUnit.GetCoverThumbnail');
-
-    SDL_FreeSurface(TexSurface);
+    // inform database that no textures have been loaded into memory
+    TextureDatabase.Texture[TextureIndex].Texture.TexNum      := 0;
+    TextureDatabase.Texture[TextureIndex].TextureCache.TexNum := 0;
   end;
+
+  // load full texture
+  if (TextureDatabase.Texture[TextureIndex].Texture.TexNum = 0) then
+    TextureDatabase.Texture[TextureIndex].Texture := LoadTexture(false, Name, Typ, Col);
+
+  // use texture
+  Result := TextureDatabase.Texture[TextureIndex].Texture;
 end;
 
-//--------
-// sets textures thumbnail size vars and sets length of databuffer and create coversurface
-//--------
-procedure TTextureUnit.SetCoverSize(width, height: integer);
-begin
-  if (width > 0) and (height > 0) then
-  begin
-    TnWidth  := width;
-    TnHeight := height;
-
-    SetLength(TnBuffer, TnWidth * TnHeight * 3);
-
-    //Free if necesary and Create new Surface at Data
-    if (Assigned(TnSurface)) then
-      SDL_FreeSurface(TnSurface);
-      
-    TnSurface := SDL_CreateRGBSurfaceFrom(@TnBuffer[0], TnWidth, TnHeight, 24, TnWidth*3, $000000ff, $0000ff00, $00ff0000, 0);
-  end;
-end;
-
-function TTextureUnit.FindTexture(const Name: string; Typ: TTextureType; Col: Cardinal): integer;
-var
-  T: integer; // texture
-begin
-  Result := -1;
-  for T := 0 to high(TextureDatabase.Texture) do
-  begin
-    if (TextureDatabase.Texture[T].Name = Name) and
-       (TextureDatabase.Texture[T].Typ = Typ) then
-    begin
-      // colorized textures must match in their color too
-      if (TextureDatabase.Texture[T].Typ <> TEXTURE_TYPE_COLORIZED) or
-         (TextureDatabase.Texture[T].Color = Col) then
-      begin
-        Result := T;
-        break;
-      end;
-    end;
-  end;
-end;
-
-function TTextureUnit.LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
-begin
-  Result := LoadTexture(false, Identifier, Typ, Col);
-end;
-
-function TTextureUnit.LoadTexture(const Identifier: string): TTexture;
-begin
-  Result := LoadTexture(false, Identifier, TEXTURE_TYPE_PLAIN, 0);
-end;
-
-function TTextureUnit.CreateTexture(var Data: array of byte; const Name: string; W, H: word; Bits: byte): TTexture;
+function TTextureUnit.CreateTexture(Data: PChar; const Name: string; Width, Height: word; BitsPerPixel: byte): TTexture;
 var
   Error:     integer;
   ActTex:    GLuint;
 begin
-  Mipmapping := false;
-
   glGenTextures(1, @ActTex); // ActText = new texture number
   glBindTexture(GL_TEXTURE_2D, ActTex);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, W, H, 0, GL_RGB, GL_UNSIGNED_BYTE, @Data[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
+  
+  {
   if Mipmapping then
   begin
     Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 3, W, H, GL_RGB, GL_UNSIGNED_BYTE, @Data[0]);
     if Error > 0 then
       Log.LogError('gluBuild2DMipmaps() failed', 'TTextureUnit.CreateTexture');
   end;
-
+  }
+  
   Result.X := 0;
   Result.Y := 0;
+  Result.Z := 0;
   Result.W := 0;
   Result.H := 0;
   Result.ScaleW := 1;
@@ -786,13 +437,12 @@ begin
   Result.ColB := 1;
   Result.Alpha := 1;
 
-  // 0.4.2 new test - default use whole texure, taking TexW and TexH as const and changing these
+  // new test - default use whole texure, taking TexW and TexH as const and changing these
   Result.TexX1 := 0;
   Result.TexY1 := 0;
   Result.TexX2 := 1;
   Result.TexY2 := 1;
 
-  // 0.5.0
   Result.Name := Name;
 end;
 
@@ -806,7 +456,7 @@ var
   T:      integer;
   TexNum: GLuint;
 begin
-  T := FindTexture(Name, Typ, Col);
+  T := TextureDatabase.FindTexture(Name, Typ, Col);
 
   if not FromCache then 
   begin
@@ -815,7 +465,7 @@ begin
     begin
       glDeleteTextures(1, PGLuint(@TexNum));
       TextureDatabase.Texture[T].Texture.TexNum := 0;
-//      Log.LogError('Unload texture no '+IntToStr(TexNum));
+      //Log.LogError('Unload texture no '+IntToStr(TexNum));
     end;
   end
   else
@@ -825,7 +475,7 @@ begin
     begin
       glDeleteTextures(1, @TexNum);
       TextureDatabase.Texture[T].TextureCache.TexNum := 0;
-//      Log.LogError('Unload texture cache no '+IntToStr(TexNum));
+      //Log.LogError('Unload texture cache no '+IntToStr(TexNum));
     end;
   end;
 end;

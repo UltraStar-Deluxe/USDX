@@ -824,9 +824,7 @@ begin
       // cache texture if there is a need to this
       if (not Covers.CoverExists(CatSongs.Song[I].Path + CatSongs.Song[I].Cover)) then
       begin
-        Texture.CreateCacheMipmap := true;
         Texture.GetTexture(CatSongs.Song[I].Path + CatSongs.Song[I].Cover, TEXTURE_TYPE_PLAIN, true); // preloads textures and creates cache mipmap
-        Texture.CreateCacheMipmap := false;
 
         // puts this texture to the cache file
         Covers.AddCover(CatSongs.Song[I].Path + CatSongs.Song[I].Cover);

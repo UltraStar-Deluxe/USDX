@@ -200,7 +200,7 @@ begin
       BlockWrite(F, Name[1], NLen);
 
       Cover[High(Cover)].Position := FilePos(F);
-      BlockWrite(F, CacheMipmap[0], W*H*(Bits div 8));
+      //BlockWrite(F, CacheMipmap[0], W*H*(Bits div 8));
 
       CloseFile(F);
     end;
