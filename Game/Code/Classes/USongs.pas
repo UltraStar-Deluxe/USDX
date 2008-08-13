@@ -54,16 +54,16 @@ type
   end;
 
   {$IFDEF USE_PSEUDO_THREAD}
-    TSongs = class( TPseudoThread )
+  TSongs = class( TPseudoThread )
   {$ELSE}
-    TSongs = class( TThread )
+  TSongs = class( TThread )
   {$ENDIF}
   private
     fNotify, fWatch     : longint;
     fParseSongDirectory : boolean;
     fProcessing         : boolean;
     {$ifdef MSWINDOWS}
-      fDirWatch           : TDirectoryWatch;
+    fDirWatch           : TDirectoryWatch;
     {$endif}
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
@@ -72,8 +72,8 @@ type
   public
     SongList  : TList;          // array of songs
     Selected  : integer;        // selected song index
-    constructor create();
-    destructor  destroy(); override;
+    constructor Create();
+    destructor  Destroy(); override;
 
 
     procedure LoadSongList;     // load all songs
@@ -133,14 +133,17 @@ uses StrUtils,
      UMain,
      UIni;
 
-constructor TSongs.create();
+constructor TSongs.Create();
 begin
   // do not start thread BEFORE initialization (suspended = true)
-  inherited create( true );
-  self.freeonterminate := true;
+  inherited Create(true);
+  Self.FreeOnTerminate := true;
 
-  SongList := TList.create();
+  SongList := TList.Create();
 
+  // FIXME: threaded loading does not work this way.
+  // It will just cause crashes but nothing else at the moment.
+  (*
   {$ifdef MSWINDOWS}
     fDirWatch := TDirectoryWatch.create(nil);
     fDirWatch.OnChange     := DoDirChanged;
@@ -151,11 +154,15 @@ begin
 
   // now we can start the thread
   Resume();
+  *)
+
+  // until it is fixed, simply load the song-list
+  int_LoadSongList();
 end;
 
-destructor TSongs.destroy();
+destructor TSongs.Destroy();
 begin
-  freeandnil( SongList );
+  FreeAndNil( SongList );
   inherited;
 end;
 
@@ -173,7 +180,7 @@ begin
 {$ELSE}
   fParseSongDirectory := true;
 
-  while not self.terminated do
+  while not terminated do
   begin
 
     if fParseSongDirectory then
@@ -182,7 +189,7 @@ begin
       int_LoadSongList();
     end;
 
-    self.suspend;
+    Suspend();
   end;
 {$ENDIF}
 end;
@@ -206,8 +213,8 @@ begin
     if assigned( CatCovers ) then
       CatCovers.Load;
 
-    //if assigned( Covers ) then
-    //  Covers.Load;
+    if assigned( Covers ) then
+      Covers.Load;
 
     if assigned(ScreenSong)  then
     begin
@@ -227,7 +234,7 @@ end;
 procedure TSongs.LoadSongList;
 begin
   fParseSongDirectory := true;
-  self.resume;
+  Resume();
 end;
 
 procedure TSongs.BrowseDir(Dir: widestring);
