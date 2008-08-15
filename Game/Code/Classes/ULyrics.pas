@@ -132,6 +132,7 @@ uses SysUtils,
      TextGL,
      UGraphic,
      UDisplay,
+     ULog,
      math,
      UIni;
 
@@ -489,7 +490,10 @@ begin
     
     // copy back-buffer to texture
     glBindTexture(GL_TEXTURE_2D, LyricLine.Tex);
+    // FIXME: this does not work this way
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 600-64, 1024, 64, 0);
+    if (glGetError() <> GL_NO_ERROR) then
+      Log.LogError('Creation of Lyrics-texture failed', 'TLyricEngine.AddLine');
 
     // restore OpenGL state
     glPopAttrib();
