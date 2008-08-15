@@ -18,21 +18,23 @@ uses
 type
   TPlatformWindows = class(TPlatform)
     private
-      function GetGamePath: WideString;
+      function GetSpecialPath(CSIDL: integer): WideString;
     public
-      function DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray; override;
-      function TerminateIfAlreadyRunning(var WndTitle : String) : Boolean; override;
+      function DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: Boolean): TDirectoryEntryArray; override;
+      function TerminateIfAlreadyRunning(var WndTitle: String): Boolean; override;
 
-      function GetLogPath        : WideString; override;
-      function GetGameSharedPath : WideString; override;
-      function GetGameUserPath   : WideString; override;
+      function GetLogPath: WideString; override;
+      function GetGameSharedPath: WideString; override;
+      function GetGameUserPath: WideString; override;
   end;
 
 implementation
 
 uses
   SysUtils,
-  Windows;
+  ShlObj,
+  Windows,
+  UConfig;
 
 type
   TSearchRecW = record
@@ -45,13 +47,13 @@ type
     FindData: TWin32FindDataW;
   end;
 
-function  FindFirstW(const Path: WideString; Attr: Integer; var  F: TSearchRecW): Integer; forward;
+function  FindFirstW(const Path: WideString; Attr: Integer; var F: TSearchRecW): Integer; forward;
 function  FindNextW(var F: TSearchRecW): Integer; forward;
 procedure FindCloseW(var F: TSearchRecW); forward;
 function  FindMatchingFileW(var F: TSearchRecW): Integer; forward;
 function  DirectoryExistsW(const Directory: widestring): Boolean; forward;
 
-function FindFirstW(const Path: widestring; Attr: Integer; var  F: TSearchRecW): Integer;
+function FindFirstW(const Path: widestring; Attr: Integer; var F: TSearchRecW): Integer;
 const
   faSpecial = faHidden or faSysFile or faVolumeID or faDirectory;
 begin
@@ -126,7 +128,7 @@ end;
 //------------------------------
 //Start more than One Time Prevention
 //------------------------------
-function TPlatformWindows.TerminateIfAlreadyRunning(var WndTitle : String) : Boolean;
+function TPlatformWindows.TerminateIfAlreadyRunning(var WndTitle: String): Boolean;
 var
   hWnd: THandle;
   I: Integer;
@@ -151,11 +153,11 @@ begin
     end;
 end;
 
-Function TPlatformWindows.DirectoryFindFiles(Dir, Filter : WideString; ReturnAllSubDirs : Boolean) : TDirectoryEntryArray;
+function TPlatformWindows.DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: Boolean): TDirectoryEntryArray;
 var
     i : Integer;
     SR : TSearchRecW;
-    lAttrib : Integer;
+    Attrib : Integer;
 begin
   i := 0;
   Filter := LowerCase(Filter);
@@ -164,8 +166,8 @@ begin
   repeat
     if (SR.Name <> '.') and (SR.Name <> '..') then
     begin
-      lAttrib := FileGetAttr(Dir + SR.name);
-      if ReturnAllSubDirs and ((lAttrib and faDirectory) <> 0) then
+      Attrib := FileGetAttr(Dir + SR.name);
+      if ReturnAllSubDirs and ((Attrib and faDirectory) <> 0) then
       begin
         SetLength( Result, i + 1);
         Result[i].Name        := SR.name;
@@ -186,25 +188,42 @@ begin
   FindCloseW(SR);
 end;
 
-function TPlatformWindows.GetGamePath: WideString;
+(**
+ * Returns the path of a special folder.
+ *
+ * Some Folder IDs:
+ * CSIDL_APPDATA       (e.g. C:\Documents and Settings\username\Application Data)
+ * CSIDL_LOCAL_APPDATA (e.g. C:\Documents and Settings\username\Local Settings\Application Data)
+ * CSIDL_PROFILE       (e.g. C:\Documents and Settings\username)
+ * CSIDL_PERSONAL      (e.g. C:\Documents and Settings\username\My Documents)
+ * CSIDL_MYMUSIC       (e.g. C:\Documents and Settings\username\My Documents\My Music)
+ *)
+function TPlatformWindows.GetSpecialPath(CSIDL: integer): WideString;
+var
+  Buffer: array [0..MAX_PATH-1] of WideChar;
 begin
-  // Windows and Linux use this:
+{$IF Defined(Delphi) or (FPC_VERSION_INT >= 2002002)} // >= 2.2.2
+  if (SHGetSpecialFolderPathW(0, @Buffer, CSIDL, false)) then
+    Result := Buffer
+  else
+{$IFEND}
+    Result := '';
+end;
+
+function TPlatformWindows.GetLogPath: WideString;
+begin
   Result := ExtractFilePath(ParamStr(0));
 end;
 
-function TPlatformWindows.GetLogPath        : WideString;
+function TPlatformWindows.GetGameSharedPath: WideString;
 begin
-  result := ExtractFilePath(ParamStr(0));
+  Result := ExtractFilePath(ParamStr(0));
 end;
 
-function TPlatformWindows.GetGameSharedPath : WideString;
+function TPlatformWindows.GetGameUserPath: WideString;
 begin
-  result := ExtractFilePath(ParamStr(0));
-end;
-
-function TPlatformWindows.GetGameUserPath   : WideString;
-begin
-  result := ExtractFilePath(ParamStr(0));
+  //Result := GetSpecialPath(CSIDL_APPDATA) + PathDelim + 'UltraStarDX' + PathDelim;
+  Result := ExtractFilePath(ParamStr(0));
 end;
 
 end.
