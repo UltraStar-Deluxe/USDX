@@ -11,6 +11,7 @@ interface
 uses Classes,
      Math,
      SysUtils,
+     sdl,
      UCommon,
      UMusic,
      UIni;
@@ -23,12 +24,22 @@ type
   TCaptureBuffer = class
     private
       VoiceStream:  TAudioVoiceStream; // stream for voice passthrough
+      AnalysisBufferLock: PSDL_Mutex;
 
       function GetToneString: string; // converts a tone to its string represenatation;
+
+      procedure BoostBuffer(Buffer: PChar; Size: Cardinal);
+      procedure ProcessNewBuffer(Buffer: PChar; BufferSize: integer);
+
+      // we call it to analyze sound by checking Autocorrelation
+      procedure AnalyzeByAutocorrelation;
+      // use this to check one frequency by Autocorrelation
+      function AnalyzeAutocorrelationFreq(Freq: real): real;
     public
-      BufferArray:  array[0..4095] of smallint; // newest 4096 samples
-      BufferLong:   TMemoryStream;              // full buffer
+      AnalysisBuffer:  array[0..4095] of smallint; // newest 4096 samples
       AnalysisBufferSize: integer; // number of samples of BufferArray to analyze
+
+      LogBuffer:   TMemoryStream;              // full buffer
 
       AudioFormat: TAudioFormatInfo;
 
@@ -44,17 +55,12 @@ type
 
       procedure Clear;
 
-      procedure BoostBuffer(Buffer: PChar; Size: Cardinal);
-      procedure ProcessNewBuffer(Buffer: PChar; BufferSize: integer);
-      
       // use to analyze sound from buffers to get new pitch
       procedure AnalyzeBuffer;
-      // we call it to analyze sound by checking Autocorrelation
-      procedure AnalyzeByAutocorrelation;
-      // use this to check one frequency by Autocorrelation
-      function AnalyzeAutocorrelationFreq(Freq: real): real;
-      function MaxSampleVolume: Single;
+      procedure LockAnalysisBuffer();   {$IFDEF HasInline}inline;{$ENDIF}
+      procedure UnlockAnalysisBuffer(); {$IFDEF HasInline}inline;{$ENDIF}
 
+      function MaxSampleVolume: Single;
       property ToneString: string READ GetToneString;
   end;
 
@@ -137,11 +143,6 @@ var
   singleton_AudioInputProcessor : TAudioInputProcessor = nil;
 
 
-// FIXME:
-// Race-Conditions between Callback-thread and main-thread on BufferArray.
-// Use mutexes to solve this problem.
-
-
 { Global }
 
 function AudioInputProcessor(): TAudioInputProcessor;
@@ -208,23 +209,37 @@ end;
 constructor TCaptureBuffer.Create;
 begin
   inherited;
-  BufferLong := TMemoryStream.Create;
-  AnalysisBufferSize := Min(4*1024, Length(BufferArray));
+  LogBuffer := TMemoryStream.Create;
+  AnalysisBufferLock := SDL_CreateMutex();
+  AnalysisBufferSize := Length(AnalysisBuffer);
 end;
 
 destructor TCaptureBuffer.Destroy;
 begin
-  FreeAndNil(BufferLong);
+  FreeAndNil(LogBuffer);
   FreeAndNil(VoiceStream);
   FreeAndNil(AudioFormat);
+  SDL_DestroyMutex(AnalysisBufferLock);
   inherited;
+end;
+
+procedure TCaptureBuffer.LockAnalysisBuffer();
+begin
+  SDL_mutexP(AnalysisBufferLock);
+end;
+
+procedure TCaptureBuffer.UnlockAnalysisBuffer();
+begin
+  SDL_mutexV(AnalysisBufferLock);
 end;
 
 procedure TCaptureBuffer.Clear;
 begin
-  if assigned(BufferLong) then
-    BufferLong.Clear;
-  FillChar(BufferArray[0], Length(BufferArray) * SizeOf(SmallInt), 0);
+  if assigned(LogBuffer) then
+    LogBuffer.Clear;
+  LockAnalysisBuffer();
+  FillChar(AnalysisBuffer[0], Length(AnalysisBuffer) * SizeOf(SmallInt), 0);
+  UnlockAnalysisBuffer();
 end;
 
 procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PChar; BufferSize: integer);
@@ -251,20 +266,29 @@ begin
   SampleCount := BufferSize div SizeOf(SmallInt);
 
   // check if we have more new samples than we can store
-  if (SampleCount > Length(BufferArray)) then
+  if (SampleCount > Length(AnalysisBuffer)) then
   begin
     // discard the oldest of the new samples
-    BufferOffset := (SampleCount - Length(BufferArray)) * SizeOf(SmallInt);
-    SampleCount := Length(BufferArray);
+    BufferOffset := (SampleCount - Length(AnalysisBuffer)) * SizeOf(SmallInt);
+    SampleCount := Length(AnalysisBuffer);
   end;
 
-  // move old samples to the beginning of the array (if necessary)
-  for i := 0 to High(BufferArray)-SampleCount do
-    BufferArray[i] := BufferArray[i+SampleCount];
 
-  // copy samples to analysis buffer
-  Move(Buffer[BufferOffset], BufferArray[Length(BufferArray)-SampleCount],
-       SampleCount * SizeOf(SmallInt));
+  LockAnalysisBuffer();
+  try
+
+    // move old samples to the beginning of the array (if necessary)
+    for i := 0 to High(AnalysisBuffer)-SampleCount do
+      AnalysisBuffer[i] := AnalysisBuffer[i+SampleCount];
+
+    // copy new samples to analysis buffer
+    Move(Buffer[BufferOffset], AnalysisBuffer[Length(AnalysisBuffer)-SampleCount],
+         SampleCount * SizeOf(SmallInt));
+
+  finally
+    UnlockAnalysisBuffer();
+  end;
+
 
   // save capture-data to BufferLong if enabled
   if (Ini.SavePlayback = 1) then
@@ -273,7 +297,7 @@ begin
     // For an in-game replay-mode we need to compress data so we do not
     // waste that much memory. Maybe ogg-vorbis with voice-preset in fast-mode?
     // Or we could use a faster but not that efficient lossless compression.
-    BufferLong.WriteBuffer(Buffer, BufferSize);
+    LogBuffer.WriteBuffer(Buffer, BufferSize);
   end;
 end;
 
@@ -288,23 +312,30 @@ begin
   ToneAbs := -1;
   Tone    := -1;
 
-  // find maximum volume of first 1024 samples
-  MaxVolume := 0;
-  for SampleIndex := 0 to 1023 do
-  begin
-    Volume := Abs(BufferArray[SampleIndex]) / -Low(Smallint);
-    if Volume > MaxVolume then
-       MaxVolume := Volume;
-  end;
+  LockAnalysisBuffer();
+  try
 
-  Threshold := IThresholdVals[Ini.ThresholdIndex];
-  
-  // check if signal has an acceptable volume (ignore background-noise)
-  if MaxVolume >= Threshold then
-  begin
-    // analyse the current voice pitch
-    AnalyzeByAutocorrelation;
-    ToneValid := true;
+    // find maximum volume of first 1024 samples
+    MaxVolume := 0;
+    for SampleIndex := 0 to 1023 do
+    begin
+      Volume := Abs(AnalysisBuffer[SampleIndex]) / -Low(Smallint);
+      if Volume > MaxVolume then
+         MaxVolume := Volume;
+    end;
+
+    Threshold := IThresholdVals[Ini.ThresholdIndex];
+
+    // check if signal has an acceptable volume (ignore background-noise)
+    if MaxVolume >= Threshold then
+    begin
+      // analyse the current voice pitch
+      AnalyzeByAutocorrelation;
+      ToneValid := true;
+    end;
+
+  finally
+    UnlockAnalysisBuffer();
   end;
 end;
 
@@ -363,7 +394,7 @@ begin
   while (CorrelatingSampleIndex < AnalysisBufferSize) do
   begin
     // calc distance (correlation: 1-dist) to corresponding sample in next period
-    Dist := Abs(BufferArray[SampleIndex] - BufferArray[CorrelatingSampleIndex]) /
+    Dist := Abs(AnalysisBuffer[SampleIndex] - AnalysisBuffer[CorrelatingSampleIndex]) /
             High(Word);
     AccumDist := AccumDist + Dist;
     Inc(SampleIndex);
@@ -379,12 +410,16 @@ var
   lSampleIndex: Integer;
   lMaxVol : Longint;
 begin;
-  // FIXME: lock buffer to avoid race-conditions
-  lMaxVol := 0;
-  for lSampleIndex := 0 to High(BufferArray) do
-  begin
-    if Abs(BufferArray[lSampleIndex]) > lMaxVol then
-      lMaxVol := Abs(BufferArray[lSampleIndex]);
+  LockAnalysisBuffer();
+  try
+    lMaxVol := 0;
+    for lSampleIndex := 0 to High(AnalysisBuffer) do
+    begin
+      if Abs(AnalysisBuffer[lSampleIndex]) > lMaxVol then
+        lMaxVol := Abs(AnalysisBuffer[lSampleIndex]);
+    end;
+  finally
+    UnlockAnalysisBuffer();
   end;
 
   result := lMaxVol / -Low(Smallint);

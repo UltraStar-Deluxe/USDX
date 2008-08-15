@@ -173,13 +173,17 @@ begin;
   MaxX := W-1;
   MaxY := (H-1) / 2;
 
+  Sound.LockAnalysisBuffer();
+
   glBegin(GL_LINE_STRIP);
-    for SampleIndex := 0 to High(Sound.BufferArray) do
+    for SampleIndex := 0 to High(Sound.AnalysisBuffer) do
     begin
-      glVertex2f(X + MaxX * SampleIndex/High(Sound.BufferArray),
-                 Y + MaxY * (1 - Sound.BufferArray[SampleIndex]/-Low(Smallint)));
+      glVertex2f(X + MaxX * SampleIndex/High(Sound.AnalysisBuffer),
+                 Y + MaxY * (1 - Sound.AnalysisBuffer[SampleIndex]/-Low(Smallint)));
     end;
   glEnd;
+
+  Sound.UnlockAnalysisBuffer();
 end;
 
 

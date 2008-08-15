@@ -388,8 +388,8 @@ begin
 
   FS := TFileStream.Create(FileName, fmCreate);
 
-  AudioInputProcessor.Sound[SoundNr].BufferLong.Seek(0, soBeginning);
-  FS.CopyFrom(AudioInputProcessor.Sound[SoundNr].BufferLong, AudioInputProcessor.Sound[SoundNr].BufferLong.Size);
+  AudioInputProcessor.Sound[SoundNr].LogBuffer.Seek(0, soBeginning);
+  FS.CopyFrom(AudioInputProcessor.Sound[SoundNr].LogBuffer, AudioInputProcessor.Sound[SoundNr].LogBuffer.Size);
 
   FS.Free;
 end;
