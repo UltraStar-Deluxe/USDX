@@ -3,7 +3,7 @@ unit UPlatform;
 // Comment by Eddie:
 // This unit defines an interface for platform specific utility functions.
 // The Interface is implemented in separate files for each platform:
-// UPlatformWindows, UPlatformLinux and UPlatformWindows.
+// UPlatformWindows, UPlatformLinux and UPlatformMacOSX.
 
 interface
 
