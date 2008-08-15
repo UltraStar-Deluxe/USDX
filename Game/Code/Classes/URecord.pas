@@ -8,8 +8,6 @@ interface
 
 {$I switches.inc}
 
-{.$DEFINE VOICE_PASSTHROUGH}
-
 uses Classes,
      Math,
      SysUtils,
@@ -193,12 +191,12 @@ begin
     // and adjust it because capture buffers are always mono
     Sound.AudioFormat.Channels := 1;
     DeviceCfg := @Ini.InputDeviceConfig[CfgIndex];
-//{$IFDEF VOICE_PASSTHROUGH}
-  if (Ini.VoicePassthrough = 1) then
-    // create a voice-stream for passthrough
-    // TODO: map odd players to the left and even players to the right speaker
-    Sound.VoiceStream := AudioPlayback.CreateVoiceStream(CHANNELMAP_FRONT, AudioFormat);
-//{$ENDIF}
+
+    if (Ini.VoicePassthrough = 1) then
+    begin
+      // TODO: map odd players to the left and even players to the right speaker
+      Sound.VoiceStream := AudioPlayback.CreateVoiceStream(CHANNELMAP_FRONT, AudioFormat);
+    end;
   end;
 
   // replace old with new buffer (Note: Sound might be nil)
