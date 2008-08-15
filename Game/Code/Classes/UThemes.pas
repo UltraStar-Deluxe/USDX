@@ -406,13 +406,14 @@ type
   end;
 
   TThemeOptionsSound = class(TThemeBasic)
-    SelectMicBoost:           TThemeSelectSlide;
-    SelectClickAssist:        TThemeSelectSlide;
-    SelectBeatClick:          TThemeSelectSlide;
-    SelectThreshold:          TThemeSelectSlide;
-    SelectSlidePreviewVolume: TThemeSelectSlide;
-    SelectSlidePreviewFading: TThemeSelectSlide;
-    ButtonExit:               TThemeButton;
+    SelectMicBoost:              TThemeSelectSlide;
+    SelectClickAssist:           TThemeSelectSlide;
+    SelectBeatClick:             TThemeSelectSlide;
+    SelectThreshold:             TThemeSelectSlide;
+    SelectSlidePreviewVolume:    TThemeSelectSlide;
+    SelectSlidePreviewFading:    TThemeSelectSlide;
+    SelectSlideVoicePassthrough: TThemeSelectSlide;
+    ButtonExit:                  TThemeButton;
   end;
 
   TThemeOptionsLyrics = class(TThemeBasic)
@@ -1156,13 +1157,14 @@ begin
       // Options Sound
       ThemeLoadBasic(OptionsSound, 'OptionsSound');
 
-      ThemeLoadSelectSlide(OptionsSound.SelectMicBoost,           'OptionsSoundSelectMicBoost');
-      ThemeLoadSelectSlide(OptionsSound.SelectClickAssist,        'OptionsSoundSelectClickAssist');
-      ThemeLoadSelectSlide(OptionsSound.SelectBeatClick,          'OptionsSoundSelectBeatClick');
-      ThemeLoadSelectSlide(OptionsSound.SelectThreshold,          'OptionsSoundSelectThreshold');
+      ThemeLoadSelectSlide(OptionsSound.SelectMicBoost,              'OptionsSoundSelectMicBoost');
+      ThemeLoadSelectSlide(OptionsSound.SelectClickAssist,           'OptionsSoundSelectClickAssist');
+      ThemeLoadSelectSlide(OptionsSound.SelectBeatClick,             'OptionsSoundSelectBeatClick');
+      ThemeLoadSelectSlide(OptionsSound.SelectThreshold,             'OptionsSoundSelectThreshold');
       //Song Preview
-      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume, 'OptionsSoundSelectSlidePreviewVolume');
-      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading, 'OptionsSoundSelectSlidePreviewFading');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume,    'OptionsSoundSelectSlidePreviewVolume');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading,    'OptionsSoundSelectSlidePreviewFading');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlideVoicePassthrough, 'OptionsSoundSelectVoicePassthrough');
 
       ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
 

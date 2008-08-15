@@ -193,12 +193,12 @@ begin
     // and adjust it because capture buffers are always mono
     Sound.AudioFormat.Channels := 1;
     DeviceCfg := @Ini.InputDeviceConfig[CfgIndex];
-// TODO: make this an ini-var, e.g. VoicePassthrough, VoiceRepeat or LiveVoice
-{$IFDEF VOICE_PASSTHROUGH}
+//{$IFDEF VOICE_PASSTHROUGH}
+  if (Ini.VoicePassthrough = 1) then
     // create a voice-stream for passthrough
     // TODO: map odd players to the left and even players to the right speaker
     Sound.VoiceStream := AudioPlayback.CreateVoiceStream(CHANNELMAP_FRONT, AudioFormat);
-{$ENDIF}
+//{$ENDIF}
   end;
 
   // replace old with new buffer (Note: Sound might be nil)

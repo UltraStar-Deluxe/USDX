@@ -82,6 +82,7 @@ type
       SavePlayback:   integer;
       ThresholdIndex: integer;
       AudioOutputBufferSizeIndex:  integer;
+      VoicePassthrough: integer;
 
       //Song Preview
       PreviewVolume:  integer;
@@ -174,6 +175,8 @@ const
 
   IThreshold:     array[0..3] of string = ('5%', '10%', '15%', '20%');
   IThresholdVals: array[0..3] of single = (0.05, 0.10,  0.15,  0.20);
+
+  IVoicePassthrough:  array[0..1] of string = ('Off', 'On');
 
   IAudioOutputBufferSize:     array[0..9] of string  = ('Auto', '256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
   IAudioOutputBufferSizeVals: array[0..9] of integer = ( 0,      256,   512 ,  1024 ,  2048 ,  4096 ,  8192 ,  16384 ,  32768 ,  65536 );
@@ -571,7 +574,10 @@ begin
   
   //Preview Fading
   PreviewFading := GetArrayIndex(IPreviewFading, IniFile.ReadString('Sound', 'PreviewFading', IPreviewFading[1]));
-  
+
+  //AudioRepeat aka VoicePassthrough
+  VoicePassthrough := GetArrayIndex(IVoicePassthrough, IniFile.ReadString('Sound', 'VoicePassthrough', IVoicePassthrough[0]));
+
   // Lyrics Font
   LyricsFont := GetArrayIndex(ILyricsFont, IniFile.ReadString('Lyrics', 'LyricsFont', ILyricsFont[1]));
 
@@ -739,6 +745,9 @@ begin
 
     // SavePlayback
     IniFile.WriteString('Sound', 'SavePlayback', ISavePlayback[SavePlayback]);
+
+    // NoteLines
+    IniFile.WriteString('Sound', 'VoicePassthrough', IVoicePassthrough[VoicePassthrough]);
 
     // Lyrics Font
     IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);

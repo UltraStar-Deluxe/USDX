@@ -49,7 +49,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 6 then begin
+          if SelInteraction = 7 then begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
@@ -61,14 +61,14 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 7) then begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 7) then begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
@@ -85,11 +85,12 @@ begin
 
   LoadFromTheme(Theme.OptionsSound);
 
+  AddSelectSlide(Theme.OptionsSound.SelectSlideVoicePassthrough, Ini.VoicePassthrough, IVoicePassthrough);
+
   AddSelectSlide(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoost);  // TODO - This need moving to ScreenOptionsRecord
   AddSelectSlide(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
   AddSelectSlide(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
   AddSelectSlide(Theme.OptionsSound.SelectThreshold, Ini.ThresholdIndex, IThreshold);
-
   //Song Preview
   AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewVolume, Ini.PreviewVolume, IPreviewVolume);
   AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewFading, Ini.PreviewFading, IPreviewFading);
