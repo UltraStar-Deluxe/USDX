@@ -93,7 +93,7 @@ begin
   AddSelectSlide(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSing);
   AddSelectSlide(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonus);
   AddSelectSlide(Theme.OptionsAdvanced.SelectOnSongClick, Ini.OnSongClick, IOnSongClick);
-  AddSelectSlide(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskbeforeDel, IAskbeforeDel);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskBeforeDel, IAskbeforeDel);
   AddSelectSlide(Theme.OptionsAdvanced.SelectPartyPopup, Ini.PartyPopup, IPartyPopup);
 
   AddButton(Theme.OptionsAdvanced.ButtonExit);

@@ -195,6 +195,8 @@ begin
 end;
 
 procedure TSongs.int_LoadSongList;
+var
+  I: integer;
 begin
   try
     fProcessing := true;
@@ -202,10 +204,8 @@ begin
     Log.LogStatus('Searching For Songs', 'SongList');
 
     // browse directories
-    BrowseDir(SongPath);
-
-    if UserSongPath <> SongPath then
-      BrowseDir(UserSongPath);
+    for I := 0 to SongPaths.Count-1 do
+      BrowseDir(SongPaths[I]);
 
     if assigned( CatSongs ) then
       CatSongs.Refresh;

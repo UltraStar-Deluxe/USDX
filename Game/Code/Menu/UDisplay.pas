@@ -290,6 +290,10 @@ var
   Align:      integer;
   RowSize:    integer;
 begin
+  // Exit if Screenshot-path does not exist or read-only
+  if (ScreenshotsPath = '') then
+    Exit;
+
   for Num := 1 to 9999 do
   begin
     FileName := IntToStr(Num);

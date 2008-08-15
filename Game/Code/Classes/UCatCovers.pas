@@ -13,11 +13,12 @@ uses UIni;
 type
   TCatCovers = class
     protected
-      cNames:    array [low(ISorting)..high(ISorting)] of array of string;
-      cFiles:    array [low(ISorting)..high(ISorting)] of array of string;
+      cNames:    array [0..high(ISorting)] of array of string;
+      cFiles:    array [0..high(ISorting)] of array of string;
     public
       constructor Create;
       procedure Load; //Load Cover aus Cover.ini and Cover Folder
+      procedure LoadPath(const CoversPath: string);
       procedure Add(Sorting: integer; Name, Filename: string); //Add a Cover
       function  CoverExists(Sorting: integer; Name: string): boolean; //Returns True when a cover with the given Name exists
       function  GetCover(Sorting: integer; Name: string): string; //Returns the Filename of a Cover
@@ -42,8 +43,18 @@ begin
   Load;
 end;
 
-  //Load Cover aus Cover.ini and Cover Folder
 procedure TCatCovers.Load;
+var
+  I: integer;
+begin
+  for I := 0 to CoverPaths.Count-1 do
+    LoadPath(CoverPaths[I]);
+end;
+
+(**
+ * Load Cover from Cover.ini and Cover Folder
+ *)
+procedure TCatCovers.LoadPath(const CoversPath: string);
 var
   Ini: TMemIniFile;
   SR:  TSearchRec;
@@ -59,7 +70,7 @@ begin
     List := TStringlist.Create;
 
     //Add every Cover in Covers Ini for Every Sorting option
-    for I := low(ISorting) to high(ISorting) do
+    for I := 0 to High(ISorting) do
     begin
       Ini.ReadSection(ISorting[I], List);
 
@@ -80,7 +91,7 @@ begin
         Filename := CoversPath + Name;
         Delete (Name, length(Name) - 3, 4);
 
-        for I := low(ISorting) to high(ISorting) do
+        for I := 0 to high(ISorting) do
         begin
           Temp := Name;
           if ((I = sTitle) or (I = sTitle2)) and (Pos ('Title', Temp) <> 0) then
@@ -118,7 +129,7 @@ begin
   Result := False;
   Name := Uppercase(Name); //Case Insensitiv
 
-  for I := low(cNames[Sorting]) to high(cNames[Sorting]) do
+  for I := 0 to high(cNames[Sorting]) do
   begin
     if (cNames[Sorting][I] = Name) then //Found Name
     begin
@@ -131,12 +142,12 @@ end;
   //Returns the Filename of a Cover
 function TCatCovers.GetCover(Sorting: integer; Name: string): string;
 var
-I: Integer;
+  I: Integer;
 begin
   Result := '';
   Name := Uppercase(Name);
 
-  for I := low(cNames[Sorting]) to high(cNames[Sorting]) do
+  for I := 0 to high(cNames[Sorting]) do
   begin
     if cNames[Sorting][I] = Name then
     begin
@@ -146,8 +157,17 @@ begin
   end;
 
   //No Cover
-  if (Result = '') AND (FileExists(CoversPath + 'NoCover.jpg')) then
-    Result := CoversPath + 'NoCover.jpg';
+  if (Result = '') then
+  begin
+    for I := 0 to CoverPaths.Count-1 do
+    begin
+      if (FileExists(CoverPaths[I] + 'NoCover.jpg')) then
+      begin
+        Result := CoverPaths[I] + 'NoCover.jpg';
+        Break;
+      end;
+    end;
+  end;
 end;
 
 end.
