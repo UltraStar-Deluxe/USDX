@@ -106,6 +106,13 @@ USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
 # name of the modification timestamp filename 
 modfile = lastmod
 
+# otool: Mac OS X object file displaying tool
+OTOOL = /usr/bin/otool 
+# install_name_tool: Mac OS X tool to change dynamic shared library install names
+INSTALL_NAME_TOOL = /usr/bin/install_name_tool
+# hdiutil: Mac OS X disk image tool
+HDIUTIL = /usr/bin/hdiutil
+
 #################################################
 # general targets
 #################################################
@@ -278,7 +285,7 @@ macosx-app: all
 	@echo "Have fun."
 	@echo ""
 
-macosx-app-standalone: macosx-app 
+macosx-standalone-app: macosx-app 
 # Create double clickable standalone (does not need fink) Mac OS X 
 # application. Not fully test, but should work on 10.5.
 
@@ -318,6 +325,13 @@ endef
 	@echo "Standalone Mac OS X application created."
 	@echo ""
 
+macosx-disk-image: macosx-standalone-app
+	/bin/rm -f ultrastardx.dmg
+	$(HDIUTIL) create -type SPARSE -size 30m -fs HFS+ -volname UltraStarDeluxe -ov -attach UltraStarDeluxe.sparseimage
+	/bin/cp -R ../../UltraStarDeluxe.app /Volumes/UltraStarDeluxe
+	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
+	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o ultrastardx.dmg
+	/bin/rm -f  UltraStarDeluxe.sparseimage
 #################################################
 # clean-up
 #################################################
