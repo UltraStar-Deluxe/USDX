@@ -26,6 +26,8 @@ type
       function GetLogPath: WideString; override;
       function GetGameSharedPath: WideString; override;
       function GetGameUserPath: WideString; override;
+
+      function CopyFile(const Source, Target: WideString; FailIfExists: boolean): boolean; override;
   end;
 
 implementation
@@ -224,6 +226,11 @@ function TPlatformWindows.GetGameUserPath: WideString;
 begin
   //Result := GetSpecialPath(CSIDL_APPDATA) + PathDelim + 'UltraStarDX' + PathDelim;
   Result := ExtractFilePath(ParamStr(0));
+end;
+
+function TPlatformWindows.CopyFile(const Source, Target: WideString; FailIfExists: boolean): boolean;
+begin
+  Result := Windows.CopyFileW(PWideChar(Source), PWideChar(Target), FailIfExists);
 end;
 
 end.
