@@ -143,29 +143,21 @@ var
   // which is the last one completely searched. Later folders are still to be
   // searched for additional files and folders.
   DirectoryIsFinished: longint;
-  counter: longint;
+  Counter: longint;
 
   UserPathName: string;
-  // SourceFile and TaretFile are used to copy a file from on folder to another.
-  SourceFile, TargetFile: TFileStream;
-  // FileCopyBuffer is the buffer for copying @link(SourceFile) to @link(TargetFile).
-  // Its size (4096) has been choosen with little testing. A smaller size makes
-  // copying slower. A larger size may make copying large files faster.
-  FileCopyBuffer: array [1..4096] of byte;
-  // number of bytes read from @link(SourceFile)
-  NumberOfBytes: integer;
 const
   // used to construct the @link(UserPathName)
   PathName: string = '/Library/Application Support/UltraStarDeluxe/Resources';
 begin
   // Get the current folder and save it in OldBaseDir for returning to it, when
   // finished.
-  getdir(0, OldBaseDir);
+  GetDir(0, OldBaseDir);
 
   // UltraStarDeluxe.app/Contents/Resources contains all the default files and
   // folders.
   BaseDir := OldBaseDir + '/UltraStarDeluxe.app/Contents/Resources';
-  chdir(BaseDir);
+  ChDir(BaseDir);
 
   // Right now, only $HOME/Library/Application Support/UltraStarDeluxe/Resources
   // is used.
@@ -180,7 +172,7 @@ begin
   repeat
 
     RelativePath := DirectoryList[DirectoryIsFinished];
-    chdir(BaseDir + '/' + RelativePath);
+    ChDir(BaseDir + '/' + RelativePath);
     if (FindFirst('*', faAnyFile, SearchInfo) = 0) then
     begin
       repeat
@@ -194,35 +186,28 @@ begin
       until (FindNext(SearchInfo) <> 0);
     end;
     FindClose(SearchInfo);
-    inc(DirectoryIsFinished);
+    Inc(DirectoryIsFinished);
   until (DirectoryIsFinished = DirectoryList.Count);
 
   // create missing folders
-  if not ForceDirectories(UserPathName) then
-    Log.LogError('Error: Failed to create the folder: ', UserPathName);
-
-  for counter := 0 to DirectoryList.Count-1 do
-    if not ForceDirectories(UserPathName + '/' + DirectoryList[counter]) then
-      Log.LogError('Error: Failed to create the folder: ', UserPathName + '/' + DirectoryList[counter]);
+  for Counter := 0 to DirectoryList.Count-1 do
+  begin
+    if not ForceDirectories(UserPathName + '/' + DirectoryList[Counter]) then
+      Log.LogError('Failed to create the folder "'+ UserPathName + '/' + DirectoryList[Counter] +'"',
+                   'TPlatformMacOSX.CreateUserFolders');
+  end;
   DirectoryList.Free();
 
   // copy missing files
-  for counter := 0 to Filelist.Count-1 do
-    if not FileExists(UserPathName + '/' + Filelist[counter]) then
-    begin
-      SourceFile := TFileStream.Create(BaseDir      + '/' + Filelist[counter], fmOpenRead);
-      TargetFile := TFileStream.Create(UserPathName + '/' + Filelist[counter], fmCreate);
-      repeat
-        NumberOfBytes := SourceFile.Read(FileCopyBuffer, SizeOf(FileCopyBuffer));
-        TargetFile.Write(FileCopyBuffer, NumberOfBytes);
-      until (NumberOfBytes < SizeOf(FileCopyBuffer));
-      SourceFile.Free;
-      TargetFile.Free;
-    end;
+  for Counter := 0 to Filelist.Count-1 do
+  begin
+    CopyFile(BaseDir      + '/' + Filelist[Counter],
+             UserPathName + '/' + Filelist[Counter], true);
+  end;
   FileList.Free();
 
   // go back to the initial folder
-  chdir(OldBaseDir);
+  ChDir(OldBaseDir);
 end;
 
 function TPlatformMacOSX.GetBundlePath: WideString;
