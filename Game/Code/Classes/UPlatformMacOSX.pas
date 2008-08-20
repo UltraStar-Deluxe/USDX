@@ -10,6 +10,7 @@ interface
 
 uses
   Classes,
+  ULog,
   UPlatform;
 
 type
@@ -193,16 +194,16 @@ begin
       until (FindNext(SearchInfo) <> 0);
     end;
     FindClose(SearchInfo);
-    DirectoryIsFinished := succ(DirectoryIsFinished);
+    inc(DirectoryIsFinished);
   until (DirectoryIsFinished = DirectoryList.Count);
 
   // create missing folders
   if not ForceDirectories(UserPathName) then
-    DebugWriteln('Error: Failed to create the folder: ', UserPathName);
+    Log.LogError('Error: Failed to create the folder: ', UserPathName);
 
   for counter := 0 to DirectoryList.Count-1 do
     if not ForceDirectories(UserPathName + '/' + DirectoryList[counter]) then
-      DebugWriteln('Error: Failed to create the folder: ', UserPathName + '/' + DirectoryList[counter]);
+      Log.LogError('Error: Failed to create the folder: ', UserPathName + '/' + DirectoryList[counter]);
   DirectoryList.Free();
 
   // copy missing files
