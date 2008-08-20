@@ -428,6 +428,7 @@ begin
   CurrentSong.VideoLoaded := False;
   fShowVisualization      := False;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
+  //and not (TVisualizerOption(Ini.VisualizerOption) in [voOn, voWhenNoVideo]) then
   begin
     if (fCurrentVideoPlaybackEngine.Open(CurrentSong.Path + CurrentSong.Video)) then
     begin
@@ -438,6 +439,7 @@ begin
 
   // set background
   if (CurrentSong.Background <> '') and (CurrentSong.VideoLoaded = False) then
+  //and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
     try
       Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
     except
@@ -447,7 +449,17 @@ begin
     end
   else
     Tex_Background.TexNum := 0;
-
+  {**
+   * set visualization
+   *}
+  {*
+  if (TVisualizerOption(Ini.VisualizerOption) in [voOn, voWhenNoVideo]) then
+  begin
+    fShowVisualization := True;
+    fCurrentVideoPlaybackEngine := Visualization;
+    fCurrentVideoPlaybackEngine.play;
+  end;
+  *}
   // prepare lyrics timer
   LyricsState.Reset();
   LyricsState.SetCurrentTime(CurrentSong.Start);
