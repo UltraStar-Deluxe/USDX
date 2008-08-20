@@ -159,12 +159,12 @@ const
 begin
   // Get the current folder and save it in OldBaseDir for returning to it, when
   // finished.
-  getdir (0, OldBaseDir);
+  getdir(0, OldBaseDir);
 
   // UltraStarDeluxe.app/Contents/Resources contains all the default files and
   // folders.
   BaseDir := OldBaseDir + '/UltraStarDeluxe.app/Contents/Resources';
-  chdir (BaseDir);
+  chdir(BaseDir);
 
   // Right now, only $HOME/Library/Application Support/UltraStarDeluxe/Resources
   // is used.
@@ -179,7 +179,7 @@ begin
   repeat
 
     RelativePath := DirectoryList[DirectoryIsFinished];
-    chdir (BaseDir + '/' + RelativePath);
+    chdir(BaseDir + '/' + RelativePath);
     if (FindFirst('*', faAnyFile, SearchInfo) = 0) then
     begin
       repeat
@@ -197,12 +197,12 @@ begin
   until (DirectoryIsFinished = DirectoryList.Count);
 
   // create missing folders
-  if not DirectoryExists(UserPathName) then
-    mkdir (UserPathName);
+  if not ForceDirectories(UserPathName) then
+    DebugWriteln('Error: Failed to create the folder: ', UserPathName);
 
   for counter := 0 to DirectoryList.Count-1 do
-    if not DirectoryExists(UserPathName + '/' + DirectoryList[counter]) then
-      mkdir (UserPathName + '/' + DirectoryList[counter]);
+    if not ForceDirectories(UserPathName + '/' + DirectoryList[counter]) then
+      DebugWriteln('Error: Failed to create the folder: ', UserPathName + '/' + DirectoryList[counter]);
   DirectoryList.Free();
 
   // copy missing files
@@ -221,7 +221,7 @@ begin
   FileList.Free();
 
   // go back to the initial folder
-  chdir (OldBaseDir);
+  chdir(OldBaseDir);
 end;
 
 function TPlatformMacOSX.GetBundlePath: WideString;
