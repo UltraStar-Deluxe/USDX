@@ -85,10 +85,12 @@ begin
 
   // we cannot catch C++ exceptions in delphi, so we have to check
   // if configFile is valid first
-  if (FileExists(configFile)) then
-    data := _projectM_create1(PChar(configFile))
-  else
+  if (not FileExists(configFile)) then
     raise Exception.Create('Invalid file: ' + configFile);
+
+  data := _projectM_create1(PChar(configFile));
+  if (data = nil) then
+    raise Exception.Create('Creation of projectM object failed');
 end;
 
 procedure TProjectM.ResetGL(width, height: Integer);
