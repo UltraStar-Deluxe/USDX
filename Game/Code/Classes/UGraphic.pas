@@ -413,6 +413,7 @@ begin
 
   // Other extensions e.g. OpenGL 1.3-2.0 or Framebuffer-Object might be loaded here
   // ...
+  //Load_GL_EXT_framebuffer_object();
 end;
 
 procedure Initialize3D (Title: string);
