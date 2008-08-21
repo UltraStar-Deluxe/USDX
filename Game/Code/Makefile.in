@@ -319,7 +319,7 @@ endef
 	$(foreach dylib,$(shell $(OTOOL) -L /sw/lib/libSDL_image.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # X11 libs as well, because users may not have installed it on 10.4
-	$(foreach dylib,$(shell $(OTOOL) -L /usr/X11/lib/libX11.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L /usr/X11R6/lib/libX11.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # final messages
 	@echo "Standalone Mac OS X application created."
@@ -329,6 +329,8 @@ macosx-disk-image: macosx-standalone-app
 	/bin/rm -f ultrastardx.dmg
 	$(HDIUTIL) create -type SPARSE -size 30m -fs HFS+ -volname UltraStarDeluxe -ov -attach UltraStarDeluxe.sparseimage
 	/bin/cp -R ../../UltraStarDeluxe.app /Volumes/UltraStarDeluxe
+#	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
+#	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
 	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o ultrastardx.dmg
 	/bin/rm -f  UltraStarDeluxe.sparseimage
