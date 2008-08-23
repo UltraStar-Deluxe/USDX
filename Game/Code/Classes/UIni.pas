@@ -38,6 +38,11 @@ type
   end;
 
 type
+
+//Options
+
+  TVisualizerOption = (voOff, voWhenNoVideo, voOn);
+
   TIni = class
     private
       function RemoveFileExt(FullName: string): string;
@@ -76,6 +81,7 @@ type
       Screens:        integer;
       Resolution:     integer;
       Depth:          integer;
+      VisualizerOption:integer; 
       FullScreen:     integer;
       TextureSize:    integer;
       SingWindow:     integer;
@@ -90,8 +96,8 @@ type
       BeatClick:      integer;
       SavePlayback:   integer;
       ThresholdIndex: integer;
-      AudioOutputBufferSizeIndex:  integer;
-      VoicePassthrough: integer;
+      AudioOutputBufferSizeIndex:integer;
+      VoicePassthrough:integer;
 
       //Song Preview
       PreviewVolume:  integer;
@@ -136,6 +142,8 @@ var
   ITheme:         array of string;
   ISkin:          array of string;
 
+
+
 const
   IPlayers:       array[0..4] of string  = ('1', '2', '3', '4', '6');
   IPlayersVals:   array[0..4] of integer = ( 1 ,  2 ,  3 ,  4 ,  6 );
@@ -158,6 +166,7 @@ const
   IScreens:       array[0..1] of string = ('1', '2');
   IFullScreen:    array[0..1] of string = ('Off', 'On');
   IDepth:         array[0..1] of string = ('16 bit', '32 bit');
+  IVisualizer:    array[0..2] of string = ('Off', 'WhenNoVideo','On');
 
   ITextureSize:     array[0..2] of string  = ('128', '256', '512');
   ITextureSizeVals: array[0..2] of integer = ( 128,   256,   512);
@@ -699,6 +708,14 @@ begin
   // ScreenFade
   ScreenFade := GetArrayIndex(IScreenFade, IniFile.ReadString('Advanced', 'ScreenFade', 'On'));
 
+  // Visualizations
+  // <mog> this could be of use later..
+  //  VisualizerOption :=
+  //    TVisualizerOption(GetEnumValue(TypeInfo(TVisualizerOption),
+  //            IniFile.ReadString('Graphics', 'Visualization', 'Off')));
+  // || VisualizerOption := TVisualizerOption(GetArrayIndex(IVisualizer, IniFile.ReadString('Graphics', 'Visualization', 'Off')));
+  VisualizerOption := GetArrayIndex(IVisualizer, IniFile.ReadString('Graphics', 'Visualization', 'Off'));
+
   // EffectSing
   EffectSing := GetArrayIndex(IEffectSing, IniFile.ReadString('Advanced', 'EffectSing', 'On'));
 
@@ -758,6 +775,9 @@ begin
   // FullScreen
   IniFile.WriteString('Graphics', 'FullScreen', IFullScreen[FullScreen]);
 
+  // Visualization
+  IniFile.WriteString('Graphics', 'Visualization', IVisualizer[VisualizerOption]);
+
   // Resolution
   IniFile.WriteString('Graphics', 'Resolution', IResolution[Resolution]);
 
@@ -800,7 +820,7 @@ begin
   // SavePlayback
   IniFile.WriteString('Sound', 'SavePlayback', ISavePlayback[SavePlayback]);
 
-    // NoteLines
+    // VoicePasstrough
     IniFile.WriteString('Sound', 'VoicePassthrough', IVoicePassthrough[VoicePassthrough]);
 
     // Lyrics Font

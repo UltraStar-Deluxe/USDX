@@ -423,23 +423,38 @@ begin
   // reset video playback engine, to play video clip...
   fCurrentVideoPlaybackEngine.Close;
   fCurrentVideoPlaybackEngine := VideoPlayback;
-
-  // set movie
+{**
+ * == Background ==
+ * We have four types of backgrounds:
+ *   + Blank        : Nothing has been set, this is our fallback
+ *   + Picture      : Picture has been set, and exists - otherwise we fallback
+ *   + Video        : Video has been set, and exists - otherwise we fallback
+ *   + Visualization: + Off        : No Visialization
+ *                    + WhenNoVideo: Overwrites Blank and Picture
+ *                    + On         : Overwrites Blank, Picture and Video
+ *}
+{**
+ * set background to: video
+ *}
   CurrentSong.VideoLoaded := False;
   fShowVisualization      := False;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
-  //and not (TVisualizerOption(Ini.VisualizerOption) in [voOn, voWhenNoVideo]) then
   begin
     if (fCurrentVideoPlaybackEngine.Open(CurrentSong.Path + CurrentSong.Video)) then
     begin
+      fShowVisualization := False;
+      fCurrentVideoPlaybackEngine := VideoPlayback;
       fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
       CurrentSong.VideoLoaded := True;
+      fCurrentVideoPlaybackEngine.play;
     end;
   end;
 
-  // set background
-  if (CurrentSong.Background <> '') and (CurrentSong.VideoLoaded = False) then
-  //and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
+{**
+ * set background to: picture
+ *}
+  if (CurrentSong.Background <> '') and (CurrentSong.VideoLoaded = False)
+    and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
     try
       Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
     except
@@ -449,17 +464,27 @@ begin
     end
   else
     Tex_Background.TexNum := 0;
-  {**
-   * set visualization
-   *}
-  {*
-  if (TVisualizerOption(Ini.VisualizerOption) in [voOn, voWhenNoVideo]) then
+{**
+ * set background to: visualization (Overwrites all)
+ *}
+  if (TVisualizerOption(Ini.VisualizerOption) in [voOn]) then
   begin
     fShowVisualization := True;
     fCurrentVideoPlaybackEngine := Visualization;
     fCurrentVideoPlaybackEngine.play;
   end;
-  *}
+
+{**
+ * set background to: visualization (Videos are still shown)
+ *}
+  if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
+  (CurrentSong.VideoLoaded = False)) then
+  begin
+    fShowVisualization := True;
+    fCurrentVideoPlaybackEngine := Visualization;
+    fCurrentVideoPlaybackEngine.play;
+  end;
+
   // prepare lyrics timer
   LyricsState.Reset();
   LyricsState.SetCurrentTime(CurrentSong.Start);

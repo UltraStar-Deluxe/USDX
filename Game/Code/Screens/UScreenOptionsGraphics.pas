@@ -17,7 +17,7 @@ type
 
 implementation
 
-uses UGraphic, UMain, SysUtils;
+uses UGraphic, UMain, SysUtils, TypInfo;
 
 function TScreenOptionsGraphics.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin
@@ -48,7 +48,7 @@ begin
 {          if SelInteraction <= 1 then begin
             Restart := true;
           end;}
-          if SelInteraction = 5 then begin
+          if SelInteraction = 6 then begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
             // FIXME: changing the video mode does not work this way in windows
@@ -66,14 +66,14 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
+          if (SelInteraction >= 0) and (SelInteraction < 6) then begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 4) then begin
+          if (SelInteraction >= 0) and (SelInteraction < 6) then begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
@@ -87,12 +87,12 @@ constructor TScreenOptionsGraphics.Create;
 // I:      integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
-
   LoadFromTheme(Theme.OptionsGraphics);
 
   AddSelectSlide(Theme.OptionsGraphics.SelectResolution, Ini.Resolution, IResolution);
   AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen, Ini.Fullscreen, IFullscreen);
-  AddSelectSlide(Theme.OptionsGraphics.SelectDepth, Ini.Depth, IDepth);
+  AddSelectSlide(Theme.OptionsGraphics.SelectDepth,      Ini.Depth, IDepth);
+  AddSelectSlide(Theme.OptionsGraphics.SelectVisualizer, Ini.VisualizerOption, IVisualizer);
   AddSelectSlide(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscope);
   AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize, Ini.MovieSize, IMovieSize);
 
