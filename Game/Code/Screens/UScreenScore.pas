@@ -236,6 +236,12 @@ var
   V:    array[1..6] of boolean; // visibility array
 
 begin
+
+{**
+ * Turn backgroundmusic on
+ *}
+ SoundLib.StartBgMusic;
+
   inherited;
 
   // all statics / texts are loaded at start - so that we have them all even if we change the amount of players

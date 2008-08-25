@@ -408,6 +408,7 @@ type
 
   TThemeOptionsSound = class(TThemeBasic)
     SelectMicBoost:              TThemeSelectSlide;
+    SelectBackgroundMusic:       TThemeSelectSlide;
     SelectClickAssist:           TThemeSelectSlide;
     SelectBeatClick:             TThemeSelectSlide;
     SelectThreshold:             TThemeSelectSlide;
@@ -1159,6 +1160,7 @@ begin
       // Options Sound
       ThemeLoadBasic(OptionsSound, 'OptionsSound');
 
+      ThemeLoadSelectSlide(OptionsSound.SelectBackgroundMusic,       'OptionsSoundSelectBackgroundMusic');
       ThemeLoadSelectSlide(OptionsSound.SelectMicBoost,              'OptionsSoundSelectMicBoost');
       ThemeLoadSelectSlide(OptionsSound.SelectClickAssist,           'OptionsSoundSelectClickAssist');
       ThemeLoadSelectSlide(OptionsSound.SelectBeatClick,             'OptionsSoundSelectBeatClick');

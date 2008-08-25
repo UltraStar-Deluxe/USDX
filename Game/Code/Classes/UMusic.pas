@@ -503,6 +503,8 @@ type
       procedure LoadSounds();
       procedure UnloadSounds();
 
+      procedure StartBgMusic();
+      procedure PauseBgMusic();
       // TODO
       //function AddSound(Filename: string): integer;
       //procedure RemoveSound(ID: integer);
@@ -536,6 +538,7 @@ implementation
 uses
   sysutils,
   math,
+  UIni,
   UMain,
   UCommandLine,
   URecord,
@@ -709,7 +712,6 @@ begin
 
   // Load in-game sounds
   SoundLib := TSoundLibrary.Create;
-  AudioPlayback.PlaySound(SoundLib.BGMusic);
 end;
 
 procedure InitializeVideo();
@@ -860,9 +862,6 @@ end;
 
 procedure TSoundLibrary.LoadSounds();
 begin
-  //Log.LogStatus('Loading Sounds', 'Music Initialize');
-  //Log.BenchmarkStart(4);
-
   UnloadSounds();
 
   Start   := AudioPlayback.OpenSound(SoundPath + 'Common start.mp3');
@@ -872,11 +871,10 @@ begin
   Option  := AudioPlayback.OpenSound(SoundPath + 'option change col.mp3');
   Click   := AudioPlayback.OpenSound(SoundPath + 'rimshot022b.mp3');
 
-  //BGMusic := AudioPlayback.OpenSound(SoundPath + '18982__bebeto__Loop010_ambient.mp3');
-  //BGMusic.SetLoop(true);
+  BGMusic := AudioPlayback.OpenSound(SoundPath + 'Bebeto_-_Loop010.mp3');
 
-  //Log.BenchmarkEnd(4);
-  //Log.LogBenchmark('--> Loading Sounds', 4);
+  if (BGMusic <> nil) then
+    BGMusic.Loop := True;
 end;
 
 procedure TSoundLibrary.UnloadSounds();
@@ -899,6 +897,23 @@ begin
     Result := nil;
 end;
 *)
+
+procedure TSoundLibrary.StartBgMusic();
+begin
+  if (TBackgroundMusicOption(Ini.BackgroundMusicOption) = bmoOn) and
+    (Soundlib.BGMusic <> nil) and not (Soundlib.BGMusic.Status = ssPlaying) then
+  begin
+    AudioPlayback.PlaySound(Soundlib.BGMusic);
+  end;
+end;
+
+procedure TSoundLibrary.PauseBgMusic();
+begin
+  If (Soundlib.BGMusic <> nil) then
+  begin
+    Soundlib.BGMusic.Pause;
+  end;
+end;
 
 { TVoiceRemoval }
 

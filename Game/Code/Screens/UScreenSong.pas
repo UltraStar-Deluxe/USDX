@@ -23,8 +23,6 @@ uses
   UThemes,
   UTexture,
   ULanguage,
-  //ULCD, //TODO: maybe LCD Support as Plugin?
-  //ULight, //TODO: maybe Light Support as Plugin?
   USong,
   UIni;
 
@@ -792,7 +790,6 @@ end;
 procedure TScreenSong.GenerateThumbnails();
 var
   I: Integer;
-  OldTextureLimit: integer;
   CoverButtonIndex: integer;
   CoverButton: TButton;
   CoverName: string;
@@ -1340,6 +1337,10 @@ end;
 procedure TScreenSong.onShow;
 begin
   inherited;
+{**
+ * Pause background music, so we can play it again on scorescreen
+ *}
+  SoundLib.PauseBgMusic;
 
   AudioPlayback.Stop;
 

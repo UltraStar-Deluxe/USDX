@@ -41,8 +41,8 @@ type
 
 //Options
 
-  TVisualizerOption = (voOff, voWhenNoVideo, voOn);
-
+  TVisualizerOption      = (voOff, voWhenNoVideo, voOn);
+  TBackgroundMusicOption = (bmoOff, bmoOn);
   TIni = class
     private
       function RemoveFileExt(FullName: string): string;
@@ -113,7 +113,8 @@ type
       Theme:          integer;
       SkinNo:         integer;
       Color:          integer;
-
+      BackgroundMusicOption:integer;
+      
       // Record
       InputDeviceConfig: array of TInputDeviceConfig;
 
@@ -167,6 +168,9 @@ const
   IFullScreen:    array[0..1] of string = ('Off', 'On');
   IDepth:         array[0..1] of string = ('16 bit', '32 bit');
   IVisualizer:    array[0..2] of string = ('Off', 'WhenNoVideo','On');
+
+  IBackgroundMusic: array[0..1] of string = ('Off', 'On');
+
 
   ITextureSize:     array[0..2] of string  = ('128', '256', '512');
   ITextureSizeVals: array[0..2] of integer = ( 128,   256,   512);
@@ -716,6 +720,11 @@ begin
   // || VisualizerOption := TVisualizerOption(GetArrayIndex(IVisualizer, IniFile.ReadString('Graphics', 'Visualization', 'Off')));
   VisualizerOption := GetArrayIndex(IVisualizer, IniFile.ReadString('Graphics', 'Visualization', 'Off'));
 
+{**
+ * Background music
+ *}
+  BackgroundMusicOption := GetArrayIndex(IBackgroundMusic, IniFile.ReadString('Sound', 'BackgroundMusic', 'Off'));
+
   // EffectSing
   EffectSing := GetArrayIndex(IEffectSing, IniFile.ReadString('Advanced', 'EffectSing', 'On'));
 
@@ -811,6 +820,9 @@ begin
   // AudioOutputBufferSize
   IniFile.WriteString('Sound', 'AudioOutputBufferSize', IAudioOutputBufferSize[AudioOutputBufferSizeIndex]);
 
+  // Background music
+  IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
+
   // Song Preview
   IniFile.WriteString('Sound', 'PreviewVolume', IPreviewVolume[PreviewVolume]);
     
@@ -820,11 +832,11 @@ begin
   // SavePlayback
   IniFile.WriteString('Sound', 'SavePlayback', ISavePlayback[SavePlayback]);
 
-    // VoicePasstrough
-    IniFile.WriteString('Sound', 'VoicePassthrough', IVoicePassthrough[VoicePassthrough]);
+  // VoicePasstrough
+  IniFile.WriteString('Sound', 'VoicePassthrough', IVoicePassthrough[VoicePassthrough]);
 
-    // Lyrics Font
-    IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
+  // Lyrics Font
+  IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
 
   // Lyrics Effect
   IniFile.WriteString('Lyrics', 'LyricsEffect', ILyricsEffect[LyricsEffect]);
