@@ -8,10 +8,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$ASMMODE Intel}
-{$ENDIF}
-
 uses uPluginDefs,
      SysUtils;
 {*********************
@@ -255,6 +251,9 @@ end;
 Function TServiceManager.NametoHash(const ServiceName: TServiceName): Integer;
 // FIXME: check if the non-asm version is fast enough and use it by default if so
 {$IF Defined(CPUX86_64)}
+{$IFDEF FPC}
+  {$ASMMODE Intel}
+{$ENDIF}
 asm
   { CL: Counter; RAX: Result; RDX: Current Memory Address }
   Mov RCX, 14
@@ -265,6 +264,9 @@ asm
   LOOP @FoldLoop {Fold again if there are Chars Left}
 end;
 {$ELSEIF Defined(CPU386) or Defined(CPUI386)}
+{$IFDEF FPC}
+  {$ASMMODE Intel}
+{$ENDIF}
 asm
   { CL: Counter; EAX: Result; EDX: Current Memory Address }
   Mov ECX, 14 {Init Counter, Fold 14 Times to get 4 Bytes out of 60}
