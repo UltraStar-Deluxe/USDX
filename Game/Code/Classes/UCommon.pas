@@ -77,34 +77,21 @@ uses
   {$IFDEF Delphi}
   Dialogs,
   {$ENDIF}
-  {$WARNINGS OFF}
-  {$IFDEF LINUX}
-  {$IFDEF FPC}
-  {$IF FPC_VERSION_INT >= 2002002} // >= 2.2.2
-  clocale,
-  {$IFEND}
-  {$ENDIF}
-  {$ENDIF}
-  {$WARNINGS ON}
   UMain;
 
 
-{$WARNINGS OFF}
 // data used by the ...Locale() functions
 {$IFDEF LINUX}
+
 var
   PrevNumLocale: string;
 
-{$IFDEF FPC}
-{$IF FPC_VERSION_INT < 2002002} // < 2.2.2
 const
-  __LC_NUMERIC  = 1;
+  LC_NUMERIC  = 1;
 
 function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c' name 'setlocale';
-{$IFEND}
+
 {$ENDIF}
-{$ENDIF}
-{$WARNINGS ON}
 
 // In Linux and maybe MacOSX some units (like cwstring) call setlocale(LC_ALL, '')
 // to set the language/country specific locale (e.g. charset) for this application.
@@ -125,15 +112,15 @@ function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c'
 procedure SetDefaultNumericLocale();
 begin
   {$ifdef LINUX}
-  PrevNumLocale := setlocale(__LC_NUMERIC, nil);
-  setlocale(__LC_NUMERIC, 'C');
+  PrevNumLocale := setlocale(LC_NUMERIC, nil);
+  setlocale(LC_NUMERIC, 'C');
   {$endif}
 end;
 
 procedure RestoreNumericLocale();
 begin
   {$ifdef LINUX}
-  setlocale(__LC_NUMERIC, PChar(PrevNumLocale));
+  setlocale(LC_NUMERIC, PChar(PrevNumLocale));
   {$endif}
 end;
 
