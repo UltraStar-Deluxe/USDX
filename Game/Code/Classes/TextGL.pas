@@ -8,10 +8,6 @@ interface
 
 {$I switches.inc}
 
-{$IFDEF FPC}
-  {$ASMMODE Intel}
-{$ENDIF}
-
 uses
   gl,
   SDL,
@@ -22,12 +18,9 @@ uses
 
 procedure BuildFont;                          // build our bitmap font
 procedure KillFont;                           // delete the font
-function  glTextWidth(text: pchar): real;     // returns text width
-procedure glPrintDone(text: pchar; Done: real; ColR, ColG, ColB: real);
+function  glTextWidth(text: PChar): real;     // returns text width
 procedure glPrintLetter(letter: char);
-procedure glPrintLetterCut(letter: char; Start, Finish: real);
 procedure glPrint(text: pchar);               // custom GL "Print" routine
-procedure glPrintCut(text: pchar);
 procedure SetFontPos(X, Y: real);             // sets X and Y
 procedure SetFontZ(Z: real);                  // sets Z
 procedure SetFontSize(Size: real);
@@ -37,15 +30,11 @@ procedure SetFontAspectW(Aspect: real);
 procedure SetFontReflection(Enable:boolean;Spacing: real); // enables/disables text reflection
 procedure SetFontBlend(Enable: boolean);      // enables/disables blending
 
-// Start of SDL_ttf
 //function NextPowerOfTwo(Value: integer): integer;
 // Checks if the ttf exists, if yes then a SDL_ttf is returned
 //function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
-
 // Does the renderstuff, color is in $ffeecc style
 //function RenderText(font: PTTF_Font; Text:PAnsiChar; Color: Cardinal):PSDL_Surface;
-//procedure printrandomtext();
-// End of SDL_ttf
 
 type
   TTextGL = record
@@ -65,7 +54,6 @@ type
     Width:    array[0..255] of byte;
     AspectW:  real;
     Centered: boolean;
-    Done:     real;
     Outline:  real;
     Italic:   boolean;
     Reflection: boolean;
@@ -75,16 +63,9 @@ type
 
 
 var
-  base:       GLuint; // base display list for the font set
   Fonts:      array of TFont;
   ActFont:    integer;
-  PColR:      real;  // temps for glPrintDone
-  PColG:      real;
-  PColB:      real;
 
-  // Colours for the reflection
-  TempColor:    array[0..3] of GLfloat;
-  PTempColor:   PGLfloat;
 
 implementation
 
@@ -93,6 +74,10 @@ uses
   UCommon,
   SysUtils,
   UGraphic;
+
+var
+  // Colours for the reflection
+  TempColor:    array[0..3] of GLfloat;
 
 procedure LoadBitmapFontInfo(aID : integer; const aType, aResourceName: string);
 var
@@ -119,36 +104,25 @@ var
 begin
   ActFont := 0;
 
-  //Log.LogStatus( '' , '---------------------------');
-
-  //Log.LogStatus( 'Font' , '---------------------------');
   SetLength(Fonts, 5);
   Fonts[0].Tex := Texture.LoadTexture(true, 'Font', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[0].Tex.H := 30;
   Fonts[0].AspectW := 0.9;
-  Fonts[0].Done := -1;
   Fonts[0].Outline := 0;
-
-  //Log.LogStatus( 'FontB' , '---------------------------');
 
   Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[1].Tex.H := 30;
   Fonts[1].AspectW := 1;
-  Fonts[1].Done := -1;
   Fonts[1].Outline := 0;
 
-  //Log.LogStatus( 'FontO' , '---------------------------');
   Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[2].Tex.H := 30;
   Fonts[2].AspectW := 0.95;
-  Fonts[2].Done := -1;
   Fonts[2].Outline := 5;
 
-  //Log.LogStatus( 'FontO2' , '---------------------------');
   Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[3].Tex.H := 30;
   Fonts[3].AspectW := 0.95;
-  Fonts[3].Done := -1;
   Fonts[3].Outline := 4;
 
 {  Fonts[4].Tex := Texture.LoadTexture('FontO', TEXTURE_TYPE_TRANSPARENT, 0); // for score screen
@@ -158,10 +132,10 @@ begin
   Fonts[4].Outline := 5;}
 
   // load font info
-  LoadBitmapFontInfo( 0, 'FNT', 'Font'   );
-  LoadBitmapFontInfo( 1, 'FNT', 'FontB'  );
-  LoadBitmapFontInfo( 2, 'FNT', 'FontO'  );
-  LoadBitmapFontInfo( 3, 'FNT', 'FontO2' );
+  LoadBitmapFontInfo( 0, 'FNT', 'Font');
+  LoadBitmapFontInfo( 1, 'FNT', 'FontB');
+  LoadBitmapFontInfo( 2, 'FNT', 'FontO');
+  LoadBitmapFontInfo( 3, 'FNT', 'FontO2');
 
   for Count := 0 to 255 do
     Fonts[1].Width[Count] := Fonts[1].Width[Count] div 2;
@@ -184,7 +158,7 @@ end;
 procedure KillFont;
 begin
   // delete all characters
-  //glDeleteLists(base, 256);
+  //glDeleteLists(..., 256);
 end;
 
 function glTextWidth(text: pchar): real;
@@ -198,16 +172,6 @@ begin
     Letter := Text[i];
     Result := Result + Fonts[ActFont].Width[Ord(Letter)] * Fonts[ActFont].Tex.H / 30 * Fonts[ActFont].AspectW;
   end;
-end;
-
-procedure glPrintDone(text: pchar; Done: real; ColR, ColG, ColB: real);
-begin
-  Fonts[ActFont].Done := Done;
-  PColR := ColR;
-  PColG := ColG;
-  PColB := ColB;
-  glPrintCut(text);
-  Fonts[ActFont].Done := -1;
 end;
 
 procedure glPrintLetter(Letter: char);
@@ -244,7 +208,7 @@ begin
   PR := PL + Tex.W + Font.Outline * (Tex.H/30) * Font.AspectW;
   PB := PT + Tex.H;
 
-  if Font.Italic = false then
+  if (not Font.Italic) then
     XItal := 0
   else
     XItal := 12;
@@ -268,7 +232,7 @@ begin
   // <mog> Reflection
   // Yes it would make sense to put this in an extra procedure,
   // but this works, doesn't take much lines, and is almost lightweight
-  if Font.Reflection = true then
+  if Font.Reflection then
   begin
     ReflectionSpacing := Font.ReflectionSpacing + Tex.H/2;
 
@@ -303,129 +267,104 @@ begin
   Tex.X := Tex.X + Tex.W;
 
   //write the colour back
-  glColor4fv(PTempColor);
-end;
-
-procedure glPrintLetterCut(letter: char; Start, Finish: real);
-var
-  TexX, TexY:   real;
-  TexR, TexB:   real;
-  TexTemp:      real;
-  FWidth:       real;
-  PL, PT:       real;
-  PR, PB:       real;
-  OutTemp:      real;
-  XItal:        real;
-  Font:              PFont;
-  Tex:               PTexture;
-begin
-  Font := @Fonts[ActFont];
-  Tex := @Font.Tex;
-
-  FWidth := Fonts[ActFont].Width[Ord(Letter)];
-
-  Tex.W := FWidth * (Tex.H/30) * Fonts[ActFont].AspectW;
-  //Tex.H := 30;
-  OutTemp := Fonts[ActFont].Outline * (Tex.H/30) * Fonts[ActFont].AspectW;
-
-  // set texture positions
-  TexX := (ord(Letter) mod 16) * 1/16 + 1/32 - FWidth/1024 - Fonts[ActFont].Outline/1024;
-  TexY := (ord(Letter) div 16) * 1/16 + 2/1024; // 2/1024
-  TexR := (ord(Letter) mod 16) * 1/16 + 1/32 + FWidth/1024 + Fonts[ActFont].Outline/1024;
-  TexB := (1 + ord(Letter) div 16) * 1/16 - 2/1024;
-
-  TexTemp := TexX + Start * (TexR - TexX);
-  TexR := TexX + Finish * (TexR - TexX);
-  TexX := TexTemp;
-
-  // set vector positions
-  PL := Tex.X - OutTemp / 2 + OutTemp * Start;
-  PT := Tex.Y;
-  PR := PL + (Tex.W + OutTemp) * (Finish - Start);
-  PB := PT + Tex.H;
-  if Fonts[ActFont].Italic = false then
-    XItal := 0
-  else
-    XItal := 12;
-
-  if (Font.Blend) then
-  begin
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  end;
-
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(TexX, TexY); glVertex2f(PL+XItal,  PT);
-    glTexCoord2f(TexX, TexB); glVertex2f(PL,        PB);
-    glTexCoord2f(TexR, TexB); glVertex2f(PR,        PB);
-    glTexCoord2f(TexR, TexY); glVertex2f(PR+XItal,  PT); // not tested with XItal
-  glEnd;
-
-  Tex.X := Tex.X + Tex.W * (Finish - Start);
-
-  glDisable(GL_TEXTURE_2D);
-  if (Font.Blend) then 
-    glDisable(GL_BLEND);
+  glColor4fv(@TempColor);
 end;
 
 // Custom GL "Print" Routine
-procedure glPrint(text: pchar);
+procedure glPrint(Text: PChar);
 var
-  //Letter :       char;
-  iPos   : integer;
+  Pos: integer;
 begin
-  if (Text = '') then     // If There's No Text
-    Exit;                 // Do Nothing
+  // if there is no text do nothing
+  if ((Text = nil) or (Text = '')) then
+    Exit;
 
   //Save the actual color and alpha (for reflection)
-  PTempColor:= @TempColor;
-  //I've read that glGetFloat is quite slow, but it seems that there is no alternative
-  glGetFloatv(GL_CURRENT_COLOR, PTempColor);
+  glGetFloatv(GL_CURRENT_COLOR, @TempColor);
 
-  // This code is better, because doing a Copy of for every
-  // letter in a string is a waste of CPU & Memory resources.
-  // Copy operations are quite memory intensive, and this simple
-  // code achieves the same result.
-  for iPos := 0 to Length(text) - 1 do
+  for Pos := 0 to Length(Text) - 1 do
   begin
-    glPrintLetter( Text[iPos] );
+    glPrintLetter(Text[Pos]);
   end;
-
 end;
 
-{*
+procedure SetFontPos(X, Y: real);
+begin
+  Fonts[ActFont].Tex.X := X;
+  Fonts[ActFont].Tex.Y := Y;
+end;
+
+procedure SetFontZ(Z: real);
+begin
+  Fonts[ActFont].Tex.Z := Z;
+end;
+
+procedure SetFontSize(Size: real);
+begin
+  Fonts[ActFont].Tex.H := 30 * (Size/10);
+end;
+
+procedure SetFontStyle(Style: integer);
+begin
+  ActFont := Style;
+end;
+
+procedure SetFontItalic(Enable: boolean);
+begin
+  Fonts[ActFont].Italic := Enable;
+end;
+
+procedure SetFontAspectW(Aspect: real);
+begin
+  Fonts[ActFont].AspectW := Aspect;
+end;
+
+procedure SetFontReflection(Enable: boolean; Spacing: real);
+begin
+  Fonts[ActFont].Reflection        := Enable;
+  Fonts[ActFont].ReflectionSpacing := Spacing;
+end;
+
+procedure SetFontBlend(Enable: boolean);
+begin
+  Fonts[ActFont].Blend := Enable;
+end;
+
+
+
+
+(*
 <mog> I uncommented this, because it was some kind of after hour hack together with blindy
 it's actually just a prove of concept, as it's having some flaws
 - instead nice and clean ttf code should be placed here :)
-*}
-// tyty to Asphyre
-// FIXME: check if the non-asm version is fast enough and use it by default if so
-//function NextPowerOfTwo(Value: integer): integer;
-//begin
-//  Result:= 1;
-//{$IF Defined(CPUX86_64)}
-//  asm
-//    mov rcx, -1
-//    bsr rcx, Value
-//    inc rcx
-//    shl Result, cl
-//  end;
-//{$ELSEIF Defined(CPU386) or Defined(CPUI386)}
-//  asm
-//    mov ecx, -1
-//    bsr ecx, Value
-//    inc ecx
-//    shl Result, cl
-//  end;
-//{$ELSE}
-//  while (Result <= Value) do
-//    Result := 2 * Result;
-//{$IFEND}
-//end;
-{*
+
+{$IFDEF FPC}
+  {$ASMMODE Intel}
+{$ENDIF}
+
+function NextPowerOfTwo(Value: integer): integer;
+begin
+  Result:= 1;
+{$IF Defined(CPUX86_64)}
+  asm
+    mov rcx, -1
+    bsr rcx, Value
+    inc rcx
+    shl Result, cl
+  end;
+{$ELSEIF Defined(CPU386) or Defined(CPUI386)}
+  asm
+    mov ecx, -1
+    bsr ecx, Value
+    inc ecx
+    shl Result, cl
+  end;
+{$ELSE}
+  while (Result <= Value) do
+    Result := 2 * Result;
+{$IFEND}
+end;
+
 function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
 begin
  if (FileExists(FileName)) then
@@ -517,91 +456,7 @@ begin
   TTF_CloseFont(font);
 
 end;
-*}
-procedure glPrintCut(text: pchar);
-var
-  Letter:       char;
-  PToDo:        real;
-  PTotWidth:    real;
-  PDoingNow:    real;
-  S:            string;
-begin
-  if (Text = '') then  // If There's No Text
-     Exit;             // Do Nothing
+*)
 
-  PTotWidth := glTextWidth(Text);
-  PToDo := Fonts[ActFont].Done;
-
-  while (length(text) > 0) do
-  begin
-    // cut
-    Letter := Text[0];
-    Text := pchar(Copy(Text, 2, Length(Text)-1));
-
-    // analyze
-    S := Letter;
-    PDoingNow := glTextWidth(pchar(S)) / PTotWidth;
-
-    // drawing
-    if (PToDo > 0) and (PDoingNow <= PToDo) then
-      glPrintLetter(Letter);
-
-    if (PToDo > 0) and (PDoingNow > PToDo) then
-    begin
-      glPrintLetterCut(Letter, 0, PToDo / PDoingNow);
-      glColor3f(PColR, PColG,  PColB);
-      glPrintLetterCut(Letter, PToDo / PDoingNow, 1);
-    end;
-
-    if (PToDo <= 0) then
-      glPrintLetter(Letter);
-
-    PToDo := PToDo - PDoingNow;
-
-  end; // while
-end;
-
-
-procedure SetFontPos(X, Y: real);
-begin
-  Fonts[ActFont].Tex.X := X;
-  Fonts[ActFont].Tex.Y := Y;
-end;
-
-procedure SetFontZ(Z: real);
-begin
-  Fonts[ActFont].Tex.Z := Z;
-end;
-
-procedure SetFontSize(Size: real);
-begin
-  Fonts[ActFont].Tex.H := 30 * (Size/10);
-end;
-
-procedure SetFontStyle(Style: integer);
-begin
-  ActFont := Style;
-end;
-
-procedure SetFontItalic(Enable: boolean);
-begin
-  Fonts[ActFont].Italic := Enable;
-end;
-
-procedure SetFontAspectW(Aspect: real);
-begin
-  Fonts[ActFont].AspectW := Aspect;
-end;
-
-procedure SetFontReflection(Enable: boolean; Spacing: real);
-begin
-  Fonts[ActFont].Reflection        := Enable;
-  Fonts[ActFont].ReflectionSpacing := Spacing;
-end;
-
-procedure SetFontBlend(Enable: boolean);
-begin
-  Fonts[ActFont].Blend := Enable;
-end;
 
 end.
