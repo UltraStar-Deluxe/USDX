@@ -121,7 +121,6 @@ uses
   UMenuText              in 'Menu\UMenuText.pas',
   UMenuButton            in 'Menu\UMenuButton.pas',
   UMenuInteract          in 'Menu\UMenuInteract.pas',
-  UMenuSelect            in 'Menu\UMenuSelect.pas',
   UMenuSelectSlide       in 'Menu\UMenuSelectSlide.pas',
   UDrawTexture           in 'Menu\UDrawTexture.pas',
   UMenuButtonCollection  in 'Menu\UMenuButtonCollection.pas',

@@ -119,25 +119,6 @@ type
   AThemeButtonCollection = array of TThemeButtonCollection;
   PAThemeButtonCollection = ^AThemeButtonCollection;
 
-  TThemeSelect = record
-    Tex:    string;
-    TexSBG: string;
-    X:      integer;
-    Y:      integer;
-    W:      integer;
-    H:      integer;
-    Text:   string;
-    ColR,  ColG,  ColB,  Int:     real;
-    DColR, DColG, DColB, DInt:    real;
-    TColR,  TColG,  TColB,  TInt:     real;
-    TDColR, TDColG, TDColB, TDInt:    real;
-    SBGColR,  SBGColG,  SBGColB,  SBGInt:     real;
-    SBGDColR, SBGDColG, SBGDColB, SBGDInt:    real;
-    STColR,  STColG,  STColB,  STInt:     real;
-    STDColR, STDColG, STDColB, STDInt:    real;
-    SkipX:    integer;
-  end;
-
   TThemeSelectSlide = record
     Tex:    string;
     TexSBG: string;
@@ -726,7 +707,6 @@ type
     procedure ThemeLoadButton(var ThemeButton: TThemeButton; Name: string; const Collections: PAThemeButtonCollection = nil);
     procedure ThemeLoadButtonCollection(var Collection: TThemeButtonCollection; Name: string);
     procedure ThemeLoadButtonCollections(var Collections: AThemeButtonCollection; Name: string);
-    procedure ThemeLoadSelect(var ThemeSelect: TThemeSelect; Name: string);
     procedure ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; Name: string);
 
     procedure ThemeSave(FileName: string);
@@ -1660,43 +1640,6 @@ begin
   SetLength(ThemeButton.Text, TLen);
   for T := 1 to TLen do
     ThemeLoadText(ThemeButton.Text[T-1], Name + 'Text' + IntToStr(T));
-end;
-
-procedure TTheme.ThemeLoadSelect(var ThemeSelect: TThemeSelect; Name: string);
-var
-  C:    integer;
-begin
-  ThemeSelect.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
-
-  ThemeSelect.Tex := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'Tex', '');
-  ThemeSelect.TexSBG := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'TexSBG', '');
-
-  ThemeSelect.X := ThemeIni.ReadInteger(Name, 'X', 0);
-  ThemeSelect.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
-  ThemeSelect.W := ThemeIni.ReadInteger(Name, 'W', 0);
-  ThemeSelect.H := ThemeIni.ReadInteger(Name, 'H', 0);
-  ThemeSelect.SkipX := ThemeIni.ReadInteger(Name, 'SkipX', 0);
-
-
-  LoadColor(ThemeSelect.ColR, ThemeSelect.ColG,  ThemeSelect.ColB, ThemeIni.ReadString(Name, 'Color', ''));
-  ThemeSelect.Int :=  ThemeIni.ReadFloat(Name, 'Int', 1);
-  LoadColor(ThemeSelect.DColR, ThemeSelect.DColG,  ThemeSelect.DColB, ThemeIni.ReadString(Name, 'DColor', ''));
-  ThemeSelect.DInt :=  ThemeIni.ReadFloat(Name, 'DInt', 1);
-
-  LoadColor(ThemeSelect.TColR, ThemeSelect.TColG,  ThemeSelect.TColB, ThemeIni.ReadString(Name, 'TColor', ''));
-  ThemeSelect.TInt :=  ThemeIni.ReadFloat(Name, 'TInt', 1);
-  LoadColor(ThemeSelect.TDColR, ThemeSelect.TDColG,  ThemeSelect.TDColB, ThemeIni.ReadString(Name, 'TDColor', ''));
-  ThemeSelect.TDInt :=  ThemeIni.ReadFloat(Name, 'TDInt', 1);
-
-  LoadColor(ThemeSelect.SBGColR, ThemeSelect.SBGColG,  ThemeSelect.SBGColB, ThemeIni.ReadString(Name, 'SBGColor', ''));
-  ThemeSelect.SBGInt :=  ThemeIni.ReadFloat(Name, 'SBGInt', 1);
-  LoadColor(ThemeSelect.SBGDColR, ThemeSelect.SBGDColG,  ThemeSelect.SBGDColB, ThemeIni.ReadString(Name, 'SBGDColor', ''));
-  ThemeSelect.SBGDInt :=  ThemeIni.ReadFloat(Name, 'SBGDInt', 1);
-
-  LoadColor(ThemeSelect.STColR, ThemeSelect.STColG,  ThemeSelect.STColB, ThemeIni.ReadString(Name, 'STColor', ''));
-  ThemeSelect.STInt :=  ThemeIni.ReadFloat(Name, 'STInt', 1);
-  LoadColor(ThemeSelect.STDColR, ThemeSelect.STDColG,  ThemeSelect.STDColB, ThemeIni.ReadString(Name, 'STDColor', ''));
-  ThemeSelect.STDInt :=  ThemeIni.ReadFloat(Name, 'STDInt', 1);
 end;
 
 procedure TTheme.ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; Name: string);

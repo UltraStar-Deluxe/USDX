@@ -8,7 +8,7 @@ interface
 
 {$I switches.inc}
 
-uses gl, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelect, UMenuSelectSlide,
+uses gl, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelectSlide,
   UMenuInteract, UThemes, UMenuButtonCollection, Math, UMusic;
 
 type
@@ -22,7 +22,6 @@ type
       Interactions:   array of TInteract;
       SelInteraction: integer;
       Button:         array of TButton;
-      Selects:        array of TSelect;
       SelectsS:       array of TSelectSlide;
       ButtonCollection: array of TButtonCollection;
       BackImg:        TTexture;
@@ -89,18 +88,6 @@ type
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: string); overload;
       procedure AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: string); overload;
 
-      // select
-      function AddSelect(ThemeSelect: TThemeSelect; var Data: integer; Values: array of string): integer; overload;
-      function AddSelect(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
-        TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
-        SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
-        STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
-        const Name: String; Typ: TTextureType; const SBGName: String; SBGTyp: TTextureType;
-        const Caption: string; var Data: integer): integer; overload;
-      procedure AddSelectOption(AddX, AddY: real; const AddText: string); overload;
-      procedure AddSelectOption(SelectNo: Cardinal; AddX, AddY: real; const AddText: string); overload;
-      procedure UpdateSelectOptions(ThemeSelect: TThemeSelect; SelectNum: integer; Values: array of string; var Data: integer);
-
       // select slide
       function AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer; Values: array of string): integer; overload;
       function AddSelectSlide(X, Y, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
@@ -151,7 +138,6 @@ const
   pmUnClick = 3;
 
   iButton = 0; // interaction type
-  iSelect = 1;
   iText = 2;
   iSelectS = 3;
   iBCollectionChild = 5;
@@ -250,7 +236,6 @@ begin
 
   case OldTyp of
     iButton:  Button[OldNum].Selected := False;
-    iSelect:  Selects[OldNum].Selected := False;
     iText:    Text[OldNum].Selected := False;
     iSelectS: SelectsS[OldNum].Selected := False;
     //Button Collection Mod
@@ -268,7 +253,6 @@ begin
   SelInteraction := Num;
   case NewTyp of
     iButton:  Button[NewNum].Selected := True;
-    iSelect:  Selects[NewNum].Selected := True;
     iText:    Text[NewNum].Selected := True;
     iSelectS: SelectsS[NewNum].Selected := True;
 
@@ -771,7 +755,6 @@ begin
   for J := 0 to Length(Text) - 1 do
     Text[J].Draw;
 
-
   //  Draw all ButtonCollections
   for J := 0 to High(ButtonCollection) do
     ButtonCollection[J].Draw;
@@ -779,10 +762,6 @@ begin
   // Second, we draw all of our buttons
   for J := 0 to Length(Button) - 1 do
     Button[J].Draw;
-
-  // Third, we draw all of our selects
-  for J := 0 to Length(Selects) - 1 do
-    Selects[J].Draw(1);
 
   for J := 0 to Length(SelectsS) - 1 do
     SelectsS[J].Draw;
@@ -855,8 +834,7 @@ begin
   case Interactions[Int].Typ of
     //Button
     iButton: Result := Button[Interactions[Int].Num].Visible and Button[Interactions[Int].Num].Selectable;
-    //Select
-    iSelect: Result := true;
+
     //Select Slide
     iSelectS: Result := SelectsS[Interactions[Int].Num].Visible;
 
@@ -1070,154 +1048,6 @@ begin
   end;
 end;
 
-function TMenu.AddSelect(ThemeSelect: TThemeSelect; var Data: integer; Values: array of string): integer;
-var
-  SO:     integer;
-begin
-  Result := AddSelect(ThemeSelect.X, ThemeSelect.Y, ThemeSelect.W, ThemeSelect.H, ThemeSelect.SkipX,
-    ThemeSelect.ColR, ThemeSelect.ColG, ThemeSelect.ColB, ThemeSelect.Int,
-    ThemeSelect.DColR, ThemeSelect.DColG, ThemeSelect.DColB, ThemeSelect.DInt,
-    ThemeSelect.TColR, ThemeSelect.TColG, ThemeSelect.TColB, ThemeSelect.TInt,
-    ThemeSelect.TDColR, ThemeSelect.TDColG, ThemeSelect.TDColB, ThemeSelect.TDInt,
-    ThemeSelect.SBGColR, ThemeSelect.SBGColG, ThemeSelect.SBGColB, ThemeSelect.SBGInt,
-    ThemeSelect.SBGDColR, ThemeSelect.SBGDColG, ThemeSelect.SBGDColB, ThemeSelect.SBGDInt,
-    ThemeSelect.STColR, ThemeSelect.STColG, ThemeSelect.STColB, ThemeSelect.STInt,
-    ThemeSelect.STDColR, ThemeSelect.STDColG, ThemeSelect.STDColB, ThemeSelect.STDInt,
-    Skin.GetTextureFileName(ThemeSelect.Tex), TEXTURE_TYPE_COLORIZED,
-    Skin.GetTextureFileName(ThemeSelect.TexSBG), TEXTURE_TYPE_COLORIZED,
-    ThemeSelect.Text, Data);
-  for SO := 0 to High(Values) do
-    AddSelectOption(ThemeSelect.X + ThemeSelect.W + ThemeSelect.SkipX + SO * 100 + 20, ThemeSelect.Y + 20, Values[SO]);
-end;
-
-function TMenu.AddSelect(X, Y, W, H, SkipX, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
-  TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
-  SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
-  STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
-  const Name: String; Typ: TTextureType; const SBGName: String; SBGTyp: TTextureType;
-  const Caption: string; var Data: integer): integer;
-var
-  S:    integer;
-begin
-  S := Length(Selects);
-  SetLength(Selects, S + 1);
-  Selects[S] := TSelect.Create;
-
-  if (Typ = TEXTURE_TYPE_COLORIZED) then
-    Selects[S].Texture := Texture.GetTexture(Name, Typ, RGBFloatToInt(ColR, ColG, ColB))
-  else
-    Selects[S].Texture := Texture.GetTexture(Name, Typ);
-  Selects[S].X := X;
-  Selects[S].Y := Y;
-  Selects[S].W := W;
-  Selects[S].H := H;
-  Selects[S].ColR := ColR;
-  Selects[S].ColG := ColG;
-  Selects[S].ColB := ColB;
-  Selects[S].Int := Int;
-  Selects[S].DColR := DColR;
-  Selects[S].DColG := DColG;
-  Selects[S].DColB := DColB;
-  Selects[S].DInt := DInt;
-
-  if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
-    Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
-  else
-    Selects[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
-  Selects[S].TextureSBG.X := X + W + SkipX;
-  Selects[S].TextureSBG.Y := Y;
-  Selects[S].TextureSBG.W := 450;
-  Selects[S].TextureSBG.H := H;
-  Selects[S].SBGColR := SBGColR;
-  Selects[S].SBGColG := SBGColG;
-  Selects[S].SBGColB := SBGColB;
-  Selects[S].SBGInt := SBGInt;
-  Selects[S].SBGDColR := SBGDColR;
-  Selects[S].SBGDColG := SBGDColG;
-  Selects[S].SBGDColB := SBGDColB;
-  Selects[S].SBGDInt := SBGDInt;
-
-  Selects[S].Text.X := X + 20;
-  Selects[S].Text.Y := Y + 20;
-  Selects[S].Text.Text := Caption;
-  Selects[S].Text.Size := 10;
-  Selects[S].Text.Visible := true;
-  Selects[S].TColR := TColR;
-  Selects[S].TColG := TColG;
-  Selects[S].TColB := TColB;
-  Selects[S].TInt := TInt;
-  Selects[S].TDColR := TDColR;
-  Selects[S].TDColG := TDColG;
-  Selects[S].TDColB := TDColB;
-  Selects[S].TDInt := TDInt;
-
-  Selects[S].STColR := STColR;
-  Selects[S].STColG := STColG;
-  Selects[S].STColB := STColB;
-  Selects[S].STInt := STInt;
-  Selects[S].STDColR := STDColR;
-  Selects[S].STDColG := STDColG;
-  Selects[S].STDColB := STDColB;
-  Selects[S].STDInt := STDInt;
-
-  // new
-  Selects[S].Texture.TexX1 := 0;
-  Selects[S].Texture.TexY1 := 0;
-  Selects[S].Texture.TexX2 := 1;
-  Selects[S].Texture.TexY2 := 1;
-  Selects[S].TextureSBG.TexX1 := 0;
-  Selects[S].TextureSBG.TexY1 := 0;
-  Selects[S].TextureSBG.TexX2 := 1;
-  Selects[S].TextureSBG.TexY2 := 1;
-
-  // Sets Data to copy the value of selectops to global value;
-  Selects[S].PData := @Data;
-
-  // Sets default value of selectopt from Data;
-  Selects[S].SelectedOption := Data;
-
-  // Disables default selection
-  Selects[S].SetSelect(false);
-
-  // adds interaction
-  AddInteraction(iSelect, S);
-end;
-
-procedure TMenu.AddSelectOption(AddX, AddY: real; const AddText: string);
-begin
-  AddSelectOption (High(Selects), AddX, AddY, AddText);
-end;
-
-procedure TMenu.AddSelectOption(SelectNo: Cardinal; AddX, AddY: real; const AddText: string);
-var
-  SO:     integer;
-begin
-  SO := Length(Selects[SelectNo].TextOpt);
-  SetLength(Selects[SelectNo].TextOpt, SO + 1);
-
-  Selects[SelectNo].TextOpt[SO] := TText.Create;
-
-  Selects[SelectNo].TextOpt[SO].X := AddX;
-  Selects[SelectNo].TextOpt[SO].Y := AddY;
-  Selects[SelectNo].TextOpt[SO].Text := AddText;
-  Selects[SelectNo].TextOpt[SO].Size := 10;
-  Selects[SelectNo].TextOpt[SO].ColR := Selects[SelectNo].STDColR;
-  Selects[SelectNo].TextOpt[SO].ColG := Selects[SelectNo].STDColG;
-  Selects[SelectNo].TextOpt[SO].ColB := Selects[SelectNo].STDColB;
-  Selects[SelectNo].TextOpt[SO].Int := Selects[SelectNo].STDInt;
-  Selects[SelectNo].TextOpt[SO].Visible := true;
-
-  if SO = Selects[SelectNo].PData^ then Selects[SelectNo].SelectedOption := SO;
-end;
-
-procedure TMenu.UpdateSelectOptions(ThemeSelect: TThemeSelect; SelectNum: integer; Values: array of string; var Data: integer);
-var
-  SO:   integer;
-begin
-  SetLength(Selects[SelectNum].TextOpt, 0);
-  for SO := 0 to High(Values) do
-    AddSelectOption(SelectNum, ThemeSelect.X + ThemeSelect.W + ThemeSelect.SkipX + SO * 100 + 20, ThemeSelect.Y + 20, Values[SO]);
-end;
 
 function TMenu.AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer; Values: array of string): integer;
 var
@@ -1419,12 +1249,6 @@ var
   Value:  integer;
 begin
   case Interactions[Interaction].Typ of
-    iSelect:  begin
-        Num := Interactions[Interaction].Num;
-        Value := Selects[Num].SelectedOption;
-        Value := (Value + 1) Mod (Length(Selects[Num].TextOpt));
-        Selects[Num].SelectedOption := Value;
-      end;
     iSelectS: begin
         Num := Interactions[Interaction].Num;
         Value := SelectsS[Num].SelectedOption;
@@ -1466,14 +1290,6 @@ var
   Value:  integer;
 begin
   case Interactions[Interaction].Typ of
-    iSelect:  begin
-        Num := Interactions[Interaction].Num;
-        Value := Selects[Num].SelectedOption;
-        Value := Value - 1;
-        if Value = -1 then
-          Value := High(Selects[Num].TextOpt);
-        Selects[Num].SelectedOption := Value;
-      end;
     iSelectS: begin
         Num := Interactions[Interaction].Num;
         Value := SelectsS[Num].SelectedOption;
