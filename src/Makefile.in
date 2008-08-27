@@ -270,7 +270,7 @@ macosx-app: all
 
 # Put the icon file into its particular place. 
 # Must be done BEFORE info.plist is created.
-	$(INSTALL_DATA) $(usdxrootdir)/Resources/Graphics/ustar-icon_v01.icns $(macosx_bundle_path)/Resources/
+	$(INSTALL_DATA) $(usdxrootdir)/icons/ustar-icon_v01.icns $(macosx_bundle_path)/Resources/
 
 # the info.plist file
 	$(INSTALL_DATA) macosx/Info.plist $(macosx_bundle_path)/

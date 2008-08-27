@@ -11,7 +11,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>UltraStarDeluxe, a SingStar clone</string>
 	<key>CFBundleIconFile</key>
-	<string>ustar-icon_v01.icns</string>
+	<string>ultrastardx.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.ultrastardeluxe.ultrastardeluxe</string>
 	<key>CFBundleInfoDictionaryVersion</key>
