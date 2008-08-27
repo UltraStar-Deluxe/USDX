@@ -35,6 +35,7 @@ USDX_PREFIX = ultrastardx
 USDX_VERSION = @PACKAGE_VERSION@
 USDX_TARNAME = @PACKAGE_TARNAME@
 
+USDX_GAME_DIR  = $(usdxrootdir)/game
 USDX_TOOLS_DIR = $(usdxrootdir)/tools
 USDX_LIB_DIR   = ./lib
 USDX_BUILD_DIR = ./build
@@ -54,7 +55,7 @@ EXTRA_SRCDIRS =
 RESEXTRACTOR_NAME = ResourceExtractor
 RESEXTRACTOR_DIR = $(USDX_TOOLS_DIR)/$(RESEXTRACTOR_NAME)
 RESEXTRACTOR_BIN = $(RESEXTRACTOR_DIR)/$(RESEXTRACTOR_NAME)$(EXE_SUFFIX)
-RESOURCE_DIR = $(usdxrootdir)/Resources
+RESOURCE_DIR = $(USDX_GAME_DIR)/resources
 RESOURCE_FILE = resource.inc
 RC_FILE = ultrastardx.rc
 EXTRA_SRCDIRS += $(RESEXTRACTOR_DIR)
@@ -101,7 +102,7 @@ endif
 USDX_SRC = ultrastardx.dpr
 # name of executable
 USDX_BIN_NAME = $(USDX_PREFIX)$(EXE_SUFFIX)
-USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
+USDX_BIN = $(USDX_GAME_DIR)/$(USDX_BIN_NAME)
 
 # name of the modification timestamp filename 
 modfile = lastmod
@@ -170,10 +171,10 @@ install-global: install-data install-exec
 
 install-data:
 	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/artwork" RECURSIVE_DST_DIR="$(INSTALL_datadir)/artwork" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Languages" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Languages" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Sounds" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Sounds" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Themes" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Themes" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Resources" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Resources" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/languages" RECURSIVE_DST_DIR="$(INSTALL_datadir)/languages" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/sounds" RECURSIVE_DST_DIR="$(INSTALL_datadir)/sounds" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/themes" RECURSIVE_DST_DIR="$(INSTALL_datadir)/themes" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" RECURSIVE_DST_DIR="$(INSTALL_datadir)/resources" install-data-recursive
 	$(INSTALL_DATA) "$(usdxrootdir)/License.txt" "$(INSTALL_datadir)"
 
 install-data-recursive:
@@ -198,10 +199,10 @@ uninstall-global: uninstall-data uninstall-exec
 
 uninstall-data:
 	rm -rf "$(INSTALL_datadir)/artwork"
-	rm -rf "$(INSTALL_datadir)/Languages"
-	rm -rf "$(INSTALL_datadir)/Sounds"
-	rm -rf "$(INSTALL_datadir)/Themes"
-	rm -rf "$(INSTALL_datadir)/Resources"
+	rm -rf "$(INSTALL_datadir)/languages"
+	rm -rf "$(INSTALL_datadir)/sounds"
+	rm -rf "$(INSTALL_datadir)/themes"
+	rm -rf "$(INSTALL_datadir)/resources"
 	rm -f  "$(INSTALL_datadir)/License.txt"
 	-rmdir "$(INSTALL_datadir)"
 
@@ -225,25 +226,23 @@ dist:
 # Debian package
 #################################################
 
-debpkgoutdir = $(usdxrootdir)/packages
-debpkgtmpdir = $(debpkgoutdir)/deb-package
-# should be $(USDX_PACKAGE_NAME) instead
-debpkgprefix = ultrastardx
+debpkgdir = $(usdxrootdir)/dists/debian
+debpkgtmpdir = $(debpkgdir)/deb-package
+debpkgprefix = $(USDX_PACKAGE_NAME)
 debpkgname = $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
 
 debian-pkg: all
 	rm -rf $(debpkgtmpdir)
-	rm -rf $(debpkgoutdir)
 
-	$(MKDIR_P) $(debpkgoutdir)
+	$(MKDIR_P) $(debpkgdir)
 	$(MKDIR_P) $(debpkgtmpdir)/DEBIAN
 
 	$(MAKE) prefix=$(debpkgtmpdir)/$(prefix) install
 
-	$(INSTALL_DATA) $(debpkgprefix).control $(debpkgtmpdir)/DEBIAN/control
+	$(INSTALL_DATA) $(debpkgdir)/$(debpkgprefix).control $(debpkgtmpdir)/DEBIAN/control
 
 	dpkg-deb --build $(debpkgtmpdir)
-	mv $(debpkgtmpdir)/../deb-package.deb $(debpkgoutdir)/$(debpkgname)
+	mv $(debpkgtmpdir)/../deb-package.deb $(debpkgdir)/$(debpkgname)
 
 	rm -rf $(debpkgtmpdir)
 
@@ -270,7 +269,7 @@ macosx-app: all
 
 # Put the icon file into its particular place. 
 # Must be done BEFORE info.plist is created.
-	$(INSTALL_DATA) $(usdxrootdir)/icons/ustar-icon_v01.icns $(macosx_bundle_path)/Resources/
+	$(INSTALL_DATA) $(usdxrootdir)/icons/ultrastardx.icns $(macosx_bundle_path)/Resources/
 
 # the info.plist file
 	$(INSTALL_DATA) macosx/Info.plist $(macosx_bundle_path)/
