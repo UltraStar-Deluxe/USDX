@@ -563,7 +563,7 @@
     <Version Value="5"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\..\UltraStar"/>
+      <Filename Value="..\ultrastardx"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="lib\JEDI-SDL\SDL\Pas\;Classes\;Menu\;Screens\;lib\JEDI-SDL\OpenGL\Pas\;lib\JEDI-SDL\SDL_Image\Pas\;lib\JEDI-SDL\SDL_ttf\Pas\;lib\SQLite\;lib\ffmpeg\;lib\fft\;lib\libpng\;lib\portaudio\delphi\;lib\zlib\;lib\pulseaudio\;\home\tobias\daten\Projekte\UltraStarDX\Kopie von trunk\Modis\SDK\"/>
