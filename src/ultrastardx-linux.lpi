@@ -30,7 +30,7 @@
     </RunParams>
     <Units Count="1">
       <Unit0>
-        <Filename Value="UltraStar.dpr"/>
+        <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
     </Units>
@@ -38,13 +38,12 @@
   <CompilerOptions>
     <Version Value="5"/>
     <Target>
-      <Filename Value="../../ultrastardx"/>
+      <Filename Value="../ultrastardx"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="lib/JEDI-SDL/SDL/Pas/"/>
-      <OtherUnitFiles Value="$(LazarusDir)/components/jpeg/lib/$(TargetCPU)-$(TargetOS)/;$(LazarusDir)/components/images/lib/$(TargetCPU)-$(TargetOS)/;$(LazarusDir)/lcl/units/$(TargetCPU)-$(TargetOS)/;$(LazarusDir)/lcl/units/$(TargetCPU)-$(TargetOS)/$(LCLWidgetType)/;$(LazarusDir)/packager/units/$(TargetCPU)-$(TargetOS)/"/>
       <UnitOutputDirectory Value="build/linux/lazarus"/>
-      <SrcPath Value="Classes/;Menu/;Screens/;lib/"/>
+      <SrcPath Value="classes/;menu/;screens/;lib/"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>

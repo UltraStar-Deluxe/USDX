@@ -21,7 +21,7 @@ PACKAGE_IRC="#ultrastardx at quakenet.org"
 AC_SUBST(PACKAGE_IRC)
 
 # Specify a source-file so autoconf can check if the source-dir exists
-AC_CONFIG_SRCDIR(UltraStar.dpr)
+AC_CONFIG_SRCDIR(ultrastardx.dpr)
 
 # This one is not used by autoconf at the moment.
 # When it is used maybe we don't need aclocal's -I parameter anymore.
@@ -32,9 +32,9 @@ AC_PRESERVE_HELP_ORDER
 
 # set root directory (= trunk dir)
 # ..resolved:   used by configure.ac
-usdxroot=../..
+usdxroot=..
 # ..unresolved: used by .in files
-usdxrootdir=\${top_srcdir}/../..
+usdxrootdir=\${top_srcdir}/..
 AC_SUBST(usdxrootdir)
 
 # set sharerootdir to the resolved dataroot-dir for the config-*.inc file.
@@ -307,7 +307,7 @@ AC_ARG_ENABLE(global,
 # add local option
 AC_ARG_ENABLE(local,
     [AS_HELP_STRING([--enable-local],
-      [install into local folders (../../...) (same as --disable-global) @<:@default=no@:>@]))],
+      [install into local folders (../...) (same as --disable-global) @<:@default=no@:>@]))],
     [test $enableval = "yes" && LOCAL_BUILD="yes"], [])
 
 # add dev_layout option
@@ -452,7 +452,7 @@ AC_SUBST(LIBS)
 
 AC_CONFIG_FILES([config-$FPC_PLATFORM.inc:config.inc.in])
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([$usdxroot/Tools/ResourceExtractor/Makefile])
+AC_CONFIG_FILES([$usdxroot/tools/ResourceExtractor/Makefile])
 if [[ x$libprojectM_NEEDS_CWRAPPER = xyes ]]; then
     AC_CONFIG_FILES([lib/projectM/cwrapper/Makefile])
 fi

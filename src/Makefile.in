@@ -35,7 +35,7 @@ USDX_PREFIX = ultrastardx
 USDX_VERSION = @PACKAGE_VERSION@
 USDX_TARNAME = @PACKAGE_TARNAME@
 
-USDX_TOOLS_DIR = $(usdxrootdir)/Tools
+USDX_TOOLS_DIR = $(usdxrootdir)/tools
 USDX_LIB_DIR   = ./lib
 USDX_BUILD_DIR = ./build
 
@@ -56,7 +56,7 @@ RESEXTRACTOR_DIR = $(USDX_TOOLS_DIR)/$(RESEXTRACTOR_NAME)
 RESEXTRACTOR_BIN = $(RESEXTRACTOR_DIR)/$(RESEXTRACTOR_NAME)$(EXE_SUFFIX)
 RESOURCE_DIR = $(usdxrootdir)/Resources
 RESOURCE_FILE = resource.inc
-RC_FILE = UltraStar.rc
+RC_FILE = ultrastardx.rc
 EXTRA_SRCDIRS += $(RESEXTRACTOR_DIR)
 
 # cwrapper settings
@@ -98,7 +98,7 @@ PLINKFLAGS = -k"$(linkflags)"
 endif
 
 # dpr project file used as input
-USDX_SRC = UltraStar.dpr
+USDX_SRC = ultrastardx.dpr
 # name of executable
 USDX_BIN_NAME = $(USDX_PREFIX)$(EXE_SUFFIX)
 USDX_BIN = $(usdxrootdir)/$(USDX_BIN_NAME)
@@ -169,7 +169,7 @@ uninstall-local:
 install-global: install-data install-exec
 
 install-data:
-	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Artwork" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Artwork" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/artwork" RECURSIVE_DST_DIR="$(INSTALL_datadir)/artwork" install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Languages" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Languages" install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Sounds" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Sounds" install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(usdxrootdir)/Themes" RECURSIVE_DST_DIR="$(INSTALL_datadir)/Themes" install-data-recursive
@@ -197,7 +197,7 @@ install-exec:
 uninstall-global: uninstall-data uninstall-exec
 
 uninstall-data:
-	rm -rf "$(INSTALL_datadir)/Artwork"
+	rm -rf "$(INSTALL_datadir)/artwork"
 	rm -rf "$(INSTALL_datadir)/Languages"
 	rm -rf "$(INSTALL_datadir)/Sounds"
 	rm -rf "$(INSTALL_datadir)/Themes"
@@ -217,7 +217,7 @@ disttmpdir = ./distdir
 dist:
 #	$(MKDIR_P) $(disttmpdir)
 #	acm $(usdxrootdir) $(disttmpdir)
-#	$(MAKE) -C $(disttmpdir)/Game/Code distclean 
+#	$(MAKE) -C $(disttmpdir)/src distclean 
 #	tar cvzf $(USDX_TARNAME)-$(USDX_VERSION).tar.gz $(usdxrootdir)
 	@echo "Comming soon"
 
@@ -273,7 +273,7 @@ macosx-app: all
 	$(INSTALL_DATA) $(usdxrootdir)/Resources/Graphics/ustar-icon_v01.icns $(macosx_bundle_path)/Resources/
 
 # the info.plist file
-	$(INSTALL_DATA) MacOSX/Info.plist $(macosx_bundle_path)/
+	$(INSTALL_DATA) macosx/Info.plist $(macosx_bundle_path)/
 
 # Copy the resources. 
 	$(MAKE) install-global INSTALL_datadir=$(macosx_bundle_path)/Resources bindir=$(macosx_bundle_path)/MacOS
@@ -328,7 +328,7 @@ endef
 macosx-disk-image: macosx-standalone-app
 	/bin/rm -f ultrastardx.dmg
 	$(HDIUTIL) create -type SPARSE -size 30m -fs HFS+ -volname UltraStarDeluxe -ov -attach UltraStarDeluxe.sparseimage
-	/bin/cp -R ../../UltraStarDeluxe.app /Volumes/UltraStarDeluxe
+	/bin/cp -R ../UltraStarDeluxe.app /Volumes/UltraStarDeluxe
 #	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
 #	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
