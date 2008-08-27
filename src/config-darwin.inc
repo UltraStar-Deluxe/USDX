@@ -1,21 +1,20 @@
 {***************************************************************** 
- * Configuration file for UltraStar-Deluxe 1.1-alpha
+ * Configuration file for ultrastardx 1.1-alpha
  * config-darwin.inc.  Generated from config.inc.in by configure.
  *****************************************************************}
 
 {* Paths *}
 
-{$DEFINE UseLocalDirs}
+{$UNDEF UseLocalDirs}
 {$IF (not Defined(UseLocalDirs)) and Defined(IncludeConstants)}
-  PathSuffix = WideString('UltraStarDeluxe');
-  LogPath    = WideString('/var/log/'+PathSuffix);
+  PathSuffix = WideString('ultrastardx');
   SharedPath = WideString('/usr/local/share/'+PathSuffix);
 {$IFEND}
 
 {* Libraries *}
 
-{$DEFINE HaveFFMpeg}
-{$IF Defined(HaveFFMpeg) and Defined(IncludeConstants)}
+{$DEFINE HaveFFmpeg}
+{$IF Defined(HaveFFmpeg) and Defined(IncludeConstants)}
   av__codec = 'libavcodec';
   LIBAVCODEC_VERSION_MAJOR   = 51;
   LIBAVCODEC_VERSION_MINOR   = 49;
