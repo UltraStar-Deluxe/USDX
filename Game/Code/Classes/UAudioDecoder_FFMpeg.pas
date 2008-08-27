@@ -21,6 +21,12 @@ interface
 
 {.$DEFINE DebugFFMpegDecode}
 
+// FFmpeg is very verbose and shows a bunch of errors.
+// Those errors (they can be considered as warnings by us) can be ignored
+// as they do not give any useful information.
+// There is no solution to fix this except for turning them off.
+{.$DEFINE EnableFFmpegErrorOutput}
+
 implementation
 
 uses
@@ -1060,6 +1066,22 @@ begin
   //Log.LogStatus('InitializeDecoder', 'UAudioDecoder_FFMpeg');
   FFMpegCore := TMediaCore_FFMpeg.GetInstance();
   av_register_all();
+
+  // Do not show uninformative error messages by default.
+  // FFmpeg prints all error-infos on the console by default what
+  // is very confusing as the playback of the files is correct.
+  // We consider these errors to be internal to FFMpeg. They can be fixed
+  // by the FFmpeg guys only and do not provide any useful information in
+  // respect to USDX.
+  {$IFNDEF EnableFFmpegErrorOutput}
+    {$IF LIBAVUTIL_VERSION_MAJOR >= 50}
+    av_log_set_level(AV_LOG_FATAL);
+    {$ELSE}
+    // FATAL and ERROR share one log-level, so we have to use QUIET
+    av_log_set_level(AV_LOG_QUIET);
+    {$IFEND}
+  {$ENDIF}
+
   Result := true;
 end;
 
