@@ -1,1 +1,1 @@
-BRC32 -r -foUltraStar.res UltraStar.rc
+BRC32 -r -foultrastardx.res ultrastardx.rc
