@@ -15,7 +15,7 @@ uses
   {$IFDEF UseSRCResample}
   samplerate,
   {$ENDIF}
-  {$IFDEF UseFFMpegResample}
+  {$IFDEF UseFFmpegResample}
   avcodec,
   {$ENDIF}
   UMediaCore_SDL,
@@ -35,7 +35,7 @@ type
    *    with the video or the lyrics timer.
    *  - float<->int16 conversion is not supported (will be part of 1.3) and
    *    SDL (<1.3) is not capable of handling floats at all.
-   *  -> Using FFMpeg or libsamplerate for resampling is preferred.
+   *  -> Using FFmpeg or libsamplerate for resampling is preferred.
    *     Use SDL for channel and format conversion only.
    *}
   TAudioConverter_SDL = class(TAudioConverter)
@@ -50,10 +50,10 @@ type
       function GetRatio(): double; override;
   end;
 
-  {$IFDEF UseFFMpegResample}
-  // Note: FFMpeg seems to be using "kaiser windowed sinc" for resampling, so
+  {$IFDEF UseFFmpegResample}
+  // Note: FFmpeg seems to be using "kaiser windowed sinc" for resampling, so
   // the quality should be good.
-  TAudioConverter_FFMpeg = class(TAudioConverter)
+  TAudioConverter_FFmpeg = class(TAudioConverter)
     private
       // TODO: use SDL for multi-channel->stereo and format conversion
       ResampleContext: PReSampleContext;
@@ -92,7 +92,7 @@ type
   // because it interpolates the samples. Normal "non-audiophile" users should not
   // be able to hear a difference between the SINC_* ones and LINEAR. Especially
   // if people sing along with the song.
-  // But FFMpeg might offer a better quality/speed ratio than SRC_LINEAR.
+  // But FFmpeg might offer a better quality/speed ratio than SRC_LINEAR.
   const
     SRC_CONVERTER_TYPE = SRC_LINEAR; 
   {$ENDIF}
@@ -171,9 +171,9 @@ begin
 end;
 
 
-{$IFDEF UseFFMpegResample}
+{$IFDEF UseFFmpegResample}
 
-function TAudioConverter_FFMpeg.Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean;
+function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean;
 begin
   inherited Init(SrcFormatInfo, DstFormatInfo);
 
@@ -183,14 +183,14 @@ begin
 
   if (srcFormatInfo.Format <> asfS16) then
   begin
-    Log.LogError('Unsupported format', 'TAudioConverter_FFMpeg.Init');
+    Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
     Exit;
   end;
 
   // TODO: use SDL here
   if (srcFormatInfo.Format <> dstFormatInfo.Format) then
   begin
-    Log.LogError('Incompatible formats', 'TAudioConverter_FFMpeg.Init');
+    Log.LogError('Incompatible formats', 'TAudioConverter_FFmpeg.Init');
     Exit;
   end;
 
@@ -199,7 +199,7 @@ begin
       Round(dstFormatInfo.SampleRate), Round(srcFormatInfo.SampleRate));
   if (ResampleContext = nil) then
   begin
-    Log.LogError('audio_resample_init() failed', 'TAudioConverter_FFMpeg.Init');
+    Log.LogError('audio_resample_init() failed', 'TAudioConverter_FFmpeg.Init');
     Exit;
   end;
 
@@ -210,14 +210,14 @@ begin
   Result := true;
 end;
 
-destructor TAudioConverter_FFMpeg.Destroy();
+destructor TAudioConverter_FFmpeg.Destroy();
 begin
   if (ResampleContext <> nil) then
     audio_resample_close(ResampleContext);
   inherited;
 end;
 
-function TAudioConverter_FFMpeg.Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer;
+function TAudioConverter_FFmpeg.Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer;
 var
   InputSampleCount: integer;
   OutputSampleCount: integer;
@@ -238,18 +238,18 @@ begin
       InputSampleCount);
   if (OutputSampleCount = -1) then
   begin
-    Log.LogError('audio_resample() failed', 'TAudioConverter_FFMpeg.Convert');
+    Log.LogError('audio_resample() failed', 'TAudioConverter_FFmpeg.Convert');
     Exit;
   end;
   Result := OutputSampleCount * DstFormatInfo.FrameSize;
 end;
 
-function TAudioConverter_FFMpeg.GetOutputBufferSize(InputSize: integer): integer;
+function TAudioConverter_FFmpeg.GetOutputBufferSize(InputSize: integer): integer;
 begin
   Result := Ceil(InputSize * GetRatio());
 end;
 
-function TAudioConverter_FFMpeg.GetRatio(): double;
+function TAudioConverter_FFmpeg.GetRatio(): double;
 begin
   Result := Ratio;
 end;

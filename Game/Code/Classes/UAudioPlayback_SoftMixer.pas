@@ -403,8 +403,8 @@ begin
   DstFormatInfo := GetAudioFormatInfo();
 
   // TODO: selection should not be done here, use a factory (TAudioConverterFactory) instead 
-  {$IF Defined(UseFFMpegResample)}
-  Converter := TAudioConverter_FFMpeg.Create();
+  {$IF Defined(UseFFmpegResample)}
+  Converter := TAudioConverter_FFmpeg.Create();
   {$ELSEIF Defined(UseSRCResample)}
   Converter := TAudioConverter_SRC.Create();
   {$ELSE}

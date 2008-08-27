@@ -1,4 +1,4 @@
-unit UMediaCore_FFMpeg;
+unit UMediaCore_FFmpeg;
 
 interface
 
@@ -51,18 +51,18 @@ const
   PKT_STATUS_FLAG_EMPTY   = 4; // request the decoder to output empty data (silence or black frames)
 
 type
-  TMediaCore_FFMpeg = class
+  TMediaCore_FFmpeg = class
     private
       AVCodecLock: PSDL_Mutex;
     public
       constructor Create();
       destructor Destroy(); override;
-      class function GetInstance(): TMediaCore_FFMpeg;
+      class function GetInstance(): TMediaCore_FFmpeg;
 
       function GetErrorString(ErrorNum: integer): string;
       function FindStreamIDs(FormatCtx: PAVFormatContext; out FirstVideoStream, FirstAudioStream: integer ): boolean;
       function FindAudioStreamIndex(FormatCtx: PAVFormatContext): integer;
-      function ConvertFFMpegToAudioFormat(FFMpegFormat: TSampleFormat; out Format: TAudioSampleFormat): boolean;
+      function ConvertFFmpegToAudioFormat(FFmpegFormat: TSampleFormat; out Format: TAudioSampleFormat): boolean;
       procedure LockAVCodec();
       procedure UnlockAVCodec();
   end;
@@ -73,38 +73,38 @@ uses
   SysUtils;
 
 var
-  Instance: TMediaCore_FFMpeg;
+  Instance: TMediaCore_FFmpeg;
 
-constructor TMediaCore_FFMpeg.Create();
+constructor TMediaCore_FFmpeg.Create();
 begin
   inherited;
   AVCodecLock := SDL_CreateMutex();
 end;
 
-destructor TMediaCore_FFMpeg.Destroy();
+destructor TMediaCore_FFmpeg.Destroy();
 begin
   SDL_DestroyMutex(AVCodecLock);
   inherited;
 end;
 
-class function TMediaCore_FFMpeg.GetInstance(): TMediaCore_FFMpeg;
+class function TMediaCore_FFmpeg.GetInstance(): TMediaCore_FFmpeg;
 begin
   if (not Assigned(Instance)) then
-    Instance := TMediaCore_FFMpeg.Create();
+    Instance := TMediaCore_FFmpeg.Create();
   Result := Instance;
 end;
 
-procedure TMediaCore_FFMpeg.LockAVCodec();
+procedure TMediaCore_FFmpeg.LockAVCodec();
 begin
   SDL_mutexP(AVCodecLock);
 end;
 
-procedure TMediaCore_FFMpeg.UnlockAVCodec();
+procedure TMediaCore_FFmpeg.UnlockAVCodec();
 begin
   SDL_mutexV(AVCodecLock);
 end;
 
-function TMediaCore_FFMpeg.GetErrorString(ErrorNum: integer): string;
+function TMediaCore_FFmpeg.GetErrorString(ErrorNum: integer): string;
 begin
   case ErrorNum of
     AVERROR_IO:           Result := 'AVERROR_IO';
@@ -125,7 +125,7 @@ end;
   @param(FirstAudioStream is an OUT value of type integer, this is the index of the audio stream)
   @returns(@true on success, @false otherwise)
 }
-function TMediaCore_FFMpeg.FindStreamIDs(FormatCtx: PAVFormatContext; out FirstVideoStream, FirstAudioStream: integer): boolean;
+function TMediaCore_FFmpeg.FindStreamIDs(FormatCtx: PAVFormatContext; out FirstVideoStream, FirstAudioStream: integer): boolean;
 var
   i: integer;
   Stream: PAVStream;
@@ -156,7 +156,7 @@ begin
             (FirstVideoStream > -1) ;
 end;
 
-function TMediaCore_FFMpeg.FindAudioStreamIndex(FormatCtx: PAVFormatContext): integer;
+function TMediaCore_FFmpeg.FindAudioStreamIndex(FormatCtx: PAVFormatContext): integer;
 var
   i: integer;
   StreamIndex: integer;
@@ -179,9 +179,9 @@ begin
   Result := StreamIndex;
 end;
 
-function TMediaCore_FFMpeg.ConvertFFMpegToAudioFormat(FFMpegFormat: TSampleFormat; out Format: TAudioSampleFormat): boolean;
+function TMediaCore_FFmpeg.ConvertFFmpegToAudioFormat(FFmpegFormat: TSampleFormat; out Format: TAudioSampleFormat): boolean;
 begin
-  case FFMpegFormat of
+  case FFmpegFormat of
     SAMPLE_FMT_U8:  Format := asfU8;
     SAMPLE_FMT_S16: Format := asfS16;
     SAMPLE_FMT_S24: Format := asfS24;

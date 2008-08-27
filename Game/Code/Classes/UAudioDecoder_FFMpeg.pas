@@ -1,4 +1,4 @@
-unit UAudioDecoder_FFMpeg;
+unit UAudioDecoder_FFmpeg;
 
 (*******************************************************************************
  *
@@ -19,7 +19,8 @@ interface
 
 {$I switches.inc}
 
-{.$DEFINE DebugFFMpegDecode}
+// show FFmpeg specific debug output
+{.$DEFINE DebugFFmpegDecode}
 
 // FFmpeg is very verbose and shows a bunch of errors.
 // Those errors (they can be considered as warnings by us) can be ignored
@@ -42,7 +43,7 @@ uses
   avio,
   mathematics, // used for av_rescale_q
   rational,
-  UMediaCore_FFMpeg,
+  UMediaCore_FFmpeg,
   SDL,
   ULog,
   UCommon,
@@ -57,7 +58,7 @@ const
   AUDIO_BUFFER_SIZE = (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) div 2;
 
 type
-  TFFMpegDecodeStream = class(TAudioDecodeStream)
+  TFFmpegDecodeStream = class(TAudioDecodeStream)
     private
       StateLock:   PSDL_Mutex;
 
@@ -86,7 +87,7 @@ type
 
       FormatInfo: TAudioFormatInfo;
 
-      // FFMpeg specific data
+      // FFmpeg specific data
       FormatCtx: PAVFormatContext;
       CodecCtx:  PAVCodecContext;
       Codec:     PAVCodec;
@@ -151,7 +152,7 @@ type
   end;
 
 type
-  TAudioDecoder_FFMpeg = class( TInterfacedObject, IAudioDecoder )
+  TAudioDecoder_FFmpeg = class( TInterfacedObject, IAudioDecoder )
     public
       function GetName: string;
 
@@ -161,14 +162,14 @@ type
   end;
 
 var
-  FFMpegCore: TMediaCore_FFMpeg;
+  FFmpegCore: TMediaCore_FFmpeg;
 
 function ParseThreadMain(Data: Pointer): integer; cdecl; forward;
 
 
-{ TFFMpegDecodeStream }
+{ TFFmpegDecodeStream }
 
-constructor TFFMpegDecodeStream.Create();
+constructor TFFmpegDecodeStream.Create();
 begin
   inherited Create();
 
@@ -200,7 +201,7 @@ begin
   Reset();
 end;
 
-procedure TFFMpegDecodeStream.Reset();
+procedure TFFmpegDecodeStream.Reset();
 begin
   ParseThread := nil;
 
@@ -227,7 +228,7 @@ end;
 {*
  * Frees the decode-stream data.
  *}
-destructor TFFMpegDecodeStream.Destroy();
+destructor TFFmpegDecodeStream.Destroy();
 begin
   Close();
 
@@ -244,7 +245,7 @@ begin
   inherited;
 end;
 
-function TFFMpegDecodeStream.Open(const Filename: string): boolean;
+function TFFmpegDecodeStream.Open(const Filename: string): boolean;
 var
   SampleFormat: TAudioSampleFormat;
   AVResult: integer;
@@ -256,7 +257,7 @@ begin
 
   if (not FileExists(Filename)) then
   begin
-    Log.LogError('Audio-file does not exist: "' + Filename + '"', 'UAudio_FFMpeg');
+    Log.LogError('Audio-file does not exist: "' + Filename + '"', 'UAudio_FFmpeg');
     Exit;
   end;
 
@@ -265,7 +266,7 @@ begin
   // open audio file
   if (av_open_input_file(FormatCtx, PChar(Filename), nil, 0, nil) <> 0) then
   begin
-    Log.LogError('av_open_input_file failed: "' + Filename + '"', 'UAudio_FFMpeg');
+    Log.LogError('av_open_input_file failed: "' + Filename + '"', 'UAudio_FFmpeg');
     Exit;
   end;
 
@@ -275,7 +276,7 @@ begin
   // retrieve stream information
   if (av_find_stream_info(FormatCtx) < 0) then
   begin
-    Log.LogError('av_find_stream_info failed: "' + Filename + '"', 'UAudio_FFMpeg');
+    Log.LogError('av_find_stream_info failed: "' + Filename + '"', 'UAudio_FFmpeg');
     Close();
     Exit;
   end;
@@ -283,19 +284,19 @@ begin
   // FIXME: hack used by ffplay. Maybe should not use url_feof() to test for the end
   FormatCtx^.pb.eof_reached := 0;
 
-  {$IFDEF DebugFFMpegDecode}
+  {$IFDEF DebugFFmpegDecode}
   dump_format(FormatCtx, 0, pchar(Filename), 0);
   {$ENDIF}
 
-  AudioStreamIndex := FFMpegCore.FindAudioStreamIndex(FormatCtx);
+  AudioStreamIndex := FFmpegCore.FindAudioStreamIndex(FormatCtx);
   if (AudioStreamIndex < 0) then
   begin
-    Log.LogError('FindAudioStreamIndex: No Audio-stream found "' + Filename + '"', 'UAudio_FFMpeg');
+    Log.LogError('FindAudioStreamIndex: No Audio-stream found "' + Filename + '"', 'UAudio_FFmpeg');
     Close();
     Exit;
   end;
 
-  //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFMpeg');
+  //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFmpeg');
 
   AudioStream := FormatCtx.streams[AudioStreamIndex];
   CodecCtx := AudioStream^.codec;
@@ -313,7 +314,7 @@ begin
   Codec := avcodec_find_decoder(CodecCtx^.codec_id);
   if (Codec = nil) then
   begin
-    Log.LogError('Unsupported codec!', 'UAudio_FFMpeg');
+    Log.LogError('Unsupported codec!', 'UAudio_FFmpeg');
     CodecCtx := nil;
     Close();
     Exit;
@@ -332,22 +333,22 @@ begin
 
   // Note: avcodec_open() and avcodec_close() are not thread-safe and will
   // fail if called concurrently by different threads.
-  FFMpegCore.LockAVCodec();
+  FFmpegCore.LockAVCodec();
   try
     AVResult := avcodec_open(CodecCtx, Codec);
   finally
-    FFMpegCore.UnlockAVCodec();
+    FFmpegCore.UnlockAVCodec();
   end;
   if (AVResult < 0) then
   begin
-    Log.LogError('avcodec_open failed!', 'UAudio_FFMpeg');
+    Log.LogError('avcodec_open failed!', 'UAudio_FFmpeg');
     Close();
     Exit;
   end;
 
   // now initialize the audio-format
 
-  if (not FFMpegCore.ConvertFFMpegToAudioFormat(CodecCtx^.sample_fmt, SampleFormat)) then
+  if (not FFmpegCore.ConvertFFmpegToAudioFormat(CodecCtx^.sample_fmt, SampleFormat)) then
   begin
     // try standard format
     SampleFormat := asfS16;
@@ -368,7 +369,7 @@ begin
   Result := true;
 end;
 
-procedure TFFMpegDecodeStream.Close();
+procedure TFFmpegDecodeStream.Close();
 var
   ThreadResult: integer;
 begin
@@ -396,11 +397,11 @@ begin
   if (CodecCtx <> nil) then
   begin
     // avcodec_close() is not thread-safe
-    FFMpegCore.LockAVCodec();
+    FFmpegCore.LockAVCodec();
     try
       avcodec_close(CodecCtx);
     finally
-      FFMpegCore.UnlockAVCodec();
+      FFmpegCore.UnlockAVCodec();
     end;
     CodecCtx := nil;
   end;
@@ -418,60 +419,60 @@ begin
   FreeAndNil(FormatInfo);
 end;
 
-function TFFMpegDecodeStream.GetLength(): real;
+function TFFmpegDecodeStream.GetLength(): real;
 begin
   // do not forget to consider the start_time value here 
   Result := (FormatCtx^.start_time + FormatCtx^.duration) / AV_TIME_BASE;
 end;
 
-function TFFMpegDecodeStream.GetAudioFormatInfo(): TAudioFormatInfo;
+function TFFmpegDecodeStream.GetAudioFormatInfo(): TAudioFormatInfo;
 begin
   Result := FormatInfo;
 end;
 
-function TFFMpegDecodeStream.IsEOF(): boolean;
+function TFFmpegDecodeStream.IsEOF(): boolean;
 begin
   SDL_mutexP(StateLock);
   Result := EOFState;
   SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.SetEOF(State: boolean);
+procedure TFFmpegDecodeStream.SetEOF(State: boolean);
 begin
   SDL_mutexP(StateLock);
   EOFState := State;
   SDL_mutexV(StateLock);
 end;
 
-function TFFMpegDecodeStream.IsError(): boolean;
+function TFFmpegDecodeStream.IsError(): boolean;
 begin
   SDL_mutexP(StateLock);
   Result := ErrorState;
   SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.SetError(State: boolean);
+procedure TFFmpegDecodeStream.SetError(State: boolean);
 begin
   SDL_mutexP(StateLock);
   ErrorState := State;
   SDL_mutexV(StateLock);
 end;
 
-function TFFMpegDecodeStream.IsSeeking(): boolean;
+function TFFmpegDecodeStream.IsSeeking(): boolean;
 begin
   SDL_mutexP(StateLock);
   Result := SeekRequest;
   SDL_mutexV(StateLock);
 end;
 
-function TFFMpegDecodeStream.IsQuit(): boolean;
+function TFFmpegDecodeStream.IsQuit(): boolean;
 begin
   SDL_mutexP(StateLock);
   Result := QuitRequest;
   SDL_mutexV(StateLock);
 end;
 
-function TFFMpegDecodeStream.GetPosition(): real;
+function TFFmpegDecodeStream.GetPosition(): real;
 var
   BufferSizeSec: double;
 begin
@@ -488,19 +489,19 @@ begin
   ResumeDecoder();
 end;
 
-procedure TFFMpegDecodeStream.SetPosition(Time: real);
+procedure TFFmpegDecodeStream.SetPosition(Time: real);
 begin
   SetPositionIntern(Time, true, true);
 end;
 
-function TFFMpegDecodeStream.GetLoop(): boolean;
+function TFFmpegDecodeStream.GetLoop(): boolean;
 begin
   SDL_mutexP(StateLock);
   Result := Loop;
   SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.SetLoop(Enabled: boolean);
+procedure TFFmpegDecodeStream.SetLoop(Enabled: boolean);
 begin
   SDL_mutexP(StateLock);
   Loop := Enabled;
@@ -512,7 +513,7 @@ end;
  * Parser section
  ********************************************)
 
-procedure TFFMpegDecodeStream.PauseParser();
+procedure TFFmpegDecodeStream.PauseParser();
 begin
   if (SDL_ThreadID() = ParseThread.threadid) then
     Exit;
@@ -524,7 +525,7 @@ begin
   SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.ResumeParser();
+procedure TFFmpegDecodeStream.ResumeParser();
 begin
   if (SDL_ThreadID() = ParseThread.threadid) then
     Exit;
@@ -535,7 +536,7 @@ begin
   SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
+procedure TFFmpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
 begin
   // - Pause the parser first to prevent it from putting obsolete packages
   //   into the queue after the queue was flushed and before seeking is done.
@@ -583,15 +584,15 @@ end;
 
 function ParseThreadMain(Data: Pointer): integer; cdecl;
 var
-  Stream: TFFMpegDecodeStream;
+  Stream: TFFmpegDecodeStream;
 begin
-  Stream := TFFMpegDecodeStream(Data);
+  Stream := TFFmpegDecodeStream(Data);
   if (Stream <> nil) then
     Stream.Parse();
   Result := 0;
 end;
 
-procedure TFFMpegDecodeStream.Parse();
+procedure TFFmpegDecodeStream.Parse();
 begin
   // reuse thread as long as the stream is not terminated
   while (ParseLoop()) do
@@ -614,7 +615,7 @@ end;
  * Returns true if the stream can be resumed or false if the stream has to
  * be terminated.
  *)
-function TFFMpegDecodeStream.ParseLoop(): boolean;
+function TFFmpegDecodeStream.ParseLoop(): boolean;
 var
   Packet: TAVPacket;
   StatusPacket: PAVPacket;
@@ -691,7 +692,7 @@ begin
           begin
             // seeking failed
             ErrorState := true;
-            Log.LogStatus('Seek Error in "'+FormatCtx^.filename+'"', 'UAudioDecoder_FFMpeg');
+            Log.LogStatus('Seek Error in "'+FormatCtx^.filename+'"', 'UAudioDecoder_FFmpeg');
           end
           else
           begin
@@ -796,7 +797,7 @@ end;
  * Decoder section
  ********************************************)
 
-procedure TFFMpegDecodeStream.PauseDecoder();
+procedure TFFmpegDecodeStream.PauseDecoder();
 begin
   SDL_mutexP(StateLock);
   Inc(DecoderPauseRequestCount);
@@ -805,7 +806,7 @@ begin
   SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.ResumeDecoder();
+procedure TFFmpegDecodeStream.ResumeDecoder();
 begin
   SDL_mutexP(StateLock);
   Dec(DecoderPauseRequestCount);
@@ -813,7 +814,7 @@ begin
   SDL_mutexV(StateLock);
 end;
 
-procedure TFFMpegDecodeStream.FlushCodecBuffers();
+procedure TFFmpegDecodeStream.FlushCodecBuffers();
 begin
   // if no flush operation is specified, avcodec_flush_buffers will not do anything.
   if (@CodecCtx.codec.flush <> nil) then
@@ -824,25 +825,25 @@ begin
   else
   begin
     // we need a Workaround to avoid plopping noise with ogg-vorbis and
-    // mp3 (in older versions of FFMpeg).
+    // mp3 (in older versions of FFmpeg).
     // We will just reopen the codec.
-    FFMpegCore.LockAVCodec();
+    FFmpegCore.LockAVCodec();
     try
       avcodec_close(CodecCtx);
       avcodec_open(CodecCtx, Codec);
     finally
-      FFMpegCore.UnlockAVCodec();
+      FFmpegCore.UnlockAVCodec();
     end;
   end;
 end;
 
-function TFFMpegDecodeStream.DecodeFrame(Buffer: PChar; BufferSize: integer): integer;
+function TFFmpegDecodeStream.DecodeFrame(Buffer: PChar; BufferSize: integer): integer;
 var
   PaketDecodedSize: integer; // size of packet data used for decoding
-  DataSize: integer;         // size of output data decoded by FFMpeg
+  DataSize: integer;         // size of output data decoded by FFmpeg
   BlockQueue: boolean;
   SilenceDuration: double;
-  {$IFDEF DebugFFMpegDecode}
+  {$IFDEF DebugFFmpegDecode}
   TmpPos: double;
   {$ENDIF}
 begin
@@ -881,7 +882,7 @@ begin
       if(PaketDecodedSize < 0) then
       begin
         // if error, skip frame
-        {$IFDEF DebugFFMpegDecode}
+        {$IFDEF DebugFFmpegDecode}
         DebugWriteln('Skip audio frame');
         {$ENDIF}
         AudioPaketSize := 0;
@@ -942,7 +943,7 @@ begin
         PKT_STATUS_FLAG_ERROR:
         begin
           SetError(true);
-          Log.LogStatus('I/O Error', 'TFFMpegDecodeStream.DecodeFrame');
+          Log.LogStatus('I/O Error', 'TFFmpegDecodeStream.DecodeFrame');
           Exit;
         end;
         PKT_STATUS_FLAG_EMPTY:
@@ -953,7 +954,7 @@ begin
         end
         else
         begin
-          Log.LogStatus('Unknown status', 'TFFMpegDecodeStream.DecodeFrame');
+          Log.LogStatus('Unknown status', 'TFFmpegDecodeStream.DecodeFrame');
         end;
       end;
 
@@ -966,11 +967,11 @@ begin
     // if available, update the stream position to the presentation time of this package
     if(AudioPaket.pts <> AV_NOPTS_VALUE) then
     begin
-      {$IFDEF DebugFFMpegDecode}
+      {$IFDEF DebugFFmpegDecode}
       TmpPos := AudioStreamPos;
       {$ENDIF}
       AudioStreamPos := av_q2d(AudioStream^.time_base) * AudioPaket.pts;
-      {$IFDEF DebugFFMpegDecode}
+      {$IFDEF DebugFFmpegDecode}
       DebugWriteln('Timestamp: ' + floattostrf(AudioStreamPos, ffFixed, 15, 3) + ' ' +
                    '(Calc: ' + floattostrf(TmpPos, ffFixed, 15, 3) + '), ' +
                    'Diff: ' + floattostrf(AudioStreamPos-TmpPos, ffFixed, 15, 3));
@@ -979,7 +980,7 @@ begin
   end;
 end;
 
-function TFFMpegDecodeStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+function TFFmpegDecodeStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
 var
   CopyByteCount:   integer; // number of bytes to copy
   RemainByteCount: integer; // number of bytes left (remain) to read
@@ -1054,17 +1055,17 @@ begin
 end;
 
 
-{ TAudioDecoder_FFMpeg }
+{ TAudioDecoder_FFmpeg }
 
-function TAudioDecoder_FFMpeg.GetName: String;
+function TAudioDecoder_FFmpeg.GetName: String;
 begin
-  Result := 'FFMpeg_Decoder';
+  Result := 'FFmpeg_Decoder';
 end;
 
-function TAudioDecoder_FFMpeg.InitializeDecoder: boolean;
+function TAudioDecoder_FFmpeg.InitializeDecoder: boolean;
 begin
-  //Log.LogStatus('InitializeDecoder', 'UAudioDecoder_FFMpeg');
-  FFMpegCore := TMediaCore_FFMpeg.GetInstance();
+  //Log.LogStatus('InitializeDecoder', 'UAudioDecoder_FFmpeg');
+  FFmpegCore := TMediaCore_FFmpeg.GetInstance();
   av_register_all();
 
   // Do not show uninformative error messages by default.
@@ -1085,18 +1086,18 @@ begin
   Result := true;
 end;
 
-function TAudioDecoder_FFMpeg.FinalizeDecoder(): boolean;
+function TAudioDecoder_FFmpeg.FinalizeDecoder(): boolean;
 begin
   Result := true;
 end;
 
-function TAudioDecoder_FFMpeg.Open(const Filename: string): TAudioDecodeStream;
+function TAudioDecoder_FFmpeg.Open(const Filename: string): TAudioDecodeStream;
 var
-  Stream: TFFMpegDecodeStream;
+  Stream: TFFmpegDecodeStream;
 begin
   Result := nil;
 
-  Stream := TFFMpegDecodeStream.Create();
+  Stream := TFFmpegDecodeStream.Create();
   if (not Stream.Open(Filename)) then
   begin
     Stream.Free;
@@ -1108,6 +1109,6 @@ end;
 
 
 initialization
-  MediaManager.Add(TAudioDecoder_FFMpeg.Create);
+  MediaManager.Add(TAudioDecoder_FFmpeg.Create);
 
 end.

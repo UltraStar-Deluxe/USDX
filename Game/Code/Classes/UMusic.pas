@@ -1115,7 +1115,7 @@ begin
   // calculate average time difference (some sort of weighted mean).
   // The bigger AVG_HISTORY_FACTOR is, the smoother is the average diff.
   // This means that older diffs are weighted more with a higher history factor
-  // than with a lower. Do not use a too low history factor. FFMpeg produces
+  // than with a lower. Do not use a too low history factor. FFmpeg produces
   // very instable timestamps (pts) for ogg due to some bugs. They may differ
   // +-50ms from the real stream position. Without filtering those glitches we
   // would synch without any need, resulting in ugly plopping sounds.

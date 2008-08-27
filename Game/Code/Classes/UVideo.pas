@@ -44,7 +44,7 @@ uses
   {$IFDEF UseSWScale}
   swscale,
   {$ENDIF}
-  UMediaCore_FFMpeg,
+  UMediaCore_FFmpeg,
   math,
   gl,
   glext,
@@ -66,7 +66,7 @@ const
 {$ENDIF}
 
 type
-  TVideoPlayback_FFMpeg = class( TInterfacedObject, IVideoPlayback )
+  TVideoPlayback_FFmpeg = class( TInterfacedObject, IVideoPlayback )
   private
     fVideoOpened,
     fVideoPaused: Boolean;
@@ -121,7 +121,7 @@ type
   end;
 
 var
-  FFMpegCore: TMediaCore_FFMpeg;
+  FFmpegCore: TMediaCore_FFmpeg;
 
   
 // These are called whenever we allocate a frame buffer.
@@ -155,12 +155,12 @@ end;
  * TVideoPlayback_ffmpeg
  *------------------------------------------------------------------------------}
 
-function  TVideoPlayback_FFMpeg.GetName: String;
+function  TVideoPlayback_FFmpeg.GetName: String;
 begin
-  result := 'FFMpeg_Video';
+  result := 'FFmpeg_Video';
 end;
 
-function TVideoPlayback_FFMpeg.Init(): boolean;
+function TVideoPlayback_FFmpeg.Init(): boolean;
 begin
   Result := true;
 
@@ -168,21 +168,21 @@ begin
     Exit;
   Initialized := true;
 
-  FFMpegCore := TMediaCore_FFMpeg.GetInstance();
+  FFmpegCore := TMediaCore_FFmpeg.GetInstance();
 
   Reset();
   av_register_all();
   glGenTextures(1, PGLuint(@fVideoTex));
 end;
 
-function TVideoPlayback_FFMpeg.Finalize(): boolean;
+function TVideoPlayback_FFmpeg.Finalize(): boolean;
 begin
   Close();
   glDeleteTextures(1, PGLuint(@fVideoTex));
   Result := true;
 end;
 
-procedure TVideoPlayback_FFMpeg.Reset();
+procedure TVideoPlayback_FFmpeg.Reset();
 begin
   // close previously opened video
   Close();
@@ -201,7 +201,7 @@ begin
   fLoopTime := 0;
 end;
 
-function TVideoPlayback_FFMpeg.Open(const aFileName : string): boolean; // true if succeed
+function TVideoPlayback_FFmpeg.Open(const aFileName : string): boolean; // true if succeed
 var
   errnum: Integer;
   AudioStreamIndex: integer;
@@ -213,7 +213,7 @@ begin
   errnum := av_open_input_file(VideoFormatContext, PChar(aFileName), nil, 0, nil);
   if (errnum <> 0) then
   begin
-    Log.LogError('Failed to open file "'+aFileName+'" ('+FFMpegCore.GetErrorString(errnum)+')');
+    Log.LogError('Failed to open file "'+aFileName+'" ('+FFmpegCore.GetErrorString(errnum)+')');
     Exit;
   end;
 
@@ -227,7 +227,7 @@ begin
   Log.LogInfo('VideoStreamIndex : ' + inttostr(VideoStreamIndex), 'TVideoPlayback_ffmpeg.Open');
 
   // find video stream
-  FFMpegCore.FindStreamIDs(VideoFormatContext, VideoStreamIndex, AudioStreamIndex);
+  FFmpegCore.FindStreamIDs(VideoFormatContext, VideoStreamIndex, AudioStreamIndex);
   if (VideoStreamIndex < 0) then
   begin
     Log.LogError('No video stream found', 'TVideoPlayback_ffmpeg.Open');
@@ -259,11 +259,11 @@ begin
 
   // Note: avcodec_open() and avcodec_close() are not thread-safe and will
   // fail if called concurrently by different threads.
-  FFMpegCore.LockAVCodec();
+  FFmpegCore.LockAVCodec();
   try
     errnum := avcodec_open(VideoCodecContext, VideoCodec);
   finally
-    FFMpegCore.UnlockAVCodec();
+    FFmpegCore.UnlockAVCodec();
   end;
   if (errnum < 0) then
   begin
@@ -306,7 +306,7 @@ begin
       VideoCodecContext^.width, VideoCodecContext^.height);
   if (errnum < 0) then
   begin
-    Log.LogError('avpicture_fill failed: ' + FFMpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
+    Log.LogError('avpicture_fill failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
     Close();
     Exit;
   end;
@@ -373,7 +373,7 @@ begin
   Result := true;
 end;
 
-procedure TVideoPlayback_FFMpeg.Close;
+procedure TVideoPlayback_FFmpeg.Close;
 begin
   if (FrameBuffer <> nil) then
     av_free(FrameBuffer);
@@ -389,11 +389,11 @@ begin
   if (VideoCodecContext <> nil) then
   begin
     // avcodec_close() is not thread-safe
-    FFMpegCore.LockAVCodec();
+    FFmpegCore.LockAVCodec();
     try
       avcodec_close(VideoCodecContext);
     finally
-      FFMpegCore.UnlockAVCodec();
+      FFmpegCore.UnlockAVCodec();
     end;
   end;
 
@@ -406,7 +406,7 @@ begin
   fVideoOpened := False;
 end;
 
-procedure TVideoPlayback_FFMpeg.SynchronizeVideo(Frame: PAVFrame; var pts: double);
+procedure TVideoPlayback_FFmpeg.SynchronizeVideo(Frame: PAVFrame; var pts: double);
 var
   FrameDelay: double;
 begin
@@ -426,7 +426,7 @@ begin
   VideoTime := VideoTime + FrameDelay;
 end;
 
-function TVideoPlayback_FFMpeg.DecodeFrame(var AVPacket: TAVPacket; out pts: double): boolean;
+function TVideoPlayback_FFmpeg.DecodeFrame(var AVPacket: TAVPacket; out pts: double): boolean;
 var
   FrameFinished: Integer;
   VideoPktPts: int64;
@@ -520,7 +520,7 @@ begin
   Result := true;
 end;
 
-procedure TVideoPlayback_FFMpeg.GetFrame(Time: Extended);
+procedure TVideoPlayback_FFmpeg.GetFrame(Time: Extended);
 var
   AVPacket: TAVPacket;
   errnum: Integer;
@@ -660,7 +660,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TVideoPlayback_FFMpeg.DrawGL(Screen: integer);
+procedure TVideoPlayback_FFmpeg.DrawGL(Screen: integer);
 var
   TexVideoRightPos, TexVideoLowerPos: Single;
   ScreenLeftPos,  ScreenRightPos: Single;
@@ -773,20 +773,20 @@ begin
   {$ENDIF}
 end;
 
-procedure TVideoPlayback_FFMpeg.Play;
+procedure TVideoPlayback_FFmpeg.Play;
 begin
 end;
 
-procedure TVideoPlayback_FFMpeg.Pause;
+procedure TVideoPlayback_FFmpeg.Pause;
 begin
   fVideoPaused := not fVideoPaused;
 end;
 
-procedure TVideoPlayback_FFMpeg.Stop;
+procedure TVideoPlayback_FFmpeg.Stop;
 begin
 end;
 
-procedure TVideoPlayback_FFMpeg.SetPosition(Time: real);
+procedure TVideoPlayback_FFmpeg.SetPosition(Time: real);
 var
   SeekFlags: integer;
 begin
@@ -816,13 +816,13 @@ begin
   avcodec_flush_buffers(VideoCodecContext);
 end;
 
-function  TVideoPlayback_FFMpeg.GetPosition: real;
+function  TVideoPlayback_FFmpeg.GetPosition: real;
 begin
   // TODO: return video-position in seconds
   Result := VideoTime;
 end;
 
 initialization
-  MediaManager.Add(TVideoPlayback_FFMpeg.Create);
+  MediaManager.Add(TVideoPlayback_FFmpeg.Create);
 
 end.

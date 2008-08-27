@@ -130,7 +130,7 @@ const
                     (FPC_PATCH * VERSION_RELEASE);
 
 
-  {$IFDEF HaveFFMpeg}
+  {$IFDEF HaveFFmpeg}
 
   LIBAVCODEC_VERSION = (LIBAVCODEC_VERSION_MAJOR * VERSION_MAJOR) +
                        (LIBAVCODEC_VERSION_MINOR * VERSION_MINOR) +
