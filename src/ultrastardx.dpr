@@ -105,7 +105,7 @@ uses
   {$ENDIF}
 
   {$IFDEF DARWIN}
-  PseudoThread  in 'macosx/Wrapper/PseudoThread.pas',
+  PseudoThread  in 'macosx\PseudoThread.pas',
   {$ENDIF}
   
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
