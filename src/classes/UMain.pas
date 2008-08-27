@@ -1077,31 +1077,31 @@ begin
     Log.LogWarn('Log directory "'+ Platform.GetLogPath +'" not available', 'InitializePaths');
   end;
 
-  FindPath(SoundPath,        Platform.GetGameSharedPath + 'Sounds', false);
-  FindPath(ThemePath,        Platform.GetGameSharedPath + 'Themes', false);
-  FindPath(SkinsPath,        Platform.GetGameSharedPath + 'Themes', false);
-  FindPath(LanguagesPath,    Platform.GetGameSharedPath + 'Languages', false);
-  FindPath(PluginPath,       Platform.GetGameSharedPath + 'Plugins', false);
-  FindPath(VisualsPath,      Platform.GetGameSharedPath + 'Visuals', false);
-  FindPath(ResourcesPath,    Platform.GetGameSharedPath + 'Resources', false);
+  FindPath(SoundPath,        Platform.GetGameSharedPath + 'sounds', false);
+  FindPath(ThemePath,        Platform.GetGameSharedPath + 'themes', false);
+  FindPath(SkinsPath,        Platform.GetGameSharedPath + 'themes', false);
+  FindPath(LanguagesPath,    Platform.GetGameSharedPath + 'languages', false);
+  FindPath(PluginPath,       Platform.GetGameSharedPath + 'plugins', false);
+  FindPath(VisualsPath,      Platform.GetGameSharedPath + 'visuals', false);
+  FindPath(ResourcesPath,    Platform.GetGameSharedPath + 'resources', false);
 
   // Playlists are not shared as we need one directory to write too
-  FindPath(PlaylistPath, Platform.GetGameUserPath + 'Playlists', true);
+  FindPath(PlaylistPath, Platform.GetGameUserPath + 'playlists', true);
   
   // Screenshot directory (must be writable)
-  if (not FindPath(ScreenshotsPath,  Platform.GetGameUserPath + 'Screenshots', true)) then
+  if (not FindPath(ScreenshotsPath,  Platform.GetGameUserPath + 'screenshots', true)) then
   begin
     Log.LogWarn('Screenshot directory "'+ Platform.GetGameUserPath +'" not available', 'InitializePaths');
   end;
 
   // Add song paths
   AddSongPath(Params.SongPath);
-  AddSongPath(Platform.GetGameSharedPath + 'Songs');
-  AddSongPath(Platform.GetGameUserPath + 'Songs');
+  AddSongPath(Platform.GetGameSharedPath + 'songs');
+  AddSongPath(Platform.GetGameUserPath + 'songs');
 
   // Add category cover paths
-  AddCoverPath(Platform.GetGameSharedPath + 'Covers');
-  AddCoverPath(Platform.GetGameUserPath + 'Covers');
+  AddCoverPath(Platform.GetGameSharedPath + 'covers');
+  AddCoverPath(Platform.GetGameUserPath + 'covers');
 end;
 
 end.
