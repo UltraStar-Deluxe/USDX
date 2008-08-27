@@ -1,11 +1,3 @@
-// Comment by eddie:
-// The mac port currently also uses the WIN32 define.
-// Once I get the beast compiled, linked and running
-// I will change this.
-// There are some parts where the WIN32 define could not
-// be used. I changed the WIN32 to MSWINDOWS.
-// So, for Windows-only code use the MSWINDOWS define.
-
 // compiler/IDE dependent config
 {$IFDEF FPC}
   {$H+} // use AnsiString instead of ShortString as String-type (default in Delphi)
@@ -86,10 +78,10 @@
 {$IFEND}
 
 // ffmpeg config
-{$IFDEF HaveFFMpeg}
-  {$DEFINE UseFFMpegDecoder}
-  {$DEFINE UseFFMpegResample}
-  {$DEFINE UseFFMpegVideo}
+{$IFDEF HaveFFmpeg}
+  {$DEFINE UseFFmpegDecoder}
+  {$DEFINE UseFFmpegResample}
+  {$DEFINE UseFFmpegVideo}
   {$IFDEF HaveSWScale}
     {$DEFINE UseSWScale}
   {$ENDIF}
@@ -106,8 +98,8 @@
 
 // specify some useful defines
 
-{$IF Defined(UseFFMpegVideo) or Defined(UseFFMpegDecoder)}
-  {$DEFINE UseFFMpeg}
+{$IF Defined(UseFFmpegVideo) or Defined(UseFFmpegDecoder)}
+  {$DEFINE UseFFmpeg}
 {$IFEND}
 
 {$IF Defined(UseBASSInput) or Defined(UseBASSPlayback) or Defined(UseBASSDecoder)}

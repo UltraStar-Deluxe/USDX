@@ -4,8 +4,8 @@
 
 {* Libraries *}
 
-{$DEFINE HaveFFMpeg}
-{$IF Defined(HaveFFMpeg) and Defined(IncludeConstants)}
+{$DEFINE HaveFFmpeg}
+{$IF Defined(HaveFFmpeg) and Defined(IncludeConstants)}
   av__codec = 'avcodec-51';
   LIBAVCODEC_VERSION_MAJOR   = 51;
   LIBAVCODEC_VERSION_MINOR   = 16;

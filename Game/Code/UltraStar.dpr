@@ -65,7 +65,7 @@ uses
   portmixer              in 'lib\portmixer\delphi\portmixer.pas',
   {$ENDIF}
 
-  {$IFDEF UseFFMpeg}
+  {$IFDEF UseFFmpeg}
   avcodec                in 'lib\ffmpeg\avcodec.pas',
   avformat               in 'lib\ffmpeg\avformat.pas',
   avutil                 in 'lib\ffmpeg\avutil.pas',
@@ -73,7 +73,7 @@ uses
   opt                    in 'lib\ffmpeg\opt.pas',
   avio                   in 'lib\ffmpeg\avio.pas',
   mathematics            in 'lib\ffmpeg\mathematics.pas',
-  UMediaCore_FFMpeg      in 'Classes\UMediaCore_FFMpeg.pas',
+  UMediaCore_FFmpeg      in 'Classes\UMediaCore_FFmpeg.pas',
   {$IFDEF UseSWScale}
   swscale                in 'lib\ffmpeg\swscale.pas',
   {$ENDIF}
@@ -205,7 +205,7 @@ uses
 
   // TODO :  these all should be moved to a media folder
 
-{$IFDEF UseFFMpegVideo}
+{$IFDEF UseFFmpegVideo}
   UVideo                    in 'Classes\UVideo.pas',
 {$ENDIF}
 {$IFDEF UseProjectM}
@@ -216,7 +216,7 @@ uses
   UAudioInput_Bass          in 'Classes\UAudioInput_Bass.pas',
 {$ENDIF}
 {$IFDEF UseBASSDecoder}
-  // prefer Bass to FFMpeg if possible 
+  // prefer Bass to FFmpeg if possible
   UAudioDecoder_Bass        in 'Classes\UAudioDecoder_Bass.pas',
 {$ENDIF}
 {$IFDEF UseBASSPlayback}
@@ -231,8 +231,8 @@ uses
 {$IFDEF UsePortaudioPlayback}
   UAudioPlayback_Portaudio  in 'Classes\UAudioPlayback_Portaudio.pas',
 {$ENDIF}
-{$IFDEF UseFFMpegDecoder}
-  UAudioDecoder_FFMpeg      in 'Classes\UAudioDecoder_FFMpeg.pas',
+{$IFDEF UseFFmpegDecoder}
+  UAudioDecoder_FFmpeg      in 'Classes\UAudioDecoder_FFmpeg.pas',
 {$ENDIF}
   // fallback dummy, must be last
   UMedia_dummy              in 'Classes\UMedia_dummy.pas',

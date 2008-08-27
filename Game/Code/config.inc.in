@@ -13,8 +13,8 @@
 
 {* Libraries *}
 
-{$@DEFINE_HAVE_FFMPEG@ HaveFFMpeg}
-{$IF Defined(HaveFFMpeg) and Defined(IncludeConstants)}
+{$@DEFINE_HAVE_FFMPEG@ HaveFFmpeg}
+{$IF Defined(HaveFFmpeg) and Defined(IncludeConstants)}
   av__codec = 'libavcodec';
   LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
   LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
