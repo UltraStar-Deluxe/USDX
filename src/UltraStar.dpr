@@ -282,9 +282,9 @@ uses
   //------------------------------
   //Includes - Modi SDK
   //------------------------------
-  ModiSDK       in '..\..\Modis\SDK\ModiSDK.pas', //Old SDK, will be deleted soon
-  UPluginDefs   in '..\..\Modis\SDK\UPluginDefs.pas', //New SDK, not only Modis
-  UPartyDefs    in '..\..\Modis\SDK\UPartyDefs.pas', //Headers to register Party Modes
+  ModiSDK       in '..\Modis\SDK\ModiSDK.pas', //Old SDK, will be deleted soon
+  UPluginDefs   in '..\Modis\SDK\UPluginDefs.pas', //New SDK, not only Modis
+  UPartyDefs    in '..\Modis\SDK\UPartyDefs.pas', //Headers to register Party Modes
 
   SysUtils;
 
