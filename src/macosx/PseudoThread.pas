@@ -30,7 +30,8 @@ implementation
 
 constructor TPseudoThread.Create(const suspended : Boolean);
 begin
-  if not suspended then begin
+  if not suspended then
+  begin
     Execute;
   end;
 end;
