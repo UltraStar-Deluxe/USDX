@@ -1,0 +1,206 @@
+#################################################
+# @PACKAGE_STRING@
+# @configure_input@
+#################################################
+
+@SET_MAKE@
+
+#################################################
+# Standard definitions
+#################################################
+
+# project root-dir (directory of configure script)
+top_srcdir  ?= @top_srcdir@
+# project src-dir (directory of the current Makefile)
+srcdir      ?= @srcdir@
+
+# file-type suffix of executables (e.g. ".exe" in windows)
+EXEEXT ?= @EXEEXT@
+
+#################################################
+# Tools
+#################################################
+
+# recursive dir creation tool (mkdir -p)
+MKDIR     ?= @MKDIR_P@
+RM        ?= rm -f
+RM_REC    ?= $(RM) -r
+
+#################################################
+# USDX Paths
+#################################################
+
+USDX_SRC_DIR   := $(top_srcdir)/src
+USDX_GAME_DIR  := $(top_srcdir)/game
+USDX_TOOLS_DIR := $(top_srcdir)/tools
+USDX_BUILD_DIR := $(top_srcdir)/build
+USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
+
+#################################################
+# RC -> resource.inc
+#################################################
+
+# RC resource extraction config
+RESEXTRACTOR_DIR := $(USDX_TOOLS_DIR)/ResourceExtractor
+RESEXTRACTOR_BIN := $(RESEXTRACTOR_DIR)/ResourceExtractor$(EXEEXT)
+RESOURCE_DIR  := $(USDX_GAME_DIR)/resources
+RESOURCE_FILE := $(srcdir)/resource.inc
+RC_FILE       := $(srcdir)/ultrastardx.rc
+
+#################################################
+# FPC config
+#################################################
+
+# Free Pascal compiler binary
+PPC := @PPC@
+# FPC target platform and processor
+PPLATFORM  := @FPC_PLATFORM@
+PPROCESSOR := @FPC_PROCESSOR@
+
+# Directories added to the unit path
+PUNIT_FLAGS := -Fu.
+
+# Directory where compiled units (.ppu and .o files) are stored
+PCUNIT_DIR   := $(USDX_BUILD_DIR)/fpc-$(PPROCESSOR)-$(PPLATFORM)
+PCUNIT_FLAGS := -FU$(PCUNIT_DIR)
+
+# Directories added to the includes path
+PINC_FLAGS := -Fi$(USDX_LIB_DIR)/JEDI-SDL/SDL/Pas
+
+PFLAGS_BASE    ?= -S2gi -vB
+PFLAGS_EXTRA   ?= @PFLAGS_EXTRA@
+PFLAGS_DEBUG   ?= @PFLAGS_DEBUG@
+PFLAGS_RELEASE ?= @PFLAGS_RELEASE@
+# user-flags (specified with configure) must be last in
+# list to overwrite defaults (e.g. the "-"-option: -Xs-).
+PFLAGS         ?= $(PFLAGS_BASE) @PFLAGS_MAKE@ $(PFLAGS_EXTRA)
+
+LIBS       ?= @LIBS@
+LDFLAGS    ?= @LDFLAGS@
+linkflags  := $(strip $(LDFLAGS) $(LIBS))
+ifneq ($(linkflags),)
+PLINKFLAGS := -k"$(linkflags)"
+endif
+
+#################################################
+# USDX project config
+#################################################
+
+# dpr project file used as input
+USDX_PROJ := ultrastardx.dpr
+# name of executable
+USDX_BIN_NAME ?= ultrastardx$(EXEEXT)
+USDX_BIN := $(USDX_GAME_DIR)/$(USDX_BIN_NAME)
+
+#################################################
+# ProjectM
+#################################################
+
+PROJECTM_CWRAPPER_DIR := $(USDX_LIB_DIR)/projectM/cwrapper
+PROJECTM_CWRAPPER_LIB := $(PROJECTM_CWRAPPER_DIR)/libprojectM-cwrapper.a
+USE_PROJECTM_CWRAPPER = @USE_PROJECTM_CWRAPPER@
+
+#################################################
+# Static libs
+#################################################
+
+STATIC_LIBS := 
+ifeq ($(USE_PROJECTM_CWRAPPER), yes)
+STATIC_LIBS += $(PROJECTM_CWRAPPER_LIB)
+endif
+
+#################################################
+# general targets
+#################################################
+
+INC_FILES = $(shell find -name "*.inc")
+PAS_FILES = $(shell find -name "*.pas" -o -name "*.pp")
+BIN_DEPS = 
+
+.PHONY: all
+all: rebuild
+
+# one shot debug build
+.PHONY: debug
+debug: PFLAGS := $(PFLAGS_BASE) $(PFLAGS_DEBUG) $(PFLAGS_EXTRA)
+debug: rebuild
+
+# one shot release build
+.PHONY: release
+release: PFLAGS := $(PFLAGS_BASE) $(PFLAGS_RELEASE) $(PFLAGS_EXTRA)
+release: rebuild
+
+# build, but always clean old data before compiling.
+# FPC does not reliably recognize changes in .inc-files, static libs
+# (and maybe even conditional .pas) dependencies. This might result
+# in corrupted builds and renders debugging difficult.
+# Clean if any (%) file changed.
+.PHONY: rebuild
+rebuild: CLEANON_PATTERN := %
+rebuild: $(USDX_BIN)
+
+# Use FPC to determine if the sources have to be rebuild.
+# This does not work if an .inc or a static lib (e.g. .a) changed so we will
+# manually clean in these cases. FPC might even miss some changes in 
+# .pas files so we prefer the rebuild target.
+# Clean if an inc-file (%.inc) or static lib (%.a) changed.
+.PHONY: build
+build: CLEANON_PATTERN := %.inc %.a
+build: $(USDX_BIN)
+
+#################################################
+# build
+#################################################
+
+# After expansion of the expression, check_clean will
+# contain the first changed prerequisite ($?) that matches
+# CLEANON_PATTERN. It is used to check if any prerequisite of CLEANON_PATTERN
+# type changed (we just return the first word to avoid spaces in 
+# the result that might crash "test x$(check_clean)").
+check_clean = $(firstword $(filter $(CLEANON_PATTERN), $?))
+
+$(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(INC_FILES) $(PAS_FILES)
+	@echo "==================================="
+	@echo "Changed files:"
+	@echo "$?"
+	@echo "==================================="
+
+# Checks if a rebuild is required.
+# This is the case if any file matching $CLEANON_PATTERN changed.
+	@if test x$(check_clean) != x; then \
+	  echo "-----------------------------------"; \
+	  echo "Clean objects..."; \
+	  $(MAKE) clean_obj; \
+	  echo "-----------------------------------"; \
+	fi
+
+	$(MKDIR) "$(PCUNIT_DIR)"
+	$(PPC) $(strip $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)) -o$@ $(USDX_PROJ)
+
+#################################################
+# Resource-file
+#################################################
+
+$(RESOURCE_FILE): $(RC_FILE)
+	$(RESEXTRACTOR_BIN) $(RC_FILE) $(RESOURCE_DIR) $(RESOURCE_FILE)
+
+
+#################################################
+# clean-up
+#################################################
+
+.PHONY: clean
+clean: clean_obj clean_res
+
+.PHONY: clean_res
+clean_res:
+	$(RM) "$(RESOURCE_FILE)"
+
+.PHONY: clean_obj
+clean_obj: clean_bin
+	$(RM_REC) "$(PCUNIT_DIR)"
+	-rmdir "$(USDX_BUILD_DIR)"
+
+.PHONY: clean_bin
+clean_bin:
+	$(RM) "$(USDX_BIN)"
