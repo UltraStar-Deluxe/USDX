@@ -10,10 +10,7 @@ BIN = $(NAME)@EXEEXT@
 all: $(BIN)
 
 clean:
-	rm -f $(BIN) *.o *.ppu *.rst *.compiled
-
-distclean: clean
-	rm -rf Makefile *~ *.bak __history
+	rm -f $(BIN) *.o *.ppu *.rst
 
 $(BIN): $(SRC)
 	$(PPC) $(PFLAGS) -o$@ $(SRC)

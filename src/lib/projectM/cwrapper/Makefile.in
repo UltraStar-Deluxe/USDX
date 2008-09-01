@@ -1,3 +1,13 @@
+#################################################
+# projectM C-wrapper
+# @configure_input@
+#################################################
+
+@SET_MAKE@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+
 OBJECTS	= projectM-cwrapper.o
 LIBRARY = libprojectM-cwrapper.a
 
@@ -28,3 +38,4 @@ distclean: clean
 strip : 
 	strip $(LIBRARY)
 	$(RANLIB) $(LIBRARY)
+

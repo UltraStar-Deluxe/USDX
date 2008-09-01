@@ -58,11 +58,11 @@ uses
   UAudioCore_Bass        in 'classes\UAudioCore_Bass.pas',
   {$ENDIF}
   {$IFDEF UsePortaudio}
-  portaudio              in 'lib\portaudio\delphi\portaudio.pas',
+  portaudio              in 'lib\portaudio\portaudio.pas',
   UAudioCore_Portaudio   in 'classes\UAudioCore_Portaudio.pas',
   {$ENDIF}
   {$IFDEF UsePortmixer}
-  portmixer              in 'lib\portmixer\delphi\portmixer.pas',
+  portmixer              in 'lib\portmixer\portmixer.pas',
   {$ENDIF}
 
   {$IFDEF UseFFmpeg}

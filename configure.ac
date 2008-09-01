@@ -21,21 +21,13 @@ PACKAGE_IRC="#ultrastardx at quakenet.org"
 AC_SUBST(PACKAGE_IRC)
 
 # Specify a source-file so autoconf can check if the source-dir exists
-AC_CONFIG_SRCDIR(ultrastardx.dpr)
+AC_CONFIG_SRCDIR(src/ultrastardx.dpr)
 
-# This one is not used by autoconf at the moment.
-# When it is used maybe we don't need aclocal's -I parameter anymore.
-AC_CONFIG_MACRO_DIR(m4)
+# Set the path to install-sh
+AC_CONFIG_AUX_DIR(dists/autogen)
 
 # show features and packages in one list
 AC_PRESERVE_HELP_ORDER
-
-# set root directory (= trunk dir)
-# ..resolved:   used by configure.ac
-usdxroot=..
-# ..unresolved: used by .in files
-usdxrootdir=\${top_srcdir}/..
-AC_SUBST(usdxrootdir)
 
 # set sharerootdir to the resolved dataroot-dir for the config-*.inc file.
 # Pascal cannot handle shell-variables like ${prefix}
@@ -80,18 +72,6 @@ AC_DEFUN([AC_SUBST_DEFINE],
 	DEFINE_[$1]=UNDEF
     fi
     AC_SUBST(DEFINE_[$1])
-])
-
-# AC_SUBST_COMMENT(DEFINE_SUFFIX, IS_ENABLED)
-# used to enable/disable lines in a Makefile
-AC_DEFUN([AC_SUBST_COMMENT],
-[
-    if [[ x$2 = xyes ]]; then
-        COMMENT_[$1]=""
-    else
-	COMMENT_[$1]="#"
-    fi
-    AC_SUBST(COMMENT_[$1])
 ])
 
 # AC_SPLIT_VERSION(VARIABLE_PREFIX, VERSION)
@@ -278,22 +258,8 @@ AC_ARG_WITH([libprojectM],
       [enable projectM visualization support @<:@default=no@:>@])],
     [with_libprojectM=$withval], [with_libprojectM="no"])
 
-# print path options header
-AC_ARG_WITH([cfg-dummy2], [
-Additional directories:])
-
-# add suffix option
-AC_ARG_WITH([suffix], 
-    [AS_HELP_STRING([--with-suffix=SUFFIX],
-      [path suffix @<:@default=ultrastardx@:>@])],
-    [suffix=$withval], [suffix="ultrastardx"])
-if [[ x$suffix = xno -o x$suffix = xyes ]] ; then
-    AC_MSG_ERROR([Invalid suffix.]);
-fi
-AC_SUBST(suffix)
-
 # print misc options header
-AC_ARG_WITH([cfg-dummy3], [
+AC_ARG_WITH([cfg-dummy2], [
 Development options:])
 
 LOCAL_BUILD="no"
@@ -307,17 +273,8 @@ AC_ARG_ENABLE(global,
 # add local option
 AC_ARG_ENABLE(local,
     [AS_HELP_STRING([--enable-local],
-      [install into local folders (../...) (same as --disable-global) @<:@default=no@:>@]))],
+      [install into local folders (./game/...) (same as --disable-global) @<:@default=no@:>@]))],
     [test $enableval = "yes" && LOCAL_BUILD="yes"], [])
-
-# add dev_layout option
-AC_ARG_ENABLE(dev-build,
-    [AS_HELP_STRING([--enable-dev-build],
-      [development build (implies local)  @<:@default=no@:>@])],
-    [enable_dev_build=$enableval], [enable_dev_build="no"])
-if [[ x$enable_dev_build = xyes ]]; then
-    LOCAL_BUILD="yes"
-fi
 
 # set default Makefile install-target according to local/global build-type
 AC_SUBST_DEFINE(USE_LOCAL_DIRS, $LOCAL_BUILD)
@@ -331,6 +288,8 @@ fi
 # -----------------------------------------
 # check for compilers
 # -----------------------------------------
+
+AC_CANONICAL_TARGET
 
 # find and test the freepascal compiler
 # sets PFLAGS, FPC_VERSION, FPC_DEBUG, etc.
@@ -426,11 +385,11 @@ PKG_VALUE([libprojectM], [DATADIR], [variable=pkgdatadir], [$libprojectM_PKG],
           [projectM data-directory for presets etc. (e.g. /usr/share/projectM)])
 # check if we need the c-wrapper
 if [[ "$libprojectM_VERSION_MAJOR" -ge 1 ]]; then
-    libprojectM_NEEDS_CWRAPPER=yes
+    libprojectM_USE_CWRAPPER=yes
 else
-    libprojectM_NEEDS_CWRAPPER=no
+    libprojectM_USE_CWRAPPER=no
 fi
-AC_SUBST_COMMENT(PROJECTM_CWRAPPER, $libprojectM_NEEDS_CWRAPPER)
+AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
 
 # find portaudio
 PKG_HAVE([portaudio], [portaudio-2.0], yes)
@@ -450,12 +409,13 @@ AC_SUBST(LIBS)
 # create output files
 # -----------------------------------------
 
-AC_CONFIG_FILES([config-$FPC_PLATFORM.inc:config.inc.in])
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([$usdxroot/tools/ResourceExtractor/Makefile])
-if [[ x$libprojectM_NEEDS_CWRAPPER = xyes ]]; then
-    AC_CONFIG_FILES([lib/projectM/cwrapper/Makefile])
+AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([src/config-$FPC_PLATFORM.inc:src/config.inc.in])
+if [[ x$libprojectM_USE_CWRAPPER = xyes ]]; then
+    AC_CONFIG_FILES([src/lib/projectM/cwrapper/Makefile])
 fi
+AC_CONFIG_FILES([tools/ResourceExtractor/Makefile])
 AC_OUTPUT
 
 # -----------------------------------------

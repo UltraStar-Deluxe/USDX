@@ -1,3 +1,6 @@
+UltraStar Deluxe 1.0 README
+----------------------------
+
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ->8 - -
                    _______  _________
             ___   /       \/         \_______
@@ -12,54 +15,31 @@
                                                                  ~=~
 - - 8<- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-Ultrastar Deluxe 1.0 Readme.txt
-----------------------------
-  ============================
- = 1. Authors                 =
- = 2. Release Notes           =
- = 3. Command-Line Parameters =
- = 4. Controls                =
- = 5. License                 =
-  ============================
+ ============================
+= 1. About                   =
+= 2. Release Notes           =
+= 3. Command-Line Parameters =
+= 4. Controls                =
+ ============================
 
 SF.Net Page: http://sourceforge.net/projects/ultrastardx/
+Wiki:        http://wiki.ultrastardeluxe.org/
 
-This is just a little introduction, for more information open documentation.pdf
+ ====================
+ = 1. About         =
+ ====================
 
- ==============
- = 1. Authors =
- ==============
-This game was introduced by Corvus5 who has written most of the code by himself.
-Basing on the official release 0.5.0 Mota and Whiteshark started to write little
-patches and modifications, and released this package named ultra-star.dl.am Mod.
-This modification was continued at Sourceforge.net by the Ultrastar Deluxe Team:
+UltraStar Deluxe (USDX) is a free and open source karaoke game. It allows up to six players to sing along with music using microphones in order to score points, depending on the pitch of the voice and the rhythm of singing. 
 
-~=[ DevTeam 1.1 - Harakirioke ]=~     
-    Tobi
-    Mischi
-    Mog
-    Whiteshark
-  
-~=[ Retired project developers / admins ]=~
-    Alex
-    Blindy  
-    fifth
-    Jay
-    Mota
-    Sawyer
-
-~=[ Thanks ]=~
-    Corvus5
-    Songmakers
-    CC People <3
-    Translators
-    
-And this piece of software is the Result!
-
+UltraStar Deluxe is a fork of the original UltraStar (developed by corvus5). 
+Many features have been added like party mode, theme support and
+support for more audio and video formats.
+The improved stability and code quality of USDX enabled ports to Linux and Mac OS X.
 
  ====================
  = 2. Release Notes =
  ====================
+
 - To change the path to the song directory add to config.ini:
   [Path]
   Songs=[SongFolder] (e.g. C:\Program Files\Ultrastar\Songs)
@@ -93,6 +73,7 @@ And this piece of software is the Result!
  ==============================
  = 3. Command-Line Parameters =
  ==============================
+
 Command-Line Parameters are passed to the game adding it to the Path of a
 Shortcut or starting the game within the console.
 
@@ -141,6 +122,7 @@ ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ult
  ===============
  = 4. Controls =
  ===============
+
 [J]      to open the "Search for a Song" Interface
 [Cursor] to navigate through the screens.
 [Enter]  to confirm 
@@ -155,10 +137,3 @@ In Songscreen
 
 
 Editor Controls are described in documentation.pdf
-
-
- ==============
- = 5. License =
- ==============
-Ultrastar Deluxe is licensed under the terms of the GNU General Public License 2.0
-See License.txt for more Information.
