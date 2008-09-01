@@ -7,8 +7,7 @@
 
 {$@DEFINE_USE_LOCAL_DIRS@ UseLocalDirs}
 {$IF (not Defined(UseLocalDirs)) and Defined(IncludeConstants)}
-  PathSuffix = WideString('@suffix@');
-  SharedPath = WideString('@sharerootdir@/'+PathSuffix);
+  INSTALL_DATADIR = '@INSTALL_DATADIR@';
 {$IFEND}
 
 {* Libraries *}

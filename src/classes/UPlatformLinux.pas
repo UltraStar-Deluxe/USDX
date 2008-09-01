@@ -90,7 +90,7 @@ begin
     {$IFDEF UseLocalDirs}
       Result := ExtractFilePath(ParamStr(0));
     {$ELSE}
-      Result := GetGameUserPath() + 'logs' + PathDelim;
+      Result := GetGameUserPath() + 'logs/';
     {$ENDIF}
   end;
 
@@ -107,7 +107,7 @@ begin
     {$IFDEF UseLocalDirs}
     Result := ExtractFilePath(ParamStr(0));
     {$ELSE}
-    Result := SharedPath + PathDelim;
+    Result := IncludeTrailingPathDelimiter(INSTALL_DATADIR);
     {$ENDIF}
   end;
 end;
@@ -121,7 +121,7 @@ begin
     {$IFDEF UseLocalDirs}
     Result := ExtractFilePath(ParamStr(0));
     {$ELSE}
-    Result := GetHomeDir() + '.'+PathSuffix + PathDelim;
+    Result := GetHomeDir() + '.ultrastardx/';
     {$ENDIF}
   end;
 end;

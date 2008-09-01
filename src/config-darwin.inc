@@ -7,8 +7,7 @@
 
 {$UNDEF UseLocalDirs}
 {$IF (not Defined(UseLocalDirs)) and Defined(IncludeConstants)}
-  PathSuffix = WideString('ultrastardx');
-  SharedPath = WideString('/usr/local/share/'+PathSuffix);
+  INSTALL_DATADIR = '/usr/local/share/ultrastardx';
 {$IFEND}
 
 {* Libraries *}
