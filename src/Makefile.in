@@ -113,8 +113,8 @@ endif
 # general targets
 #################################################
 
-INC_FILES = $(shell find -name "*.inc")
-PAS_FILES = $(shell find -name "*.pas" -o -name "*.pp")
+INC_FILES = $(shell find . -name "*.inc")
+PAS_FILES = $(shell find . -name "*.pas" -o -name "*.pp")
 BIN_DEPS = 
 
 .PHONY: all
