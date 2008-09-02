@@ -48,18 +48,18 @@ uses
   sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
   //sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
-  UMediaCore_SDL         in 'classes\UMediaCore_SDL.pas',
+  UMediaCore_SDL         in 'base\UMediaCore_SDL.pas',
 
   zlib                   in 'lib\zlib\zlib.pas',
   png                    in 'lib\libpng\png.pas',
 
   {$IFDEF UseBass}
   bass                   in 'lib\bass\delphi\bass.pas',
-  UAudioCore_Bass        in 'classes\UAudioCore_Bass.pas',
+  UAudioCore_Bass        in 'base\UAudioCore_Bass.pas',
   {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\portaudio.pas',
-  UAudioCore_Portaudio   in 'classes\UAudioCore_Portaudio.pas',
+  UAudioCore_Portaudio   in 'base\UAudioCore_Portaudio.pas',
   {$ENDIF}
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\portmixer.pas',
@@ -73,7 +73,7 @@ uses
   opt                    in 'lib\ffmpeg\opt.pas',
   avio                   in 'lib\ffmpeg\avio.pas',
   mathematics            in 'lib\ffmpeg\mathematics.pas',
-  UMediaCore_FFmpeg      in 'classes\UMediaCore_FFmpeg.pas',
+  UMediaCore_FFmpeg      in 'base\UMediaCore_FFmpeg.pas',
   {$IFDEF UseSWScale}
   swscale                in 'lib\ffmpeg\swscale.pas',
   {$ENDIF}
@@ -126,74 +126,74 @@ uses
   UMenuButtonCollection  in 'menu\UMenuButtonCollection.pas',
 
   //------------------------------
-  //Includes - Classes
+  //Includes - base
   //------------------------------
-  UConfig           in 'classes\UConfig.pas',
+  UConfig           in 'base\UConfig.pas',
   
-  UCommon           in 'classes\UCommon.pas',
-  UGraphic          in 'classes\UGraphic.pas',
-  UTexture          in 'classes\UTexture.pas',
-  ULanguage         in 'classes\ULanguage.pas',
-  UMain             in 'classes\UMain.pas',
-  UDraw             in 'classes\UDraw.pas',
-  URecord           in 'classes\URecord.pas',
-  UTime             in 'classes\UTime.pas',
-  TextGL            in 'classes\TextGL.pas',
-  USong             in 'classes\USong.pas',
-  UXMLSong          in 'classes\UXMLSong.pas',
-  USongs            in 'classes\USongs.pas',
-  UIni              in 'classes\UIni.pas',
-  UImage            in 'classes\UImage.pas',
-  ULyrics           in 'classes\ULyrics.pas',
-  UEditorLyrics     in 'classes\UEditorLyrics.pas',
-  USkins            in 'classes\USkins.pas',
-  UThemes           in 'classes\UThemes.pas',
-  ULog              in 'classes\ULog.pas',
-  UJoystick         in 'classes\UJoystick.pas',
-  UDataBase         in 'classes\UDataBase.pas',
-  UCovers           in 'classes\UCovers.pas',
-  UCatCovers        in 'classes\UCatCovers.pas',
-  UFiles            in 'classes\UFiles.pas',
-  UGraphicClasses   in 'classes\UGraphicClasses.pas',
-  UDLLManager       in 'classes\UDLLManager.pas',
-  UPlaylist         in 'classes\UPlaylist.pas',
-  UCommandLine      in 'classes\UCommandLine.pas',
-  URingBuffer       in 'classes\URingBuffer.pas',
-  UTextClasses      in 'classes\UTextClasses.pas',
-  USingScores       in 'classes\USingScores.pas',
-  USingNotes        in 'classes\USingNotes.pas',
+  UCommon           in 'base\UCommon.pas',
+  UGraphic          in 'base\UGraphic.pas',
+  UTexture          in 'base\UTexture.pas',
+  ULanguage         in 'base\ULanguage.pas',
+  UMain             in 'base\UMain.pas',
+  UDraw             in 'base\UDraw.pas',
+  URecord           in 'base\URecord.pas',
+  UTime             in 'base\UTime.pas',
+  TextGL            in 'base\TextGL.pas',
+  USong             in 'base\USong.pas',
+  UXMLSong          in 'base\UXMLSong.pas',
+  USongs            in 'base\USongs.pas',
+  UIni              in 'base\UIni.pas',
+  UImage            in 'base\UImage.pas',
+  ULyrics           in 'base\ULyrics.pas',
+  UEditorLyrics     in 'base\UEditorLyrics.pas',
+  USkins            in 'base\USkins.pas',
+  UThemes           in 'base\UThemes.pas',
+  ULog              in 'base\ULog.pas',
+  UJoystick         in 'base\UJoystick.pas',
+  UDataBase         in 'base\UDataBase.pas',
+  UCovers           in 'base\UCovers.pas',
+  UCatCovers        in 'base\UCatCovers.pas',
+  UFiles            in 'base\UFiles.pas',
+  UGraphicClasses   in 'base\UGraphicClasses.pas',
+  UDLLManager       in 'base\UDLLManager.pas',
+  UPlaylist         in 'base\UPlaylist.pas',
+  UCommandLine      in 'base\UCommandLine.pas',
+  URingBuffer       in 'base\URingBuffer.pas',
+  UTextClasses      in 'base\UTextClasses.pas',
+  USingScores       in 'base\USingScores.pas',
+  USingNotes        in 'base\USingNotes.pas',
 
-  UModules          in 'classes\UModules.pas',          //List of Modules to Load
-  UHooks            in 'classes\UHooks.pas',            //Hook Managing
-  UServices         in 'classes\UServices.pas',         //Service Managing
-  UCore             in 'classes\UCore.pas',             //Core, Maybe remove this
-  UCoreModule       in 'classes\UCoreModule.pas',       //^
-  UPluginInterface  in 'classes\UPluginInterface.pas',  //Interface offered by Core to Plugins
-  uPluginLoader     in 'classes\uPluginLoader.pas',     //New Plugin Loader Module
+  UModules          in 'base\UModules.pas',          //List of Modules to Load
+  UHooks            in 'base\UHooks.pas',            //Hook Managing
+  UServices         in 'base\UServices.pas',         //Service Managing
+  UCore             in 'base\UCore.pas',             //Core, Maybe remove this
+  UCoreModule       in 'base\UCoreModule.pas',       //^
+  UPluginInterface  in 'base\UPluginInterface.pas',  //Interface offered by Core to Plugins
+  uPluginLoader     in 'base\uPluginLoader.pas',     //New Plugin Loader Module
 
-  UParty            in 'classes\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
-  UPlatform         in 'classes\UPlatform.pas',
+  UParty            in 'base\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
+  UPlatform         in 'base\UPlatform.pas',
 {$IFDEF MSWINDOWS}
-  UPlatformWindows  in 'classes\UPlatformWindows.pas',
+  UPlatformWindows  in 'base\UPlatformWindows.pas',
 {$ENDIF}
 {$IFDEF LINUX}
-  UPlatformLinux    in 'classes\UPlatformLinux.pas',
+  UPlatformLinux    in 'base\UPlatformLinux.pas',
 {$ENDIF}
 {$IFDEF DARWIN}
-  UPlatformMacOSX   in 'classes/UPlatformMacOSX.pas',
+  UPlatformMacOSX   in 'base/UPlatformMacOSX.pas',
 {$ENDIF}
 
   //------------------------------
   //Includes - Media
   //------------------------------
 
-  UMusic          in 'classes\UMusic.pas',
-  UAudioPlaybackBase in 'classes\UAudioPlaybackBase.pas',
+  UMusic          in 'base\UMusic.pas',
+  UAudioPlaybackBase in 'base\UAudioPlaybackBase.pas',
 {$IF Defined(UsePortaudioPlayback) or Defined(UseSDLPlayback)}
   UFFT                      in 'lib\fft\UFFT.pas',
-  UAudioPlayback_Softmixer  in 'classes\UAudioPlayback_SoftMixer.pas',
+  UAudioPlayback_Softmixer  in 'base\UAudioPlayback_SoftMixer.pas',
 {$IFEND}
-  UAudioConverter           in 'classes\UAudioConverter.pas',
+  UAudioConverter           in 'base\UAudioConverter.pas',
 
   //******************************
   //Pluggable media modules
@@ -204,36 +204,36 @@ uses
   // TODO :  these all should be moved to a media folder
 
 {$IFDEF UseFFmpegVideo}
-  UVideo                    in 'classes\UVideo.pas',
+  UVideo                    in 'base\UVideo.pas',
 {$ENDIF}
 {$IFDEF UseProjectM}
   // must be after UVideo, so it will not be the default video module
-  UVisualizer               in 'classes\UVisualizer.pas',
+  UVisualizer               in 'base\UVisualizer.pas',
 {$ENDIF}
 {$IFDEF UseBASSInput}
-  UAudioInput_Bass          in 'classes\UAudioInput_Bass.pas',
+  UAudioInput_Bass          in 'base\UAudioInput_Bass.pas',
 {$ENDIF}
 {$IFDEF UseBASSDecoder}
   // prefer Bass to FFmpeg if possible
-  UAudioDecoder_Bass        in 'classes\UAudioDecoder_Bass.pas',
+  UAudioDecoder_Bass        in 'base\UAudioDecoder_Bass.pas',
 {$ENDIF}
 {$IFDEF UseBASSPlayback}
-  UAudioPlayback_Bass       in 'classes\UAudioPlayback_Bass.pas',
+  UAudioPlayback_Bass       in 'base\UAudioPlayback_Bass.pas',
 {$ENDIF}
 {$IFDEF UseSDLPlayback}
-  UAudioPlayback_SDL        in 'classes\UAudioPlayback_SDL.pas',
+  UAudioPlayback_SDL        in 'base\UAudioPlayback_SDL.pas',
 {$ENDIF}
 {$IFDEF UsePortaudioInput}
-  UAudioInput_Portaudio     in 'classes\UAudioInput_Portaudio.pas',
+  UAudioInput_Portaudio     in 'base\UAudioInput_Portaudio.pas',
 {$ENDIF}
 {$IFDEF UsePortaudioPlayback}
-  UAudioPlayback_Portaudio  in 'classes\UAudioPlayback_Portaudio.pas',
+  UAudioPlayback_Portaudio  in 'base\UAudioPlayback_Portaudio.pas',
 {$ENDIF}
 {$IFDEF UseFFmpegDecoder}
-  UAudioDecoder_FFmpeg      in 'classes\UAudioDecoder_FFmpeg.pas',
+  UAudioDecoder_FFmpeg      in 'base\UAudioDecoder_FFmpeg.pas',
 {$ENDIF}
   // fallback dummy, must be last
-  UMedia_dummy              in 'classes\UMedia_dummy.pas',
+  UMedia_dummy              in 'base\UMedia_dummy.pas',
 
 
   //------------------------------
