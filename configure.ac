@@ -3,7 +3,8 @@
 #
 # by UltraStar Deluxe Team
 #
-# Execute "autogen.sh" to create the configure script.
+# Execute "dists/autogen/autogen.sh" or "make reconf"
+# to create the configure script.
 #
 
 # Require autoconf >= 2.61
@@ -29,9 +30,11 @@ AC_CONFIG_AUX_DIR(dists/autogen)
 # show features and packages in one list
 AC_PRESERVE_HELP_ORDER
 
-# set sharerootdir to the resolved dataroot-dir for the config-*.inc file.
-# Pascal cannot handle shell-variables like ${prefix}
-AC_DEFINE_DIR(sharerootdir, datarootdir)
+# set INSTALL_DATADIR to the expanded dataroot sub-directory for USDX.
+# Pascal is not able to handle shell-variables like ${prefix} that is
+# why we expand here.
+INSTALL_DATADIR_UNEXP="$datadir/$PACKAGE_NAME"
+AC_DEFINE_DIR(INSTALL_DATADIR, INSTALL_DATADIR_UNEXP)
 
 # -----------------------------------------
 # find tools
@@ -262,34 +265,25 @@ AC_ARG_WITH([libprojectM],
 AC_ARG_WITH([cfg-dummy2], [
 Development options:])
 
-LOCAL_BUILD="no"
+# add DEPRECATED global and local options
+AC_ARG_ENABLE(global, [AS_HELP_STRING([--enable-global], [(DEPRECATED, DO NOT USE]))])
+AC_ARG_ENABLE(local, [AS_HELP_STRING([--enable-local], [(DEPRECATED, DO NOT USE]))])
 
-# add global option
-AC_ARG_ENABLE(global,
-    [AS_HELP_STRING([--enable-global],
-      [install into global folders (PREFIX/...) @<:@default=yes@:>@])],
-    [test $enableval = "no" && LOCAL_BUILD="yes"], [])
+if [[ x$enable_global != x -o x$enable_local != x ]]; then
+   AC_MSG_NOTICE([
 
-# add local option
-AC_ARG_ENABLE(local,
-    [AS_HELP_STRING([--enable-local],
-      [install into local folders (./game/...) (same as --disable-global) @<:@default=no@:>@]))],
-    [test $enableval = "yes" && LOCAL_BUILD="yes"], [])
-
-# set default Makefile install-target according to local/global build-type
-AC_SUBST_DEFINE(USE_LOCAL_DIRS, $LOCAL_BUILD)
-if [[ x$LOCAL_BUILD = xyes ]]; then
-    AC_SUBST(install_type, ["local"])
-else
-    AC_SUBST(install_type, ["global"])    
+!!! NOTE: --enable-global and --enable-local are deprecated:
+!!! - global build: just type "make" and "make install"
+!!! - local  build: just type "make" and start "game/ultrastardx"
+])
+   sleep 2
 fi
-
 
 # -----------------------------------------
 # check for compilers
 # -----------------------------------------
 
-AC_CANONICAL_TARGET
+AC_CANONICAL_HOST
 
 # find and test the freepascal compiler
 # sets PFLAGS, FPC_VERSION, FPC_DEBUG, etc.

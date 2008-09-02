@@ -640,7 +640,7 @@ host_alias
 target_alias
 PACKAGE_WEBSITE
 PACKAGE_IRC
-sharerootdir
+INSTALL_DATADIR
 SET_MAKE
 LN_S
 MKDIR_P
@@ -649,8 +649,6 @@ INSTALL_SCRIPT
 INSTALL_DATA
 SED
 GREP
-DEFINE_USE_LOCAL_DIRS
-install_type
 build
 build_cpu
 build_vendor
@@ -659,10 +657,6 @@ host
 host_cpu
 host_vendor
 host_os
-target
-target_cpu
-target_vendor
-target_os
 PFLAGS
 PFLAGS_DEBUG
 PFLAGS_RELEASE
@@ -1387,7 +1381,6 @@ _ACEOF
 System types:
   --build=BUILD     configure for building on BUILD [guessed]
   --host=HOST       cross-compile to build programs to run on HOST [BUILD]
-  --target=TARGET   configure for building compilers for TARGET [HOST]
 _ACEOF
 fi
 
@@ -1409,10 +1402,8 @@ External Libraries:
   --with-libprojectM      enable projectM visualization support [default=no]
 
 Development options:
-  --enable-global         install into global folders (PREFIX/...)
-                          [default=yes]
-  --enable-local          install into local folders (./game/...) (same as
-                          --disable-global) [default=no])
+  --enable-global         (DEPRECATED, DO NOT USE)
+  --enable-local          (DEPRECATED, DO NOT USE)
 
 Free Pascal Compiler specific options:
   --with-fpc=DIR          Directory of the FPC executable [PATH]
@@ -1952,19 +1943,21 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
-# set sharerootdir to the resolved dataroot-dir for the config-*.inc file.
-# Pascal cannot handle shell-variables like ${prefix}
+# set INSTALL_DATADIR to the expanded dataroot sub-directory for USDX.
+# Pascal is not able to handle shell-variables like ${prefix} that is
+# why we expand here.
+INSTALL_DATADIR_UNEXP="$datadir/$PACKAGE_NAME"
 
   prefix_NONE=
   exec_prefix_NONE=
   test "x$prefix" = xNONE && prefix_NONE=yes && prefix=$ac_default_prefix
   test "x$exec_prefix" = xNONE && exec_prefix_NONE=yes && exec_prefix=$prefix
-  eval ac_define_dir="\"$datarootdir\""
+  eval ac_define_dir="\"$INSTALL_DATADIR_UNEXP\""
   eval ac_define_dir="\"$ac_define_dir\""
-  sharerootdir="$ac_define_dir"
+  INSTALL_DATADIR="$ac_define_dir"
 
   cat >>confdefs.h <<_ACEOF
-#define sharerootdir "$ac_define_dir"
+#define INSTALL_DATADIR "$ac_define_dir"
 _ACEOF
 
   test "$prefix_NONE" && prefix=NONE
@@ -2396,39 +2389,33 @@ if test "${with_cfg_dummy2+set}" = set; then
 fi
 
 
-LOCAL_BUILD="no"
-
-# add global option
+# add DEPRECATED global and local options
 # Check whether --enable-global was given.
 if test "${enable_global+set}" = set; then
-  enableval=$enable_global; test $enableval = "no" && LOCAL_BUILD="yes"
+  enableval=$enable_global;
 fi
 
-
-# add local option
 # Check whether --enable-local was given.
 if test "${enable_local+set}" = set; then
-  enableval=$enable_local; test $enableval = "yes" && LOCAL_BUILD="yes"
+  enableval=$enable_local;
 fi
 
 
-# set default Makefile install-target according to local/global build-type
+if [ x$enable_global != x -o x$enable_local != x ]; then
+   { $as_echo "$as_me:$LINENO:
 
-    if [ x$LOCAL_BUILD = xyes ]; then
-        DEFINE_USE_LOCAL_DIRS=DEFINE
-    else
-	DEFINE_USE_LOCAL_DIRS=UNDEF
-    fi
+!!! NOTE: --enable-global and --enable-local are deprecated:
+!!! - global build: just type \"make\" and \"make install\"
+!!! - local  build: just type \"make\" and start \"game/ultrastardx\"
+" >&5
+$as_echo "$as_me:
 
-
-if [ x$LOCAL_BUILD = xyes ]; then
-    install_type="local"
-
-else
-    install_type="global"
-
+!!! NOTE: --enable-global and --enable-local are deprecated:
+!!! - global build: just type \"make\" and \"make install\"
+!!! - local  build: just type \"make\" and start \"game/ultrastardx\"
+" >&6;}
+   sleep 2
 fi
-
 
 # -----------------------------------------
 # check for compilers
@@ -2517,49 +2504,6 @@ IFS=$ac_save_IFS
 case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
-{ $as_echo "$as_me:$LINENO: checking target system type" >&5
-$as_echo_n "checking target system type... " >&6; }
-if test "${ac_cv_target+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  if test "x$target_alias" = x; then
-  ac_cv_target=$ac_cv_host
-else
-  ac_cv_target=`$SHELL "$ac_aux_dir/config.sub" $target_alias` ||
-    { { $as_echo "$as_me:$LINENO: error: $SHELL $ac_aux_dir/config.sub $target_alias failed" >&5
-$as_echo "$as_me: error: $SHELL $ac_aux_dir/config.sub $target_alias failed" >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_target" >&5
-$as_echo "$ac_cv_target" >&6; }
-case $ac_cv_target in
-*-*-*) ;;
-*) { { $as_echo "$as_me:$LINENO: error: invalid value of canonical target" >&5
-$as_echo "$as_me: error: invalid value of canonical target" >&2;}
-   { (exit 1); exit 1; }; };;
-esac
-target=$ac_cv_target
-ac_save_IFS=$IFS; IFS='-'
-set x $ac_cv_target
-shift
-target_cpu=$1
-target_vendor=$2
-shift; shift
-# Remember, the first character of IFS is used to create $*,
-# except with old shells:
-target_os=$*
-IFS=$ac_save_IFS
-case $target_os in *\ *) target_os=`echo "$target_os" | sed 's/ /-/g'`;; esac
-
-
-# The aliases save the names the user supplied, while $host etc.
-# will get canonicalized.
-test -n "$target_alias" &&
-  test "$program_prefix$program_suffix$program_transform_name" = \
-    NONENONEs,x,x, &&
-  program_prefix=${target_alias}-
 
 # find and test the freepascal compiler
 # sets PFLAGS, FPC_VERSION, FPC_DEBUG, etc.

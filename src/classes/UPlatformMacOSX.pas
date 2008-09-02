@@ -218,7 +218,7 @@ begin
   // We have to cut the last two folders
   // to get the application folder.
 
-  Result := ExtractFilePath(ParamStr(0));
+  Result := GetExecutionDir();
   for i := 1 to 2 do
   begin
     pos := Length(Result);

@@ -25,6 +25,7 @@ type
   TDirectoryEntryArray = array of TDirectoryEntry;
 
   TPlatform = class
+    function GetExecutionDir(): string;
     procedure Init; virtual;
     function DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: boolean): TDirectoryEntryArray; virtual; abstract;
     function TerminateIfAlreadyRunning(var WndTitle : string): boolean; virtual;
@@ -79,6 +80,14 @@ procedure TPlatform.Halt;
 begin
   // Note: Application.terminate is NOT the same
   System.Halt;
+end;
+
+{**
+ * Returns the directory of the executable
+ *}
+function TPlatform.GetExecutionDir(): string;
+begin
+  Result := ExtractFilePath(ParamStr(0));
 end;
 
 (**

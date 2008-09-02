@@ -5,10 +5,9 @@
 
 {* Paths *}
 
-{$@DEFINE_USE_LOCAL_DIRS@ UseLocalDirs}
-{$IF (not Defined(UseLocalDirs)) and Defined(IncludeConstants)}
+{$IFDEF IncludeConstants}
   INSTALL_DATADIR = '@INSTALL_DATADIR@';
-{$IFEND}
+{$ENDIF}
 
 {* Libraries *}
 

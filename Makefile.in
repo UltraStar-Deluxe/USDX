@@ -13,6 +13,10 @@ prefix      ?= @prefix@
 exec_prefix ?= @exec_prefix@
 bindir      ?= @bindir@
 datarootdir ?= @datarootdir@
+libdir      ?= @libdir@
+docdir      ?= @docdir@
+pdfdir      ?= @pdfdir@
+mandir      ?= @mandir@
 # project root-dir (directory of configure script)
 top_srcdir  ?= @top_srcdir@
 # project src-dir (directory of the current Makefile)
@@ -34,6 +38,9 @@ RM_REC       ?= $(RM) -r
 INSTALL      ?= @INSTALL@
 INSTALL_DATA ?= @INSTALL_DATA@
 
+# installation path
+INSTALL_DATADIR ?= @INSTALL_DATADIR@
+
 #################################################
 # General package configuration
 #################################################
@@ -53,9 +60,6 @@ USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
 USDX_BUILD_DIR := $(USDX_SRC_DIR)/build
 
 AUTOGEN_DIR := $(top_srcdir)/dists/autogen
-
-# installation path
-INSTALL_datadir ?= $(datarootdir)/$(USDX_PACKAGE_NAME)
 
 #################################################
 # Binary name
@@ -109,14 +113,24 @@ clean-deps:
 	  $(MAKE) -C "$$dir" clean; \
 	done
 
+.PHONY: clean-game
+clean-game:
+	$(RM) $(USDX_GAME_DIR)/*.log
+	$(RM) $(USDX_GAME_DIR)/*.db
+	$(RM) $(USDX_GAME_DIR)/*.ini
+	-rmdir $(USDX_GAME_DIR)/screenshots
+	-rmdir $(USDX_GAME_DIR)/plugins
+	-rmdir $(USDX_GAME_DIR)/playlists
+	-rmdir $(USDX_GAME_DIR)/songs
+
 .PHONY: mostlyclean
 mostlyclean: clean-src
 
 .PHONY: distclean
-distclean: clean
+distclean: clean clean-game tidy
 	$(RM_REC) config.log config.status aclocal.m4 autom4te.cache
-	$(RM) Makefile $(USDX_SRC_DIR)/Makefile $(PROJECTM_CWRAPPER_DIR)/Makefile
 	$(RM) $(USDX_SRC_DIR)/config.inc 
+	$(RM) Makefile $(USDX_SRC_DIR)/Makefile $(PROJECTM_CWRAPPER_DIR)/Makefile
 
 # remove temporary and backup files
 .PHONY: tidy
@@ -152,41 +166,23 @@ reconf:
 
 .PHONY: install
 install: all
-	$(MAKE) install-@install_type@
-
-.PHONY: uninstall
-uninstall: uninstall-@install_type@
-
-
-# local build
-
-.PHONY: install-local
-install-local:
-	@echo "Local build does not need to be installed."
-	@echo "Start with: $(USDX_BIN)"
-
-.PHONY: uninstall-local
-uninstall-local:
-	$(RM) "$(USDX_BIN)"
-
-
-# global build
-
-.PHONY: install-global
-install-global: install-data install-exec
+	$(MAKE) install-all
 	@echo "--------------------------------"
 	@echo "$(USDX_PACKAGE_NAME) installed."
 	@echo "Start with: $(bindir)/$(USDX_BIN_NAME)"
 	@echo "--------------------------------"
 
+.PHONY: install-all
+install-all: install-data install-exec
+
 .PHONY: install-data
 install-data:
-	$(MAKE) RECURSIVE_SRC_DIR="artwork" RECURSIVE_DST_DIR="$(INSTALL_datadir)/artwork" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/languages" RECURSIVE_DST_DIR="$(INSTALL_datadir)/languages" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/sounds" RECURSIVE_DST_DIR="$(INSTALL_datadir)/sounds" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/themes" RECURSIVE_DST_DIR="$(INSTALL_datadir)/themes" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" RECURSIVE_DST_DIR="$(INSTALL_datadir)/resources" install-data-recursive
-	$(INSTALL_DATA) "COPYING.txt" "$(INSTALL_datadir)"
+	$(MAKE) RECURSIVE_SRC_DIR="artwork" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/artwork" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/languages" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/languages" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/sounds" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/sounds" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/themes" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/themes" install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/resources" install-data-recursive
+	$(INSTALL_DATA) "COPYING.txt" "$(INSTALL_DATADIR)"
 
 .PHONY: install-data-recursive
 install-data-recursive:
@@ -208,18 +204,21 @@ install-exec:
 	$(MKDIR) "$(bindir)"
 	$(INSTALL) "$(USDX_BIN)" "$(bindir)"
 
-.PHONY: uninstall-global
-uninstall-global: uninstall-data uninstall-exec
+.PHONY: uninstall
+uninstall: uninstall-all
+
+.PHONY: uninstall-all
+uninstall-all: uninstall-data uninstall-exec
 
 .PHONY: uninstall-data
 uninstall-data:
-	$(RM_REC) "$(INSTALL_datadir)/artwork"
-	$(RM_REC) "$(INSTALL_datadir)/languages"
-	$(RM_REC) "$(INSTALL_datadir)/sounds"
-	$(RM_REC) "$(INSTALL_datadir)/themes"
-	$(RM_REC) "$(INSTALL_datadir)/resources"
-	$(RM)     "$(INSTALL_datadir)/COPYING.txt"
-	-rmdir "$(INSTALL_datadir)"
+	$(RM_REC) "$(INSTALL_DATADIR)/artwork"
+	$(RM_REC) "$(INSTALL_DATADIR)/languages"
+	$(RM_REC) "$(INSTALL_DATADIR)/sounds"
+	$(RM_REC) "$(INSTALL_DATADIR)/themes"
+	$(RM_REC) "$(INSTALL_DATADIR)/resources"
+	$(RM)     "$(INSTALL_DATADIR)/COPYING.txt"
+	-rmdir "$(INSTALL_DATADIR)"
 
 .PHONY: uninstall-exec
 uninstall-exec:
@@ -248,8 +247,8 @@ debpkgtmpdir := $(debpkgdir)/deb-package
 debpkgprefix := $(USDX_PACKAGE_NAME)
 debpkgname   := $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
 
-.PHONY: debian-pkg
-debian-pkg: all
+.PHONY: deb
+deb: all
 	$(RM_REC) $(debpkgtmpdir)
 
 	$(MKDIR) $(debpkgdir)
@@ -307,7 +306,7 @@ macosx-app: all
 	$(INSTALL_DATA) $(USDX_SRC_DIR)/macosx/Info.plist $(macosx_bundle_path)/
 
 # Copy the resources. 
-	$(MAKE) install-global INSTALL_datadir=$(macosx_bundle_path)/Resources bindir=$(macosx_bundle_path)/MacOS
+	$(MAKE) install-all INSTALL_DATADIR=$(macosx_bundle_path)/Resources bindir=$(macosx_bundle_path)/MacOS
 
 # final messages
 	@echo ""

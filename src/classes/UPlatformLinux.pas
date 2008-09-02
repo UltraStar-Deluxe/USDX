@@ -16,8 +16,13 @@ uses
 type
   TPlatformLinux = class(TPlatform)
     private
+      UseLocalDirs: boolean;
+
+      procedure DetectLocalExecution();
       function GetHomeDir(): string;
     public
+      procedure Init; override;
+
       function DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: Boolean): TDirectoryEntryArray; override;
 
       function GetLogPath        : WideString; override;
@@ -35,6 +40,34 @@ uses
   {$IFEND}
   SysUtils,
   ULog;
+
+procedure TPlatformLinux.Init;
+begin
+  inherited Init();
+  DetectLocalExecution();
+end;
+
+{**
+ * Detects whether the game was executed locally or globally.
+ * - It is local if it was not installed and directly executed from
+ *   within the game folder. In this case resources (themes, language-files)
+ *   reside in the directory of the executable.
+ * - It is global if the game was installed (e.g. to /usr/bin) and
+ *   the resources are in a separate folder (e.g. /usr/share/ultrastardx)
+ *   which name is stored in the INSTALL_DATADIR constant in config-linux.inc.
+ *
+ * Sets UseLocalDirs to true if the game is executed locally, false otherwise.
+ *}
+procedure TPlatformLinux.DetectLocalExecution();
+var
+  LocalDir: string;
+begin
+  LocalDir := GetExecutionDir();
+  
+  // we just check if the 'languages' folder exists in the
+  // directory of the executable. If so -> local execution.
+  UseLocalDirs := (DirectoryExists(LocalDir + 'languages'));
+end;
 
 function TPlatformLinux.DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: Boolean): TDirectoryEntryArray;
 var
@@ -81,18 +114,10 @@ end;
 
 function TPlatformLinux.GetLogPath: WideString;
 begin
-  if FindCmdLineSwitch( cUseLocalPaths ) then
-  begin
-    Result := ExtractFilePath(ParamStr(0));
-  end
+  if UseLocalDirs then
+    Result := GetExecutionDir()
   else
-  begin
-    {$IFDEF UseLocalDirs}
-      Result := ExtractFilePath(ParamStr(0));
-    {$ELSE}
-      Result := GetGameUserPath() + 'logs/';
-    {$ENDIF}
-  end;
+    Result := GetGameUserPath() + 'logs/';
 
   // create non-existing directories
   ForceDirectories(Result);
@@ -100,35 +125,23 @@ end;
 
 function TPlatformLinux.GetGameSharedPath: WideString;
 begin
-  if FindCmdLineSwitch( cUseLocalPaths ) then
-    Result := ExtractFilePath(ParamStr(0))
+  if UseLocalDirs then
+    Result := GetExecutionDir()
   else
-  begin
-    {$IFDEF UseLocalDirs}
-    Result := ExtractFilePath(ParamStr(0));
-    {$ELSE}
     Result := IncludeTrailingPathDelimiter(INSTALL_DATADIR);
-    {$ENDIF}
-  end;
 end;
 
 function TPlatformLinux.GetGameUserPath: WideString;
 begin
-  if FindCmdLineSwitch( cUseLocalPaths ) then
-    Result := ExtractFilePath(ParamStr(0))
+  if UseLocalDirs then
+    Result := GetExecutionDir()
   else
-  begin
-    {$IFDEF UseLocalDirs}
-    Result := ExtractFilePath(ParamStr(0));
-    {$ELSE}
     Result := GetHomeDir() + '.ultrastardx/';
-    {$ENDIF}
-  end;
 end;
 
-(**
+{**
  * Returns the user's home directory terminated by a path delimiter
- *)
+ *}
 function TPlatformLinux.GetHomeDir(): string;
 {$IF FPC_VERSION_INT >= 2002002}
 var

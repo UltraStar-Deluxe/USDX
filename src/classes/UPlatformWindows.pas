@@ -214,18 +214,18 @@ end;
 
 function TPlatformWindows.GetLogPath: WideString;
 begin
-  Result := ExtractFilePath(ParamStr(0));
+  Result := GetExecutionDir();
 end;
 
 function TPlatformWindows.GetGameSharedPath: WideString;
 begin
-  Result := ExtractFilePath(ParamStr(0));
+  Result := GetExecutionDir();
 end;
 
 function TPlatformWindows.GetGameUserPath: WideString;
 begin
   //Result := GetSpecialPath(CSIDL_APPDATA) + PathDelim + 'UltraStarDX' + PathDelim;
-  Result := ExtractFilePath(ParamStr(0));
+  Result := GetExecutionDir();
 end;
 
 function TPlatformWindows.CopyFile(const Source, Target: WideString; FailIfExists: boolean): boolean;

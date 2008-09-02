@@ -57,7 +57,6 @@ const
   cHelp            = 'help';
   cDebug           = 'debug';
   cMediaInterfaces = 'showinterfaces';
-  cUseLocalPaths   = 'localpaths';
 
 
 implementation
@@ -98,11 +97,7 @@ begin
   writeln( '  '+s( 'Switch' ) +' : Purpose' );
   writeln( '  ----------------------------------------------------------' );
   writeln( '  '+s( cMediaInterfaces ) + #9 + ' : Show in-use media interfaces' );
-  writeln( '  '+s( cUseLocalPaths ) + #9 + ' : Use relative paths' );
   writeln( '  '+s( cDebug ) + #9 + ' : Display Debugging info' );
-
-
-
   writeln( '' );
 
   platform.halt;

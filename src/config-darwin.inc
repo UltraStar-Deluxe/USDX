@@ -5,10 +5,9 @@
 
 {* Paths *}
 
-{$UNDEF UseLocalDirs}
-{$IF (not Defined(UseLocalDirs)) and Defined(IncludeConstants)}
+{$IFDEF IncludeConstants}
   INSTALL_DATADIR = '/usr/local/share/ultrastardx';
-{$IFEND}
+{$ENDIF}
 
 {* Libraries *}
 
