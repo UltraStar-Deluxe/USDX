@@ -308,6 +308,9 @@ macosx-app: all
 # Copy the resources. 
 	$(MAKE) install-all INSTALL_DATADIR=$(macosx_bundle_path)/Resources bindir=$(macosx_bundle_path)/MacOS
 
+# Create the song directory. 
+	$(MKDIR) $(macosx_bundle_path)/Resources/songs
+
 # final messages
 	@echo ""
 	@echo "Mac OS X application created."
@@ -360,7 +363,7 @@ endef
 macosx-disk-image: macosx-standalone-app
 	$(RM) ultrastardx.dmg
 	$(HDIUTIL) create -type SPARSE -size 30m -fs HFS+ -volname UltraStarDeluxe -ov -attach UltraStarDeluxe.sparseimage
-	/bin/cp -R ../UltraStarDeluxe.app /Volumes/UltraStarDeluxe
+	/bin/cp -R UltraStarDeluxe.app /Volumes/UltraStarDeluxe
 #	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
 #	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
