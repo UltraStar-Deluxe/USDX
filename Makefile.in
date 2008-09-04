@@ -132,6 +132,18 @@ distclean: clean clean-game tidy
 	$(RM) $(USDX_SRC_DIR)/config.inc 
 	$(RM) Makefile $(USDX_SRC_DIR)/Makefile $(PROJECTM_CWRAPPER_DIR)/Makefile
 
+# remove Mac OS X apllication bundle and disk image
+.PHONY: clean-macosx
+clean-macosx: clean-macosx-app clean-macosx-dmg
+
+.PHONY: clean-macosx-app
+clean-macosx-app:
+	$(RM) -r UltraStarDeluxe.app 
+
+.PHONY: clean-macosx-dmg
+clean-macosx-dmg:
+	$(RM) UltraStarDeluxe.dmg 
+
 # remove temporary and backup files
 .PHONY: tidy
 tidy:
@@ -359,13 +371,13 @@ endef
 	@echo "Standalone Mac OS X application created."
 	@echo ""
 
-.PHONY: macosx-disk-image
-macosx-disk-image: macosx-standalone-app
-	$(RM) ultrastardx.dmg
+.PHONY: macosx-dmg
+macosx-dmg: macosx-standalone-app
+	$(RM) UltraStarDeluxe.dmg
 	$(HDIUTIL) create -type SPARSE -size 30m -fs HFS+ -volname UltraStarDeluxe -ov -attach UltraStarDeluxe.sparseimage
 	/bin/cp -R UltraStarDeluxe.app /Volumes/UltraStarDeluxe
 #	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
 #	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
-	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o ultrastardx.dmg
+	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
