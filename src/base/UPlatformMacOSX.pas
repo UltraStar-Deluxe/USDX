@@ -190,8 +190,7 @@ begin
   until (DirectoryIsFinished = DirectoryList.Count);
 
   // create missing folders
-  if not DirectoryExists(UserPathName) then
-    ForceDirectories(UserPathName);
+  ForceDirectories(UserPathName);        / should not be necessary since (UserPathName+'/.') is created.
   for Counter := 0 to DirectoryList.Count-1 do
   begin
     if not ForceDirectories(UserPathName + '/' + DirectoryList[Counter]) then
