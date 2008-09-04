@@ -1,6 +1,6 @@
 {***************************************************************** 
  * Configuration file for ultrastardx 1.1-alpha
- * config-darwin.inc.  Generated from config.inc.in by configure.
+ * src/config-darwin.inc.  Generated from config.inc.in by configure.
  *****************************************************************}
 
 {* Paths *}
