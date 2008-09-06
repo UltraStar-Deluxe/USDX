@@ -52,7 +52,7 @@ unit UFFT;
 
 interface
 type
-  TSingleArray = array[0..0] of Single;
+  TSingleArray = array[0 .. (MaxInt div SizeOf(Single))-1] of Single;
   PSingleArray = ^TSingleArray;
 
   TFFTWindowFunc = (
@@ -142,9 +142,11 @@ implementation
 uses
   SysUtils;
 
-type TIntArray = array[0..0] of Integer;
-type TIntIntArray = array[0..0] of ^TIntArray;
-var gFFTBitTable: ^TIntIntArray;
+type TIntArray = array[0 .. (MaxInt div SizeOf(Integer))-1] of Integer;
+type PIntArray = ^TIntArray;
+type TIntIntArray = array[0 .. (MaxInt div SizeOf(PIntArray))-1] of PIntArray;
+type PIntIntArray = ^TIntIntArray;
+var gFFTBitTable: PIntIntArray;
 const MaxFastBits: Integer = 16;
 
 function IsPowerOfTwo(x: Integer): Boolean;
@@ -197,9 +199,9 @@ begin
 
   len := 2;
   for b := 1 to MaxFastBits do begin
-    GetMem(gFFTBitTable^[b - 1], len * sizeof(Single));
+    GetMem(gFFTBitTable[b - 1], len * sizeof(Single));
     for i := 0 to len-1 do
-      gFFTBitTable^[b - 1][i] := ReverseBits(i, b);
+      gFFTBitTable[b - 1][i] := ReverseBits(i, b);
       len := len shl 1;
    end;
 end;
