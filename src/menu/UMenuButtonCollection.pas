@@ -2,6 +2,10 @@ unit UMenuButtonCollection;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses UMenuButton;

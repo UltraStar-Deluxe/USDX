@@ -2,10 +2,20 @@ unit UScreenOptionsLyrics;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  UIni,
+  UThemes;
 
 type
   TScreenOptionsLyrics = class(TMenu)

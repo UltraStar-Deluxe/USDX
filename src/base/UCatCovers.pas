@@ -6,9 +6,14 @@ unit UCatCovers;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
-uses UIni;
+uses
+  UIni;
 
 type
   TCatCovers = class

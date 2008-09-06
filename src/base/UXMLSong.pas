@@ -1,7 +1,15 @@
 unit UXMLSong;
 
 interface
-uses Classes;
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
+{$I switches.inc}
+
+uses
+  Classes;
 
 type
   TNote = record

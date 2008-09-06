@@ -2,9 +2,15 @@ unit UMenuStatic;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
-uses UTexture, gl;
+uses
+  UTexture,
+  gl;
 
 type
   TStatic = class

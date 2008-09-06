@@ -2,10 +2,14 @@ unit UJoystick;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
-
-uses SDL;
+uses
+  SDL;
 
 type
   TJoyButton = record

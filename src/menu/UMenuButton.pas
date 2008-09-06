@@ -2,9 +2,18 @@ unit UMenuButton;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$I switches.inc}
 
-uses TextGL, UTexture, gl, UMenuText,SDL;
+uses
+  TextGL,
+  UTexture,
+  gl,
+  UMenuText,
+  SDL;
 
 type
   CButton = class of TButton;

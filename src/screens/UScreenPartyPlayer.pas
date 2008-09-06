@@ -1,11 +1,21 @@
 unit UScreenPartyPlayer;
 
-Interface
+interface
+
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
 
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  SysUtils,
+  UThemes;
 
 type
   TScreenPartyPlayer = class(TMenu)
