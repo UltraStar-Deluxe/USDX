@@ -769,7 +769,7 @@ var
   PlayerIndex: integer;
   CurrentSound: TCaptureBuffer;
   CurrentPlayer: PPlayer;
-  LastPlayerNote: PPLayerNote;
+  LastPlayerNote: PPlayerNote;
   Line: PLine;
   SentenceIndex: integer;
   SentenceMin: integer;
@@ -823,7 +823,12 @@ begin
   begin
     CurrentPlayer := @Player[PlayerIndex];
     CurrentSound := AudioInputProcessor.Sound[PlayerIndex];
-    LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
+
+    // At the beginning of the song there is no previous note
+    if (Length(CurrentPlayer.Note) > 0) then
+      LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote]
+    else
+      LastPlayerNote := nil;
 
     // analyze buffer
     CurrentSound.AnalyzeBuffer;
@@ -902,8 +907,10 @@ begin
       begin
         // we will add a new note
         NewNote := true;
-        // if last has the same tone
+
+        // if previous note (if any) was the same, extend prrevious note
         if ((CurrentPlayer.LengthNote > 0) and
+            (LastPlayerNote <> nil) and
             (LastPlayerNote.Tone = CurrentSound.Tone) and
             ((LastPlayerNote.Start + LastPlayerNote.Length) = LyricsState.CurrentBeatD)) then
         begin
@@ -939,7 +946,8 @@ begin
         else
         begin
           // extend note length
-          Inc(LastPlayerNote.Length);
+          if (LastPlayerNote <> nil) then
+            Inc(LastPlayerNote.Length);
         end;
 
         // check for perfect note and then lit the star (on Draw)
