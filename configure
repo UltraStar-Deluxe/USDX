@@ -640,7 +640,6 @@ host_alias
 target_alias
 PACKAGE_WEBSITE
 PACKAGE_IRC
-INSTALL_DATADIR
 SET_MAKE
 LN_S
 MKDIR_P
@@ -649,6 +648,7 @@ INSTALL_SCRIPT
 INSTALL_DATA
 SED
 GREP
+ENABLE_DEBUG
 build
 build_cpu
 build_vendor
@@ -658,22 +658,25 @@ host_cpu
 host_vendor
 host_os
 PFLAGS
+PFLAGS_BASE
 PFLAGS_DEBUG
 PFLAGS_RELEASE
 PFLAGS_EXTRA
 PPC
 FPCMAKE
-PFLAGS_MAKE
+FPC_VERSION_MAJOR
+FPC_VERSION_MINOR
+FPC_VERSION_RELEASE
+FPC_VERSION_INT
 FPC_VERSION
 FPC_PLATFORM
 FPC_PROCESSOR
+FPC_CPLATFORM
+FPC_CPROCESSOR
+FPC_TARGET
 FPC_PREFIX
 FPC_BASE_PATH
 FPC_UNIT_PATH
-PPC_VERSION_MAJOR
-PPC_VERSION_MINOR
-PPC_VERSION_RELEASE
-PPC_VERSION_INT
 CC
 CFLAGS
 LDFLAGS
@@ -690,6 +693,8 @@ MACOSX_VERSION_MAJOR
 MACOSX_VERSION_MINOR
 MACOSX_VERSION_RELEASE
 MACOSX_VERSION_INT
+MACOSX_VERSION
+DARWIN_VERSION
 libavcodec_VERSION
 libavcodec_VERSION_MAJOR
 libavcodec_VERSION_MINOR
@@ -739,16 +744,21 @@ with_libprojectM
 with_cfg_dummy2
 enable_global
 enable_local
+enable_debug
 enable_dummy_fpc1
 with_fpc
-enable_release
-enable_debug
-enable_profile
+enable_verbose
+enable_gprof
+enable_valgrind
+enable_heaptrace
+enable_rangechecks
+enable_noexecstack
 '
       ac_precious_vars='build_alias
 host_alias
 target_alias
 PFLAGS
+PFLAGS_BASE
 PFLAGS_DEBUG
 PFLAGS_RELEASE
 PFLAGS_EXTRA
@@ -1404,21 +1414,25 @@ External Libraries:
 Development options:
   --enable-global         (DEPRECATED, DO NOT USE)
   --enable-local          (DEPRECATED, DO NOT USE)
+  --enable-debug          Enable debug build [default=no]
 
 Free Pascal Compiler specific options:
   --with-fpc=DIR          Directory of the FPC executable [PATH]
-  --enable-release        Enable FPC release options [default=yes]
-  --enable-debug          Enable FPC debug options (= --disable-release)
+  --disable-verbose       Disable verbose compiler output [default=no]
+  --enable-gprof          Enable profiling with gprof [default=no]
+  --enable-valgrind       Enable debugging with valgrind [default=no]
+  --enable-heaptrace      Enable heaptrace (memory corruption detection)
                           [default=no]
-  --enable-profile        Enable FPC profiling options [default=no]
+  --enable-rangechecks    Enables range-checks [default=no]
+  --disable-noexecstack   Allow executable stacks [default=no]
 
 Some influential environment variables:
   PFLAGS      Free Pascal Compiler flags (replaces all other flags)
+  PFLAGS_BASE Free Pascal Compiler base flags, e.g. -Si
   PFLAGS_DEBUG
-              Free Pascal Compiler debug flags [-gl -Coi -Xs- -vew
-              -dDEBUG_MODE]
+              Free Pascal Compiler debug flags, e.g. -gl
   PFLAGS_RELEASE
-              Free Pascal Compiler release flags [-O2 -Xs -vew]
+              Free Pascal Compiler release flags, e.g. -O2
   PFLAGS_EXTRA
               Free Pascal Compiler additional flags
   CC          C compiler command
@@ -1943,27 +1957,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 
-# set INSTALL_DATADIR to the expanded dataroot sub-directory for USDX.
-# Pascal is not able to handle shell-variables like ${prefix} that is
-# why we expand here.
-INSTALL_DATADIR_UNEXP="$datadir/$PACKAGE_NAME"
-
-  prefix_NONE=
-  exec_prefix_NONE=
-  test "x$prefix" = xNONE && prefix_NONE=yes && prefix=$ac_default_prefix
-  test "x$exec_prefix" = xNONE && exec_prefix_NONE=yes && exec_prefix=$prefix
-  eval ac_define_dir="\"$INSTALL_DATADIR_UNEXP\""
-  eval ac_define_dir="\"$ac_define_dir\""
-  INSTALL_DATADIR="$ac_define_dir"
-
-  cat >>confdefs.h <<_ACEOF
-#define INSTALL_DATADIR "$ac_define_dir"
-_ACEOF
-
-  test "$prefix_NONE" && prefix=NONE
-  test "$exec_prefix_NONE" && exec_prefix=NONE
-
-
 # -----------------------------------------
 # find tools
 # -----------------------------------------
@@ -2293,60 +2286,8 @@ $as_echo "$ac_cv_path_GREP" >&6; }
 # macro declarations
 # -----------------------------------------
 
-# AC_TRIM(STRING)
-# removes surrounding whitespace
-# -------------------------------------------
-
-
 # AC_SUBST_DEFINE(DEFINE_SUFFIX, IS_DEFINED)
 # used to enable/disable pascal defines
-
-
-# AC_SPLIT_VERSION(VARIABLE_PREFIX, VERSION)
-# Splits version number ("major.minor.release") into its components.
-# Sets
-#   [$VARIABLE_PREFIX]_VERSION_MAJOR
-#   [$VARIABLE_PREFIX]_VERSION_MINOR
-#   [$VARIABLE_PREFIX]_VERSION_RELEASE
-# This function calls
-#   AC_SUBST([$VARIABLE_PREFIX]_VERSION_type] for each type
-
-
-# PKG_VALUE(VARIABLE_PREFIX, POSTFIX, COMMAND, MODULE, HELP-STRING)
-# -----------------------------------------------------
-
-
-# PKG_VERSION(VARIABLE_PREFIX, MODULE)
-#   Checks version of a package
-# Parameters:
-# - VARIABLE_PREFIX: the prefix for the variables storing information about the package.
-# - MODULE:          package name according to pkg-config
-# Sets:
-#   [$VARIABLE_PREFIX]_VERSION         # full version string (format: "major.minor.release")
-#   [$VARIABLE_PREFIX]_VERSION_MAJOR   # major version number
-#   [$VARIABLE_PREFIX]_VERSION_MINOR   # minor version number
-#   [$VARIABLE_PREFIX]_VERSION_RELEASE # release version number
-#   [$VARIABLE_PREFIX]_VERSION_INT     # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
-
-
-# PKG_HAVE(VARIABLE_PREFIX, MODULE, [REQUIRED])
-#   Checks with pkg-config if a package exists and retrieves information
-#   about it.
-# Parameters:
-# - VARIABLE_PREFIX: the prefix for the variables storing information about the package.
-# - MODULE:   package name according to pkg-config
-# - REQUIRED: if true, the configure-script is aborted if the package was not found
-# Uses:
-#   with_[$VARIABLE_PREFIX]: whether and how the package should be checked for
-#     "check":   check for the package but do not abort if it does not exist (default)
-#     "no":      do not check for the package (sets _HAVE to "no" and _VERSION to "0.0.0")
-#     "yes":     check for the package and abort if it does not exist
-#     "nocheck": do not check for the package (sets _HAVE to "yes")
-# Sets:
-#   [$VARIABLE_PREFIX]_HAVE       # package is available (values: "yes"|"no")
-#   [$VARIABLE_PREFIX]_LIBS       # linker flags (e.g. -Lmylibdir -lmylib)
-#   [$VARIABLE_PREFIX]_LIBDIRS    # library dirs (e.g. -Lmylibdir)
-
 
 
 # -----------------------------------------
@@ -2416,6 +2357,13 @@ $as_echo "$as_me:
 " >&6;}
    sleep 2
 fi
+
+# Check whether --enable-debug was given.
+if test "${enable_debug+set}" = set; then
+  enableval=$enable_debug; test $enableval = "yes" && ENABLE_DEBUG="yes"
+fi
+
+
 
 # -----------------------------------------
 # check for compilers
@@ -2509,15 +2457,19 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 # sets PFLAGS, FPC_VERSION, FPC_DEBUG, etc.
 
 
+##
+# User PFLAGS
+##
 
 
 
 
 
 
-PFLAGS_DEBUG=${PFLAGS_DEBUG-"-gl -Xs- -vew -dDEBUG_MODE"}
-PFLAGS_RELEASE=${PFLAGS_RELEASE-"-O2 -Xs -vew"}
 
+##
+# Compiler options
+##
 
 # Check whether --enable-dummy_fpc1 was given.
 if test "${enable_dummy_fpc1+set}" = set; then
@@ -2525,6 +2477,7 @@ if test "${enable_dummy_fpc1+set}" = set; then
 fi
 
 
+# fpc path
 
 # Check whether --with-fpc was given.
 if test "${with_fpc+set}" = set; then
@@ -2532,46 +2485,59 @@ if test "${with_fpc+set}" = set; then
 fi
 
 
-FPC_DEBUG="no"
-
-# Check whether --enable-release was given.
-if test "${enable_release+set}" = set; then
-  enableval=$enable_release; test $enableval = "no" && FPC_DEBUG="yes"
+# verbose
+# Check whether --enable-verbose was given.
+if test "${enable_verbose+set}" = set; then
+  enableval=$enable_verbose; test x$enableval = xno && PFLAGS_EXTRA="$PFLAGS_EXTRA -v0Bew"
 fi
 
 
-# Check whether --enable-debug was given.
-if test "${enable_debug+set}" = set; then
-  enableval=$enable_debug; test $enableval = "yes" && FPC_DEBUG="yes"
+# gprof
+# Check whether --enable-gprof was given.
+if test "${enable_gprof+set}" = set; then
+  enableval=$enable_gprof; test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -pg"
 fi
 
 
-# Check whether --enable-profile was given.
-if test "${enable_profile+set}" = set; then
-  enableval=$enable_profile; PFLAGS_EXTRA="$PFLAGS_EXTRA -pg"
+# valgrind
+# Check whether --enable-valgrind was given.
+if test "${enable_valgrind+set}" = set; then
+  enableval=$enable_valgrind; test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -pv"
 fi
 
 
+# heaptrace
+# Check whether --enable-heaptrace was given.
+if test "${enable_heaptrace+set}" = set; then
+  enableval=$enable_heaptrace; test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -gh"
+fi
 
-if test x${PFLAGS+assigned} = x; then
-	if test x$FPC_DEBUG = xyes; then
-		PFLAGS="$PFLAGS_DEBUG"
-		PFLAGS_MAKE="\$(PFLAGS_DEBUG)"
-	else
-		PFLAGS="$PFLAGS_RELEASE"
-		PFLAGS_MAKE="\$(PFLAGS_RELEASE)"
-	fi
+
+# range-checks
+# Check whether --enable-rangechecks was given.
+if test "${enable_rangechecks+set}" = set; then
+  enableval=$enable_rangechecks; test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -Crtoi"
+fi
+
+
+# allow execstack (see noexecstack compiler check below)
+# Check whether --enable-noexecstack was given.
+if test "${enable_noexecstack+set}" = set; then
+  enableval=$enable_noexecstack;
 else
-	PFLAGS="$PFLAGS"
-	PFLAGS_MAKE="$PFLAGS"
+  enable_noexecstack="yes"
 fi
 
 
-PPC_CHECK_PROGS="fpc FPC ppc386 ppc PPC386 ppos2"
+###
+# Find compiler executable
+###
+
+PPC_CHECK_PROGS="fpc FPC ppc386 ppc PPC386"
 
 if test -z "$PPC_PATH"; then
-	PPC_PATH=$PATH
-	for ac_prog in $PPC_CHECK_PROGS
+    PPC_PATH=$PATH
+    for ac_prog in $PPC_CHECK_PROGS
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -2613,7 +2579,7 @@ fi
   test -n "$PPC" && break
 done
 
-	for ac_prog in fpcmake
+    for ac_prog in fpcmake
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -2656,7 +2622,7 @@ fi
 done
 
 else
-	for ac_prog in $PPC_CHECK_PROGS
+    for ac_prog in $PPC_CHECK_PROGS
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -2701,7 +2667,7 @@ fi
   test -n "$PPC" && break
 done
 
-	for ac_prog in fpcmake
+    for ac_prog in fpcmake
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -2748,122 +2714,218 @@ done
 
 fi
 if test -z "$PPC"; then
-	{ { $as_echo "$as_me:$LINENO: error: no Free Pascal Compiler found in $PPC_PATH" >&5
+    { { $as_echo "$as_me:$LINENO: error: no Free Pascal Compiler found in $PPC_PATH" >&5
 $as_echo "$as_me: error: no Free Pascal Compiler found in $PPC_PATH" >&2;}
    { (exit 1); exit 1; }; }
 fi
 if test -z "$FPCMAKE"; then
-	{ { $as_echo "$as_me:$LINENO: error: fpcmake not found in $PPC_PATH" >&5
+    { { $as_echo "$as_me:$LINENO: error: fpcmake not found in $PPC_PATH" >&5
 $as_echo "$as_me: error: fpcmake not found in $PPC_PATH" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
-{ $as_echo "$as_me:$LINENO: checking whether the Free Pascal Compiler ($PPC $PFLAGS_TEST) works" >&5
-$as_echo_n "checking whether the Free Pascal Compiler ($PPC $PFLAGS_TEST) works... " >&6; }
-if test "${ac_cv_prog_ppc_works+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
+###
+# Get the FPC compiler info
+###
 
-rm -f conftest*
-echo "program foo; begin writeln; end." > conftest.pp
-${PPC} ${PFLAGS_TEST} conftest.pp >> config.log
-
-if test -f conftest || test -f conftest.exe; then
-	ac_cv_prog_ppc_works="yes"
-
-else
-	ac_cv_prog_ppc_works="no"
-fi
-rm -f conftest*
-if test x$ac_cv_prog_ppc_works = xno; then
-	{ { $as_echo "$as_me:$LINENO: error: installation or configuration problem: Cannot create executables." >&5
-$as_echo "$as_me: error: installation or configuration problem: Cannot create executables." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_prog_ppc_works" >&5
-$as_echo "$ac_cv_prog_ppc_works" >&6; }
-{ $as_echo "$as_me:$LINENO: checking whether the Free Pascal Compiler ($PPC $PFLAGS_TEST) can link" >&5
-$as_echo_n "checking whether the Free Pascal Compiler ($PPC $PFLAGS_TEST) can link... " >&6; }
-if test "${ac_cv_prog_ppc_works+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-
-rm -f conftest*
-echo "program foo; uses crt; begin writeln; end." > conftest.pp
-${PPC} ${PFLAGS_TEST} conftest.pp >> config.log
-if test -f conftest || test -f conftest.exe; then
-	ac_cv_prog_ppc_links="yes"
-else
-	ac_cv_prog_ppc_links="no"
-fi
-rm -f conftest*
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_prog_ppc_links" >&5
-$as_echo "$ac_cv_prog_ppc_links" >&6; }
-if test x$ac_cv_prog_ppc_links = xno; then
-	{ { $as_echo "$as_me:$LINENO: error: installation or configuration problem: Cannot link with some standard libraries." >&5
-$as_echo "$as_me: error: installation or configuration problem: Cannot link with some standard libraries." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_prog_ppc_works" >&5
-$as_echo "$ac_cv_prog_ppc_works" >&6; }
-
+{ $as_echo "$as_me:$LINENO: checking version of fpc" >&5
+$as_echo_n "checking version of fpc... " >&6; }
 FPC_VERSION=`${PPC} -iV`
-FPC_PLATFORM=`${PPC} -iTO`
-FPC_PROCESSOR=`${PPC} -iTP`
-
-if test "x$prefix" != xNONE; then
-	FPC_PREFIX=$prefix
-else
-	FPC_PREFIX=$ac_default_prefix
-fi
-FPC_BASE_PATH="${FPC_PREFIX}/lib/fpc/${FPC_VERSION}"
-FPC_UNIT_PATH="${FPC_BASE_PATH}/units/${FPC_PLATFORM}"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# FPC_VERSION is already defined by FPC, use
-# PPC as prefix instead.
 
     version=$FPC_VERSION
 
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
 
     # strip preceding 0s and set unset version-parts to 0
-    PPC_VERSION_MAJOR=$(($major))
-    PPC_VERSION_MINOR=$(($minor))
-    PPC_VERSION_RELEASE=$(($release))
+    FPC_VERSION_MAJOR=$(($major))
+    FPC_VERSION_MINOR=$(($minor))
+    FPC_VERSION_RELEASE=$(($release))
     # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
     # can be used if pkg-config's comparison fails
-    PPC_VERSION_INT=$(($PPC_VERSION_MAJOR*1000000+$PPC_VERSION_MINOR*1000+$PPC_VERSION_RELEASE))
+    FPC_VERSION_INT=$(($FPC_VERSION_MAJOR*1000000+$FPC_VERSION_MINOR*1000+$FPC_VERSION_RELEASE))
+
+
+
+
+
+
+
+{ $as_echo "$as_me:$LINENO: result: [$FPC_VERSION]" >&5
+$as_echo "[$FPC_VERSION]" >&6; }
+
+FPC_PLATFORM=`${PPC} -iTO`
+FPC_PROCESSOR=`${PPC} -iTP`
+FPC_CPLATFORM=`${PPC} -iSO`
+FPC_CPROCESSOR=`${PPC} -iSP`
+
+FPC_TARGET=${FPC_PROCESSOR}-${FPC_PLATFORM}
+
+
+
+
+
+
+
+
+###
+# Get paths
+###
+
+if test "x$prefix" != xNONE; then
+    FPC_PREFIX=$prefix
+else
+    FPC_PREFIX=$ac_default_prefix
+fi
+
+FPC_BASE_PATH="${FPC_PREFIX}/lib/fpc/${FPC_VERSION}"
+FPC_UNIT_PATH="${FPC_BASE_PATH}/units/${FPC_TARGET}"
+
+
+
+
+
+###
+# Compiler checks
+###
+
+SIMPLE_PROGRAM="program foo; begin writeln; end."
+
+# Check if FPC works and can compile a program
+{ $as_echo "$as_me:$LINENO: checking whether the Free Pascal Compiler works" >&5
+$as_echo_n "checking whether the Free Pascal Compiler works... " >&6; }
+if test "${ac_cv_prog_ppc_works+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+
+
+    # create test file
+    rm -f conftest*
+    echo "$SIMPLE_PROGRAM" > conftest.pp
+
+    # compile test file
+    ${PPC}  conftest.pp >> config.log 2>&1
+
+    # check if test file was compiled
+    if test -f conftest || test -f conftest.exe; then
+        ac_cv_prog_ppc_works="yes"
+    else
+        ac_cv_prog_ppc_works="no"
+    fi
+
+    # remove test file
+    rm -f conftest*
+
+
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_prog_ppc_works" >&5
+$as_echo "$ac_cv_prog_ppc_works" >&6; }
+if test x$ac_cv_prog_ppc_works = xno; then
+    { { $as_echo "$as_me:$LINENO: error: installation or configuration problem: Cannot create executables." >&5
+$as_echo "$as_me: error: installation or configuration problem: Cannot create executables." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+# Check if FPC can link with standard libraries
+{ $as_echo "$as_me:$LINENO: checking whether the Free Pascal Compiler can link" >&5
+$as_echo_n "checking whether the Free Pascal Compiler can link... " >&6; }
+if test "${ac_cv_prog_ppc_links+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+
+
+    # create test file
+    rm -f conftest*
+    echo "program foo; uses crt; begin writeln; end.
+    " > conftest.pp
+
+    # compile test file
+    ${PPC}  conftest.pp >> config.log 2>&1
+
+    # check if test file was compiled
+    if test -f conftest || test -f conftest.exe; then
+        ac_cv_prog_ppc_links="yes"
+    else
+        ac_cv_prog_ppc_links="no"
+    fi
+
+    # remove test file
+    rm -f conftest*
+
+
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_prog_ppc_links" >&5
+$as_echo "$ac_cv_prog_ppc_links" >&6; }
+if test x$ac_cv_prog_ppc_links = xno; then
+    { { $as_echo "$as_me:$LINENO: error: installation or configuration problem: Cannot link with some standard libraries." >&5
+$as_echo "$as_me: error: installation or configuration problem: Cannot link with some standard libraries." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+# Check whether FPC's linker knows "-z noexecstack"
+# FPC does not set the NX-flag on stack memory. Binaries generated with FPC
+# might crash on platforms that require the stack to be non-executable.
+# So we will try to find a workaround here.
+# See http://bugs.freepascal.org/view.php?id=11563
+
+{ $as_echo "$as_me:$LINENO: checking whether FPC supports -k\"-z noexecstack\"" >&5
+$as_echo_n "checking whether FPC supports -k\"-z noexecstack\"... " >&6; }
+if test "${ac_cv_prog_ppc_noexecstack+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+
+
+    # create test file
+    rm -f conftest*
+    echo "$SIMPLE_PROGRAM" > conftest.pp
+
+    # compile test file
+    ${PPC} -k"-z noexecstack" conftest.pp >> config.log 2>&1
+
+    # check if test file was compiled
+    if test -f conftest || test -f conftest.exe; then
+        ac_cv_prog_ppc_noexecstack="yes"
+    else
+        ac_cv_prog_ppc_noexecstack="no"
+    fi
+
+    # remove test file
+    rm -f conftest*
+
+
+fi
+{ $as_echo "$as_me:$LINENO: result: $ac_cv_prog_ppc_noexecstack" >&5
+$as_echo "$ac_cv_prog_ppc_noexecstack" >&6; }
+if test x$enable_noexecstack = xyes; then
+    if test x$ac_cv_prog_ppc_noexecstack = xyes; then
+        PFLAGS_EXTRA="$PFLAGS_EXTRA -k\"-z noexecstack\""
+    fi
+fi
+
+# Finally substitute PFLAGS
+
+# set unset PFLAGS_XYZ vars to $(PFLAGS_XYZ_DEFAULT)
+# so the Makefile can define default values to it.
+true ${PFLAGS:=\$(PFLAGS_DEFAULT)}
+true ${PFLAGS_BASE:=\$(PFLAGS_BASE_DEFAULT)}
+true ${PFLAGS_EXTRA:=\$(PFLAGS_EXTRA_DEFAULT)}
+true ${PFLAGS_DEBUG:=\$(PFLAGS_DEBUG_DEFAULT)}
+true ${PFLAGS_RELEASE:=\$(PFLAGS_RELEASE_DEFAULT)}
+
+
 
 
 
@@ -4429,24 +4491,26 @@ fi
 # check for OS
 # -----------------------------------------
 
-if [ x$FPC_PLATFORM = xdarwin ]; then
-   { $as_echo "$as_me:$LINENO: checking for Mac OS X version" >&5
+if test x$FPC_PLATFORM = xdarwin; then
+
+    { $as_echo "$as_me:$LINENO: checking for Mac OS X version" >&5
 $as_echo_n "checking for Mac OS X version... " >&6; }
-   MACOSX_VERSION=`sw_vers -productVersion`
+    MACOSX_VERSION=`sw_vers -productVersion`
 
     version=$MACOSX_VERSION
 
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
@@ -4464,8 +4528,17 @@ eof
 
 
 
-   { $as_echo "$as_me:$LINENO: result: [$MACOSX_VERSION]" >&5
+    { $as_echo "$as_me:$LINENO: result: [$MACOSX_VERSION]" >&5
 $as_echo "[$MACOSX_VERSION]" >&6; }
+
+
+    { $as_echo "$as_me:$LINENO: checking for Darwin version" >&5
+$as_echo_n "checking for Darwin version... " >&6; }
+    DARWIN_VERSION=`uname -r | cut -f1 -d.`
+    { $as_echo "$as_me:$LINENO: result: [$DARWIN_VERSION]" >&5
+$as_echo "[$DARWIN_VERSION]" >&6; }
+
+
 fi
 
 # -----------------------------------------
@@ -4492,7 +4565,8 @@ $as_echo_n "checking for libpng... " >&6; }
             have_lib="yes"
             libpng_LIBS=`$PKG_CONFIG --libs --silence-errors "libpng"`
             libpng_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libpng"`
-            libpng_LIBDIRS=`echo "$libpng_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            libpng_LIBDIRS=`
+    echo "$libpng_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$libpng_LIBDIRS"; then
@@ -4565,7 +4639,8 @@ $as_echo_n "checking for sdl... " >&6; }
             have_lib="yes"
             sdl_LIBS=`$PKG_CONFIG --libs --silence-errors "sdl"`
             sdl_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "sdl"`
-            sdl_LIBDIRS=`echo "$sdl_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            sdl_LIBDIRS=`
+    echo "$sdl_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$sdl_LIBDIRS"; then
@@ -4638,7 +4713,8 @@ $as_echo_n "checking for sqlite3... " >&6; }
             have_lib="yes"
             sqlite3_LIBS=`$PKG_CONFIG --libs --silence-errors "sqlite3"`
             sqlite3_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "sqlite3"`
-            sqlite3_LIBDIRS=`echo "$sqlite3_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            sqlite3_LIBDIRS=`
+    echo "$sqlite3_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$sqlite3_LIBDIRS"; then
@@ -4718,7 +4794,8 @@ $as_echo_n "checking for libavcodec... " >&6; }
             have_lib="yes"
             libavcodec_LIBS=`$PKG_CONFIG --libs --silence-errors "libavcodec"`
             libavcodec_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libavcodec"`
-            libavcodec_LIBDIRS=`echo "$libavcodec_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            libavcodec_LIBDIRS=`
+    echo "$libavcodec_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$libavcodec_LIBDIRS"; then
@@ -4829,14 +4906,15 @@ $as_echo "[$libavcodec_VERSION]" >&6; }
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
@@ -5082,7 +5160,8 @@ $as_echo_n "checking for libavformat... " >&6; }
             have_lib="yes"
             libavformat_LIBS=`$PKG_CONFIG --libs --silence-errors "libavformat"`
             libavformat_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libavformat"`
-            libavformat_LIBDIRS=`echo "$libavformat_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            libavformat_LIBDIRS=`
+    echo "$libavformat_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$libavformat_LIBDIRS"; then
@@ -5193,14 +5272,15 @@ $as_echo "[$libavformat_VERSION]" >&6; }
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
@@ -5238,7 +5318,8 @@ $as_echo_n "checking for libavutil... " >&6; }
             have_lib="yes"
             libavutil_LIBS=`$PKG_CONFIG --libs --silence-errors "libavutil"`
             libavutil_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libavutil"`
-            libavutil_LIBDIRS=`echo "$libavutil_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            libavutil_LIBDIRS=`
+    echo "$libavutil_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$libavutil_LIBDIRS"; then
@@ -5349,14 +5430,15 @@ $as_echo "[$libavutil_VERSION]" >&6; }
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
@@ -5409,7 +5491,8 @@ $as_echo_n "checking for libswscale... " >&6; }
             have_lib="yes"
             libswscale_LIBS=`$PKG_CONFIG --libs --silence-errors "libswscale"`
             libswscale_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libswscale"`
-            libswscale_LIBDIRS=`echo "$libswscale_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            libswscale_LIBDIRS=`
+    echo "$libswscale_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$libswscale_LIBDIRS"; then
@@ -5520,14 +5603,15 @@ $as_echo "[$libswscale_VERSION]" >&6; }
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
@@ -5577,7 +5661,8 @@ $as_echo_n "checking for $libprojectM_PKG... " >&6; }
             have_lib="yes"
             libprojectM_LIBS=`$PKG_CONFIG --libs --silence-errors "$libprojectM_PKG"`
             libprojectM_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "$libprojectM_PKG"`
-            libprojectM_LIBDIRS=`echo "$libprojectM_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            libprojectM_LIBDIRS=`
+    echo "$libprojectM_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$libprojectM_LIBDIRS"; then
@@ -5688,14 +5773,15 @@ $as_echo "[$libprojectM_VERSION]" >&6; }
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
@@ -5841,7 +5927,8 @@ $as_echo_n "checking for portaudio-2.0... " >&6; }
             have_lib="yes"
             portaudio_LIBS=`$PKG_CONFIG --libs --silence-errors "portaudio-2.0"`
             portaudio_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "portaudio-2.0"`
-            portaudio_LIBDIRS=`echo "$portaudio_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            portaudio_LIBDIRS=`
+    echo "$portaudio_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$portaudio_LIBDIRS"; then
@@ -5952,14 +6039,15 @@ $as_echo "[$portaudio_VERSION]" >&6; }
     # strip leading non-numeric tokens
     # (necessary for some ffmpeg-packages in ubuntu)
     # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[^.]*[^0-9.][^.]*\.//'`
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
 
     # replace "." and "-" with " " and ignore trailing tokens.
     # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
     read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[^0-9\ ].*//'`
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
@@ -6006,7 +6094,8 @@ $as_echo_n "checking for portmixer... " >&6; }
             have_lib="yes"
             portmixer_LIBS=`$PKG_CONFIG --libs --silence-errors "portmixer"`
             portmixer_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "portmixer"`
-            portmixer_LIBDIRS=`echo "$portmixer_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            portmixer_LIBDIRS=`
+    echo "$portmixer_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
 	    if test -n "$portmixer_LIBDIRS"; then
