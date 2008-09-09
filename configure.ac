@@ -6,6 +6,10 @@
 # Execute "dists/autogen/autogen.sh" or "make reconf"
 # to create the configure script.
 #
+# Helper macros have been separated to
+#   ax_extract_version.m4 (AX_EXTRACT_VERSION)
+#   pkg_config_utils.m4   (PKG_VALUE, PKG_VERSION, PKG_HAVE)
+#
 
 # Require autoconf >= 2.61
 AC_PREREQ(2.61)
@@ -30,12 +34,6 @@ AC_CONFIG_AUX_DIR(dists/autogen)
 # show features and packages in one list
 AC_PRESERVE_HELP_ORDER
 
-# set INSTALL_DATADIR to the expanded dataroot sub-directory for USDX.
-# Pascal is not able to handle shell-variables like ${prefix} that is
-# why we expand here.
-INSTALL_DATADIR_UNEXP="$datadir/$PACKAGE_NAME"
-AC_DEFINE_DIR(INSTALL_DATADIR, INSTALL_DATADIR_UNEXP)
-
 # -----------------------------------------
 # find tools
 # -----------------------------------------
@@ -58,13 +56,6 @@ AC_PROG_GREP
 # macro declarations
 # -----------------------------------------
 
-# AC_TRIM(STRING)
-# removes surrounding whitespace
-# -------------------------------------------
-AC_DEFUN([AC_TRIM],
-[echo "[$1]" | $SED 's/^[[ \t]]*//' | $SED 's/[[ \t]]*$//'
-])
-
 # AC_SUBST_DEFINE(DEFINE_SUFFIX, IS_DEFINED)
 # used to enable/disable pascal defines
 AC_DEFUN([AC_SUBST_DEFINE],
@@ -76,170 +67,6 @@ AC_DEFUN([AC_SUBST_DEFINE],
     fi
     AC_SUBST(DEFINE_[$1])
 ])
-
-# AC_SPLIT_VERSION(VARIABLE_PREFIX, VERSION)
-# Splits version number ("major.minor.release") into its components.
-# Sets
-#   [$VARIABLE_PREFIX]_VERSION_MAJOR
-#   [$VARIABLE_PREFIX]_VERSION_MINOR
-#   [$VARIABLE_PREFIX]_VERSION_RELEASE
-# This function calls
-#   AC_SUBST([$VARIABLE_PREFIX]_VERSION_type] for each type
-AC_DEFUN([AC_SPLIT_VERSION],
-[
-    version=[$2]    
-
-    # strip leading non-numeric tokens 
-    # (necessary for some ffmpeg-packages in ubuntu)
-    # example: 0d.51.1.0 -> 51.1.0
-    version=`echo $version | $SED 's/^[[^.]]*[[^0-9.]][[^.]]*\.//'`
-
-    # replace "." and "-" with " " and ignore trailing tokens.
-    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
-    # In addition we delete every character which is not 0-9.
-    # 1.3a4-r32 will be [maj=1, min=34, rel=32].
-    read major minor release ignore <<eof
-        `echo $version | tr '.-' ' ' | $SED 's/[[^0-9\ ]].*//'` 
-eof
-    # Note: Do NOT indent the eof-delimiter
-    # We use a here-document (<<< here-strings not POSIX compatible)
-
-    # strip preceding 0s and set unset version-parts to 0
-    [$1][_VERSION_MAJOR]=$(($major))
-    [$1][_VERSION_MINOR]=$(($minor))
-    [$1][_VERSION_RELEASE]=$(($release))
-    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
-    # can be used if pkg-config's comparison fails
-    [$1][_VERSION_INT]=$(($[$1][_VERSION_MAJOR]*1000000+$[$1][_VERSION_MINOR]*1000+$[$1][_VERSION_RELEASE]))
-
-    AC_SUBST([$1][_VERSION_MAJOR])
-    AC_SUBST([$1][_VERSION_MINOR])
-    AC_SUBST([$1][_VERSION_RELEASE])
-    AC_SUBST([$1][_VERSION_INT])
-])
-
-# PKG_VALUE(VARIABLE_PREFIX, POSTFIX, COMMAND, MODULE, HELP-STRING)
-# -----------------------------------------------------
-AC_DEFUN([PKG_VALUE],
-[
-    AC_ARG_VAR([$1]_[$2], [$5, overriding pkg-config])   
-    # check if variable was defined by the user
-    if test -z "$[$1]_[$2]"; then
-        # if not, get it from pkg-config
-        if test x$[$1][_HAVE] = xyes; then
-            PKG_CHECK_EXISTS([$4],
-                [[$1]_[$2]=`$PKG_CONFIG --[$3] --silence-errors "$4"`],
-                [# print error message and quit
-                 err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "$4"`
-                 AC_MSG_ERROR(
-[
-
-$err_msg
-
-If --with-[$1]=nocheck is defined the environment variable 
-[$1]_[$2]
-must be set to avoid the need to call pkg-config.
-
-See the pkg-config man page for more details.
-])
-
-                ])
-        fi
-    fi
-    AC_SUBST([$1]_[$2])
-])
-
-# PKG_VERSION(VARIABLE_PREFIX, MODULE)
-#   Checks version of a package
-# Parameters:
-# - VARIABLE_PREFIX: the prefix for the variables storing information about the package.
-# - MODULE:          package name according to pkg-config
-# Sets:
-#   [$VARIABLE_PREFIX]_VERSION         # full version string (format: "major.minor.release")
-#   [$VARIABLE_PREFIX]_VERSION_MAJOR   # major version number
-#   [$VARIABLE_PREFIX]_VERSION_MINOR   # minor version number
-#   [$VARIABLE_PREFIX]_VERSION_RELEASE # release version number
-#   [$VARIABLE_PREFIX]_VERSION_INT     # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
-AC_DEFUN([PKG_VERSION],
-[
-    if test x$[$1][_HAVE] = xyes; then
-        AC_MSG_CHECKING([version of $1])
-        PKG_VALUE([$1], [VERSION], [modversion], [$2], [version of $1])   
-        AC_MSG_RESULT(@<:@$[$1][_VERSION]@:>@)
-    else
-        [$1][_VERSION]="0.0.0"
-    fi
-    AC_SPLIT_VERSION([$1], $[$1][_VERSION])
-])
-
-# PKG_HAVE(VARIABLE_PREFIX, MODULE, [REQUIRED])
-#   Checks with pkg-config if a package exists and retrieves information 
-#   about it.
-# Parameters:
-# - VARIABLE_PREFIX: the prefix for the variables storing information about the package.
-# - MODULE:   package name according to pkg-config
-# - REQUIRED: if true, the configure-script is aborted if the package was not found
-# Uses:
-#   with_[$VARIABLE_PREFIX]: whether and how the package should be checked for
-#     "check":   check for the package but do not abort if it does not exist (default)
-#     "no":      do not check for the package (sets _HAVE to "no" and _VERSION to "0.0.0")
-#     "yes":     check for the package and abort if it does not exist
-#     "nocheck": do not check for the package (sets _HAVE to "yes")
-# Sets:
-#   [$VARIABLE_PREFIX]_HAVE       # package is available (values: "yes"|"no")
-#   [$VARIABLE_PREFIX]_LIBS       # linker flags (e.g. -Lmylibdir -lmylib)
-#   [$VARIABLE_PREFIX]_LIBDIRS    # library dirs (e.g. -Lmylibdir)
-AC_DEFUN([PKG_HAVE],
-[
-    have_lib="no"
-    AC_MSG_CHECKING([for $2])
-    if test x"$with_[$1]" = xnocheck; then
-        # do not call pkg-config, use user settings
-        have_lib="yes"
-    elif test x"$with_[$1]" != xno; then
-        # check if package exists
-	PKG_CHECK_EXISTS([$2], [
-            have_lib="yes"
-            [$1][_LIBS]=`$PKG_CONFIG --libs --silence-errors "$2"`
-            [$1][_LIBDIRS]=`$PKG_CONFIG --libs-only-L --silence-errors "$2"`
-            [$1][_LIBDIRS]=`AC_TRIM($[$1][_LIBDIRS])`
-            # add library directories to LIBS (ignore *_LIBS for now)
-	    if test -n "$[$1][_LIBDIRS]"; then
-                LIBS="$LIBS $[$1][_LIBDIRS]"
-            fi
-        ])
-    fi
-    if test x$have_lib = xyes; then
-        [$1][_HAVE]="yes"
-        if test -n "$[$1][_LIBDIRS]"; then
-            # show additional lib-dirs
-            AC_MSG_RESULT(yes [(]$[$1][_LIBDIRS][)])
-        else
-            AC_MSG_RESULT(yes)
-        fi
-    else
-        [$1][_HAVE]="no"
-        AC_MSG_RESULT(no)
-
-        # check if package is required
-        if test x$3 = xyes -o x"$with_[$1]" = xyes ; then
-            # print error message and quit
-            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "$2"`
-            AC_MSG_ERROR(
-[
-
-$err_msg
-
-Alternatively, you may set --with-[$1]=nocheck and the environment
-variables [$1]_[[...]] (see configure --help) 
-to appropriate values to avoid the need to call pkg-config.
-
-See the pkg-config man page for more details.
-])
-        fi
-    fi
-])
-
 
 # -----------------------------------------
 # define switches
@@ -279,6 +106,12 @@ if [[ x$enable_global != x -o x$enable_local != x ]]; then
    sleep 2
 fi
 
+AC_ARG_ENABLE(debug,
+  [AS_HELP_STRING([--enable-debug],
+    [Enable debug build @<:@default=no@:>@])],
+  [test $enableval = "yes" && ENABLE_DEBUG="yes"], [])
+AC_SUBST(ENABLE_DEBUG)
+
 # -----------------------------------------
 # check for compilers
 # -----------------------------------------
@@ -288,9 +121,6 @@ AC_CANONICAL_HOST
 # find and test the freepascal compiler
 # sets PFLAGS, FPC_VERSION, FPC_DEBUG, etc.
 AC_PROG_FPC
-# FPC_VERSION is already defined by FPC, use
-# PPC as prefix instead.
-AC_SPLIT_VERSION(PPC, $FPC_VERSION)
 
 # find and test the C compiler (for C-libs and wrappers)
 AC_PROG_CC
@@ -316,11 +146,8 @@ fi
 # check for OS
 # -----------------------------------------
 
-if [[ x$FPC_PLATFORM = xdarwin ]]; then
-   AC_MSG_CHECKING([for Mac OS X version])
-   MACOSX_VERSION=`sw_vers -productVersion`
-   AC_SPLIT_VERSION(MACOSX, $MACOSX_VERSION)
-   AC_MSG_RESULT(@<:@$MACOSX_VERSION@:>@)
+if test x$FPC_PLATFORM = xdarwin; then
+   AC_MACOSX_VERSION
 fi
 
 # -----------------------------------------

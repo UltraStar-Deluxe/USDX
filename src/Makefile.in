@@ -4,11 +4,16 @@
 #################################################
 
 @SET_MAKE@
+SHELL = /bin/sh
 
 #################################################
 # Standard definitions
 #################################################
 
+prefix      ?= @prefix@
+exec_prefix ?= @exec_prefix@
+datarootdir ?= @datarootdir@
+datadir     ?= @datadir@
 # project root-dir (directory of configure script)
 top_srcdir  ?= @top_srcdir@
 # project src-dir (directory of the current Makefile)
@@ -27,6 +32,14 @@ RM        ?= rm -f
 RM_REC    ?= $(RM) -r
 
 #################################################
+# General package configuration
+#################################################
+
+USDX_PACKAGE_NAME := @PACKAGE_NAME@
+USDX_VERSION := @PACKAGE_VERSION@
+USDX_TARNAME := @PACKAGE_TARNAME@
+
+#################################################
 # USDX Paths
 #################################################
 
@@ -35,6 +48,8 @@ USDX_GAME_DIR  := $(top_srcdir)/game
 USDX_TOOLS_DIR := $(top_srcdir)/tools
 USDX_BUILD_DIR := $(top_srcdir)/build
 USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
+
+INSTALL_DATADIR := $(datadir)/$(USDX_PACKAGE_NAME)
 
 #################################################
 # RC -> resource.inc
@@ -67,13 +82,54 @@ PCUNIT_FLAGS := -FU$(PCUNIT_DIR)
 # Directories added to the includes path
 PINC_FLAGS := -Fi$(USDX_LIB_DIR)/JEDI-SDL/SDL/Pas
 
-PFLAGS_BASE    ?= -S2gi -vB
-PFLAGS_EXTRA   ?= @PFLAGS_EXTRA@
+##
+# PFLAGS
+##
+
+# Defined on debug mode
+ENABLE_DEBUG := @ENABLE_DEBUG@
+
+# Note: 
+#   - PFLAGS/PFLAGS_* defaults to $(PFLAGS_XYZ_DEFAULT) if not set by the user
+#   - if PFLAGS is defined, PFLAGS_* will be ignored on "make all"
+PFLAGS         ?= @PFLAGS@
+PFLAGS_BASE    ?= @PFLAGS_BASE@
 PFLAGS_DEBUG   ?= @PFLAGS_DEBUG@
 PFLAGS_RELEASE ?= @PFLAGS_RELEASE@
-# user-flags (specified with configure) must be last in
-# list to overwrite defaults (e.g. the "-"-option: -Xs-).
-PFLAGS         ?= $(PFLAGS_BASE) @PFLAGS_MAKE@ $(PFLAGS_EXTRA)
+
+# Do not overwrite, just add extra flags
+PFLAGS_EXTRA   += @PFLAGS_EXTRA@
+
+# Default PFLAGS, used if PFLAGS/PFLAGS_* was not set by the user 
+# - Do not use -dDEBUG because it will enable unwanted features
+# - Do not strip executable (-Xs, set by fpc.cfg) to be GNU make conformant
+# - Use DEBUG_MODE instead of DEBUG to avoid enabling the fpc.cfg DEBUG preset
+# - The flag -vB appends the full path to filenames
+# - Note that fpc.cfg already defines -vinw, so add -v0 first
+# - The stack check (-Ct) might not work with enabled threading
+# - Do we need -Coi?
+PFLAGS_BASE_DEFAULT    := -Si -Sg- -Sc- -v0Binwe
+PFLAGS_DEBUG_DEFAULT   := -Xs- -g -gl -dDEBUG_MODE
+PFLAGS_RELEASE_DEFAULT := -Xs- -O2
+PFLAGS_EXTRA_DEFAULT   :=
+
+# Debug/Release mode flags
+# Note that flags will overwrite previously specified flags,
+# e.g. "-vinwe -vi-" is the same as "-vnwe"
+PFLAGS_DEBUG_ALL   := $(PFLAGS_BASE) $(PFLAGS_DEBUG) $(PFLAGS_EXTRA)
+PFLAGS_RELEASE_ALL := $(PFLAGS_BASE) $(PFLAGS_RELEASE) $(PFLAGS_EXTRA)
+
+# Choose default PFLAGS, depending on debug mode.
+# Only used if PFLAGS was not set by the user.
+ifdef ENABLE_DEBUG
+PFLAGS_DEFAULT := $(PFLAGS_DEBUG_ALL)
+else
+PFLAGS_DEFAULT := $(PFLAGS_RELEASE_ALL)
+endif
+
+###
+# linker and library settings
+###
 
 LIBS       ?= @LIBS@
 LDFLAGS    ?= @LDFLAGS@
@@ -81,6 +137,8 @@ linkflags  := $(strip $(LDFLAGS) $(LIBS))
 ifneq ($(linkflags),)
 PLINKFLAGS := -k"$(linkflags)"
 endif
+
+PFLAGS_ALL = $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)
 
 #################################################
 # USDX project config
@@ -98,7 +156,7 @@ USDX_BIN := $(USDX_GAME_DIR)/$(USDX_BIN_NAME)
 
 PROJECTM_CWRAPPER_DIR := $(USDX_LIB_DIR)/projectM/cwrapper
 PROJECTM_CWRAPPER_LIB := $(PROJECTM_CWRAPPER_DIR)/libprojectM-cwrapper.a
-USE_PROJECTM_CWRAPPER = @USE_PROJECTM_CWRAPPER@
+USE_PROJECTM_CWRAPPER := @USE_PROJECTM_CWRAPPER@
 
 #################################################
 # Static libs
@@ -113,69 +171,76 @@ endif
 # general targets
 #################################################
 
-INC_FILES = $(shell find . -name "*.inc")
-PAS_FILES = $(shell find . -name "*.pas" -o -name "*.pp")
-BIN_DEPS = 
-
 .PHONY: all
-all: rebuild
+all: build
 
-# one shot debug build
-.PHONY: debug
-debug: PFLAGS := $(PFLAGS_BASE) $(PFLAGS_DEBUG) $(PFLAGS_EXTRA)
-debug: rebuild
+# One shot debug build (always rebuild)
+# Note: we cannot set PFLAGS and call build directly, 
+#  as target specific flags are not passed at recursive
+#  make calls. So call debug-build first.
+.PHONY: debug debug-build
+debug: clean_obj
+	$(MAKE) debug-build
 
-# one shot release build
-.PHONY: release
-release: PFLAGS := $(PFLAGS_BASE) $(PFLAGS_RELEASE) $(PFLAGS_EXTRA)
-release: rebuild
+debug-build: PFLAGS := $(PFLAGS_DEBUG_ALL)
+debug-build: build
 
-# build, but always clean old data before compiling.
-# FPC does not reliably recognize changes in .inc-files, static libs
-# (and maybe even conditional .pas) dependencies. This might result
-# in corrupted builds and renders debugging difficult.
-# Clean if any (%) file changed.
+# One shot release build (always rebuild)
+# Note: we cannot set PFLAGS and call build directly, 
+#  as target specific flags are not passed at recursive
+#  make calls. So call release-build first.
+.PHONY: release release-build
+release: clean_obj
+	$(MAKE) release-build
+
+release-build: PFLAGS := $(PFLAGS_RELEASE_ALL)
+release-build: build
+
+# Always rebuild, even if no file changed.
 .PHONY: rebuild
-rebuild: CLEANON_PATTERN := %
-rebuild: $(USDX_BIN)
+rebuild: clean_obj
+	$(MAKE) build
 
-# Use FPC to determine if the sources have to be rebuild.
-# This does not work if an .inc or a static lib (e.g. .a) changed so we will
-# manually clean in these cases. FPC might even miss some changes in 
-# .pas files so we prefer the rebuild target.
-# Clean if an inc-file (%.inc) or static lib (%.a) changed.
+# Build if files changed. Always clean old data before compiling.
+# FPC does not reliably recognize changes, neither in .pas, 
+# .inc-files nor static libs (.a/.o). This might result in corrupted 
+# builds and renders debugging difficult (because FPC uses outdated
+# .ppu/.o data of files that have been changed).
 .PHONY: build
-build: CLEANON_PATTERN := %.inc %.a
 build: $(USDX_BIN)
 
 #################################################
 # build
 #################################################
 
-# After expansion of the expression, check_clean will
-# contain the first changed prerequisite ($?) that matches
-# CLEANON_PATTERN. It is used to check if any prerequisite of CLEANON_PATTERN
-# type changed (we just return the first word to avoid spaces in 
-# the result that might crash "test x$(check_clean)").
-check_clean = $(firstword $(filter $(CLEANON_PATTERN), $?))
+SRC_FILES = $(shell find $(srcdir) -name "*.inc" -o -name "*.pas" -o -name "*.pp")
 
-$(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(INC_FILES) $(PAS_FILES)
+# To conform to the GNU Coding Standards, INSTALL_DATADIR is
+# not hardcoded so $prefix and $datadir can be changed at any
+# execution of this Makefile. 
+# Paths cannot be passed to fpc via -d as with gcc's -D parameter.
+# We use an intermediate file instead.
+# See [info autoconf], "19.5 How Do I `#define' Installation Directories?"
+.PHONY: paths.inc
+paths.inc:
+	echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';" >$@
+
+# check if any src-file changed and rebuild
+$(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(INC_FILES) $(PAS_FILES) paths.inc
 	@echo "==================================="
 	@echo "Changed files:"
 	@echo "$?"
 	@echo "==================================="
+	@echo "-----------------------------------"
+	@echo "Clean old object data..."
 
-# Checks if a rebuild is required.
-# This is the case if any file matching $CLEANON_PATTERN changed.
-	@if test x$(check_clean) != x; then \
-	  echo "-----------------------------------"; \
-	  echo "Clean objects..."; \
-	  $(MAKE) clean_obj; \
-	  echo "-----------------------------------"; \
-	fi
+	$(MAKE) clean_obj
+
+	@echo "-----------------------------------"
 
 	$(MKDIR) "$(PCUNIT_DIR)"
-	$(PPC) $(strip $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)) -o$@ $(USDX_PROJ)
+	$(MAKE) paths.inc
+	$(PPC) $(strip $(PFLAGS_ALL)) -o$@ $(USDX_PROJ)
 
 #################################################
 # Resource-file
@@ -191,6 +256,7 @@ $(RESOURCE_FILE): $(RC_FILE)
 
 .PHONY: clean
 clean: clean_obj clean_res
+	$(RM) paths.inc
 
 .PHONY: clean_res
 clean_res:
@@ -199,7 +265,6 @@ clean_res:
 .PHONY: clean_obj
 clean_obj: clean_bin
 	$(RM_REC) "$(PCUNIT_DIR)"
-	-rmdir "$(USDX_BUILD_DIR)"
 
 .PHONY: clean_bin
 clean_bin:

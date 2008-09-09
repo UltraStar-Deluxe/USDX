@@ -4,6 +4,7 @@
 #################################################
 
 @SET_MAKE@
+SHELL = /bin/sh
 
 #################################################
 # Standard definitions
@@ -13,6 +14,7 @@ prefix      ?= @prefix@
 exec_prefix ?= @exec_prefix@
 bindir      ?= @bindir@
 datarootdir ?= @datarootdir@
+datadir     ?= @datadir@
 libdir      ?= @libdir@
 docdir      ?= @docdir@
 pdfdir      ?= @pdfdir@
@@ -35,11 +37,9 @@ RM           ?= rm -f
 RM_REC       ?= $(RM) -r
 
 # install tool
-INSTALL      ?= @INSTALL@
-INSTALL_DATA ?= @INSTALL_DATA@
-
-# installation path
-INSTALL_DATADIR ?= @INSTALL_DATADIR@
+INSTALL         ?= @INSTALL@
+INSTALL_DATA    ?= @INSTALL_DATA@
+INSTALL_PROGRAM ?= @INSTALL_DATA@
 
 #################################################
 # General package configuration
@@ -56,10 +56,12 @@ USDX_TARNAME := @PACKAGE_TARNAME@
 USDX_SRC_DIR   := $(top_srcdir)/src
 USDX_GAME_DIR  := $(top_srcdir)/game
 USDX_TOOLS_DIR := $(top_srcdir)/tools
+USDX_BUILD_DIR := $(top_srcdir)/build
 USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
-USDX_BUILD_DIR := $(USDX_SRC_DIR)/build
 
-AUTOGEN_DIR := $(top_srcdir)/dists/autogen
+INSTALL_DATADIR := $(datadir)/$(USDX_PACKAGE_NAME)
+
+AUTOGEN_DIR := $(srcdir)/dists/autogen
 
 #################################################
 # Binary name
@@ -89,10 +91,30 @@ endif
 # general targets
 #################################################
 
+##
+# IMPORTANT:
+# Always assure that this Makefile still works with the -jN 
+# parameter set. This is important as Gentoo uses parallel 
+# make (-j2) by default.
+# If parallel execution is enabled you cannot rely on a 
+# specific order the prerequisites are build. 
+#
+# Example:
+#   target: dependency dependant
+#
+# will first build "dependency" and "dependant" afterwards with a
+# sequential execution (-j1). With parallel execution "dependant"
+# might be started before "dependency" is finished and make will
+# crash.
+#
+# If it is not possible, add the virtual .NOTPARALLEL target.
+# This will disable parallel execution for ALL targets.
+##
+
 BUILD_TARGETS = all debug release rebuild build
 .PHONY: $(BUILD_TARGETS)
 $(BUILD_TARGETS): all-deps
-	$(MAKE) -C src $@
+	$(MAKE) -C $(USDX_SRC_DIR) $@
 
 .PHONY: all-deps
 all-deps:
@@ -105,7 +127,7 @@ clean: clean-src clean-deps
 
 .PHONY: clean-src
 clean-src:
-	$(MAKE) -C src clean
+	$(MAKE) -C $(USDX_SRC_DIR) clean
 
 .PHONY: clean-deps
 clean-deps:
@@ -123,43 +145,37 @@ clean-game:
 	-rmdir $(USDX_GAME_DIR)/playlists
 	-rmdir $(USDX_GAME_DIR)/songs
 
+# just clean the game build data but no dependencies (libs, tools, ...)
 .PHONY: mostlyclean
 mostlyclean: clean-src
 
 .PHONY: distclean
-distclean: clean clean-game tidy
-	$(RM_REC) config.log config.status aclocal.m4 autom4te.cache
+distclean: clean clean-game
+	$(RM) config.log config.status aclocal.m4 
+	$(RM_REC) autom4te.cache
 	$(RM) $(USDX_SRC_DIR)/config.inc 
-	$(RM) Makefile $(USDX_SRC_DIR)/Makefile $(PROJECTM_CWRAPPER_DIR)/Makefile
+	$(RM) $(srcdir)/Makefile $(USDX_SRC_DIR)/Makefile $(PROJECTM_CWRAPPER_DIR)/Makefile
 
-# remove Mac OS X apllication bundle and disk image
-.PHONY: clean-macosx
-clean-macosx: clean-macosx-app clean-macosx-dmg
-
-.PHONY: clean-macosx-app
-clean-macosx-app:
-	$(RM) -r UltraStarDeluxe.app 
-
-.PHONY: clean-macosx-dmg
-clean-macosx-dmg:
-	$(RM) UltraStarDeluxe.dmg 
+.PHONY: maintainer-clean
+maintainer-clean: distclean
 
 # remove temporary and backup files
 .PHONY: tidy
 tidy:
 # FPC stuff
-	find . -name "*.compiled" | xargs $(RM)
+	find $(srcdir) -name "*.compiled" | xargs $(RM)
 # Delphi stuff
-	find . -name "__history" | xargs $(RM_REC)
-	find . -name "*.identcache" -o -name "*.dcu" | xargs $(RM)
+	find $(srcdir) -name "__history" | xargs $(RM_REC)
+	find $(srcdir) -name "*.identcache" -o -name "*.dcu" | xargs $(RM)
 # Backup files
-	find . -name "*~" -o -name "*.bak" -o -name "*.orig" | xargs $(RM)
+	find $(srcdir) -name "*~" -o -name "*.bak" -o -name "*.orig" | xargs $(RM)
+
 
 #################################################
 # auto-update
 #################################################
 
-Makefile: Makefile.in $(USDX_SRC_DIR)/Makefile.in $(USDX_SRC_DIR)/config.inc.in $(PROJECTM_CWRAPPER_DIR)/Makefile.in config.status
+Makefile: $(srcdir)/Makefile.in $(USDX_SRC_DIR)/Makefile.in $(USDX_SRC_DIR)/config.inc.in $(PROJECTM_CWRAPPER_DIR)/Makefile.in config.status
 	@echo "-----------------------------------"
 	@echo "Performing reconfiguration..."
 	./config.status
@@ -176,45 +192,73 @@ reconf:
 # install/uninstall
 #################################################
 
+##
+# For information on directory and install conventions see
+#   "info autoconf", Section 4.8.2. Installation Directory Variables
+#                    Section 4.8.1, 4.8.3 and 4.8.4 
+# Notes:
+# - "make install" must not rebuild, so do not depend on all.
+# - use the DESTDIR variable as prefix for installation directories, 
+#   otherwise Gentoo will not be able to install as it uses a sandbox.
+##
+
 .PHONY: install
-install: all
-	$(MAKE) install-all
+install: install-all
 	@echo "--------------------------------"
 	@echo "$(USDX_PACKAGE_NAME) installed."
 	@echo "Start with: $(bindir)/$(USDX_BIN_NAME)"
 	@echo "--------------------------------"
 
+# strip binaries during install
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' \
+                install
+
 .PHONY: install-all
-install-all: install-data install-exec
+install-all: install-exec install-data
+
+.PHONY: install-exec
+install-exec:
+	$(MKDIR) "$(DESTDIR)$(bindir)"
+	$(INSTALL_PROGRAM) "$(USDX_BIN)" "$(DESTDIR)$(bindir)"
 
 .PHONY: install-data
 install-data:
-	$(MAKE) RECURSIVE_SRC_DIR="artwork" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/artwork" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/languages" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/languages" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/sounds" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/sounds" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/themes" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/themes" install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" RECURSIVE_DST_DIR="$(INSTALL_DATADIR)/resources" install-data-recursive
-	$(INSTALL_DATA) "COPYING.txt" "$(INSTALL_DATADIR)"
+	$(MAKE) RECURSIVE_SRC_DIR="artwork" \
+                RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/artwork" \
+                install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/languages" \
+                RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/languages" \
+                install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/sounds" \
+                RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/sounds" \
+                install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/themes" \
+                RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
+                install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" \
+                RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/resources" \
+                install-data-recursive
+	$(INSTALL_DATA) "COPYING.txt" "$(DESTDIR)$(INSTALL_DATADIR)/COPYING.txt"
 
 .PHONY: install-data-recursive
 install-data-recursive:
+# Note: the project contains filesnames with whitespace 
 	$(MKDIR) "$(RECURSIVE_DST_DIR)"
 	@for file in "$(RECURSIVE_SRC_DIR)"/*; do \
 	  if test -f "$$file"; then \
-	    echo $(INSTALL_DATA) "$$file" "$(RECURSIVE_DST_DIR)"; \
-	    $(INSTALL_DATA) "$$file" "$(RECURSIVE_DST_DIR)"; \
+	    filename=`basename "$$file"`; \
+	    echo "$(INSTALL_DATA) \"$$file\" \"$(RECURSIVE_DST_DIR)/$$filename\""; \
+	    $(INSTALL_DATA) "$$file" "$(RECURSIVE_DST_DIR)/$$filename" || exit 1; \
 	  fi; \
 	  if test -d "$$file"; then \
 	    subdir="$$file"; \
 	    subdirname=`basename "$$subdir"`; \
-	    $(MAKE) RECURSIVE_SRC_DIR="$$subdir" RECURSIVE_DST_DIR="$(RECURSIVE_DST_DIR)/$$subdirname" install-data-recursive; \
+	    $(MAKE) RECURSIVE_SRC_DIR="$$subdir" \
+	            RECURSIVE_DST_DIR="$(RECURSIVE_DST_DIR)/$$subdirname" \
+	            install-data-recursive || exit 1; \
 	  fi; \
 	done
-
-.PHONY: install-exec
-install-exec:
-	$(MKDIR) "$(bindir)"
-	$(INSTALL) "$(USDX_BIN)" "$(bindir)"
 
 .PHONY: uninstall
 uninstall: uninstall-all
@@ -224,31 +268,41 @@ uninstall-all: uninstall-data uninstall-exec
 
 .PHONY: uninstall-data
 uninstall-data:
-	$(RM_REC) "$(INSTALL_DATADIR)/artwork"
-	$(RM_REC) "$(INSTALL_DATADIR)/languages"
-	$(RM_REC) "$(INSTALL_DATADIR)/sounds"
-	$(RM_REC) "$(INSTALL_DATADIR)/themes"
-	$(RM_REC) "$(INSTALL_DATADIR)/resources"
-	$(RM)     "$(INSTALL_DATADIR)/COPYING.txt"
-	-rmdir "$(INSTALL_DATADIR)"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/artwork"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/languages"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/sounds"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/themes"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/resources"
+	$(RM)     "$(DESTDIR)$(INSTALL_DATADIR)/COPYING.txt"
+	-rmdir "$(DESTDIR)$(INSTALL_DATADIR)"
 
 .PHONY: uninstall-exec
 uninstall-exec:
-	$(RM) "$(bindir)/$(USDX_BIN_NAME)"
+	$(RM) "$(DESTDIR)$(bindir)/$(USDX_BIN_NAME)"
 
 #################################################
 # Distributable source-package (TODO)
 #################################################
 
-disttmpdir ?= disttmp
+#disttmpdir := $(USDX_PACKAGE_NAME)-$(USDX_VERSION)-src
+disttmpdir := $(USDX_PACKAGE_NAME)-1.1_alpha-src
+# choose all files in SVN that are not deleted
+svn-files := svn status -v | grep -v "^[?D]" | cut -c8- | tr -s " " | cut -f5- -d" "
 
 .PHONY: dist
 dist:
-#	$(MKDIR) $(disttmpdir)
-#	cp -R . $(disttmpdir)
-#	$(MAKE) -C $(disttmpdir)/src distclean 
-#	tar cvzf $(USDX_TARNAME)-$(USDX_VERSION).tar.gz $(disttmpdir)
-#	$(RM_REC) $(disttmpdir)
+	@$(svn-files) | while read FILE; do \
+	  if test -d "$$FILE"; then \
+	    echo "MKDIR: $(disttmpdir)/$$FILE"; \
+	    $(MKDIR) "$(disttmpdir)/$$FILE" || exit 1; \
+	  else \
+	    echo "COPY:  $$FILE"; \
+	    cp "$$FILE" "$(disttmpdir)/$$FILE" || exit 1; \
+	  fi; \
+	done
+	tar cvf $(disttmpdir).tar $(disttmpdir)
+	gzip $(disttmpdir).tar
+	$(RM_REC) $(disttmpdir)
 
 #################################################
 # Debian package
@@ -266,7 +320,7 @@ deb: all
 	$(MKDIR) $(debpkgdir)
 	$(MKDIR) $(debpkgtmpdir)/DEBIAN
 
-	$(MAKE) prefix=$(debpkgtmpdir)/$(prefix) install
+	$(MAKE) DESTDIR=$(debpkgtmpdir)/ install-all
 
 	$(INSTALL_DATA) $(debpkgdir)/$(debpkgprefix).control $(debpkgtmpdir)/DEBIAN/control
 
@@ -381,3 +435,15 @@ macosx-dmg: macosx-standalone-app
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
 	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
+
+# remove Mac OS X apllication bundle and disk image
+.PHONY: clean-macosx
+clean-macosx: clean-macosx-app clean-macosx-dmg
+
+.PHONY: clean-macosx-app
+clean-macosx-app:
+	$(RM_REC) UltraStarDeluxe.app 
+
+.PHONY: clean-macosx-dmg
+clean-macosx-dmg:
+	$(RM) UltraStarDeluxe.dmg 

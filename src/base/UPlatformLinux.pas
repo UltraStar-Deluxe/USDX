@@ -41,6 +41,9 @@ uses
   SysUtils,
   ULog;
 
+const
+  {$I paths.inc}
+
 procedure TPlatformLinux.Init;
 begin
   inherited Init();
@@ -54,7 +57,7 @@ end;
  *   reside in the directory of the executable.
  * - It is global if the game was installed (e.g. to /usr/bin) and
  *   the resources are in a separate folder (e.g. /usr/share/ultrastardx)
- *   which name is stored in the INSTALL_DATADIR constant in config-linux.inc.
+ *   which name is stored in the INSTALL_DATADIR constant in paths.inc.
  *
  * Sets UseLocalDirs to true if the game is executed locally, false otherwise.
  *}

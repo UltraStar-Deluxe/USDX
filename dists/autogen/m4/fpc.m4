@@ -1,176 +1,271 @@
-dnl ** Version 1.1 of file is part of the LGPLed 
-dnl **   J Sound System (http://jss.sourceforge.net)
-dnl **
-dnl ** Checks for Free Pascal Compiler by Matti "ccr/TNSP" Hamalainen
-dnl ** (C) Copyright 2000-2001 Tecnic Software productions (TNSP)
-dnl **
-dnl ** Versions
-dnl ** --------
-dnl ** 1.0 - Created
-dnl **
-dnl ** 1.1 - Added stuff to enable unix -> win32
-dnl **       cross compilation.
-dnl **
-dnl ** 1.x - A few fixes (by the UltraStar Deluxe Team)
-dnl **
+# Based on fpc.m4 Version 1.1 provided with
+#   J Sound System (http://jss.sourceforge.net)
+# 
+# Originally written by
+#   Matti "ccr/TNSP" Hamalainen
+#   (C) Copyright 2000-2001 Tecnic Software productions (TNSP)
+# 
+# Mostly rewritten by 
+#   UltraStar Deluxe Team
+
+# SYNOPSIS
+#
+#   AC_PROG_FPC
+#
+# DESCRIPTION
+#
+#   Checks for Free Pascal Compiler
+#
+#   Sets:
+#     PPC            : fpc command          
+#     FPCMAKE        : fpcmake command       
+#
+#     PFLAGS         : flags passed to fpc (overwrite default)
+#     PFLAGS_BASE    : base flags (release + debug)
+#     PFLAGS_EXTRA   : additional flags (appended to default PFLAGS)
+#     PFLAGS_DEBUG   : flags used in debug build
+#     PFLAGS_RELEASE : flags used in release build
+#
+#     Note: 
+#       all PFLAGS/PFLAGS_XYZ vars are set to $(PFLAGS_XYZ_DEFAULT)
+#       if not set by the user, so the Makefile can assign default
+#       values to them.
+#
+#     FPC_VERSION        : fpc version string, e.g. 2.3.1
+#     FPC_VERSION_MAJOR  : major version (here 2) 
+#     FPC_VERSION_MINOR  : minor version (here 3)
+#     FPC_VERSION_RELEASE: release version (here 1)
+#
+#     FPC_PLATFORM   : platform of the target (linux/darwin/win32/...)
+#     FPC_PROCESSOR  : processor of the target, (i386/...)
+#     FPC_CPLATFORM  : platform of the compiler host, (linux/darwin/win32/...)
+#     FPC_CPROCESSOR : processor of the compiler host, (i386/...)
+#     FPC_TARGET     : FPC_PROCESSOR-FPC_PLATFORM (e.g. i386-linux)
+#
+#     FPC_PREFIX     : prefix of fpc install path, (default: /usr)
+#     FPC_BASE_PATH  : $FPC_PREFIX/lib/fpc/$FPC_VERSION
+#     FPC_UNIT_PATH  : $FPC_BASE_PATH/units/$FPC_TARGET
+#
+# See "fpc -i" for a list of supported platforms and processors
 
 AC_DEFUN([AC_PROG_FPC], [
 
+##
+# User PFLAGS
+##
+
 AC_ARG_VAR(PFLAGS, [Free Pascal Compiler flags (replaces all other flags)])
-AC_ARG_VAR(PFLAGS_DEBUG, [Free Pascal Compiler debug flags @<:@-gl -Coi -Xs- -vew -dDEBUG_MODE@:>@])
-AC_ARG_VAR(PFLAGS_RELEASE, [Free Pascal Compiler release flags @<:@-O2 -Xs -vew@:>@])
-AC_ARG_VAR(PFLAGS_EXTRA, [Free Pascal Compiler additional flags])
+AC_ARG_VAR(PFLAGS_BASE,    [Free Pascal Compiler base flags, e.g. -Si])
+AC_ARG_VAR(PFLAGS_DEBUG,   [Free Pascal Compiler debug flags, e.g. -gl])
+AC_ARG_VAR(PFLAGS_RELEASE, [Free Pascal Compiler release flags, e.g. -O2])
+AC_ARG_VAR(PFLAGS_EXTRA,   [Free Pascal Compiler additional flags])
 
-dnl set DEBUG/RELEASE flags to default-values if unset
-
-dnl - Do not use -dDEBUG because this will enable range-checks that will fail with USDX.
-dnl - Disable -Xs which is defined in fpc.cfg (TODO: is this necessary?).
-dnl - For FPC we have to use DEBUG_MODE instead of DEBUG to enable the apps debug-mode 
-dnl   because DEBUG enables some additional compiler-flags in fpc.cfg too
-PFLAGS_DEBUG=${PFLAGS_DEBUG-"-gl -Xs- -vew -dDEBUG_MODE"}
-dnl -dRELEASE works too but we define our own settings
-PFLAGS_RELEASE=${PFLAGS_RELEASE-"-O2 -Xs -vew"}
-
+##
+# Compiler options
+##
 
 AC_ARG_ENABLE(dummy_fpc1,[
 Free Pascal Compiler specific options:])
 
+# fpc path
 AC_ARG_WITH(fpc,
   [AS_HELP_STRING([--with-fpc=DIR],
     [Directory of the FPC executable @<:@PATH@:>@])],
   [PPC_PATH=$withval], [])
 
-FPC_DEBUG="no"
+# verbose
+AC_ARG_ENABLE(verbose,
+  [AS_HELP_STRING([--disable-verbose],
+    [Disable verbose compiler output @<:@default=no@:>@])],
+  [test x$enableval = xno && PFLAGS_EXTRA="$PFLAGS_EXTRA -v0Bew"], [])
 
-AC_ARG_ENABLE(release,
-  [AS_HELP_STRING([--enable-release],
-    [Enable FPC release options @<:@default=yes@:>@])],
-  [test $enableval = "no" && FPC_DEBUG="yes"], [])
+# gprof
+AC_ARG_ENABLE(gprof,
+  [AS_HELP_STRING([--enable-gprof],
+    [Enable profiling with gprof @<:@default=no@:>@])],
+  [test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -pg"], [])
 
-AC_ARG_ENABLE(debug,
-  [AS_HELP_STRING([--enable-debug],
-    [Enable FPC debug options (= --disable-release) @<:@default=no@:>@])],
-  [test $enableval = "yes" && FPC_DEBUG="yes"], [])
+# valgrind
+AC_ARG_ENABLE(valgrind,
+  [AS_HELP_STRING([--enable-valgrind],
+    [Enable debugging with valgrind @<:@default=no@:>@])],
+  [test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -pv"], [])
 
-AC_ARG_ENABLE(profile,
-  [AS_HELP_STRING([--enable-profile],
-    [Enable FPC profiling options @<:@default=no@:>@])],
-  [PFLAGS_EXTRA="$PFLAGS_EXTRA -pg"], [])
+# heaptrace
+AC_ARG_ENABLE(heaptrace,
+  [AS_HELP_STRING([--enable-heaptrace],
+    [Enable heaptrace (memory corruption detection) @<:@default=no@:>@])],
+  [test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -gh"], [])
 
+# range-checks
+AC_ARG_ENABLE(rangechecks,
+  [AS_HELP_STRING([--enable-rangechecks],
+    [Enables range-checks @<:@default=no@:>@])],
+  [test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -Crtoi"], [])
 
-dnl ** set PFLAGS depending on whether it is already set by the user
-dnl Note: the user's PFLAGS must *follow* this script's flags
-dnl   to enable the user to overwrite the settings.
-if test x${PFLAGS+assigned} = x; then
-dnl PFLAGS not set by the user
-	if test x$FPC_DEBUG = xyes; then 
-		PFLAGS="$PFLAGS_DEBUG"
-		PFLAGS_MAKE="[\$](PFLAGS_DEBUG)"
-	else
-		PFLAGS="$PFLAGS_RELEASE"
-		PFLAGS_MAKE="[\$](PFLAGS_RELEASE)"
-	fi
-else
-dnl PFLAGS set by the user, just add additional flags
-	PFLAGS="$PFLAGS"
-	PFLAGS_MAKE="$PFLAGS"
-fi
+# allow execstack (see noexecstack compiler check below)
+AC_ARG_ENABLE(noexecstack,
+  [AS_HELP_STRING([--disable-noexecstack],
+    [Allow executable stacks @<:@default=no@:>@])],
+  [], [enable_noexecstack="yes"])
 
-dnl ** find compiler executable
+###
+# Find compiler executable
+###
 
-PPC_CHECK_PROGS="fpc FPC ppc386 ppc PPC386 ppos2"
+PPC_CHECK_PROGS="fpc FPC ppc386 ppc PPC386"
 
 if test -z "$PPC_PATH"; then
-	PPC_PATH=$PATH
-	AC_CHECK_PROGS(PPC, $PPC_CHECK_PROGS)
-	AC_CHECK_PROGS(FPCMAKE, [fpcmake])
+    PPC_PATH=$PATH
+    AC_CHECK_PROGS(PPC, $PPC_CHECK_PROGS)
+    AC_CHECK_PROGS(FPCMAKE, [fpcmake])
 else
-	AC_PATH_PROGS(PPC, $PPC_CHECK_PROGS, [], $PPC_PATH)
-	AC_PATH_PROGS(FPCMAKE, [fpcmake], [], $PPC_PATH)
+    AC_PATH_PROGS(PPC, $PPC_CHECK_PROGS, [], $PPC_PATH)
+    AC_PATH_PROGS(FPCMAKE, [fpcmake], [], $PPC_PATH)
 fi
 if test -z "$PPC"; then
-	AC_MSG_ERROR([no Free Pascal Compiler found in $PPC_PATH])
+    AC_MSG_ERROR([no Free Pascal Compiler found in $PPC_PATH])
 fi
 if test -z "$FPCMAKE"; then
-	AC_MSG_ERROR([fpcmake not found in $PPC_PATH])
+    AC_MSG_ERROR([fpcmake not found in $PPC_PATH])
 fi
 
-AC_PROG_FPC_WORKS
-AC_PROG_FPC_LINKS
+###
+# Get the FPC compiler info
+###
 
-dnl *** Get the FPC version and some paths
+AC_MSG_CHECKING([version of fpc])
 FPC_VERSION=`${PPC} -iV`
+AX_EXTRACT_VERSION(FPC, $FPC_VERSION)
+AC_SUBST(FPC_VERSION)
+AC_MSG_RESULT([@<:@$FPC_VERSION@:>@])
+
 FPC_PLATFORM=`${PPC} -iTO`
 FPC_PROCESSOR=`${PPC} -iTP`
+FPC_CPLATFORM=`${PPC} -iSO`
+FPC_CPROCESSOR=`${PPC} -iSP`
 
-if test "x$prefix" != xNONE; then
-	FPC_PREFIX=$prefix
-else
-	FPC_PREFIX=$ac_default_prefix
-fi
-FPC_BASE_PATH="${FPC_PREFIX}/lib/fpc/${FPC_VERSION}"
-FPC_UNIT_PATH="${FPC_BASE_PATH}/units/${FPC_PLATFORM}"
+FPC_TARGET=${FPC_PROCESSOR}-${FPC_PLATFORM}
 
-AC_SUBST(PFLAGS)
-AC_SUBST(PFLAGS_MAKE)
-AC_SUBST(PFLAGS_EXTRA)
-AC_SUBST(PFLAGS_DEBUG)
-AC_SUBST(PFLAGS_RELEASE)
 
-AC_SUBST(FPC_VERSION)
 AC_SUBST(FPC_PLATFORM)
 AC_SUBST(FPC_PROCESSOR)
+AC_SUBST(FPC_CPLATFORM)
+AC_SUBST(FPC_CPROCESSOR)
+AC_SUBST(FPC_TARGET)
+
+###
+# Get paths
+###
+
+if test "x$prefix" != xNONE; then
+    FPC_PREFIX=$prefix
+else
+    FPC_PREFIX=$ac_default_prefix
+fi
+
+FPC_BASE_PATH="${FPC_PREFIX}/lib/fpc/${FPC_VERSION}"
+FPC_UNIT_PATH="${FPC_BASE_PATH}/units/${FPC_TARGET}"
 
 AC_SUBST(FPC_PREFIX)
 AC_SUBST(FPC_BASE_PATH)
 AC_SUBST(FPC_UNIT_PATH)
+
+###
+# Compiler checks
+###
+
+SIMPLE_PROGRAM="program foo; begin writeln; end."
+
+# Check if FPC works and can compile a program
+AC_CACHE_CHECK([whether the Free Pascal Compiler works], ac_cv_prog_ppc_works,
+[
+    AC_PROG_FPC_CHECK([ac_cv_prog_ppc_works], [], [$SIMPLE_PROGRAM])
+])
+if test x$ac_cv_prog_ppc_works = xno; then
+    AC_MSG_ERROR([installation or configuration problem: Cannot create executables.])
+fi
+
+# Check if FPC can link with standard libraries
+AC_CACHE_CHECK([whether the Free Pascal Compiler can link], ac_cv_prog_ppc_links,
+[
+    AC_PROG_FPC_CHECK([ac_cv_prog_ppc_links], [],
+        [program foo; uses crt; begin writeln; end.]
+    )
+])
+if test x$ac_cv_prog_ppc_links = xno; then
+    AC_MSG_ERROR([installation or configuration problem: Cannot link with some standard libraries.])
+fi
+
+# Check whether FPC's linker knows "-z noexecstack"
+# FPC does not set the NX-flag on stack memory. Binaries generated with FPC
+# might crash on platforms that require the stack to be non-executable.
+# So we will try to find a workaround here.
+# See http://bugs.freepascal.org/view.php?id=11563
+
+AC_CACHE_CHECK([whether FPC supports -k"-z noexecstack"], ac_cv_prog_ppc_noexecstack,
+[
+    AC_PROG_FPC_CHECK([ac_cv_prog_ppc_noexecstack], [-k"-z noexecstack"], [$SIMPLE_PROGRAM])
+])
+if test x$enable_noexecstack = xyes; then
+    if test x$ac_cv_prog_ppc_noexecstack = xyes; then
+        PFLAGS_EXTRA="$PFLAGS_EXTRA -k\"-z noexecstack\""
+    fi
+fi
+
+# Finally substitute PFLAGS
+
+# set unset PFLAGS_XYZ vars to $(PFLAGS_XYZ_DEFAULT)
+# so the Makefile can define default values to it.
+true ${PFLAGS:=\$(PFLAGS_DEFAULT)}
+true ${PFLAGS_BASE:=\$(PFLAGS_BASE_DEFAULT)}
+true ${PFLAGS_EXTRA:=\$(PFLAGS_EXTRA_DEFAULT)}
+true ${PFLAGS_DEBUG:=\$(PFLAGS_DEBUG_DEFAULT)}
+true ${PFLAGS_RELEASE:=\$(PFLAGS_RELEASE_DEFAULT)}
+
+AC_SUBST(PFLAGS)
+AC_SUBST(PFLAGS_BASE)
+AC_SUBST(PFLAGS_EXTRA)
+AC_SUBST(PFLAGS_DEBUG)
+AC_SUBST(PFLAGS_RELEASE)
+
 ])
 
-PFLAGS_TEST="$PFLAGS $PFLAGS_EXTRA"
+#######################################
+# Helper functions
+#######################################
 
-dnl ***
-dnl *** Check if FPC works and can compile a program
-dnl ***
-AC_DEFUN([AC_PROG_FPC_WORKS],
-[AC_CACHE_CHECK([whether the Free Pascal Compiler ($PPC $PFLAGS_TEST) works], ac_cv_prog_ppc_works,
+# SYNOPSIS
+# 
+#   AC_PROG_FPC_CHECK(RESULT, FPC_FLAGS, CODE)
+#
+# DESCRIPTION
+#
+#   Checks if FPC is able to compile CODE with FPC_FLAGS.
+#   The result ("yes" on success, "no" otherwise) is
+#   stored in [$RESULT]
+#
+#   Parameters:
+#     RESULT:    Name of result variable
+#     FPC_FLAGS: Flags passed to FPC
+#     CODE:      
+
+AC_DEFUN([AC_PROG_FPC_CHECK],
 [
-rm -f conftest*
-echo "program foo; begin writeln; end." > conftest.pp
-${PPC} ${PFLAGS_TEST} conftest.pp >> config.log
+    # create test file
+    rm -f conftest*
+    echo "[$3]" > conftest.pp
 
-if test -f conftest || test -f conftest.exe; then
-dnl *** It works!
-	ac_cv_prog_ppc_works="yes"
+    # compile test file
+    ${PPC} [$2] conftest.pp >> config.log 2>&1
 
-else
-	ac_cv_prog_ppc_works="no"
-fi
-rm -f conftest*
-dnl AC_MSG_RESULT($ac_cv_prog_ppc_works)
-if test x$ac_cv_prog_ppc_works = xno; then
-	AC_MSG_ERROR([installation or configuration problem: Cannot create executables.])
-fi
-])])
+    # check if test file was compiled
+    if test -f conftest || test -f conftest.exe; then
+        [$1]="yes"
+    else
+        [$1]="no"
+    fi
 
-
-dnl ***
-dnl *** Check if FPC can link with standard libraries
-dnl ***
-AC_DEFUN([AC_PROG_FPC_LINKS],
-[AC_CACHE_CHECK([whether the Free Pascal Compiler ($PPC $PFLAGS_TEST) can link], ac_cv_prog_ppc_works,
-[
-rm -f conftest*
-echo "program foo; uses crt; begin writeln; end." > conftest.pp
-${PPC} ${PFLAGS_TEST} conftest.pp >> config.log
-if test -f conftest || test -f conftest.exe; then
-	ac_cv_prog_ppc_links="yes"
-else
-	ac_cv_prog_ppc_links="no"
-fi
-rm -f conftest*
-AC_MSG_RESULT($ac_cv_prog_ppc_links)
-if test x$ac_cv_prog_ppc_links = xno; then
-	AC_MSG_ERROR([installation or configuration problem: Cannot link with some standard libraries.])
-fi
-])])
-
+    # remove test file
+    rm -f conftest*
+])
