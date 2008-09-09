@@ -24,7 +24,6 @@ uses UMenu,
      gl,
 
      UThemes,
-     //ULCD, //TODO: maybe LCD Support as Plugin?
      UScreenSing,
      ModiSDK;
 
