@@ -61,8 +61,6 @@ USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
 
 INSTALL_DATADIR := $(datadir)/$(USDX_PACKAGE_NAME)
 
-AUTOGEN_DIR := $(srcdir)/dists/autogen
-
 #################################################
 # Binary name
 #################################################
@@ -186,7 +184,7 @@ config.status: configure
 
 .PHONE: reconf
 reconf:
-	$(AUTOGEN_DIR)/autogen.sh
+	./autogen.sh
 
 #################################################
 # install/uninstall

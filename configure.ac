@@ -3,7 +3,7 @@
 #
 # by UltraStar Deluxe Team
 #
-# Execute "dists/autogen/autogen.sh" or "make reconf"
+# Execute "autogen.sh" or "make reconf"
 # to create the configure script.
 #
 # Helper macros have been separated to
