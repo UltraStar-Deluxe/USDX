@@ -133,7 +133,7 @@ endif
 
 LIBS       ?= @LIBS@
 LDFLAGS    ?= @LDFLAGS@
-linkflags  := $(strip $(LDFLAGS) $(LIBS))
+linkflags  := $(sort $(LDFLAGS) $(LIBS))
 ifneq ($(linkflags),)
 PLINKFLAGS := -k"$(linkflags)"
 endif

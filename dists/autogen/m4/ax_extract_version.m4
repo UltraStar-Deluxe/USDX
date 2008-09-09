@@ -39,6 +39,10 @@ eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
 
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
     # strip preceding 0s and set unset version-parts to 0
     [$1][_VERSION_MAJOR]=$(($major))
     [$1][_VERSION_MINOR]=$(($minor))

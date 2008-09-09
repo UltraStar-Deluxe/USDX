@@ -2750,6 +2750,10 @@ eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
 
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
     # strip preceding 0s and set unset version-parts to 0
     FPC_VERSION_MAJOR=$(($major))
     FPC_VERSION_MINOR=$(($minor))
@@ -4515,6 +4519,10 @@ eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
 
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
     # strip preceding 0s and set unset version-parts to 0
     MACOSX_VERSION_MAJOR=$(($major))
     MACOSX_VERSION_MINOR=$(($minor))
@@ -4548,23 +4556,23 @@ fi
 # libpng
 
     have_lib="no"
-    { $as_echo "$as_me:$LINENO: checking for libpng" >&5
-$as_echo_n "checking for libpng... " >&6; }
+    { $as_echo "$as_me:$LINENO: checking for libpng12" >&5
+$as_echo_n "checking for libpng12... " >&6; }
     if test x"$with_libpng" = xnocheck; then
         # do not call pkg-config, use user settings
         have_lib="yes"
     elif test x"$with_libpng" != xno; then
         # check if package exists
 	if test -n "$PKG_CONFIG" && \
-    { ($as_echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libpng\"") >&5
-  ($PKG_CONFIG --exists --print-errors "libpng") 2>&5
+    { ($as_echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"libpng12\"") >&5
+  ($PKG_CONFIG --exists --print-errors "libpng12") 2>&5
   ac_status=$?
   $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
 
             have_lib="yes"
-            libpng_LIBS=`$PKG_CONFIG --libs --silence-errors "libpng"`
-            libpng_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libpng"`
+            libpng_LIBS=`$PKG_CONFIG --libs --silence-errors "libpng12"`
+            libpng_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libpng12"`
             libpng_LIBDIRS=`
     echo "$libpng_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
@@ -4593,7 +4601,7 @@ $as_echo "no" >&6; }
         # check if package is required
         if test xyes = xyes -o x"$with_libpng" = xyes ; then
             # print error message and quit
-            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "libpng"`
+            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "libpng12"`
             { { $as_echo "$as_me:$LINENO: error:
 
 $err_msg
@@ -4918,6 +4926,10 @@ $as_echo "[$libavcodec_VERSION]" >&6; }
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
 
     # strip preceding 0s and set unset version-parts to 0
     libavcodec_VERSION_MAJOR=$(($major))
@@ -5285,6 +5297,10 @@ eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
 
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
     # strip preceding 0s and set unset version-parts to 0
     libavformat_VERSION_MAJOR=$(($major))
     libavformat_VERSION_MINOR=$(($minor))
@@ -5442,6 +5458,10 @@ $as_echo "[$libavutil_VERSION]" >&6; }
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
 
     # strip preceding 0s and set unset version-parts to 0
     libavutil_VERSION_MAJOR=$(($major))
@@ -5616,6 +5636,10 @@ eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
 
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
     # strip preceding 0s and set unset version-parts to 0
     libswscale_VERSION_MAJOR=$(($major))
     libswscale_VERSION_MINOR=$(($minor))
@@ -5785,6 +5809,10 @@ $as_echo "[$libprojectM_VERSION]" >&6; }
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
 
     # strip preceding 0s and set unset version-parts to 0
     libprojectM_VERSION_MAJOR=$(($major))
@@ -6051,6 +6079,10 @@ $as_echo "[$portaudio_VERSION]" >&6; }
 eof
     # Note: Do NOT indent the eof-delimiter
     # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
 
     # strip preceding 0s and set unset version-parts to 0
     portaudio_VERSION_MAJOR=$(($major))

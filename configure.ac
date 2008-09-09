@@ -155,7 +155,7 @@ fi
 # -----------------------------------------
 
 # libpng
-PKG_HAVE([libpng], [libpng], yes)
+PKG_HAVE([libpng], [libpng12], yes)
 
 # find sdl
 PKG_HAVE([sdl], [sdl], yes)
