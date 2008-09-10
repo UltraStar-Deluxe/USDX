@@ -39,7 +39,7 @@ RM_REC       ?= $(RM) -r
 # install tool
 INSTALL         ?= @INSTALL@
 INSTALL_DATA    ?= @INSTALL_DATA@
-INSTALL_PROGRAM ?= @INSTALL_DATA@
+INSTALL_PROGRAM ?= @INSTALL_PROGRAM@
 
 #################################################
 # General package configuration
