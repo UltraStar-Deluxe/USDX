@@ -57,17 +57,15 @@ uses
   ctypes;
 
 const
-{$IFDEF MSWINDOWS}
+{$IF Defined(MSWINDOWS)}
   LibName = 'portaudio_x86.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  LibName = 'libportaudio.so';
-{$ENDIF}
-{$IFDEF DARWIN}
-// this is for portaudio version 19
+{$ELSEIF Defined(DARWIN)}
+  // this is for portaudio version 19
   LibName = 'libportaudio.2.dylib';
   {$LINKLIB libportaudio.2}
-{$ENDIF}
+{$ELSEIF Defined(UNIX)}
+  LibName = 'libportaudio.so';
+{$IFEND}
 
 {** Retrieve the release number of the currently running PortAudio build,
  eg 1900.

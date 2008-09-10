@@ -39,15 +39,6 @@
   {$DEFINE HaveBASS}
   {$UNDEF UseSerialPort}
   {$DEFINE UseMIDIPort}
-{$ELSEIF Defined(LINUX)}
-  // include defines but no constants
-  {$I config-linux.inc}
-
-  // use "configure --enable-debug", "make debug" or
-  // the command-line parameter "-debug" instead of defining DEBUG directly
-  {.$DEFINE DEBUG}
-  // linux apps are always console-apps so leave this defined.
-  {$DEFINE CONSOLE}
 {$ELSEIF Defined(DARWIN)}
   // include defines but no constants
   {$I config-darwin.inc}
@@ -57,6 +48,19 @@
   {$DEFINE CONSOLE}
   {.$DEFINE HaveBASS}
   {$DEFINE UTF8_FILENAMES}
+{$ELSEIF Defined(UNIX)}
+  // include defines but no constants
+  {$IF Defined(FREEBSD)}
+    {$I config-freebsd.inc}
+  {$ELSEIF Defined(Linux)}
+    {$I config-linux.inc}
+  {$IFEND}
+
+  // use "configure --enable-debug", "make debug" or
+  // the command-line parameter "-debug" instead of defining DEBUG directly
+  {.$DEFINE DEBUG}
+  // linux apps are always console-apps so leave this defined.
+  {$DEFINE CONSOLE}
 {$IFEND}
 
 // audio config

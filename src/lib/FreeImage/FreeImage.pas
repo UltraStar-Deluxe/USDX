@@ -49,15 +49,13 @@ uses
 {$ENDIF}
 
 const
-{$IFDEF MSWINDOWS}
+{$IF Defined(MSWINDOWS)}
   FIDLL = 'freeimage.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  FIDLL = 'libfreeimage.so';
-{$ENDIF}
-{$IFDEF DARWIN}
+{$ELSEIF Defined(DARWIN)}
   FIDLL = 'libfreeimage.dylib';
-{$ENDIF}
+{$ELSEIF Defined(UNIX)}
+  FIDLL = 'libfreeimage.so';
+{$IFEND}
 
 {$IFNDEF MSWINDOWS}
 type

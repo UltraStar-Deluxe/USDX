@@ -93,15 +93,13 @@ type
   end;
 
 const
-  {$IFDEF MSWINDOWS}
+{$IF Defined(MSWINDOWS)}
   PluginFileExtension = '.dll';
-  {$ENDIF}
-  {$IFDEF LINUX}
-  PluginFileExtension = '.so';
-  {$ENDIF}
-  {$IFDEF DARWIN}
+{$ELSEIF Defined(DARWIN)}
   PluginFileExtension = '.dylib';
-  {$ENDIF}
+{$ELSEIF Defined(UNIX)}
+  PluginFileExtension = '.so';
+{$IFEND}
 
 implementation
 

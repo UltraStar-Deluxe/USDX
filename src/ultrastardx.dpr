@@ -173,15 +173,13 @@ uses
 
   UParty            in 'base\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
   UPlatform         in 'base\UPlatform.pas',
-{$IFDEF MSWINDOWS}
+{$IF Defined(MSWINDOWS)}
   UPlatformWindows  in 'base\UPlatformWindows.pas',
-{$ENDIF}
-{$IFDEF LINUX}
-  UPlatformLinux    in 'base\UPlatformLinux.pas',
-{$ENDIF}
-{$IFDEF DARWIN}
+{$ELSEIF Defined(DARWIN)}
   UPlatformMacOSX   in 'base/UPlatformMacOSX.pas',
-{$ENDIF}
+{$ELSEIF Defined(UNIX)}
+  UPlatformLinux    in 'base\UPlatformLinux.pas',
+{$IFEND}
 
   //------------------------------
   //Includes - Media

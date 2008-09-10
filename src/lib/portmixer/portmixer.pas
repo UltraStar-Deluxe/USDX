@@ -49,16 +49,14 @@ uses
   portaudio;
 
 const
-{$IFDEF MSWINDOWS}
+{$IF Defined(MSWINDOWS)}
   LibName = 'portmixer.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  LibName = 'libportmixer.so';
-{$ENDIF}
-{$IFDEF DARWIN}
+{$ELSEIF Defined(DARWIN)}
 //  LibName = 'libportmixer.dylib';
 //  {$LINKLIB libportaudio}
-{$ENDIF}
+{$ELSEIF Defined(UNIX)}
+  LibName = 'libportmixer.so';
+{$IFEND}
 
 type
   PPxMixer = Pointer;

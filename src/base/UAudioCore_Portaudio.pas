@@ -50,11 +50,11 @@ const
     // Note1: Portmixer has no mixer support for paASIO and paWASAPI at the moment
     // Note2: Windows Default-API is MME, but DirectSound is faster
     array[0..0] of TPaHostApiTypeId = ( paDirectSound );
-{$ELSEIF Defined(LINUX)}
-    // Note: Portmixer has no mixer support for JACK at the moment
-    array[0..2] of TPaHostApiTypeId = ( paALSA, paJACK, paOSS );
 {$ELSEIF Defined(DARWIN)}
     array[0..0] of TPaHostApiTypeId = ( paDefaultApi ); // paCoreAudio
+{$ELSEIF Defined(UNIX)}
+    // Note: Portmixer has no mixer support for JACK at the moment
+    array[0..2] of TPaHostApiTypeId = ( paALSA, paJACK, paOSS );
 {$ELSE}
     array[0..0] of TPaHostApiTypeId = ( paDefaultApi );
 {$IFEND}

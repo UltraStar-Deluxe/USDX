@@ -81,7 +81,7 @@ uses
 
 
 // data used by the ...Locale() functions
-{$IFDEF LINUX}
+{$IF Defined(LINUX) or Defined(BSD)}
 
 var
   PrevNumLocale: string;
@@ -91,7 +91,7 @@ const
 
 function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c' name 'setlocale';
 
-{$ENDIF}
+{$IFEND}
 
 // In Linux and maybe MacOSX some units (like cwstring) call setlocale(LC_ALL, '')
 // to set the language/country specific locale (e.g. charset) for this application.
@@ -111,17 +111,17 @@ function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c'
 //   for each call to projectM instead of changing it globally.
 procedure SetDefaultNumericLocale();
 begin
-  {$ifdef LINUX}
+  {$IF Defined(LINUX) or Defined(BSD)}
   PrevNumLocale := setlocale(LC_NUMERIC, nil);
   setlocale(LC_NUMERIC, 'C');
-  {$endif}
+  {$IFEND}
 end;
 
 procedure RestoreNumericLocale();
 begin
-  {$ifdef LINUX}
+  {$IF Defined(LINUX) or Defined(BSD)}
   setlocale(LC_NUMERIC, PChar(PrevNumLocale));
-  {$endif}
+  {$IFEND}
 end;
 
 (*
@@ -275,7 +275,7 @@ var
   FilePath, LocalFileName: string;
   SearchInfo: TSearchRec;
 begin
-{$IFDEF LINUX} // eddie: Changed FPC to LINUX: Windows and Mac OS X dont have case sensitive file systems
+{$IF Defined(LINUX) or Defined(BSD)}
   // speed up standard case
   if FileExists(FileName) then
   begin
@@ -300,8 +300,9 @@ begin
   end;
   FindClose(SearchInfo);
 {$ELSE}
+  // Windows and Mac OS X do not have case sensitive file systems
   Result := FileExists(FileName);
-{$ENDIF}
+{$IFEND}
 end;
 
 

@@ -43,15 +43,13 @@ implementation
 
 uses
   SysUtils,
-  {$IFDEF MSWINDOWS}
+  {$IF Defined(MSWINDOWS)}
   UPlatformWindows,
-  {$ENDIF}
-  {$IFDEF LINUX}
-  UPlatformLinux,
-  {$ENDIF}
-  {$IFDEF DARWIN}
+  {$ELSEIF Defined(DARWIN)}
   UPlatformMacOSX,
-  {$ENDIF}
+  {$ELSEIF Defined(UNIX)}
+  UPlatformLinux,
+  {$IFEND}
   ULog;
 
 
@@ -158,15 +156,13 @@ end;
 
 
 initialization
-{$IFDEF MSWINDOWS}
+{$IF Defined(MSWINDOWS)}
   Platform_singleton := TPlatformWindows.Create;
-{$ENDIF}
-{$IFDEF LINUX}
-  Platform_singleton := TPlatformLinux.Create;
-{$ENDIF}
-{$IFDEF DARWIN}
+{$ELSEIF Defined(DARWIN)}
   Platform_singleton := TPlatformMacOSX.Create;
-{$ENDIF}
+{$ELSEIF Defined(UNIX)}
+  Platform_singleton := TPlatformLinux.Create;
+{$IFEND}
 
 finalization
   Platform_singleton.Free;

@@ -4,11 +4,11 @@ uses
 {$ENDIF}
 
 const
-{$IFDEF MSWINDOWS}
+{$IF Defined(MSWINDOWS)}
   libprojectM = 'libprojectM.dll';
-{$ELSE}
+{$ELSEIF Defined(UNIX)}
   libprojectM = 'libprojectM.so';
-{$ENDIF}
+{$IFEND}
 
 {**************** INTERNAL SECTION ****************}
 

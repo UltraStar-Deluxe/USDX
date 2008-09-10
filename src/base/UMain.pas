@@ -451,12 +451,12 @@ begin
         // This would create a new OpenGL render-context and all texture data
         // would be invalidated.
         // On Linux the mode MUST be resetted, otherwise graphics will be corrupted.
-        {$IFDEF LINUX}
+        {$IF Defined(LINUX) or Defined(BSD)}
         if boolean( Ini.FullScreen ) then
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN)
         else
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
-        {$ENDIF}
+        {$IFEND}
       end;
       SDL_KEYDOWN:
         begin
@@ -473,7 +473,7 @@ begin
             // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
             // reload all texture data (-> whitescreen bug).
             // Only Linux is able to handle screen-switching this way.
-            {$IFDEF LINUX}
+            {$IF Defined(LINUX) or Defined(BSD)}
             if boolean( Ini.FullScreen ) then
             begin
               SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
@@ -486,7 +486,7 @@ begin
             end;
 
             glViewPort(0, 0, ScreenW, ScreenH);
-            {$ENDIF}
+            {$IFEND}
           end
           // if print is pressed -> make screenshot and save to screenshot path
           else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then

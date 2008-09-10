@@ -85,6 +85,8 @@ const
     {$I ../config-win.inc}
   {$ELSEIF Defined(Linux)}
     {$I ../config-linux.inc}
+  {$ELSEIF Defined(FreeBSD)}
+    {$I ../config-freebsd.inc}
   {$ELSEIF Defined(Darwin)}
     {$I ../config-darwin.inc}
   {$ELSE}

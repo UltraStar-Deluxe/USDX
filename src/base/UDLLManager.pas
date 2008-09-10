@@ -45,25 +45,24 @@ var
 const
   DLLPath = 'Plugins';
 
-  {$IFDEF MSWINDOWS}
-     DLLExt  = '.dll';
-  {$ENDIF}
-  {$IFDEF LINUX}
-     DLLExt  = '.so';
-  {$ENDIF}
-  {$IFDEF DARWIN}
-     DLLExt  = '.dylib';
-  {$ENDIF}
+{$IF Defined(MSWINDOWS)}
+  DLLExt  = '.dll';
+{$ELSEIF Defined(DARWIN)}
+  DLLExt  = '.dylib';
+{$ELSEIF Defined(UNIX)}
+  DLLExt  = '.so';
+{$IFEND}
 
 implementation
 
-uses {$IFDEF MSWINDOWS}
-     windows,
-     {$ELSE}
-     dynlibs,
-     {$ENDIF}
-     ULog,
-     SysUtils;
+uses
+  {$IFDEF MSWINDOWS}
+  windows,
+  {$ELSE}
+  dynlibs,
+  {$ENDIF}
+  ULog,
+  SysUtils;
 
 
 constructor TDLLMan.Create;
