@@ -598,8 +598,7 @@ begin
 
   if (screen = nil) then
   begin
-    Log.LogError('SDL_SetVideoMode Failed', 'Initialize3D');
-    exit;
+    Log.LogCritical('SDL_SetVideoMode Failed', 'Initialize3D');
   end;
 
   LoadOpenGLExtensions();
