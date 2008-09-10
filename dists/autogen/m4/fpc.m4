@@ -126,9 +126,6 @@ fi
 if test -z "$PPC"; then
     AC_MSG_ERROR([no Free Pascal Compiler found in $PPC_PATH])
 fi
-if test -z "$FPCMAKE"; then
-    AC_MSG_ERROR([fpcmake not found in $PPC_PATH])
-fi
 
 ###
 # Get the FPC compiler info
