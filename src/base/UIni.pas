@@ -883,8 +883,9 @@ begin
   IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);
 
   // Directories (add a template if section is missing)
+  // Note: Value must be ' ' and not '', otherwise no key is generated on Linux
   if (not IniFile.SectionExists('Directories')) then
-    IniFile.WriteString('Directories', 'SongDir1', '');
+    IniFile.WriteString('Directories', 'SongDir1', ' ');
 
   IniFile.Free;
 end;
