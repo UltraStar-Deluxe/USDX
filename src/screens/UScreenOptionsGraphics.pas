@@ -64,7 +64,7 @@ begin
             // FIXME: changing the video mode does not work this way in windows
             // and MacOSX as all textures will be invalidated through this.
             // See the ALT+TAB code too.
-            {$IF Defined(Linux) or Defined(BSD)}
+            {$IF Defined(Linux) or Defined(FreeBSD)}
             Reinitialize3D();
             {$IFEND}
             FadeTo(@ScreenOptions);

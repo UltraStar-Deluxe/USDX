@@ -81,7 +81,7 @@ uses
 
 
 // data used by the ...Locale() functions
-{$IF Defined(LINUX) or Defined(BSD)}
+{$IF Defined(Linux) or Defined(FreeBSD)}
 
 var
   PrevNumLocale: string;
@@ -111,7 +111,7 @@ function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c'
 //   for each call to projectM instead of changing it globally.
 procedure SetDefaultNumericLocale();
 begin
-  {$IF Defined(LINUX) or Defined(BSD)}
+  {$IF Defined(LINUX) or Defined(FreeBSD)}
   PrevNumLocale := setlocale(LC_NUMERIC, nil);
   setlocale(LC_NUMERIC, 'C');
   {$IFEND}
@@ -119,7 +119,7 @@ end;
 
 procedure RestoreNumericLocale();
 begin
-  {$IF Defined(LINUX) or Defined(BSD)}
+  {$IF Defined(LINUX) or Defined(FreeBSD)}
   setlocale(LC_NUMERIC, PChar(PrevNumLocale));
   {$IFEND}
 end;
@@ -275,7 +275,7 @@ var
   FilePath, LocalFileName: string;
   SearchInfo: TSearchRec;
 begin
-{$IF Defined(LINUX) or Defined(BSD)}
+{$IF Defined(Linux) or Defined(FreeBSD)}
   // speed up standard case
   if FileExists(FileName) then
   begin
