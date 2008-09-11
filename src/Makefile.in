@@ -220,13 +220,17 @@ SRC_FILES = $(shell find $(srcdir) -name "*.inc" -o -name "*.pas" -o -name "*.pp
 # execution of this Makefile. 
 # Paths cannot be passed to fpc via -d as with gcc's -D parameter.
 # We use an intermediate file instead.
+#
 # See [info autoconf], "19.5 How Do I `#define' Installation Directories?"
-.PHONY: paths.inc
-paths.inc:
-	echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';" >$@
+#
+# Do NOT use paths.inc as target name as it is in the requisite list
+# of $(USDX_BIN).
+.PHONY: create-pathinfo
+create-pathinfo:
+	echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';" > paths.inc
 
 # check if any src-file changed and rebuild
-$(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(INC_FILES) $(PAS_FILES) paths.inc
+$(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(SRC_FILES)
 	@echo "==================================="
 	@echo "Changed files:"
 	@echo "$?"
@@ -239,7 +243,7 @@ $(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(INC_FILES) $(PAS_FIL
 	@echo "-----------------------------------"
 
 	$(MKDIR) "$(PCUNIT_DIR)"
-	$(MAKE) paths.inc
+	$(MAKE) create-pathinfo
 	$(PPC) $(strip $(PFLAGS_ALL)) -o$@ $(USDX_PROJ)
 
 #################################################
