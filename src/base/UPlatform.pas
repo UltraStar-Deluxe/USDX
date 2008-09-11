@@ -85,7 +85,7 @@ end;
  *}
 function TPlatform.GetExecutionDir(): string;
 begin
-  Result := ExtractFilePath(ParamStr(0));
+  Result := ExpandFileName(ExtractFilePath(ParamStr(0)));
 end;
 
 (**
