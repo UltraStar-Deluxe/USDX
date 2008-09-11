@@ -451,7 +451,7 @@ begin
         // This would create a new OpenGL render-context and all texture data
         // would be invalidated.
         // On Linux the mode MUST be resetted, otherwise graphics will be corrupted.
-        {$IF Defined(LINUX) or Defined(BSD)}
+        {$IF Defined(Linux) or Defined(FreeBSD)}
         if boolean( Ini.FullScreen ) then
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN)
         else
@@ -472,8 +472,8 @@ begin
 
             // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
             // reload all texture data (-> whitescreen bug).
-            // Only Linux is able to handle screen-switching this way.
-            {$IF Defined(LINUX) or Defined(BSD)}
+            // Only Linux (and FreeBSD) is able to handle screen-switching this way.
+            {$IF Defined(Linux) or Defined(FreeBSD)}
             if boolean( Ini.FullScreen ) then
             begin
               SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
@@ -1005,7 +1005,7 @@ begin
   if (PathList = nil) then
     PathList := TStringList.Create;
 
-  if (Path = '') or not DirectoryExists(Path) then
+  if (Path = '') or not ForceDirectories(Path) then
     Exit;
 
   PathAbs := IncludeTrailingPathDelimiter(ExpandFileName(Path));
