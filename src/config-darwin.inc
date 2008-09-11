@@ -3,12 +3,6 @@
  * src/config-darwin.inc.  Generated from config.inc.in by configure.
  *****************************************************************}
 
-{* Paths *}
-
-{$IFDEF IncludeConstants}
-  INSTALL_DATADIR = '/usr/local/share/ultrastardx';
-{$ENDIF}
-
 {* Libraries *}
 
 {$DEFINE HaveFFmpeg}
