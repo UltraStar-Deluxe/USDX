@@ -119,7 +119,7 @@ function WriteJPGImage(const FileName: string; Surface: PSDL_Surface; Quality: i
  * Image loading
  *******************************************************)
 
-function LoadImage(const Identifier: string): PSDL_Surface;
+function LoadImage(const Filename: string): PSDL_Surface;
 
 (*******************************************************
  * Image manipulation
@@ -741,64 +741,30 @@ end;
 
 
 (*
- * Loads an image from the given file or resource
+ * Loads an image from the given file
  *)
-function LoadImage(const Identifier: string): PSDL_Surface;
+function LoadImage(const Filename: string): PSDL_Surface;
 var
-  TexRWops:  PSDL_RWops;
-  TexStream: TStream;
-  FileName: string;
+  FilenameFound: string;
 begin
   Result   := nil;
-  TexRWops := nil;
 
-  if Identifier = '' then
-    exit;
+  // FileExistsInsensitive() requires a var-arg
+  FilenameFound := Filename;
 
-  //Log.LogStatus( Identifier, 'LoadImage' );
-
-  FileName := Identifier;
-
-  if (FileExistsInsensitive(FileName)) then
+  // try to find the file case insensitive
+  if (not FileExistsInsensitive(FilenameFound)) then
   begin
-    // load from file
-    //Log.LogStatus( 'Is File ( Loading : '+FileName+')', '  LoadImage' );
-    try
-      Result := IMG_Load(PChar(FileName));
-      //Log.LogStatus( '       '+inttostr( integer( Result ) ), '  LoadImage' );
-    except
-      Log.LogError('Could not load from file "'+FileName+'"', 'LoadImage');
-      Exit;
-    end;
-  end
-  else
-  begin
-    //Log.LogStatus( 'IS Resource, because file does not exist.('+Identifier+')', '  LoadImage' );
+    Log.LogError('Image-File does not exist "'+FilenameFound+'"', 'LoadImage');
+    Exit;
+  end;
 
-    TexStream := GetResourceStream(Identifier, 'TEX');
-    if (not assigned(TexStream)) then
-    begin
-      Log.LogError( 'Invalid file or resource "'+ Identifier+'"', 'LoadImage');
-      Exit;
-    end;
-
-    TexRWops := RWopsFromStream(TexStream);
-    if (TexRWops = nil) then
-    begin
-      Log.LogError( 'Could not assign resource "'+Identifier+'"', 'LoadImage');
-      TexStream.Free();
-      Exit;
-    end;
-
-    //Log.LogStatus( 'resource Assigned....' , Identifier);
-    try
-      Result := IMG_Load_RW(TexRWops, 0);
-    except
-      Log.LogError( 'Could not read resource "'+Identifier+'"', 'LoadImage');
-    end;
-
-    SDL_FreeRW(TexRWops);
-    TexStream.Free();
+  // load from file
+  try
+    Result := IMG_Load(PChar(FilenameFound));
+  except
+    Log.LogError('Could not load from file "'+FilenameFound+'"', 'LoadImage');
+    Exit;
   end;
 end;
 

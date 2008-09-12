@@ -34,33 +34,33 @@ type
       CTime_hold: Cardinal;
       ESC_Alpha: Integer;
 
-      credits_entry_tex: TTexture;
-      credits_entry_dx_tex: TTexture;
-      credits_bg_tex: TTexture;
-      credits_bg_ovl: TTexture;
-//      credits_bg_logo: TTexture;
+      credits_entry:       TTexture;
+      credits_entry_dx:    TTexture;
+      credits_bg_tex:      TTexture;
+      credits_bg_ovl:      TTexture;
+      //credits_bg_logo:   TTexture;
       credits_bg_scrollbox_left: TTexture;
-      credits_blindguard: TTexture;
-      credits_blindy: TTexture;
-      credits_canni: TTexture;
-      credits_commandio: TTexture;
-      credits_lazyjoker: TTexture;
-      credits_mog: TTexture;
-      credits_mota: TTexture;
+      credits_blindguard:  TTexture;
+      credits_blindy:      TTexture;
+      credits_canni:       TTexture;
+      credits_commandio:   TTexture;
+      credits_lazyjoker:   TTexture;
+      credits_mog:         TTexture;
+      credits_mota:        TTexture;
       credits_skillmaster: TTexture;
-      credits_whiteshark: TTexture;
-      intro_layer01: TTexture;
-      intro_layer02: TTexture;
-      intro_layer03: TTexture;
-      intro_layer04: TTexture;
-      intro_layer05: TTexture;
-      intro_layer06: TTexture;
-      intro_layer07: TTexture;
-      intro_layer08: TTexture;
-      intro_layer09: TTexture;
-      outro_bg:      TTexture;
-      outro_esc:     TTexture;
-      outro_exd:     TTexture;
+      credits_whiteshark:  TTexture;
+      intro_layer01:       TTexture;
+      intro_layer02:       TTexture;
+      intro_layer03:       TTexture;
+      intro_layer04:       TTexture;
+      intro_layer05:       TTexture;
+      intro_layer06:       TTexture;
+      intro_layer07:       TTexture;
+      intro_layer08:       TTexture;
+      intro_layer09:       TTexture;
+      outro_bg:            TTexture;
+      outro_esc:           TTexture;
+      outro_exd:           TTexture;
 
       deluxe_slidein: cardinal;
 
@@ -82,12 +82,35 @@ type
    end;
 
 const
-  Funky_Text: AnsiString =
+  Funky_Text: string =
     'Grandma Deluxe has arrived! Thanks to Corvus5 for the massive work on UltraStar, Wome for the nice tune you´re hearing, '+
     'all the people who put massive effort and work in new songs (don´t forget UltraStar w/o songs would be nothing), ppl from '+
     'irc helping us - eBandit and Gabari, scene ppl who really helped instead of compiling and running away. Greetings to DennisTheMenace for betatesting, '+
     'Demoscene.tv, pouet.net, KakiArts, Sourceforge,..';
 
+  CRDTS_BG_FILE    = 'credits_v5_bg.png';
+  CRDTS_OVL_FILE          = 'credits_v5_overlay.png';
+  CRDTS_blindguard_FILE   = 'names_blindguard.png';
+  CRDTS_blindy_FILE       = 'names_blindy.png';
+  CRDTS_canni_FILE        = 'names_canni.png';
+  CRDTS_commandio_FILE    = 'names_commandio.png';
+  CRDTS_lazyjoker_FILE    = 'names_lazyjoker.png';
+  CRDTS_mog_FILE          = 'names_mog.png';
+  CRDTS_mota_FILE         = 'names_mota.png';
+  CRDTS_skillmaster_FILE  = 'names_skillmaster.png';
+  CRDTS_whiteshark_FILE   = 'names_whiteshark.png';
+  INTRO_L01_FILE          = 'intro-l-01.png';
+  INTRO_L02_FILE          = 'intro-l-02.png';
+  INTRO_L03_FILE          = 'intro-l-03.png';
+  INTRO_L04_FILE          = 'intro-l-04.png';
+  INTRO_L05_FILE          = 'intro-l-05.png';
+  INTRO_L06_FILE          = 'intro-l-06.png';
+  INTRO_L07_FILE          = 'intro-l-07.png';
+  INTRO_L08_FILE          = 'intro-l-08.png';
+  INTRO_L09_FILE          = 'intro-l-09.png';
+  OUTRO_BG_FILE           = 'outro-bg.png';
+  OUTRO_ESC_FILE          = 'outro-esc.png';
+  OUTRO_EXD_FILE          = 'outro-exit-dark.png';
 
   Timings: array[0..21] of Cardinal=(
      20,   //  0 Delay vor Start
@@ -143,46 +166,51 @@ begin
           FadeTo(@ScreenMain);
           AudioPlayback.PlaySound(SoundLib.Back);
         end;
-{       SDLK_SPACE:
+      {
+      SDLK_SPACE:
          begin
            setlength(CTime_hold,length(CTime_hold)+1);
            CTime_hold[high(CTime_hold)]:=CTime;
          end;
-}
+      }
      end;//esac
     end; //fi
 end;
 
 constructor TScreenCredits.Create;
+var
+  CreditsPath: string;
 begin
   inherited Create;
 
-  credits_bg_tex := Texture.LoadTexture(true, 'CRDTS_BG', TEXTURE_TYPE_PLAIN, 0);
-  credits_bg_ovl := Texture.LoadTexture(true, 'CRDTS_OVL', TEXTURE_TYPE_TRANSPARENT, 0);
+  CreditsPath := ResourcesPath + 'credits/';
 
-  credits_blindguard  := Texture.LoadTexture(true, 'CRDTS_blindguard',  TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_blindy      := Texture.LoadTexture(true, 'CRDTS_blindy',      TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_canni       := Texture.LoadTexture(true, 'CRDTS_canni',       TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_commandio   := Texture.LoadTexture(true, 'CRDTS_commandio',   TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_lazyjoker   := Texture.LoadTexture(true, 'CRDTS_lazyjoker',   TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mog         := Texture.LoadTexture(true, 'CRDTS_mog',         TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mota        := Texture.LoadTexture(true, 'CRDTS_mota',        TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_skillmaster := Texture.LoadTexture(true, 'CRDTS_skillmaster', TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_whiteshark  := Texture.LoadTexture(true, 'CRDTS_whiteshark',  TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_bg_tex := Texture.LoadTexture(CreditsPath + CRDTS_BG_FILE, TEXTURE_TYPE_PLAIN, 0);
+  credits_bg_ovl := Texture.LoadTexture(CreditsPath + CRDTS_OVL_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
 
-  intro_layer01 := Texture.LoadTexture(true, 'INTRO_L01', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer02 := Texture.LoadTexture(true, 'INTRO_L02', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer03 := Texture.LoadTexture(true, 'INTRO_L03', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer04 := Texture.LoadTexture(true, 'INTRO_L04', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer05 := Texture.LoadTexture(true, 'INTRO_L05', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer06 := Texture.LoadTexture(true, 'INTRO_L06', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer07 := Texture.LoadTexture(true, 'INTRO_L07', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer08 := Texture.LoadTexture(true, 'INTRO_L08', TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer09 := Texture.LoadTexture(true, 'INTRO_L09', TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_blindguard  := Texture.LoadTexture(CreditsPath + CRDTS_blindguard_FILE,  TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_blindy      := Texture.LoadTexture(CreditsPath + CRDTS_blindy_FILE,      TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_canni       := Texture.LoadTexture(CreditsPath + CRDTS_canni_FILE,       TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_commandio   := Texture.LoadTexture(CreditsPath + CRDTS_commandio_FILE,   TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_lazyjoker   := Texture.LoadTexture(CreditsPath + CRDTS_lazyjoker_FILE,   TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_mog         := Texture.LoadTexture(CreditsPath + CRDTS_mog_FILE,         TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_mota        := Texture.LoadTexture(CreditsPath + CRDTS_mota_FILE,        TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_skillmaster := Texture.LoadTexture(CreditsPath + CRDTS_skillmaster_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_whiteshark  := Texture.LoadTexture(CreditsPath + CRDTS_whiteshark_FILE,  TEXTURE_TYPE_TRANSPARENT, 0);
 
-  outro_bg := Texture.LoadTexture(true, 'OUTRO_BG',   TEXTURE_TYPE_PLAIN, 0);
-  outro_esc := Texture.LoadTexture(true, 'OUTRO_ESC', TEXTURE_TYPE_TRANSPARENT, 0);
-  outro_exd := Texture.LoadTexture(true, 'OUTRO_EXD', TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer01 := Texture.LoadTexture(CreditsPath + INTRO_L01_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer02 := Texture.LoadTexture(CreditsPath + INTRO_L02_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer03 := Texture.LoadTexture(CreditsPath + INTRO_L03_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer04 := Texture.LoadTexture(CreditsPath + INTRO_L04_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer05 := Texture.LoadTexture(CreditsPath + INTRO_L05_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer06 := Texture.LoadTexture(CreditsPath + INTRO_L06_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer07 := Texture.LoadTexture(CreditsPath + INTRO_L07_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer08 := Texture.LoadTexture(CreditsPath + INTRO_L08_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer09 := Texture.LoadTexture(CreditsPath + INTRO_L09_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+
+  outro_bg  := Texture.LoadTexture(CreditsPath + OUTRO_BG_FILE,  TEXTURE_TYPE_PLAIN, 0);
+  outro_esc := Texture.LoadTexture(CreditsPath + OUTRO_ESC_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  outro_exd := Texture.LoadTexture(CreditsPath + OUTRO_EXD_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
 
   CRDTS_Stage:=InitialDelay;
 end;
@@ -258,11 +286,11 @@ begin
   Credits_X := 580;
   deluxe_slidein := 0;
   Credits_Alpha := 0;
-  //Music.SetLoop(true); Loop looped ned, so ne scheisse  - loop loops not, shit
-  AudioPlayback.Open(soundpath + 'wome-credits-tune.mp3'); //danke kleinster liebster weeeetüüüüü!!  - thank you wetü
-//  Music.Play;
+  //Music.SetLoop(true); loop loops not, shit
+  AudioPlayback.Open(soundpath + 'wome-credits-tune.mp3'); // thank you wetue
+  //Music.Play;
   CTime:=0;
-//  setlength(CTime_hold,0);
+  //setlength(CTime_hold,0);
 end;
 
 procedure TScreenCredits.onHide;
@@ -310,7 +338,7 @@ begin
       inc(CurrentScrollEnd);
     end;
   end;
-{  // timing hack
+  {  // timing hack
     X:=5;
     SetFontStyle (2);
      SetFontItalic(False);
@@ -321,7 +349,8 @@ begin
      SetFontPos (500, X);
      glPrint (Addr(visibleText[0]));
      X:=X+20;
-     end;}
+     end;
+  }
 end;
 
 procedure Start3D;
@@ -342,30 +371,24 @@ end;
 
 procedure TScreenCredits.DrawCredits;
 var
-T{*, I*}: Cardinal; // Auto Removed, Unused Variable (I) // Auto Removed, Unused Variable (I)
-// X: Real; // Auto Removed, Unused Variable
-// Ver: PChar; // Auto Removed, Unused Variable
-// RuntimeStr: AnsiString; // Auto Removed, Unused Variable
+  T: Cardinal;
   Data: TFFTData;
   j,k,l:cardinal;
-f,g{*, h*}: Real; // Auto Removed, Unused Variable (h) // Auto Removed, Unused Variable (h)
+  f,g: Real;
   STime:cardinal;
   Delay:cardinal;
-
-// myPixel: longword; // Auto Removed, Unused Variable
-// myColor: Cardinal; // Auto Removed, Unused Variable
   myScale: Real;
   myAngle: Real;
-
-
-const  myLogoCoords: Array[0..27,0..1] of Cardinal = ((39,32),(84,32),(100,16),(125,24),
-                                       (154,31),(156,58),(168,32),(203,36),
-                                       (258,34),(251,50),(274,93),(294,84),
-                                       (232,54),(278,62),(319,34),(336,92),
-                                       (347,23),(374,32),(377,58),(361,83),
-                                       (385,91),(405,91),(429,35),(423,51),
-                                       (450,32),(485,34),(444,91),(486,93));
-
+const
+  myLogoCoords: Array[0..27,0..1] of Cardinal = (
+    (39,32),(84,32),(100,16),(125,24),
+    (154,31),(156,58),(168,32),(203,36),
+    (258,34),(251,50),(274,93),(294,84),
+    (232,54),(278,62),(319,34),(336,92),
+    (347,23),(374,32),(377,58),(361,83),
+    (385,91),(405,91),(429,35),(423,51),
+    (450,32),(485,34),(444,91),(486,93)
+  );
 begin
   //dis does teh muiwk y0r
   AudioPlayback.GetFFTData(Data);
@@ -383,13 +406,11 @@ begin
     Log.LogStatus('',' JB-2');
     if (CRDTS_Stage=InitialDelay) and (CTime=Timings[0]) then
     begin
-//      CTime:=Timings[20];
-//      CRDTS_Stage:=Outro;
-
+      //CTime:=Timings[20];
+      //CRDTS_Stage:=Outro;
       CRDTS_Stage:=Intro;
       CTime:=0;
       AudioPlayback.Play;
-
     end;
     if (CRDTS_Stage=Intro) and (CTime=Timings[7]) then
     begin
@@ -433,17 +454,17 @@ begin
           myScale:= 0.5+0.5*(CTime-Timings[2])/(Timings[3]-Timings[2]); // get some space between layers
           myAngle:=0;
         end;
-//        if CTime > Timings[3] then myScale:=1; // keep the space between layers
+        //if CTime > Timings[3] then myScale:=1; // keep the space between layers
         glTranslatef(0,0,-5+0.5*myScale);
         if CTime > Timings[3] then myScale:=1; // keep the space between layers
         if CTime > Timings[3] then begin // make logo rotate left and grow
-//          myScale:=(CTime-Timings[4])/(Timings[7]-Timings[4]);
+          //myScale:=(CTime-Timings[4])/(Timings[7]-Timings[4]);
           glRotatef(20*sqr(CTime-Timings[3])/sqr((Timings[7]-Timings[3])/2),0,0,1);
           glScalef(1+sqr(CTime-Timings[3])/(32*(Timings[7]-Timings[3])),1+sqr(CTime-Timings[3])/(32*(Timings[7]-Timings[3])),1);
         end;
         if CTime < Timings[2] then
           glRotatef(30*myAngle,0.5*myScale+myScale,1+myScale,0);
-//        glScalef(0.5,0.5,0.5);
+        //glScalef(0.5,0.5,0.5);
         glScalef(4/3,-1,1);
         glColor4f(1, 1, 1, 1);
 
@@ -563,13 +584,13 @@ begin
         // draw scroller
         Draw_FunkyText;
 
-//#########################################################################
-// draw credits names
+    //#########################################################################
+    // draw credits names
 
 
-Log.LogStatus('',' JB-4');
+    Log.LogStatus('',' JB-4');
 
-// BlindGuard (von links oben reindrehen, nach rechts unten rausdrehen) - (rotate in from upper left, rotate out to lower right)
+    // BlindGuard (rotate in from upper left, rotate out to lower right)
     STime:=Timings[9]-10;
     Delay:=Timings[10]-Timings[9];
     if CTime > STime then
@@ -633,7 +654,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Blindy  (zoom von 0 auf volle grösse und drehung, zoom auf doppelte grösse und nach rechts oben schieben) - (zoom from 0 to full size and rotation, zoom zo doubble size and shift to upper right)
+    // Blindy (zoom from 0 to full size and rotation, zoom zo doubble size and shift to upper right)
     STime:=Timings[10]-10;
     Delay:=Timings[11]-Timings[10]+5;
     if CTime > STime then
@@ -703,7 +724,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Canni  (von links reinschieben, nach rechts oben rausschieben)  - (shift in from left, shift out to upper right)
+    // Canni  (shift in from left, shift out to upper right)
     STime:=Timings[11]-10;
     Delay:=Timings[12]-Timings[11]+5;
     if CTime > STime then
@@ -768,7 +789,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Commandio  (von unten reinklappen, nach rechts oben rausklappen) - (flip in from down, flip out to upper right)
+    // Commandio  (flip in from down, flip out to upper right)
     STime:=Timings[12]-10;
     Delay:=Timings[13]-Timings[12];
     if CTime > STime then
@@ -835,7 +856,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// lazy joker  (just scrolls from left to right, no twinkling stars, no on-beat flashing)
+    // lazy joker  (just scrolls from left to right, no twinkling stars, no on-beat flashing)
     STime:=Timings[13]-35;
     Delay:=Timings[14]-Timings[13]+5;
     if CTime > STime then
@@ -882,7 +903,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Mog (von links reinklappen, nach rechts unten rausklappen) - (flip in from right, flip out to lower right)
+    // Mog (flip in from right, flip out to lower right)
     STime:=Timings[14]-10;
     Delay:=Timings[15]-Timings[14]+5;
     if CTime > STime then
@@ -951,7 +972,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Mota (von rechts oben reindrehen, nach links unten rausschieben und verkleinern und dabei drehen) - (rotate in from upper right, shift out to lower left while shrinking and rotateing)
+    // Mota (rotate in from upper right, shift out to lower left while shrinking and rotateing)
     STime:=Timings[15]-10;
     Delay:=Timings[16]-Timings[15]+5;
     if CTime > STime then
@@ -1021,7 +1042,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// Skillmaster (von rechts unten reinschieben, nach rechts oben rausdrehen) - (shift in from lower right, rotate out to upper right)
+    // Skillmaster (shift in from lower right, rotate out to upper right)
     STime:=Timings[16]-10;
     Delay:=Timings[17]-Timings[16]+5;
     if CTime > STime then
@@ -1091,7 +1112,7 @@ Log.LogStatus('',' JB-4');
       glPopMatrix;
     end;
 
-// WhiteShark (von links unten reinklappen, nach rechts oben rausklappen) - (flip in from lower left, flip out to upper right)
+    // WhiteShark (flip in from lower left, flip out to upper right)
     STime:=Timings[17]-10;
     Delay:=Timings[18]-Timings[17];
     if CTime > STime then
@@ -1167,8 +1188,9 @@ Log.LogStatus('',' JB-4');
 
    Log.LogStatus('',' JB-103');
 
-// ####################################################################
-// do some twinkle stuff (kinda on beat)
+    // ####################################################################
+    // do some twinkle stuff (kinda on beat)
+
     if (CTime > Timings[8]  ) and
        (CTime < Timings[19] ) then
     begin
@@ -1196,8 +1218,9 @@ Log.LogStatus('',' JB-4');
       end;
     end;
 
-//#################################################
-// draw the rest of the main screen (girl and logo
+    //#################################################
+    // draw the rest of the main screen (girl and logo
+    
         glEnable(GL_TEXTURE_2D);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
@@ -1209,14 +1232,17 @@ Log.LogStatus('',' JB-4');
           glTexCoord2f(393/512,600/1024); glVertex2f(800, 600);
           glTexCoord2f(393/512,0);glVertex2f(800, 0);
         glEnd;
-{        glBindTexture(GL_TEXTURE_2D, credits_bg_logo.TexNum);
+
+        {
+        glBindTexture(GL_TEXTURE_2D, credits_bg_logo.TexNum);
         glbegin(gl_quads);
           glTexCoord2f(0,0);glVertex2f(0,   0);
           glTexCoord2f(0,112/128);glVertex2f(0,   112);
           glTexCoord2f(497/512,112/128); glVertex2f(497, 112);
           glTexCoord2f(497/512,0);glVertex2f(497, 0);
         glEnd;
-}
+        }
+        
         gldisable(gl_texture_2d);
         glDisable(GL_BLEND);
 
@@ -1297,16 +1323,17 @@ Log.LogStatus('',' JB-4');
         // ...
     end;
 
-{  // draw credits runtime counter
+   {
+   // draw credits runtime counter
    SetFontStyle (2);
     SetFontItalic(False);
     SetFontSize(9);
     SetFontPos (5, 5);
     glColor4f(1, 1, 1, 1);
-//    RuntimeStr:='CTime: '+inttostr(floor(CTime/30.320663991914489602156136106092))+'.'+inttostr(floor(CTime/3.0320663991914489602156136106092)-floor(CTime/30.320663991914489602156136106092)*10);
+    //RuntimeStr:='CTime: '+inttostr(floor(CTime/30.320663991914489602156136106092))+'.'+inttostr(floor(CTime/3.0320663991914489602156136106092)-floor(CTime/30.320663991914489602156136106092)*10);
     RuntimeStr:='CTime: '+inttostr(CTime);
     glPrint (Addr(RuntimeStr[1]));
-}
+    }
 
   // make the stars shine
   GoldenRec.Draw;

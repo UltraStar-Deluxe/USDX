@@ -416,6 +416,9 @@ begin
   //Load_GL_EXT_framebuffer_object();
 end;
 
+const
+  WINDOW_ICON = 'icons/ultrastardx-icon.png';
+
 procedure Initialize3D (Title: string);
 var
   Icon: PSDL_Surface;
@@ -428,7 +431,7 @@ begin
   end;
 
   // load icon image (must be 32x32 for win32)
-  Icon := LoadImage('WINDOWICON');
+  Icon := LoadImage(ResourcesPath + WINDOW_ICON);
   if (Icon <> nil) then
     SDL_WM_SetIcon(Icon, 0);
 

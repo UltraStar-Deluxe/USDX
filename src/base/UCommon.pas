@@ -25,7 +25,6 @@ procedure ShowMessage( const msg : String; msgType: TMessageType = mtInfo );
 
 procedure ConsoleWriteLn(const msg: string);
 
-function GetResourceStream(const aName, aType : string): TStream;
 function RWopsFromStream(Stream: TStream): PSDL_RWops;
 
 {$IFDEF FPC}
@@ -303,32 +302,6 @@ begin
   // Windows and Mac OS X do not have case sensitive file systems
   Result := FileExists(FileName);
 {$IFEND}
-end;
-
-
-// include resource-file info (stored in the constant array "resources")
-{$I ../resource.inc}
-
-function GetResourceStream(const aName, aType: string): TStream;
-var
-  ResIndex: integer;
-  Filename: string;
-begin
-  Result := nil;
-
-  for ResIndex := 0 to High(resources) do
-  begin
-    if (Resources[ResIndex][0] = aName ) then
-    begin
-      try
-        Filename := ResourcesPath + Resources[ResIndex][1];
-        Result := TFileStream.Create(Filename, fmOpenRead);
-      except
-        Log.LogError('Failed to open: "'+ resources[ResIndex][1] +'"', 'GetResourceStream');
-      end;
-      Exit;
-    end;
-  end;
 end;
 
 // +++++++++++++++++++++ helpers for RWOpsFromStream() +++++++++++++++
