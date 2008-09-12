@@ -306,87 +306,74 @@ begin
 end;
 
 
-{$IFDEF Unix}
-  // include resource-file info (stored in the constant array "resources")
-  {$I ../resource.inc}
-{$ENDIF}
+// include resource-file info (stored in the constant array "resources")
+{$I ../resource.inc}
 
 function GetResourceStream(const aName, aType: string): TStream;
-{$IFDEF Unix}
 var
   ResIndex: integer;
   Filename: string;
-{$ENDIF}
 begin
   Result := nil;
 
-  {$IFDEF Unix}
   for ResIndex := 0 to High(resources) do
   begin
-    if (resources[ResIndex][0] = aName ) and
-       (resources[ResIndex][1] = aType ) then
+    if (Resources[ResIndex][0] = aName ) then
     begin
       try
-        Filename := ResourcesPath + resources[ResIndex][2];
+        Filename := ResourcesPath + Resources[ResIndex][1];
         Result := TFileStream.Create(Filename, fmOpenRead);
       except
-        Log.LogError('Failed to open: "'+ resources[ResIndex][2] +'"', 'GetResourceStream');
+        Log.LogError('Failed to open: "'+ resources[ResIndex][1] +'"', 'GetResourceStream');
       end;
-      exit;
+      Exit;
     end;
   end;
-  {$ELSE}
-  try
-    Result := TResourceStream.Create(HInstance, aName , PChar(aType));
-  except
-    Log.LogError('Invalid resource: "'+ aType + ':' + aName +'"', 'GetResourceStream');
-  end;
-  {$ENDIF}
 end;
 
 // +++++++++++++++++++++ helpers for RWOpsFromStream() +++++++++++++++
-  function SdlStreamSeek( context : PSDL_RWops; offset : Integer; whence : Integer ) : integer; cdecl;
-  var
-    stream : TStream;
-    origin : Word;
-  begin
-    stream := TStream( context.unknown );
-    if ( stream = nil ) then
-      raise EInvalidContainer.Create( 'SDLStreamSeek on nil' );
-    case whence of
-      0 : origin := soFromBeginning; //	Offset is from the beginning of the resource. Seek moves to the position Offset. Offset must be >= 0.
-      1 : origin := soFromCurrent; //	Offset is from the current position in the resource. Seek moves to Position + Offset.
-      2 : origin := soFromEnd;
-    else
-      origin := soFromBeginning; // just in case
-    end;
-    Result := stream.Seek( offset, origin );
+function SdlStreamSeek( context : PSDL_RWops; offset : Integer; whence : Integer ) : integer; cdecl;
+var
+  stream : TStream;
+  origin : Word;
+begin
+  stream := TStream( context.unknown );
+  if ( stream = nil ) then
+    raise EInvalidContainer.Create( 'SDLStreamSeek on nil' );
+  case whence of
+    0 : origin := soFromBeginning; //	Offset is from the beginning of the resource. Seek moves to the position Offset. Offset must be >= 0.
+    1 : origin := soFromCurrent; //	Offset is from the current position in the resource. Seek moves to Position + Offset.
+    2 : origin := soFromEnd;
+  else
+    origin := soFromBeginning; // just in case
   end;
+  Result := stream.Seek( offset, origin );
+end;
   
-  function SdlStreamRead( context : PSDL_RWops; Ptr : Pointer; size : Integer; maxnum: Integer ) : Integer; cdecl;
-  var
-    stream : TStream;
-  begin
-    stream := TStream( context.unknown );
-    if ( stream = nil ) then
-      raise EInvalidContainer.Create( 'SDLStreamRead on nil' );
-    try
-      Result := stream.read( Ptr^, Size * maxnum ) div size;
-    except
-      Result := -1;
-    end;
+function SdlStreamRead( context : PSDL_RWops; Ptr : Pointer; size : Integer; maxnum: Integer ) : Integer; cdecl;
+var
+  stream : TStream;
+begin
+  stream := TStream( context.unknown );
+  if ( stream = nil ) then
+    raise EInvalidContainer.Create( 'SDLStreamRead on nil' );
+  try
+    Result := stream.read( Ptr^, Size * maxnum ) div size;
+  except
+    Result := -1;
   end;
+end;
   
-  function SDLStreamClose( context : PSDL_RWops ) : Integer; cdecl;
-  var
-    stream : TStream;
-  begin
-    stream := TStream( context.unknown );
-    if ( stream = nil ) then
-      raise EInvalidContainer.Create( 'SDLStreamClose on nil' );
-    stream.Free;
-    Result := 1;
-  end;
+function SDLStreamClose( context : PSDL_RWops ) : Integer; cdecl;
+var
+  stream : TStream;
+begin
+  stream := TStream( context.unknown );
+  if ( stream = nil ) then
+    raise EInvalidContainer.Create( 'SDLStreamClose on nil' );
+  stream.Free;
+  Result := 1;
+end;
 // -----------------------------------------------
 
 (*

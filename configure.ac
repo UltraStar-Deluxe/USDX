@@ -236,7 +236,6 @@ AC_CONFIG_FILES([src/config-$FPC_PLATFORM.inc:src/config.inc.in])
 if [[ x$libprojectM_USE_CWRAPPER = xyes ]]; then
     AC_CONFIG_FILES([src/lib/projectM/cwrapper/Makefile])
 fi
-AC_CONFIG_FILES([tools/ResourceExtractor/Makefile])
 AC_OUTPUT
 
 # -----------------------------------------

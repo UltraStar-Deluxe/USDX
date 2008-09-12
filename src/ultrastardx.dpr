@@ -1,7 +1,7 @@
 program ultrastardx;
 
 {$IFDEF MSWINDOWS}
-  {$R 'ultrastardx.res' 'ultrastardx.rc'}
+  {$R '..\icons\ultrastardx-icon.res' '..\icons\ultrastardx-icon.rc'}
 {$ENDIF}
 
 {$IFDEF FPC}

@@ -52,17 +52,6 @@ USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
 INSTALL_DATADIR := $(datadir)/$(USDX_PACKAGE_NAME)
 
 #################################################
-# RC -> resource.inc
-#################################################
-
-# RC resource extraction config
-RESEXTRACTOR_DIR := $(USDX_TOOLS_DIR)/ResourceExtractor
-RESEXTRACTOR_BIN := $(RESEXTRACTOR_DIR)/ResourceExtractor$(EXEEXT)
-RESOURCE_DIR  := $(USDX_GAME_DIR)/resources
-RESOURCE_FILE := $(srcdir)/resource.inc
-RC_FILE       := $(srcdir)/ultrastardx.rc
-
-#################################################
 # FPC config
 #################################################
 
@@ -230,7 +219,7 @@ create-pathinfo:
 	echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';" > paths.inc
 
 # check if any src-file changed and rebuild
-$(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(SRC_FILES)
+$(USDX_BIN): $(USDX_PROJ) $(STATIC_LIBS) $(SRC_FILES)
 	@echo "==================================="
 	@echo "Changed files:"
 	@echo "$?"
@@ -247,24 +236,12 @@ $(USDX_BIN): $(RESOURCE_FILE) $(USDX_PROJ) $(STATIC_LIBS) $(SRC_FILES)
 	$(PPC) $(strip $(PFLAGS_ALL)) -o$@ $(USDX_PROJ)
 
 #################################################
-# Resource-file
-#################################################
-
-$(RESOURCE_FILE): $(RC_FILE)
-	$(RESEXTRACTOR_BIN) $(RC_FILE) $(RESOURCE_DIR) $(RESOURCE_FILE)
-
-
-#################################################
 # clean-up
 #################################################
 
 .PHONY: clean
-clean: clean_obj clean_res
+clean: clean_obj
 	$(RM) paths.inc
-
-.PHONY: clean_res
-clean_res:
-	$(RM) "$(RESOURCE_FILE)"
 
 .PHONY: clean_obj
 clean_obj: clean_bin

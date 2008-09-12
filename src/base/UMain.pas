@@ -77,6 +77,7 @@ var
   LanguagesPath:    string;
   PluginPath:       string;
   VisualsPath:      string;
+  FontPath:         string;
   ResourcesPath:    string;
   PlayListPath:     string;
 
@@ -100,7 +101,7 @@ function FindPath(out PathResult: string; const RequestedPath: string; NeedsWrit
 procedure InitializePaths;
 procedure AddSongPath(const Path: string);
 
-Procedure Main;
+procedure Main;
 procedure MainLoop;
 procedure CheckEvents;
 procedure Sing(Screen: TScreenSing);
@@ -1091,6 +1092,7 @@ begin
   FindPath(LanguagesPath,    Platform.GetGameSharedPath + 'languages', false);
   FindPath(PluginPath,       Platform.GetGameSharedPath + 'plugins', false);
   FindPath(VisualsPath,      Platform.GetGameSharedPath + 'visuals', false);
+  FindPath(FontPath,         Platform.GetGameSharedPath + 'fonts', false);
   FindPath(ResourcesPath,    Platform.GetGameSharedPath + 'resources', false);
 
   // Playlists are not shared as we need one directory to write too

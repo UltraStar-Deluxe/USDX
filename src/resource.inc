@@ -1,0 +1,27 @@
+const
+  Resources: array[0..23, 0..1] of string = (
+    ('WINDOWICON',         'icons/ultrastardx-icon.png'),
+    ('CRDTS_BG',           'credits/credits_v5_bg.png'),
+    ('CRDTS_OVL',          'credits/credits_v5_overlay.png'),
+    ('CRDTS_blindguard',   'credits/names_blindguard.png'),
+    ('CRDTS_blindy',       'credits/names_blindy.png'),
+    ('CRDTS_canni',        'credits/names_canni.png'),
+    ('CRDTS_commandio',    'credits/names_commandio.png'),
+    ('CRDTS_lazyjoker',    'credits/names_lazyjoker.png'),
+    ('CRDTS_mog',          'credits/names_mog.png'),
+    ('CRDTS_mota',         'credits/names_mota.png'),
+    ('CRDTS_skillmaster',  'credits/names_skillmaster.png'),
+    ('CRDTS_whiteshark',   'credits/names_whiteshark.png'),
+    ('INTRO_L01',          'credits/intro-l-01.png'),
+    ('INTRO_L02',          'credits/intro-l-02.png'),
+    ('INTRO_L03',          'credits/intro-l-03.png'),
+    ('INTRO_L04',          'credits/intro-l-04.png'),
+    ('INTRO_L05',          'credits/intro-l-05.png'),
+    ('INTRO_L06',          'credits/intro-l-06.png'),
+    ('INTRO_L07',          'credits/intro-l-07.png'),
+    ('INTRO_L08',          'credits/intro-l-08.png'),
+    ('INTRO_L09',          'credits/intro-l-09.png'),
+    ('OUTRO_BG',           'credits/outro-bg.png'),
+    ('OUTRO_ESC',          'credits/outro-esc.png'),
+    ('OUTRO_EXD',          'credits/outro-exit-dark.png')
+  );

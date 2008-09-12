@@ -12,7 +12,6 @@ uses
   gl,
   SDL,
   UTexture,
-  Classes,
 //  SDL_ttf,
   ULog;
 
@@ -73,81 +72,101 @@ uses
   UMain,
   UCommon,
   SysUtils,
+  IniFiles,
+  Classes,
   UGraphic;
 
 var
   // Colours for the reflection
   TempColor:    array[0..3] of GLfloat;
 
-procedure LoadBitmapFontInfo(aID : integer; const aType, aResourceName: string);
+{**
+ * Load font info.
+ * FontFile is the name of the image (.png) not the data (.dat) file
+ *}
+procedure LoadFontInfo(FontID: integer; const FontFile: string);
 var
-  stream:  TStream;
+  Stream:  TFileStream;
+  DatFile: string;
 begin
-  stream := GetResourceStream(aResourceName, aType);
-  if (not assigned(stream)) then
-  begin
-    Log.LogError('Unknown font['+ inttostr(aID) +': '+aType+']', 'loadfont');
-    Exit;
-  end;
+  DatFile := ChangeFileExt(FontFile, '.dat');
+  FillChar(Fonts[FontID].Width[0], Length(Fonts[FontID].Width), 0);
+
+  Stream := nil;
   try
-    stream.Read(Fonts[ aID ].Width, 256);
+    Stream := TFileStream.Create(DatFile, fmOpenRead);
+    Stream.Read(Fonts[FontID].Width, 256);
   except
-    Log.LogError('Error while reading font['+ inttostr(aID) +': '+aType+']', 'loadfont');
+    Log.LogError('Error while reading font['+ inttostr(FontID) +']', 'LoadFontInfo');
   end;
-  stream.Free;
+  Stream.Free;
 end;
 
 // Builds bitmap fonts
 procedure BuildFont;
 var
   Count: integer;
+  FontIni: TMemIniFile;
+  FontFile: string;     // filename of the image (with .png/... ending)
 begin
   ActFont := 0;
 
-  SetLength(Fonts, 5);
-  Fonts[0].Tex := Texture.LoadTexture(true, 'Font', TEXTURE_TYPE_TRANSPARENT, 0);
+  SetLength(Fonts, 4);
+  FontIni := TMemIniFile.Create(FontPath + 'fonts.ini');
+
+  // Normal
+
+  FontFile := FontPath + FontIni.ReadString('Normal', 'File', '');
+
+  Fonts[0].Tex := Texture.LoadTexture(true, FontFile, TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[0].Tex.H := 30;
   Fonts[0].AspectW := 0.9;
   Fonts[0].Outline := 0;
 
-  Fonts[1].Tex := Texture.LoadTexture(true, 'FontB', TEXTURE_TYPE_TRANSPARENT, 0);
+  LoadFontInfo(0, FontFile);
+
+  // Bold
+
+  FontFile := FontPath + FontIni.ReadString('Bold', 'File', '');
+
+  Fonts[1].Tex := Texture.LoadTexture(true, FontFile, TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[1].Tex.H := 30;
   Fonts[1].AspectW := 1;
   Fonts[1].Outline := 0;
 
-  Fonts[2].Tex := Texture.LoadTexture(true, 'FontO', TEXTURE_TYPE_TRANSPARENT, 0);
+  LoadFontInfo(1, FontFile);
+  for Count := 0 to 255 do
+    Fonts[1].Width[Count] := Fonts[1].Width[Count] div 2;
+
+  // Outline1
+
+  FontFile := FontPath + FontIni.ReadString('Outline1', 'File', '');
+
+  Fonts[2].Tex := Texture.LoadTexture(true, FontFile, TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[2].Tex.H := 30;
   Fonts[2].AspectW := 0.95;
   Fonts[2].Outline := 5;
 
-  Fonts[3].Tex := Texture.LoadTexture(true, 'FontO2', TEXTURE_TYPE_TRANSPARENT, 0);
+  LoadFontInfo(2, FontFile);
+  for Count := 0 to 255 do
+    Fonts[2].Width[Count] := Fonts[2].Width[Count] div 2 + 2;
+
+  // Outline2
+
+  FontFile := FontPath + FontIni.ReadString('Outline2', 'File', '');
+
+  Fonts[3].Tex := Texture.LoadTexture(true, FontFile, TEXTURE_TYPE_TRANSPARENT, 0);
   Fonts[3].Tex.H := 30;
   Fonts[3].AspectW := 0.95;
   Fonts[3].Outline := 4;
 
-{  Fonts[4].Tex := Texture.LoadTexture('FontO', TEXTURE_TYPE_TRANSPARENT, 0); // for score screen
-  Fonts[4].Tex.H := 30;
-  Fonts[4].AspectW := 0.95;
-  Fonts[4].Done := -1;
-  Fonts[4].Outline := 5;}
-
-  // load font info
-  LoadBitmapFontInfo( 0, 'FNT', 'Font');
-  LoadBitmapFontInfo( 1, 'FNT', 'FontB');
-  LoadBitmapFontInfo( 2, 'FNT', 'FontO');
-  LoadBitmapFontInfo( 3, 'FNT', 'FontO2');
-
-  for Count := 0 to 255 do
-    Fonts[1].Width[Count] := Fonts[1].Width[Count] div 2;
-
-  for Count := 0 to 255 do
-    Fonts[2].Width[Count] := Fonts[2].Width[Count] div 2 + 2;
-
+  LoadFontInfo(3, FontFile);
   for Count := 0 to 255 do
     Fonts[3].Width[Count] := Fonts[3].Width[Count] + 1;
 
-{  for Count := 0 to 255 do
-    Fonts[4].Width[Count] := Fonts[4].Width[Count] div 2 + 2;}
+
+  // close ini-file
+  FontIni.Free;
 
   // enable blending by default
   for Count := 0 to High(Fonts) do

@@ -6203,8 +6203,6 @@ if [ x$libprojectM_USE_CWRAPPER = xyes ]; then
     ac_config_files="$ac_config_files src/lib/projectM/cwrapper/Makefile"
 
 fi
-ac_config_files="$ac_config_files tools/ResourceExtractor/Makefile"
-
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -6812,7 +6810,6 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/config-$FPC_PLATFORM.inc") CONFIG_FILES="$CONFIG_FILES src/config-$FPC_PLATFORM.inc:src/config.inc.in" ;;
     "src/lib/projectM/cwrapper/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/projectM/cwrapper/Makefile" ;;
-    "tools/ResourceExtractor/Makefile") CONFIG_FILES="$CONFIG_FILES tools/ResourceExtractor/Makefile" ;;
 
   *) { { $as_echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 $as_echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
