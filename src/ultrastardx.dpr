@@ -48,18 +48,18 @@ uses
   sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
   //sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
-  UMediaCore_SDL         in 'base\UMediaCore_SDL.pas',
+  UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',
 
   zlib                   in 'lib\zlib\zlib.pas',
   png                    in 'lib\libpng\png.pas',
 
   {$IFDEF UseBass}
   bass                   in 'lib\bass\delphi\bass.pas',
-  UAudioCore_Bass        in 'base\UAudioCore_Bass.pas',
+  UAudioCore_Bass        in 'media\UAudioCore_Bass.pas',
   {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\portaudio.pas',
-  UAudioCore_Portaudio   in 'base\UAudioCore_Portaudio.pas',
+  UAudioCore_Portaudio   in 'media\UAudioCore_Portaudio.pas',
   {$ENDIF}
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\portmixer.pas',
@@ -73,7 +73,7 @@ uses
   opt                    in 'lib\ffmpeg\opt.pas',
   avio                   in 'lib\ffmpeg\avio.pas',
   mathematics            in 'lib\ffmpeg\mathematics.pas',
-  UMediaCore_FFmpeg      in 'base\UMediaCore_FFmpeg.pas',
+  UMediaCore_FFmpeg      in 'media\UMediaCore_FFmpeg.pas',
   {$IFDEF UseSWScale}
   swscale                in 'lib\ffmpeg\swscale.pas',
   {$ENDIF}
@@ -172,6 +172,11 @@ uses
   uPluginLoader     in 'base\uPluginLoader.pas',     //New Plugin Loader Module
 
   UParty            in 'base\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
+
+  //------------------------------
+  //Includes - Platform
+  //------------------------------
+  
   UPlatform         in 'base\UPlatform.pas',
 {$IF Defined(MSWINDOWS)}
   UPlatformWindows  in 'base\UPlatformWindows.pas',
@@ -185,13 +190,13 @@ uses
   //Includes - Media
   //------------------------------
 
-  UMusic          in 'base\UMusic.pas',
-  UAudioPlaybackBase in 'base\UAudioPlaybackBase.pas',
+  UMusic                    in 'base\UMusic.pas',
+  UAudioPlaybackBase        in 'media\UAudioPlaybackBase.pas',
 {$IF Defined(UsePortaudioPlayback) or Defined(UseSDLPlayback)}
   UFFT                      in 'lib\fft\UFFT.pas',
-  UAudioPlayback_Softmixer  in 'base\UAudioPlayback_SoftMixer.pas',
+  UAudioPlayback_Softmixer  in 'media\UAudioPlayback_SoftMixer.pas',
 {$IFEND}
-  UAudioConverter           in 'base\UAudioConverter.pas',
+  UAudioConverter           in 'media\UAudioConverter.pas',
 
   //******************************
   //Pluggable media modules
@@ -199,39 +204,37 @@ uses
   // This means the first entry has highest priority, the last lowest.
   //******************************
 
-  // TODO :  these all should be moved to a media folder
-
 {$IFDEF UseFFmpegVideo}
-  UVideo                    in 'base\UVideo.pas',
+  UVideo                    in 'media\UVideo.pas',
 {$ENDIF}
 {$IFDEF UseProjectM}
   // must be after UVideo, so it will not be the default video module
-  UVisualizer               in 'base\UVisualizer.pas',
+  UVisualizer               in 'media\UVisualizer.pas',
 {$ENDIF}
 {$IFDEF UseBASSInput}
-  UAudioInput_Bass          in 'base\UAudioInput_Bass.pas',
+  UAudioInput_Bass          in 'media\UAudioInput_Bass.pas',
 {$ENDIF}
 {$IFDEF UseBASSDecoder}
   // prefer Bass to FFmpeg if possible
-  UAudioDecoder_Bass        in 'base\UAudioDecoder_Bass.pas',
+  UAudioDecoder_Bass        in 'media\UAudioDecoder_Bass.pas',
 {$ENDIF}
 {$IFDEF UseBASSPlayback}
-  UAudioPlayback_Bass       in 'base\UAudioPlayback_Bass.pas',
+  UAudioPlayback_Bass       in 'media\UAudioPlayback_Bass.pas',
 {$ENDIF}
 {$IFDEF UseSDLPlayback}
-  UAudioPlayback_SDL        in 'base\UAudioPlayback_SDL.pas',
+  UAudioPlayback_SDL        in 'media\UAudioPlayback_SDL.pas',
 {$ENDIF}
 {$IFDEF UsePortaudioInput}
-  UAudioInput_Portaudio     in 'base\UAudioInput_Portaudio.pas',
+  UAudioInput_Portaudio     in 'media\UAudioInput_Portaudio.pas',
 {$ENDIF}
 {$IFDEF UsePortaudioPlayback}
-  UAudioPlayback_Portaudio  in 'base\UAudioPlayback_Portaudio.pas',
+  UAudioPlayback_Portaudio  in 'media\UAudioPlayback_Portaudio.pas',
 {$ENDIF}
 {$IFDEF UseFFmpegDecoder}
-  UAudioDecoder_FFmpeg      in 'base\UAudioDecoder_FFmpeg.pas',
+  UAudioDecoder_FFmpeg      in 'media\UAudioDecoder_FFmpeg.pas',
 {$ENDIF}
   // fallback dummy, must be last
-  UMedia_dummy              in 'base\UMedia_dummy.pas',
+  UMedia_dummy              in 'media\UMedia_dummy.pas',
 
 
   //------------------------------
