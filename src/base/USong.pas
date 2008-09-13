@@ -360,7 +360,8 @@ var
   Param2:   integer;
   Param3:   integer;
   ParamS:   string;
-  I,J,X:    integer;
+  I, J:     integer;
+  NoteIndex: integer;
 
   NoteType: Char;
   SentenceEnd, Rest, Time: Integer;
@@ -441,13 +442,13 @@ begin
           Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(PChar(Lines[CP].Line[Lines[CP].High].Lyric));
           //Total Notes Patch
           Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
-          for X := 0 to high(Lines[CP].Line[Lines[CP].High].Note) do
+          for NoteIndex := 0 to high(Lines[CP].Line[Lines[CP].High].Note) do
           begin
-            if (Lines[CP].Line[Lines[CP].High].Note[X].NoteType = ntGolden) then
-              Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[X].Length;
+            if (Lines[CP].Line[Lines[CP].High].Note[NoteIndex].NoteType = ntGolden) then
+              Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[NoteIndex].Length;
 
-            if (Lines[CP].Line[Lines[CP].High].Note[X].NoteType <> ntFreestyle) then
-              Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[X].Length;
+            if (Lines[CP].Line[Lines[CP].High].Note[NoteIndex].NoteType <> ntFreestyle) then
+              Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[NoteIndex].Length;
           end;
           //Total Notes Patch End
         end
@@ -459,12 +460,12 @@ begin
             Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
             //Total Notes Patch
             Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
-            for X := 0 to high(Lines[Count].Line[Lines[Count].High].Note) do
+            for NoteIndex := 0 to high(Lines[Count].Line[Lines[Count].High].Note) do
             begin
-              if (Lines[Count].Line[Lines[Count].High].Note[X].NoteType = ntGolden) then
-                Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[X].Length;
-              if (Lines[Count].Line[Lines[Count].High].Note[X].NoteType <> ntFreestyle) then
-                Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[X].Length;
+              if (Lines[Count].Line[Lines[Count].High].Note[NoteIndex].NoteType = ntGolden) then
+                Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[NoteIndex].Length;
+              if (Lines[Count].Line[Lines[Count].High].Note[NoteIndex].NoteType <> ntFreestyle) then
+                Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[NoteIndex].Length;
 
             end;
             //Total Notes Patch End
