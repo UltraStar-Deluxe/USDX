@@ -80,7 +80,6 @@ type
     Background: WideString;
     Video:      WideString;
     VideoGAP:   real;
-    VideoLoaded: boolean; // true if the video has been loaded
     NotesGAP:   integer;
     Start:      real; // in seconds
     Finish:     integer; // in miliseconds

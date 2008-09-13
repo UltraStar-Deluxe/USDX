@@ -33,13 +33,13 @@ type
 
 type
   TScreenSing = class(TMenu)
+  private
+    VideoLoaded: boolean;
   protected
     Paused:     boolean; //Pause Mod
     LyricsSync: TLyricsSyncSource;
     NumEmptySentences: integer;
   public
-    //TextTime:           integer;
-
     // TimeBar fields
     StaticTimeProgress: integer;
     TextTimeText: integer;
@@ -424,21 +424,23 @@ begin
   // reset video playback engine, to play video clip...
   fCurrentVideoPlaybackEngine.Close;
   fCurrentVideoPlaybackEngine := VideoPlayback;
-{**
- * == Background ==
- * We have four types of backgrounds:
- *   + Blank        : Nothing has been set, this is our fallback
- *   + Picture      : Picture has been set, and exists - otherwise we fallback
- *   + Video        : Video has been set, and exists - otherwise we fallback
- *   + Visualization: + Off        : No Visialization
- *                    + WhenNoVideo: Overwrites Blank and Picture
- *                    + On         : Overwrites Blank, Picture and Video
- *}
-{**
- * set background to: video
- *}
-  CurrentSong.VideoLoaded := False;
-  fShowVisualization      := False;
+
+  {*
+   * == Background ==
+   * We have four types of backgrounds:
+   *   + Blank        : Nothing has been set, this is our fallback
+   *   + Picture      : Picture has been set, and exists - otherwise we fallback
+   *   + Video        : Video has been set, and exists - otherwise we fallback
+   *   + Visualization: + Off        : No Visialization
+   *                    + WhenNoVideo: Overwrites Blank and Picture
+   *                    + On         : Overwrites Blank, Picture and Video
+   *}
+
+  {*
+   * set background to: video
+   *}
+  VideoLoaded := False;
+  fShowVisualization := False;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
     if (fCurrentVideoPlaybackEngine.Open(CurrentSong.Path + CurrentSong.Video)) then
@@ -446,15 +448,15 @@ begin
       fShowVisualization := False;
       fCurrentVideoPlaybackEngine := VideoPlayback;
       fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
-      CurrentSong.VideoLoaded := True;
-      fCurrentVideoPlaybackEngine.play;
+      fCurrentVideoPlaybackEngine.Play;
+      VideoLoaded := True;
     end;
   end;
 
-{**
- * set background to: picture
- *}
-  if (CurrentSong.Background <> '') and (CurrentSong.VideoLoaded = False)
+  {*
+   * set background to: picture
+   *}
+  if (CurrentSong.Background <> '') and (VideoLoaded = False)
     and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
     try
       Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
@@ -464,26 +466,31 @@ begin
       Tex_Background.TexNum := 0;
     end
   else
+  begin
     Tex_Background.TexNum := 0;
-{**
- * set background to: visualization (Overwrites all)
- *}
+  end;
+
+  {*
+   * set background to: visualization (Overwrites all)
+   *}
   if (TVisualizerOption(Ini.VisualizerOption) in [voOn]) then
   begin
     fShowVisualization := True;
     fCurrentVideoPlaybackEngine := Visualization;
-    fCurrentVideoPlaybackEngine.play;
+    if (fCurrentVideoPlaybackEngine <> nil) then
+      fCurrentVideoPlaybackEngine.Play;
   end;
 
-{**
- * set background to: visualization (Videos are still shown)
- *}
+  {*
+   * set background to: visualization (Videos are still shown)
+   *}
   if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
-  (CurrentSong.VideoLoaded = False)) then
+     (VideoLoaded = False)) then
   begin
     fShowVisualization := True;
     fCurrentVideoPlaybackEngine := Visualization;
-    fCurrentVideoPlaybackEngine.play;
+    if (fCurrentVideoPlaybackEngine <> nil) then
+      fCurrentVideoPlaybackEngine.Play;
   end;
 
   // prepare lyrics timer
@@ -579,8 +586,8 @@ begin
   end; // case
 
   // Initialize lyrics by filling its queue
-  while (not Lyrics.IsQueueFull) and (Lyrics.LineCounter <=
-      High(Lines[0].Line)) do
+  while (not Lyrics.IsQueueFull) and
+        (Lyrics.LineCounter <= High(Lines[0].Line)) do
   begin
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
@@ -718,7 +725,7 @@ begin
   SingDrawBackground;
 
   // update and draw movie
-  if (ShowFinish and (CurrentSong.VideoLoaded or fShowVisualization)) then
+  if (ShowFinish and (VideoLoaded or fShowVisualization)) then
   begin
     if assigned(fCurrentVideoPlaybackEngine) then
     begin
@@ -801,6 +808,15 @@ begin
   AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
+  if (VideoPlayback <> nil) then
+    VideoPlayback.Close;
+
+  if (Visualization <> nil) then
+    Visualization.Close;
+
+  // to prevent drawing closed video
+  VideoLoaded := False;
+  
   if (Ini.SavePlayback = 1) then
   begin
     Log.BenchmarkStart(0);
@@ -809,12 +825,6 @@ begin
     Log.LogVoice(2);
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Creating files', 0);
-  end;
-
-  if CurrentSong.VideoLoaded then
-  begin
-    fCurrentVideoPlaybackEngine.Close;
-    CurrentSong.VideoLoaded := False; // to prevent drawing closed video
   end;
 
   SetFontItalic(False);

@@ -78,15 +78,15 @@ type
       PCMData: TPCMData;
       RndPCMcount: integer;
 
-      projMatrix: array[0..3, 0..3] of GLdouble;
-      texMatrix:  array[0..3, 0..3] of GLdouble;
+      ProjMatrix: array[0..3, 0..3] of GLdouble;
+      TexMatrix:  array[0..3, 0..3] of GLdouble;
 
       procedure VisualizerStart;
       procedure VisualizerStop;
 
       procedure VisualizerTogglePause;
 
-      function  GetRandomPCMData(var data: TPCMData): Cardinal;
+      function  GetRandomPCMData(var Data: TPCMData): Cardinal;
 
       procedure SaveOpenGLState();
       procedure RestoreOpenGLState();
@@ -210,7 +210,7 @@ begin
 
   // save projection-matrix
   glMatrixMode(GL_PROJECTION);
-  glGetDoublev(GL_PROJECTION_MATRIX, @projMatrix);
+  glGetDoublev(GL_PROJECTION_MATRIX, @ProjMatrix);
   {$IF PROJECTM_VERSION = 1000000} // 1.0, 1.01
   // bugfix: projection-matrix is popped without being pushed first
   glPushMatrix();
@@ -218,7 +218,7 @@ begin
 
   // save texture-matrix
   glMatrixMode(GL_TEXTURE);
-  glGetDoublev(GL_TEXTURE_MATRIX, @texMatrix);
+  glGetDoublev(GL_TEXTURE_MATRIX, @TexMatrix);
 
   // save modelview-matrix
   glMatrixMode(GL_MODELVIEW);
@@ -243,11 +243,11 @@ begin
 
   // restore projection-matrix
   glMatrixMode(GL_PROJECTION);
-  glLoadMatrixd(@projMatrix);
+  glLoadMatrixd(@ProjMatrix);
 
   // restore texture-matrix
   glMatrixMode(GL_TEXTURE);
-  glLoadMatrixd(@texMatrix);
+  glLoadMatrixd(@TexMatrix);
 
   // restore modelview-matrix
   glMatrixMode(GL_MODELVIEW);
@@ -293,7 +293,8 @@ begin
     // We use the latter so we do not need to load the FBO extension in USDX.
     pm.RenderFrame();
 
-    VisualizerStarted := True;
+    VisualizerPaused := false;
+    VisualizerStarted := true;
   finally
     RestoreOpenGLState();
   end;
@@ -303,7 +304,8 @@ procedure TVideoPlayback_ProjectM.VisualizerStop;
 begin
   if VisualizerStarted then
   begin
-    VisualizerStarted := False;
+    VisualizerPaused := false;
+    VisualizerStarted := false;
     FreeAndNil(pm);
   end;
 end;
@@ -414,21 +416,21 @@ end;
  * Produces random "sound"-data in case no audio-data is available.
  * Otherwise the visualization will look rather boring.
  *}
-function  TVideoPlayback_ProjectM.GetRandomPCMData(var data: TPCMData): Cardinal;
+function  TVideoPlayback_ProjectM.GetRandomPCMData(var Data: TPCMData): Cardinal;
 var
   i: integer;
 begin
   // Produce some fake PCM data
   if (RndPCMcount mod 500 = 0) then
   begin
-    FillChar(data, SizeOf(TPCMData), 0);
+    FillChar(Data, SizeOf(TPCMData), 0);
   end
   else
   begin
     for i := 0 to 511 do
     begin
-      data[i][0] := Random(High(Word)+1);
-      data[i][1] := Random(High(Word)+1);
+      Data[i][0] := Random(High(Word)+1);
+      Data[i][1] := Random(High(Word)+1);
     end;
   end;
   Inc(RndPCMcount);
