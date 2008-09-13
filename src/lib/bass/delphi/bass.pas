@@ -14,6 +14,7 @@ unit Bass;
 interface
 
 {$IFDEF FPC}
+  {$MODE Delphi}
   {$PACKRECORDS C}
 {$ENDIF}
 

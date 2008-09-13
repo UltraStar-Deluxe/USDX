@@ -12,6 +12,10 @@ unit WinAllocation;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
   Classes,
   Windows;
