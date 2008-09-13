@@ -79,7 +79,8 @@ type
     constructor Create; override;
     procedure onShow; override;
     procedure onShowFinish; override;
-
+    procedure onHide; override;
+    
     function ParseInput(PressedKey: cardinal; CharCode: widechar;
       PressedDown: boolean): boolean; override;
     function Draw: boolean; override;
@@ -610,6 +611,16 @@ begin
 
   // start timer
   CountSkipTimeSet;
+end;
+
+procedure TScreenSing.onHide;
+begin
+  // Unload background texture
+  if (Tex_Background.TexNum > 0) then
+  begin
+    glDeleteTextures(1, PGLuint(@Tex_Background.TexNum));
+    Tex_Background.TexNum := 0;
+  end;
 end;
 
 function TScreenSing.Draw: boolean;
