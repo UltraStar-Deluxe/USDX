@@ -168,6 +168,7 @@ var
   Param3:   integer;
   ParamS:   string;
   I:        integer;
+
 begin
   Result := false;
 
@@ -307,7 +308,9 @@ begin
             Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Length;
         end;
         //Total Notes Patch End
-      end else begin
+      end
+      else
+      begin
         for Count := 0 to High(Lines) do
 	begin
           Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
@@ -350,22 +353,24 @@ end;
 
 //Load XML Song
 function TSong.LoadXMLSong(): boolean;
+
 var
-  //TempC:    char;
-  Text:     string;
-  CP:       integer; // Current Player (0 or 1)
-  Count:    integer;
-  Both:     boolean;
-  Param1:   integer;
-  Param2:   integer;
-  Param3:   integer;
-  ParamS:   string;
-  I, J:     integer;
+  //TempC:     char;
+  Text:      string;
+  CP:        integer; // Current Player (0 or 1)
+  Count:     integer;
+  Both:      boolean;
+  Param1:    integer;
+  Param2:    integer;
+  Param3:    integer;
+  ParamS:    string;
+  I, J:      integer;
   NoteIndex: integer;
 
-  NoteType: Char;
-  SentenceEnd, Rest, Time: Integer;
+  NoteType:  char;
+  SentenceEnd, Rest, Time: integer;
   Parser: TParser;
+  
 begin
   Result := false;
 
@@ -520,11 +525,13 @@ begin
 end;
 
 function TSong.ReadXMLHeader(const aFileName : WideString): boolean;
+
 var
   Line, Identifier, Value: string;
   Temp        : word;
   Done        : byte;
   Parser      : TParser;
+
 begin
   Result := true;
   Done   := 0;
@@ -624,8 +631,10 @@ end;
 function TSong.ReadTXTHeader(const aFileName : WideString): boolean;
 
   function song_StrtoFloat( aValue : string ) : Extended;
+
   var
     lValue : string;
+
   begin
     lValue := aValue;
 
@@ -639,6 +648,7 @@ var
   Line, Identifier, Value: string;
   Temp        : word;
   Done        : byte;
+
 begin
   Result := true;
   Done   := 0;
@@ -823,6 +833,7 @@ begin
 end;
 
 procedure TSong.ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
+
 begin
   case Ini.Solmization of
     1:  // european
@@ -902,8 +913,10 @@ begin
 end;
 
 procedure TSong.NewSentence(LineNumberP: integer; Param1, Param2: integer);
+
 var
   I: integer;
+
 begin
 
   // stara czesc //Alter Satz //Update Old Part
@@ -943,6 +956,7 @@ begin
 end;
 
 procedure TSong.clear();
+
 begin
   //Main Information
   Title  := '';
@@ -976,7 +990,9 @@ begin
 
 end;
 
+
 function TSong.Analyse(): boolean;
+
 begin
   Result := False;
 
@@ -987,15 +1003,15 @@ begin
   AssignFile(SongFile, self.Path + self.FileName);
 
   try
-  Reset(SongFile);
+    Reset(SongFile);
 
-  //Clear old Song Header
-  self.clear;
+    //Clear old Song Header
+    self.clear;
 
-  //Read Header
-  Result := self.ReadTxTHeader( FileName )
+    //Read Header
+    Result := self.ReadTxTHeader( FileName )
 
-  //And Close File
+    //And Close File
   finally
     CloseFile(SongFile);
   end;
@@ -1003,6 +1019,7 @@ end;
 
 
 function TSong.AnalyseXML(): boolean;
+
 begin
   Result := False;
 
