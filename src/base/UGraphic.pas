@@ -426,8 +426,7 @@ begin
   Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
   if ( SDL_InitSubSystem(SDL_INIT_VIDEO) = -1 ) then
   begin
-    Log.LogError('SDL_Init Failed', 'UGraphic.Initialize3D');
-    exit;
+    Log.LogCritical('SDL_Init Failed', 'UGraphic.Initialize3D');
   end;
 
   // load icon image (must be 32x32 for win32)
