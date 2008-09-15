@@ -445,8 +445,8 @@ begin
 
   //Log.BenchmarkStart(2);
   Texture := TTextureUnit.Create;
-  // FIXME: this does not seem to be correct as Limit is the max. of either
-  // width or height.
+  // FIXME: this does not seem to be correct as Limit.
+  // Is the max. of either width or height.
   Texture.Limit := 1024*1024;
 
   //LoadTextures;
@@ -504,7 +504,7 @@ begin
   // TODO:
   // here should be a loop which
   // * draws the loading screen (form time to time)
-  // * controlls the "process of the loading screen
+  // * controlls the "process of the loading screen"
   // * checks if the loadingthread has loaded textures (check mutex) and
   //   * load the textures into opengl
   //   * tells the loadingthread, that the memory for the texture can be reused
@@ -555,10 +555,17 @@ begin
   else
     Screens := Ini.Screens + 1;
 
+  // Set minimum color component sizes
+  // Note: Do NOT use SDL_GL_ALPHA_SIZE here, otherwise on a few systems with
+  //  some versions of SDL (at least 1.2.11) SDL_SetVideoMode will fail.
+  //  The problem occured if the adjusted color component sizes did not leave
+  //  any space for alpha, e.g. red/green/blue ajusted from 5 to 8:
+  //  r_size+g_size+b_size = 24, so an alpha of at least 5 is just available if
+  //  the depth is 32bit.
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    5);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     5);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,    5);
+
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16); // Z-Buffer depth
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
 
@@ -584,7 +591,6 @@ begin
     Depth := Ini.Depth;
 
   Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
-  //SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
   if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
   begin
