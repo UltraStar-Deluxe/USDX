@@ -549,6 +549,7 @@ var
   I:      integer;
   W, H:   integer;
   Depth:  Integer;
+  Fullscreen: boolean;
 begin
   if (Params.Screens <> -1) then
     Screens := Params.Screens + 1
@@ -592,16 +593,22 @@ begin
 
   Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
 
-  if (Ini.FullScreen = 0) and (Not Params.FullScreen) then
-  begin
-    Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
-    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE)
-  end
-  else
+  // check whether to start in fullscreen or windowed mode.
+  // The command-line parameters take precedence over the ini settings.
+  Fullscreen := ((Ini.FullScreen = 1) or (Params.ScreenMode = scmFullscreen)) and
+                not (Params.ScreenMode = scmWindowed);
+
+  if Fullscreen then
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Full Screen');
     screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN );
     SDL_ShowCursor(0);
+  end
+  else
+  begin
+    Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
+    screen := SDL_SetVideoMode(W, H, 0, SDL_OPENGL or SDL_RESIZABLE);
+    SDL_ShowCursor(1);
   end;
 
   if (screen = nil) then
@@ -631,7 +638,7 @@ begin
   
   Display.CurrentScreen := @ScreenLoading;
 
-  swapbuffers;
+  SwapBuffers;
 
   ScreenLoading.Draw;
   Display.Draw;

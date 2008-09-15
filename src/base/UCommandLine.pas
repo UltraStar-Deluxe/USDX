@@ -10,44 +10,46 @@ interface
 
 
 type
-  //-----------
-  // TCMDParams - Class Reads Infos from ParamStr and set some easy Interface Variables
-  //-----------
+  TScreenMode = (scmDefault, scmFullscreen, scmWindowed);
+
+  {**
+   * Reads infos from ParamStr and set some easy interface variables
+   *}
   TCMDParams = class
     private
-      sLanguage:   String;
-      sResolution: String;
+      fLanguage:   string;
+      fResolution: string;
+
+      procedure ShowHelp();
+
+      procedure ReadParamInfo;
+      procedure ResetVariables;
+
+      function GetLanguage:   integer;
+      function GetResolution: integer;
     public
-      //Some Boolean Variables Set when Reading Infos
-      Debug:      Boolean;
-      Benchmark:  Boolean;
-      NoLog:      Boolean;
-      FullScreen: Boolean;
-      Joypad:     Boolean;
+      // some boolean variables set when reading infos
+      Debug:      boolean;
+      Benchmark:  boolean;
+      NoLog:      boolean;
+      ScreenMode: TScreenMode;
+      Joypad:     boolean;
 
-      //Some Value Variables Set when Reading Infos {-1: Not Set, others: Value}
-      Depth:      Integer;
-      Screens:    Integer;
+      // some value variables set when reading infos {-1: Not Set, others: Value}
+      Depth:      integer;
+      Screens:    integer;
 
-      //Some Strings Set when Reading Infos {Length=0 Not Set}
-      SongPath:   String;
-      ConfigFile: String;
-      ScoreFile:  String;
+      // some strings set when reading infos {Length=0: Not Set}
+      SongPath:   string;
+      ConfigFile: string;
+      ScoreFile:  string;
 
-      procedure showhelp();
+      // pseudo integer values
+      property Language:      integer read GetLanguage;
+      property Resolution:    integer read GetResolution;
 
-      //Pseudo Integer Values
-      Function GetLanguage:   Integer;
-      Property Language:      Integer read GetLanguage;
-
-      Function GetResolution: Integer;
-      Property Resolution:    Integer read GetResolution;
-
-      //Some Procedures for Reading Infos
-      Constructor Create;
-
-      Procedure ResetVariables;
-      Procedure ReadParamInfo;
+      // some procedures for reading infos
+      constructor Create;
   end;
 
 var
@@ -62,98 +64,93 @@ const
 implementation
 
 uses SysUtils,
-     uPlatform;
-//      uINI   -- Nasty requirement... ( removed with permission of blindy )
+     UPlatform;
 
-
-//-------------
-// Constructor - Create class, Reset Variables and Read Infos
-//-------------
-Constructor TCMDParams.Create;
+{**
+ * Resets variables and reads info
+ *}
+constructor TCMDParams.Create;
 begin
   inherited;
   
   if FindCmdLineSwitch( cHelp ) or FindCmdLineSwitch( 'h' ) then
-    showhelp();
+    ShowHelp();
 
   ResetVariables;
   ReadParamInfo;
 end;
 
-procedure TCMDParams.showhelp();
+procedure TCMDParams.ShowHelp();
 
-  function s( aString : String ) : string;
+  function Fmt(aString : string) : string;
   begin
-    result := aString + StringofChar( ' ', 15 - length( aString ) );
+    Result := Format('%-15s', [aString]);
   end;
-  
-begin
 
-  writeln( '' );
-  writeln( '**************************************************************' );
-  writeln( '  UltraStar Deluxe - Command line switches                    ' );
-  writeln( '**************************************************************' );
-  writeln( '' );
-  writeln( '  '+s( 'Switch' ) +' : Purpose' );
-  writeln( '  ----------------------------------------------------------' );
-  writeln( '  '+s( cMediaInterfaces ) + #9 + ' : Show in-use media interfaces' );
-  writeln( '  '+s( cDebug ) + #9 + ' : Display Debugging info' );
-  writeln( '' );
+begin
+  writeln;
+  writeln('**************************************************************');
+  writeln('  UltraStar Deluxe - Command line switches                    ');
+  writeln('**************************************************************');
+  writeln;
+  writeln('  '+ Fmt('Switch') +' : Purpose');
+  writeln('  ----------------------------------------------------------');
+  writeln('  '+ Fmt(cMediaInterfaces) +' : Show in-use media interfaces');
+  writeln('  '+ Fmt(cDebug) +' : Display Debugging info');
+  writeln;
 
   platform.halt;
 end;
 
-//-------------
-// ResetVariables - Reset Class Variables
-//-------------
-Procedure TCMDParams.ResetVariables;
+{**
+ * Reset Class Variables
+ *}
+procedure TCMDParams.ResetVariables;
 begin
   Debug       := False;
   Benchmark   := False;
   NoLog       := False;
-  FullScreen  := False;
+  ScreenMode  := scmDefault;
   Joypad      := False;
 
-  //Some Value Variables Set when Reading Infos {-1: Not Set, others: Value}
-  sResolution := '';
-  sLanguage   := '';
+  // some value variables set when reading infos {-1: Not Set, others: Value}
+  fResolution := '';
+  fLanguage   := '';
   Depth       := -1;
   Screens     := -1;
 
-  //Some Strings Set when Reading Infos {Length=0 Not Set}
+  // some strings set when reading infos {Length=0 Not Set}
   SongPath    := '';
   ConfigFile  := '';
   ScoreFile   := '';
 end;
 
-//-------------
-// ReadParamInfo - Read Infos from Parameters
-//-------------
-Procedure TCMDParams.ReadParamInfo;
+{**
+ * Read command-line parameters
+ *}
+procedure TCMDParams.ReadParamInfo;
 var
-  I:        Integer;
-  PCount:   Integer;
-  Command:  String;
+  I:        integer;
+  PCount:   integer;
+  Command:  string;
 begin
   PCount := ParamCount;
   //Log.LogError('ParamCount: ' + Inttostr(PCount));
   
-
-  //Check all Parameters
-  For I := 1 to PCount do
+  // check all parameters
+  for I := 1 to PCount do
   begin
-    Command := Paramstr(I);
-    //Log.LogError('Start parsing Command: ' + Command);
-    //Is String Parameter ?
-    if (Length(Command) > 1) AND (Command[1] = '-') then
+    Command := ParamStr(I);
+    // check if the string is a parameter
+    if (Length(Command) > 1) and (Command[1] = '-') then
     begin
-      //Remove - from Command
-      Command := Lowercase(Trim(Copy(Command, 2, Length(Command) - 1)));
+      // remove '-' from command
+      Command := LowerCase(Trim(Copy(Command, 2, Length(Command) - 1)));
       //Log.LogError('Command prepared: ' + Command);
 
-      //Check Command
+      // check command
 
-      // Boolean Triggers:
+      // boolean triggers
       if (Command = 'debug') then
         Debug       := True
       else if (Command = 'benchmark') then
@@ -161,21 +158,22 @@ begin
       else if (Command = 'nolog') then
         NoLog       := True
       else if (Command = 'fullscreen') then
-        Fullscreen  := True
+        ScreenMode  := scmFullscreen
       else if (Command = 'window') then
-        Fullscreen  := False
+        ScreenMode  := scmWindowed
       else if (Command = 'joypad') then
         Joypad    := True
 
-      //Integer Variables
+      // integer variables
       else if (Command = 'depth') then
       begin
-        //Check if there is another Parameter to get the Value from
+        // check if there is another Parameter to get the Value from
         if (PCount > I) then
         begin
           Command := ParamStr(I + 1);
 
-          //Check for valid Value
+          // check for valid value
+          // FIXME: guessing an array-index of depth is very error prone.  
           If (Command = '16') then
             Depth := 0
           Else If (Command = '32') then
@@ -185,12 +183,12 @@ begin
 
       else if (Command = 'screens') then
       begin
-        //Check if there is another Parameter to get the Value from
+        // check if there is another parameter to get the value from
         if (PCount > I) then
         begin
           Command := ParamStr(I + 1);
 
-          //Check for valid Value
+          // check for valid value
           If (Command = '1') then
             Screens := 0
           Else If (Command = '2') then
@@ -198,47 +196,47 @@ begin
         end;
       end
 
-      //Pseudo Integer Values
+      // pseudo integer values
       else if (Command = 'language') then
       begin
-        //Check if there is another Parameter to get the Value from
+        // check if there is another parameter to get the value from
         if (PCount > I) then
         begin
-          //Write Value to String
-          sLanguage := Lowercase(ParamStr(I + 1));
+          // write value to string
+          fLanguage := Lowercase(ParamStr(I + 1));
         end;
       end
 
       else if (Command = 'resolution') then
       begin
-        //Check if there is another Parameter to get the Value from
+        // check if there is another parameter to get the value from
         if (PCount > I) then
         begin
-          //Write Value to String
-          sResolution := Lowercase(ParamStr(I + 1));
+          // write value to string
+          fResolution := Lowercase(ParamStr(I + 1));
         end;
       end
 
-      //String Values
+      // string values
       else if (Command = 'songpath') then
       begin
-        //Check if there is another Parameter to get the Value from
+        // check if there is another parameter to get the value from
         if (PCount > I) then
         begin
-          //Write Value to String
+          // write value to string
           SongPath := ParamStr(I + 1);
         end;
       end
 
       else if (Command = 'configfile') then
       begin
-        //Check if there is another Parameter to get the Value from
+        // check if there is another parameter to get the value from
         if (PCount > I) then
         begin
-          //Write Value to String
+          // write value to string
           ConfigFile := ParamStr(I + 1);
 
-          //is this a relative PAth -> then add Gamepath
+          // is this a relative path -> then add gamepath
           if Not ((Length(ConfigFile) > 2) AND (ConfigFile[2] = ':')) then
             ConfigFile := ExtractFilePath(ParamStr(0)) + Configfile;
         end;
@@ -246,10 +244,10 @@ begin
 
       else if (Command = 'scorefile') then
       begin
-        //Check if there is another Parameter to get the Value from
+        // check if there is another parameter to get the value from
         if (PCount > I) then
         begin
-          //Write Value to String
+          // write value to string
           ScoreFile := ParamStr(I + 1);
         end;
       end;
@@ -258,43 +256,27 @@ begin
 
   end;
 
-{  Log.LogError('Values: ');
+{
+  Log.LogInfo('Screens: ' + Inttostr(Screens));
+  Log.LogInfo('Depth: ' + Inttostr(Depth));
 
-  if Debug then
-    Log.LogError('Debug');
+  Log.LogInfo('Resolution: ' + Inttostr(Resolution));
+  Log.LogInfo('Resolution: ' + Inttostr(Language));
 
-  if Benchmark then
-    Log.LogError('Benchmark');
+  Log.LogInfo('sResolution: ' + sResolution);
+  Log.LogInfo('sLanguage: ' + sLanguage);
 
-  if NoLog then
-    Log.LogError('NoLog');
-
-  if Fullscreen then
-    Log.LogError('FullScreen');
-
-  if JoyStick then
-    Log.LogError('Joystick');
-
-
-  Log.LogError('Screens: ' + Inttostr(Screens));
-  Log.LogError('Depth: ' + Inttostr(Depth));
-
-  Log.LogError('Resolution: ' + Inttostr(Resolution));
-  Log.LogError('Resolution: ' + Inttostr(Language));
-
-  Log.LogError('sResolution: ' + sResolution);
-  Log.LogError('sLanguage: ' + sLanguage);
-
-  Log.LogError('ConfigFile: ' + ConfigFile);
-  Log.LogError('SongPath: ' + SongPath);
-  Log.LogError('ScoreFile: ' + ScoreFile);  }
+  Log.LogInfo('ConfigFile: ' + ConfigFile);
+  Log.LogInfo('SongPath: ' + SongPath);
+  Log.LogInfo('ScoreFile: ' + ScoreFile);
+}
 
 end;
 
 //-------------
 // GetLanguage - Get Language ID from saved String Information
 //-------------
-Function TCMDParams.GetLanguage:   Integer;
+function TCMDParams.GetLanguage: integer;
 var
   I: integer;
 begin
@@ -314,7 +296,7 @@ end;
 //-------------
 // GetResolution - Get Resolution ID from saved String Information
 //-------------
-Function TCMDParams.GetResolution: Integer;
+function TCMDParams.GetResolution: integer;
 var
   I: integer;
 begin
