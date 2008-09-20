@@ -136,29 +136,6 @@ uses SysUtils,
      math,
      UIni;
 
-//-----------
-//Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
-//-----------
-procedure glColorRGB(Color: TRGB);  overload;
-begin
-  glColor3f(Color.R, Color.G, Color.B);
-end;
-
-procedure glColorRGB(Color: TRGB; Alpha: Real);  overload;
-begin
-  glColor4f(Color.R, Color.G, Color.B, Alpha);
-end;
-
-procedure glColorRGB(Color: TRGBA); overload;
-begin
-  glColor4f(Color.R, Color.G, Color.B, Color.A);
-end;
-
-procedure glColorRGB(Color: TRGBA; Alpha: Real); overload;
-begin
-  glColor4f(Color.R, Color.G, Color.B, Min(Color.A, Alpha));
-end;
-
 { TLyricLine }
 
 constructor TLyricLine.Create();

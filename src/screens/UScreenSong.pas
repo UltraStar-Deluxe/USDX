@@ -24,14 +24,13 @@ uses
   UTexture,
   ULanguage,
   USong,
-  UIni;
+  UIni,
+  UMenuEqualizer;
 
 type
   TScreenSong = class(TMenu)
     private
-      EqualizerData: TFFTData; // moved here to avoid stack overflows
-      EqualizerBands: array of Byte;
-      EqualizerTime: Cardinal;
+      Equalizer: Tms_Equalizer;
 
       procedure StartMusicPreview();
       procedure StopMusicPreview();
@@ -41,7 +40,7 @@ type
       TextNumber:   integer;
 
       //Video Icon Mod
-      VideoIcon:         Cardinal;
+      VideoIcon: Cardinal;
 
       TextCat:   integer;
       StaticCat: integer;
@@ -777,11 +776,13 @@ begin
 
   // Randomize Patch
   Randomize;
-  //Equalizer
+  {//Equalizer
   SetLength(EqualizerBands, Theme.Song.Equalizer.Bands);
   //ClearArray
   For I := low(EqualizerBands) to high(EqualizerBands) do
-    EqualizerBands[I] := 3;
+    EqualizerBands[I] := 3;    }
+
+  Equalizer := Tms_Equalizer.Create(AudioPlayback);
 
   if (Length(CatSongs.Song) > 0) then
     Interaction := 0;
@@ -1496,8 +1497,7 @@ begin
 
 
   //Draw Equalizer
-  if Theme.Song.Equalizer.Visible then
-    DrawEqualizer;
+  Equalizer.Draw;
 
   DrawExtensions;
 
@@ -1657,16 +1657,16 @@ begin
 end;
 
 procedure TScreenSong.DrawEqualizer;
-var
+{var
   I, J: Integer;
   ChansPerBand: byte; // channels per band
   MaxChannel: Integer;
   CurBand: Integer; // current band
   CurTime: Cardinal;
   PosX, PosY: Integer;
-  Pos: Real;
+  Pos: Real;  }
 begin
-  // Nothing to do if no music is played or an equalizer bar consists of no block
+ { // Nothing to do if no music is played or an equalizer bar consists of no block
   if (AudioPlayback.Finished or (Theme.Song.Equalizer.Length <= 0)) then
     Exit;
 
@@ -1763,7 +1763,7 @@ begin
       PosX := PosX + Theme.Song.Equalizer.W + Theme.Song.Equalizer.Space
     else                                   // Horizontal bars
       PosY := PosY + Theme.Song.Equalizer.H + Theme.Song.Equalizer.Space;
-  end;
+  end;  }
 end;
 
 procedure TScreenSong.SelectRandomSong;
