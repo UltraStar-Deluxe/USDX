@@ -425,13 +425,13 @@ begin
   aPlayers[Cur.Player].ScoreDisplayed := aPlayers[Cur.Player].ScoreDisplayed + Cur.ScoreDiff - Cur.ScoreGiven;
 
   //Change Bars Position
-  lTempA := ( aPlayers[Cur.Player].RBTarget + (Cur.ScoreDiff - Cur.ScoreGiven) );
-  lTempB := ( Cur.ScoreDiff * (Cur.Rating / 20 - 0.26) );
+  lTempA := ( (Cur.ScoreDiff - Cur.ScoreGiven) );
+  lTempB := ( Cur.ScoreDiff );
   
   if ( lTempA > 0 ) AND
      ( lTempB > 0 ) THEN
   begin
-    aPlayers[Cur.Player].RBTarget := lTempA / lTempB;
+    aPlayers[Cur.Player].RBTarget := aPlayers[Cur.Player].RBTarget +  lTempA / lTempB * (Cur.Rating / 20 - 0.26);
   end;
 
   If (aPlayers[Cur.Player].RBTarget > 1) then
