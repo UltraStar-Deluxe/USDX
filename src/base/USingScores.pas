@@ -385,7 +385,14 @@ begin
 
     Cur.Player  := PlayerIndex;
     Cur.TimeStamp := SDL_GetTicks;
-    Cur.Rating    := Rating;
+
+    //limit rating value to 8
+    //a higher value would cause a crash when selecting the bg textur
+    if (Rating > 8) then
+      Cur.Rating := 8
+    else
+      Cur.Rating := Rating;
+
     Cur.ScoreGiven:= 0;
     If (Players[PlayerIndex].Score < Score) then
     begin
@@ -417,21 +424,21 @@ end;
 // Removes a PopUp w/o destroying the List
 //-----------
 Procedure TSingScores.KillPopUp(const last, cur: PScorePopUp);
-var
-  lTempA ,
-  lTempB : real;
 begin
   //Give Player the Last Points that missing till now
   aPlayers[Cur.Player].ScoreDisplayed := aPlayers[Cur.Player].ScoreDisplayed + Cur.ScoreDiff - Cur.ScoreGiven;
 
   //Change Bars Position
-  lTempA := ( (Cur.ScoreDiff - Cur.ScoreGiven) );
-  lTempB := ( Cur.ScoreDiff );
-  
-  if ( lTempA > 0 ) AND
-     ( lTempB > 0 ) THEN
-  begin
-    aPlayers[Cur.Player].RBTarget := aPlayers[Cur.Player].RBTarget +  lTempA / lTempB * (Cur.Rating / 20 - 0.26);
+  if (Cur.ScoreDiff > 0) THEN
+  begin //Popup w/ scorechange -> give missing percents
+    aPlayers[Cur.Player].RBTarget := aPlayers[Cur.Player].RBTarget +
+                                     (Cur.ScoreDiff - Cur.ScoreGiven) / Cur.ScoreDiff
+                                     * (Cur.Rating / 20 - 0.26);
+  end
+  else
+  begin //Popup w/o scorechange -> give complete percentage
+    aPlayers[Cur.Player].RBTarget := aPlayers[Cur.Player].RBTarget +
+                                     (Cur.Rating / 20 - 0.26);
   end;
 
   If (aPlayers[Cur.Player].RBTarget > 1) then
