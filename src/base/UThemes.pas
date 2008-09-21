@@ -145,6 +145,23 @@ type
     SkipX:    integer;
   end;
 
+  TThemeEqualizer = record
+    Visible: Boolean;
+    Direction: Boolean;
+    Alpha: real;
+    X: Integer;
+    Y: Integer;
+    Z: Real;
+    W: Integer;
+    H: Integer;
+    Space: Integer;
+    Bands: Integer;
+    Length: Integer;
+    ColR, ColG, ColB: Real;
+    Reflection:           boolean;
+    Reflectionspacing:    Real;
+  end;
+
   PThemeBasic = ^TThemeBasic;
   TThemeBasic = class
     Background:       TThemeBackground;
@@ -208,20 +225,7 @@ type
       end;
 
     //Equalizer Mod
-    Equalizer: record
-      Visible: Boolean;
-      Direction: Boolean;
-      Alpha: real;
-      X: Integer;
-      Y: Integer;
-      Z: Real;
-      W: Integer;
-      H: Integer;
-      Space: Integer;
-      Bands: Integer;
-      Length: Integer;
-      ColR, ColG, ColB: Real;
-      end;
+    Equalizer: TThemeEqualizer;
 
 
     //Party and Non Party specific Statics and Texts
@@ -708,6 +712,7 @@ type
     procedure ThemeLoadButtonCollection(var Collection: TThemeButtonCollection; Name: string);
     procedure ThemeLoadButtonCollections(var Collections: AThemeButtonCollection; Name: string);
     procedure ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; Name: string);
+    procedure ThemeLoadEqualizer(var ThemeEqualizer: TThemeEqualizer; Name: string);
 
     procedure ThemeSave(FileName: string);
     procedure ThemeSaveBasic(Theme: TThemeBasic; Name: string);
@@ -939,32 +944,7 @@ begin
       Song.Cover.Reflections := (ThemeIni.ReadInteger('SongCover', 'Reflections', 0) = 1);
       //Load Cover Pos and Size from Theme Mod End
 
-      //Load Equalizer Pos and Size from Theme Mod
-      Song.Equalizer.Visible := (ThemeIni.ReadInteger('SongEqualizer', 'Visible', 0) = 1);
-      Song.Equalizer.Direction := (ThemeIni.ReadInteger('SongEqualizer', 'Direction', 0) = 1);
-      Song.Equalizer.Alpha := ThemeIni.ReadInteger('SongEqualizer', 'Alpha', 1);
-      Song.Equalizer.Space := ThemeIni.ReadInteger('SongEqualizer', 'Space', 1);
-      Song.Equalizer.X := ThemeIni.ReadInteger('SongEqualizer', 'X', 0);
-      Song.Equalizer.Y := ThemeIni.ReadInteger('SongEqualizer', 'Y', 0);
-      Song.Equalizer.Z := ThemeIni.ReadInteger('SongEqualizer', 'Z', 1);
-      Song.Equalizer.W := ThemeIni.ReadInteger('SongEqualizer', 'PieceW', 8);
-      Song.Equalizer.H := ThemeIni.ReadInteger('SongEqualizer', 'PieceH', 8);
-      Song.Equalizer.Bands := ThemeIni.ReadInteger('SongEqualizer', 'Bands', 5);
-      Song.Equalizer.Length := ThemeIni.ReadInteger('SongEqualizer', 'Length', 12);
-
-      //Color
-      I := ColorExists(ThemeIni.ReadString('SongEqualizer', 'Color', 'Black'));
-      if I >= 0 then begin
-        Song.Equalizer.ColR := Color[I].RGB.R;
-        Song.Equalizer.ColG := Color[I].RGB.G;
-        Song.Equalizer.ColB := Color[I].RGB.B;
-      end
-      else begin
-        Song.Equalizer.ColR := 0;
-        Song.Equalizer.ColG := 0;
-        Song.Equalizer.ColB := 0;
-      end;
-      //Load Equalizer Pos and Size from Theme Mod End
+      ThemeLoadEqualizer(Song.Equalizer, 'SongEqualizer');
 
       //Party and Non Party specific Statics and Texts
       ThemeLoadStatics (Song.StaticParty, 'SongStaticParty');
@@ -1715,6 +1695,37 @@ begin
   ThemeSelectS.STInt :=  ThemeIni.ReadFloat(Name, 'STInt', 1);
   LoadColor(ThemeSelectS.STDColR, ThemeSelectS.STDColG,  ThemeSelectS.STDColB, ThemeIni.ReadString(Name, 'STDColor', ''));
   ThemeSelectS.STDInt :=  ThemeIni.ReadFloat(Name, 'STDInt', 1);
+end;
+
+procedure TTheme.ThemeLoadEqualizer(var ThemeEqualizer: TThemeEqualizer; Name: string);
+var I: Integer;
+begin
+  ThemeEqualizer.Visible := (ThemeIni.ReadInteger(Name, 'Visible', 0) = 1);
+  ThemeEqualizer.Direction := (ThemeIni.ReadInteger(Name, 'Direction', 0) = 1);
+  ThemeEqualizer.Alpha := ThemeIni.ReadInteger(Name, 'Alpha', 1);
+  ThemeEqualizer.Space := ThemeIni.ReadInteger(Name, 'Space', 1);
+  ThemeEqualizer.X := ThemeIni.ReadInteger(Name, 'X', 0);
+  ThemeEqualizer.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
+  ThemeEqualizer.Z := ThemeIni.ReadInteger(Name, 'Z', 1);
+  ThemeEqualizer.W := ThemeIni.ReadInteger(Name, 'PieceW', 8);
+  ThemeEqualizer.H := ThemeIni.ReadInteger(Name, 'PieceH', 8);
+  ThemeEqualizer.Bands := ThemeIni.ReadInteger(Name, 'Bands', 5);
+  ThemeEqualizer.Length := ThemeIni.ReadInteger(Name, 'Length', 12);
+  ThemeEqualizer.Reflection := (ThemeIni.ReadInteger(Name, 'Reflection', 0) = 1);
+  ThemeEqualizer.ReflectionSpacing := ThemeIni.ReadFloat(Name, 'ReflectionSpacing', 15);
+
+  //Color
+  I := ColorExists(ThemeIni.ReadString(Name, 'Color', 'Black'));
+  if I >= 0 then begin
+    ThemeEqualizer.ColR := Color[I].RGB.R;
+    ThemeEqualizer.ColG := Color[I].RGB.G;
+    ThemeEqualizer.ColB := Color[I].RGB.B;
+  end
+  else begin
+    ThemeEqualizer.ColR := 0;
+    ThemeEqualizer.ColG := 0;
+    ThemeEqualizer.ColB := 0;
+  end;
 end;
 
 procedure TTheme.LoadColors;

@@ -110,7 +110,6 @@ type
       procedure ShowCatTLCustom(Caption: String);// Show Custom Text in Top left
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh; //Refresh Song Sorting
-      procedure DrawEqualizer;
       procedure ChangeMusic;
       //Party Mode
       procedure SelectRandomSong;
@@ -776,13 +775,8 @@ begin
 
   // Randomize Patch
   Randomize;
-  {//Equalizer
-  SetLength(EqualizerBands, Theme.Song.Equalizer.Bands);
-  //ClearArray
-  For I := low(EqualizerBands) to high(EqualizerBands) do
-    EqualizerBands[I] := 3;    }
 
-  Equalizer := Tms_Equalizer.Create(AudioPlayback);
+  Equalizer := Tms_Equalizer.Create(AudioPlayback, Theme.Song.Equalizer);
 
   if (Length(CatSongs.Song) > 0) then
     Interaction := 0;
@@ -1495,8 +1489,6 @@ begin
   for I := 0 to Length(Text) - 1 do
     Text[I].Draw;
 
-
-  //Draw Equalizer
   Equalizer.Draw;
 
   DrawExtensions;
@@ -1654,116 +1646,6 @@ begin
     SelectNext;
 
   FixSelected2;
-end;
-
-procedure TScreenSong.DrawEqualizer;
-{var
-  I, J: Integer;
-  ChansPerBand: byte; // channels per band
-  MaxChannel: Integer;
-  CurBand: Integer; // current band
-  CurTime: Cardinal;
-  PosX, PosY: Integer;
-  Pos: Real;  }
-begin
- { // Nothing to do if no music is played or an equalizer bar consists of no block
-  if (AudioPlayback.Finished or (Theme.Song.Equalizer.Length <= 0)) then
-    Exit;
-
-  CurTime := SDL_GetTicks();
-
-  // Evaluate FFT-data every 44 ms
-  if (CurTime >= EqualizerTime) then
-  begin
-    EqualizerTime := CurTime + 44;
-    AudioPlayback.GetFFTData(EqualizerData);
-
-    Pos := 0;
-    // use only the first approx. 92 of 256 FFT-channels (approx. up to 8kHz
-    ChansPerBand := ceil(92 / Theme.Song.Equalizer.Bands); // How much channels are used for one Band
-    MaxChannel := ChansPerBand * Theme.Song.Equalizer.Bands - 1;
-
-    // Change Lengths
-    for i := 0 to MaxChannel do
-    begin
-      // Gain higher freq. data so that the bars are visible
-      if i > 35 then
-        EqualizerData[i] := EqualizerData[i] * 8
-      else if i > 11 then
-        EqualizerData[i] := EqualizerData[i] * 4.5
-      else
-        EqualizerData[i] := EqualizerData[i] * 1.1;
-
-      // clamp data
-      if (EqualizerData[i] > 1) then
-        EqualizerData[i] := 1;
-
-      // Get max. pos
-      if (EqualizerData[i] * Theme.Song.Equalizer.Length > Pos) then
-        Pos := EqualizerData[i] * Theme.Song.Equalizer.Length;
-
-      // Check if this is the last channel in the band
-      if ((i+1) mod ChansPerBand = 0) then
-      begin
-        CurBand := i div ChansPerBand;
-
-        // Smooth delay if new equalizer is lower than the old one
-        if ((EqualizerBands[CurBand] > Pos) and (EqualizerBands[CurBand] > 1)) then
-          EqualizerBands[CurBand] := EqualizerBands[CurBand] - 1
-        else
-          EqualizerBands[CurBand] := Round(Pos);
-
-        Pos := 0;
-      end;
-    end;
-
-  end;
-
-  // Draw equalizer bands
-
-  // Setup OpenGL
-  glColor4f(Theme.Song.Equalizer.ColR, Theme.Song.Equalizer.ColG, Theme.Song.Equalizer.ColB, Theme.Song.Equalizer.Alpha);
-  glDisable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-
-  // Set position of the first equalizer bar
-  PosY := Theme.Song.Equalizer.Y;
-  PosX := Theme.Song.Equalizer.X;
-
-  // Draw bars for each band
-  for I := 0 to High(EqualizerBands) do
-  begin
-    // Reset to lower or left position depending on the drawing-direction
-    if Theme.Song.Equalizer.Direction then // Vertical bars
-      // FIXME: Is Theme.Song.Equalizer.Y the upper or lower coordinate?
-      PosY := Theme.Song.Equalizer.Y //+ (Theme.Song.Equalizer.H + Theme.Song.Equalizer.Space) * Theme.Song.Equalizer.Length
-    else                                   // Horizontal bars
-      PosX := Theme.Song.Equalizer.X;
-
-    // Draw the bar as a stack of blocks
-    for J := 1 to EqualizerBands[I] do
-    begin
-      // Draw block
-      glBegin(GL_QUADS);
-        glVertex3f(PosX, PosY, Theme.Song.Equalizer.Z);
-        glVertex3f(PosX, PosY+Theme.Song.Equalizer.H, Theme.Song.Equalizer.Z);
-        glVertex3f(PosX+Theme.Song.Equalizer.W, PosY+Theme.Song.Equalizer.H, Theme.Song.Equalizer.Z);
-        glVertex3f(PosX+Theme.Song.Equalizer.W, PosY, Theme.Song.Equalizer.Z);
-      glEnd;
-
-      // Calc position of the bar's next block
-      if Theme.Song.Equalizer.Direction then // Vertical bars
-        PosY := PosY - Theme.Song.Equalizer.H - Theme.Song.Equalizer.Space
-      else                                   // Horizontal bars
-        PosX := PosX + Theme.Song.Equalizer.W + Theme.Song.Equalizer.Space;
-    end;
-
-    // Calc position of the next bar
-    if Theme.Song.Equalizer.Direction then // Vertical bars
-      PosX := PosX + Theme.Song.Equalizer.W + Theme.Song.Equalizer.Space
-    else                                   // Horizontal bars
-      PosY := PosY + Theme.Song.Equalizer.H + Theme.Song.Equalizer.Space;
-  end;  }
 end;
 
 procedure TScreenSong.SelectRandomSong;
