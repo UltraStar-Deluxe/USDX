@@ -369,7 +369,7 @@ begin
   AddByStatics(4, Theme.Sing.StaticP2MScoreBG, Theme.Sing.StaticP2MSingBar, Theme.Sing.TextP2MScore);
 
   // Player3:
-  AddByStatics(4, Theme.Sing.StaticP3RScoreBG, Theme.Sing.StaticP3RScoreBG, Theme.Sing.TextP3RScore);
+  AddByStatics(4, Theme.Sing.StaticP3RScoreBG, Theme.Sing.StaticP3RSingBar, Theme.Sing.TextP3RScore);
 end;
 
 //-----------
