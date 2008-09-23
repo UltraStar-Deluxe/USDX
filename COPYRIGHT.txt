@@ -4,11 +4,11 @@ Copyright (C) 2007-2008 by the following:
 If you have contributed to this project then you deserve to be on this
 list.  Contact us (see: AUTHORS) and we'll add you.
 
+Jay Binks "jaybinks"
 Dirk Dunger "blindy"
 "eddie-0815"
 Mike Gränz "mog"
 Tobias Gunkel "tobigun"
-"Jay Binks"
 "mota"
 "s_alexander"
 Karl-Michael Schindler "mischi"
