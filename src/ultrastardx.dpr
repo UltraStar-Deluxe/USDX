@@ -1,3 +1,8 @@
+{*
+ * $URL$
+ * $Id$
+ *}
+
 program ultrastardx;
 
 {$IFDEF MSWINDOWS}
