@@ -33,10 +33,11 @@ interface
 
 {$I switches.inc}
 
-uses USongs,
-     USong,
-     Classes,
-     SQLiteTable3;
+uses
+  USongs,
+  USong,
+  Classes,
+  SQLiteTable3;
 
 //--------------------
 //DataBaseSystem - Class including all DB Methods

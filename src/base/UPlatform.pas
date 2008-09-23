@@ -38,7 +38,8 @@ interface
 
 {$I switches.inc}
 
-uses Classes;
+uses
+  Classes;
 
 type
   TDirectoryEntry = record

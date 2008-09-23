@@ -33,7 +33,6 @@ interface
 
 {$I switches.inc}
 
-
 type
   TScreenMode = (scmDefault, scmFullscreen, scmWindowed);
 

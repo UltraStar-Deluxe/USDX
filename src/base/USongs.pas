@@ -40,30 +40,30 @@ interface
 {$ENDIF}
 
 uses
-    {$IFDEF MSWINDOWS}
-      Windows,
-      DirWatch,
-    {$ELSE}
-      {$IFNDEF DARWIN}
-        syscall,
-      {$ENDIF}
-      baseunix,
-      UnixType,
+  {$IFDEF MSWINDOWS}
+    Windows,
+    DirWatch,
+  {$ELSE}
+    {$IFNDEF DARWIN}
+      syscall,
     {$ENDIF}
-    SysUtils,
-    Classes,
-    UPlatform,
-    ULog,
-    UTexture,
-    UCommon,
-    {$IFDEF DARWIN}
-      cthreads,
-    {$ENDIF}
-    {$IFDEF USE_PSEUDO_THREAD}
-      PseudoThread,
-    {$ENDIF}
-    USong,
-    UCatCovers;
+    baseunix,
+    UnixType,
+  {$ENDIF}
+  SysUtils,
+  Classes,
+  UPlatform,
+  ULog,
+  UTexture,
+  UCommon,
+  {$IFDEF DARWIN}
+    cthreads,
+  {$ENDIF}
+  {$IFDEF USE_PSEUDO_THREAD}
+    PseudoThread,
+  {$ENDIF}
+  USong,
+  UCatCovers;
 
 type
 

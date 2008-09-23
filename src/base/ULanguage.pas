@@ -32,7 +32,6 @@ interface
 {$ENDIF}
 
 {$I switches.inc}
-               
 
 type
   TLanguageEntry = record
@@ -68,16 +67,17 @@ var
 
 implementation
 
-uses UMain,
-     // UFiles,
-     UIni,
-     IniFiles,
-     Classes,
-     SysUtils,
-     {$IFDEF win32}
-     windows,
-     {$ENDIF}
-     ULog;
+uses
+  UMain,
+  // UFiles,
+  UIni,
+  IniFiles,
+  Classes,
+  SysUtils,
+  {$IFDEF win32}
+    windows,
+  {$ENDIF}
+  ULog;
 
 //----------
 //Create - Construct Class then LoadList + Standard Language + Set Standard Implode Glues

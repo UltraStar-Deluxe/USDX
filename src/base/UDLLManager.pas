@@ -33,8 +33,9 @@ interface
 
 {$I switches.inc}
 
-uses ModiSDK,
-     UFiles;
+uses
+  ModiSDK,
+  UFiles;
 
 type
   TDLLMan = class

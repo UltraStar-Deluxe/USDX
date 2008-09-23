@@ -33,13 +33,14 @@ interface
 
 {$I switches.inc}
 
-uses Classes,
-     Math,
-     SysUtils,
-     sdl,
-     UCommon,
-     UMusic,
-     UIni;
+uses
+  Classes,
+  Math,
+  SysUtils,
+  sdl,
+  UCommon,
+  UMusic,
+  UIni;
 
 const
   BaseToneFreq = 65.4064; // lowest (half-)tone to analyze (C2 = 65.4064 Hz)

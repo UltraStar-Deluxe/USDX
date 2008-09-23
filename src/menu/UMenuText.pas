@@ -33,12 +33,13 @@ interface
 
 {$I switches.inc}
 
-uses TextGL,
-     UTexture,
-     gl, 
-     math,
-     SysUtils,
-     SDL;
+uses
+  TextGL,
+  UTexture,
+  gl, 
+  math,
+  SysUtils,
+  SDL;
 
 type
   TText = class

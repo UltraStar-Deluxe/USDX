@@ -33,10 +33,11 @@ interface
 
 {$I switches.inc}
 
-uses TextGL,
-     UTexture,
-     gl,
-     UMenuText;
+uses
+  TextGL,
+  UTexture,
+  gl,
+  UMenuText;
 
 type
   PSelectSlide = ^TSelectSlide;

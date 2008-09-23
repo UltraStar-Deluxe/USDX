@@ -27,7 +27,7 @@ unit UHooks;
 
 {*********************
   THookManager
-  Class for saving, managing and calling of Hooks.
+  Class for saving, managing and calling of hooks.
   Saves all hookable events and their subscribers
 *********************}
 interface
@@ -38,28 +38,29 @@ interface
 
 {$I switches.inc}
 
-uses uPluginDefs,
-     SysUtils;
+uses
+  uPluginDefs,
+  SysUtils;
 
 type
   //Record that saves info from Subscriber
   PSubscriberInfo = ^TSubscriberInfo;
   TSubscriberInfo = record
-    Self: THandle;  //ID of this Subscription (First Word: ID of Subscription; 2nd Word: ID of Hook)
+    Self: THandle;  //ID of this Subscription (First word: ID of Subscription; 2nd word: ID of Hook)
     Next: PSubscriberInfo; //Pointer to next Item in HookChain
 
-    Owner: Integer; //For Error Handling and Plugin Unloading.
+    Owner: integer; //For Error Handling and Plugin Unloading.
 
     //Here is s/t tricky
     //To avoid writing of Wrapping Functions to Hook an Event with a Class
     //We save a Normal Proc or a Method of a Class
-    Case isClass: boolean of
+    case isClass: boolean of
       False: (Proc: TUS_Hook); //Proc that will be called on Event
       True:  (ProcOfClass: TUS_Hook_of_Object);
   end;
 
   TEventInfo = record
-    Name: String[60];                  //Name of Event
+    Name: string[60];                  //Name of Event
     FirstSubscriber:  PSubscriberInfo; //First subscriber in chain
     LastSubscriber:   PSubscriberInfo; //Last " (for easier subscriber adding
   end;
@@ -67,22 +68,22 @@ type
   THookManager = class
     private
       Events: array of TEventInfo;
-      SpaceinEvents: Word; //Number of empty Items in Events Array. (e.g. Deleted Items)
+      SpaceinEvents: word; //Number of empty Items in Events Array. (e.g. Deleted Items)
 
-      Procedure FreeSubscriber(const EventIndex: Word; const Last, Cur: PSubscriberInfo);
+      procedure FreeSubscriber(const EventIndex: word; const Last, Cur: PSubscriberInfo);
     public
-      constructor Create(const SpacetoAllocate: Word);
+      constructor Create(const SpacetoAllocate: word);
 
-      Function AddEvent (const EventName: PChar): THandle;
-      Function DelEvent (hEvent: THandle): Integer;
+      function AddEvent (const EventName: Pchar): THandle;
+      function DelEvent (hEvent: THandle): integer;
 
-      Function AddSubscriber (const EventName: PChar; const Proc: TUS_Hook = nil; const ProcOfClass: TUS_Hook_of_Object = nil): THandle;
-      Function DelSubscriber (const hSubscriber: THandle): Integer;
+      function AddSubscriber (const EventName: Pchar; const Proc: TUS_Hook = nil; const ProcOfClass: TUS_Hook_of_Object = nil): THandle;
+      function DelSubscriber (const hSubscriber: THandle): integer;
 
-      Function CallEventChain (const hEvent: THandle; const wParam: TwParam; lParam: TlParam): Integer;
-      Function EventExists (const EventName: PChar): Integer;
+      function CallEventChain (const hEvent: THandle; const wParam: TwParam; lParam: TlParam): integer;
+      function EventExists (const EventName: Pchar): integer;
 
-      Procedure DelbyOwner(const Owner: Integer);
+      procedure DelbyOwner(const Owner: integer);
   end;
 
 function HookTest(wParam: TwParam; lParam: TlParam): integer; stdcall;
@@ -91,6 +92,7 @@ var
   HookManager: THookManager;
 
 implementation
+
 uses
   ULog,
   UCore;
@@ -98,14 +100,14 @@ uses
 //------------
 // Create - Creates Class and Set Standard Values
 //------------
-constructor THookManager.Create(const SpacetoAllocate: Word);
-var I: Integer;
+constructor THookManager.Create(const SpacetoAllocate: word);
+var I: integer;
 begin
   inherited Create();
 
   //Get the Space and "Zero" it
   SetLength (Events, SpacetoAllocate);
-  For I := 0 to SpacetoAllocate-1 do
+  for I := 0 to SpacetoAllocate-1 do
     Events[I].Name[1] := chr(0);
 
   SpaceinEvents := SpacetoAllocate;
@@ -118,19 +120,19 @@ end;
 //------------
 // AddEvent - Adds an Event and return the Events Handle or 0 on Failure
 //------------
-Function THookManager.AddEvent (const EventName: PChar): THandle;
-var I: Integer;
+function THookManager.AddEvent (const EventName: Pchar): THandle;
+var I: integer;
 begin
   Result := 0;
 
   if (EventExists(EventName) = 0) then
   begin
-    If (SpaceinEvents > 0) then
+    if (SpaceinEvents > 0) then
     begin
       //There is already Space available
       //Go Search it!
-      For I := 0 to High(Events) do
-        If (Events[I].Name[1] = chr(0)) then
+      for I := 0 to High(Events) do
+        if (Events[I].Name[1] = chr(0)) then
         begin //Found Space
           Result := I;
           Dec(SpaceinEvents);
@@ -168,7 +170,7 @@ end;
 //------------
 // DelEvent - Deletes an Event by Handle Returns False on Failure
 //------------
-Function THookManager.DelEvent (hEvent: THandle): Integer;
+function THookManager.DelEvent (hEvent: THandle): integer;
 var
   Cur, Last: PSubscriberInfo;
 begin
@@ -176,12 +178,12 @@ begin
   Result := -1;
 
 
-  If (Length(Events) > hEvent) AND (Events[hEvent].Name[1] <> chr(0)) then
+  if (Length(Events) > hEvent) and (Events[hEvent].Name[1] <> chr(0)) then
   begin //Event exists
     //Free the Space for all Subscribers
     Cur := Events[hEvent].FirstSubscriber;
 
-    While (Cur <> nil) do
+    while (Cur <> nil) do
     begin
       Last := Cur;
       Cur  := Cur.Next;
@@ -207,7 +209,7 @@ end;
 // AddSubscriber - Adds an Subscriber to the Event by Name
 // Returns Handle of the Subscribtion or 0 on Failure
 //------------
-Function THookManager.AddSubscriber (const EventName: PChar; const Proc: TUS_Hook; const ProcOfClass: TUS_Hook_of_Object): THandle;
+function THookManager.AddSubscriber (const EventName: Pchar; const Proc: TUS_Hook; const ProcOfClass: TUS_Hook_of_Object): THandle;
 var
   EventHandle: THandle;
   EventIndex:  Cardinal;
@@ -215,11 +217,11 @@ var
 begin
   Result := 0;
 
-  If (@Proc <> nil) or (@ProcOfClass <> nil) then
+  if (@Proc <> nil) or (@ProcOfClass <> nil) then
   begin
     EventHandle := EventExists(EventName);
 
-    If (EventHandle <> 0) then
+    if (EventHandle <> 0) then
     begin
       EventIndex := EventHandle - 1;
       
@@ -232,7 +234,7 @@ begin
       //Add Owner
       Cur.Owner := Core.CurExecuted;
 
-      If (@Proc = nil) then
+      if (@Proc = nil) then
       begin //Use the ProcofClass Method
         Cur.isClass := True;
         Cur.ProcOfClass := ProcofClass;
@@ -243,20 +245,20 @@ begin
         Cur.Proc := Proc;
       end;
 
-      //Create Handle (1st Word: Handle of Event; 2nd Word: unique ID
-      If (Events[EventIndex].LastSubscriber = nil) then
+      //Create Handle (1st word: Handle of Event; 2nd word: unique ID
+      if (Events[EventIndex].LastSubscriber = nil) then
       begin
-        If (Events[EventIndex].FirstSubscriber = nil) then
+        if (Events[EventIndex].FirstSubscriber = nil) then
         begin
           Result := (EventHandle SHL 16);
           Events[EventIndex].FirstSubscriber := Cur;
         end
-        Else
+        else
         begin
           Result := Events[EventIndex].FirstSubscriber.Self + 1;
         end;
       end
-      Else
+      else
       begin
         Result := Events[EventIndex].LastSubscriber.Self + 1;
         Events[EventIndex].LastSubscriber.Next := Cur;
@@ -277,10 +279,10 @@ end;
 //------------
 // FreeSubscriber - Helper for DelSubscriber. Prevents Loss of Chain Items. Frees Memory.
 //------------
-Procedure THookManager.FreeSubscriber(const EventIndex: Word; const Last, Cur: PSubscriberInfo);
+procedure THookManager.FreeSubscriber(const EventIndex: word; const Last, Cur: PSubscriberInfo);
 begin
   //Delete from Chain
-  If (Last <> nil) then
+  if (Last <> nil) then
   begin
     Last.Next := Cur.Next;
   end
@@ -290,7 +292,7 @@ begin
   end;
 
   //Was this Last subscription ?
-  If (Cur = Events[EventIndex].LastSubscriber) then
+  if (Cur = Events[EventIndex].LastSubscriber) then
   begin //Change Last Subscriber
     Events[EventIndex].LastSubscriber := Last;
   end;
@@ -302,16 +304,16 @@ end;
 //------------
 // DelSubscriber - Deletes a Subscribtion by Handle, return non Zero on Failure
 //------------
-Function THookManager.DelSubscriber (const hSubscriber: THandle): Integer;
+function THookManager.DelSubscriber (const hSubscriber: THandle): integer;
 var
   EventIndex: Cardinal;
   Cur, Last: PSubscriberInfo;
 begin
   Result := -1;
-  EventIndex := ((hSubscriber AND (High(THandle) xor High(Word))) SHR 16) - 1;
+  EventIndex := ((hSubscriber and (High(THandle) xor High(word))) SHR 16) - 1;
 
   //Existing Event ?
-  If (EventIndex < Length(Events)) AND (Events[EventIndex].Name[1] <> chr(0)) then
+  if (EventIndex < Length(Events)) and (Events[EventIndex].Name[1] <> chr(0)) then
   begin
     Result := -2; //Return -1 on not existing Event, -2 on not existing Subscription
 
@@ -320,9 +322,9 @@ begin
     Last := nil;
 
     //go through the chain ...
-    While (Cur <> nil) do
+    while (Cur <> nil) do
     begin
-      If (Cur.Self = hSubscriber) then
+      if (Cur.Self = hSubscriber) then
       begin  //Found Subscription we searched for
         FreeSubscriber(EventIndex, Last, Cur);
 
@@ -347,16 +349,16 @@ end;
 // CallEventChain - Calls the Chain of a specified EventHandle
 // Returns: -1: Handle doesn't Exist, 0 Chain is called until the End
 //------------
-Function THookManager.CallEventChain (const hEvent: THandle; const wParam: TwParam; lParam: TlParam): Integer;
+function THookManager.CallEventChain (const hEvent: THandle; const wParam: TwParam; lParam: TlParam): integer;
 var
   EventIndex: Cardinal;
   Cur: PSubscriberInfo;
-  CurExecutedBackup: Integer; //backup of Core.CurExecuted Attribute
+  CurExecutedBackup: integer; //backup of Core.CurExecuted Attribute
 begin
   Result := -1;
   EventIndex := hEvent - 1;
 
-  If ((EventIndex <= High(Events)) AND (Events[EventIndex].Name[1] <> chr(0))) then
+  if ((EventIndex <= High(Events)) and (Events[EventIndex].Name[1] <> chr(0))) then
   begin //Existing Event
     //Backup CurExecuted
     CurExecutedBackup := Core.CurExecuted;
@@ -365,7 +367,7 @@ begin
     Cur := Events[EventIndex].FirstSubscriber;
     Result := 0;
     //Call Hooks until the Chain is at the End or breaked
-    While ((Cur <> nil) AND (Result = 0)) do
+    while ((Cur <> nil) and (Result = 0)) do
     begin
       //Set CurExecuted
       Core.CurExecuted := Cur.Owner;
@@ -389,21 +391,21 @@ end;
 //------------
 // EventExists - Returns non Zero if an Event with the given Name exists
 //------------
-Function THookManager.EventExists (const EventName: PChar): Integer;
+function THookManager.EventExists (const EventName: Pchar): integer;
 var
-  I: Integer;
-  Name: String[60];
+  I: integer;
+  Name: string[60];
 begin
   Result := 0;
-  //If (Length(EventName) <
-  Name := String(EventName);
+  //if (Length(EventName) <
+  Name := string(EventName);
 
   //Sure not to search for empty space
-  If (Name[1] <> chr(0)) then
+  if (Name[1] <> chr(0)) then
   begin
     //Search for Event
-    For I := 0 to High(Events) do
-      If (Events[I].Name = Name) then
+    for I := 0 to High(Events) do
+      if (Events[I].Name = Name) then
       begin //Event found
         Result := I + 1;
         Break;
@@ -414,31 +416,31 @@ end;
 //------------
 // DelbyOwner - Dels all Subscriptions by a specific Owner. (For Clean Plugin/Module unloading)
 //------------
-Procedure THookManager.DelbyOwner(const Owner: Integer);
+procedure THookManager.DelbyOwner(const Owner: integer);
 var
-  I: Integer;
+  I: integer;
   Cur, Last: PSubscriberInfo;
 begin
   //Search for Owner in all Hooks Chains
-  For I := 0 to High(Events) do
+  for I := 0 to High(Events) do
   begin
-    If (Events[I].Name[1] <> chr(0)) then
+    if (Events[I].Name[1] <> chr(0)) then
     begin
       
       Last := nil;
       Cur  := Events[I].FirstSubscriber;
       //Went Through Chain
-      While (Cur <> nil) do
+      while (Cur <> nil) do
       begin
-        If (Cur.Owner = Owner) then
+        if (Cur.Owner = Owner) then
         begin //Found Subscription by Owner -> Delete
           FreeSubscriber(I, Last, Cur);
-          If (Last <> nil) then
+          if (Last <> nil) then
             Cur := Last.Next
           else
             Cur := Events[I].FirstSubscriber;
         end
-        Else
+        else
         begin
           //Next Item:
           Last := Cur;
@@ -453,7 +455,7 @@ end;
 function HookTest(wParam: TwParam; lParam: TlParam): integer; stdcall;
 begin
   Result := 0; //Don't break the chain
-  Core.ShowMessage(CORE_SM_INFO, PChar(String(PChar(Pointer(lParam))) + ': ' + String(PChar(Pointer(wParam)))));
+  Core.ShowMessage(CORE_SM_INFO, Pchar(string(Pchar(Pointer(lParam))) + ': ' + string(Pchar(Pointer(wParam)))));
 end;
 
 end.

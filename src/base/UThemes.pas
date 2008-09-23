@@ -34,11 +34,11 @@ interface
 {$I switches.inc}
 
 uses
-    ULog,
-    IniFiles,
-    SysUtils,
-    Classes,
-    UTexture;
+  ULog,
+  IniFiles,
+  SysUtils,
+  Classes,
+  UTexture;
 
 type
   TRGB = record

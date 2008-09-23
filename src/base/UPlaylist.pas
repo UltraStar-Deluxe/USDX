@@ -32,7 +32,6 @@ interface
 {$ENDIF}
 
 {$I switches.inc}
-               
 
 uses
   USong;

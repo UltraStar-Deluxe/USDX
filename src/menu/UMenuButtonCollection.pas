@@ -33,7 +33,8 @@ interface
 
 {$I switches.inc}
 
-uses UMenuButton;
+uses
+  UMenuButton;
 
 type
   //----------------

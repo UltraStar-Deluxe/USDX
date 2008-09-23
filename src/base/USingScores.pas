@@ -33,9 +33,10 @@ interface
 
 {$I switches.inc}
 
-uses UThemes,
-     gl,
-     UTexture;
+uses
+  UThemes,
+  gl,
+  UTexture;
 
 //////////////////////////////////////////////////////////////
 //                        ATTENTION:                        //

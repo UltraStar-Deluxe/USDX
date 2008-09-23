@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 { Dummy Unit atm
-  For further expantation
+  For further explanation
   Placeholder for Class that will handle the Notes Drawing}
 
 implementation

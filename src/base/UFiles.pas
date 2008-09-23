@@ -32,13 +32,15 @@ interface
 {$ENDIF}
 {$I switches.inc}
 
-uses SysUtils,
-     ULog,
-     UMusic,
-     USongs,
-     USong;
+uses
+  SysUtils,
+  ULog,
+  UMusic,
+  USongs,
+  USong;
 
 procedure ResetSingTemp;
+
 function  SaveSong(Song: TSong; Lines: TLines; Name: string; Relative: boolean): boolean;
 
 var
@@ -53,11 +55,12 @@ var
 
 implementation
 
-uses TextGL,
-     UIni,
-		 UPlatform,
-     UMain;
-     
+uses
+  TextGL,
+  UIni,
+  UPlatform,
+  UMain;
+
 //--------------------
 // Resets the temporary Sentence Arrays for each Player and some other Variables
 //--------------------

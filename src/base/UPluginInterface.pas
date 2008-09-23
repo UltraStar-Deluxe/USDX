@@ -26,8 +26,8 @@
 unit uPluginInterface;
 {*********************
   uPluginInterface
-  Unit fills a TPluginInterface Structur with Method Pointers
-  Unit Contains all Functions called directly by Plugins
+  Unit fills a TPluginInterface structure with method pointers
+  Unit contains all functions called directly by plugins
 *********************}
 
 interface
@@ -38,7 +38,8 @@ interface
 
 {$I switches.inc}
 
-uses uPluginDefs;
+uses
+  uPluginDefs;
 
 //---------------
 // Methods for Plugin

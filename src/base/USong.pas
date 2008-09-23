@@ -34,29 +34,29 @@ interface
 {$I switches.inc}
 
 uses
-    {$IFDEF MSWINDOWS}
+  {$IFDEF MSWINDOWS}
     Windows,
-    {$ELSE}
-      {$IFNDEF DARWIN}
-        syscall,
-      {$ENDIF}
-      baseunix,
-      UnixType,
+  {$ELSE}
+    {$IFNDEF DARWIN}
+      syscall,
     {$ENDIF}
-    SysUtils,
-    Classes,
-    UPlatform,
-    ULog,
-    UTexture,
-    UCommon,
-    {$IFDEF DARWIN}
+    baseunix,
+    UnixType,
+  {$ENDIF}
+  SysUtils,
+  Classes,
+  UPlatform,
+  ULog,
+  UTexture,
+  UCommon,
+  {$IFDEF DARWIN}
     cthreads,
-    {$ENDIF}
-    {$IFDEF USE_PSEUDO_THREAD}
+  {$ENDIF}
+  {$IFDEF USE_PSEUDO_THREAD}
     PseudoThread,
-    {$ENDIF}
-    UCatCovers,
-    UXMLSong;
+  {$ENDIF}
+  UCatCovers,
+  UXMLSong;
 
 type
 

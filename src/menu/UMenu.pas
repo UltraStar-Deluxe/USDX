@@ -33,8 +33,19 @@ interface
 
 {$I switches.inc}
 
-uses gl, SysUtils, UTexture, UMenuStatic, UMenuText, UMenuButton, UMenuSelectSlide,
-  UMenuInteract, UThemes, UMenuButtonCollection, Math, UMusic;
+uses
+  gl,
+  SysUtils,
+  UTexture,
+  UMenuStatic,
+  UMenuText,
+  UMenuButton,
+  UMenuSelectSlide,
+  UMenuInteract,
+  UThemes,
+  UMenuButtonCollection,
+  Math,
+  UMusic;
 
 type
 {  Int16 = SmallInt;}

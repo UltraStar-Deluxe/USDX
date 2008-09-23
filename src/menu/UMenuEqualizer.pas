@@ -33,7 +33,9 @@ interface
 
 {$I switches.inc}
 
-uses UMusic, UThemes;
+uses
+  UMusic,
+  UThemes;
 
 type
   //----------------

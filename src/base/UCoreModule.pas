@@ -35,10 +35,11 @@ interface
 
 {*********************
   TCoreModule
-  Dummy Class that has Methods that will be called from Core
-  In the Best case every Piece of this Software is a Module
+  Dummy class that has methods that will be called from core
+  In the best case every piece of this software is a module
 *********************}
-uses UPluginDefs;
+uses
+ UPluginDefs;
 
 type
   PCoreModule = ^TCoreModule;

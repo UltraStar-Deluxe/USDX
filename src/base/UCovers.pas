@@ -44,7 +44,7 @@ interface
 {$I switches.inc}
 
 uses
-  sdl,
+  SDL,
   SQLite3,
   SQLiteTable3,
   SysUtils,

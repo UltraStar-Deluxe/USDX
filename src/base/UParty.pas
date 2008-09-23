@@ -33,7 +33,10 @@ interface
 
 {$I switches.inc}
 
-uses UPartyDefs, UCoreModule, UPluginDefs;
+uses
+  UPartyDefs,
+  UCoreModule,
+  UPluginDefs;
 
 type
   ARounds = Array [0..252] of Integer; //0..252 needed for
