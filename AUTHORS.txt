@@ -1,6 +1,6 @@
-This game was introduced by Corvus5 who has written most of the code by himself.
-Basing on the official release 0.5.0 Mota and Whiteshark started to write little
-patches and modifications, and released this package named ultra-star.dl.am Mod.
+This game was introduced by Corvus5 writing most of the code by himself.
+Based on the official release 0.5.0 Mota and Whiteshark started to add small
+patches and modifications and released a package named ultra-star.dl.am Mod.
 This modification was continued at Sourceforge.net by the Ultrastar Deluxe Team:
 
 ~=[ DevTeam 1.1 - Harakirioke ]=~     
@@ -23,4 +23,4 @@ This modification was continued at Sourceforge.net by the Ultrastar Deluxe Team:
     CC People <3
     Translators
     
-And this piece of software is the Result!
+And this piece of software is the result!
