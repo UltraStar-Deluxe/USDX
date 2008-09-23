@@ -1,0 +1,25 @@
+Ultrastar Deluxe
+Copyright (C) 2007-2008 by the following:
+
+If you have contributed to this project then you deserve to be on this
+list.  Contact us (see: AUTHORS) and we'll add you.
+
+Dirk Dunger "blindy"
+"eddie-0815"
+Mike Gränz "mog"
+Tobias Gunkel "tobigun"
+"Jay Binks"
+"mota"
+"s_alexander"
+Karl-Michael Schindler "mischi"
+Philipp Steinhardt "whiteshark"
+
+Patches contributed by:
+"d0ccrazy"
+"elBandito07"
+"f1fth_freed0m"
+"GogolNr1"
+"jekatt"
+Benedikt Krueger
+Holger Kuhn "hawkear"
+Wesley Stessens "profoX"
