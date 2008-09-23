@@ -863,7 +863,7 @@ begin
   
   Log.LogStatus('Loading: '+ FileName, 'TTheme.LoadTheme');
 
-  FileName := AdaptFilePaths( FileName );
+  FileName := AdaptFilePaths(FileName);
 
   if not FileExists(FileName) then
   begin
@@ -2211,91 +2211,88 @@ end;
 
 procedure TTheme.create_theme_objects();
 begin
-  freeandnil( Loading       );
-  Loading       := TThemeLoading.Create;
+  freeandnil(Loading);
+  Loading := TThemeLoading.Create;
 
-  freeandnil( Main      );
-  Main      := TThemeMain.Create;
+  freeandnil(Main);
+  Main := TThemeMain.Create;
 
-  freeandnil( Name      );
-  Name      := TThemeName.Create;
+  freeandnil(Name);
+  Name := TThemeName.Create;
 
-  freeandnil( Level       );
-  Level       := TThemeLevel.Create;
+  freeandnil(Level);
+  Level := TThemeLevel.Create;
 
-  freeandnil( Song      );
-  Song      := TThemeSong.Create;
+  freeandnil(Song);
+  Song := TThemeSong.Create;
 
-  freeandnil( Sing      );
-  Sing      := TThemeSing.Create;
+  freeandnil(Sing);
+  Sing := TThemeSing.Create;
 
-  freeandnil( Score       );
-  Score       := TThemeScore.Create;
+  freeandnil(Score);
+  Score := TThemeScore.Create;
 
-  freeandnil( Top5      );
-  Top5      := TThemeTop5.Create;
+  freeandnil(Top5);
+  Top5 := TThemeTop5.Create;
 
-  freeandnil( Options       );
-  Options       := TThemeOptions.Create;
+  freeandnil(Options);
+  Options := TThemeOptions.Create;
 
-  freeandnil( OptionsGame       );
-  OptionsGame       := TThemeOptionsGame.Create;
+  freeandnil(OptionsGame);
+  OptionsGame := TThemeOptionsGame.Create;
 
-  freeandnil( OptionsGraphics       );
-  OptionsGraphics       := TThemeOptionsGraphics.Create;
+  freeandnil(OptionsGraphics);
+  OptionsGraphics := TThemeOptionsGraphics.Create;
 
-  freeandnil( OptionsSound      );
-  OptionsSound      := TThemeOptionsSound.Create;
+  freeandnil(OptionsSound);
+  OptionsSound := TThemeOptionsSound.Create;
 
-  freeandnil( OptionsLyrics       );
-  OptionsLyrics       := TThemeOptionsLyrics.Create;
+  freeandnil(OptionsLyrics);
+  OptionsLyrics := TThemeOptionsLyrics.Create;
 
-  freeandnil( OptionsThemes       );
-  OptionsThemes       := TThemeOptionsThemes.Create;
+  freeandnil(OptionsThemes);
+  OptionsThemes := TThemeOptionsThemes.Create;
 
-  freeandnil( OptionsRecord       );
-  OptionsRecord       := TThemeOptionsRecord.Create;
+  freeandnil(OptionsRecord);
+  OptionsRecord := TThemeOptionsRecord.Create;
 
-  freeandnil( OptionsAdvanced       );
-  OptionsAdvanced       := TThemeOptionsAdvanced.Create;
+  freeandnil(OptionsAdvanced);
+  OptionsAdvanced := TThemeOptionsAdvanced.Create;
 
+  freeandnil(ErrorPopup);
+  ErrorPopup := TThemeError.Create;
 
-  freeandnil( ErrorPopup      );
-  ErrorPopup      := TThemeError.Create;
+  freeandnil(CheckPopup);
+  CheckPopup := TThemeCheck.Create;
 
-  freeandnil( CheckPopup      );
-  CheckPopup      := TThemeCheck.Create;
+  freeandnil(SongMenu);
+  SongMenu := TThemeSongMenu.Create;
 
-
-  freeandnil( SongMenu      );
-  SongMenu      := TThemeSongMenu.Create;
-
-  freeandnil( SongJumpto      );
-  SongJumpto      := TThemeSongJumpto.Create;
+  freeandnil(SongJumpto);
+  SongJumpto := TThemeSongJumpto.Create;
 
   //Party Screens
-  freeandnil( PartyNewRound       );
-  PartyNewRound       := TThemePartyNewRound.Create;
+  freeandnil(PartyNewRound);
+  PartyNewRound := TThemePartyNewRound.Create;
 
-  freeandnil( PartyWin      );
-  PartyWin      := TThemePartyWin.Create;
+  freeandnil(PartyWin);
+  PartyWin := TThemePartyWin.Create;
 
-  freeandnil( PartyScore      );
-  PartyScore      := TThemePartyScore.Create;
+  freeandnil(PartyScore);
+  PartyScore := TThemePartyScore.Create;
 
-  freeandnil( PartyOptions      );
-  PartyOptions      := TThemePartyOptions.Create;
+  freeandnil(PartyOptions);
+  PartyOptions := TThemePartyOptions.Create;
 
-  freeandnil( PartyPlayer       );
-  PartyPlayer       := TThemePartyPlayer.Create;
-
+  freeandnil(PartyPlayer);
+  PartyPlayer := TThemePartyPlayer.Create;
 
   //Stats Screens:
-  freeandnil( StatMain      );
-  StatMain :=        TThemeStatMain.Create;
+  freeandnil(StatMain);
+  StatMain := TThemeStatMain.Create;
 
-  freeandnil( StatDetail      );
-  StatDetail      := TThemeStatDetail.Create;
+  freeandnil(StatDetail);
+  StatDetail := TThemeStatDetail.Create;
 
  end;
 
