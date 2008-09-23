@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/uPluginLoader.pas $
+ * $Id: uPluginLoader.pas 1403 2008-09-23 21:17:22Z k-m_schindler $
  *}
 
 unit UPluginLoader;

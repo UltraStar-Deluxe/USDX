@@ -195,7 +195,7 @@ uses
   UCore             in 'base\UCore.pas',             //Core, Maybe remove this
   UCoreModule       in 'base\UCoreModule.pas',       //^
   UPluginInterface  in 'base\UPluginInterface.pas',  //Interface offered by Core to Plugins
-  uPluginLoader     in 'base\uPluginLoader.pas',     //New Plugin Loader Module
+  UPluginLoader     in 'base\UPluginLoader.pas',     //New Plugin Loader Module
 
   UParty            in 'base\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
 
