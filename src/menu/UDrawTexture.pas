@@ -46,7 +46,6 @@ uses
   gl;
 
 procedure DrawLine(X1, Y1, X2, Y2, ColR, ColG, ColB: real);
-
 begin
   glColor3f(ColR, ColG, ColB);
   glBegin(GL_LINES);
@@ -56,7 +55,6 @@ begin
 end;
 
 procedure DrawQuad(X, Y, W, H, ColR, ColG, ColB: real);
-
 begin
   glColor3f(ColR, ColG, ColB);
   glBegin(GL_QUADS);
@@ -68,13 +66,11 @@ begin
 end;
 
 procedure DrawTexture(Texture: TTexture);
-
 var
   x1, x2, x3, x4:     real;
   y1, y2, y3, y4:     real;
   xt1, xt2, xt3, xt4: real;
   yt1, yt2, yt3, yt4: real;
-
 begin
   with Texture do
   begin
