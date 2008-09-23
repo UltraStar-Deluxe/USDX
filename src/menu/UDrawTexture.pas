@@ -37,23 +37,26 @@ uses
   UTexture;
 
 procedure DrawLine(X1, Y1, X2, Y2, ColR, ColG, ColB: real);
-procedure DrawQuad(X, Y, W, H, ColR, ColG, ColB: real);
+procedure DrawQuad(X,  Y,  W,  H,  ColR, ColG, ColB: real);
 procedure DrawTexture(Texture: TTexture);
 
 implementation
 
-uses gl;
+uses
+  gl;
 
 procedure DrawLine(X1, Y1, X2, Y2, ColR, ColG, ColB: real);
+
 begin
   glColor3f(ColR, ColG, ColB);
   glBegin(GL_LINES);
-    glVertex2f(x1,   y1);
-    glVertex2f(x2,   y2);
+    glVertex2f(x1, y1);
+    glVertex2f(x2, y2);
   glEnd;
 end;
 
 procedure DrawQuad(X, Y, W, H, ColR, ColG, ColB: real);
+
 begin
   glColor3f(ColR, ColG, ColB);
   glBegin(GL_QUADS);
@@ -65,13 +68,16 @@ begin
 end;
 
 procedure DrawTexture(Texture: TTexture);
+
 var
-  x1, x2, x3, x4:       real;
-  y1, y2, y3, y4:       real;
-  xt1, xt2, xt3, xt4:   real;
-  yt1, yt2, yt3, yt4:   real;
+  x1, x2, x3, x4:     real;
+  y1, y2, y3, y4:     real;
+  xt1, xt2, xt3, xt4: real;
+  yt1, yt2, yt3, yt4: real;
+
 begin
-  with Texture do begin
+  with Texture do
+  begin
     // rysuje paski gracza
     glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha);
     glEnable(GL_TEXTURE_2D);
@@ -92,7 +98,8 @@ begin
     y2 := y+h*scaleH;
     y3 := y+h*scaleH;
     y4 := y;
-    if Rot <> 0 then begin
+    if Rot <> 0 then
+    begin
       xt1 := x1 - (x + w/2);
       xt2 := x2 - (x + w/2);
       xt3 := x3 - (x + w/2);
@@ -114,12 +121,14 @@ begin
 
     end;
 
-{    glBegin(GL_QUADS);
+{
+    glBegin(GL_QUADS);
       glTexCoord2f(0,    0);    glVertex3f(x1, y1, z);
       glTexCoord2f(0,    TexH); glVertex3f(x2, y2, z);
       glTexCoord2f(TexW, TexH); glVertex3f(x3, y3, z);
       glTexCoord2f(TexW, 0);    glVertex3f(x4, y4, z);
-    glEnd;}
+    glEnd;
+}
 
     glBegin(GL_QUADS);
       glTexCoord2f(TexX1*TexW, TexY1*TexH); glVertex3f(x1, y1, z);
