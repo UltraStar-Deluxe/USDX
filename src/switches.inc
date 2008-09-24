@@ -1,3 +1,6 @@
+// prevent pasdoc from parsing this file
+{$IFNDEF PASDOC}
+
 // compiler/IDE dependent config
 {$IFDEF FPC}
   {$H+} // use AnsiString instead of ShortString as String-type (default in Delphi)
@@ -109,3 +112,5 @@
 {$IF Defined(UsePortaudioInput) or Defined(UsePortaudioPlayback)}
   {$DEFINE UsePortaudio}
 {$IFEND}
+
+{$ENDIF PASDOC}
