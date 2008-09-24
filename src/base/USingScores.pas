@@ -456,13 +456,13 @@ begin
 
   //Change Bars Position
   if (Cur.ScoreDiff > 0) THEN
-  begin //Popup w/ scorechange -> give missing percents
+  begin //Popup w/ scorechange -> give missing Percentille
     aPlayers[Cur.Player].RBTarget := aPlayers[Cur.Player].RBTarget +
                                      (Cur.ScoreDiff - Cur.ScoreGiven) / Cur.ScoreDiff
                                      * (Cur.Rating / 20 - 0.26);
   end
   else
-  begin //Popup w/o scorechange -> give complete percentage
+  begin //Popup w/o scorechange -> give complete Percentille
     aPlayers[Cur.Player].RBTarget := aPlayers[Cur.Player].RBTarget +
                                      (Cur.Rating / 20 - 0.26);
   end;
@@ -664,6 +664,7 @@ var
   CurTime:  Cardinal;
   X, Y, W, H, Alpha: Real;
   FontSize: Byte;
+  FontOffset: Real;
   TimeDiff: Cardinal;
   PIndex:   Byte;
   TextLen:  Real;
@@ -704,7 +705,8 @@ begin
           X := Positions[PIndex].PUStartX + (Positions[PIndex].PUW - W)/2;
           Y := Positions[PIndex].PUStartY + (Positions[PIndex].PUH - H)/2;
 
-          FontSize := Round(Progress * Positions[PIndex].PUFontSize);
+          FontSize   := Round(Progress * Positions[PIndex].PUFontSize);
+          FontOffset := H / 2 - FontSize;
           Alpha := 1;
         end
 
@@ -726,7 +728,8 @@ begin
             PosDiff := PosDiff + Positions[PIndex].BGH;
           Y := Positions[PIndex].PUStartY + PosDiff * sqr(Progress);
 
-          FontSize := Positions[PIndex].PUFontSize;
+          FontSize   := Positions[PIndex].PUFontSize;
+          FontOffset := H / 2 - FontSize;
           Alpha := 1 - 0.3 * Progress;
         end
 
@@ -772,7 +775,8 @@ begin
               PosDiff := 0;
             Y := Positions[PIndex].PUTargetY - PosDiff * (1-Progress);
 
-            FontSize := Positions[PIndex].PUFontSize;
+            FontSize   := Positions[PIndex].PUFontSize;
+            FontOffset := H / 2 - FontSize;
           end
           else
           begin
@@ -816,7 +820,7 @@ begin
           TextLen := glTextWidth(PChar(Theme.Sing.LineBonusText[PopUp.Rating]));
 
           //Color and Pos
-          SetFontPos (X + (W - TextLen) / 2, Y + 12);
+          SetFontPos (X + (W - TextLen) / 2, Y + FontOffset{12});
           glColor4f(1, 1, 1, Alpha);
 
           //Draw
