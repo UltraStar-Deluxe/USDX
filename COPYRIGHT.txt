@@ -14,6 +14,9 @@ Tobias Gunkel "tobigun"
 Karl-Michael Schindler "mischi"
 Philipp Steinhardt "whiteshark"
 
+Based on UltraStar written by:
+"Corvus5"
+
 Patches contributed by:
 "d0ccrazy"
 "elBandito07"
