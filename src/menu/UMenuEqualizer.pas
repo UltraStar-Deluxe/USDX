@@ -194,9 +194,12 @@ procedure Tms_Equalizer.Draw;
     I, J: Integer;
     Diff: Real;
 
-  Function GetAlpha(H: Single): Single;
+  Function GetAlpha(Diff: Single): Single;
   begin
-    Result := (Alpha * 0.3) *(1 - H/(Bands * (W + Space)));
+    If Direction then
+      Result := (Alpha * 0.6) *(0.5 - Diff/(BandLength * (H + Space)))
+    else
+      Result := (Alpha * 0.6) *(0.5 - Diff/(Bands * (H + Space)));
   end;
 begin
   If (Visible) AND not (AudioPlayback.Finished) then
@@ -241,7 +244,7 @@ begin
           glVertex3f(PosX+W, PosY, Z);
         glEnd;
 
-        If (Reflection) AND (J < BandLength div 2) then
+        If (Reflection) AND (J <= BandLength div 2) then
         begin
           Diff := (Y-PosY) + H;
 
@@ -251,10 +254,14 @@ begin
             glBegin(GL_QUADS);
               glColorRGB(Color, GetAlpha(Diff));
               glVertex3f(PosX, Diff + Y + ReflectionSpacing, Z);
+
+              //bottom v
+              glColorRGB(Color, GetAlpha(Diff + H));
               glVertex3f(PosX, Diff + Y+H + ReflectionSpacing, Z);
               glVertex3f(PosX+W, Diff + Y+H + ReflectionSpacing, Z);
+
+              glColorRGB(Color, GetAlpha(Diff));
               glVertex3f(PosX+W, Diff + Y + ReflectionSpacing, Z);
-              glColorRGB(Color, GetAlpha(Diff + H));
             glEnd;
           end
           else
