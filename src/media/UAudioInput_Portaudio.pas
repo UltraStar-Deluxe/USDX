@@ -33,7 +33,6 @@ interface
 
 {$I ../switches.inc}
 
-
 uses
   Classes,
   SysUtils,
