@@ -1,3 +1,5 @@
+If you are using fink to install ffmpeg and friends, 
+you can skip the rest of this notes.
 
 How to download an build ffmpeg for UltraStar Deluxe on Mac OS X:
 
@@ -18,6 +20,5 @@ svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg
    lib/ffmpeg dir:
 
 ./copy_and_patch_dylibs.sh
-
 
 You're done.
