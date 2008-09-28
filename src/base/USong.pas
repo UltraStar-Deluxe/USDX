@@ -129,6 +129,8 @@ type
     Mult    : integer;
     MultBPM : integer;
 
+    LastError: String;
+
     constructor Create  (); overload;
     constructor Create  ( const aFileName : WideString ); overload;
     function    LoadSong: boolean;
@@ -158,6 +160,8 @@ begin
   Mult    := 1;
   MultBPM := 4;
   fFileName := aFileName;
+
+  LastError := '';
 
   if fileexists( aFileName ) then
   begin
@@ -195,9 +199,11 @@ var
 
 begin
   Result := false;
+  LastError := '';
 
   if not FileExists(Path + PathDelim + FileName) then
   begin
+    LastError := 'File not found';
     Log.LogError('File not found: "' + Path + PathDelim + FileName + '"', 'TSong.LoadSong()');
     exit;
   end;
@@ -240,7 +246,7 @@ begin
       begin //Song File Corrupted - No Notes
         CloseFile(SongFile);
         Log.LogError('Could not load txt File, no Notes found: ' + FileName);
-        Result := False;
+        LastError := 'Can''t find any notes';
         Exit;
       end;
       Read(SongFile, TempC);
@@ -361,6 +367,16 @@ begin
     end;
 
     CloseFile(SongFile);
+
+    For I := 0 to High(Lines) do
+    begin
+      If ((Both) or (I = 0)) AND (Length(Lines[I].Line) < 2) then
+      begin
+        LastError := 'Can''t find any linebreaks';
+        Log.LogError('Error Loading File, Can''t find any Linebreaks: "' + fFileName + '"');
+        exit;
+      end;
+    end;
   except
     try
       CloseFile(SongFile);
@@ -368,6 +384,7 @@ begin
 
     end;
 
+    LastError := 'Error reading line ' + inttostr(FileLineNo);
     Log.LogError('Error Loading File: "' + fFileName + '" in Line ' + inttostr(FileLineNo));
     exit;
   end;

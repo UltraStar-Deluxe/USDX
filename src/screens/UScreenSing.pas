@@ -440,7 +440,10 @@ begin
     // select new song in party mode
     if ScreenSong.Mode = smPartyMode then
       ScreenSong.SelectRandomSong();
-    ScreenPopupError.ShowPopup(Language.Translate('ERROR_CORRUPT_SONG'));
+    if (Length(CurrentSong.LastError) > 0) then
+      ScreenPopupError.ShowPopup(Language.Translate('ERROR_CORRUPT_SONG') + '\n' + CurrentSong.LastError)
+    else
+      ScreenPopupError.ShowPopup(Language.Translate('ERROR_CORRUPT_SONG'));
     // FIXME: do we need this?
     CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
     Exit;
