@@ -233,9 +233,6 @@ begin
     if (self.FileName = '') then
       self.Filename := ExtractFileName(FileName);
 
-    Result := False;
-
-    Reset(SongFile);
     FileLineNo := 0;
     //Search for Note Begining
     repeat
@@ -292,9 +289,9 @@ begin
            ParseNote(1, TempC, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
          end;
         end; //Zeronote check
-      end; // if
+      end // if
 
-      if TempC = '-' then
+      Else if TempC = '-' then
       begin
         // reads sentence
         Read(SongFile, Param1);
@@ -309,9 +306,9 @@ begin
           NewSentence(0, (Param1 + Rel[0]) * Mult, Param2);
           NewSentence(1, (Param1 + Rel[1]) * Mult, Param2);
         end;
-      end; // if
+      end // if
 
-      if TempC = 'B' then
+      Else if TempC = 'B' then
       begin
         SetLength(self.BPM, Length(self.BPM) + 1);
         Read(SongFile, self.BPM[High(self.BPM)].StartBeat);
@@ -342,7 +339,7 @@ begin
       else
       begin
         for Count := 0 to High(Lines) do
-	begin
+	      begin
           Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
           Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
           //Total Notes Patch
@@ -357,25 +354,39 @@ begin
           //Total Notes Patch End
         end;
       end;
+      ReadLn(SongFile); //Jump to next line in File, otherwise the next Read would catch the linebreak(e.g. #13 #10 on win32) 
+
       Read(SongFile, TempC);
       Inc(FileLineNo);
     end; // while}
-
-    for Count := 0 to High(Lines) do
-    begin
-      Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
-    end;
 
     CloseFile(SongFile);
 
     For I := 0 to High(Lines) do
     begin
-      If ((Both) or (I = 0)) AND (Length(Lines[I].Line) < 2) then
+      If ((Both) or (I = 0)) then
       begin
-        LastError := 'Can''t find any linebreaks';
-        Log.LogError('Error Loading File, Can''t find any Linebreaks: "' + fFileName + '"');
-        exit;
+        If (Length(Lines[I].Line) < 2) then
+        begin
+          LastError := 'Can''t find any linebreaks';
+          Log.LogError('Error Loading File, Can''t find any Linebreaks: "' + fFileName + '"');
+          exit;
+        end;
+
+        If (Lines[I].Line[Lines[I].High].HighNote < 0) then
+        begin
+          SetLength(Lines[I].Line, Lines[I].Number - 1);
+          Lines[I].High := Lines[I].High - 1;
+          Lines[I].Number := Lines[I].Number - 1;
+          Log.LogError('Error loading Song, sentence w/o note found in last line before E: ' + Filename);
+        end;
       end;
+    end;
+
+    for Count := 0 to High(Lines) do
+    begin
+      If (High(Lines[Count].Line) >= 0) then
+        Lines[Count].Line[High(Lines[Count].Line)].LastLine := True;
     end;
   except
     try
@@ -414,6 +425,7 @@ var
   
 begin
   Result := false;
+  LastError := '';
 
   if not FileExists(Path + PathDelim + FileName) then
   begin
@@ -936,7 +948,7 @@ begin
       ':':  Note[HighNote].NoteType := ntNormal;
       '*':  Note[HighNote].NoteType := ntGolden;
     end;
-    
+
     if (Note[HighNote].NoteType = ntGolden) then
       Lines[LineNumber].ScoreValue := Lines[LineNumber].ScoreValue + Note[HighNote].Length;
     
@@ -960,27 +972,35 @@ var
 
 begin
 
-  // stara czesc //Alter Satz //Update Old Part
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := Base[LineNumberP];
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(PChar(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric));
+  If (Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote  <> -1) then
+  begin //Update old Sentence if it has notes and create a new sentence
+    // stara czesc //Alter Satz //Update Old Part
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := Base[LineNumberP];
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(PChar(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric));
 
-  //Total Notes Patch
-  Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
-  for I := low(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) to high(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) do
-  begin
-    if (Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType = ntGolden) then
-      Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length;
-    
-    if (Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType <> ntFreestyle) then
-      Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length;
+    //Total Notes Patch
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
+    for I := low(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) to high(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) do
+    begin
+      if (Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType = ntGolden) then
+        Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length;
+
+      if (Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType <> ntFreestyle) then
+        Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length;
+    end;
+    //Total Notes Patch End
+
+
+    // nowa czesc //Neuer Satz //Update New Part
+    SetLength(Lines[LineNumberP].Line, Lines[LineNumberP].Number + 1);
+    Lines[LineNumberP].High := Lines[LineNumberP].High + 1;
+    Lines[LineNumberP].Number := Lines[LineNumberP].Number + 1;
+  end
+  else
+  begin //Use old Sentence if it has no notes
+    Log.LogError('Error loading Song, sentence w/o note found in line ' + InttoStr(FileLineNo) + ': ' + Filename);
   end;
-  //Total Notes Patch End
 
-
-  // nowa czesc //Neuer Satz //Update New Part
-  SetLength(Lines[LineNumberP].Line, Lines[LineNumberP].Number + 1);
-  Lines[LineNumberP].High := Lines[LineNumberP].High + 1;
-  Lines[LineNumberP].Number := Lines[LineNumberP].Number + 1;
   Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote := -1;
 
   if self.Relative then
