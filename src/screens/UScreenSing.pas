@@ -844,6 +844,9 @@ begin
 
   // to prevent drawing closed video
   VideoLoaded := False;
+
+  //Kill all Stars and Effects
+  GoldenRec.KillAll;
   
   if (Ini.SavePlayback = 1) then
   begin

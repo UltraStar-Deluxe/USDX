@@ -1013,13 +1013,18 @@ procedure ClearScores(PlayerNum: integer);
 begin
   with Player[PlayerNum] do
   begin
-    Score := 0;
-    ScoreInt := 0;
-    ScoreLine := 0;
-    ScoreLineInt := 0;
-    ScoreGolden := 0;
-    ScoreGoldenInt := 0;
+    Score         := 0;
+    ScoreLine     := 0;
+    ScoreGolden   := 0;
+
+    ScoreInt      := 0;
+    ScoreLineInt  := 0;
+    ScoreGoldenInt:= 0;
     ScoreTotalInt := 0;
+
+    ScoreLast     := 0;
+
+    LastSentencePerfect := False;
   end;
 end;
 
