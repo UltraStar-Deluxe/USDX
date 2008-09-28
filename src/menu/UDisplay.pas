@@ -336,6 +336,10 @@ begin
 
   GetMem(ScreenData, RowSize * ScreenH);
   glReadPixels(0, 0, ScreenW, ScreenH, GL_RGB, GL_UNSIGNED_BYTE, ScreenData);
+// on big endian machines (powerpc) this may need to be changed to
+// Needs to be tests. KaMiSchi Sept 2008
+// in this case one may have to add " glext, " to the list of used units
+//  glReadPixels(0, 0, ScreenW, ScreenH, GL_BGR, GL_UNSIGNED_BYTE, ScreenData);
   Surface := SDL_CreateRGBSurfaceFrom(
       ScreenData, ScreenW, ScreenH, 24, RowSize,
       $0000FF, $00FF00, $FF0000, 0);

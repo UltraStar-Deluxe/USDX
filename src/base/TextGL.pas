@@ -474,6 +474,9 @@ begin
   glBindTexture(GL_TEXTURE_2D, texture);
 
   glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, intermediary.pixels);
+// on big endian machines (powerpc) this may need to be changed to
+// Needs to be tests. KaMiSchi Sept 2008
+//  glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, intermediary.pixels);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
