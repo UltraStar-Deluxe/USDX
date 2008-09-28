@@ -14,7 +14,6 @@
   {$DEFINE HasInline}
 {$ELSE}
   {$DEFINE Delphi}
-  {$DEFINE FPC_LITTLE_ENDIAN}
 
   // Delphi version numbers (ignore versions released before Delphi 6 as they miss the $IF directive):
   // Delphi 6 (VER140), Delphi 7 (VER150), Delphi 8 (VER160)

@@ -319,18 +319,18 @@ begin
   if (Typ = TEXTURE_TYPE_TRANSPARENT) or
      (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
-    {$IFDEF FPC_LITTLE_ENDIAN}
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ELSE}
+    {$IFDEF FPC_BIG_ENDIAN}
     glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, TexSurface.pixels);
+    {$ELSE}
+    glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
     {$ENDIF}
   end
   else //if Typ = TEXTURE_TYPE_PLAIN then
   begin
-    {$IFDEF FPC_LITTLE_ENDIAN}
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ELSE}
+    {$IFDEF FPC_BIG_ENDIAN}
     glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, TexSurface.pixels);
+    {$ELSE}
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
     {$ENDIF}
   end;
 
@@ -441,10 +441,10 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  {$IFDEF FPC_LITTLE_ENDIAN}
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
-  {$ELSE}
+  {$IFDEF FPC_BIG_ENDIAN}
   glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_BGR, GL_UNSIGNED_BYTE, Data);
+  {$ELSE}
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
   {$ENDIF}
   
   {
