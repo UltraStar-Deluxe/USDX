@@ -1,0 +1,425 @@
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; UltraStar Deluxe Installer - Version 1.1: Main
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+!include MUI2.nsh
+!include "WinVer.nsh"
+!include "LogicLib.nsh"
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Variables
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+; Installer Paths:
+
+!define path_settings ".\settings"
+!define path_languages ".\languages"
+!define path_images "..\installerdependencies\images"
+!define path_plugins "..\installerdependencies\plugins"
+!define path_gdf "..\installerdependencies\gdf"
+
+!addPluginDir "${path_plugins}\"
+
+!include "${path_settings}\variables.nsh"
+!include "${path_settings}\GameExplorer.nsh"
+!include "${path_settings}\functions.nsh"
+
+
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Export Settings
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+SetCompress Auto
+SetCompressor /SOLID lzma
+SetCompressorDictSize 32
+SetDatablockOptimize On
+
+Name "${name} V.${version}"
+Brandingtext "${name} Installation"
+OutFile "ultrastardx-${version}-installer-full.exe"
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Interface Settings
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+; Icons:
+
+!define MUI_ICON "${path_images}\${img_install}"
+!define MUI_UNICON "${path_images}\${img_uninstall}"
+
+; Header and Side Images:
+
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "${path_images}\${img_header}"
+!define MUI_HEADERIMAGE_UNBITMAP "${path_images}\${img_header}"
+
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${path_images}\${img_side}"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "${path_images}\${img_side}"
+
+; Settings:
+
+
+; Abort Warnings:
+
+!define MUI_ABORTWARNING
+!define MUI_ABORTWARNING_TEXT "$(abort_install)"
+!define MUI_ABORTWARNING_CANCEL_DEFAULT
+
+!define MUI_UNABORTWARNING
+!define MUI_UNABORTWARNING_TEXT "$(abort_uninstall)"
+!define MUI_UNABORTWARNING_CANCEL_DEFAULT
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Pages Installation Routine Settings
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+; License Page:
+
+!define MUI_LICENSEPAGE_RADIOBUTTONS
+
+; Components Page:
+
+!define MUI_COMPONENTSPAGE_SMALLDESC
+!define MUI_COMPONENTSPAGE_TEXT_DESCRIPTION_INFO $(page_components_info)
+
+; Finish Pages:
+
+!define MUI_FINISHPAGE_TITLE_3LINES
+
+!define MUI_FINISHPAGE_TEXT_LARGE
+!define MUI_FINISHPAGE_TEXT "$(page_finish_txt)"
+
+!define MUI_FINISHPAGE_RUN "$INSTDIR\${exe}.exe"
+!define MUI_FINISHPAGE_RUN_NOTCHECKED
+
+!define MUI_FINISHPAGE_LINK "$(page_finish_linktxt)"
+!define MUI_FINISHPAGE_LINK_LOCATION "${homepage}"
+
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_UNFINISHPAGE_NOAUTOCLOSE
+
+!define MUI_FINISHPAGE_NOREBOOTSUPPORT
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Pages Installation Routine
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "${license}"
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+
+; Start menu page
+
+var ICONS_GROUP
+!define MUI_STARTMENUPAGE_NODISABLE
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "${name}"
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
+!insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
+
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Pages UnInstallation Routine
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Sections Installation Routine
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+;------------------------------------
+; MAIN COMPONENTS (Section 1)
+;------------------------------------
+
+Section $(name_section1) Section1
+	SectionIn RO
+	SetOutPath $INSTDIR
+	SetOverwrite try
+
+!include "${path_settings}\files_main_install.nsh"
+
+
+; Create Shortcuts:
+
+SetOutPath "$INSTDIR"
+
+!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+
+  SetShellVarContext all
+  SetOutPath "$INSTDIR"
+
+  CreateDirectory "${name}"
+  CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\${name}.lnk" "$INSTDIR\${exe}.exe"
+; CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_documentation).lnk" "$INSTDIR\documentation.pdf"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_website).lnk" "http://www.ultrastardeluxe.org/"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_readme).lnk" "$INSTDIR\ReadMe.txt"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_license).lnk" "$INSTDIR\License.txt"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_uninstall).lnk" "$INSTDIR\Uninstall.exe"
+  !insertmacro MUI_STARTMENU_WRITE_END
+
+; Vista Game Explorer:
+
+${If} ${AtLeastWinVista}
+
+${GameExplorer_GenerateGUID}
+Pop $0
+
+${GameExplorer_AddGame} all "${path_gdf}" $WINDIR $INSTDIR\${exe}.exe $0
+
+CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\1
+CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\1\Benchmark.lnk" \
+  "$INSTDIR\${exe}.exe" "-Benchmark"
+
+CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\2
+CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\2\Joypad.lnk" \
+  "$INSTDIR\${exe}.exe" "-Joypad"
+
+CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3
+CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3\Fullscreen.lnk" \
+  "$INSTDIR\${exe}.exe" "-FullScreen"
+
+CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3
+CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3\Dual Screen.lnk" \
+  "$INSTDIR\${exe}.exe" "-Screen 2"
+
+CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\SupportTasks\0
+CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\SupportTasks\0\Support Forum.lnk" \
+  "http://forum.ultrastardeluxe.org"
+
+${EndIf}
+
+; Create Uninstaller:
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${p_name}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\Uninstall.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+;------------------------------------
+; OPTIONAL SONGS (Section 2)
+;------------------------------------
+
+SectionGroup $(name_section2) Section2
+
+;
+; Dead Smiling Pirates - I 18
+; 
+
+Section /o "Dead Smiling Pirates - I 18" g2Section1
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR"
+   CreateDirectory "$INSTDIR\Songs\Dead Smiling Pirates - I 18"
+   SetOutPath "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_song1} $TEMP\Song-I-18.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-I-18.zip" "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
+
+  Delete "$TEMP\Song-I-18.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+;
+; Steven Dunston - Northern Star
+; 
+
+Section /o "Joshua Morin - On the run" g2Section2
+;  AddSize 2200
+   SetOverwrite try
+   SetOutPath "$INSTDIR"
+   CreateDirectory "$INSTDIR\Songs\Joshua Morin - On the run"
+   SetOutPath "$INSTDIR\Songs\Joshua Morin - On the run\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_song3} $TEMP\Song-On-the-run.zip
+
+  Pop $R0 ;Get the return value
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-On-the-run.zip" "$INSTDIR\Songs\Joshua Morin - On the run\"
+
+  Delete "$TEMP\Song-On-the-run.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Pornophonique - Space Invaders" g2Section3
+;  AddSize 2200
+   SetOverwrite try
+   SetOutPath "$INSTDIR"
+   CreateDirectory "$INSTDIR\Songs\Pornophonique - Space Invaders"
+   SetOutPath "$INSTDIR\Songs\Pornophonique - Space Invaders\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_song3} $TEMP\Song-Space-Invaders.zip
+
+  Pop $R0 ;Get the return value
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-Space-Invaders.zip" "$INSTDIR\Songs\Pornophonique - Space Invaders\"
+
+  Delete "$TEMP\Song-Space-Invaders.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Steven Dunston - Northern Star" g2Section4
+;  AddSize 1500
+   SetOverwrite try
+   SetOutPath "$INSTDIR"
+   CreateDirectory "$INSTDIR\Songs\Steven Dunston - Northern Star"
+   SetOutPath "$INSTDIR\Songs\Steven Dunston - Northern Star\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_song2} $TEMP\Song-Northern-Star.zip
+
+  Pop $R0 ;Get the return value
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-Northern-Star.zip" "$INSTDIR\Songs\Steven Dunston - Northern Star\"
+
+  Delete "$TEMP\Song-Northern-Star.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+SectionGroupEnd
+
+;------------------------------------
+; OPTIONAL THEMES (Section 3)
+;------------------------------------
+
+SectionGroup $(name_section3) Section3
+
+ Section "Orange" g3Section1
+;  AddSize 700
+
+; Download theme orange:
+  NSISdl::download /TIMEOUT=30000 ${download_theme1} $TEMP\Theme-Orange.zip
+
+  Pop $R0 ;Get the return value
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Theme-Orange.zip" "$INSTDIR\"
+
+  Delete "$TEMP\Theme-Orange.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+ Section "Streetlight" g3Section2
+;  AddSize 1000
+
+; Download theme Streetlight:
+  NSISdl::download /TIMEOUT=30000 ${download_theme2} $TEMP\Theme-Streetlight.zip
+
+  Pop $R0 ;Get the return value
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Theme-Streetlight.zip" "$INSTDIR\"
+
+  Delete "$TEMP\Theme-Streetlight.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+ Section "Vistar" g3Section3
+;   AddSize 1000
+
+; Download theme Vistar:
+
+  NSISdl::download /TIMEOUT=30000 ${download_theme3} $TEMP\Theme-Vistar.zip
+
+  Pop $R0 ;Get the return value
+   StrCmp $R0 "success" dlok
+     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Theme-Vistar.zip" "$INSTDIR\"
+
+  Delete "$TEMP\Theme-Vistar.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+SectionGroupEnd
+
+;------------------------------------
+; UNINSTALL (Section 4)
+;------------------------------------
+
+Section Uninstall
+
+ !insertmacro MUI_STARTMENU_GETFOLDER "Application" $ICONS_GROUP
+
+ !include "${path_settings}\files_opt_uninstall.nsh"
+ !include "${path_settings}\files_main_uninstall.nsh"
+
+ DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+
+; Unregister from Windows Vista Game Explorer
+
+${If} ${AtLeastWinVista}
+
+${GameExplorer_RemoveGame} $0
+
+${EndIf}
+
+SectionEnd
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Language Support
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+!insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "German"
+
+!include "${path_languages}\English.nsh"
+!include "${path_languages}\German.nsh"
+
+Function .onInit
+
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+FunctionEnd
+
+Function un.onInit
+
+  !insertmacro MUI_LANGDLL_DISPLAY
+
+FunctionEnd
