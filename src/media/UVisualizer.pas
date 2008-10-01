@@ -90,6 +90,10 @@ const
 {$IFEND}
 
 type
+  TGLMatrix = array[0..3, 0..3] of GLdouble;
+  TGLMatrixStack = array of TGLMatrix;
+
+type
   TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
     private
       pm: TProjectM;
@@ -103,8 +107,9 @@ type
       PCMData: TPCMData;
       RndPCMcount: integer;
 
-      ProjMatrix: array[0..3, 0..3] of GLdouble;
-      TexMatrix:  array[0..3, 0..3] of GLdouble;
+      ModelviewMatrixStack: TGLMatrixStack;
+      ProjectionMatrixStack: TGLMatrixStack;
+      TextureMatrixStack:  TGLMatrixStack;
 
       procedure VisualizerStart;
       procedure VisualizerStop;
@@ -113,6 +118,9 @@ type
 
       function  GetRandomPCMData(var Data: TPCMData): Cardinal;
 
+      function GetMatrixStackDepth(MatrixMode: GLenum): GLint;
+      procedure SaveMatrixStack(MatrixMode: GLenum; var MatrixStack: TGLMatrixStack);
+      procedure RestoreMatrixStack(MatrixMode: GLenum; var MatrixStack: TGLMatrixStack);
       procedure SaveOpenGLState();
       procedure RestoreOpenGLState();
 
@@ -212,6 +220,100 @@ begin
 end;
 
 {**
+ * Returns the stack depth of the given OpenGL matrix mode stack.
+ *}
+function TVideoPlayback_ProjectM.GetMatrixStackDepth(MatrixMode: GLenum): GLint;
+begin
+  // get number of matrices on stack
+  case (MatrixMode) of
+    GL_PROJECTION:
+      glGetIntegerv(GL_PROJECTION_STACK_DEPTH, @Result);
+    GL_MODELVIEW:
+      glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, @Result);
+    GL_TEXTURE:
+      glGetIntegerv(GL_TEXTURE_STACK_DEPTH, @Result);
+  end;
+end;
+
+{**
+ * Saves the current matrix stack using MatrixMode
+ * (one of GL_PROJECTION/GL_TEXTURE/GL_MODELVIEW)
+ *
+ * Use this function instead of just saving the current matrix with glPushMatrix().
+ * OpenGL specifies the depth of the GL_PROJECTION and GL_TEXTURE stacks to be
+ * at least 2 but projectM already uses 2 stack-entries so overflows might be
+ * possible on older hardware.
+ * In contrast to this the GL_MODELVIEW stack-size is at least 32, but this
+ * function should be used for the modelview stack too. We cannot rely on a
+ * proper stack management of the underlying visualizer (projectM).
+ * For example in the projectM versions 1.0 - 1.01 the modelview- and
+ * projection-matrices were popped without being pushed first.
+ *
+ * By saving the whole stack we are on the safe side, so a nasty bug in the
+ * visualizer does not corrupt USDX.
+ *}
+procedure TVideoPlayback_ProjectM.SaveMatrixStack(MatrixMode: GLenum;
+                var MatrixStack: TGLMatrixStack);
+var
+  I: integer;
+  StackDepth: GLint;
+begin
+  glMatrixMode(MatrixMode);
+
+  StackDepth := GetMatrixStackDepth(MatrixMode);
+  SetLength(MatrixStack, StackDepth);
+
+  // save current matrix stack
+  for I := StackDepth-1 downto 0 do
+  begin
+    // save current matrix
+    case (MatrixMode) of
+      GL_PROJECTION:
+        glGetDoublev(GL_PROJECTION_MATRIX, @MatrixStack[I]);
+      GL_MODELVIEW:
+        glGetDoublev(GL_MODELVIEW_MATRIX, @MatrixStack[I]);
+      GL_TEXTURE:
+        glGetDoublev(GL_TEXTURE_MATRIX, @MatrixStack[I]);
+    end;
+
+    // remove matrix from stack
+    if (I > 0) then
+      glPopMatrix();
+  end;
+
+  // reset default (first) matrix
+  glLoadIdentity();
+end;
+
+{**
+ * Restores the OpenGL matrix stack stored with SaveMatrixStack.
+ *}
+procedure TVideoPlayback_ProjectM.RestoreMatrixStack(MatrixMode: GLenum;
+                var MatrixStack: TGLMatrixStack);
+var
+  I: integer;
+  StackDepth: GLint;
+begin
+  glMatrixMode(MatrixMode);
+
+  StackDepth := GetMatrixStackDepth(MatrixMode);
+  // remove all (except the first) matrices from current stack
+  for I := 1 to StackDepth-1 do
+    glPopMatrix();
+
+  // rebuild stack
+  for I := 0 to High(MatrixStack) do
+  begin
+    glLoadMatrixd(@MatrixStack[I]);
+    if (I < High(MatrixStack)) then
+      glPushMatrix();
+  end;
+
+  // clean stored stack
+  SetLength(MatrixStack, 0);
+end;
+
+{**
  * Saves the current OpenGL state.
  * This is necessary to prevent projectM from corrupting USDX's current
  * OpenGL state.
@@ -226,32 +328,14 @@ procedure TVideoPlayback_ProjectM.SaveOpenGLState();
 begin
   // save all OpenGL state-machine attributes
   glPushAttrib(GL_ALL_ATTRIB_BITS);
+  glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
-  // Note: we do not use glPushMatrix() for the GL_PROJECTION and GL_TEXTURE stacks.
-  //   OpenGL specifies the depth of those stacks to be at least 2 but projectM
-  //   already uses 2 stack-entries so overflows might be possible on older hardware.
-  //   In contrast to this the GL_MODELVIEW stack-size is at least 32, so we can
-  //   use glPushMatrix() for this stack.
+  SaveMatrixStack(GL_PROJECTION, ProjectionMatrixStack);
+  writeln(ProjectionMatrixStack[0][0][0]);
+  SaveMatrixStack(GL_MODELVIEW, ModelviewMatrixStack);
+  SaveMatrixStack(GL_TEXTURE, TextureMatrixStack);
 
-  // save projection-matrix
-  glMatrixMode(GL_PROJECTION);
-  glGetDoublev(GL_PROJECTION_MATRIX, @ProjMatrix);
-  {$IF PROJECTM_VERSION = 1000000} // 1.0, 1.01
-  // bugfix: projection-matrix is popped without being pushed first
-  glPushMatrix();
-  {$IFEND}
-
-  // save texture-matrix
-  glMatrixMode(GL_TEXTURE);
-  glGetDoublev(GL_TEXTURE_MATRIX, @TexMatrix);
-
-  // save modelview-matrix
   glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  {$IF PROJECTM_VERSION = 1000000} // 1.0, 1.01
-  // bugfix: modelview-matrix is popped without being pushed first
-  glPushMatrix();
-  {$IFEND}
 
   // reset OpenGL error-state
   glGetError();
@@ -266,19 +350,14 @@ begin
   // reset OpenGL error-state
   glGetError();
 
-  // restore projection-matrix
-  glMatrixMode(GL_PROJECTION);
-  glLoadMatrixd(@ProjMatrix);
-
-  // restore texture-matrix
-  glMatrixMode(GL_TEXTURE);
-  glLoadMatrixd(@TexMatrix);
-
-  // restore modelview-matrix
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
+  // restore matrix stacks
+  RestoreMatrixStack(GL_PROJECTION, ProjectionMatrixStack);
+  RestoreMatrixStack(GL_MODELVIEW, ModelviewMatrixStack);
+  RestoreMatrixStack(GL_TEXTURE, TextureMatrixStack);
 
   // restore all OpenGL state-machine attributes
+  // (also restores the matrix mode)
+  glPopClientAttrib();
   glPopAttrib();
 end;
 
@@ -343,7 +422,6 @@ end;
 procedure TVideoPlayback_ProjectM.GetFrame(Time: Extended);
 var
   nSamples: cardinal;
-  stackDepth: Integer;
 begin
   if not VisualizerStarted then
     Exit;
