@@ -26,7 +26,7 @@
 
 (*
  * Conversion of libavutil/mathematics.h
- * revision 12498, Wed Mar 19 06:17:43 2008 UTC
+ * revision 15120, Sun Aug 31 07:39:47 2008 UTC 
  *)
 
 unit mathematics;
@@ -45,6 +45,13 @@ uses
   ctypes,
   rational,
   UConfig;
+
+const
+  M_E          = 2.7182818284590452354;   // e
+  M_LN2        = 0.69314718055994530942;  // log_e 2
+  M_LN10       = 2.30258509299404568402;  // log_e 10
+  M_PI         = 3.14159265358979323846;  // pi
+  M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
 
 type
   TAVRounding = (

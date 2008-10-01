@@ -156,9 +156,9 @@ type
     asfU16LSB, asfS16LSB, // unsigned/signed 16 bits (endianness: LSB)
     asfU16MSB, asfS16MSB, // unsigned/signed 16 bits (endianness: MSB)
     asfU16, asfS16,       // unsigned/signed 16 bits (endianness: System)
-    asfS24,               // signed 24 bits (endianness: System)
     asfS32,               // signed 32 bits (endianness: System)
-    asfFloat              // float
+    asfFloat,             // float
+    asfDouble             // double
   );
 
 const

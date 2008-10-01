@@ -27,7 +27,7 @@
 
 (*
  * Conversion of libavformat/avio.h
- * revision 12658, Mon Mar 31 17:31:11 2008 UTC
+ * revision 15120, Sun Aug 31 07:39:47 2008 UTC 
  *)
 
 unit avio;
@@ -94,6 +94,7 @@ type
     priv_data: pointer;
     filename: PChar; (**< specified filename *)
   end;
+  PPURLContext = ^PURLContext;
 
   PURLPollEntry = ^TURLPollEntry;
   TURLPollEntry = record
@@ -163,6 +164,12 @@ type
     {$IFEND}
   end;
 
+
+{$IF LIBAVFORMAT_VERSION >= 52021000} // 52.21.0
+function url_open_protocol(puc: PPURLContext; up: PURLProtocol;
+                           filename: {const} PChar; flags: cint): cint;
+  cdecl; external av__format;
+{$IFEND}
 function url_open(h: PPointer; filename: {const} PChar; flags: cint): cint;
   cdecl; external av__format;
 function url_read (h: PURLContext; buf: PChar; size: cint): cint;

@@ -27,7 +27,7 @@
 
 (*
  * Conversion of libavutil/rational.h
- * revision 12498, Wed Mar 19 06:17:43 2008 UTC
+ * revision 15415, Thu Sep 25 19:23:13 2008 UTC 
  *)
 
 unit rational;
@@ -57,6 +57,9 @@ type
     num: cint; ///< numerator
     den: cint; ///< denominator
   end;
+
+  TAVRationalArray = array[0 .. (MaxInt div SizeOf(TAVRational))-1] of TAVRational;
+  PAVRationalArray = ^TAVRationalArray;
 
 (**
  * Compare two rationals.
@@ -130,6 +133,25 @@ function av_sub_q(b: TAVRational; c: TAVRational): TAVRational;
  *)
 function av_d2q(d: cdouble; max: cint): TAVRational;
   cdecl; external av__util; {av_const}
+
+{$IF LIBAVUTIL_VERSION >= 49011000} // 49.11.0
+
+(**
+ * @return 1 if \q1 is nearer to \p q than \p q2, -1 if \p q2 is nearer
+ * than \p q1, 0 if they have the same distance.
+ *)
+function av_nearer_q(q, q1, q2: TAVRational): cint;
+  cdecl; external av__util;
+
+(**
+ * Finds the nearest value in \p q_list to \p q.
+ * @param q_list an array of rationals terminated by {0, 0}
+ * @return the index of the nearest value found in the array
+ *)
+function av_find_nearest_q_idx(q: TAVRational; q_list: {const} PAVRationalArray): cint;
+  cdecl; external av__util;
+
+{$IFEND}
 
 implementation
 

@@ -23,7 +23,7 @@
 
 (*
  * Conversion of libswscale/swscale.h
- * revision 26183, Thu Mar 6 11:32:25 2008 UTC
+ * revision 27592, Fri Sep 12 21:46:53 2008 UTC 
  *)
  
 unit swscale;
@@ -50,7 +50,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBSWSCALE_MAX_VERSION_MAJOR   = 0;
-  LIBSWSCALE_MAX_VERSION_MINOR   = 5;
+  LIBSWSCALE_MAX_VERSION_MINOR   = 6;
   LIBSWSCALE_MAX_VERSION_RELEASE = 1;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -58,7 +58,7 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBSWSCALE_VERSION > LIBSWSCALE_MAX_VERSION)}
-  {$MESSAGE Warn 'Linked version of libswscale may be unsupported!'}
+  {$MESSAGE Error 'Linked version of libswscale is not yet supported!'}
 {$IFEND}
 
 type
@@ -68,6 +68,14 @@ type
   PCintArray = ^TCintArray;
   TPCuint8Array = array[0..0] of PCuint8;
   PPCuint8Array = ^TPCuint8Array;
+
+{$IF LIBSWSCALE_VERSION >= 000006001} // 0.6.1
+(**
+ * Returns the LIBSWSCALE_VERSION_INT constant.
+ *)
+function swscale_version(): cuint;
+  cdecl; external sw__scale;
+{$IFEND}
 
 const
   {* values for the flags, the stuff on the command line is different *}
@@ -97,6 +105,7 @@ const
   SWS_FULL_CHR_H_INP    = $4000;
   SWS_DIRECT_BGR        = $8000;
   SWS_ACCURATE_RND      = $40000;
+  SWS_BITEXACT          = $80000;
 
   SWS_CPU_CAPS_MMX      = $80000000;
   SWS_CPU_CAPS_MMX2     = $20000000;

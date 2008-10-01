@@ -27,7 +27,7 @@
 (*
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 51.63.0, revision 14666, Fri Aug 8 18:34:27 2008 UTC 
+ * Max. version: 52.0.0, revision 15448, Sun Sep 28 19:11:26 2008 UTC 
  *)
 
 unit avcodec;
@@ -58,8 +58,8 @@ uses
 
 const
   (* Max. supported version by this header *)
-  LIBAVCODEC_MAX_VERSION_MAJOR   = 51;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 63;
+  LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 0;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -80,7 +80,7 @@ const
 
 (* Check if linked version is supported *)
 {$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
-  {$MESSAGE Warn 'Linked version of libavcodec may be unsupported!'}
+  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
 {$IFEND}
 
 const
@@ -254,6 +254,9 @@ type
     CODEC_ID_PCM_S16LE_PLANAR,
     CODEC_ID_PCM_DVD,
     CODEC_ID_PCM_F32BE,
+    CODEC_ID_PCM_F32LE,
+    CODEC_ID_PCM_F64BE,
+    CODEC_ID_PCM_F64LE,
 
     //* various ADPCM codecs */
     CODEC_ID_ADPCM_IMA_QT= $11000,
@@ -345,6 +348,8 @@ type
     CODEC_ID_WMAPRO,
     CODEC_ID_WMALOSSLESS,
     CODEC_ID_ATRAC3P,
+    CODEC_ID_EAC3,
+    CODEC_ID_SIPR,
 
     //* subtitle codecs */
     CODEC_ID_DVD_SUBTITLE= $17000,
@@ -383,7 +388,6 @@ type
   );
 
 {**
- * currently unused, may be used if 24/32 bits samples ever supported */
  * all in native endian
  *}
 type
@@ -391,9 +395,9 @@ type
     SAMPLE_FMT_NONE = -1,
     SAMPLE_FMT_U8,              ///< unsigned 8 bits
     SAMPLE_FMT_S16,             ///< signed 16 bits
-    SAMPLE_FMT_S24,             ///< signed 24 bits
     SAMPLE_FMT_S32,             ///< signed 32 bits
     SAMPLE_FMT_FLT,             ///< float
+    SAMPLE_FMT_DBL,             ///< double
     SAMPLE_FMT_NB               ///< Number of sample formats. DO NOT USE if dynamically linking to libavcodec
   );
   _TSampleFormatArray = array [0 .. MaxInt div SizeOf(TSampleFormat)-1] of TSampleFormat;
@@ -826,10 +830,32 @@ type
      * - decoding: Set by libavcodec.
      *)
     ref_index: array [0..1] of PShortint;
+
+    {$IF LIBAVCODEC_VERSION >= 51068000} // 51.68.0
+    (**
+     * reordered opaque 64bit number (generally a PTS) from AVCodecContext.reordered_opaque
+     * output in AVFrame.reordered_opaque
+     * - encoding: unused
+     * - decoding: Read by user.
+     *)
+    reordered_opaque: cint64;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 51070000} // 51.70.0
+    (**
+     * Bits per sample/pixel of internal libavcodec pixel/sample format.
+     * This field is applicable only when sample_fmt is SAMPLE_FMT_S32.
+     * - encoding: set by user.
+     * - decoding: set by libavcodec.
+     *)
+    bits_per_raw_sample: cint;
+    {$IFEND}
   end;
 
 const
+  {$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
   DEFAULT_FRAME_RATE_BASE = 1001000;
+  {$IFEND}
 
   FF_ASPECT_EXTENDED = 15;
 
@@ -1370,12 +1396,12 @@ type
     b_quant_offset: cfloat;
 
     (**
-     * Error resilience; higher values will detect more errors but may
+     * Error recognization; higher values will detect more errors but may
      * misdetect some more or less valid parts as errors.
      * - encoding: unused
      * - decoding: Set by user.
      *)
-    error_resilience: cint;
+    error_recognition: cint;
 
     (**
      * Called at the beginning of each frame to get a buffer for it.
@@ -1596,7 +1622,7 @@ type
      * - encoding: Set by libavcodec.
      * - decoding: Set by user.
      *)
-     bits_per_sample: cint;
+     bits_per_coded_sample: cint;
 
     (**
      * prediction method (needed for huffyuv)
@@ -1607,6 +1633,7 @@ type
 
     (**
      * sample aspect ratio (0 if unknown)
+     * That is the width of a pixel divided by the height of the pixel.
      * Numerator and denominator must be relatively prime and smaller than 256 for some video standards.
      * - encoding: Set by user.
      * - decoding: Set by libavcodec.
@@ -2226,7 +2253,7 @@ type
     partitions: cint;
 
     (**
-     * direct MV prediction mode - 0 (none), 1 (spatial), 2 (temporal)
+     * direct MV prediction mode - 0 (none), 1 (spatial), 2 (temporal), 3 (auto)
      * - encoding: Set by user.
      * - decoding: unused
      *)
@@ -2338,6 +2365,16 @@ type
      * - decoding: Set by user.
      *)
     drc_scale: cfloat;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 51068000} // 51.68.0
+    (**
+     * opaque 64bit number (generally a PTS) that will be reordered and
+     * output in AVFrame.reordered_opaque
+     * - encoding: unused
+     * - decoding: Set by user.
+     *)
+    reordered_opaque: cint64;
     {$IFEND}
   end;
 
@@ -2607,9 +2644,15 @@ function avcodec_get_pix_fmt_loss (dst_pix_fmt: TAVPixelFormat; src_pix_fmt: TAV
  * @param[out] loss_ptr Combination of flags informing you what kind of losses will occur.
  * @return The best pixel format to convert to or -1 if none was found.
  *)
-function avcodec_find_best_pix_fmt (pix_fmt_mask: cint; src_pix_fmt: TAVPixelFormat;
+{$IF LIBAVCODEC_VERSION >= 52000000} // 52.0.0
+function avcodec_find_best_pix_fmt(pix_fmt_mask: cint64; src_pix_fmt: TAVPixelFormat;
                             has_alpha: cint; loss_ptr: PCint): cint;
   cdecl; external av__codec;
+{$ELSE}
+function avcodec_find_best_pix_fmt(pix_fmt_mask: cint; src_pix_fmt: TAVPixelFormat;
+                            has_alpha: cint; loss_ptr: PCint): cint;
+  cdecl; external av__codec;
+{$IFEND}
 
 {$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
 (**
@@ -2799,18 +2842,18 @@ procedure avcodec_align_dimensions(s: PAVCodecContext; width: PCint; height: PCi
  * @param[in] h Height of the picture.
  * @return Zero if valid, a negative value if invalid.
  *)
-function avcodec_check_dimensions (av_log_ctx: pointer; w: cuint; h: cuint): cint;
+function avcodec_check_dimensions(av_log_ctx: pointer; w: cuint; h: cuint): cint;
   cdecl; external av__codec;
 function avcodec_default_get_format(s: PAVCodecContext; fmt: {const} PAVPixelFormat): TAVPixelFormat;
   cdecl; external av__codec;
 
-function avcodec_thread_init (s: PAVCodecContext; thread_count: cint): cint;
+function avcodec_thread_init(s: PAVCodecContext; thread_count: cint): cint;
   cdecl; external av__codec;
-procedure avcodec_thread_free (s: PAVCodecContext);
+procedure avcodec_thread_free(s: PAVCodecContext);
   cdecl; external av__codec;
-function avcodec_thread_execute (s: PAVCodecContext; func: TExecuteFunc; arg: PPointer; var ret: cint; count: cint): cint;
+function avcodec_thread_execute(s: PAVCodecContext; func: TExecuteFunc; arg: PPointer; var ret: cint; count: cint): cint;
   cdecl; external av__codec;
-function avcodec_default_execute (s: PAVCodecContext; func: TExecuteFunc; arg: PPointer; var ret: cint; count: cint): cint;
+function avcodec_default_execute(s: PAVCodecContext; func: TExecuteFunc; arg: PPointer; var ret: cint; count: cint): cint;
   cdecl; external av__codec;
 //FIXME func typedef
 
@@ -2841,16 +2884,18 @@ function avcodec_default_execute (s: PAVCodecContext; func: TExecuteFunc; arg: P
  * @return zero on success, a negative value on error
  * @see avcodec_alloc_context, avcodec_find_decoder, avcodec_find_encoder
  *)
-function avcodec_open (avctx: PAVCodecContext; codec: PAVCodec): cint;
+function avcodec_open(avctx: PAVCodecContext; codec: PAVCodec): cint;
   cdecl; external av__codec;
 
+{$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
 (**
  * @deprecated Use avcodec_decode_audio2() instead.
  *)
-function avcodec_decode_audio (avctx: PAVCodecContext; samples: PSmallint;
+function avcodec_decode_audio(avctx: PAVCodecContext; samples: PSmallint;
                            var frame_size_ptr: cint;
                            buf: {const} pchar; buf_size: cint): cint;
   cdecl; external av__codec;
+{$IFEND}
 
 {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
 (**
@@ -2889,8 +2934,8 @@ function avcodec_decode_audio (avctx: PAVCodecContext; samples: PSmallint;
  * @return On error a negative value is returned, otherwise the number of bytes
  * used or zero if no frame could be decompressed.
  *)
-function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PSmallint;
-               var frame_size_ptr : cint;
+function avcodec_decode_audio2(avctx: PAVCodecContext; samples: PSmallint;
+               var frame_size_ptr: cint;
                buf: {const} pchar; buf_size: cint): cint;
   cdecl; external av__codec;
 {$IFEND}
@@ -2926,7 +2971,7 @@ function avcodec_decode_audio2(avctx : PAVCodecContext; samples : PSmallint;
  * @return On error a negative value is returned, otherwise the number of bytes
  * used or zero if no frame could be decompressed.
  *)
-function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
+function avcodec_decode_video(avctx: PAVCodecContext; picture: PAVFrame;
                        var got_picture_ptr: cint;
                        buf: {const} PChar; buf_size: cint): cint;
   cdecl; external av__codec;
@@ -2934,11 +2979,11 @@ function avcodec_decode_video (avctx: PAVCodecContext; picture: PAVFrame;
 (* Decode a subtitle message. Return -1 if error, otherwise return the
  * number of bytes used. If no subtitle could be decompressed,
  * got_sub_ptr is zero. Otherwise, the subtitle is stored in *sub. *)
-function avcodec_decode_subtitle (avctx: PAVCodecContext; sub: PAVSubtitle;
+function avcodec_decode_subtitle(avctx: PAVCodecContext; sub: PAVSubtitle;
                           var got_sub_ptr: cint;
                           buf: {const} pchar; buf_size: cint): cint;
   cdecl; external av__codec;
-function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
+function avcodec_parse_frame(avctx: PAVCodecContext; pdata: PPointer;
                       data_size_ptr: PCint;
                       buf: pchar; buf_size: cint): cint;
   cdecl; external av__codec;
@@ -2963,7 +3008,7 @@ function avcodec_parse_frame (avctx: PAVCodecContext; pdata: PPointer;
  * @return On error a negative value is returned, on success zero or the number
  * of bytes used to encode the data read from the input buffer.
  *)
-function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
+function avcodec_encode_audio(avctx: PAVCodecContext; buf: PByte;
                       buf_size: cint; samples: {const} PSmallint): cint;
   cdecl; external av__codec;
 
@@ -2982,26 +3027,26 @@ function avcodec_encode_audio (avctx: PAVCodecContext; buf: PByte;
  * @return On error a negative value is returned, on success zero or the number
  * of bytes used from the input buffer.
  *)
-function avcodec_encode_video (avctx: PAVCodecContext; buf: PByte;
+function avcodec_encode_video(avctx: PAVCodecContext; buf: PByte;
                       buf_size: cint; pict: PAVFrame): cint;
   cdecl; external av__codec;
-function avcodec_encode_subtitle (avctx: PAVCodecContext; buf: pchar;
+function avcodec_encode_subtitle(avctx: PAVCodecContext; buf: pchar;
                       buf_size: cint; sub: {const} PAVSubtitle): cint;
   cdecl; external av__codec;
 
-function avcodec_close (avctx: PAVCodecContext): cint;
+function avcodec_close(avctx: PAVCodecContext): cint;
   cdecl; external av__codec;
 
-procedure avcodec_register_all ();
+procedure avcodec_register_all();
   cdecl; external av__codec;
 
 (**
  * Flush buffers, should be called when seeking or when switching to a different stream.
  *)
-procedure avcodec_flush_buffers (avctx: PAVCodecContext);
+procedure avcodec_flush_buffers(avctx: PAVCodecContext);
   cdecl; external av__codec;
   
-procedure avcodec_default_free_buffers (s: PAVCodecContext);
+procedure avcodec_default_free_buffers(s: PAVCodecContext);
   cdecl; external av__codec;
 
 (* misc useful functions *)
@@ -3012,7 +3057,7 @@ procedure avcodec_default_free_buffers (s: PAVCodecContext);
  * @param[in] pict_type the picture type
  * @return A single character representing the picture type.
  *)
-function av_get_pict_type_char (pict_type: cint): char;
+function av_get_pict_type_char(pict_type: cint): char;
   cdecl; external av__codec;
 
 (**
@@ -3021,7 +3066,7 @@ function av_get_pict_type_char (pict_type: cint): char;
  * @param[in] codec_id the codec
  * @return Number of bits per sample or zero if unknown for the given codec.
  *)
-function av_get_bits_per_sample (codec_id: TCodecID): cint;
+function av_get_bits_per_sample(codec_id: TCodecID): cint;
   cdecl; external av__codec;
 
 {$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
@@ -3079,13 +3124,13 @@ type
   TAVCodecParser = record
     codec_ids: array [0..4] of cint; (* several codec IDs are permitted *)
     priv_data_size: cint;
-    parser_init: function (s: PAVCodecParserContext): cint; cdecl;
-    parser_parse: function (s: PAVCodecParserContext; avctx: PAVCodecContext;
+    parser_init: function(s: PAVCodecParserContext): cint; cdecl;
+    parser_parse: function(s: PAVCodecParserContext; avctx: PAVCodecContext;
                             poutbuf: {const} PPointer; poutbuf_size: PCint;
                             buf: {const} pchar; buf_size: cint): cint; cdecl;
-    parser_close: procedure (s: PAVCodecParserContext); cdecl;
-    split: function (avctx: PAVCodecContext; buf: {const} pchar;
-                     buf_size: cint): cint; cdecl;
+    parser_close: procedure(s: PAVCodecParserContext); cdecl;
+    split: function(avctx: PAVCodecContext; buf: {const} pchar;
+                    buf_size: cint): cint; cdecl;
     next: PAVCodecParser;
   end;
 
@@ -3102,24 +3147,24 @@ function av_parser_next(c: PAVCodecParser): PAVCodecParser;
   cdecl; external av__codec;
 {$IFEND}
 
-procedure av_register_codec_parser (parser: PAVCodecParser);
+procedure av_register_codec_parser(parser: PAVCodecParser);
   cdecl; external av__codec;
 
-function av_parser_init (codec_id: cint): PAVCodecParserContext;
+function av_parser_init(codec_id: cint): PAVCodecParserContext;
   cdecl; external av__codec;
 
-function av_parser_parse (s: PAVCodecParserContext;
+function av_parser_parse(s: PAVCodecParserContext;
                   avctx: PAVCodecContext;
                   poutbuf: PPointer; poutbuf_size: PCint;
                   buf: {const} pchar; buf_size: cint;
                   pts: cint64; dts: cint64): cint;
   cdecl; external av__codec;
-function av_parser_change (s: PAVCodecParserContext;
+function av_parser_change(s: PAVCodecParserContext;
                    avctx: PAVCodecContext;
                    poutbuf: PPointer; poutbuf_size: PCint;
                    buf: {const} pchar; buf_size: cint; keyframe: cint): cint;
   cdecl; external av__codec;
-procedure av_parser_close (s: PAVCodecParserContext);
+procedure av_parser_close(s: PAVCodecParserContext);
   cdecl; external av__codec;
 
 type
@@ -3136,28 +3181,28 @@ type
   TAVBitStreamFilter = record
     name: pchar;
     priv_data_size: cint;
-    filter: function (bsfc: PAVBitStreamFilterContext;
+    filter: function(bsfc: PAVBitStreamFilterContext;
                   avctx: PAVCodecContext; args: pchar;
                   poutbuf: PPointer; poutbuf_size: PCint;
                   buf: PByte; buf_size: cint; keyframe: cint): cint; cdecl;
     {$IF LIBAVCODEC_VERSION >= 51043000} // 51.43.0
-    close: procedure (bsfc: PAVBitStreamFilterContext);
+    close: procedure(bsfc: PAVBitStreamFilterContext);
     {$IFEND}
     next: PAVBitStreamFilter;
   end;
 
-procedure av_register_bitstream_filter (bsf: PAVBitStreamFilter);
+procedure av_register_bitstream_filter(bsf: PAVBitStreamFilter);
   cdecl; external av__codec;
 
-function av_bitstream_filter_init (name: pchar): PAVBitStreamFilterContext;
+function av_bitstream_filter_init(name: pchar): PAVBitStreamFilterContext;
   cdecl; external av__codec;
 
-function av_bitstream_filter_filter (bsfc: PAVBitStreamFilterContext;
+function av_bitstream_filter_filter(bsfc: PAVBitStreamFilterContext;
                                avctx: PAVCodecContext; args: pchar;
                                poutbuf: PPointer; poutbuf_size: PCint;
                                buf: PByte; buf_size: cint; keyframe: cint): cint;
   cdecl; external av__codec;
-procedure av_bitstream_filter_close (bsf: PAVBitStreamFilterContext);
+procedure av_bitstream_filter_close(bsf: PAVBitStreamFilterContext);
   cdecl; external av__codec;
 
 {$IF LIBAVCODEC_VERSION >= 51049000} // 51.49.0
@@ -3173,7 +3218,7 @@ function av_bitstream_filter_next(f: PAVBitStreamFilter): PAVBitStreamFilter;
  *
  * @see av_realloc
  *)
-procedure av_fast_realloc (ptr: pointer; size: PCuint; min_size: cuint);
+procedure av_fast_realloc(ptr: pointer; size: PCuint; min_size: cuint);
   cdecl; external av__codec;
 
 
@@ -3188,7 +3233,7 @@ procedure av_fast_realloc (ptr: pointer; size: PCuint; min_size: cuint);
  * and should correctly use static arrays
  *
  *)
-procedure  av_free_static ();
+procedure  av_free_static();
   cdecl; external av__codec; deprecated;
 
 (**
@@ -3237,21 +3282,21 @@ function av_picture_pad(dst: PAVPicture; src: {const} PAVPicture; height: cint; 
 (**
  * @deprecated Use the software scaler (swscale) instead.
  *)
-procedure img_copy (dst: PAVPicture; src: {const} PAVPicture;
+procedure img_copy(dst: PAVPicture; src: {const} PAVPicture;
                     pix_fmt: TAVPixelFormat; width: cint; height: cint);
   cdecl; external av__codec; deprecated;
 
 (**
  * @deprecated Use the software scaler (swscale) instead.
  *)
-function img_crop (dst: PAVPicture; src: {const} PAVPicture;
+function img_crop(dst: PAVPicture; src: {const} PAVPicture;
            pix_fmt: TAVPixelFormat; top_band, left_band: cint): cint;
   cdecl; external av__codec; deprecated;
 
 (**
  * @deprecated Use the software scaler (swscale) instead.
  *)
-function img_pad (dst: PAVPicture; src: {const} PAVPicture; height, width: cint;
+function img_pad(dst: PAVPicture; src: {const} PAVPicture; height, width: cint;
                   pix_fmt: TAVPixelFormat; padtop, padbottom, padleft, padright: cint;
                   color: PCint): cint;
   cdecl; external av__codec; deprecated;
@@ -3285,6 +3330,21 @@ function av_parse_video_frame_size(width_ptr: PCint; height_ptr: PCint; str: {co
  * frame rate
  *)
 function av_parse_video_frame_rate(frame_rate: PAVRational; str: {const} PChar): cint;
+  cdecl; external av__codec;
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 51064000} // 51.64.0
+(**
+ * Logs a generic warning message about a missing feature.
+ * @param[in] avc a pointer to an arbitrary struct of which the first field is
+ * a pointer to an AVClass struct
+ * @param[in] feature string containing the name of the missing feature
+ * @param[in] want_sample indicates if samples are wanted which exhibit this feature.
+ * If \p want_sample is non-zero, additional verbage will be added to the log
+ * message which tells the user how to report samples to the development
+ * mailing list.
+ *)
+procedure av_log_missing_feature(avc: Pointer; feature: {const} PChar; want_sample: cint);
   cdecl; external av__codec;
 {$IFEND}
 

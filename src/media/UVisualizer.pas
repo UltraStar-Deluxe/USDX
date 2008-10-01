@@ -287,7 +287,7 @@ begin
   if VisualizerStarted then
     Exit;
 
-  // the OpenGL state must be saved before
+  // the OpenGL state must be saved before TProjectM.Create is called
   SaveOpenGLState();
   try
 

@@ -209,9 +209,9 @@ begin
   case FFmpegFormat of
     SAMPLE_FMT_U8:  Format := asfU8;
     SAMPLE_FMT_S16: Format := asfS16;
-    SAMPLE_FMT_S24: Format := asfS24;
     SAMPLE_FMT_S32: Format := asfS32;
     SAMPLE_FMT_FLT: Format := asfFloat;
+    SAMPLE_FMT_DBL: Format := asfDouble;
     else begin
       Result := false;
       Exit;

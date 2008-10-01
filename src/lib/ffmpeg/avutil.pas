@@ -29,13 +29,13 @@
  *
  * libavutil/avutil.h:
  *  Min. version: 49.0.1, revision 6577,  Sat Oct 7 15:30:46 2006 UTC
- *  Max. version: 49.8.0, revision 14665, Fri Aug 8 18:32:20 2008 UTC
+ *  Max. version: 49.11.0, revision 15415, Thu Sep 25 19:23:13 2008 UTC 
  *
  * libavutil/mem.h:
- *  revision 13665, Thu Jun 5 19:49:47 2008 UTC
+ *  revision 15120, Sun Aug 31 07:39:47 2008 UTC 
  *
  * libavutil/log.h:
- *  revision 13068, Tue May 6 08:41:13 2008 UTC
+ *  revision 15120, Sun Aug 31 07:39:47 2008 UTC 
  *)
 
 unit avutil;
@@ -63,7 +63,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 49;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 8;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 11;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -83,7 +83,7 @@ const
 {$IFEND}
 
 {$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
-  {$MESSAGE Warn 'Linked version of libavutil may be unsupported!'}
+  {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
 {$IF LIBAVUTIL_VERSION >= 49008000} // 49.8.0
@@ -146,8 +146,8 @@ type
     PIX_FMT_BGR4,      ///< Packed RGB 1:2:1,  4bpp, (msb)1B 2G 1R(lsb)
     PIX_FMT_BGR4_BYTE, ///< Packed RGB 1:2:1,  8bpp, (msb)1B 2G 1R(lsb)
     PIX_FMT_RGB8,      ///< Packed RGB 3:3:2,  8bpp, (msb)2R 3G 3B(lsb)
-    PIX_FMT_RGB4,      ///< Packed RGB 1:2:1,  4bpp, (msb)2R 3G 3B(lsb)
-    PIX_FMT_RGB4_BYTE, ///< Packed RGB 1:2:1,  8bpp, (msb)2R 3G 3B(lsb)
+    PIX_FMT_RGB4,      ///< Packed RGB 1:2:1,  4bpp, (msb)1R 2G 1B(lsb)
+    PIX_FMT_RGB4_BYTE, ///< Packed RGB 1:2:1,  8bpp, (msb)1R 2G 1B(lsb)
     PIX_FMT_NV12,      ///< Planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 for UV
     PIX_FMT_NV21,      ///< as above, but U and V bytes are swapped
 
