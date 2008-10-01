@@ -331,7 +331,6 @@ begin
   glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
   SaveMatrixStack(GL_PROJECTION, ProjectionMatrixStack);
-  writeln(ProjectionMatrixStack[0][0][0]);
   SaveMatrixStack(GL_MODELVIEW, ModelviewMatrixStack);
   SaveMatrixStack(GL_TEXTURE, TextureMatrixStack);
 
