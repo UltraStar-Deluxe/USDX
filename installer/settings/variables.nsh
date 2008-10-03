@@ -44,3 +44,6 @@
 !define download_theme1 "http://downloads.sourceforge.net/ultrastardx/usdx_skin-orange_by_Skar.zip"
 !define download_theme2 "http://downloads.sourceforge.net/ultrastardx/usdx_skin-Streetlight_by_Skar.zip"
 !define download_theme3 "http://downloads.sourceforge.net/ultrastardx/usdx_skin-Vistar_by_Skar.zip"
+!define download_theme4 "http://downloads.sourceforge.net/ultrastardx/usdx_skin-bluesensationV5_by_Charis.zip"
+!define download_theme5 "http://downloads.sourceforge.net/ultrastardx/usdx_skin-WiiStar_by_MasterPhW.zip"
+!define download_theme6 "http://downloads.sourceforge.net/ultrastardx/usdx_skin-istar_by_MezzoX.zip"

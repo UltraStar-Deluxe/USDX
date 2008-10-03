@@ -24,8 +24,6 @@
 !include "${path_settings}\GameExplorer.nsh"
 !include "${path_settings}\functions.nsh"
 
-
-
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Export Settings
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
@@ -57,9 +55,6 @@ OutFile "ultrastardx-${version}-installer-full.exe"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${path_images}\${img_side}"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${path_images}\${img_side}"
 
-; Settings:
-
-
 ; Abort Warnings:
 
 !define MUI_ABORTWARNING
@@ -73,6 +68,12 @@ OutFile "ultrastardx-${version}-installer-full.exe"
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Pages Installation Routine Settings
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+; Welcome Page:
+
+!define MUI_WELCOMEPAGE_TITLE_3LINES
+!define MUI_WELCOMEPAGE_TITLE "$(page_welcome_title)"
+!define MUI_WELCOMEPAGE_TEXT "$(page_welcome_txt)"
 
 ; License Page:
 
@@ -202,7 +203,7 @@ ${EndIf}
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${p_name}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${name}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
@@ -248,12 +249,12 @@ SectionEnd
 ; Steven Dunston - Northern Star
 ; 
 
-Section /o "Joshua Morin - On the run" g2Section2
+Section /o "Joshua Morin - On The Run" g2Section2
 ;  AddSize 2200
    SetOverwrite try
    SetOutPath "$INSTDIR"
-   CreateDirectory "$INSTDIR\Songs\Joshua Morin - On the run"
-   SetOutPath "$INSTDIR\Songs\Joshua Morin - On the run\"
+   CreateDirectory "$INSTDIR\Songs\Joshua Morin - On The Run"
+   SetOutPath "$INSTDIR\Songs\Joshua Morin - On The Run\"
 
 ; Download song:
   NSISdl::download /TIMEOUT=30000 ${download_song3} $TEMP\Song-On-the-run.zip
@@ -262,7 +263,7 @@ Section /o "Joshua Morin - On the run" g2Section2
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-On-the-run.zip" "$INSTDIR\Songs\Joshua Morin - On the run\"
+  nsisunz::Unzip "$TEMP\Song-On-the-run.zip" "$INSTDIR\Songs\Joshua Morin - On The Run\"
 
   Delete "$TEMP\Song-On-the-run.zip"
 
@@ -322,7 +323,7 @@ SectionGroupEnd
 
 SectionGroup $(name_section3) Section3
 
- Section "Orange" g3Section1
+ Section /o "Orange" g3Section1
 ;  AddSize 700
 
 ; Download theme orange:
@@ -340,7 +341,7 @@ SectionGroup $(name_section3) Section3
 
 SectionEnd
 
- Section "Streetlight" g3Section2
+ Section /o "Streetlight" g3Section2
 ;  AddSize 1000
 
 ; Download theme Streetlight:
@@ -358,7 +359,7 @@ SectionEnd
 
 SectionEnd
 
- Section "Vistar" g3Section3
+ Section /o "Vistar" g3Section3
 ;   AddSize 1000
 
 ; Download theme Vistar:
@@ -372,6 +373,63 @@ SectionEnd
   nsisunz::Unzip "$TEMP\Theme-Vistar.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-Vistar.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+ Section /o "BlueSensation" g3Section4
+;   AddSize 1000
+
+; Download theme BlueSensation:
+
+  NSISdl::download /TIMEOUT=30000 ${download_theme4} $TEMP\Theme-BlueSensation.zip
+
+  Pop $R0 ;Get the return value
+   StrCmp $R0 "success" dlok
+     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Theme-BlueSensation.zip" "$INSTDIR\"
+
+  Delete "$TEMP\Theme-BlueSensation.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+ Section /o "WiiStar" g3Section5
+;   AddSize 1000
+
+; Download theme WiiStar:
+
+  NSISdl::download /TIMEOUT=30000 ${download_theme5} $TEMP\Theme-WiiStar.zip
+
+  Pop $R0 ;Get the return value
+   StrCmp $R0 "success" dlok
+     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Theme-WiiStar.zip" "$INSTDIR\"
+
+  Delete "$TEMP\Theme-WiiStar.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+ Section /o "iStar" g3Section6
+;   AddSize 1000
+
+; Download theme iStar:
+
+  NSISdl::download /TIMEOUT=30000 ${download_theme6} $TEMP\Theme-iStar.zip
+
+  Pop $R0 ;Get the return value
+   StrCmp $R0 "success" dlok
+     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Theme-iStar.zip" "$INSTDIR\"
+
+  Delete "$TEMP\Theme-iStar.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -401,6 +459,30 @@ ${GameExplorer_RemoveGame} $0
 ${EndIf}
 
 SectionEnd
+
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; Section Descriptions
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
+  !insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
+  !insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3)
+
+  !insertmacro MUI_DESCRIPTION_TEXT ${g2Section1} $(DESC_g2Section1)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g2Section2} $(DESC_g2Section2)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g2Section3} $(DESC_g2Section3)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g2Section4} $(DESC_g2Section4)
+
+  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section1} $(DESC_g3Section1)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section2} $(DESC_g3Section2)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section3} $(DESC_g3Section3)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section4} $(DESC_g3Section4)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section5} $(DESC_g3Section5)
+  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section6} $(DESC_g3Section6)
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Language Support
