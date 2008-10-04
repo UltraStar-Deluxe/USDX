@@ -3,8 +3,9 @@
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 !include MUI2.nsh
-!include "WinVer.nsh"
-!include "LogicLib.nsh"
+!include WinVer.nsh
+!include LogicLib.nsh
+!include InstallOptions.nsh
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Variables
@@ -16,7 +17,7 @@
 !define path_languages ".\languages"
 !define path_images "..\installerdependencies\images"
 !define path_plugins "..\installerdependencies\plugins"
-!define path_gdf "..\installerdependencies\gdf"
+!define path_gdf "$WINDIR\gdf.dll"
 
 !addPluginDir "${path_plugins}\"
 
@@ -33,9 +34,17 @@ SetCompressor /SOLID lzma
 SetCompressorDictSize 32
 SetDatablockOptimize On
 
+XPStyle on
+
 Name "${name} V.${version}"
-Brandingtext "${name} Installation"
+Brandingtext "${name} v.${version} Installation"
 OutFile "ultrastardx-${version}-installer-full.exe"
+
+InstallDir "$PROGRAMFILES\${name}"
+
+; Windows Vista:
+
+RequestExecutionLevel user
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Interface Settings
@@ -97,6 +106,10 @@ OutFile "ultrastardx-${version}-installer-full.exe"
 !define MUI_FINISHPAGE_LINK "$(page_finish_linktxt)"
 !define MUI_FINISHPAGE_LINK_LOCATION "${homepage}"
 
+!define MUI_FINISHPAGE_SHOWREADME
+!define MUI_FINISHPAGE_SHOWREADME_TEXT $(page_finish_desktop)
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION CreateDesktopShortCuts
+
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
@@ -122,6 +135,81 @@ var ICONS_GROUP
 !insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
 
 !insertmacro MUI_PAGE_INSTFILES
+
+; USDX Settings Page
+
+Page custom Settings
+
+Function Settings
+
+!insertmacro MUI_HEADER_TEXT " " "$(page_settings_subtitle)"
+
+   !insertmacro INSTALLOPTIONS_DISPLAY "Settings-$LANGUAGE"
+
+; Get all the variables:
+
+var /GLOBAL fullscreen
+var /GLOBAL language2
+var /GLOBAL resolution
+var /GLOBAL tabs
+var /GLOBAL animations
+
+  !insertmacro INSTALLOPTIONS_READ $fullscreen "Settings-$LANGUAGE" "Field 6" "State"
+  !insertmacro INSTALLOPTIONS_READ $language2 "Settings-$LANGUAGE" "Field 7" "State"
+  !insertmacro INSTALLOPTIONS_READ $resolution "Settings-$LANGUAGE" "Field 8" "State"
+  !insertmacro INSTALLOPTIONS_READ $tabs "Settings-$LANGUAGE" "Field 9" "State"
+  !insertmacro INSTALLOPTIONS_READ $animations "Settings-$LANGUAGE" "Field 10" "State"
+
+; Write all variables to config.ini
+
+FileOpen $0 '$INSTDIR\config.ini' w
+FileWrite $0 '[Game]$\r$\n'
+FileClose $0
+
+${If} $language2 != ""
+
+${WriteToConfig} "Language=$language2$\r$\n" "$INSTDIR\config.ini"
+
+${EndIf}
+
+${If} $tabs != ""
+
+${WriteToConfig} "Tabs=$tabs$\r$\n" "$INSTDIR\config.ini"
+
+${EndIf}
+
+${WriteToConfig} "[Graphics]$\r$\n" "$INSTDIR\config.ini"
+
+${If} $fullscreen != ""
+
+${WriteToConfig} "FullScreen=$fullscreen$\r$\n" "$INSTDIR\config.ini"
+
+${EndIf}
+
+${If} $resolution != ""
+
+${WriteToConfig} "Resolution=$resolution$\r$\n" "$INSTDIR\config.ini"
+
+${EndIf}
+
+${WriteToConfig} "[Advanced]$\r$\n" "$INSTDIR\config.ini"
+
+; Animations On / Off Tasks
+
+${If} $animations == "Off"
+
+${WriteToConfig} "LoadAnimation=Off$\r$\n" "$INSTDIR\config.ini"
+
+${WriteToConfig} "EffectSing=Off$\r$\n" "$INSTDIR\config.ini"
+
+${WriteToConfig} "ScreenFade=Off$\r$\n" "$INSTDIR\config.ini"
+
+${EndIf}
+
+
+FunctionEnd ; Settings page End
+
+
 !insertmacro MUI_PAGE_FINISH
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
@@ -160,7 +248,7 @@ SetOutPath "$INSTDIR"
 
   CreateDirectory "${name}"
   CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\${name}.lnk" "$INSTDIR\${exe}.exe"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_shortcut).lnk" "$INSTDIR\${exe}.exe"
 ; CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_documentation).lnk" "$INSTDIR\documentation.pdf"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_website).lnk" "http://www.ultrastardeluxe.org/"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_readme).lnk" "$INSTDIR\ReadMe.txt"
@@ -191,7 +279,7 @@ CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3\Fullscree
 
 CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3
 CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3\Dual Screen.lnk" \
-  "$INSTDIR\${exe}.exe" "-Screen 2"
+  "$INSTDIR\${exe}.exe" "-Screens 2"
 
 CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\SupportTasks\0
 CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\SupportTasks\0\Support Forum.lnk" \
@@ -466,6 +554,7 @@ SectionEnd
 
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+
   !insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
   !insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
   !insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3)
@@ -491,17 +580,55 @@ SectionEnd
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "German"
 
-!include "${path_languages}\English.nsh"
-!include "${path_languages}\German.nsh"
+!insertmacro MUI_RESERVEFILE_LANGDLL
+
+!include "${path_languages}\*.nsh"
 
 Function .onInit
 
+   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'
+
+  Pop $R0
+
+  StrCmp $R0 0 +3
+    MessageBox MB_OK|MB_ICONEXCLAMATION $(oninit_running)
+    Abort
+
+  ReadRegStr $R0 HKLM \
+  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" \
+  "UninstallString"
+  StrCmp $R0 "" done
+
+  MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+  "${name} $(oninit_alreadyinstalled). $\n$\n $(oninit_installagain)" \
+  IDYES done
+  Abort
+
+
+done:
+
   !insertmacro MUI_LANGDLL_DISPLAY
+
+  !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1031.ini" "Settings-1031"
+  !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1033.ini" "Settings-1033"
 
 FunctionEnd
 
 Function un.onInit
 
+        ${nsProcess::FindProcess} "USdx.exe" $R0
+        StrCmp $R0 0 0 +2
+        MessageBox MB_YESNO|MB_ICONEXCLAMATION '$(oninit_closeusdx)' IDYES closeit IDNO end
+
+        closeit:
+        ${nsProcess::KillProcess} "USdx.exe" $R0
+        goto continue
+
+        end:
+        ${nsProcess::Unload}
+        Abort
+
+  continue:
   !insertmacro MUI_LANGDLL_DISPLAY
 
 FunctionEnd

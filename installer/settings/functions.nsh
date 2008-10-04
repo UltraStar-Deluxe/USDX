@@ -1,5 +1,3 @@
-!define exe2 "USdx"
-
 ; Creates Desktop Shortcut(s) if 
 ; checked on Finish Page
 
@@ -7,7 +5,7 @@ Function CreateDesktopShortCuts
 
 SetOutPath "$INSTDIR"
 
-CreateShortcut "$Desktop\$(sm_shortcut).lnk" "$INSTDIR\${exe2}.exe"
+CreateShortcut "$Desktop\$(sm_shortcut).lnk" "$INSTDIR\USdx.exe"
 
 FunctionEnd
 

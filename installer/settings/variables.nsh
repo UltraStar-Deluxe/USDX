@@ -27,6 +27,7 @@
 
 ; Registry for Start menu entries:
 
+!define PRODUCT_NAME "${name}"
 !define PRODUCT_VERSION "${version}"
 !define PRODUCT_PUBLISHER "${publisher}"
 !define PRODUCT_WEB_SITE "${homepage}"

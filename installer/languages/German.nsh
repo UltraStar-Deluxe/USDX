@@ -4,6 +4,10 @@
 
 LangString abort_install ${LANG_GERMAN} "Wollen Sie die Installation wirklich abbrechen?"
 LangString abort_uninstall ${LANG_GERMAN} "Wollen Sie die Deinstallation wirklich abbrechen?"
+LangString oninit_running ${LANG_GERMAN} "Die Installation wird bereits ausgeführt."
+LangString oninit_installagain ${LANG_GERMAN} "Sind Sie sicher, dass Sie es erneut installieren möchten?"
+LangString oninit_alreadyinstalled ${LANG_GERMAN} "ist bereits installiert"
+LangString oninit_closeusdx ${LANG_GERMAN} "kann nicht während der Laufzeit deinstalliert werden. Soll es geschlossen werden?"
 
 ; Welcome Page:
 
@@ -14,10 +18,16 @@ LangString page_welcome_txt ${LANG_GERMAN} "Dieser Assistent wird Sie durch die 
 
 LangString page_components_info ${LANG_GERMAN} "Schieben Sie den Mauszeiger über die Komponente um Details einzusehen"
 
+; Custom Page
+
+LangString page_settings_fullscreen ${LANG_GERMAN} "Vollbild Modus:"
+LangString page_settings_subtitle ${LANG_GERMAN} "Lege deine favorisierten Einstellungen für UltraStar Deluxe fest."
+
 ; Finish Page:
 
 LangString page_finish_txt ${LANG_GERMAN} "UltraStar Deluxe wurde erfolgreich auf Ihrem System installiert.$\n$\r$\n$\rBesuchen Sie unsere Projektwebseite um die neusten Updates und News zu erhalten."
 LangString page_finish_linktxt ${LANG_GERMAN} "Projektwebseite"
+LangString page_finish_desktop ${LANG_GERMAN} "Verknüpfung auf dem Desktop erstellen?"
 
 ; Start Menu and Shortcuts
 

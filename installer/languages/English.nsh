@@ -4,6 +4,10 @@
 
 LangString abort_install ${LANG_ENGLISH} "Are you sure to abort Installation?"
 LangString abort_uninstall ${LANG_ENGLISH} "Are you sure to abort UnInstallation?"
+LangString oninit_running ${LANG_ENGLISH} "The installer is already running."
+LangString oninit_installagain ${LANG_ENGLISH} "Are you sure you want to install it again?"
+LangString oninit_alreadyinstalled ${LANG_ENGLISH} "is already installed"
+LangString oninit_closeusdx ${LANG_ENGLISH} "cannot be uninstalled while its running! Do you want to close it?"
 
 ; Welcome Page:
 
@@ -14,10 +18,16 @@ LangString page_welcome_txt ${LANG_ENGLISH} "This wizard will guide you through 
 
 LangString page_components_info ${LANG_ENGLISH} "Hover the component to get details"
 
+; Custom Page
+
+LangString page_settings_fullscreen ${LANG_ENGLISH} "Fullscreen Mode"
+LangString page_settings_subtitle ${LANG_ENGLISH} "Specify your favorite settings for UltraStar Deluxe."
+
 ; Finish Page:
 
 LangString page_finish_txt ${LANG_ENGLISH} "UltraStar Deluxe was installed successfully on you system.$\n$\r$\n$\rVisit out project website to get latest news and updates."
 LangString page_finish_linktxt ${LANG_ENGLISH} "Project website"
+LangString page_finish_desktop ${LANG_ENGLISH} "Create Desktop Shortcut?"
 
 ; Start Menu and Shortcuts
 
