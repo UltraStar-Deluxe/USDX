@@ -290,9 +290,6 @@ begin
   inherited;
 
   Randomize;
-
-//  LCD.WriteText(1, '  Choose mode:  ');
-//  UpdateLCD;
 end;
 
 procedure TScreenPartyOptions.SetAnimationProgress(Progress: real);

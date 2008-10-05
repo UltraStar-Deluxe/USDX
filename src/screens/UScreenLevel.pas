@@ -117,9 +117,6 @@ begin
   inherited;
 
   Interaction := Ini.Difficulty;
-
-//  LCD.WriteText(1, '  Choose mode:  ');
-//  UpdateLCD;
 end;
 
 procedure TScreenLevel.SetAnimationProgress(Progress: real);

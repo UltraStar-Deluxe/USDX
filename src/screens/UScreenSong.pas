@@ -273,7 +273,7 @@ begin
     //Jump to Artist/Titel
     if ((SDL_ModState and KMOD_LALT <> 0) and (Mode = smNormal)) then
     begin
-      if (WideCharUpperCase(CharCode)[1] in ([WideChar('A')..WideChar('Z')]) ) then
+      if (WideCharUpperCase(CharCode)[1] in ([WideChar('A')..WideChar('Z'), WideChar('0') .. WideChar('9')]) ) then
       begin
         Letter := WideCharUpperCase(CharCode)[1];
         I2 := Length(CatSongs.Song);
@@ -293,7 +293,6 @@ begin
 
               ChangeMusic;
               SetScroll4;
-              //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
               //Break and Exit
               Exit;
             end;
@@ -314,7 +313,6 @@ begin
 
               ChangeMusic;
               SetScroll4;
-              //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
 
               //Break and Exit
               Exit;
@@ -457,7 +455,6 @@ begin
 
             ChangeMusic;
             SetScroll4;
-            //UpdateLCD; //TODO: maybe LCD Support as Plugin?
           end;
           Exit;
         end;
@@ -541,9 +538,6 @@ begin
         begin
           if Songs.SongList.Count > 0 then
           begin
-            {$IFDEF UseSerialPort}
-              // PortWriteB($378, 0);
-            {$ENDIF}
             if CatSongs.Song[Interaction].Main then
             begin // clicked on Category Button
               //Show Cat in Top Left Mod
@@ -682,8 +676,6 @@ begin
             //SongTarget := Interaction;
             ChangeMusic;
             SetScroll4;
-            //UpdateLCD;   //TODO: maybe LCD Support as Plugin?
-            //Light.LightOne(1, 200); //TODO: maybe Light Support as Plugin?
           end;
         end;
 
@@ -695,8 +687,6 @@ begin
             SelectPrev;
             ChangeMusic;
             SetScroll4;
-            //UpdateLCD; //TODO: maybe LCD Support as Plugin?
-            //Light.LightOne(0, 200); //TODO: maybe Light Support as Plugin?
           end;
         end;
 
@@ -1383,7 +1373,6 @@ begin
       StartMusicPreview();
 
     SetScroll;
-    //UpdateLCD;  //TODO: maybe LCD Support as Plugin?
   end;
 
   //Playlist Mode
@@ -1584,17 +1573,6 @@ begin
   end;
 end;
 
-(*
-procedure TScreenSong.UpdateLCD; //TODO: maybe LCD Support as Plugin?
-begin
-  LCD.HideCursor;
-  LCD.Clear;
-  LCD.WriteText(1, Text[TextArtist].Text);
-  LCD.WriteText(2, Text[TextTitle].Text);
-
-end;
-*)
-
 procedure TScreenSong.StartMusicPreview();
 var
   Song: TSong;
@@ -1735,7 +1713,6 @@ begin
   AudioPlayback.PlaySound(SoundLib.Change);
   ChangeMusic;
   SetScroll;
-  //UpdateLCD;  //TODO: maybe LCD Support as Plugin?
 end;
 
 procedure TScreenSong.SetJoker;

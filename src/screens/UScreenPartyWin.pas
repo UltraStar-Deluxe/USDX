@@ -277,10 +277,6 @@ begin
     Static[StaticTeam3BG].Visible := False;
     Static[StaticTeam3Deco].Visible := False;
   end;   }
-
-
-//  LCD.WriteText(1, '  Choose mode:  ');
-//  UpdateLCD;
 end;
 
 procedure TScreenPartyWin.SetAnimationProgress(Progress: real);

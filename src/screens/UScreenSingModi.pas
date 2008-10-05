@@ -95,7 +95,6 @@ type
       function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure Finish; override;
-      //procedure UpdateLCD; //TODO: maybe LCD Support as Plugin?
       //procedure Pause; //Pause Mod(Toggles Pause)
   end;
 

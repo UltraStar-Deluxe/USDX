@@ -448,10 +448,6 @@ begin
   end
   else
     Text[TextNextPlayer3].Visible := False;  }
-
-
-//  LCD.WriteText(1, '  Choose mode:  ');
-//  UpdateLCD;
 end;
 
 procedure TScreenPartyNewRound.SetAnimationProgress(Progress: real);
