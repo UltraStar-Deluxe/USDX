@@ -40,7 +40,6 @@
   {$ENDIF}
 
   {$DEFINE HaveBASS}
-  {$UNDEF UseSerialPort}
   {$DEFINE UseMIDIPort}
 {$ELSEIF Defined(DARWIN)}
   // include defines but no constants

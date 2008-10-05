@@ -127,7 +127,6 @@ type
       procedure onHide; override;
       procedure SelectNext;
       procedure SelectPrev;
-      //procedure UpdateLCD; //TODO: maybe LCD Support as Plugin?
       procedure SkipTo(Target: Cardinal);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
