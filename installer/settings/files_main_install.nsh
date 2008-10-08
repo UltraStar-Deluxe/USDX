@@ -20,7 +20,7 @@ File /r ..\installerdependencies\visuals
 
 ; Root dir:
 
-File ..\game\themes\dll\*.dll
+File ..\nstallerdependencies\dll\*.dll
 
 File ..\ChangeLog.txt
 File ..\ChangeLog.german.txt
