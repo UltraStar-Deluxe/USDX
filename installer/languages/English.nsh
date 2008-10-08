@@ -1,5 +1,5 @@
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
-; UltraStar Deluxe Installer - Version 1.1: English
+; UltraStar Deluxe Installer - Language file: English
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 LangString abort_install ${LANG_ENGLISH} "Are you sure to abort Installation?"

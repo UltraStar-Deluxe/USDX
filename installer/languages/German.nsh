@@ -1,5 +1,5 @@
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
-; UltraStar Deluxe Installer - Version 1.1: German
+; UltraStar Deluxe Installer - Language file: German
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 LangString abort_install ${LANG_GERMAN} "Wollen Sie die Installation wirklich abbrechen?"
