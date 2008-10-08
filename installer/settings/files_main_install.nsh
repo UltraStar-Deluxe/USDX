@@ -20,7 +20,7 @@ File /r ..\installerdependencies\visuals
 
 ; Root dir:
 
-File ..\nstallerdependencies\dll\*.dll
+File ..\installerdependencies\dll\*.dll
 
 File ..\ChangeLog.txt
 File ..\ChangeLog.german.txt
