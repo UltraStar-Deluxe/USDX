@@ -8,6 +8,7 @@ LangString oninit_running ${LANG_GERMAN} "Die Installation wird bereits ausgefüh
 LangString oninit_installagain ${LANG_GERMAN} "Sind Sie sicher, dass Sie es erneut installieren möchten?"
 LangString oninit_alreadyinstalled ${LANG_GERMAN} "ist bereits installiert"
 LangString oninit_closeusdx ${LANG_GERMAN} "kann nicht während der Laufzeit deinstalliert werden. Soll es geschlossen werden?"
+LangString oninit_updateusdx ${LANG_GERMAN} "Möchten Sie das Programm aktualisieren von"
 
 ; Welcome Page:
 

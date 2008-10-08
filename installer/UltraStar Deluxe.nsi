@@ -36,7 +36,7 @@ SetDatablockOptimize On
 
 XPStyle on
 
-Name "${name} V.${version}"
+Name "${name} v.${version}"
 Brandingtext "${name} v.${version} Installation"
 OutFile "ultrastardx-${version}-installer-full.exe"
 
@@ -533,7 +533,6 @@ Section Uninstall
 
  !insertmacro MUI_STARTMENU_GETFOLDER "Application" $ICONS_GROUP
 
- !include "${path_settings}\files_opt_uninstall.nsh"
  !include "${path_settings}\files_main_uninstall.nsh"
 
  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
@@ -545,6 +544,8 @@ ${If} ${AtLeastWinVista}
 ${GameExplorer_RemoveGame} $0
 
 ${EndIf}
+
+
 
 SectionEnd
 
@@ -586,6 +587,10 @@ SectionEnd
 
 Function .onInit
 
+var /GLOBAL version
+StrCpy $version "1.1a"
+
+
    System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'
 
   Pop $R0
@@ -594,16 +599,26 @@ Function .onInit
     MessageBox MB_OK|MB_ICONEXCLAMATION $(oninit_running)
     Abort
 
-  ReadRegStr $R0 HKLM \
+  ReadRegStr $R0  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'DisplayVersion'
+
+  ${If} $R0 == $version
+	  MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+          "${name} v.$R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_installagain)" \
+          IDYES done
+          Abort
+  ${EndIf}
+
+  ReadRegStr $R1 HKLM \
   "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" \
   "UninstallString"
-  StrCmp $R0 "" done
+  StrCmp $R1 "" done
 
-  MessageBox MB_YESNO|MB_ICONEXCLAMATION \
-  "${name} $(oninit_alreadyinstalled). $\n$\n $(oninit_installagain)" \
-  IDYES done
-  Abort
-
+  ${If} $R0 != $version
+	  MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+          "${name} v.$R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_updateusdx) v.$R0 -> v.${version}" \
+          IDYES done
+          Abort
+  ${EndIf}
 
 done:
 

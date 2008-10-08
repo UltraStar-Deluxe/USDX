@@ -8,6 +8,7 @@ LangString oninit_running ${LANG_ENGLISH} "The installer is already running."
 LangString oninit_installagain ${LANG_ENGLISH} "Are you sure you want to install it again?"
 LangString oninit_alreadyinstalled ${LANG_ENGLISH} "is already installed"
 LangString oninit_closeusdx ${LANG_ENGLISH} "cannot be uninstalled while its running! Do you want to close it?"
+LangString oninit_updateusdx ${LANG_ENGLISH} "Do you want to update the installation from:"
 
 ; Welcome Page:
 

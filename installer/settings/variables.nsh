@@ -4,7 +4,8 @@
 
 ; Product Information:
 
-!define version "1.1 Alpha"
+!define version "1.1a" ; Make sure version is also set in onInit
+
 
 !define name "UltraStar Deluxe"
 !define publisher "USDX Team"
