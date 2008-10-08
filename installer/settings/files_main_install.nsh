@@ -22,15 +22,19 @@ File /r ..\installerdependencies\visuals
 
 File ..\installerdependencies\dll\*.dll
 
+
 File ..\ChangeLog.txt
 File ..\ChangeLog.german.txt
 File ..\README.txt
 File ..\installerdependencies\documents\documentation.pdf
+File ..\installerdependencies\documents\license.txt
 
 File "..\ScoreConverter.exe"
 File "..\${exe}.exe"
 
 ; Covers dir:
+
+SetOutPath "$INSTDIR\covers"
 
 IfFileExists $INSTDIR\covers\covers.ini +2 0
 File ..\game\covers\Covers.ini
@@ -52,3 +56,4 @@ ${If} ${AtLeastWinVista}
 
 ${EndIf}
 
+SetOutPath "$INSTDIR"

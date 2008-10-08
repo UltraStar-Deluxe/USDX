@@ -7,7 +7,7 @@
 
  SetShellVarContext all
 
- RMDir "$SMPROGRAMS\$ICONS_GROUP\
+ RMDir /r "$SMPROGRAMS\$ICONS_GROUP\"
 
 ; Delete created Icon on Desktop
 
@@ -16,11 +16,11 @@
 
 ; Remove dirs
 
- RMDir "$INSTDIR\plugins"
- RMDir "$INSTDIR\themes"
- RMDir "$INSTDIR\languages"
- RMDir "$INSTDIR\visuals"
- RMDir "$INSTDIR\sounds"
+ RMDir /r "$INSTDIR\plugins"
+ RMDir /r "$INSTDIR\themes"
+ RMDir /r "$INSTDIR\languages"
+ RMDir /r "$INSTDIR\visuals"
+ RMDir /r "$INSTDIR\sounds"
 
 ; Delete remaining files
 
@@ -30,6 +30,7 @@
  Delete "$INSTDIR\Changelog.txt"
  Delete "$INSTDIR\documentation.pdf"
  Delete "$INSTDIR\License.txt"
+ Delete "$INSTDIR\config.ini"
  Delete "$INSTDIR\README.txt"
  Delete "$INSTDIR\Error.log"
  Delete "$INSTDIR\covers.cache"
