@@ -441,7 +441,7 @@ begin
     if ScreenSong.Mode = smPartyMode then
       ScreenSong.SelectRandomSong();
     if (Length(CurrentSong.LastError) > 0) then
-      ScreenPopupError.ShowPopup(Language.Translate('ERROR_CORRUPT_SONG') + '\n' + CurrentSong.LastError)
+      ScreenPopupError.ShowPopup(Format(Language.Translate(CurrentSong.LastError), [CurrentSong.ErrorLineNo]))
     else
       ScreenPopupError.ShowPopup(Language.Translate('ERROR_CORRUPT_SONG'));
     // FIXME: do we need this?
@@ -656,6 +656,8 @@ begin
     glDeleteTextures(1, PGLuint(@Tex_Background.TexNum));
     Tex_Background.TexNum := 0;
   end;
+
+  Background.OnFinish;
 end;
 
 function TScreenSing.Draw: boolean;
@@ -668,6 +670,8 @@ var
   T:     integer;
   CurLyricsTime: real;
 begin
+
+  Background.Draw;
 
   // set player names (for 2 screens and only Singstar skin)
   if ScreenAct = 1 then

@@ -130,6 +130,9 @@ type
     MultBPM : integer;
 
     LastError: String;
+    Function  GetErrorLineNo: Integer;
+    Property  ErrorLineNo: Integer read GetErrorLineNo;
+
 
     constructor Create  (); overload;
     constructor Create  ( const aFileName : WideString ); overload;
@@ -203,7 +206,7 @@ begin
 
   if not FileExists(Path + PathDelim + FileName) then
   begin
-    LastError := 'File not found';
+    LastError := 'ERROR_CORRUPT_SONG_FILE_NOT_FOUND';
     Log.LogError('File not found: "' + Path + PathDelim + FileName + '"', 'TSong.LoadSong()');
     exit;
   end;
@@ -243,7 +246,7 @@ begin
       begin //Song File Corrupted - No Notes
         CloseFile(SongFile);
         Log.LogError('Could not load txt File, no Notes found: ' + FileName);
-        LastError := 'Can''t find any notes';
+        LastError := 'ERROR_CORRUPT_SONG_NO_NOTES';
         Exit;
       end;
       Read(SongFile, TempC);
@@ -368,7 +371,7 @@ begin
       begin
         If (Length(Lines[I].Line) < 2) then
         begin
-          LastError := 'Can''t find any linebreaks';
+          LastError := 'ERROR_CORRUPT_SONG_NO_BREAKS';
           Log.LogError('Error Loading File, Can''t find any Linebreaks: "' + fFileName + '"');
           exit;
         end;
@@ -395,7 +398,7 @@ begin
 
     end;
 
-    LastError := 'Error reading line ' + inttostr(FileLineNo);
+    LastError := 'ERROR_CORRUPT_SONG_ERROR_IN_LINE';
     Log.LogError('Error Loading File: "' + fFileName + '" in Line ' + inttostr(FileLineNo));
     exit;
   end;
@@ -883,6 +886,14 @@ begin
       Log.LogError('File Incomplete or not Ultrastar TxT (B - '+ inttostr(Done) +'): ' + aFileName);
   end;
 
+end;
+
+Function  TSong.GetErrorLineNo: Integer;
+begin
+  If (LastError='ERROR_CORRUPT_SONG_ERROR_IN_LINE') then
+    Result := FileLineNo
+  Else
+    Result := -1;
 end;
 
 procedure TSong.ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
