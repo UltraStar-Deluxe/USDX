@@ -657,7 +657,7 @@ begin
     Tex_Background.TexNum := 0;
   end;
 
-  Background.OnFinish;
+//  Background.OnFinish;
 end;
 
 function TScreenSing.Draw: boolean;
@@ -671,7 +671,7 @@ var
   CurLyricsTime: real;
 begin
 
-  Background.Draw;
+//  Background.Draw;
 
   // set player names (for 2 screens and only Singstar skin)
   if ScreenAct = 1 then
