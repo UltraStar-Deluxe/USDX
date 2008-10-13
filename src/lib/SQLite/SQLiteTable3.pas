@@ -54,6 +54,7 @@ unit SQLiteTable3;
    Adapted by Tim Anderson (tim@itwriting.com)
    Originally created by Pablo Pissanetzky (pablo@myhtpc.net)
    Modified and enhanced by Lukas Gebauer
+   Modified and enhanced by Tobias Gunkel
 }
 
 interface
@@ -90,11 +91,12 @@ type
     valuedata: string;
   end;
 
+  THookQuery = procedure(Sender: TObject; SQL: String) of object;
+
   TSQLiteQuery = record
     SQL: String;
     Statement: TSQLiteStmt;
   end;
-
 
   TSQLiteTable = class;
   TSQLiteUniTable = class;
@@ -105,12 +107,14 @@ type
     fInTrans: boolean;
     fSync: boolean;
     fParams: TList;
+    FOnQuery: THookQuery;
     procedure RaiseError(s: string; SQL: string);
     procedure SetParams(Stmt: TSQLiteStmt);
     procedure BindData(Stmt: TSQLiteStmt; const Bindings: array of const);
     function GetRowsChanged: integer;
   protected
     procedure SetSynchronised(Value: boolean);
+    procedure DoQuery(value: string); 
   public
     constructor Create(const FileName: string);
     destructor Destroy; override;
@@ -129,6 +133,7 @@ type
     function GetTableValue(const SQL: string; const Bindings: array of const): int64; overload;
     function GetTableString(const SQL: string): string; overload;
     function GetTableString(const SQL: string; const Bindings: array of const): string; overload;
+    procedure GetTableStrings(const SQL: string; const Value: TStrings);
     procedure UpdateBlob(const SQL: string; BlobData: TStream);
     procedure BeginTransaction;
     procedure Commit;
@@ -152,7 +157,7 @@ type
     //database rows that were changed (or inserted or deleted) by the most recent SQL statement
     property RowsChanged : integer read getRowsChanged;
     property Synchronised: boolean read FSync write SetSynchronised;
-
+    property OnQuery: THookQuery read FOnQuery write FOnQuery;
   end;
 
   TSQLiteTable = class
@@ -194,7 +199,7 @@ type
     property Row: cardinal read fRow;
     function MoveFirst: boolean;
     function MoveLast: boolean;
-    function MoveTo(position:Integer): boolean;
+    function MoveTo(position: cardinal): boolean;
     property Count: integer read GetCount;
     // The property CountResult is used when you execute count(*) queries.
     // It returns 0 if the result set is empty or the value of the
@@ -493,7 +498,7 @@ begin
       RaiseError('Error executing SQL', SQL);
     if (Stmt = nil) then
       RaiseError('Could not prepare SQL statement', SQL);
-
+    DoQuery(SQL);
     SetParams(Stmt);
     BindData(Stmt, Bindings);
 
@@ -545,6 +550,7 @@ begin
 
   if (Result.Statement = nil) then
     RaiseError('Could not prepare SQL statement', SQL);
+  DoQuery(SQL);
 end;
 {$WARNINGS ON}
 
@@ -604,6 +610,7 @@ begin
 
     if (Stmt = nil) then
       RaiseError('Could not prepare SQL statement', SQL);
+    DoQuery(SQL);
 
     //now bind the blob data
     iSize := BlobData.size;
@@ -701,6 +708,23 @@ begin
   end;
 end;
 
+procedure TSQLiteDatabase.GetTableStrings(const SQL: string;
+  const Value: TStrings);
+var
+  Table: TSQLiteUniTable;
+begin
+  Value.Clear;
+  Table := self.GetUniTable(SQL);
+  try
+    while not table.EOF do
+    begin
+      Value.Add(Table.FieldAsString(0));
+      table.Next;
+    end;
+  finally
+    Table.Free;
+  end;
+end;
 
 procedure TSQLiteDatabase.BeginTransaction;
 begin
@@ -853,6 +877,12 @@ begin
  Result := SQLite3_Changes(self.fDB);
 end;
 
+procedure TSQLiteDatabase.DoQuery(value: string);
+begin
+  if assigned(OnQuery) then
+    OnQuery(Self, Value);
+end;
+
 //------------------------------------------------------------------------------
 // TSQLiteTable
 //------------------------------------------------------------------------------
@@ -889,7 +919,7 @@ begin
       DB.RaiseError('Error executing SQL', SQL);
     if (Stmt = nil) then
       DB.RaiseError('Could not prepare SQL statement', SQL);
-
+    DB.DoQuery(SQL);
     DB.SetParams(Stmt);
     DB.BindData(Stmt, Bindings);
 
@@ -1152,15 +1182,19 @@ begin
   Result := '';
   MemStream := self.FieldAsBlob(I);
   if MemStream <> nil then
-    if MemStream.Size > 0 then
-    begin
-      MemStream.position := 0;
-      Buffer := stralloc(MemStream.Size + 1);
-      MemStream.readbuffer(Buffer[0], MemStream.Size);
-      (Buffer + MemStream.Size)^ := chr(0);
-      SetString(Result, Buffer, MemStream.size);
-      strdispose(Buffer);
-    end;
+    try
+      if MemStream.Size > 0 then
+      begin
+        MemStream.position := 0;
+        Buffer := stralloc(MemStream.Size + 1);
+        MemStream.readbuffer(Buffer[0], MemStream.Size);
+        (Buffer + MemStream.Size)^ := chr(0);
+        SetString(Result, Buffer, MemStream.size);
+        strdispose(Buffer);
+      end;
+    finally
+      MemStream.free;
+    end; 
 end;
 
 
@@ -1259,7 +1293,7 @@ begin
 end;
 
 {$WARNINGS OFF}
-function TSQLiteTable.MoveTo(position: Integer): boolean;
+function TSQLiteTable.MoveTo(position: cardinal): boolean;
 begin
   Result := False;
   if (self.fRowCount > 0) and (self.fRowCount > position) then
@@ -1296,7 +1330,7 @@ begin
     DB.RaiseError('Error executing SQL', SQL);
   if (fStmt = nil) then
     DB.RaiseError('Could not prepare SQL statement', SQL);
-
+  DB.DoQuery(SQL);
   DB.SetParams(fStmt);
   DB.BindData(fStmt, Bindings);
 
@@ -1349,14 +1383,18 @@ begin
   Result := '';
   MemStream := self.FieldAsBlob(I);
   if MemStream <> nil then
-    if MemStream.Size > 0 then
-    begin
-      MemStream.position := 0;
-      Buffer := stralloc(MemStream.Size + 1);
-      MemStream.readbuffer(Buffer[0], MemStream.Size);
-      (Buffer + MemStream.Size)^ := chr(0);
-      SetString(Result, Buffer, MemStream.size);
-      strdispose(Buffer);
+    try
+      if MemStream.Size > 0 then
+      begin
+        MemStream.position := 0;
+        Buffer := stralloc(MemStream.Size + 1);
+        MemStream.readbuffer(Buffer[0], MemStream.Size);
+        (Buffer + MemStream.Size)^ := chr(0);
+        SetString(Result, Buffer, MemStream.size);
+        strdispose(Buffer);
+      end;
+    finally
+      MemStream.Free;
     end;
 end;
 
