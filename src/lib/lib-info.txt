@@ -1,0 +1,60 @@
+bass:
+http://www.un4seen.com/ (2.4.2.1)
+- FPC Mac OS X compatibility fixes
+
+fft:
+translation of audacity's FFT.cpp by hennymcc (maybe replace this with FFTW?)
+
+ffmpeg:
+- http://www.iversenit.dk/dev/ffmpeg-headers/: 2006-10
+- several bugs were fixed
+- many IFDEFS were added to the header to support multiple versions of ffmpeg (starting with end of 2006) and not only one specific version. This is necessary as we cannot control which version is used on linux. We could ship the ffmpeg lib with USDX and link statically but a stripped down ffmpeg is 15MB in size and takes 5 minutes to compile (so static linkage is not a good option).
+- the headers were updated to reflect the changes in the ffmpeg C-headers (http://svn.mplayerhq.hu/ffmpeg/trunk/ and http://svn.mplayerhq.hu/mplayer/trunk/libswscale/)
+
+freeimage:
+- inserted by eddie. Some compatibility fixes for platforms different than mac os x.
+- not used anymore
+
+freetype:
+- based on the AggPas (http://aggpas.org/) headers
+- just a minimal header that contains only some of the freetype functions and types. Some functions and structures/constants/types needed for USDX were added.
+- some comments added
+
+jedi-sdl:
+JEDI-SDL v1.0 Final RC 2 (http://jedi-sdl.pascalgamedevelopment.com/)
+- 64bit compatibility patch (http://sourceforge.net/tracker/index.php?func=detail&aid=1902924&group_id=43805&atid=437446)
+- some Mac OS X patches from freepascal trunk
+- some additional patched (see *.patch)
+
+midi:
+taken from http://www.torry.net/authorsmore.php?id=1615 (TMidiPlayer)
+- FPC (Win32) compatibility fixes
+- Win32 only. Maybe use some timidity stuff under linux.
+
+libpng:
+autocreated H2Pas file taken from freepascal trunk
+- bug fixes (especially H2Pas related stuff like wrong file types)
+- delphi compatibility
+- comments added
+
+portaudio:
+translation of the (patched) audacity C headers by hennymcc.
+See http://audacity.cvs.sourceforge.net/viewvc/audacity/lib-src/portaudio-v19/include/?sortdir=down
+
+portmixer:
+translation of the (patched) audacity C headers by hennymcc.
+- Unlike portaudio portmixer is part of audacity and there is no linux package for it. If we want to use it for linux, we have to link it statically. Unfortunately it requires a patched version of portaudio (which is part of audacity and statically linked to) so we have to statically link portaudio too :(.
+
+projectM:
+translation of the original C++ headers and C-wrapper by hennymcc
+
+samplerate:
+translation of the original C headers by profoX/hennymcc
+
+sqlite:
+taken from http://www.itwriting.com/blog/a-simple-delphi-wrapper-for-sqlite-3
+- slightly patched: see *.patch files for what has been patched (e.g. Binding)
+
+zlib:
+taken from freepascal (slightly patched)
+- delphi compatibility
