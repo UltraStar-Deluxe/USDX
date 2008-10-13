@@ -194,7 +194,7 @@ begin
   Display.Draw;
   SwapBuffers;
 
-  freeandnil( self );
+  Self.Destroy;
 end;
 
 end.

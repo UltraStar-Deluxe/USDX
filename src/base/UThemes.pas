@@ -51,10 +51,29 @@ type
     R, G, B, A: Double;
   end;
 
-  TThemeBackground = record
-    Tex:  string;
+TThemeBackground = record
+    BGType: Byte;
+    Color:  TRGB;
+    Tex:    string;
+    Alpha:  Real;
   end;
 
+const
+  BGT_Names: Array [0..4] of String = ('none', 'color', 'texture', 'video', 'fade');
+  BGT_None    = 0;
+  BGT_Color   = 1;
+  BGT_Texture = 2;
+  BGT_Video   = 3;
+  BGT_Fade    = 4;
+  BGT_Auto    = 255;
+  //Defaul Background for Screens w/o Theme e.g. editor
+  DEFAULTBACKGROUND: TThemeBackground = (BGType: BGT_Color;
+                                         Color:  (R:1; G:1; B:1);
+                                         Tex:    '';
+                                         Alpha:  1.0);
+
+
+type
   TThemeStatic = record
     X:      integer;
     Y:      integer;
@@ -1468,8 +1487,25 @@ begin
 end;
 
 procedure TTheme.ThemeLoadBackground(var ThemeBackground: TThemeBackground; Name: string);
+var
+  BGType: String;
+  I: Integer;
 begin
-  ThemeBackground.Tex := ThemeIni.ReadString(Name + 'Background', 'Tex', '');
+  BGType  := lowercase(ThemeIni.ReadString(Name + 'Background', 'Type', 'auto'));
+
+  ThemeBackground.BGType := BGT_Auto;
+  For I := 0 to high(BGT_Names) do
+    If (BGT_Names[I] = BGType) then
+    begin
+      ThemeBackground.BGType := I;
+      Break;
+    end;
+
+  ThemeBackground.Tex     := ThemeIni.ReadString(Name + 'Background', 'Tex', '');
+  ThemeBackground.Color.R := ThemeIni.ReadFloat(Name + 'Background', 'ColR', 1);
+  ThemeBackground.Color.G := ThemeIni.ReadFloat(Name + 'Background', 'ColG', 1);
+  ThemeBackground.Color.B := ThemeIni.ReadFloat(Name + 'Background', 'ColB', 1);
+  ThemeBackground.Alpha   := ThemeIni.ReadFloat(Name + 'Background', 'Alpha', 1);
 end;
 
 procedure TTheme.ThemeLoadText(var ThemeText: TThemeText; Name: string);

@@ -340,17 +340,25 @@ begin
               if (not CatSongs.Song[Interaction].Main) then // clicked on Song
               begin 
                 if CatSongs.CatNumShow = -3 then
-                  ScreenSongMenu.MenuShow(SM_Playlist)
+                begin
+                  ScreenSongMenu.onShow;
+                  ScreenSongMenu.MenuShow(SM_Playlist);
+                end
                 else
+                begin
+                  ScreenSongMenu.onShow;
                   ScreenSongMenu.MenuShow(SM_Main);
+                end;
               end
               else
               begin
+                ScreenSongMenu.onShow;
                 ScreenSongMenu.MenuShow(SM_Playlist_Load);
               end;
             end //Party Mode -> Show Party Menu
             else
             begin
+              ScreenSongMenu.onShow;
               ScreenSongMenu.MenuShow(SM_Party_Main);
             end;
           end;
@@ -361,7 +369,8 @@ begin
         begin
           if (Songs.SongList.Count > 0) and (Mode = smNormal) then
           begin
-              ScreenSongMenu.MenuShow(SM_Playlist_Load);
+            ScreenSongMenu.onShow;
+            ScreenSongMenu.MenuShow(SM_Playlist_Load);
           end;
           Exit;
         end;

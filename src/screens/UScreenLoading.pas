@@ -47,7 +47,6 @@ type
       constructor Create; override;
       procedure   onShow; override;
       function    ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
-      function    GetBGTexNum: GLUInt;
   end;
 
 implementation
@@ -72,11 +71,6 @@ end;
 procedure TScreenLoading.onShow;
 begin
   inherited;
-end;
-
-function TScreenLoading.GetBGTexNum: GLUInt;
-begin
-  Result := Self.BackImg.TexNum;
 end;
 
 end.

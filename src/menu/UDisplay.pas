@@ -141,8 +141,10 @@ var
 begin
   Result := True;
 
-  glClearColor(1, 1, 1 , 0);
-  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  //We don't need this here anymore,
+  //Because the background care about cleaning the buffers
+  //glClearColor(1, 1, 1 , 0);
+  //glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 
   for S := 1 to Screens do
   begin

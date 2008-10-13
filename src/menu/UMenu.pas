@@ -42,6 +42,7 @@ uses
   UMenuButton,
   UMenuSelectSlide,
   UMenuInteract,
+  UMenuBackground,
   UThemes,
   UMenuButtonCollection,
   Math,
@@ -53,18 +54,16 @@ type
   PMenu = ^TMenu;
   TMenu = class
     protected
-      ButtonPos:      Integer;
+      Background:     TMenuBackground;
 
       Interactions:   array of TInteract;
       SelInteraction: integer;
+
+      ButtonPos:      Integer;
       Button:         array of TButton;
+      
       SelectsS:       array of TSelectSlide;
       ButtonCollection: array of TButtonCollection;
-      BackImg:        TTexture;
-      BackW:          integer;
-      BackH:          integer;
-
-      fFileName : string;
     public
       Text:       array of TText;
       Static:     array of TStatic;
@@ -94,7 +93,7 @@ type
       procedure AddButtonCollection(const ThemeCollection: TThemeButtonCollection; Const Num: Byte);
 
       // background
-      procedure AddBackground(Name: string);
+      procedure AddBackground(ThemedSettings: TThemeBackground);
 
       // static
       function AddStatic(ThemeStatic: TThemeStatic): integer; overload;
@@ -191,10 +190,21 @@ uses UCommon,
      UDisplay,
      UCovers,
      UTime,
-     USkins;
+     USkins,
+     //Background types
+     UMenuBackgroundNone,
+     UMenuBackgroundColor,
+     UMenuBackgroundTexture,
+     UMenuBackgroundVideo,
+     UMenuBackgroundFade;
 
 destructor TMenu.Destroy;
 begin
+  If (Background <> nil) then
+  begin
+    Background.Destroy;
+  end;
+  //Log.LogError('Unloaded Succesful: ' + ClassName);
   inherited;
 end;
 
@@ -207,10 +217,10 @@ begin
   SetLength(Static, 0);
   SetLength(Button, 0);
 
-  BackImg.TexNum := 0;
-
   //Set ButtonPos to Autoset Length
   ButtonPos := -1;
+
+  Background := nil;
 end;
 {
 constructor TMenu.Create(Back: String);
@@ -314,7 +324,7 @@ begin
   PrepareButtonCollections(ThemeBasic.ButtonCollection);
 
   //Add Background
-  AddBackground(ThemeBasic.Background.Tex);
+  AddBackground(ThemeBasic.Background);
 
   //Add Statics and Texts
   for I := 0 to High(ThemeBasic.Static) do
@@ -324,33 +334,140 @@ begin
     AddText(ThemeBasic.Text[I]);
 end;
 
-procedure TMenu.AddBackground(Name: string);
-//var
-//  lFileName : string;
-begin
-  if Name <> '' then
+procedure TMenu.AddBackground(ThemedSettings: TThemeBackground);
+  var
+    FileExt: String;
+
+  Function IsInArray(const Piece: String; const A: Array of String): Boolean;
+  var I: Integer;
   begin
-    fFileName := Skin.GetTextureFileName(Name);
-    fFileName := AdaptFilePaths( fFileName );
-
-    if fileexists( fFileName ) then
-    begin
-      BackImg   := Texture.GetTexture( fFileName , TEXTURE_TYPE_PLAIN);
-
-      if ( BackImg.TexNum = 0 )  then
+    Result := False;
+    
+    For I := 0 to High(A) do
+      If (A[I] = Piece) then
       begin
-        if VideoPlayback.Open( fFileName ) then
+        Result := True;
+        Exit;
+      end;
+  end;
+
+  Function TryBGCreate(Typ: cMenuBackground): Boolean;
+  begin
+    Result := True;
+
+    try
+      Background := Typ.Create(ThemedSettings);
+    except
+      on E: EMenuBackgroundError do
+      begin //Background failes to create
+        Freeandnil(Background);
+        Result := False;
+      end;
+    end;
+  end;
+begin
+  If (Background <> nil) then
+  begin
+    Background.Destroy;
+    Background := nil;
+  end;
+
+  Case ThemedSettings.BGType of
+    BGT_Auto: begin //Automaticly choose one out of BGT_Texture, BGT_Video or BGT_Color
+
+      If (Length(ThemedSettings.Tex) > 0) then
+      begin
+
+        //At first some intelligent try to decide which BG to load
+        FileExt := lowercase(ExtractFileExt(Skin.GetTextureFileName(ThemedSettings.Tex)));
+
+        If IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDTEXTURE) then
+          TryBGCreate(TMenuBackgroundTexture)
+        Else If IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDVIDEO) then
+          TryBGCreate(TMenuBackgroundVideo);
+
+
+        //If the intelligent method don't succeed
+        //do it by trial and error
+        If (Background = nil) then
         begin
-          VideoBGTimer.SetTime(0);
-          VideoPlayback.Play;
+          //Try Textured Bg
+          if not TryBGCreate(TMenuBackgroundTexture) then
+            TryBgCreate(TMenuBackgroundVideo); //Try Video BG
+
+          //Color is fallback if Background = nil
         end;
       end;
-
-      BackImg.W := 800;
-      BackImg.H := 600;
-      BackW     := 1;
-      BackH     := 1;
     end;
+
+    BGT_Color: begin
+      try
+        Background := TMenuBackgroundColor.Create(ThemedSettings);
+      except
+        on E: EMenuBackgroundError do
+        begin
+          Log.LogError(E.Message);
+          freeandnil(Background);
+        end;
+      end;
+    end;
+
+    BGT_Texture: begin
+      try
+        Background := TMenuBackgroundTexture.Create(ThemedSettings);
+      except
+        on E: EMenuBackgroundError do
+        begin
+          Log.LogError(E.Message);
+          freeandnil(Background);
+        end;
+      end;
+    end;
+
+    BGT_Video: begin
+      try
+        Background := TMenuBackgroundVideo.Create(ThemedSettings);
+      except
+        on E: EMenuBackgroundError do
+        begin
+          Log.LogError(E.Message);
+          freeandnil(Background);
+        end;
+      end;
+    end;
+
+    BGT_None: begin
+      try
+        Background := TMenuBackgroundNone.Create(ThemedSettings);
+      except
+        on E: EMenuBackgroundError do
+        begin
+          Log.LogError(E.Message);
+          freeandnil(Background);
+        end;
+      end;
+    end;
+
+    BGT_Fade: begin
+      try
+        Background := TMenuBackgroundFade.Create(ThemedSettings);
+      except
+        on E: EMenuBackgroundError do
+        begin
+          Log.LogError(E.Message);
+          freeandnil(Background);
+        end;
+      end;
+    end;
+  end;
+
+  //Fallback to None Background or Colored Background
+  If (Background = nil) then
+  begin
+    If (ThemedSettings.BGType = BGT_Color) then
+      Background := TMenuBackgroundNone.Create(ThemedSettings)
+    Else
+      Background := TMenuBackgroundColor.Create(ThemedSettings)
   end;
 end;
 
@@ -752,29 +869,7 @@ end;
 // Method to draw our TMenu and all his child buttons
 function TMenu.DrawBG: boolean;
 begin
-  BackImg.ColR := 1;
-  BackImg.ColG := 1;
-  BackImg.ColB := 1;
-  BackImg.TexX1 := 0;
-  BackImg.TexY1 := 0;
-  BackImg.TexX2 := 1;
-  BackImg.TexY2 := 1;
-
-  if (BackImg.TexNum > 0) then
-  begin
-    BackImg.X := 0;
-    BackImg.Y := 0;
-    BackImg.Z := 0; // todo: eddie: to the opengl experts: please check this! On the mac z is not initialized???
-    BackImg.W := 800;
-    BackImg.H := 600;
-    DrawTexture(BackImg);
-  end
-  else if (VideoPlayback <> nil) then
-  begin
-    VideoPlayback.GetFrame(VideoBGTimer.GetTime());
-    // FIXME: why do we draw on screen 2? Seems to be wrong.
-    VideoPlayback.DrawGL(2);
-  end;
+  Background.Draw;
 
   Result := true;
 end;
@@ -1391,7 +1486,7 @@ begin
   // method is not implemented by now. This is necessary for theme-switching too.
   // At the moment videos cannot be turned off without restarting USDX. 
 
-  // check if a background texture was found
+  {// check if a background texture was found
   if (BackImg.TexNum = 0)  then
   begin
     // try to open an animated background
@@ -1405,7 +1500,11 @@ begin
         VideoPlayback.Play;
       end;
     end;
-  end;
+  end; }
+  If (Background = nil) then
+    AddBackground(DEFAULTBACKGROUND);
+
+  Background.OnShow;
 end;
 
 procedure TMenu.onShowFinish;
@@ -1451,6 +1550,7 @@ end;
 procedure TMenu.onHide;
 begin
   // nothing
+  Background.OnFinish;
 end;
 
 function TMenu.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;

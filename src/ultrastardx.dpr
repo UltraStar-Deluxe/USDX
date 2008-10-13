@@ -151,6 +151,13 @@ uses
   UDrawTexture           in 'menu\UDrawTexture.pas',
   UMenuButtonCollection  in 'menu\UMenuButtonCollection.pas',
 
+  UMenuBackground        in 'menu\UMenuBackground.pas',
+  UMenuBackgroundNone    in 'menu\UMenuBackgroundNone.pas',
+  UMenuBackgroundColor   in 'menu\UMenuBackgroundColor.pas',
+  UMenuBackgroundTexture in 'menu\UMenuBackgroundTexture.pas',
+  UMenuBackgroundVideo   in 'menu\UMenuBackgroundVideo.pas',
+  UMenuBackgroundFade    in 'menu\UMenuBackgroundFade.pas',
+
   //------------------------------
   //Includes - base
   //------------------------------
@@ -188,6 +195,17 @@ uses
   UTextClasses      in 'base\UTextClasses.pas',
   USingScores       in 'base\USingScores.pas',
   USingNotes        in 'base\USingNotes.pas',
+
+  //------------------------------
+  //Includes - Plugin Support
+  //------------------------------
+  {UPluginDefines    in 'pluginsupport\UPluginDefines.pas',
+  UPartyDefines     in 'pluginsupport\UPartyDefines.pas',
+
+  UPartyMode        in 'pluginsupport\UPartyMode.pas',
+  UPartyManager     in 'pluginsupport\UPartyManager.pas',
+  UPartyModePlugin  in 'pluginsupport\UPartyModePlugin.pas',
+  UPluginLoader     in 'pluginsupport\UPluginLoader.pas',    }
 
   UModules          in 'base\UModules.pas',          //List of Modules to Load
   UHooks            in 'base\UHooks.pas',            //Hook Managing

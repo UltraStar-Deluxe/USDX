@@ -136,7 +136,9 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.CheckPopup.Background.Tex);
+  AddText(Theme.CheckPopup.TextCheck);
+  
+  LoadFromTheme(Theme.CheckPopup);
 
   AddButton(Theme.CheckPopup.Button1);
   if (Length(Button[0].Text) = 0) then
@@ -145,14 +147,6 @@ begin
   AddButton(Theme.CheckPopup.Button2);
   if (Length(Button[1].Text) = 0) then
     AddButtonText(14, 20, 'Button 2');
-
-  AddText(Theme.CheckPopup.TextCheck);
-
-  for I := 0 to High(Theme.CheckPopup.Static) do
-    AddStatic(Theme.CheckPopup.Static[I]);
-
-  for I := 0 to High(Theme.CheckPopup.Text) do
-    AddText(Theme.CheckPopup.Text[I]);
 
   Interaction := 0;
 end;
@@ -179,6 +173,8 @@ begin
 
   Button[0].Text[0].Text := Language.Translate('SONG_MENU_YES');
   Button[1].Text[0].Text := Language.Translate('SONG_MENU_NO');
+
+  Background.OnShow
 end;
 
 // error popup
@@ -223,19 +219,13 @@ var
 begin
   inherited Create;
 
-  AddBackground(Theme.CheckPopup.Background.Tex);
+  AddText(Theme.ErrorPopup.TextError);
+
+  LoadFromTheme(Theme.ErrorPopup);
 
   AddButton(Theme.ErrorPopup.Button1);
   if (Length(Button[0].Text) = 0) then
     AddButtonText(14, 20, 'Button 1');
-
-  AddText(Theme.ErrorPopup.TextError);
-
-  for I := 0 to High(Theme.ErrorPopup.Static) do
-    AddStatic(Theme.ErrorPopup.Static[I]);
-
-  for I := 0 to High(Theme.ErrorPopup.Text) do
-    AddText(Theme.ErrorPopup.Text[I]);
 
   Interaction := 0;
 end;
@@ -259,6 +249,7 @@ procedure TScreenPopupError.ShowPopup(msg: String);
 begin
   Interaction := 0; //Reset Interaction
   Visible := True;  //Set Visible
+  Background.OnShow;
 
 {  //dirty hack... Text[0] is invisible for some strange reason
   for i:=1 to high(Text) do
