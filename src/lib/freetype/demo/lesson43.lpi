@@ -1,0 +1,272 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="6"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value=".\"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="1"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <DestinationDirectory Value="$(TestDir)\publishedproject\"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <Units Count="16">
+      <Unit0>
+        <Filename Value="lesson43.dpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="lesson43"/>
+        <CursorPos X="1" Y="138"/>
+        <TopLine Value="118"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="72"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="JEDI-SDL\OpenGL\Pas\opengl12.pas"/>
+        <UnitName Value="opengl12"/>
+        <CursorPos X="20" Y="9922"/>
+        <TopLine Value="9889"/>
+        <UsageCount Value="5"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="JEDI-SDL\SDL\Pas\sdl.pas"/>
+        <UnitName Value="sdl"/>
+        <CursorPos X="29" Y="3569"/>
+        <TopLine Value="3547"/>
+        <UsageCount Value="5"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="FreeType.pas"/>
+        <UnitName Value="FreeType"/>
+        <CursorPos X="6" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="5"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="UFreeType.pas"/>
+        <UnitName Value="UFreeType"/>
+        <CursorPos X="47" Y="111"/>
+        <TopLine Value="76"/>
+        <UsageCount Value="35"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="freetype"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="8"/>
+        <SyntaxHighlighter Value="None"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="freetype\freetype.pas"/>
+        <UnitName Value="freetype"/>
+        <CursorPos X="31" Y="807"/>
+        <TopLine Value="14"/>
+        <UsageCount Value="15"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="..\..\daten\Projekte\UltraStarDX\trunk\Game\Code\lib\ffmpeg\avcodec.pas"/>
+        <UnitName Value="avcodec"/>
+        <CursorPos X="1" Y="38"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="6"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\JEDI-SDL\OpenGL\Pas\gl.pas"/>
+        <UnitName Value="gl"/>
+        <CursorPos X="2" Y="89"/>
+        <TopLine Value="69"/>
+        <UsageCount Value="9"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\..\ctypes\ctypes.pas"/>
+        <UnitName Value="ctypes"/>
+        <CursorPos X="8" Y="25"/>
+        <TopLine Value="51"/>
+        <UsageCount Value="9"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="..\..\JEDI-SDL\OpenGL\Pas\glu.pas"/>
+        <UnitName Value="glu"/>
+        <CursorPos X="14" Y="155"/>
+        <TopLine Value="135"/>
+        <UsageCount Value="9"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="..\..\JEDI-SDL\SDL\Pas\sdl.pas"/>
+        <UnitName Value="sdl"/>
+        <CursorPos X="12" Y="1418"/>
+        <TopLine Value="1398"/>
+        <UsageCount Value="9"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\freetype.pas"/>
+        <UnitName Value="freetype"/>
+        <CursorPos X="3" Y="1985"/>
+        <TopLine Value="1965"/>
+        <UsageCount Value="10"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="C:\Programme\lazarus\fpc\2.2.0\source\rtl\objpas\classes\classesh.inc"/>
+        <CursorPos X="13" Y="26"/>
+        <TopLine Value="6"/>
+        <UsageCount Value="13"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="C:\Programme\lazarus\fpc\2.2.0\source\rtl\objpas\types.pp"/>
+        <UnitName Value="types"/>
+        <CursorPos X="7" Y="105"/>
+        <TopLine Value="73"/>
+        <UsageCount Value="12"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="UFont.pas"/>
+        <UnitName Value="UFont"/>
+        <CursorPos X="1" Y="1751"/>
+        <TopLine Value="1734"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit15>
+    </Units>
+    <JumpHistory Count="22" HistoryIndex="21">
+      <Position1>
+        <Filename Value="lesson43.dpr"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="lesson43.dpr"/>
+        <Caret Line="138" Column="1" TopLine="118"/>
+      </Position2>
+      <Position3>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1746" Column="1" TopLine="1726"/>
+      </Position3>
+      <Position4>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1747" Column="1" TopLine="1727"/>
+      </Position4>
+      <Position5>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1749" Column="1" TopLine="1729"/>
+      </Position5>
+      <Position6>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1750" Column="1" TopLine="1730"/>
+      </Position6>
+      <Position7>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1751" Column="1" TopLine="1731"/>
+      </Position7>
+      <Position8>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1752" Column="1" TopLine="1732"/>
+      </Position8>
+      <Position9>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1575" Column="1" TopLine="1555"/>
+      </Position9>
+      <Position10>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1576" Column="1" TopLine="1556"/>
+      </Position10>
+      <Position11>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1578" Column="1" TopLine="1558"/>
+      </Position11>
+      <Position12>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1579" Column="1" TopLine="1559"/>
+      </Position12>
+      <Position13>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1580" Column="1" TopLine="1560"/>
+      </Position13>
+      <Position14>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1582" Column="1" TopLine="1562"/>
+      </Position14>
+      <Position15>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1583" Column="1" TopLine="1563"/>
+      </Position15>
+      <Position16>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1585" Column="1" TopLine="1565"/>
+      </Position16>
+      <Position17>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1600" Column="1" TopLine="1580"/>
+      </Position17>
+      <Position18>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1602" Column="1" TopLine="1582"/>
+      </Position18>
+      <Position19>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1603" Column="1" TopLine="1583"/>
+      </Position19>
+      <Position20>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1604" Column="1" TopLine="1584"/>
+      </Position20>
+      <Position21>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1605" Column="1" TopLine="1585"/>
+      </Position21>
+      <Position22>
+        <Filename Value="UFont.pas"/>
+        <Caret Line="1586" Column="1" TopLine="1566"/>
+      </Position22>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <IncludeFiles Value="..\..\JEDI-SDL\SDL\Pas\"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <BreakPoints Count="2">
+      <Item1>
+        <Source Value="lesson43.dpr"/>
+        <Line Value="138"/>
+      </Item1>
+      <Item2>
+        <Source Value="UFont.pas"/>
+        <Line Value="1751"/>
+      </Item2>
+    </BreakPoints>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>
