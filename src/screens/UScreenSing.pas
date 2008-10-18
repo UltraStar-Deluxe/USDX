@@ -657,7 +657,7 @@ begin
     Tex_Background.TexNum := 0;
   end;
 
-//  Background.OnFinish;
+  Background.OnFinish;
 end;
 
 function TScreenSing.Draw: boolean;
