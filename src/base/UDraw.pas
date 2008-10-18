@@ -326,7 +326,7 @@ begin
             GoldenStarPos := Rec.Left;
           //done
 
-         // srodkowa czesc  -  middle part
+         // middle part
         Rec.Left := Rec.Right;
         Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == length
 
@@ -340,7 +340,7 @@ begin
           glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
-        // prawa czesc  -  right part
+        // right part
         Rec.Left := Rec.Right;
         Rec.Right := Rec.Right + NotesW;
 
@@ -939,38 +939,9 @@ begin
     end;
   end;
 
-    // Draw Lyrics
-    ScreenSingModi.Lyrics.Draw(LyricsState.MidBeat);
-
-    // todo: Lyrics
-{    // rysuje pasek, podpowiadajacy poczatek spiwania w scenie
-    FS := 1.3;
-    BarFrom := Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start;
-    if BarFrom > 40 then BarFrom := 40;
-    if (Lines[0].Line[Lines[0].Current].StartNote - Lines[0].Line[Lines[0].Current].Start > 8) and  // dluga przerwa //16->12 for more help bars and then 12->8 for even more
-       (Lines[0].Line[Lines[0].Current].StartNote - LyricsState.MidBeat > 0) and                     // przed tekstem
-       (Lines[0].Line[Lines[0].Current].StartNote - LyricsState.MidBeat < 40) then begin            // ale nie za wczesnie
-         BarWspol := (LyricsState.MidBeat - (Lines[0].Line[Lines[0].Current].StartNote - BarFrom)) / BarFrom;
-         Rec.Left := NR.Left + BarWspol * (ScreenSingModi.LyricMain.ClientX - NR.Left - 50) + 10*ScreenX;
-         Rec.Right := Rec.Left + 50;
-         Rec.Top := Skin_LyricsT + 3;
-         Rec.Bottom := Rec.Top + 33;//SingScreen.LyricMain.Size * 3;
-
-           glEnable(GL_TEXTURE_2D);
-           glEnable(GL_BLEND);
-           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-           glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
-           glBegin(GL_QUADS);
-             glColor4f(1, 1, 1, 0);
-               glTexCoord2f(0, 0); glVertex2f(Rec.Left, Rec.Top);
-               glTexCoord2f(0, 1); glVertex2f(Rec.Left, Rec.Bottom);
-             glColor4f(1, 1, 1, 0.5);
-               glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-               glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-           glEnd;
-           glDisable(GL_BLEND);
-    end;
-    }
+  // Draw Lyrics
+  ScreenSingModi.Lyrics.Draw(LyricsState.MidBeat);
+  // TODO: Lyrics helper
 
   // oscilloscope | the thing that moves when you yell into your mic (imho)
   if (((Ini.Oscilloscope = 1) AND (DLLMan.Selected.ShowRateBar_O)) AND (NOT DLLMan.Selected.ShowRateBar)) then begin
