@@ -671,7 +671,7 @@ var
   CurLyricsTime: real;
 begin
 
-//  Background.Draw;
+  Background.Draw;
 
   // set player names (for 2 screens and only Singstar skin)
   if ScreenAct = 1 then
