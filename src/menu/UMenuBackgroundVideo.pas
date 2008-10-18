@@ -44,57 +44,57 @@ uses
 type
   //DefaultBGVideoPlayback = TVideoPlayback_FFmpeg;
 
-{type 
+{type
   TBGVideoPool = class;
 
   PBGVideoPoolItem = ^TBGVideoPoolItem;
   TBGVideoPoolItem = record
     Parent: TBGVideoPool;
     VideoPlayback = IVideoPlayback;
-    ReferenceCounter: Cardinal; //Number of Creations
+    ReferenceCounter: cardinal; //Number of Creations
   end;
 
   TBGVideo = class
     private
       myItem: PBGVideoPoolItem;
     public
-      Constructor Create(Item: PBGVideoPoolItem); override;
+      constructor Create(Item: PBGVideoPoolItem); override;
 
-      Function    GetVideoPlayback: IVideoPlayback;
-      Procedure   Draw;
+      function    GetVideoPlayback: IVideoPlayback;
+      procedure   Draw;
 
-      Destructor  Destroy;
+      destructor  Destroy;
   end;
 
   TBGVideoPool = class
     private
       Items: PBGVideoPoolItem;
     public
-      Constructor Create;
+      constructor Create;
 
-      Function    GetBGVideo(filename: String): TBGVideo;
-      Procedure   RemoveItem(
-      Procedure   FreeAllItems;
+      function    GetBGVideo(filename: string): TBGVideo;
+      procedure   RemoveItem(
+      procedure   FreeAllItems;
 
-      Destructor  Destroy;
+      destructor  Destroy;
   end;
-        
+
 type }
   TMenuBackgroundVideo = class (TMenuBackground)
     private
-      fFilename: String;
+      fFilename: string;
     public
-      Constructor Create(const ThemedSettings: TThemeBackground); override;
-      Procedure   OnShow; override;
-      Procedure   Draw; override;
-      Procedure   OnFinish; override;
-      Destructor  Destroy; override;
+      constructor Create(const ThemedSettings: TThemeBackground); override;
+      procedure   OnShow; override;
+      procedure   Draw; override;
+      procedure   OnFinish; override;
+      destructor  Destroy; override;
   end;
 
 {var
   BGVideoPool: TBGVideoPool;  }
 const
-  SUPPORTED_EXTS_BACKGROUNDVIDEO: Array[0..6] of String = ('.avi', '.mov', '.divx', '.mpg', '.mp4', '.mpeg', '.m2v');
+  SUPPORTED_EXTS_BACKGROUNDVIDEO: array[0..6] of string = ('.avi', '.mov', '.divx', '.mpg', '.mp4', '.mpeg', '.m2v');
 
 implementation
 
@@ -107,10 +107,10 @@ uses
   USkins,
   UCommon;
 
-Constructor TMenuBackgroundVideo.Create(const ThemedSettings: TThemeBackground);
+constructor TMenuBackgroundVideo.Create(const ThemedSettings: TThemeBackground);
 begin
   inherited;
-  If (Length(ThemedSettings.Tex) = 0) then
+  if (Length(ThemedSettings.Tex) = 0) then
     raise EMenuBackgroundError.Create('TMenuBackgroundVideo: No video filename present');
 
   fFileName := Skin.GetTextureFileName(ThemedSettings.Tex);
@@ -125,13 +125,12 @@ begin
     raise EMenuBackgroundError.Create('TMenuBackgroundVideo: Can''t load background video: ' + fFilename);
 end;
 
-Destructor  TMenuBackgroundVideo.Destroy;
+destructor  TMenuBackgroundVideo.Destroy;
 begin
 
 end;
 
-
-Procedure   TMenuBackgroundVideo.OnShow;
+procedure   TMenuBackgroundVideo.OnShow;
 begin
   if VideoPlayback.Open( fFileName ) then
   begin
@@ -140,13 +139,12 @@ begin
   end;
 end;
 
-Procedure   TMenuBackgroundVideo.OnFinish;
+procedure   TMenuBackgroundVideo.OnFinish;
 begin
 
 end;
 
-
-Procedure   TMenuBackgroundVideo.Draw;
+procedure   TMenuBackgroundVideo.Draw;
 begin
   glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -157,23 +155,23 @@ end;
 
 // Implementation of TBGVideo
 //--------
-{Constructor TBGVideo.Create(Item: PBGVideoPoolItem);
+{constructor TBGVideo.Create(Item: PBGVideoPoolItem);
 begin
   myItem := PBGVideoPoolItem;
   Inc(myItem.ReferenceCounter);
 end;
 
-Destructor  TBGVideo.Destroy;
+destructor  TBGVideo.Destroy;
 begin
   Dec(myItem.ReferenceCounter);
 end;
 
-Function    TBGVideo.GetVideoPlayback: IVideoPlayback;
+function    TBGVideo.GetVideoPlayback: IVideoPlayback;
 begin
 
 end;
 
-Procedure   TBGVideo.Draw;
+procedure   TBGVideo.Draw;
 begin
 
 end;
@@ -181,22 +179,22 @@ end;
 // Implementation of TBGVideoPool
 //--------
 
-Constructor TBGVideoPool.Create;
+constructor TBGVideoPool.Create;
 begin
 
 end;
 
-Destructor  TBGVideoPool.Destroy;
+destructor  TBGVideoPool.Destroy;
 begin
 
 end;
 
-Function    TBGVideoPool.GetBGVideo(filename: String): TBGVideo;
+function    TBGVideoPool.GetBGVideo(filename: string): TBGVideo;
 begin
 
 end;
 
-Procedure   TBGVideoPool.FreeAllItems;
+procedure   TBGVideoPool.FreeAllItems;
 begin
 
 end;  }

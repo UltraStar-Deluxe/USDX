@@ -45,8 +45,8 @@ type
     private
       Color: TRGB;
     public
-      Constructor Create(const ThemedSettings: TThemeBackground); override;
-      Procedure   Draw; override;
+      constructor Create(const ThemedSettings: TThemeBackground); override;
+      procedure   Draw; override;
   end;
 
 implementation
@@ -54,13 +54,13 @@ uses
   gl,
   glext;
 
-Constructor TMenuBackgroundColor.Create(const ThemedSettings: TThemeBackground);
+constructor TMenuBackgroundColor.Create(const ThemedSettings: TThemeBackground);
 begin
   inherited;
   Color := ThemedSettings.Color;
 end;
 
-Procedure   TMenuBackgroundColor.Draw;
+procedure   TMenuBackgroundColor.Draw;
 begin
    glClearColor(Color.R, Color.G, Color.B, 0);
    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);

@@ -59,9 +59,9 @@ type
       Interactions:   array of TInteract;
       SelInteraction: integer;
 
-      ButtonPos:      Integer;
+      ButtonPos:      integer;
       Button:         array of TButton;
-      
+     
       SelectsS:       array of TSelectSlide;
       ButtonCollection: array of TButtonCollection;
     public
@@ -72,7 +72,6 @@ type
 
       Fade:       integer; // fade type
       ShowFinish: boolean; // true if there is no fade
-
 
       destructor Destroy; override;
       constructor Create; overload; virtual;
@@ -90,7 +89,7 @@ type
       procedure LoadFromTheme(const ThemeBasic: TThemeBasic);
 
       procedure PrepareButtonCollections(const Collections: AThemeButtonCollection);
-      procedure AddButtonCollection(const ThemeCollection: TThemeButtonCollection; Const Num: Byte);
+      procedure AddButtonCollection(const ThemeCollection: TThemeButtonCollection; const Num: byte);
 
       // background
       procedure AddBackground(ThemedSettings: TThemeBackground);
@@ -103,20 +102,20 @@ type
       function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType): integer; overload;
       function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer; overload;
       function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer; overload;
-      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name: string; Typ: TTextureType; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer; overload;
+      function AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name: string; Typ: TTextureType; Color: integer; Reflection: boolean; ReflectionSpacing: real): integer; overload;
 
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
       function AddText(X, Y: real; const Text_: string): integer; overload;
       function AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; const Text: string): integer; overload;
-      function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: Boolean; ReflectionSpacing_: Real; Z : Real): integer; overload;
+      function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: boolean; ReflectionSpacing_: real; Z : real): integer; overload;
 
       // button
-      Procedure SetButtonLength(Length: Cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
+      Procedure SetButtonLength(Length: cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
       function AddButton(ThemeButton: TThemeButton): integer; overload;
-      function AddButton(X, Y, W, H: real; const Name: String): integer; overload;
-      function AddButton(X, Y, W, H: real; const Name: String; Typ: TTextureType; Reflection: Boolean): integer; overload;
-      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; const Name: String; Typ: TTextureType; Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer; overload;
+      function AddButton(X, Y, W, H: real; const Name: string): integer; overload;
+      function AddButton(X, Y, W, H: real; const Name: string; Typ: TTextureType; Reflection: boolean): integer; overload;
+      function AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real; const Name: string; Typ: TTextureType; Reflection: boolean; ReflectionSpacing, DeSelectReflectionSpacing: real): integer; overload;
       procedure ClearButtons;
       procedure AddButtonText(AddX, AddY: real; const AddText: string); overload;
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; const AddText: string); overload;
@@ -129,10 +128,10 @@ type
         TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
         SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
         STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
-        const Name: String; Typ: TTextureType; const SBGName: String; SBGTyp: TTextureType;
+        const Name: string; Typ: TTextureType; const SBGName: string; SBGTyp: TTextureType;
         const Caption: string; var Data: integer): integer; overload;
       procedure AddSelectSlideOption(const AddText: string); overload;
-      procedure AddSelectSlideOption(SelectNo: Cardinal; const AddText: string); overload;
+      procedure AddSelectSlideOption(SelectNo: cardinal; const AddText: string); overload;
       procedure UpdateSelectSlideOptions(ThemeSelectSlide: TThemeSelectSlide; SelectNum: integer; Values: array of string; var Data: integer);
 
 //      function AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
@@ -140,23 +139,23 @@ type
       procedure FadeTo(Screen: PMenu); overload;
       procedure FadeTo(Screen: PMenu; aSound: TAudioPlaybackStream); overload;
       //popup hack
-      procedure CheckFadeTo(Screen: PMenu; msg: String);
+      procedure CheckFadeTo(Screen: PMenu; msg: string);
 
       function DrawBG: boolean; virtual;
       function DrawFG: boolean; virtual;
       function Draw: boolean; virtual;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown : Boolean): Boolean; virtual;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown : boolean): boolean; virtual;
       // FIXME: ParseMouse is not implemented in any subclass and not even used anywhere in the code
       //   -> do this before activation of this method
-      //function ParseMouse(Typ: integer; X: integer; Y: integer): Boolean; virtual; abstract;
+      //function ParseMouse(Typ: integer; X: integer; Y: integer): boolean; virtual; abstract;
       procedure onShow; virtual;
       procedure onShowFinish; virtual;
       procedure onHide; virtual;
 
       procedure SetAnimationProgress(Progress: real); virtual;
 
-      function IsSelectable(Int: Cardinal): Boolean;
-      
+      function IsSelectable(Int: cardinal): boolean;
+    
       procedure InteractNext; virtual;
       procedure InteractCustom(CustomSwitch: integer); virtual;
       procedure InteractPrev; virtual;
@@ -200,7 +199,7 @@ uses UCommon,
 
 destructor TMenu.Destroy;
 begin
-  If (Background <> nil) then
+  if (Background <> nil) then
   begin
     Background.Destroy;
   end;
@@ -223,21 +222,23 @@ begin
   Background := nil;
 end;
 {
-constructor TMenu.Create(Back: String);
+constructor TMenu.Create(Back: string);
 begin
   inherited Create;
 
-  if Back <> '' then begin
+  if Back <> '' then
+  begin
 //    BackImg := Texture.GetTexture(true, Back, TEXTURE_TYPE_PLAIN, 0);
     BackImg := Texture.GetTexture(Back, TEXTURE_TYPE_PLAIN, 0); // new theme system
     BackImg.W := 800;//640;
     BackImg.H := 600;//480;
     BackW := 1;
     BackH := 1;
-  end else
+  end
+  else
     BackImg.TexNum := 0;
 
-   //Set ButtonPos to Autoset Length 
+   //Set ButtonPos to Autoset Length
    ButtonPos := -1;
 end;
 
@@ -250,7 +251,7 @@ begin
   BackH := H;
 end;   }
 
-function RGBFloatToInt(R, G, B: Double): Cardinal;
+function RGBFloatToInt(R, G, B: Double): cardinal;
 begin
   Result := (Trunc(255 * R) shl 16) or
             (Trunc(255 * G) shl  8) or
@@ -259,7 +260,7 @@ end;
 
 procedure TMenu.AddInteraction(Typ, Num: integer);
 var
-  IntNum:   integer;
+  IntNum: integer;
 begin
   IntNum := Length(Interactions);
   SetLength(Interactions, IntNum+1);
@@ -270,8 +271,8 @@ end;
 
 procedure TMenu.SetInteraction(Num: integer);
 var
-  OldNum, OldTyp:   integer;
-  NewNum, NewTyp:   integer;
+  OldNum, OldTyp: integer;
+  NewNum, NewTyp: integer;
 begin
   // set inactive
   OldNum := Interactions[Interaction].Num;
@@ -281,32 +282,32 @@ begin
   NewTyp := Interactions[Num].Typ;
 
   case OldTyp of
-    iButton:  Button[OldNum].Selected := False;
-    iText:    Text[OldNum].Selected := False;
-    iSelectS: SelectsS[OldNum].Selected := False;
+    iButton:  Button[OldNum].Selected := false;
+    iText:    Text[OldNum].Selected := false;
+    iSelectS: SelectsS[OldNum].Selected := false;
     //Button Collection Mod
     iBCollectionChild:
       begin
-        Button[OldNum].Selected := False;
-        
+        Button[OldNum].Selected := false;
+      
         //Deselect Collection if Next Button is Not from Collection
         if (NewTyp <> iButton) Or (Button[NewNum].Parent <> Button[OldNum].Parent) then
-          ButtonCollection[Button[OldNum].Parent-1].Selected := False;
+          ButtonCollection[Button[OldNum].Parent-1].Selected := false;
       end;
   end;
 
   // set active
   SelInteraction := Num;
   case NewTyp of
-    iButton:  Button[NewNum].Selected := True;
-    iText:    Text[NewNum].Selected := True;
-    iSelectS: SelectsS[NewNum].Selected := True;
+    iButton:  Button[NewNum].Selected := true;
+    iText:    Text[NewNum].Selected := true;
+    iSelectS: SelectsS[NewNum].Selected := true;
 
     //Button Collection Mod
     iBCollectionChild:
       begin
-        Button[NewNum].Selected := True;
-        ButtonCollection[Button[NewNum].Parent-1].Selected := True;
+        Button[NewNum].Selected := true;
+        ButtonCollection[Button[NewNum].Parent-1].Selected := true;
       end;
   end;
 end;
@@ -317,7 +318,7 @@ end;
 //----------------------
 procedure TMenu.LoadFromTheme(const ThemeBasic: TThemeBasic);
 var
-  I: Integer;
+  I: integer;
 begin
   //Add Button Collections (Set Button CollectionsLength)
   //Button Collections are Created when the first ChildButton is Created
@@ -336,24 +337,24 @@ end;
 
 procedure TMenu.AddBackground(ThemedSettings: TThemeBackground);
   var
-    FileExt: String;
+    FileExt: string;
 
-  Function IsInArray(const Piece: String; const A: Array of String): Boolean;
-  var I: Integer;
+  Function IsInArray(const Piece: string; const A: array of string): boolean;
+  var I: integer;
   begin
-    Result := False;
-    
-    For I := 0 to High(A) do
-      If (A[I] = Piece) then
+    Result := false;
+  
+    for I := 0 to High(A) do
+      if (A[I] = Piece) then
       begin
-        Result := True;
+        Result := true;
         Exit;
       end;
   end;
 
-  Function TryBGCreate(Typ: cMenuBackground): Boolean;
+  Function TryBGCreate(Typ: cMenuBackground): boolean;
   begin
-    Result := True;
+    Result := true;
 
     try
       Background := Typ.Create(ThemedSettings);
@@ -361,12 +362,13 @@ procedure TMenu.AddBackground(ThemedSettings: TThemeBackground);
       on E: EMenuBackgroundError do
       begin //Background failes to create
         Freeandnil(Background);
-        Result := False;
+        Result := false;
       end;
     end;
   end;
+
 begin
-  If (Background <> nil) then
+  if (Background <> nil) then
   begin
     Background.Destroy;
     Background := nil;
@@ -375,21 +377,20 @@ begin
   Case ThemedSettings.BGType of
     BGT_Auto: begin //Automaticly choose one out of BGT_Texture, BGT_Video or BGT_Color
 
-      If (Length(ThemedSettings.Tex) > 0) then
+      if (Length(ThemedSettings.Tex) > 0) then
       begin
 
         //At first some intelligent try to decide which BG to load
         FileExt := lowercase(ExtractFileExt(Skin.GetTextureFileName(ThemedSettings.Tex)));
 
-        If IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDTEXTURE) then
+        if IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDTEXTURE) then
           TryBGCreate(TMenuBackgroundTexture)
-        Else If IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDVIDEO) then
+        else if IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDVIDEO) then
           TryBGCreate(TMenuBackgroundVideo);
-
 
         //If the intelligent method don't succeed
         //do it by trial and error
-        If (Background = nil) then
+        if (Background = nil) then
         begin
           //Try Textured Bg
           if not TryBGCreate(TMenuBackgroundTexture) then
@@ -462,11 +463,11 @@ begin
   end;
 
   //Fallback to None Background or Colored Background
-  If (Background = nil) then
+  if (Background = nil) then
   begin
-    If (ThemedSettings.BGType = BGT_Color) then
+    if (ThemedSettings.BGType = BGT_Color) then
       Background := TMenuBackgroundNone.Create(ThemedSettings)
-    Else
+    else
       Background := TMenuBackgroundColor.Create(ThemedSettings)
   end;
 end;
@@ -477,10 +478,10 @@ end;
 //----------------------
 procedure TMenu.PrepareButtonCollections(const Collections: AThemeButtonCollection);
 var
-  I: Integer;
+  I: integer;
 begin
   SetLength(ButtonCollection, Length(Collections));
-  For I := 0 to High(ButtonCollection) do
+  for I := 0 to High(ButtonCollection) do
     AddButtonCollection(Collections[I], I);
 end;
 
@@ -488,10 +489,10 @@ end;
 //AddButtonCollection:
 //Create a Button Collection;
 //----------------------
-procedure TMenu.AddButtonCollection(const ThemeCollection: TThemeButtonCollection; Const Num: Byte);
+procedure TMenu.AddButtonCollection(const ThemeCollection: TThemeButtonCollection; const Num: byte);
 var
-  BT, BTLen: Integer;
-  TempCol, TempDCol: Cardinal;
+  BT, BTLen: integer;
+  TempCol, TempDCol: cardinal;
 
 begin
   if (Num > High(ButtonCollection)) then
@@ -528,7 +529,8 @@ begin
   ButtonCollection[Num].Y := ThemeCollection.Style.Y;
   ButtonCollection[Num].W := ThemeCollection.Style.W;
   ButtonCollection[Num].H := ThemeCollection.Style.H;
-  if (ThemeCollection.Style.Typ <> TEXTURE_TYPE_COLORIZED) then begin
+  if (ThemeCollection.Style.Typ <> TEXTURE_TYPE_COLORIZED) then
+  begin
     ButtonCollection[Num].SelectColR := ThemeCollection.Style.ColR;
     ButtonCollection[Num].SelectColG := ThemeCollection.Style.ColG;
     ButtonCollection[Num].SelectColB := ThemeCollection.Style.ColB;
@@ -560,15 +562,17 @@ begin
   begin
     ButtonCollection[Num].FadeTex := Texture.GetTexture(
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), TEXTURE_TYPE_COLORIZED, TempCol)
-  end else begin
+  end
+  else
+  begin
     ButtonCollection[Num].FadeTex := Texture.GetTexture(
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ);
   end;
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
 
-
   BTLen := Length(ThemeCollection.Style.Text);
-  for BT := 0 to BTLen-1 do begin
+  for BT := 0 to BTLen-1 do
+  begin
       AddButtonText(ButtonCollection[Num], ThemeCollection.Style.Text[BT].X, ThemeCollection.Style.Text[BT].Y,
       ThemeCollection.Style.Text[BT].ColR, ThemeCollection.Style.Text[BT].ColG, ThemeCollection.Style.Text[BT].ColB,
       ThemeCollection.Style.Text[BT].Font, ThemeCollection.Style.Text[BT].Size, ThemeCollection.Style.Text[BT].Align,
@@ -602,7 +606,7 @@ end;
 
 function TMenu.AddStatic(X, Y, W, H: real; const Name: string; Typ: TTextureType): integer;
 var
-  StatNum:  integer;
+  StatNum: integer;
 begin
   // adds static
   StatNum := Length(Static);
@@ -625,12 +629,12 @@ end;
 
 function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; const Name: string; Typ: TTextureType; Color: integer): integer;
 begin
-  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Typ, Color, False, 0);
+  Result := AddStatic(X, Y, W, H, Z, ColR, ColG, ColB, 0, 0, 1, 1, Name, Typ, Color, false, 0);
 end;
 
-function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name: string; Typ: TTextureType; Color: integer; Reflection: Boolean; ReflectionSpacing: Real): integer;
+function TMenu.AddStatic(X, Y, W, H, Z: real; ColR, ColG, ColB: real; TexX1, TexY1, TexX2, TexY2: real; const Name: string; Typ: TTextureType; Color: integer; Reflection: boolean; ReflectionSpacing: real): integer;
 var
-  StatNum:  integer;
+  StatNum: integer;
 begin
   // adds static
   StatNum := Length(Static);
@@ -681,7 +685,7 @@ end;
 
 function TMenu.AddText(X, Y: real; const Text_: string): integer;
 var
-  TextNum:  integer;
+  TextNum: integer;
 begin
   // adds text
   TextNum := Length(Text);
@@ -695,9 +699,9 @@ begin
   Result := AddText(X, Y, 0, Style, Size, ColR, ColG, ColB, 0, Text, false, 0, 0);
 end;
 
-function TMenu.AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: Boolean; ReflectionSpacing_: Real; Z : Real): integer;
+function TMenu.AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: boolean; ReflectionSpacing_: real; Z : real): integer;
 var
-  TextNum:  integer;
+  TextNum: integer;
 begin
   // adds text
   TextNum := Length(Text);
@@ -706,8 +710,8 @@ begin
   Result := TextNum;
 end;
 
-//Function that Set Length of Button Array in one Step instead of register new Memory for every Button
-Procedure TMenu.SetButtonLength(Length: Cardinal);
+//Function that Set Length of Button boolean in one Step instead of register new Memory for every Button
+Procedure TMenu.SetButtonLength(Length: cardinal);
 begin
   if (ButtonPos = -1) AND (Length > 0) then
   begin
@@ -719,12 +723,11 @@ begin
   end;
 end;
 
-
 // Method to add a button in our TMenu. It returns the assigned ButtonNumber
 function TMenu.AddButton(ThemeButton: TThemeButton): integer;
 var
-  BT:     integer;
-  BTLen:  integer;
+  BT:    integer;
+  BTLen: integer;
 begin
   Result := AddButton(ThemeButton.X, ThemeButton.Y, ThemeButton.W, ThemeButton.H,
     ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB, ThemeButton.Int,
@@ -773,7 +776,7 @@ begin
     if (@ButtonCollection[ThemeButton.Parent-1] <> nil) then
     begin
       Interactions[High(Interactions)].Typ := iBCollectionChild;
-      Button[Result].Visible := False;
+      Button[Result].Visible := false;
 
       for BT := 0 to BTLen-1 do
         Button[Result].Text[BT].Alpha := 0;
@@ -787,19 +790,19 @@ begin
   Log.LogBenchmark('====> Screen Options32', 6);
 end;
 
-function TMenu.AddButton(X, Y, W, H: real; const Name: String): integer;
+function TMenu.AddButton(X, Y, W, H: real; const Name: string): integer;
 begin
-  Result := AddButton(X, Y, W, H, Name, TEXTURE_TYPE_PLAIN, False);
+  Result := AddButton(X, Y, W, H, Name, TEXTURE_TYPE_PLAIN, false);
 end;
 
-function TMenu.AddButton(X, Y, W, H: real; const Name: String; Typ: TTextureType; Reflection: Boolean): integer;
+function TMenu.AddButton(X, Y, W, H: real; const Name: string; Typ: TTextureType; Reflection: boolean): integer;
 begin
   Result := AddButton(X, Y, W, H, 1, 1, 1, 1, 1, 1, 1, 0.5, Name, TEXTURE_TYPE_PLAIN, Reflection, 15, 15);
 end;
 
 function TMenu.AddButton(X, Y, W, H, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt: real;
-                         const Name: String; Typ: TTextureType;
-                         Reflection: Boolean; ReflectionSpacing, DeSelectReflectionSpacing: Real): integer;
+                         const Name: string; Typ: TTextureType;
+                         Reflection: boolean; ReflectionSpacing, DeSelectReflectionSpacing: real): integer;
 begin
   // adds button
   //SetLength is used once to reduce Memory usement
@@ -855,7 +858,6 @@ begin
   //Button Collection Mod
   Button[Result].Parent := 0;
 
-
   // adds interaction
   AddInteraction(iButton, Result);
   Interaction := 0;
@@ -876,7 +878,7 @@ end;
 
 function TMenu.DrawFG: boolean;
 var
-  J:      Integer;
+  J: integer;
 begin
   // We don't forget about newly implemented static for nice skin ...
   for J := 0 to Length(Static) - 1 do
@@ -900,7 +902,7 @@ begin
   // Third, we draw all our widgets
   //  for J := 0 to Length(WidgetsSrc) - 1 do
   //    SDL_BlitSurface(WidgetsSrc[J], nil, ParentBackBuf, WidgetsRect[J]);
-  Result := True;
+  Result := true;
 end;
 
 function TMenu.Draw: boolean;
@@ -959,9 +961,9 @@ begin
 end;
 }
 
-function TMenu.IsSelectable(Int: Cardinal): Boolean;
+function TMenu.IsSelectable(Int: cardinal): boolean;
 begin
-  Result := True;
+  Result := true;
   case Interactions[Int].Typ of
     //Button
     iButton: Result := Button[Interactions[Int].Num].Visible and Button[Interactions[Int].Num].Selectable;
@@ -980,7 +982,7 @@ end;
 // this behaviour doesn't make sense for two rows of buttons
 procedure TMenu.InteractPrevRow;
 var
-  Int:   integer;
+  Int: integer;
 begin
 // these two procedures just make sense for at least 5 buttons, because we
 // usually start a second row when there are more than 4 buttons
@@ -996,7 +998,7 @@ end;
 
 procedure TMenu.InteractNextRow;
 var
-  Int:   integer;
+  Int: integer;
 begin
   Int := Interaction;
 
@@ -1046,22 +1048,23 @@ begin
   Interaction := Int
 end;
 
-
 procedure TMenu.InteractCustom(CustomSwitch: integer);
 { needed only for below
 var
-  Num:    integer;
-  Typ:    integer;
-  Again:  boolean;
+  Num:   integer;
+  Typ:   integer;
+  Again: boolean;
 }
 begin
   //Code Commented atm, because it needs to be Rewritten
   //it doesn't work with Button Collections
-  {then begin
+  {then
+  begin
     CustomSwitch:= CustomSwitch*(-1);
     Again := true;
   // change interaction as long as it's needed
-  while (Again = true) do begin
+  while (Again = true) do
+  begin
     Num := SelInteraction - CustomSwitch;
     if Num = -1 then Num := High(Interactions);
     Interaction := Num;
@@ -1073,19 +1076,21 @@ begin
     case Typ of
     iButton:
       begin
-        if Button[Num].Selectable = false then Again := True;
+        if Button[Num].Selectable = false then
+	  Again := true;
       end;
     end; // case
   end; // while
   end
-  else if num>0 then begin
+  else if num>0 then
+  begin
     Again := true;
     // change interaction as long as it's needed
-  while (Again = true) do begin
+  while (Again = true) do
+  begin
     Num := (Interaction + CustomSwitch) Mod Length(Interactions);
     Interaction := Num;
     Again := false; // reset, default to accept changing interaction
-
 
     // checking newly interacted element
     Num := Interactions[Interaction].Num;
@@ -1093,13 +1098,13 @@ begin
     case Typ of
     iButton:
       begin
-        if Button[Num].Selectable = false then Again := True;
+        if Button[Num].Selectable = false then
+	  Again := true;
       end;
     end; // case
   end; // while
     end     }
 end;
-
 
 procedure TMenu.FadeTo(Screen: PMenu);
 begin
@@ -1113,13 +1118,12 @@ begin
   AudioPlayback.PlaySound( aSound );
 end;
 
-
 //popup hack
-procedure TMenu.CheckFadeTo(Screen: PMenu; msg: String);
+procedure TMenu.CheckFadeTo(Screen: PMenu; msg: string);
 begin
   Display.Fade := 0;
   Display.NextScreenWithCheck := Screen;
-  Display.CheckOK:=False;
+  Display.CheckOK := false;
   ScreenPopupCheck.ShowPopup(msg);
 end;
 
@@ -1130,9 +1134,10 @@ end;
 
 procedure TMenu.AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; const AddText: string);
 var
-  Il:   integer;
+  Il: integer;
 begin
-  with Button[High(Button)] do begin
+  with Button[High(Button)] do
+  begin
     Il := Length(Text);
     SetLength(Text, Il+1);
     Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
@@ -1145,9 +1150,10 @@ end;
 
 procedure TMenu.AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: string);
 var
-  Il:   integer;
+  Il: integer;
 begin
-  with Button[High(Button)] do begin
+  with Button[High(Button)] do
+  begin
     Il := Length(Text);
     SetLength(Text, Il+1);
     Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
@@ -1163,9 +1169,10 @@ end;
 
 procedure TMenu.AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: string);
 var
-  Il:   integer;
+  Il: integer;
 begin
-  with CustomButton do begin
+  with CustomButton do
+  begin
     Il := Length(Text);
     SetLength(Text, Il+1);
     Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
@@ -1179,10 +1186,9 @@ begin
   end;
 end;
 
-
 function TMenu.AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer; Values: array of string): integer;
 var
-  SO:     integer;
+  SO: integer;
 begin
   Result := AddSelectSlide(ThemeSelectS.X, ThemeSelectS.Y, ThemeSelectS.W, ThemeSelectS.H, ThemeSelectS.SkipX, ThemeSelectS.SBGW,
     ThemeSelectS.ColR, ThemeSelectS.ColG, ThemeSelectS.ColB, ThemeSelectS.Int,
@@ -1214,11 +1220,11 @@ function TMenu.AddSelectSlide(X, Y, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DC
   TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
   SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
   STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
-  const Name: String; Typ: TTextureType; const SBGName: String; SBGTyp: TTextureType;
+  const Name: string; Typ: TTextureType; const SBGName: string; SBGTyp: TTextureType;
   const Caption: string; var Data: integer): integer;
 var
-  S:    integer;
-  I:    integer;
+  S: integer;
+  I: integer;
 begin
   S := Length(SelectsS);
   SetLength(SelectsS, S + 1);
@@ -1313,13 +1319,13 @@ begin
   SelectsS[S].SetSelect(false);
 
   {// Configures 3 select options
-  for I := 0 to 2 do begin
+  for I := 0 to 2 do
+  begin
     SelectsS[S].TextOpt[I].X := SelectsS[S].TextureSBG.X + 20 + (50 + 20) + (150 - 20) * I;
     SelectsS[S].TextOpt[I].Y := SelectsS[S].TextureSBG.Y + 20;
     SelectsS[S].TextOpt[I].Text := IntToStr(I+1);
     SelectsS[S].TextOpt[I].Size := 10;
     SelectsS[S].TextOpt[I].Align := 1;
-
 
     SelectsS[S].TextOpt[I].ColR := SelectsS[S].STDColR;
     SelectsS[S].TextOpt[I].ColG := SelectsS[S].STDColG;
@@ -1327,7 +1333,6 @@ begin
     SelectsS[S].TextOpt[I].Int := SelectsS[S].STDInt;
     SelectsS[S].TextOpt[I].Visible := true;
   end;}
-
 
   // adds interaction
   AddInteraction(iSelectS, S);
@@ -1339,12 +1344,12 @@ begin
   AddSelectSlideOption(High(SelectsS), AddText);
 end;
 
-procedure TMenu.AddSelectSlideOption(SelectNo: Cardinal; const AddText: string);
+procedure TMenu.AddSelectSlideOption(SelectNo: cardinal; const AddText: string);
 var
-  SO:     integer;
+  SO: integer;
 begin
   SO := Length(SelectsS[SelectNo].TextOptT);
-  
+
   SetLength(SelectsS[SelectNo].TextOptT, SO + 1);
   SelectsS[SelectNo].TextOptT[SO] := AddText;
 
@@ -1355,7 +1360,7 @@ end;
 
 procedure TMenu.UpdateSelectSlideOptions(ThemeSelectSlide: TThemeSelectSlide; SelectNum: integer; Values: array of string; var Data: integer);
 var
-  SO:   integer;
+  SO: integer;
 begin
   SetLength(SelectsS[SelectNum].TextOptT, 0);
   for SO := 0 to High(Values) do
@@ -1376,8 +1381,8 @@ end;
 
 procedure TMenu.InteractInc;
 var
-  Num:    integer;
-  Value:  integer;
+  Num:   integer;
+  Value: integer;
 begin
   case Interactions[Interaction].Typ of
     iSelectS: begin
@@ -1395,7 +1400,7 @@ begin
       begin
 
         //Select Next Button in Collection
-        For Num := 1 to High(Button) do
+        for Num := 1 to High(Button) do
         begin
           Value := (Interaction + Num) Mod Length(Button);
           if Value = 0 then
@@ -1417,8 +1422,8 @@ end;
 
 procedure TMenu.InteractDec;
 var
-  Num:    integer;
-  Value:  integer;
+  Num:   integer;
+  Value: integer;
 begin
   case Interactions[Interaction].Typ of
     iSelectS: begin
@@ -1435,7 +1440,7 @@ begin
     iBCollectionChild:
       begin
         //Select Prev Button in Collection
-        For Num := High(Button) downto 1 do
+        for Num := High(Button) downto 1 do
         begin
           Value := (Interaction + Num) Mod Length(Button);
           if Value = High(Button) then
@@ -1458,7 +1463,7 @@ begin
         if (Button[Interactions[Interaction].Num].Parent <> 0) AND (ButtonCollection[Button[Interactions[Interaction].Num].Parent-1].CountChilds > 1) then
         begin
           //Select Last Child
-          For Num := High(Button) downto 1 do
+          for Num := High(Button) downto 1 do
           begin
             Value := (Interaction + Num) Mod Length(Button);
             if (Button[Value].Parent = Button[Interaction].Parent) then
@@ -1484,7 +1489,7 @@ begin
   // VideoBackground so we can check whether a video-background is enabled or not.
   // Second, a video should be stopped if the screen is hidden, but the Video.Stop()
   // method is not implemented by now. This is necessary for theme-switching too.
-  // At the moment videos cannot be turned off without restarting USDX. 
+  // At the moment videos cannot be turned off without restarting USDX.
 
   {// check if a background texture was found
   if (BackImg.TexNum = 0)  then
@@ -1501,7 +1506,7 @@ begin
       end;
     end;
   end; }
-  If (Background = nil) then
+  if (Background = nil) then
     AddBackground(DEFAULTBACKGROUND);
 
   Background.OnShow;
@@ -1553,7 +1558,7 @@ begin
   Background.OnFinish;
 end;
 
-function TMenu.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TMenu.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   // nothing
   Result := true;

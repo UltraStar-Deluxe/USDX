@@ -52,14 +52,14 @@ type
   end;
 
 TThemeBackground = record
-    BGType: Byte;
+    BGType: byte;
     Color:  TRGB;
     Tex:    string;
-    Alpha:  Real;
+    Alpha:  real;
   end;
 
 const
-  BGT_Names: Array [0..4] of String = ('none', 'color', 'texture', 'video', 'fade');
+  BGT_Names: array [0..4] of string = ('none', 'color', 'texture', 'video', 'fade');
   BGT_None    = 0;
   BGT_Color   = 1;
   BGT_Texture = 2;
@@ -92,7 +92,7 @@ type
     TexY2:  real;
     //Reflection
     Reflection:           boolean;
-    Reflectionspacing:    Real;
+    Reflectionspacing:    real;
   end;
   AThemeStatic = array of TThemeStatic;
 
@@ -111,7 +111,7 @@ type
     Text:   string;
     //Reflection
     Reflection:           boolean;
-    ReflectionSpacing:    Real;
+    ReflectionSpacing:    real;
   end;
   AThemeText = array of TThemeText;
 
@@ -119,7 +119,7 @@ type
     Text:   AThemeText;
     X:      integer;
     Y:      integer;
-    Z:      Real;
+    Z:      real;
     W:      integer;
     H:      integer;
     Color:  string;
@@ -135,29 +135,29 @@ type
     Tex:    string;
     Typ:    TTextureType;
 
-    Visible: Boolean;
+    Visible: boolean;
 
     //Reflection Mod
     Reflection:           boolean;
-    Reflectionspacing:    Real;
+    Reflectionspacing:    real;
     //Fade Mod
     SelectH:    integer;
     SelectW:    integer;
     Fade:       boolean;
     FadeText:   boolean;
-    DeSelectReflectionspacing : Real;
+    DeSelectReflectionspacing : real;
     FadeTex:    string;
     FadeTexPos: integer;
 
     //Button Collection Mod
-    Parent: Byte; //Number of the Button Collection this Button is assigned to. IF 0: No Assignement
+    Parent: byte; //Number of the Button Collection this Button is assigned to. IF 0: No Assignement
   end;
 
   //Button Collection Mod
   TThemeButtonCollection = record
     Style: TThemeButton;
-    ChildCount: Byte; //No of assigned Childs
-    FirstChild: Byte; //No of Child on whose Interaction Position the Button should be
+    ChildCount: byte; //No of assigned Childs
+    FirstChild: byte; //No of Child on whose Interaction Position the Button should be
   end;
 
   AThemeButtonCollection = array of TThemeButtonCollection;
@@ -172,8 +172,8 @@ type
     H:      integer;
     Z:      real;
 
-    TextSize:   integer;
-    
+    TextSize: integer;
+
     //SBGW Mod
     SBGW:   integer;
 
@@ -190,20 +190,20 @@ type
   end;
 
   TThemeEqualizer = record
-    Visible: Boolean;
-    Direction: Boolean;
+    Visible: boolean;
+    Direction: boolean;
     Alpha: real;
-    X: Integer;
-    Y: Integer;
-    Z: Real;
-    W: Integer;
-    H: Integer;
-    Space: Integer;
-    Bands: Integer;
-    Length: Integer;
-    ColR, ColG, ColB: Real;
+    X: integer;
+    Y: integer;
+    Z: real;
+    W: integer;
+    H: integer;
+    Space: integer;
+    Bands: integer;
+    Length: integer;
+    ColR, ColG, ColB: real;
     Reflection:           boolean;
-    Reflectionspacing:    Real;
+    Reflectionspacing:    real;
   end;
 
   PThemeBasic = ^TThemeBasic;
@@ -259,13 +259,13 @@ type
 
     //Cover Mod
     Cover: record
-      Reflections: Boolean;
-      X: Integer;
-      Y: Integer;
-      Z: Integer;
-      W: Integer;
-      H: Integer;
-      Style: Integer;
+      Reflections: boolean;
+      X: integer;
+      Y: integer;
+      Z: integer;
+      W: integer;
+      H: integer;
+      Style: integer;
       end;
 
     //Equalizer Mod
@@ -349,7 +349,7 @@ type
     TextP3RScore:     TThemeText;
 
     //Linebonus Translations
-    LineBonusText:    Array [0..8] of String;
+    LineBonusText:    array [0..8] of string;
 
     //Pause Popup
      PausePopUp:      TThemeStatic;
@@ -428,7 +428,7 @@ type
     SelectFullscreen:       TThemeSelectSlide;
     SelectResolution:       TThemeSelectSlide;
     SelectDepth:            TThemeSelectSlide;
-    SelectVisualizer:       TThemeSelectSlide; 
+    SelectVisualizer:       TThemeSelectSlide;
     SelectOscilloscope:     TThemeSelectSlide;
     SelectLineBonus:        TThemeSelectSlide;
     SelectMovieSize:        TThemeSelectSlide;
@@ -511,10 +511,10 @@ type
     TextFound:        TThemeText;
 
     //Translated Texts
-    Songsfound:       String;
-    NoSongsfound:     String;
-    CatText:          String;
-    IType:            array [0..2] of String;
+    Songsfound:       string;
+    NoSongsfound:     string;
+    CatText:          string;
+    IType:            array [0..2] of string;
   end;
 
   //Party Screens
@@ -556,7 +556,7 @@ type
     TextTeam1Players:  TThemeText;
     TextTeam2Players:  TThemeText;
     TextTeam3Players:  TThemeText;
-    
+
     StaticTeam1:       TThemeStatic;
     StaticTeam2:       TThemeStatic;
     StaticTeam3:       TThemeStatic;
@@ -583,19 +583,19 @@ type
     StaticTeam3Deco:   TThemeStatic;
 
     DecoTextures:      record
-      ChangeTextures:  Boolean;
+      ChangeTextures:  boolean;
 
-      FirstTexture:    String;
+      FirstTexture:    string;
       FirstTyp:        TTextureType;
-      FirstColor:      String;
+      FirstColor:      string;
 
-      SecondTexture:   String;
+      SecondTexture:   string;
       SecondTyp:       TTextureType;
-      SecondColor:     String;
+      SecondColor:     string;
 
-      ThirdTexture:    String;
+      ThirdTexture:    string;
       ThirdTyp:        TTextureType;
-      ThirdColor:      String;
+      ThirdColor:      string;
     end;
 
 
@@ -683,7 +683,7 @@ type
     Description:      array[0..3] of string;
     DescriptionR:     array[0..3] of string;
     FormatStr:        array[0..3] of string;
-    PageStr:          String;
+    PageStr:          string;
   end;
 
   //Playlist Translations
@@ -738,7 +738,7 @@ type
 
     Playlist:         TThemePlaylist;
 
-    ILevel: array[0..2] of String;
+    ILevel: array[0..2] of string;
 
     constructor Create(FileName: string); overload; // Initialize theme system
     constructor Create(FileName: string; Color: integer); overload; // Initialize theme system with color
@@ -775,9 +775,9 @@ type
   end;
 
 procedure glColorRGB(Color: TRGB);  overload;
-procedure glColorRGB(Color: TRGB; Alpha: Real);  overload;
+procedure glColorRGB(Color: TRGB; Alpha: real);  overload;
 procedure glColorRGB(Color: TRGBA); overload;
-procedure glColorRGB(Color: TRGBA; Alpha: Real); overload;
+procedure glColorRGB(Color: TRGBA; Alpha: real); overload;
 
 function ColorExists(Name: string): integer;
 procedure LoadColor(var R, G, B: real; ColorName: string);
@@ -808,7 +808,7 @@ begin
   glColor3f(Color.R, Color.G, Color.B);
 end;
 
-procedure glColorRGB(Color: TRGB; Alpha: Real);  overload;
+procedure glColorRGB(Color: TRGB; Alpha: real);  overload;
 begin
   glColor4f(Color.R, Color.G, Color.B, Alpha);
 end;
@@ -818,11 +818,10 @@ begin
   glColor4f(Color.R, Color.G, Color.B, Color.A);
 end;
 
-procedure glColorRGB(Color: TRGBA; Alpha: Real); overload;
+procedure glColorRGB(Color: TRGBA; Alpha: real); overload;
 begin
   glColor4f(Color.R, Color.G, Color.B, Min(Color.A, Alpha));
 end;
-
 
 constructor TTheme.Create(FileName: string);
 begin
@@ -870,7 +869,6 @@ begin
 
 end;
 
-
 function TTheme.LoadTheme(FileName: string; sColor: integer): boolean;
 var
   I:    integer;
@@ -879,7 +877,7 @@ begin
   Result := false;
 
   create_theme_objects();
-  
+
   Log.LogStatus('Loading: '+ FileName, 'TTheme.LoadTheme');
 
   FileName := AdaptFilePaths(FileName);
@@ -1109,7 +1107,8 @@ begin
       ThemeLoadText(Score.TextTitle, 'ScoreTextTitle');
       ThemeLoadText(Score.TextArtistTitle, 'ScoreTextArtistTitle');
 
-      for I := 1 to 6 do begin
+      for I := 1 to 6 do
+      begin
         ThemeLoadStatics(Score.PlayerStatic[I],        'ScorePlayer' + IntToStr(I) + 'Static');
         ThemeLoadTexts(Score.PlayerTexts[I],           'ScorePlayer' + IntToStr(I) + 'Text');
 
@@ -1138,7 +1137,7 @@ begin
 
       // Top5
       ThemeLoadBasic(Top5, 'Top5');
-      
+
       ThemeLoadText(Top5.TextLevel,       'Top5TextLevel');
       ThemeLoadText(Top5.TextArtistTitle, 'Top5TextArtistTitle');
       ThemeLoadStatics(Top5.StaticNumber, 'Top5StaticNumber');
@@ -1488,14 +1487,14 @@ end;
 
 procedure TTheme.ThemeLoadBackground(var ThemeBackground: TThemeBackground; Name: string);
 var
-  BGType: String;
-  I: Integer;
+  BGType: string;
+  I: integer;
 begin
   BGType  := lowercase(ThemeIni.ReadString(Name + 'Background', 'Type', 'auto'));
 
   ThemeBackground.BGType := BGT_Auto;
-  For I := 0 to high(BGT_Names) do
-    If (BGT_Names[I] = BGType) then
+  for I := 0 to high(BGT_Names) do
+    if (BGT_Names[I] = BGType) then
     begin
       ThemeBackground.BGType := I;
       Break;
@@ -1510,7 +1509,7 @@ end;
 
 procedure TTheme.ThemeLoadText(var ThemeText: TThemeText; Name: string);
 var
-  C:    integer;
+  C: integer;
 begin
   ThemeText.X     := ThemeIni.ReadInteger(Name, 'X', 0);
   ThemeText.Y     := ThemeIni.ReadInteger(Name, 'Y', 0);
@@ -1534,7 +1533,8 @@ begin
   ThemeText.Reflectionspacing  := ThemeIni.ReadFloat(Name, 'ReflectionSpacing', 15);
 
   C := ColorExists(ThemeText.Color);
-  if C >= 0 then begin
+  if C >= 0 then
+  begin
     ThemeText.ColR := Color[C].RGB.R;
     ThemeText.ColG := Color[C].RGB.G;
     ThemeText.ColB := Color[C].RGB.B;
@@ -1543,10 +1543,11 @@ end;
 
 procedure TTheme.ThemeLoadTexts(var ThemeText: AThemeText; Name: string);
 var
-  T:      integer;
+  T: integer;
 begin
   T := 1;
-  while ThemeIni.SectionExists(Name + IntToStr(T)) do begin
+  while ThemeIni.SectionExists(Name + IntToStr(T)) do
+  begin
     SetLength(ThemeText, T);
     ThemeLoadText(ThemeText[T-1], Name + IntToStr(T));
     Inc(T);
@@ -1555,7 +1556,7 @@ end;
 
 procedure TTheme.ThemeLoadStatic(var ThemeStatic: TThemeStatic; Name: string);
 var
-  C:  integer;
+  C: integer;
 begin
   ThemeStatic.Tex := ThemeIni.ReadString(Name, 'Tex', '');
 
@@ -1569,7 +1570,8 @@ begin
   ThemeStatic.Color := ThemeIni.ReadString(Name, 'Color', '');
 
   C := ColorExists(ThemeStatic.Color);
-  if C >= 0 then begin
+  if C >= 0 then
+  begin
     ThemeStatic.ColR := Color[C].RGB.R;
     ThemeStatic.ColG := Color[C].RGB.G;
     ThemeStatic.ColB := Color[C].RGB.B;
@@ -1587,10 +1589,11 @@ end;
 
 procedure TTheme.ThemeLoadStatics(var ThemeStatic: AThemeStatic; Name: string);
 var
-  S:      integer;
+  S: integer;
 begin
   S := 1;
-  while ThemeIni.SectionExists(Name + IntToStr(S)) do begin
+  while ThemeIni.SectionExists(Name + IntToStr(S)) do
+  begin
     SetLength(ThemeStatic, S);
     ThemeLoadStatic(ThemeStatic[S-1], Name + IntToStr(S));
     Inc(S);
@@ -1599,7 +1602,7 @@ end;
 
 //Button Collection Mod
 procedure TTheme.ThemeLoadButtonCollection(var Collection: TThemeButtonCollection; Name: string);
-var T: Integer;
+var T: integer;
 begin
   //Load Collection Style
   ThemeLoadButton(Collection.Style, Name);
@@ -1614,10 +1617,11 @@ end;
 
 procedure TTheme.ThemeLoadButtonCollections(var Collections: AThemeButtonCollection; Name: string);
 var
-  I:      integer;
+  I: integer;
 begin
   I := 1;
-  while ThemeIni.SectionExists(Name + IntToStr(I)) do begin
+  while ThemeIni.SectionExists(Name + IntToStr(I)) do
+  begin
     SetLength(Collections, I);
     ThemeLoadButtonCollection(Collections[I-1], Name + IntToStr(I));
     Inc(I);
@@ -1627,9 +1631,9 @@ end;
 
 procedure TTheme.ThemeLoadButton(var ThemeButton: TThemeButton; Name: string; const Collections: PAThemeButtonCollection);
 var
-  C:      integer;
-  TLen:   integer;
-  T:      integer;
+  C:    integer;
+  TLen: integer;
+  T:    integer;
   Collections2: PAThemeButtonCollection;
 begin
   if not ThemeIni.SectionExists(Name) then
@@ -1660,7 +1664,8 @@ begin
 
   ThemeButton.Color := ThemeIni.ReadString(Name, 'Color', '');
   C := ColorExists(ThemeButton.Color);
-  if C >= 0 then begin
+  if C >= 0 then
+  begin
     ThemeButton.ColR := Color[C].RGB.R;
     ThemeButton.ColG := Color[C].RGB.G;
     ThemeButton.ColB := Color[C].RGB.B;
@@ -1668,7 +1673,8 @@ begin
 
   ThemeButton.DColor := ThemeIni.ReadString(Name, 'DColor', '');
   C := ColorExists(ThemeButton.DColor);
-  if C >= 0 then begin
+  if C >= 0 then
+  begin
     ThemeButton.DColR := Color[C].RGB.R;
     ThemeButton.DColG := Color[C].RGB.G;
     ThemeButton.DColB := Color[C].RGB.B;
@@ -1717,7 +1723,7 @@ end;
 
 procedure TTheme.ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; Name: string);
 var
-  C:    integer;
+  C: integer;
 begin
   ThemeSelectS.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
 
@@ -1759,7 +1765,7 @@ begin
 end;
 
 procedure TTheme.ThemeLoadEqualizer(var ThemeEqualizer: TThemeEqualizer; Name: string);
-var I: Integer;
+var I: integer;
 begin
   ThemeEqualizer.Visible := (ThemeIni.ReadInteger(Name, 'Visible', 0) = 1);
   ThemeEqualizer.Direction := (ThemeIni.ReadInteger(Name, 'Direction', 0) = 1);
@@ -1777,12 +1783,14 @@ begin
 
   //Color
   I := ColorExists(ThemeIni.ReadString(Name, 'Color', 'Black'));
-  if I >= 0 then begin
+  if I >= 0 then
+  begin
     ThemeEqualizer.ColR := Color[I].RGB.R;
     ThemeEqualizer.ColG := Color[I].RGB.G;
     ThemeEqualizer.ColB := Color[I].RGB.B;
   end
-  else begin
+  else
+  begin
     ThemeEqualizer.ColR := 0;
     ThemeEqualizer.ColG := 0;
     ThemeEqualizer.ColB := 0;
@@ -1791,18 +1799,19 @@ end;
 
 procedure TTheme.LoadColors;
 var
-  SL:     TStringList;
-  C:      integer;
-  S:      string;
-  Col:    integer;
-  RGB:    TRGB;
+  SL:  TStringList;
+  C:   integer;
+  S:   string;
+  Col: integer;
+  RGB: TRGB;
 begin
   SL := TStringList.Create;
   ThemeIni.ReadSection('Colors', SL);
 
   // normal colors
   SetLength(Color, SL.Count);
-  for C := 0 to SL.Count-1 do begin
+  for C := 0 to SL.Count-1 do
+  begin
     Color[C].Name := SL.Strings[C];
 
     S := ThemeIni.ReadString('Colors', SL.Strings[C], '');
@@ -1917,19 +1926,21 @@ end;
 
 function ColorExists(Name: string): integer;
 var
-  C:  integer;
+  C: integer;
 begin
   Result := -1;
   for C := 0 to High(Color) do
-    if Color[C].Name = Name then Result := C;
+    if Color[C].Name = Name then
+      Result := C;
 end;
 
 procedure LoadColor(var R, G, B: real; ColorName: string);
 var
-  C:    integer;
+  C: integer;
 begin
   C := ColorExists(ColorName);
-  if C >= 0 then begin
+  if C >= 0 then
+  begin
     R := Color[C].RGB.R;
     G := Color[C].RGB.G;
     B := Color[C].RGB.B;
@@ -2011,7 +2022,7 @@ end;
 
 procedure TTheme.ThemeSave(FileName: string);
 var
-  I:    integer;
+  I: integer;
 begin
   {$IFDEF THEMESAVE}
   ThemeIni := TIniFile.Create(FileName);
@@ -2101,7 +2112,8 @@ begin
   ThemeSaveText(Score.TextArtist, 'ScoreTextArtist');
   ThemeSaveText(Score.TextTitle, 'ScoreTextTitle');
 
-  for I := 1 to 6 do begin
+  for I := 1 to 6 do
+  begin
     ThemeSaveStatics(Score.PlayerStatic[I], 'ScorePlayer' + IntToStr(I) + 'Static');
 
     ThemeSaveText(Score.TextName[I], 'ScoreTextName' + IntToStr(I));
@@ -2146,7 +2158,8 @@ procedure TTheme.ThemeSaveBackground(ThemeBackground: TThemeBackground; Name: st
 begin
   if ThemeBackground.Tex <> '' then
     ThemeIni.WriteString(Name, 'Tex', ThemeBackground.Tex)
-  else begin
+  else
+  begin
     ThemeIni.EraseSection(Name);
   end;
 end;
@@ -2170,7 +2183,7 @@ end;
 
 procedure TTheme.ThemeSaveStatics(ThemeStatic: AThemeStatic; Name: string);
 var
-  S:      integer;
+  S: integer;
 begin
   for S := 0 to Length(ThemeStatic)-1 do
     ThemeSaveStatic(ThemeStatic[S], Name + {'Static' +} IntToStr(S+1));
@@ -2196,7 +2209,7 @@ end;
 
 procedure TTheme.ThemeSaveTexts(ThemeText: AThemeText; Name: string);
 var
-  T:      integer;
+  T: integer;
 begin
   for T := 0 to Length(ThemeText)-1 do
     ThemeSaveText(ThemeText[T], Name + {'Text' + }IntToStr(T+1));
@@ -2206,7 +2219,7 @@ end;
 
 procedure TTheme.ThemeSaveButton(ThemeButton: TThemeButton; Name: string);
 var
-  T:    integer;
+  T: integer;
 begin
   ThemeIni.WriteString(Name, 'Tex', ThemeButton.Tex);
   ThemeIni.WriteInteger(Name, 'X', ThemeButton.X);
@@ -2228,14 +2241,16 @@ begin
   ThemeButton.DInt :=  ThemeIni.ReadFloat(Name, 'DInt', 1);}
 
 {  C := ColorExists(ThemeIni.ReadString(Name, 'Color', ''));
-  if C >= 0 then begin
+  if C >= 0 then
+  begin
     ThemeButton.ColR := Color[C].RGB.R;
     ThemeButton.ColG := Color[C].RGB.G;
     ThemeButton.ColB := Color[C].RGB.B;
   end;
 
   C := ColorExists(ThemeIni.ReadString(Name, 'DColor', ''));
-  if C >= 0 then begin
+  if C >= 0 then
+  begin
     ThemeButton.DColR := Color[C].RGB.R;
     ThemeButton.DColG := Color[C].RGB.G;
     ThemeButton.DColB := Color[C].RGB.B;

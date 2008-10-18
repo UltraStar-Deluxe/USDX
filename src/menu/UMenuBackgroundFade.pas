@@ -44,18 +44,18 @@ uses
 type
   TMenuBackgroundFade = class (TMenuBackground)
     private
-      Tex:    TTexture;
+      Tex:        TTexture;
       Color:      TRGB;
-      Alpha:      Real;
+      Alpha:      real;
       
-      useTexture: Boolean;
+      useTexture: boolean;
 
-      FadeTime:   Cardinal;
+      FadeTime:   cardinal;
     public
-      Constructor Create(const ThemedSettings: TThemeBackground); override;
-      Procedure   OnShow; override;
-      Procedure   Draw; override;
-      Destructor  Destroy; override;
+      constructor Create(const ThemedSettings: TThemeBackground); override;
+      procedure   OnShow; override;
+      procedure   Draw; override;
+      destructor  Destroy; override;
   end;
 
 const
@@ -68,15 +68,15 @@ uses sdl,
      USkins,
      UCommon;
 
-Constructor TMenuBackgroundFade.Create(const ThemedSettings: TThemeBackground);
-var texFilename: String;
+constructor TMenuBackgroundFade.Create(const ThemedSettings: TThemeBackground);
+var texFilename: string;
 begin
   inherited;
   FadeTime := 0;
 
   Color := ThemedSettings.Color;
   Alpha := ThemedSettings.Alpha;
-  If (Length(ThemedSettings.Tex) > 0) then
+  if (Length(ThemedSettings.Tex) > 0) then
   begin
     texFilename := Skin.GetTextureFileName(ThemedSettings.Tex);
     texFilename := AdaptFilePaths(texFilename);
@@ -85,43 +85,41 @@ begin
     UseTexture  := (Tex.TexNum <> 0);
   end
   else
-    UseTexture := False;
+    UseTexture := false;
 
-  If (not UseTexture) then
+  if (not UseTexture) then
     FreeandNil(Tex);
 end;
 
-Destructor  TMenuBackgroundFade.Destroy;
+destructor  TMenuBackgroundFade.Destroy;
 begin
   //Why isn't there any Tex.free method?
-  {If UseTexture then
+  {if UseTexture then
     FreeandNil(Tex); }
   inherited;
 end;
 
-
-Procedure   TMenuBackgroundFade.OnShow;
+procedure   TMenuBackgroundFade.OnShow;
 begin
   FadeTime := SDL_GetTicks;
 end;
 
-
-Procedure   TMenuBackgroundFade.Draw;
+procedure   TMenuBackgroundFade.Draw;
 var
-  Progress: Real;
+  Progress: real;
 begin
-  If FadeTime = 0 then
+  if FadeTime = 0 then
     Progress := Alpha
-  Else
+  else
     Progress := Alpha * (SDL_GetTicks - FadeTime) / FADEINTIME;
 
-  If Progress > Alpha then
+  if Progress > Alpha then
   begin
     FadeTime := 0;
     Progress := Alpha;
   end;
 
-  If (UseTexture) then
+  if (UseTexture) then
   begin //Draw Texture to Screen
     glClear(GL_DEPTH_BUFFER_BIT);
 

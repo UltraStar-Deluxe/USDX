@@ -45,39 +45,37 @@ uses
 type
   EMenuBackgroundError = class(Exception);
   TMenuBackground = class
-    Constructor Create(const ThemedSettings: TThemeBackground); virtual;
-    Procedure   OnShow; virtual;
-    Procedure   Draw; virtual;
-    Procedure   OnFinish; virtual;
-    Destructor  Destroy; virtual;
+    constructor Create(const ThemedSettings: TThemeBackground); virtual;
+    procedure   OnShow; virtual;
+    procedure   Draw; virtual;
+    procedure   OnFinish; virtual;
+    destructor  Destroy; virtual;
   end;
   cMenuBackground = class of TMenuBackground;
 
 implementation
 
-Constructor TMenuBackground.Create(const ThemedSettings: TThemeBackground);
+constructor TMenuBackground.Create(const ThemedSettings: TThemeBackground);
 begin
   inherited Create;
 end;
 
-Destructor  TMenuBackground.Destroy;
+destructor  TMenuBackground.Destroy;
 begin
   inherited;
 end;
 
-
-Procedure   TMenuBackground.OnShow;
+procedure   TMenuBackground.OnShow;
 begin
 
 end;
 
-Procedure   TMenuBackground.OnFinish;
+procedure   TMenuBackground.OnFinish;
 begin
 
 end;
 
-
-Procedure   TMenuBackground.Draw;
+procedure   TMenuBackground.Draw;
 begin
 
 end;

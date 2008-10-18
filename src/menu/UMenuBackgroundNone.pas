@@ -45,8 +45,8 @@ type
     private
 
     public
-      Constructor Create(const ThemedSettings: TThemeBackground); override;
-      Procedure   Draw; override;
+      constructor Create(const ThemedSettings: TThemeBackground); override;
+      procedure   Draw; override;
   end;
 
 implementation
@@ -54,12 +54,12 @@ uses
   gl,
   glext;
 
-Constructor TMenuBackgroundNone.Create(const ThemedSettings: TThemeBackground);
+constructor TMenuBackgroundNone.Create(const ThemedSettings: TThemeBackground);
 begin
   inherited;
 end;
 
-Procedure   TMenuBackgroundNone.Draw;
+procedure   TMenuBackgroundNone.Draw;
 begin
   //Do just nothing in here!
   glClear(GL_DEPTH_BUFFER_BIT);

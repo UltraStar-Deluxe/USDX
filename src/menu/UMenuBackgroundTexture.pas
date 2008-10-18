@@ -47,13 +47,13 @@ type
       Tex: TTexture;
       Color: TRGB;
     public
-      Constructor Create(const ThemedSettings: TThemeBackground); override;
-      Procedure   Draw; override;
-      Destructor  Destroy; override;
+      constructor Create(const ThemedSettings: TThemeBackground); override;
+      procedure   Draw; override;
+      destructor  Destroy; override;
   end;
 
 const
-  SUPPORTED_EXTS_BACKGROUNDTEXTURE: Array[0..13] of String = ('.png', '.bmp', '.jpg', '.jpeg', '.gif', '.pnm', '.ppm', '.pgm', '.pbm', '.xpm', '.lbm', '.pcx', '.tga', '.tiff');
+  SUPPORTED_EXTS_BACKGROUNDTEXTURE: array[0..13] of string = ('.png', '.bmp', '.jpg', '.jpeg', '.gif', '.pnm', '.ppm', '.pgm', '.pbm', '.xpm', '.lbm', '.pcx', '.tga', '.tiff');
 
 implementation
 uses
@@ -63,12 +63,12 @@ uses
   gl,
   glext;
 
-Constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
-var texFilename: String;
+constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
+var texFilename: string;
 begin
   inherited;
 
-  If (Length(ThemedSettings.Tex) = 0) then
+  if (Length(ThemedSettings.Tex) = 0) then
     raise EMenuBackgroundError.Create('TMenuBackgroundTexture: No texture filename present');
 
   Color       := ThemedSettings.Color;
@@ -84,13 +84,13 @@ begin
   end;
 end;
 
-Destructor  TMenuBackgroundTexture.Destroy;
+destructor  TMenuBackgroundTexture.Destroy;
 begin
   //freeandnil(Tex); <- this causes an Access Violation o0
   inherited;
 end;
 
-Procedure   TMenuBackgroundTexture.Draw;
+procedure   TMenuBackgroundTexture.Draw;
 begin
   glClear(GL_DEPTH_BUFFER_BIT);
   glColorRGB(Color);
