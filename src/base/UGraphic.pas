@@ -216,14 +216,6 @@ const
   Skin_Spectograph2G = 0;
   Skin_Spectograph2B = 0.2;
 
-  Skin_SzczytR = 0.8;
-  Skin_SzczytG = 0;
-  Skin_SzczytB = 0;
-
-  Skin_SzczytLimitR = 0;
-  Skin_SzczytLimitG = 0.8;
-  Skin_SzczytLimitB = 0;
-
   Skin_FontR = 0;
   Skin_FontG = 0;
   Skin_FontB = 0;
@@ -298,7 +290,6 @@ var
   R, G, B:  real;
   Col:      integer;
 begin
-   // zaladowanie tekstur
   Log.LogStatus('Loading Textures', 'LoadTextures');
   
   Tex_Left[0]  := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_TRANSPARENT, 0);     //brauch man die noch?
