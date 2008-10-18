@@ -263,7 +263,7 @@ begin
   TexSurface := LoadImage(Identifier);
   if not assigned(TexSurface) then
   begin
-    Log.LogError('Could not load texture: "' + Identifier +' '+ TextureTypeToStr(Typ) +'"',
+    Log.LogError('Could not load texture: "' + Identifier +'" with type "'+ TextureTypeToStr(Typ) +'"',
                  'TTextureUnit.LoadTexture');
     Exit;
   end;
