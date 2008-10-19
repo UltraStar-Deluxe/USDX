@@ -1526,8 +1526,7 @@ begin
   ThemeText.ColB  := ThemeIni.ReadFloat(Name, 'ColB', 0);
 
   ThemeText.Font  := ThemeIni.ReadInteger(Name, 'Font', 0);
-  // FIXME: FONTSIZE
-  ThemeText.Size  := ThemeIni.ReadInteger(Name, 'Size', 0) * 3;
+  ThemeText.Size  := ThemeIni.ReadInteger(Name, 'Size', 0);
   ThemeText.Align := ThemeIni.ReadInteger(Name, 'Align', 0);
 
   ThemeText.Text  := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
@@ -1740,8 +1739,7 @@ begin
 
   ThemeSelectS.Z := ThemeIni.ReadFloat(Name, 'Z', 0);
 
-  // FIXME: FONTSIZE
-  ThemeSelectS.TextSize := ThemeIni.ReadInteger(Name, 'TextSize', 10) * 3;
+  ThemeSelectS.TextSize := ThemeIni.ReadInteger(Name, 'TextSize', 30);
 
   ThemeSelectS.SkipX := ThemeIni.ReadInteger(Name, 'SkipX', 0);
 
