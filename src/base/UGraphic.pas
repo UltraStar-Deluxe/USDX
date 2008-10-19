@@ -232,7 +232,17 @@ const
   Skin_OscG = 0;
   Skin_OscB = 0;
 
-  Skin_LyricsT = 494; // 500 / 510 / 400
+  // TODO: add to theme ini file
+  Skin_LyricsT = 493;
+  Skin_LyricsUpperX = 80;
+  Skin_LyricsUpperW = 640;
+  Skin_LyricsUpperY = Skin_LyricsT;
+  Skin_LyricsUpperH = 41;
+  Skin_LyricsLowerX = 80;
+  Skin_LyricsLowerW = 640;
+  Skin_LyricsLowerY = Skin_LyricsT + Skin_LyricsUpperH + 1;
+  Skin_LyricsLowerH = 41;
+
   Skin_SpectrumT = 470;
   Skin_SpectrumBot = 570;
   Skin_SpectrumH = 100;

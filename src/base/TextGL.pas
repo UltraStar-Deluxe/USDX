@@ -37,7 +37,6 @@ uses
   gl,
   SDL,
   UTexture,
-//  SDL_ttf,
   ULog;
 
 procedure BuildFont;                          // build our bitmap font
@@ -45,6 +44,7 @@ procedure KillFont;                           // delete the font
 function  glTextWidth(text: PChar): real;     // returns text width
 procedure glPrintLetter(letter: char);
 procedure glPrint(text: pchar);               // custom GL "Print" routine
+procedure ResetFont();                        // reset font settings of active font
 procedure SetFontPos(X, Y: real);             // sets X and Y
 procedure SetFontZ(Z: real);                  // sets Z
 procedure SetFontSize(Size: real);
@@ -209,13 +209,19 @@ function glTextWidth(text: pchar): real;
 var
   Letter: char;
   i: integer;
+  Font: PFont;
 begin
   Result := 0;
+  Font := @Fonts[ActFont];
+
   for i := 0 to Length(text) -1 do
   begin
     Letter := Text[i];
-    Result := Result + Fonts[ActFont].Width[Ord(Letter)] * Fonts[ActFont].Tex.H / 30 * Fonts[ActFont].AspectW;
+    Result := Result + Font.Width[Ord(Letter)] * Font.Tex.H / 30 * Font.AspectW;
   end;
+
+  if ((Result > 0) and Font.Italic) then
+    Result := Result + 12 * Font.Tex.H / 60 * Font.AspectW;
 end;
 
 procedure glPrintLetter(Letter: char);
@@ -332,6 +338,14 @@ begin
   end;
 end;
 
+procedure ResetFont();
+begin
+  SetFontPos(0, 0);
+  SetFontZ(0);
+  SetFontItalic(False);
+  SetFontReflection(False, 0);
+end;
+
 procedure SetFontPos(X, Y: real);
 begin
   Fonts[ActFont].Tex.X := X;
@@ -373,137 +387,5 @@ procedure SetFontBlend(Enable: boolean);
 begin
   Fonts[ActFont].Blend := Enable;
 end;
-
-
-
-
-(*
-<mog> I uncommented this, because it was some kind of after hour hack together with blindy
-it's actually just a prove of concept, as it's having some flaws
-- instead nice and clean ttf code should be placed here :)
-
-{$IFDEF FPC}
-  {$ASMMODE Intel}
-{$ENDIF}
-
-function NextPowerOfTwo(Value: integer): integer;
-begin
-  Result:= 1;
-{$IF Defined(CPUX86_64)}
-  asm
-    mov rcx, -1
-    bsr rcx, Value
-    inc rcx
-    shl Result, cl
-  end;
-{$ELSEIF Defined(CPU386) or Defined(CPUI386)}
-  asm
-    mov ecx, -1
-    bsr ecx, Value
-    inc ecx
-    shl Result, cl
-  end;
-{$ELSE}
-  while (Result <= Value) do
-    Result := 2 * Result;
-{$IFEND}
-end;
-
-function LoadFont(FileName: PAnsiChar; PointSize: integer):PTTF_Font;
-begin
- if (FileExists(FileName)) then
-   begin
-     Result := TTF_OpenFont( FileName, PointSize );
-   end
- else
-   begin
-     Log.LogStatus('ERROR Could not find font in ' + FileName , '');
-     ShowMessage(  'ERROR Could not find font in ' + FileName );
-     Result := nil;
-   end;
-end;
-
-function RenderText(font: PTTF_Font; Text:PAnsiChar; Color: Cardinal): PSDL_Surface;
-var
-  clr : TSDL_color;
-begin
-  clr.r  := ((Color and $ff0000) shr 16  ) div 255;
-  clr.g  := ((Color and $ff00  ) shr 8   ) div 255;
-  clr.b  := ( Color and $ff    ) div 255 ;
-
-  result := TTF_RenderText_Blended( font, text, cLr);
-end;
-
-procedure printrandomtext();
-var
-  stext,intermediary : PSDL_surface;
-  clrFg, clrBG       : TSDL_color;
-  texture            : Gluint;
-  font               : PTTF_Font;
-  w,h                : integer;
-begin
-
-  font := LoadFont('fonts\comicbd.ttf', 42);
-
-  clrFg.r := 255;
-  clrFg.g := 255;
-  clrFg.b := 255;
-  clrFg.unused := 255;
-
-  clrBg.r := 255;
-  clrbg.g := 0;
-  clrbg.b := 255;
-  clrbg.unused := 0;
-
-  sText := RenderText(font, 'katzeeeeeee', $fe198e);
-  //sText :=  TTF_RenderText_Blended( font, 'huuuuuuuuuund', clrFG);
-
-  // Convert the rendered text to a known format
-  w := nextpoweroftwo(sText.w);
-  h := nextpoweroftwo(sText.h);
-
-  intermediary := SDL_CreateRGBSurface(0, w, h, 32,
-      $000000ff, $0000ff00, $00ff0000, $ff000000);
-
-  SDL_SetAlpha(intermediary, 0, 255);
-  SDL_SetAlpha(sText,        0, 255);
-  SDL_BlitSurface(sText, nil, intermediary, nil);
-
-  glGenTextures(1, @texture);
-
-  glBindTexture(GL_TEXTURE_2D, texture);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, intermediary.pixels);
-// on big endian machines (powerpc) this may need to be changed to
-// Needs to be tests. KaMiSchi Sept 2008
-//  glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, intermediary.pixels);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  glEnable(GL_TEXTURE_2D);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glColor4f(1, 0, 1, 1);
-
-  glbegin(gl_quads);
-  glTexCoord2f(0, 0);                 glVertex2f(200          , 300          );
-  glTexCoord2f(0, sText.h/h);         glVertex2f(200          , 300 + sText.h);
-  glTexCoord2f(sText.w/w, sText.h/h); glVertex2f(200 + sText.w, 300 + sText.h);
-  glTexCoord2f(sText.w/w, 0);         glVertex2f(200 + sText.w, 300          );
-  glEnd;
-  glfinish();
-  glDisable(GL_BLEND);
-  gldisable(gl_texture_2d);
-
-  SDL_FreeSurface(sText);
-  SDL_FreeSurface(intermediary);
-  glDeleteTextures(1, @texture);
-  TTF_CloseFont(font);
-
-end;
-*)
-
 
 end.

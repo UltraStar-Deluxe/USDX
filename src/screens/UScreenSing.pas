@@ -298,7 +298,9 @@ begin
   //<note>Pausepopup is not visibile at the beginning</note>
   Static[StaticPausePopup].Visible := False;
 
-  Lyrics := TLyricEngine.Create(80, Skin_LyricsT, 640, 12, 80, Skin_LyricsT + 36, 640, 12);
+  Lyrics := TLyricEngine.Create(
+      Skin_LyricsUpperX, Skin_LyricsUpperY, Skin_LyricsUpperW, Skin_LyricsUpperH,
+      Skin_LyricsLowerX, Skin_LyricsLowerY, Skin_LyricsLowerW, Skin_LyricsLowerH);
 
   LyricsSync := TLyricsSyncSource.Create();
 end;
@@ -550,8 +552,6 @@ begin
   case Ini.LyricsFont of
     0:
     begin
-      Lyrics.UpperLineSize := 14;
-      Lyrics.LowerLineSize := 14;
       Lyrics.FontStyle     := 0;
 
       Lyrics.LineColor_en.R := Skin_FontR;
@@ -571,8 +571,6 @@ begin
     end;
     1:
     begin
-      Lyrics.UpperLineSize := 14;
-      Lyrics.LowerLineSize := 14;
       Lyrics.FontStyle     := 2;
 
       Lyrics.LineColor_en.R := 0.75;
@@ -592,8 +590,6 @@ begin
     end;
     2:
     begin
-      Lyrics.UpperLineSize := 12;
-      Lyrics.LowerLineSize := 12;
       Lyrics.FontStyle     := 3;
 
       Lyrics.LineColor_en.R := 0.75;
@@ -970,15 +966,6 @@ begin
     else
       Lyrics.AddLine(nil);
   end;
-
-  // AddLine draws the passed line to the back-buffer of the render context
-  // and copies it into a texture afterwards (offscreen rendering).
-  // This leaves an in invalidated screen. Calling Draw() makes sure,
-  // that the back-buffer stores the sing-screen, when the next
-  // swap between the back- and front-buffer is done (eliminates flickering)
-  // <note> calling AddLine() right before the regular screen update (Display.Draw)
-  // would be a better solution.</note>
-  Draw;
 end;
 
 function TLyricsSyncSource.GetClock(): real;
