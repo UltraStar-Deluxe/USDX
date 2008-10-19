@@ -181,37 +181,37 @@ begin
 
   AddBox(80, 60, 640, 550);
 
-  AddText(160, 110 + 0*30, 0, 10, 0, 0, 0, 'Title:');
-  AddText(160, 110 + 1*30, 0, 10, 0, 0, 0, 'Artist:');
-  AddText(160, 110 + 2*30, 0, 10, 0, 0, 0, 'MP3:');
+  AddText(160, 110 + 0*30, 0, 30, 0, 0, 0, 'Title:');
+  AddText(160, 110 + 1*30, 0, 30, 0, 0, 0, 'Artist:');
+  AddText(160, 110 + 2*30, 0, 30, 0, 0, 0, 'MP3:');
 
-  AddText(160, 110 + 4*30, 0, 10, 0, 0, 0, 'Background:');
-  AddText(160, 110 + 5*30, 0, 10, 0, 0, 0, 'Video:');
-  AddText(160, 110 + 6*30, 0, 10, 0, 0, 0, 'VideoGAP:');
+  AddText(160, 110 + 4*30, 0, 30, 0, 0, 0, 'Background:');
+  AddText(160, 110 + 5*30, 0, 30, 0, 0, 0, 'Video:');
+  AddText(160, 110 + 6*30, 0, 30, 0, 0, 0, 'VideoGAP:');
 
-  AddText(160, 110 + 8*30,  0, 10, 0, 0, 0, 'Relative:');
-  AddText(160, 110 + 9*30,  0, 10, 0, 0, 0, 'Resolution:');
-  AddText(160, 110 + 10*30, 0, 10, 0, 0, 0, 'NotesGAP:');
+  AddText(160, 110 + 8*30,  0, 30, 0, 0, 0, 'Relative:');
+  AddText(160, 110 + 9*30,  0, 30, 0, 0, 0, 'Resolution:');
+  AddText(160, 110 + 10*30, 0, 30, 0, 0, 0, 'NotesGAP:');
 
-  AddText(160, 110 + 12*30, 0, 10, 0, 0, 0, 'Start:');
-  AddText(160, 110 + 13*30, 0, 10, 0, 0, 0, 'GAP:');
-  AddText(160, 110 + 14*30, 0, 10, 0, 0, 0, 'BPM:');
+  AddText(160, 110 + 12*30, 0, 30, 0, 0, 0, 'Start:');
+  AddText(160, 110 + 13*30, 0, 30, 0, 0, 0, 'GAP:');
+  AddText(160, 110 + 14*30, 0, 30, 0, 0, 0, 'BPM:');
 
-  TextTitle  := AddText(340, 110 + 0*30, 0, 10, 0, 0, 0, '');
-  TextArtist := AddText(340, 110 + 1*30, 0, 10, 0, 0, 0, '');
-  TextMp3    := AddText(340, 110 + 2*30, 0, 10, 0, 0, 0, '');
+  TextTitle  := AddText(340, 110 + 0*30, 0, 30, 0, 0, 0, '');
+  TextArtist := AddText(340, 110 + 1*30, 0, 30, 0, 0, 0, '');
+  TextMp3    := AddText(340, 110 + 2*30, 0, 30, 0, 0, 0, '');
 
-  TextBackground := AddText(340, 110 + 4*30, 0, 10, 0, 0, 0, '');
-  TextVideo      := AddText(340, 110 + 5*30, 0, 10, 0, 0, 0, '');
-  TextVideoGAP   := AddText(340, 110 + 6*30, 0, 10, 0, 0, 0, '');
+  TextBackground := AddText(340, 110 + 4*30, 0, 30, 0, 0, 0, '');
+  TextVideo      := AddText(340, 110 + 5*30, 0, 30, 0, 0, 0, '');
+  TextVideoGAP   := AddText(340, 110 + 6*30, 0, 30, 0, 0, 0, '');
 
-  TextRelative   := AddText(340, 110 + 8*30, 0, 10, 0, 0, 0, '');
-  TextResolution := AddText(340, 110 + 9*30, 0, 10, 0, 0, 0, '');
-  TextNotesGAP   := AddText(340, 110 + 10*30, 0, 10, 0, 0, 0, '');
+  TextRelative   := AddText(340, 110 + 8*30, 0, 30, 0, 0, 0, '');
+  TextResolution := AddText(340, 110 + 9*30, 0, 30, 0, 0, 0, '');
+  TextNotesGAP   := AddText(340, 110 + 10*30, 0, 30, 0, 0, 0, '');
 
-  TextStart :=  AddText(340, 110 + 12*30, 0, 10, 0, 0, 0, '');
-  TextGAP   :=  AddText(340, 110 + 13*30, 0, 10, 0, 0, 0, '');
-  TextBPM   :=  AddText(340, 110 + 14*30, 0, 10, 0, 0, 0, '');
+  TextStart :=  AddText(340, 110 + 12*30, 0, 30, 0, 0, 0, '');
+  TextGAP   :=  AddText(340, 110 + 13*30, 0, 30, 0, 0, 0, '');
+  TextBPM   :=  AddText(340, 110 + 14*30, 0, 30, 0, 0, 0, '');
 
   StaticTitle      := AddStatic(130, 115 + 0*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
   StaticArtist     := AddStatic(130, 115 + 1*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
