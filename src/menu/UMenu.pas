@@ -375,7 +375,7 @@ begin
   end;
 
   Case ThemedSettings.BGType of
-    BGT_Auto: begin //Automaticly choose one out of BGT_Texture, BGT_Video or BGT_Color
+    bgtAuto: begin //Automaticly choose one out of BGT_Texture, BGT_Video or BGT_Color
 
       if (Length(ThemedSettings.Tex) > 0) then
       begin
@@ -401,7 +401,7 @@ begin
       end;
     end;
 
-    BGT_Color: begin
+    bgtColor: begin
       try
         Background := TMenuBackgroundColor.Create(ThemedSettings);
       except
@@ -413,7 +413,7 @@ begin
       end;
     end;
 
-    BGT_Texture: begin
+    bgtTexture: begin
       try
         Background := TMenuBackgroundTexture.Create(ThemedSettings);
       except
@@ -425,7 +425,7 @@ begin
       end;
     end;
 
-    BGT_Video: begin
+    bgtVideo: begin
       try
         Background := TMenuBackgroundVideo.Create(ThemedSettings);
       except
@@ -437,7 +437,7 @@ begin
       end;
     end;
 
-    BGT_None: begin
+    bgtNone: begin
       try
         Background := TMenuBackgroundNone.Create(ThemedSettings);
       except
@@ -449,7 +449,7 @@ begin
       end;
     end;
 
-    BGT_Fade: begin
+    bgtFade: begin
       try
         Background := TMenuBackgroundFade.Create(ThemedSettings);
       except
@@ -465,7 +465,7 @@ begin
   //Fallback to None Background or Colored Background
   if (Background = nil) then
   begin
-    if (ThemedSettings.BGType = BGT_Color) then
+    if (ThemedSettings.BGType = bgtColor) then
       Background := TMenuBackgroundNone.Create(ThemedSettings)
     else
       Background := TMenuBackgroundColor.Create(ThemedSettings)
@@ -1507,7 +1507,7 @@ begin
     end;
   end; }
   if (Background = nil) then
-    AddBackground(DEFAULTBACKGROUND);
+    AddBackground(DEFAULT_BACKGROUND);
 
   Background.OnShow;
 end;

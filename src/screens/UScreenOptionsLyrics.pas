@@ -109,8 +109,6 @@ begin
 end;
 
 constructor TScreenOptionsLyrics.Create;
-//var
-// I:      integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
 
