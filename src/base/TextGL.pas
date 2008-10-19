@@ -359,7 +359,7 @@ end;
 
 procedure SetFontSize(Size: real);
 begin
-  Fonts[ActFont].Tex.H := 30 * (Size/10);
+  Fonts[ActFont].Tex.H := Size;
 end;
 
 procedure SetFontStyle(Style: integer);

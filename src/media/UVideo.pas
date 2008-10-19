@@ -764,7 +764,7 @@ begin
     glColor4f(0.7, 1, 0.3, 1);
     SetFontStyle (1);
     SetFontItalic(False);
-    SetFontSize(9);
+    SetFontSize(27);
     SetFontPos (300, 0);
     glPrint('Delay due to negative VideoGap');
     glColor4f(1, 1, 1, 1);
@@ -783,7 +783,7 @@ begin
     glColor4f(1, 1, 1, 1);
     SetFontStyle (1);
     SetFontItalic(False);
-    SetFontSize(9);
+    SetFontSize(27);
     SetFontPos (5, 0);
     glPrint('delaying frame');
     SetFontPos (5, 20);

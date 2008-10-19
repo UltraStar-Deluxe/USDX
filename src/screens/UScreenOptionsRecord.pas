@@ -723,7 +723,7 @@ begin
 
   // initialize font
   // TODO: what about reflection, italic etc.?
-  SetFontSize(ToneStringHeight/3);
+  SetFontSize(ToneStringHeight);
 
   // center
   // Note: for centering let us assume that G#4 has the max. horizontal extent

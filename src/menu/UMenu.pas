@@ -574,9 +574,9 @@ begin
   for BT := 0 to BTLen-1 do
   begin
       AddButtonText(ButtonCollection[Num], ThemeCollection.Style.Text[BT].X, ThemeCollection.Style.Text[BT].Y,
-      ThemeCollection.Style.Text[BT].ColR, ThemeCollection.Style.Text[BT].ColG, ThemeCollection.Style.Text[BT].ColB,
-      ThemeCollection.Style.Text[BT].Font, ThemeCollection.Style.Text[BT].Size, ThemeCollection.Style.Text[BT].Align,
-      ThemeCollection.Style.Text[BT].Text);
+        ThemeCollection.Style.Text[BT].ColR, ThemeCollection.Style.Text[BT].ColG, ThemeCollection.Style.Text[BT].ColB,
+        ThemeCollection.Style.Text[BT].Font, ThemeCollection.Style.Text[BT].Size, ThemeCollection.Style.Text[BT].Align,
+        ThemeCollection.Style.Text[BT].Text);
   end;
 end;
 
@@ -1269,7 +1269,7 @@ begin
   SelectsS[S].Text.X := X + 20;
   SelectsS[S].Text.Y := Y + (SelectsS[S].TextureSBG.H / 2) - 15;
   SelectsS[S].Text.Text := Caption;
-  SelectsS[S].Text.Size := 10;
+  SelectsS[S].Text.Size := 30;
   SelectsS[S].Text.Visible := true;
   SelectsS[S].TColR := TColR;
   SelectsS[S].TColG := TColG;
@@ -1303,7 +1303,7 @@ begin
   SelectsS[S].PData := @Data;
   // Configures Select options
   {//SelectsS[S].TextOpt[0].Text := IntToStr(I+1);
-  SelectsS[S].TextOpt[0].Size := 10;
+  SelectsS[S].TextOpt[0].Size := 30;
   SelectsS[S].TextOpt[0].Align := 1;
 
   SelectsS[S].TextOpt[0].ColR := SelectsS[S].STDColR;
@@ -1324,7 +1324,7 @@ begin
     SelectsS[S].TextOpt[I].X := SelectsS[S].TextureSBG.X + 20 + (50 + 20) + (150 - 20) * I;
     SelectsS[S].TextOpt[I].Y := SelectsS[S].TextureSBG.Y + 20;
     SelectsS[S].TextOpt[I].Text := IntToStr(I+1);
-    SelectsS[S].TextOpt[I].Size := 10;
+    SelectsS[S].TextOpt[I].Size := 30;
     SelectsS[S].TextOpt[I].Align := 1;
 
     SelectsS[S].TextOpt[I].ColR := SelectsS[S].STDColR;

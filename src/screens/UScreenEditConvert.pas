@@ -558,12 +558,12 @@ begin
   for Pet := 0 to High(ATrack) do begin
     if ((ATrack[Pet].Status div 1) and 1) = 1 then begin
       SetFontPos(25, Y + Pet*YSkip + 10);
-      SetFontSize(5);
+      SetFontSize(15);
       glPrint('N');
     end;
     if ((ATrack[Pet].Status div 2) and 1) = 1 then begin
       SetFontPos(40, Y + Pet*YSkip + 10);
-      SetFontSize(5);
+      SetFontSize(15);
       glPrint('L');
     end;
   end;
@@ -577,7 +577,7 @@ begin
 
   for Pet := 0 to High(ATrack) do begin
     SetFontPos(11, Y + 10 + Pet*YSkip);
-    SetFontSize(5);
+    SetFontSize(15);
     glPrint(pchar(ATrack[Pet].Name));
   end;
 

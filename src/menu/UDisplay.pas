@@ -378,7 +378,7 @@ begin
 
   //Set Font Specs
   SetFontStyle(0);
-  SetFontSize(7);
+  SetFontSize(21);
   SetFontItalic(False);
   glColor4f(0, 0, 0, 1);
 

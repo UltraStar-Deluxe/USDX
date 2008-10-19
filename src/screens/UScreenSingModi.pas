@@ -686,7 +686,9 @@ procedure Print(const Style, Size: Byte; const X, Y: Real; const Text: PChar); s
 begin
   SetFontItalic ((Style and 128) = 128);
   SetFontStyle(Style and 7);
-  SetFontSize(Size);
+  // FIXME: FONTSIZE
+  // used by Hold_The_Line / TeamDuell
+  SetFontSize(Size * 3);
   SetFontPos (X, Y);
   glPrint (PChar(Language.Translate(String(Text))));
 end;

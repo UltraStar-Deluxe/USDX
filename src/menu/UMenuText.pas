@@ -328,12 +328,12 @@ begin
         glPrint(PChar(Text2));
 
         {if Size >= 10 then
-          Y2 := Y2 + Size * 2.8
+          Y2 := Y2 + Size * 0.93
         else}
         if (Style = 1) then
-          Y2 := Y2 + Size * 2.8
+          Y2 := Y2 + Size * 0.93
         else
-          Y2 := Y2 + Size * 2.15;
+          Y2 := Y2 + Size * 0.72;
       end;
       SetFontStyle(0); // reset to default
 
@@ -348,7 +348,7 @@ end;
 
 constructor TText.Create(X, Y: real; Tekst: string);
 begin
-  Create(X, Y, 0, 0, 10, 0, 0, 0, 0, Tekst, false, 0, 0);
+  Create(X, Y, 0, 0, 30, 0, 0, 0, 0, Tekst, false, 0, 0);
 end;
 
 constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ:real);

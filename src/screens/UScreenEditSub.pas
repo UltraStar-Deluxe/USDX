@@ -1115,30 +1115,30 @@ begin
   inherited Create;
   SetLength(Player, 1);
 
-  // linijka
+  // line
   AddStatic(20, 10, 80, 30, 0, 0, 0, Skin.GetTextureFileName('ButtonF'), TEXTURE_TYPE_COLORIZED);
-  AddText(40, 17, 1, 6, 1, 1, 1, 'Line');
-  TextSentence := AddText(120, 14, 1, 8, 0, 0, 0, '0 / 0');
+  AddText(40, 17, 1, 18, 1, 1, 1, 'Line');
+  TextSentence := AddText(120, 14, 1, 24, 0, 0, 0, '0 / 0');
 
   // Note
   AddStatic(220, 10, 80, 30, 0, 0, 0, Skin.GetTextureFileName('ButtonF'), TEXTURE_TYPE_COLORIZED);
-  AddText(242, 17, 1, 6, 1, 1, 1, 'Note');
-  TextNote := AddText(320, 14, 1, 8, 0, 0, 0, '0 / 0');
+  AddText(242, 17, 1, 18, 1, 1, 1, 'Note');
+  TextNote := AddText(320, 14, 1, 24, 0, 0, 0, '0 / 0');
 
   // file info
   AddStatic(150, 50, 500, 150, 0, 0, 0, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
   AddStatic(151, 52, 498, 146,  1, 1, 1, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
-  AddText(180, 65,  0, 8, 0, 0, 0, 'Title:');
-  AddText(180, 90,  0, 8, 0, 0, 0, 'Artist:');
-  AddText(180, 115, 0, 8, 0, 0, 0, 'Mp3:');
-  AddText(180, 140, 0, 8, 0, 0, 0, 'BPM:');
-  AddText(180, 165, 0, 8, 0, 0, 0, 'GAP:');
+  AddText(180, 65,  0, 24, 0, 0, 0, 'Title:');
+  AddText(180, 90,  0, 24, 0, 0, 0, 'Artist:');
+  AddText(180, 115, 0, 24, 0, 0, 0, 'Mp3:');
+  AddText(180, 140, 0, 24, 0, 0, 0, 'BPM:');
+  AddText(180, 165, 0, 24, 0, 0, 0, 'GAP:');
 
-  TextTitle :=  AddText(250, 65,  0, 8, 0, 0, 0, 'a');
-  TextArtist := AddText(250, 90,  0, 8, 0, 0, 0, 'b');
-  TextMp3 :=    AddText(250, 115, 0, 8, 0, 0, 0, 'c');
-  TextBPM :=    AddText(250, 140, 0, 8, 0, 0, 0, 'd');
-  TextGAP :=    AddText(250, 165, 0, 8, 0, 0, 0, 'e');
+  TextTitle :=  AddText(250, 65,  0, 24, 0, 0, 0, 'a');
+  TextArtist := AddText(250, 90,  0, 24, 0, 0, 0, 'b');
+  TextMp3 :=    AddText(250, 115, 0, 24, 0, 0, 0, 'c');
+  TextBPM :=    AddText(250, 140, 0, 24, 0, 0, 0, 'd');
+  TextGAP :=    AddText(250, 165, 0, 24, 0, 0, 0, 'e');
 
 {  AddInteraction(2, TextTitle);
   AddInteraction(2, TextArtist);
@@ -1147,15 +1147,15 @@ begin
   AddInteraction(2, TextGAP);}
 
   // note info
-  AddText(20, 190,  0, 8, 0, 0, 0, 'Start:');
-  AddText(20, 215,  0, 8, 0, 0, 0, 'Duration:');
-  AddText(20, 240,  0, 8, 0, 0, 0, 'Tone:');
-  AddText(20, 265,  0, 8, 0, 0, 0, 'Text:');
+  AddText(20, 190,  0, 24, 0, 0, 0, 'Start:');
+  AddText(20, 215,  0, 24, 0, 0, 0, 'Duration:');
+  AddText(20, 240,  0, 24, 0, 0, 0, 'Tone:');
+  AddText(20, 265,  0, 24, 0, 0, 0, 'Text:');
 
-  TextNStart :=   AddText(120, 190,  0, 8, 0, 0, 0, 'a');
-  TextNLength := AddText(120, 215,  0, 8, 0, 0, 0, 'b');
-  TextNTon :=     AddText(120, 240,  0, 8, 0, 0, 0, 'c');
-  TextNText :=    AddText(120, 265,  0, 8, 0, 0, 0, 'd');
+  TextNStart :=   AddText(120, 190,  0, 24, 0, 0, 0, 'a');
+  TextNLength :=  AddText(120, 215,  0, 24, 0, 0, 0, 'b');
+  TextNTon :=     AddText(120, 240,  0, 24, 0, 0, 0, 'c');
+  TextNText :=    AddText(120, 265,  0, 24, 0, 0, 0, 'd');
 
   // debug
   TextDebug :=  AddText(30, 550, 0, 8, 0, 0, 0, '');
@@ -1209,7 +1209,7 @@ begin
     Lyric.X := 400;
     Lyric.Y := 500;
     Lyric.Align := 1;
-    Lyric.Size := 14;
+    Lyric.Size := 42;
     Lyric.ColR := 0;
     Lyric.ColG := 0;
     Lyric.ColB := 0;

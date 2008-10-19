@@ -370,7 +370,7 @@ begin
       else
         TextOpt[I].X := TextureSBG.X + TextureSBG.W - maxlength;
 
-      TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H / 2) - 1.5 * Text.Size{20};
+      TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H - Text.Size) / 2;
 
       //Better Look with 2 Options
       if (Lines=2) AND (Length(TextOptT)= 2) then

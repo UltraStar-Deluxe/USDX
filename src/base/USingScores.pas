@@ -93,19 +93,19 @@ type
     RBW: Real;     //Width of the Rating Bar
     RBH: Real;     //Height of the Rating Bar
 
-    TextX: Real;        //X Position of the Score Text
-    TextY: Real;        //Y Position of the Score Text
-    TextFont: Byte;     //Font of the Score Text
-    TextSize: Byte;     //Size of the Score Text
+    TextX: Real;         //X Position of the Score Text
+    TextY: Real;         //Y Position of the Score Text
+    TextFont: Byte;      //Font of the Score Text
+    TextSize: integer;   //Size of the Score Text
 
-    PUW: Real;          //Width of the LineBonus Popup
-    PUH: Real;          //Height of the LineBonus Popup
-    PUFont: Byte;       //Font for the PopUps
-    PUFontSize: Byte;   //FontSize for the PopUps
-    PUStartX: Real;     //X Start Position of the LineBonus Popup
-    PUStartY: Real;     //Y Start Position of the LineBonus Popup
-    PUTargetX: Real;    //X Target Position of the LineBonus Popup
-    PUTargetY: Real;    //Y Target Position of the LineBonus Popup
+    PUW: Real;           //Width of the LineBonus Popup
+    PUH: Real;           //Height of the LineBonus Popup
+    PUFont: Byte;        //Font for the PopUps
+    PUFontSize: integer; //FontSize for the PopUps
+    PUStartX: Real;      //X Start Position of the LineBonus Popup
+    PUStartY: Real;      //Y Start Position of the LineBonus Popup
+    PUTargetX: Real;     //X Target Position of the LineBonus Popup
+    PUTargetY: Real;     //Y Target Position of the LineBonus Popup
   end;
   aScorePosition = array[0..MaxPositions-1] of TScorePosition;
 
@@ -138,17 +138,17 @@ type
       FirstPopUp: PScorePopUp;
       LastPopUp:  PScorePopUp;
 
-      //Procedure Draws a Popup by Pointer
-      Procedure DrawPopUp(const PopUp: PScorePopUp);
+      // Draws a Popup by Pointer
+      procedure DrawPopUp(const PopUp: PScorePopUp);
 
-      //Procedure Draws a Score by Playerindex
-      Procedure DrawScore(const Index: Integer);
+      // Draws a Score by Playerindex
+      procedure DrawScore(const Index: Integer);
 
-      //Procedure Draws the RatingBar by Playerindex
-      Procedure DrawRatingBar(const Index: Integer);
+      // Draws the RatingBar by Playerindex
+      procedure DrawRatingBar(const Index: Integer);
 
-      //Procedure Removes a PopUp w/o destroying the List
-      Procedure KillPopUp(const last, cur: PScorePopUp);
+      // Removes a PopUp w/o destroying the List
+      procedure KillPopUp(const last, cur: PScorePopUp);
     public
       Settings: record //Record containing some Displaying Options
         Phase1Time: Real;     //time for Phase 1 to complete (in msecs)
@@ -158,7 +158,7 @@ type
         Phase3Time: Real;     //time for Phase 3 to complete (in msecs)
                               //The Fade out and Score adding
 
-        PopUpTex:   Array [0..8] of TTexture; //Textures for every Popup Rating
+        PopUpTex:  array [0..8] of TTexture; //Textures for every Popup Rating
 
         RatingBar_BG_Tex:   TTexture; //Rating Bar Texs
         RatingBar_FG_Tex:   TTexture;
@@ -171,44 +171,44 @@ type
       RBVisible: Boolean;  //Visibility of all Rating Bars
 
       //Propertys for Reading Position and Playercount
-      Property PositionCount: Byte read oPositionCount;
-      Property PlayerCount: Byte read oPlayerCount;
-      Property Players: aScorePlayer read aPlayers;
+      property PositionCount: Byte read oPositionCount;
+      property PlayerCount: Byte read oPlayerCount;
+      property Players: aScorePlayer read aPlayers;
 
       //Constructor just sets some standard Settings
-      Constructor Create;
+      constructor Create;
 
-      //Procedure Adds a Position to Array and Increases Position Count
-      Procedure AddPosition(const pPosition: PScorePosition);
+      // Adds a Position to Array and Increases Position Count
+      procedure AddPosition(const pPosition: PScorePosition);
 
-      //Procedure Adds a Player to Array and Increases Player Count
-      Procedure AddPlayer(const ScoreBG: TTexture; const Color: TRGB; const Score: Word = 0; const Enabled: Boolean = True; const Visible: Boolean = True);
+      // Adds a Player to Array and Increases Player Count
+      procedure AddPlayer(const ScoreBG: TTexture; const Color: TRGB; const Score: Word = 0; const Enabled: Boolean = True; const Visible: Boolean = True);
 
       //Change a Players Visibility, Enable
-      Procedure ChangePlayerVisibility(const Index: Byte; const pVisible: Boolean);
-      Procedure ChangePlayerEnabled(const Index: Byte; const pEnabled: Boolean);
+      procedure ChangePlayerVisibility(const Index: Byte; const pVisible: Boolean);
+      procedure ChangePlayerEnabled(const Index: Byte; const pEnabled: Boolean);
 
-      //Procedure Deletes all Player Information
-      Procedure ClearPlayers;
+      // Deletes all Player Information
+      procedure ClearPlayers;
 
-      //Procedure Deletes Positions and Playerinformation
-      Procedure Clear;
+      // Deletes Positions and Playerinformation
+      procedure Clear;
 
-      //Procedure Loads some Settings and the Positions from Theme
-      Procedure LoadfromTheme;
+      // Loads some Settings and the Positions from Theme
+      procedure LoadfromTheme;
 
-      //Procedure has to be called after Positions and Players have been added, before first call of Draw
+      // has to be called after Positions and Players have been added, before first call of Draw
       //It gives every Player a Score Position
-      Procedure Init;
+      procedure Init;
 
       //Spawns a new Line Bonus PopUp for the Player
-      Procedure SpawnPopUp(const PlayerIndex: Byte; const Rating: Byte; const Score: Word);
+      procedure SpawnPopUp(const PlayerIndex: Byte; const Rating: Byte; const Score: Word);
 
       //Removes all PopUps from Mem
-      Procedure KillAllPopUps;
+      procedure KillAllPopUps;
 
-      //Procedure Draws Scores and Linebonus PopUps
-      Procedure Draw;
+      // Draws Scores and Linebonus PopUps
+      procedure Draw;
   end;
 
 
@@ -220,9 +220,9 @@ uses SDL,
      UGraphic,
      TextGL;
 
-//-----------
-//Constructor just sets some standard Settings
-//-----------
+{**
+ * Sets some standard Settings
+ *}
 Constructor TSingScores.Create;
 begin
   inherited;
@@ -259,9 +259,9 @@ begin
   Settings.RatingBar_Bar_Tex.TexNum  := 0;
 end;
 
-//-----------
-//Procedure Adds a Position to Array and Increases Position Count
-//-----------
+{**
+ * Adds a Position to Array and Increases Position Count
+ *}
 Procedure TSingScores.AddPosition(const pPosition: PScorePosition);
 begin
   if (PositionCount < MaxPositions) then
@@ -272,9 +272,9 @@ begin
   end;
 end;
 
-//-----------
-//Procedure Adds a Player to Array and Increases Player Count
-//-----------
+{**
+ * Adds a Player to Array and Increases Player Count
+ *}
 Procedure TSingScores.AddPlayer(const ScoreBG: TTexture; const Color: TRGB; const Score: Word; const Enabled: Boolean; const Visible: Boolean);
 begin
   if (PlayerCount < MaxPlayers) then
@@ -294,46 +294,46 @@ begin
   end;
 end;
 
-//-----------
-//Change a Players Visibility
-//-----------
+{**
+ * Change a Players Visibility
+ *}
 Procedure TSingScores.ChangePlayerVisibility(const Index: Byte; const pVisible: Boolean);
 begin
   if (Index < MaxPlayers) then
     aPlayers[Index].Visible := pVisible;
 end;
 
-//-----------
-//Change Player Enabled
-//-----------
+{**
+ * Change Player Enabled
+ *}
 Procedure TSingScores.ChangePlayerEnabled(const Index: Byte; const pEnabled: Boolean);
 begin
   if (Index < MaxPlayers) then
     aPlayers[Index].Enabled := pEnabled;
 end;
 
-//-----------
-//Procedure Deletes all Player Information
-//-----------
-Procedure TSingScores.ClearPlayers;    
+{**
+ * Procedure Deletes all Player Information
+ *}
+Procedure TSingScores.ClearPlayers;
 begin
   KillAllPopUps;
   oPlayerCount := 0;
 end;
 
-//-----------
-//Procedure Deletes Positions and Playerinformation
-//-----------
-Procedure TSingScores.Clear; 
+{**
+ * Procedure Deletes Positions and Playerinformation
+ *}
+Procedure TSingScores.Clear;
 begin
   KillAllPopUps;
   oPlayerCount    := 0;
   oPositionCount  := 0;
 end;
 
-//-----------
-//Procedure Loads some Settings and the Positions from Theme
-//-----------
+{**
+ * Procedure Loads some Settings and the Positions from Theme
+ *}
 Procedure TSingScores.LoadfromTheme;
 var I: Integer;
   Procedure AddbyStatics(const PC: Byte; const ScoreStatic, SingBarStatic: TThemeStatic; ScoreText: TThemeText);
@@ -360,7 +360,7 @@ var I: Integer;
     nPosition.PUH := nPosition.BGH;
 
     nPosition.PUFont     := 2;
-    nPosition.PUFontSize := 6;
+    nPosition.PUFontSize := 18;
 
     nPosition.PUStartX := nPosition.BGX;
     nPosition.PUStartY := nPosition.TextY + 65;
@@ -398,9 +398,9 @@ begin
   AddByStatics(4, Theme.Sing.StaticP3RScoreBG, Theme.Sing.StaticP3SingBar, Theme.Sing.TextP3RScore);
 end;
 
-//-----------
-//Spawns a new Line Bonus PopUp for the Player
-//-----------
+{**
+ * Spawns a new Line Bonus PopUp for the Player
+ *}
 Procedure TSingScores.SpawnPopUp(const PlayerIndex: Byte; const Rating: Byte; const Score: Word);
 var Cur: PScorePopUp;
 begin
@@ -446,9 +446,9 @@ begin
     Log.LogError('TSingScores: Try to add PopUp for not existing player');
 end;
 
-//-----------
-// Removes a PopUp w/o destroying the List
-//-----------
+{**
+ * Removes a PopUp w/o destroying the List
+ *}
 Procedure TSingScores.KillPopUp(const last, cur: PScorePopUp);
 begin
   //Give Player the Last Points that missing till now
@@ -488,9 +488,9 @@ begin
   FreeMem(Cur, SizeOf(TScorePopUp));
 end;
 
-//-----------
-//Removes all PopUps from Mem
-//-----------
+{**
+ * Removes all PopUps from Mem
+ *}
 Procedure TSingScores.KillAllPopUps;
 var
   Cur:  PScorePopUp;
@@ -510,10 +510,10 @@ begin
   LastPopUp := nil;
 end;
 
-//-----------
-//Init - has to be called after Positions and Players have been added, before first call of Draw
-//It gives every Player a Score Position
-//-----------
+{**
+ * Has to be called after Positions and Players have been added, before first call of Draw
+ * It gives every Player a Score Position
+ *}
 Procedure TSingScores.Init;
 var
   PlC: Array [0..1] of Byte; //Playercount First Screen and Second Screen
@@ -602,9 +602,9 @@ begin
     end;
 end;
 
-//-----------
-//Procedure Draws Scores and Linebonus PopUps
-//-----------
+{**
+ * Draws Scores and Linebonus PopUps
+ *}
 Procedure TSingScores.Draw;
 var
   I: Integer;
@@ -655,15 +655,15 @@ begin
   end; //eo Visible
 end;
 
-//-----------
-//Procedure Draws a Popup by Pointer
-//-----------
+{**
+ * Draws a Popup by Pointer
+ *}
 Procedure TSingScores.DrawPopUp(const PopUp: PScorePopUp);
 var
   Progress: Real;
   CurTime:  Cardinal;
   X, Y, W, H, Alpha: Real;
-  FontSize: Byte;
+  FontSize: integer;
   FontOffset: Real;
   TimeDiff: Cardinal;
   PIndex:   Byte;
@@ -706,7 +706,7 @@ begin
           Y := Positions[PIndex].PUStartY + (Positions[PIndex].PUH - H)/2;
 
           FontSize   := Round(Progress * Positions[PIndex].PUFontSize);
-          FontOffset := H / 2 - FontSize;
+          FontOffset := (H  - FontSize) / 2;
           Alpha := 1;
         end
 
@@ -729,7 +729,7 @@ begin
           Y := Positions[PIndex].PUStartY + PosDiff * sqr(Progress);
 
           FontSize   := Positions[PIndex].PUFontSize;
-          FontOffset := H / 2 - FontSize;
+          FontOffset := (H - FontSize) / 2;
           Alpha := 1 - 0.3 * Progress;
         end
 
@@ -776,7 +776,7 @@ begin
             Y := Positions[PIndex].PUTargetY - PosDiff * (1-Progress);
 
             FontSize   := Positions[PIndex].PUFontSize;
-            FontOffset := H / 2 - FontSize;
+            FontOffset := (H - FontSize) / 2;
           end
           else
           begin
@@ -820,7 +820,7 @@ begin
           TextLen := glTextWidth(PChar(Theme.Sing.LineBonusText[PopUp.Rating]));
 
           //Color and Pos
-          SetFontPos (X + (W - TextLen) / 2, Y + FontOffset{12});
+          SetFontPos (X + (W - TextLen) / 2, Y + FontOffset);
           glColor4f(1, 1, 1, Alpha);
 
           //Draw
@@ -833,9 +833,9 @@ begin
     Log.LogError('TSingScores: Try to Draw a not existing PopUp');
 end;
 
-//-----------
-//Procedure Draws a Score by Playerindex
-//-----------
+{**
+ * Draws a Score by Playerindex
+ *}
 Procedure TSingScores.DrawScore(const Index: Integer);
 var
   Position: PScorePosition;

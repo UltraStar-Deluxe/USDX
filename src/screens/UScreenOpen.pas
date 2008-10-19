@@ -145,18 +145,18 @@ begin
 
   // linijka
 {  AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
-  AddText(35, 17, 1, 6, 1, 1, 1, 'Linijka');
-  TextSentence := AddText(120, 14, 1, 8, 0, 0, 0, '0 / 0');}
+  AddText(35, 17, 1, 18, 1, 1, 1, 'Linijka');
+  TextSentence := AddText(120, 14, 1, 24, 0, 0, 0, '0 / 0');}
 
   // file list
 //  AddBox(400, 100, 350, 450);
 
-//  TextF[0] :=  AddText(430, 155,  0, 8, 0, 0, 0, 'a');
-//  TextF[1] :=  AddText(430, 180,  0, 8, 0, 0, 0, 'a');
+//  TextF[0] :=  AddText(430, 155,  0, 24, 0, 0, 0, 'a');
+//  TextF[1] :=  AddText(430, 180,  0, 24, 0, 0, 0, 'a');
 
   // file name
   AddBox(20, 540, 500, 40);
-  TextN := AddText(50, 548, 0, 8, 0, 0, 0, ConversionFileName);
+  TextN := AddText(50, 548, 0, 24, 0, 0, 0, ConversionFileName);
   AddInteraction(iText, TextN);
 
   // buttons

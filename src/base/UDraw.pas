@@ -1222,7 +1222,7 @@ begin
 
 //Set Font Propertys
 SetFontStyle(2); //Font: Outlined1
-if Age < 5 then SetFontSize(Age + 1) else SetFontSize(6);
+if Age < 5 then SetFontSize((Age + 1) * 3) else SetFontSize(18);
 SetFontItalic(False);
 
 //Check Font Size

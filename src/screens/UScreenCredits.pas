@@ -329,7 +329,7 @@ var
   X,Y,A: Real;
   visibleText: PChar;
 begin
-  SetFontSize(10);
+  SetFontSize(30);
   //Init ScrollingText
   if (CTime = Timings[7]) then
   begin
@@ -367,7 +367,7 @@ begin
     X:=5;
     SetFontStyle (2);
      SetFontItalic(False);
-     SetFontSize(9);
+     SetFontSize(27);
      glColor4f(1, 1, 1, 1);
      for S:=0 to high(CTime_hold) do begin
      visibleText:=pchar(inttostr(CTime_hold[S]));
@@ -1352,7 +1352,7 @@ begin
    // draw credits runtime counter
    SetFontStyle (2);
     SetFontItalic(False);
-    SetFontSize(9);
+    SetFontSize(27);
     SetFontPos (5, 5);
     glColor4f(1, 1, 1, 1);
     //RuntimeStr:='CTime: '+inttostr(floor(CTime/30.320663991914489602156136106092))+'.'+inttostr(floor(CTime/3.0320663991914489602156136106092)-floor(CTime/30.320663991914489602156136106092)*10);

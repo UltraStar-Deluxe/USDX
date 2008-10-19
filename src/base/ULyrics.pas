@@ -463,7 +463,7 @@ begin
 
   // set font size to a reasonable value
   LyricLine.Height := RequestHeight * 0.9;
-  SetFontSize(LyricLine.Height/3);
+  SetFontSize(LyricLine.Height);
   LyricLine.Width := glTextWidth(PChar(LyricLine.Text));
 
   // change font-size to fit into the lyric bar
@@ -474,7 +474,7 @@ begin
     if (LyricLine.Height < 1) then
       LyricLine.Height := 1;
 
-    SetFontSize(LyricLine.Height/3);
+    SetFontSize(LyricLine.Height);
     LyricLine.Width := glTextWidth(PChar(LyricLine.Text));
   end;
 
@@ -539,7 +539,7 @@ begin
   // set font size and style
   SetFontStyle(FontStyle);
   ResetFont();
-  SetFontSize(Line.Height/3);
+  SetFontSize(Line.Height);
   glColor4f(1, 1, 1, 1);
 
   // center lyrics
