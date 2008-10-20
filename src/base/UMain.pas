@@ -171,14 +171,16 @@ procedure Main;
 var
   WndTitle: string;
 begin
+  {$IFNDEF Debug}
   try
+  {$ENDIF}
     WndTitle := USDXVersionStr;
 
     Platform.Init;
 
     if Platform.TerminateIfAlreadyRunning(WndTitle) then
       Exit;
-      
+
     // fix floating-point exceptions (FPE)
     DisableFloatingPointExceptions();
     // fix the locale for string-to-float parsing in C-libs
@@ -380,7 +382,9 @@ begin
     Log.LogStatus('Main Loop', 'Initialization');
     MainLoop;
 
+  {$IFNDEF Debug}
   finally
+  {$ENDIF}
     //------------------------------
     //Finish Application
     //------------------------------
@@ -399,7 +403,9 @@ begin
       Log.LogStatus('Main Loop', 'Finished');
       Log.Free;
     end;
+  {$IFNDEF Debug}
   end;
+  {$ENDIF}
 end;
 
 procedure MainLoop;
