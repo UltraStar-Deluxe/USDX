@@ -583,21 +583,13 @@ begin
     Screens := Ini.Screens + 1;
 
   // Set minimum color component sizes
-  // Note:
-  //  - SDL_GL_ALPHA_SIZE should not be set here, otherwise on a few systems with
-  //    some versions of SDL (at least 1.2.11) SDL_SetVideoMode will fail.
-  //    The problem occured if the adjusted color component sizes did not leave
-  //    any space for alpha, e.g. red/green/blue ajusted from 5 to 8:
-  //    r_size+g_size+b_size = 24, so an alpha of at least 5 is just available if
-  //    the depth is 32bit.
-  //  - Without SDL_GL_ALPHA_SIZE the lyrics won't work anymore on some systems
-  //    as the offscreen lyrics rendering needs an alpha component in the
-  //    back-buffer.
-  //    -> Leave SDL_GL_ALPHA_SIZE until the lyrics-engine is changed.
+  // Note: do not request an alpha plane with SDL_GL_ALPHA_SIZE here as
+  // some cards/implementations do not support them (SDL_SetVideoMode fails).
+  // We do not the alpha plane anymore since offscreen rendering in back-buffer
+  // was removed.
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    5);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     5);
-  SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE,    5);
 
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16); // Z-Buffer depth
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);

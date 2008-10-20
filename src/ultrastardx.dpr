@@ -73,7 +73,6 @@ uses
   glext                  in 'lib\JEDI-SDL\OpenGL\Pas\glext.pas',
   sdl                    in 'lib\JEDI-SDL\SDL\Pas\sdl.pas',
   sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
-  //sdl_ttf                in 'lib\JEDI-SDL\SDL_ttf\Pas\sdl_ttf.pas',
   sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
   UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',
 
