@@ -1528,7 +1528,9 @@ begin
   // The Unicode manager cwstring does not work with MacOSX at the moment because
   // of missing references to iconv. So we have to use Ansi... for the moment.
 
-  {$IFNDEF DARWIN}
+  // cwstring crashes in FPC 2.2.2 so do not use the cwstring stuff
+  {.$IFNDEF DARWIN}
+  {$IFDEF NOIGNORE}
     // The FPC implementation of WideUpperCase returns nil if wchar is #0 (e.g. if an arrow key is pressed)
     if (wchar <> #0) then
       Result := WideUpperCase(wchar)
@@ -1545,7 +1547,9 @@ end;
  *)
 function TMenu.WideStringUpperCase(wstring: WideString) : WideString;
 begin
-  {$IFNDEF DARWIN}
+  // cwstring crashes in FPC 2.2.2 so do not use the cwstring stuff
+  {.$IFNDEF DARWIN}
+  {$IFDEF NOIGNORE}
     Result := WideUpperCase(wstring)
   {$ELSE}
     Result := AnsiUpperCase(wstring);
