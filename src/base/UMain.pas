@@ -107,7 +107,6 @@ var
   PlayListPath:     string;
 
   Done:     Boolean;
-  Event:    TSDL_event;
   // FIXME: ConversionFileName should not be global
   ConversionFileName: string;
   Restart:  boolean;
@@ -121,6 +120,7 @@ var
 const
   MAX_SONG_SCORE = 10000;     // max. achievable points per song
   MAX_SONG_LINE_BONUS = 1000; // max. achievable line bonus per song
+
 
 function FindPath(out PathResult: string; const RequestedPath: string; NeedsWritePermission: boolean): boolean;
 procedure InitializePaths;
@@ -137,6 +137,24 @@ procedure NewNote(Screen: TScreenSing); // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer): real;
 procedure ClearScores(PlayerNum: integer);
+
+
+type
+  TMainThreadExecProc = procedure(Data: Pointer);
+
+const
+  MAINTHREAD_EXEC_EVENT = SDL_USEREVENT + 2;
+
+{*
+ * Delegates execution of procedure Proc to the main thread.
+ * The Data pointer is passed to the procedure when it is called.
+ * The main thread is notified by signaling a MAINTHREAD_EXEC_EVENT which
+ * is handled in CheckEvents.
+ * Note that Data must not be a pointer to local data. If you want to pass local
+ * data, use Getmem() or New() or create a temporary object.
+ *}
+procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
+
 
 implementation
 
@@ -452,11 +470,13 @@ begin
 End;
 
 procedure CheckEvents;
+var
+  Event: TSDL_event;
 begin
   if Assigned(Display.NextScreen) then
     Exit;
     
-  while SDL_PollEvent( @event ) = 1 do
+  while (SDL_PollEvent(@Event) <> 0) do
   begin
     case Event.type_ of
       SDL_QUITEV:
@@ -465,9 +485,10 @@ begin
         Display.NextScreenWithCheck := nil;
         Display.CheckOK := True;
       end;
-      {
       SDL_MOUSEBUTTONDOWN:
-        with Event.button Do
+      begin
+      {
+        with Event.button do
         begin
           if State = SDL_BUTTON_LEFT Then
           begin
@@ -475,6 +496,7 @@ begin
           end;
         end;
       }
+      end;
       SDL_VIDEORESIZE:
       begin
         ScreenW := Event.resize.w;
@@ -560,8 +582,27 @@ begin
         begin
           // not implemented
         end;
+      MAINTHREAD_EXEC_EVENT:
+        with Event.user do
+        begin
+          TMainThreadExecProc(data1)(data2);
+        end;
     end; // case
   end; // while
+end;
+
+procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
+var
+  Event: TSDL_Event;
+begin
+  with Event.user do
+  begin
+    type_ := MAINTHREAD_EXEC_EVENT;
+    code  := 0;     // not used at the moment
+    data1 := @Proc;
+    data2 := Data;
+  end;
+  SDL_PushEvent(@Event);
 end;
 
 function GetTimeForBeats(BPM, Beats: real): real;
