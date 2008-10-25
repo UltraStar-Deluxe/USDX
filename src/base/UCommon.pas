@@ -504,22 +504,11 @@ begin
 end;
 
 {*
- * With FPC console output is not thread-safe.
+ * FPC uses threadvars (TLS) managed by FPC for console output locking.
  * Using WriteLn() from external threads (like in SDL callbacks)
- *  will damage the heap and crash the program.
- * Most probably FPC uses thread-local-data (TLS) to lock a mutex on
- *  the console-buffer. This does not work with external lib's threads
- *  because these do not have the TLS data and so it crashes while
- *  accessing unallocated memory.
+ * will crash the program as those threadvars have never been initialized.
  * The solution is to create an FPC-managed thread which has the TLS data
- *  and use it to handle the console-output (hence it is called Console-Handler)
- * It should be safe to do so, but maybe FPC requires the main-thread to access
- *  the console-buffer only. In this case output should be delegated to it.
- *
- * TODO: - check if it is safe if an FPC-managed thread different than the
- *           main-thread accesses the console-buffer in FPC.
- *       - check if Delphi's WriteLn is thread-safe.
- *       - check if we need to synchronize file-output too
+ * and use it to handle the console-output (hence it is called Console-Handler)
  *}
 procedure ConsoleWriteLn(const msg: string);
 begin
