@@ -275,7 +275,7 @@ var
   i: integer;
 begin
   // apply software boost
-  //BoostBuffer(Buffer, Size);
+  BoostBuffer(Buffer, BufferSize);
 
   // voice passthrough (send data to playback-device)
   if (assigned(VoiceStream)) then
@@ -473,7 +473,6 @@ var
   Boost:  byte;
 begin
   // TODO: set boost per device
-  {
   case Ini.MicBoost of
     0:   Boost := 1;
     1:   Boost := 2;
@@ -481,8 +480,6 @@ begin
     3:   Boost := 8;
     else Boost := 1;
   end;
-  }
-  Boost := 1;
 
   // at the moment we will boost SInt16 data only
   if (AudioFormat.Format = asfS16) then
@@ -496,7 +493,6 @@ begin
     begin
       Value := SampleBuffer^[i] * Boost;
 
-      // TODO :  JB -  This will clip the audio... cant we reduce the "Boost" if the data clips ??
       if Value > High(Smallint) then
         Value := High(Smallint);
 
