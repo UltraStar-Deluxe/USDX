@@ -545,7 +545,7 @@ begin
   // TODO: we should seperate windowed and fullscreen modes. Otherwise it is not
   // possible to select a reasonable fullscreen mode when in windowed mode
   if IFullScreen[FullScreen] = 'On' then
-    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN or SDL_RESIZABLE)
+    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN)
   else 
     Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE) ;
   
