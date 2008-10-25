@@ -64,7 +64,7 @@ interface
 {$ENDIF}
 
 uses
-  {$IFDEF WIN32}
+  {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
   SQLite3, Classes, SysUtils;
@@ -118,23 +118,23 @@ type
   public
     constructor Create(const FileName: string);
     destructor Destroy; override;
-    function GetTable(const SQL: string): TSQLiteTable; overload;
-    function GetTable(const SQL: string; const Bindings: array of const): TSQLiteTable; overload;
-    procedure ExecSQL(const SQL: string); overload;
-    procedure ExecSQL(const SQL: string; const Bindings: array of const); overload;
+    function GetTable(const SQL: Ansistring): TSQLiteTable; overload;
+    function GetTable(const SQL: Ansistring; const Bindings: array of const): TSQLiteTable; overload;
+    procedure ExecSQL(const SQL: Ansistring); overload;
+    procedure ExecSQL(const SQL: Ansistring; const Bindings: array of const); overload;
     procedure ExecSQL(Query: TSQLiteQuery); overload;
-    function PrepareSQL(const SQL: string): TSQLiteQuery;
+    function PrepareSQL(const SQL: Ansistring): TSQLiteQuery;
     procedure BindSQL(Query: TSQLiteQuery; const Index: Integer; const Value: Integer); overload;
     procedure BindSQL(Query: TSQLiteQuery; const Index: Integer; const Value: String); overload;
     procedure ReleaseSQL(Query: TSQLiteQuery);
-    function GetUniTable(const SQL: string): TSQLiteUniTable; overload;
-    function GetUniTable(const SQL: string; const Bindings: array of const): TSQLiteUniTable; overload;
-    function GetTableValue(const SQL: string): int64; overload;
-    function GetTableValue(const SQL: string; const Bindings: array of const): int64; overload;
-    function GetTableString(const SQL: string): string; overload;
-    function GetTableString(const SQL: string; const Bindings: array of const): string; overload;
-    procedure GetTableStrings(const SQL: string; const Value: TStrings);
-    procedure UpdateBlob(const SQL: string; BlobData: TStream);
+    function GetUniTable(const SQL: Ansistring): TSQLiteUniTable; overload;
+    function GetUniTable(const SQL: Ansistring; const Bindings: array of const): TSQLiteUniTable; overload;
+    function GetTableValue(const SQL: Ansistring): int64; overload;
+    function GetTableValue(const SQL: Ansistring; const Bindings: array of const): int64; overload;
+    function GetTableString(const SQL: Ansistring): string; overload;
+    function GetTableString(const SQL: Ansistring; const Bindings: array of const): string; overload;
+    procedure GetTableStrings(const SQL: Ansistring; const Value: TStrings);
+    procedure UpdateBlob(const SQL: Ansistring; BlobData: TStream);
     procedure BeginTransaction;
     procedure Commit;
     procedure Rollback;
@@ -177,8 +177,8 @@ type
     function GetCount: integer;
     function GetCountResult: integer;
   public
-    constructor Create(DB: TSQLiteDatabase; const SQL: string); overload;
-    constructor Create(DB: TSQLiteDatabase; const SQL: string; const Bindings: array of const); overload;
+    constructor Create(DB: TSQLiteDatabase; const SQL: Ansistring); overload;
+    constructor Create(DB: TSQLiteDatabase; const SQL: Ansistring; const Bindings: array of const); overload;
     destructor Destroy; override;
     function FieldAsInteger(I: cardinal): int64;
     function FieldAsBlob(I: cardinal): TMemoryStream;
@@ -221,8 +221,8 @@ type
     function GetFieldByName(FieldName: string): string;
     function GetFieldIndex(FieldName: string): integer;
   public
-    constructor Create(DB: TSQLiteDatabase; const SQL: string); overload;
-    constructor Create(DB: TSQLiteDatabase; const SQL: string; const Bindings: array of const); overload;
+    constructor Create(DB: TSQLiteDatabase; const SQL: Ansistring); overload;
+    constructor Create(DB: TSQLiteDatabase; const SQL: Ansistring; const Bindings: array of const); overload;
     destructor Destroy; override;
     function FieldAsInteger(I: cardinal): int64;
     function FieldAsBlob(I: cardinal): TMemoryStream;
@@ -243,7 +243,7 @@ type
 
 procedure DisposePointer(ptr: pointer); cdecl;
 
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
 function SystemCollate(Userdta: pointer; Buf1Len: integer; Buf1: pointer;
     Buf2Len: integer; Buf2: pointer): integer; cdecl;
 {$ENDIF}
@@ -256,7 +256,7 @@ begin
     freemem(ptr);
 end;
 
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
 function SystemCollate(Userdta: pointer; Buf1Len: integer; Buf1: pointer;
     Buf2Len: integer; Buf2: pointer): integer; cdecl;
 begin
@@ -271,9 +271,9 @@ end;
 
 constructor TSQLiteDatabase.Create(const FileName: string);
 var
-  Msg: pchar;
+  Msg: PAnsiChar;
   iResult: integer;
-  utf8FileName: string;
+  utf8FileName: UTF8string;
 begin
   inherited Create;
   fParams := TList.Create;
@@ -282,8 +282,8 @@ begin
 
   Msg := nil;
   try
-    utf8FileName := AnsiToUtf8(FileName);
-    iResult := SQLite3_Open(PChar(utf8FileName), Fdb);
+    utf8FileName := UTF8String(FileName);
+    iResult := SQLite3_Open(PAnsiChar(utf8FileName), Fdb);
 
     if iResult <> SQLITE_OK then
       if Assigned(Fdb) then
@@ -338,7 +338,7 @@ end;
 procedure TSQLiteDatabase.RaiseError(s: string; SQL: string);
 //look up last error and raise an exception with an appropriate message
 var
-  Msg: PChar;
+  Msg: PAnsiChar;
   ret : integer;
 begin
 
@@ -388,7 +388,7 @@ begin
         case Bindings[I].VType of
           vtString: begin // ShortString
             AnsiStr := Bindings[I].VString^;
-            DataPtr := PChar(AnsiStr);
+            DataPtr := PAnsiChar(AnsiStr);
             DataSize := Length(AnsiStr)+1;
           end;
           vtPChar: begin
@@ -396,24 +396,24 @@ begin
             DataSize := -1;
           end;
           vtAnsiString: begin
-            AnsiStrPtr := PString(@Bindings[I].VAnsiString);
-            DataPtr := PChar(AnsiStrPtr^);
+            AnsiStrPtr := PAnsiString(@Bindings[I].VAnsiString);
+            DataPtr := PAnsiChar(AnsiStrPtr^);
             DataSize := Length(AnsiStrPtr^)+1;
           end;
           vtPWideChar: begin
-            DataPtr := PChar(UTF8Encode(WideString(Bindings[I].VPWideChar)));
+            DataPtr := PAnsiChar(UTF8Encode(WideString(Bindings[I].VPWideChar)));
             DataSize := -1;
           end;
           vtWideString: begin
-            DataPtr := PChar(UTF8Encode(PWideString(@Bindings[I].VWideString)^));
+            DataPtr := PAnsiChar(UTF8Encode(PWideString(@Bindings[I].VWideString)^));
             DataSize := -1;
           end;
           vtChar: begin
-            DataPtr := PChar(String(Bindings[I].VChar));
+            DataPtr := PAnsiChar(String(Bindings[I].VChar));
             DataSize := 2;
           end;
           vtWideChar: begin
-            DataPtr := PChar(UTF8Encode(WideString(Bindings[I].VWideChar)));
+            DataPtr := PAnsiChar(UTF8Encode(WideString(Bindings[I].VWideChar)));
             DataSize := -1;
           end;
           else
@@ -449,7 +449,7 @@ begin
         if (Bindings[I].VObject is TCustomMemoryStream) then
         begin
           BlobMemStream := TCustomMemoryStream(Bindings[I].VObject);
-          if (sqlite3_bind_blob(Stmt, I+1, @PChar(BlobMemStream.Memory)[BlobMemStream.Position],
+          if (sqlite3_bind_blob(Stmt, I+1, @PAnsiChar(BlobMemStream.Memory)[BlobMemStream.Position],
               BlobMemStream.Size-BlobMemStream.Position, SQLITE_STATIC) <> SQLITE_OK) then
           begin
             RaiseError('Could not bind BLOB', 'BindData');
@@ -481,19 +481,19 @@ begin
   end;
 end;
 
-procedure TSQLiteDatabase.ExecSQL(const SQL: string);
+procedure TSQLiteDatabase.ExecSQL(const SQL: Ansistring);
 begin
   ExecSQL(SQL, []);
 end;
 
-procedure TSQLiteDatabase.ExecSQL(const SQL: string; const Bindings: array of const);
+procedure TSQLiteDatabase.ExecSQL(const SQL: Ansistring; const Bindings: array of const);
 var
   Stmt: TSQLiteStmt;
-  NextSQLStatement: Pchar;
+  NextSQLStatement: PAnsiChar;
   iStepResult: integer;
 begin
   try
-    if Sqlite3_Prepare_v2(self.fDB, PChar(SQL), -1, Stmt, NextSQLStatement) <>
+    if Sqlite3_Prepare_v2(self.fDB, PAnsiChar(SQL), -1, Stmt, NextSQLStatement) <>
       SQLITE_OK then
       RaiseError('Error executing SQL', SQL);
     if (Stmt = nil) then
@@ -534,15 +534,15 @@ end;
 {$WARNINGS ON}
 
 {$WARNINGS OFF}
-function TSQLiteDatabase.PrepareSQL(const SQL: string): TSQLiteQuery;
+function TSQLiteDatabase.PrepareSQL(const SQL: Ansistring): TSQLiteQuery;
 var
   Stmt: TSQLiteStmt;
-  NextSQLStatement: Pchar;
+  NextSQLStatement: PAnsiChar;
 begin
   Result.SQL := SQL;
   Result.Statement := nil;
 
-  if Sqlite3_Prepare(self.fDB, PChar(SQL), -1, Stmt, NextSQLStatement) <>
+  if Sqlite3_Prepare(self.fDB, PAnsiChar(SQL), -1, Stmt, NextSQLStatement) <>
     SQLITE_OK then
     RaiseError('Error executing SQL', SQL)
   else
@@ -568,7 +568,7 @@ end;
 procedure TSQLiteDatabase.BindSQL(Query: TSQLiteQuery; const Index: Integer; const Value: String);
 begin
   if Assigned(Query.Statement) then
-    Sqlite3_Bind_Text(Query.Statement, Index, PChar(Value), Length(Value), Pointer(SQLITE_STATIC))
+    Sqlite3_Bind_Text(Query.Statement, Index, PAnsiChar(Value), Length(Value), Pointer(SQLITE_STATIC))
   else
     RaiseError('Could not bind string to prepared SQL statement', Query.SQL);
 end;
@@ -587,13 +587,13 @@ begin
 end;
 {$WARNINGS ON}
 
-procedure TSQLiteDatabase.UpdateBlob(const SQL: string; BlobData: TStream);
+procedure TSQLiteDatabase.UpdateBlob(const SQL: Ansistring; BlobData: TStream);
 var
   iSize: integer;
   ptr: pointer;
   Stmt: TSQLiteStmt;
-  Msg: Pchar;
-  NextSQLStatement: Pchar;
+  Msg: PAnsiChar;
+  NextSQLStatement: PAnsiChar;
   iStepResult: integer;
   iBindResult: integer;
 begin
@@ -604,7 +604,7 @@ begin
   Msg := nil;
   try
 
-    if Sqlite3_Prepare_v2(self.fDB, PChar(SQL), -1, Stmt, NextSQLStatement) <>
+    if Sqlite3_Prepare_v2(self.fDB, PAnsiChar(SQL), -1, Stmt, NextSQLStatement) <>
       SQLITE_OK then
       RaiseError('Could not prepare SQL statement', SQL);
 
@@ -650,32 +650,32 @@ end;
 
 //..............................................................................
 
-function TSQLiteDatabase.GetTable(const SQL: string): TSQLiteTable;
+function TSQLiteDatabase.GetTable(const SQL: Ansistring): TSQLiteTable;
 begin
   Result := TSQLiteTable.Create(Self, SQL);
 end;
 
-function TSQLiteDatabase.GetTable(const SQL: string; const Bindings: array of const): TSQLiteTable;
+function TSQLiteDatabase.GetTable(const SQL: Ansistring; const Bindings: array of const): TSQLiteTable;
 begin
   Result := TSQLiteTable.Create(Self, SQL, Bindings);
 end;
 
-function TSQLiteDatabase.GetUniTable(const SQL: string): TSQLiteUniTable;
+function TSQLiteDatabase.GetUniTable(const SQL: Ansistring): TSQLiteUniTable;
 begin
   Result := TSQLiteUniTable.Create(Self, SQL);
 end;
 
-function TSQLiteDatabase.GetUniTable(const SQL: string; const Bindings: array of const): TSQLiteUniTable;
+function TSQLiteDatabase.GetUniTable(const SQL: Ansistring; const Bindings: array of const): TSQLiteUniTable;
 begin
   Result := TSQLiteUniTable.Create(Self, SQL, Bindings);
 end;
 
-function TSQLiteDatabase.GetTableValue(const SQL: string): int64;
+function TSQLiteDatabase.GetTableValue(const SQL: Ansistring): int64;
 begin
   Result := GetTableValue(SQL, []);
 end;
 
-function TSQLiteDatabase.GetTableValue(const SQL: string; const Bindings: array of const): int64;
+function TSQLiteDatabase.GetTableValue(const SQL: Ansistring; const Bindings: array of const): int64;
 var
   Table: TSQLiteUniTable;
 begin
@@ -689,12 +689,12 @@ begin
   end;
 end;
 
-function TSQLiteDatabase.GetTableString(const SQL: string): String;
+function TSQLiteDatabase.GetTableString(const SQL: Ansistring): String;
 begin
   Result := GetTableString(SQL, []);
 end;
 
-function TSQLiteDatabase.GetTableString(const SQL: string; const Bindings: array of const): String;
+function TSQLiteDatabase.GetTableString(const SQL: Ansistring; const Bindings: array of const): String;
 var
   Table: TSQLiteUniTable;
 begin
@@ -708,7 +708,7 @@ begin
   end;
 end;
 
-procedure TSQLiteDatabase.GetTableStrings(const SQL: string;
+procedure TSQLiteDatabase.GetTableStrings(const SQL: Ansistring;
   const Value: TStrings);
 var
   Table: TSQLiteUniTable;
@@ -778,12 +778,12 @@ end;
 procedure TSQLiteDatabase.AddCustomCollate(name: string;
   xCompare: TCollateXCompare);
 begin
-  sqlite3_create_collation(fdb, PChar(name), SQLITE_UTF8, nil, xCompare);
+  sqlite3_create_collation(fdb, PAnsiChar(name), SQLITE_UTF8, nil, xCompare);
 end;
 
 procedure TSQLiteDatabase.AddSystemCollate;
 begin
-  {$IFDEF WIN32}
+  {$IFDEF MSWINDOWS}
   sqlite3_create_collation(fdb, 'SYSTEM', SQLITE_UTF16LE, nil, @SystemCollate);
   {$ENDIF}
 end;
@@ -850,7 +850,7 @@ begin
     for n := 0 to fParams.Count - 1 do
     begin
       par := TSQliteParam(fParams[n]);
-      i := sqlite3_bind_parameter_index(Stmt, PChar(par.name));
+      i := sqlite3_bind_parameter_index(Stmt, PAnsiChar(par.name));
       if i > 0 then
       begin
         case par.valuetype of
@@ -859,7 +859,7 @@ begin
           SQLITE_FLOAT:
             sqlite3_bind_double(Stmt, i, par.valuefloat);
           SQLITE_TEXT:
-            sqlite3_bind_text(Stmt, i, pchar(par.valuedata),
+            sqlite3_bind_text(Stmt, i, PAnsiChar(par.valuedata),
               length(par.valuedata), SQLITE_TRANSIENT);
           SQLITE_NULL:
             sqlite3_bind_null(Stmt, i);
@@ -887,15 +887,15 @@ end;
 // TSQLiteTable
 //------------------------------------------------------------------------------
 
-constructor TSQLiteTable.Create(DB: TSQLiteDatabase; const SQL: string);
+constructor TSQLiteTable.Create(DB: TSQLiteDatabase; const SQL: Ansistring);
 begin
   Create(DB, SQL, []);
 end;
 
-constructor TSQLiteTable.Create(DB: TSQLiteDatabase; const SQL: string; const Bindings: array of const);
+constructor TSQLiteTable.Create(DB: TSQLiteDatabase; const SQL: Ansistring; const Bindings: array of const);
 var
   Stmt: TSQLiteStmt;
-  NextSQLStatement: Pchar;
+  NextSQLStatement: PAnsiChar;
   iStepResult: integer;
   ptr: pointer;
   iNumBytes: integer;
@@ -905,9 +905,9 @@ var
   thisIntValue: pInt64;
   thisColType: pInteger;
   i: integer;
-  DeclaredColType: Pchar;
+  DeclaredColType: PAnsiChar;
   ActualColType: integer;
-  ptrValue: Pchar;
+  ptrValue: PAnsiChar;
 begin
   inherited create;
   try
@@ -915,7 +915,7 @@ begin
     self.fColCount := 0;
     //if there are several SQL statements in SQL, NextSQLStatment points to the
     //beginning of the next one. Prepare only prepares the first SQL statement.
-    if Sqlite3_Prepare_v2(DB.fDB, PChar(SQL), -1, Stmt, NextSQLStatement) <> SQLITE_OK then
+    if Sqlite3_Prepare_v2(DB.fDB, PAnsiChar(SQL), -1, Stmt, NextSQLStatement) <> SQLITE_OK then
       DB.RaiseError('Error executing SQL', SQL);
     if (Stmt = nil) then
       DB.RaiseError('Could not prepare SQL statement', SQL);
@@ -1177,24 +1177,27 @@ end;
 function TSqliteTable.FieldAsBlobText(I: cardinal): string;
 var
   MemStream: TMemoryStream;
-  Buffer: PChar;
+  Buffer: PAnsiChar;
 begin
   Result := '';
   MemStream := self.FieldAsBlob(I);
   if MemStream <> nil then
-    try
-      if MemStream.Size > 0 then
+    if MemStream.Size > 0 then
       begin
         MemStream.position := 0;
-        Buffer := stralloc(MemStream.Size + 1);
+        {$IFDEF UNICODE}
+        Buffer := AnsiStralloc(MemStream.Size + 1);
+        {$ELSE}
+        Buffer := Stralloc(MemStream.Size + 1);
+        {$ENDIF}
         MemStream.readbuffer(Buffer[0], MemStream.Size);
         (Buffer + MemStream.Size)^ := chr(0);
         SetString(Result, Buffer, MemStream.size);
         strdispose(Buffer);
       end;
-    finally
-      MemStream.free;
-    end; 
+     //do not free the TMemoryStream here; it is freed when
+     //TSqliteTable is destroyed
+
 end;
 
 
@@ -1308,17 +1311,15 @@ end;
 
 { TSQLiteUniTable }
 
-constructor TSQLiteUniTable.Create(DB: TSQLiteDatabase; const SQL: string);
+constructor TSQLiteUniTable.Create(DB: TSQLiteDatabase; const SQL: Ansistring);
 begin
   Create(DB, SQL, []);
 end;
 
-constructor TSQLiteUniTable.Create(DB: TSQLiteDatabase; const SQL: string; const Bindings: array of const);
+constructor TSQLiteUniTable.Create(DB: TSQLiteDatabase; const SQL: Ansistring; const Bindings: array of const);
 var
-  NextSQLStatement: Pchar;
-  thisColType: pInteger;
+  NextSQLStatement: PAnsiChar;
   i: integer;
-  DeclaredColType: Pchar;
 begin
   inherited create;
   self.fDB := db;
@@ -1326,7 +1327,7 @@ begin
   self.fRow := 0;
   self.fColCount := 0;
   self.fSQL := SQL;
-  if Sqlite3_Prepare_v2(DB.fDB, PChar(SQL), -1, fStmt, NextSQLStatement) <> SQLITE_OK then
+  if Sqlite3_Prepare_v2(DB.fDB, PAnsiChar(SQL), -1, fStmt, NextSQLStatement) <> SQLITE_OK then
     DB.RaiseError('Error executing SQL', SQL);
   if (fStmt = nil) then
     DB.RaiseError('Could not prepare SQL statement', SQL);
@@ -1344,8 +1345,6 @@ begin
 end;
 
 destructor TSQLiteUniTable.Destroy;
-var
-  i: integer;
 begin
   if Assigned(fStmt) then
     Sqlite3_Finalize(fstmt);
@@ -1378,7 +1377,7 @@ end;
 function TSQLiteUniTable.FieldAsBlobText(I: cardinal): string;
 var
   MemStream: TMemoryStream;
-  Buffer: PChar;
+  Buffer: PAnsiChar;
 begin
   Result := '';
   MemStream := self.FieldAsBlob(I);
@@ -1387,7 +1386,11 @@ begin
       if MemStream.Size > 0 then
       begin
         MemStream.position := 0;
-        Buffer := stralloc(MemStream.Size + 1);
+        {$IFDEF UNICODE}
+        Buffer := AnsiStralloc(MemStream.Size + 1);
+        {$ELSE}
+        Buffer := Stralloc(MemStream.Size + 1);
+        {$ENDIF}
         MemStream.readbuffer(Buffer[0], MemStream.Size);
         (Buffer + MemStream.Size)^ := chr(0);
         SetString(Result, Buffer, MemStream.size);
