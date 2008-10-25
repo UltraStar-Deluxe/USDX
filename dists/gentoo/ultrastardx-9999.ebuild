@@ -26,6 +26,7 @@ RDEPEND="virtual/opengl
 	virtual/glu
 	media-libs/libsdl
 	media-libs/sdl-image
+	media-libs/freetype
 	media-libs/libpng
 	=media-libs/portaudio-19*
 	media-video/ffmpeg

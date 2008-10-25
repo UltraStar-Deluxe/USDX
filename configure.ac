@@ -160,6 +160,9 @@ PKG_HAVE([libpng], [libpng12], yes)
 # find sdl
 PKG_HAVE([sdl], [sdl], yes)
 
+# find freetype
+PKG_HAVE([freetype], [freetype2], yes)
+
 # find sqlite3
 PKG_HAVE([sqlite3], [sqlite3], yes)
 
