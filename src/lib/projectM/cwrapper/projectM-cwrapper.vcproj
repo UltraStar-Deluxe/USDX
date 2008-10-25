@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.1\projectM&quot;;&quot;D:\daten\ultrastar\libprojectM\libs\pthreads\Pre-built.2\include&quot;"
+				AdditionalIncludeDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.2.0\projectM&quot;;&quot;D:\daten\ultrastar\libprojectM\libs\pthreads\Pre-built.2\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;PROJECTMCWRAPPER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libprojectM.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.1\projectM\Release&quot;"
+				AdditionalLibraryDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.2.0\projectM\Debug&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
