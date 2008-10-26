@@ -1,18 +1,45 @@
+{* UltraStar Deluxe - Karaoke Game
+ *
+ * UltraStar Deluxe is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING. If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ *
+ * $URL$
+ * $Id$
+ *}
+
 unit UFont;
 
 {$IFDEF FPC}
-  {$mode delphi}{$H+}
+  {$MODE Delphi}
 {$ENDIF}
 
-{$DEFINE HasInline}
+{$I switches.inc}
 
 interface
 
-// Flip direction of y-axis.
-// Default is a cartesian coordinate system with y-axis in upper direction
-// but with USDX the y-axis is in lower direction.
-{$DEFINE FLIP_YAXIS}
-{$DEFINE BITMAP_FONT}
+{$IFNDEF FREETYPE_DEMO}
+  // Flip direction of y-axis.
+  // Default is a cartesian coordinate system with y-axis in upper direction
+  // but with USDX the y-axis is in lower direction.
+  {$DEFINE FLIP_YAXIS}
+  {$DEFINE BITMAP_FONT}
+{$ENDIF}
 
 uses
   FreeType,
@@ -176,9 +203,9 @@ type
        * bigger than the text's width as it additionally contains the advance
        * and glyph-spacing of the last character.
        *}
-      function BBox(const Text: WideString; Advance: boolean = false): TBoundsDbl; overload;
+      function BBox(const Text: WideString; Advance: boolean = true): TBoundsDbl; overload;
       {** UTF-8 version of @link(BBox) }
-      function BBox(const Text: UTF8String; Advance: boolean = false): TBoundsDbl; overload;
+      function BBox(const Text: UTF8String; Advance: boolean = true): TBoundsDbl; overload;
 
       {** Font height }
       property Height: single read GetHeight;
@@ -581,8 +608,12 @@ type
                          LoadFlags: FT_Int32 = FT_LOAD_DEFAULT);
       destructor Destroy; override;
 
-      {** Sets the color of the outline }
-      procedure SetOutlineColor(r, g, b: GLfloat; a: GLfloat = 1.0);
+      {**
+       * Sets the color of the outline.
+       * If the alpha component is < 0, OpenGL's current alpha value will be
+       * used.
+       *}
+      procedure SetOutlineColor(r, g, b: GLfloat; a: GLfloat = -1.0);
 
       {** @seealso TGlyphCache.FlushCache }
       procedure FlushCache(KeepBaseSet: boolean);
@@ -610,8 +641,8 @@ type
                          Size: integer; OutsetAmount: single;
                          UseMipmaps: boolean = true);
 
-      {** Sets the color of the outline }
-      procedure SetOutlineColor(r, g, b: GLfloat; a: GLfloat = 1.0);
+      {** @seealso TFTOutlineFont.SetOutlineColor }
+      procedure SetOutlineColor(r, g, b: GLfloat; a: GLfloat = -1.0);
 
       {** @seealso TGlyphCache.FlushCache }
       procedure FlushCache(KeepBaseSet: boolean);
@@ -902,7 +933,7 @@ var
 begin
   UnderlineY1 := GetUnderlinePosition();
   UnderlineY2 := UnderlineY1 + GetUnderlineThickness();
-  Bounds := BBox(Text);
+  Bounds := BBox(Text, false);
   glRectf(Bounds.Left, UnderlineY1, Bounds.Right, UnderlineY2);
 end;
 
@@ -1663,7 +1694,7 @@ begin
 
   fLineSpacing := fOutlineFont.LineSpacing;
   fReflectionSpacing := fOutlineFont.ReflectionSpacing;
-  fOutlineColor := NewGLColor(0, 0, 0, 1);
+  fOutlineColor := NewGLColor(0, 0, 0, -1);
 end;
 
 procedure TFTOutlineFont.Reset();
@@ -1675,12 +1706,24 @@ begin
 end;
 
 procedure TFTOutlineFont.DrawUnderline(const Text: WideString);
+var
+  CurrentColor: TGLColor;
+  OutlineColor: TGLColor;
 begin
-  glPushAttrib(GL_CURRENT_BIT);
-  glColor4fv(@fOutlineColor.vals);
-  fOutlineFont.DrawUnderline(Text);
-  glPopAttrib();
+  // save current color
+  glGetFloatv(GL_CURRENT_COLOR, @CurrentColor.vals);
 
+  // if the outline's alpha component is < 0 use the current alpha
+  OutlineColor := fOutlineColor;
+  if (OutlineColor.a < 0) then
+    OutlineColor.a := CurrentColor.a;
+
+  // draw underline outline (in outline color)
+  glColor4fv(@OutlineColor.vals);
+  fOutlineFont.DrawUnderline(Text);
+  glColor4fv(@CurrentColor.vals);
+
+  // draw underline inner part (in current color)
   glPushMatrix();
   glTranslatef(fOutset, 0, 0);
   fInnerFont.DrawUnderline(Text);
@@ -1688,16 +1731,25 @@ begin
 end;
 
 procedure TFTOutlineFont.Render(const Text: WideString);
+var
+  CurrentColor: TGLColor;
+  OutlineColor: TGLColor;
 begin
+  // save current color
+  glGetFloatv(GL_CURRENT_COLOR, @CurrentColor.vals);
+
+  // if the outline's alpha component is < 0 use the current alpha
+  OutlineColor := fOutlineColor;
+  if (OutlineColor.a < 0) then
+    OutlineColor.a := CurrentColor.a;
+
   { setup and render outline font }
 
-  // save old color
-  glPushAttrib(GL_CURRENT_BIT);
-  glColor4fv(@fOutlineColor.vals);
+  glColor4fv(@OutlineColor.vals);
   glPushMatrix();
   fOutlineFont.Render(Text);
   glPopMatrix();
-  glPopAttrib();
+  glColor4fv(@CurrentColor.vals);
 
   { setup and render inner font }
 
