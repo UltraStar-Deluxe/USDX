@@ -401,19 +401,23 @@ begin
             DataSize := Length(AnsiStrPtr^)+1;
           end;
           vtPWideChar: begin
-            DataPtr := PAnsiChar(UTF8Encode(WideString(Bindings[I].VPWideChar)));
+            AnsiStr := UTF8Encode(WideString(Bindings[I].VPWideChar));
+            DataPtr := PAnsiChar(AnsiStr);
             DataSize := -1;
           end;
           vtWideString: begin
-            DataPtr := PAnsiChar(UTF8Encode(PWideString(@Bindings[I].VWideString)^));
+            AnsiStr := UTF8Encode(PWideString(@Bindings[I].VWideString)^);
+            DataPtr := PAnsiChar(AnsiStr);
             DataSize := -1;
           end;
           vtChar: begin
-            DataPtr := PAnsiChar(String(Bindings[I].VChar));
+            AnsiStr := AnsiString(Bindings[I].VChar);
+            DataPtr := PAnsiChar(AnsiStr);
             DataSize := 2;
           end;
           vtWideChar: begin
-            DataPtr := PAnsiChar(UTF8Encode(WideString(Bindings[I].VWideChar)));
+            AnsiStr := UTF8Encode(WideString(Bindings[I].VWideChar));
+            DataPtr := PAnsiChar(AnsiStr);
             DataSize := -1;
           end;
           else
@@ -514,7 +518,6 @@ begin
   end;
 end;
 
-{$WARNINGS OFF}
 procedure TSQLiteDatabase.ExecSQL(Query: TSQLiteQuery);
 var
   iStepResult: integer;
@@ -531,9 +534,7 @@ begin
     Sqlite3_Reset(Query.Statement);
   end;
 end;
-{$WARNINGS ON}
 
-{$WARNINGS OFF}
 function TSQLiteDatabase.PrepareSQL(const SQL: Ansistring): TSQLiteQuery;
 var
   Stmt: TSQLiteStmt;
@@ -552,9 +553,7 @@ begin
     RaiseError('Could not prepare SQL statement', SQL);
   DoQuery(SQL);
 end;
-{$WARNINGS ON}
 
-{$WARNINGS OFF}
 procedure TSQLiteDatabase.BindSQL(Query: TSQLiteQuery; const Index: Integer; const Value: Integer);
 begin
   if Assigned(Query.Statement) then
@@ -562,9 +561,7 @@ begin
   else
     RaiseError('Could not bind integer to prepared SQL statement', Query.SQL);
 end;
-{$WARNINGS ON}
 
-{$WARNINGS OFF}
 procedure TSQLiteDatabase.BindSQL(Query: TSQLiteQuery; const Index: Integer; const Value: String);
 begin
   if Assigned(Query.Statement) then
@@ -572,9 +569,7 @@ begin
   else
     RaiseError('Could not bind string to prepared SQL statement', Query.SQL);
 end;
-{$WARNINGS ON}
 
-{$WARNINGS OFF}
 procedure TSQLiteDatabase.ReleaseSQL(Query: TSQLiteQuery);
 begin
   if Assigned(Query.Statement) then
@@ -585,7 +580,6 @@ begin
   else
     RaiseError('Could not release prepared SQL statement', Query.SQL);
 end;
-{$WARNINGS ON}
 
 procedure TSQLiteDatabase.UpdateBlob(const SQL: Ansistring; BlobData: TStream);
 var
@@ -1295,7 +1289,6 @@ begin
   end;
 end;
 
-{$WARNINGS OFF}
 function TSQLiteTable.MoveTo(position: cardinal): boolean;
 begin
   Result := False;
@@ -1305,7 +1298,6 @@ begin
     Result := True;
   end;
 end;
-{$WARNINGS ON}
 
 
 
