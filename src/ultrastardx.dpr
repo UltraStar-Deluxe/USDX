@@ -77,8 +77,10 @@ uses
   zlib                   in 'lib\zlib\zlib.pas',
   png                    in 'lib\libpng\png.pas',
 
-  //freetype               in 'lib\freetype\freetype.pas',
-  //UFont                  in 'base\UFont.pas',
+  {$IFDEF UseFreetype}
+  freetype               in 'lib\freetype\freetype.pas',
+  UFont                  in 'base\UFont.pas',
+  {$ENDIF}
 
   {$IFDEF UseBass}
   bass                   in 'lib\bass\delphi\bass.pas',

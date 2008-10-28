@@ -33,6 +33,11 @@ interface
 
 {$I switches.inc}
 
+// as long as the transition to freetype is not finished
+// use the old implementation
+{$IFDEF UseFreetype}
+  {$INCLUDE TextGLFreetype.pas}
+{$ELSE}
 uses
   gl,
   SDL,
@@ -51,7 +56,6 @@ procedure SetFontStyle(Style: integer);       // sets active font style (normal,
 procedure SetFontItalic(Enable: boolean);     // sets italic type letter (works for all fonts)
 procedure SetFontAspectW(Aspect: real);
 procedure SetFontReflection(Enable:boolean;Spacing: real); // enables/disables text reflection
-procedure SetFontBlend(Enable: boolean);      // enables/disables blending
 
 //function NextPowerOfTwo(Value: integer): integer;
 // Checks if the ttf exists, if yes then a SDL_ttf is returned
@@ -81,7 +85,6 @@ type
     Italic:   boolean;
     Reflection: boolean;
     ReflectionSpacing: real;
-    Blend: boolean;
   end;
 
 
@@ -191,10 +194,6 @@ begin
 
   // close ini-file
   FontIni.Free;
-
-  // enable blending by default
-  for Count := 0 to High(Fonts) do
-    Fonts[Count].Blend := true;
 end;
 
 // Deletes the font
@@ -262,11 +261,8 @@ begin
   else
     XItal := 12;
 
-  if (Font.Blend) then
-  begin
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  end;
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
@@ -310,8 +306,7 @@ begin
   end; // reflection
 
   glDisable(GL_TEXTURE_2D);
-  if (Font.Blend) then
-    glDisable(GL_BLEND);
+  glDisable(GL_BLEND);
 
   Tex.X := Tex.X + Tex.W;
 
@@ -382,9 +377,7 @@ begin
   Fonts[ActFont].ReflectionSpacing := Spacing;
 end;
 
-procedure SetFontBlend(Enable: boolean);
-begin
-  Fonts[ActFont].Blend := Enable;
-end;
-
 end.
+
+{$ENDIF}
+
