@@ -35,8 +35,6 @@ program ultrastardx;
 
 {$I switches.inc}
 
-//{$DEFINE CONSOLE}
-
 // TODO: check if this is needed for MacOSX too
 {$IFDEF MSWINDOWS}
   // Set global application-type (GUI/CONSOLE) switch for Windows.
@@ -78,6 +76,9 @@ uses
 
   zlib                   in 'lib\zlib\zlib.pas',
   png                    in 'lib\libpng\png.pas',
+
+  //freetype               in 'lib\freetype\freetype.pas',
+  //UFont                  in 'base\UFont.pas',
 
   {$IFDEF UseBass}
   bass                   in 'lib\bass\delphi\bass.pas',
@@ -193,7 +194,6 @@ uses
   UPlaylist         in 'base\UPlaylist.pas',
   UCommandLine      in 'base\UCommandLine.pas',
   URingBuffer       in 'base\URingBuffer.pas',
-  UTextClasses      in 'base\UTextClasses.pas',
   USingScores       in 'base\USingScores.pas',
   USingNotes        in 'base\USingNotes.pas',
 
