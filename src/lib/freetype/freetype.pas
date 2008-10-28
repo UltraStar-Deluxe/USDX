@@ -39,7 +39,7 @@ const
   ft_lib = 'libfreetype-6.dll';
 {$ELSEIF Defined(DARWIN)}
   ft_lib = 'libfreetype.dylib';
-  {$LINKLIB libftgl}
+  {$LINKLIB libfreetype}
 {$ELSEIF Defined(UNIX)}
   ft_lib = 'freetype.so';
 {$IFEND}
