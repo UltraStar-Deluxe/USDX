@@ -2019,8 +2019,8 @@ var
   Glyph:         FT_Glyph;
   BitmapGlyph:   FT_BitmapGlyph;
   Bitmap:        PFT_Bitmap;
-  BitmapLine:    PChar;
-  BitmapBuffer:  PChar;
+  BitmapLine:    PByteArray;
+  BitmapBuffer:  PByteArray;
   TexBuffer:     TGLubyteDynArray;
   TexLine:       PGLubyteArray;
   CBox:          FT_BBox;
@@ -2045,8 +2045,9 @@ begin
   fBounds.Bottom := CBox.yMin / 64;
   fBounds.Top    := CBox.yMax / 64 + fOutset*2;
 
-  // convert the glyph to a bitmap (and destroy original glyph image)
-  FT_Glyph_To_Bitmap(Glyph, ft_render_mode_normal, nil, 1);
+  // convert the glyph to a bitmap (and destroy original glyph image).
+  // Request 8 bit gray level pixel mode. 
+  FT_Glyph_To_Bitmap(Glyph, FT_RENDER_MODE_NORMAL, nil, 1);
   BitmapGlyph := FT_BitmapGlyph(Glyph);
 
   // get bitmap offsets
@@ -2094,8 +2095,23 @@ begin
     // get next lower line offset, use pitch instead of width as it tells
     // us the storage direction of the lines. In addition a line might be padded.
     BitmapLine := @BitmapBuffer[Y * Bitmap.pitch];
-    for X := 0 to Bitmap.width-1 do
-      TexLine[X] := GLubyte(BitmapLine[X]);
+
+    // check for pixel mode and copy pixels
+    // Should be 8 bit gray, but even with FT_RENDER_MODE_NORMAL, freetype
+    // sometimes (e.g. 16px sized japanese fonts) fallbacks to 1 bit pixels.
+    case (Bitmap.pixel_mode) of
+      FT_PIXEL_MODE_GRAY: begin  // 8 bit gray
+        for X := 0 to Bitmap.width-1 do
+          TexLine[X] := BitmapLine[X];
+      end;
+      FT_PIXEL_MODE_MONO: begin  // 1 bit mono
+        for X := 0 to Bitmap.width-1 do
+          TexLine[X] := High(GLubyte) * ((BitmapLine[X div 8] shr (7-(X mod 8))) and $1);
+      end;
+      else begin
+        // unhandled pixel format
+      end;
+    end;
   end;
 
   if (fOutset > 0) then

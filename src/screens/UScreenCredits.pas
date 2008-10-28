@@ -327,39 +327,56 @@ Procedure TScreenCredits.Draw_FunkyText;
 var
   S: Integer;
   X,Y,A: Real;
-  visibleText: PChar;
+  visibleText: string;
 begin
   SetFontSize(30);
+
   //Init ScrollingText
   if (CTime = Timings[7]) then
   begin
     //Set Position of Text
     Credits_X := 600;
-    CurrentScrollStart:=1;
-    CurrentScrollEnd:=1;
+    CurrentScrollStart := 1;
+    CurrentScrollEnd   := 1;
   end;
 
-  if (CTime > Timings[7]) and (CurrentScrollStart < length(Funky_Text)) then
+  if (CTime > Timings[7]) and
+     (CurrentScrollStart < length(Funky_Text)) then
   begin
-    X:=0;
-    visibleText:=pchar(Copy(Funky_Text, CurrentScrollStart, CurrentScrollEnd));
-    for S := 0 to length(visibleText)-1 do begin
-      Y:=abs(sin((Credits_X+X)*0.93{*(((Credits_X+X))/1200)}/100*pi));
-      SetFontPos(Credits_X+X,538-Y*(Credits_X+X)*(Credits_X+X)*(Credits_X+X)/1000000);
-      A:=0;
-      if (Credits_X+X < 15) then A:=0;
-      if (Credits_X+X >=15) then A:=Credits_X+X-15;
-      if Credits_X+X > 32 then A:=17;
-      glColor4f( 230/255-40/255+Y*(Credits_X+X)/900, 200/255-30/255+Y*(Credits_X+X)/1000, 155/255-20/255+Y*(Credits_X+X)/1100, A/17);
-      glPrintLetter(visibleText[S]);
-      X := X + Fonts[ActFont].Width[Ord(visibleText[S])] * Fonts[ActFont].Tex.H / 30 * Fonts[ActFont].AspectW;
+    X := 0;
+    visibleText := Copy(Funky_Text, CurrentScrollStart, CurrentScrollEnd);
+
+    for S := 1 to length(visibleText) do
+    begin
+      Y := abs(sin((Credits_X+X)*0.93{*(((Credits_X+X))/1200)}/100*pi));
+      SetFontPos(Credits_X+X, 538-Y*(Credits_X+X)*(Credits_X+X)*(Credits_X+X)/1000000);
+
+      if (Credits_X + X > 32) then
+        A := 17
+      else if (Credits_X + X >= 15) then
+        A := Credits_X + X - 15
+      else
+        A := 0;
+
+      glColor4f(230/255-40/255+Y*(Credits_X+X)/900,
+                200/255-30/255+Y*(Credits_X+X)/1000,
+                155/255-20/255+Y*(Credits_X+X)/1100,
+                A/17);
+      glPrint(visibleText[S]);
+      X := X + glTextWidth(visibleText[S]);
     end;
-    if (Credits_X<0) and (CurrentScrollStart < length(Funky_Text)) then begin
-      Credits_X:=Credits_X + Fonts[ActFont].Width[Ord(Funky_Text[CurrentScrollStart])] * Fonts[ActFont].Tex.H / 30 * Fonts[ActFont].AspectW;
+
+    if (Credits_X < 0) and (CurrentScrollStart < length(Funky_Text)) then
+    begin
+      Credits_X := Credits_X + glTextWidth(Funky_Text[CurrentScrollStart]);
       inc(CurrentScrollStart);
     end;
-    visibleText:=pchar(Copy(Funky_Text, CurrentScrollStart, CurrentScrollEnd));
-    if (Credits_X+glTextWidth(visibleText) < 600) and (CurrentScrollEnd < length(Funky_Text)) then begin
+
+    visibleText := Copy(Funky_Text, CurrentScrollStart, CurrentScrollEnd);
+
+    if (Credits_X + glTextWidth(visibleText) < 600) and
+       (CurrentScrollEnd < length(Funky_Text)) then
+    begin
       inc(CurrentScrollEnd);
     end;
   end;
@@ -370,9 +387,9 @@ begin
      SetFontSize(27);
      glColor4f(1, 1, 1, 1);
      for S:=0 to high(CTime_hold) do begin
-     visibleText:=pchar(inttostr(CTime_hold[S]));
+     visibleText:=inttostr(CTime_hold[S]);
      SetFontPos (500, X);
-     glPrint (Addr(visibleText[0]));
+     glPrint (visibleText[0]);
      X:=X+20;
      end;
   }
@@ -1357,7 +1374,7 @@ begin
     glColor4f(1, 1, 1, 1);
     //RuntimeStr:='CTime: '+inttostr(floor(CTime/30.320663991914489602156136106092))+'.'+inttostr(floor(CTime/3.0320663991914489602156136106092)-floor(CTime/30.320663991914489602156136106092)*10);
     RuntimeStr:='CTime: '+inttostr(CTime);
-    glPrint (Addr(RuntimeStr[1]));
+    glPrint (RuntimeStr[1]);
     }
 
   // make the stars shine

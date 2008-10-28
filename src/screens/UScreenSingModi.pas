@@ -690,7 +690,7 @@ begin
   // used by Hold_The_Line / TeamDuell
   SetFontSize(Size * 3);
   SetFontPos (X, Y);
-  glPrint (PChar(Language.Translate(String(Text))));
+  glPrint (Language.Translate(String(Text)));
 end;
 
 function LoadSound(const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound

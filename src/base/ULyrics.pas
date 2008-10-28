@@ -428,7 +428,7 @@ begin
     CurWord := @LyricLine.Words[I];
     SetFontItalic(CurWord.Freestyle);
     SetFontPos(PosX, Y);
-    glPrint(PChar(CurWord.Text));
+    glPrint(CurWord.Text);
     PosX := PosX + CurWord.Width;
   end;
 end;
@@ -464,7 +464,7 @@ begin
   // set font size to a reasonable value
   LyricLine.Height := RequestHeight * 0.9;
   SetFontSize(LyricLine.Height);
-  LyricLine.Width := glTextWidth(PChar(LyricLine.Text));
+  LyricLine.Width := glTextWidth(LyricLine.Text);
 
   // change font-size to fit into the lyric bar
   if (LyricLine.Width > RequestWidth) then
@@ -475,7 +475,7 @@ begin
       LyricLine.Height := 1;
 
     SetFontSize(LyricLine.Height);
-    LyricLine.Width := glTextWidth(PChar(LyricLine.Text));
+    LyricLine.Width := glTextWidth(LyricLine.Text);
   end;
 
   // calc word positions and widths
@@ -496,7 +496,7 @@ begin
     end;
 
     CurWord.X := PosX;
-    CurWord.Width := glTextWidth(PChar(CurWord.Text));
+    CurWord.Width := glTextWidth(CurWord.Text);
     PosX := PosX + CurWord.Width;
     SetFontItalic(false);
   end;
@@ -540,7 +540,6 @@ begin
   SetFontStyle(FontStyle);
   ResetFont();
   SetFontSize(Line.Height);
-  glColor4f(1, 1, 1, 1);
 
   // center lyrics
   LyricX := X + (W - Line.Width) / 2;
@@ -670,8 +669,6 @@ begin
     // draw the ball onto the current word
     if (LyricsEffect = lfxBall) then
     begin
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_BLEND);
       DrawBall(LyricX + CurWord.X + CurWord.Width * Progress,
                LyricY - 15 - 15*sin(Progress * Pi), Alpha);
     end;

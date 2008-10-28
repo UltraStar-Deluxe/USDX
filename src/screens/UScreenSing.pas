@@ -550,9 +550,9 @@ begin
 
   // set custom options
   case Ini.LyricsFont of
-    0:
+    0: // normal fonts
     begin
-      Lyrics.FontStyle     := 0;
+      Lyrics.FontStyle := 0;
 
       Lyrics.LineColor_en.R := Skin_FontR;
       Lyrics.LineColor_en.G := Skin_FontG;
@@ -564,33 +564,14 @@ begin
       Lyrics.LineColor_dis.B := 0.4;
       Lyrics.LineColor_dis.A := 1;
 
-      Lyrics.LineColor_act.R := 5 / 256;
-      Lyrics.LineColor_act.G := 163 / 256;
-      Lyrics.LineColor_act.B := 210 / 256;
+      Lyrics.LineColor_act.R := 0.02;
+      Lyrics.LineColor_act.G := 0.6;
+      Lyrics.LineColor_act.B := 0.8;
       Lyrics.LineColor_act.A := 1;
     end;
-    1:
+    1, 2: // outline fonts (is TScalableOutlineFont)
     begin
-      Lyrics.FontStyle     := 2;
-
-      Lyrics.LineColor_en.R := 0.75;
-      Lyrics.LineColor_en.G := 0.75;
-      Lyrics.LineColor_en.B := 1;
-      Lyrics.LineColor_en.A := 1;
-
-      Lyrics.LineColor_dis.R := 0.8;
-      Lyrics.LineColor_dis.G := 0.8;
-      Lyrics.LineColor_dis.B := 0.8;
-      Lyrics.LineColor_dis.A := 1;
-
-      Lyrics.LineColor_act.R := 0.5;
-      Lyrics.LineColor_act.G := 0.5;
-      Lyrics.LineColor_act.B := 1;
-      Lyrics.LineColor_act.A := 1;
-    end;
-    2:
-    begin
-      Lyrics.FontStyle     := 3;
+      Lyrics.FontStyle := Ini.LyricsFont + 1;
 
       Lyrics.LineColor_en.R := 0.75;
       Lyrics.LineColor_en.G := 0.75;

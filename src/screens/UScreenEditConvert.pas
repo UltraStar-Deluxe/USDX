@@ -578,7 +578,7 @@ begin
   for Pet := 0 to High(ATrack) do begin
     SetFontPos(11, Y + 10 + Pet*YSkip);
     SetFontSize(15);
-    glPrint(pchar(ATrack[Pet].Name));
+    glPrint(ATrack[Pet].Name);
   end;
 
   for Pet := 0 to High(ATrack) do

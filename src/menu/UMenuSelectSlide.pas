@@ -333,8 +333,8 @@ begin
 
   for I := low(TextOptT) to high (TextOptT) do
   begin
-    if (glTextWidth(PChar(TextOptT[I])) > maxlength) then
-      maxlength := glTextWidth(PChar(TextOptT[I]));
+    if (glTextWidth(TextOptT[I]) > maxlength) then
+      maxlength := glTextWidth(TextOptT[I]);
   end;
 
   Lines := floor((TextureSBG.W-40) / (maxlength+7));
@@ -374,7 +374,7 @@ begin
 
       //Better Look with 2 Options
       if (Lines=2) AND (Length(TextOptT)= 2) then
-        TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(PChar(TextOptT[1]))) * I;
+        TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(TextOptT[1])) * I;
     end;
 end;
 

@@ -200,7 +200,7 @@ begin
       if isBreak then
       begin
         //Look for Break before the Break
-        if (glTextWidth(PChar(Copy(Value, LastBreak, NextPos - LastBreak + 1))) > W) AND (NextPos-LastPos > 1) then
+        if (glTextWidth(Copy(Value, LastBreak, NextPos - LastBreak + 1)) > W) AND (NextPos-LastPos > 1) then
         begin
           isBreak := False;
           //Not the First word after Break, so we don't have to break within a word
@@ -221,7 +221,7 @@ begin
         AddBreak(LastBreak, NextPos);
       end
       //Text comes out of the Text Area -> CreateBreak
-      else if (glTextWidth(PChar(Copy(Value, LastBreak, NextPos - LastBreak + 1))) > W) then
+      else if (glTextWidth(Copy(Value, LastBreak, NextPos - LastBreak + 1)) > W) then
       begin
         //Not the First word after Break, so we don't have to break within a word
         if (FirstWord > 1) then
@@ -295,12 +295,12 @@ begin
 
       case Align of
         0: X2 := X;
-        1: X2 := X - glTextWidth(pchar(Text2))/2;
-        2: X2 := X - glTextWidth(pchar(Text2));
+        1: X2 := X - glTextWidth(Text2)/2;
+        2: X2 := X - glTextWidth(Text2);
       end;
 
       SetFontPos(X2, Y);
-      glPrint(PChar(Text2));
+      glPrint(Text2);
       SetFontStyle(0); // reset to default
     end
     else
@@ -317,15 +317,15 @@ begin
 
         case Align of
           0: X2 := X + MoveX;
-          1: X2 := X + MoveX - glTextWidth(pchar(Text2))/2;
-          2: X2 := X + MoveX - glTextWidth(pchar(Text2));
+          1: X2 := X + MoveX - glTextWidth(Text2)/2;
+          2: X2 := X + MoveX - glTextWidth(Text2);
         end;
 
         SetFontPos(X2, Y2);
 
         SetFontZ(Z);
 
-        glPrint(PChar(Text2));
+        glPrint(Text2);
 
         {if Size >= 10 then
           Y2 := Y2 + Size * 0.93

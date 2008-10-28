@@ -1226,7 +1226,7 @@ if Age < 5 then SetFontSize((Age + 1) * 3) else SetFontSize(18);
 SetFontItalic(False);
 
 //Check Font Size
-Length := glTextWidth ( PChar(Text)) + 3; //Little Space for a Better Look ^^
+Length := glTextWidth (Text) + 3; //Little Space for a Better Look ^^
 
 //Text
 SetFontPos (X + 50 - (Length / 2), Y + 12); //Position
@@ -1256,7 +1256,7 @@ if Age < 5 then Size := Age * 10 else Size := 50;
 
   glColor4f(1, 1, 1, Alpha); //Set Color
   //Draw Text
-  glPrint (PChar(Text));
+  glPrint (Text);
 end;
 end;
 //PhrasenBonus - Line Bonus Mod}

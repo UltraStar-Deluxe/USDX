@@ -192,7 +192,7 @@ begin
   Word[WordNum].FontStyle := FontStyleI;
   SetFontStyle(FontStyleI);
   SetFontSize(SizeR);
-  Word[WordNum].Width := glTextWidth(pchar(Text));
+  Word[WordNum].Width := glTextWidth(Text);
   Word[WordNum].Text := Text;
   Word[WordNum].ColR := ColR;
   Word[WordNum].ColG := ColG;
@@ -247,7 +247,7 @@ begin
     SetFontSize(Word[W].Size);
     SetFontItalic(Word[W].Italic);
     glColor3f(Word[W].ColR, Word[W].ColG, Word[W].ColB);
-    glPrint(pchar(Word[W].Text));
+    glPrint(Word[W].Text);
   end;
 end;
 

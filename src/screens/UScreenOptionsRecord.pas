@@ -651,7 +651,7 @@ var
   x1, y1, x2, y2: single;
   i: integer;
   ToneBoxWidth: real;
-  ToneString: PChar;
+  ToneString: string;
   ToneStringWidth, ToneStringHeight: real;
   ToneStringMaxWidth: real;
   ToneStringCenterXOffset: real;
@@ -718,7 +718,7 @@ begin
   // draw the name of the tone
   ///////
 
-  ToneString := PChar(PreviewChannel[State.ChannelIndex].ToneString);
+  ToneString := PreviewChannel[State.ChannelIndex].ToneString;
   ToneStringHeight := ChannelBarsTotalHeight;
 
   // initialize font

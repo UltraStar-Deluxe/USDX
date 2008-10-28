@@ -817,14 +817,14 @@ begin
           SetFontSize(FontSize);
 
           //Draw Text
-          TextLen := glTextWidth(PChar(Theme.Sing.LineBonusText[PopUp.Rating]));
+          TextLen := glTextWidth(Theme.Sing.LineBonusText[PopUp.Rating]);
 
           //Color and Pos
           SetFontPos (X + (W - TextLen) / 2, Y + FontOffset);
           glColor4f(1, 1, 1, Alpha);
 
           //Draw
-          glPrint(PChar(Theme.Sing.LineBonusText[PopUp.Rating]));
+          glPrint(Theme.Sing.LineBonusText[PopUp.Rating]);
         end; //eo Alpha check
       end; //eo Right Screen
     end; //eo Player has Position
@@ -877,7 +877,7 @@ begin
       While (Length(ScoreStr) < 5) do
         ScoreStr := '0' + ScoreStr;
 
-      glPrint(PChar(ScoreStr));
+      glPrint(ScoreStr);
 
     end; //eo Right Screen
   end; //eo Player has Position

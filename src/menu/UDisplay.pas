@@ -397,16 +397,16 @@ begin
 
   //FPS
   SetFontPos(695, 0);
-  glPrint (PChar('FPS: ' + InttoStr(LastFPS)));
+  glPrint ('FPS: ' + InttoStr(LastFPS));
 
   //RSpeed
   SetFontPos(695, 13);
-  glPrint (PChar('RSpeed: ' + InttoStr(Round(1000 * TimeMid))));
+  glPrint ('RSpeed: ' + InttoStr(Round(1000 * TimeMid)));
 
   //LastError
   SetFontPos(695, 26);
   glColor4f(1, 0, 0, 1);
-  glPrint (PChar(OSD_LastError));
+  glPrint (OSD_LastError);
 
   glColor4f(1, 1, 1, 1);
 end;

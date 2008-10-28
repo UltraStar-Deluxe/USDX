@@ -68,6 +68,11 @@ type
   PFT_Short  = ^FT_Short;
   PFT_String = ^FT_String;
 
+
+  TByteArray = array [0 .. (MaxInt div SizeOf(byte))-1] of byte;
+  PByteArray = ^TByteArray;
+
+
   (*************************************************************************)
   (*                                                                       *)
   (* <Enum>                                                                *)
@@ -563,6 +568,74 @@ const
   (*                                                                       *)
 type
   FT_Render_Mode = FT_Int;
+const
+  FT_RENDER_MODE_NORMAL = 0;
+  FT_RENDER_MODE_LIGHT  = FT_RENDER_MODE_NORMAL + 1;
+  FT_RENDER_MODE_MONO   = FT_RENDER_MODE_LIGHT  + 1;
+  FT_RENDER_MODE_LCD    = FT_RENDER_MODE_MONO   + 1;
+  FT_RENDER_MODE_LCD_V  = FT_RENDER_MODE_LCD    + 1;
+  FT_RENDER_MODE_MAX    = FT_RENDER_MODE_LCD_V  + 1;
+
+
+  (*************************************************************************)
+  (*                                                                       *)
+  (* <Enum>                                                                *)
+  (*    FT_Pixel_Mode                                                      *)
+  (*                                                                       *)
+  (* <Description>                                                         *)
+  (*    An enumeration type used to describe the format of pixels in a     *)
+  (*    given bitmap.  Note that additional formats may be added in the    *)
+  (*    future.                                                            *)
+  (*                                                                       *)
+  (* <Values>                                                              *)
+  (*    FT_PIXEL_MODE_NONE ::                                              *)
+  (*      Value 0 is reserved.                                             *)
+  (*                                                                       *)
+  (*    FT_PIXEL_MODE_MONO ::                                              *)
+  (*      A monochrome bitmap, using 1 bit per pixel.  Note that pixels    *)
+  (*      are stored in most-significant order (MSB), which means that     *)
+  (*      the left-most pixel in a byte has value 128.                     *)
+  (*                                                                       *)
+  (*    FT_PIXEL_MODE_GRAY ::                                              *)
+  (*      An 8-bit bitmap, generally used to represent anti-aliased glyph  *)
+  (*      images.  Each pixel is stored in one byte.  Note that the number *)
+  (*      of value `gray' levels is stored in the `num_bytes' field of     *)
+  (*      the @FT_Bitmap structure (it generally is 256).                  *)
+  (*                                                                       *)
+  (*    FT_PIXEL_MODE_GRAY2 ::                                             *)
+  (*      A 2-bit/pixel bitmap, used to represent embedded anti-aliased    *)
+  (*      bitmaps in font files according to the OpenType specification.   *)
+  (*      We haven't found a single font using this format, however.       *)
+  (*                                                                       *)
+  (*    FT_PIXEL_MODE_GRAY4 ::                                             *)
+  (*      A 4-bit/pixel bitmap, used to represent embedded anti-aliased    *)
+  (*      bitmaps in font files according to the OpenType specification.   *)
+  (*      We haven't found a single font using this format, however.       *)
+  (*                                                                       *)
+  (*    FT_PIXEL_MODE_LCD ::                                               *)
+  (*      An 8-bit bitmap, used to represent RGB or BGR decimated glyph    *)
+  (*      images used for display on LCD displays; the bitmap is three     *)
+  (*      times wider than the original glyph image.  See also             *)
+  (*      @FT_RENDER_MODE_LCD.                                             *)
+  (*                                                                       *)
+  (*    FT_PIXEL_MODE_LCD_V ::                                             *)
+  (*      An 8-bit bitmap, used to represent RGB or BGR decimated glyph    *)
+  (*      images used for display on rotated LCD displays; the bitmap      *)
+  (*      is three times taller than the original glyph image.  See also   *)
+  (*      @FT_RENDER_MODE_LCD_V.                                           *)
+  (*                                                                       *)
+type
+  FT_Pixel_Mode = byte;
+const
+  FT_PIXEL_MODE_NONE    = 0;
+  FT_PIXEL_MODE_MONO    = FT_PIXEL_MODE_NONE  + 1;
+  FT_PIXEL_MODE_GRAY    = FT_PIXEL_MODE_MONO  + 1;
+  FT_PIXEL_MODE_GRAY2   = FT_PIXEL_MODE_GRAY  + 1;
+  FT_PIXEL_MODE_GRAY4   = FT_PIXEL_MODE_GRAY2 + 1;
+  FT_PIXEL_MODE_LCD     = FT_PIXEL_MODE_GRAY4 + 1;
+  FT_PIXEL_MODE_LCD_V   = FT_PIXEL_MODE_LCD   + 1;
+
+  FT_PIXEL_MODE_MAX     = FT_PIXEL_MODE_LCD_V + 1; (* do not remove *)
 
 
   (*************************************************************************)
@@ -601,6 +674,7 @@ type
   (*    vertAdvance ::                                                     *)
   (*      Advance height for vertical layout.                              *)
   (*                                                                       *)
+type
   FT_Glyph_Metrics = record
     width  ,
     height       : FT_Pos;
@@ -809,10 +883,10 @@ type
     rows   ,
     width  : FT_Int;
     pitch  : FT_Int;
-    buffer : PChar;
+    buffer : PByteArray;
     num_grays    : FT_Short;
     pixel_mode   ,
-    palette_mode : char;
+    palette_mode : byte;
     palette : pointer;
   end;
 
@@ -1719,7 +1793,7 @@ type
   (* @macro:                                                               *)
   (*    FT_CURVE_TAG  ( flag )                                             *)
   (*                                                                       *)
-  function  FT_CURVE_TAG  (flag : char ) : char;
+  function  FT_CURVE_TAG(flag: byte): byte;
 
 const
   FT_CURVE_TAG_ON    = 1;
@@ -2027,63 +2101,6 @@ const
             load_flags : FT_Int32 ) : FT_Error;
     cdecl; external ft_lib name 'FT_Load_Glyph';
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Enum>                                                                *)
-  (*    FT_Render_Mode                                                     *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    An enumeration type that lists the render modes supported by       *)
-  (*    FreeType 2.  Each mode corresponds to a specific type of scanline  *)
-  (*    conversion performed on the outline, as well as specific           *)
-  (*    hinting optimizations.                                             *)
-  (*                                                                       *)
-  (*    For bitmap fonts the `bitmap->pixel_mode' field in the             *)
-  (*    @FT_GlyphSlotRec structure gives the format of the returned        *)
-  (*    bitmap.                                                            *)
-  (*                                                                       *)
-  (* <Values>                                                              *)
-  (*    FT_RENDER_MODE_NORMAL ::                                           *)
-  (*      This is the default render mode; it corresponds to 8-bit         *)
-  (*      anti-aliased bitmaps, using 256 levels of opacity.               *)
-  (*                                                                       *)
-  (*    FT_RENDER_MODE_LIGHT ::                                            *)
-  (*      This is similar to @FT_RENDER_MODE_NORMAL -- you have to use     *)
-  (*      @FT_LOAD_TARGET_LIGHT in calls to @FT_Load_Glyph to get any      *)
-  (*      effect since the rendering process no longer influences the      *)
-  (*      positioning of glyph outlines.                                   *)
-  (*                                                                       *)
-  (*      The resulting glyph shapes are more similar to the original,     *)
-  (*      while being a bit more fuzzy (`better shapes' instead of `better *)
-  (*      contrast', so to say.                                            *)
-  (*                                                                       *)
-  (*    FT_RENDER_MODE_MONO ::                                             *)
-  (*      This mode corresponds to 1-bit bitmaps.                          *)
-  (*                                                                       *)
-  (*    FT_RENDER_MODE_LCD ::                                              *)
-  (*      This mode corresponds to horizontal RGB/BGR sub-pixel displays,  *)
-  (*      like LCD-screens.  It produces 8-bit bitmaps that are 3 times    *)
-  (*      the width of the original glyph outline in pixels, and which use *)
-  (*      the @FT_PIXEL_MODE_LCD mode.                                     *)
-  (*                                                                       *)
-  (*    FT_RENDER_MODE_LCD_V ::                                            *)
-  (*      This mode corresponds to vertical RGB/BGR sub-pixel displays     *)
-  (*      (like PDA screens, rotated LCD displays, etc.).  It produces     *)
-  (*      8-bit bitmaps that are 3 times the height of the original        *)
-  (*      glyph outline in pixels and use the @FT_PIXEL_MODE_LCD_V mode.   *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*   The LCD-optimized glyph bitmaps produced by FT_Render_Glyph are     *)
-  (*   _not filtered_ to reduce color-fringes.  It is up to the caller to  *)
-  (*   perform this pass.                                                  *)
-  (*                                                                       *)
-const
-  FT_RENDER_MODE_NORMAL = 0;
-  FT_RENDER_MODE_LIGHT  = FT_RENDER_MODE_NORMAL + 1;
-  FT_RENDER_MODE_MONO   = FT_RENDER_MODE_LIGHT  + 1;
-  FT_RENDER_MODE_LCD    = FT_RENDER_MODE_MONO   + 1;
-  FT_RENDER_MODE_LCD_V  = FT_RENDER_MODE_LCD    + 1;
-  FT_RENDER_MODE_MAX    = FT_RENDER_MODE_LCD_V  + 1;
 
   (*************************************************************************)
   (*                                                                       *)
@@ -2482,9 +2499,9 @@ implementation
 
 
 { FT_CURVE_TAG }
-function FT_CURVE_TAG(flag : char ) : char;
+function FT_CURVE_TAG(flag: byte): byte;
 begin
-  result := char(byte(flag) and 3);
+  result := flag and 3;
 end;
 
 { FT_IS_SCALABLE }

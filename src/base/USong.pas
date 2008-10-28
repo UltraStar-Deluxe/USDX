@@ -326,7 +326,7 @@ begin
       if not Both then
       begin
         Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
-        Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(PChar(Lines[CP].Line[Lines[CP].High].Lyric));
+        Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(Lines[CP].Line[Lines[CP].High].Lyric);
         //Total Notes Patch
         Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
         for I := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
@@ -344,7 +344,7 @@ begin
         for Count := 0 to High(Lines) do
 	      begin
           Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
-          Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
+          Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(Lines[Count].Line[Lines[Count].High].Lyric);
           //Total Notes Patch
           Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
           for I := low(Lines[Count].Line[Lines[Count].High].Note) to high(Lines[Count].Line[Lines[Count].High].Note) do
@@ -500,7 +500,7 @@ begin
         if not Both then
         begin
           Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
-          Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(PChar(Lines[CP].Line[Lines[CP].High].Lyric));
+          Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(Lines[CP].Line[Lines[CP].High].Lyric);
           //Total Notes Patch
           Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
           for NoteIndex := 0 to high(Lines[CP].Line[Lines[CP].High].Note) do
@@ -518,7 +518,7 @@ begin
           for Count := 0 to High(Lines) do
           begin
             Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
-            Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(PChar(Lines[Count].Line[Lines[Count].High].Lyric));
+            Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(Lines[Count].Line[Lines[Count].High].Lyric);
             //Total Notes Patch
             Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
             for NoteIndex := 0 to high(Lines[Count].Line[Lines[Count].High].Note) do
@@ -987,7 +987,7 @@ begin
   begin //Update old Sentence if it has notes and create a new sentence
     // stara czesc //Alter Satz //Update Old Part
     Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := Base[LineNumberP];
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(PChar(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric));
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric);
 
     //Total Notes Patch
     Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
