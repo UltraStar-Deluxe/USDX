@@ -131,8 +131,6 @@ begin
 end;
 
 constructor TScreenPopupCheck.Create;
-var
-  I:    integer;
 begin
   inherited Create;
 
@@ -214,8 +212,6 @@ begin
 end;
 
 constructor TScreenPopupError.Create;
-var
-  I:    integer;
 begin
   inherited Create;
 

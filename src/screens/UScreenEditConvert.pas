@@ -127,8 +127,6 @@ uses UGraphic,
      USkins;
 
 function TScreenEditConvert.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
-var
-  T:    integer;
 begin
   Result := true;
   If (PressedDown) Then

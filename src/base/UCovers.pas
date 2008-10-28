@@ -405,7 +405,7 @@ end;
  *)
 function TCoverDatabase.CreateThumbnail(const Filename: WideString; var Info: TThumbnailInfo): PSDL_Surface;
 var
-  TargetAspect, SourceAspect: double;
+  //TargetAspect, SourceAspect: double;
   //TargetWidth, TargetHeight: integer;
   Thumbnail: PSDL_Surface;
   MaxSize: integer;

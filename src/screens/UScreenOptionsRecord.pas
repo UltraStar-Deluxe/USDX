@@ -739,7 +739,6 @@ end;
 
 function TScreenOptionsRecord.Draw: boolean;
 var
-  i: integer;
   Device: TAudioInputDevice;
   DeviceCfg: PInputDeviceConfig;
   SelectSlide: TSelectSlide;

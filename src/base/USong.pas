@@ -583,8 +583,8 @@ end;
 function TSong.ReadXMLHeader(const aFileName : WideString): boolean;
 
 var
-  Line, Identifier, Value: string;
-  Temp        : word;
+  //Line, Identifier, Value: string;
+  //Temp        : word;
   Done        : byte;
   Parser      : TParser;
 

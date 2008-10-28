@@ -301,8 +301,9 @@ end;
 // GetLanguage - Get Language ID from saved String Information
 //-------------
 function TCMDParams.GetLanguage: integer;
-var
+{var
   I: integer;
+}
 begin
   Result := -1;
 {*  JB - 12sep07 to remove uINI dependency
@@ -321,8 +322,9 @@ end;
 // GetResolution - Get Resolution ID from saved String Information
 //-------------
 function TCMDParams.GetResolution: integer;
-var
+{var
   I: integer;
+}
 begin
   Result := -1;
 {*  JB - 12sep07 to remove uINI dependency

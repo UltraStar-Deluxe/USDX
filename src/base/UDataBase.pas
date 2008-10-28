@@ -531,7 +531,6 @@ end;
 function TDataBaseSystem.GetStatReset: TDateTime;
 var
   Query: string;
-  ResetTime: int64;
 begin
   Result := 0;
 

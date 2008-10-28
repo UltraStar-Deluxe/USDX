@@ -199,8 +199,6 @@ begin
 end;
 
 constructor TScreenPartyOptions.Create;
-var
-  I:    integer;
 begin
   inherited Create;
   //Fill IPlaylist

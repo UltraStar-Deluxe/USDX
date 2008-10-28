@@ -90,7 +90,7 @@ end;
 procedure BuildFont;
 var
   FontIni: TMemIniFile;
-  BitmapFont: TBitmapFont;
+  //BitmapFont: TBitmapFont;
   FontFile: string;
 begin
   ActFont := 0;

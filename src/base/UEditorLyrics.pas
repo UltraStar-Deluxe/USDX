@@ -147,8 +147,6 @@ begin
 end;
 
 procedure TEditorLyrics.SetSelected(Value: integer);
-var
-  W:  integer;
 begin
   if (SelectedI > -1) and (SelectedI <= High(Word)) then
   begin

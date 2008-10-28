@@ -251,7 +251,6 @@ end;
 function TTextureUnit.LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
 var
   TexSurface: PSDL_Surface;
-  MipmapSurface: PSDL_Surface;
   newWidth, newHeight: Cardinal;
   oldWidth, oldHeight: Cardinal;
   ActTex: GLuint;
@@ -299,7 +298,6 @@ begin
     FitImage(TexSurface, newWidth, newHeight);
 
   // at this point we have the image in memory...
-  // scaled to be at most 1024x1024 pixels large
   // scaled so that dimensions are powers of 2
   // and converted to either RGB or RGBA
 
@@ -375,7 +373,6 @@ end;
 function TTextureUnit.GetTexture(const Name: string; Typ: TTextureType; Col: LongWord; FromCache: boolean): TTexture;
 var
   TextureIndex: integer;
-  CoverIndex:   integer;
 begin
   if (Name = '') then
   begin
@@ -386,18 +383,6 @@ begin
 
   if (FromCache) then
   begin
-    (*
-    // use cache texture
-    CoverIndex := Covers.FindCover(Name);
-
-    if TextureDatabase.Texture[TextureIndex].TextureCache.TexNum = 0 then
-    begin
-      // load texture
-      Covers.PrepareData(Name);
-      TextureDatabase.Texture[TextureIndex].TextureCache := CreateTexture(Covers.Data, Name, Covers.Cover[CoverIndex].Width, Covers.Cover[CoverIndex].Height, 24);
-    end;
-    *)
-
     // use texture
     TextureIndex := TextureDatabase.FindTexture(Name, Typ, Col);
     if (TextureIndex > -1) then
@@ -432,7 +417,7 @@ end;
 
 function TTextureUnit.CreateTexture(Data: PChar; const Name: string; Width, Height: word; BitsPerPixel: byte): TTexture;
 var
-  Error:     integer;
+  //Error:     integer;
   ActTex:    GLuint;
 begin
   glGenTextures(1, @ActTex); // ActText = new texture number

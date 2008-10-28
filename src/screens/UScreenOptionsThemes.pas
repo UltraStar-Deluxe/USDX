@@ -154,8 +154,6 @@ begin
 end;
 
 constructor TScreenOptionsThemes.Create;
-var
-  I:      integer;
 begin
   inherited Create;
 

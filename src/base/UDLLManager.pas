@@ -162,7 +162,7 @@ function TDLLMan.LoadPluginInfo(Filename: String; No: Cardinal): boolean;
 var
   hLibg: THandle;
   Info: pModi_PluginInfo;
-  I: Integer;
+  //I: Integer;
 begin
   Result := False;
   //Clear Plugin Info

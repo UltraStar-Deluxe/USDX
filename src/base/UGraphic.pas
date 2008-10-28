@@ -760,7 +760,6 @@ begin
 end;
 
 procedure UnLoadScreens;
-var I: Integer;
 begin
   ScreenMain.Destroy;
   ScreenName.Destroy;

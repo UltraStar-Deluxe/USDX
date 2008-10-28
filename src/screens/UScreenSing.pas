@@ -249,9 +249,6 @@ end;
 //Pause Mod End
 
 constructor TScreenSing.Create;
-var
-  I: integer;
-  P: integer;
 begin
   inherited Create;
 
@@ -314,7 +311,6 @@ var
   V2R:    boolean;
   V2M:    boolean;
   V3R:    boolean;
-  NR:     TRecR;     //Some enlightment of who, how and what this is here please
   Color: TRGB;
 
   success: boolean;
@@ -641,9 +637,6 @@ function TScreenSing.Draw: boolean;
 var
   Min:   integer;
   Sec:   integer;
-  Tekst: string;
-  Flash: real;
-  S:     integer;
   T:     integer;
   CurLyricsTime: real;
 begin
@@ -931,8 +924,6 @@ end;
  // Called on sentence change
  // SentenceIndex: index of the new active sentence
 procedure TScreenSing.OnSentenceChange(SentenceIndex: cardinal);
-var
-  LyricEngine: TLyricEngine;
 begin
   //GoldenStarsTwinkle
   GoldenRec.SentenceChange;

@@ -75,7 +75,8 @@ uses SysUtils,
 
 constructor TJoy.Create;
 var
-  B, N:    integer;
+  B: integer;
+  //N: integer;
 begin
   inherited;
 
@@ -137,7 +138,7 @@ begin
     Log.LogError('Could not Init Joystick');
     exit;
   end;
-  N := SDL_JoystickNumButtons(SDL_Joy);
+  //N := SDL_JoystickNumButtons(SDL_Joy);
   //if N < 6 then Log.LogStatus('Joystick button count < 6', 'TJoy.Create');
 
   for B := 0 to 5 do begin

@@ -75,7 +75,6 @@ uses UGraphic, UMain, UIni, UTexture, UParty;
 
 function TScreenPartyPlayer.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 var
-{*I, *}J:    integer; // Auto Removed, Unused Variable (I)
   SDL_ModState:  Word;
   procedure IntNext;
   begin

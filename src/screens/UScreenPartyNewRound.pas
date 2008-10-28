@@ -153,8 +153,6 @@ begin
 end;
 
 constructor TScreenPartyNewRound.Create;
-var
-  I:    integer;
 begin
   inherited Create;
 
@@ -217,7 +215,7 @@ var
   function GetTeamPlayers(const Num: Byte): String;
   var
     Players: Array of String;
-    J: Byte;
+    //J: Byte;
   begin            // to-do : Party
     if (Num-1 >= {PartySession.Teams.NumTeams}0) then
       exit;

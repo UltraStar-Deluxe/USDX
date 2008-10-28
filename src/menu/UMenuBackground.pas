@@ -49,7 +49,7 @@ type
     procedure   OnShow; virtual;
     procedure   Draw; virtual;
     procedure   OnFinish; virtual;
-    destructor  Destroy; virtual;
+    destructor  Destroy; override;
   end;
   cMenuBackground = class of TMenuBackground;
 

@@ -187,8 +187,6 @@ begin
 end;
 
 constructor TScreenSongMenu.Create;
-var
-  I:    integer;
 begin
   inherited Create;
   

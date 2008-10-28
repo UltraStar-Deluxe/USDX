@@ -432,7 +432,6 @@ var
 const
   MAX_FPS = 100;
 begin
-  Delay := 0;
   SDL_EnableKeyRepeat(125, 125);
 
   CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
@@ -732,10 +731,7 @@ var
   Count:    integer;
   CountGr:  integer;
   CP:       integer;
-  Done:     real;
   N:        integer;
-  CurLine:  PLine;
-  CurNote:  PLineFragment;
 begin
   LyricsState.UpdateBeats();
 
@@ -767,20 +763,6 @@ begin
   // make some operations when detecting new voice pitch
   if (LyricsState.CurrentBeatD >= 0) and (LyricsState.OldBeatD <> LyricsState.CurrentBeatD) then
     NewBeatDetect(Screen);
-
-  CurLine := @Lines[0].Line[Lines[0].Current];
-
-  // remove moving text
-  Done := 1;
-  for N := 0 to CurLine.HighNote do
-  begin
-    CurNote := @CurLine.Note[N];
-    if (CurNote.Start <= LyricsState.MidBeat) and
-       (CurNote.Start + CurNote.Length >= LyricsState.MidBeat) then
-    begin
-      Done := (LyricsState.MidBeat - CurNote.Start) / CurNote.Length;
-    end;
-  end;
 end;
 
 procedure NewSentence(Screen: TScreenSing);

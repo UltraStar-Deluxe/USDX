@@ -209,7 +209,6 @@ end;
 procedure TSelectSlide.SetSelectOpt(Value: integer);
 var
   SO:     integer;
-  Sel:    integer;
   HalfL:  integer;
   HalfR:  integer;
 
@@ -252,7 +251,7 @@ begin
     end
     else if (Value >= high(TextOptT)) then
     begin //Last Option Selected
-    Value := high(TextOptT);
+      Value := high(TextOptT);
 
       for SO := high(TextOpt) downto low (TextOpt) do
       begin

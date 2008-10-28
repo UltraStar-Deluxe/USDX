@@ -93,7 +93,6 @@ type
 
       Lyric:    TEditorLyrics;
 
-      procedure NewBeat;
       procedure DivideBPM;
       procedure MultiplyBPM;
       procedure LyricsCapitalize;
@@ -669,14 +668,15 @@ begin
   end;
 end;
 
+{
 procedure TScreenEditSub.NewBeat;
 begin
-    // click
-{    for Pet := 0 to Lines[0].Line[Lines[0].Current].HighNut do
-  if (Lines[0].Line[Lines[0].Current].Note[Pet].Start = Czas.AktBeat) then begin
-      // old}
-//    Music.PlayClick;
+  // click
+  for Pet := 0 to Lines[0].Line[Lines[0].Current].HighNut do
+    if (Lines[0].Line[Lines[0].Current].Note[Pet].Start = Czas.AktBeat) then
+      Music.PlayClick;
 end;
+}
 
 procedure TScreenEditSub.DivideBPM;
 var
@@ -713,7 +713,7 @@ end;
 procedure TScreenEditSub.LyricsCapitalize;
 var
   C:    integer;
-  N:    integer; // temporary
+  //N:    integer; // temporary
   S:    string;
 begin
   // temporary
@@ -925,7 +925,6 @@ procedure TScreenEditSub.DeleteNote;
 var
   C:    integer;
   N:    integer;
-  NLen: integer;
 begin
   C := Lines[0].Current;
 
@@ -1230,9 +1229,6 @@ end;
 
 function TScreenEditSub.Draw: boolean;
 var
-  Min:    integer;
-  Sec:    integer;
-  Tekst:  string;
   Pet:    integer;
   AktBeat:  integer;
 begin

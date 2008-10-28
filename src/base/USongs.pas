@@ -687,7 +687,7 @@ end;
 
 procedure TCatSongs.ClickCategoryButton(Index: integer);
 var
-  Num, S:    integer;
+  Num:    integer;
 begin
   Num := CatSongs.Song[Index].OrderNum;
   if Num <> CatNumShow then
@@ -703,7 +703,7 @@ end;
 //Hide Categorys when in Category Hack
 procedure TCatSongs.ShowCategoryList;
 var
-  Num, S:    integer;
+  S:    integer;
 begin
   // Hide All Songs Show All Cats
   for S := 0 to high(CatSongs.Song) do

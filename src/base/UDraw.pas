@@ -254,7 +254,6 @@ var
   Rec:      TRecR;
   Count:    integer;
   TempR:    real;
-  R,G,B:    real;
 
   PlayerNumber: Integer;
 
@@ -374,7 +373,7 @@ var
   TempR:      real;
   Rec:        TRecR;
   N:          integer;
-  R, G, B, A: real;
+  //R, G, B, A: real;
   NotesH2:    real;
 begin
   //Log.LogStatus('Player notes', 'SingDraw');
@@ -463,7 +462,7 @@ begin
         // Perfect note is stored
         if Perfect and (Ini.EffectSing=1) then
         begin
-          A := 1 - 2*(LyricsState.GetCurrentTime() - GetTimeFromBeat(Start+Length));
+          //A := 1 - 2*(LyricsState.GetCurrentTime() - GetTimeFromBeat(Start+Length));
           if not (Start+Length-1 = LyricsState.CurrentBeatD) then
           begin
             //Star animation counter
@@ -489,7 +488,6 @@ var
   Rec:      TRecR;
   Count:      integer;
   TempR:    real;
-  R,G,B:    real;
   X1, X2, X3, X4: real;
   W, H:     real;
   
@@ -894,19 +892,7 @@ end;
 // q'n'd for using the game mode dll's
 procedure SingModiDraw (PlayerInfo: TPlayerInfo);
 var
-  Count:      integer;
-  Pet2:     integer;
-  TempR:    real;
-  Rec:      TRecR;
-  TexRec:   TRecR;
   NR:       TRecR;
-  FS:       real;
-  BarFrom:  integer;
-  BarAlpha: real;
-  BarWspol: real;
-  TempCol:  real;
-  Tekst:    string;
-  PetCz:    integer;
 begin
   // positions
   if Ini.SingWindow = 0 then begin
