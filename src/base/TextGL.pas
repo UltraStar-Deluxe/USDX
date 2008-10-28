@@ -41,9 +41,8 @@ uses
 
 procedure BuildFont;                          // build our bitmap font
 procedure KillFont;                           // delete the font
-function  glTextWidth(text: PChar): real;     // returns text width
-procedure glPrintLetter(letter: char);
-procedure glPrint(text: pchar);               // custom GL "Print" routine
+function  glTextWidth(const text: string): real; // returns text width
+procedure glPrint(const text: string);        // custom GL "Print" routine
 procedure ResetFont();                        // reset font settings of active font
 procedure SetFontPos(X, Y: real);             // sets X and Y
 procedure SetFontZ(Z: real);                  // sets Z
@@ -205,7 +204,7 @@ begin
   //glDeleteLists(..., 256);
 end;
 
-function glTextWidth(text: pchar): real;
+function glTextWidth(const text: string): real;
 var
   Letter: char;
   i: integer;
@@ -321,18 +320,18 @@ begin
 end;
 
 // Custom GL "Print" Routine
-procedure glPrint(Text: PChar);
+procedure glPrint(const Text: string);
 var
   Pos: integer;
 begin
   // if there is no text do nothing
-  if ((Text = nil) or (Text = '')) then
+  if (Text = '') then
     Exit;
 
   //Save the actual color and alpha (for reflection)
   glGetFloatv(GL_CURRENT_COLOR, @TempColor);
 
-  for Pos := 0 to Length(Text) - 1 do
+  for Pos := 1 to Length(Text) do
   begin
     glPrintLetter(Text[Pos]);
   end;
