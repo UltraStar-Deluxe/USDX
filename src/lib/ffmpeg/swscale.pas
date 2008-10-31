@@ -152,7 +152,8 @@ type
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
-function sws_getContext(srcW: cint; srcH: cint; srcFormat: cint; dstW: cint; dstH: cint; dstFormat: cint; flags: cint;
+function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
+              dstW: cint; dstH: cint; dstFormat: TAVPixelFormat; flags: cint;
               srcFilter: PSwsFilter; dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
 function sws_scale(context: PSwsContext; src: PPCuint8Array; srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;

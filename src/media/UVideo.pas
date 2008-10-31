@@ -392,9 +392,9 @@ begin
   // could be observed in comparison to the RGB versions.
   fSwScaleContext := sws_getContext(
       fCodecContext^.width, fCodecContext^.height,
-      integer(fCodecContext^.pix_fmt),
+      fCodecContext^.pix_fmt,
       fCodecContext^.width, fCodecContext^.height,
-      integer(PIXEL_FMT_FFMPEG),
+      PIXEL_FMT_FFMPEG,
       SWS_FAST_BILINEAR, nil, nil, nil);
   if (fSwScaleContext = nil) then
   begin
@@ -495,7 +495,7 @@ begin
       // failed to read a frame, check reason
 
       {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
-      pbIOCtx := VideoFormatContext^.pb;
+      pbIOCtx := fFormatContext^.pb;
       {$ELSE}
       pbIOCtx := @fFormatContext^.pb;
       {$IFEND}
@@ -670,9 +670,9 @@ begin
           0, fCodecContext^.Height,
           @(fAVFrameRGB.data), @(fAVFrameRGB.linesize));
   {$ELSE}
-  errnum := img_convert(PAVPicture(AVFrameRGB), PIXEL_FMT_FFMPEG,
-            PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
-            VideoCodecContext^.width, VideoCodecContext^.height);
+  errnum := img_convert(PAVPicture(fAVFrameRGB), PIXEL_FMT_FFMPEG,
+            PAVPicture(fAVFrame), fCodecContext^.pix_fmt,
+            fCodecContext^.width, fCodecContext^.height);
   {$ENDIF}
   
   if (errnum < 0) then
