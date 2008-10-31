@@ -72,9 +72,9 @@ implementation
 uses
   UMain,
   UCommon,
+  UTextEncoding,
   SysUtils,
-  IniFiles,
-  UGraphic;
+  IniFiles;
 
 function FindFontFile(FontIni: TCustomIniFile; Font: string): string;
 var
@@ -148,8 +148,8 @@ function glTextWidth(const text: string): real;
 var
   Bounds: TBoundsDbl;
 begin
-  // FIXME: remove UTF-8 conversion
-  Bounds := Fonts[ActFont].Font.BBox(AnsiToUtf8(text), true);
+  // FIXME: remove conversion
+  Bounds := Fonts[ActFont].Font.BBox(RecodeString(Text, encCP1252), true);
   Result := Bounds.Right - Bounds.Left;
 end;
 
@@ -168,8 +168,8 @@ begin
     // set font position
     glTranslatef(GLFont.X, GLFont.Y + GLFont.Font.Ascender, GLFont.Z);
     // draw string
-    // FIXME: remove UTF-8 conversion
-    GLFont.Font.Print(AnsiToUtf8(Text));
+    // FIXME: remove conversion
+    GLFont.Font.Print(RecodeString(Text, encCP1252));
   glPopMatrix();
 end;
 

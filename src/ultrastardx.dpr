@@ -80,6 +80,7 @@ uses
   {$IFDEF UseFreetype}
   freetype               in 'lib\freetype\freetype.pas',
   UFont                  in 'base\UFont.pas',
+  UTextEncoding          in 'base\UTextEncoding.pas',
   {$ENDIF}
 
   {$IFDEF UseBass}
