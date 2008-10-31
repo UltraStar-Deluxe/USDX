@@ -27,9 +27,6 @@ unit UVideo;
 
 {*
  * based on 'An ffmpeg and SDL Tutorial' (http://www.dranger.com/ffmpeg/)
- *
- * http://www.mail-archive.com/fpc-pascal@lists.freepascal.org/msg09949.html
- * http://www.nabble.com/file/p11795857/mpegpas01.zip
  *}
 
 // uncomment if you want to see the debug stuff
@@ -50,6 +47,24 @@ interface
 {$IFDEF UseSWScale}
   {$DEFINE PIXEL_FMT_BGR}
 {$ENDIF}
+
+type
+  {**
+   * vacStretch: Stretch to screen width and height
+   *   - ignores aspect
+   *   + no borders
+   *   + no image data loss
+   * vacCrop: Stretch to screen width or height, crop the other dimension
+   *   + keeps aspect
+   *   + no borders
+   *   - frame borders are cropped (image data loss)
+   * vacLetterBox: Stretch to screen width, add bars at or crop top and bottom
+   *   + keeps aspect
+   *   - borders at top and bottom
+   *   o top/bottom is cropped if width < height (unusual)
+   *}
+  TAspectCorrection = (acoStretch, acoCrop, acoLetterBox);
+
 
 implementation
 
@@ -86,40 +101,52 @@ const
 {$ENDIF}
 
 type
+  TRectCoords = record
+    Left, Right:  double;
+    Upper, Lower: double;
+  end;
+
   TVideoPlayback_FFmpeg = class( TInterfacedObject, IVideoPlayback )
   private
-    fVideoOpened,
-    fVideoPaused: Boolean;
+    fOpened: boolean;     //**< stream successfully opened
+    fPaused: boolean;     //**< stream paused
+    fInitialized: boolean;
+    fEOF: boolean;        //**< end-of-file state
 
-    VideoStream: PAVStream;
-    VideoStreamIndex : Integer;
-    VideoFormatContext: PAVFormatContext;
-    VideoCodecContext: PAVCodecContext;
-    VideoCodec: PAVCodec;
+    fLoop: boolean;       //**< looping enabled
 
-    AVFrame: PAVFrame;
-    AVFrameRGB: PAVFrame;
-    FrameBuffer: PByte;
+    fStream:        PAVStream;
+    fStreamIndex :  integer;
+    fFormatContext: PAVFormatContext;
+    fCodecContext:  PAVCodecContext;
+    fCodec:         PAVCodec;
+
+    fAVFrame:     PAVFrame;
+    fAVFrameRGB:  PAVFrame;
+
+    fFrameBuffer: PByte;  //**< stores a FFmpeg video frame
+    fFrameTex:    GLuint; //**< OpenGL texture for FrameBuffer
+    fTexWidth, fTexHeight: cardinal;
 
     {$IFDEF UseSWScale}
-    SoftwareScaleContext: PSwsContext;
+    fSwScaleContext: PSwsContext;
     {$ENDIF}
 
-    fVideoTex: GLuint;
-    TexWidth, TexHeight: Cardinal;
-
-    VideoAspect: Real;
-    VideoTimeBase, VideoTime: Extended;
-    fLoopTime: Extended;
-
-    EOF: boolean;
-    Loop: boolean;
-
-    Initialized: boolean;
+    fAspect: real;        //**< width/height ratio
+    fAspectCorrection: TAspectCorrection;
     
+    fTimeBase: extended;  //**< FFmpeg time base per time unit
+    fTime:     extended;  //**< video time position (absolute)
+    fLoopTime: extended;  //**< video time position (relative to current loop)
+
     procedure Reset();
     function DecodeFrame(var AVPacket: TAVPacket; out pts: double): boolean;
     procedure SynchronizeVideo(Frame: PAVFrame; var pts: double);
+
+    procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords);
+    
+    procedure ShowDebugInfo();
+
   public
     function    GetName: String;
 
@@ -184,21 +211,21 @@ function TVideoPlayback_FFmpeg.Init(): boolean;
 begin
   Result := true;
 
-  if (Initialized) then
+  if (fInitialized) then
     Exit;
-  Initialized := true;
+  fInitialized := true;
 
   FFmpegCore := TMediaCore_FFmpeg.GetInstance();
 
   Reset();
   av_register_all();
-  glGenTextures(1, PGLuint(@fVideoTex));
+  glGenTextures(1, PGLuint(@fFrameTex));
 end;
 
 function TVideoPlayback_FFmpeg.Finalize(): boolean;
 begin
   Close();
-  glDeleteTextures(1, PGLuint(@fVideoTex));
+  glDeleteTextures(1, PGLuint(@fFrameTex));
   Result := true;
 end;
 
@@ -207,18 +234,20 @@ begin
   // close previously opened video
   Close();
 
-  fVideoOpened       := False;
-  fVideoPaused       := False;
-  VideoTimeBase      := 0;
-  VideoTime          := 0;
-  VideoStream := nil;
-  VideoStreamIndex := -1;
+  fOpened       := False;
+  fPaused       := False;
+  fTimeBase      := 0;
+  fTime          := 0;
+  fStream := nil;
+  fStreamIndex := -1;
 
-  EOF := false;
+  fEOF := false;
 
   // TODO: do we really want this by default?
-  Loop := true;
+  fLoop := true;
   fLoopTime := 0;
+  
+  fAspectCorrection := acoCrop;
 end;
 
 function TVideoPlayback_FFmpeg.Open(const aFileName : string): boolean; // true if succeed
@@ -230,7 +259,7 @@ begin
 
   Reset();
 
-  errnum := av_open_input_file(VideoFormatContext, PChar(aFileName), nil, 0, nil);
+  errnum := av_open_input_file(fFormatContext, PChar(aFileName), nil, 0, nil);
   if (errnum <> 0) then
   begin
     Log.LogError('Failed to open file "'+aFileName+'" ('+FFmpegCore.GetErrorString(errnum)+')');
@@ -238,28 +267,28 @@ begin
   end;
 
   // update video info
-  if (av_find_stream_info(VideoFormatContext) < 0) then
+  if (av_find_stream_info(fFormatContext) < 0) then
   begin
     Log.LogError('No stream info found', 'TVideoPlayback_ffmpeg.Open');
     Close();
     Exit;
   end;
-  Log.LogInfo('VideoStreamIndex : ' + inttostr(VideoStreamIndex), 'TVideoPlayback_ffmpeg.Open');
+  Log.LogInfo('VideoStreamIndex : ' + inttostr(fStreamIndex), 'TVideoPlayback_ffmpeg.Open');
 
   // find video stream
-  FFmpegCore.FindStreamIDs(VideoFormatContext, VideoStreamIndex, AudioStreamIndex);
-  if (VideoStreamIndex < 0) then
+  FFmpegCore.FindStreamIDs(fFormatContext, fStreamIndex, AudioStreamIndex);
+  if (fStreamIndex < 0) then
   begin
     Log.LogError('No video stream found', 'TVideoPlayback_ffmpeg.Open');
     Close();
     Exit;
   end;
 
-  VideoStream := VideoFormatContext^.streams[VideoStreamIndex];
-  VideoCodecContext := VideoStream^.codec;
+  fStream := fFormatContext^.streams[fStreamIndex];
+  fCodecContext := fStream^.codec;
 
-  VideoCodec := avcodec_find_decoder(VideoCodecContext^.codec_id);
-  if (VideoCodec = nil) then
+  fCodec := avcodec_find_decoder(fCodecContext^.codec_id);
+  if (fCodec = nil) then
   begin
     Log.LogError('No matching codec found', 'TVideoPlayback_ffmpeg.Open');
     Close();
@@ -267,21 +296,21 @@ begin
   end;
 
   // set debug options
-  VideoCodecContext^.debug_mv := 0;
-  VideoCodecContext^.debug := 0;
+  fCodecContext^.debug_mv := 0;
+  fCodecContext^.debug := 0;
 
   // detect bug-workarounds automatically
-  VideoCodecContext^.workaround_bugs := FF_BUG_AUTODETECT;
+  fCodecContext^.workaround_bugs := FF_BUG_AUTODETECT;
   // error resilience strategy (careful/compliant/agressive/very_aggressive)
-  //VideoCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
+  //fCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
   // allow non spec compliant speedup tricks.
-  //VideoCodecContext^.flags2 := VideoCodecContext^.flags2 or CODEC_FLAG2_FAST;
+  //fCodecContext^.flags2 := fCodecContext^.flags2 or CODEC_FLAG2_FAST;
 
   // Note: avcodec_open() and avcodec_close() are not thread-safe and will
   // fail if called concurrently by different threads.
   FFmpegCore.LockAVCodec();
   try
-    errnum := avcodec_open(VideoCodecContext, VideoCodec);
+    errnum := avcodec_open(fCodecContext, fCodec);
   finally
     FFmpegCore.UnlockAVCodec();
   end;
@@ -293,27 +322,27 @@ begin
   end;
 
   // register custom callbacks for pts-determination
-  VideoCodecContext^.get_buffer := PtsGetBuffer;
-  VideoCodecContext^.release_buffer := PtsReleaseBuffer;
+  fCodecContext^.get_buffer := PtsGetBuffer;
+  fCodecContext^.release_buffer := PtsReleaseBuffer;
 
   {$ifdef DebugDisplay}
-  DebugWriteln('Found a matching Codec: '+ VideoCodecContext^.Codec.Name + sLineBreak +
+  DebugWriteln('Found a matching Codec: '+ fCodecContext^.Codec.Name + sLineBreak +
     sLineBreak +
-    '  Width = '+inttostr(VideoCodecContext^.width) +
-    ', Height='+inttostr(VideoCodecContext^.height) + sLineBreak +
-    '  Aspect    : '+inttostr(VideoCodecContext^.sample_aspect_ratio.num) + '/' +
-                     inttostr(VideoCodecContext^.sample_aspect_ratio.den) + sLineBreak +
-    '  Framerate : '+inttostr(VideoCodecContext^.time_base.num) + '/' +
-                     inttostr(VideoCodecContext^.time_base.den));
+    '  Width = '+inttostr(fCodecContext^.width) +
+    ', Height='+inttostr(fCodecContext^.height) + sLineBreak +
+    '  Aspect    : '+inttostr(fCodecContext^.sample_aspect_ratio.num) + '/' +
+                     inttostr(fCodecContext^.sample_aspect_ratio.den) + sLineBreak +
+    '  Framerate : '+inttostr(fCodecContext^.time_base.num) + '/' +
+                     inttostr(fCodecContext^.time_base.den));
   {$endif}
 
   // allocate space for decoded frame and rgb frame
-  AVFrame := avcodec_alloc_frame();
-  AVFrameRGB := avcodec_alloc_frame();
-  FrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
-      VideoCodecContext^.width, VideoCodecContext^.height));
+  fAVFrame := avcodec_alloc_frame();
+  fAVFrameRGB := avcodec_alloc_frame();
+  fFrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
+      fCodecContext^.width, fCodecContext^.height));
 
-  if ((AVFrame = nil) or (AVFrameRGB = nil) or (FrameBuffer = nil)) then
+  if ((fAVFrame = nil) or (fAVFrameRGB = nil) or (fFrameBuffer = nil)) then
   begin
     Log.LogError('Failed to allocate buffers', 'TVideoPlayback_ffmpeg.Open');
     Close();
@@ -322,8 +351,8 @@ begin
 
   // TODO: pad data for OpenGL to GL_UNPACK_ALIGNMENT
   // (otherwise video will be distorted if width/height is not a multiple of the alignment)
-  errnum := avpicture_fill(PAVPicture(AVFrameRGB), FrameBuffer, PIXEL_FMT_FFMPEG,
-      VideoCodecContext^.width, VideoCodecContext^.height);
+  errnum := avpicture_fill(PAVPicture(fAVFrameRGB), fFrameBuffer, PIXEL_FMT_FFMPEG,
+      fCodecContext^.width, fCodecContext^.height);
   if (errnum < 0) then
   begin
     Log.LogError('avpicture_fill failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
@@ -332,27 +361,27 @@ begin
   end;
 
   // calculate some information for video display
-  VideoAspect := av_q2d(VideoCodecContext^.sample_aspect_ratio);
-  if (VideoAspect = 0) then
-    VideoAspect := VideoCodecContext^.width /
-                   VideoCodecContext^.height
+  fAspect := av_q2d(fCodecContext^.sample_aspect_ratio);
+  if (fAspect = 0) then
+    fAspect := fCodecContext^.width /
+               fCodecContext^.height
   else
-    VideoAspect := VideoAspect * VideoCodecContext^.width /
-                                 VideoCodecContext^.height;
+    fAspect := fAspect * fCodecContext^.width /
+                         fCodecContext^.height;
 
-  VideoTimeBase := 1/av_q2d(VideoStream^.r_frame_rate);
+  fTimeBase := 1/av_q2d(fStream^.r_frame_rate);
 
   // hack to get reasonable timebase (for divx and others)
-  if (VideoTimeBase < 0.02) then // 0.02 <-> 50 fps
+  if (fTimeBase < 0.02) then // 0.02 <-> 50 fps
   begin
-    VideoTimeBase := av_q2d(VideoStream^.r_frame_rate);
-    while (VideoTimeBase > 50) do
-      VideoTimeBase := VideoTimeBase/10;
-    VideoTimeBase := 1/VideoTimeBase;
+    fTimeBase := av_q2d(fStream^.r_frame_rate);
+    while (fTimeBase > 50) do
+      fTimeBase := fTimeBase/10;
+    fTimeBase := 1/fTimeBase;
   end;
 
-  Log.LogInfo('VideoTimeBase: ' + floattostr(VideoTimeBase), 'TVideoPlayback_ffmpeg.Open');
-  Log.LogInfo('Framerate: '+inttostr(floor(1/VideoTimeBase))+'fps', 'TVideoPlayback_ffmpeg.Open');
+  Log.LogInfo('VideoTimeBase: ' + floattostr(fTimeBase), 'TVideoPlayback_ffmpeg.Open');
+  Log.LogInfo('Framerate: '+inttostr(floor(1/fTimeBase))+'fps', 'TVideoPlayback_ffmpeg.Open');
 
   {$IFDEF UseSWScale}
   // if available get a SWScale-context -> faster than the deprecated img_convert().
@@ -361,13 +390,13 @@ begin
   // The BGR565-formats (GL_UNSIGNED_SHORT_5_6_5) is way too slow because of its
   // bad OpenGL support. The BGR formats have MMX(2) implementations but no speed-up
   // could be observed in comparison to the RGB versions.
-  SoftwareScaleContext := sws_getContext(
-      VideoCodecContext^.width, VideoCodecContext^.height,
-      integer(VideoCodecContext^.pix_fmt),
-      VideoCodecContext^.width, VideoCodecContext^.height,
+  fSwScaleContext := sws_getContext(
+      fCodecContext^.width, fCodecContext^.height,
+      integer(fCodecContext^.pix_fmt),
+      fCodecContext^.width, fCodecContext^.height,
       integer(PIXEL_FMT_FFMPEG),
       SWS_FAST_BILINEAR, nil, nil, nil);
-  if (SoftwareScaleContext = nil) then
+  if (fSwScaleContext = nil) then
   begin
     Log.LogError('Failed to get swscale context', 'TVideoPlayback_ffmpeg.Open');
     Close();
@@ -375,55 +404,53 @@ begin
   end;
   {$ENDIF}
 
-  TexWidth   := Round(Power(2, Ceil(Log2(VideoCodecContext^.width))));
-  TexHeight  := Round(Power(2, Ceil(Log2(VideoCodecContext^.height))));
+  fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
+  fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
 
   // we retrieve a texture just once with glTexImage2D and update it with glTexSubImage2D later.
   // Benefits: glTexSubImage2D is faster and supports non-power-of-two widths/height.
-  glBindTexture(GL_TEXTURE_2D, fVideoTex);
+  glBindTexture(GL_TEXTURE_2D, fFrameTex);
   glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, TexWidth, TexHeight, 0,
+  glTexImage2D(GL_TEXTURE_2D, 0, 3, fTexWidth, fTexHeight, 0,
       PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-
-  fVideoOpened := True;
-
+  fOpened := True;
   Result := true;
 end;
 
 procedure TVideoPlayback_FFmpeg.Close;
 begin
-  if (FrameBuffer <> nil) then
-    av_free(FrameBuffer);
-  if (AVFrameRGB <> nil) then
-    av_free(AVFrameRGB);
-  if (AVFrame <> nil) then
-    av_free(AVFrame);
+  if (fFrameBuffer <> nil) then
+    av_free(fFrameBuffer);
+  if (fAVFrameRGB <> nil) then
+    av_free(fAVFrameRGB);
+  if (fAVFrame <> nil) then
+    av_free(fAVFrame);
 
-  AVFrame     := nil;
-  AVFrameRGB  := nil;
-  FrameBuffer := nil;
+  fAVFrame     := nil;
+  fAVFrameRGB  := nil;
+  fFrameBuffer := nil;
     
-  if (VideoCodecContext <> nil) then
+  if (fCodecContext <> nil) then
   begin
     // avcodec_close() is not thread-safe
     FFmpegCore.LockAVCodec();
     try
-      avcodec_close(VideoCodecContext);
+      avcodec_close(fCodecContext);
     finally
       FFmpegCore.UnlockAVCodec();
     end;
   end;
 
-  if (VideoFormatContext <> nil) then
-    av_close_input_file(VideoFormatContext);
+  if (fFormatContext <> nil) then
+    av_close_input_file(fFormatContext);
 
-  VideoCodecContext  := nil;
-  VideoFormatContext := nil;
+  fCodecContext  := nil;
+  fFormatContext := nil;
 
-  fVideoOpened := False;
+  fOpened := False;
 end;
 
 procedure TVideoPlayback_FFmpeg.SynchronizeVideo(Frame: PAVFrame; var pts: double);
@@ -433,17 +460,17 @@ begin
   if (pts <> 0) then
   begin
     // if we have pts, set video clock to it
-    VideoTime := pts;
+    fTime := pts;
   end else
   begin
     // if we aren't given a pts, set it to the clock
-    pts := VideoTime;
+    pts := fTime;
   end;
   // update the video clock
-  FrameDelay := av_q2d(VideoCodecContext^.time_base);
+  FrameDelay := av_q2d(fCodecContext^.time_base);
   // if we are repeating a frame, adjust clock accordingly
   FrameDelay := FrameDelay + Frame^.repeat_pict * (FrameDelay * 0.5);
-  VideoTime := VideoTime + FrameDelay;
+  fTime := fTime + FrameDelay;
 end;
 
 function TVideoPlayback_FFmpeg.DecodeFrame(var AVPacket: TAVPacket; out pts: double): boolean;
@@ -456,13 +483,13 @@ begin
   Result := false;
   FrameFinished := 0;
 
-  if EOF then
+  if fEOF then
     Exit;
 
   // read packets until we have a finished frame (or there are no more packets)
   while (FrameFinished = 0) do
   begin
-    errnum := av_read_frame(VideoFormatContext, AVPacket);
+    errnum := av_read_frame(fFormatContext, AVPacket);
     if (errnum < 0) then
     begin
       // failed to read a frame, check reason
@@ -470,13 +497,13 @@ begin
       {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
       pbIOCtx := VideoFormatContext^.pb;
       {$ELSE}
-      pbIOCtx := @VideoFormatContext^.pb;
+      pbIOCtx := @fFormatContext^.pb;
       {$IFEND}
 
-      // check for end-of-file (eof is not an error)
+      // check for end-of-file (EOF is not an error)
       if (url_feof(pbIOCtx) <> 0) then
       begin
-        EOF := true;
+        fEOF := true;
         Exit;
       end;
 
@@ -486,10 +513,10 @@ begin
 
       // url_feof() does not detect an EOF for some mov-files (e.g. deluxe.mov)
       // so we have to do it this way.
-      if ((VideoFormatContext^.file_size <> 0) and
-          (pbIOCtx^.pos >= VideoFormatContext^.file_size)) then
+      if ((fFormatContext^.file_size <> 0) and
+          (pbIOCtx^.pos >= fFormatContext^.file_size)) then
       begin
-        EOF := true;
+        fEOF := true;
         Exit;
       end;
 
@@ -499,38 +526,38 @@ begin
     end;
 
     // if we got a packet from the video stream, then decode it
-    if (AVPacket.stream_index = VideoStreamIndex) then
+    if (AVPacket.stream_index = fStreamIndex) then
     begin
       // save pts to be stored in pFrame in first call of PtsGetBuffer()
       VideoPktPts := AVPacket.pts;
-      VideoCodecContext^.opaque := @VideoPktPts;
+      fCodecContext^.opaque := @VideoPktPts;
 
       // decode packet
-      avcodec_decode_video(VideoCodecContext, AVFrame,
+      avcodec_decode_video(fCodecContext, fAVFrame,
           frameFinished, AVPacket.data, AVPacket.size);
 
       // reset opaque data
-      VideoCodecContext^.opaque := nil;
+      fCodecContext^.opaque := nil;
 
       // update pts
       if (AVPacket.dts <> AV_NOPTS_VALUE) then
       begin
         pts := AVPacket.dts;
       end
-      else if ((AVFrame^.opaque <> nil) and
-               (Pint64(AVFrame^.opaque)^ <> AV_NOPTS_VALUE)) then
+      else if ((fAVFrame^.opaque <> nil) and
+               (Pint64(fAVFrame^.opaque)^ <> AV_NOPTS_VALUE)) then
       begin
-        pts := Pint64(AVFrame^.opaque)^;
+        pts := Pint64(fAVFrame^.opaque)^;
       end
       else
       begin
         pts := 0;
       end;
-      pts := pts * av_q2d(VideoStream^.time_base);
+      pts := pts * av_q2d(fStream^.time_base);
 
       // synchronize on each complete frame
       if (frameFinished <> 0) then
-        SynchronizeVideo(AVFrame, pts);
+        SynchronizeVideo(fAVFrame, pts);
     end;
 
     // free the packet from av_read_frame
@@ -552,26 +579,26 @@ var
 const
   FRAME_DROPCOUNT = 3;
 begin
-  if not fVideoOpened then
+  if not fOpened then
     Exit;
 
-  if fVideoPaused then
+  if fPaused then
     Exit;
 
-  // current time, relative to last loop (if any)
+  // current time, relative to last fLoop (if any)
   myTime := Time - fLoopTime;
   // time since the last frame was returned
-  TimeDifference := myTime - VideoTime;
+  TimeDifference := myTime - fTime;
 
   {$IFDEF DebugDisplay}
   DebugWriteln('Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-               'VideoTime: '+inttostr(floor(VideoTime*1000)) + sLineBreak +
-               'TimeBase:  '+inttostr(floor(VideoTimeBase*1000)) + sLineBreak +
+               'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
+               'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
                'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
   {$endif}
 
   // check if a new frame is needed
-  if (VideoTime <> 0) and (TimeDifference < VideoTimeBase) then
+  if (fTime <> 0) and (TimeDifference < fTimeBase) then
   begin
     {$ifdef DebugFrames}
     // frame delay debug display
@@ -581,8 +608,8 @@ begin
     {$IFDEF DebugDisplay}
     DebugWriteln('not getting new frame' + sLineBreak +
         'Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-        'VideoTime: '+inttostr(floor(VideoTime*1000)) + sLineBreak +
-        'TimeBase:  '+inttostr(floor(VideoTimeBase*1000)) + sLineBreak +
+        'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
+        'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
         'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
     {$endif}
 
@@ -591,11 +618,11 @@ begin
   end;
 
   // update video-time to the next frame
-  VideoTime := VideoTime + VideoTimeBase;
-  TimeDifference := myTime - VideoTime;
+  fTime := fTime + fTimeBase;
+  TimeDifference := myTime - fTime;
 
   // check if we have to skip frames
-  if (TimeDifference >= FRAME_DROPCOUNT*VideoTimeBase) then
+  if (TimeDifference >= FRAME_DROPCOUNT*fTimeBase) then
   begin
     {$IFDEF DebugFrames}
     //frame drop debug display
@@ -603,13 +630,13 @@ begin
     {$ENDIF}
     {$IFDEF DebugDisplay}
     DebugWriteln('skipping frames' + sLineBreak +
-        'TimeBase:  '+inttostr(floor(VideoTimeBase*1000)) + sLineBreak +
+        'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
         'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
     {$endif}
 
     // update video-time
-    DropFrameCount := Trunc(TimeDifference / VideoTimeBase);
-    VideoTime := VideoTime + DropFrameCount*VideoTimeBase;
+    DropFrameCount := Trunc(TimeDifference / fTimeBase);
+    fTime := fTime + DropFrameCount*fTimeBase;
 
     // skip half of the frames, this is much smoother than to skip all at once
     for i := 1 to DropFrameCount (*div 2*) do
@@ -622,7 +649,7 @@ begin
 
   if (not DecodeFrame(AVPacket, pts)) then
   begin
-    if Loop then
+    if fLoop then
     begin
       // Record the time we looped. This is used to keep the loops in time. otherwise they speed
       SetPosition(0);
@@ -632,16 +659,16 @@ begin
   end;
 
   // TODO: support for pan&scan
-  //if (AVFrame.pan_scan <> nil) then
+  //if (fAVFrame.pan_scan <> nil) then
   //begin
-  //  Writeln(Format('PanScan: %d/%d', [AVFrame.pan_scan.width, AVFrame.pan_scan.height]));
+  //  Writeln(Format('PanScan: %d/%d', [fAVFrame.pan_scan.width, fAVFrame.pan_scan.height]));
   //end;
 
   // otherwise we convert the pixeldata from YUV to RGB
   {$IFDEF UseSWScale}
-  errnum := sws_scale(SoftwareScaleContext, @(AVFrame.data), @(AVFrame.linesize),
-          0, VideoCodecContext^.Height,
-          @(AVFrameRGB.data), @(AVFrameRGB.linesize));
+  errnum := sws_scale(fSwScaleContext, @(fAVFrame.data), @(fAVFrame.linesize),
+          0, fCodecContext^.Height,
+          @(fAVFrameRGB.data), @(fAVFrameRGB.linesize));
   {$ELSE}
   errnum := img_convert(PAVPicture(AVFrameRGB), PIXEL_FMT_FFMPEG,
             PAVPicture(AVFrame), VideoCodecContext^.pix_fmt,
@@ -663,10 +690,10 @@ begin
   //   Or should we add padding with avpicture_fill? (check which one is faster)
   //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  glBindTexture(GL_TEXTURE_2D, fVideoTex);
+  glBindTexture(GL_TEXTURE_2D, fFrameTex);
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-      VideoCodecContext^.width, VideoCodecContext^.height,
-      PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, AVFrameRGB^.data[0]);
+      fCodecContext^.width, fCodecContext^.height,
+      PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, fAVFrameRGB^.data[0]);
 
   {$ifdef DebugFrames}
   //frame decode debug display
@@ -680,76 +707,94 @@ begin
   {$ENDIF}
 end;
 
-procedure TVideoPlayback_FFmpeg.DrawGL(Screen: integer);
+procedure TVideoPlayback_FFmpeg.GetVideoRect(var ScreenRect, TexRect: TRectCoords);
 var
-  TexVideoRightPos, TexVideoLowerPos: Single;
-  ScreenLeftPos,  ScreenRightPos: Single;
-  ScreenUpperPos, ScreenLowerPos: Single;
-  ScaledVideoWidth, ScaledVideoHeight: Single;
-  ScreenMidPosX, ScreenMidPosY: Single;
-  ScreenAspect: Single;
+  ScreenAspect: double;  // aspect of screen resolution
+  ScaledVideoWidth, ScaledVideoHeight: double;
 begin
-  // have a nice black background to draw on (even if there were errors opening the vid)
-  if (Screen = 1) then
-  begin
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  // Three aspects to take into account:
+  //  1. Screen/display resolution (e.g. 1920x1080 -> 16:9)
+  //  2. Render aspect (fixed to 800x600 -> 4:3)
+  //  3. Movie aspect (video frame aspect stored in fAspect)
+  ScreenAspect := ScreenW / ScreenH;
+
+  case fAspectCorrection of
+    acoStretch: begin
+      ScaledVideoWidth  := RenderW;
+      ScaledVideoHeight := RenderH;
+    end;
+    acoCrop: begin
+      if (ScreenAspect >= fAspect) then
+      begin
+        ScaledVideoWidth  := RenderW;
+        ScaledVideoHeight := RenderH * ScreenAspect/fAspect;
+      end
+      else
+      begin
+        ScaledVideoHeight := RenderH;
+        ScaledVideoWidth  := RenderW * fAspect/ScreenAspect;
+      end;
+    end;
+    acoLetterBox: begin
+      ScaledVideoWidth  := RenderW;
+      ScaledVideoHeight := RenderH * ScreenAspect/fAspect;
+    end;
   end;
 
+  // center video
+  ScreenRect.Left  := (RenderW - ScaledVideoWidth) / 2;
+  ScreenRect.Right := ScreenRect.Left + ScaledVideoWidth;
+  ScreenRect.Upper := (RenderH - ScaledVideoHeight) / 2;
+  ScreenRect.Lower := ScreenRect.Upper + ScaledVideoHeight;
+
+  // texture contains right/lower (power-of-2) padding.
+  // Determine the texture coords of the video frame.
+  TexRect.Left  := 0;
+  TexRect.Right := fCodecContext^.width  / fTexWidth;
+  TexRect.Upper := 0;
+  TexRect.Lower := fCodecContext^.height / fTexHeight;
+end;
+
+procedure TVideoPlayback_FFmpeg.DrawGL(Screen: integer);
+var
+  ScreenRect: TRectCoords;
+  TexRect: TRectCoords;
+begin
+  // have a nice black background to draw on
+  // (even if there were errors opening the vid)
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+
   // exit if there's nothing to draw
-  if (not fVideoOpened) then
+  if (not fOpened) then
     Exit;
 
   {$IFDEF VideoBenchmark}
   Log.BenchmarkStart(15);
   {$ENDIF}
 
-  // TODO: add a SetAspectCorrectionMode() function so we can switch
-  // aspect correction. The screens video backgrounds look very ugly with aspect
-  // correction because of the white bars at the top and bottom.
-  
-  ScreenAspect := ScreenW / ScreenH;
-  ScaledVideoWidth := RenderW;
-  ScaledVideoHeight := RenderH * ScreenAspect/VideoAspect;
-
-  // Note: Scaling the width does not look good because the video might contain
-  // black borders at the top already 
-  //ScaledVideoHeight := RenderH;
-  //ScaledVideoWidth  := RenderW * VideoAspect/ScreenAspect;
-
-  // center the video
-  ScreenMidPosX := RenderW/2;
-  ScreenMidPosY := RenderH/2;
-  ScreenLeftPos  := ScreenMidPosX - ScaledVideoWidth/2;
-  ScreenRightPos := ScreenMidPosX + ScaledVideoWidth/2;
-  ScreenUpperPos := ScreenMidPosY - ScaledVideoHeight/2;
-  ScreenLowerPos := ScreenMidPosY + ScaledVideoHeight/2;
-  // the video-texture contains empty borders because its width and height must be
-  // a power of 2. So we have to determine the texture coords of the video.
-  TexVideoRightPos := VideoCodecContext^.width  / TexWidth;
-  TexVideoLowerPos := VideoCodecContext^.height / TexHeight;
+  // get texture and screen positions
+  GetVideoRect(ScreenRect, TexRect);
 
   // we could use blending for brightness control, but do we need this?
   glDisable(GL_BLEND);
 
-  // TODO: disable other stuff like lightning, etc.
-
   glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, fVideoTex);
+  glBindTexture(GL_TEXTURE_2D, fFrameTex);
   glColor3f(1, 1, 1);
   glBegin(GL_QUADS);
     // upper-left coord
-    glTexCoord2f(0, 0);
-    glVertex2f(ScreenLeftPos, ScreenUpperPos);
+    glTexCoord2f(TexRect.Left, TexRect.Upper);
+    glVertex2f(ScreenRect.Left, ScreenRect.Upper);
     // lower-left coord
-    glTexCoord2f(0, TexVideoLowerPos);
-    glVertex2f(ScreenLeftPos, ScreenLowerPos);
+    glTexCoord2f(TexRect.Left, TexRect.Lower);
+    glVertex2f(ScreenRect.Left, ScreenRect.Lower);
     // lower-right coord
-    glTexCoord2f(TexVideoRightPos, TexVideoLowerPos);
-    glVertex2f(ScreenRightPos, ScreenLowerPos);
+    glTexCoord2f(TexRect.Right, TexRect.Lower);
+    glVertex2f(ScreenRect.Right, ScreenRect.Lower);
     // upper-right coord
-    glTexCoord2f(TexVideoRightPos, 0);
-    glVertex2f(ScreenRightPos, ScreenUpperPos);
+    glTexCoord2f(TexRect.Right, TexRect.Upper);
+    glVertex2f(ScreenRect.Right, ScreenRect.Upper);
   glEnd;
   glDisable(GL_TEXTURE_2D);
 
@@ -758,8 +803,15 @@ begin
   Log.LogBenchmark('DrawGL', 15);
   {$ENDIF}
 
+  {$IF Defined(Info) or Defined(DebugFrames)}
+  ShowDebugInfo();
+  {$IFEND}
+end;
+
+procedure TVideoPlayback_FFmpeg.ShowDebugInfo();
+begin
   {$IFDEF Info}
-  if (fVideoSkipTime+VideoTime+VideoTimeBase < 0) then
+  if (fTime+fTimeBase < 0) then
   begin
     glColor4f(0.7, 1, 0.3, 1);
     SetFontStyle (1);
@@ -799,7 +851,7 @@ end;
 
 procedure TVideoPlayback_FFmpeg.Pause;
 begin
-  fVideoPaused := not fVideoPaused;
+  fPaused := not fPaused;
 end;
 
 procedure TVideoPlayback_FFmpeg.Stop;
@@ -810,36 +862,36 @@ procedure TVideoPlayback_FFmpeg.SetPosition(Time: real);
 var
   SeekFlags: integer;
 begin
-  if not fVideoOpened then
+  if not fOpened then
     Exit;
 
   if (Time < 0) then
     Time := 0;
 
-  // TODO: handle loop-times
+  // TODO: handle fLoop-times
   //Time := Time mod VideoDuration;
 
   // backward seeking might fail without AVSEEK_FLAG_BACKWARD
   SeekFlags := AVSEEK_FLAG_ANY;
-  if (Time < VideoTime) then
+  if (Time < fTime) then
     SeekFlags := SeekFlags or AVSEEK_FLAG_BACKWARD;
 
-  VideoTime := Time;
-  EOF := false;
+  fTime := Time;
+  fEOF := false;
 
-  if (av_seek_frame(VideoFormatContext, VideoStreamIndex, Floor(Time/VideoTimeBase), SeekFlags) < 0) then
+  if (av_seek_frame(fFormatContext, fStreamIndex, Floor(Time/fTimeBase), SeekFlags) < 0) then
   begin
     Log.LogError('av_seek_frame() failed', 'TVideoPlayback_ffmpeg.SetPosition');
     Exit;
   end;
 
-  avcodec_flush_buffers(VideoCodecContext);
+  avcodec_flush_buffers(fCodecContext);
 end;
 
 function  TVideoPlayback_FFmpeg.GetPosition: real;
 begin
   // TODO: return video-position in seconds
-  Result := VideoTime;
+  Result := fTime;
 end;
 
 initialization
