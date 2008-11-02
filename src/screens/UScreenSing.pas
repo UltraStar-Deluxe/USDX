@@ -731,7 +731,7 @@ begin
   begin
     if assigned(fCurrentVideoPlaybackEngine) then
     begin
-      fCurrentVideoPlaybackEngine.GetFrame(LyricsState.GetCurrentTime());
+      fCurrentVideoPlaybackEngine.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     end;
   end;
