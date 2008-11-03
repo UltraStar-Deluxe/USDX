@@ -126,6 +126,7 @@ type
 
     fFrameBuffer: PByte;  //**< stores a FFmpeg video frame
     fFrameTex:    GLuint; //**< OpenGL texture for FrameBuffer
+    fFrameTexValid: boolean; //**< if true, fFrameTex contains the current frame
     fTexWidth, fTexHeight: cardinal;
 
     {$IFDEF UseSWScale}
@@ -137,11 +138,11 @@ type
     
     fTimeBase: extended;  //**< FFmpeg time base per time unit
     fTime:     extended;  //**< video time position (absolute)
-    fLoopTime: extended;  //**< video time position (relative to current loop)
+    fLoopTime: extended;  //**< start time of the current loop
 
     procedure Reset();
-    function DecodeFrame(var AVPacket: TAVPacket; out pts: double): boolean;
-    procedure SynchronizeVideo(Frame: PAVFrame; var pts: double);
+    function DecodeFrame(): boolean;
+    procedure SynchronizeTime(Frame: PAVFrame; var pts: double);
 
     procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords);
     
@@ -240,6 +241,7 @@ begin
   fTime          := 0;
   fStream := nil;
   fStreamIndex := -1;
+  fFrameTexValid := false;
 
   fEOF := false;
 
@@ -453,7 +455,7 @@ begin
   fOpened := False;
 end;
 
-procedure TVideoPlayback_FFmpeg.SynchronizeVideo(Frame: PAVFrame; var pts: double);
+procedure TVideoPlayback_FFmpeg.SynchronizeTime(Frame: PAVFrame; var pts: double);
 var
   FrameDelay: double;
 begin
@@ -473,12 +475,21 @@ begin
   fTime := fTime + FrameDelay;
 end;
 
-function TVideoPlayback_FFmpeg.DecodeFrame(var AVPacket: TAVPacket; out pts: double): boolean;
+{**
+ * Decode a new frame from the video stream.
+ * The decoded frame is stored in fAVFrame. fTime is updated to the new frame's
+ * time.
+ * @param pts will be updated to the presentation time of the decoded frame. 
+ * returns true if a frame could be decoded. False if an error or EOF occured.
+ *}
+function TVideoPlayback_FFmpeg.DecodeFrame(): boolean;
 var
   FrameFinished: Integer;
   VideoPktPts: int64;
   pbIOCtx: PByteIOContext;
   errnum: integer;
+  AVPacket: TAVPacket;
+  pts: double;
 begin
   Result := false;
   FrameFinished := 0;
@@ -555,9 +566,9 @@ begin
       end;
       pts := pts * av_q2d(fStream^.time_base);
 
-      // synchronize on each complete frame
+      // synchronize time on each complete frame
       if (frameFinished <> 0) then
-        SynchronizeVideo(fAVFrame, pts);
+        SynchronizeTime(fAVFrame, pts);
     end;
 
     // free the packet from av_read_frame
@@ -569,13 +580,12 @@ end;
 
 procedure TVideoPlayback_FFmpeg.GetFrame(Time: Extended);
 var
-  AVPacket: TAVPacket;
   errnum: Integer;
-  myTime: Extended;
+  NewTime: Extended;
   TimeDifference: Extended;
   DropFrameCount: Integer;
-  pts: double;
   i: Integer;
+  Success: boolean;
 const
   FRAME_DROPCOUNT = 3;
 begin
@@ -585,41 +595,50 @@ begin
   if fPaused then
     Exit;
 
-  // current time, relative to last fLoop (if any)
-  myTime := Time - fLoopTime;
-  // time since the last frame was returned
-  TimeDifference := myTime - fTime;
+  // requested stream position (relative to the last loop's start)
+  NewTime := Time - fLoopTime;
 
-  {$IFDEF DebugDisplay}
-  DebugWriteln('Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-               'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
-               'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
-               'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
-  {$endif}
-
-  // check if a new frame is needed
-  if (fTime <> 0) and (TimeDifference < fTimeBase) then
+  // check if current texture still contains the active frame
+  if (fFrameTexValid) then
   begin
-    {$ifdef DebugFrames}
-    // frame delay debug display
-    GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
-    {$endif}
+    // time since the last frame was returned
+    TimeDifference := NewTime - fTime;
 
     {$IFDEF DebugDisplay}
-    DebugWriteln('not getting new frame' + sLineBreak +
-        'Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-        'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
-        'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
-        'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
+    DebugWriteln('Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
+                 'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
+                 'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
+                 'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
     {$endif}
 
-    // we do not need a new frame now
-    Exit;
+    // check if last time is more than one frame in the past 
+    if (TimeDifference < fTimeBase) then
+    begin
+      {$ifdef DebugFrames}
+      // frame delay debug display
+      GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
+      {$endif}
+
+      {$IFDEF DebugDisplay}
+      DebugWriteln('not getting new frame' + sLineBreak +
+          'Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
+          'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
+          'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
+          'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
+      {$endif}
+
+      // we do not need a new frame now
+      Exit;
+    end;
   end;
 
-  // update video-time to the next frame
-  fTime := fTime + fTimeBase;
-  TimeDifference := myTime - fTime;
+  {$IFDEF VideoBenchmark}
+  Log.BenchmarkStart(15);
+  {$ENDIF}
+  
+  // fetch new frame (updates fTime)
+  Success := DecodeFrame();
+  TimeDifference := NewTime - fTime;
 
   // check if we have to skip frames
   if (TimeDifference >= FRAME_DROPCOUNT*fTimeBase) then
@@ -640,19 +659,18 @@ begin
 
     // skip half of the frames, this is much smoother than to skip all at once
     for i := 1 to DropFrameCount (*div 2*) do
-      DecodeFrame(AVPacket, pts);
+      Success := DecodeFrame();
   end;
 
-  {$IFDEF VideoBenchmark}
-  Log.BenchmarkStart(15);
-  {$ENDIF}
-
-  if (not DecodeFrame(AVPacket, pts)) then
+  // check if we got an EOF or error 
+  if (not Success) then
   begin
     if fLoop then
     begin
-      // Record the time we looped. This is used to keep the loops in time. otherwise they speed
+      // we have to loop, so rewind
       SetPosition(0);
+      // record the start-time of the current loop, so we can
+      // determine the position in the stream (fTime-fLoopTime) later.
       fLoopTime := Time;
     end;
     Exit;
@@ -694,6 +712,9 @@ begin
   glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
       fCodecContext^.width, fCodecContext^.height,
       PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, fAVFrameRGB^.data[0]);
+
+  if (not fFrameTexValid) then
+    fFrameTexValid := true;
 
   {$ifdef DebugFrames}
   //frame decode debug display
@@ -738,7 +759,9 @@ begin
     acoLetterBox: begin
       ScaledVideoWidth  := RenderW;
       ScaledVideoHeight := RenderH * ScreenAspect/fAspect;
-    end;
+    end
+    else
+      raise Exception.Create('Unhandled aspect correction!');
   end;
 
   // center video
@@ -858,6 +881,14 @@ procedure TVideoPlayback_FFmpeg.Stop;
 begin
 end;
 
+{**
+ * Sets the stream's position.
+ * The stream is set to the first keyframe with timestamp <= Time.
+ * Note that fTime is set to Time no matter if the actual position seeked to is
+ * at Time or the time of a preceding keyframe. fTime will be updated to the
+ * actual frame time when GetFrame() is called the next time.
+ * @param Time new position in seconds
+ *}
 procedure TVideoPlayback_FFmpeg.SetPosition(Time: real);
 var
   SeekFlags: integer;
@@ -871,13 +902,18 @@ begin
   // TODO: handle fLoop-times
   //Time := Time mod VideoDuration;
 
-  // backward seeking might fail without AVSEEK_FLAG_BACKWARD
-  SeekFlags := AVSEEK_FLAG_ANY;
-  if (Time < fTime) then
-    SeekFlags := SeekFlags or AVSEEK_FLAG_BACKWARD;
+  // Do not use the AVSEEK_FLAG_ANY here. It will seek to any frame, even
+  // non keyframes (P-/B-frames). It will produce corrupted video frames as
+  // FFmpeg does not use the information of the preceding I-frame.
+  // The picture might be gray or green until the next keyframe occurs.
+  // Instead seek the first keyframe smaller than the requested time
+  // (AVSEEK_FLAG_BACKWARD). As this can be some seconds earlier than the
+  // requested time, let the sync in GetFrame() do its job.
+  SeekFlags := AVSEEK_FLAG_BACKWARD;
 
   fTime := Time;
   fEOF := false;
+  fFrameTexValid := false; 
 
   if (av_seek_frame(fFormatContext, fStreamIndex, Floor(Time/fTimeBase), SeekFlags) < 0) then
   begin
@@ -890,7 +926,6 @@ end;
 
 function  TVideoPlayback_FFmpeg.GetPosition: real;
 begin
-  // TODO: return video-position in seconds
   Result := fTime;
 end;
 
