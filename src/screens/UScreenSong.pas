@@ -1059,10 +1059,10 @@ end;
 procedure TScreenSong.SetScroll2;
 var
   B:      integer;
-  //Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu 
-  //Wsp2:   real;
+  //Factor:    integer; // factor of position relative to center of screen
+  //Factor2:   real;
 begin
-  // liniowe
+  // line
   for B := 0 to High(Button) do
     Button[B].X := 300 + (B - Interaction) * 260;
 
@@ -1074,12 +1074,12 @@ begin
       Button[0].X := 300 + 260;
   end;
 
-  // kolowe
+  // circle
   {
   for B := 0 to High(Button) do begin
-    Wsp := (B - Interaction); // 0 dla srodka, -1 dla lewego, +1 dla prawego itd.
-    Wsp2 := Wsp / Length(Button);
-    Button[B].X := 300 + 10000 * sin(2*pi*Wsp2);
+    Factor := (B - Interaction); // 0 to center, -1: to left, +1 to right
+    Factor2 := Factor / Length(Button);
+    Button[B].X := 300 + 10000 * sin(2*pi*Factor2);
     //Button[B].Y := 140 + 50 * ;
   end;
   }
@@ -1089,12 +1089,12 @@ end;
 procedure TScreenSong.SetScroll3; // with slide
 var
   B:      integer;
-  //Wsp:    integer; // wspolczynnik przesuniecia wzgledem srodka ekranu
-  //Wsp2:   real;
+  //Factor:    integer; // factor of position relative to center of screen
+  //Factor2:   real;
 begin
   SongTarget := Interaction;
 
-  // liniowe
+  // line
   for B := 0 to High(Button) do
   begin
     Button[B].X := 300 + (B - SongCurrent) * 260;
@@ -1114,12 +1114,12 @@ begin
   end;
   }
 
-  // kolowe
+  // circle
   {
   for B := 0 to High(Button) do begin
-    Wsp := (B - Interaction); // 0 dla srodka, -1 dla lewego, +1 dla prawego itd.
-    Wsp2 := Wsp / Length(Button);
-    Button[B].X := 300 + 10000 * sin(2*pi*Wsp2);
+    Factor := (B - Interaction); // 0 to center, -1: to left, +1 to right
+    Factor2 := Factor / Length(Button);
+    Button[B].X := 300 + 10000 * sin(2*pi*Factor2);
     //Button[B].Y := 140 + 50 * ;
   end;
   }
@@ -1253,25 +1253,25 @@ var
   VS:     integer;
   diff:     real;
   X:        Real;
-  Wsp:    real;
+  Factor:    real;
   Z, Z2:      real;
 begin
   VS := CatSongs.VisibleSongs;
   if VS <= 5 then
   begin
-    // kolowe
+    // circle
     for B := 0 to High(Button) do
     begin
-      Button[B].Visible := CatSongs.Song[B].Visible; // nowe
+      Button[B].Visible := CatSongs.Song[B].Visible;
       if Button[B].Visible then begin // optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
 
-      Wsp := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
+      Factor := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
 
-      Z := (1 + cos(Wsp)) / 2;
+      Z := (1 + cos(Factor)) / 2;
       Z2 := (1 + 2*Z) / 3;
 
 
-      Button[B].Y := Theme.Song.Cover.Y + (0.185 * Theme.Song.Cover.H * VS * sin(Wsp)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
+      Button[B].Y := Theme.Song.Cover.Y + (0.185 * Theme.Song.Cover.H * VS * sin(Factor)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
       Button[B].Z := Z / 2 + 0.3;
 
       Button[B].W := Theme.Song.Cover.H * Z2;
@@ -1547,7 +1547,7 @@ begin
 
   end;
 
-  // Interaction -> Button, ktorego okladke przeczytamy
+  // Interaction -> Button, load cover
   // show uncached texture
   //Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
 end;

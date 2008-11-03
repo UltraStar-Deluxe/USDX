@@ -136,8 +136,6 @@ end;
 var
   Min:    integer;
   Sec:    integer;
-  Tekst:  string;
-  Pet:    integer;
   AktBeat:  integer;
 begin
 end;

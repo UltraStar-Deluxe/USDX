@@ -74,7 +74,6 @@ var
 begin
   with Texture do
   begin
-    // rysuje paski gracza
     glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);

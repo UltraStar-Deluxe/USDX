@@ -275,8 +275,7 @@ end;
 var
   Min:    integer;
   Sec:    integer;
-  Tekst:  string;
-  Pet:    integer;
+  Count:    integer;
   AktBeat:  integer;
 begin
 {  glClearColor(1,1,1,1);
@@ -294,8 +293,8 @@ begin
       AktBeat := Floor(CurrentSong.BPM[0].BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
       Text[TextDebug].Text := IntToStr(AktBeat);
       if AktBeat <> LastClick then begin
-        for Pet := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
-          if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Pet].Start = AktBeat) then begin
+        for Count := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
+          if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Count].Start = AktBeat) then begin
             Music.PlayClick;
             LastClick := AktBeat;
           end;
@@ -314,7 +313,7 @@ begin
   Text[TextNStart].Text :=    IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Start);
   Text[TextNDlugosc].Text :=  IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Dlugosc);
   Text[TextNTon].Text :=      IntToStr(Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Ton);
-  Text[TextNText].Text :=              Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Tekst;
+  Text[TextNText].Text :=              Czesci[0].Czesc[Czesci[0].Akt].Nuta[AktNuta].Text;
 
   // draw static menu
   inherited Draw;

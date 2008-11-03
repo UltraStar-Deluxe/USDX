@@ -143,9 +143,9 @@ constructor TScreenOpen.Create;
 begin
   inherited Create;
 
-  // linijka
+  // line
 {  AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
-  AddText(35, 17, 1, 18, 1, 1, 1, 'Linijka');
+  AddText(35, 17, 1, 18, 1, 1, 1, 'line');
   TextSentence := AddText(120, 14, 1, 24, 0, 0, 0, '0 / 0');}
 
   // file list
@@ -186,8 +186,6 @@ end;
 var
   Min:    integer;
   Sec:    integer;
-  Tekst:  string;
-  Pet:    integer;
   AktBeat:  integer;
 begin
 

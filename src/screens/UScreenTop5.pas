@@ -159,11 +159,10 @@ function TScreenTop5.Draw: boolean;
 //var
 {  Min:    real;
   Max:    real;
-  Wsp:    real;
-  Wsp2:   real;
-  Pet:    integer;}
+  Factor:    real;
+  Factor2:   real;
 
-{  Item:   integer;
+  Item:   integer;
   P:      integer;
   C:      integer;}
 begin

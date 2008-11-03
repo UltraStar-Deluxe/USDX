@@ -434,10 +434,6 @@ begin
         begin
         end;
 
-      SDLK_LCTRL:
-        begin
-        end;
-
       SDLK_DELETE:
         begin
           if SDL_ModState = KMOD_LCTRL then begin

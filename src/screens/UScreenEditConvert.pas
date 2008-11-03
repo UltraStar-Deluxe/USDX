@@ -328,7 +328,7 @@ begin
   Lines.Line[C].HighNote := -1;
 
   for Nu := 0 to High(Note) do begin
-    if Note[Nu].NewSentence then begin // nowa linijka
+    if Note[Nu].NewSentence then begin // new line
       SetLength(Lines.Line, Length(Lines.Line)+1);
       Lines.Number := Lines.Number + 1;
       Lines.High := Lines.High + 1;
@@ -359,10 +359,10 @@ begin
       end;
     end;
 
-    // tworzy miejsce na nowa nute
+    // create space for new note
     SetLength(Lines.Line[C].Note, Length(Lines.Line[C].Note)+1);
 
-    // dopisuje
+    // initialize note
     Lines.Line[C].Note[N].Start := Note[Nu].Start;
     Lines.Line[C].Note[N].Length := Note[Nu].Len;
     Lines.Line[C].Note[N].Tone := Note[Nu].Tone;
@@ -526,8 +526,8 @@ end;
 
 function TScreenEditConvert.Draw: boolean;
 var
-  Pet:    integer;
-  Pet2:   integer;
+  Count:    integer;
+  Count2:   integer;
   Bottom: real;
   X:      real;
   Y:      real;
@@ -549,18 +549,18 @@ begin
   DrawQuad(10, Y+Sel*YSkip, 780, YSkip, 0.8, 0.8, 0.8);
 
   // selected - now me use Status System
-  for Pet := 0 to High(ATrack) do
-    if ATrack[Pet].Hear then
-      DrawQuad(10, Y+Pet*YSkip, 50, YSkip, 0.8, 0.3, 0.3);
+  for Count := 0 to High(ATrack) do
+    if ATrack[Count].Hear then
+      DrawQuad(10, Y+Count*YSkip, 50, YSkip, 0.8, 0.3, 0.3);
   glColor3f(0, 0, 0);
-  for Pet := 0 to High(ATrack) do begin
-    if ((ATrack[Pet].Status div 1) and 1) = 1 then begin
-      SetFontPos(25, Y + Pet*YSkip + 10);
+  for Count := 0 to High(ATrack) do begin
+    if ((ATrack[Count].Status div 1) and 1) = 1 then begin
+      SetFontPos(25, Y + Count*YSkip + 10);
       SetFontSize(15);
       glPrint('N');
     end;
-    if ((ATrack[Pet].Status div 2) and 1) = 1 then begin
-      SetFontPos(40, Y + Pet*YSkip + 10);
+    if ((ATrack[Count].Status div 2) and 1) = 1 then begin
+      SetFontPos(40, Y + Count*YSkip + 10);
       SetFontSize(15);
       glPrint('L');
     end;
@@ -570,21 +570,21 @@ begin
   DrawLine(60, Y,   60, Bottom, 0, 0, 0);
   DrawLine(790, Y, 790, Bottom, 0, 0, 0);
 
-  for Pet := 0 to Length(ATrack) do
-    DrawLine(10, Y+Pet*YSkip, 790, Y+Pet*YSkip, 0, 0, 0);
+  for Count := 0 to Length(ATrack) do
+    DrawLine(10, Y+Count*YSkip, 790, Y+Count*YSkip, 0, 0, 0);
 
-  for Pet := 0 to High(ATrack) do begin
-    SetFontPos(11, Y + 10 + Pet*YSkip);
+  for Count := 0 to High(ATrack) do begin
+    SetFontPos(11, Y + 10 + Count*YSkip);
     SetFontSize(15);
-    glPrint(ATrack[Pet].Name);
+    glPrint(ATrack[Count].Name);
   end;
 
-  for Pet := 0 to High(ATrack) do
-    for Pet2 := 0 to High(ATrack[Pet].Note) do begin
-      if ATrack[Pet].Note[Pet2].EventType = 9 then
-        DrawQuad(60 + ATrack[Pet].Note[Pet2].Start/Len * 725, Y + (Pet+1)*YSkip - ATrack[Pet].Note[Pet2].Data1*35/127, 3, 3, ColR[Pet], ColG[Pet], ColB[Pet]);
-      if ATrack[Pet].Note[Pet2].EventType = 15 then
-        DrawLine(60 + ATrack[Pet].Note[Pet2].Start/Len * 725, Y + 0.75 * YSkip + Pet*YSkip, 60 + ATrack[Pet].Note[Pet2].Start/Len * 725, Y + YSkip + Pet*YSkip, ColR[Pet], ColG[Pet], ColB[Pet]);
+  for Count := 0 to High(ATrack) do
+    for Count2 := 0 to High(ATrack[Count].Note) do begin
+      if ATrack[Count].Note[Count2].EventType = 9 then
+        DrawQuad(60 + ATrack[Count].Note[Count2].Start/Len * 725, Y + (Count+1)*YSkip - ATrack[Count].Note[Count2].Data1*35/127, 3, 3, ColR[Count], ColG[Count], ColB[Count]);
+      if ATrack[Count].Note[Count2].EventType = 15 then
+        DrawLine(60 + ATrack[Count].Note[Count2].Start/Len * 725, Y + 0.75 * YSkip + Count*YSkip, 60 + ATrack[Count].Note[Count2].Start/Len * 725, Y + YSkip + Count*YSkip, ColR[Count], ColG[Count], ColB[Count]);
     end;
 
   // playing line

@@ -94,8 +94,8 @@ function TScreenWelcome.Draw: boolean;
 var
   Min:    real;
   Max:    real;
-  Wsp:    real;
-  Pet:    integer;
+  Factor:    real;
+  Count:    integer;
 begin
   // star animation
   Animation := Animation + TimeSkip*1000;
@@ -108,34 +108,34 @@ begin
   // popup
   Min := 1000; Max := 1120;
   if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
+    Factor := (Animation - Min) / (Max - Min);
     Static[0].Texture.X := 600;
-    Static[0].Texture.Y := 600 - Wsp * 230;
+    Static[0].Texture.Y := 600 - Factor * 230;
     Static[0].Texture.W := 200;
-    Static[0].Texture.H := Wsp * 230;
+    Static[0].Texture.H := Factor * 230;
   end;
 
   // bounce
   Min := 1120; Max := 1200;
   if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
-    Static[0].Texture.Y := 370 + Wsp * 50;
-    Static[0].Texture.H := 230 - Wsp * 50;
+    Factor := (Animation - Min) / (Max - Min);
+    Static[0].Texture.Y := 370 + Factor * 50;
+    Static[0].Texture.H := 230 - Factor * 50;
   end;
 
   // run
   Min := 1500; Max := 3500;
   if (Animation >= Min) and (Animation < Max) then begin
-    Wsp := (Animation - Min) / (Max - Min);
+    Factor := (Animation - Min) / (Max - Min);
 
-    Static[0].Texture.X := 600 - Wsp * 1400;
+    Static[0].Texture.X := 600 - Factor * 1400;
     Static[0].Texture.H := 180;
 
 
-    for Pet := 1 to 5 do begin
-      Static[Pet].Texture.X := 770 - Wsp * 1400;
-      Static[Pet].Texture.W := 150 + Wsp * 200;
-      Static[Pet].Texture.Alpha := Wsp * 0.5;
+    for Count := 1 to 5 do begin
+      Static[Count].Texture.X := 770 - Factor * 1400;
+      Static[Count].Texture.W := 150 + Factor * 200;
+      Static[Count].Texture.Alpha := Factor * 0.5;
     end;
   end;
 

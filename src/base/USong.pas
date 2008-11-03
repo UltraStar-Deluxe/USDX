@@ -985,7 +985,7 @@ begin
 
   If (Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote  <> -1) then
   begin //Update old Sentence if it has notes and create a new sentence
-    // stara czesc //Alter Satz //Update Old Part
+    // Update old part
     Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := Base[LineNumberP];
     Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric);
 
@@ -1002,7 +1002,7 @@ begin
     //Total Notes Patch End
 
 
-    // nowa czesc //Neuer Satz //Update New Part
+    // Update new part
     SetLength(Lines[LineNumberP].Line, Lines[LineNumberP].Number + 1);
     Lines[LineNumberP].High := Lines[LineNumberP].High + 1;
     Lines[LineNumberP].Number := Lines[LineNumberP].Number + 1;

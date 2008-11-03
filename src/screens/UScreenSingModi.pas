@@ -180,7 +180,7 @@ begin
       Result.Sentence[I].Note[J].Start     := Lines.Line[I].Note[J].Start;
       Result.Sentence[I].Note[J].Length    := Lines.Line[I].Note[J].Length;
       Result.Sentence[I].Note[J].Tone      := Lines.Line[I].Note[J].Tone;
-      //Result.Sentence[I].Note[J].Text      := Lines.Line[I].Note[J].Tekst;
+      //Result.Sentence[I].Note[J].Text      := Lines.Line[I].Note[J].Text;
       Result.Sentence[I].Note[J].FreeStyle := (Lines.Line[I].Note[J].NoteType = ntFreestyle);
     end;
   end;
@@ -299,7 +299,7 @@ function TScreenSingModi.Draw: boolean;
 var
   Min:    integer;
   Sec:    integer;
-  Tekst:  string;
+  TextStr:  string;
   S, I:   integer;
   T:      integer;
   CurLyricsTime: real;
@@ -445,82 +445,82 @@ begin
 
     // .. and scores
     {if PlayersPlay = 1 then begin
-      Tekst := IntToStr(Player[0].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP1Score].Text := Tekst;
+      TextStr := IntToStr(Player[0].ScoreTotalI);
+      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+      Text[TextP1Score].Text := TextStr;
     end;
 
     if PlayersPlay = 2 then begin
-      Tekst := IntToStr(Player[0].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP1TwoPScore].Text := Tekst;
+      TextStr := IntToStr(Player[0].ScoreTotalI);
+      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+      Text[TextP1TwoPScore].Text := TextStr;
 
-      Tekst := IntToStr(Player[1].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP2RScore].Text := Tekst;
+      TextStr := IntToStr(Player[1].ScoreTotalI);
+      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+      Text[TextP2RScore].Text := TextStr;
     end;
 
     if PlayersPlay = 3 then begin
-      Tekst := IntToStr(Player[0].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP1ThreePScore].Text := Tekst;
+      TextStr := IntToStr(Player[0].ScoreTotalI);
+      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+      Text[TextP1ThreePScore].Text := TextStr;
 
-      Tekst := IntToStr(Player[1].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP2MScore].Text := Tekst;
+      TextStr := IntToStr(Player[1].ScoreTotalI);
+      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+      Text[TextP2MScore].Text := TextStr;
 
-      Tekst := IntToStr(Player[2].ScoreTotalI);
-      while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-      Text[TextP3RScore].Text := Tekst;
+      TextStr := IntToStr(Player[2].ScoreTotalI);
+      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+      Text[TextP3RScore].Text := TextStr;
     end;
 
     if PlayersPlay = 4 then begin
       if ScreenAct = 1 then begin
-        Tekst := IntToStr(Player[0].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP1TwoPScore].Text := Tekst;
+        TextStr := IntToStr(Player[0].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP1TwoPScore].Text := TextStr;
 
-        Tekst := IntToStr(Player[1].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP2RScore].Text := Tekst;
+        TextStr := IntToStr(Player[1].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP2RScore].Text := TextStr;
       end;
       if ScreenAct = 2 then begin
-        Tekst := IntToStr(Player[2].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP1TwoPScore].Text := Tekst;
+        TextStr := IntToStr(Player[2].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP1TwoPScore].Text := TextStr;
 
-        Tekst := IntToStr(Player[3].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP2RScore].Text := Tekst;
+        TextStr := IntToStr(Player[3].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP2RScore].Text := TextStr;
       end;
     end;
 
     if PlayersPlay = 6 then begin
       if ScreenAct = 1 then begin
-        Tekst := IntToStr(Player[0].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP1ThreePScore].Text := Tekst;
+        TextStr := IntToStr(Player[0].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP1ThreePScore].Text := TextStr;
 
-        Tekst := IntToStr(Player[1].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP2MScore].Text := Tekst;
+        TextStr := IntToStr(Player[1].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP2MScore].Text := TextStr;
 
-        Tekst := IntToStr(Player[2].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP3RScore].Text := Tekst;
+        TextStr := IntToStr(Player[2].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP3RScore].Text := TextStr;
       end;
       if ScreenAct = 2 then begin
-        Tekst := IntToStr(Player[3].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP1ThreePScore].Text := Tekst;
+        TextStr := IntToStr(Player[3].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP1ThreePScore].Text := TextStr;
 
-        Tekst := IntToStr(Player[4].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP2MScore].Text := Tekst;
+        TextStr := IntToStr(Player[4].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP2MScore].Text := TextStr;
 
-        Tekst := IntToStr(Player[5].ScoreTotalI);
-        while Length(Tekst) < 5 do Tekst := '0' + Tekst;
-        Text[TextP3RScore].Text := Tekst;
+        TextStr := IntToStr(Player[5].ScoreTotalI);
+        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
+        Text[TextP3RScore].Text := TextStr;
       end;
     end;   }
 
@@ -553,9 +553,7 @@ begin
   if (DllMan.Selected.LoadSong) AND (DllMan.Selected.LoadBack) then
     SingDrawBackground;
 
-  // comment by blindy: wo zum henker wird denn in diesem screen ein video abgespielt?
   // update and draw movie
-  // <mog> wie wo wadd? also in der selben funktion in der uscreensing kommt des video in der zeile 995, oder was wollteste wissen? :X
 {  if ShowFinish and CurrentSong.VideoLoaded AND DllMan.Selected.LoadVideo then begin
     UpdateSmpeg; // this only draws
   end;}

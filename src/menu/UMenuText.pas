@@ -82,8 +82,8 @@ type
 
       procedure Draw;
       constructor Create; overload;
-      constructor Create(X, Y: real; Tekst: string); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real); overload;
+      constructor Create(X, Y: real; Text: string); overload;
+      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParText: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real); overload;
   end;
 
 implementation
@@ -346,12 +346,12 @@ begin
   Create(0, 0, '');
 end;
 
-constructor TText.Create(X, Y: real; Tekst: string);
+constructor TText.Create(X, Y: real; Text: string);
 begin
-  Create(X, Y, 0, 0, 30, 0, 0, 0, 0, Tekst, false, 0, 0);
+  Create(X, Y, 0, 0, 30, 0, 0, 0, 0, Text, false, 0, 0);
 end;
 
-constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParTekst: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ:real);
+constructor TText.Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParText: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ:real);
 begin
   inherited Create;
   Alpha := 1;
@@ -361,7 +361,7 @@ begin
   Z := ParZ;
   Style := ParStyle;
   Size := ParSize;
-  Text := ParTekst;
+  Text := ParText;
   ColR := ParColR;
   ColG := ParColG;
   ColB := ParColB;

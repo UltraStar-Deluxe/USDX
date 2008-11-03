@@ -81,9 +81,6 @@ var
   TickOld: cardinal;
   TickOld2:cardinal;
 
-const
-  Przedz = 32;
-
 implementation
 
 uses
@@ -307,8 +304,8 @@ begin
           end //Else all Notes same Color
           else
             glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
-                                          // Czesci == teil, element == piece, element | koniec == end / ending
-          // lewa czesc  -  left part
+
+          // left part
           Rec.Left := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW;
           Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH;
@@ -327,7 +324,7 @@ begin
 
          // middle part
         Rec.Left := Rec.Right;
-        Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;    // Dlugosc == length
+        Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
 
         glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
@@ -428,7 +425,7 @@ begin
         Rec.Left := Rec.Right;
         Rec.Right := X + (Start+Length-Lines[0].Line[Lines[0].Current].Note[0].Start) * TempR - NotesW - 0.5  + 10*ScreenX;
 
-        // (nowe) - dunno
+        // new
         if (Start+Length-1 = LyricsState.CurrentBeatD) then
           Rec.Right := Rec.Right - (1-Frac(LyricsState.MidBeatD)) * TempR;
         // the left note is more right than the right note itself, sounds weird - so we fix that xD
@@ -527,10 +524,10 @@ begin
             W := NotesW * 2 + 2;
             H := NotesH * 1.5 + 3.5;
 
-            X2 := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX + 4; // wciecie
+            X2 := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX + 4;
             X1 := X2-W;
 
-            X3 := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - 0.5 + 10*ScreenX - 4; // wciecie
+            X3 := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - 0.5 + 10*ScreenX - 4;
             X4 := X3+W;
 
             // left
@@ -547,7 +544,7 @@ begin
               glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
             glEnd;
 
-            // srodkowa czesc
+            // middle part
             Rec.Left := X2;
             Rec.Right := X3;
 
@@ -559,7 +556,7 @@ begin
               glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
             glEnd;
 
-            // prawa czesc
+            // right part
             Rec.Left := X3;
             Rec.Right := X4;
 
@@ -1276,7 +1273,7 @@ begin
 
 
 
-          // lewa czesc  -  left part
+          // left part
           Rec.Left := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW;
           Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH;
@@ -1289,7 +1286,7 @@ begin
             glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
           glEnd;
 
-         // srodkowa czesc  -  middle part
+         // middle part
         Rec.Left := Rec.Right;
         Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
 
@@ -1301,7 +1298,7 @@ begin
           glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
 
-        // prawa czesc  -  right part
+        // right part
         Rec.Left := Rec.Right;
         Rec.Right := Rec.Right + NotesW;
 

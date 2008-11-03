@@ -78,7 +78,7 @@ constructor TSkin.Create;
 begin
   inherited;
   LoadList;
-//  LoadSkin('Lisek');
+//  LoadSkin('...');
 //  SkinColor := Color;
 end;
 
