@@ -1,9 +1,10 @@
 library Hold_The_Line;
 
 uses
-  ModiSDK in '..\SDK\ModiSDK.pas',
+  ModiSDK  in '..\SDK\ModiSDK.pas',
   StrUtils in '..\SDK\StrUtils.pas',
-  OpenGL12,
+  moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
+  gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas',
   Windows;
 
 var
@@ -83,8 +84,6 @@ begin
     PlayerInfo.Playerinfo[I].Percentage := 100;
     PlayerTimes[I] := 0;
   end;
-
-  LoadOpenGL;
 
   Result := True;
 end;

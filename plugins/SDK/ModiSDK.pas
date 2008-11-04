@@ -6,8 +6,6 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-{$I switches.inc}
-
 type  //PluginInfo, for Init
   TPluginInfo = record
     //Info

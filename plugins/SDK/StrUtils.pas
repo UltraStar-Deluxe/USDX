@@ -2,7 +2,9 @@ unit StrUtils;
 
 interface
 
-{$I switches.inc}
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
 
 uses ModiSDK;
 
@@ -11,6 +13,10 @@ function CreateStr(Str: PChar): PChar;
 procedure FreeStr(Str: PChar);
 
 implementation
+
+{$IFDEF FPC}
+  {$ASMMODE Intel}
+{$ENDIF}
 
 {function StrToAChar(Str: String): AChar;
 var
