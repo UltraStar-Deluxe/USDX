@@ -1,5 +1,9 @@
 library TeamDuell ;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
   ModiSDK      in '..\SDK\ModiSDK.pas',
   StrUtils     in '..\SDK\StrUtils.pas',

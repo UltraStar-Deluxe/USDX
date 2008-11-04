@@ -1,5 +1,9 @@
 library Duell;
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 uses
   ModiSDK in '..\SDK\ModiSDK.pas';
 
