@@ -4,8 +4,6 @@ library Until5000;
   {$MODE Delphi}
 {$ENDIF}
 
-{$I ../../Game/Code/switches.inc}
-
 uses
   ModiSDK in '..\SDK\ModiSDK.pas';
 
@@ -90,7 +88,10 @@ for I := 0 to PlayerInfo.NumPlayers-1 do
 end;
 
 exports
-PluginInfo, Init, Draw, Finish;
+  PluginInfo,
+  Init,
+  Draw,
+  Finish;
 
 begin
 

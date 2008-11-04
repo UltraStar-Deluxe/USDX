@@ -3,9 +3,9 @@ library Hold_The_Line;
 uses
   ModiSDK  in '..\SDK\ModiSDK.pas',
   StrUtils in '..\SDK\StrUtils.pas',
+  sdl          in '..\..\src\lib\JEDI-SDL\SDL\Pas\sdl.pas',
   moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
-  gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas',
-  Windows;
+  gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas';
 
 var
   PointerTex: TSmallTexture;
@@ -101,7 +101,7 @@ begin
   //Aktivate Blink
   If (CurSentence = CountSentences div 5 * 2 - 1) OR (CurSentence = CountSentences div 3 * 2 - 1) then
   begin
-    Tick := Gettickcount div 400;
+    Tick := SDL_GetTicks() div 400;
     If (Tick <> LastTick) then
     begin
       LastTick := Tick;

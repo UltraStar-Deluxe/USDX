@@ -95,7 +95,10 @@ begin
 end;
 
 exports
-PluginInfo, Init, Draw, Finish;
+  PluginInfo,
+  Init,
+  Draw,
+  Finish;
 
 begin
 
