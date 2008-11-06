@@ -34,52 +34,69 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  SysUtils,
+  UThemes;
 
 type
   TScreenPartyOptions = class(TMenu)
     public
-      SelectLevel: Cardinal;
-      SelectPlayList: Cardinal;
-      SelectPlayList2: Cardinal;
-      SelectRounds: Cardinal;
-      SelectTeams: Cardinal;
-      SelectPlayers1: Cardinal;
-      SelectPlayers2: Cardinal;
-      SelectPlayers3: Cardinal;
+      SelectLevel:     cardinal;
+      SelectPlayList:  cardinal;
+      SelectPlayList2: cardinal;
+      SelectRounds:    cardinal;
+      SelectTeams:     cardinal;
+      SelectPlayers1:  cardinal;
+      SelectPlayers2:  cardinal;
+      SelectPlayers3:  cardinal;
 
-      PlayList:  Integer;
-      PlayList2: Integer;
-      Rounds:    Integer;
-      NumTeams:  Integer;
-      NumPlayer1, NumPlayer2, NumPlayer3: Integer;
-      
+      PlayList:  integer;
+      PlayList2: integer;
+      Rounds:    integer;
+      NumTeams:  integer;
+      NumPlayer1, NumPlayer2, NumPlayer3: integer;
+
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
       procedure SetPlaylist2;
   end;
 
 var
-  IPlaylist: array[0..2] of String;
-  IPlaylist2: array of String;
-const
-  ITeams: array[0..1] of String =('2', '3');
-  IPlayers: array[0..3] of String =('1', '2', '3', '4');
-  IRounds: array[0..5] of String = ('2', '3', '4', '5', '6', '7');
+  IPlaylist: array[0..2] of string;
+  IPlaylist2: array of string;
+
+  const
+  ITeams:   array[0..1] of string = ('2', '3');
+  IPlayers: array[0..3] of string = ('1', '2', '3', '4');
+  IRounds:  array[0..5] of string = ('2', '3', '4', '5', '6', '7');
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USong, UDLLManager, UPlaylist, USongs;
+uses
+  UGraphic,
+  UMain,
+  UIni,
+  UTexture,
+  ULanguage,
+  UParty,
+  USong,
+  UDLLManager,
+  UPlaylist,
+  USongs;
 
-function TScreenPartyOptions.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
-  var
-    I, J: Integer;
-    OnlyMultiPlayer: boolean;
+function TScreenPartyOptions.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+var
+  I, J: integer;
+  OnlyMultiPlayer: boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -102,14 +119,16 @@ begin
       SDLK_RETURN:
         begin
           //Don'T start when Playlist is Selected and there are no Playlists
-          If (Playlist = 2) and (Length(PlaylistMan.Playlists) = 0) then
+          if (Playlist = 2) and (Length(PlaylistMan.Playlists) = 0) then
             Exit;
           // Don't start when SinglePlayer Teams but only Multiplayer Plugins available
-          OnlyMultiPlayer:=true;
-          for I := 0 to High(DLLMan.Plugins) do begin
-            OnlyMultiPlayer := (OnlyMultiPlayer AND DLLMan.Plugins[I].TeamModeOnly);
+          OnlyMultiPlayer := true;
+          for I := 0 to High(DLLMan.Plugins) do
+	  begin
+            OnlyMultiPlayer := (OnlyMultiPlayer and DLLMan.Plugins[I].TeamModeOnly);
           end;
-          if (OnlyMultiPlayer) AND ((NumPlayer1 = 0) OR (NumPlayer2 = 0) OR ((NumPlayer3 = 0) AND (NumTeams = 1))) then begin
+          if (OnlyMultiPlayer) and ((NumPlayer1 = 0) or (NumPlayer2 = 0) or ((NumPlayer3 = 0) and (NumTeams = 1))) then
+	  begin
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_PLUGINS'));
             Exit;
           end;
@@ -126,12 +145,12 @@ begin
 
           //Save Playlist
           PlaylistMan.Mode := TSingMode( Playlist );
-          PlaylistMan.CurPlayList := High(Cardinal);
-          //If Category Selected Search Category ID
+          PlaylistMan.CurPlayList := High(cardinal);
+          //if Category Selected Search Category ID
           if Playlist = 1 then
           begin
             J := -1;
-            For I := 0 to high(CatSongs.Song) do
+            for I := 0 to high(CatSongs.Song) do
             begin
               if CatSongs.Song[I].Main then
                 Inc(J);
@@ -144,7 +163,7 @@ begin
             end;
 
             //No Categorys or Invalid Entry
-            If PlaylistMan.CurPlayList = High(Cardinal) then
+            if PlaylistMan.CurPlayList = High(cardinal) then
               Exit;
           end
           else
@@ -170,11 +189,11 @@ begin
           InteractInc;
 
           //Change Playlist2 if Playlist is Changed
-          If (Interaction = 1) then
+          if (Interaction = 1) then
           begin
             SetPlaylist2;
           end //Change Team3 Players visibility
-          Else If (Interaction = 4) then
+          else if (Interaction = 4) then
           begin
               SelectsS[7].Visible := (NumTeams = 1);
           end;
@@ -185,11 +204,11 @@ begin
           InteractDec;
 
           //Change Playlist2 if Playlist is Changed
-          If (Interaction = 1) then
+          if (Interaction = 1) then
           begin
             SetPlaylist2;
           end //Change Team3 Players visibility
-          Else If (Interaction = 4) then
+          else if (Interaction = 4) then
           begin
             SelectsS[7].Visible := (NumTeams = 1);
           end;
@@ -222,25 +241,25 @@ begin
   //Load Screen From Theme
   LoadFromTheme(Theme.PartyOptions);
 
-  SelectLevel := AddSelectSlide (Theme.PartyOptions.SelectLevel, Ini.Difficulty, Theme.ILevel);
-  SelectPlayList := AddSelectSlide (Theme.PartyOptions.SelectPlayList, PlayList, IPlaylist);
+  SelectLevel     := AddSelectSlide (Theme.PartyOptions.SelectLevel, Ini.Difficulty, Theme.ILevel);
+  SelectPlayList  := AddSelectSlide (Theme.PartyOptions.SelectPlayList, PlayList, IPlaylist);
   SelectPlayList2 := AddSelectSlide (Theme.PartyOptions.SelectPlayList2, PlayList2, IPlaylist2);
-  SelectRounds := AddSelectSlide (Theme.PartyOptions.SelectRounds, Rounds, IRounds);
-  SelectTeams := AddSelectSlide (Theme.PartyOptions.SelectTeams, NumTeams, ITeams);
-  SelectPlayers1 := AddSelectSlide (Theme.PartyOptions.SelectPlayers1, NumPlayer1, IPlayers);
-  SelectPlayers2 := AddSelectSlide (Theme.PartyOptions.SelectPlayers2, NumPlayer2, IPlayers);
-  SelectPlayers3 := AddSelectSlide (Theme.PartyOptions.SelectPlayers3, NumPlayer3, IPlayers);
+  SelectRounds    := AddSelectSlide (Theme.PartyOptions.SelectRounds, Rounds, IRounds);
+  SelectTeams     := AddSelectSlide (Theme.PartyOptions.SelectTeams, NumTeams, ITeams);
+  SelectPlayers1  := AddSelectSlide (Theme.PartyOptions.SelectPlayers1, NumPlayer1, IPlayers);
+  SelectPlayers2  := AddSelectSlide (Theme.PartyOptions.SelectPlayers2, NumPlayer2, IPlayers);
+  SelectPlayers3  := AddSelectSlide (Theme.PartyOptions.SelectPlayers3, NumPlayer3, IPlayers);
 
   Interaction := 0;
 
   //Hide Team3 Players
-  SelectsS[7].Visible := False;
+  SelectsS[7].Visible := false;
 end;
 
 procedure TScreenPartyOptions.SetPlaylist2;
-var I: Integer;
+var I: integer;
 begin
-  Case Playlist of
+  case Playlist of
     0:
       begin
         SetLength(IPlaylist2, 1);
@@ -249,16 +268,16 @@ begin
     1:
       begin
         SetLength(IPlaylist2, 0);
-        For I := 0 to high(CatSongs.Song) do
+        for I := 0 to high(CatSongs.Song) do
         begin
-          If (CatSongs.Song[I].Main) then
+          if (CatSongs.Song[I].Main) then
           begin
             SetLength(IPlaylist2, Length(IPlaylist2) + 1);
             IPlaylist2[high(IPlaylist2)] := CatSongs.Song[I].Artist;
           end;
         end;
 
-        If (Length(IPlaylist2) = 0) then
+        if (Length(IPlaylist2) = 0) then
         begin
           SetLength(IPlaylist2, 1);
           IPlaylist2[0] := 'No Categories found';
