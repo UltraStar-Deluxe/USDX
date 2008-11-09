@@ -212,7 +212,7 @@ begin
   Result := 0;
   Font := @Fonts[ActFont];
 
-  for i := 0 to Length(text) -1 do
+  for i := 1 to Length(text) do
   begin
     Letter := Text[i];
     Result := Result + Font.Width[Ord(Letter)] * Font.Tex.H / 30 * Font.AspectW;
