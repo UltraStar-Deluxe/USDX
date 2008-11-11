@@ -131,7 +131,7 @@ const
 {$IFDEF DARWIN}
   GLLibName = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib';
 {$ELSE}
-  GLLibName = 'libGL.so';
+  GLLibName = 'libGL.so.1';
 {$ENDIF}
 {$ENDIF}
 

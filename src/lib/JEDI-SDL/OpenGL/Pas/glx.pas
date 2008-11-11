@@ -266,8 +266,7 @@ end;
 
 function InitGLX: Boolean;
 begin
-  Result := InitGLXFromLibrary('libGL.so') or
-            InitGLXFromLibrary('libGL.so.1') or
+  Result := InitGLXFromLibrary('libGL.so.1') or
             InitGLXFromLibrary('libMesaGL.so') or
             InitGLXFromLibrary('libMesaGL.so.3');
 end;

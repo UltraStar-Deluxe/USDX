@@ -140,7 +140,7 @@ const
 {$IFDEF DARWIN}
   GLuLibName   = '/System/Library/Frameworks/OpenGL.framework/Libraries/libGLU.dylib';
 {$ELSE}
-  GLuLibName   = 'libGLU.so';
+  GLuLibName   = 'libGLU.so.1';
 {$ENDIF}
 {$ENDIF}
 
