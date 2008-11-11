@@ -310,6 +310,7 @@
 {$IFDEF Delphi}
   {$DEFINE Windows}
   {$DEFINE USE_STDCALL}
+  {$MINENUMSIZE 4}
   //{$ALIGN ON}
 {$ENDIF Delphi}
 
@@ -317,6 +318,7 @@
   {$MODE Delphi}          { use Delphi compatibility mode }
   {$H+}
   {$PACKRECORDS C}        // Added for record
+  {$PACKENUM 4}           // Use 4-byte enums
   {$MACRO ON}             // Added For OpenGL
   {$DEFINE Delphi}
   {$DEFINE UseAT}

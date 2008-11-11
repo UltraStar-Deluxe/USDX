@@ -3628,7 +3628,7 @@ cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_SetCaption'{$ELSE} SDL
   This function must be called before the first call to SDL_SetVideoMode().
   It takes an icon surface, and a mask in MSB format.
   If 'mask' is NULL, the entire icon surface will be used as the icon. }
-procedure SDL_WM_SetIcon(icon: PSDL_Surface; mask: UInt8);
+procedure SDL_WM_SetIcon(icon: PSDL_Surface; mask: PUInt8);
 cdecl; external {$IFNDEF NDS}{$IFDEF __GPC__}name 'SDL_WM_SetIcon'{$ELSE} SDLLibName{$ENDIF __GPC__}{$ENDIF};
 {$EXTERNALSYM SDL_WM_SetIcon}
 
