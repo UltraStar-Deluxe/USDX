@@ -182,7 +182,7 @@ Makefile: $(srcdir)/Makefile.in $(USDX_SRC_DIR)/Makefile.in $(USDX_SRC_DIR)/conf
 config.status: configure
 	./config.status --recheck
 
-.PHONE: reconf
+.PHONY: reconf
 reconf:
 	./autogen.sh
 
