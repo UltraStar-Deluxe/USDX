@@ -35,7 +35,6 @@ program ultrastardx;
 
 {$I switches.inc}
 
-// TODO: check if this is needed for MacOSX too
 {$IFDEF MSWINDOWS}
   // Set global application-type (GUI/CONSOLE) switch for Windows.
   // CONSOLE is the default for FPC, GUI for Delphi, so we have
