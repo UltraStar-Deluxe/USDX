@@ -47,19 +47,21 @@ type
    * (Note for non-Maccies: "folder" is the Mac name for directory.)
    *
    * Note on the resource folders:
-   *  1. Installation of an application on the mac works as follows: Extract and copy an application
-   *     and if you don't like or need the application anymore you move the folder
-   *     to the trash - and you're done.
-   *  2. The use folders in the user's home directory is against Apple's guidelines
-   *     and strange to an average user.
+   *  1. Installation of an application on the mac works as follows: Extract and
+   *     copy an application and if you don't like or need the application
+   *     anymore you move the folder to the trash - and you're done.
+   *  2. The use of folders in the user's home directory is against Apple's
+   *     guidelines and strange to an average user.
    *  3. Even worse is using /usr/local/... since all lowercase folders in / are
-   *     not visible to an average user in the Finder, at least not without some "tricks".
+   *     not visible to an average user in the Finder, at least not without some
+   *     "tricks".
    *
-   * The best way would be to store everything within the application bundle. However, this
-   * requires USDX to offer the handling of the resources. Until this is implemented, the
-   * second best solution is as follows:
+   * The best way would be to store everything within the application bundle.
+   * However, this requires USDX to offer the handling of the resources. Until
+   * this is implemented, the second best solution is as follows:
    *
-   * According to Aple guidelines handling of resources and folders should follow these lines:
+   * According to Aple guidelines handling of resources and folders should follow
+   * these lines:
    *
    * Acceptable places for files are folders named UltraStarDeluxe either in
    *   /Library/Application Support/
@@ -75,8 +77,8 @@ type
    * Right now, only $HOME/Library/Application Support/UltraStarDeluxe/Resources
    * is used. So every user needs the complete set of files and folders.
    * Future versions may also use shared resources in
-   * /Library/Application Support/UltraStarDeluxe/Resources. However, this is not
-   * treated yet in the code outside this unit.
+   * /Library/Application Support/UltraStarDeluxe/Resources. However, this is
+   * not treated yet in the code outside this unit.
    *
    * USDX checks, whether GetGameUserPath exists. If not, USDX creates it.
    * The existence of needed files is then checked and if a file is missing
@@ -88,7 +90,8 @@ type
   TPlatformMacOSX = class(TPlatform)
     private
       {**
-       * GetBundlePath returns the path to the application bundle UltraStarDeluxe.app.
+       * GetBundlePath returns the path to the application bundle
+       * UltraStarDeluxe.app.
        *}
       function GetBundlePath: WideString;
 
@@ -102,19 +105,19 @@ type
        * see the description of @link(Init).
        *}
       procedure CreateUserFolders();
-      
+
     public
       {**
-       * Init simply calls @link(CreateUserFolders), which in turn scans the folder
-       * UltraStarDeluxe.app/Contents/Resources for all files and folders.
-       * $HOME/Library/Application Support/UltraStarDeluxe/Resources is then checked
-       * for their presence and missing ones are copied.
+       * Init simply calls @link(CreateUserFolders), which in turn scans the
+       * folder UltraStarDeluxe.app/Contents/Resources for all files and
+       * folders. $HOME/Library/Application Support/UltraStarDeluxe/Resources
+       * is then checked for their presence and missing ones are copied.
        *}
       procedure Init; override;
 
       {**
-       * DirectoryFindFiles returns all entries of a folder with names and booleans
-       * about their type, i.e. file or directory.
+       * DirectoryFindFiles returns all entries of a folder with names and
+       * booleans about their type, i.e. file or directory.
        *}
       function  DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: boolean): TDirectoryEntryArray; override;
 
@@ -125,15 +128,15 @@ type
       function  GetLogPath        : WideString; override;
 
       {**
-       * GetGameSharedPath returns the path for shared resources. Currently it is set to
-       * /Library/Application Support/UltraStarDeluxe/Resources.
+       * GetGameSharedPath returns the path for shared resources. Currently it
+       * is set to /Library/Application Support/UltraStarDeluxe/Resources.
        * However it is not used.
        *}
       function  GetGameSharedPath : WideString; override;
 
       {**
-       * GetGameUserPath returns the path for user resources. Currently it is set to
-       * $HOME/Library/Application Support/UltraStarDeluxe/Resources.
+       * GetGameUserPath returns the path for user resources. Currently it is
+       * set to $HOME/Library/Application Support/UltraStarDeluxe/Resources.
        * This is where a user can add songs, themes, ....
        *}
       function  GetGameUserPath   : WideString; override;
@@ -192,7 +195,7 @@ begin
   DirectoryList := TStringList.Create();
   FileList := TStringList.Create();
   DirectoryList.Add('.');
-  
+
   // create the folder and file lists
   repeat
 
@@ -203,7 +206,7 @@ begin
       repeat
         if DirectoryExists(SearchInfo.Name) then
         begin
-          if (SearchInfo.Name <> '.') and (SearchInfo.Name <> '..')  then
+          if (SearchInfo.Name <> '.') and (SearchInfo.Name <> '..') then
             DirectoryList.Add(RelativePath + '/' + SearchInfo.Name);
         end
         else
@@ -241,8 +244,7 @@ var
   i, pos : integer;
 begin
   // Mac applications are packaged in folders.
-  // We have to cut the last two folders
-  // to get the application folder.
+  // Cutting the last two folders yields the application folder.
 
   Result := GetExecutionDir();
   for i := 1 to 2 do
@@ -287,7 +289,7 @@ begin
   i := 0;
   Filter := LowerCase(Filter);
 
-  TheDir := FPOpenDir(Dir);     
+  TheDir := FPOpenDir(Dir);
   if Assigned(TheDir) then
     repeat
       ADirent := FPReadDir(TheDir);
