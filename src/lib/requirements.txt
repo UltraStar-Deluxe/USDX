@@ -44,5 +44,5 @@ Install the FreePascal compiler (version 2.2.2 or later) using fink or a package
 
 Install these libs and their dependences using fink:
 
-		fink install pkgconfig ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libtheora0
-		fink install portaudio2 SDL SDL-image SDL-ttf libpng3 imlib2 sqlite3-dev
+		fink install pkgconfig libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+		fink install portaudio2 SDL SDL-image libpng3 sqlite3-dev
