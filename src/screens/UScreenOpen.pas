@@ -33,40 +33,61 @@ interface
 
 {$I switches.inc}
 
-uses UMenu, UMusic, SDL, SysUtils, UFiles, UTime, USongs, UIni, ULog, UTexture, UMenuText,
-  ULyrics, Math, gl, UThemes;
+uses
+  UMenu,
+  UMusic,
+  SDL,
+  SysUtils,
+  UFiles,
+  UTime,
+  USongs,
+  UIni,
+  ULog,
+  UTexture,
+  UMenuText,
+  ULyrics,
+  Math,
+  gl,
+  UThemes;
 
 type
   TScreenOpen = class(TMenu)
     private
-      TextF:    array[0..1] of integer;
-      TextN:    integer;
+      TextF:          array[0..1] of integer;
+      TextN:          integer;
     public
-      Tex_Background:     TTexture;
-      FadeOut:            boolean;
-      Path:               string;
-      BackScreen:         pointer;
+      Tex_Background: TTexture;
+      FadeOut:        boolean;
+      Path:           string;
+      BackScreen:     pointer;
       procedure AddBox(X, Y, W, H: real);
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
 //      function Draw: boolean; override;
 //      procedure Finish;
   end;
 
 implementation
-uses UGraphic, UDraw, UMain, USkins;
 
-function TScreenOpen.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+uses
+  UGraphic,
+  UDraw,
+  UMain,
+  USkins;
+
+function TScreenOpen.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
 
-  if (PressedDown) then begin // Key Down
+  if (PressedDown) then  // Key Down
+  begin
     // check normal keys
     case CharCode of
       '0'..'9', 'a'..'z', 'A'..'Z', ' ', '-', '.', ':', '\':
         begin
-          if Interaction = 0 then begin
+          if Interaction = 0 then
+	  begin
             Text[TextN].Text := Text[TextN].Text + CharCode;
           end;
         end;
@@ -80,24 +101,24 @@ begin
         end;
       8: // del
         begin
-            if Interaction = 0 then
-            begin
-              Text[TextN].DeleteLastL;
-            end;
+          if Interaction = 0 then
+          begin
+            Text[TextN].DeleteLastL;
+          end;
         end;
 
-
-      SDLK_ESCAPE :
+      SDLK_ESCAPE:
         begin
           //Empty Filename and go to last Screen
-            ConversionFileName := '';
-            AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(BackScreen);
+          ConversionFileName := '';
+          AudioPlayback.PlaySound(SoundLib.Back);
+          FadeTo(BackScreen);
         end;
 
       SDLK_RETURN:
         begin
-          if (Interaction = 2) then begin
+          if (Interaction = 2) then
+	  begin
             //Update Filename and go to last Screen
             ConversionFileName := Text[TextN].Text;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -172,7 +193,6 @@ begin
   AddButton(670, 540, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(30, 5, 0, 0, 0, 'OK');
 
-
 end;
 
 procedure TScreenOpen.onShow;
@@ -184,9 +204,9 @@ end;
 
 (*function TScreenEditSub.Draw: boolean;
 var
-  Min:    integer;
-  Sec:    integer;
-  AktBeat:  integer;
+  Min:     integer;
+  Sec:     integer;
+  AktBeat: integer;
 begin
 
 end;
@@ -197,4 +217,3 @@ begin
 end;*)
 
 end.
-
