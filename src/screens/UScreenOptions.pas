@@ -73,7 +73,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-//          Ini.Save;
+          Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
         end;
