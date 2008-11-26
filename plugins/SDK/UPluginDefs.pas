@@ -1,8 +1,8 @@
 unit uPluginDefs;
 {*********************
   uPluginDefs
-  Some Basic Structures and Functions used to communicate with Plugins
-  Usable as Delphi Plugin SDK
+  Some basic structures and functions used to communicate with plugins
+  Usable as Delphi plugin SDK
 *********************}
 
 interface
@@ -14,60 +14,60 @@ interface
 {$I switches.inc}
 
 type
-  DWORD = LongWord;
+  dword = LongWord;
 
   //Compatibility with 64 Bit Systems
   {$IFDEF CPU32}
-  TwParam = Integer;
-  TlParam = Pointer; //lParam is Used for 32 Bit addresses DWord is large enough
+  TwParam = integer;
+  TlParam = pointer; //lParam is used for 32 bit addresses. dword is large enough
   {$ELSE}
-  TwParam = Int64;
-  TlParam = Pointer; //lParam used for 64Bit addresses in 64 Bit Systems(FreePascal)
+  TwParam = int64;
+  TlParam = pointer; //lParam used for 64 bit addresses in 64 bit systems (FreePascal)
   {$ENDIF}
-  //wParam is mainly used for Ordninals
-  //lParam is mainly used for Pointers
+  //wParam is mainly used for ordinals
+  //lparam is mainly used for pointers
 
   //----------------
-  // TUS_PluginInfo - Some Infos from Plugin to Core.
-  // Send when Plugininfo procedure is Called
+  // TUS_PluginInfo - some infos from plugin to core.
+  // Send when Plugininfo procedure is called
   // ---
-  // Version Structure:
-  // First  Byte: Head Revison
-  // Second Byte: Sub Revison
-  // Third  Byte: Sub Revision 2
-  // Fourth Byte: Letter (For Bug Fix releases. 0 or 'a' .. 'z')
+  // Version structure:
+  // First  byte: Head Revison
+  // Second byte: Sub Revison
+  // Third  byte: Sub Revision 2
+  // Fourth byte: Letter (For Bug Fix releases. 0 or 'a' .. 'z')
   //----------------
   PUS_PluginInfo = ^TUS_PluginInfo;
   TUS_PluginInfo = record
-    cbSize:       Integer;    //Size of this record (usefull if record will be extended in the future)
+    cbSize:       integer;    //Size of this record (usefull if record will be extended in the future)
 
-    Name:         Array [0..31] of Char;      //Name of the Plugin
-    Version:      DWord;                      //Version of the Plugin
-    Description:  Array [0..127] of Char;     //Description, what does this Plugin do
-    Author:       Array [0..31] of Char;      //Author of this Plugin
-    AuthorEmail:  Array [0..63] of Char;      //Authors Email
-    Homepage:     Array [0..63] of Char;      //Homepage of Plugin/Author
+    Name:         array [0..31] of char;      //Name of the Plugin
+    Version:      dword;                      //Version of the Plugin
+    Description:  array [0..127] of char;     //Description, what does this Plugin do
+    Author:       array [0..31] of char;      //Author of this Plugin
+    AuthorEmail:  array [0..63] of char;      //Authors Email
+    Homepage:     array [0..63] of char;      //Homepage of Plugin/Author
   end;
-  AUS_PluginInfo = Array of TUS_PluginInfo;
+  AUS_PluginInfo = array of TUS_PluginInfo;
   PAUS_PluginInfo = ^AUS_PluginInfo;
 
   //----------------
-  // TUS_Hook - Structure of the Hook Function
+  // TUS_Hook - Structure of the Hook function
   // Return 0 if the Hook should be continue,
   // or a non zero Value, if the Hook should be Interuped
   // In this Case the Caller of the Notifier gets the Return Value
   // Return Value Should not be -1
   //----------------
-  TUS_Hook            = Function (wParam: TwParam; lParam: TlParam): integer; stdcall;
-  TUS_Hook_of_Object  = Function (wParam: TwParam; lParam: TlParam): integer of Object;
+  TUS_Hook            = function (wParam: TwParam; lParam: TlParam): integer; stdcall;
+  TUS_Hook_of_Object  = function (wParam: TwParam; lParam: TlParam): integer of Object;
 
   //----------------
-  // TUS_Service - Structure of the Service Function
-  // This Function is called if the Registered Service is Called
+  // TUS_Service - Structure of the Service function
+  // This function is called if the Registered Service is Called
   // Return Value Should not be SERVICE_NOT_FOUND
   //----------------
-  TUS_Service           = Function (wParam: TwParam; lParam: TlParam): integer; stdcall;
-  TUS_Service_of_Object = Function (wParam: TwParam; lParam: TlParam): integer of Object;
+  TUS_Service           = function (wParam: TwParam; lParam: TlParam): integer; stdcall;
+  TUS_Service_of_Object = function (wParam: TwParam; lParam: TlParam): integer of Object;
 
   //----------------
   // TUS_PluginInterface - Structure that Includes all Methods callable
@@ -78,45 +78,45 @@ type
     {******** Hook specific Methods ********}
     {Function Creates a new Hookable Event and Returns the Handle
      or 0 on Failure. (Name already exists)}
-    CreateHookableEvent: Function (EventName: PChar): THandle; stdcall;
+    CreateHookableEvent: function (EventName: PChar): THandle; stdcall;
 
     {Function Destroys an Event and Unhooks all Hooks to this Event.
      0 on success, not 0 on Failure}
-    DestroyHookableEvent: Function (hEvent: THandle): integer; stdcall;
+    DestroyHookableEvent: function (hEvent: THandle): integer; stdcall;
 
     {Function start calling the Hook Chain
      0 if Chain is called until the End, -1 if Event Handle is not valid
      otherwise Return Value of the Hook that breaks the Chain}
-    NotivyEventHooks: Function (hEvent: THandle; wParam: TwParam; lParam: TlParam): integer; stdcall;
+    NotivyEventHooks: function (hEvent: THandle; wParam: TwParam; lParam: TlParam): integer; stdcall;
 
     {Function Hooks an Event by Name.
      Returns Hook Handle on Success, otherwise 0}
-    HookEvent: Function (EventName: PChar; HookProc: TUS_Hook): THandle; stdcall;
+    HookEvent: function (EventName: PChar; HookProc: TUS_Hook): THandle; stdcall;
 
     {Function Removes the Hook from the Chain
      Returns 0 on Success}
-    UnHookEvent: Function (hHook: THandle): Integer; stdcall;
+    UnHookEvent: function (hHook: THandle): integer; stdcall;
 
     {Function Returns Non Zero if a Event with the given Name Exists,
      otherwise 0}
-    EventExists: Function (EventName: PChar): Integer; stdcall;
+    EventExists: function (EventName: PChar): integer; stdcall;
 
     {******** Service specific Methods ********}
     {Function Creates a new Service and Returns the Services Handle
      or 0 on Failure. (Name already exists)}
-    CreateService: Function (ServiceName: PChar; ServiceProc: TUS_Service): THandle; stdcall;
+    CreateService: function (ServiceName: PChar; ServiceProc: TUS_Service): THandle; stdcall;
 
     {Function Destroys a Service.
      0 on success, not 0 on Failure}
-    DestroyService: Function (hService: THandle): integer; stdcall;
+    DestroyService: function (hService: THandle): integer; stdcall;
 
     {Function Calls a Services Proc
      Returns Services Return Value or SERVICE_NOT_FOUND on Failure}
-    CallService: Function (ServiceName: PChar; wParam: TwParam; lParam: TlParam): integer; stdcall;
+    CallService: function (ServiceName: PChar; wParam: TwParam; lParam: TlParam): integer; stdcall;
 
     {Function Returns Non Zero if a Service with the given Name Exists,
      otherwise 0}
-    ServiceExists: Function (ServiceName: PChar): Integer; stdcall;
+    ServiceExists: function (ServiceName: PChar): integer; stdcall;
   end;
 
   //----------------
@@ -124,9 +124,9 @@ type
   //----------------
   PModuleInfo = ^TModuleInfo;
   TModuleInfo = record
-    Name:         String;
+    Name:         string;
     Version:      LongWord;
-    Description:  String;
+    Description:  string;
   end;
   AModuleInfo = array of TModuleInfo;
 
@@ -139,11 +139,11 @@ type
 
   //Called on Plugins Load. If Non Zero is Returned => abort Loading
   //PInterface is Pointer to PluginInterface
-  Func_Load = function (const PInterface: PUS_PluginInterface): Integer; stdcall;
+  Func_Load = function (const PInterface: PUS_PluginInterface): integer; stdcall;
 
   //Called on Plugins Init. If Non Zero is Returned => abort Loading
   //PInterface is Pointer to PluginInterface
-  Func_Init = function (const PInterface: PUS_PluginInterface): Integer; stdcall;
+  Func_Init = function (const PInterface: PUS_PluginInterface): integer; stdcall;
 
   //Called on Plugins Deinit.
   //PInterface is Pointer to PluginInterface
@@ -162,32 +162,30 @@ const
   CORE_SM_WARNING = 2;
   CORE_SM_INFO    = 3;
 
-
 //----------------
-// Some Functions to Handle Version DWords
+// Some functions to Handle Version dwords
 //----------------
-Function MakeVersion(const HeadRevision, SubVersion, SubVersion2: Byte; Letter: Char): DWord;
-Function VersiontoSting(const Version: DWord): String;
-
+function MakeVersion(const HeadRevision, SubVersion, SubVersion2: byte; Letter: char): dword;
+function VersionToString(const Version: dword): string;
 
 implementation
 
 //--------------
-// MakeVersion - Converts 4 Values to a valid Version DWord
+// MakeVersion - converts 4 values to a valid version dword
 //--------------
-Function MakeVersion(const HeadRevision, SubVersion, SubVersion2: Byte; Letter: Char): DWord;
+function MakeVersion(const HeadRevision, SubVersion, SubVersion2: byte; Letter: char): dword;
 begin
-  If (letter < 'a') or (Letter > 'z') then
+  if(letter < 'a') or (Letter > 'z') then
     letter := chr(0);
 
   Result := (HeadRevision shl 24) or (SubVersion shl 16) or (SubVersion2 shl 8) or Ord(Letter);
 end;
 
 //--------------
-// VersiontoString - Returns some beauty '1.0.2a' like String
+// VersiontoString - Returns some beauty '1.0.2a' like string
 //--------------
-Function VersiontoSting(const Version: DWord): String;
-begin // to-do : Write VersiontoString without SysUtils depencies
+function VersionToString(const Version: dword): string;
+begin // to-do : Write VersiontoString without SysUtils dependence
   //Result := InttoStr((ver and $FF000000) shr 24);
   Result := '1.0.1'
 end;

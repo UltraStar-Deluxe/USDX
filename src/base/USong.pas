@@ -74,7 +74,7 @@ type
   end;
 
   TSong = class
-    FileLineNo  : integer;  //Line which is readed at Last, for error reporting
+    FileLineNo  : integer;  // line, which is read last, for error reporting
 
     procedure ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: string);
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
@@ -281,15 +281,15 @@ begin
 
         //Check for ZeroNote
         if Param2 = 0 then
-	  Log.LogError('Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamS+'" -> Note ignored!')
-	else
+          Log.LogError('Found ZeroNote at "'+TempC+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamS+'" -> Note ignored!')
+        else
         begin
          // add notes
          if not Both then
            // P1
            ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS)
          else
-	 begin
+         begin
            // P1 + P2
            ParseNote(0, TempC, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
            ParseNote(1, TempC, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
@@ -302,14 +302,14 @@ begin
         // reads sentence
         Read(SongFile, Param1);
         if self.Relative then
-	  Read(SongFile, Param2); // read one more data for relative system
+          Read(SongFile, Param2); // read one more data for relative system
 
         // new sentence
         if not Both then
           // P1
           NewSentence(0, (Param1 + Rel[0]) * Mult, Param2)
         else
-	begin
+        begin
           // P1 + P2
           NewSentence(0, (Param1 + Rel[0]) * Mult, Param2);
           NewSentence(1, (Param1 + Rel[1]) * Mult, Param2);
@@ -338,7 +338,7 @@ begin
         begin
           if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType = ntGolden) then
             Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Length;
-          
+
           if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType <> ntFreestyle) then
             Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Length;
         end;
@@ -347,7 +347,7 @@ begin
       else
       begin
         for Count := 0 to High(Lines) do
-	begin
+        begin
           Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
           Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(Lines[Count].Line[Lines[Count].High].Lyric);
           //Total Notes Patch
@@ -362,7 +362,7 @@ begin
           //Total Notes Patch End
         end;
       end;
-      ReadLn(SongFile); //Jump to next line in File, otherwise the next Read would catch the linebreak(e.g. #13 #10 on win32) 
+      ReadLn(SongFile); //Jump to next line in File, otherwise the next Read would catch the linebreak(e.g. #13 #10 on win32)
 
       Read(SongFile, TempC);
       Inc(FileLineNo);
@@ -430,7 +430,7 @@ var
   NoteType:  char;
   SentenceEnd, Rest, Time: integer;
   Parser: TParser;
-  
+
 begin
   Result := false;
   LastError := '';
@@ -473,7 +473,7 @@ begin
   if Parser.ParseSong(Path + PathDelim + FileName) then
   begin
     //Writeln('XML Inputfile Parsed succesful');
-    
+
     //Start write parsed information to Song
     //Notes Part
     for I := 0 to High(Parser.SongInfo.Sentences) do
@@ -946,7 +946,7 @@ begin
   begin
     SetLength(Note, Length(Note) + 1);
     HighNote := High(Note);
-    
+
     Note[HighNote].Start := StartP;
     if HighNote = 0 then
     begin
@@ -966,7 +966,7 @@ begin
 
     if (Note[HighNote].NoteType = ntGolden) then
       Lines[LineNumber].ScoreValue := Lines[LineNumber].ScoreValue + Note[HighNote].Length;
-    
+
     if (Note[HighNote].NoteType <> ntFreestyle) then
       Lines[LineNumber].ScoreValue := Lines[LineNumber].ScoreValue + Note[HighNote].Length;
 
