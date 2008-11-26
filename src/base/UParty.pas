@@ -104,7 +104,7 @@ type
   end;
 
 const
-  StandardModi = 0; //Modus ID that will be played in non-party mode
+  StandardModus = 0; //Modus ID that will be played in non-party mode
 
 implementation
 
@@ -138,7 +138,7 @@ constructor TPartySession.Create;
 begin
   inherited;
   //UnSet PartyMode
-  bPartyMode := False;
+  bPartyMode := false;
 end;
 
 //-------------
@@ -150,7 +150,7 @@ end;
 function TPartySession.Load: boolean;
 begin
   //Add register party modus service
-  Result := True;
+  Result := true;
   Core.Services.AddService('Party/RegisterModi', nil, Self.RegisterModi);
   Core.Services.AddService('Party/StartParty', nil, Self.StartParty);
   Core.Services.AddService('Party/GetCurModi', nil, Self.GetCurModi);
@@ -223,7 +223,7 @@ var
   I: integer;
   R: word;
 begin
-  Result := StandardModi; //If there are no matching modi, play standard modus
+  Result := StandardModus; //If there are no matching modi, play standard modus
   LowestTP := high(byte);
   NumPwithLTP := 0;
 
@@ -241,15 +241,15 @@ begin
     end;
   end;
 
-  //Create Random No
+  //Create random no
   R := Random(NumPwithLTP);
 
-  //Search for Random Plugin
+  //Search for random plugin
   for I := 0 to high(Modis) do
   begin
     if (Modis[I].TimesPlayed = lowestTP) and (((Modis[I].Info.LoadingSettings and MLS_TeamOnly) <> 0) = TeamMode) then
     begin
-      //Plugin Found
+      //Plugin found
       if (R = 0) then
       begin
         Result := I;
@@ -278,8 +278,8 @@ begin
     aiRounds := PAofIRounds;
 
     try
-      //Is this Teammode(More then one Player per Team) ?
-      TeamMode := True;
+      //Is this team mode (More than one player per team) ?
+      TeamMode := true;
       for I := 0 to Teams.NumTeams-1 do
         TeamMode := TeamMode and (Teams.Teaminfo[I].NumPlayers > 1);
 
@@ -287,31 +287,31 @@ begin
       SetLength(Rounds, NumRounds);
 
       for I := 0 to High(Rounds) do
-      begin //Set Plugins
+      begin //Set plugins
         if (aiRounds[I] = -1) then
           Rounds[I].Modi := GetRandomPlugin(TeamMode)
         else if (aiRounds[I] >= 0) and (aiRounds[I] <= High(Modis)) and (TeamMode or ((Modis[aiRounds[I]].Info.LoadingSettings and MLS_TeamOnly) = 0))  then
           Rounds[I].Modi := aiRounds[I]
         else
-          Rounds[I].Modi := StandardModi;
+          Rounds[I].Modi := StandardModus;
 
-        Rounds[I].Winner := High(byte); //Set Winner to Not Played
+        Rounds[I].Winner := High(byte); //Set winner to not played
       end;
 
       CurRound := High(byte); //Set CurRound to not defined
 
-      //Return teh true and Set PartyMode
-      bPartyMode := True;
+      //Return true and set party mode
+      bPartyMode := true;
       Result := 1;
 
     except
-      Core.ReportError(integer(PChar('Can''t start PartyMode.')), PChar('TPartySession'));
+      Core.ReportError(integer(PChar('Can''t start party mode.')), PChar('TPartySession'));
     end;
   end;
 end;
 
 //----------
-// Returns Pointer to Cur. ModiInfoEx (to use with sing screen)
+// Returns pointer to Cur. ModiInfoEx (to use with sing screen)
 //----------
 function TPartySession.GetCurModi(wParam: TwParam; lParam: TlParam): integer;
 begin
@@ -321,21 +321,21 @@ begin
     Result := integer(@Modis[Rounds[CurRound].Modi]);
   end
   else
-  begin //Return StandardModi
-    Result := integer(@Modis[StandardModi]);
+  begin //Return standard modus
+    Result := integer(@Modis[StandardModus]);
   end;
 end;
 
 //----------
-// Stops Party Mode. Returns 1 If Partymode was enabled before. And -1 if Change was not possible
+// Stops party mode. Returns 1 if party mode was enabled before and -1 if change was not possible
 //----------
 function TPartySession.StopParty(wParam: TwParam; lParam: TlParam): integer;
 begin
   Result := -1;
   if (bPartyMode) then
   begin
-    // to-do : Whitü: Check here if SingScreen is not Shown atm.
-    bPartyMode := False;
+    // to-do : Whitü: Check here if sing screen is not shown atm.
+    bPartyMode := false;
     Result := 1;
   end
   else
@@ -355,7 +355,7 @@ begin
   NumPwithLTP := 0;
   Result := 0;
 
-  //Search for Players that have not often played yet
+  //Search for players that have not often played yet
   for I := 0 to Teams.Teaminfo[Team].NumPlayers-1 do
   begin
     if (Teams.Teaminfo[Team].Playerinfo[I].TimesPlayed < lowestTP) then
@@ -445,7 +445,7 @@ begin
   if (not bPartyMode) then
   begin //Set rounds if not in party mode
     SetLength(Rounds, 1);
-    Rounds[0].Modi := StandardModi;
+    Rounds[0].Modi := StandardModus;
     Rounds[0].Winner := High(byte);
     CurRound := 0;
   end;
@@ -456,14 +456,14 @@ begin
     on E : Exception do
     begin
       Core.ReportError(integer(PChar('Error starting modus: ' + Modis[Rounds[CurRound].Modi].Info.Name + ' ErrorStr: ' + E.Message)), PChar('TPartySession'));
-      if (Rounds[CurRound].Modi = StandardModi) then
+      if (Rounds[CurRound].Modi = StandardModus) then
       begin
         Core.ReportError(integer(PChar('Can''t start standard modus, will exit now!')), PChar('TPartySession'));
         Halt;
       end
-      else //Select StandardModi
+      else //Select standard modus
       begin
-        Rounds[CurRound].Modi := StandardModi
+        Rounds[CurRound].Modi := StandardModus
       end;
     end;
   end;
@@ -650,7 +650,7 @@ begin
     Result := Length(ResultStr);
   end
   else
-  begin //Return String
+  begin //Return string
     try
       S := lParam;
       S^ := ResultStr;
