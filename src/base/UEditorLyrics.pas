@@ -207,13 +207,13 @@ end;
 
 procedure TEditorLyrics.AddLine(NrLine: integer);
 var
-  N: integer;
+  NoteIndex: integer;
 begin
   Clear;
-  for N := 0 to Lines[0].Line[NrLine].HighNote do
+  for NoteIndex := 0 to Lines[0].Line[NrLine].HighNote do
   begin
-    Italic := Lines[0].Line[NrLine].Note[N].NoteType = ntFreestyle;
-    AddWord(Lines[0].Line[NrLine].Note[N].Text);
+    Italic := Lines[0].Line[NrLine].Note[NoteIndex].NoteType = ntFreestyle;
+    AddWord(Lines[0].Line[NrLine].Note[NoteIndex].Text);
   end;
   Selected := -1;
 end;
@@ -226,33 +226,33 @@ end;
 
 procedure TEditorLyrics.Refresh;
 var
-  W:        integer;
-  TotWidth: real;
+  WordIndex:  integer;
+  TotalWidth: real;
 begin
   if AlignI = center then
   begin
-    TotWidth := 0;
-    for W := 0 to High(Word) do
-      TotWidth := TotWidth + Word[W].Width;
+    TotalWidth := 0;
+    for WordIndex := 0 to High(Word) do
+      TotalWidth := TotalWidth + Word[WordIndex].Width;
 
-    Word[0].X := XR - TotWidth / 2;
-    for W := 1 to High(Word) do
-      Word[W].X := Word[W - 1].X + Word[W - 1].Width;
+    Word[0].X := XR - TotalWidth / 2;
+    for WordIndex := 1 to High(Word) do
+      Word[WordIndex].X := Word[WordIndex - 1].X + Word[WordIndex - 1].Width;
   end;
 end;
 
 procedure TEditorLyrics.Draw;
 var
-  W: integer;
+  WordIndex: integer;
 begin
-  for W := 0 to High(Word) do
+  for WordIndex := 0 to High(Word) do
   begin
-    SetFontStyle(Word[W].FontStyle);
-    SetFontPos(Word[W].X+ 10*ScreenX, Word[W].Y);
-    SetFontSize(Word[W].Size);
-    SetFontItalic(Word[W].Italic);
-    glColor3f(Word[W].ColR, Word[W].ColG, Word[W].ColB);
-    glPrint(Word[W].Text);
+    SetFontStyle(Word[WordIndex].FontStyle);
+    SetFontPos(Word[WordIndex].X + 10*ScreenX, Word[WordIndex].Y);
+    SetFontSize(Word[WordIndex].Size);
+    SetFontItalic(Word[WordIndex].Italic);
+    glColor3f(Word[WordIndex].ColR, Word[WordIndex].ColG, Word[WordIndex].ColB);
+    glPrint(Word[WordIndex].Text);
   end;
 end;
 
