@@ -40,23 +40,25 @@ uses
   UTexture;
 
 type
+  alignment = (left, center, right);
+
   TWord = record
-      X:         real;
-      Y:         real;
-      Size:      real;
-      Width:     real;
-      Text:      string;
-      ColR:      real;
-      ColG:      real;
-      ColB:      real;
-      FontStyle: integer;
-      Italic:    boolean;
-      Selected:  boolean;
+    X:         real;
+    Y:         real;
+    Size:      real;
+    Width:     real;
+    Text:      string;
+    ColR:      real;
+    ColG:      real;
+    ColB:      real;
+    FontStyle: integer;
+    Italic:    boolean;
+    Selected:  boolean;
   end;
 
   TEditorLyrics = class
     private
-      AlignI:     integer;
+      AlignI:     alignment;
       XR:         real;
       YR:         real;
       SizeR:      real;
@@ -67,7 +69,7 @@ type
       procedure SetX(Value: real);
       procedure SetY(Value: real);
       function GetClientX: real;
-      procedure SetAlign(Value: integer);
+      procedure SetAlign(Value: alignment);
       function GetSize: real;
       procedure SetSize(Value: real);
       procedure SetSelected(Value: integer);
@@ -94,7 +96,7 @@ type
       property X: real write SetX;
       property Y: real write SetY;
       property ClientX: real read GetClientX;
-      property Align: integer write SetAlign;
+      property Align: alignment write SetAlign;
       property Size: real read GetSize write SetSize;
       property Selected: integer read SelectedI write SetSelected;
       property FontStyle: integer write SetFontStyle;
@@ -103,10 +105,10 @@ type
 implementation
 
 uses
-  TextGL, 
-  UGraphic, 
-  UDrawTexture, 
-  Math, 
+  TextGL,
+  UGraphic,
+  UDrawTexture,
+  Math,
   USkins;
 
 constructor TEditorLyrics.Create;
@@ -135,7 +137,7 @@ begin
   Result := Word[0].X;
 end;
 
-procedure TEditorLyrics.SetAlign(Value: integer);
+procedure TEditorLyrics.SetAlign(Value: alignment);
 begin
   AlignI := Value;
 end;
@@ -183,7 +185,7 @@ var
 begin
   WordNum := Length(Word);
   SetLength(Word, WordNum + 1);
-  if WordNum = 0 then 
+  if WordNum = 0 then
     Word[WordNum].X := XR
   else
     Word[WordNum].X := Word[WordNum - 1].X + Word[WordNum - 1].Width;
@@ -227,7 +229,7 @@ var
   W:        integer;
   TotWidth: real;
 begin
-  if AlignI = 1 then
+  if AlignI = center then
   begin
     TotWidth := 0;
     for W := 0 to High(Word) do

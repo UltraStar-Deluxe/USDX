@@ -530,7 +530,7 @@ begin
           end;
 
           // ctrl + left
-          if SDL_ModState = KMOD_LCTRL the
+          if SDL_ModState = KMOD_LCTRL then
 	  begin
             Dec(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
             Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
@@ -1270,7 +1270,7 @@ begin
     Lyric.Clear;
     Lyric.X := 400;
     Lyric.Y := 500;
-    Lyric.Align := 1;
+    Lyric.Align := center;
     Lyric.Size := 42;
     Lyric.ColR := 0;
     Lyric.ColG := 0;
