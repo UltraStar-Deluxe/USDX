@@ -33,11 +33,12 @@ interface
 
 {$I switches.inc}
 
-uses UMenu,
-     SDL,
-     USongs,
-     USong,
-     UThemes;
+uses
+  UMenu,
+  SDL,
+  USongs,
+  USong,
+  UThemes;
 
 type
   TScreenEditHeader = class(TMenu)
@@ -72,22 +73,28 @@ type
 
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
 {      function Draw: boolean; override;
       procedure Finish;}
   end;
 
 implementation
 
-uses UGraphic, UMusic, SysUtils, UFiles, USkins, UTexture;
+uses
+  UGraphic,
+  UMusic,
+  SysUtils,
+  UFiles,
+  USkins,
+  UTexture;
 
-function TScreenEditHeader.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenEditHeader.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 var
   T:    integer;
 begin
   Result := true;
-  If (PressedDown) Then begin // Key Down
-    // check normal keys
+  if (PressedDown) then    // Key Down
+   begin   // check normal keys
     case WideCharUpperCase(CharCode)[1] of
       'Q':
         begin
@@ -107,7 +114,8 @@ begin
 
       SDLK_RETURN:
         begin
-          if Interaction = 1 then begin
+          if Interaction = 1 then
+	  begin
 //            Save;
           end;
         end;
@@ -116,14 +124,14 @@ begin
         begin
           case Interaction of
             0..0: InteractNext;
-            1:  Interaction := 0;
+            1:    Interaction := 0;
           end;
         end;
 
       SDLK_LEFT:
         begin
           case Interaction of
-            0:  Interaction := 1;
+            0:    Interaction := 1;
             1..1: InteractPrev;
           end;
         end;
@@ -131,25 +139,26 @@ begin
       SDLK_DOWN:
         begin
           case Interaction of
-            0..1:   Interaction := 2;
-            2..12:  InteractNext;
-            13:     Interaction := 0;
+            0..1:  Interaction := 2;
+            2..12: InteractNext;
+            13:    Interaction := 0;
           end;
         end;
 
       SDLK_UP:
         begin
           case Interaction of
-            0..1:   Interaction := 13;
-            2:      Interaction := 0;
-            3..13:  InteractPrev;
+            0..1:  Interaction := 13;
+            2:     Interaction := 0;
+            3..13: InteractPrev;
           end;
         end;
 
       SDLK_BACKSPACE:
         begin
           T := Interaction - 2 + TextTitle;
-          if (Interaction >= 2) and (Interaction <= 13) and (Length(Text[T].Text) >= 1) then begin
+          if (Interaction >= 2) and (Interaction <= 13) and (Length(Text[T].Text) >= 1) then
+	  begin
             Text[T].DeleteLastL;
             SetRoundButtons;            
           end;
@@ -159,7 +168,8 @@ begin
     case CharCode of
       #32..#255:
         begin
-          if (Interaction >= 2) and (Interaction <= 13) then begin
+          if (Interaction >= 2) and (Interaction <= 13) then
+	  begin
             Text[Interaction - 2 + TextTitle].Text :=
               Text[Interaction - 2 + TextTitle].Text + CharCode;
             SetRoundButtons;
@@ -244,7 +254,8 @@ procedure TScreenEditHeader.onShow;
 begin
   inherited;
 
-{  if FileExists(FileName) then begin // load file
+{  if FileExists(FileName) then  // load file
+  begin
     CurrentSong.FileName := FileName;
     SkanujPlik(CurrentSong);
 
@@ -273,28 +284,33 @@ end;
 
 (*function TScreenEdit.Draw: boolean;
 var
-  Min:    integer;
-  Sec:    integer;
-  Count:    integer;
-  AktBeat:  integer;
+  Min:     integer;
+  Sec:     integer;
+  Count:   integer;
+  AktBeat: integer;
 begin
 {  glClearColor(1,1,1,1);
 
   // control music
-  if PlaySentence then begin
+  if PlaySentence then
+  begin
     // stop the music
-    if (Music.Position > PlayStopTime) then begin
+    if (Music.Position > PlayStopTime) then
+    begin
       Music.Stop;
       PlaySentence := false;
     end;
 
     // click
-    if (Click) and (PlaySentence) then begin
+    if (Click) and (PlaySentence) then
+    begin
       AktBeat := Floor(CurrentSong.BPM[0].BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
       Text[TextDebug].Text := IntToStr(AktBeat);
-      if AktBeat <> LastClick then begin
+      if AktBeat <> LastClick then
+      begin
         for Count := 0 to Czesci[0].Czesc[Czesci[0].Akt].HighNut do
-          if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Count].Start = AktBeat) then begin
+          if (Czesci[0].Czesc[Czesci[0].Akt].Nuta[Count].Start = AktBeat) then
+          begin
             Music.PlayClick;
             LastClick := AktBeat;
           end;
@@ -330,37 +346,52 @@ end;*)
 
 procedure TScreenEditHeader.SetRoundButtons;
 begin
-  if Length(Text[TextTitle].Text) > 0 then Static[StaticTitle].Visible := true
-  else Static[StaticTitle].Visible := false;
+  if Length(Text[TextTitle].Text) > 0 then
+    Static[StaticTitle].Visible := true
+  else
+    Static[StaticTitle].Visible := false;
 
-  if Length(Text[TextArtist].Text) > 0 then Static[StaticArtist].Visible := true
-  else Static[StaticArtist].Visible := false;
+  if Length(Text[TextArtist].Text) > 0 then
+    Static[StaticArtist].Visible := true
+  else
+    Static[StaticArtist].Visible := false;
 
-  if Length(Text[TextMp3].Text) > 0 then Static[StaticMp3].Visible := true
-  else Static[StaticMp3].Visible := false;
+  if Length(Text[TextMp3].Text) > 0 then
+    Static[StaticMp3].Visible := true
+  else 
+    Static[StaticMp3].Visible := false;
 
-  if Length(Text[TextBackground].Text) > 0 then Static[StaticBackground].Visible := true
-  else Static[StaticBackground].Visible := false;
+  if Length(Text[TextBackground].Text) > 0 then
+    Static[StaticBackground].Visible := true
+  else
+    Static[StaticBackground].Visible := false;
 
-  if Length(Text[TextVideo].Text) > 0 then Static[StaticVideo].Visible := true
-  else Static[StaticVideo].Visible := false;
+  if Length(Text[TextVideo].Text) > 0 then
+    Static[StaticVideo].Visible := true
+  else
+    Static[StaticVideo].Visible := false;
 
   try
     StrToFloat(Text[TextVideoGAP].Text);
-    if StrToFloat(Text[TextVideoGAP].Text)<> 0 then Static[StaticVideoGAP].Visible := true
-    else Static[StaticVideoGAP].Visible := false;
+    if StrToFloat(Text[TextVideoGAP].Text)<> 0 then
+      Static[StaticVideoGAP].Visible := true
+    else
+      Static[StaticVideoGAP].Visible := false;
   except
     Static[StaticVideoGAP].Visible := false;
   end;
 
-  if LowerCase(Text[TextRelative].Text) = 'yes' then Static[StaticRelative].Visible := true
-  else Static[StaticRelative].Visible := false;
+  if LowerCase(Text[TextRelative].Text) = 'yes' then
+    Static[StaticRelative].Visible := true
+  else
+    Static[StaticRelative].Visible := false;
 
   try
     StrToInt(Text[TextResolution].Text);
-    if (StrToInt(Text[TextResolution].Text) <> 0) and (StrToInt(Text[TextResolution].Text) >= 1)
-    then Static[StaticResolution].Visible := true
-    else Static[StaticResolution].Visible := false;
+    if (StrToInt(Text[TextResolution].Text) <> 0) and (StrToInt(Text[TextResolution].Text) >= 1) then
+      Static[StaticResolution].Visible := true
+    else
+      Static[StaticResolution].Visible := false;
   except
     Static[StaticResolution].Visible := false;
   end;
@@ -375,8 +406,10 @@ begin
   // start
   try
     StrToFloat(Text[TextStart].Text);
-    if (StrToFloat(Text[TextStart].Text) > 0) then Static[StaticStart].Visible := true
-    else Static[StaticStart].Visible := false;
+    if (StrToFloat(Text[TextStart].Text) > 0) then
+      Static[StaticStart].Visible := true
+    else
+      Static[StaticStart].Visible := false;
   except
     Static[StaticStart].Visible := false;
   end;
@@ -392,8 +425,10 @@ begin
   // BPM
   try
     StrToFloat(Text[TextBPM].Text);
-    if (StrToFloat(Text[TextBPM].Text) > 0) then Static[StaticBPM].Visible := true
-    else Static[StaticBPM].Visible := false;
+    if (StrToFloat(Text[TextBPM].Text) > 0) then
+      Static[StaticBPM].Visible := true
+    else
+      Static[StaticBPM].Visible := false;
   except
     Static[StaticBPM].Visible := false;
   end;

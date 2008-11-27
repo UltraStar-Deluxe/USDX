@@ -33,7 +33,10 @@ interface
 
 {$I switches.inc}
 
-uses UMenu, SDL, UThemes;
+uses
+  UMenu,
+  SDL,
+  UThemes;
 
 type
   TScreenEdit = class(TMenu)
@@ -44,19 +47,23 @@ type
       FileName:           string;}
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
 {      function Draw: boolean; override;
       procedure Finish;}
   end;
 
 implementation
 
-uses UGraphic, UMusic, USkins, SysUtils;
+uses
+  UGraphic,
+  UMusic,
+  USkins,
+  SysUtils;
 
-function TScreenEdit.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenEdit.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -83,7 +90,8 @@ begin
             AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenEditConvert);
           end;
-//          if Interaction = 1 then begin
+//          if Interaction = 1 then
+//          begin
 //            Music.PlayStart;
 //            FadeTo(@ScreenEditHeader);
 //          end;
@@ -134,9 +142,9 @@ end;
 
 (*function TScreenEdit.Draw: boolean;
 var
-  Min:    integer;
-  Sec:    integer;
-  AktBeat:  integer;
+  Min:     integer;
+  Sec:     integer;
+  AktBeat: integer;
 begin
 end;
 

@@ -33,25 +33,25 @@ interface
 {$I switches.inc}
 
 uses
-    UMenu,
-    UMusic,
-    SDL,
-    SysUtils,
-    UFiles,
-    UTime,
-    USongs,
-    USong,
-    UIni,
-    ULog,
-    UTexture,
-    UMenuText,
-    UEditorLyrics,
-    Math,
-    gl,
-    {$IFDEF UseMIDIPort}
-    MidiOut,
-    {$ENDIF}
-    UThemes;
+  UMenu,
+  UMusic,
+  SDL,
+  SysUtils,
+  UFiles,
+  UTime,
+  USongs,
+  USong,
+  UIni,
+  ULog,
+  UTexture,
+  UMenuText,
+  UEditorLyrics,
+  Math,
+  gl,
+  {$IFDEF UseMIDIPort}
+  MidiOut,
+  {$ENDIF}
+  UThemes;
 
 type
   TScreenEditSub = class(TMenu)
@@ -80,18 +80,18 @@ type
       CopySrc:          integer;
 
       {$IFDEF UseMIDIPort}
-      MidiOut:         TMidiOutput;
+      MidiOut:          TMidiOutput;
       {$endif}
 
-      MidiStart:       real;
-      MidiStop:        real;
-      MidiTime:        real;
-      MidiPos:         real;
-      MidiLastNote:    integer;
+      MidiStart:        real;
+      MidiStop:         real;
+      MidiTime:         real;
+      MidiPos:          real;
+      MidiLastNote:     integer;
 
-      TextEditMode:    boolean;
+      TextEditMode:     boolean;
 
-      Lyric:    TEditorLyrics;
+      Lyric:            TEditorLyrics;
 
       procedure DivideBPM;
       procedure MultiplyBPM;
@@ -588,7 +588,8 @@ begin
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
             Inc(Lines[0].Current);
             CurrentNote := 0;
-            if Lines[0].Current > Lines[0].High then Lines[0].Current := 0;
+            if Lines[0].Current > Lines[0].High then
+	      Lines[0].Current := 0;
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
 
             Lyric.AddLine(Lines[0].Current);
@@ -724,7 +725,8 @@ begin
   begin
     Lines[0].Line[C].Start := Lines[0].Line[C].Start div 2;
     Lines[0].Line[C].End_  := Lines[0].Line[C].End_ div 2;
-    for N := 0 to Lines[0].Line[C].HighNote do begin
+    for N := 0 to Lines[0].Line[C].HighNote do
+    begin
       Lines[0].Line[C].Note[N].Start  :=       Lines[0].Line[C].Note[N].Start div 2;
       Lines[0].Line[C].Note[N].Length := Round(Lines[0].Line[C].Note[N].Length / 2);
     end; // N
@@ -1076,7 +1078,8 @@ var
 begin
 {  C := Lines[0].Current;
 
-  for N := Lines[0].Line[C].HighNut downto 1 do begin
+  for N := Lines[0].Line[C].HighNut downto 1 do
+  begin
     Lines[0].Line[C].Note[N].Text := Lines[0].Line[C].Note[N-1].Text;
   end; // for
 
@@ -1426,8 +1429,6 @@ begin
     N1 := (Note + (-Trunc(Note/12)+1)*12) mod 12;
     N2 := -1;
   end;
-
-
 
   case N1 of
     0: Result := 'c';

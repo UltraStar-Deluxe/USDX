@@ -33,35 +33,36 @@ interface
 
 {$I switches.inc}
 
-uses UMenu,
-     SDL,
-     {$IFDEF UseMIDIPort}
-     MidiFile,
-     MidiOut,
-     {$ENDIF}
-     ULog,
-     USongs,
-     USong,
-     UMusic,
-     UThemes;
+uses
+  UMenu,
+  SDL,
+  {$IFDEF UseMIDIPort}
+  MidiFile,
+  MidiOut,
+  {$ENDIF}
+  ULog,
+  USongs,
+  USong,
+  UMusic,
+  UThemes;
 
 type
   TNote = record
-    Event:        integer;
-    EventType:    integer;
-    Channel:    integer;
-    Start:    real;
-    Len:      real;
-    Data1:    integer;
-    Data2:    integer;
-    Str:      string;
+    Event:     integer;
+    EventType: integer;
+    Channel:   integer;
+    Start:     real;
+    Len:       real;
+    Data1:     integer;
+    Data2:     integer;
+    Str:       string;
   end;
 
   TTrack = record
-    Note:     array of TNote;
-    Name:     string;
-    Hear:     boolean;
-    Status:   byte;     // 0 - none, 1 - notes, 2 - lyrics, 3 - notes + lyrics
+    Note:   array of TNote;
+    Name:   string;
+    Hear:   boolean;
+    Status: byte;     // 0 - none, 1 - notes, 2 - lyrics, 3 - notes + lyrics
   end;
 
   TNuta = record
@@ -76,29 +77,29 @@ type
 
   TScreenEditConvert = class(TMenu)
     public
-      ATrack:             TArrayTrack; // actual track
-//      Track:              TArrayTrack;
-      Channel:            TArrayTrack;
-      ColR:               array[0..100] of real;
-      ColG:               array[0..100] of real;
-      ColB:               array[0..100] of real;
-      Len:                real;
-      Sel:                integer;
-      Selected:           boolean;
-//      FileName:           string;
+      ATrack:    TArrayTrack; // actual track
+//      Track:     TArrayTrack;
+      Channel:   TArrayTrack;
+      ColR:      array[0..100] of real;
+      ColG:      array[0..100] of real;
+      ColB:      array[0..100] of real;
+      Len:       real;
+      Sel:       integer;
+      Selected:  boolean;
+//      FileName:  string;
 
       {$IFDEF UseMIDIPort}
-      MidiFile:           TMidiFile;
-      MidiTrack:          TMidiTrack;
-      MidiEvent:          pMidiEvent;
-      MidiOut:            TMidiOutput;
+      MidiFile:  TMidiFile;
+      MidiTrack: TMidiTrack;
+      MidiEvent: pMidiEvent;
+      MidiOut:   TMidiOutput;
       {$ENDIF}
       
-      Song:               TSong;
-      Lines:              TLines;
-      BPM:                real;
-      Ticks:              real;
-      Note:               array of TNuta;
+      Song:      TSong;
+      Lines:     TLines;
+      BPM:       real;
+      Ticks:     real;
+      Note:      array of TNuta;
 
       procedure AddLyric(Start: integer; Text: string);
       procedure Extract;
@@ -110,23 +111,25 @@ type
       function SelectedNumber: integer;
       constructor Create; override;
       procedure onShow; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       function Draw: boolean; override;
       procedure onHide; override;
   end;
 
 implementation
-uses UGraphic,
-     SysUtils,
-     UDrawTexture,
-     TextGL,
-     UFiles,
-     UMain,
-     UIni,
-     gl,
-     USkins;
 
-function TScreenEditConvert.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+uses
+  UGraphic,
+  SysUtils,
+  UDrawTexture,
+  TextGL,
+  UFiles,
+  UMain,
+  UIni,
+  gl,
+  USkins;
+
+function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
   If (PressedDown) Then
@@ -171,13 +174,16 @@ begin
             {$ENDIF}
           end;
 
-          if Interaction = 2 then begin
+          if Interaction = 2 then
+	  begin
             Selected := true;
             {$IFDEF UseMIDIPort}
             MidiFile.OnMidiEvent := nil;
             {$ENDIF}
-            {for T := 0 to High(ATrack) do begin
-              if ATrack[T].Hear then begin
+            {for T := 0 to High(ATrack) do
+	    begin
+              if ATrack[T].Hear then
+	      begin
                 MidiTrack := MidiFile.GetTrack(T);
                 MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
               end;
@@ -185,8 +191,10 @@ begin
             MidiFile.StartPlaying;//}
           end;
 
-          if Interaction = 3 then begin
-            if SelectedNumber > 0 then begin
+          if Interaction = 3 then
+	  begin
+            if SelectedNumber > 0 then
+	    begin
               Extract;
               SaveSong(Song, Lines, ChangeFileExt(ConversionFileName, '.txt'), false);
             end;
@@ -199,7 +207,8 @@ begin
 //          ATrack[Sel].Hear := not ATrack[Sel].Hear;
           ATrack[Sel].Status := (ATrack[Sel].Status + 1) mod 4;
 
-{          if Selected then begin
+{          if Selected then
+          begin
             MidiTrack := MidiFile.GetTrack(Sel);
             if Track[Sel].Hear then
               MidiTrack.OnMidiEvent := MidiFile1MidiEvent
@@ -221,12 +230,14 @@ begin
       SDLK_DOWN:
         begin
           Inc(Sel);
-          if Sel > High(ATrack) then Sel := 0;
+          if Sel > High(ATrack) then
+	    Sel := 0;
         end;
       SDLK_UP:
         begin
           Dec(Sel);
-          if Sel < 0 then Sel := High(ATrack);
+          if Sel < 0 then
+	    Sel := High(ATrack);
         end;
     end;
   end;
@@ -236,11 +247,15 @@ procedure TScreenEditConvert.AddLyric(Start: integer; Text: string);
 var
   N:    integer;
 begin
-  for N := 0 to High(Note) do begin
-    if Note[N].Start = Start then begin
+  for N := 0 to High(Note) do
+  begin
+    if Note[N].Start = Start then
+    begin
       // check for new sentece
-      if Copy(Text, 1, 1) = '\' then Delete(Text, 1, 1);
-      if Copy(Text, 1, 1) = '/' then begin
+      if Copy(Text, 1, 1) = '\' then
+        Delete(Text, 1, 1);
+      if Copy(Text, 1, 1) = '/' then
+      begin
         Delete(Text, 1, 1);
         Note[N].NewSentence := true;
       end;
@@ -275,11 +290,16 @@ begin
   SetLength(Note, 0);
 
   // extract notes
-  for T := 0 to High(ATrack) do begin
-//    if ATrack[T].Hear then begin
-    if ((ATrack[T].Status div 1) and 1) = 1 then begin
-      for N := 0 to High(ATrack[T].Note) do begin
-        if (ATrack[T].Note[N].EventType = 9) and (ATrack[T].Note[N].Data2 > 0) then begin
+  for T := 0 to High(ATrack) do
+  begin
+//    if ATrack[T].Hear then
+//    begin
+    if ((ATrack[T].Status div 1) and 1) = 1 then
+    begin
+      for N := 0 to High(ATrack[T].Note) do
+      begin
+        if (ATrack[T].Note[N].EventType = 9) and (ATrack[T].Note[N].Data2 > 0) then
+	begin
           Nu := Length(Note);
           SetLength(Note, Nu + 1);
           Note[Nu].Start := Round(ATrack[T].Note[N].Start / Ticks);
@@ -292,11 +312,16 @@ begin
   end;
 
   // extract lyrics
-  for T := 0 to High(ATrack) do begin
-//    if ATrack[T].Hear then begin
-    if ((ATrack[T].Status div 2) and 1) = 1 then begin
-      for N := 0 to High(ATrack[T].Note) do begin
-        if (ATrack[T].Note[N].EventType = 15) then begin
+  for T := 0 to High(ATrack) do
+  begin
+//    if ATrack[T].Hear then
+//    begin
+    if ((ATrack[T].Status div 2) and 1) = 1 then
+    begin
+      for N := 0 to High(ATrack[T].Note) do
+      begin
+        if (ATrack[T].Note[N].EventType = 15) then
+	begin
 //          Log.LogStatus('<' + Track[T].Note[N].Str + '>', 'MIDI');
           AddLyric(Round(ATrack[T].Note[N].Start / Ticks), ATrack[T].Note[N].Str);
         end;
@@ -307,7 +332,8 @@ begin
   // sort notes
   for N := 0 to High(Note) do
     for Nu := 0 to High(Note)-1 do
-      if Note[Nu].Start > Note[Nu+1].Start then begin
+      if Note[Nu].Start > Note[Nu+1].Start then
+      begin
         NoteTemp := Note[Nu];
         Note[Nu] := Note[Nu+1];
         Note[Nu+1] := NoteTemp;
@@ -327,8 +353,10 @@ begin
   N := 0;
   Lines.Line[C].HighNote := -1;
 
-  for Nu := 0 to High(Note) do begin
-    if Note[Nu].NewSentence then begin // new line
+  for Nu := 0 to High(Note) do
+  begin
+    if Note[Nu].NewSentence then // new line
+    begin
       SetLength(Lines.Line, Length(Lines.Line)+1);
       Lines.Number := Lines.Number + 1;
       Lines.High := Lines.High + 1;
@@ -379,8 +407,10 @@ var
 begin
   Result := 0;
   for T := 0 to High(ATrack) do
-//    if ATrack[T].Hear then Inc(Result);
-    if ((ATrack[T].Status div 1) and 1) = 1 then Inc(Result);
+//    if ATrack[T].Hear then
+//      Inc(Result);
+    if ((ATrack[T].Status div 1) and 1) = 1 then
+      Inc(Result);
 end;
 
 {$IFDEF UseMIDIPort}
@@ -424,7 +454,8 @@ begin
   MidiFile := TMidiFile.Create(nil);
   {$ENDIF}
 
-  for P := 0 to 100 do begin
+  for P := 0 to 100 do
+  begin
     ColR[P] := Random(10)/10;
     ColG[P] := Random(10)/10;
     ColB[P] := Random(10)/10;
@@ -460,13 +491,15 @@ begin
     BPM := MidiFile.Bpm;
     Ticks := MidiFile.TicksPerQuarter / 4;
 
-{    for T := 0 to MidiFile.NumberOfTracks-1 do begin
+{    for T := 0 to MidiFile.NumberOfTracks-1 do
+    begin
       SetLength(Track, Length(Track)+1);
       MidiTrack := MidiFile.GetTrack(T);
       MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
       Track[T].Name := MidiTrack.getName;
 
-      for N := 0 to MidiTrack.getEventCount-1 do begin
+      for N := 0 to MidiTrack.getEventCount-1 do
+      begin
         SetLength(Track[T].Note, Length(Track[T].Note)+1);
         MidiEvent := MidiTrack.GetEvent(N);
         Track[T].Note[N].Start := MidiEvent.time;
@@ -492,11 +525,13 @@ begin
       Channel[T].Status := 0;
     end;
 
-    for T := 0 to MidiFile.NumberOfTracks-1 do begin
+    for T := 0 to MidiFile.NumberOfTracks-1 do
+    begin
       MidiTrack := MidiFile.GetTrack(T);
       MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
 
-      for N := 0 to MidiTrack.getEventCount-1 do begin
+      for N := 0 to MidiTrack.getEventCount-1 do
+      begin
         MidiEvent := MidiTrack.GetEvent(N);
         C := MidiEvent.event and 15;
 
@@ -526,8 +561,8 @@ end;
 
 function TScreenEditConvert.Draw: boolean;
 var
-  Count:    integer;
-  Count2:   integer;
+  Count:  integer;
+  Count2: integer;
   Bottom: real;
   X:      real;
   Y:      real;
@@ -540,7 +575,8 @@ begin
   Y := 100;
 
   H := Length(ATrack)*40;
-  if H > 480 then H := 480;
+  if H > 480 then
+    H := 480;
   Bottom := Y + H;
 
   YSkip := H / Length(ATrack);
@@ -553,13 +589,16 @@ begin
     if ATrack[Count].Hear then
       DrawQuad(10, Y+Count*YSkip, 50, YSkip, 0.8, 0.3, 0.3);
   glColor3f(0, 0, 0);
-  for Count := 0 to High(ATrack) do begin
-    if ((ATrack[Count].Status div 1) and 1) = 1 then begin
+  for Count := 0 to High(ATrack) do
+  begin
+    if ((ATrack[Count].Status div 1) and 1) = 1 then
+    begin
       SetFontPos(25, Y + Count*YSkip + 10);
       SetFontSize(15);
       glPrint('N');
     end;
-    if ((ATrack[Count].Status div 2) and 1) = 1 then begin
+    if ((ATrack[Count].Status div 2) and 1) = 1 then
+    begin
       SetFontPos(40, Y + Count*YSkip + 10);
       SetFontSize(15);
       glPrint('L');
@@ -573,14 +612,16 @@ begin
   for Count := 0 to Length(ATrack) do
     DrawLine(10, Y+Count*YSkip, 790, Y+Count*YSkip, 0, 0, 0);
 
-  for Count := 0 to High(ATrack) do begin
+  for Count := 0 to High(ATrack) do
+  begin
     SetFontPos(11, Y + 10 + Count*YSkip);
     SetFontSize(15);
     glPrint(ATrack[Count].Name);
   end;
 
   for Count := 0 to High(ATrack) do
-    for Count2 := 0 to High(ATrack[Count].Note) do begin
+    for Count2 := 0 to High(ATrack[Count].Note) do
+    begin
       if ATrack[Count].Note[Count2].EventType = 9 then
         DrawQuad(60 + ATrack[Count].Note[Count2].Start/Len * 725, Y + (Count+1)*YSkip - ATrack[Count].Note[Count2].Data1*35/127, 3, 3, ColR[Count], ColG[Count], ColB[Count]);
       if ATrack[Count].Note[Count2].EventType = 15 then
