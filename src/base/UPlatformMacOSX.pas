@@ -154,6 +154,9 @@ begin
 end;
 
 procedure TPlatformMacOSX.CreateUserFolders();
+const
+  // used to construct the @link(UserPathName)
+  PathName: string = '/Library/Application Support/UltraStarDeluxe/Resources';
 var
   RelativePath: string;
   // BaseDir contains the path to the folder, where a search is performed.
@@ -172,11 +175,12 @@ var
   // searched for additional files and folders.
   DirectoryIsFinished: longint;
   Counter: longint;
+  // These three are for creating directories, due to possible symlinks
+  CreatedDirectory: boolean;
+  FileAttrs:        integer;
+  DirectoryPath:    string;
 
-  UserPathName: string;
-const
-  // used to construct the @link(UserPathName)
-  PathName: string = '/Library/Application Support/UltraStarDeluxe/Resources';
+  UserPathName:     string;
 begin
   // Get the current folder and save it in OldBaseDir for returning to it, when
   // finished.
@@ -221,7 +225,12 @@ begin
   ForceDirectories(UserPathName);        // should not be necessary since (UserPathName+'/.') is created.
   for Counter := 0 to DirectoryList.Count-1 do
   begin
-    if not ForceDirectories(UserPathName + '/' + DirectoryList[Counter]) then
+    DirectoryPath    := UserPathName + '/' + DirectoryList[Counter];
+    CreatedDirectory := ForceDirectories(DirectoryPath);
+    FileAttrs        := FileGetAttr(DirectoryPath);
+    // Don't know how to analyse the target of the link.
+    // Let's assume the symlink is pointing to an existing directory.
+    if (not CreatedDirectory) and (FileAttrs and faSymLink > 0) then
       Log.LogError('Failed to create the folder "'+ UserPathName + '/' + DirectoryList[Counter] +'"',
                    'TPlatformMacOSX.CreateUserFolders');
   end;
