@@ -484,6 +484,16 @@ type
     ButtonExit:           TThemeButton;
   end;
 
+  TThemeEdit = class(TThemeBasic)
+    ButtonConvert:        TThemeButton;
+    ButtonExit:           TThemeButton;
+
+    TextDescription:      TThemeText;
+    TextDescriptionLong:  TThemeText;
+    Description:          array[0..5] of string;
+    DescriptionLong:      array[0..5] of string;
+  end;
+
   //Error- and Check-Popup
   TThemeError = class(TThemeBasic)
     Button1: TThemeButton;
@@ -723,6 +733,8 @@ type
     OptionsThemes:    TThemeOptionsThemes;
     OptionsRecord:    TThemeOptionsRecord;
     OptionsAdvanced:  TThemeOptionsAdvanced;
+    //edit
+    Edit:             TThemeEdit;
     //error and check popup
     ErrorPopup:       TThemeError;
     CheckPopup:       TThemeCheck;
@@ -851,6 +863,8 @@ begin
   OptionsThemes := TThemeOptionsThemes.Create;
   OptionsRecord := TThemeOptionsRecord.Create;
   OptionsAdvanced := TThemeOptionsAdvanced.Create;
+
+  Edit := TThemeEdit.Create;
 
   ErrorPopup := TThemeError.Create;
   CheckPopup := TThemeCheck.Create;
@@ -1245,6 +1259,18 @@ begin
       ThemeLoadSelectSlide(OptionsAdvanced.SelectAskbeforeDel,  'OptionsAdvancedSelectAskbeforeDel');
       ThemeLoadSelectSlide(OptionsAdvanced.SelectPartyPopup,    'OptionsAdvancedSelectPartyPopup');
       ThemeLoadButton     (OptionsAdvanced.ButtonExit,          'OptionsAdvancedButtonExit');
+
+      //Edit Menu
+      ThemeLoadBasic (Edit,               'Edit');
+
+      ThemeLoadButton(Edit.ButtonConvert, 'EditButtonConvert');
+      ThemeLoadButton(Edit.ButtonExit,    'EditButtonExit');
+
+      Edit.Description[0] := Language.Translate('SING_EDIT_BUTTON_DESCRIPTION_CONVERT');
+      Edit.Description[1] := Language.Translate('SING_EDIT_BUTTON_DESCRIPTION_EXIT');
+
+      ThemeLoadText(Edit.TextDescription, 'EditTextDescription');
+      Edit.TextDescription.Text := Edit.Description[0];
 
       //error and check popup
       ThemeLoadBasic (ErrorPopup, 'ErrorPopup');
@@ -2309,6 +2335,9 @@ begin
 
   freeandnil(OptionsAdvanced);
   OptionsAdvanced := TThemeOptionsAdvanced.Create;
+
+  freeandnil(Edit);
+  Edit := TThemeEdit.Create;
 
   freeandnil(ErrorPopup);
   ErrorPopup := TThemeError.Create;
