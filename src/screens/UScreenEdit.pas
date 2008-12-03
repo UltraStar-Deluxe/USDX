@@ -41,12 +41,6 @@ uses
 type
   TScreenEdit = class(TMenu)
     public
-{
-      Tex_Background:     TTexture;
-      FadeOut:            boolean;
-      Path:               string;
-      FileName:           string;
-}
       TextDescription:     integer;
       TextDescriptionLong: integer;
 
@@ -59,10 +53,6 @@ type
       procedure InteractInc; override;
       procedure InteractDec; override;
       procedure SetAnimationProgress(Progress: real); override;
-{
-      function Draw: boolean; override;
-      procedure Finish;
-}
   end;
 
 implementation
@@ -101,7 +91,6 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
-//          Result := false;
         end;
       SDLK_RETURN:
         begin
@@ -110,11 +99,6 @@ begin
             AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenEditConvert);
           end;
-//          if Interaction = 1 then
-//          begin
-//            Music.PlayStart;
-//            FadeTo(@ScreenEditHeader);
-//          end;
 
           if Interaction = 1 then
           begin
@@ -136,66 +120,41 @@ begin
   inherited Create;
 
   TextDescription := AddText(Theme.Edit.TextDescription);
-//  TextDescriptionLong := AddText(Theme.Edit.TextDescriptionLong);
 
   LoadFromTheme(Theme.Edit);
 
-//  AddButton(400-200, 100 + 0*70, 400, 40, Skin.GetTextureFileName('ButtonF'));
-//  AddButtonText(10, 5, 0, 0, 0, 'Convert Midi to Txt');
-//  Button[High(Button)].Text[0].Size := 11;
-
-//  AddButton(400-200, 100 + 1*60, 400, 40, 'ButtonF');
-//  AddButtonText(10, 5, 0, 0, 0, 'Edit Headers');
-
-//  AddButton(400-200, 100 + 2*60, 400, 40, 'ButtonF');
-//  AddButtonText(10, 5, 0, 0, 0, 'Set GAP');
-
-//  AddButton(400-200, 100 + 3*60, 400, 40, Skin.GetTextureFileName('ButtonF'));
-//  AddButtonText(10, 5, 0, 0, 0, 'Exit');
-
   AddButton(Theme.Edit.ButtonConvert);
+{ Some ideas for more:
+  AddButton(Theme.Edit.ButtonEditHeaders);
+  AddButton(Theme.Edit.ButtonAdjustGap);
+}
   AddButton(Theme.Edit.ButtonExit);
 
-{  
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(14, 20, Theme.Edit.Description[0]);
-}
   Interaction := 0;
-end;
-
-procedure TScreenEdit.onShow;
-begin
-  inherited;
-
-//  Interaction := 0;
 end;
 
 procedure TScreenEdit.InteractNext;
 begin
   inherited InteractNext;
-  Text[TextDescription].Text     := Theme.Edit.Description[Interaction];
-//  Text[TextDescriptionLong].Text := Theme.Edit.DescriptionLong[Interaction];
+  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
 end;
 
 procedure TScreenEdit.InteractPrev;
 begin
   inherited InteractPrev;
-  Text[TextDescription].Text     := Theme.Edit.Description[Interaction];
-//  Text[TextDescriptionLong].Text := Theme.Edit.DescriptionLong[Interaction];
+  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
 end;
 
 procedure TScreenEdit.InteractDec;
 begin
   inherited InteractDec;
-  Text[TextDescription].Text     := Theme.Edit.Description[Interaction];
-//  Text[TextDescriptionLong].Text := Theme.Edit.DescriptionLong[Interaction];
+  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
 end;
 
 procedure TScreenEdit.InteractInc;
 begin
   inherited InteractInc;
-  Text[TextDescription].Text     := Theme.Edit.Description[Interaction];
-//  Text[TextDescriptionLong].Text := Theme.Edit.DescriptionLong[Interaction];
+  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
 end;
 
 procedure TScreenEdit.SetAnimationProgress(Progress: real);
@@ -203,18 +162,5 @@ begin
   Static[0].Texture.ScaleW := Progress;
   Static[0].Texture.ScaleH := Progress;
 end;
-
-(*function TScreenEdit.Draw: boolean;
-var
-  Min:     integer;
-  Sec:     integer;
-  AktBeat: integer;
-begin
-end;
-
-procedure TScreenEdit.Finish;
-begin
-//
-end;*)
 
 end.

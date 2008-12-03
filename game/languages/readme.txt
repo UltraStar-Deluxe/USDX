@@ -1,24 +1,22 @@
-.o0 Ultrastar Deluxe in your Language 0o.
+.o0 Ultrastar Deluxe in your language 0o.
 
 -----------------------
    Table of Contents
 -----------------------
 1. Introduction
-2. Statistic Wild-Cards
-3. Texts to Add
-
-
+2. Statistic wildcards
+3. Texts to add
 
 -----------------------
 1. Introduction:
 -----------------------
-To translate USD to a new language, take the English Language File, or another one that is up to date and Edit the Texts behind the Equal Mark(=).
+To translate USD to a new language, take the English language file, or another one that is up to date and edit the texts behind the equal mark(=).
 
 -----------------------
 2. Statistic Wild-Cards:
 -----------------------
-Here are some Information about the Wild-Cars in the Language Texts for the Statistic Screens (STAT_...):
-Information that will replace the Wild-Cards:
+Here are some informations about the wildcards in the language texts for the statistic screens (STAT_...):
+Information that will replace the wildcards:
 
 STAT_OVERVIEW_INTRO:
   Format:
@@ -68,19 +66,19 @@ STAT_FORMAT_BANDS:
     %0:s Artist Name
     %1:d Times Sung
 
-Some further Explantation about the Wild-Cards:
+Some further explanations about the wildcards:
 %x:[.y]z
 
-Where X is the Number of the Wildcard,
-Y is optional, it is the number of digits for Decimal Numbers (Z=d). So if y is 2 there and the number is only 0 to 9 there will be a Zero added in front of the number.
-z can be d for Numbers and s for texts
+Where X is the number of the wildcard,
+Y is optional, it is the number of digits for deciaml numbers (Z=d). So, if y is 2 there and the number is only 0 to 9 there will be a zero added in front of the number.
+z can be d for numbers and s for texts
 
-For the date thing in STAT_OVERVIEW_INTRO you may use %1:.2d for the day and %2:.2d for the Month.
+For the date thing in STAT_OVERVIEW_INTRO you may use %1:.2d for the day and %2:.2d for the month.
 
 -----------------------
 3. Texts to Add:
 -----------------------
-To port a LanguageFile from Ultrastar 0.5.2 or Higher add the following Texts to the end of the file:
+To port a language file from Ultrastar 0.5.2 or higher add the following texts to the end of the file:
 
 #Main Screen
 SING_MENU=Main Menu
@@ -126,17 +124,17 @@ POPUP_BAD=bad!
 POPUP_POOR=poor!
 POPUP_AWFUL=awful!
 
-#To connect Strigns with, e.g.: He, you and I
+#To connect strings with, e.g.: He, you and I
 IMPLODE_GLUE1=, 
 IMPLODE_GLUE2= and 
 
 #Song Screen Legend
 PLAYLIST_CATTEXT=Playlist: %s
 
-#Text for the Legend Bar at the bottom
+#Text for the legend bar at the bottom
 SING_LEGEND_CONTINUE=Continue
 
-#Texts of the Menu that appears when M is Pressed at the SongSelection
+#Texts of the menu that appears when M is pressed at the song selection
 SONG_MENU_NAME_MAIN=Song Menu
 SONG_MENU_PLAY=Sing
 SONG_MENU_EDIT=Edit
@@ -181,7 +179,7 @@ SONG_MENU_JOKER=Joker
 
 SONG_MENU_NAME_PARTY_JOKER=take Joker
 
-#Texts of the jumpto Window
+#Texts of the jump to window
 SONG_JUMPTO_DESC=Jump to Song
 SONG_JUMPTO_TYPE_DESC=Search for:
 SONG_JUMPTO_TYPE1=All
@@ -233,7 +231,7 @@ PARTY_SCORE_WINS2=wins!
 PARTY_SONG_WHEREAMI=Party Song-Selection
 PARTY_SONG_LEGEND_CONTINUE=Party-Menu
 
-#Texts that descripts Plugins or Modis
+#Texts describing Plugins or Modi
 PLUGIN_HDL_NAME=Hold the Line
 PLUGIN_HDL_DESC=Don't get worse than the pointer at the rating bar shows you.
 PLUGIN_UNTIL5000_NAME=Until 5000
@@ -246,7 +244,7 @@ PLUGIN_TEAMDUELL_NAME=Team Duell
 PLUGIN_TEAMDUELL_DESC=Pass The Mic!
 
 #Statistics Screen
-#For more Info about the Format Strings look at the SorceCode (UScreenStatMain)
+#For more info about the format strings look at the source code (UScreenStatMain)
 STAT_MAIN=Statistics
 STAT_MAIN_DESC=General
 STAT_MAIN_WHEREAMI=Statistics
