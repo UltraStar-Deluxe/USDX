@@ -47,7 +47,6 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: WideChar;
         PressedDown: boolean): boolean; override;
-      procedure onShow; override;
       procedure InteractNext; override;
       procedure InteractPrev; override;
       procedure InteractInc; override;
