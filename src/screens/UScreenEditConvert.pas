@@ -62,7 +62,7 @@ type
     Note:   array of TNote;
     Name:   string;
     Hear:   boolean;
-    Status: byte;     // 0 - none, 1 - notes, 2 - lyrics, 3 - notes + lyrics
+    Status: set of (notes, lyrics);
   end;
 
   TNuta = record
@@ -205,7 +205,16 @@ begin
       SDLK_SPACE:
         begin
 //          ATrack[Sel].Hear := not ATrack[Sel].Hear;
-          ATrack[Sel].Status := (ATrack[Sel].Status + 1) mod 4;
+	  if Notes in ATrack[Sel].Status then
+	  begin
+	    ATrack[Sel].Status := ATrack[Sel].Status - [Notes];
+	    if Lyrics in ATrack[Sel].Status then
+	      ATrack[Sel].Status := ATrack[Sel].Status - [Lyrics]
+	    else
+	      ATrack[Sel].Status := ATrack[Sel].Status + [Lyrics];
+	  end
+	  else
+	    ATrack[Sel].Status := ATrack[Sel].Status + [Notes];
 
 {          if Selected then
           begin
@@ -294,7 +303,7 @@ begin
   begin
 //    if ATrack[T].Hear then
 //    begin
-    if ((ATrack[T].Status div 1) and 1) = 1 then
+    if Notes in ATrack[T].Status then
     begin
       for N := 0 to High(ATrack[T].Note) do
       begin
@@ -316,7 +325,7 @@ begin
   begin
 //    if ATrack[T].Hear then
 //    begin
-    if ((ATrack[T].Status div 2) and 1) = 1 then
+    if Lyrics in ATrack[T].Status then
     begin
       for N := 0 to High(ATrack[T].Note) do
       begin
@@ -409,7 +418,7 @@ begin
   for T := 0 to High(ATrack) do
 //    if ATrack[T].Hear then
 //      Inc(Result);
-    if ((ATrack[T].Status div 1) and 1) = 1 then
+    if Notes in ATrack[T].Status then
       Inc(Result);
 end;
 
@@ -516,13 +525,12 @@ begin
       end;
     end;}
 
-
     SetLength(Channel, 16);
     for T := 0 to 15 do
     begin
       Channel[T].Name := IntToStr(T+1);
       SetLength(Channel[T].Note, 0);
-      Channel[T].Status := 0;
+      Channel[T].Status := [];
     end;
 
     for T := 0 to MidiFile.NumberOfTracks-1 do
@@ -591,13 +599,13 @@ begin
   glColor3f(0, 0, 0);
   for Count := 0 to High(ATrack) do
   begin
-    if ((ATrack[Count].Status div 1) and 1) = 1 then
+    if Notes in ATrack[Count].Status then
     begin
       SetFontPos(25, Y + Count*YSkip + 10);
       SetFontSize(15);
       glPrint('N');
     end;
-    if ((ATrack[Count].Status div 2) and 1) = 1 then
+    if Lyrics in ATrack[Count].Status then
     begin
       SetFontPos(40, Y + Count*YSkip + 10);
       SetFontSize(15);
