@@ -334,7 +334,521 @@ Section /o "Dead Smiling Pirates - I 18" g2Section1
 SectionEnd
 
 ;
-; Steven Dunston - Northern Star
+; Jonathan Coulton Songs
+; 
+
+SectionGroup $(name_s2_sub1) s2_sub1
+
+Section /o "Monkey Shines" s2_sub1_Section1
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song1} $TEMP\Song-JC-MS.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-MS.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-MS.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "I Crush Everything" s2_sub1_Section2
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song2} $TEMP\Song-JC-ICE.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-ICE.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-ICE.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Not About You" s2_sub1_Section3
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song3} $TEMP\Song-JC-NAY.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-NAY.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-NAY.zip"
+
+  SetOutPath "$INSTDIR"
+
+
+SectionEnd
+
+Section /o "Mr. Fancy Pants" s2_sub1_Section4
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song4} $TEMP\Song-JC-MFP.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-MFP.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-MFP.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Big Bad World One" s2_sub1_Section5
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song5} $TEMP\Song-JC-BBWO.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-BBWO.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-BBWO.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Flickr" s2_sub1_Section6
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song6} $TEMP\Song-JC-Flickr.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-Flickr.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-Flickr.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "My Beige Bear" s2_sub1_Section7
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song7} $TEMP\Song-JC-MBB.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-MBB.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-MBB.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "The Future Soon" s2_sub1_Section8
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song8} $TEMP\Song-JC-TFS.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-TFS.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-TFS.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Ikea" s2_sub1_Section9
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song9} $TEMP\Song-JC-Ikea.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-Ikea.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-Ikea.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Furry Old Lobster" s2_sub1_Section10
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song10} $TEMP\Song-JC-FOL.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-FOL.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-FOL.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Code Monkey" s2_sub1_Section11
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song11} $TEMP\Song-JC-CM.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-CM.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-CM.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "I´m Your Moon" s2_sub1_Section12
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song12} $TEMP\Song-JC-IYM.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-IYM.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-IYM.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "First Of May" s2_sub1_Section13
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song13} $TEMP\Song-JC-FOM.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-FOM.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-FOM.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Dance, Soterious Johnson, Dance" s2_sub1_Section14
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song14} $TEMP\Song-JC-DSJD.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-DSJD.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-DSJD.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "A Walk With George" s2_sub1_Section15
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song15} $TEMP\Song-JC-AWWG.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-AWWG.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-AWWG.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Creepy Doll" s2_sub1_Section16
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song16} $TEMP\Song-JC-CD.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-CD.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-CD.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "That Spells DNA" s2_sub1_Section17
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song17} $TEMP\Song-JC-TSDNA.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-TSDNA.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-TSDNA.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "When You Go" s2_sub1_Section18
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song18} $TEMP\Song-JC-WYG.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-WYG.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-WYG.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Better" s2_sub1_Section19
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song19} $TEMP\Song-JC-Better.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-Better.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-Better.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Shop Vac" s2_sub1_Section20
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song20} $TEMP\Song-JC-SV.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-SV.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-SV.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "I Feel Fantastic" s2_sub1_Section21
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song21} $TEMP\Song-JC-IFF.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-IFF.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-IFF.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Re: Your Brains" s2_sub1_Section22
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song22} $TEMP\Song-JC-ReYB.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-ReYB.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-ReYB.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Skullcrusher Mountain" s2_sub1_Section23
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song23} $TEMP\Song-JC-SCM.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-SCM.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-SCM.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Chiron Beta Prime" s2_sub1_Section24
+
+;  AddSize 1400
+   SetOverwrite try
+   SetOutPath "$INSTDIR\Songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song24} $TEMP\Song-JC-CBP.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+  nsisunz::Unzip "$TEMP\Song-JC-CBP.zip" "$INSTDIR\Songs\"
+
+  Delete "$TEMP\Song-JC-CBP.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+
+SectionGroupEnd
+
+;
+; Joshua Morin - On The Run
 ; 
 
 Section /o "Joshua Morin - On The Run" g2Section2
@@ -558,12 +1072,38 @@ SectionEnd
 
   !insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
   !insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1} $(DESC_Section2_sub1)
   !insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3)
 
   !insertmacro MUI_DESCRIPTION_TEXT ${g2Section1} $(DESC_g2Section1)
   !insertmacro MUI_DESCRIPTION_TEXT ${g2Section2} $(DESC_g2Section2)
   !insertmacro MUI_DESCRIPTION_TEXT ${g2Section3} $(DESC_g2Section3)
   !insertmacro MUI_DESCRIPTION_TEXT ${g2Section4} $(DESC_g2Section4)
+
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section1} $(DESC_s2_sub1_Section1)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section2} $(DESC_s2_sub1_Section2)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section3} $(DESC_s2_sub1_Section3)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section4} $(DESC_s2_sub1_Section4)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section5} $(DESC_s2_sub1_Section5)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section6} $(DESC_s2_sub1_Section6)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section7} $(DESC_s2_sub1_Section7)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section8} $(DESC_s2_sub1_Section8)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section9} $(DESC_s2_sub1_Section9)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section10} $(DESC_s2_sub1_Section10)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section11} $(DESC_s2_sub1_Section11)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section12} $(DESC_s2_sub1_Section12)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section13} $(DESC_s2_sub1_Section13)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section14} $(DESC_s2_sub1_Section14)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section15} $(DESC_s2_sub1_Section15)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section16} $(DESC_s2_sub1_Section16)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section17} $(DESC_s2_sub1_Section17)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section18} $(DESC_s2_sub1_Section18)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section19} $(DESC_s2_sub1_Section19)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section20} $(DESC_s2_sub1_Section20)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section21} $(DESC_s2_sub1_Section21)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section22} $(DESC_s2_sub1_Section22)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section23} $(DESC_s2_sub1_Section23)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section24} $(DESC_s2_sub1_Section24)
 
   !insertmacro MUI_DESCRIPTION_TEXT ${g3Section1} $(DESC_g3Section1)
   !insertmacro MUI_DESCRIPTION_TEXT ${g3Section2} $(DESC_g3Section2)

@@ -43,11 +43,7 @@ File ..\game\covers\NoCover.jpg
 ; Plugins dir:
 
 SetOutPath "$INSTDIR\Plugins\"
-  File "..\Plugins\Blind.dll"
-  File "..\Plugins\Duell.dll"
-  File "..\Plugins\Hold_The_Line.dll"
-  File "..\Plugins\TeamDuell.dll"
-  File "..\Plugins\Until5000.dll"
+  File "..\Plugins\*.dll"
 
 ${If} ${AtLeastWinVista}
 
