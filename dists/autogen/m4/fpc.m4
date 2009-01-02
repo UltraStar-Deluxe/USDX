@@ -89,7 +89,7 @@ AC_ARG_ENABLE(gprof,
 AC_ARG_ENABLE(valgrind,
   [AS_HELP_STRING([--enable-valgrind],
     [Enable debugging with valgrind @<:@default=no@:>@])],
-  [test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -pv"], [])
+  [test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -gv"], [])
 
 # heaptrace
 AC_ARG_ENABLE(heaptrace,

@@ -2502,7 +2502,7 @@ fi
 # valgrind
 # Check whether --enable-valgrind was given.
 if test "${enable_valgrind+set}" = set; then
-  enableval=$enable_valgrind; test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -pv"
+  enableval=$enable_valgrind; test x$enableval = xyes && PFLAGS_EXTRA="$PFLAGS_EXTRA -gv"
 fi
 
 
@@ -6935,7 +6935,8 @@ $debug ||
 if test -n "$CONFIG_FILES"; then
 
 
-ac_cr=''
+ac_cr='
+'
 ac_cs_awk_cr=`$AWK 'BEGIN { print "a\rb" }' </dev/null 2>/dev/null`
 if test "$ac_cs_awk_cr" = "a${ac_cr}b"; then
   ac_cs_awk_cr='\\r'
