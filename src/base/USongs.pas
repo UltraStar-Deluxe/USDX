@@ -275,7 +275,11 @@ var
   lSong   : TSong;
 begin
 
-  Files    := Platform.DirectoryFindFiles( Dir, '.txt', true);
+  try
+    Files := Platform.DirectoryFindFiles( Dir, '.txt', true)
+  except
+    Log.LogError('Couldn''t deal with directory/file: ' + Dir + ' in TSongs.BrowseTXTFiles')
+  end;
 
   for i := 0 to Length(Files)-1 do
   begin
@@ -308,7 +312,11 @@ var
   lSong   : TSong;
 begin
 
-  Files := Platform.DirectoryFindFiles( Dir, '.xml', true);
+  try
+    Files := Platform.DirectoryFindFiles( Dir, '.xml', true)
+  except
+    Log.LogError('Couldn''t deal with directory/file: ' + Dir + ' in TSongs.BrowseXMLFiles')
+  end;
 
   for i := 0 to Length(Files)-1 do
   begin
