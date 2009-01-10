@@ -15,7 +15,15 @@ LangString button_next ${LANG_GERMAN} "Weiter >"
 LangString button_close ${LANG_GERMAN} "Beenden"
 LangString update_information ${LANG_GERMAN} "Du kannst nach einer aktuelleren Version von 'UltraStar Deluxe' suchen. Dazu wird eine Verbindung mit dem Internet hergestellt. Wurde eine aktuellere Version gefunden, kann diese anschließend installiert werden."
 
+LangString update_check_older ${LANG_GERMAN} "Deine aktuelle Version $R0 ist veraltet. Die neue Version $1 von UltraStar Deluxe ist verfügbar. Möchtest du sie runterladen?"
+LangString update_check_equal ${LANG_GERMAN} "Deine aktuelle Version $R0 ist auf dem neusten Stand.$\n$\rKein Update benötigt."
+LangString update_check_newer ${LANG_GERMAN} "Deine aktuelle Version $R0 ist neuer als die zurzeit veröffentlichte$\n$\rVersion $1 von UltraStar Deluxe. Kein Update benötigt."
+LangString update_check_failed ${LANG_GERMAN} "Die Aktualisierungsprüfung ist fehlgeschlagen. Willst du manuell nach Updates suchen?"
+
 ; Welcome Page:
+
+LangString page_welcome_title_update ${LANG_GERMAN} "Willkommen beim Aktualisierungsassistenten von UltraStar Deluxe" 
+LangString page_welcome_txt_update ${LANG_GERMAN} "Dieser Assistent wird Sie durch die Aktualisierung von UltraStar Deluxe begleiten. UltraStar Deluxe ist ein kostenloses quelloffenes Karaokespiel, welches Singstar ähnelt. $\n$\r$\n$\rDas UltraStar Deluxe Team wünscht viel Spaß.$\n$\rProjekthomepage: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"
 
 LangString page_welcome_title ${LANG_GERMAN} "Willkommen zur Installationsroutine von UltraStar Deluxe"
 LangString page_welcome_txt ${LANG_GERMAN} "Dieser Assistent wird Sie durch die Installation von UltraStar Deluxe begleiten. UltraStar Deluxe ist ein kostenloses quelloffenes Karaokespiel, welches Singstar ähnelt. $\n$\r$\n$\rDas UltraStar Deluxe Team wünscht viel Spaß.$\n$\rProjekthomepage: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"

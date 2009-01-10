@@ -40,8 +40,8 @@ Var /GLOBAL checkbox_state
 
 XPStyle on
 
-Name "${name} v.${version} - Update"
-Brandingtext "${name} v.${version} Update"
+Name "${name} - Update"
+Brandingtext "${name} Update"
 OutFile "ultrastardx-update.exe"
 
 InstallDir "$PROGRAMFILES\${name}"
@@ -123,25 +123,64 @@ ${NSD_GetState} $CHECKBOX $checkbox_state
 
 ${If} $checkbox_state == "1"
 
-NSISdl::download_quiet /TIMEOUT=30000 http://ultrastardx.svn.sourceforge.net/viewvc/ultrastardx/trunk/installer/version.txt $TEMP\version.txt
+NSISdl::download /TIMEOUT=50000 http://ultrastardeluxe.xtremeweb-hosting.net/version.txt $TEMP\version.txt
 
-FileOpen $4 "$TEMP\version.txt" r
-FileRead $4 $1
+Push 1
+Push "$TEMP\version.txt"
+ Call ReadFileLine
+Pop $1
 
 ReadRegStr $R0  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'DisplayVersion'
 
-
 ${VersionCompare} "$R0" "$1" $R1
 
-MessageBox MB_OK "$R1. R0 = $R0 und R1 = $1"
+${If} $R1 == "0"
 
-
+messageBox MB_OK|MB_ICONINFORMATION "$(update_check_equal)"
 
 ${Else}
+	${If} $R1 == "1"
 
+        IfFileExists $TEMP\version.txt FileExists
+           SetErrors
+           Goto Failed
+
+        FileExists:
+	messageBox MB_OK|MB_ICONINFORMATION "$(update_check_newer)"
+
+	${Else}
+
+		${If} $R1 == "2"
+		messageBox MB_YESNO|MB_ICONQUESTION \
+ 		"$(update_check_older)" IDNO +6
+
+		Push 2
+		Push "$TEMP\version.txt"
+ 		Call ReadFileLine
+		Pop $2
+
+		ExecShell Open $2
+
+		${Else}
+
+		Failed:
+		messageBox MB_YESNO|MB_ICONQUESTION \
+ 		"$(update_check_failed)" IDNO +2
+
+		ExecShell Open http://www.ultrastardeluxe.org
+
+		${EndIf}
+	${EndIf}
+${EndIf}
+${Else}
+
+; If checkbox_state = 0
 
 
 ${EndIf}
+
+Delete "$TEMP\version.txt"
+
 
 FunctionEnd
 

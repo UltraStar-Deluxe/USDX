@@ -15,7 +15,15 @@ LangString button_next ${LANG_ENGLISH} "Next >"
 LangString button_close ${LANG_ENGLISH} "Close"
 LangString update_information ${LANG_ENGLISH} "You can check if a new version of 'UltraStar Deluxe' is available. Thereto an internet connection will be established. If a new version is found, it can be installed afterwards."
 
+LangString update_check_older ${LANG_ENGLISH} "Your version $R0 is outdated. The new version $1 of UltraStar Deluxe is available. Do you want to update?"
+LangString update_check_equal ${LANG_ENGLISH} "Your currently installed version $R0 is up-to-date. No update needed."
+LangString update_check_newer ${LANG_ENGLISH} "Your installed version $R0 is newer than the $\n$\rcurrent release version $1 of UltraStar Deluxe. No update needed."
+LangString update_check_failed ${LANG_ENGLISH} "The check for a new version failed. Do you want to visit website to check manually ?"
+
 ; Welcome Page:
+
+LangString page_welcome_title_update ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe Update Wizard"
+LangString page_welcome_txt_update ${LANG_ENGLISH} "This wizard will guide you through the Update process of UltraStar Deluxe. UltraStar Deluxe is a free open source Karaoke game, which can be compared with Singstar.$\n$\r$\n$\rThe UltraStar Deluxe Team wishes you fun.$\n$\rProject website: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"
 
 LangString page_welcome_title ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe Setup Wizard"
 LangString page_welcome_txt ${LANG_ENGLISH} "This wizard will guide you through the Installation of UltraStar Deluxe. UltraStar Deluxe is a free open source Karaoke game, which can be compared with Singstar.$\n$\r$\n$\rThe UltraStar Deluxe Team wishes you fun.$\n$\rProject website: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"
