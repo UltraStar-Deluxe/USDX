@@ -10,6 +10,11 @@ LangString oninit_alreadyinstalled ${LANG_ENGLISH} "is already installed"
 LangString oninit_closeusdx ${LANG_ENGLISH} "cannot be uninstalled while its running! Do you want to close it?"
 LangString oninit_updateusdx ${LANG_ENGLISH} "Do you want to update the installation from:"
 
+LangString update_connect ${LANG_ENGLISH} "Establish internet connection and check for new version"
+LangString button_next ${LANG_ENGLISH} "Next >"
+LangString button_close ${LANG_ENGLISH} "Close"
+LangString update_information ${LANG_ENGLISH} "You can check if a new version of 'UltraStar Deluxe' is available. Thereto an internet connection will be established. If a new version is found, it can be installed afterwards."
+
 ; Welcome Page:
 
 LangString page_welcome_title ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe Setup Wizard"

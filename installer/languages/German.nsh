@@ -10,6 +10,11 @@ LangString oninit_alreadyinstalled ${LANG_GERMAN} "ist bereits installiert"
 LangString oninit_closeusdx ${LANG_GERMAN} "kann nicht w‰hrend der Laufzeit deinstalliert werden. Soll es geschlossen werden?"
 LangString oninit_updateusdx ${LANG_GERMAN} "Mˆchten Sie das Programm aktualisieren von"
 
+LangString update_connect ${LANG_GERMAN} "Mit dem Internet verbinden und nach aktueller Version suchen"
+LangString button_next ${LANG_GERMAN} "Weiter >"
+LangString button_close ${LANG_GERMAN} "Beenden"
+LangString update_information ${LANG_GERMAN} "Du kannst nach einer aktuelleren Version von 'UltraStar Deluxe' suchen. Dazu wird eine Verbindung mit dem Internet hergestellt. Wurde eine aktuellere Version gefunden, kann diese anschlieﬂend installiert werden."
+
 ; Welcome Page:
 
 LangString page_welcome_title ${LANG_GERMAN} "Willkommen zur Installationsroutine von UltraStar Deluxe"
