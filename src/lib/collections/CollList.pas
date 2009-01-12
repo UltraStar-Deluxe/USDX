@@ -32,10 +32,16 @@ unit CollList;
  * Revision 1.0  by: Matthew Greet  Rev date: 01/03/03 10:50:02
  *   Initial revision.
  * 
+ * FPC compatibility fixes by: UltraStar Deluxe Team
+ *
  * $Endlog$
  *****************************************************************************)
 
 interface
+
+{$IFDEF FPC}
+  {$MODE Delphi}{$H+}
+{$ENDIF}
 
 uses
     Collections, CollPArray;

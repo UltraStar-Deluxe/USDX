@@ -35,9 +35,15 @@ unit CollPArray;
  * Revision 1.0  by: Matthew Greet  Rev date: 01/03/03 10:50:02
  *   Initial revision.
  * 
+ * FPC compatibility fixes by: UltraStar Deluxe Team
+ *
  * $Endlog$
  *****************************************************************************)
 
+{$IFDEF FPC}
+  {$MODE Delphi}{$H+}
+{$ENDIF}
+ 
 interface
 
 uses

@@ -44,13 +44,19 @@ unit Collections;
  * Revision 1.0  by: Matthew Greet  Rev date: 01/03/03 10:50:02
  *   Initial revision.
  * 
+ * FPC compatibility fixes by: UltraStar Deluxe Team
+ *
  * $Endlog$
  *****************************************************************************)
 
+{$IFDEF FPC}
+  {$MODE Delphi}{$H+}
+{$ENDIF}
+ 
 interface
 
 uses
-    Classes, SysUtils, Windows;
+    Classes, SysUtils;
 
 const
     EquatableIID: TGUID = '{EAC823A7-0B90-11D7-8120-0002E3165EF8}';
