@@ -246,63 +246,6 @@ begin
   Draw:=true;
 end;
 
-function pixfmt_eq(fmt1,fmt2: TSDL_Pixelformat): boolean;
-begin
-  if (fmt1.BitsPerPixel = fmt2.BitsPerPixel) and
-     (fmt1.BytesPerPixel = fmt2.BytesPerPixel) and
-     (fmt1.Rloss = fmt2.Rloss) and
-     (fmt1.Gloss = fmt2.Gloss) and
-     (fmt1.Bloss = fmt2.Bloss) and
-     (fmt1.Rmask = fmt2.Rmask) and
-     (fmt1.Gmask = fmt2.Gmask) and
-     (fmt1.Bmask = fmt2.Bmask) and
-     (fmt1.Rshift = fmt2.Rshift) and
-     (fmt1.Gshift = fmt2.Gshift) and
-     (fmt1.Bshift = fmt2.Bshift)
-   then
-    pixfmt_eq:=True
-  else
-    pixfmt_eq:=False;
-end;
-
-function inttohexstr(i: cardinal):pchar;
-var helper, i2, c:cardinal;
-    tmpstr: string;
-begin
-  helper:=0;
-  i2:=i;
-  tmpstr:='';
-  for c:=1 to 8 do
-  begin
-    helper:=(helper shl 4) or (i2 and $f);
-    i2:=i2 shr 4;
-  end;
-  for c:=1 to 8 do
-  begin
-    i2:=helper and $f;
-    helper := helper shr 4;
-    case i2 of
-      0: tmpstr:=tmpstr+'0';
-      1: tmpstr:=tmpstr+'1';
-      2: tmpstr:=tmpstr+'2';
-      3: tmpstr:=tmpstr+'3';
-      4: tmpstr:=tmpstr+'4';
-      5: tmpstr:=tmpstr+'5';
-      6: tmpstr:=tmpstr+'6';
-      7: tmpstr:=tmpstr+'7';
-      8: tmpstr:=tmpstr+'8';
-      9: tmpstr:=tmpstr+'9';
-     10: tmpstr:=tmpstr+'a';
-     11: tmpstr:=tmpstr+'b';
-     12: tmpstr:=tmpstr+'c';
-     13: tmpstr:=tmpstr+'d';
-     14: tmpstr:=tmpstr+'e';
-     15: tmpstr:=tmpstr+'f';
-    end;
-  end;
-  inttohexstr:=pchar(tmpstr);
-end;
-
 procedure TScreenCredits.onShow;
 begin
   inherited;
