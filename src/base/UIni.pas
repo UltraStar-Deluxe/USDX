@@ -283,17 +283,22 @@ function TIni.ExtractKeyIndex(const Key, Prefix, Suffix: string): integer;
 var
   Value: string;
   Start: integer;
+  PrefixPos, SuffixPos: integer;
 begin
   Result := -1;
 
-  if Pos(Prefix, Key) > -1 then
-  begin
-    Start  := Pos(Prefix, Key) + Length(Prefix);
+  PrefixPos := Pos(Prefix, Key);
+  if (PrefixPos <= 0) then
+    Exit;
+  SuffixPos := Pos(Suffix, Key);
+  if (SuffixPos <= 0) then
+    Exit;
 
-    // copy all between prefix and suffix
-    Value  := Copy(Key, Start, Pos(Suffix, Key)-1 - Start);
-    Result := StrToIntDef(Value, -1);
-  end;
+  Start := PrefixPos + Length(Prefix);
+
+  // copy all between prefix and suffix
+  Value  := Copy(Key, Start, SuffixPos - Start);
+  Result := StrToIntDef(Value, -1);
 end;
 
 (**
