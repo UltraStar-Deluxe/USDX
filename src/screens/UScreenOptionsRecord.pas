@@ -166,8 +166,8 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
         begin
-          // Escape -> save nothing - just leave this screen
-          
+          // TODO: Show Save/Abort screen
+          Ini.Save;          
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
