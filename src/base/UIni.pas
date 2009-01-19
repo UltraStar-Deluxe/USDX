@@ -419,9 +419,9 @@ begin
   RecordKeys.Free();
 
   // MicBoost
-  //MicBoost := GetArrayIndex(IMicBoost, IniFile.ReadString('Record', 'MicBoost', 'Off'));
+  MicBoost := GetArrayIndex(IMicBoost, IniFile.ReadString('Record', 'MicBoost', 'Off'));
   // Threshold
-  //  ThresholdIndex := GetArrayIndex(IThreshold, IniFile.ReadString('Record', 'Threshold', IThreshold[1]));
+  ThresholdIndex := GetArrayIndex(IThreshold, IniFile.ReadString('Record', 'Threshold', IThreshold[1]));
 end;
 
 procedure TIni.SaveInputDeviceCfg(IniFile: TIniFile);
@@ -447,9 +447,9 @@ begin
   end;
 
   // MicBoost
-  //IniFile.WriteString('Record', 'MicBoost', IMicBoost[MicBoost]);
+  IniFile.WriteString('Record', 'MicBoost', IMicBoost[MicBoost]);
   // Threshold
-  //IniFile.WriteString('Record', 'Threshold', IThreshold[ThresholdIndex]);
+  IniFile.WriteString('Record', 'Threshold', IThreshold[ThresholdIndex]);
 end;
 
 procedure TIni.LoadPaths(IniFile: TCustomIniFile);
