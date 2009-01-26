@@ -37,23 +37,24 @@ type
 
 // Debugging threads with XCode doesn't seem to work.
 // We use PseudoThread in Debug mode to get proper debugging.
+
 TPseudoThread = class(TObject)
   private
   protected
     Terminated,
-    FreeOnTerminate : Boolean;
+    FreeOnTerminate: boolean;
     procedure Execute; virtual; abstract;
     procedure Resume;
     procedure Suspend;
   public
-   constructor Create(const suspended : Boolean);
+   constructor Create(const suspended : boolean);
 end;
 
 implementation
 
 { TPseudoThread }
 
-constructor TPseudoThread.Create(const suspended : Boolean);
+constructor TPseudoThread.Create(const suspended: boolean);
 begin
   if not suspended then
   begin
