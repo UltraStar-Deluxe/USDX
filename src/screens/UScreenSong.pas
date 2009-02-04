@@ -392,21 +392,22 @@ begin
 
       'R':
         begin
-          if (Songs.SongList.Count > 0) and (Mode = smNormal) then
+          if (Songs.SongList.Count > 0) and
+             (Mode = smNormal) then
           begin
-            if (SDL_ModState = KMOD_LSHIFT) and (Ini.Tabs_at_startup = 1) then //Random Category
+            if (SDL_ModState = KMOD_LSHIFT) and (Ini.TabsAtStartup = 1) then //Random Category
             begin
               I2 := 0; //Count Cats
-              for I:= low(CatSongs.Song) to high (CatSongs.Song) do
+              for I:= 0 to high(CatSongs.Song) do
               begin
                 if CatSongs.Song[I].Main then
                   Inc(I2);
               end;
 
-              I2 := Random (I2)+1; //Zufall
+              I2 := Random(I2)+1; //Zufall
 
               //Find Cat:
-              for I:= low(CatSongs.Song) to high (CatSongs.Song) do
+              for I:= 0 to high(CatSongs.Song) do
                 begin
                 if CatSongs.Song[I].Main then
                   Dec(I2);
@@ -425,14 +426,14 @@ begin
                 end;
               end;
             end
-            else if (SDL_ModState = KMOD_LCTRL) and (Ini.Tabs_at_startup = 1) then //random in All Categorys
+            else if (SDL_ModState = KMOD_LCTRL) and (Ini.TabsAtStartup = 1) then //random in All Categorys
             begin
               repeat
-                I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
-              until CatSongs.Song[I2].Main = false;
+                I2 := Random(high(CatSongs.Song)+1) + 1;
+              until (not CatSongs.Song[I2].Main);
 
               //Search Cat
-              for I := I2 downto low(CatSongs.Song) do
+              for I := I2 downto 0 do
               begin
               if CatSongs.Song[I].Main then
                 break;
@@ -476,20 +477,20 @@ begin
           if (Mode = smNormal) then
           begin
             //On Escape goto Cat-List Hack
-            if (Ini.Tabs_at_startup = 1) and (CatSongs.CatNumShow <> -1) then
+            if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow <> -1) then
               begin
               //Find Category
               I := Interaction;
-              while not catsongs.Song[I].Main  do
-                begin
-                Dec (I);
-                if (I < low(catsongs.Song)) then
+              while (not CatSongs.Song[I].Main) do
+              begin
+                Dec(I);
+                if (I < 0) then
                   break;
-                end;
-              if (I<= 1) then
-              Interaction := high(catsongs.Song)
+              end;
+              if (I <= 1) then
+                Interaction := high(CatSongs.Song)
               else
-              Interaction := I - 1;
+                Interaction := I - 1;
 
               //Stop Music
               StopMusicPreview();
@@ -544,7 +545,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if Songs.SongList.Count > 0 then
+          if (Songs.SongList.Count > 0) then
           begin
             if CatSongs.Song[Interaction].Main then
             begin // clicked on Category Button
@@ -601,7 +602,7 @@ begin
             if (CatSongs.CatNumShow > -2) then
             begin
               //Cat Change Hack
-              if Ini.Tabs_at_startup = 1 then
+              if Ini.TabsAtStartup = 1 then
               begin
                 I := Interaction;
                 if I <= 0 then I := 1;
@@ -641,7 +642,7 @@ begin
             if (CatSongs.CatNumShow > -2) then
             begin
               //Cat Change Hack
-              if Ini.Tabs_at_startup = 1 then
+              if Ini.TabsAtStartup = 1 then
               begin
                 I := Interaction;
                 I2 := 0;
@@ -731,7 +732,7 @@ begin
           end; }
         end;
     end;
-  end;
+  end; // if (PressedDown)
 end;
 
 constructor TScreenSong.Create;
@@ -892,7 +893,7 @@ begin
     // Set texts
     Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
     Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
-    if (Ini.Tabs_at_startup = 1) and (CatSongs.CatNumShow = -1) then
+    if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then
     begin
       Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].OrderNum) + '/' + IntToStr(CatSongs.CatCount);
       Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
@@ -901,7 +902,7 @@ begin
       Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
     else if (CatSongs.CatNumShow = -3) then
       Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
-    else if (Ini.Tabs_at_startup = 1) then
+    else if (Ini.TabsAtStartup = 1) then
       Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].CatNumber) + '/' + IntToStr(CatSongs.Song[Interaction - CatSongs.Song[Interaction].CatNumber].CatNumber)
     else
       Text[TextNumber].Text := IntToStr(Interaction+1) + '/' + IntToStr(Length(CatSongs.Song));
@@ -1366,7 +1367,7 @@ begin
   if Ini.Players  = 4 then PlayersPlay := 6;
 
   //Cat Mod etc
-  if (Ini.Tabs_at_startup = 1) and (CatSongs.CatNumShow = -1) then
+  if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then
   begin
     CatSongs.ShowCategoryList;
     FixSelected;
@@ -1674,7 +1675,7 @@ begin
       smNormal:  //All Songs Just Select Random Song
         begin
           //When Tabs are activated then use Tab Method
-          if (Ini.Tabs_at_startup = 1) then
+          if (Ini.TabsAtStartup = 1) then
           begin
             repeat
               I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
