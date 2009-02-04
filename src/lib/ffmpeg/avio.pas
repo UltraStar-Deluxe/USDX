@@ -27,7 +27,7 @@
 
 (*
  * Conversion of libavformat/avio.h
- * revision 15120, Sun Aug 31 07:39:47 2008 UTC 
+ * revision 16100, Sat Dec 13 13:39:13 2008 UTC 
  *)
 
 unit avio;
@@ -48,12 +48,8 @@ uses
   ctypes,
   avutil,
   avcodec,
+  SysUtils,
   UConfig;
-
-(* output byte stream handling *)
-
-type
-  TOffset = cint64;
 
 (* unbuffered I/O *)
 
@@ -92,7 +88,7 @@ type
     is_streamed: cint;  (**< true if streamed (no seek possible), default = false *)
     max_packet_size: cint;  (**< if non zero, the stream is packetized with this max packet size *)
     priv_data: pointer;
-    filename: PChar; (**< specified filename *)
+    filename: PAnsiChar; (**< specified filename *)
   end;
   PPURLContext = ^PURLContext;
 
@@ -104,11 +100,11 @@ type
   end;
 
   TURLProtocol = record
-    name: PChar;
-    url_open: function (h: PURLContext; filename: {const} PChar; flags: cint): cint; cdecl;
-    url_read: function (h: PURLContext; buf: PChar; size: cint): cint; cdecl;
-    url_write: function (h: PURLContext; buf: PChar; size: cint): cint; cdecl;
-    url_seek: function (h: PURLContext; pos: TOffset; whence: cint): TOffset; cdecl;
+    name: PAnsiChar;
+    url_open: function (h: PURLContext; filename: {const} PAnsiChar; flags: cint): cint; cdecl;
+    url_read: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+    url_write: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+    url_seek: function (h: PURLContext; pos: cint64; whence: cint): cint64; cdecl;
     url_close: function (h: PURLContext): cint; cdecl;
     next: PURLProtocol;
     {$IF (LIBAVFORMAT_VERSION >= 52001000) and (LIBAVFORMAT_VERSION < 52004000)} // 52.1.0 .. 52.4.0
@@ -119,8 +115,8 @@ type
     url_read_pause: function (h: PURLContext; pause: cint): cint; cdecl;
     {$IFEND}
     {$IF LIBAVFORMAT_VERSION >= 52001000} // 52.1.0
-    url_read_seek: function (h: PURLContext;
-                         stream_index: cint; timestamp: cint64; flags: cint): TOffset; cdecl;
+    url_read_seek: function (h: PURLContext; stream_index: cint;
+                             timestamp: cint64; flags: cint): cint64; cdecl;
     {$IFEND}
   end;
 
@@ -133,23 +129,23 @@ type
   *)
   PByteIOContext = ^TByteIOContext;
   TByteIOContext = record
-    buffer: PChar;
+    buffer: PByteArray;
     buffer_size: cint;
-    buf_ptr: PChar;
-    buf_end: PChar;
+    buf_ptr: PByteArray;
+    buf_end: PByteArray;
     opaque: pointer;
-    read_packet: function (opaque: pointer; buf: PChar; buf_size: cint): cint; cdecl;
-    write_packet: function (opaque: pointer; buf: PChar; buf_size: cint): cint; cdecl;
-    seek: function (opaque: pointer; offset: TOffset; whence: cint): TOffset; cdecl;
-    pos: TOffset; (* position in the file of the current buffer *)
+    read_packet: function (opaque: pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
+    write_packet: function (opaque: pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
+    seek: function (opaque: pointer; offset: cint64; whence: cint): cint64; cdecl;
+    pos: cint64; (* position in the file of the current buffer *)
     must_flush: cint; (* true if the next seek should flush *)
     eof_reached: cint; (* true if eof reached *)
     write_flag: cint;  (* true if open for writing *)
     is_streamed: cint;
     max_packet_size: cint;
     checksum: culong;
-    checksum_ptr: PCuchar;
-    update_checksum: function (checksum: culong; buf: {const} PChar; size: cuint): culong; cdecl;
+    checksum_ptr: PByteArray;
+    update_checksum: function (checksum: culong; buf: {const} PByteArray; size: cuint): culong; cdecl;
     error: cint;         ///< contains the error code or 0 if no error happened
     {$IF (LIBAVFORMAT_VERSION >= 52001000) and (LIBAVFORMAT_VERSION < 52004000)} // 52.1.0 .. 52.4.0
     read_play: function(opaque: Pointer): cint; cdecl;
@@ -159,30 +155,30 @@ type
     read_pause: function(opaque: Pointer; pause: cint): cint; cdecl;
     {$IFEND}
     {$IF LIBAVFORMAT_VERSION >= 52001000} // 52.1.0
-    read_seek: function(opaque: Pointer;
-                     stream_index: cint; timestamp: cint64; flags: cint): TOffset; cdecl;
+    read_seek: function(opaque: Pointer; stream_index: cint;
+                        timestamp: cint64; flags: cint): cint64; cdecl;
     {$IFEND}
   end;
 
 
 {$IF LIBAVFORMAT_VERSION >= 52021000} // 52.21.0
 function url_open_protocol(puc: PPURLContext; up: PURLProtocol;
-                           filename: {const} PChar; flags: cint): cint;
+                           filename: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format;
 {$IFEND}
-function url_open(h: PPointer; filename: {const} PChar; flags: cint): cint;
+function url_open(h: PPointer; filename: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format;
-function url_read (h: PURLContext; buf: PChar; size: cint): cint;
+function url_read (h: PURLContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
-function url_write (h: PURLContext; buf: PChar; size: cint): cint;
+function url_write (h: PURLContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
-function url_seek (h: PURLContext; pos: TOffset; whence: cint): TOffset;
+function url_seek (h: PURLContext; pos: cint64; whence: cint): cint64;
   cdecl; external av__format;
 function url_close (h: PURLContext): cint;
   cdecl; external av__format;
-function url_exist(filename: {const} PChar): cint;
+function url_exist(filename: {const} PAnsiChar): cint;
   cdecl; external av__format;
-function url_filesize (h: PURLContext): TOffset;
+function url_filesize (h: PURLContext): cint64;
   cdecl; external av__format;
 
 (**
@@ -195,7 +191,7 @@ function url_filesize (h: PURLContext): TOffset;
  *)
 function url_get_max_packet_size(h: PURLContext): cint;
   cdecl; external av__format;
-procedure url_get_filename(h: PURLContext; buf: PChar; buf_size: cint);
+procedure url_get_filename(h: PURLContext; buf: PAnsiChar; buf_size: cint);
   cdecl; external av__format;
 
 (**
@@ -239,8 +235,8 @@ function av_url_read_pause(h: PURLContext; pause: cint): cint;
  * @return >= 0 on success
  * @see AVInputFormat::read_seek
  *)
-function av_url_read_seek(h: PURLContext;
-                     stream_index: cint; timestamp: cint64; flags: cint): TOffset;
+function av_url_read_seek(h: PURLContext; stream_index: cint;
+                          timestamp: cint64; flags: cint): cint64;
   cdecl; external av__format;
 {$IFEND}
 
@@ -259,11 +255,11 @@ function register_protocol (protocol: PURLProtocol): cint;
   cdecl; external av__format;
 
 type
-  TReadWriteFunc = function (opaque: Pointer; buf: PChar; buf_size: cint): cint; cdecl;
-  TSeekFunc = function (opaque: Pointer; offset: TOffset; whence: cint): TOffset; cdecl;
+  TReadWriteFunc = function (opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
+  TSeekFunc = function (opaque: Pointer; offset: cint64; whence: cint): cint64; cdecl;
 
 function init_put_byte(s: PByteIOContext;
-                buffer: PChar;
+                buffer: PByteArray;
                 buffer_size: cint; write_flag: cint;
                 opaque: pointer;
                 read_packet: TReadWriteFunc;
@@ -272,7 +268,7 @@ function init_put_byte(s: PByteIOContext;
   cdecl; external av__format;
 {$IF LIBAVFORMAT_VERSION >= 52004000} // 52.4.0
 function av_alloc_put_byte(
-                  buffer: PChar;
+                  buffer: PByteArray;
                   buffer_size: cint;
                   write_flag: cint;
                   opaque: Pointer;
@@ -284,7 +280,7 @@ function av_alloc_put_byte(
 
 procedure put_byte(s: PByteIOContext; b: cint);
   cdecl; external av__format;
-procedure put_buffer (s: PByteIOContext; buf: {const} PChar; size: cint);
+procedure put_buffer (s: PByteIOContext; buf: {const} PByteArray; size: cint);
   cdecl; external av__format;
 procedure put_le64(s: PByteIOContext; val: cuint64);
   cdecl; external av__format;
@@ -302,38 +298,38 @@ procedure put_le16(s: PByteIOContext; val: cuint);
   cdecl; external av__format;
 procedure put_be16(s: PByteIOContext; val: cuint);
   cdecl; external av__format;
-procedure put_tag(s: PByteIOContext; tag: {const} PChar);
+procedure put_tag(s: PByteIOContext; tag: {const} PAnsiChar);
   cdecl; external av__format;
 
-procedure put_strz(s: PByteIOContext; buf: {const} PChar);
+procedure put_strz(s: PByteIOContext; buf: {const} PAnsiChar);
   cdecl; external av__format;
 
 (**
  * fseek() equivalent for ByteIOContext.
  * @return new position or AVERROR.
  *)
-function url_fseek(s: PByteIOContext; offset: TOffset; whence: cint): TOffset;
+function url_fseek(s: PByteIOContext; offset: cint64; whence: cint): cint64;
   cdecl; external av__format;
 
 (**
  * Skip given number of bytes forward.
  * @param offset number of bytes
  *)
-procedure url_fskip(s: PByteIOContext; offset: TOffset);
+procedure url_fskip(s: PByteIOContext; offset: cint64);
   cdecl; external av__format;
 
 (**
  * ftell() equivalent for ByteIOContext.
  * @return position or AVERROR.
  *)
-function url_ftell(s: PByteIOContext): TOffset;
+function url_ftell(s: PByteIOContext): cint64;
   cdecl; external av__format;
 
 (**
  * Gets the filesize.
  * @return filesize or AVERROR
  *)
-function url_fsize(s: PByteIOContext): TOffset;
+function url_fsize(s: PByteIOContext): cint64;
   cdecl; external av__format;
 
 (**
@@ -351,8 +347,8 @@ function av_url_read_fpause(h: PByteIOContext; pause: cint): cint;
   cdecl; external av__format;
 {$IFEND}
 {$IF LIBAVFORMAT_VERSION >= 52001000} // 52.1.0
-function av_url_read_fseek(h: PByteIOContext;
-                      stream_index: cint; timestamp: cint64; flags: cint): TOffset;
+function av_url_read_fseek(h: PByteIOContext; stream_index: cint;
+                           timestamp: cint64; flags: cint): cint64;
   cdecl; external av__format;
 {$IFEND}
 
@@ -363,12 +359,12 @@ function url_fgetc(s: PByteIOContext): cint;
   cdecl; external av__format;
 
 (** @warning currently size is limited *)
-function url_fprintf(s: PByteIOContext; fmt: {const} PChar; args: array of const): cint;
+function url_fprintf(s: PByteIOContext; fmt: {const} PAnsiChar; args: array of const): cint;
   cdecl; external av__format;
 
 (** @note unlike fgets, the EOL character is not returned and a whole
    line is parsed. return NULL if first char read was EOF *)
-function url_fgets(s: PByteIOContext; buf: PChar; buf_size: cint): PChar;
+function url_fgets(s: PByteIOContext; buf: PAnsiChar; buf_size: cint): PAnsiChar;
   cdecl; external av__format;
 
 procedure put_flush_packet (s: PByteIOContext);
@@ -379,7 +375,7 @@ procedure put_flush_packet (s: PByteIOContext);
  * Reads size bytes from ByteIOContext into buf.
  * @returns number of bytes read or AVERROR
  *)
-function get_buffer(s: PByteIOContext; buf: PChar; size: cint): cint;
+function get_buffer(s: PByteIOContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
 
 (**
@@ -388,7 +384,7 @@ function get_buffer(s: PByteIOContext; buf: PChar; size: cint): cint;
  * returned.
  * @returns number of bytes read or AVERROR
  *)
-function get_partial_buffer(s: PByteIOContext; buf: PChar; size: cint): cint;
+function get_partial_buffer(s: PByteIOContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
 
 (** @note return 0 if EOF, so you cannot use it if EOF handling is
@@ -404,7 +400,7 @@ function get_le64(s: PByteIOContext): cuint64;
 function get_le16(s: PByteIOContext): cuint;
   cdecl; external av__format;
 
-function get_strz(s: PByteIOContext; buf: PChar; maxlen: cint): PChar;
+function get_strz(s: PByteIOContext; buf: PAnsiChar; maxlen: cint): PAnsiChar;
   cdecl; external av__format;
 function get_be16(s: PByteIOContext): cuint;
   cdecl; external av__format;
@@ -447,9 +443,9 @@ function url_resetbuf(s: PByteIOContext; flags: cint): cint;
 (** @note when opened as read/write, the buffers are only used for
    writing *)
 {$IF LIBAVFORMAT_VERSION >= 52000000} // 52.0.0
-function url_fopen(var s: PByteIOContext; filename: {const} PChar; flags: cint): cint;
+function url_fopen(var s: PByteIOContext; filename: {const} PAnsiChar; flags: cint): cint;
 {$ELSE}
-function url_fopen(s: PByteIOContext; filename: {const} PChar; flags: cint): cint;
+function url_fopen(s: PByteIOContext; filename: {const} PAnsiChar; flags: cint): cint;
 {$IFEND}
   cdecl; external av__format;
 function url_fclose(s: PByteIOContext): cint;
@@ -469,9 +465,9 @@ function url_fget_max_packet_size (s: PByteIOContext): cint;
   cdecl; external av__format;
 
 {$IF LIBAVFORMAT_VERSION >= 52000000} // 52.0.0
-function url_open_buf(var s: PByteIOContext; buf: PChar; buf_size: cint; flags: cint): cint;
+function url_open_buf(var s: PByteIOContext; buf: PAnsiChar; buf_size: cint; flags: cint): cint;
 {$ELSE}
-function url_open_buf(s: PByteIOContext; buf: PChar; buf_size: cint; flags: cint): cint;
+function url_open_buf(s: PByteIOContext; buf: PAnsiChar; buf_size: cint; flags: cint): cint;
 {$IFEND}
   cdecl; external av__format;
 
@@ -519,16 +515,19 @@ function url_close_dyn_buf(s: PByteIOContext; pbuffer:PPointer): cint;
   cdecl; external av__format;
 
 {$IF LIBAVFORMAT_VERSION >= 51017001} // 51.17.1
-function ff_crc04C11DB7_update(checksum: culong; buf: {const} PChar; len: cuint): culong;
+function ff_crc04C11DB7_update(checksum: culong; buf: {const} PByteArray;
+                               len: cuint): culong;
   cdecl; external av__format;
 {$IFEND}
 function get_checksum(s: PByteIOContext): culong;
   cdecl; external av__format;
-procedure init_checksum (s: PByteIOContext; update_checksum: pointer; checksum: culong);
+procedure init_checksum(s: PByteIOContext;
+                        update_checksum: pointer;
+                        checksum: culong);
   cdecl; external av__format;
 
 (* udp.c *)
-function udp_set_remote_url(h: PURLContext; uri: {const} PChar): cint;
+function udp_set_remote_url(h: PURLContext; uri: {const} PAnsiChar): cint;
   cdecl; external av__format;
 function udp_get_local_port(h: PURLContext): cint;
   cdecl; external av__format;

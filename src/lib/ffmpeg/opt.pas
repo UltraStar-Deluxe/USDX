@@ -27,7 +27,7 @@
 
 (*
  * Conversion of libavcodec/opt.h
- * revision 15120, Sun Aug 31 07:39:47 2008 UTC 
+ * revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *)
 
 unit opt;
@@ -74,13 +74,13 @@ type
    *)
   PAVOption = ^TAVOption;
   TAVOption = record
-    name: {const} PChar;
+    name: {const} PAnsiChar;
     
     (**
      * short English help text
      * @todo What about other languages?
      *)
-    help: {const} PChar;
+    help: {const} PAnsiChar;
 
     (**
      * The offset relative to the context structure where the option
@@ -104,7 +104,7 @@ type
      * options and corresponding named constants share the same
      * unit. May be NULL.
      *)
-    unit_: {const} PChar;
+    unit_: {const} PAnsiChar;
   end;
 
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
@@ -114,23 +114,38 @@ type
  * for which it is the case that opt->flags & mask == flags).
  *
  * @param[in] obj a pointer to a struct whose first element is a
- * pointer to an #AVClass
+ * pointer to an AVClass
  * @param[in] name the name of the option to look for
  * @param[in] unit the unit of the option to look for, or any if NULL
  * @return a pointer to the option found, or NULL if no option
  * has been found
  *)
-function av_find_opt(obj: Pointer; {const} name: {const} PChar; {const} unit_: PChar; mask: cint; flags: cint): {const} PAVOption;
+function av_find_opt(obj: Pointer; {const} name: {const} PAnsiChar; {const} unit_: PAnsiChar; mask: cint; flags: cint): {const} PAVOption;
   cdecl; external av__codec;
 {$IFEND}
+
+{$IF LIBAVCODEC_VERSION_MAJOR < 53}
 
 (**
  * @see av_set_string2()
  *)
-function av_set_string(obj: pointer; name: {const} pchar; val: {const} pchar): {const} PAVOption;
+function av_set_string(obj: pointer; name: {const} PAnsiChar; val: {const} PAnsiChar): {const} PAVOption;
   cdecl; external av__codec; deprecated;
 
 {$IF LIBAVCODEC_VERSION >= 51059000} // 51.59.0
+(**
+ * @return a pointer to the AVOption corresponding to the field set or
+ * NULL if no matching AVOption exists, or if the value \p val is not
+ * valid
+ * @see av_set_string3()
+ *)
+function av_set_string2(obj: Pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; alloc: cint): {const} PAVOption;
+  cdecl; external av__codec; deprecated;
+{$IFEND}
+
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 52007000} // 52.7.0
 (**
  * Sets the field of obj with the given name to value.
  *
@@ -147,36 +162,37 @@ function av_set_string(obj: pointer; name: {const} pchar; val: {const} pchar): {
  * scalars or named flags separated by '+' or '-'. Prefixing a flag
  * with '+' causes it to be set without affecting the other flags;
  * similarly, '-' unsets a flag.
- * @return a pointer to the AVOption corresponding to the field set or
- * NULL if no matching AVOption exists, or if the value \p val is not
- * valid
+ * @param[out] o_out if non-NULL put here a pointer to the AVOption
+ * found
  * @param alloc when 1 then the old value will be av_freed() and the
  *                     new av_strduped()
  *              when 0 then no av_free() nor av_strdup() will be used
+ * @return 0 if the value has been set, an AVERROR* error code if no
+ * matching option exists, or if the value \p val is not valid
  *)
-function av_set_string2(obj: Pointer; name: {const} PChar; val: {const} PChar; alloc: cint): {const} PAVOption;
+function av_set_string3(obj: Pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; alloc: cint; out o_out: {const} PAVOption): cint;
   cdecl; external av__codec;
 {$IFEND}
 
-function av_set_double(obj: pointer; name: {const} pchar; n: cdouble): PAVOption;
+function av_set_double(obj: pointer; name: {const} PAnsiChar; n: cdouble): PAVOption;
   cdecl; external av__codec;
 
-function av_set_q(obj: pointer; name: {const} pchar; n: TAVRational): PAVOption;
+function av_set_q(obj: pointer; name: {const} PAnsiChar; n: TAVRational): PAVOption;
   cdecl; external av__codec;
 
-function av_set_int(obj: pointer; name: {const} pchar; n: cint64): PAVOption;
+function av_set_int(obj: pointer; name: {const} PAnsiChar; n: cint64): PAVOption;
   cdecl; external av__codec;
 
-function av_get_double(obj: pointer; name: {const} pchar; var o_out: PAVOption): cdouble;
+function av_get_double(obj: pointer; name: {const} PAnsiChar; var o_out: PAVOption): cdouble;
   cdecl; external av__codec;
 
-function av_get_q(obj: pointer; name: {const} pchar; var o_out: PAVOption): TAVRational;
+function av_get_q(obj: pointer; name: {const} PAnsiChar; var o_out: PAVOption): TAVRational;
   cdecl; external av__codec;
 
-function av_get_int(obj: pointer; name: {const} pchar; var o_out: {const} PAVOption): cint64;
+function av_get_int(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): cint64;
   cdecl; external av__codec;
 
-function av_get_string(obj: pointer; name: {const} pchar; var o_out: {const} PAVOption; buf: pchar; buf_len: cint): pchar;
+function av_get_string(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption; buf: PAnsiChar; buf_len: cint): PAnsiChar;
   cdecl; external av__codec;
 
 function av_next_option(obj: pointer; last: {const} PAVOption): PAVOption;

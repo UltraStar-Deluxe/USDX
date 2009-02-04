@@ -26,7 +26,7 @@
 
 (*
  * Conversion of libavutil/mathematics.h
- * revision 15120, Sun Aug 31 07:39:47 2008 UTC 
+ * revision 16844, Wed Jan 28 08:50:10 2009 UTC 
  *)
 
 unit mathematics;
@@ -55,29 +55,34 @@ const
 
 type
   TAVRounding = (
-    AV_ROUND_ZERO     = 0, ///< round toward zero
-    AV_ROUND_INF      = 1, ///< round away from zero
-    AV_ROUND_DOWN     = 2, ///< round toward -infinity
-    AV_ROUND_UP       = 3, ///< round toward +infinity
-    AV_ROUND_NEAR_INF = 5  ///< round to nearest and halfway cases away from zero
+    AV_ROUND_ZERO     = 0, ///< Round toward zero
+    AV_ROUND_INF      = 1, ///< Round away from zero
+    AV_ROUND_DOWN     = 2, ///< Round toward -infinity
+    AV_ROUND_UP       = 3, ///< Round toward +infinity
+    AV_ROUND_NEAR_INF = 5  ///< Round to nearest and halfway cases away from zero
   );
 
+{$IF LIBAVUTIL_VERSION >= 49013000} // 49.13.0
+function av_gcd(a: cint64; b: cint64): cint64;
+  cdecl; external av__util; {av_const}
+{$IFEND}
+
 (**
- * rescale a 64bit integer with rounding to nearest.
- * a simple a*b/c isn't possible as it can overflow
+ * Rescales a 64-bit integer with rounding to nearest.
+ * A simple a*b/c isn't possible as it can overflow.
  *)
 function av_rescale (a, b, c: cint64): cint64;
   cdecl; external av__util; {av_const}
 
 (**
- * rescale a 64bit integer with specified rounding.
- * a simple a*b/c isn't possible as it can overflow
+ * Rescales a 64-bit integer with specified rounding.
+ * A simple a*b/c isn't possible as it can overflow.
  *)
 function av_rescale_rnd (a, b, c: cint64; enum: TAVRounding): cint64;
   cdecl; external av__util; {av_const}
 
 (**
- * rescale a 64bit integer by 2 rational numbers.
+ * Rescales a 64-bit integer by 2 rational numbers.
  *)
 function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
   cdecl; external av__util; {av_const}
