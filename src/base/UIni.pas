@@ -98,7 +98,7 @@ type
       Difficulty:     integer;
       Language:       integer;
       Tabs:           integer;
-      Tabs_at_startup:integer; //Tabs at Startup fix
+      TabsAtStartup:integer; //Tabs at Startup fix
       Sorting:        integer;
       Debug:          integer;
 
@@ -668,7 +668,7 @@ begin
   
   // Tabs
   Tabs := GetArrayIndex(ITabs, IniFile.ReadString('Game', 'Tabs', ITabs[0]));
-  Tabs_at_startup := Tabs;	//Tabs at Startup fix
+  TabsAtStartup := Tabs;	//Tabs at Startup fix
   
   // Song Sorting
   Sorting := GetArrayIndex(ISorting, IniFile.ReadString('Game', 'Sorting', ISorting[0]));
