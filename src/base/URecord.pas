@@ -36,8 +36,8 @@ interface
 uses
   Classes,
   Math,
-  SysUtils,
   sdl,
+  SysUtils,
   UCommon,
   UMusic,
   UIni;
@@ -54,8 +54,8 @@ type
 
       function GetToneString: string; // converts a tone to its string represenatation;
 
-      procedure BoostBuffer(Buffer: PChar; Size: Cardinal);
-      procedure ProcessNewBuffer(Buffer: PChar; BufferSize: integer);
+      procedure BoostBuffer(Buffer: PByteArray; Size: Cardinal);
+      procedure ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
 
       // we call it to analyze sound by checking Autocorrelation
       procedure AnalyzeByAutocorrelation;
@@ -135,7 +135,7 @@ type
       procedure UpdateInputDeviceConfig;
 
       // handle microphone input
-      procedure HandleMicrophoneData(Buffer: PChar; Size: Cardinal;
+      procedure HandleMicrophoneData(Buffer: PByteArray; Size: Cardinal;
                                      InputDevice: TAudioInputDevice);
   end;
 
@@ -268,7 +268,7 @@ begin
   UnlockAnalysisBuffer();
 end;
 
-procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PChar; BufferSize: integer);
+procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
 var
   BufferOffset: integer;
   SampleCount: integer;
@@ -464,7 +464,7 @@ begin
     Result := '-';
 end;
 
-procedure TCaptureBuffer.BoostBuffer(Buffer: PChar; Size: Cardinal);
+procedure TCaptureBuffer.BoostBuffer(Buffer: PByteArray; Size: Cardinal);
 var
   i: integer;
   Value: Longint;
@@ -608,10 +608,10 @@ end;
  *   Length - number of bytes in Buffer
  *   Input - Soundcard-Input used for capture
  *}
-procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: PChar; Size: Cardinal; InputDevice: TAudioInputDevice);
+procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: PByteArray; Size: Cardinal; InputDevice: TAudioInputDevice);
 var
-  MultiChannelBuffer: PChar;  // buffer handled as array of bytes (offset relative to channel)
-  SingleChannelBuffer: PChar; // temporary buffer for new samples per channel
+  MultiChannelBuffer: PByteArray;  // buffer handled as array of bytes (offset relative to channel)
+  SingleChannelBuffer: PByteArray; // temporary buffer for new samples per channel
   SingleChannelBufferSize: integer;
   ChannelIndex: integer;
   CaptureChannel: TCaptureBuffer;

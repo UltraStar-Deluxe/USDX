@@ -35,6 +35,7 @@ interface
 
 uses
   UTime,
+  SysUtils,
   Classes;
 
 type
@@ -212,12 +213,12 @@ type
   TSoundEffect = class
     public
       EngineData: Pointer; // can be used for engine-specific data
-      procedure Callback(Buffer: PChar; BufSize: integer); virtual; abstract;
+      procedure Callback(Buffer: PByteArray; BufSize: integer); virtual; abstract;
   end;
 
   TVoiceRemoval = class(TSoundEffect)
     public
-      procedure Callback(Buffer: PChar; BufSize: integer); override;
+      procedure Callback(Buffer: PByteArray; BufSize: integer); override;
   end;
 
 type
@@ -262,7 +263,7 @@ type
       function IsEOF(): boolean;            virtual; abstract;
       function IsError(): boolean;          virtual; abstract;
     public
-      function ReadData(Buffer: PChar; BufferSize: integer): integer; virtual; abstract;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; virtual; abstract;
 
       property EOF: boolean read IsEOF;
       property Error: boolean read IsError;
@@ -292,7 +293,7 @@ type
       function GetVolume(): single;         virtual; abstract;
       procedure SetVolume(Volume: single);  virtual; abstract;
       function Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
-      procedure FillBufferWithFrame(Buffer: PChar; BufferSize: integer; Frame: PChar; FrameSize: integer);
+      procedure FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
    public
       (**
        * Opens a SourceStream for playback.
@@ -335,7 +336,7 @@ type
       function Open(ChannelMap: integer; FormatInfo: TAudioFormatInfo): boolean; virtual;
       procedure Close(); override;
 
-      procedure WriteData(Buffer: PChar; BufferSize: integer); virtual; abstract;
+      procedure WriteData(Buffer: PByteArray; BufferSize: integer); virtual; abstract;
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
       function GetLength(): real;           override;
@@ -468,7 +469,7 @@ type
        * input-buffer bytes used.
        * Returns the number of bytes written to the output-buffer or -1 if an error occured.
        *)
-      function Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer; virtual; abstract;
+      function Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer; virtual; abstract;
 
       (**
        * Destination/Source size ratio
@@ -561,7 +562,6 @@ procedure DumpMediaInterfaces();
 implementation
 
 uses
-  sysutils,
   math,
   UIni,
   UMain,
@@ -942,7 +942,7 @@ end;
 
 { TVoiceRemoval }
 
-procedure TVoiceRemoval.Callback(Buffer: PChar; BufSize: integer);
+procedure TVoiceRemoval.Callback(Buffer: PByteArray; BufSize: integer);
 var
   FrameIndex, FrameSize: integer;
   Value: integer;
@@ -1180,7 +1180,7 @@ end;
 (*
  * Fills a buffer with copies of the given frame or with 0 if frame.
  *)
-procedure TAudioPlaybackStream.FillBufferWithFrame(Buffer: PChar; BufferSize: integer; Frame: PChar; FrameSize: integer);
+procedure TAudioPlaybackStream.FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
 var
   i: integer;
   FrameCopyCount: integer;

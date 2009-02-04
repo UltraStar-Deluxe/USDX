@@ -39,7 +39,7 @@ uses
 type
   TRingBuffer = class
     private
-      RingBuffer: PChar;
+      RingBuffer: PByteArray;
       BufferCount: integer;
       BufferSize: integer;
       WritePos: integer;
@@ -47,8 +47,10 @@ type
     public
       constructor Create(Size: integer);
       destructor Destroy; override;
-      function Read(Buffer: PChar; Count: integer): integer;
-      function Write(Buffer: PChar; Count: integer): integer;
+      function Read(Buffer: PByteArray; Count: integer): integer;
+      function Write(Buffer: PByteArray; Count: integer): integer;
+      function Size(): integer;
+      function Available(): integer;
       procedure Flush();
   end;
 
@@ -71,7 +73,7 @@ begin
   FreeMem(RingBuffer);
 end;
 
-function TRingBuffer.Read(Buffer: PChar; Count: integer): integer;
+function TRingBuffer.Read(Buffer: PByteArray; Count: integer): integer;
 var
   PartCount: integer;
 begin
@@ -106,7 +108,7 @@ begin
   Result := Count;
 end;
 
-function TRingBuffer.Write(Buffer: PChar; Count: integer): integer;
+function TRingBuffer.Write(Buffer: PByteArray; Count: integer): integer;
 var
   PartCount: integer;
 begin
@@ -141,6 +143,16 @@ begin
     ReadPos := WritePos;
 
   Result := Count;
+end;
+
+function TRingBuffer.Available(): integer;
+begin
+  Result := BufferCount;
+end;
+
+function TRingBuffer.Size(): integer;
+begin
+  Result := BufferSize;
 end;
 
 procedure TRingBuffer.Flush();
