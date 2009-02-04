@@ -35,8 +35,8 @@ interface
 
 uses
   Classes,
-  SysUtils,
   sdl,
+  SysUtils,
   URingBuffer,
   UMusic,
   UAudioPlaybackBase;
@@ -48,12 +48,12 @@ type
     private
       Engine: TAudioPlayback_SoftMixer;
 
-      SampleBuffer:      PChar;
+      SampleBuffer:      PByteArray;
       SampleBufferSize:  integer;
       SampleBufferCount: integer; // number of available bytes in SampleBuffer
       SampleBufferPos:   cardinal;
 
-      SourceBuffer:      PChar;
+      SourceBuffer:      PByteArray;
       SourceBufferSize:  integer;
       SourceBufferCount: integer; // number of available bytes in SourceBuffer
 
@@ -70,7 +70,7 @@ type
 
       procedure Reset();
 
-      procedure ApplySoundEffects(Buffer: PChar; BufferSize: integer);
+      procedure ApplySoundEffects(Buffer: PByteArray; BufferSize: integer);
       function InitFormatConversion(): boolean;
       procedure FlushBuffers();
 
@@ -100,7 +100,7 @@ type
 
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
-      function ReadData(Buffer: PChar; BufferSize: integer): integer;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 
       function GetPCMData(var Data: TPCMData): Cardinal; override;
       procedure GetFFTData(var Data: TFFTData);          override;
@@ -114,7 +114,7 @@ type
       Engine: TAudioPlayback_SoftMixer;
 
       ActiveStreams: TList;
-      MixerBuffer: PChar;
+      MixerBuffer: PByteArray;
       InternalLock: PSDL_Mutex;
 
       AppVolume: single;
@@ -129,7 +129,7 @@ type
       destructor Destroy(); override;
       procedure AddStream(Stream: TAudioPlaybackStream);
       procedure RemoveStream(Stream: TAudioPlaybackStream);
-      function ReadData(Buffer: PChar; BufferSize: integer): integer;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 
       property Volume: single read GetVolume write SetVolume;
   end;
@@ -144,7 +144,7 @@ type
       function StartAudioPlaybackEngine(): boolean;      virtual; abstract;
       procedure StopAudioPlaybackEngine();               virtual; abstract;
       function FinalizeAudioPlaybackEngine(): boolean;   virtual; abstract;
-      procedure AudioCallback(Buffer: PChar; Size: integer); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure AudioCallback(Buffer: PByteArray; Size: integer); {$IFDEF HasInline}inline;{$ENDIF}
 
       function CreatePlaybackStream(): TAudioPlaybackStream; override;
     public
@@ -159,7 +159,7 @@ type
       function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
-      procedure MixBuffers(DstBuffer, SrcBuffer: PChar; Size: Cardinal; Volume: Single); virtual;
+      procedure MixBuffers(DstBuffer, SrcBuffer: PByteArray; Size: Cardinal; Volume: Single); virtual;
   end;
 
 type
@@ -174,8 +174,8 @@ type
 
       function Open(ChannelMap: integer; FormatInfo: TAudioFormatInfo): boolean; override;
       procedure Close(); override;
-      procedure WriteData(Buffer: PChar; BufferSize: integer); override;
-      function ReadData(Buffer: PChar; BufferSize: integer): integer; override;
+      procedure WriteData(Buffer: PByteArray; BufferSize: integer); override;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
       function IsEOF(): boolean; override;
       function IsError(): boolean; override;
   end;
@@ -276,7 +276,7 @@ begin
   Unlock();
 end;
 
-function TAudioMixerStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+function TAudioMixerStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 var
   i: integer;
   Size: integer;
@@ -545,7 +545,7 @@ begin
   SourceBufferCount := 0;
 end;
 
-procedure TGenericPlaybackStream.ApplySoundEffects(Buffer: PChar; BufferSize: integer);
+procedure TGenericPlaybackStream.ApplySoundEffects(Buffer: PByteArray; BufferSize: integer);
 var
   i: integer;
 begin
@@ -558,7 +558,7 @@ begin
   end;
 end;
 
-function TGenericPlaybackStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+function TGenericPlaybackStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 var
   ConversionInputCount: integer;
   ConversionOutputSize: integer;   // max. number of converted data (= buffer size)
@@ -573,7 +573,7 @@ var
   SkipSourceCount: integer;  // number of source-data bytes to skip
   FillCount: integer;  // number of bytes to fill with padding data
   CopyCount: integer;
-  PadFrame: PChar;
+  PadFrame: PByteArray;
   i: integer;
 begin
   Result := -1;
@@ -986,7 +986,7 @@ begin
   inherited Close();
 end;
 
-procedure TGenericVoiceStream.WriteData(Buffer: PChar; BufferSize: integer);
+procedure TGenericVoiceStream.WriteData(Buffer: PByteArray; BufferSize: integer);
 begin
   // lock access to buffer
   SDL_mutexP(BufferLock);
@@ -999,7 +999,7 @@ begin
   end;
 end;
 
-function TGenericVoiceStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+function TGenericVoiceStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 begin
   Result := -1;
 
@@ -1059,7 +1059,7 @@ begin
   Result := true;
 end;
 
-procedure TAudioPlayback_SoftMixer.AudioCallback(Buffer: PChar; Size: integer);
+procedure TAudioPlayback_SoftMixer.AudioCallback(Buffer: PByteArray; Size: integer);
 begin
   MixerStream.ReadData(Buffer, Size);
 end;
@@ -1102,7 +1102,7 @@ begin
   MixerStream.Volume := Volume;
 end;
 
-procedure TAudioPlayback_SoftMixer.MixBuffers(DstBuffer, SrcBuffer: PChar; Size: Cardinal; Volume: Single);
+procedure TAudioPlayback_SoftMixer.MixBuffers(DstBuffer, SrcBuffer: PByteArray; Size: Cardinal; Volume: Single);
 var
   SampleIndex: Cardinal;
   SampleInt: Integer;

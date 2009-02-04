@@ -33,16 +33,14 @@ interface
 
 {$I switches.inc}
 
-uses
-  Classes,
-  SysUtils,
-  UMusic;
-
 implementation
 
 uses
+  Classes,
   sdl,
+  SysUtils,
   UAudioPlayback_SoftMixer,
+  UMusic,
   ULog,
   UIni,
   UMain;
@@ -60,13 +58,13 @@ type
       function GetLatency(): double;                     override;
     public
       function GetName: String;                          override;
-      procedure MixBuffers(dst, src: PChar; size: Cardinal; volume: Single); override;
+      procedure MixBuffers(dst, src: PByteArray; size: Cardinal; volume: Single); override;
   end;
 
   
 { TAudioPlayback_SDL }
 
-procedure SDLAudioCallback(userdata: Pointer; stream: PChar; len: integer); cdecl;
+procedure SDLAudioCallback(userdata: Pointer; stream: PByteArray; len: integer); cdecl;
 var
   Engine: TAudioPlayback_SDL;
 begin
@@ -172,7 +170,7 @@ begin
   Result := Latency;
 end;
 
-procedure TAudioPlayback_SDL.MixBuffers(dst, src: PChar; size: Cardinal; volume: Single);
+procedure TAudioPlayback_SDL.MixBuffers(dst, src: PByteArray; size: Cardinal; volume: Single);
 begin
   SDL_MixAudio(PUInt8(dst), PUInt8(src), size, Round(volume * SDL_MIX_MAXVOLUME));
 end;

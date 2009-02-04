@@ -57,7 +57,6 @@ implementation
 
 uses
   Classes,
-  SysUtils,
   Math,
   UMusic,
   UIni,
@@ -68,8 +67,9 @@ uses
   avio,
   mathematics, // used for av_rescale_q
   rational,
-  UMediaCore_FFmpeg,
   SDL,
+  SysUtils,
+  UMediaCore_FFmpeg,
   ULog,
   UCommon,
   UConfig;
@@ -129,14 +129,14 @@ type
 
       // state-vars for DecodeFrame (locked by DecoderLock)
       AudioPaket:        TAVPacket;
-      AudioPaketData:    PChar;
+      AudioPaketData:    PByteArray;
       AudioPaketSize:    integer;
       AudioPaketSilence: integer; // number of bytes of silence to return
 
       // state-vars for AudioCallback (locked by DecoderLock)
       AudioBufferPos:  integer;
       AudioBufferSize: integer;
-      AudioBuffer:     PChar;
+      AudioBuffer:     PByteArray;
 
       Filename: string;
 
@@ -153,7 +153,7 @@ type
       procedure PauseParser();
       procedure ResumeParser();
 
-      function DecodeFrame(Buffer: PChar; BufferSize: integer): integer;
+      function DecodeFrame(Buffer: PByteArray; BufferSize: integer): integer;
       procedure FlushCodecBuffers();
       procedure PauseDecoder();
       procedure ResumeDecoder();
@@ -173,11 +173,11 @@ type
       function IsEOF(): boolean;             override;
       function IsError(): boolean;           override;
 
-      function ReadData(Buffer: PChar; BufferSize: integer): integer; override;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
   end;
 
 type
-  TAudioDecoder_FFmpeg = class( TInterfacedObject, IAudioDecoder )
+  TAudioDecoder_FFmpeg = class(TInterfacedObject, IAudioDecoder)
     public
       function GetName: string;
 
@@ -289,7 +289,7 @@ begin
   Self.Filename := Filename;
 
   // open audio file
-  if (av_open_input_file(FormatCtx, PChar(Filename), nil, 0, nil) <> 0) then
+  if (av_open_input_file(FormatCtx, PAnsiChar(Filename), nil, 0, nil) <> 0) then
   begin
     Log.LogError('av_open_input_file failed: "' + Filename + '"', 'UAudio_FFmpeg');
     Exit;
@@ -310,7 +310,7 @@ begin
   FormatCtx^.pb.eof_reached := 0;
 
   {$IFDEF DebugFFmpegDecode}
-  dump_format(FormatCtx, 0, pchar(Filename), 0);
+  dump_format(FormatCtx, 0, PAnsiChar(Filename), 0);
   {$ENDIF}
 
   AudioStreamIndex := FFmpegCore.FindAudioStreamIndex(FormatCtx);
@@ -862,7 +862,7 @@ begin
   end;
 end;
 
-function TFFmpegDecodeStream.DecodeFrame(Buffer: PChar; BufferSize: integer): integer;
+function TFFmpegDecodeStream.DecodeFrame(Buffer: PByteArray; BufferSize: integer): integer;
 var
   PaketDecodedSize: integer; // size of packet data used for decoding
   DataSize: integer;         // size of output data decoded by FFmpeg
@@ -945,7 +945,7 @@ begin
       Exit;
 
     // handle Status-packet
-    if (PChar(AudioPaket.data) = STATUS_PACKET) then
+    if (PAnsiChar(AudioPaket.data) = STATUS_PACKET) then
     begin
       AudioPaket.data := nil;
       AudioPaketData := nil;
@@ -986,7 +986,7 @@ begin
       Continue;
     end;
 
-    AudioPaketData := PChar(AudioPaket.data);
+    AudioPaketData := AudioPaket.data;
     AudioPaketSize := AudioPaket.size;
 
     // if available, update the stream position to the presentation time of this package
@@ -1005,7 +1005,7 @@ begin
   end;
 end;
 
-function TFFmpegDecodeStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+function TFFmpegDecodeStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 var
   CopyByteCount:   integer; // number of bytes to copy
   RemainByteCount: integer; // number of bytes left (remain) to read

@@ -65,7 +65,7 @@ type
       function IsEOF(): boolean;             override;
       function IsError(): boolean;           override;
 
-      function ReadData(Buffer: PChar; BufSize: integer): integer; override;
+      function ReadData(Buffer: PByteArray; BufSize: integer): integer; override;
   end;
 
 type
@@ -193,7 +193,7 @@ begin
   Result := Error;
 end;
 
-function TBassDecodeStream.ReadData(Buffer: PChar; BufSize: integer): integer;
+function TBassDecodeStream.ReadData(Buffer: PByteArray; BufSize: integer): integer;
 begin
   Result := BASS_ChannelGetData(Handle, Buffer, BufSize);
   // check error state (do not handle EOF as error)
@@ -237,7 +237,7 @@ begin
 
   // TODO: use BASS_STREAM_PRESCAN for accurate seeking in VBR-files?
   //       disadvantage: seeking will slow down.
-  Stream := BASS_StreamCreateFile(False, PChar(Filename), 0, 0, BASS_STREAM_DECODE);
+  Stream := BASS_StreamCreateFile(False, PAnsiChar(Filename), 0, 0, BASS_STREAM_DECODE);
   if (Stream = 0) then
   begin
     //Log.LogError(BassCore.ErrorGetString(), 'TAudioDecoder_Bass.Open');

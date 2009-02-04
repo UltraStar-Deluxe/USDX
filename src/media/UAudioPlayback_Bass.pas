@@ -37,7 +37,6 @@ implementation
 
 uses
   Classes,
-  SysUtils,
   Math,
   UIni,
   UMain,
@@ -46,7 +45,8 @@ uses
   UAudioCore_Bass,
   ULog,
   sdl,
-  bass;
+  bass,
+  SysUtils;
 
 type
   PHDSP = ^HDSP;
@@ -90,7 +90,7 @@ type
 
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
-      function ReadData(Buffer: PChar; BufferSize: integer): integer;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 
       property EOF: boolean READ IsEOF;
   end;
@@ -106,8 +106,8 @@ type
       function Open(ChannelMap: integer; FormatInfo: TAudioFormatInfo): boolean; override;
       procedure Close(); override;
 
-      procedure WriteData(Buffer: PChar; BufferSize: integer); override;
-      function ReadData(Buffer: PChar; BufferSize: integer): integer; override;
+      procedure WriteData(Buffer: PByteArray; BufferSize: integer); override;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
       function IsEOF(): boolean; override;
       function IsError(): boolean; override;
   end;
@@ -163,14 +163,14 @@ begin
     Result := BytesRead;
 end;
 
-function TBassPlaybackStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+function TBassPlaybackStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 var
   AdjustedSize: integer;
   RequestedSourceSize, SourceSize: integer;
   SkipCount: integer;
   SourceFormatInfo: TAudioFormatInfo;
   FrameSize: integer;
-  PadFrame: PChar;
+  PadFrame: PByteArray;
   //Info: BASS_INFO;
   //Latency: double;
 begin
@@ -610,7 +610,7 @@ begin
   inherited Close();
 end;
 
-procedure TBassVoiceStream.WriteData(Buffer: PChar; BufferSize: integer);
+procedure TBassVoiceStream.WriteData(Buffer: PByteArray; BufferSize: integer);
 var QueueSize: DWORD;
 begin
   if ((Handle <> 0) and (BufferSize > 0)) then
@@ -626,7 +626,7 @@ begin
 end;
 
 // Note: we do not need the read-function for the BASS implementation
-function TBassVoiceStream.ReadData(Buffer: PChar; BufferSize: integer): integer;
+function TBassVoiceStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 begin
   Result := -1;
 end;

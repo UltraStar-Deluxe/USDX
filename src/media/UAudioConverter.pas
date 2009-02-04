@@ -70,7 +70,7 @@ type
       function Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean; override;
       destructor Destroy(); override;
 
-      function Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer; override;
+      function Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer; override;
       function GetOutputBufferSize(InputSize: integer): integer; override;
       function GetRatio(): double; override;
   end;
@@ -87,7 +87,7 @@ type
       function Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean; override;
       destructor Destroy(); override;
 
-      function Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer; override;
+      function Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer; override;
       function GetOutputBufferSize(InputSize: integer): integer; override;
       function GetRatio(): double; override;
   end;
@@ -103,7 +103,7 @@ type
       function Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean; override;
       destructor Destroy(); override;
 
-      function Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer; override;
+      function Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer; override;
       function GetOutputBufferSize(InputSize: integer): integer; override;
       function GetRatio(): double; override;
   end;
@@ -173,7 +173,7 @@ begin
   Result := cvt.len_ratio;
 end;
 
-function TAudioConverter_SDL.Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer;
+function TAudioConverter_SDL.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer;
 begin
   Result := -1;
 
@@ -242,7 +242,7 @@ begin
   inherited;
 end;
 
-function TAudioConverter_FFmpeg.Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer;
+function TAudioConverter_FFmpeg.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer;
 var
   InputSampleCount: integer;
   OutputSampleCount: integer;
@@ -360,11 +360,11 @@ begin
   inherited;
 end;
 
-function TAudioConverter_SRC.Convert(InputBuffer: PChar; OutputBuffer: PChar; var InputSize: integer): integer;
+function TAudioConverter_SRC.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer;
 var
   FloatInputBuffer: PSingle;
   FloatOutputBuffer: PSingle;
-  TempBuffer: PChar;
+  TempBuffer: PByteArray;
   TempSize: integer;
   NumSamples: integer;
   OutputSize: integer;
