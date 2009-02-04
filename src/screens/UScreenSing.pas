@@ -33,7 +33,6 @@ interface
 
 {$I switches.inc}
 
-
 uses UMenu,
   UMusic,
   SDL,
@@ -61,22 +60,22 @@ type
   private
     VideoLoaded: boolean;
   protected
-    Paused:     boolean; //Pause Mod
+    Paused:     boolean; // pause mod
     LyricsSync: TLyricsSyncSource;
     NumEmptySentences: integer;
   public
-    // TimeBar fields
+    // timebar fields
     StaticTimeProgress: integer;
     TextTimeText: integer;
 
     StaticP1: integer;
     TextP1:   integer;
 
-    //shown when game is in 2/4 player modus
+    // shown when game is in 2/4 player modus
     StaticP1TwoP: integer;
     TextP1TwoP:   integer;
 
-    //shown when game is in 3/6 player modus
+    // shown when game is in 3/6 player modus
     StaticP1ThreeP: integer;
     TextP1ThreeP:   integer;
 
@@ -95,7 +94,7 @@ type
     FadeOut: boolean;
     Lyrics:  TLyricEngine;
 
-    //Score Manager:
+    // score manager:
     Scores: TSingScores;
 
     fShowVisualization: boolean;
@@ -105,21 +104,22 @@ type
     procedure onShow; override;
     procedure onShowFinish; override;
     procedure onHide; override;
-    
+
     function ParseInput(PressedKey: cardinal; CharCode: widechar;
       PressedDown: boolean): boolean; override;
     function Draw: boolean; override;
 
     procedure Finish; virtual;
-    procedure Pause; // Toggle Pause
+    procedure Pause; // toggle pause
 
-    procedure OnSentenceEnd(SentenceIndex: cardinal);     // for LineBonus + Singbar
-    procedure OnSentenceChange(SentenceIndex: cardinal);  // for Golden Notes
+    procedure OnSentenceEnd(SentenceIndex: cardinal);     // for linebonus + singbar
+    procedure OnSentenceChange(SentenceIndex: cardinal);  // for golden notes
   end;
 
 implementation
 
-uses UGraphic,
+uses
+  UGraphic,
   UDraw,
   UMain,
   USong,
@@ -128,29 +128,30 @@ uses UGraphic,
   ULanguage,
   Math;
 
- // Method for input parsing. If False is returned, GetNextWindow
- // should be checked to know the next window to load;
+// method for input parsing. if false is returned, getnextwindow
+// should be checked to know the next window to load;
+
 function TScreenSing.ParseInput(PressedKey: cardinal; CharCode: widechar;
   PressedDown: boolean): boolean;
 begin
-  Result := True;
+  Result := true;
   if (PressedDown) then
-  begin // Key Down
-        // check normal keys
+  begin // key down
+    // check normal keys
     case WideCharUpperCase(CharCode)[1] of
       'Q':
       begin
-        //When not ask before Exit then Finish now
+        // when not ask before exit then finish now
         if (Ini.AskbeforeDel <> 1) then
           Finish
-        //else just Pause and let the Popup make the Work
+        // else just pause and let the popup make the work
         else if not Paused then
           Pause;
 
-        Result := False;
+        Result := false;
         Exit;
       end;
-      'V': //Show Visualization
+      'V': // show visualization
       begin
         fShowVisualization := not fShowVisualization;
 
@@ -176,7 +177,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
       begin
-        //Record Sound Hack:
+        // record sound hack:
         //Sound[0].BufferLong
 
         Finish;
@@ -189,7 +190,7 @@ begin
         Pause;
       end;
 
-      SDLK_TAB: //Change Visualization Preset
+      SDLK_TAB: // change visualization preset
       begin
         if fShowVisualization then
           fCurrentVideoPlaybackEngine.Position := now; // move to a random position
@@ -199,8 +200,8 @@ begin
       begin
       end;
 
-      // Up and Down could be done at the same time,
-      // but I don't want to declare variables inside
+      // up and down could be done at the same time,
+      // but i don't want to declare variables inside
       // functions like this one, called so many times
       SDLK_DOWN:
       begin
@@ -212,57 +213,57 @@ begin
   end;
 end;
 
-//Pause Mod
+// pause mod
 procedure TScreenSing.Pause;
 begin
-  if (not Paused) then  //enable Pause
+  if (not Paused) then  // enable pause
   begin
-    // pause Time
-    Paused := True;
+    // pause time
+    Paused := true;
 
     LyricsState.Pause();
 
-    // pause Music
+    // pause music
     AudioPlayback.Pause;
 
-    // pause Video
+    // pause video
     if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path +
       CurrentSong.Video) then
       fCurrentVideoPlaybackEngine.Pause;
 
   end
-  else              //disable Pause
+  else              // disable pause
   begin
     LyricsState.Resume();
 
-    // Play Music
+    // play music
     AudioPlayback.Play;
 
-    // Video
+    // video
     if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path +
       CurrentSong.Video) then
       fCurrentVideoPlaybackEngine.Pause;
 
-    Paused := False;
+    Paused := false;
   end;
 end;
-//Pause Mod End
+// pause mod end
 
 constructor TScreenSing.Create;
 begin
   inherited Create;
 
-  fShowVisualization := False;
+  fShowVisualization := false;
 
   fCurrentVideoPlaybackEngine := VideoPlayback;
 
-  //Create Score Class
+  // create score class
   Scores := TSingScores.Create;
   Scores.LoadfromTheme;
 
   LoadFromTheme(Theme.Sing);
 
-  //TimeBar
+  // timebar
   StaticTimeProgress := AddStatic(Theme.Sing.StaticTimeProgress);
   TextTimeText := AddText(Theme.Sing.TextTimeText);
 
@@ -274,7 +275,7 @@ begin
   StaticP1TwoP := AddStatic(Theme.Sing.StaticP1TwoP);
   TextP1TwoP   := AddText(Theme.Sing.TextP1TwoP);
 
-  //              | P2
+  //                | P2
   StaticP2R := AddStatic(Theme.Sing.StaticP2R);
   TextP2R   := AddText(Theme.Sing.TextP2R);
 
@@ -282,18 +283,18 @@ begin
   StaticP1ThreeP := AddStatic(Theme.Sing.StaticP1ThreeP);
   TextP1ThreeP   := AddText(Theme.Sing.TextP1ThreeP);
 
-  //              | P2
+  //                | P2
   StaticP2M := AddStatic(Theme.Sing.StaticP2M);
   TextP2M   := AddText(Theme.Sing.TextP2M);
 
-  //              | P3
+  //                | P3
   StaticP3R := AddStatic(Theme.Sing.StaticP3R);
   TextP3R   := AddText(Theme.Sing.TextP3R);
 
   StaticPausePopup := AddStatic(Theme.Sing.PausePopUp);
 
-  //<note>Pausepopup is not visibile at the beginning</note>
-  Static[StaticPausePopup].Visible := False;
+  // <note> pausepopup is not visibile at the beginning </note>
+  Static[StaticPausePopup].Visible := false;
 
   Lyrics := TLyricEngine.Create(
       Skin_LyricsUpperX, Skin_LyricsUpperY, Skin_LyricsUpperW, Skin_LyricsUpperH,
@@ -306,8 +307,8 @@ procedure TScreenSing.onShow;
 var
   P:      integer;
   V1:     boolean;
-  V1TwoP: boolean;   //Position of ScoreBox in two-player mode
-  V1ThreeP: boolean; //Position of ScoreBox in three-player mode
+  V1TwoP: boolean;   // position of score box in two player mode
+  V1ThreeP: boolean; // position of score box in three player mode
   V2R:    boolean;
   V2M:    boolean;
   V3R:    boolean;
@@ -318,9 +319,9 @@ begin
   inherited;
 
   Log.LogStatus('Begin', 'onShow');
-  FadeOut := False;
+  FadeOut := false;
 
-  // reset video playback engine, to play Video Clip...
+  // reset video playback engine, to play video clip ...
   fCurrentVideoPlaybackEngine := VideoPlayback;
 
   // setup score manager
@@ -335,7 +336,7 @@ begin
     Scores.AddPlayer(Tex_ScoreBG[P], Color);
   end;
 
-  Scores.Init; //Get Positions for Players
+  Scores.Init; // get positions for players
 
   // prepare players
   SetLength(Player, PlayersPlay);
@@ -343,92 +344,87 @@ begin
   case PlayersPlay of
     1:
     begin
-      V1     := True;
-      V1TwoP := False;
-      V1ThreeP := False;
-      V2R    := False;
-      V2M    := False;
-      V3R    := False;
+      V1     := true;
+      V1TwoP := false;
+      V1ThreeP := false;
+      V2R    := false;
+      V2M    := false;
+      V3R    := false;
     end;
     2:
     begin
-      V1     := False;
-      V1TwoP := True;
-      V1ThreeP := False;
-      V2R    := True;
-      V2M    := False;
-      V3R    := False;
+      V1     := false;
+      V1TwoP := true;
+      V1ThreeP := false;
+      V2R    := true;
+      V2M    := false;
+      V3R    := false;
     end;
     3:
     begin
-      V1     := False;
-      V1TwoP := False;
-      V1ThreeP := True;
-      V2R    := False;
-      V2M    := True;
-      V3R    := True;
+      V1     := false;
+      V1TwoP := false;
+      V1ThreeP := true;
+      V2R    := false;
+      V2M    := true;
+      V3R    := true;
     end;
     4:
     begin // double screen
-      V1     := False;
-      V1TwoP := True;
-      V1ThreeP := False;
-      V2R    := True;
-      V2M    := False;
-      V3R    := False;
+      V1     := false;
+      V1TwoP := true;
+      V1ThreeP := false;
+      V2R    := true;
+      V2M    := false;
+      V3R    := false;
     end;
     6:
     begin // double screen
-      V1     := False;
-      V1TwoP := False;
-      V1ThreeP := True;
-      V2R    := False;
-      V2M    := True;
-      V3R    := True;
+      V1     := false;
+      V1TwoP := false;
+      V1ThreeP := true;
+      V2R    := false;
+      V2M    := true;
+      V3R    := true;
     end;
 
   end;
 
-  //This one is shown in 1P mode
+  // this one is shown in 1P mode
   Static[StaticP1].Visible := V1;
   Text[TextP1].Visible     := V1;
 
-
-  //This one is shown in 2/4P mode
+  // this one is shown in 2/4P mode
   Static[StaticP1TwoP].Visible := V1TwoP;
   Text[TextP1TwoP].Visible     := V1TwoP;
 
   Static[StaticP2R].Visible := V2R;
   Text[TextP2R].Visible     := V2R;
 
-
-  //This one is shown in 3/6P mode
+  // this one is shown in 3/6P mode
   Static[StaticP1ThreeP].Visible := V1ThreeP;
   Text[TextP1ThreeP].Visible     := V1ThreeP;
-
 
   Static[StaticP2M].Visible := V2M;
   Text[TextP2M].Visible     := V2M;
 
-
   Static[StaticP3R].Visible := V3R;
   Text[TextP3R].Visible     := V3R;
 
-
-  // FIXME: sets Path and Filename to ''
+  // FIXME: sets path and filename to ''
   ResetSingTemp;
 
   CurrentSong := CatSongs.Song[CatSongs.Selected];
 
-  // FIXME: bad style, put the try-except into LoadSong() and not here
+  // FIXME: bad style, put the try-except into loadsong() and not here
   try
-    // Check if file is XML
+    // check if file is xml
     if copy(CurrentSong.FileName, length(CurrentSong.FileName) - 3, 4) = '.xml' then
       success := CurrentSong.LoadXMLSong()
     else
       success := CurrentSong.LoadSong();
   except
-    success := False;
+    success := false;
   end;
 
   if (not success) then
@@ -447,7 +443,7 @@ begin
     Exit;
   end;
 
-  // reset video playback engine, to play video clip...
+  // reset video playback engine, to play video clip ...
   fCurrentVideoPlaybackEngine.Close;
   fCurrentVideoPlaybackEngine := VideoPlayback;
 
@@ -457,32 +453,32 @@ begin
    *   + Blank        : Nothing has been set, this is our fallback
    *   + Picture      : Picture has been set, and exists - otherwise we fallback
    *   + Video        : Video has been set, and exists - otherwise we fallback
-   *   + Visualization: + Off        : No Visialization
-   *                    + WhenNoVideo: Overwrites Blank and Picture
-   *                    + On         : Overwrites Blank, Picture and Video
+   *   + Visualization: + Off        : No visualization
+   *                    + WhenNoVideo: Overwrites blank and picture
+   *                    + On         : Overwrites blank, picture and video
    *}
 
   {*
    * set background to: video
    *}
-  VideoLoaded := False;
-  fShowVisualization := False;
+  VideoLoaded := false;
+  fShowVisualization := false;
   if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
   begin
     if (fCurrentVideoPlaybackEngine.Open(CurrentSong.Path + CurrentSong.Video)) then
     begin
-      fShowVisualization := False;
+      fShowVisualization := false;
       fCurrentVideoPlaybackEngine := VideoPlayback;
       fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
       fCurrentVideoPlaybackEngine.Play;
-      VideoLoaded := True;
+      VideoLoaded := true;
     end;
   end;
 
   {*
    * set background to: picture
    *}
-  if (CurrentSong.Background <> '') and (VideoLoaded = False)
+  if (CurrentSong.Background <> '') and (VideoLoaded = false)
     and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
     try
       Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
@@ -501,7 +497,7 @@ begin
    *}
   if (TVisualizerOption(Ini.VisualizerOption) in [voOn]) then
   begin
-    fShowVisualization := True;
+    fShowVisualization := true;
     fCurrentVideoPlaybackEngine := Visualization;
     if (fCurrentVideoPlaybackEngine <> nil) then
       fCurrentVideoPlaybackEngine.Play;
@@ -511,9 +507,9 @@ begin
    * set background to: visualization (Videos are still shown)
    *}
   if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
-     (VideoLoaded = False)) then
+     (VideoLoaded = false)) then
   begin
-    fShowVisualization := True;
+    fShowVisualization := true;
     fCurrentVideoPlaybackEngine := Visualization;
     if (fCurrentVideoPlaybackEngine <> nil) then
       fCurrentVideoPlaybackEngine.Play;
@@ -586,21 +582,21 @@ begin
     end;
   end; // case
 
-  // Initialize lyrics by filling its queue
+  // initialize lyrics by filling its queue
   while (not Lyrics.IsQueueFull) and
         (Lyrics.LineCounter <= High(Lines[0].Line)) do
   begin
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
 
-  // Deactivate pause
-  Paused := False;
+  // deactivate pause
+  Paused := false;
 
-  // Kill all stars not killed yet (GoldenStarsTwinkle Mod)
+  // kill all stars not killed yet (goldenstarstwinkle mod)
   GoldenRec.SentenceChange;
 
-  // set Position of Line Bonus - Line Bonus end
-  // set number of empty sentences for Line Bonus
+  // set position of line bonus - line bonus end
+  // set number of empty sentences for line bonus
   NumEmptySentences := 0;
   for P := Low(Lines[0].Line) to High(Lines[0].Line) do
     if Lines[0].Line[P].TotalNotes = 0 then
@@ -623,7 +619,7 @@ end;
 
 procedure TScreenSing.onHide;
 begin
-  // Unload background texture
+  // background texture
   if (Tex_Background.TexNum > 0) then
   begin
     glDeleteTextures(1, PGLuint(@Tex_Background.TexNum));
@@ -643,7 +639,7 @@ begin
 
   Background.Draw;
 
-  // set player names (for 2 screens and only Singstar skin)
+  // set player names (for 2 screens and only singstar skin)
   if ScreenAct = 1 then
   begin
     Text[TextP1].Text     := 'P1';
@@ -671,7 +667,6 @@ begin
     end; // case
   end; // if
 
-
   ////
   // dual screen, part 1
   ////////////////////////
@@ -687,7 +682,6 @@ begin
   {Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
   Text[TextP1Score].X                := Text[TextP1Score].X + 10*ScreenX;}
 
-
   Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10 * ScreenX;
 
   Text[TextP2R].X := Text[TextP2R].X + 10 * ScreenX;
@@ -701,8 +695,6 @@ begin
 
   for T := 0 to 1 do
     Text[T].X := Text[T].X + 10 * ScreenX;
-
-
 
   // retrieve current lyrics time, we have to store the value to avoid
   // that min- and sec-values do not match
@@ -723,7 +715,7 @@ begin
   // Note: there is no menu and the animated background brakes the video playback
   //DrawBG;
 
-  // Draw Background
+  // draw background
   SingDrawBackground;
 
   // update and draw movie
@@ -755,7 +747,7 @@ begin
       if (not FadeOut) then
       begin
         Finish;
-        FadeOut := True;
+        FadeOut := true;
         FadeTo(@ScreenScore);
       end;
     end;
@@ -764,10 +756,10 @@ begin
   // always draw custom items
   SingDraw;
 
-  //GoldenNoteStarsTwinkle
+  // goldennotestarstwinkle
   GoldenRec.SpawnRec;
 
-  //Draw Scores
+  // draw scores
   Scores.Draw;
 
   ////
@@ -784,24 +776,24 @@ begin
   Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X - 10 * ScreenX;
   Text[TextP2R].X := Text[TextP2R].X - 10 * ScreenX;
 
-  //end of weird
+  // end of weird
 
   Static[1].Texture.X := Static[1].Texture.X - 10 * ScreenX;
 
   for T := 0 to 1 do
     Text[T].X := Text[T].X - 10 * ScreenX;
 
-  // Draw Pausepopup
-  // FIXME: this is a workaround that the Static is drawn over the Lyrics, Lines, Scores and Effects
+  // draw pausepopup
+  // FIXME: this is a workaround that the static is drawn over the lyrics, lines, scores and effects
   // maybe someone could find a better solution
   if Paused then
   begin
-    Static[StaticPausePopup].Visible := True;
+    Static[StaticPausePopup].Visible := true;
     Static[StaticPausePopup].Draw;
-    Static[StaticPausePopup].Visible := False;
+    Static[StaticPausePopup].Visible := false;
   end;
 
-  Result := True;
+  Result := true;
 end;
 
 procedure TScreenSing.Finish;
@@ -817,11 +809,11 @@ begin
     Visualization.Close;
 
   // to prevent drawing closed video
-  VideoLoaded := False;
+  VideoLoaded := false;
 
-  //Kill all Stars and Effects
+  // kill all stars and effects
   GoldenRec.KillAll;
-  
+
   if (Ini.SavePlayback = 1) then
   begin
     Log.BenchmarkStart(0);
@@ -832,7 +824,7 @@ begin
     Log.LogBenchmark('Creating files', 0);
   end;
 
-  SetFontItalic(False);
+  SetFontItalic(false);
 end;
 
 procedure TScreenSing.OnSentenceEnd(SentenceIndex: cardinal);
@@ -871,14 +863,14 @@ begin
     CurrentPlayer := @Player[PlayerIndex];
     CurrentScore  := CurrentPlayer.Score + CurrentPlayer.ScoreGolden;
 
-    // Line Bonus
+    // line bonus
 
     // points for this line
     LineScore := CurrentScore - CurrentPlayer.ScoreLast;
 
     // determine LinePerfection
     // Note: the "+2" extra points are a little bonus so the player does not
-    //   have to be that perfect to reach the bonus steps.
+    // have to be that perfect to reach the bonus steps.
     LinePerfection := (LineScore + 2) / MaxLineScore;
 
     // clamp LinePerfection to range [0..1]
@@ -908,7 +900,7 @@ begin
       Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
     end;
 
-    // PerfectLineTwinkle (effect), Part 1
+    // PerfectLineTwinkle (effect), part 1
     if (Ini.EffectSing = 1) then
       CurrentPlayer.LastSentencePerfect := (LinePerfection >= 1);
 
@@ -916,7 +908,7 @@ begin
     CurrentPlayer.ScoreLast := CurrentScore;
   end;
 
-  // PerfectLineTwinkle (effect), Part 2
+  // PerfectLineTwinkle (effect), part 2
   if (Ini.EffectSing = 1) then
     GoldenRec.SpawnPerfectLineTwinkle;
 end;
@@ -925,14 +917,14 @@ end;
  // SentenceIndex: index of the new active sentence
 procedure TScreenSing.OnSentenceChange(SentenceIndex: cardinal);
 begin
-  //GoldenStarsTwinkle
+  // goldenstarstwinkle
   GoldenRec.SentenceChange;
 
-  // Fill lyrics queue and set upper line to the current sentence
+  // fill lyrics queue and set upper line to the current sentence
   while (Lyrics.GetUpperLineIndex() < SentenceIndex) or
     (not Lyrics.IsQueueFull) do
   begin
-    // Add the next line to the queue or a dummy if no more lines are available
+    // add the next line to the queue or a dummy if no more lines are available
     if (Lyrics.LineCounter <= High(Lines[0].Line)) then
       Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter])
     else
