@@ -892,17 +892,18 @@ begin
 end;
 *)
 
-procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: Cardinal);
+procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
 
-  //returns hue within range [0.0-6.0)
-  function col2hue(Color:Cardinal): double;
+  // returns hue within the range [0.0-6.0)
+  function col2hue(Color: longword): double;
   var
     clr: array[0..2] of double;
     hue, max, delta: double;
   begin
-    clr[0] := ((Color and $ff0000) shr 16)/255; // R
-    clr[1] := ((Color and   $ff00) shr  8)/255; // G
-    clr[2] :=  (Color and     $ff)        /255; // B
+    // division by 255 is omitted, since it is implicitly done when deviding by delta
+    clr[0] := ((Color and $ff0000) shr 16); // R
+    clr[1] := ((Color and   $ff00) shr  8); // G
+    clr[2] :=  (Color and     $ff)        ; // B
     max := maxvalue(clr);
     delta := max - minvalue(clr);
     // calc hue
@@ -916,16 +917,16 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: Cardinal);
   end;
 
 var
-  DestinationHue: Double;
-  PixelIndex: Cardinal;
+  DestinationHue: double;
+  PixelIndex: longword;
   Pixel: PByte;
   PixelColors: PByteArray;
-  clr: array[0..2] of UInt32; // [0: R, 1: G, 2: B]
-  hsv: array[0..2] of UInt32; // [0: H(ue), 1: S(aturation), 2: V(alue)]
-  dhue: UInt32;
-  h_int: Cardinal;
-  delta, f, p, q, t: Longint;
-  max: Uint32;
+  clr: array[0..2] of longword; // [0: R, 1: G, 2: B]
+  hsv: array[0..2] of longword; // [0: H(ue), 1: S(aturation), 2: V(alue)]
+  dhue: longword;
+  delta, max: longword;
+  h_int: longword;
+  f, p, q, t: longword;
 begin
   DestinationHue := col2hue(NewColor);
 
@@ -953,7 +954,7 @@ begin
     if clr[2] < delta then delta := clr[2];
     delta := max-delta;
     hsv[0] := dhue;  // shl 8
-    hsv[2] := max;  // shl 8
+    hsv[2] := max;   // shl 8
     if (max = 0) then
       hsv[1] := 0
     else
