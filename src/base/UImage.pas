@@ -798,7 +798,7 @@ end;
  * Image manipulation
  *******************************************************)
 
- 
+
 function PixelFormatEquals(fmt1, fmt2: PSDL_PixelFormat): boolean;
 begin
   if (fmt1^.BitsPerPixel = fmt2^.BitsPerPixel) and
@@ -828,7 +828,7 @@ end;
 procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
 var
   TempSurface: PSDL_Surface;
-  ImgFmt: PSDL_PixelFormat; 
+  ImgFmt: PSDL_PixelFormat;
 begin
   TempSurface := ImgSurface;
 
@@ -894,45 +894,62 @@ end;
 
 procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
 
-  // returns hue within the range [0.0-6.0)
-  function col2hue(Color: longword): double;
+  // for the conversion of colors from rgb to hsv space and back
+  // simply check the wikipedia.
+
+  function col2hue(const Color: longword): longword;
+  // returns hue within the range [0.0-6.0] but shl 10, ie.  times 1024
   var
-    clr: array[0..2] of double;
-    hue, max, delta: double;
+    red, green, blue: longword;
+    min, max, delta: longword;
+    hue: double;
   begin
-    // division by 255 is omitted, since it is implicitly done when deviding by delta
-    clr[0] := ((Color and $ff0000) shr 16); // R
-    clr[1] := ((Color and   $ff00) shr  8); // G
-    clr[2] :=  (Color and     $ff)        ; // B
-    max := maxvalue(clr);
-    delta := max - minvalue(clr);
+    // extract the colors
+    // division by 255 is omitted, since it is implicitly done
+    // when deviding by delta
+    red   := ((Color and $ff0000) shr 16); // R
+    green := ((Color and   $ff00) shr  8); // G
+    blue  :=  (Color and     $ff)        ; // B
+
+    min := red;
+    if green < min then min := green;
+    if blue  < min then min := blue;
+
+    max := red;
+    if green > max then max := green;
+    if blue  > max then max := blue;
+
     // calc hue
-    if (delta = 0.0) then       hue := 0
-    else if (clr[0] = max) then hue :=     (clr[1]-clr[2])/delta
-    else if (clr[1] = max) then hue := 2.0+(clr[2]-clr[0])/delta
-    else if (clr[2] = max) then hue := 4.0+(clr[0]-clr[1])/delta;
-    if (hue < 0.0) then
-      hue := hue + 6.0;
-    Result := hue;
+    delta := max - min;
+    if (delta = 0) then
+      Result := 0
+    else
+    begin
+      if      (max = red  ) then hue :=       (green - blue )/delta
+      else if (max = green) then hue := 2.0 + (blue  - red  )/delta
+      else if (max = blue ) then hue := 4.0 + (red   - green)/delta;
+      if (hue < 0.0) then
+        hue := hue + 6.0;
+      Result := trunc(hue*1024);           // '*1024' is shl 10
+    end;
   end;
 
 var
-  DestinationHue: double;
   PixelIndex: longword;
   Pixel: PByte;
   PixelColors: PByteArray;
-  clr: array[0..2] of longword; // [0: R, 1: G, 2: B]
-  hsv: array[0..2] of longword; // [0: H(ue), 1: S(aturation), 2: V(alue)]
-  dhue: longword;
-  delta, max: longword;
-  h_int: longword;
+  red, green, blue: longword;
+  hue, sat: longword;
+  min, max, delta: longword;
+  HueInteger: longword;
   f, p, q, t: longword;
 begin
-  DestinationHue := col2hue(NewColor);
-
-  dhue := Trunc(DestinationHue*1024);
 
   Pixel := ImgSurface^.Pixels;
+
+  hue := col2hue(NewColor);   // hue is shl 10
+  f := hue and $3ff;
+  HueInteger := hue shr 10;
 
   for PixelIndex := 0 to (ImgSurface^.W * ImgSurface^.H)-1 do
   begin
@@ -940,43 +957,65 @@ begin
     // inlined colorize per pixel
 
     // uses fixed point math
+    // shl 10 is used for divisions
+
     // get color values
-    clr[0] := PixelColors[0] shl 10;
-    clr[1] := PixelColors[1] shl 10;
-    clr[2] := PixelColors[2] shl 10;
+
+    red   := PixelColors[0];
+    green := PixelColors[1];
+    blue  := PixelColors[2];
+
     //calculate luminance and saturation from rgb
 
-    max := clr[0];
-    if clr[1] > max then max := clr[1];
-    if clr[2] > max then max := clr[2];
-    delta := clr[0];
-    if clr[1] < delta then delta := clr[1];
-    if clr[2] < delta then delta := clr[2];
-    delta := max-delta;
-    hsv[0] := dhue;  // shl 8
-    hsv[2] := max;   // shl 8
-    if (max = 0) then
-      hsv[1] := 0
-    else
-      hsv[1] := (delta shl 10) div max; // shl 8
-    h_int := hsv[0] and $fffffC00;
-    f := hsv[0]-h_int; //shl 10
-    p := (hsv[2]*(1024-hsv[1])) shr 10;
-    q := (hsv[2]*(1024-(hsv[1]*f) shr 10)) shr 10;
-    t := (hsv[2]*(1024-(hsv[1]*(1024-f)) shr 10)) shr 10;
-    h_int := h_int shr 10;
-    case h_int of
-      0: begin clr[0] := hsv[2]; clr[1] := t;      clr[2] := p;      end; // (v,t,p)
-      1: begin clr[0] := q;      clr[1] := hsv[2]; clr[2] := p;      end; // (q,v,p)
-      2: begin clr[0] := p;      clr[1] := hsv[2]; clr[2] := t;      end; // (p,v,t)
-      3: begin clr[0] := p;      clr[1] := q;      clr[2] := hsv[2]; end; // (p,q,v)
-      4: begin clr[0] := t;      clr[1] := p;      clr[2] := hsv[2]; end; // (t,p,v)
-      5: begin clr[0] := hsv[2]; clr[1] := p;      clr[2] := q;      end; // (v,p,q)
-    end;
+    max := red;
+    if green > max then max := green;
+    if blue  > max then max := blue ;
 
-    PixelColors[0] := clr[0] shr 10;
-    PixelColors[1] := clr[1] shr 10;
-    PixelColors[2] := clr[2] shr 10;
+    if (max = 0) then               // the color is black
+    begin
+      PixelColors[0] := 0;
+      PixelColors[1] := 0;
+      PixelColors[2] := 0;
+    end
+    else
+    begin
+      min := red;
+      if green < min then min := green;
+      if blue  < min then min := blue ;
+
+      if (min = 255) then           // the color is white
+      begin
+        PixelColors[0] := 255;
+        PixelColors[1] := 255;
+        PixelColors[2] := 255;
+      end
+      else                          // all colors except black and white
+      begin
+        delta := max - min;
+        sat := (delta shl 10) div max;  // shl 10
+
+        // take into account that sat and f are shl 10
+        // the final p, q and t are unshifted
+
+        p := (max*(1024-sat)) shr 10;
+        q := (max*(1024-(sat*f) shr 10)) shr 10;
+        t := (max*(1024-(sat*(1024-f)) shr 10)) shr 10;
+
+        case HueInteger of
+          0: begin red := max; green := t;   blue := p;   end; // (v,t,p)
+          1: begin red := q;   green := max; blue := p;   end; // (q,v,p)
+          2: begin red := p;   green := max; blue := t;   end; // (p,v,t)
+          3: begin red := p;   green := q;   blue := max; end; // (p,q,v)
+          4: begin red := t;   green := p;   blue := max; end; // (t,p,v)
+          5: begin red := max; green := p;   blue := q;   end; // (v,p,q)
+        end;
+
+        PixelColors[0] := red   ;
+        PixelColors[1] := green ;
+        PixelColors[2] := blue  ;
+
+      end;
+    end;
 
     Inc(Pixel, ImgSurface^.format.BytesPerPixel);
   end;
