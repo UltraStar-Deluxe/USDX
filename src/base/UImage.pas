@@ -903,6 +903,7 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
     red, green, blue: longword;
     min, max, delta: longword;
     hue: double;
+    test: longword;
   begin
     // extract the colors
     // division by 255 is omitted, since it is implicitly done
@@ -961,9 +962,15 @@ begin
 
     // get color values
 
+    {$IFDEF FPC_BIG_ENDIAN}
+    red   := PixelColors[3];
+    green := PixelColors[2];
+    blue  := PixelColors[1];
+    {$ELSE}
     red   := PixelColors[0];
     green := PixelColors[1];
     blue  := PixelColors[2];
+    {$ENDIF}
 
     //calculate luminance and saturation from rgb
 
@@ -973,9 +980,15 @@ begin
 
     if (max = 0) then               // the color is black
     begin
+      {$IFDEF FPC_BIG_ENDIAN}
+      PixelColors[3] := 0;
+      PixelColors[2] := 0;
+      PixelColors[1] := 0;
+      {$ELSE}
       PixelColors[0] := 0;
       PixelColors[1] := 0;
       PixelColors[2] := 0;
+      {$ENDIF}
     end
     else
     begin
@@ -985,9 +998,15 @@ begin
 
       if (min = 255) then           // the color is white
       begin
+        {$IFDEF FPC_BIG_ENDIAN}
+        PixelColors[3] := 255;
+        PixelColors[2] := 255;
+        PixelColors[1] := 255;
+        {$ELSE}
         PixelColors[0] := 255;
         PixelColors[1] := 255;
         PixelColors[2] := 255;
+        {$ENDIF}
       end
       else                          // all colors except black and white
       begin
@@ -1010,9 +1029,15 @@ begin
           5: begin red := max; green := p;   blue := q;   end; // (v,p,q)
         end;
 
+        {$IFDEF FPC_BIG_ENDIAN}
+        PixelColors[3] := red   ;
+        PixelColors[2] := green ;
+        PixelColors[1] := blue  ;
+        {$ELSE}
         PixelColors[0] := red   ;
         PixelColors[1] := green ;
         PixelColors[2] := blue  ;
+        {$ENDIF}
 
       end;
     end;
