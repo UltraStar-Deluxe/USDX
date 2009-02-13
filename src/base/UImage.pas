@@ -947,6 +947,15 @@ var
 begin
 
   Pixel := ImgSurface^.Pixels;
+  
+  // check of the size of a pixel in bytes.
+  // It should be always 4, but this 
+  // additional safeguard will show, 
+  // whether something went wrong up to here.
+
+  if ImgSurface^.format.BytesPerPixel <> 4 then
+    Log.LogError ('ColorizeImage: The pixel size should be 4, but it is ' 
+                   + IntToStr(ImgSurface^.format.BytesPerPixel));
 
   hue := col2hue(NewColor);   // hue is shl 10
   f := hue and $3ff;
