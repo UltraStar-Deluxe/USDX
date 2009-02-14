@@ -151,10 +151,9 @@ function LoadImage(const Filename: string): PSDL_Surface;
  *******************************************************)
 
 function PixelFormatEquals(fmt1, fmt2: PSDL_PixelFormat): boolean;
-procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
-procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
-procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: Cardinal);
-
+procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
+procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
+procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
 
 implementation
 
@@ -184,7 +183,6 @@ uses
   sdlutils,
   UCommon,
   ULog;
-
 
 function IsRGBSurface(pixelFmt: PSDL_PixelFormat): boolean;
 begin
@@ -265,7 +263,6 @@ begin
     Converted := true;
   end;
 end;
-
 
 (*******************************************************
  * Image saving
@@ -759,11 +756,9 @@ end;
 
 {$ENDIF}
 
-
 (*******************************************************
  * Image loading
  *******************************************************)
-
 
 (*
  * Loads an image from the given file
@@ -793,11 +788,9 @@ begin
   end;
 end;
 
-
 (*******************************************************
  * Image manipulation
  *******************************************************)
-
 
 function PixelFormatEquals(fmt1, fmt2: PSDL_PixelFormat): boolean;
 begin
@@ -814,7 +807,7 @@ begin
     Result := false;
 end;
 
-procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
+procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
 var
   TempSurface: PSDL_Surface;
 begin
@@ -825,7 +818,7 @@ begin
   SDL_FreeSurface(TempSurface);
 end;
 
-procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: Cardinal);
+procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
 var
   TempSurface: PSDL_Surface;
   ImgFmt: PSDL_PixelFormat;
@@ -849,12 +842,12 @@ end;
 (*
 // Old slow floating point version of ColorizeTexture.
 // For an easier understanding of the faster fixed point version below.
-procedure ColorizeTexture(TexSurface: PSDL_Surface; Col: Cardinal);
+procedure ColorizeTexture(TexSurface: PSDL_Surface; Col: cardinal);
 var
-  clr: array[0..2] of Double; // [0: R, 1: G, 2: B]
-  hsv: array[0..2] of Double; // [0: H(ue), 1: S(aturation), 2: V(alue)]
-  delta, f, p, q, t: Double;
-  max: Double;
+  clr: array[0..2] of double; // [0: R, 1: G, 2: B]
+  hsv: array[0..2] of double; // [0: H(ue), 1: S(aturation), 2: V(alue)]
+  delta, f, p, q, t: double;
+  max: double;
 begin
   clr[0] := PixelColors[0]/255;
   clr[1] := PixelColors[1]/255;
@@ -897,41 +890,40 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
   // for the conversion of colors from rgb to hsv space and back
   // simply check the wikipedia.
 
-  function col2hue(const Color: longword): longword;
+  function ColorToHue(const Color: longword): longword;
   // returns hue within the range [0.0-6.0] but shl 10, ie.  times 1024
   var
-    red, green, blue: longword;
-    min, max, delta: longword;
-    hue: double;
-    test: longword;
+    Red, Green, Blue: longword;
+    Min, Max, Delta: longword;
+    Hue: double;
   begin
     // extract the colors
     // division by 255 is omitted, since it is implicitly done
     // when deviding by delta
-    red   := ((Color and $ff0000) shr 16); // R
-    green := ((Color and   $ff00) shr  8); // G
-    blue  :=  (Color and     $ff)        ; // B
+    Red   := ((Color and $ff0000) shr 16); // R
+    Green := ((Color and   $ff00) shr  8); // G
+    Blue  :=  (Color and     $ff)        ; // B
 
-    min := red;
-    if green < min then min := green;
-    if blue  < min then min := blue;
+    Min := Red;
+    if Green < Min then Min := Green;
+    if Blue  < Min then Min := Blue;
 
-    max := red;
-    if green > max then max := green;
-    if blue  > max then max := blue;
+    Max := Red;
+    if Green > Max then Max := Green;
+    if Blue  > Max then Max := Blue;
 
     // calc hue
-    delta := max - min;
-    if (delta = 0) then
+    Delta := Max - Min;
+    if (Delta = 0) then
       Result := 0
     else
     begin
-      if      (max = red  ) then hue :=       (green - blue )/delta
-      else if (max = green) then hue := 2.0 + (blue  - red  )/delta
-      else if (max = blue ) then hue := 4.0 + (red   - green)/delta;
-      if (hue < 0.0) then
-        hue := hue + 6.0;
-      Result := trunc(hue*1024);           // '*1024' is shl 10
+      if      (Max = Red  ) then Hue :=       (Green - Blue )/Delta
+      else if (Max = Green) then Hue := 2.0 + (Blue  - Red  )/Delta
+      else if (Max = Blue ) then Hue := 4.0 + (Red   - Green)/Delta;
+      if (Hue < 0.0) then
+        Hue := Hue + 6.0;
+      Result := trunc(Hue*1024);           // '*1024' is shl 10
     end;
   end;
 
@@ -939,27 +931,27 @@ var
   PixelIndex: longword;
   Pixel: PByte;
   PixelColors: PByteArray;
-  red, green, blue: longword;
-  hue, sat: longword;
-  min, max, delta: longword;
+  Red, Green, Blue: longword;
+  Hue, Sat: longword;
+  Min, Max, Delta: longword;
   HueInteger: longword;
   f, p, q, t: longword;
 begin
 
   Pixel := ImgSurface^.Pixels;
-  
+
   // check of the size of a pixel in bytes.
-  // It should be always 4, but this 
-  // additional safeguard will show, 
+  // It should be always 4, but this
+  // additional safeguard will show,
   // whether something went wrong up to here.
 
   if ImgSurface^.format.BytesPerPixel <> 4 then
-    Log.LogError ('ColorizeImage: The pixel size should be 4, but it is ' 
+    Log.LogError ('ColorizeImage: The pixel size should be 4, but it is '
                    + IntToStr(ImgSurface^.format.BytesPerPixel));
 
-  hue := col2hue(NewColor);   // hue is shl 10
-  f := hue and $3ff;
-  HueInteger := hue shr 10;
+  Hue := ColorToHue(NewColor);   // Hue is shl 10
+  f := Hue and $3ff;
+  HueInteger := Hue shr 10;
 
   for PixelIndex := 0 to (ImgSurface^.W * ImgSurface^.H)-1 do
   begin
@@ -972,22 +964,24 @@ begin
     // get color values
 
     {$IFDEF FPC_BIG_ENDIAN}
-    red   := PixelColors[3];
-    green := PixelColors[2];
-    blue  := PixelColors[1];
+    Red   := PixelColors[3];
+    Green := PixelColors[2];
+    Blue  := PixelColors[1];
+    //       PixelColors[0] is alpha and remains untouched
     {$ELSE}
-    red   := PixelColors[0];
-    green := PixelColors[1];
-    blue  := PixelColors[2];
+    Red   := PixelColors[0];
+    Green := PixelColors[1];
+    Blue  := PixelColors[2];
+    //       PixelColors[3] is alpha and remains untouched
     {$ENDIF}
 
     //calculate luminance and saturation from rgb
 
-    max := red;
-    if green > max then max := green;
-    if blue  > max then max := blue ;
+    Max := Red;
+    if Green > Max then Max := Green;
+    if Blue  > Max then Max := Blue ;
 
-    if (max = 0) then               // the color is black
+    if (Max = 0) then               // the color is black
     begin
       {$IFDEF FPC_BIG_ENDIAN}
       PixelColors[3] := 0;
@@ -1001,11 +995,11 @@ begin
     end
     else
     begin
-      min := red;
-      if green < min then min := green;
-      if blue  < min then min := blue ;
+      Min := Red;
+      if Green < Min then Min := Green;
+      if Blue  < Min then Min := Blue ;
 
-      if (min = 255) then           // the color is white
+      if (Min = 255) then           // the color is white
       begin
         {$IFDEF FPC_BIG_ENDIAN}
         PixelColors[3] := 255;
@@ -1019,33 +1013,33 @@ begin
       end
       else                          // all colors except black and white
       begin
-        delta := max - min;
-        sat := (delta shl 10) div max;  // shl 10
+        Delta := Max - Min;
+        Sat := (Delta shl 10) div Max;  // shl 10
 
-        // take into account that sat and f are shl 10
-        // the final p, q and t are unshifted
+        // shr 10 corrects that sat and f are shl 10
+        // the resulting p, q and t are unshifted
 
-        p := (max*(1024-sat)) shr 10;
-        q := (max*(1024-(sat*f) shr 10)) shr 10;
-        t := (max*(1024-(sat*(1024-f)) shr 10)) shr 10;
+        p := (Max*(1024-Sat)) shr 10;
+        q := (Max*(1024-(Sat*f) shr 10)) shr 10;
+        t := (Max*(1024-(Sat*(1024-f)) shr 10)) shr 10;
 
         case HueInteger of
-          0: begin red := max; green := t;   blue := p;   end; // (v,t,p)
-          1: begin red := q;   green := max; blue := p;   end; // (q,v,p)
-          2: begin red := p;   green := max; blue := t;   end; // (p,v,t)
-          3: begin red := p;   green := q;   blue := max; end; // (p,q,v)
-          4: begin red := t;   green := p;   blue := max; end; // (t,p,v)
-          5: begin red := max; green := p;   blue := q;   end; // (v,p,q)
+          0: begin Red := Max; Green := t;   Blue := p;   end; // (v,t,p)
+          1: begin Red := q;   Green := Max; Blue := p;   end; // (q,v,p)
+          2: begin Red := p;   Green := Max; Blue := t;   end; // (p,v,t)
+          3: begin Red := p;   Green := q;   Blue := Max; end; // (p,q,v)
+          4: begin Red := t;   Green := p;   Blue := Max; end; // (t,p,v)
+          5: begin Red := Max; Green := p;   Blue := q;   end; // (v,p,q)
         end;
 
         {$IFDEF FPC_BIG_ENDIAN}
-        PixelColors[3] := red   ;
-        PixelColors[2] := green ;
-        PixelColors[1] := blue  ;
+        PixelColors[3] := Red   ;
+        PixelColors[2] := Green ;
+        PixelColors[1] := Blue  ;
         {$ELSE}
-        PixelColors[0] := red   ;
-        PixelColors[1] := green ;
-        PixelColors[2] := blue  ;
+        PixelColors[0] := Red   ;
+        PixelColors[1] := Green ;
+        PixelColors[2] := Blue  ;
         {$ENDIF}
 
       end;
