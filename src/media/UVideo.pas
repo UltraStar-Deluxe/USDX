@@ -532,8 +532,17 @@ begin
       end;
 
       // no error -> wait for user input
-      SDL_Delay(100);
+{
+      SDL_Delay(100);  // initial version, left for documentation
       continue;
+}
+
+      // Patch by Hawkear:
+      // Why should this function loop in an endless loop if there is an error?
+      // This runs in the main thread, so it halts the whole program
+      // Therefore, it is better to exit when an error occurs
+      Exit;
+
     end;
 
     // if we got a packet from the video stream, then decode it
