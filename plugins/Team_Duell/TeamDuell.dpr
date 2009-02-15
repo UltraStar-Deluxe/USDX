@@ -180,11 +180,11 @@ begin
   // Names, Timer
   if (TtoNextChange <= 9) Then begin display := PChar(TeamPlayer[I,NextSinger[I]]);
     glColor4f (0.8, 0.1, 0.2, 1);
-    MethodRec.Print (1, 6, PlayerInfo.Playerinfo[I].PosX+85, PlayerInfo.Playerinfo[I].PosY+10, CreateStr(PChar(IntToStr(Trunc(TtoNextChange)))));
+    MethodRec.Print (1, 18, PlayerInfo.Playerinfo[I].PosX+85, PlayerInfo.Playerinfo[I].PosY+10, CreateStr(PChar(IntToStr(Trunc(TtoNextChange)))));
   end;
   glColor4f (0.8, 0.8, 0.8, 1);
   if (CurSentence = 0) then display := PChar(TeamPlayer[I,CurSinger[I]]);
-  if (TtoNextChange <= 11) OR (start) Then MethodRec.Print (1, 6, PlayerInfo.Playerinfo[I].PosX+5, PlayerInfo.Playerinfo[I].PosY+10, display);
+  if (TtoNextChange <= 11) OR (start) Then MethodRec.Print (1, 18, PlayerInfo.Playerinfo[I].PosX+5, PlayerInfo.Playerinfo[I].PosY+10, display);
   end;
   if (CurSentence = ChangeOnSentence) then  begin ChangeOnSentence := CurSentence + 7; firsttime := true; end;
 Result := True;

@@ -686,7 +686,7 @@ begin
   SetFontStyle(Style and 7);
   // FIXME: FONTSIZE
   // used by Hold_The_Line / TeamDuell
-  SetFontSize(Size * 3);
+  SetFontSize(Size);
   SetFontPos (X, Y);
   glPrint (Language.Translate(String(Text)));
 end;

@@ -175,7 +175,7 @@ begin
 
       glColor4f (0.8, 0.8, 0.8, 1);
 
-      MethodRec.Print (1, 6, PlayerInfo.Playerinfo[I].PosX, PlayerInfo.Playerinfo[I].PosY-8, Text);
+      MethodRec.Print (1, 18, PlayerInfo.Playerinfo[I].PosX, PlayerInfo.Playerinfo[I].PosY-8, Text);
       FreeStr(Text);
     end;
   end;
