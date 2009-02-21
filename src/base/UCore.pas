@@ -42,20 +42,20 @@ uses
 
 {*********************
   TCore
-  Class manages all CoreModules, teh StartUp, teh MainLoop and the shutdown process
-  Also it does some Error Handling, and maybe sometime multithreaded Loading ;)
+  Class manages all CoreModules, the StartUp, the MainLoop and the shutdown process
+  Also, it does some error handling, and maybe sometime multithreaded loading ;)
 *********************}
 
 type
   TModuleListItem = record
-    Module:       TCoreModule; //Instance of the Modules Class
-    Info:         TModuleInfo; //ModuleInfo returned by Modules Modulinfo Proc
-    NeedsDeInit:  Boolean;     //True if Module was succesful inited
+    Module:       TCoreModule; // Instance of the modules class
+    Info:         TModuleInfo; // ModuleInfo returned by modules modulinfo proc
+    NeedsDeInit:  boolean;     // True if module was succesful inited
   end;
   
   TCore = class
     private
-      //Some Hook Handles. See Plugin SDKs Hooks.txt for Infos
+      // Some Hook Handles. See Plugin SDKs Hooks.txt for Infos
       hLoadingFinished: THandle;
       hMainLoop:        THandle;
       hTranslate:       THandle;
@@ -72,71 +72,71 @@ type
       sGetModuleInfo:   THandle;
       sGetApplicationHandle: THandle;
 
-      Modules:          Array [0..High(CORE_MODULES_TO_LOAD)] of TModuleListItem;
+      Modules:          array [0..High(CORE_MODULES_TO_LOAD)] of TModuleListItem;
 
-      //Cur + Last Executed Setting and Getting ;)
-      iCurExecuted: Integer;
-      iLastExecuted: Integer;
+      // Cur + Last Executed Setting and Getting ;)
+      iCurExecuted: integer;
+      iLastExecuted: integer;
 
-      procedure SetCurExecuted(Value: Integer);
+      procedure SetCurExecuted(Value: integer);
 
-      //Function Get all Modules and Creates them
-      function GetModules: Boolean;
+      // Function Get all Modules and Creates them
+      function GetModules: boolean;
 
-      //Loads Core and all Modules
-      function Load: Boolean;
+      // Loads Core and all Modules
+      function Load: boolean;
 
-      //Inits Core and all Modules
-      function Init: Boolean;
+      // Inits Core and all Modules
+      function Init: boolean;
 
-      //DeInits Core and all Modules
-      function DeInit: Boolean;
+      // DeInits Core and all Modules
+      function DeInit: boolean;
 
-      //Load the Core
-      function LoadCore: Boolean;
+      // Load the Core
+      function LoadCore: boolean;
 
-      //Init the Core
-      function InitCore: Boolean;
+      // Init the Core
+      function InitCore: boolean;
 
-      //DeInit the Core
-      function DeInitCore: Boolean;
+      // DeInit the Core
+      function DeInitCore: boolean;
 
-      //Called one Time per Frame
-      function MainLoop: Boolean;
+      // Called one time per frame
+      function MainLoop: boolean;
 
     public
-      Hooks:            THookManager;   //Teh Hook Manager ;)
-      Services:         TServiceManager;//The Service Manager
+      Hooks:             THookManager;    // The Hook Manager ;)
+      Services:          TServiceManager; // The Service Manager
 
-      Name:             String;         //Name of this Application
-      Version:          LongWord;       //Version of this ". For Info Look PluginDefs Functions
+      Name:              string;          // Name of this application
+      Version:           LongWord;        // Version of this ". For info look plugindefs functions
 
-      LastErrorReporter:String;         //Who Reported the Last Error String
-      LastErrorString:  String;         //Last Error String reported
+      LastErrorReporter: string;          // Who reported the last error string
+      LastErrorString:   string;          // Last error string reported
 
-      property CurExecuted: Integer read iCurExecuted write SetCurExecuted;       //ID of Plugin or Module curently Executed
-      property LastExecuted: Integer read iLastExecuted;
+      property CurExecuted:  integer read iCurExecuted write SetCurExecuted;       //ID of plugin or module curently executed
+      property LastExecuted: integer read iLastExecuted;
 
       //---------------
-      //Main Methods to control the Core:
+      // Main methods to control the core:
       //---------------
-      constructor Create(const cName: String; const cVersion: LongWord);
+      constructor Create(const cName: string; const cVersion: LongWord);
 
-      //Starts Loading and Init Process. Then Runs MainLoop. DeInits on Shutdown
+      // Starts loading and init process. Then runs MainLoop. DeInits on shutdown
       procedure Run;
 
-      //Method for other Classes to get Pointer to a specific Module
-      function GetModulebyName(const Name: String): PCoreModule;
+      // Method for other classes to get pointer to a specific module
+      function GetModulebyName(const Name: string): PCoreModule;
 
       //--------------
-      // Hook and Service Procs:
+      // Hook and service procs:
       //--------------
       function ShowMessage(wParam: TwParam; lParam: TlParam): integer; //Shows a Message (lParam: PChar Text, wParam: Symbol)
       function ReportError(wParam: TwParam; lParam: TlParam): integer; //Shows a Message (wParam: Pchar(Message), lParam: PChar(Reportername))
       function ReportDebug(wParam: TwParam; lParam: TlParam): integer; //Shows a Message (wParam: Pchar(Message), lParam: PChar(Reportername))
       function Retranslate(wParam: TwParam; lParam: TlParam): integer; //Calls Translate hook
       function ReloadTextures(wParam: TwParam; lParam: TlParam): integer; //Calls LoadTextures hook
-      function GetModuleInfo(wParam: TwParam; lParam: TlParam): integer; //If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TModuleInfo to address at lparam
+      function GetModuleInfo(wParam: TwParam; lParam: TlParam): integer; //If lParam = nil then get length of Moduleinfo array. If lparam <> nil then write array of TModuleInfo to address at lparam
       function GetApplicationHandle(wParam: TwParam; lParam: TlParam): integer; //Returns Application Handle
   end;
 
@@ -154,7 +154,7 @@ uses
 //-------------
 // Create - Creates Class + Hook and Service Manager
 //-------------
-constructor TCore.Create(const cName: String; const cVersion: LongWord);
+constructor TCore.Create(const cName: string; const cVersion: LongWord);
 begin
   inherited Create;
 
@@ -171,11 +171,11 @@ begin
 end;
 
 //-------------
-//Starts Loading and Init Process. Then Runs MainLoop. DeInits on Shutdown
+// Starts Loading and Init process. Then runs MainLoop. DeInits on shutdown
 //-------------
 procedure TCore.Run;
 var
-  Success: Boolean;
+  Success: boolean;
 
   procedure HandleError(const ErrorMsg: string);
   begin
@@ -184,16 +184,16 @@ var
     else
       Self.ShowMessage(CORE_SM_ERROR, PChar(ErrorMsg));
 
-    //DeInit
+    // DeInit
     DeInit;
   end;
 
 begin
-  //Get Modules
+  // Get modules
   try
     Success := GetModules();
   except
-    Success := False;
+    Success := false;
   end;
 
   if (not Success) then
@@ -202,11 +202,11 @@ begin
     Exit;
   end;
 
-  //Loading
+  // Loading
   try
     Success := Load();
   except
-    Success := False;
+    Success := false;
   end;
 
   if (not Success) then
@@ -215,11 +215,11 @@ begin
     Exit;
   end;
 
-  //Init
+  // Init
   try
     Success := Init();
   except
-    Success := False;
+    Success := false;
   end;
 
   if (not Success) then
@@ -228,28 +228,28 @@ begin
     Exit;
   end;
 
-  //Call Translate Hook
+  // Call Translate Hook
   if (Hooks.CallEventChain(hTranslate, 0, nil) <> 0) then
   begin
     HandleError('Error translating');
     Exit;
   end;
 
-  //Calls LoadTextures Hook
+  // Calls LoadTextures Hook
   if (Hooks.CallEventChain(hLoadTextures, 0, nil) <> 0) then
   begin
     HandleError('Error loading textures');
     Exit;
   end;
   
-  //Calls Loading Finished Hook
+  // Calls Loading Finished Hook
   if (Hooks.CallEventChain(hLoadingFinished, 0, nil) <> 0) then
   begin
     HandleError('Error calling LoadingFinished Hook');
     Exit;
   end;
   
-  //Start MainLoop
+  // Start MainLoop
   while Success do
   begin
     Success := MainLoop();
@@ -258,41 +258,41 @@ begin
 end;
 
 //-------------
-//Called one Time per Frame
+// Called one time per frame
 //-------------
-function TCore.MainLoop: Boolean;
+function TCore.MainLoop: boolean;
 begin
-  Result := False;
+  Result := false;
 end;
 
 //-------------
-//Function Get all Modules and Creates them
+// Function get all modules and creates them
 //-------------
-function TCore.GetModules: Boolean;
+function TCore.GetModules: boolean;
 var
-  i: Integer;
+  i: integer;
 begin
-  Result := False;
+  Result := false;
   for i := 0 to high(Modules) do
   begin
     try
-      Modules[i].NeedsDeInit := False;
+      Modules[i].NeedsDeInit := false;
       Modules[i].Module := CORE_MODULES_TO_LOAD[i].Create;
       Modules[i].Module.Info(@Modules[i].Info);
     except
-      ReportError(Integer(PChar('Can''t get module #' + InttoStr(i) + ' "' + Modules[i].Info.Name + '"')), PChar('Core'));
+      ReportError(integer(PChar('Can''t get module #' + InttoStr(i) + ' "' + Modules[i].Info.Name + '"')), PChar('Core'));
       Exit;
     end;
   end;
-  Result := True;
+  Result := true;
 end;
 
 //-------------
-//Loads Core and all Modules
+// Loads core and all modules
 //-------------
-function TCore.Load: Boolean;
+function TCore.Load: boolean;
 var
-  i: Integer;
+  i: integer;
 begin
   Result := LoadCore;
 
@@ -301,23 +301,23 @@ begin
     try
       Result := Modules[i].Module.Load;
     except
-      Result := False;
+      Result := false;
     end;
 
     if (not Result) then
     begin
-      ReportError(Integer(PChar('Error loading module #' + InttoStr(i) + ' "' + Modules[i].Info.Name + '"')), PChar('Core'));
+      ReportError(integer(PChar('Error loading module #' + InttoStr(i) + ' "' + Modules[i].Info.Name + '"')), PChar('Core'));
       break;
     end;
   end;
 end;
 
 //-------------
-//Inits Core and all Modules
+// Inits core and all modules
 //-------------
-function TCore.Init: Boolean;
+function TCore.Init: boolean;
 var
-  i: Integer;
+  i: integer;
 begin
   Result := InitCore;
 
@@ -326,12 +326,12 @@ begin
     try
       Result := Modules[i].Module.Init;
     except
-      Result := False;
+      Result := false;
     end;
 
     if (not Result) then
     begin
-      ReportError(Integer(PChar('Error initing module #' + InttoStr(i) + ' "' + Modules[i].Info.Name + '"')), PChar('Core'));
+      ReportError(integer(PChar('Error initing module #' + InttoStr(i) + ' "' + Modules[i].Info.Name + '"')), PChar('Core'));
       break;
     end;
 
@@ -340,7 +340,7 @@ begin
 end;
 
 //-------------
-//DeInits Core and all Modules
+// DeInits core and all modules
 //-------------
 function TCore.DeInit: boolean;
 var
@@ -362,9 +362,9 @@ begin
 end;
 
 //-------------
-//Load the Core
+// Load the Core
 //-------------
-function TCore.LoadCore: Boolean;
+function TCore.LoadCore: boolean;
 begin
   hLoadingFinished := Hooks.AddEvent('Core/LoadingFinished');
   hMainLoop        := Hooks.AddEvent('Core/MainLoop');
@@ -383,35 +383,35 @@ begin
   sGetModuleInfo   := Services.AddService('Core/GetModuleInfo', nil, Self.GetModuleInfo);
   sGetApplicationHandle := Services.AddService('Core/GetApplicationHandle', nil, Self.GetApplicationHandle);
 
-  //A little Test
+  // A little Test
   Hooks.AddSubscriber('Core/NewError', HookTest);
 
   result := true;
 end;
 
 //-------------
-//Init the Core
+// Init the Core
 //-------------
-function TCore.InitCore: Boolean;
+function TCore.InitCore: boolean;
 begin
   //Don not init something atm.
   result := true;
 end;
 
 //-------------
-//DeInit the Core
+// DeInit the Core
 //-------------
-function TCore.DeInitCore: Boolean;
+function TCore.DeInitCore: boolean;
 begin
-  // TODO: write TService-/HookManager.Free and call it here
+  // TODO: write TService-/HookManager. Free and call it here
   Result := true;
 end;
 
 //-------------
-//Method for other classes to get pointer to a specific module
+// Method for other classes to get pointer to a specific module
 //-------------
-function TCore.GetModuleByName(const Name: String): PCoreModule;
-var i: Integer;
+function TCore.GetModuleByName(const Name: string): PCoreModule;
+var i: integer;
 begin
   Result := nil;
   for i := 0 to High(Modules) do
@@ -444,7 +444,7 @@ begin
       CORE_SM_INFO: Params := Params or MB_ICONINFORMATION;
     end;
 
-    //Show:
+    // Show:
     Result := Messagebox(0, lParam, PChar(Name), Params);
   end;
   {$ENDIF}
@@ -458,8 +458,8 @@ end;
 function TCore.ReportError(wParam: TwParam; lParam: TlParam): integer;
 begin
   //Update LastErrorReporter and LastErrorString
-  LastErrorReporter := String(PChar(lParam));
-  LastErrorString   := String(PChar(Pointer(wParam)));
+  LastErrorReporter := string(PChar(lParam));
+  LastErrorString   := string(PChar(Pointer(wParam)));
   
   Hooks.CallEventChain(hError, wParam, lParam);
 
@@ -501,7 +501,7 @@ begin
 end;
 
 //-------------
-// If lParam = nil then get length of Moduleinfo Array. If lparam <> nil then write array of TModuleInfo to address at lparam
+// If lParam = nil then get length of Moduleinfo array. If lparam <> nil then write array of TModuleInfo to address at lparam
 //-------------
 function TCore.GetModuleInfo(wParam: TwParam; lParam: TlParam): integer;
 var
@@ -538,12 +538,12 @@ end;
 //-------------
 // Called when setting CurExecuted
 //-------------
-procedure TCore.SetCurExecuted(Value: Integer);
+procedure TCore.SetCurExecuted(Value: integer);
 begin
-  //Set Last Executed
+  // Set Last Executed
   iLastExecuted := iCurExecuted;
 
-  //Set Cur Executed
+  // Set Cur Executed
   iCurExecuted := Value;
 end;
 
