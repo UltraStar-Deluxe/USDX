@@ -35,23 +35,23 @@ interface
 
 type
   TSkinTexture = record
-    Name:       string;
-    FileName:   string;
+    Name:     string;
+    FileName: string;
   end;
 
   TSkinEntry = record
-    Theme:      string;
-    Name:       string;
-    Path:       string;
-    FileName:   string;
-    Creator:    string; // not used yet
+    Theme:    string;
+    Name:     string;
+    Path:     string;
+    FileName: string;
+    Creator:  string; // not used yet
   end;
 
   TSkin = class
-    Skin:         array of TSkinEntry;
-    SkinTexture:  array of TSkinTexture;
-    SkinPath:     string;
-    Color:        integer;
+    Skin:        array of TSkinEntry;
+    SkinTexture: array of TSkinTexture;
+    SkinPath:    string;
+    Color:       integer;
     constructor Create;
     procedure LoadList;
     procedure ParseDir(Dir: string);
@@ -63,16 +63,17 @@ type
   end;
 
 var
-  Skin:   TSkin;
+  Skin: TSkin;
 
 implementation
 
-uses IniFiles,
-     Classes,
-     SysUtils,
-     UMain,
-     ULog,
-     UIni;
+uses
+  IniFiles,
+  Classes,
+  SysUtils,
+  UMain,
+  ULog,
+  UIni;
 
 constructor TSkin.Create;
 begin
@@ -84,9 +85,10 @@ end;
 
 procedure TSkin.LoadList;
 var
-  SR:     TSearchRec;
+  SR: TSearchRec;
 begin
-  if FindFirst(SkinsPath+'*', faDirectory, SR) = 0 then begin
+  if FindFirst(SkinsPath+'*', faDirectory, SR) = 0 then
+  begin
     repeat
       if (SR.Name <> '.') and (SR.Name <> '..') then
         ParseDir(SkinsPath + SR.Name + PathDelim);
@@ -97,9 +99,10 @@ end;
 
 procedure TSkin.ParseDir(Dir: string);
 var
-  SR:     TSearchRec;
+  SR: TSearchRec;
 begin
-  if FindFirst(Dir + '*.ini', faAnyFile, SR) = 0 then begin
+  if FindFirst(Dir + '*.ini', faAnyFile, SR) = 0 then
+  begin
     repeat
 
       if (SR.Name <> '.') and (SR.Name <> '..') then
@@ -111,8 +114,8 @@ end;
 
 procedure TSkin.LoadHeader(FileName: string);
 var
-  SkinIni:    TMemIniFile;
-  S:          integer;
+  SkinIni: TMemIniFile;
+  S:       integer;
 begin
   SkinIni := TMemIniFile.Create(FileName);
 
@@ -130,10 +133,10 @@ end;
 
 procedure TSkin.LoadSkin(Name: string);
 var
-  SkinIni:    TMemIniFile;
-  SL:         TStringList;
-  T:          integer;
-  S:          integer;
+  SkinIni: TMemIniFile;
+  SL:      TStringList;
+  T:       integer;
+  S:       integer;
 begin
   S        := GetSkinNumber(Name);
   SkinPath := Skin[S].Path;
@@ -156,39 +159,43 @@ end;
 
 function TSkin.GetTextureFileName(TextureName: string): string;
 var
-  T:    integer;
+  T: integer;
 begin
   Result := '';
   
   for T := 0 to High(SkinTexture) do
   begin
-    if ( SkinTexture[T].Name     = TextureName ) AND
+    if ( SkinTexture[T].Name     = TextureName ) and
        ( SkinTexture[T].FileName <> ''         ) then
     begin
       Result := SkinPath + SkinTexture[T].FileName;
     end;
   end;
 
-  if ( TextureName <> '' ) AND
-     ( Result      <> '' ) THEN
+  if ( TextureName <> '' ) and
+     ( Result      <> '' ) then
   begin
     //Log.LogError('', '-----------------------------------------');
     //Log.LogError(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
   end;
 
 {  Result := SkinPath + 'Bar.jpg';
-  if TextureName = 'Ball' then Result := SkinPath + 'Ball.bmp';
-  if Copy(TextureName, 1, 4) = 'Gray' then Result := SkinPath + 'Ball.bmp';
-  if Copy(TextureName, 1, 6) = 'NoteBG' then Result := SkinPath + 'Ball.bmp';}
+  if TextureName = 'Ball' then
+    Result := SkinPath + 'Ball.bmp';
+  if Copy(TextureName, 1, 4) = 'Gray' then
+    Result := SkinPath + 'Ball.bmp';
+  if Copy(TextureName, 1, 6) = 'NoteBG' then
+    Result := SkinPath + 'Ball.bmp';}
 end;
 
 function TSkin.GetSkinNumber(Name: string): integer;
 var
-  S:    integer;
+  S: integer;
 begin
   Result := 0; // set default to the first available skin
   for S := 0 to High(Skin) do
-    if Skin[S].Name = Name then Result := S;
+    if Skin[S].Name = Name then
+      Result := S;
 end;
 
 procedure TSkin.onThemeChange;
@@ -200,7 +207,8 @@ begin
   SetLength(ISkin, 0);
   Name := Uppercase(ITheme[Ini.Theme]);
   for S := 0 to High(Skin) do
-    if Name = Uppercase(Skin[S].Theme) then begin
+    if Name = Uppercase(Skin[S].Theme) then
+    begin
       SetLength(ISkin, Length(ISkin)+1);
       ISkin[High(ISkin)] := Skin[S].Name;
     end;
