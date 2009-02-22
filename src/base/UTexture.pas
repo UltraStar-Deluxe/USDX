@@ -249,8 +249,8 @@ end;
 function TTextureUnit.LoadTexture(const Identifier: string; Typ: TTextureType; Col: LongWord): TTexture;
 var
   TexSurface: PSDL_Surface;
-  newWidth, newHeight: cardinal;
-  oldWidth, oldHeight: cardinal;
+  newWidth, newHeight: integer;
+  oldWidth, oldHeight: integer;
   ActTex: GLuint;
 begin
   // zero texture data
