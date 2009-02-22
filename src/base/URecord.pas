@@ -44,17 +44,17 @@ uses
 
 const
   BaseToneFreq = 65.4064; // lowest (half-)tone to analyze (C2 = 65.4064 Hz)
-  NumHalftones = 36; // C2-B4 (for Whitney and my high voice)
+  NumHalftones = 36;      // C2-B4 (for Whitney and my high voice)
 
 type
   TCaptureBuffer = class
     private
-      VoiceStream:  TAudioVoiceStream; // stream for voice passthrough
+      VoiceStream: TAudioVoiceStream; // stream for voice passthrough
       AnalysisBufferLock: PSDL_Mutex;
 
       function GetToneString: string; // converts a tone to its string represenatation;
 
-      procedure BoostBuffer(Buffer: PByteArray; Size: Cardinal);
+      procedure BoostBuffer(Buffer: PByteArray; Size: cardinal);
       procedure ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
 
       // we call it to analyze sound by checking Autocorrelation
@@ -86,7 +86,7 @@ type
       procedure LockAnalysisBuffer();   {$IFDEF HasInline}inline;{$ENDIF}
       procedure UnlockAnalysisBuffer(); {$IFDEF HasInline}inline;{$ENDIF}
 
-      function MaxSampleVolume: Single;
+      function MaxSampleVolume: single;
       property ToneString: string READ GetToneString;
   end;
 
@@ -95,17 +95,17 @@ const
 
 type
   TAudioInputSource = record
-    Name:   string;
+    Name: string;
   end;
 
   // soundcard input-devices information
   TAudioInputDevice = class
     public
-      CfgIndex:        integer;   // index of this device in Ini.InputDeviceConfig
-      Name:            string;    // soundcard name
-      Source:          array of TAudioInputSource; // soundcard input-sources
-      SourceRestore:   integer;  // source-index that will be selected after capturing (-1: not detected)
-      MicSource:       integer;  // source-index of mic (-1: none detected)
+      CfgIndex:      integer;   // index of this device in Ini.InputDeviceConfig
+      Name:          string;    // soundcard name
+      Source:        array of TAudioInputSource; // soundcard input-sources
+      SourceRestore: integer;  // source-index that will be selected after capturing (-1: not detected)
+      MicSource:     integer;  // source-index of mic (-1: none detected)
 
       AudioFormat:     TAudioFormatInfo; // capture format info (e.g. 44.1kHz SInt16 stereo)
       CaptureChannel:  array of TCaptureBuffer; // sound-buffer references used for mono or stereo channel's capture data
@@ -115,10 +115,10 @@ type
       procedure LinkCaptureBuffer(ChannelIndex: integer; Sound: TCaptureBuffer);
 
       // TODO: add Open/Close functions so Start/Stop becomes faster
-      //function Open(): boolean;  virtual; abstract;
-      //function Close(): boolean; virtual; abstract;
-      function Start(): boolean; virtual; abstract;
-      function Stop(): boolean;  virtual; abstract;
+      //function Open():    boolean; virtual; abstract;
+      //function Close():   boolean; virtual; abstract;
+      function Start():   boolean; virtual; abstract;
+      function Stop():    boolean; virtual; abstract;
 
       function GetVolume(): single;        virtual; abstract;
       procedure SetVolume(Volume: single); virtual; abstract;
@@ -135,7 +135,7 @@ type
       procedure UpdateInputDeviceConfig;
 
       // handle microphone input
-      procedure HandleMicrophoneData(Buffer: PByteArray; Size: Cardinal;
+      procedure HandleMicrophoneData(Buffer: PByteArray; Size: cardinal;
                                      InputDevice: TAudioInputDevice);
   end;
 
@@ -153,7 +153,6 @@ type
       procedure CaptureStop;
   end;
 
-
   TSmallIntArray = array [0..(MaxInt div SizeOf(SmallInt))-1] of SmallInt;
   PSmallIntArray = ^TSmallIntArray;
 
@@ -168,7 +167,6 @@ uses
 var
   singleton_AudioInputProcessor : TAudioInputProcessor = nil;
 
-
 { Global }
 
 function AudioInputProcessor(): TAudioInputProcessor;
@@ -178,7 +176,6 @@ begin
 
   result := singleton_AudioInputProcessor;
 end;
-
 
 { TAudioInputDevice }
 
@@ -271,8 +268,8 @@ end;
 procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
 var
   BufferOffset: integer;
-  SampleCount: integer;
-  i: integer;
+  SampleCount:  integer;
+  i:            integer;
 begin
   // apply software boost
   BoostBuffer(Buffer, BufferSize);
@@ -299,7 +296,6 @@ begin
     SampleCount := Length(AnalysisBuffer);
   end;
 
-
   LockAnalysisBuffer();
   try
 
@@ -315,7 +311,6 @@ begin
     UnlockAnalysisBuffer();
   end;
 
-
   // save capture-data to BufferLong if enabled
   if (Ini.SavePlayback = 1) then
   begin
@@ -329,10 +324,10 @@ end;
 
 procedure TCaptureBuffer.AnalyzeBuffer;
 var
-  Volume:    single;
-  MaxVolume: single;
+  Volume:      single;
+  MaxVolume:   single;
   SampleIndex: integer;
-  Threshold: single;
+  Threshold:   single;
 begin
   ToneValid := false;
   ToneAbs := -1;
@@ -431,10 +426,10 @@ begin
   Result := 1 - AccumDist / AnalysisBufferSize;
 end;
 
-function TCaptureBuffer.MaxSampleVolume: Single;
+function TCaptureBuffer.MaxSampleVolume: single;
 var
-  lSampleIndex: Integer;
-  lMaxVol : Longint;
+  lSampleIndex: integer;
+  lMaxVol:      longint;
 begin;
   LockAnalysisBuffer();
   try
@@ -464,13 +459,13 @@ begin
     Result := '-';
 end;
 
-procedure TCaptureBuffer.BoostBuffer(Buffer: PByteArray; Size: Cardinal);
+procedure TCaptureBuffer.BoostBuffer(Buffer: PByteArray; Size: cardinal);
 var
-  i: integer;
-  Value: Longint;
-  SampleCount: integer;
+  i:            integer;
+  Value:        longint;
+  SampleCount:  integer;
   SampleBuffer: PSmallIntArray; // buffer handled as array of samples
-  Boost:  byte;
+  Boost:        byte;
 begin
   // TODO: set boost per device
   case Ini.MicBoost of
@@ -504,7 +499,6 @@ begin
   end;
 end;
 
-
 { TAudioInputProcessor }
 
 constructor TAudioInputProcessor.Create;
@@ -531,14 +525,14 @@ end;
 // See: TIni.LoadInputDeviceCfg()
 procedure TAudioInputProcessor.UpdateInputDeviceConfig;
 var
-  deviceIndex: integer;
-  newDevice: boolean;
+  deviceIndex:    integer;
+  newDevice:      boolean;
   deviceIniIndex: integer;
-  deviceCfg: PInputDeviceConfig;
-  device: TAudioInputDevice;
-  channelCount: integer;
-  channelIndex: integer;
-  i: integer;
+  deviceCfg:      PInputDeviceConfig;
+  device:         TAudioInputDevice;
+  channelCount:   integer;
+  channelIndex:   integer;
+  i:              integer;
 begin
   // Input devices - append detected soundcards
   for deviceIndex := 0 to High(DeviceList) do
@@ -608,18 +602,18 @@ end;
  *   Length - number of bytes in Buffer
  *   Input - Soundcard-Input used for capture
  *}
-procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: PByteArray; Size: Cardinal; InputDevice: TAudioInputDevice);
+procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: PByteArray; Size: cardinal; InputDevice: TAudioInputDevice);
 var
-  MultiChannelBuffer: PByteArray;  // buffer handled as array of bytes (offset relative to channel)
-  SingleChannelBuffer: PByteArray; // temporary buffer for new samples per channel
+  MultiChannelBuffer:      PByteArray;  // buffer handled as array of bytes (offset relative to channel)
+  SingleChannelBuffer:     PByteArray;  // temporary buffer for new samples per channel
   SingleChannelBufferSize: integer;
-  ChannelIndex: integer;
-  CaptureChannel: TCaptureBuffer;
-  AudioFormat: TAudioFormatInfo;
-  SampleSize: integer;
-  SampleCount: integer;
-  SamplesPerChannel: integer;
-  i: integer;
+  ChannelIndex:            integer;
+  CaptureChannel:          TCaptureBuffer;
+  AudioFormat:             TAudioFormatInfo;
+  SampleSize:              integer;
+  SampleCount:             integer;
+  SamplesPerChannel:       integer;
+  i:                       integer;
 begin
   AudioFormat := InputDevice.AudioFormat;
   SampleSize := AudioSampleSize[AudioFormat.Format];
@@ -638,7 +632,7 @@ begin
     begin
       // set offset according to channel index
       MultiChannelBuffer := @Buffer[ChannelIndex * SampleSize];
-      // seperate channel-data from interleaved multi-channel (e.g. stereo) data
+      // separate channel-data from interleaved multi-channel (e.g. stereo) data
       for i := 0 to SamplesPerChannel-1 do
       begin
         Move(MultiChannelBuffer[i*AudioFormat.FrameSize],
@@ -651,7 +645,6 @@ begin
 
   FreeMem(SingleChannelBuffer);
 end;
-
 
 { TAudioInputBase }
 
@@ -670,13 +663,13 @@ end;
  *}
 procedure TAudioInputBase.CaptureStart;
 var
-  S:  integer;
-  DeviceIndex: integer;
+  S:            integer;
+  DeviceIndex:  integer;
   ChannelIndex: integer;
-  Device: TAudioInputDevice;
-  DeviceCfg: PInputDeviceConfig;
-  DeviceUsed: boolean;
-  Player: integer;
+  Device:       TAudioInputDevice;
+  DeviceCfg:    PInputDeviceConfig;
+  DeviceUsed:   boolean;
+  Player:       integer;
 begin
   if (Started) then
     CaptureStop();
@@ -728,10 +721,10 @@ end;
  *}
 procedure TAudioInputBase.CaptureStop;
 var
-  DeviceIndex: integer;
+  DeviceIndex:  integer;
   ChannelIndex: integer;
-  Device: TAudioInputDevice;
-  DeviceCfg: PInputDeviceConfig;
+  Device:       TAudioInputDevice;
+  DeviceCfg:    PInputDeviceConfig;
 begin
   for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
   begin
@@ -758,17 +751,18 @@ var
   var
     i: integer;
   begin
-    Result := False;
+    Result := false;
     // search devices with same description
-    For i := 0 to deviceIndex-1 do
+    for i := 0 to deviceIndex-1 do
     begin
       if (AudioInputProcessor.DeviceList[i].Name = name) then
       begin
-        Result := True;
+        Result := true;
         Break;
       end;
     end;
   end;
+
 begin
   count := 1;
   result := name;
@@ -783,6 +777,3 @@ begin
 end;
 
 end.
-
-
-
