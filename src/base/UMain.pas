@@ -78,7 +78,7 @@ type
     ScoreTotalInt:  integer;
 
     // LineBonus
-    ScoreLast:    real; / /Last Line Score
+    ScoreLast:    real; //Last Line Score
 
     // PerfectLineTwinkle (effect)
     LastSentencePerfect: boolean;
