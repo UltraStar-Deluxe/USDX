@@ -51,12 +51,12 @@ uses
 type
   PPLayerNote = ^TPlayerNote;
   TPlayerNote = record
-    Start:     integer;
-    Length:    integer;
-    Detect:    real;    // accurate place, detected in the note
-    Tone:      real;
-    Perfect:   boolean; // true if the note matches the original one, lit the star
-    Hit:       boolean; // true if the note Hits the Line
+    Start:   integer;
+    Length:  integer;
+    Detect:  real;    // accurate place, detected in the note
+    Tone:    real;
+    Perfect: boolean; // true if the note matches the original one, lit the star
+    Hit:     boolean; // true if the note Hits the Line
   end;
 
   PPLayer = ^TPlayer;
@@ -64,8 +64,8 @@ type
     Name:         string;
 
     // Index in Teaminfo record
-    TeamID:       Byte;
-    PlayerID:     Byte;
+    TeamID:       byte;
+    PlayerID:     byte;
 
     // Scores
     Score:        real;
@@ -78,16 +78,15 @@ type
     ScoreTotalInt:  integer;
 
     // LineBonus
-    ScoreLast:    Real;//Last Line Score
+    ScoreLast:    real; / /Last Line Score
 
     // PerfectLineTwinkle (effect)
-    LastSentencePerfect: Boolean;
+    LastSentencePerfect: boolean;
 
     HighNote:   integer; // index of last note (= High(Note)?)
     LengthNote: integer; // number of notes (= Length(Note)?).
     Note:       array of TPlayerNote;
   end;
-
 
 var
   // Absolute Paths
@@ -106,21 +105,20 @@ var
   ResourcesPath:    string;
   PlayListPath:     string;
 
-  Done:     Boolean;
+  Done:     boolean;
   // FIXME: ConversionFileName should not be global
   ConversionFileName: string;
   Restart:  boolean;
 
   // player and music info
-  Player:       array of TPlayer;
-  PlayersPlay:  integer;
+  Player:      array of TPlayer;
+  PlayersPlay: integer;
 
-  CurrentSong : TSong;
+  CurrentSong: TSong;
 
 const
   MAX_SONG_SCORE = 10000;     // max. achievable points per song
   MAX_SONG_LINE_BONUS = 1000; // max. achievable line bonus per song
-
 
 function FindPath(out PathResult: string; const RequestedPath: string; NeedsWritePermission: boolean): boolean;
 procedure InitializePaths;
@@ -131,13 +129,12 @@ procedure MainLoop;
 procedure CheckEvents;
 procedure Sing(Screen: TScreenSing);
 procedure NewSentence(Screen: TScreenSing);
-procedure NewBeatClick(Screen: TScreenSing); // executed when on then new beat for click
+procedure NewBeatClick(Screen: TScreenSing);  // executed when on then new beat for click
 procedure NewBeatDetect(Screen: TScreenSing); // executed when on then new beat for detection
-procedure NewNote(Screen: TScreenSing); // detect note
+procedure NewNote(Screen: TScreenSing);       // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer): real;
 procedure ClearScores(PlayerNum: integer);
-
 
 type
   TMainThreadExecProc = procedure(Data: Pointer);
@@ -154,7 +151,6 @@ const
  * data, use Getmem() or New() or create a temporary object.
  *}
 procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
-
 
 implementation
 
@@ -181,9 +177,6 @@ uses
   UPluginDefs,
   UPlatform,
   UThemes;
-
-
-
 
 procedure Main;
 var
@@ -370,7 +363,7 @@ begin
     Log.LogBenchmark('Loading Particle System', 1);
 
     // Joypad
-    if (Ini.Joypad = 1) OR (Params.Joypad) then
+    if (Ini.Joypad = 1) or (Params.Joypad) then
     begin
       Log.BenchmarkStart(1);
       Log.LogStatus('Initialize Joystick', 'Initialization');
@@ -428,7 +421,7 @@ end;
 
 procedure MainLoop;
 var
-  Delay:    integer;
+  Delay: integer;
 const
   MAX_FPS = 100;
 begin
@@ -466,7 +459,7 @@ begin
     end;
 
   end;
-End;
+end;
 
 procedure CheckEvents;
 var
@@ -474,7 +467,7 @@ var
 begin
   if Assigned(Display.NextScreen) then
     Exit;
-    
+
   while (SDL_PollEvent(@Event) <> 0) do
   begin
     case Event.type_ of
@@ -482,7 +475,7 @@ begin
       begin
         Display.Fade := 0;
         Display.NextScreenWithCheck := nil;
-        Display.CheckOK := True;
+        Display.CheckOK := true;
       end;
       SDL_MOUSEBUTTONDOWN:
       begin
@@ -547,13 +540,13 @@ begin
           // if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
           else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-            done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True)
+            done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), true)
           else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-            done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True)
+            done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), true)
           else
           begin
             // check if screen wants to exit
-            done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), True);
+            done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), true);
 
             // if screen wants to exit
             if done then
@@ -567,7 +560,7 @@ begin
               begin
                 Display.Fade := 0;
                 Display.NextScreenWithCheck := nil;
-                Display.CheckOK := True;
+                Display.CheckOK := true;
               end;
             end;
 
@@ -616,7 +609,7 @@ end;
 
 procedure GetMidBeatSub(BPMNum: integer; var Time: real; var CurBeat: real);
 var
-  NewTime:  real;
+  NewTime: real;
 begin
   if High(CurrentSong.BPM) = BPMNum then
   begin
@@ -648,8 +641,8 @@ end;
 
 function GetMidBeat(Time: real): real;
 var
-  CurBeat:  real;
-  CurBPM:   integer;
+  CurBeat: real;
+  CurBPM:  integer;
 begin
   // static BPM
   if Length(CurrentSong.BPM) = 1 then
@@ -678,7 +671,7 @@ end;
 
 function GetTimeFromBeat(Beat: integer): real;
 var
-  CurBPM:   integer;
+  CurBPM: integer;
 begin
   // static BPM
   if Length(CurrentSong.BPM) = 1 then
@@ -728,10 +721,10 @@ end;
 
 procedure Sing(Screen: TScreenSing);
 var
-  Count:    integer;
-  CountGr:  integer;
-  CP:       integer;
-  N:        integer;
+  Count:   integer;
+  CountGr: integer;
+  CP:      integer;
+  N:       integer;
 begin
   LyricsState.UpdateBeats();
 
@@ -749,7 +742,7 @@ begin
         Lines[CP].Current := Count;
     end;
 
-    // clean player note if there is a new line 
+    // clean player note if there is a new line
     // (optimization on halfbeat time)
     if Lines[CP].Current <> LyricsState.OldLine then
       NewSentence(Screen);
@@ -767,7 +760,7 @@ end;
 
 procedure NewSentence(Screen: TScreenSing);
 var
-  i: Integer;
+  i: integer;
 begin
   // clean note of player
   for i := 0 to High(Player) do
@@ -783,7 +776,7 @@ end;
 
 procedure NewBeatClick;
 var
-  Count:    integer;
+  Count: integer;
 begin
   // beat click
   if ((Ini.BeatClick = 1) and
@@ -802,7 +795,7 @@ begin
 
       // drum machine
       (*
-      TempBeat := LyricsState.CurrentBeat;// + 2;
+      TempBeat := LyricsState.CurrentBeat; // + 2;
       if (TempBeat mod 8 = 0) then Music.PlayDrum;
       if (TempBeat mod 8 = 4) then Music.PlayClap;
       //if (TempBeat mod 4 = 2) then Music.PlayHihat;
@@ -819,23 +812,23 @@ end;
 
 procedure NewNote(Screen: TScreenSing);
 var
-  LineFragmentIndex: integer;
+  LineFragmentIndex:   integer;
   CurrentLineFragment: PLineFragment;
-  PlayerIndex: integer;
-  CurrentSound: TCaptureBuffer;
-  CurrentPlayer: PPlayer;
-  LastPlayerNote: PPlayerNote;
-  Line: PLine;
-  SentenceIndex: integer;
-  SentenceMin: integer;
-  SentenceMax: integer;
-  SentenceDetected: integer; // sentence of detected note
-  NoteAvailable: boolean;
-  NewNote: boolean;
-  Range: integer;
-  NoteHit: boolean;
-  MaxSongPoints: integer; // max. points for the song (without line bonus)
-  MaxLinePoints: Real;    // max. points for the current line
+  PlayerIndex:         integer;
+  CurrentSound:        TCaptureBuffer;
+  CurrentPlayer:       PPlayer;
+  LastPlayerNote:      PPlayerNote;
+  Line: 	       PLine;
+  SentenceIndex:       integer;
+  SentenceMin:         integer;
+  SentenceMax:         integer;
+  SentenceDetected:    integer; // sentence of detected note
+  NoteAvailable:       boolean;
+  NewNote:             boolean;
+  Range:               integer;
+  NoteHit:             boolean;
+  MaxSongPoints:       integer; // max. points for the song (without line bonus)
+  MaxLinePoints:       real;    // max. points for the current line
 begin
   // TODO: add duet mode support
   // use Lines[LineSetIndex] with LineSetIndex depending on the current player
@@ -858,8 +851,8 @@ begin
       // check if line is active
       if ((CurrentLineFragment.Start <= LyricsState.CurrentBeatD) and
           (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= LyricsState.CurrentBeatD)) and
-         (CurrentLineFragment.NoteType <> ntFreestyle) and // but ignore FreeStyle notes
-         (CurrentLineFragment.Length > 0) then // and make sure the note lengths is at least 1
+         (CurrentLineFragment.NoteType <> ntFreestyle) and              // but ignore FreeStyle notes
+         (CurrentLineFragment.Length > 0) then                          // and make sure the note lengths is at least 1
       begin
         SentenceDetected := SentenceIndex;
         NoteAvailable := true;
@@ -869,7 +862,7 @@ begin
     // TODO: break here, if NoteAvailable is true? We would then use the first instead
     // of the last note matching the current beat if notes overlap. But notes
     // should not overlap at all.
-    //if (NoteAvailable) then
+    // if (NoteAvailable) then
     //  Break;
   end;
 
@@ -896,7 +889,7 @@ begin
     if (CurrentSound.ToneValid and NoteAvailable) then
     begin
       Line := @Lines[0].Line[SentenceDetected];
-      
+
       // process until last note
       for LineFragmentIndex := 0 to Line.HighNote do
       begin
@@ -916,9 +909,9 @@ begin
           // half size notes patch
           NoteHit := false;
 
-          //if Ini.Difficulty = 0 then Range := 2;
-          //if Ini.Difficulty = 1 then Range := 1;
-          //if Ini.Difficulty = 2 then Range := 0;
+          // if Ini.Difficulty = 0 then Range := 2;
+          // if Ini.Difficulty = 1 then Range := 1;
+          // if Ini.Difficulty = 2 then Range := 0;
           Range := 2 - Ini.Difficulty;
 
           // check if the player hit the correct tone within the tolerated range
@@ -942,8 +935,8 @@ begin
             // FIXME: is this correct? Why do we add the points for a whole line
             // if just one note is correct?
             case CurrentLineFragment.NoteType of
-              ntNormal:  CurrentPlayer.Score := CurrentPlayer.Score + MaxLinePoints;
-              ntGolden:  CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + MaxLinePoints;
+              ntNormal: CurrentPlayer.Score := CurrentPlayer.Score + MaxLinePoints;
+              ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + MaxLinePoints;
             end;
 
             CurrentPlayer.ScoreInt := Floor(CurrentPlayer.Score / 10) * 10;
@@ -1009,9 +1002,9 @@ begin
         for LineFragmentIndex := 0 to Line.HighNote do
         begin
           CurrentLineFragment := @Line.Note[LineFragmentIndex];
-          if (CurrentLineFragment.Start = LastPlayerNote.Start) and
+          if (CurrentLineFragment.Start  = LastPlayerNote.Start) and
              (CurrentLineFragment.Length = LastPlayerNote.Length) and
-             (CurrentLineFragment.Tone = LastPlayerNote.Tone) then
+             (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then
           begin
             LastPlayerNote.Perfect := true;
           end;
@@ -1042,18 +1035,18 @@ procedure ClearScores(PlayerNum: integer);
 begin
   with Player[PlayerNum] do
   begin
-    Score         := 0;
-    ScoreLine     := 0;
-    ScoreGolden   := 0;
+    Score          := 0;
+    ScoreLine      := 0;
+    ScoreGolden    := 0;
 
-    ScoreInt      := 0;
-    ScoreLineInt  := 0;
-    ScoreGoldenInt:= 0;
-    ScoreTotalInt := 0;
+    ScoreInt       := 0;
+    ScoreLineInt   := 0;
+    ScoreGoldenInt := 0;
+    ScoreTotalInt  := 0;
 
-    ScoreLast     := 0;
+    ScoreLast      := 0;
 
-    LastSentencePerfect := False;
+    LastSentencePerfect := false;
   end;
 end;
 
@@ -1156,7 +1149,7 @@ begin
 
   // Playlists are not shared as we need one directory to write too
   FindPath(PlaylistPath, Platform.GetGameUserPath + 'playlists', true);
-  
+
   // Screenshot directory (must be writable)
   if (not FindPath(ScreenshotsPath,  Platform.GetGameUserPath + 'screenshots', true)) then
   begin
