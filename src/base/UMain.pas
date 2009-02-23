@@ -829,7 +829,11 @@ var
   NoteHit:             boolean;
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   MaxLinePoints:       real;    // max. points for the current line
+  ScoreFactor:         array[TNoteType] of integer;
 begin
+  ScoreFactor[ntFreestyle] := 0;
+  ScoreFactor[ntNormal]    := 1;
+  ScoreFactor[ntGolden]    := 2;
   // TODO: add duet mode support
   // use Lines[LineSetIndex] with LineSetIndex depending on the current player
 
@@ -931,7 +935,7 @@ begin
               MaxSongPoints := MAX_SONG_SCORE;
 
             // Note: ScoreValue is the sum of all note values of the song
-            MaxLinePoints := MaxSongPoints / Lines[0].ScoreValue;
+            MaxLinePoints := MaxSongPoints / Lines[0].ScoreValue * ScoreFactor[CurrentLineFragment.NoteType];
 
             // FIXME: is this correct? Why do we add the points for a whole line
             // if just one note is correct?
