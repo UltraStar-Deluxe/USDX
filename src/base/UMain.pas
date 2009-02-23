@@ -61,16 +61,16 @@ type
 
   PPLayer = ^TPlayer;
   TPlayer = record
-    Name:         string;
+    Name:           string;
 
     // Index in Teaminfo record
-    TeamID:       byte;
-    PlayerID:     byte;
+    TeamID:         byte;
+    PlayerID:       byte;
 
     // Scores
-    Score:        real;
-    ScoreLine:    real;
-    ScoreGolden:  real;
+    Score:          real;
+    ScoreLine:      real;
+    ScoreGolden:    real;
 
     ScoreInt:       integer;
     ScoreLineInt:   integer;
@@ -78,14 +78,14 @@ type
     ScoreTotalInt:  integer;
 
     // LineBonus
-    ScoreLast:    real; //Last Line Score
+    ScoreLast:      real;    // Last Line Score
 
     // PerfectLineTwinkle (effect)
     LastSentencePerfect: boolean;
 
-    HighNote:   integer; // index of last note (= High(Note)?)
-    LengthNote: integer; // number of notes (= Length(Note)?).
-    Note:       array of TPlayerNote;
+    HighNote:       integer; // index of last note (= High(Note)?)
+    LengthNote:     integer; // number of notes (= Length(Note)?).
+    Note:           array of TPlayerNote;
   end;
 
 var
@@ -105,10 +105,10 @@ var
   ResourcesPath:    string;
   PlayListPath:     string;
 
-  Done:     boolean;
+  Done:             boolean;
   // FIXME: ConversionFileName should not be global
   ConversionFileName: string;
-  Restart:  boolean;
+  Restart:            boolean;
 
   // player and music info
   Player:      array of TPlayer;
@@ -833,7 +833,8 @@ begin
   // TODO: add duet mode support
   // use Lines[LineSetIndex] with LineSetIndex depending on the current player
 
-  // count min and max sentence range for checking (detection is delayed to the notes we see on the screen)
+  // count min and max sentence range for checking 
+  // (detection is delayed to the notes we see on the screen)
   SentenceMin := Lines[0].Current-1;
   if (SentenceMin < 0) then
     SentenceMin := 0;
@@ -851,8 +852,8 @@ begin
       // check if line is active
       if ((CurrentLineFragment.Start <= LyricsState.CurrentBeatD) and
           (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= LyricsState.CurrentBeatD)) and
-         (CurrentLineFragment.NoteType <> ntFreestyle) and              // but ignore FreeStyle notes
-         (CurrentLineFragment.Length > 0) then                          // and make sure the note lengths is at least 1
+         (CurrentLineFragment.NoteType <> ntFreestyle) and       // but ignore FreeStyle notes
+         (CurrentLineFragment.Length > 0) then                   // and make sure the note length is at least 1
       begin
         SentenceDetected := SentenceIndex;
         NoteAvailable := true;
@@ -935,7 +936,7 @@ begin
             // FIXME: is this correct? Why do we add the points for a whole line
             // if just one note is correct?
             case CurrentLineFragment.NoteType of
-              ntNormal: CurrentPlayer.Score := CurrentPlayer.Score + MaxLinePoints;
+              ntNormal: CurrentPlayer.Score       := CurrentPlayer.Score       + MaxLinePoints;
               ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + MaxLinePoints;
             end;
 
@@ -956,7 +957,7 @@ begin
         // we will add a new note
         NewNote := true;
 
-        // if previous note (if any) was the same, extend prrevious note
+        // if previous note (if any) was the same, extend previous note
         if ((CurrentPlayer.LengthNote > 0) and
             (LastPlayerNote <> nil) and
             (LastPlayerNote.Tone = CurrentSound.Tone) and
@@ -998,7 +999,7 @@ begin
             Inc(LastPlayerNote.Length);
         end;
 
-        // check for perfect note and then lit the star (on Draw)
+        // check for perfect note and then light the star (on Draw)
         for LineFragmentIndex := 0 to Line.HighNote do
         begin
           CurrentLineFragment := @Line.Note[LineFragmentIndex];
