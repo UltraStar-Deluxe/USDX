@@ -55,8 +55,8 @@ type
     Length:  integer;
     Detect:  real;    // accurate place, detected in the note
     Tone:    real;
-    Perfect: boolean; // true if the note matches the original one, lit the star
-    Hit:     boolean; // true if the note Hits the Line
+    Perfect: boolean; // true if the note matches the original one, light the star
+    Hit:     boolean; // true if the note hits the line
   end;
 
   PPLayer = ^TPlayer;
@@ -203,11 +203,11 @@ begin
     DecimalSeparator := '.';
 
     //------------------------------
-    //StartUp - Create Classes and Load Files
+    // StartUp - Create Classes and Load Files
     //------------------------------
 
-    // Initialize SDL
-    // Without SDL_INIT_TIMER SDL_GetTicks() might return strange values
+    // initialize SDL
+    // without SDL_INIT_TIMER SDL_GetTicks() might return strange values
     SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
     SDL_EnableUnicode(1);
 
@@ -230,7 +230,7 @@ begin
     Log.LogStatus('Load Language', 'Initialization');
     Language := TLanguage.Create;
 
-    // Add Const Values:
+    // add const values:
     Language.AddConst('US_VERSION', USDXVersionStr);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Language', 1);
@@ -388,7 +388,7 @@ begin
     //Core.Run;
 
     //------------------------------
-    //Start- Mainloop
+    // Start Mainloop
     //------------------------------
     Log.LogStatus('Main Loop', 'Initialization');
     MainLoop;
@@ -397,12 +397,12 @@ begin
   finally
   {$ENDIF}
     //------------------------------
-    //Finish Application
+    // Finish Application
     //------------------------------
 
     // TODO:
     // call an uninitialize routine for every initialize step
-    // or at least use the corresponding Free-Methods
+    // or at least use the corresponding Free methods
 
     FinalizeMedia();
 
@@ -877,7 +877,7 @@ begin
     CurrentPlayer := @Player[PlayerIndex];
     CurrentSound := AudioInputProcessor.Sound[PlayerIndex];
 
-    // At the beginning of the song there is no previous note
+    // at the beginning of the song there is no previous note
     if (Length(CurrentPlayer.Note) > 0) then
       LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote]
     else
