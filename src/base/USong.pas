@@ -218,7 +218,6 @@ begin
 
   MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
-  self.Relative     := false;
   Rel[0]            := 0;
   CP                := 0;
   Both              := false;
@@ -1009,6 +1008,7 @@ begin
   Resolution := 4;
   Creator    := '';
 
+  Relative := false;
 end;
 
 function TSong.Analyse(): boolean;
