@@ -876,9 +876,8 @@ begin
   NStart := CurrentNote;
   Lines[0].Line[CNew].Start := Lines[0].Line[CStart].Note[NStart].Start;
   Lines[0].Line[CNew].Lyric := '';
-  Lines[0].Line[CNew].LyricWidth := 0;
   Lines[0].Line[CNew].End_ := 0;
-  Lines[0].Line[CNew].BaseNote := 0; // 0.5.0: we modify it later in this procedure
+  Lines[0].Line[CNew].BaseNote := 0;//High(Integer); // TODO: High (Integer) will causes a memory exception later in this procedure. Weird!
   Lines[0].Line[CNew].HighNote := -1;
   SetLength(Lines[0].Line[CNew].Note, 0);
 
@@ -904,6 +903,16 @@ begin
   Lines[0].Line[CStart].End_ := Lines[0].Line[CStart].Note[NStart-1].Start +
     Lines[0].Line[CStart].Note[NStart-1].Length;
   SetLength(Lines[0].Line[CStart].Note, Lines[0].Line[CStart].HighNote + 1);
+
+  //recalculate BaseNote of the divided Sentence
+  with Lines[0].Line[CStart] do
+  begin
+    BaseNote := High(Integer);
+
+    For N := 0 to HighNote do
+      if Note[N].Tone < BaseNote then
+        BaseNote := Note[N].Tone;
+  end;
 
   Lines[0].Current := Lines[0].Current + 1;
   CurrentNote := 0;

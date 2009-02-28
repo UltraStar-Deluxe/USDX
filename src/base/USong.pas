@@ -88,7 +88,7 @@ type
     FileName:   WideString;
 
     // sorting methods
-    Category:   array of WideString; // TODO: do we need this?
+    //Category:   array of WideString; // TODO: do we need this?
     Genre:      WideString;
     Edition:    WideString;
     Language:   WideString;
@@ -185,6 +185,11 @@ begin
   end;
 end;
 
+{function TSong.LoadSong(): boolean;
+begin
+
+end;   }
+
 //Load TXT Song
 function TSong.LoadSong(): boolean;
 
@@ -213,8 +218,6 @@ begin
 
   MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
-  Base[0]           := 100; // high number
-  Lines[0].ScoreValue := 0;
   self.Relative     := false;
   Rel[0]            := 0;
   CP                := 0;
@@ -255,18 +258,22 @@ begin
     SetLength(Lines, 2);
     for Count := 0 to High(Lines) do
     begin
-      SetLength(Lines[Count].Line, 1);
       Lines[Count].High := 0;
       Lines[Count].Number := 1;
       Lines[Count].Current := 0;
       Lines[Count].Resolution := self.Resolution;
       Lines[Count].NotesGAP   := self.NotesGAP;
+      Lines[Count].ScoreValue := 0;
+
+      //Add first line and set some standard values to fields
+      //see procedure NewSentence for further explantation
+      //concerning most of these values
+      SetLength(Lines[Count].Line, 1);
       Lines[Count].Line[0].HighNote := -1;
       Lines[Count].Line[0].LastLine := false;
+      Lines[Count].Line[0].BaseNote := High(Integer);
+      Lines[Count].Line[0].TotalNotes := 0;
     end;
-
-    //TempC := ':';
-    //TempC := Text[1]; // read from backup variable, don't use default ':' value
 
     while (TempC <> 'E') and (not EOF(SongFile)) do
     begin
@@ -327,41 +334,6 @@ begin
         self.BPM[High(self.BPM)].BPM := self.BPM[High(self.BPM)].BPM * Mult * MultBPM;
       end;
 
-
-      if not Both then
-      begin
-        Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
-        Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(Lines[CP].Line[Lines[CP].High].Lyric);
-        //Total Notes Patch
-        Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
-        for I := low(Lines[CP].Line[Lines[CP].High].Note) to high(Lines[CP].Line[Lines[CP].High].Note) do
-        begin
-          if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType = ntGolden) then
-            Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Length;
-
-          if (Lines[CP].Line[Lines[CP].High].Note[I].NoteType <> ntFreestyle) then
-            Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[I].Length;
-        end;
-        //Total Notes Patch End
-      end
-      else
-      begin
-        for Count := 0 to High(Lines) do
-        begin
-          Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
-          Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(Lines[Count].Line[Lines[Count].High].Lyric);
-          //Total Notes Patch
-          Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
-          for I := low(Lines[Count].Line[Lines[Count].High].Note) to high(Lines[Count].Line[Lines[Count].High].Note) do
-          begin
-            if (Lines[Count].Line[Lines[Count].High].Note[I].NoteType = ntGolden) then
-              Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[I].Length;
-            if (Lines[Count].Line[Lines[Count].High].Note[I].NoteType <> ntFreestyle) then
-              Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[I].Length;
-          end;
-          //Total Notes Patch End
-        end;
-      end;
       ReadLn(SongFile); //Jump to next line in File, otherwise the next Read would catch the linebreak(e.g. #13 #10 on win32)
 
       Read(SongFile, TempC);
@@ -443,7 +415,6 @@ begin
 
   MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
-  Base[0]           := 100; // high number
   Lines[0].ScoreValue := 0;
   self.Relative     := false;
   Rel[0]            := 0;
@@ -458,14 +429,21 @@ begin
 
   for Count := 0 to High(Lines) do
   begin
-    SetLength(Lines[Count].Line, 1);
     Lines[Count].High := 0;
-    Lines[Count].Number := 1;
-    Lines[Count].Current := 0;
-    Lines[Count].Resolution := self.Resolution;
-    Lines[Count].NotesGAP   := self.NotesGAP;
-    Lines[Count].Line[0].HighNote := -1;
-    Lines[Count].Line[0].LastLine := false;
+      Lines[Count].Number := 1;
+      Lines[Count].Current := 0;
+      Lines[Count].Resolution := self.Resolution;
+      Lines[Count].NotesGAP   := self.NotesGAP;
+      Lines[Count].ScoreValue := 0;
+
+      //Add first line and set some standard values to fields
+      //see procedure NewSentence for further explantation
+      //concerning most of these values
+      SetLength(Lines[Count].Line, 1);
+      Lines[Count].Line[0].HighNote := -1;
+      Lines[Count].Line[0].LastLine := false;
+      Lines[Count].Line[0].BaseNote := High(Integer);
+      Lines[Count].Line[0].TotalNotes := 0;
   end;
 
   //Try to Parse the Song
@@ -501,42 +479,6 @@ begin
           ParseNote(0, NoteType, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamS);
           ParseNote(1, NoteType, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamS);
         end;
-
-        if not Both then
-        begin
-          Lines[CP].Line[Lines[CP].High].BaseNote := Base[CP];
-          Lines[CP].Line[Lines[CP].High].LyricWidth := glTextWidth(Lines[CP].Line[Lines[CP].High].Lyric);
-          //Total Notes Patch
-          Lines[CP].Line[Lines[CP].High].TotalNotes := 0;
-          for NoteIndex := 0 to high(Lines[CP].Line[Lines[CP].High].Note) do
-          begin
-            if (Lines[CP].Line[Lines[CP].High].Note[NoteIndex].NoteType = ntGolden) then
-              Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[NoteIndex].Length;
-
-            if (Lines[CP].Line[Lines[CP].High].Note[NoteIndex].NoteType <> ntFreestyle) then
-              Lines[CP].Line[Lines[CP].High].TotalNotes := Lines[CP].Line[Lines[CP].High].TotalNotes + Lines[CP].Line[Lines[CP].High].Note[NoteIndex].Length;
-          end;
-          //Total Notes Patch End
-        end
-        else
-        begin
-          for Count := 0 to High(Lines) do
-          begin
-            Lines[Count].Line[Lines[Count].High].BaseNote := Base[Count];
-            Lines[Count].Line[Lines[Count].High].LyricWidth := glTextWidth(Lines[Count].Line[Lines[Count].High].Lyric);
-            //Total Notes Patch
-            Lines[Count].Line[Lines[Count].High].TotalNotes := 0;
-            for NoteIndex := 0 to high(Lines[Count].Line[Lines[Count].High].Note) do
-            begin
-              if (Lines[Count].Line[Lines[Count].High].Note[NoteIndex].NoteType = ntGolden) then
-                Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[NoteIndex].Length;
-              if (Lines[Count].Line[Lines[Count].High].Note[NoteIndex].NoteType <> ntFreestyle) then
-                Lines[Count].Line[Lines[Count].High].TotalNotes := Lines[Count].Line[Lines[Count].High].TotalNotes + Lines[Count].Line[Lines[Count].High].Note[NoteIndex].Length;
-
-            end;
-            //Total Notes Patch End
-          end;
-        end; { end of for loop }
 
       end; //J Forloop
 
@@ -964,17 +906,28 @@ begin
       '*':  Note[HighNote].NoteType := ntGolden;
     end;
 
-    if (Note[HighNote].NoteType = ntGolden) then
-      Lines[LineNumber].ScoreValue := Lines[LineNumber].ScoreValue + Note[HighNote].Length;
+    //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
+    Inc(Lines[LineNumber].ScoreValue, Note[HighNote].Length * ScoreFactor[Note[HighNote].NoteType]);
 
-    if (Note[HighNote].NoteType <> ntFreestyle) then
-      Lines[LineNumber].ScoreValue := Lines[LineNumber].ScoreValue + Note[HighNote].Length;
+    //and to the current lines entire value
+    Inc(TotalNotes, Note[HighNote].Length * ScoreFactor[Note[HighNote].NoteType]);
+
 
     Note[HighNote].Tone := NoteP;
-    if Note[HighNote].Tone < Base[LineNumber] then
-      Base[LineNumber] := Note[HighNote].Tone;
 
-    Note[HighNote].Text := Copy(LyricS, 2, 100);
+    //if a note w/ a deeper pitch then the current basenote is found
+    //we replace the basenote w/ the current notes pitch
+    if Note[HighNote].Tone < BaseNote then
+      BaseNote := Note[HighNote].Tone;
+
+    //delete the space that seperates the notes pitch from its lyrics
+    //it is left in the LyricS string because Read("some ordinal type") will
+    //set the files pointer to the first whitespace character after the
+    //ordinal string. Trim is no solution because it would cut the spaces
+    //that seperate the words of the lyrics, too.
+    Delete(LyricS, 1, 1);
+
+    Note[HighNote].Text := LyricS;
     Lyric := Lyric + Note[HighNote].Text;
 
     End_ := Note[HighNote].Start + Note[HighNote].Length;
@@ -989,35 +942,28 @@ var
 begin
 
   if (Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote  <> -1) then
-  begin //Update old Sentence if it has notes and create a new sentence
-    // Update old part
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := Base[LineNumberP];
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].LyricWidth := glTextWidth(Lines[LineNumberP].Line[Lines[LineNumberP].High].Lyric);
-
-    //Total Notes Patch
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
-    for I := low(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) to high(Lines[LineNumberP].Line[Lines[LineNumberP].High].Note) do
-    begin
-      if (Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType = ntGolden) then
-        Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length;
-
-      if (Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].NoteType <> ntFreestyle) then
-        Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes + Lines[LineNumberP].Line[Lines[LineNumberP].High].Note[I].Length;
-    end;
-    //Total Notes Patch End
-
-
-    // Update new part
+  begin //create a new line
     SetLength(Lines[LineNumberP].Line, Lines[LineNumberP].Number + 1);
-    Lines[LineNumberP].High := Lines[LineNumberP].High + 1;
-    Lines[LineNumberP].Number := Lines[LineNumberP].Number + 1;
+    Inc(Lines[LineNumberP].High);
+    Inc(Lines[LineNumberP].Number);
   end
   else
-  begin //Use old Sentence if it has no notes
+  begin //use old line if it there were no notes added since last call of NewSentence
     Log.LogError('Error loading Song, sentence w/o note found in line ' + InttoStr(FileLineNo) + ': ' + Filename);
   end;
 
   Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote := -1;
+
+  //set the current lines value to zero
+  //it will be incremented w/ the value of every added note
+  Lines[LineNumberP].Line[Lines[LineNumberP].High].TotalNotes := 0;
+
+  //basenote is the pitch of the deepest note, it is used for note drawing.
+  //if a note with a less value than the current sentences basenote is found,
+  //basenote will be set to this notes pitch. Therefore the initial value of
+  //this field has to be very high.
+  Lines[LineNumberP].Line[Lines[LineNumberP].High].BaseNote := High(Integer);
+
 
   if self.Relative then
   begin
@@ -1028,8 +974,6 @@ begin
     Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
 
   Lines[LineNumberP].Line[Lines[LineNumberP].High].LastLine := false;
-
-  Base[LineNumberP] := 100; // high number
 end;
 
 procedure TSong.clear();

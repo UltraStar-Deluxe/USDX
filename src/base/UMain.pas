@@ -828,12 +828,8 @@ var
   Range:               integer;
   NoteHit:             boolean;
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
-  MaxLinePoints:       real;    // max. points for the current line
-  ScoreFactor:         array[TNoteType] of integer;
+  CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
 begin
-  ScoreFactor[ntFreestyle] := 0;
-  ScoreFactor[ntNormal]    := 1;
-  ScoreFactor[ntGolden]    := 2;
   // TODO: add duet mode support
   // use Lines[LineSetIndex] with LineSetIndex depending on the current player
 
@@ -924,6 +920,9 @@ begin
           begin
             // adjust the players tone to the correct one
             // TODO: do we need to do this?
+            // Philipp: I think we do, at least when we draw the notes.
+            //          Otherwise the notehit thing would be shifted to the
+            //          correct unhit note. I think this will look kind of strange.
             CurrentSound.Tone := CurrentLineFragment.Tone;
 
             // half size notes patch
@@ -935,17 +934,35 @@ begin
               MaxSongPoints := MAX_SONG_SCORE;
 
             // Note: ScoreValue is the sum of all note values of the song
-            MaxLinePoints := MaxSongPoints / Lines[0].ScoreValue * ScoreFactor[CurrentLineFragment.NoteType];
-
-            // FIXME: is this correct? Why do we add the points for a whole line
-            // if just one note is correct?
+            // (MaxSongPoints / ScoreValue) is the points that a player
+            // gets for a hit of one beat of a normal note
+            // CurNotePoints is the amount of points that is meassured
+            // for a hit of the note per full beat
+            CurNotePoints := (MaxSongPoints / Lines[0].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
+            
             case CurrentLineFragment.NoteType of
-              ntNormal: CurrentPlayer.Score       := CurrentPlayer.Score       + MaxLinePoints;
-              ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + MaxLinePoints;
+              ntNormal: CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+              ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
             end;
 
-            CurrentPlayer.ScoreInt := Floor(CurrentPlayer.Score / 10) * 10;
-            CurrentPlayer.ScoreGoldenInt := Floor(CurrentPlayer.ScoreGolden / 10) * 10;
+            // a problem if we use floor instead of round is that a score of
+            // 10000 points is only possible if the last digit of the total points
+            // for golden and normal notes is 0.
+            // if we use round, the max score is 10000 for most songs
+            // but a score of 10010 is possible if the last digit of the total
+            // points for golden and normal notes is 5
+            // the best solution is to use round for one of these scores
+            // and round the other score in the opposite direction
+            // so we assure that the highest possible score is 10000 in every case.
+            CurrentPlayer.ScoreInt := round(CurrentPlayer.Score / 10) * 10;
+
+            if (CurrentPlayer.ScoreInt < CurrentPlayer.Score) then
+              //normal score is floored so we have to ceil golden notes score
+              CurrentPlayer.ScoreGoldenInt := ceil(CurrentPlayer.ScoreGolden / 10) * 10
+            else
+              //normal score is ceiled so we have to floor golden notes score
+              CurrentPlayer.ScoreGoldenInt := floor(CurrentPlayer.ScoreGolden / 10) * 10;
+
 
             CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
                                            CurrentPlayer.ScoreGoldenInt +

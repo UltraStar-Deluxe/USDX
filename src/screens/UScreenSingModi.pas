@@ -167,7 +167,6 @@ begin
     Result.Sentence[I].Start      := Lines.Line[I].Start;
     Result.Sentence[I].StartNote  := Lines.Line[I].Note[0].Start;
     Result.Sentence[I].Lyric      := Lines.Line[I].Lyric;
-    Result.Sentence[I].LyricWidth := Lines.Line[I].LyricWidth;
     Result.Sentence[I].End_       := Lines.Line[I].End_;
     Result.Sentence[I].BaseNote   := Lines.Line[I].BaseNote;
     Result.Sentence[I].HighNote   := Lines.Line[I].HighNote;

@@ -39,8 +39,13 @@ uses
   Classes;
 
 type
-  TNoteType = (ntFreestyle, ntNormal, ntGolden);
+  TNoteType = (ntFreestyle = 0, ntNormal = 1, ntGolden = 2);
 
+const
+  //Score Factor
+  ScoreFactor:         array[TNoteType] of integer = (0, 1, 2);
+
+type
   (**
    * TLineFragment represents a fragment of a lyrics line.
    * This is a text-fragment (e.g. a syllable) assigned to a note pitch,
@@ -64,7 +69,7 @@ type
   TLine = record
     Start:      integer; // the start beat of this line (<> start beat of the first note of this line)
     Lyric:      string;
-    LyricWidth: real;    // @deprecated: width of the line in pixels.
+    //LyricWidth: real;    // @deprecated: width of the line in pixels.
                          // Do not use this as the width is not correct.
                          // Use TLyricsEngine.GetUpperLine().Width instead. 
     End_:       integer;
@@ -82,7 +87,7 @@ type
    *)
   TLines = record
     Current:    integer;  // for drawing of current line
-    High:       integer;  // (= High(Line)?)
+    High:       integer;  // = High(Line)!
     Number:     integer;
     Resolution: integer;
     NotesGAP:   integer;
