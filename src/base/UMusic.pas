@@ -39,10 +39,14 @@ uses
   Classes;
 
 type
-  TNoteType = (ntFreestyle = 0, ntNormal = 1, ntGolden = 2);
+  TNoteType = (ntFreestyle, ntNormal, ntGolden);
 
 const
-  //Score Factor
+  // ScoreFactor defines how a notehit of a specified notetype is
+  // measured in comparison to the other types
+  // 0 means this notetype is not rated at all
+  // 2 means a hit of this notetype will be rated w/ twice as much
+  // points as a hit of a notetype w/ ScoreFactor 1
   ScoreFactor:         array[TNoteType] of integer = (0, 1, 2);
 
 type
