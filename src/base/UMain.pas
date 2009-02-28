@@ -180,16 +180,16 @@ uses
 
 procedure Main;
 var
-  WndTitle: string;
+  WindowTitle: string;
 begin
   {$IFNDEF Debug}
   try
   {$ENDIF}
-    WndTitle := USDXVersionStr;
+    WindowTitle := USDXVersionStr;
 
     Platform.Init;
 
-    if Platform.TerminateIfAlreadyRunning(WndTitle) then
+    if Platform.TerminateIfAlreadyRunning(WindowTitle) then
       Exit;
 
     // fix floating-point exceptions (FPE)
@@ -219,7 +219,7 @@ begin
 
     // Log + Benchmark
     Log := TLog.Create;
-    Log.Title := WndTitle;
+    Log.Title := WindowTitle;
     Log.FileOutputEnabled := not Params.NoLog;
     Log.BenchmarkStart(0);
 
@@ -331,7 +331,7 @@ begin
     // Graphics
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize 3D', 'Initialization');
-    Initialize3D(WndTitle);
+    Initialize3D(WindowTitle);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing 3D', 1);
 
