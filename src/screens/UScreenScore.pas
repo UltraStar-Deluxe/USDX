@@ -46,56 +46,56 @@ uses
   UTexture;
 
 const
-  ZBars            : real = 0.8; // Z value for the bars
-  ZRatingPic       : real = 0.8; // Z value for the rating pictures
+  ZBars:            real = 0.8;   // Z value for the bars
+  ZRatingPic:       real = 0.8;   // Z value for the rating pictures
 
-  EaseOut_MaxSteps : real = 10;  // that's the speed of the bars (10 is fast | 100 is slower)
+  EaseOut_MaxSteps: real = 10;    // that's the speed of the bars (10 is fast | 100 is slower)
 
-  BarRaiseSpeed    : cardinal = 0; // Time for raising the bar one step higher (in ms)
+  BarRaiseSpeed:    cardinal = 0; // Time for raising the bar one step higher (in ms)
 
 type
   TPlayerScoreScreenTexture = record            // holds all colorized textures for up to 6 players
     //Bar textures
-    Score_NoteBarLevel_Dark     : TTexture;     // Note
-    Score_NoteBarRound_Dark     : TTexture;     // that's the round thing on top
+    Score_NoteBarLevel_Dark:     TTexture;      // Note
+    Score_NoteBarRound_Dark:     TTexture;      // that's the round thing on top
 
-    Score_NoteBarLevel_Light    : TTexture;     // LineBonus | Phrasebonus
-    Score_NoteBarRound_Light    : TTexture;
+    Score_NoteBarLevel_Light:    TTexture;      // LineBonus | Phrasebonus
+    Score_NoteBarRound_Light:    TTexture;
 
-    Score_NoteBarLevel_Lightest : TTexture;     // GoldenNotes
-    Score_NoteBarRound_Lightest : TTexture;
+    Score_NoteBarLevel_Lightest: TTexture;      // GoldenNotes
+    Score_NoteBarRound_Lightest: TTexture;
   end;
 
   TPlayerScoreScreenData = record               // holds the positions and other data
-    Bar_Y      :Real;
-    Bar_Actual_Height      : Real;              // this one holds the actual height of the bar, while we animate it
-    BarScore_ActualHeight  : Real;
-    BarLine_ActualHeight   : Real;
-    BarGolden_ActualHeight : Real;
+    Bar_Y:                  real;
+    Bar_Actual_Height:      real;               // this one holds the actual height of the bar, while we animate it
+    BarScore_ActualHeight:  real;
+    BarLine_ActualHeight:   real;
+    BarGolden_ActualHeight: real;
   end;
 
   TPlayerScoreRatingPics = record               // a fine array of the rating pictures
-    RateEaseStep : Integer;
-    RateEaseValue: Real;
+    RateEaseStep:  integer;
+    RateEaseValue: real;
   end;
 
   TScreenScore = class(TMenu)
     private
-      BarTime : Cardinal;
-      ArrayStartModifier : integer;
+      BarTime:            cardinal;
+      ArrayStartModifier: integer;
     public
-      aPlayerScoreScreenTextures   : array[1..6] of TPlayerScoreScreenTexture;
-      aPlayerScoreScreenDatas      : array[1..6] of TPlayerScoreScreenData;
-      aPlayerScoreScreenRatings    : array[1..6] of TPlayerScoreRatingPics;
+      aPlayerScoreScreenTextures: array[1..6] of TPlayerScoreScreenTexture;
+      aPlayerScoreScreenDatas:    array[1..6] of TPlayerScoreScreenData;
+      aPlayerScoreScreenRatings:  array[1..6] of TPlayerScoreRatingPics;
 
-      BarScore_EaseOut_Step  : real;
-      BarPhrase_EaseOut_Step : real;
-      BarGolden_EaseOut_Step : real;
+      BarScore_EaseOut_Step:  real;
+      BarPhrase_EaseOut_Step: real;
+      BarGolden_EaseOut_Step: real;
 
-      TextArtist:   integer;
-      TextTitle:    integer;
+      TextArtist:             integer;
+      TextTitle:              integer;
 
-      TextArtistTitle : integer;
+      TextArtistTitle:        integer;
 
       TextName:             array[1..6] of integer;
       TextScore:            array[1..6] of integer;
@@ -110,63 +110,60 @@ type
       TextTotalScore:       array[1..6] of integer;
 
       PlayerStatic:         array[1..6] of array of integer;
-      PlayerTexts :         array[1..6] of array of integer;
-
+      PlayerTexts:          array[1..6] of array of integer;
 
       StaticBoxLightest:    array[1..6] of integer;
       StaticBoxLight:       array[1..6] of integer;
       StaticBoxDark:        array[1..6] of integer;
 
-      StaticBackLevel:        array[1..6] of integer;
-      StaticBackLevelRound:   array[1..6] of integer;
-      StaticLevel:            array[1..6] of integer;
-      StaticLevelRound:       array[1..6] of integer;
+      StaticBackLevel:      array[1..6] of integer;
+      StaticBackLevelRound: array[1..6] of integer;
+      StaticLevel:          array[1..6] of integer;
+      StaticLevelRound:     array[1..6] of integer;
 
-      Animation:    real;
+      Animation:            real;
 
-      TextScore_ActualValue  : array[1..6] of integer;
-      TextPhrase_ActualValue : array[1..6] of integer;
-      TextGolden_ActualValue : array[1..6] of integer;
-
-
+      TextScore_ActualValue:  array[1..6] of integer;
+      TextPhrase_ActualValue: array[1..6] of integer;
+      TextGolden_ActualValue: array[1..6] of integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       procedure onShowFinish; override;
       function Draw: boolean; override;
       procedure FillPlayer(Item, P: integer);
 
-      procedure EaseBarIn(PlayerNumber : Integer; BarType: String);
-      procedure EaseScoreIn(PlayerNumber : Integer; ScoreType: String);
+      procedure EaseBarIn(PlayerNumber: integer; BarType: string);
+      procedure EaseScoreIn(PlayerNumber: integer; ScoreType: string);
 
-      procedure FillPlayerItems(PlayerNumber : Integer; ScoreType: String);
+      procedure FillPlayerItems(PlayerNumber: integer; ScoreType: string);
 
-
-      procedure DrawBar(BarType:string; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
+      procedure DrawBar(BarType: string; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
 
       //Rating Picture
       procedure ShowRating(PlayerNumber: integer);
-        function  CalculateBouncing(PlayerNumber : Integer): real;
-        procedure DrawRating(PlayerNumber:integer;Rating:integer);
+      function  CalculateBouncing(PlayerNumber: integer): real;
+      procedure DrawRating(PlayerNumber: integer; Rating: integer);
   end;
 
 implementation
 
+uses
+  UGraphic,
+  UScreenSong,
+  UMenuStatic,
+  UTime,
+  UMain,
+  UIni,
+  ULog,
+  ULanguage;
 
-uses UGraphic,
-     UScreenSong,
-     UMenuStatic,
-     UTime,
-     UMain,
-     UIni,
-     ULog,
-     ULanguage;
-
-function TScreenScore.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenScore.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then begin
+  if (PressedDown) then
+  begin
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
       'Q':
@@ -256,9 +253,9 @@ end;
 
 procedure TScreenScore.onShow;
 var
-  P:    integer;  // player
-  I:    integer;
-  V:    array[1..6] of boolean; // visibility array
+  P: integer;  // player
+  I: integer;
+  V: array[1..6] of boolean; // visibility array
 
 begin
 
@@ -294,7 +291,6 @@ begin
     aPlayerScoreScreenRatings[P].RateEaseStep         := 1;
     aPlayerScoreScreenRatings[P].RateEaseValue        := 20;
   end;
-
 
   Text[TextArtist].Text      := CurrentSong.Artist;
   Text[TextTitle].Text       := CurrentSong.Title;
@@ -347,7 +343,6 @@ begin
     Static[StaticBoxLight[P]].Texture.Alpha    := 0;
     Static[StaticBoxDark[P]].Texture.Alpha     := 0;
 
-
     Text[TextNotes[P]].Visible              := V[P];
     Text[TextNotesScore[P]].Visible         := V[P];
     Text[TextLineBonus[P]].Visible          := V[P];
@@ -377,14 +372,14 @@ end;
 
 procedure TScreenScore.onShowFinish;
 var
-  index : integer;
+  index: integer;
 begin
   for index := 1 to (PlayersPlay) do
-    begin
-      TextScore_ActualValue[index]  := 0;
-      TextPhrase_ActualValue[index] := 0;
-      TextGolden_ActualValue[index] := 0;
-    end;
+  begin
+    TextScore_ActualValue[index]  := 0;
+    TextPhrase_ActualValue[index] := 0;
+    TextGolden_ActualValue[index] := 0;
+  end;
 
   BarScore_EaseOut_Step  := 1;
   BarPhrase_EaseOut_Step := 1;
@@ -393,10 +388,10 @@ end;
 
 function TScreenScore.Draw: boolean;
 var
-  CurrentTime : Cardinal;
-  PlayerCounter : integer;
-  PStart: Integer;
-  PHigh: Integer;
+  CurrentTime:   cardinal;
+  PlayerCounter: integer;
+  PStart:        integer;
+  PHigh:         integer;
 begin
 {*
   player[0].ScoreInt       := 7000;
@@ -414,9 +409,9 @@ begin
   DrawBG;
 
   //Calculate first and last Player on this Screen
-  If (PlayersPlay > 3) then
+  if (PlayersPlay > 3) then
   begin
-    Case PlayersPlay of
+    case PlayersPlay of
       4: begin
         PStart := 1 + ((ScreenAct-1) * 2);
         PHigh  := 2 + ((ScreenAct-1) * 2);
@@ -428,7 +423,7 @@ begin
       end;
     end;
   end
-  Else
+  else
   begin
     PStart := 1;
     PHigh  := PlayersPlay;
@@ -436,7 +431,7 @@ begin
 
   // Let's start to arise the bars
   CurrentTime := SDL_GetTicks();
-  if((CurrentTime >= BarTime) AND ShowFinish) then
+  if((CurrentTime >= BarTime) and ShowFinish) then
   begin
     BarTime := CurrentTime + BarRaiseSpeed;
 
@@ -451,7 +446,6 @@ begin
       begin
         if (BarPhrase_EaseOut_Step < EaseOut_MaxSteps * 10) then
           BarPhrase_EaseOut_Step := BarPhrase_EaseOut_Step + 1;
-
 
         // GoldenNotebonus
         if (BarPhrase_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
@@ -473,27 +467,25 @@ begin
       EaseBarIn(PlayerCounter,  'Note');
       EaseScoreIn(PlayerCounter,'Note');
 
-
-      If (PlayersPlay <= 3) then
+      if (PlayersPlay <= 3) then
         //If we play w/ 3 or less players they fit in one screen
         //so we don't have to swap the values of themeobjects
-        //on every draw   
+        //on every draw
         FillPlayerItems(PlayerCounter,'Funky');
 
     end;
   end;
 
-  If (PlayersPlay > 3) then
+  if (PlayersPlay > 3) then
     //more then 3 players don't fit the screen
     //so we have to swap the themeobjects values on every draw
-    For PlayerCounter := PStart to PHigh do
+    for PlayerCounter := PStart to PHigh do
     begin
       FillPlayerItems(PlayerCounter,'Funky');
     end;
 
   //Draw Theme Objects
   DrawFG;
-
 
 (*
     //todo: i need a clever method to draw statics with their z value
@@ -506,7 +498,7 @@ begin
   Result := true;
 end;
 
-procedure TscreenScore.FillPlayerItems(PlayerNumber : Integer; ScoreType: String);
+procedure TscreenScore.FillPlayerItems(PlayerNumber: integer; ScoreType: string);
 var
   ThemeIndex: integer;
 begin
@@ -516,11 +508,11 @@ begin
 
   // We have to do this here because we use the same Theme Object
   // for players on the first and second screen
-  Case PlayersPlay of
+  case PlayersPlay of
     1, 2, 3: ThemeIndex := PlayerNumber + ArrayStartModifier;
     4: ThemeIndex := ((PlayerNumber-1) mod 2) + 1 + ArrayStartModifier;
     6: ThemeIndex := ((PlayerNumber-1) mod 3) + 1 + ArrayStartModifier;
-  end;        
+  end;
 
   //golden
   Text[TextGoldenNotesScore[ThemeIndex]].Text         := IntToStr(TextGolden_ActualValue[PlayerNumber]);
@@ -557,20 +549,19 @@ begin
   end;
 end;
 
-
 procedure TScreenScore.ShowRating(PlayerNumber: integer);
 var
-  Rating : integer;
-  ThemeIndex : integer;
+  Rating: integer;
+  ThemeIndex: integer;
 begin
 
   // We have to do this here because we use the same Theme Object
   // for players on the first and second screen
-  Case PlayersPlay of
+  case PlayersPlay of
     1, 2, 3: ThemeIndex := PlayerNumber + ArrayStartModifier;
     4: ThemeIndex := ((PlayerNumber-1) mod 2) + 1 + ArrayStartModifier;
     6: ThemeIndex := ((PlayerNumber-1) mod 3) + 1 + ArrayStartModifier;
-  end;  
+  end;
 
   case (Player[PlayerNumber-1].ScoreTotalInt) of
    0..2009:
@@ -618,7 +609,7 @@ begin
   end;
 
   //todo: this could break if the width is not given, for instance when there's a skin with no picture for ratings
-  if ( Theme.Score.StaticRatings[ThemeIndex].W > 0 ) AND  ( aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue > 0 ) then
+  if ( Theme.Score.StaticRatings[ThemeIndex].W > 0 ) and  ( aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue > 0 ) then
   begin
     Text[TextScore[ThemeIndex]].Alpha := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / Theme.Score.StaticRatings[ThemeIndex].W;
   end;
@@ -627,11 +618,11 @@ begin
   DrawRating(PlayerNumber, Rating);
 end;
 
-procedure TscreenScore.DrawRating(PlayerNumber:integer;Rating:integer);
+procedure TscreenScore.DrawRating(PlayerNumber: integer; Rating: integer);
 var
-  Posx : real;
-  Posy : real;
-  Width :real;
+  Posx:  real;
+  Posy:  real;
+  Width: real;
 begin
 
   CalculateBouncing(PlayerNumber);
@@ -658,56 +649,53 @@ begin
   glDisable(GL_TEXTURE_2d);
 end;
 
-
-
-function TscreenScore.CalculateBouncing(PlayerNumber : Integer): real;
+function TscreenScore.CalculateBouncing(PlayerNumber: integer): real;
 var
-  ReturnValue : real;
-  p, s        : real;
+  ReturnValue:       real;
+  p, s:              real;
 
-  RaiseStep, MaxVal  : real;
-  EaseOut_Step : integer;
+  RaiseStep, MaxVal: real;
+  EaseOut_Step:      integer;
 begin
   EaseOut_Step  := aPlayerScoreScreenRatings[PlayerNumber].RateEaseStep;
   MaxVal        := Theme.Score.StaticRatings[PlayerNumber + ArrayStartModifier].W;
 
   RaiseStep     := EaseOut_Step;
 
-  if (MaxVal > 0) AND (RaiseStep > 0) then
+  if (MaxVal > 0) and (RaiseStep > 0) then
     RaiseStep := RaiseStep / MaxVal;
 
-    if (RaiseStep = 1) then
-      begin
-        ReturnValue := MaxVal;
-      end
-    else
-      begin
-        p := MaxVal * 0.4;
+  if (RaiseStep = 1) then
+  begin
+    ReturnValue := MaxVal;
+  end
+  else
+  begin
+    p := MaxVal * 0.4;
 
-        s           := p/(2*PI) * arcsin (1);
-        ReturnValue := MaxVal * power(2,-5 * RaiseStep) * sin( (RaiseStep * MaxVal - s) * (2 * PI) / p) + MaxVal;
+    s           := p/(2*PI) * arcsin (1);
+    ReturnValue := MaxVal * power(2,-5 * RaiseStep) * sin( (RaiseStep * MaxVal - s) * (2 * PI) / p) + MaxVal;
 
-        inc(aPlayerScoreScreenRatings[PlayerNumber].RateEaseStep);
-        aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue := ReturnValue;
-      end;
+    inc(aPlayerScoreScreenRatings[PlayerNumber].RateEaseStep);
+    aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue := ReturnValue;
+  end;
 
   Result := ReturnValue;
 end;
 
-
-procedure TscreenScore.EaseBarIn(PlayerNumber : Integer; BarType: String);
+procedure TscreenScore.EaseBarIn(PlayerNumber: integer; BarType: string);
 const
-  RaiseSmoothness : integer = 100;
+  RaiseSmoothness: integer = 100;
 var
-  MaxHeight       : real;
-  NewHeight       : real;
+  MaxHeight:    real;
+  NewHeight:    real;
 
-  Height2Reach    : real;
-  RaiseStep       : real;
-  BarStartPosY    : single;
+  Height2Reach: real;
+  RaiseStep:    real;
+  BarStartPosY: single;
 
-  lTmp            : real;
-  Score           : integer;
+  lTmp:         real;
+  Score:        integer;
 begin
   MaxHeight    := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].H;
 
@@ -768,10 +756,10 @@ begin
     aPlayerScoreScreenDatas[PlayerNumber].BarGolden_ActualHeight := NewHeight;
 end;
 
-procedure TscreenScore.DrawBar(BarType:string; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
+procedure TscreenScore.DrawBar(BarType: string; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
 var
-  Width:real;
-  BarStartPosX:real;
+  Width:        real;
+  BarStartPosX: real;
 begin
   // this is solely for better readability of the drawing
   Width        := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].W;
@@ -825,15 +813,15 @@ begin
   glDisable(GL_TEXTURE_2d);
 end;
 
-procedure TScreenScore.EaseScoreIn(PlayerNumber: integer; ScoreType : String);
+procedure TScreenScore.EaseScoreIn(PlayerNumber: integer; ScoreType: string);
 const
-  RaiseSmoothness : integer = 100;
+  RaiseSmoothness: integer = 100;
 var
-  RaiseStep    : Real;
-  lTmpA        : Real;
-  ScoreReached :Integer;
-  EaseOut_Step :Real;
-  ActualScoreValue:integer;
+  RaiseStep:        real;
+  lTmpA:            real;
+  ScoreReached:     integer;
+  EaseOut_Step:     real;
+  ActualScoreValue: integer;
 begin
   if (ScoreType = 'Note') then
   begin
@@ -865,7 +853,7 @@ begin
     // quadratic easing out - decelerating to zero velocity
     // -end_position * current_time * ( current_time - 2 ) + start_postion
     lTmpA := (-ScoreReached * RaiseStep * (RaiseStep - 20));
-    if ( lTmpA           > 0 ) AND
+    if ( lTmpA           > 0 ) and
        ( RaiseSmoothness > 0 ) then
     begin
       if (ScoreType = 'Note') then
@@ -918,7 +906,6 @@ begin
     S := '0' + S;
   Text[TextGoldenNotesScore[Item]].Text := S;
   //end of fix
-
 
 end;
 
