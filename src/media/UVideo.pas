@@ -794,8 +794,18 @@ var
 begin
   // have a nice black background to draw on
   // (even if there were errors opening the vid)
-  glClearColor(0, 0, 0, 0);
-  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  // TODO: Philipp: IMO TVideoPlayback should not clear the screen at
+  //       all, because clearing is already done by the background class
+  //       at this moment.
+  if (Screen = 1) then
+  begin
+    // It is important that we just clear once before we start
+    // drawing the first screen otherwise the first screen
+    // would be cleared by the drawgl called when the second
+    // screen is drawn
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+  end;
 
   // exit if there's nothing to draw
   if (not fOpened) then

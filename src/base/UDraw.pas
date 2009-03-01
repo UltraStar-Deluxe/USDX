@@ -106,10 +106,6 @@ var
 begin
   if (ScreenSing.Tex_Background.TexNum > 0) then
   begin
-
-  glClearColor (1, 1, 1, 1);
-  glColor4f (1, 1, 1, 1);
-
     if (Ini.MovieSize <= 1) then  //HalfSize BG
     begin
       (* half screen + gradient *)
@@ -681,9 +677,6 @@ begin
 
   // FIXME: accessing ScreenSing is not that generic
   LyricEngine := ScreenSing.Lyrics;
-
-  // background  //BG Fullsize Mod
-  //SingDrawBackground;
 
   // draw time-bar
   SingDrawTimeBar();

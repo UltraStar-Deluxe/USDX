@@ -105,7 +105,8 @@ uses
   SysUtils,
   UTime,
   USkins,
-  UCommon;
+  UCommon,
+  UGraphic;
 
 constructor TMenuBackgroundVideo.Create(const ThemedSettings: TThemeBackground);
 begin
@@ -146,7 +147,8 @@ end;
 
 procedure   TMenuBackgroundVideo.Draw;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  If (ScreenAct = 1) then //Clear just once when in dual screen mode
+    glClear(GL_DEPTH_BUFFER_BIT);
 
   VideoPlayback.GetFrame(VideoBGTimer.GetTime());
     // FIXME: why do we draw on screen 2? Seems to be wrong.

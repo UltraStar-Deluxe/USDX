@@ -636,7 +636,6 @@ var
   T:     integer;
   CurLyricsTime: real;
 begin
-
   Background.Draw;
 
   // set player names (for 2 screens and only singstar skin)
@@ -675,26 +674,26 @@ begin
   // will move the statics and texts to the correct screen here.
   // FIXME: clean up this weird stuff. Commenting this stuff out, nothing
   //   was missing on screen w/ 6 players - so do we even need this stuff?
-  Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10 * ScreenX;
+  {Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10 * ScreenX;
 
-  Text[TextP1].X := Text[TextP1].X + 10 * ScreenX;
+  Text[TextP1].X := Text[TextP1].X + 10 * ScreenX;  }
 
   {Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
   Text[TextP1Score].X                := Text[TextP1Score].X + 10*ScreenX;}
 
-  Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10 * ScreenX;
+  {Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10 * ScreenX;
 
-  Text[TextP2R].X := Text[TextP2R].X + 10 * ScreenX;
+  Text[TextP2R].X := Text[TextP2R].X + 10 * ScreenX; }
 
   {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
   Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;}
 
   // end of weird stuff
+  {
+  Static[1].Texture.X := Static[1].Texture.X + 10 * ScreenX;     }
 
-  Static[1].Texture.X := Static[1].Texture.X + 10 * ScreenX;
-
-  for T := 0 to 1 do
-    Text[T].X := Text[T].X + 10 * ScreenX;
+ { for T := 0 to 1 do
+    Text[T].X := Text[T].X + 10 * ScreenX;    }
 
   // retrieve current lyrics time, we have to store the value to avoid
   // that min- and sec-values do not match
@@ -770,7 +769,7 @@ begin
   // will move the statics and texts to the correct screen here.
   // FIXME: clean up this weird stuff
 
-  Static[StaticP1].Texture.X := Static[StaticP1].Texture.X - 10 * ScreenX;
+  {Static[StaticP1].Texture.X := Static[StaticP1].Texture.X - 10 * ScreenX;
   Text[TextP1].X := Text[TextP1].X - 10 * ScreenX;
 
   Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X - 10 * ScreenX;
@@ -781,7 +780,7 @@ begin
   Static[1].Texture.X := Static[1].Texture.X - 10 * ScreenX;
 
   for T := 0 to 1 do
-    Text[T].X := Text[T].X - 10 * ScreenX;
+    Text[T].X := Text[T].X - 10 * ScreenX;        }
 
   // draw pausepopup
   // FIXME: this is a workaround that the static is drawn over the lyrics, lines, scores and effects

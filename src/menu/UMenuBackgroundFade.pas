@@ -66,7 +66,8 @@ uses sdl,
      gl,
      glext,
      USkins,
-     UCommon;
+     UCommon,
+     UGraphic;
 
 constructor TMenuBackgroundFade.Create(const ThemedSettings: TThemeBackground);
 var texFilename: string;
@@ -121,7 +122,8 @@ begin
 
   if (UseTexture) then
   begin //Draw Texture to Screen
-    glClear(GL_DEPTH_BUFFER_BIT);
+    If (ScreenAct = 1) then //Clear just once when in dual screen mode
+      glClear(GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
@@ -149,7 +151,9 @@ begin
   end
   else
   begin //Clear Screen w/ progress Alpha + Color
-    glClear(GL_DEPTH_BUFFER_BIT);
+    If (ScreenAct = 1) then //Clear just once when in dual screen mode
+      glClear(GL_DEPTH_BUFFER_BIT);
+      
     glDisable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

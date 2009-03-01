@@ -52,7 +52,8 @@ type
 implementation
 uses
   gl,
-  glext;
+  glext,
+  UGraphic;
 
 constructor TMenuBackgroundNone.Create(const ThemedSettings: TThemeBackground);
 begin
@@ -62,7 +63,8 @@ end;
 procedure   TMenuBackgroundNone.Draw;
 begin
   //Do just nothing in here!
-  glClear(GL_DEPTH_BUFFER_BIT);
+  If (ScreenAct = 1) then //Clear just once when in dual screen mode
+    glClear(GL_DEPTH_BUFFER_BIT);
 end;
 
 end.

@@ -61,7 +61,8 @@ uses
   UCommon,
   SysUtils,
   gl,
-  glext;
+  glext,
+  UGraphic;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
 var texFilename: string;
@@ -92,7 +93,9 @@ end;
 
 procedure   TMenuBackgroundTexture.Draw;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  If (ScreenAct = 1) then //Clear just once when in dual screen mode
+    glClear(GL_DEPTH_BUFFER_BIT);
+    
   glColorRGB(Color);
 
   glEnable(GL_TEXTURE_2D);
