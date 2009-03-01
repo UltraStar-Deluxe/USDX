@@ -395,9 +395,9 @@ function TScreenScore.Draw: boolean;
 var
   CurrentTime : Cardinal;
   PlayerCounter : integer;
+  PStart: Integer;
+  PHigh: Integer;
 begin
-
-  inherited Draw;
 {*
   player[0].ScoreInt       := 7000;
   player[0].ScoreLineInt   := 2000;
@@ -409,13 +409,38 @@ begin
   player[1].ScoreGoldenInt :=  900;
   player[1].ScoreTotalInt  := 4500;
 *}
+
+  //Draw the Background
+  DrawBG;
+
+  //Calculate first and last Player on this Screen
+  If (PlayersPlay > 3) then
+  begin
+    Case PlayersPlay of
+      4: begin
+        PStart := 1 + ((ScreenAct-1) * 2);
+        PHigh  := 2 + ((ScreenAct-1) * 2);
+      end;
+
+      6: begin
+        PStart := 1 + ((ScreenAct-1) * 3);
+        PHigh  := 3 + ((ScreenAct-1) * 3);
+      end;
+    end;
+  end
+  Else
+  begin
+    PStart := 1;
+    PHigh  := PlayersPlay;
+  end;
+
   // Let's start to arise the bars
   CurrentTime := SDL_GetTicks();
   if((CurrentTime >= BarTime) AND ShowFinish) then
   begin
     BarTime := CurrentTime + BarRaiseSpeed;
 
-    for PlayerCounter := 1 to PlayersPlay do
+    for PlayerCounter := PStart to PHigh do
     begin
       // We actually arise them in the right order, but we have to draw them in reverse order (golden -> phrase -> mainscore)
       if (BarScore_EaseOut_Step < EaseOut_MaxSteps * 10) then
@@ -449,10 +474,25 @@ begin
       EaseScoreIn(PlayerCounter,'Note');
 
 
-      FillPlayerItems(PlayerCounter,'Funky');
+      If (PlayersPlay <= 3) then
+        //If we play w/ 3 or less players they fit in one screen
+        //so we don't have to swap the values of themeobjects
+        //on every draw   
+        FillPlayerItems(PlayerCounter,'Funky');
 
     end;
   end;
+
+  If (PlayersPlay > 3) then
+    //more then 3 players don't fit the screen
+    //so we have to swap the themeobjects values on every draw
+    For PlayerCounter := PStart to PHigh do
+    begin
+      FillPlayerItems(PlayerCounter,'Funky');
+    end;
+
+  //Draw Theme Objects
+  DrawFG;
 
 
 (*
@@ -474,7 +514,13 @@ begin
   Text[TextName[PlayerNumber + ArrayStartModifier]].Text := Ini.Name[PlayerNumber - 1];
   // end todo
 
-  ThemeIndex := PlayerNumber + ArrayStartModifier;
+  // We have to do this here because we use the same Theme Object
+  // for players on the first and second screen
+  Case PlayersPlay of
+    1, 2, 3: ThemeIndex := PlayerNumber + ArrayStartModifier;
+    4: ThemeIndex := ((PlayerNumber-1) mod 2) + 1 + ArrayStartModifier;
+    6: ThemeIndex := ((PlayerNumber-1) mod 3) + 1 + ArrayStartModifier;
+  end;        
 
   //golden
   Text[TextGoldenNotesScore[ThemeIndex]].Text         := IntToStr(TextGolden_ActualValue[PlayerNumber]);
@@ -518,7 +564,13 @@ var
   ThemeIndex : integer;
 begin
 
-  ThemeIndex := PlayerNumber + ArrayStartModifier;
+  // We have to do this here because we use the same Theme Object
+  // for players on the first and second screen
+  Case PlayersPlay of
+    1, 2, 3: ThemeIndex := PlayerNumber + ArrayStartModifier;
+    4: ThemeIndex := ((PlayerNumber-1) mod 2) + 1 + ArrayStartModifier;
+    6: ThemeIndex := ((PlayerNumber-1) mod 3) + 1 + ArrayStartModifier;
+  end;  
 
   case (Player[PlayerNumber-1].ScoreTotalInt) of
    0..2009:
