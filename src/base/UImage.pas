@@ -887,8 +887,14 @@ end;
 
 procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
 
-  // for the conversion of colors from rgb to hsv space and back
-  // simply check the wikipedia.
+  // First, the rgb colors are converted to hsv, second hue is replaced by
+  // the NewColor, saturation and value remain unchanged, finally this
+  // hsv color is converted back to rgb space.
+  // For the conversion algorithms of colors from rgb to hsv space
+  // and back simply check the wikipedia.
+  // In order to speed up starting time of USDX the division of reals is 
+  // replaced by division of longwords, shifted by 10 bits to keep 
+  // digits.
 
   function ColorToHue(const Color: longword): longword;
   // returns hue within the range [0.0-6.0] but shl 10, ie.  times 1024
@@ -954,7 +960,7 @@ begin
                    + IntToStr(ImgSurface^.format.BytesPerPixel));
 
   Hue := ColorToHue(NewColor);   // Hue is shl 10
-  f := Hue and $3ff;
+  f := Hue and $3ff;             // f is the dezimal part of hue
   HueInteger := Hue shr 10;
 
   for PixelIndex := 0 to (ImgSurface^.W * ImgSurface^.H)-1 do
@@ -1037,13 +1043,13 @@ begin
         end;
 
         {$IFDEF FPC_BIG_ENDIAN}
-        PixelColors[3] := Red   ;
-        PixelColors[2] := Green ;
-        PixelColors[1] := Blue  ;
+        PixelColors[3] := Red;
+        PixelColors[2] := Green;
+        PixelColors[1] := Blue
         {$ELSE}
-        PixelColors[0] := Red   ;
-        PixelColors[1] := Green ;
-        PixelColors[2] := Blue  ;
+        PixelColors[0] := Red;
+        PixelColors[1] := Green;
+        PixelColors[2] := Blue;
         {$ENDIF}
 
       end;
