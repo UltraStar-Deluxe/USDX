@@ -918,9 +918,13 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
       Result := 0
     else
     begin
-      if      (Max = Red  ) then Hue :=       (Green - Blue )/Delta
-      else if (Max = Green) then Hue := 2.0 + (Blue  - Red  )/Delta
-      else if (Max = Blue ) then Hue := 4.0 + (Red   - Green)/Delta;
+      // The division by Delta is done separately afterwards.
+      // Necessary because Delphi did not do the type conversion from
+      // longword to double as expected.
+      if      (Max = Red  ) then Hue :=             Green - Blue
+      else if (Max = Green) then Hue := 2.0*Delta + Blue  - Red
+      else if (Max = Blue ) then Hue := 4.0*Delta + Red   - Green;
+      Hue := Hue / Delta;
       if (Hue < 0.0) then
         Hue := Hue + 6.0;
       Result := trunc(Hue*1024);           // '*1024' is shl 10
