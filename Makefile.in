@@ -364,20 +364,20 @@ macosx-app: all
 	@echo "Creating the Mac OS X application"
 	@echo ""
 
-	$(MKDIR) $(macosx_bundle_path)/Resources
+	$(MKDIR) $(macosx_bundle_path)
 
 # Put the icon file into its particular place. 
 # Must be done BEFORE info.plist is created.
-	$(INSTALL_DATA) icons/ultrastardx.icns $(macosx_bundle_path)/Resources/
+	$(INSTALL_DATA) icons/ultrastardx.icns $(macosx_bundle_path)/
 
 # the info.plist file
 	$(INSTALL_DATA) $(USDX_SRC_DIR)/macosx/Info.plist $(macosx_bundle_path)/
 
 # Copy the resources. 
-	$(MAKE) install-all INSTALL_DATADIR=$(macosx_bundle_path)/Resources bindir=$(macosx_bundle_path)/MacOS
+	$(MAKE) install-all INSTALL_DATADIR=$(macosx_bundle_path) bindir=$(macosx_bundle_path)/MacOS
 
 # Create the song directory. 
-	$(MKDIR) $(macosx_bundle_path)/Resources/songs
+	$(MKDIR) $(macosx_bundle_path)/songs
 
 # final messages
 	@echo ""

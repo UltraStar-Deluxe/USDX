@@ -70,19 +70,19 @@ type
    *
    * So
    * GetGameSharedPath could return
-   *   /Library/Application Support/UltraStarDeluxe/Resources/.
+   *   /Library/Application Support/UltraStarDeluxe/.
    * GetGameUserPath could return
-   *   ~/Library/Application Support/UltraStarDeluxe/Resources/.
+   *   ~/Library/Application Support/UltraStarDeluxe/.
    *
-   * Right now, only $HOME/Library/Application Support/UltraStarDeluxe/Resources
+   * Right now, only $HOME/Library/Application Support/UltraStarDeluxe
    * is used. So every user needs the complete set of files and folders.
    * Future versions may also use shared resources in
-   * /Library/Application Support/UltraStarDeluxe/Resources. However, this is
+   * /Library/Application Support/UltraStarDeluxe. However, this is
    * not treated yet in the code outside this unit.
    *
    * USDX checks, whether GetGameUserPath exists. If not, USDX creates it.
    * The existence of needed files is then checked and if a file is missing
-   * it is copied to there from within the Resources folder in the Application
+   * it is copied to there from within the folder Contents in the Application
    * bundle, which contains the default files. USDX should not delete files or
    * folders in Application Support/UltraStarDeluxe automatically or without
    * user confirmation.
@@ -97,7 +97,7 @@ type
 
       {**
        * GetApplicationSupportPath returns the path to
-       * $HOME/Library/Application Support/UltraStarDeluxe/Resources.
+       * $HOME/Library/Application Support/UltraStarDeluxe.
        *}
       function GetApplicationSupportPath: WideString;
 
@@ -109,8 +109,8 @@ type
     public
       {**
        * Init simply calls @link(CreateUserFolders), which in turn scans the
-       * folder UltraStarDeluxe.app/Contents/Resources for all files and
-       * folders. $HOME/Library/Application Support/UltraStarDeluxe/Resources
+       * folder UltraStarDeluxe.app/Contents for all files and
+       * folders. $HOME/Library/Application Support/UltraStarDeluxe
        * is then checked for their presence and missing ones are copied.
        *}
       procedure Init; override;
@@ -123,20 +123,20 @@ type
 
       {**
        * GetLogPath returns the path for log messages. Currently it is set to
-       * $HOME/Library/Application Support/UltraStarDeluxe/Resources/Log.
+       * $HOME/Library/Application Support/UltraStarDeluxe/Log.
        *}
       function  GetLogPath        : WideString; override;
 
       {**
        * GetGameSharedPath returns the path for shared resources. Currently it
-       * is set to /Library/Application Support/UltraStarDeluxe/Resources.
+       * is set to /Library/Application Support/UltraStarDeluxe.
        * However it is not used.
        *}
       function  GetGameSharedPath : WideString; override;
 
       {**
        * GetGameUserPath returns the path for user resources. Currently it is
-       * set to $HOME/Library/Application Support/UltraStarDeluxe/Resources.
+       * set to $HOME/Library/Application Support/UltraStarDeluxe.
        * This is where a user can add songs, themes, ....
        *}
       function  GetGameUserPath   : WideString; override;
@@ -156,7 +156,7 @@ end;
 procedure TPlatformMacOSX.CreateUserFolders();
 const
   // used to construct the @link(UserPathName)
-  PathName: string = '/Library/Application Support/UltraStarDeluxe/Resources';
+  PathName: string = '/Library/Application Support/UltraStarDeluxe';
 var
   RelativePath: string;
   // BaseDir contains the path to the folder, where a search is performed.
@@ -186,12 +186,12 @@ begin
   // finished.
   GetDir(0, OldBaseDir);
 
-  // UltraStarDeluxe.app/Contents/Resources contains all the default files and
+  // UltraStarDeluxe.app/Contents contains all the default files and
   // folders.
-  BaseDir := OldBaseDir + '/UltraStarDeluxe.app/Contents/Resources';
+  BaseDir := OldBaseDir + '/UltraStarDeluxe.app/Contents';
   ChDir(BaseDir);
 
-  // Right now, only $HOME/Library/Application Support/UltraStarDeluxe/Resources
+  // Right now, only $HOME/Library/Application Support/UltraStarDeluxe
   // is used.
   UserPathName := GetEnvironmentVariable('HOME') + PathName;
 
@@ -268,7 +268,7 @@ end;
 
 function TPlatformMacOSX.GetApplicationSupportPath: WideString;
 const
-  PathName : string = '/Library/Application Support/UltraStarDeluxe/Resources';
+  PathName : string = '/Library/Application Support/UltraStarDeluxe';
 begin
   Result := GetEnvironmentVariable('HOME') + PathName + '/';
 end;
