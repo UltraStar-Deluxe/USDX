@@ -305,7 +305,7 @@ end;
 
 procedure TScreenSing.onShow;
 var
-  P:      integer;
+  Index:  integer;
   V1:     boolean;
   V1TwoP: boolean;   // position of score box in two player mode
   V1ThreeP: boolean; // position of score box in three player mode
@@ -331,9 +331,9 @@ begin
   Color.B := 0; // dummy atm  <- \(O.o)/? B like bummy?
 
   // add new players
-  for P := 0 to PlayersPlay - 1 do
+  for Index := 0 to PlayersPlay - 1 do
   begin
-    Scores.AddPlayer(Tex_ScoreBG[P], Color);
+    Scores.AddPlayer(Tex_ScoreBG[Index], Color);
   end;
 
   Scores.Init; // get positions for players
@@ -534,8 +534,24 @@ begin
   // prepare and start voice-capture
   AudioInput.CaptureStart;
 
-  for P := 0 to High(Player) do
-    ClearScores(P);
+  // clear the scores of all players
+
+  for Index := 0 to High(Player) do
+    with Player[Index] do
+    begin
+      Score          := 0;
+      ScoreLine      := 0;
+      ScoreGolden    := 0;
+
+      ScoreInt       := 0;
+      ScoreLineInt   := 0;
+      ScoreGoldenInt := 0;
+      ScoreTotalInt  := 0;
+
+      ScoreLast      := 0;
+
+      LastSentencePerfect := false;
+    end;
 
   // main text
   Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
@@ -598,8 +614,8 @@ begin
   // set position of line bonus - line bonus end
   // set number of empty sentences for line bonus
   NumEmptySentences := 0;
-  for P := Low(Lines[0].Line) to High(Lines[0].Line) do
-    if Lines[0].Line[P].TotalNotes = 0 then
+  for Index := Low(Lines[0].Line) to High(Lines[0].Line) do
+    if Lines[0].Line[Index].TotalNotes = 0 then
       Inc(NumEmptySentences);
 
   Log.LogStatus('End', 'onShow');

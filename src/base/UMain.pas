@@ -134,7 +134,6 @@ procedure NewBeatDetect(Screen: TScreenSing); // executed when on then new beat 
 procedure NewNote(Screen: TScreenSing);       // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer): real;
-procedure ClearScores(PlayerNum: integer);
 
 type
   TMainThreadExecProc = procedure(Data: Pointer);
@@ -1051,25 +1050,6 @@ begin
     end;
   end;
 
-end;
-
-procedure ClearScores(PlayerNum: integer);
-begin
-  with Player[PlayerNum] do
-  begin
-    Score          := 0;
-    ScoreLine      := 0;
-    ScoreGolden    := 0;
-
-    ScoreInt       := 0;
-    ScoreLineInt   := 0;
-    ScoreGoldenInt := 0;
-    ScoreTotalInt  := 0;
-
-    ScoreLast      := 0;
-
-    LastSentencePerfect := false;
-  end;
 end;
 
 procedure AddSpecialPath(var PathList: TStringList; const Path: string);
