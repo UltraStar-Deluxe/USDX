@@ -74,6 +74,7 @@ uses
   UGraphic,
   UDraw,
   UMain,
+  UScreenEditConvert,
   USkins;
 
 function TScreenOpen.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;

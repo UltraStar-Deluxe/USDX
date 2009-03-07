@@ -91,8 +91,6 @@ type
 var
 
   Done:             boolean;
-  // FIXME: ConversionFileName should not be global
-  ConversionFileName: string;
   Restart:            boolean;
 
   // player and music info

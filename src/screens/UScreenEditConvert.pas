@@ -116,6 +116,9 @@ type
       procedure onHide; override;
   end;
 
+var
+  ConversionFileName: string;
+
 implementation
 
 uses
