@@ -484,7 +484,11 @@ begin
   glMatrixMode(GL_PROJECTION);
   glPushMatrix();
   glLoadIdentity();
-  gluOrtho2D(0, 1, 0, 1);
+  // Use count of screens instead of 1 for the right corner
+  // otherwise we would draw the visualization streched over both screens
+  // another point is that we draw over the at this time drawn first
+  // screen, if Screen = 2
+  gluOrtho2D(0, Screens, 0, 1);
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
@@ -496,11 +500,12 @@ begin
   glColor4f(1, 1, 1, 1);
 
   // draw projectM frame
+  // Screen is 1 to 2. So current screen is from (Screen - 1) to (Screen)
   glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(0, 0);
-    glTexCoord2f(1, 0); glVertex2f(1, 0);
-    glTexCoord2f(1, 1); glVertex2f(1, 1);
-    glTexCoord2f(0, 1); glVertex2f(0, 1);
+    glTexCoord2f(0, 0); glVertex2f((Screen - 1), 0);
+    glTexCoord2f(1, 0); glVertex2f(Screen, 0);
+    glTexCoord2f(1, 1); glVertex2f(Screen, 1);
+    glTexCoord2f(0, 1); glVertex2f((Screen - 1), 1);
   glEnd();
 
   glDisable(GL_TEXTURE_2D);

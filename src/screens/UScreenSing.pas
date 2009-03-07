@@ -655,6 +655,12 @@ var
 begin
   Background.Draw;
 
+  // draw background picture (if any, and if no visualizations)
+  // when we don't check for visualizations the visualizations would
+  // be overdrawn by the picture when {UNDEFINED UseTexture} in UVisualizer
+  if (not fShowVisualization) then
+    SingDrawBackground;
+
   // set player names (for 2 screens and only singstar skin)
   if ScreenAct = 1 then
   begin
@@ -731,15 +737,17 @@ begin
   // Note: there is no menu and the animated background brakes the video playback
   //DrawBG;
 
-  // draw background
-  SingDrawBackground;
-
   // update and draw movie
   if (ShowFinish and (VideoLoaded or fShowVisualization)) then
   begin
     if assigned(fCurrentVideoPlaybackEngine) then
     begin
-      fCurrentVideoPlaybackEngine.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
+      // Just call this once
+      // when Screens = 2
+      If (ScreenAct = 1) then
+        fCurrentVideoPlaybackEngine.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
+
+
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     end;
   end;
