@@ -280,11 +280,12 @@ function LoadingThreadFunction: integer;
 implementation
 
 uses
+  Classes,
   UMain,
   UIni,
   UDisplay,
   UCommandLine,
-  Classes;
+  UPath;
 
 procedure LoadFontTextures;
 begin
@@ -294,11 +295,10 @@ end;
 
 procedure LoadTextures;
 
-
 var
-  P:        integer;
-  R, G, B:  real;
-  Col:      integer;
+  P:       integer;
+  R, G, B: real;
+  Col:     integer;
 begin
   Log.LogStatus('Loading Textures', 'LoadTextures');
 

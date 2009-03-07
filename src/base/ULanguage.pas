@@ -75,9 +75,10 @@ uses
   Classes,
   SysUtils,
   {$IFDEF win32}
-    windows,
+    Windows,
   {$ENDIF}
-  ULog;
+  ULog,
+  UPath;
 
 //----------
 //Create - Construct Class then LoadList + Standard Language + Set Standard Implode Glues

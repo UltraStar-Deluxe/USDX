@@ -119,7 +119,19 @@ procedure PlaySound (const Index: Cardinal); stdcall;       //Plays a Custom Sou
 function ToSentences(Const Lines: TLines): TSentences;
 
 implementation
-uses UGraphic, UDraw, UMain, Classes, URecord, ULanguage, math, UDLLManager, USkins, UGraphicClasses;
+
+uses
+  Classes, 
+  Math,
+  UDLLManager,
+  UDraw,
+  UGraphic,
+  UGraphicClasses,
+  ULanguage,
+  UMain,
+  UPath,
+  URecord, 
+  USkins;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;

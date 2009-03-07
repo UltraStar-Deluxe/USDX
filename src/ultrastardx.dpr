@@ -198,6 +198,7 @@ uses
   URingBuffer       in 'base\URingBuffer.pas',
   USingScores       in 'base\USingScores.pas',
   USingNotes        in 'base\USingNotes.pas',
+  UPath             in 'base\UPath.pas',
 
   //------------------------------
   //Includes - Plugin Support

@@ -151,12 +151,14 @@ const
 
 implementation
 
-uses StrUtils,
-     UGraphic,
-     UCovers,
-     UFiles,
-     UMain,
-     UIni;
+uses
+  StrUtils,
+  UCovers,
+  UFiles,
+  UGraphic,
+  UIni,
+  UPath,
+  UMain;
 
 constructor TSongs.Create();
 begin

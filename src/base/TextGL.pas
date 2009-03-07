@@ -96,12 +96,13 @@ var
 implementation
 
 uses
-  UMain,
-  UCommon,
+  Classes,
   SysUtils,
   IniFiles,
-  Classes,
-  UGraphic;
+  UCommon,
+  UGraphic,
+  UMain,
+  UPath;
 
 var
   // Colours for the reflection

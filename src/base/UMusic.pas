@@ -576,7 +576,8 @@ uses
   UMain,
   UCommandLine,
   URecord,
-  ULog;
+  ULog,
+  UPath;
 
 var
   DefaultVideoPlayback : IVideoPlayback;

@@ -132,7 +132,8 @@ uses
   UMain,  
   UTime,
   UCommon,
-  UCommandLine;
+  UCommandLine,
+  UPath;
 
 (*
  * Write to console if in debug mode (Thread-safe).

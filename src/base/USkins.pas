@@ -71,9 +71,10 @@ uses
   IniFiles,
   Classes,
   SysUtils,
-  UMain,
+  UIni,
   ULog,
-  UIni;
+  UMain,
+  UPath;
 
 constructor TSkin.Create;
 begin

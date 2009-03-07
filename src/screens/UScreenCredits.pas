@@ -34,6 +34,7 @@ interface
 {$I switches.inc}
 
 uses
+    SysUtils,
     UMenu,
     SDL,
     SDL_Image,
@@ -42,7 +43,6 @@ uses
     gl,
     UMusic,
     UFiles,
-    SysUtils,
     UThemes,
     UGraphicClasses;
 
@@ -167,16 +167,16 @@ const
 implementation
 
 uses
-     ULog,
-     UGraphic,
-     UMain,
-     UIni,
-     USongs,
-     Textgl,
-     ULanguage,
-     UCommon,
-     Math;
-
+  Math,
+  ULog,
+  UGraphic,
+  UMain,
+  UIni,
+  USongs,
+  Textgl,
+  ULanguage,
+  UCommon,
+  UPath;
 
 function TScreenCredits.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
 begin

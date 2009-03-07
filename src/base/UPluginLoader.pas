@@ -41,7 +41,8 @@ interface
 
 uses
   UPluginDefs,
-  UCoreModule;
+  UCoreModule,
+  UPath;
 
 type
   TPluginListItem = record

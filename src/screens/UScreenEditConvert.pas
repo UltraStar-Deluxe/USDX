@@ -119,14 +119,15 @@ type
 implementation
 
 uses
-  UGraphic,
   SysUtils,
-  UDrawTexture,
   TextGL,
-  UFiles,
-  UMain,
-  UIni,
   gl,
+  UDrawTexture,
+  UFiles,
+  UGraphic,
+  UIni,
+  UMain,
+  UPath,
   USkins;
 
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;

@@ -34,7 +34,8 @@ interface
 {$I switches.inc}
 
 uses
-  USong;
+  USong,
+  UPath;
 
 type
   TPlaylistItem = record

@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  ucommon,
+  UCommon,
   SDL,
   UMenu,
   gl,
@@ -86,15 +86,16 @@ var
 implementation
 
 uses
-  UImage,
   TextGL,
+  UCommandLine,
+  UGraphic,
+  UIni,
+  UImage,
   ULog,
   UMain,
   UTexture,
-  UIni,
-  UGraphic,
   UTime,
-  UCommandLine;
+  UPath;
 
 constructor TDisplay.Create;
 var

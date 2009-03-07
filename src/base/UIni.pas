@@ -261,7 +261,8 @@ uses
   UPlatform,
   USkins,
   URecord,
-  UCommandLine;
+  UCommandLine,
+  UPath;
 
 (**
  * Returns the filename without its fileextension
