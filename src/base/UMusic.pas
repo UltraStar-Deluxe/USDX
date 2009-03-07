@@ -573,7 +573,7 @@ implementation
 uses
   math,
   UIni,
-  UMain,
+  UNote,
   UCommandLine,
   URecord,
   ULog,

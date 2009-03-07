@@ -33,22 +33,23 @@ interface
 
 {$I switches.inc}
 
-uses UMenu,
-  UMusic,
-  SDL,
+uses
   SysUtils,
+  gl,
+  SDL,
+  TextGL,
   UFiles,
-  UTime,
-  USongs,
+  UGraphicClasses,
   UIni,
   ULog,
-  UTexture,
   ULyrics,
-  TextGL,
-  gl,
+  UMenu,
+  UMusic,
+  USingScores,
+  USongs,
+  UTexture,
   UThemes,
-  UGraphicClasses,
-  USingScores;
+  UTime;
 
 type
   TLyricsSyncSource = class(TSyncSource)
@@ -119,14 +120,14 @@ type
 implementation
 
 uses
-  UGraphic,
-  UDraw,
-  UMain,
-  USong,
   Classes,
-  URecord,
+  Math,
+  UDraw,
+  UGraphic,
   ULanguage,
-  Math;
+  UNote,
+  URecord,
+  USong;
 
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;

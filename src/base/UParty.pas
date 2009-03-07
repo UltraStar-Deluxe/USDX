@@ -111,9 +111,9 @@ implementation
 uses
   UCore,
   UGraphic,
-  UMain,
   ULanguage,
   ULog,
+  UNote,
   SysUtils;
 
 {*********************

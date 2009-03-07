@@ -158,7 +158,7 @@ uses
   UGraphic,
   UIni,
   UPath,
-  UMain;
+  UNote;
 
 constructor TSongs.Create();
 begin

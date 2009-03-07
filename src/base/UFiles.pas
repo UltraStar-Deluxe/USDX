@@ -58,8 +58,8 @@ implementation
 uses
   TextGL,
   UIni,
-  UPlatform,
-  UMain;
+  UNote,
+  UPlatform;
 
 //--------------------
 // Resets the temporary Sentence Arrays for each Player and some other Variables

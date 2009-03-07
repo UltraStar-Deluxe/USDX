@@ -149,7 +149,7 @@ uses
   TextGL,
   UIni,
   UMusic,  //needed for Lines
-  UMain;   //needed for Player
+  UNote;   //needed for Player
 
 constructor TSong.Create();
 begin

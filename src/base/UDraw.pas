@@ -82,22 +82,22 @@ var
 implementation
 
 uses
-  gl,
-  UGraphic,
   SysUtils,
+  Math,
+  gl,
+  TextGL,
+  UDLLManager,
+  UDrawTexture,
+  UGraphic,
+  UIni,
+  ULog,
+  ULyrics,
+  UNote,
   UMusic,
   URecord,
-  ULog,
   UScreenSing,
   UScreenSingModi,
-  ULyrics,
-  UMain,
-  TextGL,
-  UTexture,
-  UDrawTexture,
-  UIni,
-  Math,
-  UDLLManager;
+  UTexture;
 
 procedure SingDrawBackground;
 var

@@ -63,7 +63,7 @@ implementation
 
 uses
   UGraphic,
-  UMain,
+  UNote,
   UIni,
   UTexture,
   USongs,

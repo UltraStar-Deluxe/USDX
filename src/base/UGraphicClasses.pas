@@ -124,16 +124,16 @@ var
 implementation
 
 uses
-  sysutils,
+  SysUtils,
+  Math,
   gl,
-  UIni,
-  UMain,
-  UThemes,
-  USkins,
-  UGraphic,
-  UDrawTexture,
   UCommon,
-  math;
+  UDrawTexture,
+  UGraphic,
+  UIni,
+  UNote,
+  USkins,
+  UThemes;
 
 //TParticle
 constructor TParticle.Create(cX, cY         : real;

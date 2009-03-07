@@ -199,6 +199,7 @@ uses
   USingScores       in 'base\USingScores.pas',
   USingNotes        in 'base\USingNotes.pas',
   UPath             in 'base\UPath.pas',
+  UNote             in 'base\UNote.pas',
 
   //------------------------------
   //Includes - Plugin Support

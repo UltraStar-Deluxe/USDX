@@ -162,7 +162,7 @@ implementation
 
 uses
   ULog,
-  UMain;
+  UNote;
 
 var
   singleton_AudioInputProcessor : TAudioInputProcessor = nil;

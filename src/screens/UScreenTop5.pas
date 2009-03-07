@@ -34,34 +34,46 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, SysUtils, UDisplay, UMusic, USongs, UThemes;
+  SysUtils,
+  SDL,
+  UDisplay,
+  UMenu,
+  UMusic,
+  USongs,
+  UThemes;
 
 type
   TScreenTop5 = class(TMenu)
     public
-      TextLevel:        integer;
-      TextArtistTitle:  integer;
+      TextLevel:       integer;
+      TextArtistTitle: integer;
 
-      StaticNumber:     array[1..5] of integer;
-      TextNumber:       array[1..5] of integer;
-      TextName:         array[1..5] of integer;
-      TextScore:        array[1..5] of integer;
+      StaticNumber:    array[1..5] of integer;
+      TextNumber:      array[1..5] of integer;
+      TextName:        array[1..5] of integer;
+      TextScore:       array[1..5] of integer;
 
-      Fadeout:      boolean;
+      Fadeout:         boolean;
+
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       function Draw: boolean; override;
   end;
 
 implementation
 
-uses UGraphic, UDataBase, UMain, UIni;
+uses
+  UDataBase,
+  UGraphic,
+  UIni,
+  UNote;
 
-function TScreenTop5.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenTop5.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then begin
+  if (PressedDown) then
+  begin
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
       'Q':
@@ -70,14 +82,15 @@ begin
           Exit;
         end;
     end;
-    
+
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE,
       SDLK_RETURN:
         begin
-          if (not Fadeout) then begin
+          if (not Fadeout) then
+	  begin
             FadeTo(@ScreenSong);
             Fadeout := true;
           end;
@@ -92,7 +105,7 @@ end;
 
 constructor TScreenTop5.Create;
 var
-  I:    integer;
+  I: integer;
 begin
   inherited Create;
 
@@ -116,8 +129,8 @@ end;
 
 procedure TScreenTop5.onShow;
 var
-  I:      integer;
-  PMax:   integer;
+  I:    integer;
+  PMax: integer;
 begin
   inherited;
 
@@ -126,7 +139,8 @@ begin
   //ReadScore(CurrentSong);
 
   PMax := Ini.Players;
-  if PMax = 4 then PMax := 5;
+  if PMax = 4 then
+    PMax := 5;
   for I := 0 to PMax do
     DataBase.AddScore(CurrentSong, Ini.Difficulty, Ini.Name[I], Round(Player[I].ScoreTotalInt));
 
@@ -135,7 +149,8 @@ begin
 
   Text[TextArtistTitle].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
-  for I := 1 to Length(CurrentSong.Score[Ini.Difficulty]) do begin
+  for I := 1 to Length(CurrentSong.Score[Ini.Difficulty]) do
+  begin
     Static[StaticNumber[I]].Visible := true;
     Text[TextNumber[I]].Visible := true;
     Text[TextName[I]].Visible := true;
@@ -145,7 +160,8 @@ begin
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Ini.Difficulty, I-1].Score);
   end;
 
-  for I := Length(CurrentSong.Score[Ini.Difficulty])+1 to 5 do begin
+  for I := Length(CurrentSong.Score[Ini.Difficulty])+1 to 5 do
+  begin
     Static[StaticNumber[I]].Visible := false;
     Text[TextNumber[I]].Visible := false;
     Text[TextName[I]].Visible := false;
@@ -157,24 +173,30 @@ end;
 
 function TScreenTop5.Draw: boolean;
 //var
-{  Min:    real;
-  Max:    real;
-  Factor:    real;
-  Factor2:   real;
+{
+  Min:     real;
+  Max:     real;
+  Factor:  real;
+  Factor2: real;
 
-  Item:   integer;
-  P:      integer;
-  C:      integer;}
+  Item:    integer;
+  P:       integer;
+  C:       integer;
+}
 begin
   // Singstar - let it be...... with 6 statics
-(*  if PlayersPlay = 6 then begin
-    for Item := 4 to 6 do begin
+(*
+  if PlayersPlay = 6 then
+  begin
+    for Item := 4 to 6 do
+    begin
       if ScreenAct = 1 then P := Item-4;
       if ScreenAct = 2 then P := Item-1;
 
       FillPlayer(Item, P);
-
-{      if ScreenAct = 1 then begin
+{
+      if ScreenAct = 1 then
+      begin
         LoadColor(
           Static[StaticBoxLightest[Item]].Texture.ColR,
           Static[StaticBoxLightest[Item]].Texture.ColG,
@@ -182,16 +204,18 @@ begin
           'P1Dark');
       end;
 
-      if ScreenAct = 2 then begin
+      if ScreenAct = 2 then
+      begin
         LoadColor(
           Static[StaticBoxLightest[Item]].Texture.ColR,
           Static[StaticBoxLightest[Item]].Texture.ColG,
           Static[StaticBoxLightest[Item]].Texture.ColB,
           'P4Dark');
-      end; }
-
+      end;
+}
     end;
-  end; *)
+  end;
+*)
 
   Result := inherited Draw;
 end;

@@ -34,7 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
+  SysUtils, 
+  SDL,
+  UDisplay,
+  UFiles,
+  UMenu,
+  UMusic,
+  UThemes;
 
 type
   TScreenName = class(TMenu)
@@ -48,7 +54,12 @@ type
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, UCommon;
+uses
+  UCommon,
+  UGraphic, 
+  UIni,
+  UNote,
+  UTexture;
 
 
 function TScreenName.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;

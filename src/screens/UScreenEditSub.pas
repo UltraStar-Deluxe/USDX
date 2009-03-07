@@ -128,7 +128,7 @@ implementation
 uses
   UGraphic,
   UDraw,
-  UMain,
+  UNote,
   USkins,
   ULanguage;
 

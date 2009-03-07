@@ -65,7 +65,7 @@ type
       TextNumber:   integer;
 
       //Video Icon Mod
-      VideoIcon: Cardinal;
+      VideoIcon: cardinal;
 
       TextCat:   integer;
       StaticCat: integer;
@@ -88,28 +88,28 @@ type
       Mode: TSingMode;
 
       //party Statics (Joker)
-      StaticTeam1Joker1: Cardinal;
-      StaticTeam1Joker2: Cardinal;
-      StaticTeam1Joker3: Cardinal;
-      StaticTeam1Joker4: Cardinal;
-      StaticTeam1Joker5: Cardinal;
+      StaticTeam1Joker1: cardinal;
+      StaticTeam1Joker2: cardinal;
+      StaticTeam1Joker3: cardinal;
+      StaticTeam1Joker4: cardinal;
+      StaticTeam1Joker5: cardinal;
 
-      StaticTeam2Joker1: Cardinal;
-      StaticTeam2Joker2: Cardinal;
-      StaticTeam2Joker3: Cardinal;
-      StaticTeam2Joker4: Cardinal;
-      StaticTeam2Joker5: Cardinal;
+      StaticTeam2Joker1: cardinal;
+      StaticTeam2Joker2: cardinal;
+      StaticTeam2Joker3: cardinal;
+      StaticTeam2Joker4: cardinal;
+      StaticTeam2Joker5: cardinal;
 
-      StaticTeam3Joker1: Cardinal;
-      StaticTeam3Joker2: Cardinal;
-      StaticTeam3Joker3: Cardinal;
-      StaticTeam3Joker4: Cardinal;
-      StaticTeam3Joker5: Cardinal;
+      StaticTeam3Joker1: cardinal;
+      StaticTeam3Joker2: cardinal;
+      StaticTeam3Joker3: cardinal;
+      StaticTeam3Joker4: cardinal;
+      StaticTeam3Joker5: cardinal;
 
-      StaticParty:    array of Cardinal;
-      TextParty:      array of Cardinal;
-      StaticNonParty: array of Cardinal;
-      TextNonParty:   array of Cardinal;
+      StaticParty:    array of cardinal;
+      TextParty:      array of cardinal;
+      StaticNonParty: array of cardinal;
+      TextNonParty:   array of cardinal;
 
 
       constructor Create; override;
@@ -120,18 +120,18 @@ type
       procedure SetScroll4;
       procedure SetScroll5;
       procedure SetScroll6;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       function Draw: boolean; override;
       procedure GenerateThumbnails();
       procedure onShow; override;
       procedure onHide; override;
       procedure SelectNext;
       procedure SelectPrev;
-      procedure SkipTo(Target: Cardinal);
+      procedure SkipTo(Target: cardinal);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
-      procedure ShowCatTL(Cat: Integer);// Show Cat in Top left
-      procedure ShowCatTLCustom(Caption: String);// Show Custom Text in Top left
+      procedure ShowCatTL(Cat: integer);// Show Cat in Top left
+      procedure ShowCatTLCustom(Caption: string);// Show Custom Text in Top left
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh; //Refresh Song Sorting
       procedure ChangeMusic;
@@ -154,23 +154,25 @@ type
 implementation
 
 uses
+  Math,
+  gl,
+  UCovers,
+  UDLLManager,
   UGraphic,
   UMain,
-  UCovers,
-  math,
-  gl,
-  USkins,
-  UDLLManager,
+  UMenuButton,
+  UNote,
   UParty,
   UPlaylist,
-  UMenuButton,
-  UScreenSongMenu;
+  UScreenSongMenu,
+  USkins;
 
 // ***** Public methods ****** //
 
 //Show Wrong Song when Tabs on Fix
 procedure TScreenSong.FixSelected;
-var I, I2: Integer;
+var
+  I, I2: integer;
 begin
   if CatSongs.VisibleSongs > 0 then
   begin
@@ -190,7 +192,8 @@ begin
 end;
 
 procedure TScreenSong.FixSelected2;
-var I, I2: Integer;
+var
+  I, I2: integer;
 begin
   if CatSongs.VisibleSongs > 0 then
   begin
@@ -209,15 +212,15 @@ begin
 end;
 //Show Wrong Song when Tabs on Fix End
 
-procedure TScreenSong.ShowCatTLCustom(Caption: String);// Show Custom Text in Top left
+procedure TScreenSong.ShowCatTLCustom(Caption: string);// Show Custom Text in Top left
 begin
   Text[TextCat].Text := Caption;
   Text[TextCat].Visible := true;
-  Static[StaticCat].Visible := False;
+  Static[StaticCat].Visible := false;
 end;
 
 //Show Cat in Top Left Mod
-procedure TScreenSong.ShowCatTL(Cat: Integer);
+procedure TScreenSong.ShowCatTL(Cat: integer);
 begin
   //Change
   Text[TextCat].Text := CatSongs.Song[Cat].Artist;
@@ -225,7 +228,7 @@ begin
 
   //Show
   Text[TextCat].Visible := true;
-  Static[StaticCat].Visible := True;
+  Static[StaticCat].Visible := true;
 end;
 
 procedure TScreenSong.HideCatTL;
@@ -234,7 +237,7 @@ begin
   //Text[TextCat].Visible := false;
   Static[StaticCat].Visible := false;
   //New -> Show Text specified in Theme
-  Text[TextCat].Visible := True;
+  Text[TextCat].Visible := true;
   Text[TextCat].Text := Theme.Song.TextCat.Text;
 end;
 //Show Cat in Top Left Mod End
@@ -242,7 +245,7 @@ end;
 
 // Method for input parsing. If False is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSong.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 var
   I:      integer;
   I2:     integer;
@@ -379,7 +382,7 @@ begin
         begin
           if (Songs.SongList.Count > 0) and (Mode = smNormal) then
           begin
-            ScreenSongJumpto.Visible := True;
+            ScreenSongJumpto.Visible := true;
           end;
           Exit;
         end;
@@ -451,7 +454,8 @@ begin
               SelectNext;
 
               //Fix: Not Existing Song selected:
-              //if (I+1=I2) then Inc(I2);
+              //if (I+1=I2) then
+	        Inc(I2);
 
               //Choose Song
               SkipTo(I2-I);
@@ -505,7 +509,7 @@ begin
               SelectNext;
               FixSelected;
               //SelectPrev;
-              //CatSongs.Song[0].Visible := False;
+              //CatSongs.Song[0].Visible := false;
               end
             else
             begin
@@ -605,7 +609,8 @@ begin
               if Ini.TabsAtStartup = 1 then
               begin
                 I := Interaction;
-                if I <= 0 then I := 1;
+                if I <= 0 then
+		  I := 1;
 
                 while not catsongs.Song[I].Main do
                 begin
@@ -646,7 +651,8 @@ begin
               begin
                 I := Interaction;
                 I2 := 0;
-                if I <= 0 then I := 1;
+                if I <= 0 then
+		  I := 1;
 
                 while not catsongs.Song[I].Main or (I2 = 0) do
                 begin
@@ -808,7 +814,7 @@ end;
 
 procedure TScreenSong.GenerateThumbnails();
 var
-  I: Integer;
+  I: integer;
   CoverButtonIndex: integer;
   CoverButton: TButton;
   CoverName: string;
@@ -869,7 +875,7 @@ end;
 
 procedure TScreenSong.SetScroll;
 var
-  VS, B: Integer;
+  VS, B: integer;
 begin
   VS := CatSongs.VisibleSongs;
   if VS > 0 then
@@ -913,7 +919,7 @@ begin
     Text[TextArtist].Text := '';
     Text[TextTitle].Text  := '';
     for B := 0 to High(Button) do
-      Button[B].Visible := False;
+      Button[B].Visible := false;
 
   end;
 end;
@@ -943,29 +949,37 @@ begin
 
   VisCount := 0;
   for B := 0 to High(Button) do
-    if CatSongs.Song[B].Visible then Inc(VisCount);
+    if CatSongs.Song[B].Visible then
+      Inc(VisCount);
 
   VisInt := 0;
   for B := 0 to Interaction-1 do
-    if CatSongs.Song[B].Visible then Inc(VisInt);
+    if CatSongs.Song[B].Visible then
+      Inc(VisInt);
 
 
-  if VisCount <= 6 then begin
+  if VisCount <= 6 then
+  begin
     Typ := 0;
-  end else begin
-    if VisInt <= 3 then begin
+  end
+  else
+  begin
+    if VisInt <= 3 then
+    begin
       Typ := 1;
       Count := 7;
       Ready := true;
     end;
 
-    if (VisCount - VisInt) <= 3 then begin
+    if (VisCount - VisInt) <= 3 then
+    begin
       Typ := 2;
       Count := 7;
       Ready := true;
     end;
 
-    if not Ready then begin
+    if not Ready then
+    begin
       Typ := 3;
       Src := Interaction;
     end;
@@ -974,13 +988,15 @@ begin
 
 
   // hide all buttons
-  for B := 0 to High(Button) do begin
+  for B := 0 to High(Button) do
+  begin
     Button[B].Visible := false;
     Button[B].Selectable := CatSongs.Song[B].Visible;
   end;
 
   {
-  for B := Src to Dst do begin
+  for B := Src to Dst do
+  begin
     //Button[B].Visible := true;
     Button[B].Visible := CatSongs.Song[B].Visible;
     Button[B].Selectable := Button[B].Visible;
@@ -989,9 +1005,12 @@ begin
   }
 
 
-  if Typ = 0 then begin
-    for B := 0 to High(Button) do begin
-      if CatSongs.Song[B].Visible then begin
+  if Typ = 0 then
+  begin
+    for B := 0 to High(Button) do
+    begin
+      if CatSongs.Song[B].Visible then
+      begin
         Button[B].Visible := true;
         Button[B].Y := 140 + (Placed) * 60;
         Inc(Placed);
@@ -999,10 +1018,13 @@ begin
     end;
   end;
 
-  if Typ = 1 then begin
+  if Typ = 1 then
+  begin
     B := 0;
-    while (Count > 0) do begin
-      if CatSongs.Song[B].Visible then begin
+    while (Count > 0) do
+    begin
+      if CatSongs.Song[B].Visible then
+      begin
         Button[B].Visible := true;
         Button[B].Y := 140 + (Placed) * 60;
         Inc(Placed);
@@ -1012,10 +1034,13 @@ begin
     end;
   end;
 
-  if Typ = 2 then begin
+  if Typ = 2 then
+  begin
     B := High(Button);
-    while (Count > 0) do begin
-      if CatSongs.Song[B].Visible then begin
+    while (Count > 0) do
+    begin
+      if CatSongs.Song[B].Visible then
+      begin
         Button[B].Visible := true;
         Button[B].Y := 140 + (6-Placed) * 60;
         Inc(Placed);
@@ -1025,11 +1050,14 @@ begin
     end;
   end;
 
-  if Typ = 3 then begin
+  if Typ = 3 then
+  begin
     B := Src;
     Count := 4;
-    while (Count > 0) do begin
-      if CatSongs.Song[B].Visible then begin
+    while (Count > 0) do
+    begin
+      if CatSongs.Song[B].Visible then
+      begin
         Button[B].Visible := true;
         Button[B].Y := 140 + (3+Placed) * 60;
         Inc(Placed);
@@ -1041,8 +1069,10 @@ begin
     B := Src-1;
     Placed := 0;
     Count := 3;
-    while (Count > 0) do begin
-      if CatSongs.Song[B].Visible then begin
+    while (Count > 0) do
+    begin
+      if CatSongs.Song[B].Visible then
+      begin
         Button[B].Visible := true;
         Button[B].Y := 140 + (2-Placed) * 60;
         Inc(Placed);
@@ -1067,7 +1097,8 @@ begin
   for B := 0 to High(Button) do
     Button[B].X := 300 + (B - Interaction) * 260;
 
-  if Length(Button) >= 3 then begin
+  if Length(Button) >= 3 then
+  begin
     if Interaction = 0 then
       Button[High(Button)].X := 300 - 260;
 
@@ -1077,7 +1108,8 @@ begin
 
   // circle
   {
-  for B := 0 to High(Button) do begin
+  for B := 0 to High(Button) do
+  begin
     Factor := (B - Interaction); // 0 to center, -1: to left, +1 to right
     Factor2 := Factor / Length(Button);
     Button[B].X := 300 + 10000 * sin(2*pi*Factor2);
@@ -1100,13 +1132,14 @@ begin
   begin
     Button[B].X := 300 + (B - SongCurrent) * 260;
     if (Button[B].X < -Button[B].W) or (Button[B].X > 800) then
-      Button[B].Visible := False
+      Button[B].Visible := false
     else
-      Button[B].Visible := True;
+      Button[B].Visible := true;
   end;
 
   {
-  if Length(Button) >= 3 then begin
+  if Length(Button) >= 3 then
+  begin
     if Interaction = 0 then
       Button[High(Button)].X := 300 - 260;
 
@@ -1117,7 +1150,8 @@ begin
 
   // circle
   {
-  for B := 0 to High(Button) do begin
+  for B := 0 to High(Button) do
+  begin
     Factor := (B - Interaction); // 0 to center, -1: to left, +1 to right
     Factor2 := Factor / Length(Button);
     Button[B].X := 300 + 10000 * sin(2*pi*Factor2);
@@ -1174,10 +1208,10 @@ procedure TScreenSong.SetScroll5;
 var
   B:      integer;
   Angle:    real;
-  Pos:    Real;
+  Pos:    real;
   VS:     integer;
   Padding:     real;
-  X:        Real;
+  X:        real;
   {
   Theme.Song.CoverW: circle radius
   Theme.Song.CoverX: x-pos. of the left edge of the selected cover
@@ -1249,13 +1283,13 @@ end;
 procedure TScreenSong.SetScroll6; // rotate (slotmachine style)
 var
   B:      integer;
-  Angle:    real;
-  Pos:    Real;
+  Angle:  real;
+  Pos:    real;
   VS:     integer;
-  diff:     real;
-  X:        Real;
-  Factor:    real;
-  Z, Z2:      real;
+  diff:   real;
+  X:      real;
+  Factor: real;
+  Z, Z2:  real;
 begin
   VS := CatSongs.VisibleSongs;
   if VS <= 5 then
@@ -1264,22 +1298,23 @@ begin
     for B := 0 to High(Button) do
     begin
       Button[B].Visible := CatSongs.Song[B].Visible;
-      if Button[B].Visible then begin // optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
+      if Button[B].Visible then // optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
+      begin
+  
+	Factor := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
 
-      Factor := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
-
-      Z := (1 + cos(Factor)) / 2;
-      Z2 := (1 + 2*Z) / 3;
+	Z := (1 + cos(Factor)) / 2;
+	Z2 := (1 + 2*Z) / 3;
 
 
-      Button[B].Y := Theme.Song.Cover.Y + (0.185 * Theme.Song.Cover.H * VS * sin(Factor)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
-      Button[B].Z := Z / 2 + 0.3;
+	Button[B].Y := Theme.Song.Cover.Y + (0.185 * Theme.Song.Cover.H * VS * sin(Factor)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
+	Button[B].Z := Z / 2 + 0.3;
 
-      Button[B].W := Theme.Song.Cover.H * Z2;
+	Button[B].W := Theme.Song.Cover.H * Z2;
 
-      //Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
-      Button[B].X := Theme.Song.Cover.X  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
-      Button[B].H := Button[B].W;
+	//Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
+	Button[B].X := Theme.Song.Cover.X  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
+	Button[B].H := Button[B].W;
       end;
     end;
   end
@@ -1287,10 +1322,10 @@ begin
   begin
     //Change Pos of all Buttons
     for B := low(Button) to high(Button) do
-      begin
-          Button[B].Visible := CatSongs.Song[B].Visible; //Adjust Visibility
+    begin
+      Button[B].Visible := CatSongs.Song[B].Visible; //Adjust Visibility
       if Button[B].Visible then //Only Change Pos for Visible Buttons
-        begin
+      begin
         Pos := (CatSongs.VisibleIndex(B) - SongCurrent);
         if (Pos < -VS/2) then
           Pos := Pos + VS
@@ -1300,7 +1335,7 @@ begin
         if (Abs(Pos) < 2.5) then {fixed Positions}
         begin
           Angle := Pi * (Pos / 5);
-          //Button[B].Visible := False;
+          //Button[B].Visible := false;
 
           Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle*0.8));//Power(Z2, 3);
 
@@ -1323,8 +1358,10 @@ begin
         begin {Behind the Front Covers}
 
           // limit-bg-covers hack
-          if (abs(VS/2-abs(Pos))>10) then Button[B].Visible:=False;
-          if VS > 25 then VS:=25;
+          if (abs(VS/2-abs(Pos))>10) then
+	    Button[B].Visible := false;
+          if VS > 25 then
+	    VS:=25;
           // end of limit-bg-covers hack
 
           if Pos < 0 then
@@ -1442,9 +1479,9 @@ end;
 
 function TScreenSong.Draw: boolean;
 var
-  dx:   real;
-  dt:   real;
-  I:    Integer;
+  dx: real;
+  dt: real;
+  I:  integer;
 begin
   dx := SongTarget-SongCurrent;
   dt := TimeSkip * 7;
@@ -1455,7 +1492,8 @@ begin
   SongCurrent := SongCurrent + dx*dt;
 
   {
-  if SongCurrent > Catsongs.VisibleSongs then begin
+  if SongCurrent > Catsongs.VisibleSongs then
+  begin
     SongCurrent := SongCurrent - Catsongs.VisibleSongs;
     SongTarget := SongTarget - Catsongs.VisibleSongs;
   end;
@@ -1521,8 +1559,8 @@ end;
 
 procedure TScreenSong.SelectNext;
 var
-  Skip:   integer;
-  VS:     Integer;
+  Skip: integer;
+  VS:   integer;
 begin
   VS := CatSongs.VisibleSongs;
 
@@ -1541,7 +1579,8 @@ begin
     Interaction := (Interaction + Skip) mod Length(Interactions);
 
     // try to keep all at the beginning
-    if SongTarget > VS-1 then begin
+    if SongTarget > VS-1 then
+    begin
       SongTarget := SongTarget - VS;
       SongCurrent := SongCurrent - VS;
     end;
@@ -1555,8 +1594,8 @@ end;
 
 procedure TScreenSong.SelectPrev;
 var
-  Skip:   integer;
-  VS:     Integer;
+  Skip: integer;
+  VS:   integer;
 begin
   VS := CatSongs.VisibleSongs;
 
@@ -1566,13 +1605,15 @@ begin
 
     Skip := 1;
 
-    while (not CatSongs.Song[(Interaction - Skip + Length(Interactions)) mod Length(Interactions)].Visible) do Inc(Skip);
+    while (not CatSongs.Song[(Interaction - Skip + Length(Interactions)) mod Length(Interactions)].Visible) do
+      Inc(Skip);
     SongTarget := SongTarget - 1;//Skip;
 
     Interaction := (Interaction - Skip + Length(Interactions)) mod Length(Interactions);
 
     // try to keep all at the beginning
-    if SongTarget < 0 then begin
+    if SongTarget < 0 then
+    begin
       SongTarget := SongTarget + CatSongs.VisibleSongs;
       SongCurrent := SongCurrent + CatSongs.VisibleSongs;
     end;
@@ -1652,9 +1693,9 @@ begin
   end;
 end;
 
-procedure TScreenSong.SkipTo(Target: Cardinal);
+procedure TScreenSong.SkipTo(Target: cardinal);
 var
-  i:      integer;
+  i: integer;
 begin
   UnLoadDetailedCover;
 
@@ -1669,7 +1710,7 @@ end;
 
 procedure TScreenSong.SelectRandomSong;
 var
-  I, I2: Integer;
+  I, I2: integer;
 begin
   case PlaylistMan.Mode of
       smNormal:  //All Songs Just Select Random Song
@@ -1748,11 +1789,11 @@ begin
     end
     else
     begin
-      Static[StaticTeam1Joker1].Visible := False;
-      Static[StaticTeam1Joker2].Visible := False;
-      Static[StaticTeam1Joker3].Visible := False;
-      Static[StaticTeam1Joker4].Visible := False;
-      Static[StaticTeam1Joker5].Visible := False;
+      Static[StaticTeam1Joker1].Visible := false;
+      Static[StaticTeam1Joker2].Visible := false;
+      Static[StaticTeam1Joker3].Visible := false;
+      Static[StaticTeam1Joker4].Visible := false;
+      Static[StaticTeam1Joker5].Visible := false;
     end;
 
     if (PartySession.Teams.NumTeams >= 2) then
@@ -1765,11 +1806,11 @@ begin
     end
     else
     begin
-      Static[StaticTeam2Joker1].Visible := False;
-      Static[StaticTeam2Joker2].Visible := False;
-      Static[StaticTeam2Joker3].Visible := False;
-      Static[StaticTeam2Joker4].Visible := False;
-      Static[StaticTeam2Joker5].Visible := False;
+      Static[StaticTeam2Joker1].Visible := false;
+      Static[StaticTeam2Joker2].Visible := false;
+      Static[StaticTeam2Joker3].Visible := false;
+      Static[StaticTeam2Joker4].Visible := false;
+      Static[StaticTeam2Joker5].Visible := false;
     end;
 
     if (PartySession.Teams.NumTeams >= 3) then
@@ -1782,40 +1823,40 @@ begin
     end
     else
     begin
-      Static[StaticTeam3Joker1].Visible := False;
-      Static[StaticTeam3Joker2].Visible := False;
-      Static[StaticTeam3Joker3].Visible := False;
-      Static[StaticTeam3Joker4].Visible := False;
-      Static[StaticTeam3Joker5].Visible := False;
+      Static[StaticTeam3Joker1].Visible := false;
+      Static[StaticTeam3Joker2].Visible := false;
+      Static[StaticTeam3Joker3].Visible := false;
+      Static[StaticTeam3Joker4].Visible := false;
+      Static[StaticTeam3Joker5].Visible := false;
     end;
   *)
   end
   else
   begin //Hide all
-    Static[StaticTeam1Joker1].Visible := False;
-    Static[StaticTeam1Joker2].Visible := False;
-    Static[StaticTeam1Joker3].Visible := False;
-    Static[StaticTeam1Joker4].Visible := False;
-    Static[StaticTeam1Joker5].Visible := False;
+    Static[StaticTeam1Joker1].Visible := false;
+    Static[StaticTeam1Joker2].Visible := false;
+    Static[StaticTeam1Joker3].Visible := false;
+    Static[StaticTeam1Joker4].Visible := false;
+    Static[StaticTeam1Joker5].Visible := false;
 
-    Static[StaticTeam2Joker1].Visible := False;
-    Static[StaticTeam2Joker2].Visible := False;
-    Static[StaticTeam2Joker3].Visible := False;
-    Static[StaticTeam2Joker4].Visible := False;
-    Static[StaticTeam2Joker5].Visible := False;
+    Static[StaticTeam2Joker1].Visible := false;
+    Static[StaticTeam2Joker2].Visible := false;
+    Static[StaticTeam2Joker3].Visible := false;
+    Static[StaticTeam2Joker4].Visible := false;
+    Static[StaticTeam2Joker5].Visible := false;
 
-    Static[StaticTeam3Joker1].Visible := False;
-    Static[StaticTeam3Joker2].Visible := False;
-    Static[StaticTeam3Joker3].Visible := False;
-    Static[StaticTeam3Joker4].Visible := False;
-    Static[StaticTeam3Joker5].Visible := False;
+    Static[StaticTeam3Joker1].Visible := false;
+    Static[StaticTeam3Joker2].Visible := false;
+    Static[StaticTeam3Joker3].Visible := false;
+    Static[StaticTeam3Joker4].Visible := false;
+    Static[StaticTeam3Joker5].Visible := false;
   end;
 end;
 
 procedure TScreenSong.SetStatics;
 var
-  I:       Integer;
-  Visible: Boolean;
+  I:       integer;
+  Visible: boolean;
 begin
   //Set Visibility of Party Statics and Text
   Visible := (Mode = smPartyMode);
@@ -1859,7 +1900,7 @@ begin
   CatSongs.Selected := Interaction;
   StopMusicPreview();
 
-  ScreenName.Goto_SingScreen := True;
+  ScreenName.Goto_SingScreen := true;
   FadeTo(@ScreenName);
 end;
 

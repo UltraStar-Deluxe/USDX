@@ -128,7 +128,7 @@ uses
   UGraphic,
   UGraphicClasses,
   ULanguage,
-  UMain,
+  UNote,
   UPath,
   URecord, 
   USkins;

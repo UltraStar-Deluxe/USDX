@@ -154,10 +154,10 @@ uses
   UScreenSong,
   UMenuStatic,
   UTime,
-  UMain,
   UIni,
   ULog,
-  ULanguage;
+  ULanguage,
+  UNote;
 
 function TScreenScore.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
