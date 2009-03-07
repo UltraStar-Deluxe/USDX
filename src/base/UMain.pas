@@ -35,23 +35,11 @@ interface
 
 uses
   SysUtils,
-  Classes,
-  SDL,
-  UMusic,
-  URecord,
-  UTime,
-  UDisplay,
-  UIni,
-  ULog,
-  ULyrics,
-  UScreenSing,
-  USong,
-  gl;
+  SDL;
 
 var
-
-  Done:        boolean;
-  Restart:     boolean;
+  Done:    boolean;
+  Restart: boolean;
 
 procedure Main;
 procedure MainLoop;
@@ -77,28 +65,34 @@ implementation
 
 uses
   Math,
-  StrUtils,
-  USongs,
-  UJoystick,
-  UCommandLine,
-  ULanguage,
-  //SDL_ttf,
-  USkins,
-  UCovers,
-  UCatCovers,
-  UDataBase,
-  UPlaylist,
-  UDLLManager,
+  gl,
+{
+  SDL_ttf,
   UParty,
-  UConfig,
   UCore,
+}
+  UCatCovers,
+  UCommandLine,
   UCommon,
+  UConfig,
+  UCovers,
+  UDataBase,
+  UDisplay,
+  UDLLManager,
   UGraphic,
   UGraphicClasses,
+  UIni,
+  UJoystick,
+  ULanguage,
+  ULog,
   UPath,
-  UPluginDefs,
+  UPlaylist,
+  UMusic,
   UPlatform,
-  UThemes;
+  USkins,
+  USongs,
+  UThemes,
+  UTime;
 
 procedure Main;
 var
