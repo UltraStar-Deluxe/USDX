@@ -119,7 +119,7 @@ begin
     DecimalSeparator := '.';
 
     //------------------------------
-    // StartUp - Create Classes and Load Files
+    // StartUp - create classes and load files
     //------------------------------
 
     // initialize SDL
@@ -151,14 +151,14 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Language', 1);
 
-    {
+{
     // SDL_ttf (Not used yet, maybe in version 1.5)
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize SDL_ttf', 'Initialization');
     TTF_Init();
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Initializing SDL_ttf', 1);
-    }
+}
 
     // Skin
     Log.BenchmarkStart(1);
@@ -173,7 +173,7 @@ begin
     Ini := TIni.Create;
     Ini.Load;
 
-    //it's possible that this is the first run, create a .ini file if neccessary
+    // it is possible that this is the first run, create a .ini file if neccessary
     Log.LogStatus('Write Ini', 'Initialization');
     Ini.Save;
 
@@ -236,13 +236,14 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading PluginManager', 1);
 
-    {// Party Mode Manager
+{
+    // Party Mode Manager
     Log.BenchmarkStart(1);
     Log.LogStatus('PartySession Manager', 'Initialization');
     PartySession := TPartySession.Create;   //Load PartySession
-
     Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading PartySession Manager', 1);      }
+    Log.LogBenchmark('Loading PartySession Manager', 1);
+}
 
     // Graphics
     Log.BenchmarkStart(1);
@@ -292,13 +293,15 @@ begin
     Log.LogBenchmark('Loading Time', 0);
 
     Log.LogStatus('Creating Core', 'Initialization');
-    {Core := TCore.Create(
+{
+    Core := TCore.Create(
       USDXShortVersionStr,
       MakeVersion(USDX_VERSION_MAJOR,
                   USDX_VERSION_MINOR,
                   USDX_VERSION_RELEASE,
                   chr(0))
-    );  }
+    );
+}
 
     Log.LogStatus('Running Core', 'Initialization');
     //Core.Run;
@@ -395,15 +398,15 @@ begin
       end;
       SDL_MOUSEBUTTONDOWN:
       begin
-      {
+{
         with Event.button do
         begin
-          if State = SDL_BUTTON_LEFT Then
+          if State = SDL_BUTTON_LEFT then
           begin
             //
           end;
         end;
-      }
+}
       end;
       SDL_VIDEORESIZE:
       begin
@@ -412,7 +415,7 @@ begin
         // Note: do NOT call SDL_SetVideoMode on Windows and MacOSX here.
         // This would create a new OpenGL render-context and all texture data
         // would be invalidated.
-        // On Linux the mode MUST be resetted, otherwise graphics will be corrupted.
+        // On Linux the mode MUST be reset, otherwise graphics will be corrupted.
         {$IF Defined(Linux) or Defined(FreeBSD)}
         if boolean( Ini.FullScreen ) then
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN)
@@ -434,7 +437,7 @@ begin
 
             // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
             // reload all texture data (-> whitescreen bug).
-            // Only Linux (and FreeBSD) is able to handle screen-switching this way.
+            // Only Linux and FreeBSD are able to handle screen-switching this way.
             {$IF Defined(Linux) or Defined(FreeBSD)}
             if boolean( Ini.FullScreen ) then
             begin
