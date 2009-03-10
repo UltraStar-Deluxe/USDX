@@ -146,8 +146,10 @@ type
 implementation
 
 uses
+  StrUtils,
   TextGL,
   UIni,
+  UPath,
   UMusic,  //needed for Lines
   UNote;   //needed for Player
 
@@ -156,7 +158,42 @@ begin
   inherited;
 end;
 
-constructor TSong.Create( const aFileName : WideString );
+constructor TSong.Create( const aFileName: WideString );
+  // This may be changed, when we rewrite song select code.
+  // it is some kind of dirty, but imho the best possible
+  // solution as we do atm not support nested categorys.
+  // it works like the folder sorting in 1.0.1a
+  // folder is set to the first folder under the songdir
+  // so songs ~/.ultrastardx/songs/punk is in the same
+  // category as songs in shared/ultrastardx/songs are.
+  // note: folder is just the name of a category it has
+  //       nothing to do with the path used for file loading
+  function GetFolderCategory: WideString;
+    var
+      I: Integer;
+      P: Integer; //position of next path delimiter
+  begin
+    Result := 'Unknown'; //default folder category, if we can't locate the song dir
+
+    for I := 0 to SongPaths.Count-1 do
+      if (AnsiStartsText(SongPaths.Strings[I], aFilename)) then
+      begin
+        P := PosEx(PathDelim, aFilename, Length(SongPaths.Strings[I]) + 1);
+
+        If (P > 0) then
+        begin
+          // we have found the category name => get it
+          Result := copy(self.Path, Length(SongPaths.Strings[I]) + 1, P - Length(SongPaths.Strings[I]) - 1);
+        end
+        else
+        begin
+          // songs are in the "root" of the songdir => use songdir for the categorys name 
+          Result := SongPaths.Strings[I];
+        end;
+
+        Exit;
+      end;
+  end;
 begin
   inherited Create();
 
@@ -169,7 +206,7 @@ begin
   if fileexists( aFileName ) then
   begin
     self.Path     := ExtractFilePath( aFileName );
-    self.Folder   := ExtractFilePath( aFileName );
+    self.Folder   := GetFolderCategory;
     self.FileName := ExtractFileName( aFileName );
     (*
     if ReadTXTHeader( aFileName ) then
