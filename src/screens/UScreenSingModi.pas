@@ -109,11 +109,19 @@ var
   CustomSounds: array of TCustomSoundEntry;
 
 //Procedured for Plugin
-function LoadTex   (const Name: PChar; Typ: TTextureType): TsmallTexture; stdcall;
-//function Translate (const Name: PChar): PChar; stdcall;
-procedure Print (const Style, Size: Byte; const X, Y: Real; const Text: PChar); stdcall;       //Procedure to Print Text
-function LoadSound  (const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
-procedure PlaySound (const Index: Cardinal); stdcall;       //Plays a Custom Sound
+function LoadTex(const Name: PChar; Typ: TTextureType): TsmallTexture;
+  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+//function Translate (const Name: PChar): PChar;
+//  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+//Procedure to Print Text
+procedure Print(const Style, Size: Byte; const X, Y: Real; const Text: PChar);
+  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+//Procedure that loads a Custom Sound
+function LoadSound(const Name: PChar): Cardinal;
+  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+//Plays a Custom Sound
+procedure PlaySound(const Index: Cardinal);
+  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
 //Utilys
 function ToSentences(Const Lines: TLines): TSentences;
@@ -665,7 +673,7 @@ Winner := DllMan.PluginFinish(PlayerInfo);
 //DLLMan.UnLoadPlugin;
 end;
 
-function LoadTex (const Name: PChar; Typ: TTextureType): TsmallTexture; stdcall;
+function LoadTex(const Name: PChar; Typ: TTextureType): TsmallTexture;
 var
   Texname, EXT: String;
   Tex: TTexture;
@@ -691,7 +699,8 @@ begin
   Result := PChar(Language.Translate(String(Name)));
 end; }
 
-procedure Print(const Style, Size: Byte; const X, Y: Real; const Text: PChar); stdcall;       //Procedure to Print Text
+//Procedure to Print Text
+procedure Print(const Style, Size: Byte; const X, Y: Real; const Text: PChar);
 begin
   SetFontItalic ((Style and 128) = 128);
   SetFontStyle(Style and 7);
@@ -702,7 +711,8 @@ begin
   glPrint (Language.Translate(String(Text)));
 end;
 
-function LoadSound(const Name: PChar): Cardinal; stdcall;       //Procedure that loads a Custom Sound
+//Procedure that loads a Custom Sound
+function LoadSound(const Name: PChar): Cardinal;
 var
   Stream: TAudioPlaybackStream;
   i: Integer;
@@ -731,7 +741,8 @@ begin
   Result := High(CustomSounds);
 end;
 
-procedure PlaySound(const Index: Cardinal); stdcall;       //Plays a Custom Sound
+//Plays a Custom Sound
+procedure PlaySound(const Index: Cardinal);
 begin
   if (Index <= High(CustomSounds)) then
     AudioPlayback.PlaySound(CustomSounds[Index].Stream);

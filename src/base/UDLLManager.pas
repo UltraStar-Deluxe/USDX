@@ -69,8 +69,6 @@ var
   DLLMan: TDLLMan;
 
 const
-  DLLPath = 'Plugins';
-
 {$IF Defined(MSWINDOWS)}
   DLLExt  = '.dll';
 {$ELSEIF Defined(DARWIN)}
@@ -87,6 +85,7 @@ uses
   {$ELSE}
   dynlibs,
   {$ENDIF}
+  UPath,
   ULog,
   SysUtils;
 
@@ -104,7 +103,7 @@ var
   SR:     TSearchRec;
 begin
 
-  if FindFirst(DLLPath +PathDelim+ '*' + DLLExt, faAnyFile	, SR) = 0 then
+  if FindFirst(PluginPath + '*' + DLLExt, faAnyFile	, SR) = 0 then
   begin
     repeat
       SetLength(Plugins, Length(Plugins)+1);
@@ -174,18 +173,18 @@ begin
       exit;  }
 
   //Load Libary
-  hLibg := LoadLibrary(PChar(DLLPath +PathDelim+ Filename));
+  hLibg := LoadLibrary(PChar(PluginPath + Filename));
   //If Loaded
   if (hLibg <> 0) then
   begin
     //Load Info Procedure
-    @Info := GetProcAddress (hLibg, PChar('PluginInfo'));
+    @Info := GetProcAddress(hLibg, PChar('PluginInfo'));
 
     //If Loaded
     if (@Info <> nil) then
     begin
       //Load PluginInfo
-      Info (Plugins[No]);
+      Info(Plugins[No]);
       Result := True;
     end
     else
@@ -193,22 +192,22 @@ begin
 
     FreeLibrary (hLibg);
   end
-    else
-      Log.LogError('Could not Load Plugin "' + Filename + '": Libary not Loaded');
+  else
+    Log.LogError('Could not Load Plugin "' + Filename + '": Libary not Loaded');
 end;
 
 function TDLLMan.LoadPlugin(No: Cardinal): boolean;
 begin
   Result := False;
   //Load Libary
-  hLib := LoadLibrary(PChar(DLLPath +PathDelim+ PluginPaths[No]));
+  hLib := LoadLibrary(PChar(PluginPath + PluginPaths[No]));
   //If Loaded
   if (hLib <> 0) then
   begin
     //Load Info Procedure
-    @P_Init := GetProcAddress (hLib, PChar('Init'));
-    @P_Draw := GetProcAddress (hLib, PChar('Draw'));
-    @P_Finish := GetProcAddress (hLib, PChar('Finish'));
+    @P_Init := GetProcAddress (hLib, 'Init');
+    @P_Draw := GetProcAddress (hLib, 'Draw');
+    @P_Finish := GetProcAddress (hLib, 'Finish');
 
     //If Loaded
     if (@P_Init <> nil) And (@P_Draw <> nil) And (@P_Finish <> nil) then
