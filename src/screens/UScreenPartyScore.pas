@@ -93,22 +93,21 @@ begin
       SDLK_BACKSPACE :
         begin
           AudioPlayback.PlaySound(SoundLib.Start);
-          {if (PartySession.CurRound < High(PartySession.Rounds)) then
+          if (PartySession.CurRound < High(PartySession.Rounds)) then
             FadeTo(@ScreenPartyNewRound)
-          else  // to-do : Party
+          else
           begin
-            PartySession.EndRound;  }
+            PartySession.EndRound;
             FadeTo(@ScreenPartyWin);
-          //end;
+          end;
         end;
 
       SDLK_RETURN:
         begin
           AudioPlayback.PlaySound(SoundLib.Start);
-          // to-do : Party
-          {if (PartySession.CurRound < High(PartySession.Rounds)) then
+          if (PartySession.CurRound < High(PartySession.Rounds)) then
             FadeTo(@ScreenPartyNewRound)
-          else }
+          else
             FadeTo(@ScreenPartyWin);
         end;
     end;
@@ -220,11 +219,11 @@ begin
   if Static[StaticTeam2].Texture.ScaleW > 99 then Static[StaticTeam2].Texture.ScaleW := 99;
   if Static[StaticTeam3].Texture.ScaleW > 99 then Static[StaticTeam3].Texture.ScaleW := 99;
 
-  //End Last Round // to-do : Party
-  //PartySession.EndRound;
+  //End Last Round
+  PartySession.EndRound;
 
   //Set Winnertext
-  //Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.GetWinnerString(PartySession.CurRound)]);
+  Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.GetWinnerString(PartySession.CurRound)]);
 
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
   begin

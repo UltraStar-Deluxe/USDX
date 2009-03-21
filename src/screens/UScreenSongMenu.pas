@@ -399,19 +399,16 @@ begin
       begin
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_JOKER');
-        // to-do : Party
-{
-	Button[0].Visible := (PartySession.Teams.NumTeams >= 1) and (PartySession.Teams.Teaminfo[0].Joker > 0);
+
+        Button[0].Visible := (PartySession.Teams.NumTeams >= 1) and (PartySession.Teams.Teaminfo[0].Joker > 0);
         Button[1].Visible := (PartySession.Teams.NumTeams >= 2) and (PartySession.Teams.Teaminfo[1].Joker > 0);
         Button[2].Visible := (PartySession.Teams.NumTeams >= 3) and (PartySession.Teams.Teaminfo[2].Joker > 0);
-}
         Button[3].Visible := true;
         SelectsS[0].Visible := false;
-{
-	Button[0].Text[0].Text := String(PartySession.Teams.Teaminfo[0].Name);
+
+        Button[0].Text[0].Text := String(PartySession.Teams.Teaminfo[0].Name);
         Button[1].Text[0].Text := String(PartySession.Teams.Teaminfo[1].Name);
         Button[2].Text[0].Text := String(PartySession.Teams.Teaminfo[2].Name);
-}
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
 
         // set right interaction
@@ -422,10 +419,10 @@ begin
             if (not Button[2].Visible) then
               Interaction := 4
             else
-	      Interaction := 2;
+              Interaction := 2;
           end
           else
-	    Interaction := 1;
+            Interaction := 1;
         end;
 
       end;

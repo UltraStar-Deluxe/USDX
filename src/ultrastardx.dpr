@@ -204,22 +204,6 @@ uses
   //------------------------------
   //Includes - Plugin Support
   //------------------------------
-  {UPluginDefines    in 'pluginsupport\UPluginDefines.pas',
-  UPartyDefines     in 'pluginsupport\UPartyDefines.pas',
-
-  UPartyMode        in 'pluginsupport\UPartyMode.pas',
-  UPartyManager     in 'pluginsupport\UPartyManager.pas',
-  UPartyModePlugin  in 'pluginsupport\UPartyModePlugin.pas',
-  UPluginLoader     in 'pluginsupport\UPluginLoader.pas',    }
-
-  UModules          in 'base\UModules.pas',          //List of Modules to Load
-  UHooks            in 'base\UHooks.pas',            //Hook Managing
-  UServices         in 'base\UServices.pas',         //Service Managing
-  UCore             in 'base\UCore.pas',             //Core, Maybe remove this
-  UCoreModule       in 'base\UCoreModule.pas',       //^
-  UPluginInterface  in 'base\UPluginInterface.pas',  //Interface offered by Core to Plugins
-  UPluginLoader     in 'base\UPluginLoader.pas',     //New Plugin Loader Module
-
   UParty            in 'base\UParty.pas',            // TODO: rewrite Party Manager as Module, reomplent ability to offer party Mody by Plugin
 
   //------------------------------
@@ -331,8 +315,6 @@ uses
   //Includes - Modi SDK
   //------------------------------
   ModiSDK       in '..\plugins\SDK\ModiSDK.pas', //Old SDK, will be deleted soon
-  UPluginDefs   in '..\plugins\SDK\UPluginDefs.pas', //New SDK, not only Modis
-  UPartyDefs    in '..\plugins\SDK\UPartyDefs.pas', //Headers to register Party Modes
 
   SysUtils;
 

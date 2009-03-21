@@ -127,9 +127,9 @@ begin
 end;
 
 procedure TScreenPartyWin.onShow;
-//var
-// I: Integer; // Auto Removed, Unused Variable
-// Placing: Integer; // Auto Removed, Unused Variable
+var
+  I: Integer;
+  Placing: TeamOrderArray;
 
   Function GetTeamColor(Team: Byte): Cardinal;
   var
@@ -143,13 +143,12 @@ procedure TScreenPartyWin.onShow;
 begin
   inherited;
 
-  // to-do : Party
   //Get Team Placing
-  //Placing := PartySession.GetTeamOrder;
+  Placing := PartySession.GetTeamOrder;
 
   //Set Winnertext
-  //Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.Teams.Teaminfo[Placing[0]].Name]);
-  {if (PartySession.Teams.NumTeams >= 1) then
+  Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.Teams.Teaminfo[Placing[0]].Name]);
+  if (PartySession.Teams.NumTeams >= 1) then
   begin
     Text[TextScoreTeam1].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[0]].Score);
     Text[TextNameTeam1].Text := String(PartySession.Teams.TeamInfo[Placing[0]].Name);
@@ -276,7 +275,7 @@ begin
     Static[StaticTeam3].Visible := False;
     Static[StaticTeam3BG].Visible := False;
     Static[StaticTeam3Deco].Visible := False;
-  end;   }
+  end;
 end;
 
 procedure TScreenPartyWin.SetAnimationProgress(Progress: real);

@@ -126,12 +126,10 @@ uses
   UDLLManager,
   UParty,
   UConfig,
-  UCore,
   UCommon,
   UGraphic,
   UGraphicClasses,
   UPath,
-  UPluginDefs,
   UPlatform,
   UThemes;
 
