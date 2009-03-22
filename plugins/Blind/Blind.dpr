@@ -8,7 +8,7 @@ uses
   ModiSDK in '..\SDK\ModiSDK.pas';
 
 //Gave the Plugins Info
-procedure PluginInfo (var Info: TPluginInfo); stdcall;
+procedure PluginInfo (var Info: TPluginInfo); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 begin
   Info.Name    := 'PLUGIN_BLIND_NAME';
 
@@ -45,13 +45,13 @@ begin
 end;
 
 //Executed on Game Start //If True Game begins, else Failure
-function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean; stdcall;
+function Init (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 begin
 Result := True;
 end;
 
 //Executed everytime the Screen is Drawed //If False The Game finishes
-function Draw (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean; stdcall;
+function Draw (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 var
 I: Integer;
 begin
@@ -59,7 +59,7 @@ Result := True;
 end;
 
 //Is Executed on Finish, Returns the Playernum of the Winner
-function Finish (var Playerinfo: TPlayerinfo): byte; stdcall;
+function Finish (var Playerinfo: TPlayerinfo): byte; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 var
   I:Integer;
   MaxScore: Word;
