@@ -194,8 +194,8 @@ const
 
   IBackgroundMusic:  array[0..1] of string  = ('Off', 'On');
 
-  ITextureSize:      array[0..2] of string  = ('128', '256', '512');
-  ITextureSizeVals:  array[0..2] of integer = ( 128,   256,   512);
+  ITextureSize:      array[0..3] of string  = ('64', '128', '256', '512');
+  ITextureSizeVals:  array[0..3] of integer = ( 64,   128,   256,   512);
 
   ISingWindow:       array[0..1] of string  = ('Small', 'Big');
 
