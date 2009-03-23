@@ -266,8 +266,8 @@ end;
 
 procedure TSongs.BrowseDir(Dir: widestring);
 begin
- BrowseTXTFiles(Dir);
- BrowseXMLFiles(Dir);
+  BrowseTXTFiles(Dir);
+  BrowseXMLFiles(Dir);
 end;
 
 procedure TSongs.BrowseTXTFiles(Dir: widestring);
