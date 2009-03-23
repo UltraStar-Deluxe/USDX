@@ -43,9 +43,9 @@ uses
 
 type
   TDirectoryEntry = record
-    Name        : WideString;
-    IsDirectory : boolean;
-    IsFile      : boolean;
+    Name:        WideString;
+    IsDirectory: boolean;
+    IsFile:      boolean;
   end;
 
   TDirectoryEntryArray = array of TDirectoryEntry;
@@ -54,12 +54,12 @@ type
     function GetExecutionDir(): string;
     procedure Init; virtual;
     function DirectoryFindFiles(Dir, Filter: WideString; ReturnAllSubDirs: boolean): TDirectoryEntryArray; virtual; abstract;
-    function TerminateIfAlreadyRunning(var WndTitle : string): boolean; virtual;
+    function TerminateIfAlreadyRunning(var WndTitle: string): boolean; virtual;
     function FindSongFile(Dir, Mask: WideString): WideString; virtual;
     procedure Halt; virtual;
-    function GetLogPath        : WideString; virtual; abstract;
-    function GetGameSharedPath : WideString; virtual; abstract;
-    function GetGameUserPath   : WideString; virtual; abstract;
+    function GetLogPath:        WideString; virtual; abstract;
+    function GetGameSharedPath: WideString; virtual; abstract;
+    function GetGameUserPath:   WideString; virtual; abstract;
     function CopyFile(const Source, Target: WideString; FailIfExists: boolean): boolean; virtual;
   end;
 
@@ -79,13 +79,13 @@ uses
   ULog;
 
 
-// I have modified it to use the Platform_singleton in this location ( in the implementaiton )
+// I modified it to use the Platform_singleton in this location (in the implementation)
 // so that this variable can NOT be overwritten from anywhere else in the application.
 // the accessor function platform, emulates all previous calls to work the same way.  
 var
-  Platform_singleton : TPlatform;
+  Platform_singleton: TPlatform;
 
-function Platform : TPlatform;
+function Platform: TPlatform;
 begin
   Result := Platform_singleton;
 end;
@@ -117,7 +117,7 @@ end;
 (**
  * Default TerminateIfAlreadyRunning() implementation
  *)
-function TPlatform.TerminateIfAlreadyRunning(var WndTitle : string): Boolean;
+function TPlatform.TerminateIfAlreadyRunning(var WndTitle: string): boolean;
 begin
   Result := false;
 end;
@@ -143,7 +143,7 @@ const
 var
   SourceFile, TargetFile: TFileStream;
   FileCopyBuffer: array [0..COPY_BUFFER_SIZE-1] of byte; // temporary copy-buffer.
-  NumberOfBytes: integer; // number of bytes read from SourceFile
+  NumberOfBytes:  integer; // number of bytes read from SourceFile
 begin
   Result := false;
   SourceFile := nil;
