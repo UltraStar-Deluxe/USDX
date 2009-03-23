@@ -55,36 +55,8 @@ uses UMenu,
 type
   TScreenSingModi = class(TScreenSing)
     protected
-    //paused: boolean; //Pause Mod
-    //PauseTime: Real;
-    //NumEmptySentences: integer;
+    
     public
-      //TextTime:           integer;
-
-      //StaticP1:           integer;
-      //StaticP1ScoreBG:    integer;
-      //TextP1:             integer;
-      //TextP1Score:        integer;
-
-      //StaticP2R:          integer;
-      //StaticP2RScoreBG:   integer;
-      //TextP2R:            integer;
-      //TextP2RScore:       integer;
-
-      //StaticP2M:          integer;
-      //StaticP2MScoreBG:   integer;
-      //TextP2M:            integer;
-      //TextP2MScore:       integer;
-
-      //StaticP3R:          integer;
-      //StaticP3RScoreBG:   integer;
-      //TextP3R:            integer;
-      //TextP3RScore:       integer;
-
-      //Tex_Background:     TTexture;
-      //FadeOut:            boolean;
-      //LyricMain:          TLyric;
-      //LyricSub:           TLyric;
       Winner: Byte; //Who Wins
       PlayerInfo: TPlayerInfo;
       TeamInfo:   TTeamInfo;
@@ -95,7 +67,6 @@ type
       function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
       function Draw: boolean; override;
       procedure Finish; override;
-      //procedure Pause; //Pause Mod(Toggles Pause)
   end;
 
 type
@@ -289,6 +260,8 @@ begin
   Winner := 0;
 
   //Set Score Visibility
+  Scores.Visible := DLLMan.Selected.ShowScore;
+
   {if PlayersPlay = 1 then begin
     Text[TextP1Score].Visible := DLLMan.Selected.ShowScore;
     Static[StaticP1ScoreBG].Visible := DLLMan.Selected.ShowScore;
@@ -338,115 +311,37 @@ begin
     end;
   end;
 
-  //Show Score
-  if DLLMan.Selected.ShowScore then
-  begin
-    {//ScoreBG Mod
-    // set player colors
-    if PlayersPlay = 4 then begin
-      if ScreenAct = 1 then begin
-        LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
-        Static[StaticP1TwoP].Texture.ColB, 'P1Dark');
-        LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
-        Static[StaticP2R].Texture.ColB, 'P2Dark');
+  Background.Draw;
 
+  // draw background picture (if any, and if no visualizations)
+  // when we don't check for visualizations the visualizations would
+  // be overdrawn by the picture when {UNDEFINED UseTexture} in UVisualizer
+  if (DllMan.Selected.LoadSong) AND (DllMan.Selected.LoadBack) AND (not fShowVisualization) then
+    SingDrawBackground;
 
+  // set player names (for 2 screens and only Singstar skin)
+  if ScreenAct = 1 then begin
+    Text[TextP1].Text       := 'P1';
+    Text[TextP1TwoP].Text   := 'P1'; // added for ps3 skin
+    Text[TextP1ThreeP].Text := 'P1'; // added for ps3 skin
+    Text[TextP2R].Text      := 'P2';
+    Text[TextP2M].Text      := 'P2';
+    Text[TextP3R].Text      := 'P3';
+  end
 
-        LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
-        Static[StaticP1TwoPScoreBG].Texture.ColB, 'P1Dark');
-        LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
-        Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
-
-
-
-      end;
-      if ScreenAct = 2 then begin
-        LoadColor(Static[StaticP1TwoP].Texture.ColR, Static[StaticP1TwoP].Texture.ColG,
-          Static[StaticP1TwoP].Texture.ColB, 'P3Dark');
-        LoadColor(Static[StaticP2R].Texture.ColR, Static[StaticP2R].Texture.ColG,
-          Static[StaticP2R].Texture.ColB, 'P4Dark');
-
-
-
-        LoadColor(Static[StaticP1TwoPScoreBG].Texture.ColR, Static[StaticP1TwoPScoreBG].Texture.ColG,
-          Static[StaticP1TwoPScoreBG].Texture.ColB, 'P3Dark');
-        LoadColor(Static[StaticP2RScoreBG].Texture.ColR, Static[StaticP2RScoreBG].Texture.ColG,
-          Static[StaticP2RScoreBG].Texture.ColB, 'P4Dark');
-
-
-
-       end;
-    end;
-
-    if PlayersPlay = 6 then begin
-      if ScreenAct = 1 then begin
-        LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
-          Static[StaticP1ThreeP].Texture.ColB, 'P1Dark');
-        LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
-          Static[StaticP2R].Texture.ColB, 'P2Dark');
-        LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
-          Static[StaticP3R].Texture.ColB, 'P3Dark');
-
-
-
-        LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
-          Static[StaticP1ThreePScoreBG].Texture.ColB, 'P1Dark');
-        LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
-          Static[StaticP2RScoreBG].Texture.ColB, 'P2Dark');
-        LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
-          Static[StaticP3RScoreBG].Texture.ColB, 'P3Dark');
-
-
-
-      end;
-      if ScreenAct = 2 then begin
-        LoadColor(Static[StaticP1ThreeP].Texture.ColR, Static[StaticP1ThreeP].Texture.ColG,
-          Static[StaticP1ThreeP].Texture.ColB, 'P4Dark');
-        LoadColor(Static[StaticP2M].Texture.ColR, Static[StaticP2M].Texture.ColG,
-          Static[StaticP2R].Texture.ColB, 'P5Dark');
-        LoadColor(Static[StaticP3R].Texture.ColR, Static[StaticP3R].Texture.ColG,
-          Static[StaticP3R].Texture.ColB, 'P6Dark');
-
-
-
-
-        LoadColor(Static[StaticP1ThreePScoreBG].Texture.ColR, Static[StaticP1ThreePScoreBG].Texture.ColG,
-          Static[StaticP1ThreePScoreBG].Texture.ColB, 'P4Dark');
-        LoadColor(Static[StaticP2MScoreBG].Texture.ColR, Static[StaticP2MScoreBG].Texture.ColG,
-          Static[StaticP2RScoreBG].Texture.ColB, 'P5Dark');
-        LoadColor(Static[StaticP3RScoreBG].Texture.ColR, Static[StaticP3RScoreBG].Texture.ColG,
-          Static[StaticP3RScoreBG].Texture.ColB, 'P6Dark');
-
-
-
-
-      end;
-    end;
-    //end ScoreBG Mod }
-
-    // set player names (for 2 screens and only Singstar skin)
-    if ScreenAct = 1 then begin
-      Text[TextP1].Text       := 'P1';
-      Text[TextP1TwoP].Text   := 'P1'; // added for ps3 skin
-      Text[TextP1ThreeP].Text := 'P1'; // added for ps3 skin
-      Text[TextP2R].Text      := 'P2';
-      Text[TextP2M].Text      := 'P2';
-      Text[TextP3R].Text      := 'P3';
-    end;
-
-    if ScreenAct = 2 then begin
-      case PlayersPlay of
-        4:  begin
-              Text[TextP1TwoP].Text := 'P3';
-              Text[TextP2R].Text := 'P4';
-            end;
-        6:  begin
-              Text[TextP1ThreeP].Text := 'P4';
-              Text[TextP2M].Text := 'P5';
-              Text[TextP3R].Text := 'P6';
-            end;
-      end; // case
-    end; // if
+  Else if ScreenAct = 2 then begin
+    case PlayersPlay of
+      4:  begin
+            Text[TextP1TwoP].Text := 'P3';
+            Text[TextP2R].Text := 'P4';
+          end;
+      6:  begin
+            Text[TextP1ThreeP].Text := 'P4';
+            Text[TextP2M].Text := 'P5';
+            Text[TextP3R].Text := 'P6';
+          end;
+    end; // case
+  end; // if
 
 
     // stereo   <- and where iss P2M? or P3?
@@ -458,92 +353,6 @@ begin
 
     Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10*ScreenX;
     Text[TextP2R].X := Text[TextP2R].X + 10*ScreenX;
-
-    {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
-    Text[TextP2RScore].X := Text[TextP2RScore].X + 10*ScreenX;}
-
-    // .. and scores
-    {if PlayersPlay = 1 then begin
-      TextStr := IntToStr(Player[0].ScoreTotalI);
-      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-      Text[TextP1Score].Text := TextStr;
-    end;
-
-    if PlayersPlay = 2 then begin
-      TextStr := IntToStr(Player[0].ScoreTotalI);
-      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-      Text[TextP1TwoPScore].Text := TextStr;
-
-      TextStr := IntToStr(Player[1].ScoreTotalI);
-      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-      Text[TextP2RScore].Text := TextStr;
-    end;
-
-    if PlayersPlay = 3 then begin
-      TextStr := IntToStr(Player[0].ScoreTotalI);
-      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-      Text[TextP1ThreePScore].Text := TextStr;
-
-      TextStr := IntToStr(Player[1].ScoreTotalI);
-      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-      Text[TextP2MScore].Text := TextStr;
-
-      TextStr := IntToStr(Player[2].ScoreTotalI);
-      while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-      Text[TextP3RScore].Text := TextStr;
-    end;
-
-    if PlayersPlay = 4 then begin
-      if ScreenAct = 1 then begin
-        TextStr := IntToStr(Player[0].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP1TwoPScore].Text := TextStr;
-
-        TextStr := IntToStr(Player[1].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP2RScore].Text := TextStr;
-      end;
-      if ScreenAct = 2 then begin
-        TextStr := IntToStr(Player[2].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP1TwoPScore].Text := TextStr;
-
-        TextStr := IntToStr(Player[3].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP2RScore].Text := TextStr;
-      end;
-    end;
-
-    if PlayersPlay = 6 then begin
-      if ScreenAct = 1 then begin
-        TextStr := IntToStr(Player[0].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP1ThreePScore].Text := TextStr;
-
-        TextStr := IntToStr(Player[1].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP2MScore].Text := TextStr;
-
-        TextStr := IntToStr(Player[2].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP3RScore].Text := TextStr;
-      end;
-      if ScreenAct = 2 then begin
-        TextStr := IntToStr(Player[3].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP1ThreePScore].Text := TextStr;
-
-        TextStr := IntToStr(Player[4].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP2MScore].Text := TextStr;
-
-        TextStr := IntToStr(Player[5].ScoreTotalI);
-        while Length(TextStr) < 5 do TextStr := '0' + TextStr;
-        Text[TextP3RScore].Text := TextStr;
-      end;
-    end;   }
-
-  end; //ShowScore
 
   for S := 1 to 1 do
     Static[S].Texture.X := Static[S].Texture.X + 10*ScreenX;
@@ -565,17 +374,25 @@ begin
     Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Sec);
   end;
 
-  // draw static menu (BG)
-  DrawBG;
-
-  //Draw Background
-  if (DllMan.Selected.LoadSong) AND (DllMan.Selected.LoadBack) then
-    SingDrawBackground;
-
   // update and draw movie
 {  if ShowFinish and CurrentSong.VideoLoaded AND DllMan.Selected.LoadVideo then begin
     UpdateSmpeg; // this only draws
   end;}
+
+  // update and draw movie
+  if (ShowFinish and (VideoLoaded or fShowVisualization) and DllMan.Selected.LoadVideo) then
+  begin
+    if assigned(fCurrentVideoPlaybackEngine) then
+    begin
+      // Just call this once
+      // when Screens = 2
+      If (ScreenAct = 1) then
+        fCurrentVideoPlaybackEngine.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
+
+
+      fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
+    end;
+  end;
 
   // draw static menu (FG)
   DrawFG;
@@ -603,6 +420,9 @@ begin
   //GoldenNoteStarsTwinkle Mod
     GoldenRec.SpawnRec;
   //GoldenNoteStarsTwinkle Mod
+
+  //Draw Score
+  Scores.Draw;
 
   //Update PlayerInfo
   for I := 0 to PlayerInfo.NumPlayers-1 do

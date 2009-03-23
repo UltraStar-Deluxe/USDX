@@ -58,9 +58,8 @@ type
 
 type
   TScreenSing = class(TMenu)
-  private
-    VideoLoaded: boolean;
   protected
+    VideoLoaded: boolean;
     Paused:     boolean; // pause mod
     LyricsSync: TLyricsSyncSource;
     NumEmptySentences: integer;
