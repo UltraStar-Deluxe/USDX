@@ -1,0 +1,31 @@
+Blockers for the outstanding 1.1 release
+if you want to help us then start at this tasks
+
+Missing party mode (contact whiteshark to get further information on how to help)
+- finishing new one (partymode branch) 
+  pro: should be easy to port to all supported platforms
+       it should be easy to extended w/ lua support
+       basic plugin support, not only party modes
+  con: work!
+       modes has to be adapted
+       work!
+- merge the old one
+  pro: less work
+       it is known to work and there are many existing modis
+  con: may be difficult to port to other platforms than windows
+
+Unicode support (contact tobigun to get further information on how to help)
+- there is a unicode branch
+- seems to work except for some glitches
+
+Microfone playback
+- buffers have to be adjusted
+  - this may be done automatically (prefer this!)
+  - or at least the user has to manually adjust this
+- there may be other problems as due to the missing buffer adjustment there were no extensive tests
+
+Theme changes
+- there are some problems w/ theme-object positions mainly in the option-screens
+
+There are also assembla tickets that need to be fixed
+http://www.assembla.com/spaces/usdx/milestones/26192-UltraStar-Deluxe-1-1-Release
