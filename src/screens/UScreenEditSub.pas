@@ -1282,7 +1282,7 @@ begin
     Lyric.Clear;
     Lyric.X := 400;
     Lyric.Y := 500;
-    Lyric.Align := center;
+    Lyric.Align := atCenter;
     Lyric.Size := 42;
     Lyric.ColR := 0;
     Lyric.ColG := 0;
