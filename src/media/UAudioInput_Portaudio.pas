@@ -95,7 +95,6 @@ var
   Error:       TPaError;
   inputParams: TPaStreamParameters;
   deviceInfo:  PPaDeviceInfo;
-  SourceIndex: integer;
 begin
   Result := false;
 
@@ -291,8 +290,6 @@ var
   sourceIndex: integer;
   sourceName:  string;
   {$ENDIF}
-  cbPolls: integer;
-  cbWorks: boolean;
 begin
   Result := false;
 

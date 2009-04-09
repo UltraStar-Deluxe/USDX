@@ -643,7 +643,6 @@ end;
 function TFFmpegDecodeStream.ParseLoop(): boolean;
 var
   Packet: TAVPacket;
-  StatusPacket: PAVPacket;
   SeekTarget: int64;
   ByteIOCtx: PByteIOContext;
   ErrorCode: integer;
