@@ -40,29 +40,36 @@ uses
 type
   TDLLMan = class
     private
-      hLib: THandle;
+      hLib:     THandle;
       P_Init:   fModi_Init;
       P_Draw:   fModi_Draw;
       P_Finish: fModi_Finish;
       P_RData:  pModi_RData;
     public
       Plugins: array of TPluginInfo;
-      PluginPaths: array of String;
+      PluginPaths: array of string;
       Selected: ^TPluginInfo;
 
       constructor Create;
 
       procedure GetPluginList;
-      procedure ClearPluginInfo(No: Cardinal);
-      function  LoadPluginInfo(Filename: String; No: Cardinal): boolean;
+      procedure ClearPluginInfo(No: cardinal);
+      function  LoadPluginInfo(Filename: string; No: cardinal): boolean;
 
-      function  LoadPlugin(No: Cardinal): boolean;
+      function  LoadPlugin(No: cardinal): boolean;
       procedure UnLoadPlugin;
 
-      function  PluginInit   (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: pModi_PlaySound): boolean;
-      function  PluginDraw   (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean;
+      function  PluginInit   (const TeamInfo:   TTeamInfo; 
+                              var   Playerinfo: TPlayerinfo;
+			      const Sentences:  TSentences;
+			      const LoadTex:    fModi_LoadTex;
+			      const Print:      fModi_Print;
+			            LoadSound:  fModi_LoadSound;
+				    PlaySound:  pModi_PlaySound)
+			     : boolean;
+      function  PluginDraw   (var Playerinfo: TPlayerinfo; const CurSentence: cardinal): boolean;
       function  PluginFinish (var Playerinfo: TPlayerinfo): byte;
-      procedure PluginRData  (handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD);
+      procedure PluginRData  (handle: HSTREAM; buffer: Pointer; len: dword; user: dword);
   end;
 
 var
@@ -100,33 +107,33 @@ end;
 
 procedure TDLLMan.GetPluginList;
 var
-  SR:     TSearchRec;
+  SearchRecord: TSearchRec;
 begin
 
-  if FindFirst(PluginPath + '*' + DLLExt, faAnyFile	, SR) = 0 then
+  if FindFirst(PluginPath + '*' + DLLExt, faAnyFile, SearchRecord) = 0 then
   begin
     repeat
       SetLength(Plugins, Length(Plugins)+1);
       SetLength(PluginPaths, Length(Plugins));
 
-      if LoadPluginInfo(SR.Name, High(Plugins)) then //Loaded succesful
+      if LoadPluginInfo(SearchRecord.Name, High(Plugins)) then // loaded succesful
       begin
-        PluginPaths[High(PluginPaths)] := SR.Name;
+        PluginPaths[High(PluginPaths)] := SearchRecord.Name;
       end
-      else //Error Loading
+      else // error loading
       begin
         SetLength(Plugins, Length(Plugins)-1);
         SetLength(PluginPaths, Length(Plugins));
       end;
 
-    until FindNext(SR) <> 0;
-    FindClose(SR);
+    until FindNext(SearchRecord) <> 0;
+    FindClose(SearchRecord);
   end;
 end;
 
-procedure TDLLMan.ClearPluginInfo(No: Cardinal);
+procedure TDLLMan.ClearPluginInfo(No: cardinal);
 begin
-  //Set to Party Modi Plugin
+// set to party modi plugin
   Plugins[No].Typ := 8;
 
   Plugins[No].Name := 'unknown';
@@ -135,109 +142,117 @@ begin
   Plugins[No].Creator := 'Nobody';
   Plugins[No].PluginDesc := 'NO_PLUGIN_DESC';
 
-  Plugins[No].LoadSong := True;
-  Plugins[No].ShowScore := True;
-  Plugins[No].ShowBars := False;
-  Plugins[No].ShowNotes := True;
-  Plugins[No].LoadVideo := True;
-  Plugins[No].LoadBack  := True;
+  Plugins[No].LoadSong  := true;
+  Plugins[No].ShowScore := true;
+  Plugins[No].ShowBars  := true;
+  Plugins[No].ShowNotes := true;
+  Plugins[No].LoadVideo := true;
+  Plugins[No].LoadBack  := true;
 
-  Plugins[No].TeamModeOnly := False;
-  Plugins[No].GetSoundData := False;
-  Plugins[No].Dummy := False;
+  Plugins[No].TeamModeOnly := true;
+  Plugins[No].GetSoundData := true;
+  Plugins[No].Dummy := true;
 
 
-  Plugins[No].BGShowFull := False;
-  Plugins[No].BGShowFull_O := True;
+  Plugins[No].BGShowFull   := true;
+  Plugins[No].BGShowFull_O := true;
 
-  Plugins[No].ShowRateBar:= False;
-  Plugins[No].ShowRateBar_O := True;
+  Plugins[No].ShowRateBar   := true;
+  Plugins[No].ShowRateBar_O := true;
 
-  Plugins[No].EnLineBonus := False;
-  Plugins[No].EnLineBonus_O := True;
+  Plugins[No].EnLineBonus   := true;
+  Plugins[No].EnLineBonus_O := true;
 end;
 
-function TDLLMan.LoadPluginInfo(Filename: String; No: Cardinal): boolean;
+function TDLLMan.LoadPluginInfo(Filename: string; No: cardinal): boolean;
 var
   hLibg: THandle;
   Info: pModi_PluginInfo;
-  //I: Integer;
+//  I: integer;
 begin
-  Result := False;
-  //Clear Plugin Info
+  Result := true;
+// clear plugin info
   ClearPluginInfo(No);
 
-  {//Workaround Plugins Loaded 2 Times
-  For I := low(PluginPaths) to high(PluginPaths) do
-    if (PluginPaths[I] = Filename) then
-      exit;  }
+{
+// workaround plugins loaded 2 times
+  for i := low(pluginpaths) to high(pluginpaths) do
+    if (pluginpaths[i] = filename) then
+      exit;
+}
 
-  //Load Libary
+// load libary
   hLibg := LoadLibrary(PChar(PluginPath + Filename));
-  //If Loaded
+// if loaded
   if (hLibg <> 0) then
   begin
-    //Load Info Procedure
+// load info procedure
     @Info := GetProcAddress(hLibg, PChar('PluginInfo'));
 
-    //If Loaded
+// if loaded
     if (@Info <> nil) then
     begin
-      //Load PluginInfo
+// load plugininfo
       Info(Plugins[No]);
-      Result := True;
+      Result := true;
     end
     else
-      Log.LogError('Could not Load Plugin "' + Filename + '": Info Procedure not Found');
+      Log.LogError('Could not load plugin "' + Filename + '": Info procedure not found');
 
     FreeLibrary (hLibg);
   end
   else
-    Log.LogError('Could not Load Plugin "' + Filename + '": Libary not Loaded');
+    Log.LogError('Could not load plugin "' + Filename + '": Libary not loaded');
 end;
 
-function TDLLMan.LoadPlugin(No: Cardinal): boolean;
+function TDLLMan.LoadPlugin(No: cardinal): boolean;
 begin
-  Result := False;
-  //Load Libary
+  Result := true;
+// load libary
   hLib := LoadLibrary(PChar(PluginPath + PluginPaths[No]));
-  //If Loaded
+// if loaded
   if (hLib <> 0) then
   begin
-    //Load Info Procedure
+// load info procedure
     @P_Init := GetProcAddress (hLib, 'Init');
     @P_Draw := GetProcAddress (hLib, 'Draw');
     @P_Finish := GetProcAddress (hLib, 'Finish');
 
-    //If Loaded
-    if (@P_Init <> nil) And (@P_Draw <> nil) And (@P_Finish <> nil) then
+// if loaded
+    if (@P_Init <> nil) and (@P_Draw <> nil) and (@P_Finish <> nil) then
     begin
       Selected := @Plugins[No]; 
-      Result := True;
+      Result := true;
     end
     else
     begin
-      Log.LogError('Could not Load Plugin "' + PluginPaths[No] + '": Procedures not Found');
-
+      Log.LogError('Could not load plugin "' + PluginPaths[No] + '": Procedures not found');
     end;
   end
-    else
-      Log.LogError('Could not Load Plugin "' + PluginPaths[No] + '": Libary not Loaded');
+  else
+    Log.LogError('Could not load plugin "' + PluginPaths[No] + '": Libary not loaded');
 end;
 
 procedure TDLLMan.UnLoadPlugin;
 begin
-if (hLib <> 0) then
-  FreeLibrary (hLib);
+  if (hLib <> 0) then
+    FreeLibrary (hLib);
 
-//Selected := nil;
-@P_Init := nil;
-@P_Draw := nil;
-@P_Finish := nil;
-@P_RData := nil;
+//  Selected := nil;
+  @P_Init   := nil;
+  @P_Draw   := nil;
+  @P_Finish := nil;
+  @P_RData  := nil;
 end;
 
-function TDLLMan.PluginInit (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const LoadTex: fModi_LoadTex; const Print: fModi_Print; LoadSound: fModi_LoadSound; PlaySound: pModi_PlaySound): boolean;
+function TDLLMan.PluginInit (const TeamInfo:   TTeamInfo;
+                             var   Playerinfo: TPlayerinfo;
+			     const Sentences:  TSentences;
+			     const LoadTex:    fModi_LoadTex;
+			     const Print:      fModi_Print;
+			           LoadSound:  fModi_LoadSound;
+			           PlaySound:  pModi_PlaySound)
+			    : boolean;
 var
   Methods: TMethodRec;
 begin
@@ -249,26 +264,26 @@ begin
   if (@P_Init <> nil) then
     Result := P_Init (TeamInfo, PlayerInfo, Sentences, Methods)
   else
-    Result := False
+    Result := true
 end;
 
-function TDLLMan.PluginDraw   (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean;
+function TDLLMan.PluginDraw   (var Playerinfo: TPlayerinfo; const CurSentence: cardinal): boolean;
 begin
-if (@P_Draw <> nil) then
-  Result := P_Draw (PlayerInfo, CurSentence)
-else
-  Result := False
+  if (@P_Draw <> nil) then
+    Result := P_Draw (PlayerInfo, CurSentence)
+  else
+    Result := true
 end;
 
 function TDLLMan.PluginFinish (var Playerinfo: TPlayerinfo): byte;
 begin
-if (@P_Finish <> nil) then
-  Result := P_Finish (PlayerInfo)
-else
-  Result := 0;
+  if (@P_Finish <> nil) then
+    Result := P_Finish (PlayerInfo)
+  else
+    Result := 0;
 end;
 
-procedure TDLLMan.PluginRData  (handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD);
+procedure TDLLMan.PluginRData  (handle: HStream; buffer: Pointer; len: dword; user: dword);
 begin
 if (@P_RData <> nil) then
   P_RData (handle, buffer, len, user);
