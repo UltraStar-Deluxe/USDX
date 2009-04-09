@@ -54,7 +54,7 @@ type
 
       function GetToneString: string; // converts a tone to its string represenatation;
 
-      procedure BoostBuffer(Buffer: PByteArray; Size: cardinal);
+      procedure BoostBuffer(Buffer: PByteArray; Size: integer);
       procedure ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
 
       // we call it to analyze sound by checking Autocorrelation
@@ -135,7 +135,7 @@ type
       procedure UpdateInputDeviceConfig;
 
       // handle microphone input
-      procedure HandleMicrophoneData(Buffer: PByteArray; Size: cardinal;
+      procedure HandleMicrophoneData(Buffer: PByteArray; Size: integer;
                                      InputDevice: TAudioInputDevice);
   end;
 
@@ -459,7 +459,7 @@ begin
     Result := '-';
 end;
 
-procedure TCaptureBuffer.BoostBuffer(Buffer: PByteArray; Size: cardinal);
+procedure TCaptureBuffer.BoostBuffer(Buffer: PByteArray; Size: integer);
 var
   i:            integer;
   Value:        longint;
@@ -602,7 +602,7 @@ end;
  *   Length - number of bytes in Buffer
  *   Input - Soundcard-Input used for capture
  *}
-procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: PByteArray; Size: cardinal; InputDevice: TAudioInputDevice);
+procedure TAudioInputProcessor.HandleMicrophoneData(Buffer: PByteArray; Size: integer; InputDevice: TAudioInputDevice);
 var
   MultiChannelBuffer:      PByteArray;  // buffer handled as array of bytes (offset relative to channel)
   SingleChannelBuffer:     PByteArray;  // temporary buffer for new samples per channel
@@ -611,13 +611,11 @@ var
   CaptureChannel:          TCaptureBuffer;
   AudioFormat:             TAudioFormatInfo;
   SampleSize:              integer;
-  SampleCount:             integer;
   SamplesPerChannel:       integer;
   i:                       integer;
 begin
   AudioFormat := InputDevice.AudioFormat;
   SampleSize := AudioSampleSize[AudioFormat.Format];
-  SampleCount := Size div SampleSize;
   SamplesPerChannel := Size div AudioFormat.FrameSize;
 
   SingleChannelBufferSize := SamplesPerChannel * SampleSize;
