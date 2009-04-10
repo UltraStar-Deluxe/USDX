@@ -314,7 +314,7 @@ Section /o "Bodo Wartke - Liebeslied (Love Song)" g2Section1
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song5} $TEMP\Song-BodoWartke-LoveSong.zip
+  NSISdl::download /TIMEOUT=30000 ${download_song1} $TEMP\Song-BodoWartke-LoveSong.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -341,7 +341,7 @@ Section /o "Dead Smiling Pirates - I 18" g2Section2
    SetOutPath "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song1} $TEMP\Song-I-18.zip
+  NSISdl::download /TIMEOUT=30000 ${download_song2} $TEMP\Song-I-18.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -881,7 +881,7 @@ Section /o "Joshua Morin - On The Run" g2Section3
    SetOutPath "$INSTDIR\Songs\Joshua Morin - On The Run\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song2} $TEMP\Song-On-the-run.zip
+  NSISdl::download /TIMEOUT=30000 ${download_song3} $TEMP\Song-On-the-run.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -903,7 +903,7 @@ Section /o "Pornophonique - Space Invaders" g2Section4
    SetOutPath "$INSTDIR\Songs\Pornophonique - Space Invaders\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song3} $TEMP\Song-Space-Invaders.zip
+  NSISdl::download /TIMEOUT=30000 ${download_song4} $TEMP\Song-Space-Invaders.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -1118,7 +1118,7 @@ Section /o "Steven Dunston - Northern Star" g2Section5
    SetOutPath "$INSTDIR\Songs\Steven Dunston - Northern Star\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song4} $TEMP\Song-Northern-Star.zip
+  NSISdl::download /TIMEOUT=30000 ${download_song5} $TEMP\Song-Northern-Star.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -1134,7 +1134,7 @@ SectionEnd
 
 SectionGroup $(name_s2_sub3) s2_sub3
 
-Section /o "Wise Guys - Lebendig und kräftig und schärfer" s2_sub3_Section1
+Section /o "Wise Guys - Lebendig und kraeftig und schaerfer" s2_sub3_Section1
 
 ;  AddSize 1400
    SetOverwrite try
