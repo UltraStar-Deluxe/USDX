@@ -320,7 +320,7 @@ Section /o "Bodo Wartke - Liebeslied (Love Song)" g2Section1
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-BodoWartke-LoveSong.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-BodoWartke-LoveSong.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-BodoWartke-LoveSong.zip"
 
@@ -347,7 +347,7 @@ Section /o "Dead Smiling Pirates - I 18" g2Section2
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-I-18.zip" "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
+  ZipDLL::extractall "$TEMP\Song-I-18.zip" "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
 
   Delete "$TEMP\Song-I-18.zip"
 
@@ -374,7 +374,7 @@ Section /o "Monkey Shines" s2_sub1_Section1
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-MS.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-MS.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-MS.zip"
 
@@ -395,7 +395,7 @@ Section /o "I Crush Everything" s2_sub1_Section2
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-ICE.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-ICE.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-ICE.zip"
 
@@ -416,7 +416,7 @@ Section /o "Not About You" s2_sub1_Section3
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-NAY.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-NAY.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-NAY.zip"
 
@@ -438,7 +438,7 @@ Section /o "Mr. Fancy Pants" s2_sub1_Section4
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-MFP.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-MFP.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-MFP.zip"
 
@@ -459,7 +459,7 @@ Section /o "Big Bad World One" s2_sub1_Section5
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-BBWO.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-BBWO.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-BBWO.zip"
 
@@ -480,7 +480,7 @@ Section /o "Flickr" s2_sub1_Section6
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-Flickr.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-Flickr.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-Flickr.zip"
 
@@ -501,7 +501,7 @@ Section /o "My Beige Bear" s2_sub1_Section7
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-MBB.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-MBB.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-MBB.zip"
 
@@ -522,7 +522,7 @@ Section /o "The Future Soon" s2_sub1_Section8
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-TFS.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-TFS.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-TFS.zip"
 
@@ -543,7 +543,7 @@ Section /o "Ikea" s2_sub1_Section9
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-Ikea.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-Ikea.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-Ikea.zip"
 
@@ -564,7 +564,7 @@ Section /o "Furry Old Lobster" s2_sub1_Section10
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-FOL.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-FOL.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-FOL.zip"
 
@@ -585,7 +585,7 @@ Section /o "Code Monkey" s2_sub1_Section11
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-CM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-CM.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-CM.zip"
 
@@ -606,7 +606,7 @@ Section /o "I´m Your Moon" s2_sub1_Section12
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-IYM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-IYM.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-IYM.zip"
 
@@ -627,7 +627,7 @@ Section /o "First Of May" s2_sub1_Section13
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-FOM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-FOM.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-FOM.zip"
 
@@ -648,7 +648,7 @@ Section /o "Dance, Soterious Johnson, Dance" s2_sub1_Section14
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-DSJD.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-DSJD.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-DSJD.zip"
 
@@ -669,7 +669,7 @@ Section /o "A Walk With George" s2_sub1_Section15
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-AWWG.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-AWWG.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-AWWG.zip"
 
@@ -690,7 +690,7 @@ Section /o "Creepy Doll" s2_sub1_Section16
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-CD.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-CD.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-CD.zip"
 
@@ -711,7 +711,7 @@ Section /o "That Spells DNA" s2_sub1_Section17
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-TSDNA.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-TSDNA.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-TSDNA.zip"
 
@@ -732,7 +732,7 @@ Section /o "When You Go" s2_sub1_Section18
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-WYG.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-WYG.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-WYG.zip"
 
@@ -753,7 +753,7 @@ Section /o "Better" s2_sub1_Section19
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-Better.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-Better.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-Better.zip"
 
@@ -774,7 +774,7 @@ Section /o "Shop Vac" s2_sub1_Section20
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-SV.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-SV.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-SV.zip"
 
@@ -795,7 +795,7 @@ Section /o "I Feel Fantastic" s2_sub1_Section21
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-IFF.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-IFF.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-IFF.zip"
 
@@ -816,7 +816,7 @@ Section /o "Re: Your Brains" s2_sub1_Section22
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-ReYB.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-ReYB.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-ReYB.zip"
 
@@ -837,7 +837,7 @@ Section /o "Skullcrusher Mountain" s2_sub1_Section23
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-SCM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-SCM.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-SCM.zip"
 
@@ -858,7 +858,7 @@ Section /o "Chiron Beta Prime" s2_sub1_Section24
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-JC-CBP.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-CBP.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-JC-CBP.zip"
 
@@ -887,7 +887,7 @@ Section /o "Joshua Morin - On The Run" g2Section3
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-On-the-run.zip" "$INSTDIR\Songs\Joshua Morin - On The Run\"
+  ZipDLL::extractall "$TEMP\Song-On-the-run.zip" "$INSTDIR\Songs\Joshua Morin - On The Run\"
 
   Delete "$TEMP\Song-On-the-run.zip"
 
@@ -909,7 +909,7 @@ Section /o "Pornophonique - Space Invaders" g2Section4
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Space-Invaders.zip" "$INSTDIR\Songs\Pornophonique - Space Invaders\"
+  ZipDLL::extractall "$TEMP\Song-Space-Invaders.zip" "$INSTDIR\Songs\Pornophonique - Space Invaders\"
 
   Delete "$TEMP\Song-Space-Invaders.zip"
 
@@ -932,7 +932,7 @@ Section /o "Shearer - 69" s2_sub2_Section1
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-69.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-69.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-69.zip"
 
@@ -953,7 +953,7 @@ Section /o "Shearer - 69 (Karaoke)" s2_sub2_Section2
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-69-Kar.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-69-Kar.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-69-Kar.zip"
 
@@ -974,7 +974,7 @@ Section /o "Shearer - Can't stop it" s2_sub2_Section3
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-CSI.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-CSI.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-CSI.zip"
 
@@ -995,7 +995,7 @@ Section /o "Shearer - Can't stop it (Karaoke)" s2_sub2_Section4
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-CSI-Kar.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-CSI-Kar.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-CSI-Kar.zip"
 
@@ -1016,7 +1016,7 @@ Section /o "Shearer - In My Hand" s2_sub2_Section5
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-IMH.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-IMH.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-IMH.zip"
 
@@ -1037,7 +1037,7 @@ Section /o "Shearer - Man Song" s2_sub2_Section6
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-MS.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-MS.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-MS.zip"
 
@@ -1058,7 +1058,7 @@ Section /o "Shearer - Man Song (Karaoke)" s2_sub2_Section7
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-MS-Kar.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-MS-Kar.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-MS-Kar.zip"
 
@@ -1079,7 +1079,7 @@ Section /o "Shearer - Stay With Me" s2_sub2_Section8
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-SWM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-Shearer-SWM.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-SWM.zip"
 
@@ -1100,7 +1100,8 @@ Section /o "Shearer - Stay With Me (Karaoke)" s2_sub2_Section9
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Shearer-SWM-Kar.zip" "$INSTDIR\Songs\"
+
+  ZipDLL::extractall "$TEMP\Song-Shearer-SWM-Kar.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-Shearer-SWM-Kar.zip"
 
@@ -1124,7 +1125,8 @@ Section /o "Steven Dunston - Northern Star" g2Section5
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-Northern-Star.zip" "$INSTDIR\Songs\Steven Dunston - Northern Star\"
+
+  ZipDLL::extractall "$TEMP\Song-Northern-Star.zip" "$INSTDIR\Songs\Steven Dunston - Northern Star\"
 
   Delete "$TEMP\Song-Northern-Star.zip"
 
@@ -1134,7 +1136,7 @@ SectionEnd
 
 SectionGroup $(name_s2_sub3) s2_sub3
 
-Section /o "Wise Guys - Lebendig und kraeftig und schaerfer" s2_sub3_Section1
+Section /o "Wise Guys - Lebendig und kräftig und schärfer" s2_sub3_Section1
 
 ;  AddSize 1400
    SetOverwrite try
@@ -1147,7 +1149,8 @@ Section /o "Wise Guys - Lebendig und kraeftig und schaerfer" s2_sub3_Section1
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-WiseGuys-LUKUS.zip" "$INSTDIR\Songs\"
+
+  ZipDLL::extractall "$TEMP\Song-WiseGuys-LUKUS.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-WiseGuys-LUKUS.zip"
 
@@ -1168,7 +1171,8 @@ Section /o "Wise Guys - Mensch, wo bist du?" s2_sub3_Section2
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Song-WiseGuys-MWBD.zip" "$INSTDIR\Songs\"
+
+  ZipDLL::extractall "$TEMP\Song-WiseGuys-MWBD.zip" "$INSTDIR\Songs\"
 
   Delete "$TEMP\Song-WiseGuys-MWBD.zip"
 
@@ -1196,7 +1200,7 @@ SectionGroup $(name_section3) Section3
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Theme-Orange.zip" "$INSTDIR\"
+  ZipDLL::extractall "$TEMP\Theme-Orange.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-Orange.zip"
 
@@ -1214,7 +1218,7 @@ SectionEnd
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Theme-Streetlight.zip" "$INSTDIR\"
+  ZipDLL::extractall "$TEMP\Theme-Streetlight.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-Streetlight.zip"
 
@@ -1233,7 +1237,7 @@ SectionEnd
    StrCmp $R0 "success" dlok
      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Theme-Vistar.zip" "$INSTDIR\"
+  ZipDLL::extractall "$TEMP\Theme-Vistar.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-Vistar.zip"
 
@@ -1252,7 +1256,7 @@ SectionEnd
    StrCmp $R0 "success" dlok
      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Theme-BlueSensation.zip" "$INSTDIR\"
+  ZipDLL::extractall "$TEMP\Theme-BlueSensation.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-BlueSensation.zip"
 
@@ -1272,7 +1276,7 @@ SectionEnd
    StrCmp $R0 "success" dlok
      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Theme-WhiteSensation.zip" "$INSTDIR\"
+  ZipDLL::extractall "$TEMP\Theme-WhiteSensation.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-WhiteSensation.zip"
 
@@ -1291,7 +1295,7 @@ SectionEnd
    StrCmp $R0 "success" dlok
      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Theme-WiiStar.zip" "$INSTDIR\"
+  ZipDLL::extractall "$TEMP\Theme-WiiStar.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-WiiStar.zip"
 
@@ -1310,7 +1314,7 @@ SectionEnd
    StrCmp $R0 "success" dlok
      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  nsisunz::Unzip "$TEMP\Theme-iStar.zip" "$INSTDIR\"
+  ZipDLL::extractall "$TEMP\Theme-iStar.zip" "$INSTDIR\"
 
   Delete "$TEMP\Theme-iStar.zip"
 
