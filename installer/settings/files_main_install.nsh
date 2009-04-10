@@ -11,11 +11,12 @@ CreateDirectory $INSTDIR\playlists
 
 SetOutPath "$INSTDIR"
 
-; themes, languages, sounds, visuals dir
+; themes, languages, sounds, fonts, visuals dir
 
 File /r ..\game\themes
 File /r ..\game\languages
 File /r ..\game\sounds
+File /r ..\game\fonts
 File /r ..\installerdependencies\visuals
 
 ; Root dir:
