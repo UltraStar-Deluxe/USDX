@@ -6,6 +6,7 @@
 !include WinVer.nsh
 !include LogicLib.nsh
 !include InstallOptions.nsh
+!include nsDialogs.nsh
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Variables
@@ -82,6 +83,7 @@ RequestExecutionLevel user
 
 !define MUI_WELCOMEPAGE_TITLE_3LINES
 !define MUI_WELCOMEPAGE_TITLE "$(page_welcome_title)"
+
 !define MUI_WELCOMEPAGE_TEXT "$(page_welcome_txt)"
 
 ; License Page:
@@ -148,6 +150,9 @@ Function Settings
 
 ; Get all the variables:
 
+Var /GLOBAL CHECKBOX
+Var /GLOBAL checkbox_state
+
 var /GLOBAL fullscreen
 var /GLOBAL language2
 var /GLOBAL resolution
@@ -192,17 +197,34 @@ ${WriteToConfig} "Resolution=$resolution$\r$\n" "$INSTDIR\config.ini"
 
 ${EndIf}
 
-${WriteToConfig} "[Advanced]$\r$\n" "$INSTDIR\config.ini"
+${WriteToConfig} "[Sound]$\r$\n" "$INSTDIR\config.ini"
+${WriteToConfig} "PreviewFading=3 Secs$\r$\n" "$INSTDIR\config.ini"
 
 ; Animations On / Off Tasks
 
 ${If} $animations == "Off"
+
+${WriteToConfig} "[Advanced]$\r$\n" "$INSTDIR\config.ini"
 
 ${WriteToConfig} "LoadAnimation=Off$\r$\n" "$INSTDIR\config.ini"
 
 ${WriteToConfig} "EffectSing=Off$\r$\n" "$INSTDIR\config.ini"
 
 ${WriteToConfig} "ScreenFade=Off$\r$\n" "$INSTDIR\config.ini"
+
+${WriteToConfig} "LineBonus=At Notes$\r$\n" "$INSTDIR\config.ini"
+
+${EndIf}
+
+${WriteToConfig} "[Lyrics]$\r$\n" "$INSTDIR\config.ini"
+${WriteToConfig} "LyricsFont=Plain$\r$\n" "$INSTDIR\config.ini"
+${WriteToConfig} "LyricsEffect=Slide$\r$\n" "$INSTDIR\config.ini"
+
+${If} $animations != "Off"
+
+${WriteToConfig} "[Advanced]$\r$\n" "$INSTDIR\config.ini"
+
+${WriteToConfig} "LineBonus=At Notes$\r$\n" "$INSTDIR\config.ini"
 
 ${EndIf}
 
@@ -216,8 +238,46 @@ FunctionEnd ; Settings page End
 ; Pages UnInstallation Routine
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
+!define MUI_WELCOMEPAGE_TITLE "$(page_un_welcome_title)"
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
+
+UninstPage custom un.AskDelete un.DeleteAll
+
+Function un.AskDelete
+
+nsDialogs::Create /NOUNLOAD 1018
+
+	${NSD_CreateCheckbox} 0 -150 100% 8u "$(delete_all)"
+	Pop $CHECKBOX
+
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX $0
+
+
+nsDialogs::Show
+
+FunctionEnd
+
+Function un.DeleteAll
+
+${NSD_GetState} $CHECKBOX $checkbox_state
+
+${If} $checkbox_state == "1"
+
+ RMDir /r "$INSTDIR\Songs"
+ RMDir /r "$INSTDIR\Covers"
+ Delete "$INSTDIR\Ultrastar.db"
+
+${Else}
+
+; If checkbox_state = 0
+
+
+${EndIf}
+
+
+FunctionEnd
+
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_UNPAGE_FINISH
 
@@ -309,7 +369,7 @@ SectionGroup $(name_section2) Section2
 
 Section /o "Bodo Wartke - Liebeslied (Love Song)" g2Section1
 
-;  AddSize 1400
+   AddSize 10342
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -334,7 +394,7 @@ SectionEnd
 ; 
 
 Section /o "Dead Smiling Pirates - I 18" g2Section2
-;  AddSize 1400
+   AddSize 2816
    SetOverwrite try
    SetOutPath "$INSTDIR"
    CreateDirectory "$INSTDIR\Songs\Dead Smiling Pirates - I 18"
@@ -363,7 +423,7 @@ SectionGroup $(name_s2_sub1) s2_sub1
 
 Section /o "Monkey Shines" s2_sub1_Section1
 
-;  AddSize 1400
+   AddSize 1455
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -384,7 +444,7 @@ SectionEnd
 
 Section /o "I Crush Everything" s2_sub1_Section2
 
-;  AddSize 1400
+   AddSize 7127
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -405,7 +465,7 @@ SectionEnd
 
 Section /o "Not About You" s2_sub1_Section3
 
-;  AddSize 1400
+   AddSize 3492
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -427,7 +487,7 @@ SectionEnd
 
 Section /o "Mr. Fancy Pants" s2_sub1_Section4
 
-;  AddSize 1400
+   AddSize 2427
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -448,7 +508,7 @@ SectionEnd
 
 Section /o "Big Bad World One" s2_sub1_Section5
 
-;  AddSize 1400
+   AddSize 4424
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -469,7 +529,7 @@ SectionEnd
 
 Section /o "Flickr" s2_sub1_Section6
 
-;  AddSize 1400
+   AddSize 21607
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -490,7 +550,7 @@ SectionEnd
 
 Section /o "My Beige Bear" s2_sub1_Section7
 
-;  AddSize 1400
+   AddSize 4926
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -511,7 +571,7 @@ SectionEnd
 
 Section /o "The Future Soon" s2_sub1_Section8
 
-;  AddSize 1400
+   AddSize 5612
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -532,7 +592,7 @@ SectionEnd
 
 Section /o "Ikea" s2_sub1_Section9
 
-;  AddSize 1400
+   AddSize 4608
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -553,7 +613,7 @@ SectionEnd
 
 Section /o "Furry Old Lobster" s2_sub1_Section10
 
-;  AddSize 1400
+   AddSize 3288
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -574,7 +634,7 @@ SectionEnd
 
 Section /o "Code Monkey" s2_sub1_Section11
 
-;  AddSize 1400
+   AddSize 21402
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -595,7 +655,7 @@ SectionEnd
 
 Section /o "I´m Your Moon" s2_sub1_Section12
 
-;  AddSize 1400
+   AddSize 4916
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -616,7 +676,7 @@ SectionEnd
 
 Section /o "First Of May" s2_sub1_Section13
 
-;  AddSize 1400
+   AddSize 6257
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -637,7 +697,7 @@ SectionEnd
 
 Section /o "Dance, Soterious Johnson, Dance" s2_sub1_Section14
 
-;  AddSize 1400
+   AddSize 5929
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -656,22 +716,22 @@ Section /o "Dance, Soterious Johnson, Dance" s2_sub1_Section14
 
 SectionEnd
 
-Section /o "A Walk With George" s2_sub1_Section15
+Section /o "A Talk With George" s2_sub1_Section15
 
-;  AddSize 1400
+   AddSize 4076
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song15} $TEMP\Song-JC-AWWG.zip
+  NSISdl::download /TIMEOUT=30000 ${download_sub1_song15} $TEMP\Song-JC-ATWG.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-AWWG.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$TEMP\Song-JC-ATWG.zip" "$INSTDIR\Songs\"
 
-  Delete "$TEMP\Song-JC-AWWG.zip"
+  Delete "$TEMP\Song-JC-ATWG.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -679,7 +739,7 @@ SectionEnd
 
 Section /o "Creepy Doll" s2_sub1_Section16
 
-;  AddSize 1400
+   AddSize 66560
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -700,7 +760,7 @@ SectionEnd
 
 Section /o "That Spells DNA" s2_sub1_Section17
 
-;  AddSize 1400
+   AddSize 4158
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -721,7 +781,7 @@ SectionEnd
 
 Section /o "When You Go" s2_sub1_Section18
 
-;  AddSize 1400
+   AddSize 5755
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -742,7 +802,7 @@ SectionEnd
 
 Section /o "Better" s2_sub1_Section19
 
-;  AddSize 1400
+   AddSize 4199
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -763,7 +823,7 @@ SectionEnd
 
 Section /o "Shop Vac" s2_sub1_Section20
 
-;  AddSize 1400
+   AddSize 5448
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -784,7 +844,7 @@ SectionEnd
 
 Section /o "I Feel Fantastic" s2_sub1_Section21
 
-;  AddSize 1400
+   AddSize 3851
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -805,7 +865,7 @@ SectionEnd
 
 Section /o "Re: Your Brains" s2_sub1_Section22
 
-;  AddSize 1400
+   AddSize 7087
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -826,7 +886,7 @@ SectionEnd
 
 Section /o "Skullcrusher Mountain" s2_sub1_Section23
 
-;  AddSize 1400
+   AddSize 6298
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -847,7 +907,7 @@ SectionEnd
 
 Section /o "Chiron Beta Prime" s2_sub1_Section24
 
-;  AddSize 1400
+   AddSize 38298
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -874,7 +934,7 @@ SectionGroupEnd
 ; 
 
 Section /o "Joshua Morin - On The Run" g2Section3
-;  AddSize 2200
+   AddSize 3881
    SetOverwrite try
    SetOutPath "$INSTDIR"
    CreateDirectory "$INSTDIR\Songs\Joshua Morin - On The Run"
@@ -896,7 +956,7 @@ Section /o "Joshua Morin - On The Run" g2Section3
 SectionEnd
 
 Section /o "Pornophonique - Space Invaders" g2Section4
-;  AddSize 2200
+   AddSize 3646
    SetOverwrite try
    SetOutPath "$INSTDIR"
    CreateDirectory "$INSTDIR\Songs\Pornophonique - Space Invaders"
@@ -921,7 +981,7 @@ SectionGroup $(name_s2_sub2) s2_sub2
 
 Section /o "Shearer - 69" s2_sub2_Section1
 
-;  AddSize 1400
+   AddSize 4557
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -942,7 +1002,7 @@ SectionEnd
 
 Section /o "Shearer - 69 (Karaoke)" s2_sub2_Section2
 
-;  AddSize 1400
+   AddSize 4772
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -963,7 +1023,7 @@ SectionEnd
 
 Section /o "Shearer - Can't stop it" s2_sub2_Section3
 
-;  AddSize 1400
+   AddSize 5510
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -984,7 +1044,7 @@ SectionEnd
 
 Section /o "Shearer - Can't stop it (Karaoke)" s2_sub2_Section4
 
-;  AddSize 1400
+   AddSize 4178
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1005,7 +1065,7 @@ SectionEnd
 
 Section /o "Shearer - In My Hand" s2_sub2_Section5
 
-;  AddSize 1400
+   AddSize 5960
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1026,7 +1086,7 @@ SectionEnd
 
 Section /o "Shearer - Man Song" s2_sub2_Section6
 
-;  AddSize 1400
+   AddSize 7270
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1047,7 +1107,7 @@ SectionEnd
 
 Section /o "Shearer - Man Song (Karaoke)" s2_sub2_Section7
 
-;  AddSize 1400
+   AddSize 5807
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1068,7 +1128,7 @@ SectionEnd
 
 Section /o "Shearer - Stay With Me" s2_sub2_Section8
 
-;  AddSize 1400
+   AddSize 6400
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1089,7 +1149,7 @@ SectionEnd
 
 Section /o "Shearer - Stay With Me (Karaoke)" s2_sub2_Section9
 
-;  AddSize 1400
+   AddSize 5417
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1112,7 +1172,7 @@ SectionEnd
 SectionGroupEnd
 
 Section /o "Steven Dunston - Northern Star" g2Section5
-;  AddSize 1500
+   AddSize 2427
    SetOverwrite try
    SetOutPath "$INSTDIR"
    CreateDirectory "$INSTDIR\Songs\Steven Dunston - Northern Star"
@@ -1138,7 +1198,7 @@ SectionGroup $(name_s2_sub3) s2_sub3
 
 Section /o "Wise Guys - Lebendig und kräftig und schärfer" s2_sub3_Section1
 
-;  AddSize 1400
+   AddSize 4015
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1160,7 +1220,7 @@ SectionEnd
 
 Section /o "Wise Guys - Mensch, wo bist du?" s2_sub3_Section2
 
-;  AddSize 1400
+   AddSize 5335
    SetOverwrite try
    SetOutPath "$INSTDIR\Songs\"
 
@@ -1191,7 +1251,7 @@ SectionGroupEnd
 SectionGroup $(name_section3) Section3
 
  Section /o "Orange" g3Section1
-;  AddSize 700
+   AddSize 1291
 
 ; Download theme orange:
   NSISdl::download /TIMEOUT=30000 ${download_theme1} $TEMP\Theme-Orange.zip
@@ -1209,7 +1269,7 @@ SectionGroup $(name_section3) Section3
 SectionEnd
 
  Section /o "Streetlight" g3Section2
-;  AddSize 1000
+  AddSize 1905
 
 ; Download theme Streetlight:
   NSISdl::download /TIMEOUT=30000 ${download_theme2} $TEMP\Theme-Streetlight.zip
@@ -1227,7 +1287,7 @@ SectionEnd
 SectionEnd
 
  Section /o "Vistar" g3Section3
-;   AddSize 1000
+    AddSize 1936
 
 ; Download theme Vistar:
 
@@ -1246,7 +1306,7 @@ SectionEnd
 SectionEnd
 
  Section /o "BlueSensation" g3Section4
-;   AddSize 1000
+    AddSize 2109
 
 ; Download theme BlueSensation:
 
@@ -1266,7 +1326,7 @@ SectionEnd
 
 
  Section /o "WhiteSensation" g3Section5
-;   AddSize 1000
+  AddSize 1168
 
 ; Download theme WhiteSensation:
 
@@ -1285,7 +1345,7 @@ SectionEnd
 SectionEnd
 
  Section /o "WiiStar" g3Section6
-;   AddSize 1000
+   AddSize 850
 
 ; Download theme WiiStar:
 
@@ -1304,7 +1364,7 @@ SectionEnd
 SectionEnd
 
  Section /o "iStar" g3Section7
-;   AddSize 1000
+  AddSize 1588
 
 ; Download theme iStar:
 

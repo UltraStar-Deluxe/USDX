@@ -18,6 +18,7 @@
 
  RMDir /r "$INSTDIR\plugins"
  RMDir /r "$INSTDIR\themes"
+ RMDir /r "$INSTDIR\fonts"
  RMDir /r "$INSTDIR\languages"
  RMDir /r "$INSTDIR\visuals"
  RMDir /r "$INSTDIR\sounds"

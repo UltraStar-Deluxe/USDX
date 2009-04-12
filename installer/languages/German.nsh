@@ -15,6 +15,8 @@ LangString button_next ${LANG_GERMAN} "Weiter >"
 LangString button_close ${LANG_GERMAN} "Beenden"
 LangString update_information ${LANG_GERMAN} "Du kannst nach einer aktuelleren Version von 'UltraStar Deluxe' suchen. Dazu wird eine Verbindung mit dem Internet hergestellt. Wurde eine aktuellere Version gefunden, kann diese anschließend installiert werden."
 
+LangString delete_all ${LANG_GERMAN} "Lieder, Highscores und Cover auch löschen?"
+
 LangString update_check_older ${LANG_GERMAN} "Deine aktuelle Version $R0 ist veraltet. Die neue Version $1 von UltraStar Deluxe ist verfügbar. Möchtest du sie runterladen?"
 LangString update_check_equal ${LANG_GERMAN} "Deine aktuelle Version $R0 ist auf dem neusten Stand.$\n$\rKein Update benötigt."
 LangString update_check_newer ${LANG_GERMAN} "Deine aktuelle Version $R0 ist neuer als die zurzeit veröffentlichte$\n$\rVersion $1 von UltraStar Deluxe. Kein Update benötigt."
@@ -27,6 +29,8 @@ LangString page_welcome_txt_update ${LANG_GERMAN} "Dieser Assistent wird Sie dur
 
 LangString page_welcome_title ${LANG_GERMAN} "Willkommen zur Installationsroutine von UltraStar Deluxe"
 LangString page_welcome_txt ${LANG_GERMAN} "Dieser Assistent wird Sie durch die Installation von UltraStar Deluxe begleiten. UltraStar Deluxe ist ein kostenloses quelloffenes Karaokespiel, welches Singstar ähnelt. $\n$\r$\n$\rDas UltraStar Deluxe Team wünscht viel Spaß.$\n$\rProjekthomepage: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"
+
+LangString page_un_welcome_title ${LANG_GERMAN} "Willkommen zur Deinstallation von UltraStar Deluxe"
 
 ; Components Page:
 
@@ -82,17 +86,17 @@ LangString DESC_s2_sub1_Section2 ${LANG_GERMAN} "Installiert das Lied 'I Crush E
 LangString DESC_s2_sub1_Section3 ${LANG_GERMAN} "Installiert das Lied 'Not About You'."
 LangString DESC_s2_sub1_Section4 ${LANG_GERMAN} "Installiert das Lied 'Mr. Fancy Pants'."
 LangString DESC_s2_sub1_Section5 ${LANG_GERMAN} "Installiert das Lied 'Big Bad World One'."
-LangString DESC_s2_sub1_Section6 ${LANG_GERMAN} "Installiert das Lied 'Flickr'."
+LangString DESC_s2_sub1_Section6 ${LANG_GERMAN} "Installiert das Lied 'Flickr [inkl. Video]'."
 LangString DESC_s2_sub1_Section7 ${LANG_GERMAN} "Installiert das Lied 'My Beige Bear'."
 LangString DESC_s2_sub1_Section8 ${LANG_GERMAN} "Installiert das Lied 'The Future Soon'."
 LangString DESC_s2_sub1_Section9 ${LANG_GERMAN} "Installiert das Lied 'Ikea'."
 LangString DESC_s2_sub1_Section10 ${LANG_GERMAN} "Installiert das Lied 'Furry Old Lobster'."
-LangString DESC_s2_sub1_Section11 ${LANG_GERMAN} "Installiert das Lied 'Code Monkey'."
+LangString DESC_s2_sub1_Section11 ${LANG_GERMAN} "Installiert das Lied 'Code Monkey [inkl. Video]'."
 LangString DESC_s2_sub1_Section12 ${LANG_GERMAN} "Installiert das Lied 'I´m Your Moon'."
 LangString DESC_s2_sub1_Section13 ${LANG_GERMAN} "Installiert das Lied 'First Of May'."
 LangString DESC_s2_sub1_Section14 ${LANG_GERMAN} "Installiert das Lied 'Dance, Soterios Johnson, Dance'."
 LangString DESC_s2_sub1_Section15 ${LANG_GERMAN} "Installiert das Lied 'A Talk With George'."
-LangString DESC_s2_sub1_Section16 ${LANG_GERMAN} "Installiert das Lied 'Creepy Doll'."
+LangString DESC_s2_sub1_Section16 ${LANG_GERMAN} "Installiert das Lied 'Creepy Doll [inkl. Video]'."
 LangString DESC_s2_sub1_Section17 ${LANG_GERMAN} "Installiert das Lied 'That Spells DNA'."
 LangString DESC_s2_sub1_Section18 ${LANG_GERMAN} "Installiert das Lied 'When You Go'."
 LangString DESC_s2_sub1_Section19 ${LANG_GERMAN} "Installiert das Lied 'Better'."
@@ -100,7 +104,7 @@ LangString DESC_s2_sub1_Section20 ${LANG_GERMAN} "Installiert das Lied 'Shop Vac
 LangString DESC_s2_sub1_Section21 ${LANG_GERMAN} "Installiert das Lied 'I Feel Fantastic'."
 LangString DESC_s2_sub1_Section22 ${LANG_GERMAN} "Installiert das Lied 'Re: Your Brains'."
 LangString DESC_s2_sub1_Section23 ${LANG_GERMAN} "Installiert das Lied 'Skullcrusher Mountain'."
-LangString DESC_s2_sub1_Section24 ${LANG_GERMAN} "Installiert das Lied 'Chiron Beta Prime'."
+LangString DESC_s2_sub1_Section24 ${LANG_GERMAN} "Installiert das Lied 'Chiron Beta Prime [inkl. Video]'."
 
 LangString DESC_s2_sub2_Section1 ${LANG_GERMAN} "Installiert das Lied '69'."
 LangString DESC_s2_sub2_Section2 ${LANG_GERMAN} "Installiert das Lied '69 (Karaoke)'."

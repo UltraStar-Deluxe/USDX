@@ -15,6 +15,8 @@ LangString button_next ${LANG_ENGLISH} "Next >"
 LangString button_close ${LANG_ENGLISH} "Close"
 LangString update_information ${LANG_ENGLISH} "You can check if a new version of 'UltraStar Deluxe' is available. Thereto an internet connection will be established. If a new version is found, it can be installed afterwards."
 
+LangString delete_all ${LANG_ENGLISH} "Also delete Songs, Highscores and Covers ?"
+
 LangString update_check_older ${LANG_ENGLISH} "Your version $R0 is outdated. The new version $1 of UltraStar Deluxe is available. Do you want to update?"
 LangString update_check_equal ${LANG_ENGLISH} "Your currently installed version $R0 is up-to-date. No update needed."
 LangString update_check_newer ${LANG_ENGLISH} "Your installed version $R0 is newer than the $\n$\rcurrent release version $1 of UltraStar Deluxe. No update needed."
@@ -27,6 +29,8 @@ LangString page_welcome_txt_update ${LANG_ENGLISH} "This wizard will guide you t
 
 LangString page_welcome_title ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe Setup Wizard"
 LangString page_welcome_txt ${LANG_ENGLISH} "This wizard will guide you through the Installation of UltraStar Deluxe. UltraStar Deluxe is a free open source Karaoke game, which can be compared with Singstar.$\n$\r$\n$\rThe UltraStar Deluxe Team wishes you fun.$\n$\rProject website: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"
+
+LangString page_un_welcome_title ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe uninstall wizard"
 
 ; Components Page:
 
@@ -82,17 +86,17 @@ LangString DESC_s2_sub1_Section2 ${LANG_ENGLISH} "This will install the song 'I 
 LangString DESC_s2_sub1_Section3 ${LANG_ENGLISH} "This will install the song 'Not About You'."
 LangString DESC_s2_sub1_Section4 ${LANG_ENGLISH} "This will install the song 'Mr. Fancy Pants'."
 LangString DESC_s2_sub1_Section5 ${LANG_ENGLISH} "This will install the song 'Big Bad World One'."
-LangString DESC_s2_sub1_Section6 ${LANG_ENGLISH} "This will install the song 'Flickr'."
+LangString DESC_s2_sub1_Section6 ${LANG_ENGLISH} "This will install the song 'Flickr [incl. video]'."
 LangString DESC_s2_sub1_Section7 ${LANG_ENGLISH} "This will install the song 'My Beige Bear'."
 LangString DESC_s2_sub1_Section8 ${LANG_ENGLISH} "This will install the song 'The Future Soon'."
 LangString DESC_s2_sub1_Section9 ${LANG_ENGLISH} "This will install the song 'Ikea'."
 LangString DESC_s2_sub1_Section10 ${LANG_ENGLISH} "This will install the song 'Furry Old Lobster'."
-LangString DESC_s2_sub1_Section11 ${LANG_ENGLISH} "This will install the song 'Code Monkey'."
+LangString DESC_s2_sub1_Section11 ${LANG_ENGLISH} "This will install the song 'Code Monkey [incl. video]'."
 LangString DESC_s2_sub1_Section12 ${LANG_ENGLISH} "This will install the song 'I´m Your Moon'."
 LangString DESC_s2_sub1_Section13 ${LANG_ENGLISH} "This will install the song 'First Of May'."
 LangString DESC_s2_sub1_Section14 ${LANG_ENGLISH} "This will install the song 'Dance, Soterios Johnson, Dance'."
 LangString DESC_s2_sub1_Section15 ${LANG_ENGLISH} "This will install the song 'A Talk With George'."
-LangString DESC_s2_sub1_Section16 ${LANG_ENGLISH} "This will install the song 'Creepy Doll'."
+LangString DESC_s2_sub1_Section16 ${LANG_ENGLISH} "This will install the song 'Creepy Doll [incl. video]'."
 LangString DESC_s2_sub1_Section17 ${LANG_ENGLISH} "This will install the song 'That Spells DNA'."
 LangString DESC_s2_sub1_Section18 ${LANG_ENGLISH} "This will install the song 'When You Go'."
 LangString DESC_s2_sub1_Section19 ${LANG_ENGLISH} "This will install the song 'Better'."
@@ -100,7 +104,7 @@ LangString DESC_s2_sub1_Section20 ${LANG_ENGLISH} "This will install the song 'S
 LangString DESC_s2_sub1_Section21 ${LANG_ENGLISH} "This will install the song 'I Feel Fantastic'."
 LangString DESC_s2_sub1_Section22 ${LANG_ENGLISH} "This will install the song 'Re: Your Brains'."
 LangString DESC_s2_sub1_Section23 ${LANG_ENGLISH} "This will install the song 'Skullcrusher Mountain'."
-LangString DESC_s2_sub1_Section24 ${LANG_ENGLISH} "This will install the song 'Chiron Beta Prime'."
+LangString DESC_s2_sub1_Section24 ${LANG_ENGLISH} "This will install the song 'Chiron Beta Prime [incl. video]'."
 
 LangString DESC_s2_sub2_Section1 ${LANG_ENGLISH} "This will install the song '69'."
 LangString DESC_s2_sub2_Section2 ${LANG_ENGLISH} "This will install the song '69 (Karaoke)'."
