@@ -29,12 +29,16 @@ Wiki:        http://wiki.ultrastardeluxe.org/
  = 1. About         =
  ====================
 
-UltraStar Deluxe (USDX) is a free and open source karaoke game. It allows up to six players to sing along with music using microphones in order to score points, depending on the pitch of the voice and the rhythm of singing. 
+UltraStar Deluxe (USDX) is a free and open source karaoke game.  It allows
+up to six players to sing along with music using microphones in order to
+score points, depending on the pitch of the voice and the rhythm of
+singing.
 
-UltraStar Deluxe is a fork of the original UltraStar (developed by corvus5). 
-Many features have been added like party mode, theme support and
-support for more audio and video formats.
-The improved stability and code quality of USDX enabled ports to Linux and Mac OS X.
+UltraStar Deluxe is a fork of the original UltraStar (developed by corvus5).
+Many features have been added like party mode, theme support and support
+for more audio and video formats.
+The improved stability and code quality of USDX enabled ports to Linux and
+Mac OS X.
 
  ====================
  = 2. Release Notes =
@@ -44,7 +48,7 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
   [Path]
   Songs=[SongFolder] (e.g. C:\Program Files\Ultrastar\Songs)
 
-- To take a screenshot press "PrintScreen" Key
+- To take a screenshot press "PrintScreen" key.
   Screenshots are saved in the directory "Screenshots".
 
 - To enable joypad support change config.ini:
@@ -57,15 +61,15 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
   [Controller]
   Joypad=On
 
-- To Enable 4 to 6 Playermode 2 Screens are needed.
-  Disable the fullscreen mode, extend your desktop horizontaly, set the
-  resolution to fill one screen. 
+- To Enable 4 to 6 player mode 2 screens are needed.
+  Disable the full screen mode, extend your desktop horizontally and set
+  the resolution to fill one screen.
   Add to Config.ini:
   [Graphics]
   Screens=2
 
-- Press Alt + F[1..12] in NameScreen to Save a Playername
-  Press F[1..12] to Load a Playername
+- Press Alt + F[1..12] in NameScreen to save the name of a player
+  Press F[1..12] to load the name of a player
 
 - To enable benchmark run the game with -benchmark parameter
 
@@ -74,48 +78,49 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
  = 3. Command-Line Parameters =
  ==============================
 
-Command-Line Parameters are passed to the game adding it to the Path of a
-Shortcut or starting the game within the console.
+Command-line parameters are passed to the game adding it to the path of a
+shortcut or starting the game within the console.
 
 The following parameters are possible. They can be joined in any possible way.
 
 - Benchmark         : Create a benchmark.log file with start timings.
 
-- NoLog    	        : Do not create any .log files
+- NoLog    	    : Do not create any .log files
 
-- Joypad            : Start with Joypad support
+- Joypad            : Start with joypad support
 
-- Language [ID]     : Load Language [ID] on startup.
+- Language [ID]     : Load language [ID] on startup.
                       Example: -Language german
 
-- Songpath [Path]   : Some as config Songpath.
+- Songpath [Path]   : Same as config Songpath.
                       Example: -SongPath "C:\Ultrastar Songs"
 
-- ConfigFile [File] : Load Configfile [File] instead of config.ini. 
-                      Path to the file have to exist.
+- ConfigFile [File] : Load configuration file [File] instead of config.ini.
+                      The path to the file has to exist.
                       Example: -ConfigFile config.SongCreation.ini
 
 - ScoreFile [File]  : Use [File] instead of Ultrastar.db
-                      Path to the file have to exist.
+                      The path to the file has to exist.
                       Example: -ScoreFile HouseParty.db
 
-- FullScreen        : Start the game in Fullscreen Mode
+- FullScreen        : Start the game in full screen mode
 
-- Depth [16/32]     : Force Depth 16 or 32. Example: -Depth 16
+- Depth [16/32]     : Force depth to 16 or 32. Example: -Depth 16
 
 - Resolution [ID]   : Force resolution. Example: -Resolution 800x600
 
-- Screens [1/2]     : Force 1 or 2 Screen Mode. Example: -Screens 2
+- Screens [1/2]     : Force 1 or 2 screens. Example: -Screens 2
 
 Some Examples:
 
-Start with Resolution 1024x768 32 Bit Depth and Fullscreen:
+Start with a resolution of 1024x768, a depth of 32 bit and in full screen
+mode:
 ultrastar.exe -Resolution 1024x768 -Depth 32 -Fullscreen
 
-Start without logging and polish Language
-ultrastar.exe -NoLog -Language german
+Start without logging and with polish language
+ultrastar.exe -NoLog -Language polish
 
-Start with custom config File and Score DB:
+Start with a customs configuration file and score database:
 ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ultrastar\Scores\PartyScores.db
 
 
@@ -123,12 +128,12 @@ ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ult
  = 4. Controls =
  ===============
 
-[J]      to open the "Search for a Song" Interface
+[J]      to open the "Search for a Song" interface
 [Cursor] to navigate through the screens.
-[Enter]  to confirm 
+[Enter]  to confirm
 [Escape] to go to the previous screen.
 
-In Songscreen
+Songscreen
 [R],
   [Shift] + [R],
   [Strg]  + [R]            select a random song/category
@@ -136,4 +141,4 @@ In Songscreen
 [Alt] + [Shift] + [Letter] jump to a title with the first letter [Letter]
 
 
-Editor Controls are described in documentation.pdf
+Editor controls are described in documentation.pdf
