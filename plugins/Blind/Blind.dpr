@@ -53,7 +53,7 @@ begin
   Result := true;
 end;
 
-// executed everytime the screen is drawed. if false the game finishes
+// executed every time the screen is drawn. if false the game finishes
 function Draw (var   Playerinfo:  TPlayerinfo; 
                const CurSentence: cardinal)
 	      : boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}

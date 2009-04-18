@@ -1,4 +1,4 @@
-unit StrUtils;
+unit USDXStrUtils;
 
 interface
 

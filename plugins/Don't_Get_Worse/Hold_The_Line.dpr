@@ -6,7 +6,7 @@ library Hold_The_Line;
 
 uses
   ModiSDK      in '..\SDK\ModiSDK.pas',
-  StrUtils     in '..\SDK\StrUtils.pas',
+  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
   sdl          in '..\..\src\lib\JEDI-SDL\SDL\Pas\sdl.pas',
   moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
   gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas';
@@ -23,7 +23,7 @@ var
 
   DismissedSound: cardinal;
 
-// Gave the Plugins Info
+// Give the plugin's info
 procedure PluginInfo (var Info: TPluginInfo); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 begin
   Info.Name       := 'PLUGIN_HDL_NAME';
@@ -36,30 +36,30 @@ begin
 
   Info.NumPlayers := 31;
   // Options
-  Info.LoadSong   := true; // Whether or not a Song should be Loaded
-  // Only When Song is Loaded:
-  Info.ShowScore  := true; // Whether or not the Score should be shown
-  Info.ShowNotes  := true; // Whether the Note Lines should be displayed
-  Info.LoadVideo  := true; // Should the Video be loaded?
-  Info.LoadBack   := true; // Should the Background be loaded?
+  Info.LoadSong   := true; // Whether or not a song should be loaded
+  // Only when song is loaded:
+  Info.ShowScore  := true; // Whether or not the score should be shown
+  Info.ShowNotes  := true; // Whether the note lines should be displayed
+  Info.LoadVideo  := true; // Should the video be loaded?
+  Info.LoadBack   := true; // Should the background be loaded?
 
-  Info.BGShowFull    := false; // Whether the Background or the Video should be shown Full size
-  Info.BGShowFull_O  := true;  // Whether the Background or the Video should be shown Full size
+  Info.BGShowFull    := false; // Whether the background or the video should be shown full size
+  Info.BGShowFull_O  := true;  // Whether the Background or the Video should be shown full size
 
-  Info.ShowRateBar   := true;  // Whether the Bar that shows how good the player was should be displayed
-  Info.ShowRateBar_O := false; // Load from Ini whether the Bar should be Displayed
+  Info.ShowRateBar   := true;  // Whether the bar that shows how good the player was should be displayed
+  Info.ShowRateBar_O := false; // Load from ini whether the bar should be displayed
 
-  Info.EnLineBonus   := false; // Whether LineBonus Should be enabled
-  Info.EnLineBonus_O := true;  // Load from Ini whether LineBonus Should be enabled
+  Info.EnLineBonus   := false; // Whether line bonus should be enabled
+  Info.EnLineBonus_O := true;  // Load from ini whether line bonus should be enabled
 
-  // Options even when song is Not loaded
-  Info.ShowBars      := false; // Whether the White Bars on Top and Bottom should be Drawn
-  Info.TeamModeOnly  := false; // if true the Plugin can only be Played in Team Mode
-  Info.GetSoundData  := false; // if true the RData Procedure is called when new Sound Data is available
-  Info.Dummy         := false; // Should be Set to false... for Updating Plugin Interface
+  // Options even when song is not loaded
+  Info.ShowBars      := false; // Whether the white bars on top and bottom should be drawn
+  Info.TeamModeOnly  := false; // if true the plugin can only be played in team mode
+  Info.GetSoundData  := false; // if true the rdata procedure is called when new sound data is available
+  Info.Dummy         := false; // Should be set to false... for updating plugin interface
 end;
 
-// Executed on Game Start; if true Game begins, else Failure
+// executed on game start. if true game begins, else failure
 function Init (const TeamInfo:   TTeamInfo; 
                var   Playerinfo: TPlayerinfo;
 	       const Sentences:  TSentences;
@@ -149,7 +149,7 @@ begin
         MethodRec.PlaySound (DismissedSound);
       end;
 
-      // Draw Pointer
+      // Draw pointer
       if (PointerVisible) then
       begin
         glColor4f (0.2, 0.8, 0.1, 1);
@@ -175,7 +175,7 @@ begin
     else
     begin
       Inc(C);
-      // Draw Dismissed
+      // Draw dismissed
       Text := CreateStr(PChar('PARTY_DISMISSED'));
 
       glColor4f (0.8, 0.8, 0.8, 1);
@@ -188,7 +188,7 @@ begin
     Result := false;
 end;
 
-// Is Executed on Finish, Returns the Playernum of the Winner
+// is executed on finish, returns the player number of the winner
 function Finish (var Playerinfo: TPlayerinfo): byte; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 var
   Index: integer;

@@ -4,9 +4,11 @@ library TeamDuell ;
   {$MODE Delphi}
 {$ENDIF}
 
+// compile with fpc -k-U -k_SDL_main TeamDuell.dpr -Fi../../src/lib/JEDI-SDL/SDL/Pas/
+
 uses
   ModiSDK      in '..\SDK\ModiSDK.pas',
-  StrUtils     in '..\SDK\StrUtils.pas',
+  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
   sdl          in '..\..\src\lib\JEDI-SDL\SDL\Pas\sdl.pas',
   moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
   gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas',
@@ -22,8 +24,7 @@ var
   bps, RTtoNextChange:   double;
   firsttime, secondtime: boolean;
 
-
-// Give the Plugin's Info
+// Give the plugin's info
 procedure PluginInfo (var Info: TPluginInfo); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 begin
   Info.Name       := 'PLUGIN_TEAMDUELL_NAME';
@@ -35,30 +36,30 @@ begin
 
   Info.NumPlayers := 31;
   // Options
-  Info.LoadSong   := true; // Whether or not a Song should be Loaded
-  // Only When Song is Loaded:
-  Info.ShowScore  := true; // Whether or not the Score should be shown
-  Info.ShowNotes  := true; // Whether the Note Lines should be displayed
-  Info.LoadVideo  := true; // Should the Video be loaded ?
-  Info.LoadBack   := true; // Should the Background be loaded ?
+  Info.LoadSong   := true; // Whether or not a song should be loaded
+  // Only when song is loaded:
+  Info.ShowScore  := true; // Whether or not the score should be shown
+  Info.ShowNotes  := true; // Whether the note lines should be displayed
+  Info.LoadVideo  := true; // Should the video be loaded ?
+  Info.LoadBack   := true; // Should the background be loaded ?
 
-  Info.BGShowFull    := false; // Whether the Background or the Video should be shown Full size
-  Info.BGShowFull_O  := true;  // Whether the Background or the Video should be shown Full size
+  Info.BGShowFull    := false; // Whether the background or the video should be shown full size
+  Info.BGShowFull_O  := true;  // Whether the background or the video should be shown full size
 
-  Info.ShowRateBar   := true;  // Whether the Bar that shows how good the player was should be displayed
-  Info.ShowRateBar_O := false; // Load from Ini whether the Bar should be Displayed
+  Info.ShowRateBar   := true;  // Whether the bar that shows how good the player was should be displayed
+  Info.ShowRateBar_O := false; // Load from ini whether the bar should be displayed
 
-  Info.EnLineBonus   := false; // Whether Line Bonus Should be enabled
-  Info.EnLineBonus_O := true;  // Load from Ini whether Line Bonus Should be enabled
+  Info.EnLineBonus   := false; // Whether line bonus should be enabled
+  Info.EnLineBonus_O := true;  // Load from ini whether line bonus should be enabled
 
-  // Options even when song is Not loaded
-  Info.ShowBars      := false; // Whether the White Bars on Top and Bottom should be Drawn
-  Info.TeamModeOnly  := true;  // if true the Plugin can only be Played in Team Mode
-  Info.GetSoundData  := false; // if true the RData Procedure is called when new SoundData is available
-  Info.Dummy         := false; // Should be Set to false... for Updating Plugin Interface
+  // Options even when song is not loaded
+  Info.ShowBars      := false; // Whether the white bars on top and bottom should be drawn
+  Info.TeamModeOnly  := true;  // if true the plugin can only be played in team mode
+  Info.GetSoundData  := false; // if true the rdata procedure is called when new sounddata is available
+  Info.Dummy         := false; // Should be set to false... for updating plugin interface
 end;
 
-// Executed on Game Start; if true Game begins, else Failure
+// executed on game start. if true game begins, else failure
 function Init (const TeamInfo:   TTeamInfo;
                var   Playerinfo: TPlayerinfo;
 	       const Sentences:  TSentences;
@@ -67,13 +68,13 @@ function Init (const TeamInfo:   TTeamInfo;
 var
   Index, J: integer;
 begin
-  // Get beginning of sentences
+// Get beginning of sentences
   for Index := 0 to Sentences.High do
   begin
     SetLength(Startpoints, Index+1);
     Startpoints[Index]:=Sentences.Sentence[Index].Start;
   end;
-  // Get Teams and Players
+  // Get teams and players
   for Index := 0 to TeamInfo.NumTeams-1 do
   begin
     SetLength(TeamPlayer, Index+1);
@@ -99,7 +100,7 @@ begin
   Result := true;
 end;
 
-// Executed everytime the Screen is Drawed; if false The Game finishes
+// Executed every time the screen is drawn; if false the game finishes
 function Draw (var   Playerinfo:  TPlayerinfo;
                const CurSentence: cardinal)
 	      : boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -115,7 +116,7 @@ begin
     starttick := SDL_GetTicks();
   end;
   start := false;
-  // show first singers for 5sec
+  // show first singer for 5 sec
   if  (CurSentence < 1) and ((starttick + 5000) > SDL_GetTicks()) then
     start := true;
 
@@ -128,11 +129,11 @@ begin
     bps :=  (Startpoints[3]-Startpoints[1]) * 1000 / (endtick-starttick); // BeatsPerSecond
   end;
 
-  // Time to next Change
+  // Time to next change
   RTtoNextChange := ((Startpoints[ChangeOnSentence]-Startpoints[ChangeOnSentence - 7]) / bps) - ((SDL_GetTicks() - starttick) / 1000);
   TtoNextChange := Trunc(RTtoNextChange) +1;
 
-  // Next Singer for Team I
+  // Next singer for team I
   for Index := 0 to High(TeamPlayer) do
   begin
     if (CurSentence = ChangeOnSentence) and not(PlayerSelected[Index] = CurSentence) then
@@ -144,7 +145,7 @@ begin
       until not(NextSinger[Index] = CurSinger[Index]) or (SPT[Index] = 1) ;
     end;
 
-  // display bg
+  // display background
   glColor4f (0.8, 0.8, 0.8, 1);
   display := PChar(TeamPlayer[Index,CurSinger[Index]]);
   if (TtoNextChange <= 11) or (start = true) then
@@ -211,7 +212,7 @@ begin
   Result := true;
 end;
 
-// Is Executed on Finish, Returns the Playernum of the Winner
+// is executed on finish, returns the player number of the winner
 function Finish (var Playerinfo: TPlayerinfo): byte; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 var
   Index: integer;
