@@ -8,7 +8,7 @@ library TeamDuell ;
 
 uses
   ModiSDK      in '..\SDK\ModiSDK.pas',
-  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
+//  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
   sdl          in '..\..\src\lib\JEDI-SDL\SDL\Pas\sdl.pas',
   moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
   gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas',
@@ -20,8 +20,8 @@ var
   CurSinger, NextSinger: array[0..2] of integer;
   MethodRec:             TMethodRec;
   SPT, PlayerSelected:   array[0..2] of integer;
-  TtoNextChange, starttick, endtick, ChangeOnSentence: cardinal;
-  bps, RTtoNextChange:   double;
+  TimeToNextChange, starttick, endtick, ChangeOnSentence: cardinal;
+  bps, RTimeToNextChange:   double;
   firsttime, secondtime: boolean;
 
 // Give the plugin's info
@@ -106,8 +106,9 @@ function Draw (var   Playerinfo:  TPlayerinfo;
 	      : boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 var
   Index, timeline, x, y: integer;
-  display: PChar;
-  start: boolean;
+  display:    PChar;
+  TimeString: PChar;
+  start:      boolean;
 begin
   // TickCount(firstSentence) (not zero!)
   if (CurSentence = ChangeOnSentence - 7) and (firsttime) then
@@ -130,8 +131,8 @@ begin
   end;
 
   // Time to next change
-  RTtoNextChange := ((Startpoints[ChangeOnSentence]-Startpoints[ChangeOnSentence - 7]) / bps) - ((SDL_GetTicks() - starttick) / 1000);
-  TtoNextChange := Trunc(RTtoNextChange) +1;
+  RTimeToNextChange := ((Startpoints[ChangeOnSentence]-Startpoints[ChangeOnSentence - 7]) / bps) - ((SDL_GetTicks() - starttick) / 1000);
+  TimeToNextChange := Trunc(RTimeToNextChange) + 1;
 
   // Next singer for team I
   for Index := 0 to High(TeamPlayer) do
@@ -148,60 +149,66 @@ begin
   // display background
   glColor4f (0.8, 0.8, 0.8, 1);
   display := PChar(TeamPlayer[Index,CurSinger[Index]]);
-  if (TtoNextChange <= 11) or (start = true) then
+  if (TimeToNextChange <= 11) or (start = true) then
   begin
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
-    glColor4f (0, 0, 0, 1);
+    glColor4f(0, 0, 0, 1);
     glBegin(GL_QUADS);
-    glVertex2f(PlayerInfo.Playerinfo[Index].PosX, PlayerInfo.Playerinfo[Index].PosY+8);
-    glVertex2f(PlayerInfo.Playerinfo[Index].PosX, PlayerInfo.Playerinfo[Index].PosY + 30);
-    glVertex2f(PlayerInfo.Playerinfo[Index].PosX + 100, PlayerInfo.Playerinfo[Index].PosY + 30);
-    glVertex2f(PlayerInfo.Playerinfo[Index].PosX + 100, PlayerInfo.Playerinfo[Index].PosY+8);
+      glVertex2f(PlayerInfo.Playerinfo[Index].PosX,       PlayerInfo.Playerinfo[Index].PosY +  8);
+      glVertex2f(PlayerInfo.Playerinfo[Index].PosX,       PlayerInfo.Playerinfo[Index].PosY + 30);
+      glVertex2f(PlayerInfo.Playerinfo[Index].PosX + 100, PlayerInfo.Playerinfo[Index].PosY + 30);
+      glVertex2f(PlayerInfo.Playerinfo[Index].PosX + 100, PlayerInfo.Playerinfo[Index].PosY +  8);
     glEnd;
     display := 'Next Singer';
 
    // timeline
-    x:= 270;
-    y:= 472;
-    if (TtoNextChange <= 5) and (RTtoNextChange > 0) then
+    x := 270;
+    y := 472;
+    if (TimeToNextChange <= 5) and (RTimeToNextChange > 0) then
     begin
-      timeline := Trunc(RTtoNextChange*50);
-      glColor3f (0, 0, 0);
+      timeline := Trunc(RTimeToNextChange*50);
+      glColor3f(0, 0, 0);
       glBegin(GL_QUADS);
-      glVertex2f(x, y);
-      glVertex2f(x, y+18);
-      glVertex2f(x+6+250, y+18);
-      glVertex2f(x+6+250, y);
+        glVertex2f(x,           y);
+        glVertex2f(x,           y + 18);
+        glVertex2f(x + 6 + 250, y + 18);
+        glVertex2f(x + 6 + 250, y);
       glEnd;
-      glColor3f (0.2, 0.2, 0.2);
+      glColor3f(0.2, 0.2, 0.2);
       glBegin(GL_QUADS);
-      glVertex2f(x+3, y+3);
-      glVertex2f(x+3, y+15);
-      glVertex2f(x+3+250, y+15);
-      glVertex2f(x+3+250, y+3);
+        glVertex2f(x + 3,       y +  3);
+        glVertex2f(x + 3,       y + 15);
+        glVertex2f(x + 3 + 250, y + 15);
+        glVertex2f(x + 3 + 250, y +  3);
       glEnd;
-      glColor3f (0.8, 0.2, 0.2);
+      glColor3f(0.8, 0.2, 0.2);
       glBegin(GL_QUADS);
-      glColor3f (0.9, 0, 0);     glVertex2f(x+3, y+3);
-      glColor3f (0.8, 0.3, 0.3); glVertex2f(x+3, y+15);
-      glColor3f (0.8, 0.3, 0.3); glVertex2f(x+3+timeline, y+15);
-      glColor3f (0.9, 0, 0);     glVertex2f(x+3+timeline, y+3);
+        glColor3f(0.9, 0,   0);   glVertex2f(x + 3,            y +  3);
+        glColor3f(0.8, 0.3, 0.3); glVertex2f(x + 3,            y + 15);
+        glColor3f(0.8, 0.3, 0.3); glVertex2f(x + 3 + timeline, y + 15);
+        glColor3f(0.9, 0,   0);   glVertex2f(x + 3 + timeline, y +  3);
       glEnd;
     end;
     glDisable(GL_TEXTURE_2D);
   end;
 
   // Names, Timer
-  if (TtoNextChange <= 9) then
+  if (TimeToNextChange <= 9) then
   begin display := PChar(TeamPlayer[Index,NextSinger[Index]]);
-    glColor4f (0.8, 0.1, 0.2, 1);
-    MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX+85, PlayerInfo.Playerinfo[Index].PosY+10, CreateStr(PChar(IntToStr(Trunc(TtoNextChange)))));
+    glColor4f(0.8, 0.1, 0.2, 1);
+// KMS aka Mischi:
+// try to replace the use of the unit USDXStrUtils
+// original:
+//    MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX+85, PlayerInfo.Playerinfo[Index].PosY+10, CreateStr(PChar(IntToStr(Trunc(TimeToNextChange)))));
+// replacement: Is this correct?
+    TimeString := PChar(IntToStr(Trunc(TimeToNextChange)));
+    MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX+85, PlayerInfo.Playerinfo[Index].PosY+10, TimeString);
   end;
-  glColor4f (0.8, 0.8, 0.8, 1);
+  glColor4f(0.8, 0.8, 0.8, 1);
   if (CurSentence = 0) then
     display := PChar(TeamPlayer[Index,CurSinger[Index]]);
-  if (TtoNextChange <= 11) or (start) then
+  if (TimeToNextChange <= 11) or (start) then
     MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX+5, PlayerInfo.Playerinfo[Index].PosY+10, display);
   end;
   if (CurSentence = ChangeOnSentence) then
@@ -248,7 +255,7 @@ begin
     end;
   end;
 
-  // When nobody has Points -> Everybody loose
+  // When nobody has points -> everybody looses
   if (MaxScore = 0) then
     Result := 0;
 end;
