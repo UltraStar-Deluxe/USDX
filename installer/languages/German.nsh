@@ -62,11 +62,11 @@ LangString sc_desktop ${LANG_GERMAN} "Verknüpfung auf dem Desktop erstellen?"
 ; Sections and SectionGroups
 
 LangString name_section1 ${LANG_GERMAN} "Hauptkomponenten"
-LangString name_section2 ${LANG_GERMAN} "Optionale Songs"
+LangString name_section2 ${LANG_GERMAN} "Songs"
 LangString name_s2_sub1 ${LANG_GERMAN} "Jonathan Coulton"
 LangString name_s2_sub2 ${LANG_GERMAN} "Shearer"
 LangString name_s2_sub3 ${LANG_GERMAN} "Wise Guys"
-LangString name_section3 ${LANG_GERMAN} "Optionale Themen"
+LangString name_section3 ${LANG_GERMAN} "Designs"
 
 LangString DESC_Section1 ${LANG_GERMAN} "Dies sind die von UltraStar Deluxe benötigten Grunddateien"
 LangString DESC_Section2 ${LANG_GERMAN} "Hier können Songs zum Installieren gewählt werden."

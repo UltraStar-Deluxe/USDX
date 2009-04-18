@@ -62,11 +62,11 @@ LangString sc_desktop ${LANG_ENGLISH} "Create Desktop Shortcut?"
 ; Sections and SectionGroups
 
 LangString name_section1 ${LANG_ENGLISH} "Main components"
-LangString name_section2 ${LANG_ENGLISH} "Optional songs"
+LangString name_section2 ${LANG_ENGLISH} "Songs"
 LangString name_s2_sub1 ${LANG_ENGLISH} "Jonathan Coulton"
 LangString name_s2_sub2 ${LANG_ENGLISH} "Shearer"
 LangString name_s2_sub3 ${LANG_ENGLISH} "Wise Guys"
-LangString name_section3 ${LANG_ENGLISH} "Optional themes"
+LangString name_section3 ${LANG_ENGLISH} "Themes"
 
 LangString DESC_Section1 ${LANG_ENGLISH} "These are the basic files needed by UltraStar Deluxe"
 LangString DESC_Section2 ${LANG_ENGLISH} "You can choose which songs should be installed."
