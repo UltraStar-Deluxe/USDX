@@ -6,94 +6,93 @@ interface
   {$MODE Delphi}
 {$ENDIF}
 
-type  //PluginInfo, for Init
+type  // PluginInfo, for init
   TPluginInfo = record
-    //Info
-    Name       : Array [0..32] of Char;   //Modi to Register for the Plugin
-    Creator    : Array [0..32] of Char;   //Name of the Author
-    PluginDesc : Array [0..64] of Char;   //Plugin Description
+    // Info
+    Name:       array [0..32] of char;   // modi to register for the plugin
+    Creator:    array [0..32] of char;   // name of the author
+    PluginDesc: array [0..64] of char;   // plugin description
 
-    //Plugin Typ, atm: 8 only for PartyMode Modi
+    // plugin type, atm: 8 only for partymode modi
     Case Typ: byte of
       8: (
-        //Options
-        LoadSong:      boolean; //Whether or not a Song should be Loaded
-        //Only When Song is Loaded:
-        ShowNotes:     boolean; //Whether the Note Lines should be displayed
-        LoadVideo:     boolean; //Should the Video be loaded ?
-        LoadBack:      boolean; //Should the Background be loaded ?
+        // Options
+        LoadSong:      boolean; // Whether or not a song should be loaded
+        // Only when song is loaded:
+        ShowNotes:     boolean; // Whether the note lines should be displayed
+        LoadVideo:     boolean; // Should the video be loaded?
+        LoadBack:      boolean; // Should the background be loaded?
 
-        ShowRateBar:   boolean; //Whether the Bar that shows how good the player was sould be displayed
-        ShowRateBar_O: boolean; //Load from Ini whether the Bar should be Displayed
+        ShowRateBar:   boolean; // Whether the bar that shows how good the player was sould be displayed
+        ShowRateBar_O: boolean; // Load from ini whether the bar should be displayed
 
-        EnLineBonus:   boolean; //Whether LineBonus Should be enabled
-        EnLineBonus_O: boolean; //Load from Ini whether LineBonus Should be enabled
+        EnLineBonus:   boolean; // Whether line bonus should be enabled
+        EnLineBonus_O: boolean; // Load from ini whether line bonus should be enabled
 
-        BGShowFull:    boolean; //Whether the Background or the Video should be shown Fullsize
-        BGShowFull_O:  boolean; //Whether the Background or the Video should be shown Fullsize
+        BGShowFull:    boolean; // Whether the background or the video should be shown full size
+        BGShowFull_O:  boolean; // Whether the background or the video should be shown full size
 
-        //Options -> everytime
-        ShowScore:     boolean; //Whether or not the Score should be shown
-        ShowBars:      boolean; //Whether the White Bars on Top and Bottom should be Drawn
-        TeamModeOnly:  boolean; //If True the Plugin can only be Played in Team Mode
-        GetSoundData:  boolean; //If True the RData Procedure is called when new SoundData is available
-        Dummy:         boolean; //Should be Set to False... for Updateing Plugin Interface
+        // Options -> everytime
+        ShowScore:     boolean; // Whether or not the score should be shown
+        ShowBars:      boolean; // Whether the white bars on top and bottom should be drawn
+        TeamModeOnly:  boolean; // If true the plugin can only be played in team mode
+        GetSoundData:  boolean; // If true the rdata procedure is called when new sound data is available
+        Dummy:         boolean; // Should be set to false... for updateing plugin interface
 
-        NumPlayers: Byte   //Number of Available Players for Modi
-        //Set different Bits
-        //1 -> One Player
-        //2 -> Two Players
-        //4 -> Three Players
-        //8 -> Four Players
-        //16-> Six Players
-        //e.g. : 10 -> Playable with 2 and 4 Players
+        NumPlayers: byte   // Number of available players for modus
+        // Set different bits
+        // 1 -> one player
+        // 2 -> two players
+        // 4 -> three players
+        // 8 -> four players
+        // 16-> six players
+        // e.g. : 10 -> playable with 2 and 4 players
         );
 
   end;
 
   TPlayerInfo = record
-    NumPlayers: Byte;
+    NumPlayers: byte;
     Playerinfo: array[0..5] of record
-      Name: PChar; //Name of the Player
-      Score:Word;  //Players Score
-      Bar:  Byte;  //Percentage of the SingBar filled
-      PosX: Real;  //PosX of Players SingBar
-      PosY: Real;  //PosY "
-      Enabled: Boolean; //Whether the Player could get Points
-      Percentage: Byte; //Percentage Shown on the Score Screen
+      Name:       PChar; // Name of the player
+      Score:      word;  // Players score
+      Bar:        byte;  // Percentage of the singbar filled
+      PosX:       real;  // PosX of players singbar
+      PosY:       real;  // PosY "
+      Enabled:    boolean; // Whether the player could get points
+      Percentage: byte; // Percentage shown on the score screen
     end;
   end;
 
   TTeamInfo = record
-    NumTeams: Byte;
+    NumTeams: byte;
     Teaminfo: array[0..5] of record
-      Name:  PChar;
-      Score: Word;
-      Joker: Byte;
-      CurPlayer: Byte;
-      NumPlayers: Byte;
+      Name:       PChar;
+      Score:      word;
+      Joker:      byte;
+      CurPlayer:  byte;
+      NumPlayers: byte;
       Playerinfo: array[0..3] of record
-        Name: PChar;
-        TimesPlayed: Byte;
-        
+        Name:        PChar;
+        TimesPlayed: byte;
       end;
     end;
   end;
 
   TsmallTexture = record
-    TexNum:   integer;
-    W:        real;
-    H:        real;
+    TexNum: integer;
+    W:      real;
+    H:      real;
   end;
 
   TSentences = record
-    Current:    integer;      // aktualna czesc utworu do rysowania
-    High:       integer;
-    Number:     integer;
-    Resolution: integer;
-    NotesGAP:   integer;
-    TotalLength:integer;
-    Sentence:   array of record
+    Current:     integer;      // aktualna czesc utworu do rysowania
+    High:        integer;
+    Number:      integer;
+    Resolution:  integer;
+    NotesGAP:    integer;
+    TotalLength: integer;
+    Sentence:    array of record
       Start:      integer;
       StartNote:  integer;
       Lyric:      string;
@@ -109,14 +108,14 @@ type  //PluginInfo, for Init
         Length:    integer;
         Tone:      integer;
         //Text:      string;
-        FreeStyle:  boolean;
-        Typ:    integer;    // zwykla nuta x1, zlota nuta x2
+        FreeStyle: boolean;
+        Typ:      integer;    // zwykla nuta x1, zlota nuta x2
       end;
     end;
   end;
 
-  DWORD = Longword;
-  HSTREAM = DWORD;
+  dword = longword;
+  hstream = dword;
 
   TTextureType = (
     TEXTURE_TYPE_PLAIN,        // Plain (alpha = 1)
@@ -124,17 +123,17 @@ type  //PluginInfo, for Init
     TEXTURE_TYPE_COLORIZED     // Alpha is used; Hue of the HSV color-model will be replaced by a new value
   );
 
-  //Routines to gave to the Plugin
-  fModi_LoadTex = function (const Name: PChar; Typ: TTextureType): TsmallTexture; //Pointer to Texture Loader
+  // Routines to give to the plugin
+  fModi_LoadTex = function (const Name: PChar; Typ: TTextureType): TsmallTexture; // Pointer to texture loader
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
-  //fModi_Translate = function (const Name, Translation: AChar): Integer; //Pointer to Translator
+  //fModi_Translate = function (const Name, Translation: AChar): integer; // Pointer to translator
   //  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
-  fModi_Print = procedure (const Style, Size: Byte; const X, Y: Real; const Text: PChar); //Procedure to Print Text   //Now translated automatically
+  fModi_Print = procedure (const Style, Size: byte; const X, Y: real; const Text: PChar); // Procedure to print text   // Now translated automatically
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
-  fModi_LoadSound = function (const Name: PChar): Cardinal; //Procedure that loads a Custom Sound
+  fModi_LoadSound = function (const Name: PChar): cardinal; // Procedure that loads a custom sound
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
-  pModi_PlaySound = procedure (const Index: Cardinal); //Plays a Custom Sound
+  pModi_PlaySound = procedure (const Index: cardinal); // Plays a custom sound
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
   TMethodRec = record
@@ -143,20 +142,20 @@ type  //PluginInfo, for Init
     LoadSound:  fModi_LoadSound;
     PlaySound:  pModi_PlaySound;
   end;
-  //DLL Funktionen
-  //Gave the Plugins Info
+  // DLL functions
+  // Give the plugins info
   pModi_PluginInfo = procedure (var Info: TPluginInfo);
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
-  //Executed on Game Start //If True Game begins, else Failure
+  // Executed on game start // if true game begins, else failure
   fModi_Init = function (const TeamInfo: TTeamInfo; var Playerinfo: TPlayerinfo; const Sentences: TSentences; const Methods: TMethodRec): boolean;
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
-  //Executed everytime the Screen is Drawed //If False The Game finishes
-  fModi_Draw = function (var Playerinfo: TPlayerinfo; const CurSentence: Cardinal): boolean;
+  // Executed everytime the screen is drawn // if false the game finishes
+  fModi_Draw = function (var Playerinfo: TPlayerinfo; const CurSentence: cardinal): boolean;
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
-  //Is Executed on Finish, Returns the Playernum of the Winner
+  // Is executed on finish, returns the player num of the winner
   fModi_Finish = function (var Playerinfo: TPlayerinfo): byte;
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
-  //Procedure called when new Sound Data is available
+  // Procedure called when new sound data is available
   pModi_RData = procedure (handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD);
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
