@@ -35,6 +35,7 @@
  Delete "$INSTDIR\README.txt"
  Delete "$INSTDIR\Error.log"
  Delete "$INSTDIR\covers.cache"
+ Delete "$INSTDIR\cover.db"
 
  Delete "$INSTDIR\avcodec-51.dll"
  Delete "$INSTDIR\avformat-50.dll"

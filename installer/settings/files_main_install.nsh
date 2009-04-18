@@ -4,10 +4,11 @@
 
 ; Create Directories:
 
-CreateDirectory $INSTDIR\plugins
-CreateDirectory $INSTDIR\songs
-CreateDirectory $INSTDIR\screenshots
-CreateDirectory $INSTDIR\playlists
+CreateDirectory $INSTDIR\Plugins
+CreateDirectory $INSTDIR\Songs
+CreateDirectory $INSTDIR\Screenshots
+CreateDirectory $INSTDIR\Playlists
+CreateDirectory $INSTDIR\Covers
 
 SetOutPath "$INSTDIR"
 
@@ -23,7 +24,6 @@ File /r ..\installerdependencies\visuals
 
 File ..\installerdependencies\dll\*.dll
 
-
 File ..\ChangeLog.txt
 File ..\ChangeLog.german.txt
 File ..\README.txt
@@ -35,7 +35,7 @@ File "..\${exe}.exe"
 
 ; Covers dir:
 
-SetOutPath "$INSTDIR\covers"
+SetOutPath "$INSTDIR\Covers"
 
 IfFileExists $INSTDIR\covers\covers.ini +2 0
 File ..\game\covers\Covers.ini
