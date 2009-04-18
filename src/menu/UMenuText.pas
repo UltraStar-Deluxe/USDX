@@ -102,23 +102,24 @@ end;
 
 procedure TText.SetText(Value: string);
 var
-  NextPos:   Cardinal;  //NextPos of a Space etc.
-  LastPos:   Cardinal;  //LastPos "
-  LastBreak: Cardinal;  //Last Break
-  isBreak:   boolean;   //True if the Break is not Caused because the Text is out of the area
-  FirstWord: Word;      //Is First Word after Break?
-  Len:       Word;      //Length of the Tiles Array
+  NextPos:   cardinal;  // NextPos of a Space etc.
+  LastPos:   cardinal;  // LastPos "
+  LastBreak: cardinal;  // Last Break
+  isBreak:   boolean;   // True if the Break is not Caused because the Text is out of the area
+  FirstWord: word;      // Is First Word after Break?
+  Len:       word;      // Length of the Tiles Array
 
   function GetNextPos: boolean;
   var
-    T1, {T2,} T3: Cardinal;
+    T1, {T2,} T3: cardinal;
   begin
     LastPos := NextPos;
 
     //Next Space (If Width is given)
     if (W > 0) then
       T1 := PosEx(' ', Value, LastPos + 1)
-    else T1 := Length(Value);
+    else
+      T1 := Length(Value);
 
     {//Next -
     T2 := PosEx('-', Value, LastPos + 1);}
@@ -136,16 +137,16 @@ var
     //Get Nearest Pos
     NextPos := min(T1, T3{min(T2, T3)});
 
-    if (LastPos = Length(Value)) then
+    if (LastPos = cardinal(Length(Value))) then
       NextPos := 0;
 
-    isBreak := (NextPos = T3) AND (NextPos <> Length(Value));
+    isBreak := (NextPos = T3) and (NextPos <> cardinal(Length(Value)));
     Result := (NextPos <> 0);
   end;
 
-  procedure AddBreak(const From, bTo: Cardinal);
+  procedure AddBreak(const From, bTo: cardinal);
   begin
-    if (isBreak) OR (bTo - From >= 1) then
+    if (isBreak) or (bTo - From >= 1) then
     begin
       Inc(Len);
       SetLength (TextTiles, Len);
@@ -259,7 +260,7 @@ procedure TText.Draw;
 var
   X2, Y2: real;
   Text2:  string;
-  I:      integer;
+  I:      cardinal;
 begin
   if Visible then
   begin
@@ -310,7 +311,7 @@ begin
       Y2 := Y + MoveY;
       for I := 0 to high(TextTiles) do
       begin
-        if (not (SelectBool and SelectBlink)) or (I <> high(TextTiles)) then
+        if (not (SelectBool and SelectBlink)) or (I <> cardinal(high(TextTiles))) then
           Text2 := TextTiles[I]
         else
           Text2 := TextTiles[I] + '|';
