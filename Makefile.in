@@ -58,6 +58,7 @@ USDX_GAME_DIR  := $(top_srcdir)/game
 USDX_TOOLS_DIR := $(top_srcdir)/tools
 USDX_BUILD_DIR := $(top_srcdir)/build
 USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
+USDX_PLUGIN_DIR   := $(top_srcdir)/plugins
 
 INSTALL_DATADIR := $(datadir)/$(USDX_PACKAGE_NAME)
 
@@ -113,6 +114,7 @@ BUILD_TARGETS = all debug release rebuild build
 .PHONY: $(BUILD_TARGETS)
 $(BUILD_TARGETS): all-deps
 	$(MAKE) -C $(USDX_SRC_DIR) $@
+	$(MAKE) -C $(USDX_PLUGIN_DIR) all
 
 .PHONY: all-deps
 all-deps:
@@ -213,12 +215,21 @@ install-strip:
                 install
 
 .PHONY: install-all
-install-all: install-exec install-data
+install-all: install-exec install-plugins install-data
 
 .PHONY: install-exec
 install-exec:
 	$(MKDIR) "$(DESTDIR)$(bindir)"
 	$(INSTALL_PROGRAM) "$(USDX_BIN)" "$(DESTDIR)$(bindir)"
+
+# FPC target platform and processor
+PPLATFORM  := @FPC_PLATFORM@
+PPROCESSOR := @FPC_PROCESSOR@
+
+.PHONY: install-plugins
+install-plugins:
+	$(MKDIR) "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
+	$(INSTALL) "$(USDX_BUILD_DIR)"/fpc-$(PPROCESSOR)-$(PPLATFORM)/lib* "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
 
 .PHONY: install-data
 install-data:
@@ -265,7 +276,7 @@ install-data-recursive:
 uninstall: uninstall-all
 
 .PHONY: uninstall-all
-uninstall-all: uninstall-data uninstall-exec
+uninstall-all: uninstall-data uninstall-exec uninstall-plugins
 
 .PHONY: uninstall-data
 uninstall-data:
@@ -281,6 +292,10 @@ uninstall-data:
 .PHONY: uninstall-exec
 uninstall-exec:
 	$(RM) "$(DESTDIR)$(bindir)/$(USDX_BIN_NAME)"
+
+.PHONY: uninstall-plugins
+uninstall-plugins:
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
 
 #################################################
 # Distributable source-package (TODO)

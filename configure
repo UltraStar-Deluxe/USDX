@@ -6271,6 +6271,8 @@ ac_config_files="$ac_config_files Makefile"
 
 ac_config_files="$ac_config_files src/Makefile"
 
+ac_config_files="$ac_config_files plugins/Makefile"
+
 ac_config_files="$ac_config_files src/config-$FPC_PLATFORM.inc:src/config.inc.in"
 
 if [ x$libprojectM_USE_CWRAPPER = xyes ]; then
