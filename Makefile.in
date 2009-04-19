@@ -229,7 +229,7 @@ PPROCESSOR := @FPC_PROCESSOR@
 .PHONY: install-plugins
 install-plugins:
 	$(MKDIR) "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
-	$(INSTALL) "$(USDX_BUILD_DIR)"/fpc-$(PPROCESSOR)-$(PPLATFORM)/lib* "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
+	$(INSTALL) "$(USDX_GAME_DIR)/plugins"/* "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
 
 .PHONY: install-data
 install-data:

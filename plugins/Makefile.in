@@ -38,7 +38,7 @@ PPLATFORM  := @FPC_PLATFORM@
 PPROCESSOR := @FPC_PROCESSOR@
 
 # Directories added to the unit path
-PUNIT_FLAGS := -FE../build/fpc-$(PPROCESSOR)-$(PPLATFORM) -Fu../build/fpc-$(PPROCESSOR)-$(PPLATFORM)
+PUNIT_FLAGS := -FE../game/plugins -FU../build/fpc-$(PPROCESSOR)-$(PPLATFORM) -Fu../build/fpc-$(PPROCESSOR)-$(PPLATFORM)
 
 # Directory where compiled units (.ppu, .o and library files) are stored
 PCUNIT_DIR   := $(USDX_BUILD_DIR)/fpc-$(PPROCESSOR)-$(PPLATFORM)
