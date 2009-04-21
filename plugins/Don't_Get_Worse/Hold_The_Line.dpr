@@ -6,7 +6,7 @@ library Hold_The_Line;
 
 uses
   ModiSDK      in '..\SDK\ModiSDK.pas',
-  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
+//  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
   sdl          in '..\..\src\lib\JEDI-SDL\SDL\Pas\sdl.pas',
   moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
   gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas';
@@ -65,11 +65,16 @@ function Init (const TeamInfo:   TTeamInfo;
 	       const Sentences:  TSentences;
 	       const Methods:    TMethodRec)
 	      : boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+
+const
+  TextureName : PChar = 'HDL_Pointer';
+  SoundName   : PChar = 'dismissed.mp3';
 var
   Index:   integer;
-  Texname: PChar;
+//  Texname: PChar;
   TexType: TTextureType;
 begin
+{
   TexName := CreateStr(PChar('HDL_Pointer'));
   TexType := TEXTURE_TYPE_TRANSPARENT;
   PointerTex := Methods.LoadTex(TexName, TexType);
@@ -79,6 +84,11 @@ begin
   TexName := CreateStr(PChar('dismissed.mp3'));
   DismissedSound := Methods.LoadSound (TexName);
   FreeStr(TexName);
+}
+  TexType := TEXTURE_TYPE_TRANSPARENT;
+  PointerTex := Methods.LoadTex(TextureName, TexType);
+
+  DismissedSound := Methods.LoadSound (SoundName);
 
   CountSentences := Sentences.High;
   Limit := 0;
@@ -99,11 +109,13 @@ end;
 function Draw (var   Playerinfo:  TPlayerinfo; 
                const CurSentence: cardinal)
 	      : boolean; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
+const
+  SoundName : PChar = 'PARTY_DISMISSED';
 var
   Index: integer;
   L:     byte;
   C:     byte;
-  Text:  PChar;
+//  Text:  PChar;
   Blink: boolean;
   Tick:  cardinal;
 begin
@@ -176,12 +188,15 @@ begin
     begin
       Inc(C);
       // Draw dismissed
-      Text := CreateStr(PChar('PARTY_DISMISSED'));
+//      Text := CreateStr(PChar('PARTY_DISMISSED'));
 
       glColor4f (0.8, 0.8, 0.8, 1);
 
+{
       MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX, PlayerInfo.Playerinfo[Index].PosY-8, Text);
       FreeStr(Text);
+}
+      MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX, PlayerInfo.Playerinfo[Index].PosY-8, SoundName);
     end;
   end;
   if (C >= PlayerInfo.NumPlayers-1) then
