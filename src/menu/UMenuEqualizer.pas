@@ -45,69 +45,71 @@ type
   Tms_Equalizer = class(TObject)
     private
       FFTData: TFFTData; // moved here to avoid stack overflows
-      BandData: array of Byte;
-      RefreshTime: Cardinal;
+      BandData: array of byte;
+      RefreshTime: cardinal;
 
       Source: IAudioPlayback;
 
-      Procedure Analyse;
+      procedure Analyse;
     public
-      X: Integer;
-      Y: Integer;
-      Z: Real;
+      X: integer;
+      Y: integer;
+      Z: real;
 
-      W: Integer;
-      H: Integer;
-      Space: Integer;
+      W: integer;
+      H: integer;
+      Space: integer;
 
-      Visible: Boolean;
-      Alpha: real;
-      Color: TRGB;
+      Visible: boolean;
+      Alpha:   real;
+      Color:   TRGB;
 
-      Direction: Boolean;
+      Direction:  boolean;
+      BandLength: integer;
 
-      BandLength: Integer;
-
-      Reflection:           boolean;
-      Reflectionspacing:    Real;
+      Reflection:        boolean;
+      Reflectionspacing: real;
 
 
       constructor Create(Source: IAudioPlayback; mySkin: TThemeEqualizer);
 
       procedure Draw;
-
-      Procedure SetBands(Value: Byte);
-      Function  GetBands: Byte;
-      Property  Bands: Byte read GetBands write SetBands;
+      procedure SetBands(Value: byte);
+      function  GetBands: byte;
+      property  Bands: byte read GetBands write SetBands;
       procedure SetSource(newSource: IAudioPlayback);
   end;
 
 implementation
-uses math, SDL, gl, glext;
-
+uses
+  math,
+  SDL,
+  gl,
+  glext;
 
 constructor Tms_Equalizer.Create(Source: IAudioPlayback; mySkin: TThemeEqualizer);
-var I: Integer;
+var
+  I: integer;
 begin
-  If (Source <> nil) then
+  if (Source <> nil) then
   begin
-    X         := mySkin.X;
-    Y         := mySkin.Y;
-    W         := mySkin.W;
-    H         := mySkin.H;
-    Z         := mySkin.Z;
+    X          := mySkin.X;
+    Y          := mySkin.Y;
+    W          := mySkin.W;
+    H          := mySkin.H;
+    Z          := mySkin.Z;
 
-    Space     := mySkin.Space;
+    Space      := mySkin.Space;
 
-    Visible   := mySkin.Visible;
-    Alpha     := mySkin.Alpha;
-    Color.R   := mySkin.ColR;
-    Color.G   := mySkin.ColG;
-    Color.B   := mySkin.ColB;
+    Visible    := mySkin.Visible;
+    Alpha      := mySkin.Alpha;
+    Color.R    := mySkin.ColR;
+    Color.G    := mySkin.ColG;
+    Color.B    := mySkin.ColB;
 
-    Direction := mySkin.Direction;
-    Bands     := mySkin.Bands;
-    BandLength    := mySkin.Length;
+    Direction  := mySkin.Direction;
+    Bands      := mySkin.Bands;
+    BandLength := mySkin.Length;
 
     Reflection := mySkin.Reflection;
     Reflectionspacing := mySkin.Reflectionspacing;
@@ -116,31 +118,31 @@ begin
 
 
     //Check if Visible
-    If (Bands  <= 0)  OR
-       (BandLength <= 0)  OR
-       (W      <= 0)  OR
-       (H      <= 0)  OR
+    if (Bands  <= 0)  or
+       (BandLength <= 0)  or
+       (W      <= 0)  or
+       (H      <= 0)  or
        (Alpha  <= 0)  then
-      Visible := False;
+      Visible := false;
 
     //ClearArray
-    For I := low(BandData) to high(BandData) do
+    for I := low(BandData) to high(BandData) do
       BandData[I] := 3;
   end
   else
-    Visible := False;
+    Visible := false;
 end;
 
 //--------
 // evaluate FFT-Data
 //--------
-Procedure Tms_Equalizer.Analyse;
-  var
-    I: Integer;
-    ChansPerBand: byte; // channels per band
-    MaxChannel: Integer;
-    Pos: Real;
-    CurBand: Integer;
+procedure Tms_Equalizer.Analyse;
+var
+  I:            integer;
+  ChansPerBand: byte;        // channels per band
+  MaxChannel:   integer;
+  Pos:          real;
+  CurBand:      integer;
 begin
   Source.GetFFTData(FFTData);
 
@@ -188,25 +190,26 @@ end;
 // Draw SpectrumAnalyser, Call Analyse
 //--------
 procedure Tms_Equalizer.Draw;
-  var
-    CurTime: Cardinal;
-    PosX, PosY: Real;
-    I, J: Integer;
-    Diff: Real;
+var
+  CurTime:    cardinal;
+  PosX, PosY: real;
+  I, J:       integer;
+  Diff:       real;
 
-  Function GetAlpha(Diff: Single): Single;
+  function GetAlpha(Diff: single): single;
   begin
-    If Direction then
-      Result := (Alpha * 0.6) *(0.5 - Diff/(BandLength * (H + Space)))
+    if Direction then
+      Result := (Alpha * 0.6) * (0.5 - Diff/(BandLength * (H + Space)))
     else
-      Result := (Alpha * 0.6) *(0.5 - Diff/(Bands * (H + Space)));
+      Result := (Alpha * 0.6) * (0.5 - Diff/(Bands      * (H + Space)));
   end;
+
 begin
-  If (Visible) AND not (AudioPlayback.Finished) then
+  if (Visible) and not (AudioPlayback.Finished) then
   begin
     //Call Analyse if necessary
     CurTime := SDL_GetTicks();
-    If (CurTime > RefreshTime) then
+    if (CurTime > RefreshTime) then
     begin
       Analyse;
 
@@ -244,12 +247,12 @@ begin
           glVertex3f(PosX+W, PosY, Z);
         glEnd;
 
-        If (Reflection) AND (J <= BandLength div 2) then
+        if (Reflection) and (J <= BandLength div 2) then
         begin
           Diff := (Y-PosY) + H;
 
           //Draw Reflection
-          If Direction then
+          if Direction then
           begin
             glBegin(GL_QUADS);
               glColorRGB(Color, GetAlpha(Diff));
@@ -298,22 +301,20 @@ begin
   end;
 end;
 
-Procedure Tms_Equalizer.SetBands(Value: Byte);
+procedure Tms_Equalizer.SetBands(Value: byte);
 begin
   SetLength(BandData, Value);
 end;
 
-Function  Tms_Equalizer.GetBands: Byte;
+function  Tms_Equalizer.GetBands: byte;
 begin
   Result := Length(BandData);
 end;
 
-Procedure Tms_Equalizer.SetSource(newSource: IAudioPlayback);
+procedure Tms_Equalizer.SetSource(newSource: IAudioPlayback);
 begin
-  If (newSource <> nil) then
+  if (newSource <> nil) then
     Source := newSource;
 end;
-
-
 
 end.

@@ -40,19 +40,20 @@ uses
 type
   TStatic = class
     public
-      Texture:    TTexture; // Button Screen position and size
-      Visible:    boolean;
+      Texture:           TTexture; // Button Screen position and size
+      Visible:           boolean;
 
       //Reflection Mod
-      Reflection:           boolean;
-      Reflectionspacing:    Real;
+      Reflection:        boolean;
+      Reflectionspacing: real;
 
       procedure Draw;
       constructor Create(Textura: TTexture); overload;
   end;
 
 implementation
-uses UDrawTexture;
+uses
+  UDrawTexture;
 
 procedure TStatic.Draw;
 begin

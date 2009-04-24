@@ -45,39 +45,39 @@ type
   TDisplay = class
     private
       //fade-to-black-hack
-      BlackScreen: Boolean;
+      BlackScreen: boolean;
 
-      FadeEnabled:  Boolean;  // true if fading is enabled
-      FadeFailed: Boolean;    // true if fading is possible (enough memory, etc.)
-      FadeState: integer;     // fading state, 0 means that the fade texture must be initialized
-      LastFadeTime: Cardinal; // last fade update time
+      FadeEnabled:   boolean;  // true if fading is enabled
+      FadeFailed:    boolean;  // true if fading is possible (enough memory, etc.)
+      FadeState:     integer;  // fading state, 0 means that the fade texture must be initialized
+      LastFadeTime:  cardinal; // last fade update time
 
-      FadeTex: array[1..2] of GLuint;
+      FadeTex:       array[1..2] of GLuint;
+ 
+      FPSCounter:    cardinal;
+      LastFPS:       cardinal;
+      NextFPSSwap:   cardinal;
 
-      FPSCounter    : Cardinal;
-      LastFPS       : Cardinal;
-      NextFPSSwap   : Cardinal;
-
-      OSD_LastError : String;
+      OSD_LastError: string;
 
       procedure DrawDebugInformation;
     public
-      NextScreen   : PMenu;
-      CurrentScreen : PMenu;
+      NextScreen:          PMenu;
+      CurrentScreen:       PMenu;
 
       //popup data
       NextScreenWithCheck: Pmenu;
-      CheckOK  : Boolean;
+      CheckOK:             boolean;
 
       // FIXME: Fade is set to 0 in UMain and other files but not used here anymore.
-      Fade     : Real;
+      Fade:                real;
 
       constructor Create;
       destructor  Destroy; override;
 
       procedure SaveScreenShot;
 
-      function  Draw: Boolean;
+      function  Draw: boolean;
   end;
 
 var
@@ -104,10 +104,10 @@ begin
   inherited Create;
 
   //popup hack
-  CheckOK             := False;
+  CheckOK             := false;
   NextScreen          := nil;
   NextScreenWithCheck := nil;
-  BlackScreen         := False;
+  BlackScreen         := false;
 
   // fade mod
   FadeState := 0;
@@ -133,14 +133,14 @@ begin
   inherited Destroy;
 end;
 
-function TDisplay.Draw: Boolean;
+function TDisplay.Draw: boolean;
 var
-  S: integer;
-  FadeStateSquare: Real;
-  currentTime: Cardinal;
-  glError: glEnum;
+  S:               integer;
+  FadeStateSquare: real;
+  currentTime:     cardinal;
+  glError:         glEnum;
 begin
-  Result := True;
+  Result := true;
 
   //We don't need this here anymore,
   //Because the background care about cleaning the buffers
@@ -166,12 +166,12 @@ begin
       begin
         NextScreen := NextScreenWithCheck;
         NextScreenWithCheck := nil;
-        CheckOk := False;
+        CheckOk := false;
       end
       else
       begin
         // on end of game fade to black before exit
-        BlackScreen := True;
+        BlackScreen := true;
       end;
     end;
 
@@ -188,16 +188,16 @@ begin
       // fade mod
       FadeState := 0;
       if ((Ini.ScreenFade = 1) and (not FadeFailed)) then
-        FadeEnabled := True
+        FadeEnabled := true
       else if (Ini.ScreenFade = 0) then
-        FadeEnabled := False;
+        FadeEnabled := false;
     end
     else
     begin
       // disable fading if initialization failed
       if (FadeEnabled and FadeFailed) then
       begin
-        FadeEnabled := False;
+        FadeEnabled := false;
       end;
       
       if (FadeEnabled and not FadeFailed) then
@@ -275,7 +275,7 @@ begin
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
       end
-      // blackscreen hack
+// blackscreen hack
       else if not BlackScreen then
       begin
         NextScreen.OnShow;
@@ -286,7 +286,7 @@ begin
         // fade out complete...
         FadeState := 0;
         CurrentScreen.onHide;
-        CurrentScreen.ShowFinish := False;
+        CurrentScreen.ShowFinish := false;
         CurrentScreen := NextScreen;
         NextScreen := nil;
         if not BlackScreen then
@@ -296,13 +296,13 @@ begin
         end
         else
         begin
-          Result := False;
+          Result := false;
           Break;
         end;
       end;
     end; // if
 
-    //Draw OSD only on first Screen if Debug Mode is enabled
+// Draw OSD only on first Screen if Debug Mode is enabled
     if ((Ini.Debug = 1) or (Params.Debug)) and (S = 1) then
       DrawDebugInformation;      
   end; // for
@@ -318,7 +318,7 @@ var
   Align:      integer;
   RowSize:    integer;
 begin
-  // Exit if Screenshot-path does not exist or read-only
+// Exit if Screenshot-path does not exist or read-only
   if (ScreenshotsPath = '') then
     Exit;
 
@@ -332,9 +332,9 @@ begin
       break
   end;
 
-  // we must take the row-alignment (4byte by default) into account
+// we must take the row-alignment (4byte by default) into account
   glGetIntegerv(GL_PACK_ALIGNMENT, @Align);
-  // calc aligned row-size
+// calc aligned row-size
   RowSize := ((ScreenW*3 + (Align-1)) div Align) * Align;
 
   GetMem(ScreenData, RowSize * ScreenH);
@@ -347,8 +347,8 @@ begin
       ScreenData, ScreenW, ScreenH, 24, RowSize,
       $0000FF, $00FF00, $FF0000, 0);
 
-  //Success := WriteJPGImage(FileName, Surface, 95);
-  //Success := WriteBMPImage(FileName, Surface);
+//  Success := WriteJPGImage(FileName, Surface, 95);
+//  Success := WriteBMPImage(FileName, Surface);
   Success := WritePNGImage(FileName, Surface);
   if Success then
     ScreenPopupError.ShowPopup('Screenshot saved: ' + ExtractFileName(FileName))
@@ -363,9 +363,9 @@ end;
 // DrawDebugInformation - Procedure draw FPS and some other Informations on Screen
 //------------
 procedure TDisplay.DrawDebugInformation;
-var Ticks: Cardinal;
+var Ticks: cardinal;
 begin
-  //Some White Background for information
+// Some White Background for information
   glEnable(GL_BLEND);
   glDisable(GL_TEXTURE_2D);
   glColor4f(1, 1, 1, 0.5);
@@ -377,13 +377,13 @@ begin
   glEnd;
   glDisable(GL_BLEND);
 
-  //Set Font Specs
+// Set Font Specs
   SetFontStyle(0);
   SetFontSize(21);
-  SetFontItalic(False);
+  SetFontItalic(false);
   glColor4f(0, 0, 0, 1);
 
-  //Calculate FPS
+// Calculate FPS
   Ticks := SDL_GetTicks();
   if (Ticks >= NextFPSSwap) then
   begin
@@ -394,17 +394,17 @@ begin
 
   Inc(FPSCounter);
 
-  //Draw Text
+// Draw Text
 
-  //FPS
+// FPS
   SetFontPos(695, 0);
   glPrint ('FPS: ' + InttoStr(LastFPS));
 
-  //RSpeed
+// RSpeed
   SetFontPos(695, 13);
   glPrint ('RSpeed: ' + InttoStr(Round(1000 * TimeMid)));
 
-  //LastError
+// LastError
   SetFontPos(695, 26);
   glColor4f(1, 0, 0, 1);
   glPrint (OSD_LastError);

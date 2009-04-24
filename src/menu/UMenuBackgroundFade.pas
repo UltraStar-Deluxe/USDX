@@ -62,15 +62,17 @@ const
   FADEINTIME = 1500; //Time the bg fades in
 
 implementation
-uses sdl,
-     gl,
-     glext,
-     USkins,
-     UCommon,
-     UGraphic;
+uses
+  sdl,
+  gl,
+  glext,
+  USkins,
+  UCommon,
+  UGraphic;
 
 constructor TMenuBackgroundFade.Create(const ThemedSettings: TThemeBackground);
-var texFilename: string;
+var
+  texFilename: string;
 begin
   inherited;
   FadeTime := 0;
@@ -122,7 +124,7 @@ begin
 
   if (UseTexture) then
   begin //Draw Texture to Screen
-    If (ScreenAct = 1) then //Clear just once when in dual screen mode
+    if (ScreenAct = 1) then //Clear just once when in dual screen mode
       glClear(GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_TEXTURE_2D);
@@ -151,7 +153,7 @@ begin
   end
   else
   begin //Clear Screen w/ progress Alpha + Color
-    If (ScreenAct = 1) then //Clear just once when in dual screen mode
+    if (ScreenAct = 1) then //Clear just once when in dual screen mode
       glClear(GL_DEPTH_BUFFER_BIT);
       
     glDisable(GL_TEXTURE_2D);

@@ -54,15 +54,15 @@ type
   PMenu = ^TMenu;
   TMenu = class
     protected
-      Background:     TMenuBackground;
+      Background:       TMenuBackground;
 
-      Interactions:   array of TInteract;
-      SelInteraction: integer;
+      Interactions:     array of TInteract;
+      SelInteraction:   integer;
 
-      ButtonPos:      integer;
-      Button:         array of TButton;
+      ButtonPos:        integer;
+      Button:           array of TButton;
      
-      SelectsS:       array of TSelectSlide;
+      SelectsS:         array of TSelectSlide;
       ButtonCollection: array of TButtonCollection;
     public
       Text:       array of TText;
@@ -111,7 +111,7 @@ type
       function AddText(X, Y, W: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: string; Reflection_: boolean; ReflectionSpacing_: real; Z : real): integer; overload;
 
       // button
-      Procedure SetButtonLength(Length: cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
+      procedure SetButtonLength(Length: cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
       function AddButton(ThemeButton: TThemeButton): integer; overload;
       function AddButton(X, Y, W, H: real; const Name: string): integer; overload;
       function AddButton(X, Y, W, H: real; const Name: string; Typ: TTextureType; Reflection: boolean): integer; overload;
@@ -167,13 +167,13 @@ type
   end;
 
 const
-  pmMove = 1;
-  pmClick = 2;
+  pmMove    = 1;
+  pmClick   = 2;
   pmUnClick = 3;
 
-  iButton = 0; // interaction type
-  iText = 2;
-  iSelectS = 3;
+  iButton           = 0; // interaction type
+  iText             = 2;
+  iSelectS          = 3;
   iBCollectionChild = 5;
 
 //  fBlack = 0; // fade type
@@ -181,21 +181,22 @@ const
 
 implementation
 
-uses UCommon,
-     ULog,
-     UMain,
-     UDrawTexture,
-     UGraphic,
-     UDisplay,
-     UCovers,
-     UTime,
-     USkins,
-     //Background types
-     UMenuBackgroundNone,
-     UMenuBackgroundColor,
-     UMenuBackgroundTexture,
-     UMenuBackgroundVideo,
-     UMenuBackgroundFade;
+uses
+  UCommon,
+  ULog,
+  UMain,
+  UDrawTexture,
+  UGraphic,
+  UDisplay,
+  UCovers,
+  UTime,
+  USkins,
+  //Background types
+  UMenuBackgroundNone,
+  UMenuBackgroundColor,
+  UMenuBackgroundTexture,
+  UMenuBackgroundVideo,
+  UMenuBackgroundFade;
 
 destructor TMenu.Destroy;
 begin
@@ -339,8 +340,9 @@ procedure TMenu.AddBackground(ThemedSettings: TThemeBackground);
   var
     FileExt: string;
 
-  Function IsInArray(const Piece: string; const A: array of string): boolean;
-  var I: integer;
+  function IsInArray(const Piece: string; const A: array of string): boolean;
+  var
+    I: integer;
   begin
     Result := false;
   
@@ -352,7 +354,7 @@ procedure TMenu.AddBackground(ThemedSettings: TThemeBackground);
       end;
   end;
 
-  Function TryBGCreate(Typ: cMenuBackground): boolean;
+  function TryBGCreate(Typ: cMenuBackground): boolean;
   begin
     Result := true;
 
@@ -374,7 +376,7 @@ begin
     Background := nil;
   end;
 
-  Case ThemedSettings.BGType of
+  case ThemedSettings.BGType of
     bgtAuto: begin //Automaticly choose one out of BGT_Texture, BGT_Video or BGT_Color
 
       if (Length(ThemedSettings.Tex) > 0) then
@@ -491,7 +493,7 @@ end;
 //----------------------
 procedure TMenu.AddButtonCollection(const ThemeCollection: TThemeButtonCollection; const Num: byte);
 var
-  BT, BTLen: integer;
+  BT, BTLen:         integer;
   TempCol, TempDCol: cardinal;
 
 begin
@@ -711,9 +713,9 @@ begin
 end;
 
 //Function that Set Length of Button boolean in one Step instead of register new Memory for every Button
-Procedure TMenu.SetButtonLength(Length: cardinal);
+procedure TMenu.SetButtonLength(Length: cardinal);
 begin
-  if (ButtonPos = -1) AND (Length > 0) then
+  if (ButtonPos = -1) and (Length > 0) then
   begin
     //Set Length of Button
     SetLength(Button, Length);
@@ -920,9 +922,9 @@ end;
 }
 
 {
-function TMenu.AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
+function TMenu.AddWidget(X, Y: UInt16; WidgetSrc: PSDL_Surface): Int16;
 var
-  WidgetNum : Int16;
+  WidgetNum: Int16;
 begin
   if (Assigned(WidgetSrc)) then
   begin
@@ -946,9 +948,9 @@ end;
 }
 
 {
-procedure TMenu.ClearWidgets(MinNumber : Int16);
+procedure TMenu.ClearWidgets(MinNumber: Int16);
 var
-  J : Int16;
+  J: Int16;
 begin
   for J := MinNumber to (Length(WidgetsSrc) - 1) do
   begin
@@ -1252,6 +1254,7 @@ begin
     SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
   else
     SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
+
   SelectsS[S].TextureSBG.X := X + W + SkipX;
   SelectsS[S].TextureSBG.Y := Y;
   //SelectsS[S].TextureSBG.W := 450;
@@ -1460,7 +1463,7 @@ begin
       begin
         InteractPrev;
         //If ButtonCollection with more than 1 Entry then Select Last Entry
-        if (Button[Interactions[Interaction].Num].Parent <> 0) AND (ButtonCollection[Button[Interactions[Interaction].Num].Parent-1].CountChilds > 1) then
+        if (Button[Interactions[Interaction].Num].Parent <> 0) and (ButtonCollection[Button[Interactions[Interaction].Num].Parent-1].CountChilds > 1) then
         begin
           //Select Last Child
           for Num := High(Button) downto 1 do
