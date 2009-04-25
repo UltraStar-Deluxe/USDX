@@ -73,9 +73,9 @@ type
   end;
 
   TScore = record
-    Name:      widestring;
-    Score:     integer;
-    Length:    string;
+    Name:   widestring;
+    Score:  integer;
+    Length: string;
   end;
 
   {$IFDEF USE_PSEUDO_THREAD}
@@ -107,7 +107,7 @@ type
     procedure BrowseXMLFiles(Dir: widestring);
     procedure Sort(Order: integer);
     function  FindSongFile(Dir, Mask: widestring): widestring;
-    property  Processing  boolean read fProcessing;
+    property  Processing: boolean read fProcessing;
   end;
 
 
