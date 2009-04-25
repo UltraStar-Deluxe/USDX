@@ -34,24 +34,32 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  UIni,
+  UThemes;
 
 type
   TScreenOptionsAdvanced = class(TMenu)
     public
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
   end;
 
 implementation
 
-uses UGraphic, SysUtils;
+uses
+  UGraphic,
+  SysUtils;
 
-function TScreenOptionsAdvanced.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenOptionsAdvanced.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -76,7 +84,8 @@ begin
         begin
           //SelectLoadAnimation Hidden because it is useless atm
           //if SelInteraction = 7 then begin
-          if SelInteraction = 6 then begin
+          if SelInteraction = 6 then
+          begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
@@ -90,7 +99,8 @@ begin
         begin
           //SelectLoadAnimation Hidden because it is useless atm
           //if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 5) then
+          begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
@@ -99,7 +109,8 @@ begin
         begin
           //SelectLoadAnimation Hidden because it is useless atm
           //if (SelInteraction >= 0) and (SelInteraction <= 6) then begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then begin
+          if (SelInteraction >= 0) and (SelInteraction <= 5) then
+          begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;

@@ -90,7 +90,7 @@ begin
       SDLK_RETURN:
         begin
           if (not Fadeout) then
-	  begin
+          begin
             FadeTo(@ScreenSong);
             Fadeout := true;
           end;
@@ -110,7 +110,6 @@ begin
   inherited Create;
 
   LoadFromTheme(Theme.Top5);
-
 
   TextLevel := AddText(Theme.Top5.TextLevel);
   TextArtistTitle := AddText(Theme.Top5.TextArtistTitle);

@@ -95,7 +95,7 @@ type
     public
       constructor Create; override;
       function    Draw: boolean; override;
-      function    ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function    ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure   onShow; override;
       procedure   onHide; override;
   end;
@@ -128,10 +128,10 @@ uses
   UIni,
   ULog;
 
-function TScreenOptionsRecord.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -484,7 +484,6 @@ begin
   PreviewDeviceIndex := -1;
 end;
 
-
 procedure TScreenOptionsRecord.DrawVolume(x, y, Width, Height: single);
 var
   x1, y1, x2, y2: single;
@@ -802,8 +801,7 @@ begin
     end;
   end;
 
-  Result := True;
+  Result := true;
 end;
-
 
 end.

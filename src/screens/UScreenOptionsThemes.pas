@@ -47,9 +47,9 @@ type
     private
       procedure ReloadTheme;
     public
-      SkinSelect: Integer;
+      SkinSelect: integer;
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       procedure InteractInc; override;
       procedure InteractDec; override;
@@ -64,10 +64,10 @@ uses
   UPath,
   USkins;
 
-function TScreenOptionsThemes.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -189,7 +189,6 @@ begin
 
   ScreenOptionsThemes.Interaction    := self.Interaction;
   ScreenOptionsThemes.Draw;
-
 
   Display.Draw;
   SwapBuffers;

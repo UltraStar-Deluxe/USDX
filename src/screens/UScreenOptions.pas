@@ -34,14 +34,21 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, SysUtils, UDisplay, UMusic, UFiles, UIni, UThemes;
+  UMenu,
+  SDL,
+  SysUtils,
+  UDisplay,
+  UMusic,
+  UFiles,
+  UIni,
+  UThemes;
 
 type
   TScreenOptions = class(TMenu)
     public
       TextDescription:    integer;
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       procedure InteractNext; override;
       procedure InteractPrev; override;
@@ -52,12 +59,13 @@ type
 
 implementation
 
-uses UGraphic;
+uses
+  UGraphic;
 
-function TScreenOptions.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenOptions.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of

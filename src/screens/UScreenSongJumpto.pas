@@ -34,44 +34,59 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, SysUtils, UThemes;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  SysUtils,
+  UThemes;
 
 type
   TScreenSongJumpto = class(TMenu)
     private
       //For ChangeMusic
-      LastPlayed: Integer;
-      VisibleBool: Boolean;
+      LastPlayed: integer;
+      VisibleBool: boolean;
     public
-      VisSongs: Integer;
+      VisSongs: integer;
 
       constructor Create; override;
 
       //Visible //Whether the Menu should be Drawn
       //Whether the Menu should be Drawn
-      procedure SetVisible(Value: Boolean);
-      property Visible: Boolean read VisibleBool write SetVisible;
+      procedure SetVisible(Value: boolean);
+      property Visible: boolean read VisibleBool write SetVisible;
 
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       function Draw: boolean; override;
 
-      procedure SetTextFound(const Count: Cardinal);
+      procedure SetTextFound(const Count: cardinal);
   end;
 
 var
-  IType: Array [0..2] of String;
-  SelectType: Integer;
+  IType: array [0..2] of string;
+  SelectType: integer;
 
 
 implementation
 
-uses UGraphic, UMain, UIni, UTexture, ULanguage, UParty, USongs, UScreenSong, ULog;
+uses
+  UGraphic,
+  UMain,
+  UIni,
+  UTexture,
+  ULanguage,
+  UParty,
+  USongs,
+  UScreenSong,
+  ULog;
 
-function TScreenSongJumpto.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenSongJumpto.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case CharCode of
@@ -90,7 +105,7 @@ begin
     case PressedKey of
       SDLK_BACKSPACE:
         begin
-          if (Interaction = 0) AND (Length(Button[0].Text[0].Text) > 0) then
+          if (Interaction = 0) and (Length(Button[0].Text[0].Text) > 0) then
           begin
             Button[0].Text[0].DeleteLastL;
             SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, SelectType));
@@ -100,9 +115,9 @@ begin
       SDLK_RETURN,
       SDLK_ESCAPE:
         begin
-          Visible := False;
+          Visible := false;
           AudioPlayback.PlaySound(SoundLib.Back);
-          if (VisSongs = 0) AND (Length(Button[0].Text[0].Text) > 0) then
+          if (VisSongs = 0) and (Length(Button[0].Text[0].Text) > 0) then
           begin
             ScreenSong.UnLoadDetailedCover;
             Button[0].Text[0].Text := '';
@@ -163,15 +178,14 @@ begin
   SelectType := 0;
   AddSelectSlide(Theme.SongJumpto.SelectSlideType, SelectType, Theme.SongJumpto.IType);
 
-
   Interaction := 0;
   LastPlayed  := 0;
 end;
 
-procedure TScreenSongJumpto.SetVisible(Value: Boolean);
+procedure TScreenSongJumpto.SetVisible(Value: boolean);
 begin
 //If change from unvisible to Visible then OnShow
-  if (VisibleBool = False) AND (Value = True) then
+  if (VisibleBool = false) and (Value = true) then
     OnShow;
 
   VisibleBool := Value;
@@ -192,7 +206,7 @@ begin
 
   //Select Input
   Interaction := 0;
-  Button[0].Text[0].Selected := True;
+  Button[0].Text[0].Selected := true;
 
   LastPlayed := ScreenSong.Interaction;
 end;
@@ -202,7 +216,7 @@ begin
   Result := inherited Draw;
 end;
 
-procedure TScreenSongJumpto.SetTextFound(const Count: Cardinal);
+procedure TScreenSongJumpto.SetTextFound(const Count: cardinal);
 begin
   if (Count = 0) then
   begin
@@ -219,7 +233,6 @@ begin
     //Set CatTopLeftText
     ScreenSong.ShowCatTLCustom(Format(Theme.SongJumpto.CatText, [Button[0].Text[0].Text]));
   end;
-
 
   //Set visSongs
   VisSongs := Count;

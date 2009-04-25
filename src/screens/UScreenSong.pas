@@ -33,7 +33,6 @@ interface
 
 {$I switches.inc}
 
-
 uses
   UMenu,
   SDL,
@@ -111,7 +110,6 @@ type
       StaticNonParty: array of cardinal;
       TextNonParty:   array of cardinal;
 
-
       constructor Create; override;
       procedure SetScroll;
       //procedure SetScroll1;
@@ -142,7 +140,7 @@ type
       //procedures for Menu
       procedure StartSong;
       procedure OpenEditor;
-      procedure DoJoker(Team: Byte);
+      procedure DoJoker(Team: byte);
       procedure SelectPlayers;
 
       procedure UnloadDetailedCover;
@@ -242,14 +240,13 @@ begin
 end;
 //Show Cat in Top Left Mod End
 
-
-// Method for input parsing. If False is returned, GetNextWindow
+// Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
 function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 var
   I:      integer;
   I2:     integer;
-  SDL_ModState:  Word;
+  SDL_ModState:  word;
   Letter: WideChar;
 begin
   Result := true;
@@ -455,7 +452,7 @@ begin
 
               //Fix: Not Existing Song selected:
               //if (I+1=I2) then
-	        Inc(I2);
+                Inc(I2);
 
               //Choose Song
               SkipTo(I2-I);
@@ -503,7 +500,6 @@ begin
 
               //Show Cat in Top Left Mod
               HideCatTL;
-
 
               //Show Wrong Song when Tabs on Fix
               SelectNext;
@@ -610,7 +606,7 @@ begin
               begin
                 I := Interaction;
                 if I <= 0 then
-		  I := 1;
+                  I := 1;
 
                 while not catsongs.Song[I].Main do
                 begin
@@ -652,7 +648,7 @@ begin
                 I := Interaction;
                 I2 := 0;
                 if I <= 0 then
-		  I := 1;
+                  I := 1;
 
                 while not catsongs.Song[I].Main or (I2 = 0) do
                 begin
@@ -801,7 +797,6 @@ begin
   CatSongs.Refresh;
 
   GenerateThumbnails();
-
 
   // Randomize Patch
   Randomize;
@@ -957,7 +952,6 @@ begin
     if CatSongs.Song[B].Visible then
       Inc(VisInt);
 
-
   if VisCount <= 6 then
   begin
     Typ := 0;
@@ -986,7 +980,6 @@ begin
   end;
 
 
-
   // hide all buttons
   for B := 0 to High(Button) do
   begin
@@ -1003,7 +996,6 @@ begin
     Button[B].Y := 140 + (B-Src) * 60;
   end;
   }
-
 
   if Typ = 0 then
   begin
@@ -1301,20 +1293,19 @@ begin
       if Button[B].Visible then // optimization for 1000 songs - updates only visible songs, hiding in tabs becomes useful for maintaing good speed
       begin
   
-	Factor := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
+        Factor := 2 * pi * (CatSongs.VisibleIndex(B) - SongCurrent) /  VS {CatSongs.VisibleSongs};// 0.5.0 (II): takes another 16ms
 
-	Z := (1 + cos(Factor)) / 2;
-	Z2 := (1 + 2*Z) / 3;
+        Z := (1 + cos(Factor)) / 2;
+        Z2 := (1 + 2*Z) / 3;
 
+        Button[B].Y := Theme.Song.Cover.Y + (0.185 * Theme.Song.Cover.H * VS * sin(Factor)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
+        Button[B].Z := Z / 2 + 0.3;
 
-	Button[B].Y := Theme.Song.Cover.Y + (0.185 * Theme.Song.Cover.H * VS * sin(Factor)) * Z2 - ((Button[B].H - Theme.Song.Cover.H)/2); // 0.5.0 (I): 2 times faster by not calling CatSongs.VisibleSongs
-	Button[B].Z := Z / 2 + 0.3;
+        Button[B].W := Theme.Song.Cover.H * Z2;
 
-	Button[B].W := Theme.Song.Cover.H * Z2;
-
-	//Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
-	Button[B].X := Theme.Song.Cover.X  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
-	Button[B].H := Button[B].W;
+        //Button[B].Y := {50 +} 140 + 50 - 50 * Z2;
+        Button[B].X := Theme.Song.Cover.X  + (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7 ;
+        Button[B].H := Button[B].W;
       end;
     end;
   end
@@ -1349,7 +1340,6 @@ begin
 
           Diff := (Button[B].H - Theme.Song.Cover.H)/2;
 
-
           X := Sin(Angle*1.3)*0.9;
 
           Button[B].Y := Theme.Song.Cover.Y + Theme.Song.Cover.W * X - Diff;
@@ -1359,9 +1349,9 @@ begin
 
           // limit-bg-covers hack
           if (abs(VS/2-abs(Pos))>10) then
-	    Button[B].Visible := false;
+            Button[B].Visible := false;
           if VS > 25 then
-	    VS:=25;
+            VS:=25;
           // end of limit-bg-covers hack
 
           if Pos < 0 then
@@ -1379,7 +1369,6 @@ begin
 
           Button[B].X := Theme.Song.Cover.X  - (Button[B].H - Theme.Song.Cover.H)*0.5;
 
-
           Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
 
           Button[B].Y := Theme.Song.Cover.Y+Theme.Song.Cover.H/2-Button[b].H/2+Theme.Song.Cover.W/320*(Theme.Song.Cover.H*sin(Angle/2)*1.52);
@@ -1388,7 +1377,6 @@ begin
     end;
   end;
 end;
-
 
 procedure TScreenSong.onShow;
 begin
@@ -1453,7 +1441,7 @@ begin
   AudioPlayback.SetVolume(1.0);
 
   // if preview is deactivated: load musicfile now
-  If (IPreviewVolumeVals[Ini.PreviewVolume] = 0) then
+  if (IPreviewVolumeVals[Ini.PreviewVolume] = 0) then
     AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
 
   // if hide then stop music (for party mode popup on exit)
@@ -1915,7 +1903,7 @@ begin
 end;
 
 //Team No of Team (0-5)
-procedure TScreenSong.DoJoker (Team: Byte);
+procedure TScreenSong.DoJoker (Team: byte);
 begin
   if (Mode = smPartyMode) and
      (PartySession.Teams.NumTeams >= Team + 1) and

@@ -68,35 +68,35 @@ uses
 type
 
   TBPM = record
-    BPM:        real;
-    StartBeat:  real;
+    BPM:       real;
+    StartBeat: real;
   end;
 
   TScore = record
-    Name:       widestring;
-    Score:      integer;
-    Length:     string;
+    Name:      widestring;
+    Score:     integer;
+    Length:    string;
   end;
 
   {$IFDEF USE_PSEUDO_THREAD}
-  TSongs = class( TPseudoThread )
+  TSongs = class(TPseudoThread)
   {$ELSE}
-  TSongs = class( TThread )
+  TSongs = class(TThread)
   {$ENDIF}
   private
-    fNotify, fWatch     : longint;
-    fParseSongDirectory : boolean;
-    fProcessing         : boolean;
+    fNotify, fWatch:     longint;
+    fParseSongDirectory: boolean;
+    fProcessing:         boolean;
     {$ifdef MSWINDOWS}
-    fDirWatch           : TDirectoryWatch;
+    fDirWatch:           TDirectoryWatch;
     {$endif}
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
   protected
     procedure Execute; override;
   public
-    SongList  : TList;          // array of songs
-    Selected  : integer;        // selected song index
+    SongList: TList;          // array of songs
+    Selected: integer;        // selected song index
     constructor Create();
     destructor  Destroy(); override;
 
@@ -107,7 +107,7 @@ type
     procedure BrowseXMLFiles(Dir: widestring);
     procedure Sort(Order: integer);
     function  FindSongFile(Dir, Mask: widestring): widestring;
-    property  Processing : boolean read fProcessing;
+    property  Processing  boolean read fProcessing;
   end;
 
 
@@ -116,24 +116,24 @@ type
     Selected:   integer; // selected song index
     Order:      integer; // order type (0=title)
     CatNumShow: integer; // Category Number being seen
-    CatCount:   integer; //Number of Categorys
+    CatCount:   integer; // Number of Categorys
 
     procedure SortSongs();
-    procedure Refresh; // refreshes arrays by recreating them from Songs array
-    procedure ShowCategory(Index: integer); // expands all songs in category
-    procedure HideCategory(Index: integer); // hides all songs in category
-    procedure ClickCategoryButton(Index: integer); // uses ShowCategory and HideCategory when needed
-    procedure ShowCategoryList; //Hides all Songs And Show the List of all Categorys
-    function FindNextVisible(SearchFrom:integer): integer; //Find Next visible Song
-    function VisibleSongs: integer; // returns number of visible songs (for tabs)
-    function VisibleIndex(Index: integer): integer; // returns visible song index (skips invisible)
+    procedure Refresh;                                      // refreshes arrays by recreating them from Songs array
+    procedure ShowCategory(Index: integer);                 // expands all songs in category
+    procedure HideCategory(Index: integer);                 // hides all songs in category
+    procedure ClickCategoryButton(Index: integer);          // uses ShowCategory and HideCategory when needed
+    procedure ShowCategoryList;                             // Hides all Songs And Show the List of all Categorys
+    function FindNextVisible(SearchFrom: integer): integer; // Find Next visible Song
+    function VisibleSongs: integer;                         // returns number of visible songs (for tabs)
+    function VisibleIndex(Index: integer): integer;         // returns visible song index (skips invisible)
 
-    function SetFilter(FilterStr: string; const fType: Byte): Cardinal;
+    function SetFilter(FilterStr: string; const fType: byte): cardinal;
   end;
 
 var
-  Songs:      TSongs;    // all songs
-  CatSongs:   TCatSongs; // categorized songs
+  Songs:    TSongs;    // all songs
+  CatSongs: TCatSongs; // categorized songs
 
 const
   IN_ACCESS        = $00000001; //* File was accessed */
@@ -170,7 +170,7 @@ begin
 
   // FIXME: threaded loading does not work this way.
   // It will just cause crashes but nothing else at the moment.
-  (*
+(*
   {$ifdef MSWINDOWS}
     fDirWatch := TDirectoryWatch.create(nil);
     fDirWatch.OnChange     := DoDirChanged;
@@ -181,7 +181,7 @@ begin
 
   // now we can start the thread
   Resume();
-  *)
+*)
 
   // until it is fixed, simply load the song-list
   int_LoadSongList();
@@ -189,7 +189,7 @@ end;
 
 destructor TSongs.Destroy();
 begin
-  FreeAndNil( SongList );
+  FreeAndNil(SongList);
   inherited;
 end;
 
@@ -200,7 +200,7 @@ end;
 
 procedure TSongs.Execute();
 var
-  fChangeNotify : THandle;
+  fChangeNotify: THandle;
 begin
 {$IFDEF USE_PSEUDO_THREAD}
   int_LoadSongList();
@@ -234,13 +234,13 @@ begin
     for I := 0 to SongPaths.Count-1 do
       BrowseDir(SongPaths[I]);
 
-    if assigned( CatSongs ) then
+    if assigned(CatSongs) then
       CatSongs.Refresh;
 
-    if assigned( CatCovers ) then
+    if assigned(CatCovers) then
       CatCovers.Load;
 
-    //if assigned( Covers ) then
+    //if assigned(Covers) then
     //  Covers.Load;
 
     if assigned(ScreenSong)  then
@@ -272,75 +272,75 @@ end;
 
 procedure TSongs.BrowseTXTFiles(Dir: widestring);
 var
-  i       : integer;
-  Files   : TDirectoryEntryArray;
-  lSong   : TSong;
+  i:     integer;
+  Files: TDirectoryEntryArray;
+  lSong: TSong;
 begin
 
   try
-    Files := Platform.DirectoryFindFiles( Dir, '.txt', true)
+    Files := Platform.DirectoryFindFiles(Dir, '.txt', true)
   except
     Log.LogError('Couldn''t deal with directory/file: ' + Dir + ' in TSongs.BrowseTXTFiles')
   end;
 
-  for i := 0 to Length(Files)-1 do
+  for i := 0 to Length(Files) - 1 do
   begin
     if Files[i].IsDirectory then
     begin
-      BrowseTXTFiles( Dir + Files[i].Name + PathDelim );  //Recursive Call
+      BrowseTXTFiles(Dir + Files[i].Name + PathDelim);  //Recursive Call
     end
     else
     begin
-      lSong := TSong.create( Dir + Files[i].Name );
+      lSong := TSong.create(Dir + Files[i].Name);
 
       if lSong.Analyse then
-        SongList.add( lSong )
+        SongList.add(lSong)
       else
       begin
         Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
-        freeandnil( lSong );
+        freeandnil(lSong);
       end;
 
     end;
   end;
-  SetLength( Files, 0);
+  SetLength(Files, 0);
 
 end;
 
 procedure TSongs.BrowseXMLFiles(Dir: widestring);
 var
-  i       : integer;
-  Files   : TDirectoryEntryArray;
-  lSong   : TSong;
+  i:     integer;
+  Files: TDirectoryEntryArray;
+  lSong: TSong;
 begin
 
   try
-    Files := Platform.DirectoryFindFiles( Dir, '.xml', true)
+    Files := Platform.DirectoryFindFiles(Dir, '.xml', true)
   except
     Log.LogError('Couldn''t deal with directory/file: ' + Dir + ' in TSongs.BrowseXMLFiles')
   end;
 
-  for i := 0 to Length(Files)-1 do
+  for i := 0 to Length(Files) - 1 do
   begin
     if Files[i].IsDirectory then
     begin
-      BrowseXMLFiles( Dir + Files[i].Name + PathDelim ); //Recursive Call
+      BrowseXMLFiles(Dir + Files[i].Name + PathDelim); // Recursive Call
     end
     else
     begin
-      lSong := TSong.create( Dir + Files[i].Name );
+      lSong := TSong.create(Dir + Files[i].Name);
 
       if lSong.AnalyseXML then
-	SongList.add( lSong )
+	SongList.add(lSong)
       else
       begin
 	Log.LogError('AnalyseFile failed for "' + Files[i].Name + '".');
-	freeandnil( lSong );
+	freeandnil(lSong);
       end;
 
     end;
   end;
-  SetLength( Files, 0);
+  SetLength(Files, 0);
 
 end;
 
@@ -414,7 +414,7 @@ end;
 
 function TSongs.FindSongFile(Dir, Mask: widestring): widestring;
 var
-  SR:     TSearchRec;   // for parsing song directory
+  SR: TSearchRec;   // for parsing song directory
 begin
   Result := '';
   if FindFirst(Dir + Mask, faDirectory, SR) = 0 then
@@ -483,13 +483,13 @@ var
     Inc(Order);
     CatIndex := Length(Song);
     SetLength(Song, CatIndex+1);
-    Song[CatIndex] := TSong.Create();
-    Song[CatIndex].Artist := '[' + CategoryName + ']';
-    Song[CatIndex].Main := true;
+    Song[CatIndex]          := TSong.Create();
+    Song[CatIndex].Artist   := '[' + CategoryName + ']';
+    Song[CatIndex].Main     := true;
     Song[CatIndex].OrderTyp := 0;
     Song[CatIndex].OrderNum := Order;
-    Song[CatIndex].Cover := CatCovers.GetCover(Ini.Sorting, CategoryName);
-    Song[CatIndex].Visible := true;
+    Song[CatIndex].Cover    := CatCovers.GetCover(Ini.Sorting, CategoryName);
+    Song[CatIndex].Visible  := true;
 
     // set number of songs in previous category
     PrevCatBtnIndex := CatIndex - CatNumber - 1;
@@ -500,21 +500,21 @@ var
  end;
 
 begin
-  CatNumShow := -1;
+  CatNumShow  := -1;
 
   SortSongs();
 
   CurCategory := '';
-  Order := 0;
-  CatNumber := 0;
+  Order       := 0;
+  CatNumber   := 0;
 
   // Note: do NOT set Letter to ' ', otherwise no category-button will be
   // created for songs beginning with ' ' if songs of this category exist.
   // TODO: trim song-properties so ' ' will not occur as first chararcter. 
-  Letter := #0;
+  Letter      := #0;
 
   // clear song-list
-  for SongIndex := 0 to Songs.SongList.Count-1 do
+  for SongIndex := 0 to Songs.SongList.Count - 1 do
   begin
     // free category buttons
     // Note: do NOT delete songs, they are just references to Songs.SongList entries
@@ -524,7 +524,7 @@ begin
   end;
   SetLength(Song, 0);
 
-  for SongIndex := 0 to Songs.SongList.Count-1 do
+  for SongIndex := 0 to Songs.SongList.Count - 1 do
   begin
     CurSong := TSong(Songs.SongList[SongIndex]);
     // if tabs are on, add section buttons for each new section
@@ -537,11 +537,11 @@ begin
 
         // TODO: remove this block if it is not needed anymore
         {
-        if CurSection = 'Singstar Part 2' then CoverName := 'Singstar';
-        if CurSection = 'Singstar German' then CoverName := 'Singstar';
-        if CurSection = 'Singstar Spanish' then CoverName := 'Singstar';
-        if CurSection = 'Singstar Italian' then CoverName := 'Singstar';
-        if CurSection = 'Singstar French' then CoverName := 'Singstar';
+        if CurSection = 'Singstar Part 2'     then CoverName := 'Singstar';
+        if CurSection = 'Singstar German'     then CoverName := 'Singstar';
+        if CurSection = 'Singstar Spanish'    then CoverName := 'Singstar';
+        if CurSection = 'Singstar Italian'    then CoverName := 'Singstar';
+        if CurSection = 'Singstar French'     then CoverName := 'Singstar';
         if CurSection = 'Singstar 80s Polish' then CoverName := 'Singstar 80s';
         }
 
@@ -642,15 +642,14 @@ begin
       CurSong.Visible := true
     else if (Ini.Tabs = 1) then
       CurSong.Visible := false;
-
-    {
+{
     if (Ini.Tabs = 1) and (Order = 1) then
     begin
       //open first tab
       CurSong.Visible := true;
     end;
     CurSong.Visible := true;
-    }
+}
   end;
 
   // set CatNumber of last category
@@ -668,7 +667,7 @@ end;
 
 procedure TCatSongs.ShowCategory(Index: integer);
 var
-  S:    integer; // song
+  S: integer; // song
 begin
   CatNumShow := Index;
   for S := 0 to high(CatSongs.Song) do
@@ -680,13 +679,13 @@ begin
       CatSongs.Song[S].Visible := false;
 }
 //  KMS: This should be the same, but who knows :-)
-    CatSongs.Song[S].Visible := ( (CatSongs.Song[S].OrderNum = Index) and (not CatSongs.Song[S].Main) );
+    CatSongs.Song[S].Visible := ((CatSongs.Song[S].OrderNum = Index) and (not CatSongs.Song[S].Main));
   end;
 end;
 
 procedure TCatSongs.HideCategory(Index: integer); // hides all songs in category
 var
-  S:    integer; // song
+  S: integer; // song
 begin
   for S := 0 to high(CatSongs.Song) do
   begin
@@ -697,7 +696,7 @@ end;
 
 procedure TCatSongs.ClickCategoryButton(Index: integer);
 var
-  Num:    integer;
+  Num: integer;
 begin
   Num := CatSongs.Song[Index].OrderNum;
   if Num <> CatNumShow then
@@ -713,7 +712,7 @@ end;
 //Hide Categorys when in Category Hack
 procedure TCatSongs.ShowCategoryList;
 var
-  S:    integer;
+  S: integer;
 begin
   // Hide All Songs Show All Cats
   for S := 0 to high(CatSongs.Song) do
@@ -723,8 +722,8 @@ begin
 end;
 //Hide Categorys when in Category Hack End
 
-//Wrong song selected when tabs on bug
-function TCatSongs.FindNextVisible(SearchFrom:integer): integer;//Find next Visible Song
+// Wrong song selected when tabs on bug
+function TCatSongs.FindNextVisible(SearchFrom:integer): integer;// Find next Visible Song
 var
   I: integer;
 begin
@@ -735,11 +734,11 @@ begin
     Inc (I);
     if (I>high(CatSongs.Song)) then
       I := low(CatSongs.Song);
-    if (I = SearchFrom) then //Make One Round and no song found->quit
+    if (I = SearchFrom) then // Make One Round and no song found->quit
       break;
   end;
 end;
-//Wrong song selected when tabs on bug End
+// Wrong song selected when tabs on bug End
 
 (**
  * Returns the number of visible songs.
@@ -765,44 +764,46 @@ var
   SongIndex: integer;
 begin
   Result := 0;
-  for SongIndex := 0 to Index-1 do
+  for SongIndex := 0 to Index - 1 do
   begin
     if (CatSongs.Song[SongIndex].Visible) then
       Inc(Result);
   end;
 end;
 
-function TCatSongs.SetFilter(FilterStr: string; const fType: Byte): Cardinal;
+function TCatSongs.SetFilter(FilterStr: string; const fType: byte): cardinal;
 var
-  I, J: integer;
-  cString: string;
+  I, J:      integer;
+  cString:   string;
   SearchStr: array of string;
 begin
-  {fType: 0: All
-          1: Title
-          2: Artist}
+{
+  fType: 0: All
+         1: Title
+         2: Artist
+}
   FilterStr := Trim(FilterStr);
   if FilterStr<>'' then
   begin
     Result := 0;
-    //Create Search Array
+    // Create Search Array
     SetLength(SearchStr, 1);
-    I := Pos (' ', FilterStr);
+    I := Pos(' ', FilterStr);
     while (I <> 0) do
     begin
-      SetLength (SearchStr, Length(SearchStr) + 1);
-      cString := Copy(FilterStr, 1, I-1);
+      SetLength(SearchStr, Length(SearchStr) + 1);
+      cString := Copy(FilterStr, 1, I - 1);
       if (cString <> ' ') and (cString <> '') then
-        SearchStr[High(SearchStr)-1] := cString;
+        SearchStr[High(SearchStr) - 1] := cString;
       Delete (FilterStr, 1, I);
 
       I := Pos (' ', FilterStr);
     end;
-    //Copy last Word
+    // Copy last Word
     if (FilterStr <> ' ') and (FilterStr <> '') then
       SearchStr[High(SearchStr)] := FilterStr;
 
-    for I:=0 to High(Song) do
+    for I := 0 to High(Song) do
     begin
       if not Song[i].Main then
       begin
@@ -811,8 +812,8 @@ begin
           1: cString := Song[I].Title;
           2: cString := Song[I].Artist;
         end;
-        Song[i].Visible:=True;
-        //Look for every Searched Word
+        Song[i].Visible:=true;
+        // Look for every Searched Word
         for J := 0 to High(SearchStr) do
         begin
           Song[i].Visible := Song[i].Visible and AnsiContainsText(cString, SearchStr[J])
@@ -821,13 +822,13 @@ begin
           Inc(Result);
       end
       else
-        Song[i].Visible:=False;
+        Song[i].Visible:=false;
     end;
     CatNumShow := -2;
   end
   else
   begin
-    for i:=0 to High(Song) do
+    for i := 0 to High(Song) do
     begin
       Song[i].Visible := (Ini.Tabs=1) = Song[i].Main;
       CatNumShow := -1;

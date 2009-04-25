@@ -124,18 +124,17 @@ begin
           // Don't start when SinglePlayer Teams but only Multiplayer Plugins available
           OnlyMultiPlayer := true;
           for I := 0 to High(DLLMan.Plugins) do
-	  begin
+          begin
             OnlyMultiPlayer := (OnlyMultiPlayer and DLLMan.Plugins[I].TeamModeOnly);
           end;
           if (OnlyMultiPlayer) and ((NumPlayer1 = 0) or (NumPlayer2 = 0) or ((NumPlayer3 = 0) and (NumTeams = 1))) then
-	  begin
+          begin
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_PLUGINS'));
             Exit;
           end;
           //Save Difficulty
           Ini.Difficulty := SelectsS[SelectLevel].SelectedOption;
           Ini.SaveLevel;
-
 
           //Save Num Teams:
           PartySession.Teams.NumTeams := NumTeams + 2;
@@ -256,7 +255,8 @@ begin
 end;
 
 procedure TScreenPartyOptions.SetPlaylist2;
-var I: integer;
+var
+  I: integer;
 begin
   case Playlist of
     0:

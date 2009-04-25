@@ -193,7 +193,6 @@ begin
   SetLength(ISelections, 1);
   ISelections[0] := 'Dummy';
 
-
   AddText(Theme.SongMenu.TextMenu);
 
   LoadFromTheme(Theme.SongMenu);
@@ -406,9 +405,9 @@ begin
         Button[3].Visible := true;
         SelectsS[0].Visible := false;
 
-        Button[0].Text[0].Text := String(PartySession.Teams.Teaminfo[0].Name);
-        Button[1].Text[0].Text := String(PartySession.Teams.Teaminfo[1].Name);
-        Button[2].Text[0].Text := String(PartySession.Teams.Teaminfo[2].Name);
+        Button[0].Text[0].Text := string(PartySession.Teams.Teaminfo[0].Name);
+        Button[1].Text[0].Text := string(PartySession.Teams.Teaminfo[1].Name);
+        Button[2].Text[0].Text := string(PartySession.Teams.Teaminfo[2].Name);
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
 
         // set right interaction

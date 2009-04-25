@@ -34,26 +34,35 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu, SDL, UDisplay, UMusic, UFiles, UIni, UThemes, USongs;
+  UMenu,
+  SDL,
+  UDisplay,
+  UMusic,
+  UFiles,
+  UIni,
+  UThemes,
+  USongs;
 
 type
   TScreenOptionsGame = class(TMenu)
     public
       old_Tabs, old_Sorting: integer;
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       procedure RefreshSongs;
   end;
 
 implementation
 
-uses UGraphic, SysUtils;
+uses
+  UGraphic,
+  SysUtils;
 
-function TScreenOptionsGame.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenOptionsGame.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -76,7 +85,8 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 6 then begin
+          if SelInteraction = 6 then
+          begin
             AudioPlayback.PlaySound(SoundLib.Back);
             RefreshSongs;
             FadeTo(@ScreenOptions);

@@ -79,7 +79,7 @@ function TScreenMain.ParseInput(PressedKey: cardinal; CharCode: widechar;
 var
   SDL_ModState: word;
 begin
-  Result := True;
+  Result := true;
 
   SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT +
     KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
@@ -90,7 +90,7 @@ begin
     case WideCharUpperCase(CharCode)[1] of
       'Q':
       begin
-        Result := False;
+        Result := false;
         Exit;
       end;
       'C':
@@ -128,7 +128,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
       begin
-        Result := False;
+        Result := false;
       end;
 
       SDLK_RETURN:
@@ -143,7 +143,7 @@ begin
             if (Ini.Players = 4) then
               PlayersPlay := 6;
 
-            ScreenName.Goto_SingScreen := False;
+            ScreenName.Goto_SingScreen := false;
             FadeTo(@ScreenName, SoundLib.Start);
           end
           else //show error message
@@ -187,7 +187,7 @@ begin
         //Exit
         if Interaction = 5 then
         begin
-          Result := False;
+          Result := false;
         end;
       end;
       {**

@@ -136,7 +136,7 @@ uses
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -179,15 +179,15 @@ begin
           end;
 
           if Interaction = 2 then
-	  begin
+          begin
             Selected := true;
             {$IFDEF UseMIDIPort}
             MidiFile.OnMidiEvent := nil;
             {$ENDIF}
             {for T := 0 to High(ATrack) do
-	    begin
+            begin
               if ATrack[T].Hear then
-	      begin
+              begin
                 MidiTrack := MidiFile.GetTrack(T);
                 MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
               end;
@@ -196,9 +196,9 @@ begin
           end;
 
           if Interaction = 3 then
-	  begin
+          begin
             if SelectedNumber > 0 then
-	    begin
+            begin
               Extract;
               SaveSong(Song, Lines, ChangeFileExt(ConversionFileName, '.txt'), false);
             end;
@@ -209,16 +209,16 @@ begin
       SDLK_SPACE:
         begin
 //          ATrack[Sel].Hear := not ATrack[Sel].Hear;
-	  if Notes in ATrack[Sel].Status then
-	  begin
-	    ATrack[Sel].Status := ATrack[Sel].Status - [Notes];
-	    if Lyrics in ATrack[Sel].Status then
-	      ATrack[Sel].Status := ATrack[Sel].Status - [Lyrics]
-	    else
-	      ATrack[Sel].Status := ATrack[Sel].Status + [Lyrics];
-	  end
-	  else
-	    ATrack[Sel].Status := ATrack[Sel].Status + [Notes];
+          if Notes in ATrack[Sel].Status then
+          begin
+            ATrack[Sel].Status := ATrack[Sel].Status - [Notes];
+            if Lyrics in ATrack[Sel].Status then
+              ATrack[Sel].Status := ATrack[Sel].Status - [Lyrics]
+            else
+              ATrack[Sel].Status := ATrack[Sel].Status + [Lyrics];
+          end
+          else
+            ATrack[Sel].Status := ATrack[Sel].Status + [Notes];
 
 {          if Selected then
           begin
@@ -244,13 +244,13 @@ begin
         begin
           Inc(Sel);
           if Sel > High(ATrack) then
-	    Sel := 0;
+            Sel := 0;
         end;
       SDLK_UP:
         begin
           Dec(Sel);
           if Sel < 0 then
-	    Sel := High(ATrack);
+            Sel := High(ATrack);
         end;
     end;
   end;
@@ -312,7 +312,7 @@ begin
       for N := 0 to High(ATrack[T].Note) do
       begin
         if (ATrack[T].Note[N].EventType = 9) and (ATrack[T].Note[N].Data2 > 0) then
-	begin
+        begin
           Nu := Length(Note);
           SetLength(Note, Nu + 1);
           Note[Nu].Start := Round(ATrack[T].Note[N].Start / Ticks);
@@ -334,7 +334,7 @@ begin
       for N := 0 to High(ATrack[T].Note) do
       begin
         if (ATrack[T].Note[N].EventType = 15) then
-	begin
+        begin
 //          Log.LogStatus('<' + Track[T].Note[N].Str + '>', 'MIDI');
           AddLyric(Round(ATrack[T].Note[N].Start / Ticks), ATrack[T].Note[N].Str);
         end;
@@ -452,7 +452,6 @@ begin
   AddButton(500, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(20, 5, 0, 0, 0, 'Save');
 
-
 {  MidiOut := TMidiOutput.Create(nil);
 //  MidiOut.Close;
 //  MidiOut.DeviceID := 0;
@@ -492,12 +491,10 @@ begin
   Log.LogStatus(MidiOut.ProductName, 'MIDI');
   MidiOut.Open;
 
-
   if FileExists(ConversionFileName) then
   begin
     MidiFile.Filename := ConversionFileName;
     MidiFile.ReadFile;
-
 
     Len := 0;
     Sel := 0;

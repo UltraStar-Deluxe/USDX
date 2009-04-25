@@ -743,9 +743,8 @@ begin
     begin
       // Just call this once
       // when Screens = 2
-      If (ScreenAct = 1) then
+      if (ScreenAct = 1) then
         fCurrentVideoPlaybackEngine.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
-
 
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     end;

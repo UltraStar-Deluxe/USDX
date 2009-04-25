@@ -46,18 +46,22 @@ type
   TScreenOptionsGraphics = class(TMenu)
     public
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
   end;
 
 implementation
 
-uses UGraphic, UMain, SysUtils, TypInfo;
+uses
+  UGraphic,
+  UMain,
+  SysUtils,
+  TypInfo;
 
-function TScreenOptionsGraphics.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenOptionsGraphics.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -80,10 +84,12 @@ begin
         end;
       SDLK_RETURN:
         begin
-{          if SelInteraction <= 1 then begin
+{          if SelInteraction <= 1 then
+          begin
             Restart := true;
           end;}
-          if SelInteraction = 6 then begin
+          if SelInteraction = 6 then
+          begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
             // FIXME: changing the video mode does not work this way in windows
@@ -101,14 +107,16 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction < 6) then begin
+          if (SelInteraction >= 0) and (SelInteraction < 6) then
+          begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction < 6) then begin
+          if (SelInteraction >= 0) and (SelInteraction < 6) then
+          begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
@@ -124,13 +132,12 @@ begin
   inherited Create;
   LoadFromTheme(Theme.OptionsGraphics);
 
-  AddSelectSlide(Theme.OptionsGraphics.SelectResolution, Ini.Resolution, IResolution);
-  AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen, Ini.Fullscreen, IFullscreen);
-  AddSelectSlide(Theme.OptionsGraphics.SelectDepth,      Ini.Depth, IDepth);
-  AddSelectSlide(Theme.OptionsGraphics.SelectVisualizer, Ini.VisualizerOption, IVisualizer);
+  AddSelectSlide(Theme.OptionsGraphics.SelectResolution,   Ini.Resolution, IResolution);
+  AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen,   Ini.Fullscreen, IFullscreen);
+  AddSelectSlide(Theme.OptionsGraphics.SelectDepth,        Ini.Depth, IDepth);
+  AddSelectSlide(Theme.OptionsGraphics.SelectVisualizer,   Ini.VisualizerOption, IVisualizer);
   AddSelectSlide(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscope);
-  AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize, Ini.MovieSize, IMovieSize);
-
+  AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize,    Ini.MovieSize, IMovieSize);
 
   AddButton(Theme.OptionsGraphics.ButtonExit);
   if (Length(Button[0].Text)=0) then

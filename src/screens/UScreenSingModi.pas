@@ -33,45 +33,45 @@ interface
 
 {$I switches.inc}
 
+uses
+  UMenu,
+  UMusic,
+  SDL,
+  SysUtils,
+  UFiles,
+  UTime,
+  USongs,
+  UIni,
+  ULog,
+  UTexture,
+  ULyrics,
+  TextGL,
+  gl,
 
-uses UMenu,
-     UMusic,
-     SDL,
-     SysUtils,
-     UFiles,
-     UTime,
-     USongs,
-     UIni,
-     ULog,
-     UTexture,
-     ULyrics,
-     TextGL,
-     gl,
-
-     UThemes,
-     UScreenSing,
-     ModiSDK;
+  UThemes,
+  UScreenSing,
+  ModiSDK;
 
 type
   TScreenSingModi = class(TScreenSing)
     protected
     
     public
-      Winner: Byte; //Who Wins
+      Winner: byte; //Who Wins
       PlayerInfo: TPlayerInfo;
       TeamInfo:   TTeamInfo;
 
       constructor Create; override;
       procedure onShow; override;
       //procedure onShowFinish; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       function Draw: boolean; override;
       procedure Finish; override;
   end;
 
 type
   TCustomSoundEntry = record
-    Filename : String;
+    Filename : string;
     Stream   : TAudioPlaybackStream;
   end;
 
@@ -85,13 +85,13 @@ function LoadTex(const Name: PChar; Typ: TTextureType): TsmallTexture;
 //function Translate (const Name: PChar): PChar;
 //  {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 //Procedure to Print Text
-procedure Print(const Style, Size: Byte; const X, Y: Real; const Text: PChar);
+procedure Print(const Style, Size: byte; const X, Y: real; const Text: PChar);
   {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 //Procedure that loads a Custom Sound
-function LoadSound(const Name: PChar): Cardinal;
+function LoadSound(const Name: PChar): cardinal;
   {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 //Plays a Custom Sound
-procedure PlaySound(const Index: Cardinal);
+procedure PlaySound(const Index: cardinal);
   {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
 //Utilys
@@ -112,12 +112,12 @@ uses
   URecord, 
   USkins;
 
-// Method for input parsing. If False is returned, GetNextWindow
+// Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSingModi.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenSingModi.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 begin
   Result := true;
-  If (PressedDown) Then
+  if (PressedDown) then
   begin // Key Down
     case PressedKey of
 
@@ -143,7 +143,7 @@ end;
 
 function ToSentences(Const Lines: TLines): TSentences;
 var
-  I, J: Integer;
+  I, J: integer;
 begin
   Result.Current     := Lines.Current;
   Result.High        := Lines.High;
@@ -178,7 +178,7 @@ end;
 
 procedure TScreenSingModi.onShow;
 var
-  I: Integer;
+  I: integer;
 begin
   inherited;
 
@@ -200,14 +200,14 @@ begin
     PlayerInfo.Playerinfo[I].Name    := PChar(Ini.Name[I]);
     PlayerInfo.Playerinfo[I].Score   := 0;
     PlayerInfo.Playerinfo[I].Bar     := 50;
-    PlayerInfo.Playerinfo[I].Enabled := True;
+    PlayerInfo.Playerinfo[I].Enabled := true;
   end;
 
   for I := PlayerInfo.NumPlayers to high(PlayerInfo.Playerinfo) do
   begin
     PlayerInfo.Playerinfo[I].Score:=  0;
     PlayerInfo.Playerinfo[I].Bar :=  0;
-    PlayerInfo.Playerinfo[I].Enabled := False;
+    PlayerInfo.Playerinfo[I].Enabled := false;
   end;
 
   {Case PlayersPlay of
@@ -254,7 +254,7 @@ begin
   end;
 
   // Set Background (Little Workaround, maybe change sometime)
-  if (DLLMan.Selected.LoadBack) AND (DLLMan.Selected.LoadSong) then
+  if (DLLMan.Selected.LoadBack) and (DLLMan.Selected.LoadSong) then
     ScreenSing.Tex_Background := Tex_Background;
 
   Winner := 0;
@@ -262,12 +262,14 @@ begin
   //Set Score Visibility
   Scores.Visible := DLLMan.Selected.ShowScore;
 
-  {if PlayersPlay = 1 then begin
+  {if PlayersPlay = 1 then
+  begin
     Text[TextP1Score].Visible := DLLMan.Selected.ShowScore;
     Static[StaticP1ScoreBG].Visible := DLLMan.Selected.ShowScore;
   end;
 
-  if (PlayersPlay = 2) OR (PlayersPlay = 4) then begin
+  if (PlayersPlay = 2) or (PlayersPlay = 4) then
+  begin
     Text[TextP1TwoPScore].Visible := DLLMan.Selected.ShowScore;
     Static[StaticP1TwoPScoreBG].Visible := DLLMan.Selected.ShowScore;
 
@@ -275,7 +277,8 @@ begin
     Static[StaticP2RScoreBG].Visible := DLLMan.Selected.ShowScore;
   end;
 
-  if (PlayersPlay = 3) OR (PlayersPlay = 6) then begin
+  if (PlayersPlay = 3) or (PlayersPlay = 6) then
+  begin
     Text[TextP1ThreePScore].Visible := DLLMan.Selected.ShowScore;
     Static[StaticP1ThreePScoreBG].Visible := DLLMan.Selected.ShowScore;
 
@@ -316,11 +319,12 @@ begin
   // draw background picture (if any, and if no visualizations)
   // when we don't check for visualizations the visualizations would
   // be overdrawn by the picture when {UNDEFINED UseTexture} in UVisualizer
-  if (DllMan.Selected.LoadSong) AND (DllMan.Selected.LoadBack) AND (not fShowVisualization) then
+  if (DllMan.Selected.LoadSong) and (DllMan.Selected.LoadBack) and (not fShowVisualization) then
     SingDrawBackground;
 
   // set player names (for 2 screens and only Singstar skin)
-  if ScreenAct = 1 then begin
+  if ScreenAct = 1 then
+  begin
     Text[TextP1].Text       := 'P1';
     Text[TextP1TwoP].Text   := 'P1'; // added for ps3 skin
     Text[TextP1ThreeP].Text := 'P1'; // added for ps3 skin
@@ -329,7 +333,8 @@ begin
     Text[TextP3R].Text      := 'P3';
   end
 
-  Else if ScreenAct = 2 then begin
+  Else if ScreenAct = 2 then
+  begin
     case PlayersPlay of
       4:  begin
             Text[TextP1TwoP].Text := 'P3';
@@ -342,7 +347,6 @@ begin
           end;
     end; // case
   end; // if
-
 
     // stereo   <- and where iss P2M? or P3?
     Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10*ScreenX;
@@ -375,7 +379,8 @@ begin
   end;
 
   // update and draw movie
-{  if ShowFinish and CurrentSong.VideoLoaded AND DllMan.Selected.LoadVideo then begin
+{  if ShowFinish and CurrentSong.VideoLoaded and DllMan.Selected.LoadVideo then
+  begin
     UpdateSmpeg; // this only draws
   end;}
 
@@ -386,9 +391,8 @@ begin
     begin
       // Just call this once
       // when Screens = 2
-      If (ScreenAct = 1) then
+      if (ScreenAct = 1) then
         fCurrentVideoPlaybackEngine.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
-
 
       fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
     end;
@@ -397,15 +401,20 @@ begin
   // draw static menu (FG)
   DrawFG;
 
-  if ShowFinish then begin
+  if ShowFinish then
+  begin
     if DllMan.Selected.LoadSong then
     begin
-      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LyricsState.GetCurrentTime*1000 <= CurrentSong.Finish)) then begin
+      if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or (LyricsState.GetCurrentTime*1000 <= CurrentSong.Finish)) then
+      begin
         //Pause Mod:
         if not Paused then
           Sing(Self);       // analyze song
-      end else begin
-        if not FadeOut then begin
+      end
+      else
+      begin
+        if not FadeOut then
+        begin
           Finish;
           FadeOut := true;
           FadeTo(@ScreenPartyScore);
@@ -434,14 +443,15 @@ begin
     end;
   end;
 
-  if ((ShowFinish) AND (NOT Paused)) then
+  if ((ShowFinish) and (not Paused)) then
   begin
     if not DLLMan.PluginDraw(Playerinfo, Lines[0].Current) then
     begin
-      if not FadeOut then begin
-          Finish;
-          FadeOut := true;
-          FadeTo(@ScreenPartyScore);
+      if not FadeOut then
+      begin
+        Finish;
+        FadeOut := true;
+        FadeTo(@ScreenPartyScore);
       end;
     end;   
   end;
@@ -465,13 +475,11 @@ begin
   {Static[StaticP1ScoreBG].Texture.X := Static[StaticP1ScoreBG].Texture.X - 10*ScreenX;
   Text[TextP1Score].X := Text[TextP1Score].X - 10*ScreenX;}
 
-
   Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X - 10*ScreenX;
   Text[TextP2R].X := Text[TextP2R].X - 10*ScreenX;
 
   {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X - 10*ScreenX;
   Text[TextP2RScore].X := Text[TextP2RScore].X - 10*ScreenX;}
-
 
   for S := 1 to 1 do
     Static[S].Texture.X := Static[S].Texture.X - 10*ScreenX;
@@ -495,11 +503,11 @@ end;
 
 function LoadTex(const Name: PChar; Typ: TTextureType): TsmallTexture;
 var
-  Texname, EXT: String;
+  Texname, EXT: string;
   Tex: TTexture;
 begin
   //Get texture Name
-  TexName := Skin.GetTextureFileName(String(Name));
+  TexName := Skin.GetTextureFileName(string(Name));
   //Get File Typ
   Ext := ExtractFileExt(TexName);
   if (uppercase(Ext) = '.JPG') then
@@ -516,11 +524,11 @@ end;
 {
 function Translate (const Name: PChar): PChar; stdcall;
 begin
-  Result := PChar(Language.Translate(String(Name)));
+  Result := PChar(Language.Translate(string(Name)));
 end; }
 
 //Procedure to Print Text
-procedure Print(const Style, Size: Byte; const X, Y: Real; const Text: PChar);
+procedure Print(const Style, Size: byte; const X, Y: real; const Text: PChar);
 begin
   SetFontItalic ((Style and 128) = 128);
   SetFontStyle(Style and 7);
@@ -528,15 +536,15 @@ begin
   // used by Hold_The_Line / TeamDuell
   SetFontSize(Size);
   SetFontPos (X, Y);
-  glPrint (Language.Translate(String(Text)));
+  glPrint (Language.Translate(string(Text)));
 end;
 
 //Procedure that loads a Custom Sound
-function LoadSound(const Name: PChar): Cardinal;
+function LoadSound(const Name: PChar): cardinal;
 var
   Stream: TAudioPlaybackStream;
-  i: Integer;
-  Filename: String;
+  i: integer;
+  Filename: string;
 begin
   //Search for Sound in already loaded Sounds
   Filename := UpperCase(SoundPath + Name);
@@ -549,7 +557,7 @@ begin
     end;
   end;
 
-  Stream := AudioPlayback.OpenSound(SoundPath + String(Name));
+  Stream := AudioPlayback.OpenSound(SoundPath + string(Name));
   if (Stream = nil) then
   begin
     Result := 0;
@@ -562,7 +570,7 @@ begin
 end;
 
 //Plays a Custom Sound
-procedure PlaySound(const Index: Cardinal);
+procedure PlaySound(const Index: cardinal);
 begin
   if (Index <= High(CustomSounds)) then
     AudioPlayback.PlaySound(CustomSounds[Index].Stream);

@@ -45,26 +45,26 @@ uses
 type
   TScreenPartyPlayer = class(TMenu)
     public
-      Team1Name: Cardinal;
-      Player1Name: Cardinal;
-      Player2Name: Cardinal;
-      Player3Name: Cardinal;
-      Player4Name: Cardinal;
+      Team1Name: cardinal;
+      Player1Name: cardinal;
+      Player2Name: cardinal;
+      Player3Name: cardinal;
+      Player4Name: cardinal;
 
-      Team2Name: Cardinal;
-      Player5Name: Cardinal;
-      Player6Name: Cardinal;
-      Player7Name: Cardinal;
-      Player8Name: Cardinal;
+      Team2Name: cardinal;
+      Player5Name: cardinal;
+      Player6Name: cardinal;
+      Player7Name: cardinal;
+      Player8Name: cardinal;
 
-      Team3Name: Cardinal;
-      Player9Name: Cardinal;
-      Player10Name: Cardinal;
-      Player11Name: Cardinal;
-      Player12Name: Cardinal;
+      Team3Name: cardinal;
+      Player9Name: cardinal;
+      Player10Name: cardinal;
+      Player11Name: cardinal;
+      Player12Name: cardinal;
 
       constructor Create; override;
-      function ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
       procedure onShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -78,7 +78,7 @@ uses
   UTexture,
   UParty;
 
-function TScreenPartyPlayer.ParseInput(PressedKey: Cardinal; CharCode: WideChar; PressedDown: Boolean): Boolean;
+function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
   I, J: integer;
@@ -315,9 +315,9 @@ begin
     Button[10].Text[0].Text := Ini.NameTeam[2];
     // Templates for Names Mod end
   
-  If (PartySession.Teams.NumTeams>=1) then
+  if (PartySession.Teams.NumTeams>=1) then
   begin
-    Button[0].Visible := True;
+    Button[0].Visible := true;
     Button[1].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=1);
     Button[2].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=2);
     Button[3].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=3);
@@ -325,16 +325,16 @@ begin
   end
   else
   begin
-    Button[0].Visible := False;
-    Button[1].Visible := False;
-    Button[2].Visible := False;
-    Button[3].Visible := False;
-    Button[4].Visible := False;
+    Button[0].Visible := false;
+    Button[1].Visible := false;
+    Button[2].Visible := false;
+    Button[3].Visible := false;
+    Button[4].Visible := false;
   end;
 
-  If (PartySession.Teams.NumTeams>=2) then
+  if (PartySession.Teams.NumTeams>=2) then
   begin
-    Button[5].Visible := True;
+    Button[5].Visible := true;
     Button[6].Visible := (PartySession.Teams.Teaminfo[1].NumPlayers >=1);
     Button[7].Visible := (PartySession.Teams.Teaminfo[1].NumPlayers >=2);
     Button[8].Visible := (PartySession.Teams.Teaminfo[1].NumPlayers >=3);
@@ -342,16 +342,16 @@ begin
   end
   else
   begin
-    Button[5].Visible := False;
-    Button[6].Visible := False;
-    Button[7].Visible := False;
-    Button[8].Visible := False;
-    Button[9].Visible := False;
+    Button[5].Visible := false;
+    Button[6].Visible := false;
+    Button[7].Visible := false;
+    Button[8].Visible := false;
+    Button[9].Visible := false;
   end;
 
-  If (PartySession.Teams.NumTeams>=3) then
+  if (PartySession.Teams.NumTeams>=3) then
   begin
-    Button[10].Visible := True;
+    Button[10].Visible := true;
     Button[11].Visible := (PartySession.Teams.Teaminfo[2].NumPlayers >=1);
     Button[12].Visible := (PartySession.Teams.Teaminfo[2].NumPlayers >=2);
     Button[13].Visible := (PartySession.Teams.Teaminfo[2].NumPlayers >=3);
@@ -359,11 +359,11 @@ begin
   end
   else
   begin
-    Button[10].Visible := False;
-    Button[11].Visible := False;
-    Button[12].Visible := False;
-    Button[13].Visible := False;
-    Button[14].Visible := False;
+    Button[10].Visible := false;
+    Button[11].Visible := false;
+    Button[12].Visible := false;
+    Button[13].Visible := false;
+    Button[14].Visible := false;
   end;
 
 end;
