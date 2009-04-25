@@ -374,7 +374,7 @@ Section /o "Bodo Wartke - Liebeslied (Love Song)" g2Section1
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song1} $TEMP\Song-BodoWartke-LoveSong.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song1} $TEMP\Song-BodoWartke-LoveSong.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -401,7 +401,7 @@ Section /o "Dead Smiling Pirates - I 18" g2Section2
    SetOutPath "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song2} $TEMP\Song-I-18.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song2} $TEMP\Song-I-18.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -428,7 +428,7 @@ Section /o "Monkey Shines" s2_sub1_Section1
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song1} $TEMP\Song-JC-MS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song1} $TEMP\Song-JC-MS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -449,7 +449,7 @@ Section /o "I Crush Everything" s2_sub1_Section2
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song2} $TEMP\Song-JC-ICE.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song2} $TEMP\Song-JC-ICE.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -470,7 +470,7 @@ Section /o "Not About You" s2_sub1_Section3
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song3} $TEMP\Song-JC-NAY.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song3} $TEMP\Song-JC-NAY.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -492,7 +492,7 @@ Section /o "Mr. Fancy Pants" s2_sub1_Section4
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song4} $TEMP\Song-JC-MFP.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song4} $TEMP\Song-JC-MFP.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -513,7 +513,7 @@ Section /o "Big Bad World One" s2_sub1_Section5
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song5} $TEMP\Song-JC-BBWO.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song5} $TEMP\Song-JC-BBWO.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -534,7 +534,7 @@ Section /o "Flickr" s2_sub1_Section6
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song6} $TEMP\Song-JC-Flickr.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song6} $TEMP\Song-JC-Flickr.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -555,7 +555,7 @@ Section /o "My Beige Bear" s2_sub1_Section7
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song7} $TEMP\Song-JC-MBB.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song7} $TEMP\Song-JC-MBB.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -576,7 +576,7 @@ Section /o "The Future Soon" s2_sub1_Section8
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song8} $TEMP\Song-JC-TFS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song8} $TEMP\Song-JC-TFS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -597,7 +597,7 @@ Section /o "Ikea" s2_sub1_Section9
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song9} $TEMP\Song-JC-Ikea.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song9} $TEMP\Song-JC-Ikea.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -618,7 +618,7 @@ Section /o "Furry Old Lobster" s2_sub1_Section10
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song10} $TEMP\Song-JC-FOL.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song10} $TEMP\Song-JC-FOL.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -639,7 +639,7 @@ Section /o "Code Monkey" s2_sub1_Section11
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song11} $TEMP\Song-JC-CM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song11} $TEMP\Song-JC-CM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -660,7 +660,7 @@ Section /o "I´m Your Moon" s2_sub1_Section12
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song12} $TEMP\Song-JC-IYM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song12} $TEMP\Song-JC-IYM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -681,7 +681,7 @@ Section /o "First Of May" s2_sub1_Section13
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song13} $TEMP\Song-JC-FOM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song13} $TEMP\Song-JC-FOM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -702,7 +702,7 @@ Section /o "Dance, Soterious Johnson, Dance" s2_sub1_Section14
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song14} $TEMP\Song-JC-DSJD.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song14} $TEMP\Song-JC-DSJD.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -723,7 +723,7 @@ Section /o "A Talk With George" s2_sub1_Section15
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song15} $TEMP\Song-JC-ATWG.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song15} $TEMP\Song-JC-ATWG.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -744,7 +744,7 @@ Section /o "Creepy Doll" s2_sub1_Section16
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song16} $TEMP\Song-JC-CD.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song16} $TEMP\Song-JC-CD.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -765,7 +765,7 @@ Section /o "That Spells DNA" s2_sub1_Section17
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song17} $TEMP\Song-JC-TSDNA.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song17} $TEMP\Song-JC-TSDNA.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -786,7 +786,7 @@ Section /o "When You Go" s2_sub1_Section18
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song18} $TEMP\Song-JC-WYG.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song18} $TEMP\Song-JC-WYG.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -807,7 +807,7 @@ Section /o "Better" s2_sub1_Section19
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song19} $TEMP\Song-JC-Better.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song19} $TEMP\Song-JC-Better.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -828,7 +828,7 @@ Section /o "Shop Vac" s2_sub1_Section20
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song20} $TEMP\Song-JC-SV.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song20} $TEMP\Song-JC-SV.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -849,7 +849,7 @@ Section /o "I Feel Fantastic" s2_sub1_Section21
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song21} $TEMP\Song-JC-IFF.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song21} $TEMP\Song-JC-IFF.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -870,7 +870,7 @@ Section /o "Re: Your Brains" s2_sub1_Section22
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song22} $TEMP\Song-JC-ReYB.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song22} $TEMP\Song-JC-ReYB.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -891,7 +891,7 @@ Section /o "Skullcrusher Mountain" s2_sub1_Section23
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song23} $TEMP\Song-JC-SCM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song23} $TEMP\Song-JC-SCM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -912,7 +912,7 @@ Section /o "Chiron Beta Prime" s2_sub1_Section24
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub1_song24} $TEMP\Song-JC-CBP.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song24} $TEMP\Song-JC-CBP.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -941,7 +941,7 @@ Section /o "Joshua Morin - On The Run" g2Section3
    SetOutPath "$INSTDIR\Songs\Joshua Morin - On The Run\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song3} $TEMP\Song-On-the-run.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song3} $TEMP\Song-On-the-run.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -963,7 +963,7 @@ Section /o "Pornophonique - Space Invaders" g2Section4
    SetOutPath "$INSTDIR\Songs\Pornophonique - Space Invaders\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song4} $TEMP\Song-Space-Invaders.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song4} $TEMP\Song-Space-Invaders.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -986,7 +986,7 @@ Section /o "Shearer - 69" s2_sub2_Section1
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song1} $TEMP\Song-Shearer-69.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song1} $TEMP\Song-Shearer-69.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1007,7 +1007,7 @@ Section /o "Shearer - 69 (Karaoke)" s2_sub2_Section2
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song2} $TEMP\Song-Shearer-69-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song2} $TEMP\Song-Shearer-69-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1028,7 +1028,7 @@ Section /o "Shearer - Can't stop it" s2_sub2_Section3
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song3} $TEMP\Song-Shearer-CSI.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song3} $TEMP\Song-Shearer-CSI.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1049,7 +1049,7 @@ Section /o "Shearer - Can't stop it (Karaoke)" s2_sub2_Section4
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song4} $TEMP\Song-Shearer-CSI-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song4} $TEMP\Song-Shearer-CSI-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1070,7 +1070,7 @@ Section /o "Shearer - In My Hand" s2_sub2_Section5
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song5} $TEMP\Song-Shearer-IMH.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song5} $TEMP\Song-Shearer-IMH.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1091,7 +1091,7 @@ Section /o "Shearer - Man Song" s2_sub2_Section6
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song6} $TEMP\Song-Shearer-MS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song6} $TEMP\Song-Shearer-MS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1112,7 +1112,7 @@ Section /o "Shearer - Man Song (Karaoke)" s2_sub2_Section7
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song7} $TEMP\Song-Shearer-MS-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song7} $TEMP\Song-Shearer-MS-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1133,7 +1133,7 @@ Section /o "Shearer - Stay With Me" s2_sub2_Section8
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song8} $TEMP\Song-Shearer-SWM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song8} $TEMP\Song-Shearer-SWM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1154,7 +1154,7 @@ Section /o "Shearer - Stay With Me (Karaoke)" s2_sub2_Section9
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub2_song9} $TEMP\Song-Shearer-SWM-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song9} $TEMP\Song-Shearer-SWM-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1179,7 +1179,7 @@ Section /o "Steven Dunston - Northern Star" g2Section5
    SetOutPath "$INSTDIR\Songs\Steven Dunston - Northern Star\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_song5} $TEMP\Song-Northern-Star.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song5} $TEMP\Song-Northern-Star.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -1203,7 +1203,7 @@ Section /o "Wise Guys - Lebendig und kräftig und schärfer" s2_sub3_Section1
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub3_song1} $TEMP\Song-WiseGuys-LUKUS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub3_song1} $TEMP\Song-WiseGuys-LUKUS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1225,7 +1225,7 @@ Section /o "Wise Guys - Mensch, wo bist du?" s2_sub3_Section2
    SetOutPath "$INSTDIR\Songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=30000 ${download_sub3_song2} $TEMP\Song-WiseGuys-MWBD.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub3_song2} $TEMP\Song-WiseGuys-MWBD.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
@@ -1254,7 +1254,7 @@ SectionGroup $(name_section3) Section3
    AddSize 1291
 
 ; Download theme orange:
-  NSISdl::download /TIMEOUT=30000 ${download_theme1} $TEMP\Theme-Orange.zip
+  NSISdl::download /TIMEOUT=50000 ${download_theme1} $TEMP\Theme-Orange.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -1272,7 +1272,7 @@ SectionEnd
   AddSize 1905
 
 ; Download theme Streetlight:
-  NSISdl::download /TIMEOUT=30000 ${download_theme2} $TEMP\Theme-Streetlight.zip
+  NSISdl::download /TIMEOUT=50000 ${download_theme2} $TEMP\Theme-Streetlight.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
@@ -1291,7 +1291,7 @@ SectionEnd
 
 ; Download theme Vistar:
 
-  NSISdl::download /TIMEOUT=30000 ${download_theme3} $TEMP\Theme-Vistar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_theme3} $TEMP\Theme-Vistar.zip
 
   Pop $R0 ;Get the return value
    StrCmp $R0 "success" dlok
@@ -1310,7 +1310,7 @@ SectionEnd
 
 ; Download theme BlueSensation:
 
-  NSISdl::download /TIMEOUT=30000 ${download_theme4} $TEMP\Theme-BlueSensation.zip
+  NSISdl::download /TIMEOUT=50000 ${download_theme4} $TEMP\Theme-BlueSensation.zip
 
   Pop $R0 ;Get the return value
    StrCmp $R0 "success" dlok
@@ -1330,7 +1330,7 @@ SectionEnd
 
 ; Download theme WhiteSensation:
 
-  NSISdl::download /TIMEOUT=30000 ${download_theme7} $TEMP\Theme-WhiteSensation.zip
+  NSISdl::download /TIMEOUT=50000 ${download_theme7} $TEMP\Theme-WhiteSensation.zip
 
   Pop $R0 ;Get the return value
    StrCmp $R0 "success" dlok
@@ -1349,7 +1349,7 @@ SectionEnd
 
 ; Download theme WiiStar:
 
-  NSISdl::download /TIMEOUT=30000 ${download_theme5} $TEMP\Theme-WiiStar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_theme5} $TEMP\Theme-WiiStar.zip
 
   Pop $R0 ;Get the return value
    StrCmp $R0 "success" dlok
@@ -1368,7 +1368,7 @@ SectionEnd
 
 ; Download theme iStar:
 
-  NSISdl::download /TIMEOUT=30000 ${download_theme6} $TEMP\Theme-iStar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_theme6} $TEMP\Theme-iStar.zip
 
   Pop $R0 ;Get the return value
    StrCmp $R0 "success" dlok
