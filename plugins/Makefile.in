@@ -38,7 +38,7 @@ PPLATFORM  := @FPC_PLATFORM@
 PPROCESSOR := @FPC_PROCESSOR@
 
 # Directories added to the unit path
-PUNIT_FLAGS := -FE../game/plugins -FU../build/fpc-$(PPROCESSOR)-$(PPLATFORM) -Fu../build/fpc-$(PPROCESSOR)-$(PPLATFORM)
+PUNIT_FLAGS := -FE../game/plugins -Fu../build/fpc-$(PPROCESSOR)-$(PPLATFORM)
 
 # Directory where compiled units (.ppu, .o and library files) are stored
 PCUNIT_DIR   := $(USDX_BUILD_DIR)/fpc-$(PPROCESSOR)-$(PPLATFORM)
@@ -49,7 +49,11 @@ PINC_FLAGS := -Fi$(USDX_LIB_DIR)/JEDI-SDL/SDL/Pas
 
 # Flags for the treatment of a linker issue with SDL.
 # Symbol _SDK_main is undefined
-PFLAGS_SDL := -k-U -k_SDL_main
+FPC_PLATFORM = @FPC_PLATFORM@
+PFLAGS_SDL :=
+ifeq ($(FPC_PLATFORM), darwin)
+PFLAGS_SDL += -k"-U _SDL_main"
+endif
 
 ##
 # PFLAGS
