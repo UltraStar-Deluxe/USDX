@@ -227,7 +227,7 @@ uses
   UAudioPlaybackBase        in 'media\UAudioPlaybackBase.pas',
 {$IF Defined(UsePortaudioPlayback) or Defined(UseSDLPlayback)}
   UFFT                      in 'lib\fft\UFFT.pas',
-  UAudioPlayback_Softmixer  in 'media\UAudioPlayback_SoftMixer.pas',
+  UAudioPlayback_SoftMixer  in 'media\UAudioPlayback_SoftMixer.pas',
 {$IFEND}
   UAudioConverter           in 'media\UAudioConverter.pas',
 
