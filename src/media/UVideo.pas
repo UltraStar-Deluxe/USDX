@@ -697,6 +697,12 @@ begin
           0, fCodecContext^.Height,
           @(fAVFrameRGB.data), @(fAVFrameRGB.linesize));
   {$ELSE}
+  // img_convert from lib/ffmpeg/avcodec.pas is actually deprecated. 
+  // If ./configure does not find SWScale then this gives the error
+  // that the identifier img_convert is not known or similar.
+  // I think this should be removed, but am not sure whether there should
+  // be some other replacement or a warning, Therefore, I leave it for now.
+  // April 2009, mischi
   errnum := img_convert(PAVPicture(fAVFrameRGB), PIXEL_FMT_FFMPEG,
             PAVPicture(fAVFrame), fCodecContext^.pix_fmt,
             fCodecContext^.width, fCodecContext^.height);
