@@ -311,13 +311,13 @@ var
   hour, minute, second, msecond: word;
 begin
   DecodeDate(time, year, month, day);
-  pngTime.year  := year;
-  pngTime.month := month;
-  pngTime.day   := day;
+  pngTime.year  := png_uint_16(year);
+  pngTime.month := png_byte(month);
+  pngTime.day   := png_byte(day);
   DecodeTime(time, hour, minute, second, msecond);
-  pngTime.hour   := hour;
-  pngTime.minute := minute;
-  pngTime.second := second;
+  pngTime.hour   := png_byte(hour);
+  pngTime.minute := png_byte(minute);
+  pngTime.second := png_byte(second);
 end;
 
 (*
@@ -896,8 +896,13 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
   // replaced by division of longwords, shifted by 10 bits to keep 
   // digits.
 
+  // The use of longwards leeds to some type size mismatch warnings
+  // whenever differences are formed.
+  // This should not be a problem, since the results should all be positive.
+  // replacing longword by longint would probably resolve this cosmetic fault :-)
+
   function ColorToHue(const Color: longword): longword;
-  // returns hue within the range [0.0-6.0] but shl 10, ie.  times 1024
+  // returns hue within the range [0.0-6.0] but shl 10, ie. times 1024
   var
     Red, Green, Blue: longword;
     Min, Max, Delta: longword;
@@ -919,7 +924,8 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
     if Blue  > Max then Max := Blue;
 
     // calc hue
-    Delta := Max - Min;
+    Delta := Max - Min;     // This gives a type size mismatch warning, because Delta is longword, ie. >= 0
+                            // But the assignments above are easy enough to be sure, that Max - Min is >= 0.
     if (Delta = 0) then
       Result := 0
     else
@@ -1023,15 +1029,18 @@ begin
       end
       else                          // all colors except black and white
       begin
-        Delta := Max - Min;
+        Delta := Max - Min;         // This gives a type size mismatch warning, because Delta is longword, ie. >= 0
+                                    // But the assignments above are easy enough to be sure, that Max - Min is >= 0.
         Sat := (Delta shl 10) div Max;  // shl 10
 
-        // shr 10 corrects that sat and f are shl 10
+        // shr 10 corrects that Sat and f are shl 10
         // the resulting p, q and t are unshifted
 
         p := (Max*(1024-Sat)) shr 10;
         q := (Max*(1024-(Sat*f) shr 10)) shr 10;
         t := (Max*(1024-(Sat*(1024-f)) shr 10)) shr 10;
+
+        // The above 3 lines give type size mismatch warning, but all variables are longword and the ranges should be ok.
 
         case HueInteger of
           0: begin Red := Max; Green := t;   Blue := p;   end; // (v,t,p)
@@ -1043,13 +1052,13 @@ begin
         end;
 
         {$IFDEF FPC_BIG_ENDIAN}
-        PixelColors[3] := Red;
-        PixelColors[2] := Green;
-        PixelColors[1] := Blue
+        PixelColors[3] := byte(Red);
+        PixelColors[2] := byte(Green);
+        PixelColors[1] := byte(Blue);
         {$ELSE}
-        PixelColors[0] := Red;
-        PixelColors[1] := Green;
-        PixelColors[2] := Blue;
+        PixelColors[0] := byte(Red);
+        PixelColors[1] := byte(Green);
+        PixelColors[2] := byte(Blue);
         {$ENDIF}
 
       end;
