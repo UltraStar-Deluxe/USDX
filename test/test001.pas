@@ -6,20 +6,21 @@ This program test the function glext_ExtensionSupported from unit glext.
 
 uses
   SysUtils,
-  SDL,
-  gl,
-  glext;
+  SDL          in '../src/lib/JEDI-SDL/SDL/Pas/sdl.pas',
+  moduleloader in '../src/lib/JEDI-SDL/SDL/Pas/moduleloader.pas',
+  gl           in '../src/lib/JEDI-SDL/OpenGL/Pas/gl.pas',
+  glext        in '../src/lib/JEDI-SDL/OpenGL/Pas/glext.pas';
 
 const
-  s1: pchar = '';
-  s2: pchar = 'ext';
-  s3: pchar = ' ext';
-  s4: pchar = ' ext ';
-  s5: pchar = 'kkshf kjsfh ext';
-  s6: pchar = 'fakh sajhf ext jskdhf';
-  s7: pchar = 'ext jshf';
-  s8: pchar = 'sdkjfh ksjhext sjdha';
-  s9: pchar = 'sdkjfh ksjh extsjdha';
+  s1:  pchar = '';
+  s2:  pchar = 'ext';
+  s3:  pchar = ' ext';
+  s4:  pchar = ' ext ';
+  s5:  pchar = 'kkshf kjsfh ext';
+  s6:  pchar = 'fakh sajhf ext jskdhf';
+  s7:  pchar = 'ext jshf';
+  s8:  pchar = 'sdkjfh ksjhext sjdha';
+  s9:  pchar = 'sdkjfh ksjh extsjdha';
   s10: pchar = 'sdkjfh ksjhextsjdha';
   s11: pchar = 'sd kjf jdha';
 
@@ -32,11 +33,13 @@ const
   SCREEN_BPP    =  16;
 
 var
-  surface: PSDL_Surface;
+  surface:    PSDL_Surface;
   videoFlags: integer;
+  testFailed: boolean;
 
 begin
   write ('test001: Start ... ');
+  testFailed := false;
 
 // initialize SDL and OpenGL for the use of glGetString(GL_EXTENSIONS)
 // within glext_ExtensionSupported.
@@ -51,34 +54,26 @@ begin
 
 // Initialization finished
 
-  if glext_ExtensionSupported(e1, s1) then
-    writeln ('test001, 1: failed');
-  if glext_ExtensionSupported(e1, s2) then
-    writeln ('test001, 2: failed');
-  if glext_ExtensionSupported(e2, s1) then
-    writeln ('test001, 3: failed');
-  if not glext_ExtensionSupported(e2, s2) then
-    writeln ('test001, 4: failed');
-  if not glext_ExtensionSupported(e2, s3) then
-    writeln ('test001, 5: failed');
-  if not glext_ExtensionSupported(e2, s4) then
-    writeln ('test001, 6: failed');
-  if not glext_ExtensionSupported(e2, s5) then
-    writeln ('test001, 7: failed');
-  if not glext_ExtensionSupported(e2, s6) then
-    writeln ('test001, 8: failed');
-  if not glext_ExtensionSupported(e2, s7) then
-    writeln ('test001, 9: failed');
-  if glext_ExtensionSupported(e2, s8) then
-    writeln ('test001, 10: failed');
-  if glext_ExtensionSupported(e2, s9) then
-    writeln ('test001, 11: failed');
-  if glext_ExtensionSupported(e2, s10) then
-    writeln ('test001, 12: failed');
-  if glext_ExtensionSupported(e2, s11) then
-    writeln ('test001, 13: failed');
-  if not glext_ExtensionSupported(e3, s1) then
-    writeln ('test001, 14: failed');
+  if     glext_ExtensionSupported(e1, s1)  then begin writeln; write ('test001, 1: failed');  testFailed := true; end;
+  if     glext_ExtensionSupported(e1, s2)  then begin writeln; write ('test001, 2: failed');  testFailed := true; end;
+  if     glext_ExtensionSupported(e2, s1)  then begin writeln; write ('test001, 3: failed');  testFailed := true; end;
+  if not glext_ExtensionSupported(e2, s2)  then begin writeln; write ('test001, 4: failed');  testFailed := true; end;
+  if not glext_ExtensionSupported(e2, s3)  then begin writeln; write ('test001, 5: failed');  testFailed := true; end;
+  if not glext_ExtensionSupported(e2, s4)  then begin writeln; write ('test001, 6: failed');  testFailed := true; end;
+  if not glext_ExtensionSupported(e2, s5)  then begin writeln; write ('test001, 7: failed');  testFailed := true; end;
+  if not glext_ExtensionSupported(e2, s6)  then begin writeln; write ('test001, 8: failed');  testFailed := true; end;
+  if not glext_ExtensionSupported(e2, s7)  then begin writeln; write ('test001, 9: failed');  testFailed := true; end;
+  if     glext_ExtensionSupported(e2, s8)  then begin writeln; write ('test001, 10: failed'); testFailed := true; end;
+  if     glext_ExtensionSupported(e2, s9)  then begin writeln; write ('test001, 11: failed'); testFailed := true; end;
+  if     glext_ExtensionSupported(e2, s10) then begin writeln; write ('test001, 12: failed'); testFailed := true; end;
+  if     glext_ExtensionSupported(e2, s11) then begin writeln; write ('test001, 13: failed'); testFailed := true; end;
+  if not glext_ExtensionSupported(e3, s1)  then begin writeln; write ('test001, 14: failed'); testFailed := true; end;
 
-  writeln ('End');
+  if testFailed then
+  begin
+    writeln;
+    writeln ('test001: End');
+  end
+  else
+    writeln ('End');
 end.
