@@ -378,13 +378,13 @@ begin
     // try standard format
     SampleFormat := asfS16;
   end;
-
+  if CodecCtx^.channels > 255 then
+    Log.LogStatus('Error: CodecCtx^.channels > 255', 'TFFmpegDecodeStream.Open');
   FormatInfo := TAudioFormatInfo.Create(
-    CodecCtx^.channels,
+    byte(CodecCtx^.channels),
     CodecCtx^.sample_rate,
     SampleFormat
   );
-
 
   PacketQueue := TPacketQueue.Create();
 
@@ -446,7 +446,9 @@ end;
 
 function TFFmpegDecodeStream.GetLength(): real;
 begin
-  // do not forget to consider the start_time value here 
+  // do not forget to consider the start_time value here
+  // there is a type size mismatch warnign because start_time and duration are cint64.
+  // So, in principle there could be an overflow when doing the sum.
   Result := (FormatCtx^.start_time + FormatCtx^.duration) / AV_TIME_BASE;
 end;
 
