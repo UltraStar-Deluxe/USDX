@@ -9,11 +9,11 @@ interface
 type  // PluginInfo, for init
   TPluginInfo = record
     // Info
-    Name:       array [0..32] of char;   // modi to register for the plugin
+    Name:       array [0..32] of char;   // modus to register for the plugin
     Creator:    array [0..32] of char;   // name of the author
     PluginDesc: array [0..64] of char;   // plugin description
 
-    // plugin type, atm: 8 only for partymode modi
+    // plugin type, atm: 8 only for partymode modus
     Case Typ: byte of
       8: (
         // Options
@@ -37,7 +37,7 @@ type  // PluginInfo, for init
         ShowBars:      boolean; // Whether the white bars on top and bottom should be drawn
         TeamModeOnly:  boolean; // If true the plugin can only be played in team mode
         GetSoundData:  boolean; // If true the rdata procedure is called when new sound data is available
-        Dummy:         boolean; // Should be set to false... for updateing plugin interface
+        Dummy:         boolean; // Should be set to false... for updating plugin interface
 
         NumPlayers: byte   // Number of available players for modus
         // Set different bits
@@ -54,13 +54,13 @@ type  // PluginInfo, for init
   TPlayerInfo = record
     NumPlayers: byte;
     Playerinfo: array[0..5] of record
-      Name:       PChar; // Name of the player
-      Score:      word;  // Players score
-      Bar:        byte;  // Percentage of the singbar filled
-      PosX:       real;  // PosX of players singbar
-      PosY:       real;  // PosY "
+      Name:       PChar;   // Name of the player
+      Score:      word;    // Player's score
+      Bar:        byte;    // Percentage of the singbar filled
+      PosX:       real;    // PosX of player's singbar
+      PosY:       real;    // PosY "
       Enabled:    boolean; // Whether the player could get points
-      Percentage: byte; // Percentage shown on the score screen
+      Percentage: byte;    // Percentage shown on the score screen
     end;
   end;
 
@@ -86,7 +86,7 @@ type  // PluginInfo, for init
   end;
 
   TSentences = record
-    Current:     integer;      // aktualna czesc utworu do rysowania
+    Current:     integer;      // current part of a line
     High:        integer;
     Number:      integer;
     Resolution:  integer;
@@ -109,12 +109,12 @@ type  // PluginInfo, for init
         Tone:      integer;
         //Text:      string;
         FreeStyle: boolean;
-        Typ:      integer;    // zwykla nuta x1, zlota nuta x2
+        Typ:      integer;    // normal note x1, golden note x2
       end;
     end;
   end;
 
-  dword = longword;
+  dword   = longword;
   hstream = dword;
 
   TTextureType = (
@@ -156,7 +156,7 @@ type  // PluginInfo, for init
   fModi_Finish = function (var Playerinfo: TPlayerinfo): byte;
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   // Procedure called when new sound data is available
-  pModi_RData = procedure (handle: HSTREAM; buffer: Pointer; len: DWORD; user: DWORD);
+  pModi_RData = procedure (handle: hstream; buffer: pointer; len: dword; user: dword);
     {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
 implementation

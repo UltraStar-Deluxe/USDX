@@ -69,7 +69,7 @@ var
 begin
   Result   := 0;
   MaxScore := 0;
-  for Index := 0 to PlayerInfo.NumPlayers-1 do
+  for Index := 0 to PlayerInfo.NumPlayers - 1 do
   begin
     PlayerInfo.Playerinfo[Index].Percentage := PlayerInfo.Playerinfo[Index].Score div 9999;
     if (PlayerInfo.Playerinfo[Index].Score > MaxScore) then
