@@ -638,7 +638,7 @@ begin
       // determine lyric help bar position and size
       Bounds.Left := MoveStartX + BarProgress * MoveDist;
       Bounds.Right := Bounds.Left + BarWidth;
-      Bounds.Top := Skin_LyricsT + 3;
+      Bounds.Top := Theme.LyricBar.IndicatorYOffset + Theme.LyricBar.UpperY ;
       Bounds.Bottom := Bounds.Top + BarHeight + 3;
 
       // draw lyric help bar

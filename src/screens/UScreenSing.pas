@@ -297,8 +297,8 @@ begin
   Static[StaticPausePopup].Visible := false;
 
   Lyrics := TLyricEngine.Create(
-      Skin_LyricsUpperX, Skin_LyricsUpperY, Skin_LyricsUpperW, Skin_LyricsUpperH,
-      Skin_LyricsLowerX, Skin_LyricsLowerY, Skin_LyricsLowerW, Skin_LyricsLowerH);
+      Theme.LyricBar.UpperX, Theme.LyricBar.UpperY, Theme.LyricBar.UpperW, Theme.LyricBar.UpperH,
+      Theme.LyricBar.LowerX, Theme.LyricBar.LowerY, Theme.LyricBar.LowerW, Theme.LyricBar.LowerH);
 
   LyricsSync := TLyricsSyncSource.Create();
 end;
