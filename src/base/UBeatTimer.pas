@@ -26,13 +26,15 @@
 unit UBeatTimer;
 
 interface
-uses UTime;
 
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
 
 {$I switches.inc}
+
+uses
+  UTime;
 
 type
   (**
