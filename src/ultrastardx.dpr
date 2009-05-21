@@ -200,6 +200,7 @@ uses
   USingNotes        in 'base\USingNotes.pas',
   UPath             in 'base\UPath.pas',
   UNote             in 'base\UNote.pas',
+  UBeatTimer        in 'base\UBeatTimer.pas',
 
   //------------------------------
   //Includes - Plugin Support

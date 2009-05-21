@@ -83,6 +83,7 @@ uses
   UPath,
   UPlaylist,
   UMusic,
+  UBeatTimer,
   UPlatform,
   USkins,
   USongs,
