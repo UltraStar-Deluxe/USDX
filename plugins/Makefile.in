@@ -108,7 +108,7 @@ all: SDK 5000Points Blind Dont_Get_Worse Duell Team_Duell
 .PHONY: SDK
 SDK: clean-SDK
 	$(PPC) $(strip $(PFLAGS_ALL)) SDK/ModiSDK.pas
-	$(PPC) $(strip $(PFLAGS_ALL)) SDK/USDXStrUtils.pas
+#	$(PPC) $(strip $(PFLAGS_ALL)) SDK/USDXStrUtils.pas
 
 .PHONY: 5000Points
 5000Points: SDK clean-5000Points
