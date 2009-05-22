@@ -107,7 +107,7 @@ const
 
   // include config-file (defines + constants)
   {$IF Defined(MSWindows)}
-    {$I ../config-win.inc}
+    {$I ..\config-win.inc}
   {$ELSEIF Defined(Linux)}
     {$I ../config-linux.inc}
   {$ELSEIF Defined(FreeBSD)}
