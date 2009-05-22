@@ -48,7 +48,7 @@ type
       TextString:   string;
       TextTiles:    array of string;
 
-      STicks:       Cardinal;
+      STicks:       cardinal;
       SelectBlink:  boolean;
     public
       X:      real;
