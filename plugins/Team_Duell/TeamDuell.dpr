@@ -4,15 +4,10 @@ library TeamDuell ;
   {$MODE Delphi}
 {$ENDIF}
 
-// compile with fpc -k-U -k_SDL_main TeamDuell.dpr -Fi../../src/lib/JEDI-SDL/SDL/Pas/
-
 uses
-  ModiSDK      in '..\SDK\ModiSDK.pas',
-//  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
-  sdl          in '..\..\src\lib\JEDI-SDL\SDL\Pas\sdl.pas',
-  moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
-  gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas',
-  sysutils;
+  SysUtils,
+  ModiSDK in '..\SDK\ModiSDK.pas',
+  gl      in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas';
 
 var
   TeamPlayer:            array of array of string;
@@ -23,6 +18,12 @@ var
   TimeToNextChange, starttick, endtick, ChangeOnSentence: cardinal;
   bps, RTimeToNextChange:   double;
   firsttime, secondtime: boolean;
+
+function GetTicks: integer;
+// returns a time stamp in milliseconds
+begin
+  GetTicks := round(TimeStampToMSecs(DateTimeToTimeStamp(Now)));
+end;
 
 // Give the plugin's info
 procedure PluginInfo (var Info: TPluginInfo); {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -92,7 +93,7 @@ begin
     until not(NextSinger[Index] = CurSinger[Index]) or (SPT[Index] = 1);
   end;
   ChangeOnSentence := 8;
-  starttick := SDL_GetTicks();
+  starttick := GetTicks;
   firsttime := true;
   secondtime := true;
   bps := 1;
@@ -114,11 +115,11 @@ begin
   if (CurSentence = ChangeOnSentence - 7) and (firsttime) then
   begin
     firsttime := false;
-    starttick := SDL_GetTicks();
+    starttick := GetTicks;
   end;
   start := false;
   // show first singer for 5 sec
-  if  (CurSentence < 1) and ((starttick + 5000) > SDL_GetTicks()) then
+  if  (CurSentence < 1) and ((starttick + 5000) > GetTicks) then
     start := true;
 
   // TickCount(thirdSentence)
@@ -126,12 +127,12 @@ begin
   begin
     secondtime := false;
     firsttime := true;
-    endtick := SDL_GetTicks();
+    endtick := GetTicks;
     bps :=  (Startpoints[3]-Startpoints[1]) * 1000 / (endtick-starttick); // BeatsPerSecond
   end;
 
   // Time to next change
-  RTimeToNextChange := ((Startpoints[ChangeOnSentence]-Startpoints[ChangeOnSentence - 7]) / bps) - ((SDL_GetTicks() - starttick) / 1000);
+  RTimeToNextChange := ((Startpoints[ChangeOnSentence]-Startpoints[ChangeOnSentence - 7]) / bps) - ((GetTicks - starttick) / 1000);
   TimeToNextChange := Trunc(RTimeToNextChange) + 1;
 
   // Next singer for team I
@@ -222,7 +223,7 @@ end;
 // is executed on finish, returns the player number of the winner
 function Finish (var Playerinfo: TPlayerinfo): byte; {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 var
-  Index: integer;
+  Index:    integer;
   MaxScore: word;
 begin
   Result := 0;

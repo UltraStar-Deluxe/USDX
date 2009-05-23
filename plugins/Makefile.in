@@ -44,17 +44,6 @@ PUNIT_FLAGS := -FE../game/plugins -Fu../build/fpc-$(PPROCESSOR)-$(PPLATFORM)
 PCUNIT_DIR   := $(USDX_BUILD_DIR)/fpc-$(PPROCESSOR)-$(PPLATFORM)
 PCUNIT_FLAGS := -FU$(PCUNIT_DIR)
 
-# Directories added to the includes path
-PINC_FLAGS := -Fi$(USDX_LIB_DIR)/JEDI-SDL/SDL/Pas
-
-# Flags for the treatment of a linker issue with SDL.
-# Symbol _SDK_main is undefined
-FPC_PLATFORM = @FPC_PLATFORM@
-PFLAGS_SDL :=
-ifeq ($(FPC_PLATFORM), darwin)
-PFLAGS_SDL += -k"-U _SDL_main"
-endif
-
 ##
 # PFLAGS
 ##
@@ -108,7 +97,6 @@ all: SDK 5000Points Blind Dont_Get_Worse Duell Team_Duell
 .PHONY: SDK
 SDK: clean-SDK
 	$(PPC) $(strip $(PFLAGS_ALL)) SDK/ModiSDK.pas
-#	$(PPC) $(strip $(PFLAGS_ALL)) SDK/USDXStrUtils.pas
 
 .PHONY: 5000Points
 5000Points: SDK clean-5000Points
@@ -124,11 +112,11 @@ Duell: SDK clean-Duell
 
 .PHONY: Team_Duell
 Team_Duell: SDK clean-Team_Duell
-	$(PPC) $(PFLAGS_SDL) $(strip $(PFLAGS_ALL)) Team_Duell/TeamDuell.dpr
+	$(PPC) $(strip $(PFLAGS_ALL)) Team_Duell/TeamDuell.dpr
 
 .PHONY: Dont_Get_Worse
 Dont_Get_Worse: SDK clean-Dont_Get_Worse
-	$(PPC) $(PFLAGS_SDL) $(strip $(PFLAGS_ALL)) Don\'t_Get_Worse/Hold_The_Line.dpr
+	$(PPC) $(strip $(PFLAGS_ALL)) Don\'t_Get_Worse/Hold_The_Line.dpr
 
 .PHONY: clean-plugins
 clean-plugins: clean-SDK clean-5000Points clean-Blind clean-Dont_Get_Worse clean-Duell clean-Team_Duell
@@ -136,7 +124,6 @@ clean-plugins: clean-SDK clean-5000Points clean-Blind clean-Dont_Get_Worse clean
 .PHONY: clean-SDK
 clean-SDK:
 	$(RM) $(PCUNIT_DIR)/ModiSDK.o $(PCUNIT_DIR)/ModiSDK.ppu
-	$(RM) $(PCUNIT_DIR)/USDXStrUtils.o $(PCUNIT_DIR)/USDXStrUtils.ppu
 
 .PHONY: clean-5000Points
 clean-5000Points:

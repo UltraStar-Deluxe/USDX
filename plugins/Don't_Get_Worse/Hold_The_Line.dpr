@@ -5,18 +5,16 @@ library Hold_The_Line;
 {$ENDIF}
 
 uses
-  ModiSDK      in '..\SDK\ModiSDK.pas',
-//  USDXStrUtils in '..\SDK\USDXStrUtils.pas',
-  sdl          in '..\..\src\lib\JEDI-SDL\SDL\Pas\sdl.pas',
-  moduleloader in '..\..\src\lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
-  gl           in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas';
+  SysUtils,
+  ModiSDK in '..\SDK\ModiSDK.pas',
+  gl      in '..\..\src\lib\JEDI-SDL\OpenGL\Pas\gl.pas';
 
 var
   PointerTex:     TSmallTexture;
   CountSentences: cardinal;
   Limit:          byte;
   MethodRec:      TMethodRec;
-  Frame:          integer;
+//  Frame:          integer;
   PlayerTimes:    array[0..5] of integer;
   LastTick:       cardinal;
   PointerVisible: boolean;
@@ -92,7 +90,7 @@ begin
 
   CountSentences := Sentences.High;
   Limit := 0;
-  Frame := 0;
+//  Frame := 0;
 
   MethodRec := Methods;
 
@@ -115,14 +113,12 @@ var
   Index: integer;
   L:     byte;
   C:     byte;
-//  Text:  PChar;
-  Blink: boolean;
   Tick:  cardinal;
 begin
   // activate blink
   if (CurSentence = CountSentences div 5 * 2 - 1) or (CurSentence = CountSentences div 3 * 2 - 1) then
   begin
-    Tick := SDL_GetTicks() div 400;
+    Tick := round(TimeStampToMSecs(DateTimeToTimeStamp(Now))) div 400;
     if (Tick <> LastTick) then
     begin
       LastTick := Tick;
@@ -188,14 +184,7 @@ begin
     begin
       Inc(C);
       // Draw dismissed
-//      Text := CreateStr(PChar('PARTY_DISMISSED'));
-
       glColor4f (0.8, 0.8, 0.8, 1);
-
-{
-      MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX, PlayerInfo.Playerinfo[Index].PosY-8, Text);
-      FreeStr(Text);
-}
       MethodRec.Print (1, 18, PlayerInfo.Playerinfo[Index].PosX, PlayerInfo.Playerinfo[Index].PosY-8, SoundName);
     end;
   end;
