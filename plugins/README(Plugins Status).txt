@@ -1,3 +1,6 @@
+All plugins are cleared off the SDL stuff (basically SDL_GetTicks), the StrUtils and moduleloader unit and should work on all platforms.
+2009-May-23 KMS
+
 Mac OS X: 
 The following plugins can be compiled and used after being put in to the plugins folder: Blind, 5000Points, Duell
 
