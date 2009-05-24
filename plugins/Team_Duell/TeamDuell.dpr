@@ -19,7 +19,7 @@ var
   bps, RTimeToNextChange:   double;
   firsttime, secondtime: boolean;
 
-function GetTicks: integer;
+function GetTicks: cardinal;
 // returns a time stamp in milliseconds
 begin
   GetTicks := round(TimeStampToMSecs(DateTimeToTimeStamp(Now)));
