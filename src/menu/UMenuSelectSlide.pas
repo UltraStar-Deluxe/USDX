@@ -54,14 +54,20 @@ type
       TextureSBG:       TTexture; // Background Selections Texture
 //      TextureS:         array of TTexture; // Selections Texture (not used)
 
-//      TextureArrowL:    TTexture; // Texture for left arrow (not used yet)
-//      TextureArrowR:    TTexture; // Texture for right arrow (not used yet)
+      Tex_SelectS_ArrowL:    TTexture; // Texture for left arrow
+      Tex_SelectS_ArrowR:    TTexture; // Texture for right arrow
 
       SelectOptInt:     integer;
       PData:            ^integer;
 
       //For automatically Setting LineCount
       Lines: byte;
+
+      //Arrows on/off
+      showArrows: Boolean;      //default is false
+
+      //whether to show one item or all that fit into the select
+      oneItemOnly:Boolean;      //default is false
 
       //Visibility
       Visible: boolean;
@@ -147,7 +153,7 @@ begin
   TextOpt[0] := TText.Create;
 
   //Set Standard Width for Selections Background
-  SBGW := 450;
+//  SBGW := 400;
 
   Visible := true;
   {SetLength(TextOpt, 3);
@@ -250,6 +256,8 @@ begin
     begin //First Option Selected
       Value := 0;
 
+      Tex_SelectS_ArrowL.alpha := 0;
+
       for SO := low (TextOpt) to high(TextOpt) do
       begin
         TextOpt[SO].Text := TextOptT[SO];
@@ -261,6 +269,8 @@ begin
     begin //Last Option Selected
       Value := high(TextOptT);
 
+      Tex_SelectS_ArrowR.alpha := 0;
+
       for SO := high(TextOpt) downto low (TextOpt) do
       begin
         TextOpt[SO].Text := TextOptT[high(TextOptT)-(Lines-SO-1)];
@@ -269,6 +279,9 @@ begin
     end
     else
     begin
+      Tex_SelectS_ArrowL.alpha := 1;
+      Tex_SelectS_ArrowR.alpha := 1;
+
       HalfL := Ceil((Lines-1)/2);
       HalfR := Lines-1-HalfL;
 
@@ -322,12 +335,19 @@ begin
     DrawTexture(Texture);
     DrawTexture(TextureSBG);
 
+    if(showArrows) then begin
+      DrawTexture(Tex_SelectS_ArrowL);
+      DrawTexture(Tex_SelectS_ArrowR);
+    end;
+
     Text.Draw;
 
     for SO := low(TextOpt) to high(TextOpt) do
       TextOpt[SO].Draw;
   end;
 end;
+
+
 
 procedure TSelectSlide.GenLines;
 var
@@ -344,12 +364,22 @@ begin
       maxlength := glTextWidth(TextOptT[I]);
   end;
 
-  Lines := floor((TextureSBG.W-40) / (maxlength+7));
-  if (Lines > Length(TextOptT)) then
-    Lines := Length(TextOptT);
 
-  if (Lines <= 0) then
+  if(oneItemOnly = false) then
+  begin
+    //show all items
+    Lines := floor((TextureSBG.W-40) / (maxlength+7));
+    if (Lines > Length(TextOptT)) then
+      Lines := Length(TextOptT);
+
+    if (Lines <= 0) then
+      Lines := 1;
+  end
+  else
+  begin
+    //show one item only
     Lines := 1;
+  end;
 
   //Free old Space used by Texts
   for I := low(TextOpt) to high(TextOpt) do
@@ -382,6 +412,12 @@ begin
     //Better Look with 2 Options
     if (Lines=2) AND (Length(TextOptT)= 2) then
       TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(TextOptT[1])) * I;
+
+    if (Lines=1) then
+    begin
+      TextOpt[I].Align := 1; //center text
+      TextOpt[I].X := TextureSBG.X + (TextureSBG.W / 2);
+    end;
   end;
 end;
 

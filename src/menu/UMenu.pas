@@ -652,12 +652,22 @@ begin
   begin
     Static[StatNum] := TStatic.Create(Texture.GetTexture(Name, Typ, Color)); // new skin
   end;
-
+                     
   // configures static
   Static[StatNum].Texture.X := X;
   Static[StatNum].Texture.Y := Y;
-  Static[StatNum].Texture.W := W;
-  Static[StatNum].Texture.H := H;
+
+  //Set height and width via sprite size if omitted
+  if(H = 0) then
+    Static[StatNum].Texture.H := Static[StatNum].Texture.H
+  else
+    Static[StatNum].Texture.H := H;
+
+  if(W = 0) then
+    Static[StatNum].Texture.W := Static[StatNum].Texture.W
+  else
+    Static[StatNum].Texture.W := W;
+
   Static[StatNum].Texture.Z := Z;
   if (Typ <> TEXTURE_TYPE_COLORIZED) then
   begin
@@ -1212,6 +1222,9 @@ begin
   SelectsS[High(SelectsS)].Texture.Z := ThemeSelectS.Z;
   SelectsS[High(SelectsS)].TextureSBG.Z := ThemeSelectS.Z;
 
+  SelectsS[High(SelectsS)].showArrows := ThemeSelectS.showArrows;
+  SelectsS[High(SelectsS)].oneItemOnly := ThemeSelectS.oneItemOnly;
+
   //Generate Lines
   SelectsS[High(SelectsS)].GenLines;
 
@@ -1255,9 +1268,20 @@ begin
   else
     SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
 
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL   := Tex_SelectS_ArrowL;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.X := X + W + SkipX;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.Y := Y;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.W := Tex_SelectS_ArrowL.W;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.H := Tex_SelectS_ArrowL.H;
+
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR   := Tex_SelectS_ArrowR;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.X := X + W + SkipX + SBGW - Tex_SelectS_ArrowR.W;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.Y := Y;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.W := Tex_SelectS_ArrowR.W;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.H := Tex_SelectS_ArrowR.H;
+
   SelectsS[S].TextureSBG.X := X + W + SkipX;
   SelectsS[S].TextureSBG.Y := Y;
-  //SelectsS[S].TextureSBG.W := 450;
   SelectsS[S].SBGW := SBGW;
   SelectsS[S].TextureSBG.H := H;
   SelectsS[S].SBGColR := SBGColR;

@@ -126,12 +126,31 @@ begin
   old_Sorting := Ini.Sorting;
   old_Tabs    := Ini.Tabs;
 
+  Theme.OptionsGame.SelectPlayers.showArrows := true;
+  Theme.OptionsGame.SelectPlayers.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectPlayers,    Ini.Players,    IPlayers);
+
+  Theme.OptionsGame.SelectDifficulty.showArrows := true;
+  Theme.OptionsGame.SelectDifficulty.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectDifficulty, Ini.Difficulty, IDifficulty);
+
+  Theme.OptionsGame.SelectLanguage.showArrows := true;
+  Theme.OptionsGame.SelectLanguage.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectLanguage,   Ini.Language,   ILanguage);
+
+  Theme.OptionsGame.SelectTabs.showArrows := true;
+  Theme.OptionsGame.SelectTabs.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectTabs,       Ini.Tabs,       ITabs);
+
+  Theme.OptionsGame.SelectSorting.showArrows := true;
+  Theme.OptionsGame.SelectSorting.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectSorting,    Ini.Sorting,    ISorting);
+
+  Theme.OptionsGame.SelectDebug.showArrows := true;
+  Theme.OptionsGame.SelectDebug.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectDebug,      Ini.Debug,      IDebug);
+
+
 
   AddButton(Theme.OptionsGame.ButtonExit);
   if (Length(Button[0].Text)=0) then

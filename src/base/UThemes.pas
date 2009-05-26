@@ -175,11 +175,12 @@ type
     W:      integer;
     H:      integer;
     Z:      real;
+    SBGW:   integer;
 
     TextSize: integer;
 
-    //SBGW Mod
-    SBGW:   integer;
+    showArrows:boolean;
+    oneItemOnly:boolean;
 
     Text:   string;
     ColR,  ColG,  ColB,  Int:     real;
@@ -1785,7 +1786,7 @@ begin
 
   ThemeSelectS.SkipX := ThemeIni.ReadInteger(Name, 'SkipX', 0);
 
-  ThemeSelectS.SBGW := ThemeIni.ReadInteger(Name, 'SBGW', 450);
+  ThemeSelectS.SBGW := ThemeIni.ReadInteger(Name, 'SBGW', 400);
 
   LoadColor(ThemeSelectS.ColR, ThemeSelectS.ColG,  ThemeSelectS.ColB, ThemeIni.ReadString(Name, 'Color', ''));
   ThemeSelectS.Int :=  ThemeIni.ReadFloat(Name, 'Int', 1);
