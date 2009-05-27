@@ -119,9 +119,16 @@ begin
 
   LoadFromTheme(Theme.OptionsLyrics);
 
+  Theme.OptionsLyrics.SelectLyricsFont.showArrows := true;
+  Theme.OptionsLyrics.SelectLyricsFont.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFont);
+
+  Theme.OptionsLyrics.SelectLyricsEffect.showArrows := true;
+  Theme.OptionsLyrics.SelectLyricsEffect.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsLyrics.SelectLyricsEffect, Ini.LyricsEffect, ILyricsEffect);
-  //AddSelect(Theme.OptionsLyrics.SelectSolmization, Ini.Solmization, ISolmization); GAH!!!!11 DIE!!!
+
+  Theme.OptionsLyrics.SelectNoteLines.showArrows := true;
+  Theme.OptionsLyrics.SelectNoteLines.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsLyrics.SelectNoteLines, Ini.NoteLines, INoteLines);
 
   AddButton(Theme.OptionsLyrics.ButtonExit);

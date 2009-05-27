@@ -129,11 +129,28 @@ begin
 
   //SelectLoadAnimation Hidden because it is useless atm
   //AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimation);
+  Theme.OptionsAdvanced.SelectScreenFade.showArrows := true;
+  Theme.OptionsAdvanced.SelectScreenFade.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFade);
+
+  Theme.OptionsAdvanced.SelectEffectSing.showArrows := true;
+  Theme.OptionsAdvanced.SelectEffectSing.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSing);
+
+  Theme.OptionsAdvanced.SelectLineBonus.showArrows := true;
+  Theme.OptionsAdvanced.SelectLineBonus.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonus);
+
+  Theme.OptionsAdvanced.SelectOnSongClick.showArrows := true;
+  Theme.OptionsAdvanced.SelectOnSongClick.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectOnSongClick, Ini.OnSongClick, IOnSongClick);
+
+  Theme.OptionsAdvanced.SelectAskbeforeDel.showArrows := true;
+  Theme.OptionsAdvanced.SelectAskbeforeDel.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskBeforeDel, IAskbeforeDel);
+
+  Theme.OptionsAdvanced.SelectPartyPopup.showArrows := true;
+  Theme.OptionsAdvanced.SelectPartyPopup.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectPartyPopup, Ini.PartyPopup, IPartyPopup);
 
   AddButton(Theme.OptionsAdvanced.ButtonExit);

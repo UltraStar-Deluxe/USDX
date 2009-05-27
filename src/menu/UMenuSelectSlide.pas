@@ -151,15 +151,7 @@ begin
   Text := TText.Create;
   SetLength(TextOpt, 1);
   TextOpt[0] := TText.Create;
-
-  //Set Standard Width for Selections Background
-//  SBGW := 400;
-
   Visible := true;
-  {SetLength(TextOpt, 3);
-  TextOpt[0] := TText.Create;
-  TextOpt[1] := TText.Create;
-  TextOpt[2] := TText.Create;}
 end;
 
 procedure TSelectSlide.SetSelect(Value: boolean);
@@ -184,14 +176,6 @@ begin
     TextureSBG.ColG := SBGColG;
     TextureSBG.ColB := SBGColB;
     TextureSBG.Int := SBGInt;
-
-{    for I := 0 to High(TextOpt) do begin
-      TextOpt[I].ColR := STColR;
-      TextOpt[I].ColG := STColG;
-      TextOpt[I].ColB := STColB;
-      TextOpt[I].Int := STInt;
-    end;}
-
   end
   else
   begin
@@ -209,13 +193,6 @@ begin
     TextureSBG.ColG := SBGDColG;
     TextureSBG.ColB := SBGDColB;
     TextureSBG.Int := SBGDInt;
-
-{    for I := 0 to High(TextOpt) do begin
-      TextOpt[I].ColR := STDColR;
-      TextOpt[I].ColG := STDColG;
-      TextOpt[I].ColB := STDColB;
-      TextOpt[I].Int := STDInt;
-    end;}
   end;
 end;
 
@@ -225,7 +202,7 @@ var
   HalfL: integer;
   HalfR: integer;
 
-procedure DoSelection(Sel: cardinal);
+  procedure DoSelection(Sel: cardinal);
   var
     I: integer;
   begin
@@ -236,39 +213,45 @@ procedure DoSelection(Sel: cardinal);
       TextOpt[I].ColB := STDColB;
       TextOpt[I].Int := STDInt;
     end;
+
     if (integer(Sel) <= high(TextOpt)) then
     begin
       TextOpt[Sel].ColR := STColR;
       TextOpt[Sel].ColG := STColG;
       TextOpt[Sel].ColB := STColB;
       TextOpt[Sel].Int := STInt;
+      end;
     end;
-  end;
+
 begin
   SelectOptInt := Value;
   PData^ := Value;
-//  SetSelect(true); // reset all colors
 
   if (Length(TextOpt)>0) AND (Length(TextOptT)>0) then
   begin
 
+    //First option selected
     if (Value <= 0) then
-    begin //First Option Selected
+    begin
       Value := 0;
 
       Tex_SelectS_ArrowL.alpha := 0;
+      Tex_SelectS_ArrowR.alpha := 1;
 
-      for SO := low (TextOpt) to high(TextOpt) do
+      for SO := low(TextOpt) to high(TextOpt) do
       begin
         TextOpt[SO].Text := TextOptT[SO];
       end;
 
       DoSelection(0);
     end
+
+    //Last option selected
     else if (Value >= high(TextOptT)) then
-    begin //Last Option Selected
+    begin
       Value := high(TextOptT);
 
+      Tex_SelectS_ArrowL.alpha := 1;
       Tex_SelectS_ArrowR.alpha := 0;
 
       for SO := high(TextOpt) downto low (TextOpt) do
@@ -277,6 +260,8 @@ begin
       end;
       DoSelection(Lines-1);
     end
+
+    //in between first and last
     else
     begin
       Tex_SelectS_ArrowL.alpha := 1;
@@ -285,45 +270,44 @@ begin
       HalfL := Ceil((Lines-1)/2);
       HalfR := Lines-1-HalfL;
 
+      //Selected option is near to the left side
       if (Value <= HalfL) then
-      begin //Selected Option is near to the left side
-	{HalfL := Value;
-	HalfR := Lines-1-HalfL;}
-	//Change Texts
-	for SO := low (TextOpt) to high(TextOpt) do
-	begin
-	  TextOpt[SO].Text := TextOptT[SO];
-	end;
+      begin
+        //Change texts
+      	for SO := low (TextOpt) to high(TextOpt) do
+      	begin
+      	  TextOpt[SO].Text := TextOptT[SO];
+      	end;
 
-	DoSelection(Value);
+      	DoSelection(Value);
       end
+
+      //Selected option is near to the right side
       else if (Value > High(TextOptT)-HalfR) then
-      begin //Selected is too near to the right border
-	HalfR := high(TextOptT) - Value;
-	HalfL := Lines-1-HalfR;
-	//Change Texts
-	for SO := high(TextOpt) downto low (TextOpt) do
-	begin
-	    TextOpt[SO].Text := TextOptT[high(TextOptT)-(Lines-SO-1)];
-	end;
+      begin
+      	HalfR := high(TextOptT) - Value;
+      	HalfL := Lines-1-HalfR;
+      	//Change texts
+       	for SO := high(TextOpt) downto low (TextOpt) do
+       	begin
+	        TextOpt[SO].Text := TextOptT[high(TextOptT)-(Lines-SO-1)];
+      	end;
 
-	DoSelection (HalfL);
+    	  DoSelection (HalfL);
       end
+
       else
       begin
-	//Change Texts
-	for SO := low (TextOpt) to high(TextOpt) do
-	begin
-	  TextOpt[SO].Text := TextOptT[Value - HalfL + SO];
-	end;
+      	//Change Texts
+       	for SO := low (TextOpt) to high(TextOpt) do
+      	begin
+	       TextOpt[SO].Text := TextOptT[Value - HalfL + SO];
+      	end;
 
-	DoSelection(HalfL);
+        DoSelection(HalfL);
       end;
-
     end;
-
   end;
-
 end;
 
 procedure TSelectSlide.Draw;
@@ -335,7 +319,7 @@ begin
     DrawTexture(Texture);
     DrawTexture(TextureSBG);
 
-    if(showArrows) then begin
+    if(showArrows && ) then begin
       DrawTexture(Tex_SelectS_ArrowL);
       DrawTexture(Tex_SelectS_ArrowR);
     end;

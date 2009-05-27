@@ -132,11 +132,28 @@ begin
   inherited Create;
   LoadFromTheme(Theme.OptionsGraphics);
 
+  Theme.OptionsGraphics.SelectResolution.showArrows := true;
+  Theme.OptionsGraphics.SelectResolution.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGraphics.SelectResolution,   Ini.Resolution, IResolution);
+
+  Theme.OptionsGraphics.SelectFullscreen.showArrows := true;
+  Theme.OptionsGraphics.SelectFullscreen.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen,   Ini.Fullscreen, IFullscreen);
+
+  Theme.OptionsGraphics.SelectDepth.showArrows := true;
+  Theme.OptionsGraphics.SelectDepth.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGraphics.SelectDepth,        Ini.Depth, IDepth);
+
+  Theme.OptionsGraphics.SelectVisualizer.showArrows := true;
+  Theme.OptionsGraphics.SelectVisualizer.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGraphics.SelectVisualizer,   Ini.VisualizerOption, IVisualizer);
+
+  Theme.OptionsGraphics.SelectOscilloscope.showArrows := true;
+  Theme.OptionsGraphics.SelectOscilloscope.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscope);
+
+  Theme.OptionsGraphics.SelectMovieSize.showArrows := true;
+  Theme.OptionsGraphics.SelectMovieSize.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize,    Ini.MovieSize, IMovieSize);
 
   AddButton(Theme.OptionsGraphics.ButtonExit);

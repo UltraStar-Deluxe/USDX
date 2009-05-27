@@ -244,6 +244,8 @@ begin
       InputDeviceNames[DeviceIndex] := AudioInputProcessor.DeviceList[DeviceIndex].Name;
     end;
     // add device-selection slider (InteractionID: 0)
+    Theme.OptionsRecord.SelectSlideCard.showArrows := true;
+    Theme.OptionsRecord.SelectSlideCard.oneItemOnly := true;
     AddSelectSlide(Theme.OptionsRecord.SelectSlideCard, CurrentDeviceIndex, InputDeviceNames);
 
     // init source-selection slider
@@ -252,6 +254,9 @@ begin
     begin
       InputSourceNames[SourceIndex] := InputDevice.Source[SourceIndex].Name;
     end;
+
+    Theme.OptionsRecord.SelectSlideInput.showArrows := true;
+    Theme.OptionsRecord.SelectSlideInput.oneItemOnly := true;
     // add source-selection slider (InteractionID: 1)
     SelectInputSourceID := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput,
         InputDeviceCfg.Input, InputSourceNames);
