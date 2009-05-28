@@ -319,7 +319,11 @@ begin
     DrawTexture(Texture);
     DrawTexture(TextureSBG);
 
-    if(showArrows && ) then begin
+//    if(showArrows && ) then begin
+// The line above is from mog but with an error. 
+// The line below fixes the syntax, but what did mog actually wanted to do?
+    if (showArrows) then
+    begin
       DrawTexture(Tex_SelectS_ArrowL);
       DrawTexture(Tex_SelectS_ArrowR);
     end;
@@ -330,8 +334,6 @@ begin
       TextOpt[SO].Draw;
   end;
 end;
-
-
 
 procedure TSelectSlide.GenLines;
 var
