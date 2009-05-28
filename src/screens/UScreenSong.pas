@@ -175,7 +175,7 @@ begin
   if CatSongs.VisibleSongs > 0 then
   begin
     I2:= 0;
-    for I := low(CatSongs.Song) to High(Catsongs.Song) do
+    for I := Low(CatSongs.Song) to High(Catsongs.Song) do
     begin
       if CatSongs.Song[I].Visible then
         inc(I2);
@@ -196,7 +196,7 @@ begin
   if CatSongs.VisibleSongs > 0 then
   begin
     I2:= 0;
-    for I := low(CatSongs.Song) to High(Catsongs.Song) do
+    for I := Low(CatSongs.Song) to High(Catsongs.Song) do
     begin
       if CatSongs.Song[I].Visible then
         inc(I2);
@@ -280,7 +280,7 @@ begin
         //Jump To Titel
         if (SDL_ModState = (KMOD_LALT or KMOD_LSHIFT)) then
         begin
-          for I := 1 to high(CatSongs.Song) do
+          for I := 1 to High(CatSongs.Song) do
           begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) and
                (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) and
@@ -300,7 +300,7 @@ begin
         //Jump to Artist
         else if (SDL_ModState = KMOD_LALT) then
         begin
-          for I := 1 to high(CatSongs.Song) do
+          for I := 1 to High(CatSongs.Song) do
           begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) and
                (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) and
@@ -395,25 +395,25 @@ begin
           if (Songs.SongList.Count > 0) and
              (Mode = smNormal) then
           begin
-            if (SDL_ModState = KMOD_LSHIFT) and (Ini.TabsAtStartup = 1) then //Random Category
+            if (SDL_ModState = KMOD_LSHIFT) and (Ini.TabsAtStartup = 1) then // random category
             begin
-              I2 := 0; //Count Cats
-              for I:= 0 to high(CatSongs.Song) do
+              I2 := 0; // count cats
+              for I := 0 to High(CatSongs.Song) do
               begin
                 if CatSongs.Song[I].Main then
                   Inc(I2);
               end;
 
-              I2 := Random(I2)+1; //Zufall
+              I2 := Random(I2 + 1); // random and include I2
 
-              //Find Cat:
-              for I:= 0 to high(CatSongs.Song) do
+              // find cat:
+              for I := 0 to High(CatSongs.Song) do
                 begin
                 if CatSongs.Song[I].Main then
                   Dec(I2);
-                if (I2<=0) then
+                if (I2 <= 0) then
                 begin
-                  //Show Cat in Top Left Mod
+                  // show cat in top left mod
                   ShowCatTL (I);
 
                   Interaction := I;
@@ -426,38 +426,38 @@ begin
                 end;
               end;
             end
-            else if (SDL_ModState = KMOD_LCTRL) and (Ini.TabsAtStartup = 1) then //random in All Categorys
+            else if (SDL_ModState = KMOD_LCTRL) and (Ini.TabsAtStartup = 1) then // random in all categories
             begin
               repeat
-                I2 := Random(high(CatSongs.Song)+1) + 1;
+                I2 := Random(High(CatSongs.Song) + 1);
               until (not CatSongs.Song[I2].Main);
 
-              //Search Cat
+              // search cat
               for I := I2 downto 0 do
               begin
               if CatSongs.Song[I].Main then
                 break;
               end;
               
-              //In I is now the categorie in I2 the song
+              // in I is now the categorie in I2 the song
 
-              //Choose Cat
+              // choose cat
               CatSongs.ShowCategoryList;
 
-              //Show Cat in Top Left Mod
+              // show cat in top left mod
               ShowCatTL (I);
 
               CatSongs.ClickCategoryButton(I);
               SelectNext;
 
-              //Fix: Not Existing Song selected:
-              //if (I+1=I2) then
+              // Fix: not existing song selected:
+              //if (I + 1 = I2) then
                 Inc(I2);
 
-              //Choose Song
-              SkipTo(I2-I);
+              // choose song
+              SkipTo(I2 - I);
             end
-            else //Random in one Category
+            else // random in one category
             begin
               SkipTo(Random(CatSongs.VisibleSongs));
             end;
@@ -489,7 +489,7 @@ begin
                   break;
               end;
               if (I <= 1) then
-                Interaction := high(CatSongs.Song)
+                Interaction := High(CatSongs.Song)
               else
                 Interaction := I - 1;
 
@@ -611,8 +611,8 @@ begin
                 while not catsongs.Song[I].Main do
                 begin
                   Inc (I);
-                  if (I > high(catsongs.Song)) then
-                    I := low(catsongs.Song);
+                  if (I > High(catsongs.Song)) then
+                    I := Low(catsongs.Song);
                 end;
 
                 Interaction := I;
@@ -655,8 +655,8 @@ begin
                   if catsongs.Song[I].Main then
                     Inc(I2);
                   Dec (I);
-                  if (I < low(catsongs.Song)) then
-                    I := high(catsongs.Song);
+                  if (I < Low(catsongs.Song)) then
+                    I := High(catsongs.Song);
                 end;
 
                 Interaction := I;
@@ -1312,7 +1312,7 @@ begin
   else
   begin
     //Change Pos of all Buttons
-    for B := low(Button) to high(Button) do
+    for B := Low(Button) to High(Button) do
     begin
       Button[B].Visible := CatSongs.Song[B].Visible; //Adjust Visibility
       if Button[B].Visible then //Only Change Pos for Visible Buttons
@@ -1701,41 +1701,40 @@ var
   I, I2: integer;
 begin
   case PlaylistMan.Mode of
-      smNormal:  //All Songs Just Select Random Song
+      smNormal:  // all songs just select random song
         begin
-          //When Tabs are activated then use Tab Method
+          // when tabs are activated then use tab method
           if (Ini.TabsAtStartup = 1) then
           begin
             repeat
-              I2 := Random(high(CatSongs.Song)+1) - low(CatSongs.Song)+1;
+              I2 := Low(CatSongs.Song) + Random(High(CatSongs.Song) + 1 - Low(CatSongs.Song));
             until CatSongs.Song[I2].Main = false;
 
-            //Search Cat
-            for I := I2 downto low(CatSongs.Song) do
+            // search cat
+            for I := I2 downto Low(CatSongs.Song) do
             begin
               if CatSongs.Song[I].Main then
                 break;
             end;
-            //In I ist jetzt die Kategorie in I2 der Song
-            //I is the CatNum, I2 is the No of the Song within this Cat
+            // I is the cat number, I2 is the no of the song within this cat
 
-            //Choose Cat
+            // choose cat
             CatSongs.ShowCategoryList;
 
-            //Show Cat in Top Left Mod
-            ShowCatTL (I);
+            // show cat in top left mod
+            ShowCatTL(I);
 
             CatSongs.ClickCategoryButton(I);
             SelectNext;
 
-            //Choose Song
-            SkipTo(I2-I);
+            // choose song
+            SkipTo(I2 - I);
           end
-          //When Tabs are deactivated use easy Method
+          // when tabs are deactivated use easy method
           else
             SkipTo(Random(CatSongs.VisibleSongs));
         end;
-      smPartyMode:  //One Category Select Category and Select Random Song
+      smPartyMode:  // one category select category and select random song
         begin
           CatSongs.ShowCategoryList;
           CatSongs.ClickCategoryButton(PlaylistMan.CurPlayList);
@@ -1746,7 +1745,7 @@ begin
 
           SkipTo(Random(CatSongs.VisibleSongs));
         end;
-      smPlaylistRandom:  //Playlist: Select Playlist and Select Random Song
+      smPlaylistRandom:  // playlist: select playlist and select random song
         begin
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
@@ -1846,19 +1845,19 @@ begin
   //Set Visibility of Party Statics and Text
   Visible := (Mode = smPartyMode);
 
-  for I := 0 to high(StaticParty) do
+  for I := 0 to High(StaticParty) do
     Static[StaticParty[I]].Visible := Visible;
 
-  for I := 0 to high(TextParty) do
+  for I := 0 to High(TextParty) do
     Text[TextParty[I]].Visible := Visible;
 
   //Set Visibility of Non Party Statics and Text
   Visible := not Visible;
 
-  for I := 0 to high(StaticNonParty) do
+  for I := 0 to High(StaticNonParty) do
     Static[StaticNonParty[I]].Visible := Visible;
 
-  for I := 0 to high(TextNonParty) do
+  for I := 0 to High(TextNonParty) do
     Text[TextNonParty[I]].Visible := Visible;
 end;
 
