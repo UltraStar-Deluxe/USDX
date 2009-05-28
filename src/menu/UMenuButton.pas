@@ -55,7 +55,6 @@ type
       PosX,
       PosY:         real;
 
-      constructor Create(); overload;
 
     public
       Text:                      array of TText;
@@ -113,6 +112,7 @@ type
 
       procedure   Draw; virtual;
 
+      constructor Create(); overload;
       constructor Create(Textura: TTexture); overload;
       constructor Create(Textura, DSTexture: TTexture); overload;
       destructor  Destroy; override;
@@ -250,42 +250,6 @@ begin
       Texture.H := DeSelectH;
     end;
   end;
-end;
-
-constructor TButton.Create();
-begin
-  inherited Create;
-  // We initialize all to 0, nil or false
-  Visible        := true;
-  SelectBool     := false;
-  DeselectType   := 0;
-  Selectable     := true;
-  Reflection     := false;
-  Colorized      := false;
-
-  SelectColR     := 1;
-  SelectColG     := 1;
-  SelectColB     := 1;
-  SelectInt      := 1;
-  SelectTInt     := 1;
-
-  DeselectColR   := 1;
-  DeselectColG   := 1;
-  DeselectColB   := 1;
-  DeselectInt    := 0.5;
-  DeselectTInt   := 1;
-
-  Fade           := false;
-  FadeTex.TexNum := 0;
-  FadeProgress   := 0;
-  FadeText       := false;
-  SelectW        := DeSelectW;
-  SelectH        := DeSelectH;
-
-  PosX           := 0;
-  PosY           := 0;
-
-  Parent         := 0;
 end;
 
 // ***** Public methods ****** //
@@ -569,6 +533,42 @@ end;
 destructor TButton.Destroy;
 begin
   inherited;
+end;
+
+constructor TButton.Create();
+begin
+  inherited Create;
+  // We initialize all to 0, nil or false
+  Visible        := true;
+  SelectBool     := false;
+  DeselectType   := 0;
+  Selectable     := true;
+  Reflection     := false;
+  Colorized      := false;
+
+  SelectColR     := 1;
+  SelectColG     := 1;
+  SelectColB     := 1;
+  SelectInt      := 1;
+  SelectTInt     := 1;
+
+  DeselectColR   := 1;
+  DeselectColG   := 1;
+  DeselectColB   := 1;
+  DeselectInt    := 0.5;
+  DeselectTInt   := 1;
+
+  Fade           := false;
+  FadeTex.TexNum := 0;
+  FadeProgress   := 0;
+  FadeText       := false;
+  SelectW        := DeSelectW;
+  SelectH        := DeSelectH;
+
+  PosX           := 0;
+  PosY           := 0;
+
+  Parent         := 0;
 end;
 
 constructor TButton.Create(Textura: TTexture);
