@@ -154,6 +154,7 @@ type
 
       // Controller
       Joypad:         integer;
+      Mouse:          integer;
 
       procedure Load();
       procedure Save();
@@ -246,6 +247,7 @@ const
   IPartyPopup:    array[0..1] of string = ('Off', 'On');
 
   IJoypad:        array[0..1] of string = ('Off', 'On');
+  IMouse:         array[0..2] of string = ('Off', 'Hardware Cursor', 'Software Cursor');
 
   // Recording options
   IChannelPlayer: array[0..6] of string = ('Off', '1', '2', '3', '4', '5', '6');
@@ -769,6 +771,9 @@ begin
   // Joypad
   Joypad := GetArrayIndex(IJoypad, IniFile.ReadString('Controller',    'Joypad',   IJoypad[0]));
 
+  // Mouse
+  Mouse := GetArrayIndex(IMouse, IniFile.ReadString('Controller',    'Mouse',   IMouse[2]));
+
   LoadPaths(IniFile);
 
   IniFile.Free;
@@ -907,6 +912,9 @@ begin
 
   // Joypad
   IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);
+
+  // Mouse
+  IniFile.WriteString('Controller', 'Mouse', IMouse[Mouse]);
 
   // Directories (add a template if section is missing)
   // Note: Value must be ' ' and not '', otherwise no key is generated on Linux

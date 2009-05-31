@@ -126,7 +126,8 @@ uses
   ULanguage,
   UNote,
   URecord,
-  USong;
+  USong,
+  UDisplay;
 
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
@@ -252,6 +253,9 @@ end;
 constructor TScreenSing.Create;
 begin
   inherited Create;
+
+  //too dangerous, a mouse button is quickly pressed by accident
+  RightMbESC := false;
 
   fShowVisualization := false;
 
@@ -623,6 +627,9 @@ end;
 
 procedure TScreenSing.onShowFinish;
 begin
+  // hide cursor on singscreen show    
+  Display.SetCursor;
+  
   // start lyrics
   LyricsState.Resume();
 
@@ -643,6 +650,7 @@ begin
   end;
 
   Background.OnFinish;
+  Display.SetCursor;
 end;
 
 function TScreenSing.Draw: boolean;

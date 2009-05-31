@@ -60,6 +60,17 @@ type
 
       OSD_LastError: string;
 
+      { software cursor data }
+      Cursor_X:            Double;
+      Cursor_Y:            Double;
+      Cursor_Pressed:      Boolean;
+      Cursor_HiddenByScreen: Boolean; // hides software cursor and deactivate auto fade in
+
+      // used for cursor fade out when there is no movement
+      Cursor_Visible:      Boolean;
+      Cursor_LastMove:     Cardinal;
+      Cursor_Fade:         Boolean;
+
       procedure DrawDebugInformation;
     public
       NextScreen:          PMenu;
@@ -78,10 +89,27 @@ type
       procedure SaveScreenShot;
 
       function  Draw: boolean;
+
+      { sets SDL_ShowCursor depending on options set in Ini }
+      procedure SetCursor;
+
+      { called when cursor moves, positioning of software cursor }
+      procedure MoveCursor(X, Y: Double; Pressed: Boolean);
+
+      
+      { draws software cursor }
+      procedure DrawCursor;
   end;
 
 var
   Display:          TDisplay;
+
+const
+  { constants for software cursor effects
+    time in milliseconds }
+  Cursor_FadeIn_Time = 500;      // seconds the fade in effect lasts
+  Cursor_FadeOut_Time = 2000;    // seconds the fade out effect lasts
+  Cursor_AutoHide_Time = 5000;   // seconds until auto fade out starts if there is no mouse movement
 
 implementation
 
@@ -125,6 +153,15 @@ begin
 
   //Set LastError for OSD to No Error
   OSD_LastError := 'No Errors';
+
+  // software cursor default values
+  Cursor_LastMove := SDL_GetTicks;
+  Cursor_Visible  := false;
+  Cursor_Pressed  := false;
+  Cursor_X        := -1;
+  Cursor_Y        := -1;
+  Cursor_Fade     := false;
+  Cursor_HiddenByScreen := true;
 end;
 
 destructor TDisplay.Destroy;
@@ -306,6 +343,160 @@ begin
     if ((Ini.Debug = 1) or (Params.Debug)) and (S = 1) then
       DrawDebugInformation;      
   end; // for
+
+  if not BlackScreen then
+    DrawCursor;
+end;
+
+{ sets SDL_ShowCursor depending on options set in Ini }
+procedure TDisplay.SetCursor;
+  var
+    Cursor: Integer;
+begin
+  Cursor := 0;
+
+  if (CurrentScreen <> @ScreenSing) or (Cursor_HiddenByScreen) then
+  begin // hide cursor on singscreen
+    if (Ini.Mouse = 0) and (Ini.FullScreen = 0) then
+      // show sdl (os) cursor in window mode even when mouse support is off
+      Cursor := 1
+    else if (Ini.Mouse = 1) then
+      // show sdl (os) cursor when hardware cursor is selected
+      Cursor := 1;
+
+    if (Ini.Mouse <> 2) then
+      Cursor_HiddenByScreen := false;
+  end
+  else if (Ini.Mouse <> 2) then
+    Cursor_HiddenByScreen := true;
+
+
+  SDL_ShowCursor(Cursor);
+
+  if (Ini.Mouse = 2) then
+  begin
+    if Cursor_HiddenByScreen then
+    begin
+      // show software cursor
+      Cursor_HiddenByScreen := false;
+      Cursor_Visible := false;
+      Cursor_Fade := false;
+    end
+    else if (CurrentScreen = @ScreenSing) then
+    begin
+      // hide software cursor in singscreen
+      Cursor_HiddenByScreen := true;
+      Cursor_Visible := false;
+      Cursor_Fade := false;
+    end;
+  end;
+end;
+
+{ called when cursor moves, positioning of software cursor }
+procedure TDisplay.MoveCursor(X, Y: Double; Pressed: Boolean);
+var
+  Ticks: Cardinal;
+begin
+  if (Ini.Mouse = 2) and ((X <> Cursor_X) or (Y <> Cursor_Y) or (Pressed <> Cursor_Pressed)) then
+  begin
+    Cursor_X := X;
+    Cursor_Y := Y;
+    Cursor_Pressed := Pressed;
+
+    Ticks := SDL_GetTicks;
+
+    if not Cursor_Visible then
+    begin
+      if (Cursor_Fade) then // we use a trick here to consider progress of fade out
+        Cursor_LastMove := Ticks - round(Cursor_FadeIn_Time * (1 - (Ticks - Cursor_LastMove)/Cursor_FadeOut_Time))
+      else
+        Cursor_LastMove := Ticks;
+
+      Cursor_Visible := True;
+      Cursor_Fade := True;
+    end
+    else if not Cursor_Fade then
+    begin
+      Cursor_LastMove := Ticks;
+    end;
+  end;
+end;
+
+{ draws software cursor }
+procedure TDisplay.DrawCursor;
+  var
+    Alpha: Single;
+    Ticks: Cardinal;
+begin
+  if (Ini.Mouse = 2) then
+  begin // draw software cursor
+    Ticks := SDL_GetTicks;
+
+    if (Cursor_Visible) and (Cursor_LastMove + Cursor_AutoHide_Time <= Ticks) then
+    begin // start fade out after 5 secs w/o activity
+      Cursor_Visible := False;
+      Cursor_LastMove := Ticks;
+      Cursor_Fade := True;
+    end;
+    
+    // fading
+    if (Cursor_Fade) then
+    begin
+      if (Cursor_Visible) then
+      begin // fade in
+        if (Cursor_LastMove + Cursor_FadeIn_Time <= Ticks) then
+          Cursor_Fade := False
+        else
+          Alpha := sin((Ticks - Cursor_LastMove) * 0.5 * pi / Cursor_FadeIn_Time) * 0.7;
+      end
+      else
+      begin //fade out
+        if (Cursor_LastMove + Cursor_FadeOut_Time <= Ticks) then
+          Cursor_Fade := False
+        else
+          Alpha := cos((Ticks - Cursor_LastMove) * 0.5 * pi / Cursor_FadeOut_Time) * 0.7;
+      end;
+    end;
+
+    // no else if here because we may turn off fade in if block
+    if not Cursor_Fade then
+    begin
+      if Cursor_Visible then
+        Alpha := 0.7 // alpha when cursor visible and not fading
+      else
+        Alpha := 0;  // alpha when cursor is hidden
+    end;
+
+    if (Alpha > 0) and (not Cursor_HiddenByScreen) then
+    begin
+      glColor4f(1, 1, 1, Alpha);
+      glEnable(GL_TEXTURE_2D);
+      glEnable(GL_BLEND);
+      glDisable(GL_DEPTH_TEST);
+
+      if (Cursor_Pressed) and (Tex_Cursor_Pressed.TexNum > 0) then
+        glBindTexture(GL_TEXTURE_2D, Tex_Cursor_Pressed.TexNum)
+      else
+        glBindTexture(GL_TEXTURE_2D, Tex_Cursor_Unpressed.TexNum);
+
+      glBegin(GL_QUADS);
+        glTexCoord2f(0, 0);
+        glVertex2f(Cursor_X, Cursor_Y);
+
+        glTexCoord2f(0, 1);
+        glVertex2f(Cursor_X, Cursor_Y + 32);
+
+        glTexCoord2f(1, 1);
+        glVertex2f(Cursor_X + 32, Cursor_Y + 32);
+
+        glTexCoord2f(1, 0);
+        glVertex2f(Cursor_X + 32, Cursor_Y);
+      glEnd;
+
+      glDisable(GL_BLEND);
+      glDisable(GL_TEXTURE_2D);
+    end;
+  end;
 end;
 
 procedure TDisplay.SaveScreenShot;

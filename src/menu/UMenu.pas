@@ -35,6 +35,7 @@ interface
 
 uses
   gl,
+  SDL,
   SysUtils,
   UTexture,
   UMenuStatic,
@@ -61,7 +62,7 @@ type
 
       ButtonPos:        integer;
       Button:           array of TButton;
-     
+
       SelectsS:         array of TSelectSlide;
       ButtonCollection: array of TButtonCollection;
     public
@@ -72,6 +73,7 @@ type
 
       Fade:       integer; // fade type
       ShowFinish: boolean; // true if there is no fade
+      RightMbESC: boolean; // true to simulate ESC keypress when RMB is pressed
 
       destructor Destroy; override;
       constructor Create; overload; virtual;
@@ -82,7 +84,7 @@ type
       function WideCharUpperCase(wchar: WideChar) : WideString;
       function WideStringUpperCase(wstring: WideString) : WideString;
       procedure AddInteraction(Typ, Num: integer);
-      procedure SetInteraction(Num: integer);
+      procedure SetInteraction(Num: integer); virtual;
       property Interaction: integer read SelInteraction write SetInteraction;
 
       //Procedure Load BG, Texts, Statics and Button Collections from ThemeBasic
@@ -145,9 +147,10 @@ type
       function DrawFG: boolean; virtual;
       function Draw: boolean; virtual;
       function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown : boolean): boolean; virtual;
-      // FIXME: ParseMouse is not implemented in any subclass and not even used anywhere in the code
-      //   -> do this before activation of this method
-      //function ParseMouse(Typ: integer; X: integer; Y: integer): boolean; virtual; abstract;
+      function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; virtual;
+      function InRegion(X1, Y1, W, H, X, Y: real): Boolean;
+      function InteractAt(X, Y: real): Integer;
+      function CollectionAt(X, Y: real): Integer;
       procedure onShow; virtual;
       procedure onShowFinish; virtual;
       procedure onHide; virtual;
@@ -167,8 +170,11 @@ type
   end;
 
 const
-  pmMove    = 1;
-  pmClick   = 2;
+  MENU_MDOWN = 8;
+  MENU_MUP = 0;
+
+  pmMove = 1;
+  pmClick = 2;
   pmUnClick = 3;
 
   iButton           = 0; // interaction type
@@ -221,6 +227,8 @@ begin
   ButtonPos := -1;
 
   Background := nil;
+
+  RightMbESC := True;
 end;
 {
 constructor TMenu.Create(Back: string);
@@ -1593,6 +1601,103 @@ function TMenu.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown:
 begin
   // nothing
   Result := true;
+end;
+
+function TMenu.ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean;
+var
+  nBut: Integer;
+begin
+  //default mouse parsing: clicking generates return keypress,
+  //  mousewheel selects in select slide
+  //override ParseMouse to customize
+  Result := true;
+
+  if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then begin
+    //if RightMbESC is set, send ESC keypress
+    Result:=ParseInput(SDLK_ESCAPE, #0, True);
+  end;
+
+  nBut := InteractAt(X, Y);
+  if nBut >= 0 then begin
+    //select on mouse-over
+    if nBut <> Interaction then
+      SetInteraction(nBut);
+    if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then begin
+      //click button
+      Result:=ParseInput(SDLK_RETURN, #0, True);
+    end;
+    if (Interactions[nBut].Typ = iSelectS) then begin
+      //forward/backward in select slide with mousewheel
+      if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then begin
+        ParseInput(SDLK_RIGHT, #0, true);
+      end;
+      if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then begin
+        ParseInput(SDLK_LEFT, #0, true);
+      end;
+    end;
+  end
+  else begin
+    nBut := CollectionAt(X, Y);
+    if nBut >= 0 then begin
+      //if over button collection, select first child but don't allow click
+      nBut := ButtonCollection[nBut].FirstChild - 1;
+      if nBut <> Interaction then
+        SetInteraction(nBut);
+    end;
+  end;
+end;
+
+function TMenu.InRegion(X1, Y1, W, H, X, Y: real): Boolean;
+begin
+  Result:=False;
+  X1 := X1 * Screen.w/800;
+  W := W * Screen.w/800;
+  Y1 := Y1 * Screen.h/600;
+  H := H * Screen.h/600;
+  if (X >= X1) and (X <= X1+W) and (Y >= Y1) and (Y <= Y1+H) then
+    Result := true;
+end;
+
+//takes x,y coordinates and returns the interaction number
+//of the control at this position
+function TMenu.InteractAt(X, Y: real): Integer;
+var
+  i, nBut: Integer;
+begin
+  Result:=-1;
+  for i:=Low(Interactions) to High(Interactions) do begin
+    case Interactions[i].Typ of
+      iButton:if InRegion(Button[Interactions[i].Num].X, Button[Interactions[i].Num].Y, Button[Interactions[i].Num].W, Button[Interactions[i].Num].H, X, Y) and
+           Button[Interactions[i].Num].Visible then begin
+          Result:=i;
+          exit;
+        end;
+      iBCollectionChild:if InRegion(Button[Interactions[i].Num].X, Button[Interactions[i].Num].Y, Button[Interactions[i].Num].W, Button[Interactions[i].Num].H, X, Y) then begin
+          Result:=i;
+          exit;
+        end;
+      iSelectS:if InRegion(SelectSs[Interactions[i].Num].X, SelectSs[Interactions[i].Num].Y, SelectSs[Interactions[i].Num].W, SelectSs[Interactions[i].Num].H, X, Y) or
+        InRegion(SelectSs[Interactions[i].Num].TextureSBG.X, SelectSs[Interactions[i].Num].TextureSBG.Y, SelectSs[Interactions[i].Num].TextureSBG.W, SelectSs[Interactions[i].Num].TextureSBG.H, X, Y) then begin
+          Result:=i;
+          exit;
+        end;
+    end;
+  end;
+end;
+
+//takes x,y coordinates and returns the button collection id
+function TMenu.CollectionAt(X, Y: real): Integer;
+var
+  i, nBut: Integer;
+begin
+  Result:=-1;
+  for i:=Low(ButtonCollection) to High(ButtonCollection) do begin
+    if InRegion(ButtonCollection[i].X, ButtonCollection[i].Y, ButtonCollection[i].W, ButtonCollection[i].H, X, Y) and
+        ButtonCollection[i].Visible then begin
+      Result:=i;
+      exit;
+    end;
+  end;
 end;
 
 procedure TMenu.SetAnimationProgress(Progress: real);

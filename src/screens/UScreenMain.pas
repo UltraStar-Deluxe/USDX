@@ -52,10 +52,7 @@ type
     function ParseInput(PressedKey: cardinal; CharCode: widechar;
       PressedDown: boolean): boolean; override;
     procedure onShow; override;
-    procedure InteractNext; override;
-    procedure InteractPrev; override;
-    procedure InteractInc; override;
-    procedure InteractDec; override;
+    procedure SetInteraction(Num: integer); override;
     procedure SetAnimationProgress(Progress: real); override;
   end;
 
@@ -238,36 +235,19 @@ end;
 procedure TScreenMain.onShow;
 begin
   inherited;
+
+  { display cursor (on moved) }
+  Display.SetCursor;
+
 {**
  * Start background music
  *}
   SoundLib.StartBgMusic;
 end;
 
-procedure TScreenMain.InteractNext;
+procedure TScreenMain.SetInteraction(Num: integer);
 begin
-  inherited InteractNext;
-  Text[TextDescription].Text     := Theme.Main.Description[Interaction];
-  Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-end;
-
-procedure TScreenMain.InteractPrev;
-begin
-  inherited InteractPrev;
-  Text[TextDescription].Text     := Theme.Main.Description[Interaction];
-  Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-end;
-
-procedure TScreenMain.InteractDec;
-begin
-  inherited InteractDec;
-  Text[TextDescription].Text     := Theme.Main.Description[Interaction];
-  Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-end;
-
-procedure TScreenMain.InteractInc;
-begin
-  inherited InteractInc;
+  inherited SetInteraction(Num);
   Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
 end;

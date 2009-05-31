@@ -119,6 +119,7 @@ type
       procedure SetScroll5;
       procedure SetScroll6;
       function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
       function Draw: boolean; override;
       procedure GenerateThumbnails();
       procedure onShow; override;
@@ -735,6 +736,28 @@ begin
         end;
     end;
   end; // if (PressedDown)
+end;
+
+function TScreenSong.ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean;
+begin
+  Result := True;
+
+  if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then begin
+    //if RightMbESC is set, send ESC keypress
+    Result:=ParseInput(SDLK_ESCAPE, #0, True);
+  end;
+
+  //song scrolling with mousewheel
+  if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then begin
+    ParseInput(SDLK_RIGHT, #0, true);
+  end;
+  if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then begin
+    ParseInput(SDLK_LEFT, #0, true);
+  end;
+  //LMB anywhere starts
+  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then begin
+    ParseInput(SDLK_RETURN, #0, true);
+  end;
 end;
 
 constructor TScreenSong.Create;

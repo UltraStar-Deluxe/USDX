@@ -129,6 +129,7 @@ type
 
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
       procedure onShow; override;
       procedure onShowFinish; override;
       function Draw: boolean; override;
@@ -188,6 +189,15 @@ begin
           Display.SaveScreenShot;
         end;
     end;
+  end;
+end;
+
+function TScreenScore.ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean;
+begin
+  Result := True;
+  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then begin
+    //left-click anywhere sends return
+    ParseInput(SDLK_RETURN, #0, true);
   end;
 end;
 
