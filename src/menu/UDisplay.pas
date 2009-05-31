@@ -155,7 +155,7 @@ begin
   OSD_LastError := 'No Errors';
 
   // software cursor default values
-  Cursor_LastMove := SDL_GetTicks;
+  Cursor_LastMove := 0;
   Cursor_Visible  := false;
   Cursor_Pressed  := false;
   Cursor_X        := -1;
@@ -405,7 +405,8 @@ begin
 
     Ticks := SDL_GetTicks;
 
-    if not Cursor_Visible then
+    { fade in on movement (or button press) if not first movement }
+    if (not Cursor_Visible) and (Cursor_LastMove <> 0) then
     begin
       if (Cursor_Fade) then // we use a trick here to consider progress of fade out
         Cursor_LastMove := Ticks - round(Cursor_FadeIn_Time * (1 - (Ticks - Cursor_LastMove)/Cursor_FadeOut_Time))
