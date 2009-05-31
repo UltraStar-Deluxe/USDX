@@ -260,7 +260,8 @@ procedure TText.Draw;
 var
   X2, Y2: real;
   Text2:  string;
-  I:      cardinal;
+  I:      Integer;
+  Ticks:  Cardinal;
 begin
   if Visible then
   begin
@@ -279,10 +280,10 @@ begin
     //if selected set blink...
     if SelectBool then
     begin
-      I := SDL_GetTicks() div 550;
-      if I <> STicks then
+      Ticks := SDL_GetTicks() div 550;
+      if Ticks <> STicks then
       begin //Change Visability
-        STicks := I;
+        STicks := Ticks;
         SelectBlink := Not SelectBlink;
       end;
     end;
@@ -309,17 +310,17 @@ begin
     //now use allways:
     //draw text as many strings
       Y2 := Y + MoveY;
-      for I := 0 to high(TextTiles) do
+      for I := 0 to High(TextTiles) do
       begin
-        if (not (SelectBool and SelectBlink)) or (I <> cardinal(high(TextTiles))) then
+        if (not (SelectBool and SelectBlink)) or (I <> High(TextTiles)) then
           Text2 := TextTiles[I]
         else
           Text2 := TextTiles[I] + '|';
 
         case Align of
-          0: X2 := X + MoveX;
-          1: X2 := X + MoveX - glTextWidth(Text2)/2;
-          2: X2 := X + MoveX - glTextWidth(Text2);
+          1: X2 := X + MoveX - glTextWidth(Text2)/2; { centered }
+          2: X2 := X + MoveX - glTextWidth(Text2); { right aligned }
+          else X2 := X + MoveX; { left aligned (default) }
         end;
 
         SetFontPos(X2, Y2);
