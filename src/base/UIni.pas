@@ -201,8 +201,7 @@ const
   ISingWindow:       array[0..1] of string  = ('Small', 'Big');
 
   //SingBar Mod
-  IOscilloscope:     array[0..2] of string  = ('Off', 'Osci', 'Bar');
-//IOscilloscope:     array[0..1] of string  = ('Off', 'On');
+  IOscilloscope:     array[0..1] of string  = ('Off', 'On');
 
   ISpectrum:         array[0..1] of string  = ('Off', 'On');
   ISpectrograph:     array[0..1] of string  = ('Off', 'On');
@@ -683,7 +682,7 @@ begin
   SingWindow := GetArrayIndex(ISingWindow, IniFile.ReadString('Graphics', 'SingWindow', 'Big'));
 
   // Oscilloscope
-  Oscilloscope := GetArrayIndex(IOscilloscope, IniFile.ReadString('Graphics', 'Oscilloscope', 'Bar'));
+  Oscilloscope := GetArrayIndex(IOscilloscope, IniFile.ReadString('Graphics', 'Oscilloscope', IOscilloscope[0]));
 
   // Spectrum
   Spectrum := GetArrayIndex(ISpectrum, IniFile.ReadString('Graphics', 'Spectrum', 'Off'));
@@ -763,7 +762,7 @@ begin
   OnSongClick := GetArrayIndex(IOnSongClick, IniFile.ReadString('Advanced', 'OnSongClick', 'Sing'));
 
   // Linebonus
-  LineBonus := GetArrayIndex(ILineBonus, IniFile.ReadString('Advanced', 'LineBonus', 'At Score'));
+  LineBonus := GetArrayIndex(ILineBonus, IniFile.ReadString('Advanced', 'LineBonus', ILineBonus[2]));
 
   // PartyPopup
   PartyPopup := GetArrayIndex(IPartyPopup, IniFile.ReadString('Advanced', 'PartyPopup', 'On'));
