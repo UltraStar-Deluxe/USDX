@@ -154,9 +154,9 @@ begin
   Theme.OptionsSound.SelectClickAssist.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssist);
 
-  Theme.OptionsSound.SelectThreshold.showArrows := true;
-  Theme.OptionsSound.SelectThreshold.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsSound.SelectThreshold, Ini.BeatClick, IBeatClick);
+  Theme.OptionsSound.SelectBeatClick.showArrows := true;
+  Theme.OptionsSound.SelectBeatClick.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClick);
 
   Theme.OptionsSound.SelectThreshold.showArrows := true;
   Theme.OptionsSound.SelectThreshold.oneItemOnly := true;
