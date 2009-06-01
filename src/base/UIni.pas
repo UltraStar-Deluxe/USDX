@@ -242,7 +242,7 @@ const
   IScreenFade:    array[0..1] of string = ('Off', 'On');
   IAskbeforeDel:  array[0..1] of string = ('Off', 'On');
   IOnSongClick:   array[0..2] of string = ('Sing', 'Select Players', 'Open Menu');
-  ILineBonus:     array[0..2] of string = ('Off', 'At Score', 'At Notes');
+  ILineBonus:     array[0..1] of string = ('Off', 'On');
   IPartyPopup:    array[0..1] of string = ('Off', 'On');
 
   IJoypad:        array[0..1] of string = ('Off', 'On');
@@ -762,7 +762,7 @@ begin
   OnSongClick := GetArrayIndex(IOnSongClick, IniFile.ReadString('Advanced', 'OnSongClick', 'Sing'));
 
   // Linebonus
-  LineBonus := GetArrayIndex(ILineBonus, IniFile.ReadString('Advanced', 'LineBonus', ILineBonus[2]));
+  LineBonus := GetArrayIndex(ILineBonus, IniFile.ReadString('Advanced', 'LineBonus', ILineBonus[1]));
 
   // PartyPopup
   PartyPopup := GetArrayIndex(IPartyPopup, IniFile.ReadString('Advanced', 'PartyPopup', 'On'));
