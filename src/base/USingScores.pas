@@ -815,6 +815,7 @@ begin
           SetFontStyle(Positions[PIndex].PUFont);
           SetFontItalic(False);
           SetFontSize(FontSize);
+          SetFontReflection(False, 0);
 
           //Draw Text
           TextLen := glTextWidth(Theme.Sing.LineBonusText[PopUp.Rating]);
@@ -872,6 +873,7 @@ begin
       SetFontItalic(False);
       SetFontSize(Position.TextSize);
       SetFontPos(Position.TextX, Position.TextY);
+      SetFontReflection(False, 0);
 
       ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
       While (Length(ScoreStr) < 5) do

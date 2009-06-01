@@ -1,0 +1,88 @@
+Index: src/menu/UDisplay.pas
+===================================================================
+--- src/menu/UDisplay.pas	(revision 1702)
++++ src/menu/UDisplay.pas	(working copy)
+@@ -42,8 +42,65 @@
+   SysUtils;
+ 
+ type
++  { this is a effect for screen fade that in fact does nothing
++    and should be used as parent for new fade effect.
++    It will also be used if fading is disabled }
++  TFadeEffect = class
++    private
++
++    public
++      constructor Create;
++
++      { this procedure is called when a screen change starts }
++      procedure StartFade;
++
++      { this function is called during a screen change, before screen
++        is drawn. screenchange is finished if this function returns
++        true. DoFadePostDraw will be called in every case after this
++        function was called, but fading will be finished regardless
++        what is returned DoFadePostDraw.}
++      function DoFadePreDraw: Boolean;
++
++      { this function is called during a screen change, after screen
++        was drawn. screenchange is finished if this function returns
++        true. }
++      function DoFadePostDraw: Boolean;
++
++
++
++      destructor Destroy;
++  end;
++
++  { class representing a kind of screen that is drawn over
++    one or more other screens. it has focus before the
++    screens that it is overlaying }
++  TOverlay = class(TMenu);
++
+   TDisplay = class
+     private
++      FadeInProgress: Boolean;
++      CurrentMenu: TMenu;
++
++      FadeEffect: TFadeEffect;
++    public
++      constructor Create(Caption: String);
++
++      { changes displayed screen, starts fading }
++      procedure ChangeMenu(NewScreen: TMenu);
++      property Menu: TMenu read CurrentMenu write ChangeMenu;
++
++
++
++
++
++      { calls draw procedures of Screen and overlays, it
++        returns false if application should be closed }
++      function Draw: Boolean;
++
++      destructor Destroy;
++
++  {TDisplay = class
++    private
+       //fade-to-black-hack
+       BlackScreen: boolean;
+ 
+@@ -53,7 +110,7 @@
+       LastFadeTime:  cardinal; // last fade update time
+ 
+       FadeTex:       array[1..2] of GLuint;
+- 
++
+       FPSCounter:    cardinal;
+       LastFPS:       cardinal;
+       NextFPSSwap:   cardinal;
+@@ -78,7 +135,7 @@
+       procedure SaveScreenShot;
+ 
+       function  Draw: boolean;
+-  end;
++  end; }
+ 
+ var
+   Display:          TDisplay;
