@@ -34,6 +34,7 @@ interface
 {$I switches.inc}
 
 uses
+  math,
   UMenu,
   SDL,
   {$IFDEF UseMIDIPort}
@@ -575,7 +576,7 @@ var
   Bottom: real;
   X:      real;
   Y:      real;
-  H:      real;
+  Height: real;
   YSkip:  real;
 begin
   // draw static menu
@@ -583,20 +584,24 @@ begin
 
   Y := 100;
 
-  H := Length(ATrack)*40;
-  if H > 480 then
-    H := 480;
-  Bottom := Y + H;
+  Height := min(480, 40 * Length(ATrack));
+  Bottom := Y + Height;
 
-  YSkip := H / Length(ATrack);
+  if Length(ATrack) = 0 then // prevent crash with uncomplete code. 
+  begin
+    Log.LogDebug ('UScreenEditConvert -> TScreenEditConvert.Draw:', 'Length(ATrack) = 0');
+    YSkip := 40;
+  end
+  else 
+    YSkip := Height / Length(ATrack);
 
   // select
-  DrawQuad(10, Y+Sel*YSkip, 780, YSkip, 0.8, 0.8, 0.8);
+  DrawQuad(10, Y + Sel*YSkip, 780, YSkip, 0.8, 0.8, 0.8);
 
   // selected - now me use Status System
   for Count := 0 to High(ATrack) do
     if ATrack[Count].Hear then
-      DrawQuad(10, Y+Count*YSkip, 50, YSkip, 0.8, 0.3, 0.3);
+      DrawQuad(10, Y + Count*YSkip, 50, YSkip, 0.8, 0.3, 0.3);
   glColor3f(0, 0, 0);
   for Count := 0 to High(ATrack) do
   begin
@@ -614,12 +619,12 @@ begin
     end;
   end;
 
-  DrawLine(10, Y,   10, Bottom, 0, 0, 0);
-  DrawLine(60, Y,   60, Bottom, 0, 0, 0);
+  DrawLine( 10, Y,  10, Bottom, 0, 0, 0);
+  DrawLine( 60, Y,  60, Bottom, 0, 0, 0);
   DrawLine(790, Y, 790, Bottom, 0, 0, 0);
 
   for Count := 0 to Length(ATrack) do
-    DrawLine(10, Y+Count*YSkip, 790, Y+Count*YSkip, 0, 0, 0);
+    DrawLine(10, Y + Count*YSkip, 790, Y + Count*YSkip, 0, 0, 0);
 
   for Count := 0 to High(ATrack) do
   begin
@@ -632,9 +637,21 @@ begin
     for Count2 := 0 to High(ATrack[Count].Note) do
     begin
       if ATrack[Count].Note[Count2].EventType = 9 then
-        DrawQuad(60 + ATrack[Count].Note[Count2].Start/Len * 725, Y + (Count+1)*YSkip - ATrack[Count].Note[Count2].Data1*35/127, 3, 3, ColR[Count], ColG[Count], ColB[Count]);
+        DrawQuad(60 + ATrack[Count].Note[Count2].Start/Len*725,
+                 Y + (Count+1)*YSkip - ATrack[Count].Note[Count2].Data1*35/127,
+                 3,
+                 3,
+                 ColR[Count],
+                 ColG[Count],
+                 ColB[Count]);
       if ATrack[Count].Note[Count2].EventType = 15 then
-        DrawLine(60 + ATrack[Count].Note[Count2].Start/Len * 725, Y + 0.75 * YSkip + Count*YSkip, 60 + ATrack[Count].Note[Count2].Start/Len * 725, Y + YSkip + Count*YSkip, ColR[Count], ColG[Count], ColB[Count]);
+        DrawLine(60 + ATrack[Count].Note[Count2].Start/Len*725,
+                 Y + 0.75*YSkip + Count*YSkip,
+                 60 + ATrack[Count].Note[Count2].Start/Len*725,
+                 Y + YSkip + Count*YSkip,
+                 ColR[Count],
+                 ColG[Count],
+                 ColB[Count]);
     end;
 
   // playing line
