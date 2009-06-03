@@ -44,28 +44,28 @@ uses
   ULog;
 
 type
-  TMessageType = ( mtInfo, mtError );
+  TMessageType = (mtInfo, mtError);
 
-procedure ShowMessage( const msg : String; msgType: TMessageType = mtInfo );
+procedure ShowMessage(const msg: string; msgType: TMessageType = mtInfo);
 
 procedure ConsoleWriteLn(const msg: string);
 
 function RWopsFromStream(Stream: TStream): PSDL_RWops;
 
 {$IFDEF FPC}
-function RandomRange(aMin: Integer; aMax: Integer) : Integer;
+function RandomRange(aMin: integer; aMax: integer): integer;
 {$ENDIF}
 
-function StringReplaceW(text : WideString; search, rep: WideChar):WideString;
-function AdaptFilePaths( const aPath : widestring ): widestring;
+function StringReplaceW(text: WideString; search, rep: WideChar): WideString;
+function AdaptFilePaths(const aPath: WideString): WideString;
 
 procedure DisableFloatingPointExceptions();
 procedure SetDefaultNumericLocale();
 procedure RestoreNumericLocale();
 
 {$IFNDEF MSWINDOWS}
-  procedure ZeroMemory( Destination: Pointer; Length: DWORD );
-  function MakeLong(a, b: Word): Longint;
+  procedure ZeroMemory(Destination: pointer; Length: dword);
+  function MakeLong(a, b: word): longint;
   (*
   #define LOBYTE(a) (BYTE)(a)
   #define HIBYTE(a) (BYTE)((a)>>8)
@@ -90,8 +90,8 @@ function IsControlChar(ch: WideChar): boolean;
 // A stable alternative to TList.Sort() (use TList.Sort() if applicable, see below)
 procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
 
-function GetAlignedMem(Size: cardinal; Alignment: integer): Pointer;
-procedure FreeAlignedMem(P: Pointer);
+function GetAlignedMem(Size: cardinal; Alignment: integer): pointer;
+procedure FreeAlignedMem(P: pointer);
 
 
 implementation
@@ -224,10 +224,10 @@ begin
                     exOverflow, exUnderflow, exPrecision]);
 end;
 
-function StringReplaceW(text : WideString; search, rep: WideChar) : WideString;
+function StringReplaceW(text: WideString; search, rep: WideChar): WideString;
 var
-  iPos  : integer;
-//  sTemp : WideString;
+  iPos:  integer;
+//  sTemp: WideString;
 begin
 (*
   result := text;
@@ -251,25 +251,25 @@ begin
   end;
 end;
 
-function AdaptFilePaths( const aPath : widestring ): widestring;
+function AdaptFilePaths(const aPath: WideString): WideString;
 begin
-  result := StringReplaceW( aPath, '\', PathDelim );//, [rfReplaceAll] );
+  result := StringReplaceW(aPath, '\', PathDelim);//, [rfReplaceAll]);
 end;
 
 
 {$IFNDEF MSWINDOWS}
-procedure ZeroMemory( Destination: Pointer; Length: DWORD );
+procedure ZeroMemory(Destination: pointer; Length: dword);
 begin
-  FillChar( Destination^, Length, 0 );
+  FillChar(Destination^, Length, 0);
 end;
 
-function MakeLong(A, B: Word): Longint;
+function MakeLong(A, B: word): longint;
 begin
   Result := (LongInt(B) shl 16) + A;
 end;
 
 (*
-function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER):Bool;
+function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER): Bool;
 
   // From http://en.wikipedia.org/wiki/RDTSC
   function RDTSC: Int64; register;
@@ -310,7 +310,7 @@ begin
   Result := false;
 
   FilePath := ExtractFilePath(FileName);
-  if (FindFirst(FilePath+'*', faAnyFile, SearchInfo) = 0) then
+  if (FindFirst(FilePath + '*', faAnyFile, SearchInfo) = 0) then
   begin
     LocalFileName := ExtractFileName(FileName);
     repeat
@@ -330,14 +330,14 @@ begin
 end;
 
 // +++++++++++++++++++++ helpers for RWOpsFromStream() +++++++++++++++
-function SdlStreamSeek( context : PSDL_RWops; offset : Integer; whence : Integer ) : integer; cdecl;
+function SdlStreamSeek(context: PSDL_RWops; offset: integer; whence: integer): integer; cdecl;
 var
-  stream : TStream;
-  origin : Word;
+  stream: TStream;
+  origin: word;
 begin
-  stream := TStream( context.unknown );
-  if ( stream = nil ) then
-    raise EInvalidContainer.Create( 'SDLStreamSeek on nil' );
+  stream := TStream(context.unknown);
+  if (stream = nil) then
+    raise EInvalidContainer.Create('SDLStreamSeek on nil');
   case whence of
     0 : origin := soFromBeginning; //	Offset is from the beginning of the resource. Seek moves to the position Offset. Offset must be >= 0.
     1 : origin := soFromCurrent; //	Offset is from the current position in the resource. Seek moves to Position + Offset.
@@ -345,30 +345,30 @@ begin
   else
     origin := soFromBeginning; // just in case
   end;
-  Result := stream.Seek( offset, origin );
+  Result := stream.Seek(offset, origin);
 end;
   
-function SdlStreamRead( context : PSDL_RWops; Ptr : Pointer; size : Integer; maxnum: Integer ) : Integer; cdecl;
+function SdlStreamRead(context: PSDL_RWops; Ptr: pointer; size: integer; maxnum: integer): integer; cdecl;
 var
-  stream : TStream;
+  stream: TStream;
 begin
-  stream := TStream( context.unknown );
-  if ( stream = nil ) then
-    raise EInvalidContainer.Create( 'SDLStreamRead on nil' );
+  stream := TStream(context.unknown);
+  if (stream = nil) then
+    raise EInvalidContainer.Create('SDLStreamRead on nil');
   try
-    Result := stream.read( Ptr^, Size * maxnum ) div size;
+    Result := stream.read(Ptr^, Size * maxnum) div size;
   except
     Result := -1;
   end;
 end;
   
-function SDLStreamClose( context : PSDL_RWops ) : Integer; cdecl;
+function SDLStreamClose(context: PSDL_RWops): integer; cdecl;
 var
-  stream : TStream;
+  stream: TStream;
 begin
-  stream := TStream( context.unknown );
-  if ( stream = nil ) then
-    raise EInvalidContainer.Create( 'SDLStreamClose on nil' );
+  stream := TStream(context.unknown);
+  if (stream = nil) then
+    raise EInvalidContainer.Create('SDLStreamClose on nil');
   stream.Free;
   Result := 1;
 end;
@@ -397,12 +397,10 @@ begin
   end;
 end;
 
-
-
 {$IFDEF FPC}
-function RandomRange(aMin: Integer; aMax: Integer) : Integer;
+function RandomRange(aMin: integer; aMax: integer): integer;
 begin
-  RandomRange := Random(aMax-aMin) + aMin ;
+  RandomRange := Random(aMax - aMin) + aMin ;
 end;
 {$ENDIF}
 
@@ -455,7 +453,7 @@ begin
 
     System.EnterCriticalSection(ConsoleCriticalSection);
     // output pending messages
-    for i := 0 to MessageList.Count-1 do
+    for i := 0 to MessageList.Count - 1 do
     begin
       _ConsoleWriteLn(MessageList[i]);
     end;
@@ -528,7 +526,7 @@ end;
 
 procedure ShowMessage(const msg: String; msgType: TMessageType);
 {$IFDEF MSWINDOWS}
-var Flags: Cardinal;
+var Flags: cardinal;
 {$ENDIF}
 begin
 {$IF Defined(MSWINDOWS)}
@@ -607,7 +605,7 @@ procedure _MergeSort(InList, TempList, OutList: TList; StartPos, BlockSize: inte
                     CompareFunc: TListSortCompare);
 var
   LeftSize, RightSize: integer; // number of elements in left/right block
-  LeftEnd, RightEnd: integer;   // Index after last element in left/right block
+  LeftEnd,  RightEnd:  integer; // Index after last element in left/right block
   MidPos: integer; // index of first element in right block
   Pos: integer;    // position in output list
 begin
@@ -683,7 +681,7 @@ end;
 type
   // stores the unaligned pointer of data allocated by GetAlignedMem()
   PMemAlignHeader = ^TMemAlignHeader;
-  TMemAlignHeader = Pointer;
+  TMemAlignHeader = pointer;
 
 (**
  * Use this function to assure that allocated memory is aligned on a specific
@@ -699,9 +697,9 @@ type
  * alignments on 16 and 32 byte boundaries too.
  *)
 {$WARNINGS OFF}
-function GetAlignedMem(Size: cardinal; Alignment: integer): Pointer;
+function GetAlignedMem(Size: cardinal; Alignment: integer): pointer;
 var
-  OrigPtr: Pointer;
+  OrigPtr: pointer;
 const
   MIN_ALIGNMENT = 16;
 begin
@@ -722,9 +720,9 @@ begin
   end;
 
   // reserve space for the header
-  Result := Pointer(PtrUInt(OrigPtr) + SizeOf(TMemAlignHeader));
+  Result := pointer(PtrUInt(OrigPtr) + SizeOf(TMemAlignHeader));
   // align memory
-  Result := Pointer(PtrUInt(Result) + Alignment - PtrUInt(Result) mod Alignment);
+  Result := pointer(PtrUInt(Result) + Alignment - PtrUInt(Result) mod Alignment);
 
   // set header with info on old pointer for FreeMem
   PMemAlignHeader(PtrUInt(Result) - SizeOf(TMemAlignHeader))^ := OrigPtr;
@@ -732,7 +730,7 @@ end;
 {$WARNINGS ON}
 
 {$WARNINGS OFF}
-procedure FreeAlignedMem(P: Pointer);
+procedure FreeAlignedMem(P: pointer);
 begin
   if (P <> nil) then
     FreeMem(PMemAlignHeader(PtrUInt(P) - SizeOf(TMemAlignHeader))^);
