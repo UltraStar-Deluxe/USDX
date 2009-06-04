@@ -34,10 +34,10 @@ interface
 {$I switches.inc}
 
 uses
-  TextGL,
-  UTexture,
   gl,
-  UMenuText;
+  TextGL,
+  UMenuText,
+  UTexture;
 
 type
   PSelectSlide = ^TSelectSlide;
@@ -64,10 +64,10 @@ type
       Lines: byte;
 
       //Arrows on/off
-      showArrows: Boolean;      //default is false
+      showArrows: boolean;      //default is false
 
       //whether to show one item or all that fit into the select
-      oneItemOnly:Boolean;      //default is false
+      oneItemOnly: boolean;      //default is false
 
       //Visibility
       Visible: boolean;
@@ -138,11 +138,12 @@ type
   end;
 
 implementation
+
 uses
-  UDrawTexture,
   math,
-  ULog,
-  SysUtils;
+  SysUtils,
+  UDrawTexture,
+  ULog;
 
 // ------------ Select
 constructor TSelectSlide.Create;
@@ -206,7 +207,7 @@ var
   var
     I: integer;
   begin
-    for I := low(TextOpt) to high(TextOpt) do
+    for I := Low(TextOpt) to High(TextOpt) do
     begin
       TextOpt[I].ColR := STDColR;
       TextOpt[I].ColG := STDColG;
@@ -214,7 +215,7 @@ var
       TextOpt[I].Int := STDInt;
     end;
 
-    if (integer(Sel) <= high(TextOpt)) then
+    if (integer(Sel) <= High(TextOpt)) then
     begin
       TextOpt[Sel].ColR := STColR;
       TextOpt[Sel].ColG := STColG;
@@ -227,7 +228,7 @@ begin
   SelectOptInt := Value;
   PData^ := Value;
 
-  if (Length(TextOpt)>0) AND (Length(TextOptT)>0) then
+  if (Length(TextOpt) > 0) and (Length(TextOptT) > 0) then
   begin
 
     //First option selected
@@ -238,7 +239,7 @@ begin
       Tex_SelectS_ArrowL.alpha := 0;
       Tex_SelectS_ArrowR.alpha := 1;
 
-      for SO := low(TextOpt) to high(TextOpt) do
+      for SO := Low(TextOpt) to High(TextOpt) do
       begin
         TextOpt[SO].Text := TextOptT[SO];
       end;
@@ -247,18 +248,18 @@ begin
     end
 
     //Last option selected
-    else if (Value >= high(TextOptT)) then
+    else if (Value >= High(TextOptT)) then
     begin
-      Value := high(TextOptT);
+      Value := High(TextOptT);
 
       Tex_SelectS_ArrowL.alpha := 1;
       Tex_SelectS_ArrowR.alpha := 0;
 
-      for SO := high(TextOpt) downto low (TextOpt) do
+      for SO := High(TextOpt) downto Low(TextOpt) do
       begin
-        TextOpt[SO].Text := TextOptT[high(TextOptT)-(Lines-SO-1)];
+        TextOpt[SO].Text := TextOptT[High(TextOptT) - (Lines - SO - 1)];
       end;
-      DoSelection(Lines-1);
+      DoSelection(Lines - 1);
     end
 
     //in between first and last
@@ -267,14 +268,14 @@ begin
       Tex_SelectS_ArrowL.alpha := 1;
       Tex_SelectS_ArrowR.alpha := 1;
 
-      HalfL := Ceil((Lines-1)/2);
-      HalfR := Lines-1-HalfL;
+      HalfL := Ceil((Lines - 1) / 2);
+      HalfR := Lines - 1 - HalfL;
 
       //Selected option is near to the left side
       if (Value <= HalfL) then
       begin
         //Change texts
-      	for SO := low (TextOpt) to high(TextOpt) do
+      	for SO := Low(TextOpt) to High(TextOpt) do
       	begin
       	  TextOpt[SO].Text := TextOptT[SO];
       	end;
@@ -283,25 +284,25 @@ begin
       end
 
       //Selected option is near to the right side
-      else if (Value > High(TextOptT)-HalfR) then
+      else if (Value > High(TextOptT) - HalfR) then
       begin
-      	HalfR := high(TextOptT) - Value;
-      	HalfL := Lines-1-HalfR;
+      	HalfR := High(TextOptT) - Value;
+      	HalfL := Lines - 1 - HalfR;
       	//Change texts
-       	for SO := high(TextOpt) downto low (TextOpt) do
+       	for SO := High(TextOpt) downto Low(TextOpt) do
        	begin
-	        TextOpt[SO].Text := TextOptT[high(TextOptT)-(Lines-SO-1)];
+	  TextOpt[SO].Text := TextOptT[High(TextOptT) - (Lines - SO - 1)];
       	end;
 
-    	  DoSelection (HalfL);
+    	DoSelection (HalfL);
       end
 
       else
       begin
       	//Change Texts
-       	for SO := low (TextOpt) to high(TextOpt) do
+       	for SO := Low(TextOpt) to High(TextOpt) do
       	begin
-	       TextOpt[SO].Text := TextOptT[Value - HalfL + SO];
+	  TextOpt[SO].Text := TextOptT[Value - HalfL + SO];
       	end;
 
         DoSelection(HalfL);
@@ -319,7 +320,7 @@ begin
     DrawTexture(Texture);
     DrawTexture(TextureSBG);
 
-    if (showArrows) then
+    if showArrows then
     begin
       DrawTexture(Tex_SelectS_ArrowL);
       DrawTexture(Tex_SelectS_ArrowR);
@@ -327,7 +328,7 @@ begin
 
     Text.Draw;
 
-    for SO := low(TextOpt) to high(TextOpt) do
+    for SO := Low(TextOpt) to High(TextOpt) do
       TextOpt[SO].Draw;
   end;
 end;
@@ -341,14 +342,14 @@ begin
   SetFontSize(Text.Size);
   maxlength := 0;
 
-  for I := low(TextOptT) to high (TextOptT) do
+  for I := Low(TextOptT) to High(TextOptT) do
   begin
     if (glTextWidth(TextOptT[I]) > maxlength) then
       maxlength := glTextWidth(TextOptT[I]);
   end;
 
 
-  if(oneItemOnly = false) then
+  if (oneItemOnly = false) then
   begin
     //show all items
     Lines := floor((TextureSBG.W-40) / (maxlength+7));
@@ -365,12 +366,12 @@ begin
   end;
 
   //Free old Space used by Texts
-  for I := low(TextOpt) to high(TextOpt) do
+  for I := Low(TextOpt) to High(TextOpt) do
     TextOpt[I].Free;
     
   setLength (TextOpt, Lines);
 
-  for I := low(TextOpt) to high(TextOpt) do
+  for I := Low(TextOpt) to High(TextOpt) do
   begin
     TextOpt[I] := TText.Create;
     TextOpt[I].Size := Text.Size;
@@ -385,7 +386,7 @@ begin
 
     //Generate Positions
     //TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * (I + 0.5);
-    if (I <> High(TextOpt)) OR (High(TextOpt) = 0) OR (Length(TextOptT) = Lines) then
+    if (I <> High(TextOpt)) or (High(TextOpt) = 0) or (Length(TextOptT) = Lines) then
       TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * I
     else
       TextOpt[I].X := TextureSBG.X + TextureSBG.W - maxlength;
@@ -393,10 +394,10 @@ begin
     TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H - Text.Size) / 2;
 
     //Better Look with 2 Options
-    if (Lines=2) AND (Length(TextOptT)= 2) then
+    if (Lines = 2) and (Length(TextOptT) = 2) then
       TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(TextOptT[1])) * I;
 
-    if (Lines=1) then
+    if (Lines = 1) then
     begin
       TextOpt[I].Align := 1; //center text
       TextOpt[I].X := TextureSBG.X + (TextureSBG.W / 2);

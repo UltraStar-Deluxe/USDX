@@ -61,20 +61,20 @@ procedure CountSkipTime;
 procedure CountMidTime;
 
 var
-  USTime      : TTime;
+  USTime:       TTime;
   VideoBGTimer: TRelativeTimer;
 
-  TimeNew     : int64;
-  TimeOld     : int64;
-  TimeSkip    : real;
-  TimeMid     : real;
-  TimeMidTemp : int64;
+  TimeNew:     int64;
+  TimeOld:     int64;
+  TimeSkip:    real;
+  TimeMid:     real;
+  TimeMidTemp: int64;
 
 implementation
 
 uses
   sdl,
-  ucommon;
+  UCommon;
   
 const
   cSDLCorrectionRatio = 1000;
@@ -91,14 +91,14 @@ http://www.gamedev.net/community/forums/topic.asp?topic_id=466145&whichpage=1%EE
 
 procedure CountSkipTimeSet;
 begin
-  TimeNew     := SDL_GetTicks();
+  TimeNew := SDL_GetTicks();
 end;
 
 procedure CountSkipTime;
 begin
-  TimeOld     := TimeNew;
-  TimeNew     := SDL_GetTicks();
-  TimeSkip    := (TimeNew-TimeOld) / cSDLCorrectionRatio;
+  TimeOld  := TimeNew;
+  TimeNew  := SDL_GetTicks();
+  TimeSkip := (TimeNew-TimeOld) / cSDLCorrectionRatio;
 end;
 
 procedure CountMidTime;
@@ -127,10 +127,10 @@ end;
  **}
 
 (*
- * Creates a new timer.
- * If TriggerMode is false (default), the timer
+ * creates a new timer.
+ * if triggermode is false (default), the timer
  * will immediately begin with counting.
- * If TriggerMode is true, it will wait until Get/SetTime() or Pause() is called
+ * if triggermode is true, it will wait until get/settime() or pause() is called
  * for the first time.
  *)
 constructor TRelativeTimer.Create(TriggerMode: boolean);

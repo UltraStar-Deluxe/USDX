@@ -57,7 +57,7 @@ type
 
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
+      function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure onShow; override;
       function Draw: boolean; override;
   end;
@@ -70,10 +70,12 @@ uses
   UIni,
   UNote;
 
-function TScreenTop5.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenTop5.ParseInput(PressedKey: cardinal;
+                                CharCode: WideChar;
+				PressedDown: boolean): boolean;
 begin
   Result := true;
-  if (PressedDown) then
+  if PressedDown then
   begin
     // check normal keys
     case WideCharUpperCase(CharCode)[1] of
@@ -104,13 +106,14 @@ begin
   end;
 end;
 
-function TScreenTop5.ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean;
+function TScreenTop5.ParseMouse(MouseButton: integer;
+                                BtnDown: boolean;
+				X, Y: integer): boolean;
 begin
-  Result := True;
-  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then begin
+  Result := true;
+  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
     //left-click anywhere sends return
     ParseInput(SDLK_RETURN, #0, true);
-  end;
 end;
 
 constructor TScreenTop5.Create;
@@ -121,18 +124,16 @@ begin
 
   LoadFromTheme(Theme.Top5);
 
-  TextLevel := AddText(Theme.Top5.TextLevel);
+  TextLevel       := AddText(Theme.Top5.TextLevel);
   TextArtistTitle := AddText(Theme.Top5.TextArtistTitle);
 
   for I := 0 to 4 do
-    StaticNumber[I+1] := AddStatic( Theme.Top5.StaticNumber[I] );
-
-  for I := 0 to 4 do
-    TextNumber[I+1] := AddText(Theme.Top5.TextNumber[I]);
-  for I := 0 to 4 do
-    TextName[I+1] := AddText(Theme.Top5.TextName[I]);
-  for I := 0 to 4 do
-    TextScore[I+1] := AddText(Theme.Top5.TextScore[I]);
+  begin
+    StaticNumber[I+1] := AddStatic(Theme.Top5.StaticNumber[I]);
+    TextNumber[I+1]   := AddText  (Theme.Top5.TextNumber[I]);
+    TextName[I+1]     := AddText  (Theme.Top5.TextName[I]);
+    TextScore[I+1]    := AddText  (Theme.Top5.TextScore[I]);
+  end;
 
 end;
 
@@ -169,7 +170,7 @@ begin
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Ini.Difficulty, I-1].Score);
   end;
 
-  for I := Length(CurrentSong.Score[Ini.Difficulty])+1 to 5 do
+  for I := Length(CurrentSong.Score[Ini.Difficulty]) + 1 to 5 do
   begin
     Static[StaticNumber[I]].Visible := false;
     Text[TextNumber[I]].Visible := false;

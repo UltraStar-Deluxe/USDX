@@ -359,9 +359,11 @@ begin
     CountMidTime;
 
     Delay := Floor(1000 / MAX_FPS - 1000 * TimeMid);
+    Log.LogError ('MainLoop', 'Delay: ' + intToStr(Delay));
 
     if Delay >= 1 then
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
+    Log.LogError ('MainLoop', 'Delay: ok ' + intToStr(Delay));
 
     CountSkipTime;
 
@@ -386,15 +388,15 @@ begin
   begin
     Display.Fade := 0;
     Display.NextScreenWithCheck := nil;
-    Display.CheckOK := True;
+    Display.CheckOK := true;
   end;
 end;
 
 procedure CheckEvents;
 var
-  Event: TSDL_event;
-  mouseDown:  Boolean;
-  mouseBtn: Integer;
+  Event:     TSDL_event;
+  mouseDown: boolean;
+  mouseBtn:  integer;
 begin
   if Assigned(Display.NextScreen) then
     Exit;
@@ -416,18 +418,18 @@ begin
           case Event.type_ of
             SDL_MOUSEMOTION:
             begin
-              mouseDown := False;
-              mouseBtn := 0;
+              mouseDown := false;
+              mouseBtn  := 0;
             end;
             SDL_MOUSEBUTTONDOWN:
             begin
-              mouseDown := True;
-              mouseBtn := Event.button.button;
+              mouseDown := true;
+              mouseBtn  := Event.button.button;
             end;
             SDL_MOUSEBUTTONUP:
             begin
-              mouseDown := False;
-              mouseBtn := Event.button.button;
+              mouseDown := false;
+              mouseBtn  := Event.button.button;
             end;
           end;
 

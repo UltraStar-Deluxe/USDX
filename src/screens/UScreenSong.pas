@@ -34,22 +34,22 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  SDL,
-  UMusic,
-  UFiles,
-  UTime,
-  UDisplay,
-  USongs,
   SysUtils,
+  SDL,
   UCommon,
-  ULog,
-  UThemes,
-  UTexture,
-  ULanguage,
-  USong,
+  UDisplay,
+  UFiles,
   UIni,
-  UMenuEqualizer;
+  ULanguage,
+  ULog,
+  UMenu,
+  UMenuEqualizer,
+  UMusic,
+  USong,
+  USongs,
+  UTexture,
+  UThemes,
+  UTime;
 
 type
   TScreenSong = class(TMenu)
@@ -119,7 +119,7 @@ type
       procedure SetScroll5;
       procedure SetScroll6;
       function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
+      function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function Draw: boolean; override;
       procedure GenerateThumbnails();
       procedure onShow; override;
@@ -738,26 +738,24 @@ begin
   end; // if (PressedDown)
 end;
 
-function TScreenSong.ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean;
+function TScreenSong.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 begin
-  Result := True;
+  Result := true;
 
-  if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then begin
+  if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then
     //if RightMbESC is set, send ESC keypress
-    Result:=ParseInput(SDLK_ESCAPE, #0, True);
-  end;
+    Result:=ParseInput(SDLK_ESCAPE, #0, true);
 
   //song scrolling with mousewheel
-  if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then begin
+  if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then
     ParseInput(SDLK_RIGHT, #0, true);
-  end;
-  if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then begin
+
+  if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then
     ParseInput(SDLK_LEFT, #0, true);
-  end;
+
   //LMB anywhere starts
-  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then begin
+  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
     ParseInput(SDLK_RETURN, #0, true);
-  end;
 end;
 
 constructor TScreenSong.Create;

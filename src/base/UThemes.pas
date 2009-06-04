@@ -42,13 +42,13 @@ uses
 
 type
   TRGB = record
-    R:    single;
-    G:    single;
-    B:    single;
+    R: single;
+    G: single;
+    B: single;
   end;
 
   TRGBA = record
-    R, G, B, A: Double;
+    R, G, B, A: double;
   end;
 
 type

@@ -530,7 +530,7 @@ var
     Result := 0;
     bPlayerCount := 1 shl (bPlayerCount - 1);
 
-    for I := 0 to PositionCount-1 do
+    for I := 0 to PositionCount - 1 do
     begin
       if ((Positions[I].PlayerCount and bPlayerCount) <> 0) then
         Inc(Result);
