@@ -750,7 +750,10 @@ begin
               aPlayers[PopUp.Player].ScoreDisplayed := Players[PopUp.Player].ScoreDisplayed + ScoreToAdd;
 
               // change bar positions
-              aPlayers[PopUp.Player].RBTarget := aPlayers[PopUp.Player].RBTarget + ScoreToAdd/PopUp.ScoreDiff * (PopUp.Rating / 20 - 0.26);
+	      if PopUp.ScoreDiff = 0 then
+		Log.LogError('TSingScores.DrawPopUp', 'PopUp.ScoreDiff is 0 and we want to divide by it. No idea how this happens.')
+	      else
+                aPlayers[PopUp.Player].RBTarget := aPlayers[PopUp.Player].RBTarget + ScoreToAdd/PopUp.ScoreDiff * (PopUp.Rating / 20 - 0.26);
               if (aPlayers[PopUp.Player].RBTarget > 1) then
                 aPlayers[PopUp.Player].RBTarget := 1
               else if (aPlayers[PopUp.Player].RBTarget < 0) then
