@@ -446,12 +446,12 @@ endef
 .PHONY: macosx-dmg
 macosx-dmg: macosx-standalone-app
 	$(RM) UltraStarDeluxe.dmg
-	$(HDIUTIL) create -type SPARSE -size 100m -fs HFS+ -volname UltraStarDeluxe -ov -attach UltraStarDeluxe.sparseimage
+	$(HDIUTIL)  -verbose create -type SPARSE -size 100m -fs HFS+ -volname UltraStarDeluxe -ov -attach UltraStarDeluxe.sparseimage
 	/bin/cp -R UltraStarDeluxe.app /Volumes/UltraStarDeluxe
 #	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
 #	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
-	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
-	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
+	$(HDIUTIL)  -verbose detach /Volumes/UltraStarDeluxe
+	$(HDIUTIL)  -verbose convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
 
 # remove Mac OS X apllication bundle and disk image
