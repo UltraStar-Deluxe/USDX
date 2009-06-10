@@ -256,13 +256,13 @@ function av_url_read_seek(h: PURLContext; stream_index: cint;
   cdecl; external av__format;
 {$IFEND}
 
-{
+(**
 var
 {$IF LIBAVFORMAT_VERSION_MAJOR < 53}
   first_protocol: PURLProtocol; external av__format;
 {$IFEND}
   url_interrupt_cb: PURLInterruptCB; external av__format;
-}
+**)
 
 {
 * If protocol is NULL, returns the first registered protocol,
@@ -274,7 +274,7 @@ function av_protocol_next(p: PURLProtocol): PURLProtocol;
   cdecl; external av__format;
 {$IFEND}
 
-{$IF LIBAVFORMAT_VERSION < = 52028000} // 52.28.0
+{$IF LIBAVFORMAT_VERSION <= 52028000} // 52.28.0
 (**
  * @deprecated Use av_register_protocol() instead.
  *)
