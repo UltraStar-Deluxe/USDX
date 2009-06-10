@@ -27,7 +27,12 @@
 
 (*
  * Conversion of libavformat/avio.h
- * revision 16100, Sat Dec 13 13:39:13 2008 UTC 
+ * unbuffered I/O operations
+ * revision 16100, Sat Dec 13 13:39:13 2008 UTC
+ * update Tue, Jun 10 01:00:00 2009 UTC
+ *
+ * @warning This file has to be considered an internal but installed
+ * header, so it should not be directly included in your projects.
  *)
 
 unit avio;
@@ -103,6 +108,7 @@ type
     name: PAnsiChar;
     url_open: function (h: PURLContext; filename: {const} PAnsiChar; flags: cint): cint; cdecl;
     url_read: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+    url_read_complete: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
     url_write: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
     url_seek: function (h: PURLContext; pos: cint64; whence: cint): cint64; cdecl;
     url_close: function (h: PURLContext): cint; cdecl;
@@ -180,6 +186,16 @@ function url_exist(filename: {const} PAnsiChar): cint;
   cdecl; external av__format;
 function url_filesize (h: PURLContext): cint64;
   cdecl; external av__format;
+{
+ * Return the file descriptor associated with this URL. For RTP, this
+ * will return only the RTP file descriptor, not the RTCP file descriptor.
+ * To get both, use rtp_get_file_handles().
+ *
+ * @return the file descriptor associated with this URL, or <0 on error.
+}
+(* not implemented *)
+function url_get_file_handle(h: PURLContext): cint;
+  cdecl; external av__format;
 
 (**
  * Return the maximum packet size associated to packetized file
@@ -242,17 +258,32 @@ function av_url_read_seek(h: PURLContext; stream_index: cint;
 
 {
 var
+{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
   first_protocol: PURLProtocol; external av__format;
+{$IFEND}
   url_interrupt_cb: PURLInterruptCB; external av__format;
 }
 
+{
+* If protocol is NULL, returns the first registered protocol,
+* if protocol is non-NULL, returns the next registered protocol after protocol,
+* or NULL if protocol is the last one.
+}
 {$IF LIBAVFORMAT_VERSION >= 52002000} // 52.2.0
 function av_protocol_next(p: PURLProtocol): PURLProtocol;
   cdecl; external av__format;
 {$IFEND}
 
+{$IF LIBAVFORMAT_VERSION < = 52028000} // 52.28.0
+(**
+ * @deprecated Use av_register_protocol() instead.
+ *)
 function register_protocol (protocol: PURLProtocol): cint;
   cdecl; external av__format;
+{$ELSE}
+function av_register_protocol (protocol: PURLProtocol): cint;
+  cdecl; external av__format;
+{$IFEND}
 
 type
   TReadWriteFunc = function (opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
@@ -521,7 +552,7 @@ function ff_crc04C11DB7_update(checksum: culong; buf: {const} PByteArray;
 {$IFEND}
 function get_checksum(s: PByteIOContext): culong;
   cdecl; external av__format;
-procedure init_checksum(s: PByteIOContext;
+procedure init_gsum(s: PByteIOContext;
                         update_checksum: pointer;
                         checksum: culong);
   cdecl; external av__format;
@@ -531,9 +562,11 @@ function udp_set_remote_url(h: PURLContext; uri: {const} PAnsiChar): cint;
   cdecl; external av__format;
 function udp_get_local_port(h: PURLContext): cint;
   cdecl; external av__format;
+{$IF LIBAVFORMAT_VERSION_MAJOR <= 52}
 function udp_get_file_handle(h: PURLContext): cint;
   cdecl; external av__format;
-
+{$IFEND}
+  
 implementation
 
 function url_is_streamed(s: PByteIOContext): cint;
