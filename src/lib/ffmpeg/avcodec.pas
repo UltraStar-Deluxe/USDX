@@ -782,6 +782,107 @@ const
   FF_BUFFER_HINTS_PRESERVE = $04; // User must not alter buffer content
   FF_BUFFER_HINTS_REUSABLE = $08; // Codec will reuse the buffer (update)
 
+{$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
+type
+(**
+ * AVHWAccel.
+ *)
+  PAVHWAccel = ^TAVHWAccel;
+  TAVHWAccel = record
+    (**
+     * Name of the hardware accelerated codec.
+     * The name is globally unique among encoders and among decoders (but an
+     * encoder and a decoder can share the same name).
+     *)
+    name: PAnsiChar;
+
+    (**
+     * Type of codec implemented by the hardware accelerator.
+     *
+     * See CODEC_TYPE_xxx
+     *)
+    type_: TCodecType;
+
+    (**
+     * Codec implemented by the hardware accelerator.
+     *
+     * See CODEC_ID_xxx
+     *)
+    id: TCodecID;
+
+    (**
+     * Supported pixel format.
+     *
+     * Only hardware accelerated formats are supported here.
+     *)
+    pix_fmt: {const} PAVPixelFormat; 
+
+    (**
+     * Hardware accelerated codec capabilities.
+     * see FF_HWACCEL_CODEC_CAP_*
+     *)
+    capabilities: cint;
+
+    next: PAVCodec;
+
+    (**
+     * Called at the beginning of each frame or field picture.
+     *
+     * Meaningful frame information (codec specific) is guaranteed to
+     * be parsed at this point. This function is mandatory.
+     *
+     * Note that buf can be NULL along with buf_size set to 0.
+     * Otherwise, this means the whole frame is available at this point.
+     *
+     * @param avctx the codec context
+     * @param buf the frame data buffer base
+     * @param buf_size the size of the frame in bytes
+     * @return zero if successful, a negative value otherwise
+     *)
+    start_frame: function (avctx:    PAVCodecContext; 
+                           buf:      PByteArray; 
+                           buf_size: cint): cint; cdecl;
+
+    (**
+     * Callback for each slice.
+     *
+     * Meaningful slice information (codec specific) is guaranteed to
+     * be parsed at this point. This function is mandatory.
+     *
+     * @param avctx the codec context
+     * @param buf the slice data buffer base
+     * @param buf_size the size of the slice in bytes
+     * @return zero if successful, a negative value otherwise
+     *)
+    decode_slice: function (avctx:    PAVCodecContext;
+                            buf:      PByteArray; 
+                            buf_size: cint): cint; cdecl;
+
+    (**
+     * Called at the end of each frame or field picture.
+     *
+     * The whole picture is parsed at this point and can now be sent
+     * to the hardware accelerator. This function is mandatory.
+     *
+     * @param avctx the codec context
+     * @return zero if successful, a negative value otherwise
+     *)
+    end_frame: function (avctx: PAVCodecContext): cint; cdecl;
+        
+{$IF LIBAVCODEC_VERSION >= 52021000} // >= 52.21.0
+    (**
+     * Size of HW accelerator private data.
+     *
+     * Private data is allocated with av_mallocz() before
+     * AVCodecContext.get_buffer() and deallocated after
+     * AVCodecContext.release_buffer().
+     *)
+    priv_data_size: cint;
+{$IFEND}
+        
+  end;
+{$IFEND}
+
 type
   {**
    * Audio Video Frame.
@@ -2796,107 +2897,6 @@ type
     channel_layouts: {const} PCint64;         ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
     {$IFEND}
   end;
-
-{$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
-type
-(**
- * AVHWAccel.
- *)
-  PAVHWAccel = ^TAVHWAccel;
-  TAVHWAccel = record
-    (**
-     * Name of the hardware accelerated codec.
-     * The name is globally unique among encoders and among decoders (but an
-     * encoder and a decoder can share the same name).
-     *)
-    name: PAnsiChar;
-
-    (**
-     * Type of codec implemented by the hardware accelerator.
-     *
-     * See CODEC_TYPE_xxx
-     *)
-    type_: TCodecType;
-
-    (**
-     * Codec implemented by the hardware accelerator.
-     *
-     * See CODEC_ID_xxx
-     *)
-    id: TCodecID;
-
-    (**
-     * Supported pixel format.
-     *
-     * Only hardware accelerated formats are supported here.
-     *)
-    pix_fmt: {const} PAVPixelFormat; 
-
-    (**
-     * Hardware accelerated codec capabilities.
-     * see FF_HWACCEL_CODEC_CAP_*
-     *)
-    capabilities: cint;
-
-    next: PAVCodec;
-
-    (**
-     * Called at the beginning of each frame or field picture.
-     *
-     * Meaningful frame information (codec specific) is guaranteed to
-     * be parsed at this point. This function is mandatory.
-     *
-     * Note that buf can be NULL along with buf_size set to 0.
-     * Otherwise, this means the whole frame is available at this point.
-     *
-     * @param avctx the codec context
-     * @param buf the frame data buffer base
-     * @param buf_size the size of the frame in bytes
-     * @return zero if successful, a negative value otherwise
-     *)
-    start_frame: function (avctx:    PAVCodecContext; 
-                           buf:      PByteArray; 
-                           buf_size: cint): cint; cdecl;
-
-    (**
-     * Callback for each slice.
-     *
-     * Meaningful slice information (codec specific) is guaranteed to
-     * be parsed at this point. This function is mandatory.
-     *
-     * @param avctx the codec context
-     * @param buf the slice data buffer base
-     * @param buf_size the size of the slice in bytes
-     * @return zero if successful, a negative value otherwise
-     *)
-    decode_slice: function (avctx:    PAVCodecContext;
-                            buf:      PByteArray; 
-                            buf_size: cint): cint; cdecl;
-
-    (**
-     * Called at the end of each frame or field picture.
-     *
-     * The whole picture is parsed at this point and can now be sent
-     * to the hardware accelerator. This function is mandatory.
-     *
-     * @param avctx the codec context
-     * @return zero if successful, a negative value otherwise
-     *)
-    end_frame: function (avctx: PAVCodecContext): cint; cdecl;
-        
-{$IF LIBAVCODEC_VERSION >= 52021000} // >= 52.21.0
-    (**
-     * Size of HW accelerator private data.
-     *
-     * Private data is allocated with av_mallocz() before
-     * AVCodecContext.get_buffer() and deallocated after
-     * AVCodecContext.release_buffer().
-     *)
-    priv_data_size: cint;
-{$IFEND}
-        
-  end;
-{$IFEND}
 
 (**
  * four components are given, that's all.
