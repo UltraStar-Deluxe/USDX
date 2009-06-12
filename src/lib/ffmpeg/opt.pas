@@ -28,6 +28,9 @@
 (*
  * Conversion of libavcodec/opt.h
  * revision 16912, Sun Feb 1 02:00:19 2009 UTC 
+ *
+ * update, MiSchi, no code change
+ * Fri Jun 12 2009 21:50:00 UTC
  *)
 
 unit opt;
@@ -109,8 +112,8 @@ type
 
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
 (**
- * Looks for an option in \p obj. Looks only for the options which
- * have the flags set as specified in \p mask and \p flags (that is,
+ * Looks for an option in obj. Looks only for the options which
+ * have the flags set as specified in mask and flags (that is,
  * for which it is the case that opt->flags & mask == flags).
  *
  * @param[in] obj a pointer to a struct whose first element is a
@@ -135,7 +138,7 @@ function av_set_string(obj: pointer; name: {const} PAnsiChar; val: {const} PAnsi
 {$IF LIBAVCODEC_VERSION >= 51059000} // 51.59.0
 (**
  * @return a pointer to the AVOption corresponding to the field set or
- * NULL if no matching AVOption exists, or if the value \p val is not
+ * NULL if no matching AVOption exists, or if the value val is not
  * valid
  * @see av_set_string3()
  *)
@@ -167,8 +170,11 @@ function av_set_string2(obj: Pointer; name: {const} PAnsiChar; val: {const} PAns
  * @param alloc when 1 then the old value will be av_freed() and the
  *                     new av_strduped()
  *              when 0 then no av_free() nor av_strdup() will be used
- * @return 0 if the value has been set, an AVERROR* error code if no
- * matching option exists, or if the value \p val is not valid
+ * @return 0 if the value has been set, or an AVERROR code in case of
+ * error:
+ * AVERROR(ENOENT) if no matching option exists
+ * AVERROR(ERANGE) if the value is out of range
+ * AVERROR(EINVAL) if the value is not valid
  *)
 function av_set_string3(obj: Pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; alloc: cint; out o_out: {const} PAVOption): cint;
   cdecl; external av__codec;
