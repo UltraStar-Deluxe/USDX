@@ -28,6 +28,9 @@
 (*
  * Conversion of libavutil/rational.h
  * revision 16912, Sun Feb 1 02:00:19 2009 UTC 
+ *
+ * update, MiSchi, no code change
+ * Fri Jun 12 2009 22:20:00 UTC
  *)
 
 unit rational;
@@ -135,22 +138,20 @@ function av_d2q(d: cdouble; max: cint): TAVRational;
   cdecl; external av__util; {av_const}
 
 {$IF LIBAVUTIL_VERSION >= 49011000} // 49.11.0
-
 (**
- * @return 1 if \q1 is nearer to \p q than \p q2, -1 if \p q2 is nearer
- * than \p q1, 0 if they have the same distance.
+ * @return 1 if q1 is nearer to q than q2, -1 if q2 is nearer
+ * than q1, 0 if they have the same distance.
  *)
 function av_nearer_q(q, q1, q2: TAVRational): cint;
   cdecl; external av__util;
 
 (**
- * Finds the nearest value in \p q_list to \p q.
+ * Finds the nearest value in q_list to q.
  * @param q_list an array of rationals terminated by {0, 0}
  * @return the index of the nearest value found in the array
  *)
 function av_find_nearest_q_idx(q: TAVRational; q_list: {const} PAVRationalArray): cint;
   cdecl; external av__util;
-
 {$IFEND}
 
 implementation
