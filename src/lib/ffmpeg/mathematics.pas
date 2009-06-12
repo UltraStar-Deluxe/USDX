@@ -27,6 +27,9 @@
 (*
  * Conversion of libavutil/mathematics.h
  * revision 16844, Wed Jan 28 08:50:10 2009 UTC 
+ *
+ * update, MiSchi, no code change
+ * Fri Jun 12 2009 21:50:00 UTC
  *)
 
 unit mathematics;
@@ -55,11 +58,11 @@ const
 
 type
   TAVRounding = (
-    AV_ROUND_ZERO     = 0, ///< Round toward zero
-    AV_ROUND_INF      = 1, ///< Round away from zero
-    AV_ROUND_DOWN     = 2, ///< Round toward -infinity
-    AV_ROUND_UP       = 3, ///< Round toward +infinity
-    AV_ROUND_NEAR_INF = 5  ///< Round to nearest and halfway cases away from zero
+    AV_ROUND_ZERO     = 0, ///< Round toward zero.
+    AV_ROUND_INF      = 1, ///< Round away from zero.
+    AV_ROUND_DOWN     = 2, ///< Round toward -infinity.
+    AV_ROUND_UP       = 3, ///< Round toward +infinity.
+    AV_ROUND_NEAR_INF = 5  ///< Round to nearest and halfway cases away from zero.
   );
 
 {$IF LIBAVUTIL_VERSION >= 49013000} // 49.13.0
@@ -90,4 +93,3 @@ function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
 implementation
 
 end.
- 
