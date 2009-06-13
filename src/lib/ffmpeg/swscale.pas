@@ -249,8 +249,8 @@ procedure sws_subVec(a: PSwsVector; b: PSwsVector);
 procedure sws_shiftVec(a: PSwsVector; shift: cint);
   cdecl; external sw__scale;
 
-// Allocates and returns a clone of the vector \p a, that is a vector
-// with the same coefficients as \p a.
+// Allocates and returns a clone of the vector a, that is a vector
+// with the same coefficients as a.
 function sws_cloneVec(a: PSwsVector): PSwsVector;
   cdecl; external sw__scale;
 
@@ -262,10 +262,11 @@ procedure sws_printVec(a: PSwsVector);
 {$IFEND}
 
 {$IF LIBSWSCALE_VERSION_MINOR >= 7}
-// Prints with av_log() a textual representation of the vector \p a
-// if \p log_level <= av_log_level.
-procedure sws_printVec2(a: PSwsVector,
-               log_ctx: PAVClass, log_level: cint);   // Hint: PAVClass needs to be done in avutil as in log.h
+// Prints with av_log() a textual representation of the vector a
+// if log_level <= av_log_level.
+procedure sws_printVec2(a:         PSwsVector;
+                        log_ctx:   PAVClass;
+			log_level: cint);   // Hint: PAVClass needs to be done in avutil as in log.h
   cdecl; external sw__scale;
 {$IFEND}
 
@@ -279,16 +280,16 @@ procedure sws_freeFilter(filter: PSwsFilter);
   cdecl; external sw__scale;
 
 {
-Checks if \p context can be reused, otherwise reallocates a new
+Checks if context can be reused, otherwise reallocates a new
 one.
 
-If \p context is NULL, just calls sws_getContext() to get a new
+If context is NULL, just calls sws_getContext() to get a new
 context. Otherwise, checks if the parameters are the ones already
-saved in \p context. If that is the case, returns the current
-context. Otherwise, frees \p context and gets a new context with
+saved in context. If that is the case, returns the current
+context. Otherwise, frees context and gets a new context with
 the new parameters.
 
-Be warned that \p srcFilter and \p dstFilter are not checked, they
+Be warned that srcFilter and dstFilter are not checked, they
 are assumed to remain the same.
 }
 function sws_getCachedContext(context: PSwsContext;
