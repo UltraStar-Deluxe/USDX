@@ -782,16 +782,311 @@ const
   FF_BUFFER_HINTS_PRESERVE = $04; // User must not alter buffer content
   FF_BUFFER_HINTS_REUSABLE = $08; // Codec will reuse the buffer (update)
 
-{$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
+const
+  {$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
+  DEFAULT_FRAME_RATE_BASE = 1001000;
+  {$IFEND}
+
+  FF_ASPECT_EXTENDED = 15;
+
+  FF_RC_STRATEGY_XVID = 1;
+
+  FF_BUG_AUTODETECT       = 1;  ///< autodetection
+  FF_BUG_OLD_MSMPEG4      = 2;
+  FF_BUG_XVID_ILACE       = 4;
+  FF_BUG_UMP4             = 8;
+  FF_BUG_NO_PADDING       = 16;
+  FF_BUG_AMV              = 32;
+  FF_BUG_AC_VLC           = 0;  ///< will be removed, libavcodec can now handle these non compliant files by default
+  FF_BUG_QPEL_CHROMA      = 64;
+  FF_BUG_STD_QPEL         = 128;
+  FF_BUG_QPEL_CHROMA2     = 256;
+  FF_BUG_DIRECT_BLOCKSIZE = 512;
+  FF_BUG_EDGE             = 1024;
+  FF_BUG_HPEL_CHROMA      = 2048;
+  FF_BUG_DC_CLIP          = 4096;
+  FF_BUG_MS               = 8192; ///< workaround various bugs in microsofts broken decoders
+  //FF_BUG_FAKE_SCALABILITY = 16 //Autodetection should work 100%.
+
+  FF_COMPLIANCE_VERY_STRICT   =  2; ///< strictly conform to a older more strict version of the spec or reference software
+  FF_COMPLIANCE_STRICT        =  1; ///< strictly conform to all the things in the spec no matter what consequences
+  FF_COMPLIANCE_NORMAL        =  0;
+  FF_COMPLIANCE_INOFFICIAL    = -1; ///< allow inofficial extensions
+  FF_COMPLIANCE_EXPERIMENTAL  = -2; ///< allow non standarized experimental things
+
+  FF_ER_CAREFUL         = 1;
+  FF_ER_COMPLIANT       = 2;
+  FF_ER_AGGRESSIVE      = 3;
+  FF_ER_VERY_AGGRESSIVE = 4;
+
+  FF_DCT_AUTO    = 0;
+  FF_DCT_FASTINT = 1;
+  FF_DCT_INT     = 2;
+  FF_DCT_MMX     = 3;
+  FF_DCT_MLIB    = 4;
+  FF_DCT_ALTIVEC = 5;
+  FF_DCT_FAAN    = 6;
+
+  FF_IDCT_AUTO         = 0;
+  FF_IDCT_INT          = 1;
+  FF_IDCT_SIMPLE       = 2;
+  FF_IDCT_SIMPLEMMX    = 3;
+  FF_IDCT_LIBMPEG2MMX  = 4;
+  FF_IDCT_PS2          = 5;
+  FF_IDCT_MLIB         = 6;
+  FF_IDCT_ARM          = 7;
+  FF_IDCT_ALTIVEC      = 8;
+  FF_IDCT_SH4          = 9;
+  FF_IDCT_SIMPLEARM    = 10;
+  FF_IDCT_H264         = 11;
+  FF_IDCT_VP3          = 12;
+  FF_IDCT_IPP          = 13;
+  FF_IDCT_XVIDMMX      = 14;
+  FF_IDCT_CAVS         = 15;
+  FF_IDCT_SIMPLEARMV5TE= 16;
+  FF_IDCT_SIMPLEARMV6  = 17;
+  FF_IDCT_SIMPLEVIS    = 18;
+  FF_IDCT_WMV2         = 19;
+  FF_IDCT_FAAN         = 20;
+  FF_IDCT_EA           = 21;
+  FF_IDCT_SIMPLENEON   = 22;
+  FF_IDCT_SIMPLEALPHA  = 23;
+
+  FF_EC_GUESS_MVS   = 1;
+  FF_EC_DEBLOCK     = 2;
+
+  FF_MM_FORCE       = $80000000; (* force usage of selected flags (OR) *)
+  (* lower 16 bits - CPU features *)
+  FF_MM_MMX         = $0001; ///< standard MMX
+  FF_MM_3DNOW       = $0004; ///< AMD 3DNOW
+  {$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
+  FF_MM_MMXEXT      = $0002; ///< SSE integer functions or AMD MMX ext
+  {$IFEND}
+  {$IF LIBAVCODEC_VERSION >= 52024000} // >= 52.24.0
+  FF_MM_MMX2        = $0002; ///< SSE integer functions or AMD MMX ext
+  {$IFEND}
+  FF_MM_SSE         = $0008; ///< SSE functions
+  FF_MM_SSE2        = $0010; ///< PIV SSE2 functions
+  FF_MM_3DNOWEXT    = $0020; ///< AMD 3DNowExt
+  FF_MM_SSE3        = $0040; ///< Prescott SSE3 functions
+  FF_MM_SSSE3       = $0080; ///< Conroe SSSE3 functions
+  {$IF LIBAVCODEC_VERSION >= 52022003} // >= 52.22.3
+  FF_MM_SSE4        = $0100; ///< Penryn SSE4.1 functions
+  FF_MM_SSE42       = $0200; ///< Nehalem SSE4.2 functions
+  {$IFEND}
+  FF_MM_IWMMXT      = $0100; ///< XScale IWMMXT
+  FF_MM_ALTIVEC     = $0001; ///< standard AltiVec
+
+  FF_PRED_LEFT   = 0;
+  FF_PRED_PLANE  = 1;
+  FF_PRED_MEDIAN = 2;
+
+  FF_DEBUG_PICT_INFO    = 1;
+  FF_DEBUG_RC           = 2;
+  FF_DEBUG_BITSTREAM    = 4;
+  FF_DEBUG_MB_TYPE      = 8;
+  FF_DEBUG_QP           = 16;
+  FF_DEBUG_MV           = 32;
+  FF_DEBUG_DCT_COEFF    = $00000040;
+  FF_DEBUG_SKIP         = $00000080;
+  FF_DEBUG_STARTCODE    = $00000100;
+  FF_DEBUG_PTS          = $00000200;
+  FF_DEBUG_ER           = $00000400;
+  FF_DEBUG_MMCO         = $00000800;
+  FF_DEBUG_BUGS         = $00001000;
+  FF_DEBUG_VIS_QP       = $00002000;
+  FF_DEBUG_VIS_MB_TYPE  = $00004000;
+  FF_DEBUG_BUFFERS      = $00008000;
+
+  FF_DEBUG_VIS_MV_P_FOR  = $00000001; //visualize forward predicted MVs of P frames
+  FF_DEBUG_VIS_MV_B_FOR  = $00000002; //visualize forward predicted MVs of B frames
+  FF_DEBUG_VIS_MV_B_BACK = $00000004; //visualize backward predicted MVs of B frames
+
+  FF_CMP_SAD    = 0;
+  FF_CMP_SSE    = 1;
+  FF_CMP_SATD   = 2;
+  FF_CMP_DCT    = 3;
+  FF_CMP_PSNR   = 4;
+  FF_CMP_BIT    = 5;
+  FF_CMP_RD     = 6;
+  FF_CMP_ZERO   = 7;
+  FF_CMP_VSAD   = 8;
+  FF_CMP_VSSE   = 9;
+  FF_CMP_NSSE   = 10;
+  FF_CMP_W53    = 11;
+  FF_CMP_W97    = 12;
+  FF_CMP_DCTMAX = 13;
+  FF_CMP_DCT264 = 14;
+  FF_CMP_CHROMA = 256;
+
+  FF_DTG_AFD_SAME         = 8;
+  FF_DTG_AFD_4_3          = 9;
+  FF_DTG_AFD_16_9         = 10;
+  FF_DTG_AFD_14_9         = 11;
+  FF_DTG_AFD_4_3_SP_14_9  = 13;
+  FF_DTG_AFD_16_9_SP_14_9 = 14;
+  FF_DTG_AFD_SP_4_3       = 15;
+
+  FF_DEFAULT_QUANT_BIAS   = 999999;
+
+  FF_LAMBDA_SHIFT   = 7;
+  FF_LAMBDA_SCALE   = (1 shl FF_LAMBDA_SHIFT);
+  FF_QP2LAMBDA      = 118; ///< factor to convert from H.263 QP to lambda
+  FF_LAMBDA_MAX     = (256 * 128 - 1);
+
+  FF_QUALITY_SCALE  = FF_LAMBDA_SCALE; //FIXME maybe remove
+
+  FF_CODER_TYPE_VLC     = 0;
+  FF_CODER_TYPE_AC      = 1;
+  FF_CODER_TYPE_RAW     = 2;
+  FF_CODER_TYPE_RLE     = 3;
+  FF_CODER_TYPE_DEFLATE = 4;
+
+  SLICE_FLAG_CODED_ORDER    = $0001; ///< draw_horiz_band() is called in coded order instead of display
+  SLICE_FLAG_ALLOW_FIELD    = $0002; ///< allow draw_horiz_band() with field slices (MPEG2 field pics)
+  SLICE_FLAG_ALLOW_PLANE    = $0004; ///< allow draw_horiz_band() with 1 component at a time (SVQ1)
+
+  FF_MB_DECISION_SIMPLE = 0;        ///< uses mb_cmp
+  FF_MB_DECISION_BITS   = 1;        ///< chooses the one which needs the fewest bits
+  FF_MB_DECISION_RD     = 2;        ///< rate distortion
+
+  FF_AA_AUTO    = 0;
+  FF_AA_FASTINT = 1; //not implemented yet
+  FF_AA_INT     = 2;
+  FF_AA_FLOAT   = 3;
+
+  FF_PROFILE_UNKNOWN  = -99;
+  FF_PROFILE_AAC_MAIN = 0;
+  FF_PROFILE_AAC_LOW  = 1;
+  FF_PROFILE_AAC_SSR  = 2;
+  FF_PROFILE_AAC_LTP  = 3;
+
+  FF_LEVEL_UNKNOWN    = -99;
+
+  X264_PART_I4X4 = $001;  (* Analyse i4x4 *)
+  X264_PART_I8X8 = $002;  (* Analyse i8x8 (requires 8x8 transform) *)
+  X264_PART_P8X8 = $010;  (* Analyse p16x8, p8x16 and p8x8 *)
+  X264_PART_P4X4 = $020;  (* Analyse p8x4, p4x8, p4x4 *)
+  X264_PART_B8X8 = $100;  (* Analyse b16x8, b8x16 and b8x8 *)
+
+  FF_COMPRESSION_DEFAULT = -1;
+
+const
+  AVPALETTE_SIZE = 1024;
+  AVPALETTE_COUNT = 256;
+
+{$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
 type
 (**
- * AVHWAccel.
- * forward declaration of PAVHWAccel
+ * AVPaletteControl
+ * This structure defines a method for communicating palette changes
+ * between and demuxer and a decoder.
+ *
+ * @deprecated Use AVPacket to send palette changes instead.
+ * This is totally broken.
  *)
-  PAVHWAccel = ^TAVHWAccel;
+  PAVPaletteControl = ^TAVPaletteControl;
+  TAVPaletteControl = record
+    (* demuxer sets this to 1 to indicate the palette has changed;
+     * decoder resets to 0 *)
+    palette_changed: cint;
+
+    (* 4-byte ARGB palette entries, stored in native byte order; note that
+     * the individual palette components should be on a 8-bit scale; if
+     * the palette data comes from a IBM VGA native format, the component
+     * data is probably 6 bits in size and needs to be scaled *)
+    palette: array [0..AVPALETTE_COUNT - 1] of cuint;
+  end; {deprecated;}
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 52023000} // >= 52.23.0
+type
+  PAVPacket = ^TAVPacket;
+  TAVPacket = record
+(*
+ * Presentation timestamp in AVStream->time_base units; the time at which
+ * the decompressed packet will be presented to the user.
+ * Can be AV_NOPTS_VALUE if it is not stored in the file.
+ * pts MUST be larger or equal to dts as presentation cannot happen before
+ * decompression, unless one wants to view hex dumps. Some formats misuse
+ * the terms dts and pts/cts to mean something different. Such timestamps
+ * must be converted to true pts/dts before they are stored in AVPacket.
+ *)
+    pts:          cint64;
+(*
+ * Decompression timestamp in AVStream->time_base units; the time at which
+ * the packet is decompressed.
+ * Can be AV_NOPTS_VALUE if it is not stored in the file.
+ *)
+    dts:          cint64;
+    data:         PByteArray;
+    size:         cint;
+    stream_index: cint;
+    flags:        cint;
+(*
+ * Duration of this packet in AVStream->time_base units, 0 if unknown.
+ * Equals next_pts - this_pts in presentation order.
+ *)
+    duration:     cint;
+    destruct:     procedure (para1: PAVPacket); cdecl;
+    priv:         pointer;
+    pos:          cint64;       // byte position in stream, -1 if unknown
+
+(*
+ * Time difference in AVStream->time_base units from the pts of this
+ * packet to the point at which the output from the decoder has converged
+ * independent from the availability of previous frames. That is, the
+ * frames are virtually identical no matter if decoding started from
+ * the very first frame or from this keyframe.
+ * Is AV_NOPTS_VALUE if unknown.
+ * This field is not the display duration of the current packet.
+ *
+ * The purpose of this field is to allow seeking in streams that have no
+ * keyframes in the conventional sense. It corresponds to the
+ * recovery point SEI in H.264 and match_time_delta in NUT. It is also
+ * essential for some types of subtitle streams to ensure that all
+ * subtitles are correctly displayed after seeking.
+ *)
+    convergence_duration: cint64;
+  end;
+
+const
+  {$IF LIBAVCODEC_VERSION < 52030002} // >= 52.30.2
+  PKT_FLAG_KEY = $0001;
+  {$ELSE}
+  AV_PKT_FLAG_KEY = $0001;
+    {$IF LIBAVCODEC_VERSION_MAJOR < 53}
+  PKT_FLAG_KEY = AV_PKT_FLAG_KEY;
+    {$IFEND}
+  {$IFEND}
 {$IFEND}
 
 type
+  PAVClass = ^TAVClass; {const}
+  PAVCodecContext = ^TAVCodecContext;
+
+  PAVCodec = ^TAVCodec;
+
+{$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
+  PAVHWAccel = ^TAVHWAccel;
+{$IFEND}
+
+  // int[4]
+  PQuadIntArray = ^TQuadIntArray;
+  TQuadIntArray = array[0..3] of cint;
+  // int (*func)(struct AVCodecContext *c2, void *arg)
+  TExecuteFunc = function(c2: PAVCodecContext; arg: Pointer): cint; cdecl;
+
+  TAVClass = record
+    class_name: PAnsiChar;
+    (* actually passing a pointer to an AVCodecContext
+       or AVFormatContext, which begin with an AVClass.
+       Needed because av_log is in libavcodec and has no visibility
+       of AVIn/OutputFormat *)
+    item_name: function(): PAnsiChar; cdecl;
+    option: PAVOption;
+  end;
+
   {**
    * Audio Video Frame.
    * New fields can be added to the end of FF_COMMON_FRAME with minor version
@@ -1121,307 +1416,6 @@ type
      *)
      chroma_sample_location: TAVChromaLocation;
     {$IFEND}
-  end;
-
-const
-  {$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
-  DEFAULT_FRAME_RATE_BASE = 1001000;
-  {$IFEND}
-
-  FF_ASPECT_EXTENDED = 15;
-
-  FF_RC_STRATEGY_XVID = 1;
-
-  FF_BUG_AUTODETECT       = 1;  ///< autodetection
-  FF_BUG_OLD_MSMPEG4      = 2;
-  FF_BUG_XVID_ILACE       = 4;
-  FF_BUG_UMP4             = 8;
-  FF_BUG_NO_PADDING       = 16;
-  FF_BUG_AMV              = 32;
-  FF_BUG_AC_VLC           = 0;  ///< will be removed, libavcodec can now handle these non compliant files by default
-  FF_BUG_QPEL_CHROMA      = 64;
-  FF_BUG_STD_QPEL         = 128;
-  FF_BUG_QPEL_CHROMA2     = 256;
-  FF_BUG_DIRECT_BLOCKSIZE = 512;
-  FF_BUG_EDGE             = 1024;
-  FF_BUG_HPEL_CHROMA      = 2048;
-  FF_BUG_DC_CLIP          = 4096;
-  FF_BUG_MS               = 8192; ///< workaround various bugs in microsofts broken decoders
-  //FF_BUG_FAKE_SCALABILITY = 16 //Autodetection should work 100%.
-
-  FF_COMPLIANCE_VERY_STRICT   =  2; ///< strictly conform to a older more strict version of the spec or reference software
-  FF_COMPLIANCE_STRICT        =  1; ///< strictly conform to all the things in the spec no matter what consequences
-  FF_COMPLIANCE_NORMAL        =  0;
-  FF_COMPLIANCE_INOFFICIAL    = -1; ///< allow inofficial extensions
-  FF_COMPLIANCE_EXPERIMENTAL  = -2; ///< allow non standarized experimental things
-
-  FF_ER_CAREFUL         = 1;
-  FF_ER_COMPLIANT       = 2;
-  FF_ER_AGGRESSIVE      = 3;
-  FF_ER_VERY_AGGRESSIVE = 4;
-
-  FF_DCT_AUTO    = 0;
-  FF_DCT_FASTINT = 1;
-  FF_DCT_INT     = 2;
-  FF_DCT_MMX     = 3;
-  FF_DCT_MLIB    = 4;
-  FF_DCT_ALTIVEC = 5;
-  FF_DCT_FAAN    = 6;
-
-  FF_IDCT_AUTO         = 0;
-  FF_IDCT_INT          = 1;
-  FF_IDCT_SIMPLE       = 2;
-  FF_IDCT_SIMPLEMMX    = 3;
-  FF_IDCT_LIBMPEG2MMX  = 4;
-  FF_IDCT_PS2          = 5;
-  FF_IDCT_MLIB         = 6;
-  FF_IDCT_ARM          = 7;
-  FF_IDCT_ALTIVEC      = 8;
-  FF_IDCT_SH4          = 9;
-  FF_IDCT_SIMPLEARM    = 10;
-  FF_IDCT_H264         = 11;
-  FF_IDCT_VP3          = 12;
-  FF_IDCT_IPP          = 13;
-  FF_IDCT_XVIDMMX      = 14;
-  FF_IDCT_CAVS         = 15;
-  FF_IDCT_SIMPLEARMV5TE= 16;
-  FF_IDCT_SIMPLEARMV6  = 17;
-  FF_IDCT_SIMPLEVIS    = 18;
-  FF_IDCT_WMV2         = 19;
-  FF_IDCT_FAAN         = 20;
-  FF_IDCT_EA           = 21;
-  FF_IDCT_SIMPLENEON   = 22;
-  FF_IDCT_SIMPLEALPHA  = 23;
-
-  FF_EC_GUESS_MVS   = 1;
-  FF_EC_DEBLOCK     = 2;
-
-  FF_MM_FORCE       = $80000000; (* force usage of selected flags (OR) *)
-  (* lower 16 bits - CPU features *)
-  FF_MM_MMX         = $0001; ///< standard MMX
-  FF_MM_3DNOW       = $0004; ///< AMD 3DNOW
-  {$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
-  FF_MM_MMXEXT      = $0002; ///< SSE integer functions or AMD MMX ext
-  {$IFEND}
-  {$IF LIBAVCODEC_VERSION >= 52024000} // >= 52.24.0
-  FF_MM_MMX2        = $0002; ///< SSE integer functions or AMD MMX ext
-  {$IFEND}
-  FF_MM_SSE         = $0008; ///< SSE functions
-  FF_MM_SSE2        = $0010; ///< PIV SSE2 functions
-  FF_MM_3DNOWEXT    = $0020; ///< AMD 3DNowExt
-  FF_MM_SSE3        = $0040; ///< Prescott SSE3 functions
-  FF_MM_SSSE3       = $0080; ///< Conroe SSSE3 functions
-  {$IF LIBAVCODEC_VERSION >= 52022003} // >= 52.22.3
-  FF_MM_SSE4        = $0100; ///< Penryn SSE4.1 functions
-  FF_MM_SSE42       = $0200; ///< Nehalem SSE4.2 functions
-  {$IFEND}
-  FF_MM_IWMMXT      = $0100; ///< XScale IWMMXT
-  FF_MM_ALTIVEC     = $0001; ///< standard AltiVec
-
-  FF_PRED_LEFT   = 0;
-  FF_PRED_PLANE  = 1;
-  FF_PRED_MEDIAN = 2;
-
-  FF_DEBUG_PICT_INFO    = 1;
-  FF_DEBUG_RC           = 2;
-  FF_DEBUG_BITSTREAM    = 4;
-  FF_DEBUG_MB_TYPE      = 8;
-  FF_DEBUG_QP           = 16;
-  FF_DEBUG_MV           = 32;
-  FF_DEBUG_DCT_COEFF    = $00000040;
-  FF_DEBUG_SKIP         = $00000080;
-  FF_DEBUG_STARTCODE    = $00000100;
-  FF_DEBUG_PTS          = $00000200;
-  FF_DEBUG_ER           = $00000400;
-  FF_DEBUG_MMCO         = $00000800;
-  FF_DEBUG_BUGS         = $00001000;
-  FF_DEBUG_VIS_QP       = $00002000;
-  FF_DEBUG_VIS_MB_TYPE  = $00004000;
-  FF_DEBUG_BUFFERS      = $00008000;
-
-  FF_DEBUG_VIS_MV_P_FOR  = $00000001; //visualize forward predicted MVs of P frames
-  FF_DEBUG_VIS_MV_B_FOR  = $00000002; //visualize forward predicted MVs of B frames
-  FF_DEBUG_VIS_MV_B_BACK = $00000004; //visualize backward predicted MVs of B frames
-
-  FF_CMP_SAD    = 0;
-  FF_CMP_SSE    = 1;
-  FF_CMP_SATD   = 2;
-  FF_CMP_DCT    = 3;
-  FF_CMP_PSNR   = 4;
-  FF_CMP_BIT    = 5;
-  FF_CMP_RD     = 6;
-  FF_CMP_ZERO   = 7;
-  FF_CMP_VSAD   = 8;
-  FF_CMP_VSSE   = 9;
-  FF_CMP_NSSE   = 10;
-  FF_CMP_W53    = 11;
-  FF_CMP_W97    = 12;
-  FF_CMP_DCTMAX = 13;
-  FF_CMP_DCT264 = 14;
-  FF_CMP_CHROMA = 256;
-
-  FF_DTG_AFD_SAME         = 8;
-  FF_DTG_AFD_4_3          = 9;
-  FF_DTG_AFD_16_9         = 10;
-  FF_DTG_AFD_14_9         = 11;
-  FF_DTG_AFD_4_3_SP_14_9  = 13;
-  FF_DTG_AFD_16_9_SP_14_9 = 14;
-  FF_DTG_AFD_SP_4_3       = 15;
-
-  FF_DEFAULT_QUANT_BIAS   = 999999;
-
-  FF_LAMBDA_SHIFT   = 7;
-  FF_LAMBDA_SCALE   = (1 shl FF_LAMBDA_SHIFT);
-  FF_QP2LAMBDA      = 118; ///< factor to convert from H.263 QP to lambda
-  FF_LAMBDA_MAX     = (256 * 128 - 1);
-
-  FF_QUALITY_SCALE  = FF_LAMBDA_SCALE; //FIXME maybe remove
-
-  FF_CODER_TYPE_VLC     = 0;
-  FF_CODER_TYPE_AC      = 1;
-  FF_CODER_TYPE_RAW     = 2;
-  FF_CODER_TYPE_RLE     = 3;
-  FF_CODER_TYPE_DEFLATE = 4;
-
-  SLICE_FLAG_CODED_ORDER    = $0001; ///< draw_horiz_band() is called in coded order instead of display
-  SLICE_FLAG_ALLOW_FIELD    = $0002; ///< allow draw_horiz_band() with field slices (MPEG2 field pics)
-  SLICE_FLAG_ALLOW_PLANE    = $0004; ///< allow draw_horiz_band() with 1 component at a time (SVQ1)
-
-  FF_MB_DECISION_SIMPLE = 0;        ///< uses mb_cmp
-  FF_MB_DECISION_BITS   = 1;        ///< chooses the one which needs the fewest bits
-  FF_MB_DECISION_RD     = 2;        ///< rate distortion
-
-  FF_AA_AUTO    = 0;
-  FF_AA_FASTINT = 1; //not implemented yet
-  FF_AA_INT     = 2;
-  FF_AA_FLOAT   = 3;
-
-  FF_PROFILE_UNKNOWN  = -99;
-  FF_PROFILE_AAC_MAIN = 0;
-  FF_PROFILE_AAC_LOW  = 1;
-  FF_PROFILE_AAC_SSR  = 2;
-  FF_PROFILE_AAC_LTP  = 3;
-
-  FF_LEVEL_UNKNOWN    = -99;
-
-  X264_PART_I4X4 = $001;  (* Analyse i4x4 *)
-  X264_PART_I8X8 = $002;  (* Analyse i8x8 (requires 8x8 transform) *)
-  X264_PART_P8X8 = $010;  (* Analyse p16x8, p8x16 and p8x8 *)
-  X264_PART_P4X4 = $020;  (* Analyse p8x4, p4x8, p4x4 *)
-  X264_PART_B8X8 = $100;  (* Analyse b16x8, b8x16 and b8x8 *)
-
-  FF_COMPRESSION_DEFAULT = -1;
-
-const
-  AVPALETTE_SIZE = 1024;
-  AVPALETTE_COUNT = 256;
-
-{$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
-type
-(**
- * AVPaletteControl
- * This structure defines a method for communicating palette changes
- * between and demuxer and a decoder.
- *
- * @deprecated Use AVPacket to send palette changes instead.
- * This is totally broken.
- *)
-  PAVPaletteControl = ^TAVPaletteControl;
-  TAVPaletteControl = record
-    (* demuxer sets this to 1 to indicate the palette has changed;
-     * decoder resets to 0 *)
-    palette_changed: cint;
-
-    (* 4-byte ARGB palette entries, stored in native byte order; note that
-     * the individual palette components should be on a 8-bit scale; if
-     * the palette data comes from a IBM VGA native format, the component
-     * data is probably 6 bits in size and needs to be scaled *)
-    palette: array [0..AVPALETTE_COUNT - 1] of cuint;
-  end; {deprecated;}
-{$IFEND}
-
-{$IF LIBAVCODEC_VERSION >= 52023000} // >= 52.23.0
-type
-  PAVPacket = ^TAVPacket;
-  TAVPacket = record
-(*
- * Presentation timestamp in AVStream->time_base units; the time at which
- * the decompressed packet will be presented to the user.
- * Can be AV_NOPTS_VALUE if it is not stored in the file.
- * pts MUST be larger or equal to dts as presentation cannot happen before
- * decompression, unless one wants to view hex dumps. Some formats misuse
- * the terms dts and pts/cts to mean something different. Such timestamps
- * must be converted to true pts/dts before they are stored in AVPacket.
- *)
-    pts:          cint64;
-(*
- * Decompression timestamp in AVStream->time_base units; the time at which
- * the packet is decompressed.
- * Can be AV_NOPTS_VALUE if it is not stored in the file.
- *)
-    dts:          cint64;
-    data:         PByteArray;
-    size:         cint;
-    stream_index: cint;
-    flags:        cint;
-(*
- * Duration of this packet in AVStream->time_base units, 0 if unknown.
- * Equals next_pts - this_pts in presentation order.
- *)
-    duration:     cint;
-    destruct:     procedure (para1: PAVPacket); cdecl;
-    priv:         pointer;
-    pos:          cint64;       // byte position in stream, -1 if unknown
-
-(*
- * Time difference in AVStream->time_base units from the pts of this
- * packet to the point at which the output from the decoder has converged
- * independent from the availability of previous frames. That is, the
- * frames are virtually identical no matter if decoding started from
- * the very first frame or from this keyframe.
- * Is AV_NOPTS_VALUE if unknown.
- * This field is not the display duration of the current packet.
- *
- * The purpose of this field is to allow seeking in streams that have no
- * keyframes in the conventional sense. It corresponds to the
- * recovery point SEI in H.264 and match_time_delta in NUT. It is also
- * essential for some types of subtitle streams to ensure that all
- * subtitles are correctly displayed after seeking.
- *)
-    convergence_duration: cint64;
-  end;
-
-const
-  {$IF LIBAVCODEC_VERSION < 52030002} // >= 52.30.2
-  PKT_FLAG_KEY = $0001;
-  {$ELSE}
-  AV_PKT_FLAG_KEY = $0001;
-    {$IF LIBAVCODEC_VERSION_MAJOR < 53}
-  PKT_FLAG_KEY = AV_PKT_FLAG_KEY;
-    {$IFEND}
-  {$IFEND}
-{$IFEND}
-
-type
-  PAVClass = ^TAVClass; {const}
-  PAVCodecContext = ^TAVCodecContext;
-
-  PAVCodec = ^TAVCodec;
-
-  // int[4]
-  PQuadIntArray = ^TQuadIntArray;
-  TQuadIntArray = array[0..3] of cint;
-  // int (*func)(struct AVCodecContext *c2, void *arg)
-  TExecuteFunc = function(c2: PAVCodecContext; arg: Pointer): cint; cdecl;
-
-  TAVClass = record
-    class_name: PAnsiChar;
-    (* actually passing a pointer to an AVCodecContext
-       or AVFormatContext, which begin with an AVClass.
-       Needed because av_log is in libavcodec and has no visibility
-       of AVIn/OutputFormat *)
-    item_name: function(): PAnsiChar; cdecl;
-    option: PAVOption;
   end;
 
   (**
@@ -2807,11 +2801,9 @@ type
   end;
 
 {$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
-type
 (**
  * AVHWAccel.
  *)
-//  PAVHWAccel = ^TAVHWAccel;
   TAVHWAccel = record
     (**
      * Name of the hardware accelerated codec.
