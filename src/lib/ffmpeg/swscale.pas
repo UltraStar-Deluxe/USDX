@@ -45,6 +45,7 @@ interface
 uses
   ctypes,
   avutil,
+  avcodec,
   UConfig;
 
 const
