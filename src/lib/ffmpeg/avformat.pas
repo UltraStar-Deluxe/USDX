@@ -132,21 +132,6 @@ type
 
   PAVMetadata = Pointer;
 
-{$IF LIBAVFORMAT_VERSION >= 52030001} // >= 52.30.1
-(**
- * Convert all the metadata sets from ctx according to the source and
- * destination conversion tables.
- * @param d_conv destination tags format conversion table
- * @param s_conv source tags format conversion table
- *)
-  PAVMetadataConv = ^TAVMetadataConv;
-  TAVMetadataConv = record
-    ctx:            PAVFormatContext;
-    d_conv: {const} PAVMetadataConv;
-    s_conv: {const} PAVMetadataConv;
-  end;
-{$IFEND}
-
 {$IF LIBAVFORMAT_VERSION > 52024001} // > 52.24.1
 (**
  * Gets a metadata element with matching key.
@@ -391,6 +376,21 @@ type
   PAVImageFormat = ^TAVImageFormat;
   PAVImageInfo = ^TAVImageInfo;
   {$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52030001} // >= 52.30.1
+(**
+ * Convert all the metadata sets from ctx according to the source and
+ * destination conversion tables.
+ * @param d_conv destination tags format conversion table
+ * @param s_conv source tags format conversion table
+ *)
+  PAVMetadataConv = ^TAVMetadataConv;
+  TAVMetadataConv = record
+    ctx:            PAVFormatContext;
+    d_conv: {const} PAVMetadataConv;
+    s_conv: {const} PAVMetadataConv;
+  end;
+{$IFEND}
 
   PAVChapter = ^TAVChapter;
   TAVChapter = record
