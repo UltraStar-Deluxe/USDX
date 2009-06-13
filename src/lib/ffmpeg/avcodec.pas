@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.30.2, Fri Jun 12 21:05:00 2009 UTC 
+ * Max. version: 52.31.2, Sar Jun 13 22:05:00 2009 UTC 
  * MiSchi
 }
 
@@ -256,6 +256,9 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52030002}  // >= 52.30.2
     CODEC_ID_DPX,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52031002}  // >= 52.31.2
+    CODEC_ID_MAD,
 {$IFEND}
 
     //* various PCM "codecs" */
