@@ -238,23 +238,23 @@ type
     CODEC_ID_MOTIONPIXELS,
     CODEC_ID_TGV,
     CODEC_ID_TGQ,
-{$IF LIBAVCODEC_VERSION >= 52012000}  // 52.12.0
+{$IF LIBAVCODEC_VERSION >= 52012000}  // >= 52.12.0
     CODEC_ID_TQI,
 {$IFEND}
-{$IF LIBAVCODEC_VERSION >= 52022002}  // 52.22.2
+{$IF LIBAVCODEC_VERSION >= 52022002}  // >= 52.22.2
     CODEC_ID_AURA,
     CODEC_ID_AURA2,
 {$IFEND}
-{$IF LIBAVCODEC_VERSION >= 52027000}  // 52.27.0
+{$IF LIBAVCODEC_VERSION >= 52027000}  // >= 52.27.0
     CODEC_ID_V210X,
 {$IFEND}
-{$IF LIBAVCODEC_VERSION >= 52028000}  // 52.28.0
+{$IF LIBAVCODEC_VERSION >= 52028000}  // >= 52.28.0
     CODEC_ID_TMV,
 {$IFEND}
-{$IF LIBAVCODEC_VERSION >= 52029000}  // 52.29.0
+{$IF LIBAVCODEC_VERSION >= 52029000}  // >= 52.29.0
     CODEC_ID_V210,
 {$IFEND}
-{$IF LIBAVCODEC_VERSION >= 52030002}  // 52.30.2
+{$IF LIBAVCODEC_VERSION >= 52030002}  // >= 52.30.2
     CODEC_ID_DPX,
 {$IFEND}
 
@@ -332,7 +332,7 @@ type
     CODEC_ID_MP2= $15000,
     CODEC_ID_MP3, ///< preferred ID for decoding MPEG audio layer 1, 2 or 3
     CODEC_ID_AAC,
-    {$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+    {$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
     _CODEC_ID_MPEG4AAC, // will be redefined to CODEC_ID_AAC below
     {$IFEND}
     CODEC_ID_AC3,
@@ -378,13 +378,13 @@ type
     CODEC_ID_EAC3,
     CODEC_ID_SIPR,
     CODEC_ID_MP1,
-{$IF LIBAVCODEC_VERSION >= 52020000} // 52.20.0
+{$IF LIBAVCODEC_VERSION >= 52020000} // >= 52.20.0
     CODEC_ID_TWINVQ,
 {$IFEND}
-{$IF LIBAVCODEC_VERSION >= 52022000} // 52.22.0
+{$IF LIBAVCODEC_VERSION >= 52022000} // >= 52.22.0
     CODEC_ID_TRUEHD,
 {$IFEND}
-{$IF LIBAVCODEC_VERSION >= 52026000} // 52.26.0
+{$IF LIBAVCODEC_VERSION >= 52026000} // >= 52.26.0
     CODEC_ID_MP4ALS,
 {$IFEND}
 
@@ -406,7 +406,7 @@ type
     __CODEC_ID_4BYTE = $FFFFF  // ensure 4-byte enum
   );
 
-{$IF LIBAVCODEC_VERSION < 52000000} // 52.0.0
+{$IF LIBAVCODEC_VERSION < 52000000} // < 52.0.0
 {* CODEC_ID_MP3LAME is obsolete *}
 const
   CODEC_ID_MP3LAME = CODEC_ID_MP3;
@@ -467,21 +467,21 @@ const
   CH_LAYOUT_MONO            = (CH_FRONT_CENTER);
   CH_LAYOUT_STEREO          = (CH_FRONT_LEFT or CH_FRONT_RIGHT);
   CH_LAYOUT_SURROUND        = (CH_LAYOUT_STEREO or CH_FRONT_CENTER);
-{$IF LIBAVCODEC_VERSION >= 52027000} // 52.27.0
-  CH_LAYOUT_2_1               (CH_LAYOUT_STEREO or CH_BACK_CENTER);
-  CH_LAYOUT_4POINT0           (CH_LAYOUT_SURROUND or CH_BACK_CENTER);
-  CH_LAYOUT_2_2               (CH_LAYOUT_STEREO or CH_SIDE_LEFT or CH_SIDE_RIGHT);
+{$IF LIBAVCODEC_VERSION >= 52027000} // >= 52.27.0
+  CH_LAYOUT_2_1             = (CH_LAYOUT_STEREO or CH_BACK_CENTER);
+  CH_LAYOUT_4POINT0         = (CH_LAYOUT_SURROUND or CH_BACK_CENTER);
+  CH_LAYOUT_2_2             = (CH_LAYOUT_STEREO or CH_SIDE_LEFT or CH_SIDE_RIGHT);
 {$IFEND}
   CH_LAYOUT_QUAD            = (CH_LAYOUT_STEREO or CH_BACK_LEFT or CH_BACK_RIGHT);
   CH_LAYOUT_5POINT0         = (CH_LAYOUT_SURROUND or CH_SIDE_LEFT or CH_SIDE_RIGHT);
   CH_LAYOUT_5POINT1         = (CH_LAYOUT_5POINT0 or CH_LOW_FREQUENCY);
-{$IF LIBAVCODEC_VERSION >= 52025000} // 52.25.0
+{$IF LIBAVCODEC_VERSION >= 52025000} // >= 52.25.0
   CH_LAYOUT_5POINT0_BACK    = (CH_LAYOUT_SURROUND or CH_BACK_LEFT or 
                                CH_BACK_RIGHT);
   CH_LAYOUT_5POINT1_BACK    = (CH_LAYOUT_5POINT0_BACK or CH_LOW_FREQUENCY);
 {$IFEND}
   CH_LAYOUT_7POINT1         = (CH_LAYOUT_5POINT1 or CH_BACK_LEFT or CH_BACK_RIGHT);
-{$IF LIBAVCODEC_VERSION < 52025000} // 52.25.0
+{$IF LIBAVCODEC_VERSION < 52025000} // < 52.25.0
   CH_LAYOUT_7POINT1_WIDE    = (CH_LAYOUT_SURROUND or CH_LOW_FREQUENCY or
                                CH_BACK_LEFT or CH_BACK_RIGHT or
 {$ELSE}
@@ -540,7 +540,7 @@ type
     AVDISCARD_ALL     =  48  ///< discard all
   );
 
-{$IF LIBAVCODEC_VERSION < 52028000} // < 52.28.0
+{$IF LIBAVCODEC_VERSION >= 52028000} // >= 52.28.0
   TAVColorPrimaries = (
     AVCOL_PRI_BT709       = 1, ///< also ITU-R BT1361 / IEC 61966-2-4 / SMPTE RP177 Annex B
     AVCOL_PRI_UNSPECIFIED = 2,
@@ -1051,7 +1051,7 @@ type
   end;
 
 const
-  {$IF LIBAVCODEC_VERSION < 52030002} // >= 52.30.2
+  {$IF LIBAVCODEC_VERSION >= 52030002} // >= 52.30.2
   PKT_FLAG_KEY = $0001;
   {$ELSE}
   AV_PKT_FLAG_KEY = $0001;
@@ -1067,7 +1067,7 @@ type
 
   PAVCodec = ^TAVCodec;
 
-{$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
+{$IF LIBAVCODEC_VERSION >= 52018000} // >= 52.18.0
   PAVHWAccel = ^TAVHWAccel;
 {$IFEND}
 
@@ -1286,7 +1286,7 @@ type
      *)
     ref_index: array [0..1] of PShortint;
 
-    {$IF LIBAVCODEC_VERSION >= 51068000} // 51.68.0
+    {$IF LIBAVCODEC_VERSION >= 51068000} // >= 51.68.0
     (**
      * reordered opaque 64bit number (generally a PTS) from AVCodecContext.reordered_opaque
      * output in AVFrame.reordered_opaque
@@ -1296,7 +1296,7 @@ type
     reordered_opaque: cint64;
     {$IFEND}
     
-    {$IF LIBAVCODEC_VERSION = 52021000} // 52.21.0
+    {$IF LIBAVCODEC_VERSION = 52021000} // = 52.21.0
     (**
      * hardware accelerator private data (FFmpeg allocated)
      * - encoding: unused
@@ -1304,11 +1304,11 @@ type
      *)
     hwaccel_data_private: pointer;
     {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52022000} // 52.22.0
+    {$IF LIBAVCODEC_VERSION >= 52022000} // >= 52.22.0
     hwaccel_picture_private: pointer;
     {$IFEND}
 
-    {$IF LIBAVCODEC_VERSION >= 51070000} // 51.70.0
+    {$IF LIBAVCODEC_VERSION >= 51070000} // >= 51.70.0
     (**
      * Bits per sample/pixel of internal libavcodec pixel/sample format.
      * This field is applicable only when sample_fmt is SAMPLE_FMT_S32.
@@ -1318,7 +1318,7 @@ type
     bits_per_raw_sample: cint;
     {$IFEND}
 
-    {$IF LIBAVCODEC_VERSION >= 52002000} // 52.2.0
+    {$IF LIBAVCODEC_VERSION >= 52002000} // >= 52.2.0
     (**
      * Audio channel layout.
      * - encoding: set by user.
@@ -1334,7 +1334,7 @@ type
     request_channel_layout: cint64;
     {$IFEND}
 
-    {$IF LIBAVCODEC_VERSION >= 52004000} // 52.4.0
+    {$IF LIBAVCODEC_VERSION >= 52004000} // >= 52.4.0
     (**
      * Ratecontrol attempt to use, at maximum, <value> of what can be used without an underflow.
      * - encoding: Set by user.
@@ -1349,7 +1349,7 @@ type
      *)
     rc_min_vbv_overflow_use: cfloat;
     {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52018000} // < 52.18.0
+    {$IF LIBAVCODEC_VERSION >= 52018000} // >= 52.18.0
     (**
      * Hardware accelerator in use
      * - encoding: unused.
@@ -1357,7 +1357,7 @@ type
      *)
     hwaccel: PAVHWAccel;
     {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52020000} // < 52.20.0
+    {$IF LIBAVCODEC_VERSION >= 52020000} // >= 52.20.0
     (**
      * For some codecs, the time base is closer to the field rate than the frame rate.
      * Most notably, H.264 and MPEG-2 specify time_base as half of frame duration
@@ -1367,7 +1367,7 @@ type
      *)
     ticks_per_frame: cint;
     {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52021000} // < 52.21.0
+    {$IF LIBAVCODEC_VERSION >= 52021000} // >= 52.21.0
     (**
      * Hardware accelerator context.
      * For some hardware accelerators, a global context needs to be
@@ -1380,7 +1380,7 @@ type
      *)
     hwaccel_context: pointer;
     {$IFEND}
-    {$IF LIBAVCODEC_VERSION < 52028000} // < 52.28.0
+    {$IF LIBAVCODEC_VERSION >= 52028000} // >= 52.28.0
     (**
      * Chromaticity coordinates of the source primaries.
      * - encoding: Set by user
@@ -3038,7 +3038,7 @@ function av_dup_packet(pkt: PAVPacket): cint;
  * @param pkt packet to free
  *)
 procedure av_free_packet(pkt: PAVPacket);
-{$IF LIBAVCODEC_VERSION >=52028000} // 52.28.0
+{$IF LIBAVCODEC_VERSION >= 52028000} // 52.28.0
   cdecl; external av__codec;
 {$IFEND}
 {$IFEND}
@@ -4096,7 +4096,7 @@ function av_bitstream_filter_next(f: PAVBitStreamFilter): PAVBitStreamFilter;
 procedure av_fast_realloc(ptr: pointer; size: PCuint; min_size: cuint);
   cdecl; external av__codec;
 
-{$IF LIBAVCODEC_VERSION < 52025000} // 52.25.0
+{$IF LIBAVCODEC_VERSION >= 52025000} // >= 52.25.0
 (**
  * Allocates a buffer, reusing the given one if large enough.
  *
