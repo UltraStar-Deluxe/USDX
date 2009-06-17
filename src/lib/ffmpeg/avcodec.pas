@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 30;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 31;
   LIBAVCODEC_MAX_VERSION_RELEASE = 2;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -3047,7 +3047,7 @@ procedure av_free_packet(pkt: PAVPacket);
 {$IFEND}
 
 (* resample.c *)
-
+type
   PReSampleContext = pointer;
   PAVResampleContext = pointer;
   PImgReSampleContext = pointer;
@@ -3075,10 +3075,31 @@ function av_resample_init (out_rate: cint; in_rate: cint; filter_length: cint;
                            log2_phase_count: cint; linear: cint; cutoff: cdouble): PAVResampleContext;
   cdecl; external av__codec;
 
+(**
+ * resamples.
+ * @param src an array of unconsumed samples
+ * @param consumed the number of samples of src which have been consumed are returned here
+ * @param src_size the number of unconsumed samples available
+ * @param dst_size the amount of space in samples available in dst
+ * @param update_ctx If this is 0 then the context will not be modified, that way several channels can be resampled with the same context.
+ * @return the number of samples written in dst or -1 if an error occurred
+ *)
 function av_resample (c: PAVResampleContext; dst: PSmallint; src: PSmallint; var consumed: cint;
                       src_size: cint; dst_size: cint; update_ctx: cint): cint;
   cdecl; external av__codec;
 
+(**
+ * Compensates samplerate/timestamp drift. The compensation is done by changing
+ * the resampler parameters, so no audible clicks or similar distortions occur
+ * @param compensation_distance distance in output samples over which the compensation should be performed
+ * @param sample_delta number of output samples which should be output less
+ *
+ * example: av_resample_compensate(c, 10, 500)
+ * here instead of 510 samples only 500 samples would be output
+ *
+ * note, due to rounding the actual compensation might be slightly different,
+ * especially if the compensation_distance is large and the in_rate used during init is small
+ *)
 procedure av_resample_compensate (c: PAVResampleContext; sample_delta: cint;
                                   compensation_distance: cint);
   cdecl; external av__codec;
@@ -3185,6 +3206,17 @@ function avpicture_get_size (pix_fmt: TAVPixelFormat; width: cint; height: cint)
 procedure avcodec_get_chroma_sub_sample (pix_fmt: TAVPixelFormat; var h_shift: cint; var v_shift: cint);
   cdecl; external av__codec;
 
+(**
+ * Returns the pixel format corresponding to the name \p name.
+ *
+ * If there is no pixel format with name \p name, then looks for a
+ * pixel format with the name corresponding to the native endian
+ * format of \p name.
+ * For example in a little-endian system, first looks for "gray16",
+ * then for "gray16le".
+ *
+ * Finally if no pixel format has been found, returns \c PIX_FMT_NONE.
+ *)
 function avcodec_get_pix_fmt_name(pix_fmt: TAVPixelFormat): PAnsiChar;
   cdecl; external av__codec;
 
@@ -4346,7 +4378,7 @@ type
 
 (**
  * Register a user provided lock manager supporting the operations
- * specified by AVLockOp. mutex points to a (void *) where the
+ * specified by AVLockOp. mutex points to a (void) where the
  * lockmgr should store/get a pointer to a user allocated mutex. It's
  * NULL upon AV_LOCK_CREATE and != NULL for all other ops.
  *
@@ -4357,8 +4389,9 @@ type
  *           Also note that during unregistration the previously registered
  *           lockmgr callback may also be invoked.
  *)
-function av_lockmgr_register(cb: function (mutex: Ppointer; op: TAVLockOp)): cint;
-  cdecl; external av__codec;
+// ToDo: Implement and test this
+//function av_lockmgr_register(cb: function (mutex: pointer; op: TAVLockOp)): cint;
+//  cdecl; external av__codec;
 {$IFEND}
 
 implementation
