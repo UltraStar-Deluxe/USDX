@@ -280,7 +280,7 @@ procedure sws_printVec(a: PSwsVector);
   cdecl; external sw__scale; deprecated;
 {$IFEND}
 
-{$IF LIBSWSCALE_VERSION_MINOR >= 7}
+{$IF LIBSWSCALE_VERSION >= 000007000} // >= 0.7.0
 (**
  * Prints with av_log() a textual representation of the vector a
  * if log_level <= av_log_level.
