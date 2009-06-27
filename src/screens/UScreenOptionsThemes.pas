@@ -171,7 +171,7 @@ begin
 
   Theme.OptionsThemes.SelectColor.showArrows := true;
   Theme.OptionsThemes.SelectColor.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsThemes.SelectColor, Ini.Color, IColor);
+  AddSelectSlide(Theme.OptionsThemes.SelectColor, Ini.Color, IColorTranslated);
 
   AddButton(Theme.OptionsThemes.ButtonExit);
   if (Length(Button[0].Text)=0) then

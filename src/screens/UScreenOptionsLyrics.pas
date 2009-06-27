@@ -121,15 +121,15 @@ begin
 
   Theme.OptionsLyrics.SelectLyricsFont.showArrows := true;
   Theme.OptionsLyrics.SelectLyricsFont.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFont);
+  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFontTranslated);
 
   Theme.OptionsLyrics.SelectLyricsEffect.showArrows := true;
   Theme.OptionsLyrics.SelectLyricsEffect.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsEffect, Ini.LyricsEffect, ILyricsEffect);
+  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsEffect, Ini.LyricsEffect, ILyricsEffectTranslated);
 
   Theme.OptionsLyrics.SelectNoteLines.showArrows := true;
   Theme.OptionsLyrics.SelectNoteLines.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectNoteLines, Ini.NoteLines, INoteLines);
+  AddSelectSlide(Theme.OptionsLyrics.SelectNoteLines, Ini.NoteLines, INoteLinesTranslated);
 
   AddButton(Theme.OptionsLyrics.ButtonExit);
   if (Length(Button[0].Text)=0) then

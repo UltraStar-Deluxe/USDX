@@ -128,30 +128,30 @@ begin
   LoadFromTheme(Theme.OptionsAdvanced);
 
   //SelectLoadAnimation Hidden because it is useless atm
-  //AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimation);
+  //AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimationTranslated);
   Theme.OptionsAdvanced.SelectScreenFade.showArrows := true;
   Theme.OptionsAdvanced.SelectScreenFade.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFade);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFadeTranslated);
 
   Theme.OptionsAdvanced.SelectEffectSing.showArrows := true;
   Theme.OptionsAdvanced.SelectEffectSing.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSing);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSingTranslated);
 
   Theme.OptionsAdvanced.SelectLineBonus.showArrows := true;
   Theme.OptionsAdvanced.SelectLineBonus.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonus);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonusTranslated);
 
   Theme.OptionsAdvanced.SelectOnSongClick.showArrows := true;
   Theme.OptionsAdvanced.SelectOnSongClick.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectOnSongClick, Ini.OnSongClick, IOnSongClick);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectOnSongClick, Ini.OnSongClick, IOnSongClickTranslated);
 
   Theme.OptionsAdvanced.SelectAskbeforeDel.showArrows := true;
   Theme.OptionsAdvanced.SelectAskbeforeDel.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskBeforeDel, IAskbeforeDel);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskBeforeDel, IAskbeforeDelTranslated);
 
   Theme.OptionsAdvanced.SelectPartyPopup.showArrows := true;
   Theme.OptionsAdvanced.SelectPartyPopup.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectPartyPopup, Ini.PartyPopup, IPartyPopup);
+  AddSelectSlide(Theme.OptionsAdvanced.SelectPartyPopup, Ini.PartyPopup, IPartyPopupTranslated);
 
   AddButton(Theme.OptionsAdvanced.ButtonExit);
   if (Length(Button[0].Text)=0) then

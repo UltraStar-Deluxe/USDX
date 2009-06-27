@@ -138,7 +138,7 @@ begin
 
   Theme.OptionsGraphics.SelectFullscreen.showArrows := true;
   Theme.OptionsGraphics.SelectFullscreen.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen,   Ini.Fullscreen, IFullscreen);
+  AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen,   Ini.Fullscreen, IFullScreenTranslated);
 
   Theme.OptionsGraphics.SelectDepth.showArrows := true;
   Theme.OptionsGraphics.SelectDepth.oneItemOnly := true;
@@ -146,15 +146,15 @@ begin
 
   Theme.OptionsGraphics.SelectVisualizer.showArrows := true;
   Theme.OptionsGraphics.SelectVisualizer.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectVisualizer,   Ini.VisualizerOption, IVisualizer);
+  AddSelectSlide(Theme.OptionsGraphics.SelectVisualizer,   Ini.VisualizerOption, IVisualizerTranslated);
 
   Theme.OptionsGraphics.SelectOscilloscope.showArrows := true;
   Theme.OptionsGraphics.SelectOscilloscope.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscope);
+  AddSelectSlide(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscopeTranslated);
 
   Theme.OptionsGraphics.SelectMovieSize.showArrows := true;
   Theme.OptionsGraphics.SelectMovieSize.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize,    Ini.MovieSize, IMovieSize);
+  AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize,    Ini.MovieSize, IMovieSizeTranslated);
 
   AddButton(Theme.OptionsGraphics.ButtonExit);
   if (Length(Button[0].Text)=0) then
