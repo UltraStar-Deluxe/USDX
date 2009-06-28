@@ -137,7 +137,7 @@ begin
 
   Theme.OptionsGame.SelectLanguage.showArrows  := true;
   Theme.OptionsGame.SelectLanguage.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGame.SelectLanguage,   Ini.Language,   ILanguage);
+  AddSelectSlide(Theme.OptionsGame.SelectLanguage,   Ini.Language,   ILanguageTranslated);
 
   Theme.OptionsGame.SelectTabs.showArrows  := true;
   Theme.OptionsGame.SelectTabs.oneItemOnly := true;
