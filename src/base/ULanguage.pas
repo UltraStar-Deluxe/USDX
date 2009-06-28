@@ -133,7 +133,8 @@ begin
   SetLength(List, 0);
   SetLength(ILanguage, 0);
 
-  if FindFirst(LanguagesPath + '*.ini', 0, SR) = 0 then begin
+  if FindFirst(LanguagesPath + '*.ini', 0, SR) = 0 then
+  begin
     repeat
       SetLength(List, Length(List)+1);
       SetLength(ILanguage, Length(ILanguage)+1);
@@ -143,7 +144,7 @@ begin
       ILanguage[High(ILanguage)] := SR.Name;
 
     until FindNext(SR) <> 0;
-  SysUtils.FindClose(SR);
+    SysUtils.FindClose(SR);
   end; // if FindFirst
 end;
 
