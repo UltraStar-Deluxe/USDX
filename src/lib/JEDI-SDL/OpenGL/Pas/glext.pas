@@ -4282,32 +4282,33 @@ begin
 
   if (Pos(' ', extension) <> 0) or (extension = '') then
   begin
-    Result := FALSE;
+    Result := false;
     Exit;
   end;
 
   if searchIn = '' then
     extensions := glGetString(GL_EXTENSIONS)
   else
-    //StrLCopy( extensions, searchIn, StrLen(searchIn)+1 );
+    //StrLCopy(extensions, searchIn, StrLen(searchIn) + 1);
     extensions := searchIn;
   start := extensions;
-  while TRUE do
+  while true do
   begin
-    where := StrPos(start, extension );
-    if where = nil then Break;
-    terminator := Pointer(Integer(where) + Integer( strlen( extension ) ) );
-    if (where = start) or (PChar(Integer(where) - 1)^ = ' ') then
+    where := StrPos(start, extension);
+    if where = nil then
+      Break;
+    terminator := where + Length(extension);
+    if (where = start) or ((where - 1)^ = ' ') then
     begin
       if (terminator^ = ' ') or (terminator^ = #0) then
       begin
-	Result := TRUE;
+	Result := true;
 	Exit;
       end;
     end;
     start := terminator;
   end;
-  Result := FALSE;
+  Result := false;
 
 end;
 
