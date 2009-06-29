@@ -885,7 +885,7 @@ begin
 end;
 *)
 
-procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
+procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: longword);
 
   // First, the rgb colors are converted to hsv, second hue is replaced by
   // the NewColor, saturation and value remain unchanged, finally this
@@ -904,8 +904,8 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
   function ColorToHue(const Color: longword): longword;
   // returns hue within the range [0.0-6.0] but shl 10, ie. times 1024
   var
-    Red, Green, Blue: longword;
-    Min, Max, Delta: longword;
+    Red, Green, Blue: longint;
+    Min, Max, Delta:  longint;
     Hue: double;
   begin
     // extract the colors
@@ -933,6 +933,8 @@ procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
       // The division by Delta is done separately afterwards.
       // Necessary because Delphi did not do the type conversion from
       // longword to double as expected.
+      // After the change to longint, we may not need it, but left for now
+      // Something to check
       if      (Max = Red  ) then Hue :=             Green - Blue
       else if (Max = Green) then Hue := 2.0*Delta + Blue  - Red
       else if (Max = Blue ) then Hue := 4.0*Delta + Red   - Green;
