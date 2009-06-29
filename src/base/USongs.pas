@@ -535,16 +535,6 @@ begin
       begin
         CurCategory := CurSong.Edition;
 
-        // TODO: remove this block if it is not needed anymore
-        {
-        if CurSection = 'Singstar Part 2'     then CoverName := 'Singstar';
-        if CurSection = 'Singstar German'     then CoverName := 'Singstar';
-        if CurSection = 'Singstar Spanish'    then CoverName := 'Singstar';
-        if CurSection = 'Singstar Italian'    then CoverName := 'Singstar';
-        if CurSection = 'Singstar French'     then CoverName := 'Singstar';
-        if CurSection = 'Singstar 80s Polish' then CoverName := 'Singstar 80s';
-        }
-
         // add Category Button
         AddCategoryButton(CurCategory);
       end
