@@ -899,9 +899,9 @@ begin
     LineScore := CurrentScore - CurrentPlayer.ScoreLast;
 
     // determine LinePerfection
-    // Note: the "+2" extra points are a little bonus so the player does not
+    // Note: the "-2" extra points are a little bonus so the player does not
     // have to be that perfect to reach the bonus steps.
-    LinePerfection := (LineScore + 2) / MaxLineScore;
+    LinePerfection := LineScore / (MaxLineScore - 2);
 
     // clamp LinePerfection to range [0..1]
     if (LinePerfection < 0) then
