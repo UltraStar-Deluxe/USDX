@@ -452,7 +452,7 @@ begin
   IColorTranslated[5]                 := ULanguage.Language.Translate('OPTION_VALUE_ORANGE');
   IColorTranslated[6]                 := ULanguage.Language.Translate('OPTION_VALUE_YELLOW');
   IColorTranslated[7]                 := ULanguage.Language.Translate('OPTION_VALUE_BROWN');
-  IColorTranslated[8]                 := ULanguage.Language.Translate('OPTION_VALUE_BALCK');
+  IColorTranslated[8]                 := ULanguage.Language.Translate('OPTION_VALUE_BLACK');
 
   // Advanced
   ILoadAnimationTranslated[0]         := ULanguage.Language.Translate('OPTION_VALUE_OFF');
