@@ -139,6 +139,7 @@ type
     procedure Commit;
     procedure Rollback;
     function TableExists(TableName: string): boolean;
+    function ContainsColumn(Table: String; Column: String) : boolean;
     function GetLastInsertRowID: int64;
     function GetLastChangedRows: int64;
     procedure SetTimeout(Value: integer);
@@ -754,6 +755,26 @@ begin
   ds := self.GetTable(sql);
   try
     Result := (ds.Count > 0);
+  finally
+    ds.Free;
+  end;
+end;
+
+function TSQLiteDatabase.ContainsColumn(Table: String; Column: String) : boolean;
+var
+  sql: string;
+  ds: TSqliteTable;
+  i : integer;
+begin
+  sql := 'PRAGMA TABLE_INFO('+Table+');';
+  ds := self.GetTable(sql);
+  try
+    Result := false;
+    while (ds.Next() and not Result and not ds.EOF)  do
+    begin
+      if ds.FieldAsString(1) = Column then
+        Result := true;
+    end;
   finally
     ds.Free;
   end;

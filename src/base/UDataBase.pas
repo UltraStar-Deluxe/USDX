@@ -119,6 +119,11 @@ uses
   SysUtils,
   ULog;
 
+{
+ cDBVersion - history
+ 0 = USDX 1.01 or no Database
+ 01 = USDX 1.1
+}
 const
   cDBVersion = 01; // 0.1
   cUS_Scores = 'us_scores';
@@ -146,16 +151,11 @@ begin
 
     Version := GetVersion();
 
-    finalizeConvertion := false;
+    //Adds Table cUS_Statistics_Info
+    //Happens from Convertion 1.01 -> 1.1
     if not ScoreDB.TableExists(cUS_Statistics_Info) then
     begin
-      Log.LogInfo('Outdated song-database file found', 'TDataBaseSystem.Init');
-      Version := 0;
-      //following just works with convertion of usdx1.01 to usdx1.1!
-      //Rename old Tables - to be able to insert new table-structures
-      ScoreDB.ExecSQL('ALTER TABLE US_Scores RENAME TO us_scores_101;');
-      ScoreDB.ExecSQL('ALTER TABLE US_Songs RENAME TO us_songs_101;');
-
+      Log.LogInfo('Outdated song-database file found - Missing Table"'+cUS_Statistics_Info+'"', 'TDataBaseSystem.Init');
       ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Statistics_Info+'] (' +
                       '[ResetTime] INTEGER' +
                       ');');
@@ -163,6 +163,16 @@ begin
       ScoreDB.ExecSQL(Format('INSERT INTO ['+cUS_Statistics_Info+'] ' +
                              '([ResetTime]) VALUES(%d);',
                              [DateTimeToUnix(Now())]));
+    end;
+
+    //Converts data of 1.01 -> 1.1
+    //Part #1 - prearrangement
+    finalizeConvertion := false;
+    if (Version = 0) AND ScoreDB.TableExists('US_Scores') then
+    begin
+      //Rename old Tables - to be able to insert new table-structures
+      ScoreDB.ExecSQL('ALTER TABLE US_Scores RENAME TO us_scores_101;');
+      ScoreDB.ExecSQL('ALTER TABLE US_Songs RENAME TO us_songs_101;');
       finalizeConvertion := true; //means: convertion has to be done!
     end;
 
@@ -177,7 +187,6 @@ begin
     // types are used (especially FieldAsInteger). Also take care to write the
     // types in upper-case letters although SQLite does not care about this -
     // SQLiteTable3 is very sensitive in this regard.
-     
     ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Scores+'] (' +
                       '[SongID] INTEGER NOT NULL, ' +
                       '[Difficulty] INTEGER NOT NULL, ' +
@@ -193,8 +202,11 @@ begin
                       '[Rating] INTEGER NULL' + 
                     ');');
 
+    //Converts data of 1.01 -> 1.1
+    //Part #2 - accomplishment
     if finalizeConvertion then
     begin
+      Log.LogInfo('Outdated song-database file found - Began Converting from V1.01 to V1.1', 'TDataBaseSystem.Init');
       //insert old values in new db-schemes (/tables)
       ScoreDB.ExecSQL('INSERT INTO '+cUS_Scores+' SELECT  SongID, Difficulty, Player, Score FROM us_scores_101;');
       ScoreDB.ExecSQL('INSERT INTO '+cUS_Songs+' SELECT  ID, Artist, Title, TimesPlayed, ''NULL'' FROM us_songs_101;');
@@ -203,6 +215,13 @@ begin
       ScoreDB.ExecSQL('DROP TABLE us_songs_101;');
     end;
 
+    //Adds Column Rating to cUS_Songs
+    //Just for the users of Nightly-Builds and all Developers!
+    if not ScoreDB.ContainsColumn(cUS_Songs, 'Rating') then
+    begin
+      Log.LogInfo('Outdated song-database file found - Adding Column Rating to "'+cUS_Songs+'"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE '+cUS_Songs+' ADD COLUMN Rating INTEGER NULL');
+    end;
 
   except
     on E: Exception do
