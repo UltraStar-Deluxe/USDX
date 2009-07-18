@@ -34,10 +34,10 @@ interface
 {$I switches.inc}
 
 uses
-  USongs,
-  USong,
   Classes,
-  SQLiteTable3;
+  SQLiteTable3,
+  USong,
+  USongs;
 
 //--------------------
 //DataBaseSystem - Class including all DB Methods
@@ -59,8 +59,8 @@ type
   TStatResultBestScores = class(TStatResult)
     public
       Singer:       WideString;
-      Score:        Word;
-      Difficulty:   Byte;
+      Score:        word;
+      Difficulty:   byte;
       SongArtist:   WideString;
       SongTitle:    WideString;
   end;
@@ -68,27 +68,27 @@ type
   TStatResultBestSingers = class(TStatResult)
     public
       Player:       WideString;
-      AverageScore: Word;
+      AverageScore: word;
   end;
 
   TStatResultMostSungSong = class(TStatResult)
     public
       Artist:       WideString;
       Title:        WideString;
-      TimesSung:    Word;
+      TimesSung:    word;
   end;
 
   TStatResultMostPopBand = class(TStatResult)
     public
       ArtistName:   WideString;
-      TimesSungTot: Word;
+      TimesSungTot: word;
   end;
 
   
   TDataBaseSystem = class
     private
-      ScoreDB: TSQLiteDatabase;
-      fFilename: string;
+      ScoreDB:      TSQLiteDatabase;
+      fFilename:    string;
 
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
@@ -102,9 +102,9 @@ type
       procedure AddScore(Song: TSong; Level: integer; const Name: WideString; Score: integer);
       procedure WriteScore(Song: TSong);
 
-      function GetStats(Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): TList;
+      function GetStats(Typ: TStatType; Count: byte; Page: cardinal; Reversed: boolean): TList;
       procedure FreeStats(StatList: TList);
-      function GetTotalEntrys(Typ: TStatType): Cardinal;
+      function GetTotalEntrys(Typ: TStatType): cardinal;
       function GetStatReset: TDateTime;
   end;
 
@@ -114,24 +114,24 @@ var
 implementation
 
 uses
-  ULog,
   DateUtils,
   StrUtils,
-  SysUtils;
+  SysUtils,
+  ULog;
 
 const
   cDBVersion = 01; // 0.1
   cUS_Scores = 'us_scores';
   cUS_Songs  = 'us_songs';
-  cUS_Statistics_Info  = 'us_statistics_info';
+  cUS_Statistics_Info = 'us_statistics_info';
 
 (**
  * Opens Database and Create Tables if not Exist
  *)
 procedure TDataBaseSystem.Init(const Filename: string);
 var
-  Version: integer;
-  finalizeConvertion : boolean;
+  Version:            integer;
+  finalizeConvertion: boolean;
 begin
   if Assigned(ScoreDB) then
     Exit;
@@ -146,6 +146,7 @@ begin
 
     Version := GetVersion();
 
+    finalizeConvertion := false;
     if not ScoreDB.TableExists(cUS_Statistics_Info) then
     begin
       Log.LogInfo('Outdated song-database file found', 'TDataBaseSystem.Init');
@@ -156,14 +157,14 @@ begin
       ScoreDB.ExecSQL('ALTER TABLE US_Songs RENAME TO us_songs_101;');
 
       ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Statistics_Info+'] (' +
-                        '[ResetTime] INTEGER' +
+                      '[ResetTime] INTEGER' +
                       ');');
       // insert creation timestamp
       ScoreDB.ExecSQL(Format('INSERT INTO ['+cUS_Statistics_Info+'] ' +
-                            '([ResetTime]) VALUES(%d);',
-                            [DateTimeToUnix(Now())]));
+                             '([ResetTime]) VALUES(%d);',
+                             [DateTimeToUnix(Now())]));
       finalizeConvertion := true; //means: convertion has to be done!
-    end else finalizeConvertion := false;
+    end;
 
     // Set version number after creation
     if (Version = 0) then
@@ -228,8 +229,8 @@ end;
  *)
 procedure TDataBaseSystem.ReadScore(Song: TSong);
 var
-  TableData: TSQLiteUniTable;
-  Difficulty: Integer;
+  TableData:  TSQLiteUniTable;
+  Difficulty: integer;
 begin
   if not Assigned(ScoreDB) then
     Exit;
@@ -287,7 +288,7 @@ end;
  *)
 procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: WideString; Score: integer);
 var
-  ID: Integer;
+  ID:        integer;
   TableData: TSQLiteTable;
 begin
   if not Assigned(ScoreDB) then
@@ -384,11 +385,11 @@ end;
  * entries.
  * Free the result-list with FreeStats() after usage to avoid memory leaks.
  *)
-function TDataBaseSystem.GetStats(Typ: TStatType; Count: Byte; Page: Cardinal; Reversed: Boolean): TList;
+function TDataBaseSystem.GetStats(Typ: TStatType; Count: byte; Page: cardinal; Reversed: boolean): TList;
 var
-  Query: String;
+  Query:     string;
   TableData: TSQLiteUniTable;
-  Stat: TStatResult;
+  Stat:      TStatResult;
 begin
   Result := nil;
 
@@ -492,21 +493,21 @@ end;
 
 procedure TDataBaseSystem.FreeStats(StatList: TList);
 var
-  I: integer;
+  Index: integer;
 begin
   if (StatList = nil) then
     Exit;
-  for I := 0 to StatList.Count-1 do
-    TStatResult(StatList[I]).Free;
+  for Index := 0 to StatList.Count-1 do
+    TStatResult(StatList[Index]).Free;
   StatList.Free;
 end;
 
 (**
  * Gets total number of entrys for a stats query
  *)
-function  TDataBaseSystem.GetTotalEntrys(Typ: TStatType): Cardinal;
+function  TDataBaseSystem.GetTotalEntrys(Typ: TStatType): cardinal;
 var
-  Query: String;
+  Query: string;
 begin
   Result := 0;
 
