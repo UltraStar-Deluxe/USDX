@@ -359,11 +359,11 @@ begin
     CountMidTime;
 
     Delay := Floor(1000 / MAX_FPS - 1000 * TimeMid);
-    Log.LogError ('MainLoop', 'Delay: ' + intToStr(Delay));
+    //Log.LogError ('MainLoop', 'Delay: ' + intToStr(Delay));
 
     if Delay >= 1 then
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
-    Log.LogError ('MainLoop', 'Delay: ok ' + intToStr(Delay));
+    //Log.LogError ('MainLoop', 'Delay: ok ' + intToStr(Delay));
 
     CountSkipTime;
 

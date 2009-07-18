@@ -131,6 +131,7 @@ const
 procedure TDataBaseSystem.Init(const Filename: string);
 var
   Version: integer;
+  finalizeConvertion : boolean;
 begin
   if Assigned(ScoreDB) then
     Exit;
@@ -143,24 +144,30 @@ begin
     ScoreDB   := TSQLiteDatabase.Create(Filename);
     fFilename := Filename;
 
-    // Close and delete outdated file
     Version := GetVersion();
-    if ((Version <> 0) and (Version <> cDBVersion)) then
+
+    if not ScoreDB.TableExists(cUS_Statistics_Info) then
     begin
-      Log.LogInfo('Outdated cover-database file found', 'TDataBaseSystem.Init');
-      // Close and delete outdated file
-      ScoreDB.Free;
-      if (not DeleteFile(Filename)) then
-        raise Exception.Create('Could not delete ' + Filename);
-      // Reopen
-      ScoreDB := TSQLiteDatabase.Create(Filename);
+      Log.LogInfo('Outdated song-database file found', 'TDataBaseSystem.Init');
       Version := 0;
-    end;
-    
+      //following just works with convertion of usdx1.01 to usdx1.1!
+      //Rename old Tables - to be able to insert new table-structures
+      ScoreDB.ExecSQL('ALTER TABLE US_Scores RENAME TO us_scores_101;');
+      ScoreDB.ExecSQL('ALTER TABLE US_Songs RENAME TO us_songs_101;');
+
+      ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Statistics_Info+'] (' +
+                        '[ResetTime] INTEGER' +
+                      ');');
+      // insert creation timestamp
+      ScoreDB.ExecSQL(Format('INSERT INTO ['+cUS_Statistics_Info+'] ' +
+                            '([ResetTime]) VALUES(%d);',
+                            [DateTimeToUnix(Now())]));
+      finalizeConvertion := true; //means: convertion has to be done!
+    end else finalizeConvertion := false;
+
     // Set version number after creation
     if (Version = 0) then
       SetVersion(cDBVersion);
-    
 
     // SQLite does not handle VARCHAR(n) or INT(n) as expected.
     // Texts do not have a restricted length, no matter which type is used,
@@ -181,19 +188,20 @@ begin
                       '[ID] INTEGER PRIMARY KEY, ' +
                       '[Artist] TEXT NOT NULL, ' +
                       '[Title] TEXT NOT NULL, ' +
-                      '[TimesPlayed] INTEGER NOT NULL' +
+                      '[TimesPlayed] INTEGER NOT NULL, ' +
+                      '[Rating] INTEGER NULL' + 
                     ');');
 
-    if not ScoreDB.TableExists(cUS_Statistics_Info) then
+    if finalizeConvertion then
     begin
-      ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Statistics_Info+'] (' +
-                        '[ResetTime] INTEGER' +
-                      ');');
-      // insert creation timestamp
-      ScoreDB.ExecSQL(Format('INSERT INTO ['+cUS_Statistics_Info+'] ' +
-                            '([ResetTime]) VALUES(%d);',
-                            [DateTimeToUnix(Now())]));
+      //insert old values in new db-schemes (/tables)
+      ScoreDB.ExecSQL('INSERT INTO '+cUS_Scores+' SELECT  SongID, Difficulty, Player, Score FROM us_scores_101;');
+      ScoreDB.ExecSQL('INSERT INTO '+cUS_Songs+' SELECT  ID, Artist, Title, TimesPlayed, ''NULL'' FROM us_songs_101;');
+      //now drop old tables
+      ScoreDB.ExecSQL('DROP TABLE us_scores_101;');
+      ScoreDB.ExecSQL('DROP TABLE us_songs_101;');
     end;
+
 
   except
     on E: Exception do
