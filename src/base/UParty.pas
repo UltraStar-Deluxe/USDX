@@ -254,8 +254,13 @@ var
 begin
   if ((CurRound < high(Rounds)) or (CurRound = high(CurRound))) then
   begin
-    //Increase Current Round
-    Inc(CurRound);
+    // Increase Current Round but not beyond its limit
+    // CurRound is set to 255 to begin with!
+    // Ugly solution if you ask me.
+    if CurRound < high(CurRound) then
+      Inc(CurRound)
+    else
+      CurRound := 0;
 
     Rounds[CurRound].Winner := 255;
     DllMan.LoadPlugin(Rounds[CurRound].Plugin);
