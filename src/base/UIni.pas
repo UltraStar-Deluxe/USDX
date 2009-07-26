@@ -331,43 +331,22 @@ uses
  * Translate and set the values of options, which need translation. 
  *)
 procedure TIni.TranslateOptionValues;
-const
-  NumberOfLanguages = 14;
 var
-  ErrorStringStart: string;
+  I: integer;
 begin
-  ULanguage.Language.ChangeLanguage(ILanguage[Language]);
+  // Load Languagefile
+  if (Params.Language <> -1) then
+    ULanguage.Language.ChangeLanguage(ILanguage[Params.Language])
+  else
+    ULanguage.Language.ChangeLanguage(ILanguage[Ini.Language]);
 
-  ErrorStringStart := 'The number of language files ('
-                    + IntToStr(Length(ILanguage)) + ') is ';
-
-  if Length(ILanguage) > NumberOfLanguages then
+  SetLength(ILanguageTranslated, Length(ILanguage));
+  for I := 0 to High(ILanguage) do
   begin
-    Log.LogError(ErrorStringStart + 'larger than expected (' + IntToStr(NumberOfLanguages) + ').',
-                 'Ini.TranslateOptionValues');
-    Halt;
+    ILanguageTranslated[I] := ULanguage.Language.Translate(
+      'OPTION_VALUE_' + UpperCase(ILanguage[I])
+    );
   end;
-  
-  if Length(ILanguage) < NumberOfLanguages then
-    Log.LogWarn(ErrorStringStart + 'smaller than expected (' + IntToStr(NumberOfLanguages) + ').',
-                'Ini.TranslateOptionValues');
-
-  SetLength(ILanguageTranslated, NumberOfLanguages);
-
-  ILanguageTranslated[0]              := ULanguage.Language.Translate('OPTION_VALUE_CATALAN');
-  ILanguageTranslated[1]              := ULanguage.Language.Translate('OPTION_VALUE_CROATIAN');
-  ILanguageTranslated[2]              := ULanguage.Language.Translate('OPTION_VALUE_DUTCH');
-  ILanguageTranslated[3]              := ULanguage.Language.Translate('OPTION_VALUE_ENGLISH');
-  ILanguageTranslated[4]              := ULanguage.Language.Translate('OPTION_VALUE_EUSKARA');
-  ILanguageTranslated[5]              := ULanguage.Language.Translate('OPTION_VALUE_FINNISH');
-  ILanguageTranslated[6]              := ULanguage.Language.Translate('OPTION_VALUE_FRENCH');
-  ILanguageTranslated[7]              := ULanguage.Language.Translate('OPTION_VALUE_GERMAN');
-  ILanguageTranslated[8]              := ULanguage.Language.Translate('OPTION_VALUE_GREEK');
-  ILanguageTranslated[9]              := ULanguage.Language.Translate('OPTION_VALUE_ITALIAN');
-  ILanguageTranslated[10]             := ULanguage.Language.Translate('OPTION_VALUE_JAPANESE');
-  ILanguageTranslated[11]             := ULanguage.Language.Translate('OPTION_VALUE_PORTUGUESE');
-  ILanguageTranslated[12]             := ULanguage.Language.Translate('OPTION_VALUE_SPANISH');
-  ILanguageTranslated[13]             := ULanguage.Language.Translate('OPTION_VALUE_SWEDISH');  
 
   IDifficultyTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_EASY');
   IDifficultyTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_MEDIUM');
@@ -941,7 +920,6 @@ begin
 
   // Language
   Language := GetArrayIndex(ILanguage, IniFile.ReadString('Game', 'Language', 'English'));
-  //Language.ChangeLanguage(ILanguage[Language]);
 
   // Tabs
   Tabs := GetArrayIndex(ITabs, IniFile.ReadString('Game', 'Tabs', ITabs[0]));

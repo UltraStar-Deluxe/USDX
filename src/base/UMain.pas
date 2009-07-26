@@ -174,12 +174,6 @@ begin
     Log.LogStatus('Write Ini', 'Initialization');
     Ini.Save;
 
-    // Load Languagefile
-    if (Params.Language <> -1) then
-      Language.ChangeLanguage(ILanguage[Params.Language])
-    else
-      Language.ChangeLanguage(ILanguage[Ini.Language]);
-
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Ini', 1);
 

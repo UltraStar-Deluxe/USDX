@@ -46,9 +46,9 @@ type
 
   TLanguage = class
     public
-      Entry:  array of TLanguageEntry; //Entrys of Chosen Language
-      SEntry: array of TLanguageEntry; //Entrys of Standard Language
-      CEntry: array of TLanguageEntry; //Constant Entrys e.g. Version
+      Entry:        array of TLanguageEntry; //Entrys of Chosen Language
+      EntryDefault: array of TLanguageEntry; //Entrys of Standard Language
+      EntryConst:   array of TLanguageEntry; //Constant Entrys e.g. Version
       Implode_Glue1, Implode_Glue2: String;
     public
       List:   array of TLanguageList;
@@ -107,9 +107,9 @@ begin
     begin
       ChangeLanguage('English');
 
-      SetLength(SEntry, Length(Entry));
+      SetLength(EntryDefault, Length(Entry));
       for J := low(Entry) to high(Entry) do
-        SEntry[J] := Entry[J];
+        EntryDefault[J] := Entry[J];
 
       SetLength(Entry, 0);
       
@@ -189,10 +189,10 @@ begin
   Text := Uppercase(Result);
 
   //Const Mod
-  for E := 0 to high(CEntry) do
-    if Text = CEntry[E].ID then
+  for E := 0 to high(EntryConst) do
+    if Text = EntryConst[E].ID then
     begin
-     Result := CEntry[E].Text;
+     Result := EntryConst[E].Text;
      exit;
     end;
   //Const Mod End
@@ -206,10 +206,10 @@ begin
 
   //Standard Language (If a Language File is Incomplete)
   //Then use Standard Language
-    for E := low(SEntry) to high(SEntry) do
-      if Text = SEntry[E].ID then
+    for E := low(EntryDefault) to high(EntryDefault) do
+      if Text = EntryDefault[E].ID then
       begin
-        Result := SEntry[E].Text;
+        Result := EntryDefault[E].Text;
         Break;
       end;
   //Standard Language END
@@ -220,9 +220,9 @@ end;
 //----------
 procedure TLanguage.AddConst (ID, Text: String);
 begin
-  SetLength (CEntry, Length(CEntry) + 1);
-  CEntry[high(CEntry)].ID := ID;
-  CEntry[high(CEntry)].Text := Text;
+  SetLength (EntryConst, Length(EntryConst) + 1);
+  EntryConst[high(EntryConst)].ID := ID;
+  EntryConst[high(EntryConst)].Text := Text;
 end;
 
 //----------
@@ -232,11 +232,11 @@ procedure TLanguage.ChangeConst(ID, Text: String);
 var
   I: Integer;
 begin
-  for I := 0 to high(CEntry) do
+  for I := 0 to high(EntryConst) do
   begin
-    if CEntry[I].ID = ID then
+    if EntryConst[I].ID = ID then
     begin
-     CEntry[I].Text := Text;
+     EntryConst[I].Text := Text;
      Break;
     end;
   end;
