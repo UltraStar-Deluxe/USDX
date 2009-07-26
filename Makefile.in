@@ -114,7 +114,7 @@ BUILD_TARGETS = all debug release rebuild build
 .PHONY: $(BUILD_TARGETS)
 $(BUILD_TARGETS): all-deps
 	$(MAKE) -C $(USDX_SRC_DIR) $@
-	$(MAKE) -C $(USDX_PLUGIN_DIR) all
+#	$(MAKE) -C $(USDX_PLUGIN_DIR) all
 
 .PHONY: all-deps
 all-deps:
@@ -215,7 +215,7 @@ install-strip:
                 install
 
 .PHONY: install-all
-install-all: install-exec install-plugins install-data
+install-all: install-exec install-data
 
 .PHONY: install-exec
 install-exec:
