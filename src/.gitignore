@@ -1,0 +1,8 @@
+*.cfg
+*.local
+*.bdsproj
+*.identcache
+clean.bat
+config-linux.inc
+paths.inc
+ultrastardx-*.lp[i|s]
