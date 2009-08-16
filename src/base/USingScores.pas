@@ -117,9 +117,9 @@ type
   TScorePopUp = record
     Player:     byte;        // index of the popups player
     TimeStamp:  cardinal;    // timestamp of popups spawn
-    Rating:     byte;        // 0 to 8, type of rating (cool, bad, etc.)
-    ScoreGiven: word;        // score that has already been given to the player
-    ScoreDiff:  word;        // difference between cur score at spawn and old score
+    Rating:     integer;     // 0 to 8, type of rating (cool, bad, etc.)
+    ScoreGiven: integer;     // score that has already been given to the player
+    ScoreDiff:  integer;     // difference between cur score at spawn and old score
     Next:       PScorePopUp; // next item in list
   end;
   aScorePopUp = array of TScorePopUp;
@@ -202,7 +202,7 @@ type
       procedure Init;
 
       // spawns a new line bonus popup for the player
-      procedure SpawnPopUp(const PlayerIndex: byte; const Rating: byte; const Score: word);
+      procedure SpawnPopUp(const PlayerIndex: byte; const Rating: integer; const Score: integer);
 
       // removes all popups from mem
       procedure KillAllPopUps;
@@ -402,7 +402,7 @@ end;
 {**
  * spawns a new line bonus popup for the player
  *}
-procedure TSingScores.SpawnPopUp(const PlayerIndex: byte; const Rating: byte; const Score: word);
+procedure TSingScores.SpawnPopUp(const PlayerIndex: byte; const Rating: integer; const Score: integer);
 var
   Cur: PScorePopUp;
 begin
@@ -414,10 +414,12 @@ begin
     Cur.Player    := PlayerIndex;
     Cur.TimeStamp := SDL_GetTicks;
 
-    // limit rating value to 8
+    // limit rating value to 0..8
     // a higher value would cause a crash when selecting the bg texture
     if (Rating > 8) then
       Cur.Rating := 8
+    else if (Rating < 0) then
+      Cur.Rating := 0
     else
       Cur.Rating := Rating;
 

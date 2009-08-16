@@ -859,7 +859,7 @@ end;
 
 procedure TScreenSing.OnSentenceEnd(SentenceIndex: cardinal);
 var
-  PlayerIndex: integer;
+  PlayerIndex: byte;
   CurrentPlayer: PPLayer;
   CurrentScore: real;
   Line:      PLine;
