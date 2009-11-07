@@ -306,7 +306,7 @@ begin
   Tex_Right[0] := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_TRANSPARENT, 0);
 
   Log.LogStatus('Loading Textures - A', 'LoadTextures');
-  
+
   // P1-6
   // TODO... do it once for each player... this is a bit crappy !!
   //                                       can we make it any better !?
@@ -314,7 +314,29 @@ begin
   begin
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    
+
+    { some colors for tests
+	Col := $10000 * Round(0.02*255) + $100 * Round(0.6 *255) + Round(0.8 *255); //blue
+	Col := $10000 * Round(0.8 *255)                                           ; //red
+	Col :=                            $100 * Round(0.85*255)                  ; //green
+	Col := $10000 * 255             + $100 * Round(0.52*255)                  ; //orange
+	Col := $10000 *            255  + $100 *            255                   ; //yellow
+	Col := $10000 * Round(0.82*255) +                   255                   ; //purple
+	Col := $10000 * Round(0.22*255) + $100 * Round(0.39*255) + Round(0.64*255); //dark blue
+	Col := $10000 * Round(0   *255) + $100 * Round(0   *255) + Round(0   *255); //black
+	Col := $10000 * Round(1.0 *255) + $100 * Round(0.43*255) + Round(0.70*255); //pink
+	Col := 0;       //black
+	Col := $FFFFFF; //white
+	Col := $FF0000; //red
+	Col := $00FF00; //green
+	Col := $002200; //light green
+	Col := $002222; //light greenblue
+	Col := $222200; //light yellow
+	Col := $340000; //red
+	Col := $FF6EB4; //pink
+	Col := $333333; //grey
+    }
+
     Tex_Left[P]         := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Col);
     Tex_Mid[P]          := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Col);
     Tex_Right[P]        := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Col);
