@@ -868,10 +868,17 @@ begin
 
     Song := CatSongs.Song[I];
 
-    // if cover-image is not found then show 'no cover'
-    CoverFile := Song.Path.Append(Song.Cover);
-    if (not CoverFile.IsFile()) then
+    if not Song.Main then
+    begin // to-do : load category covers again...
+          // just a workaround to fic folders=on for the moment...
+      // if cover-image is not found then show 'no cover'
+      CoverFile := Song.Path.Append(Song.Cover);
+      if (not CoverFile.IsFile()) then
+        Song.Cover := PATH_NONE;
+    end
+    else
       Song.Cover := PATH_NONE;
+
     if (Song.Cover.IsUnset) then
       CoverFile := Skin.GetTextureFileName('SongCover');
 

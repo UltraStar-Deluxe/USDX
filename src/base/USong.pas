@@ -176,6 +176,14 @@ const
 constructor TSong.Create();
 begin
   inherited;
+
+  //dirty fix to fix folders=on
+  Self.Path     := PATH_NONE();
+  Self.FileName := PATH_NONE();
+  Self.Cover    := PATH_NONE();
+  Self.Mp3      := PATH_NONE();
+  Self.Background:= PATH_NONE();
+  Self.Video    := PATH_NONE();
 end;
 
 // This may be changed, when we rewrite song select code.
