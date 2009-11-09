@@ -11,7 +11,7 @@ interface
 
 {$IFDEF FPC}
   {$MODE Delphi}
-  {$H+} // use AnsiString
+  {$H+} // use long strings
 {$ENDIF}
 
 uses Messages;

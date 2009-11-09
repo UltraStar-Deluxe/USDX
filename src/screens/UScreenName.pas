@@ -47,8 +47,8 @@ type
     public
       Goto_SingScreen: boolean; //If true then next Screen in SingScreen
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure onShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
@@ -59,9 +59,11 @@ uses
   UGraphic, 
   UIni,
   UNote,
-  UTexture;
+  UTexture,
+  UUnicodeUtils;
 
-function TScreenName.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+
+function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   I: integer;
   SDL_ModState: word;
@@ -74,10 +76,10 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     // check normal keys
-    if (IsAlphaNumericChar(CharCode) or
-        {(CharCode in [' ','-','_','!',',','<','/','*','?','''','"']))} IsPunctuationChar(CharCode)) then
+    if (IsPrintableChar(CharCode)) then
     begin
-      Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text + CharCode;
+      Button[Interaction].Text[0].Text := Button[Interaction].Text[0].Text +
+                                          UCS4ToUTF8String(CharCode);
       Exit;
     end;
 
@@ -195,7 +197,7 @@ begin
 
       SDLK_BACKSPACE:
         begin
-          Button[Interaction].Text[0].DeleteLastL;
+          Button[Interaction].Text[0].DeleteLastLetter();
         end;
 
       SDLK_ESCAPE :
@@ -248,7 +250,7 @@ begin
   Interaction := 0;
 end;
 
-procedure TScreenName.onShow;
+procedure TScreenName.OnShow;
 var
   I:    integer;
 begin

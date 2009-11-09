@@ -34,10 +34,13 @@ interface
 {$I switches.inc}
 
 uses
+  Math,
+  SysUtils,
+  gl,
+  SDL,
+  UPath,
   UMenu,
   UMusic,
-  SDL,
-  SysUtils,
   UFiles,
   UTime,
   USongs,
@@ -46,26 +49,31 @@ uses
   UTexture,
   UMenuText,
   ULyrics,
-  Math,
-  gl,
   UThemes;
 
 type
   TScreenOpen = class(TMenu)
     private
-      TextF:          array[0..1] of integer;
-      TextN:          integer;
-    public
-      Tex_Background: TTexture;
-      FadeOut:        boolean;
-      Path:           string;
-      BackScreen:     pointer;
+      //fTextF:      array[0..1] of integer;
+      fTextN:      integer; // text-box ID of filename
+      fFilename:   IPath;
+      fBackScreen: PMenu;
+
       procedure AddBox(X, Y, W, H: real);
+    public
       constructor Create; override;
-      procedure onShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-//      function Draw: boolean; override;
-//      procedure Finish;
+      procedure OnShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+
+      {**
+       * Set by the caller to provide a default filename.
+       * Set to the selected filename after calling this screen or to PATH_NONE
+       * if the screen was aborted.
+       * TODO: maybe pass this value with a callback OnValueChanged()
+       *}
+      property Filename: IPath READ fFilename WRITE fFilename;
+      {** The screen that is shown after this screen is closed (set by the caller) *}
+      property BackScreen: PMenu READ fBackScreen WRITE fBackScreen;
   end;
 
 implementation
@@ -75,45 +83,41 @@ uses
   UDraw,
   UMain,
   UScreenEditConvert,
-  USkins;
+  USkins,
+  UUnicodeUtils;
 
-function TScreenOpen.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenOpen.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
 
   if (PressedDown) then  // Key Down
   begin
     // check normal keys
-    case CharCode of
-      '0'..'9', 'a'..'z', 'A'..'Z', ' ', '-', '.', ':', '\':
-        begin
-          if Interaction = 0 then
-          begin
-            Text[TextN].Text := Text[TextN].Text + CharCode;
-          end;
-        end;
+    if (IsPrintableChar(CharCode)) then
+    begin
+      if (Interaction = 0) then
+      begin
+        Text[fTextN].Text := Text[fTextN].Text + UCS4ToUTF8String(CharCode);
+        Exit;
+      end;
     end;
 
     // check special keys
     case PressedKey of
-      SDLK_Q:
-        begin
-          Result := false;
-        end;
-      8: // del
+      SDLK_BACKSPACE: // del
         begin
           if Interaction = 0 then
           begin
-            Text[TextN].DeleteLastL;
+            Text[fTextN].DeleteLastLetter;
           end;
         end;
 
       SDLK_ESCAPE:
         begin
           //Empty Filename and go to last Screen
-          ConversionFileName := '';
+          fFileName := PATH_NONE;
           AudioPlayback.PlaySound(SoundLib.Back);
-          FadeTo(BackScreen);
+          FadeTo(fBackScreen);
         end;
 
       SDLK_RETURN:
@@ -121,16 +125,16 @@ begin
           if (Interaction = 2) then
           begin
             //Update Filename and go to last Screen
-            ConversionFileName := Text[TextN].Text;
+            fFileName := Path(Text[fTextN].Text);
             AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(BackScreen);
+            FadeTo(fBackScreen);
           end
           else if (Interaction = 1) then
           begin
             //Empty Filename and go to last Screen
-            ConversionFileName := '';
+            fFileName := PATH_NONE;
             AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(BackScreen);
+            FadeTo(fBackScreen);
           end;
         end;
 
@@ -165,21 +169,25 @@ constructor TScreenOpen.Create;
 begin
   inherited Create;
 
+  fFilename := PATH_NONE;
+
   // line
-{  AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
+  {
+  AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
   AddText(35, 17, 1, 18, 1, 1, 1, 'line');
-  TextSentence := AddText(120, 14, 1, 24, 0, 0, 0, '0 / 0');}
+  TextSentence := AddText(120, 14, 1, 24, 0, 0, 0, '0 / 0');
+  }
 
   // file list
-//  AddBox(400, 100, 350, 450);
+  //AddBox(400, 100, 350, 450);
 
-//  TextF[0] :=  AddText(430, 155,  0, 24, 0, 0, 0, 'a');
-//  TextF[1] :=  AddText(430, 180,  0, 24, 0, 0, 0, 'a');
+  //TextF[0] :=  AddText(430, 155,  0, 24, 0, 0, 0, 'a');
+  //TextF[1] :=  AddText(430, 180,  0, 24, 0, 0, 0, 'a');
 
   // file name
   AddBox(20, 540, 500, 40);
-  TextN := AddText(50, 548, 0, 24, 0, 0, 0, ConversionFileName);
-  AddInteraction(iText, TextN);
+  fTextN := AddText(50, 548, 0, 24, 0, 0, 0, fFileName.ToUTF8);
+  AddInteraction(iText, fTextN);
 
   // buttons
   {AddButton(540, 540, 100, 40, Skin.SkinPath + Skin.ButtonF);
@@ -196,11 +204,12 @@ begin
 
 end;
 
-procedure TScreenOpen.onShow;
+procedure TScreenOpen.OnShow;
 begin
   inherited;
 
   Interaction := 0;
+  Text[fTextN].Text := fFilename.ToUTF8();
 end;
 
 (*

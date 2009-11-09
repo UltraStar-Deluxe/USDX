@@ -35,15 +35,16 @@ interface
 
 uses
   SysUtils,
-  UMenu,
   SDL,
   SDL_Image,
+  gl,
+  UMenu,
   UDisplay,
   UTexture,
-  gl,
   UMusic,
   UFiles,
   UThemes,
+  UPath,
   UGraphicClasses;
 
 type
@@ -98,10 +99,10 @@ type
 
       Fadeout: boolean;
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function Draw: boolean; override;
-      procedure onShow; override;
-      procedure onHide; override;
+      procedure OnShow; override;
+      procedure OnHide; override;
       procedure DrawCredits;
       procedure Draw_FunkyText;
    end;
@@ -138,17 +139,17 @@ const
   OUTRO_EXD_FILE          = 'outro-exit-dark.png';
 
   Timings: array[0..21] of cardinal=(
-     20,   //  0 Delay vor Start
+     20,   //  0 Delay before Start
 
-    149,   //  1 Ende erster Intro Zoom
-    155,   //  2 Start 2. Action im Intro
-    170,   //  3 Ende Separation im Intro
-    271,   //  4 Anfang Zoomout im Intro
+    149,   //  1 End first Intro Zoom
+    155,   //  2 Start 2. Action in Intro
+    170,   //  3 End Separation in Intro
+    271,   //  4 beginning Zoomout in Intro
       0,   //  5 unused
-    261,   //  6 Start fade-to-white im Intro
+    261,   //  6 Start fade-to-white in Intro
 
     271,   //  7 Start Main Part
-    280,   //  8 Start On-Beat-Sternchen Main Part
+    280,   //  8 Start On-Beat-Star Main Part
 
     396,   //  9 Start BlindGuard
     666,   // 10 Start blindy
@@ -162,7 +163,7 @@ const
    2826,   // 18 Ende Whiteshark
    3096,   // 19 Start FadeOut Mainscreen
    3366,   // 20 Ende Credits Tune
-     60);  // 21 start flare im intro
+     60);  // 21 start flare in intro
 
 implementation
 
@@ -176,9 +177,9 @@ uses
   Textgl,
   ULanguage,
   UCommon,
-  UPath;
+  UPathUtils;
 
-function TScreenCredits.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenCredits.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -204,38 +205,38 @@ end;
 
 constructor TScreenCredits.Create;
 var
-  CreditsPath: string;
+  CreditsPath: IPath;
 begin
   inherited Create;
 
-  CreditsPath := ResourcesPath + 'credits/';
+  CreditsPath := ResourcesPath.Append('credits', pdAppend);
 
-  credits_bg_tex := Texture.LoadTexture(CreditsPath + CRDTS_BG_FILE, TEXTURE_TYPE_PLAIN, 0);
-  credits_bg_ovl := Texture.LoadTexture(CreditsPath + CRDTS_OVL_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_bg_tex := Texture.LoadTexture(CreditsPath.Append(CRDTS_BG_FILE), TEXTURE_TYPE_PLAIN, 0);
+  credits_bg_ovl := Texture.LoadTexture(CreditsPath.Append(CRDTS_OVL_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
 
-  credits_blindguard  := Texture.LoadTexture(CreditsPath + CRDTS_blindguard_FILE,  TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_blindy      := Texture.LoadTexture(CreditsPath + CRDTS_blindy_FILE,      TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_canni       := Texture.LoadTexture(CreditsPath + CRDTS_canni_FILE,       TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_commandio   := Texture.LoadTexture(CreditsPath + CRDTS_commandio_FILE,   TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_lazyjoker   := Texture.LoadTexture(CreditsPath + CRDTS_lazyjoker_FILE,   TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mog         := Texture.LoadTexture(CreditsPath + CRDTS_mog_FILE,         TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mota        := Texture.LoadTexture(CreditsPath + CRDTS_mota_FILE,        TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_skillmaster := Texture.LoadTexture(CreditsPath + CRDTS_skillmaster_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_whiteshark  := Texture.LoadTexture(CreditsPath + CRDTS_whiteshark_FILE,  TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_blindguard  := Texture.LoadTexture(CreditsPath.Append(CRDTS_blindguard_FILE),  TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_blindy      := Texture.LoadTexture(CreditsPath.Append(CRDTS_blindy_FILE),      TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_canni       := Texture.LoadTexture(CreditsPath.Append(CRDTS_canni_FILE),       TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_commandio   := Texture.LoadTexture(CreditsPath.Append(CRDTS_commandio_FILE),   TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_lazyjoker   := Texture.LoadTexture(CreditsPath.Append(CRDTS_lazyjoker_FILE),   TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_mog         := Texture.LoadTexture(CreditsPath.Append(CRDTS_mog_FILE),         TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_mota        := Texture.LoadTexture(CreditsPath.Append(CRDTS_mota_FILE),        TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_skillmaster := Texture.LoadTexture(CreditsPath.Append(CRDTS_skillmaster_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  credits_whiteshark  := Texture.LoadTexture(CreditsPath.Append(CRDTS_whiteshark_FILE),  TEXTURE_TYPE_TRANSPARENT, 0);
 
-  intro_layer01 := Texture.LoadTexture(CreditsPath + INTRO_L01_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer02 := Texture.LoadTexture(CreditsPath + INTRO_L02_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer03 := Texture.LoadTexture(CreditsPath + INTRO_L03_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer04 := Texture.LoadTexture(CreditsPath + INTRO_L04_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer05 := Texture.LoadTexture(CreditsPath + INTRO_L05_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer06 := Texture.LoadTexture(CreditsPath + INTRO_L06_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer07 := Texture.LoadTexture(CreditsPath + INTRO_L07_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer08 := Texture.LoadTexture(CreditsPath + INTRO_L08_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  intro_layer09 := Texture.LoadTexture(CreditsPath + INTRO_L09_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer01 := Texture.LoadTexture(CreditsPath.Append(INTRO_L01_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer02 := Texture.LoadTexture(CreditsPath.Append(INTRO_L02_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer03 := Texture.LoadTexture(CreditsPath.Append(INTRO_L03_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer04 := Texture.LoadTexture(CreditsPath.Append(INTRO_L04_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer05 := Texture.LoadTexture(CreditsPath.Append(INTRO_L05_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer06 := Texture.LoadTexture(CreditsPath.Append(INTRO_L06_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer07 := Texture.LoadTexture(CreditsPath.Append(INTRO_L07_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer08 := Texture.LoadTexture(CreditsPath.Append(INTRO_L08_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  intro_layer09 := Texture.LoadTexture(CreditsPath.Append(INTRO_L09_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
 
-  outro_bg  := Texture.LoadTexture(CreditsPath + OUTRO_BG_FILE,  TEXTURE_TYPE_PLAIN, 0);
-  outro_esc := Texture.LoadTexture(CreditsPath + OUTRO_ESC_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
-  outro_exd := Texture.LoadTexture(CreditsPath + OUTRO_EXD_FILE, TEXTURE_TYPE_TRANSPARENT, 0);
+  outro_bg  := Texture.LoadTexture(CreditsPath.Append(OUTRO_BG_FILE),  TEXTURE_TYPE_PLAIN, 0);
+  outro_esc := Texture.LoadTexture(CreditsPath.Append(OUTRO_ESC_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
+  outro_exd := Texture.LoadTexture(CreditsPath.Append(OUTRO_EXD_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
 
   CRDTS_Stage:=InitialDelay;
 end;
@@ -246,7 +247,7 @@ begin
   Draw := true;
 end;
 
-procedure TScreenCredits.onShow;
+procedure TScreenCredits.OnShow;
 begin
   inherited;
 
@@ -255,13 +256,13 @@ begin
   deluxe_slidein := 0;
   Credits_Alpha  := 0;
 //  Music.SetLoop(true); loop loops not, shit
-  AudioPlayback.Open(soundpath + 'wome-credits-tune.mp3'); // thank you wetue
+  AudioPlayback.Open(soundpath.Append('wome-credits-tune.mp3')); // thank you wetue
 //  Music.Play;
   CTime := 0;
 //  setlength(CTime_hold,0);
 end;
 
-procedure TScreenCredits.onHide;
+procedure TScreenCredits.OnHide;
 begin
   AudioPlayback.Stop;
 end;
@@ -1386,7 +1387,7 @@ begin
       begin
         CTime_hold := 0;
         AudioPlayback.Stop;
-        AudioPlayback.Open(soundpath + 'credits-outro-tune.mp3');
+        AudioPlayback.Open(SoundPath.Append('credits-outro-tune.mp3'));
         AudioPlayback.SetVolume(0.2);
         AudioPlayback.SetLoop(true);
         AudioPlayback.Play;

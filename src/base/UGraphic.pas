@@ -150,6 +150,7 @@ var
   //popup mod
   ScreenPopupCheck: TScreenPopupCheck;
   ScreenPopupError: TScreenPopupError;
+  ScreenPopupInfo:  TScreenPopupInfo;
 
   //Notes
   Tex_Left:        array[0..6] of TTexture;   //rename to tex_note_left
@@ -281,7 +282,7 @@ uses
   UIni,
   UDisplay,
   UCommandLine,
-  UPath;
+  UPathUtils;
 
 procedure LoadFontTextures;
 begin
@@ -362,7 +363,7 @@ begin
 
   Tex_Cursor_Unpressed  := Texture.LoadTexture(Skin.GetTextureFileName('Cursor'), TEXTURE_TYPE_TRANSPARENT, 0);
 
-  if (Skin.GetTextureFileName('Cursor_Pressed') <> '') then
+  if (Skin.GetTextureFileName('Cursor_Pressed').IsSet) then
     Tex_Cursor_Pressed    := Texture.LoadTexture(Skin.GetTextureFileName('Cursor_Pressed'), TEXTURE_TYPE_TRANSPARENT, 0)
   else
     Tex_Cursor_Pressed.TexNum := 0;
@@ -411,14 +412,14 @@ begin
       End;
 
       Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(pchar(Skin.GetTextureFileName('LineBonusBack')), TEXTURE_TYPE_COLORIZED, Col);
+      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(Skin.GetTextureFileName('LineBonusBack'), TEXTURE_TYPE_COLORIZED, Col);
     end;
 
 //## backgrounds for the scores ##
   for P := 0 to 5 do begin
     LoadColor(R, G, B, 'P' + IntToStr(P+1) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_ScoreBG[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreBG')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_ScoreBG[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Col);
   end;
 
 
@@ -433,23 +434,23 @@ begin
 //NoteBar ScoreBar
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Dark');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark')), TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Dark[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Dark_Round')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarLevel_Dark[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark'), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarRound_Dark[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark_Round'), TEXTURE_TYPE_COLORIZED, Col);
 //LineBonus ScoreBar
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light')), TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Light[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Light_Round')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarLevel_Light[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light'), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarRound_Light[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light_Round'), TEXTURE_TYPE_COLORIZED, Col);
 //GoldenNotes ScoreBar
     LoadColor(R, G, B, 'P' + IntToStr(P) + 'Lightest');
     Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest')), TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Lightest[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('ScoreLevel_Lightest_Round')), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarLevel_Lightest[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest'), TEXTURE_TYPE_COLORIZED, Col);
+    Tex_Score_NoteBarRound_Lightest[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest_Round'), TEXTURE_TYPE_COLORIZED, Col);
   end;
 
 //## rating pictures that show a picture according to your rate ##
     for P := 0 to 7 do begin
-    Tex_Score_Ratings[P] := Texture.LoadTexture(pchar(Skin.GetTextureFileName('Rating_'+IntToStr(P))), TEXTURE_TYPE_TRANSPARENT, 0);
+    Tex_Score_Ratings[P] := Texture.LoadTexture(Skin.GetTextureFileName('Rating_'+IntToStr(P)), TEXTURE_TYPE_TRANSPARENT, 0);
   end;
 
   Log.LogStatus('Loading Textures - Done', 'LoadTextures');
@@ -486,9 +487,9 @@ begin
   end;
 
   // load icon image (must be 32x32 for win32)
-  Icon := LoadImage(ResourcesPath + WINDOW_ICON);
+  Icon := LoadImage(ResourcesPath.Append(WINDOW_ICON));
   if (Icon <> nil) then
-    SDL_WM_SetIcon(Icon, 0);
+    SDL_WM_SetIcon(Icon, nil);
 
   SDL_WM_SetCaption(PChar(Title), nil);
 
@@ -689,7 +690,7 @@ end;
 procedure LoadLoadingScreen;
 begin
   ScreenLoading := TScreenLoading.Create;
-  ScreenLoading.onShow;
+  ScreenLoading.OnShow;
   
   Display.CurrentScreen := @ScreenLoading;
 
@@ -704,7 +705,7 @@ end;
 procedure LoadScreens;
 begin
 {  ScreenLoading := TScreenLoading.Create;
-  ScreenLoading.onShow;
+  ScreenLoading.OnShow;
   Display.CurrentScreen := @ScreenLoading;
   ScreenLoading.Draw;
   Display.Draw;
@@ -765,6 +766,8 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Check)', 3); Log.BenchmarkStart(3);
   ScreenPopupError := TScreenPopupError.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Error)', 3); Log.BenchmarkStart(3);
+  ScreenPopupInfo := TScreenPopupInfo.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Info)', 3); Log.BenchmarkStart(3);
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyNewRound', 3); Log.BenchmarkStart(3);
   ScreenPartyScore :=       TScreenPartyScore.Create;
@@ -816,6 +819,7 @@ begin
   ScreenSongJumpto.Destroy;
   ScreenPopupCheck.Destroy;
   ScreenPopupError.Destroy;
+  ScreenPopupInfo.Destroy;
   ScreenPartyNewRound.Destroy;
   ScreenPartyScore.Destroy;
   ScreenPartyWin.Destroy;

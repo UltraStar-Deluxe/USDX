@@ -27,7 +27,9 @@ uses
   ctypes       in '../../ctypes/ctypes.pas',
   {$ENDIF}
   FreeType     in '../freetype.pas',
-  UFont        in '../../../base/UFont.pas',
+  UFont        in 'UFont.pas',
+  //UFont        in '../../../base/UFont.pas',
+  UUnicodeUtils in '../../../base/UUnicodeUtils.pas',
   math,
   sysutils;
 
@@ -41,7 +43,7 @@ const
   //FONT_FILE = 'C:/Windows/Fonts/Arial.ttf';
   //FONT_FILE = 'C:/Windows/Fonts/SimSun.ttf';
   //FONT_FILE = 'eurostarregularextended.ttf';
-  FONT_FILE = 'FreeSans.ttf';
+  FONT_FILE = '../../../../game/fonts/FreeSans/FreeSans.ttf';
   
 var
   OurFont: TScalableFont;
@@ -129,11 +131,11 @@ begin
   // Really Nice Perspective Calculations
   glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
 
-  //OurFont := TFTScalableFont.Create(FONT_FILE, 64);
+  OurFont := TFTScalableFont.Create(FONT_FILE, 64, 0.03);
   //OurFont := TFTFont.Create(FONT_FILE, 128);
-  OurFont := TFTScalableOutlineFont.Create(FONT_FILE, 64, 0.05);
+  //OurFont := TFTScalableOutlineFont.Create(FONT_FILE, 64, 0.03);
   //OurFont.UseKerning := false;
-  TFTScalableOutlineFont(OurFont).SetOutlineColor(1, 0, 0);
+  //TFTScalableOutlineFont(OurFont).SetOutlineColor(1, 0, 0, 1);
   //OurFont := TOutlineFont.Create(FONT_FILE, 32, 2);
   //OurFont.LineSpacing := OurFont.LineSpacing * 0.5;
 
@@ -183,7 +185,7 @@ begin
   //OurFont.SetOutlineColor(0.5, 0.5, 0.5);
   //OurFont.ReflectionSpacing := -4;
   //OurFont.UseKerning := false;
-  OurFont.Height := 64;//cnt2;
+  OurFont.Height := 150;//cnt2;
   //OurFont.Reset;
   //OurFont.Aspect := 2;
 
@@ -191,7 +193,7 @@ begin
   bounds := OurFont.BBox(msg);
   //glRectf(bounds.Left, OurFont.Ascender, bounds.Right, OurFont.Ascender-OurFont.Height);
 
-  glColor3f(1, 1, 1);
+  glColor4f(1, 1, 1, 1);
   //OurFont.ReflectionSpacing := 0;
   OurFont.Print(msg);
 

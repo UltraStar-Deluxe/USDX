@@ -34,7 +34,8 @@ interface
 {$I switches.inc}
 
 uses
-  UMusic;
+  UMusic,
+  UPath;
 
 type
   TAudioPlaybackBase = class(TInterfacedObject, IAudioPlayback)
@@ -46,12 +47,12 @@ type
       function GetLatency(): double; virtual; abstract;
 
       // open sound or music stream (used by Open() and OpenSound())
-      function OpenStream(const Filename: string): TAudioPlaybackStream;
-      function OpenDecodeStream(const Filename: string): TAudioDecodeStream;
+      function OpenStream(const Filename: IPath): TAudioPlaybackStream;
+      function OpenDecodeStream(const Filename: IPath): TAudioDecodeStream;
     public
       function GetName: string; virtual; abstract;
 
-      function Open(const Filename: string): boolean; // true if succeed
+      function Open(const Filename: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -79,7 +80,7 @@ type
       function  Length: real;
 
       // Sounds
-      function OpenSound(const Filename: string): TAudioPlaybackStream;
+      function OpenSound(const Filename: IPath): TAudioPlaybackStream;
       procedure PlaySound(Stream: TAudioPlaybackStream);
       procedure StopSound(Stream: TAudioPlaybackStream);
 
@@ -108,7 +109,7 @@ begin
   Result := true;
 end;
 
-function TAudioPlaybackBase.Open(const Filename: string): boolean;
+function TAudioPlaybackBase.Open(const Filename: IPath): boolean;
 begin
   // free old MusicStream
   MusicStream.Free;
@@ -130,7 +131,7 @@ begin
   FreeAndNil(MusicStream);
 end;
 
-function TAudioPlaybackBase.OpenDecodeStream(const Filename: String): TAudioDecodeStream;
+function TAudioPlaybackBase.OpenDecodeStream(const Filename: IPath): TAudioDecodeStream;
 var
   i: integer;
 begin
@@ -140,7 +141,7 @@ begin
     if (assigned(Result)) then
     begin
       Log.LogInfo('Using decoder ' + IAudioDecoder(AudioDecoders[i]).GetName() +
-        ' for "' + Filename + '"', 'TAudioPlaybackBase.OpenDecodeStream');
+        ' for "' + Filename.ToNative + '"', 'TAudioPlaybackBase.OpenDecodeStream');
       Exit;
     end;
   end;
@@ -157,7 +158,7 @@ begin
   SourceStream.Free;
 end;
 
-function TAudioPlaybackBase.OpenStream(const Filename: string): TAudioPlaybackStream;
+function TAudioPlaybackBase.OpenStream(const Filename: IPath): TAudioPlaybackStream;
 var
   PlaybackStream: TAudioPlaybackStream;
   DecodeStream: TAudioDecodeStream;
@@ -169,7 +170,7 @@ begin
   DecodeStream := OpenDecodeStream(Filename);
   if (not assigned(DecodeStream)) then
   begin
-    Log.LogStatus('Could not open "' + Filename + '"', 'TAudioPlayback_Bass.OpenStream');
+    Log.LogStatus('Could not open "' + Filename.ToNative + '"', 'TAudioPlayback_Bass.OpenStream');
     Exit;
   end;
 
@@ -283,7 +284,7 @@ begin
     Result := 0;
 end;
 
-function TAudioPlaybackBase.OpenSound(const Filename: string): TAudioPlaybackStream;
+function TAudioPlaybackBase.OpenSound(const Filename: IPath): TAudioPlaybackStream;
 begin
   Result := OpenStream(Filename);
 end;

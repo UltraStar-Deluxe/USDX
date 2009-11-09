@@ -47,7 +47,7 @@ unit UFFT;
 
 {$IFDEF FPC}
   {$MODE Delphi}
-  {$H+} // Use AnsiString
+  {$H+} // Use long strings
 {$ENDIF}
 
 interface

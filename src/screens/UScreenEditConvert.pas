@@ -25,6 +25,29 @@
 
 unit UScreenEditConvert;
 
+{*
+ * See
+ * MIDI Recommended Practice (RP-017): SMF Lyric Meta Event Definition
+ *   http://www.midi.org/techspecs/rp17.php
+ * MIDI Recommended Practice (RP-026): SMF Language and Display Extensions
+ *   http://www.midi.org/techspecs/rp26.php
+ * MIDI File Format
+ *   http://www.sonicspot.com/guide/midifiles.html
+ * KMIDI File Format
+ *   http://gnese.free.fr/Projects/KaraokeTime/Fichiers/karfaq.html
+ *   http://journals.rpungin.fotki.com/karaoke/category/midi
+ *
+ * There are two widely spread karaoke formats:
+ * - KMIDI (.kar), an inofficial midi extension by Tune 1000
+ * - Standard Midi files with lyric meta-tags (SMF with lyrics, .mid).
+ *
+ * KMIDI uses two tracks, the first just contains a header (mostly track 2) and
+ * the second the lyrics (track 3). It uses text meta tags for the lyrics.
+ * SMF uses just one track (normally track 1) and uses lyric meta tags for storage.
+ *
+ * Most files are in the KMIDI format. Some Midi files contain both lyric types.
+ *}
+
 interface
 
 {$IFDEF FPC}
@@ -45,10 +68,11 @@ uses
   USongs,
   USong,
   UMusic,
-  UThemes;
+  UThemes,
+  UPath;
 
 type
-  TNote = record
+  TMidiNote = record
     Event:     integer;
     EventType: integer;
     Channel:   integer;
@@ -56,69 +80,64 @@ type
     Len:       real;
     Data1:     integer;
     Data2:     integer;
-    Str:       string;
+    Str:       UTF8String; // normally ASCII
   end;
+
+  TLyricType = (ltKMIDI, ltSMFLyric);
 
   TTrack = record
-    Note:   array of TNote;
-    Name:   string;
-    Hear:   boolean;
-    Status: set of (notes, lyrics);
+    Note:   array of TMidiNote;
+    Name:   UTF8String; // normally ASCII
+    Status: set of (tsNotes, tsLyrics); //< track contains notes, lyrics or both
+    LyricType: set of TLyricType;
+    NoteType:  (ntNone, ntAvail);
   end;
 
-  TNuta = record
+  TNote = record
     Start:    integer;
     Len:      integer;
     Tone:     integer;
-    Lyric:    string;
+    Lyric:    UTF8String;
     NewSentence:  boolean;
   end;
 
   TArrayTrack = array of TTrack;
 
   TScreenEditConvert = class(TMenu)
-    public
-      ATrack:    TArrayTrack; // actual track
-//      Track:     TArrayTrack;
-      Channel:   TArrayTrack;
+    private
+      Tracks:    TArrayTrack; // current track
       ColR:      array[0..100] of real;
       ColG:      array[0..100] of real;
       ColB:      array[0..100] of real;
       Len:       real;
-      Sel:       integer;
-      Selected:  boolean;
-//      FileName:  string;
+      SelTrack:  integer;     // index of selected track
+      fFileName: IPath;
 
       {$IFDEF UseMIDIPort}
       MidiFile:  TMidiFile;
-      MidiTrack: TMidiTrack;
-      MidiEvent: pMidiEvent;
       MidiOut:   TMidiOutput;
       {$ENDIF}
-      
-      Song:      TSong;
-      Lines:     TLines;
+
       BPM:       real;
       Ticks:     real;
-      Note:      array of TNuta;
+      Note:      array of TNote;
 
-      procedure AddLyric(Start: integer; Text: string);
-      procedure Extract;
+      procedure AddLyric(Start: integer; LyricType: TLyricType; Text: UTF8String);
+      procedure Extract(out Song: TSong; out Lines: TLines);
 
       {$IFDEF UseMIDIPort}
       procedure MidiFile1MidiEvent(event: PMidiEvent);
       {$ENDIF}
-      
-      function SelectedNumber: integer;
-      constructor Create; override;
-      procedure onShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      function Draw: boolean; override;
-      procedure onHide; override;
-  end;
 
-var
-  ConversionFileName: string;
+      function CountSelectedTracks: integer;
+
+    public
+      constructor Create; override;
+      procedure OnShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function Draw: boolean; override;
+      procedure OnHide; override;
+  end;
 
 implementation
 
@@ -131,17 +150,42 @@ uses
   UGraphic,
   UIni,
   UMain,
-  UPath,
-  USkins;
+  UPathUtils,
+  USkins,
+  ULanguage,
+  UTextEncoding,
+  UUnicodeUtils;
 
-function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+const
+  // MIDI/KAR lyrics are specified to be ASCII only.
+  // Assume backward compatible CP1252 encoding.
+  DEFAULT_ENCODING = encCP1252;
+
+const
+  MIDI_EVENTTYPE_NOTEOFF    = $8;
+  MIDI_EVENTTYPE_NOTEON     = $9;
+  MIDI_EVENTTYPE_META_SYSEX = $F;
+
+  MIDI_EVENT_META = $FF;
+  MIDI_META_TEXT   = $1;
+  MIDI_META_LYRICS = $5;
+
+function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+{$IFDEF UseMIDIPort}
+var
+  SResult: TSaveSongResult;
+  Playing: boolean;
+  MidiTrack: TMidiTrack;
+  Song:  TSong;
+  Lines: TLines;
+{$ENDIF}
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -153,9 +197,10 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-      {$IFDEF UseMIDIPort}
-          MidiFile.StopPlaying;
-      {$ENDIF}
+          {$IFDEF UseMIDIPort}
+          if (MidiFile <> nil) then
+            MidiFile.StopPlaying;
+          {$ENDIF}
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenEdit);
         end;
@@ -165,70 +210,97 @@ begin
           if Interaction = 0 then
           begin
             AudioPlayback.PlaySound(SoundLib.Start);
+            ScreenOpen.Filename := GamePath.Append('file.mid');
             ScreenOpen.BackScreen := @ScreenEditConvert;
             FadeTo(@ScreenOpen);
-          end;
-
-          if Interaction = 1 then
+          end
+          else if Interaction = 1 then
           begin
-            Selected := false;
-      {$IFDEF UseMIDIPort}
-            MidiFile.OnMidiEvent := MidiFile1MidiEvent;
-//            MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
-            MidiFile.StartPlaying;
-            {$ENDIF}
-          end;
-
-          if Interaction = 2 then
-          begin
-            Selected := true;
             {$IFDEF UseMIDIPort}
-            MidiFile.OnMidiEvent := nil;
+            if (MidiFile <> nil) then
+            begin
+              MidiFile.OnMidiEvent := MidiFile1MidiEvent;
+              //MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
+              MidiFile.StartPlaying;
+            end;
             {$ENDIF}
-            {for T := 0 to High(ATrack) do
-            begin
-              if ATrack[T].Hear then
-              begin
-                MidiTrack := MidiFile.GetTrack(T);
-                MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
-              end;
-            end;
-            MidiFile.StartPlaying;//}
-          end;
-
-          if Interaction = 3 then
+          end
+          else if Interaction = 2 then
           begin
-            if SelectedNumber > 0 then
+            {$IFDEF UseMIDIPort}
+            if (MidiFile <> nil) then
             begin
-              Extract;
-              SaveSong(Song, Lines, ChangeFileExt(ConversionFileName, '.txt'), false);
+              MidiFile.OnMidiEvent := nil;
+              MidiFile.StartPlaying;
             end;
+            {$ENDIF}
+          end
+          else if Interaction = 3 then
+          begin
+            {$IFDEF UseMIDIPort}
+            if CountSelectedTracks > 0 then
+            begin
+              Extract(Song, Lines);
+              SResult := SaveSong(Song, Lines, fFileName.SetExtension('.txt'),
+                       false);
+              FreeAndNil(Song);
+              if (SResult = ssrOK) then
+                ScreenPopupInfo.ShowPopup(Language.Translate('INFO_FILE_SAVED'))
+              else
+                ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
+            end
+            else
+            begin
+              ScreenPopupError.ShowPopup(Language.Translate('EDITOR_ERROR_NO_TRACK_SELECTED'));
+            end;
+            {$ENDIF}
           end;
 
         end;
 
       SDLK_SPACE:
         begin
-//          ATrack[Sel].Hear := not ATrack[Sel].Hear;
-          if Notes in ATrack[Sel].Status then
+          {$IFDEF UseMIDIPort}
+          if (MidiFile <> nil) then
           begin
-            ATrack[Sel].Status := ATrack[Sel].Status - [Notes];
-            if Lyrics in ATrack[Sel].Status then
-              ATrack[Sel].Status := ATrack[Sel].Status - [Lyrics]
-            else
-              ATrack[Sel].Status := ATrack[Sel].Status + [Lyrics];
-          end
-          else
-            ATrack[Sel].Status := ATrack[Sel].Status + [Notes];
+            if (Tracks[SelTrack].NoteType = ntAvail) and
+               (Tracks[SelTrack].LyricType <> []) then
+            begin
+              if (Tracks[SelTrack].Status = []) then
+                Tracks[SelTrack].Status := [tsNotes]
+              else if (Tracks[SelTrack].Status = [tsNotes]) then
+                Tracks[SelTrack].Status := [tsLyrics]
+              else if (Tracks[SelTrack].Status = [tsLyrics]) then
+                Tracks[SelTrack].Status := [tsNotes, tsLyrics]
+              else if (Tracks[SelTrack].Status = [tsNotes, tsLyrics]) then
+                Tracks[SelTrack].Status := [];
+            end
+            else if (Tracks[SelTrack].NoteType = ntAvail) then
+            begin
+              if (Tracks[SelTrack].Status = []) then
+                Tracks[SelTrack].Status := [tsNotes]
+              else
+                Tracks[SelTrack].Status := [];
+            end
+            else if (Tracks[SelTrack].LyricType <> []) then
+            begin
+              if (Tracks[SelTrack].Status = []) then
+                Tracks[SelTrack].Status := [tsLyrics]
+              else
+                Tracks[SelTrack].Status := [];
+            end;
 
-{          if Selected then
-          begin
-            MidiTrack := MidiFile.GetTrack(Sel);
-            if Track[Sel].Hear then
+            Playing := (MidiFile.GetCurrentTime > 0);
+            MidiFile.StopPlaying();
+            MidiTrack := MidiFile.GetTrack(SelTrack);
+            if tsNotes in Tracks[SelTrack].Status then
               MidiTrack.OnMidiEvent := MidiFile1MidiEvent
             else
               MidiTrack.OnMidiEvent := nil;
-          end;}
+            if (Playing) then
+              MidiFile.ContinuePlaying();
+          end;
+          {$ENDIF}
         end;
 
       SDLK_RIGHT:
@@ -243,102 +315,161 @@ begin
 
       SDLK_DOWN:
         begin
-          Inc(Sel);
-          if Sel > High(ATrack) then
-            Sel := 0;
+          Inc(SelTrack);
+          if SelTrack > High(Tracks) then
+            SelTrack := 0;
         end;
       SDLK_UP:
         begin
-          Dec(Sel);
-          if Sel < 0 then
-            Sel := High(ATrack);
+          Dec(SelTrack);
+          if SelTrack < 0 then
+            SelTrack := High(Tracks);
         end;
     end;
   end;
 end;
 
-procedure TScreenEditConvert.AddLyric(Start: integer; Text: string);
+procedure TScreenEditConvert.AddLyric(Start: integer; LyricType: TLyricType; Text: UTF8String);
 var
   N:    integer;
 begin
-  for N := 0 to High(Note) do
+  // find corresponding note
+  N := 0;
+  while (N <= High(Note)) do
   begin
     if Note[N].Start = Start then
-    begin
-      // check for new sentece
-      if Copy(Text, 1, 1) = '\' then
-        Delete(Text, 1, 1);
-      if Copy(Text, 1, 1) = '/' then
-      begin
-        Delete(Text, 1, 1);
-        Note[N].NewSentence := true;
-      end;
+      Break;
+    Inc(N);
+  end;
 
-      // overwrite lyric od append
-      if Note[N].Lyric = '-' then
-        Note[N].Lyric := Text
-      else
-        Note[N].Lyric := Note[N].Lyric + Text;
+  // check if note was found
+  if (N > High(Note)) then
+    Exit;
+  
+  // set text
+  if (LyricType = ltKMIDI) then
+  begin
+    // end of paragraph
+    if Copy(Text, 1, 1) = '\' then
+    begin
+      Delete(Text, 1, 1);
+    end
+    // end of line
+    else if Copy(Text, 1, 1) = '/' then
+    begin
+      Delete(Text, 1, 1);
+      Note[N].NewSentence := true;
+    end;
+  end
+  else // SMFLyric
+  begin
+    // Line Feed -> end of paragraph
+    if Copy(Text, 1, 1) = #$0A then
+    begin
+      Delete(Text, 1, 1);
+    end
+    // Carriage Return -> end of line
+    else if Copy(Text, 1, 1) = #$0D then
+    begin
+      Delete(Text, 1, 1);
+      Note[N].NewSentence := true;
     end;
   end;
+
+  // overwrite lyric or append
+  if Note[N].Lyric = '-' then
+    Note[N].Lyric := Text
+  else
+    Note[N].Lyric := Note[N].Lyric + Text;
 end;
 
-procedure TScreenEditConvert.Extract;
+procedure TScreenEditConvert.Extract(out Song: TSong; out Lines: TLines);
+
 var
   T:    integer;
   C:    integer;
   N:    integer;
   Nu:   integer;
-  NoteTemp: TNuta;
+  NoteTemp: TNote;
   Move: integer;
   Max, Min: integer;
+  LyricType: TLyricType;
+  Text: UTF8String;
 begin
   // song info
-  Song.Title := '';
-  Song.Artist := '';
-  Song.Mp3 := '';
+  Song := TSong.Create();
+  Song.Clear();
   Song.Resolution := 4;
   SetLength(Song.BPM, 1);
   Song.BPM[0].BPM := BPM*4;
-
   SetLength(Note, 0);
 
   // extract notes
-  for T := 0 to High(ATrack) do
+  for T := 0 to High(Tracks) do
   begin
-//    if ATrack[T].Hear then
-//    begin
-    if Notes in ATrack[T].Status then
+    if tsNotes in Tracks[T].Status then
     begin
-      for N := 0 to High(ATrack[T].Note) do
+      for N := 0 to High(Tracks[T].Note) do
       begin
-        if (ATrack[T].Note[N].EventType = 9) and (ATrack[T].Note[N].Data2 > 0) then
+        if (Tracks[T].Note[N].EventType = MIDI_EVENTTYPE_NOTEON) and
+           (Tracks[T].Note[N].Data2 > 0) then
         begin
           Nu := Length(Note);
           SetLength(Note, Nu + 1);
-          Note[Nu].Start := Round(ATrack[T].Note[N].Start / Ticks);
-          Note[Nu].Len := Round(ATrack[T].Note[N].Len / Ticks);
-          Note[Nu].Tone := ATrack[T].Note[N].Data1 - 12*5;
+          Note[Nu].Start := Round(Tracks[T].Note[N].Start / Ticks);
+          Note[Nu].Len := Round(Tracks[T].Note[N].Len / Ticks);
+          Note[Nu].Tone := Tracks[T].Note[N].Data1 - 12*5;
           Note[Nu].Lyric := '-';
         end;
       end;
     end;
   end;
 
-  // extract lyrics
-  for T := 0 to High(ATrack) do
+  // extract lyrics (and artist + title info)
+  for T := 0 to High(Tracks) do
   begin
-//    if ATrack[T].Hear then
-//    begin
-    if Lyrics in ATrack[T].Status then
+    if not (tsLyrics in Tracks[T].Status) then
+      Continue;
+
+    for N := 0 to High(Tracks[T].Note) do
     begin
-      for N := 0 to High(ATrack[T].Note) do
+      if (Tracks[T].Note[N].Event = MIDI_EVENT_META) then
       begin
-        if (ATrack[T].Note[N].EventType = 15) then
+        // determine and validate lyric meta tag
+        if (ltKMIDI in Tracks[T].LyricType) and
+           (Tracks[T].Note[N].Data1 = MIDI_META_TEXT) then
         begin
-//          Log.LogStatus('<' + Track[T].Note[N].Str + '>', 'MIDI');
-          AddLyric(Round(ATrack[T].Note[N].Start / Ticks), ATrack[T].Note[N].Str);
+          Text := Tracks[T].Note[N].Str;
+          
+          // check for meta info
+          if (Length(Text) > 2) and (Text[1] = '@') then
+          begin
+            case Text[2] of
+              'L': Song.Language := Copy(Text, 3, Length(Text)); // language
+              'T': begin // title info
+                if (Song.Artist = '') then
+                  Song.Artist := Copy(Text, 3, Length(Text))
+                else if (Song.Title = '') then
+                  Song.Title := Copy(Text, 3, Length(Text));
+              end;
+            end;
+            Continue;
+          end;
+
+          LyricType := ltKMIDI;
+        end
+        else if (ltSMFLyric in Tracks[T].LyricType) and
+                (Tracks[T].Note[N].Data1 = MIDI_META_LYRICS) then
+        begin
+          LyricType := ltSMFLyric;
+        end
+        else
+        begin
+          // unknown meta event
+          Continue;
         end;
+
+        AddLyric(Round(Tracks[T].Note[N].Start / Ticks), LyricType, Tracks[T].Note[N].Str);
       end;
     end;
   end;
@@ -360,8 +491,12 @@ begin
 
   // copy notes
   SetLength(Lines.Line, 1);
-  Lines.Number := 1;
-  Lines.High := 0;
+  Lines.Number     := 1;
+  Lines.High       := 0;
+  Lines.Current    := 0;
+  Lines.Resolution := 0;
+  Lines.NotesGAP   := 0;
+  Lines.ScoreValue := 0;
 
   C := 0;
   N := 0;
@@ -403,35 +538,37 @@ begin
 
     // create space for new note
     SetLength(Lines.Line[C].Note, Length(Lines.Line[C].Note)+1);
+    Inc(Lines.Line[C].HighNote);
 
     // initialize note
     Lines.Line[C].Note[N].Start := Note[Nu].Start;
     Lines.Line[C].Note[N].Length := Note[Nu].Len;
     Lines.Line[C].Note[N].Tone := Note[Nu].Tone;
-    Lines.Line[C].Note[N].Text := Note[Nu].Lyric;
-    //All Notes are Freestyle when Converted Fix:
+    Lines.Line[C].Note[N].Text := DecodeStringUTF8(Note[Nu].Lyric, DEFAULT_ENCODING);
     Lines.Line[C].Note[N].NoteType := ntNormal;
     Inc(N);
   end;
 end;
 
-function TScreenEditConvert.SelectedNumber: integer;
+function TScreenEditConvert.CountSelectedTracks: integer;
 var
   T:    integer; // track
 begin
   Result := 0;
-  for T := 0 to High(ATrack) do
-//    if ATrack[T].Hear then
-//      Inc(Result);
-    if Notes in ATrack[T].Status then
+  for T := 0 to High(Tracks) do
+    if tsNotes in Tracks[T].Status then
       Inc(Result);
 end;
 
 {$IFDEF UseMIDIPort}
 procedure TScreenEditConvert.MidiFile1MidiEvent(event: PMidiEvent);
 begin
-//  Log.LogStatus(IntToStr(event.event), 'MIDI');
-  MidiOut.PutShort(event.event, event.data1, event.data2);
+  //Log.LogStatus(IntToStr(event.event), 'MIDI');
+  try
+    MidiOut.PutShort(event.event, event.data1, event.data2);
+  except
+    MidiFile.StopPlaying();
+  end;
 end;
 {$ENDIF}
 
@@ -442,7 +579,7 @@ begin
   inherited Create;
   AddButton(40, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(15, 5, 0, 0, 0, 'Open');
-//  Button[High(Button)].Text[0].Size := 11;
+  //Button[High(Button)].Text[0].Size := 11;
 
   AddButton(160, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(25, 5, 0, 0, 0, 'Play');
@@ -453,19 +590,7 @@ begin
   AddButton(500, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(20, 5, 0, 0, 0, 'Save');
 
-{  MidiOut := TMidiOutput.Create(nil);
-//  MidiOut.Close;
-//  MidiOut.DeviceID := 0;
-  if Ini.Debug = 1 then
-    MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
-  Log.LogStatus(MidiOut.ProductName, 'MIDI');
-  MidiOut.Open;
-//  MidiOut.SetVolume(100, 100); // temporary}
-
-  ConversionFileName := GamePath + 'file.mid';
-  {$IFDEF UseMIDIPort}
-  MidiFile := TMidiFile.Create(nil);
-  {$ENDIF}
+  fFileName := PATH_NONE;
 
   for P := 0 to 100 do
   begin
@@ -476,96 +601,124 @@ begin
 
 end;
 
-procedure TScreenEditConvert.onShow;
+procedure TScreenEditConvert.OnShow;
 var
   T:    integer; // track
   N:    integer; // note
-  C:    integer; // channel
-  CN:   integer; // channel note
+  {$IFDEF UseMIDIPort}
+  MidiTrack: TMidiTrack;
+  MidiEvent: PMidiEvent;
+  {$ENDIF}
+  FileOpened: boolean;
+  KMIDITrackIndex, SMFTrackIndex: integer;
 begin
   inherited;
 
+  Interaction := 0;
+
 {$IFDEF UseMIDIPort}
   MidiOut := TMidiOutput.Create(nil);
-  if Ini.Debug = 1 then
-    MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
-  Log.LogStatus(MidiOut.ProductName, 'MIDI');
+  Log.LogInfo(MidiOut.ProductName, 'MIDI');
   MidiOut.Open;
+  MidiFile := nil;
+  SetLength(Tracks, 0);
 
-  if FileExists(ConversionFileName) then
+  // Filename is only <> PATH_NONE if we called the OpenScreen before
+  fFilename := ScreenOpen.Filename;
+  if (fFilename = PATH_NONE) then
+    Exit;
+  ScreenOpen.Filename := PATH_NONE;
+
+  FileOpened := false;
+  if fFileName.Exists then
   begin
-    MidiFile.Filename := ConversionFileName;
-    MidiFile.ReadFile;
-
-    Len := 0;
-    Sel := 0;
-    BPM := MidiFile.Bpm;
-    Ticks := MidiFile.TicksPerQuarter / 4;
-
-{    for T := 0 to MidiFile.NumberOfTracks-1 do
-    begin
-      SetLength(Track, Length(Track)+1);
-      MidiTrack := MidiFile.GetTrack(T);
-      MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
-      Track[T].Name := MidiTrack.getName;
-
-      for N := 0 to MidiTrack.getEventCount-1 do
-      begin
-        SetLength(Track[T].Note, Length(Track[T].Note)+1);
-        MidiEvent := MidiTrack.GetEvent(N);
-        Track[T].Note[N].Start := MidiEvent.time;
-        Track[T].Note[N].Len := MidiEvent.len;
-        Track[T].Note[N].Event := MidiEvent.event;
-        Track[T].Note[N].EventType := MidiEvent.event div 16;
-        Track[T].Note[N].Channel := MidiEvent.event and 15;
-        Track[T].Note[N].Data1 := MidiEvent.data1;
-        Track[T].Note[N].Data2 := MidiEvent.data2;
-        Track[T].Note[N].Str := MidiEvent.str;
-
-        if Track[T].Note[N].Start + Track[T].Note[N].Len > Len then
-          Len := Track[T].Note[N].Start + Track[T].Note[N].Len;
-      end;
-    end;}
-
-    SetLength(Channel, 16);
-    for T := 0 to 15 do
-    begin
-      Channel[T].Name := IntToStr(T+1);
-      SetLength(Channel[T].Note, 0);
-      Channel[T].Status := [];
+    MidiFile := TMidiFile.Create(nil);
+    MidiFile.Filename := fFileName;
+    try
+      MidiFile.ReadFile;
+      FileOpened := true;
+    except
+      MidiFile.Free;
     end;
-
-    for T := 0 to MidiFile.NumberOfTracks-1 do
-    begin
-      MidiTrack := MidiFile.GetTrack(T);
-      MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
-
-      for N := 0 to MidiTrack.getEventCount-1 do
-      begin
-        MidiEvent := MidiTrack.GetEvent(N);
-        C := MidiEvent.event and 15;
-
-        CN := Length(Channel[C].Note);
-        SetLength(Channel[C].Note, CN+1);
-
-        Channel[C].Note[CN].Start := MidiEvent.time;
-        Channel[C].Note[CN].Len := MidiEvent.len;
-        Channel[C].Note[CN].Event := MidiEvent.event;
-        Channel[C].Note[CN].EventType := MidiEvent.event div 16;
-        Channel[C].Note[CN].Channel := MidiEvent.event and 15;
-        Channel[C].Note[CN].Data1 := MidiEvent.data1;
-        Channel[C].Note[CN].Data2 := MidiEvent.data2;
-        Channel[C].Note[CN].Str := MidiEvent.str;
-
-        if Channel[C].Note[CN].Start + Channel[C].Note[CN].Len > Len then
-          Len := Channel[C].Note[CN].Start + Channel[C].Note[CN].Len;
-      end;
-    end;
-    ATrack := Channel;
-
   end;
 
-  Interaction := 0;
+  if (not FileOpened) then
+  begin
+    ScreenPopupError.ShowPopup(Language.Translate('ERROR_FILE_NOT_FOUND'));
+    Exit;
+  end;
+
+  Len := 0;
+  SelTrack := 0;
+  BPM := MidiFile.Bpm;
+  Ticks := MidiFile.TicksPerQuarter / 4;
+
+  KMIDITrackIndex := -1;
+  SMFTrackIndex := -1;
+
+  SetLength(Tracks, MidiFile.NumberOfTracks);
+  for T := 0 to MidiFile.NumberOfTracks-1 do
+    Tracks[T].LyricType := [];
+
+  for T := 0 to MidiFile.NumberOfTracks-1 do
+  begin
+    MidiTrack := MidiFile.GetTrack(T);
+    MidiTrack.OnMidiEvent := nil;
+    Tracks[T].Name := DecodeStringUTF8(MidiTrack.getName, DEFAULT_ENCODING);
+    Tracks[T].NoteType := ntNone;
+    Tracks[T].Status := [];
+
+    SetLength(Tracks[T].Note, MidiTrack.getEventCount());
+    for N := 0 to MidiTrack.getEventCount-1 do
+    begin
+      MidiEvent := MidiTrack.GetEvent(N);
+
+      Tracks[T].Note[N].Start     := MidiEvent.time;
+      Tracks[T].Note[N].Len       := MidiEvent.len;
+      Tracks[T].Note[N].Event     := MidiEvent.event;
+      Tracks[T].Note[N].EventType := MidiEvent.event shr 4;
+      Tracks[T].Note[N].Channel   := MidiEvent.event and $0F;
+      Tracks[T].Note[N].Data1     := MidiEvent.data1;
+      Tracks[T].Note[N].Data2     := MidiEvent.data2;
+      Tracks[T].Note[N].Str       := DecodeStringUTF8(MidiEvent.str, DEFAULT_ENCODING);
+
+      if (Tracks[T].Note[N].Event = MIDI_EVENT_META) then
+      begin
+        case (Tracks[T].Note[N].Data1) of
+          MIDI_META_TEXT: begin
+            // KMIDI lyrics (uses MIDI_META_TEXT events)
+            if (StrLComp(PAnsiChar(Tracks[T].Note[N].Str), '@KMIDI KARAOKE FILE', 19) = 0) and
+               (High(Tracks) >= T+1) then
+            begin
+              // The '@KMIDI ...' mark is in the first track (mostly named 'Soft Karaoke')
+              // but the lyrics are in the second track (named 'Words')
+              Tracks[T+1].LyricType := Tracks[T+1].LyricType + [ltKMIDI];
+              KMIDITrackIndex := T+1;
+            end;
+          end;
+          MIDI_META_LYRICS: begin
+            // lyrics in Standard Midi File format found (uses MIDI_META_LYRICS events)
+            Tracks[T].LyricType := Tracks[T].LyricType + [ltSMFLyric];
+            SMFTrackIndex := T;
+          end;
+        end;
+      end
+      else if (Tracks[T].Note[N].EventType = MIDI_EVENTTYPE_NOTEON) then
+      begin
+        // notes available
+        Tracks[T].NoteType := ntAvail;
+      end;
+
+      if Tracks[T].Note[N].Start + Tracks[T].Note[N].Len > Len then
+        Len := Tracks[T].Note[N].Start + Tracks[T].Note[N].Len;
+    end;
+  end;
+
+  // set default lyric track. Prefer KMIDI.
+  if (KMIDITrackIndex > -1) then
+    Tracks[KMIDITrackIndex].Status := Tracks[KMIDITrackIndex].Status + [tsLyrics]
+  else if (SMFTrackIndex > -1) then
+    Tracks[SMFTrackIndex].Status := Tracks[SMFTrackIndex].Status + [tsLyrics];
 {$ENDIF}
 end;
 
@@ -578,41 +731,44 @@ var
   Y:      real;
   Height: real;
   YSkip:  real;
+  TrackName: UTF8String;
 begin
   // draw static menu
   inherited Draw;
 
   Y := 100;
 
-  Height := min(480, 40 * Length(ATrack));
+  Height := min(480, 40 * Length(Tracks));
   Bottom := Y + Height;
 
-  if Length(ATrack) = 0 then // prevent crash with uncomplete code. 
-  begin
-    Log.LogDebug ('UScreenEditConvert -> TScreenEditConvert.Draw:', 'Length(ATrack) = 0');
-    YSkip := 40;
-  end
-  else 
-    YSkip := Height / Length(ATrack);
+  YSkip := Height / Length(Tracks);
 
-  // select
-  DrawQuad(10, Y + Sel*YSkip, 780, YSkip, 0.8, 0.8, 0.8);
+  // highlight selected track
+  DrawQuad(10, Y+SelTrack*YSkip, 780, YSkip, 0.8, 0.8, 0.8);
 
-  // selected - now me use Status System
-  for Count := 0 to High(ATrack) do
-    if ATrack[Count].Hear then
+  // track-selection info
+  for Count := 0 to High(Tracks) do
+    if Tracks[Count].Status <> [] then
       DrawQuad(10, Y + Count*YSkip, 50, YSkip, 0.8, 0.3, 0.3);
   glColor3f(0, 0, 0);
-  for Count := 0 to High(ATrack) do
+  for Count := 0 to High(Tracks) do
   begin
-    if Notes in ATrack[Count].Status then
+    if Tracks[Count].NoteType = ntAvail then
     begin
+      if tsNotes in Tracks[Count].Status then
+        glColor3f(0, 0, 0)
+      else
+        glColor3f(0.7, 0.7, 0.7);
       SetFontPos(25, Y + Count*YSkip + 10);
       SetFontSize(15);
       glPrint('N');
     end;
-    if Lyrics in ATrack[Count].Status then
+    if Tracks[Count].LyricType <> [] then
     begin
+      if tsLyrics in Tracks[Count].Status then
+        glColor3f(0, 0, 0)
+      else
+        glColor3f(0.7, 0.7, 0.7);
       SetFontPos(40, Y + Count*YSkip + 10);
       SetFontSize(15);
       glPrint('L');
@@ -623,51 +779,48 @@ begin
   DrawLine( 60, Y,  60, Bottom, 0, 0, 0);
   DrawLine(790, Y, 790, Bottom, 0, 0, 0);
 
-  for Count := 0 to Length(ATrack) do
+  for Count := 0 to Length(Tracks) do
     DrawLine(10, Y + Count*YSkip, 790, Y + Count*YSkip, 0, 0, 0);
 
-  for Count := 0 to High(ATrack) do
+  for Count := 0 to High(Tracks) do
   begin
-    SetFontPos(11, Y + 10 + Count*YSkip);
+    SetFontPos(65, Y + Count*YSkip);
     SetFontSize(15);
-    glPrint(ATrack[Count].Name);
+    glPrint(Tracks[Count].Name);
   end;
 
-  for Count := 0 to High(ATrack) do
-    for Count2 := 0 to High(ATrack[Count].Note) do
+  for Count := 0 to High(Tracks) do
+  begin
+    for Count2 := 0 to High(Tracks[Count].Note) do
     begin
-      if ATrack[Count].Note[Count2].EventType = 9 then
-        DrawQuad(60 + ATrack[Count].Note[Count2].Start/Len*725,
-                 Y + (Count+1)*YSkip - ATrack[Count].Note[Count2].Data1*35/127,
-                 3,
-                 3,
-                 ColR[Count],
-                 ColG[Count],
-                 ColB[Count]);
-      if ATrack[Count].Note[Count2].EventType = 15 then
-        DrawLine(60 + ATrack[Count].Note[Count2].Start/Len*725,
-                 Y + 0.75*YSkip + Count*YSkip,
-                 60 + ATrack[Count].Note[Count2].Start/Len*725,
-                 Y + YSkip + Count*YSkip,
-                 ColR[Count],
-                 ColG[Count],
-                 ColB[Count]);
+      if Tracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_NOTEON then
+        DrawQuad(60 + Tracks[Count].Note[Count2].Start/Len * 725,
+                 Y + (Count+1)*YSkip - Tracks[Count].Note[Count2].Data1*35/127,
+                 3, 3,
+                 ColR[Count], ColG[Count], ColB[Count]);
+      if Tracks[Count].Note[Count2].EventType = 15 then
+        DrawLine(60 + Tracks[Count].Note[Count2].Start/Len * 725, Y + 0.75 * YSkip + Count*YSkip,
+                 60 + Tracks[Count].Note[Count2].Start/Len * 725, Y + YSkip + Count*YSkip,
+                 ColR[Count], ColG[Count], ColB[Count]);
     end;
+  end;
 
   // playing line
   {$IFDEF UseMIDIPort}
-  X := 60 + MidiFile.GetCurrentTime/MidiFile.GetTrackLength*730;
+  if (MidiFile <> nil) then
+    X := 60 + MidiFile.GetCurrentTime/MidiFile.GetTrackLength*730;
   {$ENDIF}
   DrawLine(X, Y, X, Bottom, 0.3, 0.3, 0.3);
 
   Result := true;
 end;
 
-procedure TScreenEditConvert.onHide;
+procedure TScreenEditConvert.OnHide;
 begin
 {$IFDEF UseMIDIPort}
+  FreeAndNil(MidiFile);
   MidiOut.Close;
-  MidiOut.Free;
+  FreeAndNil(MidiOut);
 {$ENDIF}
 end;
 

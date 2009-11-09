@@ -36,18 +36,19 @@ interface
 uses
   Classes,
   SQLiteTable3,
+  UPath,
   USong,
   USongs;
 
 //--------------------
-//DataBaseSystem - Class including all DB Methods
+//DataBaseSystem - Class including all DB methods
 //--------------------
 type
   TStatType = (
-    stBestScores,   // Best Scores
-    stBestSingers,  // Best Singers
-    stMostSungSong, // Most sung Songs
-    stMostPopBand   // Most popular Band
+    stBestScores,   // Best scores
+    stBestSingers,  // Best singers
+    stMostSungSong, // Most sung songs
+    stMostPopBand   // Most popular band
   );
 
   // abstract super-class for statistic results
@@ -58,29 +59,29 @@ type
 
   TStatResultBestScores = class(TStatResult)
     public
-      Singer:       WideString;
+      Singer:       UTF8String;
       Score:        word;
       Difficulty:   byte;
-      SongArtist:   WideString;
-      SongTitle:    WideString;
+      SongArtist:   UTF8String;
+      SongTitle:    UTF8String;
   end;
 
   TStatResultBestSingers = class(TStatResult)
     public
-      Player:       WideString;
+      Player:       UTF8String;
       AverageScore: word;
   end;
 
   TStatResultMostSungSong = class(TStatResult)
     public
-      Artist:       WideString;
-      Title:        WideString;
+      Artist:       UTF8String;
+      Title:        UTF8String;
       TimesSung:    word;
   end;
 
   TStatResultMostPopBand = class(TStatResult)
     public
-      ArtistName:   WideString;
+      ArtistName:   UTF8String;
       TimesSungTot: word;
   end;
 
@@ -88,18 +89,18 @@ type
   TDataBaseSystem = class
     private
       ScoreDB:      TSQLiteDatabase;
-      fFilename:    string;
+      fFilename: IPath;
 
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
     public
-      property Filename: string read fFilename;
+      property Filename: IPath read fFilename;
 
       destructor Destroy; override;
 
-      procedure Init(const Filename: string);
+      procedure Init(const Filename: IPath);
       procedure ReadScore(Song: TSong);
-      procedure AddScore(Song: TSong; Level: integer; const Name: WideString; Score: integer);
+      procedure AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
       procedure WriteScore(Song: TSong);
 
       function GetStats(Typ: TStatType; Count: byte; Page: cardinal; Reversed: boolean): TList;
@@ -131,49 +132,49 @@ const
   cUS_Statistics_Info = 'us_statistics_info';
 
 (**
- * Opens Database and Create Tables if not Exist
+ * Open database and create tables if they do not exist
  *)
-procedure TDataBaseSystem.Init(const Filename: string);
+procedure TDataBaseSystem.Init(const Filename: IPath);
 var
   Version:            integer;
-  finalizeConvertion: boolean;
+  finalizeConversion: boolean;
 begin
   if Assigned(ScoreDB) then
     Exit;
 
-  Log.LogStatus('Initializing database: "'+Filename+'"', 'TDataBaseSystem.Init');
+  Log.LogStatus('Initializing database: "' + Filename.ToNative + '"', 'TDataBaseSystem.Init');
 
   try
   
-    // Open Database
-    ScoreDB   := TSQLiteDatabase.Create(Filename);
+    // open database
+    ScoreDB   := TSQLiteDatabase.Create(Filename.ToUTF8);
     fFilename := Filename;
 
     Version := GetVersion();
 
-    //Adds Table cUS_Statistics_Info
-    //Happens from Convertion 1.01 -> 1.1
+    // add Table cUS_Statistics_Info
+    // needed in the conversion from 1.01 to 1.1
     if not ScoreDB.TableExists(cUS_Statistics_Info) then
     begin
-      Log.LogInfo('Outdated song-database file found - Missing Table"'+cUS_Statistics_Info+'"', 'TDataBaseSystem.Init');
-      ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Statistics_Info+'] (' +
+      Log.LogInfo('Outdated song database found - missing table"' + cUS_Statistics_Info + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Statistics_Info + '] (' +
                       '[ResetTime] INTEGER' +
                       ');');
       // insert creation timestamp
-      ScoreDB.ExecSQL(Format('INSERT INTO ['+cUS_Statistics_Info+'] ' +
+      ScoreDB.ExecSQL(Format('INSERT INTO [' + cUS_Statistics_Info + '] ' +
                              '([ResetTime]) VALUES(%d);',
                              [DateTimeToUnix(Now())]));
     end;
 
-    //Converts data of 1.01 -> 1.1
-    //Part #1 - prearrangement
-    finalizeConvertion := false;
+    // convert data from 1.01 to 1.1
+    // part #1 - prearrangement
+    finalizeConversion := false;
     if (Version = 0) AND ScoreDB.TableExists('US_Scores') then
     begin
-      //Rename old Tables - to be able to insert new table-structures
+      // rename old tables - to be able to insert new table structures
       ScoreDB.ExecSQL('ALTER TABLE US_Scores RENAME TO us_scores_101;');
       ScoreDB.ExecSQL('ALTER TABLE US_Songs RENAME TO us_songs_101;');
-      finalizeConvertion := true; //means: convertion has to be done!
+      finalizeConversion := true; // means: conversion has to be done!
     end;
 
     // Set version number after creation
@@ -187,14 +188,14 @@ begin
     // types are used (especially FieldAsInteger). Also take care to write the
     // types in upper-case letters although SQLite does not care about this -
     // SQLiteTable3 is very sensitive in this regard.
-    ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Scores+'] (' +
+    ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Scores + '] (' +
                       '[SongID] INTEGER NOT NULL, ' +
                       '[Difficulty] INTEGER NOT NULL, ' +
                       '[Player] TEXT NOT NULL, ' +
                       '[Score] INTEGER NOT NULL' +
                     ');');
 
-    ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS ['+cUS_Songs+'] (' +
+    ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Songs + '] (' +
                       '[ID] INTEGER PRIMARY KEY, ' +
                       '[Artist] TEXT NOT NULL, ' +
                       '[Title] TEXT NOT NULL, ' +
@@ -202,25 +203,25 @@ begin
                       '[Rating] INTEGER NULL' + 
                     ');');
 
-    //Converts data of 1.01 -> 1.1
-    //Part #2 - accomplishment
-    if finalizeConvertion then
+    // convert data from 1.01 to 1.1
+    // part #2 - accomplishment
+    if finalizeConversion then
     begin
-      Log.LogInfo('Outdated song-database file found - Began Converting from V1.01 to V1.1', 'TDataBaseSystem.Init');
-      //insert old values in new db-schemes (/tables)
-      ScoreDB.ExecSQL('INSERT INTO '+cUS_Scores+' SELECT  SongID, Difficulty, Player, Score FROM us_scores_101;');
-      ScoreDB.ExecSQL('INSERT INTO '+cUS_Songs+' SELECT  ID, Artist, Title, TimesPlayed, ''NULL'' FROM us_songs_101;');
+      Log.LogInfo('Outdated song database  found - begin conversion from V1.01 to V1.1', 'TDataBaseSystem.Init');
+      // insert old values into new db-schemes (/tables)
+      ScoreDB.ExecSQL('INSERT INTO ' + cUS_Scores + ' SELECT  SongID, Difficulty, Player, Score FROM us_scores_101;');
+      ScoreDB.ExecSQL('INSERT INTO ' + cUS_Songs + ' SELECT  ID, Artist, Title, TimesPlayed, ''NULL'' FROM us_songs_101;');
       //now drop old tables
       ScoreDB.ExecSQL('DROP TABLE us_scores_101;');
       ScoreDB.ExecSQL('DROP TABLE us_songs_101;');
     end;
 
-    //Adds Column Rating to cUS_Songs
-    //Just for the users of Nightly-Builds and all Developers!
+    // add column rating to cUS_Songs
+    // just for users of nightly builds and developers!
     if not ScoreDB.ContainsColumn(cUS_Songs, 'Rating') then
     begin
-      Log.LogInfo('Outdated song-database file found - Adding Column Rating to "'+cUS_Songs+'"', 'TDataBaseSystem.Init');
-      ScoreDB.ExecSQL('ALTER TABLE '+cUS_Songs+' ADD COLUMN Rating INTEGER NULL');
+      Log.LogInfo('Outdated song database found - adding column rating to "' + cUS_Songs + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN Rating INTEGER NULL');
     end;
 
   except
@@ -259,13 +260,13 @@ begin
   try
     // Search Song in DB
     TableData := ScoreDB.GetUniTable(
-      'SELECT [Difficulty], [Player], [Score] FROM ['+cUS_Scores+'] ' +
+      'SELECT [Difficulty], [Player], [Score] FROM [' + cUS_Scores + '] ' +
       'WHERE [SongID] = (' +
-        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'SELECT [ID] FROM [' + cUS_Songs + '] ' +
         'WHERE [Artist] = ? AND [Title] = ? ' +
         'LIMIT 1) ' +
       'ORDER BY [Score] DESC  LIMIT 15',
-      [UTF8Encode(Song.Artist), UTF8Encode(Song.Title)]);
+      [Song.Artist, Song.Title]);
 
     // Empty Old Scores
     SetLength(Song.Score[0], 0);
@@ -283,7 +284,7 @@ begin
         SetLength(Song.Score[Difficulty], Length(Song.Score[Difficulty]) + 1);
 
         Song.Score[Difficulty, High(Song.Score[Difficulty])].Name  :=
-            UTF8Decode(TableData.FieldByName['Player']);
+            TableData.FieldByName['Player'];
         Song.Score[Difficulty, High(Song.Score[Difficulty])].Score :=
             TableData.FieldAsInteger(TableData.FieldIndex['Score']);
       end;
@@ -305,7 +306,7 @@ end;
 (**
  * Adds one new score to DB
  *)
-procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: WideString; Score: integer);
+procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
 var
   ID:        integer;
   TableData: TSQLiteTable;
@@ -322,35 +323,35 @@ begin
   try
 
     ID := ScoreDB.GetTableValue(
-        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'SELECT [ID] FROM [' + cUS_Songs + '] ' +
         'WHERE [Artist] = ? AND [Title] = ?',
-        [UTF8Encode(Song.Artist), UTF8Encode(Song.Title)]);
+        [Song.Artist, Song.Title]);
     if (ID = 0) then
     begin
       // Create song if it does not exist
       ScoreDB.ExecSQL(
-          'INSERT INTO ['+cUS_Songs+'] ' +
+          'INSERT INTO [' + cUS_Songs + '] ' +
           '([ID], [Artist], [Title], [TimesPlayed]) VALUES ' +
           '(NULL, ?, ?, 0);',
-          [UTF8Encode(Song.Artist), UTF8Encode(Song.Title)]);
+          [Song.Artist, Song.Title]);
       // Get song-ID
       ID := ScoreDB.GetLastInsertRowID();
     end;
     // Create new entry
     ScoreDB.ExecSQL(
-        'INSERT INTO ['+cUS_Scores+'] ' +
+        'INSERT INTO [' + cUS_Scores + '] ' +
         '([SongID] ,[Difficulty], [Player], [Score]) VALUES ' +
         '(?, ?, ?, ?);',
-        [ID, Level, UTF8Encode(Name), Score]);
+        [ID, Level, Name, Score]);
 
     // Delete last position when there are more than 5 entrys.
     // Fixes crash when there are > 5 ScoreEntrys
     // Note: GetUniTable is not applicable here, as the results are used while
     // table entries are deleted.
     TableData := ScoreDB.GetTable(
-        'SELECT [Player], [Score] FROM ['+cUS_Scores+'] ' +
+        'SELECT [Player], [Score] FROM [' + cUS_Scores + '] ' +
         'WHERE [SongID] = ' + InttoStr(ID) + ' AND ' +
-              '[Difficulty] = ' + InttoStr(Level) +' ' +
+              '[Difficulty] = ' + InttoStr(Level) + ' ' +
         'ORDER BY [Score] DESC LIMIT -1 OFFSET 5');
 
     while (not TableData.EOF) do
@@ -360,7 +361,7 @@ begin
       // an automatic cast of this field to the TEXT type (although it might even
       // work that way).
       ScoreDB.ExecSQL(
-          'DELETE FROM ['+cUS_Scores+'] ' +
+          'DELETE FROM [' + cUS_Scores + '] ' +
           'WHERE [SongID] = ' + InttoStr(ID) + ' AND ' +
                 '[Difficulty] = ' + InttoStr(Level) +' AND ' +
                 '[Player] = ? AND ' +
@@ -378,8 +379,8 @@ begin
 end;
 
 (**
- * Not needed with new System.
- * Used for increment played count
+ * Not needed with new system.
+ * Used to increment played count
  *)
 procedure TDataBaseSystem.WriteScore(Song: TSong);
 begin
@@ -389,10 +390,10 @@ begin
   try
     // Increase TimesPlayed
     ScoreDB.ExecSQL(
-        'UPDATE ['+cUS_Songs+'] ' +
+        'UPDATE [' + cUS_Songs + '] ' +
         'SET [TimesPlayed] = [TimesPlayed] + 1 ' +
         'WHERE [Title] = ? AND [Artist] = ?;',
-        [UTF8Encode(Song.Title), UTF8Encode(Song.Artist)]);
+        [Song.Title, Song.Artist]);
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.WriteScore');
   end;
@@ -420,19 +421,19 @@ begin
   // Create query
   case Typ of
     stBestScores: begin
-      Query := 'SELECT [Player], [Difficulty], [Score], [Artist], [Title] FROM ['+cUS_Scores+'] ' +
-               'INNER JOIN ['+cUS_Songs+'] ON ([SongID] = [ID]) ORDER BY [Score]';
+      Query := 'SELECT [Player], [Difficulty], [Score], [Artist], [Title] FROM [' + cUS_Scores + '] ' +
+               'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) ORDER BY [Score]';
     end;
     stBestSingers: begin
-      Query := 'SELECT [Player], ROUND(AVG([Score])) FROM ['+cUS_Scores+'] ' +
+      Query := 'SELECT [Player], ROUND(AVG([Score])) FROM [' + cUS_Scores + '] ' +
                'GROUP BY [Player] ORDER BY AVG([Score])';
     end;
     stMostSungSong: begin
-      Query := 'SELECT [Artist], [Title], [TimesPlayed] FROM ['+cUS_Songs+'] ' +
+      Query := 'SELECT [Artist], [Title], [TimesPlayed] FROM [' + cUS_Songs + '] ' +
                'ORDER BY [TimesPlayed]';
     end;
     stMostPopBand: begin
-      Query := 'SELECT [Artist], SUM([TimesPlayed]) FROM ['+cUS_Songs+'] ' +
+      Query := 'SELECT [Artist], SUM([TimesPlayed]) FROM [' + cUS_Songs + '] ' +
                'GROUP BY [Artist] ORDER BY SUM([TimesPlayed])';
     end;
   end;
@@ -465,18 +466,18 @@ begin
         Stat := TStatResultBestScores.Create;
         with TStatResultBestScores(Stat) do
         begin
-          Singer := UTF8Decode(TableData.Fields[0]);
+          Singer := TableData.Fields[0];
           Difficulty := TableData.FieldAsInteger(1);
           Score := TableData.FieldAsInteger(2);
-          SongArtist := UTF8Decode(TableData.Fields[3]);
-          SongTitle := UTF8Decode(TableData.Fields[4]);
+          SongArtist := TableData.Fields[3];
+          SongTitle := TableData.Fields[4];
         end;
       end;
       stBestSingers: begin
         Stat := TStatResultBestSingers.Create;
         with TStatResultBestSingers(Stat) do
         begin
-          Player := UTF8Decode(TableData.Fields[0]);
+          Player := TableData.Fields[0];
           AverageScore := TableData.FieldAsInteger(1);
         end;
       end;
@@ -484,8 +485,8 @@ begin
         Stat := TStatResultMostSungSong.Create;
         with TStatResultMostSungSong(Stat) do
         begin
-          Artist := UTF8Decode(TableData.Fields[0]);
-          Title  := UTF8Decode(TableData.Fields[1]);
+          Artist := TableData.Fields[0];
+          Title  := TableData.Fields[1];
           TimesSung  := TableData.FieldAsInteger(2);
         end;
       end;
@@ -493,7 +494,7 @@ begin
         Stat := TStatResultMostPopBand.Create;
         with TStatResultMostPopBand(Stat) do
         begin
-          ArtistName := UTF8Decode(TableData.Fields[0]);
+          ArtistName := TableData.Fields[0];
           TimesSungTot := TableData.FieldAsInteger(1);
         end;
       end
@@ -524,7 +525,7 @@ end;
 (**
  * Gets total number of entrys for a stats query
  *)
-function  TDataBaseSystem.GetTotalEntrys(Typ: TStatType): cardinal;
+function TDataBaseSystem.GetTotalEntrys(Typ: TStatType): cardinal;
 var
   Query: string;
 begin
@@ -537,13 +538,13 @@ begin
     // Create query
     case Typ of
       stBestScores:
-        Query := 'SELECT COUNT([SongID]) FROM ['+cUS_Scores+'];';
+        Query := 'SELECT COUNT([SongID]) FROM [' + cUS_Scores + '];';
       stBestSingers:
-        Query := 'SELECT COUNT(DISTINCT [Player]) FROM ['+cUS_Scores+'];';
+        Query := 'SELECT COUNT(DISTINCT [Player]) FROM [' + cUS_Scores + '];';
       stMostSungSong:
-        Query := 'SELECT COUNT([ID]) FROM ['+cUS_Songs+'];';
+        Query := 'SELECT COUNT([ID]) FROM [' + cUS_Songs + '];';
       stMostPopBand:
-        Query := 'SELECT COUNT(DISTINCT [Artist]) FROM ['+cUS_Songs+'];';
+        Query := 'SELECT COUNT(DISTINCT [Artist]) FROM [' + cUS_Songs + '];';
     end;
 
     Result := ScoreDB.GetTableValue(Query);
@@ -566,7 +567,7 @@ begin
     Exit;
 
   try
-    Query := 'SELECT [ResetTime] FROM ['+cUS_Statistics_Info+'];';
+    Query := 'SELECT [ResetTime] FROM [' + cUS_Statistics_Info + '];';
     Result := UnixToDateTime(ScoreDB.GetTableValue(Query));
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.GetStatReset');

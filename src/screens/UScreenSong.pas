@@ -38,6 +38,7 @@ uses
   SDL,
   UCommon,
   UDisplay,
+  UPath,
   UFiles,
   UIni,
   ULanguage,
@@ -118,19 +119,19 @@ type
       procedure SetScroll4;
       procedure SetScroll5;
       procedure SetScroll6;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function Draw: boolean; override;
       procedure GenerateThumbnails();
-      procedure onShow; override;
-      procedure onHide; override;
+      procedure OnShow; override;
+      procedure OnHide; override;
       procedure SelectNext;
       procedure SelectPrev;
       procedure SkipTo(Target: cardinal);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
       procedure ShowCatTL(Cat: integer);// Show Cat in Top left
-      procedure ShowCatTLCustom(Caption: string);// Show Custom Text in Top left
+      procedure ShowCatTLCustom(Caption: UTF8String);// Show Custom Text in Top left
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh; //Refresh Song Sorting
       procedure ChangeMusic;
@@ -164,7 +165,8 @@ uses
   UParty,
   UPlaylist,
   UScreenSongMenu,
-  USkins;
+  USkins,
+  UUnicodeUtils;
 
 // ***** Public methods ****** //
 
@@ -211,7 +213,7 @@ begin
 end;
 //Show Wrong Song when Tabs on Fix End
 
-procedure TScreenSong.ShowCatTLCustom(Caption: string);// Show Custom Text in Top left
+procedure TScreenSong.ShowCatTLCustom(Caption: UTF8String);// Show Custom Text in Top left
 begin
   Text[TextCat].Text := Caption;
   Text[TextCat].Visible := true;
@@ -243,12 +245,13 @@ end;
 
 // Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   I:      integer;
   I2:     integer;
   SDL_ModState:  word;
-  Letter: WideChar;
+  UpperLetter: UCS4Char;
+  TempStr: UTF8String;
 begin
   Result := true;
 
@@ -273,9 +276,10 @@ begin
     //Jump to Artist/Titel
     if ((SDL_ModState and KMOD_LALT <> 0) and (Mode = smNormal)) then
     begin
-      if (WideCharUpperCase(CharCode)[1] in ([WideChar('A')..WideChar('Z'), WideChar('0') .. WideChar('9')]) ) then
+      UpperLetter := UCS4UpperCase(CharCode);
+
+      if (UpperLetter in ([Ord('A')..Ord('Z'), Ord('0') .. Ord('9')]) ) then
       begin
-        Letter := WideCharUpperCase(CharCode)[1];
         I2 := Length(CatSongs.Song);
 
         //Jump To Titel
@@ -283,18 +287,21 @@ begin
         begin
           for I := 1 to High(CatSongs.Song) do
           begin
-            if (CatSongs.Song[(I + Interaction) mod I2].Visible) and
-               (Length(CatSongs.Song[(I + Interaction) mod I2].Title)>0) and
-               (WideStringUpperCase(CatSongs.Song[(I + Interaction) mod I2].Title)[1] = Letter) then
+            if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
             begin
-              SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+              TempStr := CatSongs.Song[(I + Interaction) mod I2].Title;
+              if (Length(TempStr) > 0) and
+                 (UCS4UpperCase(UTF8ToUCS4String(TempStr)[0]) = UpperLetter) then
+              begin
+                SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-              AudioPlayback.PlaySound(SoundLib.Change);
+                AudioPlayback.PlaySound(SoundLib.Change);
 
-              ChangeMusic;
-              SetScroll4;
-              //Break and Exit
-              Exit;
+                ChangeMusic;
+                SetScroll4;
+                //Break and Exit
+                Exit;
+              end;
             end;
           end;
         end
@@ -303,19 +310,22 @@ begin
         begin
           for I := 1 to High(CatSongs.Song) do
           begin
-            if (CatSongs.Song[(I + Interaction) mod I2].Visible) and
-               (Length(CatSongs.Song[(I + Interaction) mod I2].Artist)>0) and
-               (WideStringUpperCase(CatSongs.Song[(I + Interaction) mod I2].Artist)[1] = Letter) then
+            if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
             begin
-              SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
+              TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist;
+              if (Length(TempStr) > 0) and
+                 (UCS4UpperCase(UTF8ToUCS4String(TempStr)[0]) = UpperLetter) then
+              begin
+                SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2));
 
-              AudioPlayback.PlaySound(SoundLib.Change);
+                AudioPlayback.PlaySound(SoundLib.Change);
 
-              ChangeMusic;
-              SetScroll4;
+                ChangeMusic;
+                SetScroll4;
 
-              //Break and Exit
-              Exit;
+                //Break and Exit
+                Exit;
+              end;
             end;
           end;
         end;
@@ -325,14 +335,14 @@ begin
     end;
 
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
         end;
 
-      'M': //Show SongMenu
+      Ord('M'): //Show SongMenu
         begin
           if (Songs.SongList.Count > 0) then
           begin
@@ -342,41 +352,41 @@ begin
               begin 
                 if CatSongs.CatNumShow = -3 then
                 begin
-                  ScreenSongMenu.onShow;
+                  ScreenSongMenu.OnShow;
                   ScreenSongMenu.MenuShow(SM_Playlist);
                 end
                 else
                 begin
-                  ScreenSongMenu.onShow;
+                  ScreenSongMenu.OnShow;
                   ScreenSongMenu.MenuShow(SM_Main);
                 end;
               end
               else
               begin
-                ScreenSongMenu.onShow;
+                ScreenSongMenu.OnShow;
                 ScreenSongMenu.MenuShow(SM_Playlist_Load);
               end;
             end //Party Mode -> Show Party Menu
             else
             begin
-              ScreenSongMenu.onShow;
+              ScreenSongMenu.OnShow;
               ScreenSongMenu.MenuShow(SM_Party_Main);
             end;
           end;
           Exit;
         end;
 
-      'P': //Show Playlist Menu
+      Ord('P'): //Show Playlist Menu
         begin
           if (Songs.SongList.Count > 0) and (Mode = smNormal) then
           begin
-            ScreenSongMenu.onShow;
+            ScreenSongMenu.OnShow;
             ScreenSongMenu.MenuShow(SM_Playlist_Load);
           end;
           Exit;
         end;
 
-      'J': //Show Jumpto Menu
+      Ord('J'): //Show Jumpto Menu
         begin
           if (Songs.SongList.Count > 0) and (Mode = smNormal) then
           begin
@@ -385,13 +395,13 @@ begin
           Exit;
         end;
 
-      'E':
+      Ord('E'):
         begin
           OpenEditor;
           Exit;
         end;
 
-      'R':
+      Ord('R'):
         begin
           if (Songs.SongList.Count > 0) and
              (Mode = smNormal) then
@@ -515,7 +525,7 @@ begin
               if (CatSongs.CatNumShow < -1) then
               begin
                 //Atm: Set Empty Filter
-                CatSongs.SetFilter('', 0);
+                CatSongs.SetFilter('', fltAll);
 
                 //Show Cat in Top Left Mod
                 HideCatTL;
@@ -744,18 +754,18 @@ begin
 
   if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then
     //if RightMbESC is set, send ESC keypress
-    Result:=ParseInput(SDLK_ESCAPE, #0, true);
+    Result:=ParseInput(SDLK_ESCAPE, 0, true);
 
   //song scrolling with mousewheel
   if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then
-    ParseInput(SDLK_RIGHT, #0, true);
+    ParseInput(SDLK_RIGHT, 0, true);
 
   if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then
-    ParseInput(SDLK_LEFT, #0, true);
+    ParseInput(SDLK_LEFT, 0, true);
 
   //LMB anywhere starts
   if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
-    ParseInput(SDLK_RETURN, #0, true);
+    ParseInput(SDLK_RETURN, 0, true);
 end;
 
 constructor TScreenSong.Create;
@@ -833,9 +843,9 @@ var
   I: integer;
   CoverButtonIndex: integer;
   CoverButton: TButton;
-  CoverName: string;
   CoverTexture: TTexture;
   Cover: TCover;
+  CoverFile: IPath;
   Song: TSong;
 begin
   if (Length(CatSongs.Song) <= 0) then
@@ -850,7 +860,7 @@ begin
     CoverButton := nil;
 
     // create a clickable cover
-    CoverButtonIndex := AddButton(300 + I*250, 140, 200, 200, '', TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
+    CoverButtonIndex := AddButton(300 + I*250, 140, 200, 200, PATH_NONE, TEXTURE_TYPE_PLAIN, Theme.Song.Cover.Reflections);
     if (CoverButtonIndex > -1) then
       CoverButton := Button[CoverButtonIndex];
     if (CoverButton = nil) then
@@ -859,18 +869,16 @@ begin
     Song := CatSongs.Song[I];
 
     // if cover-image is not found then show 'no cover'
-    if (not FileExists(Song.Path + Song.Cover)) then
-      Song.Cover := '';
-
-    if (Song.Cover = '') then
-      CoverName := Skin.GetTextureFileName('SongCover')
-    else
-      CoverName := Song.Path + Song.Cover;
+    CoverFile := Song.Path.Append(Song.Cover);
+    if (not CoverFile.IsFile()) then
+      Song.Cover := PATH_NONE;
+    if (Song.Cover.IsUnset) then
+      CoverFile := Skin.GetTextureFileName('SongCover');
 
     // load cover and cache its texture
-    Cover := Covers.FindCover(CoverName);
+    Cover := Covers.FindCover(CoverFile);
     if (Cover = nil) then
-      Cover := Covers.AddCover(CoverName);
+      Cover := Covers.AddCover(CoverFile);
 
     // use the cached texture
     // TODO: this is a workaround until the new song-loading works.
@@ -910,7 +918,7 @@ begin
     end;
 
     // Set visibility of video icon
-    Static[VideoIcon].Visible := (CatSongs.Song[Interaction].Video <> '');
+    Static[VideoIcon].Visible := CatSongs.Song[Interaction].Video.IsSet;
 
     // Set texts
     Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
@@ -1399,7 +1407,7 @@ begin
   end;
 end;
 
-procedure TScreenSong.onShow;
+procedure TScreenSong.OnShow;
 begin
   inherited;
 {**
@@ -1456,14 +1464,14 @@ begin
   SetStatics;
 end;
 
-procedure TScreenSong.onHide;
+procedure TScreenSong.OnHide;
 begin
   // turn music volume to 100%
   AudioPlayback.SetVolume(1.0);
 
   // if preview is deactivated: load musicfile now
   if (IPreviewVolumeVals[Ini.PreviewVolume] = 0) then
-    AudioPlayback.Open(CatSongs.Song[Interaction].Path + CatSongs.Song[Interaction].Mp3);
+    AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Mp3));
 
   // if hide then stop music (for party mode popup on exit)
   if (Display.NextScreen <> @ScreenSing) and
@@ -1642,7 +1650,7 @@ begin
   if not assigned(Song) then
     Exit;
 
-  if AudioPlayback.Open(Song.Path + Song.Mp3) then
+  if AudioPlayback.Open(Song.Path.Append(Song.Mp3)) then
   begin
     AudioPlayback.Position := AudioPlayback.Length / 4;
     // set preview volume

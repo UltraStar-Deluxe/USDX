@@ -36,7 +36,8 @@ interface
 uses
   UThemes,
   UTexture,
-  UMenuBackground;
+  UMenuBackground,
+  UPath;
 
 //TMenuBackgroundColor - Background Color
 //--------
@@ -65,7 +66,8 @@ uses
   UGraphic;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
-var texFilename: string;
+var
+  texFilename: IPath;
 begin
   inherited;
 
@@ -75,7 +77,6 @@ begin
   Color       := ThemedSettings.Color;
 
   texFilename := Skin.GetTextureFileName(ThemedSettings.Tex);
-  texFilename := AdaptFilePaths(texFilename);
   Tex         := Texture.GetTexture(texFilename, TEXTURE_TYPE_PLAIN);
 
   if (Tex.TexNum = 0) then

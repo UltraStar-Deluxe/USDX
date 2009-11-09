@@ -48,7 +48,7 @@ type
       // objects
       Text:             TText; // Main text describing option
       TextOpt:          array of TText; // 3 texts in the position of possible options
-      TextOptT:         array of string; // array of names for possible options
+      TextOptT:         array of UTF8String; // array of names for possible options
 
       Texture:          TTexture; // Select Texture
       TextureSBG:       TTexture; // Background Selections Texture

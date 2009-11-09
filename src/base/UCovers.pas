@@ -50,7 +50,8 @@ uses
   SysUtils,
   Classes,
   UImage,
-  UTexture;
+  UTexture,
+  UPath;
 
 type
   ECoverDBException = class(Exception)
@@ -59,9 +60,9 @@ type
   TCover = class
     private
       ID: int64;
-      Filename: WideString;
+      Filename: IPath;
     public
-      constructor Create(ID: int64; Filename: WideString);
+      constructor Create(ID: int64; Filename: IPath);
       function GetPreviewTexture(): TTexture;
       function GetTexture(): TTexture;
   end;
@@ -76,19 +77,19 @@ type
     private
       DB: TSQLiteDatabase;
       procedure InitCoverDatabase();
-      function CreateThumbnail(const Filename: WideString; var Info: TThumbnailInfo): PSDL_Surface;
+      function CreateThumbnail(const Filename: IPath; var Info: TThumbnailInfo): PSDL_Surface;
       function LoadCover(CoverID: int64): TTexture;
       procedure DeleteCover(CoverID: int64);
-      function FindCoverIntern(const Filename: WideString): int64;
+      function FindCoverIntern(const Filename: IPath): int64;
       procedure Open();
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
     public
       constructor Create();
       destructor Destroy; override;
-      function AddCover(const Filename: WideString): TCover;
-      function FindCover(const Filename: WideString): TCover;
-      function CoverExists(const Filename: WideString): boolean;
+      function AddCover(const Filename: IPath): TCover;
+      function FindCover(const Filename: IPath): TCover;
+      function CoverExists(const Filename: IPath): boolean;
       function GetMaxCoverSize(): integer;
       procedure SetMaxCoverSize(Size: integer);
   end;
@@ -111,7 +112,7 @@ uses
   DateUtils;
 
 const
-  COVERDB_FILENAME = 'cover.db';
+  COVERDB_FILENAME: UTF8String = 'cover.db';
   COVERDB_VERSION = 01; // 0.1
   COVER_TBL = 'Cover';
   COVER_THUMBNAIL_TBL = 'CoverThumbnail';
@@ -141,7 +142,7 @@ end;
 
 { TCover }
 
-constructor TCover.Create(ID: int64; Filename: WideString);
+constructor TCover.Create(ID: int64; Filename: IPath);
 begin
   Self.ID := ID;
   Self.Filename := Filename;
@@ -210,11 +211,11 @@ end;
 procedure TCoverDatabase.Open();
 var
   Version: integer;
-  Filename: string;
+  Filename: IPath;
 begin
-  Filename := UTF8Encode(Platform.GetGameUserPath() + COVERDB_FILENAME);
+  Filename := Platform.GetGameUserPath().Append(COVERDB_FILENAME);
 
-  DB := TSQLiteDatabase.Create(Filename);
+  DB := TSQLiteDatabase.Create(Filename.ToUTF8());
   Version := GetVersion();
 
   // check version, if version is too old/new, delete database file
@@ -223,10 +224,10 @@ begin
     Log.LogInfo('Outdated cover-database file found', 'TCoverDatabase.Open');
     // close and delete outdated file
     DB.Free;
-    if (not DeleteFile(Filename)) then
-      raise ECoverDBException.Create('Could not delete ' + Filename);
+    if (not Filename.DeleteFile()) then
+      raise ECoverDBException.Create('Could not delete ' + Filename.ToNative);
     // reopen
-    DB := TSQLiteDatabase.Create(Filename);
+    DB := TSQLiteDatabase.Create(Filename.ToUTF8());
     Version := 0;
   end;
 
@@ -266,14 +267,14 @@ begin
              ')');
 end;
 
-function TCoverDatabase.FindCoverIntern(const Filename: WideString): int64;
+function TCoverDatabase.FindCoverIntern(const Filename: IPath): int64;
 begin
   Result := DB.GetTableValue('SELECT [ID] FROM ['+COVER_TBL+'] ' +
                              'WHERE [Filename] = ?',
-                             [UTF8Encode(Filename)]);
+                             [Filename.ToUTF8]);
 end;
 
-function TCoverDatabase.FindCover(const Filename: WideString): TCover;
+function TCoverDatabase.FindCover(const Filename: IPath): TCover;
 var
   CoverID: int64;
 begin
@@ -287,7 +288,7 @@ begin
   end;
 end;
 
-function TCoverDatabase.CoverExists(const Filename: WideString): boolean;
+function TCoverDatabase.CoverExists(const Filename: IPath): boolean;
 begin
   Result := false;
   try
@@ -297,7 +298,7 @@ begin
   end;
 end;
 
-function TCoverDatabase.AddCover(const Filename: WideString): TCover;
+function TCoverDatabase.AddCover(const Filename: IPath): TCover;
 var
   CoverID: int64;
   Thumbnail: PSDL_Surface;
@@ -329,7 +330,7 @@ begin
     DB.ExecSQL('INSERT INTO ['+COVER_TBL+'] ' +
                '([Filename], [Date], [Width], [Height]) VALUES' +
                '(?, ?, ?, ?)',
-               [UTF8Encode(Filename), DateTimeToUnixTime(FileDate),
+               [Filename.ToUTF8, DateTimeToUnixTime(FileDate),
                 Info.CoverWidth, Info.CoverHeight]);
 
     // get auto-generated cover ID
@@ -358,7 +359,7 @@ var
   PixelFmt: TImagePixelFmt;
   Data: PChar;
   DataSize: integer;
-  Filename: WideString;
+  Filename: IPath;
   Table: TSQLiteUniTable;
 begin
   Table := nil;
@@ -371,7 +372,7 @@ begin
         'USING(ID) ' +
       'WHERE [ID] = %d', [CoverID]));
 
-    Filename := UTF8Decode(Table.FieldAsString(0));
+    Filename := Path(Table.FieldAsString(0));
     PixelFmt := TImagePixelFmt(Table.FieldAsInteger(1));
     Width    := Table.FieldAsInteger(2);
     Height   := Table.FieldAsInteger(3);
@@ -384,6 +385,9 @@ begin
     end
     else
     begin
+      // FillChar() does not decrement the ref-count of ref-counted fields
+      // -> reset Name field manually
+      Result.Name := nil;
       FillChar(Result, SizeOf(TTexture), 0);
     end;
   except on E: Exception do
@@ -403,7 +407,7 @@ end;
  * Returns a pointer to an array of bytes containing the texture data in the
  * requested size
  *)
-function TCoverDatabase.CreateThumbnail(const Filename: WideString; var Info: TThumbnailInfo): PSDL_Surface;
+function TCoverDatabase.CreateThumbnail(const Filename: IPath; var Info: TThumbnailInfo): PSDL_Surface;
 var
   //TargetAspect, SourceAspect: double;
   //TargetWidth, TargetHeight: integer;
@@ -417,7 +421,7 @@ begin
   Thumbnail := LoadImage(Filename);
   if (not assigned(Thumbnail)) then
   begin
-    Log.LogError('Could not load cover: "'+ Filename +'"', 'TCoverDatabase.AddCover');
+    Log.LogError('Could not load cover: "'+ Filename.ToNative +'"', 'TCoverDatabase.AddCover');
     Exit;
   end;
 

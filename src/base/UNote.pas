@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UNote.pas $
- * $Id: UNote.pas 1626 2009-03-07 19:53:00Z k-m_schindler $
+ * $URL$
+ * $Id$
  *}
 
 unit UNote;
@@ -61,7 +61,7 @@ type
 
   PPLayer = ^TPlayer;
   TPlayer = record
-    Name:           string;
+    Name:           UTF8String;
 
     // Index in Teaminfo record
     TeamID:         byte;
@@ -129,7 +129,7 @@ uses
   UCommon,
   UGraphic,
   UGraphicClasses,
-  UPath,
+  UPathUtils,
   UPlatform,
   UThemes;
 

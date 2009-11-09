@@ -34,8 +34,8 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
   SDL,
+  UMenu,
   UDisplay,
   UMusic,
   UFiles,
@@ -46,26 +46,27 @@ type
   TScreenOptionsSound = class(TMenu)
   public
     constructor Create; override;
-    function ParseInput(PressedKey: cardinal; CharCode: widechar;
+    function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
       PressedDown: boolean): boolean; override;
-    procedure onShow; override;
+    procedure OnShow; override;
   end;
 
 implementation
 
 uses
   UGraphic,
+  UUnicodeUtils,
   SysUtils;
 
 function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
-  CharCode: widechar; PressedDown: boolean): boolean;
+  CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
         // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
       begin
         Result := false;
         Exit;
@@ -177,7 +178,7 @@ begin
   Interaction := 0;
 end;
 
-procedure TScreenOptionsSound.onShow;
+procedure TScreenOptionsSound.OnShow;
 begin
   inherited;
   Interaction := 0;

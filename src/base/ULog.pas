@@ -34,7 +34,8 @@ interface
 {$I switches.inc}
 
 uses
-  Classes;
+  Classes,
+  UPath;
 
 (*
  * LOG_LEVEL_[TYPE] defines the "minimum" index for logs of type TYPE. Each
@@ -115,7 +116,7 @@ type
     // voice
     procedure LogVoice(SoundNr: integer);
     // buffer
-    procedure LogBuffer(const buf : Pointer; const bufLength : Integer; const filename : string);
+    procedure LogBuffer(const buf : Pointer; const bufLength : Integer; const filename : IPath);
   end;
 
 procedure DebugWriteln(const aString: String);
@@ -133,7 +134,7 @@ uses
   UTime,
   UCommon,
   UCommandLine,
-  UPath;
+  UPathUtils;
 
 (*
  * Write to console if in debug mode (Thread-safe).
@@ -198,7 +199,7 @@ begin
     if not BenchmarkFileOpened then
     begin
       BenchmarkFileOpened := true;
-      AssignFile(BenchmarkFile, LogPath + 'Benchmark.log');
+      AssignFile(BenchmarkFile, LogPath.Append('Benchmark.log').ToNative);
       {$I-}
       Rewrite(BenchmarkFile);
       if IOResult = 0 then
@@ -270,7 +271,7 @@ procedure TLog.LogToFile(const Text: string);
 begin
   if (FileOutputEnabled and not LogFileOpened) then
   begin
-    AssignFile(LogFile, LogPath + 'Error.log');
+    AssignFile(LogFile, LogPath.Append('Error.log').ToNative);
     {$I-}
     Rewrite(LogFile);
     if IOResult = 0 then
@@ -399,20 +400,19 @@ end;
 
 procedure TLog.LogVoice(SoundNr: integer);
 var
-  FS:           TFileStream;
-  FileName:     string;
+  FS:           TBinaryFileStream;
+  Prefix:       string;
+  FileName:     IPath;
   Num:          integer;
 begin
   for Num := 1 to 9999 do begin
-    FileName := IntToStr(Num);
-    while Length(FileName) < 4 do
-      FileName := '0' + FileName;
-    FileName := LogPath + 'Voice' + FileName + '.raw';
-    if not FileExists(FileName) then
+    Prefix := Format('Voice%.4d', [Num]);
+    FileName := LogPath.Append(Prefix + '.raw');
+    if not FileName.Exists() then
       break
   end;
 
-  FS := TFileStream.Create(FileName, fmCreate);
+  FS := TBinaryFileStream.Create(FileName, fmCreate);
 
   AudioInputProcessor.Sound[SoundNr].LogBuffer.Seek(0, soBeginning);
   FS.CopyFrom(AudioInputProcessor.Sound[SoundNr].LogBuffer, AudioInputProcessor.Sound[SoundNr].LogBuffer.Size);
@@ -420,21 +420,19 @@ begin
   FS.Free;
 end;
 
-procedure TLog.LogBuffer(const buf: Pointer; const bufLength: Integer; const filename: string);
+procedure TLog.LogBuffer(const buf: Pointer; const bufLength: Integer; const filename: IPath);
 var
-  f : TFileStream;
+  f : TBinaryFileStream;
 begin
-  f := nil;
-
   try
-    f := TFileStream.Create( filename, fmCreate);
-    f.Write( buf^, bufLength);
-    f.Free;
-  except
-    on e : Exception do begin
-      Log.LogError('TLog.LogBuffer: Failed to log buffer into file "' + filename + '". ErrMsg: ' + e.Message);
+    f := TBinaryFileStream.Create( filename, fmCreate);
+    try
+      f.Write( buf^, bufLength);
+    finally
       f.Free;
     end;
+  except on e : Exception do
+    Log.LogError('TLog.LogBuffer: Failed to log buffer into file "' + filename.ToNative + '". ErrMsg: ' + e.Message);
   end;
 end;
 

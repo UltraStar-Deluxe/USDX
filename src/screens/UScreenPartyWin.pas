@@ -34,10 +34,11 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  SDL, UDisplay,
-  UMusic,
+  SDL,
   SysUtils,
+  UMenu,
+  UDisplay,
+  UMusic,
   UThemes;
 
 type
@@ -61,28 +62,29 @@ type
       TextWinner:        cardinal;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure onShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
 implementation
 
-uses 
+uses
   UGraphic,
   UMain,
   UParty,
   UScreenSingModi,
-  ULanguage;
+  ULanguage,
+  UUnicodeUtils;
 
-function TScreenPartyWin.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenPartyWin.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -135,7 +137,7 @@ begin
   LoadFromTheme(Theme.PartyWin);
 end;
 
-procedure TScreenPartyWin.onShow;
+procedure TScreenPartyWin.OnShow;
 var
   I: integer;
   Placing: TeamOrderArray;

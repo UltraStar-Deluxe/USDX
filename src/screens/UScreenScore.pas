@@ -128,10 +128,10 @@ type
       TextGolden_ActualValue: array[1..6] of integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
-      procedure onShow; override;
-      procedure onShowFinish; override;
+      procedure OnShow; override;
+      procedure OnShowFinish; override;
       function Draw: boolean; override;
       procedure FillPlayer(Item, P: integer);
 
@@ -158,16 +158,18 @@ uses
   UIni,
   ULog,
   ULanguage,
-  UNote;
+  UNote,
+  UUnicodeUtils;
 
-function TScreenScore.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+
+function TScreenScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -197,7 +199,7 @@ begin
   Result := True;
   if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then begin
     //left-click anywhere sends return
-    ParseInput(SDLK_RETURN, #0, true);
+    ParseInput(SDLK_RETURN, 0, true);
   end;
 end;
 
@@ -261,7 +263,7 @@ begin
 
 end;
 
-procedure TScreenScore.onShow;
+procedure TScreenScore.OnShow;
 var
   P: integer;  // player
   I: integer;

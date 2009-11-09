@@ -44,6 +44,7 @@ type
     public
       constructor Create();
       class function GetInstance(): TAudioCore_Bass;
+      function CheckVersion(): boolean;
       function ErrorGetString(): string; overload;
       function ErrorGetString(errCode: integer): string; overload;
       function ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
@@ -55,6 +56,12 @@ implementation
 uses
   UMain,
   ULog;
+
+const
+  // TODO: 2.4.2 is not ABI compatible with older versions
+  // as (BASS_RECORDINFO.driver was removed)
+  //BASS_MIN_REQUIRED_VERSION = $02040201;
+  BASS_MIN_REQUIRED_VERSION = $02000000;
 
 var
   Instance: TAudioCore_Bass;
@@ -69,6 +76,11 @@ begin
   if (not Assigned(Instance)) then
     Instance := TAudioCore_Bass.Create();
   Result := Instance;
+end;
+
+function TAudioCore_Bass.CheckVersion(): boolean;
+begin
+  Result := BASS_GetVersion() >= BASS_MIN_REQUIRED_VERSION;
 end;
 
 function TAudioCore_Bass.ErrorGetString(): string;

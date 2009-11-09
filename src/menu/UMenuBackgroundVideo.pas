@@ -36,7 +36,8 @@ interface
 uses
   UThemes,
   UMenuBackground,
-  UVideo;
+  UVideo,
+  UPath;
 
 //TMenuBackgroundColor - Background Color
 //--------
@@ -72,7 +73,7 @@ type
     public
       constructor Create;
 
-      function    GetBGVideo(filename: string): TBGVideo;
+      function    GetBGVideo(filename: IPath): TBGVideo;
       procedure   RemoveItem(
       procedure   FreeAllItems;
 
@@ -82,7 +83,7 @@ type
 type }
   TMenuBackgroundVideo = class (TMenuBackground)
     private
-      fFilename: string;
+      fFilename: IPath;
     public
       constructor Create(const ThemedSettings: TThemeBackground); override;
       procedure   OnShow; override;
@@ -115,15 +116,13 @@ begin
     raise EMenuBackgroundError.Create('TMenuBackgroundVideo: No video filename present');
 
   fFileName := Skin.GetTextureFileName(ThemedSettings.Tex);
-  fFileName := AdaptFilePaths( fFileName );
-
-  if fileexists(fFilename) AND VideoPlayback.Open( fFileName ) then
+  if fFilename.IsFile and VideoPlayback.Open(fFileName) then
   begin
     VideoBGTimer.SetTime(0);
     VideoPlayback.Play;
   end
   else
-    raise EMenuBackgroundError.Create('TMenuBackgroundVideo: Can''t load background video: ' + fFilename);
+    raise EMenuBackgroundError.Create('TMenuBackgroundVideo: Can''t load background video: ' + fFilename.ToNative);
 end;
 
 destructor  TMenuBackgroundVideo.Destroy;
@@ -191,7 +190,7 @@ begin
 
 end;
 
-function    TBGVideoPool.GetBGVideo(filename: string): TBGVideo;
+function    TBGVideoPool.GetBGVideo(filename: IPath): TBGVideo;
 begin
 
 end;

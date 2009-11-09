@@ -33,33 +33,41 @@ interface
 
 {$I switches.inc}
 
+uses
+  UUnicodeUtils;
+
 type
   TLanguageEntry = record
-    ID:     string;
-    Text:   string;
+    ID:     AnsiString;  //**< identifier (ASCII)
+    Text:   UTF8String;  //**< translation (UTF-8)
   end;
 
   TLanguageList = record
-    Name:     string;
-    {FileName: string; }
+    Name:     AnsiString;  //**< language name (ASCII)
   end;
 
+  TLanguageEntryArray = array of TLanguageEntry;
+
   TLanguage = class
-    public
-      Entry:        array of TLanguageEntry; //Entrys of Chosen Language
-      EntryDefault: array of TLanguageEntry; //Entrys of Standard Language
-      EntryConst:   array of TLanguageEntry; //Constant Entrys e.g. Version
-      Implode_Glue1, Implode_Glue2: String;
-    public
+    private
       List:   array of TLanguageList;
 
-      constructor Create;
+      Entry:        TLanguageEntryArray; //**< Entrys of Chosen Language
+      EntryDefault: TLanguageEntryArray; //**< Entrys of Standard Language
+      EntryConst:   TLanguageEntryArray; //**< Constant Entrys e.g. Version
+
+      Implode_Glue1, Implode_Glue2: UTF8String;
+
       procedure LoadList;
-      function Translate(Text: String): String;
-      procedure ChangeLanguage(Language: String);
-      procedure AddConst(ID, Text: String);
-      procedure ChangeConst(ID, Text: String);
-      function Implode(Pieces: Array of String): String;
+      function FindID(const ID: AnsiString; const EntryList: TLanguageEntryArray): integer;
+
+    public
+      constructor Create;
+      function Translate(const Text: RawByteString): UTF8String;
+      procedure ChangeLanguage(const Language: AnsiString);
+      procedure AddConst(const ID: AnsiString; const Text: UTF8String);
+      procedure ChangeConst(const ID: AnsiString; const Text: UTF8String);
+      function Implode(const Pieces: array of UTF8String): UTF8String;
   end;
 
 var
@@ -69,20 +77,18 @@ implementation
 
 uses
   UMain,
-  // UFiles,
   UIni,
   IniFiles,
   Classes,
   SysUtils,
-  {$IFDEF win32}
-    Windows,
-  {$ENDIF}
   ULog,
-  UPath;
+  UPath,
+  UFilesystem,
+  UPathUtils;
 
-//----------
-//Create - Construct Class then LoadList + Standard Language + Set Standard Implode Glues
-//----------
+{**
+ * LoadList, set default language, set standard implode glues
+ *}
 constructor TLanguage.Create;
 var
   I, J: Integer;
@@ -108,7 +114,7 @@ begin
       ChangeLanguage('English');
 
       SetLength(EntryDefault, Length(Entry));
-      for J := low(Entry) to high(Entry) do
+      for J := 0 to high(Entry) do
         EntryDefault[J] := Entry[J];
 
       SetLength(Entry, 0);
@@ -123,42 +129,44 @@ begin
   
 end;
 
-//----------
-//LoadList - Parse the Language Dir searching Translations
-//----------
+{**
+ * Parse the Language Dir searching Translations
+ *}
 procedure TLanguage.LoadList;
 var
-  SR:     TSearchRec;   // for parsing directory
+  Iter: IFileIterator;
+  IniInfo: TFileInfo;
+  LangName: string;
 begin
   SetLength(List, 0);
   SetLength(ILanguage, 0);
 
-  if FindFirst(LanguagesPath + '*.ini', 0, SR) = 0 then
+  Iter := FileSystem.FileFind(LanguagesPath.Append('*.ini'), 0);
+  while(Iter.HasNext) do
   begin
-    repeat
-      SetLength(List, Length(List)+1);
-      SetLength(ILanguage, Length(ILanguage)+1);
-      SR.Name := ChangeFileExt(SR.Name, '');
+    IniInfo := Iter.Next;
 
-      List[High(List)].Name := SR.Name;
-      ILanguage[High(ILanguage)] := SR.Name;
+    LangName := IniInfo.Name.SetExtension('').ToUTF8;
 
-    until FindNext(SR) <> 0;
-    SysUtils.FindClose(SR);
-  end; // if FindFirst
+    SetLength(List, Length(List)+1);
+    List[High(List)].Name := LangName;
+
+    SetLength(ILanguage, Length(ILanguage)+1);
+    ILanguage[High(ILanguage)] := LangName;
+  end;
 end;
 
-//----------
-//ChangeLanguage - Load the specified LanguageFile
-//----------
-procedure TLanguage.ChangeLanguage(Language: String);
+{**
+ * Load the specified LanguageFile
+ *}
+procedure TLanguage.ChangeLanguage(const Language: AnsiString);
 var
-  IniFile:    TIniFile;
+  IniFile:    TUnicodeMemIniFile;
   E:          integer; // entry
   S:          TStringList;
 begin
   SetLength(Entry, 0);
-  IniFile := TIniFile.Create(LanguagesPath + Language + '.ini');
+  IniFile := TUnicodeMemIniFile.Create(LanguagesPath.Append(Language + '.ini'));
   S := TStringList.Create;
 
   IniFile.ReadSectionValues('Text', S);
@@ -178,57 +186,84 @@ begin
   IniFile.Free;
 end;
 
-//----------
-//Translate - Translate the Text
-//----------
-Function TLanguage.Translate(Text: String): String;
+{**
+ * Find the index of ID an array of language entries.
+ * @returns the index on success, -1 otherwise.
+ *}
+function TLanguage.FindID(const ID: AnsiString; const EntryList: TLanguageEntryArray): integer;
 var
-  E:    integer; // entry
+  Index: integer;
 begin
+  for Index := 0 to High(EntryList) do
+  begin
+    if ID = EntryList[Index].ID then
+    begin
+      Result := Index;
+      Exit;
+    end;
+  end;
+  Result := -1;
+end;
+
+{**
+ * Translate the Text.
+ * If Text is an ID, text will be translated according to the current language
+ * setting. If Text is not a known ID, it will be returned as is. 
+ * @param Text either an ID or an UTF-8 encoded string 
+ *}
+function TLanguage.Translate(const Text: RawByteString): UTF8String;
+var
+  E:  integer; // entry
+  ID: AnsiString;
+  EntryIndex: integer;
+begin
+  // fallback result in case Text is not a known ID
   Result := Text;
-  Text := Uppercase(Result);
+
+  // normalize ID case
+  ID := UpperCase(Text);
+
+  // Check if ID exists
 
   //Const Mod
-  for E := 0 to high(EntryConst) do
-    if Text = EntryConst[E].ID then
-    begin
-     Result := EntryConst[E].Text;
-     exit;
-    end;
-  //Const Mod End
+  EntryIndex := FindID(ID, EntryConst);
+  if (EntryIndex >= 0) then
+  begin
+    Result := EntryConst[EntryIndex].Text;
+    Exit;
+  end;
 
-  for E := 0 to high(Entry) do
-    if Text = Entry[E].ID then
-    begin
-     Result := Entry[E].Text;
-     exit;
-    end;
+  EntryIndex := FindID(ID, Entry);
+  if (EntryIndex >= 0) then
+  begin
+    Result := Entry[EntryIndex].Text;
+    Exit;
+  end;
 
   //Standard Language (If a Language File is Incomplete)
   //Then use Standard Language
-    for E := low(EntryDefault) to high(EntryDefault) do
-      if Text = EntryDefault[E].ID then
-      begin
-        Result := EntryDefault[E].Text;
-        Break;
-      end;
-  //Standard Language END
+  EntryIndex := FindID(ID, EntryDefault);
+  if (EntryIndex >= 0) then
+  begin
+    Result := EntryDefault[EntryIndex].Text;
+    Exit;
+  end;
 end;
 
-//----------
-//AddConst - Add a Constant ID that will be Translated but not Loaded from the LanguageFile
-//----------
-procedure TLanguage.AddConst (ID, Text: String);
+{**
+ * Add a Constant ID that will be Translated but not Loaded from the LanguageFile
+ *}
+procedure TLanguage.AddConst(const ID: AnsiString; const Text: UTF8String);
 begin
   SetLength (EntryConst, Length(EntryConst) + 1);
   EntryConst[high(EntryConst)].ID := ID;
   EntryConst[high(EntryConst)].Text := Text;
 end;
 
-//----------
-//ChangeConst - Change a Constant Value by ID
-//----------
-procedure TLanguage.ChangeConst(ID, Text: String);
+{**
+ * Change a Constant Value by ID
+ *}
+procedure TLanguage.ChangeConst(const ID: AnsiString; const Text: UTF8String);
 var
   I: Integer;
 begin
@@ -242,16 +277,16 @@ begin
   end;
 end;
 
-//----------
-//Implode - Connect an Array of Strings with ' and ' or ', ' to one String
-//----------
-function TLanguage.Implode(Pieces: Array of String): String;
+{**
+ * Connect an array of strings with ' and ' or ', ' to one string
+ *}
+function TLanguage.Implode(const Pieces: array of UTF8String): UTF8String;
 var
   I: Integer;
 begin
   Result := '';
   //Go through Pieces
-  for I := low(Pieces) to high(Pieces) do
+  for I := 0 to high(Pieces) do
   begin
     //Add Value
     Result := Result + Pieces[I];

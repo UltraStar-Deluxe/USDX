@@ -38,11 +38,12 @@ implementation
 uses
   Classes,
   SysUtils,
+  bass,
   UMain,
   UMusic,
   UAudioCore_Bass,
   ULog,
-  bass;
+  UPath;
 
 type
   TBassDecodeStream = class(TAudioDecodeStream)
@@ -75,7 +76,7 @@ type
 
       function InitializeDecoder(): boolean;
       function FinalizeDecoder(): boolean;
-      function Open(const Filename: string): TAudioDecodeStream;
+      function Open(const Filename: IPath): TAudioDecodeStream;
   end;
 
 var
@@ -213,7 +214,10 @@ end;
 
 function TAudioDecoder_Bass.InitializeDecoder(): boolean;
 begin
+  Result := false;
   BassCore := TAudioCore_Bass.GetInstance();
+  if not BassCore.CheckVersion then
+    Exit;
   Result := true;
 end;
 
@@ -222,7 +226,7 @@ begin
   Result := true;
 end;
 
-function TAudioDecoder_Bass.Open(const Filename: string): TAudioDecodeStream;
+function TAudioDecoder_Bass.Open(const Filename: IPath): TAudioDecodeStream;
 var
   Stream: HSTREAM;
   ChannelInfo: BASS_CHANNELINFO;
@@ -237,7 +241,14 @@ begin
 
   // TODO: use BASS_STREAM_PRESCAN for accurate seeking in VBR-files?
   //       disadvantage: seeking will slow down.
-  Stream := BASS_StreamCreateFile(False, PAnsiChar(Filename), 0, 0, BASS_STREAM_DECODE);
+  
+  {$IFDEF MSWINDOWS}
+  // Windows: Use UTF-16 version
+  Stream := BASS_StreamCreateFile(False, PWideChar(Filename.ToWide), 0, 0, BASS_STREAM_DECODE or BASS_UNICODE);
+  {$ELSE}
+  // Mac OS X: Use UTF8/ANSI version
+  Stream := BASS_StreamCreateFile(False, PAnsiChar(Filename.ToNative), 0, 0, BASS_STREAM_DECODE);
+  {$ENDIF}
   if (Stream = 0) then
   begin
     //Log.LogError(BassCore.ErrorGetString(), 'TAudioDecoder_Bass.Open');
@@ -247,7 +258,7 @@ begin
   // check if BASS opened some erroneously recognized file-formats
   if BASS_ChannelGetInfo(Stream, channelInfo) then
   begin
-    fileExt := ExtractFileExt(Filename);
+    fileExt := Filename.GetExtension.ToUTF8;
     // BASS opens FLV-files (maybe others too) although it cannot handle them.
     // Setting BASS_CONFIG_VERIFY to the max. value (100000) does not help.
     if ((fileExt = '.flv') and (channelInfo.ctype = BASS_CTYPE_STREAM_MP1)) then

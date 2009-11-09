@@ -49,9 +49,9 @@ type
     TextDescriptionLong: integer;
 
     constructor Create; override;
-    function ParseInput(PressedKey: cardinal; CharCode: widechar;
+    function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
       PressedDown: boolean): boolean; override;
-    procedure onShow; override;
+    procedure OnShow; override;
     procedure SetInteraction(Num: integer); override;
     procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -69,9 +69,10 @@ uses
   UParty,
   UDLLManager,
   UScreenCredits,
-  USkins;
+  USkins,
+  UUnicodeUtils;
 
-function TScreenMain.ParseInput(PressedKey: cardinal; CharCode: widechar;
+function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
   PressedDown: boolean): boolean;
 var
   SDL_ModState: word;
@@ -84,22 +85,19 @@ begin
   if (PressedDown) then
   begin // Key Down
         // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
-      begin
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'): begin
         Result := false;
         Exit;
       end;
-      'C':
-      begin
+      Ord('C'): begin
         if (SDL_ModState = KMOD_LALT) then
         begin
           FadeTo(@ScreenCredits, SoundLib.Start);
           Exit;
         end;
       end;
-      'M':
-      begin
+      Ord('M'): begin
         if (Ini.Players >= 1) and (Length(DLLMan.Plugins) >= 1) then
         begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
@@ -107,14 +105,12 @@ begin
         end;
       end;
 
-      'S':
-      begin
+      Ord('S'): begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;
       end;
 
-      'E':
-      begin
+      Ord('E'): begin
         FadeTo(@ScreenEdit, SoundLib.Start);
         Exit;
       end;
@@ -172,7 +168,11 @@ begin
         //Editor
         if Interaction = 3 then
         begin
+          {$IFDEF UseMIDIPort}
           FadeTo(@ScreenEdit, SoundLib.Start);
+          {$ELSE}
+          ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_EDITOR'));
+          {$ENDIF}
         end;
 
         //Options
@@ -232,7 +232,7 @@ begin
   Interaction := 0;
 end;
 
-procedure TScreenMain.onShow;
+procedure TScreenMain.OnShow;
 begin
   inherited;
 

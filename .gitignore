@@ -14,7 +14,6 @@ Thumbs.db
 *.bdsproj.local
 *.bak
 *~
-Thumbs.db
 Makefile
 config.log
 config.status

@@ -55,8 +55,8 @@ type
       TotPages:  cardinal;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure onShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
 
       procedure SetTitle;
@@ -66,20 +66,21 @@ type
 implementation
 
 uses
-  UGraphic,
-  ULanguage,
   Math,
   Classes,
-  ULog;
+  UGraphic,
+  ULanguage,
+  ULog,
+  UUnicodeUtils;
 
-function TScreenStatDetail.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenStatDetail.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -178,7 +179,7 @@ begin
   Typ := TStatType(0);
 end;
 
-procedure TScreenStatDetail.onShow;
+procedure TScreenStatDetail.OnShow;
 begin
   inherited;
 

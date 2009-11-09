@@ -45,8 +45,8 @@ type
   TText = class
     private
       SelectBool:  boolean;
-      TextString:  string;
-      TextTiles:   array of string;
+      TextString:  UTF8String;
+      TextTiles:   array of UTF8String;
 
       STicks:      cardinal;
       SelectBlink: boolean;
@@ -75,22 +75,23 @@ type
       procedure SetSelect(Value: boolean);
       property Selected: boolean read SelectBool write SetSelect;
 
-      procedure SetText(Value: string);
-      property  Text: string read TextString write SetText;
+      procedure SetText(Value: UTF8String);
+      property  Text: UTF8String read TextString write SetText;
 
-      procedure DeleteLastL; // procedure to delete last letter
+      procedure DeleteLastLetter; //< Deletes the rightmost letter
 
       procedure Draw;
       constructor Create; overload;
-      constructor Create(X, Y: real; Text: string); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; ParText: string; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real); overload;
+      constructor Create(X, Y: real; const Text: UTF8String); overload;
+      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real); overload;
   end;
 
 implementation
 
 uses
-  StrUtils,
-  UGraphic;
+  UGraphic,
+  UUnicodeUtils,
+  StrUtils;
 
 procedure TText.SetSelect(Value: boolean);
 begin
@@ -101,7 +102,7 @@ begin
   STicks := SDL_GetTicks() div 550;
 end;
 
-procedure TText.SetText(Value: string);
+procedure TText.SetText(Value: UTF8String);
 var
   NextPos:   cardinal;  // next pos of a space etc.
   LastPos:   cardinal;  // last pos "
@@ -244,23 +245,15 @@ begin
   AddBreak(LastBreak, Length(Value)+1);
 end;
 
-procedure TText.DeleteLastL;
-var
-  S: string;
-  L: integer;
+procedure TText.DeleteLastLetter;
 begin
-  S := TextString;
-  L := Length(S);
-  if (L > 0) then
-    SetLength(S, L-1);
-
-  SetText(S);
+  SetText(UTF8Copy(TextString, 1, LengthUTF8(TextString)-1));
 end;
 
 procedure TText.Draw;
 var
   X2, Y2: real;
-  Text2:  string;
+  Text2:  UTF8String;
   I:      integer;
   Ticks:  cardinal;
 begin
@@ -349,19 +342,19 @@ begin
   Create(0, 0, '');
 end;
 
-constructor TText.Create(X, Y: real; Text: string);
+constructor TText.Create(X, Y: real; const Text: UTF8String);
 begin
   Create(X, Y, 0, 0, 30, 0, 0, 0, 0, Text, false, 0, 0);
 end;
 
 constructor TText.Create(ParX, ParY, ParW: real;
                          ParStyle: integer;
-			 ParSize, ParColR, ParColG, ParColB: real;
-			 ParAlign: integer;
-			 ParText: string;
-			 ParReflection: boolean;
-			 ParReflectionSpacing: real;
-			 ParZ: real);
+                         ParSize, ParColR, ParColG, ParColB: real;
+                         ParAlign: integer;
+                         const ParText: UTF8String;
+                         ParReflection: boolean;
+                         ParReflectionSpacing: real;
+                         ParZ: real);
 begin
   inherited Create;
   Alpha := 1;

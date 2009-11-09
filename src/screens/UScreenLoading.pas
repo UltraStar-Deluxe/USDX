@@ -43,10 +43,11 @@ uses
 type
   TScreenLoading = class(TMenu)
     public
-      Fadeout:      boolean;
+      Fadeout: boolean;
+
       constructor Create; override;
-      procedure   onShow; override;
-      function    ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
   end;
 
 implementation
@@ -55,7 +56,7 @@ uses
   UGraphic,
   UTime;
 
-function TScreenLoading.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenLoading.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
 end;
@@ -69,7 +70,7 @@ begin
   Fadeout := false;
 end;
 
-procedure TScreenLoading.onShow;
+procedure TScreenLoading.OnShow;
 begin
   inherited;
 end;

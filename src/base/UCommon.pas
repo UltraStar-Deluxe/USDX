@@ -39,9 +39,28 @@ uses
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
-  sdl,
   UConfig,
-  ULog;
+  ULog,
+  UPath;
+
+type
+  TStringDynArray = array of string;
+
+const
+  SepWhitespace = [#9, #10, #13, ' ']; // tab, lf, cr, space
+
+{**
+ * Splits a string into pieces separated by Separators.
+ * MaxCount specifies the max. number of pieces. If it is <= 0 the number is
+ * not limited. If > 0 the last array element will hold the rest of the string
+ * (with leading separators removed).
+ *
+ * Examples:
+ *   SplitString(' split  me now ', 0) -> ['split', 'me', 'now']
+ *   SplitString(' split  me now ', 1) -> ['split', 'me now']
+ *}
+function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace): TStringDynArray;
+
 
 type
   TMessageType = (mtInfo, mtError);
@@ -50,42 +69,18 @@ procedure ShowMessage(const msg: string; msgType: TMessageType = mtInfo);
 
 procedure ConsoleWriteLn(const msg: string);
 
-function RWopsFromStream(Stream: TStream): PSDL_RWops;
-
 {$IFDEF FPC}
 function RandomRange(aMin: integer; aMax: integer): integer;
 {$ENDIF}
-
-function StringReplaceW(text: WideString; search, rep: WideChar): WideString;
-function AdaptFilePaths(const aPath: WideString): WideString;
 
 procedure DisableFloatingPointExceptions();
 procedure SetDefaultNumericLocale();
 procedure RestoreNumericLocale();
 
 {$IFNDEF MSWINDOWS}
-  procedure ZeroMemory(Destination: pointer; Length: dword);
-  function MakeLong(a, b: word): longint;
-  (*
-  #define LOBYTE(a) (BYTE)(a)
-  #define HIBYTE(a) (BYTE)((a)>>8)
-  #define LOWORD(a) (WORD)(a)
-  #define HIWORD(a) (WORD)((a)>>16)
-  #define MAKEWORD(a,b) (WORD)(((a)&0xff)|((b)<<8))
-  *)
+procedure ZeroMemory(Destination: pointer; Length: dword);
+function MakeLong(a, b: word): longint;
 {$ENDIF}
-
-function FileExistsInsensitive(var FileName: string): boolean;
-
-(*
- * Character classes
- *)
-
-function IsAlphaChar(ch: WideChar): boolean;
-function IsNumericChar(ch: WideChar): boolean;
-function IsAlphaNumericChar(ch: WideChar): boolean;
-function IsPunctuationChar(ch: WideChar): boolean;
-function IsControlChar(ch: WideChar): boolean;
 
 // A stable alternative to TList.Sort() (use TList.Sort() if applicable, see below)
 procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
@@ -101,8 +96,63 @@ uses
   {$IFDEF Delphi}
   Dialogs,
   {$ENDIF}
-  UMain;
+  sdl,
+  UFilesystem,
+  UMain,
+  UUnicodeUtils;
 
+function SplitString(const Str: string; MaxCount: integer; Separators: TSysCharSet): TStringDynArray;
+
+  {*
+   * Adds Str[StartPos..Endpos-1] to the result array.
+   *}
+  procedure AddSplit(StartPos, EndPos: integer);
+  begin
+    SetLength(Result, Length(Result)+1);
+    Result[High(Result)] := Copy(Str, StartPos, EndPos-StartPos);
+  end;
+
+var
+  I: integer;
+  Start: integer;
+  Last: integer;
+begin
+  Start := 0;
+  SetLength(Result, 0);
+
+  for I := 1 to Length(Str) do
+  begin
+    if (Str[I] in Separators) then
+    begin
+      // end of component found
+      if (Start > 0) then
+      begin
+        AddSplit(Start, I);
+        Start := 0;
+      end;
+    end
+    else if (Start = 0) then
+    begin
+      // mark beginning of component
+      Start := I;
+      // check if this is the last component
+      if (Length(Result) = MaxCount-1) then
+      begin
+        // find last non-separator char
+        Last := Length(Str);
+        while (Str[Last] in Separators) do
+          Dec(Last);
+        // add component up to last non-separator
+        AddSplit(Start, Last);
+        Exit;
+      end;
+    end;
+  end;
+
+  // last component
+  if (Start > 0) then
+    AddSplit(Start, Length(Str)+1);
+end;
 
 // data used by the ...Locale() functions
 {$IF Defined(Linux) or Defined(FreeBSD)}
@@ -224,39 +274,6 @@ begin
                     exOverflow, exUnderflow, exPrecision]);
 end;
 
-function StringReplaceW(text: WideString; search, rep: WideChar): WideString;
-var
-  iPos:  integer;
-//  sTemp: WideString;
-begin
-(*
-  result := text;
-  iPos   := Pos(search, result);
-  while (iPos > 0) do
-  begin
-    sTemp  := copy(result, iPos + length(search), length(result));
-    result := copy(result, 1, iPos - 1) + rep + sTEmp;
-    iPos   := Pos(search, result);
-  end;
-*)
-  result := text;
-
-  if search = rep then
-    exit;
-
-  for iPos := 1 to length(result) do
-  begin
-    if result[iPos] = search then
-      result[iPos] := rep;
-  end;
-end;
-
-function AdaptFilePaths(const aPath: WideString): WideString;
-begin
-  result := StringReplaceW(aPath, '\', PathDelim);//, [rfReplaceAll]);
-end;
-
-
 {$IFNDEF MSWINDOWS}
 procedure ZeroMemory(Destination: pointer; Length: dword);
 begin
@@ -268,134 +285,7 @@ begin
   Result := (LongInt(B) shl 16) + A;
 end;
 
-(*
-function QueryPerformanceCounter(lpPerformanceCount:TLARGEINTEGER): Bool;
-
-  // From http://en.wikipedia.org/wiki/RDTSC
-  function RDTSC: Int64; register;
-  asm
-    rdtsc
-  end;
-
-begin
-  // Use clock_gettime(CLOCK_REALTIME, ...) here (but not from the libc unit)
-  lpPerformanceCount := RDTSC();
-  result := true;
-end;
-
-function QueryPerformanceFrequency(lpFrequency:TLARGEINTEGER):Bool;
-begin
-  // clock_getres(CLOCK_REALTIME, ...)
-  lpFrequency := 0;
-  result := true;
-end;
-*)
 {$ENDIF}
-
-// Checks if a regular files or directory with the given name exists.
-// The comparison is case insensitive.
-function FileExistsInsensitive(var FileName: string): boolean;
-var
-  FilePath, LocalFileName: string;
-  SearchInfo: TSearchRec;
-begin
-{$IF Defined(Linux) or Defined(FreeBSD)}
-  // speed up standard case
-  if FileExists(FileName) then
-  begin
-    Result := true;
-    exit;
-  end;
-
-  Result := false;
-
-  FilePath := ExtractFilePath(FileName);
-  if (FindFirst(FilePath + '*', faAnyFile, SearchInfo) = 0) then
-  begin
-    LocalFileName := ExtractFileName(FileName);
-    repeat
-      if (AnsiSameText(LocalFileName, SearchInfo.Name)) then
-      begin
-        FileName := FilePath + SearchInfo.Name;
-        Result := true;
-        break;
-      end;
-    until (FindNext(SearchInfo) <> 0);
-  end;
-  FindClose(SearchInfo);
-{$ELSE}
-  // Windows and Mac OS X do not have case sensitive file systems
-  Result := FileExists(FileName);
-{$IFEND}
-end;
-
-// +++++++++++++++++++++ helpers for RWOpsFromStream() +++++++++++++++
-function SdlStreamSeek(context: PSDL_RWops; offset: integer; whence: integer): integer; cdecl;
-var
-  stream: TStream;
-  origin: word;
-begin
-  stream := TStream(context.unknown);
-  if (stream = nil) then
-    raise EInvalidContainer.Create('SDLStreamSeek on nil');
-  case whence of
-    0 : origin := soFromBeginning; //	Offset is from the beginning of the resource. Seek moves to the position Offset. Offset must be >= 0.
-    1 : origin := soFromCurrent; //	Offset is from the current position in the resource. Seek moves to Position + Offset.
-    2 : origin := soFromEnd;
-  else
-    origin := soFromBeginning; // just in case
-  end;
-  Result := stream.Seek(offset, origin);
-end;
-  
-function SdlStreamRead(context: PSDL_RWops; Ptr: pointer; size: integer; maxnum: integer): integer; cdecl;
-var
-  stream: TStream;
-begin
-  stream := TStream(context.unknown);
-  if (stream = nil) then
-    raise EInvalidContainer.Create('SDLStreamRead on nil');
-  try
-    Result := stream.read(Ptr^, Size * maxnum) div size;
-  except
-    Result := -1;
-  end;
-end;
-  
-function SDLStreamClose(context: PSDL_RWops): integer; cdecl;
-var
-  stream: TStream;
-begin
-  stream := TStream(context.unknown);
-  if (stream = nil) then
-    raise EInvalidContainer.Create('SDLStreamClose on nil');
-  stream.Free;
-  Result := 1;
-end;
-// -----------------------------------------------
-
-(*
- * Creates an SDL_RWops handle from a TStream.
- * The stream and RWops must be freed by the user after usage.
- * Use SDL_FreeRW(...) to free the RWops data-struct. 
- *)
-function RWopsFromStream(Stream: TStream): PSDL_RWops;
-begin
-  Result := SDL_AllocRW();
-  if (Result = nil) then
-    Exit;
-
-  // set RW-callbacks
-  with Result^ do
-  begin
-    unknown := TUnknown(Stream);
-    seek    := SDLStreamSeek;
-    read    := SDLStreamRead;
-    write   := nil;
-    close   := SDLStreamClose;
-    type_   := 2;
-  end;
-end;
 
 {$IFDEF FPC}
 function RandomRange(aMin: integer; aMax: integer): integer;
@@ -539,59 +429,6 @@ begin
 {$ELSE}
   ConsoleWriteln(msg);
 {$IFEND}
-end;
-
-function IsAlphaChar(ch: WideChar): boolean;
-begin
-  // TODO: add chars > 255 when unicode-fonts work?
-  case ch of
-    'A'..'Z',  // A-Z
-    'a'..'z',  // a-z
-    #170,#181,#186,
-    #192..#214,
-    #216..#246,
-    #248..#255:
-      Result := true;
-    else
-      Result := false;
-  end;
-end;
-
-function IsNumericChar(ch: WideChar): boolean;
-begin
-  case ch of
-    '0'..'9':
-      Result := true;
-    else
-      Result := false;
-  end;
-end;
-
-function IsAlphaNumericChar(ch: WideChar): boolean;
-begin
-  Result := (IsAlphaChar(ch) or IsNumericChar(ch));
-end;
-
-function IsPunctuationChar(ch: WideChar): boolean;
-begin
-  // TODO: add chars outside of Latin1 basic (0..127)?
-  case ch of
-    ' '..'/',':'..'@','['..'`','{'..'~':
-      Result := true;
-    else
-      Result := false;
-  end;
-end;
-
-function IsControlChar(ch: WideChar): boolean;
-begin
-  case ch of
-    #0..#31,
-    #127..#159:
-      Result := true;
-    else
-      Result := false;
-  end;
 end;
 
 (*

@@ -2,7 +2,7 @@ unit projectM;
 
 {$IFDEF FPC}
   {$MODE DELPHI}
-  {$H+}            (* use AnsiString *)
+  {$H+}            (* use long strings *)
   {$PACKENUM 4}    (* use 4-byte enums *)
   {$PACKRECORDS C} (* C/C++-compatible record packing *)
 {$ELSE}

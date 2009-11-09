@@ -56,9 +56,9 @@ type
       Fadeout:         boolean;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
-      procedure onShow; override;
+      procedure OnShow; override;
       function Draw: boolean; override;
   end;
 
@@ -67,19 +67,19 @@ implementation
 uses
   UDataBase,
   UGraphic,
+  UMain,
   UIni,
-  UNote;
+  UNote,
+  UUnicodeUtils;
 
-function TScreenTop5.ParseInput(PressedKey: cardinal;
-                                CharCode: WideChar;
-				PressedDown: boolean): boolean;
+function TScreenTop5.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if PressedDown then
   begin
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -113,7 +113,7 @@ begin
   Result := true;
   if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
     //left-click anywhere sends return
-    ParseInput(SDLK_RETURN, #0, true);
+    ParseInput(SDLK_RETURN, 0, true);
 end;
 
 constructor TScreenTop5.Create;
@@ -137,7 +137,7 @@ begin
 
 end;
 
-procedure TScreenTop5.onShow;
+procedure TScreenTop5.OnShow;
 var
   I:    integer;
   PMax: integer;

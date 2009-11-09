@@ -92,18 +92,18 @@ interface
 
 {$IFDEF FPC}
   {$MODE Delphi}
-  {$H+} // use AnsiString
+  {$H+} // use long strings
 {$ENDIF}
 
 uses
   Windows,
-  //Forms,
   Messages,
   Classes,
   {$IFDEF FPC}
   WinAllocation,
   {$ENDIF}
-  SysUtils;
+  SysUtils,
+  UPath;
 
 type
   TChunkType = (illegal, header, track);
@@ -162,7 +162,7 @@ type
     procedure WndProc(var Msg : TMessage);
   protected
     { Protected declarations }
-    midiFile: file of byte;
+    midiFile: TBinaryFileStream;
     chunkType: TChunkType;
     chunkLength: integer;
     chunkData: PByte;
@@ -177,7 +177,7 @@ type
     FBpm: integer;
     FBeatsPerMeasure: integer;
     FusPerTick: double;
-    FFilename: string;
+    FFilename: IPath;
 
     Tracks: TList;
     currentTrack: TMidiTrack;
@@ -191,7 +191,7 @@ type
     currentPos: Double; // Current Position in ticks
 
     procedure OnTrackReady;
-    procedure setFilename(val: string);
+    procedure SetFilename(val: IPath);
     procedure ReadChunkHeader;
     procedure ReadChunkContent;
     procedure ReadChunk;
@@ -221,7 +221,7 @@ type
     function  Ready: boolean;
   published
     { Published declarations }
-    property Filename: string read FFilename write setFilename;
+    property Filename: IPath read FFilename write SetFilename;
     property NumberOfTracks: integer read numberTracks;
     property TicksPerQuarter: integer read deltaTicks;
     property FileFormat: TFileFormat read FFileFormat;
@@ -463,7 +463,7 @@ begin
   result := Tracks.Items[index];
 end;
 
-procedure TMidifile.setFilename(val: string);
+procedure TMidifile.SetFilename(val: IPath);
 begin
   FFilename := val;
 //  ReadFile;
@@ -586,7 +586,7 @@ procedure TMidifile.ReadChunkHeader;
 var
   theByte: array[0..7] of byte;
 begin
-  BlockRead(midiFile, theByte, 8);
+  midiFile.Read(theByte[0], 8);
   if (theByte[0] = $4D) and (theByte[1] = $54) then
   begin
     if (theByte[2] = $68) and (theByte[3] = $64) then
@@ -608,7 +608,7 @@ begin
   if not (chunkData = nil) then
     FreeMem(chunkData);
   GetMem(chunkData, chunkLength + 10);
-  BlockRead(midiFile, chunkData^, chunkLength);
+  midiFile.Read(chunkData^, chunkLength);
   chunkIndex := chunkData;
   chunkEnd := PByte(integer(chunkIndex) + integer(chunkLength) - 1);
 end;
@@ -848,12 +848,10 @@ begin
   Tracks.Clear;
   chunkType := illegal;
 
-  AssignFile(midiFile, FFilename);
-  FileMode := 0;
-  Reset(midiFile);
-  while not eof(midiFile) do
+  midiFile := TBinaryFileStream.Create(FFilename, fmOpenRead);
+  while (midiFile.Position < midiFile.Size) do
     ReadChunk;
-  CloseFile(midiFile);
+  FreeAndNil(midiFile);
   numberTracks := Tracks.Count;
 end;
 

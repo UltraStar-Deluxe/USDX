@@ -36,7 +36,8 @@ interface
 uses
   UThemes,
   UTexture,
-  UMenuBackground;
+  UMenuBackground,
+  UPath;
 
 //TMenuBackgroundFade - Background Fade In for Overlay screens
 //--------
@@ -72,7 +73,7 @@ uses
 
 constructor TMenuBackgroundFade.Create(const ThemedSettings: TThemeBackground);
 var
-  texFilename: string;
+  texFilename: IPath;
 begin
   inherited;
   FadeTime := 0;
@@ -82,7 +83,6 @@ begin
   if (Length(ThemedSettings.Tex) > 0) then
   begin
     texFilename := Skin.GetTextureFileName(ThemedSettings.Tex);
-    texFilename := AdaptFilePaths(texFilename);
     Tex         := Texture.GetTexture(texFilename, TEXTURE_TYPE_PLAIN);
 
     UseTexture  := (Tex.TexNum <> 0);

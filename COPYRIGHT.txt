@@ -1,4 +1,4 @@
-﻿Ultrastar Deluxe
+Ultrastar Deluxe
 Copyright (C) 2007-2008 by the following:
 
 If you have contributed to this project then you deserve to be on this
@@ -10,7 +10,7 @@ Dirk Dunger "blindy"
 Mike Gränz "mog"
 Tobias Gunkel "tobigun"
 "mota"
-"s_alexander"
+Alexander S. "s_alexander"
 Karl-Michael Schindler "mischi"
 Philipp Steinhardt "whiteshark"
 

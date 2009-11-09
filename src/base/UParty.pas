@@ -71,7 +71,7 @@ type
     procedure StartRound;
     procedure EndRound;
     function  GetTeamOrder: TeamOrderArray;
-    function  GetWinnerString(Round: byte): string;
+    function  GetWinnerString(Round: byte): UTF8String;
   end;
 
 var
@@ -352,9 +352,9 @@ end;
 //----------
 //GetWinnerString - Get string with WinnerTeam Name, when there is more than one Winner than Connect with and or ,
 //----------
-function  TPartySession.GetWinnerString(Round: byte): string;
+function  TPartySession.GetWinnerString(Round: byte): UTF8String;
 var
-  Winners: array of string;
+  Winners: array of UTF8String;
   I:       integer;
 begin
   Result := Language.Translate('PARTY_NOBODY');

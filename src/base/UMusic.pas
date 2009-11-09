@@ -34,10 +34,11 @@ interface
 {$I switches.inc}
 
 uses
-  UTime,
   SysUtils,
   Classes,
-  UBeatTimer;
+  UTime,
+  UBeatTimer,
+  UPath;
 
 type
   TNoteType = (ntFreestyle, ntNormal, ntGolden);
@@ -62,7 +63,7 @@ type
     Start:      integer;    // beat the fragment starts at
     Length:     integer;    // length in beats
     Tone:       integer;    // full range tone
-    Text:       string;     // text assigned to this fragment (a syllable, word, etc.)
+    Text:       UTF8String; // text assigned to this fragment (a syllable, word, etc.)
     NoteType:   TNoteType;  // note-type: golden-note/freestyle etc.
   end;
 
@@ -73,7 +74,7 @@ type
   PLine = ^TLine;
   TLine = record
     Start:      integer; // the start beat of this line (<> start beat of the first note of this line)
-    Lyric:      string;
+    Lyric:      UTF8String;
     //LyricWidth: real;    // @deprecated: width of the line in pixels.
                          // Do not use this as the width is not correct.
                          // Use TLyricsEngine.GetUpperLine().Width instead. 
@@ -315,7 +316,7 @@ type
   // soundcard output-devices information
   TAudioOutputDevice = class
     public
-      Name: string; // soundcard name
+      Name: UTF8String; // soundcard name
   end;
   TAudioOutputDeviceList = array of TAudioOutputDevice;
 
@@ -324,7 +325,7 @@ type
   ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCE33DD}']
       function GetName: String;
 
-      function Open(const Filename: string): boolean; // true if succeed
+      function Open(const Filename: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -376,7 +377,7 @@ type
       // nil-pointers is not neccessary anymore.
       // PlaySound/StopSound will be removed then, OpenSound will be renamed to
       // CreateSound.
-      function OpenSound(const Filename: String): TAudioPlaybackStream;
+      function OpenSound(const Filename: IPath): TAudioPlaybackStream;
       procedure PlaySound(Stream: TAudioPlaybackStream);
       procedure StopSound(Stream: TAudioPlaybackStream);
 
@@ -391,7 +392,7 @@ type
 
   IGenericDecoder = Interface
   ['{557B0E9A-604D-47E4-B826-13769F3E10B7}']
-      function GetName(): String;
+      function GetName(): string;
       function InitializeDecoder(): boolean;
       function FinalizeDecoder(): boolean;
       //function IsSupported(const Filename: string): boolean;
@@ -400,13 +401,13 @@ type
   (*
   IVideoDecoder = Interface( IGenericDecoder )
   ['{2F184B2B-FE69-44D5-9031-0A2462391DCA}']
-      function Open(const Filename: string): TVideoDecodeStream;
+      function Open(const Filename: IPath): TVideoDecodeStream;
   end;
   *)
 
   IAudioDecoder = Interface( IGenericDecoder )
   ['{AB47B1B6-2AA9-4410-BF8C-EC79561B5478}']
-      function Open(const Filename: string): TAudioDecodeStream;
+      function Open(const Filename: IPath): TAudioDecodeStream;
   end;
 
   IAudioInput = Interface
@@ -456,7 +457,7 @@ const
   SOUNDID_CLICK    = 5;
   LAST_SOUNDID = SOUNDID_CLICK;
 
-  BaseSoundFilenames: array[0..LAST_SOUNDID] of string = (
+  BaseSoundFilenames: array[0..LAST_SOUNDID] of IPath = (
     '%SOUNDPATH%/Common start.mp3',                 // Start
     '%SOUNDPATH%/Common back.mp3',                  // Back
     '%SOUNDPATH%/menu swoosh.mp3',                  // Swoosh
@@ -497,7 +498,7 @@ type
       procedure StartBgMusic();
       procedure PauseBgMusic();
       // TODO
-      //function AddSound(Filename: string): integer;
+      //function AddSound(Filename: IPath): integer;
       //procedure RemoveSound(ID: integer);
       //function GetSound(ID: integer): TAudioPlaybackStream;
       //property Sound[ID: integer]: TAudioPlaybackStream read GetSound; default;
@@ -533,7 +534,7 @@ uses
   UCommandLine,
   URecord,
   ULog,
-  UPath;
+  UPathUtils;
 
 var
   DefaultVideoPlayback : IVideoPlayback;
@@ -654,7 +655,7 @@ begin
   FilterInterfaceList(IAudioDecoder, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
   begin
-    CurrentAudioDecoder := IAudioDecoder(InterfaceList[i]);
+    CurrentAudioDecoder := InterfaceList[i] as IAudioDecoder;
     if (not CurrentAudioDecoder.InitializeDecoder()) then
     begin
       Log.LogError('Initialize failed, Removing - '+ CurrentAudioDecoder.GetName);
@@ -671,7 +672,7 @@ begin
   FilterInterfaceList(IAudioPlayback, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
   begin
-    CurrentAudioPlayback := IAudioPlayback(InterfaceList[i]);
+    CurrentAudioPlayback := InterfaceList[i] as IAudioPlayback;
     if (CurrentAudioPlayback.InitializePlayback()) then
     begin
       DefaultAudioPlayback := CurrentAudioPlayback;
@@ -686,7 +687,7 @@ begin
   FilterInterfaceList(IAudioInput, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
   begin
-    CurrentAudioInput := IAudioInput(InterfaceList[i]);
+    CurrentAudioInput := InterfaceList[i] as IAudioInput;
     if (CurrentAudioInput.InitializeRecord()) then
     begin
       DefaultAudioInput := CurrentAudioInput;
@@ -719,7 +720,7 @@ begin
   FilterInterfaceList(IVideoPlayback, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
   begin
-    VideoInterface := IVideoPlayback(InterfaceList[i]);
+    VideoInterface := InterfaceList[i] as IVideoPlayback;
     if (VideoInterface.Init()) then
     begin
       DefaultVideoPlayback := VideoInterface;
@@ -734,7 +735,7 @@ begin
   FilterInterfaceList(IVideoVisualization, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
   begin
-    VisualInterface := IVideoVisualization(InterfaceList[i]);
+    VisualInterface := InterfaceList[i] as IVideoVisualization;
     if (VisualInterface.Init()) then
     begin
       DefaultVisualization := VisualInterface;
@@ -748,7 +749,7 @@ begin
 
   // now that we have all interfaces, we can dump them
   // TODO: move this to another place
-  if FindCmdLineSwitch( cMediaInterfaces ) then
+  if FindCmdLineSwitch(cMediaInterfaces) then
   begin
     DumpMediaInterfaces();
     halt;
@@ -772,27 +773,27 @@ begin
   // finalize audio playback interfaces (should be done before the decoders)
   FilterInterfaceList(IAudioPlayback, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
-    IAudioPlayback(InterfaceList[i]).FinalizePlayback();
+    (InterfaceList[i] as IAudioPlayback).FinalizePlayback();
 
   // finalize audio input interfaces
   FilterInterfaceList(IAudioInput, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
-    IAudioInput(InterfaceList[i]).FinalizeRecord();
+    (InterfaceList[i] as IAudioInput).FinalizeRecord();
 
   // finalize audio decoder interfaces
   FilterInterfaceList(IAudioDecoder, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
-    IAudioDecoder(InterfaceList[i]).FinalizeDecoder();
+    (InterfaceList[i] as IAudioDecoder).FinalizeDecoder();
 
   // finalize video interfaces
   FilterInterfaceList(IVideoPlayback, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
-    IVideoPlayback(InterfaceList[i]).Finalize();
+    (InterfaceList[i] as IVideoPlayback).Finalize();
 
   // finalize audio decoder interfaces
   FilterInterfaceList(IVideoVisualization, MediaManager, InterfaceList);
   for i := 0 to InterfaceList.Count-1 do
-    IVideoVisualization(InterfaceList[i]).Finalize();
+    (InterfaceList[i] as IVideoVisualization).Finalize();
 
   InterfaceList.Free;
 
@@ -855,14 +856,14 @@ procedure TSoundLibrary.LoadSounds();
 begin
   UnloadSounds();
 
-  Start   := AudioPlayback.OpenSound(SoundPath + 'Common start.mp3');
-  Back    := AudioPlayback.OpenSound(SoundPath + 'Common back.mp3');
-  Swoosh  := AudioPlayback.OpenSound(SoundPath + 'menu swoosh.mp3');
-  Change  := AudioPlayback.OpenSound(SoundPath + 'select music change music 50.mp3');
-  Option  := AudioPlayback.OpenSound(SoundPath + 'option change col.mp3');
-  Click   := AudioPlayback.OpenSound(SoundPath + 'rimshot022b.mp3');
+  Start   := AudioPlayback.OpenSound(SoundPath.Append('Common start.mp3'));
+  Back    := AudioPlayback.OpenSound(SoundPath.Append('Common back.mp3'));
+  Swoosh  := AudioPlayback.OpenSound(SoundPath.Append('menu swoosh.mp3'));
+  Change  := AudioPlayback.OpenSound(SoundPath.Append('select music change music 50.mp3'));
+  Option  := AudioPlayback.OpenSound(SoundPath.Append('option change col.mp3'));
+  Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.mp3'));
 
-  BGMusic := AudioPlayback.OpenSound(SoundPath + 'Bebeto_-_Loop010.mp3');
+  BGMusic := AudioPlayback.OpenSound(SoundPath.Append('Bebeto_-_Loop010.mp3'));
 
   if (BGMusic <> nil) then
     BGMusic.Loop := True;

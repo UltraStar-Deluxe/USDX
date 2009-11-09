@@ -90,7 +90,7 @@ interface
 {$I switches.inc}
    
 uses
-  Sysutils;
+  SysUtils;
 
 const
   // IMPORTANT:
@@ -156,6 +156,12 @@ const
                     (FPC_RELEASE * VERSION_MINOR) +
                     (FPC_PATCH * VERSION_RELEASE);
 
+  // FPC 2.2.0 unicode support is very buggy. The cwstring unit for example
+  // always crashes whenever UTF8ToAnsi() is called on a non UTF8 encoded string
+  // what is fixed in 2.2.2.
+  {$IF Defined(FPC) and (FPC_VERSION_INT < 2002002)} // < 2.2.2
+    {$MESSAGE FATAL 'FPC >= 2.2.2 required!'}
+  {$IFEND}
 
   {$IFDEF HaveFFmpeg}
 

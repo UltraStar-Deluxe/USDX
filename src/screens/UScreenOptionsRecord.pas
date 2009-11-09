@@ -61,8 +61,8 @@ type
       PreviewDeviceIndex: integer;
 
       // string arrays for select-slide options
-      InputSourceNames: array of string;
-      InputDeviceNames: array of string;
+      InputSourceNames: array of UTF8String;
+      InputDeviceNames: array of UTF8String;
 
       // dynamic generated themes for channel select-sliders
       SelectSlideChannelTheme: array of TThemeSelectSlide;
@@ -95,9 +95,9 @@ type
     public
       constructor Create; override;
       function    Draw: boolean; override;
-      function    ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure   onShow; override;
-      procedure   onHide; override;
+      function    ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure   OnShow; override;
+      procedure   OnHide; override;
   end;
 
 const
@@ -126,33 +126,34 @@ uses
   UFiles,
   UDisplay,
   UIni,
+  UUnicodeUtils,
   ULog;
 
-function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
         end;
-      '+':
+      Ord('+'):
         begin
           // FIXME: add a nice volume-slider instead
           // or at least provide visualization and acceleration if the user holds the key pressed.
           ChangeVolume(0.02);
         end;
-      '-':
+      Ord('-'):
         begin
           // FIXME: add a nice volume-slider instead
           // or at least provide visualization and acceleration if the user holds the key pressed.
           ChangeVolume(-0.02);
         end;
-      'T':
+      Ord('T'):
         begin
           if ((SDL_GetModState() and KMOD_SHIFT) <> 0) then
             Ini.ThresholdIndex := (Ini.ThresholdIndex + Length(IThresholdVals) - 1) mod Length(IThresholdVals)
@@ -418,7 +419,7 @@ begin
   NextVolumePollTime := 0;
 end;
 
-procedure TScreenOptionsRecord.onShow;
+procedure TScreenOptionsRecord.OnShow;
 var
   ChannelIndex: integer;
 begin
@@ -436,7 +437,7 @@ begin
   StartPreview();
 end;
 
-procedure TScreenOptionsRecord.onHide;
+procedure TScreenOptionsRecord.OnHide;
 var
   ChannelIndex: integer;
 begin

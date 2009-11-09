@@ -77,6 +77,7 @@ uses
   UGraphic,
   UMain,
   UConfig,
+  UPath,
   ULog;
 
 {$IF PROJECTM_VERSION < 1000000} // < 1.0
@@ -130,7 +131,7 @@ type
       function Init(): boolean;
       function Finalize(): boolean;
 
-      function Open(const aFileName : string): boolean; // true if succeed
+      function Open(const aFileName: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -183,7 +184,7 @@ begin
   Result := true;
 end;
 
-function TVideoPlayback_ProjectM.Open(const aFileName : string): boolean; // true if succeed
+function TVideoPlayback_ProjectM.Open(const aFileName: IPath): boolean; // true if succeed
 begin
   Result := false;
 end;

@@ -15,8 +15,9 @@ Missing party mode (contact whiteshark to get further information on how to help
   con: may be difficult to port to other platforms than windows
 
 Unicode support (contact tobigun to get further information on how to help)
-- there is a unicode branch
-- seems to work except for some glitches
+- should work now but needs some testing
+- report bugs specific to the unicode branch (cross-check the trunk) at 
+  our forum (http://ultrastardeluxe.xtremeweb-hosting.net/)
 
 Microfone playback
 - buffers have to be adjusted

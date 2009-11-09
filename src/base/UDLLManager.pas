@@ -35,7 +35,9 @@ interface
 
 uses
   ModiSDK,
-  UFiles;
+  UFiles,
+  UPath,
+  UFilesystem;
 
 type
   TDLLMan = class
@@ -47,14 +49,14 @@ type
       P_RData:  pModi_RData;
     public
       Plugins: array of TPluginInfo;
-      PluginPaths: array of string;
+      PluginPaths: array of IPath;
       Selected: ^TPluginInfo;
 
       constructor Create;
 
       procedure GetPluginList;
       procedure ClearPluginInfo(No: cardinal);
-      function  LoadPluginInfo(Filename: string; No: cardinal): boolean;
+      function  LoadPluginInfo(const Filename: IPath; No: cardinal): boolean;
 
       function  LoadPlugin(No: cardinal): boolean;
       procedure UnLoadPlugin;
@@ -92,7 +94,7 @@ uses
   {$ELSE}
   dynlibs,
   {$ENDIF}
-  UPath,
+  UPathUtils,
   ULog,
   SysUtils;
 
@@ -107,27 +109,26 @@ end;
 
 procedure TDLLMan.GetPluginList;
 var
-  SearchRecord: TSearchRec;
+  Iter: IFileIterator;
+  FileInfo: TFileInfo;
 begin
-
-  if FindFirst(PluginPath + '*' + DLLExt, faAnyFile, SearchRecord) = 0 then
+  Iter := FileSystem.FileFind(PluginPath.Append('*' + DLLExt), 0);
+  while (Iter.HasNext) do
   begin
-    repeat
-      SetLength(Plugins, Length(Plugins)+1);
+    SetLength(Plugins, Length(Plugins)+1);
+    SetLength(PluginPaths, Length(Plugins));
+
+    FileInfo := Iter.Next;
+
+    if LoadPluginInfo(FileInfo.Name, High(Plugins)) then // loaded succesful
+    begin
+      PluginPaths[High(PluginPaths)] := FileInfo.Name;
+    end
+    else // error loading
+    begin
+      SetLength(Plugins, Length(Plugins)-1);
       SetLength(PluginPaths, Length(Plugins));
-
-      if LoadPluginInfo(SearchRecord.Name, High(Plugins)) then // loaded succesful
-      begin
-        PluginPaths[High(PluginPaths)] := SearchRecord.Name;
-      end
-      else // error loading
-      begin
-        SetLength(Plugins, Length(Plugins)-1);
-        SetLength(PluginPaths, Length(Plugins));
-      end;
-
-    until FindNext(SearchRecord) <> 0;
-    FindClose(SearchRecord);
+    end;
   end;
 end;
 
@@ -164,7 +165,7 @@ begin
   Plugins[No].EnLineBonus_O := true;
 end;
 
-function TDLLMan.LoadPluginInfo(Filename: string; No: cardinal): boolean;
+function TDLLMan.LoadPluginInfo(const Filename: IPath; No: cardinal): boolean;
 var
   hLibg: THandle;
   Info: pModi_PluginInfo;
@@ -182,7 +183,7 @@ begin
 }
 
 // load libary
-  hLibg := LoadLibrary(PChar(PluginPath + Filename));
+  hLibg := LoadLibrary(PChar(PluginPath.Append(Filename).ToNative));
 // if loaded
   if (hLibg <> 0) then
   begin
@@ -197,19 +198,19 @@ begin
       Result := true;
     end
     else
-      Log.LogError('Could not load plugin "' + Filename + '": Info procedure not found');
+      Log.LogError('Could not load plugin "' + Filename.ToNative + '": Info procedure not found');
 
     FreeLibrary (hLibg);
   end
   else
-    Log.LogError('Could not load plugin "' + Filename + '": Libary not loaded');
+    Log.LogError('Could not load plugin "' + Filename.ToNative + '": Libary not loaded');
 end;
 
 function TDLLMan.LoadPlugin(No: cardinal): boolean;
 begin
   Result := true;
 // load libary
-  hLib := LoadLibrary(PChar(PluginPath + PluginPaths[No]));
+  hLib := LoadLibrary(PChar(PluginPath.Append(PluginPaths[No]).ToNative));
 // if loaded
   if (hLib <> 0) then
   begin
@@ -226,11 +227,11 @@ begin
     end
     else
     begin
-      Log.LogError('Could not load plugin "' + PluginPaths[No] + '": Procedures not found');
+      Log.LogError('Could not load plugin "' + PluginPaths[No].ToNative + '": Procedures not found');
     end;
   end
   else
-    Log.LogError('Could not load plugin "' + PluginPaths[No] + '": Libary not loaded');
+    Log.LogError('Could not load plugin "' + PluginPaths[No].ToNative + '": Libary not loaded');
 end;
 
 procedure TDLLMan.UnLoadPlugin;

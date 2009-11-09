@@ -52,14 +52,14 @@ type
     Width:      real;     // width
     Start:      cardinal; // start of the word in quarters (beats)
     Length:     cardinal; // length of the word in quarters
-    Text:       string;   // text
+    Text:       UTF8String; // text
     Freestyle:  boolean;  // is freestyle?
   end;
   TLyricWordArray = array of TLyricWord;
 
   TLyricLine = class
     public
-      Text:           string;       // text
+      Text:           UTF8String;   // text
       Width:          real;         // width
       Height:         real;         // height
       Words:          TLyricWordArray;   // words in this line

@@ -45,9 +45,9 @@ type
       Animation:    real;
       Fadeout:      boolean;
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function Draw: boolean; override;
-      procedure onShow; override;
+      procedure OnShow; override;
   end;
 
 implementation
@@ -58,7 +58,7 @@ uses
   USkins,
   UTexture;
 
-function TScreenWelcome.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenWelcome.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -91,7 +91,7 @@ begin
   Fadeout := false;
 end;
 
-procedure TScreenWelcome.onShow;
+procedure TScreenWelcome.OnShow;
 begin
   inherited;
 

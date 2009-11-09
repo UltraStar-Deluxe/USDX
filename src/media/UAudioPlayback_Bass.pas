@@ -684,9 +684,11 @@ end;
 
 function TAudioPlayback_Bass.InitializePlayback(): boolean;
 begin
-  result := false;
+  Result := false;
 
   BassCore := TAudioCore_Bass.GetInstance();
+  if not BassCore.CheckVersion then
+    Exit;
 
   EnumDevices();
 
@@ -706,7 +708,7 @@ begin
   //BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
   //BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
 
-  result := true;
+  Result := true;
 end;
 
 function TAudioPlayback_Bass.FinalizePlayback(): boolean;

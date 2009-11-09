@@ -33,6 +33,9 @@ interface
 
 {$I switches.inc}
 
+uses
+  UPath;
+
 type
   TScreenMode = (scmDefault, scmFullscreen, scmWindowed);
 
@@ -64,9 +67,9 @@ type
       Screens:    integer;
 
       // some strings set when reading infos {Length=0: Not Set}
-      SongPath:   string;
-      ConfigFile: string;
-      ScoreFile:  string;
+      SongPath:   IPath;
+      ConfigFile: IPath;
+      ScoreFile:  IPath;
 
       // pseudo integer values
       property Language:      integer read GetLanguage;
@@ -144,9 +147,9 @@ begin
   Screens     := -1;
 
   // some strings set when reading infos {Length=0 Not Set}
-  SongPath    := '';
-  ConfigFile  := '';
-  ScoreFile   := '';
+  SongPath    := PATH_NONE;
+  ConfigFile  := PATH_NONE;
+  ScoreFile   := PATH_NONE;
 end;
 
 {**
@@ -248,7 +251,7 @@ begin
         if (PCount > I) then
         begin
           // write value to string
-          SongPath := ParamStr(I + 1);
+          SongPath := Path(ParamStr(I + 1));
         end;
       end
 
@@ -258,11 +261,11 @@ begin
         if (PCount > I) then
         begin
           // write value to string
-          ConfigFile := ParamStr(I + 1);
+          ConfigFile := Path(ParamStr(I + 1));
 
           // is this a relative path -> then add gamepath
-          if Not ((Length(ConfigFile) > 2) AND (ConfigFile[2] = ':')) then
-            ConfigFile := ExtractFilePath(ParamStr(0)) + Configfile;
+          if (not ConfigFile.IsAbsolute) then
+            ConfigFile := Platform.GetExecutionDir().Append(ConfigFile);
         end;
       end
 
@@ -272,7 +275,7 @@ begin
         if (PCount > I) then
         begin
           // write value to string
-          ScoreFile := ParamStr(I + 1);
+          ScoreFile := Path(ParamStr(I + 1));
         end;
       end;
 

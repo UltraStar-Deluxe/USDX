@@ -80,7 +80,7 @@ uses
   UJoystick,
   ULanguage,
   ULog,
-  UPath,
+  UPathUtils,
   UPlaylist,
   UMusic,
   UBeatTimer,
@@ -190,7 +190,7 @@ begin
     // Theme
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Themes', 'Initialization');
-    Theme := TTheme.Create(ThemePath + ITheme[Ini.Theme] + '.ini', Ini.Color);
+    Theme := TTheme.Create(ThemePath.Append(ITheme[Ini.Theme] + '.ini'), Ini.Color);
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Themes', 1);
 
@@ -246,10 +246,10 @@ begin
     Log.LogStatus('DataBase System', 'Initialization');
     DataBase := TDataBaseSystem.Create;
 
-    if (Params.ScoreFile = '') then
-      DataBase.Init (Platform.GetGameUserPath + 'Ultrastar.db')
+    if (Params.ScoreFile.IsUnset) then
+      DataBase.Init(Platform.GetGameUserPath.Append('Ultrastar.db'))
     else
-      DataBase.Init (Params.ScoreFile);
+      DataBase.Init(Params.ScoreFile);
 
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading DataBase System', 1);
@@ -353,11 +353,9 @@ begin
     CountMidTime;
 
     Delay := Floor(1000 / MAX_FPS - 1000 * TimeMid);
-    //Log.LogError ('MainLoop', 'Delay: ' + intToStr(Delay));
 
     if Delay >= 1 then
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
-    //Log.LogError ('MainLoop', 'Delay: ok ' + intToStr(Delay));
 
     CountSkipTime;
 
@@ -433,6 +431,8 @@ begin
 
           if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
             done := not ScreenPopupError.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+          else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
+            done := not ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
           else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
             done := not ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
           else
@@ -462,6 +462,16 @@ begin
       end;
       SDL_KEYDOWN:
         begin
+          // translate CTRL-A (ASCII 1) - CTRL-Z (ASCII 26) to correct charcodes.
+          // keysyms (SDLK_A, ...) could be used instead but they ignore the
+          // current key mapping (if 'a' is pressed on a French keyboard the
+          // .unicode field will be 'a' and .sym SDLK_Q).
+          // IMPORTANT: if CTRL is pressed with a key different than 'A'-'Z' SDL
+          // will set .unicode to 0. There is no possibility to obtain a
+          // translated charcode. Use keysyms instead.
+          //if (Event.key.keysym.unicode in [1 .. 26]) then
+          //  Event.key.keysym.unicode := Ord('A') + Event.key.keysym.unicode - 1;
+
           // remap the "keypad enter" key to the "standard enter" key
           if (Event.key.keysym.sym = SDLK_KP_ENTER) then
             Event.key.keysym.sym := SDLK_RETURN;
@@ -496,13 +506,15 @@ begin
           // if there is a visible popup then let it handle input instead of underlying screen
           // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
           else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-            Done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), true)
+            Done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+          else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
+            Done := not ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
           else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-            Done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), true)
+            Done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
           else
           begin
             // check if screen wants to exit
-            Done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, WideChar(Event.key.keysym.unicode), true);
+            Done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
 
             // if screen wants to exit
             if Done then

@@ -38,6 +38,7 @@ uses
   SDL,
   USongs,
   USong,
+  UPath,
   UThemes;
 
 type
@@ -72,8 +73,8 @@ type
       procedure SetRoundButtons;
 
       constructor Create; override;
-      procedure onShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
 {      function Draw: boolean; override;
       procedure Finish;}
   end;
@@ -86,17 +87,18 @@ uses
   SysUtils,
   UFiles,
   USkins,
-  UTexture;
+  UTexture,
+  UUnicodeUtils;
 
-function TScreenEditHeader.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenEditHeader.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   T:    integer;
 begin
   Result := true;
   if (PressedDown) then    // Key Down
    begin   // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -105,10 +107,10 @@ begin
     
     // check special keys
     case PressedKey of
-      SDLK_ESCAPE :
+      SDLK_ESCAPE:
         begin
-//          Music.PlayBack;
-//          FadeTo(@MainScreen);
+          //Music.PlayBack;
+          //FadeTo(@MainScreen);
           Result := false;
         end;
 
@@ -116,7 +118,7 @@ begin
         begin
           if Interaction = 1 then
           begin
-//            Save;
+            //Save;
           end;
         end;
 
@@ -159,19 +161,19 @@ begin
           T := Interaction - 2 + TextTitle;
           if (Interaction >= 2) and (Interaction <= 13) and (Length(Text[T].Text) >= 1) then
           begin
-            Text[T].DeleteLastL;
+            Text[T].DeleteLastLetter;
             SetRoundButtons;            
           end;
         end;
 
     end;
     case CharCode of
-      #32..#255:
+      32..255:
         begin
           if (Interaction >= 2) and (Interaction <= 13) then
           begin
             Text[Interaction - 2 + TextTitle].Text :=
-              Text[Interaction - 2 + TextTitle].Text + CharCode;
+              Text[Interaction - 2 + TextTitle].Text + UCS4ToUTF8String(CharCode);
             SetRoundButtons;
           end;
         end;
@@ -223,18 +225,18 @@ begin
   TextGAP   :=  AddText(340, 110 + 13*30, 0, 30, 0, 0, 0, '');
   TextBPM   :=  AddText(340, 110 + 14*30, 0, 30, 0, 0, 0, '');
 
-  StaticTitle      := AddStatic(130, 115 + 0*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticArtist     := AddStatic(130, 115 + 1*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticMp3        := AddStatic(130, 115 + 2*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticBackground := AddStatic(130, 115 + 4*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticVideo      := AddStatic(130, 115 + 5*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticVideoGAP   := AddStatic(130, 115 + 6*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticRelative   := AddStatic(130, 115 + 8*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticResolution := AddStatic(130, 115 + 9*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticNotesGAP   := AddStatic(130, 115 + 10*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticStart      := AddStatic(130, 115 + 12*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticGAP        := AddStatic(130, 115 + 13*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  StaticBPM        := AddStatic(130, 115 + 14*30, 20, 20, 1, 1, 1, 'RoundButton', TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticTitle      := AddStatic(130, 115 + 0*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticArtist     := AddStatic(130, 115 + 1*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticMp3        := AddStatic(130, 115 + 2*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticBackground := AddStatic(130, 115 + 4*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticVideo      := AddStatic(130, 115 + 5*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticVideoGAP   := AddStatic(130, 115 + 6*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticRelative   := AddStatic(130, 115 + 8*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticResolution := AddStatic(130, 115 + 9*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticNotesGAP   := AddStatic(130, 115 + 10*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticStart      := AddStatic(130, 115 + 12*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticGAP        := AddStatic(130, 115 + 13*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  StaticBPM        := AddStatic(130, 115 + 14*30, 20, 20, 1, 1, 1, Path('RoundButton'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
 
   AddInteraction(iText, TextTitle);
   AddInteraction(iText, TextArtist);
@@ -250,7 +252,7 @@ begin
   AddInteraction(iText, TextBPM);
 end;
 
-procedure TScreenEditHeader.onShow;
+procedure TScreenEditHeader.OnShow;
 begin
   inherited;
 

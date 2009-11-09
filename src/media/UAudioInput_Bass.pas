@@ -489,6 +489,11 @@ end;
 function TAudioInput_Bass.InitializeRecord(): boolean;
 begin
   BassCore := TAudioCore_Bass.GetInstance();
+  if not BassCore.CheckVersion then
+  begin
+    Result := false;
+    Exit;
+  end;
   Result := EnumDevices();
 end;
 

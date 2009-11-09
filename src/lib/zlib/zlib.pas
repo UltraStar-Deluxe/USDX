@@ -14,7 +14,7 @@ interface
 
 {$ifdef FPC}
   {$mode objfpc} // Needed for array of const
-  {$H+} // use AnsiString
+  {$H+} // use long strings
   {$PACKRECORDS C}
 {$endif}
 

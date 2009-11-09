@@ -74,7 +74,7 @@ type
       procedure SetSize(Value: real);
       procedure SetSelected(Value: integer);
       procedure SetFontStyle(Value: integer);
-      procedure AddWord(Text: string);
+      procedure AddWord(Text: UTF8String);
       procedure Refresh;
     public
       ColR:   real;
@@ -179,7 +179,7 @@ begin
   FontStyleI := Value;
 end;
 
-procedure TEditorLyrics.AddWord(Text: string);
+procedure TEditorLyrics.AddWord(Text: UTF8String);
 var
   WordNum: integer;
 begin

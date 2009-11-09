@@ -46,8 +46,8 @@ type
   TScreenOptionsGraphics = class(TMenu)
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure onShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
   end;
 
 implementation
@@ -55,17 +55,17 @@ implementation
 uses
   UGraphic,
   UMain,
-  SysUtils,
-  TypInfo;
+  UUnicodeUtils,
+  SysUtils;
 
-function TScreenOptionsGraphics.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenOptionsGraphics.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -162,7 +162,7 @@ begin
 
 end;
 
-procedure TScreenOptionsGraphics.onShow;
+procedure TScreenOptionsGraphics.OnShow;
 begin
   inherited;
 

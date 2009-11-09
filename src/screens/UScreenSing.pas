@@ -35,9 +35,9 @@ interface
 
 uses
   SysUtils,
-  gl,
   SDL,
   TextGL,
+  gl,
   UFiles,
   UGraphicClasses,
   UIni,
@@ -49,6 +49,7 @@ uses
   USongs,
   UTexture,
   UThemes,
+  UPath,
   UTime;
 
 type
@@ -101,11 +102,11 @@ type
     fCurrentVideoPlaybackEngine: IVideoPlayback;
 
     constructor Create; override;
-    procedure onShow; override;
-    procedure onShowFinish; override;
-    procedure onHide; override;
+    procedure OnShow; override;
+    procedure OnShowFinish; override;
+    procedure OnHide; override;
 
-    function ParseInput(PressedKey: cardinal; CharCode: widechar;
+    function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
       PressedDown: boolean): boolean; override;
     function Draw: boolean; override;
 
@@ -127,20 +128,21 @@ uses
   UNote,
   URecord,
   USong,
-  UDisplay;
+  UDisplay,
+  UUnicodeUtils;
 
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
 
-function TScreenSing.ParseInput(PressedKey: cardinal; CharCode: widechar;
+function TScreenSing.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
   PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // key down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
       begin
         // when not ask before exit then finish now
         if (Ini.AskbeforeDel <> 1) then
@@ -152,7 +154,7 @@ begin
         Result := false;
         Exit;
       end;
-      'V': // show visualization
+      Ord('V'): // show visualization
       begin
         fShowVisualization := not fShowVisualization;
 
@@ -166,7 +168,7 @@ begin
 
         Exit;
       end;
-      'P':
+      Ord('P'):
       begin
         Pause;
         Exit;
@@ -216,6 +218,8 @@ end;
 
 // pause mod
 procedure TScreenSing.Pause;
+var
+  VideoFile: IPath;
 begin
   if (not Paused) then  // enable pause
   begin
@@ -228,8 +232,8 @@ begin
     AudioPlayback.Pause;
 
     // pause video
-    if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path +
-      CurrentSong.Video) then
+    VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
+    if (CurrentSong.Video.IsSet) and VideoFile.Exists then
       fCurrentVideoPlaybackEngine.Pause;
 
   end
@@ -241,8 +245,8 @@ begin
     AudioPlayback.Play;
 
     // video
-    if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path +
-      CurrentSong.Video) then
+    VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
+    if (CurrentSong.Video.IsSet) and VideoFile.Exists then
       fCurrentVideoPlaybackEngine.Pause;
 
     Paused := false;
@@ -307,7 +311,7 @@ begin
   LyricsSync := TLyricsSyncSource.Create();
 end;
 
-procedure TScreenSing.onShow;
+procedure TScreenSing.OnShow;
 var
   Index:  integer;
   V1:     boolean;
@@ -317,12 +321,12 @@ var
   V2M:    boolean;
   V3R:    boolean;
   Color: TRGB;
-
+  VideoFile, BgFile: IPath;
   success: boolean;
 begin
   inherited;
 
-  Log.LogStatus('Begin', 'onShow');
+  Log.LogStatus('Begin', 'OnShow');
   FadeOut := false;
 
   // reset video playback engine, to play video clip ...
@@ -423,7 +427,7 @@ begin
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
     // check if file is xml
-    if copy(CurrentSong.FileName, length(CurrentSong.FileName) - 3, 4) = '.xml' then
+    if CurrentSong.FileName.GetExtension.ToUTF8 = '.xml' then
       success := CurrentSong.LoadXMLSong()
     else
       success := CurrentSong.LoadSong();
@@ -467,9 +471,10 @@ begin
    *}
   VideoLoaded := false;
   fShowVisualization := false;
-  if (CurrentSong.Video <> '') and FileExists(CurrentSong.Path + CurrentSong.Video) then
+  VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
+  if (CurrentSong.Video.IsSet) and VideoFile.IsFile then
   begin
-    if (fCurrentVideoPlaybackEngine.Open(CurrentSong.Path + CurrentSong.Video)) then
+    if (fCurrentVideoPlaybackEngine.Open(VideoFile)) then
     begin
       fShowVisualization := false;
       fCurrentVideoPlaybackEngine := VideoPlayback;
@@ -482,15 +487,17 @@ begin
   {*
    * set background to: picture
    *}
-  if (CurrentSong.Background <> '') and (VideoLoaded = false)
+  if (CurrentSong.Background.IsSet) and (VideoLoaded = false)
     and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
+  begin
+    BgFile := CurrentSong.Path.Append(CurrentSong.Background);
     try
-      Tex_Background := Texture.LoadTexture(CurrentSong.Path + CurrentSong.Background);
+      Tex_Background := Texture.LoadTexture(BgFile);
     except
-      Log.LogError('Background could not be loaded: ' + CurrentSong.Path +
-        CurrentSong.Background);
+      Log.LogError('Background could not be loaded: ' + BgFile.ToNative);
       Tex_Background.TexNum := 0;
     end
+  end
   else
   begin
     Tex_Background.TexNum := 0;
@@ -622,7 +629,7 @@ begin
     if Lines[0].Line[Index].TotalNotes = 0 then
       Inc(NumEmptySentences);
 
-  Log.LogStatus('End', 'onShow');
+  Log.LogStatus('End', 'OnShow');
 end;
 
 procedure TScreenSing.onShowFinish;
@@ -640,7 +647,7 @@ begin
   CountSkipTimeSet;
 end;
 
-procedure TScreenSing.onHide;
+procedure TScreenSing.OnHide;
 begin
   // background texture
   if (Tex_Background.TexNum > 0) then

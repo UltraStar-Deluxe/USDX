@@ -1,23 +1,42 @@
-//----------------------------------------------------------------------------
-// FreeType2 pascal header
-//----------------------------------------------------------------------------
-// Anti-Grain Geometry - Version 2.4 (Public License)
-// Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)
-//
-// Anti-Grain Geometry - Version 2.4 Release Milano 3 (AggPas 2.4 RM3)
-// Pascal Port By: Milan Marusinec alias Milano
-//                 milan@marusinec.sk
-//                 http://www.aggpas.org
-// Copyright (c) 2005-2007
-//
-// Permission to copy, use, modify, sell and distribute this software
-// is granted provided this copyright notice appears in all copies.
-// This software is provided "as is" without express or implied
-// warranty, and with no claim as to its suitability for any purpose.
-//
-//----------------------------------------------------------------------------
-// Adapted by the UltraStar Deluxe Team
-//----------------------------------------------------------------------------
+(***************************************************************************)
+(*                                                                         *)
+(*  freetype.h                                                             *)
+(*                                                                         *)
+(*    FreeType high-level API and common types (specification only).       *)
+(*                                                                         *)
+(*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007 by             *)
+(*  David Turner, Robert Wilhelm, and Werner Lemberg.                      *)
+(*                                                                         *)
+(*  This file is part of the FreeType project, and may only be used,       *)
+(*  modified, and distributed under the terms of the FreeType project      *)
+(*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     *)
+(*  this file you indicate that you have read the license and              *)
+(*  understand and accept it fully.                                        *)
+(*                                                                         *)
+(***************************************************************************)
+
+(***************************************************************************)
+(* Initial Pascal port by                                                  *)
+(***************************************************************************)
+(* Anti-Grain Geometry - Version 2.4 (Public License)                      *)
+(* Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)     *)
+(*                                                                         *)
+(* Anti-Grain Geometry - Version 2.4 Release Milano 3 (AggPas 2.4 RM3)     *)
+(* Pascal Port By: Milan Marusinec alias Milano                            *)
+(*                 milan@marusinec.sk                                      *)
+(*                 http://www.aggpas.org                                   *)
+(* Copyright (c) 2005-2007                                                 *)
+(*                                                                         *)
+(* Permission to copy, use, modify, sell and distribute this software      *)
+(* is granted provided this copyright notice appears in all copies.        *)
+(* This software is provided "as is" without express or implied            *)
+(* warranty, and with no claim as to its suitability for any purpose.      *)
+(*                                                                         *)
+(***************************************************************************)
+
+(***************************************************************************)
+(* Extended by the UltraStar Deluxe Team                                   *)
+(***************************************************************************)
 
 unit freetype;
 
@@ -36,7 +55,7 @@ uses
 
 const
 {$IF Defined(MSWINDOWS)}
-  ft_lib = 'libfreetype-6.dll';
+  ft_lib = 'freetype6.dll';
 {$ELSEIF Defined(DARWIN)}
   ft_lib = 'libfreetype.dylib';
   {$LINKLIB libfreetype}
@@ -45,32 +64,24 @@ const
 {$IFEND}
 
 type
-  FT_Byte    = cuchar;
-  FT_Short   = csshort;
-  FT_UShort  = cushort;
-  FT_Int     = csint;
-  FT_UInt    = cuint;
-  FT_Int16   = cint16;
-  FT_UInt16  = cuint16;
-  FT_Int32   = cint32;
-  FT_UInt32  = cuint32;
-  FT_Long    = cslong;
-  FT_ULong   = culong;
-
-  FT_Fixed   = cslong;
-  FT_Pos     = cslong;
-  FT_Error   = cint;
-  FT_F26Dot6 = cslong;
-  FT_String  = cchar;
-  FT_Bool    = cuchar;
-
-  PFT_Byte   = ^FT_Byte;
-  PFT_Short  = ^FT_Short;
-  PFT_String = ^FT_String;
-
-
-  TByteArray = array [0 .. (MaxInt div SizeOf(byte))-1] of byte;
-  PByteArray = ^TByteArray;
+  (*************************************************************************)
+  (*                                                                       *)
+  (* <Type>                                                                *)
+  (*    FT_Library                                                         *)
+  (*                                                                       *)
+  (* <Description>                                                         *)
+  (*    A handle to a FreeType library instance.  Each `library' is        *)
+  (*    completely independent from the others; it is the `root' of a set  *)
+  (*    of objects like fonts, faces, sizes, etc.                          *)
+  (*                                                                       *)
+  (*    It also embeds a memory manager (see @FT_Memory), as well as a     *)
+  (*    scan-line converter object (see @FT_Raster).                       *)
+  (*                                                                       *)
+  (* <Note>                                                                *)
+  (*    Library objects are normally created by @FT_Init_FreeType, and     *)
+  (*    destroyed with @FT_Done_FreeType.                                  *)
+  (*                                                                       *)
+  FT_Library = Pointer;
 
 
   (*************************************************************************)
@@ -290,54 +301,6 @@ const
   FT_ENCODING_WANSUNG:   FT_Encoding = ('w', 'a', 'n', 's');
   FT_ENCODING_JOHAB:     FT_Encoding = ('j', 'o', 'h', 'a');
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Enum>                                                                *)
-  (*    FT_Glyph_Format                                                    *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    An enumeration type used to describe the format of a given glyph   *)
-  (*    image.  Note that this version of FreeType only supports two image *)
-  (*    formats, even though future font drivers will be able to register  *)
-  (*    their own format.                                                  *)
-  (*                                                                       *)
-  (* <Values>                                                              *)
-  (*    FT_GLYPH_FORMAT_NONE ::                                            *)
-  (*      The value 0 is reserved and does describe a glyph format.        *)
-  (*                                                                       *)
-  (*    FT_GLYPH_FORMAT_COMPOSITE ::                                       *)
-  (*      The glyph image is a composite of several other images.  This    *)
-  (*      format is _only_ used with @FT_LOAD_NO_RECURSE, and is used to   *)
-  (*      report compound glyphs (like accented characters).               *)
-  (*                                                                       *)
-  (*    FT_GLYPH_FORMAT_BITMAP ::                                          *)
-  (*      The glyph image is a bitmap, and can be described as an          *)
-  (*      @FT_Bitmap.  You generally need to access the `bitmap' field of  *)
-  (*      the @FT_GlyphSlotRec structure to read it.                       *)
-  (*                                                                       *)
-  (*    FT_GLYPH_FORMAT_OUTLINE ::                                         *)
-  (*      The glyph image is a vertorial outline made of line segments     *)
-  (*      and Bezier arcs; it can be described as an @FT_Outline; you      *)
-  (*      generally want to access the `outline' field of the              *)
-  (*      @FT_GlyphSlotRec structure to read it.                           *)
-  (*                                                                       *)
-  (*    FT_GLYPH_FORMAT_PLOTTER ::                                         *)
-  (*      The glyph image is a vectorial path with no inside/outside       *)
-  (*      contours.  Some Type 1 fonts, like those in the Hershey family,  *)
-  (*      contain glyphs in this format.  These are described as           *)
-  (*      @FT_Outline, but FreeType isn't currently capable of rendering   *)
-  (*      them correctly.                                                  *)
-  (*                                                                       *)
-type
-  FT_Glyph_Format = array[0..3] of char;
-const
-  FT_GLYPH_FORMAT_NONE:      FT_Glyph_Format = (#0, #0, #0, #0 );
-
-  FT_GLYPH_FORMAT_COMPOSITE: FT_Glyph_Format = ('c', 'o', 'm', 'p' );
-  FT_GLYPH_FORMAT_BITMAP:    FT_Glyph_Format = ('b', 'i', 't', 's' );
-  FT_GLYPH_FORMAT_OUTLINE:   FT_Glyph_Format = ('o', 'u', 't', 'l' );
-  FT_GLYPH_FORMAT_PLOTTER:   FT_Glyph_Format = ('p', 'l', 'o', 't' );
-
 
   (*************************************************************************)
   (*                                                                       *)
@@ -358,7 +321,7 @@ const
 const
   FT_STYLE_FLAG_ITALIC = 1 shl 0;
   FT_STYLE_FLAG_BOLD   = 1 shl 1;
-  
+
 
  (***************************************************************************
   *
@@ -567,7 +530,7 @@ const
   (*   perform this pass.                                                  *)
   (*                                                                       *)
 type
-  FT_Render_Mode = FT_Int;
+  FT_Render_Mode = cint;
 const
   FT_RENDER_MODE_NORMAL = 0;
   FT_RENDER_MODE_LIGHT  = FT_RENDER_MODE_NORMAL + 1;
@@ -579,63 +542,34 @@ const
 
   (*************************************************************************)
   (*                                                                       *)
-  (* <Enum>                                                                *)
-  (*    FT_Pixel_Mode                                                      *)
+  (* <Type>                                                                *)
+  (*    FT_GlyphSlot                                                       *)
   (*                                                                       *)
   (* <Description>                                                         *)
-  (*    An enumeration type used to describe the format of pixels in a     *)
-  (*    given bitmap.  Note that additional formats may be added in the    *)
-  (*    future.                                                            *)
+  (*    A handle to a given `glyph slot'.  A slot is a container where it  *)
+  (*    is possible to load any one of the glyphs contained in its parent  *)
+  (*    face.                                                              *)
   (*                                                                       *)
-  (* <Values>                                                              *)
-  (*    FT_PIXEL_MODE_NONE ::                                              *)
-  (*      Value 0 is reserved.                                             *)
+  (*    In other words, each time you call @FT_Load_Glyph or               *)
+  (*    @FT_Load_Char, the slot's content is erased by the new glyph data, *)
+  (*    i.e. the glyph's metrics, its image (bitmap or outline), and       *)
+  (*    other control information.                                         *)
   (*                                                                       *)
-  (*    FT_PIXEL_MODE_MONO ::                                              *)
-  (*      A monochrome bitmap, using 1 bit per pixel.  Note that pixels    *)
-  (*      are stored in most-significant order (MSB), which means that     *)
-  (*      the left-most pixel in a byte has value 128.                     *)
-  (*                                                                       *)
-  (*    FT_PIXEL_MODE_GRAY ::                                              *)
-  (*      An 8-bit bitmap, generally used to represent anti-aliased glyph  *)
-  (*      images.  Each pixel is stored in one byte.  Note that the number *)
-  (*      of value `gray' levels is stored in the `num_bytes' field of     *)
-  (*      the @FT_Bitmap structure (it generally is 256).                  *)
-  (*                                                                       *)
-  (*    FT_PIXEL_MODE_GRAY2 ::                                             *)
-  (*      A 2-bit/pixel bitmap, used to represent embedded anti-aliased    *)
-  (*      bitmaps in font files according to the OpenType specification.   *)
-  (*      We haven't found a single font using this format, however.       *)
-  (*                                                                       *)
-  (*    FT_PIXEL_MODE_GRAY4 ::                                             *)
-  (*      A 4-bit/pixel bitmap, used to represent embedded anti-aliased    *)
-  (*      bitmaps in font files according to the OpenType specification.   *)
-  (*      We haven't found a single font using this format, however.       *)
-  (*                                                                       *)
-  (*    FT_PIXEL_MODE_LCD ::                                               *)
-  (*      An 8-bit bitmap, used to represent RGB or BGR decimated glyph    *)
-  (*      images used for display on LCD displays; the bitmap is three     *)
-  (*      times wider than the original glyph image.  See also             *)
-  (*      @FT_RENDER_MODE_LCD.                                             *)
-  (*                                                                       *)
-  (*    FT_PIXEL_MODE_LCD_V ::                                             *)
-  (*      An 8-bit bitmap, used to represent RGB or BGR decimated glyph    *)
-  (*      images used for display on rotated LCD displays; the bitmap      *)
-  (*      is three times taller than the original glyph image.  See also   *)
-  (*      @FT_RENDER_MODE_LCD_V.                                           *)
+  (* <Also>                                                                *)
+  (*    @FT_GlyphSlotRec details the publicly accessible glyph fields.     *)
   (*                                                                       *)
 type
-  FT_Pixel_Mode = byte;
-const
-  FT_PIXEL_MODE_NONE    = 0;
-  FT_PIXEL_MODE_MONO    = FT_PIXEL_MODE_NONE  + 1;
-  FT_PIXEL_MODE_GRAY    = FT_PIXEL_MODE_MONO  + 1;
-  FT_PIXEL_MODE_GRAY2   = FT_PIXEL_MODE_GRAY  + 1;
-  FT_PIXEL_MODE_GRAY4   = FT_PIXEL_MODE_GRAY2 + 1;
-  FT_PIXEL_MODE_LCD     = FT_PIXEL_MODE_GRAY4 + 1;
-  FT_PIXEL_MODE_LCD_V   = FT_PIXEL_MODE_LCD   + 1;
+  FT_GlyphSlot = ^FT_GlyphSlotRec;
 
-  FT_PIXEL_MODE_MAX     = FT_PIXEL_MODE_LCD_V + 1; (* do not remove *)
+
+{$DEFINE TYPE_DECL}
+{$I ftconfig.inc}
+{$I fttypes.inc}
+{$I ftimage.inc}
+{$I ftglyph.inc}
+{$I ftstroke.inc}
+{$I ftoutln.inc} 
+{$UNDEF TYPE_DECL}
 
 
   (*************************************************************************)
@@ -674,7 +608,6 @@ const
   (*    vertAdvance ::                                                     *)
   (*      Advance height for vertical layout.                              *)
   (*                                                                       *)
-type
   FT_Glyph_Metrics = record
     width  ,
     height       : FT_Pos;
@@ -759,140 +692,6 @@ type
 
   (*************************************************************************)
   (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_Vector                                                          *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A simple structure used to store a 2D vector; coordinates are of   *)
-  (*    the FT_Pos type.                                                   *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    x :: The horizontal coordinate.                                    *)
-  (*    y :: The vertical coordinate.                                      *)
-  (*                                                                       *)
-  PFT_Vector = ^FT_Vector;
-  FT_Vector = record
-    x ,
-    y : FT_Pos;
-  end;
-
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_Outline                                                         *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    This structure is used to describe an outline to the scan-line     *)
-  (*    converter.                                                         *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    n_contours :: The number of contours in the outline.               *)
-  (*                                                                       *)
-  (*    n_points   :: The number of points in the outline.                 *)
-  (*                                                                       *)
-  (*    points     :: A pointer to an array of `n_points' FT_Vector        *)
-  (*                  elements, giving the outline's point coordinates.    *)
-  (*                                                                       *)
-  (*    tags       :: A pointer to an array of `n_points' chars, giving    *)
-  (*                  each outline point's type.  If bit 0 is unset, the   *)
-  (*                  point is `off' the curve, i.e. a Bezier control      *)
-  (*                  point, while it is `on' when set.                    *)
-  (*                                                                       *)
-  (*                  Bit 1 is meaningful for `off' points only.  If set,  *)
-  (*                  it indicates a third-order Bezier arc control point; *)
-  (*                  and a second-order control point if unset.           *)
-  (*                                                                       *)
-  (*    contours   :: An array of `n_contours' shorts, giving the end      *)
-  (*                  point of each contour within the outline.  For       *)
-  (*                  example, the first contour is defined by the points  *)
-  (*                  `0' to `contours[0]', the second one is defined by   *)
-  (*                  the points `contours[0]+1' to `contours[1]', etc.    *)
-  (*                                                                       *)
-  (*    flags      :: A set of bit flags used to characterize the outline  *)
-  (*                  and give hints to the scan-converter and hinter on   *)
-  (*                  how to convert/grid-fit it.  See FT_Outline_Flags.   *)
-  (*                                                                       *)
-  PFT_Outline = ^FT_Outline;
-  FT_Outline = record
-    n_contours : FT_Short;
-    n_points   : FT_Short;
-
-    points : PFT_Vector;
-    tags   : PChar;
-    contours : PFT_Short;
-
-    flags    : FT_Int;
-  end;
-
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_Bitmap                                                          *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A structure used to describe a bitmap or pixmap to the raster.     *)
-  (*    Note that we now manage pixmaps of various depths through the      *)
-  (*    `pixel_mode' field.                                                *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    rows         :: The number of bitmap rows.                         *)
-  (*                                                                       *)
-  (*    width        :: The number of pixels in bitmap row.                *)
-  (*                                                                       *)
-  (*    pitch        :: The pitch's absolute value is the number of bytes  *)
-  (*                    taken by one bitmap row, including padding.        *)
-  (*                    However, the pitch is positive when the bitmap has *)
-  (*                    a `down' flow, and negative when it has an `up'    *)
-  (*                    flow.  In all cases, the pitch is an offset to add *)
-  (*                    to a bitmap pointer in order to go down one row.   *)
-  (*                                                                       *)
-  (*    buffer       :: A typeless pointer to the bitmap buffer.  This     *)
-  (*                    value should be aligned on 32-bit boundaries in    *)
-  (*                    most cases.                                        *)
-  (*                                                                       *)
-  (*    num_grays    :: This field is only used with                       *)
-  (*                    `FT_PIXEL_MODE_GRAY'; it gives the number of gray  *)
-  (*                    levels used in the bitmap.                         *)
-  (*                                                                       *)
-  (*    pixel_mode   :: The pixel mode, i.e., how pixel bits are stored.   *)
-  (*                    See @FT_Pixel_Mode for possible values.            *)
-  (*                                                                       *)
-  (*    palette_mode :: This field is only used with paletted pixel modes; *)
-  (*                    it indicates how the palette is stored.            *)
-  (*                                                                       *)
-  (*    palette      :: A typeless pointer to the bitmap palette; only     *)
-  (*                    used for paletted pixel modes.                     *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*   For now, the only pixel mode supported by FreeType are mono and     *)
-  (*   grays.  However, drivers might be added in the future to support    *)
-  (*   more `colorful' options.                                            *)
-  (*                                                                       *)
-  (*   When using pixel modes pal2, pal4 and pal8 with a void `palette'    *)
-  (*   field, a gray pixmap with respectively 4, 16, and 256 levels of     *)
-  (*   gray is assumed.  This, in order to be compatible with some         *)
-  (*   embedded bitmap formats defined in the TrueType specification.      *)
-  (*                                                                       *)
-  (*   Note that no font was found presenting such embedded bitmaps, so    *)
-  (*   this is currently completely unhandled by the library.              *)
-  (*                                                                       *)
-  PFT_Bitmap = ^FT_Bitmap;
-  FT_Bitmap = record
-    rows   ,
-    width  : FT_Int;
-    pitch  : FT_Int;
-    buffer : PByteArray;
-    num_grays    : FT_Short;
-    pixel_mode   ,
-    palette_mode : byte;
-    palette : pointer;
-  end;
-
-
-  (*************************************************************************)
-  (*                                                                       *)
   (* <Type>                                                                *)
   (*    FT_Face                                                            *)
   (*                                                                       *)
@@ -950,183 +749,10 @@ type
   PAFT_CharMap = ^FT_CharMap;
   AFT_CharMap = array[0..High(Word)] of FT_CharMap;
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Type>                                                                *)
-  (*    FT_Library                                                         *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A handle to a FreeType library instance.  Each `library' is        *)
-  (*    completely independent from the others; it is the `root' of a set  *)
-  (*    of objects like fonts, faces, sizes, etc.                          *)
-  (*                                                                       *)
-  (*    It also embeds a memory manager (see @FT_Memory), as well as a     *)
-  (*    scan-line converter object (see @FT_Raster).                       *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*    Library objects are normally created by @FT_Init_FreeType, and     *)
-  (*    destroyed with @FT_Done_FreeType.                                  *)
-  (*                                                                       *)
-  FT_Library = ^FT_LibraryRec;
-  FT_LibraryRec = record // internal
-  end;
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Section>                                                             *)
-  (*    glyph_management                                                   *)
-  (*                                                                       *)
-  (* <Title>                                                               *)
-  (*    Glyph Management                                                   *)
-  (*                                                                       *)
-  (* <Abstract>                                                            *)
-  (*    Generic interface to manage individual glyph data.                 *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    This section contains definitions used to manage glyph data        *)
-  (*    through generic FT_Glyph objects.  Each of them can contain a      *)
-  (*    bitmap, a vector outline, or even images in other formats.         *)
-  (*                                                                       *)
-  (*************************************************************************)
-
-  (* forward declaration to a private type *)
-  PFT_Glyph_Class = ^FT_Glyph_Class;
-  FT_Glyph_Class = record // internal
-  end;
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Type>                                                                *)
-  (*    FT_Glyph                                                           *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    Handle to an object used to model generic glyph images.  It is a   *)
-  (*    pointer to the @FT_GlyphRec structure and can contain a glyph      *)
-  (*    bitmap or pointer.                                                 *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*    Glyph objects are not owned by the library.  You must thus release *)
-  (*    them manually (through @FT_Done_Glyph) _before_ calling            *)
-  (*    @FT_Done_FreeType.                                                 *)
-  (*                                                                       *)
-  FT_Glyph = ^FT_GlyphRec;
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_GlyphRec                                                        *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    The root glyph structure contains a given glyph image plus its     *)
-  (*    advance width in 16.16 fixed float format.                         *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    library :: A handle to the FreeType library object.                *)
-  (*                                                                       *)
-  (*    clazz   :: A pointer to the glyph's class.  Private.               *)
-  (*                                                                       *)
-  (*    format  :: The format of the glyph's image.                        *)
-  (*                                                                       *)
-  (*    advance :: A 16.16 vector that gives the glyph's advance width.    *)
-  (*                                                                       *)
-  FT_GlyphRec = record
-    library_: FT_Library;
-    clazz:    PFT_Glyph_Class;
-    format:   FT_Glyph_Format;
-    advance:  FT_Vector;
-  end;
 
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Type>                                                                *)
-  (*    FT_BitmapGlyph                                                     *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A handle to an object used to model a bitmap glyph image.  This is *)
-  (*    a sub-class of @FT_Glyph, and a pointer to @FT_BitmapGlyphRec.     *)
-  (*                                                                       *)
-  FT_BitmapGlyph = ^FT_BitmapGlyphRec;
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_BitmapGlyphRec                                                  *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A structure used for bitmap glyph images.  This really is a        *)
-  (*    `sub-class' of `FT_GlyphRec'.                                      *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    root   :: The root FT_Glyph fields.                                *)
-  (*                                                                       *)
-  (*    left   :: The left-side bearing, i.e., the horizontal distance     *)
-  (*              from the current pen position to the left border of the  *)
-  (*              glyph bitmap.                                            *)
-  (*                                                                       *)
-  (*    top    :: The top-side bearing, i.e., the vertical distance from   *)
-  (*              the current pen position to the top border of the glyph  *)
-  (*              bitmap.  This distance is positive for upwards-y!        *)
-  (*                                                                       *)
-  (*    bitmap :: A descriptor for the bitmap.                             *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*    You can typecast FT_Glyph to FT_BitmapGlyph if you have            *)
-  (*    glyph->format == FT_GLYPH_FORMAT_BITMAP.  This lets you access     *)
-  (*    the bitmap's contents easily.                                      *)
-  (*                                                                       *)
-  (*    The corresponding pixel buffer is always owned by the BitmapGlyph  *)
-  (*    and is thus created and destroyed with it.                         *)
-  (*                                                                       *)
-  FT_BitmapGlyphRec = record
-    root:   FT_GlyphRec;
-    left:   FT_Int;
-    top:    FT_Int;
-    bitmap: FT_Bitmap;
-  end;
 
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Type>                                                                *)
-  (*    FT_OutlineGlyph                                                    *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A handle to an object used to model an outline glyph image.  This  *)
-  (*    is a sub-class of @FT_Glyph, and a pointer to @FT_OutlineGlyphRec. *)
-  (*                                                                       *)
-  FT_OutlineGlyph = ^FT_OutlineGlyphRec;
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_OutlineGlyphRec                                                 *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A structure used for outline (vectorial) glyph images.  This       *)
-  (*    really is a `sub-class' of `FT_GlyphRec'.                          *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    root    :: The root FT_Glyph fields.                               *)
-  (*                                                                       *)
-  (*    outline :: A descriptor for the outline.                           *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*    You can typecast FT_Glyph to FT_OutlineGlyph if you have           *)
-  (*    glyph->format == FT_GLYPH_FORMAT_OUTLINE.  This lets you access    *)
-  (*    the outline's content easily.                                      *)
-  (*                                                                       *)
-  (*    As the outline is extracted from a glyph slot, its coordinates are *)
-  (*    expressed normally in 26.6 pixels, unless the flag                 *)
-  (*    FT_LOAD_NO_SCALE was used in FT_Load_Glyph() or FT_Load_Char().    *)
-  (*                                                                       *)
-  (*    The outline's tables are always owned by the object and are        *)
-  (*    destroyed with it.                                                 *)
-  (*                                                                       *)
-  FT_OutlineGlyphRec = record
-    root:    FT_GlyphRec;
-    outline: FT_Outline;
-  end;
 
 
   (*************************************************************************)
@@ -1146,101 +772,6 @@ type
   FT_SubGlyphRec = record // internal
   end;
 
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <FuncType>                                                            *)
-  (*    FT_Generic_Finalizer                                               *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    Describes a function used to destroy the `client' data of any      *)
-  (*    FreeType object.  See the description of the FT_Generic type for   *)
-  (*    details of usage.                                                  *)
-  (*                                                                       *)
-  (* <Input>                                                               *)
-  (*    The address of the FreeType object which is under finalization.    *)
-  (*    Its client data is accessed through its `generic' field.           *)
-  (*                                                                       *)
-  FT_Generic_Finalizer = procedure(AnObject : pointer ); cdecl;
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_Generic                                                         *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    Client applications often need to associate their own data to a    *)
-  (*    variety of FreeType core objects.  For example, a text layout API  *)
-  (*    might want to associate a glyph cache to a given size object.      *)
-  (*                                                                       *)
-  (*    Most FreeType object contains a `generic' field, of type           *)
-  (*    FT_Generic, which usage is left to client applications and font    *)
-  (*    servers.                                                           *)
-  (*                                                                       *)
-  (*    It can be used to store a pointer to client-specific data, as well *)
-  (*    as the address of a `finalizer' function, which will be called by  *)
-  (*    FreeType when the object is destroyed (for example, the previous   *)
-  (*    client example would put the address of the glyph cache destructor *)
-  (*    in the `finalizer' field).                                         *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    data      :: A typeless pointer to any client-specified data. This *)
-  (*                 field is completely ignored by the FreeType library.  *)
-  (*                                                                       *)
-  (*    finalizer :: A pointer to a `generic finalizer' function, which    *)
-  (*                 will be called when the object is destroyed.  If this *)
-  (*                 field is set to NULL, no code will be called.         *)
-  (*                                                                       *)
-  FT_Generic = record
-    data      : pointer;
-    finalizer : FT_Generic_Finalizer;
-  end;
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Struct>                                                              *)
-  (*    FT_BBox                                                            *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A structure used to hold an outline's bounding box, i.e., the      *)
-  (*    coordinates of its extrema in the horizontal and vertical          *)
-  (*    directions.                                                        *)
-  (*                                                                       *)
-  (* <Fields>                                                              *)
-  (*    xMin :: The horizontal minimum (left-most).                        *)
-  (*                                                                       *)
-  (*    yMin :: The vertical minimum (bottom-most).                        *)
-  (*                                                                       *)
-  (*    xMax :: The horizontal maximum (right-most).                       *)
-  (*                                                                       *)
-  (*    yMax :: The vertical maximum (top-most).                           *)
-  (*                                                                       *)
-  PFT_BBox = ^FT_BBox;
-  FT_BBox = record
-    xMin, yMin : FT_Pos;
-    xMax, yMax : FT_Pos;
-  end;
-
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Type>                                                                *)
-  (*    FT_GlyphSlot                                                       *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A handle to a given `glyph slot'.  A slot is a container where it  *)
-  (*    is possible to load any one of the glyphs contained in its parent  *)
-  (*    face.                                                              *)
-  (*                                                                       *)
-  (*    In other words, each time you call @FT_Load_Glyph or               *)
-  (*    @FT_Load_Char, the slot's content is erased by the new glyph data, *)
-  (*    i.e. the glyph's metrics, its image (bitmap or outline), and       *)
-  (*    other control information.                                         *)
-  (*                                                                       *)
-  (* <Also>                                                                *)
-  (*    @FT_GlyphSlotRec details the publicly accessible glyph fields.     *)
-  (*                                                                       *)
-  FT_GlyphSlot = ^FT_GlyphSlotRec;
 
   (*************************************************************************)
   (*                                                                       *)
@@ -1432,7 +963,7 @@ type
     subglyphs     : FT_SubGlyph;
     
     control_data  : pointer;
-    control_len   : longint;
+    control_len   : clong;
 
     lsb_delta: FT_Pos;
     rsb_delta: FT_Pos;
@@ -1497,15 +1028,15 @@ type
   (*    computations.                                                      *)
   (*                                                                       *)
   FT_Size_Metrics = record
-    x_ppem  ,
-    y_ppem  : FT_UShort;
-    x_scale ,
-    y_scale : FT_Fixed;
+    x_ppem,                   (* horizontal pixels per EM               *)
+    y_ppem:      FT_UShort;   (* vertical pixels per EM                 *)
+    x_scale,                  (* scaling values used to convert font    *)
+    y_scale:     FT_Fixed;    (* units to 26.6 fractional pixels        *)
 
-    ascender    ,
-    descender   : FT_Pos;
-    height      : FT_Pos;
-    max_advance : FT_Pos;
+    ascender,                 (* ascender in 26.6 frac. pixels          *)
+    descender:   FT_Pos;      (* descender in 26.6 frac. pixels         *)
+    height:      FT_Pos;      (* text height in 26.6 frac. pixels       *)
+    max_advance: FT_Pos;      (* max horizontal advance, in 26.6 pixels *)
   end;
 
   (*************************************************************************)
@@ -1786,21 +1317,29 @@ type
     encoding_id : FT_UShort;
   end;
 
+
+{$I ftconfig.inc}
+{$I fttypes.inc}
+{$I ftimage.inc}
+{$I ftglyph.inc}
+{$I ftstroke.inc}
+{$I ftoutln.inc} 
+
+
 { GLOBAL PROCEDURES }
 
   (*************************************************************************)
   (*                                                                       *)
   (* @macro:                                                               *)
-  (*    FT_CURVE_TAG  ( flag )                                             *)
+  (*    FT_HAS_KERNING( face )                                             *)
   (*                                                                       *)
-  function  FT_CURVE_TAG(flag: byte): byte;
+  (* @description:                                                         *)
+  (*    A macro that returns true whenever a face object contains kerning  *)
+  (*    data that can be accessed with @FT_Get_Kerning.                    *)
+  (*                                                                       *)
+  function  FT_HAS_KERNING(face : FT_Face ) : cbool;
 
-const
-  FT_CURVE_TAG_ON    = 1;
-  FT_CURVE_TAG_CONIC = 0;
-  FT_CURVE_TAG_CUBIC = 2;
-
-
+  
   (*************************************************************************)
   (*                                                                       *)
   (* @macro:                                                               *)
@@ -1813,16 +1352,6 @@ const
   (*                                                                       *)
   function  FT_IS_SCALABLE(face : FT_Face ) : cbool;
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* @macro:                                                               *)
-  (*    FT_HAS_KERNING( face )                                             *)
-  (*                                                                       *)
-  (* @description:                                                         *)
-  (*    A macro that returns true whenever a face object contains kerning  *)
-  (*    data that can be accessed with @FT_Get_Kerning.                    *)
-  (*                                                                       *)
-  function  FT_HAS_KERNING(face : FT_Face ) : cbool;
 
   (*************************************************************************)
   (*                                                                       *)
@@ -2284,216 +1813,12 @@ const
             pixel_height : FT_UInt ) : FT_Error;
     cdecl; external ft_lib name 'FT_Set_Pixel_Sizes';
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Function>                                                            *)
-  (*    FT_Get_Glyph                                                       *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    A function used to extract a glyph image from a slot.              *)
-  (*                                                                       *)
-  (* <Input>                                                               *)
-  (*    slot   :: A handle to the source glyph slot.                       *)
-  (*                                                                       *)
-  (* <Output>                                                              *)
-  (*    aglyph :: A handle to the glyph object.                            *)
-  (*                                                                       *)
-  (* <Return>                                                              *)
-  (*    FreeType error code.  0 means success.                             *)
-  (*                                                                       *)
-  function FT_Get_Glyph(
-             slot:   FT_GlyphSlot;
-             out aglyph: FT_Glyph ): FT_Error;
-    cdecl; external ft_lib name 'FT_Get_Glyph';
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Enum>                                                                *)
-  (*    FT_Glyph_BBox_Mode                                                 *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    The mode how the values of @FT_Glyph_Get_CBox are returned.        *)
-  (*                                                                       *)
-  (* <Values>                                                              *)
-  (*    FT_GLYPH_BBOX_UNSCALED ::                                          *)
-  (*      Return unscaled font units.                                      *)
-  (*                                                                       *)
-  (*    FT_GLYPH_BBOX_SUBPIXELS ::                                         *)
-  (*      Return unfitted 26.6 coordinates.                                *)
-  (*                                                                       *)
-  (*    FT_GLYPH_BBOX_GRIDFIT ::                                           *)
-  (*      Return grid-fitted 26.6 coordinates.                             *)
-  (*                                                                       *)
-  (*    FT_GLYPH_BBOX_TRUNCATE ::                                          *)
-  (*      Return coordinates in integer pixels.                            *)
-  (*                                                                       *)
-  (*    FT_GLYPH_BBOX_PIXELS ::                                            *)
-  (*      Return grid-fitted pixel coordinates.                            *)
-  (*                                                                       *)
-type
-  FT_Glyph_BBox_Mode = FT_UInt;
 const
-  FT_GLYPH_BBOX_UNSCALED  = 0;
-  FT_GLYPH_BBOX_SUBPIXELS = 0;
-  FT_GLYPH_BBOX_GRIDFIT   = 1;
-  FT_GLYPH_BBOX_TRUNCATE  = 2;
-  FT_GLYPH_BBOX_PIXELS    = 3;
+  FT_ANGLE_PI  = 180 shl 16;
+  FT_ANGLE_2PI = FT_ANGLE_PI * 2;
+  FT_ANGLE_PI2 = FT_ANGLE_PI div 2;
+  FT_ANGLE_PI4 = FT_ANGLE_PI div 4;
 
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Function>                                                            *)
-  (*    FT_Glyph_Get_CBox                                                  *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    Return a glyph's `control box'.  The control box encloses all the  *)
-  (*    outline's points, including Bézier control points.  Though it      *)
-  (*    coincides with the exact bounding box for most glyphs, it can be   *)
-  (*    slightly larger in some situations (like when rotating an outline  *)
-  (*    which contains Bézier outside arcs).                               *)
-  (*                                                                       *)
-  (*    Computing the control box is very fast, while getting the bounding *)
-  (*    box can take much more time as it needs to walk over all segments  *)
-  (*    and arcs in the outline.  To get the latter, you can use the       *)
-  (*    `ftbbox' component which is dedicated to this single task.         *)
-  (*                                                                       *)
-  (* <Input>                                                               *)
-  (*    glyph :: A handle to the source glyph object.                      *)
-  (*                                                                       *)
-  (*    mode  :: The mode which indicates how to interpret the returned    *)
-  (*             bounding box values.                                      *)
-  (*                                                                       *)
-  (* <Output>                                                              *)
-  (*    acbox :: The glyph coordinate bounding box.  Coordinates are       *)
-  (*             expressed in 1/64th of pixels if it is grid-fitted.       *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*    Coordinates are relative to the glyph origin, using the Y-upwards  *)
-  (*    convention.                                                        *)
-  (*                                                                       *)
-  (*    If the glyph has been loaded with @FT_LOAD_NO_SCALE, `bbox_mode'   *)
-  (*    must be set to @FT_GLYPH_BBOX_UNSCALED to get unscaled font        *)
-  (*    units in 26.6 pixel format.  The value @FT_GLYPH_BBOX_SUBPIXELS    *)
-  (*    is another name for this constant.                                 *)
-  (*                                                                       *)
-  (*    Note that the maximum coordinates are exclusive, which means that  *)
-  (*    one can compute the width and height of the glyph image (be it in  *)
-  (*    integer or 26.6 pixels) as:                                        *)
-  (*                                                                       *)
-  (*    {                                                                  *)
-  (*      width  = bbox.xMax - bbox.xMin;                                  *)
-  (*      height = bbox.yMax - bbox.yMin;                                  *)
-  (*    }                                                                  *)
-  (*                                                                       *)
-  (*    Note also that for 26.6 coordinates, if `bbox_mode' is set to      *)
-  (*    @FT_GLYPH_BBOX_GRIDFIT, the coordinates will also be grid-fitted,  *)
-  (*    which corresponds to:                                              *)
-  (*                                                                       *)
-  (*    {                                                                  *)
-  (*      bbox.xMin = FLOOR(bbox.xMin);                                    *)
-  (*      bbox.yMin = FLOOR(bbox.yMin);                                    *)
-  (*      bbox.xMax = CEILING(bbox.xMax);                                  *)
-  (*      bbox.yMax = CEILING(bbox.yMax);                                  *)
-  (*    }                                                                  *)
-  (*                                                                       *)
-  (*    To get the bbox in pixel coordinates, set `bbox_mode' to           *)
-  (*    @FT_GLYPH_BBOX_TRUNCATE.                                           *)
-  (*                                                                       *)
-  (*    To get the bbox in grid-fitted pixel coordinates, set `bbox_mode'  *)
-  (*    to @FT_GLYPH_BBOX_PIXELS.                                          *)
-  (*                                                                       *)
-  procedure FT_Glyph_Get_CBox( glyph: FT_Glyph;
-                     bbox_mode: FT_UInt;
-                     out acbox: FT_BBox );
-    cdecl; external ft_lib name 'FT_Glyph_Get_CBox';
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Function>                                                            *)
-  (*    FT_Glyph_To_Bitmap                                                 *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    Converts a given glyph object to a bitmap glyph object.            *)
-  (*                                                                       *)
-  (* <InOut>                                                               *)
-  (*    the_glyph   :: A pointer to a handle to the target glyph.          *)
-  (*                                                                       *)
-  (* <Input>                                                               *)
-  (*    render_mode :: An enumeration that describe how the data is        *)
-  (*                   rendered.                                           *)
-  (*                                                                       *)
-  (*    origin      :: A pointer to a vector used to translate the glyph   *)
-  (*                   image before rendering.  Can be 0 (if no            *)
-  (*                   translation).  The origin is expressed in           *)
-  (*                   26.6 pixels.                                        *)
-  (*                                                                       *)
-  (*    destroy     :: A boolean that indicates that the original glyph    *)
-  (*                   image should be destroyed by this function.  It is  *)
-  (*                   never destroyed in case of error.                   *)
-  (*                                                                       *)
-  (* <Return>                                                              *)
-  (*    FreeType error code.  0 means success.                             *)
-  (*                                                                       *)
-  (* <Note>                                                                *)
-  (*    The glyph image is translated with the `origin' vector before      *)
-  (*    rendering.                                                         *)
-  (*                                                                       *)
-  (*    The first parameter is a pointer to a FT_Glyph handle, that will   *)
-  (*    be replaced by this function.  Typically, you would use (omitting  *)
-  (*    error handling):                                                   *)
-  (*                                                                       *)
-  (*                                                                       *)
-  (*      {                                                                *)
-  (*        FT_Glyph        glyph;                                         *)
-  (*        FT_BitmapGlyph  glyph_bitmap;                                  *)
-  (*                                                                       *)
-  (*                                                                       *)
-  (*        // load glyph                                                  *)
-  (*        error = FT_Load_Char( face, glyph_index, FT_LOAD_DEFAUT );     *)
-  (*                                                                       *)
-  (*        // extract glyph image                                         *)
-  (*        error = FT_Get_Glyph( face->glyph, &glyph );                   *)
-  (*                                                                       *)
-  (*        // convert to a bitmap (default render mode + destroy old)     *)
-  (*        if ( glyph->format != FT_GLYPH_FORMAT_BITMAP )                 *)
-  (*        {                                                              *)
-  (*          error = FT_Glyph_To_Bitmap( &glyph, FT_RENDER_MODE_DEFAULT,  *)
-  (*                                      0, 1 );                          *)
-  (*          if ( error ) // glyph unchanged                              *)
-  (*            ...                                                        *)
-  (*        }                                                              *)
-  (*                                                                       *)
-  (*        // access bitmap content by typecasting                        *)
-  (*        glyph_bitmap = (FT_BitmapGlyph)glyph;                          *)
-  (*                                                                       *)
-  (*        // do funny stuff with it, like blitting/drawing               *)
-  (*        ...                                                            *)
-  (*                                                                       *)
-  (*        // discard glyph image (bitmap or not)                         *)
-  (*        FT_Done_Glyph( glyph );                                        *)
-  (*      }                                                                *)
-  (*                                                                       *)
-  (*                                                                       *)
-  (*    This function does nothing if the glyph format isn't scalable.     *)
-  (*                                                                       *)
-  function FT_Glyph_To_Bitmap(var the_glyph: FT_Glyph;
-                      render_mode: FT_Render_Mode;
-                      origin:      PFT_Vector;
-                      destroy:     FT_Bool ): FT_Error;
-    cdecl; external ft_lib name 'FT_Glyph_To_Bitmap';
-
-  (*************************************************************************)
-  (*                                                                       *)
-  (* <Function>                                                            *)
-  (*    FT_Done_Glyph                                                      *)
-  (*                                                                       *)
-  (* <Description>                                                         *)
-  (*    Destroys a given glyph.                                            *)
-  (*                                                                       *)
-  (* <Input>                                                               *)
-  (*    glyph :: A handle to the target glyph object.                      *)
-  (*                                                                       *)
-  procedure FT_Done_Glyph( glyph: FT_Glyph );
-    cdecl; external ft_lib name 'FT_Done_Glyph';
 
 implementation
 
@@ -2504,16 +1829,16 @@ begin
   result := flag and 3;
 end;
 
-{ FT_IS_SCALABLE }
-function FT_IS_SCALABLE(face : FT_Face ) : cbool;
-begin
-  result := cbool(face.face_flags and FT_FACE_FLAG_SCALABLE );
-end;
-
 { FT_HAS_KERNING }
 function FT_HAS_KERNING(face : FT_Face ) : cbool;
 begin
   result := cbool(face.face_flags and FT_FACE_FLAG_KERNING );
+end;
+
+{ FT_IS_SCALABLE }
+function FT_IS_SCALABLE(face : FT_Face ) : cbool;
+begin
+  result := cbool(face.face_flags and FT_FACE_FLAG_SCALABLE );
 end;
 
 end.

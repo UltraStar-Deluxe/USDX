@@ -34,11 +34,11 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
   SDL,
+  SysUtils,
+  UMenu,
   UDisplay,
   UMusic,
-  SysUtils,
   UThemes;
 
 type
@@ -69,8 +69,8 @@ type
       MaxScore:          word;
       
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure onShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
@@ -83,16 +83,17 @@ uses
   UScreenSingModi,
   ULanguage,
   UTexture,
-  USkins;
+  USkins,
+  UUnicodeUtils;
 
-function TScreenPartyScore.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenPartyScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -165,7 +166,9 @@ begin
     DecoColor[0].B := B;
 
     //Load Texture
-    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.FirstTexture)), Theme.PartyScore.DecoTextures.FirstTyp, Color);
+    Tex := Texture.LoadTexture(
+      Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.FirstTexture),
+      Theme.PartyScore.DecoTextures.FirstTyp, Color);
     DecoTex[0] := Tex.TexNum;
 
     //Get Second Color
@@ -176,7 +179,9 @@ begin
     DecoColor[1].B := B;
 
     //Load Second Texture
-    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.SecondTexture)), Theme.PartyScore.DecoTextures.SecondTyp, Color);
+    Tex := Texture.LoadTexture(
+      Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.SecondTexture),
+      Theme.PartyScore.DecoTextures.SecondTyp, Color);
     DecoTex[1] := Tex.TexNum;
 
     //Get Third Color
@@ -187,14 +192,16 @@ begin
     DecoColor[2].B := B;
 
     //Load Third Texture
-    Tex := Texture.LoadTexture(pchar(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.ThirdTexture)), Theme.PartyScore.DecoTextures.ThirdTyp, Color);
+    Tex := Texture.LoadTexture(
+      Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.ThirdTexture),
+      Theme.PartyScore.DecoTextures.ThirdTyp, Color);
     DecoTex[2] := Tex.TexNum;
   end;
 
   LoadFromTheme(Theme.PartyScore);
 end;
 
-procedure TScreenPartyScore.onShow;
+procedure TScreenPartyScore.OnShow;
 var
   I, J: integer;
   Placings: array [0..5] of byte;
@@ -238,7 +245,7 @@ begin
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
   begin
     Text[TextScoreTeam1].Text := InttoStr(ScreenSingModi.PlayerInfo.Playerinfo[0].Score);
-    Text[TextNameTeam1].Text := string(ScreenSingModi.TeamInfo.Teaminfo[0].Name);
+    Text[TextNameTeam1].Text := UTF8String(ScreenSingModi.TeamInfo.Teaminfo[0].Name);
 
     //Set Deco Texture
     if Theme.PartyScore.DecoTextures.ChangeTextures then
@@ -267,7 +274,7 @@ begin
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
   begin
     Text[TextScoreTeam2].Text := InttoStr(ScreenSingModi.PlayerInfo.Playerinfo[1].Score);
-    Text[TextNameTeam2].Text := string(ScreenSingModi.TeamInfo.Teaminfo[1].Name);
+    Text[TextNameTeam2].Text := UTF8String(ScreenSingModi.TeamInfo.Teaminfo[1].Name);
 
     //Set Deco Texture
     if Theme.PartyScore.DecoTextures.ChangeTextures then
@@ -296,7 +303,7 @@ begin
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
   begin
     Text[TextScoreTeam3].Text := InttoStr(ScreenSingModi.PlayerInfo.Playerinfo[2].Score);
-    Text[TextNameTeam3].Text := string(ScreenSingModi.TeamInfo.Teaminfo[2].Name);
+    Text[TextNameTeam3].Text := UTF8String(ScreenSingModi.TeamInfo.Teaminfo[2].Name);
 
     //Set Deco Texture
     if Theme.PartyScore.DecoTextures.ChangeTextures then

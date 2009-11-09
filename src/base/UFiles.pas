@@ -34,24 +34,23 @@ interface
 
 uses
   SysUtils,
+  Classes,
   ULog,
   UMusic,
   USongs,
-  USong;
+  USong,
+  UPath;
 
 procedure ResetSingTemp;
 
-function  SaveSong(Song: TSong; Lines: TLines; Name: string; Relative: boolean): boolean;
+type
+  TSaveSongResult = (ssrOK, ssrFileError, ssrEncodingError);
 
-var
-  SongFile: TextFile;   // all procedures in this unit operates on this file
-  FileLineNo: integer;  //Line which is readed at Last, for error reporting
-
-  // variables available for all procedures
-  Base    : array[0..1] of integer;
-  Rel     : array[0..1] of integer;
-  Mult    : integer = 1;
-  MultBPM : integer = 4;
+{**
+ * Throws a TEncodingException if the song's fields cannot be encoded in the
+ * requested encoding.
+ *}
+function SaveSong(const Song: TSong; const Lines: TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
 
 implementation
 
@@ -59,7 +58,9 @@ uses
   TextGL,
   UIni,
   UNote,
-  UPlatform;
+  UPlatform,
+  UUnicodeUtils,
+  UTextEncoding;
 
 //--------------------
 // Resets the temporary Sentence Arrays for each Player and some other Variables
@@ -77,101 +78,112 @@ begin
     Player[Count].LengthNote := 0;
     Player[Count].HighNote := -1;
   end;
-
-  (* FIXME
-  //Reset Path and Filename Values to Prevent Errors in Editor
-  if assigned( CurrentSong ) then
-  begin
-    SetLength(CurrentSong.BPM, 0);
-    CurrentSong.Path := '';
-    CurrentSong.FileName := '';
-  end;
-  *)
-  
-//  CurrentSong := nil;
 end;
-
 
 //--------------------
 // Saves a Song
 //--------------------
-function SaveSong(Song: TSong; Lines: TLines; Name: string; Relative: boolean): boolean;
+function SaveSong(const Song: TSong; const Lines: TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
 var
   C:      integer;
   N:      integer;
-  S:      string;
+  S:      AnsiString;
   B:      integer;
-  RelativeSubTime:    integer;
-  NoteState: String;
+  RelativeSubTime: integer;
+  NoteState: AnsiString;
+  SongFile: TTextFileStream;
+
+  function EncodeToken(const Str: UTF8String): RawByteString;
+  var
+    Success: boolean;
+  begin
+    Success := EncodeStringUTF8(Str, Result, Song.Encoding);
+    if (not Success) then
+      SaveSong := ssrEncodingError;
+  end;
 
 begin
-//  Relative := true; // override (idea - use shift+S to save with relative)
-  AssignFile(SongFile, Name);
-  Rewrite(SongFile);
+  //  Relative := true; // override (idea - use shift+S to save with relative)
+  Result := ssrOK;
 
-  Writeln(SongFile, '#TITLE:' + Song.Title + '');
-  Writeln(SongFile, '#ARTIST:' + Song.Artist);
+  try
+    SongFile := TMemTextFileStream.Create(Name, fmCreate);
+    try
+      if (Song.Encoding = encUTF8) then
+        SongFile.WriteString(UTF8_BOM);
 
-  if Song.Creator     <> '' then    Writeln(SongFile, '#CREATOR:'     + Song.Creator);
-  if Song.Edition     <> 'Unknown' then Writeln(SongFile, '#EDITION:' + Song.Edition);
-  if Song.Genre       <> 'Unknown' then   Writeln(SongFile, '#GENRE:' + Song.Genre);
-  if Song.Language    <> 'Unknown' then    Writeln(SongFile, '#LANGUAGE:'    + Song.Language);
+      SongFile.WriteLine('#ENCODING:' + EncodingName(Song.Encoding));
+      SongFile.WriteLine('#TITLE:'    + EncodeToken(Song.Title));
+      SongFile.WriteLine('#ARTIST:'   + EncodeToken(Song.Artist));
 
-  Writeln(SongFile, '#MP3:' + Song.Mp3);
+      if Song.Creator     <> ''        then SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
+      if Song.Edition     <> 'Unknown' then SongFile.WriteLine('#EDITION:'   + EncodeToken(Song.Edition));
+      if Song.Genre       <> 'Unknown' then SongFile.WriteLine('#GENRE:'     + EncodeToken(Song.Genre));
+      if Song.Language    <> 'Unknown' then SongFile.WriteLine('#LANGUAGE:'  + EncodeToken(Song.Language));
 
-  if Song.Cover       <> '' then    Writeln(SongFile, '#COVER:'       + Song.Cover);
-  if Song.Background  <> '' then    Writeln(SongFile, '#BACKGROUND:'  + Song.Background);
-  if Song.Video       <> '' then    Writeln(SongFile, '#VIDEO:'       + Song.Video);
-  if Song.VideoGAP    <> 0  then    Writeln(SongFile, '#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
-  if Song.Resolution  <> 4  then    Writeln(SongFile, '#RESOLUTION:'  + IntToStr(Song.Resolution));
-  if Song.NotesGAP    <> 0  then    Writeln(SongFile, '#NOTESGAP:'    + IntToStr(Song.NotesGAP));
-  if Song.Start       <> 0  then    Writeln(SongFile, '#START:'       + FloatToStr(Song.Start));
-  if Song.Finish      <> 0  then    Writeln(SongFile, '#END:'         + IntToStr(Song.Finish));
-  if Relative               then    Writeln(SongFile, '#RELATIVE:yes');
+      SongFile.WriteLine('#MP3:' + EncodeToken(Song.Mp3.ToUTF8));
+      if Song.Cover.IsSet      then    SongFile.WriteLine('#COVER:'       + EncodeToken(Song.Cover.ToUTF8));
+      if Song.Background.IsSet then    SongFile.WriteLine('#BACKGROUND:'  + EncodeToken(Song.Background.ToUTF8));
+      if Song.Video.IsSet      then    SongFile.WriteLine('#VIDEO:'       + EncodeToken(Song.Video.ToUTF8));
 
-  Writeln(SongFile, '#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
-  Writeln(SongFile, '#GAP:' + FloatToStr(Song.GAP));
+      if Song.VideoGAP    <> 0  then    SongFile.WriteLine('#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
+      if Song.Resolution  <> 4  then    SongFile.WriteLine('#RESOLUTION:'  + IntToStr(Song.Resolution));
+      if Song.NotesGAP    <> 0  then    SongFile.WriteLine('#NOTESGAP:'    + IntToStr(Song.NotesGAP));
+      if Song.Start       <> 0  then    SongFile.WriteLine('#START:'       + FloatToStr(Song.Start));
+      if Song.Finish      <> 0  then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));
+      if Relative               then    SongFile.WriteLine('#RELATIVE:yes');
 
-  RelativeSubTime := 0;
-  for B := 1 to High(CurrentSong.BPM) do
-    Writeln(SongFile, 'B ' + FloatToStr(CurrentSong.BPM[B].StartBeat) + ' ' + FloatToStr(CurrentSong.BPM[B].BPM/4));
+      SongFile.WriteLine('#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
+      SongFile.WriteLine('#GAP:' + FloatToStr(Song.GAP));
 
-  for C := 0 to Lines.High do begin
-    for N := 0 to Lines.Line[C].HighNote do begin
-      with Lines.Line[C].Note[N] do begin
+      RelativeSubTime := 0;
+      for B := 1 to High(Song.BPM) do
+        SongFile.WriteLine('B ' + FloatToStr(Song.BPM[B].StartBeat) + ' '
+                                + FloatToStr(Song.BPM[B].BPM/4));
 
+      for C := 0 to Lines.High do
+      begin
+        for N := 0 to Lines.Line[C].HighNote do
+        begin
+          with Lines.Line[C].Note[N] do
+          begin
+            //Golden + Freestyle Note Patch
+            case Lines.Line[C].Note[N].NoteType of
+              ntFreestyle: NoteState := 'F ';
+              ntNormal: NoteState := ': ';
+              ntGolden: NoteState := '* ';
+            end; // case
+            S := NoteState + IntToStr(Start-RelativeSubTime) + ' '
+                           + IntToStr(Length) + ' '
+                           + IntToStr(Tone) + ' '
+                           + EncodeToken(Text);
 
-        //Golden + Freestyle Note Patch
-        case Lines.Line[C].Note[N].NoteType of
-          ntFreestyle: NoteState := 'F ';
-          ntNormal: NoteState := ': ';
-          ntGolden: NoteState := '* ';
-        end; // case
-        S := NoteState + IntToStr(Start-RelativeSubTime) + ' ' + IntToStr(Length) + ' ' + IntToStr(Tone) + ' ' + Text;
+            SongFile.WriteLine(S);
+          end; // with
+        end; // N
 
+        if C < Lines.High then // don't write end of last sentence
+        begin
+          if not Relative then
+            S := '- ' + IntToStr(Lines.Line[C+1].Start)
+          else
+          begin
+            S := '- ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime) +
+              ' ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime);
+            RelativeSubTime := Lines.Line[C+1].Start;
+          end;
+          SongFile.WriteLine(S);
+        end;
+      end; // C
 
-        Writeln(SongFile, S);
-      end; // with
-    end; // N
-
-    if C < Lines.High then begin      // don't write end of last sentence
-      if not Relative then
-        S := '- ' + IntToStr(Lines.Line[C+1].Start)
-      else begin
-        S := '- ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime) +
-          ' ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime);
-        RelativeSubTime := Lines.Line[C+1].Start;
-      end;
-      Writeln(SongFile, S);
+      SongFile.WriteLine('E');
+    finally
+      SongFile.Free;
     end;
-
-  end; // C
-
-
-  Writeln(SongFile, 'E');
-  CloseFile(SongFile);
-
-  Result := true;
+  except
+    Result := ssrFileError;
+  end;
 end;
 
 end.
+

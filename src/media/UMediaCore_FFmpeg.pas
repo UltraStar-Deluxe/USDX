@@ -34,12 +34,16 @@ interface
 {$I switches.inc}
 
 uses
-  UMusic,
+  Classes,
+  ctypes,
+  sdl,
   avcodec,
   avformat,
   avutil,
+  avio,
+  UMusic,
   ULog,
-  sdl;
+  UPath;
 
 type
   PPacketQueue = ^TPacketQueue;
@@ -97,12 +101,29 @@ implementation
 uses
   SysUtils;
 
+function FFmpegStreamOpen(h: PURLContext; filename: PChar; flags: cint): cint; cdecl; forward;
+function FFmpegStreamRead(h: PURLContext; buf: PByteArray; size: cint): cint; cdecl; forward;
+function FFmpegStreamWrite(h: PURLContext; buf: PByteArray; size: cint): cint; cdecl; forward;
+function FFmpegStreamSeek(h: PURLContext; pos: int64; whence: cint): int64; cdecl; forward;
+function FFmpegStreamClose(h: PURLContext): cint; cdecl; forward;
+
+const
+  UTF8FileProtocol: TURLProtocol = (
+      name:      'ufile';
+      url_open:  FFmpegStreamOpen;
+      url_read:  FFmpegStreamRead;
+      url_write: FFmpegStreamWrite;
+      url_seek:  FFmpegStreamSeek;
+      url_close: FFmpegStreamClose;
+  );
+
 var
   Instance: TMediaCore_FFmpeg;
 
 constructor TMediaCore_FFmpeg.Create();
 begin
   inherited;
+  av_register_protocol(@UTF8FileProtocol);
   AVCodecLock := SDL_CreateMutex();
 end;
 
@@ -219,6 +240,105 @@ begin
   end;
   Result := true;
 end;
+
+
+{**
+ * UTF-8 Filename wrapper based on:
+ * http://www.mail-archive.com/libav-user@mplayerhq.hu/msg02460.html
+ *}
+
+function FFmpegStreamOpen(h: PURLContext; filename: PChar; flags: cint): cint; cdecl;
+var
+  Stream: TStream;
+  Mode: word;
+  ProtPrefix: string;
+  FilePath: IPath;
+begin
+  // check for protocol prefix ('ufile:') and strip it
+  ProtPrefix := Format('%s:', [UTF8FileProtocol.name]);
+  if (StrLComp(filename, PChar(ProtPrefix), Length(ProtPrefix)) = 0) then
+  begin
+    Inc(filename, Length(ProtPrefix));
+  end;
+
+  FilePath := Path(filename);
+
+  if ((flags and URL_RDWR) <> 0) then
+    Mode := fmCreate
+  else if ((flags and URL_WRONLY) <> 0) then
+    Mode := fmCreate // TODO: fmCreate is Read+Write -> reopen with fmOpenWrite
+  else
+    Mode := fmOpenRead;
+
+  Result := 0;
+
+  try
+    Stream := TBinaryFileStream.Create(FilePath, Mode);
+    h.priv_data := Stream;
+  except
+    Result := AVERROR_NOENT;
+  end;
+end;
+
+function FFmpegStreamRead(h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+var
+  Stream: TStream;
+begin
+  Stream := TStream(h.priv_data);
+  if (Stream = nil) then
+    raise EInvalidContainer.Create('FFmpegStreamRead on nil');
+  try
+    Result := Stream.Read(buf[0], size);
+  except
+    Result := -1;
+  end;
+end;
+
+function FFmpegStreamWrite(h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+var
+  Stream: TStream;
+begin
+  Stream := TStream(h.priv_data);
+  if (Stream = nil) then
+    raise EInvalidContainer.Create('FFmpegStreamWrite on nil');
+  try
+    Result := Stream.Write(buf[0], size);
+  except
+    Result := -1;
+  end;
+end;
+
+function FFmpegStreamSeek(h: PURLContext; pos: int64; whence: cint): int64; cdecl;
+var
+  Stream : TStream;
+  Origin : TSeekOrigin;
+begin
+  Stream := TStream(h.priv_data);
+  if (Stream = nil) then
+    raise EInvalidContainer.Create('FFmpegStreamSeek on nil');
+  case whence of
+    0 {SEEK_SET}: Origin := soBeginning;
+    1 {SEEK_CUR}: Origin := soCurrent;
+    2 {SEEK_END}: Origin := soEnd;
+    AVSEEK_SIZE: begin
+      Result := Stream.Size;
+      Exit;
+    end
+  else
+    Origin := soBeginning;
+  end;
+  Result := Stream.Seek(pos, Origin);
+end;
+
+function FFmpegStreamClose(h: PURLContext): cint; cdecl;
+var
+  Stream : TStream;
+begin
+  Stream := TStream(h.priv_data);
+  Stream.Free;
+  Result := 0;
+end;
+
 
 { TPacketQueue }
 

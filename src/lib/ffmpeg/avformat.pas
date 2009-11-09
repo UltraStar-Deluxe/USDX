@@ -1132,7 +1132,7 @@ function av_probe_input_format(pd: PAVProbeData; is_opened: cint): PAVInputForma
  * Allocates all the structures needed to read an input stream.
  *        This does not open the needed codecs for decoding the stream[s].
  *)
-function av_open_input_stream(ic_ptr: PAVFormatContext;
+function av_open_input_stream(var ic_ptr: PAVFormatContext;
                        pb: PByteIOContext; filename: PAnsiChar;
                        fmt: PAVInputFormat; ap: PAVFormatParameters): cint;
   cdecl; external av__format;

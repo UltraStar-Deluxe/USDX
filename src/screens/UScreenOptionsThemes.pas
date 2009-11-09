@@ -49,8 +49,8 @@ type
     public
       SkinSelect: integer;
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure onShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
       procedure InteractInc; override;
       procedure InteractDec; override;
   end;
@@ -61,17 +61,18 @@ uses
   SysUtils,
   UGraphic,
   UMain,
-  UPath,
+  UPathUtils,
+  UUnicodeUtils,
   USkins;
 
-function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -135,7 +136,7 @@ begin
   if (SelInteraction = 0) then
   begin
     Skin.OnThemeChange;
-    UpdateSelectSlideOptions (Theme.OptionsThemes.SelectSkin, SkinSelect, ISkin, Ini.SkinNo);
+    UpdateSelectSlideOptions(Theme.OptionsThemes.SelectSkin, SkinSelect, ISkin, Ini.SkinNo);
   end;
 
   ReloadTheme();
@@ -178,7 +179,7 @@ begin
     AddButtonText(14, 20, Theme.Options.Description[7]);
 end;
 
-procedure TScreenOptionsThemes.onShow;
+procedure TScreenOptionsThemes.OnShow;
 begin
   inherited;
 
@@ -187,7 +188,7 @@ end;
 
 procedure TScreenOptionsThemes.ReloadTheme;
 begin
-  Theme.LoadTheme(ThemePath + ITheme[Ini.Theme] + '.ini', Ini.Color);
+  Theme.LoadTheme(ThemePath.Append(ITheme[Ini.Theme] + '.ini'), Ini.Color);
 
   ScreenOptionsThemes := TScreenOptionsThemes.create();
   ScreenOptionsThemes.onshow;

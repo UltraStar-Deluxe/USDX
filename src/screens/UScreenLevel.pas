@@ -46,8 +46,8 @@ type
   TScreenLevel = class(TMenu)
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      procedure onShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
@@ -58,16 +58,17 @@ uses
   UMain,
   UIni,
   USong,
-  UTexture;
+  UTexture,
+  UUnicodeUtils;
 
-function TScreenLevel.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenLevel.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
@@ -119,7 +120,7 @@ begin
   Interaction := 0;
 end;
 
-procedure TScreenLevel.onShow;
+procedure TScreenLevel.OnShow;
 begin
   inherited;
 

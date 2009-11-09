@@ -69,8 +69,9 @@ type
 implementation
 
 uses
+  SysUtils,
+  Math,
   SDL,
-  textgl,
   avcodec,
   avformat,
   avutil,
@@ -79,17 +80,17 @@ uses
   {$IFDEF UseSWScale}
   swscale,
   {$ENDIF}
-  UMediaCore_FFmpeg,
-  math,
   gl,
   glext,
-  SysUtils,
+  textgl,
+  UMediaCore_FFmpeg,
   UCommon,
   UConfig,
   ULog,
   UMusic,
   UGraphicClasses,
-  UGraphic;
+  UGraphic,
+  UPath;
 
 const
 {$IFDEF PIXEL_FMT_BGR}
@@ -154,7 +155,7 @@ type
     function    Init(): boolean;
     function    Finalize: boolean;
 
-    function    Open(const aFileName : string): boolean; // true if succeed
+    function    Open(const FileName : IPath): boolean; // true if succeed
     procedure   Close;
 
     procedure   Play;
@@ -252,7 +253,7 @@ begin
   fAspectCorrection := acoCrop;
 end;
 
-function TVideoPlayback_FFmpeg.Open(const aFileName : string): boolean; // true if succeed
+function TVideoPlayback_FFmpeg.Open(const FileName : IPath): boolean; // true if succeed
 var
   errnum: Integer;
   AudioStreamIndex: integer;
@@ -261,10 +262,11 @@ begin
 
   Reset();
 
-  errnum := av_open_input_file(fFormatContext, PChar(aFileName), nil, 0, nil);
+  // use custom 'ufile' protocol for UTF-8 support
+  errnum := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
   if (errnum <> 0) then
   begin
-    Log.LogError('Failed to open file "'+aFileName+'" ('+FFmpegCore.GetErrorString(errnum)+')');
+    Log.LogError('Failed to open file "'+ FileName.ToNative +'" ('+FFmpegCore.GetErrorString(errnum)+')');
     Exit;
   end;
 
@@ -434,7 +436,7 @@ begin
   fAVFrame     := nil;
   fAVFrameRGB  := nil;
   fFrameBuffer := nil;
-    
+
   if (fCodecContext <> nil) then
   begin
     // avcodec_close() is not thread-safe

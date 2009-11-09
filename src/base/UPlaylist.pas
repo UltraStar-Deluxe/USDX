@@ -34,21 +34,23 @@ interface
 {$I switches.inc}
 
 uses
+  Classes,
   USong,
-  UPath;
+  UPath,
+  UPathUtils;
 
 type
   TPlaylistItem = record
-    Artist: String;
-    Title:  String;
+    Artist: UTF8String;
+    Title:  UTF8String;
     SongID: Integer;
   end;
 
   APlaylistItem = array of TPlaylistItem;
 
   TPlaylist = record
-    Name:     String;
-    Filename: String;
+    Name:     UTF8String;
+    Filename: IPath;
     Items:    APlaylistItem;
   end;
 
@@ -68,20 +70,20 @@ type
       Playlists:    APlaylist;
 
       constructor Create;
-      Procedure   LoadPlayLists;
-      Function    LoadPlayList(Index: Cardinal; Filename: String): Boolean;
-      Procedure   SavePlayList(Index: Cardinal);
+      procedure   LoadPlayLists;
+      function    LoadPlayList(Index: Cardinal; const Filename: IPath): Boolean;
+      procedure   SavePlayList(Index: Cardinal);
 
-      Procedure   SetPlayList(Index: Cardinal);
+      procedure   SetPlayList(Index: Cardinal);
 
-      Function    AddPlaylist(Name: String): Cardinal;
-      Procedure   DelPlaylist(const Index: Cardinal);
+      function    AddPlaylist(const Name: UTF8String): Cardinal;
+      procedure   DelPlaylist(const Index: Cardinal);
 
-      Procedure   AddItem(const SongID: Cardinal; const iPlaylist: Integer = -1);
-      Procedure   DelItem(const iItem: Cardinal; const iPlaylist: Integer = -1);
+      procedure   AddItem(const SongID: Cardinal; const iPlaylist: Integer = -1);
+      procedure   DelItem(const iItem: Cardinal; const iPlaylist: Integer = -1);
 
-      Procedure   GetNames(var PLNames: array of String);
-      Function    GetIndexbySongID(const SongID: Cardinal; const iPlaylist: Integer = -1): Integer;
+      procedure   GetNames(var PLNames: array of UTF8String);
+      function    GetIndexbySongID(const SongID: Cardinal; const iPlaylist: Integer = -1): Integer;
     end;
 
     {Modes:
@@ -95,13 +97,15 @@ type
 
 implementation
 
-uses USongs,
-     ULog,
-     UMain,
-     //UFiles,
-     UGraphic,
-     UThemes,
-     SysUtils;
+uses
+  SysUtils,
+  USongs,
+  ULog,
+  UMain,
+  UFilesystem,
+  UGraphic,
+  UThemes,
+  UUnicodeUtils;
 
 //----------
 //Create - Construct Class - Dummy for now
@@ -117,90 +121,90 @@ end;
 //----------
 Procedure   TPlayListManager.LoadPlayLists;
 var
-  SR:   TSearchRec;
   Len:  Integer;
   PlayListBuffer: TPlayList;
+  Iter: IFileIterator;
+  FileInfo: TFileInfo;
 begin
   SetLength(Playlists, 0);
 
-  if FindFirst(PlayListPath + '*.upl', 0, SR) = 0 then
+  Iter := FileSystem.FileFind(PlayListPath.Append('*.upl'), 0);
+  while (Iter.HasNext) do
   begin
-    repeat
-      Len := Length(Playlists);
-      SetLength(Playlists, Len +1);
+    Len := Length(Playlists);
+    SetLength(Playlists, Len + 1);
 
-      if not LoadPlayList (Len, Sr.Name) then
-        SetLength(Playlists, Len)
-      else
+    FileInfo := Iter.Next;
+
+    if not LoadPlayList(Len, FileInfo.Name) then
+      SetLength(Playlists, Len)
+    else
+    begin
+      // Sort the Playlists - Insertion Sort
+      PlayListBuffer := Playlists[Len];
+      Dec(Len);
+      while (Len >= 0) AND (CompareText(Playlists[Len].Name, PlayListBuffer.Name) >= 0) do
       begin
-        // Sort the Playlists - Insertion Sort
-        PlayListBuffer := Playlists[Len];
-        Dec(Len);
-        while (Len >= 0) AND (CompareText(Playlists[Len].Name, PlayListBuffer.Name) >= 0) do
-        begin
-            Playlists[Len+1] := Playlists[Len];
-            Dec(Len);
-        end;
-        Playlists[Len+1] := PlayListBuffer;
+          Playlists[Len+1] := Playlists[Len];
+          Dec(Len);
       end;
-
-    until FindNext(SR) <> 0;
-    FindClose(SR);
-  end;  
+      Playlists[Len+1] := PlayListBuffer;
+    end;
+  end;
 end;
 
 //----------
 //LoadPlayList - Load a Playlist in the Array
 //----------
-Function    TPlayListManager.LoadPlayList(Index: Cardinal; Filename: String): Boolean;
-  var
-    F: TextFile;
-    Line: String;
-    PosDelimiter: Integer;
-    SongID: Integer;
-    Len: Integer;
+function TPlayListManager.LoadPlayList(Index: Cardinal; const Filename: IPath): Boolean;
 
-  Function FindSong(Artist, Title: String): Integer;
+  function FindSong(Artist, Title: UTF8String): Integer;
   var I: Integer;
   begin
     Result := -1;
 
     For I := low(CatSongs.Song) to high(CatSongs.Song) do
     begin
-      if (CatSongs.Song[I].Title = Title) AND (CatSongs.Song[I].Artist = Artist) then
+      if (CatSongs.Song[I].Title = Title) and (CatSongs.Song[I].Artist = Artist) then
       begin
         Result := I;
         Break;
       end;
     end;
   end;
+
+var
+  TextStream: TTextFileStream;
+  Line: UTF8String;
+  PosDelimiter: Integer;
+  SongID: Integer;
+  Len: Integer;
+  FilenameAbs: IPath;
 begin
-  if not FileExists(PlayListPath + Filename) then
-  begin
-    Log.LogError('Could not load Playlist: ' + Filename);
-    Result := False;
-    Exit;
+  //Load File
+  try
+    FilenameAbs := PlaylistPath.Append(Filename);
+    TextStream := TMemTextFileStream.Create(FilenameAbs, fmOpenRead);
+  except
+    begin
+      Log.LogError('Could not load Playlist: ' + FilenameAbs.ToNative);
+      Result := False;
+      Exit;
+    end;
   end;
   Result := True;
 
-  //Load File
-  AssignFile(F, PlayListPath + FileName);
-  Reset(F);
-
   //Set Filename
-  PlayLists[Index].Filename := Filename;
-  PlayLists[Index].Name := '';
+  Playlists[Index].Filename := Filename;
+  Playlists[Index].Name := '';
 
   //Read Until End of File
-  While not Eof(F) do
+  while TextStream.ReadLine(Line) do
   begin
-    //Read Curent Line
-    Readln(F, Line);
-
     if (Length(Line) > 0) then
     begin
-    PosDelimiter := Pos(':', Line);
-      if (PosDelimiter  <> 0) then
+      PosDelimiter := UTF8Pos(':', Line);
+      if (PosDelimiter <> 0) then
       begin
         //Comment or Name String
         if (Line[1] = '#') then
@@ -224,7 +228,7 @@ begin
             PlayLists[Index].Items[Len].Artist := Trim(copy(Line, 1, PosDelimiter - 1));
             PlayLists[Index].Items[Len].Title  := Trim(copy(Line, PosDelimiter + 1, Length(Line) - PosDelimiter));
           end
-          else Log.LogError('Could not find Song in Playlist: ' + PlayLists[Index].Filename + ', ' + Line);
+          else Log.LogError('Could not find Song in Playlist: ' + PlayLists[Index].Filename.ToNative + ', ' + Line);
         end;
       end;
     end;
@@ -233,71 +237,70 @@ begin
   //If no special name is given, use Filename
   if PlayLists[Index].Name = '' then
   begin
-    PlayLists[Index].Name := ChangeFileExt(FileName, '');
+    PlayLists[Index].Name := FileName.SetExtension('').ToUTF8;
   end;
 
   //Finish (Close File)
-  CloseFile(F);
+  TextStream.Free;
 end;
 
-//----------
-//SavePlayList - Saves the specified Playlist
-//----------
-Procedure   TPlayListManager.SavePlayList(Index: Cardinal);
+{**
+ * Saves the specified Playlist
+ *}
+procedure   TPlayListManager.SavePlayList(Index: Cardinal);
 var
-  F: TextFile;
+  TextStream: TTextFileStream;
+  PlaylistFile: IPath;
   I: Integer;
 begin
-  if (Not FileExists(PlaylistPath + Playlists[Index].Filename)) OR (Not FileisReadOnly(PlaylistPath + Playlists[Index].Filename)) then
-  begin
+  PlaylistFile := PlaylistPath.Append(Playlists[Index].Filename);
 
-    //open File for Rewriting
-    AssignFile(F, PlaylistPath + Playlists[Index].Filename);
-    try
-      try
-        Rewrite(F);
+  // cannot update read-only file
+  if PlaylistFile.IsFile() and PlaylistFile.IsReadOnly() then
+    Exit;
 
-        //Write Version (not nessecary but helpful)
-        WriteLn(F, '######################################');
-        WriteLn(F, '#Ultrastar Deluxe Playlist Format v1.0');
-        WriteLn(F, '#Playlist "' + Playlists[Index].Name + '" with ' + InttoStr(Length(Playlists[Index].Items)) + ' Songs.');
-        WriteLn(F, '######################################');
+  // open file for rewriting
+  TextStream := TMemTextFileStream.Create(PlaylistFile, fmCreate);
+  try
+    // Write version (not nessecary but helpful)
+    TextStream.WriteLine('######################################');
+    TextStream.WriteLine('#Ultrastar Deluxe Playlist Format v1.0');
+    TextStream.WriteLine(Format('#Playlist %s with %d Songs.',
+                         [ Playlists[Index].Name, Length(Playlists[Index].Items) ]));
+    TextStream.WriteLine('######################################');
 
-        //Write Name Information
-        WriteLn(F, '#Name: ' + Playlists[Index].Name);
+    // Write name information
+    TextStream.WriteLine('#Name: ' + Playlists[Index].Name);
 
-        //Write Song Information
-        WriteLn(F, '#Songs:');
+    // Write song information
+    TextStream.WriteLine('#Songs:');
 
-        For I := 0 to high(Playlists[Index].Items) do
-        begin
-          WriteLn(F, Playlists[Index].Items[I].Artist + ' : ' + Playlists[Index].Items[I].Title);
-        end;
-      except
-        log.LogError('Could not write Playlistfile "' + Playlists[Index].Name + '"');
-      end;
-    finally
-      CloseFile(F);
+    for I := 0 to high(Playlists[Index].Items) do
+    begin
+      TextStream.WriteLine(Playlists[Index].Items[I].Artist + ' : ' + Playlists[Index].Items[I].Title);
     end;
+  except
+    Log.LogError('Could not write Playlistfile "' + Playlists[Index].Name + '"');
   end;
+  TextStream.Free;
 end;
 
-//----------
-//SetPlayList - Display a Playlist in CatSongs
-//----------
-Procedure   TPlayListManager.SetPlayList(Index: Cardinal);
+{**
+ * Display a Playlist in CatSongs
+ *}
+procedure TPlayListManager.SetPlayList(Index: Cardinal);
 var
   I: Integer;
 begin
-  If (Int(Index) > High(PlayLists)) then
+  if (Int(Index) > High(PlayLists)) then
     exit;
 
   //Hide all Songs
-  For I := 0 to high(CatSongs.Song) do
+  for I := 0 to high(CatSongs.Song) do
      CatSongs.Song[I].Visible := False;
 
   //Show Songs in PL
-  For I := 0 to high(PlayLists[Index].Items) do
+  for I := 0 to high(PlayLists[Index].Items) do
   begin
     CatSongs.Song[PlayLists[Index].Items[I].SongID].Visible := True;
   end;
@@ -324,31 +327,30 @@ end;
 //----------
 //AddPlaylist - Adds a Playlist and Returns the Index
 //----------
-Function    TPlayListManager.AddPlaylist(Name: String): Cardinal;
+function TPlayListManager.AddPlaylist(const Name: UTF8String): cardinal;
 var
   I: Integer;
+  PlaylistFile: IPath;
 begin
   Result := Length(Playlists);
   SetLength(Playlists, Result + 1);
   
   // Sort the Playlists - Insertion Sort
-  while (Result > 0) AND (CompareText(Playlists[Result - 1].Name, Name) >= 0) do
+  while (Result > 0) and (CompareText(Playlists[Result - 1].Name, Name) >= 0) do
   begin
     Dec(Result);
     Playlists[Result+1] := Playlists[Result];
   end;
-  Playlists[Result].Name      := Name;
+  Playlists[Result].Name := Name;
 
   I := 1;
-  if (not FileExists(PlaylistPath + Name + '.upl')) then
-    Playlists[Result].Filename  := Name + '.upl'
-  else
+  PlaylistFile := PlaylistPath.Append(Name + '.upl');
+  while (PlaylistFile.Exists) do
   begin
-    repeat
-      Inc(I);
-    until not FileExists(PlaylistPath + Name + InttoStr(I) + '.upl');
-    Playlists[Result].Filename := Name + InttoStr(I) + '.upl';
+    Inc(I);
+    PlaylistFile := PlaylistPath.Append(Name + InttoStr(I) + '.upl');
   end;
+  Playlists[Result].Filename := PlaylistFile;
 
   //Save new Playlist
   SavePlayList(Result);
@@ -357,28 +359,28 @@ end;
 //----------
 //DelPlaylist - Deletes a Playlist
 //----------
-Procedure   TPlayListManager.DelPlaylist(const Index: Cardinal);
+procedure   TPlayListManager.DelPlaylist(const Index: Cardinal);
 var
   I: Integer;
-  Filename: String;
+  Filename: IPath;
 begin
-  If Int(Index) > High(Playlists) then
+  if Int(Index) > High(Playlists) then
     Exit;
 
-  Filename := PlaylistPath + Playlists[Index].Filename;
+  Filename := PlaylistPath.Append(Playlists[Index].Filename);
 
   //If not FileExists or File is not Writeable then exit
-  If (Not FileExists(Filename)) OR (FileisReadOnly(Filename)) then
+  if (not Filename.IsFile()) or (Filename.IsReadOnly()) then
     Exit;
 
 
   //Delete Playlist from FileSystem
-  if Not DeleteFile(Filename) then
+  if not Filename.DeleteFile() then
     Exit;
 
   //Delete Playlist from Array
   //move all PLs to the Hole
-  For I := Index to High(Playlists)-1 do
+  for I := Index to High(Playlists)-1 do
     PlayLists[I] := PlayLists[I+1];
 
   //Delete last Playlist
@@ -390,7 +392,7 @@ begin
   begin
     ScreenSong.UnLoadDetailedCover;
     ScreenSong.HideCatTL;
-    CatSongs.SetFilter('', 0);
+    CatSongs.SetFilter('', fltAll);
     ScreenSong.Interaction := 0;
     ScreenSong.FixSelected;
     ScreenSong.ChangeMusic;
@@ -471,7 +473,7 @@ end;
 //----------
 //GetNames - Writes Playlist Names in a Array
 //----------
-Procedure    TPlayListManager.GetNames(var PLNames: array of String);
+procedure TPlayListManager.GetNames(var PLNames: array of UTF8String);
 var
   I: Integer;
   Len: Integer;

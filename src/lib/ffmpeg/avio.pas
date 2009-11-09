@@ -108,14 +108,16 @@ type
     name: PAnsiChar;
     url_open: function (h: PURLContext; filename: {const} PAnsiChar; flags: cint): cint; cdecl;
     url_read: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+    {$IF LIBAVFORMAT_VERSION >= 52034001} // 52.34.1
     url_read_complete: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+    {$IFEND}
     url_write: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
     url_seek: function (h: PURLContext; pos: cint64; whence: cint): cint64; cdecl;
     url_close: function (h: PURLContext): cint; cdecl;
     next: PURLProtocol;
     {$IF (LIBAVFORMAT_VERSION >= 52001000) and (LIBAVFORMAT_VERSION < 52004000)} // 52.1.0 .. 52.4.0
-    url_read_play: function (h: PURLContext): cint;
-    url_read_pause: function (h: PURLContext): cint;
+    url_read_play: function (h: PURLContext): cint; cdecl;
+    url_read_pause: function (h: PURLContext): cint; cdecl;
     {$IFEND}
     {$IF LIBAVFORMAT_VERSION >= 52004000} // 52.4.0
     url_read_pause: function (h: PURLContext; pause: cint): cint; cdecl;
@@ -278,16 +280,19 @@ function av_protocol_next(p: PURLProtocol): PURLProtocol;
 (**
  * @deprecated Use av_register_protocol() instead.
  *)
-function register_protocol (protocol: PURLProtocol): cint;
+function register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
+(** Alias for register_protocol() *)
+function av_register_protocol(protocol: PURLProtocol): cint;
+  cdecl; external av__format name 'register_protocol';
 {$ELSE}
-function av_register_protocol (protocol: PURLProtocol): cint;
+function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
 {$IFEND}
 
 type
-  TReadWriteFunc = function (opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
-  TSeekFunc = function (opaque: Pointer; offset: cint64; whence: cint): cint64; cdecl;
+  TReadWriteFunc = function(opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
+  TSeekFunc = function(opaque: Pointer; offset: cint64; whence: cint): cint64; cdecl;
 
 function init_put_byte(s: PByteIOContext;
                 buffer: PByteArray;

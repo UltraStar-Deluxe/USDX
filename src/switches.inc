@@ -15,14 +15,30 @@
 {$ELSE}
   {$DEFINE Delphi}
 
-  // Delphi version numbers (ignore versions released before Delphi 6 as they miss the $IF directive):
-  // Delphi 6 (VER140), Delphi 7 (VER150), Delphi 8 (VER160)
-  // Delphi 9/2005 (VER170), Delphi 10/2006 (VER180)
+  // Delphi version numbers (ignore Delphi < 7 and Delphi 8 (VER160))
 
-  // the inline-procedure directive was introduced with Delphi 2005
-  {$IF not (Defined(VER140) or Defined(VER150) or Defined(VER160))}
+  {$IFDEF VER180} // Delphi 2006 (=10)
+    {$DEFINE DELPHI_10}
+    {$DEFINE DELPHI_7_UP}
+    {$DEFINE DELPHI_9_UP}
+    {$DEFINE DELPHI_10_UP}
+  {$ENDIF}
+
+  {$IFDEF VER170} // Delphi 2005 (=9)
+    {$DEFINE DELPHI_9}
+    {$DEFINE DELPHI_7_UP}
+    {$DEFINE DELPHI_9_UP}
+  {$ENDIF}
+
+  {$IFDEF VER150} // Delphi 7
+    {$DEFINE DELPHI_7}
+    {$DEFINE DELPHI_7_UP}
+  {$ENDIF}
+
+  // inline directive introduced with Delphi 2005
+  {$IFDEF DELPHI_9_UP}
     {$DEFINE HasInline}
-  {$IFEND}
+  {$ENDIF}
 {$ENDIF}
 
 
@@ -64,8 +80,6 @@
   // linux apps are always console-apps so leave this defined.
   {$DEFINE CONSOLE}
 {$IFEND}
-
-{.$DEFINE UseFreetype}
 
 // audio config
 {$IF Defined(HaveBASS)}

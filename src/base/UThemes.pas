@@ -34,11 +34,12 @@ interface
 {$I switches.inc}
 
 uses
-  ULog,
   IniFiles,
   SysUtils,
   Classes,
-  UTexture;
+  ULog,
+  UTexture,
+  UPath;
 
 type
   TRGB = record
@@ -112,7 +113,7 @@ type
     Font:   integer;
     Size:   integer;
     Align:  integer;
-    Text:   string;
+    Text:   UTF8String;
     //Reflection
     Reflection:           boolean;
     ReflectionSpacing:    real;
@@ -182,7 +183,7 @@ type
     showArrows:boolean;
     oneItemOnly:boolean;
 
-    Text:   string;
+    Text:   UTF8String;
     ColR,  ColG,  ColB,  Int:     real;
     DColR, DColG, DColB, DInt:    real;
     TColR,  TColG,  TColB,  TInt:     real;
@@ -236,8 +237,8 @@ type
 
     TextDescription:      TThemeText;
     TextDescriptionLong:  TThemeText;
-    Description:          array[0..5] of string;
-    DescriptionLong:      array[0..5] of string;
+    Description:          array[0..5] of UTF8String;
+    DescriptionLong:      array[0..5] of UTF8String;
   end;
 
   TThemeName = class(TThemeBasic)
@@ -354,7 +355,7 @@ type
     TextP3RScore:     TThemeText;
 
     //Linebonus Translations
-    LineBonusText:    array [0..8] of string;
+    LineBonusText:    array [0..8] of UTF8String;
 
     //Pause Popup
      PausePopUp:      TThemeStatic;
@@ -421,7 +422,7 @@ type
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
-    Description:          array[0..7] of string;
+    Description:          array[0..7] of UTF8String;
   end;
 
   TThemeOptionsGame = class(TThemeBasic)
@@ -496,8 +497,8 @@ type
 
     TextDescription:      TThemeText;
     TextDescriptionLong:  TThemeText;
-    Description:          array[0..5] of string;
-    DescriptionLong:      array[0..5] of string;
+    Description:          array[0..5] of UTF8string;
+    DescriptionLong:      array[0..5] of UTF8string;
   end;
 
   //Error- and Check-Popup
@@ -531,10 +532,10 @@ type
     TextFound:        TThemeText;
 
     //Translated Texts
-    Songsfound:       string;
-    NoSongsfound:     string;
-    CatText:          string;
-    IType:            array [0..2] of string;
+    Songsfound:       UTF8String;
+    NoSongsfound:     UTF8String;
+    CatText:          UTF8String;
+    IType:            array [0..2] of UTF8String;
   end;
 
   //Party Screens
@@ -700,15 +701,15 @@ type
     TextPage:         TThemeText;
     TextList:         AThemeText;
 
-    Description:      array[0..3] of string;
-    DescriptionR:     array[0..3] of string;
-    FormatStr:        array[0..3] of string;
-    PageStr:          string;
+    Description:      array[0..3] of UTF8String;
+    DescriptionR:     array[0..3] of UTF8String;
+    FormatStr:        array[0..3] of UTF8String;
+    PageStr:          UTF8String;
   end;
 
   //Playlist Translations
   TThemePlaylist = record
-    CatText:    string;
+    CatText:    UTF8String;
   end;
 
   TTheme = class
@@ -761,11 +762,11 @@ type
 
     Playlist:         TThemePlaylist;
 
-    ILevel: array[0..2] of string;
+    ILevel: array[0..2] of UTF8String;
 
-    constructor Create(const FileName: string); overload; // Initialize theme system
-    constructor Create(const FileName: string; Color: integer); overload; // Initialize theme system with color
-    function LoadTheme(FileName: string; sColor: integer): boolean; // Load some theme settings from file
+    constructor Create(const FileName: IPath); overload; // Initialize theme system
+    constructor Create(const FileName: IPath; Color: integer); overload; // Initialize theme system with color
+    function LoadTheme(const FileName: IPath; sColor: integer): boolean; // Load some theme settings from file
 
     procedure LoadColors;
 
@@ -845,12 +846,12 @@ begin
   glColor4f(Color.R, Color.G, Color.B, Min(Color.A, Alpha));
 end;
 
-constructor TTheme.Create(const FileName: string);
+constructor TTheme.Create(const FileName: IPath);
 begin
   Create(FileName, 0);
 end;
 
-constructor TTheme.Create(const FileName: string; Color: integer);
+constructor TTheme.Create(const FileName: IPath; Color: integer);
 begin
   inherited Create();
 
@@ -893,7 +894,7 @@ begin
 
 end;
 
-function TTheme.LoadTheme(FileName: string; sColor: integer): boolean;
+function TTheme.LoadTheme(const FileName: IPath; sColor: integer): boolean;
 var
   I:    integer;
 begin
@@ -901,23 +902,21 @@ begin
 
   CreateThemeObjects();
 
-  Log.LogStatus('Loading: '+ FileName, 'TTheme.LoadTheme');
+  Log.LogStatus('Loading: '+ FileName.ToNative, 'TTheme.LoadTheme');
 
-  FileName := AdaptFilePaths(FileName);
-
-  if not FileExists(FileName) then
+  if not FileName.IsFile() then
   begin
-    Log.LogError('Theme does not exist ('+ FileName +')', 'TTheme.LoadTheme');
+    Log.LogError('Theme does not exist ('+ FileName.ToNative +')', 'TTheme.LoadTheme');
   end;
 
-  if FileExists(FileName) then
+  if FileName.IsFile() then
   begin
     Result := true;
 
     {$IFDEF THEMESAVE}
-    ThemeIni := TIniFile.Create(FileName);
+    ThemeIni := TIniFile.Create(FileName.ToNative);
     {$ELSE}
-    ThemeIni := TMemIniFile.Create(FileName);
+    ThemeIni := TMemIniFile.Create(FileName.ToNative);
     {$ENDIF}
 
     if ThemeIni.ReadString('Theme', 'Name', '') <> '' then

@@ -36,9 +36,10 @@ interface
 implementation
 
 uses
-     SysUtils,
-     math,
-     UMusic;
+  SysUtils,
+  math,
+  UMusic,
+  UPath;
 
 type
     TMedia_dummy = class( TInterfacedObject, IVideoPlayback, IVideoVisualization, IAudioPlayback, IAudioInput )
@@ -51,7 +52,7 @@ type
       function Init(): boolean;
       function Finalize(): boolean;
 
-      function  Open(const aFileName : string): boolean; // true if succeed
+      function  Open(const aFileName: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -88,7 +89,7 @@ type
       function Finished: boolean;
       function Length: real;
 
-      function OpenSound(const Filename: string): TAudioPlaybackStream;
+      function OpenSound(const Filename: IPath): TAudioPlaybackStream;
       procedure CloseSound(var PlaybackStream: TAudioPlaybackStream);
       procedure PlaySound(stream: TAudioPlaybackStream);
       procedure StopSound(stream: TAudioPlaybackStream);
@@ -125,7 +126,7 @@ begin
   Result := true;
 end;
 
-function TMedia_dummy.Open(const aFileName : string): boolean; // true if succeed
+function TMedia_dummy.Open(const aFileName : IPath): boolean; // true if succeed
 begin
   Result := false;
 end;
@@ -236,7 +237,7 @@ begin
   Result := 60;
 end;
 
-function TMedia_dummy.OpenSound(const Filename: string): TAudioPlaybackStream;
+function TMedia_dummy.OpenSound(const Filename: IPath): TAudioPlaybackStream;
 begin
  Result := nil;
 end;

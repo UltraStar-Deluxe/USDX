@@ -116,11 +116,11 @@ type
       Tex_Background:     TTexture;
       FadeOut:            boolean;
       constructor Create; override;
-      procedure onShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean; override;
-      function ParseInputEditText(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+      procedure OnShow; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function Draw: boolean; override;
-      procedure onHide; override;
+      procedure OnHide; override;
   end;
 
 implementation
@@ -130,14 +130,44 @@ uses
   UDraw,
   UNote,
   USkins,
-  ULanguage;
+  ULanguage,
+  UTextEncoding,
+  UUnicodeUtils,
+  UPath;
+
+
+procedure OnSaveEncodingError(Value: boolean; Data: Pointer);
+var
+  SResult: TSaveSongResult;
+  FilePath: IPath;
+  Success: boolean;
+begin
+  Success := false;
+  if (Value) then
+  begin
+    CurrentSong.Encoding := encUTF8;
+    FilePath := CurrentSong.Path.Append(CurrentSong.FileName);
+    // create backup file
+    FilePath.CopyFile(Path(FilePath.ToUTF8 + '.ansi.bak'), false);
+    // store in UTF-8 encoding
+    SResult := SaveSong(CurrentSong, Lines[0], FilePath,
+             boolean(Data));
+    Success := (SResult = ssrOK);
+  end;
+
+  if (Success) then
+    ScreenPopupInfo.ShowPopup(Language.Translate('INFO_FILE_SAVED'))
+  else
+    ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
+end;
 
 // Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenEditSub.ParseInput(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenEditSub.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
   R:    real;
+  SResult: TSaveSongResult;
 begin
   Result := true;
 
@@ -152,40 +182,47 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
 
   if (PressedDown) then  // Key Down
-  begin  // check normal keys
-    case WideCharUpperCase(CharCode)[1] of
-      'Q':
+  begin
+    // check normal keys
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
         begin
           Result := false;
           Exit;
         end;
-      'S':
+      Ord('S'):
         begin
           // Save Song
-          if SDL_ModState = KMOD_LSHIFT then
-            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, true)
+          SResult := SaveSong(CurrentSong, Lines[0], CurrentSong.Path.Append(CurrentSong.FileName),
+                   (SDL_ModState = KMOD_LSHIFT));
+          if (SResult = ssrOK) then
+          begin
+            ScreenPopupInfo.ShowPopup(Language.Translate('INFO_FILE_SAVED'));
+          end
+          else if (SResult = ssrEncodingError) then
+          begin
+            ScreenPopupCheck.ShowPopup(Language.Translate('ENCODING_ERROR_ASK_FOR_UTF8'), OnSaveEncodingError,
+                Pointer(SDL_ModState = KMOD_LSHIFT), true);
+          end
           else
-            SaveSong(CurrentSong, Lines[0], CurrentSong.Path + CurrentSong.FileName, false);
-
-          {if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL + KMOD_LALT then
-            // Save Song
-            SaveSongDebug(CurrentSong, Lines[0], 'C:\song.asm', false);}
-
+          begin
+            ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
+          end;
           Exit;
         end;
-      'D':
+      Ord('D'):
         begin
           // Divide lengths by 2
           DivideBPM;
           Exit;
         end;
-      'M':
+      Ord('M'):
         begin
           // Multiply lengths by 2
           MultiplyBPM;
           Exit;
         end;
-      'C':
+      Ord('C'):
         begin
           // Capitalize letter at the beginning of line
           if SDL_ModState = 0 then
@@ -201,7 +238,7 @@ begin
 
           Exit;
         end;
-      'V':
+      Ord('V'):
         begin
           // Paste text
           if SDL_ModState = KMOD_LCTRL then
@@ -217,13 +254,13 @@ begin
             CopySentence(CopySrc, Lines[0].Current);
           end;
         end;
-      'T':
+      Ord('T'):
         begin
           // Fixes timings between sentences
           FixTimings;
           Exit;
         end;
-      'P':
+      Ord('P'):
         begin
           if SDL_ModState = 0 then
           begin
@@ -269,8 +306,8 @@ begin
           Exit;
         end;
       
-      // Golden Note Patch
-      'G':
+      // Golden Note
+      Ord('G'):
         begin
           if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntGolden) then
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
@@ -280,8 +317,8 @@ begin
           Exit;
         end;
       
-      // Freestyle Note Patch
-      'F':
+      // Freestyle Note
+      Ord('F'):
         begin
           if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntFreestyle) then
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
@@ -580,10 +617,11 @@ begin
 
           // skip to next sentence
           if SDL_ModState = 0 then
-          begin                       {$IFDEF UseMIDIPort}
+          begin
+            {$IFDEF UseMIDIPort}
             MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
-            {$endif}
+            {$ENDIF}
 
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
             Inc(Lines[0].Current);
@@ -642,7 +680,7 @@ begin
   end; // if
 end;
 
-function TScreenEditSub.ParseInputEditText(PressedKey: cardinal; CharCode: WideChar; PressedDown: boolean): boolean;
+function TScreenEditSub.ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
 begin
@@ -653,7 +691,16 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
 
   if (PressedDown) then
-  begin // Key Down
+  begin
+    // check normal keys
+    if (IsPrintableChar(CharCode)) then
+    begin
+      Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text :=
+        Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text + UCS4ToUTF8String(CharCode);
+      Exit;
+    end;
+
+    // check special keys
     case PressedKey of
 
       SDLK_ESCAPE:
@@ -665,15 +712,10 @@ begin
           // Exit Text Edit Mode
           TextEditMode := false;
         end;
-      SDLK_0..SDLK_9, SDLK_A..SDLK_Z, SDLK_SPACE, SDLK_MINUS, SDLK_EXCLAIM, SDLK_COMMA, SDLK_SLASH, SDLK_ASTERISK, SDLK_QUESTION, SDLK_QUOTE, SDLK_QUOTEDBL:
-        begin
-          Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text :=
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text + CharCode;
-        end;
       SDLK_BACKSPACE:
         begin
-          Delete(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text,
-            Length(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text), 1);
+          UTF8Delete(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text,
+            LengthUTF8(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text), 1);
         end;
       SDLK_RIGHT:
         begin
@@ -758,9 +800,11 @@ var
   S:    string;
 begin
   // temporary
-{  for C := 0 to Lines[0].High do
+  {
+  for C := 0 to Lines[0].High do
     for N := 0 to Lines[0].Line[C].HighNut do
-      Lines[0].Line[C].Note[N].Text := AnsiLowerCase(Lines[0].Line[C].Note[N].Text);}
+      Lines[0].Line[C].Note[N].Text := UTF8LowerCase(Lines[0].Line[C].Note[N].Text);
+  }
 
   for C := 0 to Lines[0].High do
   begin
@@ -1085,14 +1129,16 @@ var
   N:      integer;
   NHigh:  integer;
 begin
-{  C := Lines[0].Current;
+  {
+  C := Lines[0].Current;
 
   for N := Lines[0].Line[C].HighNut downto 1 do
   begin
     Lines[0].Line[C].Note[N].Text := Lines[0].Line[C].Note[N-1].Text;
   end; // for
 
-  Lines[0].Line[C].Note[0].Text := '- ';}
+  Lines[0].Line[C].Note[0].Text := '- ';
+  }
 
   C := Lines[0].Current;
   NHigh := Lines[0].Line[C].HighNote;
@@ -1233,21 +1279,24 @@ begin
 
 end;
 
-procedure TScreenEditSub.onShow;
+procedure TScreenEditSub.OnShow;
+var
+  FileExt: IPath;
 begin
   inherited;
 
-  Log.LogStatus('Initializing', 'TEditScreen.onShow');
+  Log.LogStatus('Initializing', 'TEditScreen.OnShow');
   Lyric := TEditorLyrics.Create;
 
   ResetSingTemp;
 
   try 
-  //Check if File is XML
-   if copy(CurrentSong.FileName,length(CurrentSong.FileName)-3,4) = '.xml' then
-     Error := not CurrentSong.LoadXMLSong()
-   else
-     Error := not CurrentSong.LoadSong();
+    //Check if File is XML
+    FileExt := CurrentSong.FileName.GetExtension;
+    if FileExt.ToUTF8 = '.xml' then
+      Error := not CurrentSong.LoadXMLSong()
+    else
+      Error := not CurrentSong.LoadSong();
   except
     Error := true;
   end;
@@ -1269,12 +1318,12 @@ begin
   {$ENDIF}
     Text[TextTitle].Text :=   CurrentSong.Title;
     Text[TextArtist].Text :=  CurrentSong.Artist;
-    Text[TextMp3].Text :=     CurrentSong.Mp3;
+    Text[TextMp3].Text :=     CurrentSong.Mp3.ToUTF8;
 
     Lines[0].Current := 0;
     CurrentNote := 0;
     Lines[0].Line[0].Note[0].Color := 1;
-    AudioPlayback.Open(CurrentSong.Path + CurrentSong.Mp3);
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(0.4);
 
@@ -1412,7 +1461,7 @@ begin
   Result := true;
 end;
 
-procedure TScreenEditSub.onHide;
+procedure TScreenEditSub.OnHide;
 begin
   {$IFDEF UseMIDIPort}
   MidiOut.Close;
