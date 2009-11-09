@@ -1167,12 +1167,22 @@ begin
   // projected width ||(x1, y1) - (x2, y1)||
   Dist  := (WinCoords[0][0] - WinCoords[1][0]);
   Dist2 := (WinCoords[0][1] - WinCoords[1][1]);
-  WidthScale := cTestSize / Sqrt(Dist*Dist + Dist2*Dist2);
+
+  WidthScale := 1;
+  if (Sqrt(Dist*Dist + Dist2*Dist2) <> 0) then
+  begin
+    WidthScale := cTestSize / Sqrt(Dist*Dist + Dist2*Dist2);
+  end;
 
   // projected height ||(x1, y1) - (x1, y2)||
   Dist  := (WinCoords[0][0] - WinCoords[2][0]);
   Dist2 := (WinCoords[0][1] - WinCoords[2][1]);
-  HeightScale := cTestSize / Sqrt(Dist*Dist + Dist2*Dist2);
+
+  HeightScale := 1;
+  if (Sqrt(Dist*Dist + Dist2*Dist2) <> 0) then
+  begin
+    HeightScale := cTestSize / Sqrt(Dist*Dist + Dist2*Dist2);
+  end;
 
   //writeln(Format('Scale %f, %f', [WidthScale, HeightScale]));
 
@@ -1326,7 +1336,7 @@ var
   Level: integer;
 begin
   for Level := 0 to High(fMipmapFonts) do
-    if (fMipmapFonts[Level] <> nil) then
+    if ((fMipmapFonts[Level] <> nil) AND (GetMipmapScale(Level) > 0)) then
       fMipmapFonts[Level].SetReflectionSpacing(Spacing / GetMipmapScale(Level));
 end;
 
