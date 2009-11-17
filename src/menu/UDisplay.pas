@@ -91,6 +91,9 @@ type
 
       function  Draw: boolean;
 
+      { calls ParseInput of cur or next Screen if assigned }
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+
       { sets SDL_ShowCursor depending on options set in Ini }
       procedure SetCursor;
 
@@ -503,6 +506,16 @@ begin
       glDisable(GL_TEXTURE_2D);
     end;
   end;
+end;
+
+function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+begin
+  if (assigned(NextScreen)) then
+    Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+  else if (assigned(CurrentScreen)) then
+    Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+  else
+    Result := True;
 end;
 
 procedure TDisplay.SaveScreenShot;

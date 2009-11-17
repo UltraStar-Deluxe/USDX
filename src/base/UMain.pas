@@ -514,7 +514,7 @@ begin
           else
           begin
             // check if screen wants to exit
-            Done := not Display.CurrentScreen^.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
+            Done := not Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
 
             // if screen wants to exit
             if Done then
