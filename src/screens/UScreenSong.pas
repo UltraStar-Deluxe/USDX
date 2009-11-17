@@ -57,6 +57,9 @@ type
     private
       Equalizer: Tms_Equalizer;
 
+      PreviewOpened: Integer; // interaction of the Song that is loaded for preview music
+                              // -1 if nothing is opened
+
       procedure StartMusicPreview();
       procedure StopMusicPreview();
     public
@@ -834,6 +837,8 @@ begin
 
   Equalizer := Tms_Equalizer.Create(AudioPlayback, Theme.Song.Equalizer);
 
+  PreviewOpened := -1;
+
   if (Length(CatSongs.Song) > 0) then
     Interaction := 0;
 end;
@@ -1440,7 +1445,9 @@ begin
   begin
     //Load Music only when Song Preview is activated
     if ( Ini.PreviewVolume <> 0 ) then
-      StartMusicPreview();
+      StartMusicPreview()
+    else
+      PreviewOpened := -1;
 
     SetScroll;
   end;
@@ -1473,12 +1480,12 @@ end;
 
 procedure TScreenSong.OnHide;
 begin
+  // if preview is not loaded: load musicfile now
+  if (PreviewOpened <> Interaction) then
+    AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Mp3));
+
   // turn music volume to 100%
   AudioPlayback.SetVolume(1.0);
-
-  // if preview is deactivated: load musicfile now
-  if (IPreviewVolumeVals[Ini.PreviewVolume] = 0) then
-    AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Mp3));
 
   // if hide then stop music (for party mode popup on exit)
   if (Display.NextScreen <> @ScreenSing) and
@@ -1659,6 +1666,8 @@ begin
 
   if AudioPlayback.Open(Song.Path.Append(Song.Mp3)) then
   begin
+    PreviewOpened := Interaction;
+    
     AudioPlayback.Position := AudioPlayback.Length / 4;
     // set preview volume
     if (Ini.PreviewFading = 0) then
@@ -1706,6 +1715,7 @@ end;
 procedure TScreenSong.ChangeMusic;
 begin
   StopMusicPreview();
+  PreviewOpened := -1;
 
   // Preview song if activated and current selection is not a category cover
   if (CatSongs.VisibleSongs > 0) and
