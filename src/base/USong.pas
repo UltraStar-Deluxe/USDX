@@ -119,6 +119,7 @@ type
     Genre:      UTF8String;
     Edition:    UTF8String;
     Language:   UTF8String;
+    Year:       Integer;
 
     Title:      UTF8String;
     Artist:     UTF8String;
@@ -1034,6 +1035,12 @@ begin
         DecodeStringUTF8(Value, Language, Encoding)
       end
 
+      //Language Sorting
+      else if (Identifier = 'YEAR') then
+      begin
+        TryStrtoInt(Value, self.Year)
+      end
+
       // Song Start
       else if (Identifier = 'START') then
       begin
@@ -1256,7 +1263,8 @@ begin
   //Sortings:
   Genre    := 'Unknown';
   Edition  := 'Unknown';
-  Language := 'Unknown'; //Language Patch
+  Language := 'Unknown'; 
+  Year := 0;
 
   // set to default encoding
   Encoding := DEFAULT_ENCODING;

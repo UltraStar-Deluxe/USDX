@@ -139,6 +139,7 @@ begin
       if Song.Edition     <> 'Unknown' then SongFile.WriteLine('#EDITION:'   + EncodeToken(Song.Edition));
       if Song.Genre       <> 'Unknown' then SongFile.WriteLine('#GENRE:'     + EncodeToken(Song.Genre));
       if Song.Language    <> 'Unknown' then SongFile.WriteLine('#LANGUAGE:'  + EncodeToken(Song.Language));
+      if Song.Year        <> 0         then SongFile.WriteLine('#YEAR:'      + IntToStr(Song.Year));
 
       SongFile.WriteLine('#MP3:' + EncodeToken(Song.Mp3.ToUTF8));
       if Song.Cover.IsSet      then    SongFile.WriteLine('#COVER:'       + EncodeToken(Song.Cover.ToUTF8));
