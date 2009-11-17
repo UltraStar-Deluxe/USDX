@@ -410,8 +410,6 @@ begin
       CompareFunc := CompareByArtist;
     sFolder: // by folder
       CompareFunc := CompareByFolder;
-    sTitle2: // by title2
-      CompareFunc := CompareByTitle;
     sArtist2: // by artist2
       CompareFunc := CompareByArtist;
     sLanguage: // by Language
@@ -458,12 +456,8 @@ begin
         Songs.Sort(sTitle);
         Songs.Sort(sArtist);
       end;
-    sTitle2: begin
-        Songs.Sort(sArtist2);
-        Songs.Sort(sTitle2);
-      end;
     sArtist2: begin
-        Songs.Sort(sTitle2);
+        Songs.Sort(sTitle);
         Songs.Sort(sArtist2);
       end;
   end; // case
@@ -567,6 +561,15 @@ begin
           if (Length(CurSong.Title) >= 1) then
           begin
             LetterTmp := UCS4UpperCase(UTF8ToUCS4String(CurSong.Title)[0]);
+            { all numbers and some punctuation chars are put into a
+              category named '#'
+              we can't put the other punctuation chars into this category
+              because they are not in order, so there will be two different
+              categories named '#' } 
+            if (LetterTmp in [Ord('!') .. Ord('?')]) then
+              LetterTmp := Ord('#')
+            else
+              LetterTmp := UCS4UpperCase(LetterTmp);
             if (Letter <> LetterTmp) then
             begin
               Letter := LetterTmp;
@@ -580,6 +583,16 @@ begin
           if (Length(CurSong.Artist) >= 1) then
           begin
             LetterTmp := UCS4UpperCase(UTF8ToUCS4String(CurSong.Artist)[0]);
+            { all numbers and some punctuation chars are put into a
+              category named '#'
+              we can't put the other punctuation chars into this category
+              because they are not in order, so there will be two different
+              categories named '#' } 
+            if (LetterTmp in [Ord('!') .. Ord('?')]) then
+              LetterTmp := Ord('#')
+            else
+              LetterTmp := UCS4UpperCase(LetterTmp);
+              
             if (Letter <> LetterTmp) then
             begin
               Letter := LetterTmp;
@@ -598,44 +611,17 @@ begin
           end;
         end;
 
-        sTitle2: begin
-          if (Length(CurSong.Title) >= 1) then
-          begin
-            LetterTmp := UTF8ToUCS4String(CurSong.Title)[0];
-            // pack all numbers into a category named '#'
-            if (LetterTmp in [Ord('0') .. Ord('9')]) then
-              LetterTmp := Ord('#')
-            else
-              LetterTmp := UCS4UpperCase(LetterTmp);
-
-            if (Letter <> LetterTmp) then
-            begin
-              Letter := LetterTmp;
-              // add a letter Category Button
-              AddCategoryButton(UCS4ToUTF8String(Letter));
-            end;
-          end;
-        end;
-
         sArtist2: begin
-          if (Length(CurSong.Artist) >= 1) then
+          { this new sorting puts all songs by the same artist into
+            a single category }
+          if (UTF8CompareText(CurCategory, CurSong.Artist) <> 0) then
           begin
-            LetterTmp := UTF8ToUCS4String(CurSong.Artist)[0];
-            // pack all numbers into a category named '#'
-            if (LetterTmp in [Ord('0') .. Ord('9')]) then
-              LetterTmp := Ord('#')
-            else
-              LetterTmp := UCS4UpperCase(LetterTmp);
-
-            if (Letter <> LetterTmp) then
-            begin
-              Letter := LetterTmp;
-              // add a letter Category Button
-              AddCategoryButton(UCS4ToUTF8String(Letter));
-            end;
+            CurCategory := CurSong.Artist;
+            // add folder tab
+            AddCategoryButton(CurCategory);
           end;
         end;
-        
+
       end; // case (Ini.Sorting)
     end; // if (Ini.Tabs = 1)
 

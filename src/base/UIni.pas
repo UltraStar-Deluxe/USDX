@@ -179,15 +179,14 @@ const
   IDifficulty:  array[0..2] of UTF8String = ('Easy', 'Medium', 'Hard');
   ITabs:        array[0..1] of UTF8String = ('Off', 'On');
 
-  ISorting:     array[0..7] of UTF8String = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Title2', 'Artist2');
+  ISorting:     array[0..6] of UTF8String = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2');
   sEdition  = 0;
   sGenre    = 1;
   sLanguage = 2;
   sFolder   = 3;
   sTitle    = 4;
   sArtist   = 5;
-  sTitle2   = 6;
-  sArtist2  = 7;
+  sArtist2  = 6;
 
   IDebug:            array[0..1] of UTF8String  = ('Off', 'On');
 
@@ -261,7 +260,7 @@ var
   IDifficultyTranslated:       array[0..2] of UTF8String  = ('Easy', 'Medium', 'Hard');
   ITabsTranslated:             array[0..1] of UTF8String  = ('Off', 'On');
 
-  ISortingTranslated:          array[0..7] of UTF8String  = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Title2', 'Artist2');
+  ISortingTranslated:          array[0..6] of UTF8String  = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2');
 
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
 
@@ -364,8 +363,7 @@ begin
   ISortingTranslated[3]               := ULanguage.Language.Translate('OPTION_VALUE_FOLDER');
   ISortingTranslated[4]               := ULanguage.Language.Translate('OPTION_VALUE_TITLE');
   ISortingTranslated[5]               := ULanguage.Language.Translate('OPTION_VALUE_ARTIST');
-  ISortingTranslated[6]               := ULanguage.Language.Translate('OPTION_VALUE_TITLE2');
-  ISortingTranslated[7]               := ULanguage.Language.Translate('OPTION_VALUE_ARTIST2');
+  ISortingTranslated[6]               := ULanguage.Language.Translate('OPTION_VALUE_ARTIST2');
 
   IDebugTranslated[0]                 := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IDebugTranslated[1]                 := ULanguage.Language.Translate('OPTION_VALUE_ON');
