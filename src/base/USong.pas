@@ -76,6 +76,14 @@ type
     Score:      integer;
   end;
 
+  { used to hold header tags that are not supported by this version of
+    usdx (e.g. some tags from ultrastar 0.7.0) when songs are loaded in
+    songeditor. They will be written the end of the song header }
+  TCustomHeaderTag = record
+    Tag: UTF8String;
+    Content: UTF8String;
+  end;
+
   TSong = class
   private
     FileLineNo  : integer;  // line, which is read last, for error reporting
@@ -91,12 +99,11 @@ type
     function ParseLyricCharParam(const Line: RawByteString; var LinePos: integer): AnsiChar;
     function ParseLyricText(const Line: RawByteString; var LinePos: integer): RawByteString;
 
-    function ReadTXTHeader(SongFile: TTextFileStream): boolean;
+    function ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
     function ReadXMLHeader(const aFileName: IPath): boolean;
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
     function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
-
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
@@ -131,6 +138,8 @@ type
 
     Encoding:   TEncoding;
 
+    CustomTags: array of TCustomHeaderTag;
+
     Score:      array[0..2] of array of TScore;
 
     // these are used when sorting is enabled
@@ -154,7 +163,7 @@ type
     constructor Create(const aFileName : IPath); overload;
     function    LoadSong: boolean;
     function    LoadXMLSong: boolean;
-    function    Analyse(): boolean;
+    function    Analyse(const ReadCustomTags: Boolean = false): boolean;
     function    AnalyseXML(): boolean;
     procedure   Clear();
   end;
@@ -177,6 +186,7 @@ constructor TSong.Create();
 begin
   inherited;
 
+  // to-do : special create for category "songs"
   //dirty fix to fix folders=on
   Self.Path     := PATH_NONE();
   Self.FileName := PATH_NONE();
@@ -211,7 +221,7 @@ begin
       if (aFileName.IsChildOf(CurSongPath, true)) then
       begin
         // songs are in the "root" of the songdir => use songdir for the categorys name
-        Result := CurSongPath.ToUTF8; // TODO: remove trailing path-delim?
+        Result := CurSongPath.RemovePathDelim.ToUTF8;
       end
       else
       begin
@@ -824,7 +834,6 @@ begin
 
 end;
 
-
 {**
  * "International" StrToFloat variant. Uses either ',' or '.' as decimal
  * separator.
@@ -839,7 +848,7 @@ begin
   Result := StrToFloatDef(TempValue, 0);
 end;
 
-function TSong.ReadTXTHeader(SongFile: TTextFileStream): boolean;
+function TSong.ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
 var
   Line, Identifier: string;
   Value: string;
@@ -847,6 +856,21 @@ var
   Done: byte;      // bit-vector of mandatory fields
   EncFile: IPath; // encoded filename
   FullFileName: string;
+
+  { adds a custom header tag to the song
+    if there is no ':' in the read line, Tag should be empty
+    and the whole line should be in Content }
+  procedure AddCustomTag(const Tag, Content: String);
+    var Len: Integer;
+  begin
+    if ReadCustomTags then
+    begin
+      Len := Length(CustomTags);
+      SetLength(CustomTags, Len + 1);
+      CustomTags[Len].Tag := DecodeStringUTF8(Tag, Encoding);
+      CustomTags[Len].Content := DecodeStringUTF8(Content, Encoding);
+    end;
+  end;
 begin
   Result := true;
   Done   := 0;
@@ -876,7 +900,17 @@ begin
 
     //Line has no Seperator, ignore non header field
     if (SepPos = 0) then
+    begin
+      AddCustomTag('', Copy(Line, 2, Length(Line) - 1));
+      // read next line
+      if (not SongFile.ReadLine(Line)) then
+      begin
+        Result := false;
+        Log.LogError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
+        Break;
+      end;
       Continue;
+    end;
 
     //Read Identifier and Value
     Identifier  := UpperCase(Trim(Copy(Line, 2, SepPos - 2))); //Uppercase is for Case Insensitive Checks
@@ -887,6 +921,7 @@ begin
     begin
       Log.LogWarn('Empty field "'+Identifier+'" in file ' + FullFileName,
                    'TSong.ReadTXTHeader');
+      AddCustomTag(Identifier, '');
     end
     else
     begin
@@ -1034,6 +1069,12 @@ begin
       else if (Identifier = 'ENCODING') then
       begin
         self.Encoding := ParseEncoding(Value, DEFAULT_ENCODING);
+      end
+
+      // unsupported tag
+      else
+      begin
+        AddCustomTag(Identifier, Value);
       end;
       
     end; // End check for non-empty Value
@@ -1220,6 +1261,9 @@ begin
   // set to default encoding
   Encoding := DEFAULT_ENCODING;
 
+  // clear custom header tags
+  SetLength(CustomTags, 0);
+
   //Required Information
   Mp3    := PATH_NONE;
   SetLength(BPM, 0);
@@ -1240,7 +1284,7 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean): boolean;
 var
   SongFile: TTextFileStream;
 begin
@@ -1256,7 +1300,7 @@ begin
     Self.clear;
 
     //Read Header
-    Result := Self.ReadTxTHeader(SongFile)
+    Result := Self.ReadTxTHeader(SongFile, ReadCustomTags)
   finally
     SongFile.Free;
   end;

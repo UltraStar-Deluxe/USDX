@@ -1296,7 +1296,12 @@ begin
     if FileExt.ToUTF8 = '.xml' then
       Error := not CurrentSong.LoadXMLSong()
     else
-      Error := not CurrentSong.LoadSong();
+    begin
+      // reread header with custom tags
+      Error := not CurrentSong.Analyse(true);
+      if not Error then
+        Error := not CurrentSong.LoadSong;
+    end;
   except
     Error := true;
   end;

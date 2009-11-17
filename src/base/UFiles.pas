@@ -102,6 +102,22 @@ var
       SaveSong := ssrEncodingError;
   end;
 
+  procedure WriteCustomTags;
+    var
+      I: integer;
+      Line: RawByteString;
+  begin
+    for I := 0 to High(Song.CustomTags) do
+    begin
+      Line := EncodeToken(Song.CustomTags[I].Content);
+      if (Length(Song.CustomTags[I].Tag) > 0) then
+        Line := EncodeToken(Song.CustomTags[I].Tag) + ':' + Line;
+
+      SongFile.WriteLine('#' + Line);
+    end;
+
+  end;
+
 begin
   //  Relative := true; // override (idea - use shift+S to save with relative)
   Result := ssrOK;
@@ -109,6 +125,9 @@ begin
   try
     SongFile := TMemTextFileStream.Create(Name, fmCreate);
     try
+      // to-do: should we really write the BOM?
+      //        it causes problems w/ older versions
+      //        e.g. usdx 1.0.1a or ultrastar < 0.7.0
       if (Song.Encoding = encUTF8) then
         SongFile.WriteString(UTF8_BOM);
 
@@ -135,6 +154,9 @@ begin
 
       SongFile.WriteLine('#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
       SongFile.WriteLine('#GAP:' + FloatToStr(Song.GAP));
+
+      // write custom header tags
+      WriteCustomTags;
 
       RelativeSubTime := 0;
       for B := 1 to High(Song.BPM) do
