@@ -350,7 +350,7 @@ begin
     Inc(I);
     PlaylistFile := PlaylistPath.Append(Name + InttoStr(I) + '.upl');
   end;
-  Playlists[Result].Filename := PlaylistFile;
+  Playlists[Result].Filename := PlaylistFile.GetName;
 
   //Save new Playlist
   SavePlayList(Result);
