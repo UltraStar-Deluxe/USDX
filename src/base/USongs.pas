@@ -727,14 +727,18 @@ var
   I: integer;
 begin
   Result := -1;
-  I := SearchFrom + 1;
-  while not CatSongs.Song[I].Visible do
+  I := SearchFrom;
+  while (Result = -1) do
   begin
     Inc (I);
-    if (I>high(CatSongs.Song)) then
-      I := low(CatSongs.Song);
+
+    if (I > High(CatSongs.Song)) then
+      I := Low(CatSongs.Song);
     if (I = SearchFrom) then // Make One Round and no song found->quit
-      break;
+      Break;
+
+    if (CatSongs.Song[I].Visible) then
+      Result := I;
   end;
 end;
 // Wrong song selected when tabs on bug End
