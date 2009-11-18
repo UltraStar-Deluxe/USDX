@@ -752,6 +752,9 @@ begin
 end;
 
 function TScreenSong.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+  var
+    I, J: Integer;
+    Btn: Integer;
 begin
   Result := true;
 
@@ -767,20 +770,74 @@ begin
   end
   else // no extension visible
   begin
-    if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then
+    if (BtnDown) then
+    begin
       //if RightMbESC is set, send ESC keypress
-      Result:=ParseInput(SDLK_ESCAPE, 0, true);
+      if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
+        Result:=ParseInput(SDLK_ESCAPE, 0, true)
 
-    //song scrolling with mousewheel
-    if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then
-      ParseInput(SDLK_RIGHT, 0, true);
+     //song scrolling with mousewheel
+      else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+        ParseInput(SDLK_RIGHT, 0, true)
 
-    if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then
-      ParseInput(SDLK_LEFT, 0, true);
+      else if (MouseButton = SDL_BUTTON_WHEELUP) then
+        ParseInput(SDLK_LEFT, 0, true)
 
-    //LMB anywhere starts
-    if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
-      ParseInput(SDLK_RETURN, 0, true);
+      //LMB anywhere starts
+      else if (MouseButton = SDL_BUTTON_LEFT) then
+      begin
+        if (CatSongs.VisibleSongs > 4) then
+        begin
+          // select the second visible button left from selected
+          I := 0;
+          Btn := Interaction;
+          while (I < 2) do
+          begin
+            Dec(Btn);
+            if (Btn < 0) then
+              Btn := High(CatSongs.Song);
+
+            if (CatSongs.Song[Btn].Visible) then
+              Inc(I);
+          end;
+
+          // test the 5 front buttons for click
+          for I := 0 to 4 do
+          begin
+            if InRegion(X, Y, Button[Btn].GetMouseOverArea) then
+            begin
+              // song cover clicked
+              if (I = 2) then
+              begin // Selected Song clicked -> start singing
+                ParseInput(SDLK_RETURN, 0, true);
+              end
+              else
+              begin // one of the other 4 covers in the front clicked -> select it
+                J := I - 2;
+                while (J < 0) do
+                begin
+                  ParseInput(SDLK_LEFT, 0, true);
+                  Inc(J);
+                end;
+
+                while (J > 0) do
+                begin
+                  ParseInput(SDLK_RIGHT, 0, true);
+                  Dec(J);
+                end;
+              end;
+              Break;
+            end;
+
+            Btn := CatSongs.FindNextVisible(Btn);
+            if (Btn = -1) then
+              Break;
+          end;
+        end
+        else
+          ParseInput(SDLK_RETURN, 0, true);
+      end;
+    end;
   end;
 end;
 
