@@ -38,7 +38,8 @@ uses
   UTexture,
   gl,
   UMenuText,
-  SDL;
+  SDL,
+  UMenuInteract;
 
 type
   CButton = class of TButton;
@@ -116,6 +117,8 @@ type
       constructor Create(Textura: TTexture); overload;
       constructor Create(Textura, DSTexture: TTexture); overload;
       destructor  Destroy; override;
+
+      function GetMouseOverArea: TMouseOverRect;
   end;
 
 implementation
@@ -525,6 +528,49 @@ begin
     for T := 0 to High(Text) do
     begin
       Text[T].Draw;
+    end;
+  end;
+end;
+
+function TButton.GetMouseOverArea: TMouseOverRect;
+begin
+  if (FadeTex.TexNum = 0) then
+  begin
+    Result.X := Texture.X;
+    Result.Y := Texture.Y;
+    Result.W := Texture.W;
+    Result.H := Texture.H;
+  end
+  else
+  begin
+    case FadeTexPos of
+      0: begin // fade tex on top
+        Result.X := Texture.X;
+        Result.Y := FadeTex.Y;
+        Result.W := Texture.W;
+        Result.H := FadeTex.H + Texture.H;
+      end;
+
+      1: begin // fade tex on left side
+        Result.X := FadeTex.X;
+        Result.Y := Texture.Y;
+        Result.W := FadeTex.W + Texture.W;
+        Result.H := Texture.H;
+      end;
+
+      2: begin // fade tex on bottom
+        Result.X := Texture.X;
+        Result.Y := Texture.Y;
+        Result.W := Texture.W;
+        Result.H := FadeTex.H + Texture.H;
+      end;
+
+      3: begin // fade tex on right side
+        Result.X := Texture.X;
+        Result.Y := Texture.Y;
+        Result.W := FadeTex.W + Texture.W;
+        Result.H := Texture.H;
+      end;
     end;
   end;
 end;

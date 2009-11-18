@@ -147,7 +147,7 @@ type
       function Draw: boolean; virtual;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean; virtual;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; virtual;
-      function InRegion(X1, Y1, W, H, X, Y: real): boolean;
+      function InRegion(X, Y: real; A: TMouseOverRect): boolean;
       function InteractAt(X, Y: real): integer;
       function CollectionAt(X, Y: real): integer;
       procedure OnShow; virtual;
@@ -1629,6 +1629,7 @@ end;
 function TMenu.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 var
   nBut: integer;
+  Action: TMouseClickAction;
 begin
   //default mouse parsing: clicking generates return keypress,
   //  mousewheel selects in select slide
@@ -1647,30 +1648,45 @@ begin
     //select on mouse-over
     if nBut <> Interaction then
       SetInteraction(nBut);
-    if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
+
+    Action := maNone;
+
+    if (BtnDown) then
     begin
-      //click button
-      Result:=ParseInput(SDLK_RETURN, 0, true);
+      if (MouseButton = SDL_BUTTON_LEFT) then
+      begin
+        //click button or SelectS
+        if (Interactions[nBut].Typ = iSelectS) then
+          Action := SelectsS[Interactions[nBut].Num].OnClick((X / Screen.w) * RenderW, (Y / Screen.h) * RenderH)
+        else
+          Action := maReturn;
+      end
+      else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+      begin //forward on select slide with mousewheel
+        if (Interactions[nBut].Typ = iSelectS) then
+          Action := maRight;
+      end
+      else if (MouseButton = SDL_BUTTON_WHEELUP) then
+      begin //backward on select slide with mousewheel
+        if (Interactions[nBut].Typ = iSelectS) then
+          Action := maLeft;
+      end;
     end;
-    if (Interactions[nBut].Typ = iSelectS) then
-    begin
-      //forward/backward in select slide with mousewheel
-      if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then
-      begin
-        ParseInput(SDLK_RIGHT, 0, true);
-      end;
-      if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then
-      begin
-        ParseInput(SDLK_LEFT, 0, true);
-      end;
+
+    // do the action we have to do ;)
+    case Action of
+      maReturn: Result := ParseInput(SDLK_RETURN, 0, true);
+      maLeft:   Result := ParseInput(SDLK_LEFT, 0, true);
+      maRight:  Result := ParseInput(SDLK_RIGHT, 0, true);
     end;
   end
   else
   begin
     nBut := CollectionAt(X, Y);
-    if nBut >= 0 then
+    if (nBut >= 0) and (not ButtonCollection[nBut].Selected) then
     begin
-      // if over button collection, select first child but don't allow click
+      // if over button collection, that is not already selected
+      // -> select first child but don't allow click
       nBut := ButtonCollection[nBut].FirstChild - 1;
       if nBut <> Interaction then
         SetInteraction(nBut);
@@ -1678,15 +1694,14 @@ begin
   end;
 end;
 
-function TMenu.InRegion(X1, Y1, W, H, X, Y: real): boolean;
+function TMenu.InRegion(X, Y: real; A: TMouseOverRect): boolean;
 begin
-  Result := false;
-  X1 := X1 * Screen.w / 800;
-  W  := W  * Screen.w / 800;
-  Y1 := Y1 * Screen.h / 600;
-  H  := H  * Screen.h / 600;
-  if (X >= X1) and (X <= X1 + W) and (Y >= Y1) and (Y <= Y1 + H) then
-    Result := true;
+  // transfer mousecords to the 800x600 raster we use to draw
+  X := (X / Screen.w) * RenderW;
+  Y := (Y / Screen.h) * RenderH;
+
+  // check whether A contains X and Y
+  Result := (X >= A.X) and (X <= A.X + A.W) and (Y >= A.Y) and (Y <= A.Y + A.H);
 end;
 
 //takes x,y coordinates and returns the interaction number
@@ -1699,20 +1714,22 @@ begin
   for i := Low(Interactions) to High(Interactions) do
   begin
     case Interactions[i].Typ of
-      iButton: if InRegion(Button[Interactions[i].Num].X, Button[Interactions[i].Num].Y, Button[Interactions[i].Num].W, Button[Interactions[i].Num].H, X, Y) and
+      iButton:
+        if InRegion(X, Y, Button[Interactions[i].Num].GetMouseOverArea) and
            Button[Interactions[i].Num].Visible then
-	begin
-          Result:=i;
-          exit;
-        end;
-      iBCollectionChild: if InRegion(Button[Interactions[i].Num].X, Button[Interactions[i].Num].Y, Button[Interactions[i].Num].W, Button[Interactions[i].Num].H, X, Y) then
         begin
           Result:=i;
           exit;
         end;
-      iSelectS: if InRegion(SelectSs[Interactions[i].Num].X, SelectSs[Interactions[i].Num].Y, SelectSs[Interactions[i].Num].W, SelectSs[Interactions[i].Num].H, X, Y) or
-        InRegion(SelectSs[Interactions[i].Num].TextureSBG.X, SelectSs[Interactions[i].Num].TextureSBG.Y, SelectSs[Interactions[i].Num].TextureSBG.W, SelectSs[Interactions[i].Num].TextureSBG.H, X, Y) then
-	begin
+      iBCollectionChild:
+        if InRegion(X, Y, Button[Interactions[i].Num].GetMouseOverArea) then
+        begin
+          Result:=i;
+          exit;
+        end;
+      iSelectS:
+        if InRegion(X, Y, SelectSs[Interactions[i].Num].GetMouseOverArea)  then
+      	begin
           Result:=i;
           exit;
         end;
@@ -1728,7 +1745,7 @@ begin
   Result := -1;
   for i:= Low(ButtonCollection) to High(ButtonCollection) do
   begin
-    if InRegion(ButtonCollection[i].X, ButtonCollection[i].Y, ButtonCollection[i].W, ButtonCollection[i].H, X, Y) and
+    if InRegion(X, Y, ButtonCollection[i].GetMouseOverArea) and
         ButtonCollection[i].Visible then
     begin
       Result:=i;

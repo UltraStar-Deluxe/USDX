@@ -39,6 +39,15 @@ type
     Num: integer;  // number of this item in proper list like buttons, selects
   end;
 
+  { to handle the area where the mouse is over a control }
+  TMouseOverRect = record
+    X, Y: Real;
+    W, H: Real;
+  end;
+
+  { to handle the on click action }
+  TMouseClickAction = (maNone, maReturn, maLeft, maRight);
+
 implementation
 
 end.

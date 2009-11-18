@@ -755,20 +755,33 @@ function TScreenSong.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: in
 begin
   Result := true;
 
-  if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then
-    //if RightMbESC is set, send ESC keypress
-    Result:=ParseInput(SDLK_ESCAPE, 0, true);
+  if (ScreenSongMenu.Visible) then
+  begin
+    Result := ScreenSongMenu.ParseMouse(MouseButton, BtnDown, X, Y);
+    exit;
+  end
+  else if (ScreenSongJumpTo.Visible) then
+  begin
+    Result := ScreenSongJumpTo.ParseMouse(MouseButton, BtnDown, X, Y);
+    exit;
+  end
+  else // no extension visible
+  begin
+    if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then
+      //if RightMbESC is set, send ESC keypress
+      Result:=ParseInput(SDLK_ESCAPE, 0, true);
 
-  //song scrolling with mousewheel
-  if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then
-    ParseInput(SDLK_RIGHT, 0, true);
+    //song scrolling with mousewheel
+    if (MouseButton = SDL_BUTTON_WHEELDOWN) and BtnDown then
+      ParseInput(SDLK_RIGHT, 0, true);
 
-  if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then
-    ParseInput(SDLK_LEFT, 0, true);
+    if (MouseButton = SDL_BUTTON_WHEELUP) and BtnDown then
+      ParseInput(SDLK_LEFT, 0, true);
 
-  //LMB anywhere starts
-  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
-    ParseInput(SDLK_RETURN, 0, true);
+    //LMB anywhere starts
+    if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
+      ParseInput(SDLK_RETURN, 0, true);
+  end;
 end;
 
 constructor TScreenSong.Create;

@@ -37,7 +37,8 @@ uses
   gl,
   TextGL,
   UMenuText,
-  UTexture;
+  UTexture,
+  UMenuInteract;
 
 type
   PSelectSlide = ^TSelectSlide;
@@ -135,6 +136,9 @@ type
 
       //Automatically Generate Lines (Texts)
       procedure genLines;
+
+      function GetMouseOverArea: TMouseOverRect;
+      function OnClick(X, Y: Real): TMouseClickAction;
   end;
 
 implementation
@@ -402,6 +406,33 @@ begin
       TextOpt[I].Align := 1; //center text
       TextOpt[I].X := TextureSBG.X + (TextureSBG.W / 2);
     end;
+  end;
+end;
+
+function TSelectSlide.GetMouseOverArea: TMouseOverRect;
+begin
+  Result.X := Texture.X;
+  Result.Y := Texture.Y;
+  Result.W := (TextureSBG.X + TextureSBG.W) - Result.X;
+  Result.H := Max(Texture.H, TextureSBG.H);
+end;
+
+function TSelectSlide.OnClick(X, Y: Real): TMouseClickAction;
+  var
+    AreaW: Real;
+begin
+  // default: press return on click 
+  Result := maReturn;
+
+  // use left sides to inc or dec selection by click
+  AreaW := TextureSbg.W / 20;
+
+  if (Y >= TextureSBG.Y) and (Y <= TextureSBG.Y + TextureSBG.H) then
+  begin
+    if (X >= TextureSBG.X) and (X <= TextureSBG.X + AreaW) then
+      Result := maLeft   // hit left area
+    else if (X >= TextureSBG.X + TextureSBG.W - AreaW) and (X <= TextureSBG.X + TextureSBG.W) then
+      Result := maRight; // hit right area
   end;
 end;
 
