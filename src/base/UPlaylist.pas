@@ -343,6 +343,9 @@ begin
   end;
   Playlists[Result].Name := Name;
 
+  // clear playlist items
+  SetLength(Playlists[Result].Items, 0);
+
   I := 1;
   PlaylistFile := PlaylistPath.Append(Name + '.upl');
   while (PlaylistFile.Exists) do
