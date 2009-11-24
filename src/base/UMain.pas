@@ -390,9 +390,6 @@ var
   mouseDown: boolean;
   mouseBtn:  integer;
 begin
-  if Assigned(Display.NextScreen) then
-    Exit;
-
   while (SDL_PollEvent(@Event) <> 0) do
   begin
     case Event.type_ of
@@ -417,31 +414,39 @@ begin
             begin
               mouseDown := true;
               mouseBtn  := Event.button.button;
+              
+              if (mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT) then
+                Display.OnMouseButton(true);
             end;
             SDL_MOUSEBUTTONUP:
             begin
               mouseDown := false;
               mouseBtn  := Event.button.button;
+
+              if (mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT) then
+                Display.OnMouseButton(false);
             end;
           end;
 
           Display.MoveCursor(Event.button.X * 800 / Screen.w,
-                             Event.button.Y * 600 / Screen.h,
-                             mouseDown and ((mouseBtn <> SDL_BUTTON_WHEELDOWN) or (mouseBtn <> SDL_BUTTON_WHEELUP)));
+                             Event.button.Y * 600 / Screen.h);
 
-          if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-            done := not ScreenPopupError.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
-          else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-            done := not ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
-          else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-            done := not ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
-          else
-          begin
-            done := not Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
+          if not Assigned(Display.NextScreen) then
+          begin //drop input when changing screens
+            if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
+              done := not ScreenPopupError.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
+              done := not ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
+              done := not ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else
+            begin
+              done := not Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
 
-            // if screen wants to exit
-            if done then
-              DoQuit;
+              // if screen wants to exit
+              if done then
+                DoQuit;
+            end;
           end;
         end;
       end;
@@ -476,50 +481,53 @@ begin
           if (Event.key.keysym.sym = SDLK_KP_ENTER) then
             Event.key.keysym.sym := SDLK_RETURN;
 
-          if (Event.key.keysym.sym = SDLK_F11) or
-             ((Event.key.keysym.sym = SDLK_RETURN) and
-              ((Event.key.keysym.modifier and KMOD_ALT) <> 0)) then // toggle full screen
-          begin
-            Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
-
-            // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
-            // reload all texture data (-> whitescreen bug).
-            // Only Linux and FreeBSD are able to handle screen-switching this way.
-            {$IF Defined(Linux) or Defined(FreeBSD)}
-            if boolean( Ini.FullScreen ) then
+          if not Assigned(Display.NextScreen) then
+          begin //drop input when changing screens
+            if (Event.key.keysym.sym = SDLK_F11) or
+               ((Event.key.keysym.sym = SDLK_RETURN) and
+               ((Event.key.keysym.modifier and KMOD_ALT) <> 0)) then // toggle full screen
             begin
-              SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+              Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
+
+              // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
+              // reload all texture data (-> whitescreen bug).
+              // Only Linux and FreeBSD are able to handle screen-switching this way.
+              {$IF Defined(Linux) or Defined(FreeBSD)}
+              if boolean( Ini.FullScreen ) then
+              begin
+                SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+              end
+              else
+              begin
+                SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+              end;
+
+              Display.SetCursor;
+
+              glViewPort(0, 0, ScreenW, ScreenH);
+              {$IFEND}
             end
+            // if print is pressed -> make screenshot and save to screenshot path
+            else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
+              Display.SaveScreenShot
+            // if there is a visible popup then let it handle input instead of underlying screen
+            // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
+            else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
+              Done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+            else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
+              Done := not ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+            else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
+              Done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else
             begin
-              SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+              // check if screen wants to exit
+              Done := not Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
+
+              // if screen wants to exit
+              if Done then
+                DoQuit;
+
             end;
-
-            Display.SetCursor;
-
-            glViewPort(0, 0, ScreenW, ScreenH);
-            {$IFEND}
-          end
-          // if print is pressed -> make screenshot and save to screenshot path
-          else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
-            Display.SaveScreenShot
-          // if there is a visible popup then let it handle input instead of underlying screen
-          // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
-          else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-            Done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
-          else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-            Done := not ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
-          else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-            Done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
-          else
-          begin
-            // check if screen wants to exit
-            Done := not Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
-
-            // if screen wants to exit
-            if Done then
-              DoQuit;
-
           end;
         end;
       SDL_JOYAXISMOTION:
