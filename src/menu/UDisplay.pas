@@ -73,6 +73,9 @@ type
       Cursor_Fade:         boolean;
 
       procedure DrawDebugInformation;
+
+      { called by MoveCursor and OnMouseButton to update last move and start fade in }
+      procedure UpdateCursorFade;
     public
       NextScreen:          PMenu;
       CurrentScreen:       PMenu;
@@ -98,9 +101,12 @@ type
       procedure SetCursor;
 
       { called when cursor moves, positioning of software cursor }
-      procedure MoveCursor(X, Y: double; Pressed: boolean);
+      procedure MoveCursor(X, Y: double);
 
-      
+      { called when left or right mousebutton is pressed or released }
+      procedure OnMouseButton(Pressed: boolean);
+
+
       { draws software cursor }
       procedure DrawCursor;
   end;
@@ -399,35 +405,51 @@ begin
   end;
 end;
 
-{ called when cursor moves, positioning of software cursor }
-procedure TDisplay.MoveCursor(X, Y: double; Pressed: boolean);
+{ called by MoveCursor and OnMouseButton to update last move and start fade in }
+procedure TDisplay.UpdateCursorFade;
 var
   Ticks: cardinal;
 begin
-  if (Ini.Mouse = 2) and 
-     ((X <> Cursor_X) or (Y <> Cursor_Y) or (Pressed <> Cursor_Pressed)) then
+  Ticks := SDL_GetTicks;
+
+  { fade in on movement (or button press) if not first movement }
+  if (not Cursor_Visible) and (Cursor_LastMove <> 0) then
+  begin
+    if Cursor_Fade then // we use a trick here to consider progress of fade out
+      Cursor_LastMove := Ticks - round(Cursor_FadeIn_Time * (1 - (Ticks - Cursor_LastMove)/Cursor_FadeOut_Time))
+    else
+      Cursor_LastMove := Ticks;
+
+    Cursor_Visible := true;
+    Cursor_Fade := true;
+  end
+  else if not Cursor_Fade then
+  begin
+    Cursor_LastMove := Ticks;
+  end;
+end;
+
+{ called when cursor moves, positioning of software cursor }
+procedure TDisplay.MoveCursor(X, Y: double);
+begin
+  if (Ini.Mouse = 2) and
+     ((X <> Cursor_X) or (Y <> Cursor_Y)) then
   begin
     Cursor_X := X;
     Cursor_Y := Y;
+
+    UpdateCursorFade;
+  end;
+end;
+
+{ called when left or right mousebutton is pressed or released }
+procedure TDisplay.OnMouseButton(Pressed: boolean);
+begin
+  if (Ini.Mouse = 2) then
+  begin
     Cursor_Pressed := Pressed;
 
-    Ticks := SDL_GetTicks;
-
-    { fade in on movement (or button press) if not first movement }
-    if (not Cursor_Visible) and (Cursor_LastMove <> 0) then
-    begin
-      if Cursor_Fade then // we use a trick here to consider progress of fade out
-        Cursor_LastMove := Ticks - round(Cursor_FadeIn_Time * (1 - (Ticks - Cursor_LastMove)/Cursor_FadeOut_Time))
-      else
-        Cursor_LastMove := Ticks;
-
-      Cursor_Visible := true;
-      Cursor_Fade := true;
-    end
-    else if not Cursor_Fade then
-    begin
-      Cursor_LastMove := Ticks;
-    end;
+    UpdateCursorFade;
   end;
 end;
 
