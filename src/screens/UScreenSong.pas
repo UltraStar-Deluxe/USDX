@@ -908,9 +908,6 @@ begin
   Equalizer := Tms_Equalizer.Create(AudioPlayback, Theme.Song.Equalizer);
 
   PreviewOpened := -1;
-
-  if (Length(CatSongs.Song) > 0) then
-    Interaction := 0;
 end;
 
 procedure TScreenSong.GenerateThumbnails();
@@ -973,10 +970,17 @@ begin
       CoverTexture := Cover.GetPreviewTexture();
       Texture.AddTexture(CoverTexture, TEXTURE_TYPE_PLAIN, true);
       CoverButton.Texture := CoverTexture;
+
+      // set selected to false -> the right texture will be displayed
+      CoverButton.Selected := False;
     end;
 
     Cover.Free;
   end;
+
+  // reset selection
+  if (Length(CatSongs.Song) > 0) then
+    Interaction := 0;
 end;
 
 procedure TScreenSong.SetScroll;
