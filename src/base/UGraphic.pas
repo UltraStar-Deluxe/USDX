@@ -153,9 +153,9 @@ var
   ScreenPopupInfo:  TScreenPopupInfo;
 
   //Notes
-  Tex_Left:        array[0..6] of TTexture;   //rename to tex_note_left
-  Tex_Mid:         array[0..6] of TTexture;   //rename to tex_note_mid
-  Tex_Right:       array[0..6] of TTexture;   //rename to tex_note_right
+  Tex_Left:        array[1..6] of TTexture;   //rename to tex_note_left
+  Tex_Mid:         array[1..6] of TTexture;   //rename to tex_note_mid
+  Tex_Right:       array[1..6] of TTexture;   //rename to tex_note_right
 
   Tex_plain_Left:  array[1..6] of TTexture;   //rename to tex_notebg_left
   Tex_plain_Mid:   array[1..6] of TTexture;   //rename to tex_notebg_mid
@@ -298,15 +298,6 @@ var
   Col:     integer;
 begin
   Log.LogStatus('Loading Textures', 'LoadTextures');
-
-  // FIXME: do we need this? (REMOVE otherwise)
-  Tex_Left[0]  := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_TRANSPARENT, 0);
-  // FIXME: do we need this? (REMOVE otherwise)
-  Tex_Mid[0]   := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_PLAIN, 0);
-  // FIXME: do we need this? (REMOVE otherwise)
-  Tex_Right[0] := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_TRANSPARENT, 0);
-
-  Log.LogStatus('Loading Textures - A', 'LoadTextures');
 
   // P1-6
   // TODO... do it once for each player... this is a bit crappy !!

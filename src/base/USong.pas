@@ -1206,6 +1206,8 @@ begin
     if Note[HighNote].Tone < BaseNote then
       BaseNote := Note[HighNote].Tone;
 
+    Note[HighNote].Color := 1; // default color to 1 for editor
+
     DecodeStringUTF8(LyricS, Note[HighNote].Text, Encoding);
     Lyric := Lyric + Note[HighNote].Text;
 

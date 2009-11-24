@@ -503,11 +503,11 @@ begin
           // right
           if SDL_ModState = 0 then
           begin
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Inc(CurrentNote);
             if CurrentNote > Lines[0].Line[Lines[0].Current].HighNote then
               CurrentNote := 0;
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
             Lyric.Selected := CurrentNote;
           end;
 
@@ -558,11 +558,11 @@ begin
           // left
           if SDL_ModState = 0 then
           begin
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Dec(CurrentNote);
             if CurrentNote = -1 then
               CurrentNote := Lines[0].Line[Lines[0].Current].HighNote;
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
             Lyric.Selected := CurrentNote;
           end;
 
@@ -623,12 +623,12 @@ begin
             PlaySentenceMidi := false;
             {$ENDIF}
 
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Inc(Lines[0].Current);
             CurrentNote := 0;
             if Lines[0].Current > Lines[0].High then
               Lines[0].Current := 0;
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
 
             Lyric.AddLine(Lines[0].Current);
             Lyric.Selected := 0;
@@ -655,12 +655,12 @@ begin
             PlaySentenceMidi := false;
             {$endif}
 
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Dec(Lines[0].Current);
             CurrentNote := 0;
             if Lines[0].Current = -1 then
               Lines[0].Current := Lines[0].High;
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
 
             Lyric.AddLine(Lines[0].Current);
             Lyric.Selected := 0;
@@ -722,11 +722,11 @@ begin
           // right
           if SDL_ModState = 0 then
           begin
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Inc(CurrentNote);
             if CurrentNote > Lines[0].Line[Lines[0].Current].HighNote then
               CurrentNote := 0;
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
             Lyric.Selected := CurrentNote;
           end;
         end;
@@ -735,11 +735,11 @@ begin
           // left
           if SDL_ModState = 0 then
           begin
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Dec(CurrentNote);
             if CurrentNote = -1 then
               CurrentNote := Lines[0].Line[Lines[0].Current].HighNote;
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
             Lyric.Selected := CurrentNote;
           end;
       end;
@@ -960,7 +960,7 @@ begin
 
   Lines[0].Current := Lines[0].Current + 1;
   CurrentNote := 0;
-  Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+  Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
   Lyric.AddLine(Lines[0].Current);
 end;
 
@@ -1023,7 +1023,7 @@ begin
     Inc(Note[CurrentNote+1].Start);
     Dec(Note[CurrentNote+1].Length);
     Note[CurrentNote+1].Text := '- ';
-    Note[CurrentNote+1].Color := 0;
+    Note[CurrentNote+1].Color := 1;
   end;
 end;
 
@@ -1053,7 +1053,7 @@ begin
       if CurrentNote > Lines[0].Line[C].HighNote then
         Dec(CurrentNote);
       
-      Lines[0].Line[C].Note[CurrentNote].Color := 1;
+      Lines[0].Line[C].Note[CurrentNote].Color := 2;
     end
     //Last Note of current Sentence Deleted - > Delete Sentence
     else
@@ -1073,7 +1073,7 @@ begin
       else
         Lines[0].Current := 0;
 
-      Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+      Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
     end;
   end;
 end;
@@ -1327,7 +1327,7 @@ begin
 
     Lines[0].Current := 0;
     CurrentNote := 0;
-    Lines[0].Line[0].Note[0].Color := 1;
+    Lines[0].Line[0].Note[0].Color := 2;
     AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(0.4);
