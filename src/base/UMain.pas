@@ -483,8 +483,13 @@ begin
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
-            if (Event.key.keysym.sym = SDLK_F11) or
-               ((Event.key.keysym.sym = SDLK_RETURN) and
+            { to-do : F11 was used for fullscreen toggle, too here
+                      but we also use the key in screenname and some other
+                      screens. It is droped although fullscreen toggle doesn't
+                      even work on windows.
+                      should we add (Event.key.keysym.sym = SDLK_F11) here
+                      anyway? }
+            if ((Event.key.keysym.sym = SDLK_RETURN) and
                ((Event.key.keysym.modifier and KMOD_ALT) <> 0)) then // toggle full screen
             begin
               Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
