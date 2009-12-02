@@ -4396,18 +4396,15 @@ type
 
 implementation
 
-{$IF (LIBAVCODEC_VERSION >= 52025000) and (LIBAVCODEC_VERSION <= 5202700)} // 52.25.0
+{$IF (LIBAVCODEC_VERSION >= 52025000) and (LIBAVCODEC_VERSION <= 52027000)} // 52.25.0 - 52.27.0
 procedure av_free_packet(pkt: PAVPacket);{$IFDEF HASINLINE} inline; {$ENDIF} 
 begin
-  if (pkt <> nil) then
+  if assigned(pkt) then
   begin
-    if (pkt.destruct <> nil) then
-      pkt.destruct(pkt)
-    else
-    begin
-      pkt.data = NULL;
-      pkt.size = 0;
-    end;
+    if assigned(pkt^.destruct) then
+      pkt^.destruct(pkt);
+    pkt^.data := NIL;
+    pkt^.size := 0;
   end;
 end;
 {$IFEND}
