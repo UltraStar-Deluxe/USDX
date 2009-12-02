@@ -3005,7 +3005,7 @@ procedure av_destruct_packet(pkt: PAVPacket);
  *
  * @param pkt packet
  *)
-procedure av_init_packet(pkt: PAVPacket);
+procedure av_init_packet(var pkt: TAVPacket);
   cdecl; external av__codec;
 
 (*
