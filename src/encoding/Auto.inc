@@ -75,27 +75,28 @@ begin
   self.UTF8Encoder := UTF8Encoder;
 
   // Load and initialize PCRE Library
-  LoadPCRE();
-  SetPCREMallocCallback(PCREGetMem);
-  SetPCREFreeCallback(PCREFreeMem);
-
-  // compile regex
-  self.Regex := pcre_compile('\A([\x09\x0A\x0D\x20-\x7E]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})*\z', 0, @Error, @ErrorOffset, nil);
-
-  if self.Regex = Nil then
+  if LoadPCRE() then
   begin
-    writeln('ERROR:  UTF8 Regex compilation failed: ', AnsiString(Error), ' at ', ErrorOffset);
+    // compile regex
+    self.Regex := pcre_compile('\A([\x09\x0A\x0D\x20-\x7E]|[\xC2-\xDF][\x80-\xBF]|\xE0[\xA0-\xBF][\x80-\xBF]|[\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}|\xED[\x80-\x9F][\x80-\xBF]|\xF0[\x90-\xBF][\x80-\xBF]{2}|[\xF1-\xF3][\x80-\xBF]{3}|\xF4[\x80-\x8F][\x80-\xBF]{2})*\z', 0, @Error, @ErrorOffset, nil);
+
+    if self.Regex = Nil then
+    begin
+      writeln('ERROR:  UTF8 Regex compilation failed: ', AnsiString(Error), ' at ', ErrorOffset);
+    end
+    else
+    begin
+      // if compiled successfull, try to get more informations the speed up the matching
+      self.RegexExtra := pcre_study(self.Regex, 0, @Error);
+
+      if Error <> Nil then
+      begin
+        writeln('ERROR:  UTF8 Regex study failed: ', AnsiString(Error));
+      end;
+    end;
   end
   else
-  begin
-    // if compiled successfull, try to get more informations the speed up the matching
-    self.RegexExtra := pcre_study(self.Regex, 0, @Error);
-
-    if Error <> Nil then
-    begin
-      writeln('ERROR:  UTF8 Regex study failed: ', AnsiString(Error));
-    end;
-  end;
+    writeln('ERROR:  pcre not loaded. utf-8 autodetection will not work.');
 end;
 
 function TEncoderAuto.GetName(): AnsiString;
