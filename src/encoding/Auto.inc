@@ -82,7 +82,9 @@ begin
 
     if self.Regex = Nil then
     begin
+      {$IFDEF CONSOLE}
       writeln('ERROR:  UTF8 Regex compilation failed: ', AnsiString(Error), ' at ', ErrorOffset);
+      {$ENDIF}
     end
     else
     begin
@@ -91,12 +93,18 @@ begin
 
       if Error <> Nil then
       begin
+        {$IFDEF CONSOLE}
         writeln('ERROR:  UTF8 Regex study failed: ', AnsiString(Error));
+        {$ENDIF}
       end;
     end;
   end
   else
+  begin
+    {$IFDEF CONSOLE}
     writeln('ERROR:  pcre not loaded. utf-8 autodetection will not work.');
+    {$ENDIF}
+  end;
 end;
 
 function TEncoderAuto.GetName(): AnsiString;
