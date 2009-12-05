@@ -166,20 +166,6 @@ PKG_HAVE([freetype], [freetype2], yes)
 # find sqlite3
 PKG_HAVE([sqlite3], [sqlite3], yes)
 
-# find pcre
-AC_ARG_WITH(pcre,
-        [  --with-pcre=<path>      prefix of pcre installation (eg /usr/local)],
-        [
-                CPPFLAGS="$CPPFLAGS -I $withval/include"
-                LDFLAGS="$LDFLAGS -L $withval/lib"
-        ]
-)
-
-AC_CHECK_HEADERS(pcre.h,
-	AC_SEARCH_LIBS([pcre_compile], [pcre]) ,
-	AC_MSG_WARN([*** pcre.h not found -- consider using --with-pcre])
-)
-
 # find FFMpeg
 # Note: do not use the min/max version parameters with ffmpeg
 # otherwise it might fail in ubuntu due to a wrong version number 
