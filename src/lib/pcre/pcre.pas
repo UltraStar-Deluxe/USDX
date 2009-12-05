@@ -261,6 +261,17 @@ const
   {$EXTERNALSYM PCRE_EXTRA_MATCH_LIMIT_RECURSION}
 
 type
+  {$IFNDEF FPC}
+  {$IFDEF CPU32}
+  SizeInt = Integer;
+  {$ENDIF CPU32}
+  {$IFDEF CPU64}
+  SizeInt = Int64;
+  {$ENDIF CPU64}
+  PPAnsiChar = ^PAnsiChar;
+  {$ENDIF ~FPC}
+  PPPAnsiChar = ^PPAnsiChar;
+
   real_pcre = packed record
     {magic_number: Longword;
     size: Integer;
@@ -368,16 +379,6 @@ function CallPCRECallout(var callout_block: pcre_callout_block): Integer;
 
 type
   TPCRELibNotLoadedHandler = procedure; cdecl;
-  {$IFNDEF FPC}
-  {$IFDEF CPU32}
-  SizeInt = Integer;
-  {$ENDIF CPU32}
-  {$IFDEF CPU64}
-  SizeInt = Int64;
-  {$ENDIF CPU64}
-  PPAnsiChar = ^PAnsiChar;
-  {$ENDIF ~FPC}
-  PPPAnsiChar = ^PPAnsiChar;
 
 var
   // Value to initialize function pointers below with, in case LoadPCRE fails
