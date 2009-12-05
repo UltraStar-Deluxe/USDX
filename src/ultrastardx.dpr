@@ -132,6 +132,8 @@ uses
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3       in 'lib\SQLite\SQLite3.pas',
 
+  pcre          in 'lib\pcre\pcre.pas',
+
   {$IFDEF MSWINDOWS}
   // TntUnicodeControls
   TntSystem         in 'lib\TntUnicodeControls\TntSystem.pas',

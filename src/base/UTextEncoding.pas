@@ -42,7 +42,9 @@ type
     encLocale,  // current locale (needs cwstring on linux)
     encUTF8,    // UTF-8
     encCP1250,  // Windows-1250 Central/Eastern Europe (used by Ultrastar)
-    encCP1252   // Windows-1252 Western Europe (used by UltraStar Deluxe < 1.1)
+    encCP1252,  // Windows-1252 Western Europe (used by UltraStar Deluxe < 1.1)
+    encAuto     // try to match the w3c regex and decode as unicode on match
+                // and as fallback if not match
   );
 
 const
@@ -88,7 +90,9 @@ function EncodingName(Encoding: TEncoding): AnsiString;
 implementation
 
 uses
-  StrUtils;
+  StrUtils,
+  pcre,
+  ULog;
 
 type
   IEncoder = interface
@@ -229,11 +233,15 @@ end;
 {$I ../encoding/UTF8.inc}
 {$I ../encoding/CP1250.inc}
 {$I ../encoding/CP1252.inc}
+{$I ../encoding/Auto.inc}
 
 initialization
   Encoders[encLocale] := TEncoderLocale.Create;
   Encoders[encUTF8]   := TEncoderUTF8.Create;
   Encoders[encCP1250] := TEncoderCP1250.Create;
   Encoders[encCP1252] := TEncoderCP1252.Create;
+
+  // use USDX < 1.1 encoding for backward compatibility (encCP1252)
+  Encoders[encAuto] := TEncoderAuto.Create(Encoders[encUTF8], Encoders[encCP1252]);
 
 end.

@@ -114,7 +114,7 @@ type
     Mp3:        IPath;
     Background: IPath;
     Video:      IPath;
-    
+
     // sorting methods
     Genre:      UTF8String;
     Edition:    UTF8String;
@@ -127,7 +127,7 @@ type
     Creator:    UTF8String;
 
     CoverTex:   TTexture;
-    
+
     VideoGAP:   real;
     NotesGAP:   integer;
     Start:      real; // in seconds
@@ -180,8 +180,7 @@ uses
   UNote;   //needed for Player
 
 const
-  // use USDX < 1.1 encoding for backward compatibility
-  DEFAULT_ENCODING = encCP1252;
+  DEFAULT_ENCODING = encAuto;
 
 constructor TSong.Create();
 begin
@@ -381,7 +380,7 @@ begin
     LinePos := OldLinePos;
     raise EUSDXParseException.Create('Character expected');
   end;
-  Result := Str[1];  
+  Result := Str[1];
 end;
 
 {**
@@ -926,7 +925,7 @@ begin
     end
     else
     begin
-    
+
       //-----------
       //Required Attributes
       //-----------
@@ -1083,7 +1082,7 @@ begin
       begin
         AddCustomTag(Identifier, Value);
       end;
-      
+
     end; // End check for non-empty Value
 
     // read next line
@@ -1265,7 +1264,7 @@ begin
   //Sortings:
   Genre    := 'Unknown';
   Edition  := 'Unknown';
-  Language := 'Unknown'; 
+  Language := 'Unknown';
   Year := 0;
 
   // set to default encoding
