@@ -368,7 +368,15 @@ function CallPCRECallout(var callout_block: pcre_callout_block): Integer;
 
 type
   TPCRELibNotLoadedHandler = procedure; cdecl;
-
+  {$IFNDEF FPC}
+  {$IFDEF CPU32}
+  SizeInt = Integer;
+  {$ENDIF CPU32}
+  {$IFDEF CPU64}
+  SizeInt = Int64;
+  {$ENDIF CPU64}
+  PPAnsiChar = ^PAnsiChar;
+  {$ENDIF ~FPC}
   PPPAnsiChar = ^PPAnsiChar;
 
 var
