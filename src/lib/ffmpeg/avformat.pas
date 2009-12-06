@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.37.0, Sun Dec 6 19:57:00 2009 CET 
+ * Max. version: 52.38.0, Sun Dec 6 20:05:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 37;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 38;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -295,8 +295,8 @@ type
   (** This structure contains the data a format has to probe a file. *)
   TAVProbeData = record
     filename: PAnsiChar;
-    buf: PByteArray;
-    buf_size: cint;
+    buf: PByteArray;  (**< Buffer must have AVPROBE_PADDING_SIZE of extra allocated bytes filled with zero. *)
+    buf_size: cint;   (**< Size of buf except extra allocated bytes *)
   end;
 
 const
@@ -728,12 +728,19 @@ type
      *)
     reference_dts: cint64;
     {$IFEND}
-    {$IF LIBAVFORMAT_VERSION >= 52034000} // > 52.34.0
+    {$IF LIBAVFORMAT_VERSION >= 52034000} // >= 52.34.0
     (**
      * Number of packets to buffer for codec probing
      * NOT PART OF PUBLIC API
      *)
     probe_packets: cint;
+    {$IFEND}
+    {$IF LIBAVFORMAT_VERSION >= 52038000} // >= 52.38.0
+    (**
+     * last packet in packet_buffer for this stream when muxing.
+     * used internally, NOT PART OF PUBLIC API, dont read or write from outside of libav*
+     *)
+    last_in_packet_buffer: PAVPacketList;
     {$IFEND}
   end;
 
