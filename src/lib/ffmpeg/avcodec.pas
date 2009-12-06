@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.31.2, Sar Jun 13 22:05:00 2009 UTC 
+ * Max. version: 52.32.0, Sun Dec 6 17:08:00 2009 CET 
  * MiSchi
 }
 
@@ -65,8 +65,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 31;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 2;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 32;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -1563,7 +1563,7 @@ type
      * - encoding: Set by user.
      * - decoding: Set by libavcodec.
      *)
-    sample_fmt: TSampleFormat;  ///< sample format, currenly unused
+    sample_fmt: TSampleFormat;  ///< sample format
 
     (* The following data should not be initialized. *)
     (**
@@ -2983,6 +2983,9 @@ type
     {$ELSE}
     rects: PPAVSubtitleRect;
     {$IFEND}
+    {$IF LIBAVCODEC_VERSION >= 52032000} // >= 52.32.0
+    pts: cint64;     ///< Same as packet pts, in AV_TIME_BASE
+    {$IFEND}
   end;
 
 {$IF LIBAVCODEC_VERSION >= 52025000} // 52.25.0
@@ -3595,7 +3598,7 @@ function avcodec_decode_audio(avctx: PAVCodecContext; samples: PSmallint;
  *
  * @deprecated Use avcodec_decode_audio3 instead.
  * @param avctx the codec context
- * @param[out] samples the output buffer
+ * @param[out] samples the output buffer, sample type in avctx->sample_fmt
  * @param[in,out] frame_size_ptr the output buffer size in bytes
  * @param[in] buf the input buffer
  * @param[in] buf_size the input buffer size in bytes
@@ -4347,6 +4350,34 @@ const
   // Note: function calls as constant-initializers are invalid
   //AVERROR_PATCHWELCOME = -MKTAG('P','A','W','E'); {**< Not yet implemented in FFmpeg. Patches welcome. *}
   AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
+
+{$IF LIBAVCODEC_VERSION >= 52032000} // >= 52.32.0
+(**
+ * Logs a generic warning message about a missing feature. This function is
+ * intended to be used internally by FFmpeg (libavcodec, libavformat, etc.)
+ * only, and would normally not be used by applications.
+ * @param[in] avc a pointer to an arbitrary struct of which the first field is
+ * a pointer to an AVClass struct
+ * @param[in] feature string containing the name of the missing feature
+ * @param[in] want_sample indicates if samples are wanted which exhibit this feature.
+ * If want_sample is non-zero, additional verbage will be added to the log
+ * message which tells the user how to report samples to the development
+ * mailing list.
+ *)
+procedure av_log_missing_feature(avc: Pointer; feature: {const} Pchar; want_sample: cint);
+  cdecl; external av__codec;
+
+(**
+ * Logs a generic warning message asking for a sample. This function is
+ * intended to be used internally by FFmpeg (libavcodec, libavformat, etc.)
+ * only, and would normally not be used by applications.
+ * @param[in] avc a pointer to an arbitrary struct of which the first field is
+ * a pointer to an AVClass struct
+ * @param[in] msg string containing an optional message, or NULL if no message
+ *)
+procedure av_log_ask_for_sample(avc: Pointer; msg: {const} Pchar);
+  cdecl; external av__codec;
+{$IFEND}
 
 {$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
 (**
