@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.32.0, Sun Dec 6 17:08:00 2009 CET 
+ * Max. version: 52.33.0, Sun Dec 6 17:11:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 32;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 33;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -398,6 +398,9 @@ type
     CODEC_ID_XSUB,
     CODEC_ID_SSA,
     CODEC_ID_MOV_TEXT,
+{$IF LIBAVCODEC_VERSION >= 52033000} // >= 52.33.0
+    CODEC_ID_HDMV_PGS_SUBTITLE,
+{$IFEND}
 
     (* other specific kind of codecs (generally used for attachments) *)
     CODEC_ID_TTF= $18000,
