@@ -317,7 +317,7 @@ begin
 
   //Fix SongSelection
   ScreenSong.Interaction := 0;
-  ScreenSong.SelectNext;
+  ScreenSong.SelectNext(true);
   ScreenSong.FixSelected;
 
   //Play correct Music
