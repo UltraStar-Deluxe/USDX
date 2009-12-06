@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.36.0, Sun Dec 6 19:33:00 2009 CET 
+ * Max. version: 52.37.0, Sun Dec 6 19:57:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 36;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 37;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -1371,7 +1371,7 @@ function ff_new_chapter(s: PAVFormatContext; id: cint; time_base: TAVRational;
 procedure av_set_pts_info(s: PAVStream; pts_wrap_bits: cint;
 {$IF LIBAVFORMAT_VERSION < 52036000} // < 52.36.0
                    pts_num: cint; pts_den: cint);
-{$IFEND}
+{$ELSE}
                    pts_num: cuint; pts_den: cuint);
 {$IFEND}
   cdecl; external av__format;
@@ -1380,6 +1380,9 @@ const
   AVSEEK_FLAG_BACKWARD = 1; ///< seek backward
   AVSEEK_FLAG_BYTE     = 2; ///< seeking based on position in bytes
   AVSEEK_FLAG_ANY      = 4; ///< seek to any frame, even non-keyframes
+{$IF LIBAVFORMAT_VERSION >= 52037000} // >= 52.37.0
+  AVSEEK_FLAG_FRAME    = 8;
+{$IFEND}
 
 function av_find_default_stream_index(s: PAVFormatContext): cint;
   cdecl; external av__format;
