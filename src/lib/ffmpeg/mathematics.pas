@@ -31,6 +31,11 @@
  * update, MiSchi, no code change
  * Fri Jun 12 2009 21:50:00 UTC
  *)
+{
+ * update to
+ * avutil max. version 50.05.1, Sun, Dec 6 24:00:00 2009 UTC 
+ * MiSchi
+}
 
 unit mathematics;
 
@@ -55,6 +60,10 @@ const
   M_LN10       = 2.30258509299404568402;  // log_e 10
   M_PI         = 3.14159265358979323846;  // pi
   M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
+{$IF LIBAVUTIL_VERSION >= 50005001} // >= 50.5.1
+  NAN          = 0.0/0.0;     
+  INFINITY     = 1.0/0.0;     
+{$IFEND}
 
 type
   TAVRounding = (
