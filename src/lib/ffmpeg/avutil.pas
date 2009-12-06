@@ -70,7 +70,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 50;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 3;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 4;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -98,6 +98,20 @@ const
  * Returns the LIBAVUTIL_VERSION_INT constant.
  *)
 function avutil_version(): cuint;
+  cdecl; external av__format;
+{$IFEND}
+
+{$IF LIBAVUTIL_VERSION >= 50004000} // >= 50.4.0
+(**
+ * Returns the libavutil build-time configuration.
+ *)
+function avutil_configuration(): PAnsiChar;
+  cdecl; external av__format;
+
+(**
+ * Returns the libavutil license.
+ *)
+function avutil_license(): PAnsiChar;
   cdecl; external av__format;
 {$IFEND}
 
