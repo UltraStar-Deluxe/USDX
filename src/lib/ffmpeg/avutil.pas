@@ -39,7 +39,7 @@
  *)
 {
  Update changes auf avutil.h, mem.h and log.h
- Max. version 50.03.0, Tue, Jun 09 24:00:00 2009 UTC 
+ Max. version 50.05.1, Sun, Dec 6 24:00:00 2009 UTC 
  include/keep pixfmt.h (change in revision 50.01.0)
  Maybe, the pixelformats are not needed, but it has not been checked.
  log.h is only partial.
@@ -70,8 +70,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 50;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 4;
-  LIBAVUTIL_MAX_VERSION_RELEASE = 0;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 5;
+  LIBAVUTIL_MAX_VERSION_RELEASE = 1;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
                           (LIBAVUTIL_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -301,7 +301,7 @@ function av_malloc(size: cuint): pointer;
 
 (**
  * Allocates or reallocates a block of memory.
- * If ptr is NULL and size > 0, allocates a new block. If \p
+ * If ptr is NULL and size > 0, allocates a new block. If 
  * size is zero, frees the memory block pointed to by ptr.
  * @param size Size in bytes for the memory block to be allocated or
  * reallocated.
@@ -340,7 +340,7 @@ function av_mallocz(size: cuint): pointer;
  * Duplicates the string s.
  * @param s string to be duplicated.
  * @return Pointer to a newly allocated string containing a
- * copy of \p s or NULL if the string cannot be allocated.
+ * copy of s or NULL if the string cannot be allocated.
  *)
 function av_strdup({const} s: PAnsiChar): PAnsiChar;
   cdecl; external av__util; {av_malloc_attrib}
