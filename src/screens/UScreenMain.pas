@@ -136,8 +136,13 @@ begin
             if (Ini.Players = 4) then
               PlayersPlay := 6;
 
-            ScreenName.Goto_SingScreen := false;
-            FadeTo(@ScreenName, SoundLib.Start);
+            if Ini.OnSongClick = sSelectPlayer then
+              FadeTo(@ScreenLevel)
+            else
+            begin
+              ScreenName.Goto_SingScreen := false;
+              FadeTo(@ScreenName, SoundLib.Start);
+            end;
           end
           else //show error message
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));

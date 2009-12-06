@@ -74,14 +74,18 @@ begin
           Exit;
         end;
     end;
-    
+
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
-          FadeTo(@ScreenName);
+
+          if Ini.OnSongClick = sSelectPlayer then
+            FadeTo(@ScreenMain)
+          else
+            FadeTo(@ScreenName);
         end;
 
       SDLK_RETURN:
@@ -106,8 +110,6 @@ begin
 end;
 
 constructor TScreenLevel.Create;
-//var
-// I:    integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
 

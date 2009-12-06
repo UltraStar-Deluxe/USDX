@@ -244,6 +244,10 @@ const
   IScreenFade:    array[0..1] of UTF8String = ('Off', 'On');
   IAskbeforeDel:  array[0..1] of UTF8String = ('Off', 'On');
   IOnSongClick:   array[0..2] of UTF8String = ('Sing', 'Select Players', 'Open Menu');
+  sStartSing = 0;
+  sSelectPlayer = 1;
+  sOpenMenu = 2;
+
   ILineBonus:     array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopup:    array[0..1] of UTF8String = ('Off', 'On');
 
