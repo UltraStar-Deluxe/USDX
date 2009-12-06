@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.41.0, Sun Dec 6 19:14:00 2009 CET 
+ * Max. version: 52.42.0, Sun Dec 6 19:20:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 41;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 42;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -2807,6 +2807,17 @@ type
      * - decoding: Set by libavcodec, user can override.
      *)
     execute2: function (c: PAVCodecContext; func: function (c2: PAVCodecContext; arg: Pointer; jobnr: cint; threadnr: cint): cint; cdecl; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
+    {$IFEND}
+    {$IF LIBAVCODEC_VERSION >= 52042000} // >= 52.42.0
+    (**
+     * explicit P-frame weighted prediction analysis method
+     * 0: off
+     * 1: fast blind weighting (one reference duplicate with -1 offset)
+     * 2: smart weighting (full fade detection analysis)
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
+    weighted_p_pred: cint;
     {$IFEND}
   end;
 
