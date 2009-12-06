@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.38.1, Sun Dec 6 18:05:00 2009 CET 
+ * Max. version: 52.41.0, Sun Dec 6 19:14:00 2009 CET 
  * MiSchi
 }
 
@@ -65,8 +65,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 38;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 41;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -262,6 +262,9 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52037000}  // >= 52.37.0
     CODEC_ID_FRWU,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52041000}  // >= 52.41.0
+    CODEC_ID_FLASHSV2,
 {$IFEND}
 
     //* various PCM "codecs" */
@@ -3443,6 +3446,20 @@ function avcodec_version(): cuint;
 (* returns LIBAVCODEC_BUILD constant *)
 function avcodec_build(): cuint;
   cdecl; external av__codec; deprecated;
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 52041000} // 52.41.0
+(**
+ * Returns the libavcodec build-time configuration.
+ *)
+function avcodec_configuration(): PAnsiChar;
+  cdecl; external av__codec;
+
+(**
+ * Returns the libavcodec license.
+ *)
+function avcodec_license(): PAnsiChar;
+  cdecl; external av__codec;
 {$IFEND}
 
 (**
