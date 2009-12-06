@@ -35,6 +35,12 @@
  * header, so it should not be directly included in your projects.
  *)
 
+{
+ * update to
+ * Max. avformat version: 52.41.0, Sun Dec 6 20:15:00 2009 CET 
+ * MiSchi
+}
+
 unit avio;
 
 {$IFDEF FPC}
@@ -467,6 +473,7 @@ function url_fdopen (s: PByteIOContext; h: PURLContext): cint;
 function url_setbufsize (s: PByteIOContext; buf_size: cint): cint;
   cdecl; external av__format;
 
+{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
 {$IF LIBAVFORMAT_VERSION >= 51015000} // 51.15.0
 (** Reset the buffer for reading or writing.
  * @note Will drop any data currently in the buffer without transmitting it.
@@ -474,6 +481,7 @@ function url_setbufsize (s: PByteIOContext; buf_size: cint): cint;
  *        to set up the buffer for writing. *)
 function url_resetbuf(s: PByteIOContext; flags: cint): cint;
   cdecl; external av__format;
+{$IFEND}
 {$IFEND}
 
 (** @note when opened as read/write, the buffers are only used for
