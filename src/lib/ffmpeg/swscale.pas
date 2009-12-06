@@ -25,6 +25,11 @@
  * Conversion of libswscale/swscale.h
  * revision 27592, Fri Sep 12 21:46:53 2008 UTC 
  *)
+{
+ * update to
+ * Max. version: 0.7.2, Sun Dec 6 22:20:00 2009 CET 
+ * MiSchi
+}
  
 unit swscale;
 
@@ -52,7 +57,7 @@ const
   (* Max. supported version by this header *)
   LIBSWSCALE_MAX_VERSION_MAJOR   = 0;
   LIBSWSCALE_MAX_VERSION_MINOR   = 7;
-  LIBSWSCALE_MAX_VERSION_RELEASE = 1;
+  LIBSWSCALE_MAX_VERSION_RELEASE = 2;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBSWSCALE_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -75,6 +80,20 @@ type
  * Returns the LIBSWSCALE_VERSION_INT constant.
  *)
 function swscale_version(): cuint;
+  cdecl; external sw__scale;
+{$IFEND}
+
+{$IF LIBSWSCALE_VERSION >= 000007002} // 0.7.2
+(**
+ * Returns the libswscale build-time configuration.
+ *)
+function swscale_configuration(): PAnsiChar;
+  cdecl; external sw__scale;
+
+(**
+ * Returns the libswscale license.
+ *)
+function swscale_license(): PAnsiChar;
   cdecl; external sw__scale;
 {$IFEND}
 
@@ -148,6 +167,10 @@ type
     {internal structure}
   end;
 
+(**
+ * Frees the swscaler context swsContext.
+ * If swsContext is NULL, then does nothing.
+ *)
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
@@ -174,6 +197,10 @@ function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
  * Scales the image slice in srcSlice and puts the resulting scaled
  * slice in the image in dst. A slice is a sequence of consecutive
  * rows in an image.
+ *
+ * Slices have to be provided in sequential order, either in
+ * top-bottom or bottom-top order. If slices are provided in
+ * non-sequential order the behavior of the function is undefined.
  *
  * @param context   the scaling context previously created with
  *                  sws_getContext()
