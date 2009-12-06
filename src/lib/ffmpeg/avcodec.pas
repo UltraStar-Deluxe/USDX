@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.35.0, Sun Dec 6 17:30:00 2009 CET 
+ * Max. version: 52.36.0, Sun Dec 6 17:33:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 35;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 36;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -1436,7 +1436,7 @@ type
      * - encoding: Set by user
      * - decoding: Set by libavcodec
      *)
-     chroma_sample_location: TAVChromaLocation;
+    chroma_sample_location: TAVChromaLocation;
     {$IFEND}
   end;
 
