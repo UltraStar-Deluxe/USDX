@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.37.1, Sun Dec 6 18:58:00 2009 CET 
+ * Max. version: 52.38.1, Sun Dec 6 18:05:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 37;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 38;
   LIBAVCODEC_MAX_VERSION_RELEASE = 1;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -480,7 +480,13 @@ const
   CH_TOP_BACK_RIGHT         = $00020000;
   CH_STEREO_LEFT            = $20000000;  ///< Stereo downmix.
   CH_STEREO_RIGHT           = $40000000;  ///< See CH_STEREO_LEFT.
-
+{** Channel mask value used for AVCodecContext.request_channel_layout
+ *  to indicate that the user requests the channel order of the decoder output
+ *  to be the native codec channel order.
+ *}
+{$IF LIBAVCODEC_VERSION >= 52038001} // >= 52.38.1
+  CH_LAYOUT_NATIVE          = $8000000000000000LL
+{$IFEND}
   {* Audio channel convenience macros *}
   CH_LAYOUT_MONO            = (CH_FRONT_CENTER);
   CH_LAYOUT_STEREO          = (CH_FRONT_LEFT or CH_FRONT_RIGHT);
