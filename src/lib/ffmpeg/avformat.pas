@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.38.0, Sun Dec 6 20:05:00 2009 CET 
+ * Max. version: 52.39.2, Sun Dec 6 20:05:00 2009 CET 
  * MiSchi
 }
 
@@ -65,8 +65,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 38;
-  LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 39;
+  LIBAVFORMAT_MAX_VERSION_RELEASE = 2;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -94,6 +94,20 @@ const
  * Returns the LIBAVFORMAT_VERSION_INT constant.
  *)
 function avformat_version(): cuint;
+  cdecl; external av__format;
+{$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52039002} // 52.39.2
+(**
+ * Returns the libavformat build-time configuration.
+ *)
+function avformat_configuration(): {const} PansiChar;
+  cdecl; external av__format;
+
+(**
+ * Returns the libavformat license.
+ *)
+function avformat_license(): {const} PansiChar;
   cdecl; external av__format;
 {$IFEND}
 
@@ -347,12 +361,20 @@ const
   // used by TAVFormatContext.debug
   FF_FDEBUG_TS = 0001;
 
-  {$IF LIBAVFORMAT_VERSION >= 52034000} // > 52.34.0
+  {$IF LIBAVFORMAT_VERSION >= 52034000}  // >= 52.34.0
+    {$IF LIBAVFORMAT_VERSION < 52039000} // <  52.39.0
   MAX_PROBE_PACKETS = 100;
+    {$ELSE}
+  MAX_PROBE_PACKETS = 2500;
+    {$IFEND}
   {$IFEND}
 
-  {$IF LIBAVFORMAT_VERSION >= 52035000} // > 52.35.0
+  {$IF LIBAVFORMAT_VERSION >= 52035000}  // >= 52.35.0
+    {$IF LIBAVFORMAT_VERSION < 52039000} // <  52.39.0
   RAW_PACKET_BUFFER_SIZE 32000
+    {$ELSE}
+  RAW_PACKET_BUFFER_SIZE 2500000
+    {$IFEND}
   {$IFEND}
 
 type
