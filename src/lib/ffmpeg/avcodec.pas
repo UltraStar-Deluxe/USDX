@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.34.0, Sun Dec 6 17:11:00 2009 CET 
+ * Max. version: 52.34.0, Sun Dec 6 17:26:00 2009 CET 
  * MiSchi
 }
 
