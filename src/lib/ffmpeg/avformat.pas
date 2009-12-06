@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.34.0, Sat Jun 13 00:37:00 2009 UTC 
+ * Max. version: 52.34.1, Sun Dec 6 19:27:00 2009 CET 
  * MiSchi
 }
 
@@ -66,7 +66,7 @@ const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
   LIBAVFORMAT_MAX_VERSION_MINOR   = 34;
-  LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
+  LIBAVFORMAT_MAX_VERSION_RELEASE = 1;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -804,7 +804,11 @@ type
     index_built: cint;
 
     mux_rate: cint;
+    {$IF LIBAVFORMAT_VERSION < 52034001} // < 52.34.1
     packet_size: cint;
+    {$ELSE}
+    packet_size: cuint;
+    {$IFEND}
     preload: cint;
     max_delay: cint;
 
