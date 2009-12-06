@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.34.0, Sun Dec 6 17:26:00 2009 CET 
+ * Max. version: 52.35.0, Sun Dec 6 17:30:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 34;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 35;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -392,6 +392,9 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52026000} // >= 52.26.0
     CODEC_ID_MP4ALS,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52035000} // >= 52.35.0
+    CODEC_ID_ATRAC1,
 {$IFEND}
 
     //* subtitle codecs */
@@ -720,6 +723,13 @@ const
    * Codec can export data for HW decoding (VDPAU).
    *)
   CODEC_CAP_HWACCEL_VDPAU    = $0080;
+
+  {$IF LIBAVCODEC_VERSION >= 52035000} // >= 52.35.0
+  (**
+   * Codec can output multiple frames per AVPacket
+   *)
+  CODEC_CAP_SUBFRAMES        = $0100;
+  {$IFEND}
 
    //the following defines may change, don't expect compatibility if you use them
    MB_TYPE_INTRA4x4   = $001;
