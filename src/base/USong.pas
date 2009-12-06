@@ -74,6 +74,7 @@ type
   TScore = record
     Name:       UTF8String;
     Score:      integer;
+    Date:       UTF8String;
   end;
 
   { used to hold header tags that are not supported by this version of

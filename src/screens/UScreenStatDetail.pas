@@ -234,7 +234,7 @@ begin
               if (Score > 0) then
               begin
                 Text[I].Text := Format(FormatStr,
-                  [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle]);
+                  [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle, Date]);
               end;
             end;
           end;

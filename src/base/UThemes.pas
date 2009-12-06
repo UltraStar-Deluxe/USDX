@@ -409,6 +409,7 @@ type
     TextNumber:       AThemeText;
     TextName:         AThemeText;
     TextScore:        AThemeText;
+    TextDate:         AThemeText;
   end;
 
   TThemeOptions = class(TThemeBasic)
@@ -1176,6 +1177,7 @@ begin
       ThemeLoadTexts(Top5.TextNumber,     'Top5TextNumber');
       ThemeLoadTexts(Top5.TextName,       'Top5TextName');
       ThemeLoadTexts(Top5.TextScore,      'Top5TextScore');
+      ThemeLoadTexts(Top5.TextDate,       'Top5TextDate');
 
       // Options
       ThemeLoadBasic(Options, 'Options');
