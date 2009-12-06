@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.36.0, Sun Dec 6 17:33:00 2009 CET 
+ * Max. version: 52.37.1, Sun Dec 6 18:58:00 2009 CET 
  * MiSchi
 }
 
@@ -65,8 +65,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 36;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 37;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -260,6 +260,9 @@ type
 {$IF LIBAVCODEC_VERSION >= 52031002}  // >= 52.31.2
     CODEC_ID_MAD,
 {$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52037000}  // >= 52.37.0
+    CODEC_ID_FRWU,
+{$IFEND}
 
     //* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= $10000,
@@ -406,6 +409,9 @@ type
     CODEC_ID_MOV_TEXT,
 {$IF LIBAVCODEC_VERSION >= 52033000} // >= 52.33.0
     CODEC_ID_HDMV_PGS_SUBTITLE,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52037001} // >= 52.37.1
+    CODEC_ID_DVB_TELETEXT,
 {$IFEND}
 
     (* other specific kind of codecs (generally used for attachments) *)
@@ -2772,6 +2778,27 @@ type
      *)
      chroma_sample_location: TAVChromaLocation;
     {$IFEND}
+    {$IF LIBAVCODEC_VERSION >= 52037000} // >= 52.37.0
+    (**
+     * The codec may call this to execute several independent things.
+     * It will return only after finishing all tasks.
+     * The user may replace this with some multithreaded implementation,
+     * the default implementation will execute the parts serially.
+     * Also see avcodec_thread_init and e.g. the --enable-pthread configure option.
+     * @param c context passed also to func
+     * @param count the number of things to execute
+     * @param arg2 argument passed unchanged to func
+     * @param ret return values of executed functions, must have space for "count" values. May be NULL.
+     * @param func function that will be called count times, with jobnr from 0 to count-1.
+     *             threadnr will be in the range 0 to c->thread_count-1 < MAX_THREADS and so that no
+     *             two instances of func executing at the same time will have the same threadnr.
+     * @return always 0 currently, but code should handle a future improvement where when any call to func
+     *         returns < 0 no further calls to func may be done and < 0 is returned.
+     * - encoding: Set by libavcodec, user can override.
+     * - decoding: Set by libavcodec, user can override.
+     *)
+    execute2: function (c: PAVCodecContext; func: function (c2: PAVCodecContext; arg: Pointer; jobnr: cint; threadnr: cint): cint; cdecl; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
+    {$IFEND}
   end;
 
 (**
@@ -3567,6 +3594,10 @@ function avcodec_default_execute(s: PAVCodecContext; func: TExecuteFunc; arg: PP
 function avcodec_default_execute(s: PAVCodecContext; func: TExecuteFunc; arg: Pointer; var ret: cint; count: cint; size: cint): cint;
   cdecl; external av__codec;
 {$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52037000} // >= 52.37.0
+function avcodec_default_execute2(s: PAVCodecContext; func: TExecuteFunc; arg: Pointer; var ret: cint; count: cint): cint;
+  cdecl; external av__codec;
+{$IFEND}
 //FIXME func typedef
 
 (**
@@ -3635,9 +3666,11 @@ function avcodec_decode_audio2(avctx: PAVCodecContext; samples: PSmallint;
 (**
  * Decodes the audio frame of size avpkt->size from avpkt->data into samples.
  * Some decoders may support multiple frames in a single AVPacket, such
- * decoders would then just decode the first frame.
+ * decoders would then just decode the first frame. In this case,
+ * avcodec_decode_audio3 has to be called again with an AVPacket that contains
+ * the remaining data in order to decode the second frame etc.
  * If no frame
- * could be decompressed, frame_size_ptr is zero. Otherwise, it is the
+ * could be outputted, frame_size_ptr is zero. Otherwise, it is the
  * decompressed frame size in bytes.
  *
  * @warning You must set frame_size_ptr to the allocated size of the
@@ -3670,7 +3703,7 @@ function avcodec_decode_audio2(avctx: PAVCodecContext; samples: PSmallint;
  *            data and size, some decoders might in addition need other fields.
  *            All decoders are designed to use the least fields possible though.
  * @return On error a negative value is returned, otherwise the number of bytes
- * used or zero if no frame could be decompressed.
+ * used or zero if no frame data was decompressed (used) from the input AVPacket.
  *)
 function avcodec_decode_audio3(avctx: PAVCodecContext; samples: PSmallint;
                var frame_size_ptr: cint;
