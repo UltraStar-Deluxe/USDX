@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.34.1, Sun Dec 6 19:27:00 2009 CET 
+ * Max. version: 52.35.0, Sun Dec 6 19:33:00 2009 CET 
  * MiSchi
 }
 
@@ -65,8 +65,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 34;
-  LIBAVFORMAT_MAX_VERSION_RELEASE = 1;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 35;
+  LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -349,6 +349,10 @@ const
 
   {$IF LIBAVFORMAT_VERSION >= 52034000} // > 52.34.0
   MAX_PROBE_PACKETS = 100;
+  {$IFEND}
+
+  {$IF LIBAVFORMAT_VERSION >= 52035000} // > 52.35.0
+  RAW_PACKET_BUFFER_SIZE 32000
   {$IFEND}
 
 type
@@ -907,6 +911,15 @@ type
     {$IF LIBAVFORMAT_VERSION >= 52024001} // 52.24.1
     metadata: PAVMetadata;
     {$IFEND}
+    
+    {$IF LIBAVFORMAT_VERSION >= 52035000} // 52.35.0
+    (**
+     * Remaining size available for raw_packet_buffer, in bytes.
+     * NOT PART OF PUBLIC API
+     *)
+    raw_packet_buffer_remaining_size: cint;
+    {$IFEND}
+
   end;
 
   (**
