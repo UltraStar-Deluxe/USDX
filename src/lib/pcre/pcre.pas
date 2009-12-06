@@ -56,12 +56,6 @@ interface
 
 {$WEAKPACKAGEUNIT ON}
 
-// (p3) this is the switch to change between static and dynamic linking.
-// It is set to dynamic by default. To disable simply insert a '.' before the '$'
-//
-// NOTE: if you enable static linking of DLL, this means that the pcre.dll *must*
-// be in the users path or an AV will occur at startup
-
 (*$HPPEMIT '#include "pcre.h"'*)
 
 const
@@ -262,12 +256,11 @@ const
 
 type
   {$IFNDEF FPC}
-  {$IFDEF CPU32}
-  SizeInt = Integer;
-  {$ENDIF CPU32}
   {$IFDEF CPU64}
   SizeInt = Int64;
-  {$ENDIF CPU64}
+  {$ELSE ~CPU64}
+  SizeInt = Integer;
+  {$ENDIF ~CPU64}
   PPAnsiChar = ^PAnsiChar;
   {$ENDIF ~FPC}
   PPPAnsiChar = ^PPAnsiChar;
