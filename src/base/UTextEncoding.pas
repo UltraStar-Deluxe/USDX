@@ -229,11 +229,11 @@ begin
   Result := Encoders[Encoding].GetName();
 end;
 
-{$I ../encoding/Locale.inc}
-{$I ../encoding/UTF8.inc}
-{$I ../encoding/CP1250.inc}
-{$I ../encoding/CP1252.inc}
-{$I ../encoding/Auto.inc}
+{$I ..\\encoding\\Locale.inc}
+{$I ..\\encoding\\UTF8.inc}
+{$I ..\\encoding\\CP1250.inc}
+{$I ..\\encoding\\CP1252.inc}
+{$I ..\\encoding\\Auto.inc}
 
 initialization
   Encoders[encLocale] := TEncoderLocale.Create;
