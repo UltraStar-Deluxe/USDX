@@ -263,7 +263,7 @@ begin
   Reset();
 
   // use custom 'ufile' protocol for UTF-8 support
-  errnum := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
+  errnum := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToNative), nil, 0, nil);
   if (errnum <> 0) then
   begin
     Log.LogError('Failed to open file "'+ FileName.ToNative +'" ('+FFmpegCore.GetErrorString(errnum)+')');
