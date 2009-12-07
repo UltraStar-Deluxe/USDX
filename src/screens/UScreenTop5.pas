@@ -188,7 +188,7 @@ begin
     PMax := 5;
   for I := 0 to PMax do
   begin
-    if (Round(Player[I].ScoreTotalInt) > 0) then
+    if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
     begin
       DataBase.AddScore(CurrentSong, Ini.Difficulty, Ini.Name[I], Round(Player[I].ScoreTotalInt));
       sung:=true;

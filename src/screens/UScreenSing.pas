@@ -98,6 +98,9 @@ type
     // score manager:
     Scores: TSingScores;
 
+    //the song was sung to the end
+    SungToEnd: boolean;
+
     fShowVisualization: boolean;
     fCurrentVideoPlaybackEngine: IVideoPlayback;
 
@@ -328,6 +331,9 @@ begin
 
   Log.LogStatus('Begin', 'OnShow');
   FadeOut := false;
+
+  //the song was sung to the end
+  SungToEnd := false;
 
   // reset video playback engine, to play video clip ...
   fCurrentVideoPlaybackEngine := VideoPlayback;
@@ -666,6 +672,8 @@ var
   Sec:   integer;
   T:     integer;
   CurLyricsTime: real;
+  Line: TLyricLine;
+  LastWord: TLyricWord;
 begin
   Background.Draw;
 
@@ -750,6 +758,15 @@ begin
   // draw static menu (BG)
   // Note: there is no menu and the animated background brakes the video playback
   //DrawBG;
+
+  //the song was sung to the end?
+  Line := Lyrics.GetUpperLine();
+  if Line.LastLine then
+  begin
+    LastWord := Line.Words[Length(Line.Words)-1];
+    if CurLyricsTime >= GetTimeFromBeat(LastWord.Start+LastWord.Length) then
+      SungToEnd := true;
+  end;
 
   // update and draw movie
   if (ShowFinish and (VideoLoaded or fShowVisualization)) then
