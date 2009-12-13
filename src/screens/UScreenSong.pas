@@ -1733,6 +1733,10 @@ begin
   if not assigned(Song) then
     Exit;
 
+  //fix: if main cat than there is nothing to play
+  if Song.main then
+    Exit;
+
   if AudioPlayback.Open(Song.Path.Append(Song.Mp3)) then
   begin
     PreviewOpened := Interaction;
