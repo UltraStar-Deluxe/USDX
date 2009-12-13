@@ -96,7 +96,7 @@ type
 
     function ParseLyricStringParam(const Line: RawByteString; var LinePos: integer): RawByteString;
     function ParseLyricIntParam(const Line: RawByteString; var LinePos: integer): integer;
-    function ParseLyricFloatParam(const Line: RawByteString; var LinePos: integer): real;
+    function ParseLyricFloatParam(const Line: RawByteString; var LinePos: integer): extended;
     function ParseLyricCharParam(const Line: RawByteString; var LinePos: integer): AnsiChar;
     function ParseLyricText(const Line: RawByteString; var LinePos: integer): RawByteString;
 
@@ -346,24 +346,26 @@ var
 begin
   OldLinePos := LinePos;
   Str := ParseLyricStringParam(Line, LinePos);
-  try
-    Result := StrToInt(Str);
-  except // on EConvertError
+
+  if not TryStrToInt(Str, Result) then
+  begin // on convert error
+    Result := 0;
     LinePos := OldLinePos;
     raise EUSDXParseException.Create('Integer expected');
   end;
 end;
 
-function TSong.ParseLyricFloatParam(const Line: RawByteString; var LinePos: integer): real;
+function TSong.ParseLyricFloatParam(const Line: RawByteString; var LinePos: integer): extended;
 var
   Str: RawByteString;
   OldLinePos: integer;
 begin
   OldLinePos := LinePos;
   Str := ParseLyricStringParam(Line, LinePos);
-  try
-    Result := StrToFloat(Str);
-  except // on EConvertError
+
+  if not TryStrToFloat(Str, Result) then
+  begin // on convert error
+    Result := 0;
     LinePos := OldLinePos;
     raise EUSDXParseException.Create('Float expected');
   end;
