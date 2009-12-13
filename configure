@@ -6250,7 +6250,9 @@ See the pkg-config man page for more details.
 
 
 # determine linker-flags
-LDFLAGS="-undefined dynamic_lookup"
+if test x$FPC_PLATFORM = xdarwin; then
+  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup"
+fi
 #LIBS=
 
 

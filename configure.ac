@@ -224,7 +224,9 @@ PKG_HAVE([portmixer], [portmixer], no)
 AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 
 # determine linker-flags
-LDFLAGS="-undefined dynamic_lookup"
+if test x$FPC_PLATFORM = xdarwin; then
+  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup"
+fi
 #LIBS=
 AC_SUBST(LDFLAGS)
 AC_SUBST(LIBS)
