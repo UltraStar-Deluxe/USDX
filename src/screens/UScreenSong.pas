@@ -1547,8 +1547,8 @@ end;
 
 procedure TScreenSong.OnHide;
 begin
-  // if preview is not loaded: load musicfile now
-  if (PreviewOpened <> Interaction) then
+  // if preview is not loaded: load musicfile now; not on cat-main!
+  if (PreviewOpened <> Interaction) and not CatSongs.Song[Interaction].main then
     AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Mp3));
 
   // turn music volume to 100%
