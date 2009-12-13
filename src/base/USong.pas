@@ -483,7 +483,7 @@ begin
 
       while true do
       begin
-        LinePos := 0;
+        LinePos := 1;
 
         Param0 := ParseLyricCharParam(CurLine, LinePos);
         if (Param0 = 'E') then
