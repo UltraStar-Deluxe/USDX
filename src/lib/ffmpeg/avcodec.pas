@@ -1113,7 +1113,11 @@ type
   TQuadIntArray = array[0..3] of cint;
   // int (*func)(struct AVCodecContext *c2, void *arg)
   TExecuteFunc = function(c2: PAVCodecContext; arg: Pointer): cint; cdecl;
-
+{$IF LIBAVCODEC_VERSION >= 52037000} // >= 52.37.0
+  // int (*func)(struct AVCodecContext *c2, void *arg, int jobnr, int threadnr)
+  TExecute2Func = function(c2: PAVCodecContext; arg: Pointer; jobnr: cint; threadnr: cint): cint; cdecl;
+{$IFEND}
+  
   TAVClass = record
     class_name: PAnsiChar;
     (* actually passing a pointer to an AVCodecContext
@@ -2806,11 +2810,7 @@ type
      * - encoding: Set by libavcodec, user can override.
      * - decoding: Set by libavcodec, user can override.
      *)
-// **** FIXME the following gives this error:
-//  lib/ffmpeg/avcodec.pas(2809,51) Error: Type identifier expected
-//  lib/ffmpeg/avcodec.pas(2809,51) Fatal: Syntax error, ")" expected but "FUNCTION" found
-//    execute2: function (c: PAVCodecContext; func: function (c2: PAVCodecContext; arg: Pointer; jobnr: cint; threadnr: cint): cint; cdecl; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
-      execute2: function (c: PAVCodecContext; func: Pcint; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
+      execute2: function (c: PAVCodecContext; func: TExecute2Func; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
     {$IFEND}
     {$IF LIBAVCODEC_VERSION >= 52042000} // >= 52.42.0
     (**
