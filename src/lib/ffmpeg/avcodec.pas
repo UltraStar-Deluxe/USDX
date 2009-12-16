@@ -2810,6 +2810,7 @@ type
 //  lib/ffmpeg/avcodec.pas(2809,51) Error: Type identifier expected
 //  lib/ffmpeg/avcodec.pas(2809,51) Fatal: Syntax error, ")" expected but "FUNCTION" found
 //    execute2: function (c: PAVCodecContext; func: function (c2: PAVCodecContext; arg: Pointer; jobnr: cint; threadnr: cint): cint; cdecl; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
+      execute2: function (c: PAVCodecContext; func: Pcint; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
     {$IFEND}
     {$IF LIBAVCODEC_VERSION >= 52042000} // >= 52.42.0
     (**
