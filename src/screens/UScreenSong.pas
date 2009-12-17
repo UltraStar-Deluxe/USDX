@@ -1548,11 +1548,12 @@ end;
 procedure TScreenSong.OnHide;
 begin
   // if preview is not loaded: load musicfile now; not on cat-main!
-  if (PreviewOpened <> Interaction) and not CatSongs.Song[Interaction].main then
-    AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Mp3));
+//  if (PreviewOpened <> Interaction) then
 
   // turn music volume to 100%
   AudioPlayback.SetVolume(1.0);
+  if (IPreviewVolumeVals[Ini.PreviewVolume] = 0) then
+    AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Mp3));
 
   // if hide then stop music (for party mode popup on exit)
   if (Display.NextScreen <> @ScreenSing) and
