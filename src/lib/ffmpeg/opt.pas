@@ -122,13 +122,6 @@ type
  * This is identical to AVOption except that default_val was replaced by
  * an union, it should be compatible with AVOption on normal platforms.
  *)
-const
-  AV_OPT_FLAG_ENCODING_PARAM = 1;     ///< a generic parameter which can be set by the user for muxing or encoding
-  AV_OPT_FLAG_DECODING_PARAM = 2;     ///< a generic parameter which can be set by the user for demuxing or decoding
-  AV_OPT_FLAG_METADATA       = 4;     ///< some data extracted or inserted into the file like title, comment, ...
-  AV_OPT_FLAG_AUDIO_PARAM    = 8;     
-  AV_OPT_FLAG_VIDEO_PARAM    = 16;     
-  AV_OPT_FLAG_SUBTITLE_PARAM = 32;     
 type
   PAVOption2 = ^TAVOption2;
   TAVOption2 = record
