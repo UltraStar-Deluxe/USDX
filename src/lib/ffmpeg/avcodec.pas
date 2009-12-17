@@ -488,7 +488,7 @@ const
  *  to be the native codec channel order.
  *}
 {$IF LIBAVCODEC_VERSION >= 52038001} // >= 52.38.1
-  CH_LAYOUT_NATIVE          = $8000000000000000LL
+  CH_LAYOUT_NATIVE          = $8000000000000000;
 {$IFEND}
   {* Audio channel convenience macros *}
   CH_LAYOUT_MONO            = (CH_FRONT_CENTER);
