@@ -749,7 +749,7 @@ procedure TSingScores.DoRaiseScore(const Index: integer);
   const
     RaisePerSecond = 500;
 begin
-  S := (Players[Index].Score - Players[Index].ScoreDisplayed) + GetPopUpPoints(Index);
+  S := (Players[Index].Score - (Players[Index].ScoreDisplayed + GetPopUpPoints(Index)));
 
   if (S <> 0) then
   begin
