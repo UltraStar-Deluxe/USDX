@@ -510,7 +510,9 @@ begin
 
           //Check for ZeroNote
           if Param2 = 0 then
-            Log.LogError('Found zero-length note at "'+Param0+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> Note ignored!')
+            Log.LogWarn(Format('"%s" in line %d: %s',
+                  [FileNamePath.ToNative, FileLineNo, 'found note with length zero -> note ignored']), 'TSong.LoadSong')
+            //Log.LogError('Found zero-length note at "'+Param0+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> Note ignored!')
           else
           begin
            // add notes
