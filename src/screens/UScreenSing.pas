@@ -53,8 +53,8 @@ uses
   UTime;
 
 type
-  TLyricsSyncSource = class(TSyncSource)
-    function GetClock(): real; override;
+  TLyricsSyncSource = class(TInterfacedObject,ISyncSource)
+    function GetClock(): real;
   end;
 
 type

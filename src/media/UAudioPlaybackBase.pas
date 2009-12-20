@@ -60,7 +60,7 @@ type
       procedure Stop;
       procedure FadeIn(Time: real; TargetVolume: single);
 
-      procedure SetSyncSource(SyncSource: TSyncSource);
+      procedure SetSyncSource(SyncSource: ISyncSource);
 
       procedure SetPosition(Time: real);
       function  GetPosition: real;
@@ -228,7 +228,7 @@ begin
     MusicStream.Position := Time;
 end;
 
-procedure TAudioPlaybackBase.SetSyncSource(SyncSource: TSyncSource);
+procedure TAudioPlaybackBase.SetSyncSource(SyncSource: ISyncSource);
 begin
   if assigned(MusicStream) then
     MusicStream.SetSyncSource(SyncSource);
