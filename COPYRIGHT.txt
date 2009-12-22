@@ -6,6 +6,7 @@ list.  Contact us (see: AUTHORS) and we'll add you.
 
 Jay Binks "jaybinks"
 Dirk Dunger "blindy"
+Alexander Eckart "brunzel"
 "eddie-0815"
 Mike Gränz "mog"
 Tobias Gunkel "tobigun"

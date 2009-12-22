@@ -934,7 +934,7 @@ begin
     begin
       Inc(HighNote);
       SetLength(Note, HighNote + 1);
-      Note[HighNote] := Note[N];
+      Note[HighNote] := Lines[0].Line[CStart].Note[N];
       End_ := Note[HighNote].Start + Note[HighNote].Length;
       
       if Note[HighNote].Tone < BaseNote then

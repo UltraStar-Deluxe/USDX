@@ -8,6 +8,7 @@ This modification was continued at Sourceforge.net by the Ultrastar Deluxe Team:
     Mischi
     Mog
     Whiteshark
+	brunzel
   
 ~=[ Retired project developers / admins ]=~
     Alex
