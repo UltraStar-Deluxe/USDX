@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.42.0, Sun Dec 6 19:20:00 2009 CET 
+ * Max. version: 52.45.0, Tue Dec 29 00:25:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 42;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 45;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -265,6 +265,10 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52041000}  // >= 52.41.0
     CODEC_ID_FLASHSV2,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52043000}  // >= 52.43.0
+    CODEC_ID_CDGRAPHICS,
+    CODEC_ID_R210,
 {$IFEND}
 
     //* various PCM "codecs" */
@@ -703,6 +707,9 @@ const
   CODEC_FLAG2_CHUNKS        = $00008000; ///< Input bitstream might be truncated at a packet boundaries instead of only at frame boundaries.
   CODEC_FLAG2_NON_LINEAR_QUANT = $00010000; ///< Use MPEG-2 nonlinear quantizer.
   CODEC_FLAG2_BIT_RESERVOIR = $00020000; ///< Use a bit reservoir when encoding if possible
+  {$IF LIBAVCODEC_VERSION >= 52043000} // >= 52.43.0  
+  CODEC_FLAG2_MBTREE        = $00040000; ///< Use macroblock tree ratecontrol (x264 only)
+  {$IFEND}
 
 (* Unsupported options :
  *              Syntax Arithmetic coding (SAC)
@@ -3731,7 +3738,7 @@ function avcodec_decode_audio2(avctx: PAVCodecContext; samples: PSmallint;
  * (AltiVec and SSE do).
  *
  * @note Some codecs have a delay between input and output, these need to be
- * feeded with avpkt->data=NULL, avpkt->size=0 at the end to return the remaining frames.
+ * fed with avpkt->data=NULL, avpkt->size=0 at the end to return the remaining frames.
  *
  * @param avctx the codec context
  * @param[out] samples the output buffer

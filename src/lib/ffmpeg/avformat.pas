@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.41.0, Sun Dec 6 20:15:00 2009 CET 
+ * Max. version: 52.44.0, Tue Dec 29 0:40:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 41;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 44;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -136,6 +136,10 @@ type
 const
   AV_METADATA_MATCH_CASE    = 1;
   AV_METADATA_IGNORE_SUFFIX = 2;
+{$IF LIBAVFORMAT_VERSION >= 52043000} // >= 52.43.0
+  AV_METADATA_DONT_STRDUP_KEY = 4;
+  AV_METADATA_DONT_STRDUP_VAL = 8;
+{$IFEND}
 
 type
   PAVMetadataTag = ^TAVMetadataTag;
@@ -147,6 +151,7 @@ type
   PAVMetadata = Pointer;
 
 {$IF LIBAVFORMAT_VERSION > 52024001} // > 52.24.1
+{$IF LIBAVFORMAT_VERSION_MAJOR == 52}
 (**
  * Gets a metadata element with matching key.
  * @param prev Set to the previous matching element to find the next.
@@ -165,6 +170,18 @@ function av_metadata_get(m: PAVMetadata; key: {const} PAnsiChar;
  *)
 function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar): cint;
   cdecl; external av__format;
+{$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52043000} // >= 52.43.0
+(**
+ * Sets the given tag in m, overwriting an existing tag.
+ * @param key tag key to add to m (will be av_strduped depending on flags)
+ * @param value tag value to add to m (will be av_strduped depending on flags)
+ * @return >= 0 on success otherwise an error code <0
+ *)
+function av_metadata_set2(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar; flags: cint): cint;
+  cdecl; external av__format;
+{$IFEND}
 
 (**
  * Frees all the memory allocated for an AVMetadata struct.
@@ -763,6 +780,12 @@ type
      * used internally, NOT PART OF PUBLIC API, dont read or write from outside of libav*
      *)
     last_in_packet_buffer: PAVPacketList;
+    {$IFEND}
+    {$IF LIBAVFORMAT_VERSION >= 52041000} // >= 52.41.0
+    (**
+     * Average framerate
+     *)
+    avg_frame_rate: TAVRational;
     {$IFEND}
   end;
 

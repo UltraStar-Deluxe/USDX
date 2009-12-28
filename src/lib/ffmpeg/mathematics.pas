@@ -75,6 +75,11 @@ type
   );
 
 {$IF LIBAVUTIL_VERSION >= 49013000} // 49.13.0
+(**
+ * Returns the greatest common divisor of a and b.
+ * If both a or b are 0 or either or both are <0 then behavior is
+ * undefined.
+ *)
 function av_gcd(a: cint64; b: cint64): cint64;
   cdecl; external av__util; {av_const}
 {$IFEND}
