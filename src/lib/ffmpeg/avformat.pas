@@ -151,7 +151,7 @@ type
   PAVMetadata = Pointer;
 
 {$IF LIBAVFORMAT_VERSION > 52024001} // > 52.24.1
-{$IF LIBAVFORMAT_VERSION_MAJOR == 52}
+{$IF LIBAVFORMAT_VERSION_MAJOR = 52}
 (**
  * Gets a metadata element with matching key.
  * @param prev Set to the previous matching element to find the next.
