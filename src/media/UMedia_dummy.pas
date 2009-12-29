@@ -62,7 +62,7 @@ type
       procedure SetPosition(Time: real);
       function  GetPosition: real;
 
-      procedure SetSyncSource(SyncSource: ISyncSource);
+      procedure SetSyncSource(SyncSource: TSyncSource);
 
       procedure GetFrame(Time: Extended);
       procedure DrawGL(Screen: integer);
@@ -156,7 +156,7 @@ begin
   Result := 0;
 end;
 
-procedure TMedia_dummy.SetSyncSource(SyncSource: ISyncSource);
+procedure TMedia_dummy.SetSyncSource(SyncSource: TSyncSource);
 begin
 end;
 

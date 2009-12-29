@@ -188,8 +188,8 @@ type
   end;
 
 type
-  ISyncSource = interface
-    function GetClock(): real;
+  TSyncSource = class
+    function GetClock(): real; virtual; abstract;
   end;
 
   TAudioProcessingStream = class;
@@ -250,7 +250,7 @@ type
 
   TAudioPlaybackStream = class(TAudioProcessingStream)
     protected
-      SyncSource: ISyncSource;
+      SyncSource: TSyncSource;
       AvgSyncDiff: double;
       SourceStream: TAudioSourceStream;
 
@@ -282,7 +282,7 @@ type
       procedure AddSoundEffect(Effect: TSoundEffect);    virtual; abstract;
       procedure RemoveSoundEffect(Effect: TSoundEffect); virtual; abstract;
 
-      procedure SetSyncSource(SyncSource: ISyncSource);
+      procedure SetSyncSource(SyncSource: TSyncSource);
       function GetSourceStream(): TAudioSourceStream;
 
       property Status: TStreamStatus read GetStatus;
@@ -364,7 +364,7 @@ type
       procedure SetLoop(Enabled: boolean);
 
       procedure FadeIn(Time: real; TargetVolume: single);
-      procedure SetSyncSource(SyncSource: ISyncSource);
+      procedure SetSyncSource(SyncSource: TSyncSource);
 
       procedure Rewind;
       function  Finished: boolean;
@@ -978,7 +978,7 @@ begin
   Result := SourceStream;
 end;
 
-procedure TAudioPlaybackStream.SetSyncSource(SyncSource: ISyncSource);
+procedure TAudioPlaybackStream.SetSyncSource(SyncSource: TSyncSource);
 begin
   Self.SyncSource := SyncSource;
   AvgSyncDiff := -1;
