@@ -114,7 +114,7 @@ type
     name: PAnsiChar;
     url_open: function (h: PURLContext; filename: {const} PAnsiChar; flags: cint): cint; cdecl;
     url_read: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
-    {$IF LIBAVFORMAT_VERSION >= 52034001} // 52.34.1
+    {$IF LIBAVFORMAT_VERSION >= 52034000} // 52.34.0
     url_read_complete: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
     {$IFEND}
     url_write: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
