@@ -290,7 +290,7 @@ function av_new_packet(var pkt: TAVPacket; size: cint): cint;
 function av_get_packet(s: PByteIOContext; var pkt: TAVPacket; size: cint): cint;
   cdecl; external av__format;
 
-{$IF LIBAVCODEC_VERSION < 52032000} // < 52.32.0
+{$IF LIBAVFORMAT_VERSION < 52032000} // < 52.32.0
 (**
  * @warning This is a hack - the packet memory allocation stuff is broken. The
  * packet is allocated if it was not really allocated.
@@ -1762,7 +1762,7 @@ begin
 end;
 {$IFEND}
 
-{$IF LIBAVCODEC_VERSION < 52032000} // < 52.32.0
+{$IF LIBAVFORMAT_VERSION < 52032000} // < 52.32.0
 procedure av_free_packet(pkt: PAVPacket);
 begin
   if ((pkt <> nil) and (@pkt^.destruct <> nil)) then
