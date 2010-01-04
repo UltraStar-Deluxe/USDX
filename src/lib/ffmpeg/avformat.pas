@@ -192,7 +192,7 @@ procedure av_metadata_free(var m: PAVMetadata);
 
 (* packet functions *)
 
-{$IF LIBAVCODEC_VERSION < 52032000} // < 52.32.0
+{$IF LIBAVFORMAT_VERSION < 52032000} // < 52.32.0
 type
   PAVPacket = ^TAVPacket;
   TAVPacket = record
