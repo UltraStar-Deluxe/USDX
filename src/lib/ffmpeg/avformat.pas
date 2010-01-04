@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.45.0, Mo Jan 4 0:40:00 2009 CET 
+ * Max. version: 52.46.0, Mo Jan 4 0:40:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 45;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 46;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
