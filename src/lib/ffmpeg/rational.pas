@@ -32,8 +32,9 @@
  * update, MiSchi, no code change
  * Fri Jun 12 2009 22:20:00 UTC
  *
- * update, MiSchi, no code change needed
- * Sun Dec 6 2009 22:20:00 UTC
+ * update to
+ * avutil max. version 50.7.0, Mon, Jan 4 2010 24:00:00 UTC 
+ * MiSchi
  *)
 
 unit rational;

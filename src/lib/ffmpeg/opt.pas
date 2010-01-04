@@ -23,18 +23,15 @@
  * - For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  *   in the source codes.
  * - Changes and updates by the UltraStar Deluxe Team
- *)
-
-(*
+ *
  * Conversion of libavcodec/opt.h
  * revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update, MiSchi, no code change
  * Fri Jun 12 2009 21:50:00 UTC
- *)
-{
+ *
  * update to
- * Max. version: 52.42.0, Sun Dec 6 19:20:00 2009 CET 
+ * Max. avcodec version: 52.45.0, Mon Jan 4 2010 19:20:00 CET 
  * MiSchi
 }
 

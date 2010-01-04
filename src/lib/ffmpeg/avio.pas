@@ -33,13 +33,11 @@
  *
  * @warning This file has to be considered an internal but installed
  * header, so it should not be directly included in your projects.
- *)
-
-{
+ *
  * update to
- * Max. avformat version: 52.44.0, Tue Dec 29 0:40:00 2009 CET 
+ * Max. avformat version: 52.46.0, Mon Jan 4 2010 0:40:00 CET 
  * MiSchi
-}
+ *)
 
 unit avio;
 

@@ -36,14 +36,15 @@
  *
  * libavutil/log.h:
  *  revision 16571, Tue Jan 13 00:14:43 2009 UTC
+ *
+ * Update changes auf avutil.h, mem.h and log.h
+ * Max. version 50.7.0, Tue, Dec 29 0:30:00 2009 UTC 
+ * include/keep pixfmt.h (change in revision 50.01.0)
+ * Maybe, the pixelformats are not needed, but it has not been checked.
+ * log.h is only partial.
+ *
+ * update Mon, Jan 4 2010
  *)
-{
- Update changes auf avutil.h, mem.h and log.h
- Max. version 50.7.0, Tue, Dec 29 0:30:00 2009 UTC 
- include/keep pixfmt.h (change in revision 50.01.0)
- Maybe, the pixelformats are not needed, but it has not been checked.
- log.h is only partial.
-}
 
 unit avutil;
 
@@ -114,6 +115,8 @@ function avutil_configuration(): PAnsiChar;
 function avutil_license(): PAnsiChar;
   cdecl; external av__format;
 {$IFEND}
+
+(* libavutil/pixfmt.h *)
 
 type
 (**
@@ -286,6 +289,7 @@ const
 function MKTAG(a, b, c, d: AnsiChar): integer;
 
 (* libavutil/mem.h *)
+
 (* memory handling functions *)
 
 (**
@@ -402,11 +406,40 @@ const
   AV_LOG_DEBUG   = 48;
 {$IFEND}
 
+(**
+ * Sends the specified message to the log if the level is less than or equal
+ * to the current av_log_level. By default, all logging messages are sent to
+ * stderr. This behavior can be altered by setting a different av_vlog callback
+ * function.
+ *
+ * @param avcl A pointer to an arbitrary struct of which the first field is a
+ * pointer to an AVClass struct.
+ * @param level The importance level of the message, lower values signifying
+ * higher importance.
+ * @param fmt The format string (printf-compatible) that specifies how
+ * subsequent arguments are converted to output.
+ * @see av_vlog
+ *)
+
+{** to be translated if needed
+#ifdef __GNUC__
+void av_log(void*, int level, const char *fmt, ...) __attribute__ ((__format__ (__printf__, 3, 4)));
+#else
+void av_log(void*, int level, const char *fmt, ...);
+#endif
+ 
+void av_vlog(void*, int level, const char *fmt, va_list);
+**}
+
 function av_log_get_level(): cint;
   cdecl; external av__util;
 procedure av_log_set_level(level: cint);
   cdecl; external av__util;
 
+{** to be translated if needed
+void av_log_set_callback(void (*)(void*, int, const char*, va_list));
+void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl);
+**}
 
 implementation
 

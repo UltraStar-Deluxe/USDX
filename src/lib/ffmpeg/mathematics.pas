@@ -33,7 +33,7 @@
  *)
 {
  * update to
- * avutil max. version 50.05.1, Sun, Dec 6 24:00:00 2009 UTC 
+ * avutil max. version 50.7.0, Mon, Jan 4 2010 24:00:00 UTC 
  * MiSchi
 }
 

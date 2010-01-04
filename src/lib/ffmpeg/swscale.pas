@@ -27,7 +27,7 @@
  *)
 {
  * update to
- * Max. version: 0.7.2, Sun Dec 6 22:20:00 2009 CET 
+ * Max. version: 0.7.2, Mon Jan 4 2010 22:20:00 CET 
  * MiSchi
 }
  

@@ -28,12 +28,11 @@
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision 6577,  Sat Oct 7 15:30:46 2006 UTC
  * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
- *)
-{
+ *
  * update to
- * Max. version: 52.46.0, Mo Jan 4 0:40:00 2009 CET 
+ * Max. version: 52.46.0, Mo Jan 4 2010 0:40:00 CET 
  * MiSchi
-}
+ *)
 
 unit avformat;
 

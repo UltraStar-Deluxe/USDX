@@ -28,12 +28,11 @@
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
- *)
-{
+ *
  * update to
- * Max. version: 52.45.0, Tue Dec 29 00:25:00 2009 CET 
+ * Max. version: 52.45.0, Mon Jan 4 2010 00:25:00 CET 
  * MiSchi
-}
+ *)
 
 unit avcodec;
 
@@ -494,6 +493,7 @@ const
 {$IF LIBAVCODEC_VERSION >= 52038001} // >= 52.38.1
   CH_LAYOUT_NATIVE          = $8000000000000000;
 {$IFEND}
+
   {* Audio channel convenience macros *}
   CH_LAYOUT_MONO            = (CH_FRONT_CENTER);
   CH_LAYOUT_STEREO          = (CH_FRONT_LEFT or CH_FRONT_RIGHT);
@@ -525,9 +525,7 @@ const
                                CH_FRONT_RIGHT_OF_CENTER);
   CH_LAYOUT_STEREO_DOWNMIX  = (CH_STEREO_LEFT or CH_STEREO_RIGHT);
 
-
-const
-  {* in bytes *}
+{* in bytes *}
   AVCODEC_MAX_AUDIO_FRAME_SIZE = 192000; // 1 second of 48khz 32bit audio
 
 {**
@@ -718,7 +716,6 @@ const
 (* /Fx *)
 (* codec capabilities *)
 
-const
   CODEC_CAP_DRAW_HORIZ_BAND = $0001; ///< decoder can use draw_horiz_band callback
   (**
    * Codec uses get_buffer() for allocating buffers.
@@ -1015,11 +1012,11 @@ const
 
   FF_COMPRESSION_DEFAULT = -1;
 
+{$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
 const
   AVPALETTE_SIZE = 1024;
   AVPALETTE_COUNT = 256;
 
-{$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
 type
 (**
  * AVPaletteControl
@@ -1352,118 +1349,11 @@ type
      *)
     hwaccel_data_private: pointer;
     {$IFEND}
+
     {$IF LIBAVCODEC_VERSION >= 52022000} // >= 52.22.0
     hwaccel_picture_private: pointer;
     {$IFEND}
 
-    {$IF LIBAVCODEC_VERSION >= 51070000} // >= 51.70.0
-    (**
-     * Bits per sample/pixel of internal libavcodec pixel/sample format.
-     * This field is applicable only when sample_fmt is SAMPLE_FMT_S32.
-     * - encoding: set by user.
-     * - decoding: set by libavcodec.
-     *)
-    bits_per_raw_sample: cint;
-    {$IFEND}
-
-    {$IF LIBAVCODEC_VERSION >= 52002000} // >= 52.2.0
-    (**
-     * Audio channel layout.
-     * - encoding: set by user.
-     * - decoding: set by libavcodec.
-     *)
-    channel_layout: cint64;
-
-    (**
-     * Request decoder to use this channel layout if it can (0 for default)
-     * - encoding: unused
-     * - decoding: Set by user.
-     *)
-    request_channel_layout: cint64;
-    {$IFEND}
-
-    {$IF LIBAVCODEC_VERSION >= 52004000} // >= 52.4.0
-    (**
-     * Ratecontrol attempt to use, at maximum, <value> of what can be used without an underflow.
-     * - encoding: Set by user.
-     * - decoding: unused.
-     *)
-    rc_max_available_vbv_use: cfloat;
-
-    (**
-     * Ratecontrol attempt to use, at least, <value> times the amount needed to prevent a vbv overflow.
-     * - encoding: Set by user.
-     * - decoding: unused.
-     *)
-    rc_min_vbv_overflow_use: cfloat;
-    {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52018000} // >= 52.18.0
-    (**
-     * Hardware accelerator in use
-     * - encoding: unused.
-     * - decoding: Set by libavcodec
-     *)
-    hwaccel: PAVHWAccel;
-    {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52020000} // >= 52.20.0
-    (**
-     * For some codecs, the time base is closer to the field rate than the frame rate.
-     * Most notably, H.264 and MPEG-2 specify time_base as half of frame duration
-     * if no telecine is used ...
-     *
-     * Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
-     *)
-    ticks_per_frame: cint;
-    {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52021000} // >= 52.21.0
-    (**
-     * Hardware accelerator context.
-     * For some hardware accelerators, a global context needs to be
-     * provided by the user. In that case, this holds display-dependent
-     * data FFmpeg cannot instantiate itself. Please refer to the
-     * FFmpeg HW accelerator documentation to know how to fill this
-     * is. e.g. for VA API, this is a struct vaapi_context.
-     * - encoding: unused
-     * - decoding: Set by user
-     *)
-    hwaccel_context: pointer;
-    {$IFEND}
-    {$IF LIBAVCODEC_VERSION >= 52028000} // >= 52.28.0
-    (**
-     * Chromaticity coordinates of the source primaries.
-     * - encoding: Set by user
-     * - decoding: Set by libavcodec
-     *)
-    color_primaries: TAVColorPrimaries;
-
-    (**
-     * Color Transfer Characteristic.
-     * - encoding: Set by user
-     * - decoding: Set by libavcodec
-     *)
-    color_trc: TAVColorTransferCharacteristic;
-
-    (**
-     * YUV colorspace type.
-     * - encoding: Set by user
-     * - decoding: Set by libavcodec
-     *)
-    colorspace: TAVColorSpace;
-
-    (**
-     * MPEG vs JPEG YUV range.
-     * - encoding: Set by user
-     * - decoding: Set by libavcodec
-     *)
-    color_range: TAVColorRange;
-
-    (**
-     * This defines the location of chroma samples.
-     * - encoding: Set by user
-     * - decoding: Set by libavcodec
-     *)
-    chroma_sample_location: TAVChromaLocation;
-    {$IFEND}
   end;
 
   (**
@@ -2790,7 +2680,111 @@ type
     reordered_opaque: cint64;
     {$IFEND}
     
-    {$IF LIBAVCODEC_VERSION >= 52028000} // 52.28.0
+    {$IF LIBAVCODEC_VERSION >= 51069000} // 51.69.0
+    (**
+     * Bits per sample/pixel of internal libavcodec pixel/sample format.
+     * This field is applicable only when sample_fmt is SAMPLE_FMT_S32.
+     * - encoding: set by user.
+     * - decoding: set by libavcodec.
+     *)
+    bits_per_raw_sample: cint;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52002000} // 52.2.0
+    (**
+     * Audio channel layout.
+     * - encoding: set by user.
+     * - decoding: set by libavcodec.
+     *)
+    channel_layout: cint64;
+
+    (**
+     * Request decoder to use this channel layout if it can (0 for default)
+     * - encoding: unused
+     * - decoding: Set by user.
+     *)
+    request_channel_layout: cint64;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52004000} // >= 52.4.0
+    (**
+     * Ratecontrol attempt to use, at maximum, <value> of what can be used without an underflow.
+     * - encoding: Set by user.
+     * - decoding: unused.
+     *)
+    rc_max_available_vbv_use: cfloat;
+
+    (**
+     * Ratecontrol attempt to use, at least, <value> times the amount needed to prevent a vbv overflow.
+     * - encoding: Set by user.
+     * - decoding: unused.
+     *)
+    rc_min_vbv_overflow_use: cfloat;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52018000} // >= 52.18.0
+    (**
+     * Hardware accelerator in use
+     * - encoding: unused.
+     * - decoding: Set by libavcodec
+     *)
+    hwaccel: PAVHWAccel;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52020000} // >= 52.20.0
+    (**
+     * For some codecs, the time base is closer to the field rate than the frame rate.
+     * Most notably, H.264 and MPEG-2 specify time_base as half of frame duration
+     * if no telecine is used ...
+     *
+     * Set to time_base ticks per frame. Default 1, e.g., H.264/MPEG-2 set it to 2.
+     *)
+    ticks_per_frame: cint;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52021000} // >= 52.21.0
+    (**
+     * Hardware accelerator context.
+     * For some hardware accelerators, a global context needs to be
+     * provided by the user. In that case, this holds display-dependent
+     * data FFmpeg cannot instantiate itself. Please refer to the
+     * FFmpeg HW accelerator documentation to know how to fill this
+     * is. e.g. for VA API, this is a struct vaapi_context.
+     * - encoding: unused
+     * - decoding: Set by user
+     *)
+    hwaccel_context: pointer;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52028000} // >= 52.28.0
+    (**
+     * Chromaticity coordinates of the source primaries.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     *)
+    color_primaries: TAVColorPrimaries;
+
+    (**
+     * Color Transfer Characteristic.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     *)
+    color_trc: TAVColorTransferCharacteristic;
+
+    (**
+     * YUV colorspace type.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     *)
+    colorspace: TAVColorSpace;
+
+    (**
+     * MPEG vs JPEG YUV range.
+     * - encoding: Set by user
+     * - decoding: Set by libavcodec
+     *)
+    color_range: TAVColorRange;
+
     (**
      * This defines the location of chroma samples.
      * - encoding: Set by user
@@ -2798,6 +2792,7 @@ type
      *)
      chroma_sample_location: TAVChromaLocation;
     {$IFEND}
+
     {$IF LIBAVCODEC_VERSION >= 52037000} // >= 52.37.0
     (**
      * The codec may call this to execute several independent things.
@@ -2819,6 +2814,7 @@ type
      *)
       execute2: function (c: PAVCodecContext; func: TExecute2Func; arg2: Pointer; ret: Pcint; count: cint): cint; cdecl;
     {$IFEND}
+
     {$IF LIBAVCODEC_VERSION >= 52042000} // >= 52.42.0
     (**
      * explicit P-frame weighted prediction analysis method
@@ -3317,7 +3313,12 @@ procedure avcodec_set_dimensions(s: PAVCodecContext; width: cint; height: cint);
 function avcodec_get_pix_fmt(name: {const} PAnsiChar): TAVPixelFormat;
   cdecl; external av__codec;
 
-function avcodec_pix_fmt_to_codec_tag(p: TAVPixelFormat): cuint;
+(**
+ * Returns a value representing the fourCC code associated to the
+ * pixel format pix_fmt, or 0 if no associated fourCC code can be
+ * found.
+ *)
+function avcodec_pix_fmt_to_codec_tag(pix_fmt: TAVPixelFormat): cuint;
   cdecl; external av__codec;
 
 const
@@ -4087,9 +4088,10 @@ type
     codec_ids: array [0..4] of cint; (* several codec IDs are permitted *)
     priv_data_size: cint;
     parser_init: function(s: PAVCodecParserContext): cint; cdecl;
-    parser_parse: function(s: PAVCodecParserContext; avctx: PAVCodecContext;
-                            poutbuf: {const} PPointer; poutbuf_size: PCint;
-                            buf: {const} PByteArray; buf_size: cint): cint; cdecl;
+    parser_parse: function(s: PAVCodecParserContext;
+                           avctx: PAVCodecContext;
+                           poutbuf: {const} PPointer; poutbuf_size: PCint;
+                           buf: {const} PByteArray; buf_size: cint): cint; cdecl;
     parser_close: procedure(s: PAVCodecParserContext); cdecl;
     split: function(avctx: PAVCodecContext; buf: {const} PByteArray;
                     buf_size: cint): cint; cdecl;
@@ -4212,6 +4214,7 @@ function av_bitstream_filter_filter(bsfc: PAVBitStreamFilterContext;
                                poutbuf: PPointer; poutbuf_size: PCint;
                                buf: PByte; buf_size: cint; keyframe: cint): cint;
   cdecl; external av__codec;
+
 procedure av_bitstream_filter_close(bsf: PAVBitStreamFilterContext);
   cdecl; external av__codec;
 
