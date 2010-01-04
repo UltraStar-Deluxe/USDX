@@ -31,7 +31,7 @@
  *)
 {
  * update to
- * Max. version: 52.44.0, Tue Dec 29 0:40:00 2009 CET 
+ * Max. version: 52.45.0, Mo Jan 4 0:40:00 2009 CET 
  * MiSchi
 }
 
@@ -65,7 +65,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 44;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 45;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -1088,15 +1088,39 @@ procedure av_register_input_format(format: PAVInputFormat);
 procedure av_register_output_format(format: PAVOutputFormat);
   cdecl; external av__format;
 
+{$IF LIBAVFORMAT_VERSION_MAJOR < 53} // < 53
 function guess_stream_format(short_name: PAnsiChar;
                              filename: PAnsiChar;
                              mime_type: PAnsiChar): PAVOutputFormat;
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
+{$IFEND}
 
+(**
+ * Returns the output format in the list of registered output formats
+ * which best matches the provided parameters, or returns NULL if
+ * there is no match.
+ *
+ * @param short_name if non-NULL checks if short_name matches with the
+ * names of the registered formats
+ * @param filename if non-NULL checks if filename terminates with the
+ * extensions of the registered formats
+ * @param mime_type if non-NULL checks if mime_type matches with the
+ * MIME type of the registered formats
+ *)
+(**
+ * @deprecated Use av_guess_format() instead.
+ *)
 function guess_format(short_name: PAnsiChar;
                       filename: PAnsiChar;
                       mime_type: PAnsiChar): PAVOutputFormat;
   cdecl; external av__format;
+{$IF LIBAVFORMAT_VERSION >= 52045000} // >= 52.45.0
+                              deprecated;
+function av_guess_format(short_name: PAnsiChar;
+                         filename: PAnsiChar;
+                         mime_type: PAnsiChar): PAVOutputFormat;
+  cdecl; external av__format;
+{$IFEND}
 
 (**
  * Guesses the codec ID based upon muxer and filename.
