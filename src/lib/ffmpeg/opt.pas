@@ -33,7 +33,7 @@
  * update to
  * Max. avcodec version: 52.45.0, Mon Jan 4 2010 19:20:00 CET 
  * MiSchi
-}
+ *)
 
 unit opt;
 
