@@ -160,7 +160,6 @@ uses
   Math,
   gl,
   UCovers,
-  UDLLManager,
   UGraphic,
   UMain,
   UMenuButton,

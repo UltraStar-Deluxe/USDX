@@ -74,7 +74,6 @@ uses
   ULanguage,
   UParty,
   USong,
-  UDLLManager,
   UPlaylist,
   USongs,
   UUnicodeUtils;

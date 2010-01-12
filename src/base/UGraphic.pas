@@ -71,7 +71,6 @@ uses
   UScreenSongMenu,
   UScreenSongJumpto,
   {Party Screens}
-  UScreenSingModi,
   UScreenPartyNewRound,
   UScreenPartyScore,
   UScreenPartyOptions,

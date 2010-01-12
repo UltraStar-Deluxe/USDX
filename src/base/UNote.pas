@@ -123,7 +123,6 @@ uses
   UCatCovers,
   UDataBase,
   UPlaylist,
-  UDLLManager,
   UParty,
   UConfig,
   UCommon,

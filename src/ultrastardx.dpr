@@ -212,7 +212,6 @@ uses
   UCatCovers        in 'base\UCatCovers.pas',
   UFiles            in 'base\UFiles.pas',
   UGraphicClasses   in 'base\UGraphicClasses.pas',
-  UDLLManager       in 'base\UDLLManager.pas',
   UPlaylist         in 'base\UPlaylist.pas',
   UCommandLine      in 'base\UCommandLine.pas',
   URingBuffer       in 'base\URingBuffer.pas',
@@ -332,19 +331,12 @@ uses
   UScreenPopup            in 'screens\UScreenPopup.pas',
 
   //Includes - Screens PartyMode
-  UScreenSingModi         in 'screens\UScreenSingModi.pas',
   UScreenPartyNewRound    in 'screens\UScreenPartyNewRound.pas',
   UScreenPartyScore       in 'screens\UScreenPartyScore.pas',
   UScreenPartyPlayer      in 'screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions     in 'screens\UScreenPartyOptions.pas',
   UScreenPartyRounds      in 'screens\UScreenPartyRounds.pas',
   UScreenPartyWin         in 'screens\UScreenPartyWin.pas',
-
-
-  //------------------------------
-  //Includes - Modi SDK
-  //------------------------------
-  ModiSDK       in '..\plugins\SDK\ModiSDK.pas', //Old SDK, will be deleted soon
 
   SysUtils;
 

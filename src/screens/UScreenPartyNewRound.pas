@@ -94,7 +94,6 @@ uses
   UIni,
   UTexture,
   UParty,
-  UDLLManager,
   ULanguage,
   USong,
   ULog,

@@ -67,7 +67,6 @@ uses
   Textgl,
   ULanguage,
   UParty,
-  UDLLManager,
   UScreenCredits,
   USkins,
   UUnicodeUtils;
@@ -98,7 +97,7 @@ begin
         end;
       end;
       Ord('M'): begin
-        if (Ini.Players >= 1) and (Length(DLLMan.Plugins) >= 1) then
+        if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
           Exit;

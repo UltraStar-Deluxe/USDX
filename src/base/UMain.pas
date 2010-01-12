@@ -74,7 +74,6 @@ uses
   UCovers,
   UDataBase,
   UDisplay,
-  UDLLManager,
   UGraphic,
   UGraphicClasses,
   UIni,
