@@ -93,7 +93,6 @@ uses
   UMusic,
   URecord,
   UScreenSing,
-  UScreenSingModi,
   UTexture;
 
 procedure SingDrawBackground;

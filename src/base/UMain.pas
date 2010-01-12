@@ -232,13 +232,6 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Songs', 1);
 
-    // PluginManager
-    Log.BenchmarkStart(1);
-    Log.LogStatus('PluginManager', 'Initialization');
-    DLLMan := TDLLMan.Create;   // Load PluginList
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading PluginManager', 1);
-
     // Graphics
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize 3D', 'Initialization');
