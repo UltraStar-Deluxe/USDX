@@ -245,7 +245,6 @@ AC_SUBST(LIBS)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([plugins/Makefile])
 AC_CONFIG_FILES([src/config-$FPC_PLATFORM.inc:src/config.inc.in])
 if [[ x$libprojectM_USE_CWRAPPER = xyes ]]; then
     AC_CONFIG_FILES([src/lib/projectM/cwrapper/Makefile])
