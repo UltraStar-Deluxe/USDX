@@ -1,0 +1,27 @@
+function plugin_init()
+  register('party mode: blind', '1.00', 'USDX Team', 'http://www.UltrastarDeluxe.org');
+
+  require('Usdx.Party')
+  require('Usdx.ScreenSing')
+
+  local Mode = {}
+
+  Mode.Name = 'Blind'
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+
+  Mode.BeforeSing = 'BeforeSing';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+function BeforeSing()
+  local Settings = {};
+  Settings['NotesVisible'] = {}; -- notes hidden for every player
+
+  ScreenSing.SetSettings(Settings);
+
+  return true;
+end

@@ -1,0 +1,230 @@
+-- some values to adjust the creation of PlayerChanges
+local MinPercentage = 0.06;  -- minimal amount of points between changes (in percent)
+local MaxPercentage = 0.12; -- maximal amount of points between changes (in percent)
+-- position of big progress bar in the center
+local BarPos = {};
+BarPos.Top = 30
+BarPos.Bottom = 50
+BarPos.Left = 300
+BarPos.Right = 500
+
+function plugin_init()
+  register('party mode: teamduel', '1.00', 'USDX Team', 'http://www.UltrastarDeluxe.org');
+
+  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Gl', 'Usdx.TextGl');
+  local Mode = {}
+
+  Mode.Name = 'teamduel';
+  Mode.CanParty = true;
+  Mode.PlayerCount = {2,3,4,5,6};
+
+  Mode.BeforeSing = 'BeforeSing'
+  Mode.OnSing = 'Sing';
+
+  Usdx.Party.Register(Mode)
+
+  ScreenSing.GetBeat();
+
+  return true;
+end
+
+-- called everytime a singing session w/ this party mode is startet
+-- we just hook ScreenSing.SongLoaded to prepare the mic changes here
+function BeforeSing()
+  hSongLoaded = Usdx.Hook('ScreenSing.SongLoaded', 'PrepareChanges');
+end;
+
+-- adds a new SentenceChange at Line to the PlayerChanges array
+function AddChange(Line)
+  PlayerChanges[#PlayerChanges + 1] = {};
+  PlayerChanges[#PlayerChanges].OnBeat = Lines[Line].Start;
+
+  PlayerChanges[#PlayerChanges].NextPlayer = {}
+  for i = 1, #Teams do
+    repeat
+      PlayerChanges[#PlayerChanges].NextPlayer[i] = math.random(#Teams[i].Players);
+    until (1 == #PlayerChanges) or (PlayerChanges[#PlayerChanges].NextPlayer[i] ~= PlayerChanges[#PlayerChanges-1].NextPlayer[i]) or (#Teams[i].Players == 1);
+  end;
+end;
+
+function PrepareChanges()
+  Lines = ScreenSing.GetSongLines();
+  Teams = Party.GetTeams();
+
+  -- get sum of hittable beats (per line and total)
+  local TotalBeats = 0;
+  local LineValue = {};
+  for i = 1, #Lines do
+    for j = 1, #Lines[i].Notes do
+      LineValue[i] = (LineValue[i] or 0) + Lines[i].Notes[j].Length * Lines[i].Notes[j].NoteType;
+    end;
+    TotalBeats = TotalBeats + LineValue[i];
+  end;
+
+  -- calculate changes
+  PlayerChanges = {};
+  -- fallback if there are only freestyle notes
+  -- random count of lines between changes
+  if (TotalBeats == 0) then
+    local i = 1;
+    repeat
+      if i > 1 then
+        AddChange(i);
+      end
+
+      local step = math.ceil((MinPercentage + (MaxPercentage - MinPercentage) * math.random()) * #Lines);
+      if step < 1 then
+        step = 1;
+      end;
+
+      i = i + step;
+    until i >= #Lines;
+  else -- calculate changes by amount of hittable beats
+    local i = 1;
+    local BeatsToChange = math.ceil((MinPercentage + (MaxPercentage - MinPercentage) * math.random()) * TotalBeats);
+    local Beats = 0;
+
+    repeat
+      Beats = Beats + LineValue[i];
+      if Beats >= BeatsToChange then
+        AddChange(i);
+        BeatsToChange = BeatsToChange + math.ceil((MinPercentage + (MaxPercentage - MinPercentage) * math.random()) * TotalBeats);
+      end
+      i = i + 1;
+    until i >= #Lines;
+  end;
+
+  -- free lines
+  Lines = nil;
+
+  -- init NextPlayerChange
+  NextPlayerChange = 1;
+
+  -- calculate OSD position for players
+  do
+    local RBRect = ScreenSing.GetRBRect();
+    OSD = {};
+
+    for i = 1, #RBRect do
+      OSD[i] = {};
+      OSD[i].Left   = RBRect[i].x;
+      OSD[i].Right  = RBRect[i].x + RBRect[i].w;
+      OSD[i].Top    = RBRect[i].y + RBRect[i].h;
+      OSD[i].Bottom = RBRect[i].y + RBRect[i].h + math.max(RBRect[i].h, 13);
+    end;
+  end;
+
+  -- remove hook
+  hSongLoaded:Unhook();
+  hSongLoaded = nil;
+end
+
+function DrawPlayerText(i, Text)
+  Gl.Disable('GL_TEXTURE_2D');
+
+  -- background
+  Gl.Color (0, 0, 0, 1);
+  Gl.Begin('GL_QUADS');
+    Gl.Vertex(OSD[i].Left, OSD[i].Top);
+    Gl.Vertex(OSD[i].Left, OSD[i].Bottom);
+    Gl.Vertex(OSD[i].Right, OSD[i].Bottom);
+    Gl.Vertex(OSD[i].Right, OSD[i].Top);
+  Gl.End();
+
+  -- text
+  Gl.Color(1, 0, 0, 1);
+  TextGl.Size(6);
+  TextGl.Style(1);
+  TextGl.Italic(false);
+
+  local PosX = (OSD[i].Left + OSD[i].Right) / 2;
+  PosX = PosX - TextGl.Width(Text) / 2;
+
+  TextGl.Pos(PosX, OSD[i].Top - 3);
+
+  TextGl.Print(Text);
+end;
+
+-- draws the progress bar for player i
+function DrawPlayerProgress(i, Progress)
+  Gl.Disable('GL_TEXTURE_2D');
+
+  -- background
+  Gl.Color (0, 0, 0, 1);
+  Gl.Begin('GL_QUADS');
+    Gl.Vertex(OSD[i].Left, OSD[i].Top);
+    Gl.Vertex(OSD[i].Left, OSD[i].Bottom);
+    Gl.Vertex(OSD[i].Right, OSD[i].Bottom);
+    Gl.Vertex(OSD[i].Right, OSD[i].Top);
+  Gl.End();
+
+  -- bar
+  Gl.Color(1, 0, 0, 1);
+  Gl.Begin('GL_QUADS');
+    Gl.Vertex(OSD[i].Left + 2, OSD[i].Top + 2);
+    Gl.Vertex(OSD[i].Left + 2, OSD[i].Bottom - 2);
+    Gl.Vertex(OSD[i].Left + 2 + (OSD[i].Right - OSD[i].Left - 4) * Progress, OSD[i].Bottom - 2);
+    Gl.Vertex(OSD[i].Left + 2 + (OSD[i].Right - OSD[i].Left - 4) * Progress, OSD[i].Top + 2);
+  Gl.End();
+end;
+
+-- draws the big progress bar in the screen center
+function DrawCenterProgress(Progress)
+  Gl.Disable('GL_TEXTURE_2D');
+
+  -- background
+  Gl.Color (0, 0, 0, 1);
+  Gl.Begin('GL_QUADS');
+    Gl.Vertex(BarPos.Left, BarPos.Top);
+    Gl.Vertex(BarPos.Left, BarPos.Bottom);
+    Gl.Vertex(BarPos.Right, BarPos.Bottom);
+    Gl.Vertex(BarPos.Right, BarPos.Top);
+  Gl.End();
+
+  -- bar
+  Gl.Color(1, 0, 0, 1);
+  Gl.Begin('GL_QUADS');
+    Gl.Vertex(BarPos.Left + 2, BarPos.Top + 2);
+    Gl.Vertex(BarPos.Left + 2, BarPos.Bottom - 2);
+    Gl.Vertex(BarPos.Left + 2 + (BarPos.Right - BarPos.Left - 4) * Progress, BarPos.Bottom - 2);
+    Gl.Vertex(BarPos.Left + 2 + (BarPos.Right - BarPos.Left - 4) * Progress, BarPos.Top + 2);
+  Gl.End();
+end;
+
+function Sing()
+  if (NextPlayerChange <= #PlayerChanges) then
+    local BeatsToNextChange = PlayerChanges[NextPlayerChange].OnBeat - ScreenSing.GetBeat();
+    local TimeToNextChange = ScreenSing.BeatsToSeconds(BeatsToNextChange);
+
+    -- draw next player text or progress bar
+    if (TimeToNextChange <= 0) then
+      --there is a change
+      NextPlayerChange = NextPlayerChange + 1;
+
+    elseif (TimeToNextChange <= 5) then
+      for i = 1, #Teams do
+        DrawPlayerProgress(i, 1 - TimeToNextChange/5);
+      end;
+    elseif (TimeToNextChange <= 6.5) then
+      for i = 1, #Teams do
+        DrawPlayerText(i, Teams[i].Players[PlayerChanges[NextPlayerChange].NextPlayer[i]].Name);
+      end;
+    elseif (TimeToNextChange <= 8) then
+      for i = 1, #Teams do
+        DrawPlayerText(i, 'Next Player');
+      end;
+    elseif (TimeToNextChange <= 9.5) then
+      for i = 1, #Teams do
+        DrawPlayerText(i, Teams[i].Players[PlayerChanges[NextPlayerChange].NextPlayer[i]].Name);
+      end;
+    elseif (TimeToNextChange <= 11) then
+      for i = 1, #Teams do
+        DrawPlayerText(i, 'Next Player');
+      end;
+    end
+
+    if (TimeToNextChange <= 11) then
+      DrawCenterProgress(1 - TimeToNextChange/11);
+    end;
+  end;
+end
