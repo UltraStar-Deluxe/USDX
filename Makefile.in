@@ -58,7 +58,6 @@ USDX_GAME_DIR  := $(top_srcdir)/game
 USDX_TOOLS_DIR := $(top_srcdir)/tools
 USDX_BUILD_DIR := $(top_srcdir)/build
 USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
-USDX_PLUGIN_DIR   := $(top_srcdir)/plugins
 
 INSTALL_DATADIR := $(datadir)/$(USDX_PACKAGE_NAME)
 
@@ -114,7 +113,6 @@ BUILD_TARGETS = all debug release rebuild build
 .PHONY: $(BUILD_TARGETS)
 $(BUILD_TARGETS): all-deps
 	$(MAKE) -C $(USDX_SRC_DIR) $@
-#	$(MAKE) -C $(USDX_PLUGIN_DIR) all
 
 .PHONY: all-deps
 all-deps:
@@ -141,7 +139,6 @@ clean-game:
 	$(RM) $(USDX_GAME_DIR)/*.db
 	$(RM) $(USDX_GAME_DIR)/*.ini
 	-rmdir $(USDX_GAME_DIR)/screenshots
-	-rmdir $(USDX_GAME_DIR)/plugins
 	-rmdir $(USDX_GAME_DIR)/playlists
 	-rmdir $(USDX_GAME_DIR)/songs
 
@@ -227,11 +224,6 @@ install-exec:
 PPLATFORM  := @FPC_PLATFORM@
 PPROCESSOR := @FPC_PROCESSOR@
 
-.PHONY: install-plugins
-install-plugins:
-	$(MKDIR) "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
-	$(INSTALL) "$(USDX_GAME_DIR)/plugins"/* "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
-
 .PHONY: install-data
 install-data:
 	$(MAKE) RECURSIVE_SRC_DIR="artwork" \
@@ -293,10 +285,6 @@ uninstall-data:
 .PHONY: uninstall-exec
 uninstall-exec:
 	$(RM) "$(DESTDIR)$(bindir)/$(USDX_BIN_NAME)"
-
-.PHONY: uninstall-plugins
-uninstall-plugins:
-	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
 
 #################################################
 # Distributable source-package (TODO)
