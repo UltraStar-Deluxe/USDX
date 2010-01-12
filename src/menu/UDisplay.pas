@@ -40,11 +40,16 @@ uses
   glu,
   SysUtils,
   UMenu,
-  UPath;
+  UPath,
+  UMusic,
+  UHookableEvent;
 
 type
   TDisplay = class
     private
+      ePreDraw: THookableEvent;
+      eDraw: THookableEvent;
+
       //fade-to-black-hack
       BlackScreen:   boolean;
 
@@ -105,7 +110,11 @@ type
 
       { called when left or right mousebutton is pressed or released }
       procedure OnMouseButton(Pressed: boolean);
+      { fades to specific screen (playing specified sound) }
+      function FadeTo(Screen: PMenu; const aSound: TAudioPlaybackStream = nil): PMenu;
 
+      { abort fading to the current screen, may be used in OnShow, or during fade process }
+      procedure AbortScreenChange;
 
       { draws software cursor }
       procedure DrawCursor;
@@ -141,6 +150,10 @@ var
   i: integer;
 begin
   inherited Create;
+
+  // create events for plugins
+  ePreDraw := THookableEvent.Create('Display.PreDraw');
+  eDraw := THookableEvent.Create('Display.Draw');
 
   //popup hack
   CheckOK             := false;
@@ -225,6 +238,7 @@ begin
 
     if (not assigned(NextScreen)) and (not BlackScreen) then
     begin
+      ePreDraw.CallHookChain(false);
       CurrentScreen.Draw;
 
       //popup mod
@@ -241,6 +255,8 @@ begin
         FadeEnabled := true
       else if (Ini.ScreenFade = 0) then
         FadeEnabled := false;
+
+      eDraw.CallHookChain(false);
     end
     else
     begin
@@ -259,8 +275,11 @@ begin
           glPushAttrib(GL_VIEWPORT_BIT);
           glViewPort(0, 0, 512, 512);
 
+
           // draw screen that will be faded
+          ePreDraw.CallHookChain(false);
           CurrentScreen.Draw;
+          eDraw.CallHookChain(false);
 
           // clear OpenGL errors, otherwise fading might be disabled due to some
           // older errors in previous OpenGL calls.
@@ -299,7 +318,11 @@ begin
 
         // blackscreen-hack
         if not BlackScreen then
-          NextScreen.Draw // draw next screen
+        begin
+          ePreDraw.CallHookChain(false);
+          NextScreen.Draw; // draw next screen
+          eDraw.CallHookChain(false);
+        end
         else if ScreenAct = 1 then
         begin
           glClearColor(0, 0, 0 , 0);
@@ -538,6 +561,45 @@ begin
     Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown)
   else
     Result := True;
+end;
+
+{ abort fading to the next screen, may be used in OnShow, or during fade process }
+procedure TDisplay.AbortScreenChange;
+  var
+    Temp: PMenu;
+begin
+  // this is some kind of "hack" it is based on the
+  // code that is used to change the screens in TDisplay.Draw
+  // we should rewrite this whole behaviour, as it is not well
+  // structured and not well extendable. Also we should offer
+  // a possibility to change screens to plugins
+  // change this code when restructuring is done
+  if (assigned(NextScreen)) then
+  begin
+    // we have to swap the screens
+    Temp := CurrentScreen;
+    CurrentScreen := NextScreen;
+    NextScreen := Temp;
+
+    // and call the OnShow procedure of the previous screen
+    // because it was already called by default fade procedure
+    NextScreen.OnShow;
+    
+  end;
+end;
+
+{ fades to specific screen (playing specified sound)
+  returns old screen }
+function TDisplay.FadeTo(Screen: PMenu; const aSound: TAudioPlaybackStream = nil): PMenu;
+begin
+  Result := CurrentScreen;
+  if (Result <> nil) then
+  begin
+    if (aSound <> nil) then
+      Result.FadeTo(Screen, aSound)
+    else
+      Result.FadeTo(Screen);
+  end;
 end;
 
 procedure TDisplay.SaveScreenShot;

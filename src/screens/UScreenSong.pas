@@ -145,7 +145,7 @@ type
       //procedures for Menu
       procedure StartSong;
       procedure OpenEditor;
-      procedure DoJoker(Team: byte);
+      procedure DoJoker(Team: integer);
       procedure SelectPlayers;
 
       procedure UnloadDetailedCover;
@@ -602,7 +602,7 @@ begin
                 if (Ini.PartyPopup = 1) then
                   ScreenSongMenu.MenuShow(SM_Party_Main)
                 else
-                  ScreenSong.StartSong;
+                  Party.CallAfterSongSelect;
               end;
             end;
           end;
@@ -717,35 +717,17 @@ begin
 
       SDLK_1:
         begin //Joker
-          if (Mode = smPartyMode) and (PartySession.Teams.NumTeams >= 1) and (PartySession.Teams.Teaminfo[0].Joker > 0) then
-          begin
-            //Use Joker
-            Dec(PartySession.Teams.Teaminfo[0].Joker);
-            SelectRandomSong;
-            SetJoker;
-          end;
+          DoJoker(0);
         end;
 
       SDLK_2:
         begin //Joker
-          if (Mode = smPartyMode) and (PartySession.Teams.NumTeams >= 2) and (PartySession.Teams.Teaminfo[1].Joker > 0) then
-          begin
-            //Use Joker
-            Dec(PartySession.Teams.Teaminfo[1].Joker);
-            SelectRandomSong;
-            SetJoker;
-          end;
+          DoJoker(1);
         end;
 
       SDLK_3:
         begin //Joker
-          if (Mode = smPartyMode) and (PartySession.Teams.NumTeams >= 3) and (PartySession.Teams.Teaminfo[2].Joker > 0) then
-          begin
-            //Use Joker
-            Dec(PartySession.Teams.Teaminfo[2].Joker);
-            SelectRandomSong;
-            SetJoker;
-          end;
+          DoJoker(2);
         end;
     end;
   end; // if (PressedDown)
@@ -1555,8 +1537,8 @@ begin
   AudioPlayback.SetVolume(1.0);
 
   // if hide then stop music (for party mode popup on exit)
-  if (Display.NextScreen <> @ScreenSing) and
-     (Display.NextScreen <> @ScreenSingModi) then
+  if (Display.NextScreen <> @ScreenSing) {and
+     (Display.NextScreen <> @ScreenSingModi) }then
   begin
     StopMusicPreview();
   end;
@@ -1883,13 +1865,13 @@ begin
   // If Party Mode
   if Mode = smPartyMode then //Show Joker that are available
   begin
-    if (PartySession.Teams.NumTeams >= 1) then
+    if (Length(Party.Teams) >= 1) then
     begin
-      Static[StaticTeam1Joker1].Visible := (PartySession.Teams.Teaminfo[0].Joker >= 1);
-      Static[StaticTeam1Joker2].Visible := (PartySession.Teams.Teaminfo[0].Joker >= 2);
-      Static[StaticTeam1Joker3].Visible := (PartySession.Teams.Teaminfo[0].Joker >= 3);
-      Static[StaticTeam1Joker4].Visible := (PartySession.Teams.Teaminfo[0].Joker >= 4);
-      Static[StaticTeam1Joker5].Visible := (PartySession.Teams.Teaminfo[0].Joker >= 5);
+      Static[StaticTeam1Joker1].Visible := (Party.Teams[0].JokersLeft >= 1);
+      Static[StaticTeam1Joker2].Visible := (Party.Teams[0].JokersLeft >= 2);
+      Static[StaticTeam1Joker3].Visible := (Party.Teams[0].JokersLeft >= 3);
+      Static[StaticTeam1Joker4].Visible := (Party.Teams[0].JokersLeft >= 4);
+      Static[StaticTeam1Joker5].Visible := (Party.Teams[0].JokersLeft >= 5);
     end
     else
     begin
@@ -1900,13 +1882,13 @@ begin
       Static[StaticTeam1Joker5].Visible := false;
     end;
 
-    if (PartySession.Teams.NumTeams >= 2) then
+    if (Length(Party.Teams) >= 2) then
     begin
-      Static[StaticTeam2Joker1].Visible := (PartySession.Teams.Teaminfo[1].Joker >= 1);
-      Static[StaticTeam2Joker2].Visible := (PartySession.Teams.Teaminfo[1].Joker >= 2);
-      Static[StaticTeam2Joker3].Visible := (PartySession.Teams.Teaminfo[1].Joker >= 3);
-      Static[StaticTeam2Joker4].Visible := (PartySession.Teams.Teaminfo[1].Joker >= 4);
-      Static[StaticTeam2Joker5].Visible := (PartySession.Teams.Teaminfo[1].Joker >= 5);
+      Static[StaticTeam2Joker1].Visible := (Party.Teams[1].JokersLeft >= 1);
+      Static[StaticTeam2Joker2].Visible := (Party.Teams[1].JokersLeft >= 2);
+      Static[StaticTeam2Joker3].Visible := (Party.Teams[1].JokersLeft >= 3);
+      Static[StaticTeam2Joker4].Visible := (Party.Teams[1].JokersLeft >= 4);
+      Static[StaticTeam2Joker5].Visible := (Party.Teams[1].JokersLeft >= 5);
     end
     else
     begin
@@ -1917,13 +1899,13 @@ begin
       Static[StaticTeam2Joker5].Visible := false;
     end;
 
-    if (PartySession.Teams.NumTeams >= 3) then
+    if (Length(Party.Teams) >= 3) then
     begin
-      Static[StaticTeam3Joker1].Visible := (PartySession.Teams.Teaminfo[2].Joker >= 1);
-      Static[StaticTeam3Joker2].Visible := (PartySession.Teams.Teaminfo[2].Joker >= 2);
-      Static[StaticTeam3Joker3].Visible := (PartySession.Teams.Teaminfo[2].Joker >= 3);
-      Static[StaticTeam3Joker4].Visible := (PartySession.Teams.Teaminfo[2].Joker >= 4);
-      Static[StaticTeam3Joker5].Visible := (PartySession.Teams.Teaminfo[2].Joker >= 5);
+      Static[StaticTeam3Joker1].Visible := (Party.Teams[2].JokersLeft >= 1);
+      Static[StaticTeam3Joker2].Visible := (Party.Teams[2].JokersLeft >= 2);
+      Static[StaticTeam3Joker3].Visible := (Party.Teams[2].JokersLeft >= 3);
+      Static[StaticTeam3Joker4].Visible := (Party.Teams[2].JokersLeft >= 4);
+      Static[StaticTeam3Joker5].Visible := (Party.Teams[2].JokersLeft >= 5);
     end
     else
     begin
@@ -1990,7 +1972,7 @@ begin
   //Party Mode
   if (Mode = smPartyMode) then
   begin
-    FadeTo(@ScreenSingModi);
+    FadeTo(@ScreenSing);
   end
   else
   begin
@@ -2021,14 +2003,14 @@ begin
 end;
 
 //Team No of Team (0-5)
-procedure TScreenSong.DoJoker (Team: byte);
+procedure TScreenSong.DoJoker (Team: integer);
 begin
   if (Mode = smPartyMode) and
-     (PartySession.Teams.NumTeams >= Team + 1) and
-     (PartySession.Teams.Teaminfo[Team].Joker > 0) then
+     (High(Party.Teams) >= Team) and
+     (Party.Teams[Team].JokersLeft > 0) then
   begin
     //Use Joker
-    Dec(PartySession.Teams.Teaminfo[Team].Joker);
+    Dec(Party.Teams[Team].JokersLeft);
     SelectRandomSong;
     SetJoker;
   end;

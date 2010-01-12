@@ -401,16 +401,19 @@ begin
       begin
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_JOKER');
+        // to-do : Party
+        Button[0].Visible := (Length(Party.Teams) >= 1) AND (Party.Teams[0].JokersLeft > 0);
+        Button[1].Visible := (Length(Party.Teams) >= 2) AND (Party.Teams[1].JokersLeft > 0);
+        Button[2].Visible := (Length(Party.Teams) >= 3) AND (Party.Teams[2].JokersLeft > 0);
+        Button[3].Visible := True;
+        SelectsS[0].Visible := False;
 
-        Button[0].Visible := (PartySession.Teams.NumTeams >= 1) and (PartySession.Teams.Teaminfo[0].Joker > 0);
-        Button[1].Visible := (PartySession.Teams.NumTeams >= 2) and (PartySession.Teams.Teaminfo[1].Joker > 0);
-        Button[2].Visible := (PartySession.Teams.NumTeams >= 3) and (PartySession.Teams.Teaminfo[2].Joker > 0);
-        Button[3].Visible := true;
-        SelectsS[0].Visible := false;
-
-        Button[0].Text[0].Text := UTF8String(PartySession.Teams.Teaminfo[0].Name);
-        Button[1].Text[0].Text := UTF8String(PartySession.Teams.Teaminfo[1].Name);
-        Button[2].Text[0].Text := UTF8String(PartySession.Teams.Teaminfo[2].Name);
+        if (Button[0].Visible) then
+          Button[0].Text[0].Text := UTF8String(Party.Teams[0].Name);
+        if (Button[1].Visible) then
+          Button[1].Text[0].Text := UTF8String(Party.Teams[1].Name);
+        if (Button[2].Visible) then
+          Button[2].Text[0].Text := UTF8String(Party.Teams[2].Name);
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
 
         // set right interaction
@@ -614,7 +617,7 @@ begin
           0: // button 1
             begin
               // start singing
-              ScreenSong.StartSong;
+              Party.CallAfterSongSelect;
               Visible := false;
             end;
 

@@ -77,6 +77,7 @@ uses
   UScreenPartyOptions,
   UScreenPartyWin,
   UScreenPartyPlayer,
+  UScreenPartyRounds,
   {Stats Screens}
   UScreenStatMain,
   UScreenStatDetail,
@@ -133,12 +134,13 @@ var
   ScreenSongJumpto:     TScreenSongJumpto;
 
   //Party Screens
-  ScreenSingModi:         TScreenSingModi;
+  //ScreenSingModi:         TScreenSingModi;
   ScreenPartyNewRound:    TScreenPartyNewRound;
   ScreenPartyScore:       TScreenPartyScore;
   ScreenPartyWin:         TScreenPartyWin;
   ScreenPartyOptions:     TScreenPartyOptions;
   ScreenPartyPlayer:      TScreenPartyPlayer;
+  ScreenPartyRounds:      TScreenPartyRounds;
 
   //StatsScreens
   ScreenStatMain:         TScreenStatMain;
@@ -747,8 +749,8 @@ begin
 //  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Edit Header', 3); Log.BenchmarkStart(3);
   ScreenOpen :=             TScreenOpen.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Open', 3); Log.BenchmarkStart(3);
-  ScreenSingModi :=         TScreenSingModi.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
+  //ScreenSingModi :=         TScreenSingModi.Create;
+  //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
   ScreenSongMenu :=         TScreenSongMenu.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongMenu', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
@@ -769,6 +771,8 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyOptions', 3); Log.BenchmarkStart(3);
   ScreenPartyPlayer :=      TScreenPartyPlayer.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyPlayer', 3); Log.BenchmarkStart(3);
+  ScreenPartyRounds :=      TScreenPartyRounds.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyRounds', 3); Log.BenchmarkStart(3);
   ScreenStatMain :=         TScreenStatMain.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Stat Main', 3); Log.BenchmarkStart(3);
   ScreenStatDetail :=       TScreenStatDetail.Create;
@@ -805,7 +809,7 @@ begin
   ScreenEdit.Destroy;
   ScreenEditConvert.Destroy;
   ScreenOpen.Destroy;
-  ScreenSingModi.Destroy;
+  //ScreenSingModi.Destroy;
   ScreenSongMenu.Destroy;
   ScreenSongJumpto.Destroy;
   ScreenPopupCheck.Destroy;
@@ -816,6 +820,7 @@ begin
   ScreenPartyWin.Destroy;
   ScreenPartyOptions.Destroy;
   ScreenPartyPlayer.Destroy;
+  ScreenPartyRounds.Destroy;
   ScreenStatMain.Destroy;
   ScreenStatDetail.Destroy;
 end;

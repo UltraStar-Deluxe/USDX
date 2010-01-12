@@ -94,13 +94,8 @@ begin
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
-      SDLK_BACKSPACE :
-        begin
-          AudioPlayback.PlaySound(SoundLib.Start);
-          FadeTo(@ScreenMain);
-        end;
-
-      SDLK_RETURN:
+      SDLK_BACKSPACE,
+      SDLK_RETURN :
         begin
           AudioPlayback.PlaySound(SoundLib.Start);
           FadeTo(@ScreenMain);
@@ -139,10 +134,10 @@ end;
 
 procedure TScreenPartyWin.OnShow;
 var
-  I: integer;
-  Placing: TeamOrderArray;
+ I, J: integer;
+ Ranking: AParty_TeamRanking;
 
-  Function GetTeamColor(Team: byte): cardinal;
+  Function GetTeamColor(Team: integer): cardinal;
   var
     NameString: string;
   begin
@@ -154,15 +149,16 @@ var
 begin
   inherited;
 
-  //Get Team Placing
-  Placing := PartySession.GetTeamOrder;
+  // get team ranking
+  // Ranking is sorted by score
+  Ranking := Party.GetTeamRanking;
 
   //Set Winnertext
-  Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [PartySession.Teams.Teaminfo[Placing[0]].Name]);
-  if (PartySession.Teams.NumTeams >= 1) then
+  Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [Party.GetWinnerString(-1)]);
+  if (Length(Party.Teams) >= 1) then
   begin
-    Text[TextScoreTeam1].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[0]].Score);
-    Text[TextNameTeam1].Text := string(PartySession.Teams.TeamInfo[Placing[0]].Name);
+    Text[TextScoreTeam1].Text := IntToStr(Party.Teams[Ranking[0].Team].Score);
+    Text[TextNameTeam1].Text := Party.Teams[Ranking[0].Team].Name;
 
     Text[TextScoreTeam1].Visible := true;
     Text[TextNameTeam1].Visible := true;
@@ -173,7 +169,7 @@ begin
     //Set Static Color to Team Color
     if (Theme.PartyWin.StaticTeam1BG.Color = 'TeamColor') then
     begin
-      I := GetTeamColor(Placing[0]);
+      I := GetTeamColor(Ranking[0].Team);
       if (I <> -1) then
       begin
         Static[StaticTeam1BG].Texture.ColR := Color[I].RGB.R;
@@ -184,7 +180,7 @@ begin
 
     if (Theme.PartyWin.StaticTeam1.Color = 'TeamColor') then
     begin
-      I := GetTeamColor(Placing[0]);
+      I := GetTeamColor(Ranking[0].Team);
       if (I <> -1) then
       begin
         Static[StaticTeam1].Texture.ColR := Color[I].RGB.R;
@@ -202,10 +198,10 @@ begin
     Static[StaticTeam1Deco].Visible := false;
   end;
 
-  if (PartySession.Teams.NumTeams >= 2) then
+  if (Length(Party.Teams) >= 2) then
   begin
-    Text[TextScoreTeam2].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[1]].Score);
-    Text[TextNameTeam2].Text := string(PartySession.Teams.TeamInfo[Placing[1]].Name);
+    Text[TextScoreTeam2].Text := IntToStr(Party.Teams[Ranking[1].Team].Score);
+    Text[TextNameTeam2].Text := Party.Teams[Ranking[1].Team].Name;
 
     Text[TextScoreTeam2].Visible := true;
     Text[TextNameTeam2].Visible := true;
@@ -216,7 +212,7 @@ begin
     //Set Static Color to Team Color
     if (Theme.PartyWin.StaticTeam2BG.Color = 'TeamColor') then
     begin
-      I := GetTeamColor(Placing[1]);
+      I := GetTeamColor(Ranking[1].Team);
       if (I <> -1) then
       begin
         Static[StaticTeam2BG].Texture.ColR := Color[I].RGB.R;
@@ -227,7 +223,7 @@ begin
 
     if (Theme.PartyWin.StaticTeam2.Color = 'TeamColor') then
     begin
-      I := GetTeamColor(Placing[1]);
+      I := GetTeamColor(Ranking[1].Team);
       if (I <> -1) then
       begin
         Static[StaticTeam2].Texture.ColR := Color[I].RGB.R;
@@ -245,10 +241,10 @@ begin
     Static[StaticTeam2Deco].Visible := false;
   end;
 
-  if (PartySession.Teams.NumTeams >= 3) then
+  if (Length(Party.Teams) >= 3) then
   begin
-    Text[TextScoreTeam3].Text := InttoStr(PartySession.Teams.TeamInfo[Placing[2]].Score);
-    Text[TextNameTeam3].Text := string(PartySession.Teams.TeamInfo[Placing[2]].Name);
+    Text[TextScoreTeam3].Text := IntToStr(Party.Teams[Ranking[2].Team].Score);
+    Text[TextNameTeam3].Text := Party.Teams[Ranking[2].Team].Name;
 
     Text[TextScoreTeam3].Visible := true;
     Text[TextNameTeam3].Visible := true;
@@ -259,7 +255,7 @@ begin
     //Set Static Color to Team Color
     if (Theme.PartyWin.StaticTeam3BG.Color = 'TeamColor') then
     begin
-      I := GetTeamColor(Placing[2]);
+      I := GetTeamColor(Ranking[2].Team);
       if (I <> -1) then
       begin
         Static[StaticTeam3BG].Texture.ColR := Color[I].RGB.R;
@@ -270,7 +266,7 @@ begin
 
     if (Theme.PartyWin.StaticTeam3.Color = 'TeamColor') then
     begin
-      I := GetTeamColor(Placing[2]);
+      I := GetTeamColor(Ranking[2].Team);
       if (I <> -1) then
       begin
         Static[StaticTeam3].Texture.ColR := Color[I].RGB.R;

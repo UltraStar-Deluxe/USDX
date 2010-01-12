@@ -50,7 +50,8 @@ uses
   UTexture,
   UThemes,
   UPath,
-  UTime;
+  UTime,
+  UHookableEvent;
 
 type
   TLyricsSyncSource = class(TSyncSource)
@@ -61,7 +62,9 @@ type
   TScreenSing = class(TMenu)
   protected
     VideoLoaded: boolean;
-    Paused:     boolean; // pause mod
+    eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
+  protected
+    Paused:     boolean; //pause Mod
     LyricsSync: TLyricsSyncSource;
     NumEmptySentences: integer;
   public
@@ -104,6 +107,19 @@ type
     fShowVisualization: boolean;
     fCurrentVideoPlaybackEngine: IVideoPlayback;
 
+    // some settings to be set by plugins
+    settings: record
+      Finish: Boolean; //< if true, screen will finish on next draw
+
+      LyricsVisible: Boolean; //< shows or hides lyrics
+      NotesVisible: Integer; //< if bit[playernum] is set the notes for the specified player are visible. By default all players notes are visible
+
+      PlayerEnabled: Integer; //< defines whether a player can score atm
+    end;
+    procedure ClearSettings;
+    procedure ApplySettings; //< applies changes of settings record
+    procedure EndSong;
+
     constructor Create; override;
     procedure OnShow; override;
     procedure OnShowFinish; override;
@@ -132,6 +148,7 @@ uses
   URecord,
   USong,
   UDisplay,
+  UParty,
   UUnicodeUtils;
 
 // method for input parsing. if false is returned, getnextwindow
@@ -312,6 +329,10 @@ begin
       Theme.LyricBar.LowerX, Theme.LyricBar.LowerY, Theme.LyricBar.LowerW, Theme.LyricBar.LowerH);
 
   LyricsSync := TLyricsSyncSource.Create();
+
+  eSongLoaded := THookableEvent.Create('ScreenSing.SongLoaded');
+
+  ClearSettings;
 end;
 
 procedure TScreenSing.OnShow;
@@ -334,8 +355,10 @@ begin
 
   //the song was sung to the end
   SungToEnd := false;
+  ClearSettings;
+  Party.CallBeforeSing;
 
-  // reset video playback engine, to play video clip ...
+  // reset video playback engine, to play Video Clip...
   fCurrentVideoPlaybackEngine := VideoPlayback;
 
   // setup score manager
@@ -443,8 +466,8 @@ begin
 
   if (not success) then
   begin
-    // error loading song -> go back to song screen and show some error message
-    FadeTo(@ScreenSong);
+    // error loading song -> go back to previous screen and show some error message
+    Display.AbortScreenChange;
     // select new song in party mode
     if ScreenSong.Mode = smPartyMode then
       ScreenSong.SelectRandomSong();
@@ -635,6 +658,8 @@ begin
     if Lines[0].Line[Index].TotalNotes = 0 then
       Inc(NumEmptySentences);
 
+  eSongLoaded.CallHookChain(False);
+
   Log.LogStatus('End', 'OnShow');
 end;
 
@@ -651,6 +676,25 @@ begin
 
   // start timer
   CountSkipTimeSet;
+end;
+
+procedure TScreenSing.ClearSettings;
+begin
+  Settings.Finish := False;
+  Settings.LyricsVisible := True;
+  Settings.NotesVisible := high(Integer);
+  Settings.PlayerEnabled := high(Integer);
+end;
+
+{ applies changes of settings record }
+procedure TScreenSing.ApplySettings;
+begin
+  //
+end;
+
+procedure TScreenSing.EndSong;
+begin
+  Settings.Finish := True;
 end;
 
 procedure TScreenSing.OnHide;
@@ -790,11 +834,14 @@ begin
   if ShowFinish then
   begin
     if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or
-      (LyricsState.GetCurrentTime() * 1000 <= CurrentSong.Finish)) then
+      (LyricsState.GetCurrentTime() * 1000 <= CurrentSong.Finish)) and (not Settings.Finish) then
     begin
       // analyze song if not paused
       if (not Paused) then
+      begin
         Sing(Self);
+        Party.CallOnSing;
+      end;
     end
     else
     begin
@@ -802,7 +849,6 @@ begin
       begin
         Finish;
         FadeOut := true;
-        FadeTo(@ScreenScore);
       end;
     end;
   end;
@@ -879,6 +925,8 @@ begin
   end;
 
   SetFontItalic(false);
+
+  Party.CallAfterSing;
 end;
 
 procedure TScreenSing.OnSentenceEnd(SentenceIndex: cardinal);

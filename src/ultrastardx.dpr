@@ -148,6 +148,21 @@ uses
   {$ENDIF}
 
   //------------------------------
+  //Includes - Lua Support
+  //------------------------------
+  ULua           in 'lib\Lua\ULua.pas',
+  ULuaUtils      in 'lua\ULuaUtils.pas',
+  ULuaGl         in 'lua\ULuaGl.pas',
+  ULuaLog        in 'lua\ULuaLog.pas',
+  ULuaTextGL     in 'lua\ULuaTextGL.pas',
+  ULuaTexture    in 'lua\ULuaTexture.pas',
+  UHookableEvent in 'lua\UHookableEvent.pas',
+  ULuaCore       in 'lua\ULuaCore.pas',
+  ULuaUsdx       in 'lua\ULuaUsdx.pas',
+  ULuaParty      in 'lua\ULuaParty.pas',
+  ULuaScreenSing in 'lua\ULuaScreenSing.pas',
+
+  //------------------------------
   //Includes - Menu System
   //------------------------------
   UDisplay               in 'menu\UDisplay.pas',
@@ -322,6 +337,7 @@ uses
   UScreenPartyScore       in 'screens\UScreenPartyScore.pas',
   UScreenPartyPlayer      in 'screens\UScreenPartyPlayer.pas',
   UScreenPartyOptions     in 'screens\UScreenPartyOptions.pas',
+  UScreenPartyRounds      in 'screens\UScreenPartyRounds.pas',
   UScreenPartyWin         in 'screens\UScreenPartyWin.pas',
 
 

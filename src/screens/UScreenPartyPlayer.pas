@@ -44,6 +44,14 @@ uses
 
 type
   TScreenPartyPlayer = class(TMenu)
+    private
+      CountTeams: integer;
+      CountPlayer: array [0..2] of integer;
+
+      SelectTeams:     cardinal;
+      SelectPlayers: array [0..2] of cardinal;
+      procedure UpdateInterface;
+      procedure UpdateParty;
     public
       Team1Name: cardinal;
       Player1Name: cardinal;
@@ -69,6 +77,10 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ITeams:   array[0..1] of UTF8String = ('2', '3');
+  IPlayers: array[0..3] of UTF8String = ('1', '2', '3', '4');
+
 implementation
 
 uses
@@ -77,24 +89,92 @@ uses
   UIni,
   UTexture,
   UParty,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  UScreenPartyOptions,
+  ULanguage;
+
+procedure TScreenPartyPlayer.UpdateInterface;
+  var
+    I: integer;
+    Btn: integer;
+begin
+  SelectsS[SelectPlayers[2]].Visible := (CountTeams = 1);
+
+  Btn := 0;
+  for I := 0 to 2 do
+  begin
+    if (CountTeams + 1 >= I) then
+    begin
+      Button[Btn + 0].Visible := true;
+      Button[Btn + 1].Visible := (CountPlayer[I] + 1 >= 1);
+      Button[Btn + 2].Visible := (CountPlayer[I] + 1 >= 2);
+      Button[Btn + 3].Visible := (CountPlayer[I] + 1 >= 3);
+      Button[Btn + 4].Visible := (CountPlayer[I] + 1 >= 4);
+    end
+    else
+    begin
+      Button[Btn + 0].Visible := false;
+      Button[Btn + 1].Visible := false;
+      Button[Btn + 2].Visible := false;
+      Button[Btn + 3].Visible := false;
+      Button[Btn + 4].Visible := false;
+    end;
+    Inc(Btn, 5);
+  end;
+end;
+
+procedure TScreenPartyPlayer.UpdateParty;
+  var
+    I, J: integer;
+    Rounds: ARounds;
+begin
+  {//Save PlayerNames
+  for I := 0 to PartySession.Teams.NumTeams-1 do
+  begin
+    PartySession.Teams.Teaminfo[I].Name := PChar(Button[I*5].Text[0].Text);
+    for J := 0 to PartySession.Teams.Teaminfo[I].NumPlayers-1 do
+    begin
+      PartySession.Teams.Teaminfo[I].Playerinfo[J].Name := PChar(Button[I*5 + J+1].Text[0].Text);
+      PartySession.Teams.Teaminfo[I].Playerinfo[J].TimesPlayed := 0;
+    end;
+  end; }
+
+  // add teams to party
+
+  for I := 0 to CountTeams + 1 do
+  begin
+    Party.AddTeam(Button[I * 5].Text[0].Text);
+
+    for J := 0 to CountPlayer[I] do
+      Party.AddPlayer(I, Button[I * 5 + 1 + J].Text[0].Text);
+  end;
+
+  if (Party.ModesAvailable) then
+  begin //mode for current playersetup available
+    FadeTo(@ScreenPartyRounds, SoundLib.Start);
+  end
+  else
+  begin
+    // no mode available for current player setup
+    ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_MODES_FOR_CURRENT_SETUP'));
+    Party.Clear;
+  end;
+end;
 
 function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
-  I, J: integer;
-
   procedure IntNext;
   begin
     repeat
       InteractNext;
-    until Button[Interaction].Visible;
+    until (Interactions[Interaction].Typ <> iButton) or (Button[Interactions[Interaction].Num].Visible);
   end;
   procedure IntPrev;
   begin
     repeat
       InteractPrev;
-    until Button[Interaction].Visible;
+    until (Interactions[Interaction].Typ <> iButton) or (Button[Interactions[Interaction].Num].Visible);
   end;
 begin
   Result := true;
@@ -244,31 +324,31 @@ begin
           FadeTo(@ScreenPartyOptions);
         end;
 
-      SDLK_RETURN:
-        begin
-
-          //Save PlayerNames
-          for I := 0 to PartySession.Teams.NumTeams-1 do
-          begin
-            PartySession.Teams.Teaminfo[I].Name := PChar(Button[I*5].Text[0].Text);
-            for J := 0 to PartySession.Teams.Teaminfo[I].NumPlayers-1 do
-            begin
-              PartySession.Teams.Teaminfo[I].Playerinfo[J].Name := PChar(Button[I*5 + J+1].Text[0].Text);
-              PartySession.Teams.Teaminfo[I].Playerinfo[J].TimesPlayed := 0;
-            end;
-          end;
-
-          AudioPlayback.PlaySound(SoundLib.Start);
-          FadeTo(@ScreenPartyNewRound);
-        end;
+      SDLK_RETURN: UpdateParty;
 
       // Up and Down could be done at the same time,
       // but I don't want to declare variables inside
       // functions like this one, called so many times
       SDLK_DOWN:    IntNext;
       SDLK_UP:      IntPrev;
-      SDLK_RIGHT:   IntNext;
-      SDLK_LEFT:    IntPrev;
+      SDLK_RIGHT: begin
+        if (Interaction in [0,2,8,14]) then
+        begin
+          AudioPlayback.PlaySound(SoundLib.Option);
+          InteractInc;
+
+          UpdateInterface;
+        end;
+      end;
+      SDLK_LEFT: begin
+        if (Interaction in [0,2,8,14]) then
+        begin
+          AudioPlayback.PlaySound(SoundLib.Option);
+          InteractDec;
+
+          UpdateInterface;
+        end;
+      end;
     end;
   end;
 end;
@@ -279,25 +359,47 @@ begin
 
   LoadFromTheme(Theme.PartyPlayer);
 
+  Theme.PartyPlayer.SelectTeams.oneItemOnly := true;
+  Theme.PartyPlayer.SelectTeams.showArrows := true;
+  SelectTeams     := AddSelectSlide(Theme.PartyPlayer.SelectTeams, CountTeams, ITeams);
+
   Team1Name := AddButton(Theme.PartyPlayer.Team1Name);
+  Theme.PartyPlayer.SelectPlayers1.oneItemOnly := true;
+  Theme.PartyPlayer.SelectPlayers1.showArrows := true;
+  SelectPlayers[0]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers1, CountPlayer[0], IPlayers);
+
   AddButton(Theme.PartyPlayer.Player1Name);
   AddButton(Theme.PartyPlayer.Player2Name);
   AddButton(Theme.PartyPlayer.Player3Name);
   AddButton(Theme.PartyPlayer.Player4Name);
 
   Team2Name := AddButton(Theme.PartyPlayer.Team2Name);
+  Theme.PartyPlayer.SelectPlayers2.oneItemOnly := true;
+  Theme.PartyPlayer.SelectPlayers2.showArrows := true;
+  SelectPlayers[1]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers2, CountPlayer[1], IPlayers);
+
   AddButton(Theme.PartyPlayer.Player5Name);
   AddButton(Theme.PartyPlayer.Player6Name);
   AddButton(Theme.PartyPlayer.Player7Name);
   AddButton(Theme.PartyPlayer.Player8Name);
 
   Team3Name := AddButton(Theme.PartyPlayer.Team3Name);
+  Theme.PartyPlayer.SelectPlayers3.oneItemOnly := true;
+  Theme.PartyPlayer.SelectPlayers3.showArrows := true;
+  SelectPlayers[2]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers3, CountPlayer[2], IPlayers);
+  
   AddButton(Theme.PartyPlayer.Player9Name);
   AddButton(Theme.PartyPlayer.Player10Name);
   AddButton(Theme.PartyPlayer.Player11Name);
   AddButton(Theme.PartyPlayer.Player12Name);
 
   Interaction := 0;
+
+  //Clear Selects
+  CountTeams := 0;
+  CountPlayer[0] := 0;
+  CountPlayer[1] := 0;
+  CountPlayer[2] := 0;
 end;
 
 procedure TScreenPartyPlayer.OnShow;
@@ -320,66 +422,18 @@ begin
     Button[5].Text[0].Text := Ini.NameTeam[1];
     Button[10].Text[0].Text := Ini.NameTeam[2];
     // Templates for Names Mod end
-  
-  if (PartySession.Teams.NumTeams>=1) then
-  begin
-    Button[0].Visible := true;
-    Button[1].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=1);
-    Button[2].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=2);
-    Button[3].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=3);
-    Button[4].Visible := (PartySession.Teams.Teaminfo[0].NumPlayers >=4);
-  end
-  else
-  begin
-    Button[0].Visible := false;
-    Button[1].Visible := false;
-    Button[2].Visible := false;
-    Button[3].Visible := false;
-    Button[4].Visible := false;
-  end;
 
-  if (PartySession.Teams.NumTeams>=2) then
-  begin
-    Button[5].Visible := true;
-    Button[6].Visible := (PartySession.Teams.Teaminfo[1].NumPlayers >=1);
-    Button[7].Visible := (PartySession.Teams.Teaminfo[1].NumPlayers >=2);
-    Button[8].Visible := (PartySession.Teams.Teaminfo[1].NumPlayers >=3);
-    Button[9].Visible := (PartySession.Teams.Teaminfo[1].NumPlayers >=4);
-  end
-  else
-  begin
-    Button[5].Visible := false;
-    Button[6].Visible := false;
-    Button[7].Visible := false;
-    Button[8].Visible := false;
-    Button[9].Visible := false;
-  end;
+  Party.Clear;
 
-  if (PartySession.Teams.NumTeams>=3) then
-  begin
-    Button[10].Visible := true;
-    Button[11].Visible := (PartySession.Teams.Teaminfo[2].NumPlayers >=1);
-    Button[12].Visible := (PartySession.Teams.Teaminfo[2].NumPlayers >=2);
-    Button[13].Visible := (PartySession.Teams.Teaminfo[2].NumPlayers >=3);
-    Button[14].Visible := (PartySession.Teams.Teaminfo[2].NumPlayers >=4);
-  end
-  else
-  begin
-    Button[10].Visible := false;
-    Button[11].Visible := false;
-    Button[12].Visible := false;
-    Button[13].Visible := false;
-    Button[14].Visible := false;
-  end;
-
+  UpdateInterface;
 end;
 
 procedure TScreenPartyPlayer.SetAnimationProgress(Progress: real);
 var
   I:    integer;
 begin
-  for I := 0 to high(Button) do
-    Button[I].Texture.ScaleW := Progress;
+  {for I := 0 to high(Button) do
+    Button[I].Texture.ScaleW := Progress;   }
 end;
 
 end.

@@ -129,7 +129,7 @@ type
   //-----------
   TSingScores = class
     private
-      Positions: aScorePosition;
+      aPositions: aScorePosition;
       aPlayers:  aScorePlayer;
       oPositionCount: byte;
       oPlayerCount:   byte;
@@ -187,6 +187,7 @@ type
       property PositionCount: byte         read oPositionCount;
       property PlayerCount:   byte         read oPlayerCount;
       property Players:       aScorePlayer read aPlayers;
+      property Positions: aScorePosition read aPositions;
 
       // constructor just sets some standard settings
       constructor Create;
@@ -286,7 +287,7 @@ procedure TSingScores.AddPosition(const pPosition: PScorePosition);
 begin
   if (PositionCount < MaxPositions) then
   begin
-    Positions[PositionCount] := pPosition^;
+    aPositions[PositionCount] := pPosition^;
     Inc(oPositionCount);
   end;
 end;
@@ -606,7 +607,7 @@ var
 
     for I := 0 to PositionCount - 1 do
     begin
-      if ((Positions[I].PlayerCount and bPlayerCount) <> 0) then
+      if ((aPositions[I].PlayerCount and bPlayerCount) <> 0) then
         Inc(Result);
     end;
   end;
@@ -620,7 +621,7 @@ var
 
     for I := 0 to PositionCount - 1 do
     begin
-      if ((Positions[I].PlayerCount and bPlayerCount) <> 0) then
+      if ((aPositions[I].PlayerCount and bPlayerCount) <> 0) then
       begin
         if (bPlayer = 0) then
         begin
@@ -806,13 +807,13 @@ begin
           Progress := TimeDiff / Settings.Phase1Time;
 
 
-          W := Positions[PIndex].PUW * Sin(Progress/2*Pi);
-          H := Positions[PIndex].PUH * Sin(Progress/2*Pi);
+          W := aPositions[PIndex].PUW * Sin(Progress/2*Pi);
+          H := aPositions[PIndex].PUH * Sin(Progress/2*Pi);
 
-          X := Positions[PIndex].PUStartX + (Positions[PIndex].PUW - W)/2;
-          Y := Positions[PIndex].PUStartY + (Positions[PIndex].PUH - H)/2;
+          X := aPositions[PIndex].PUStartX + (aPositions[PIndex].PUW - W)/2;
+          Y := aPositions[PIndex].PUStartY + (aPositions[PIndex].PUH - H)/2;
 
-          FontSize   := Round(Progress * Positions[PIndex].PUFontSize);
+          FontSize   := Round(Progress * aPositions[PIndex].PUFontSize);
           FontOffset := (H - FontSize) / 2;
           Alpha := 1;
         end
@@ -822,20 +823,20 @@ begin
           // phase 2 - the moving
           Progress := (TimeDiff - Settings.Phase1Time) / Settings.Phase2Time;
 
-          W := Positions[PIndex].PUW;
-          H := Positions[PIndex].PUH;
+          W := aPositions[PIndex].PUW;
+          H := aPositions[PIndex].PUH;
 
-          PosDiff := Positions[PIndex].PUTargetX - Positions[PIndex].PUStartX;
+          PosDiff := aPositions[PIndex].PUTargetX - aPositions[PIndex].PUStartX;
           if PosDiff > 0 then
             PosDiff := PosDiff + W;
-          X := Positions[PIndex].PUStartX + PosDiff * sqr(Progress);
+          X := aPositions[PIndex].PUStartX + PosDiff * sqr(Progress);
 
-          PosDiff := Positions[PIndex].PUTargetY - Positions[PIndex].PUStartY;
+          PosDiff := aPositions[PIndex].PUTargetY - aPositions[PIndex].PUStartY;
           if PosDiff < 0 then
-            PosDiff := PosDiff + Positions[PIndex].BGH;
-          Y := Positions[PIndex].PUStartY + PosDiff * sqr(Progress);
+            PosDiff := PosDiff + aPositions[PIndex].BGH;
+          Y := aPositions[PIndex].PUStartY + PosDiff * sqr(Progress);
 
-          FontSize   := Positions[PIndex].PUFontSize;
+          FontSize   := aPositions[PIndex].PUFontSize;
           FontOffset := (H - FontSize) / 2;
           Alpha := 1 - 0.3 * Progress;
         end
@@ -868,24 +869,24 @@ begin
             // set positions etc.
             Alpha := 0.7 - 0.7 * Progress;
 
-            W := Positions[PIndex].PUW;
-            H := Positions[PIndex].PUH;
+            W := aPositions[PIndex].PUW;
+            H := aPositions[PIndex].PUH;
 
-            PosDiff := Positions[PIndex].PUTargetX - Positions[PIndex].PUStartX;
+            PosDiff := aPositions[PIndex].PUTargetX - aPositions[PIndex].PUStartX;
             if (PosDiff > 0) then
               PosDiff := W
             else
               PosDiff := 0;
-            X := Positions[PIndex].PUTargetX + PosDiff * Progress;
+            X := aPositions[PIndex].PUTargetX + PosDiff * Progress;
 
-            PosDiff := Positions[PIndex].PUTargetY - Positions[PIndex].PUStartY;
+            PosDiff := aPositions[PIndex].PUTargetY - aPositions[PIndex].PUStartY;
             if (PosDiff < 0) then
-              PosDiff := -Positions[PIndex].BGH
+              PosDiff := -aPositions[PIndex].BGH
             else
               PosDiff := 0;
-            Y := Positions[PIndex].PUTargetY - PosDiff * (1 - Progress);
+            Y := aPositions[PIndex].PUTargetY - PosDiff * (1 - Progress);
 
-            FontSize   := Positions[PIndex].PUFontSize;
+            FontSize   := aPositions[PIndex].PUFontSize;
             FontOffset := (H - FontSize) / 2;
           end
           else
@@ -922,7 +923,7 @@ begin
           glDisable(GL_BLEND);
 
           // set font style and size
-          SetFontStyle(Positions[PIndex].PUFont);
+          SetFontStyle(aPositions[PIndex].PUFont);
           SetFontItalic(false);
           SetFontSize(FontSize);
           SetFontReflection(false, 0);
@@ -958,7 +959,7 @@ begin
     // only draw if player is on cur screen
     if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1)) and Players[Index].Visible then
     begin
-      Position := @Positions[Players[Index].Position and 127];
+      Position := @aPositions[Players[Index].Position and 127];
 
       // draw scorebg
       glEnable(GL_TEXTURE_2D);
@@ -1010,7 +1011,7 @@ begin
         Players[index].RBVisible and
         Players[index].Visible) then
     begin
-      Position := @Positions[Players[Index].Position and 127];
+      Position := @aPositions[Players[Index].Position and 127];
 
       if (Enabled and Players[Index].Enabled) then
       begin

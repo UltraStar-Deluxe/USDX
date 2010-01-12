@@ -258,19 +258,21 @@ begin
 // So we exploit this behavior a bit - we give NrLines the playernumber, keep it in playernumber - and then we set NrLines to zero
 // This could also come quite in handy when we do the duet mode, cause just the notes for the player that has to sing should be drawn then
 // BUT this is not implemented yet, all notes are drawn! :D
+  if (ScreenSing.settings.NotesVisible and (1 shl NrLines) <> 0) then
+  begin
 
-  PlayerNumber := NrLines + 1; // Player 1 is 0
-  NrLines     := 0;
+    PlayerNumber := NrLines + 1; // Player 1 is 0
+    NrLines     := 0;
 
-// exploit done
+  // exploit done
 
-  glColor3f(1, 1, 1);
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor3f(1, 1, 1);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  lTmpA := (Right-Left);
-  lTmpB := (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
+    lTmpA := (Right-Left);
+    lTmpB := (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
 
   if ( lTmpA > 0 ) and ( lTmpB > 0 ) then
     TempR := lTmpA / lTmpB
@@ -285,16 +287,17 @@ begin
       begin
         if NoteType <> ntFreestyle then
 	begin
-          if Ini.EffectSing = 0 then
-          // If Golden note Effect of then Change not Color
-          begin
-            case NoteType of
-              ntNormal: glColor4f(1, 1, 1, 1);   // We set alpha to 1, cause we can control the transparency through the png itself
-              ntGolden: glColor4f(1, 1, 0.3, 1); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
+
+            if Ini.EffectSing = 0 then
+              // If Golden note Effect of then Change not Color
+            begin
+              case NoteType of
+                ntNormal: glColor4f(1, 1, 1, 1);   // We set alpha to 1, cause we can control the transparency through the png itself
+                ntGolden: glColor4f(1, 1, 0.3, 1); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
             end; // case
-          end //Else all Notes same Color
-          else
-            glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
+            end //Else all Notes same Color
+            else
+              glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
 
           // left part
           Rec.Left  := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX;
@@ -309,35 +312,35 @@ begin
             glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
           glEnd;
 
-          //We keep the postion of the top left corner b4 it's overwritten
+            //We keep the postion of the top left corner b4 it's overwritten
             GoldenStarPos := Rec.Left;
-          //done
+            //done
 
-         // middle part
-        Rec.Left  := Rec.Right;
-        Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
+            // middle part
+            Rec.Left := Rec.Right;
+            Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW - 0.5 + 10*ScreenX;
 
-        glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
+            glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+            glBegin(GL_QUADS);
+              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+              glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
+              glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
+            glEnd;
 
         // right part
         Rec.Left  := Rec.Right;
         Rec.Right := Rec.Right + NotesW;
 
-        glBindTexture(GL_TEXTURE_2D, Tex_plain_Right[PlayerNumber].TexNum);
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
+            glBindTexture(GL_TEXTURE_2D, Tex_plain_Right[PlayerNumber].TexNum);
+            glBegin(GL_QUADS);
+              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+              glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+              glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+            glEnd;
 
           // Golden Star Patch
           if (NoteType = ntGolden) and (Ini.EffectSing=1) then
@@ -345,13 +348,14 @@ begin
             GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
           end;
 
-        end; // if not FreeStyle
-      end; // with
-    end; // for
-  end; // with
+          end; // if not FreeStyle
+        end; // with
+      end; // for
+    end; // with
 
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+  end;
 end;
 
 // draw sung notes
@@ -481,7 +485,7 @@ var
   W, H:           real;
   lTmpA, lTmpB:   real;
 begin
-  if (Player[PlayerIndex].ScoreTotalInt >= 0) then
+  if (ScreenSing.settings.NotesVisible and (1 shl PlayerIndex) <> 0) then
   begin
     glColor4f(1, 1, 1, sqrt((1+sin( AudioPlayback.Position * 3))/4)/ 2 + 0.5 );
     glEnable(GL_TEXTURE_2D);
@@ -683,20 +687,25 @@ begin
 
   // draw note-lines
 
-  if (PlayersPlay = 1) and (Ini.NoteLines = 1) then
+  // to-do : needs fix when party mode works w/ 2 screens 
+  if (PlayersPlay = 1) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible and (1) <> 0) then
     SingDrawNoteLines(NR.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Right + 10*ScreenX, 15);
 
   if ((PlayersPlay = 2) or (PlayersPlay = 4)) and (Ini.NoteLines = 1) then
   begin
-    SingDrawNoteLines(NR.Left + 10*ScreenX, Skin_P1_NotesB - 105, NR.Right + 10*ScreenX, 15);
-    SingDrawNoteLines(NR.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Right + 10*ScreenX, 15);
+    if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15);
+    if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
   end;
 
-  if ((PlayersPlay = 3) or (PlayersPlay = 6)) and (Ini.NoteLines = 1) then
-  begin
-    SingDrawNoteLines(NR.Left + 10*ScreenX, 120, NR.Right + 10*ScreenX, 12);
-    SingDrawNoteLines(NR.Left + 10*ScreenX, 245, NR.Right + 10*ScreenX, 12);
-    SingDrawNoteLines(NR.Left + 10*ScreenX, 370, NR.Right + 10*ScreenX, 12);
+  if ((PlayersPlay = 3) or (PlayersPlay = 6)) and (Ini.NoteLines = 1) then begin
+    if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
+    if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
+    if (ScreenSing.settings.NotesVisible and (1 shl 2) <> 0) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
   end;
 
   // draw Lyrics
@@ -937,7 +946,7 @@ begin
   end;
 
   // Draw Lyrics
-  ScreenSingModi.Lyrics.Draw(LyricsState.MidBeat);
+  //ScreenSingModi.Lyrics.Draw(LyricsState.MidBeat);
   // TODO: Lyrics helper
 
   // oscilloscope | the thing that moves when you yell into your mic (imho)

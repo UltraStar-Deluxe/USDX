@@ -1187,8 +1187,8 @@ begin
     begin
       if (Display.CurrentScreen = @ScreenSing) then
         ScreenSing.Finish
-      else if (Display.CurrentScreen = @ScreenSingModi) then
-        ScreenSingModi.Finish;
+      {else if (Display.CurrentScreen = @ScreenSingModi) then
+        ScreenSingModi.Finish;}
     end;
   end
   else

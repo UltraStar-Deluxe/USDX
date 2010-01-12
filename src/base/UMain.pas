@@ -35,6 +35,7 @@ interface
 
 uses
   SysUtils,
+
   SDL;
 
 var
@@ -89,6 +90,14 @@ uses
   USongs,
   UThemes,
   UParty,
+  ULuaCore,
+  UHookableEvent,
+  ULuaGl,
+  ULuaLog,
+  ULuaTexture,
+  ULuaTextGL,
+  ULuaParty,
+  ULuaScreenSing,
   UTime;
 
 procedure Main;
@@ -123,6 +132,10 @@ begin
     // without SDL_INIT_TIMER SDL_GetTicks() might return strange values
     SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
     SDL_EnableUnicode(1);
+
+    // create luacore first so other classes can register their events
+    LuaCore := TLuaCore.Create;
+
 
     USTime := TTime.Create;
     VideoBGTimer := TRelativeTimer.Create;
@@ -227,13 +240,6 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading PluginManager', 1);
 
-    // Party Mode Manager
-    Log.BenchmarkStart(1);
-    Log.LogStatus('PartySession Manager', 'Initialization');
-    PartySession := TPartySession.Create;   //Load PartySession
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading PartySession Manager', 1);
-
     // Graphics
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize 3D', 'Initialization');
@@ -277,6 +283,29 @@ begin
       Log.BenchmarkEnd(1);
       Log.LogBenchmark('Initializing Joystick', 1);
     end;
+
+    // Lua
+    Log.BenchmarkStart(1);
+    Party := TPartyGame.Create;
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Initializing Party Manager', 1);
+
+    Log.BenchmarkStart(1);
+    LuaCore.RegisterModule('Log', ULuaLog_Lib_f);
+    LuaCore.RegisterModule('Gl', ULuaGl_Lib_f);
+    LuaCore.RegisterModule('TextGl', ULuaTextGl_Lib_f);
+    LuaCore.RegisterModule('Party', ULuaParty_Lib_f);
+    LuaCore.RegisterModule('ScreenSing', ULuaScreenSing_Lib_f);
+
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Initializing LuaCore', 1);
+
+    Log.BenchmarkStart(1);
+    LuaCore.LoadPlugins;
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Loading Lua Plugins', 1);
+
+    LuaCore.DumpPlugins;
 
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Loading Time', 0);

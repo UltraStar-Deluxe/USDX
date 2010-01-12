@@ -58,7 +58,7 @@ unit UConfig;
 //   not possible to use the version-numbers in this uses-clause.
 //   Example:
 //     interface
-//     uses 
+//     uses
 //       versions, // include this file
 //       {$IF USE_UNIT_XYZ}xyz;{$IFEND}      // Error: USE_UNIT_XYZ not defined
 //     const
@@ -68,13 +68,13 @@ unit UConfig;
 //
 //   Even if this file was an include-file no constants could be declared
 //   before the interface's uses clause.
-//   In FPC macros {$DEFINE VER:= 3} could be used to declare the version-numbers 
+//   In FPC macros {$DEFINE VER:= 3} could be used to declare the version-numbers
 //   but this is incompatible to Delphi. In addition macros do not allow expand
-//   arithmetic expressions. Although you can define 
+//   arithmetic expressions. Although you can define
 //     {$DEFINE FPC_VER:= FPC_VERSION*1000000+FPC_RELEASE*1000+FPC_PATCH}
 //   the following check would fail:
 //     {$IF FPC_VERSION_INT >= 002002000}
-//   would fail because FPC_VERSION_INT is interpreted as a string. 
+//   would fail because FPC_VERSION_INT is interpreted as a string.
 //
 // PLEASE consider this if you use version numbers in $IF compiler-
 // directives. Otherwise you might break portability.
@@ -88,7 +88,7 @@ interface
 {$ENDIF}
 
 {$I switches.inc}
-   
+
 uses
   SysUtils;
 
@@ -151,7 +151,7 @@ const
   FPC_RELEASE = 0;
   FPC_PATCH   = 0;
   {$ENDIF}
-  
+
   FPC_VERSION_INT = (FPC_VERSION * VERSION_MAJOR) +
                     (FPC_RELEASE * VERSION_MINOR) +
                     (FPC_PATCH * VERSION_RELEASE);
@@ -185,13 +185,13 @@ const
 
   {$ENDIF}
 
-  {$IFDEF HaveProjectM}  
+  {$IFDEF HaveProjectM}
   PROJECTM_VERSION = (PROJECTM_VERSION_MAJOR * VERSION_MAJOR) +
                      (PROJECTM_VERSION_MINOR * VERSION_MINOR) +
                      (PROJECTM_VERSION_RELEASE * VERSION_RELEASE);
   {$ENDIF}
 
-  {$IFDEF HavePortaudio}  
+  {$IFDEF HavePortaudio}
   PORTAUDIO_VERSION = (PORTAUDIO_VERSION_MAJOR * VERSION_MAJOR) +
                       (PORTAUDIO_VERSION_MINOR * VERSION_MINOR) +
                       (PORTAUDIO_VERSION_RELEASE * VERSION_RELEASE);
