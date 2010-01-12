@@ -224,6 +224,11 @@ install-exec:
 PPLATFORM  := @FPC_PLATFORM@
 PPROCESSOR := @FPC_PROCESSOR@
 
+.PHONY: install-plugins
+install-plugins:
+	$(MKDIR) "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
+	$(INSTALL) "$(USDX_GAME_DIR)/plugins"/* "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
+
 .PHONY: install-data
 install-data:
 	$(MAKE) RECURSIVE_SRC_DIR="artwork" \
@@ -285,6 +290,10 @@ uninstall-data:
 .PHONY: uninstall-exec
 uninstall-exec:
 	$(RM) "$(DESTDIR)$(bindir)/$(USDX_BIN_NAME)"
+
+.PHONY: uninstall-plugins
+uninstall-plugins:
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/plugins"
 
 #################################################
 # Distributable source-package (TODO)
