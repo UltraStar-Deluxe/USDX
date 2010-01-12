@@ -212,8 +212,7 @@ install-strip:
                 install
 
 .PHONY: install-all
-#install-all: install-exec install-plugins install-data
-install-all: install-exec install-data
+install-all: install-exec install-plugins install-data
 
 .PHONY: install-exec
 install-exec:
