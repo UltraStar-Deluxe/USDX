@@ -73,7 +73,6 @@ uses
   UGraphic,
   UMain,
   UParty,
-  UScreenSingModi,
   ULanguage,
   UUnicodeUtils;
 
