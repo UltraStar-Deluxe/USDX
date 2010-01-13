@@ -37,7 +37,8 @@ const
   LuaDLL = 'liblua.5.1.dylib';
   {$linklib liblua.5.1}
 {$ELSE}
-  LuaDLL = 'lua5.1.so';
+  LuaDLL51 = 'lua5.1.so';
+  LuaDLL = 'lua.so';
 {$ENDIF}
 {$ENDIF}
 {$IFDEF MACOS}
