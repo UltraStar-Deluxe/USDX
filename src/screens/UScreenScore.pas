@@ -513,7 +513,7 @@ var
   PStart:        integer;
   PHigh:         integer;
 begin
-//{*
+{*
   player[0].ScoreInt       := 7000;
   player[0].ScoreLineInt   := 2000;
   player[0].ScoreGoldenInt := 1000;
