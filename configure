@@ -641,6 +641,7 @@ libavcodec_VERSION_RELEASE
 libavcodec_VERSION_MINOR
 libavcodec_VERSION_MAJOR
 libavcodec_VERSION
+lua_LIB_NAME
 DARWIN_VERSION
 MACOSX_VERSION
 MACOSX_VERSION_INT
@@ -4911,6 +4912,7 @@ See the pkg-config man page for more details.
         fi
     fi
 
+lua_LIB_NAME="lua5.1"
 if [ x$lua_HAVE = xno ]; then
 
     have_lib="no"
@@ -4984,7 +4986,9 @@ See the pkg-config man page for more details.
         fi
     fi
 
+    lua_LIB_NAME="lua"
 fi
+
 
 # find FFMpeg
 # Note: do not use the min/max version parameters with ffmpeg

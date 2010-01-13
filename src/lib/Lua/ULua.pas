@@ -15,7 +15,8 @@ interface
 
 {$IFDEF UNIX}
 uses
-  dl;
+  dl,
+  UConfig;
 {$ENDIF}
 
 {$DEFINE LUA51}
@@ -37,8 +38,7 @@ const
   LuaDLL = 'liblua.5.1.dylib';
   {$linklib liblua.5.1}
 {$ELSE}
-  LuaDLL51 = 'lua5.1.so';
-  LuaDLL = 'lua.so';
+  LuaDLL = lua_lib_name;
 {$ENDIF}
 {$ENDIF}
 {$IFDEF MACOS}

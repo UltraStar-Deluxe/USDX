@@ -5,6 +5,10 @@
 
 {* Libraries *}
 
+{$IF Defined(IncludeConstants)}
+  lua_lib_name = '@lua_LIB_NAME@';
+{$IFEND}
+
 {$@DEFINE_HAVE_FFMPEG@ HaveFFmpeg}
 {$IF Defined(HaveFFmpeg) and Defined(IncludeConstants)}
   av__codec = 'libavcodec';
@@ -47,4 +51,3 @@
 {$IFEND}
 
 {$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
-
