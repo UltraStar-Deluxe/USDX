@@ -51,9 +51,10 @@ const
 
   EaseOut_MaxSteps: real = 10;    // that's the speed of the bars (10 is fast | 100 is slower)
 
-  BarRaiseSpeed:    cardinal = 0; // Time for raising the bar one step higher (in ms)
+  BarRaiseSpeed:    cardinal = 14; // Time for raising the bar one step higher (in ms)
 
 type
+  TScoreBarType = (sbtScore, sbtLine, sbtGolden);
   TPlayerScoreScreenTexture = record            // holds all colorized textures for up to 6 players
     //Bar textures
     Score_NoteBarLevel_Dark:     TTexture;      // Note
@@ -79,11 +80,22 @@ type
     RateEaseValue: real;
   end;
 
+  { hold maps of players to the different positions }
+  TPlayerPositionMap = record
+    Position: byte; // 1..6: Position of Player; 0: no position (e.g. too little screens)
+    Screen: byte;   // 0 - Screen 1; 1 - Screen 2
+    BothScreens: boolean; // true if player is drawn on both screens
+  end;
+  APlayerPositionMap = array of TPlayerPositionMap;
+
   TScreenScore = class(TMenu)
     private
+      { holds position and screen of players(index)
+        set by calling MapPlayerstoPosition() }
+      PlayerPositionMap: APlayerPositionMap;
+
       BarTime:            cardinal;
-      ArrayStartModifier: integer;
-    public
+
       aPlayerScoreScreenTextures: array[1..6] of TPlayerScoreScreenTexture;
       aPlayerScoreScreenDatas:    array[1..6] of TPlayerScoreScreenData;
       aPlayerScoreScreenRatings:  array[1..6] of TPlayerScoreRatingPics;
@@ -127,25 +139,35 @@ type
       TextPhrase_ActualValue: array[1..6] of integer;
       TextGolden_ActualValue: array[1..6] of integer;
 
+      procedure MapPlayersToPosition;
+
+      procedure FillPlayer(Item, P: integer);
+      procedure FillPlayerItems(PlayerNumber: integer);
+
+      procedure UpdateAnimation;
+      {****
+       * helpers for bar easing
+       *}
+      procedure EaseBarIn(PlayerNumber: integer; BarType: TScoreBarType);
+      procedure EaseScoreIn(PlayerNumber: integer; ScoreType: TScoreBarType);
+
+      procedure DrawPlayerBars;
+
+      procedure DrawBar(BarType: TScoreBarType; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
+
+      {****
+       * helpers for rating picture
+       *}
+      procedure ShowRating(PlayerNumber: integer);
+      function  CalculateBouncing(PlayerNumber: integer): real;
+      procedure DrawRating(PlayerNumber: integer; Rating: integer);
+    public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       procedure OnShowFinish; override;
       function Draw: boolean; override;
-      procedure FillPlayer(Item, P: integer);
-
-      procedure EaseBarIn(PlayerNumber: integer; BarType: string);
-      procedure EaseScoreIn(PlayerNumber: integer; ScoreType: string);
-
-      procedure FillPlayerItems(PlayerNumber: integer; ScoreType: string);
-
-      procedure DrawBar(BarType: string; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
-
-      //Rating Picture
-      procedure ShowRating(PlayerNumber: integer);
-      function  CalculateBouncing(PlayerNumber: integer): real;
-      procedure DrawRating(PlayerNumber: integer; Rating: integer);
   end;
 
 implementation
@@ -263,21 +285,12 @@ begin
 
 end;
 
-procedure TScreenScore.OnShow;
-var
-  P: integer;  // player
-  I: integer;
-  V: array[1..6] of boolean; // visibility array
-
+procedure TScreenScore.MapPlayersToPosition;
+  var
+    ArrayStartModifier: integer;
+    PlayersPerScreen: integer;
+    I: integer;
 begin
-
-{**
- * Turn backgroundmusic on
- *}
- SoundLib.StartBgMusic;
-
-  inherited;
-
   // all statics / texts are loaded at start - so that we have them all even if we change the amount of players
   // To show the corrects statics / text from the them, we simply modify the start of the according arrays
   // 1 Player -> Player[0].Score         (The score for one player starts at 0)
@@ -287,21 +300,116 @@ begin
   // 3 Player -> Player[0..5].Score
   //          -> Statics[4..6]
   case PlayersPlay of
-    1:    ArrayStartModifier := 0;
-    2, 4: ArrayStartModifier := 1;
-    3, 6: ArrayStartModifier := 3;
+    1:    ArrayStartModifier := 1;
+    2, 4: ArrayStartModifier := 2;
+    3, 6: ArrayStartModifier := 4;
   else
     ArrayStartModifier := 0; //this should never happen
   end;
 
+  if (PlayersPlay <= 3) then
+    PlayersPerScreen := PlayersPlay
+  else
+    PlayersPerScreen := PlayersPlay div 2;
+
+  SetLength(PlayerPositionMap, PlayersPlay);
+
+  // actually map players to positions
+  for I := 0 to PlayersPlay - 1 do
+  begin
+    PlayerPositionMap[I].Screen := (I div PlayersPerScreen) + 1;
+    if (PlayerPositionMap[I].Screen > Screens) then
+      PlayerPositionMap[I].Position := 0
+    else
+      PlayerPositionMap[I].Position := ArrayStartModifier + (I mod PlayersPerScreen);
+    PlayerPositionMap[I].BothScreens := (PlayersPlay <= 3) and (Screens > 1);
+  end;
+end;
+
+procedure TScreenScore.UpdateAnimation;
+var
+  CurrentTime: integer;
+  I: integer;
+begin
+  CurrentTime := SDL_GetTicks();
+
+  if (ScreenAct = 1) and ((CurrentTime >= BarTime) and ShowFinish) then
+  begin
+    BarTime := CurrentTime + BarRaiseSpeed;
+
+    // We actually arise them in the right order, but we have to draw them in reverse order (golden -> phrase -> mainscore)
+    if (BarScore_EaseOut_Step < EaseOut_MaxSteps * 10) then
+      BarScore_EaseOut_Step:= BarScore_EaseOut_Step + 1
+
+    // PhrasenBonus
+    else if (BarPhrase_EaseOut_Step < EaseOut_MaxSteps * 10) then
+      BarPhrase_EaseOut_Step := BarPhrase_EaseOut_Step + 1
+
+    // GoldenNotebonus
+    else if (BarGolden_EaseOut_Step < EaseOut_MaxSteps * 10) then
+      BarGolden_EaseOut_Step := BarGolden_EaseOut_Step + 1;
+  end;
+end;
+
+procedure TScreenScore.DrawPlayerBars;
+  var
+    I: integer;
+begin
+  for I := 0 to PlayersPlay-1 do
+  begin
+    if (PlayerPositionMap[I].Position > 0) and ((ScreenAct = PlayerPositionMap[I].Screen) or (PlayerPositionMap[I].BothScreens)) then
+    begin
+      if (BarScore_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
+      begin
+        if (BarPhrase_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
+        begin
+          // Draw golden score bar #
+          EaseBarIn(I + 1, sbtGolden);
+          EaseScoreIn(I + 1, sbtGolden);
+        end;
+
+        // Draw phrase score bar #
+        EaseBarIn(I + 1, sbtLine);
+        EaseScoreIn(I + 1, sbtLine);
+      end;
+
+      // Draw plain score bar #
+      EaseBarIn(I + 1, sbtScore);
+      EaseScoreIn(I + 1, sbtScore);
+    end;
+  end;
+end;
+
+procedure TScreenScore.OnShow;
+var
+  P: integer;  // player
+  I: integer;
+  V: array[1..6] of boolean; // visibility array
+
+begin
+
+  {**
+   * Turn backgroundmusic on
+   *}
+  SoundLib.StartBgMusic;
+
+  inherited;
+
+  MapPlayersToPosition;
+
   for P := 1 to PlayersPlay do
   begin
     // data
-    aPlayerScoreScreenDatas[P].Bar_Y                  := Theme.Score.StaticBackLevel[P + ArrayStartModifier].Y;
+    aPlayerScoreScreenDatas[P].Bar_Y                  := Theme.Score.StaticBackLevel[PlayerPositionMap[P-1].Position].Y;
 
     // ratings
     aPlayerScoreScreenRatings[P].RateEaseStep         := 1;
     aPlayerScoreScreenRatings[P].RateEaseValue        := 20;
+
+    // actual values
+    TextScore_ActualValue[P]  := 0;
+    TextPhrase_ActualValue[P] := 0;
+    TextGolden_ActualValue[P] := 0;
   end;
 
   Text[TextArtist].Text      := CurrentSong.Artist;
@@ -380,6 +488,10 @@ begin
     Static[StaticLevel[P]].Visible          := false;
     Static[StaticLevelRound[P]].Visible     := false;
   end;
+
+  BarScore_EaseOut_Step  := 1;
+  BarPhrase_EaseOut_Step := 1;
+  BarGolden_EaseOut_Step := 1;
 end;
 
 procedure TScreenScore.onShowFinish;
@@ -392,10 +504,6 @@ begin
     TextPhrase_ActualValue[index] := 0;
     TextGolden_ActualValue[index] := 0;
   end;
-
-  BarScore_EaseOut_Step  := 1;
-  BarPhrase_EaseOut_Step := 1;
-  BarGolden_EaseOut_Step := 1;
 end;
 
 function TScreenScore.Draw: boolean;
@@ -405,7 +513,7 @@ var
   PStart:        integer;
   PHigh:         integer;
 begin
-{*
+//{*
   player[0].ScoreInt       := 7000;
   player[0].ScoreLineInt   := 2000;
   player[0].ScoreGoldenInt := 1000;
@@ -415,86 +523,23 @@ begin
   player[1].ScoreLineInt   := 1100;
   player[1].ScoreGoldenInt :=  900;
   player[1].ScoreTotalInt  := 4500;
-*}
+//*}
 
   //Draw the Background
   DrawBG;
 
-  //Calculate first and last Player on this Screen
-  if (PlayersPlay > 3) then
-  begin
-    case PlayersPlay of
-      4: begin
-        PStart := 1 + ((ScreenAct-1) * 2);
-        PHigh  := 2 + ((ScreenAct-1) * 2);
-      end;
-
-      6: begin
-        PStart := 1 + ((ScreenAct-1) * 3);
-        PHigh  := 3 + ((ScreenAct-1) * 3);
-      end;
-    end;
-  end
-  else
-  begin
-    PStart := 1;
-    PHigh  := PlayersPlay;
-  end;
-
   // Let's start to arise the bars
-  CurrentTime := SDL_GetTicks();
-  if((CurrentTime >= BarTime) and ShowFinish) then
+  UpdateAnimation;
+
+  // we have to swap the themeobjects values on every draw
+  // to support dual screen
+  for PlayerCounter := 1 to PlayersPlay do
   begin
-    BarTime := CurrentTime + BarRaiseSpeed;
-
-    for PlayerCounter := PStart to PHigh do
-    begin
-      // We actually arise them in the right order, but we have to draw them in reverse order (golden -> phrase -> mainscore)
-      if (BarScore_EaseOut_Step < EaseOut_MaxSteps * 10) then
-        BarScore_EaseOut_Step:= BarScore_EaseOut_Step + 1;
-
-      // PhrasenBonus
-      if (BarScore_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
-      begin
-        if (BarPhrase_EaseOut_Step < EaseOut_MaxSteps * 10) then
-          BarPhrase_EaseOut_Step := BarPhrase_EaseOut_Step + 1;
-
-        // GoldenNotebonus
-        if (BarPhrase_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
-        begin
-          if (BarGolden_EaseOut_Step < EaseOut_MaxSteps * 10) then
-            BarGolden_EaseOut_Step := BarGolden_EaseOut_Step + 1;
-
-          // Draw golden score bar #
-          EaseBarIn(PlayerCounter,  'Golden');
-          EaseScoreIn(PlayerCounter,'Golden');
-        end;
-
-        // Draw phrase score bar #
-        EaseBarIn(PlayerCounter,  'Line');
-        EaseScoreIn(PlayerCounter,'Line');
-      end;
-
-      // Draw plain score bar #
-      EaseBarIn(PlayerCounter,  'Note');
-      EaseScoreIn(PlayerCounter,'Note');
-
-      if (PlayersPlay <= 3) then
-        //If we play w/ 3 or less players they fit in one screen
-        //so we don't have to swap the values of themeobjects
-        //on every draw
-        FillPlayerItems(PlayerCounter,'Funky');
-
-    end;
+    FillPlayerItems(PlayerCounter);
   end;
 
-  if (PlayersPlay > 3) then
-    //more then 3 players don't fit the screen
-    //so we have to swap the themeobjects values on every draw
-    for PlayerCounter := PStart to PHigh do
-    begin
-      FillPlayerItems(PlayerCounter,'Funky');
-    end;
+  if (ShowFinish) then
+    DrawPlayerBars;
 
   //Draw Theme Objects
   DrawFG;
@@ -510,54 +555,48 @@ begin
   Result := true;
 end;
 
-procedure TscreenScore.FillPlayerItems(PlayerNumber: integer; ScoreType: string);
+procedure TscreenScore.FillPlayerItems(PlayerNumber: integer);
 var
   ThemeIndex: integer;
 begin
-  // todo: take the name from player[PlayerNumber].Name instead of the ini when this is done (mog)
-  Text[TextName[PlayerNumber + ArrayStartModifier]].Text := Ini.Name[PlayerNumber - 1];
-  // end todo
-
-  // We have to do this here because we use the same Theme Object
-  // for players on the first and second screen
-  case PlayersPlay of
-    1, 2, 3: ThemeIndex := PlayerNumber + ArrayStartModifier;
-    4: ThemeIndex := ((PlayerNumber-1) mod 2) + 1 + ArrayStartModifier;
-    6: ThemeIndex := ((PlayerNumber-1) mod 3) + 1 + ArrayStartModifier;
-  end;
-
-  //golden
-  Text[TextGoldenNotesScore[ThemeIndex]].Text         := IntToStr(TextGolden_ActualValue[PlayerNumber]);
-  Text[TextGoldenNotesScore[ThemeIndex]].Alpha        := (BarGolden_EaseOut_Step / 100);
-
-  Static[StaticBoxLightest[ThemeIndex]].Texture.Alpha := (BarGolden_EaseOut_Step / 100);
-  Text[TextGoldenNotes[ThemeIndex]].Alpha             := (BarGolden_EaseOut_Step / 100);
-
-  // line bonus
-  Text[TextLineBonusScore[ThemeIndex]].Text           := IntToStr(TextPhrase_ActualValue[PlayerNumber]);
-  Text[TextLineBonusScore[ThemeIndex]].Alpha          := (BarPhrase_EaseOut_Step / 100);
-
-  Static[StaticBoxLight[ThemeIndex]].Texture.Alpha    := (BarPhrase_EaseOut_Step / 100);
-  Text[TextLineBonus[ThemeIndex]].Alpha               := (BarPhrase_EaseOut_Step / 100);
-
-  // plain score
-  Text[TextNotesScore[ThemeIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber]);
-  Text[TextNotes[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
-
-  Static[StaticBoxDark[ThemeIndex]].Texture.Alpha     := (BarScore_EaseOut_Step / 100);
-  Text[TextNotesScore[ThemeIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
-
-  // total score
-  Text[TextTotalScore[ThemeIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber] + TextPhrase_ActualValue[PlayerNumber] + TextGolden_ActualValue[PlayerNumber]);
-  Text[TextTotalScore[ThemeIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
-
-  Text[TextTotal[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
-
-  Text[TextTotal[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
-
-  if(BarGolden_EaseOut_Step = 100) then
+  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  if (ThemeIndex > 0) and ((ScreenAct = PlayerPositionMap[PlayerNumber-1].Screen) or (PlayerPositionMap[PlayerNumber-1].BothScreens)) then
   begin
-    ShowRating(PlayerNumber);
+    // todo: take the name from player[PlayerNumber].Name instead of the ini when this is done (mog)
+    Text[TextName[ThemeIndex]].Text := Ini.Name[PlayerNumber-1];
+    // end todo
+
+    //golden
+    Text[TextGoldenNotesScore[ThemeIndex]].Text         := IntToStr(TextGolden_ActualValue[PlayerNumber]);
+    Text[TextGoldenNotesScore[ThemeIndex]].Alpha        := (BarGolden_EaseOut_Step / 100);
+
+    Static[StaticBoxLightest[ThemeIndex]].Texture.Alpha := (BarGolden_EaseOut_Step / 100);
+    Text[TextGoldenNotes[ThemeIndex]].Alpha             := (BarGolden_EaseOut_Step / 100);
+
+    // line bonus
+    Text[TextLineBonusScore[ThemeIndex]].Text           := IntToStr(TextPhrase_ActualValue[PlayerNumber]);
+    Text[TextLineBonusScore[ThemeIndex]].Alpha          := (BarPhrase_EaseOut_Step / 100);
+
+    Static[StaticBoxLight[ThemeIndex]].Texture.Alpha    := (BarPhrase_EaseOut_Step / 100);
+    Text[TextLineBonus[ThemeIndex]].Alpha               := (BarPhrase_EaseOut_Step / 100);
+
+    // plain score
+    Text[TextNotesScore[ThemeIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber]);
+    Text[TextNotes[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
+
+    Static[StaticBoxDark[ThemeIndex]].Texture.Alpha     := (BarScore_EaseOut_Step / 100);
+    Text[TextNotesScore[ThemeIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
+
+    // total score
+    Text[TextTotalScore[ThemeIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber] + TextPhrase_ActualValue[PlayerNumber] + TextGolden_ActualValue[PlayerNumber]);
+    Text[TextTotalScore[ThemeIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
+
+    Text[TextTotal[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
+
+    if(BarGolden_EaseOut_Step = 100) then
+    begin
+      ShowRating(PlayerNumber);
+    end;
   end;
 end;
 
@@ -566,68 +605,63 @@ var
   Rating: integer;
   ThemeIndex: integer;
 begin
-
-  // We have to do this here because we use the same Theme Object
-  // for players on the first and second screen
-  case PlayersPlay of
-    1, 2, 3: ThemeIndex := PlayerNumber + ArrayStartModifier;
-    4: ThemeIndex := ((PlayerNumber-1) mod 2) + 1 + ArrayStartModifier;
-    6: ThemeIndex := ((PlayerNumber-1) mod 3) + 1 + ArrayStartModifier;
-  end;
-
-  case (Player[PlayerNumber-1].ScoreTotalInt) of
-   0..2009:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
-       Rating := 0;
-     end;
-   2010..4009:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_AMATEUR');
-       Rating := 1;
-     end;
-   4010..5009:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_WANNABE');
-       Rating := 2;
-     end;
-   5010..6009:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_HOPEFUL');
-       Rating := 3;
-     end;
-   6010..7509:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_RISING_STAR');
-       Rating := 4;
-     end;
-   7510..8509:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_LEAD_SINGER');
-       Rating := 5;
-     end;
-   8510..9009:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_SUPERSTAR');
-       Rating := 6;
-     end;
-   9010..10000:
-     begin
-       Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_ULTRASTAR');
-       Rating := 7;
-     end;
-  else
-    Rating := 0; // Cheata :P
-  end;
-
-  //todo: this could break if the width is not given, for instance when there's a skin with no picture for ratings
-  if ( Theme.Score.StaticRatings[ThemeIndex].W > 0 ) and  ( aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue > 0 ) then
+  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  if (ThemeIndex > 0) and ((ScreenAct = PlayerPositionMap[PlayerNumber-1].Screen) or (PlayerPositionMap[PlayerNumber-1].BothScreens)) then
   begin
-    Text[TextScore[ThemeIndex]].Alpha := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / Theme.Score.StaticRatings[ThemeIndex].W;
-  end;
-  // end todo
+    case (Player[PlayerNumber-1].ScoreTotalInt) of
+     0..2009:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
+         Rating := 0;
+       end;
+     2010..4009:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_AMATEUR');
+         Rating := 1;
+       end;
+     4010..5009:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_WANNABE');
+         Rating := 2;
+       end;
+     5010..6009:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_HOPEFUL');
+         Rating := 3;
+       end;
+     6010..7509:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_RISING_STAR');
+         Rating := 4;
+       end;
+     7510..8509:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_LEAD_SINGER');
+         Rating := 5;
+       end;
+     8510..9009:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_SUPERSTAR');
+         Rating := 6;
+       end;
+     9010..10000:
+       begin
+         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_ULTRASTAR');
+         Rating := 7;
+       end;
+    else
+      Rating := 0; // Cheata :P
+    end;
 
-  DrawRating(PlayerNumber, Rating);
+    //todo: this could break if the width is not given, for instance when there's a skin with no picture for ratings
+    if ( Theme.Score.StaticRatings[ThemeIndex].W > 0 ) and  ( aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue > 0 ) then
+    begin
+      Text[TextScore[ThemeIndex]].Alpha := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / Theme.Score.StaticRatings[ThemeIndex].W;
+    end;
+    // end todo
+
+    DrawRating(PlayerNumber, Rating);
+  end;
 end;
 
 procedure TscreenScore.DrawRating(PlayerNumber: integer; Rating: integer);
@@ -635,12 +669,13 @@ var
   Posx:  real;
   Posy:  real;
   Width: real;
+  ThemeIndex: integer;
 begin
-
+  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
   CalculateBouncing(PlayerNumber);
 
-  PosX := Theme.Score.StaticRatings[PlayerNumber + ArrayStartModifier].X + (Theme.Score.StaticRatings[PlayerNumber + ArrayStartModifier].W  * 0.5);
-  PosY := Theme.Score.StaticRatings[PlayerNumber + ArrayStartModifier].Y + (Theme.Score.StaticRatings[PlayerNumber + ArrayStartModifier].H  * 0.5); ;
+  PosX := Theme.Score.StaticRatings[ThemeIndex].X + (Theme.Score.StaticRatings[ThemeIndex].W  * 0.5);
+  PosY := Theme.Score.StaticRatings[ThemeIndex].Y + (Theme.Score.StaticRatings[ThemeIndex].H  * 0.5); ;
 
   Width := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue/2;
 
@@ -663,14 +698,16 @@ end;
 
 function TscreenScore.CalculateBouncing(PlayerNumber: integer): real;
 var
-  ReturnValue:       real;
   p, s:              real;
 
   RaiseStep, MaxVal: real;
   EaseOut_Step:      integer;
+  ThemeIndex: integer;
 begin
+  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+
   EaseOut_Step  := aPlayerScoreScreenRatings[PlayerNumber].RateEaseStep;
-  MaxVal        := Theme.Score.StaticRatings[PlayerNumber + ArrayStartModifier].W;
+  MaxVal        := Theme.Score.StaticRatings[ThemeIndex].W;
 
   RaiseStep     := EaseOut_Step;
 
@@ -679,23 +716,21 @@ begin
 
   if (RaiseStep = 1) then
   begin
-    ReturnValue := MaxVal;
+    Result := MaxVal;
   end
   else
   begin
     p := MaxVal * 0.4;
 
     s           := p/(2*PI) * arcsin (1);
-    ReturnValue := MaxVal * power(2,-5 * RaiseStep) * sin( (RaiseStep * MaxVal - s) * (2 * PI) / p) + MaxVal;
+    Result := MaxVal * power(2,-5 * RaiseStep) * sin( (RaiseStep * MaxVal - s) * (2 * PI) / p) + MaxVal;
 
     inc(aPlayerScoreScreenRatings[PlayerNumber].RateEaseStep);
-    aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue := ReturnValue;
+    aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue := Result;
   end;
-
-  Result := ReturnValue;
 end;
 
-procedure TscreenScore.EaseBarIn(PlayerNumber: integer; BarType: string);
+procedure TscreenScore.EaseBarIn(PlayerNumber: integer; BarType: TScoreBarType);
 const
   RaiseSmoothness: integer = 100;
 var
@@ -708,34 +743,31 @@ var
 
   lTmp:         real;
   Score:        integer;
+  ThemeIndex: integer;
 begin
-  MaxHeight    := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].H;
+  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  MaxHeight    := Theme.Score.StaticBackLevel[ThemeIndex].H;
 
   // let's get the points according to the bar we draw
   // score array starts at 0, which means the score for player 1 is in score[0]
   // EaseOut_Step is the actual step in the raising process, like the 20iest step of EaseOut_MaxSteps
-  if (BarType = 'Note') then
+  if (BarType = sbtScore) then
   begin
     Score        := Player[PlayerNumber - 1].ScoreInt;
     RaiseStep    := BarScore_EaseOut_Step;
-    BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y + MaxHeight;
+    BarStartPosY := Theme.Score.StaticBackLevel[ThemeIndex].Y + MaxHeight;
   end
-  else if (BarType = 'Line') then
+  else if (BarType = sbtLine) then
   begin
     Score        := Player[PlayerNumber - 1].ScoreLineInt;
     RaiseStep    := BarPhrase_EaseOut_Step;
-    BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight + MaxHeight;
+    BarStartPosY := Theme.Score.StaticBackLevel[ThemeIndex].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight + MaxHeight;
   end
-  else if (BarType = 'Golden') then
+  else if (BarType = sbtGolden) then
   begin
     Score        := Player[PlayerNumber - 1].ScoreGoldenInt;
     RaiseStep    := BarGolden_EaseOut_Step;
-    BarStartPosY := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight - aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight + MaxHeight;
-  end
-  else
-  begin
-    Log.LogCritical('Unknown bar-type: ' + BarType, 'TScreenScore.EaseBarIn');
-    Exit; // suppress warnings
+    BarStartPosY := Theme.Score.StaticBackLevel[ThemeIndex].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight - aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight + MaxHeight;
   end;
 
   // the height dependend of the score
@@ -760,31 +792,34 @@ begin
 
   DrawBar(BarType, PlayerNumber, BarStartPosY, NewHeight);
 
-  if (BarType = 'Note') then
+  if (BarType = sbtScore) then
     aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight  := NewHeight
-  else if (BarType = 'Line') then
+  else if (BarType = sbtLine) then
     aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight   := NewHeight
-  else if (BarType = 'Golden') then
+  else if (BarType = sbtGolden) then
     aPlayerScoreScreenDatas[PlayerNumber].BarGolden_ActualHeight := NewHeight;
 end;
 
-procedure TscreenScore.DrawBar(BarType: string; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
+procedure TscreenScore.DrawBar(BarType: TScoreBarType; PlayerNumber: integer; BarStartPosY: single; NewHeight: real);
 var
   Width:        real;
   BarStartPosX: real;
+  ThemeIndex: integer;
 begin
+  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+
   // this is solely for better readability of the drawing
-  Width        := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].W;
-  BarStartPosX := Theme.Score.StaticBackLevel[PlayerNumber + ArrayStartModifier].X;
+  Width        := Theme.Score.StaticBackLevel[ThemeIndex].W;
+  BarStartPosX := Theme.Score.StaticBackLevel[ThemeIndex].X;
 
   glColor4f(1, 1, 1, 1);
 
   // set the texture for the bar
-  if (BarType = 'Note') then
+  if (BarType = sbtScore) then
     glBindTexture(GL_TEXTURE_2D, aPlayerScoreScreenTextures[PlayerNumber].Score_NoteBarLevel_Dark.TexNum);
-  if (BarType = 'Line') then
+  if (BarType = sbtLine) then
     glBindTexture(GL_TEXTURE_2D, aPlayerScoreScreenTextures[PlayerNumber].Score_NoteBarLevel_Light.TexNum);
-  if (BarType = 'Golden') then
+  if (BarType = sbtGolden) then
     glBindTexture(GL_TEXTURE_2D, aPlayerScoreScreenTextures[PlayerNumber].Score_NoteBarLevel_Lightest.TexNum);
 
   //draw it
@@ -803,11 +838,11 @@ begin
   glDisable(GL_TEXTURE_2d);
 
   //the round thing on top
-  if (BarType = 'Note') then
+  if (BarType = sbtScore) then
     glBindTexture(GL_TEXTURE_2D, aPlayerScoreScreenTextures[PlayerNumber].Score_NoteBarRound_Dark.TexNum);
-  if (BarType = 'Line') then
+  if (BarType = sbtLine) then
     glBindTexture(GL_TEXTURE_2D, aPlayerScoreScreenTextures[PlayerNumber].Score_NoteBarRound_Light.TexNum);
-  if (BarType = 'Golden') then
+  if (BarType = sbtGolden) then
     glBindTexture(GL_TEXTURE_2D, aPlayerScoreScreenTextures[PlayerNumber].Score_NoteBarRound_Lightest.TexNum);
 
   glEnable(GL_TEXTURE_2D);
@@ -815,8 +850,8 @@ begin
   glEnable(GL_BLEND);
 
   glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex3f(BarStartPosX,         (BarStartPosY - Static[StaticLevelRound[PlayerNumber + ArrayStartModifier]].Texture.h) - NewHeight, ZBars);
-    glTexCoord2f(1, 0); glVertex3f(BarStartPosX + Width, (BarStartPosY - Static[StaticLevelRound[PlayerNumber + ArrayStartModifier]].Texture.h) - NewHeight, ZBars);
+    glTexCoord2f(0, 0); glVertex3f(BarStartPosX,         (BarStartPosY - Static[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
+    glTexCoord2f(1, 0); glVertex3f(BarStartPosX + Width, (BarStartPosY - Static[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
     glTexCoord2f(1, 1); glVertex3f(BarStartPosX + Width,  BarStartPosY - NewHeight,                                                     ZBars);
     glTexCoord2f(0, 1); glVertex3f(BarStartPosX,          BarStartPosY - NewHeight,                                                     ZBars);
   glEnd;
@@ -825,7 +860,7 @@ begin
   glDisable(GL_TEXTURE_2d);
 end;
 
-procedure TScreenScore.EaseScoreIn(PlayerNumber: integer; ScoreType: string);
+procedure TScreenScore.EaseScoreIn(PlayerNumber: integer; ScoreType: TScoreBarType);
 const
   RaiseSmoothness: integer = 100;
 var
@@ -835,19 +870,19 @@ var
   EaseOut_Step:     real;
   ActualScoreValue: integer;
 begin
-  if (ScoreType = 'Note') then
+  if (ScoreType = sbtScore) then
   begin
     EaseOut_Step     := BarScore_EaseOut_Step;
     ActualScoreValue := TextScore_ActualValue[PlayerNumber];
     ScoreReached     := Player[PlayerNumber-1].ScoreInt;
   end;
-  if (ScoreType = 'Line') then
+  if (ScoreType = sbtLine) then
   begin
     EaseOut_Step     := BarPhrase_EaseOut_Step;
     ActualScoreValue := TextPhrase_ActualValue[PlayerNumber];
     ScoreReached     := Player[PlayerNumber-1].ScoreLineInt;
   end;
-  if (ScoreType = 'Golden') then
+  if (ScoreType = sbtGolden) then
   begin
     EaseOut_Step     := BarGolden_EaseOut_Step;
     ActualScoreValue := TextGolden_ActualValue[PlayerNumber];
@@ -868,21 +903,21 @@ begin
     if ( lTmpA           > 0 ) and
        ( RaiseSmoothness > 0 ) then
     begin
-      if (ScoreType = 'Note') then
+      if (ScoreType = sbtScore) then
         TextScore_ActualValue[PlayerNumber]  := floor( lTmpA / RaiseSmoothness);
-      if (ScoreType = 'Line') then
+      if (ScoreType = sbtLine) then
         TextPhrase_ActualValue[PlayerNumber] := floor( lTmpA / RaiseSmoothness);
-      if (ScoreType = 'Golden') then
+      if (ScoreType = sbtGolden) then
         TextGolden_ActualValue[PlayerNumber] := floor( lTmpA / RaiseSmoothness);
     end;
   end
   else
   begin
-    if (ScoreType = 'Note') then
+    if (ScoreType = sbtScore) then
       TextScore_ActualValue[PlayerNumber]    := ScoreReached;
-    if (ScoreType = 'Line') then
+    if (ScoreType = sbtLine) then
       TextPhrase_ActualValue[PlayerNumber]   := ScoreReached;
-    if (ScoreType = 'Golden') then
+    if (ScoreType = sbtGolden) then
       TextGolden_ActualValue[PlayerNumber]   := ScoreReached;
   end;
 end;
