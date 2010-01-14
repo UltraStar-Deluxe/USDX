@@ -347,7 +347,12 @@ begin
 
     // GoldenNotebonus
     else if (BarGolden_EaseOut_Step < EaseOut_MaxSteps * 10) then
-      BarGolden_EaseOut_Step := BarGolden_EaseOut_Step + 1;
+      BarGolden_EaseOut_Step := BarGolden_EaseOut_Step + 1
+
+    // rating icon
+    else
+      for I := 1 to PlayersPlay do
+        CalculateBouncing(I);
   end;
 end;
 
@@ -672,7 +677,6 @@ var
   ThemeIndex: integer;
 begin
   ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
-  CalculateBouncing(PlayerNumber);
 
   PosX := Theme.Score.StaticRatings[ThemeIndex].X + (Theme.Score.StaticRatings[ThemeIndex].W  * 0.5);
   PosY := Theme.Score.StaticRatings[ThemeIndex].Y + (Theme.Score.StaticRatings[ThemeIndex].H  * 0.5); ;
