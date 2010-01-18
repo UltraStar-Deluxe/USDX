@@ -88,6 +88,13 @@ type
   end;
   APlayerPositionMap = array of TPlayerPositionMap;
 
+  { textures for playerstatics of seconds screen players }
+  TPlayerStaticTexture = class
+    Tex: TTexture;
+    Player: integer; // 0..5 playernumber
+    
+  end;
+
   TScreenScore = class(TMenu)
     private
       { holds position and screen of players(index)
@@ -333,27 +340,28 @@ var
 begin
   CurrentTime := SDL_GetTicks();
 
-  if (ScreenAct = 1) and ((CurrentTime >= BarTime) and ShowFinish) then
-  begin
-    BarTime := CurrentTime + BarRaiseSpeed;
+  if (ScreenAct = 1) and ShowFinish then
+    while (CurrentTime >= BarTime) do
+    begin
+      Inc(BarTime, BarRaiseSpeed);
 
-    // We actually arise them in the right order, but we have to draw them in reverse order (golden -> phrase -> mainscore)
-    if (BarScore_EaseOut_Step < EaseOut_MaxSteps * 10) then
-      BarScore_EaseOut_Step:= BarScore_EaseOut_Step + 1
+      // We actually arise them in the right order, but we have to draw them in reverse order (golden -> phrase -> mainscore)
+      if (BarScore_EaseOut_Step < EaseOut_MaxSteps * 10) then
+        BarScore_EaseOut_Step:= BarScore_EaseOut_Step + 1
 
-    // PhrasenBonus
-    else if (BarPhrase_EaseOut_Step < EaseOut_MaxSteps * 10) then
-      BarPhrase_EaseOut_Step := BarPhrase_EaseOut_Step + 1
+      // PhrasenBonus
+      else if (BarPhrase_EaseOut_Step < EaseOut_MaxSteps * 10) then
+        BarPhrase_EaseOut_Step := BarPhrase_EaseOut_Step + 1
 
-    // GoldenNotebonus
-    else if (BarGolden_EaseOut_Step < EaseOut_MaxSteps * 10) then
-      BarGolden_EaseOut_Step := BarGolden_EaseOut_Step + 1
+      // GoldenNotebonus
+      else if (BarGolden_EaseOut_Step < EaseOut_MaxSteps * 10) then
+        BarGolden_EaseOut_Step := BarGolden_EaseOut_Step + 1
 
-    // rating icon
-    else
-      for I := 1 to PlayersPlay do
-        CalculateBouncing(I);
-  end;
+      // rating icon
+      else
+        for I := 1 to PlayersPlay do
+          CalculateBouncing(I);
+    end;
 end;
 
 procedure TScreenScore.DrawPlayerBars;
@@ -509,6 +517,8 @@ begin
     TextPhrase_ActualValue[index] := 0;
     TextGolden_ActualValue[index] := 0;
   end;
+
+  BarTime := SDL_GetTicks();
 end;
 
 function TScreenScore.Draw: boolean;
