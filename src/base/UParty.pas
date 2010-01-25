@@ -797,8 +797,12 @@ end;
   if plugins function returns true then default is called after plugins
   function was executed}
 procedure TPartyGame.CallBeforeSongSelect;
+  var
+    ExecuteDefault: boolean;
 begin
-  if (CurRound >= 0) then
+  if not bPartyStarted then
+    ExecuteDefault := true
+  else if (CurRound >= 0) then
   begin
     // we set screen song to party mode
     // plugin should not have to do this if it
@@ -806,79 +810,116 @@ begin
     ScreenSong.Mode := smPartyMode;
 
     with Modes[Rounds[CurRound].Mode] do
-      if (CallLua(Parent, Functions.BeforeSongSelect)) then
-      begin // execute default function:
-        // display song select screen
-        Display.FadeTo(@ScreenSong);
-      end;
+      ExecuteDefault := (CallLua(Parent, Functions.BeforeSongSelect));
+  end
+  else
+    ExecuteDefault := true;
+
+  // execute default function:
+  if ExecuteDefault then
+  begin
+    // display song select screen
+    Display.FadeTo(@ScreenSong);
   end;
 end;
 
-procedure TPartyGame.CallAfterSongSelect;   
+procedure TPartyGame.CallAfterSongSelect;
+  var
+    ExecuteDefault: boolean; 
 begin
-  if (CurRound >= 0) then
+  if not bPartyStarted then
+    ExecuteDefault := true
+  else if (CurRound >= 0) then
   begin
     with Modes[Rounds[CurRound].Mode] do
-      if (CallLua(Parent, Functions.AfterSongSelect)) then
-      begin // execute default function:
+      ExecuteDefault := (CallLua(Parent, Functions.AfterSongSelect));
+  end
+  else
+    ExecuteDefault := true;
 
-        // display sing screen
-        ScreenSong.StartSong;
-      end;
+  // execute default function:
+  if ExecuteDefault then
+  begin
+    // display sing screen
+    ScreenSong.StartSong;
   end;
 end;
 
-procedure TPartyGame.CallBeforeSing; 
+procedure TPartyGame.CallBeforeSing;
+  var
+    ExecuteDefault: boolean;
 begin
-  if (CurRound >= 0) then
+  if not bPartyStarted then
+    ExecuteDefault := true
+  else if (CurRound >= 0) then
   begin
     with Modes[Rounds[CurRound].Mode] do
-      if (CallLua(Parent, Functions.BeforeSing)) then
-      begin // execute default function:
+      ExecuteDefault := (CallLua(Parent, Functions.BeforeSing));
+  end
+  else
+    ExecuteDefault := true;
 
-        //nothing atm
-        { to-do : compartmentalize TSingScreen.OnShow into
-                  functions for init of a specific part of
-                  sing screen.
-                  these functions should be called here before
-                  sing screen is shown, or it should be called
-                  by plugin if it wants to define a custom
-                  singscreen start up. }
+  // execute default function:
+  if ExecuteDefault then
+  begin
+    //nothing atm
+    { to-do : compartmentalize TSingScreen.OnShow into
+              functions for init of a specific part of
+              sing screen.
+              these functions should be called here before
+              sing screen is shown, or it should be called
+              by plugin if it wants to define a custom
+              singscreen start up. }
 
-        //set correct playersplay
-        if (bPartyGame) then
-          PlayersPlay := Length(Teams);
-      end;
+    //set correct playersplay
+    if (bPartyGame) then
+      PlayersPlay := Length(Teams);
   end;
 end;
 
 procedure TPartyGame.CallOnSing;
+  var
+    ExecuteDefault: boolean;
 begin
-  if (CurRound >= 0) then
+  if not bPartyStarted then
+    ExecuteDefault := true
+  else if (CurRound >= 0) then
   begin
     with Modes[Rounds[CurRound].Mode] do
-      if (CallLua(Parent, Functions.OnSing)) then
-      begin // execute default function:
+      ExecuteDefault := (CallLua(Parent, Functions.OnSing));;
+  end
+  else
+    ExecuteDefault := true;
 
-        //nothing atm
-      end;
+  // execute default function:
+  if ExecuteDefault then
+  begin
+    //nothing atm
   end;
 end;
 
 procedure TPartyGame.CallAfterSing;
+  var
+    ExecuteDefault: boolean;
 begin
-  if (CurRound >= 0) then
+  if not bPartyStarted then
+    ExecuteDefault := true
+  else if (CurRound >= 0) then
   begin
     with Modes[Rounds[CurRound].Mode] do
-      if (CallLua(Parent, Functions.AfterSing)) then
-      begin // execute default function:
+      ExecuteDefault := (CallLua(Parent, Functions.AfterSing));
+  end
+  else
+    ExecuteDefault := true;
 
-        if (bPartyGame) then
-          // display party score screen
-          Display.FadeTo(@ScreenPartyScore)
-        else //display standard score screen
-          Display.FadeTo(@ScreenScore);
-      end;
+  // execute default function:
+  if ExecuteDefault then
+  begin
+    if (bPartyGame) then
+      // display party score screen
+      Display.FadeTo(@ScreenPartyScore)
+    else //display standard score screen
+      Display.FadeTo(@ScreenScore);
   end;
 end;
 
