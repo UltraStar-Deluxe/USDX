@@ -377,11 +377,11 @@ begin
 
 // Draw OSD only on first Screen if Debug Mode is enabled
     if ((Ini.Debug = 1) or (Params.Debug)) and (S = 1) then
-      DrawDebugInformation;      
-  end; // for
+      DrawDebugInformation;
 
-  if not BlackScreen then
-    DrawCursor;
+    if not BlackScreen then
+      DrawCursor;
+  end; // for
 end;
 
 { sets SDL_ShowCursor depending on options set in Ini }
@@ -481,8 +481,9 @@ procedure TDisplay.DrawCursor;
 var
   Alpha: single;
   Ticks: cardinal;
+  DrawX: double;
 begin
-  if (Ini.Mouse = 2) then
+  if (Ini.Mouse = 2) and ((Screens = 1) or ((ScreenAct - 1) = (Round(Cursor_X+16) div 800))) then
   begin // draw software cursor
     Ticks := SDL_GetTicks;
 
@@ -523,6 +524,9 @@ begin
 
     if (Alpha > 0) and (not Cursor_HiddenByScreen) then
     begin
+      DrawX := Cursor_X;
+      if (ScreenAct = 2) then
+        DrawX := DrawX - RenderW;
       glColor4f(1, 1, 1, Alpha);
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
@@ -535,16 +539,16 @@ begin
 
       glBegin(GL_QUADS);
         glTexCoord2f(0, 0);
-        glVertex2f(Cursor_X, Cursor_Y);
+        glVertex2f(DrawX, Cursor_Y);
 
         glTexCoord2f(0, 1);
-        glVertex2f(Cursor_X, Cursor_Y + 32);
+        glVertex2f(DrawX, Cursor_Y + 32);
 
         glTexCoord2f(1, 1);
-        glVertex2f(Cursor_X + 32, Cursor_Y + 32);
+        glVertex2f(DrawX + 32, Cursor_Y + 32);
 
         glTexCoord2f(1, 0);
-        glVertex2f(Cursor_X + 32, Cursor_Y);
+        glVertex2f(DrawX + 32, Cursor_Y);
       glEnd;
 
       glDisable(GL_BLEND);

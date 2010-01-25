@@ -1642,6 +1642,12 @@ begin
     Result:=ParseInput(SDLK_ESCAPE, 0, true);
   end;
 
+  // transfer mousecords to the 800x600 raster we use to draw
+  X := Round((X / (Screen.w / Screens)) * RenderW);
+  if (X > RenderW) then
+    X := X - RenderW;
+  Y := Round((Y / Screen.h) * RenderH);
+
   nBut := InteractAt(X, Y);
   if nBut >= 0 then
   begin
@@ -1657,7 +1663,7 @@ begin
       begin
         //click button or SelectS
         if (Interactions[nBut].Typ = iSelectS) then
-          Action := SelectsS[Interactions[nBut].Num].OnClick((X / Screen.w) * RenderW, (Y / Screen.h) * RenderH)
+          Action := SelectsS[Interactions[nBut].Num].OnClick(X, Y)
         else
           Action := maReturn;
       end
@@ -1696,10 +1702,6 @@ end;
 
 function TMenu.InRegion(X, Y: real; A: TMouseOverRect): boolean;
 begin
-  // transfer mousecords to the 800x600 raster we use to draw
-  X := (X / Screen.w) * RenderW;
-  Y := (Y / Screen.h) * RenderH;
-
   // check whether A contains X and Y
   Result := (X >= A.X) and (X <= A.X + A.W) and (Y >= A.Y) and (Y <= A.Y + A.H);
 end;

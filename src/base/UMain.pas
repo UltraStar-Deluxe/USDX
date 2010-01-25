@@ -435,7 +435,7 @@ begin
             end;
           end;
 
-          Display.MoveCursor(Event.button.X * 800 / Screen.w,
+          Display.MoveCursor(Event.button.X * 800 * Screens / Screen.w,
                              Event.button.Y * 600 / Screen.h);
 
           if not Assigned(Display.NextScreen) then
