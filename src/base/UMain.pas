@@ -302,20 +302,6 @@ begin
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Loading Time', 0);
 
-    Log.LogStatus('Creating Core', 'Initialization');
-{
-    Core := TCore.Create(
-      USDXShortVersionStr,
-      MakeVersion(USDX_VERSION_MAJOR,
-                  USDX_VERSION_MINOR,
-                  USDX_VERSION_RELEASE,
-                  chr(0))
-    );
-}
-
-    Log.LogStatus('Running Core', 'Initialization');
-    //Core.Run;
-
     //------------------------------
     // Start Mainloop
     //------------------------------
