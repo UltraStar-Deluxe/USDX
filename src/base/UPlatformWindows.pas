@@ -44,8 +44,12 @@ uses
 type
   TPlatformWindows = class(TPlatform)
     private
+      UseLocalDirs: boolean;
+      
       function GetSpecialPath(CSIDL: integer): IPath;
+      procedure DetectLocalExecution();
     public
+      procedure Init; override;
       function TerminateIfAlreadyRunning(var WndTitle: String): Boolean; override;
 
       function GetLogPath: IPath; override;
@@ -60,6 +64,12 @@ uses
   ShlObj,
   Windows,
   UConfig;
+
+procedure TPlatformWindows.Init;
+begin
+  inherited Init();
+  DetectLocalExecution();
+end;
 
 //------------------------------
 //Start more than One Time Prevention
@@ -109,6 +119,33 @@ begin
     Result := PATH_NONE;
 end;
 
+{**
+ * Detects whether the game was executed locally or globally.
+ * - It is local if a config.ini exists in the directory of the
+ *   executable. In config files like config.ini or score db
+ *   reside in the directory of the executable. This is useful
+ *   to enable windows users to have a portable installation
+ *   e.g. on an external hdd. This is also the default behaviour
+ *   of usdx prior to version 1.1
+ * - It is global if no config.ini exists in the directory of the
+ *   executable the config files are in a separate folder
+ *   (e.g. APPDATA\ultrastardx)
+ * On windows resources (themes, language-files)
+ * reside in the directory of the executable in every case
+ *
+ * Sets UseLocalDirs to true if the game is executed locally, false otherwise.
+ *}
+procedure TPlatformWindows.DetectLocalExecution();
+var
+  LocalDir, ConfigIni: IPath;
+begin
+  // we just check if the 'languages' folder exists in the
+  // directory of the executable. If so -> local execution.
+  LocalDir := GetExecutionDir();
+  ConfigIni := LocalDir.Append('config.ini');
+  UseLocalDirs := (ConfigIni.IsFile and ConfigIni.Exists);
+end;
+
 function TPlatformWindows.GetLogPath: IPath;
 begin
   Result := GetExecutionDir();
@@ -121,8 +158,10 @@ end;
 
 function TPlatformWindows.GetGameUserPath: IPath;
 begin
-  //Result := GetSpecialPath(CSIDL_APPDATA).Append('UltraStarDX', pdAppend);
-  Result := GetExecutionDir();
+  if UseLocalDirs then
+    Result := GetExecutionDir()
+  else
+    Result := GetSpecialPath(CSIDL_APPDATA).Append('ultrastardx', pdAppend);
 end;
 
 end.
