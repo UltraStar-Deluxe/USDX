@@ -129,7 +129,7 @@ end;
  *   of usdx prior to version 1.1
  * - It is global if no config.ini exists in the directory of the
  *   executable the config files are in a separate folder
- *   (e.g. APPDATA\ultrastardx)
+ *   (e.g. %APPDATA%\ultrastardx)
  * On windows resources (themes, language-files)
  * reside in the directory of the executable in every case
  *
@@ -138,12 +138,15 @@ end;
 procedure TPlatformWindows.DetectLocalExecution();
 var
   LocalDir, ConfigIni: IPath;
+  OSVerInfo: TOSVersionInfo;
 begin
-  // we just check if the 'languages' folder exists in the
-  // directory of the executable. If so -> local execution.
+  // we just check if 'config.ini' exists in the
+  // directory of the executable or if windows version
+  // is less than Windows Vista (major version = 6). 
+  // If so -> local execution.
   LocalDir := GetExecutionDir();
   ConfigIni := LocalDir.Append('config.ini');
-  UseLocalDirs := (ConfigIni.IsFile and ConfigIni.Exists);
+  UseLocalDirs := ((ConfigIni.IsFile and ConfigIni.Exists) and (OSVerInfo.dwMajorVersion < 6));
 end;
 
 function TPlatformWindows.GetLogPath: IPath;
