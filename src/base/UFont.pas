@@ -1127,7 +1127,7 @@ var
   ModelMatrix, ProjMatrix: T16dArray;
   WinCoords: array[0..2, 0..2] of GLdouble;
   ViewPortArray: TViewPortArray;
-  Dist, Dist2: double;
+  Dist, Dist2, DistSum: double;
   WidthScale, HeightScale: double;
 const
   // width/height of square used for determining the scale
@@ -1169,9 +1169,10 @@ begin
   Dist2 := (WinCoords[0][1] - WinCoords[1][1]);
 
   WidthScale := 1;
-  if (Sqrt(Dist*Dist + Dist2*Dist2) <> 0) then
+  DistSum := Dist*Dist + Dist2*Dist2
+  if DistSum > 0) then
   begin
-    WidthScale := cTestSize / Sqrt(Dist*Dist + Dist2*Dist2);
+    WidthScale := cTestSize / Sqrt(DistSum);
   end;
 
   // projected height ||(x1, y1) - (x1, y2)||
@@ -1179,9 +1180,10 @@ begin
   Dist2 := (WinCoords[0][1] - WinCoords[2][1]);
 
   HeightScale := 1;
-  if (Sqrt(Dist*Dist + Dist2*Dist2) <> 0) then
+  DistSum := Dist*Dist + Dist2*Dist2
+  if DistSum > 0) then
   begin
-    HeightScale := cTestSize / Sqrt(Dist*Dist + Dist2*Dist2);
+    HeightScale := cTestSize / Sqrt(DistSum);
   end;
 
   //writeln(Format('Scale %f, %f', [WidthScale, HeightScale]));
