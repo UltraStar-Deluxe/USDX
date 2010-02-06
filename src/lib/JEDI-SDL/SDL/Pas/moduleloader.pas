@@ -59,7 +59,7 @@ interface
 
 // each OS gets its own IFDEFed complete code block to make reading easier
 
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
 uses
   Windows;
 

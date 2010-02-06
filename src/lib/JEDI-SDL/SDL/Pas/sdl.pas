@@ -367,10 +367,13 @@ const
 {$ENDIF}
 
 {$IFDEF UNIX}
+{$macro on}
+{$IF (6 <= 6)}
+{$ENDIF}
 {$IFDEF DARWIN}
   SDLLibName = 'libSDL-1.2.0.dylib';
   {$linklib libSDL-1.2.0}
-  {$linklib gcc}
+//  {$linklib gcc}
   {$linklib SDLmain}
   {$linkframework Cocoa}
   {$PASCALMAINNAME SDL_main}

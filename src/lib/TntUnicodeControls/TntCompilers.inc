@@ -63,7 +63,7 @@
 // QT_CLX      : Trolltech's QT library is being used.
 //----------------------------------------------------------------------------------------------------------------------
 
-{$ifdef Win32}
+{$ifdef MSWINDOWS}
 
   {$ifdef VER180}
     {$define COMPILER_10}

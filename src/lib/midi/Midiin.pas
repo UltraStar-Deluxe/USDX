@@ -237,7 +237,7 @@ uses Controls,
   There are special requirements and restrictions for this callback
   procedure (see midiInOpen in MMSYSTEM.HLP) so it's impractical to
   make it an object method }
-{$IFDEF WIN32}
+{$IFDEF MSWINDOWS}
 function midiHandler(
     hMidiIn: HMidiIn;
     wMsg: UINT;

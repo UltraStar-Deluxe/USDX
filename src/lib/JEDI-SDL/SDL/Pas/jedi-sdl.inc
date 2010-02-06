@@ -332,7 +332,7 @@
   {$ELSE}
      {$DEFINE __OS_DOS__}
   {$ENDIF}
-  {$IFDEF WIN32}
+  {$IFDEF MSWINDOWS}
    {$DEFINE UseWin}
   {$ENDIF}
   {$DEFINE HAS_TYPES}
@@ -380,13 +380,13 @@
   {$OA+} // Objects and structures align
 {$ENDIF}
 
-{$IFDEF Win32}
+{$IFDEF MSWINDOWS}
   {$DEFINE OS_BigMem}
-{$ELSE Win32}
+{$ELSE MSWINDOWS}
   {$IFDEF ver70}
     {$DEFINE assembler}
   {$ENDIF} { use 16-bit assembler! }
-{$ENDIF Win32}
+{$ENDIF MSWINDOWS}
 
 { ************************** dos/dos-like platforms **************}
 {$IFDEF Windows}
