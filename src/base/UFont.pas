@@ -1170,7 +1170,7 @@ begin
 
   WidthScale := 1;
   DistSum := Dist*Dist + Dist2*Dist2;
-  if DistSum > 0) then
+  if (DistSum > 0) then
   begin
     WidthScale := cTestSize / Sqrt(DistSum);
   end;
@@ -1181,7 +1181,7 @@ begin
 
   HeightScale := 1;
   DistSum := Dist*Dist + Dist2*Dist2;
-  if DistSum > 0) then
+  if (DistSum > 0) then
   begin
     HeightScale := cTestSize / Sqrt(DistSum);
   end;
