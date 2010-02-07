@@ -58,7 +58,7 @@ type
       SourceBufferCount: integer; // number of available bytes in SourceBuffer
 
       Converter: TAudioConverter;
-      Status:   TStreamStatus;
+      Status:    TStreamStatus;
       InternalLock: PSDL_Mutex;
       SoundEffects: TList;
       fVolume: single;
@@ -102,7 +102,7 @@ type
 
       function ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 
-      function GetPCMData(var Data: TPCMData): Cardinal; override;
+      function GetPCMData(var Data: TPCMData): cardinal; override;
       procedure GetFFTData(var Data: TFFTData);          override;
 
       procedure AddSoundEffect(Effect: TSoundEffect);    override;
@@ -148,7 +148,7 @@ type
 
       function CreatePlaybackStream(): TAudioPlaybackStream; override;
     public
-      function GetName: String; override; abstract;
+      function GetName: string; override; abstract;
       function InitializePlayback(): boolean; override;
       function FinalizePlayback: boolean; override;
 
@@ -159,7 +159,7 @@ type
       function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
-      procedure MixBuffers(DstBuffer, SrcBuffer: PByteArray; Size: Cardinal; Volume: Single); virtual;
+      procedure MixBuffers(DstBuffer, SrcBuffer: PByteArray; Size: cardinal; Volume: single); virtual;
   end;
 
 type
@@ -377,11 +377,11 @@ begin
 
   Close();
 
-  if (not assigned(SourceStream)) then
+  if not assigned(SourceStream) then
     Exit;
   Self.SourceStream := SourceStream;
 
-  if (not InitFormatConversion()) then
+  if not InitFormatConversion() then
   begin
     // reset decode-stream so it will not be freed on destruction
     Self.SourceStream := nil;
@@ -443,8 +443,7 @@ var
   Mixer: TAudioMixerStream;
 begin
   // only paused streams are not flushed
-  if (Status = ssPaused) then
-    NeedsRewind := false;
+  NeedsRewind := not (Status = ssPaused);
 
   // rewind if necessary. Cases that require no rewind are:
   // - stream was created and never played
@@ -750,7 +749,7 @@ begin
   Result := BufferSize - BytesNeeded;
 end;
 
-function TGenericPlaybackStream.GetPCMData(var Data: TPCMData): Cardinal;
+function TGenericPlaybackStream.GetPCMData(var Data: TPCMData): cardinal;
 var
   ByteCount: integer;
 begin
@@ -790,7 +789,7 @@ begin
   // only works with SInt16 and Float values at the moment
   AudioFormat := GetAudioFormatInfo();
 
-  DataIn := AllocMem(FFTSize * SizeOf(Single));
+  DataIn := AllocMem(FFTSize * SizeOf(single));
   if (DataIn = nil) then
     Exit;
 
@@ -872,8 +871,7 @@ begin
     LockSampleBuffer();
 
     SourceStream.Position := Time;
-    if (Status = ssStopped) then
-      NeedsRewind := false;
+    NeedsRewind := not (Status = ssStopped); 
     // do not use outdated data
     FlushBuffers();
 
@@ -885,7 +883,7 @@ end;
 
 function TGenericPlaybackStream.GetVolume(): single;
 var
-  FadeAmount: Single;
+  FadeAmount: single;
 begin
   LockSampleBuffer();
   // adjust volume if fading is enabled
@@ -1033,12 +1031,12 @@ begin
 
   //Log.LogStatus('InitializePlayback', 'UAudioPlayback_SoftMixer');
 
-  if(not InitializeAudioPlaybackEngine()) then
+  if (not InitializeAudioPlaybackEngine()) then
     Exit;
 
   MixerStream := TAudioMixerStream.Create(Self);
 
-  if(not StartAudioPlaybackEngine()) then
+  if (not StartAudioPlaybackEngine()) then
     Exit;
 
   Result := true;
@@ -1100,11 +1098,11 @@ begin
   MixerStream.Volume := Volume;
 end;
 
-procedure TAudioPlayback_SoftMixer.MixBuffers(DstBuffer, SrcBuffer: PByteArray; Size: Cardinal; Volume: Single);
+procedure TAudioPlayback_SoftMixer.MixBuffers(DstBuffer, SrcBuffer: PByteArray; Size: cardinal; Volume: single);
 var
-  SampleIndex: Cardinal;
-  SampleInt: Integer;
-  SampleFlt: Single;
+  SampleIndex: cardinal;
+  SampleInt: integer;
+  SampleFlt: single;
 begin
   SampleIndex := 0;
   case FormatInfo.Format of
@@ -1141,7 +1139,7 @@ begin
         // assign result
         PSingle(@DstBuffer[SampleIndex])^ := SampleFlt;
         // increase index by one sample
-        Inc(SampleIndex, SizeOf(Single));
+        Inc(SampleIndex, SizeOf(single));
       end;
     end;
     else
