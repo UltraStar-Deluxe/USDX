@@ -1169,7 +1169,7 @@ begin
   Dist2 := (WinCoords[0][1] - WinCoords[1][1]);
 
   WidthScale := 1;
-  DistSum := Dist*Dist + Dist2*Dist2
+  DistSum := Dist*Dist + Dist2*Dist2;
   if DistSum > 0) then
   begin
     WidthScale := cTestSize / Sqrt(DistSum);
@@ -1180,7 +1180,7 @@ begin
   Dist2 := (WinCoords[0][1] - WinCoords[2][1]);
 
   HeightScale := 1;
-  DistSum := Dist*Dist + Dist2*Dist2
+  DistSum := Dist*Dist + Dist2*Dist2;
   if DistSum > 0) then
   begin
     HeightScale := cTestSize / Sqrt(DistSum);
