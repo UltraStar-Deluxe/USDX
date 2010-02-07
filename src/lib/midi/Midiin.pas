@@ -244,13 +244,6 @@ function midiHandler(
     dwInstance: DWORD;
     dwParam1: DWORD;
     dwParam2: DWORD): Boolean; stdcall; external 'DELMID32.DLL';
-{$ELSE}
-procedure midiHandler(
-    hMidiIn: HMidiIn;
-    wMsg: Word;
-    dwInstance: DWORD;
-    dwParam1: DWORD;
-    dwParam2: DWORD); far; external 'DELPHMID';
 {$ENDIF}
 *)
 {-------------------------------------------------------------------}
