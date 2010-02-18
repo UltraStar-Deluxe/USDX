@@ -233,9 +233,12 @@ begin
   ScreenSong.FixSelected;
 
   //Play Correct Music
-  if (ScreenSong.Interaction <> fLastPlayed) then
+  if (ScreenSong.Interaction <> fLastPlayed) or (CatSongs.VisibleSongs = 0) then
   begin
-    fLastPlayed := ScreenSong.Interaction;
+    if (CatSongs.VisibleSongs > 0) then
+      fLastPlayed := ScreenSong.Interaction
+    else
+      fLastPlayed := -1;
 
     ScreenSong.ChangeMusic;
   end;
