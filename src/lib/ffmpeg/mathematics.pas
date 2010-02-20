@@ -28,14 +28,10 @@
  * Conversion of libavutil/mathematics.h
  * revision 16844, Wed Jan 28 08:50:10 2009 UTC 
  *
- * update, MiSchi, no code change
- * Fri Jun 12 2009 21:50:00 UTC
- *)
-{
  * update to
- * avutil max. version 50.7.0, Mon, Jan 4 2010 24:00:00 UTC 
+ * avutil max. version 50.9.0, Sun, Feb 21 2010 00:00:00 UTC 
  * MiSchi
-}
+ *)
 
 unit mathematics;
 
@@ -58,6 +54,9 @@ const
   M_E          = 2.7182818284590452354;   // e
   M_LN2        = 0.69314718055994530942;  // log_e 2
   M_LN10       = 2.30258509299404568402;  // log_e 10
+{$IF LIBAVUTIL_VERSION >= 50009000} // >= 50.9.0
+  M_LOG2_10    = 3.32192809488736218171;  // log_2 10
+{$IFEND}
   M_PI         = 3.14159265358979323846;  // pi
   M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
 {$IF LIBAVUTIL_VERSION >= 50005001} // >= 50.5.1
