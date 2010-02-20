@@ -43,7 +43,7 @@
  * Maybe, the pixelformats are not needed, but it has not been checked.
  * log.h is only partial.
  *
- * update Mon, Jan 4 2010
+ * update Sun to 50.9.0, Feb 21, 2010
  *)
 
 unit avutil;
@@ -71,7 +71,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 50;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 7;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 9;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
