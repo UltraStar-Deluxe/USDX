@@ -90,7 +90,8 @@ const
 
 {$IF LIBAVFORMAT_VERSION >= 52020000} // 52.20.0
 (**
- * Returns the LIBAVFORMAT_VERSION_INT constant.
+ * I return the LIBAVFORMAT_VERSION_INT constant.  You got
+ * a fucking problem with that, douchebag?
  *)
 function avformat_version(): cuint;
   cdecl; external av__format;
