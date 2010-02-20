@@ -27,7 +27,7 @@
  *)
 {
  * update to
- * Max. version: 0.8.0, Sat Feb 20 2010 23:25:00 CET 
+ * Max. version: 0.10.0, Sat Feb 20 2010 23:25:00 CET 
  * MiSchi
 }
  
@@ -55,9 +55,9 @@ uses
 
 const
   (* Max. supported version by this header *)
-  LIBSWSCALE_MAX_VERSION_MAJOR   = 0;
-  LIBSWSCALE_MAX_VERSION_MINOR   = 8;
-  LIBSWSCALE_MAX_VERSION_RELEASE = 0;
+  LIBSWSCALE_MAX_VERSION_MAJOR   =  0;
+  LIBSWSCALE_MAX_VERSION_MINOR   = 10;
+  LIBSWSCALE_MAX_VERSION_RELEASE =  0;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBSWSCALE_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -233,8 +233,8 @@ function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
  *                  the destination image
  * @return          the height of the output slice
  *)
-function sws_scale(context: PSwsContext; {const} srcSlice: PPCuint8Array; srcStride: PCintArray;
-              srcSliceY: cint; srcSliceH: cint; dst: PPCuint8Array; dstStride: PCintArray): cint;
+function sws_scale(context: PSwsContext; {const} srcSlice: PPCuint8Array; {const} srcStride: PCintArray;
+              srcSliceY: cint; srcSliceH: cint; {const} dst: PPCuint8Array; {const} dstStride: PCintArray): cint;
   cdecl; external sw__scale;
 
 {$IF  LIBSWSCALE_VERSION_MAJOR < 1}
