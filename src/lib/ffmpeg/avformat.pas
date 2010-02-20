@@ -30,7 +30,7 @@
  * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
  *
  * update to
- * Max. version: 52.46.0, Mo Jan 4 2010 0:40:00 CET 
+ * Max. version: 52.47.0, Sun Feb 21 2010 0:40:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 46;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 47;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -353,7 +353,11 @@ const
 
   AVFMTCTX_NOHEADER = $0001; (**< signal that no header is present
                                          (streams are added dynamically) *)
+{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
   MAX_STREAMS = 20;
+{$ELSE}
+  MAX_STREAMS = 100;
+{$IFEND}
 
   AVFMT_NOOUTPUTLOOP = -1;
   AVFMT_INFINITEOUTPUTLOOP = 0;
