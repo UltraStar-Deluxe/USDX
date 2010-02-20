@@ -104,6 +104,17 @@ function av_rescale_rnd (a, b, c: cint64; enum: TAVRounding): cint64;
 function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
   cdecl; external av__util; {av_const}
 
+{$IF LIBAVUTIL_VERSION >= 50008000} // 50.8.0
+(**
+ * Compares 2 timestamps each in its own timebases.
+ * The result of the function is undefined if one of the timestamps
+ * is outside the int64_t range when represented in the others timebase.
+ * @returns -1 if ts_a is before ts_b, 1 if ts_a is after ts_b or 0 if they represent the same position
+ *)
+function av_compare_ts(ts_a: cint64; tb_a: TAVRational; ts_b: cint64; tb_b: TAVRational): cint;
+  cdecl; external av__util;
+{$IFEND}
+
 implementation
 
 end.

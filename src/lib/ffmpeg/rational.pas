@@ -35,6 +35,7 @@
  * update to
  * avutil max. version 50.7.0, Mon, Jan 4 2010 24:00:00 UTC 
  * MiSchi
+ * check Sat, Feb 20 2010: Still fine
  *)
 
 unit rational;
