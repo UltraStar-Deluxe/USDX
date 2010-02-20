@@ -143,6 +143,18 @@ const
   SWS_CS_SMPTE240M      = 7;
   SWS_CS_DEFAULT        = 5;
 
+{$IF  LIBSWSCALE_VERSION >= 000010000} // 0.10.0
+(**
+ * Returns a pointer to yuv<->rgb coefficients for the given colorspace
+ * suitable for sws_setColorspaceDetails().
+ *
+ * @param colorspace One of the SWS_CS_* macros. If invalid,
+ * SWS_CS_DEFAULT is used.
+ *)
+  function sws_getCoefficients(colorspace: cint): Pcint;
+    cdecl; external sw__scale;
+{$IFEND}
+  
 type
 
   // when used for filters they must have an odd number of elements
@@ -172,13 +184,15 @@ type
  * Returns a positive value if pix_fmt is a supported input format, 0
  * otherwise.
  *)
-    function sws_isSupportedInput(pix_fmt: TAVPixelFormat): cint;
+  function sws_isSupportedInput(pix_fmt: TAVPixelFormat): cint;
+    cdecl; external sw__scale;
 
 (**
  * Returns a positive value if pix_fmt is a supported output format, 0
  * otherwise.
  *)
-    function sws_isSupportedOutput(pix_fmt: TAVPixelFormat): cint;
+  function sws_isSupportedOutput(pix_fmt: TAVPixelFormat): cint;
+    cdecl; external sw__scale;
 {$IFEND}
 
 (**
