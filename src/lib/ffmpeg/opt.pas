@@ -242,10 +242,10 @@ function av_set_q(obj: pointer; name: {const} PAnsiChar; n: TAVRational): PAVOpt
 function av_set_int(obj: pointer; name: {const} PAnsiChar; n: cint64): PAVOption;
   cdecl; external av__codec;
 
-function av_get_double(obj: pointer; name: {const} PAnsiChar; var o_out: PAVOption): cdouble;
+function av_get_double(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): cdouble;
   cdecl; external av__codec;
 
-function av_get_q(obj: pointer; name: {const} PAnsiChar; var o_out: PAVOption): TAVRational;
+function av_get_q(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): TAVRational;
   cdecl; external av__codec;
 
 function av_get_int(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): cint64;
