@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.52.0, Sun Feb 21 2010 00:25:00 CET 
+ * Max. version: 52.54.0, Sun Feb 21 2010 00:25:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 52;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 54;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -870,6 +870,9 @@ const
   FF_BUG_HPEL_CHROMA      = 2048;
   FF_BUG_DC_CLIP          = 4096;
   FF_BUG_MS               = 8192; ///< workaround various bugs in microsofts broken decoders
+  {$IF LIBAVCODEC_VERSION >= 52054000} // >= 52.54.0
+  FF_BUG_TRUNCATED        = 16384;
+  {$IFEND}
   //FF_BUG_FAKE_SCALABILITY = 16 //Autodetection should work 100%.
 
   FF_COMPLIANCE_VERY_STRICT   =  2; ///< strictly conform to a older more strict version of the spec or reference software
