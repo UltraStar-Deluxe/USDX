@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.48.0, Mon Jan 4 2010 00:25:00 CET 
+ * Max. version: 52.49.0, Sun Feb 21 2010 00:25:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 48;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 49;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -269,6 +269,10 @@ type
     CODEC_ID_CDGRAPHICS,
     CODEC_ID_R210,
 {$IFEND}
+     CODEC_ID_ANM,
+{$IF LIBAVCODEC_VERSION >= 52049000}  // >= 52.49.0
+    CODEC_ID_BINKVIDEO,
+{$IFEND}
 
     //* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= $10000,
@@ -404,6 +408,10 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52035000} // >= 52.35.0
     CODEC_ID_ATRAC1,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52049000} // >= 52.49.0
+    CODEC_ID_BINKAUDIO_RDFT,
+    CODEC_ID_BINKAUDIO_DCT,
 {$IFEND}
 
     //* subtitle codecs */
@@ -811,6 +819,9 @@ const
   FF_QSCALE_TYPE_MPEG1  = 0;
   FF_QSCALE_TYPE_MPEG2  = 1;
   FF_QSCALE_TYPE_H264   = 2;
+  {$IF LIBAVCODEC_VERSION >= 52049000} // >= 52.49.0
+  FF_QSCALE_TYPE_VP56   = 3;
+  {$IFEND}
 
   FF_BUFFER_TYPE_INTERNAL = 1;
   FF_BUFFER_TYPE_USER     = 2; ///< Direct rendering buffers (image is (de)allocated by user)
@@ -3307,6 +3318,7 @@ function avcodec_get_pix_fmt_name(pix_fmt: TAVPixelFormat): PAnsiChar;
 procedure avcodec_set_dimensions(s: PAVCodecContext; width: cint; height: cint);
   cdecl; external av__codec;
 
+{$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
 (**
  * Returns the pixel format corresponding to the name name.
  *
@@ -3316,10 +3328,15 @@ procedure avcodec_set_dimensions(s: PAVCodecContext; width: cint; height: cint);
  * For example in a little-endian system, first looks for "gray16",
  * then for "gray16le".
  *
- * Finally if no pixel format has been found, returns PIX_FMT_NONE.
+ * Finally if no pixel format has been found, returns PIX_FMT_NONE.*
+ * @deprecated Deprecated in favor of av_get_pix_fmt().
  *)
 function avcodec_get_pix_fmt(name: {const} PAnsiChar): TAVPixelFormat;
   cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION >= 52049000} // >= 52.49.0
+  deprecated;
+{$ENDIF}
+{$ENDIF}
 
 (**
  * Returns a value representing the fourCC code associated to the
