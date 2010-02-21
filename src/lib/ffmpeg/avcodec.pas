@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.45.0, Mon Jan 4 2010 00:25:00 CET 
+ * Max. version: 52.48.0, Mon Jan 4 2010 00:25:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 45;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 48;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -746,6 +746,14 @@ const
   {$IF LIBAVCODEC_VERSION >= 52035000} // >= 52.35.0
   (**
    * Codec can output multiple frames per AVPacket
+   * Normally demuxers return one frame at a time, demuxers which do not do
+   * are connected to a parser to split what they return into proper frames.
+   * This flag is reserved to the very rare category of codecs which have a
+   * bitstream that cannot be split into frames without timeconsuming
+   * operations like full decoding. Demuxers carring such bitstreams thus
+   * may return multiple frames in a packet. This has many disadvantages like
+   * prohibiting stream copy in many cases thus it should only be considered
+   * as a last resort.
    *)
   CODEC_CAP_SUBFRAMES        = $0100;
   {$IFEND}
