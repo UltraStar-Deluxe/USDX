@@ -3342,8 +3342,8 @@ function avcodec_get_pix_fmt(name: {const} PAnsiChar): TAVPixelFormat;
   cdecl; external av__codec;
 {$IF LIBAVCODEC_VERSION >= 52049000} // >= 52.49.0
   deprecated;
-{$ENDIF}
-{$ENDIF}
+{$IFEND}
+{$IFEND}
 
 (**
  * Returns a value representing the fourCC code associated to the
