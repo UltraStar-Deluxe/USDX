@@ -30,7 +30,7 @@
  * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
  *
  * update to
- * Max. version: 52.48.0, Sun Feb 21 2010 0:40:00 CET 
+ * Max. version: 52.52.0, Sun Feb 21 2010 0:40:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 48;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 52;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -346,6 +346,9 @@ const
   AVFMT_TS_DISCONT    = $0200; (**< Format allows timestamp discontinuities. *)
   {$IF LIBAVFORMAT_VERSION >= 52029002} // 52.29.2
   AVFMT_VARIABLE_FPS  = $0400; (**< Format allows variable fps. *)
+  {$IFEND}
+  {$IF LIBAVFORMAT_VERSION >= 52052000} // 52.52.0
+  AVFMT_NODIMENSIONS  = $0800; (**< Format does not need width/height *)
   {$IFEND}
 
   // used by AVIndexEntry
