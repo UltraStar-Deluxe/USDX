@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.49.0, Sun Feb 21 2010 00:25:00 CET 
+ * Max. version: 52.52.0, Sun Feb 21 2010 00:25:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 49;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 52;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -272,6 +272,10 @@ type
      CODEC_ID_ANM,
 {$IF LIBAVCODEC_VERSION >= 52049000}  // >= 52.49.0
     CODEC_ID_BINKVIDEO,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52052000}  // >= 52.52.0
+    CODEC_ID_IFF_ILBM,
+    CODEC_ID_IFF_BYTERUN1,
 {$IFEND}
 
     //* various PCM "codecs" */
