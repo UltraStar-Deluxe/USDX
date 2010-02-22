@@ -39,13 +39,11 @@ uses
   SDL;
 
 var
-  Done:    boolean;
   Restart: boolean;
-  TicksBeforeFrame: Cardinal;
 
 procedure Main;
 procedure MainLoop;
-procedure CheckEvents;
+function CheckEvents: boolean;
 
 type
   TMainThreadExecProc = procedure(Data: Pointer);
@@ -336,16 +334,18 @@ begin
 end;
 
 procedure MainLoop;
-var
-  Delay: integer;
-  TicksCurrent: Cardinal;
 const
   MAX_FPS = 100;
+var
+  Delay:            integer;
+  TicksCurrent:     cardinal;
+  TicksBeforeFrame: cardinal;
+  Continue:         boolean;
 begin
   SDL_EnableKeyRepeat(125, 125);
 
   CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
-  while not Done do
+  while Continue do
   begin
     TicksBeforeFrame := SDL_GetTicks;
     
@@ -354,10 +354,10 @@ begin
       Joy.Update;
 
     // keyboard events
-    CheckEvents;
+    Continue := CheckEvents;
 
     // display
-    Done := not Display.Draw;
+    Continue := Display.Draw;
     SwapBuffers;
 
     // FPS limiter
@@ -394,12 +394,13 @@ begin
   end;
 end;
 
-procedure CheckEvents;
+function CheckEvents: boolean;
 var
   Event:     TSDL_event;
   mouseDown: boolean;
   mouseBtn:  integer;
 begin
+  Result := true;
   while (SDL_PollEvent(@Event) <> 0) do
   begin
     case Event.type_ of
@@ -444,17 +445,17 @@ begin
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
             if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              done := not ScreenPopupError.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+              Result := ScreenPopupError.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              done := not ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+              Result := ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              done := not ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+              Result := ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
-              done := not Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
+              Result := Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
 
               // if screen wants to exit
-              if done then
+              if not Result then
                 DoQuit;
             end;
           end;
@@ -528,18 +529,18 @@ begin
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
             else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              Done := not ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              Result := ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              Done := not ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              Result := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              Done := not ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              Result := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else
             begin
               // check if screen wants to exit
-              Done := not Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
+              Result := Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
 
               // if screen wants to exit
-              if Done then
+              if not Result then
                 DoQuit;
 
             end;
