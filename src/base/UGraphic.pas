@@ -45,7 +45,6 @@ uses
   UImage,
   UMusic,
   UScreenLoading,
-  UScreenWelcome,
   UScreenMain,
   UScreenName,
   UScreenLevel,
@@ -107,7 +106,6 @@ var
   ScreenX:    integer;
 
   ScreenLoading:      TScreenLoading;
-  ScreenWelcome:      TScreenWelcome;
   ScreenMain:         TScreenMain;
   ScreenName:         TScreenName;
   ScreenLevel:        TScreenLevel;
@@ -704,8 +702,6 @@ begin
   SwapBuffers;
 }
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Loading', 3); Log.BenchmarkStart(3);
-{ ScreenWelcome :=          TScreenWelcome.Create; //'BG', 4, 3);
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Welcome', 3); Log.BenchmarkStart(3);}
   ScreenMain :=             TScreenMain.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Main', 3); Log.BenchmarkStart(3);
   ScreenName :=             TScreenName.Create;

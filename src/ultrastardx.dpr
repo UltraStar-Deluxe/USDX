@@ -302,7 +302,6 @@ uses
   //Includes - Screens
   //------------------------------  
   UScreenLoading          in 'screens\UScreenLoading.pas',
-  UScreenWelcome          in 'screens\UScreenWelcome.pas',
   UScreenMain             in 'screens\UScreenMain.pas',
   UScreenName             in 'screens\UScreenName.pas',
   UScreenLevel            in 'screens\UScreenLevel.pas',
