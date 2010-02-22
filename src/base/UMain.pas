@@ -35,11 +35,7 @@ interface
 
 uses
   SysUtils,
-
   SDL;
-
-var
-  Restart: boolean;
 
 procedure Main;
 procedure MainLoop;
@@ -368,13 +364,6 @@ begin
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
 
     CountSkipTime;
-
-    // reinitialization of graphics
-    if Restart then
-    begin
-      Reinitialize3D;
-      Restart := false;
-    end;
 
   end;
 end;
