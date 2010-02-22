@@ -1773,23 +1773,6 @@ begin
   AudioPlayback.Stop;
 end;
 
-procedure StartMusicPreview(data: Pointer);
-var
-  ScreenSong: TScreenSong;
-begin
-  ScreenSong := TScreenSong(data);
-  if (ScreenSong <> nil) then
-    ScreenSong.StartMusicPreview();
-end;
-
-function MusicPreviewTimerCallback(interval: UInt32; param: Pointer): UInt32; cdecl;
-begin
-  // delegate execution to main-thread
-  MainThreadExec(@StartMusicPreview, param);
-  // stop timer
-  Result := 0;
-end;
-
 // Changes previewed song
 procedure TScreenSong.ChangeMusic;
 begin
