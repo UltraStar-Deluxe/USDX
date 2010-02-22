@@ -41,6 +41,7 @@ uses
 var
   Done:    boolean;
   Restart: boolean;
+  TicksBeforeFrame: Cardinal;
 
 procedure Main;
 procedure MainLoop;
@@ -337,6 +338,7 @@ end;
 procedure MainLoop;
 var
   Delay: integer;
+  TicksCurrent: Cardinal;
 const
   MAX_FPS = 100;
 begin
@@ -345,6 +347,8 @@ begin
   CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
   while not Done do
   begin
+    TicksBeforeFrame := SDL_GetTicks;
+    
     // joypad
     if (Ini.Joypad = 1) or (Params.Joypad) then
       Joy.Update;
@@ -356,10 +360,9 @@ begin
     Done := not Display.Draw;
     SwapBuffers;
 
-    // delay
-    CountMidTime;
-
-    Delay := Floor(1000 / MAX_FPS - 1000 * TimeMid);
+    // FPS limiter
+    TicksCurrent := SDL_GetTicks;
+    Delay := 1000 div MAX_FPS - (TicksCurrent - TicksBeforeFrame);
 
     if Delay >= 1 then
       SDL_Delay(Delay); // dynamic, maximum is 100 fps
