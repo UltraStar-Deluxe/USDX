@@ -54,7 +54,6 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UUnicodeUtils,
   SysUtils;
 
