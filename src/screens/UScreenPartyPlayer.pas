@@ -126,7 +126,6 @@ end;
 procedure TScreenPartyPlayer.UpdateParty;
   var
     I, J: integer;
-    Rounds: ARounds;
 begin
   {//Save PlayerNames
   for I := 0 to PartySession.Teams.NumTeams-1 do

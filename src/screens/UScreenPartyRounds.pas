@@ -114,9 +114,6 @@ begin
 end;
 
 function TScreenPartyRounds.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  I, J: integer;
-  OnlyMultiPlayer: boolean;
 begin
   Result := true;
   if (PressedDown) then

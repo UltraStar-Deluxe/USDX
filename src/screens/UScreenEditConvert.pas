@@ -602,15 +602,15 @@ begin
 end;
 
 procedure TScreenEditConvert.OnShow;
+{$IFDEF UseMIDIPort}
 var
   T:    integer; // track
   N:    integer; // note
-  {$IFDEF UseMIDIPort}
   MidiTrack: TMidiTrack;
   MidiEvent: PMidiEvent;
-  {$ENDIF}
   FileOpened: boolean;
   KMIDITrackIndex, SMFTrackIndex: integer;
+{$ENDIF}
 begin
   inherited;
 
@@ -731,7 +731,6 @@ var
   Y:      real;
   Height: real;
   YSkip:  real;
-  TrackName: UTF8String;
 begin
   // draw static menu
   inherited Draw;

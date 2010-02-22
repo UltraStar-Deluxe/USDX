@@ -104,8 +104,6 @@ begin
 end;
 
 constructor TScreenPartyWin.Create;
-//var
-// I:    integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
 
@@ -133,7 +131,7 @@ end;
 
 procedure TScreenPartyWin.OnShow;
 var
- I, J: integer;
+ I: integer;
  Ranking: AParty_TeamRanking;
 
   Function GetTeamColor(Team: integer): cardinal;

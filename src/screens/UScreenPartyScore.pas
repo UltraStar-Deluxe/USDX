@@ -124,7 +124,6 @@ end;
 
 constructor TScreenPartyScore.Create;
 var
-// I:    integer; // Auto Removed, Unused Variable
   Tex:  TTexture;
   R, G, B: real;
   Color: integer;
@@ -198,7 +197,6 @@ end;
 
 procedure TScreenPartyScore.OnShow;
 var
-  I, J: integer;
   Ranking: AParty_TeamRanking;
 begin
   inherited;

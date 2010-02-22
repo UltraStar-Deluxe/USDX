@@ -121,8 +121,6 @@ begin
 end;
 
 constructor TScreenOptionsGraphics.Create;
-//var
-// I:      integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
   LoadFromTheme(Theme.OptionsGraphics);

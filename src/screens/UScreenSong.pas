@@ -1012,8 +1012,6 @@ end;
 procedure TScreenSong.SetScroll1;
 var
   B:      integer;    // button
-  //BMin:   integer;    // button min // Auto Removed, Unused Variable
-  //BMax:   integer;    // button max // Auto Removed, Unused Variable
   Src:    integer;
   //Dst:    integer;
   Count:  integer;    // Dst is not used. Count is used.

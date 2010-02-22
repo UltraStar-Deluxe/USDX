@@ -523,10 +523,7 @@ end;
 
 function TScreenScore.Draw: boolean;
 var
-  CurrentTime:   cardinal;
   PlayerCounter: integer;
-  PStart:        integer;
-  PHigh:         integer;
 begin
 {*
   player[0].ScoreInt       := 7000;

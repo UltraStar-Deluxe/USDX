@@ -121,8 +121,6 @@ begin
 end;
 
 constructor TScreenOptionsAdvanced.Create;
-//var
-// I:      integer; // Auto Removed, Unused Variable
 begin
   inherited Create;
 
