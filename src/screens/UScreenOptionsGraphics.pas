@@ -84,10 +84,6 @@ begin
         end;
       SDLK_RETURN:
         begin
-{          if SelInteraction <= 1 then
-          begin
-            Restart := true;
-          end;}
           if SelInteraction = 6 then
           begin
             Ini.Save;
