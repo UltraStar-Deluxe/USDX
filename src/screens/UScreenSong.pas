@@ -60,6 +60,8 @@ type
       PreviewOpened: Integer; // interaction of the Song that is loaded for preview music
                               // -1 if nothing is opened
 
+      isScrolling: boolean;   // true if song flow is about to move
+
       procedure StartMusicPreview();
       procedure StopMusicPreview();
     public
@@ -147,6 +149,9 @@ type
       procedure OpenEditor;
       procedure DoJoker(Team: integer);
       procedure SelectPlayers;
+
+      procedure OnSongSelect;   // called when song flows movement stops at a song
+      procedure OnSongDeSelect; // called before current song is deselected
 
       procedure UnloadDetailedCover;
 
@@ -299,7 +304,6 @@ begin
 
                 AudioPlayback.PlaySound(SoundLib.Change);
 
-                ChangeMusic;
                 SetScroll4;
                 //Break and Exit
                 Exit;
@@ -322,7 +326,6 @@ begin
 
                 AudioPlayback.PlaySound(SoundLib.Change);
 
-                ChangeMusic;
                 SetScroll4;
 
                 //Break and Exit
@@ -476,7 +479,6 @@ begin
             end;
             AudioPlayback.PlaySound(SoundLib.Change);
 
-            ChangeMusic;
             SetScroll4;
           end;
           Exit;
@@ -536,8 +538,6 @@ begin
                 //Show Wrong Song when Tabs on Fix
                 SelectNext(true);
                 FixSelected;
-
-                ChangeMusic;
               end
               else
               begin
@@ -576,9 +576,6 @@ begin
               //Show Wrong Song when Tabs on Fix
               SelectNext(true);
               FixSelected;
-
-              //Play Music:
-              ChangeMusic;
             end
             else
             begin // clicked on song
@@ -639,8 +636,6 @@ begin
 
                 //Play Music:
                 AudioPlayback.PlaySound(SoundLib.Change);
-                ChangeMusic;
-
               end;
 
             //
@@ -683,7 +678,6 @@ begin
 
                 //Play Music:
                 AudioPlayback.PlaySound(SoundLib.Change);
-                ChangeMusic;
               end;
             end;
             //Cat Change Hack End}
@@ -696,9 +690,6 @@ begin
           begin
             AudioPlayback.PlaySound(SoundLib.Change);
             SelectNext(true);
-            //InteractNext;
-            //SongTarget := Interaction;
-            ChangeMusic;
             SetScroll4;
           end;
         end;
@@ -709,7 +700,6 @@ begin
           begin
             AudioPlayback.PlaySound(SoundLib.Change);
             SelectPrev(true);
-            ChangeMusic;
             SetScroll4;
           end;
         end;
@@ -889,6 +879,7 @@ begin
   Equalizer := Tms_Equalizer.Create(AudioPlayback, Theme.Song.Equalizer);
 
   PreviewOpened := -1;
+  isScrolling := false;
 end;
 
 procedure TScreenSong.GenerateThumbnails();
@@ -955,6 +946,28 @@ begin
   // reset selection
   if (Length(CatSongs.Song) > 0) then
     Interaction := 0;
+end;
+
+{ called when song flows movement stops at a song }
+procedure TScreenSong.OnSongSelect;
+begin
+  if (Ini.PreviewVolume <> 0) then
+  begin
+    StartMusicPreview;
+  end;
+
+  // fade in detailed cover
+  CoverTime := 0;
+end;
+
+{ called before current song is deselected }
+procedure TScreenSong.OnSongDeSelect;
+begin
+  CoverTime := 10;
+  UnLoadDetailedCover;
+
+  StopMusicPreview();
+  PreviewOpened := -1;
 end;
 
 procedure TScreenSong.SetScroll;
@@ -1474,6 +1487,7 @@ begin
   SoundLib.PauseBgMusic;
 
   AudioPlayback.Stop;
+  PreviewOpened := -1;
 
   if Ini.Players <= 3 then PlayersPlay := Ini.Players + 1;
   if Ini.Players  = 4 then PlayersPlay := 6;
@@ -1489,12 +1503,6 @@ begin
 
   if Length(CatSongs.Song) > 0 then
   begin
-    //Load Music only when Song Preview is activated
-    if ( Ini.PreviewVolume <> 0 ) then
-      StartMusicPreview()
-    else
-      PreviewOpened := -1;
-
     SetScroll;
   end;
 
@@ -1505,7 +1513,6 @@ begin
     if (CatSongs.CatNumShow = -3) then
     begin
       SelectNext(true);
-      ChangeMusic;
     end;
   end
   //Party Mode
@@ -1520,6 +1527,7 @@ begin
     end;
   end;
 
+  isScrolling := true;
   SetJoker;
   SetStatics;
 end;
@@ -1560,13 +1568,23 @@ var
   dt: real;
   I:  integer;
 begin
-  dx := SongTarget-SongCurrent;
-  dt := TimeSkip * 7;
+  if isScrolling then
+  begin
+    dx := SongTarget-SongCurrent;
+    dt := TimeSkip * 7;
 
-  if dt > 1 then
-    dt := 1;
-    
-  SongCurrent := SongCurrent + dx*dt;
+    if dt > 1 then
+      dt := 1;
+
+    SongCurrent := SongCurrent + dx*dt;
+
+    if SameValue(SongCurrent, SongTarget, 0.002) and (CatSongs.VisibleSongs > 0) then
+    begin
+      isScrolling := false;
+      SongCurrent := SongTarget;
+      OnSongSelect;
+    end;
+  end;
 
   {
   if SongCurrent > Catsongs.VisibleSongs then
@@ -1643,8 +1661,11 @@ begin
 
   if VS > 0 then
   begin
-    if UnloadCover then      //that should fix the performance problem on scrolling
-      UnLoadDetailedCover;
+    if (not isScrolling) and (VS > 1) then
+    begin
+      isScrolling := true;
+      OnSongDeselect;
+    end;
 
     Skip := 1;
 
@@ -1677,10 +1698,13 @@ var
 begin
   VS := CatSongs.VisibleSongs;
 
-  if VS > 0 then
+  if VS > 1 then
   begin
-    if UnloadCover then
-      UnLoadDetailedCover;    //that should fix the performance problem on scrolling
+    if (not isScrolling) and (VS > 1) then
+    begin
+      isScrolling := true;
+      OnSongDeselect;
+    end;
 
     Skip := 1;
 
@@ -1708,6 +1732,9 @@ var
 begin
   AudioPlayback.Close();
 
+  if CatSongs.VisibleSongs = 0 then
+    Exit;
+    
   Song := CatSongs.Song[Interaction];
   if not assigned(Song) then
     Exit;
@@ -1768,23 +1795,13 @@ procedure TScreenSong.ChangeMusic;
 begin
   StopMusicPreview();
   PreviewOpened := -1;
-
-  // Preview song if activated and current selection is not a category cover
-  if (CatSongs.VisibleSongs > 0) and
-     (not CatSongs.Song[Interaction].Main) and
-     (Ini.PreviewVolume <> 0) then
-  begin
-    // Delay song fading to prevent the song from being played while scrolling
-    MusicPreviewTimer := SDL_AddTimer(200, MusicPreviewTimerCallback, Self);
-  end;
+  StartMusicPreview();
 end;
 
 procedure TScreenSong.SkipTo(Target: cardinal);
 var
   i: integer;
 begin
-  UnLoadDetailedCover;
-
   Interaction := High(CatSongs.Song);
   SongTarget  := 0;
 
@@ -1853,7 +1870,6 @@ begin
   end;
 
   AudioPlayback.PlaySound(SoundLib.Change);
-  ChangeMusic;
   SetScroll;
 end;
 
@@ -2016,8 +2032,6 @@ end;
 //Detailed Cover Unloading. Unloads the Detailed, uncached Cover of the cur. Song
 procedure TScreenSong.UnloadDetailedCover;
 begin
-  CoverTime := 0;
-
   // show cached texture
   Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, true);
   Button[Interaction].Texture2.Alpha := 0;
