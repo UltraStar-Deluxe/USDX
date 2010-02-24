@@ -330,7 +330,7 @@ begin
 
     // retrieve device-name
     deviceName := deviceInfo^.name;
-    paDevice.Name := deviceName;
+    paDevice.Name := UnifyDeviceName(deviceName, deviceIndex);
     paDevice.PaDeviceIndex := deviceIndex;
 
     sampleRate := deviceInfo^.defaultSampleRate;
