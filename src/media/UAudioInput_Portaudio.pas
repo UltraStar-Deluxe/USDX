@@ -46,10 +46,10 @@ uses
   {$ENDIF}
   portaudio,
   UAudioCore_Portaudio,
-  URecord,
   UIni,
   ULog,
-  UMain;
+  UMain,
+  URecord;
 
 type
   TAudioInput_Portaudio = class(TAudioInputBase)
@@ -57,7 +57,7 @@ type
       AudioCore: TAudioCore_Portaudio;
       function EnumDevices(): boolean;
     public
-      function GetName: String; override;
+      function GetName: string; override;
       function InitializeRecord: boolean; override;
       function FinalizeRecord: boolean; override;
   end;
@@ -70,22 +70,22 @@ type
       {$ENDIF}
       PaDeviceIndex:  TPaDeviceIndex;
     public
-      function Open(): boolean;
+      function Open():  boolean;
       function Close(): boolean;
       function Start(): boolean; override;
-      function Stop(): boolean;  override;
+      function Stop():  boolean; override;
 
       function GetVolume(): single;        override;
       procedure SetVolume(Volume: single); override;
   end;
 
-function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longword;
+function MicrophoneCallback(input: pointer; output: pointer; frameCount: longword;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: Pointer): Integer; cdecl; forward;
+      inputDevice: pointer): integer; cdecl; forward;
 
-function MicrophoneTestCallback(input: Pointer; output: Pointer; frameCount: Longword;
+function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: longword;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: Pointer): Integer; cdecl; forward;
+      inputDevice: pointer): integer; cdecl; forward;
 
 
 { TPortaudioInputDevice }
@@ -118,8 +118,8 @@ begin
   Error := Pa_OpenStream(RecordStream, @inputParams, nil,
       AudioFormat.SampleRate,
       paFramesPerBufferUnspecified, paNoFlag,
-      @MicrophoneCallback, Pointer(Self));
-  if(Error <> paNoError) then
+      @MicrophoneCallback, pointer(Self));
+  if (Error <> paNoError) then
   begin
     Log.LogError('Error opening stream: ' + Pa_GetErrorText(Error), 'TPortaudioInputDevice.Open');
     Exit;
@@ -155,7 +155,7 @@ end;
 
 function TPortaudioInputDevice.Start(): boolean;
 var
-  Error:       TPaError;
+  Error: TPaError;
 begin
   Result := false;
 
@@ -169,7 +169,7 @@ begin
 
   // start capture
   Error := Pa_StartStream(RecordStream);
-  if(Error <> paNoError) then
+  if (Error <> paNoError) then
   begin
     Log.LogError('Error starting stream: ' + Pa_GetErrorText(Error), 'TPortaudioInputDevice.Start');
     Close();
@@ -295,7 +295,7 @@ begin
 
   // choose the best available Audio-API
   paApiIndex := AudioCore.GetPreferredApiIndex();
-  if(paApiIndex = -1) then
+  if (paApiIndex = -1) then
   begin
     Log.LogError('No working Audio-API found', 'TAudioInput_Portaudio.EnumDevices');
     Exit;
@@ -364,7 +364,7 @@ begin
     // open device for further info
     err := Pa_OpenStream(stream, @inputParams, nil, sampleRate,
         paFramesPerBufferUnspecified, paNoFlag, @MicrophoneTestCallback, nil);
-    if(err <> paNoError) then
+    if (err <> paNoError) then
     begin
       // unable to open device -> skip
       errMsg := Pa_GetErrorText(err);
@@ -449,7 +449,7 @@ begin
 
   // initialize portaudio
   err := Pa_Initialize();
-  if(err <> paNoError) then
+  if (err <> paNoError) then
   begin
     Log.LogError(Pa_GetErrorText(err), 'TAudioInput_Portaudio.InitializeRecord');
     Result := false;
@@ -469,9 +469,9 @@ end;
 {*
  * Portaudio input capture callback.
  *}
-function MicrophoneCallback(input: Pointer; output: Pointer; frameCount: Longword;
+function MicrophoneCallback(input: pointer; output: pointer; frameCount: longword;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: Pointer): Integer; cdecl;
+      inputDevice: pointer): integer; cdecl;
 begin
   AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
   result := paContinue;
@@ -480,14 +480,13 @@ end;
 {*
  * Portaudio test capture callback.
  *}
-function MicrophoneTestCallback(input: Pointer; output: Pointer; frameCount: Longword;
+function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: longword;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: Pointer): Integer; cdecl;
+      inputDevice: pointer): integer; cdecl;
 begin
   // this callback is called only once
   result := paAbort;
 end;
-
 
 initialization
   MediaManager.add(TAudioInput_Portaudio.Create);
