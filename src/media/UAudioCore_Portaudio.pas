@@ -44,7 +44,7 @@ type
       constructor Create();
       class function GetInstance(): TAudioCore_Portaudio;
       function GetPreferredApiIndex(): TPaHostApiIndex;
-      function TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
+      function TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: double): boolean;
   end;
 
 implementation
@@ -103,7 +103,7 @@ end;
 
 function TAudioCore_Portaudio.GetPreferredApiIndex(): TPaHostApiIndex;
 var
-  i: integer;
+  i:        integer;
   apiIndex: TPaHostApiIndex;
   apiInfo:  PPaHostApiInfo;
 begin
@@ -112,11 +112,11 @@ begin
   // select preferred sound-API
   for i:= 0 to High(ApiPreferenceOrder) do
   begin
-    if(ApiPreferenceOrder[i] <> paDefaultApi) then
+    if (ApiPreferenceOrder[i] <> paDefaultApi) then
     begin
       // check if API is available
       apiIndex := Pa_HostApiTypeIdToHostApiIndex(ApiPreferenceOrder[i]);
-      if(apiIndex >= 0) then
+      if (apiIndex >= 0) then
       begin
         // we found an API but we must check if it works
         // (on linux portaudio might detect OSS but does not provide
@@ -132,7 +132,7 @@ begin
   end;
 
   // None of the preferred APIs is available -> use default
-  if(result < 0) then
+  if (result < 0) then
   begin
     result := Pa_GetDefaultHostApi();
   end;
@@ -141,9 +141,9 @@ end;
 {*
  * Portaudio test callback used by TestDevice().
  *}
-function TestCallback(input: Pointer; output: Pointer; frameCount: Longword;
+function TestCallback(input: pointer; output: pointer; frameCount: longword;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: Pointer): Integer; cdecl;
+      inputDevice: pointer): integer; cdecl;
 begin
   // this callback is called only once
   result := paAbort;
@@ -189,15 +189,15 @@ end;
  *   So we have to provide the possibility to manually select an output device
  *   in the UltraStar options if we want to use portaudio instead of SDL.
  *)
-function TAudioCore_Portaudio.TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: Double): boolean;
+function TAudioCore_Portaudio.TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: double): boolean;
+const
+  altSampleRates: array[0..1] of double = (44100, 48000); // alternative sample-rates
 var
-  stream: PPaStream;
-  err: TPaError;
+  stream:  PPaStream;
+  err:     TPaError;
   cbWorks: boolean;
   cbPolls: integer;
-  i: integer;
-const
-  altSampleRates: array[0..1] of Double = (44100, 48000); // alternative sample-rates
+  i:       integer;
 begin
   Result := false;
 
@@ -206,7 +206,7 @@ begin
 
   // check if device supports our input-format
   err := Pa_IsFormatSupported(inParams, outParams, sampleRate);
-  if(err <> paNoError) then
+  if (err <> paNoError) then
   begin
     // we cannot fix the error -> exit
     if (err <> paInvalidSampleRate) then
@@ -244,14 +244,14 @@ begin
   err := Pa_OpenStream(stream, inParams, outParams, sampleRate,
           paFramesPerBufferUnspecified,
           paNoFlag, @TestCallback, nil);
-  if(err <> paNoError) then
+  if (err <> paNoError) then
   begin
     exit;
   end;
 
   // start the callback
   err := Pa_StartStream(stream);
-  if(err <> paNoError) then
+  if (err <> paNoError) then
   begin
     Pa_CloseStream(stream);
     exit;
