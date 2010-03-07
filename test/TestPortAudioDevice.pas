@@ -36,6 +36,7 @@ program TestPortAudioDevice;
 
 uses
   SysUtils,
+  ctypes,
   PortAudio in '../src/lib/portaudio/portaudio.pas';
 
 const
@@ -63,7 +64,10 @@ var
   paApiInfo:   PPaHostApiInfo;
   deviceIndex: TPaDeviceIndex;
   deviceInfo:  PPaDeviceInfo;
-
+  inputParameters:  PPaStreamParameters;
+  outputParameters: PPaStreamParameters;
+  sampleRate:       cdouble;
+  
 function GetPreferredApiIndex(): TPaHostApiIndex;
 var
   i:        integer;
@@ -119,13 +123,6 @@ begin
     writeln ('Pa_Terminate:  Error No: ', PaError);
   writeln;
   
-  writeln ('*** Test of Pa_GetVersion and Pa_GetVersionText ***');
-  PaError := Pa_Initialize;
-  writeln ('Pa_GetVersion:     ', Pa_GetVersion);
-  writeln ('Pa_GetVersionText: ', Pa_GetVersionText);
-  PaError := Pa_Terminate; 
-  writeln;
-
   writeln ('*** Test of Pa_GetErrorText ***');
   PaError := Pa_Initialize;
   writeln ('paNoError (0): ', Pa_GetErrorText(PaError));
@@ -138,6 +135,31 @@ begin
     i := succ(i);
   until SameText(Pa_GetErrorText(i), 'Invalid error code') or (i = paNotInitialized + 100);
   writeln (i:6, ' ', Pa_GetErrorText(i));
+  PaError := Pa_Terminate; 
+  writeln;
+
+  writeln ('*** Test of Pa_GetVersion and Pa_GetVersionText ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetVersion:     ', Pa_GetVersion);
+  writeln ('Pa_GetVersionText: ', Pa_GetVersionText);
+  PaError := Pa_Terminate; 
+  writeln;
+
+  writeln ('*** Test of Pa_GetDeviceCount ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetDeviceCount: ', Pa_GetDeviceCount);
+  PaError := Pa_Terminate; 
+  writeln;
+
+  writeln ('*** Test of Pa_GetDefaultInputDevice ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetDefaultInputDevice: ', Pa_GetDefaultInputDevice);
+  PaError := Pa_Terminate; 
+  writeln;
+
+  writeln ('*** Test of Pa_GetDefaultOutputDevice ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetDefaultOutputDevice: ', Pa_GetDefaultOutputDevice);
   PaError := Pa_Terminate; 
   writeln;
 
@@ -178,7 +200,8 @@ begin
   writeln;
 
   writeln ('*** Test of Pa_GetDeviceInfo ***');
-// 
+// Note: the fields of deviceInfo can also be used without the '^'.
+// deviceInfo.name works as well as deviceInfo^.name
   PaError    := Pa_Initialize;
   paApiIndex := GetPreferredApiIndex();
   paApiInfo  := Pa_GetHostApiInfo(paApiIndex);
@@ -195,9 +218,84 @@ begin
     writeln ('deviceInfo[', i, '].defaultLowOutputLatency:  ', deviceInfo^.defaultLowOutputLatency);
     writeln ('deviceInfo[', i, '].defaultHighInputLatency:  ', deviceInfo^.defaultHighInputLatency);
     writeln ('deviceInfo[', i, '].defaultHighOutputLatency: ', deviceInfo^.defaultHighOutputLatency);
-    writeln ('deviceInfo[', i, '].defaultSampleRate:        ', deviceInfo^.defaultSampleRate:5:1);
+    writeln ('deviceInfo[', i, '].defaultSampleRate:        ', deviceInfo^.defaultSampleRate:5:0);
     writeln;
   end;
+  PaError := Pa_Terminate; 
+
+  writeln ('*** Test of Pa_IsFormatSupported ***');
+// Note: the fields of deviceInfo can also be used without the '^'.
+// deviceInfo.name works as well as deviceInfo^.name
+  PaError    := Pa_Initialize;
+  paApiIndex := GetPreferredApiIndex();
+  paApiInfo  := Pa_GetHostApiInfo(paApiIndex);
+  for i:= 0 to paApiInfo^.deviceCount - 1 do
+  begin
+    deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(paApiIndex, i);
+    deviceInfo  := Pa_GetDeviceInfo(deviceIndex);
+    writeln ('Device[', i, '] ', deviceInfo^.name, ':');
+    New(inputParameters);
+    New(outputParameters);
+    if deviceInfo^.maxInputChannels > 0 then
+    begin
+      inputParameters^.device                    := deviceIndex;
+      inputParameters^.channelCount              := deviceInfo^.maxInputChannels;
+      inputParameters^.sampleFormat              := paInt16;
+      inputParameters^.suggestedLatency          := deviceInfo^.defaultLowInputLatency;
+      inputParameters^.hostApiSpecificStreamInfo := nil;
+      outputParameters := nil;
+    end
+    else
+    begin
+      inputParameters := nil;
+      outputParameters^.device                    := deviceIndex;
+      outputParameters^.channelCount              := deviceInfo^.maxOutputChannels;
+      outputParameters^.sampleFormat              := paInt16;
+      outputParameters^.suggestedLatency          := deviceInfo^.defaultLowOutputLatency;
+      outputParameters^.hostApiSpecificStreamInfo := nil;
+    end;
+    sampleRate := deviceInfo^.defaultSampleRate;
+    PaError    := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
+    if PaError = paFormatIsSupported then
+      writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
+    else
+      writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', Pa_GetErrorText(PaError));
+{
+    try
+      sampleRate := 48000;
+      PaError    := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
+      if PaError = paFormatIsSupported then
+	writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
+      else
+	writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', PaError);
+    except
+      On EDivByZero do
+      begin
+	writeln ('Division by 0 error with sample rate ', sampleRate:5:0);
+	PaError := Pa_Terminate;
+	PaError := Pa_Initialize;
+      end;
+    end;
+    try
+      sampleRate := 90000;
+      PaError    := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
+      if PaError = paFormatIsSupported then
+	writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
+      else
+	writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', Pa_GetErrorText(PaError));
+    except
+      On EDivByZero do
+      begin
+        writeln ('Division by 0 error with sample rate ', sampleRate:5:0);
+        PaError := Pa_Terminate;
+        PaError := Pa_Initialize;
+      end;
+    end;
+}
+    Dispose(inputParameters);
+    Dispose(outputParameters);
+  end;
+  writeln;
   PaError := Pa_Terminate; 
 
   writeln ('End: Test of Portaudio libs');
