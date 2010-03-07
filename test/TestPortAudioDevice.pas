@@ -42,7 +42,6 @@ uses
 const
   paDefaultApi = -1;
 
-const
   ApiPreferenceOrder:
 {$IF Defined(MSWINDOWS)}
     // Note1: Portmixer has no mixer support for paASIO and paWASAPI at the moment
@@ -57,8 +56,23 @@ const
     array[0..0] of TPaHostApiTypeId = ( paDefaultApi );
 {$IFEND}
 
+  standardSampleRates: array[1..13] of cdouble =
+    ( 8000.0,  9600.0,  11025.0,  12000.0,  16000.0,
+     22050.0, 24000.0,  32000.0,  44100.0,  48000.0,
+     88200.0, 96000.0, 192000.0
+    );
+
+  SampleFormat: array[1..8] of culong =
+    (paFloat32,      paInt32,          paInt24, paInt16, paInt8, paUInt8,
+     paCustomFormat, paNonInterleaved
+    );
+  SampleFormatName: array[1..8] of string =
+    ('paFloat32',      'paInt32',          'paInt24', 'paInt16', 'paInt8', 'paUInt8',
+     'paCustomFormat', 'paNonInterleaved'
+    );
+
 var
-  i:           integer;
+  i, j:        integer;
   PaError:     TPaError;
   paApiIndex:  TPaHostApiIndex;
   paApiInfo:   PPaHostApiInfo;
@@ -67,7 +81,12 @@ var
   inputParameters:  PPaStreamParameters;
   outputParameters: PPaStreamParameters;
   sampleRate:       cdouble;
-  
+  stream:           PPaStream;
+  framesPerBuffer:  culong;
+  streamFlags:      TPaStreamFlags;
+  streamCallback:   PPaStreamCallback;
+  userData:         Pointer;
+
 function GetPreferredApiIndex(): TPaHostApiIndex;
 var
   i:        integer;
@@ -103,6 +122,35 @@ begin
   begin
     result := Pa_GetDefaultHostApi();
   end;
+end;
+
+function DummyCallback(input: pointer; output: pointer; frameCount: longword;
+    timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+    userData: pointer): integer; cdecl;
+begin
+  result := paContinue;
+end;
+
+function MicrophoneCallback(input: pointer; output: pointer; frameCount: longword;
+      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+      inputDevice: pointer): integer; cdecl;
+begin
+//  AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
+  result := paContinue;
+end;
+
+function PortaudioAudioCallback(input: pointer; output: pointer; frameCount: longword;
+    timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+    userData: pointer): integer; cdecl;
+{var
+  Engine: TAudioPlayback_Portaudio;
+}begin
+{  Engine := TAudioPlayback_Portaudio(userData);
+  // update latency
+  Engine.Latency := timeInfo.outputBufferDacTime - timeInfo.currentTime;
+  // call superclass callback
+  Engine.AudioCallback(output, frameCount * Engine.FormatInfo.FrameSize);
+}  Result := paContinue;
 end;
 
 begin
@@ -214,18 +262,16 @@ begin
     writeln ('deviceInfo[', i, '].hostApi:                  ', deviceInfo^.hostApi);
     writeln ('deviceInfo[', i, '].maxInputChannels:         ', deviceInfo^.maxInputChannels);
     writeln ('deviceInfo[', i, '].maxOutputChannels:        ', deviceInfo^.maxOutputChannels);
-    writeln ('deviceInfo[', i, '].defaultLowInputLatency:   ', deviceInfo^.defaultLowInputLatency);
-    writeln ('deviceInfo[', i, '].defaultLowOutputLatency:  ', deviceInfo^.defaultLowOutputLatency);
-    writeln ('deviceInfo[', i, '].defaultHighInputLatency:  ', deviceInfo^.defaultHighInputLatency);
-    writeln ('deviceInfo[', i, '].defaultHighOutputLatency: ', deviceInfo^.defaultHighOutputLatency);
+    writeln ('deviceInfo[', i, '].defaultLowInputLatency:   ', deviceInfo^.defaultLowInputLatency:6:4);
+    writeln ('deviceInfo[', i, '].defaultLowOutputLatency:  ', deviceInfo^.defaultLowOutputLatency:6:4);
+    writeln ('deviceInfo[', i, '].defaultHighInputLatency:  ', deviceInfo^.defaultHighInputLatency:6:4);
+    writeln ('deviceInfo[', i, '].defaultHighOutputLatency: ', deviceInfo^.defaultHighOutputLatency:6:4);
     writeln ('deviceInfo[', i, '].defaultSampleRate:        ', deviceInfo^.defaultSampleRate:5:0);
     writeln;
   end;
   PaError := Pa_Terminate; 
 
   writeln ('*** Test of Pa_IsFormatSupported ***');
-// Note: the fields of deviceInfo can also be used without the '^'.
-// deviceInfo.name works as well as deviceInfo^.name
   PaError    := Pa_Initialize;
   paApiIndex := GetPreferredApiIndex();
   paApiInfo  := Pa_GetHostApiInfo(paApiIndex);
@@ -236,12 +282,13 @@ begin
     writeln ('Device[', i, '] ', deviceInfo^.name, ':');
     New(inputParameters);
     New(outputParameters);
+
     if deviceInfo^.maxInputChannels > 0 then
     begin
       inputParameters^.device                    := deviceIndex;
       inputParameters^.channelCount              := deviceInfo^.maxInputChannels;
       inputParameters^.sampleFormat              := paInt16;
-      inputParameters^.suggestedLatency          := deviceInfo^.defaultLowInputLatency;
+      inputParameters^.suggestedLatency          := 0;
       inputParameters^.hostApiSpecificStreamInfo := nil;
       outputParameters := nil;
     end
@@ -251,52 +298,113 @@ begin
       outputParameters^.device                    := deviceIndex;
       outputParameters^.channelCount              := deviceInfo^.maxOutputChannels;
       outputParameters^.sampleFormat              := paInt16;
-      outputParameters^.suggestedLatency          := deviceInfo^.defaultLowOutputLatency;
+      outputParameters^.suggestedLatency          := 0;
       outputParameters^.hostApiSpecificStreamInfo := nil;
     end;
+
     sampleRate := deviceInfo^.defaultSampleRate;
     PaError    := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
     if PaError = paFormatIsSupported then
       writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
     else
       writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', Pa_GetErrorText(PaError));
-{
-    try
-      sampleRate := 48000;
+
+{$IF not Defined(DARWIN)} // as long as the darwin bug is not resolved
+    for j := low(standardSampleRates) to high(standardSampleRates) do
+    begin 
+      sampleRate := standardSampleRates[j];
       PaError    := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
       if PaError = paFormatIsSupported then
 	writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
       else
 	writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', PaError);
-    except
-      On EDivByZero do
-      begin
-	writeln ('Division by 0 error with sample rate ', sampleRate:5:0);
-	PaError := Pa_Terminate;
-	PaError := Pa_Initialize;
-      end;
     end;
-    try
-      sampleRate := 90000;
-      PaError    := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
-      if PaError = paFormatIsSupported then
-	writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
+{$IFEND}
+
+    writeln;
+    for j := low(SampleFormat) to high(SampleFormat) do
+    begin 
+      if inputParameters <> nil then
+        inputParameters^.sampleFormat := SampleFormat[j]
       else
-	writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', Pa_GetErrorText(PaError));
-    except
-      On EDivByZero do
-      begin
-        writeln ('Division by 0 error with sample rate ', sampleRate:5:0);
-        PaError := Pa_Terminate;
-        PaError := Pa_Initialize;
-      end;
+	outputParameters^.sampleFormat := SampleFormat[j];
+      PaError := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
+      if PaError = paFormatIsSupported then
+        writeln ('Sample Format ', SampleFormatName[j], ': supported')
+      else
+        writeln ('Sample Format ', SampleFormatName[j], ': ', Pa_GetErrorText(PaError));
     end;
-}
+
     Dispose(inputParameters);
     Dispose(outputParameters);
+    writeln;
   end;
-  writeln;
   PaError := Pa_Terminate; 
 
+  writeln ('*** Test of Pa_OpenStream and Pa_CloseStream ***');
+  PaError    := Pa_Initialize;
+  paApiIndex := GetPreferredApiIndex();
+  paApiInfo  := Pa_GetHostApiInfo(paApiIndex);
+  for i:= 0 to paApiInfo^.deviceCount - 1 do
+  begin
+    deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(paApiIndex, i);
+    deviceInfo  := Pa_GetDeviceInfo(deviceIndex);
+    writeln ('Device[', i, '] ', deviceInfo^.name, ':');
+    New(inputParameters);
+    New(outputParameters);
+    New(stream);
+    New(userData);
+    if deviceInfo^.maxInputChannels > 0 then
+    begin
+      inputParameters^.device                    := deviceIndex;
+      inputParameters^.channelCount              := deviceInfo^.maxInputChannels;
+      inputParameters^.sampleFormat              := paInt16;
+      inputParameters^.suggestedLatency          := 0;
+      inputParameters^.hostApiSpecificStreamInfo := nil;
+      outputParameters := nil;
+    end
+    else
+    begin
+      inputParameters := nil;
+      outputParameters^.device                    := deviceIndex;
+      outputParameters^.channelCount              := deviceInfo^.maxOutputChannels;
+      outputParameters^.sampleFormat              := paInt16;
+      outputParameters^.suggestedLatency          := 0;
+      outputParameters^.hostApiSpecificStreamInfo := nil;
+    end;
+      
+    sampleRate      := deviceInfo^.defaultSampleRate;
+    framesPerBuffer := paFramesPerBufferUnspecified;
+    streamFlags     := paNoFlag;
+    streamCallback  := @DummyCallback;
+  
+    PaError := Pa_OpenStream(
+                     stream,
+                     inputParameters,
+                     outputParameters,
+		     sampleRate,
+                     framesPerBuffer,
+                     streamFlags,
+                     streamCallback,
+                     userData 
+		     );
+    if PaError = paNoError then
+      writeln ('Pa_OpenStream: success')
+    else
+      writeln ('Pa_OpenStream: ', Pa_GetErrorText(PaError));
+
+    PaError := Pa_CloseStream(stream);
+    if PaError = paNoError then
+      writeln ('Pa_CloseStream: success')
+    else
+      writeln ('Pa_CloseStream: ', Pa_GetErrorText(PaError));
+
+    Dispose(inputParameters);
+    Dispose(outputParameters);
+    
+    writeln;    
+  end;
+  PaError := Pa_Terminate; 
+  
   writeln ('End: Test of Portaudio libs');
 end.
