@@ -35,7 +35,8 @@ program TestPortAudioDevice;
 {$ENDIF}
 
 uses
-  PortAudio in '../../src/lib/portaudio/portaudio.pas';
+  SysUtils,
+  PortAudio in '../src/lib/portaudio/portaudio.pas';
 
 const
   paDefaultApi = -1;
@@ -107,17 +108,39 @@ begin
   writeln ('*** Test of Pa_Initialize and Pa_Terminate ***');
   PaError := Pa_Initialize;
   if PaError = paNoError then
-    writeln ('Pa_Initialize: NoError')
+    writeln ('Pa_Initialize: No error')
   else
     writeln ('Pa_Initialize: Error No ', PaError);
 
   PaError := Pa_Terminate; 
   if PaError = paNoError then
-    writeln ('Pa_Terminate:  NoError')
+    writeln ('Pa_Terminate:  No error')
   else
     writeln ('Pa_Terminate:  Error No: ', PaError);
   writeln;
   
+  writeln ('*** Test of Pa_GetVersion and Pa_GetVersionText ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetVersion:     ', Pa_GetVersion);
+  writeln ('Pa_GetVersionText: ', Pa_GetVersionText);
+  PaError := Pa_Terminate; 
+  writeln;
+
+  writeln ('*** Test of Pa_GetErrorText ***');
+  PaError := Pa_Initialize;
+  writeln ('paNoError (0): ', Pa_GetErrorText(PaError));
+  writeln;
+  writeln ('Code   Text');
+  writeln ('------------------------------------');
+  i := paNotInitialized;
+  repeat
+    writeln (i:6, ' ', Pa_GetErrorText(i));
+    i := succ(i);
+  until SameText(Pa_GetErrorText(i), 'Invalid error code') or (i = paNotInitialized + 100);
+  writeln (i:6, ' ', Pa_GetErrorText(i));
+  PaError := Pa_Terminate; 
+  writeln;
+
   writeln ('*** Test of GetPreferredApiIndex ***');
   PaError    := Pa_Initialize;
   paApiIndex := GetPreferredApiIndex();
