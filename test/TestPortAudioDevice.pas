@@ -37,6 +37,9 @@ program TestPortAudioDevice;
 uses
   SysUtils,
   ctypes,
+{$IF Defined(DARWIN)} // for setting the floating point exception mask
+  math,
+{$IFEND}
   PortAudio in '../src/lib/portaudio/portaudio.pas';
 
 const
@@ -124,18 +127,70 @@ begin
   end;
 end;
 
-function DummyCallback(input: pointer; output: pointer; frameCount: longword;
-    timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-    userData: pointer): integer; cdecl;
-begin
-  result := paContinue;
-end;
+{
+type
+  TAudioSampleFormat = (
+    asfU8, asfS8,         // unsigned/signed  8 bits
+    asfU16LSB, asfS16LSB, // unsigned/signed 16 bits (endianness: LSB)
+    asfU16MSB, asfS16MSB, // unsigned/signed 16 bits (endianness: MSB)
+    asfU16, asfS16,       // unsigned/signed 16 bits (endianness: System)
+    asfS32,               // signed 32 bits (endianness: System)
+    asfFloat,             // float
+    asfDouble             // double
+  );
+  TAudioFormatInfo = ;
+  TAudioInputDevice = record
+      AudioFormat:     TAudioFormatInfo; // capture format info (e.g. 44.1kHz SInt16 stereo)
+      CaptureChannel:  array of TCaptureBuffer; // sound-buffer references used for mono or stereo channel's capture data
+  end;
 
+procedure HandleMicrophoneData(Buffer: PByteArray; Size: integer; InputDevice: TAudioInputDevice);
+var
+  MultiChannelBuffer:      PByteArray;  // buffer handled as array of bytes (offset relative to channel)
+  SingleChannelBuffer:     PByteArray;  // temporary buffer for new samples per channel
+  SingleChannelBufferSize: integer;
+  ChannelIndex:            integer;
+  CaptureChannel:          TCaptureBuffer;
+  AudioFormat:             TAudioFormatInfo;
+  SampleSize:              integer;
+  SamplesPerChannel:       integer;
+  i:                       integer;
+begin
+  AudioFormat := InputDevice.AudioFormat;
+  SampleSize := AudioSampleSize[AudioFormat.Format];
+  SamplesPerChannel := Size div AudioFormat.FrameSize;
+
+  SingleChannelBufferSize := SamplesPerChannel * SampleSize;
+  GetMem(SingleChannelBuffer, SingleChannelBufferSize);
+
+  // process channels
+  for ChannelIndex := 0 to High(InputDevice.CaptureChannel) do
+  begin
+    CaptureChannel := InputDevice.CaptureChannel[ChannelIndex];
+    // check if a capture buffer was assigned, otherwise there is nothing to do
+    if (CaptureChannel <> nil) then
+    begin
+      // set offset according to channel index
+      MultiChannelBuffer := @Buffer[ChannelIndex * SampleSize];
+      // separate channel-data from interleaved multi-channel (e.g. stereo) data
+      for i := 0 to SamplesPerChannel-1 do
+      begin
+        Move(MultiChannelBuffer[i*AudioFormat.FrameSize],
+             SingleChannelBuffer[i*SampleSize],
+             SampleSize);
+      end;
+      CaptureChannel.ProcessNewBuffer(SingleChannelBuffer, SingleChannelBufferSize);
+    end;
+  end;
+
+  FreeMem(SingleChannelBuffer);
+end;
+}
 function MicrophoneCallback(input: pointer; output: pointer; frameCount: longword;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
       inputDevice: pointer): integer; cdecl;
 begin
-//  AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
+//  HandleMicrophoneData(input, frameCount*4, inputDevice);
   result := paContinue;
 end;
 
@@ -309,7 +364,10 @@ begin
     else
       writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', Pa_GetErrorText(PaError));
 
-{$IF not Defined(DARWIN)} // as long as the darwin bug is not resolved
+{$IF Defined(DARWIN)} // floating point exceptions are raised. Therefore, set the exception mask.
+    SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide,
+                      exOverflow, exUnderflow, exPrecision]);
+{$IFEND}
     for j := low(standardSampleRates) to high(standardSampleRates) do
     begin 
       sampleRate := standardSampleRates[j];
@@ -319,7 +377,6 @@ begin
       else
 	writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', PaError);
     end;
-{$IFEND}
 
     writeln;
     for j := low(SampleFormat) to high(SampleFormat) do
@@ -352,8 +409,6 @@ begin
     writeln ('Device[', i, '] ', deviceInfo^.name, ':');
     New(inputParameters);
     New(outputParameters);
-    New(stream);
-    New(userData);
     if deviceInfo^.maxInputChannels > 0 then
     begin
       inputParameters^.device                    := deviceIndex;
@@ -376,7 +431,8 @@ begin
     sampleRate      := deviceInfo^.defaultSampleRate;
     framesPerBuffer := paFramesPerBufferUnspecified;
     streamFlags     := paNoFlag;
-    streamCallback  := @DummyCallback;
+    streamCallback  := nil;
+    userData        := nil;
   
     PaError := Pa_OpenStream(
                      stream,
@@ -388,7 +444,7 @@ begin
                      streamCallback,
                      userData 
 		     );
-    if PaError = paNoError then
+    if (PaError = paNoError) and (stream <> nil) then
       writeln ('Pa_OpenStream: success')
     else
       writeln ('Pa_OpenStream: ', Pa_GetErrorText(PaError));
