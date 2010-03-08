@@ -365,8 +365,7 @@ begin
       writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', Pa_GetErrorText(PaError));
 
 {$IF Defined(DARWIN)} // floating point exceptions are raised. Therefore, set the exception mask.
-    SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide,
-                      exOverflow, exUnderflow, exPrecision]);
+    SetExceptionMask([exZeroDivide, exPrecision]);
 {$IFEND}
     for j := low(standardSampleRates) to high(standardSampleRates) do
     begin 
