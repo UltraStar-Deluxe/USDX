@@ -753,11 +753,12 @@ var
     // search devices with same description
     for i := 0 to deviceIndex-1 do
     begin
-      if (AudioInputProcessor.DeviceList[i].Name = name) then
-      begin
-        Result := true;
-        Break;
-      end;
+      if (AudioInputProcessor.DeviceList[i] <> nil) then
+	if (AudioInputProcessor.DeviceList[i].Name = name) then
+	begin
+	  Result := true;
+	  Break;
+	end;
     end;
   end;
 
