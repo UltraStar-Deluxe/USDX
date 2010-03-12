@@ -268,27 +268,27 @@ end;
 
 function TAudioInput_Portaudio.EnumDevices(): boolean;
 var
-  i:           integer;
-  paApiIndex:  TPaHostApiIndex;
-  paApiInfo:   PPaHostApiInfo;
-  deviceName:  string;
-  deviceIndex: TPaDeviceIndex;
-  deviceInfo:  PPaDeviceInfo;
-  channelCnt:  integer;
-  SC:          integer; // soundcard
-  err:         TPaError;
-  errMsg:      string;
-  paDevice:    TPortaudioInputDevice;
-  inputParams: TPaStreamParameters;
-  stream:      PPaStream;
-  streamInfo:  PPaStreamInfo;
-  sampleRate:  double;
-  latency:     TPaTime;
+  i:            integer;
+  paApiIndex:   TPaHostApiIndex;
+  paApiInfo:    PPaHostApiInfo;
+  deviceName:   string;
+  deviceIndex:  TPaDeviceIndex;
+  deviceInfo:   PPaDeviceInfo;
+  channelCnt:   integer;
+  soundcardCnt: integer;
+  err:          TPaError;
+  errMsg:       string;
+  paDevice:     TPortaudioInputDevice;
+  inputParams:  TPaStreamParameters;
+  stream:       PPaStream;
+  streamInfo:   PPaStreamInfo;
+  sampleRate:   double;
+  latency:      TPaTime;
   {$IFDEF UsePortmixer}
-  mixer:       PPxMixer;
-  sourceCnt:   integer;
-  sourceIndex: integer;
-  sourceName:  string;
+  mixer:        PPxMixer;
+  sourceCnt:    integer;
+  sourceIndex:  integer;
+  sourceName:   string;
   {$ENDIF}
 begin
   Result := false;
@@ -303,7 +303,7 @@ begin
 
   paApiInfo := Pa_GetHostApiInfo(paApiIndex);
 
-  SC := 0;
+  soundcardCnt := 0;
 
   // init array-size to max. input-devices count
   SetLength(AudioInputProcessor.DeviceList, paApiInfo^.deviceCount);
@@ -326,7 +326,7 @@ begin
       channelCnt := 2;
 
     paDevice := TPortaudioInputDevice.Create();
-    AudioInputProcessor.DeviceList[SC] := paDevice;
+    AudioInputProcessor.DeviceList[soundCardCnt] := paDevice;
 
     // retrieve device-name
     deviceName := deviceInfo^.name;
@@ -430,13 +430,13 @@ begin
     // close test-stream
     Pa_CloseStream(stream);
 
-    Inc(SC);
+    Inc(soundCardCnt);
   end;
 
   // adjust size to actual input-device count
-  SetLength(AudioInputProcessor.DeviceList, SC);
+  SetLength(AudioInputProcessor.DeviceList, soundCardCnt);
 
-  Log.LogStatus('#Input-Devices: ' + inttostr(SC), 'Portaudio');
+  Log.LogStatus('#Input-Devices: ' + inttostr(soundCardCnt), 'Portaudio');
 
   Result := true;
 end;
