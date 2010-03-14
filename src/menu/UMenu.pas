@@ -838,8 +838,6 @@ begin
         Button[Result].Texture.Alpha := 0;
     end;
   end;
-  Log.BenchmarkEnd(6);
-  Log.LogBenchmark('====> Screen Options32', 6);
 end;
 
 function TMenu.AddButton(X, Y, W, H: real; const TexName: IPath): integer;
