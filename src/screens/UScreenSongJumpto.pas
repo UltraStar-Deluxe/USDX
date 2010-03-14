@@ -229,7 +229,7 @@ begin
 
   //Fix SongSelection
   ScreenSong.Interaction := high(CatSongs.Song);
-  ScreenSong.SelectNext(true);
+  ScreenSong.SelectNext;
   ScreenSong.FixSelected;
 
   //Play Correct Music

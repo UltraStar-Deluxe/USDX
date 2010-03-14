@@ -130,8 +130,8 @@ type
       procedure GenerateThumbnails();
       procedure OnShow; override;
       procedure OnHide; override;
-      procedure SelectNext(UnloadCover: boolean);
-      procedure SelectPrev(UnloadCover: boolean);
+      procedure SelectNext;
+      procedure SelectPrev;
       procedure SkipTo(Target: cardinal);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
@@ -436,7 +436,7 @@ begin
 
                   CatSongs.ShowCategoryList;
                   CatSongs.ClickCategoryButton(I);
-                  SelectNext(true);
+                  SelectNext;
                   FixSelected;
                   break;
                 end;
@@ -464,7 +464,7 @@ begin
               ShowCatTL (I);
 
               CatSongs.ClickCategoryButton(I);
-              SelectNext(true);
+              SelectNext;
 
               // Fix: not existing song selected:
               //if (I + 1 = I2) then
@@ -517,7 +517,7 @@ begin
               HideCatTL;
 
               //Show Wrong Song when Tabs on Fix
-              SelectNext(true);
+              SelectNext;
               FixSelected;
               //SelectPrev(true);
               //CatSongs.Song[0].Visible := false;
@@ -536,7 +536,7 @@ begin
                 Interaction := 0;
 
                 //Show Wrong Song when Tabs on Fix
-                SelectNext(true);
+                SelectNext;
                 FixSelected;
               end
               else
@@ -574,7 +574,7 @@ begin
               //  SetScroll4;
 
               //Show Wrong Song when Tabs on Fix
-              SelectNext(true);
+              SelectNext;
               FixSelected;
             end
             else
@@ -631,7 +631,7 @@ begin
                 ShowCatTL (Interaction);
 
                 CatSongs.ClickCategoryButton(Interaction);
-                SelectNext(true);
+                SelectNext;
                 FixSelected;
 
                 //Play Music:
@@ -673,7 +673,7 @@ begin
                 ShowCatTL (I);
 
                 CatSongs.ClickCategoryButton(I);
-                SelectNext(true);
+                SelectNext;
                 FixSelected;
 
                 //Play Music:
@@ -689,7 +689,7 @@ begin
           if (Songs.SongList.Count > 0) and (Mode = smNormal) then
           begin
             AudioPlayback.PlaySound(SoundLib.Change);
-            SelectNext(true);
+            SelectNext;
             SetScroll4;
           end;
         end;
@@ -699,7 +699,7 @@ begin
           if (Songs.SongList.Count > 0)and (Mode = smNormal)  then
           begin
             AudioPlayback.PlaySound(SoundLib.Change);
-            SelectPrev(true);
+            SelectPrev;
             SetScroll4;
           end;
         end;
@@ -1512,7 +1512,7 @@ begin
     //If Playlist Shown -> Select Next automatically
     if (CatSongs.CatNumShow = -3) then
     begin
-      SelectNext(true);
+      SelectNext;
     end;
   end
   //Party Mode
@@ -1652,7 +1652,7 @@ begin
   Result := true;
 end;
 
-procedure TScreenSong.SelectNext(UnloadCover: boolean);
+procedure TScreenSong.SelectNext;
 var
   Skip: integer;
   VS:   integer;
@@ -1665,7 +1665,8 @@ begin
     begin
       isScrolling := true;
       OnSongDeselect;
-    end;
+    end else if (VS=0) then // fix for tabs=on
+      UnLoadDetailedCover;       
 
     Skip := 1;
 
@@ -1691,7 +1692,7 @@ begin
   //Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
 end;
 
-procedure TScreenSong.SelectPrev(UnloadCover: boolean);
+procedure TScreenSong.SelectPrev;
 var
   Skip: integer;
   VS:   integer;
@@ -1789,7 +1790,7 @@ begin
   SongTarget  := 0;
 
   for i := 1 to Target+1 do
-    SelectNext(false);
+    SelectNext;
 
   FixSelected2;
 end;
@@ -1823,7 +1824,7 @@ begin
             ShowCatTL(I);
 
             CatSongs.ClickCategoryButton(I);
-            SelectNext(true);
+            SelectNext;
 
             // choose song
             SkipTo(I2 - I);
@@ -1838,7 +1839,7 @@ begin
           CatSongs.ClickCategoryButton(PlaylistMan.CurPlayList);
           ShowCatTL(PlaylistMan.CurPlayList);
 
-          SelectNext(true);
+          SelectNext;
           FixSelected2;
 
           SkipTo(Random(CatSongs.VisibleSongs));
