@@ -817,17 +817,25 @@ begin
   else if (Modes = PPSDL_Rect(-1)) then
   begin
     // Fallback to some standard resolutions
-    SetLength(IResolution, 10);
+    SetLength(IResolution, 18);
     IResolution[0] := '640x480';
     IResolution[1] := '800x600';
     IResolution[2] := '1024x768';
-    IResolution[3] := '1152x864';
-    IResolution[4] := '1280x800';
-    IResolution[5] := '1280x960';
-    IResolution[6] := '1400x1050';
-    IResolution[7] := '1440x900';
-    IResolution[8] := '1600x1200';
-    IResolution[9] := '1680x1050';
+    IResolution[3] := '1152x666';;
+    IResolution[4] := '1152x864';
+    IResolution[5] := '1280x800';
+    IResolution[6] := '1280x960';
+    IResolution[7] := '1280x1024';
+    IResolution[8] := '1366x768';
+    IResolution[9] := '1400x1050';
+    IResolution[10] := '1440x900';
+    IResolution[11] := '1600x900';
+    IResolution[12] := '1600x1200';
+    IResolution[13] := '1680x1050';
+    IResolution[14] := '1920x1080';
+    IResolution[15] := '1920x1200';
+    IResolution[16] := '2048x1152';
+    IResolution[17] := '2560x1600';
 
     Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
     if Resolution = -1 then
@@ -931,7 +939,7 @@ begin
   LoadScreenModes(IniFile);
 
   // TextureSize
-  TextureSize := GetArrayIndex(ITextureSize, IniFile.ReadString('Graphics', 'TextureSize', ITextureSize[1]));
+  TextureSize := GetArrayIndex(ITextureSize, IniFile.ReadString('Graphics', 'TextureSize', ITextureSize[2]));
 
   // SingWindow
   SingWindow := GetArrayIndex(ISingWindow, IniFile.ReadString('Graphics', 'SingWindow', 'Big'));
