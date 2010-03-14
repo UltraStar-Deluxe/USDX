@@ -35,6 +35,7 @@ interface
 
 uses
   UCommon,
+  Math,
   SDL,
   gl,
   glu,
@@ -57,8 +58,10 @@ type
       FadeFailed:    boolean;  // true if fading is possible (enough memory, etc.)
       FadeState:     integer;  // fading state, 0 means that the fade texture must be initialized
       LastFadeTime:  cardinal; // last fade update time
+      DoneOnShow:    boolean;  // true if passed onShow after fading
 
       FadeTex:       array[1..2] of GLuint;
+      TexW, TexH:    Cardinal;
  
       FPSCounter:    cardinal;
       LastFPS:       cardinal;
@@ -165,12 +168,17 @@ begin
   FadeState   := 0;
   FadeEnabled := (Ini.ScreenFade = 1);
   FadeFailed  := false;
-
-  glGenTextures(2, @FadeTex);
+  DoneOnShow  := false;
 
   for i := 1 to 2 do
   begin
+    TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
+    TexH := Round(Power(2, Ceil(Log2(ScreenH))));
+
+    glGenTextures(1, PglUint(@FadeTex[i]));
     glBindTexture(GL_TEXTURE_2D, FadeTex[i]);
+    glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   end;
@@ -198,8 +206,10 @@ function TDisplay.Draw: boolean;
 var
   S:               integer;
   FadeStateSquare: real;
+  FadeW, FadeH:    real;
   currentTime:     cardinal;
   glError:         glEnum;
+
 begin
   Result := true;
 
@@ -271,11 +281,6 @@ begin
         //Create Fading texture if we're just starting
         if FadeState = 0 then
         begin
-          // save old viewport and resize to fit texture
-          glPushAttrib(GL_VIEWPORT_BIT);
-          glViewPort(0, 0, 512, 512);
-
-
           // draw screen that will be faded
           ePreDraw.CallHookChain(false);
           CurrentScreen.Draw;
@@ -287,20 +292,22 @@ begin
 
           // copy screen to texture
           glBindTexture(GL_TEXTURE_2D, FadeTex[S]);
-          glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 512, 512, 0);
+          glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (S-1) * ScreenW div Screens, 0,
+            ScreenW div Screens, ScreenH);
+
           glError := glGetError();
           if (glError <> GL_NO_ERROR) then
           begin
             FadeFailed := true;
-            Log.LogWarn('Fading disabled: ' + gluErrorString(glError), 'TDisplay.Draw');
+            Log.LogError('Fading disabled: ' + gluErrorString(glError), 'TDisplay.Draw');
           end;
 
-          // restore viewport
-          glPopAttrib();
-
           // blackscreen-hack
-          if not BlackScreen then
+          if not BlackScreen and (S = 1) and not DoneOnShow then
+          begin
             NextScreen.OnShow;
+            DoneOnShow := true;
+          end;
 
           // update fade state
           LastFadeTime := SDL_GetTicks();
@@ -312,7 +319,7 @@ begin
         currentTime := SDL_GetTicks();
         if (currentTime > LastFadeTime+30) and (S = 1) then
         begin
-          FadeState := FadeState + 4;
+          FadeState := FadeState + 5;
           LastFadeTime := currentTime;
         end;
 
@@ -325,25 +332,34 @@ begin
         end
         else if ScreenAct = 1 then
         begin
-          glClearColor(0, 0, 0 , 0);
+          glClearColor(0, 0, 0, 0);
           glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
         end;
 
         // and draw old screen over it... slowly fading out
 
         FadeStateSquare := (FadeState*FadeState)/10000;
+        FadeW := (ScreenW div Screens)/TexW;
+        FadeH := ScreenH/TexH;
 
         glBindTexture(GL_TEXTURE_2D, FadeTex[S]);
-        glColor4f(1, 1, 1, 1-FadeStateSquare);
+        glColor4f(1, 1, 1, 1-FadeStateSquare*1.5);
 
         glEnable(GL_TEXTURE_2D);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
         glBegin(GL_QUADS);
-          glTexCoord2f(0+FadeStateSquare, 0+FadeStateSquare); glVertex2f(0,   600);
-          glTexCoord2f(0+FadeStateSquare, 1-FadeStateSquare); glVertex2f(0,   0);
-          glTexCoord2f(1-FadeStateSquare, 1-FadeStateSquare); glVertex2f(800, 0);
-          glTexCoord2f(1-FadeStateSquare, 0+FadeStateSquare); glVertex2f(800, 600);
+          glTexCoord2f((0+FadeStateSquare)*FadeW, (0+FadeStateSquare)*FadeH);
+          glVertex2f(0,   RenderH);
+
+          glTexCoord2f((0+FadeStateSquare)*FadeW, (1-FadeStateSquare)*FadeH);
+          glVertex2f(0,   0);
+
+          glTexCoord2f((1-FadeStateSquare)*FadeW, (1-FadeStateSquare)*FadeH);
+          glVertex2f(RenderW, 0);
+
+          glTexCoord2f((1-FadeStateSquare)*FadeW, (0+FadeStateSquare)*FadeH);
+          glVertex2f(RenderW, RenderH);
         glEnd;
         glDisable(GL_BLEND);
         glDisable(GL_TEXTURE_2D);
@@ -354,10 +370,11 @@ begin
         NextScreen.OnShow;
       end;
 
-      if ((FadeState > 40) or (not FadeEnabled) or FadeFailed) and (S = 1) then
+      if ((FadeState > 44) or (not FadeEnabled) or FadeFailed) and (S = 1) then
       begin
         // fade out complete...
         FadeState := 0;
+        DoneOnShow := false;
         CurrentScreen.onHide;
         CurrentScreen.ShowFinish := false;
         CurrentScreen := NextScreen;
@@ -483,7 +500,7 @@ var
   Ticks: cardinal;
   DrawX: double;
 begin
-  if (Ini.Mouse = 2) and ((Screens = 1) or ((ScreenAct - 1) = (Round(Cursor_X+16) div 800))) then
+  if (Ini.Mouse = 2) and ((Screens = 1) or ((ScreenAct - 1) = (Round(Cursor_X+16) div RenderW))) then
   begin // draw software cursor
     Ticks := SDL_GetTicks;
 
