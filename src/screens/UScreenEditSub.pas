@@ -91,6 +91,7 @@ type
       MidiLastNote:     integer;
 
       TextEditMode:     boolean;
+      editText:         UTF8String; //backup of current text in text-edit-mode
 
       Lyric:            TEditorLyrics;
 
@@ -200,7 +201,8 @@ begin
                    (SDL_ModState = KMOD_LSHIFT));
           if (SResult = ssrOK) then
           begin
-            ScreenPopupInfo.ShowPopup(Language.Translate('INFO_FILE_SAVED'));
+            //ScreenPopupInfo.ShowPopup(Language.Translate('INFO_FILE_SAVED'));
+            Text[TextDebug].Text := Language.Translate('INFO_FILE_SAVED');
           end
           else if (SResult = ssrEncodingError) then
           begin
@@ -213,6 +215,20 @@ begin
           end;
           Exit;
         end;
+
+      SDLK_R:   //reload
+        begin
+          AudioPlayback.Stop;
+          {$IFDEF UseMIDIPort}
+          MidiOut.Close;
+          MidiOut.Free;
+          {$ENDIF}
+          Lyric.Free;
+
+          onShow;
+          Text[TextDebug].Text := 'song reloaded'; //TODO: Language.Translate('SONG_RELOADED'); 
+        end;
+
       SDLK_D:
         begin
           // Divide lengths by 2
@@ -470,6 +486,7 @@ begin
       SDLK_F4:
         begin
           // Enter Text Edit Mode
+          editText := Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
           TextEditMode := true;
         end;
 
@@ -706,15 +723,20 @@ begin
     begin
       Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text :=
         Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text + UCS4ToUTF8String(CharCode);
+
+      Lyric.AddLine(Lines[0].Current);
+      Lyric.Selected := CurrentNote;
       Exit;
     end;
 
     // check special keys
     case PressedKey of
-
       SDLK_ESCAPE:
         begin
-          FadeTo(@ScreenSong);
+          Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text := editText;
+          Lyric.AddLine(Lines[0].Current);
+          Lyric.Selected := CurrentNote;
+          TextEditMode := false;
         end;
       SDLK_F4, SDLK_RETURN:
         begin
@@ -725,6 +747,8 @@ begin
         begin
           UTF8Delete(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text,
             LengthUTF8(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text), 1);
+          Lyric.AddLine(Lines[0].Current);
+          Lyric.Selected := CurrentNote;
         end;
       SDLK_RIGHT:
         begin
@@ -737,6 +761,7 @@ begin
               CurrentNote := 0;
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
             Lyric.Selected := CurrentNote;
+            editText := Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
           end;
         end;
       SDLK_LEFT:
@@ -750,6 +775,7 @@ begin
               CurrentNote := Lines[0].Line[Lines[0].Current].HighNote;
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
             Lyric.Selected := CurrentNote;
+            editText := Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
           end;
       end;
     end;
@@ -1454,13 +1480,13 @@ begin
   SetLength(Player, 1);
 
   // line
-  AddText(40, 14, 1, 24, 0, 0, 0, 'Line:');
-  TextSentence := AddText(110, 14, 1, 24, 0, 0, 0, '0 / 0');
+  AddText(40, 11, 1, 30, 0, 0, 0, 'Line:');
+  TextSentence := AddText(110, 11, 1, 30, 0, 0, 0, '0 / 0');
 
 
   // Note
-  AddText(282, 14, 1, 24, 0, 0, 0, 'Note:');
-  TextNote := AddText(360, 14, 1, 24, 0, 0, 0, '0 / 0');
+  AddText(282, 11, 1, 30, 0, 0, 0, 'Note:');
+  TextNote := AddText(360, 11, 1, 30, 0, 0, 0, '0 / 0');
 
   // file info
   AddText(30, 65,  0, 24, 0, 0, 0, 'Title:');
@@ -1498,6 +1524,10 @@ var
   FileExt: IPath;
 begin
   inherited;
+
+  AudioPlayback.Stop;
+  PlaySentence := false;
+  PlaySentenceMidi := false;
 
   Log.LogStatus('Initializing', 'TEditScreen.OnShow');
   Lyric := TEditorLyrics.Create;
