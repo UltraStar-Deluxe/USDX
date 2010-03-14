@@ -1561,8 +1561,6 @@ begin
   begin
   {$IFDEF UseMIDIPort}
     MidiOut := TMidiOutput.Create(nil);
-    if Ini.Debug = 1 then
-      MidiOut.ProductName := 'Microsoft GS Wavetable SW Synth'; // for my kxproject without midi table
     MidiOut.Open;
   {$ENDIF}
     Text[TextTitle].Text :=   CurrentSong.Title;
