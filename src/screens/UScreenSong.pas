@@ -1661,12 +1661,11 @@ begin
 
   if VS > 0 then
   begin
-    if (not isScrolling) and (VS > 1) then
+    if (not isScrolling) and (VS > 0) then
     begin
       isScrolling := true;
       OnSongDeselect;
-    end else if (VS=0) then // fix for tabs=on
-      UnLoadDetailedCover;       
+    end;
 
     Skip := 1;
 
@@ -1701,7 +1700,7 @@ begin
 
   if VS > 1 then
   begin
-    if (not isScrolling) and (VS > 1) then
+    if (not isScrolling) and (VS > 0) then
     begin
       isScrolling := true;
       OnSongDeselect;
