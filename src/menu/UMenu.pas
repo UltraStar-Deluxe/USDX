@@ -1311,28 +1311,57 @@ begin
   SelectsS[S] := TSelectSlide.Create;
 
   if (Typ = TEXTURE_TYPE_COLORIZED) then
-    SelectsS[S].Texture := Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB))
+  begin
+    SelectsS[S].Colorized := true;
+    SelectsS[S].Texture := Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB));
+    SelectsS[S].DeselectTexture := Texture.GetTexture(TexName, Typ, RGBFloatToInt(DColR, DColG, DColB));
+  end
   else
+  begin
+    SelectsS[S].Colorized := false;
     SelectsS[S].Texture := Texture.GetTexture(TexName, Typ);
+    
+    SelectsS[S].ColR := ColR;
+    SelectsS[S].ColG := ColG;
+    SelectsS[S].ColB := ColB;
+
+    SelectsS[S].DColR := DColR;
+    SelectsS[S].DColG := DColG;
+    SelectsS[S].DColB := DColB;
+  end;
+  
+  SelectsS[S].Int := Int;
+  SelectsS[S].DInt := DInt; 
+
   SelectsS[S].X := X;
   SelectsS[S].Y := Y;
   SelectsS[S].W := W;
-  SelectsS[S].H := H;
-
-  SelectsS[S].ColR := ColR;
-  SelectsS[S].ColG := ColG;
-  SelectsS[S].ColB := ColB;
-  SelectsS[S].Int := Int;
-  SelectsS[S].DColR := DColR;
-  SelectsS[S].DColG := DColG;
-  SelectsS[S].DColB := DColB;
-  SelectsS[S].DInt := DInt;
+  SelectsS[S].H := H;  
 
   if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
-    SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB))
+  begin
+    SelectsS[S].ColorizedSBG := true;
+    SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB));
+    SelectsS[S].DeselectTextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGDColR, SBGDColG, SBGDColB));
+  end
   else
+  begin
+    SelectsS[S].ColorizedSBG := false;
     SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
 
+    SelectsS[S].SBGColR := SBGColR;
+    SelectsS[S].SBGColG := SBGColG;
+    SelectsS[S].SBGColB := SBGColB;
+
+    SelectsS[S].SBGDColR := SBGDColR;
+    SelectsS[S].SBGDColG := SBGDColG;
+    SelectsS[S].SBGDColB := SBGDColB;
+  end;
+
+
+  SelectsS[S].SBGInt := SBGInt;
+  SelectsS[S].SBGDInt := SBGDInt;
+  
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowL   := Tex_SelectS_ArrowL;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.X := X + W + SkipX;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.Y := Y;
@@ -1349,14 +1378,6 @@ begin
   SelectsS[S].TextureSBG.Y := Y;
   SelectsS[S].SBGW := SBGW;
   SelectsS[S].TextureSBG.H := H;
-  SelectsS[S].SBGColR := SBGColR;
-  SelectsS[S].SBGColG := SBGColG;
-  SelectsS[S].SBGColB := SBGColB;
-  SelectsS[S].SBGInt := SBGInt;
-  SelectsS[S].SBGDColR := SBGDColR;
-  SelectsS[S].SBGDColG := SBGDColG;
-  SelectsS[S].SBGDColB := SBGDColB;
-  SelectsS[S].SBGDInt := SBGDInt;
 
   SelectsS[S].Text.X := X + 20;
   SelectsS[S].Text.Y := Y + (SelectsS[S].TextureSBG.H / 2) - 15;

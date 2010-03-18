@@ -53,7 +53,11 @@ type
 
       Texture:          TTexture; // Select Texture
       TextureSBG:       TTexture; // Background Selections Texture
-//      TextureS:         array of TTexture; // Selections Texture (not used)
+
+      Colorized:          boolean;
+      DeSelectTexture:    TTexture; // texture for colorized hack
+      ColorizedSBG:       boolean;
+      DeSelectTextureSBG: TTexture; // texture for colorized hack Select BG
 
       Tex_SelectS_ArrowL:    TTexture; // Texture for left arrow
       Tex_SelectS_ArrowR:    TTexture; // Texture for right arrow
@@ -141,6 +145,10 @@ type
       function OnClick(X, Y: Real): TMouseClickAction;
   end;
 
+const
+  ArrowAlphaOptionsLeft = 1;
+  ArrowAlphaNoOptionsLeft = 0;
+
 implementation
 
 uses
@@ -157,6 +165,26 @@ begin
   SetLength(TextOpt, 1);
   TextOpt[0] := TText.Create;
   Visible := true;
+
+  Colorized := false;
+  ColorizedSBG := false;
+  ColR := 1;
+  ColG := 1;
+  ColB := 1;
+  Int := 1;
+  DColR := 1;
+  DColG := 1;
+  DColB := 1;
+  DInt := 1;
+
+  SBGColR := 1;
+  SBGColG := 1;
+  SBGColB := 1;
+  SBGInt := 1;
+  SBGDColR := 1;
+  SBGDColG := 1;
+  SBGDColB := 1;
+  SBGDInt := 1;
 end;
 
 procedure TSelectSlide.SetSelect(Value: boolean);
@@ -184,20 +212,30 @@ begin
   end
   else
   begin
-    Texture.ColR := DColR;
-    Texture.ColG := DColG;
-    Texture.ColB := DColB;
-    Texture.Int := DInt;
+    if Colorized then
+      DeSelectTexture.Int := DInt
+    else
+    begin
+      Texture.ColR := DColR;
+      Texture.ColG := DColG;
+      Texture.ColB := DColB;
+      Texture.Int := DInt;
+    end;
 
     Text.ColR := TDColR;
     Text.ColG := TDColG;
     Text.ColB := TDColB;
     Text.Int := TDInt;
 
-    TextureSBG.ColR := SBGDColR;
-    TextureSBG.ColG := SBGDColG;
-    TextureSBG.ColB := SBGDColB;
-    TextureSBG.Int := SBGDInt;
+    if (ColorizedSBG) then
+      DeselectTextureSBG.Int := SBGDInt
+    else
+    begin
+      TextureSBG.ColR := SBGDColR;
+      TextureSBG.ColG := SBGDColG;
+      TextureSBG.ColB := SBGDColB;
+      TextureSBG.Int := SBGDInt;
+    end;
   end;
 end;
 
@@ -240,8 +278,11 @@ begin
     begin
       Value := 0;
 
-      Tex_SelectS_ArrowL.alpha := 0;
-      Tex_SelectS_ArrowR.alpha := 1;
+      Tex_SelectS_ArrowL.alpha := ArrowAlphaNoOptionsLeft;
+      if (Length(TextOptT) > 1) then
+        Tex_SelectS_ArrowR.alpha := ArrowAlphaOptionsLeft
+      else
+        Tex_SelectS_ArrowR.alpha := ArrowAlphaNoOptionsLeft;
 
       for SO := Low(TextOpt) to High(TextOpt) do
       begin
@@ -256,8 +297,8 @@ begin
     begin
       Value := High(TextOptT);
 
-      Tex_SelectS_ArrowL.alpha := 1;
-      Tex_SelectS_ArrowR.alpha := 0;
+      Tex_SelectS_ArrowL.alpha := ArrowAlphaOptionsLeft;
+      Tex_SelectS_ArrowR.alpha := ArrowAlphaNoOptionsLeft;
 
       for SO := High(TextOpt) downto Low(TextOpt) do
       begin
@@ -269,8 +310,8 @@ begin
     //in between first and last
     else
     begin
-      Tex_SelectS_ArrowL.alpha := 1;
-      Tex_SelectS_ArrowR.alpha := 1;
+      Tex_SelectS_ArrowL.alpha := ArrowAlphaOptionsLeft;
+      Tex_SelectS_ArrowR.alpha := ArrowAlphaOptionsLeft;
 
       HalfL := Ceil((Lines - 1) / 2);
       HalfR := Lines - 1 - HalfL;
@@ -321,8 +362,31 @@ var
 begin
   if Visible then
   begin
-    DrawTexture(Texture);
-    DrawTexture(TextureSBG);
+    if SelectBool or not Colorized then
+    begin
+      DrawTexture(Texture);
+    end
+    else
+    begin
+      DeselectTexture.X := Texture.X;
+      DeselectTexture.Y := Texture.Y;
+      DeselectTexture.W := Texture.W;
+      DeselectTexture.H := Texture.H;
+      DrawTexture(DeselectTexture);
+    end;
+
+    if SelectBool or not ColorizedSBG then
+    begin
+      DrawTexture(TextureSBG);
+    end
+    else
+    begin
+      DeselectTextureSBG.X := TextureSBG.X;
+      DeselectTextureSBG.Y := TextureSBG.Y;
+      DeselectTextureSBG.W := TextureSBG.W;
+      DeselectTextureSBG.H := TextureSBG.H;
+      DrawTexture(DeselectTextureSBG);
+    end;
 
     if showArrows then
     begin

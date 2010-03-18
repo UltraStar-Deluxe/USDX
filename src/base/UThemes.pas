@@ -1822,6 +1822,9 @@ begin
   ThemeSelectS.STInt :=  ThemeIni.ReadFloat(Name, 'STInt', 1);
   LoadColor(ThemeSelectS.STDColR, ThemeSelectS.STDColG,  ThemeSelectS.STDColB, ThemeIni.ReadString(Name, 'STDColor', ''));
   ThemeSelectS.STDInt :=  ThemeIni.ReadFloat(Name, 'STDInt', 1);
+
+  ThemeSelectS.showArrows := (ThemeIni.ReadInteger(Name, 'ShowArrows', 0) = 1);
+  ThemeSelectS.oneItemOnly := (ThemeIni.ReadInteger(Name, 'OneItemOnly', 0) = 1);
 end;
 
 procedure TTheme.ThemeLoadEqualizer(var ThemeEqualizer: TThemeEqualizer; const Name: string);
