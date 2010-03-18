@@ -1286,6 +1286,8 @@ begin
 
   SelectsS[High(SelectsS)].Texture.Z := ThemeSelectS.Z;
   SelectsS[High(SelectsS)].TextureSBG.Z := ThemeSelectS.Z;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.Z := ThemeSelectS.Z;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.Z := ThemeSelectS.Z;
 
   SelectsS[High(SelectsS)].showArrows := ThemeSelectS.showArrows;
   SelectsS[High(SelectsS)].oneItemOnly := ThemeSelectS.oneItemOnly;
@@ -1364,13 +1366,14 @@ begin
   
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowL   := Tex_SelectS_ArrowL;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.X := X + W + SkipX;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.Y := Y;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.Y := Y + (H - Tex_SelectS_ArrowL.H) / 2;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.W := Tex_SelectS_ArrowL.W;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.H := Tex_SelectS_ArrowL.H;
 
+
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowR   := Tex_SelectS_ArrowR;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.X := X + W + SkipX + SBGW - Tex_SelectS_ArrowR.W;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.Y := Y;
+  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.Y := Y + (H - Tex_SelectS_ArrowR.H) / 2;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.W := Tex_SelectS_ArrowR.W;
   SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.H := Tex_SelectS_ArrowR.H;
 
