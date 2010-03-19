@@ -121,23 +121,23 @@ type
 
       {**
        * GetLogPath returns the path for log messages. Currently it is set to
-       * $HOME/Library/Application Support/UltraStarDeluxe/Log.
+       * $HOME/Library/Application Support/UltraStarDeluxe/log.
        *}
-      function  GetLogPath        : IPath; override;
+      function  GetLogPath:        IPath; override;
 
       {**
        * GetGameSharedPath returns the path for shared resources. Currently it
        * is set to /Library/Application Support/UltraStarDeluxe.
        * However it is not used.
        *}
-      function  GetGameSharedPath : IPath; override;
+      function  GetGameSharedPath: IPath; override;
 
       {**
        * GetGameUserPath returns the path for user resources. Currently it is
        * set to $HOME/Library/Application Support/UltraStarDeluxe.
        * This is where a user can add songs, themes, ....
        *}
-      function  GetGameUserPath   : IPath; override;
+      function  GetGameUserPath:   IPath; override;
   end;
 
 implementation
@@ -159,9 +159,9 @@ var
   // OldBaseDir contains the path to the folder, where the search started.
   // It is used to return to it, when the search is completed in all folders.
   OldBaseDir: IPath;
-  Iter: IFileIterator;
-  FileInfo: TFileInfo;
-  CurPath: IPath;
+  Iter:       IFileIterator;
+  FileInfo:   TFileInfo;
+  CurPath:    IPath;
   // These two lists contain all folder and file names found
   // within the folder @link(BaseDir).
   DirectoryList, FileList: IInterfaceList;
@@ -174,7 +174,7 @@ var
   CreatedDirectory: boolean;
   FileAttrs:        integer;
   DirectoryPath:    IPath;
-  UserPath: IPath;
+  UserPath:         IPath;
   SrcFile, TgtFile: IPath;
 begin
   // Get the current folder and save it in OldBaseDir for returning to it, when
@@ -265,7 +265,7 @@ end;
 
 function TPlatformMacOSX.GetLogPath: IPath;
 begin
-  Result := GetApplicationSupportPath.Append('Logs');
+  Result := GetApplicationSupportPath.Append('logs');
 end;
 
 function TPlatformMacOSX.GetGameSharedPath: IPath;
