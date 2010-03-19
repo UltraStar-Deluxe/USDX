@@ -205,7 +205,9 @@ begin
       CurPath := FileInfo.Name;
       if CurPath.IsDirectory() then
       begin
-        if (not CurPath.Equals('.')) and (not CurPath.Equals('..')) then
+        if (not CurPath.Equals('.')) and 
+	   (not CurPath.Equals('..')) and 
+	   (not CurPath.Equals('MacOS')) then
           DirectoryList.Add(RelativePath.Append(CurPath));
       end
       else
