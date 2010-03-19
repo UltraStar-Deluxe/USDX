@@ -389,6 +389,9 @@ macosx-app: all
 # Copy the resources. 
 	$(MAKE) install-all INSTALL_DATADIR=$(macosx_bundle_path) bindir=$(macosx_bundle_path)/MacOS
 
+# Copy the lua plugins. 
+	$(MAKE) install-plugins INSTALL_DATADIR=$(macosx_bundle_path) bindir=$(macosx_bundle_path)/MacOS
+
 # Create the song directory. 
 	$(MKDIR) $(macosx_bundle_path)/songs
 
