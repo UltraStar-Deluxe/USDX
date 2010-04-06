@@ -563,7 +563,7 @@ end;
 
 function Path(PathName: PChar; DelimOption: TPathDelimOption): IPath;
 begin
-  Result := Path(string(PathName));
+  Result := Path(RawByteString(PathName));
 end;
 
 function Path(const PathName: WideString; DelimOption: TPathDelimOption): IPath;
