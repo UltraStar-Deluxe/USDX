@@ -150,7 +150,7 @@ end;
 
 function TPlatformWindows.GetLogPath: IPath;
 begin
-  Result := GetExecutionDir();
+  Result := GetGameUserPath;
 end;
 
 function TPlatformWindows.GetGameSharedPath: IPath;
