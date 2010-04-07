@@ -65,6 +65,8 @@ type
 
     Score_NoteBarLevel_Lightest: TTexture;      // GoldenNotes
     Score_NoteBarRound_Lightest: TTexture;
+
+    Player_Id_Box: TTexture;                    // boxes with player numbers
   end;
 
   TPlayerScoreScreenData = record               // holds the positions and other data
@@ -89,10 +91,8 @@ type
   APlayerPositionMap = array of TPlayerPositionMap;
 
   { textures for playerstatics of seconds screen players }
-  TPlayerStaticTexture = class
-    Tex: TTexture;
-    Player: integer; // 0..5 playernumber
-    
+  TPlayerStaticTexture = record
+    Tex: TTexture;    
   end;
 
   TScreenScore = class(TMenu)
@@ -129,16 +129,37 @@ type
       TextTotalScore:       array[1..6] of integer;
 
       PlayerStatic:         array[1..6] of array of integer;
+      { texture pairs for swapping when screens = 2
+        first array level: index of player ( actually this is a position
+          1    - Player 1 if PlayersPlay = 1 <- we don't need swapping here
+          2..3 - Player 1 and 2 or 3 and 4 if PlayersPlay = 2 or 4
+          4..6 - Player 1 - 3 or 4 - 6 if PlayersPlay = 3 or 6 )
+        second array level: different playerstatics for positions
+        third array level: texture for screen 1 or 2 }
+      PlayerStaticTextures: array[1..6] of array of array [1..2] of TPlayerStaticTexture;
       PlayerTexts:          array[1..6] of array of integer;
 
       StaticBoxLightest:    array[1..6] of integer;
       StaticBoxLight:       array[1..6] of integer;
       StaticBoxDark:        array[1..6] of integer;
+      { texture pairs for swapping when screens = 2
+        for boxes
+        first array level: index of player ( actually this is a position
+          1    - Player 1 if PlayersPlay = 1 <- we don't need swapping here
+          2..3 - Player 1 and 2 or 3 and 4 if PlayersPlay = 2 or 4
+          4..6 - Player 1 - 3 or 4 - 6 if PlayersPlay = 3 or 6 )
+        second array level: different boxes for positions (0: lightest; 1: light; 2: dark)
+        third array level: texture for screen 1 or 2 }
+      PlayerBoxTextures: array[1..6] of array[0..2] of array [1..2] of TPlayerStaticTexture;
 
       StaticBackLevel:      array[1..6] of integer;
       StaticBackLevelRound: array[1..6] of integer;
       StaticLevel:          array[1..6] of integer;
       StaticLevelRound:     array[1..6] of integer;
+
+      { statics with players ids }
+      StaticPlayerIdBox:    array[1..6] of integer;
+      TexturePlayerIdBox:   array[1..6] of TTexture;
 
       Animation:            real;
 
@@ -168,6 +189,10 @@ type
       procedure ShowRating(PlayerNumber: integer);
       function  CalculateBouncing(PlayerNumber: integer): real;
       procedure DrawRating(PlayerNumber: integer; Rating: integer);
+
+      { for player static texture swapping }
+      procedure LoadSwapTextures;
+      procedure SwapToScreen(Screen: integer);
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
@@ -185,6 +210,7 @@ uses
   UMenuStatic,
   UTime,
   UIni,
+  USkins,
   ULog,
   ULanguage,
   UNote,
@@ -232,6 +258,188 @@ begin
   end;
 end;
 
+procedure TScreenScore.LoadSwapTextures;
+  var
+    P, I: integer;
+    PlayerNum, PlayerNum2: integer;
+    Color: string;
+    R, G, B: real;
+    StaticNum: integer;
+    ThemeStatic: TThemeStatic;
+begin
+  { we only need to load swapping textures if in dualscreen mode }
+  if Screens = 2 then
+  begin
+    { load swapping textures for custom statics }
+    for P := low(PlayerStatic) to High(PlayerStatic) do
+    begin
+      SetLength(PlayerStaticTextures[P], Length(PlayerStatic[P]));
+
+      { get the players that actually are on this position }
+      case P of
+        1: begin
+          PlayerNum := 1;
+          PlayerNum2 := 1;
+        end;
+
+        2, 3: begin
+          PlayerNum := P - 1;
+          PlayerNum2 := PlayerNum + 2;
+        end;
+
+        4..6: begin
+          PlayerNum := P - 3;
+          PlayerNum2 := PlayerNum + 3;
+        end;
+      end;
+
+      for I := 0 to High(PlayerStatic[P]) do
+      begin
+        // copy current statics texture to texture for screen 1
+        PlayerStaticTextures[P, I, 1].Tex := Static[PlayerStatic[P, I]].Texture;
+
+        // fallback to first screen texture for 2nd screen
+        PlayerStaticTextures[P, I, 2].Tex := PlayerStaticTextures[P, I, 1].Tex;
+
+        { texture for second screen }
+        { we only change color for statics with playercolor
+          and with Texture type colorized
+          also we don't need to swap for one player position }
+        if (P <> 1) and
+           (Theme.Score.PlayerStatic[P, I].Typ = Texture_Type_Colorized) and
+           (Length(Theme.Score.PlayerStatic[P, I].Color) >= 2) and
+           (copy(Theme.Score.PlayerStatic[P, I].Color, 1, 2) = 'P' + IntToStr(PlayerNum)) then
+        begin
+          // get the color
+          Color := Theme.Score.PlayerStatic[P, I].Color;
+          Color[2] := IntToStr(PlayerNum2)[1];
+          LoadColor(R, G, B, Color);
+
+          with Theme.Score.PlayerStatic[P, I] do
+            PlayerStaticTextures[P, I, 2].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
+
+          PlayerStaticTextures[P, I, 2].Tex.X := Static[PlayerStatic[P, I]].Texture.X;
+          PlayerStaticTextures[P, I, 2].Tex.Y := Static[PlayerStatic[P, I]].Texture.Y;
+          PlayerStaticTextures[P, I, 2].Tex.W := Static[PlayerStatic[P, I]].Texture.W;
+          PlayerStaticTextures[P, I, 2].Tex.H := Static[PlayerStatic[P, I]].Texture.H;
+        end;
+      end;
+    end;
+
+    { load swap textures for boxes }
+    for P := low(PlayerBoxTextures) to High(PlayerBoxTextures) do
+    begin
+      { get the players that actually are on this position }
+      case P of
+        1: begin
+          PlayerNum := 1;
+          PlayerNum2 := 1;
+        end;
+
+        2, 3: begin
+          PlayerNum := P - 1;
+          PlayerNum2 := PlayerNum + 2;
+        end;
+
+        4..6: begin
+          PlayerNum := P - 3;
+          PlayerNum2 := PlayerNum + 3;
+        end;
+      end;
+
+      for I := 0 to High(PlayerBoxTextures[P]) do
+      begin
+        case I of
+          0: begin
+            StaticNum := StaticBoxLightest[P];
+            ThemeStatic := Theme.Score.StaticBoxLightest[P];
+          end;
+          1: begin
+            StaticNum := StaticBoxLight[P];
+            ThemeStatic := Theme.Score.StaticBoxLight[P];
+          end;
+          2: begin
+            StaticNum := StaticBoxDark[P];
+            ThemeStatic := Theme.Score.StaticBoxDark[P];
+          end;
+        end;
+        // copy current statics texture to texture for screen 1
+        PlayerBoxTextures[P, I, 1].Tex := Static[StaticNum].Texture;
+
+        // fallback to first screen texture for 2nd screen
+        PlayerBoxTextures[P, I, 2].Tex := PlayerBoxTextures[P, I, 1].Tex;
+
+        { texture for second screen }
+        { we only change color for statics with playercolor
+          and with Texture type colorized
+          also we don't need to swap for one player position }
+        if (P <> 1) and
+           (ThemeStatic.Typ = Texture_Type_Colorized) and
+           (Length(ThemeStatic.Color) >= 2) and
+           (copy(ThemeStatic.Color, 1, 2) = 'P' + IntToStr(PlayerNum)) then
+        begin
+          // get the color
+          Color := ThemeStatic.Color;
+          Color[2] := IntToStr(PlayerNum2)[1];
+          LoadColor(R, G, B, Color);
+
+          with ThemeStatic do
+            PlayerBoxTextures[P, I, 2].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
+
+          PlayerBoxTextures[P, I, 2].Tex.X := Static[StaticNum].Texture.X;
+          PlayerBoxTextures[P, I, 2].Tex.Y := Static[StaticNum].Texture.Y;
+          PlayerBoxTextures[P, I, 2].Tex.W := Static[StaticNum].Texture.W;
+          PlayerBoxTextures[P, I, 2].Tex.H := Static[StaticNum].Texture.H;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TScreenScore.SwapToScreen(Screen: integer);
+  var
+    P, I: integer;
+begin
+  { if screens = 2 and playerplay <= 3 the 2nd screen shows the
+    textures of screen 1 }
+  if (PlayersPlay <= 3) and (Screen = 2) then
+    Screen := 1;
+
+  { set correct box textures }
+  for I := 0 to High(PlayerPositionMap) do
+  begin
+    if (PlayerPositionMap[I].Position > 0) and ((ScreenAct = PlayerPositionMap[I].Screen) or (PlayerPositionMap[I].BothScreens)) then
+    begin
+      // we just set the texture specific stuff
+      // so we don't overwrite e.g. width and height
+      with Static[StaticPlayerIdBox[PlayerPositionMap[I].Position]].Texture do
+      begin
+        TexNum := aPlayerScoreScreenTextures[I+1].Player_Id_Box.TexNum;
+        TexW := aPlayerScoreScreenTextures[I+1].Player_Id_Box.TexW;
+        TexH := aPlayerScoreScreenTextures[I+1].Player_Id_Box.TexH;
+      end;
+    end;
+  end;
+
+  if (Screens = 2) then
+  begin
+    { to keep it simple we just swap all statics, not just the shown ones }
+    for P := Low(PlayerStatic) to High(PlayerStatic) do
+      for I := 0 to High(PlayerStatic[P]) do
+      begin
+        Static[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, Screen].Tex;
+      end;
+
+    { box statics }
+    for P := Low(PlayerStatic) to High(PlayerStatic) do
+    begin
+      Static[StaticBoxLightest[P]].Texture := PlayerBoxTextures[P, 0, Screen].Tex;
+      Static[StaticBoxLight[P]].Texture := PlayerBoxTextures[P, 1, Screen].Tex;
+      Static[StaticBoxDark[P]].Texture := PlayerBoxTextures[P, 2, Screen].Tex;
+    end;
+  end;
+end;
+
 constructor TScreenScore.Create;
 var
   Player:  integer;
@@ -254,6 +462,8 @@ begin
 
     for Counter := 0 to High(Theme.Score.PlayerStatic[Player]) do
       PlayerStatic[Player, Counter]      := AddStatic(Theme.Score.PlayerStatic[Player, Counter]);
+
+    
 
     for Counter := 0 to High(Theme.Score.PlayerTexts[Player]) do
       PlayerTexts[Player, Counter]       := AddText(Theme.Score.PlayerTexts[Player, Counter]);
@@ -278,6 +488,7 @@ begin
     StaticBackLevelRound[Player] := AddStatic(Theme.Score.StaticBackLevelRound[Player]);
     StaticLevel[Player]          := AddStatic(Theme.Score.StaticLevel[Player]);
     StaticLevelRound[Player]     := AddStatic(Theme.Score.StaticLevelRound[Player]);
+    StaticPlayerIdBox[Player]    := AddStatic(Theme.Score.StaticPlayerIdBox[Player]);
 
     //textures
     aPlayerScoreScreenTextures[Player].Score_NoteBarLevel_Dark     := Tex_Score_NoteBarLevel_Dark[Player];
@@ -288,8 +499,10 @@ begin
 
     aPlayerScoreScreenTextures[Player].Score_NoteBarLevel_Lightest := Tex_Score_NoteBarLevel_Lightest[Player];
     aPlayerScoreScreenTextures[Player].Score_NoteBarRound_Lightest := Tex_Score_NoteBarRound_Lightest[Player];
+    aPlayerScoreScreenTextures[Player].Player_Id_Box := Texture.GetTexture(Skin.GetTextureFileName('PlayerIDBox0' + IntToStr(Player)), Texture_Type_Transparent);
   end;
 
+  LoadSwapTextures;
 end;
 
 procedure TScreenScore.MapPlayersToPosition;
@@ -495,6 +708,8 @@ begin
     Static[StaticBoxLight[P]].Visible       := V[P];
     Static[StaticBoxDark[P]].Visible        := V[P];
 
+    Static[StaticPlayerIdBox[P]].Visible     := V[P];
+
     // we draw that on our own
     Static[StaticBackLevel[P]].Visible      := false;
     Static[StaticBackLevelRound[P]].Visible := false;
@@ -536,6 +751,8 @@ begin
   player[1].ScoreGoldenInt :=  900;
   player[1].ScoreTotalInt  := 4500;
 //*}
+  // swap static textures to current screen ones
+  SwapToScreen(ScreenAct);
 
   //Draw the Background
   DrawBG;

@@ -397,6 +397,7 @@ type
     StaticBackLevelRound:   array[1..6] of TThemeStatic;
     StaticLevel:            array[1..6] of TThemeStatic;
     StaticLevelRound:       array[1..6] of TThemeStatic;
+    StaticPlayerIdBox:      array[1..6] of TThemeStatic;
 
 //    Description:          array[0..5] of string;}
   end;
@@ -1171,6 +1172,7 @@ begin
         ThemeLoadStatic(Score.StaticBackLevelRound[I], 'ScoreStaticBackLevelRound' + IntToStr(I));
         ThemeLoadStatic(Score.StaticLevel[I],          'ScoreStaticLevel'          + IntToStr(I));
         ThemeLoadStatic(Score.StaticLevelRound[I],     'ScoreStaticLevelRound'     + IntToStr(I));
+        ThemeLoadStatic(Score.StaticPlayerIdBox[I],    'ScoreStaticPlayerIdBox'    + IntToStr(I));
 
         ThemeLoadStatic(Score.StaticRatings[I],        'ScoreStaticRatingPicture'  + IntToStr(I));
       end;

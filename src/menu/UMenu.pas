@@ -168,6 +168,8 @@ type
       procedure AddBox(X, Y, W, H: real);
   end;
 
+function RGBFloatToInt(R, G, B: double): cardinal;
+
 const
   MENU_MDOWN = 8;
   MENU_MUP   = 0;
