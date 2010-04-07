@@ -483,6 +483,9 @@ begin
 
   SDL_WM_SetCaption(PChar(Title), nil);
 
+  { center window }
+  SDL_putenv('SDL_VIDEO_WINDOW_POS=center');
+
   //Log.BenchmarkStart(2);
 
   InitializeScreen;
