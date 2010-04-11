@@ -38,7 +38,8 @@ uses
   SQLiteTable3,
   UPath,
   USong,
-  USongs;
+  USongs,
+  UTextEncoding;
 
 //--------------------
 //DataBaseSystem - Class including all DB methods
@@ -100,6 +101,7 @@ type
       destructor Destroy; override;
 
       procedure Init(const Filename: IPath);
+      procedure ConvertFrom101To110();
       procedure ReadScore(Song: TSong);
       procedure AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
       procedure WriteScore(Song: TSong);
@@ -207,17 +209,11 @@ begin
                       '[Rating] INTEGER NULL' +
                     ');');
 
-    // convert data from 1.01 to 1.1
-    // part #2 - accomplishment
-    if finalizeConversion then
+    //add column date to cUS-Scores
+    if not ScoreDB.ContainsColumn(cUS_Scores, 'Date') then
     begin
-      Log.LogInfo('Outdated song database  found - begin conversion from V1.01 to V1.1', 'TDataBaseSystem.Init');
-      // insert old values into new db-schemes (/tables)
-      ScoreDB.ExecSQL('INSERT INTO ' + cUS_Scores + ' SELECT  SongID, Difficulty, Player, Score FROM us_scores_101;');
-      ScoreDB.ExecSQL('INSERT INTO ' + cUS_Songs + ' SELECT  ID, Artist, Title, TimesPlayed, ''NULL'' FROM us_songs_101;');
-      //now drop old tables
-      ScoreDB.ExecSQL('DROP TABLE us_scores_101;');
-      ScoreDB.ExecSQL('DROP TABLE us_songs_101;');
+      Log.LogInfo('adding column date to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [Date] INTEGER NULL');
     end;
 
     // add column rating to cUS_Songs
@@ -228,12 +224,13 @@ begin
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [Rating] INTEGER NULL');
     end;
 
-
-    //add column date to cUS-Scores
-    if not ScoreDB.ContainsColumn(cUS_Scores, 'Date') then
+    // convert data from previous versions
+    // part #2 - accomplishment
+    if finalizeConversion then
     begin
-      Log.LogInfo('adding column date to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
-      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [Date] INTEGER NULL');
+      //convert data from 1.01 to 1.1
+      if ScoreDB.TableExists('us_scores_101') then
+        ConvertFrom101To110();
     end;
 
   except
@@ -244,6 +241,115 @@ begin
     end;
   end;
 
+end;
+
+(**
+ * Convert Database from 1.01 to 1.1
+ *)
+procedure TDataBaseSystem.ConvertFrom101To110();
+var
+  TableData:      TSQLiteUniTable;
+  tempUTF8String: UTF8String;
+begin
+  if not ScoreDB.ContainsColumn('us_scores_101', 'Date') then
+  begin
+    Log.LogInfo(
+      'Outdated song database found - ' +
+      'begin conversion from V1.01 to V1.1', 'TDataBaseSystem.Convert101To110');
+
+    // insert old values into new db-schemes (/tables)
+    ScoreDB.ExecSQL(
+      'INSERT INTO ' + cUS_Scores +
+      ' SELECT  SongID, Difficulty, Player, Score FROM us_scores_101;');
+  end else
+  begin
+    Log.LogInfo(
+      'Outdated song database  found - ' +
+      'begin conversion from V1.01 Challenge Mod to V1.1', 'TDataBaseSystem.Convert101To110');
+
+    // insert old values into new db-schemes (/tables)
+    ScoreDB.ExecSQL(
+      'INSERT INTO ' + cUS_Scores +
+      ' SELECT  SongID, Difficulty, Player, Score, Date FROM us_scores_101;');
+  end;
+
+    ScoreDB.ExecSQL(
+      'INSERT INTO ' + cUS_Songs +
+      ' SELECT  ID, Artist, Title, TimesPlayed, ''NULL'' FROM us_songs_101;');
+
+    // now we have to convert all the texts for unicode support:
+
+    // player names
+    TableData := nil;
+    try
+      TableData := ScoreDB.GetUniTable(
+        'SELECT [rowid], [Player] ' +
+        'FROM [' + cUS_Scores + '];');
+
+      // Go through all Entrys
+      while (not TableData.EOF) do
+      begin
+        // Convert name into UTF8 and alter all entrys
+        DecodeStringUTF8(TableData.FieldByName['Player'], tempUTF8String, encCP1252);
+        ScoreDB.ExecSQL(
+          'UPDATE [' + cUS_Scores + '] ' +
+          'SET [Player] = ? ' +
+          'WHERE [rowid] = ? ',
+          [tempUTF8String,
+          TableData.FieldAsInteger(TableData.FieldIndex['rowid'])]);
+
+        TableData.Next;
+      end; // while
+
+    except
+      on E: Exception do
+        Log.LogError(E.Message, 'TDataBaseSystem.Convert101To110');
+    end;
+
+    TableData.Free;
+
+    // song artist and song title
+    TableData := nil;
+    try
+      TableData := ScoreDB.GetUniTable(
+        'SELECT [ID], [Artist], [Title] ' +
+        'FROM [' + cUS_Songs + '];');
+
+      // Go through all Entrys
+      while (not TableData.EOF) do
+      begin
+        // Convert Artist into UTF8 and alter all entrys
+        DecodeStringUTF8(TableData.FieldByName['Artist'], tempUTF8String, encCP1252);
+        //Log.LogError(TableData.FieldByName['Artist']+' -> '+tempUTF8String+' (encCP1252)');
+        ScoreDB.ExecSQL(
+          'UPDATE [' + cUS_Songs + '] ' +
+          'SET [Artist] = ? ' +
+          'WHERE [ID] = ?',
+          [tempUTF8String,
+          TableData.FieldAsInteger(TableData.FieldIndex['ID'])]);
+
+        // Convert Title into UTF8 and alter all entrys
+        DecodeStringUTF8(TableData.FieldByName['Title'], tempUTF8String, encCP1252);
+        ScoreDB.ExecSQL(
+          'UPDATE [' + cUS_Songs + '] ' +
+          'SET [Title] = ? ' +
+          'WHERE [ID] = ? ',
+          [tempUTF8String,
+          TableData.FieldAsInteger(TableData.FieldIndex['ID'])]);
+
+        TableData.Next;
+      end; // while
+
+    except
+      on E: Exception do
+        Log.LogError(E.Message, 'TDataBaseSystem.Convert101To110');
+    end;
+
+    TableData.Free;
+
+    //now drop old tables
+    ScoreDB.ExecSQL('DROP TABLE us_scores_101;');
+    ScoreDB.ExecSQL('DROP TABLE us_songs_101;');
 end;
 
 (**
