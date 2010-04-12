@@ -26,10 +26,8 @@ LangString update_check_failed ${LANG_ENGLISH} "The check for a new version fail
 
 LangString page_welcome_title_update ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe Update Wizard"
 LangString page_welcome_txt_update ${LANG_ENGLISH} "This wizard will guide you through the Update process of UltraStar Deluxe. UltraStar Deluxe is a free open source Karaoke game, which can be compared with Singstar.$\n$\r$\n$\rThe UltraStar Deluxe Team wishes you fun.$\n$\rProject website: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"
-
 LangString page_welcome_title ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe Setup Wizard"
 LangString page_welcome_txt ${LANG_ENGLISH} "This wizard will guide you through the Installation of UltraStar Deluxe. UltraStar Deluxe is a free open source Karaoke game, which can be compared with Singstar.$\n$\r$\n$\rThe UltraStar Deluxe Team wishes you fun.$\n$\rProject website: http://www.ultrastardeluxe.org$\n$\rSupport Forum: http://forum.ultrastardeluxe.org"
-
 LangString page_un_welcome_title ${LANG_ENGLISH} "Welcome to the UltraStar Deluxe uninstall wizard"
 
 ; Components Page:

@@ -20,6 +20,9 @@
 !define path_images ".\dependencies\images"
 !define path_plugins ".\dependencies\plugins"
 
+; MultiLanguage - Show all languages:
+!define MUI_LANGDLL_ALLLANGUAGES
+
 !addPluginDir "${path_plugins}\"
 
 !include "${path_settings}\variables.nsh"
@@ -1316,6 +1319,7 @@ SectionEnd
 
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "German"
+!insertmacro MUI_LANGUAGE "Hungarian"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -1373,6 +1377,7 @@ done:
 
   !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1031.ini" "Settings-1031"
   !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1033.ini" "Settings-1033"
+  !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1038.ini" "Settings-1038"
 
 FunctionEnd
 

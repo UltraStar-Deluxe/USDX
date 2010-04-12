@@ -1,0 +1,16 @@
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+; How to translate the installer into your own language?
+; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+If you want to translate the installer, just:
+
+- Take English.nsh and edit each variabe within the "" 
+
+- Replace LANG_ENGLISH with the name of your language (in english).
+
+Please also edit the following file
+for translating the settings screen:
+
+..\settings\settings-1033.ini
+
+Thanks for your help in advance!
