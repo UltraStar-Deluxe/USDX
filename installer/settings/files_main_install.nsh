@@ -4,53 +4,64 @@
 
 ; Create Directories:
 
-CreateDirectory $INSTDIR\Plugins
-CreateDirectory $INSTDIR\Songs
-CreateDirectory $INSTDIR\Screenshots
-CreateDirectory $INSTDIR\Playlists
-CreateDirectory $INSTDIR\Covers
+CreateDirectory $INSTDIR\plugins
+CreateDirectory $INSTDIR\covers
+CreateDirectory $INSTDIR\songs
 
-SetOutPath "$INSTDIR"
+${If} ${AtLeastWinVista}
+
+  ; Create folders in appdata for current user
+  SetShellVarContext current		
+  CreateDirectory $APPDATA\ultrastardx
+  CreateDirectory $APPDATA\ultrastardx\screenshots
+  CreateDirectory $APPDATA\ultrastardx\playlists
+
+  SetOutPath "$APPDATA\ultrastardx"
+  File ..\game\config.ini
+
+  SetOutPath "$INSTDIR"
+
+  CreateShortCut "screenshots.lnk" "$APPDATA\ultrastardx\screenshots"
+  CreateShortCut "playlists.lnk" "$APPDATA\ultrastardx\playlists"
+  CreateShortCut "config.ini.lnk" "$APPDATA\ultrastardx\config.ini"
+
+  SetShellVarContext all
+${EndIf}
 
 ; themes, languages, sounds, fonts, visuals dir
+
+SetOutPath "$INSTDIR"
 
 File /r ..\game\themes
 File /r ..\game\languages
 File /r ..\game\sounds
 File /r ..\game\fonts
-File /r ..\installerdependencies\visuals
+File /r ..\game\visuals
 
 ; Root dir:
 
-File ..\installerdependencies\dll\*.dll
+File .\dependencies\dll\*.dll
 
 File ..\ChangeLog.txt
-File ..\ChangeLog.german.txt
+File ..\ChangeLog.GERMAN.txt
+File ..\game\LuaCommands.odt
 File ..\README.txt
-File ..\installerdependencies\documents\documentation.pdf
-File ..\installerdependencies\documents\license.txt
+File .\dependencies\documents\license.txt
+File .\dependencies\documents\documentation.pdf
 
-File "..\ScoreConverter.exe"
 File "..\${exe}.exe"
 
 ; Covers dir:
 
-SetOutPath "$INSTDIR\Covers"
+SetOutPath "$INSTDIR\covers"
 
 IfFileExists $INSTDIR\covers\covers.ini +2 0
-File ..\game\covers\Covers.ini
+File ..\game\covers\covers.ini
 File ..\game\covers\NoCover.jpg
 
 ; Plugins dir:
 
-SetOutPath "$INSTDIR\Plugins\"
-  File "..\Plugins\*.dll"
-
-${If} ${AtLeastWinVista}
-
-  SetOutPath "$WINDIR"
-  File "..\installerdependencies\plugins\gdf.dll"
-
-${EndIf}
+SetOutPath "$INSTDIR\plugins\"
+File "..\game\plugins\*.*"
 
 SetOutPath "$INSTDIR"

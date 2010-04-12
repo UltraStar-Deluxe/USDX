@@ -5,7 +5,7 @@ Function CreateDesktopShortCuts
 
 SetOutPath "$INSTDIR"
 
-CreateShortcut "$Desktop\$(sm_shortcut).lnk" "$INSTDIR\USdx.exe"
+CreateShortcut "$Desktop\$(sm_shortcut).lnk" "$INSTDIR\ultrastardx.exe"
 
 FunctionEnd
 

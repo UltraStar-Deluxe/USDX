@@ -16,14 +16,13 @@
 
 !define path_settings ".\settings"
 !define path_languages ".\languages"
-!define path_images "..\installerdependencies\images"
-!define path_plugins "..\installerdependencies\plugins"
-!define path_gdf "$WINDIR\gdf.dll"
+!define path_dependencies ".\dependencies"
+!define path_images ".\dependencies\images"
+!define path_plugins ".\dependencies\plugins"
 
 !addPluginDir "${path_plugins}\"
 
 !include "${path_settings}\variables.nsh"
-!include "${path_settings}\GameExplorer.nsh"
 !include "${path_settings}\functions.nsh"
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
@@ -31,9 +30,11 @@
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 SetCompress Auto
-SetCompressor /SOLID lzma
+SetCompressor lzma
 SetCompressorDictSize 32
 SetDatablockOptimize On
+
+CRCCheck on
 
 XPStyle on
 
@@ -42,6 +43,7 @@ Brandingtext "${name} v.${version} Installation"
 OutFile "ultrastardx-${version}-installer-full.exe"
 
 InstallDir "$PROGRAMFILES\${name}"
+InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\UltraStar Deluxe" "InstallDir"
 
 ; Windows Vista / Windows 7:
 
@@ -53,8 +55,8 @@ RequestExecutionLevel admin
 
 ; Icons:
 
-!define MUI_ICON "${path_images}\${img_install}"
-!define MUI_UNICON "${path_images}\${img_uninstall}"
+!define MUI_ICON "${img_install}"
+!define MUI_UNICON "${img_uninstall}"
 
 ; Header and Side Images:
 
@@ -78,6 +80,8 @@ RequestExecutionLevel admin
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Pages Installation Routine Settings
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
+
+!define MUI_CUSTOMFUNCTION_GUIINIT bgmusic
 
 ; Welcome Page:
 
@@ -133,7 +137,7 @@ var ICONS_GROUP
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "${name}"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
-!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${name}"
 !insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
 
 !insertmacro MUI_PAGE_INSTFILES
@@ -167,70 +171,44 @@ var /GLOBAL animations
 
 ; Write all variables to config.ini
 
-FileOpen $0 '$INSTDIR\config.ini' w
-FileWrite $0 '[Game]$\r$\n'
-FileClose $0
+var /GLOBAL path_config
+var /GLOBAL path_configini
 
-${If} $language2 != ""
-
-${WriteToConfig} "Language=$language2$\r$\n" "$INSTDIR\config.ini"
-
+${If} ${AtLeastWinVista}  
+  SetShellVarContext current
+  StrCpy $path_config "$APPDATA\ultrastardx"
+  SetShellVarContext all
+${Else}
+  StrCpy $path_config "$INSTDIR"
 ${EndIf}
 
-${If} $tabs != ""
+StrCpy $path_configini "$path_config\config.ini"
 
-${WriteToConfig} "Tabs=$tabs$\r$\n" "$INSTDIR\config.ini"
+${WriteToConfig} "[Game]$\r$\n" "$path_configini"
+${WriteToConfig} "Language=$language2$\r$\n" "$path_configini"
+${WriteToConfig} "Tabs=$tabs$\r$\n" "$path_configini"
 
-${EndIf}
+${WriteToConfig} "[Graphics]$\r$\n" "$path_configini"
+${WriteToConfig} "FullScreen=$fullscreen$\r$\n" "$path_configini"
+${WriteToConfig} "Resolution=$resolution$\r$\n" "$path_configini"
 
-${WriteToConfig} "[Graphics]$\r$\n" "$INSTDIR\config.ini"
-
-${If} $fullscreen != ""
-
-${WriteToConfig} "FullScreen=$fullscreen$\r$\n" "$INSTDIR\config.ini"
-
-${EndIf}
-
-${If} $resolution != ""
-
-${WriteToConfig} "Resolution=$resolution$\r$\n" "$INSTDIR\config.ini"
-
-${EndIf}
-
-${WriteToConfig} "[Sound]$\r$\n" "$INSTDIR\config.ini"
-${WriteToConfig} "PreviewFading=3 Secs$\r$\n" "$INSTDIR\config.ini"
+${WriteToConfig} "[Sound]$\r$\n" "$path_configini"
+${WriteToConfig} "PreviewFading=3 Secs$\r$\n" "$path_configini"
 
 ; Animations On / Off Tasks
 
 ${If} $animations == "Off"
-
-${WriteToConfig} "[Advanced]$\r$\n" "$INSTDIR\config.ini"
-
-${WriteToConfig} "LoadAnimation=Off$\r$\n" "$INSTDIR\config.ini"
-
-${WriteToConfig} "EffectSing=Off$\r$\n" "$INSTDIR\config.ini"
-
-${WriteToConfig} "ScreenFade=Off$\r$\n" "$INSTDIR\config.ini"
-
-${WriteToConfig} "LineBonus=At Notes$\r$\n" "$INSTDIR\config.ini"
-
+${WriteToConfig} "[Advanced]$\r$\n" "$path_configini"
+${WriteToConfig} "LoadAnimation=Off$\r$\n" "$path_configini"
+${WriteToConfig} "EffectSing=Off$\r$\n" "$path_configini"
+${WriteToConfig} "ScreenFade=Off$\r$\n" "$path_configini"
 ${EndIf}
 
-${WriteToConfig} "[Lyrics]$\r$\n" "$INSTDIR\config.ini"
-${WriteToConfig} "LyricsFont=Plain$\r$\n" "$INSTDIR\config.ini"
-${WriteToConfig} "LyricsEffect=Slide$\r$\n" "$INSTDIR\config.ini"
-
-${If} $animations != "Off"
-
-${WriteToConfig} "[Advanced]$\r$\n" "$INSTDIR\config.ini"
-
-${WriteToConfig} "LineBonus=At Notes$\r$\n" "$INSTDIR\config.ini"
-
-${EndIf}
-
+${WriteToConfig} "[Lyrics]$\r$\n" "$path_configini"
+${WriteToConfig} "LyricsFont=Plain$\r$\n" "$path_configini"
+${WriteToConfig} "LyricsEffect=Slide$\r$\n" "$path_configini"
 
 FunctionEnd ; Settings page End
-
 
 !insertmacro MUI_PAGE_FINISH
 
@@ -264,9 +242,19 @@ ${NSD_GetState} $CHECKBOX $checkbox_state
 
 ${If} $checkbox_state == "1"
 
- RMDir /r "$INSTDIR\Songs"
- RMDir /r "$INSTDIR\Covers"
+; Remove settings, songs, highscores, covers
+
+ RMDir /r "$INSTDIR\songs"
+ RMDir /r "$INSTDIR\covers"
+ Delete "$INSTDIR\config.ini"
  Delete "$INSTDIR\Ultrastar.db"
+
+ SetShellVarContext current	
+ RMDir /r "$APPDATA\ultrastardx\songs"
+ RMDir /r "$APPDATA\ultrastardx\covers"
+ Delete "$APPDATA\ultrastardx\config.ini"
+ Delete "$APPDATA\ultrastardx\Ultrastar.db"
+ SetShellVarContext all
 
 ${Else}
 
@@ -302,56 +290,27 @@ Section $(name_section1) Section1
 SetOutPath "$INSTDIR"
 
 !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-
   SetShellVarContext all
   SetOutPath "$INSTDIR"
 
   CreateDirectory "${name}"
   CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_shortcut).lnk" "$INSTDIR\${exe}.exe"
-; CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_documentation).lnk" "$INSTDIR\documentation.pdf"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_website).lnk" "http://www.ultrastardeluxe.org/"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_readme).lnk" "$INSTDIR\ReadMe.txt"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_license).lnk" "$INSTDIR\License.txt"
+  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_songs).lnk" "$INSTDIR\songs"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_uninstall).lnk" "$INSTDIR\Uninstall.exe"
-  !insertmacro MUI_STARTMENU_WRITE_END
+!insertmacro MUI_STARTMENU_WRITE_END
 
 ; Vista Game Explorer:
-
-${If} ${AtLeastWinVista}
-
-${GameExplorer_GenerateGUID}
-Pop $0
-
-${GameExplorer_AddGame} all "${path_gdf}" $WINDIR $INSTDIR\${exe}.exe $0
-
-CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\1
-CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\1\Benchmark.lnk" \
-  "$INSTDIR\${exe}.exe" "-Benchmark"
-
-CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\2
-CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\2\Joypad.lnk" \
-  "$INSTDIR\${exe}.exe" "-Joypad"
-
-CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3
-CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3\Fullscreen.lnk" \
-  "$INSTDIR\${exe}.exe" "-FullScreen"
-
-CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3
-CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\PlayTasks\3\Dual Screen.lnk" \
-  "$INSTDIR\${exe}.exe" "-Screens 2"
-
-CreateDirectory $APPDATA\Microsoft\Windows\GameExplorer\$0\SupportTasks\0
-CreateShortcut "$APPDATA\Microsoft\Windows\GameExplorer\$0\SupportTasks\0\Support Forum.lnk" \
-  "http://forum.ultrastardeluxe.org"
-
-${EndIf}
+; (removed due to incompatibility with Windows 7, needs rewrite)
 
 ; Create Uninstaller:
 
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${name}"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\ultrastardx.exe"
+  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallDir" "$INSTDIR"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
@@ -371,18 +330,18 @@ Section /o "Bodo Wartke - Liebeslied (Love Song)" g2Section1
 
    AddSize 10342
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_song1} $TEMP\Song-BodoWartke-LoveSong.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song1} $LOCALAPPDATA\Temp\Song-BodoWartke-LoveSong.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-BodoWartke-LoveSong.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-BodoWartke-LoveSong.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-BodoWartke-LoveSong.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-BodoWartke-LoveSong.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -397,19 +356,19 @@ Section /o "Dead Smiling Pirates - I 18" g2Section2
    AddSize 2816
    SetOverwrite try
    SetOutPath "$INSTDIR"
-   CreateDirectory "$INSTDIR\Songs\Dead Smiling Pirates - I 18"
-   SetOutPath "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
+   CreateDirectory "$INSTDIR\songs\Dead Smiling Pirates - I 18"
+   SetOutPath "$INSTDIR\songs\Dead Smiling Pirates - I 18\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_song2} $TEMP\Song-I-18.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song2} $LOCALAPPDATA\Temp\Song-I-18.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-I-18.zip" "$INSTDIR\Songs\Dead Smiling Pirates - I 18\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-I-18.zip" "$INSTDIR\songs\Dead Smiling Pirates - I 18\"
 
-  Delete "$TEMP\Song-I-18.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-I-18.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -425,18 +384,18 @@ Section /o "Monkey Shines" s2_sub1_Section1
 
    AddSize 1455
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song1} $TEMP\Song-JC-MS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song1} $LOCALAPPDATA\Temp\Song-JC-MS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-MS.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-MS.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-MS.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-MS.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -446,18 +405,18 @@ Section /o "I Crush Everything" s2_sub1_Section2
 
    AddSize 7127
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song2} $TEMP\Song-JC-ICE.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song2} $LOCALAPPDATA\Temp\Song-JC-ICE.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-ICE.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-ICE.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-ICE.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-ICE.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -467,18 +426,18 @@ Section /o "Not About You" s2_sub1_Section3
 
    AddSize 3492
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song3} $TEMP\Song-JC-NAY.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song3} $LOCALAPPDATA\Temp\Song-JC-NAY.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-NAY.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-NAY.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-NAY.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-NAY.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -489,18 +448,18 @@ Section /o "Mr. Fancy Pants" s2_sub1_Section4
 
    AddSize 2427
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song4} $TEMP\Song-JC-MFP.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song4} $LOCALAPPDATA\Temp\Song-JC-MFP.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-MFP.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-MFP.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-MFP.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-MFP.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -510,18 +469,18 @@ Section /o "Big Bad World One" s2_sub1_Section5
 
    AddSize 4424
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song5} $TEMP\Song-JC-BBWO.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song5} $LOCALAPPDATA\Temp\Song-JC-BBWO.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-BBWO.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-BBWO.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-BBWO.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-BBWO.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -531,18 +490,18 @@ Section /o "Flickr" s2_sub1_Section6
 
    AddSize 21607
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song6} $TEMP\Song-JC-Flickr.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song6} $LOCALAPPDATA\Temp\Song-JC-Flickr.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-Flickr.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-Flickr.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-Flickr.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-Flickr.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -552,18 +511,18 @@ Section /o "My Beige Bear" s2_sub1_Section7
 
    AddSize 4926
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song7} $TEMP\Song-JC-MBB.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song7} $LOCALAPPDATA\Temp\Song-JC-MBB.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-MBB.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-MBB.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-MBB.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-MBB.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -573,18 +532,18 @@ Section /o "The Future Soon" s2_sub1_Section8
 
    AddSize 5612
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song8} $TEMP\Song-JC-TFS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song8} $LOCALAPPDATA\Temp\Song-JC-TFS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-TFS.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-TFS.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-TFS.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-TFS.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -594,18 +553,18 @@ Section /o "Ikea" s2_sub1_Section9
 
    AddSize 4608
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song9} $TEMP\Song-JC-Ikea.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song9} $LOCALAPPDATA\Temp\Song-JC-Ikea.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-Ikea.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-Ikea.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-Ikea.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-Ikea.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -615,18 +574,18 @@ Section /o "Furry Old Lobster" s2_sub1_Section10
 
    AddSize 3288
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song10} $TEMP\Song-JC-FOL.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song10} $LOCALAPPDATA\Temp\Song-JC-FOL.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-FOL.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-FOL.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-FOL.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-FOL.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -636,18 +595,18 @@ Section /o "Code Monkey" s2_sub1_Section11
 
    AddSize 21402
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song11} $TEMP\Song-JC-CM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song11} $LOCALAPPDATA\Temp\Song-JC-CM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-CM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-CM.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-CM.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-CM.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -657,18 +616,18 @@ Section /o "I´m Your Moon" s2_sub1_Section12
 
    AddSize 4916
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song12} $TEMP\Song-JC-IYM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song12} $LOCALAPPDATA\Temp\Song-JC-IYM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-IYM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-IYM.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-IYM.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-IYM.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -678,18 +637,18 @@ Section /o "First Of May" s2_sub1_Section13
 
    AddSize 6257
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song13} $TEMP\Song-JC-FOM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song13} $LOCALAPPDATA\Temp\Song-JC-FOM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-FOM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-FOM.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-FOM.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-FOM.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -699,18 +658,18 @@ Section /o "Dance, Soterious Johnson, Dance" s2_sub1_Section14
 
    AddSize 5929
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song14} $TEMP\Song-JC-DSJD.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song14} $LOCALAPPDATA\Temp\Song-JC-DSJD.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-DSJD.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-DSJD.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-DSJD.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-DSJD.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -720,18 +679,18 @@ Section /o "A Talk With George" s2_sub1_Section15
 
    AddSize 4076
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song15} $TEMP\Song-JC-ATWG.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song15} $LOCALAPPDATA\Temp\Song-JC-ATWG.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-ATWG.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-ATWG.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-ATWG.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-ATWG.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -741,18 +700,18 @@ Section /o "Creepy Doll" s2_sub1_Section16
 
    AddSize 66560
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song16} $TEMP\Song-JC-CD.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song16} $LOCALAPPDATA\Temp\Song-JC-CD.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-CD.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-CD.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-CD.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-CD.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -762,18 +721,18 @@ Section /o "That Spells DNA" s2_sub1_Section17
 
    AddSize 4158
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song17} $TEMP\Song-JC-TSDNA.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song17} $LOCALAPPDATA\Temp\Song-JC-TSDNA.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-TSDNA.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-TSDNA.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-TSDNA.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-TSDNA.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -783,18 +742,18 @@ Section /o "When You Go" s2_sub1_Section18
 
    AddSize 5755
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song18} $TEMP\Song-JC-WYG.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song18} $LOCALAPPDATA\Temp\Song-JC-WYG.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-WYG.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-WYG.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-WYG.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-WYG.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -804,18 +763,18 @@ Section /o "Better" s2_sub1_Section19
 
    AddSize 4199
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song19} $TEMP\Song-JC-Better.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song19} $LOCALAPPDATA\Temp\Song-JC-Better.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-Better.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-Better.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-Better.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-Better.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -825,18 +784,18 @@ Section /o "Shop Vac" s2_sub1_Section20
 
    AddSize 5448
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song20} $TEMP\Song-JC-SV.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song20} $LOCALAPPDATA\Temp\Song-JC-SV.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-SV.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-SV.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-SV.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-SV.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -846,18 +805,18 @@ Section /o "I Feel Fantastic" s2_sub1_Section21
 
    AddSize 3851
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song21} $TEMP\Song-JC-IFF.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song21} $LOCALAPPDATA\Temp\Song-JC-IFF.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-IFF.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-IFF.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-IFF.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-IFF.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -867,18 +826,18 @@ Section /o "Re: Your Brains" s2_sub1_Section22
 
    AddSize 7087
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song22} $TEMP\Song-JC-ReYB.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song22} $LOCALAPPDATA\Temp\Song-JC-ReYB.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-ReYB.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-ReYB.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-ReYB.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-ReYB.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -888,18 +847,18 @@ Section /o "Skullcrusher Mountain" s2_sub1_Section23
 
    AddSize 6298
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song23} $TEMP\Song-JC-SCM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song23} $LOCALAPPDATA\Temp\Song-JC-SCM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-SCM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-SCM.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-SCM.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-SCM.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -909,18 +868,18 @@ Section /o "Chiron Beta Prime" s2_sub1_Section24
 
    AddSize 38298
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub1_song24} $TEMP\Song-JC-CBP.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub1_song24} $LOCALAPPDATA\Temp\Song-JC-CBP.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-JC-CBP.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-JC-CBP.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-JC-CBP.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-JC-CBP.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -937,19 +896,19 @@ Section /o "Joshua Morin - On The Run" g2Section3
    AddSize 3881
    SetOverwrite try
    SetOutPath "$INSTDIR"
-   CreateDirectory "$INSTDIR\Songs\Joshua Morin - On The Run"
-   SetOutPath "$INSTDIR\Songs\Joshua Morin - On The Run\"
+   CreateDirectory "$INSTDIR\songs\Joshua Morin - On The Run"
+   SetOutPath "$INSTDIR\songs\Joshua Morin - On The Run\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_song3} $TEMP\Song-On-the-run.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song3} $LOCALAPPDATA\Temp\Song-On-the-run.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-On-the-run.zip" "$INSTDIR\Songs\Joshua Morin - On The Run\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-On-the-run.zip" "$INSTDIR\songs\Joshua Morin - On The Run\"
 
-  Delete "$TEMP\Song-On-the-run.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-On-the-run.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -959,19 +918,19 @@ Section /o "Pornophonique - Space Invaders" g2Section4
    AddSize 3646
    SetOverwrite try
    SetOutPath "$INSTDIR"
-   CreateDirectory "$INSTDIR\Songs\Pornophonique - Space Invaders"
-   SetOutPath "$INSTDIR\Songs\Pornophonique - Space Invaders\"
+   CreateDirectory "$INSTDIR\songs\Pornophonique - Space Invaders"
+   SetOutPath "$INSTDIR\songs\Pornophonique - Space Invaders\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_song4} $TEMP\Song-Space-Invaders.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song4} $LOCALAPPDATA\Temp\Song-Space-Invaders.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Space-Invaders.zip" "$INSTDIR\Songs\Pornophonique - Space Invaders\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Space-Invaders.zip" "$INSTDIR\songs\Pornophonique - Space Invaders\"
 
-  Delete "$TEMP\Song-Space-Invaders.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Space-Invaders.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -983,18 +942,18 @@ Section /o "Shearer - 69" s2_sub2_Section1
 
    AddSize 4557
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song1} $TEMP\Song-Shearer-69.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song1} $LOCALAPPDATA\Temp\Song-Shearer-69.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-69.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-69.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-69.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-69.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1004,18 +963,18 @@ Section /o "Shearer - 69 (Karaoke)" s2_sub2_Section2
 
    AddSize 4772
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song2} $TEMP\Song-Shearer-69-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song2} $LOCALAPPDATA\Temp\Song-Shearer-69-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-69-Kar.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-69-Kar.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-69-Kar.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-69-Kar.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1025,18 +984,18 @@ Section /o "Shearer - Can't stop it" s2_sub2_Section3
 
    AddSize 5510
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song3} $TEMP\Song-Shearer-CSI.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song3} $LOCALAPPDATA\Temp\Song-Shearer-CSI.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-CSI.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-CSI.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-CSI.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-CSI.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1046,18 +1005,18 @@ Section /o "Shearer - Can't stop it (Karaoke)" s2_sub2_Section4
 
    AddSize 4178
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song4} $TEMP\Song-Shearer-CSI-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song4} $LOCALAPPDATA\Temp\Song-Shearer-CSI-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-CSI-Kar.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-CSI-Kar.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-CSI-Kar.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-CSI-Kar.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1067,18 +1026,18 @@ Section /o "Shearer - In My Hand" s2_sub2_Section5
 
    AddSize 5960
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song5} $TEMP\Song-Shearer-IMH.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song5} $LOCALAPPDATA\Temp\Song-Shearer-IMH.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-IMH.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-IMH.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-IMH.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-IMH.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1088,18 +1047,18 @@ Section /o "Shearer - Man Song" s2_sub2_Section6
 
    AddSize 7270
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song6} $TEMP\Song-Shearer-MS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song6} $LOCALAPPDATA\Temp\Song-Shearer-MS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-MS.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-MS.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-MS.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-MS.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1109,18 +1068,18 @@ Section /o "Shearer - Man Song (Karaoke)" s2_sub2_Section7
 
    AddSize 5807
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song7} $TEMP\Song-Shearer-MS-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song7} $LOCALAPPDATA\Temp\Song-Shearer-MS-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-MS-Kar.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-MS-Kar.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-MS-Kar.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-MS-Kar.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1130,18 +1089,18 @@ Section /o "Shearer - Stay With Me" s2_sub2_Section8
 
    AddSize 6400
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song8} $TEMP\Song-Shearer-SWM.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song8} $LOCALAPPDATA\Temp\Song-Shearer-SWM.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
-  ZipDLL::extractall "$TEMP\Song-Shearer-SWM.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-SWM.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-SWM.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-SWM.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1151,19 +1110,19 @@ Section /o "Shearer - Stay With Me (Karaoke)" s2_sub2_Section9
 
    AddSize 5417
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub2_song9} $TEMP\Song-Shearer-SWM-Kar.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song9} $LOCALAPPDATA\Temp\Song-Shearer-SWM-Kar.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
 
-  ZipDLL::extractall "$TEMP\Song-Shearer-SWM-Kar.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-SWM-Kar.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-Shearer-SWM-Kar.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-SWM-Kar.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1175,20 +1134,20 @@ Section /o "Steven Dunston - Northern Star" g2Section5
    AddSize 2427
    SetOverwrite try
    SetOutPath "$INSTDIR"
-   CreateDirectory "$INSTDIR\Songs\Steven Dunston - Northern Star"
-   SetOutPath "$INSTDIR\Songs\Steven Dunston - Northern Star\"
+   CreateDirectory "$INSTDIR\songs\Steven Dunston - Northern Star"
+   SetOutPath "$INSTDIR\songs\Steven Dunston - Northern Star\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_song5} $TEMP\Song-Northern-Star.zip
+  NSISdl::download /TIMEOUT=50000 ${download_song5} $LOCALAPPDATA\Temp\Song-Northern-Star.zip
 
   Pop $R0 ;Get the return value
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
 
-  ZipDLL::extractall "$TEMP\Song-Northern-Star.zip" "$INSTDIR\Songs\Steven Dunston - Northern Star\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Northern-Star.zip" "$INSTDIR\songs\Steven Dunston - Northern Star\"
 
-  Delete "$TEMP\Song-Northern-Star.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-Northern-Star.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1200,19 +1159,19 @@ Section /o "Wise Guys - Lebendig und kräftig und schärfer" s2_sub3_Section1
 
    AddSize 4015
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub3_song1} $TEMP\Song-WiseGuys-LUKUS.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub3_song1} $LOCALAPPDATA\Temp\Song-WiseGuys-LUKUS.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
 
-  ZipDLL::extractall "$TEMP\Song-WiseGuys-LUKUS.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-WiseGuys-LUKUS.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-WiseGuys-LUKUS.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-WiseGuys-LUKUS.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1222,19 +1181,41 @@ Section /o "Wise Guys - Mensch, wo bist du?" s2_sub3_Section2
 
    AddSize 5335
    SetOverwrite try
-   SetOutPath "$INSTDIR\Songs\"
+   SetOutPath "$INSTDIR\songs\"
 
 ; Download song:
-  NSISdl::download /TIMEOUT=50000 ${download_sub3_song2} $TEMP\Song-WiseGuys-MWBD.zip
+  NSISdl::download /TIMEOUT=50000 ${download_sub3_song2} $LOCALAPPDATA\Temp\Song-WiseGuys-MWBD.zip
  
   Pop $R0
     StrCmp $R0 "success" dlok
       MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
   dlok:
 
-  ZipDLL::extractall "$TEMP\Song-WiseGuys-MWBD.zip" "$INSTDIR\Songs\"
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-WiseGuys-MWBD.zip" "$INSTDIR\songs\"
 
-  Delete "$TEMP\Song-WiseGuys-MWBD.zip"
+  Delete "$LOCALAPPDATA\Temp\Song-WiseGuys-MWBD.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+
+Section /o "Wise Guys - Mensch, wo bist du? (Karaoke)" s2_sub3_Section3
+
+   AddSize 5335
+   SetOverwrite try
+   SetOutPath "$INSTDIR\songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=50000 ${download_sub3_song3} $LOCALAPPDATA\Temp\Song-WiseGuys-MWBDKar.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-WiseGuys-MWBDKar.zip" "$INSTDIR\songs\"
+
+  Delete "$LOCALAPPDATA\Temp\Song-WiseGuys-MWBDKar.zip"
 
   SetOutPath "$INSTDIR"
 
@@ -1248,141 +1229,8 @@ SectionGroupEnd
 ; OPTIONAL THEMES (Section 3)
 ;------------------------------------
 
-SectionGroup $(name_section3) Section3
-
- Section /o "Orange" g3Section1
-   AddSize 1291
-
-; Download theme orange:
-  NSISdl::download /TIMEOUT=50000 ${download_theme1} $TEMP\Theme-Orange.zip
-
-  Pop $R0 ;Get the return value
-    StrCmp $R0 "success" dlok
-      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
-  dlok:
-  ZipDLL::extractall "$TEMP\Theme-Orange.zip" "$INSTDIR\"
-
-  Delete "$TEMP\Theme-Orange.zip"
-
-  SetOutPath "$INSTDIR"
-
-SectionEnd
-
- Section /o "Streetlight" g3Section2
-  AddSize 1905
-
-; Download theme Streetlight:
-  NSISdl::download /TIMEOUT=50000 ${download_theme2} $TEMP\Theme-Streetlight.zip
-
-  Pop $R0 ;Get the return value
-    StrCmp $R0 "success" dlok
-      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
-  dlok:
-  ZipDLL::extractall "$TEMP\Theme-Streetlight.zip" "$INSTDIR\"
-
-  Delete "$TEMP\Theme-Streetlight.zip"
-
-  SetOutPath "$INSTDIR"
-
-SectionEnd
-
- Section /o "Vistar" g3Section3
-    AddSize 1936
-
-; Download theme Vistar:
-
-  NSISdl::download /TIMEOUT=50000 ${download_theme3} $TEMP\Theme-Vistar.zip
-
-  Pop $R0 ;Get the return value
-   StrCmp $R0 "success" dlok
-     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
-  dlok:
-  ZipDLL::extractall "$TEMP\Theme-Vistar.zip" "$INSTDIR\"
-
-  Delete "$TEMP\Theme-Vistar.zip"
-
-  SetOutPath "$INSTDIR"
-
-SectionEnd
-
- Section /o "BlueSensation" g3Section4
-    AddSize 2109
-
-; Download theme BlueSensation:
-
-  NSISdl::download /TIMEOUT=50000 ${download_theme4} $TEMP\Theme-BlueSensation.zip
-
-  Pop $R0 ;Get the return value
-   StrCmp $R0 "success" dlok
-     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
-  dlok:
-  ZipDLL::extractall "$TEMP\Theme-BlueSensation.zip" "$INSTDIR\"
-
-  Delete "$TEMP\Theme-BlueSensation.zip"
-
-  SetOutPath "$INSTDIR"
-
-SectionEnd
-
-
- Section /o "WhiteSensation" g3Section5
-  AddSize 1168
-
-; Download theme WhiteSensation:
-
-  NSISdl::download /TIMEOUT=50000 ${download_theme7} $TEMP\Theme-WhiteSensation.zip
-
-  Pop $R0 ;Get the return value
-   StrCmp $R0 "success" dlok
-     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
-  dlok:
-  ZipDLL::extractall "$TEMP\Theme-WhiteSensation.zip" "$INSTDIR\"
-
-  Delete "$TEMP\Theme-WhiteSensation.zip"
-
-  SetOutPath "$INSTDIR"
-
-SectionEnd
-
- Section /o "WiiStar" g3Section6
-   AddSize 850
-
-; Download theme WiiStar:
-
-  NSISdl::download /TIMEOUT=50000 ${download_theme5} $TEMP\Theme-WiiStar.zip
-
-  Pop $R0 ;Get the return value
-   StrCmp $R0 "success" dlok
-     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
-  dlok:
-  ZipDLL::extractall "$TEMP\Theme-WiiStar.zip" "$INSTDIR\"
-
-  Delete "$TEMP\Theme-WiiStar.zip"
-
-  SetOutPath "$INSTDIR"
-
-SectionEnd
-
- Section /o "iStar" g3Section7
-  AddSize 1588
-
-; Download theme iStar:
-
-  NSISdl::download /TIMEOUT=50000 ${download_theme6} $TEMP\Theme-iStar.zip
-
-  Pop $R0 ;Get the return value
-   StrCmp $R0 "success" dlok
-     MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
-  dlok:
-  ZipDLL::extractall "$TEMP\Theme-iStar.zip" "$INSTDIR\"
-
-  Delete "$TEMP\Theme-iStar.zip"
-
-  SetOutPath "$INSTDIR"
-
-SectionEnd
-
-SectionGroupEnd
+; No additional themes available 
+; for current version of ultrastardx
 
 ;------------------------------------
 ; UNINSTALL (Section 4)
@@ -1397,14 +1245,7 @@ Section Uninstall
  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 
 ; Unregister from Windows Vista Game Explorer
-
-${If} ${AtLeastWinVista}
-
-${GameExplorer_RemoveGame} $0
-
-${EndIf}
-
-
+; (removed due to incompatibility with Windows 7)
 
 SectionEnd
 
@@ -1420,7 +1261,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1} $(DESC_Section2_sub1)
   !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2} $(DESC_Section2_sub2)
   !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3} $(DESC_Section2_sub3)
-  !insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3)
+; !insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3)
 
   !insertmacro MUI_DESCRIPTION_TEXT ${g2Section1} $(DESC_g2Section1)
   !insertmacro MUI_DESCRIPTION_TEXT ${g2Section2} $(DESC_g2Section2)
@@ -1465,14 +1306,7 @@ SectionEnd
 
   !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section1} $(DESC_s2_sub3_Section1)
   !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section2} $(DESC_s2_sub3_Section2)
-
-  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section1} $(DESC_g3Section1)
-  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section2} $(DESC_g3Section2)
-  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section3} $(DESC_g3Section3)
-  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section4} $(DESC_g3Section4)
-  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section5} $(DESC_g3Section5)
-  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section6} $(DESC_g3Section6)
-  !insertmacro MUI_DESCRIPTION_TEXT ${g3Section7} $(DESC_g3Section7)
+  !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section3} $(DESC_s2_sub3_Section3)
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
@@ -1487,10 +1321,21 @@ SectionEnd
 
 !include "${path_languages}\*.nsh"
 
+;!addPluginDir "${path_plugins}\"
+
+Function bgmusic
+    File /oname=$PLUGINSDIR\loop.wav .\dependencies\loop.wav
+    BGImage::Sound /NOUNLOAD /LOOP $PLUGINSDIR\loop.wav
+FunctionEnd
+
+Function .onGUIEnd
+    BGImage::Sound /STOP
+FunctionEnd
+
 Function .onInit
 
 var /GLOBAL version
-StrCpy $version "1.1a"
+StrCpy $version "1.1beta"
 
 
    System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'
@@ -1537,8 +1382,16 @@ Function un.onInit
         StrCmp $R0 0 0 +2
         MessageBox MB_YESNO|MB_ICONEXCLAMATION '$(oninit_closeusdx)' IDYES closeit IDNO end
 
-        closeit:
+	closeit:
         ${nsProcess::KillProcess} "USdx.exe" $R0
+        goto continue
+
+        ${nsProcess::FindProcess} "ultrastardx.exe" $R0
+        StrCmp $R0 0 0 +2
+        MessageBox MB_YESNO|MB_ICONEXCLAMATION '$(oninit_closeusdx)' IDYES closeusdx IDNO end
+
+	closeusdx:
+	${nsProcess::KillProcess} "ultrastardx.exe" $R0
         goto continue
 
         end:

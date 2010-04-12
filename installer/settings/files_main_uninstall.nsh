@@ -2,11 +2,9 @@
 ; UltraStar Deluxe Uninstaller: Main components
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
-
 ; Delete created Icons in startmenu
 
  SetShellVarContext all
-
  RMDir /r "$SMPROGRAMS\$ICONS_GROUP\"
 
 ; Delete created Icon on Desktop
@@ -21,32 +19,47 @@
  RMDir /r "$INSTDIR\fonts"
  RMDir /r "$INSTDIR\languages"
  RMDir /r "$INSTDIR\visuals"
+ RMDir /r "$INSTDIR\resources"
  RMDir /r "$INSTDIR\sounds"
 
-; Delete remaining files
+; Remove old files from previous versions
+ IfFileExists $INSTDIR\ScoreConverter.exe 0 +2
+ Delete "$INSTDIR\ScoreConverter.exe"
+ IfFileExists $INSTDIR\USdx.exe 0 +2
+ Delete "$INSTDIR\USdx.exe"
+ IfFileExists $INSTDIR\covers.cache 0 +2
+ Delete "$INSTDIR\covers.cache"
 
+; Delete remaining files
  Delete "$INSTDIR\ScoreConverter.exe"
  Delete "$INSTDIR\${exe}.exe"
- Delete "$INSTDIR\Changelog.german.txt"
- Delete "$INSTDIR\Changelog.txt"
+ Delete "$INSTDIR\ChangeLog.GERMAN.txt"
+ Delete "$INSTDIR\ChangeLog.txt"
+ Delete "$INSTDIR\LuaCommands.odt"
  Delete "$INSTDIR\documentation.pdf"
- Delete "$INSTDIR\License.txt"
- Delete "$INSTDIR\config.ini"
+ Delete "$INSTDIR\license.txt"
  Delete "$INSTDIR\README.txt"
+ Delete "$INSTDIR\screenshots.lnk"
+ Delete "$INSTDIR\playlists.lnk"
+ Delete "$INSTDIR\config.ini.lnk"
+
  Delete "$INSTDIR\Error.log"
- Delete "$INSTDIR\covers.cache"
  Delete "$INSTDIR\cover.db"
 
- Delete "$INSTDIR\avcodec-51.dll"
- Delete "$INSTDIR\avformat-50.dll"
- Delete "$INSTDIR\avutil-49.dll"
+ Delete "$INSTDIR\avcodec-52.dll"
+ Delete "$INSTDIR\avformat-52.dll"
+ Delete "$INSTDIR\avdevice-52.dll"
+ Delete "$INSTDIR\avutil-50.dll"
  Delete "$INSTDIR\bass.dll"
+ Delete "$INSTDIR\freetype6.dll"
  Delete "$INSTDIR\glew32.dll"
  Delete "$INSTDIR\jpeg.dll"
- Delete "$INSTDIR\libfreetype-6.dll"
  Delete "$INSTDIR\libpng12-0.dll"
  Delete "$INSTDIR\libprojectM.dll"
  Delete "$INSTDIR\libtiff-3.dll"
+ Delete "$INSTDIR\lua5.1.dll"
+ Delete "$INSTDIR\lua51.dll"
+ Delete "$INSTDIR\pcre3.dll"
  Delete "$INSTDIR\portaudio_x86.dll"
  Delete "$INSTDIR\portmixer.dll"
  Delete "$INSTDIR\projectM-cwrapper.dll"
@@ -54,28 +67,44 @@
  Delete "$INSTDIR\SDL_image.dll"
  Delete "$INSTDIR\SDL_ttf.dll"
  Delete "$INSTDIR\sqlite3.dll"
+ Delete "$INSTDIR\swscale-0.dll"
  Delete "$INSTDIR\zlib1.dll"
 
-${If} ${AtLeastWinVista}
- Delete "$WINDIR\gdf.dll"
-${EndIf}
-
-
- RMDir "$INSTDIR\songs\Dead Smiling Pirates - I 18"
- RMDir "$INSTDIR\songs\Joshua Morin - On The Run"
- RMDir "$INSTDIR\songs\Pornophonique - Space Invaders"
- RMDir "$INSTDIR\songs\Steven Dunston - Northern Star"
-
  StrCpy $0 "$INSTDIR\songs"
- Call un.DeleteIfEmpty
+ Call un.DeleteIfEmpty 
 
- Delete "$INSTDIR\covers\NoCover.jpg"
+ StrCpy $0 "$INSTDIR\covers"
+ Call un.DeleteIfEmpty
 
  StrCpy $0 "$INSTDIR\screenshots"
  Call un.DeleteIfEmpty
 
  StrCpy $0 "$INSTDIR\playlists"
  Call un.DeleteIfEmpty
+
+ ; Clean up AppData
+
+ SetShellVarContext current
+
+ Delete "$APPDATA\ultrastardx\Error.log"
+ Delete "$APPDATA\ultrastardx\cover.db"
+
+ StrCpy $0 "$APPDATA\ultrastardx\covers"
+ Call un.DeleteIfEmpty
+
+ StrCpy $0 "$APPDATA\ultrastardx\songs"
+ Call un.DeleteIfEmpty
+
+ StrCpy $0 "$APPDATA\ultrastardx\screenshots"
+ Call un.DeleteIfEmpty
+
+ StrCpy $0 "$APPDATA\ultrastardx\playlists"
+ Call un.DeleteIfEmpty
+
+ StrCpy $0 "$APPDATA\ultrastardx"
+ Call un.DeleteIfEmpty
+
+ SetShellVarContext all
 
 ; Self delete:
 

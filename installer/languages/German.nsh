@@ -15,7 +15,7 @@ LangString button_next ${LANG_GERMAN} "Weiter >"
 LangString button_close ${LANG_GERMAN} "Beenden"
 LangString update_information ${LANG_GERMAN} "Du kannst nach einer aktuelleren Version von 'UltraStar Deluxe' suchen. Dazu wird eine Verbindung mit dem Internet hergestellt. Wurde eine aktuellere Version gefunden, kann diese anschließend installiert werden."
 
-LangString delete_all ${LANG_GERMAN} "Lieder, Highscores und Cover auch löschen?"
+LangString delete_all ${LANG_GERMAN} "Lieder, Einstellungen, Highscores und Cover auch löschen?"
 
 LangString update_check_older ${LANG_GERMAN} "Deine aktuelle Version $R0 ist veraltet. Die neue Version $1 von UltraStar Deluxe ist verfügbar. Möchtest du sie runterladen?"
 LangString update_check_equal ${LANG_GERMAN} "Deine aktuelle Version $R0 ist auf dem neusten Stand.$\n$\rKein Update benötigt."
@@ -49,11 +49,12 @@ LangString page_finish_desktop ${LANG_GERMAN} "Verknüpfung auf dem Desktop erste
 
 ; Start Menu and Shortcuts
 
-LangString sm_website ${LANG_GERMAN} "Internetseite"
+LangString sm_website ${LANG_GERMAN} "Webseite"
 LangString sm_uninstall ${LANG_GERMAN} "Deinstallieren"		  
 LangString sm_shortcut ${LANG_GERMAN} "UltraStar Deluxe spielen"  
 LangString sm_license ${LANG_GERMAN} "Lizenz"
 LangString sm_readme ${LANG_GERMAN} "Lies mich"
+LangString sm_songs ${LANG_GERMAN} "Songs"
 LangString sm_documentation ${LANG_GERMAN} "Dokumentation"
 
 LangString sc_play ${LANG_GERMAN} "Spielen" 
@@ -66,14 +67,12 @@ LangString name_section2 ${LANG_GERMAN} "Songs"
 LangString name_s2_sub1 ${LANG_GERMAN} "Jonathan Coulton"
 LangString name_s2_sub2 ${LANG_GERMAN} "Shearer"
 LangString name_s2_sub3 ${LANG_GERMAN} "Wise Guys"
-LangString name_section3 ${LANG_GERMAN} "Designs"
 
 LangString DESC_Section1 ${LANG_GERMAN} "Dies sind die von UltraStar Deluxe benötigten Grunddateien"
 LangString DESC_Section2 ${LANG_GERMAN} "Hier können Songs zum Installieren gewählt werden."
 LangString DESC_Section2_sub1 ${LANG_GERMAN} "Hier können Jonathan Coulton Songs (CC by-nc 3.0) zum Installieren gewählt werden."
 LangString DESC_Section2_sub2 ${LANG_GERMAN} "Hier können Shearer Songs (CC by-nc-sa 2.0 / 3.0) zum Installieren gewählt werden."
 LangString DESC_Section2_sub3 ${LANG_GERMAN} "Hier können Wise Guys Songs zum Installieren gewählt werden."
-LangString DESC_Section3 ${LANG_GERMAN} "Hier können alternative Motive zum Installieren gewählt werden."
 
 LangString DESC_g2Section2 ${LANG_GERMAN} "Installiert das Lied 'Dead Smiling Pirates - I 18' (CC by-nc-nd 2.5)."
 LangString DESC_g2Section3 ${LANG_GERMAN} "Installiert das Lied 'Joshua Morin - On The Run' (CC by-sa 2.5)."
@@ -118,11 +117,4 @@ LangString DESC_s2_sub2_Section9 ${LANG_GERMAN} "Installiert das Lied 'Stay with
 
 LangString DESC_s2_sub3_Section1 ${LANG_GERMAN} "Installiert das Lied 'Lebendig und kräftig und schärfer'."
 LangString DESC_s2_sub3_Section2 ${LANG_GERMAN} "Installiert das Lied 'Mensch, wo bist du?'."
-
-LangString DESC_g3Section1 ${LANG_GERMAN} "Installiert das Motiv 'Orange' von Skar"
-LangString DESC_g3Section2 ${LANG_GERMAN} "Installiert das Motiv 'Streetlight' von Skar"
-LangString DESC_g3Section3 ${LANG_GERMAN} "Installiert das Motiv 'Vistar' von Skar"
-LangString DESC_g3Section4 ${LANG_GERMAN} "Installiert das Motiv 'BlueSensation v5.1' von Charis"
-LangString DESC_g3Section6 ${LANG_GERMAN} "Installiert das Motiv 'WiiStar' von MasterPhW"
-LangString DESC_g3Section7 ${LANG_GERMAN} "Installiert das Motiv 'iStar' von MezzoX"
-LangString DESC_g3Section5 ${LANG_GERMAN} "Installiert das Motiv 'WhiteSensation' von Charis"
+LangString DESC_s2_sub3_Section3 ${LANG_GERMAN} "Installiert das Lied 'Mensch, wo bist du? (Karaoke)'."

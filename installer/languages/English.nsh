@@ -15,7 +15,7 @@ LangString button_next ${LANG_ENGLISH} "Next >"
 LangString button_close ${LANG_ENGLISH} "Close"
 LangString update_information ${LANG_ENGLISH} "You can check if a new version of 'UltraStar Deluxe' is available. Thereto an internet connection will be established. If a new version is found, it can be installed afterwards."
 
-LangString delete_all ${LANG_ENGLISH} "Also delete Songs, Highscores and Covers ?"
+LangString delete_all ${LANG_ENGLISH} "Also delete Songs, Settings, Highscores and Covers ?"
 
 LangString update_check_older ${LANG_ENGLISH} "Your version $R0 is outdated. The new version $1 of UltraStar Deluxe is available. Do you want to update?"
 LangString update_check_equal ${LANG_ENGLISH} "Your currently installed version $R0 is up-to-date. No update needed."
@@ -54,6 +54,7 @@ LangString sm_uninstall ${LANG_ENGLISH} "Uninstall"
 LangString sm_website ${LANG_ENGLISH} "Website"
 LangString sm_license ${LANG_ENGLISH} "License"
 LangString sm_readme ${LANG_ENGLISH} "Readme"
+LangString sm_songs ${LANG_ENGLISH} "Songs"
 LangString sm_documentation ${LANG_ENGLISH} "Documentation"
 
 LangString sc_play ${LANG_ENGLISH} "Play"
@@ -66,14 +67,12 @@ LangString name_section2 ${LANG_ENGLISH} "Songs"
 LangString name_s2_sub1 ${LANG_ENGLISH} "Jonathan Coulton"
 LangString name_s2_sub2 ${LANG_ENGLISH} "Shearer"
 LangString name_s2_sub3 ${LANG_ENGLISH} "Wise Guys"
-LangString name_section3 ${LANG_ENGLISH} "Themes"
 
 LangString DESC_Section1 ${LANG_ENGLISH} "These are the basic files needed by UltraStar Deluxe"
 LangString DESC_Section2 ${LANG_ENGLISH} "You can choose which songs should be installed."
 LangString DESC_Section2_sub1 ${LANG_ENGLISH} "You can choose which Jonathan Coulton songs (CC by-nc 3.0) should be installed."
 LangString DESC_Section2_sub2 ${LANG_ENGLISH} "You can choose which Shearer songs (CC by-nc-sa 2.0 / 3.0) should be installed."
 LangString DESC_Section2_sub3 ${LANG_ENGLISH} "You can choose which Wise Guys songs should be installed."
-LangString DESC_Section3 ${LANG_ENGLISH} "You can choose which optional themes should be installed."
 
 LangString DESC_g2Section2 ${LANG_ENGLISH} "This will install the song 'Dead Smiling Pirates - I 18' (CC by-nc-nd 2.5)."
 LangString DESC_g2Section3 ${LANG_ENGLISH} "This will install the song 'Joshua Morin - On The Run' (CC by-sa 2.5)."
@@ -118,11 +117,7 @@ LangString DESC_s2_sub2_Section9 ${LANG_ENGLISH} "This will install the song 'St
 
 LangString DESC_s2_sub3_Section1 ${LANG_ENGLISH} "This will install the song 'Lebendig und kräftig und schärfer'."
 LangString DESC_s2_sub3_Section2 ${LANG_ENGLISH} "This will install the song 'Mensch, wo bist du?'."
+LangString DESC_s2_sub3_Section3 ${LANG_ENGLISH} "This will install the song 'Mensch, wo bist du? (Karaoke)'."
 
-LangString DESC_g3Section1 ${LANG_ENGLISH} "This will install the optional theme 'Orange' by Skar"
-LangString DESC_g3Section2 ${LANG_ENGLISH} "This will install the optional theme 'Streetlight' by Skar"
-LangString DESC_g3Section3 ${LANG_ENGLISH} "This will install the optional theme 'Vistar' by Skar"
-LangString DESC_g3Section4 ${LANG_ENGLISH} "This will install the optional theme 'BlueSensation v5.1' by Charis"
-LangString DESC_g3Section6 ${LANG_ENGLISH} "This will install the optional theme 'WiiStar' by MasterPhW"
-LangString DESC_g3Section7 ${LANG_ENGLISH} "This will install the optional theme 'iStar' by MezzoX"
-LangString DESC_g3Section5 ${LANG_ENGLISH} "This will install the optional theme 'WhiteSensation' by Charis"
+; Optional Themes
+; (not available)
