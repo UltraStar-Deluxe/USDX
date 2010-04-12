@@ -130,13 +130,12 @@ function DrawPlayerText(i, Text)
     Gl.Vertex(OSD[i].Right, OSD[i].Bottom);
     Gl.Vertex(OSD[i].Right, OSD[i].Top);
   Gl.End();
-
+  
   -- text
   Gl.Color(1, 0, 0, 1);
-  TextGl.Size(6);
+  TextGl.Size(18);
   TextGl.Style(1);
   TextGl.Italic(false);
-
   local PosX = (OSD[i].Left + OSD[i].Right) / 2;
   PosX = PosX - TextGl.Width(Text) / 2;
 

@@ -21,7 +21,7 @@ function Sing()
   Scores = ScreenSing.GetScores();
 
   for i = 1, #Scores do
-    if (Scores[i] >= 5000) then
+    if (Scores[i] >= 100) then
       ScreenSing.Finish();
       break;
     end
@@ -34,7 +34,7 @@ function Calculate_Winner()
   Scores = Scores or ScreenSing.GetScores();
   local Ranking = {};
   for i = 1, #Scores do
-    if Scores[i] >= 5000 then
+    if Scores[i] >= 100 then
       Ranking[i] = 1
     else
       Ranking[i] = #Scores

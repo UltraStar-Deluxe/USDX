@@ -197,18 +197,20 @@ begin
 
   for I := 0 to High(R) do
   begin
-    lua_pushInteger(L, I);
+    lua_pushInteger(L, (I+1));
     lua_gettable(L, 1);
 
     R[I].Rank := Length(R);
+    R[I].Team := I;
     if (lua_isnumber(L, -1)) then
     begin
       Rank := lua_toInteger(L, -1);
       if (Rank >= 1) and (Rank <= Length(R)) then
-        R[I].Rank := Rank;
+        R[I].Rank := Rank
     end;
 
     lua_pop(L, 1);
+    
   end;
 
   // pop table
