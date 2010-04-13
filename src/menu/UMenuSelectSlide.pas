@@ -405,6 +405,9 @@ procedure TSelectSlide.GenLines;
 var
   maxlength: real;
   I:         integer;
+const
+  MinItemSpacing = 5;
+  MinSideSpacing = 24;
 begin
   SetFontStyle(0{Text.Style});
   SetFontSize(Text.Size);
@@ -420,7 +423,7 @@ begin
   if (oneItemOnly = false) then
   begin
     //show all items
-    Lines := floor((TextureSBG.W-40) / (maxlength+7));
+    Lines := floor((TextureSBG.W - MinSideSpacing * 2) / (maxlength + MinItemSpacing));
     if (Lines > Length(TextOptT)) then
       Lines := Length(TextOptT);
 
@@ -437,14 +440,12 @@ begin
   for I := Low(TextOpt) to High(TextOpt) do
     TextOpt[I].Free;
     
-  setLength (TextOpt, Lines);
+  SetLength (TextOpt, Lines);
 
   for I := Low(TextOpt) to High(TextOpt) do
   begin
     TextOpt[I] := TText.Create;
     TextOpt[I].Size := Text.Size;
-    //TextOpt[I].Align := 1;
-    TextOpt[I].Align := 0;
     TextOpt[I].Visible := true;
 
     TextOpt[I].ColR := STDColR;
@@ -452,23 +453,24 @@ begin
     TextOpt[I].ColB := STDColB;
     TextOpt[I].Int := STDInt;
 
-    //Generate Positions
-    //TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * (I + 0.5);
-    if (I <> High(TextOpt)) or (High(TextOpt) = 0) or (Length(TextOptT) = Lines) then
-      TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W  / Lines) * I
-    else
-      TextOpt[I].X := TextureSBG.X + TextureSBG.W - maxlength;
-
+    // generate positions
     TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H - Text.Size) / 2;
 
-    //Better Look with 2 Options
-    if (Lines = 2) and (Length(TextOptT) = 2) then
-      TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(TextOptT[1])) * I;
-
-    if (Lines = 1) then
+    // better look with 2 options and a single option
+    if (Lines = 2) then
     begin
-      TextOpt[I].Align := 1; //center text
+      TextOpt[I].X := TextureSBG.X + 20 + (TextureSBG.W -40 - glTextWidth(TextOptT[1])) * I;
+      TextOpt[I].Align := 0;
+    end
+    else if (Lines = 1) then
+    begin
       TextOpt[I].X := TextureSBG.X + (TextureSBG.W / 2);
+      TextOpt[I].Align := 1; //center text
+    end
+    else
+    begin
+      TextOpt[I].X := TextureSBG.X + TextureSBG.W / 2 + (TextureSBG.W - MinSideSpacing*2) * (I / Lines - 0.5);
+      TextOpt[I].Align := 0;
     end;
   end;
 end;
