@@ -45,6 +45,8 @@ type
   TSelectSlide = class
     private
       SelectBool:       boolean;
+
+      function AdjustOptionTextToFit(OptText: UTF8String): UTF8String;
     public
       // objects
       Text:             TText; // Main text describing option
@@ -148,6 +150,8 @@ type
 const
   ArrowAlphaOptionsLeft = 1;
   ArrowAlphaNoOptionsLeft = 0;
+  MinItemSpacing = 5;
+  MinSideSpacing = 24;
 
 implementation
 
@@ -286,7 +290,7 @@ begin
 
       for SO := Low(TextOpt) to High(TextOpt) do
       begin
-        TextOpt[SO].Text := TextOptT[SO];
+        TextOpt[SO].Text := AdjustOptionTextToFit(TextOptT[SO]);
       end;
 
       DoSelection(0);
@@ -302,7 +306,7 @@ begin
 
       for SO := High(TextOpt) downto Low(TextOpt) do
       begin
-        TextOpt[SO].Text := TextOptT[High(TextOptT) - (Lines - SO - 1)];
+        TextOpt[SO].Text := AdjustOptionTextToFit(TextOptT[High(TextOptT) - (Lines - SO - 1)]);
       end;
       DoSelection(Lines - 1);
     end
@@ -322,7 +326,7 @@ begin
         //Change texts
       	for SO := Low(TextOpt) to High(TextOpt) do
       	begin
-      	  TextOpt[SO].Text := TextOptT[SO];
+      	  TextOpt[SO].Text := AdjustOptionTextToFit(TextOptT[SO]);
       	end;
 
       	DoSelection(Value);
@@ -336,10 +340,10 @@ begin
       	//Change texts
        	for SO := High(TextOpt) downto Low(TextOpt) do
        	begin
-	  TextOpt[SO].Text := TextOptT[High(TextOptT) - (Lines - SO - 1)];
+	        TextOpt[SO].Text := AdjustOptionTextToFit(TextOptT[High(TextOptT) - (Lines - SO - 1)]);
       	end;
 
-    	DoSelection (HalfL);
+      	DoSelection (HalfL);
       end
 
       else
@@ -347,11 +351,45 @@ begin
       	//Change Texts
        	for SO := Low(TextOpt) to High(TextOpt) do
       	begin
-	  TextOpt[SO].Text := TextOptT[Value - HalfL + SO];
+	        TextOpt[SO].Text := AdjustOptionTextToFit(TextOptT[Value - HalfL + SO]);
       	end;
 
         DoSelection(HalfL);
       end;
+    end;
+  end;
+end;
+
+{ cuts the text if it is too long to fit on the selectbg }
+function TSelectSlide.AdjustOptionTextToFit(OptText: UTF8String): UTF8String;
+  var
+    MaxLen: real;
+    Len: integer;
+begin
+  Result := OptText;
+  
+  if (TextureSBG.W > 0) then
+  begin
+    MaxLen := TextureSBG.W - MinSideSpacing * 2;
+
+    SetFontStyle(0);
+    SetFontSize(Text.Size);
+
+    // we will remove min. 2 letters by default and replace them w/ points
+    // if the whole text don't fit
+    Len := Length(OptText) - 1;
+
+    while (glTextWidth(Result) > MaxLen) and (Len > 0) do
+    begin
+      { ensure that we only cut at full letters }
+      { this code may be a problem if there is a text that
+        consists of many multi byte characters and only few
+        one byte characters }
+      repeat
+        Dec(Len);
+      until (byte(OptText[Len]) and 128) = 0;
+      
+      Result := copy(OptText, 1, Len) + '..';
     end;
   end;
 end;
@@ -405,9 +443,6 @@ procedure TSelectSlide.GenLines;
 var
   maxlength: real;
   I:         integer;
-const
-  MinItemSpacing = 5;
-  MinSideSpacing = 24;
 begin
   SetFontStyle(0{Text.Style});
   SetFontSize(Text.Size);
@@ -447,6 +482,7 @@ begin
     TextOpt[I] := TText.Create;
     TextOpt[I].Size := Text.Size;
     TextOpt[I].Visible := true;
+    TextOpt[I].Style := 0;
 
     TextOpt[I].ColR := STDColR;
     TextOpt[I].ColG := STDColG;
