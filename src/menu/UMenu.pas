@@ -1278,8 +1278,8 @@ begin
     ThemeSelectS.SBGDColR, ThemeSelectS.SBGDColG, ThemeSelectS.SBGDColB, ThemeSelectS.SBGDInt,
     ThemeSelectS.STColR, ThemeSelectS.STColG, ThemeSelectS.STColB, ThemeSelectS.STInt,
     ThemeSelectS.STDColR, ThemeSelectS.STDColG, ThemeSelectS.STDColB, ThemeSelectS.STDInt,
-    Skin.GetTextureFileName(ThemeSelectS.Tex), TEXTURE_TYPE_COLORIZED,
-    Skin.GetTextureFileName(ThemeSelectS.TexSBG), TEXTURE_TYPE_COLORIZED,
+    Skin.GetTextureFileName(ThemeSelectS.Tex), ThemeSelectS.Typ,
+    Skin.GetTextureFileName(ThemeSelectS.TexSBG), ThemeSelectS.TypSBG,
     ThemeSelectS.Text, Data);
   for SO := 0 to High(Values) do
     AddSelectSlideOption(Values[SO]);

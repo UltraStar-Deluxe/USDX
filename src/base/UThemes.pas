@@ -170,7 +170,9 @@ type
 
   TThemeSelectSlide = record
     Tex:    string;
+    Typ:    TTextureType;
     TexSBG: string;
+    TypSBG: TTextureType;
     X:      integer;
     Y:      integer;
     W:      integer;
@@ -1790,7 +1792,9 @@ begin
   ThemeSelectS.Text := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
 
   ThemeSelectS.Tex := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'Tex', '');
+  ThemeSelectS.Typ := ParseTextureType(ThemeIni.ReadString(Name, 'Type', ''), TEXTURE_TYPE_PLAIN);
   ThemeSelectS.TexSBG := {Skin.SkinPath + }ThemeIni.ReadString(Name, 'TexSBG', '');
+  ThemeSelectS.TypSBG := ParseTextureType(ThemeIni.ReadString(Name, 'TypeSBG', ''), TEXTURE_TYPE_PLAIN);
 
   ThemeSelectS.X := ThemeIni.ReadInteger(Name, 'X', 0);
   ThemeSelectS.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
