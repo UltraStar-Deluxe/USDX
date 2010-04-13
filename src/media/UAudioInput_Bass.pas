@@ -46,6 +46,7 @@ uses
   UIni,
   ULog,
   UAudioCore_Bass,
+  UTextEncoding,
   UCommon,    // (Note: for MakeLong on non-windows platforms)
   {$IFDEF MSWINDOWS}
   Windows,    // (Note: for MakeLong)
@@ -352,7 +353,7 @@ end;
 
 function TAudioInput_Bass.EnumDevices(): boolean;
 var
-  Descr:      PChar;
+  Descr:      UTF8String;
   SourceName: PChar;
   Flags:      integer;
   BassDeviceID: integer;
@@ -389,9 +390,12 @@ begin
       BassDevice := TBassInputDevice.Create();
       AudioInputProcessor.DeviceList[DeviceIndex] := BassDevice;
 
-      Descr := DeviceInfo.name;
-
       BassDevice.BassDeviceID := BassDeviceID;
+
+      // bass device name seems to be encoded w/ local encoding
+      // to-do : check if this is correct
+      Descr := DecodeStringUTF8(DeviceInfo.name, encLocale);
+
       BassDevice.Name := UnifyDeviceName(Descr, DeviceIndex);
 
       // zero info-struct as some fields might not be set (e.g. freq is just set on Vista and MacOSX)

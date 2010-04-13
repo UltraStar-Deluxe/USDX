@@ -102,7 +102,7 @@ type
   TAudioInputDevice = class
     public
       CfgIndex:      integer;   // index of this device in Ini.InputDeviceConfig
-      Name:          string;    // soundcard name
+      Name:          UTF8String;    // soundcard name
       Source:        array of TAudioInputSource; // soundcard input-sources
       SourceRestore: integer;  // source-index that will be selected after capturing (-1: not detected)
       MicSource:     integer;  // source-index of mic (-1: none detected)
@@ -143,7 +143,7 @@ type
     private
       Started: boolean;
     protected
-      function UnifyDeviceName(const name: string; deviceIndex: integer): string;
+      function UnifyDeviceName(const name: UTF8String; deviceIndex: integer): UTF8String;
     public
       function GetName: String;           virtual; abstract;
       function InitializeRecord: boolean; virtual; abstract;
@@ -741,7 +741,7 @@ begin
   Started := false;
 end;
 
-function TAudioInputBase.UnifyDeviceName(const name: string; deviceIndex: integer): string;
+function TAudioInputBase.UnifyDeviceName(const name: UTF8String; deviceIndex: integer): UTF8String;
 var
   count: integer; // count of devices with this name
 

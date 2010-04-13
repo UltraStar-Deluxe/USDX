@@ -271,7 +271,7 @@ var
   i:            integer;
   paApiIndex:   TPaHostApiIndex;
   paApiInfo:    PPaHostApiInfo;
-  deviceName:   string;
+  deviceName:   UTF8String;
   deviceIndex:  TPaDeviceIndex;
   deviceInfo:   PPaDeviceInfo;
   channelCnt:   integer;
