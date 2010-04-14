@@ -721,6 +721,7 @@ var
   SearchResult: TSearchRec;
   ThemeIni:     TMemIniFile;
   ThemeName:    string;
+  ThemeVersion: string;
   I: integer;
   Iter: IFileIterator;
   FileInfo: TFileInfo;
@@ -737,9 +738,17 @@ begin
     Log.LogStatus('Found Theme: ' + FileInfo.Name.ToNative, 'Theme');
 
     //Read Themename from Theme
-    ThemeIni := TMemIniFile.Create(FileInfo.Name.ToNative);
+    ThemeIni := TMemIniFile.Create(ThemePath.Append(FileInfo.Name).ToNative);
     ThemeName := UpperCase(ThemeIni.ReadString('Theme','Name', FileInfo.Name.SetExtension('').ToNative));
+    ThemeVersion := Trim(UpperCase(ThemeIni.ReadString('Theme','US_Version', 'no version tag')));
     ThemeIni.Free;
+
+    // don't load theme with wrong version tag
+    if ThemeVersion <> 'USD 110' then
+    begin
+      Log.LogWarn('Wrong Version (' + ThemeVersion + ') in Theme : ' + ThemeName, 'Theme');
+      Continue;
+    end;
 
     //Search for Skins for this Theme
     for I := Low(Skin.Skin) to High(Skin.Skin) do
@@ -767,6 +776,12 @@ begin
   Skin.onThemeChange;
 
   SkinNo := GetArrayIndex(ISkin, IniFile.ReadString('Themes',    'Skin',   ISkin[0]));
+
+  { there may be a not existing skin in the ini file
+    e.g. due to manual edit or corrupted file.
+    in this case we load the first Skin }
+  if SkinNo = -1 then
+    SkinNo := 0;
 end;
 
 procedure TIni.LoadScreenModes(IniFile: TCustomIniFile);
