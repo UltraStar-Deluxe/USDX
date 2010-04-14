@@ -90,7 +90,6 @@ type
     FileLineNo  : integer;  // line, which is read last, for error reporting
 
     function DecodeFilename(Filename: RawByteString): IPath;
-    function Solmizate(Note: integer; Type_: integer): string;
     procedure ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
 
@@ -1135,53 +1134,8 @@ begin
     Result := -1;
 end;
 
-function TSong.Solmizate(Note: integer; Type_: integer): string;
-begin
-  case (Type_) of
-    1:  // european
-      begin
-        case (Note mod 12) of
-          0..1:   Result := ' do ';
-          2..3:   Result := ' re ';
-          4:      Result := ' mi ';
-          5..6:   Result := ' fa ';
-          7..8:   Result := ' sol ';
-          9..10:  Result := ' la ';
-          11:     Result := ' si ';
-        end;
-      end;
-    2:  // japanese
-      begin
-        case (Note mod 12) of
-          0..1:   Result := ' do ';
-          2..3:   Result := ' re ';
-          4:      Result := ' mi ';
-          5..6:   Result := ' fa ';
-          7..8:   Result := ' so ';
-          9..10:  Result := ' la ';
-          11:     Result := ' shi ';
-        end;
-      end;
-    3:  // american
-      begin
-        case (Note mod 12) of
-          0..1:   Result := ' do ';
-          2..3:   Result := ' re ';
-          4:      Result := ' mi ';
-          5..6:   Result := ' fa ';
-          7..8:   Result := ' sol ';
-          9..10:  Result := ' la ';
-          11:     Result := ' ti ';
-        end;
-      end;
-  end; // case
-end;
-
 procedure TSong.ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
 begin
-  if (Ini.Solmization <> 0) then
-    LyricS := Solmizate(NoteP, Ini.Solmization);
-
   with Lines[LineNumber].Line[Lines[LineNumber].High] do
   begin
     SetLength(Note, Length(Note) + 1);

@@ -134,7 +134,6 @@ type
       // Lyrics
       LyricsFont:     integer;
       LyricsEffect:   integer;
-      Solmization:    integer;
       NoteLines:      integer;
 
       // Themes
@@ -233,7 +232,6 @@ const
 
   ILyricsFont:    array[0..2] of UTF8String = ('Plain', 'OLine1', 'OLine2');
   ILyricsEffect:  array[0..4] of UTF8String = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
-  ISolmization:   array[0..3] of UTF8String = ('Off', 'Euro', 'Jap', 'American');
   INoteLines:     array[0..1] of UTF8String = ('Off', 'On');
 
   IColor:         array[0..8] of UTF8String = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
@@ -298,7 +296,6 @@ var
 
   ILyricsFontTranslated:       array[0..2] of UTF8String = ('Plain', 'OLine1', 'OLine2');
   ILyricsEffectTranslated:     array[0..4] of UTF8String = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
-  ISolmizationTranslated:      array[0..3] of UTF8String = ('Off', 'Euro', 'Jap', 'American');
   INoteLinesTranslated:        array[0..1] of UTF8String = ('Off', 'On');
 
   IColorTranslated:            array[0..8] of UTF8String = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
@@ -419,11 +416,6 @@ begin
   ILyricsEffectTranslated[2]          := ULanguage.Language.Translate('OPTION_VALUE_SLIDE');
   ILyricsEffectTranslated[3]          := ULanguage.Language.Translate('OPTION_VALUE_BALL');
   ILyricsEffectTranslated[4]          := ULanguage.Language.Translate('OPTION_VALUE_SHIFT');
-
-  ISolmizationTranslated[0]           := ULanguage.Language.Translate('OPTION_VALUE_OFF');
-  ISolmizationTranslated[1]           := ULanguage.Language.Translate('OPTION_VALUE_EURO');
-  ISolmizationTranslated[2]           := ULanguage.Language.Translate('OPTION_VALUE_JAPAN');
-  ISolmizationTranslated[3]           := ULanguage.Language.Translate('OPTION_VALUE_AMERICAN');
 
   INoteLinesTranslated[0]             := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   INoteLinesTranslated[1]             := ULanguage.Language.Translate('OPTION_VALUE_ON');
@@ -981,10 +973,7 @@ begin
   LyricsFont := GetArrayIndex(ILyricsFont, IniFile.ReadString('Lyrics', 'LyricsFont', ILyricsFont[0]));
 
   // Lyrics Effect
-  LyricsEffect := GetArrayIndex(ILyricsEffect, IniFile.ReadString('Lyrics', 'LyricsEffect', ILyricsEffect[2]));
-
-  // Solmization
-  Solmization := GetArrayIndex(ISolmization, IniFile.ReadString('Lyrics', 'Solmization', ISolmization[0]));
+  LyricsEffect := GetArrayIndex(ILyricsEffect, IniFile.ReadString('Lyrics', 'LyricsEffect', ILyricsEffect[4]));
 
   // NoteLines
   NoteLines := GetArrayIndex(INoteLines, IniFile.ReadString('Lyrics', 'NoteLines', INoteLines[1]));
@@ -1013,7 +1002,7 @@ begin
 {**
  * Background music
  *}
-  BackgroundMusicOption := GetArrayIndex(IBackgroundMusic, IniFile.ReadString('Sound', 'BackgroundMusic', 'Off'));
+  BackgroundMusicOption := GetArrayIndex(IBackgroundMusic, IniFile.ReadString('Sound', 'BackgroundMusic', 'On'));
 
   // EffectSing
   EffectSing := GetArrayIndex(IEffectSing, IniFile.ReadString('Advanced', 'EffectSing', 'On'));
@@ -1135,9 +1124,6 @@ begin
 
   // Lyrics Effect
   IniFile.WriteString('Lyrics', 'LyricsEffect', ILyricsEffect[LyricsEffect]);
-
-  // Solmization
-  IniFile.WriteString('Lyrics', 'Solmization', ISolmization[Solmization]);
 
   // NoteLines
   IniFile.WriteString('Lyrics', 'NoteLines', INoteLines[NoteLines]);
