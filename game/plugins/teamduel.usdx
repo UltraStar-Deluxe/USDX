@@ -32,6 +32,9 @@ end
 -- we just hook ScreenSing.SongLoaded to prepare the mic changes here
 function BeforeSing()
   hSongLoaded = Usdx.Hook('ScreenSing.SongLoaded', 'PrepareChanges');
+
+  -- execute default action (e.g. set correct singing playercount)
+  return true
 end;
 
 -- adds a new SentenceChange at Line to the PlayerChanges array
@@ -130,7 +133,7 @@ function DrawPlayerText(i, Text)
     Gl.Vertex(OSD[i].Right, OSD[i].Bottom);
     Gl.Vertex(OSD[i].Right, OSD[i].Top);
   Gl.End();
-  
+
   -- text
   Gl.Color(1, 0, 0, 1);
   TextGl.Size(18);
