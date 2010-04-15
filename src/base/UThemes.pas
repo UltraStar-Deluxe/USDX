@@ -721,6 +721,13 @@ type
     CatText:    UTF8String;
   end;
 
+  TThemeEntry = record
+    Name: string;
+    Filename: IPath;
+    DefaultSkin: integer;
+    Creator: string;
+  end;
+
   TTheme = class
   private
     {$IFDEF THEMESAVE}
@@ -731,8 +738,9 @@ type
 
     LastThemeBasic:   TThemeBasic;
     procedure CreateThemeObjects();
-    
+    procedure LoadHeader(FileName: IPath);
   public
+    Themes:           array of TThemeEntry;
     Loading:          TThemeLoading;
     Main:             TThemeMain;
     Name:             TThemeName;
@@ -774,9 +782,11 @@ type
 
     ILevel: array[0..2] of UTF8String;
 
-    constructor Create(const FileName: IPath); overload; // Initialize theme system
-    constructor Create(const FileName: IPath; Color: integer); overload; // Initialize theme system with color
-    function LoadTheme(const FileName: IPath; sColor: integer): boolean; // Load some theme settings from file
+    constructor Create;
+
+    procedure LoadList;
+
+    function LoadTheme(ThemeNum: integer; sColor: integer): boolean; // Load some theme settings from file
 
     procedure LoadColors;
 
@@ -829,9 +839,12 @@ uses
   ULanguage,
   USkins,
   UIni,
+  UPathUtils,
+  UFileSystem,
   gl,
   glext,
-  math;
+  math,
+  StrUtils;
 
 //-----------
 //Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
@@ -856,12 +869,7 @@ begin
   glColor4f(Color.R, Color.G, Color.B, Min(Color.A, Alpha));
 end;
 
-constructor TTheme.Create(const FileName: IPath);
-begin
-  Create(FileName, 0);
-end;
-
-constructor TTheme.Create(const FileName: IPath; Color: integer);
+constructor TTheme.Create;
 begin
   inherited Create();
 
@@ -901,11 +909,83 @@ begin
   StatMain :=   TThemeStatMain.Create;
   StatDetail := TThemeStatDetail.Create;
 
-  LoadTheme(FileName, Color);
-
+  //LoadTheme(FileName, Color);
+  LoadList;
 end;
 
-function TTheme.LoadTheme(const FileName: IPath; sColor: integer): boolean;
+procedure TTheme.LoadHeader(FileName: IPath);
+  var
+    Entry: TThemeEntry;
+    Ini: TMemIniFile;
+    SkinName: string;
+    SkinsFound: boolean;
+    ThemeVersion: string;
+    I: integer;
+    Len: integer;
+    Skins: TUTF8StringDynArray;
+begin
+  Entry.Filename := ThemePath.Append(FileName);
+  //read info from theme header
+  Ini := TMemIniFile.Create(Entry.Filename.ToNative);
+
+  Entry.Name := Ini.ReadString('Theme', 'Name', FileName.SetExtension('').ToNative);
+  ThemeVersion := Trim(UpperCase(Ini.ReadString('Theme', 'US_Version', 'no version tag')));
+  Entry.Creator := Ini.ReadString('Theme', 'Creator', 'Unknown');
+  SkinName := Ini.ReadString('Theme', 'DefaultSkin', FileName.SetExtension('').ToNative);
+
+  Ini.Free;
+
+  // don't load theme with wrong version tag
+  if ThemeVersion <> 'USD 110' then
+  begin
+    Log.LogWarn('Wrong Version (' + ThemeVersion + ') in Theme : ' + Entry.Name, 'Theme.LoadHeader');
+  end
+  else
+  begin
+    //Search for Skins for this Theme
+    SkinsFound := false;
+    for I := Low(Skin.Skin) to High(Skin.Skin) do
+    begin
+      if (CompareText(Skin.Skin[I].Theme, Entry.Name) = 0) then
+      begin
+        SkinsFound := true;
+        break;
+      end;
+    end;
+
+    if SkinsFound then
+    begin
+      { found a valid Theme }
+      // set correct default skin
+      Skin.GetSkinsByTheme(Entry.Name, Skins);
+      Entry.DefaultSkin := max(0, GetArrayIndex(Skins, SkinName, true));
+  
+      Len := Length(Themes);
+      SetLength(Themes, Len + 1);
+      SetLength(ITheme, Len + 1);
+      Themes[Len] := Entry;
+      ITheme[Len] := Entry.Name;
+    end;
+  end;
+end;
+
+procedure TTheme.LoadList;
+  var
+    Iter: IFileIterator;
+    FileInfo: TFileInfo;
+begin
+  Log.LogStatus('Searching for Theme : ' + ThemePath.ToNative + '*.ini', 'Theme.LoadList');
+
+  Iter := FileSystem.FileFind(ThemePath.Append('*.ini'), 0);
+  while (Iter.HasNext) do
+  begin
+    FileInfo := Iter.Next;
+    Log.LogStatus('Found Theme: ' + FileInfo.Name.ToNative, 'Theme.LoadList');
+    LoadHeader(Fileinfo.Name);
+  end;
+end;
+
+function TTheme.LoadTheme(ThemeNum: integer; sColor: integer): boolean;
 var
   I:    integer;
 begin
@@ -913,21 +993,21 @@ begin
 
   CreateThemeObjects();
 
-  Log.LogStatus('Loading: '+ FileName.ToNative, 'TTheme.LoadTheme');
+  Log.LogStatus('Loading: '+ Themes[ThemeNum].FileName.ToNative, 'TTheme.LoadTheme');
 
-  if not FileName.IsFile() then
+  if not Themes[ThemeNum].FileName.IsFile() then
   begin
-    Log.LogError('Theme does not exist ('+ FileName.ToNative +')', 'TTheme.LoadTheme');
+    Log.LogError('Theme does not exist ('+ Themes[ThemeNum].FileName.ToNative +')', 'TTheme.LoadTheme');
   end;
 
-  if FileName.IsFile() then
+  if Themes[ThemeNum].FileName.IsFile() then
   begin
     Result := true;
 
     {$IFDEF THEMESAVE}
-    ThemeIni := TIniFile.Create(FileName.ToNative);
+    ThemeIni := TIniFile.Create(Themes[ThemeNum].FileName.ToNative);
     {$ELSE}
-    ThemeIni := TMemIniFile.Create(FileName.ToNative);
+    ThemeIni := TMemIniFile.Create(Themes[ThemeNum].FileName.ToNative);
     {$ENDIF}
 
     if ThemeIni.ReadString('Theme', 'Name', '') <> '' then

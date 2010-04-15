@@ -45,6 +45,7 @@ uses
 
 type
   TStringDynArray = array of string;
+  TUTF8StringDynArray = array of UTF8String;
 
 const
   SepWhitespace = [#9, #10, #13, ' ']; // tab, lf, cr, space
@@ -87,6 +88,8 @@ procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
 
 function GetAlignedMem(Size: cardinal; Alignment: integer): pointer;
 procedure FreeAlignedMem(P: pointer);
+
+function GetArrayIndex(const SearchArray: array of UTF8String; Value: string; CaseInsensitiv: boolean = false): integer;
 
 
 implementation
@@ -512,6 +515,28 @@ begin
   if (List.Count >= 2) then
     _MergeSort(List, TempList, List, 0, List.Count, CompareFunc);
   TempList.Free;
+end;
+
+(**
+ * Returns the index of Value in SearchArray
+ * or -1 if Value is not in SearchArray.
+ *)
+function GetArrayIndex(const SearchArray: array of UTF8String; Value: string;
+    CaseInsensitiv: boolean = false): integer;
+var
+  i: integer;
+begin
+  Result := -1;
+
+  for i := 0 to High(SearchArray) do
+  begin
+    if (SearchArray[i] = Value) or
+       (CaseInsensitiv and (CompareText(SearchArray[i], Value) = 0)) then
+    begin
+      Result := i;
+      Break;
+    end;
+  end;
 end;
 
 

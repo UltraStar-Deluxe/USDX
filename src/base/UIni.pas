@@ -37,6 +37,7 @@ uses
   Classes,
   IniFiles,
   SysUtils,
+  UCommon,
   ULog,
   UTextEncoding,
   UFilesystem,
@@ -75,7 +76,6 @@ type
     private
       function ExtractKeyIndex(const Key, Prefix, Suffix: string): integer;
       function GetMaxKeyIndex(Keys: TStringList; const Prefix, Suffix: string): integer;
-      function GetArrayIndex(const SearchArray: array of UTF8String; Value: string; CaseInsensitiv: boolean = false): integer;
       function ReadArrayIndex(const SearchArray: array of UTF8String; IniFile: TCustomIniFile;
           IniSection: string; IniProperty: string; Default: integer): integer;
 
@@ -166,10 +166,10 @@ type
 
 var
   Ini:         TIni;
-  IResolution: array of UTF8String;
-  ILanguage:   array of UTF8String;
-  ITheme:      array of UTF8String;
-  ISkin:       array of UTF8String;
+  IResolution: TUTF8StringDynArray;
+  ILanguage:   TUTF8StringDynArray;
+  ITheme:      TUTF8StringDynArray;
+  ISkin:       TUTF8StringDynArray;
 
 const
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
@@ -327,6 +327,7 @@ uses
   UMain,
   URecord,
   USkins,
+  UThemes,
   UPathUtils,
   UUnicodeUtils;
 
@@ -567,28 +568,6 @@ begin
 end;
 
 (**
- * Returns the index of Value in SearchArray
- * or -1 if Value is not in SearchArray.
- *)
-function TIni.GetArrayIndex(const SearchArray: array of UTF8String; Value: string;
-    CaseInsensitiv: boolean = false): integer;
-var
-  i: integer;
-begin
-  Result := -1;
-
-  for i := 0 to High(SearchArray) do
-  begin
-    if (SearchArray[i] = Value) or
-       (CaseInsensitiv and (UpperCase(SearchArray[i]) = UpperCase(Value))) then
-    begin
-      Result := i;
-      Break;
-    end;
-  end;
-end;
-
-(**
  * Reads the property IniSeaction:IniProperty from IniFile and
  * finds its corresponding index in SearchArray.
  * If SearchArray does not contain the property value, the default value is
@@ -717,51 +696,7 @@ begin
 end;
 
 procedure TIni.LoadThemes(IniFile: TCustomIniFile);
-var
-  SearchResult: TSearchRec;
-  ThemeIni:     TMemIniFile;
-  ThemeName:    string;
-  ThemeVersion: string;
-  I: integer;
-  Iter: IFileIterator;
-  FileInfo: TFileInfo;
 begin
-  // Theme
-  SetLength(ITheme, 0);
-  Log.LogStatus('Searching for Theme : ' + ThemePath.ToNative + '*.ini', 'Theme');
-
-
-  Iter := FileSystem.FileFind(ThemePath.Append('*.ini'), 0);
-  while (Iter.HasNext) do
-  begin
-    FileInfo := Iter.Next;
-    Log.LogStatus('Found Theme: ' + FileInfo.Name.ToNative, 'Theme');
-
-    //Read Themename from Theme
-    ThemeIni := TMemIniFile.Create(ThemePath.Append(FileInfo.Name).ToNative);
-    ThemeName := UpperCase(ThemeIni.ReadString('Theme','Name', FileInfo.Name.SetExtension('').ToNative));
-    ThemeVersion := Trim(UpperCase(ThemeIni.ReadString('Theme','US_Version', 'no version tag')));
-    ThemeIni.Free;
-
-    // don't load theme with wrong version tag
-    if ThemeVersion <> 'USD 110' then
-    begin
-      Log.LogWarn('Wrong Version (' + ThemeVersion + ') in Theme : ' + ThemeName, 'Theme');
-      Continue;
-    end;
-
-    //Search for Skins for this Theme
-    for I := Low(Skin.Skin) to High(Skin.Skin) do
-    begin
-      if UpperCase(Skin.Skin[I].Theme) = ThemeName then
-      begin
-        SetLength(ITheme, Length(ITheme)+1);
-        ITheme[High(ITheme)] := FileInfo.Name.SetExtension('').ToNative;
-        break;
-      end;
-    end;
-  end;
-
   // No Theme Found
   if (Length(ITheme) = 0) then
   begin
@@ -775,13 +710,16 @@ begin
   // Skin
   Skin.onThemeChange;
 
-  SkinNo := GetArrayIndex(ISkin, IniFile.ReadString('Themes',    'Skin',   ISkin[0]));
+  SkinNo := GetArrayIndex(ISkin, IniFile.ReadString('Themes',    'Skin',   ISkin[UThemes.Theme.Themes[Theme].DefaultSkin]));
 
   { there may be a not existing skin in the ini file
     e.g. due to manual edit or corrupted file.
     in this case we load the first Skin }
   if SkinNo = -1 then
     SkinNo := 0;
+
+  // Color
+  Color := GetArrayIndex(IColor, IniFile.ReadString('Themes',    'Color', IColor[Skin.GetDefaultColor(SkinNo)]));
 end;
 
 procedure TIni.LoadScreenModes(IniFile: TCustomIniFile);
@@ -994,9 +932,6 @@ begin
   NoteLines := GetArrayIndex(INoteLines, IniFile.ReadString('Lyrics', 'NoteLines', INoteLines[1]));
 
   LoadThemes(IniFile);
-
-  // Color
-  Color := GetArrayIndex(IColor, IniFile.ReadString('Themes',    'Color',   IColor[0]));
 
   LoadInputDeviceCfg(IniFile);
 

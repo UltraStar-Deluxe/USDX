@@ -137,6 +137,15 @@ begin
   begin
     Skin.OnThemeChange;
     UpdateSelectSlideOptions(Theme.OptionsThemes.SelectSkin, SkinSelect, ISkin, Ini.SkinNo);
+
+    // set skin to themes default skin
+    Ini.SkinNo := Theme.Themes[Ini.Theme].DefaultSkin;
+  end;
+
+  { set skins default color }
+  if (SelInteraction = 0) or (SelInteraction = 1) then
+  begin
+    Ini.Color := Skin.GetDefaultColor(Ini.SkinNo);
   end;
 
   ReloadTheme();
@@ -151,6 +160,15 @@ begin
   begin
     Skin.OnThemeChange;
     UpdateSelectSlideOptions (Theme.OptionsThemes.SelectSkin, SkinSelect, ISkin, Ini.SkinNo);
+
+    // set skin to themes default skin
+    Ini.SkinNo := Theme.Themes[Ini.Theme].DefaultSkin;
+  end;
+
+  { set skins default color }
+  if (SelInteraction = 0) or (SelInteraction = 1) then
+  begin
+    Ini.Color := Skin.GetDefaultColor(Ini.SkinNo);
   end;
 
   ReloadTheme();
@@ -188,7 +206,7 @@ end;
 
 procedure TScreenOptionsThemes.ReloadTheme;
 begin
-  Theme.LoadTheme(ThemePath.Append(ITheme[Ini.Theme] + '.ini'), Ini.Color);
+  Theme.LoadTheme(Ini.Theme, Ini.Color);
 
   ScreenOptionsThemes := TScreenOptionsThemes.create();
   ScreenOptionsThemes.onshow;

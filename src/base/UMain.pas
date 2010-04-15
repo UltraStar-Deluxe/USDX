@@ -171,6 +171,12 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Skin List', 1);
 
+    Log.BenchmarkStart(1);
+    Log.LogStatus('Loading Theme List', 'Initialization');
+    Theme := TTheme.Create;
+    Log.BenchmarkEnd(1);
+    Log.LogBenchmark('Loading Theme List', 1);
+
     // Ini + Paths
     Log.BenchmarkStart(1);
     Log.LogStatus('Load Ini', 'Initialization');
@@ -196,10 +202,10 @@ begin
 
     // Theme
     Log.BenchmarkStart(1);
-    Log.LogStatus('Load Themes', 'Initialization');
-    Theme := TTheme.Create(ThemePath.Append(ITheme[Ini.Theme] + '.ini'), Ini.Color);
+    Log.LogStatus('Load Theme', 'Initialization');
+    Theme.LoadTheme(Ini.Theme, Ini.Color);
     Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Themes', 1);
+    Log.LogBenchmark('Loading Theme', 1);
 
     // Covers Cache
     Log.BenchmarkStart(1);

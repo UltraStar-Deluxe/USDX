@@ -34,7 +34,8 @@ interface
 {$I switches.inc}
 
 uses
-  UPath;
+  UPath,
+  UCommon;
 
 type
   TSkinTexture = record
@@ -47,6 +48,8 @@ type
     Name:     string;
     Path:     IPath;
     FileName: IPath;
+
+    DefaultColor: integer;
     Creator:  string; // not used yet
   end;
 
@@ -62,6 +65,10 @@ type
     procedure LoadSkin(Name: string);
     function GetTextureFileName(TextureName: string): IPath;
     function GetSkinNumber(Name: string): integer;
+    function GetDefaultColor(SkinNo: integer): integer;
+
+    procedure GetSkinsByTheme(Theme: string; out Skins: TUTF8StringDynArray);
+
     procedure onThemeChange;
   end;
 
@@ -74,6 +81,7 @@ uses
   IniFiles,
   Classes,
   SysUtils,
+  Math,
   UIni,
   ULog,
   UMain,
@@ -130,6 +138,7 @@ begin
   Skin[S].Theme    := SkinIni.ReadString('Skin', 'Theme', '');
   Skin[S].Name     := SkinIni.ReadString('Skin', 'Name', '');
   Skin[S].Creator  := SkinIni.ReadString('Skin', 'Creator', '');
+  Skin[S].DefaultColor := Max(0, GetArrayIndex(IColor, SkinIni.ReadString('Skin', 'Color', ''), true));
 
   SkinIni.Free;
 end;
@@ -180,14 +189,6 @@ begin
     //Log.LogError('', '-----------------------------------------');
     //Log.LogError(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
   end;
-
-{  Result := SkinPath + 'Bar.jpg';
-  if TextureName = 'Ball' then
-    Result := SkinPath + 'Ball.bmp';
-  if Copy(TextureName, 1, 4) = 'Gray' then
-    Result := SkinPath + 'Ball.bmp';
-  if Copy(TextureName, 1, 6) = 'NoteBG' then
-    Result := SkinPath + 'Ball.bmp';}
 end;
 
 function TSkin.GetSkinNumber(Name: string): integer;
@@ -196,25 +197,52 @@ var
 begin
   Result := 0; // set default to the first available skin
   for S := 0 to High(Skin) do
-    if Skin[S].Name = Name then
+    if CompareText(Skin[S].Name, Name) = 0 then
       Result := S;
 end;
 
+procedure TSkin.GetSkinsByTheme(Theme: string; out Skins: TUTF8StringDynArray);
+  var
+    I: Integer;
+    Len: integer;
+begin
+  SetLength(Skins, 0);
+  Len := 0;
+
+  for I := 0 to High(Skin) do
+    if CompareText(Theme, Skin[I].Theme) = 0 then
+    begin
+      SetLength(Skins, Len + 1);
+      Skins[Len] := Skin[I].Name;
+      Inc(Len);
+    end;
+end;
+
+{ returns number of default color for skin with
+  index SkinNo in ISkin (not in the actual skin array) }
+function TSkin.GetDefaultColor(SkinNo: integer): integer;
+  var
+    I: Integer;
+begin
+  Result := 0;
+
+  for I := 0 to High(Skin) do
+    if CompareText(ITheme[Ini.Theme], Skin[I].Theme) = 0 then
+    begin
+      if SkinNo > 0 then
+        Dec(SkinNo)
+      else
+      begin
+        Result := Skin[I].DefaultColor;
+        Break;
+      end;
+    end;
+end;
+
 procedure TSkin.onThemeChange;
-var
-  S:    integer;
-  Name: String;
 begin
   Ini.SkinNo:=0;
-  SetLength(ISkin, 0);
-  Name := Uppercase(ITheme[Ini.Theme]);
-  for S := 0 to High(Skin) do
-    if Name = Uppercase(Skin[S].Theme) then
-    begin
-      SetLength(ISkin, Length(ISkin)+1);
-      ISkin[High(ISkin)] := Skin[S].Name;
-    end;
-
+  GetSkinsByTheme(ITheme[Ini.Theme], ISkin);
 end;
 
 end.
