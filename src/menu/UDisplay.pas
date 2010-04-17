@@ -56,8 +56,7 @@ type
 
       FadeEnabled:   boolean;  // true if fading is enabled
       FadeFailed:    boolean;  // true if fading is possible (enough memory, etc.)
-      FadeState:     integer;  // fading state, 0 means that the fade texture must be initialized
-      LastFadeTime:  cardinal; // last fade update time
+      FadeTime:      cardinal; // time when fading starts, 0 means that the fade texture must be initialized
       DoneOnShow:    boolean;  // true if passed onShow after fading
 
       FadeTex:       array[1..2] of GLuint;
@@ -127,6 +126,9 @@ var
   Display: TDisplay;
 
 const
+  { constants for screen transition
+    time in milliseconds }
+  Transition_Fade_Time = 400; 
   { constants for software cursor effects
     time in milliseconds }
   Cursor_FadeIn_Time = 500;      // seconds the fade in effect lasts
@@ -165,7 +167,7 @@ begin
   BlackScreen         := false;
 
   // fade mod
-  FadeState   := 0;
+  FadeTime   := 0;
   FadeEnabled := (Ini.ScreenFade = 1);
   FadeFailed  := false;
   DoneOnShow  := false;
@@ -260,7 +262,7 @@ begin
         ScreenPopupCheck.Draw;
 
       // fade mod
-      FadeState := 0;
+      FadeTime := 0;
       if ((Ini.ScreenFade = 1) and (not FadeFailed)) then
         FadeEnabled := true
       else if (Ini.ScreenFade = 0) then
@@ -279,7 +281,7 @@ begin
       if (FadeEnabled and not FadeFailed) then
       begin
         //Create Fading texture if we're just starting
-        if FadeState = 0 then
+        if FadeTime = 0 then
         begin
           // draw screen that will be faded
           ePreDraw.CallHookChain(false);
@@ -309,19 +311,19 @@ begin
             DoneOnShow := true;
           end;
 
-          // update fade state
-          LastFadeTime := SDL_GetTicks();
-          if (S = 2) or (Screens = 1) then
-            FadeState := FadeState + 1;
+
+          // set fade time once on second screen (or first if screens = 1)
+          if (Screens = 1) or (S = 2) then
+            FadeTime := SDL_GetTicks;
         end; // end texture creation in first fading step
 
-        //do some time-based fading
+        {//do some time-based fading
         currentTime := SDL_GetTicks();
         if (currentTime > LastFadeTime+30) and (S = 1) then
         begin
           FadeState := FadeState + 5;
           LastFadeTime := currentTime;
-        end;
+        end;   }
 
         // blackscreen-hack
         if not BlackScreen then
@@ -332,48 +334,55 @@ begin
         end
         else if ScreenAct = 1 then
         begin
-          glClearColor(0, 0, 0, 0);
+          glClearColor(0, 0, 0, 1);
           glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
         end;
 
         // and draw old screen over it... slowly fading out
+        if (FadeTime = 0) then
+          FadeStateSquare := 0 // for first screen if screens = 2
+        else
+          FadeStateSquare := sqr((SDL_GetTicks - FadeTime) / Transition_Fade_Time);
 
-        FadeStateSquare := (FadeState*FadeState)/10000;
-        FadeW := (ScreenW div Screens)/TexW;
-        FadeH := ScreenH/TexH;
+        if (FadeStateSquare < 1) then
+        begin
+          FadeW := (ScreenW div Screens)/TexW;
+          FadeH := ScreenH/TexH;
 
-        glBindTexture(GL_TEXTURE_2D, FadeTex[S]);
-        glColor4f(1, 1, 1, 1-FadeStateSquare*1.5);
+          glBindTexture(GL_TEXTURE_2D, FadeTex[S]);
+          glColor4f(1, 1, 1, 1-FadeStateSquare);
 
-        glEnable(GL_TEXTURE_2D);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_BLEND);
-        glBegin(GL_QUADS);
-          glTexCoord2f((0+FadeStateSquare)*FadeW, (0+FadeStateSquare)*FadeH);
-          glVertex2f(0,   RenderH);
+          glEnable(GL_TEXTURE_2D);
+          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+          glEnable(GL_BLEND);
+          glBegin(GL_QUADS);
+            glTexCoord2f((0+FadeStateSquare/2)*FadeW, (0+FadeStateSquare/2)*FadeH);
+            glVertex2f(0,   RenderH);
 
-          glTexCoord2f((0+FadeStateSquare)*FadeW, (1-FadeStateSquare)*FadeH);
-          glVertex2f(0,   0);
+            glTexCoord2f((0+FadeStateSquare/2)*FadeW, (1-FadeStateSquare/2)*FadeH);
+            glVertex2f(0,   0);
 
-          glTexCoord2f((1-FadeStateSquare)*FadeW, (1-FadeStateSquare)*FadeH);
-          glVertex2f(RenderW, 0);
+            glTexCoord2f((1-FadeStateSquare/2)*FadeW, (1-FadeStateSquare/2)*FadeH);
+            glVertex2f(RenderW, 0);
 
-          glTexCoord2f((1-FadeStateSquare)*FadeW, (0+FadeStateSquare)*FadeH);
-          glVertex2f(RenderW, RenderH);
-        glEnd;
-        glDisable(GL_BLEND);
-        glDisable(GL_TEXTURE_2D);
+            glTexCoord2f((1-FadeStateSquare/2)*FadeW, (0+FadeStateSquare/2)*FadeH);
+            glVertex2f(RenderW, RenderH);
+          glEnd;
+          glDisable(GL_BLEND);
+          glDisable(GL_TEXTURE_2D);
+        end;
       end
-// blackscreen hack
+      
+      // blackscreen hack
       else if not BlackScreen then
       begin
         NextScreen.OnShow;
       end;
 
-      if ((FadeState > 44) or (not FadeEnabled) or FadeFailed) and (S = 1) then
+      if ((FadeTime + Transition_Fade_Time < SDL_GetTicks) or (not FadeEnabled) or FadeFailed) and ((Screens = 1) or (S = 2)) then
       begin
         // fade out complete...
-        FadeState := 0;
+        FadeTime := 0;
         DoneOnShow := false;
         CurrentScreen.onHide;
         CurrentScreen.ShowFinish := false;
