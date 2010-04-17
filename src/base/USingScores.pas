@@ -571,19 +571,14 @@ function TSingScores.GetPopUpPoints(const Index: integer): integer;
 begin
   Result := 0;
   
-  // only check points if there is a difference between actual
-  // and displayed points
-  if (Players[Index].Score > Players[Index].ScoreDisplayed) then
+  CurPopUp := FirstPopUp;
+  while (CurPopUp <> nil) do
   begin
-    CurPopUp := FirstPopUp;
-    while (CurPopUp <> nil) do
-    begin
-      if (CurPopUp.Player = Index) then
-      begin // add points left "in" popup to result
-        Inc(Result, CurPopUp.ScoreDiff - CurPopUp.ScoreGiven);
-      end;
-      CurPopUp := CurPopUp.Next;
+    if (CurPopUp.Player = Index) then
+    begin // add points left "in" popup to result
+      Inc(Result, CurPopUp.ScoreDiff - CurPopUp.ScoreGiven);
     end;
+    CurPopUp := CurPopUp.Next;
   end;
 end;
 
@@ -754,12 +749,16 @@ begin
 
   if (S <> 0) then
   begin
-    if (S > 0) then
-      Diff := Min(Round(RoundTo((RaisePerSecond * TimePassed) / 1000, 1)), S)
-    else
-      Diff := Max(Round(RoundTo((RaisePerSecond * TimePassed) / 1000, 1)), S);
+    Diff := Round(RoundTo((RaisePerSecond * TimePassed) / 1000, 1));
 
-    Inc(aPlayers[Index].ScoreDisplayed, Diff);
+    { minimal raise per frame = 1 }
+    if Abs(Diff) < 1 then
+      Diff := Sign(S);
+
+    if (Abs(Diff) < Abs(S)) then
+      Inc(aPlayers[Index].ScoreDisplayed, Diff)
+    else
+      Inc(aPlayers[Index].ScoreDisplayed, S);
   end;
 end;
 
