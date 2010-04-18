@@ -349,90 +349,90 @@ end;*)
 procedure TScreenEditHeader.SetRoundButtons;
 begin
   if Length(Text[TextTitle].Text) > 0 then
-    Static[StaticTitle].Visible := true
+    Statics[StaticTitle].Visible := true
   else
-    Static[StaticTitle].Visible := false;
+    Statics[StaticTitle].Visible := false;
 
   if Length(Text[TextArtist].Text) > 0 then
-    Static[StaticArtist].Visible := true
+    Statics[StaticArtist].Visible := true
   else
-    Static[StaticArtist].Visible := false;
+    Statics[StaticArtist].Visible := false;
 
   if Length(Text[TextMp3].Text) > 0 then
-    Static[StaticMp3].Visible := true
+    Statics[StaticMp3].Visible := true
   else 
-    Static[StaticMp3].Visible := false;
+    Statics[StaticMp3].Visible := false;
 
   if Length(Text[TextBackground].Text) > 0 then
-    Static[StaticBackground].Visible := true
+    Statics[StaticBackground].Visible := true
   else
-    Static[StaticBackground].Visible := false;
+    Statics[StaticBackground].Visible := false;
 
   if Length(Text[TextVideo].Text) > 0 then
-    Static[StaticVideo].Visible := true
+    Statics[StaticVideo].Visible := true
   else
-    Static[StaticVideo].Visible := false;
+    Statics[StaticVideo].Visible := false;
 
   try
     StrToFloat(Text[TextVideoGAP].Text);
     if StrToFloat(Text[TextVideoGAP].Text)<> 0 then
-      Static[StaticVideoGAP].Visible := true
+      Statics[StaticVideoGAP].Visible := true
     else
-      Static[StaticVideoGAP].Visible := false;
+      Statics[StaticVideoGAP].Visible := false;
   except
-    Static[StaticVideoGAP].Visible := false;
+    Statics[StaticVideoGAP].Visible := false;
   end;
 
   if LowerCase(Text[TextRelative].Text) = 'yes' then
-    Static[StaticRelative].Visible := true
+    Statics[StaticRelative].Visible := true
   else
-    Static[StaticRelative].Visible := false;
+    Statics[StaticRelative].Visible := false;
 
   try
     StrToInt(Text[TextResolution].Text);
     if (StrToInt(Text[TextResolution].Text) <> 0) and (StrToInt(Text[TextResolution].Text) >= 1) then
-      Static[StaticResolution].Visible := true
+      Statics[StaticResolution].Visible := true
     else
-      Static[StaticResolution].Visible := false;
+      Statics[StaticResolution].Visible := false;
   except
-    Static[StaticResolution].Visible := false;
+    Statics[StaticResolution].Visible := false;
   end;
 
   try
     StrToInt(Text[TextNotesGAP].Text);
-    Static[StaticNotesGAP].Visible := true;
+    Statics[StaticNotesGAP].Visible := true;
   except
-    Static[StaticNotesGAP].Visible := false;
+    Statics[StaticNotesGAP].Visible := false;
   end;
 
   // start
   try
     StrToFloat(Text[TextStart].Text);
     if (StrToFloat(Text[TextStart].Text) > 0) then
-      Static[StaticStart].Visible := true
+      Statics[StaticStart].Visible := true
     else
-      Static[StaticStart].Visible := false;
+      Statics[StaticStart].Visible := false;
   except
-    Static[StaticStart].Visible := false;
+    Statics[StaticStart].Visible := false;
   end;
 
   // GAP
   try
     StrToFloat(Text[TextGAP].Text);
-    Static[StaticGAP].Visible := true;
+    Statics[StaticGAP].Visible := true;
   except
-    Static[StaticGAP].Visible := false;
+    Statics[StaticGAP].Visible := false;
   end;
 
   // BPM
   try
     StrToFloat(Text[TextBPM].Text);
     if (StrToFloat(Text[TextBPM].Text) > 0) then
-      Static[StaticBPM].Visible := true
+      Statics[StaticBPM].Visible := true
     else
-      Static[StaticBPM].Visible := false;
+      Statics[StaticBPM].Visible := false;
   except
-    Static[StaticBPM].Visible := false;
+    Statics[StaticBPM].Visible := false;
   end;
 
 end;

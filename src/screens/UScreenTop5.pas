@@ -203,7 +203,7 @@ begin
 
   for I := 1 to Length(CurrentSong.Score[Ini.Difficulty]) do
   begin
-    Static[StaticNumber[I]].Visible := true;
+    Statics[StaticNumber[I]].Visible := true;
     Text[TextNumber[I]].Visible := true;
     Text[TextName[I]].Visible := true;
     Text[TextScore[I]].Visible := true;
@@ -216,7 +216,7 @@ begin
 
   for I := Length(CurrentSong.Score[Ini.Difficulty]) + 1 to 5 do
   begin
-    Static[StaticNumber[I]].Visible := false;
+    Statics[StaticNumber[I]].Visible := false;
     Text[TextNumber[I]].Visible := false;
     Text[TextName[I]].Visible := false;
     Text[TextScore[I]].Visible := false;
@@ -232,7 +232,7 @@ var
 begin
   for I := 1 to Length(CurrentSong.Score[difficulty]) do
   begin
-    Static[StaticNumber[I]].Visible := true;
+    Statics[StaticNumber[I]].Visible := true;
     Text[TextNumber[I]].Visible := true;
     Text[TextName[I]].Visible := true;
     Text[TextScore[I]].Visible := true;
@@ -245,7 +245,7 @@ begin
 
   for I := Length(CurrentSong.Score[difficulty]) + 1 to 5 do
   begin
-    Static[StaticNumber[I]].Visible := false;
+    Statics[StaticNumber[I]].Visible := false;
     Text[TextNumber[I]].Visible := false;
     Text[TextName[I]].Visible := false;
     Text[TextScore[I]].Visible := false;
@@ -282,18 +282,18 @@ begin
       if ScreenAct = 1 then
       begin
         LoadColor(
-          Static[StaticBoxLightest[Item]].Texture.ColR,
-          Static[StaticBoxLightest[Item]].Texture.ColG,
-          Static[StaticBoxLightest[Item]].Texture.ColB,
+          Statics[StaticBoxLightest[Item]].Texture.ColR,
+          Statics[StaticBoxLightest[Item]].Texture.ColG,
+          Statics[StaticBoxLightest[Item]].Texture.ColB,
           'P1Dark');
       end;
 
       if ScreenAct = 2 then
       begin
         LoadColor(
-          Static[StaticBoxLightest[Item]].Texture.ColR,
-          Static[StaticBoxLightest[Item]].Texture.ColG,
-          Static[StaticBoxLightest[Item]].Texture.ColB,
+          Statics[StaticBoxLightest[Item]].Texture.ColR,
+          Statics[StaticBoxLightest[Item]].Texture.ColG,
+          Statics[StaticBoxLightest[Item]].Texture.ColB,
           'P4Dark');
       end;
 }

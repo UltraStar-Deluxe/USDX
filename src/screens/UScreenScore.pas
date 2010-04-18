@@ -296,7 +296,7 @@ begin
       for I := 0 to High(PlayerStatic[P]) do
       begin
         // copy current statics texture to texture for screen 1
-        PlayerStaticTextures[P, I, 1].Tex := Static[PlayerStatic[P, I]].Texture;
+        PlayerStaticTextures[P, I, 1].Tex := Statics[PlayerStatic[P, I]].Texture;
 
         // fallback to first screen texture for 2nd screen
         PlayerStaticTextures[P, I, 2].Tex := PlayerStaticTextures[P, I, 1].Tex;
@@ -318,10 +318,10 @@ begin
           with Theme.Score.PlayerStatic[P, I] do
             PlayerStaticTextures[P, I, 2].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
 
-          PlayerStaticTextures[P, I, 2].Tex.X := Static[PlayerStatic[P, I]].Texture.X;
-          PlayerStaticTextures[P, I, 2].Tex.Y := Static[PlayerStatic[P, I]].Texture.Y;
-          PlayerStaticTextures[P, I, 2].Tex.W := Static[PlayerStatic[P, I]].Texture.W;
-          PlayerStaticTextures[P, I, 2].Tex.H := Static[PlayerStatic[P, I]].Texture.H;
+          PlayerStaticTextures[P, I, 2].Tex.X := Statics[PlayerStatic[P, I]].Texture.X;
+          PlayerStaticTextures[P, I, 2].Tex.Y := Statics[PlayerStatic[P, I]].Texture.Y;
+          PlayerStaticTextures[P, I, 2].Tex.W := Statics[PlayerStatic[P, I]].Texture.W;
+          PlayerStaticTextures[P, I, 2].Tex.H := Statics[PlayerStatic[P, I]].Texture.H;
         end;
       end;
     end;
@@ -364,7 +364,7 @@ begin
           end;
         end;
         // copy current statics texture to texture for screen 1
-        PlayerBoxTextures[P, I, 1].Tex := Static[StaticNum].Texture;
+        PlayerBoxTextures[P, I, 1].Tex := Statics[StaticNum].Texture;
 
         // fallback to first screen texture for 2nd screen
         PlayerBoxTextures[P, I, 2].Tex := PlayerBoxTextures[P, I, 1].Tex;
@@ -386,10 +386,10 @@ begin
           with ThemeStatic do
             PlayerBoxTextures[P, I, 2].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
 
-          PlayerBoxTextures[P, I, 2].Tex.X := Static[StaticNum].Texture.X;
-          PlayerBoxTextures[P, I, 2].Tex.Y := Static[StaticNum].Texture.Y;
-          PlayerBoxTextures[P, I, 2].Tex.W := Static[StaticNum].Texture.W;
-          PlayerBoxTextures[P, I, 2].Tex.H := Static[StaticNum].Texture.H;
+          PlayerBoxTextures[P, I, 2].Tex.X := Statics[StaticNum].Texture.X;
+          PlayerBoxTextures[P, I, 2].Tex.Y := Statics[StaticNum].Texture.Y;
+          PlayerBoxTextures[P, I, 2].Tex.W := Statics[StaticNum].Texture.W;
+          PlayerBoxTextures[P, I, 2].Tex.H := Statics[StaticNum].Texture.H;
         end;
       end;
     end;
@@ -412,7 +412,7 @@ begin
     begin
       // we just set the texture specific stuff
       // so we don't overwrite e.g. width and height
-      with Static[StaticPlayerIdBox[PlayerPositionMap[I].Position]].Texture do
+      with Statics[StaticPlayerIdBox[PlayerPositionMap[I].Position]].Texture do
       begin
         TexNum := aPlayerScoreScreenTextures[I+1].Player_Id_Box.TexNum;
         TexW := aPlayerScoreScreenTextures[I+1].Player_Id_Box.TexW;
@@ -427,15 +427,15 @@ begin
     for P := Low(PlayerStatic) to High(PlayerStatic) do
       for I := 0 to High(PlayerStatic[P]) do
       begin
-        Static[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, Screen].Tex;
+        Statics[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, Screen].Tex;
       end;
 
     { box statics }
     for P := Low(PlayerStatic) to High(PlayerStatic) do
     begin
-      Static[StaticBoxLightest[P]].Texture := PlayerBoxTextures[P, 0, Screen].Tex;
-      Static[StaticBoxLight[P]].Texture := PlayerBoxTextures[P, 1, Screen].Tex;
-      Static[StaticBoxDark[P]].Texture := PlayerBoxTextures[P, 2, Screen].Tex;
+      Statics[StaticBoxLightest[P]].Texture := PlayerBoxTextures[P, 0, Screen].Tex;
+      Statics[StaticBoxLight[P]].Texture := PlayerBoxTextures[P, 1, Screen].Tex;
+      Statics[StaticBoxDark[P]].Texture := PlayerBoxTextures[P, 2, Screen].Tex;
     end;
   end;
 end;
@@ -685,9 +685,9 @@ begin
     Text[TextGoldenNotesScore[P]].Alpha        := 0;
     Text[TextTotal[P]].Alpha                   := 0;
     Text[TextTotalScore[P]].Alpha              := 0;
-    Static[StaticBoxLightest[P]].Texture.Alpha := 0;
-    Static[StaticBoxLight[P]].Texture.Alpha    := 0;
-    Static[StaticBoxDark[P]].Texture.Alpha     := 0;
+    Statics[StaticBoxLightest[P]].Texture.Alpha := 0;
+    Statics[StaticBoxLight[P]].Texture.Alpha    := 0;
+    Statics[StaticBoxDark[P]].Texture.Alpha     := 0;
 
     Text[TextNotes[P]].Visible              := V[P];
     Text[TextNotesScore[P]].Visible         := V[P];
@@ -699,22 +699,22 @@ begin
     Text[TextTotalScore[P]].Visible         := V[P];
 
     for I := 0 to high(PlayerStatic[P]) do
-      Static[PlayerStatic[P, I]].Visible    := V[P];
+      Statics[PlayerStatic[P, I]].Visible    := V[P];
 
     for I := 0 to high(PlayerTexts[P]) do
       Text[PlayerTexts[P, I]].Visible       := V[P];
 
-    Static[StaticBoxLightest[P]].Visible    := V[P];
-    Static[StaticBoxLight[P]].Visible       := V[P];
-    Static[StaticBoxDark[P]].Visible        := V[P];
+    Statics[StaticBoxLightest[P]].Visible    := V[P];
+    Statics[StaticBoxLight[P]].Visible       := V[P];
+    Statics[StaticBoxDark[P]].Visible        := V[P];
 
-    Static[StaticPlayerIdBox[P]].Visible     := V[P];
+    Statics[StaticPlayerIdBox[P]].Visible     := V[P];
 
     // we draw that on our own
-    Static[StaticBackLevel[P]].Visible      := false;
-    Static[StaticBackLevelRound[P]].Visible := false;
-    Static[StaticLevel[P]].Visible          := false;
-    Static[StaticLevelRound[P]].Visible     := false;
+    Statics[StaticBackLevel[P]].Visible      := false;
+    Statics[StaticBackLevelRound[P]].Visible := false;
+    Statics[StaticLevel[P]].Visible          := false;
+    Statics[StaticLevelRound[P]].Visible     := false;
   end;
 
   BarScore_EaseOut_Step  := 1;
@@ -775,8 +775,8 @@ begin
 
 (*
     //todo: i need a clever method to draw statics with their z value
-    for I := 0 to Length(Static) - 1 do
-      Static[I].Draw;
+    for I := 0 to Length(Statics) - 1 do
+      Statics[I].Draw;
     for I := 0 to Length(Text) - 1 do
       Text[I].Draw;
 *)
@@ -799,21 +799,21 @@ begin
     Text[TextGoldenNotesScore[ThemeIndex]].Text         := IntToStr(TextGolden_ActualValue[PlayerNumber]);
     Text[TextGoldenNotesScore[ThemeIndex]].Alpha        := (BarGolden_EaseOut_Step / 100);
 
-    Static[StaticBoxLightest[ThemeIndex]].Texture.Alpha := (BarGolden_EaseOut_Step / 100);
+    Statics[StaticBoxLightest[ThemeIndex]].Texture.Alpha := (BarGolden_EaseOut_Step / 100);
     Text[TextGoldenNotes[ThemeIndex]].Alpha             := (BarGolden_EaseOut_Step / 100);
 
     // line bonus
     Text[TextLineBonusScore[ThemeIndex]].Text           := IntToStr(TextPhrase_ActualValue[PlayerNumber]);
     Text[TextLineBonusScore[ThemeIndex]].Alpha          := (BarPhrase_EaseOut_Step / 100);
 
-    Static[StaticBoxLight[ThemeIndex]].Texture.Alpha    := (BarPhrase_EaseOut_Step / 100);
+    Statics[StaticBoxLight[ThemeIndex]].Texture.Alpha    := (BarPhrase_EaseOut_Step / 100);
     Text[TextLineBonus[ThemeIndex]].Alpha               := (BarPhrase_EaseOut_Step / 100);
 
     // plain score
     Text[TextNotesScore[ThemeIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber]);
     Text[TextNotes[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
 
-    Static[StaticBoxDark[ThemeIndex]].Texture.Alpha     := (BarScore_EaseOut_Step / 100);
+    Statics[StaticBoxDark[ThemeIndex]].Texture.Alpha     := (BarScore_EaseOut_Step / 100);
     Text[TextNotesScore[ThemeIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
 
     // total score
@@ -1078,8 +1078,8 @@ begin
   glEnable(GL_BLEND);
 
   glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex3f(BarStartPosX,         (BarStartPosY - Static[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
-    glTexCoord2f(1, 0); glVertex3f(BarStartPosX + Width, (BarStartPosY - Static[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
+    glTexCoord2f(0, 0); glVertex3f(BarStartPosX,         (BarStartPosY - Statics[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
+    glTexCoord2f(1, 0); glVertex3f(BarStartPosX + Width, (BarStartPosY - Statics[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
     glTexCoord2f(1, 1); glVertex3f(BarStartPosX + Width,  BarStartPosY - NewHeight,                                                     ZBars);
     glTexCoord2f(0, 1); glVertex3f(BarStartPosX,          BarStartPosY - NewHeight,                                                     ZBars);
   glEnd;

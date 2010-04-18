@@ -68,7 +68,7 @@ type
       ButtonCollection: array of TButtonCollection;
     public
       Text:       array of TText;
-      Static:     array of TStatic;
+      Statics:     array of TStatic;
       mX:         integer; // mouse X
       mY:         integer; // mouse Y
 
@@ -221,7 +221,7 @@ begin
 
   Fade := 0;//fWhite;
 
-  SetLength(Static, 0);
+  SetLength(Statics, 0);
   SetLength(Button, 0);
 
   //Set ButtonPos to Autoset Length
@@ -338,8 +338,8 @@ begin
   AddBackground(ThemeBasic.Background);
 
   //Add Statics and Texts
-  for I := 0 to High(ThemeBasic.Static) do
-    AddStatic(ThemeBasic.Static[I]);
+  for I := 0 to High(ThemeBasic.Statics) do
+    AddStatic(ThemeBasic.Statics[I]);
 
   for I := 0 to High(ThemeBasic.Text) do
     AddText(ThemeBasic.Text[I]);
@@ -628,16 +628,16 @@ var
   StatNum: integer;
 begin
   // adds static
-  StatNum := Length(Static);
-  SetLength(Static, StatNum + 1);
-  Static[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, $FF00FF)); // new skin
+  StatNum := Length(Statics);
+  SetLength(Statics, StatNum + 1);
+  Statics[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, $FF00FF)); // new skin
 
   // configures static
-  Static[StatNum].Texture.X := X;
-  Static[StatNum].Texture.Y := Y;
-  Static[StatNum].Texture.W := W;
-  Static[StatNum].Texture.H := H;
-  Static[StatNum].Visible := true;
+  Statics[StatNum].Texture.X := X;
+  Statics[StatNum].Texture.Y := Y;
+  Statics[StatNum].Texture.W := W;
+  Statics[StatNum].Texture.H := H;
+  Statics[StatNum].Visible := true;
   Result := StatNum;
 end;
 
@@ -671,52 +671,52 @@ var
   StatNum: integer;
 begin
   // adds static
-  StatNum := Length(Static);
-  SetLength(Static, StatNum + 1);
+  StatNum := Length(Statics);
+  SetLength(Statics, StatNum + 1);
 
   // colorize hack
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
     // give encoded color to GetTexture()
-    Static[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)));
+    Statics[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)));
   end
   else
   begin
-    Static[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, Color)); // new skin
+    Statics[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, Color)); // new skin
   end;
                      
   // configures static
-  Static[StatNum].Texture.X := X;
-  Static[StatNum].Texture.Y := Y;
+  Statics[StatNum].Texture.X := X;
+  Statics[StatNum].Texture.Y := Y;
 
   //Set height and width via sprite size if omitted
   if(H = 0) then
-    Static[StatNum].Texture.H := Static[StatNum].Texture.H
+    Statics[StatNum].Texture.H := Statics[StatNum].Texture.H
   else
-    Static[StatNum].Texture.H := H;
+    Statics[StatNum].Texture.H := H;
 
   if(W = 0) then
-    Static[StatNum].Texture.W := Static[StatNum].Texture.W
+    Statics[StatNum].Texture.W := Statics[StatNum].Texture.W
   else
-    Static[StatNum].Texture.W := W;
+    Statics[StatNum].Texture.W := W;
 
-  Static[StatNum].Texture.Z := Z;
+  Statics[StatNum].Texture.Z := Z;
   if (Typ <> TEXTURE_TYPE_COLORIZED) then
   begin
-    Static[StatNum].Texture.ColR := ColR;
-    Static[StatNum].Texture.ColG := ColG;
-    Static[StatNum].Texture.ColB := ColB;
+    Statics[StatNum].Texture.ColR := ColR;
+    Statics[StatNum].Texture.ColG := ColG;
+    Statics[StatNum].Texture.ColB := ColB;
   end;
-  Static[StatNum].Texture.TexX1 := TexX1;
-  Static[StatNum].Texture.TexY1 := TexY1;
-  Static[StatNum].Texture.TexX2 := TexX2;
-  Static[StatNum].Texture.TexY2 := TexY2;
-  Static[StatNum].Texture.Alpha := 1;
-  Static[StatNum].Visible := true;
+  Statics[StatNum].Texture.TexX1 := TexX1;
+  Statics[StatNum].Texture.TexY1 := TexY1;
+  Statics[StatNum].Texture.TexX2 := TexX2;
+  Statics[StatNum].Texture.TexY2 := TexY2;
+  Statics[StatNum].Texture.Alpha := 1;
+  Statics[StatNum].Visible := true;
 
   //ReflectionMod
-  Static[StatNum].Reflection := Reflection;
-  Static[StatNum].ReflectionSpacing := ReflectionSpacing;
+  Statics[StatNum].Reflection := Reflection;
+  Statics[StatNum].ReflectionSpacing := ReflectionSpacing;
 
   Result := StatNum;
 end;
@@ -934,8 +934,8 @@ var
   J: integer;
 begin
   // We don't forget about newly implemented static for nice skin ...
-  for J := 0 to High(Static) do
-    Static[J].Draw;
+  for J := 0 to High(Statics) do
+    Statics[J].Draw;
 
   // ... and slightly implemented menutext unit
   for J := 0 to High(Text) do

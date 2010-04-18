@@ -218,7 +218,7 @@ type
   TThemeBasic = class
     Background:       TThemeBackground;
     Text:             AThemeText;
-    Static:           AThemeStatic;
+    Statics:           AThemeStatic;
 
     //Button Collection Mod
     ButtonCollection: AThemeButtonCollection;
@@ -1623,7 +1623,7 @@ procedure TTheme.ThemeLoadBasic(Theme: TThemeBasic; const Name: string);
 begin
   ThemeLoadBackground(Theme.Background, Name);
   ThemeLoadTexts(Theme.Text, Name + 'Text');
-  ThemeLoadStatics(Theme.Static, Name + 'Static');
+  ThemeLoadStatics(Theme.Statics, Name + 'Static');
   ThemeLoadButtonCollections(Theme.ButtonCollection, Name + 'ButtonCollection');
 
   LastThemeBasic := Theme;
@@ -2297,7 +2297,7 @@ begin
   ThemeIni.WriteInteger(Name, 'Texts', Length(Theme.Text));
 
   ThemeSaveBackground(Theme.Background, Name + 'Background');
-  ThemeSaveStatics(Theme.Static, Name + 'Static');
+  ThemeSaveStatics(Theme.Statics, Name + 'Static');
   ThemeSaveTexts(Theme.Text, Name + 'Text');
 end;
 

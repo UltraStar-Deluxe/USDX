@@ -157,8 +157,8 @@ end;
 
 procedure TScreenEdit.SetAnimationProgress(Progress: real);
 begin
-  Static[0].Texture.ScaleW := Progress;
-  Static[0].Texture.ScaleH := Progress;
+  Statics[0].Texture.ScaleW := Progress;
+  Statics[0].Texture.ScaleH := Progress;
 end;
 
 end.

@@ -159,9 +159,9 @@ begin
 
     Text[TextScoreTeam1].Visible := true;
     Text[TextNameTeam1].Visible := true;
-    Static[StaticTeam1].Visible := true;
-    Static[StaticTeam1BG].Visible := true;
-    Static[StaticTeam1Deco].Visible := true;
+    Statics[StaticTeam1].Visible := true;
+    Statics[StaticTeam1BG].Visible := true;
+    Statics[StaticTeam1Deco].Visible := true;
 
     //Set Static Color to Team Color
     if (Theme.PartyWin.StaticTeam1BG.Color = 'TeamColor') then
@@ -169,9 +169,9 @@ begin
       I := GetTeamColor(Ranking[0].Team);
       if (I <> -1) then
       begin
-        Static[StaticTeam1BG].Texture.ColR := Color[I].RGB.R;
-        Static[StaticTeam1BG].Texture.ColG := Color[I].RGB.G;
-        Static[StaticTeam1BG].Texture.ColB := Color[I].RGB.B;
+        Statics[StaticTeam1BG].Texture.ColR := Color[I].RGB.R;
+        Statics[StaticTeam1BG].Texture.ColG := Color[I].RGB.G;
+        Statics[StaticTeam1BG].Texture.ColB := Color[I].RGB.B;
       end;
     end;
 
@@ -180,9 +180,9 @@ begin
       I := GetTeamColor(Ranking[0].Team);
       if (I <> -1) then
       begin
-        Static[StaticTeam1].Texture.ColR := Color[I].RGB.R;
-        Static[StaticTeam1].Texture.ColG := Color[I].RGB.G;
-        Static[StaticTeam1].Texture.ColB := Color[I].RGB.B;
+        Statics[StaticTeam1].Texture.ColR := Color[I].RGB.R;
+        Statics[StaticTeam1].Texture.ColG := Color[I].RGB.G;
+        Statics[StaticTeam1].Texture.ColB := Color[I].RGB.B;
       end;
     end;
   end
@@ -190,9 +190,9 @@ begin
   begin
     Text[TextScoreTeam1].Visible := false;
     Text[TextNameTeam1].Visible := false;
-    Static[StaticTeam1].Visible := false;
-    Static[StaticTeam1BG].Visible := false;
-    Static[StaticTeam1Deco].Visible := false;
+    Statics[StaticTeam1].Visible := false;
+    Statics[StaticTeam1BG].Visible := false;
+    Statics[StaticTeam1Deco].Visible := false;
   end;
 
   if (Length(Party.Teams) >= 2) then
@@ -202,9 +202,9 @@ begin
 
     Text[TextScoreTeam2].Visible := true;
     Text[TextNameTeam2].Visible := true;
-    Static[StaticTeam2].Visible := true;
-    Static[StaticTeam2BG].Visible := true;
-    Static[StaticTeam2Deco].Visible := true;
+    Statics[StaticTeam2].Visible := true;
+    Statics[StaticTeam2BG].Visible := true;
+    Statics[StaticTeam2Deco].Visible := true;
 
     //Set Static Color to Team Color
     if (Theme.PartyWin.StaticTeam2BG.Color = 'TeamColor') then
@@ -212,9 +212,9 @@ begin
       I := GetTeamColor(Ranking[1].Team);
       if (I <> -1) then
       begin
-        Static[StaticTeam2BG].Texture.ColR := Color[I].RGB.R;
-        Static[StaticTeam2BG].Texture.ColG := Color[I].RGB.G;
-        Static[StaticTeam2BG].Texture.ColB := Color[I].RGB.B;
+        Statics[StaticTeam2BG].Texture.ColR := Color[I].RGB.R;
+        Statics[StaticTeam2BG].Texture.ColG := Color[I].RGB.G;
+        Statics[StaticTeam2BG].Texture.ColB := Color[I].RGB.B;
       end;
     end;
 
@@ -223,9 +223,9 @@ begin
       I := GetTeamColor(Ranking[1].Team);
       if (I <> -1) then
       begin
-        Static[StaticTeam2].Texture.ColR := Color[I].RGB.R;
-        Static[StaticTeam2].Texture.ColG := Color[I].RGB.G;
-        Static[StaticTeam2].Texture.ColB := Color[I].RGB.B;
+        Statics[StaticTeam2].Texture.ColR := Color[I].RGB.R;
+        Statics[StaticTeam2].Texture.ColG := Color[I].RGB.G;
+        Statics[StaticTeam2].Texture.ColB := Color[I].RGB.B;
       end;
     end;
   end
@@ -233,9 +233,9 @@ begin
   begin
     Text[TextScoreTeam2].Visible := false;
     Text[TextNameTeam2].Visible := false;
-    Static[StaticTeam2].Visible := false;
-    Static[StaticTeam2BG].Visible := false;
-    Static[StaticTeam2Deco].Visible := false;
+    Statics[StaticTeam2].Visible := false;
+    Statics[StaticTeam2BG].Visible := false;
+    Statics[StaticTeam2Deco].Visible := false;
   end;
 
   if (Length(Party.Teams) >= 3) then
@@ -245,9 +245,9 @@ begin
 
     Text[TextScoreTeam3].Visible := true;
     Text[TextNameTeam3].Visible := true;
-    Static[StaticTeam3].Visible := true;
-    Static[StaticTeam3BG].Visible := true;
-    Static[StaticTeam3Deco].Visible := true;
+    Statics[StaticTeam3].Visible := true;
+    Statics[StaticTeam3BG].Visible := true;
+    Statics[StaticTeam3Deco].Visible := true;
 
     //Set Static Color to Team Color
     if (Theme.PartyWin.StaticTeam3BG.Color = 'TeamColor') then
@@ -255,9 +255,9 @@ begin
       I := GetTeamColor(Ranking[2].Team);
       if (I <> -1) then
       begin
-        Static[StaticTeam3BG].Texture.ColR := Color[I].RGB.R;
-        Static[StaticTeam3BG].Texture.ColG := Color[I].RGB.G;
-        Static[StaticTeam3BG].Texture.ColB := Color[I].RGB.B;
+        Statics[StaticTeam3BG].Texture.ColR := Color[I].RGB.R;
+        Statics[StaticTeam3BG].Texture.ColG := Color[I].RGB.G;
+        Statics[StaticTeam3BG].Texture.ColB := Color[I].RGB.B;
       end;
     end;
 
@@ -266,9 +266,9 @@ begin
       I := GetTeamColor(Ranking[2].Team);
       if (I <> -1) then
       begin
-        Static[StaticTeam3].Texture.ColR := Color[I].RGB.R;
-        Static[StaticTeam3].Texture.ColG := Color[I].RGB.G;
-        Static[StaticTeam3].Texture.ColB := Color[I].RGB.B;
+        Statics[StaticTeam3].Texture.ColR := Color[I].RGB.R;
+        Statics[StaticTeam3].Texture.ColG := Color[I].RGB.G;
+        Statics[StaticTeam3].Texture.ColB := Color[I].RGB.B;
       end;
     end;
   end
@@ -276,20 +276,20 @@ begin
   begin
     Text[TextScoreTeam3].Visible := false;
     Text[TextNameTeam3].Visible := false;
-    Static[StaticTeam3].Visible := false;
-    Static[StaticTeam3BG].Visible := false;
-    Static[StaticTeam3Deco].Visible := false;
+    Statics[StaticTeam3].Visible := false;
+    Statics[StaticTeam3BG].Visible := false;
+    Statics[StaticTeam3Deco].Visible := false;
   end;
 end;
 
 procedure TScreenPartyWin.SetAnimationProgress(Progress: real);
 begin
   {if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
-    Static[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Score / maxScore;
+    Statics[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Score / maxScore;
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
-    Static[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Score / maxScore;
+    Statics[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Score / maxScore;
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
-    Static[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Score / maxScore;}
+    Statics[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Score / maxScore;}
 end;
 
 end.

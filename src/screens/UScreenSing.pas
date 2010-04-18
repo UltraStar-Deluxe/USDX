@@ -322,7 +322,7 @@ begin
   StaticPausePopup := AddStatic(Theme.Sing.PausePopUp);
 
   // <note> pausepopup is not visibile at the beginning </note>
-  Static[StaticPausePopup].Visible := false;
+  Statics[StaticPausePopup].Visible := false;
 
   Lyrics := TLyricEngine.Create(
       Theme.LyricBar.UpperX, Theme.LyricBar.UpperY, Theme.LyricBar.UpperW, Theme.LyricBar.UpperH,
@@ -428,24 +428,24 @@ begin
   end;
 
   // this one is shown in 1P mode
-  Static[StaticP1].Visible := V1;
+  Statics[StaticP1].Visible := V1;
   Text[TextP1].Visible     := V1;
 
   // this one is shown in 2/4P mode
-  Static[StaticP1TwoP].Visible := V1TwoP;
+  Statics[StaticP1TwoP].Visible := V1TwoP;
   Text[TextP1TwoP].Visible     := V1TwoP;
 
-  Static[StaticP2R].Visible := V2R;
+  Statics[StaticP2R].Visible := V2R;
   Text[TextP2R].Visible     := V2R;
 
   // this one is shown in 3/6P mode
-  Static[StaticP1ThreeP].Visible := V1ThreeP;
+  Statics[StaticP1ThreeP].Visible := V1ThreeP;
   Text[TextP1ThreeP].Visible     := V1ThreeP;
 
-  Static[StaticP2M].Visible := V2M;
+  Statics[StaticP2M].Visible := V2M;
   Text[TextP2M].Visible     := V2M;
 
-  Static[StaticP3R].Visible := V3R;
+  Statics[StaticP3R].Visible := V3R;
   Text[TextP3R].Visible     := V3R;
 
   // FIXME: sets path and filename to ''
@@ -763,23 +763,23 @@ begin
   // will move the statics and texts to the correct screen here.
   // FIXME: clean up this weird stuff. Commenting this stuff out, nothing
   //   was missing on screen w/ 6 players - so do we even need this stuff?
-  {Static[StaticP1].Texture.X := Static[StaticP1].Texture.X + 10 * ScreenX;
+  {Statics[StaticP1].Texture.X := Statics[StaticP1].Texture.X + 10 * ScreenX;
 
   Text[TextP1].X := Text[TextP1].X + 10 * ScreenX;  }
 
-  {Static[StaticP1ScoreBG].Texture.X  := Static[StaticP1ScoreBG].Texture.X + 10*ScreenX;
+  {Statics[StaticP1ScoreBG].Texture.X  := Statics[StaticP1ScoreBG].Texture.X + 10*ScreenX;
   Text[TextP1Score].X                := Text[TextP1Score].X + 10*ScreenX;}
 
-  {Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X + 10 * ScreenX;
+  {Statics[StaticP2R].Texture.X := Statics[StaticP2R].Texture.X + 10 * ScreenX;
 
   Text[TextP2R].X := Text[TextP2R].X + 10 * ScreenX; }
 
-  {Static[StaticP2RScoreBG].Texture.X := Static[StaticP2RScoreBG].Texture.X + 10*ScreenX;
+  {Statics[StaticP2RScoreBG].Texture.X := Statics[StaticP2RScoreBG].Texture.X + 10*ScreenX;
   Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;}
 
   // end of weird stuff
   {
-  Static[1].Texture.X := Static[1].Texture.X + 10 * ScreenX;     }
+  Statics[1].Texture.X := Statics[1].Texture.X + 10 * ScreenX;     }
 
  { for T := 0 to 1 do
     Text[T].X := Text[T].X + 10 * ScreenX;    }
@@ -870,15 +870,15 @@ begin
   // will move the statics and texts to the correct screen here.
   // FIXME: clean up this weird stuff
 
-  {Static[StaticP1].Texture.X := Static[StaticP1].Texture.X - 10 * ScreenX;
+  {Statics[StaticP1].Texture.X := Statics[StaticP1].Texture.X - 10 * ScreenX;
   Text[TextP1].X := Text[TextP1].X - 10 * ScreenX;
 
-  Static[StaticP2R].Texture.X := Static[StaticP2R].Texture.X - 10 * ScreenX;
+  Statics[StaticP2R].Texture.X := Statics[StaticP2R].Texture.X - 10 * ScreenX;
   Text[TextP2R].X := Text[TextP2R].X - 10 * ScreenX;
 
   // end of weird
 
-  Static[1].Texture.X := Static[1].Texture.X - 10 * ScreenX;
+  Statics[1].Texture.X := Statics[1].Texture.X - 10 * ScreenX;
 
   for T := 0 to 1 do
     Text[T].X := Text[T].X - 10 * ScreenX;        }
@@ -888,9 +888,9 @@ begin
   // maybe someone could find a better solution
   if Paused then
   begin
-    Static[StaticPausePopup].Visible := true;
-    Static[StaticPausePopup].Draw;
-    Static[StaticPausePopup].Visible := false;
+    Statics[StaticPausePopup].Visible := true;
+    Statics[StaticPausePopup].Draw;
+    Statics[StaticPausePopup].Visible := false;
   end;
 
   Result := true;

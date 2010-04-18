@@ -224,7 +224,7 @@ procedure TScreenSong.ShowCatTLCustom(Caption: UTF8String);// Show Custom Text i
 begin
   Text[TextCat].Text := Caption;
   Text[TextCat].Visible := true;
-  Static[StaticCat].Visible := false;
+  Statics[StaticCat].Visible := false;
 end;
 
 //Show Cat in Top Left Mod
@@ -232,18 +232,18 @@ procedure TScreenSong.ShowCatTL(Cat: integer);
 begin
   //Change
   Text[TextCat].Text := CatSongs.Song[Cat].Artist;
-  //Static[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, TEXTURE_TYPE_PLAIN, true);
+  //Statics[StaticCat].Texture := Texture.GetTexture(Button[Cat].Texture.Name, TEXTURE_TYPE_PLAIN, true);
 
   //Show
   Text[TextCat].Visible := true;
-  Static[StaticCat].Visible := true;
+  Statics[StaticCat].Visible := true;
 end;
 
 procedure TScreenSong.HideCatTL;
 begin
   //Hide
   //Text[TextCat].Visible := false;
-  Static[StaticCat].Visible := false;
+  Statics[StaticCat].Visible := false;
   //New -> Show Text specified in Theme
   Text[TextCat].Visible := true;
   Text[TextCat].Text := Theme.Song.TextCat.Text;
@@ -991,7 +991,7 @@ begin
     end;
 
     // Set visibility of video icon
-    Static[VideoIcon].Visible := CatSongs.Song[Interaction].Video.IsSet;
+    Statics[VideoIcon].Visible := CatSongs.Song[Interaction].Video.IsSet;
 
     // Set texts
     Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
@@ -1176,7 +1176,7 @@ begin
   end;
 
   if Length(Button) > 0 then
-    Static[1].Texture.Y := Button[Interaction].Y - 5; // selection texture
+    Statics[1].Texture.Y := Button[Interaction].Y - 5; // selection texture
 end;
 
 procedure TScreenSong.SetScroll2;
@@ -1638,8 +1638,8 @@ begin
     Button[I].Draw;
 
   // Statics
-  for I := 0 to Length(Static) - 1 do
-    Static[I].Draw;
+  for I := 0 to Length(Statics) - 1 do
+    Statics[I].Draw;
 
   // and texts
   for I := 0 to Length(Text) - 1 do
@@ -1863,74 +1863,74 @@ begin
   begin
     if (Length(Party.Teams) >= 1) then
     begin
-      Static[StaticTeam1Joker1].Visible := (Party.Teams[0].JokersLeft >= 1);
-      Static[StaticTeam1Joker2].Visible := (Party.Teams[0].JokersLeft >= 2);
-      Static[StaticTeam1Joker3].Visible := (Party.Teams[0].JokersLeft >= 3);
-      Static[StaticTeam1Joker4].Visible := (Party.Teams[0].JokersLeft >= 4);
-      Static[StaticTeam1Joker5].Visible := (Party.Teams[0].JokersLeft >= 5);
+      Statics[StaticTeam1Joker1].Visible := (Party.Teams[0].JokersLeft >= 1);
+      Statics[StaticTeam1Joker2].Visible := (Party.Teams[0].JokersLeft >= 2);
+      Statics[StaticTeam1Joker3].Visible := (Party.Teams[0].JokersLeft >= 3);
+      Statics[StaticTeam1Joker4].Visible := (Party.Teams[0].JokersLeft >= 4);
+      Statics[StaticTeam1Joker5].Visible := (Party.Teams[0].JokersLeft >= 5);
     end
     else
     begin
-      Static[StaticTeam1Joker1].Visible := false;
-      Static[StaticTeam1Joker2].Visible := false;
-      Static[StaticTeam1Joker3].Visible := false;
-      Static[StaticTeam1Joker4].Visible := false;
-      Static[StaticTeam1Joker5].Visible := false;
+      Statics[StaticTeam1Joker1].Visible := false;
+      Statics[StaticTeam1Joker2].Visible := false;
+      Statics[StaticTeam1Joker3].Visible := false;
+      Statics[StaticTeam1Joker4].Visible := false;
+      Statics[StaticTeam1Joker5].Visible := false;
     end;
 
     if (Length(Party.Teams) >= 2) then
     begin
-      Static[StaticTeam2Joker1].Visible := (Party.Teams[1].JokersLeft >= 1);
-      Static[StaticTeam2Joker2].Visible := (Party.Teams[1].JokersLeft >= 2);
-      Static[StaticTeam2Joker3].Visible := (Party.Teams[1].JokersLeft >= 3);
-      Static[StaticTeam2Joker4].Visible := (Party.Teams[1].JokersLeft >= 4);
-      Static[StaticTeam2Joker5].Visible := (Party.Teams[1].JokersLeft >= 5);
+      Statics[StaticTeam2Joker1].Visible := (Party.Teams[1].JokersLeft >= 1);
+      Statics[StaticTeam2Joker2].Visible := (Party.Teams[1].JokersLeft >= 2);
+      Statics[StaticTeam2Joker3].Visible := (Party.Teams[1].JokersLeft >= 3);
+      Statics[StaticTeam2Joker4].Visible := (Party.Teams[1].JokersLeft >= 4);
+      Statics[StaticTeam2Joker5].Visible := (Party.Teams[1].JokersLeft >= 5);
     end
     else
     begin
-      Static[StaticTeam2Joker1].Visible := false;
-      Static[StaticTeam2Joker2].Visible := false;
-      Static[StaticTeam2Joker3].Visible := false;
-      Static[StaticTeam2Joker4].Visible := false;
-      Static[StaticTeam2Joker5].Visible := false;
+      Statics[StaticTeam2Joker1].Visible := false;
+      Statics[StaticTeam2Joker2].Visible := false;
+      Statics[StaticTeam2Joker3].Visible := false;
+      Statics[StaticTeam2Joker4].Visible := false;
+      Statics[StaticTeam2Joker5].Visible := false;
     end;
 
     if (Length(Party.Teams) >= 3) then
     begin
-      Static[StaticTeam3Joker1].Visible := (Party.Teams[2].JokersLeft >= 1);
-      Static[StaticTeam3Joker2].Visible := (Party.Teams[2].JokersLeft >= 2);
-      Static[StaticTeam3Joker3].Visible := (Party.Teams[2].JokersLeft >= 3);
-      Static[StaticTeam3Joker4].Visible := (Party.Teams[2].JokersLeft >= 4);
-      Static[StaticTeam3Joker5].Visible := (Party.Teams[2].JokersLeft >= 5);
+      Statics[StaticTeam3Joker1].Visible := (Party.Teams[2].JokersLeft >= 1);
+      Statics[StaticTeam3Joker2].Visible := (Party.Teams[2].JokersLeft >= 2);
+      Statics[StaticTeam3Joker3].Visible := (Party.Teams[2].JokersLeft >= 3);
+      Statics[StaticTeam3Joker4].Visible := (Party.Teams[2].JokersLeft >= 4);
+      Statics[StaticTeam3Joker5].Visible := (Party.Teams[2].JokersLeft >= 5);
     end
     else
     begin
-      Static[StaticTeam3Joker1].Visible := false;
-      Static[StaticTeam3Joker2].Visible := false;
-      Static[StaticTeam3Joker3].Visible := false;
-      Static[StaticTeam3Joker4].Visible := false;
-      Static[StaticTeam3Joker5].Visible := false;
+      Statics[StaticTeam3Joker1].Visible := false;
+      Statics[StaticTeam3Joker2].Visible := false;
+      Statics[StaticTeam3Joker3].Visible := false;
+      Statics[StaticTeam3Joker4].Visible := false;
+      Statics[StaticTeam3Joker5].Visible := false;
     end;
   end
   else
   begin //Hide all
-    Static[StaticTeam1Joker1].Visible := false;
-    Static[StaticTeam1Joker2].Visible := false;
-    Static[StaticTeam1Joker3].Visible := false;
-    Static[StaticTeam1Joker4].Visible := false;
-    Static[StaticTeam1Joker5].Visible := false;
+    Statics[StaticTeam1Joker1].Visible := false;
+    Statics[StaticTeam1Joker2].Visible := false;
+    Statics[StaticTeam1Joker3].Visible := false;
+    Statics[StaticTeam1Joker4].Visible := false;
+    Statics[StaticTeam1Joker5].Visible := false;
 
-    Static[StaticTeam2Joker1].Visible := false;
-    Static[StaticTeam2Joker2].Visible := false;
-    Static[StaticTeam2Joker3].Visible := false;
-    Static[StaticTeam2Joker4].Visible := false;
-    Static[StaticTeam2Joker5].Visible := false;
+    Statics[StaticTeam2Joker1].Visible := false;
+    Statics[StaticTeam2Joker2].Visible := false;
+    Statics[StaticTeam2Joker3].Visible := false;
+    Statics[StaticTeam2Joker4].Visible := false;
+    Statics[StaticTeam2Joker5].Visible := false;
 
-    Static[StaticTeam3Joker1].Visible := false;
-    Static[StaticTeam3Joker2].Visible := false;
-    Static[StaticTeam3Joker3].Visible := false;
-    Static[StaticTeam3Joker4].Visible := false;
-    Static[StaticTeam3Joker5].Visible := false;
+    Statics[StaticTeam3Joker1].Visible := false;
+    Statics[StaticTeam3Joker2].Visible := false;
+    Statics[StaticTeam3Joker3].Visible := false;
+    Statics[StaticTeam3Joker4].Visible := false;
+    Statics[StaticTeam3Joker5].Visible := false;
   end;
 end;
 
@@ -1943,7 +1943,7 @@ begin
   Visible := (Mode = smPartyMode);
 
   for I := 0 to High(StaticParty) do
-    Static[StaticParty[I]].Visible := Visible;
+    Statics[StaticParty[I]].Visible := Visible;
 
   for I := 0 to High(TextParty) do
     Text[TextParty[I]].Visible := Visible;
@@ -1952,7 +1952,7 @@ begin
   Visible := not Visible;
 
   for I := 0 to High(StaticNonParty) do
-    Static[StaticNonParty[I]].Visible := Visible;
+    Statics[StaticNonParty[I]].Visible := Visible;
 
   for I := 0 to High(TextNonParty) do
     Text[TextNonParty[I]].Visible := Visible;

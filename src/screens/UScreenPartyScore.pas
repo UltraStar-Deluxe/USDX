@@ -208,15 +208,15 @@ begin
   Ranking := Party.Rounds[Party.CurrentRound].Ranking;
 
 
-  {//Set Static Length
-  Static[StaticTeam1].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
-  Static[StaticTeam2].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
-  Static[StaticTeam3].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;
+  {//Set Statics Length
+  Statics[StaticTeam1].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
+  Statics[StaticTeam2].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
+  Statics[StaticTeam3].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;
 
-  //fix: prevents static from drawn out of bounds.
-  if Static[StaticTeam1].Texture.ScaleW > 99 then Static[StaticTeam1].Texture.ScaleW := 99;
-  if Static[StaticTeam2].Texture.ScaleW > 99 then Static[StaticTeam2].Texture.ScaleW := 99;
-  if Static[StaticTeam3].Texture.ScaleW > 99 then Static[StaticTeam3].Texture.ScaleW := 99; }
+  //fix: prevents statics from drawn out of bounds.
+  if Statics[StaticTeam1].Texture.ScaleW > 99 then Statics[StaticTeam1].Texture.ScaleW := 99;
+  if Statics[StaticTeam2].Texture.ScaleW > 99 then Statics[StaticTeam2].Texture.ScaleW := 99;
+  if Statics[StaticTeam3].Texture.ScaleW > 99 then Statics[StaticTeam3].Texture.ScaleW := 99; }
 
   //Set Winnertext
   Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [Party.GetWinnerString(Party.CurrentRound)]);
@@ -231,26 +231,26 @@ begin
     begin
       if (Length(Ranking) >= 1) and (Ranking[0].Rank >= 1) and (Ranking[0].Rank <= Length(DecoTex)) then
       begin
-        Static[StaticTeam1Deco].Texture.TexNum := DecoTex[Ranking[0].Rank-1];
-        Static[StaticTeam1Deco].Texture.ColR := DecoColor[Ranking[0].Rank-1].R;
-        Static[StaticTeam1Deco].Texture.ColG := DecoColor[Ranking[0].Rank-1].G;
-        Static[StaticTeam1Deco].Texture.ColB := DecoColor[Ranking[0].Rank-1].B;
+        Statics[StaticTeam1Deco].Texture.TexNum := DecoTex[Ranking[0].Rank-1];
+        Statics[StaticTeam1Deco].Texture.ColR := DecoColor[Ranking[0].Rank-1].R;
+        Statics[StaticTeam1Deco].Texture.ColG := DecoColor[Ranking[0].Rank-1].G;
+        Statics[StaticTeam1Deco].Texture.ColB := DecoColor[Ranking[0].Rank-1].B;
       end;
     end;
 
     Text[TextScoreTeam1].Visible := true;
     Text[TextNameTeam1].Visible := true;
-    Static[StaticTeam1].Visible := true;
-    Static[StaticTeam1BG].Visible := true;
-    Static[StaticTeam1Deco].Visible := true;
+    Statics[StaticTeam1].Visible := true;
+    Statics[StaticTeam1BG].Visible := true;
+    Statics[StaticTeam1Deco].Visible := true;
   end
   else
   begin
     Text[TextScoreTeam1].Visible := false;
     Text[TextNameTeam1].Visible := false;
-    Static[StaticTeam1].Visible := false;
-    Static[StaticTeam1BG].Visible := false;
-    Static[StaticTeam1Deco].Visible := false;
+    Statics[StaticTeam1].Visible := false;
+    Statics[StaticTeam1BG].Visible := false;
+    Statics[StaticTeam1Deco].Visible := false;
   end;
 
   if (Length(Party.Teams) >= 2) then
@@ -263,26 +263,26 @@ begin
     begin
       if (Length(Ranking) >= 2) and (Ranking[1].Rank >= 1) and (Ranking[1].Rank <= Length(DecoTex)) then
       begin
-        Static[StaticTeam2Deco].Texture.TexNum := DecoTex[Ranking[1].Rank-1];
-        Static[StaticTeam2Deco].Texture.ColR := DecoColor[Ranking[1].Rank-1].R;
-        Static[StaticTeam2Deco].Texture.ColG := DecoColor[Ranking[1].Rank-1].G;
-        Static[StaticTeam2Deco].Texture.ColB := DecoColor[Ranking[1].Rank-1].B;
+        Statics[StaticTeam2Deco].Texture.TexNum := DecoTex[Ranking[1].Rank-1];
+        Statics[StaticTeam2Deco].Texture.ColR := DecoColor[Ranking[1].Rank-1].R;
+        Statics[StaticTeam2Deco].Texture.ColG := DecoColor[Ranking[1].Rank-1].G;
+        Statics[StaticTeam2Deco].Texture.ColB := DecoColor[Ranking[1].Rank-1].B;
       end;
     end;
 
     Text[TextScoreTeam2].Visible := true;
     Text[TextNameTeam2].Visible := true;
-    Static[StaticTeam2].Visible := true;
-    Static[StaticTeam2BG].Visible := true;
-    Static[StaticTeam2Deco].Visible := true;
+    Statics[StaticTeam2].Visible := true;
+    Statics[StaticTeam2BG].Visible := true;
+    Statics[StaticTeam2Deco].Visible := true;
   end
   else
   begin
     Text[TextScoreTeam2].Visible := false;
     Text[TextNameTeam2].Visible := false;
-    Static[StaticTeam2].Visible := false;
-    Static[StaticTeam2BG].Visible := false;
-    Static[StaticTeam2Deco].Visible := false;
+    Statics[StaticTeam2].Visible := false;
+    Statics[StaticTeam2BG].Visible := false;
+    Statics[StaticTeam2Deco].Visible := false;
   end;
 
   if (Length(Party.Teams) >= 3) then
@@ -295,37 +295,37 @@ begin
     begin
       if (Length(Ranking) >= 3) and (Ranking[2].Rank >= 1) and (Ranking[2].Rank <= Length(DecoTex)) then
       begin
-        Static[StaticTeam3Deco].Texture.TexNum := DecoTex[Ranking[2].Rank-1];
-        Static[StaticTeam3Deco].Texture.ColR := DecoColor[Ranking[2].Rank-1].R;
-        Static[StaticTeam3Deco].Texture.ColG := DecoColor[Ranking[2].Rank-1].G;
-        Static[StaticTeam3Deco].Texture.ColB := DecoColor[Ranking[2].Rank-1].B;
+        Statics[StaticTeam3Deco].Texture.TexNum := DecoTex[Ranking[2].Rank-1];
+        Statics[StaticTeam3Deco].Texture.ColR := DecoColor[Ranking[2].Rank-1].R;
+        Statics[StaticTeam3Deco].Texture.ColG := DecoColor[Ranking[2].Rank-1].G;
+        Statics[StaticTeam3Deco].Texture.ColB := DecoColor[Ranking[2].Rank-1].B;
       end;
     end;
 
     Text[TextScoreTeam3].Visible := true;
     Text[TextNameTeam3].Visible := true;
-    Static[StaticTeam3].Visible := true;
-    Static[StaticTeam3BG].Visible := true;
-    Static[StaticTeam3Deco].Visible := true;
+    Statics[StaticTeam3].Visible := true;
+    Statics[StaticTeam3BG].Visible := true;
+    Statics[StaticTeam3Deco].Visible := true;
   end
   else
   begin
     Text[TextScoreTeam3].Visible := false;
     Text[TextNameTeam3].Visible := false;
-    Static[StaticTeam3].Visible := false;
-    Static[StaticTeam3BG].Visible := false;
-    Static[StaticTeam3Deco].Visible := false;
+    Statics[StaticTeam3].Visible := false;
+    Statics[StaticTeam3BG].Visible := false;
+    Statics[StaticTeam3Deco].Visible := false;
   end;
 end;
 
 procedure TScreenPartyScore.SetAnimationProgress(Progress: real);
 begin
   {if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
-    Static[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
+    Statics[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
-    Static[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
+    Statics[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
   if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
-    Static[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;}
+    Statics[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;}
 end;
 
 end.
