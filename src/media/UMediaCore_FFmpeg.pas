@@ -268,7 +268,7 @@ begin
   else if ((flags and URL_WRONLY) <> 0) then
     Mode := fmCreate // TODO: fmCreate is Read+Write -> reopen with fmOpenWrite
   else
-    Mode := fmOpenRead;
+    Mode := fmOpenRead or fmShareDenyWrite;
 
   Result := 0;
 
