@@ -2,16 +2,16 @@
 <CONFIG>
   <ProjectOptions>
     <PathDelim Value="\"/>
-    <Version Value="6"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
         <AlwaysBuild Value="False"/>
+        <LRSInOutputDirectory Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
-      <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
       <Title Value="ultrastardx"/>
     </General>
@@ -30,7 +30,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="117">
+    <Units Count="127">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -500,6 +500,56 @@
         <Filename Value="config-win.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit116>
+      <Unit117>
+        <Filename Value="lua\ULuaUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaUtils"/>
+      </Unit117>
+      <Unit118>
+        <Filename Value="lua\UHookableEvent.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UHookableEvent"/>
+      </Unit118>
+      <Unit119>
+        <Filename Value="lua\ULuaCore.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaCore"/>
+      </Unit119>
+      <Unit120>
+        <Filename Value="lua\ULuaGl.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaGl"/>
+      </Unit120>
+      <Unit121>
+        <Filename Value="lua\ULuaLog.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaLog"/>
+      </Unit121>
+      <Unit122>
+        <Filename Value="lua\ULuaParty.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaParty"/>
+      </Unit122>
+      <Unit123>
+        <Filename Value="lua\ULuaScreenSing.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaScreenSing"/>
+      </Unit123>
+      <Unit124>
+        <Filename Value="lua\ULuaTextGL.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaTextGL"/>
+      </Unit124>
+      <Unit125>
+        <Filename Value="lua\ULuaTexture.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaTexture"/>
+      </Unit125>
+      <Unit126>
+        <Filename Value="lua\ULuaUsdx.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaUsdx"/>
+      </Unit126>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -510,8 +560,8 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="lib\JEDI-SDL\SDL\Pas\"/>
+      <OtherUnitFiles Value="base\;lua\;media\;menu\;screens\;lib\JEDI-SDL\SDL\Pas\;lib\JEDI-SDL\SDL_Image\Pas\;lib\JEDI-SDL\OpenGL\Pas\;lib\portaudio\;lib\ffmpeg\;lib\SQLite\;lib\other\"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
-      <SrcPath Value="base\;menu\;screens\;media\;lib\JEDI-SDL\SDL\Pas\;lib\JEDI-SDL\SDL_Image\Pas\;lib\JEDI-SDL\OpenGL\Pas\;lib\portaudio\;lib\ffmpeg\;lib\SQLite\;lib\other\"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>
