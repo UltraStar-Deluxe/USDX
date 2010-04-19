@@ -73,9 +73,9 @@ type
    *}
   IFileSystem = interface
     function ExpandFileName(const FileName: IPath): IPath;
-    function FileCreate(const FileName: IPath): THandle;
+    function FileCreate(const FileName: IPath): TFileHandle;
     function DirectoryCreate(const Dir: IPath): boolean;
-    function FileOpen(const FileName: IPath; Mode: longword): THandle;
+    function FileOpen(const FileName: IPath; Mode: longword): TFileHandle;
     function FileAge(const FileName: IPath): integer; overload;
     function FileAge(const FileName: IPath; out FileDateTime: TDateTime): boolean; overload;
 
@@ -151,9 +151,9 @@ type
   TFileSystemImpl = class(TInterfacedObject, IFileSystem)
   public
     function ExpandFileName(const FileName: IPath): IPath;
-    function FileCreate(const FileName: IPath): THandle;
+    function FileCreate(const FileName: IPath): TFileHandle;
     function DirectoryCreate(const Dir: IPath): boolean;
-    function FileOpen(const FileName: IPath; Mode: longword): THandle;
+    function FileOpen(const FileName: IPath; Mode: longword): TFileHandle;
     function FileAge(const FileName: IPath): integer; overload;
     function FileAge(const FileName: IPath; out FileDateTime: TDateTime): boolean; overload;
     function DirectoryExists(const Name: IPath): boolean;
@@ -259,7 +259,7 @@ begin
   Result := Path(WideExpandFileName(FileName.ToWide()));
 end;
 
-function TFileSystemImpl.FileCreate(const FileName: IPath): THandle;
+function TFileSystemImpl.FileCreate(const FileName: IPath): TFileHandle;
 begin
   Result := WideFileCreate(FileName.ToWide());
 end;
@@ -269,7 +269,7 @@ begin
   Result := WideCreateDir(Dir.ToWide());
 end;
 
-function TFileSystemImpl.FileOpen(const FileName: IPath; Mode: longword): THandle;
+function TFileSystemImpl.FileOpen(const FileName: IPath; Mode: longword): TFileHandle;
 begin
   Result := WideFileOpen(FileName.ToWide(), Mode);
 end;
@@ -431,7 +431,7 @@ begin
   Result := Path(SysUtils.ExpandFileName(FileName.ToNative()));
 end;
 
-function TFileSystemImpl.FileCreate(const FileName: IPath): THandle;
+function TFileSystemImpl.FileCreate(const FileName: IPath): TFileHandle;
 begin
   Result := SysUtils.FileCreate(FileName.ToNative());
 end;
@@ -441,7 +441,7 @@ begin
   Result := SysUtils.CreateDir(Dir.ToNative());
 end;
 
-function TFileSystemImpl.FileOpen(const FileName: IPath; Mode: longword): THandle;
+function TFileSystemImpl.FileOpen(const FileName: IPath; Mode: longword): TFileHandle;
 begin
   Result := SysUtils.FileOpen(FileName.ToNative(), Mode);
 end;

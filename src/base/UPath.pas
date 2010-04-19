@@ -46,6 +46,12 @@ uses
 type
   IPath = interface;
 
+  {$IFDEF FPC}
+  TFileHandle = THandle;
+  {$ELSE}
+  TFileHandle = Longint;
+  {$ENDIF}
+
   {**
    * TUnicodeMemoryStream
    *}
@@ -219,7 +225,7 @@ type
      * Note: File must be closed with FileClose(Handle) after usage
      * @seealso SysUtils.FileOpen()
      *}
-    function Open(Mode: longword): THandle;
+    function Open(Mode: longword): TFileHandle;
 
     {** @seealso SysUtils.ExtractFileDrive() *}
     function GetDrive(): IPath;
@@ -340,8 +346,10 @@ type
      *}
     function FileSearch(const DirList: IPath): IPath;
 
-    {** File must be closed with FileClose(Handle) after usage }
-    function CreateFile(): THandle;
+    {**
+     * File must be closed with FileClose(Handle) after usage
+     *}
+    function CreateFile(): TFileHandle;
     function DeleteFile(): boolean;
     function CreateDirectory(Force: boolean = false): boolean;
     function DeleteEmptyDir(): boolean;
@@ -493,7 +501,7 @@ type
       function ToWide(UseNativeDelim: boolean): WideString;
       function ToNative(): RawByteString;
 
-      function Open(Mode: longword): THandle;
+      function Open(Mode: longword): TFileHandle;
 
       function GetDrive(): IPath;
       function GetPath(): IPath;
@@ -541,7 +549,7 @@ type
 
       function FileSearch(const DirList: IPath): IPath;
 
-      function CreateFile(): THandle;
+      function CreateFile(): TFileHandle;
       function DeleteFile(): boolean;
       function CreateDirectory(Force: boolean): boolean;
       function DeleteEmptyDir(): boolean;
@@ -964,7 +972,7 @@ begin
   Result := FileSystem.ExcludeTrailingPathDelimiter(Self);
 end;
 
-function TPathImpl.CreateFile(): THandle;
+function TPathImpl.CreateFile(): TFileHandle;
 begin
   Result := FileSystem.FileCreate(Self);
 end;
@@ -977,7 +985,7 @@ begin
     Result := FileSystem.DirectoryCreate(Self);
 end;
 
-function TPathImpl.Open(Mode: longword): THandle;
+function TPathImpl.Open(Mode: longword): TFileHandle;
 begin
   Result := FileSystem.FileOpen(Self, Mode);
 end;
