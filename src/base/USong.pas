@@ -931,7 +931,7 @@ begin
     //Check the Identifier (If Value is given)
     if (Length(Value) = 0) then
     begin
-      Log.LogWarn('Empty field "'+Identifier+'" in file ' + FullFileName,
+      Log.LogInfo('Empty field "'+Identifier+'" in file ' + FullFileName,
                    'TSong.ReadTXTHeader');
       AddCustomTag(Identifier, '');
     end

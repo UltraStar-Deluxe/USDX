@@ -540,7 +540,8 @@ begin
       Exit;
     end;
   end;
-  Log.LogWarn('Unknown texture type: "' + TypeStr + '". Using default texture type "' + TextureTypeToStr(Default) + '"', 'ParseTextureType');
+  Log.LogInfo('Unknown texture type: "' + TypeStr + '". Using default texture type "'
+      + TextureTypeToStr(Default) + '"', 'UTexture.ParseTextureType');
   Result := Default;
 end;
 
