@@ -46,6 +46,8 @@ uses
   {$ENDIF}
   portaudio,
   UAudioCore_Portaudio,
+  UUnicodeUtils,
+  UTextEncoding,
   UIni,
   ULog,
   UMain,
@@ -88,6 +90,20 @@ function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: lon
       inputDevice: pointer): integer; cdecl; forward;
 
 
+{**
+ * Converts a string returned by Portaudio into UTF8.
+ * If the string already is in UTF8 no conversion is performed, otherwise
+ * the local encoding is used. 
+ *}
+function ConvertPaStringToUTF8(const Str: RawByteString): UTF8String;
+begin
+  if (IsUTF8String(Str)) then
+    Result := Str
+  else
+    Result := DecodeStringUTF8(Str, encLocale);  
+end;
+
+
 { TPortaudioInputDevice }
 
 function TPortaudioInputDevice.Open(): boolean;
@@ -95,6 +111,9 @@ var
   Error:       TPaError;
   inputParams: TPaStreamParameters;
   deviceInfo:  PPaDeviceInfo;
+  {$IFDEF UsePortmixer}
+  SourceIndex: integer;
+  {$ENDIF}
 begin
   Result := false;
 
@@ -269,13 +288,13 @@ end;
 function TAudioInput_Portaudio.EnumDevices(): boolean;
 var
   i:            integer;
+  deviceName:   UTF8String;
   paApiIndex:   TPaHostApiIndex;
   paApiInfo:    PPaHostApiInfo;
-  deviceName:   UTF8String;
-  deviceIndex:  TPaDeviceIndex;
-  deviceInfo:   PPaDeviceInfo;
+  paDeviceIndex:TPaDeviceIndex;
+  paDeviceInfo: PPaDeviceInfo;
   channelCnt:   integer;
-  soundcardCnt: integer;
+  deviceIndex:  integer;
   err:          TPaError;
   errMsg:       string;
   paDevice:     TPortaudioInputDevice;
@@ -288,7 +307,7 @@ var
   mixer:        PPxMixer;
   sourceCnt:    integer;
   sourceIndex:  integer;
-  sourceName:   string;
+  sourceName:   UTF8String;
   {$ENDIF}
 begin
   Result := false;
@@ -303,17 +322,17 @@ begin
 
   paApiInfo := Pa_GetHostApiInfo(paApiIndex);
 
-  soundcardCnt := 0;
+  deviceIndex := 0;
 
   // init array-size to max. input-devices count
   SetLength(AudioInputProcessor.DeviceList, paApiInfo^.deviceCount);
   for i:= 0 to High(AudioInputProcessor.DeviceList) do
   begin
     // convert API-specific device-index to global index
-    deviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(paApiIndex, i);
-    deviceInfo := Pa_GetDeviceInfo(deviceIndex);
+    paDeviceIndex := Pa_HostApiDeviceIndexToDeviceIndex(paApiIndex, i);
+    paDeviceInfo := Pa_GetDeviceInfo(paDeviceIndex);
 
-    channelCnt := deviceInfo^.maxInputChannels;
+    channelCnt := paDeviceInfo^.maxInputChannels;
 
     // current device is no input device -> skip
     if (channelCnt <= 0) then
@@ -326,25 +345,25 @@ begin
       channelCnt := 2;
 
     paDevice := TPortaudioInputDevice.Create();
-    AudioInputProcessor.DeviceList[soundCardCnt] := paDevice;
+    AudioInputProcessor.DeviceList[deviceIndex] := paDevice;
 
     // retrieve device-name
-    deviceName := deviceInfo^.name;
+    deviceName := ConvertPaStringToUTF8(paDeviceInfo^.name);
     paDevice.Name := UnifyDeviceName(deviceName, deviceIndex);
-    paDevice.PaDeviceIndex := deviceIndex;
+    paDevice.PaDeviceIndex := paDeviceIndex;
 
-    sampleRate := deviceInfo^.defaultSampleRate;
+    sampleRate := paDeviceInfo^.defaultSampleRate;
 
     // on vista and xp the defaultLowInputLatency may be set to 0 but it works.
     // TODO: correct too low latencies (what is a too low latency, maybe < 10ms?)
-    latency := deviceInfo^.defaultLowInputLatency;
+    latency := paDeviceInfo^.defaultLowInputLatency;
 
     // setup desired input parameters
     // TODO: retry with input-latency set to 20ms (defaultLowInputLatency might
     //       not be set correctly in OSS)
     with inputParams do
     begin
-      device := deviceIndex;
+      device := paDeviceIndex;
       channelCount := channelCnt;
       sampleFormat := paInt16;
       suggestedLatency := latency;
@@ -421,7 +440,7 @@ begin
       for sourceIndex := 1 to sourceCnt do
       begin
         sourceName := Px_GetInputSourceName(mixer, sourceIndex-1);
-        paDevice.Source[sourceIndex].Name := sourceName;
+        paDevice.Source[sourceIndex].Name := ConvertPaStringToUTF8(sourceName);
       end;
 
       Px_CloseMixer(mixer);
@@ -430,13 +449,13 @@ begin
     // close test-stream
     Pa_CloseStream(stream);
 
-    Inc(soundCardCnt);
+    Inc(deviceIndex);
   end;
 
   // adjust size to actual input-device count
-  SetLength(AudioInputProcessor.DeviceList, soundCardCnt);
+  SetLength(AudioInputProcessor.DeviceList, deviceIndex);
 
-  Log.LogStatus('#Input-Devices: ' + inttostr(soundCardCnt), 'Portaudio');
+  Log.LogStatus('#Input-Devices: ' + inttostr(deviceIndex), 'Portaudio');
 
   Result := true;
 end;

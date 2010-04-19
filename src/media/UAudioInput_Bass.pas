@@ -392,8 +392,8 @@ begin
 
       BassDevice.BassDeviceID := BassDeviceID;
 
-      // bass device name seems to be encoded w/ local encoding
-      // to-do : check if this is correct
+      // BASS device names seem to be encoded with local encoding
+      // TODO: works for windows, check Linux + Mac OS X
       Descr := DecodeStringUTF8(DeviceInfo.name, encLocale);
 
       BassDevice.Name := UnifyDeviceName(Descr, DeviceIndex);
@@ -463,7 +463,9 @@ begin
           break;
 
         SetLength(BassDevice.Source, Length(BassDevice.Source)+1);
-        BassDevice.Source[SourceIndex].Name := SourceName;
+        // BASS source names seem to be encoded with local encoding
+        // TODO: works for windows, check Linux + Mac OS X
+        BassDevice.Source[SourceIndex].Name := DecodeStringUTF8(SourceName, encLocale);
 
         // get input-source info
         Flags := BASS_RecordGetInput(SourceIndex, PSingle(nil)^);

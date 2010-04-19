@@ -95,7 +95,7 @@ const
 
 type
   TAudioInputSource = record
-    Name: string;
+    Name: UTF8String;
   end;
 
   // soundcard input-devices information
@@ -745,7 +745,7 @@ function TAudioInputBase.UnifyDeviceName(const name: UTF8String; deviceIndex: in
 var
   count: integer; // count of devices with this name
 
-  function IsDuplicate(const name: string): boolean;
+  function IsDuplicate(const name: UTF8String): boolean;
   var
     i: integer;
   begin
@@ -754,11 +754,13 @@ var
     for i := 0 to deviceIndex-1 do
     begin
       if (AudioInputProcessor.DeviceList[i] <> nil) then
-	if (AudioInputProcessor.DeviceList[i].Name = name) then
-	begin
-	  Result := true;
-	  Break;
-	end;
+      begin
+        if (AudioInputProcessor.DeviceList[i].Name = name) then
+        begin
+          Result := true;
+          Break;
+        end;
+      end;
     end;
   end;
 
