@@ -1,0 +1,4 @@
+#define MANIFEST_RESOURCE_ID   1
+#define RT_MANIFEST           24
+MANIFEST_RESOURCE_ID    RT_MANIFEST  "..\\res\\ultrastardx.exe.manifest"
+MAINICON                ICON         "..\\icons\\ultrastardx.ico"
