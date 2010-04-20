@@ -1,5 +1,5 @@
 BASS 2.4
-Copyright (c) 1999-2008 Un4seen Developments Ltd. All rights reserved.
+Copyright (c) 1999-2009 Un4seen Developments Ltd. All rights reserved.
 
 Files that you should have found in the BASS package
 ====================================================
@@ -136,8 +136,8 @@ VB\             Visual Basic API and examples...
     MODLIVESPEC.BAS
   MULTI\          Multiple device example
     PRJMULTI.VBP
-    PRJMULTI.FRM
-    PRJDEVICE.FRM
+    FRMMULTI.FRM
+    FRMDEVICE.FRM
   NETRADIO\       Internet streaming example
     PRJNETRADIO.VBP
     FRMNETRADIO.FRM
@@ -199,6 +199,8 @@ DELPHI\         Delphi API and examples...
     LIVEFX.DPR
     UNIT1.PAS
     UNIT1.DFM
+  LIVESPEC\       "Live" version of spectrum analyser example
+    LIVESPEC.DPR
   MULTI\          Multiple device example
     MULTI.DPR
     UNIT1.PAS
@@ -229,6 +231,10 @@ DELPHI\         Delphi API and examples...
     SPEAKERS.DPR
     UNIT1.PAS
     UNIT1.DFM
+  SPECTRUM\       Spectrum analyser example
+    SPECTRUM.DPR
+    UNIT1.PAS
+    COMMON.INC
   STREAMTEST\     User stream example
     STREAMTEST.DPR
     STMAIN.PAS
@@ -281,9 +287,12 @@ CUSTLOOP\       Custom looping example
   MAKEFILE
 DSPTEST\        DSP example
   DSPTEST.C
-  DSPTEST.RC
   MAKEFILE
   DSPTEST.NIB
+FXTEST\         DX8 effect example
+  FXTEST.C
+  MAKEFILE
+  FXTEST.NIB
 LIVESPEC\       "Live" version of spectrum analyser example
   LIVESPEC.C
   MAKEFILE
@@ -567,6 +576,73 @@ There are of course bug fixes and other little improvements made along
 the way too! To make upgrading simpler, all functions affected by a
 change to the BASS interface are listed.
 
+2.4.5 - 18/12/2009
+------------------
+* Support for little-endian AIFF files
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+* Support for 64-bit floating-point WAVE/AIFF files
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+* Input volume retrieval failure results in a reading of -1 instead of 1
+	BASS_RecordGetInput
+	RECTEST example updated
+* Input volume support on OSX
+	BASS_RecordSetInput
+	BASS_RecordGetInput
+	RECTEST example updated
+* Fix for deferred input settings on Vista
+	BASS_RecordSetInput
+* Windows MP3 codec given preference over other installed MP3 codecs (MP3-FREE version)
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+
+2.4.4 - 13/10/2009
+------------------
+* RIFF/BWF "radio traffic" tag retrieval
+	BASS_TAG_RIFF_CART (BASS_ChannelGetTags type)
+	TAG_CART structure
+* Support for ID3v2 tags in RIFF/WAVE/AIFF files ("ID3 " chunk)
+	BASS_TAG_ID3V2 (BASS_ChannelGetTags type)
+* Pushed fractional samples are refused rather than discarded
+	BASS_StreamPutData
+* DX8 effect emulation on OSX
+	BASS_FX_DX8_CHORUS/DISTORTION/ECHO/FLANGER/PARAMEQ/REVERB (BASS_ChannelSetFX types)
+	FXTEST example added
+* UTF-16 support on OSX
+	BASS_UNICODE (BASS_StreamCreateFile/SampleLoad/MusicLoad/PluginLoad flag)
+
+2.4.3 - 8/5/2009
+----------------
+* MOD order list retrieval
+	BASS_TAG_MUSIC_ORDERS (BASS_ChannelGetTags type)
+* Support for ID3v2 tags in RIFF/WAVE files ("id3 " chunk)
+	BASS_TAG_ID3V2 (BASS_ChannelGetTags type)
+* Improved position reporting precision on Vista
+	BASS_ChannelGetPosition
+* Length retrieval when streaming in blocks (BASS_STREAM_BLOCK)
+	BASS_ChannelGetLength
+* Support for CoreAudio codecs on OSX
+	BASS_StreamCreateFile/User
+	BASS_SampleLoad
+	BASS_TAG_CA_CODEC (BASS_ChannelGetTags type)
+	TAG_CA_CODEC structure
+* 3D algorithm option support on OSX
+	BASS_CONFIG_3DALGORITHM (BASS_SetConfig option)
+
+2.4.2 - 18/9/2008
+-----------------
+* RF64 support
+	BASS_StreamCreateFile/User
+* RIFF/BWF "Broadcast Audio Extension" tag retrieval
+	BASS_TAG_RIFF_BEXT (BASS_ChannelGetTags type)
+	TAG_BEXT structure
+* ID3v1 tag structure
+	TAG_ID3 structure
+* Multiple simultaneous recordings per device on Vista & OSX (as on XP)
+	BASS_RecordStart
+* DX8 effect parameter defaults updated/corrected in documentation
+
 2.4 - 2/4/2008
 --------------
 * "Push" streaming
@@ -588,7 +664,7 @@ change to the BASS interface are listed.
 	BASS_FILEPOS_BUFFER (BASS_StreamGetFilePosition mode)
 * Sinc interpolated MOD music mixing
 	BASS_MUSIC_SINCINTER (BASS_MusicLoad flag)
-* MO3 v2.4 support
+* MO3 2.4 support
 	BASS_MusicLoad
 * MOD orders positioning incorporated into channel functions
 	BASS_ChannelGetLength
@@ -637,7 +713,7 @@ change to the BASS interface are listed.
 	BASS_ChannelSetFlags *removed*
 	SPEAKERS example updated
 * 256 sample FFT
-	BASS_DATA_FFT256 (BASS_ChannelGetDat flag)
+	BASS_DATA_FFT256 (BASS_ChannelGetData flag)
 * Channel locking to prevent access by other threads
 	BASS_ChannelLock
 * Manual channel buffer updating
@@ -730,7 +806,7 @@ change to the BASS interface are listed.
 	BASS_ChannelStop
 * Sample channels created paused to prevent overriding before playback
 	BASS_SampleGetChannel
-* Separate "MP3-FREE" version using Windows/OSX MP3 decoder
+* Separate "MP3-FREE" version using the OS's MP3 decoder
 	BASS_CONFIG_MP3_CODEC *removed*
 
 2.3.0.1 - 12/6/2006
@@ -1458,7 +1534,7 @@ change to the BASS interface are listed.
 
 0.8 - 24/1/2000
 ---------------
-* Improved MP3 performance on P2/K6 and above CPUs - fast!
+* Improved MP3 performance on P2/K6 and above CPUs
 * User DSP functions on streams and MOD musics
 	BASS_ChannelSetDSP
 	BASS_ChannelRemoveDSP
@@ -1645,7 +1721,7 @@ API/Sample contributors
 Visual Basic: Adam Hoult, Hendrik Knaepen, Arthur Aminov,
               Peter Hebels
 Delphi: Titus Miloi, Rogier Timmermans, Alessandro Cappellozza,
-        Jesse Naranjo, Chris Troesken
+        Jesse Naranjo, Chris Troesken, Evgeny Melnikov
 MASM: Octavian Chis
 
 
