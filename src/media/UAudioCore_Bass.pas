@@ -49,6 +49,8 @@ type
       function ErrorGetString(errCode: integer): string; overload;
       function ConvertAudioFormatToBASSFlags(Format: TAudioSampleFormat; out Flags: DWORD): boolean;
       function ConvertBASSFlagsToAudioFormat(Flags: DWORD; out Format: TAudioSampleFormat): boolean;
+    private
+      function DecodeVersion(VersionHex: integer): string;
   end;
 
 implementation
@@ -58,10 +60,9 @@ uses
   ULog;
 
 const
-  // TODO: 2.4.2 is not ABI compatible with older versions
+  // BASS 2.4.2 is not ABI compatible with older versions
   // as (BASS_RECORDINFO.driver was removed)
-  //BASS_MIN_REQUIRED_VERSION = $02040201;
-  BASS_MIN_REQUIRED_VERSION = $02000000;
+  BASS_MIN_REQUIRED_VERSION = $02040201;
 
 var
   Instance: TAudioCore_Bass;
@@ -78,9 +79,25 @@ begin
   Result := Instance;
 end;
 
+function TAudioCore_Bass.DecodeVersion(VersionHex: integer): string;
+var
+  Version: array [0..3] of integer;
+begin
+  Version[0] := (VersionHex shr 24) and $FF;
+  Version[1] := (VersionHex shr 16) and $FF;
+  Version[2] := (VersionHex shr 8) and $FF;
+  Version[3] := (VersionHex shr 0) and $FF;
+  Result := Format('%x.%x.%x.%x', [Version[0], Version[1], Version[2], Version[3]]);
+end;
+
 function TAudioCore_Bass.CheckVersion(): boolean;
 begin
   Result := BASS_GetVersion() >= BASS_MIN_REQUIRED_VERSION;
+  if (not Result) then
+  begin
+    Log.LogWarn('Could not init BASS audio library. ''bass.dll'' version is ' + DecodeVersion(BASS_GetVersion()) + ' but ' + DecodeVersion(BASS_MIN_REQUIRED_VERSION) + ' or higher is required.',
+        'TAudioCore_Bass.CheckVersion');
+  end;
 end;
 
 function TAudioCore_Bass.ErrorGetString(): string;
