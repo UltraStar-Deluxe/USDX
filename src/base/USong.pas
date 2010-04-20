@@ -377,19 +377,20 @@ var
 begin
   OldLinePos := LinePos;
   Str := ParseLyricStringParam(Line, LinePos);
-  if (Length(Str) <> 1) then
+  
+  if (Length(Str) < 1) then
   begin
-    { to-do : decide what to do here
-              usdx < 1.1 does not nead a whitespace after a char param
-              so we may just write a warning to error.log and use the
-              first non whitespace character instead of raising an
-              exception that causes the song not to load. So the more
-              error resistant code is:
-                LinePos := OldLinePos + 1;
-                // raise EUSDXParseException.Create('Character expected'); }
     LinePos := OldLinePos;
     raise EUSDXParseException.Create('Character expected');
+  end
+  else if (Length(Str) > 1) then
+  begin
+    Log.LogWarn(Format('"%s" in line %d: %s',
+        [FileName.ToNative, FileLineNo, 'character expected but found "' + Str + '"']),
+        'TSong.ParseLyricCharParam');
   end;
+       
+  LinePos := OldLinePos + 1;
   Result := Str[1];
 end;
 
