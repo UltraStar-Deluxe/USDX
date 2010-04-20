@@ -45,52 +45,52 @@ type
   PEventListItem = ^TEventListItem;
   TEventListItem = record
     Event: THookableEvent;
-    Next: PEventListItem;
+    Next:  PEventListItem;
   end;
 
   { record represents a module }
   TLuaModule = record
-    Name: String;
-    Functions: Array of luaL_reg; //modules functions, w/ trailing nils this time
+    Name:      string;
+    Functions: array of luaL_reg; //modules functions, w/ trailing nils this time
   end;
 
   TLuaPlugin_Status = (psNone, psRunning, psClosed, psErrorOnLoad, psErrorOnCall, psErrorInInit, psErrorOnRun);
   { class represents a loaded plugin }
   TLuaPlugin = class
     private
-      iId: Integer;
-      Filename: IPath;
-      State: Plua_State;   //< all functions of this plugin are called with this Lua state
-      bPaused: Boolean;    //< If true no lua functions from this state are called
-      ErrorCount: Integer; //< counts the errors that occured during function calls of this plugin
-      ShutDown: Boolean;   //< for self shutdown by plugin. true if plugin wants to be unloaded after execution of current function
+      iId:        integer;
+      Filename:   IPath;
+      State:      Plua_State; //< all functions of this plugin are called with this Lua state
+      bPaused:    boolean;    //< If true no lua functions from this state are called
+      ErrorCount: integer;    //< counts the errors that occured during function calls of this plugin
+      ShutDown:   boolean;    //< for self shutdown by plugin. true if plugin wants to be unloaded after execution of current function
 
-      sName: String;
-      sVersion: String;
-      sAuthor: String;
-      sURL: String;
+      sName:    string;
+      sVersion: string;
+      sAuthor:  string;
+      sURL:     string;
 
-      sStatus: TLuaPlugin_Status;
+      sStatus:  TLuaPlugin_Status;
     public
-      constructor Create(Filename: IPath; Id: Integer);
+      constructor Create(Filename: IPath; Id: integer);
 
-      property Id: Integer read iId;
-      property Name: String read sName;
-      property Version: String read sVersion;
-      property Author: String read sAuthor;
-      property Url: String read sUrl;
+      property Id:      integer read iId;
+      property Name:    string read sName;
+      property Version: string read sVersion;
+      property Author:  string read sAuthor;
+      property Url:     string read sUrl;
 
-      property Status: TLuaPlugin_Status read sStatus;
-      property CountErrors: Integer read ErrorCount;
+      property Status:      TLuaPlugin_Status read sStatus;
+      property CountErrors: integer read ErrorCount;
 
-      property LuaState: Plua_State read State;
+      property LuaState:    Plua_State read State;
 
       procedure Load;
 
-      procedure Register(Name, Version, Author, Url: String);
-      function HasRegistred: Boolean;
+      procedure Register(Name, Version, Author, Url: string);
+      function HasRegistred: boolean;
 
-      procedure PausePlugin(doPause: Boolean);
+      procedure PausePlugin(doPause: boolean);
       property Paused: boolean read bPaused write PausePlugin;
 
       procedure ShutMeDown;
@@ -103,7 +103,10 @@ type
         if result is false there was an error calling the function
         if ReportErrors is true the errorstring is popped from stack
         and written to error.log otherwise it is left on stack}
-      function CallFunctionByName(Name: String; const nArgs: Integer = 0; const nResults: Integer = 0; const ReportErrors: Boolean = True): Boolean;
+      function CallFunctionByName(Name:               string; 
+                                  const nArgs:        integer = 0;
+				  const nResults:     integer = 0;
+				  const ReportErrors: boolean = true): boolean;
       procedure ClearStack;
 
       procedure Unload; //< Destroys the Luastate, and frees as much mem as possible, w/o destroying the class and important information 
@@ -116,16 +119,16 @@ type
     like self unload or hook getting}
   TLuaCore = class
     private
-      EventList: PEventListItem; //< pointer to first registred Event, ordered by name
-      EventHandles: Array of String; //< Index is Events handle, value is events name. if length(value) is 0 handle is considered unregistred
+      EventList:         PEventListItem;  //< pointer to first registred Event, ordered by name
+      EventHandles:      array of string; //< Index is Events handle, value is events name. if length(value) is 0 handle is considered unregistred
 
-      Plugins: Array of TLuaPlugin;
+      Plugins:           array of TLuaPlugin;
 
       eLoadingFinished: THookableEvent;
     protected
-      Modules: Array of TLuaModule; //< modules that has been registred, has to be proctected because fucntions of this unit need to get access
+      Modules: array of TLuaModule; //< modules that has been registred, has to be proctected because fucntions of this unit need to get access
 
-      function GetModuleIdByName(Name: String): Integer; //returns id of given module, or -1 if module is not found
+      function GetModuleIdByName(Name: string): integer; //returns id of given module, or -1 if module is not found
     public
       constructor Create;
       destructor Destroy; override;
@@ -135,22 +138,22 @@ type
       procedure BrowseDir(Dir: IPath);               //< searches for files w/ extension .usdx in the specified dir and tries to load them w/ lua
       procedure LoadPlugin(Filename: IPath);         //< tries to load filename w/ lua and creates the default usdx lua environment for the plugins state
 
-      function GetPluginByName(Name: String): TLuaPlugin;
-      function GetPluginById(Id: Integer): TLuaPlugin;
+      function GetPluginByName(Name: string): TLuaPlugin;
+      function GetPluginById(Id: integer): TLuaPlugin;
 
       { this function adds a module loader for your functions
         name is the name the script needs to write in its require()
         Functions is an array of lua calling compatible functions
         w/o trailing nils! }
-      procedure RegisterModule(Name: String; const Functions: Array of luaL_reg);
+      procedure RegisterModule(Name: string; const Functions: array of luaL_reg);
 
-      function RegisterEvent(Event: THookableEvent): Integer; //< adds the event to eventlist and returns its handle
-      procedure UnRegisterEvent(hEvent: Integer);    //< removes the event from eventlist by handle
+      function RegisterEvent(Event: THookableEvent): integer; //< adds the event to eventlist and returns its handle
+      procedure UnRegisterEvent(hEvent: integer);             //< removes the event from eventlist by handle
 
-      function GetEventbyName(Name: String): THookableEvent;       //< tries to find the event w/ the given name in the list
-      function GetEventbyHandle(hEvent: Integer): THookableEvent;     //< tries to find the event w/ the given handle
+      function GetEventbyName(Name: string): THookableEvent;       //< tries to find the event w/ the given name in the list
+      function GetEventbyHandle(hEvent: integer): THookableEvent;  //< tries to find the event w/ the given handle
 
-      procedure UnHookByParent(Parent: Integer); //< remove all hooks by given parent id from all events
+      procedure UnHookByParent(Parent: integer); //< remove all hooks by given parent id from all events
 
       procedure PrepareState(L: Plua_State);
 
@@ -162,24 +165,24 @@ type
   register(plugin name, plugin version, [plugin author], [plugin homepage])
   can only be called once since the global "register" is niled by the function
   returns true on success. (name does not exist)}
-function TLuaPlugin_Register (L: Plua_State): Integer; cdecl;
+function TLuaPlugin_Register (L: Plua_State): integer; cdecl;
 
 { moduleloader for usdx.* modules
   stored in package.loaders[3]
   package.loaders[3] (module name)
   returns a function to load the requested module or a error
   description(string) when the module is not found }
-function TLuaCore_ModuleLoader (L: Plua_State): Integer; cdecl;
+function TLuaCore_ModuleLoader (L: Plua_State): integer; cdecl;
 
 { loads module specified by a cfunction upvalue to
   usdx.modulename and returns it.
   loadmodule(module name) }
-function TLuaCore_LoadModule (L: Plua_State): Integer; cdecl;
+function TLuaCore_LoadModule (L: Plua_State): integer; cdecl;
 
 { custom lua panic function
   it writes error string to error.log and raises an ELuaException
   that may be caught }
-function TLua_CustomPanic (L: Plua_State): Integer; cdecl;
+function TLua_CustomPanic (L: Plua_State): integer; cdecl;
 
 { replacement for luas require function
   can be called with more than one parameter to require
@@ -188,7 +191,7 @@ function TLua_CustomPanic (L: Plua_State): Integer; cdecl;
   unlike standard require the module tables are not returned
   the standard require function in _require is called by
   this function }
-function TLua_CustomRequire(L: PLua_State): Integer; cdecl;
+function TLua_CustomRequire(L: PLua_State): integer; cdecl;
 
 
 var
@@ -223,7 +226,7 @@ begin
   //delete event list
   Cur := EventList;
 
-  While(Cur <> nil) do
+  while(Cur <> nil) do
   begin
     Prev := Cur;
     Cur := Prev.Next;
@@ -250,10 +253,10 @@ end;
   dir and tries to load them w/ lua }
 procedure TLuaCore.BrowseDir(Dir: IPath);
   var
-    Iter: IFileIterator;
+    Iter:     IFileIterator;
     FileInfo: TFileInfo;
     FileName: IPath;
-    Ext: IPath;
+    Ext:      IPath;
 begin
   Ext := Path('.usdx');
 
@@ -282,7 +285,7 @@ end;
   usdx lua environment for the plugins state }
 procedure TLuaCore.LoadPlugin(Filename: IPath);
   var
-    Len: Integer;  
+    Len: integer;  
 begin
   Len := Length(Plugins);
   SetLength(Plugins, Len + 1);
@@ -291,15 +294,15 @@ begin
 end;
 
 { returns Plugin on success nil on failure }
-function TLuaCore.GetPluginByName(Name: String): TLuaPlugin;
+function TLuaCore.GetPluginByName(Name: string): TLuaPlugin;
   var
-    I: Integer;
+    I: integer;
 begin
   Result := nil;
   Name := lowercase(Name);
 
-  For I := 0 to High(Plugins) do
-    If (lowercase(Plugins[I].Name) = Name) then
+  for I := 0 to High(Plugins) do
+    if (lowercase(Plugins[I].Name) = Name) then
     begin
       Result := GetPluginById(I);
       Exit;
@@ -307,11 +310,11 @@ begin
 end;
 
 { returns Plugin on success nil on failure }
-function TLuaCore.GetPluginById(Id: Integer): TLuaPlugin;
+function TLuaCore.GetPluginById(Id: integer): TLuaPlugin;
 begin
-  If (Id >= 0) AND (Id <= High(Plugins)) then
+  if (Id >= 0) and (Id <= High(Plugins)) then
     Result := Plugins[Id]
-  Else
+  else
     Result := nil;
 end;
 
@@ -319,11 +322,11 @@ end;
   name is the name the script needs to write in its require()
   Functions is an array of lua calling compatible functions
   w/o trailing nils! }
-procedure TLuaCore.RegisterModule(Name: String; const Functions: Array of luaL_reg);
+procedure TLuaCore.RegisterModule(Name: string; const Functions: array of luaL_reg);
   var
-    Len: Integer;
-    FuncLen: Integer;
-    I: Integer;
+    Len:     integer;
+    FuncLen: integer;
+    I:       integer;
 begin
   Len := Length(Modules);
   SetLength(Modules, Len + 1);
@@ -332,7 +335,7 @@ begin
   FuncLen := Length(Functions);
   SetLength(Modules[Len].Functions, FuncLen + 1);
   
-  For I := 0 to FuncLen-1 do
+  for I := 0 to FuncLen-1 do
     Modules[Len].Functions[I] := Functions[I];
 
   Modules[Len].Functions[FuncLen].name := nil;
@@ -341,11 +344,11 @@ end;
 
 { adds the event to eventlist and returns its handle
   called by THookableEvent on creation }
-function TLuaCore.RegisterEvent(Event: THookableEvent): Integer;
+function TLuaCore.RegisterEvent(Event: THookableEvent): integer;
 var
   Cur, Prev, Item: PEventListItem;
 begin
-  If (Event <> nil) and (Length(Event.Name) > 0) then
+  if (Event <> nil) and (Length(Event.Name) > 0) then
   begin
     Result := Length(EventHandles);
     SetLength(EventHandles, Result + 1); //get Handle and copy it to result
@@ -360,7 +363,7 @@ begin
     Prev := nil;
     Cur := EventList;
 
-    While (Cur <> nil) and (CompareStr(Cur.Event.Name, EventHandles[Result]) < 0) do
+    while (Cur <> nil) and (CompareStr(Cur.Event.Name, EventHandles[Result]) < 0) do
     begin
       Prev := Cur;
       Cur := Prev.Next;
@@ -379,23 +382,23 @@ begin
 end;
 
 { removes the event from eventlist by handle }
-procedure TLuaCore.UnRegisterEvent(hEvent: Integer);
+procedure TLuaCore.UnRegisterEvent(hEvent: integer);
   var
     Cur, Prev: PEventListItem;
 begin
-  If (hEvent >= 0) AND (hEvent <= High(EventHandles)) AND (Length(EventHandles[hEvent]) > 0) then
+  if (hEvent >= 0) and (hEvent <= High(EventHandles)) and (Length(EventHandles[hEvent]) > 0) then
   begin //hEvent in bounds and not already deleted
     //delete from eventlist
     Prev := nil;
-    Cur := EventList;
+    Cur  := EventList;
 
-    While (Cur <> nil) and (CompareStr(Cur.Event.Name, EventHandles[hEvent]) < 0) do
+    while (Cur <> nil) and (CompareStr(Cur.Event.Name, EventHandles[hEvent]) < 0) do
     begin
       Prev := Cur;
-      Cur := Prev.Next;
+      Cur  := Prev.Next;
     end;
 
-    If (Cur <> nil) and (Cur.Event.Name = EventHandles[hEvent]) then
+    if (Cur <> nil) and (Cur.Event.Name = EventHandles[hEvent]) then
     begin //delete if found
       Prev.Next := Cur.Next; // remove from list
       Dispose(Cur); // free memory
@@ -409,7 +412,7 @@ end;
 { tries to find the event w/ the given name in the list
   to-do : use binary search algorithm instead of linear search here
           check whether this is possible (events are saved in a pointer list) }
-function TLuaCore.GetEventbyName(Name: String): THookableEvent;
+function TLuaCore.GetEventbyName(Name: string): THookableEvent;
   var
     Cur: PEventListItem;
 begin
@@ -420,12 +423,12 @@ begin
     //search in eventlist
     Cur := EventList;
 
-    While (Cur <> nil) and (CompareStr(Cur.Event.Name, Name) < 0) do
+    while (Cur <> nil) and (CompareStr(Cur.Event.Name, Name) < 0) do
     begin
       Cur := Cur.Next;
     end;
 
-    If (Cur <> nil) and (Cur.Event.Name = Name) then
+    if (Cur <> nil) and (Cur.Event.Name = Name) then
     begin //we found what we want to find
       Result := Cur.Event;
     end;
@@ -433,9 +436,9 @@ begin
 end;
 
 { tries to find the event w/ the given handle }
-function TLuaCore.GetEventbyHandle(hEvent: Integer): THookableEvent;
+function TLuaCore.GetEventbyHandle(hEvent: integer): THookableEvent;
 begin
-  If (hEvent >= 0) AND (hEvent <= High(EventHandles)) AND (Length(EventHandles[hEvent]) > 0) then
+  if (hEvent >= 0) and (hEvent <= High(EventHandles)) and (Length(EventHandles[hEvent]) > 0) then
   begin //hEvent in bounds and not already deleted
     Result := GetEventByName(EventHandles[hEvent]);
   end
@@ -444,7 +447,7 @@ begin
 end;
 
 { remove all hooks by given parent id from all events }
-procedure TLuaCore.UnHookByParent(Parent: Integer);
+procedure TLuaCore.UnHookByParent(Parent: integer);
   var
     Cur: PEventListItem;
 begin
@@ -453,7 +456,7 @@ begin
     // go through event list
     Cur := EventList;
 
-    While (Cur <> nil) do
+    while (Cur <> nil) do
     begin
       Cur.Event.UnHookByParent(Parent);
       Cur := Cur.Next;
@@ -569,9 +572,9 @@ begin
 end;
 
 { returns id of given module, or -1 if module is not found }
-function TLuaCore.GetModuleIdByName(Name: String): Integer;
+function TLuaCore.GetModuleIdByName(Name: string): integer;
   var
-    I: Integer;
+    I: integer;
 begin
   Result := -1;
   
@@ -588,12 +591,12 @@ end;
   package.loaders[3] (module name)
   returns a function to load the requested module or an error
   description(string) when the module is not found }
-function TLuaCore_ModuleLoader (L: Plua_State): Integer; cdecl;
+function TLuaCore_ModuleLoader (L: Plua_State): integer; cdecl;
   var
-    Name: String;
-    ID: Integer;
+    Name: string;
+    ID:   integer;
 begin
-  Result := 1; //we will return one value in every case (or never return in case of an error)
+  Result := 1; //we will return one value in any case (or never return in case of an error)
 
   if (lua_gettop(L) >= 1) then
   begin
@@ -611,7 +614,7 @@ begin
       if (Length(Name) > 5) and (lowercase(copy(Name, 1, 5))='usdx.') then
       begin
         ID := LuaCore.GetModuleIdByName(copy(Name, 6, Length(Name) - 5));
-        If (ID >= 0) then
+        if (ID >= 0) then
         begin //found the module -> return loader function
           lua_pushinteger(L, Id);
           lua_pushcclosure(L, TLuaCore_LoadModule, 1);
@@ -634,9 +637,9 @@ end;
 { loads module specified by a cfunction upvalue to
   usdx.modulename and returns it.
   loadmodule(module name) }
-function TLuaCore_LoadModule (L: Plua_State): Integer; cdecl;
+function TLuaCore_LoadModule (L: Plua_State): integer; cdecl;
   var
-    Id: Integer;
+    Id: integer;
 begin
   if (not lua_isnoneornil(L, lua_upvalueindex(1))) then
   begin
@@ -660,52 +663,54 @@ end;
 
 { prints plugin runtime information w/ Log.LogStatus }
 procedure TLuaCore.DumpPlugins;
-  function PluginStatusToString(Status: TLuaPlugin_Status): String;
+  function PluginStatusToString(Status: TLuaPlugin_Status): string;
   begin
-    Case Status of
-      psNone: Result := 'not loaded';
-      psRunning: Result := 'running';
-      psClosed: Result := 'closed';
+    case Status of
+      psNone:        Result := 'not loaded';
+      psRunning:     Result := 'running';
+      psClosed:      Result := 'closed';
       psErrorOnLoad: Result := 'error during load';
       psErrorOnCall: Result := 'error during call';
       psErrorInInit: Result := 'error in plugin_init()';
-      psErrorOnRun: Result := 'error on function call';
-      else Result := 'unknown';
+      psErrorOnRun:  Result := 'error on function call';
+      else           Result := 'unknown';
     end;
   end;
+
+  const
+    NameLength = 30;
   var
-    I: Integer;
+    I: integer;
 begin
-  //print table header
-  Log.LogError(' # ' + #09 + ' name ' + #09 + ' version ' + #09 + ' status ' + #09 + ' paused ' + #09 + ' #errors ', 'plugins');
+  // print table header
+  Log.LogStatus('  # ' + PadRight('Name', NameLength) + 
+                'Version Status    Paused #Errors', 'LuaCore Plugins');
 
-
-  For I := 0 to High(Plugins) do
-    Log.LogError(' ' + IntToStr(Plugins[I].Id) + ' ' + #09 +
-                  ' ' + Plugins[I].Name + ' ' + #09 +
-                  ' ' + Plugins[I].Version + ' ' + #09 +
-                  ' ' + PluginStatusToString(Plugins[I].Status) + ' ' + #09 +
-                  ' ' + BoolToStr(Plugins[I].Paused, true) + ' ' + #09 +
-                  ' ' + IntToStr(Plugins[I].CountErrors) + ' ', 'plugins');
-
-  If (High(Plugins)<0) then
-    Log.LogError(' no plugins loaded ');
+  for I := 0 to High(Plugins) do
+    Log.LogStatus(PadLeft(IntToStr(Plugins[I].Id),                   3) + ' ' +
+                  PadRight(Plugins[I].Name,                 NameLength) +
+                  PadRight(Plugins[I].Version,                       8) +
+                  PadRight(PluginStatusToString(Plugins[I].Status), 10) +
+                  PadRight(BoolToStr(Plugins[I].Paused, true),       7) + ' ' + 
+                  PadRight(IntToStr(Plugins[I].CountErrors),         6), 'LuaCore Plugins');
+  if (High(Plugins) < 0) then
+    Log.LogStatus(' no plugins loaded ', 'LuaCore Plugins');
 end;
 
 // Implementation of TLuaPlugin
 //--------
-constructor TLuaPlugin.Create(Filename: IPath; Id: Integer);
+constructor TLuaPlugin.Create(Filename: IPath; Id: integer);
 begin
   inherited Create;
   Self.iId := Id;
   Self.Filename := Filename;
 
   // set some default attributes
-  Self.bPaused := False;
+  Self.bPaused    := false;
   Self.ErrorCount := 0;
-  Self.sName := 'not registred';
-  Self.sStatus := psNone;
-  Self.ShutDown := False;
+  Self.sName      := 'not registred';
+  Self.sStatus    := psNone;
+  Self.ShutDown   := false;
 
   State := nil; //< to prevent calls to unopened state
 end;
@@ -756,7 +761,7 @@ begin
       // plugin_init() if false or nothing is returned plugin init is aborted
       if (CallFunctionByName('plugin_init', 0, 1)) then
       begin
-        If (HasRegistred) AND (sStatus = psNone) AND (lua_toBoolean(State, 1)) then
+        if (HasRegistred) and (sStatus = psNone) and (lua_toBoolean(State, 1)) then
         begin
           sStatus := psRunning;
           ClearStack;
@@ -789,21 +794,21 @@ begin
   end;
 end;
 
-procedure TLuaPlugin.Register(Name, Version, Author, Url: String);
+procedure TLuaPlugin.Register(Name, Version, Author, Url: string);
 begin
-  sName := Name;
+  sName    := Name;
   sVersion := Version;
-  sAuthor := Author;
-  sURL := Url;
+  sAuthor  := Author;
+  sURL     := Url;
 end;
 
 { returns true if plugin has called register }
-function TLuaPlugin.HasRegistred: Boolean;
+function TLuaPlugin.HasRegistred: boolean;
 begin
   Result := (Self.sName <> 'not registred');
 end;
 
-procedure TLuaPlugin.PausePlugin(doPause: Boolean);
+procedure TLuaPlugin.PausePlugin(doPause: boolean);
 begin
   bPaused := doPause;
 end;
@@ -811,7 +816,7 @@ end;
 { unload plugin after execution of the current function }
 procedure TLuaPlugin.ShutMeDown;
 begin
-  ShutDown := True;
+  ShutDown := true;
 end;
 
 { calls the lua function in the global w/ the given name.
@@ -822,7 +827,10 @@ end;
   if result is false there was an error calling the function,
   if ReportErrors is true the errorstring is popped from stack
   and written to error.log otherwise it is left on stack}
-function TLuaPlugin.CallFunctionByName(Name: String; const nArgs: Integer; const nResults: Integer; const ReportErrors: Boolean): Boolean;
+function TLuaPlugin.CallFunctionByName(Name:               string; 
+                                       const nArgs:        integer;
+				       const nResults:     integer;
+				       const ReportErrors: boolean): boolean;
 begin
   Result := false;
   if (State <> nil) then
@@ -861,14 +869,14 @@ begin
       lua_pushstring(State, PChar('plugin paused'));
     end;
 
-    if (not Result) AND (ReportErrors) then
+    if (not Result) and (ReportErrors) then
       Log.LogError(lua_toString(State, -1), 'lua/' + sName);
 
     if ShutDown then
     begin // plugin indicates self shutdown
-      ShutDown := False;
+      ShutDown := false;
       Unload;
-      Result := False;
+      Result := false;
     end
   end
   else
@@ -904,11 +912,11 @@ begin
   end;
 end;
 
-function TLuaPlugin_Register (L: Plua_State): Integer; cdecl;
+function TLuaPlugin_Register (L: Plua_State): integer; cdecl;
   var
-    Id: Integer;
-    P: TLuaPlugin;
-    Name, Version, Author, Url: String;
+    Id: integer;
+    P:  TLuaPlugin;
+    Name, Version, Author, Url: string;
 begin
   if (lua_gettop(L) >= 2) then
   begin // we got at least name and version
@@ -924,7 +932,7 @@ begin
     Id := lua_ToInteger(L, lua_upvalueindex(1));
 
     //get version and name
-    Name := lua_tostring(L, 1);
+    Name    := lua_tostring(L, 1);
     Version := lua_tostring(L, 2);
 
     //get optional parameters
@@ -951,7 +959,7 @@ begin
     P := LuaCore.GetPluginById(Id);
     if (P <> nil) then
       P.Register(Name, Version, Author, Url)
-    Else
+    else
       luaL_error(L, PChar('wrong id in upstream'));
 
     // remove function from global register
@@ -960,7 +968,7 @@ begin
 
     // return true
     Result := 1;
-    lua_pushboolean(L, True);  
+    lua_pushboolean(L, true);  
   end
   else
     luaL_error(L, PChar('not enough arguments, at least 2 expected. in TLuaPlugin_Register'));
@@ -969,9 +977,9 @@ end;
 { custom lua panic function
   it writes error string to error.log and raises an ELuaException
   that may be caught }
-function TLua_CustomPanic (L: Plua_State): Integer; cdecl;
+function TLua_CustomPanic (L: Plua_State): integer; cdecl;
   var
-    Msg: String;
+    Msg: string;
 begin
   if (lua_isString(L, -1)) then
     Msg := lua_toString(L, -1)
@@ -992,7 +1000,7 @@ end;
   unlike standard require the module tables are not returned
   the standard require function in _require is called by
   this function }
-function TLua_CustomRequire(L: PLua_State): Integer; cdecl;
+function TLua_CustomRequire(L: PLua_State): integer; cdecl;
 begin
   // no results
   Result := 0;
