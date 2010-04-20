@@ -7,10 +7,11 @@
 #define PROJECTM_VERSION_1_00_00 1000000 // 1.00.00 = 1.0 or 1.01 (same version number for 1.0 and 1.01)
 #define PROJECTM_VERSION_1_10_00 1010000 // 1.10.00 = 1.1 (bigger than 1.2 due to strange versioning)
 #define PROJECTM_VERSION_1_02_00 1002000 // 1.02.00 = 1.2
+#define PROJECTM_VERSION_2_00_00 2000000 // 2.00.00 = 2.0
 
 // version of projectM to wrap (see PROJECTM_VERSION)
 #ifndef PROJECTM_VERSION_INT
-#define PROJECTM_VERSION_INT PROJECTM_VERSION_1_02_00
+#define PROJECTM_VERSION_INT PROJECTM_VERSION_2_00_00
 #endif
 
 extern "C" {

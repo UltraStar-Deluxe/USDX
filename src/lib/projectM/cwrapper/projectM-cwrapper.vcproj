@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="9,00"
 	Name="projectM-cwrapper"
 	ProjectGUID="{8E653284-12F3-4A90-9D0D-4195557051F7}"
 	RootNamespace="projectMcwrapper"
 	Keyword="Win32Proj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -40,14 +41,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.2.0\projectM&quot;;&quot;D:\daten\ultrastar\libprojectM\libs\pthreads\Pre-built.2\include&quot;"
+				AdditionalIncludeDirectories="&quot;D:\daten\projectM-2.0.1-Source&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;PROJECTMCWRAPPER_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -61,11 +61,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libprojectM.lib"
+				AdditionalDependencies="projectM.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.2.0\projectM\Debug&quot;"
+				AdditionalLibraryDirectories="&quot;D:\daten\projectM-2.0.1-Source\build\Debug&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -85,9 +87,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -118,13 +117,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.2.0\projectM&quot;;&quot;D:\daten\ultrastar\libprojectM\libs\pthreads\Pre-built.2\include&quot;"
+				AdditionalIncludeDirectories="&quot;D:\daten\projectM-2.0.1-Source&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;PROJECTMCWRAPPER_EXPORTS"
 				ExceptionHandling="1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -138,13 +136,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libprojectM.lib"
+				AdditionalDependencies="projectM.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;D:\daten\ultrastar\libprojectM\libprojectM-1.2.0\projectM\Release&quot;"
+				AdditionalLibraryDirectories="&quot;D:\daten\projectM-2.0.1-Source\build\Release&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -164,9 +164,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
