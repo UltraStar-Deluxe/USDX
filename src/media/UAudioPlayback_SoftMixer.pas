@@ -449,7 +449,8 @@ var
   Mixer: TAudioMixerStream;
 begin
   // only paused streams are not flushed
-  NeedsRewind := not (Status = ssPaused);
+  if (Status = ssPaused) then
+    NeedsRewind := false;
 
   // rewind if necessary. Cases that require no rewind are:
   // - stream was created and never played
@@ -921,7 +922,8 @@ begin
     LockSampleBuffer();
 
     SourceStream.Position := Time;
-    NeedsRewind := not (Status = ssStopped); 
+    if (Status = ssStopped) then
+      NeedsRewind := false;
     // do not use outdated data
     FlushBuffers();
 
