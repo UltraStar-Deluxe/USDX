@@ -81,7 +81,6 @@ type
       HighSpeed:    boolean;
       CoverFull:    boolean;
       CoverTime:    real;
-      MusicPreviewTimer: PSDL_TimerID;
 
       CoverX:       integer;
       CoverY:       integer;
@@ -1534,19 +1533,11 @@ end;
 
 procedure TScreenSong.OnHide;
 begin
-  // if preview is not loaded: load musicfile now; not on cat-main!
-  if (PreviewOpened <> Interaction) and not CatSongs.Song[Interaction].main then
-    AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Mp3));
-
   // turn music volume to 100%
   AudioPlayback.SetVolume(1.0);
 
-  // if hide then stop music (for party mode popup on exit)
-  if (Display.NextScreen <> @ScreenSing) {and
-     (Display.NextScreen <> @ScreenSingModi) }then
-  begin
-    StopMusicPreview();
-  end;
+  // stop preview
+  StopMusicPreview();
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -1766,9 +1757,6 @@ end;
 
 procedure TScreenSong.StopMusicPreview();
 begin
-  // Cancel pending preview requests
-  SDL_RemoveTimer(MusicPreviewTimer);
-
   // Stop preview of previous song
   AudioPlayback.Stop;
 end;

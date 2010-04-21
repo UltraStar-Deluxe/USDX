@@ -564,12 +564,6 @@ begin
     LyricsState.TotalTime := AudioPlayback.Length;
   LyricsState.UpdateBeats();
 
-  // prepare music
-  AudioPlayback.Stop();
-  AudioPlayback.Position := CurrentSong.Start;
-  // synchronize music to the lyrics
-  AudioPlayback.SetSyncSource(LyricsSync);
-
   // prepare and start voice-capture
   AudioInput.CaptureStart;
 
@@ -666,7 +660,16 @@ procedure TScreenSing.onShowFinish;
 begin
   // hide cursor on singscreen show    
   Display.SetCursor;
-  
+
+  // prepare music
+  // Important: AudioPlayback must not be initialized in onShow() as TScreenSong
+  // uses stops AudioPlayback in onHide() which interferes with TScreenSings onShow.
+  AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+  AudioPlayback.SetVolume(1.0);
+  AudioPlayback.Position := CurrentSong.Start;
+  // synchronize music to the lyrics
+  AudioPlayback.SetSyncSource(LyricsSync);
+
   // start lyrics
   LyricsState.Resume();
 
