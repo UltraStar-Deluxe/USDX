@@ -47,6 +47,8 @@ type
   TGenericPlaybackStream = class(TAudioPlaybackStream)
     private
       Engine: TAudioPlayback_SoftMixer;
+      LastReadSize: integer;  // size of data returned by the last ReadData() call
+      LastReadTime: Cardinal; // time of the last ReadData() call
 
       SampleBuffer:      PByteArray;
       SampleBufferSize:  integer;
@@ -86,6 +88,8 @@ type
       procedure SetLoop(Enabled: boolean);  override;
       function GetPosition: real;           override;
       procedure SetPosition(Time: real);    override;
+
+      function GetRemainingBufferSize(): integer;
     public
       constructor Create(Engine: TAudioPlayback_SoftMixer);
       destructor Destroy(); override;
@@ -369,6 +373,8 @@ begin
   fVolume := 0;
   SoundEffects.Clear;
   FadeInTime := 0;
+
+  LastReadSize := 0;
 end;
 
 function TGenericPlaybackStream.Open(SourceStream: TAudioSourceStream): boolean;
@@ -494,7 +500,11 @@ begin
     Exit;
 
   Status := ssStopped;
+  // stop fading
+  FadeInTime := 0;
 
+  LastReadSize := 0;
+  
   Mixer := Engine.GetMixer();
   if (Mixer <> nil) then
     Mixer.RemoveStream(Self);
@@ -542,6 +552,7 @@ begin
   SampleBufferCount := 0;
   SampleBufferPos := 0;
   SourceBufferCount := 0;
+  LastReadSize := 0;
 end;
 
 procedure TGenericPlaybackStream.ApplySoundEffects(Buffer: PByteArray; BufferSize: integer);
@@ -574,6 +585,8 @@ var
   PadFrame: PByteArray;
 begin
   Result := -1;
+
+  LastReadSize := 0;
 
   // sanity check for the source-stream
   if (not assigned(SourceStream)) then
@@ -746,7 +759,9 @@ begin
   end;
 
   // BytesNeeded now contains the number of remaining bytes we were not able to fetch
-  Result := BufferSize - BytesNeeded;
+  LastReadTime := SDL_GetTicks;
+  LastReadSize := BufferSize - BytesNeeded;
+  Result := LastReadSize;
 end;
 
 function TGenericPlaybackStream.GetPCMData(var Data: TPCMData): cardinal;
@@ -841,6 +856,28 @@ begin
   UnlockSampleBuffer();
 end;
 
+{**
+ * Returns the approximate number of bytes left in the audio engines buffer queue.
+ *}
+function TGenericPlaybackStream.GetRemainingBufferSize(): integer;
+var
+  TimeDiff: double;
+begin
+  if (LastReadSize <= 0) then
+  begin
+    Result := 0;
+  end
+  else
+  begin
+    TimeDiff := (SDL_GetTicks() - LastReadTime) / 1000;
+    // we gave the data-sink LastReadSize bytes at the last call to ReadData().
+    // Calculate how much of this should be left in the data-sink
+    Result := LastReadSize - Trunc(TimeDiff * Engine.FormatInfo.BytesPerSec);
+    if (Result < 0) then
+      Result := 0;
+  end;
+end;
+
 function TGenericPlaybackStream.GetPosition: real;
 var
   BufferedTime: double;
@@ -849,11 +886,24 @@ begin
   begin
     LockSampleBuffer();
 
-    // calc the time of source data that is buffered (in the SampleBuffer and SourceBuffer)
-    // but not yet outputed
-    BufferedTime := (SampleBufferCount - SampleBufferPos) / Engine.FormatInfo.BytesPerSec +
-                    SourceBufferCount / SourceStream.GetAudioFormatInfo().BytesPerSec;
-    // and subtract it from the source position
+    // the duration of source stream data that is buffered in this stream.
+    // (this is the data retrieved from the source but has not been resampled)
+    BufferedTime := SourceBufferCount / SourceStream.GetAudioFormatInfo().BytesPerSec;
+
+    // the duration of data that is buffered in this stream.
+    // (this is the already resampled data that has not yet been passed to the audio engine)
+    BufferedTime := BufferedTime + (SampleBufferCount - SampleBufferPos) / Engine.FormatInfo.BytesPerSec;
+
+    // Now consider the samples left in the engine's (e.g. SDL) buffer.
+    // Otherwise the result calculated so far will not change until the callback
+    // is called the next time.
+    // For example, if the buffer has a size of 2048 frames we would not be
+    // able to return a new new position for approx. 40ms (at 44.1kHz) which
+    // would be very bad for synching.
+    BufferedTime := BufferedTime + GetRemainingBufferSize() / Engine.FormatInfo.BytesPerSec;
+
+    // use the timestamp of the source as reference and subtract the time of
+    // the data that is still buffered and not yet output.
     Result := SourceStream.Position - BufferedTime;
 
     UnlockSampleBuffer();
