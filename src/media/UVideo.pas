@@ -81,6 +81,7 @@ uses
   swscale,
   {$ENDIF}
   gl,
+  glu,
   glext,
   textgl,
   UMediaCore_FFmpeg,
@@ -92,13 +93,23 @@ uses
   UGraphic,
   UPath;
 
+{$DEFINE PIXEL_FMT_BGR}
+
 const
 {$IFDEF PIXEL_FMT_BGR}
   PIXEL_FMT_OPENGL = GL_BGR;
   PIXEL_FMT_FFMPEG = PIX_FMT_BGR24;
+  PIXEL_FMT_SIZE   = 3;
+
+  // looks strange on linux:
+  //PIXEL_FMT_OPENGL = GL_RGBA;
+  //PIXEL_FMT_FFMPEG = PIX_FMT_BGR32;
+  //PIXEL_FMT_SIZE   = 4;
 {$ELSE}
+  // looks strange on linux:
   PIXEL_FMT_OPENGL = GL_RGB;
   PIXEL_FMT_FFMPEG = PIX_FMT_RGB24;
+  PIXEL_FMT_SIZE   = 3;
 {$ENDIF}
 
 type
@@ -142,9 +153,11 @@ type
     fAspectCorrection: TAspectCorrection;
 
     fTimeBase: extended;  //**< FFmpeg time base per time unit
-    fTime:     extended;  //**< video time position (absolute)
+    fFrameTime: extended;  //**< video time position (absolute)
     fLoopTime: extended;  //**< start time of the current loop
 
+    fPboEnabled: boolean;
+    fPboId:      GLuint;
     procedure Reset();
     function DecodeFrame(): boolean;
     procedure SynchronizeTime(Frame: PAVFrame; var pts: double);
@@ -274,10 +287,13 @@ end;
 function TVideo_FFmpeg.Open(const FileName : IPath): boolean;
 var
   errnum: Integer;
+  glErr: GLenum;
   AudioStreamIndex: integer;
 begin
   Result := false;
   Reset();
+
+  fPboEnabled := PboSupported;
 
   // use custom 'ufile' protocol for UTF-8 support
   errnum := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
@@ -425,14 +441,33 @@ begin
   end;
   {$ENDIF}
 
-
   fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
   fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
+
+  if (fPboEnabled) then
+  begin
+    glGetError();
+
+    glGenBuffersARB(1, @fPboId);
+    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
+    glBufferDataARB(
+        GL_PIXEL_UNPACK_BUFFER_ARB,
+        fCodecContext^.width * fCodecContext^.height * PIXEL_FMT_SIZE,
+        nil,
+        GL_STREAM_DRAW_ARB);
+    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+    glErr := glGetError();
+    if (glErr <> GL_NO_ERROR) then
+    begin
+      fPboEnabled := false;
+      Log.LogError('PBO initialization failed: ' + gluErrorString(glErr), 'TVideo_FFmpeg.Open');
+    end;
+  end;
 
   // we retrieve a texture just once with glTexImage2D and update it with glTexSubImage2D later.
   // Benefits: glTexSubImage2D is faster and supports non-power-of-two widths/height.
   glBindTexture(GL_TEXTURE_2D, fFrameTex);
-  glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   glTexImage2D(GL_TEXTURE_2D, 0, 3, fTexWidth, fTexHeight, 0,
       PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -447,10 +482,10 @@ begin
   // close previously opened video
   Close();
 
-  fOpened       := False;
-  fPaused       := False;
-  fTimeBase      := 0;
-  fTime          := 0;
+  fOpened := False;
+  fPaused := False;
+  fTimeBase := 0;
+  fFrameTime := 0;
   fStream := nil;
   fStreamIndex := -1;
   fFrameTexValid := false;
@@ -459,6 +494,8 @@ begin
 
   fLoop := false;
   fLoopTime := 0;
+
+  fPboId := 0;
 
   fAspectCorrection := acoCrop;
 end;
@@ -493,6 +530,9 @@ begin
   fCodecContext  := nil;
   fFormatContext := nil;
 
+  if (fPboId <> 0) then
+    glDeleteBuffersARB(1, @fPboId);
+
   fOpened := False;
 end;
 
@@ -503,22 +543,22 @@ begin
   if (pts <> 0) then
   begin
     // if we have pts, set video clock to it
-    fTime := pts;
+    fFrameTime := pts;
   end else
   begin
     // if we aren't given a pts, set it to the clock
-    pts := fTime;
+    pts := fFrameTime;
   end;
   // update the video clock
   FrameDelay := av_q2d(fCodecContext^.time_base);
   // if we are repeating a frame, adjust clock accordingly
   FrameDelay := FrameDelay + Frame^.repeat_pict * (FrameDelay * 0.5);
-  fTime := fTime + FrameDelay;
+  fFrameTime := fFrameTime + FrameDelay;
 end;
 
 {**
  * Decode a new frame from the video stream.
- * The decoded frame is stored in fAVFrame. fTime is updated to the new frame's
+ * The decoded frame is stored in fAVFrame. fFrameTime is updated to the new frame's
  * time.
  * @param pts will be updated to the presentation time of the decoded frame.
  * returns true if a frame could be decoded. False if an error or EOF occured.
@@ -629,13 +669,15 @@ end;
 procedure TVideo_FFmpeg.GetFrame(Time: Extended);
 var
   errnum: Integer;
-  NewTime: Extended;
-  TimeDifference: Extended;
+  glErr: GLenum;
+  CurrentTime: Extended;
+  TimeDiff: Extended;
   DropFrameCount: Integer;
   i: Integer;
   Success: boolean;
+  BufferPtr: PGLvoid;
 const
-  FRAME_DROPCOUNT = 3;
+  SKIP_FRAME_DIFF = 0.010; // start skipping if we are >= 10ms too late
 begin
   if not fOpened then
     Exit;
@@ -643,24 +685,37 @@ begin
   if fPaused then
     Exit;
 
+  {*
+   * TODO:
+   * Check if it is correct to assume that fTimeBase is the time of one frame?
+   * The tutorial and FFPlay do not make this assumption.
+   *}
+
+  {*
+   * Synchronization - begin
+   *}
+
   // requested stream position (relative to the last loop's start)
-  NewTime := Time - fLoopTime;
+  if (fLoop) then
+    CurrentTime := Time - fLoopTime
+  else
+    CurrentTime := Time;
 
   // check if current texture still contains the active frame
   if (fFrameTexValid) then
   begin
     // time since the last frame was returned
-    TimeDifference := NewTime - fTime;
+    TimeDiff := CurrentTime - fFrameTime;
 
     {$IFDEF DebugDisplay}
     DebugWriteln('Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-                 'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
+                 'VideoTime: '+inttostr(floor(fFrameTime*1000)) + sLineBreak +
                  'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
                  'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
     {$endif}
 
-    // check if last time is more than one frame in the past
-    if (TimeDifference < fTimeBase) then
+    // check if time has reached the next frame
+    if (TimeDiff < fTimeBase) then
     begin
       {$ifdef DebugFrames}
       // frame delay debug display
@@ -670,7 +725,7 @@ begin
       {$IFDEF DebugDisplay}
       DebugWriteln('not getting new frame' + sLineBreak +
           'Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-          'VideoTime: '+inttostr(floor(fTime*1000)) + sLineBreak +
+          'VideoTime: '+inttostr(floor(fFrameTime*1000)) + sLineBreak +
           'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
           'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
       {$endif}
@@ -684,12 +739,15 @@ begin
   Log.BenchmarkStart(15);
   {$ENDIF}
 
-  // fetch new frame (updates fTime)
+  // fetch new frame (updates fFrameTime)
   Success := DecodeFrame();
-  TimeDifference := NewTime - fTime;
+  TimeDiff := CurrentTime - fFrameTime;
 
   // check if we have to skip frames
-  if (TimeDifference >= FRAME_DROPCOUNT*fTimeBase) then
+  // Either if we are one frame behind or if the skip threshold has been reached.
+  // Do not skip if the difference is less than fTimeBase as there is no next frame.
+  // Note: We assume that fTimeBase is the length of one frame.
+  if (TimeDiff >= Max(fTimeBase, SKIP_FRAME_DIFF)) then
   begin
     {$IFDEF DebugFrames}
     //frame drop debug display
@@ -702,11 +760,11 @@ begin
     {$endif}
 
     // update video-time
-    DropFrameCount := Trunc(TimeDifference / fTimeBase);
-    fTime := fTime + DropFrameCount*fTimeBase;
+    DropFrameCount := Trunc(TimeDiff / fTimeBase);
+    fFrameTime := fFrameTime + DropFrameCount*fTimeBase;
 
-    // skip half of the frames, this is much smoother than to skip all at once
-    for i := 1 to DropFrameCount (*div 2*) do
+    // skip frames
+    for i := 1 to DropFrameCount do
       Success := DecodeFrame();
   end;
 
@@ -718,11 +776,15 @@ begin
       // we have to loop, so rewind
       SetPosition(0);
       // record the start-time of the current loop, so we can
-      // determine the position in the stream (fTime-fLoopTime) later.
+      // determine the position in the stream (fFrameTime-fLoopTime) later.
       fLoopTime := Time;
     end;
     Exit;
   end;
+
+  {*
+   * Synchronization - end
+   *}
 
   // TODO: support for pan&scan
   //if (fAVFrame.pan_scan <> nil) then
@@ -732,9 +794,9 @@ begin
 
   // otherwise we convert the pixeldata from YUV to RGB
   {$IFDEF UseSWScale}
-  errnum := sws_scale(fSwScaleContext, @(fAVFrame.data), @(fAVFrame.linesize),
+  errnum := sws_scale(fSwScaleContext, @fAVFrame.data, @fAVFrame.linesize,
           0, fCodecContext^.Height,
-          @(fAVFrameRGB.data), @(fAVFrameRGB.linesize));
+          @fAVFrameRGB.data, @fAVFrameRGB.linesize);
   {$ELSE}
   // img_convert from lib/ffmpeg/avcodec.pas is actually deprecated.
   // If ./configure does not find SWScale then this gives the error
@@ -762,10 +824,48 @@ begin
   //   Or should we add padding with avpicture_fill? (check which one is faster)
   //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  glBindTexture(GL_TEXTURE_2D, fFrameTex);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-      fCodecContext^.width, fCodecContext^.height,
-      PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, fAVFrameRGB^.data[0]);
+  // TODO: check if this is faster
+  //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+  if (not fPboEnabled) then
+  begin
+    glBindTexture(GL_TEXTURE_2D, fFrameTex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+        fCodecContext^.width, fCodecContext^.height,
+        PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, fAVFrameRGB^.data[0]);
+  end
+  else // fPboEnabled
+  begin
+    glGetError();
+
+    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
+    glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB,
+        fCodecContext^.height * fCodecContext^.width * PIXEL_FMT_SIZE,
+        nil,
+        GL_STREAM_DRAW_ARB);
+
+    bufferPtr := glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+    if(bufferPtr <> nil) then
+    begin
+      Move(fAVFrameRGB^.data[0]^, bufferPtr^,
+           fCodecContext^.height * fCodecContext^.width * PIXEL_FMT_SIZE);
+
+      // release pointer to mapping buffer
+      glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
+    end;
+
+    glBindTexture(GL_TEXTURE_2D, fFrameTex);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+        fCodecContext^.width, fCodecContext^.height,
+        PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
+
+    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glErr := glGetError();
+    if (glErr <> GL_NO_ERROR) then
+      Log.LogError('PBO texture stream error: ' + gluErrorString(glErr), 'TVideo_FFmpeg.GetFrame');
+  end;
 
   if (not fFrameTexValid) then
     fFrameTexValid := true;
@@ -898,7 +998,7 @@ end;
 procedure TVideo_FFmpeg.ShowDebugInfo();
 begin
   {$IFDEF Info}
-  if (fTime+fTimeBase < 0) then
+  if (fFrameTime+fTimeBase < 0) then
   begin
     glColor4f(0.7, 1, 0.3, 1);
     SetFontStyle (1);
@@ -959,8 +1059,8 @@ end;
 {**
  * Sets the stream's position.
  * The stream is set to the first keyframe with timestamp <= Time.
- * Note that fTime is set to Time no matter if the actual position seeked to is
- * at Time or the time of a preceding keyframe. fTime will be updated to the
+ * Note that fFrameTime is set to Time no matter if the actual position seeked to is
+ * at Time or the time of a preceding keyframe. fFrameTime will be updated to the
  * actual frame time when GetFrame() is called the next time.
  * @param Time new position in seconds
  *}
@@ -986,7 +1086,7 @@ begin
   // requested time, let the sync in GetFrame() do its job.
   SeekFlags := AVSEEK_FLAG_BACKWARD;
 
-  fTime := Time;
+  fFrameTime := Time;
   fEOF := false;
   fFrameTexValid := false;
 
@@ -1001,7 +1101,7 @@ end;
 
 function  TVideo_FFmpeg.GetPosition: real;
 begin
-  Result := fTime;
+  Result := fFrameTime;
 end;
 
 initialization

@@ -206,6 +206,10 @@ var
   // textures for software mouse cursor
     Tex_Cursor_Unpressed: TTexture;
     Tex_Cursor_Pressed:   TTexture;
+
+
+  PboSupported: boolean;
+
 const
   Skin_BGColorR = 1;
   Skin_BGColorG = 1;
@@ -461,6 +465,12 @@ begin
   // Other extensions e.g. OpenGL 1.3-2.0 or Framebuffer-Object might be loaded here
   // ...
   //Load_GL_EXT_framebuffer_object();
+
+  // PBO functions are loaded with VBO
+  //PboSupported := Load_GL_ARB_pixel_buffer_object()
+  //    and Load_GL_ARB_vertex_buffer_object();
+  //Log.LogWarn('PBOSupported: ' + BoolToStr(PboSupported, true), 'LoadOpenGLExtensions');
+  PboSupported := false;
 end;
 
 const
