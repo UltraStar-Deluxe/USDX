@@ -171,6 +171,10 @@ var
   ITheme:      TUTF8StringDynArray;
   ISkin:       TUTF8StringDynArray;
 
+{*
+ * Options
+ *}
+
 const
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
@@ -178,15 +182,12 @@ const
   IDifficulty:  array[0..2] of UTF8String = ('Easy', 'Medium', 'Hard');
   ITabs:        array[0..1] of UTF8String = ('Off', 'On');
 
+const
   ISorting:     array[0..6] of UTF8String = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2');
-  sEdition  = 0;
-  sGenre    = 1;
-  sLanguage = 2;
-  sFolder   = 3;
-  sTitle    = 4;
-  sArtist   = 5;
-  sArtist2  = 6;
+type
+  TSortingType = (sEdition, sGenre, sLanguage, sFolder, sTitle, sArtist, sArtist2);
 
+const  
   IDebug:            array[0..1] of UTF8String  = ('Off', 'On');
 
   IScreens:          array[0..1] of UTF8String  = ('1', '2');
@@ -255,6 +256,10 @@ const
   // Recording options
   IChannelPlayer: array[0..6] of UTF8String = ('Off', '1', '2', '3', '4', '5', '6');
   IMicBoost:      array[0..3] of UTF8String = ('Off', '+6dB', '+12dB', '+18dB');
+
+{*
+ * Translated options
+ *}
 
 var
   ILanguageTranslated:         array of UTF8String;

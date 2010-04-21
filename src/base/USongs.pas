@@ -61,6 +61,7 @@ uses
   {$ENDIF}
   UPath,
   USong,
+  UIni,
   UCatCovers;
 
 type
@@ -111,7 +112,7 @@ type
     procedure BrowseDir(Dir: IPath); // should return number of songs in the future
     procedure BrowseTXTFiles(Dir: IPath);
     procedure BrowseXMLFiles(Dir: IPath);
-    procedure Sort(Order: integer);
+    procedure Sort(Order: TSortingType);
     property  Processing: boolean read fProcessing;
   end;
 
@@ -162,7 +163,6 @@ uses
   UFiles,
   UGraphic,
   UMain,
-  UIni,
   UPathUtils,
   UNote,
   UFilesystem,
@@ -394,7 +394,7 @@ begin
   Result := UTF8CompareText(TSong(Song1).Language, TSong(Song2).Language);
 end;
 
-procedure TSongs.Sort(Order: integer);
+procedure TSongs.Sort(Order: TSortingType);
 var
   CompareFunc: TListSortCompare;
 begin
@@ -428,7 +428,7 @@ end;
 
 procedure TCatSongs.SortSongs();
 begin
-  case Ini.Sorting of
+  case TSortingType(Ini.Sorting) of
     sEdition: begin
         Songs.Sort(sTitle);
         Songs.Sort(sArtist);
@@ -528,7 +528,7 @@ begin
     // if tabs are on, add section buttons for each new section
     if (Ini.Tabs = 1) then
     begin
-      case (Ini.Sorting) of
+      case (TSortingType(Ini.Sorting)) of
         sEdition: begin
           if (CompareText(CurCategory, CurSong.Edition) <> 0) then
           begin

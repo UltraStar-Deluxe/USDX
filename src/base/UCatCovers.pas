@@ -92,6 +92,7 @@ var
   Ini: TMemIniFile;
   List: TStringlist;
   I, J: Integer;
+  SortType: TSortingType;
   Filename: IPath;
   Name, TmpName: UTF8String;
   CatCover: IPath;
@@ -131,12 +132,12 @@ begin
     Filename := CoversPath.Append(FileInfo.Name);
     Name := FileInfo.Name.SetExtension('').ToUTF8;
 
-    for I := 0 to high(ISorting) do
+    for SortType := Low(TSortingType) to High(TSortingType) do
     begin
       TmpName := Name;
-      if (I = sTitle) and (UTF8Pos('Title', TmpName) <> 0) then
+      if (SortType = sTitle) and (UTF8Pos('Title', TmpName) <> 0) then
         UTF8Delete(TmpName, UTF8Pos('Title', TmpName), 5)
-      else if (I = sArtist) and (UTF8Pos('Artist', TmpName) <> 0) then
+      else if (SortType = sArtist) and (UTF8Pos('Artist', TmpName) <> 0) then
         UTF8Delete(TmpName, UTF8Pos('Artist', TmpName), 6);
 
       if not CoverExists(I, TmpName) then
