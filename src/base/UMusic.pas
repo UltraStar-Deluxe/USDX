@@ -324,28 +324,33 @@ type
   IGenericPlayback = Interface
   ['{63A5EBC3-3F4D-4F23-8DFB-B5165FCE33DD}']
       function GetName: String;
+  end;
 
-      function Open(const Filename: IPath): boolean; // true if succeed
-      procedure Close;
-
+  IVideo = interface
+  ['{58DFC674-9168-41EA-B59D-A61307242B80}']
       procedure Play;
       procedure Pause;
       procedure Stop;
 
+      procedure SetLoop(Enable: boolean);
+      function GetLoop(): boolean;
+
       procedure SetPosition(Time: real);
       function GetPosition: real;
 
+      procedure GetFrame(Time: Extended);
+      procedure DrawGL(Screen: integer);
+
+      property Loop: boolean read GetLoop write SetLoop;
       property Position: real read GetPosition write SetPosition;
   end;
 
   IVideoPlayback = Interface( IGenericPlayback )
   ['{3574C40C-28AE-4201-B3D1-3D1F0759B131}']
-    function Init(): boolean;
-    function Finalize: boolean;
+      function Init(): boolean;
+      function Finalize: boolean;
 
-    procedure GetFrame(Time: Extended); // WANT TO RENAME THESE TO BE MORE GENERIC
-    procedure DrawGL(Screen: integer);  // WANT TO RENAME THESE TO BE MORE GENERIC
-
+      function Open(const FileName : IPath): IVideo;
   end;
 
   IVideoVisualization = Interface( IVideoPlayback )
@@ -369,6 +374,18 @@ type
       procedure Rewind;
       function  Finished: boolean;
       function  Length: real;
+
+      function Open(const Filename: IPath): boolean; // true if succeed
+      procedure Close;
+
+      procedure Play;
+      procedure Pause;
+      procedure Stop;
+
+      procedure SetPosition(Time: real);
+      function GetPosition: real;
+
+      property Position: real read GetPosition write SetPosition;
 
       // Sounds
       // TODO:
@@ -813,12 +830,6 @@ begin
   // stop any active captures
   if (AudioInput <> nil) then
     AudioInput.CaptureStop;
-
-  if (VideoPlayback <> nil) then
-    VideoPlayback.Close;
-
-  if (Visualization <> nil) then
-    Visualization.Close;
 
   UnloadMediaModules();
 end;

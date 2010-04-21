@@ -36,6 +36,7 @@ interface
 uses
   UThemes,
   UMenuBackground,
+  UMusic,
   UVideo,
   UPath;
 
@@ -84,6 +85,7 @@ type }
   TMenuBackgroundVideo = class (TMenuBackground)
     private
       fFilename: IPath;
+      fBgVideo: IVideo;
     public
       constructor Create(const ThemedSettings: TThemeBackground); override;
       procedure   OnShow; override;
@@ -102,7 +104,6 @@ implementation
 uses
   gl,
   glext,
-  UMusic,
   SysUtils,
   UTime,
   USkins,
@@ -116,42 +117,48 @@ begin
     raise EMenuBackgroundError.Create('TMenuBackgroundVideo: No video filename present');
 
   fFileName := Skin.GetTextureFileName(ThemedSettings.Tex);
-  if fFilename.IsFile and VideoPlayback.Open(fFileName) then
-  begin
-    VideoBGTimer.SetTime(0);
-    VideoPlayback.Play;
-  end
-  else
+  if (not fFilename.IsFile) then
     raise EMenuBackgroundError.Create('TMenuBackgroundVideo: Can''t load background video: ' + fFilename.ToNative);
 end;
 
 destructor  TMenuBackgroundVideo.Destroy;
 begin
-
 end;
 
-procedure   TMenuBackgroundVideo.OnShow;
+procedure TMenuBackgroundVideo.OnShow;
 begin
-  if VideoPlayback.Open( fFileName ) then
+  fBgVideo := VideoPlayback.Open(fFileName);
+  if (fBgVideo <> nil) then
   begin
     VideoBGTimer.SetTime(0);
-    VideoPlayback.Play;
+    fBgVideo.Loop := true;
+    fBgVideo.Play;
   end;
 end;
 
 procedure   TMenuBackgroundVideo.OnFinish;
 begin
-
+  // unload video
+  fBgVideo := nil;
 end;
 
-procedure   TMenuBackgroundVideo.Draw;
+procedure TMenuBackgroundVideo.Draw;
 begin
-  If (ScreenAct = 1) then //Clear just once when in dual screen mode
+  // clear just once when in dual screen mode
+  if (ScreenAct = 1) then
+  begin
     glClear(GL_DEPTH_BUFFER_BIT);
+    // video failure -> draw blank background
+    if (fBgVideo = nil) then
+      glClear(GL_COLOR_BUFFER_BIT);    
+  end;
 
-  VideoPlayback.GetFrame(VideoBGTimer.GetTime());
+  if (fBgVideo <> nil) then
+  begin
+    fBgVideo.GetFrame(VideoBGTimer.GetTime());
     // FIXME: why do we draw on screen 2? Seems to be wrong.
-  VideoPlayback.DrawGL(2);
+    fBgVideo.DrawGL(2);
+  end;
 end;
 
 // Implementation of TBGVideo

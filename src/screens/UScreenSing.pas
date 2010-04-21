@@ -105,7 +105,8 @@ type
     SungToEnd: boolean;
 
     fShowVisualization: boolean;
-    fCurrentVideoPlaybackEngine: IVideoPlayback;
+    fCurrentVideo: IVideo;
+    fVideoClip:    IVideo;
 
     // some settings to be set by plugins
     settings: record
@@ -179,13 +180,14 @@ begin
         fShowVisualization := not fShowVisualization;
 
         if fShowVisualization then
-          fCurrentVideoPlaybackEngine := Visualization
+        begin
+          fCurrentVideo := Visualization.Open(PATH_NONE);
+          fCurrentVideo.play;
+        end
         else
-          fCurrentVideoPlaybackEngine := VideoPlayback;
-
-        if fShowVisualization then
-          fCurrentVideoPlaybackEngine.play;
-
+        begin
+          fCurrentVideo := fVideoClip;
+        end;
         Exit;
       end;
       Ord('P'):
@@ -216,7 +218,7 @@ begin
       SDLK_TAB: // change visualization preset
       begin
         if fShowVisualization then
-          fCurrentVideoPlaybackEngine.Position := now; // move to a random position
+          fCurrentVideo.Position := now; // move to a random position
       end;
 
       SDLK_RETURN:
@@ -254,7 +256,7 @@ begin
     // pause video
     VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
     if (CurrentSong.Video.IsSet) and VideoFile.Exists then
-      fCurrentVideoPlaybackEngine.Pause;
+      fCurrentVideo.Pause;
 
   end
   else              // disable pause
@@ -267,7 +269,7 @@ begin
     // video
     VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
     if (CurrentSong.Video.IsSet) and VideoFile.Exists then
-      fCurrentVideoPlaybackEngine.Pause;
+      fCurrentVideo.Pause;
 
     Paused := false;
   end;
@@ -283,7 +285,7 @@ begin
 
   fShowVisualization := false;
 
-  fCurrentVideoPlaybackEngine := VideoPlayback;
+  fCurrentVideo := nil;
 
   // create score class
   Scores := TSingScores.Create;
@@ -358,8 +360,8 @@ begin
   ClearSettings;
   Party.CallBeforeSing;
 
-  // reset video playback engine, to play Video Clip...
-  fCurrentVideoPlaybackEngine := VideoPlayback;
+  // reset video playback engine
+  fCurrentVideo := nil;
 
   // setup score manager
   Scores.ClearPlayers; // clear old player values
@@ -480,10 +482,6 @@ begin
     Exit;
   end;
 
-  // reset video playback engine, to play video clip ...
-  fCurrentVideoPlaybackEngine.Close;
-  fCurrentVideoPlaybackEngine := VideoPlayback;
-
   {*
    * == Background ==
    * We have four types of backgrounds:
@@ -503,12 +501,13 @@ begin
   VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
   if (CurrentSong.Video.IsSet) and VideoFile.IsFile then
   begin
-    if (fCurrentVideoPlaybackEngine.Open(VideoFile)) then
+    fVideoClip := VideoPlayback.Open(VideoFile);
+    fCurrentVideo := fVideoClip;
+    if (fVideoClip <> nil) then
     begin
       fShowVisualization := false;
-      fCurrentVideoPlaybackEngine := VideoPlayback;
-      fCurrentVideoPlaybackEngine.Position := CurrentSong.VideoGAP + CurrentSong.Start;
-      fCurrentVideoPlaybackEngine.Play;
+      fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start;
+      fCurrentVideo.Play;
       VideoLoaded := true;
     end;
   end;
@@ -538,9 +537,9 @@ begin
   if (TVisualizerOption(Ini.VisualizerOption) in [voOn]) then
   begin
     fShowVisualization := true;
-    fCurrentVideoPlaybackEngine := Visualization;
-    if (fCurrentVideoPlaybackEngine <> nil) then
-      fCurrentVideoPlaybackEngine.Play;
+    fCurrentVideo := Visualization.Open(PATH_NONE);
+    if (fCurrentVideo <> nil) then
+      fCurrentVideo.Play;
   end;
 
   {*
@@ -550,9 +549,9 @@ begin
      (VideoLoaded = false)) then
   begin
     fShowVisualization := true;
-    fCurrentVideoPlaybackEngine := Visualization;
-    if (fCurrentVideoPlaybackEngine <> nil) then
-      fCurrentVideoPlaybackEngine.Play;
+    fCurrentVideo := Visualization.Open(PATH_NONE);
+    if (fCurrentVideo <> nil) then
+      fCurrentVideo.Play;
   end;
 
   // prepare lyrics timer
@@ -815,14 +814,14 @@ begin
   // update and draw movie
   if (ShowFinish and (VideoLoaded or fShowVisualization)) then
   begin
-    if assigned(fCurrentVideoPlaybackEngine) then
+    if assigned(fCurrentVideo) then
     begin
       // Just call this once
       // when Screens = 2
       if (ScreenAct = 1) then
-        fCurrentVideoPlaybackEngine.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
+        fCurrentVideo.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
 
-      fCurrentVideoPlaybackEngine.DrawGL(ScreenAct);
+      fCurrentVideo.DrawGL(ScreenAct);
     end;
   end;
 
@@ -902,14 +901,12 @@ begin
   AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
-  if (VideoPlayback <> nil) then
-    VideoPlayback.Close;
-
-  if (Visualization <> nil) then
-    Visualization.Close;
-
   // to prevent drawing closed video
   VideoLoaded := false;
+
+  // close video files
+  fVideoClip := nil;
+  fCurrentVideo := nil;
 
   // kill all stars and effects
   GoldenRec.KillAll;

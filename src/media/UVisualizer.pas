@@ -60,12 +60,17 @@ interface
 
 {$I switches.inc}
 
+{.$DEFINE UseTexture}
+
 uses
   SDL,
   UGraphicClasses,
   textgl,
   math,
   gl,
+  {$IFDEF UseTexture}
+  glu,
+  {$ENDIF}
   SysUtils,
   UIni,
   projectM,
@@ -91,31 +96,29 @@ const
 {$IFEND}
 
 type
+  TProjectMState = ( pmPlay, pmStop, pmPause );
+
+type
   TGLMatrix = array[0..3, 0..3] of GLdouble;
   TGLMatrixStack = array of TGLMatrix;
 
 type
-  TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
+  TVideo_ProjectM = class( TInterfacedObject, IVideo )
     private
-      pm: TProjectM;
-      ProjectMPath : string;
-      Initialized: boolean;
+      fPm: TProjectM;
+      fProjectMPath : string;
 
-      VisualizerStarted: boolean;
-      VisualizerPaused: boolean;
+      fState: TProjectMState;
 
-      VisualTex: GLuint;
-      PCMData: TPCMData;
-      RndPCMcount: integer;
+      fVisualTex: GLuint;
+      fPCMData: TPCMData;
+      fRndPCMcount: integer;
 
-      ModelviewMatrixStack: TGLMatrixStack;
-      ProjectionMatrixStack: TGLMatrixStack;
-      TextureMatrixStack:  TGLMatrixStack;
+      fModelviewMatrixStack: TGLMatrixStack;
+      fProjectionMatrixStack: TGLMatrixStack;
+      fTextureMatrixStack:  TGLMatrixStack;
 
-      procedure VisualizerStart;
-      procedure VisualizerStop;
-
-      procedure VisualizerTogglePause;
+      procedure InitProjectM;
 
       function  GetRandomPCMData(var Data: TPCMData): Cardinal;
 
@@ -126,12 +129,9 @@ type
       procedure RestoreOpenGLState();
 
     public
-      function GetName: String;
+      constructor Create;
+      destructor Destroy; override;
 
-      function Init(): boolean;
-      function Finalize(): boolean;
-
-      function Open(const aFileName: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -141,10 +141,28 @@ type
       procedure SetPosition(Time: real);
       function GetPosition: real;
 
+      procedure SetLoop(Enable: boolean);
+      function GetLoop(): boolean;
+
       procedure GetFrame(Time: Extended);
       procedure DrawGL(Screen: integer);
   end;
 
+  TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoVisualization )
+    private
+      fInitialized: boolean;
+
+    public
+      function GetName: String;
+
+      function Init(): boolean;
+      function Finalize(): boolean;
+
+      function Open(const aFileName: IPath): IVideo;
+  end;
+
+
+{ TVideoPlayback_ProjectM }
 
 function  TVideoPlayback_ProjectM.GetName: String;
 begin
@@ -154,76 +172,100 @@ end;
 function TVideoPlayback_ProjectM.Init(): boolean;
 begin
   Result := true;
-
-  if (Initialized) then
+  if (fInitialized) then
     Exit;
-  Initialized := true;
-
-  RndPCMcount := 0;
-
-  ProjectMPath := ProjectM_DataDir + PathDelim;
-
-  VisualizerStarted := False;
-  VisualizerPaused  := False;
-
-  {$IFDEF UseTexture}
-  glGenTextures(1, PglUint(@VisualTex));
-  glBindTexture(GL_TEXTURE_2D, VisualTex);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  {$ENDIF}
+  fInitialized := true;
 end;
 
 function TVideoPlayback_ProjectM.Finalize(): boolean;
 begin
-  VisualizerStop();
-  {$IFDEF UseTexture}
-  glDeleteTextures(1, PglUint(@VisualTex));
-  {$ENDIF}
   Result := true;
 end;
 
-function TVideoPlayback_ProjectM.Open(const aFileName: IPath): boolean; // true if succeed
+function TVideoPlayback_ProjectM.Open(const aFileName: IPath): IVideo;
 begin
-  Result := false;
+  Result := TVideo_ProjectM.Create;
 end;
 
-procedure TVideoPlayback_ProjectM.Close;
+
+{ TVideo_ProjectM }
+
+constructor TVideo_ProjectM.Create;
 begin
-  VisualizerStop();
+  fRndPCMcount := 0;
+
+  fProjectMPath := ProjectM_DataDir + PathDelim;
+
+  fState := pmStop;
+
+  {$IFDEF UseTexture}
+  glGenTextures(1, PglUint(@fVisualTex));
+  glBindTexture(GL_TEXTURE_2D, fVisualTex);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  {$ENDIF}
+
+  InitProjectM();
 end;
 
-procedure TVideoPlayback_ProjectM.Play;
+destructor TVideo_ProjectM.Destroy;
 begin
-  VisualizerStart();
+  Close();
+  {$IFDEF UseTexture}
+  glDeleteTextures(1, PglUint(@fVisualTex));
+  {$ENDIF}
 end;
 
-procedure TVideoPlayback_ProjectM.Pause;
+procedure TVideo_ProjectM.Close;
 begin
-  VisualizerTogglePause();
+  FreeAndNil(fPm);
 end;
 
-procedure TVideoPlayback_ProjectM.Stop;
+procedure TVideo_ProjectM.Play;
 begin
-  VisualizerStop();
+  if (fState = pmStop) and (assigned(fPm)) then
+    fPm.RandomPreset();
+  fState := pmPlay;
 end;
 
-procedure TVideoPlayback_ProjectM.SetPosition(Time: real);
+procedure TVideo_ProjectM.Pause;
 begin
-  if assigned(pm) then
-    pm.RandomPreset();
+  if (fState = pmPlay) then
+    fState := pmPause
+  else if (fState = pmPause) then
+    fState := pmPlay;
 end;
 
-function  TVideoPlayback_ProjectM.GetPosition: real;
+procedure TVideo_ProjectM.Stop;
+begin
+  fState := pmStop;
+end;
+
+procedure TVideo_ProjectM.SetPosition(Time: real);
+begin
+  if assigned(fPm) then
+    fPm.RandomPreset();
+end;
+
+function TVideo_ProjectM.GetPosition: real;
 begin
   Result := 0;
+end;
+
+procedure TVideo_ProjectM.SetLoop(Enable: boolean);
+begin
+end;
+
+function TVideo_ProjectM.GetLoop(): boolean;
+begin
+  Result := true;
 end;
 
 {**
  * Returns the stack depth of the given OpenGL matrix mode stack.
  *}
-function TVideoPlayback_ProjectM.GetMatrixStackDepth(MatrixMode: GLenum): GLint;
+function TVideo_ProjectM.GetMatrixStackDepth(MatrixMode: GLenum): GLint;
 begin
   // get number of matrices on stack
   case (MatrixMode) of
@@ -253,7 +295,7 @@ end;
  * By saving the whole stack we are on the safe side, so a nasty bug in the
  * visualizer does not corrupt USDX.
  *}
-procedure TVideoPlayback_ProjectM.SaveMatrixStack(MatrixMode: GLenum;
+procedure TVideo_ProjectM.SaveMatrixStack(MatrixMode: GLenum;
                 var MatrixStack: TGLMatrixStack);
 var
   I: integer;
@@ -289,7 +331,7 @@ end;
 {**
  * Restores the OpenGL matrix stack stored with SaveMatrixStack.
  *}
-procedure TVideoPlayback_ProjectM.RestoreMatrixStack(MatrixMode: GLenum;
+procedure TVideo_ProjectM.RestoreMatrixStack(MatrixMode: GLenum;
                 var MatrixStack: TGLMatrixStack);
 var
   I: integer;
@@ -325,15 +367,15 @@ end;
  *   - Modelview-matrix is pushed to the Modelview-stack
  *   - the OpenGL error-state (glGetError) is cleared
  *}
-procedure TVideoPlayback_ProjectM.SaveOpenGLState();
+procedure TVideo_ProjectM.SaveOpenGLState();
 begin
   // save all OpenGL state-machine attributes
   glPushAttrib(GL_ALL_ATTRIB_BITS);
   glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
 
-  SaveMatrixStack(GL_PROJECTION, ProjectionMatrixStack);
-  SaveMatrixStack(GL_MODELVIEW, ModelviewMatrixStack);
-  SaveMatrixStack(GL_TEXTURE, TextureMatrixStack);
+  SaveMatrixStack(GL_PROJECTION, fProjectionMatrixStack);
+  SaveMatrixStack(GL_MODELVIEW, fModelviewMatrixStack);
+  SaveMatrixStack(GL_TEXTURE, fTextureMatrixStack);
 
   glMatrixMode(GL_MODELVIEW);
 
@@ -345,15 +387,15 @@ end;
  * Restores the OpenGL state saved by SaveOpenGLState()
  * and resets the error-state.
  *}
-procedure TVideoPlayback_ProjectM.RestoreOpenGLState();
+procedure TVideo_ProjectM.RestoreOpenGLState();
 begin
   // reset OpenGL error-state
   glGetError();
 
   // restore matrix stacks
-  RestoreMatrixStack(GL_PROJECTION, ProjectionMatrixStack);
-  RestoreMatrixStack(GL_MODELVIEW, ModelviewMatrixStack);
-  RestoreMatrixStack(GL_TEXTURE, TextureMatrixStack);
+  RestoreMatrixStack(GL_PROJECTION, fProjectionMatrixStack);
+  RestoreMatrixStack(GL_MODELVIEW, fModelviewMatrixStack);
+  RestoreMatrixStack(GL_TEXTURE, fTextureMatrixStack);
 
   // restore all OpenGL state-machine attributes
   // (also restores the matrix mode)
@@ -361,22 +403,19 @@ begin
   glPopAttrib();
 end;
 
-procedure TVideoPlayback_ProjectM.VisualizerStart;
+procedure TVideo_ProjectM.InitProjectM;
 begin
-  if VisualizerStarted then
-    Exit;
-
   // the OpenGL state must be saved before TProjectM.Create is called
   SaveOpenGLState();
   try
 
     try
       {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
-      pm := TProjectM.Create(ProjectMPath + 'config.inp');
+      fPm := TProjectM.Create(fProjectMPath + 'config.inp');
       {$ELSE}
-      pm := TProjectM.Create(
+      fPm := TProjectM.Create(
         meshX, meshY, fps, textureSize, ScreenW, ScreenH,
-        ProjectMPath + 'presets', ProjectMPath + 'fonts');
+        fProjectMPath + 'presets', fProjectMPath + 'fonts');
       {$IFEND}
     except on E: Exception do
       begin
@@ -387,72 +426,51 @@ begin
     end;
 
     // initialize OpenGL
-    pm.ResetGL(ScreenW, ScreenH);
+    fPm.ResetGL(ScreenW, ScreenH);
     // skip projectM default-preset
-    pm.RandomPreset();
+    fPm.RandomPreset();
     // projectM >= 1.0 uses the OpenGL FramebufferObject (FBO) extension.
     // Unfortunately it does NOT reset the framebuffer-context after
     // TProjectM.Create. Either glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0) for
     // a manual reset or TProjectM.RenderFrame() must be called.
     // We use the latter so we do not need to load the FBO extension in USDX.
-    pm.RenderFrame();
-
-    VisualizerPaused := false;
-    VisualizerStarted := true;
+    fPm.RenderFrame();
   finally
     RestoreOpenGLState();
   end;
 end;
 
-procedure TVideoPlayback_ProjectM.VisualizerStop;
-begin
-  if VisualizerStarted then
-  begin
-    VisualizerPaused := false;
-    VisualizerStarted := false;
-    FreeAndNil(pm);
-  end;
-end;
-
-procedure TVideoPlayback_ProjectM.VisualizerTogglePause;
-begin
-  VisualizerPaused := not VisualizerPaused;
-end;
-
-procedure TVideoPlayback_ProjectM.GetFrame(Time: Extended);
+procedure TVideo_ProjectM.GetFrame(Time: Extended);
 var
   nSamples: cardinal;
 begin
-  if not VisualizerStarted then
-    Exit;
-
-  if VisualizerPaused then
+  if (fState <> pmPlay) then
     Exit;
 
   // get audio data
-  nSamples := AudioPlayback.GetPCMData(PcmData);
+  nSamples := AudioPlayback.GetPCMData(fPCMData);
 
   // generate some data if non is available
   if (nSamples = 0) then
-    nSamples := GetRandomPCMData(PcmData);
+    nSamples := GetRandomPCMData(fPCMData);
 
   // send audio-data to projectM
   if (nSamples > 0) then
-    pm.AddPCM16Data(PSmallInt(@PcmData), nSamples);
+    fPm.AddPCM16Data(PSmallInt(@fPCMData), nSamples);
 
   // store OpenGL state (might be messed up otherwise)
   SaveOpenGLState();
   try
     // setup projectM's OpenGL state
-    pm.ResetGL(ScreenW, ScreenH);
+    fPm.ResetGL(ScreenW, ScreenH);
 
     // let projectM render a frame
-    pm.RenderFrame();
+    fPm.RenderFrame();
 
     {$IFDEF UseTexture}
-    glBindTexture(GL_TEXTURE_2D, VisualTex);
+    glBindTexture(GL_TEXTURE_2D, fVisualTex);
     glFlush();
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, VisualWidth, VisualHeight, 0);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, fVisualWidth, fVisualHeight, 0);
     {$ENDIF}
   finally
     // restore USDX OpenGL state
@@ -467,7 +485,7 @@ end;
  * Draws the current frame to screen.
  * TODO: this is not used yet. Data is directly drawn on GetFrame().
  *}
-procedure TVideoPlayback_ProjectM.DrawGL(Screen: integer);
+procedure TVideo_ProjectM.DrawGL(Screen: integer);
 begin
   {$IFDEF UseTexture}
   // have a nice black background to draw on
@@ -478,7 +496,7 @@ begin
   end;
 
   // exit if there's nothing to draw
-  if not VisualizerStarted then
+  if (fState <> pmPlay) then
     Exit;
 
   // setup display
@@ -497,7 +515,7 @@ begin
   glEnable(GL_BLEND);
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  glBindTexture(GL_TEXTURE_2D, VisualTex);
+  glBindTexture(GL_TEXTURE_2D, fVisualTex);
   glColor4f(1, 1, 1, 1);
 
   // draw projectM frame
@@ -524,12 +542,12 @@ end;
  * Produces random "sound"-data in case no audio-data is available.
  * Otherwise the visualization will look rather boring.
  *}
-function  TVideoPlayback_ProjectM.GetRandomPCMData(var Data: TPCMData): Cardinal;
+function  TVideo_ProjectM.GetRandomPCMData(var Data: TPCMData): Cardinal;
 var
   i: integer;
 begin
   // Produce some fake PCM data
-  if (RndPCMcount mod 500 = 0) then
+  if (fRndPCMcount mod 500 = 0) then
   begin
     FillChar(Data, SizeOf(TPCMData), 0);
   end
@@ -541,7 +559,7 @@ begin
       Data[i][1] := Random(High(Word)+1);
     end;
   end;
-  Inc(RndPCMcount);
+  Inc(fRndPCMcount);
   Result := 512;
 end;
 

@@ -107,11 +107,15 @@ type
     Upper, Lower: double;
   end;
 
-  TVideoPlayback_FFmpeg = class( TInterfacedObject, IVideoPlayback )
+  IVideo_FFmpeg = interface (IVideo)
+  ['{E640E130-C8C0-4399-AF02-67A3569313AB}']
+    function Open(const FileName: IPath): boolean;
+  end;
+
+  TVideo_FFmpeg = class( TInterfacedObject, IVideo_FFmpeg )
   private
     fOpened: boolean;     //**< stream successfully opened
     fPaused: boolean;     //**< stream paused
-    fInitialized: boolean;
     fEOF: boolean;        //**< end-of-file state
 
     fLoop: boolean;       //**< looping enabled
@@ -150,23 +154,37 @@ type
     procedure ShowDebugInfo();
 
   public
-    function    GetName: String;
+    constructor Create;
+    destructor Destroy; override;
 
-    function    Init(): boolean;
-    function    Finalize: boolean;
+    function Open(const FileName: IPath): boolean;
+    procedure Close;
 
-    function    Open(const FileName : IPath): boolean; // true if succeed
-    procedure   Close;
+    procedure Play;
+    procedure Pause;
+    procedure Stop;
 
-    procedure   Play;
-    procedure   Pause;
-    procedure   Stop;
+    procedure SetLoop(Enable: boolean);
+    function GetLoop(): boolean;
 
-    procedure   SetPosition(Time: real);
-    function    GetPosition: real;
+    procedure SetPosition(Time: real);
+    function GetPosition: real;
 
-    procedure   GetFrame(Time: Extended);
-    procedure   DrawGL(Screen: integer);
+    procedure GetFrame(Time: Extended);
+    procedure DrawGL(Screen: integer);
+  end;
+
+  TVideoPlayback_FFmpeg = class( TInterfacedObject, IVideoPlayback )
+  private
+    fInitialized: boolean;
+
+  public
+    function GetName: String;
+
+    function Init(): boolean;
+    function Finalize: boolean;
+
+    function Open(const FileName : IPath): IVideo;
   end;
 
 var
@@ -219,47 +237,46 @@ begin
 
   FFmpegCore := TMediaCore_FFmpeg.GetInstance();
 
-  Reset();
   av_register_all();
-  glGenTextures(1, PGLuint(@fFrameTex));
 end;
 
 function TVideoPlayback_FFmpeg.Finalize(): boolean;
 begin
-  Close();
-  glDeleteTextures(1, PGLuint(@fFrameTex));
   Result := true;
 end;
 
-procedure TVideoPlayback_FFmpeg.Reset();
+function TVideoPlayback_FFmpeg.Open(const FileName : IPath): IVideo;
+var
+  Video: IVideo_FFmpeg;
 begin
-  // close previously opened video
-  Close();
-
-  fOpened       := False;
-  fPaused       := False;
-  fTimeBase      := 0;
-  fTime          := 0;
-  fStream := nil;
-  fStreamIndex := -1;
-  fFrameTexValid := false;
-
-  fEOF := false;
-
-  // TODO: do we really want this by default?
-  fLoop := true;
-  fLoopTime := 0;
-
-  fAspectCorrection := acoCrop;
+  Video := TVideo_FFmpeg.Create;
+  if Video.Open(FileName) then
+    Result := Video
+  else
+    Result := nil;
 end;
 
-function TVideoPlayback_FFmpeg.Open(const FileName : IPath): boolean; // true if succeed
+
+{* TVideo_FFmpeg *}
+
+constructor TVideo_FFmpeg.Create;
+begin
+  glGenTextures(1, PGLuint(@fFrameTex));
+  Reset();
+end;
+
+destructor TVideo_FFmpeg.Destroy;
+begin
+  Close();
+  glDeleteTextures(1, PGLuint(@fFrameTex));
+end;
+
+function TVideo_FFmpeg.Open(const FileName : IPath): boolean;
 var
   errnum: Integer;
   AudioStreamIndex: integer;
 begin
   Result := false;
-
   Reset();
 
   // use custom 'ufile' protocol for UTF-8 support
@@ -408,6 +425,7 @@ begin
   end;
   {$ENDIF}
 
+
   fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
   fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
 
@@ -420,11 +438,32 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-  fOpened := True;
+  fOpened := true;
   Result := true;
 end;
 
-procedure TVideoPlayback_FFmpeg.Close;
+procedure TVideo_FFmpeg.Reset();
+begin
+  // close previously opened video
+  Close();
+
+  fOpened       := False;
+  fPaused       := False;
+  fTimeBase      := 0;
+  fTime          := 0;
+  fStream := nil;
+  fStreamIndex := -1;
+  fFrameTexValid := false;
+
+  fEOF := false;
+
+  fLoop := false;
+  fLoopTime := 0;
+
+  fAspectCorrection := acoCrop;
+end;
+
+procedure TVideo_FFmpeg.Close;
 begin
   if (fFrameBuffer <> nil) then
     av_free(fFrameBuffer);
@@ -457,7 +496,7 @@ begin
   fOpened := False;
 end;
 
-procedure TVideoPlayback_FFmpeg.SynchronizeTime(Frame: PAVFrame; var pts: double);
+procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; var pts: double);
 var
   FrameDelay: double;
 begin
@@ -484,7 +523,7 @@ end;
  * @param pts will be updated to the presentation time of the decoded frame.
  * returns true if a frame could be decoded. False if an error or EOF occured.
  *}
-function TVideoPlayback_FFmpeg.DecodeFrame(): boolean;
+function TVideo_FFmpeg.DecodeFrame(): boolean;
 var
   FrameFinished: Integer;
   VideoPktPts: int64;
@@ -522,7 +561,10 @@ begin
 
       // check for errors
       if (url_ferror(pbIOCtx) <> 0) then
+      begin
+        Log.LogError('Video decoding file error', 'TVideoPlayback_FFmpeg.DecodeFrame');
         Exit;
+      end;
 
       // url_feof() does not detect an EOF for some mov-files (e.g. deluxe.mov)
       // so we have to do it this way.
@@ -533,18 +575,9 @@ begin
         Exit;
       end;
 
-      // no error -> wait for user input
-{
-      SDL_Delay(100);  // initial version, left for documentation
-      continue;
-}
-
-      // Patch by Hawkear:
-      // Why should this function loop in an endless loop if there is an error?
-      // This runs in the main thread, so it halts the whole program
-      // Therefore, it is better to exit when an error occurs
+      // error occured, log and exit
+      Log.LogError('Video decoding error', 'TVideoPlayback_FFmpeg.DecodeFrame');
       Exit;
-
     end;
 
     // if we got a packet from the video stream, then decode it
@@ -593,7 +626,7 @@ begin
   Result := true;
 end;
 
-procedure TVideoPlayback_FFmpeg.GetFrame(Time: Extended);
+procedure TVideo_FFmpeg.GetFrame(Time: Extended);
 var
   errnum: Integer;
   NewTime: Extended;
@@ -749,7 +782,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TVideoPlayback_FFmpeg.GetVideoRect(var ScreenRect, TexRect: TRectCoords);
+procedure TVideo_FFmpeg.GetVideoRect(var ScreenRect, TexRect: TRectCoords);
 var
   ScreenAspect: double;  // aspect of screen resolution
   ScaledVideoWidth, ScaledVideoHeight: double;
@@ -799,7 +832,7 @@ begin
   TexRect.Lower := fCodecContext^.height / fTexHeight;
 end;
 
-procedure TVideoPlayback_FFmpeg.DrawGL(Screen: integer);
+procedure TVideo_FFmpeg.DrawGL(Screen: integer);
 var
   ScreenRect: TRectCoords;
   TexRect: TRectCoords;
@@ -862,7 +895,7 @@ begin
   {$IFEND}
 end;
 
-procedure TVideoPlayback_FFmpeg.ShowDebugInfo();
+procedure TVideo_FFmpeg.ShowDebugInfo();
 begin
   {$IFDEF Info}
   if (fTime+fTimeBase < 0) then
@@ -899,17 +932,28 @@ begin
   {$ENDIF}
 end;
 
-procedure TVideoPlayback_FFmpeg.Play;
+procedure TVideo_FFmpeg.Play;
 begin
 end;
 
-procedure TVideoPlayback_FFmpeg.Pause;
+procedure TVideo_FFmpeg.Pause;
 begin
   fPaused := not fPaused;
 end;
 
-procedure TVideoPlayback_FFmpeg.Stop;
+procedure TVideo_FFmpeg.Stop;
 begin
+end;
+
+procedure TVideo_FFmpeg.SetLoop(Enable: boolean);
+begin
+  fLoop := Enable;
+  fLoopTime := 0;
+end;
+
+function TVideo_FFmpeg.GetLoop(): boolean;
+begin
+  Result := fLoop;
 end;
 
 {**
@@ -920,7 +964,7 @@ end;
  * actual frame time when GetFrame() is called the next time.
  * @param Time new position in seconds
  *}
-procedure TVideoPlayback_FFmpeg.SetPosition(Time: real);
+procedure TVideo_FFmpeg.SetPosition(Time: real);
 var
   SeekFlags: integer;
 begin
@@ -955,7 +999,7 @@ begin
   avcodec_flush_buffers(fCodecContext);
 end;
 
-function  TVideoPlayback_FFmpeg.GetPosition: real;
+function  TVideo_FFmpeg.GetPosition: real;
 begin
   Result := fTime;
 end;

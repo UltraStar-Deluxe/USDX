@@ -42,17 +42,17 @@ uses
   UPath;
 
 type
-    TMedia_dummy = class( TInterfacedObject, IVideoPlayback, IVideoVisualization, IAudioPlayback, IAudioInput )
+    TAudio_Dummy = class( TInterfacedObject, IAudioPlayback, IAudioInput )
     private
       DummyOutputDeviceList: TAudioOutputDeviceList;
     public
       constructor Create();
-      function  GetName: string;
+      function GetName: string;
 
       function Init(): boolean;
       function Finalize(): boolean;
 
-      function  Open(const aFileName: IPath): boolean; // true if succeed
+      function Open(const aFileName: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
@@ -63,9 +63,6 @@ type
       function  GetPosition: real;
 
       procedure SetSyncSource(SyncSource: TSyncSource);
-
-      procedure GetFrame(Time: Extended);
-      procedure DrawGL(Screen: integer);
 
       // IAudioInput
       function InitializeRecord: boolean;
@@ -83,8 +80,10 @@ type
       procedure FadeIn(Time: real; TargetVolume: single);
       procedure SetAppVolume(Volume: single);
       procedure SetVolume(Volume: single);
-      procedure SetLoop(Enabled: boolean);
       procedure Rewind;
+
+      procedure SetLoop(Enabled: boolean);
+      function GetLoop(): boolean;
 
       function Finished: boolean;
       function Length: real;
@@ -98,98 +97,122 @@ type
       procedure CloseVoiceStream(var VoiceStream: TAudioVoiceStream);
     end;
 
-function  TMedia_dummy.GetName: string;
+    TVideo_Dummy = class( TInterfacedObject, IVideo )
+    public
+      procedure Close;
+
+      procedure Play;
+      procedure Pause;
+      procedure Stop;
+
+      procedure SetLoop(Enable: boolean);
+      function GetLoop(): boolean;
+
+      procedure SetPosition(Time: real);
+      function GetPosition: real;
+
+      procedure GetFrame(Time: Extended);
+      procedure DrawGL(Screen: integer);
+
+      property Loop: boolean read GetLoop write SetLoop;
+      property Position: real read GetPosition write SetPosition;
+    end;
+
+    TVideoPlayback_Dummy = class( TInterfacedObject, IVideoPlayback, IVideoVisualization )
+    public
+      constructor Create();
+      function GetName: string;
+
+      function Init(): boolean;
+      function Finalize(): boolean;
+
+      function Open(const FileName: IPath): IVideo;
+    end;
+
+function  TAudio_Dummy.GetName: string;
 begin
-  Result := 'dummy';
+  Result := 'AudioDummy';
 end;
 
-procedure TMedia_dummy.GetFrame(Time: Extended);
-begin
-end;
-
-procedure TMedia_dummy.DrawGL(Screen: integer);
-begin
-end;
-
-constructor TMedia_dummy.Create();
+constructor TAudio_Dummy.Create();
 begin
   inherited;
 end;
 
-function TMedia_dummy.Init(): boolean;
+function TAudio_Dummy.Init(): boolean;
 begin
   Result := true;
 end;
 
-function TMedia_dummy.Finalize(): boolean;
+function TAudio_Dummy.Finalize(): boolean;
 begin
   Result := true;
 end;
 
-function TMedia_dummy.Open(const aFileName : IPath): boolean; // true if succeed
+function TAudio_Dummy.Open(const aFileName : IPath): boolean; // true if succeed
 begin
   Result := false;
 end;
 
-procedure TMedia_dummy.Close;
+procedure TAudio_Dummy.Close;
 begin
 end;
 
-procedure TMedia_dummy.Play;
+procedure TAudio_Dummy.Play;
 begin
 end;
 
-procedure TMedia_dummy.Pause;
+procedure TAudio_Dummy.Pause;
 begin
 end;
 
-procedure TMedia_dummy.Stop;
+procedure TAudio_Dummy.Stop;
 begin
 end;
 
-procedure TMedia_dummy.SetPosition(Time: real);
+procedure TAudio_Dummy.SetPosition(Time: real);
 begin
 end;
 
-function  TMedia_dummy.GetPosition: real;
+function  TAudio_Dummy.GetPosition: real;
 begin
   Result := 0;
 end;
 
-procedure TMedia_dummy.SetSyncSource(SyncSource: TSyncSource);
+procedure TAudio_Dummy.SetSyncSource(SyncSource: TSyncSource);
 begin
 end;
 
 // IAudioInput
-function TMedia_dummy.InitializeRecord: boolean;
+function TAudio_Dummy.InitializeRecord: boolean;
 begin
   Result := true;
 end;
 
-function TMedia_dummy.FinalizeRecord: boolean;
+function TAudio_Dummy.FinalizeRecord: boolean;
 begin
   Result := true;
 end;
 
-procedure TMedia_dummy.CaptureStart;
+procedure TAudio_Dummy.CaptureStart;
 begin
 end;
 
-procedure TMedia_dummy.CaptureStop;
+procedure TAudio_Dummy.CaptureStop;
 begin
 end;
 
-procedure TMedia_dummy.GetFFTData(var data: TFFTData);
+procedure TAudio_Dummy.GetFFTData(var data: TFFTData);
 begin
 end;
 
-function  TMedia_dummy.GetPCMData(var data: TPCMData): Cardinal;
+function  TAudio_Dummy.GetPCMData(var data: TPCMData): Cardinal;
 begin
   Result := 0;
 end;
 
 // IAudioPlayback
-function TMedia_dummy.InitializePlayback: boolean;
+function TAudio_Dummy.InitializePlayback: boolean;
 begin
   SetLength(DummyOutputDeviceList, 1);
   DummyOutputDeviceList[0] := TAudioOutputDevice.Create();
@@ -197,73 +220,152 @@ begin
   Result := true;
 end;
 
-function TMedia_dummy.FinalizePlayback: boolean;
+function TAudio_Dummy.FinalizePlayback: boolean;
 begin
   Result := true;
 end;
 
-function TMedia_dummy.GetOutputDeviceList(): TAudioOutputDeviceList;
+function TAudio_Dummy.GetOutputDeviceList(): TAudioOutputDeviceList;
 begin
   Result := DummyOutputDeviceList;
 end;
 
-procedure TMedia_dummy.SetAppVolume(Volume: single);
+procedure TAudio_Dummy.SetAppVolume(Volume: single);
 begin
 end;
 
-procedure TMedia_dummy.SetVolume(Volume: single);
+procedure TAudio_Dummy.SetVolume(Volume: single);
 begin
 end;
 
-procedure TMedia_dummy.SetLoop(Enabled: boolean);
+procedure TAudio_Dummy.SetLoop(Enabled: boolean);
 begin
 end;
 
-procedure TMedia_dummy.FadeIn(Time: real; TargetVolume: single);
-begin
-end;
-
-procedure TMedia_dummy.Rewind;
-begin
-end;
-
-function TMedia_dummy.Finished: boolean;
+function TAudio_Dummy.GetLoop(): boolean;
 begin
   Result := false;
 end;
 
-function TMedia_dummy.Length: real;
+procedure TAudio_Dummy.FadeIn(Time: real; TargetVolume: single);
+begin
+end;
+
+procedure TAudio_Dummy.Rewind;
+begin
+end;
+
+function TAudio_Dummy.Finished: boolean;
+begin
+  Result := false;
+end;
+
+function TAudio_Dummy.Length: real;
 begin
   Result := 60;
 end;
 
-function TMedia_dummy.OpenSound(const Filename: IPath): TAudioPlaybackStream;
+function TAudio_Dummy.OpenSound(const Filename: IPath): TAudioPlaybackStream;
 begin
  Result := nil;
 end;
 
-procedure TMedia_dummy.CloseSound(var PlaybackStream: TAudioPlaybackStream);
+procedure TAudio_Dummy.CloseSound(var PlaybackStream: TAudioPlaybackStream);
 begin
 end;
 
-procedure TMedia_dummy.PlaySound(stream: TAudioPlaybackStream);
+procedure TAudio_Dummy.PlaySound(stream: TAudioPlaybackStream);
 begin
 end;
 
-procedure TMedia_dummy.StopSound(stream: TAudioPlaybackStream);
+procedure TAudio_Dummy.StopSound(stream: TAudioPlaybackStream);
 begin
 end;
 
-function TMedia_dummy.CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+function TAudio_Dummy.CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
 begin
   Result := nil;
 end;
 
-procedure TMedia_dummy.CloseVoiceStream(var VoiceStream: TAudioVoiceStream);
+procedure TAudio_Dummy.CloseVoiceStream(var VoiceStream: TAudioVoiceStream);
 begin
 end;
 
+
+{ TVideoPlayback_Dummy }
+
+procedure TVideo_Dummy.Close;
+begin
+end;
+
+procedure TVideo_Dummy.Play;
+begin
+end;
+
+procedure TVideo_Dummy.Pause;
+begin
+end;
+
+procedure TVideo_Dummy.Stop;
+begin
+end;
+
+procedure TVideo_Dummy.SetLoop(Enable: boolean);
+begin
+end;
+
+function TVideo_Dummy.GetLoop(): boolean;
+begin
+  Result := false;
+end;
+
+procedure TVideo_Dummy.SetPosition(Time: real);
+begin
+end;
+
+function TVideo_Dummy.GetPosition: real;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_Dummy.GetFrame(Time: Extended);
+begin
+end;
+
+procedure TVideo_Dummy.DrawGL(Screen: integer);
+begin
+end;
+
+
+{ TVideoPlayback_Dummy }
+
+constructor TVideoPlayback_Dummy.Create();
+begin
+end;
+
+function TVideoPlayback_Dummy.GetName: string;
+begin
+  Result := 'VideoDummy';
+end;
+
+function TVideoPlayback_Dummy.Init(): boolean;
+begin
+  Result := true;
+end;
+
+function TVideoPlayback_Dummy.Finalize(): boolean;
+begin
+  Result := true;
+end;
+
+function TVideoPlayback_Dummy.Open(const FileName: IPath): IVideo;
+begin
+  Result := TVideo_Dummy.Create;
+end;
+
+
 initialization
-  MediaManager.Add(TMedia_dummy.Create);
+  MediaManager.Add(TAudio_Dummy.Create);
+  MediaManager.Add(TVideoPlayback_Dummy.Create);
 
 end.
