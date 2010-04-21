@@ -683,18 +683,19 @@ procedure TLuaCore.DumpPlugins;
     I: integer;
 begin
   // print table header
-  Log.LogStatus('  # ' + PadRight('Name', NameLength) + 
-                'Version Status    Paused #Errors', 'LuaCore Plugins');
+  Log.LogError(Format('%3s %-30s %-8s %-10s %-7s %-6s', [
+      '#', 'Name', 'Version', 'Status', 'Paused', '#Errors'
+  ]), 'LuaCore Plugins');
 
   for I := 0 to High(Plugins) do
-    Log.LogStatus(PadLeft(IntToStr(Plugins[I].Id),                   3) + ' ' +
-                  PadRight(Plugins[I].Name,                 NameLength) +
-                  PadRight(Plugins[I].Version,                       8) +
-                  PadRight(PluginStatusToString(Plugins[I].Status), 10) +
-                  PadRight(BoolToStr(Plugins[I].Paused, true),       7) + ' ' + 
-                  PadRight(IntToStr(Plugins[I].CountErrors),         6), 'LuaCore Plugins');
+    Log.LogError(Format('%3d %-30s %-8s %-10s %-7s %-6d', [
+        Plugins[I].Id, Plugins[I].Name, Plugins[I].Version,
+        PluginStatusToString(Plugins[I].Status),
+        BoolToStr(Plugins[I].Paused, true),
+        Plugins[I].CountErrors
+    ]), 'LuaCore Plugins');
   if (High(Plugins) < 0) then
-    Log.LogStatus(' no plugins loaded ', 'LuaCore Plugins');
+    Log.LogError(' no plugins loaded ', 'LuaCore Plugins');
 end;
 
 // Implementation of TLuaPlugin
