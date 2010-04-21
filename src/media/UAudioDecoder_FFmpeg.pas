@@ -325,6 +325,7 @@ begin
   //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFmpeg');
 
   AudioStream := FormatCtx.streams[AudioStreamIndex];
+  AudioStreamPos := 0;
   CodecCtx := AudioStream^.codec;
 
   // TODO: should we use this or not? Should we allow 5.1 channel audio?
@@ -575,30 +576,38 @@ begin
   PauseParser();
   PauseDecoder();
   SDL_mutexP(StateLock);
+  try
+    EOFState := false;
+    ErrorState := false;
 
-  // configure seek parameters
-  SeekPos := Time;
-  SeekFlush := Flush;
-  SeekFlags := AVSEEK_FLAG_ANY;
-  SeekRequest := true;
+    // do not seek if we are already at the correct position.
+    // This is important especially for seeking to position 0 if we already are
+    // at the beginning. Although seeking with AVSEEK_FLAG_BACKWARD for pos 0 works,
+    // it is still a bit choppy (although much better than w/o AVSEEK_FLAG_BACKWARD).
+    if (Time = AudioStreamPos) then
+      Exit;    
 
-  // Note: the BACKWARD-flag seeks to the first position <= the position
-  // searched for. Otherwise e.g. position 0 might not be seeked correct.
-  // For some reason ffmpeg sometimes doesn't use position 0 but the key-frame
-  // following. In streams with few key-frames (like many flv-files) the next
-  // key-frame after 0 might be 5secs ahead.
-  if (Time < AudioStreamPos) then
-    SeekFlags := SeekFlags or AVSEEK_FLAG_BACKWARD;
+    // configure seek parameters
+    SeekPos := Time;
+    SeekFlush := Flush;
+    SeekFlags := AVSEEK_FLAG_ANY;
+    SeekRequest := true;
 
-  EOFState := false;
-  ErrorState := false;
+    // Note: the BACKWARD-flag seeks to the first position <= the position
+    // searched for. Otherwise e.g. position 0 might not be seeked correct.
+    // For some reason ffmpeg sometimes doesn't use position 0 but the key-frame
+    // following. In streams with few key-frames (like many flv-files) the next
+    // key-frame after 0 might be 5secs ahead.
+    if (Time <= AudioStreamPos) then
+      SeekFlags := SeekFlags or AVSEEK_FLAG_BACKWARD;
 
-  // send a reuse signal in case the parser was stopped (e.g. because of an EOF)
-  SDL_CondSignal(ParserIdleCond);
-
-  SDL_mutexV(StateLock);
-  ResumeDecoder();
-  ResumeParser();
+    // send a reuse signal in case the parser was stopped (e.g. because of an EOF)
+    SDL_CondSignal(ParserIdleCond);
+  finally
+    SDL_mutexV(StateLock);
+    ResumeDecoder();
+    ResumeParser();
+  end;
 
   // in blocking mode, wait until seeking is done
   if (Blocking) then
