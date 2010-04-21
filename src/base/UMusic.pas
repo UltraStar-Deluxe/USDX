@@ -250,8 +250,8 @@ type
 
   TAudioPlaybackStream = class(TAudioProcessingStream)
     protected
+      AvgSyncDiff: double;  //** average difference between stream and sync clock
       SyncSource: TSyncSource;
-      AvgSyncDiff: double;
       SourceStream: TAudioSourceStream;
 
       function GetLatency(): double; virtual; abstract;
@@ -260,7 +260,7 @@ type
       procedure SetVolume(Volume: single);  virtual; abstract;
       function Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
       procedure FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
-   public
+    public
       (**
        * Opens a SourceStream for playback.
        * Note that the caller (not the TAudioPlaybackStream) is responsible to
@@ -995,6 +995,8 @@ begin
   AvgSyncDiff := -1;
 end;
 
+{.$DEFINE LOG_SYNC}
+
 (*
  * Results an adjusted size of the input buffer size to keep the stream in sync
  * with the SyncSource. If no SyncSource was assigned to this stream, the
@@ -1011,11 +1013,15 @@ end;
 function TAudioPlaybackStream.Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
 var
   TimeDiff: double;
-  TimeCorrectionFactor: double;
+  FrameDiff: double;
+  FrameSkip: integer;
+  ReqFrames: integer;
+  MasterClock: real;
+  CurPosition: real;
 const
-  AVG_HISTORY_FACTOR = 0.9;
-  SYNC_THRESHOLD = 0.045;
-  MAX_SYNC_DIFF_TIME = 0.002;
+  AVG_HISTORY_FACTOR = 0.7;
+  SYNC_REPOS_THRESHOLD = 5.000;
+  SYNC_SOFT_THRESHOLD  = 0.010;
 begin
   Result := BufferSize;
 
@@ -1025,9 +1031,12 @@ begin
   if (BufferSize <= 0) then
     Exit;
 
+  CurPosition := Position;
+  MasterClock := SyncSource.GetClock();
+
   // difference between sync-source and stream position
   // (negative if the music-stream's position is ahead of the master clock)
-  TimeDiff := SyncSource.GetClock() - (Position - GetLatency());
+  TimeDiff := MasterClock - CurPosition;
 
   // calculate average time difference (some sort of weighted mean).
   // The bigger AVG_HISTORY_FACTOR is, the smoother is the average diff.
@@ -1042,35 +1051,46 @@ begin
     AvgSyncDiff := TimeDiff * (1-AVG_HISTORY_FACTOR) +
                    AvgSyncDiff * AVG_HISTORY_FACTOR;
 
-  // check if sync needed
-  if (Abs(AvgSyncDiff) >= SYNC_THRESHOLD) then
-  begin
-    // TODO: use SetPosition if diff is too large (>5s)
-    if (TimeDiff < 1) then
-      TimeCorrectionFactor := Sign(TimeDiff)*TimeDiff*TimeDiff
-    else
-      TimeCorrectionFactor := TimeDiff;
+  {$IFDEF LOG_SYNC}
+  //Log.LogError(Format('c:%.3f | p:%.3f | d:%.3f | a:%.3f',
+  //    [MasterClock, CurPosition, TimeDiff, AvgSyncDiff]), 'Synch');
+  {$ENDIF}
 
-    // calculate adapted buffer size
-    // reduce size of data to fetch if music is ahead, increase otherwise
-    Result := BufferSize + Round(TimeCorrectionFactor * FormatInfo.SampleRate) * FormatInfo.FrameSize;
+  // check if we are out of sync
+  if (Abs(AvgSyncDiff) >= SYNC_REPOS_THRESHOLD) then
+  begin
+    {$IFDEF LOG_SYNC}
+    Log.LogError(Format('ReposSynch: %.3f > %.3f',
+        [Abs(AvgSyncDiff), SYNC_REPOS_THRESHOLD]), 'Synch');
+    {$ENDIF}
+
+    // diff far is too large -> reposition stream
+    // (resulting position might still be out of sync)
+    SetPosition(CurPosition + AvgSyncDiff);
+
+    // reset sync info
+    AvgSyncDiff := -1;
+  end
+  else if (Abs(AvgSyncDiff) >= SYNC_SOFT_THRESHOLD) then
+  begin
+    {$IFDEF LOG_SYNC}
+    Log.LogError(Format('SoftSynch: %.3f > %.3f',
+        [Abs(AvgSyncDiff), SYNC_SOFT_THRESHOLD]), 'Synch');
+    {$ENDIF}
+
+    // hard sync: directly jump to the current position
+    FrameSkip := Round(AvgSyncDiff * FormatInfo.SampleRate);
+    Result := BufferSize + FrameSkip * FormatInfo.FrameSize;
     if (Result < 0) then
       Result := 0;
 
-    // reset average
+    // reset sync info
     AvgSyncDiff := -1;
   end;
-
-  (*
-  DebugWriteln('Diff: ' + floattostrf(TimeDiff, ffFixed, 15, 3) +
-               '| SyS: ' + floattostrf(SyncSource.GetClock(), ffFixed, 15, 3) +
-               '| Pos: ' + floattostrf(Position, ffFixed, 15, 3) +
-               '| Avg: ' + floattostrf(AvgSyncDiff, ffFixed, 15, 3));
-  *)
 end;
 
 (*
- * Fills a buffer with copies of the given frame or with 0 if frame.
+ * Fills a buffer with copies of the given Frame or with 0 if Frame is nil.
  *)
 procedure TAudioPlaybackStream.FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
 var
