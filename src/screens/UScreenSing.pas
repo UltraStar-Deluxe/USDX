@@ -60,12 +60,14 @@ type
 
 type
   TScreenSing = class(TMenu)
+  private
+    fShowVisualization: boolean;
+    fCurrentVideo: IVideo;
+    fVideoClip:    IVideo;
+    fLyricsSync: TLyricsSyncSource;
   protected
-    VideoLoaded: boolean;
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
-  protected
     Paused:     boolean; //pause Mod
-    LyricsSync: TLyricsSyncSource;
     NumEmptySentences: integer;
   public
     // timebar fields
@@ -104,12 +106,8 @@ type
     //the song was sung to the end
     SungToEnd: boolean;
 
-    fShowVisualization: boolean;
-    fCurrentVideo: IVideo;
-    fVideoClip:    IVideo;
-
     // some settings to be set by plugins
-    settings: record
+    Settings: record
       Finish: Boolean; //< if true, screen will finish on next draw
 
       LyricsVisible: Boolean; //< shows or hides lyrics
@@ -240,8 +238,6 @@ end;
 
 // pause mod
 procedure TScreenSing.Pause;
-var
-  VideoFile: IPath;
 begin
   if (not Paused) then  // enable pause
   begin
@@ -254,8 +250,7 @@ begin
     AudioPlayback.Pause;
 
     // pause video
-    VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
-    if (CurrentSong.Video.IsSet) and VideoFile.Exists then
+    if (fCurrentVideo <> nil) then
       fCurrentVideo.Pause;
 
   end
@@ -267,8 +262,7 @@ begin
     AudioPlayback.Play;
 
     // video
-    VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
-    if (CurrentSong.Video.IsSet) and VideoFile.Exists then
+    if (fCurrentVideo <> nil) then
       fCurrentVideo.Pause;
 
     Paused := false;
@@ -330,7 +324,7 @@ begin
       Theme.LyricBar.UpperX, Theme.LyricBar.UpperY, Theme.LyricBar.UpperW, Theme.LyricBar.UpperH,
       Theme.LyricBar.LowerX, Theme.LyricBar.LowerY, Theme.LyricBar.LowerW, Theme.LyricBar.LowerH);
 
-  LyricsSync := TLyricsSyncSource.Create();
+  fLyricsSync := TLyricsSyncSource.Create();
 
   eSongLoaded := THookableEvent.Create('ScreenSing.SongLoaded');
 
@@ -496,7 +490,6 @@ begin
   {*
    * set background to: video
    *}
-  VideoLoaded := false;
   fShowVisualization := false;
   VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
   if (CurrentSong.Video.IsSet) and VideoFile.IsFile then
@@ -508,14 +501,13 @@ begin
       fShowVisualization := false;
       fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start;
       fCurrentVideo.Play;
-      VideoLoaded := true;
     end;
   end;
 
   {*
    * set background to: picture
    *}
-  if (CurrentSong.Background.IsSet) and (VideoLoaded = false)
+  if (CurrentSong.Background.IsSet) and (fVideoClip = nil)
     and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
   begin
     BgFile := CurrentSong.Path.Append(CurrentSong.Background);
@@ -546,7 +538,7 @@ begin
    * set background to: visualization (Videos are still shown)
    *}
   if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
-     (VideoLoaded = false)) then
+     (fVideoClip = nil)) then
   begin
     fShowVisualization := true;
     fCurrentVideo := Visualization.Open(PATH_NONE);
@@ -668,7 +660,7 @@ begin
   AudioPlayback.SetVolume(1.0);
   AudioPlayback.Position := CurrentSong.Start;
   // synchronize music to the lyrics
-  AudioPlayback.SetSyncSource(LyricsSync);
+  AudioPlayback.SetSyncSource(fLyricsSync);
 
   // start lyrics
   LyricsState.Resume();
@@ -718,6 +710,7 @@ var
   Sec:   integer;
   T:     integer;
   CurLyricsTime: real;
+  VideoFrameTime: Extended;
   Line: TLyricLine;
   LastWord: TLyricWord;
 begin
@@ -815,17 +808,27 @@ begin
   end;
 
   // update and draw movie
-  if (ShowFinish and (VideoLoaded or fShowVisualization)) then
+  if Assigned(fCurrentVideo) then
   begin
-    if assigned(fCurrentVideo) then
+    // Just call this once
+    // when Screens = 2
+    if (ScreenAct = 1) then
     begin
-      // Just call this once
-      // when Screens = 2
-      if (ScreenAct = 1) then
-        fCurrentVideo.GetFrame(CurrentSong.VideoGAP + LyricsState.GetCurrentTime());
-
-      fCurrentVideo.DrawGL(ScreenAct);
+      if (ShowFinish) then
+      begin
+        // everything is setup, determine the current position 
+        VideoFrameTime := CurrentSong.VideoGAP + LyricsState.GetCurrentTime();
+      end
+      else
+      begin
+        // Important: do not yet start the triggered timer by a call to
+        // LyricsState.GetCurrentTime()
+        VideoFrameTime := CurrentSong.VideoGAP;
+      end;
+      fCurrentVideo.GetFrame(VideoFrameTime);
     end;
+
+    fCurrentVideo.DrawGL(ScreenAct);
   end;
 
   // draw static menu (FG)
@@ -903,9 +906,6 @@ begin
   AudioInput.CaptureStop;
   AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
-
-  // to prevent drawing closed video
-  VideoLoaded := false;
 
   // close video files
   fVideoClip := nil;
