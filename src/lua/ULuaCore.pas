@@ -683,12 +683,12 @@ procedure TLuaCore.DumpPlugins;
     I: integer;
 begin
   // print table header
-  Log.LogError(Format('%3s %-30s %-8s %-10s %-7s %-6s', [
+  Log.LogStatus(Format('%3s %-30s %-8s %-10s %-7s %-6s', [
       '#', 'Name', 'Version', 'Status', 'Paused', '#Errors'
   ]), 'LuaCore Plugins');
 
   for I := 0 to High(Plugins) do
-    Log.LogError(Format('%3d %-30s %-8s %-10s %-7s %-6d', [
+    Log.LogStatus(Format('%3d %-30s %-8s %-10s %-7s %-6d', [
         Plugins[I].Id, Plugins[I].Name, Plugins[I].Version,
         PluginStatusToString(Plugins[I].Status),
         BoolToStr(Plugins[I].Paused, true),
