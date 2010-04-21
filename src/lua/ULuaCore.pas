@@ -677,10 +677,8 @@ procedure TLuaCore.DumpPlugins;
     end;
   end;
 
-  const
-    NameLength = 30;
-  var
-    I: integer;
+var
+  I: integer;
 begin
   // print table header
   Log.LogStatus(Format('%3s %-30s %-8s %-10s %-7s %-6s', [
