@@ -127,6 +127,8 @@ type
       AudioOutputBufferSizeIndex: integer;
       VoicePassthrough: integer;
 
+      SyncTo: integer;
+
       //Song Preview
       PreviewVolume:  integer;
       PreviewFading:  integer;
@@ -218,6 +220,12 @@ const
 
   IVoicePassthrough: array[0..1] of UTF8String  = ('Off', 'On');
 
+const
+  ISyncTo: array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
+type
+  TSyncToType = (stMusic, stLyrics, stOff);
+
+const  
   IAudioOutputBufferSize:     array[0..9] of UTF8String  = ('Auto', '256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
   IAudioOutputBufferSizeVals: array[0..9] of integer     = ( 0,      256,   512 ,  1024 ,  2048 ,  4096 ,  8192 ,  16384 ,  32768 ,  65536 );
 
@@ -289,6 +297,8 @@ var
   ISavePlaybackTranslated:     array[0..1] of UTF8String  = ('Off', 'On');
 
   IVoicePassthroughTranslated: array[0..1] of UTF8String  = ('Off', 'On');
+
+  ISyncToTranslated:           array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
 
   //Song Preview
   IPreviewVolumeTranslated:    array[0..10] of UTF8String = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
@@ -412,6 +422,10 @@ begin
 
   IVoicePassthroughTranslated[0]      := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IVoicePassthroughTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_ON');
+
+  ISyncToTranslated[Ord(stMusic)]     := ULanguage.Language.Translate('OPTION_VALUE_MUSIC');
+  ISyncToTranslated[Ord(stLyrics)]    := ULanguage.Language.Translate('OPTION_VALUE_LYRICS');
+  ISyncToTranslated[Ord(stOff)]       := ULanguage.Language.Translate('OPTION_VALUE_OFF');
 
   ILyricsFontTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_PLAIN');
   ILyricsFontTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_OLINE1');
@@ -881,7 +895,7 @@ begin
   TabsAtStartup := Tabs;	//Tabs at Startup fix
 
   // Song Sorting
-  Sorting := GetArrayIndex(ISorting, IniFile.ReadString('Game', 'Sorting', ISorting[0]));
+  Sorting := GetArrayIndex(ISorting, IniFile.ReadString('Game', 'Sorting', ISorting[Ord(sEdition)]));
 
   // Debug
   Debug := GetArrayIndex(IDebug, IniFile.ReadString('Game', 'Debug', IDebug[0]));
@@ -973,6 +987,9 @@ begin
 
   // PartyPopup
   PartyPopup := GetArrayIndex(IPartyPopup, IniFile.ReadString('Advanced', 'PartyPopup', 'On'));
+
+  // SyncTo
+  SyncTo := GetArrayIndex(ISyncTo, IniFile.ReadString('Advanced', 'SyncTo', ISyncTo[Ord(stMusic)]));
 
   // Joypad
   Joypad := GetArrayIndex(IJoypad, IniFile.ReadString('Controller',    'Joypad',   IJoypad[0]));
@@ -1114,6 +1131,9 @@ begin
 
   //Party Popup
   IniFile.WriteString('Advanced', 'PartyPopup', IPartyPopup[PartyPopup]);
+
+  //SyncTo
+  IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
 
   // Joypad
   IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);

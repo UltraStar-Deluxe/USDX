@@ -58,6 +58,10 @@ type
     function GetClock(): real; override;
   end;
 
+  TMusicSyncSource = class(TSyncSource)
+    function GetClock(): real; override;
+  end;
+
 type
   TScreenSing = class(TMenu)
   private
@@ -65,6 +69,7 @@ type
     fCurrentVideo: IVideo;
     fVideoClip:    IVideo;
     fLyricsSync: TLyricsSyncSource;
+    fMusicSync: TMusicSyncSource;
   protected
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
     Paused:     boolean; //pause Mod
@@ -256,7 +261,7 @@ begin
   end
   else              // disable pause
   begin
-    LyricsState.Resume();
+    LyricsState.Start();
 
     // play music
     AudioPlayback.Play;
@@ -325,6 +330,7 @@ begin
       Theme.LyricBar.LowerX, Theme.LyricBar.LowerY, Theme.LyricBar.LowerW, Theme.LyricBar.LowerH);
 
   fLyricsSync := TLyricsSyncSource.Create();
+  fMusicSync := TMusicSyncSource.Create();
 
   eSongLoaded := THookableEvent.Create('ScreenSing.SongLoaded');
 
@@ -659,11 +665,21 @@ begin
   AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
   AudioPlayback.SetVolume(1.0);
   AudioPlayback.Position := CurrentSong.Start;
-  // synchronize music to the lyrics
-  AudioPlayback.SetSyncSource(fLyricsSync);
+
+  // synchronize music
+  if (Ini.SyncTo = Ord(stLyrics)) then
+    AudioPlayback.SetSyncSource(fLyricsSync)
+  else
+    AudioPlayback.SetSyncSource(nil);
+
+  // synchronize lyrics (do not set this before AudioPlayback is initialized)
+  if (Ini.SyncTo = Ord(stMusic)) then
+    LyricsState.SetSyncSource(fMusicSync)
+  else
+    LyricsState.SetSyncSource(nil);
 
   // start lyrics
-  LyricsState.Resume();
+  LyricsState.Start(true);
 
   // start music
   AudioPlayback.Play();
@@ -907,6 +923,9 @@ begin
   AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
+  LyricsState.Stop();
+  LyricsState.SetSyncSource(nil);
+
   // close video files
   fVideoClip := nil;
   fCurrentVideo := nil;
@@ -1043,6 +1062,11 @@ end;
 function TLyricsSyncSource.GetClock(): real;
 begin
   Result := LyricsState.GetCurrentTime();
+end;
+
+function TMusicSyncSource.GetClock(): real;
+begin
+  Result := AudioPlayback.Position;
 end;
 
 end.

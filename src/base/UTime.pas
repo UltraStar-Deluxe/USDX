@@ -40,20 +40,26 @@ type
       function GetTime(): real;
   end;
 
+  TRelativeTimerState = (rtsStopped, rtsWait, rtsPaused, rtsRunning);
+
   TRelativeTimer = class
     private
       AbsoluteTime: int64;      // system-clock reference time for calculation of CurrentTime
-      RelativeTimeOffset: real;
-      Paused: boolean;
+      RelativeTime: real;
       TriggerMode: boolean;
+      State: TRelativeTimerState;
     public
-      constructor Create(TriggerMode: boolean = false);
+      constructor Create();
+      procedure Start(WaitForTrigger: boolean = false);
       procedure Pause();
-      procedure Resume();
+      procedure Stop();
       function GetTime(): real;
-      function GetAndResetTime(): real;
-      procedure SetTime(Time: real; Trigger: boolean = true);
-      procedure Reset();
+      procedure SetTime(Time: real);
+      function GetState(): TRelativeTimerState;
+  end;
+
+  TSyncSource = class
+    function GetClock(): real; virtual; abstract;
   end;
 
 procedure CountSkipTimeSet;
@@ -126,85 +132,115 @@ end;
  * TRelativeTimer
  **}
 
-(*
- * creates a new timer.
- * if triggermode is false (default), the timer
- * will immediately begin with counting.
- * if triggermode is true, it will wait until get/settime() or pause() is called
- * for the first time.
+(**
+ * Creates a new relative timer.
+ * A relative timer works like a stop-watch. It can be paused and
+ * resumed afterwards, continuing with the counter it had when it was paused.
  *)
-constructor TRelativeTimer.Create(TriggerMode: boolean);
+constructor TRelativeTimer.Create();
 begin
-  inherited Create();
-  Self.TriggerMode := TriggerMode;
-  Reset();
-  Paused := false;
+  State := rtsStopped;
+  AbsoluteTime := 0;
+  RelativeTime := 0;
 end;
 
+(**
+ * Starts the timer.
+ * If WaitForTrigger is false the timer will be started immediately.
+ * If WaitForTrigger is true the timer will be started when a trigger event
+ * occurs. A trigger event is a call of one of the Get-/SetTime() methods.
+ * In addition the timer can be started by calling this method again with
+ * WaitForTrigger set to false.
+ *)
+procedure TRelativeTimer.Start(WaitForTrigger: boolean = false);
+begin
+  case (State) of
+    rtsStopped, rtsPaused: begin
+      if (WaitForTrigger) then
+      begin
+        State := rtsWait;
+      end
+      else
+      begin
+        State := rtsRunning;
+        AbsoluteTime := SDL_GetTicks();
+      end;
+    end;
+
+    rtsWait: begin
+      if (not WaitForTrigger) then
+      begin
+        State := rtsRunning;
+        AbsoluteTime := SDL_GetTicks();
+        RelativeTime := 0;
+      end;
+    end;
+  end;
+end;
+
+(**
+ * Pauses the timer and leaves the counter untouched.
+ *)
 procedure TRelativeTimer.Pause();
 begin
-  RelativeTimeOffset := GetTime();
-  Paused := true;
-end;
-
-procedure TRelativeTimer.Resume();
-begin
-  AbsoluteTime := SDL_GetTicks();
-  Paused := false;
-end;
-
-(*
- * Returns the counter of the timer.
- * If in TriggerMode it will return 0 and start the counter on the first call.
- *)
-function TRelativeTimer.GetTime: real;
-begin
-  // initialize absolute time on first call in triggered mode
-  if (TriggerMode and (AbsoluteTime = 0)) then
+  if (State = rtsRunning) then
   begin
-    AbsoluteTime := SDL_GetTicks();
-    Result := RelativeTimeOffset;
-    Exit;
+    // Important: GetTime() must be called in running state
+    RelativeTime := GetTime();
+    State := rtsPaused;
   end;
-
-  if Paused then
-    Result := RelativeTimeOffset
-  else
-    Result := RelativeTimeOffset + (SDL_GetTicks() - AbsoluteTime) / cSDLCorrectionRatio;
 end;
 
-(*
- * Returns the counter of the timer and resets the counter to 0 afterwards.
- * Note: In TriggerMode the counter will not be stopped as with Reset().
+(**
+ * Stops the timer and sets its counter to 0.
  *)
-function TRelativeTimer.GetAndResetTime(): real;
+procedure TRelativeTimer.Stop();
 begin
-  Result := GetTime();
-  SetTime(0);
+  if (State <> rtsStopped) then
+  begin
+    State := rtsStopped;
+    RelativeTime := 0;
+  end;
 end;
 
-(*
- * Sets the timer to the given time. This will trigger in TriggerMode if
- * Trigger is set to true. Otherwise the counter's state will not change.
+(**
+ * Returns the current counter of the timer.
+ * If WaitForTrigger was true in Start() the timer will be started
+ * if it was not already running.
  *)
-procedure TRelativeTimer.SetTime(Time: real; Trigger: boolean);
+function TRelativeTimer.GetTime(): real;
 begin
-  RelativeTimeOffset := Time;
-  if ((not TriggerMode) or Trigger) then
-    AbsoluteTime := SDL_GetTicks();
+  case (State) of
+    rtsStopped, rtsPaused:
+      Result := RelativeTime;
+    rtsRunning:
+      Result := RelativeTime + (SDL_GetTicks() - AbsoluteTime) / cSDLCorrectionRatio;
+    rtsWait: begin
+      // start triggered
+      State := rtsRunning;
+      AbsoluteTime := SDL_GetTicks();
+      Result := RelativeTime;
+    end;
+  end;
 end;
 
-(*
- * Resets the counter of the timer to 0.
- * If in TriggerMode the timer will not start counting until it is triggered again.
+(**
+ * Sets the counter of the timer.
+ * If WaitForTrigger was true in Start() the timer will be started
+ * if it was not already running.
  *)
-procedure TRelativeTimer.Reset();
+procedure TRelativeTimer.SetTime(Time: real);
 begin
-  RelativeTimeOffset := 0;
-  if (TriggerMode) then
-    AbsoluteTime := 0
-  else
-    AbsoluteTime := SDL_GetTicks();
+  RelativeTime := Time;
+  AbsoluteTime := SDL_GetTicks();
+  // start triggered
+  if (State = rtsWait) then
+    State := rtsRunning;
+end;
+
+function TRelativeTimer.GetState(): TRelativeTimerState;
+begin
+  Result := State;
 end;
 
 end.

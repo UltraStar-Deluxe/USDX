@@ -131,6 +131,7 @@ begin
   if (fBgVideo <> nil) then
   begin
     VideoBGTimer.SetTime(0);
+    VideoBGTimer.Start();
     fBgVideo.Loop := true;
     fBgVideo.Play;
   end;

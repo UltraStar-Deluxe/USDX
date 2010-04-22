@@ -188,10 +188,6 @@ type
   end;
 
 type
-  TSyncSource = class
-    function GetClock(): real; virtual; abstract;
-  end;
-
   TAudioProcessingStream = class;
   TOnCloseHandler = procedure(Stream: TAudioProcessingStream);
 

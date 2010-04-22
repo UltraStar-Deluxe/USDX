@@ -43,7 +43,15 @@ type
    *)
   TLyricsState = class
     private
-      Timer:        TRelativeTimer; // keeps track of the current time
+      fTimer:        TRelativeTimer; // keeps track of the current time
+      fSyncSource:   TSyncSource;
+      fAvgSyncDiff:  real;
+      fLastClock:    real;       // last master clock value
+      // Note: do not use Timer.GetState() to check if lyrics are paused as
+      // Timer.Pause() is used for synching.
+      fPaused:       boolean;
+
+      function Synchronize(LyricTime: real): real;
     public
       OldBeat:      integer;    // previous discovered beat
       CurrentBeat:  integer;    // current beat (rounded)
@@ -68,28 +76,61 @@ type
       TotalTime:    real;       // total song time
 
       constructor Create();
-      procedure Pause();
-      procedure Resume();
 
+      {**
+       * Resets the LyricsState state.
+       *}
       procedure Reset();
+
       procedure UpdateBeats();
 
+      {**
+       * Sets a master clock for this LyricsState. If no sync-source is set
+       * or SyncSource is nil the internal timer is used.
+       *}
+      procedure SetSyncSource(SyncSource: TSyncSource);
+
+      {**
+       * Starts the timer. This is either done
+       * - immediately if WaitForTrigger is false or
+       * - after the first call to GetCurrentTime()/SetCurrentTime() or Start(false)
+       *}
+      procedure Start(WaitForTrigger: boolean = false);
+
+      {**
+       * Pauses the timer.
+       * The counter is preserved and can be resumed by a call to Start().
+       *}
+      procedure Pause();
+
+      {**
+       * Stops the timer.
+       * The counter is reset to 0.
+       *}
+      procedure Stop();
+
       (**
-       * current song time (in seconds) used as base-timer for lyrics etc.
+       * Returns/Sets the current song time (in seconds) used as base-timer for lyrics etc.
+       * If GetCurrentTime()/SetCurrentTime() if Start() was called
        *)
       function GetCurrentTime(): real;
       procedure SetCurrentTime(Time: real);
   end;
 
 implementation
-uses UNote, Math;
+
+uses
+  UNote,
+  ULog,
+  SysUtils,
+  Math;
 
 
 constructor TLyricsState.Create();
 begin
   // create a triggered timer, so we can Pause() it, set the time
   // and Resume() it afterwards for better synching.
-  Timer := TRelativeTimer.Create(true);
+  fTimer := TRelativeTimer.Create();
 
   // reset state
   Reset();
@@ -97,24 +138,110 @@ end;
 
 procedure TLyricsState.Pause();
 begin
-  Timer.Pause();
+  fTimer.Pause();
+  fPaused := true;
 end;
 
-procedure TLyricsState.Resume();
+procedure TLyricsState.Start(WaitForTrigger: boolean);
 begin
-  Timer.Resume();
+  fTimer.Start(WaitForTrigger);
+  fPaused := false;
+  fLastClock := -1;
+  fAvgSyncDiff := -1;
+end;
+
+procedure TLyricsState.Stop();
+begin
+  fTimer.Stop();
+  fPaused := false;
 end;
 
 procedure TLyricsState.SetCurrentTime(Time: real);
 begin
-  // do not start the timer (if not started already),
-  // after setting the current time
-  Timer.SetTime(Time, false);
+  fTimer.SetTime(Time);
+  fLastClock := -1;
+  fAvgSyncDiff := -1;
+end;
+
+{.$DEFINE LOG_SYNC}
+
+function TLyricsState.Synchronize(LyricTime: real): real;
+var
+  MasterClock: real;
+  TimeDiff: real;
+const
+  AVG_HISTORY_FACTOR = 0.7;
+  PAUSE_THRESHOLD = 0.010; // 10ms
+  FORWARD_THRESHOLD = 0.010; // 10ms
+begin
+  MasterClock := fSyncSource.GetClock();
+  Result := LyricTime;
+
+  // do not sync if lyrics are paused externally or if the timestamp is old
+  if (fPaused or (MasterClock = fLastClock)) then
+    Exit;
+
+  // calculate average time difference (some sort of weighted mean).
+  // The bigger AVG_HISTORY_FACTOR is, the smoother is the average diff.
+  // This is done as some timestamps might be wrong or even lower
+  // than their predecessor.
+  TimeDiff := MasterClock - LyricTime;
+  if (fAvgSyncDiff = -1) then
+    fAvgSyncDiff := TimeDiff
+  else
+    fAvgSyncDiff := TimeDiff * (1-AVG_HISTORY_FACTOR) +
+                    fAvgSyncDiff * AVG_HISTORY_FACTOR;
+
+  {$IFDEF LOG_SYNC}
+  //Log.LogError(Format('TimeDiff: %.3f', [TimeDiff]));
+  {$ENDIF}
+
+  // do not go backwards in time as this could mess up the score
+  if (fAvgSyncDiff > FORWARD_THRESHOLD) then
+  begin
+    {$IFDEF LOG_SYNC}
+    Log.LogError('Sync: ' + floatToStr(MasterClock) + ' > ' + floatToStr(LyricTime));
+    {$ENDIF}
+
+    Result := LyricTime + fAvgSyncDiff;
+    fTimer.SetTime(Result);
+    fTimer.Start();
+    fAvgSyncDiff := -1;
+  end
+  else if (fAvgSyncDiff < -PAUSE_THRESHOLD) then
+  begin
+    // wait until timer and master clock are in sync (> 10ms)
+    fTimer.Pause();
+
+    {$IFDEF LOG_SYNC}
+    Log.LogError('Pause: ' + floatToStr(MasterClock) + ' < ' + floatToStr(LyricTime));
+    {$ENDIF}
+  end
+  else if (fTimer.GetState = rtsPaused) and (fAvgSyncDiff >= 0) then
+  begin
+    fTimer.Start();
+
+    {$IFDEF LOG_SYNC}
+    Log.LogError('Unpause: ' + floatToStr(LyricTime));
+    {$ENDIF}
+  end;
+  fLastClock := MasterClock;
 end;
 
 function TLyricsState.GetCurrentTime(): real;
+var
+  LyricTime: real;
 begin
-  Result := Timer.GetTime();
+  LyricTime := fTimer.GetTime();
+  if Assigned(fSyncSource) then
+    Result := Synchronize(LyricTime)
+  else
+    Result := LyricTime;
+end;
+
+procedure TLyricsState.SetSyncSource(SyncSource: TSyncSource);
+begin
+  fSyncSource := SyncSource;
 end;
 
 (**
@@ -124,8 +251,10 @@ end;
  *)
 procedure TLyricsState.Reset();
 begin
-  Pause();
-  SetCurrentTime(0);
+  Stop();
+  fPaused := false;
+
+  fSyncSource := nil;
 
   StartTime := 0;
   TotalTime := 0;

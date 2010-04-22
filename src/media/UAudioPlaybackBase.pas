@@ -35,6 +35,7 @@ interface
 
 uses
   UMusic,
+  UTime,
   UPath;
 
 type
