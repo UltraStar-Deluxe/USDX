@@ -2127,15 +2127,15 @@ begin
         //New Theme-Color Patch
     4:  begin
           // violet
-          Result.R := 230/255;
-          Result.G := 63/255;
-          Result.B := 230/255;
+          Result.R := 212/255;
+          Result.G := 71/255;
+          Result.B := 247/255;
         end;
     5:  begin
           // orange
-          Result.R := 255/255;
+          Result.R := 247/255;
           Result.G := 144/255;
-          Result.B := 0;
+          Result.B := 71/255;
         end;
     6:  begin
           // yellow
