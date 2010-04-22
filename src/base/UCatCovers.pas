@@ -24,10 +24,6 @@
  *}
 
 unit UCatCovers;
-/////////////////////////////////////////////////////////////////////////
-//                   UCatCovers by Whiteshark                          //
-//          Class for listing and managing the Category Covers         //
-/////////////////////////////////////////////////////////////////////////
 
 interface
 
@@ -183,7 +179,7 @@ function TCatCovers.GetCover(Sorting: TSortingType; const Name: UTF8String): IPa
 var
   I: Integer;
   UpperName: UTF8String;
-  NoCoverPath: IPath; 
+  NoCoverPath: IPath;
 begin
   Result := PATH_NONE;
   UpperName := UTF8Uppercase(Name);
