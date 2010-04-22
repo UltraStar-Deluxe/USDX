@@ -486,7 +486,7 @@ var
     Song[CatIndex].Main     := true;
     Song[CatIndex].OrderTyp := 0;
     Song[CatIndex].OrderNum := Order;
-    Song[CatIndex].Cover    := CatCovers.GetCover(Ini.Sorting, CategoryName);
+    Song[CatIndex].Cover    := CatCovers.GetCover(TSortingType(Ini.Sorting), CategoryName);
     Song[CatIndex].Visible  := true;
 
     // set number of songs in previous category

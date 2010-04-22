@@ -44,15 +44,15 @@ uses
 type
   TCatCovers = class
     protected
-      cNames:    array [0..high(ISorting)] of array of UTF8String;
-      cFiles:    array [0..high(ISorting)] of array of IPath;
+      cNames:    array [TSortingType] of array of UTF8String;
+      cFiles:    array [TSortingType] of array of IPath;
     public
       constructor Create;
       procedure Load; //Load Cover aus Cover.ini and Cover Folder
       procedure LoadPath(const CoversPath: IPath);
-      procedure Add(Sorting: integer; const Name: UTF8String; const Filename: IPath); //Add a Cover
-      function  CoverExists(Sorting: integer; const Name: UTF8String): boolean; //Returns True when a cover with the given Name exists
-      function  GetCover(Sorting: integer; const Name: UTF8String): IPath; //Returns the Filename of a Cover
+      procedure Add(Sorting: TSortingType; const Name: UTF8String; const Filename: IPath); //Add a Cover
+      function  CoverExists(Sorting: TSortingType; const Name: UTF8String): boolean; //Returns True when a cover with the given Name exists
+      function  GetCover(Sorting: TSortingType; const Name: UTF8String): IPath; //Returns the Filename of a Cover
   end;
 
 var
@@ -91,7 +91,7 @@ procedure TCatCovers.LoadPath(const CoversPath: IPath);
 var
   Ini: TMemIniFile;
   List: TStringlist;
-  I, J: Integer;
+  I: Integer;
   SortType: TSortingType;
   Filename: IPath;
   Name, TmpName: UTF8String;
@@ -107,14 +107,14 @@ begin
     List := TStringlist.Create;
 
     //Add every Cover in Covers Ini for Every Sorting option
-    for I := 0 to High(ISorting) do
+    for SortType := Low(TSortingType) to High(TSortingType) do
     begin
-      Ini.ReadSection(ISorting[I], List);
+      Ini.ReadSection(ISorting[Ord(SortType)], List);
 
-      for J := 0 to List.Count - 1 do
+      for I := 0 to List.Count - 1 do
       begin
-        CatCover := Path(Ini.ReadString(ISorting[I], List.Strings[J], 'NoCover.jpg'));
-        Add(I, List.Strings[J], CoversPath.Append(CatCover));
+        CatCover := Path(Ini.ReadString(ISorting[Ord(SortType)], List.Strings[I], 'NoCover.jpg'));
+        Add(SortType, List.Strings[I], CoversPath.Append(CatCover));
       end;
     end;
   finally
@@ -140,14 +140,14 @@ begin
       else if (SortType = sArtist) and (UTF8Pos('Artist', TmpName) <> 0) then
         UTF8Delete(TmpName, UTF8Pos('Artist', TmpName), 6);
 
-      if not CoverExists(I, TmpName) then
-        Add(I, TmpName, Filename);
+      if not CoverExists(SortType, TmpName) then
+        Add(SortType, TmpName, Filename);
     end;
   end;
 end;
 
   //Add a Cover
-procedure TCatCovers.Add(Sorting: integer; const Name: UTF8String; const Filename: IPath);
+procedure TCatCovers.Add(Sorting: TSortingType; const Name: UTF8String; const Filename: IPath);
 begin
   if Filename.IsFile then //If Exists -> Add
   begin
@@ -160,7 +160,7 @@ begin
 end;
 
   //Returns True when a cover with the given Name exists
-function TCatCovers.CoverExists(Sorting: integer; const Name: UTF8String): boolean;
+function TCatCovers.CoverExists(Sorting: TSortingType; const Name: UTF8String): boolean;
 var
   I: Integer;
   UpperName: UTF8String;
@@ -179,7 +179,7 @@ begin
 end;
 
   //Returns the Filename of a Cover
-function TCatCovers.GetCover(Sorting: integer; const Name: UTF8String): IPath;
+function TCatCovers.GetCover(Sorting: TSortingType; const Name: UTF8String): IPath;
 var
   I: Integer;
   UpperName: UTF8String;
