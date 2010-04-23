@@ -152,6 +152,34 @@ const
 
   (*************************************************************************)
   (*                                                                       *)
+  (* <Macro>                                                               *)
+  (*    FT_ENC_TAG                                                         *)
+  (*                                                                       *)
+  (* <Description>                                                         *)
+  (*    This macro converts four-letter tags into an unsigned long.  It is *)
+  (*    used to define `encoding' identifiers (see @FT_Encoding).          *)
+  (*                                                                       *)
+  (* <Note>                                                                *)
+  (*    Since many 16-bit compilers don't like 32-bit enumerations, you    *)
+  (*    should redefine this macro in case of problems to something like   *)
+  (*    this:                                                              *)
+  (*                                                                       *)
+  (*    {                                                                  *)
+  (*      #define FT_ENC_TAG( value, a, b, c, d )  value                   *)
+  (*    }                                                                  *)
+  (*                                                                       *)
+  (*    to get a simple enumeration without assigning special numbers.     *)
+  (*                                                                       *)
+  {
+  #define FT_ENC_TAG( value, a, b, c, d )         \
+          value = ( ( (FT_UInt32)(a) << 24 ) |  \
+                    ( (FT_UInt32)(b) << 16 ) |  \
+                    ( (FT_UInt32)(c) <<  8 ) |  \
+                      (FT_UInt32)(d)         )
+  }
+
+  (*************************************************************************)
+  (*                                                                       *)
   (* <Enum>                                                                *)
   (*    FT_Encoding                                                        *)
   (*                                                                       *)
@@ -289,17 +317,47 @@ const
   (*                                                                       *)
 type
   PFT_Encoding = ^FT_Encoding;
-  FT_Encoding = array[0..3] of char;
+  FT_Encoding = cint32; // 32 bit enum of FT_ENC_TAG
 const
-  FT_ENCODING_NONE:      FT_Encoding = (#0 ,#0 ,#0 ,#0 );
-  FT_ENCODING_MS_SYMBOL: FT_Encoding = ('s', 'y', 'm', 'b' );
-  FT_ENCODING_UNICODE:   FT_Encoding = ('u', 'n', 'i', 'c' );
+  FT_ENCODING_NONE      = (Ord(#0) shl 24) or
+                          (Ord(#0) shl 16) or
+                          (Ord(#0) shl  8) or
+                          (Ord(#0) shl  0);
 
-  FT_ENCODING_SJIS:      FT_Encoding = ('s', 'j', 'i', 's');
-  FT_ENCODING_GB2312:    FT_Encoding = ('g', 'b', ' ', ' ');
-  FT_ENCODING_BIG5:      FT_Encoding = ('b', 'i', 'g', '5');
-  FT_ENCODING_WANSUNG:   FT_Encoding = ('w', 'a', 'n', 's');
-  FT_ENCODING_JOHAB:     FT_Encoding = ('j', 'o', 'h', 'a');
+  FT_ENCODING_MS_SYMBOL = (Ord('s') shl 24) or
+                          (Ord('y') shl 16) or
+                          (Ord('m') shl  8) or
+                          (Ord('b') shl  0);
+
+  FT_ENCODING_UNICODE   = (Ord('u') shl 24) or
+                          (Ord('n') shl 16) or
+                          (Ord('i') shl  8) or
+                          (Ord('c') shl  0);
+
+  FT_ENCODING_SJIS      = (Ord('s') shl 24) or
+                          (Ord('j') shl 16) or
+                          (Ord('i') shl  8) or
+                          (Ord('s') shl  0);
+
+  FT_ENCODING_GB2312    = (Ord('g') shl 24) or
+                          (Ord('b') shl 16) or
+                          (Ord(' ') shl  8) or
+                          (Ord(' ') shl  0);
+
+  FT_ENCODING_BIG5      = (Ord('b') shl 24) or
+                          (Ord('i') shl 16) or
+                          (Ord('g') shl  8) or
+                          (Ord('5') shl  0);
+
+  FT_ENCODING_WANSUNG   = (Ord('w') shl 24) or
+                          (Ord('a') shl 16) or
+                          (Ord('n') shl  8) or
+                          (Ord('s') shl  0);
+
+  FT_ENCODING_JOHAB     = (Ord('j') shl 24) or
+                          (Ord('o') shl 16) or
+                          (Ord('h') shl  8) or
+                          (Ord('a') shl  0);
 
 
   (*************************************************************************)

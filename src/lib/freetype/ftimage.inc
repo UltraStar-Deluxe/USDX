@@ -454,6 +454,33 @@ const
 
   (*************************************************************************)
   (*                                                                       *)
+  (* <Macro>                                                               *)
+  (*    FT_IMAGE_TAG                                                       *)
+  (*                                                                       *)
+  (* <Description>                                                         *)
+  (*    This macro converts four-letter tags to an unsigned long type.     *)
+  (*                                                                       *)
+  (* <Note>                                                                *)
+  (*    Since many 16-bit compilers don't like 32-bit enumerations, you    *)
+  (*    should redefine this macro in case of problems to something like   *)
+  (*    this:                                                              *)
+  (*                                                                       *)
+  (*    {                                                                  *)
+  (*      #define FT_IMAGE_TAG( value, _x1, _x2, _x3, _x4 )  value         *)
+  (*    }                                                                  *)
+  (*                                                                       *)
+  (*    to get a simple enumeration without assigning special numbers.     *)
+  (*                                                                       *)
+  {
+  #define FT_IMAGE_TAG( value, _x1, _x2, _x3, _x4 )  \
+          value = ( ( (unsigned long)_x1 << 24 ) | \
+                    ( (unsigned long)_x2 << 16 ) | \
+                    ( (unsigned long)_x3 << 8  ) | \
+                      (unsigned long)_x4         )
+  }
+
+  (*************************************************************************)
+  (*                                                                       *)
   (* <Enum>                                                                *)
   (*    FT_Glyph_Format                                                    *)
   (*                                                                       *)
@@ -490,15 +517,34 @@ const
   (*      @FT_Outline, but FreeType isn't currently capable of rendering   *)
   (*      them correctly.                                                  *)
   (*                                                                       *)
-  FT_Glyph_Format = array[0..3] of char;
+  // Note: enums are 32 bit on x86 AND x86_64
+  FT_Glyph_Format = cuint32;  // 32 bit enum of FT_IMAGE_TAG
 {$ELSE TYPE_DECL}
 const
-  FT_GLYPH_FORMAT_NONE:      FT_Glyph_Format = (#0, #0, #0, #0 );
+  FT_GLYPH_FORMAT_NONE      = (Ord(#0) shl 24) or
+                              (Ord(#0) shl 16) or
+                              (Ord(#0) shl  8) or
+                              (Ord(#0) shl  0);
 
-  FT_GLYPH_FORMAT_COMPOSITE: FT_Glyph_Format = ('c', 'o', 'm', 'p' );
-  FT_GLYPH_FORMAT_BITMAP:    FT_Glyph_Format = ('b', 'i', 't', 's' );
-  FT_GLYPH_FORMAT_OUTLINE:   FT_Glyph_Format = ('o', 'u', 't', 'l' );
-  FT_GLYPH_FORMAT_PLOTTER:   FT_Glyph_Format = ('p', 'l', 'o', 't' );
+  FT_GLYPH_FORMAT_COMPOSITE = (Ord('c') shl 24) or
+                              (Ord('o') shl 16) or
+                              (Ord('m') shl  8) or
+                              (Ord('p') shl  0);
+
+  FT_GLYPH_FORMAT_BITMAP    = (Ord('b') shl 24) or
+                              (Ord('i') shl 16) or
+                              (Ord('t') shl  8) or
+                              (Ord('s') shl  0);
+
+  FT_GLYPH_FORMAT_OUTLINE   = (Ord('o') shl 24) or
+                              (Ord('u') shl 16) or
+                              (Ord('t') shl  8) or
+                              (Ord('l') shl  0);
+
+  FT_GLYPH_FORMAT_PLOTTER   = (Ord('p') shl 24) or
+                              (Ord('l') shl 16) or
+                              (Ord('o') shl  8) or
+                              (Ord('t') shl  0);
 
 {$ENDIF TYPE_DECL}
 
