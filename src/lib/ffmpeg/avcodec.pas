@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.54.0, Sun Feb 21 2010 00:25:00 CET 
+ * Max. version: 52.55.0, Fri Apr 23 2010 21:49:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 54;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 55;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -918,6 +918,9 @@ const
   FF_IDCT_EA           = 21;
   FF_IDCT_SIMPLENEON   = 22;
   FF_IDCT_SIMPLEALPHA  = 23;
+  {$IF LIBAVCODEC_VERSION >= 52055000} // >= 52.55.0
+  FF_IDCT_BINK         = 24;
+  {$IFEND}
 
   FF_EC_GUESS_MVS   = 1;
   FF_EC_DEBLOCK     = 2;
@@ -1351,7 +1354,8 @@ type
      *)
     dct_coeff: PsmallInt;
     (**
-     * motion referece frame index
+     * motion reference frame index
+     * the order in which these are stored can depend on the codec.
      * - encoding: Set by user.
      * - decoding: Set by libavcodec.
      *)
@@ -1721,7 +1725,7 @@ type
     (**
      * Called at the beginning of each frame to get a buffer for it.
      * If pic.reference is set then the frame will be read later by libavcodec.
-     * avcodec_align_dimensions() should be used to find the required width and
+     * avcodec_align_dimensions2() should be used to find the required width and
      * height, as they normally need to be rounded up to the next multiple of 16.
      * if CODEC_CAP_DR1 is not set then get_buffer() must call
      * avcodec_default_get_buffer() instead of providing buffers allocated by
@@ -3635,8 +3639,25 @@ procedure avcodec_default_release_buffer (s: PAVCodecContext; pic: PAVFrame);
   cdecl; external av__codec;
 function avcodec_default_reget_buffer (s: PAVCodecContext; pic: PAVFrame): cint;
   cdecl; external av__codec;
+
+(**
+ * Modifies width and height values so that they will result in a memory
+ * buffer that is acceptable for the codec if you do not use any horizontal
+ * padding.
+ *)
 procedure avcodec_align_dimensions(s: PAVCodecContext; width: PCint; height: PCint);
   cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 52055000} // >= 52.55.0
+(**
+ * Modifies width and height values so that they will result in a memory
+ * buffer that is acceptable for the codec if you also ensure that all
+ * line sizes are a multiple of the respective linesize_align[i].
+ *)
+procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PCint;
+                                    linesize_align: PQuadIntArray);
+  cdecl; external av__codec;
+{$IFEND}
 
 (**
  * Checks if the given dimension of a picture is valid, meaning that all
