@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.58.0, Fri Apr 23 2010 21:49:00 CET 
+ * Max. version: 52.59.0, Fri Apr 23 2010 21:49:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 58;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 59;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -172,7 +172,9 @@ type
     CODEC_ID_QDRAW,
     CODEC_ID_VIXL,
     CODEC_ID_QPEG,
+{$IF LIBAVCODEC_VERSION_MAJOR < 53}
     CODEC_ID_XVID,
+{$IFEND}
     CODEC_ID_PNG,
     CODEC_ID_PPM,
     CODEC_ID_PBM,
@@ -3702,11 +3704,10 @@ function avcodec_thread_init(s: PAVCodecContext; thread_count: cint): cint;
 procedure avcodec_thread_free(s: PAVCodecContext);
   cdecl; external av__codec;
 
-
 {$IF LIBAVCODEC_VERSION < 52004000} // < 52.4.0
 function avcodec_thread_execute(s: PAVCodecContext; func: TExecuteFunc; arg: PPointer; var ret: cint; count: cint): cint;
   cdecl; external av__codec;
-{$ELSE}
+{$ELSEIF LIBAVCODEC_VERSION < 52059000} // < 52.59.0
 function avcodec_thread_execute(s: PAVCodecContext; func: TExecuteFunc; arg: Pointer; var ret: cint; count: cint; size: cint): cint;
   cdecl; external av__codec;
 {$IFEND}
@@ -3718,6 +3719,7 @@ function avcodec_default_execute(s: PAVCodecContext; func: TExecuteFunc; arg: PP
 function avcodec_default_execute(s: PAVCodecContext; func: TExecuteFunc; arg: Pointer; var ret: cint; count: cint; size: cint): cint;
   cdecl; external av__codec;
 {$IFEND}
+
 {$IF LIBAVCODEC_VERSION >= 52037000} // >= 52.37.0
 function avcodec_default_execute2(s: PAVCodecContext; func: TExecuteFunc; arg: Pointer; var ret: cint; count: cint): cint;
   cdecl; external av__codec;
@@ -4494,6 +4496,7 @@ const
   {$ENDIF}
 {$ENDIF}
 
+{$IF LIBAVCODEC_VERSION < 52059000} // <52.59.0
 const
 {$IF EINVAL > 0}
   AVERROR_SIGN = -1;
@@ -4528,6 +4531,7 @@ const
   // Note: function calls as constant-initializers are invalid
   //AVERROR_PATCHWELCOME = -MKTAG('P','A','W','E'); {**< Not yet implemented in FFmpeg. Patches welcome. *}
   AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
+{$IFEND}
 
 {$IF LIBAVCODEC_VERSION >= 52032000} // >= 52.32.0
 (**
