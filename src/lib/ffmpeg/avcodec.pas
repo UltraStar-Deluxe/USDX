@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.65.0, Fri Apr 23 2010 21:49:00 CET 
+ * Max. version: 52.66.0, Fri Apr 23 2010 24:00:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 65;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 66;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -3777,6 +3777,18 @@ procedure avcodec_default_release_buffer (s: PAVCodecContext; pic: PAVFrame);
   cdecl; external av__codec;
 function avcodec_default_reget_buffer (s: PAVCodecContext; pic: PAVFrame): cint;
   cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 52066000} // >= 52.66.0
+(**
+ * Returns the amount of padding in pixels which the get_buffer callback must
+ * provide around the edge of the image for codecs which do not have the
+ * CODEC_FLAG_EMU_EDGE flag.
+ *
+ * @return Required padding in pixels.
+ *)
+function avcodec_get_edge_width(): cuint;
+  cdecl; external av__codec;
+{$IFEND}
 
 (**
  * Modifies width and height values so that they will result in a memory
