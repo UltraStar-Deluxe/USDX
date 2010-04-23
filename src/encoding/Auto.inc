@@ -64,6 +64,14 @@ begin
   FreeMem(P);
 end;
 
+// NOTICE: Log.LogError/ConsoleWriteLn/DebugWriteLn are initialized yet
+procedure ShowError(const msg: string);
+begin
+  {$IFDEF CONSOLE}
+  WriteLn('ERROR: ', msg);
+  {$ENDIF}
+end;
+
 constructor TEncoderAuto.Create(const UTF8Encoder, FallbackEncoder: IEncoder);
 var
   Error: PChar;
@@ -81,8 +89,7 @@ begin
 
     if self.Regex = Nil then
     begin
-      // NOTICE: Log.LogError() is not possible here because it isn't loaded
-      ConsoleWriteLn(Format('ERROR:  UTF8 Regex compilation failed: %s at %d', [Error, ErrorOffset]));
+      ShowError(Format('UTF8 Regex compilation failed: %s at %d', [Error, ErrorOffset]));
     end
     else
     begin
@@ -91,15 +98,13 @@ begin
 
       if Error <> Nil then
       begin
-        // NOTICE: Log.LogError() is not possible here because it isn't loaded
-        ConsoleWriteLn('ERROR:  UTF8 Regex study failed: ' + Error);
+        ShowError('UTF8 Regex study failed: ' + Error);
       end;
     end;
   end
   else
   begin
-    // NOTICE: Log.LogError() is not possible here because it isn't loaded
-    ConsoleWriteLn('ERROR:  pcre not loaded. utf-8 autodetection will not work.');
+    ShowError('pcre not loaded. utf-8 autodetection will not work.');
   end;
 end;
 
