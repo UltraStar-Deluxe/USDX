@@ -39,11 +39,12 @@
 ; Download URLs for Songs and Themes:
 
 ; SONGS
+!define download_song1 "http://downloads.sourceforge.net/ultrastardx/usdx_song-bodo_wartke_-_liebeslied.zip"
 !define download_song2 "http://downloads.sourceforge.net/ultrastardx/usdx_song-dead_smiling_pirates_-_i_18.zip"
 !define download_song3 "http://downloads.sourceforge.net/ultrastardx/usdx_song-joshua_morin_-_on_the_run.zip"
 !define download_song4 "http://downloads.sourceforge.net/ultrastardx/usdx_song-pornophonique_-_space_-_invaders.zip"
 !define download_song5 "http://downloads.sourceforge.net/ultrastardx/usdx_song-steven_dunston_-_northern_star.zip"
-!define download_song1 "http://downloads.sourceforge.net/ultrastardx/usdx_song-bodo_wartke_-_liebeslied.zip"
+!define download_song6 "http://downloads.sourceforge.net/ultrastardx/usdx_song-pornophonique_-_space_invaders_kar.zip"
 
 !define download_sub1_song1 "http://downloads.sourceforge.net/ultrastardx/usdx_song-jonathan_coulton_-_monkey_shines.zip"
 !define download_sub1_song2 "http://downloads.sourceforge.net/ultrastardx/usdx_song-jonathan_coulton_-_i_crush_everything.zip"
