@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.64.0, Fri Apr 23 2010 21:49:00 CET 
+ * Max. version: 52.65.0, Fri Apr 23 2010 21:49:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 64;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 65;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -3737,6 +3737,22 @@ function avcodec_alloc_context2(ctype: TAVMediaType): PAVCodecContext;
 {$IFEND}
 {$IFEND}
 
+{$IF LIBAVCODEC_VERSION >= 52065000} // >= 52.65.0
+(**
+ * Copy the settings of the source AVCodecContext into the destination
+ * AVCodecContext. The resulting destination codec context will be
+ * unopened, i.e. you are required to call avcodec_open() before you
+ * can use this AVCodecContext to decode/encode video/audio data.
+ *
+ * @param dest target codec context, should be initialized with
+ *             avcodec_alloc_context(), but otherwise uninitialized
+ * @param src source codec context
+ * @return AVERROR() on error (e.g. memory allocation error), 0 on success
+ *)
+function avcodec_copy_context(dest: PAVCodecContext; src: {const} PAVCodecContext): cint;
+  cdecl; external av__codec;
+{$IFEND}
+
 (**
  * Sets the fields of the given AVFrame to default values.
  *
@@ -3977,7 +3993,7 @@ function avcodec_decode_video(avctx: PAVCodecContext; picture: PAVFrame;
  * @param[in] avpkt The input AVpacket containing the input buffer.
  *            You can create such packet with av_init_packet() and by then setting
  *            data and size, some decoders might in addition need other fields like
- *            flags&PKT_FLAG_KEY. All decoders are designed to use the least
+ *            flags&AV_PKT_FLAG_KEY. All decoders are designed to use the least
  *            fields possible.
  * @param[in,out] got_picture_ptr Zero if no frame could be decompressed, otherwise, it is nonzero.
  * @return On error a negative value is returned, otherwise the number of bytes
