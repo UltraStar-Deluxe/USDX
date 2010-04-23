@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.62.0, Fri Apr 23 2010 21:49:00 CET 
+ * Max. version: 52.64.0, Fri Apr 23 2010 21:49:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 62;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 64;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -457,6 +457,7 @@ const
   CODEC_ID_MPEG4AAC = CODEC_ID_AAC;
 {$IFEND}
 
+{$IF LIBAVCODEC_VERSION_MAJOR < 53} // < 53.0.0
 type
   TCodecType = (
     CODEC_TYPE_UNKNOWN = -1,
@@ -467,6 +468,20 @@ type
     CODEC_TYPE_ATTACHMENT,
     CODEC_TYPE_NB
   );
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 52064000} // >= 52.64.0
+type
+  TAVMediaType = (
+    AVMEDIA_TYPE_UNKNOWN = -1,
+    AVMEDIA_TYPE_VIDEO,
+    AVMEDIA_TYPE_AUDIO,
+    AVMEDIA_TYPE_DATA,
+    AVMEDIA_TYPE_SUBTITLE,
+    AVMEDIA_TYPE_ATTACHMENT,
+    AVMEDIA_TYPE_NB
+  );
+{$IFEND}
 
 {**
  * all in native endian
@@ -1689,7 +1704,11 @@ type
     opaque: pointer;
 
     codec_name: array [0..31] of AnsiChar;
+{$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     codec_type: TCodecType; (* see CODEC_TYPE_xxx *)
+{$ELSE}
+    codec_type: TAVMediaType; (* see AVMEDIA_TYPE_xxx *)
+{$IFEND}
     codec_id: TCodecID; (* see CODEC_ID_xxx *)
 
     (**
@@ -2942,7 +2961,11 @@ type
  *)
   TAVCodec = record
     name: PAnsiChar;
+{$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     type_: TCodecType;
+{$ELSE}
+    type_: TAVMediaType;
+{$IFEND}
     id: TCodecID;
     priv_data_size: cint;
     init: function (avctx: PAVCodecContext): cint; cdecl; (* typo corretion by the Creative CAT *)
@@ -2997,13 +3020,23 @@ type
      *)
     name: PAnsiChar;
 
+{$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     (**
      * Type of codec implemented by the hardware accelerator.
      *
      * See CODEC_TYPE_xxx
      *)
     type_: TCodecType;
+{$ELSE}
+    (**
+     * Type of codec implemented by the hardware accelerator.
+     *
+     * See AVMediaType_xxx
+     *)
+    type_: TAVMediaType;
+{$IFEND}
 
+    
     (**
      * Codec implemented by the hardware accelerator.
      *
@@ -3673,8 +3706,13 @@ procedure avcodec_get_context_defaults(s: PAVCodecContext);
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
 (** THIS FUNCTION IS NOT YET PART OF THE PUBLIC API!
  *  we WILL change its arguments and name a few times! *)
+{$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
 procedure avcodec_get_context_defaults2(s: PAVCodecContext; ctype: TCodecType);
   cdecl; external av__codec;
+{$ELSE}
+procedure avcodec_get_context_defaults2(s: PAVCodecContext; ctype: TAVMediaType);
+  cdecl; external av__codec;
+{$IFEND}
 {$IFEND}
 
 (**
@@ -3690,8 +3728,13 @@ function avcodec_alloc_context(): PAVCodecContext;
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
 (** THIS FUNCTION IS NOT YET PART OF THE PUBLIC API!
  *  we WILL change its arguments and name a few times! *)
+{$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
 function avcodec_alloc_context2(ctype: TCodecType): PAVCodecContext;
   cdecl; external av__codec;
+{$ELSE}
+function avcodec_alloc_context2(ctype: TAVMediaType): PAVCodecContext;
+  cdecl; external av__codec;
+{$IFEND}
 {$IFEND}
 
 (**
