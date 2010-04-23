@@ -703,7 +703,7 @@ begin
   glDisable(GL_BLEND);
 
   // set font specs
-  SetFontStyle(0);
+  SetFontStyle(ftNormal);
   SetFontSize(21);
   SetFontItalic(false);
   glColor4f(0, 0, 0, 1);

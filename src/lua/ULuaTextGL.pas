@@ -35,6 +35,7 @@ interface
 
 uses
   TextGL,
+  SysUtils,
   ULua;
 
 { TextGl.Pos(X, Y: Float) : sets font position }
@@ -99,10 +100,10 @@ function ULuaTextGL_Style(L: Plua_State): Integer; cdecl;
 begin
   Style := luaL_checkinteger(L, 1);
 
-  if (Style >= 0) and (Style <= 3) then
+  if (Style >= 0) and (Style < Length(Fonts)) then
     SetFontStyle(Style)
   else
-    luaL_ArgError(L, 1, PChar('number from 0 to 3 expected')); 
+    luaL_ArgError(L, 1, PChar('number from 0 to ' + IntToStr(High(Fonts)) + ' expected'));
 
   Result := 0;
 end;

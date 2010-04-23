@@ -383,7 +383,7 @@ var
     nPosition.PUW := nPosition.BGW;
     nPosition.PUH := nPosition.BGH;
 
-    nPosition.PUFont     := 2;
+    nPosition.PUFont     := ftOutline1;
     nPosition.PUFontSize := 18;
 
     nPosition.PUStartX := nPosition.BGX;

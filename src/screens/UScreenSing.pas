@@ -591,7 +591,7 @@ begin
   case Ini.LyricsFont of
     0: // normal fonts
     begin
-      Lyrics.FontStyle := 0;
+      Lyrics.FontStyle := ftNormal;
 
       Lyrics.LineColor_en.R := Skin_FontR;
       Lyrics.LineColor_en.G := Skin_FontG;
@@ -608,9 +608,12 @@ begin
       Lyrics.LineColor_act.B := 0.8;
       Lyrics.LineColor_act.A := 1;
     end;
-    1, 2: // outline fonts (is TScalableOutlineFont)
+    1, 2: // outline fonts
     begin
-      Lyrics.FontStyle := Ini.LyricsFont + 1;
+      if (Ini.LyricsFont = 1) then
+        Lyrics.FontStyle := ftOutline1
+      else
+        Lyrics.FontStyle := ftOutline2;
 
       Lyrics.LineColor_en.R := 0.75;
       Lyrics.LineColor_en.G := 0.75;

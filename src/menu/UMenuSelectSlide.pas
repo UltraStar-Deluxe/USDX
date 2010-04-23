@@ -372,7 +372,7 @@ begin
   begin
     MaxLen := TextureSBG.W - MinSideSpacing * 2;
 
-    SetFontStyle(0);
+    SetFontStyle(ftNormal);
     SetFontSize(Text.Size);
 
     // we will remove min. 2 letters by default and replace them w/ points
@@ -444,7 +444,7 @@ var
   maxlength: real;
   I:         integer;
 begin
-  SetFontStyle(0{Text.Style});
+  SetFontStyle(ftNormal{Text.Style});
   SetFontSize(Text.Size);
   maxlength := 0;
 

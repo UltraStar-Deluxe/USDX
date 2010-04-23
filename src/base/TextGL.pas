@@ -47,8 +47,15 @@ type
   PGLFont = ^TGLFont;
   TGLFont = record
     Font:     TScalableFont;
+    Outlined: boolean;
     X, Y, Z:  real;
   end;
+
+const
+  ftNormal   = 0;
+  ftBold     = 1;
+  ftOutline1 = 2;
+  ftOutline2 = 3;
 
 var
   Fonts:   array of TGLFont;
@@ -76,50 +83,93 @@ uses
   UMain,
   UPathUtils;
 
-function FindFontFile(FontIni: TCustomIniFile; Font: string): IPath;
-var
-  Filename: IPath;
+{**
+ * Returns either Filename if it is absolute or a path relative to FontPath.
+ *}
+function FindFontFile(const Filename: string): IPath;
 begin
-  Filename := Path(FontIni.ReadString(Font, 'File', ''));
   Result := FontPath.Append(Filename);
   // if path does not exist, try as an absolute path
   if (not Result.IsFile) then
-    Result := Filename;
+    Result := Path(Filename);
 end;
+
+procedure AddFontFallbacks(FontIni: TMemIniFile; Font: TFont);
+var
+  FallbackFont: IPath;
+  IdentName: string;
+  I: Integer;
+begin
+  // evaluate the ini-file's 'Fallbacks' section
+  for I := 1 to 10 do
+  begin
+    IdentName := 'File' + IntToStr(I);
+    FallbackFont := FindFontFile(FontIni.ReadString('Fallbacks', IdentName, ''));
+    if (FallbackFont.Equals(PATH_NONE)) then
+      Continue;
+    try
+      Font.AddFallback(FallbackFont);
+    except
+      on E: EFontError do
+        Log.LogError('Setting font fallback ''' + FallbackFont.ToNative() + ''' failed: ' + E.Message);
+    end;
+  end;
+end;
+
+const
+  FONT_NAMES: array [0..3] of string = (
+    'Normal', 'Bold', 'Outline1', 'Outline2'
+  );
 
 procedure BuildFont;
 var
+  I: integer;
   FontIni: TMemIniFile;
   FontFile: IPath;
+  Outline: single;
+  Embolden: single;
+  OutlineFont: TFTScalableOutlineFont;
 begin
   ActFont := 0;
 
-  SetLength(Fonts, 4);
+  SetLength(Fonts, Length(FONT_NAMES));
   FontIni := TMemIniFile.Create(FontPath.Append('fonts.ini').ToNative);
 
   try
+    for I := 0 to High(FONT_NAMES) do
+    begin
+      FontFile := FindFontFile(FontIni.ReadString('Font_'+FONT_NAMES[I], 'File', ''));
 
-    // Normal
-    FontFile := FindFontFile(FontIni, 'Normal');
-    Fonts[0].Font := TFTScalableFont.Create(FontFile, 64);
-    //Fonts[0].Font.GlyphSpacing := 1.4;
-    //Fonts[0].Font.Aspect := 1.2;
+      // create either outlined or normal font
+      Outline := FontIni.ReadFloat(FONT_NAMES[I], 'Outline', 0.0);
+      if (Outline > 0.0) then
+      begin
+        // outlined font
+        OutlineFont := TFTScalableOutlineFont.Create(FontFile, 64, Outline);
+        OutlineFont.SetOutlineColor(
+          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorR',  0.0),
+          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorG',  0.0),
+          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorB',  0.0),
+          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorA', -1.0)
+        );
+        Fonts[I].Font := OutlineFont;
+        Fonts[I].Outlined := true;
+      end
+      else
+      begin
+        // normal font
+        Embolden := FontIni.ReadFloat(FONT_NAMES[I], 'Embolden', 0.0);
+        Fonts[I].Font := TFTScalableFont.Create(FontFile, 64, Embolden);
+        Fonts[I].Outlined := false;
+      end;
 
-    // Bold
-    FontFile := FindFontFile(FontIni, 'Bold');
-    Fonts[1].Font := TFTScalableFont.Create(FontFile, 64);
+      Fonts[I].Font.GlyphSpacing := FontIni.ReadFloat(FONT_NAMES[I], 'GlyphSpacing', 0.0);
+      Fonts[I].Font.Stretch := FontIni.ReadFloat(FONT_NAMES[I], 'Stretch', 1.0);
 
-    // Outline1
-    FontFile := FindFontFile(FontIni, 'Outline1');
-    Fonts[2].Font := TFTScalableOutlineFont.Create(FontFile, 64, 0.06);
-    //TFTScalableOutlineFont(Fonts[2].Font).SetOutlineColor(0.3, 0.3, 0.3);
-
-    // Outline2
-    FontFile := FindFontFile(FontIni, 'Outline2');
-    Fonts[3].Font := TFTScalableOutlineFont.Create(FontFile, 64, 0.08);
-
+      AddFontFallbacks(FontIni, Fonts[I].Font);
+    end;
   except
-    on E: Exception do
+    on E: EFontError do
       Log.LogCritical(E.Message, 'BuildFont');
   end;
 

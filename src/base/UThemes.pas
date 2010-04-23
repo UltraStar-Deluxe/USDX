@@ -841,6 +841,7 @@ uses
   UIni,
   UPathUtils,
   UFileSystem,
+  TextGL,
   gl,
   glext,
   math,
@@ -1667,7 +1668,7 @@ begin
   ThemeText.ColG  := ThemeIni.ReadFloat(Name, 'ColG', 0);
   ThemeText.ColB  := ThemeIni.ReadFloat(Name, 'ColB', 0);
 
-  ThemeText.Font  := ThemeIni.ReadInteger(Name, 'Font', 0);
+  ThemeText.Font  := ThemeIni.ReadInteger(Name, 'Font', ftNormal);
   ThemeText.Size  := ThemeIni.ReadInteger(Name, 'Size', 0);
   ThemeText.Align := ThemeIni.ReadInteger(Name, 'Align', 0);
 

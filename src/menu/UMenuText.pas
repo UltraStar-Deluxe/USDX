@@ -297,7 +297,7 @@ begin
 
       SetFontPos(X2, Y);
       glPrint(Text2);
-      SetFontStyle(0); // reset to default
+      SetFontStyle(ftNormal); // reset to default
     end
     else
     begin}
@@ -326,12 +326,12 @@ begin
         {if Size >= 10 then
           Y2 := Y2 + Size * 0.93
         else}
-        if (Style = 1) then
+        if (Style = ftBold) then
           Y2 := Y2 + Size * 0.93
         else
           Y2 := Y2 + Size * 0.72;
       end;
-      SetFontStyle(0); // reset to default
+      SetFontStyle(ftNormal); // reset to default
 
     //end;
   end;
@@ -344,7 +344,7 @@ end;
 
 constructor TText.Create(X, Y: real; const Text: UTF8String);
 begin
-  Create(X, Y, 0, 0, 30, 0, 0, 0, 0, Text, false, 0, 0);
+  Create(X, Y, 0, ftNormal, 30, 0, 0, 0, 0, Text, false, 0, 0);
 end;
 
 constructor TText.Create(ParX, ParY, ParW: real;
