@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.59.0, Fri Apr 23 2010 21:49:00 CET 
+ * Max. version: 52.61.0, Fri Apr 23 2010 21:49:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 59;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 61;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -747,6 +747,10 @@ const
   {$IF LIBAVCODEC_VERSION >= 52043000} // >= 52.43.0  
   CODEC_FLAG2_MBTREE        = $00040000; ///< Use macroblock tree ratecontrol (x264 only)
   {$IFEND}
+  {$IF LIBAVCODEC_VERSION >= 52061000} // >= 52.61.0  
+  CODEC_FLAG2_PSY           = $00080000; ///< Use psycho visual optimizations.
+  CODEC_FLAG2_SSIM          = $00100000; ///< Compute SSIM during encoding, error[] values are undefined.
+  {$IFEND}
 
 (* Unsupported options :
  *              Syntax Arithmetic coding (SAC)
@@ -757,8 +761,9 @@ const
 
   CODEC_CAP_DRAW_HORIZ_BAND = $0001; ///< decoder can use draw_horiz_band callback
   (**
-   * Codec uses get_buffer() for allocating buffers.
-   * direct rendering method 1
+   * Codec uses get_buffer() for allocating buffers and supports custom allocators.
+   * If not set, it might not use get_buffer() at all or use operations that
+   * assume the buffer was allocated by avcodec_default_get_buffer.
    *)
   CODEC_CAP_DR1             = $0002;
   (* if 'parse_only' field is true, then avcodec_parse_frame() can be used *)
@@ -2883,6 +2888,50 @@ type
      *)
     weighted_p_pred: cint;
     {$IFEND}
+    
+    {$IF LIBAVCODEC_VERSION >= 52061000} // >= 52.61.0
+    (**
+     * AQ mode
+     * 0: Disabled
+     * 1: Variance AQ (complexity mask)
+     * 2: Auto-variance AQ (experimental)
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
+    aq_mode: cint;
+
+    (**
+     * AQ strength
+     * Reduces blocking and blurring in flat and textured areas.
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
+    aq_strength: cfloat;
+
+    (**
+     * PSY RD
+     * Strength of psychovisual optimization
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
+    psy_rd: cfloat;
+
+    (**
+     * PSY trellis
+     * Strength of psychovisual optimization
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
+    psy_trellis: cfloat;
+
+    (**
+     * RC lookahead
+     * Number of frames for frametype and ratecontrol lookahead
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
+    rc_lookahead: cint;
+    {$IFEND}
   end;
 
 (**
@@ -4438,6 +4487,13 @@ function img_pad(dst: PAVPicture; src: {const} PAVPicture; height, width: cint;
   cdecl; external av__codec; deprecated;
 {$IFEND}
 
+(**
+ * Encodes extradata length to a buffer. Used by xiph codecs.
+ *
+ * @param s buffer to write to; must be at least (v/255+1) bytes long
+ * @param v size of extradata in bytes
+ * @return number of bytes written to the buffer.
+ *)
 function av_xiphlacing(s: PByte; v: cuint): cuint;
   cdecl; external av__codec;
 
