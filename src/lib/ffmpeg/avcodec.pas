@@ -282,6 +282,9 @@ type
 {$IF LIBAVCODEC_VERSION >= 52058000}  // >= 52.58.0
     CODEC_ID_KGV1,
 {$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52062000}  // >= 52.62.0
+    CODEC_ID_YOP,
+{$IFEND}
 
     //* various PCM "codecs" */
     CODEC_ID_PCM_S16LE= $10000,
