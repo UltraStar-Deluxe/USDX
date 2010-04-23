@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.61.0, Fri Apr 23 2010 21:49:00 CET 
+ * Max. version: 52.62.0, Fri Apr 23 2010 21:49:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 61;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 62;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
