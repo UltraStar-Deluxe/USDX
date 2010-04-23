@@ -30,7 +30,7 @@
  * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
  *
  * update to
- * Max. version: 52.55.0, Fri Apr 23 2010 21:49:00 CET 
+ * Max. version: 52.56.0, Fri Apr 23 2010 21:49:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 55;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 56;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -540,6 +540,7 @@ const
 {* in bytes *}
   AVCODEC_MAX_AUDIO_FRAME_SIZE = 192000; // 1 second of 48khz 32bit audio
 
+{$IF LIBAVCODEC_VERSION <= 52056000} // <= 52.56.0
 {**
  * Required number of additionally allocated bytes at the end of the input bitstream for decoding.
  * This is mainly needed because some optimized bitstream readers read
@@ -548,6 +549,18 @@ const
  * MPEG bitstreams could cause overread and segfault.
  *}
   FF_INPUT_BUFFER_PADDING_SIZE = 8;
+{$ELSE}
+{**
+ * Required number of additionally allocated bytes at the end of the input bitstream for decoding.
+ * The first 8 bytes are needed because some optimized bitstream readers read
+ * 32 or 64 bit at once and could read over the end. The remainder is to give
+ * decoders a reasonable amount of distance to work with before checking for
+ * buffer overreads.<br>
+ * Note: If the first 23 bits of the additional bytes are not 0, then damaged
+ * MPEG bitstreams could cause overread and segfault.
+ *}
+  FF_INPUT_BUFFER_PADDING_SIZE = 64;
+{$IFEND}
 
 {**
  * minimum encoding buffer size.
