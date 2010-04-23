@@ -151,9 +151,10 @@ Page custom Settings
 
 Function Settings
 
-!insertmacro MUI_HEADER_TEXT " " "$(page_settings_subtitle)"
+!insertmacro INSTALLOPTIONS_WRITE "Settings-$LANGUAGE" "Field 18" "State" "$INSTDIR\songs"
 
-   !insertmacro INSTALLOPTIONS_DISPLAY "Settings-$LANGUAGE"
+!insertmacro MUI_HEADER_TEXT " " "$(page_settings_subtitle)"   
+!insertmacro INSTALLOPTIONS_DISPLAY "Settings-$LANGUAGE"
 
 ; Get all the variables:
 
@@ -164,13 +165,15 @@ var /GLOBAL fullscreen
 var /GLOBAL language2
 var /GLOBAL resolution
 var /GLOBAL tabs
-var /GLOBAL animations
+var /GLOBAL sorting
+var /GLOBAL songdir
 
-  !insertmacro INSTALLOPTIONS_READ $fullscreen "Settings-$LANGUAGE" "Field 6" "State"
-  !insertmacro INSTALLOPTIONS_READ $language2 "Settings-$LANGUAGE" "Field 7" "State"
-  !insertmacro INSTALLOPTIONS_READ $resolution "Settings-$LANGUAGE" "Field 8" "State"
-  !insertmacro INSTALLOPTIONS_READ $tabs "Settings-$LANGUAGE" "Field 9" "State"
-  !insertmacro INSTALLOPTIONS_READ $animations "Settings-$LANGUAGE" "Field 10" "State"
+  !insertmacro INSTALLOPTIONS_READ $fullscreen "Settings-$LANGUAGE" "Field 5" "State"
+  !insertmacro INSTALLOPTIONS_READ $language2 "Settings-$LANGUAGE" "Field 6" "State"
+  !insertmacro INSTALLOPTIONS_READ $resolution "Settings-$LANGUAGE" "Field 7" "State"
+  !insertmacro INSTALLOPTIONS_READ $tabs "Settings-$LANGUAGE" "Field 8" "State"
+  !insertmacro INSTALLOPTIONS_READ $sorting "Settings-$LANGUAGE" "Field 15" "State"
+  !insertmacro INSTALLOPTIONS_READ $songdir "Settings-$LANGUAGE" "Field 18" "State"
 
 ; Write all variables to config.ini
 
@@ -190,26 +193,14 @@ StrCpy $path_configini "$path_config\config.ini"
 ${WriteToConfig} "[Game]$\r$\n" "$path_configini"
 ${WriteToConfig} "Language=$language2$\r$\n" "$path_configini"
 ${WriteToConfig} "Tabs=$tabs$\r$\n" "$path_configini"
+${WriteToConfig} "Sorting=$sorting$\r$\n" "$path_configini"
 
 ${WriteToConfig} "[Graphics]$\r$\n" "$path_configini"
 ${WriteToConfig} "FullScreen=$fullscreen$\r$\n" "$path_configini"
 ${WriteToConfig} "Resolution=$resolution$\r$\n" "$path_configini"
 
-${WriteToConfig} "[Sound]$\r$\n" "$path_configini"
-${WriteToConfig} "PreviewFading=3 Secs$\r$\n" "$path_configini"
-
-; Animations On / Off Tasks
-
-${If} $animations == "Off"
-${WriteToConfig} "[Advanced]$\r$\n" "$path_configini"
-${WriteToConfig} "LoadAnimation=Off$\r$\n" "$path_configini"
-${WriteToConfig} "EffectSing=Off$\r$\n" "$path_configini"
-${WriteToConfig} "ScreenFade=Off$\r$\n" "$path_configini"
-${EndIf}
-
-${WriteToConfig} "[Lyrics]$\r$\n" "$path_configini"
-${WriteToConfig} "LyricsFont=Plain$\r$\n" "$path_configini"
-${WriteToConfig} "LyricsEffect=Slide$\r$\n" "$path_configini"
+${WriteToConfig} "[Directories]$\r$\n" "$path_configini"
+${WriteToConfig} "SongDir2=$songdir$\r$\n" "$path_configini"
 
 FunctionEnd ; Settings page End
 
@@ -1378,6 +1369,7 @@ done:
   !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1031.ini" "Settings-1031"
   !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1033.ini" "Settings-1033"
   !insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1038.ini" "Settings-1038"
+
 
 FunctionEnd
 

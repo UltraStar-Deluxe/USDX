@@ -36,6 +36,7 @@ File /r ..\game\themes
 File /r ..\game\languages
 File /r ..\game\sounds
 File /r ..\game\fonts
+File /r ..\game\resources
 File /r ..\game\visuals
 
 ; Root dir:
