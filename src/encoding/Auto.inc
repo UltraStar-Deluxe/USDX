@@ -69,7 +69,6 @@ var
   Error: PChar;
   ErrorOffset: Integer;
 begin
-  // NOTICE: Log.LogError() is not possible here because it isn't loaded
   inherited Create();
   self.FallbackEncoder := FallbackEncoder;
   self.UTF8Encoder := UTF8Encoder;
@@ -82,7 +81,8 @@ begin
 
     if self.Regex = Nil then
     begin
-      Log.LogError ('UTF8 Regex compilation failed: ' + AnsiString(Error) + ' at ' + IntToStr(ErrorOffset), 'EncoderAuto.Create');
+      // NOTICE: Log.LogError() is not possible here because it isn't loaded
+      ConsoleWriteLn(Format('ERROR:  UTF8 Regex compilation failed: %s at %d', [Error, ErrorOffset]));
     end
     else
     begin
@@ -91,13 +91,15 @@ begin
 
       if Error <> Nil then
       begin
-        Log.LogError ('UTF8 regex study failed: ' + AnsiString(Error), 'EncoderAuto.Create');
+        // NOTICE: Log.LogError() is not possible here because it isn't loaded
+        ConsoleWriteLn('ERROR:  UTF8 Regex study failed: ' + Error);
       end;
     end;
   end
   else
   begin
-    Log.LogError ('pcre not loaded. utf-8 autodetection will not work.', 'EncoderAuto.Create');
+    // NOTICE: Log.LogError() is not possible here because it isn't loaded
+    ConsoleWriteLn('ERROR:  pcre not loaded. utf-8 autodetection will not work.');
   end;
 end;
 
