@@ -30,7 +30,7 @@
  * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
  *
  * update to
- * Max. version: 52.54.0, Sun Apr 25 2010 0:40:00 CET 
+ * Max. version: 52.56.0, Sun Apr 25 2010 0:40:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 54;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 56;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -988,6 +988,17 @@ type
      * NOT PART OF PUBLIC API
      *)
     raw_packet_buffer_remaining_size: cint;
+    {$IFEND}
+
+    {$IF LIBAVFORMAT_VERSION >= 52056000} // 52.56.0
+    (**
+     * Start time of the stream in real world time, in microseconds
+     * since the unix epoch (00:00 1st January 1970). That is, pts=0
+     * in the stream was captured at this real world time.
+     * - encoding: Set by user.
+     * - decoding: Unused.
+     *)
+    start_time_realtime: cint64;
     {$IFEND}
 
   end;
