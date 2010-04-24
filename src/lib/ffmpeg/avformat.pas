@@ -30,7 +30,7 @@
  * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
  *
  * update to
- * Max. version: 52.56.0, Sun Apr 25 2010 0:40:00 CET 
+ * Max. version: 52.59.0, Sun Apr 25 2010 0:40:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 56;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 59;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -157,6 +157,7 @@ type
 (**
  * Gets a metadata element with matching key.
  * @param prev Set to the previous matching element to find the next.
+ *             If set to NULL the first matching element is returned.
  * @param flags Allows case as well as suffix-insensitive comparisons.
  * @return Found tag or NULL, changing key or value leads to undefined behavior.
  *)
@@ -1381,7 +1382,7 @@ function av_seek_frame(s: PAVFormatContext; stream_index: cint; timestamp: cint6
  * @param ts target timestamp
  * @param max_ts largest acceptable timestamp
  * @param flags flags
- * @returns >=0 on success, error code otherwise
+ * @return >=0 on success, error code otherwise
  *
  * @NOTE This is part of the new seek API which is still under construction.
  *       Thus do not use this yet. It may change at any time, do not expect
