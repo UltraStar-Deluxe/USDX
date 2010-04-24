@@ -30,7 +30,7 @@
  * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
  *
  * update to
- * Max. version: 52.52.0, Sun Feb 21 2010 0:40:00 CET 
+ * Max. version: 52.54.0, Sun Apr 25 2010 0:40:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 52;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 54;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -117,7 +117,9 @@ type
 (*
  * Public Metadata API.
  * The metadata API allows libavformat to export metadata tags to a client
- * application using a sequence of key/value pairs.
+ * application using a sequence of key/value pairs. Like all strings in FFmpeg,
+ * metadata must be stored as UTF-8 encoded Unicode. Note that metadata
+ * exported by demuxers isn't checked to be valid UTF-8 in most cases.
  * Important concepts to keep in mind:
  * 1. Keys are unique; there can never be 2 tags with the same key. This is
  *    also meant semantically, i.e., a demuxer should not knowingly produce
@@ -796,6 +798,12 @@ type
      * Average framerate
      *)
     avg_frame_rate: TAVRational;
+    {$IFEND}
+    {$IF LIBAVFORMAT_VERSION >= 52054000} // >= 52.54.0
+    (**
+     * Number of frames that have been demuxed during av_find_stream_info()
+     *)
+    codec_info_nb_frames: cint;
     {$IFEND}
   end;
 
