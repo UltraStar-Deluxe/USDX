@@ -451,7 +451,7 @@ type
    * Freetype font face class.
    *}
   TFTFontFace = class
-    strict private
+    private
       fFilename: IPath;             //**< filename of the font-file
       fFace: FT_Face;               //**< Holds the height of the font
       fFontUnitScale: TPositionDbl; //**< FT font-units to pixel ratio
@@ -544,7 +544,7 @@ type
     private
       procedure ResetIntern();
 
-    strict protected
+    protected
       fFace: TFTFontFace;           //**< Default font face
       fSize: integer;               //**< Font base size (in pixels)
       fOutset: single;              //**< size of outset extrusion (in pixels)
