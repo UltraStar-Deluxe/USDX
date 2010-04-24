@@ -129,28 +129,32 @@ var
   Outline: single;
   Embolden: single;
   OutlineFont: TFTScalableOutlineFont;
+  SectionName: string;
 begin
   ActFont := 0;
 
   SetLength(Fonts, Length(FONT_NAMES));
+
   FontIni := TMemIniFile.Create(FontPath.Append('fonts.ini').ToNative);
 
   try
     for I := 0 to High(FONT_NAMES) do
     begin
-      FontFile := FindFontFile(FontIni.ReadString('Font_'+FONT_NAMES[I], 'File', ''));
+      SectionName := 'Font_'+FONT_NAMES[I];
+
+      FontFile := FindFontFile(FontIni.ReadString(SectionName , 'File', ''));
 
       // create either outlined or normal font
-      Outline := FontIni.ReadFloat(FONT_NAMES[I], 'Outline', 0.0);
+      Outline := FontIni.ReadFloat(SectionName, 'Outline', 0.0);
       if (Outline > 0.0) then
       begin
         // outlined font
         OutlineFont := TFTScalableOutlineFont.Create(FontFile, 64, Outline);
         OutlineFont.SetOutlineColor(
-          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorR',  0.0),
-          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorG',  0.0),
-          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorB',  0.0),
-          FontIni.ReadFloat(FONT_NAMES[I], 'OutlineColorA', -1.0)
+          FontIni.ReadFloat(SectionName, 'OutlineColorR',  0.0),
+          FontIni.ReadFloat(SectionName, 'OutlineColorG',  0.0),
+          FontIni.ReadFloat(SectionName, 'OutlineColorB',  0.0),
+          FontIni.ReadFloat(SectionName, 'OutlineColorA', -1.0)
         );
         Fonts[I].Font := OutlineFont;
         Fonts[I].Outlined := true;
@@ -158,13 +162,13 @@ begin
       else
       begin
         // normal font
-        Embolden := FontIni.ReadFloat(FONT_NAMES[I], 'Embolden', 0.0);
+        Embolden := FontIni.ReadFloat(SectionName, 'Embolden', 0.0);
         Fonts[I].Font := TFTScalableFont.Create(FontFile, 64, Embolden);
         Fonts[I].Outlined := false;
       end;
 
-      Fonts[I].Font.GlyphSpacing := FontIni.ReadFloat(FONT_NAMES[I], 'GlyphSpacing', 0.0);
-      Fonts[I].Font.Stretch := FontIni.ReadFloat(FONT_NAMES[I], 'Stretch', 1.0);
+      Fonts[I].Font.GlyphSpacing := FontIni.ReadFloat(SectionName, 'GlyphSpacing', 0.0);
+      Fonts[I].Font.Stretch := FontIni.ReadFloat(SectionName, 'Stretch', 1.0);
 
       AddFontFallbacks(FontIni, Fonts[I].Font);
     end;
