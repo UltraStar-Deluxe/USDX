@@ -30,7 +30,7 @@
  * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
  *
  * update to
- * Max. version: 52.59.0, Sun Apr 25 2010 0:40:00 CET 
+ * Max. version: 52.60.0, Sun Apr 25 2010 0:40:00 CET 
  * MiSchi
  *)
 
@@ -64,7 +64,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 59;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 60;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -372,6 +372,10 @@ const
   AVFMT_FLAG_NONBLOCK = $0004; ///< Do not block when reading packets from input.
 {$IF LIBAVFORMAT_VERSION >= 52048000}  // >= 52.48.0
   AVFMT_FLAG_IGNDTS   = $0008; ///< Ignore DTS on frames that contain both DTS & PTS
+{$IFEND}
+{$IF LIBAVFORMAT_VERSION >= 52060000}  // >= 52.60.0
+  AVFMT_FLAG_NOFILLIN = $0010; ///< Do not infer any values from other values, just return what is stored in the container
+  AVFMT_FLAG_NOPARSE  = $0020; ///< Do not use AVParsers, you also must set AVFMT_FLAG_NOFILLIN as the fillin code works on frames and no parsing -> no frames. Also seeking to frames can not work if parsing to find frame boundaries has been disabled
 {$IFEND}
 
   // used by AVStream
@@ -1796,6 +1800,17 @@ function av_filename_number_test(filename: PAnsiChar): cint;
  * @return 0 if OK, AVERROR_xxx on error
  *)
 function avf_sdp_create(ac: PPAVFormatContext; n_files: cint; buff: PByteArray; size: cint): cint;
+  cdecl; external av__format;
+{$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52060000} // 52.60.0
+(**
+ * Returns a positive value if the given filename has one of the given
+ * extensions, 0 otherwise.
+ *
+ * @param extensions a comma-separated list of filename extensions
+ *)
+function av_match_ext(filename: {const} Pchar; extensions: {const} Pchar): cint;
   cdecl; external av__format;
 {$IFEND}
 
