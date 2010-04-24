@@ -863,8 +863,9 @@ type
        It is deduced from the AVStream values. *)
     start_time: cint64;
     (** Decoding: duration of the stream, in AV_TIME_BASE fractional
-       seconds. NEVER set this value directly: it is deduced from the
-       AVStream values.  *)
+        seconds. Only set this value if you know none of the individual stream
+        durations and also dont set any of them. This is deduced from the
+        AVStream values if not set.  *)
     duration: cint64;
     (** decoding: total file size, 0 if unknown *)
     file_size: cint64;
