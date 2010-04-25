@@ -413,7 +413,7 @@ begin
       inputParameters^.device                    := deviceIndex;
       inputParameters^.channelCount              := deviceInfo^.maxInputChannels;
       inputParameters^.sampleFormat              := paInt16;
-      inputParameters^.suggestedLatency          := 0;
+      inputParameters^.suggestedLatency          := deviceInfo.defaultLowInputLatency;
       inputParameters^.hostApiSpecificStreamInfo := nil;
       outputParameters := nil;
     end
@@ -423,7 +423,7 @@ begin
       outputParameters^.device                    := deviceIndex;
       outputParameters^.channelCount              := deviceInfo^.maxOutputChannels;
       outputParameters^.sampleFormat              := paInt16;
-      outputParameters^.suggestedLatency          := 0;
+      outputParameters^.suggestedLatency          := deviceInfo.defaultLowOutputLatency;
       outputParameters^.hostApiSpecificStreamInfo := nil;
     end;
       
