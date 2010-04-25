@@ -41,6 +41,9 @@ interface
   {$DEFINE BITMAP_FONT}
 {$ENDIF}
 
+// Enables the Freetype font cache
+{$DEFINE ENABLE_FT_FACE_CACHE}
+
 uses
   FreeType,
   gl,
@@ -455,6 +458,7 @@ type
       fFilename: IPath;             //**< filename of the font-file
       fFace: FT_Face;               //**< Holds the height of the font
       fFontUnitScale: TPositionDbl; //**< FT font-units to pixel ratio
+      fSize: integer;
 
     public
       {**
@@ -467,6 +471,25 @@ type
       property Filename: IPath read fFilename;
       property Data: FT_Face read fFace;
       property FontUnitScale: TPositionDbl read fFontUnitScale;
+      property Size: integer read fSize;
+  end;
+
+  {**
+   * Loading font faces with freetype is a slow process.
+   * Especially loading a font (e.g. fallback fonts) more than once is a waste
+   * of time. Just cache already loaded faces here.
+   *}
+  TFTFontFaceCache = class
+    private
+      fFaces:       array of TFTFontFace;
+      fFacesRefCnt: array of integer;      
+    public
+      {**
+       * @raises EFontError  if the font could not be initialized
+       *}
+      function LoadFace(const Filename: IPath; Size: integer): TFTFontFace;
+
+      procedure UnloadFace(Face: TFTFontFace);
   end;
 
   {**
@@ -543,6 +566,7 @@ type
   TFTFont = class(TCachedFont)
     private
       procedure ResetIntern();
+      class function GetFaceCache(): TFTFontFaceCache;
 
     protected
       fFace: TFTFontFace;           //**< Default font face
@@ -1479,6 +1503,10 @@ begin
 end;
 
 {*
+ * TFTFontFaceCache
+ *}
+
+{*
  * TFTFontFace
  *}
 
@@ -1487,6 +1515,7 @@ begin
   inherited Create();
 
   fFilename := Filename;
+  fSize := Size;
 
   // load font information
   if (FT_New_Face(TFreeType.GetLibrary(), PChar(Filename.ToNative), 0, fFace) <> 0) then
@@ -1513,6 +1542,61 @@ end;
 
 
 {*
+ * TFTFontFaceCache
+ *}
+
+function TFTFontFaceCache.LoadFace(const Filename: IPath; Size: integer): TFTFontFace;
+var
+  I: Integer;
+  Face: TFTFontFace;
+begin
+  {$IFDEF ENABLE_FT_FACE_CACHE}
+  for I := 0 to High(fFaces) do
+  begin
+    Face := fFaces[I];
+    // check if we have this file in our cache
+    if ((Face.Filename.Equals(Filename)) and (Face.Size = Size)) then
+    begin
+      // true -> return cached face and increment ref-count
+      Inc(fFacesRefCnt[I]);
+      Result := Face;
+      Exit;
+    end;
+  end;
+  {$ENDIF}
+
+  // face not in cache -> load it
+  Face := TFTFontFace.Create(Filename, Size);
+
+  // add face to cache
+  SetLength(fFaces, Length(fFaces)+1);
+  SetLength(fFacesRefCnt, Length(fFaces)+1);
+  fFaces[High(fFaces)] := Face;
+  fFacesRefCnt[High(fFaces)] := 1;
+
+  Result := Face;
+end;
+
+procedure TFTFontFaceCache.UnloadFace(Face: TFTFontFace);
+var
+  I: Integer;
+begin
+  for I := 0 to High(fFaces) do
+  begin
+    // search face in cache
+    if (fFaces[I] = Face) then
+    begin
+      // decrement ref-count and free face if ref-count is 0
+      Dec(fFacesRefCnt[I]);
+      if (fFacesRefCnt[I] <= 0) then
+        fFaces[I].Free;
+      Exit;
+    end;
+  end;
+end;
+
+
+{*
  * TFTFont
  *}
 
@@ -1531,7 +1615,7 @@ begin
   fUseDisplayLists := true;
   fPart := fpNone;
 
-  fFace := TFTFontFace.Create(Filename, Size);
+  fFace := GetFaceCache.LoadFace(Filename, Size);
 
   ResetIntern();
 
@@ -1545,11 +1629,21 @@ var
   I: integer;
 begin
   // free faces
-  fFace.Free;
+  GetFaceCache.UnloadFace(fFace);
   for I := 0 to High(fFallbackFaces) do
-    fFallbackFaces[I].Free;    
+    GetFaceCache.UnloadFace(fFallbackFaces[I]);    
 
   inherited;
+end;
+
+var
+  FontFaceCache: TFTFontFaceCache = nil;
+
+class function TFTFont.GetFaceCache(): TFTFontFaceCache;
+begin
+  if (FontFaceCache = nil) then
+    FontFaceCache := TFTFontFaceCache.Create;
+  Result := FontFaceCache;
 end;
 
 procedure TFTFont.ResetIntern();
@@ -1569,7 +1663,7 @@ procedure TFTFont.AddFallback(const Filename: IPath);
 var
   FontFace: TFTFontFace;
 begin
-  FontFace := TFTFontFace.Create(Filename, Size);
+  FontFace := GetFaceCache.LoadFace(Filename, Size);
   SetLength(fFallbackFaces, Length(fFallbackFaces) + 1);
   fFallbackFaces[High(fFallbackFaces)] := FontFace;
 end;
