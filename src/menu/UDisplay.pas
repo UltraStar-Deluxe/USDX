@@ -204,10 +204,9 @@ begin
   for i := 0 to 1 do
   begin
     glBindTexture(GL_TEXTURE_2D, FadeTex[i]);
-    //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
   end;
 end;
 
@@ -366,6 +365,8 @@ begin
           FadeH := ScreenH/TexH;
 
           glBindTexture(GL_TEXTURE_2D, FadeTex[S-1]);
+          // TODO: check if glTexEnvi() gives any speed improvement
+          //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
           glColor4f(1, 1, 1, 1-FadeStateSquare);
 
           glEnable(GL_TEXTURE_2D);
@@ -386,6 +387,9 @@ begin
           glEnd;
           glDisable(GL_BLEND);
           glDisable(GL_TEXTURE_2D);
+
+          // reset to default
+          //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         end;
       end
       

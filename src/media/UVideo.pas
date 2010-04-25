@@ -824,8 +824,8 @@ begin
   //   Or should we add padding with avpicture_fill? (check which one is faster)
   //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  // TODO: check if this is faster
-  //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  // glTexEnvi with GL_REPLACE might give a small speed improvement
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
   if (not fPboEnabled) then
   begin
@@ -866,6 +866,9 @@ begin
     if (glErr <> GL_NO_ERROR) then
       Log.LogError('PBO texture stream error: ' + gluErrorString(glErr), 'TVideo_FFmpeg.GetFrame');
   end;
+
+  // reset to default
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
   if (not fFrameTexValid) then
     fFrameTexValid := true;
