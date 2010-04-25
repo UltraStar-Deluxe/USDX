@@ -59,7 +59,7 @@ type
       FadeTime:      cardinal; // time when fading starts, 0 means that the fade texture must be initialized
       DoneOnShow:    boolean;  // true if passed onShow after fading
 
-      FadeTex:       array[1..2] of GLuint;
+      FadeTex:       array[0..1] of GLuint;
       TexW, TexH:    Cardinal;
  
       FPSCounter:    cardinal;
@@ -97,6 +97,8 @@ type
       constructor Create;
       destructor  Destroy; override;
 
+      procedure InitFadeTextures();
+      
       procedure SaveScreenShot;
 
       function  Draw: boolean;
@@ -151,8 +153,6 @@ uses
   UPathUtils;
 
 constructor TDisplay.Create;
-var
-  i: integer;
 begin
   inherited Create;
 
@@ -172,18 +172,8 @@ begin
   FadeFailed  := false;
   DoneOnShow  := false;
 
-  for i := 1 to 2 do
-  begin
-    TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
-    TexH := Round(Power(2, Ceil(Log2(ScreenH))));
-
-    glGenTextures(1, PglUint(@FadeTex[i]));
-    glBindTexture(GL_TEXTURE_2D, FadeTex[i]);
-    glTexEnvi(GL_TEXTURE_2D, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  end;
+  glGenTextures(2, PGLuint(@FadeTex));
+  InitFadeTextures();
 
   //Set LastError for OSD to No Error
   OSD_LastError := 'No Errors';
@@ -200,8 +190,25 @@ end;
 
 destructor TDisplay.Destroy;
 begin
-  glDeleteTextures(2, @FadeTex);    
+  glDeleteTextures(2, @FadeTex);
   inherited Destroy;
+end;
+
+procedure TDisplay.InitFadeTextures();
+var
+  i: integer;
+begin
+  TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
+  TexH := Round(Power(2, Ceil(Log2(ScreenH))));
+
+  for i := 0 to 1 do
+  begin
+    glBindTexture(GL_TEXTURE_2D, FadeTex[i]);
+    //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  end;
 end;
 
 function TDisplay.Draw: boolean;
@@ -209,6 +216,7 @@ var
   S:               integer;
   FadeStateSquare: real;
   FadeW, FadeH:    real;
+  FadeCopyW, FadeCopyH: integer;
   currentTime:     cardinal;
   glError:         glEnum;
 
@@ -292,10 +300,18 @@ begin
           // older errors in previous OpenGL calls.
           glGetError();
 
+          FadeCopyW := ScreenW div Screens;
+          FadeCopyH := ScreenH;
+
+          // it is possible that our fade textures are too small after a window
+          // resize. In that case resize the fade texture to fit the requirements.
+          if (TexW < FadeCopyW) or (TexH < FadeCopyH) then
+            InitFadeTextures();
+
           // copy screen to texture
-          glBindTexture(GL_TEXTURE_2D, FadeTex[S]);
+          glBindTexture(GL_TEXTURE_2D, FadeTex[S-1]);
           glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (S-1) * ScreenW div Screens, 0,
-            ScreenW div Screens, ScreenH);
+            FadeCopyW, FadeCopyH);
 
           glError := glGetError();
           if (glError <> GL_NO_ERROR) then
@@ -349,7 +365,7 @@ begin
           FadeW := (ScreenW div Screens)/TexW;
           FadeH := ScreenH/TexH;
 
-          glBindTexture(GL_TEXTURE_2D, FadeTex[S]);
+          glBindTexture(GL_TEXTURE_2D, FadeTex[S-1]);
           glColor4f(1, 1, 1, 1-FadeStateSquare);
 
           glEnable(GL_TEXTURE_2D);
