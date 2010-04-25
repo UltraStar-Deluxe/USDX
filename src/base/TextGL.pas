@@ -61,8 +61,8 @@ var
   Fonts:   array of TGLFont;
   ActFont: integer;
 
-procedure BuildFont;                          // build our bitmap font
-procedure KillFont;                           // delete the font
+procedure BuildFonts;                         // builds all fonts
+procedure KillFonts;                          // deletes all font
 function  glTextWidth(const text: UTF8String): real; // returns text width
 procedure glPrint(const text: UTF8String);    // custom GL "Print" routine
 procedure ResetFont();                        // reset font settings of active font
@@ -121,7 +121,7 @@ const
     'Normal', 'Bold', 'Outline1', 'Outline2'
   );
 
-procedure BuildFont;
+procedure BuildFonts;
 var
   I: integer;
   FontIni: TMemIniFile;
@@ -183,10 +183,12 @@ end;
 
 
 // Deletes the font
-procedure KillFont;
+procedure KillFonts;
+var
+  I: integer;
 begin
-  // delete all characters
-  //glDeleteLists(..., 256);
+  for I := 0 to High(Fonts) do
+    Fonts[I].Font.Free;
 end;
 
 function glTextWidth(const text: UTF8String): real;

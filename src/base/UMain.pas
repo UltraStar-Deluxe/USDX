@@ -155,15 +155,6 @@ begin
     Log.BenchmarkEnd(1);
     Log.LogBenchmark('Loading Language', 1);
 
-{
-    // SDL_ttf (Not used yet, maybe in version 1.5)
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize SDL_ttf', 'Initialization');
-    TTF_Init();
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing SDL_ttf', 1);
-}
-
     // Skin
     Log.BenchmarkStart(1);
     Log.LogStatus('Loading Skin List', 'Initialization');
@@ -320,16 +311,17 @@ begin
     // call an uninitialize routine for every initialize step
     // or at least use the corresponding Free methods
 
+    Log.LogStatus('Finalize Media', 'Finalization');
     FinalizeMedia();
 
-    //TTF_Quit();
+    Log.LogStatus('Uninitialize 3D', 'Finalization');
+    Finalize3D();
+
+    Log.LogStatus('Finalize SDL', 'Finalization');
     SDL_Quit();
 
-    if assigned(Log) then
-    begin
-      Log.LogStatus('Main Loop', 'Finished');
-      Log.Free;
-    end;
+    Log.LogStatus('Finalize Log', 'Finalization');
+    Log.Free;
   {$IFNDEF Debug}
   end;
   {$ENDIF}

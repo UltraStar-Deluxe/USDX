@@ -265,6 +265,7 @@ const
   Skin_P2_ScoreL = 640;
 
 procedure Initialize3D (Title: string);
+procedure Finalize3D;
 procedure Reinitialize3D;
 procedure SwapBuffers;
 
@@ -290,7 +291,13 @@ uses
 procedure LoadFontTextures;
 begin
   Log.LogStatus('Building Fonts', 'LoadTextures');
-  BuildFont;
+  BuildFonts;
+end;
+
+procedure UnloadFontTextures;
+begin
+  Log.LogStatus('Kill Fonts', 'UnloadFontTextures');
+  KillFonts;
 end;
 
 procedure LoadTextures;
@@ -597,6 +604,13 @@ begin
     glLoadIdentity;
     glOrtho(0, RenderW, RenderH, 0, -1, 100);
   glMatrixMode(GL_MODELVIEW);
+end;
+
+procedure Finalize3D;
+begin
+  // TODO: finalize other stuff
+  UnloadFontTextures;
+  SDL_QuitSubSystem(SDL_INIT_VIDEO);
 end;
 
 procedure Reinitialize3D;
