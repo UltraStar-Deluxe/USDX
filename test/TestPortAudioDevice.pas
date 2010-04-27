@@ -37,9 +37,8 @@ program TestPortAudioDevice;
 uses
   SysUtils,
   ctypes,
-{$IF Defined(DARWIN)} // for setting the floating point exception mask
+  crt,
   math,
-{$IFEND}
   PortAudio in '../src/lib/portaudio/portaudio.pas';
 
 const
@@ -88,7 +87,10 @@ var
   framesPerBuffer:  culong;
   streamFlags:      TPaStreamFlags;
   streamCallback:   PPaStreamCallback;
+  callbackStartTime: TDateTime;
+  callbackWorks:    boolean;
   userData:         Pointer;
+
 
 function GetPreferredApiIndex(): TPaHostApiIndex;
 var
@@ -186,32 +188,9 @@ begin
   FreeMem(SingleChannelBuffer);
 end;
 }
-function MicrophoneCallback(input: pointer; output: pointer; frameCount: longword;
-      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: pointer): integer; cdecl;
+
+procedure TestInitTerminate();
 begin
-//  HandleMicrophoneData(input, frameCount*4, inputDevice);
-  result := paContinue;
-end;
-
-function PortaudioAudioCallback(input: pointer; output: pointer; frameCount: longword;
-    timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-    userData: pointer): integer; cdecl;
-{var
-  Engine: TAudioPlayback_Portaudio;
-}begin
-{  Engine := TAudioPlayback_Portaudio(userData);
-  // update latency
-  Engine.Latency := timeInfo.outputBufferDacTime - timeInfo.currentTime;
-  // call superclass callback
-  Engine.AudioCallback(output, frameCount * Engine.FormatInfo.FrameSize);
-}  Result := paContinue;
-end;
-
-begin
-  writeln ('Start: Test of Portaudio libs');
-  writeln;
-
   writeln ('*** Test of Pa_Initialize and Pa_Terminate ***');
   PaError := Pa_Initialize;
   if PaError = paNoError then
@@ -225,7 +204,10 @@ begin
   else
     writeln ('Pa_Terminate:  Error No: ', PaError);
   writeln;
-  
+end;
+
+procedure TestErrorText();
+begin
   writeln ('*** Test of Pa_GetErrorText ***');
   PaError := Pa_Initialize;
   writeln ('paNoError (0): ', Pa_GetErrorText(PaError));
@@ -240,32 +222,20 @@ begin
   writeln (i:6, ' ', Pa_GetErrorText(i));
   PaError := Pa_Terminate; 
   writeln;
+end;
 
+procedure TestVersion();
+begin
   writeln ('*** Test of Pa_GetVersion and Pa_GetVersionText ***');
   PaError := Pa_Initialize;
   writeln ('Pa_GetVersion:     ', Pa_GetVersion);
   writeln ('Pa_GetVersionText: ', Pa_GetVersionText);
   PaError := Pa_Terminate; 
   writeln;
+end;
 
-  writeln ('*** Test of Pa_GetDeviceCount ***');
-  PaError := Pa_Initialize;
-  writeln ('Pa_GetDeviceCount: ', Pa_GetDeviceCount);
-  PaError := Pa_Terminate; 
-  writeln;
-
-  writeln ('*** Test of Pa_GetDefaultInputDevice ***');
-  PaError := Pa_Initialize;
-  writeln ('Pa_GetDefaultInputDevice: ', Pa_GetDefaultInputDevice);
-  PaError := Pa_Terminate; 
-  writeln;
-
-  writeln ('*** Test of Pa_GetDefaultOutputDevice ***');
-  PaError := Pa_Initialize;
-  writeln ('Pa_GetDefaultOutputDevice: ', Pa_GetDefaultOutputDevice);
-  PaError := Pa_Terminate; 
-  writeln;
-
+procedure TestApiInfo();
+begin
   writeln ('*** Test of GetPreferredApiIndex ***');
   PaError    := Pa_Initialize;
   paApiIndex := GetPreferredApiIndex();
@@ -301,6 +271,27 @@ begin
   end;
   PaError := Pa_Terminate; 
   writeln;
+end;
+
+procedure TestDeviceInfo();
+begin
+  writeln ('*** Test of Pa_GetDeviceCount ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetDeviceCount: ', Pa_GetDeviceCount);
+  PaError := Pa_Terminate; 
+  writeln;
+
+  writeln ('*** Test of Pa_GetDefaultInputDevice ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetDefaultInputDevice: ', Pa_GetDefaultInputDevice);
+  PaError := Pa_Terminate; 
+  writeln;
+
+  writeln ('*** Test of Pa_GetDefaultOutputDevice ***');
+  PaError := Pa_Initialize;
+  writeln ('Pa_GetDefaultOutputDevice: ', Pa_GetDefaultOutputDevice);
+  PaError := Pa_Terminate; 
+  writeln;
 
   writeln ('*** Test of Pa_GetDeviceInfo ***');
 // Note: the fields of deviceInfo can also be used without the '^'.
@@ -325,7 +316,10 @@ begin
     writeln;
   end;
   PaError := Pa_Terminate; 
+end;
 
+procedure TestFormatInfo();
+begin
   writeln ('*** Test of Pa_IsFormatSupported ***');
   PaError    := Pa_Initialize;
   paApiIndex := GetPreferredApiIndex();
@@ -364,9 +358,6 @@ begin
     else
       writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', Pa_GetErrorText(PaError));
 
-{$IF Defined(DARWIN)} // floating point exceptions are raised. Therefore, set the exception mask.
-    SetExceptionMask([exZeroDivide, exPrecision]);
-{$IFEND}
     for j := low(standardSampleRates) to high(standardSampleRates) do
     begin 
       sampleRate := standardSampleRates[j];
@@ -396,7 +387,26 @@ begin
     writeln;
   end;
   PaError := Pa_Terminate; 
+end;
 
+function AudioCallback(input: pointer; output: pointer; frameCount: culong;
+      timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
+      inputDevice: pointer): cint; cdecl;
+var
+  duration: real;
+begin
+  duration := (Now() - callbackStartTime) * 24 * 3600;
+  if (duration < 2.0) then
+    result := paContinue
+  else
+  begin
+    callbackWorks := true;
+    result := paComplete;
+  end;
+end;
+
+procedure TestStreams();
+begin
   writeln ('*** Test of Pa_OpenStream and Pa_CloseStream ***');
   PaError    := Pa_Initialize;
   paApiIndex := GetPreferredApiIndex();
@@ -413,7 +423,7 @@ begin
       inputParameters^.device                    := deviceIndex;
       inputParameters^.channelCount              := deviceInfo^.maxInputChannels;
       inputParameters^.sampleFormat              := paInt16;
-      inputParameters^.suggestedLatency          := deviceInfo.defaultLowInputLatency;
+      inputParameters^.suggestedLatency          := deviceInfo.defaultHighInputLatency;
       inputParameters^.hostApiSpecificStreamInfo := nil;
       outputParameters := nil;
     end
@@ -430,9 +440,9 @@ begin
     sampleRate      := deviceInfo^.defaultSampleRate;
     framesPerBuffer := paFramesPerBufferUnspecified;
     streamFlags     := paNoFlag;
-    streamCallback  := nil;
+    streamCallback  := @AudioCallback;
     userData        := nil;
-  
+
     PaError := Pa_OpenStream(
                      stream,
                      inputParameters,
@@ -448,6 +458,43 @@ begin
     else
       writeln ('Pa_OpenStream: ', Pa_GetErrorText(PaError));
 
+    if (PaError = paNoError) and (stream <> nil) then
+    begin
+      callbackStartTime := Now();
+
+      PaError := Pa_StartStream(stream);
+      if (PaError = paNoError) then
+	writeln ('Pa_StartStream: success')
+      else
+	writeln ('Pa_StartStream: ', Pa_GetErrorText(PaError));
+
+      callbackWorks := false;
+
+      // wait twice the time a successful callback would need for termination
+      writeln('Wait for callback');
+      delay(4000);
+
+      if (callbackWorks and (Pa_IsStreamStopped(stream) = 0)) then
+      begin
+	writeln ('Success: Device works');
+	PaError := Pa_StopStream(stream);
+	if (PaError = paNoError) then
+	  writeln ('Pa_StopStream: success')
+	else
+	  writeln ('Pa_StopStream: ', Pa_GetErrorText(PaError));
+      end
+      else
+      begin
+	writeln ('Error: Non working device');
+        PaError := Pa_AbortStream(stream);
+        if (PaError = paNoError) then
+          writeln ('Pa_AbortStream: success')
+        else
+          writeln ('Pa_AbortStream: ', Pa_GetErrorText(PaError));
+
+      end;
+    end;
+
     PaError := Pa_CloseStream(stream);
     if PaError = paNoError then
       writeln ('Pa_CloseStream: success')
@@ -460,6 +507,22 @@ begin
     writeln;    
   end;
   PaError := Pa_Terminate; 
+end;
+
+begin
+  // floating point exceptions are raised. Therefore, set the exception mask.
+  SetExceptionMask([exZeroDivide, exPrecision]);
+
+  writeln ('Start: Test of Portaudio libs');
+  writeln;
+
+  //TestInitTerminate();
+  //TestErrorText(); 
+  //TestVersion();
+  //TestApiInfo();
+  //TestDeviceInfo();
+  //TestFormatInfo();
+  TestStreams();
   
   writeln ('End: Test of Portaudio libs');
 end.
