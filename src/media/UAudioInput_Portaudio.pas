@@ -45,6 +45,7 @@ uses
   portmixer,
   {$ENDIF}
   portaudio,
+  ctypes,
   UAudioCore_Portaudio,
   UUnicodeUtils,
   UTextEncoding,
@@ -77,18 +78,19 @@ type
       function Start(): boolean; override;
       function Stop():  boolean; override;
 
+      function DetermineInputLatency(Info: PPaDeviceInfo): TPaTime;
+
       function GetVolume(): single;        override;
       procedure SetVolume(Volume: single); override;
   end;
 
-function MicrophoneCallback(input: pointer; output: pointer; frameCount: longword;
+function MicrophoneCallback(input: pointer; output: pointer; frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: pointer): integer; cdecl; forward;
+      inputDevice: pointer): cint; cdecl; forward;
 
-function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: longword;
+function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: pointer): integer; cdecl; forward;
-
+      inputDevice: pointer): cint; cdecl; forward;
 
 {**
  * Converts a string returned by Portaudio into UTF8.
@@ -105,6 +107,33 @@ end;
 
 
 { TPortaudioInputDevice }
+
+function TPortaudioInputDevice.DetermineInputLatency(Info: PPaDeviceInfo): TPaTime;
+begin
+  if (Ini.InputDeviceConfig[CfgIndex].Latency <> -1) then
+  begin
+    // autodetection off -> set user latency
+    Result := Ini.InputDeviceConfig[CfgIndex].Latency / 1000
+  end
+  else
+  begin
+    // on vista and xp the defaultLowInputLatency may be set to 0 but it works.
+    // TODO: correct too low latencies (what is a too low latency, maybe < 10ms?)
+    // TODO: retry with input-latency set to 20ms (defaultLowInputLatency might
+    //       not be set correctly in OSS)
+
+    // FIXME: according to the portaudio headers defaultHighInputLatency (approx. 40ms) is
+    // for robust non-interactive  applications and defaultLowInputLatency (approx. 15ms)
+    // for interactive performance.
+    // We need defaultLowInputLatency here but this setting is far too buggy. If the callback
+    // does not return quickly the stream will be stuck after returning from the callback
+    // and the callback will not be called anymore and mic-capturing stops.
+    // Audacity (in AudioIO.cpp) uses defaultHighInputLatency if software playthrough is on
+    // and even higher latencies (100ms) without playthrough so this should be ok for now.
+    //Result := Info^.defaultLowInputLatency;
+    Result := Info^.defaultHighInputLatency;
+  end;
+end;
 
 function TPortaudioInputDevice.Open(): boolean;
 var
@@ -126,12 +155,12 @@ begin
     device := PaDeviceIndex;
     channelCount := AudioFormat.Channels;
     sampleFormat := paInt16;
-    suggestedLatency := deviceInfo^.defaultLowInputLatency;
+    suggestedLatency := DetermineInputLatency(deviceInfo);
     hostApiSpecificStreamInfo := nil;
   end;
 
-  //Log.LogStatus(deviceInfo^.name, 'Portaudio');
-  //Log.LogStatus(floattostr(deviceInfo^.defaultLowInputLatency), 'Portaudio');
+  Log.LogStatus('Open ' + deviceInfo^.name, 'Portaudio');
+  Log.LogStatus('Latency of ' + deviceInfo^.name + ': ' + floatToStr(inputParams.suggestedLatency), 'Portaudio');
 
   // open input stream
   Error := Pa_OpenStream(RecordStream, @inputParams, nil,
@@ -309,6 +338,8 @@ var
   sourceIndex:  integer;
   sourceName:   UTF8String;
   {$ENDIF}
+const
+  MIN_TEST_LATENCY = 100 / 1000; // min. test latency of 100 ms to avoid removal of working devices
 begin
   Result := false;
 
@@ -354,13 +385,13 @@ begin
 
     sampleRate := paDeviceInfo^.defaultSampleRate;
 
-    // on vista and xp the defaultLowInputLatency may be set to 0 but it works.
-    // TODO: correct too low latencies (what is a too low latency, maybe < 10ms?)
-    latency := paDeviceInfo^.defaultLowInputLatency;
+    // use a stable (high) latency so we do not remove working devices
+    if (paDeviceInfo^.defaultHighInputLatency > MIN_TEST_LATENCY) then
+      latency := paDeviceInfo^.defaultHighInputLatency
+    else
+      latency := MIN_TEST_LATENCY;
 
     // setup desired input parameters
-    // TODO: retry with input-latency set to 20ms (defaultLowInputLatency might
-    //       not be set correctly in OSS)
     with inputParams do
     begin
       device := paDeviceIndex;
@@ -488,9 +519,9 @@ end;
 {*
  * Portaudio input capture callback.
  *}
-function MicrophoneCallback(input: pointer; output: pointer; frameCount: longword;
+function MicrophoneCallback(input: pointer; output: pointer; frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: pointer): integer; cdecl;
+      inputDevice: pointer): cint; cdecl;
 begin
   AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
   result := paContinue;
@@ -499,9 +530,9 @@ end;
 {*
  * Portaudio test capture callback.
  *}
-function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: longword;
+function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: pointer): integer; cdecl;
+      inputDevice: pointer): cint; cdecl;
 begin
   // this callback is called only once
   result := paAbort;

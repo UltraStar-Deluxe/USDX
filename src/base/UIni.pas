@@ -63,8 +63,12 @@ type
   TInputDeviceConfig = record
     Name:               string;
     Input:              integer;
+    Latency:            integer; //**< latency in ms, or LATENCY_AUTODETECT for default
     ChannelToPlayerMap: array of integer;
   end;
+
+const
+  LATENCY_AUTODETECT = -1;
 
 type
 
@@ -640,6 +644,7 @@ begin
       DeviceCfg := @InputDeviceConfig[High(InputDeviceConfig)];
       DeviceCfg.Name := IniFile.ReadString('Record', Format('DeviceName[%d]', [DeviceIndex]), '');
       DeviceCfg.Input := IniFile.ReadInteger('Record', Format('Input[%d]', [DeviceIndex]), 0);
+      DeviceCfg.Latency := IniFile.ReadInteger('Record', Format('Latency[%d]', [DeviceIndex]), LATENCY_AUTODETECT);
 
       // find the largest channel-number of the current device in the ini-file
       ChannelCount := GetMaxKeyIndex(RecordKeys, 'Channel', Format('[%d]', [DeviceIndex]));
@@ -678,6 +683,8 @@ begin
                         InputDeviceConfig[DeviceIndex].Name);
     IniFile.WriteInteger('Record', Format('Input[%d]', [DeviceIndex+1]),
                         InputDeviceConfig[DeviceIndex].Input);
+    IniFile.WriteInteger('Record', Format('Latency[%d]', [DeviceIndex+1]),
+                        InputDeviceConfig[DeviceIndex].Latency);
 
     // Channel-to-Player Mapping
     for ChannelIndex := 0 to High(InputDeviceConfig[DeviceIndex].ChannelToPlayerMap) do

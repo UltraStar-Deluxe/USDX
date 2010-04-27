@@ -577,6 +577,7 @@ begin
 
       deviceCfg.Name := Trim(device.Name);
       deviceCfg.Input := 0;
+      deviceCfg.Latency := LATENCY_AUTODETECT;
 
       channelCount := device.AudioFormat.Channels;
       SetLength(deviceCfg.ChannelToPlayerMap, channelCount);
