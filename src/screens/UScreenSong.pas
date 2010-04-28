@@ -1344,13 +1344,19 @@ begin
         Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.5);
         Button[B].Z := 0.95 - Abs(Pos) * 0.01;
       end
-      else
+      { only draw 3 visible covers in the background
+        (the 3 that are on the opposite of the front covers}
+      else if (Abs(Pos) > floor(VS/2) - 1.5) then
       begin
-        // Transform Pos to range [-1..-1/2, +1/2..+1]
+        // Transform Pos to range [-1..-3/4, +3/4..+1]
+        { the 3 covers at the back will show up in the gap between the
+          front cover and its neighbors
+          one cover will be hiddenbehind the front cover,
+          but this will not be a lack of performance ;) }
         if Pos < 0 then
-          Pos := Pos/VS - 0.5
+          Pos := (Pos - 2 + ceil(VS/2))/8 - 0.75
         else
-          Pos := Pos/VS + 0.5;
+          Pos := (Pos + 2 - floor(VS/2))/8 + 0.75;
 
         // angle in radians [-2Pi..-Pi, +Pi..+2Pi]
         Angle := 2*Pi * Pos;
@@ -1366,7 +1372,10 @@ begin
 
         //Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
         Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
-      end;
+      end
+      { all other covers are not visible }
+      else
+      Button[B].Visible := false;
     end;
   end;
 end;
