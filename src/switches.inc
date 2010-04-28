@@ -17,23 +17,21 @@
 
   // Delphi version numbers (ignore Delphi < 7 and Delphi 8 (VER160))
 
-  {$IFDEF VER180} // Delphi 2006 (=10)
+  {$IF Defined(VER180)} // Delphi 2006 (=10)
     {$DEFINE DELPHI_10}
     {$DEFINE DELPHI_7_UP}
     {$DEFINE DELPHI_9_UP}
     {$DEFINE DELPHI_10_UP}
-  {$ENDIF}
-
-  {$IFDEF VER170} // Delphi 2005 (=9)
+  {$ELSEIF Defined(VER170)} // Delphi 2005 (=9)
     {$DEFINE DELPHI_9}
     {$DEFINE DELPHI_7_UP}
-    {$DEFINE DELPHI_9_UP}
-  {$ENDIF}
-
-  {$IFDEF VER150} // Delphi 7
+    {$DEFINE DELPHI_9_UP}    
+  {$ELSEIF Defined(VER150)}
     {$DEFINE DELPHI_7}
     {$DEFINE DELPHI_7_UP}
-  {$ENDIF}
+  {$ELSE} // unsupported
+    {$WARN ERROR 'Unsupported compiler version'}
+  {$IFEND}
 
   // inline directive introduced with Delphi 2005
   {$IFDEF DELPHI_9_UP}
