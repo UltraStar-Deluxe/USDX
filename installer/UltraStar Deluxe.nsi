@@ -190,17 +190,16 @@ ${EndIf}
 
 StrCpy $path_configini "$path_config\config.ini"
 
-${WriteToConfig} "[Game]$\r$\n" "$path_configini"
-${WriteToConfig} "Language=$language2$\r$\n" "$path_configini"
-${WriteToConfig} "Tabs=$tabs$\r$\n" "$path_configini"
-${WriteToConfig} "Sorting=$sorting$\r$\n" "$path_configini"
+WriteINIStr "$path_configini" "Game" "Language" "$language2"
+WriteINIStr "$path_configini" "Game" "Tabs" "$tabs"
+WriteINIStr "$path_configini" "Game" "Sorting" "$sorting"
 
-${WriteToConfig} "[Graphics]$\r$\n" "$path_configini"
-${WriteToConfig} "FullScreen=$fullscreen$\r$\n" "$path_configini"
-${WriteToConfig} "Resolution=$resolution$\r$\n" "$path_configini"
+WriteINIStr "$path_configini" "Graphics" "FullScreen" "$fullscreen"
+WriteINIStr "$path_configini" "Graphics" "Resolution" "$resolution"
 
-${WriteToConfig} "[Directories]$\r$\n" "$path_configini"
-${WriteToConfig} "SongDir2=$songdir$\r$\n" "$path_configini"
+${If} $songdir != "$INSTDIR\songs"
+WriteINIStr "$path_configini" "Directories" "SongDir1" "$songdir"
+${EndIf}
 
 FunctionEnd ; Settings page End
 

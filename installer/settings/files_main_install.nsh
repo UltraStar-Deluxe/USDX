@@ -16,9 +16,6 @@ ${If} ${AtLeastWinVista}
   CreateDirectory $APPDATA\ultrastardx\screenshots
   CreateDirectory $APPDATA\ultrastardx\playlists
 
-  SetOutPath "$APPDATA\ultrastardx"
-  File ..\game\config.ini
-
   SetOutPath "$INSTDIR"
 
   CreateShortCut "screenshots.lnk" "$APPDATA\ultrastardx\screenshots"
@@ -32,12 +29,12 @@ ${EndIf}
 
 SetOutPath "$INSTDIR"
 
-File /r ..\game\themes
-File /r ..\game\languages
-File /r ..\game\sounds
-File /r ..\game\fonts
-File /r ..\game\resources
-File /r ..\game\visuals
+File /r /x .svn /x .gitignore ..\game\themes
+File /r /x .svn /x .gitignore ..\game\languages
+File /r /x .svn /x .gitignore ..\game\sounds
+File /r /x .svn /x .gitignore ..\game\fonts
+File /r /x .svn /x .gitignore ..\game\resources
+File /r /x .svn /x .gitignore ..\game\visuals
 
 ; Root dir:
 
