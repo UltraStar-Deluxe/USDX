@@ -1,3 +1,137 @@
+Ultrastar Deluxe 1.10
+-----------------------------
+
+--------------
+Plattform
+--------------
+Upd: Plattformunabhängige Codebasis
+upd: Codebasis unabhängig der Byte-Reihenfolge
+Add: Unterstützung für Linux und FreeBSD (beide x86/x86_64)
+Add: Unterstützung für Max OS X (PowerPC + Intel)
+
+--------------
+Audio
+--------------
+Upd: Audio Ausgabe und Eingabe komplett neu implementiert
+Upd: Austauschbare Audio/Video Module
+       - Bass Eingabe/Ausgabe/Dekodierung (Nur Windows)
+       - SDL Audio Ausgabe (Alle Plattformen)
+       - Portaudio Eingabe/Ausgabe (Alle Plattformen)
+       - FFmpeg Dekodierung (Alle Plattformen)
+Upd: Es können nun auch Videodateien für das #MP3 Tag verwendet werden (der erste Audiostream des Videos wird verwendet)
+Add: Mikrofon Weiterleitung (sehr experimentell)
+Fix: Ein Start ohne angeschlossenes Mikrofon führt nicht mehr zum Absturz
+Add: Hintergrundmusik
+
+--------------
+Video
+--------------
+Upd: Videodekodierung überarbeitet
+Upd: Windows: FFmpeg Version aktualisiert
+Upd: Einige Performanceverbesserungen
+
+--------------
+Interface
+--------------
+Upd: Videohintergründe für Themes
+Upd: Performance im Songscreen bei vielen Songs verbessert
+Upd: Themewechsel ohne Neustart möglich
+Upd: Neue Punkteanzeige im Singscreen (animiert)
+Upd: Score Screen umgestaltet (Animationen)
+Upd: Deluxe Theme komplett überholt (ty mog)
+Upd: Party Plugins können vor dem Spiel ausgewählt werden
+Upd: Default Skin und Color kann in Themes bzw. Skins gespeichert werden
+Add: Visualisierungen (mit projectM) als Hintergrund beim Singen
+Upd: Truetype Schriften (durch freetype) anstatt der alten Bitmap Font
+     -> Unterstützung internationale Zeichensätze
+     -> glatteres Schriftbild
+Upd: Neuer Lyrics Effekt: Shift
+Upd: Mehr als ein Songpfad kann in der Config.ini (SongDirX) angegeben werden
+Upd: Mikrofon Einstellungen vereinfacht
+      - Vu-meter für einkommende Signale auf dem gewählen Eingang
+      - Anzeige für Eingangslautstärke
+      - Eingangslautstärke über '+' und '-' Tasten regelbar
+      - Anzeige für Rauschunterdrückung (grauer Balken)
+      - Rauschunterdrückung (Threshold) änderbar mit Taste 'T'
+Upd: Internationalisiertes Keyboard-Layout (einheitliche Shortcuts bei QWERTZ, QWERTY, AZERTY, ...)
+Rem: verwirrende Solmization Option entfernt
+Add: Textreflektionen für Themes
+Add: Notenlinien in den Optionen abschaltbar
+Add: Maus-Unterstützung
+Add: Texturtyp "Colorized": Textur wird über Hue-Wert (siehe HSB-Farbmodell) eingefärbt
+Add: Overlay bei aktiviertem Pause-Modus im SingScreen
+Fix: Einige "Screens=2" Bugs
+Add: Unicode support: Alle "druckbaren" Zeichen sollten nun mit den Eingabefeldern(z.B. Spielernamen) funktionieren
+Add: Fenstergröße veränderbar
+Add: Wechsel von Vollbild und Fenstermodus mit ALT+Eingabe (nur Linux + FreeBSD)
+Fix: Aktion bei Eingabe und Return (Zehnertastatur) ist nun gleich
+
+--------------
+Intern
+--------------
+Upd: Synchronisation von Lyrics, Video und Audio
+     (Vorher wurden die verschiedenen Timer nicht synchronisiert)
+     Es kann per Config.ini ("SyncTo"-Option) gewählt werden zwischen:
+      - Lyrics und Video gegen Audio synchronisieren (standard)
+      - Audio und Video gegen Lyrics synchronisieren
+      - keine Synchronisation
+Upd: Lua Plugin Interface anstatt des alten DLL Interfaces
+Upd: Select Objekt entfernt stattdessen wird überall Select Slide verwendet
+Upd: Verbesserte Stabilität und aufgeräumte Codebase
+Fix: Einige Fehler/Crashes im Midi/Kar-Konverter behoben
+Upd: Vista/Win7 Konformität: Konfigurationsdateien werden im Benutzerordner abgelegt. Ein Programmstart von CD/DVD sollte nun möglich sein.
+Upd: Cover-Thumbnails werden in einer SQLite Tabelle gespeichert
+     -> Verlässlicher als die alte Lösung; leichte Performance-Einbußen beim Starten
+
+--------------
+Song Dateien
+--------------
+Upd: Unterstützung für UTF8
+Upd: #Encoding Tag
+      - CP1250: Mittel-/Osteuropäische Kodierung; wird standardmäßig von Corvus Ultrastar benutzt
+      - CP1252: Westeuropäische Kodierung; wurde standardmäßig von Ultrastar Deluxe vor 1.1 benutzt
+      - Locale: Benutzt die Systemkodierung (sollte für neue Dateien nicht verwendet werden)
+      - UTF8:   Textdatei ist in UTF8 kodiert (empfohlen)
+Upd: Unterstützung für UTF8 BOM (neuer Standard in Ultrastar Deluxe)
+Upd: #Year Tag wird gelesen und gespeichert
+Fix: Kein Absturz mehr, wenn kein Lyrics-Zeilenumbruch in der Datei ist
+Fix: Leere Lyrics Zeilen werden ignoriert
+Fix: Der Editor löscht beim Speichern keine unbekannten Tags mehr aus den TXT-Dateien
+
+UltraStar Deluxe 1.01a
+-----------------------------
+Fix: VideoGap funktioniert wieder mit Mpeg Videos
+Fix: Video Start wird nun richtig berechnet wenn der Start-Tag benutzt wird
+
+UltraStar Deluxe 1.01
+-----------------------------
+Upd: Neue SDL-Lib
+Upd: Neue Bass.dll
+Upd: Video support neu geschrieben (FFMpeg anstatt SMPeg)
+     ->Fast alle Videoformate werden nun unterstützt. Bessere Synchronisation der meisten Videos.
+Upd: Theme, Skin und Farbe können ohne Neustart geändert werden
+Upd: Einige Geschwindigkeitsverbesserungen
+Upd: Backspace ist nun identisch mit ESC bei den meisten Screens
+Upd: Editor: Singlenote-playback (SHIFT + Leertaste / STRG + SHIFT + Leertaste)
+Upd: Editor: Mehr Buchstaben funktionieren nun im Texteditmodus z.B. '~'
+Upd: Deluxe-Theme verschönert.
+       - Neue Texturen für die Leiste
+       - Neue Hintergründe für die Deluxe Skins
+       - Farbe ist nun im Deluxe-Theme änderbar \o/
+Upd: Executable Name zu USdx.exe geändert
+Upd: Neue Sounds für die Menüs
+Upd: 3 neue Skins von Skar/Alajasam hinzugefügt
+Upd: TeamDuell (ähnlich Gib das Mikro weiter) Modiplugin hinzugefügt
+
+Add: Installer verfügbar
+
+Fix: 4/6 Spieler: Richtige Punktzahlen werden auf dem Scorescreen angezeigt
+Fix: Doppeltes hinzufügen der Scores bei Screens=2
+Fix: Überlappen einiger Artistennamen mit den Songname sollte nun in den meisten Fällen gefixed sein.
+Fix: License- und Readme.txt Dateien tauchen nicht mehr in der error.log auf
+Fix: Einige Sounds, (hauptsächlich der Editor 'klick'-Sound) waren zu leise
+Fix: USdx sollte nun mit Girder funktionieren
+
 UltraStar Deluxe 1.00 (by Ultrastar Deluxe Team)
 -----------------------------
 
@@ -14,7 +148,7 @@ Upd: Optionale Spiegelungen zu Buttons und Statics hinzugefügt. (Reflection = 1)
 Upd: Buttons können nun im Theme zu Gruppen zusammengefasst werden.z.B. Deluxe Theme Main Menu Tools Collection.
 Upd: Buttons könen vom Theme ausgeblendet werden. z.B. für den Exit Button, oder falls Hotkeys existieren.
 Upd: Texte können nun eine Länge (w= ..) erhalten. Sie werden dann bei der gegebenen Länge umgebrochen.
- 
+
 --------------
 Aufnahme Optionen
 --------------
@@ -57,7 +191,7 @@ Sonstiges
 --------------
 Upd: Deluxe Theme hinzugefügt: Theme mit PS3 ähnlichem Aussehen
 Upd: Neues Score Speicherungssystem (basierend auf SQLite)
-Upd: Statistiken hinzugefügt. Generelle Statistiken und 
+Upd: Statistiken hinzugefügt. Generelle Statistiken und
      Beste Scores, Beste Sänger, beliebteste Songs, beliebteste Bands
 Upd: Einige On Screen Fehler Benachrichtigungen hinzugefügt, die neuen Spielern helfen sollten.
 Upd: Neuer Erweiterter Options Screen hinzugefügt
@@ -75,10 +209,10 @@ Fix: Bug in LineBonus Popup behoben das zu Speicherüberläufen führen kann.
 Fix: Bug in SelectSlide behoben der zu Fehlern mit weniger als 3 optionen führen kann.
      Automatisches Resizing hinzugefügt
 Fix: Backgrounds can be used now in option Screens, too
-Fix: Unnützer Speicherverbauch wenn ein Song mit Video abgespielt wird. Einige Videodaten blieben im Speicher nachdem der Song beendet wurde. 
+Fix: Unnützer Speicherverbauch wenn ein Song mit Video abgespielt wird. Einige Videodaten blieben im Speicher nachdem der Song beendet wurde.
      Dies könnte zu einem Out Of Memory Error führen wenn viele Songs mit Video gespielt werden.
 Fix: Einige Speichernutzungs und Ladezeit Updates
-Fix: Falsche Satzübergänge wenn T im Editor benutzt wurde und sich 2 Noten von verschiedenen 
+Fix: Falsche Satzübergänge wenn T im Editor benutzt wurde und sich 2 Noten von verschiedenen
      Sätzen überlagerten.
 Fix: Editor stürzte ab wenn die letzte Note eines Satzes gelöscht wurde.
 Fix: [Midi Converter]Noten wurden mehrmals hinzugefügt wenn eine Datei mehrmals geöffnet wurde
@@ -138,7 +272,7 @@ Fix: Richtige Kategorie wird angezeigt nach Druck von Escape
 
 Upd: Neue Random Funktionen: R + [Strg]: Random in allen Kategorien (Hier wird die Kategorie oben noch falsch angezeigt); R + [Shift]: Zufällige Kategorie
 Upd: Gerade gewählte Kategorie wird oben links in der Ecke gezeigt
-   
+
 UltraStar 0.5.0 ultra-star.dl.am Mod r8 (Release by Whiteshark)
 -----------------------------
 Fix: Creatorbug behoben
