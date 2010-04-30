@@ -40,9 +40,13 @@ uses
 
 type
   TAudioCore_Portaudio = class
+    private
+      InitCount: integer; ///< keeps track of the number of Initialize/Terminate calls
     public
       constructor Create();
       class function GetInstance(): TAudioCore_Portaudio;
+      function Initialize(): boolean;
+      function Terminate(): boolean;
       function GetPreferredApiIndex(): TPaHostApiIndex;
       function TestDevice(inParams, outParams: PPaStreamParameters; var sampleRate: double): boolean;
   end;
@@ -92,6 +96,7 @@ var
 constructor TAudioCore_Portaudio.Create();
 begin
   inherited;
+  InitCount := 0;
 end;
 
 class function TAudioCore_Portaudio.GetInstance(): TAudioCore_Portaudio;
@@ -99,6 +104,57 @@ begin
   if not assigned(Instance) then
     Instance := TAudioCore_Portaudio.Create();
   Result := Instance;
+end;
+
+function TAudioCore_Portaudio.Initialize(): boolean;
+var
+  Err: TPaError;
+begin
+  // initialize only once
+  if (InitCount > 0) then
+  begin
+    Inc(InitCount);
+    Result := true;
+    Exit;
+  end;
+
+  // init Portaudio
+  Err := Pa_Initialize();
+  if (Err <> paNoError) then
+  begin
+    Log.LogError(Pa_GetErrorText(Err), 'TAudioCore_Portaudio.Initialize');
+    Result := false;
+    Exit;
+  end;
+
+  // only increment on success
+  Inc(InitCount);
+  Result := true;
+end;
+
+function TAudioCore_Portaudio.Terminate(): boolean;
+var
+  Err: TPaError;
+begin
+  // decrement usage count
+  Dec(InitCount);
+  if (InitCount > 0) then
+  begin
+    // do not terminate yet
+    Result := true;
+    Exit;
+  end;
+
+  // terminate if usage count is 0
+  Err := Pa_Terminate();
+  if (Err <> paNoError) then
+  begin
+    Log.LogError(Pa_GetErrorText(Err), 'TAudioCore_Portaudio.Terminate');
+    Result := false;
+    Exit;
+  end;
+
+  Result := true;
 end;
 
 function TAudioCore_Portaudio.GetPreferredApiIndex(): TPaHostApiIndex;

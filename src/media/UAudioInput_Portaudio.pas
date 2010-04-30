@@ -492,27 +492,20 @@ begin
 end;
 
 function TAudioInput_Portaudio.InitializeRecord(): boolean;
-var
-  err: TPaError;
 begin
+  Result := false;
   AudioCore := TAudioCore_Portaudio.GetInstance();
 
   // initialize portaudio
-  err := Pa_Initialize();
-  if (err <> paNoError) then
-  begin
-    Log.LogError(Pa_GetErrorText(err), 'TAudioInput_Portaudio.InitializeRecord');
-    Result := false;
-    Exit;
-  end;
-
+  if (not AudioCore.Initialize()) then
+     Exit;
   Result := EnumDevices();
 end;
 
 function TAudioInput_Portaudio.FinalizeRecord: boolean;
 begin
   CaptureStop;
-  Pa_Terminate();
+  AudioCore.Terminate();
   Result := inherited FinalizeRecord();
 end;
 

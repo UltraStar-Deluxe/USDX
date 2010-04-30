@@ -307,22 +307,16 @@ var
   paApiIndex      : TPaHostApiIndex;
   paApiInfo       : PPaHostApiInfo;
   paOutDevice     : TPaDeviceIndex;
-  err: TPaError;
 begin
   Result := false;
-
   AudioCore := TAudioCore_Portaudio.GetInstance();
 
   // initialize portaudio
-  err := Pa_Initialize();
-  if(err <> paNoError) then
-  begin
-    Log.LogError(Pa_GetErrorText(err), 'TAudioInput_Portaudio.InitializeRecord');
+  if (not AudioCore.Initialize()) then
     Exit;
-  end;
 
   paApiIndex := AudioCore.GetPreferredApiIndex();
-  if(paApiIndex = -1) then
+  if (paApiIndex = -1) then
   begin
     Log.LogError('No working Audio-API found', 'TAudioPlayback_Portaudio.InitializeAudioPlaybackEngine');
     Exit;
@@ -364,13 +358,19 @@ end;
 procedure TAudioPlayback_Portaudio.StopAudioPlaybackEngine();
 begin
   if (paStream <> nil) then
-    Pa_StopStream(paStream);
+  begin
+    Pa_CloseStream(paStream);
+    // wait until stream is closed, otherwise Terminate() might cause a segfault
+    while (Pa_IsStreamActive(paStream) = 1) do
+      ;
+    paStream := nil;
+  end;
 end;
 
 function TAudioPlayback_Portaudio.FinalizeAudioPlaybackEngine(): boolean;
 begin
-  Pa_Terminate();
-  Result := true;
+  StopAudioPlaybackEngine();
+  Result := AudioCore.Terminate();
 end;
 
 function TAudioPlayback_Portaudio.GetLatency(): double;
