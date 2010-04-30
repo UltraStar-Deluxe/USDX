@@ -18,9 +18,9 @@ upd: pluggable audio/video modules
        - SDL audio playback (all platforms)
        - Portaudio playback/input (all platforms)
        - FFmpeg decoder (all platforms)
-upd: video files enabled for the #MP3 tag (using the first audio stream of the video)
+upd: video files enabled for the #MP3 tag (using the first audio stream of a video)
 add: Microphone Passthrough (experimental)
-fix: A Start without a plugged microphone does not result in a crash
+fix: a start without a microphone plugged-in does not result in a crash
 add: background music
 
 --------------
@@ -33,37 +33,37 @@ upd: performance improvements
 --------------
 interface
 --------------
-upd: video-backgrounds for themes
-upd: Songscreen: performance improvements with many songs
+upd: video backgrounds for themes
+upd: Song Screen: performance improvements with many songs
 upd: theme change w/o restarting Ultrastar Deluxe
-upd: new scoredisplay in Singscreen (animated)
+upd: new score display in Sing Screen (animated)
 upd: Score Screen redesigned (animations)
 upd: Deluxe theme enhanced (ty mog)
-upd: ability to select party-modes before the game
+upd: ability to select party modes before the game
 upd: default skin and color are read from themes and skins
 add: visualisations (due to projectM) as background while singing
 upd: Truetype fonts (due to freetype6) instead of the old bitmap fonts
      -> support for international character sets
      -> smoother type face
 upd: new lyrics effect: Shift
-upd: More than one additional song path can be set in config.ini (SongDirX)
+upd: more than one additional song path can be set in config.ini (SongDirX)
 upd: microphone settings simplified
-      - vu-meter for incomming signals on the selected input
-      - display for input volume
-      - adjust input volume by using the '+' and '-' keys
-      - threshold-display (gray bar)
+      - vu-meter for incoming signals on the selected input
+      - display of input volume
+      - adjust input volume by using '+' and '-' keys
+      - threshold display (gray bar)
       - adjust threshold with 'T' key
-upd: internationalized keyboard layout (uniform shortcuts on QWERTZ, QWERTY, AZERTY, ...)
+upd: international keyboard layout (uniform shortcuts on QWERTZ, QWERTY, AZERTY, ...)
 rem: removed confusing solmization option
-add: text reflections for themes
+add: text reflections in themes
 add: note lines can be switched off in options
 add: mouse support (hardware and software)
-add: Textur type "Colorized": Texture will be colorized adjusting the Hue-value (see HSB-color model)
+add: texture type "Colorized": Texture is colorized by adjusting the hue value (see HSB color model)
 add: overlay when pause modus is activated in Sing Screen
 fix: some "Screens=2" bugs
-add: Unicode support: All "printable" characters should work with the input fields (e.g. players names)
+add: Unicode support: All "printable" characters should work with the input fields (e.g. players' names)
 add: resizable window
-add: toggle between fullscreen and windowed mode with ALT+Return (Linux + FreeBSD only)
+add: toggle between fullscreen and windowed mode with ALT+Return (Linux and FreeBSD only)
 fix: mapped same function to Return and Enter (numpad)
 
 --------------
@@ -71,32 +71,32 @@ internal
 --------------
 upd: synchronization of lyrics, video and audio
      (timers were not synchronized until now)
-     you can be choose via Config.ini ("SyncTo" option) between:
+     you can be choose via config.ini ("SyncTo" option) between:
       - synchronize lyrics and video to audio (default)
       - synchronize audio and video to lyrics
       - no synchronization
-upd: DLL interfaces replaced by Lua plugin interface
+upd: DLL interface replaced by Lua plugin interface
 upd: Select Object replaced by Select Slide
 upd: improved stability and major code base cleanup
 fix: solved some bugs/crashes in Midi/Kar converter
-upd: Vista/Win7 conform: configuration files will be saved within the user directory. A  start from CD/DVD should also be possible from now on.
-upd: cover thumbnails will be saved within a SQLite database
-     ->  more reliable than the old solution; small performance-loss on start
+upd: Vista/Win7 conform: configuration files is saved in the user directory. Running USDX from CD/DVD should also be possible from now on.
+upd: cover thumbnails are saved in an SQLite database
+     ->  more reliable than the old solution; small performance loss on start
 
 --------------
 song files
 --------------
 upd: UTF8 support
 upd: #Encoding tag
-      - CP1250: Central-/Eastern european encoding
+      - CP1250: Central/Eastern european encoding
       - CP1252: Western european encoding; was used as default before 1.1
-      - Locale: Uses system encoding (should not be used for new files!)
-      - UTF8: Text file is encoded in UTF8 (recommended)
+      - Locale: uses system encoding (should not be used for new files!)
+      - UTF8: text file is encoded in UTF8 (recommended)
 upd: support for UTF8 BOM (new standard in Ultrastar Deluxe)
-upd: #Year tag will be read and saved
-fix: does not crash any longer if there is no linebreak within the lyrics file
-fix: blank lyrics lines will be ignored
-fix: editor doesn't delete unknown tags any longer from the song txt files
+upd: #Year tag is read and saved
+fix: does not crash any longer if there is no linebreak in lyrics file
+fix: blank lyrics lines are ignored
+fix: editor does not delete unknown tags any longer from song txt files
 
 UltraStar Deluxe 1.01a
 -----------------------------
