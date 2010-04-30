@@ -16,7 +16,7 @@ AC_PREREQ(2.61)
 
 # Init autoconf
 AC_INIT([ultrastardx], 
-        [1.1-alpha], 
+        [1.1-beta], 
         [http://sourceforge.net/tracker/?group_id=191560&atid=937872])
 # specify the website here
 PACKAGE_WEBSITE="http://www.ultrastardeluxe.org/"
@@ -269,22 +269,12 @@ AC_MSG_NOTICE([
 !!! For further information on $PACKAGE_NAME visit:
 !!!   $PACKAGE_WEBSITE
 !!!
-!!! IMPORTANT:
-!!! This is an UNSUPPORTED ALPHA release for developers only.
-!!!
-!!! DO NOT EXPECT THE MAKEFILE OR THE PROGRAM ITSELF TO WORK
-!!!
-!!! If you want to contribute, visit the IRC-Channel instead:
+!!! In case you find a bug send a bugreport to:
+!!!   $PACKAGE_BUGREPORT
+!!! You might as well ask for help at the IRC-Channel
 !!!   $PACKAGE_IRC
-!!!
-!!! PLEASE DO NOT SEND BUGREPORTS FOR THIS VERSION.
 !!!
 ])
 
-# TODO: insert this in the public beta release
-#!!! In case you find a bug send a bugreport to:
-#!!!   $PACKAGE_BUGREPORT
-#!!! You might as well ask for help at the IRC-Channel
-#!!!   $PACKAGE_IRC
 
 

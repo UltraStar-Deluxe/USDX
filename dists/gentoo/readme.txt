@@ -3,7 +3,7 @@
 ---------------------------------------
 This directory contains two ebuilds for UltraStar Deluxe
 - ultrastardx-9999.ebuild: a live ebuild using SVN sources
-- ultrastardx-1.1_alpha.ebuild: a snapshot ebuild that might be appended to the official portage someday (Note: at the moment there is no source snapshot for USDX so this will not work)
+- ultrastardx-1.1_beta.ebuild: a snapshot ebuild that might be appended to the official portage someday (Note: at the moment there is no source snapshot for USDX so this will not work)
 
 ---------------------------------------
 2. Create a portage overlay

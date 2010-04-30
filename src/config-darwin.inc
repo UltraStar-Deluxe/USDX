@@ -1,5 +1,5 @@
 {***************************************************************** 
- * Configuration file for ultrastardx 1.1-alpha
+ * Configuration file for ultrastardx 1.1-beta
  * src/config-darwin.inc.  Generated from config.inc.in by configure.
  *****************************************************************}
 
