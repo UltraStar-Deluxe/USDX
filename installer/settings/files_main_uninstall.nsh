@@ -48,6 +48,7 @@
 
  Delete "$INSTDIR\avcodec-52.dll"
  Delete "$INSTDIR\avformat-52.dll"
+ Delete "$INSTDIR\avfilter-1.dll"
  Delete "$INSTDIR\avdevice-52.dll"
  Delete "$INSTDIR\avutil-50.dll"
  Delete "$INSTDIR\bass.dll"
