@@ -158,8 +158,20 @@ Function Settings
 
 ; Get all the variables:
 
-Var /GLOBAL CHECKBOX
-Var /GLOBAL checkbox_state
+Var /GLOBAL LABEL_COMPONENTS
+
+Var /GLOBAL CHECKBOX_COVERS
+Var /GLOBAL CB_COVERS_State
+Var /GLOBAL CHECKBOX_SCORES
+Var /GLOBAL CB_SCORES_State
+Var /GLOBAL CHECKBOX_CONFIG
+Var /GLOBAL CB_CONFIG_State
+Var /GLOBAL CHECKBOX_SCREENSHOTS
+Var /GLOBAL CB_SCREENSHOTS_State
+Var /GLOBAL CHECKBOX_PLAYLISTS
+Var /GLOBAL CB_PLAYLISTS_State
+Var /GLOBAL CHECKBOX_SONGS 
+Var /GLOBAL CB_SONGS_State
 
 var /GLOBAL fullscreen
 var /GLOBAL language2
@@ -219,10 +231,33 @@ Function un.AskDelete
 
 nsDialogs::Create /NOUNLOAD 1018
 
-	${NSD_CreateCheckbox} 0 -150 100% 8u "$(delete_all)"
-	Pop $CHECKBOX
+	${NSD_CreateLabel} 0 -195 100% 12u "$(delete_components)"
+	Pop $LABEL_COMPONENTS
 
-	nsDialogs::OnClick /NOUNLOAD $CHECKBOX $0
+	${NSD_CreateCheckbox} 0 -175 100% 8u "$(delete_covers)"
+	Pop $CHECKBOX_COVERS
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_COVERS $1
+
+	${NSD_CreateCheckbox} 0 -155 100% 8u "$(delete_config)"
+	Pop $CHECKBOX_CONFIG
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_CONFIG $2
+
+	${NSD_CreateCheckbox} 0 -135 100% 8u "$(delete_highscores)"
+	Pop $CHECKBOX_SCORES 
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SCORES $3
+
+	${NSD_CreateCheckbox} 0 -115 100% 8u "$(delete_screenshots)"
+	Pop $CHECKBOX_SCREENSHOTS 
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SCREENSHOTS $4
+
+	${NSD_CreateCheckbox} 0 -95 100% 8u "$(delete_playlists)"
+	Pop $CHECKBOX_PLAYLISTS
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_PLAYLISTS $5
+
+	${NSD_CreateCheckbox} 0 -65 100% 18u "$(delete_songs)"
+	Pop $CHECKBOX_SONGS 
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SONGS $6
+
 
 nsDialogs::Show
 
@@ -230,29 +265,53 @@ FunctionEnd
 
 Function un.DeleteAll
 
-${NSD_GetState} $CHECKBOX $checkbox_state
+${NSD_GetState} $CHECKBOX_COVERS $CB_COVERS_State
+${NSD_GetState} $CHECKBOX_CONFIG $CB_CONFIG_State
+${NSD_GetState} $CHECKBOX_SCORES $CB_SCORES_State
+${NSD_GetState} $CHECKBOX_SCORES $CB_SCREENSHOTS_State
+${NSD_GetState} $CHECKBOX_SCORES $CB_PLAYLISTS_State
+${NSD_GetState} $CHECKBOX_SONGS  $CB_SONGS_State
 
-${If} $checkbox_state == "1"
-
-; Remove settings, songs, highscores, covers
-
- RMDir /r "$INSTDIR\songs"
+${If} $CB_COVERS_State == "1" ; Remove covers
  RMDir /r "$INSTDIR\covers"
- Delete "$INSTDIR\config.ini"
- Delete "$INSTDIR\Ultrastar.db"
-
  SetShellVarContext current	
- RMDir /r "$APPDATA\ultrastardx\songs"
  RMDir /r "$APPDATA\ultrastardx\covers"
- Delete "$APPDATA\ultrastardx\config.ini"
- Delete "$APPDATA\ultrastardx\Ultrastar.db"
  SetShellVarContext all
+${EndIf}
 
-${Else}
+${If} $CB_CONFIG_State == "1" ; Remove config
+ SetShellVarContext current
+ Delete "$APPDATA\ultrastardx\config.ini" 
+ SetShellVarContext all
+ Delete "$INSTDIR\config.ini"
+${EndIf}
 
-; If checkbox_state = 0
+${If} $CB_SCORES_State == "1" ; Remove highscores
+ SetShellVarContext current
+ Delete "$APPDATA\ultrastardx\Ultrastar.db" 
+ SetShellVarContext all
+ Delete "$INSTDIR\Ultrastar.db"
+${EndIf}
 
+${If} $CB_SCREENSHOTS_State == "1" ; Remove screenshots
+ RMDir /r "$INSTDIR\sreenshots"
+ SetShellVarContext current
+ RMDir /r "$APPDATA\ultrastardx\screenshots"
+ SetShellVarContext all
+${EndIf}
 
+${If} $CB_SCREENSHOTS_State == "1" ; Remove playlists
+ RMDir /r "$INSTDIR\playlists"
+ SetShellVarContext current
+ RMDir /r "$APPDATA\ultrastardx\playlists"
+ SetShellVarContext all
+${EndIf}
+
+${If} $CB_SONGS_State == "1" ; Remove songs
+ RMDir /r "$INSTDIR\songs"
+ SetShellVarContext current
+ RMDir /r "$APPDATA\ultrastardx\songs"
+ SetShellVarContext all
 ${EndIf}
 
 
@@ -432,7 +491,7 @@ var /GLOBAL version
 StrCpy $version "1.1beta"
 
 
-   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'
 
   Pop $R0
 
@@ -445,21 +504,26 @@ StrCpy $version "1.1beta"
   ${If} $R0 == $version
 	  MessageBox MB_YESNO|MB_ICONEXCLAMATION \
           "${name} v.$R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_installagain)" \
-          IDYES done
+          IDYES continue
           Abort
   ${EndIf}
 
-  ReadRegStr $R1 HKLM \
-  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" \
-  "UninstallString"
+  ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'UninstallString'
   StrCmp $R1 "" done
+  
 
   ${If} $R0 != $version
 	  MessageBox MB_YESNO|MB_ICONEXCLAMATION \
           "${name} v.$R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_updateusdx) v.$R0 -> v.${version}" \
-          IDYES done
+          IDYES continue
           Abort
   ${EndIf}
+
+
+continue:
+  ReadRegStr $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'UninstallString'
+  MessageBox MB_YESNO|MB_ICONEXCLAMATION "$(oninit_uninstall)" IDNO done
+  ExecWait '"$R2" _?=$INSTDIR'
 
 done:
 

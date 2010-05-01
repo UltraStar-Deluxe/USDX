@@ -11,6 +11,7 @@
 
  Delete "$Desktop\Play UltraStar Deluxe.lnk"
  Delete "$Desktop\UltraStar Deluxe spielen.lnk"
+ Delete "$Desktop\UltraStar Deluxe karaoke.lnk"
 
 ; Remove dirs
 
@@ -21,14 +22,6 @@
  RMDir /r "$INSTDIR\visuals"
  RMDir /r "$INSTDIR\resources"
  RMDir /r "$INSTDIR\sounds"
-
-; Remove old files from previous versions
- IfFileExists $INSTDIR\ScoreConverter.exe 0 +2
- Delete "$INSTDIR\ScoreConverter.exe"
- IfFileExists $INSTDIR\USdx.exe 0 +2
- Delete "$INSTDIR\USdx.exe"
- IfFileExists $INSTDIR\covers.cache 0 +2
- Delete "$INSTDIR\covers.cache"
 
 ; Delete remaining files
  Delete "$INSTDIR\ScoreConverter.exe"
@@ -44,6 +37,7 @@
  Delete "$INSTDIR\config.ini.lnk"
 
  Delete "$INSTDIR\Error.log"
+ Delete "$INSTDIR\Benchmark.log"
  Delete "$INSTDIR\cover.db"
 
  Delete "$INSTDIR\avcodec-52.dll"
@@ -88,6 +82,7 @@
  SetShellVarContext current
 
  Delete "$APPDATA\ultrastardx\Error.log"
+ Delete "$APPDATA\ultrastardx\Benchmark.log"
  Delete "$APPDATA\ultrastardx\cover.db"
 
  StrCpy $0 "$APPDATA\ultrastardx\covers"

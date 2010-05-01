@@ -2,6 +2,31 @@
 ; UltraStar Deluxe Installer: Main components
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
+; Remove old files from previous versions
+IfFileExists $INSTDIR\ScoreConverter.exe 0 +2
+Delete "$INSTDIR\ScoreConverter.exe"
+IfFileExists $INSTDIR\USdx.exe 0 +2
+Delete "$INSTDIR\USdx.exe"
+IfFileExists $INSTDIR\covers.cache 0 +2
+Delete "$INSTDIR\covers.cache"
+IfFileExists $INSTDIR\avcodec-51.dll 0 +2
+Delete "$INSTDIR\avcodec-51.dll"
+IfFileExists $INSTDIR\avformat-50.dll 0 +2
+Delete "$INSTDIR\avformat-50.dll"
+IfFileExists $INSTDIR\avutil-49.dll 0 +2
+Delete "$INSTDIR\avutil-49.dll"
+IfFileExists $INSTDIR\bass.dll 0 +2
+Delete "$INSTDIR\bass.dll"
+IfFileExists $INSTDIR\SDL.dll 0 +2
+Delete "$INSTDIR\SDL.dll"
+IfFileExists $INSTDIR\sqlite3.dll 0 +2
+Delete "$INSTDIR\sqlite3.dll"
+
+RMDir /r "$INSTDIR\Themes"
+RMDir /r "$INSTDIR\Skins"
+RMDir /r "$INSTDIR\Plugins"
+RMDir /r "$INSTDIR\Languages"
+
 ; Create Directories:
 
 CreateDirectory $INSTDIR\plugins

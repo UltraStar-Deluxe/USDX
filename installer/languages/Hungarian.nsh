@@ -10,12 +10,20 @@ LangString oninit_installagain ${LANG_HUNGARIAN} "Biztos abban, hogy még egyszer
 LangString oninit_alreadyinstalled ${LANG_HUNGARIAN} "már telepítve van"
 LangString oninit_closeusdx ${LANG_HUNGARIAN} "nem eltávolítható, ha még fut! Kívánja a program bezárását?"
 LangString oninit_updateusdx ${LANG_HUNGARIAN} "Kívánja-e a programot frissíteni errõl a helyrõl:"
+LangString oninit_uninstall ${LANG_HUNGARIAN} "Do you want to uninstall the old version? (recommended)"
 
 LangString update_connect ${LANG_HUNGARIAN} "Új verzió keresése az interneten"
 LangString button_next ${LANG_HUNGARIAN} "Tovább >"
 LangString button_close ${LANG_HUNGARIAN} "Bezárás"
 LangString update_information ${LANG_HUNGARIAN} "Ellenõrizheti, hogy van-e új 'UltraStar Deluxe'-verzió. Ehhez internetkapcsolat szükséges. Ha van új verzió, az ezt követõen telepíthetõ."
-LangString delete_all ${LANG_HUNGARIAN} "Töröljük a dalokat, a pontszámokat és a borítókat is?"
+
+LangString delete_components ${LANG_HUNGARIAN} "Also delete the following components:"
+LangString delete_covers ${LANG_HUNGARIAN} "Töröljük a borítókat?"
+LangString delete_highscores ${LANG_HUNGARIAN} "Töröljük a pontszámokat?"
+LangString delete_config ${LANG_HUNGARIAN} "Config?"
+LangString delete_screenshots ${LANG_HUNGARIAN} "Screenshots?"
+LangString delete_playlists ${LANG_HUNGARIAN} "Playlists?"
+LangString delete_songs ${LANG_HUNGARIAN} "Töröljük a dalokat is? WARNING: ALL files within the InstallationDir\songs folder will be removed(!)"
 
 LangString update_check_older ${LANG_HUNGARIAN} "Az Ön gépén telepített verziónál ($R0) van már újabb ($1). Kívánja frissíteni?"
 LangString update_check_equal ${LANG_HUNGARIAN} "Az Ön gépén a legfrissebb verzió ($R0) van telepítve. Frissítés nem szükséges."
