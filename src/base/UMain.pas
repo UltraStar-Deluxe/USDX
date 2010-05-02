@@ -426,8 +426,8 @@ begin
             end;
           end;
 
-          Display.MoveCursor(Event.button.X * 800 * Screens / Screen.w,
-                             Event.button.Y * 600 / Screen.h);
+          Display.MoveCursor(Event.button.X * 800 * Screens / ScreenW,
+                             Event.button.Y * 600 / ScreenH);
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
@@ -456,6 +456,12 @@ begin
         // This would create a new OpenGL render-context and all texture data
         // would be invalidated.
         // On Linux the mode MUST be reset, otherwise graphics will be corrupted.
+        // Update: It seems to work now without creating a new OpenGL context. At least
+        // with Win7 and SDL 1.2.14. Maybe it generally works now with SDL 1.2.14 and we
+        // can switch it on for windows.
+        // Important: Unless SDL_SetVideoMode() is called (it is not on Windows), Screen.w
+        // and Screen.h are not valid after a resize and still contain the old size. Use
+        // ScreenW and ScreenH instead.
         {$IF Defined(Linux) or Defined(FreeBSD)}
         if boolean( Ini.FullScreen ) then
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN)
