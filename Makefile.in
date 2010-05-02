@@ -230,9 +230,6 @@ install-plugins:
 
 .PHONY: install-data
 install-data:
-	$(MAKE) RECURSIVE_SRC_DIR="artwork" \
-            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/artwork" \
-            install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/languages" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/languages" \
             install-data-recursive
@@ -277,7 +274,6 @@ uninstall-all: uninstall-data uninstall-exec uninstall-plugins
 
 .PHONY: uninstall-data
 uninstall-data:
-	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/artwork"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/languages"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/sounds"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/themes"
