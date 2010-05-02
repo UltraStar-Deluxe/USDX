@@ -338,6 +338,13 @@ begin
       Exit;
     end;
 
+    // **********************
+    // * workaround for LCTRL+R: it should be changed when we have a solution for the
+    // * CTRL+'A'..'Z' problem
+    if (SDL_ModState = KMOD_LCTRL) and (PressedKey = SDLK_R) then
+      CharCode := UCS4Char('R');
+    // **********************
+
     // check normal keys
     case UCS4UpperCase(CharCode) of
       Ord('Q'):
