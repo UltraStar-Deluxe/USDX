@@ -84,7 +84,12 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          // Escape -> save nothing - just leave this screen
+          Ini.Save;
+
+          // Reload all screens, after Theme changed
+          // Todo : JB - Check if theme was actually changed
+          UGraphic.UnLoadScreens();
+          UGraphic.LoadScreens();
 
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
