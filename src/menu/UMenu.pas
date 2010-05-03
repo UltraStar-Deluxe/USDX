@@ -206,11 +206,22 @@ uses
   UMenuBackgroundFade;
 
 destructor TMenu.Destroy;
+var
+  I: integer;
 begin
-  if (Background <> nil) then
-  begin
-    Background.Destroy;
-  end;
+  for I := 0 to High(Button) do
+    Button[I].Free;
+  for I := 0 to High(ButtonCollection) do
+    ButtonCollection[I].Free;
+  for I := 0 to High(SelectsS) do
+    SelectsS[I].Free;
+  for I := 0 to High(Text) do
+    Text[I].Free;
+  for I := 0 to High(Statics) do
+    Statics[I].Free;
+
+  Background.Free;
+
   //Log.LogError('Unloaded Succesful: ' + ClassName);
   inherited;
 end;
@@ -379,11 +390,7 @@ procedure TMenu.AddBackground(ThemedSettings: TThemeBackground);
   end;
 
 begin
-  if (Background <> nil) then
-  begin
-    Background.Destroy;
-    Background := nil;
-  end;
+  FreeAndNil(Background);
 
   case ThemedSettings.BGType of
     bgtAuto: begin //Automaticly choose one out of BGT_Texture, BGT_Video or BGT_Color
