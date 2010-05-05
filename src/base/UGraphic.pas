@@ -502,6 +502,8 @@ begin
 
   { center window }
   SDL_putenv('SDL_VIDEO_WINDOW_POS=center');
+  { workaround for buggy Intel 3D driver on Linux }
+  SDL_putenv('texture_tiling=false');
 
   //Log.BenchmarkStart(2);
 
