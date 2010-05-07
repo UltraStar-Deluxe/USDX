@@ -986,12 +986,7 @@ begin
     // Set Positions
     case Theme.Song.Cover.Style of
       3: SetScroll3;
-      5:begin
-          if VS > 5 then
-            SetScroll5
-          else
-            SetScroll4;
-        end;
+      5: SetScroll5;
       6: SetScroll6;
       else SetScroll4;
     end;
@@ -1336,7 +1331,7 @@ begin
       // Use an alternate position for the five front covers. 
       if (Abs(Pos) < 2.5) then
       begin
-        Angle := Pi * (Pos / 5); // Range: (-1/4*Pi .. +1/4*Pi)
+        Angle := Pi * (Pos / Min(VS, 5)); // Range: (-1/4*Pi .. +1/4*Pi)
 
         Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle*0.8));
         Button[B].W := Button[B].H;
@@ -1350,10 +1345,15 @@ begin
         Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * X - Padding;
         Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.5);
         Button[B].Z := 0.95 - Abs(Pos) * 0.01;
+
+        if VS < 5 then
+          Button[B].Texture.Alpha := 1 - Abs(Pos) / VS  * 2
+        else
+          Button[B].Texture.Alpha := 1;    
       end
       { only draw 3 visible covers in the background
         (the 3 that are on the opposite of the front covers}
-      else if (Abs(Pos) > floor(VS/2) - 1.5) then
+      else if (VS > 7) and (Abs(Pos) > floor(VS/2) - 1.5) then
       begin
         // Transform Pos to range [-1..-3/4, +3/4..+1]
         { the 3 covers at the back will show up in the gap between the
@@ -1376,6 +1376,8 @@ begin
         Button[B].X :=  Theme.Song.Cover.X+Theme.Song.Cover.H/2-Button[b].H/2+Theme.Song.Cover.W/320*((Theme.Song.Cover.H)*sin(Angle/2)*1.52);
         Button[B].Y := Theme.Song.Cover.Y  - (Button[B].H - Theme.Song.Cover.H)*0.75;
         Button[B].Z := (0.4 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
+
+        Button[B].Texture.Alpha := 1;
 
         //Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
         Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
@@ -1705,7 +1707,7 @@ var
 begin
   VS := CatSongs.VisibleSongs;
 
-  if VS > 1 then
+  if VS > 0 then
   begin
     if (not isScrolling) and (VS > 0) then
     begin
