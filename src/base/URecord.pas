@@ -133,6 +133,7 @@ type
       destructor Destroy; override;
 
       procedure UpdateInputDeviceConfig;
+      function ValidateSettings: boolean;
 
       // handle microphone input
       procedure HandleMicrophoneData(Buffer: PByteArray; Size: integer;
@@ -162,6 +163,8 @@ implementation
 
 uses
   ULog,
+  UGraphic,
+  ULanguage,
   UNote;
 
 var
@@ -592,6 +595,50 @@ begin
       end;
     end;
   end;
+end;
+
+function TAudioInputProcessor.ValidateSettings: boolean;
+const
+  MAX_PLAYER_COUNT = 6; // FIXME: there should be a global variable for this
+var
+  I, J: integer;
+  PlayerID: integer;
+  PlayerMap: array [0 .. MAX_PLAYER_COUNT] of boolean;
+  InputDevice: TAudioInputDevice;
+  InputDeviceCfg: PInputDeviceConfig;
+begin
+  // mark all players as unassigned
+  for I := 0 to High(PlayerMap) do
+    PlayerMap[I] := false;
+
+  // iterate over all active devices
+  for I := 0 to High(DeviceList) do
+  begin
+    InputDevice := DeviceList[I];
+    InputDeviceCfg := @Ini.InputDeviceConfig[InputDevice.CfgIndex];
+    // iterate over all channels of the current devices
+    for J := 0 to High(InputDeviceCfg.ChannelToPlayerMap) do
+    begin
+      // get player that was mapped to the current device channel
+      PlayerID := InputDeviceCfg.ChannelToPlayerMap[J];
+      if (PlayerID <> 0) then
+      begin
+        // check if player is already assigned to another device/channel
+        if (PlayerMap[PlayerID]) then
+        begin
+          ScreenPopupError.ShowPopup(
+              Format(Language.Translate('ERROR_PLAYER_DEVICE_ASSIGNMENT'),
+              [PlayerID]));
+          Result := false;
+          Exit;
+        end;
+
+        // mark player as assigned to a device
+        PlayerMap[PlayerID] := true;
+      end;
+    end;
+  end;
+  Result := true;
 end;
 
 {*

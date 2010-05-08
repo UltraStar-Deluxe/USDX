@@ -632,7 +632,7 @@ begin
     if (DeviceIndex >= 0) then
     begin
       if not IniFile.ValueExists('Record', Format('DeviceName[%d]', [DeviceIndex])) then
-        break;
+        Continue;
 
       // resize list
       SetLength(InputDeviceConfig, Length(InputDeviceConfig)+1);

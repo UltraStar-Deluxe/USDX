@@ -78,6 +78,7 @@ uses
   UPathUtils,
   UPlaylist,
   UMusic,
+  URecord,
   UBeatTimer,
   UPlatform,
   USkins,
@@ -293,6 +294,10 @@ begin
 
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Loading Time', 0);
+
+    // check microphone settings, goto record options if they are corrupt
+    if (not AudioInputProcessor.ValidateSettings) then
+      Display.CurrentScreen^.FadeTo( @ScreenOptionsRecord );
 
     //------------------------------
     // Start Mainloop

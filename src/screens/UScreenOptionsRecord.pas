@@ -168,17 +168,23 @@ begin
       SDLK_BACKSPACE:
         begin
           // TODO: Show Save/Abort screen
-          Ini.Save;          
-          AudioPlayback.PlaySound(SoundLib.Back);
-          FadeTo(@ScreenOptions);
+          if (AudioInputProcessor.ValidateSettings()) then
+          begin
+            Ini.Save;
+            AudioPlayback.PlaySound(SoundLib.Back);
+            FadeTo(@ScreenOptions);
+          end;
         end;
       SDLK_RETURN:
         begin
           if (SelInteraction = ExitButtonIID) then
           begin
-            Ini.Save;
-            AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(@ScreenOptions);
+            if (AudioInputProcessor.ValidateSettings()) then
+            begin
+              Ini.Save;
+              AudioPlayback.PlaySound(SoundLib.Back);
+              FadeTo(@ScreenOptions);
+            end;
           end;
         end;
       SDLK_DOWN:
@@ -434,7 +440,7 @@ begin
 
   SetLength(ChannelPeak, MaxChannelCount);
 
-  StartPreview();
+  UpdateInputDevice();
 end;
 
 procedure TScreenOptionsRecord.OnHide;
