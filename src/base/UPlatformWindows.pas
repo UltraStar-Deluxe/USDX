@@ -120,16 +120,30 @@ begin
 end;
 
 {**
- * Detects whether the game was executed locally or globally.
- * - It is local if config.ini exists in the directory of the
- *   executable. Config files like config.ini or score db
- *   reside in the directory of the executable. This is useful
- *   to enable windows users to have a portable installation
- *   e.g. on an external hdd. This is also the default behaviour
- *   of usdx prior to version 1.1
- * - It is global if no config.ini exists in the directory of the
- *   executable. The config files are in a separate folder
- *   (e.g. %APPDATA%\ultrastardx)
+ * Detects whether the was executed locally or globally.
+ * - Local mode:
+ *   - Condition:
+ *     - config.ini is writable or creatable in the directory of the executable.
+ *   - Examples:
+ *     - The USDX zip-archive has been unpacked to a directory with write.
+ *       permissions
+ *     - XP: USDX was installed to %ProgramFiles% and the user is an admin.
+ *     - USDX is started from an external HD- or flash-drive
+ *   - Behavior:
+ *     Config files like config.ini or score db reside in the directory of the
+ *     executable. This is useful to enable windows users to have a portable
+ *     installation e.g. on an external hdd.
+ *     This is also the default behaviour of usdx prior to version 1.1
+ * - Global mode:
+ *   - Condition:
+ *     - config.ini is not writable.
+ *   - Examples:
+ *     - Vista/7: USDX was installed to %ProgramFiles%.
+ *     - XP: USDX was installed to %ProgramFiles% and the user is not an admin.
+ *     - USDX is started from CD
+ *   - Behavior:
+ *     - The config files are in a separate folder (e.g. %APPDATA%\ultrastardx)
+ *
  * On windows, resources (themes, language-files)
  * reside in the directory of the executable in any case
  *
@@ -138,14 +152,40 @@ end;
 procedure TPlatformWindows.DetectLocalExecution();
 var
   LocalDir, ConfigIni: IPath;
+  Handle: TFileHandle;
 begin
-  // we just check if 'config.ini' exists in the
-  // directory of the executable or if the windows version
-  // is less than Windows Vista (major version = 6). 
-  // If so -> local execution.
   LocalDir := GetExecutionDir();
   ConfigIni := LocalDir.Append('config.ini');
-  UseLocalDirs := (ConfigIni.IsFile and ConfigIni.Exists and (Win32MajorVersion < 6));
+
+  // check if config.ini is writable or creatable, if so use local dirs
+  UseLocalDirs := false;
+  if (ConfigIni.Exists()) then
+  begin
+    // do not use a read-only config file
+    if (not ConfigIni.IsReadOnly()) then
+    begin
+      // Just open the file in read-write mode to be sure that we have access
+      // rights for it.
+      // Note: Do not use IsReadOnly() as it does not check file privileges, so
+      // a non-read-only file might not be writable for us.
+      Handle := ConfigIni.Open(fmOpenReadWrite);
+      if (Handle <> -1) then
+      begin
+        FileClose(Handle);
+        UseLocalDirs := true;
+      end;
+    end;
+  end
+  else // config.ini does not exist
+  begin
+    // try to create config.ini
+    Handle := ConfigIni.CreateFile();
+    if (Handle <> -1) then
+    begin
+      FileClose(Handle);
+      UseLocalDirs := true;
+    end;
+  end;
 end;
 
 function TPlatformWindows.GetLogPath: IPath;
