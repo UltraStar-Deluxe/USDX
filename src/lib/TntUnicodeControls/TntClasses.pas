@@ -503,13 +503,20 @@ procedure TTntWideCharPropertyFiler.WriteData_W(Writer: TWriter);
 var
   L: Integer;
   Temp: WideString;
+{$IFDEF FPC}
+// Workaround: the Buffer parameter of TWriter.Write() must be of a fixed size
+// type for FPC >= 2.4.0. The values vaWString, Ord(vaWString) or Integer(vaWString)
+// are not allowed anymore.
+const
+  vaWStringInt: integer = Ord(vaWString);
+{$ENDIF}
 begin
   Temp := WideChar(GetOrdProp(FInstance, FPropInfo));
 
   {$IFNDEF FPC}
   TAccessWriter(Writer).WriteValue(vaWString);
   {$ELSE}
-  TAccessWriter(Writer).Write(vaWString, SizeOf(vaWString));
+  TAccessWriter(Writer).Write(vaWStringInt, SizeOf(vaWString));
   {$ENDIF}
   L := Length(Temp);
   Writer.Write(L, SizeOf(Integer));

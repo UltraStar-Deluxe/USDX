@@ -253,7 +253,7 @@ begin
   with TFormatStrParser.Create(_FormatString) do
   try
     // loop until no more '%'
-    PosSpec := Pos('%', PFormatString);
+    PosSpec := Pos(WideString('%'), PFormatString);
     While PosSpec <> 0 do begin
       try
         // delete everything up until '%'
@@ -262,7 +262,7 @@ begin
         // parse format specifier
         ParseFormatSpecifier;
       finally
-        PosSpec := Pos('%', PFormatString);
+        PosSpec := Pos(WideString('%'), PFormatString);
       end;
     end;
     if ((ExplicitCount = 0) and (ImplicitCount = 1)) {simple expression}
@@ -336,7 +336,7 @@ begin
   try
     FormatArgs.Clear;
     // loop until no more '%'
-    PosSpec := Pos('%', PFormatString);
+    PosSpec := Pos(WideString('%'), PFormatString);
     While PosSpec <> 0 do begin
       try
         // delete everything up until '%'
@@ -346,7 +346,7 @@ begin
         if ParseFormatSpecifier then
           FormatArgs.Add(ParsedString.Value);
       finally
-        PosSpec := Pos('%', PFormatString);
+        PosSpec := Pos(WideString('%'), PFormatString);
       end;
     end;
   finally
