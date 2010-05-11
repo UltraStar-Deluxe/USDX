@@ -28,15 +28,11 @@
 (*
  * Conversion of libavformat/avio.h
  * unbuffered I/O operations
- * revision 16100, Sat Dec 13 13:39:13 2008 UTC
- * update Tue, Jun 10 01:00:00 2009 UTC
- *
  * @warning This file has to be considered an internal but installed
  * header, so it should not be directly included in your projects.
  *
  * update to
- * Max. avformat version: 52.46.0, Mon Jan 4 2010 0:40:00 CET 
- * MiSchi
+ * Max. avformat version: 52.61.0, revision 22921, Tue May 11 2010 19:12 CET 
  *)
 
 unit avio;

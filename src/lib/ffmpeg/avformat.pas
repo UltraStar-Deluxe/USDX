@@ -198,9 +198,13 @@ function av_metadata_get(m: PAVMetadata; key: {const} PAnsiChar;
  * @param key tag key to add to m (will be av_strduped)
  * @param value tag value to add to m (will be av_strduped)
  * @return >= 0 on success otherwise an error code <0
+ * @deprecated Use av_metadata_set2() instead.
  *)
 function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar): cint;
   cdecl; external av__format;
+{$IF LIBAVFORMAT_VERSION >= 52061000} // >= 52.61.0
+    deprecated;
+{$IFEND}
 {$IFEND}
 
 {$IF LIBAVFORMAT_VERSION >= 52043000} // >= 52.43.0
