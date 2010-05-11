@@ -28,8 +28,8 @@
  * Conversions of
  *
  * libavutil/avutil.h:
- *  Min. version: 49.0.1, revision 6577,  Sat Oct 7 15:30:46 2006 UTC
- *  Max. version: 49.14.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC
+ *  Min. version: 49.0.1, revision 6577,  Sat Oct  7 15:30:46 2006 UTC
+ *  Max. version: 50.9.0, revision 16912, Tue May 11 22:05:00 2010 CET
  *
  * libavutil/mem.h:
  *  revision 16590, Tue Jan 13 23:44:16 2009 UTC
@@ -37,13 +37,10 @@
  * libavutil/log.h:
  *  revision 16571, Tue Jan 13 00:14:43 2009 UTC
  *
- * Update changes auf avutil.h, mem.h and log.h
- * Max. version 50.7.0, Tue, Dec 29 0:30:00 2009 UTC 
  * include/keep pixfmt.h (change in revision 50.01.0)
  * Maybe, the pixelformats are not needed, but it has not been checked.
  * log.h is only partial.
  *
- * update Sun to 50.9.0, Feb 21, 2010
  *)
 
 unit avutil;

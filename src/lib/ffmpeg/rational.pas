@@ -27,15 +27,8 @@
 
 (*
  * Conversion of libavutil/rational.h
- * revision 16912, Sun Feb 1 02:00:19 2009 UTC 
+ * avutil max. version 50.9.0, revision 21946, Tue May 11 22:10:00 2010 CET 
  *
- * update, MiSchi, no code change
- * Fri Jun 12 2009 22:20:00 UTC
- *
- * update to
- * avutil max. version 50.7.0, Mon, Jan 4 2010 24:00:00 UTC 
- * MiSchi
- * check Sat, Feb 20 2010: Still fine
  *)
 
 unit rational;
