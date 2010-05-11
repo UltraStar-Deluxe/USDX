@@ -23,13 +23,8 @@
 
 (*
  * Conversion of libswscale/swscale.h
- * revision 27592, Fri Sep 12 21:46:53 2008 UTC 
+ * Max. version: 0.10.0, revision 31050, Tue May 11 19:40:00 2010 CET 
  *)
-{
- * update to
- * Max. version: 0.10.0, Sat Feb 20 2010 23:25:00 CET 
- * MiSchi
-}
  
 unit swscale;
 
