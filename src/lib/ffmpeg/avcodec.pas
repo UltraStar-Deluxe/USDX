@@ -29,6 +29,8 @@
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
  * Max. version: 52.67.0, revision 23057, Tue May 11 18:30 2010 CET
  *
+ * Also check libavutil/error.h
+ *
  *)
 
 unit avcodec;
@@ -4672,6 +4674,12 @@ const
   {* Some platforms have E* and errno already negated. *}
   AVERROR_SIGN =  1;
 {$IFEND}
+
+{
+ The following error codes are moved to libavutil/error.h on 
+ revision 22501 Mar 13 2010
+ It is kept here for now.
+}
 
 (*
 #if EINVAL > 0
