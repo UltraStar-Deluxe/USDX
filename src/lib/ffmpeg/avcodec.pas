@@ -1236,13 +1236,21 @@ type
     option: PAVOption;
 
 {$IF LIBAVUTIL_VERSION >= 50015000} // 50.15.0
-{$IFEND}
     (**
      * LIBAVUTIL_VERSION with which this structure was created.
-     * This is used to allow fields to be added without requireing major
+     * This is used to allow fields to be added without requiring major
      * version bumps everywhere.
      *)
     version: cint;
+{$IFEND}
+
+{$IF LIBAVUTIL_VERSION >= 50015002} // 50.15.2
+    (**
+     * Offset in the structure where log_level_offset is stored.
+     * 0 means there is no such variable
+     *)
+    log_level_offset_offset: cint;
+{$IFEND}
   end;
 
   {**

@@ -29,7 +29,7 @@
  *
  * libavutil/avutil.h:
  *  Min. version: 49.0.1,  revision  6577, Sat Oct  7 15:30:46 2006 UTC
- *  Max. version: 50.15.0, revision 22987, Tue May 11 22:05:00 2010 CET
+ *  Max. version: 50.15.2, revision 23059, Tue May 11 22:05:00 2010 CET
  *
  * libavutil/mem.h:
  *  revision 16590, Tue Jan 13 23:44:16 2009 UTC

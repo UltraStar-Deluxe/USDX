@@ -27,7 +27,7 @@
 
 (*
  * Conversion of libavutil/rational.h
- * avutil max. version 50.9.0, revision 21946, Tue May 11 22:10:00 2010 CET 
+ * avutil max. version 50.15.2, revision 23059, Tue May 11 22:10:00 2010 CET 
  *
  *)
 
