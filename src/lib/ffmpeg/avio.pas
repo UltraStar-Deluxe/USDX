@@ -74,6 +74,16 @@ const
   *)
   AVSEEK_SIZE = $10000;
 
+{$IF LIBAVFORMAT_VERSION >= 52056000} // 52.56.0
+ (**
+  * Oring this flag as into the "whence" parameter to a seek function causes it to
+  * seek by any means (like reopening and linear reading) or other normally unreasonble
+  * means that can be extreemly slow.
+  * This may be ignored by the seek code.
+  *)
+  AVSEEK_FORCE = $20000;
+{$IFEND}
+
 type
   TURLInterruptCB = function (): cint; cdecl;
 
@@ -115,6 +125,7 @@ type
 {$ELSE}
     url_open: function (h: PURLContext; url: {const} PAnsiChar; flags: cint): cint; cdecl;
 {$IFEND}
+
 (**
  * Reads up to size bytes from the resource accessed by h, and stores
  * the read bytes in buf.
@@ -125,6 +136,7 @@ type
  * resource (except if the value of the size argument is also zero).
  *)
     url_read: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+
 (**
  * Read as many bytes as possible (up to size), calling the
  * read function multiple times if necessary.
@@ -242,6 +254,7 @@ function url_write (h: PURLContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
 function url_seek (h: PURLContext; pos: cint64; whence: cint): cint64;
   cdecl; external av__format;
+
 (**
  * Closes the resource accessed by the URLContext h, and frees the
  * memory used by it.
@@ -259,6 +272,7 @@ function url_exist(url: {const} PAnsiChar): cint;
   cdecl; external av__format;
 function url_filesize (h: PURLContext): cint64;
   cdecl; external av__format;
+
 (**
  * Return the file descriptor associated with this URL. For RTP, this
  * will return only the RTP file descriptor, not the RTCP file descriptor.
@@ -337,20 +351,20 @@ var
   url_interrupt_cb: PURLInterruptCB; external av__format;
 **)
 
+{$IF LIBAVFORMAT_VERSION >= 52002000} // 52.2.0
 (**
  * If protocol is NULL, returns the first registered protocol,
  * if protocol is non-NULL, returns the next registered protocol after protocol,
  * or NULL if protocol is the last one.
  *)
-{$IF LIBAVFORMAT_VERSION >= 52002000} // 52.2.0
 function av_protocol_next(p: PURLProtocol): PURLProtocol;
   cdecl; external av__format;
 {$IFEND}
 
+{$IF LIBAVFORMAT_VERSION <= 52028000} // 52.28.0
 (**
  * Registers the URLProtocol protocol.
  *)
-{$IF LIBAVFORMAT_VERSION <= 52028000} // 52.28.0
 (**
  * @deprecated Use av_register_protocol() instead.
  *)
@@ -479,7 +493,6 @@ function url_fgets(s: PByteIOContext; buf: PAnsiChar; buf_size: cint): PAnsiChar
 
 procedure put_flush_packet (s: PByteIOContext);
   cdecl; external av__format;
-  
 
 (**
  * Reads size bytes from ByteIOContext into buf.
@@ -528,7 +541,6 @@ function ff_get_v(bc: PByteIOContext): cuint64;
 
 function url_is_streamed(s: PByteIOContext): cint; {$IFDEF HasInline}inline;{$ENDIF}
 
-
 (**
  * Creates and initializes a ByteIOContext for accessing the
  * resource referenced by the URLContext h.
@@ -561,7 +573,6 @@ function url_resetbuf(s: PByteIOContext; flags: cint): cint;
   cdecl; external av__format;
 {$IFEND}
 {$IFEND}
-
 
 (**
  * Creates and initializes a ByteIOContext for accessing the
