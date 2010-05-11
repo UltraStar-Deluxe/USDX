@@ -26,12 +26,8 @@
 
 (*
  * Conversion of libavformat/avformat.h
- * Min. version: 50.5.0 , revision 6577,  Sat Oct 7 15:30:46 2006 UTC
- * Max. version: 52.25.0, revision 16986, Wed Feb 4 05:56:39 2009 UTC 
- *
- * update to
- * Max. version: 52.61.0, Sun Apr 25 2010 0:40:00 CET 
- * MiSchi
+ * Min. version: 50.5.0 , revision  6577, Sat Oct  7 15:30:46 2006 UTC
+ * Max. version: 52.62.0, revision 23004, Tue May 11 19:29:00 2010 CET 
  *)
 
 unit avformat;
@@ -1287,6 +1283,22 @@ function av_find_input_format(short_name: PAnsiChar): PAVInputFormat;
  *)
 function av_probe_input_format(pd: PAVProbeData; is_opened: cint): PAVInputFormat;
   cdecl; external av__format;
+
+{$IF LIBAVFORMAT_VERSION >= 52062000} // 52.62.0
+(**
+ * Guesses the file format.
+ *
+ * @param is_opened Whether the file is already opened; determines whether
+ *                  demuxers with or without AVFMT_NOFILE are probed.
+ * @param score_max A probe score larger that this is required to accept a
+ *                  detection, the variable is set to the actual detection
+ *                  score afterwards.
+ *                  If the score is <= AVPROBE_SCORE_MAX / 4 it is recommended
+ *                  to retry with a larger probe buffer.
+ *)
+function av_probe_input_format2(pd: PAVProbeData; is_opened: cint; score_max: PCint): PAVInputFormat;
+  cdecl; external av__format;
+{$IFEND}
 
 (**
  * Allocates all the structures needed to read an input stream.

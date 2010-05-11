@@ -32,7 +32,7 @@
  * header, so it should not be directly included in your projects.
  *
  * update to
- * Max. avformat version: 52.61.0, revision 22921, Tue May 11 2010 19:12 CET 
+ * Max. avformat version: 52.62.0, revision 23004, Tue May 11 19:29:00 2010 CET 
  *)
 
 unit avio;
