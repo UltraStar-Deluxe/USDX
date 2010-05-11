@@ -29,7 +29,7 @@
  *
  * libavutil/avutil.h:
  *  Min. version: 49.0.1,  revision  6577, Sat Oct  7 15:30:46 2006 UTC
- *  Max. version: 50.12.0, revision 22501, Tue May 11 22:05:00 2010 CET
+ *  Max. version: 50.14.0, revision 22736, Tue May 11 22:05:00 2010 CET
  *
  * libavutil/mem.h:
  *  revision 16590, Tue Jan 13 23:44:16 2009 UTC
@@ -93,7 +93,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 50;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 12;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 14;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -136,6 +136,19 @@ function avutil_configuration(): PAnsiChar;
  *)
 function avutil_license(): PAnsiChar;
   cdecl; external av__format;
+{$IFEND}
+
+{$IF LIBAVUTIL_VERSION >= 50014000} // >= 50.14.0
+type
+  TAVMediaType = (
+    AVMEDIA_TYPE_UNKNOWN = -1,
+    AVMEDIA_TYPE_VIDEO,
+    AVMEDIA_TYPE_AUDIO,
+    AVMEDIA_TYPE_DATA,
+    AVMEDIA_TYPE_SUBTITLE,
+    AVMEDIA_TYPE_ATTACHMENT,
+    AVMEDIA_TYPE_NB
+  );
 {$IFEND}
 
 (* libavutil/pixfmt.h *)
