@@ -146,7 +146,23 @@ type
  * certain there was either an error or the end of file was reached.
  *)
     url_write: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+
+(**
+ * Changes the position that will be used by the next read/write
+ * operation on the resource accessed by h.
+ *
+ * @param pos specifies the new position to set
+ * @param whence specifies how pos should be interpreted, it must be
+ * one of SEEK_SET (seek from the beginning), SEEK_CUR (seek from the
+ * current position), SEEK_END (seek from the end), or AVSEEK_SIZE
+ * (return the filesize of the requested resource, pos is ignored).
+ * @return a negative value corresponding to an AVERROR code in case
+ * of failure, or the resulting file position, measured in bytes from
+ * the beginning of the file. You can use this feature together with
+ * SEEK_CUR to read the current file position.
+ *)
     url_seek: function (h: PURLContext; pos: cint64; whence: cint): cint64; cdecl;
+
     url_close: function (h: PURLContext): cint; cdecl;
     next: PURLProtocol;
     {$IF (LIBAVFORMAT_VERSION >= 52001000) and (LIBAVFORMAT_VERSION < 52004000)} // 52.1.0 .. 52.4.0
@@ -264,12 +280,18 @@ function url_seek (h: PURLContext; pos: cint64; whence: cint): cint64;
  *)
 function url_close (h: PURLContext): cint;
   cdecl; external av__format;
+
+(**
+ * Returns a non-zero value if the resource indicated by url
+ * exists, 0 otherwise.
+ *)
 {$IF LIBAVFORMAT_VERSION < 52047000} // 52.47.0
 function url_exist(filename: {const} PAnsiChar): cint;
 {$ELSE}
 function url_exist(url: {const} PAnsiChar): cint;
 {$IFEND}
   cdecl; external av__format;
+
 function url_filesize (h: PURLContext): cint64;
   cdecl; external av__format;
 
@@ -496,7 +518,7 @@ procedure put_flush_packet (s: PByteIOContext);
 
 (**
  * Reads size bytes from ByteIOContext into buf.
- * @returns number of bytes read or AVERROR
+ * @return number of bytes read or AVERROR
  *)
 function get_buffer(s: PByteIOContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
@@ -505,7 +527,7 @@ function get_buffer(s: PByteIOContext; buf: PByteArray; size: cint): cint;
  * Reads size bytes from ByteIOContext into buf.
  * This reads at most 1 packet. If that is not enough fewer bytes will be
  * returned.
- * @returns number of bytes read or AVERROR
+ * @return number of bytes read or AVERROR
  *)
 function get_partial_buffer(s: PByteIOContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
@@ -572,6 +594,24 @@ function url_setbufsize (s: PByteIOContext; buf_size: cint): cint;
 function url_resetbuf(s: PByteIOContext; flags: cint): cint;
   cdecl; external av__format;
 {$IFEND}
+{$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52061000} // 52.61.0
+(**
+ * Rewinds the ByteIOContext using the specified buffer containing the first buf_size bytes of the file.
+ * Used after probing to avoid seeking.
+ * Joins buf and s->buffer, taking any overlap into consideration.
+ * @note s->buffer must overlap with buf or they can't be joined and the function fails
+ * @note This function is NOT part of the public API
+ *
+ * @param s The read-only ByteIOContext to rewind
+ * @param buf The probe buffer containing the first buf_size bytes of the file
+ * @param buf_size The size of buf
+ * @return 0 in case of success, a negative value corresponding to an
+ * AVERROR code in case of failure
+ *)
+function ff_rewind_with_probe_data(s: PByteIOContext;  buf: PAnsiChar; buf_size: cint): cint;
+  cdecl; external av__format;
 {$IFEND}
 
 (**
