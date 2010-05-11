@@ -25,19 +25,9 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavcodec/opt.h
- * revision 16912, Sun Feb 1 02:00:19 2009 UTC 
+ * revision 22921, Tue May 11 18:17 2010 CET 
  *
- * update, MiSchi, no code change
- * Fri Jun 12 2009 21:50:00 UTC
- *
- * update to
- * Max. avcodec version: 52.45.0, Mon Jan 4 2010 19:20:00 CET 
- * MiSchi
- *
- * update, no code change
- * Max. avcodec version: 52.54.0, Sun Feb 21 2010 19:20:00 CET 
- * MiSchi
-*)
+ *)
 
 unit opt;
 

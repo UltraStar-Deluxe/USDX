@@ -27,11 +27,8 @@
 (*
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 52.11.0, revision 16912, Sun Feb 1 02:00:19 2009 UTC 
+ * Max. version: 52.67.0, revision 23057, Tue May 11 18:30 2010 CET
  *
- * update to
- * Max. version: 52.66.0, Fri Apr 23 2010 24:00:00 CET 
- * MiSchi
  *)
 
 unit avcodec;
@@ -787,12 +784,15 @@ const
   CODEC_FLAG2_CHUNKS        = $00008000; ///< Input bitstream might be truncated at a packet boundaries instead of only at frame boundaries.
   CODEC_FLAG2_NON_LINEAR_QUANT = $00010000; ///< Use MPEG-2 nonlinear quantizer.
   CODEC_FLAG2_BIT_RESERVOIR = $00020000; ///< Use a bit reservoir when encoding if possible
-  {$IF LIBAVCODEC_VERSION >= 52043000} // >= 52.43.0  
+  {$IF LIBAVCODEC_VERSION >= 52043000}   // >= 52.43.0  
   CODEC_FLAG2_MBTREE        = $00040000; ///< Use macroblock tree ratecontrol (x264 only)
   {$IFEND}
-  {$IF LIBAVCODEC_VERSION >= 52061000} // >= 52.61.0  
+  {$IF LIBAVCODEC_VERSION >= 52061000}   // >= 52.61.0  
   CODEC_FLAG2_PSY           = $00080000; ///< Use psycho visual optimizations.
   CODEC_FLAG2_SSIM          = $00100000; ///< Compute SSIM during encoding, error[] values are undefined.
+  {$IFEND}
+  {$IF LIBAVCODEC_VERSION >= 52067000}   // >= 52.67.0  
+  CODEC_FLAG2_INTRA_REFRESH = $00200000; ///< Use periodic insertion of intra blocks instead of keyframes.
   {$IFEND}
 
 (* Unsupported options :
@@ -2979,6 +2979,17 @@ type
      *)
     rc_lookahead: cint;
     {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52067000} // >= 52.67.0
+    (**
+     * Constant rate factor maximum
+     * With CRF encoding mode and VBV restrictions enabled, prevents quality from being worse
+     * than crf_max, even if doing so would violate VBV restrictions.
+     * - encoding: Set by user.
+     * - decoding: unused
+     *)
+    crf_max: cfloat;
+    {$IFEND}
   end;
 
 (**
@@ -3993,6 +4004,8 @@ function avcodec_decode_audio3(avctx: PAVCodecContext; samples: PSmallint;
  * @deprecated Use avcodec_decode_video2 instead.
  * @param avctx the codec context
  * @param[out] picture The AVFrame in which the decoded video frame will be stored.
+ *             Use avcodec_alloc_frame to get an AVFrame, the codec will
+ *             allocate memory for the actual bitmap.
  * @param[in] buf the input buffer
  * @param[in] buf_size the size of the input buffer in bytes
  * @param[in,out] got_picture_ptr Zero if no frame could be decompressed, otherwise, it is nonzero.
