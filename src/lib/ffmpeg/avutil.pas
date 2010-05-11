@@ -29,7 +29,7 @@
  *
  * libavutil/avutil.h:
  *  Min. version: 49.0.1,  revision  6577, Sat Oct  7 15:30:46 2006 UTC
- *  Max. version: 50.14.0, revision 22736, Tue May 11 22:05:00 2010 CET
+ *  Max. version: 50.15.0, revision 22987, Tue May 11 22:05:00 2010 CET
  *
  * libavutil/mem.h:
  *  revision 16590, Tue Jan 13 23:44:16 2009 UTC
@@ -93,7 +93,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 50;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 14;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 15;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +

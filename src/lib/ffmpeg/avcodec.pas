@@ -1234,6 +1234,15 @@ type
        of AVIn/OutputFormat *)
     item_name: function(): PAnsiChar; cdecl;
     option: PAVOption;
+
+{$IF LIBAVUTIL_VERSION >= 50015000} // 50.15.0
+{$IFEND}
+    (**
+     * LIBAVUTIL_VERSION with which this structure was created.
+     * This is used to allow fields to be added without requireing major
+     * version bumps everywhere.
+     *)
+    version: cint;
   end;
 
   {**
