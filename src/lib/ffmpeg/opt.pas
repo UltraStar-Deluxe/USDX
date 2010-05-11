@@ -25,7 +25,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavcodec/opt.h
- * revision 22921, Tue May 11 18:17 2010 CET 
+ * Max. avcodec version: 52.67.0, revision 23057, Tue May 11 18:17 2010 CET 
  *
  *)
 
