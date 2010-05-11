@@ -26,7 +26,7 @@
 
 (*
  * Conversion of libavutil/mathematics.h
- * avutil max. version 50.9.0, revision 21946, Tue May 11 22:10:00 2010 CET 
+ * avutil max. version 50.14.0, revision 22825, Tue May 11 22:10:00 2010 CET 
  *
  *)
 
@@ -56,6 +56,9 @@ const
 {$IFEND}
   M_PI         = 3.14159265358979323846;  // pi
   M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
+{$IF LIBAVUTIL_VERSION >= 50014000} // >= 50.14.0
+  M_SQRT2      = 1.41421356237309504880;  // sqrt(2)
+{$IFEND}
 {$IF LIBAVUTIL_VERSION >= 50005001} // >= 50.5.1
   NAN          = 0.0/0.0;     
   INFINITY     = 1.0/0.0;     
@@ -105,7 +108,7 @@ function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
  * Compares 2 timestamps each in its own timebases.
  * The result of the function is undefined if one of the timestamps
  * is outside the int64_t range when represented in the others timebase.
- * @returns -1 if ts_a is before ts_b, 1 if ts_a is after ts_b or 0 if they represent the same position
+ * @return -1 if ts_a is before ts_b, 1 if ts_a is after ts_b or 0 if they represent the same position
  *)
 function av_compare_ts(ts_a: cint64; tb_a: TAVRational; ts_b: cint64; tb_b: TAVRational): cint;
   cdecl; external av__util;
