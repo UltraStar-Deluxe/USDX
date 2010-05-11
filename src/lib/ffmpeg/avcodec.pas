@@ -29,8 +29,6 @@
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
  * Max. version: 52.67.0, revision 23057, Tue May 11 18:30 2010 CET
  *
- * Also check libavutil/error.h
- *
  *)
 
 unit avcodec;
@@ -4639,6 +4637,12 @@ function av_parse_video_frame_rate(frame_rate: PAVRational; str: {const} PAnsiCh
   cdecl; external av__codec;
 {$IFEND}
 
+{
+ The following error codes are moved to libavutil/error.h on 
+ revision 22501 Mar 13 2010
+ It is kept here for now.
+}
+
 {* error handling *}
 
 const
@@ -4675,12 +4679,6 @@ const
   AVERROR_SIGN =  1;
 {$IFEND}
 
-{
- The following error codes are moved to libavutil/error.h on 
- revision 22501 Mar 13 2010
- It is kept here for now.
-}
-
 (*
 #if EINVAL > 0
 #define AVERROR(e) (-(e)) {**< Returns a negative error code from a POSIX error code, to return from library functions. *}
@@ -4707,6 +4705,23 @@ const
   // Note: function calls as constant-initializers are invalid
   //AVERROR_PATCHWELCOME = -MKTAG('P','A','W','E'); {**< Not yet implemented in FFmpeg. Patches welcome. *}
   AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
+{$IFEND}
+
+(*
+ * Puts a description of the AVERROR code errnum in errbuf.
+ * In case of failure the global variable errno is set to indicate the
+ * error. Even in case of failure av_strerror() will print a generic
+ * error message indicating the errnum provided to errbuf.
+ *
+ * @param errbuf_size the size in bytes of errbuf
+ * @return 0 on success, a negative value if a description for errnum
+ * cannot be found
+ *)
+
+function av_strerror(errnum: cint; errbuf: Pchar; errbuf_size: cint): cint;
+  cdecl; external av__util;
+
+{$IF LIBAVUTIL_VERSION >= 50013000} // avutil!!! 50.13.0
 {$IFEND}
 
 {$IF LIBAVCODEC_VERSION >= 52032000} // >= 52.32.0
