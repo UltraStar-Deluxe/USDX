@@ -63,6 +63,9 @@ uses
   ctypes,
   mathematics,
   rational,
+  {$IFDEF UNIX}
+  BaseUnix,
+  {$ENDIF}
   UConfig;
 
 const
