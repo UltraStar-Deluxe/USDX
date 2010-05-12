@@ -151,6 +151,61 @@ type
   );
 {$IFEND}
 
+(* libavutil/error.h *)
+
+{$IF LIBAVUTIL_VERSION >= 50012000} // >= 50.12.0
+const
+{$IF EINVAL > 0}
+  AVERROR_SIGN = -1;
+{$ELSE}
+  {* Some platforms have E* and errno already negated. *}
+  AVERROR_SIGN =  1;
+{$IFEND}
+
+(*
+#if EINVAL > 0
+#define AVERROR(e) (-(e)) {**< Returns a negative error code from a POSIX error code, to return from library functions. *}
+#define AVUNERROR(e) (-(e)) {**< Returns a POSIX error code from a library function error return value. *}
+#else
+{* Some platforms have E* and errno already negated. *}
+#define AVERROR(e) (e)
+#define AVUNERROR(e) (e)
+#endif
+*)
+
+const
+  AVERROR_UNKNOWN     = AVERROR_SIGN * EINVAL;  (**< unknown error *)
+  AVERROR_IO          = AVERROR_SIGN * EIO;     (**< I/O error *)
+  AVERROR_NUMEXPECTED = AVERROR_SIGN * EDOM;    (**< Number syntax expected in filename. *)
+  AVERROR_INVALIDDATA = AVERROR_SIGN * EINVAL;  (**< invalid data found *)
+  AVERROR_NOMEM       = AVERROR_SIGN * ENOMEM;  (**< not enough memory *)
+  AVERROR_NOFMT       = AVERROR_SIGN * EILSEQ;  (**< unknown format *)
+  AVERROR_NOTSUPP     = AVERROR_SIGN * ENOSYS;  (**< Operation not supported. *)
+  AVERROR_NOENT       = AVERROR_SIGN * ENOENT;  (**< No such file or directory. *)
+{$IF LIBAVCODEC_VERSION >= 52017000} // 52.17.0
+  AVERROR_EOF         = AVERROR_SIGN * EPIPE;   (**< End of file. *)
+{$IFEND}
+  // Note: function calls as constant-initializers are invalid
+  //AVERROR_PATCHWELCOME = -MKTAG('P','A','W','E'); {**< Not yet implemented in FFmpeg. Patches welcome. *}
+  AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
+{$IFEND}
+
+{$IF LIBAVUTIL_VERSION >= 50013000} // >= 50.13.0
+(*
+ * Puts a description of the AVERROR code errnum in errbuf.
+ * In case of failure the global variable errno is set to indicate the
+ * error. Even in case of failure av_strerror() will print a generic
+ * error message indicating the errnum provided to errbuf.
+ *
+ * @param errbuf_size the size in bytes of errbuf
+ * @return 0 on success, a negative value if a description for errnum
+ * cannot be found
+ *)
+
+function av_strerror(errnum: cint; errbuf: Pchar; errbuf_size: cint): cint;
+  cdecl; external av__util;
+{$IFEND}
+
 (* libavutil/pixfmt.h *)
 
 type

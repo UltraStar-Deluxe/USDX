@@ -4724,23 +4724,6 @@ const
   AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
 {$IFEND}
 
-(*
- * Puts a description of the AVERROR code errnum in errbuf.
- * In case of failure the global variable errno is set to indicate the
- * error. Even in case of failure av_strerror() will print a generic
- * error message indicating the errnum provided to errbuf.
- *
- * @param errbuf_size the size in bytes of errbuf
- * @return 0 on success, a negative value if a description for errnum
- * cannot be found
- *)
-
-function av_strerror(errnum: cint; errbuf: Pchar; errbuf_size: cint): cint;
-  cdecl; external av__util;
-
-{$IF LIBAVUTIL_VERSION >= 50013000} // avutil!!! 50.13.0
-{$IFEND}
-
 {$IF LIBAVCODEC_VERSION >= 52032000} // >= 52.32.0
 (**
  * Logs a generic warning message about a missing feature. This function is
