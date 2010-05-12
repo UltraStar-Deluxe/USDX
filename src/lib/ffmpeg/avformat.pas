@@ -27,7 +27,7 @@
 (*
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision  6577, Sat Oct  7 15:30:46 2006 UTC
- * Max. version: 52.62.0, revision 23004, Tue May 11 19:29:00 2010 CET 
+ * Max. version: 52.62.0, revision 23102, Thu May 13  1:15:00 2010 CET 
  *)
 
 unit avformat;
@@ -1260,9 +1260,23 @@ procedure av_register_all();
   cdecl; external av__format;
 
 {$IF LIBAVFORMAT_VERSION >= 51008000} // 51.8.0
-(** codec tag <-> codec id *)
+(**
+ * Gets the CodecID for the given codec tag tag.
+ * If no codec id is found returns CODEC_ID_NONE.
+ *
+ * @param tags list of supported codec_id-codec_tag pairs, as stored
+ * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
+ *)
 function av_codec_get_id(var tags: PAVCodecTag; tag: cuint): TCodecID;
   cdecl; external av__format;
+
+(**
+ * Gets the codec tag for the given codec id id.
+ * If no codec tag is found returns 0.
+ *
+ * @param tags list of supported codec_id-codec_tag pairs, as stored
+ * in AVInputFormat.codec_tag and AVOutputFormat.codec_tag
+ *)
 function av_codec_get_tag(var tags: PAVCodecTag; id: TCodecID): cuint;
   cdecl; external av__format;
 {$IFEND}
