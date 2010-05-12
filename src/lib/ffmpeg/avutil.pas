@@ -154,6 +154,34 @@ type
 (* libavutil/error.h *)
 
 {$IF LIBAVUTIL_VERSION >= 50012000} // >= 50.12.0
+
+{* error handling *}
+
+const
+{$IFDEF UNIX}
+  ENOENT = ESysENOENT;
+  EIO    = ESysEIO;
+  ENOMEM = ESysENOMEM;
+  EINVAL = ESysEINVAL;
+  EDOM   = ESysEDOM;
+  ENOSYS = ESysENOSYS;
+  EILSEQ = ESysEILSEQ;
+  EPIPE  = ESysEPIPE;
+{$ELSE}
+  ENOENT = 2;
+  EIO    = 5;
+  ENOMEM = 12;
+  EINVAL = 22;
+  EPIPE  = 32;  // just an assumption. needs to be checked.
+  EDOM   = 33;
+  {$IFDEF MSWINDOWS}
+  // Note: we assume that ffmpeg was compiled with MinGW.
+  // This must be changed if DLLs were compiled with cygwin.
+  ENOSYS = 40;  // MSVC/MINGW: 40, CYGWIN: 88,  LINUX/FPC: 38
+  EILSEQ = 42;  // MSVC/MINGW: 42, CYGWIN: 138, LINUX/FPC: 84
+  {$ENDIF}
+{$ENDIF}
+
 const
 {$IF EINVAL > 0}
   AVERROR_SIGN = -1;
