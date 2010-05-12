@@ -141,7 +141,7 @@ function avutil_license(): PAnsiChar;
   cdecl; external av__format;
 {$IFEND}
 
-{$IF LIBAVUTIL_VERSION >= 50014000} // >= 50.14.0
+{$IF LIBAVUTIL_VERSION >= 50020000} // >= 50.14.0
 type
   TAVMediaType = (
     AVMEDIA_TYPE_UNKNOWN = -1,

@@ -4654,10 +4654,11 @@ function av_parse_video_frame_rate(frame_rate: PAVRational; str: {const} PAnsiCh
   cdecl; external av__codec;
 {$IFEND}
 
+{$IF LIBAVCODEC_VERSION < 52059000} // <52.59.0
+
 {
  The following error codes are moved to libavutil/error.h on 
  revision 22501 Mar 13 2010
- It is kept here for now.
 }
 
 {* error handling *}
@@ -4687,7 +4688,6 @@ const
   {$ENDIF}
 {$ENDIF}
 
-{$IF LIBAVCODEC_VERSION < 52059000} // <52.59.0
 const
 {$IF EINVAL > 0}
   AVERROR_SIGN = -1;
