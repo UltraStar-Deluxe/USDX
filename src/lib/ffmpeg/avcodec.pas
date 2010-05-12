@@ -492,6 +492,11 @@ type
   );
 {$IFEND}
 
+{
+  TAVMediaType moved to avutil in LIBAVUTIL_VERSION 50.14.0
+  but moving it in the pascal headers was not really necessary
+  but caused problems. So, I (KMS) left it here.
+}
 {$IF LIBAVCODEC_VERSION >= 52064000} // >= 52.64.0
 type
   TAVMediaType = (

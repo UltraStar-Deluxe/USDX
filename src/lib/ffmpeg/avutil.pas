@@ -141,7 +141,11 @@ function avutil_license(): PAnsiChar;
   cdecl; external av__format;
 {$IFEND}
 
-{$IF LIBAVUTIL_VERSION >= 50020000} // >= 50.14.0
+{
+  TAVMediaType moved to avutil in LIBAVUTIL_VERSION 50.14.0
+  but moving it in the pascal headers was not really necessary
+  but caused problems. So, I (KMS) left it there.
+
 type
   TAVMediaType = (
     AVMEDIA_TYPE_UNKNOWN = -1,
@@ -152,7 +156,7 @@ type
     AVMEDIA_TYPE_ATTACHMENT,
     AVMEDIA_TYPE_NB
   );
-{$IFEND}
+}
 
 (* libavutil/error.h *)
 
