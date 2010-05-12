@@ -99,7 +99,8 @@ type
 implementation
 
 uses
-  SysUtils;
+  SysUtils,
+  UConfig;
 
 function FFmpegStreamOpen(h: PURLContext; filename: PChar; flags: cint): cint; cdecl; forward;
 function FFmpegStreamRead(h: PURLContext; buf: PByteArray; size: cint): cint; cdecl; forward;
@@ -184,6 +185,7 @@ begin
   begin
     Stream := FormatCtx.streams[i];
 
+{$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec.codec_type = CODEC_TYPE_VIDEO) and
        (FirstVideoStream < 0) then
     begin
@@ -196,6 +198,20 @@ begin
       FirstAudioStream := i;
     end;
   end;
+{$ELSE}
+    if (Stream.codec.codec_type = AVMEDIA_TYPE_VIDEO) and
+       (FirstVideoStream < 0) then
+    begin
+      FirstVideoStream := i;
+    end;
+
+    if (Stream.codec.codec_type = AVMEDIA_TYPE_AUDIO) and
+       (FirstAudioStream < 0) then
+    begin
+      FirstAudioStream := i;
+    end;
+  end;
+{$IFEND}
 
   // return true if either an audio- or video-stream was found
   Result := (FirstAudioStream > -1) or
@@ -215,7 +231,11 @@ begin
   begin
     Stream := FormatCtx^.streams[i];
 
+{$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec^.codec_type = CODEC_TYPE_AUDIO) then
+{$ELSE}
+    if (Stream.codec^.codec_type = AVMEDIA_TYPE_AUDIO) then
+{$IFEND}
     begin
       StreamIndex := i;
       Break;
