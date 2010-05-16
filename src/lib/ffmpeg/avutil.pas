@@ -119,7 +119,7 @@ const
   {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
-{$IF LIBAVUTIL_VERSION >= 49008000} // 49.8.0
+{$IF LIBAVUTIL_VERSION_INT >= 49008000} // 49.8.0
 (**
  * Returns the LIBAVUTIL_VERSION_INT constant.
  *)
@@ -127,7 +127,7 @@ function avutil_version(): cuint;
   cdecl; external av__format;
 {$IFEND}
 
-{$IF LIBAVUTIL_VERSION >= 50004000} // >= 50.4.0
+{$IF LIBAVUTIL_VERSION_INT >= 50004000} // >= 50.4.0
 (**
  * Returns the libavutil build-time configuration.
  *)
@@ -160,7 +160,7 @@ type
 
 (* libavutil/error.h *)
 
-{$IF LIBAVUTIL_VERSION >= 50012000} // >= 50.12.0
+{$IF LIBAVUTIL_VERSION_INT >= 50012000} // >= 50.12.0
 
 {* error handling *}
 
@@ -225,7 +225,7 @@ const
   AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
 {$IFEND}
 
-{$IF LIBAVUTIL_VERSION >= 50013000} // >= 50.13.0
+{$IF LIBAVUTIL_VERSION_INT >= 50013000} // >= 50.13.0
 (*
  * Puts a description of the AVERROR code errnum in errbuf.
  * In case of failure the global variable errno is set to indicate the
@@ -280,12 +280,12 @@ type
     PIX_FMT_BGR24,     ///< packed RGB 8:8:8, 24bpp, BGRBGR...
     PIX_FMT_YUV422P,   ///< planar YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
     PIX_FMT_YUV444P,   ///< planar YUV 4:4:4, 24bpp, (1 Cr & Cb sample per 1x1 Y samples)
-{$IF LIBAVUTIL_VERSION <= 50001000} // 50.01.0
+{$IF LIBAVUTIL_VERSION_INT <= 50001000} // 50.01.0
     PIX_FMT_RGB32,     ///< packed RGB 8:8:8, 32bpp, (msb)8A 8R 8G 8B(lsb), in CPU endianness
 {$IFEND}
     PIX_FMT_YUV410P,   ///< planar YUV 4:1:0,  9bpp, (1 Cr & Cb sample per 4x4 Y samples)
     PIX_FMT_YUV411P,   ///< planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples)
-{$IF LIBAVUTIL_VERSION <= 50000000} // 50.00.0
+{$IF LIBAVUTIL_VERSION_INT <= 50000000} // 50.00.0
     PIX_FMT_RGB565,    ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), in CPU endianness
     PIX_FMT_RGB555,    ///< packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), in CPU endianness, most significant bit to 0
 {$IFEND}
@@ -300,10 +300,10 @@ type
     PIX_FMT_XVMC_MPEG2_IDCT,
     PIX_FMT_UYVY422,   ///< packed YUV 4:2:2, 16bpp, Cb Y0 Cr Y1
     PIX_FMT_UYYVYY411, ///< packed YUV 4:1:1, 12bpp, Cb Y0 Y1 Cr Y2 Y3
-{$IF LIBAVUTIL_VERSION <= 50001000} // 50.01.0
+{$IF LIBAVUTIL_VERSION_INT <= 50001000} // 50.01.0
     PIX_FMT_BGR32,     ///< packed RGB 8:8:8, 32bpp, (msb)8A 8B 8G 8R(lsb), in CPU endianness
 {$IFEND}
-{$IF LIBAVUTIL_VERSION <= 50000000} // 50.00.0
+{$IF LIBAVUTIL_VERSION_INT <= 50000000} // 50.00.0
     PIX_FMT_BGR565,    ///< packed RGB 5:6:5, 16bpp, (msb)   5B 6G 5R(lsb), in CPU endianness
     PIX_FMT_BGR555,    ///< packed RGB 5:5:5, 16bpp, (msb)1A 5B 5G 5R(lsb), in CPU endianness, most significant bit to 1
 {$IFEND}
@@ -315,7 +315,7 @@ type
     PIX_FMT_RGB4_BYTE, ///< packed RGB 1:2:1,  8bpp, (msb)1R 2G 1B(lsb)
     PIX_FMT_NV12,      ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 for UV
     PIX_FMT_NV21,      ///< as above, but U and V bytes are swapped
-{$IF LIBAVUTIL_VERSION <= 50001000} // 50.01.0
+{$IF LIBAVUTIL_VERSION_INT <= 50001000} // 50.01.0
     PIX_FMT_RGB32_1,   ///< packed RGB 8:8:8, 32bpp, (msb)8R 8G 8B 8A(lsb), in CPU endianness
     PIX_FMT_BGR32_1,   ///< packed RGB 8:8:8, 32bpp, (msb)8B 8G 8R 8A(lsb), in CPU endianness
 {$ELSE} // 50.02.0
@@ -334,11 +334,11 @@ type
     PIX_FMT_VDPAU_MPEG2,///< MPEG-2 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
     PIX_FMT_VDPAU_WMV3,///< WMV3 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
     PIX_FMT_VDPAU_VC1, ///< VC-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
-{$IF LIBAVUTIL_VERSION >= 49015000} // 49.15.0
+{$IF LIBAVUTIL_VERSION_INT >= 49015000} // 49.15.0
     PIX_FMT_RGB48BE,   ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, big-endian
     PIX_FMT_RGB48LE,   ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, little-endian
 {$IFEND}
-{$IF LIBAVUTIL_VERSION >= 50001000} // 50.01.0
+{$IF LIBAVUTIL_VERSION_INT >= 50001000} // 50.01.0
     PIX_FMT_RGB565BE,  ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), big-endian
     PIX_FMT_RGB565LE,  ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), little-endian
     PIX_FMT_RGB555BE,  ///< packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), big-endian, most significant bit to 0
@@ -358,7 +358,7 @@ type
 
 const
 {$ifdef WORDS_BIGENDIAN}
-  {$IF LIBAVUTIL_VERSION <= 50001000} // 50.01.0
+  {$IF LIBAVUTIL_VERSION_INT <= 50001000} // 50.01.0
     PIX_FMT_RGBA    = PIX_FMT_RGB32_1;
     PIX_FMT_BGRA    = PIX_FMT_BGR32_1;
     PIX_FMT_ARGB    = PIX_FMT_RGB32;
@@ -370,17 +370,17 @@ const
     PIX_FMT_BGR32_1 = PIX_FMT_BGRA;
   {$IFEND}
   PIX_FMT_GRAY16  = PIX_FMT_GRAY16BE;
-  {$IF LIBAVUTIL_VERSION >= 49015000} // 49.15.0
+  {$IF LIBAVUTIL_VERSION_INT >= 49015000} // 49.15.0
     PIX_FMT_RGB48   = PIX_FMT_RGB48BE;
   {$IFEND}
-  {$IF LIBAVUTIL_VERSION >= 50001000} // 50.01.0
+  {$IF LIBAVUTIL_VERSION_INT >= 50001000} // 50.01.0
     PIX_FMT_RGB565  = PIX_FMT_RGB565BE;
     PIX_FMT_RGB555  = PIX_FMT_RGB555BE;
     PIX_FMT_BGR565  = PIX_FMT_BGR565BE;
     PIX_FMT_BGR555  = PIX_FMT_BGR555BE
   {$IFEND}
 {$else}
-  {$IF LIBAVUTIL_VERSION <= 50001000} // 50.01.0
+  {$IF LIBAVUTIL_VERSION_INT <= 50001000} // 50.01.0
     PIX_FMT_RGBA    = PIX_FMT_BGR32;
     PIX_FMT_BGRA    = PIX_FMT_RGB32;
     PIX_FMT_ARGB    = PIX_FMT_BGR32_1;
@@ -392,10 +392,10 @@ const
     PIX_FMT_BGR32_1 = PIX_FMT_ARGB;
   {$IFEND}
   PIX_FMT_GRAY16  = PIX_FMT_GRAY16LE;
-  {$IF LIBAVUTIL_VERSION >= 49015000} // 49.15.0
+  {$IF LIBAVUTIL_VERSION_INT >= 49015000} // 49.15.0
     PIX_FMT_RGB48   = PIX_FMT_RGB48LE;
   {$IFEND}
-  {$IF LIBAVUTIL_VERSION >= 50001000} // 50.01.0
+  {$IF LIBAVUTIL_VERSION_INT >= 50001000} // 50.01.0
     PIX_FMT_RGB565  = PIX_FMT_RGB565LE;
     PIX_FMT_RGB555  = PIX_FMT_RGB555LE;
     PIX_FMT_BGR565  = PIX_FMT_BGR565LE;
