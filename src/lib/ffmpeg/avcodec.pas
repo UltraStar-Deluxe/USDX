@@ -4693,13 +4693,21 @@ const
   {$ENDIF}
 {$ENDIF}
 
+(**
+ * We need the sign of of the error, because some platforms have 
+ * E* and errno already negated. The previous version failed
+ * with Delphi, because it needs EINVAL defined.
+ * Warning: This code is platform dependent and assumes constants 
+ * to be 32 bit.
+ * This version does the following steps:
+ * 1) shr 6:         shifts the sign bit to bit position 2
+ * 2) and $00000002: sets all other bits to zero
+ *                   positive EINVAL gives 0, negative gives 2
+ * 3) not:           inverts all bits. This gives -1 and -3
+ * 4) + 2:           positive EINVAL gives 1, negative -1
+ *)
 const
-{$IF EINVAL > 0}
-  AVERROR_SIGN = -1;
-{$ELSE}
-  {* Some platforms have E* and errno already negated. *}
-  AVERROR_SIGN =  1;
-{$IFEND}
+  AVERROR_SIGN = not((EINVAL shr 6) and $00000002) + 2;
 
 (*
 #if EINVAL > 0
