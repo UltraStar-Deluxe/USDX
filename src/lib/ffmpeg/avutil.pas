@@ -160,11 +160,11 @@ type
 
 (* libavutil/error.h *)
 
-{$MESSAGE Note libavutil marker}
+{$MESSAGE Warning 'libavutil marker'}
 
 {$IF LIBAVUTIL_VERSION >= 50012000} // >= 50.12.0
 
-{$MESSAGE INFO LIBAVUTIL_VERSION >= 50012000!}
+{$MESSAGE Warning 'LIBAVUTIL_VERSION >= 50012000!'}
 
 {* error handling *}
 
@@ -194,7 +194,7 @@ const
 {$ENDIF}
 
 const
-{$MESSAGE NoteYou should not get this libavutil marker!!!}
+{$MESSAGE Warning 'You should not get this libavutil marker!!!'}
 {$IF EINVAL > 0}
   AVERROR_SIGN = -1;
 {$ELSE}
