@@ -121,7 +121,7 @@ const
 
 {$IF LIBAVUTIL_VERSION >= 49008000} // 49.8.0
 (**
- * Returns the LIBAVUTIL_VERSION constant.
+ * Returns the LIBAVUTIL_VERSION_INT constant.
  *)
 function avutil_version(): cuint;
   cdecl; external av__format;
