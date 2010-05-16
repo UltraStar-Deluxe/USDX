@@ -160,11 +160,11 @@ type
 
 (* libavutil/error.h *)
 
-{$MESSAGE Warning 'libavutil marker'}
-
 {$IF LIBAVUTIL_VERSION >= 50012000} // >= 50.12.0
+  {$DEFINE NEED_ERRORS_HERE}
+{$IFEND}
 
-{$MESSAGE Warning 'LIBAVUTIL_VERSION >= 50012000!'}
+{$IFDEF NEED_ERRORS_HERE}
 
 {* error handling *}
 
@@ -194,7 +194,6 @@ const
 {$ENDIF}
 
 const
-{$MESSAGE Warning 'You should not get this libavutil marker!!!'}
 {$IF EINVAL > 0}
   AVERROR_SIGN = -1;
 {$ELSE}
@@ -228,7 +227,7 @@ const
   // Note: function calls as constant-initializers are invalid
   //AVERROR_PATCHWELCOME = -MKTAG('P','A','W','E'); {**< Not yet implemented in FFmpeg. Patches welcome. *}
   AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
-{$IFEND}
+{$ENDIF}
 
 {$IF LIBAVUTIL_VERSION >= 50013000} // >= 50.13.0
 (*
