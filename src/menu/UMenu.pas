@@ -1679,54 +1679,63 @@ begin
     X := X - RenderW;
   Y := Round((Y / ScreenH) * RenderH);
 
-  nBut := InteractAt(X, Y);
-  if nBut >= 0 then
+  // allways go to next screen if we don't have any interactions
+  if Length(Interactions) = 0 then
   begin
-    //select on mouse-over
-    if nBut <> Interaction then
-      SetInteraction(nBut);
-
-    Action := maNone;
-
-    if (BtnDown) then
-    begin
-      if (MouseButton = SDL_BUTTON_LEFT) then
-      begin
-        //click button or SelectS
-        if (Interactions[nBut].Typ = iSelectS) then
-          Action := SelectsS[Interactions[nBut].Num].OnClick(X, Y)
-        else
-          Action := maReturn;
-      end
-      else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
-      begin //forward on select slide with mousewheel
-        if (Interactions[nBut].Typ = iSelectS) then
-          Action := maRight;
-      end
-      else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      begin //backward on select slide with mousewheel
-        if (Interactions[nBut].Typ = iSelectS) then
-          Action := maLeft;
-      end;
-    end;
-
-    // do the action we have to do ;)
-    case Action of
-      maReturn: Result := ParseInput(SDLK_RETURN, 0, true);
-      maLeft:   Result := ParseInput(SDLK_LEFT, 0, true);
-      maRight:  Result := ParseInput(SDLK_RIGHT, 0, true);
-    end;
+    if (BtnDown) and (MouseButton = SDL_BUTTON_LEFT) then
+      Result := ParseInput(SDLK_RETURN, 0, true);
   end
   else
   begin
-    nBut := CollectionAt(X, Y);
-    if (nBut >= 0) and (not ButtonCollection[nBut].Selected) then
+    nBut := InteractAt(X, Y);
+    if nBut >= 0 then
     begin
-      // if over button collection, that is not already selected
-      // -> select first child but don't allow click
-      nBut := ButtonCollection[nBut].FirstChild - 1;
+      //select on mouse-over
       if nBut <> Interaction then
         SetInteraction(nBut);
+
+      Action := maNone;
+
+      if (BtnDown) then
+      begin
+        if (MouseButton = SDL_BUTTON_LEFT) then
+        begin
+          //click button or SelectS
+          if (Interactions[nBut].Typ = iSelectS) then
+            Action := SelectsS[Interactions[nBut].Num].OnClick(X, Y)
+          else
+            Action := maReturn;
+        end
+        else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+        begin //forward on select slide with mousewheel
+          if (Interactions[nBut].Typ = iSelectS) then
+            Action := maRight;
+        end
+        else if (MouseButton = SDL_BUTTON_WHEELUP) then
+        begin //backward on select slide with mousewheel
+          if (Interactions[nBut].Typ = iSelectS) then
+            Action := maLeft;
+        end;
+      end;
+
+        // do the action we have to do ;)
+      case Action of
+        maReturn: Result := ParseInput(SDLK_RETURN, 0, true);
+        maLeft:   Result := ParseInput(SDLK_LEFT, 0, true);
+        maRight:  Result := ParseInput(SDLK_RIGHT, 0, true);
+      end;
+    end
+    else
+    begin
+      nBut := CollectionAt(X, Y);
+      if (nBut >= 0) and (not ButtonCollection[nBut].Selected) then
+      begin
+        // if over button collection, that is not already selected
+        // -> select first child but don't allow click
+        nBut := ButtonCollection[nBut].FirstChild - 1;
+        if nBut <> Interaction then
+          SetInteraction(nBut);
+      end;
     end;
   end;
 end;
