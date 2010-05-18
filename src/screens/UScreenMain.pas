@@ -234,20 +234,11 @@ end;
 procedure TScreenMain.OnShow;
 begin
   inherited;
-
  {**
   * Clean up TPartyGame here
   * at the moment there is no better place for this
   *}
   Party.Clear;
-
-  { display cursor (on moved) }
-  Display.SetCursor;
-
- {**
-  * Start background music
-  *}
-  SoundLib.StartBgMusic;
 end;
 
 procedure TScreenMain.SetInteraction(Num: integer);
