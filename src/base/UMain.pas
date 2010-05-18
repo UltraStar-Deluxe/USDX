@@ -295,6 +295,14 @@ begin
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Loading Time', 0);
 
+    { prepare software cursor }
+    Display.SetCursor;
+
+    {**
+      * Start background music
+      *}
+    SoundLib.StartBgMusic;
+
     // check microphone settings, goto record options if they are corrupt
     if (not AudioInputProcessor.ValidateSettings) then
       Display.CurrentScreen^.FadeTo( @ScreenOptionsRecord );
