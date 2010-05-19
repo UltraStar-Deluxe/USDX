@@ -27,7 +27,7 @@
 (*
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision  6577, Sat Oct  7 15:30:46 2006 UTC
- * Max. version: 52.62.0, revision 23102, Thu May 13  1:15:00 2010 CET 
+ * Max. version: 52.63.0, revision 23179, Wed May 19 19:17:00 2010 CET 
  *)
 
 unit avformat;
@@ -85,7 +85,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 62;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 63;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -404,6 +404,9 @@ const
 {$IF LIBAVFORMAT_VERSION >= 52060000}  // >= 52.60.0
   AVFMT_FLAG_NOFILLIN = $0010; ///< Do not infer any values from other values, just return what is stored in the container
   AVFMT_FLAG_NOPARSE  = $0020; ///< Do not use AVParsers, you also must set AVFMT_FLAG_NOFILLIN as the fillin code works on frames and no parsing -> no frames. Also seeking to frames can not work if parsing to find frame boundaries has been disabled
+{$IFEND}
+{$IF LIBAVFORMAT_VERSION >= 52063000}  // >= 52.63.0
+  AVFMT_FLAG_RTP_HINT = $0040; ///< Add RTP hinting to the output file
 {$IFEND}
 
   // used by AVStream
