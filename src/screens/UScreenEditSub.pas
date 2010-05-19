@@ -492,17 +492,34 @@ begin
 
       SDLK_SPACE:
         begin
-          // Play Sentence
-          PlaySentenceMidi := false; // stop midi
-          PlaySentence := true;
-          Click := false;
-          AudioPlayback.Stop;
-          AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
-          PlayStopTime := (GetTimeFromBeat(
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start +
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length));
-          AudioPlayback.Play;
-          LastClick := -100;
+          if (SDL_ModState = 0) or (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
+          begin
+            // Play Sentence
+            PlaySentenceMidi := false; // stop midi
+            PlaySentence := true;
+            Click := false;
+            AudioPlayback.Stop;
+            AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
+            PlayStopTime := (GetTimeFromBeat(
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start +
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length));
+            AudioPlayback.Play;
+            LastClick := -100;
+          end;
+
+          if (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
+          begin
+            // Play Midi
+            PlaySentenceMidi := true;
+
+            MidiTime := USTime.GetTime;
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
+            MidiStop := GetTimeFromBeat(
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start +
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
+
+            LastClick := -100;
+          end;
         end;
 
       SDLK_RETURN:
