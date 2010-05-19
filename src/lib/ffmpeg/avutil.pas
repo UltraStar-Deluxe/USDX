@@ -160,7 +160,7 @@ type
 
 {$INCLUDE error.pas}
 
-(* libavutil/pixfmt.h *)
+(* libavutil/pixfmt.h up to revision 23144, May 16 2010 *)
 
 type
 (**
@@ -209,8 +209,8 @@ type
     PIX_FMT_RGB555,    ///< packed RGB 5:5:5, 16bpp, (msb)1A 5R 5G 5B(lsb), in CPU endianness, most significant bit to 0
 {$IFEND}
     PIX_FMT_GRAY8,     ///<        Y        ,  8bpp
-    PIX_FMT_MONOWHITE, ///<        Y        ,  1bpp, 0 is white, 1 is black
-    PIX_FMT_MONOBLACK, ///<        Y        ,  1bpp, 0 is black, 1 is white
+    PIX_FMT_MONOWHITE, ///<        Y        ,  1bpp, 0 is white, 1 is black, in each byte pixels are ordered from the msb to the lsb
+    PIX_FMT_MONOBLACK, ///<        Y        ,  1bpp, 0 is black, 1 is white, in each byte pixels are ordered from the msb to the lsb
     PIX_FMT_PAL8,      ///< 8 bit with PIX_FMT_RGB32 palette
     PIX_FMT_YUVJ420P,  ///< planar YUV 4:2:0, 12bpp, full scale (JPEG)
     PIX_FMT_YUVJ422P,  ///< planar YUV 4:2:2, 16bpp, full scale (JPEG)
@@ -227,12 +227,12 @@ type
     PIX_FMT_BGR555,    ///< packed RGB 5:5:5, 16bpp, (msb)1A 5B 5G 5R(lsb), in CPU endianness, most significant bit to 1
 {$IFEND}
     PIX_FMT_BGR8,      ///< packed RGB 3:3:2,  8bpp, (msb)2B 3G 3R(lsb)
-    PIX_FMT_BGR4,      ///< packed RGB 1:2:1,  4bpp, (msb)1B 2G 1R(lsb)
+    PIX_FMT_BGR4,      ///< packed RGB 1:2:1, bitstream,  4bpp, (msb)1B 2G 1R(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
     PIX_FMT_BGR4_BYTE, ///< packed RGB 1:2:1,  8bpp, (msb)1B 2G 1R(lsb)
     PIX_FMT_RGB8,      ///< packed RGB 3:3:2,  8bpp, (msb)2R 3G 3B(lsb)
-    PIX_FMT_RGB4,      ///< packed RGB 1:2:1,  4bpp, (msb)1R 2G 1B(lsb)
+    PIX_FMT_RGB4,      ///< packed RGB 1:2:1, bitstream,  4bpp, (msb)1R 2G 1B(lsb), a byte contains two pixels, the first pixel in the byte is the one composed by the 4 msb bits
     PIX_FMT_RGB4_BYTE, ///< packed RGB 1:2:1,  8bpp, (msb)1R 2G 1B(lsb)
-    PIX_FMT_NV12,      ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 for UV
+    PIX_FMT_NV12,      ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
     PIX_FMT_NV21,      ///< as above, but U and V bytes are swapped
 {$IF LIBAVUTIL_VERSION <= 50001000} // 50.01.0
     PIX_FMT_RGB32_1,   ///< packed RGB 8:8:8, 32bpp, (msb)8R 8G 8B 8A(lsb), in CPU endianness
@@ -254,8 +254,8 @@ type
     PIX_FMT_VDPAU_WMV3,///< WMV3 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
     PIX_FMT_VDPAU_VC1, ///< VC-1 HW decoding with VDPAU, data[0] contains a vdpau_render_state struct which contains the bitstream of the slices as well as various fields extracted from headers
 {$IF LIBAVUTIL_VERSION >= 49015000} // 49.15.0
-    PIX_FMT_RGB48BE,   ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, big-endian
-    PIX_FMT_RGB48LE,   ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, little-endian
+    PIX_FMT_RGB48BE,   ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as big-endian
+    PIX_FMT_RGB48LE,   ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as little-endian
 {$IFEND}
 {$IF LIBAVUTIL_VERSION >= 50001000} // 50.01.0
     PIX_FMT_RGB565BE,  ///< packed RGB 5:6:5, 16bpp, (msb)   5R 6G 5B(lsb), big-endian
@@ -328,9 +328,10 @@ const
   PIX_FMT_YUV422  = PIX_FMT_YUYV422;
 {$IFEND}
 
-(* libavutil/common.h *) // until now MKTAG is all from common.h KMS 9/6/2009
+(* libavutil/common.h *) // until now MKTAG and MKBETAG is all from common.h KMS 19/5/2010
 
 function MKTAG(a, b, c, d: AnsiChar): integer;
+function MKBETAG(a, b, c, d: AnsiChar): integer;
 
 (* libavutil/mem.h *)
 
@@ -493,5 +494,11 @@ function MKTAG(a, b, c, d: AnsiChar): integer;
 begin
   Result := (ord(a) or (ord(b) shl 8) or (ord(c) shl 16) or (ord(d) shl 24));
 end;
+
+function MKBETAG(a, b, c, d: AnsiChar): integer;
+begin
+  Result := (ord(d) or (ord(c) shl 8) or (ord(b) shl 16) or (ord(a) shl 24));
+end;
+
 
 end.
