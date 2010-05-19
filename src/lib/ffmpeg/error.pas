@@ -55,7 +55,7 @@ const
 (**
  * We need the sign of the error, because some platforms have 
  * E* and errno already negated. The previous version failed
- * with Delphi, because it needs EINVAL defined.
+ * with Delphi, because it needed EINVAL defined.
  * Warning: This code is platform dependent and assumes constants 
  * to be 32 bit.
  * This version does the following steps:
