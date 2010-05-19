@@ -27,7 +27,7 @@
 (*
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 52.67.0, revision 23057, Tue May 11 18:30 2010 CET
+ * Max. version: 52.67.2, revision 23191, Wed May 19 19:30 2010 CET
  *
  *)
 
@@ -87,7 +87,7 @@ const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
   LIBAVCODEC_MAX_VERSION_MINOR   = 67;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 2;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -306,6 +306,9 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52062000}  // >= 52.62.0
     CODEC_ID_YOP,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52067002}  // >= 52.67.2
+    CODEC_ID_VP8,
 {$IFEND}
 
     //* various PCM "codecs" */
