@@ -199,11 +199,10 @@ const
  * 1) shr 30:        shifts the sign bit to bit position 2
  * 2) and $00000002: sets all other bits to zero
  *                   positive EINVAL gives 0, negative gives 2
- * 3) not:           inverts all bits. This gives -1 and -3
- * 4) + 2:           positive EINVAL gives 1, negative -1
+ * 3) - 1:           positive EINVAL gives -1, negative 1
  *)
 const
-  AVERROR_SIGN = not((EINVAL shr 30) and $00000002) + 2;
+  AVERROR_SIGN = (EINVAL shr 30) and $00000002 - 1;
 
 (*
 #if EINVAL > 0
