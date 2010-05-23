@@ -50,19 +50,20 @@ interface
 
 type
   {**
-   * vacStretch: Stretch to screen width and height
+   * acoStretch: Stretch to screen width and height
    *   - ignores aspect
    *   + no borders
    *   + no image data loss
-   * vacCrop: Stretch to screen width or height, crop the other dimension
+   * acoCrop: Stretch to screen width or height, crop the other dimension
    *   + keeps aspect
    *   + no borders
    *   - frame borders are cropped (image data loss)
-   * vacLetterBox: Stretch to screen width, add bars at or crop top and bottom
+   * acoLetterBox: Stretch to screen width, add bars at or crop top and bottom
    *   + keeps aspect
    *   - borders at top and bottom
    *   o top/bottom is cropped if width < height (unusual)
    *}
+   
   TAspectCorrection = (acoStretch, acoCrop, acoLetterBox);
 
 
@@ -114,8 +115,14 @@ const
 
 type
   TRectCoords = record
-    Left, Right:  double;
-    Upper, Lower: double;
+    Left, Right:        double;
+    Upper, Lower:       double;
+    Windowed:           boolean;  //draw video in a window instead of full screen
+                                  //full screen means black background without blending
+    Reflection:         boolean;
+    ReflectionSpacing:  real;
+    TargetAspect:       TAspectCorrection;  //for zooming/aspect-switching
+    ZoomFactor:         double;             //0..1 ==> 0..100%
   end;
 
   IVideo_FFmpeg = interface (IVideo)
@@ -162,7 +169,7 @@ type
     function DecodeFrame(): boolean;
     procedure SynchronizeTime(Frame: PAVFrame; var pts: double);
 
-    procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords);
+    procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords; Window: TRectCoords);
 
     procedure ShowDebugInfo();
 
@@ -184,7 +191,8 @@ type
     function GetPosition: real;
 
     procedure GetFrame(Time: Extended);
-    procedure DrawGL(Screen: integer);
+    procedure DrawGL(Screen: integer); overload;
+    procedure DrawGL(Screen: integer; Window: TRectCoords; Blend: real); overload;
   end;
 
   TVideoPlayback_FFmpeg = class( TInterfacedObject, IVideoPlayback )
@@ -885,47 +893,87 @@ begin
   {$ENDIF}
 end;
 
-procedure TVideo_FFmpeg.GetVideoRect(var ScreenRect, TexRect: TRectCoords);
+procedure TVideo_FFmpeg.GetVideoRect(var ScreenRect, TexRect: TRectCoords; Window: TRectCoords);
 var
-  ScreenAspect: double;  // aspect of screen resolution
-  ScaledVideoWidth, ScaledVideoHeight: double;
-begin
-  // Three aspects to take into account:
-  //  1. Screen/display resolution (e.g. 1920x1080 -> 16:9)
-  //  2. Render aspect (fixed to 800x600 -> 4:3)
-  //  3. Movie aspect (video frame aspect stored in fAspect)
-  ScreenAspect := ScreenW / ScreenH;
+  RectS, RectT: TRectCoords;
 
-  case fAspectCorrection of
-    acoStretch: begin
-      ScaledVideoWidth  := RenderW;
-      ScaledVideoHeight := RenderH;
+  procedure GetCoords(var SRect: TRectCoords; Win: TRectCoords; Aspect: TAspectCorrection);
+  var
+    ScreenAspect:       double;  // aspect of screen resolution
+    ScaledVideoWidth:   double;
+    ScaledVideoHeight:  double;
+    rW, rH:             double;
+
+  begin
+    // Three aspects to take into account:
+    //  1. Screen/display resolution (e.g. 1920x1080 -> 16:9)
+    //  2. Render aspect (fixed to 800x600 -> 4:3)
+    //  3. Movie aspect (video frame aspect stored in fAspect)
+    if (Win.windowed) then
+    begin
+      rW := (Win.Right-Win.Left);
+      rH := (Win.Lower-Win.Upper);
+      ScreenAspect := rW*((ScreenW/Screens)/RenderW)/(rH*(ScreenH/RenderH));
+    end else
+    begin
+      rW := RenderW;
+      rH := RenderH;
+      ScreenAspect := (ScreenW/Screens) / ScreenH;
     end;
-    acoCrop: begin
-      if (ScreenAspect >= fAspect) then
-      begin
-        ScaledVideoWidth  := RenderW;
-        ScaledVideoHeight := RenderH * ScreenAspect/fAspect;
+
+    case Aspect of
+      acoStretch: begin
+        ScaledVideoWidth  := rW;
+        ScaledVideoHeight := rH;
+      end;
+
+      acoCrop: begin
+        if (ScreenAspect >= fAspect) then
+        begin
+          ScaledVideoWidth  := rW;
+          ScaledVideoHeight := rH * ScreenAspect/fAspect;
+        end
+        else
+        begin
+          ScaledVideoHeight := rH;
+          ScaledVideoWidth  := rW * fAspect/ScreenAspect;
+        end;
+      end;
+
+      acoLetterBox: begin
+        if (ScreenAspect <= fAspect) then
+        begin
+          ScaledVideoWidth  := rW;
+          ScaledVideoHeight := rH * ScreenAspect/fAspect;
+        end
+        else
+        begin
+          ScaledVideoHeight := rH;
+          ScaledVideoWidth  := rW * fAspect/ScreenAspect;
+        end;
       end
       else
-      begin
-        ScaledVideoHeight := RenderH;
-        ScaledVideoWidth  := RenderW * fAspect/ScreenAspect;
-      end;
+        raise Exception.Create('Unhandled aspect correction!');
     end;
-    acoLetterBox: begin
-      ScaledVideoWidth  := RenderW;
-      ScaledVideoHeight := RenderH * ScreenAspect/fAspect;
-    end
-    else
-      raise Exception.Create('Unhandled aspect correction!');
-  end;
 
-  // center video
-  ScreenRect.Left  := (RenderW - ScaledVideoWidth) / 2;
-  ScreenRect.Right := ScreenRect.Left + ScaledVideoWidth;
-  ScreenRect.Upper := (RenderH - ScaledVideoHeight) / 2;
-  ScreenRect.Lower := ScreenRect.Upper + ScaledVideoHeight;
+    SRect.Left := (rW - ScaledVideoWidth) / 2 + Win.Left;
+    SRect.Right := SRect.Left + ScaledVideoWidth;
+    SRect.Upper := (rH - ScaledVideoHeight) / 2 + Win.Upper;
+    SRect.Lower := SRect.Upper + ScaledVideoHeight;
+  end;
+begin
+  if (Window.TargetAspect = fAspectCorrection) then
+    GetCoords(ScreenRect, Window, fAspectCorrection)
+  else
+  begin
+    GetCoords(RectS, Window, fAspectCorrection);
+    GetCoords(RectT, Window, Window.TargetAspect);
+
+    ScreenRect.Left := RectS.Left + (RectT.Left-RectS.Left)*Window.ZoomFactor;
+    ScreenRect.Right := RectS.Right + (RectT.Right-RectS.Right)*Window.ZoomFactor;
+    ScreenRect.Upper := RectS.Upper + (RectT.Upper-RectS.Upper)*Window.ZoomFactor;
+    ScreenRect.Lower := RectS.Lower + (RectT.Lower-RectS.Lower)*Window.ZoomFactor;
+  end;
 
   // texture contains right/lower (power-of-2) padding.
   // Determine the texture coords of the video frame.
@@ -937,15 +985,31 @@ end;
 
 procedure TVideo_FFmpeg.DrawGL(Screen: integer);
 var
+  Window: TRectCoords;
+
+begin
+  Window.Left := 0;
+  Window.Right := ScreenW;
+  Window.Upper := 0;
+  Window.Lower := ScreenH;
+  Window.Windowed := false;
+  Window.Reflection := false;
+  Window.TargetAspect := fAspectCorrection;
+  DrawGL(Screen, Window, 1);
+end;
+
+procedure TVideo_FFmpeg.DrawGL(Screen: integer; Window: TRectCoords; Blend: real);
+var
   ScreenRect: TRectCoords;
   TexRect: TRectCoords;
+
 begin
   // have a nice black background to draw on
   // (even if there were errors opening the vid)
   // TODO: Philipp: IMO TVideoPlayback should not clear the screen at
   //       all, because clearing is already done by the background class
   //       at this moment.
-  if (Screen = 1) then
+  if (Screen = 1) and not Window.Windowed then
   begin
     // It is important that we just clear once before we start
     // drawing the first screen otherwise the first screen
@@ -964,14 +1028,25 @@ begin
   {$ENDIF}
 
   // get texture and screen positions
-  GetVideoRect(ScreenRect, TexRect);
+  GetVideoRect(ScreenRect, TexRect, Window);
 
-  // we could use blending for brightness control, but do we need this?
-  glDisable(GL_BLEND);
+  if Window.Windowed then
+  begin
+    glScissor(round((Window.Left)*(ScreenW/Screens)/RenderW+(ScreenW/Screens)*(Screen-1)),
+      round((RenderH-Window.Lower)*ScreenH/RenderH),
+      round((Window.Right-Window.Left)*(ScreenW/Screens)/RenderW),
+      round((Window.Lower-Window.Upper)*ScreenH/RenderH));
+    glEnable(GL_SCISSOR_TEST);
+
+    // we could use blending for brightness control, but do we need this?
+    // the window-mode needs blending!
+    glEnable(GL_BLEND);
+  end else
+    glDisable(GL_BLEND);
 
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, fFrameTex);
-  glColor3f(1, 1, 1);
+  glColor4f(1, 1, 1, Blend);
   glBegin(GL_QUADS);
     // upper-left coord
     glTexCoord2f(TexRect.Left, TexRect.Upper);
@@ -986,7 +1061,49 @@ begin
     glTexCoord2f(TexRect.Right, TexRect.Upper);
     glVertex2f(ScreenRect.Right, ScreenRect.Upper);
   glEnd;
+  glDisable(GL_SCISSOR_TEST);
+
+  //Draw Reflection
+  if Window.Reflection then
+  begin
+    glScissor(round((Window.Left)*(ScreenW/Screens)/RenderW+(ScreenW/Screens)*(Screen-1)),
+      round((RenderH-Window.Lower-Window.ReflectionSpacing-(Window.Lower-Window.Upper)*0.5)*ScreenH/RenderH),
+      round((Window.Right-Window.Left)*(ScreenW/Screens)/RenderW),
+      round((Window.Lower-Window.Upper)*ScreenH/RenderH*0.5));
+    glEnable(GL_SCISSOR_TEST);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //Draw
+    glBegin(GL_QUADS);//Top Left
+      glColor4f(1, 1, 1, Blend-0.3);
+      glTexCoord2f(TexRect.Left, TexRect.Lower);
+      glVertex2f(ScreenRect.Left, Window.Lower + Window.ReflectionSpacing);
+
+      //Bottom Left
+      glColor4f(1, 1, 1, 0);
+      glTexCoord2f(TexRect.Left, (TexRect.Lower-TexRect.Upper)*0.5);
+      glVertex2f(ScreenRect.Left,
+        Window.Lower + (ScreenRect.Lower-ScreenRect.Upper)*0.5 + Window.ReflectionSpacing);
+
+      //Bottom Right
+      glColor4f(1, 1, 1, 0);
+      glTexCoord2f(TexRect.Right, (TexRect.Lower-TexRect.Upper)*0.5);
+      glVertex2f(ScreenRect.Right,
+        Window.Lower + (ScreenRect.Lower-ScreenRect.Upper)*0.5 + Window.ReflectionSpacing);
+
+      //Top Right
+      glColor4f(1, 1, 1, Blend-0.3);
+      glTexCoord2f(TexRect.Right, TexRect.Lower);
+      glVertex2f(ScreenRect.Right, Window.Lower + Window.ReflectionSpacing);
+    glEnd;
+
+    glDisable(GL_SCISSOR_TEST);
+  end;
+
   glDisable(GL_TEXTURE_2D);
+  glDisable(GL_BLEND);
 
   {$IFDEF VideoBenchmark}
   Log.BenchmarkEnd(15);
