@@ -510,22 +510,25 @@ begin
 
           //Check for ZeroNote
           if Param2 = 0 then
+          begin
             Log.LogWarn(Format('"%s" in line %d: %s',
-                  [FileNamePath.ToNative, FileLineNo, 'found note with length zero -> note ignored']), 'TSong.LoadSong')
+              [FileNamePath.ToNative, FileLineNo,
+              'found note with length zero -> converted to FreeStyle']),
+              'TSong.LoadSong');
             //Log.LogError('Found zero-length note at "'+Param0+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> Note ignored!')
+            Param0 := 'F';
+          end;
+
+          // add notes
+          if not Both then
+            // P1
+            ParseNote(0, Param0, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamLyric)
           else
           begin
-           // add notes
-           if not Both then
-             // P1
-             ParseNote(0, Param0, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamLyric)
-           else
-           begin
-             // P1 + P2
-             ParseNote(0, Param0, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamLyric);
-             ParseNote(1, Param0, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamLyric);
-           end;
-          end; //Zeronote check
+            // P1 + P2
+            ParseNote(0, Param0, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamLyric);
+            ParseNote(1, Param0, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamLyric);
+          end;
         end // if
 
         else if Param0 = '-' then
