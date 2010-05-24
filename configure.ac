@@ -233,7 +233,7 @@ AC_SUBST_DEFINE(HAVE_PORTAUDIO, $portaudio_HAVE)
 
 # find pcre
 libpcre_PKG="libpcre"
-PKG_HAVE([libpcre], [$libpcre_PKG], yes)
+PKG_HAVE([libpcre], [$libpcre_PKG], no)
 PKG_VERSION([libpcre], [$libpcre_PKG])
 AC_SUBST_DEFINE(HAVE_LIBPCRE, $libpcre_HAVE)
 # get libpcre library dir
