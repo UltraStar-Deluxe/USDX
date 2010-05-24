@@ -50,4 +50,9 @@
   PORTAUDIO_VERSION_RELEASE = 0;
 {$IFEND}
 
+{$DEFINE HaveLibPcre}
+{$IF Defined(HaveLibPcre) and Defined(IncludeConstants)}
+  LIBPCRE_LIBDIR   = '/sw/lib';
+{$IFEND}
+
 {$UNDEF HavePortmixer}

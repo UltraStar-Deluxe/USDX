@@ -50,4 +50,9 @@
   PORTAUDIO_VERSION_RELEASE = @portaudio_VERSION_RELEASE@;
 {$IFEND}
 
+{$@DEFINE_HAVE_LIBPCRE@ HaveLibPcre}
+{$IF Defined(HaveLibPcre) and Defined(IncludeConstants)}
+  LIBPCRE_LIBDIR   = '@libpcre_LIBDIR@';
+{$IFEND}
+
 {$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
