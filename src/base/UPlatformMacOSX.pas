@@ -108,7 +108,10 @@ type
        *}
       procedure CreateUserFolders();
 
-      function GetHomeDir(): IPath;
+      {**
+       * GetHomeDir returns the path to $HOME.
+       *}
+      function GetHomeDir: IPath;
 
     public
       {**
@@ -126,8 +129,14 @@ type
       function  GetLogPath:        IPath; override;
 
       {**
+       * GetMusicPath returns the path for music. Currently it is set to
+       * $HOME/Music/UltraStar Deluxe/.
+       *}
+      function  GetMusicPath:      IPath; override;
+
+      {**
        * GetGameSharedPath returns the path for shared resources. Currently it
-       * is set to /Library/Application Support/UltraStarDeluxe.
+       * is also set to $HOME/Library/Application Support/UltraStarDeluxe.
        * However it is not used.
        *}
       function  GetGameSharedPath: IPath; override;
@@ -135,7 +144,7 @@ type
       {**
        * GetGameUserPath returns the path for user resources. Currently it is
        * set to $HOME/Library/Application Support/UltraStarDeluxe.
-       * This is where a user can add songs, themes, ....
+       * This is where a user can add themes, ....
        *}
       function  GetGameUserPath:   IPath; override;
   end;
@@ -251,19 +260,24 @@ begin
   Result := GetExecutionDir().GetParent().GetParent();
 end;
 
-function TPlatformMacOSX.GetHomeDir(): IPath;
+function TPlatformMacOSX.GetHomeDir: IPath;
 begin
   Result := Path(GetEnvironmentVariable('HOME'));
 end;
 
 function TPlatformMacOSX.GetApplicationSupportPath: IPath;
 begin
-  Result := GetHomeDir().Append('Library/Application Support/UltraStarDeluxe', pdAppend);
+  Result := GetHomeDir.Append('Library/Application Support/UltraStarDeluxe', pdAppend);
 end;
 
 function TPlatformMacOSX.GetLogPath: IPath;
 begin
-  Result := GetHomeDir().Append('Library/Logs/UltraStar Deluxe', pdAppend);
+  Result := GetHomeDir.Append('Library/Logs/UltraStar Deluxe', pdAppend);
+end;
+
+function TPlatformMacOSX.GetMusicPath: IPath;
+begin
+  Result := GetHomeDir.Append('Music/UltraStar Deluxe', pdAppend);
 end;
 
 function TPlatformMacOSX.GetGameSharedPath: IPath;

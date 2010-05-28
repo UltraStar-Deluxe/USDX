@@ -51,6 +51,7 @@ type
     procedure Halt; virtual;
 
     function GetLogPath:        IPath; virtual; abstract;
+    function GetMusicPath:      IPath; virtual; abstract;
     function GetGameSharedPath: IPath; virtual; abstract;
     function GetGameUserPath:   IPath; virtual; abstract;
   end;
