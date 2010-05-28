@@ -121,7 +121,7 @@ type
 
       {**
        * GetLogPath returns the path for log messages. Currently it is set to
-       * $HOME/Library/Application Support/UltraStarDeluxe/log.
+       * $HOME/Library/Logs/UltraStar Deluxe/.
        *}
       function  GetLogPath:        IPath; override;
 
@@ -251,21 +251,19 @@ begin
   Result := GetExecutionDir().GetParent().GetParent();
 end;
 
-function TPlatformMacOSX.GetApplicationSupportPath: IPath;
-const
-  PathName: string = 'Library/Application Support/UltraStarDeluxe';
-begin
-  Result := GetHomeDir().Append(PathName, pdAppend);
-end;
-
 function TPlatformMacOSX.GetHomeDir(): IPath;
 begin
   Result := Path(GetEnvironmentVariable('HOME'));
 end;
 
+function TPlatformMacOSX.GetApplicationSupportPath: IPath;
+begin
+  Result := GetHomeDir().Append('Library/Application Support/UltraStarDeluxe', pdAppend);
+end;
+
 function TPlatformMacOSX.GetLogPath: IPath;
 begin
-  Result := GetApplicationSupportPath.Append('logs');
+  Result := GetHomeDir().Append('Library/Logs/UltraStar Deluxe', pdAppend);
 end;
 
 function TPlatformMacOSX.GetGameSharedPath: IPath;
