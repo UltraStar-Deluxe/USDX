@@ -539,7 +539,8 @@ const
   libpcremodulename = 'libpcre.so.0';
   {$ENDIF LINUX}
   {$IFDEF DARWIN}
-  libpcremodulename = LIBPCRE_LIBDIR + '/libpcre.dylib';
+  libpcremodulename = 'libpcre.dylib';
+  libpcremodulenamefromfink = LIBPCRE_LIBDIR + '/libpcre.dylib';
   {$ENDIF DARWIN}
   PCRECompileExportName = 'pcre_compile';
   PCRECompile2ExportName = 'pcre_compile2';
@@ -783,6 +784,10 @@ begin
     {$IFDEF UNIX}
     PCRELib := dlopen(PAnsiChar(libpcremodulename), RTLD_NOW);
     {$ENDIF UNIX}
+    {$IFDEF DARWIN}  // if not found, do another try from the fink path
+  if PCRELib = INVALID_MODULEHANDLE_VALUE then
+    PCRELib := dlopen(PAnsiChar(libpcremodulenamefromfink), RTLD_NOW);
+    {$ENDIF DARWIN}
   Result := PCRELib <> INVALID_MODULEHANDLE_VALUE;
   if Result then
   begin
