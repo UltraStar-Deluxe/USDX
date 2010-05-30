@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 52.67.2, revision 23153, Sun May 30 20:30 2010 CET
+ * Max. version: 52.70.0, revision 23332, Sun May 30 20:30 2010 CET
  *
  *)
 
@@ -82,8 +82,8 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 67;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 2;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 70;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -3855,6 +3855,10 @@ function avcodec_get_edge_width(): cuint;
  * Modifies width and height values so that they will result in a memory
  * buffer that is acceptable for the codec if you do not use any horizontal
  * padding.
+ *
+ * May only be used if a codec with CODEC_CAP_DR1 has been opened.
+ * If CODEC_FLAG_EMU_EDGE is not set, the dimensions must have been increased
+ * according to avcodec_get_edge_width() before.
  *)
 procedure avcodec_align_dimensions(s: PAVCodecContext; width: PCint; height: PCint);
   cdecl; external av__codec;
@@ -3864,6 +3868,10 @@ procedure avcodec_align_dimensions(s: PAVCodecContext; width: PCint; height: PCi
  * Modifies width and height values so that they will result in a memory
  * buffer that is acceptable for the codec if you also ensure that all
  * line sizes are a multiple of the respective linesize_align[i].
+ *
+ * May only be used if a codec with CODEC_CAP_DR1 has been opened.
+ * If CODEC_FLAG_EMU_EDGE is not set, the dimensions must have been increased
+ * according to avcodec_get_edge_width() before.
  *)
 procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PCint;
                                     linesize_align: PQuadIntArray);
@@ -4215,6 +4223,9 @@ function av_get_bits_per_sample_format(sample_fmt: TSampleFormat): cint;
 const
   AV_PARSER_PTS_NB      = 4;
   PARSER_FLAG_COMPLETE_FRAMES = $0001;
+{$IF LIBAVCODEC_VERSION >= 52070000} // 52.70.0
+  PARSER_FLAG_ONCE            = $0002;
+{$IFEND}
 
 type
   {* frame parsing *}
