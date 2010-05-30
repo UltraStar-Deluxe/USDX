@@ -14,20 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *)
-
-(*
+ *
  * This is a part of Pascal porting of ffmpeg.
  * - Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
  * - For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  *   in the source codes.
  * - Changes and updates by the UltraStar Deluxe Team
- *)
-
-(*
+ *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 52.67.2, revision 23191, Wed May 19 19:30 2010 CET
+ * Max. version: 52.67.2, revision 23153, Sun May 30 20:30 2010 CET
  *
  *)
 
@@ -3015,7 +3011,11 @@ type
      *)
     crf_max: cfloat;
     {$IFEND}
-  end;
+
+    {$IF LIBAVCODEC_VERSION >= 52067002} // >= 52.67.2
+    log_level_offset: cint;
+    {$IFEND}
+  end; {TAVCodecContext}
 
 (**
  * AVCodec.
