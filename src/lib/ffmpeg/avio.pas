@@ -15,24 +15,20 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *)
-
-(*
+ *
  * This is a part of Pascal porting of ffmpeg.
  * - Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
  * - For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
  *   in the source codes.
  * - Changes and updates by the UltraStar Deluxe Team
- *)
-
-(*
+ *
  * Conversion of libavformat/avio.h
  * unbuffered I/O operations
  * @warning This file has to be considered an internal but installed
  * header, so it should not be directly included in your projects.
  *
  * update to
- * Max. avformat version: 52.62.0, revision 23004, Tue May 11 19:29:00 2010 CET 
+ * Max. avformat version: 52.67.0, revision 23357, Sun May 30 21:30:00 2010 CET 
  *)
 
 unit avio;
