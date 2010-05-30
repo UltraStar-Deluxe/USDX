@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 52.70.0, revision 23332, Sun May 30 20:30 2010 CET
+ * Max. version: 52.72.0, revision 23338, Sun May 30 20:55 2010 CET
  *
  *)
 
@@ -82,7 +82,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 70;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 72;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -847,6 +847,14 @@ const
    * as a last resort.
    *)
   CODEC_CAP_SUBFRAMES        = $0100;
+  {$IFEND}
+
+  {$IF LIBAVCODEC_VERSION >= 52071000} // >= 52.71.0
+  (**
+   * Codec is experimental and is thus avoided in favor of non experimental
+   * encoders
+   *)
+  CODEC_CAP_EXPERIMENTAL     = $0200;
   {$IFEND}
 
    //the following defines may change, don't expect compatibility if you use them

@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *)
-
-(*
+ *
  * This is a part of Pascal porting of ffmpeg.
  * - Originally by Victor Zinetz for Delphi and Free Pascal on Windows.
  * - For Mac OS X, some modifications were made by The Creative CAT, denoted as CAT
@@ -25,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavcodec/opt.h
- * Max. avcodec version: 52.67.0, revision 23057, Tue May 11 18:17 2010 CET 
+ * Max. avcodec version: 52.72.0, revision 23338, Sun May 30 20:55 2010 CET 
  *
  *)
 
