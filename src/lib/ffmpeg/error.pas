@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/error.h
- * Max. avutil version:  50.15.2, revision 23059, Tue May 11 18:30 2010 CET
+ * Max. avutil version:  50.16.0, revision 23255, Sun May 30 22:05:00 2010 CET
  *
  *)
 
