@@ -14,16 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with FFmpeg; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *)
-
-(*
+ *
  * FFmpeg Pascal port
  * - Ported by the UltraStar Deluxe Team
- *)
-
-(*
+ *
  * Conversion of libswscale/swscale.h
- * Max. version: 0.10.0, revision 31050, Tue May 11 19:40:00 2010 CET 
+ * Max. version: 0.10.0, revision 31279, Tue May 30 20:25:00 2010 CET 
  *)
  
 unit swscale;
