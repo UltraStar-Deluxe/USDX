@@ -812,9 +812,18 @@ begin
           Exit;
         end;
 
-        // no error -> wait for user input
-        SDL_Delay(100);
-        Continue;
+        // url_feof() does not detect an EOF for some files
+        // so we have to do it this way.
+        if ((FormatCtx^.file_size <> 0) and
+            (ByteIOCtx^.pos >= FormatCtx^.file_size)) then
+        begin
+          PacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
+          Exit;
+        end;
+
+        // unknown error occured, exit
+        PacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
+        Exit;
       end;
 
       if (Packet.stream_index = AudioStreamIndex) then
