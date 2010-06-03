@@ -62,6 +62,12 @@ type
     function GetClock(): real; override;
   end;
 
+  TTimebarMode = (
+    tbmCurrent,   // current song position
+    tbmRemaining, // remaining time
+    tbmTotal      // total time
+  );
+
 type
   TScreenSing = class(TMenu)
   private
@@ -70,6 +76,7 @@ type
     fVideoClip:    IVideo;
     fLyricsSync: TLyricsSyncSource;
     fMusicSync: TMusicSyncSource;
+    fTimebarMode: TTimebarMode;
   protected
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
     Paused:     boolean; //pause Mod
@@ -178,7 +185,9 @@ begin
         Result := false;
         Exit;
       end;
-      Ord('V'): // show visualization
+
+      // show visualization
+      Ord('V'):
       begin
         fShowVisualization := not fShowVisualization;
 
@@ -193,9 +202,21 @@ begin
         end;
         Exit;
       end;
+
+      // pause
       Ord('P'):
       begin
         Pause;
+        Exit;
+      end;
+
+      // toggle time display
+      Ord('T'):
+      begin
+        if (fTimebarMode = High(TTimebarMode)) then
+          fTimebarMode := Low(TTimebarMode)
+        else
+          Inc(fTimebarMode);
         Exit;
       end;
     end;
@@ -449,6 +470,8 @@ begin
 
   Statics[StaticP3R].Visible := V3R;
   Text[TextP3R].Visible     := V3R;
+
+  fTimebarMode := tbmCurrent;
 
   // FIXME: sets path and filename to ''
   ResetSingTemp;
@@ -725,8 +748,10 @@ end;
 
 function TScreenSing.Draw: boolean;
 var
-  Min:   integer;
-  Sec:   integer;
+  DisplayTime:  real;
+  DisplayPrefix: string;
+  DisplayMin:   integer;
+  DisplaySec:   integer;
   T:     integer;
   CurLyricsTime: real;
   VideoFrameTime: Extended;
@@ -769,53 +794,31 @@ begin
     end; // case
   end; // if
 
-  ////
-  // dual screen, part 1
-  ////////////////////////
-
-  // Note: ScreenX is the offset of the current screen in dual-screen mode so we
-  // will move the statics and texts to the correct screen here.
-  // FIXME: clean up this weird stuff. Commenting this stuff out, nothing
-  //   was missing on screen w/ 6 players - so do we even need this stuff?
-  {Statics[StaticP1].Texture.X := Statics[StaticP1].Texture.X + 10 * ScreenX;
-
-  Text[TextP1].X := Text[TextP1].X + 10 * ScreenX;  }
-
-  {Statics[StaticP1ScoreBG].Texture.X  := Statics[StaticP1ScoreBG].Texture.X + 10*ScreenX;
-  Text[TextP1Score].X                := Text[TextP1Score].X + 10*ScreenX;}
-
-  {Statics[StaticP2R].Texture.X := Statics[StaticP2R].Texture.X + 10 * ScreenX;
-
-  Text[TextP2R].X := Text[TextP2R].X + 10 * ScreenX; }
-
-  {Statics[StaticP2RScoreBG].Texture.X := Statics[StaticP2RScoreBG].Texture.X + 10*ScreenX;
-  Text[TextP2RScore].X               := Text[TextP2RScore].X + 10*ScreenX;}
-
-  // end of weird stuff
-  {
-  Statics[1].Texture.X := Statics[1].Texture.X + 10 * ScreenX;     }
-
- { for T := 0 to 1 do
-    Text[T].X := Text[T].X + 10 * ScreenX;    }
-
   // retrieve current lyrics time, we have to store the value to avoid
   // that min- and sec-values do not match
   CurLyricsTime := LyricsState.GetCurrentTime();
-  Min := Round(CurLyricsTime) div 60;
-  Sec := Round(CurLyricsTime) mod 60;
+
+  // retrieve time for timebar text
+  case (fTimebarMode) of
+    tbmRemaining: begin
+      DisplayTime := LyricsState.TotalTime - CurLyricsTime;
+      DisplayPrefix := '-';
+    end;
+    tbmTotal: begin
+      DisplayTime := LyricsState.TotalTime;
+      DisplayPrefix := '#';
+    end;
+    else begin
+      DisplayTime := CurLyricsTime;
+      DisplayPrefix := '';
+    end;
+  end;
+  DisplayMin := Round(DisplayTime) div 60;
+  DisplaySec := Round(DisplayTime) mod 60;
 
   // update static menu with time ...
-  Text[TextTimeText].Text := '';
-  if Min < 10 then
-    Text[TextTimeText].Text := '0';
-  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Min) + ':';
-  if Sec < 10 then
-    Text[TextTimeText].Text := Text[TextTimeText].Text + '0';
-  Text[TextTimeText].Text := Text[TextTimeText].Text + IntToStr(Sec);
-
-  // draw static menu (BG)
-  // Note: there is no menu and the animated background brakes the video playback
-  //DrawBG;
+  Text[TextTimeText].Text := Format('%s%.2d:%.2d',
+      [DisplayPrefix, DisplayMin, DisplaySec]);
 
   //the song was sung to the end?
   Line := Lyrics.GetUpperLine();
@@ -857,8 +860,10 @@ begin
   //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LyricsState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
   if ShowFinish then
   begin
-    if (not AudioPlayback.Finished) and ((CurrentSong.Finish = 0) or
-      (LyricsState.GetCurrentTime() * 1000 <= CurrentSong.Finish)) and (not Settings.Finish) then
+    if (not AudioPlayback.Finished) and
+       ((CurrentSong.Finish = 0) or
+        (LyricsState.GetCurrentTime() * 1000 <= CurrentSong.Finish)) and
+       (not Settings.Finish) then
     begin
       // analyze song if not paused
       if (not Paused) then
@@ -885,27 +890,6 @@ begin
 
   // draw scores
   Scores.Draw;
-
-  ////
-  // dual screen, part 2
-  ////////////////////////
-
-  // Note: ScreenX is the offset of the current screen in dual-screen mode so we
-  // will move the statics and texts to the correct screen here.
-  // FIXME: clean up this weird stuff
-
-  {Statics[StaticP1].Texture.X := Statics[StaticP1].Texture.X - 10 * ScreenX;
-  Text[TextP1].X := Text[TextP1].X - 10 * ScreenX;
-
-  Statics[StaticP2R].Texture.X := Statics[StaticP2R].Texture.X - 10 * ScreenX;
-  Text[TextP2R].X := Text[TextP2R].X - 10 * ScreenX;
-
-  // end of weird
-
-  Statics[1].Texture.X := Statics[1].Texture.X - 10 * ScreenX;
-
-  for T := 0 to 1 do
-    Text[T].X := Text[T].X - 10 * ScreenX;        }
 
   // draw pausepopup
   // FIXME: this is a workaround that the static is drawn over the lyrics, lines, scores and effects
