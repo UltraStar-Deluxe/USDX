@@ -266,7 +266,7 @@ begin
       FadeStartTime := 0;
       if ((Ini.ScreenFade = 1) and (not FadeFailed)) then
         FadeEnabled := true
-      else if (Ini.ScreenFade = 0) then
+      else
         FadeEnabled := false;
 
       eDraw.CallHookChain(false);
