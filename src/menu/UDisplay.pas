@@ -56,7 +56,7 @@ type
 
       FadeEnabled:   boolean;  // true if fading is enabled
       FadeFailed:    boolean;  // true if fading is possible (enough memory, etc.)
-      FadeTime:      cardinal; // time when fading starts, 0 means that the fade texture must be initialized
+      FadeStartTime: cardinal; // time when fading starts, 0 means that the fade texture must be initialized
       DoneOnShow:    boolean;  // true if passed onShow after fading
 
       FadeTex:       array[0..1] of GLuint;
@@ -130,12 +130,12 @@ var
 const
   { constants for screen transition
     time in milliseconds }
-  Transition_Fade_Time = 400; 
+  FADE_DURATION = 400;
   { constants for software cursor effects
     time in milliseconds }
-  Cursor_FadeIn_Time = 500;      // seconds the fade in effect lasts
-  Cursor_FadeOut_Time = 2000;    // seconds the fade out effect lasts
-  Cursor_AutoHide_Time = 5000;   // seconds until auto fade out starts if there is no mouse movement
+  CURSOR_FADE_IN_TIME = 500;      // seconds the fade in effect lasts
+  CURSOR_FADE_OUT_TIME = 2000;    // seconds the fade out effect lasts
+  CURSOR_AUTOHIDE_TIME = 5000;   // seconds until auto fade out starts if there is no mouse movement
 
 implementation
 
@@ -167,7 +167,7 @@ begin
   BlackScreen         := false;
 
   // fade mod
-  FadeTime   := 0;
+  FadeStartTime := 0;
   FadeEnabled := (Ini.ScreenFade = 1);
   FadeFailed  := false;
   DoneOnShow  := false;
@@ -222,11 +222,6 @@ var
 begin
   Result := true;
 
-  //We don't need this here anymore,
-  //Because the background care about cleaning the buffers
-  //glClearColor(1, 1, 1 , 0);
-  //glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-
   for S := 1 to Screens do
   begin
     ScreenAct := S;
@@ -269,7 +264,7 @@ begin
         ScreenPopupCheck.Draw;
 
       // fade mod
-      FadeTime := 0;
+      FadeStartTime := 0;
       if ((Ini.ScreenFade = 1) and (not FadeFailed)) then
         FadeEnabled := true
       else if (Ini.ScreenFade = 0) then
@@ -288,7 +283,7 @@ begin
       if (FadeEnabled and not FadeFailed) then
       begin
         //Create Fading texture if we're just starting
-        if FadeTime = 0 then
+        if FadeStartTime = 0 then
         begin
           // draw screen that will be faded
           ePreDraw.CallHookChain(false);
@@ -329,16 +324,8 @@ begin
 
           // set fade time once on second screen (or first if screens = 1)
           if (Screens = 1) or (S = 2) then
-            FadeTime := SDL_GetTicks;
+            FadeStartTime := SDL_GetTicks;
         end; // end texture creation in first fading step
-
-        {//do some time-based fading
-        currentTime := SDL_GetTicks();
-        if (currentTime > LastFadeTime+30) and (S = 1) then
-        begin
-          FadeState := FadeState + 5;
-          LastFadeTime := currentTime;
-        end;   }
 
         // blackscreen-hack
         if not BlackScreen then
@@ -354,10 +341,10 @@ begin
         end;
 
         // and draw old screen over it... slowly fading out
-        if (FadeTime = 0) then
+        if (FadeStartTime = 0) then
           FadeStateSquare := 0 // for first screen if screens = 2
         else
-          FadeStateSquare := sqr((SDL_GetTicks - FadeTime) / Transition_Fade_Time);
+          FadeStateSquare := sqr((SDL_GetTicks - FadeStartTime) / FADE_DURATION);
 
         if (FadeStateSquare < 1) then
         begin
@@ -399,10 +386,12 @@ begin
         NextScreen.OnShow;
       end;
 
-      if ((FadeTime + Transition_Fade_Time < SDL_GetTicks) or (not FadeEnabled) or FadeFailed) and ((Screens = 1) or (S = 2)) then
+      if ((FadeStartTime + FADE_DURATION < SDL_GetTicks) or
+          (not FadeEnabled) or FadeFailed) and
+         ((Screens = 1) or (S = 2)) then
       begin
         // fade out complete...
-        FadeTime := 0;
+        FadeStartTime := 0;
         DoneOnShow := false;
         CurrentScreen.onHide;
         CurrentScreen.ShowFinish := false;
@@ -421,7 +410,7 @@ begin
       end;
     end; // if
 
-// Draw OSD only on first Screen if Debug Mode is enabled
+    // Draw OSD only on first Screen if Debug Mode is enabled
     if ((Ini.Debug = 1) or (Params.Debug)) and (S = 1) then
       DrawDebugInformation;
 
@@ -485,7 +474,7 @@ begin
   if (not Cursor_Visible) and (Cursor_LastMove <> 0) then
   begin
     if Cursor_Fade then // we use a trick here to consider progress of fade out
-      Cursor_LastMove := Ticks - round(Cursor_FadeIn_Time * (1 - (Ticks - Cursor_LastMove)/Cursor_FadeOut_Time))
+      Cursor_LastMove := Ticks - round(CURSOR_FADE_IN_TIME * (1 - (Ticks - Cursor_LastMove)/CURSOR_FADE_OUT_TIME))
     else
       Cursor_LastMove := Ticks;
 
@@ -533,7 +522,7 @@ begin
   begin // draw software cursor
     Ticks := SDL_GetTicks;
 
-    if (Cursor_Visible) and (Cursor_LastMove + Cursor_AutoHide_Time <= Ticks) then
+    if (Cursor_Visible) and (Cursor_LastMove + CURSOR_AUTOHIDE_TIME <= Ticks) then
     begin // start fade out after 5 secs w/o activity
       Cursor_Visible := false;
       Cursor_LastMove := Ticks;
@@ -545,17 +534,17 @@ begin
     begin
       if Cursor_Visible then
       begin // fade in
-        if (Cursor_LastMove + Cursor_FadeIn_Time <= Ticks) then
+        if (Cursor_LastMove + CURSOR_FADE_IN_TIME <= Ticks) then
           Cursor_Fade := false
         else
-          Alpha := sin((Ticks - Cursor_LastMove) * 0.5 * pi / Cursor_FadeIn_Time) * 0.7;
+          Alpha := sin((Ticks - Cursor_LastMove) * 0.5 * pi / CURSOR_FADE_IN_TIME) * 0.7;
       end
       else
       begin //fade out
-        if (Cursor_LastMove + Cursor_FadeOut_Time <= Ticks) then
+        if (Cursor_LastMove + CURSOR_FADE_OUT_TIME <= Ticks) then
           Cursor_Fade := false
         else
-          Alpha := cos((Ticks - Cursor_LastMove) * 0.5 * pi / Cursor_FadeOut_Time) * 0.7;
+          Alpha := cos((Ticks - Cursor_LastMove) * 0.5 * pi / CURSOR_FADE_OUT_TIME) * 0.7;
       end;
     end;
 
