@@ -51,7 +51,7 @@ type
       ePreDraw: THookableEvent;
       eDraw: THookableEvent;
 
-      //fade-to-black-hack
+      // fade-to-black
       BlackScreen:   boolean;
 
       FadeEnabled:   boolean;  // true if fading is enabled
@@ -87,7 +87,7 @@ type
       NextScreen:          PMenu;
       CurrentScreen:       PMenu;
 
-      //popup data
+      // popup data
       NextScreenWithCheck: Pmenu;
       CheckOK:             boolean;
 
@@ -160,13 +160,13 @@ begin
   ePreDraw := THookableEvent.Create('Display.PreDraw');
   eDraw := THookableEvent.Create('Display.Draw');
 
-  //popup hack
+  // init popup
   CheckOK             := false;
   NextScreen          := nil;
   NextScreenWithCheck := nil;
   BlackScreen         := false;
 
-  // fade mod
+  // init fade
   FadeStartTime := 0;
   FadeEnabled := (Ini.ScreenFade = 1);
   FadeFailed  := false;
@@ -175,7 +175,7 @@ begin
   glGenTextures(2, PGLuint(@FadeTex));
   InitFadeTextures();
 
-  //Set LastError for OSD to No Error
+  // set LastError for OSD to No Error
   OSD_LastError := 'No Errors';
 
   // software cursor default values
@@ -281,7 +281,7 @@ begin
       
       if (FadeEnabled and not FadeFailed) then
       begin
-        //Create Fading texture if we're just starting
+        // create fading texture if we're just starting
         if FadeStartTime = 0 then
         begin
           // draw screen that will be faded
@@ -313,7 +313,6 @@ begin
             Log.LogError('Fading disabled: ' + gluErrorString(glError), 'TDisplay.Draw');
           end;
 
-          // blackscreen-hack
           if not BlackScreen and (S = 1) and not DoneOnShow then
           begin
             NextScreen.OnShow;
@@ -326,7 +325,6 @@ begin
             FadeStartTime := SDL_GetTicks;
         end; // end texture creation in first fading step
 
-        // blackscreen-hack
         if not BlackScreen then
         begin
           ePreDraw.CallHookChain(false);
@@ -335,6 +333,7 @@ begin
         end
         else if ScreenAct = 1 then
         begin
+          // draw black screen
           glClearColor(0, 0, 0, 1);
           glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
         end;
@@ -378,8 +377,8 @@ begin
           //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         end;
       end
-      
-      // blackscreen hack
+
+      // there is no need to init next screen if it is a black screen
       else if not BlackScreen then
       begin
         NextScreen.OnShow;
