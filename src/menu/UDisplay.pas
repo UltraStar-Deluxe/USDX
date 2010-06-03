@@ -233,8 +233,7 @@ begin
 
     glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
-    // popup hack
-    // check was successful... move on
+    // popup check was successful... move on
     if CheckOK then
     begin
       if assigned(NextScreenWithCheck) then
@@ -255,7 +254,7 @@ begin
       ePreDraw.CallHookChain(false);
       CurrentScreen.Draw;
 
-      //popup mod
+      // popup
       if (ScreenPopupError <> nil) and ScreenPopupError.Visible then
         ScreenPopupError.Draw
       else if (ScreenPopupInfo <> nil) and ScreenPopupInfo.Visible then
@@ -263,7 +262,7 @@ begin
       else if (ScreenPopupCheck <> nil) and ScreenPopupCheck.Visible then
         ScreenPopupCheck.Draw;
 
-      // fade mod
+      // fade
       FadeStartTime := 0;
       if ((Ini.ScreenFade = 1) and (not FadeFailed)) then
         FadeEnabled := true
