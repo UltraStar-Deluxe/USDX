@@ -562,6 +562,13 @@ ac_unique_file="src/ultrastardx.dpr"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 DEFINE_HAVE_PORTMIXER
+libpcre_LIBDIR
+DEFINE_HAVE_LIBPCRE
+libpcre_VERSION_INT
+libpcre_VERSION_RELEASE
+libpcre_VERSION_MINOR
+libpcre_VERSION_MAJOR
+libpcre_VERSION
 DEFINE_HAVE_PORTAUDIO
 portaudio_VERSION_INT
 portaudio_VERSION_RELEASE
@@ -738,7 +745,9 @@ libswscale_VERSION
 libprojectM_VERSION
 libprojectM_INCLUDEDIR
 libprojectM_DATADIR
-portaudio_VERSION'
+portaudio_VERSION
+libpcre_VERSION
+libpcre_LIBDIR'
 
 
 # Initialize some variables set by options.
@@ -1411,6 +1420,10 @@ Some influential environment variables:
               /usr/share/projectM), overriding pkg-config
   portaudio_VERSION
               version of portaudio, overriding pkg-config
+  libpcre_VERSION
+              version of libpcre, overriding pkg-config
+  libpcre_LIBDIR
+              library dir (e.g. /usr/lib, /sw/lib, ...), overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -5772,6 +5785,192 @@ eof
     else
 	DEFINE_HAVE_PORTAUDIO=UNDEF
     fi
+
+
+
+# find pcre
+libpcre_PKG="libpcre"
+
+    have_lib="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $libpcre_PKG" >&5
+$as_echo_n "checking for $libpcre_PKG... " >&6; }
+    if test x"$with_libpcre" = xnocheck; then
+        # do not call pkg-config, use user settings
+        have_lib="yes"
+    elif test x"$with_libpcre" != xno; then
+        # check if package exists
+	if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$libpcre_PKG\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$libpcre_PKG") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+            have_lib="yes"
+            libpcre_LIBS=`$PKG_CONFIG --libs --silence-errors "$libpcre_PKG"`
+            libpcre_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "$libpcre_PKG"`
+            libpcre_LIBDIRS=`
+    echo "$libpcre_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+`
+            # add library directories to LIBS (ignore *_LIBS for now)
+	    if test -n "$libpcre_LIBDIRS"; then
+                LIBS="$LIBS $libpcre_LIBDIRS"
+            fi
+
+fi
+    fi
+    if test x$have_lib = xyes; then
+        libpcre_HAVE="yes"
+        if test -n "$libpcre_LIBDIRS"; then
+            # show additional lib-dirs
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes ($libpcre_LIBDIRS)" >&5
+$as_echo "yes ($libpcre_LIBDIRS)" >&6; }
+        else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+        fi
+    else
+        libpcre_HAVE="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+        # check if package is required
+        if test xno = xyes -o x"$with_libpcre" = xyes ; then
+            # print error message and quit
+            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "$libpcre_PKG"`
+            as_fn_error "
+
+$err_msg
+
+Alternatively, you may set --with-libpcre=nocheck and the environment
+variables libpcre_[...] (see configure --help)
+to appropriate values to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+        fi
+    fi
+
+
+    if test x$libpcre_HAVE = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of libpcre" >&5
+$as_echo_n "checking version of libpcre... " >&6; }
+
+
+    # check if variable was defined by the user
+    if test -z "$libpcre_VERSION"; then
+        # if not, get it from pkg-config
+        if test x$libpcre_HAVE = xyes; then
+            if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$libpcre_PKG\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$libpcre_PKG") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  libpcre_VERSION=`$PKG_CONFIG --modversion --silence-errors "$libpcre_PKG"`
+else
+  # print error message and quit
+                 err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "$libpcre_PKG"`
+                 as_fn_error "
+
+$err_msg
+
+If --with-libpcre=nocheck is defined the environment variable
+libpcre_VERSION
+must be set to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+
+
+fi
+        fi
+    fi
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$libpcre_VERSION]" >&5
+$as_echo "[$libpcre_VERSION]" >&6; }
+    else
+        libpcre_VERSION="0.0.0"
+    fi
+
+    version=$libpcre_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    libpcre_VERSION_MAJOR=$(($major))
+    libpcre_VERSION_MINOR=$(($minor))
+    libpcre_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    libpcre_VERSION_INT=$(($libpcre_VERSION_MAJOR*1000000+$libpcre_VERSION_MINOR*1000+$libpcre_VERSION_RELEASE))
+
+
+
+
+
+
+
+
+    if [ x$libpcre_HAVE = xyes ]; then
+        DEFINE_HAVE_LIBPCRE=DEFINE
+    else
+	DEFINE_HAVE_LIBPCRE=UNDEF
+    fi
+
+
+# get libpcre library dir
+
+
+    # check if variable was defined by the user
+    if test -z "$libpcre_LIBDIR"; then
+        # if not, get it from pkg-config
+        if test x$libpcre_HAVE = xyes; then
+            if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$libpcre_PKG\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "$libpcre_PKG") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  libpcre_LIBDIR=`$PKG_CONFIG --variable=libdir --silence-errors "$libpcre_PKG"`
+else
+  # print error message and quit
+                 err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "$libpcre_PKG"`
+                 as_fn_error "
+
+$err_msg
+
+If --with-libpcre=nocheck is defined the environment variable
+libpcre_LIBDIR
+must be set to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+
+
+fi
+        fi
+    fi
+
 
 
 # find portmixer
