@@ -120,7 +120,7 @@ const
  * Returns the LIBAVUTIL_VERSION_INT constant.
  *)
 function avutil_version(): cuint;
-  cdecl; external av__format;
+  cdecl; external av__util;
 {$IFEND}
 
 {$IF LIBAVUTIL_VERSION >= 50004000} // >= 50.4.0
@@ -128,13 +128,13 @@ function avutil_version(): cuint;
  * Returns the libavutil build-time configuration.
  *)
 function avutil_configuration(): PAnsiChar;
-  cdecl; external av__format;
+  cdecl; external av__util;
 
 (**
  * Returns the libavutil license.
  *)
 function avutil_license(): PAnsiChar;
-  cdecl; external av__format;
+  cdecl; external av__util;
 {$IFEND}
 
 {
