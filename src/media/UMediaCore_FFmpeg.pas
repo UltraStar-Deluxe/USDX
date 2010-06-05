@@ -41,6 +41,7 @@ uses
   avformat,
   avutil,
   avio,
+  swscale,
   UMusic,
   ULog,
   UPath;
@@ -121,9 +122,83 @@ const
 var
   Instance: TMediaCore_FFmpeg;
 
+function AV_VERSION_INT(a, b, c: cardinal): cuint;
+begin
+  Result := (a shl 16) or (b shl 8) or c;
+end;
+
+procedure CheckVersions();
+var
+  libVersion: cuint;
+  headerVersion: cuint;
+
+  function hexVerToStr(Version: cuint): string;
+  var
+    Major, Minor, Release: cardinal;
+  begin
+    Major   := (Version shr 16) and $FF;;
+    Minor   := (Version shr 8) and $FF;
+    Release := Version and $FF;
+    Result := Format('%d.%d.%d', [Major, Minor, Release]);
+  end;
+
+begin
+  libVersion := avcodec_version();
+  headerVersion := AV_VERSION_INT(
+      LIBAVCODEC_VERSION_MAJOR,
+      LIBAVCODEC_VERSION_MINOR,
+      LIBAVCODEC_VERSION_RELEASE);
+  if (libVersion <> headerVersion) then
+  begin
+    Log.LogError(Format('%s header (%s) and DLL (%s) versions do not match.',
+        ['libavcodec', hexVerToStr(headerVersion), hexVerToStr(libVersion)]));
+  end;
+
+  {$IF LIBAVFORMAT_VERSION >= 52020000} // 52.20.0
+  libVersion := avformat_version();
+  headerVersion := AV_VERSION_INT(
+      LIBAVFORMAT_VERSION_MAJOR,
+      LIBAVFORMAT_VERSION_MINOR,
+      LIBAVFORMAT_VERSION_RELEASE);
+  if (libVersion <> headerVersion) then
+  begin
+    Log.LogError(Format('%s header (%s) and DLL (%s) versions do not match.',
+        ['libavformat', hexVerToStr(headerVersion), hexVerToStr(libVersion)]));
+  end;
+  {$IFEND}
+
+  {$IF LIBAVUTIL_VERSION >= 49008000} // 49.8.0
+  libVersion := avutil_version();
+  headerVersion := AV_VERSION_INT(
+      LIBAVUTIL_VERSION_MAJOR,
+      LIBAVUTIL_VERSION_MINOR,
+      LIBAVUTIL_VERSION_RELEASE);
+  if (libVersion <> headerVersion) then
+  begin
+    Log.LogError(Format('%s header (%s) and DLL (%s) versions do not match.',
+        ['libavutil', hexVerToStr(headerVersion), hexVerToStr(libVersion)]));
+  end;
+  {$IFEND}
+  
+  {$IF LIBSWSCALE_VERSION >= 000006001} // 0.6.1
+  libVersion := swscale_version();
+  headerVersion := AV_VERSION_INT(
+      LIBSWSCALE_VERSION_MAJOR,
+      LIBSWSCALE_VERSION_MINOR,
+      LIBSWSCALE_VERSION_RELEASE);
+  if (libVersion <> headerVersion) then
+  begin
+    Log.LogError(Format('%s header (%s) and DLL (%s) versions do not match.',
+        ['libswscale', hexVerToStr(headerVersion), hexVerToStr(libVersion)]));
+  end;
+  {$IFEND}
+end;
+
 constructor TMediaCore_FFmpeg.Create();
 begin
   inherited;
+
+  CheckVersions();
   av_register_protocol(@UTF8FileProtocol);
   AVCodecLock := SDL_CreateMutex();
 end;
