@@ -321,12 +321,6 @@ begin
   end;
 
   // add Exit-button
-  //ButtonTheme := Theme.OptionsRecord.ButtonExit;
-  // adjust button position
-  //if (WidgetYPos <> 0) then
-  //  ButtonTheme.Y := WidgetYPos;
-  //AddButton(ButtonTheme);
-  // <mog> I uncommented the stuff above, because it's not skinable :X 
   AddButton(Theme.OptionsRecord.ButtonExit);
   if (Length(Button[0].Text) = 0) then
     AddButtonText(20, 5, Theme.Options.Description[7]);
@@ -783,7 +777,7 @@ begin
     for ChannelIndex := 0 to High(Device.CaptureChannel) do
     begin
       // load player color mapped to current input channel
-      if (DeviceCfg.ChannelToPlayerMap[ChannelIndex] > 0) then
+      if (DeviceCfg.ChannelToPlayerMap[ChannelIndex] <> CHANNEL_OFF) then
       begin
         // set mapped channel to corresponding player-color
         LoadColor(State.R, State.G, State.B, 'P'+ IntToStr(DeviceCfg.ChannelToPlayerMap[ChannelIndex]) + 'Dark');
