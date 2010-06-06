@@ -471,9 +471,12 @@ begin
         Flags := BASS_RecordGetInput(SourceIndex, PSingle(nil)^);
         if (Flags <> -1) then
         begin
-          // is the current source a mic-source?
-          if ((Flags and BASS_INPUT_TYPE_MIC) <> 0) then
+          // chech if current source is a mic (and none was set before)
+          if ((Flags and BASS_INPUT_TYPE_MIC) <> 0) and
+             (BassDevice.MicSource = -1) then
+          begin
             BassDevice.MicSource := SourceIndex;
+          end;
         end;
 
         Inc(SourceIndex);
