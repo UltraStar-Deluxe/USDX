@@ -88,6 +88,7 @@ type
       procedure StartPreview;
       procedure StopPreview;
       procedure UpdateInputDevice;
+      function ValidateSettings: boolean;
       procedure ChangeVolume(VolumeChange: single);
       procedure DrawVolume(x, y, Width, Height: single);
       procedure DrawVUMeter(const State: TDrawState; x, y, Width, Height: single);
@@ -120,6 +121,7 @@ uses
   TextGL,
   UGraphic,
   UDraw,
+  ULanguage,
   UMain,
   UMenuSelectSlide,
   UMenuText,
@@ -168,7 +170,7 @@ begin
       SDLK_BACKSPACE:
         begin
           // TODO: Show Save/Abort screen
-          if (AudioInputProcessor.ValidateSettings()) then
+          if (ValidateSettings()) then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -179,7 +181,7 @@ begin
         begin
           if (SelInteraction = ExitButtonIID) then
           begin
-            if (AudioInputProcessor.ValidateSettings()) then
+            if (ValidateSettings()) then
             begin
               Ini.Save;
               AudioPlayback.PlaySound(SoundLib.Back);
@@ -210,6 +212,24 @@ begin
           UpdateInputDevice;
         end;
     end;
+  end;
+end;
+
+function TScreenOptionsRecord.ValidateSettings: boolean;
+var
+  BadPlayer: integer;
+begin
+  BadPlayer := AudioInputProcessor.ValidateSettings();
+  if (BadPlayer <> 0) then
+  begin
+    ScreenPopupError.ShowPopup(
+        Format(Language.Translate('ERROR_PLAYER_DEVICE_ASSIGNMENT'),
+        [BadPlayer]));
+    Result := false;
+  end
+  else
+  begin
+    Result := true;
   end;
 end;
 

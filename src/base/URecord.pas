@@ -139,9 +139,11 @@ type
       {**
        * Validates the mic settings.
        * If a player was assigned to multiple mics a popup will be displayed
-       * with the ID of the player and the return value will be false.
+       * with the ID of the player.
+       * The return value is the player number of the first player that is not
+       * configured correctly or 0 if all players are correct.
        *}
-      function ValidateSettings: boolean;
+      function ValidateSettings: integer;
 
       {**
        * Checks if players 1 to PlayerCount are configured correctly.
@@ -153,7 +155,12 @@ type
        * The PlayerState array is zero based (index 0 for player 1).
        *}
       function CheckPlayersConfig(PlayerCount: cardinal;
-          var PlayerState: TBooleanDynArray): integer;
+          var PlayerState: TBooleanDynArray): integer; overload;
+
+      {**
+       * Same as the array version but it does not output a state for each player.
+       *}
+      function CheckPlayersConfig(PlayerCount: cardinal): integer; overload;
 
       {**
        * Handle microphone input
@@ -185,8 +192,6 @@ implementation
 
 uses
   ULog,
-  UGraphic,
-  ULanguage,
   UNote;
 
 var
@@ -619,7 +624,7 @@ begin
   end;
 end;
 
-function TAudioInputProcessor.ValidateSettings: boolean;
+function TAudioInputProcessor.ValidateSettings: integer;
 const
   MAX_PLAYER_COUNT = 6; // FIXME: there should be a global variable for this
 var
@@ -648,10 +653,7 @@ begin
         // check if player is already assigned to another device/channel
         if (PlayerMap[PlayerID - 1]) then
         begin
-          ScreenPopupError.ShowPopup(
-              Format(Language.Translate('ERROR_PLAYER_DEVICE_ASSIGNMENT'),
-              [PlayerID]));
-          Result := false;
+          Result := PlayerID;
           Exit;
         end;
 
@@ -660,7 +662,7 @@ begin
       end;
     end;
   end;
-  Result := true;
+  Result := 0;
 end;
 
 function TAudioInputProcessor.CheckPlayersConfig(PlayerCount: cardinal;
@@ -706,6 +708,13 @@ begin
       Break;
     end;
   end;
+end;
+
+function TAudioInputProcessor.CheckPlayersConfig(PlayerCount: cardinal): integer;
+var
+  PlayerState: TBooleanDynArray;
+begin
+  CheckPlayersConfig(PlayerCount, PlayerState);
 end;
 
 {*

@@ -370,7 +370,6 @@ var
   Color: TRGB;
   VideoFile, BgFile: IPath;
   success: boolean;
-  PlayerState: TBooleanDynArray;
   BadPlayer: integer;
 begin
   inherited;
@@ -587,7 +586,7 @@ begin
     LyricsState.TotalTime := AudioPlayback.Length;
   LyricsState.UpdateBeats();
 
-  BadPlayer := AudioInputProcessor.CheckPlayersConfig(PlayersPlay, PlayerState);
+  BadPlayer := AudioInputProcessor.CheckPlayersConfig(PlayersPlay);
   if (BadPlayer <> 0) then
   begin
     ScreenPopupError.ShowPopup(
