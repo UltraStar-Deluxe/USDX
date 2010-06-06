@@ -88,12 +88,23 @@ type
     Note:           array of TPlayerNote;
   end;
 
+{* Player and music info *}
 var
+  {**
+   * Player info and state for each player.
+   * The amount of players is given by PlayersPlay.
+   *}
+  Player: array of TPlayer;
 
-  // player and music info
-  Player:      array of TPlayer;
+  {**
+   * Number of players or teams playing.
+   * Possible values: 1 - 6
+   *}
   PlayersPlay: integer;
 
+  {**
+   * Selected song for singing.
+   *}
   CurrentSong: TSong;
 
 const

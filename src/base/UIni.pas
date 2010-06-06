@@ -44,31 +44,34 @@ uses
   UPath;
 
 type
-  // TInputDeviceConfig stores the configuration for an input device.
-  // Configurations will be stored in the InputDeviceConfig array.
-  // Note that not all devices listed in InputDeviceConfig are active devices.
-  // Some might be unplugged and hence unavailable.
-  // Available devices are held in TAudioInputProcessor.DeviceList. Each
-  // TAudioInputDevice listed there has a CfgIndex field which is the index to
-  // its configuration in the InputDeviceConfig array.
-  // Name:
-  //   the name of the input device
-  // Input:
-  //   the index of the input source to use for recording
-  // ChannelToPlayerMap:
-  //   mapping of recording channels to players, e.g. ChannelToPlayerMap[0] = 2
-  //   maps the channel 0 (left) to player 2. A player index of 0 means that
-  //   the channel is not assigned to a player.
+  {**
+   * TInputDeviceConfig stores the configuration for an input device.
+   * Configurations will be stored in the InputDeviceConfig array.
+   * Note that not all devices listed in InputDeviceConfig are active devices.
+   * Some might be unplugged and hence unavailable.
+   * Available devices are held in TAudioInputProcessor.DeviceList. Each
+   * TAudioInputDevice listed there has a CfgIndex field which is the index to
+   * its configuration in the InputDeviceConfig array.
+   *}
   PInputDeviceConfig = ^TInputDeviceConfig;
   TInputDeviceConfig = record
-    Name:               string;
-    Input:              integer;
-    Latency:            integer; //**< latency in ms, or LATENCY_AUTODETECT for default
+    Name:               string;  //**< Name of the input device
+    Input:              integer; //**< Index of the input source to use for recording
+    Latency:            integer; //**< Latency in ms, or LATENCY_AUTODETECT for default
+
+    {**
+     * Mapping of recording channels to players, e.g. ChannelToPlayerMap[0] = 2
+     * maps the channel 0 (left) to player 2.
+     * A player index of 0 (CHANNEL_OFF) means that the channel is not assigned
+     * to any player (the channel is off).
+     *}
     ChannelToPlayerMap: array of integer;
   end;
 
+{* Constants for TInputDeviceConfig *}
 const
-  LATENCY_AUTODETECT = -1;
+  CHANNEL_OFF = 0;         // for field ChannelToPlayerMap
+  LATENCY_AUTODETECT = -1; // for field Latency
 
 type
 
@@ -87,6 +90,7 @@ type
       procedure LoadInputDeviceCfg(IniFile: TMemIniFile);
       procedure SaveInputDeviceCfg(IniFile: TIniFile);
       procedure LoadThemes(IniFile: TCustomIniFile);
+
       procedure LoadPaths(IniFile: TCustomIniFile);
       procedure LoadScreenModes(IniFile: TCustomIniFile);
 
@@ -658,7 +662,7 @@ begin
       for ChannelIndex := 0 to High(DeviceCfg.ChannelToPlayerMap) do
       begin
         DeviceCfg.ChannelToPlayerMap[ChannelIndex] :=
-          IniFile.ReadInteger('Record', Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex]), 0);
+          IniFile.ReadInteger('Record', Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex]), CHANNEL_OFF);
       end;
     end;
   end;
