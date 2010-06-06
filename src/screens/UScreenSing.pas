@@ -370,6 +370,8 @@ var
   Color: TRGB;
   VideoFile, BgFile: IPath;
   success: boolean;
+  PlayerState: TBooleanDynArray;
+  BadPlayer: integer;
 begin
   inherited;
 
@@ -584,6 +586,14 @@ begin
   else
     LyricsState.TotalTime := AudioPlayback.Length;
   LyricsState.UpdateBeats();
+
+  BadPlayer := AudioInputProcessor.CheckPlayersConfig(PlayersPlay, PlayerState);
+  if (BadPlayer <> 0) then
+  begin
+    ScreenPopupError.ShowPopup(
+        Format(Language.Translate('ERROR_PLAYER_NO_DEVICE_ASSIGNMENT'),
+        [BadPlayer]));
+  end;
 
   // prepare and start voice-capture
   AudioInput.CaptureStart;

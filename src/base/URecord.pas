@@ -124,6 +124,8 @@ type
       procedure SetVolume(Volume: single); virtual; abstract;
   end;
 
+  TBooleanDynArray = array of boolean;
+
   TAudioInputProcessor = class
     public
       Sound:  array of TCaptureBuffer; // sound-buffers for every player
@@ -133,9 +135,29 @@ type
       destructor Destroy; override;
 
       procedure UpdateInputDeviceConfig;
+
+      {**
+       * Validates the mic settings.
+       * If a player was assigned to multiple mics a popup will be displayed
+       * with the ID of the player and the return value will be false.
+       *}
       function ValidateSettings: boolean;
 
-      // handle microphone input
+      {**
+       * Checks if players 1 to PlayerCount are configured correctly.
+       * A player is configured if a device's channel is assigned to him.
+       * For each player (up to PlayerCount) the state will be in PlayerState.
+       * If a player's state is true the player is configured, otherwise not.
+       * The return value is the player number of the first player that is not
+       * configured correctly or 0 if all players are correct.
+       * The PlayerState array is zero based (index 0 for player 1).
+       *}
+      function CheckPlayersConfig(PlayerCount: cardinal;
+          var PlayerState: TBooleanDynArray): integer;
+
+      {**
+       * Handle microphone input
+       *}
       procedure HandleMicrophoneData(Buffer: PByteArray; Size: integer;
                                      InputDevice: TAudioInputDevice);
   end;
@@ -555,10 +577,10 @@ begin
         channelIndex := High(deviceCfg.ChannelToPlayerMap);
         // add missing channels or remove non-existing ones
         SetLength(deviceCfg.ChannelToPlayerMap, device.AudioFormat.Channels);
-        // initialize added channels to 0
+        // assign added channels to no player
         for i := channelIndex+1 to High(deviceCfg.ChannelToPlayerMap) do
         begin
-          deviceCfg.ChannelToPlayerMap[i] := 0;
+          deviceCfg.ChannelToPlayerMap[i] := CHANNEL_OFF;
         end;
 
         // associate ini-index with device
@@ -587,11 +609,11 @@ begin
 
       for channelIndex := 0 to channelCount-1 do
       begin
-        // set default at first start of USDX (1st device, 1st channel -> player1)
-        if ((channelIndex = 0) and (device.CfgIndex = 0)) then
-          deviceCfg.ChannelToPlayerMap[0] := 1
-        else
-          deviceCfg.ChannelToPlayerMap[channelIndex] := 0;
+        // Do not set any default on first start of USDX.
+        // Otherwise most probably the wrong device (internal sound card)
+        // will be selected.
+        // It is better to force the user to configure the mics himself.
+        deviceCfg.ChannelToPlayerMap[channelIndex] := CHANNEL_OFF;
       end;
     end;
   end;
@@ -603,7 +625,7 @@ const
 var
   I, J: integer;
   PlayerID: integer;
-  PlayerMap: array [0 .. MAX_PLAYER_COUNT] of boolean;
+  PlayerMap: array [0 .. MAX_PLAYER_COUNT - 1] of boolean;
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
 begin
@@ -621,10 +643,10 @@ begin
     begin
       // get player that was mapped to the current device channel
       PlayerID := InputDeviceCfg.ChannelToPlayerMap[J];
-      if (PlayerID <> 0) then
+      if (PlayerID <> CHANNEL_OFF) then
       begin
         // check if player is already assigned to another device/channel
-        if (PlayerMap[PlayerID]) then
+        if (PlayerMap[PlayerID - 1]) then
         begin
           ScreenPopupError.ShowPopup(
               Format(Language.Translate('ERROR_PLAYER_DEVICE_ASSIGNMENT'),
@@ -634,11 +656,56 @@ begin
         end;
 
         // mark player as assigned to a device
-        PlayerMap[PlayerID] := true;
+        PlayerMap[PlayerID - 1] := true;
       end;
     end;
   end;
   Result := true;
+end;
+
+function TAudioInputProcessor.CheckPlayersConfig(PlayerCount: cardinal;
+  var PlayerState: TBooleanDynArray): integer;
+var
+  DeviceIndex:  integer;
+  ChannelIndex: integer;
+  Device:       TAudioInputDevice;
+  DeviceCfg:    PInputDeviceConfig;
+  PlayerIndex:  integer;
+  I: integer;
+begin
+  SetLength(PlayerState, PlayerCount);
+  // set all entries to "not configured"
+  for I := 0 to High(PlayerState) do
+  begin
+    PlayerState[I] := false;
+  end;
+
+  // check each used device
+  for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
+  begin
+    Device := AudioInputProcessor.DeviceList[DeviceIndex];
+    if not assigned(Device) then
+      continue;
+    DeviceCfg := @Ini.InputDeviceConfig[Device.CfgIndex];
+
+    // check if device is used
+    for ChannelIndex := 0 to High(DeviceCfg.ChannelToPlayerMap) do
+    begin
+      PlayerIndex := DeviceCfg.ChannelToPlayerMap[ChannelIndex] - 1;
+      if (PlayerIndex >= 0) and (PlayerIndex < PlayerCount) then
+        PlayerState[PlayerIndex] := true;
+    end;
+  end;
+
+  Result := 0;
+  for I := 0 to High(PlayerState) do
+  begin
+    if (PlayerState[I] = false) then
+    begin
+      Result := I + 1;
+      Break;
+    end;
+  end;
 end;
 
 {*
@@ -737,7 +804,7 @@ begin
     // check if device is used
     for ChannelIndex := 0 to High(DeviceCfg.ChannelToPlayerMap) do
     begin
-      Player := DeviceCfg.ChannelToPlayerMap[ChannelIndex]-1;
+      Player := DeviceCfg.ChannelToPlayerMap[ChannelIndex] - 1;
       if (Player < 0) or (Player >= PlayersPlay) then
       begin
         Device.LinkCaptureBuffer(ChannelIndex, nil);
