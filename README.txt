@@ -44,9 +44,11 @@ Mac OS X.
  = 2. Release Notes =
  ====================
 
-- To change the path to the song directory add to config.ini:
-  [Path]
-  Songs=[SongFolder] (e.g. C:\Program Files\Ultrastar\Songs)
+- To set additional song directories change your config.ini like this:
+  [Directories]
+  SongDir1=C:\Users\My\Music\MyUSDXSongs
+  SongDir2=F:\EvenMoreUSDXSongs
+  SongDir...=... (some more directories)
 
 - To take a screenshot press "PrintScreen" key.
   Screenshots are saved in the directory "Screenshots".
