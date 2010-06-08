@@ -33,19 +33,19 @@ CreateDirectory $INSTDIR\plugins
 CreateDirectory $INSTDIR\covers
 CreateDirectory $INSTDIR\songs
 
-${If} ${AtLeastWinVista}
+${If} $UseAppData == true
 
   ; Create folders in appdata for current user
   SetShellVarContext current		
-  CreateDirectory $APPDATA\ultrastardx
-  CreateDirectory $APPDATA\ultrastardx\screenshots
-  CreateDirectory $APPDATA\ultrastardx\playlists
+  CreateDirectory $UserDataPath
+  CreateDirectory $UserDataPath\screenshots
+  CreateDirectory $UserDataPath\playlists
 
   SetOutPath "$INSTDIR"
 
-  CreateShortCut "screenshots.lnk" "$APPDATA\ultrastardx\screenshots"
-  CreateShortCut "playlists.lnk" "$APPDATA\ultrastardx\playlists"
-  CreateShortCut "config.ini.lnk" "$APPDATA\ultrastardx\config.ini"
+  CreateShortCut "screenshots.lnk" "$UserDataPath\screenshots"
+  CreateShortCut "playlists.lnk" "$UserDataPath\playlists"
+  CreateShortCut "config.ini.lnk" "$ConfigIniPath"
 
   SetShellVarContext all
 ${EndIf}

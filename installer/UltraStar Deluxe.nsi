@@ -7,6 +7,7 @@
 !include LogicLib.nsh
 !include InstallOptions.nsh
 !include nsDialogs.nsh
+!include UAC.nsh
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Variables
@@ -49,8 +50,8 @@ InstallDir "$PROGRAMFILES\${name}"
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\UltraStar Deluxe" "InstallDir"
 
 ; Windows Vista / Windows 7:
-
-RequestExecutionLevel admin
+; must be "user" for UAC plugin 
+RequestExecutionLevel user
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Interface Settings
@@ -109,8 +110,16 @@ RequestExecutionLevel admin
 !define MUI_FINISHPAGE_TEXT_LARGE
 !define MUI_FINISHPAGE_TEXT "$(page_finish_txt)"
 
-!define MUI_FINISHPAGE_RUN "$INSTDIR\${exe}.exe"
+; MUI_FINISHPAGE_RUN is executed as admin by default.
+; To get the config.ini location right it must be executed with user 
+; rights instead.
+!define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_NOTCHECKED
+!define MUI_FINISHPAGE_RUN_FUNCTION RunAppAsUser 
+
+Function RunAppAsUser 
+    UAC::ShellExec 'open' '' '$INSTDIR\${exe}.exe' '' '$INSTDIR'
+FunctionEnd
 
 !define MUI_FINISHPAGE_LINK "$(page_finish_linktxt)"
 !define MUI_FINISHPAGE_LINK_LOCATION "${homepage}"
@@ -135,7 +144,7 @@ RequestExecutionLevel admin
 
 ; Start menu page
 
-var ICONS_GROUP
+Var ICONS_GROUP
 !define MUI_STARTMENUPAGE_NODISABLE
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "${name}"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
@@ -148,6 +157,50 @@ var ICONS_GROUP
 ; USDX Settings Page
 
 Page custom Settings
+
+
+; User data info
+
+Var UseAppData    ; true if APPDATA is used for user data, false for INSTDIR
+Var UserDataPath  ; Path to user data dir (e.g. $INSTDIR)
+Var ConfigIniPath ; Path to config.ini (e.g. "$INSTDIR\config.ini")
+
+; Checks for write permissions on $INSTDIR\config.ini.
+; This function creates $INSTDIR\config.use as a marker file if
+; the user has write permissions.
+; Note: Must be run with user privileges
+Function CheckInstDirUserPermissions
+	ClearErrors
+	; try to open the ini file.
+	; Use "append" mode so an existing config.ini is not destroyed.
+	FileOpen $0 "$INSTDIR\config.ini" a
+	IfErrors end
+	; we have write permissions -> create a marker file
+	FileOpen $1 "$INSTDIR\config.use" a	
+	FileClose $1
+end:
+	FileClose $0
+FunctionEnd
+
+; Determines the directory used for config.ini and other user
+; settings and data.
+; Sets $UseAppData, $UserDataPath and $ConfigIniPath
+Function DetermineUserDataDir
+	Delete "$INSTDIR\config.use"
+	!insertmacro UAC.CallFunctionAsUser CheckInstDirUserPermissions
+	IfFileExists "$INSTDIR\config.use" 0 notexists
+	StrCpy $UseAppData false
+	StrCpy $UserDataPath "$INSTDIR"
+	Goto end
+notexists:
+	StrCpy $UseAppData true
+	SetShellVarContext current
+	StrCpy $UserDataPath "$APPDATA\ultrastardx"
+	SetShellVarContext all
+end:
+	Delete "$INSTDIR\config.use"	
+	StrCpy $ConfigIniPath "$UserDataPath\config.ini"
+FunctionEnd
 
 Function Settings
 
@@ -187,32 +240,17 @@ Function Settings
 	!insertmacro INSTALLOPTIONS_READ $sorting "Settings-$LANGUAGE" "Field 15" "State"
 	!insertmacro INSTALLOPTIONS_READ $songdir "Settings-$LANGUAGE" "Field 18" "State"
 
-	; Write all variables to config.ini
+	WriteINIStr "$ConfigIniPath" "Game" "Language" "$language2"
+	WriteINIStr "$ConfigIniPath" "Game" "Tabs" "$tabs"
+	WriteINIStr "$ConfigIniPath" "Game" "Sorting" "$sorting"
 
-	var /GLOBAL path_config
-	var /GLOBAL path_configini
-
-	${If} ${AtLeastWinVista}  
-		SetShellVarContext current
-		StrCpy $path_config "$APPDATA\ultrastardx"
-		SetShellVarContext all
-	${Else}
-		StrCpy $path_config "$INSTDIR"
-	${EndIf}
-
-	StrCpy $path_configini "$path_config\config.ini"
-
-	WriteINIStr "$path_configini" "Game" "Language" "$language2"
-	WriteINIStr "$path_configini" "Game" "Tabs" "$tabs"
-	WriteINIStr "$path_configini" "Game" "Sorting" "$sorting"
-
-	WriteINIStr "$path_configini" "Graphics" "FullScreen" "$fullscreen"
-	WriteINIStr "$path_configini" "Graphics" "Resolution" "$resolution"
+	WriteINIStr "$ConfigIniPath" "Graphics" "FullScreen" "$fullscreen"
+	WriteINIStr "$ConfigIniPath" "Graphics" "Resolution" "$resolution"
 
 	${If} $songdir != "$INSTDIR\songs"
-	WriteINIStr "$path_configini" "Directories" "SongDir1" "$songdir"
+	WriteINIStr "$ConfigIniPath" "Directories" "SongDir1" "$songdir"
 	${EndIf}
-
+		
 FunctionEnd ; Settings page End
 
 !insertmacro MUI_PAGE_FINISH
@@ -333,6 +371,8 @@ Section $(name_section1) Section1
 	SetOutPath $INSTDIR
 	SetOverwrite try
 
+	Call DetermineUserDataDir
+	
 	!include "${path_settings}\files_main_install.nsh"
 
 	; Create Shortcuts:
@@ -487,6 +527,8 @@ FunctionEnd
 
 Function .onInit
 
+	${UAC.I.Elevate.AdminOnly}
+
 	var /GLOBAL version
 	StrCpy $version "1.1beta"
 
@@ -559,4 +601,12 @@ end:
 continue:
 	!insertmacro MUI_LANGDLL_DISPLAY
 
+FunctionEnd
+
+Function .onInstFailed
+	${UAC.Unload}
+FunctionEnd
+ 
+Function .onInstSuccess
+	${UAC.Unload}
 FunctionEnd
