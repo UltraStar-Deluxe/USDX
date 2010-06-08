@@ -4,7 +4,7 @@
 
 ; Product Information:
 
-!define version "1.1beta" ; Make sure version is also set in onInit
+!define version "1.1RC" ; Make sure version is also set in onInit
 
 
 !define name "UltraStar Deluxe"

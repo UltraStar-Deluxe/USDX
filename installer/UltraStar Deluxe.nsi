@@ -530,7 +530,7 @@ Function .onInit
 	${UAC.I.Elevate.AdminOnly}
 
 	var /GLOBAL version
-	StrCpy $version "1.1beta"
+	StrCpy $version "1.1RC"
 
 
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'
