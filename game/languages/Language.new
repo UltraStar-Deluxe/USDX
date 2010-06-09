@@ -320,7 +320,7 @@
 ;TODO: PARTY_PLAYER_ENTER_NAME=enter names
 
 
-;TODO: PARTY_ROUNDS_DESC = select which modes you want to play
+;TODO: PARTY_ROUNDS_DESC=select which modes you want to play
 ;TODO: PARTY_ROUNDS_WHEREAMI=Party Rounds
 ;TODO: PARTY_ROUNDS_LEGEND_CONTINUE=start party-game
 ;TODO: PARTY_ROUNDCOUNT=number of rounds
@@ -428,7 +428,7 @@
 ;TODO: ERROR_NO_SONGS=No Songs loaded
 ;TODO: ERROR_NO_PLUGINS=No Plugins loaded
 ;TODO: ERROR_NO_MODES_FOR_CURRENT_SETUP=no modes available for current player/team setup
-;TODO: ERROR_CAN_NOT_START_PARTY= an error occurred starting the party game
+;TODO: ERROR_CAN_NOT_START_PARTY=an error occurred starting the party game
 ;TODO: ERROR_CORRUPT_SONG=Song could not be loaded.
 ;TODO: ERROR_CORRUPT_SONG_FILE_NOT_FOUND=Song could not be loaded: File not found
 ;TODO: ERROR_CORRUPT_SONG_NO_NOTES=Song could not be loaded: Can''t find any notes
