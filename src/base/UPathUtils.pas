@@ -154,7 +154,6 @@ end;
 procedure InitializePaths;
 var
   SharedPath, UserPath: IPath;
-  MacOSXSongPath: IPath;
 begin
   // Log directory (must be writable)
   if (not FindPath(LogPath, Platform.GetLogPath, true)) then
@@ -188,6 +187,7 @@ begin
   AddSongPath(Params.SongPath);
 {$IF Defined(DARWIN)}
   AddSongPath(Platform.GetMusicPath);
+  AddSongPath(UserPath.Append('songs'));
 {$ELSE}
   AddSongPath(SharedPath.Append('songs'));
   AddSongPath(UserPath.Append('songs'));
