@@ -714,7 +714,7 @@ function TAudioInputProcessor.CheckPlayersConfig(PlayerCount: cardinal): integer
 var
   PlayerState: TBooleanDynArray;
 begin
-  CheckPlayersConfig(PlayerCount, PlayerState);
+  Result := CheckPlayersConfig(PlayerCount, PlayerState);
 end;
 
 {*

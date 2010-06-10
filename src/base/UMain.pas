@@ -39,7 +39,7 @@ uses
 
 procedure Main;
 procedure MainLoop;
-function CheckEvents: boolean;
+procedure CheckEvents;
 
 type
   TMainThreadExecProc = procedure(Data: Pointer);
@@ -354,12 +354,12 @@ var
   Delay:            integer;
   TicksCurrent:     cardinal;
   TicksBeforeFrame: cardinal;
-  Continue:         boolean;
+  Done:             boolean;
 begin
   SDL_EnableKeyRepeat(125, 125);
 
   CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
-  while Continue do
+  while not Done do
   begin
     TicksBeforeFrame := SDL_GetTicks;
     
@@ -368,10 +368,10 @@ begin
       Joy.Update;
 
     // keyboard events
-    Continue := CheckEvents;
+    CheckEvents;
 
     // display
-    Continue := Display.Draw;
+    Done := not Display.Draw;
     SwapBuffers;
 
     // FPS limiter
@@ -401,13 +401,14 @@ begin
   end;
 end;
 
-function CheckEvents: boolean;
+procedure CheckEvents;
 var
   Event:     TSDL_event;
   mouseDown: boolean;
   mouseBtn:  integer;
+  Done:      boolean;
 begin
-  Result := true;
+  Done := true;
   while (SDL_PollEvent(@Event) <> 0) do
   begin
     case Event.type_ of
@@ -452,17 +453,17 @@ begin
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
             if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              Result := ScreenPopupError.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+              Done := ScreenPopupError.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              Result := ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+              Done := ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              Result := ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+              Done := ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
-              Result := Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
+              Done := Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
 
               // if screen wants to exit
-              if not Result then
+              if not Done then
                 DoQuit;
             end;
           end;
@@ -542,18 +543,18 @@ begin
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
             else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              Result := ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              Done := ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              Result := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              Done := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              Result := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              Done := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else
             begin
               // check if screen wants to exit
-              Result := Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
+              Done := Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
 
               // if screen wants to exit
-              if not Result then
+              if not Done then
                 DoQuit;
 
             end;
