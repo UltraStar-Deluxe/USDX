@@ -110,6 +110,8 @@ type
 
       fState: TProjectMState;
 
+      fScreen:  integer;
+
       fVisualTex: GLuint;
       fPCMData: TPCMData;
       fRndPCMcount: integer;
@@ -144,8 +146,35 @@ type
       procedure SetLoop(Enable: boolean);
       function GetLoop(): boolean;
 
+      procedure SetScreen(Screen: integer);
+      function GetScreen(): integer;
+
+      procedure SetScreenPosition(X, Y, Z: double);
+      procedure GetScreenPosition(var X, Y, Z: double);
+
+      procedure  SetWidth(Width: double);
+      function GetWidth(): double;
+
+      procedure  SetHeight(Height: double);
+      function GetHeight(): double;
+
+      procedure SetFrameRange(Range: TRectCoords);
+      function GetFrameRange(): TRectCoords;
+
+      function GetFrameAspect(): real;
+
+      procedure SetAspectCorrection(AspectCorrection: TAspectCorrection);
+      function GetAspectCorrection(): TAspectCorrection;
+              
+      procedure SetAlpha(Alpha: double);
+      function GetAlpha(): double;
+
+      procedure SetReflectionSpacing(Spacing: double);
+      function GetReflectionSpacing(): double;
+
       procedure GetFrame(Time: Extended);
-      procedure DrawGL(Screen: integer);
+      procedure Draw();
+      procedure DrawReflection();
   end;
 
   TVideoPlayback_ProjectM = class( TInterfacedObject, IVideoVisualization )
@@ -260,6 +289,88 @@ end;
 function TVideo_ProjectM.GetLoop(): boolean;
 begin
   Result := true;
+end;
+
+procedure TVideo_ProjectM.SetScreen(Screen: integer);
+begin
+end;
+
+function TVideo_ProjectM.GetScreen(): integer;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_ProjectM.SetScreenPosition(X, Y, Z: double);
+begin
+end;
+
+procedure TVideo_ProjectM.GetScreenPosition(var X, Y, Z: double);
+begin
+  X := 0;
+  Y := 0;
+  Z := 0;
+end;
+
+procedure TVideo_ProjectM.SetWidth(Width: double);
+begin
+end;
+
+function TVideo_ProjectM.GetWidth(): double;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_ProjectM.SetHeight(Height: double);
+begin
+end;
+
+function TVideo_ProjectM.GetHeight(): double;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_ProjectM.SetFrameRange(Range: TRectCoords);
+begin
+end;
+
+function TVideo_ProjectM.GetFrameRange(): TRectCoords;
+begin
+  Result.Left := 0;
+  Result.Right := 0;
+  Result.Upper := 0;
+  Result.Lower := 0;
+end;
+
+function TVideo_ProjectM.GetFrameAspect(): real;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_ProjectM.SetAspectCorrection(AspectCorrection: TAspectCorrection);
+begin
+end;
+
+function TVideo_ProjectM.GetAspectCorrection(): TAspectCorrection;
+begin
+  Result := acoStretch;
+end;
+
+procedure TVideo_ProjectM.SetAlpha(Alpha: double);
+begin
+end;
+
+function TVideo_ProjectM.GetAlpha(): double;
+begin
+  Result := 1;
+end;
+
+procedure TVideo_ProjectM.SetReflectionSpacing(Spacing: double);
+begin
+end;
+
+function TVideo_ProjectM.GetReflectionSpacing(): double;
+begin
+  Result := 0;
 end;
 
 {**
@@ -485,11 +596,11 @@ end;
  * Draws the current frame to screen.
  * TODO: this is not used yet. Data is directly drawn on GetFrame().
  *}
-procedure TVideo_ProjectM.DrawGL(Screen: integer);
+procedure TVideo_ProjectM.Draw();
 begin
   {$IFDEF UseTexture}
   // have a nice black background to draw on
-  if (Screen = 1) then
+  if (fScreen = 1) then
   begin
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
@@ -521,10 +632,10 @@ begin
   // draw projectM frame
   // Screen is 1 to 2. So current screen is from (Screen - 1) to (Screen)
   glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f((Screen - 1), 0);
-    glTexCoord2f(1, 0); glVertex2f(Screen, 0);
-    glTexCoord2f(1, 1); glVertex2f(Screen, 1);
-    glTexCoord2f(0, 1); glVertex2f((Screen - 1), 1);
+    glTexCoord2f(0, 0); glVertex2f((fScreen - 1), 0);
+    glTexCoord2f(1, 0); glVertex2f(fScreen, 0);
+    glTexCoord2f(1, 1); glVertex2f(fScreen, 1);
+    glTexCoord2f(0, 1); glVertex2f((fScreen - 1), 1);
   glEnd();
 
   glDisable(GL_TEXTURE_2D);
@@ -536,6 +647,10 @@ begin
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   {$ENDIF}
+end;
+
+procedure TVideo_ProjectM.DrawReflection();
+begin
 end;
 
 {**

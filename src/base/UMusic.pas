@@ -43,6 +43,27 @@ uses
 type
   TNoteType = (ntFreestyle, ntNormal, ntGolden);
 
+  {**
+   * acoStretch: Stretch to screen width and height
+   *   - ignores aspect
+   *   + no borders
+   *   + no image data loss
+   * acoCrop: Stretch to screen width or height, crop the other dimension
+   *   + keeps aspect
+   *   + no borders
+   *   - frame borders are cropped (image data loss)
+   * acoLetterBox: Stretch to screen width, add bars at or crop top and bottom
+   *   + keeps aspect
+   *   - borders at top and bottom
+   *   o top/bottom is cropped if width < height (unusual)
+   *}
+  TAspectCorrection = (acoStretch, acoCrop, acoLetterBox);
+
+  TRectCoords = record
+    Left, Right:  double;
+    Upper, Lower: double;
+  end;
+
 const
   // ScoreFactor defines how a notehit of a specified notetype is
   // measured in comparison to the other types
@@ -334,9 +355,49 @@ type
       procedure SetPosition(Time: real);
       function GetPosition: real;
 
-      procedure GetFrame(Time: Extended);
-      procedure DrawGL(Screen: integer);
+      procedure SetScreen(Screen: integer);
+      function GetScreen(): integer;
+      
+      procedure SetScreenPosition(X, Y: double; Z: double = 0.0);
+      procedure GetScreenPosition(var X, Y, Z: double);
 
+      procedure  SetWidth(Width: double);
+       function GetWidth(): double;
+      
+      procedure  SetHeight(Height: double);
+       function GetHeight(): double;
+      
+      {**
+       * Sub-image of the video frame to draw.
+       * This can be used for zooming or similar purposes.
+       *}
+      procedure SetFrameRange(Range: TRectCoords);
+      function GetFrameRange(): TRectCoords;
+      
+      function GetFrameAspect(): real;
+      
+      procedure SetAspectCorrection(AspectCorrection: TAspectCorrection);
+      function GetAspectCorrection(): TAspectCorrection;
+      
+
+      procedure SetAlpha(Alpha: double);
+      function GetAlpha(): double;
+      
+      procedure SetReflectionSpacing(Spacing: double);
+      function GetReflectionSpacing(): double;
+
+      procedure GetFrame(Time: Extended);
+      procedure Draw();
+      procedure DrawReflection();
+       
+       
+      property Screen: integer read GetScreen;
+      property Width: double read GetWidth write SetWidth;
+      property Height: double read GetHeight write SetHeight;
+      property Alpha: double read GetAlpha write SetAlpha;
+      property ReflectionSpacing: double read GetReflectionSpacing write SetReflectionSpacing;
+      property FrameAspect: real read GetFrameAspect;
+      property AspectCorrection: TAspectCorrection read GetAspectCorrection write SetAspectCorrection;
       property Loop: boolean read GetLoop write SetLoop;
       property Position: real read GetPosition write SetPosition;
   end;
@@ -414,7 +475,15 @@ type
   (*
   IVideoDecoder = Interface( IGenericDecoder )
   ['{2F184B2B-FE69-44D5-9031-0A2462391DCA}']
-      function Open(const Filename: IPath): TVideoDecodeStream;
+       function Open(const Filename: IPath): TVideoDecodeStream;
+
+       procedure SetPosition(Time: real);
+       function GetPosition:  real;
+
+       procedure UpdateTexture(Texture: glUint);
+
+       property Loop: boolean read GetLoop write SetLoop;
+       property Position: real read GetPosition write SetPosition;
   end;
   *)
 

@@ -522,7 +522,7 @@ begin
    *}
   fShowVisualization := false;
   VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
-  if (CurrentSong.Video.IsSet) and VideoFile.IsFile then
+  if (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet() and VideoFile.IsFile then
   begin
     fVideoClip := VideoPlayback.Open(VideoFile);
     fCurrentVideo := fVideoClip;
@@ -859,7 +859,8 @@ begin
       fCurrentVideo.GetFrame(VideoFrameTime);
     end;
 
-    fCurrentVideo.DrawGL(ScreenAct);
+    fCurrentVideo.SetScreen(ScreenAct);
+    fCurrentVideo.Draw;
   end;
 
   // draw static menu (FG)

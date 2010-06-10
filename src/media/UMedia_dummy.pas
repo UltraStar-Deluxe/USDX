@@ -112,9 +112,43 @@ type
       procedure SetPosition(Time: real);
       function GetPosition: real;
 
-      procedure GetFrame(Time: Extended);
-      procedure DrawGL(Screen: integer);
+      procedure SetScreen(Screen: integer);
+      function GetScreen(): integer;
 
+      procedure SetScreenPosition(X, Y, Z: double);
+      procedure GetScreenPosition(var X, Y, Z: double);
+
+      procedure  SetWidth(Width: double);
+      function GetWidth(): double;
+
+      procedure  SetHeight(Height: double);
+      function GetHeight(): double;
+
+      procedure SetFrameRange(Range: TRectCoords);
+      function GetFrameRange(): TRectCoords;
+
+      function GetFrameAspect(): real;
+
+      procedure SetAspectCorrection(AspectCorrection: TAspectCorrection);
+      function GetAspectCorrection(): TAspectCorrection;
+
+      procedure SetAlpha(Alpha: double);
+      function GetAlpha(): double;
+
+      procedure SetReflectionSpacing(Spacing: double);
+      function GetReflectionSpacing(): double;
+
+      procedure GetFrame(Time: Extended);
+      procedure Draw();
+      procedure DrawReflection();
+
+      property Screen: integer read GetScreen;
+      property Width: double read GetWidth write SetWidth;
+      property Height: double read GetHeight write SetWidth;
+      property Alpha: double read GetAlpha write SetAlpha;
+      property ReflectionSpacing: double read GetReflectionSpacing write SetReflectionSpacing;
+      property FrameAspect: real read GetFrameAspect;
+      property AspectCorrection: TAspectCorrection read GetAspectCorrection;
       property Loop: boolean read GetLoop write SetLoop;
       property Position: real read GetPosition write SetPosition;
     end;
@@ -329,11 +363,97 @@ begin
   Result := 0;
 end;
 
+procedure TVideo_Dummy.SetScreen(Screen: integer);
+begin
+end;
+
+function TVideo_Dummy.GetScreen(): integer;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_Dummy.SetScreenPosition(X, Y, Z: double);
+begin
+end;
+
+procedure TVideo_Dummy.GetScreenPosition(var X, Y, Z: double);
+begin
+  X := 0;
+  Y := 0;
+  Z := 0;
+end;
+
+procedure TVideo_Dummy.SetWidth(Width: double);
+begin
+end;
+
+function TVideo_Dummy.GetWidth(): double;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_Dummy.SetHeight(Height: double);
+begin
+end;
+
+function TVideo_Dummy.GetHeight(): double;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_Dummy.SetFrameRange(Range: TRectCoords);
+begin
+end;
+
+function TVideo_Dummy.GetFrameRange(): TRectCoords;
+begin
+  Result.Left := 0;
+  Result.Right := 0;
+  Result.Upper := 0;
+  Result.Lower := 0;
+end;
+
+function TVideo_Dummy.GetFrameAspect(): real;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_Dummy.SetAspectCorrection(AspectCorrection: TAspectCorrection);
+begin
+end;
+
+function TVideo_Dummy.GetAspectCorrection(): TAspectCorrection;
+begin
+  Result := acoStretch;
+end;
+
+procedure TVideo_Dummy.SetAlpha(Alpha: double);
+begin
+end;
+
+function TVideo_Dummy.GetAlpha(): double;
+begin
+  Result := 0;
+end;
+
+procedure TVideo_Dummy.SetReflectionSpacing(Spacing: double);
+begin
+end;
+
+function TVideo_Dummy.GetReflectionSpacing(): double;
+begin
+  Result := 0;
+end;
+
 procedure TVideo_Dummy.GetFrame(Time: Extended);
 begin
 end;
 
-procedure TVideo_Dummy.DrawGL(Screen: integer);
+procedure TVideo_Dummy.Draw();
+begin
+end;
+
+procedure TVideo_Dummy.DrawReflection();
 begin
 end;
 

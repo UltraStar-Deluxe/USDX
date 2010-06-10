@@ -151,14 +151,14 @@ begin
     glClear(GL_DEPTH_BUFFER_BIT);
     // video failure -> draw blank background
     if (fBgVideo = nil) then
-      glClear(GL_COLOR_BUFFER_BIT);    
+      glClear(GL_COLOR_BUFFER_BIT);
   end;
 
   if (fBgVideo <> nil) then
   begin
     fBgVideo.GetFrame(VideoBGTimer.GetTime());
-    // FIXME: why do we draw on screen 2? Seems to be wrong.
-    fBgVideo.DrawGL(2);
+    fBgVideo.SetScreen(ScreenAct);
+    fBgVideo.Draw();
   end;
 end;
 
