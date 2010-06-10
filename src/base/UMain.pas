@@ -358,7 +358,7 @@ var
 begin
   SDL_EnableKeyRepeat(125, 125);
 
-  Done := true;
+  Done := false;
 
   CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
   while not Done do
