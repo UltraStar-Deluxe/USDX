@@ -1072,13 +1072,21 @@ begin
       Note[N] := Note[N-1];
     end;
 
-    // me slightly modify new note
-    Note[CurrentNote].Length := 1;
-    Inc(Note[CurrentNote+1].Start);
-    Dec(Note[CurrentNote+1].Length);
-    Note[CurrentNote+1].Text := '- ';
+    // Note[Cur] and Note[Cur + 1] is identical at this point
+    // modify first note
+    Note[CurrentNote].Length := Note[CurrentNote+1].Length div 2 + Note[CurrentNote+1].Length mod 2;
+
+    // 2nd note
+    Note[CurrentNote+1].Start := Note[CurrentNote].Start + Note[CurrentNote].Length;
+    Note[CurrentNote+1].Length := Note[CurrentNote + 1].Length div 2;
+
+    Note[CurrentNote+1].Text := '~';
     Note[CurrentNote+1].Color := 1;
   end;
+
+  // update lyric display
+  Lyric.AddLine(Lines[0].Current);
+  Lyric.Selected := CurrentNote;
 end;
 
 procedure TScreenEditSub.DeleteNote;
