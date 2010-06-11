@@ -539,8 +539,11 @@ const
   libpcremodulename = 'libpcre.so.0';
   {$ENDIF LINUX}
   {$IFDEF DARWIN}
-  libpcremodulename = 'libpcre.dylib';
-  libpcremodulenamefromfink = LIBPCRE_LIBDIR + '/libpcre.dylib';
+  libpcremodulename = 'libpcre.dylib';  // this is a symlink for example to libpcre.0.0.1.dylib
+  // the system resolves the symlink
+  libpcremodulenamefromfink = LIBPCRE_LIBDIR + '/' + libpcremodulename;
+  // the install command in the Makefile resolves the symlink, when installing libpcre.dylib in the app bundle
+  libpcremodulenamefromexecutable = '@executable_path/' + libpcremodulename;
   {$ENDIF DARWIN}
   PCRECompileExportName = 'pcre_compile';
   PCRECompile2ExportName = 'pcre_compile2';
@@ -784,10 +787,14 @@ begin
     {$IFDEF UNIX}
     PCRELib := dlopen(PAnsiChar(libpcremodulename), RTLD_NOW);
     {$ENDIF UNIX}
-    {$IFDEF DARWIN}  // if not found, do another try from the fink path
+    
+  {$IFDEF DARWIN}  // if libpcre.dylib is not found, first try from the executable path and finally from the fink path
+  if PCRELib = INVALID_MODULEHANDLE_VALUE then
+    PCRELib := dlopen(PAnsiChar(libpcremodulenamefromexecutable), RTLD_NOW);
   if PCRELib = INVALID_MODULEHANDLE_VALUE then
     PCRELib := dlopen(PAnsiChar(libpcremodulenamefromfink), RTLD_NOW);
-    {$ENDIF DARWIN}
+  {$ENDIF DARWIN}
+
   Result := PCRELib <> INVALID_MODULEHANDLE_VALUE;
   if Result then
   begin
