@@ -530,7 +530,7 @@ begin
         begin
           if SDL_ModState = KMOD_LCTRL then
           begin
-            // moves text to right in current sentence
+            // deletes current note
             DeleteNote;
           end;
         end;
@@ -1097,9 +1097,8 @@ begin
   C := Lines[0].Current;
 
   //Do Not delete Last Note
-  if (Lines[0].High > 0) or (Lines[0].Line[C].HighNote > 0) then
+  if (Lines[0].Line[C].HighNote > 0) then
   begin
-
     // we copy all notes from the next to the selected one
     for N := CurrentNote+1 to Lines[0].Line[C].HighNote do
     begin
@@ -1107,37 +1106,47 @@ begin
     end;
     
     Dec(Lines[0].Line[C].HighNote);
-    if (Lines[0].Line[C].HighNote >= 0) then
+
+    SetLength(Lines[0].Line[C].Note, Lines[0].Line[C].HighNote + 1);
+
+    // last note was deleted
+    if (CurrentNote > Lines[0].Line[C].HighNote) then
     begin
-      SetLength(Lines[0].Line[C].Note, Lines[0].Line[C].HighNote + 1);
+      // select new last note
+      CurrentNote := Lines[0].Line[C].HighNote;
 
-      // me slightly modify new note
-      if CurrentNote > Lines[0].Line[C].HighNote then
-        Dec(CurrentNote);
-      
-      Lines[0].Line[C].Note[CurrentNote].Color := 2;
-    end
-    //Last Note of current Sentence Deleted - > Delete Sentence
-    else
-    begin
-      //Move all Sentences after the current to the Left
-      for N := C+1 to Lines[0].High do
-        Lines[0].Line[N-1] := Lines[0].Line[N];
-
-      //Delete Last Sentence
-      SetLength(Lines[0].Line, Lines[0].High);
-      Lines[0].High := High(Lines[0].Line);
-      Lines[0].Number := Length(Lines[0].Line);
-
-      CurrentNote := 0;
-      if (C > 0) then
-        Lines[0].Current := C - 1
-      else
-        Lines[0].Current := 0;
-
-      Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
+      // correct Line ending
+      with Lines[0].Line[C] do
+        End_ := Note[HighNote].Start + Note[HighNote].Length;
     end;
+
+    Lines[0].Line[C].Note[CurrentNote].Color := 2;
+  end
+  // Last Note of current Sentence Deleted - > Delete Sentence
+  // if there are more than two left
+  else if (Lines[0].High > 1) then
+  begin
+    //Move all Sentences after the current to the Left
+    for N := C+1 to Lines[0].High do
+      Lines[0].Line[N-1] := Lines[0].Line[N];
+
+    //Delete Last Sentence
+    SetLength(Lines[0].Line, Lines[0].High);
+    Lines[0].High := High(Lines[0].Line);
+    Lines[0].Number := Length(Lines[0].Line);
+
+    CurrentNote := 0;
+    if (C > 0) then
+      Lines[0].Current := C - 1
+    else
+      Lines[0].Current := 0;
+
+    Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
   end;
+
+  // update lyric display
+  Lyric.AddLine(Lines[0].Current);
+  Lyric.Selected := CurrentNote;
 end;
 
 procedure TScreenEditSub.TransposeNote(Transpose: integer);
