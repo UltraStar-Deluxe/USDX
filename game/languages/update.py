@@ -123,14 +123,18 @@ def update(lang):
 		f.write(line + os.linesep)
 	f.close()
 
-# update ini-files
-iniList=os.listdir(".")
-for ini in iniList: 
-	if not re.search(".ini$", ini):
-		continue
-	if ini == "English.ini":
-		continue
-	update(ini);
+if len(sys.argv) >= 2:
+	# update specific language file passed as command-line argument
+	update(sys.argv[1])
+else:
+	# update all language (ini) files
+	iniList=os.listdir(".")
+	for ini in iniList: 
+		if not re.search(".ini$", ini):
+			continue
+		if ini == "English.ini":
+			continue
+		update(ini);
 
-# update template (do not use an .ini prefix as USDX would load it)
-update("Language.new");
+	# update template (do not use an .ini prefix as USDX would load it)
+	update("Language.new");
