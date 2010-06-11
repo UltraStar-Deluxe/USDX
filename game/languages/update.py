@@ -26,7 +26,7 @@ import sys
 import os
 import codecs
 
-# buffer english file (always open binary, handle newline uniformly)
+# buffer english file (always open binary, handle newline uniformly as "\n")
 f = open("English.ini", "rbU")
 english = []
 for line in f:
@@ -44,6 +44,10 @@ def update(lang):
 	for line in f:
 		translation.append(line.rstrip("\n"))
 	f.close
+	# WORKAROUND: On windows the file does not seem to be closed by f.close
+	# as long as it is still referenced. Hence os.rename(lang, oldLang) will
+	# fail later as the file is still opened for reading.
+	f = None;
 
 	outList = []
 	# find new fields
@@ -114,7 +118,9 @@ def update(lang):
 
 	f = open(lang, 'wb')
 	for line in outList:
-		f.write(line + "\n")
+		# binary mode does not convert "\n" to the os specific line-ending.
+		# Use os.linesep instead.
+		f.write(line + os.linesep)
 	f.close()
 
 # update ini-files
