@@ -1413,6 +1413,7 @@ end;
 procedure TScreenEditSub.DrawInfoBar(x, y, w, h: integer);
 var
   start, end_:        integer;
+  SongStart, SongEnd: integer;
   ww:                 integer;
 
   pos:                real;
@@ -1427,9 +1428,9 @@ begin
   if(numLines=0) then
     Exit;
 
-  start := Lines[0].Line[0].Start;
-  end_ := Lines[0].Line[numLines-1].End_;
-  ww := end_ - start;
+  SongStart := Lines[0].Line[0].Note[0].Start;
+  SongEnd := Lines[0].Line[numLines-1].End_;
+  ww := SongEnd - SongStart;
 
   glColor4f(0, 0, 0, 1);
   glDisable(GL_BLEND);
@@ -1462,7 +1463,7 @@ begin
     end_ := Lines[0].Line[line].Note[Lines[0].Line[line].HighNote].Start+
       Lines[0].Line[line].Note[Lines[0].Line[line].HighNote].Length;
 
-    pos := start/ww*w;
+    pos := (start - SongStart)/ww*w;
     br := (end_-start)/ww*w;
 
     glbegin(gl_quads);
@@ -1484,13 +1485,13 @@ begin
   begin
     glColor4f(0, 0, 0, 0.5);
     pos := 0;
-    br := AktBeat/ww*w;
+    br := (AktBeat - SongStart)/ww*w;
     if (br>w) then
       br := w;
   end else
   begin
     glColor4f(1, 0, 0, 1);
-    pos := Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start/ww*w;
+    pos := (Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start - SongStart)/ww*w;
     br := Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length/ww*w;
     if (br<1) then
       br := 1;
