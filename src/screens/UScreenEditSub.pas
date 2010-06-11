@@ -50,6 +50,7 @@ uses
   gl,
   {$IFDEF UseMIDIPort}
   MidiOut,
+  MidiCons,
   {$ENDIF}
   UThemes;
 
@@ -662,7 +663,9 @@ begin
           if SDL_ModState = 0 then
           begin
             {$IFDEF UseMIDIPort}
-            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+            MidiOut.PutShort(MIDI_NOTEOFF or 1,
+                Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60,
+                127);
             PlaySentenceMidi := false;
             {$ENDIF}
 
@@ -694,7 +697,9 @@ begin
           if SDL_ModState = 0 then
           begin
             {$IFDEF UseMIDIPort}
-            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+            MidiOut.PutShort(MIDI_NOTEOFF or 1,
+                Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60,
+                127);
             PlaySentenceMidi := false;
             {$endif}
 
@@ -1472,13 +1477,6 @@ begin
       glVertex2f(x+pos+br, y+h);
       glVertex2f(x+pos+br, y);
     glEnd;
-    {
-    numNotes := Length(Lines[0].Line[line].Nuta);
-
-    for note := 0 to numNotes - 1 do
-    begin
-
-    end;  }
   end;
 
   if(PlaySentence or PlaySentenceMidi) then
@@ -1628,7 +1626,7 @@ begin
 
   end;
 
-//  Interaction := 0;
+  //Interaction := 0;
   TextEditMode := false;
 end;
 
@@ -1648,7 +1646,9 @@ begin
     // stop the music
     if (MidiPos > MidiStop) then
     begin
-      MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+      MidiOut.PutShort(MIDI_NOTEOFF or 1,
+          Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60,
+          127);
       PlaySentenceMidi := false;
     end;
   {$ENDIF}
@@ -1666,8 +1666,14 @@ begin
           LastClick := AktBeat;
           {$IFDEF UseMIDIPort}
           if Pet > 0 then
-            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[Pet-1].Tone + 60, 127);
-          MidiOut.PutShort($91, Lines[0].Line[Lines[0].Current].Note[Pet].Tone + 60, 127);
+          begin
+            MidiOut.PutShort(MIDI_NOTEOFF or 1,
+                Lines[0].Line[Lines[0].Current].Note[Pet-1].Tone + 60,
+                127);
+          end;
+          MidiOut.PutShort(MIDI_NOTEON or 1,
+              Lines[0].Line[Lines[0].Current].Note[Pet].Tone + 60,
+              127);
           MidiLastNote := Pet;
           {$ENDIF}
 
@@ -1688,7 +1694,7 @@ begin
     // click
     if (Click) and (PlaySentence) then
     begin
-//      AktBeat := Floor(CurrentSong.BPM[0].BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
+      //AktBeat := Floor(CurrentSong.BPM[0].BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
       AktBeat := Floor(GetMidBeat(AudioPlayback.Position - CurrentSong.GAP / 1000));
       Text[TextDebug].Text := IntToStr(AktBeat);
       if AktBeat <> LastClick then
@@ -1715,10 +1721,10 @@ begin
   if not Error then
   begin
     // Note info
-    Text[TextNStart].Text :=    IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
-    Text[TextNLength].Text :=  IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
-    Text[TextNTon].Text :=      IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' ( ' + GetNoteName(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' )';
-    Text[TextNText].Text :=              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
+    Text[TextNStart].Text :=  IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
+    Text[TextNLength].Text := IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
+    Text[TextNTon].Text :=    IntToStr(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' ( ' + GetNoteName(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Tone) + ' )';
+    Text[TextNText].Text :=   Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
   end;
 
   // Text Edit Mode
