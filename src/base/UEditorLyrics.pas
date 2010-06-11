@@ -195,6 +195,7 @@ begin
   Word[WordNum].FontStyle := FontStyleI;
   SetFontStyle(FontStyleI);
   SetFontSize(SizeR);
+  SetFontItalic(Italic);
   Word[WordNum].Width := glTextWidth(Text);
   Word[WordNum].Text := Text;
   Word[WordNum].ColR := ColR;
