@@ -5,7 +5,7 @@ Ultrastar Deluxe 1.1
 Plattform
 --------------
 Upd: Plattformunabhängige Codebasis
-upd: Codebasis unabhängig von der Byte-Reihenfolge
+Upd: Codebasis unabhängig von der Byte-Reihenfolge
 Add: Unterstützung für Linux und FreeBSD (beide x86/x86_64)
 Add: Unterstützung für Max OS X (Intel 10.5/10.6)
 
@@ -65,6 +65,9 @@ Add: Unicode support: Alle "druckbaren" Zeichen sollten nun mit den Eingabefelde
 Add: Fenstergröße veränderbar
 Add: Wechsel von Vollbild und Fenstermodus mit ALT+Eingabe (nur Linux und FreeBSD)
 Fix: Aktion bei Eingabe und Return (Zehnertastatur) ist nun gleich
+Add: VideoPreview in der Songauswahl
+Add: Zeitanzeige mit Taste 'T' wählbar zwischen aktueller Position, Restanzeige und Gesamtzeit
+Add: Unterstützung des Benutzers bei den Konfiguration der Mikrofone durch Fehlermeldungen, wenn Spieler mehrere oder keine Mikrofone zugewiesen wurden
 
 --------------
 Intern
@@ -82,6 +85,9 @@ Fix: Einige Fehler/Crashes im Midi/Kar-Konverter behoben
 Upd: Vista/Win7 Konformität: Konfigurationsdateien werden im Benutzerordner abgelegt. Ein Programmstart von CD/DVD sollte nun möglich sein.
 Upd: Cover-Thumbnails werden in einer SQLite Tabelle gespeichert
      -> Verlässlicher als die alte Lösung; leichte Performance-Einbußen beim Start
+Fix: hängende Maus nach Alt-Tab durch Austausch der SDL.dll behoben
+Fix: bessere Erkennung des Endes eines Songs/Videos bei Verwendung von FFmpeg
+Upd: Windows: Benutzerdaten werden nun im Installationsordner abgelegt falls Schreibrechte darauf existieren, anderenfalls in APPDATA
 
 --------------
 Song Dateien
