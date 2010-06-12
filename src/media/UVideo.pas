@@ -1315,7 +1315,10 @@ begin
   fEOF := false;
   fFrameTexValid := false;
 
-  if (av_seek_frame(fFormatContext, fStreamIndex, Floor(Time/fTimeBase), SeekFlags) < 0) then
+  if (av_seek_frame(fFormatContext,
+     fStreamIndex,
+     Round(Time / av_q2d(fStream^.time_base)),
+     SeekFlags) < 0) then
   begin
     Log.LogError('av_seek_frame() failed', 'TVideoPlayback_ffmpeg.SetPosition');
     Exit;
