@@ -145,8 +145,8 @@ type
     fAspect: real;        //**< width/height ratio
     fAspectCorrection: TAspectCorrection;
 
-    fTimeBase: extended;  //**< FFmpeg time base per time unit
-    fFrameTime: extended;  //**< video time position (absolute)
+    fFrameDuration: extended; //**< duration of a video frame in seconds (= 1/fps)
+    fFrameTime: extended; //**< video time position (absolute)
     fLoopTime: extended;  //**< start time of the current loop
 
     fPboEnabled: boolean;
@@ -432,19 +432,18 @@ begin
     fAspect := fAspect * fCodecContext^.width /
                          fCodecContext^.height;
 
-  fTimeBase := 1/av_q2d(fStream^.r_frame_rate);
+  fFrameDuration := 1/av_q2d(fStream^.r_frame_rate);
 
-  // hack to get reasonable timebase (for divx and others)
-  if (fTimeBase < 0.02) then // 0.02 <-> 50 fps
+  // hack to get reasonable framerate (for divx and others)
+  if (fFrameDuration < 0.02) then // 0.02 <-> 50 fps
   begin
-    fTimeBase := av_q2d(fStream^.r_frame_rate);
-    while (fTimeBase > 50) do
-      fTimeBase := fTimeBase/10;
-    fTimeBase := 1/fTimeBase;
+    fFrameDuration := av_q2d(fStream^.r_frame_rate);
+    while (fFrameDuration > 50) do
+      fFrameDuration := fFrameDuration/10;
+    fFrameDuration := 1/fFrameDuration;
   end;
 
-  Log.LogInfo('VideoTimeBase: ' + floattostr(fTimeBase), 'TVideoPlayback_ffmpeg.Open');
-  Log.LogInfo('Framerate: '+inttostr(floor(1/fTimeBase))+'fps', 'TVideoPlayback_ffmpeg.Open');
+  Log.LogInfo('Framerate: '+inttostr(floor(1/fFrameDuration))+'fps', 'TVideoPlayback_ffmpeg.Open');
 
   {$IFDEF UseSWScale}
   // if available get a SWScale-context -> faster than the deprecated img_convert().
@@ -510,7 +509,7 @@ begin
 
   fOpened := False;
   fPaused := False;
-  fTimeBase := 0;
+  fFrameDuration := 0;
   fFrameTime := 0;
   fStream := nil;
   fStreamIndex := -1;
@@ -728,12 +727,6 @@ begin
     Exit;
 
   {*
-   * TODO:
-   * Check if it is correct to assume that fTimeBase is the time of one frame?
-   * The tutorial and FFPlay do not make this assumption.
-   *}
-
-  {*
    * Synchronization - begin
    *}
 
@@ -752,12 +745,12 @@ begin
     {$IFDEF DebugDisplay}
     DebugWriteln('Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
                  'VideoTime: '+inttostr(floor(fFrameTime*1000)) + sLineBreak +
-                 'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
+                 'TimeBase:  '+inttostr(floor(fFrameDuration*1000)) + sLineBreak +
                  'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
     {$endif}
 
     // check if time has reached the next frame
-    if (TimeDiff < fTimeBase) then
+    if (TimeDiff < fFrameDuration) then
     begin
       {$ifdef DebugFrames}
       // frame delay debug display
@@ -768,7 +761,7 @@ begin
       DebugWriteln('not getting new frame' + sLineBreak +
           'Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
           'VideoTime: '+inttostr(floor(fFrameTime*1000)) + sLineBreak +
-          'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
+          'TimeBase:  '+inttostr(floor(fFrameDuration*1000)) + sLineBreak +
           'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
       {$endif}
 
@@ -787,9 +780,9 @@ begin
 
   // check if we have to skip frames
   // Either if we are one frame behind or if the skip threshold has been reached.
-  // Do not skip if the difference is less than fTimeBase as there is no next frame.
-  // Note: We assume that fTimeBase is the length of one frame.
-  if (TimeDiff >= Max(fTimeBase, SKIP_FRAME_DIFF)) then
+  // Do not skip if the difference is less than fFrameDuration as there is no next frame.
+  // Note: We assume that fFrameDuration is the length of one frame.
+  if (TimeDiff >= Max(fFrameDuration, SKIP_FRAME_DIFF)) then
   begin
     {$IFDEF DebugFrames}
     //frame drop debug display
@@ -797,13 +790,13 @@ begin
     {$ENDIF}
     {$IFDEF DebugDisplay}
     DebugWriteln('skipping frames' + sLineBreak +
-        'TimeBase:  '+inttostr(floor(fTimeBase*1000)) + sLineBreak +
+        'TimeBase:  '+inttostr(floor(fFrameDuration*1000)) + sLineBreak +
         'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
     {$endif}
 
     // update video-time
-    DropFrameCount := Trunc(TimeDiff / fTimeBase);
-    fFrameTime := fFrameTime + DropFrameCount*fTimeBase;
+    DropFrameCount := Trunc(TimeDiff / fFrameDuration);
+    fFrameTime := fFrameTime + DropFrameCount*fFrameDuration;
 
     // skip frames
     for i := 1 to DropFrameCount do
@@ -1223,7 +1216,7 @@ end;
 procedure TVideo_FFmpeg.ShowDebugInfo();
 begin
   {$IFDEF Info}
-  if (fFrameTime+fTimeBase < 0) then
+  if (fFrameTime+fFrameDuration < 0) then
   begin
     glColor4f(0.7, 1, 0.3, 1);
     SetFontStyle (1);
