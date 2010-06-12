@@ -65,6 +65,9 @@ add: Unicode support: All "printable" characters should work with the input fiel
 add: resizable window
 add: toggle between fullscreen and windowed mode with ALT+Return (Linux and FreeBSD only)
 fix: mapped same function to Return and Enter (numpad)
+add: video preview during song selection
+add: toggle displayed time with 'T' key between current position, remaining or total playback time
+add: mic configuration assistance: error messages are displayed if multiple or no mics were assigned to a player.
 
 --------------
 internal
@@ -82,16 +85,25 @@ fix: solved some bugs/crashes in Midi/Kar converter
 upd: Vista/Win7 conform: configuration files is saved in the user directory. Running USDX from CD/DVD should also be possible from now on.
 upd: cover thumbnails are saved in an SQLite database
      ->  more reliable than the old solution; small performance loss on start
+fix: cursor freeze after Alt-Tab fixed through change of SDL.dll
+fix: better detection of ending at songs/videos while using FFmpeg
+upd: windows: user data will be placed in installation directory if user has write permissions, else it will be stored in APPDATA
 
 --------------
 song files
 --------------
 upd: UTF8 support
 upd: #Encoding tag
-      - CP1250: Central/Eastern european encoding
-      - CP1252: Western european encoding; was used as default before 1.1
+      - CP1250: Central/Eastern european encoding (should not be used for new files)
+      - CP1252: Western european encoding; was used as default before 1.1 (should not be used for new files)
       - Locale: uses system encoding (should not be used for new files!)
       - UTF8: text file is encoded in UTF8 (recommended)
+upd: select default encoding (if #Encoding tag is missing) via the "Encoding" option in config.ini.
+  - Possible values: 
+    - "Auto" (Default), "UTF8", 
+    - "CP1252" (USDX<1.1 default), "CP1250" (old US default), "Locale" (System encoding)
+  - IMPORTANT:
+    - "CP1252", "CP1250" and "Locale" are for backward compatibility only, new files should always be encoded in UTF-8 with BOM
 upd: support for UTF8 BOM (new standard in Ultrastar Deluxe)
 upd: #Year tag is read and saved
 fix: does not crash any longer if there is no linebreak in lyrics file
