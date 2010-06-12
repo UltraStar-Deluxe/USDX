@@ -94,10 +94,18 @@ Song Dateien
 --------------
 Upd: Unterstützung für UTF8
 Upd: #Encoding Tag
-      - CP1250: Mittel-/Osteuropäische Kodierung; wird standardmäßig von Corvus Ultrastar benutzt
-      - CP1252: Westeuropäische Kodierung; wurde standardmäßig von Ultrastar Deluxe vor 1.1 benutzt
+      - CP1250: Mittel-/Osteuropäische Kodierung; wird standardmäßig von Corvus Ultrastar benutzt (sollte für neue Dateien nicht verwendet werden)
+      - CP1252: Westeuropäische Kodierung; wurde standardmäßig von Ultrastar Deluxe vor 1.1 benutzt (sollte für neue Dateien nicht verwendet werden)
       - Locale: Benutzt die Systemkodierung (sollte für neue Dateien nicht verwendet werden)
       - UTF8:   Textdatei ist in UTF8 kodiert (empfohlen)
+Upd: Sollte kein #Encoding Tag oder UTF-8 BOM in der Song Datei vorhanden sein, wird der in der config.ini
+  gewählte Standardwert der "Encoding" Option genutzt:
+  - Werte: 
+    - "Auto" (Standard), "UTF8", 
+    - "CP1252" (USDX<1.1 Standard), "CP1250" (alter US Standard), "Locale" (Systemkodierung)
+  - WICHTIG:
+    - "CP1252", "CP1250" und "Locale" dienen nur zur Kompatibilität mit älteren USDX und US Versionen, 
+      neue Song Dateien sollten immer in UTF-8 mit BOM gespeichert werden.
 Upd: Unterstützung für UTF8 BOM (neuer Standard in Ultrastar Deluxe)
 Upd: #Year Tag wird gelesen und gespeichert
 Fix: Kein Absturz mehr, wenn kein Lyrics-Zeilenumbruch in der Datei ist
