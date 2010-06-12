@@ -170,6 +170,9 @@ type
       Joypad:         integer;
       Mouse:          integer;
 
+      // default encoding for texts (lyrics, song-name, ...)
+      DefaultEncoding: TEncoding;
+
       procedure Load();
       procedure Save();
       procedure SaveNames;
@@ -982,6 +985,9 @@ begin
   // NoteLines
   NoteLines := GetArrayIndex(INoteLines, IniFile.ReadString('Lyrics', 'NoteLines', INoteLines[1]));
 
+  // DefaultEncoding
+  DefaultEncoding := ParseEncoding(IniFile.ReadString('Lyrics', 'Encoding', ''), encAuto);
+
   LoadThemes(IniFile);
 
   LoadInputDeviceCfg(IniFile);
@@ -1137,6 +1143,9 @@ begin
 
   // NoteLines
   IniFile.WriteString('Lyrics', 'NoteLines', INoteLines[NoteLines]);
+
+  //Encoding default
+  IniFile.WriteString('Lyrics', 'Encoding', EncodingName(DefaultEncoding));
 
   // Theme
   IniFile.WriteString('Themes', 'Theme', ITheme[Theme]);

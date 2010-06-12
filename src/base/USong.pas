@@ -179,9 +179,6 @@ uses
   UMusic,  //needed for Lines
   UNote;   //needed for Player
 
-const
-  DEFAULT_ENCODING = encAuto;
-
 constructor TSong.Create();
 begin
   inherited;
@@ -1090,7 +1087,7 @@ begin
       // File encoding
       else if (Identifier = 'ENCODING') then
       begin
-        self.Encoding := ParseEncoding(Value, DEFAULT_ENCODING);
+        self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
       end
 
       // unsupported tag
@@ -1239,7 +1236,7 @@ begin
   Year := 0;
 
   // set to default encoding
-  Encoding := DEFAULT_ENCODING;
+  Encoding := Ini.DefaultEncoding;
 
   // clear custom header tags
   SetLength(CustomTags, 0);
