@@ -7,7 +7,7 @@ platform
 upd: platform independent code base
 upd: endianness independent code base
 add: Linux and FreeBSD support (x86 and x86_64)
-add: Max OS X support (Intel 10.5/10.6)
+add: Mac OS X support (Intel 10.5/10.6)
 
 --------------
 audio

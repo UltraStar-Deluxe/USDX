@@ -7,7 +7,7 @@ Plattform
 Upd: Plattformunabhängige Codebasis
 Upd: Codebasis unabhängig von der Byte-Reihenfolge
 Add: Unterstützung für Linux und FreeBSD (beide x86/x86_64)
-Add: Unterstützung für Max OS X (Intel 10.5/10.6)
+Add: Unterstützung für Mac OS X (Intel 10.5/10.6)
 
 --------------
 Audio
