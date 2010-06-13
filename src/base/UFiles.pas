@@ -131,7 +131,9 @@ begin
       if (Song.Encoding = encUTF8) then
         SongFile.WriteString(UTF8_BOM);
 
-      SongFile.WriteLine('#ENCODING:' + EncodingName(Song.Encoding));
+      // do not save "auto" encoding tag
+      if (Song.Encoding <> encAuto) then
+        SongFile.WriteLine('#ENCODING:' + EncodingName(Song.Encoding));
       SongFile.WriteLine('#TITLE:'    + EncodeToken(Song.Title));
       SongFile.WriteLine('#ARTIST:'   + EncodeToken(Song.Artist));
 
