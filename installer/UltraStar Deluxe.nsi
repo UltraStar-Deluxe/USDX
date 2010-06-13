@@ -509,6 +509,7 @@ SectionEnd
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "German"
 !insertmacro MUI_LANGUAGE "Hungarian"
+!insertmacro MUI_LANGUAGE "Polish"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -573,6 +574,7 @@ done:
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1031.ini" "Settings-1031"
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1033.ini" "Settings-1033"
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1038.ini" "Settings-1038"
+	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1045.ini" "Settings-1045"
 
 FunctionEnd
 
