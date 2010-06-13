@@ -1791,6 +1791,7 @@ end;
 procedure TScreenSong.StartMusicPreview();
 var
   Song: TSong;
+  PreviewPos: real;
 begin
   AudioPlayback.Close();
 
@@ -1809,7 +1810,12 @@ begin
   begin
     PreviewOpened := Interaction;
 
-    AudioPlayback.Position := AudioPlayback.Length / 4;
+    PreviewPos := AudioPlayback.Length / 4;
+    // fix for invalid music file lengths
+    if (PreviewPos > 60.0) then
+      PreviewPos := 60.0;
+    AudioPlayback.Position := PreviewPos;
+
     // set preview volume
     if (Ini.PreviewFading = 0) then
     begin

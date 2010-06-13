@@ -728,7 +728,7 @@ begin
           begin
             // seeking failed
             fErrorState := true;
-            Log.LogStatus('Seek Error in "'+fFormatCtx^.filename+'"', 'UAudioDecoder_FFmpeg');
+            Log.LogError('Seek Error in "'+fFormatCtx^.filename+'"', 'UAudioDecoder_FFmpeg');
           end
           else
           begin
