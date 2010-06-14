@@ -350,6 +350,10 @@ begin
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
           else
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntFreestyle;
+
+            // update lyrics
+            Lyric.AddLine(Lines[0].Current);
+            Lyric.Selected := CurrentNote;
           
           Exit;
         end;
