@@ -1,4 +1,4 @@
-Ultrastar Deluxe 1.1
+﻿Ultrastar Deluxe 1.1
 -----------------------------
 
 --------------
@@ -100,11 +100,11 @@ Upd: #Encoding Tag
       - UTF8:   Textdatei ist in UTF8 kodiert (empfohlen)
 Upd: Sollte kein #Encoding Tag oder UTF-8 BOM in der Song Datei vorhanden sein, wird der in der config.ini
   gewählte Standardwert der "Encoding" Option genutzt:
-  - Werte: 
-    - "Auto" (Standard), "UTF8", 
+  - Werte:
+    - "Auto" (Standard), "UTF8",
     - "CP1252" (USDX<1.1 Standard), "CP1250" (alter US Standard), "Locale" (Systemkodierung)
   - WICHTIG:
-    - "CP1252", "CP1250" und "Locale" dienen nur zur Kompatibilität mit älteren USDX und US Versionen, 
+    - "CP1252", "CP1250" und "Locale" dienen nur zur Kompatibilität mit älteren USDX und US Versionen,
       neue Song Dateien sollten immer in UTF-8 mit BOM gespeichert werden.
 Upd: Unterstützung für UTF8 BOM (neuer Standard in Ultrastar Deluxe)
 Upd: #Year Tag wird gelesen und gespeichert
