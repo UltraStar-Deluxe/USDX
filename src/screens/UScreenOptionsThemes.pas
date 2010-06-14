@@ -92,6 +92,10 @@ begin
           UGraphic.LoadScreens();
 
           AudioPlayback.PlaySound(SoundLib.Back);
+
+          // select theme button in new created options screen
+          ScreenOptions.Interaction := 4;
+
           FadeTo(@ScreenOptions);
         end;
       SDLK_RETURN:
@@ -106,6 +110,10 @@ begin
             UGraphic.LoadScreens();
 
             AudioPlayback.PlaySound(SoundLib.Back);
+
+            // select theme button in new created options screen
+            ScreenOptions.Interaction := 4;
+
             FadeTo(@ScreenOptions);
           end;
         end;
