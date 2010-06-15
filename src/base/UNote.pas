@@ -351,8 +351,39 @@ begin
 end;
 
 procedure NewBeatDetect(Screen: TScreenSing);
+  var
+    SentenceEnd: integer;
+    I: cardinal;
 begin
   NewNote(Screen);
+
+  // check for sentence end
+  // we check all lines here because a new sentence may
+  // have been started even before the old one finishes
+  // due to corrupt lien breaks
+  // checking only current line works to, but may lead to
+  // weird ratings for the song files w/ the mentioned
+  // errors
+  // To-Do Philipp : check current and last line should
+  // do it for most corrupt txt and for lines in
+  // non-corrupt txts that start immediatly after the prev.
+  // line ends
+  if (assigned(Screen)) then
+  begin
+    for I := 0 to Lines[0].High do
+    begin
+      with Lines[0].Line[I] do
+      begin
+        if (HighNote > 0) then
+        begin
+          SentenceEnd := Note[HighNote].Start + Note[HighNote].Length;
+
+          if (LyricsState.OldBeatD < SentenceEnd) and (LyricsState.CurrentBeatD >= SentenceEnd) then
+            Screen.OnSentenceEnd(I);
+        end;
+      end;
+    end;
+  end;
 end;
 
 procedure NewNote(Screen: TScreenSing);
@@ -582,20 +613,6 @@ begin
   end; // for PlayerIndex
 
   //Log.LogStatus('EndBeat', 'NewBeat');
-
-  // on sentence end -> for LineBonus and display of SingBar (rating pop-up)
-  if (SentenceDetected >= Low(Lines[0].Line)) and
-     (SentenceDetected <= High(Lines[0].Line)) then
-  begin
-    Line := @Lines[0].Line[SentenceDetected];
-    CurrentLineFragment := @Line.Note[Line.HighNote];
-    if ((CurrentLineFragment.Start + CurrentLineFragment.Length - 1) = LyricsState.CurrentBeatD) then
-    begin
-      if assigned(Screen) then
-        Screen.OnSentenceEnd(SentenceDetected);
-    end;
-  end;
-
 end;
 
 end.
