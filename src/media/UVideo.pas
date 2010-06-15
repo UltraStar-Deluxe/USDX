@@ -1075,7 +1075,7 @@ begin
   HeightFactor := ScreenH / RenderH;
 
   glScissor(
-    round(fPosX*WidthFactor + HeightFactor*(fScreen-1)),
+    round(fPosX*WidthFactor + (ScreenW/Screens)*(fScreen-1)),
     round((RenderH-fPosY-fHeight)*HeightFactor),
     round(fWidth*WidthFactor),
     round(fHeight*HeightFactor)
@@ -1150,7 +1150,7 @@ begin
   HeightFactor := ScreenH / RenderH;
 
   glScissor(
-    round(fPosX*WidthFactor + HeightFactor*(fScreen-1)),
+    round(fPosX*WidthFactor + (ScreenW/Screens)*(fScreen-1)),
     round((RenderH-fPosY-fHeight-fReflectionSpacing-fHeight*ReflectionH)*HeightFactor),
     round(fWidth*WidthFactor),
     round(fHeight*HeightFactor*ReflectionH)
