@@ -246,7 +246,7 @@ AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
-  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup"
+  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names"
 fi
 #LIBS=
 AC_SUBST(LDFLAGS)
