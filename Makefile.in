@@ -439,6 +439,8 @@ endef
 
 # libpcre.dylib must be installed extra, since it is not linked to the executable but opened using dlopen
 	$(shell $(INSTALL) -m 755 $(finkLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
+	$(shell $(INSTALL_NAME_TOOL) -change $(finkLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
+	$(shell $(INSTALL_NAME_TOOL) -id @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 
 # final messages
 	@echo "Standalone Mac OS X application created."
