@@ -44,6 +44,10 @@ uses
 
 type
   TScreenMain = class(TMenu)
+  private
+    { ticks when the user interacted, used to start credits
+      after a period of time w/o user interaction }
+    UserInteractionTicks: cardinal;
   public
     TextDescription:     integer;
     TextDescriptionLong: integer;
@@ -51,10 +55,16 @@ type
     constructor Create; override;
     function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
       PressedDown: boolean): boolean; override;
+    function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
     procedure OnShow; override;
     procedure SetInteraction(Num: integer); override;
     procedure SetAnimationProgress(Progress: real); override;
+    function Draw: boolean; override;
   end;
+
+const
+  { start credits after 30 seconds w/o interaction }
+  TicksUntilCredits = 30 * 1000;
 
 implementation
 
@@ -77,6 +87,9 @@ var
   SDL_ModState: word;
 begin
   Result := true;
+
+  { reset user interaction timer }
+  UserInteractionTicks := SDL_GetTicks;
 
   SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT +
     KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
@@ -205,6 +218,15 @@ begin
     end;
 end;
 
+function TScreenMain.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+begin
+  // default mouse behaviour
+  Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
+
+  { reset user interaction timer }
+  UserInteractionTicks := SDL_GetTicks;
+end;
+
 constructor TScreenMain.Create;
 begin
   inherited Create;
@@ -239,6 +261,20 @@ begin
   * at the moment there is no better place for this
   *}
   Party.Clear;
+
+  { reset user interaction timer }
+  UserInteractionTicks := SDL_GetTicks;
+end;
+
+function TScreenMain.Draw: boolean;
+begin
+  Result := inherited Draw;
+
+  { start credits after a period w/o user interaction }
+  if (UserInteractionTicks + TicksUntilCredits < SDL_GetTicks) then
+  begin
+    FadeTo(@ScreenCredits, SoundLib.Start);
+  end;  
 end;
 
 procedure TScreenMain.SetInteraction(Num: integer);
