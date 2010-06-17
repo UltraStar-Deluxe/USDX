@@ -251,6 +251,9 @@ procedure TScreenCredits.OnShow;
 begin
   inherited;
 
+  // pause background music
+  SoundLib.PauseBgMusic;
+
   CRDTS_Stage    := InitialDelay;
   Credits_X      := 580;
   deluxe_slidein := 0;
@@ -265,6 +268,8 @@ end;
 procedure TScreenCredits.OnHide;
 begin
   AudioPlayback.Stop;
+
+  SoundLib.StartBgMusic;
 end;
 
 Procedure TScreenCredits.Draw_FunkyText;
