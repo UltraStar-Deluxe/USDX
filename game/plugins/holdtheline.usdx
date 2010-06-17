@@ -1,0 +1,219 @@
+--[[
+ * UltraStar Deluxe - Karaoke Game
+ *
+ * UltraStar Deluxe is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING. If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ *
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/game/plugins/holdtheline.usdx $
+ * $Id: holdtheline.usdx 2258 2010-06-17 17:30:16Z b_krueger $
+ *]]
+
+--Configuration
+-- limit to get
+local startRatingLimit = 0; --percentage : from 0 to 1 , eg. 0.1
+local fullRatingLimit = 1;  --percentage : from 0 to 1 , eg. 0.95
+local ratingLimit = startRatingLimit;
+
+-- percentage of the song-time, to need the full rating ( [start.beat + line.length] of the last line is the "end" of the song
+local percentageToFullRating = 0.75; --percentage : from 0 to 1 , eg. 0.75
+
+-- position of big progress bar in the center
+local Indicator = {};
+Indicator.Width  = 10; --pixles
+Indicator.Height = 10; --pixles
+
+--Do not Change a Line if ya do not know what ya doing!
+-- scoring
+local scores = {};
+local lastDissmissedNo;
+local dissmissedCount;
+
+
+function plugin_init()
+  register('party mode: holdtheline', '0.6', 'USDX Team', 'http://www.UltrastarDeluxe.org');
+
+  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Gl', 'Usdx.TextGl');
+  local Mode = {}
+
+  Mode.Name = 'holdtheline';
+  Mode.CanParty = true;
+  Mode.PlayerCount = {1,2,3,4,5,6};
+
+  Mode.BeforeSing = 'BeforeSing'
+  Mode.OnSing = 'Sing';
+  Mode.AfterSing = 'Finish';
+
+  Usdx.Party.Register(Mode);
+
+  return true;
+end
+
+
+function BeforeSing()
+  hSongLoaded = Usdx.Hook('ScreenSing.SongLoaded', 'Prepare');
+  hDraw = Usdx.Hook('Display.Draw', 'Draw');
+
+  return true;
+end;
+
+
+function Prepare()
+
+  -- get beat-sum of the whole song
+  local Lines = ScreenSing.GetSongLines();
+  local lastNote = Lines[#Lines].Notes[#Lines[#Lines].Notes];
+  TotalBeats = lastNote.Start + lastNote.Length;
+  
+  -- calculate OSD position for players
+  do
+    local RBRect = ScreenSing.GetRBRect();
+    OSD = {};
+
+    for i = 1, #RBRect do
+      OSD[i] = {};
+      OSD[i].Left   = RBRect[i].x;
+      OSD[i].Right  = RBRect[i].x + RBRect[i].w;
+      OSD[i].Top    = RBRect[i].y + RBRect[i].h;
+      OSD[i].Bottom = RBRect[i].y + RBRect[i].h + math.max(RBRect[i].h, 13);
+      scores[i] = false;
+    end;
+  end;
+
+  --fill some Vars with values
+  Teams = Party.GetTeams(); --team-infos
+  lastDissmissedNo = 1;     --dismissed-runner
+  dissmissedCount = 0;      --dismissed-counter
+
+  -- remove hook
+  hSongLoaded:Unhook();
+  hSongLoaded = nil;
+end;
+
+function DrawPlayerIndicator(i)
+  Gl.Disable('GL_TEXTURE_2D');
+
+ local xOffset = ratingLimit * (OSD[i].Right - OSD[i].Left)
+
+  -- background
+  Gl.Color (0, 1, 0, 1);
+  Gl.Begin('GL_QUADS');
+    Gl.Vertex(OSD[i].Left+xOffset-(Indicator.Width/2), OSD[i].Top+Indicator.Height);
+    Gl.Vertex(OSD[i].Left+xOffset, OSD[i].Top);
+    Gl.Vertex(OSD[i].Left+xOffset, OSD[i].Top);
+    Gl.Vertex(OSD[i].Left+xOffset+(Indicator.Width/2), OSD[i].Top+Indicator.Height);
+  Gl.End();
+end;
+
+function DrawOut(i)
+  Gl.Disable('GL_TEXTURE_2D');
+
+  local Text = ' OUT ';
+
+  -- text
+  Gl.Color(1, 0, 0, 1);
+  TextGl.Size(18);
+  TextGl.Style(1);
+  TextGl.Italic(false);
+  local PosX = (OSD[i].Left + OSD[i].Right) / 2;
+  PosX = PosX - TextGl.Width(Text) / 2;
+  TextGl.Pos(PosX, OSD[i].Top - 3);
+  TextGl.Print(Text);
+
+end;
+
+
+function Finish()
+
+  -- remove hook
+  hDraw:Unhook();
+  --hDraw = nil;
+
+  if dissmissedCount >= (#Teams-1) then 
+    --calculate scoring out of the dissmissed-order
+    local Ranking = {};
+    for i = 1, #Teams do
+      if (type(scores[i]) == "boolean") then 
+         Ranking[i] = 1;
+      else  
+         Ranking[i] = #Teams - scores[i] + 1;
+      end;
+    end;
+
+    Party.SetRoundRanking(Ranking);
+  end;
+
+  return (dissmissedCount < (#Teams-1));
+end;
+
+
+function Draw() 
+  for i = 1, #Teams do
+    if scores[i] == false then
+       DrawPlayerIndicator(i);
+    else 
+       --todo: draw dismissed-texture OVER the scoreing as a stamp or sth else
+       DrawOut(i);
+    end;
+  end;
+end;
+
+
+function Sing()
+  local Ratings = Usdx.ScreenSing.GetRating();
+  local finished = true;
+  local dismissedAPlayer = false;
+
+  -- calculate the x-offset of the indicator (ratingLimit)
+  local currentBeat = ScreenSing.GetBeat();
+
+  if (currentBeat<0) then
+    ratingLimit = startRatingLimit;
+  elseif (currentBeat <= (TotalBeats*percentageToFullRating)) then
+    ratingLimit = ((fullRatingLimit-startRatingLimit) / (TotalBeats*percentageToFullRating)) * currentBeat + startRatingLimit;    
+  else 
+    ratingLimit = fullRatingLimit;
+  end;
+
+  for i = 1, #Teams do
+    if scores[i] == false then
+      --player no. i is still in game
+      if Ratings[i] >= ratingLimit then
+        finished = false;
+      else 
+        --todo: play dismissed-sound
+        --todo: disable player i (bars from player i)
+        dismissedAPlayer = true;
+        dissmissedCount = dissmissedCount + 1;
+        scores[i] = lastDissmissedNo;
+      end;
+    end;
+  end;
+
+  --if more than one player is dismissed in one round,
+  --this guarantees correct scoring
+  if dismissedAPlayer == true then 
+    lastDissmissedNo = lastDissmissedNo + 1;
+  end;
+
+  --if only one player is in game, this round is finished
+  if dissmissedCount >= (#Teams-1) then 
+    ScreenSing.Finish();
+  end;
+
+end;
