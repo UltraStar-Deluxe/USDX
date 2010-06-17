@@ -154,8 +154,16 @@ fi
 # check for libraries
 # -----------------------------------------
 
-# libpng
-PKG_HAVE([libpng], [libpng12], yes)
+# find libpng
+# pkgconfig name for 1.2 is "libpng12", for 1.4 "libpng"
+PKG_HAVE([libpng], [libpng12], no)
+if [[ x$libpng_HAVE = xyes ]]; then
+    PKG_VERSION([libpng], [libpng12])
+else
+    # check for the generic .pc file
+    PKG_HAVE([libpng], [libpng >= 1.2], yes)
+    PKG_VERSION([libpng], [libpng >= 1.2])
+fi
 
 # find sdl
 PKG_HAVE([sdl], [sdl], yes)
