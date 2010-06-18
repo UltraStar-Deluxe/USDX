@@ -223,7 +223,7 @@ begin
     Text[TextDate[I]].Visible := false;
   end;
 
-  Text[TextLevel].Text := IDifficulty[Ini.Difficulty];
+  Text[TextLevel].Text := IDifficultyTranslated[Ini.Difficulty];
 end;
 
 procedure TScreenTop5.DrawScores(difficulty: integer);
