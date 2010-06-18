@@ -111,17 +111,31 @@ def update(lang):
 			print ("  -" + m.group(1))
 			outList.append(";UNUSED: " + m.group(1) + "=" + m.group(2))
 
-	oldLang = lang + ".old"
-	if (os.path.exists(oldLang)):
-		os.remove(oldLang)
-	os.rename(lang, oldLang)
+	# check if file changed
+	changed = False
+	if (len(outList) != len(translation)):
+		changed = True
+	else:
+		# search for a changed line
+		for i in range(len(outList)):
+			if (outList[i] != translation[i]):
+				changed = True
+				break
 
-	f = open(lang, 'wb')
-	for line in outList:
-		# binary mode does not convert "\n" to the os specific line-ending.
-		# Use os.linesep instead.
-		f.write(line + os.linesep)
-	f.close()
+	# write changes
+	if changed:
+		# create a backup first
+		oldLang = lang + ".bak"
+		if (os.path.exists(oldLang)):
+			os.remove(oldLang)
+		os.rename(lang, oldLang)
+
+		f = open(lang, 'wb')
+		for line in outList:
+			# binary mode does not convert "\n" to the os specific line-ending.
+			# Use os.linesep instead.
+			f.write(line + os.linesep)
+		f.close()
 
 if len(sys.argv) >= 2:
 	# update specific language file passed as command-line argument
