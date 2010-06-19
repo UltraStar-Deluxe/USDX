@@ -934,7 +934,7 @@ begin
         Break;
       end;
 
-      Inc(fAudioPaketData, PaketDecodedSize);
+      Inc(PByte(fAudioPaketData), PaketDecodedSize);
       Dec(fAudioPaketSize, PaketDecodedSize);
 
       // check if avcodec_decode_audio returned data, otherwise fetch more frames

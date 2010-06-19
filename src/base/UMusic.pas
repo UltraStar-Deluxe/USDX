@@ -1006,7 +1006,7 @@ begin
     Sample[0] := Value;
     Sample[1] := Value;
     // increase to next frame
-    Inc(Buffer, FrameSize);
+    Inc(PByte(Buffer), FrameSize);
   end;
 end;
 
