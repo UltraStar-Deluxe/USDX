@@ -23,7 +23,7 @@
  * $URL$
  * $Id$
  *]]
-    
+
 -- some values to adjust the creation of PlayerChanges
 local MinPercentage = 0.06;  -- minimal amount of points between changes (in percent)
 local MaxPercentage = 0.12; -- maximal amount of points between changes (in percent)
@@ -162,8 +162,8 @@ function DrawPlayerText(i, Text)
 
   -- text
   Gl.Color(1, 0, 0, 1);
-  TextGl.Size(18);
   TextGl.Style(1);
+  TextGl.Size(18);
   TextGl.Italic(false);
   local PosX = (OSD[i].Left + OSD[i].Right) / 2;
   PosX = PosX - TextGl.Width(Text) / 2;
