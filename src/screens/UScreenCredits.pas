@@ -68,16 +68,11 @@ type
 
       Credits_X:     real;
       Credits_Time:  cardinal;
-      Credits_Alpha: cardinal;
       CTime_hold:    cardinal;
-      ESC_Alpha:     integer;
 
-      credits_entry:       TTexture;
-      credits_entry_dx:    TTexture;
       credits_bg_tex:      TTexture;
       credits_bg_ovl:      TTexture;
       //credits_bg_logo:   TTexture;
-      credits_bg_scrollbox_left: TTexture;
       credits_names:       array of TTexture;
       intro_layer01:       TTexture;
       intro_layer02:       TTexture;
@@ -92,11 +87,6 @@ type
       outro_esc:           TTexture;
       outro_exd:           TTexture;
 
-      deluxe_slidein: cardinal;
-
-      CurrentScrollText:      string;
-      NextScrollUpdate:       real;
-      EndofLastScrollingPart: cardinal;
       CurrentScrollStart, CurrentScrollEnd: integer;
 
       CRDTS_Stage: TCreditsStages;
