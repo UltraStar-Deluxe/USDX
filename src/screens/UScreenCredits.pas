@@ -47,16 +47,28 @@ uses
   UPath,
   UGraphicClasses;
 
+{ beat detection constants and types }
+const
+  SubChannelCount = 32;
+  HistoryLength = 44;
+  SamplesPerChannel = (FFTSize div 2) div SubChannelCount;
+  BeatEnergyModifier = 80; // modifies detected energy
+                           // higher values equal a more sensitive detection
+
+type
+  TEnergyHistory = array [0..HistoryLength-1] of single;
+  TSubchannelHistory = array [0..SubChannelCount-1] of TEnergyHistory;
+
 type
   TCreditsStages=(InitialDelay, Intro, MainPart, Outro);
 
   TScreenCredits = class(TMenu)
-    public
+    private
+      CreditsPath: IPath;
 
       Credits_X:     real;
       Credits_Time:  cardinal;
       Credits_Alpha: cardinal;
-      CTime:         cardinal;
       CTime_hold:    cardinal;
       ESC_Alpha:     integer;
 
@@ -66,15 +78,7 @@ type
       credits_bg_ovl:      TTexture;
       //credits_bg_logo:   TTexture;
       credits_bg_scrollbox_left: TTexture;
-      credits_blindguard:  TTexture;
-      credits_blindy:      TTexture;
-      credits_canni:       TTexture;
-      credits_commandio:   TTexture;
-      credits_lazyjoker:   TTexture;
-      credits_mog:         TTexture;
-      credits_mota:        TTexture;
-      credits_skillmaster: TTexture;
-      credits_whiteshark:  TTexture;
+      credits_names:       array of TTexture;
       intro_layer01:       TTexture;
       intro_layer02:       TTexture;
       intro_layer03:       TTexture;
@@ -97,14 +101,53 @@ type
 
       CRDTS_Stage: TCreditsStages;
 
+      { beat detection }
+      SubChannelHistory: TSubchannelHistory;
+
+      { mouse movement easter eggs: }
+      MouseMoved: boolean;
+      MouseX, MouseY: double;
+
+      procedure LoadNameTextures;
+
+      { draw different stages }
+      procedure DrawInitialDelay;
+
+      { Intro }
+      procedure DrawIntro;
+      procedure DrawLayeredLogo(Separation, Scale, AngleX, AngleY, AngleZ: single);
+
+      { Main }
+      procedure DrawMain;
+      procedure DrawMainBG;
+      procedure DrawFunkyText;
+
+      procedure DrawMainFG;
+
+      procedure DrawNames;
+      procedure DoLogoBling;
+
+      { Outro }
+      procedure DrawOutro;
+
+
+      { beat detection }
+      procedure DetectBeat;
+    protected
+      { beat detection stuff
+        protected cause we need this information for "on beat
+        effect"}
+      LastBeatTime: cardinal;
+      BeatDetected: boolean;
+      CTime:        cardinal;
+    public
       Fadeout: boolean;
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
-      function Draw: boolean; override;
+      function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       procedure OnHide; override;
-      procedure DrawCredits;
-      procedure Draw_FunkyText;
+      function Draw: boolean; override;
    end;
 
 const
@@ -114,17 +157,9 @@ const
     'irc helping us - eBandit and Gabari, scene ppl who really helped instead of compiling and running away. Greetings to DennisTheMenace for betatesting, '+
     'Demoscene.tv, pouet.net, KakiArts, Sourceforge,..';
 
+{ texture names (loaded from gameshared/resources/credits}
   CRDTS_BG_FILE           = 'credits_v5_bg.png';
   CRDTS_OVL_FILE          = 'credits_v5_overlay.png';
-  CRDTS_blindguard_FILE   = 'names_blindguard.png';
-  CRDTS_blindy_FILE       = 'names_blindy.png';
-  CRDTS_canni_FILE        = 'names_canni.png';
-  CRDTS_commandio_FILE    = 'names_commandio.png';
-  CRDTS_lazyjoker_FILE    = 'names_lazyjoker.png';
-  CRDTS_mog_FILE          = 'names_mog.png';
-  CRDTS_mota_FILE         = 'names_mota.png';
-  CRDTS_skillmaster_FILE  = 'names_skillmaster.png';
-  CRDTS_whiteshark_FILE   = 'names_whiteshark.png';
   INTRO_L01_FILE          = 'intro-l-01.png';
   INTRO_L02_FILE          = 'intro-l-02.png';
   INTRO_L03_FILE          = 'intro-l-03.png';
@@ -138,32 +173,83 @@ const
   OUTRO_ESC_FILE          = 'outro-esc.png';
   OUTRO_EXD_FILE          = 'outro-exit-dark.png';
 
-  Timings: array[0..21] of cardinal=(
-     20,   //  0 Delay before Start
+{ some timings }
+  Delay_Before_Start = 20;
+  Intro_Flare_Start = 60;
+  Intro_Zoom_End = 149;
+  Intro_Stand_End = 155;
+  Intro_Separation_End = 170;
+  Intro_FadeToWhite_Start = 261;
+  Intro_Zoomout_Start = 271;
+  Main_Start = 271;
+  Main_OnBeatTwinkle_Start = 280;
+  Main_Names_Start = 359;
+  Main_Names_End = 2833;
+  Main_FadeOut_Start = 3096;
+  Tune_End = 3366;
 
-    149,   //  1 End first Intro Zoom
-    155,   //  2 Start 2. Action in Intro
-    170,   //  3 End Separation in Intro
-    271,   //  4 beginning Zoomout in Intro
-      0,   //  5 unused
-    261,   //  6 Start fade-to-white in Intro
+{ cosntants for developer names }
 
-    271,   //  7 Start Main Part
-    280,   //  8 Start On-Beat-Star Main Part
+type
+  TFadeEffect = procedure (const Tex: TTexture; Progress: double);
+  TCRTZ_Developer = record
+    Name: string;           // developer name for texture loading (names_"devel".png)
+    Twinkle: boolean;       // should there be twinkles on show
+    FadeIn:   TFadeEffect;  // fade in effect
+    Draw:     TFadeEffect;  // effect during draw
+    FadeOut:  TFadeEffect;  // fade out effect
+  end;
 
-    396,   //  9 Start BlindGuard
-    666,   // 10 Start blindy
-    936,   // 11 Start Canni
-   1206,   // 12 Start Commandio
-   1476,   // 13 Start LazyJoker
-   1746,   // 14 Start Mog
-   2016,   // 15 Start Mota
-   2286,   // 16 Start SkillMaster
-   2556,   // 17 Start WhiteShark
-   2826,   // 18 Ende Whiteshark
-   3096,   // 19 Start FadeOut Mainscreen
-   3366,   // 20 Ende Credits Tune
-     60);  // 21 start flare in intro
+{ effects are called with blending, texture and matrix prepared }
+procedure Effect_Draw             (const Tex: TTexture; Progress: double);
+procedure Effect_OnBeatJitter     (const Tex: TTexture; Progress: double);
+
+procedure Effect_Rotate_Left_Top  (const Tex: TTexture; Progress: double);
+procedure Effect_Rotate_Right_Bot (const Tex: TTexture; Progress: double);
+procedure Effect_ZoomIn_Rotate    (const Tex: TTexture; Progress: double);
+procedure Effect_ZoomOut_Shift    (const Tex: TTexture; Progress: double);
+procedure Effect_Shift_Left       (const Tex: TTexture; Progress: double);
+procedure Effect_Shift_Right_Top  (const Tex: TTexture; Progress: double);
+procedure Effect_Flip_Bot         (const Tex: TTexture; Progress: double);
+procedure Effect_Flip_Right_Top   (const Tex: TTexture; Progress: double);
+procedure Effect_Flip_Right       (const Tex: TTexture; Progress: double);
+procedure Effect_Flip_Right_Bot   (const Tex: TTexture; Progress: double);
+procedure Effect_Rotate_Right_Top (const Tex: TTexture; Progress: double);
+procedure Effect_Shift_Weird      (const Tex: TTexture; Progress: double);
+procedure Effect_Shift_Right_Bot  (const Tex: TTexture; Progress: double);
+procedure Effect_Rotate_Right_Top2(const Tex: TTexture; Progress: double);
+procedure Effect_Flip_Left_Bot    (const Tex: TTexture; Progress: double);
+procedure Effect_Flip_Right_Top2  (const Tex: TTexture; Progress: double);
+procedure Effect_Twinkle_Down     (const Tex: TTexture; Progress: double);
+
+const
+  Developers: array[0..10] of TCRTZ_Developer = (
+    (Name: 'alexanders';  Twinkle: true;  FadeIn: Effect_Rotate_Left_Top;   Draw: Effect_OnBeatJitter;  FadeOut: Effect_Rotate_Right_Bot),
+    (Name: 'blindy';      Twinkle: true;  FadeIn: Effect_ZoomIn_Rotate;     Draw: Effect_OnBeatJitter;  FadeOut: Effect_ZoomOut_Shift),
+    (Name: 'brunzel';     Twinkle: true;  FadeIn: Effect_Shift_Left;        Draw: Effect_Draw;          FadeOut: Effect_Shift_Right_Top),
+    (Name: 'canni';       Twinkle: true;  FadeIn: Effect_Flip_Bot;          Draw: Effect_Draw;          FadeOut: Effect_Flip_Right_Top),
+    (Name: 'hennymcc';    Twinkle: true;  FadeIn: Effect_Flip_Right;        Draw: Effect_OnBeatJitter;  FadeOut: Effect_Flip_Right_Bot),
+    (Name: 'jaybinks';    Twinkle: true;  FadeIn: Effect_Rotate_Right_Top;  Draw: Effect_OnBeatJitter;  FadeOut: Effect_Shift_Weird),
+    (Name: 'krueger';     Twinkle: true;  FadeIn: Effect_Shift_Right_Bot;   Draw: Effect_OnBeatJitter;  FadeOut: Effect_Rotate_Right_Top2),
+    (Name: 'mezzox';      Twinkle: true;  FadeIn: Effect_Flip_Left_Bot;     Draw: Effect_OnBeatJitter;  FadeOut: Effect_Flip_Right_Top),
+    (Name: 'mischi';      Twinkle: true;  FadeIn: Effect_Shift_Weird;       Draw: Effect_OnBeatJitter;  FadeOut: Effect_Flip_Bot),
+    (Name: 'mog';         Twinkle: false; FadeIn: Effect_Twinkle_Down;      Draw: Effect_OnBeatJitter;  FadeOut: Effect_ZoomIn_Rotate),
+    (Name: 'whiteshark';  Twinkle: true;  FadeIn: Effect_Rotate_Right_Top2; Draw: Effect_OnBeatJitter;  FadeOut: Effect_Shift_Left)
+  );
+
+  { name specific times }
+  TimePerName = (Main_Names_End - Main_Names_Start) div Length(Developers);
+  NameFadeTime = 12;   // duration of fade in/out in 1/100 secs
+  NameWaitTime = 5;    // delay between fade out and fade in of the next devel in 1/100 secs
+  NameTwinkleTime = 2; // duration of star effects in 1/100 secs
+  BeatJitterTime = 3;  // duration of on beat jitter effect
+  { position at which the names show up
+    note: due to use of translate this is the center
+    of the names not the upper left corner as usual }
+  NameX = 223;
+  NameY = 329;
+  NameW = 326;
+  NameH = 258;
 
 implementation
 
@@ -204,9 +290,30 @@ begin
     end;  // fi
 end;
 
+function TScreenCredits.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+begin
+  Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
+  
+  { calculate mouse coordinates from -1 to 1
+    relative to screen center }
+  MouseX := (X - (ScreenW / Screens) / 2) / ((ScreenW / Screens) / 2);
+  MouseY := (Y - ScreenH / 2) / (ScreenH / 2);
+
+  MouseMoved := true;
+end;
+
+procedure TScreenCredits.LoadNameTextures;
+  var I: integer;
+begin
+  SetLength(credits_names, Length(Developers));
+
+  for I  := 0 to High(Developers) do
+  begin
+    credits_names[I] := Texture.LoadTexture(CreditsPath.Append('names_' + Developers[I].Name + '.png'),  TEXTURE_TYPE_TRANSPARENT, 0);
+  end;
+end;
+
 constructor TScreenCredits.Create;
-var
-  CreditsPath: IPath;
 begin
   inherited Create;
 
@@ -215,15 +322,7 @@ begin
   credits_bg_tex := Texture.LoadTexture(CreditsPath.Append(CRDTS_BG_FILE), TEXTURE_TYPE_PLAIN, 0);
   credits_bg_ovl := Texture.LoadTexture(CreditsPath.Append(CRDTS_OVL_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
 
-  credits_blindguard  := Texture.LoadTexture(CreditsPath.Append(CRDTS_blindguard_FILE),  TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_blindy      := Texture.LoadTexture(CreditsPath.Append(CRDTS_blindy_FILE),      TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_canni       := Texture.LoadTexture(CreditsPath.Append(CRDTS_canni_FILE),       TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_commandio   := Texture.LoadTexture(CreditsPath.Append(CRDTS_commandio_FILE),   TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_lazyjoker   := Texture.LoadTexture(CreditsPath.Append(CRDTS_lazyjoker_FILE),   TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mog         := Texture.LoadTexture(CreditsPath.Append(CRDTS_mog_FILE),         TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_mota        := Texture.LoadTexture(CreditsPath.Append(CRDTS_mota_FILE),        TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_skillmaster := Texture.LoadTexture(CreditsPath.Append(CRDTS_skillmaster_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
-  credits_whiteshark  := Texture.LoadTexture(CreditsPath.Append(CRDTS_whiteshark_FILE),  TEXTURE_TYPE_TRANSPARENT, 0);
+  LoadNameTextures;
 
   intro_layer01 := Texture.LoadTexture(CreditsPath.Append(INTRO_L01_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
   intro_layer02 := Texture.LoadTexture(CreditsPath.Append(INTRO_L02_FILE), TEXTURE_TYPE_TRANSPARENT, 0);
@@ -242,38 +341,341 @@ begin
   CRDTS_Stage:=InitialDelay;
 end;
 
-function TScreenCredits.Draw: boolean;
-begin
-  DrawCredits;
-  Draw := true;
-end;
-
 procedure TScreenCredits.OnShow;
 begin
   inherited;
 
-  // pause background music
+ { pause background music }
   SoundLib.PauseBgMusic;
 
   CRDTS_Stage    := InitialDelay;
-  Credits_X      := 580;
-  deluxe_slidein := 0;
-  Credits_Alpha  := 0;
-//  Music.SetLoop(true); loop loops not, shit
-  AudioPlayback.Open(soundpath.Append('wome-credits-tune.mp3')); // thank you wetue
-//  Music.Play;
   CTime := 0;
-//  setlength(CTime_hold,0);
+  Credits_X      := 580;
+
+  { open credits tune, we play it after initial delay }
+  AudioPlayback.Open(soundpath.Append('wome-credits-tune.mp3')); // thank you wetue
+
+  { reset twinkling stars }
+  GoldenRec.KillAll;
+  
+  { reset mouse coords }
+  MouseMoved := false;
+  MouseX := 0;
+  MouseY := 0;
+
+  { hide cursor }
+  Display.SetCursor;
 end;
 
 procedure TScreenCredits.OnHide;
 begin
   AudioPlayback.Stop;
 
+  { show cursor }
+  Display.SetCursor;
+
   SoundLib.StartBgMusic;
 end;
 
-Procedure TScreenCredits.Draw_FunkyText;
+function TScreenCredits.Draw: boolean;
+  var
+    T: cardinal;
+begin
+  Result := true;
+  
+  // reset beat detection
+  BeatDetected := false;
+
+  T := SDL_GetTicks() div 33;
+  if T <> Credits_Time then
+  begin
+    Credits_Time := T;
+    inc(CTime);
+    inc(CTime_hold);
+    Credits_X := Credits_X-2;
+
+    if (CRDTS_Stage = InitialDelay) and (CTime >= Delay_Before_Start) then
+    begin
+      CRDTS_Stage := Intro;
+      CTime := 0;
+      AudioPlayback.Play;
+    end
+    else if (CRDTS_Stage = Intro) and (CTime >= Main_Start) then
+    begin
+      CRDTS_Stage := MainPart;
+    end
+    else if (CRDTS_Stage = MainPart) and (CTime >= Tune_End) then
+    begin
+      CRDTS_Stage := Outro;
+    end;
+    
+    // dis does teh muiwk y0r   to be translated :-)
+    DetectBeat;
+  end;
+
+  case CRDTS_Stage of
+    InitialDelay: DrawInitialDelay;
+    Intro:        DrawIntro;
+    MainPart:     DrawMain;
+    Outro:        DrawOutro;  
+  end;
+
+  // make the stars shine
+  GoldenRec.Draw;
+end;
+
+procedure TScreenCredits.DrawInitialDelay;
+begin
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+end;
+
+procedure TScreenCredits.DrawIntro;
+  var
+    Separation, Scale,
+    AngleX, AngleY, AngleZ: single;
+    FlareX, FlareY: single;
+    I: integer;
+begin
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+
+  { rotate logo anti clockwise and make it grow }
+  if (CTime >= Intro_Separation_End) then
+  begin
+    Separation := 1;
+    Scale := 1 + sqr(CTime - Intro_Separation_End) / (32 * (Main_Start - Intro_Separation_End));
+    AngleX := 0;
+    AngleY := 0;
+    AngleZ := 20 * sqr(CTime - Intro_Separation_End) / sqr((Main_Start - Intro_Separation_End) / 2);
+  end
+
+  { separate layers }
+  else if (CTime >= Intro_Stand_End) then
+  begin
+    Separation := 0.5 + 0.5 * (CTime - Intro_Stand_End) / (Intro_Separation_End - Intro_Stand_End);
+    Scale := 1;
+    AngleX := 0;
+    AngleY := 0;
+    AngleZ := 0;
+  end
+
+  { stand still }
+  else if (CTime >= Intro_Zoom_End) then
+  begin
+    Separation := 0.5;
+    Scale := 1;
+    AngleX := 0;
+    AngleY := 0;
+    AngleZ := 0;
+  end
+
+  { rotate left }
+  else 
+  begin
+    Separation := 0.5 + 0.5 * (Intro_Zoom_End - CTime) / (Intro_Zoom_End);
+    Scale := 1;
+    AngleX := 10 * (Intro_Zoom_End - CTime) / (Intro_Zoom_End);
+    AngleY := 20 * (Intro_Zoom_End - CTime) / (Intro_Zoom_End);
+    AngleZ := 0;
+  end;
+
+  { the user moved the mouse, overwrite X and Y angle with
+    according to mouse position }
+  if (MouseMoved) then
+  begin
+    AngleX := 30 * MouseY;
+    AngleY := 30 * MouseX;
+  end;
+
+  DrawLayeredLogo(Separation, Scale, AngleX, AngleY, AngleZ);
+
+  { do some sparkling effects }
+  if (CTime < Intro_Zoom_End) and (CTime > Intro_Flare_Start) then
+  begin
+    for I := 1 to 3 do
+    begin
+       FlareX := 410 + Floor((CTime - Intro_Flare_Start) / (Intro_Zoom_End - Intro_Flare_Start) * (536 - 410)) + RandomRange(-5, 5);
+       FlareY := Floor((Intro_Zoom_End - CTime) / 22) + RandomRange(285, 301);
+       GoldenRec.Spawn(FlareX, FlareY, 1, 16, 0, -1, Flare, 0);
+    end;
+  end;
+
+  { fade to white at end }
+  if Ctime > Intro_FadeToWhite_Start then
+  begin
+    glColor4f(1, 1, 1, sqr(CTime - Intro_FadeToWhite_Start) * (CTime - Intro_FadeToWhite_Start) / sqr(Main_Start - Intro_FadeToWhite_Start));
+    glEnable(GL_BLEND);
+    glBegin(GL_QUADS);
+      glVertex2f(  0,   0);
+      glVertex2f(  0, 600);
+      glVertex2f(800, 600);
+      glVertex2f(800,   0);
+    glEnd;
+    glDisable(GL_BLEND);
+  end;
+end;
+
+procedure Start3D;
+begin
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix;
+  glLoadIdentity;
+  glFrustum(-0.3 * 4 / 3, 0.3 * 4 / 3, -0.3, 0.3, 1, 1000);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity;
+end;
+
+procedure End3D;
+begin
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix;
+  glMatrixMode(GL_MODELVIEW);
+end;
+
+procedure TScreenCredits.DrawLayeredLogo(Separation, Scale, AngleX, AngleY, AngleZ: single);
+  var
+    TotalAngle: single;
+begin
+  Start3D;
+  glPushMatrix;
+
+  glEnable(GL_TEXTURE_2D);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+
+  glTranslatef(0, 0, -5 + 0.5 * Separation);
+
+  TotalAngle := Abs(AngleX) + Abs(AngleY) + Abs(AngleZ);
+  if not isZero(TotalAngle) then
+    glRotatef(TotalAngle, AngleX / TotalAngle, AngleY / TotalAngle, AngleZ / TotalAngle);
+
+  glScalef(Scale, Scale, 1);
+
+  glScalef(4/3, -1, 1);
+  glColor4f(1, 1, 1, 1);
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer01.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.4 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.4 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.4 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.4 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer02.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.3 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.3 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.3 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.3 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer03.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.2 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.2 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.2 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.2 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer04.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.1 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.1 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.1 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.1 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer05.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, 0 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, 0 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, 0 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, 0 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer06.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.1 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.1 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.1 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.1 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer07.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.2 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.2 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.2 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.2 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer08.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.3 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.3 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.3 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.3 * Separation);
+  glEnd;
+
+  glBindTexture(GL_TEXTURE_2D, intro_layer09.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.22 * Separation);
+    glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.22 * Separation);
+    glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.22 * Separation);
+    glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.22 * Separation);
+  glEnd;
+
+  glDisable(Gl_Texture_2D);
+  glDisable(GL_BLEND);
+
+  glPopMatrix;
+  End3D;
+end;
+
+procedure TScreenCredits.DrawMain;  
+begin
+  DrawMainBG;
+  DrawFunkyText;
+  DrawNames;
+  DrawMainFG;
+  DoLogoBling;
+
+  // fade out at end of main part
+  if (Ctime > Main_FadeOut_Start) then
+  begin
+    glColor4f(0, 0, 0, (CTime - Main_FadeOut_Start) / (Tune_End - Main_FadeOut_Start));
+    glEnable(GL_BLEND);
+    glBegin(GL_QUADS);
+      glVertex2f(  0,   0);
+      glVertex2f(  0, 600);
+      glVertex2f(800, 600);
+      glVertex2f(800,   0);
+    glEnd;
+    glDisable(GL_BLEND);
+  end;
+end;
+
+procedure TScreenCredits.DrawMainBG;
+begin
+  glEnable(GL_TEXTURE_2D);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+
+  glColor4f(1, 1, 1, 1);
+  glBindTexture(GL_TEXTURE_2D, credits_bg_tex.TexNum);
+  glBegin(Gl_Quads);
+    glTexCoord2f(       0,        0); glVertex2f(      0,       0);
+    glTexCoord2f(       0, 600/1024); glVertex2f(      0, RenderH);
+    glTexCoord2f(800/1024, 600/1024); glVertex2f(RenderW, RenderH);
+    glTexCoord2f(800/1024,        0); glVertex2f(RenderW,       0);
+  glEnd;
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_BLEND);
+end;
+
+procedure TScreenCredits.DrawFunkyText;
 var
   S:           integer;
   X, Y, A:     real;
@@ -282,7 +684,7 @@ begin
   SetFontSize(30);
 
   // init ScrollingText
-  if (CTime = Timings[7]) then
+  if (CTime = Main_Start) then
   begin
     // set position of text
     Credits_X          := 600;
@@ -290,7 +692,7 @@ begin
     CurrentScrollEnd   := 1;
   end;
 
-  if (CTime > Timings[7]) and
+  if (CTime > Main_Start) and
      (CurrentScrollStart < length(Funky_Text)) then
   begin
     X := 0;
@@ -347,1126 +749,576 @@ begin
 }
 end;
 
-procedure Start3D;
+procedure TScreenCredits.DrawNames;
+  var
+    Dev: integer;
+    Ticks: integer;
+    DevTicks: integer;
+    TwinkleW, TwinkleH: integer;
 begin
-  glMatrixMode(GL_PROJECTION);
-  glPushMatrix;
-  glLoadIdentity;
-  glFrustum(-0.3 * 4 / 3, 0.3 * 4 / 3, -0.3, 0.3, 1, 1000);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity;
-end;
+  Ticks := (CTime - Main_Names_Start);
+  Dev := Ticks div TimePerName;
+  DevTicks := Ticks mod TimePerName;
 
-procedure End3D;
-begin
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix;
-  glMatrixMode(GL_MODELVIEW);
-end;
+  {// debug stuff
+  SetFontPos(20, 20);
+  glPrint('Ticks: ' + IntToStr(Ticks));
+  SetFontPos(20, 45);
+  glPrint('Dev: ' + IntToStr(Dev));
+  SetFontPos(20, 70);
+  glPrint('DevTicks: ' + IntToStr(DevTicks)); //}
 
-procedure TScreenCredits.DrawCredits;
-var
-  T:       cardinal;
-  Data:    TFFTData;
-  j, k, l: cardinal;
-  f, g:    real;
-  STime:   cardinal;
-  Delay:   cardinal;
-  myScale: real;
-  myAngle: real;
-const
-  myLogoCoords: array[0..27,0..1] of cardinal = (
-    ( 39,32),( 84,32),(100,16),(125,24),
-    (154,31),(156,58),(168,32),(203,36),
-    (258,34),(251,50),(274,93),(294,84),
-    (232,54),(278,62),(319,34),(336,92),
-    (347,23),(374,32),(377,58),(361,83),
-    (385,91),(405,91),(429,35),(423,51),
-    (450,32),(485,34),(444,91),(486,93)
-  );
-begin
-  // dis does teh muiwk y0r   to be translated :-)
-  AudioPlayback.GetFFTData(Data);
-
-  Log.LogStatus('', ' JB-1');
-
-  T := SDL_GetTicks() div 33;
-  if T <> Credits_Time then
+  if (Ticks >= 0) and (Dev <= High(Developers)) then
   begin
-    Credits_Time := T;
-    inc(CTime);
-    inc(CTime_hold);
-    Credits_X := Credits_X-2;
-    
-    Log.LogStatus('', ' JB-2');
-    if (CRDTS_Stage=InitialDelay) and (CTime = Timings[0]) then
+    { spawn twinkling stars }
+    if (Developers[Dev].Twinkle) and (DevTicks >= NameFadeTime) and (DevTicks <= NameFadeTime + NameTwinkleTime) then
     begin
-//      CTime := Timings[20];
-//      CRDTS_Stage := Outro;
-      CRDTS_Stage := Intro;
-      CTime := 0;
-      AudioPlayback.Play;
-    end;
-    if (CRDTS_Stage = Intro) and (CTime = Timings[7]) then
-    begin
-      CRDTS_Stage := MainPart;
-    end;
-    if (CRDTS_Stage = MainPart) and (CTime = Timings[20]) then
-    begin
-      CRDTS_Stage := Outro;
-    end;
-  end;
-  
-  Log.LogStatus('', ' JB-3');
+      TwinkleW := Round(NameW * 0.6);
+      TwinkleH := Round(NameH * 0.6);
 
-  // draw background
-  if CRDTS_Stage = InitialDelay then
-  begin
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-  end
-  else
-  if CRDTS_Stage = Intro then
-  begin
-    Start3D;
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 0);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 1);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 5);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 0);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 1);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 5);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 0);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 1);
+      GoldenRec.Spawn(NameX + RandomRange(-TwinkleW, TwinkleW), NameY + RandomRange(-TwinkleH, TwinkleH), 1, 16, 0, -1, PerfectLineTwinkle, 5);
+    end;
+
+    { prepare drawing }
     glPushMatrix;
-
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_TEXTURE_2D);
+    glTranslatef(NameX, NameY, 0);
+    glBindTexture(GL_TEXTURE_2D, credits_names[Dev].TexNum);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
 
-    if CTime < Timings[1] then
+    // calculate progress and call effect
+    if (DevTicks <= NameFadeTime) then
+      Developers[Dev].FadeIn(credits_names[Dev], DevTicks / NameFadeTime)
+    else if (DevTicks >= TimePerName - NameFadeTime - NameWaitTime) then
     begin
-      myScale := 0.5 + 0.5 * (Timings[1] - CTime) / (Timings[1]); // slowly move layers together
-      myAngle := cos((CTime) * pi / ((Timings[1]) * 2));          // and make logo face towards camera
+      if (DevTicks < TimePerName - NameWaitTime) then
+        Developers[Dev].FadeOut(credits_names[Dev], ((TimePerName - NameWaitTime) - DevTicks) / NameFadeTime);
     end
     else
-    begin // this is the part when the logo stands still
-      myScale := 0.5;
-      myAngle := 0;
-    end;
-    if CTime > Timings[2] then
-    begin
-      myScale := 0.5 + 0.5 * (CTime - Timings[2]) / (Timings[3] - Timings[2]); // get some space between layers
-      myAngle := 0;
-    end;
-//    if CTime > Timings[3] then myScale := 1; // keep the space between layers
-    glTranslatef(0, 0, -5 + 0.5 * myScale);
-    if CTime > Timings[3] then
-      myScale := 1; // keep the space between layers
-    if CTime > Timings[3] then
-    begin // make logo rotate left and grow
-//      myScale := (CTime - Timings[4]) / (Timings[7] - Timings[4]);
-      glRotatef(20 * sqr(CTime - Timings[3]) / sqr((Timings[7] - Timings[3]) / 2), 0, 0, 1);
-      glScalef(1 + sqr(CTime - Timings[3]) / (32 * (Timings[7] - Timings[3])), 1 + sqr(CTime - Timings[3]) / (32 * (Timings[7] - Timings[3])), 1);
-    end;
-    if CTime < Timings[2] then
-      glRotatef(30 * myAngle, 0.5 * myScale + myScale, 1 + myScale, 0);
-//    glScalef(0.5, 0.5, 0.5);
-    glScalef(4/3, -1, 1);
-    glColor4f(1, 1, 1, 1);
+      Developers[Dev].Draw(credits_names[Dev], (DevTicks - NameFadeTime) / (TimePerName - NameFadeTime * 2 - NameWaitTime));
 
-    glBindTexture(GL_TEXTURE_2D, intro_layer01.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.4 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.4 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.4 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.4 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer02.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.3 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.3 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.3 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.3 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer03.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.2 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.2 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.2 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.2 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer04.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, -0.1 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, -0.1 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, -0.1 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, -0.1 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer05.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, 0 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, 0 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, 0 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, 0 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer06.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.1 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.1 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.1 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.1 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer07.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.2 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.2 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.2 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.2 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer08.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.3 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.3 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.3 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.3 * myScale);
-    glEnd;
-    glBindTexture(GL_TEXTURE_2D, intro_layer09.TexNum);
-    glbegin(gl_quads);
-      glTexCoord2f(0, 0); glVertex3f(-1, -1, 0.22 * myScale);
-      glTexCoord2f(0, 1); glVertex3f(-1,  1, 0.22 * myScale);
-      glTexCoord2f(1, 1); glVertex3f( 1,  1, 0.22 * myScale);
-      glTexCoord2f(1, 0); glVertex3f( 1, -1, 0.22 * myScale);
-    glEnd;
-    gldisable(gl_texture_2d);
+    glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
-
     glPopMatrix;
-    End3D;
+  end;
+end;
 
-    // do some sparkling effects
-    if (CTime < Timings[1]) and (CTime > Timings[21]) then
+procedure TScreenCredits.DrawMainFG;
+begin
+  glEnable(GL_TEXTURE_2D);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glColor4f(1, 1, 1, 1);
+  glBindTexture(GL_TEXTURE_2D, credits_bg_ovl.TexNum);
+  glBegin(gl_Quads);
+    glTexCoord2f(      0,        0); glVertex2f(800-393,   0);
+    glTexCoord2f(      0, 600/1024); glVertex2f(800-393, 600);
+    glTexCoord2f(393/512, 600/1024); glVertex2f(800,     600);
+    glTexCoord2f(393/512,        0); glVertex2f(800,       0);
+  glEnd;
+
+
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_BLEND);
+end;
+
+procedure TScreenCredits.DoLogoBling;
+  const
+    myLogoCoords: array[0..27,0..1] of cardinal = (
+      ( 39,32),( 84,32),(100,16),(125,24),
+      (154,31),(156,58),(168,32),(203,36),
+      (258,34),(251,50),(274,93),(294,84),
+      (232,54),(278,62),(319,34),(336,92),
+      (347,23),(374,32),(377,58),(361,83),
+      (385,91),(405,91),(429,35),(423,51),
+      (450,32),(485,34),(444,91),(486,93)
+    );
+  var
+    Coords: integer;
+    StartFrame: integer;
+begin
+  if (CTime > Main_OnBeatTwinkle_Start ) and
+     (CTime < Main_FadeOut_Start) then
     begin
-      for k:= 1 to 3 do
+      { spawn stars only in frames where a beat was detected }
+      if BeatDetected then
       begin
-         l := 410 + floor((CTime - Timings[21]) / (Timings[1] - Timings[21]) * (536 - 410)) + RandomRange(-5, 5);
-         j := floor((Timings[1] - CTime) / 22) + RandomRange(285, 301);
-         GoldenRec.Spawn(l, j, 1, 16, 0, -1, Flare, 0);
+         StartFrame := RandomRange(6, 16);
+         Coords := RandomRange(0, 27);
+
+         GoldenRec.Spawn(myLogoCoords[Coords,0], myLogoCoords[Coords,1], 16-StartFrame, StartFrame, 0, -1, PerfectNote, 0);
       end;
     end;
-
-    // fade to white at end
-    if Ctime > Timings[6] then
-    begin
-      glColor4f(1, 1, 1, sqr(CTime - Timings[6]) * (CTime - Timings[6]) / sqr(Timings[7] - Timings[6]));
-      glEnable(GL_BLEND);
-      glBegin(GL_QUADS);
-        glVertex2f(  0,   0);
-        glVertex2f(  0, 600);
-        glVertex2f(800, 600);
-        glVertex2f(800,   0);
-      glEnd;
-      glDisable(GL_BLEND);
-    end;
-
-    end;
-    if (CRDTS_Stage=MainPart) then
-      // main credits screen background, scroller, logo and girl
-      begin
-
-        glEnable(GL_TEXTURE_2D);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_BLEND);
-
-        glColor4f(1, 1, 1, 1);
-        glBindTexture(GL_TEXTURE_2D, credits_bg_tex.TexNum);
-        glbegin(gl_quads);
-          glTexCoord2f(       0,        0); glVertex2f(  0,   0);
-          glTexCoord2f(       0, 600/1024); glVertex2f(  0, 600);
-          glTexCoord2f(800/1024, 600/1024); glVertex2f(800, 600);
-          glTexCoord2f(800/1024,        0); glVertex2f(800,   0);
-        glEnd;
-        glDisable(GL_TEXTURE_2D);
-        glDisable(GL_BLEND);
-
-        // draw scroller
-        Draw_FunkyText;
-
-    //#########################################################################
-    // draw credits names
-
-    Log.LogStatus('', ' JB-4');
-
-    // BlindGuard (rotate in from upper left, rotate out to lower right)
-    STime := Timings[9] - 10;
-    Delay := Timings[10] - Timings[9];
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-	j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-	  j := (STime + Delay) - CTime
-	else
-	  j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime + 10) and (CTime <= STime + 12) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(0, 329, 0);
-      if CTime <= STime + 10 then
-        glrotatef((CTime - STime) * 9 + 270, 0, 0, 1);
-      gltranslatef(223, 0, 0);
-      if CTime >= STime + Delay - 10 then
-        if CTime <= STime + Delay then
-        begin
-          gltranslatef(223, 0, 0);
-          glrotatef((integer(CTime) - (integer(STime + Delay) - 10)) * -9, 0, 0, 1);
-          gltranslatef(-223, 0, 0);
-        end;
-      glBindTexture(GL_TEXTURE_2D, credits_blindguard.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163, -129);
-        glTexCoord2f(0, 1); glVertex2f(-163,  129);
-        glTexCoord2f(1, 1); glVertex2f( 163,  129);
-        glTexCoord2f(1, 0); glVertex2f( 163, -129);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // Blindy (zoom from 0 to full size and rotation, zoom zo doubble size and shift to upper right)
-    STime := Timings[10] - 10;
-    Delay := Timings[11] - Timings[10] + 5;
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-            k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-        j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime+20) and (CTime<=STime+22) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(223, 329, 0);
-      if CTime <= STime + 20 then
-      begin
-        j := CTime - Stime;
-        glscalef(j * j / 400, j * j / 400, j * j / 400);
-        glrotatef(j * 18.0, 0, 0, 1);
-      end;
-      if CTime >= STime + Delay - 10 then
-        if CTime <= STime + Delay then
-        begin
-          j := CTime - (STime + Delay - 10);
-          f := j * 10.0;
-          gltranslatef(f * 3, -f, 0);
-          glscalef(1 + j / 10, 1 + j / 10, 1 + j / 10);
-          glrotatef(j * 9.0, 0, 0, 1);
-        end;
-      glBindTexture(GL_TEXTURE_2D, credits_blindy.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163, -129);
-        glTexCoord2f(0, 1); glVertex2f(-163,  129);
-        glTexCoord2f(1, 1); glVertex2f( 163,  129);
-        glTexCoord2f(1, 0); glVertex2f( 163, -129);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // Canni  (shift in from left, shift out to upper right)
-    STime := Timings[11] - 10;
-    Delay := Timings[12] - Timings[11] + 5;
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-        j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime + 10) and (CTime <= STime + 12) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(223, 329, 0);
-      if CTime <= STime + 10 then
-      begin
-        gltranslatef(((CTime - STime) * 21.0) - 210, 0, 0);
-      end;
-      if CTime >= STime + Delay - 10 then
-        if CTime <= STime + Delay then
-	begin
-	  j := (CTime - (STime + Delay - 10)) * 21;
-	  gltranslatef(j, -j / 2, 0);
-	end;
-      glBindTexture(GL_TEXTURE_2D, credits_canni.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163, -129);
-        glTexCoord2f(0, 1); glVertex2f(-163,  129);
-        glTexCoord2f(1, 1); glVertex2f( 163,  129);
-        glTexCoord2f(1, 0); glVertex2f( 163, -129);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // Commandio  (flip in from down, flip out to upper right)
-    STime := Timings[12] - 10;
-    Delay := Timings[13] - Timings[12];
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-            k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-        j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime + 10) and (CTime <= STime + 12) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(223, 329, 0);
-      if CTime <= STime + 10 then
-        f := 258.0 - 25.8 * (CTime - STime)
-      else
-        f := 0;
-      g := 0;
-      if CTime >= STime + Delay - 10 then
-        if CTime <= STime + Delay then
-        begin
-          j := CTime - (STime + Delay - 10);
-          g := 32.6 * j;
-        end;
-      glBindTexture(GL_TEXTURE_2D, credits_commandio.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163 + g - f * 1.5,     -129 + f * 1.5 - g/2);
-        glTexCoord2f(0, 1); glVertex2f(-163 + g * 1.5,          129 - (g * 1.5 * 258 / 326));
-        glTexCoord2f(1, 1); glVertex2f( 163 + g,                129 + g / 4);
-        glTexCoord2f(1, 0); glVertex2f( 163 + f * 1.5 + g / 4, -129 + f * 1.5 - g / 4);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // lazy joker  (just scrolls from left to right, no twinkling stars, no on-beat flashing)
-    STime := Timings[13] - 35;
-    Delay := Timings[14] - Timings[13] + 5;
-    if CTime > STime then
-    begin
-      k := 0;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) > 10) and ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      ESC_Alpha := 10;
-      f := CTime - STime;
-      if CTime <= STime + 40 then
-        j := CTime - STime
-      else
-        j := 40;
-      if (CTime >= STime + Delay - 40) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j * j / 1600);
-
-      glPushMatrix;
-      gltranslatef(180 + (f - 70), 329, 0);
-      glBindTexture(GL_TEXTURE_2D, credits_lazyjoker.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163, -129);
-        glTexCoord2f(0, 1); glVertex2f(-163,  129);
-        glTexCoord2f(1, 1); glVertex2f( 163,  129);
-        glTexCoord2f(1, 0); glVertex2f( 163, -129);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // Mog (flip in from right, flip out to lower right)
-    STime := Timings[14] - 10;
-    Delay := Timings[15] - Timings[14] + 5;
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-        j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime + 10) and (CTime <= STime + 12) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(223, 329, 0);
-      if CTime <= STime + 10 then
-        f := 326.0 - 32.6 * (CTime - STime)
-      else
-        f := 0;
-
-      g := 0;
-      if CTime >= STime + Delay - 10 then
-        if CTime <= STime + Delay then
-	begin
-	  j := CTime - (STime + Delay - 10);
-	  g := 32.6 * j;
-	end;
-      glBindTexture(GL_TEXTURE_2D, credits_mog.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163 + g * 1.5,     -129 + g * 1.5);
-        glTexCoord2f(0, 1); glVertex2f(-163 + g * 1.2,      129 + g);
-        glTexCoord2f(1, 1); glVertex2f( 163 - f + g / 2,    129 + f * 1.5 + g / 4);
-        glTexCoord2f(1, 0); glVertex2f( 163 - f + g * 1.5, -129 - f * 1.5);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // Mota (rotate in from upper right, shift out to lower left while shrinking and rotateing)
-    STime := Timings[15] - 10;
-    Delay := Timings[16] - Timings[15] + 5;
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-        j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime + 10) and (CTime <= STime + 12) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(223, 329, 0);
-      if CTime <= STime + 10 then
-      begin
-        gltranslatef(223, 0, 0);
-        glrotatef((10 - (CTime - STime)) * 9, 0, 0, 1);
-        gltranslatef(-223, 0, 0);
-      end;
-      if CTime >= STime + Delay - 10 then
-        if CTime <= STime + Delay then
-        begin
-          j := CTime - (STime + Delay - 10);
-          f := j * 10.0;
-          gltranslatef(-f * 2, -f, 0);
-          glscalef(1 - j / 10, 1 - j / 10, 1 - j / 10);
-          glrotatef(-j * 9.0, 0, 0, 1);
-        end;
-      glBindTexture(GL_TEXTURE_2D, credits_mota.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163, -129);
-        glTexCoord2f(0, 1); glVertex2f(-163,  129);
-        glTexCoord2f(1, 1); glVertex2f( 163,  129);
-        glTexCoord2f(1, 0); glVertex2f( 163, -129);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // Skillmaster (shift in from lower right, rotate out to upper right)
-    STime := Timings[16] - 10;
-    Delay := Timings[17] - Timings[16] + 5;
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-        j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime + 10) and (CTime <= STime + 12) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(223, 329, 0);
-      if CTime <= STime + 10 then
-      begin
-        j := STime + 10 - CTime;
-        f := j * 10.0;
-        gltranslatef(+f * 2, +f / 2, 0);
-      end;
-      if CTime >= STime + Delay - 10 then
-        if CTime <= STime + Delay then
-        begin
-          j := CTime - (STime + Delay - 10);
-          gltranslatef(0, -223, 0);
-          glrotatef(integer(j) * -9, 0, 0, 1);
-          gltranslatef(0, 223, 0);
-          glrotatef(j * 9, 0, 0, 1);
-        end;
-      glBindTexture(GL_TEXTURE_2D, credits_skillmaster.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163, -129);
-        glTexCoord2f(0, 1); glVertex2f(-163,  129);
-        glTexCoord2f(1, 1); glVertex2f( 163,  129);
-        glTexCoord2f(1, 0); glVertex2f( 163, -129);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-    // WhiteShark (flip in from lower left, flip out to upper right)
-    STime := Timings[17] - 10;
-    Delay := Timings[18] - Timings[17];
-    if CTime > STime then
-    begin
-      k := 0;
-      ESC_Alpha := 20;
-
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.25 then
-        ESC_Alpha := 5
-      else
-        inc(ESC_Alpha);
-      if ESC_Alpha > 20 then
-        ESC_Alpha := 20;
-      if ((CTime - STime) < 20) then
-        ESC_Alpha := 20;
-      if CTime <= STime + 10 then
-        j := CTime - STime
-      else
-        j := 10;
-      if (CTime >= STime + Delay - 10) then
-        if (CTime <= STime + Delay) then
-          j := (STime + Delay) - CTime
-        else
-          j := 0;
-      glColor4f(1, 1, 1, ESC_Alpha / 20 * j / 10);
-
-      if (CTime >= STime + 10) and (CTime <= STime + 12) then
-      begin
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 0);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 1);
-        GoldenRec.Spawn(RandomRange(65,390), RandomRange(200,460), 1, 16, 0, -1, PerfectLineTwinkle, 5);
-      end;
-
-      glPushMatrix;
-      gltranslatef(223, 329, 0);
-      if CTime <= STime + 10 then
-        f := 326.0 - 32.6 * (CTime - STime)
-      else
-        f := 0;
-
-      if (CTime >= STime + Delay - 10) and (CTime <= STime + Delay) then
-      begin
-        j := CTime - (STime + Delay - 10);
-        g := 32.6 * j;
-      end
-      else
-      begin
-        g := 0;
-      end;
-
-      glBindTexture(GL_TEXTURE_2D, credits_whiteshark.TexNum);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-      glEnable(GL_TEXTURE_2D);
-      glbegin(gl_quads);
-        glTexCoord2f(0, 0); glVertex2f(-163 - f       + g,     -129 + f / 4   - g / 2);
-        glTexCoord2f(0, 1); glVertex2f(-163 - f / 4   + g,      129 + g / 2   + f / 4);
-        glTexCoord2f(1, 1); glVertex2f( 163 - f * 1.2 + g / 4,  129 + f / 2   - g / 4);
-        glTexCoord2f(1, 0); glVertex2f( 163 - f * 1.5 + g / 4, -129 + f * 1.5 + g / 4);
-      glEnd;
-      gldisable(gl_texture_2d);
-      gldisable(GL_BLEND);
-      glPopMatrix;
-    end;
-
-   Log.LogStatus('', ' JB-103');
-
-    // ####################################################################
-    // do some twinkle stuff (kinda on beat)
-
-    if (CTime > Timings[8] ) and
-       (CTime < Timings[19]) then
-    begin
-      k := 0;
-      
-      try
-      for j := 0 to 40 do
-      begin
-        if (j < length(Data)) and
-           (k < length(Data)) then
-        begin
-          if Data[j] >= Data[k] then
-             k := j;
-        end;
-      end;
-      except
-      end;
-
-      if Data[k] > 0.2 then
-      begin
-         l := RandomRange(6, 16);
-         j := RandomRange(0, 27);
-         
-         GoldenRec.Spawn(myLogoCoords[j,0], myLogoCoords[j,1], 16-l, l, 0, -1, PerfectNote, 0);
-      end;
-    end;
-
-    //#################################################
-    // draw the rest of the main screen (girl and logo)
-    
-        glEnable(GL_TEXTURE_2D);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_BLEND);
-        glColor4f(1, 1, 1, 1);
-        glBindTexture(GL_TEXTURE_2D, credits_bg_ovl.TexNum);
-        glbegin(gl_quads);
-          glTexCoord2f(      0,        0); glVertex2f(800-393,   0);
-          glTexCoord2f(      0, 600/1024); glVertex2f(800-393, 600);
-          glTexCoord2f(393/512, 600/1024); glVertex2f(800,     600);
-          glTexCoord2f(393/512,        0); glVertex2f(800,       0);
-        glEnd;
-
-{
-        glBindTexture(GL_TEXTURE_2D, credits_bg_logo.TexNum);
-        glbegin(gl_quads);
-          glTexCoord2f(      0,       0); glVertex2f(  0,   0);
-          glTexCoord2f(      0, 112/128); glVertex2f(  0, 112);
-          glTexCoord2f(497/512, 112/128); glVertex2f(497, 112);
-          glTexCoord2f(497/512,       0); glVertex2f(497,   0);
-        glEnd;
-}
-        
-        gldisable(gl_texture_2d);
-        glDisable(GL_BLEND);
-
-        // fade out at end of main part
-        if Ctime > Timings[19] then
-        begin
-          glColor4f(0, 0, 0, (CTime - Timings[19]) / (Timings[20] - Timings[19]));
-          glEnable(GL_BLEND);
-          glBegin(GL_QUADS);
-            glVertex2f(  0,   0);
-            glVertex2f(  0, 600);
-            glVertex2f(800, 600);
-            glVertex2f(800,   0);
-          glEnd;
-          glDisable(GL_BLEND);
-        end;
-      end
-    else
-    if (CRDTS_Stage = Outro) then
-    begin
-      if CTime = Timings[20] then
-      begin
-        CTime_hold := 0;
-        AudioPlayback.Stop;
-        AudioPlayback.Open(SoundPath.Append('credits-outro-tune.mp3'));
-        AudioPlayback.SetVolume(0.2);
-        AudioPlayback.SetLoop(true);
-        AudioPlayback.Play;
-      end;
-      if CTime_hold > 231 then
-       begin
-        AudioPlayback.Play;
-        Ctime_hold := 0;
-      end;
-      glClearColor(0, 0, 0, 0);
-      glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-
-      // do something useful
-        // outro background
-        glEnable(GL_TEXTURE_2D);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_BLEND);
-
-        glColor4f(1, 1, 1, 1);
-        glBindTexture(GL_TEXTURE_2D, outro_bg.TexNum);
-        glbegin(gl_quads);
-          glTexCoord2f(       0,        0); glVertex2f(  0,   0);
-          glTexCoord2f(       0, 600/1024); glVertex2f(  0, 600);
-          glTexCoord2f(800/1024, 600/1024); glVertex2f(800, 600);
-          glTexCoord2f(800/1024,        0); glVertex2f(800,   0);
-        glEnd;
-
-        // outro overlays
-        glColor4f(1, 1, 1, (1 + sin(CTime / 15)) / 3 + 1/3);
-        glBindTexture(GL_TEXTURE_2D, outro_esc.TexNum);
-        glbegin(gl_quads);
-          glTexCoord2f(      0,       0); glVertex2f(  0,   0);
-          glTexCoord2f(      0, 223/256); glVertex2f(  0, 223);
-          glTexCoord2f(487/512, 223/256); glVertex2f(487, 223);
-          glTexCoord2f(487/512,       0); glVertex2f(487,   0);
-        glEnd;
-
-        ESC_Alpha := 20;
-        if (RandomRange(0,20) > 18) and (ESC_Alpha = 20) then
-          ESC_Alpha := 0
-        else
-          inc(ESC_Alpha);
-        if ESC_Alpha > 20 then
-          ESC_Alpha := 20;
-        glColor4f(1, 1, 1, ESC_Alpha / 20);
-        glBindTexture(GL_TEXTURE_2D, outro_exd.TexNum);
-        glbegin(gl_quads);
-          glTexCoord2f(      0,       0); glVertex2f(800-310, 600-247);
-          glTexCoord2f(      0, 247/256); glVertex2f(800-310, 600    );
-          glTexCoord2f(310/512, 247/256); glVertex2f(800,     600    );
-          glTexCoord2f(310/512,       0); glVertex2f(800,     600-247);
-        glEnd;
-        glDisable(GL_TEXTURE_2D);
-        glDisable(GL_BLEND);
-
-        // outro scrollers?
-        // ...
-    end;
-
-{
-   // draw credits runtime counter
-    SetFontStyle (2);
-    SetFontItalic(false);
-    SetFontSize(27);
-    SetFontPos (5, 5);
+end;
+
+procedure TScreenCredits.DrawOutro;
+begin
+  if CTime = Tune_End then
+  begin
+    CTime_hold := 0;
+    AudioPlayback.Stop;
+    AudioPlayback.Open(SoundPath.Append('credits-outro-tune.mp3'));
+    AudioPlayback.SetVolume(0.2);
+    AudioPlayback.SetLoop(true);
+    AudioPlayback.Play;
+  end;
+
+  if CTime_hold > 231 then
+  begin
+    AudioPlayback.Play;
+    Ctime_hold := 0;
+  end;
+
+  glClearColor(0, 0, 0, 0);
+  glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+
+  // do something useful
+  // outro background
+  glEnable(GL_TEXTURE_2D);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+
+  glColor4f(1, 1, 1, 1);
+  glBindTexture(GL_TEXTURE_2D, outro_bg.TexNum);
+  glBegin(gl_quads);
+    glTexCoord2f(       0,        0); glVertex2f(  0,   0);
+    glTexCoord2f(       0, 600/1024); glVertex2f(  0, 600);
+    glTexCoord2f(800/1024, 600/1024); glVertex2f(800, 600);
+    glTexCoord2f(800/1024,        0); glVertex2f(800,   0);
+  glEnd;
+
+  // outro overlays
+  glColor4f(1, 1, 1, (2 + sin(CTime / 15)) / 3);
+  glBindTexture(GL_TEXTURE_2D, outro_esc.TexNum);
+  glBegin(Gl_Quads);
+    glTexCoord2f(      0,       0); glVertex2f(  0,   0);
+    glTexCoord2f(      0, 223/256); glVertex2f(  0, 223);
+    glTexCoord2f(487/512, 223/256); glVertex2f(487, 223);
+    glTexCoord2f(487/512,       0); glVertex2f(487,   0);
+  glEnd;
+
+  if (RandomRange(0,20) <= 18) then
+  begin
     glColor4f(1, 1, 1, 1);
-//    RuntimeStr := 'CTime: ' + inttostr(floor(CTime / 30.320663991914489602156136106092)) + '.' + inttostr(floor(CTime / 3.0320663991914489602156136106092) - floor(CTime / 30.320663991914489602156136106092) * 10);
-    RuntimeStr := 'CTime: ' + inttostr(CTime);
-    glPrint (RuntimeStr[1]);
-}
+    glBindTexture(GL_TEXTURE_2D, outro_exd.TexNum);
+    glBegin(Gl_Quads);
+      glTexCoord2f(      0,       0); glVertex2f(800-310, 600-247);
+      glTexCoord2f(      0, 247/256); glVertex2f(800-310, 600    );
+      glTexCoord2f(310/512, 247/256); glVertex2f(800,     600    );
+      glTexCoord2f(310/512,       0); glVertex2f(800,     600-247);
+    glEnd;
+  end;
 
-  // make the stars shine
-  GoldenRec.Draw;
+  glDisable(GL_TEXTURE_2D);
+  glDisable(GL_BLEND);
+
+  // outro scrollers?
+  // ...
+end;
+
+{ name effects }
+{ effects are called with blending texture and matrix prepared }
+procedure Effect_Draw (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, 1);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_OnBeatJitter (const Tex: TTexture; Progress: double);
+  var
+    Diff: cardinal;
+    Alpha: double;
+begin
+  Diff := ScreenCredits.CTime - ScreenCredits.LastBeatTime;
+  if (Diff < BeatJitterTime) then  
+    Alpha := 0.5 + 0.5 * Diff / BeatJitterTime
+  else
+    Alpha := 1;
+
+  glColor4f(1, 1, 1, Alpha);
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Rotate_Left_Top (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  gltranslatef(-NameX, 0, 0);
+  glrotatef(Progress * 90 + 270, 0, 0, 1);
+  gltranslatef(NameX, 0, 0);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Rotate_Right_Bot (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  gltranslatef(NameX, 0, 0);
+  glrotatef((Progress - 1) * 90, 0, 0, 1);
+  gltranslatef(-NameX, 0, 0);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_ZoomIn_Rotate (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  glscalef(sqr(Progress), sqr(Progress), sqr(Progress));
+  glrotatef(Progress * 360, 0, 0, 1);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_ZoomOut_Shift (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := (1 - Progress);
+  gltranslatef(X * 300, -X * 100, 0);
+  glscalef(1 + X, 1 + X, 1 + X);
+  glrotatef(X * 90, 0, 0, 1);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Shift_Left (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  glTranslatef((Progress - 1) * 210, 0, 0);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Shift_Right_Top (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  glTranslatef((1 - Progress) * 210, (Progress - 1) * 105, 0);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Flip_Bot (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := NameH * (1 - Progress);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2 - 1.5 * X, -NameH/2 + 1.5 * X);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2 + 1.5 * X, -NameH/2 + 1.5 * X);
+  glEnd;
+end;
+
+procedure Effect_Flip_Right_Top (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := NameW * (1 - Progress);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2 + X, -NameH/2 - X/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2 + X,  NameH/2 - (X * 1.5 * NameH / NameW));
+    glTexCoord2f(1, 1); glVertex2f( NameW/2 + X,  NameH/2 + X / 4);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2 + X, -NameH/2 - X / 4);
+  glEnd;
+end;
+
+procedure Effect_Flip_Right (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := NameW * (1 - Progress);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2,     -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,      NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2 - X,  NameH/2 + X * 1.5);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2 - X, -NameH/2 - X * 1.5);
+  glEnd;
+end;
+
+procedure Effect_Flip_Right_Bot (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := NameW * (1 - Progress);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2 + X * 1.5, -NameH/2 + X * 1.5);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2 + X * 1.2,  NameH/2 + X);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2 + X / 2,    NameH/2 + X / 4);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2 + X * 1.5, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Rotate_Right_Top (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  glTranslatef(NameX, 0, 0);
+  glrotatef((1 - Progress) * 90, 0, 0, 1);
+  glTranslatef(-NameX, 0, 0);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Shift_Weird (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := (Progress - 1);
+
+  glTranslatef(X * 200, X * 100, 0);
+  glScalef(Progress, Progress, Progress);
+  glRotatef(X * 90, 0, 0, 1);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Shift_Right_Bot (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  glTranslatef((1 - Progress) * 200, (1 - Progress) * 100, 0);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Rotate_Right_Top2 (const Tex: TTexture; Progress: double);
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  glTranslatef(0, -NameX, 0);
+  glRotatef((Progress - 1) * 90, 0, 0, 1);
+  glTranslatef(0, NameX, 0);
+  glRotatef((1 - Progress) * 90, 0, 0, 1);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH/2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2,  NameH/2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2,  NameH/2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH/2);
+  glEnd;
+end;
+
+procedure Effect_Flip_Left_Bot (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := (1 - Progress) * NameW;
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2 - X,       -NameH/2 + X / 4);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2 - X / 4,    NameH/2 + X / 4);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2 - X * 1.2,  NameH/2 + X / 2);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2 - X * 1.5, -NameH/2 + X * 1.5);
+  glEnd;
+end;
+
+procedure Effect_Flip_Right_Top2 (const Tex: TTexture; Progress: double);
+  var
+    X: double;
+begin
+  glColor4f(1, 1, 1, Progress);
+
+  X := (1 - Progress) * NameW;
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2 + X,     -NameH/2 - X / 2);
+    glTexCoord2f(0, 1); glVertex2f(-NameW/2 + X,      NameH/2 + X / 2);
+    glTexCoord2f(1, 1); glVertex2f( NameW/2 + X / 4,  NameH/2 - X / 4);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2 + X / 4, -NameH/2 + X / 4);
+  glEnd;
+end;
+
+procedure Effect_Twinkle_Down     (const Tex: TTexture; Progress: double);
+begin
+  // draw name
+  glColor4f(1, 1, 1, 1);
+
+  glTranslatef(0, NameH/2, 0);
+
+  glBegin(gl_Quads);
+    glTexCoord2f(0, 0); glVertex2f(-NameW/2, -NameH * Progress);
+    glTexCoord2f(0, Progress); glVertex2f(-NameW/2, 0);
+    glTexCoord2f(1, Progress); glVertex2f( NameW/2, 0);
+    glTexCoord2f(1, 0); glVertex2f( NameW/2, -NameH * Progress);
+  glEnd;
+
+  //spawn some stars on the edge
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 0);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 1);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 5);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 0);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 1);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 5);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 0);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 1);
+  GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 5);
+end;
+
+{ beat detection algorithm
+  based on a tutorial from Frédéric Patin on gamedev.net
+  http://www.gamedev.net/reference/programming/features/beatdetection/default.asp }
+
+{ calculates average value of a history buffer }
+function Average(History: TEnergyHistory): single;
+  var I: integer; 
+begin
+  Result := 0;
+
+  for I := 0 to HistoryLength - 1 do
+    Result := Result + History[I];
+
+  Result := Result / HistoryLength;
+end;
+
+{ calculates variance value of a history buffer }
+function Variance(History: TEnergyHistory; Average: single): single;
+  var I: integer;
+begin
+  Result := 0;
+
+  for I := 0 to HistoryLength - 1 do
+    Result := Result + sqr(History[I] - Average);
+
+  Result := Result / HistoryLength;
+end;
+
+{ shifts all values of the history to the right and
+  adds the new value at the front }
+procedure AddHistory(Value: single; var History: TEnergyHistory);
+  var I: integer;
+begin
+  for I := HistoryLength - 1 downto 1 do
+    History[I] := History[I-1];
+
+  History[0] := Value;
+end;
+
+{ calculates instant energy from FFT data for a specific
+  subchannel (0..SubChannelCount - 1) }
+function CalculateInstantEnergy(SubChannel: integer; Data: TFFTData): single;
+  var I: integer;
+begin
+  Result := 0;
+  for I := SubChannel * SamplesPerChannel to (SubChannel + 1) * SamplesPerChannel - 1 do
+    Result := Result + Data[I] * BeatEnergyModifier;
+
+  Result := Result / SamplesPerChannel;
+end;
+
+procedure TScreenCredits.DetectBeat;
+  var
+    Data: TFFTData;
+    I: integer;
+    Instant: single;
+    C, E, V: single;
+begin
+  AudioPlayback.GetFFTData(Data);
+
+  // do beatdetection for every subchannel
+  for I := 0 to SubChannelCount - 1 do
+  begin
+    Instant := CalculateInstantEnergy(I, Data);
+    E := Average(SubchannelHistory[I]);
+    V := Variance(SubchannelHistory[I], E);
+
+    C := (-0.0025714 * V) + 1.5142857;
+
+    AddHistory(Instant, SubChannelHistory[I]);
+
+    if (Instant > 2) and (Instant > C * E) then
+    begin
+      // beat detected
+      BeatDetected := true;
+      LastBeatTime := CTime;
+    end;
+  end;
 end;
 
 end.
