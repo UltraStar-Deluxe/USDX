@@ -230,8 +230,8 @@ begin
         //Sound[0].BufferLong
 
         Finish;
+        FadeOut := true;
         AudioPlayback.PlaySound(SoundLib.Back);
-        FadeTo(@ScreenScore);
       end;
 
       SDLK_SPACE:
@@ -884,7 +884,7 @@ begin
     end
     else
     begin
-      if (not FadeOut) then
+      if (not FadeOut) and (Screens=1) or (ScreenAct=2) then
       begin
         Finish;
         FadeOut := true;
@@ -942,7 +942,8 @@ begin
 
   SetFontItalic(false);
 
-  Party.CallAfterSing;
+  if not FadeOut then
+    Party.CallAfterSing;
 end;
 
 procedure TScreenSing.OnSentenceEnd(SentenceIndex: cardinal);

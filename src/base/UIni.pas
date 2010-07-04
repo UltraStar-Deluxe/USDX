@@ -841,7 +841,7 @@ begin
     begin
       Log.LogStatus( 'Found Video Mode : ' + IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h) , 'Video');
       SetLength(IResolution, Length(IResolution) + 1);
-      IResolution[High(IResolution)] := IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h);
+      IResolution[High(IResolution)] := IntToStr(Modes^.w div (Screens+1)) + 'x' + IntToStr(Modes^.h);
       Inc(Modes);
     end;
 
