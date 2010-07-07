@@ -260,7 +260,7 @@ begin
     // insert old values into new db-schemes (/tables)
     ScoreDB.ExecSQL(
       'INSERT INTO ' + cUS_Scores +
-      ' SELECT  SongID, Difficulty, Player, Score FROM us_scores_101;');
+      ' SELECT  SongID, Difficulty, Player, Score, ''NULL'' FROM us_scores_101;');
   end else
   begin
     Log.LogInfo(
