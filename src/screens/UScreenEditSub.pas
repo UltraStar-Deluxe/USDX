@@ -687,7 +687,7 @@ begin
           end;
 
           // decrease tone
-          if SDL_ModState = KMOD_LCTRL then
+          if SDL_ModState = KMOD_LSHIFT then
           begin
             TransposeNote(-1);
           end;
@@ -721,7 +721,7 @@ begin
           end;
 
           // increase tone
-          if SDL_ModState = KMOD_LCTRL then
+          if SDL_ModState = KMOD_LSHIFT then
           begin
             TransposeNote(1);
           end;
