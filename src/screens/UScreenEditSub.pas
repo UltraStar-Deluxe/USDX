@@ -560,7 +560,7 @@ begin
           end;
 
           // ctrl + right
-          if SDL_ModState = KMOD_LCTRL then
+          if (SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT) then
           begin
             if Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length > 1 then
             begin
@@ -586,7 +586,7 @@ begin
           end;
 
           // alt + right
-          if SDL_ModState = KMOD_LALT then
+          if (SDL_ModState = KMOD_LALT) or (SDL_ModState = KMOD_LALT + KMOD_LSHIFT) then
           begin
             Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
             if CurrentNote = Lines[0].Line[Lines[0].Current].HighNote then
@@ -615,7 +615,7 @@ begin
           end;
 
           // ctrl + left
-          if SDL_ModState = KMOD_LCTRL then
+          if (SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT) then
           begin
             Dec(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
             Inc(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length);
@@ -642,7 +642,7 @@ begin
           end;
 
           // alt + left
-          if SDL_ModState = KMOD_LALT then
+          if (SDL_ModState = KMOD_LALT) or (SDL_ModState = KMOD_LALT + KMOD_LSHIFT) then
           begin
             if Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length > 1 then
             begin
