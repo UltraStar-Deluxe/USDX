@@ -19,7 +19,7 @@
  * - Ported by the UltraStar Deluxe Team
  *
  * Conversion of libswscale/swscale.h
- * Max. version: 0.10.0, revision 31279, Tue May 30 20:25:00 2010 CET 
+ * Max. version: 0.11.0, revision 31301, Mon Jil 12 8:00:00 2010 CET 
  *)
  
 unit swscale;
@@ -72,7 +72,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBSWSCALE_MAX_VERSION_MAJOR   =  0;
-  LIBSWSCALE_MAX_VERSION_MINOR   = 10;
+  LIBSWSCALE_MAX_VERSION_MINOR   = 11;
   LIBSWSCALE_MAX_VERSION_RELEASE =  0;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -394,6 +394,40 @@ function sws_getCachedContext(context: PSwsContext;
 	      flags: cint; srcFilter: PSwsFilter; 
 	      dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
+
+{$IF LIBSWSCALE_VERSION >= 000011000} // >= 0.11.0
+(**
+ * Converts an 8bit paletted frame into a frame with a color depth of 32-bits.
+ *
+ * The output frame will have the same packed format as the palette.
+ *
+ * @param src        source frame buffer
+ * @param dst        destination frame buffer
+ * @param num_pixels number of pixels to convert
+ * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
+ *)
+procedure sws_convertPalette8ToPacked32({const} src:      PPCuint8Array;
+                                         dst:             PPCuint8Array;
+					 num_pixels:      clong;
+					 {const} palette: PPCuint8Array);
+  cdecl; external sw__scale;
+
+(**
+ * Converts an 8bit paletted frame into a frame with a color depth of 24 bits.
+ *
+ * With the palette format "ABCD", the destination frame ends up with the format "ABC".
+ *
+ * @param src        source frame buffer
+ * @param dst        destination frame buffer
+ * @param num_pixels number of pixels to convert
+ * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
+ *)
+procedure sws_convertPalette8ToPacked24({const} src:      PPCuint8Array;
+                                         dst:             PPCuint8Array;
+					 num_pixels:      clong;
+					 {const} palette: PPCuint8Array);
+  cdecl; external sw__scale;
+{$IFEND}
 
 implementation
 
