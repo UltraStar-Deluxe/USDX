@@ -174,6 +174,9 @@ type
       returns true on success }
     function SetRanking(Ranking: AParty_TeamRanking): Boolean;
 
+    { increases players TimesPlayed value }
+    procedure IncTimesPlayed;
+
     { increases round counter by 1 and clears all round specific information;
       returns the number of the current round or -1 if last round has already
       been played }
@@ -210,7 +213,7 @@ type
     { returns a string like "Team 1 (and Team 2) win" }
     function GetWinnerString(Round: integer): UTF8String;
 
-    destructor  Destroy;
+    destructor  Destroy; override;
   end;
 
 const
@@ -713,6 +716,15 @@ begin
   SetRanking(Ranking);
 end;
 
+{ increases players TimesPlayed value }
+procedure TPartyGame.IncTimesPlayed;
+  var I: Integer;
+begin
+  for I := 0 to High(Teams) do
+    with Teams[I] do
+      Inc(Players[NextPlayer].TimesPlayed);
+end;
+
 { increases round counter by 1 and clears all round specific information;
   returns the number of the current round or -1 if last round has already
   been played }
@@ -722,6 +734,8 @@ begin
   // some lines concerning the previous round
   if (CurRound >= 0) then
   begin
+    IncTimesPlayed;
+    
     Rounds[CurRound].AlreadyPlayed := true;
 
     GenScores;
