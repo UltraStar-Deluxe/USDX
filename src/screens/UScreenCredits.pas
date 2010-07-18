@@ -98,6 +98,9 @@ type
       MouseMoved: boolean;
       MouseX, MouseY: double;
 
+      { saves last x and y angle for easter egg }
+      LogoAngleX, LogoAngleY: single;
+
       procedure LoadNameTextures;
 
       { draw different stages }
@@ -474,9 +477,21 @@ begin
     according to mouse position }
   if (MouseMoved) then
   begin
+    // calculate destination angle
     AngleX := 30 * MouseY;
     AngleY := 30 * MouseX;
+
+    { move angle towards destination }
+    if not SameValue(LogoAngleX, AngleX, 0.001) then
+      AngleX := LogoAngleX + 0.05 * (AngleX - LogoAngleX);
+
+    if not SameValue(LogoAngleY, AngleY, 0.001) then
+      AngleY := LogoAngleY + 0.05 * (AngleY - LogoAngleY);
   end;
+
+  // save last angle
+  LogoAngleX := AngleX;
+  LogoAngleY := AngleY;
 
   DrawLayeredLogo(Separation, Scale, AngleX, AngleY, AngleZ);
 
