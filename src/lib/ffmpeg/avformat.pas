@@ -23,7 +23,7 @@
  *
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision  6577, Sat Oct  7 15:30:46 2006 UTC
- * Max. version: 52.72.0, revision 23941, Tue Jul 20 21:30:00 2010 CET 
+ * Max. version: 52.73.0, revision 24007, Tue Jul 20 21:30:00 2010 CET 
  *)
 
 unit avformat;
@@ -81,7 +81,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 72;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 73;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -421,6 +421,13 @@ const
   AV_DISPOSITION_COMMENT   = $0008;
   AV_DISPOSITION_LYRICS    = $0010;
   AV_DISPOSITION_KARAOKE   = $0020;
+  {$IF LIBAVFORMAT_VERSION >= 52073000}  // >= 52.73.0
+(** Track should be used during playback by default.
+ *  Useful for subtitle track that should be displayed
+ *  even when user did not explicitly ask for subtitles.
+ *)
+  AV_DISPOSITION_FORCED    = $0040;
+  {$IFEND}
 
   // used by TAVFormatContext.debug
   FF_FDEBUG_TS = 0001;
@@ -800,7 +807,8 @@ type
     {$IFEND}
 
     {$IF LIBAVFORMAT_VERSION > 52024001} // > 52.24.1
-    {* av_read_frame() support *}
+    {* Intended mostly for av_read_frame() support. Not supposed to be used by *}
+    {* external applications; try to use something else if at all possible.    *}
     cur_ptr: {const} PCuint8;
     cur_len: cint;
     cur_pkt: TAVPacket;
@@ -1452,7 +1460,7 @@ function av_seek_frame(s: PAVFormatContext; stream_index: cint; timestamp: cint6
  * @param flags flags
  * @return >=0 on success, error code otherwise
  *
- * @NOTE This is part of the new seek API which is still under construction.
+ * @note This is part of the new seek API which is still under construction.
  *       Thus do not use this yet. It may change at any time, do not expect
  *       ABI compatibility yet!
  *)
@@ -1725,7 +1733,7 @@ function av_interleaved_write_frame(s: PAVFormatContext; var pkt: TAVPacket): ci
  *
  * @param s media file handle
  * @param out the interleaved packet will be output here
- * @param in the input packet
+ * @param pkt the input packet
  * @param flush 1 if no further packets are available as input and all
  *              remaining packets should be output
  * @return 1 if a packet was output, 0 if no packet could be output,
