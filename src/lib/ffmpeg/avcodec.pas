@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.82.0, revision 24185, Tue May 29 23:00:00 2010 CET
+ * Max. version: 52.83.0, revision 24199, Tue May 29 23:00:00 2010 CET
  *
  *)
 
@@ -82,7 +82,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 82;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 83;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -710,6 +710,20 @@ type
     AVCHROMA_LOC_BOTTOMLEFT  = 5,
     AVCHROMA_LOC_BOTTOM      = 6,
     AVCHROMA_LOC_NB               ///< Not part of ABI
+  );
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 52083000} // >= 52.83.0
+(**
+ * LPC analysis type
+ *)
+  TAVLPCType = (
+    AV_LPC_TYPE_DEFAULT     = -1, ///< use the codec default LPC type
+    AV_LPC_TYPE_NONE        =  0, ///< do not use LPC prediction or use all zero coefficients
+    AV_LPC_TYPE_FIXED       =  1, ///< fixed LPC coefficients
+    AV_LPC_TYPE_LEVINSON    =  2, ///< Levinson-Durbin recursion
+    AV_LPC_TYPE_CHOLESKY    =  3, ///< Cholesky factorization
+    AV_LPC_TYPE_NB                ///< Not part of ABI
   );
 {$IFEND}
 
@@ -2754,12 +2768,15 @@ type
      *)
     compression_level: cint;
 
+    {$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
     (**
      * Sets whether to use LPC mode - used by FLAC encoder.
      * - encoding: Set by user.
      * - decoding: unused
+     * @deprecated Deprecated in favor of lpc_type and lpc_passes.
      *)
     use_lpc: cint;
+    {$IFEND}
 
     (**
      * LPC coefficient precision - used by FLAC encoder
@@ -3044,6 +3061,22 @@ type
 
     {$IF LIBAVCODEC_VERSION >= 52067002} // >= 52.67.2
     log_level_offset: cint;
+    {$IFEND}
+
+    {$IF LIBAVCODEC_VERSION >= 52083000} // >= 52.83.0
+    (**
+     * Determines which LPC analysis algorithm to use.
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
+    lpc_type: TAVLPCType;
+
+    (**
+     * Number of passes to use for Cholesky factorization during LPC analysis
+     * - encoding: Set by user
+     * - decoding: unused
+     *)
+    lpc_passes: cint;
     {$IFEND}
   end; {TAVCodecContext}
 
