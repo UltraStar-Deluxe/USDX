@@ -23,7 +23,7 @@
  *
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision  6577, Sat Oct  7 15:30:46 2006 UTC
- * Max. version: 52.70.0, revision 23704, Tue Jul 20 21:30:00 2010 CET 
+ * Max. version: 52.71.0, revision 23706, Tue Jul 20 21:30:00 2010 CET 
  *)
 
 unit avformat;
@@ -81,7 +81,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 70;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 71;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -1763,8 +1763,9 @@ function parse_frame_rate(frame_rate: PCint; frame_rate_base: PCint;
  * @param datestr String representing a date or a duration.
  * - If a date the syntax is:
  * @code
- *  [{YYYY-MM-DD|YYYYMMDD}]{T| }{HH[:MM[:SS[.m...]]][Z]|HH[MM[SS[.m...]]][Z]}
+ *  now|{[{YYYY-MM-DD|YYYYMMDD}[T|t| ]]{{HH[:MM[:SS[.m...]]]}|{HH[MM[SS[.m...]]]}}[Z|z]}
  * @endcode
+ * If the value is "now" it takes the current time.
  * Time is localtime unless Z is appended, in which case it is
  * interpreted as UTC.
  * If the year-month-day part is not specified it takes the current

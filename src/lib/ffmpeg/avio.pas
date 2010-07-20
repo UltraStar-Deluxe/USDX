@@ -174,6 +174,11 @@ type
     {$IF LIBAVFORMAT_VERSION >= 52031000} // 52.31.0
     url_get_file_handle: function (h: PURLContext): cint; cdecl;
     {$IFEND}
+    
+    {$IF LIBAVFORMAT_VERSION >= 52071000} // 52.71.0
+    priv_data_size: cint;
+    {const} priv_data_class: PAVClass;
+    {$IFEND}
   end;
 
  (**
