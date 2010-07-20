@@ -488,9 +488,15 @@ function url_fseek(s: PByteIOContext; offset: cint64; whence: cint): cint64;
 (**
  * Skip given number of bytes forward.
  * @param offset number of bytes
+ * @return 0 on success, <0 on error
  *)
+{$IF LIBAVFORMAT_VERSION < 52074000} // 52.74.0
 procedure url_fskip(s: PByteIOContext; offset: cint64);
   cdecl; external av__format;
+{$ELSE}
+function url_fskip(s: PByteIOContext; offset: cint64): cint;
+  cdecl; external av__format;
+{$IFEND}
 
 (**
  * ftell() equivalent for ByteIOContext.
