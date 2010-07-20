@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 52.72.0, revision 23338, Sun May 30 20:55 2010 CET
+ * Max. version: 52.73.0, revision 23421, Sun May 30 20:55 2010 CET
  *
  *)
 
@@ -82,7 +82,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 72;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 73;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -3547,6 +3547,18 @@ function avcodec_get_pix_fmt(name: {const} PAnsiChar): TAVPixelFormat;
  *)
 function avcodec_pix_fmt_to_codec_tag(pix_fmt: TAVPixelFormat): cuint;
   cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 52073000} // 52.73.0
+(**
+ * Puts a string representing the codec tag codec_tag in buf.
+ *
+ * @param buf_size size in bytes of buf
+ * @return the length of the string that would have been generated if
+ * enough space had been available, excluding the trailing null
+ *)
+function av_get_codec_tag_string(buf: PAnsiChar; buf_size: size_t; codec_tag: cuint): size_t;
+  cdecl; external av__codec;
+{$IFEND}
 
 const
   FF_LOSS_RESOLUTION  = $0001; {**< loss due to resolution change *}
