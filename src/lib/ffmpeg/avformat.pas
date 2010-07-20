@@ -23,7 +23,7 @@
  *
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision  6577, Sat Oct  7 15:30:46 2006 UTC
- * Max. version: 52.67.0, revision 23357, Sun May 30 21:30:00 2010 CET 
+ * Max. version: 52.68.0, revision 23634, Tue Jul 20 21:30:00 2010 CET 
  *)
 
 unit avformat;
@@ -81,7 +81,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 67;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 68;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -203,7 +203,8 @@ function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {co
 (**
  * Sets the given tag in m, overwriting an existing tag.
  * @param key tag key to add to m (will be av_strduped depending on flags)
- * @param value tag value to add to m (will be av_strduped depending on flags)
+ * @param value tag value to add to m (will be av_strduped depending on flags).
+ *        Passing a NULL value will cause an existing tag to be deleted.
  * @return >= 0 on success otherwise an error code <0
  *)
 function av_metadata_set2(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar; flags: cint): cint;
@@ -386,7 +387,9 @@ const
 {$IF LIBAVFORMAT_VERSION_MAJOR < 53}
   MAX_STREAMS = 20;
 {$ELSE}
+{$IF LIBAVFORMAT_VERSION < 52068000}  // < 52.68.0
   MAX_STREAMS = 100;
+{$IFEND}
 {$IFEND}
 
   AVFMT_NOOUTPUTLOOP = -1;

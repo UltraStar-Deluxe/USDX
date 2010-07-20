@@ -258,7 +258,7 @@ function url_read (h: PURLContext; buf: PByteArray; size: cint): cint;
 function url_read_complete (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
   cdecl; external av__format;
 {$IFEND}
-function url_write (h: PURLContext; buf: PByteArray; size: cint): cint;
+function url_write (h: PURLContext; {const} buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
 function url_seek (h: PURLContext; pos: cint64; whence: cint): cint64;
   cdecl; external av__format;
