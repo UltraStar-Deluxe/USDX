@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.78.0, revision 23904, Tue May 29 23:00:00 2010 CET
+ * Max. version: 52.79.1, revision 24021, Tue May 29 23:00:00 2010 CET
  *
  *)
 
@@ -82,8 +82,8 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 78;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 79;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -112,7 +112,7 @@ const
   AV_TIME_BASE_Q: TAVRational = (num: 1; den: AV_TIME_BASE);
 
 (**
- * Identifie the syntax and semantics of the bitstream.
+ * Identify the syntax and semantics of the bitstream.
  * The principle is roughly:
  * Two decoders with the same ID can decode the same streams.
  * Two encoders with the same ID can encode compatible streams.
@@ -968,7 +968,13 @@ const
   FF_COMPLIANCE_VERY_STRICT   =  2; ///< strictly conform to an older more strict version of the spec or reference software
   FF_COMPLIANCE_STRICT        =  1; ///< strictly conform to all the things in the spec no matter what consequences
   FF_COMPLIANCE_NORMAL        =  0;
-  FF_COMPLIANCE_INOFFICIAL    = -1; ///< allow inofficial extensions
+  {$IF LIBAVCODEC_VERSION_MAJOR < 53} // < 53
+  FF_COMPLIANCE_INOFFICIAL    = -1; ///< Allow inofficial extensions
+  {$IFEND}
+  {$IF LIBAVCODEC_VERSION >= 52079001} // >= 52.79.1
+  FF_COMPLIANCE_UNOFFICIAL    = -1; ///< Allow unofficial extensions
+  {$IFEND}
+
   FF_COMPLIANCE_EXPERIMENTAL  = -2; ///< allow non standarized experimental things
 
   FF_ER_CAREFUL         = 1;
@@ -1199,7 +1205,8 @@ type
  * frames are virtually identical no matter if decoding started from
  * the very first frame or from this keyframe.
  * Is AV_NOPTS_VALUE if unknown.
- * This field is not the display duration of the current packet.
+ * This field has no meaning if the packet does not have AV_PKT_FLAG_KEY
+ * set.
  *
  * The purpose of this field is to allow seeking in streams that have no
  * keyframes in the conventional sense. It corresponds to the
@@ -1821,10 +1828,10 @@ type
      * - encoding: Set by user.
      * - decoding: Set by user.
      * Setting this to STRICT or higher means the encoder and decoder will
-     * generally do stupid things, whereas setting it to inofficial or lower
+     * generally do stupid things, whereas setting it to unofficial or lower
      * will mean the encoder might produce output that is not supported by all
      * spec-compliant decoders. Decoders don't differentiate between normal,
-     * inofficial and experimental (that is, they always try to decode things
+     * unofficial and experimental (that is, they always try to decode things
      * when they can) unless they are explicitly asked to behave stupidly
      * (=strictly conform to the specs)
      *)
@@ -4141,7 +4148,7 @@ function avcodec_decode_subtitle(avctx: PAVCodecContext; sub: PAVSubtitle;
   
 {$IF LIBAVCODEC_VERSION >= 52025000} // 52.25.0
 (* Decode a subtitle message.
- * Return a negative value on error, otherwise returns the number of bytes used.
+ * Return a negative value on error, otherwise return the number of bytes used.
  * If no subtitle could be decompressed, got_sub_ptr is zero.
  * Otherwise, the subtitle is stored in sub.
  *
@@ -4328,7 +4335,8 @@ type
      * frames are virtually identical no matter if decoding started from
      * the very first frame or from this keyframe.
      * Is AV_NOPTS_VALUE if unknown.
-     * This field is not the display duration of the current frame.
+     * This field has no meaning if the packet does not have AV_PKT_FLAG_KEY
+     * set.
      *
      * The purpose of this field is to allow seeking in streams that have no
      * keyframes in the conventional sense. It corresponds to the
@@ -4690,7 +4698,7 @@ function av_xiphlacing(s: PByte; v: cuint): cuint;
  *
  * @return 0 in case of a successful parsing, a negative value otherwise
  * @param[in] str the string to parse: it has to be a string in the format
- * <width>x<height> or a valid video frame size abbreviation.
+ * width x height or a valid video frame size abbreviation.
  * @param[in,out] width_ptr pointer to the variable which will contain the detected
  * frame width value
  * @param[in,out] height_ptr pointer to the variable which will contain the detected
@@ -4704,7 +4712,7 @@ function av_parse_video_frame_size(width_ptr: PCint; height_ptr: PCint; str: {co
  *
  * @return 0 in case of a successful parsing, a negative value otherwise
  * @param[in] str the string to parse: it has to be a string in the format
- * <frame_rate_num>/<frame_rate_den>, a float number or a valid video rate abbreviation
+ * frame_rate_num / frame_rate_den, a float number or a valid video rate abbreviation
  * @param[in,out] frame_rate pointer to the AVRational which will contain the detected
  * frame rate
  *)
