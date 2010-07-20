@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mathematics.h
- * avutil max. version 50.18.0, revision 23551, Mon Jul 21 01:00:00 2010 CET
+ * avutil max. version 50.19.0, revision 23593, Mon Jul 21 01:00:00 2010 CET
  *
  *)
 
@@ -112,12 +112,14 @@ function av_compare_ts(ts_a: cint64; tb_a: TAVRational; ts_b: cint64; tb_b: TAVR
  
 {$IF LIBAVUTIL_VERSION >= 50018000} // 50.18.0
 (**
- * Compare 2 integers modulo mod.
- * That is we compare integers a and b for which only the least significant log2(mod) bits are known
+ * Compares 2 integers modulo mod.
+ * That is we compare integers a and b for which only the least
+ * significant log2(mod) bits are known.
+ *
  * @param mod must be a power of 2
- * @returns a negative value if a is smaller than b
- *          a positiv  value if a is greater than b
- *          0                if a equals          b
+ * @return a negative value if a is smaller than b
+ *         a positiv  value if a is greater than b
+ *         0                if a equals          b
  *)
 function av_compare_mod(a: cuint64; b: cuint64; modVar: cuint64): cint64;
   cdecl; external av__util;
