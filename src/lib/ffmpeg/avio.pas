@@ -122,7 +122,7 @@ type
 {$IFEND}
 
 (**
- * Reads up to size bytes from the resource accessed by h, and stores
+ * Read up to size bytes from the resource accessed by h, and store
  * the read bytes in buf.
  *
  * @return The number of bytes actually read, or a negative value
@@ -143,7 +143,7 @@ type
     url_write: function (h: PURLContext; {const} buf: PByteArray; size: cint): cint; cdecl;
 
 (**
- * Changes the position that will be used by the next read/write
+ * Change the position that will be used by the next read/write
  * operation on the resource accessed by h.
  *
  * @param pos specifies the new position to set
@@ -223,8 +223,8 @@ type
 
 {$IF LIBAVFORMAT_VERSION >= 52070000} // 52.70.0
 (**
- * Creates an URLContext for accessing to the resource indicated by
- * url, but doesn't initiate the connection yet.
+ * Create a URLContext for accessing to the resource indicated by
+ * url, but do not initiate the connection yet.
  *
  * @param puc pointer to the location where, in case of success, the
  * function puts the pointer to the created URLContext
@@ -245,8 +245,8 @@ function url_connect(h: PURLContext): cint;
 
 {$IF LIBAVFORMAT_VERSION >= 52021000} // 52.21.0
 (**
- * Creates an URLContext for accessing to the resource indicated by
- * URL, and opens it using the URLProtocol up.
+ * Create a URLContext for accessing to the resource indicated by
+ * URL, and open it using the URLProtocol up.
  *
  * @param puc pointer to the location where, in case of success, the
  * function puts the pointer to the created URLContext
@@ -265,8 +265,8 @@ function url_open_protocol(puc: PPURLContext; up: PURLProtocol;
 {$IFEND}
 
 (**
- * Creates an URLContext for accessing to the resource indicated by
- * url, and opens it.
+ * Create a URLContext for accessing to the resource indicated by
+ * url, and open it.
  *
  * @param puc pointer to the location where, in case of success, the
  * function puts the pointer to the created URLContext
@@ -293,7 +293,7 @@ function url_seek (h: PURLContext; pos: cint64; whence: cint): cint64;
   cdecl; external av__format;
 
 (**
- * Closes the resource accessed by the URLContext h, and frees the
+ * Close the resource accessed by the URLContext h, and free the
  * memory used by it.
  *
  * @return a negative value if an error condition occurred, 0
@@ -303,7 +303,7 @@ function url_close (h: PURLContext): cint;
   cdecl; external av__format;
 
 (**
- * Returns a non-zero value if the resource indicated by url
+ * Return a non-zero value if the resource indicated by url
  * exists, 0 otherwise.
  *)
 {$IF LIBAVFORMAT_VERSION < 52047000} // 52.47.0
@@ -406,7 +406,7 @@ function av_protocol_next(p: PURLProtocol): PURLProtocol;
 
 {$IF LIBAVFORMAT_VERSION <= 52028000} // 52.28.0
 (**
- * Registers the URLProtocol protocol.
+ * Register the URLProtocol protocol.
  *
  *
  * @deprecated Use av_register_protocol() instead.
@@ -500,7 +500,7 @@ function url_ftell(s: PByteIOContext): cint64;
   cdecl; external av__format;
 
 (**
- * Gets the filesize.
+ * Get the filesize.
  * @return filesize or AVERROR
  *)
 function url_fsize(s: PByteIOContext): cint64;
@@ -545,14 +545,14 @@ procedure put_flush_packet (s: PByteIOContext);
   cdecl; external av__format;
 
 (**
- * Reads size bytes from ByteIOContext into buf.
+ * Read size bytes from ByteIOContext into buf.
  * @return number of bytes read or AVERROR
  *)
 function get_buffer(s: PByteIOContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format;
 
 (**
- * Reads size bytes from ByteIOContext into buf.
+ * Read size bytes from ByteIOContext into buf.
  * This reads at most 1 packet. If that is not enough fewer bytes will be
  * returned.
  * @return number of bytes read or AVERROR
@@ -592,7 +592,7 @@ function ff_get_v(bc: PByteIOContext): cuint64;
 function url_is_streamed(s: PByteIOContext): cint; {$IFDEF HasInline}inline;{$ENDIF}
 
 (**
- * Creates and initializes a ByteIOContext for accessing the
+ * Create and initialize a ByteIOContext for accessing the
  * resource referenced by the URLContext h.
  * @note When the URLContext h has been opened in read+write mode, the
  * ByteIOContext can be used only for writing.
@@ -626,7 +626,7 @@ function url_resetbuf(s: PByteIOContext; flags: cint): cint;
 
 {$IF LIBAVFORMAT_VERSION >= 52061000} // 52.61.0
 (**
- * Rewinds the ByteIOContext using the specified buffer containing the first buf_size bytes of the file.
+ * Rewind the ByteIOContext using the specified buffer containing the first buf_size bytes of the file.
  * Used after probing to avoid seeking.
  * Joins buf and s->buffer, taking any overlap into consideration.
  * @note s->buffer must overlap with buf or they can't be joined and the function fails
@@ -643,7 +643,7 @@ function ff_rewind_with_probe_data(s: PByteIOContext;  buf: PAnsiChar; buf_size:
 {$IFEND}
 
 (**
- * Creates and initializes a ByteIOContext for accessing the
+ * Create and initialize a ByteIOContext for accessing the
  * resource indicated by url.
  * @note When the resource indicated by url has been opened in
  * read+write mode, the ByteIOContext can be used only for writing.
@@ -723,7 +723,9 @@ function url_open_dyn_packet_buf(s: PByteIOContext; max_packet_size: cint): cint
 
 (**
  * Return the written size and a pointer to the buffer. The buffer
- *  must be freed with av_free().
+ * must be freed with av_free(). If the buffer is opened with
+ * url_open_dyn_buf, then padding of FF_INPUT_BUFFER_PADDING_SIZE is
+ * added; if opened with url_open_dyn_packet_buf, no padding is added.
  * @param s IO context
  * @param pbuffer pointer to a byte buffer
  * @return the length of the byte buffer
