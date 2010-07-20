@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.80.0, revision 24098, Tue May 29 23:00:00 2010 CET
+ * Max. version: 52.82.0, revision 24185, Tue May 29 23:00:00 2010 CET
  *
  *)
 
@@ -82,7 +82,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 80;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 82;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -1861,7 +1861,7 @@ type
      * avcodec_default_get_buffer() instead of providing buffers allocated by
      * some other means.
      * - encoding: unused
-     * - decoding: Set by libavcodec., user can override.
+     * - decoding: Set by libavcodec, user can override.
      *)
     get_buffer: function (c: PAVCodecContext; pic: PAVFrame): cint; cdecl;
 
@@ -1870,7 +1870,7 @@ type
      * A released buffer can be reused in get_buffer().
      * pic.data[*] must be set to NULL.
      * - encoding: unused
-     * - decoding: Set by libavcodec., user can override.
+     * - decoding: Set by libavcodec, user can override.
      *)
     release_buffer: procedure (c: PAVCodecContext; pic: PAVFrame); cdecl;
 
@@ -2387,7 +2387,7 @@ type
      * avcodec_default_reget_buffer() instead of providing buffers allocated by
      * some other means.
      * - encoding: unused
-     * - decoding: Set by libavcodec., user can override
+     * - decoding: Set by libavcodec, user can override
      *)
     reget_buffer: function (c: PAVCodecContext; pic: PAVFrame): cint; cdecl;
 
@@ -4153,10 +4153,15 @@ function avcodec_decode_subtitle(avctx: PAVCodecContext; sub: PAVSubtitle;
 (* Decode a subtitle message.
  * Return a negative value on error, otherwise return the number of bytes used.
  * If no subtitle could be decompressed, got_sub_ptr is zero.
- * Otherwise, the subtitle is stored in sub.
+ * Otherwise, the subtitle is stored in *sub.
+ * Note that CODEC_CAP_DR1 is not available for subtitle codecs. This is for
+ * simplicity, because the performance difference is expect to be negligible 
+ * and reusing a get_buffer written for video codecs would probably perform badly
+ * due to a potentially very different allocation pattern.
  *
  * @param avctx the codec context
- * @param[out] sub The AVSubtitle in which the decoded subtitle will be stored.
+ * @param[out] sub The AVSubtitle in which the decoded subtitle will be stored, must be
+                   freed with avsubtitle_free if *got_sub_ptr is set.
  * @param[in,out] got_sub_ptr Zero if no subtitle could be decompressed, otherwise, it is nonzero.
  * @param[in] avpkt The input AVPacket containing the input buffer.
  *)
@@ -4166,6 +4171,16 @@ function avcodec_decode_subtitle2(avctx: PAVCodecContext; sub: PAVSubtitle;
   cdecl; external av__codec;
 {$IFEND}
   
+{$IF LIBAVCODEC_VERSION >= 52082000} // 52.82.0
+(**
+ * Frees all allocated data in the given subtitle struct.
+ *
+ * @param sub AVSubtitle to free.
+ *)
+procedure avsubtitle_free(sub: PAVSubtitle);
+  cdecl; external av__codec;
+{$IFEND}
+
 function avcodec_parse_frame(avctx: PAVCodecContext; pdata: PPointer;
                       data_size_ptr: PCint;
                       buf: PByteArray; buf_size: cint): cint;
