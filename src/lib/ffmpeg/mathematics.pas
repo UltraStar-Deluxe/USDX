@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mathematics.h
- * avutil max. version 50.19.0, revision 23593, Mon Jul 21 01:00:00 2010 CET
+ * avutil max. version 50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET
  *
  *)
 
@@ -71,7 +71,7 @@ type
 
 {$IF LIBAVUTIL_VERSION >= 49013000} // 49.13.0
 (**
- * Returns the greatest common divisor of a and b.
+ * Return the greatest common divisor of a and b.
  * If both a or b are 0 or either or both are <0 then behavior is
  * undefined.
  *)
@@ -80,28 +80,28 @@ function av_gcd(a: cint64; b: cint64): cint64;
 {$IFEND}
 
 (**
- * Rescales a 64-bit integer with rounding to nearest.
+ * Rescale a 64-bit integer with rounding to nearest.
  * A simple a*b/c isn't possible as it can overflow.
  *)
 function av_rescale (a, b, c: cint64): cint64;
   cdecl; external av__util; {av_const}
 
 (**
- * Rescales a 64-bit integer with specified rounding.
+ * Rescale a 64-bit integer with specified rounding.
  * A simple a*b/c isn't possible as it can overflow.
  *)
 function av_rescale_rnd (a, b, c: cint64; enum: TAVRounding): cint64;
   cdecl; external av__util; {av_const}
 
 (**
- * Rescales a 64-bit integer by 2 rational numbers.
+ * Rescale a 64-bit integer by 2 rational numbers.
  *)
 function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
   cdecl; external av__util; {av_const}
 
 {$IF LIBAVUTIL_VERSION >= 50008000} // 50.8.0
 (**
- * Compares 2 timestamps each in its own timebases.
+ * Compare 2 timestamps each in its own timebases.
  * The result of the function is undefined if one of the timestamps
  * is outside the int64_t range when represented in the others timebase.
  * @return -1 if ts_a is before ts_b, 1 if ts_a is after ts_b or 0 if they represent the same position
@@ -112,7 +112,7 @@ function av_compare_ts(ts_a: cint64; tb_a: TAVRational; ts_b: cint64; tb_b: TAVR
  
 {$IF LIBAVUTIL_VERSION >= 50018000} // 50.18.0
 (**
- * Compares 2 integers modulo mod.
+ * Compare 2 integers modulo mod.
  * That is we compare integers a and b for which only the least
  * significant log2(mod) bits are known.
  *

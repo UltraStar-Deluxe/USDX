@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/rational.h
- * avutil max. version 50.16.0, revision 23255, Sun May 30 22:05:00 2010 CET 
+ * avutil max. version 50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET 
  *
  *)
 
@@ -59,7 +59,7 @@ type
   PAVRationalArray = ^TAVRationalArray;
 
 (**
- * Compares two rationals.
+ * Compare two rationals.
  * @param a first rational
  * @param b second rational
  * @return 0 if a==b, 1 if a>b and -1 if a<b
@@ -67,14 +67,14 @@ type
 function av_cmp_q(a: TAVRational; b: TAVRational): cint; {$IFDEF HasInline}inline;{$ENDIF}
 
 (**
- * Converts rational to double.
+ * Convert rational to double.
  * @param a rational to convert
  * @return (double) a
  *)
 function av_q2d(a: TAVRational): cdouble; {$IFDEF HasInline}inline;{$ENDIF}
 
 (**
- * Reduces a fraction.
+ * Reduce a fraction.
  * This is useful for framerate calculations.
  * @param dst_num destination numerator
  * @param dst_den destination denominator
@@ -87,7 +87,7 @@ function av_reduce(dst_num: PCint; dst_den: PCint; num: cint64; den: cint64; max
   cdecl; external av__util;
 
 (**
- * Multiplies two rationals.
+ * Multiply two rationals.
  * @param b first rational
  * @param c second rational
  * @return b*c
@@ -96,7 +96,7 @@ function av_mul_q(b: TAVRational; c: TAVRational): TAVRational;
   cdecl; external av__util; {av_const}
 
 (**
- * Divides one rational by another.
+ * Divide one rational by another.
  * @param b first rational
  * @param c second rational
  * @return b/c
@@ -105,7 +105,7 @@ function av_div_q(b: TAVRational; c: TAVRational): TAVRational;
   cdecl; external av__util; {av_const}
 
 (**
- * Adds two rationals.
+ * Add two rationals.
  * @param b first rational
  * @param c second rational
  * @return b+c
@@ -114,7 +114,7 @@ function av_add_q(b: TAVRational; c: TAVRational): TAVRational;
   cdecl; external av__util; {av_const}
 
 (**
- * Subtracts one rational from another.
+ * Subtract one rational from another.
  * @param b first rational
  * @param c second rational
  * @return b-c
@@ -123,7 +123,7 @@ function av_sub_q(b: TAVRational; c: TAVRational): TAVRational;
   cdecl; external av__util; {av_const}
 
 (**
- * Converts a double precision floating point number to a rational.
+ * Convert a double precision floating point number to a rational.
  * @param d double to convert
  * @param max the maximum allowed numerator and denominator
  * @return (AVRational) d
@@ -140,7 +140,7 @@ function av_nearer_q(q, q1, q2: TAVRational): cint;
   cdecl; external av__util;
 
 (**
- * Finds the nearest value in q_list to q.
+ * Find the nearest value in q_list to q.
  * @param q_list an array of rationals terminated by {0, 0}
  * @return the index of the nearest value found in the array
  *)

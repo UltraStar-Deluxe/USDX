@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/error.h
- * Max. avutil version:  50.16.0, revision 23255, Sun May 30 22:05:00 2010 CET
+ * Max. avutil version:  50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET
  *
  *)
 
@@ -98,11 +98,13 @@ const
 
 {$IF LIBAVUTIL_VERSION >= 50013000} // >= 50.13.0
 (*
- * Puts a description of the AVERROR code errnum in errbuf.
+ * Put a description of the AVERROR code errnum in errbuf.
  * In case of failure the global variable errno is set to indicate the
  * error. Even in case of failure av_strerror() will print a generic
  * error message indicating the errnum provided to errbuf.
  *
+ * @param errnum      error code to describe
+ * @param errbuf      buffer to which description is written
  * @param errbuf_size the size in bytes of errbuf
  * @return 0 on success, a negative value if a description for errnum
  * cannot be found

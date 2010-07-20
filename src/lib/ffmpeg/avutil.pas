@@ -25,13 +25,13 @@
  *
  * libavutil/avutil.h:
  *  Min. version: 49.0.1,  revision  6577, Sat Oct  7 15:30:46 2006 UTC
- *  Max. version: 50.19.0, revision 23593, Mon Jul 21 01:00:00 2010 CET
+ *  Max. version: 50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET
  *
  * libavutil/mem.h:
- *  revision 16590, Tue Jan 13 23:44:16 2009 UTC
+ *  revision 23904, Wed Jul 21 01:00:00 2010 CET
  *
  * libavutil/log.h:
- *  revision 16571, Tue Jan 13 00:14:43 2009 UTC
+ *  revision 23972, Wed Jul 21 01:00:00 2010 CET
  *
  * include/keep pixfmt.h (change in revision 50.01.0)
  * Maybe, the pixelformats are not needed, but it has not been checked.
@@ -92,7 +92,7 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 50;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 19;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 21;
   LIBAVUTIL_MAX_VERSION_RELEASE = 0;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -117,7 +117,7 @@ const
 
 {$IF LIBAVUTIL_VERSION >= 49008000} // 49.8.0
 (**
- * Returns the LIBAVUTIL_VERSION_INT constant.
+ * Return the LIBAVUTIL_VERSION_INT constant.
  *)
 function avutil_version(): cuint;
   cdecl; external av__util;
@@ -125,13 +125,13 @@ function avutil_version(): cuint;
 
 {$IF LIBAVUTIL_VERSION >= 50004000} // >= 50.4.0
 (**
- * Returns the libavutil build-time configuration.
+ * Return the libavutil build-time configuration.
  *)
 function avutil_configuration(): PAnsiChar;
   cdecl; external av__util;
 
 (**
- * Returns the libavutil license.
+ * Return the libavutil license.
  *)
 function avutil_license(): PAnsiChar;
   cdecl; external av__util;
@@ -334,7 +334,7 @@ function MKBETAG(a, b, c, d: AnsiChar): integer;
 (* memory handling functions *)
 
 (**
- * Allocates a block of size bytes with alignment suitable for all
+ * Allocate a block of size bytes with alignment suitable for all
  * memory accesses (including vectors if available on the CPU).
  * @param size Size in bytes for the memory block to be allocated.
  * @return Pointer to the allocated block, NULL if the block cannot
@@ -345,9 +345,9 @@ function av_malloc(size: cuint): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
- * Allocates or reallocates a block of memory.
- * If ptr is NULL and size > 0, allocates a new block. If 
- * size is zero, frees the memory block pointed to by ptr.
+ * Allocate or reallocate a block of memory.
+ * If ptr is NULL and size > 0, allocate a new block. If 
+ * size is zero, free the memory block pointed to by ptr.
  * @param size Size in bytes for the memory block to be allocated or
  * reallocated.
  * @param ptr Pointer to a memory block already allocated with
@@ -360,7 +360,7 @@ function av_realloc(ptr: pointer; size: cuint): pointer;
   cdecl; external av__util; {av_alloc_size(2)}
 
 (**
- * Frees a memory block which has been allocated with av_malloc(z)() or
+ * Free a memory block which has been allocated with av_malloc(z)() or
  * av_realloc().
  * @param ptr Pointer to the memory block which should be freed.
  * @note ptr = NULL is explicitly allowed.
@@ -371,7 +371,7 @@ procedure av_free(ptr: pointer);
   cdecl; external av__util;
 
 (**
- * Allocates a block of size bytes with alignment suitable for all
+ * Allocate a block of size bytes with alignment suitable for all
  * memory accesses (including vectors if available on the CPU) and
  * zeroes all the bytes of the block.
  * @param size Size in bytes for the memory block to be allocated.
@@ -382,7 +382,7 @@ function av_mallocz(size: cuint): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
- * Duplicates the string s.
+ * Duplicate the string s.
  * @param s string to be duplicated.
  * @return Pointer to a newly allocated string containing a
  * copy of s or NULL if the string cannot be allocated.
@@ -391,7 +391,7 @@ function av_strdup({const} s: PAnsiChar): PAnsiChar;
   cdecl; external av__util; {av_malloc_attrib}
 
 (**
- * Frees a memory block which has been allocated with av_malloc(z)() or
+ * Freesa memory block which has been allocated with av_malloc(z)() or
  * av_realloc() and set the pointer pointing to it to NULL.
  * @param ptr Pointer to the pointer to the memory block which should
  * be freed.
@@ -448,7 +448,7 @@ const
 {$IFEND}
 
 (**
- * Sends the specified message to the log if the level is less than or equal
+ * Send the specified message to the log if the level is less than or equal
  * to the current av_log_level. By default, all logging messages are sent to
  * stderr. This behavior can be altered by setting a different av_vlog callback
  * function.
