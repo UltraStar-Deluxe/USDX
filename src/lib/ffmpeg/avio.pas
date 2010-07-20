@@ -137,7 +137,7 @@ type
  * unnecessary, if the return value is < size then it is
  * certain there was either an error or the end of file was reached.
  *)
-    url_write: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
+    url_write: function (h: PURLContext; {const} buf: PByteArray; size: cint): cint; cdecl;
 
 (**
  * Changes the position that will be used by the next read/write
@@ -378,19 +378,26 @@ function av_protocol_next(p: PURLProtocol): PURLProtocol;
 {$IF LIBAVFORMAT_VERSION <= 52028000} // 52.28.0
 (**
  * Registers the URLProtocol protocol.
- *)
-(**
+ *
+ *
  * @deprecated Use av_register_protocol() instead.
  *)
 function register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
-(** Alias for register_protocol() *)
+(** Alias for register_protocol()
+ *
+ * @deprecated Use av_register_protocol2() instead.
+ *)
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format name 'register_protocol';
 {$ELSE}
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
 {$IFEND}
+{$IF LIBAVFORMAT_VERSION >= 52069000} // 52.69.0
+{$IFEND}
+function av_register_protocol2(protocol: PURLProtocol; size: cint): cint;
+  cdecl; external av__format;
 
 type
   TReadWriteFunc = function(opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
