@@ -153,7 +153,7 @@ type
 
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
 (**
- * Looks for an option in obj. Looks only for the options which
+ * Look for an option in obj. Look only for the options which
  * have the flags set as specified in mask and flags (that is,
  * for which it is the case that opt->flags & mask == flags).
  *
@@ -191,7 +191,7 @@ function av_set_string2(obj: Pointer; name: {const} PAnsiChar; val: {const} PAns
 
 {$IF LIBAVCODEC_VERSION >= 52007000} // 52.7.0
 (**
- * Sets the field of obj with the given name to value.
+ * Set the field of obj with the given name to value.
  *
  * @param[in] obj A struct whose first element is a pointer to an
  * AVClass.

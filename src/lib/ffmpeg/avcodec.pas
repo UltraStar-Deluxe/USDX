@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.75.1, revision 23532, Tue May 29 23:00:00 2010 CET
+ * Max. version: 52.78.0, revision 23904, Tue May 29 23:00:00 2010 CET
  *
  *)
 
@@ -82,8 +82,8 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 75;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 78;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -112,7 +112,7 @@ const
   AV_TIME_BASE_Q: TAVRational = (num: 1; den: AV_TIME_BASE);
 
 (**
- * Identifies the syntax and semantics of the bitstream.
+ * Identifie the syntax and semantics of the bitstream.
  * The principle is roughly:
  * Two decoders with the same ID can decode the same streams.
  * Two encoders with the same ID can encode compatible streams.
@@ -1600,8 +1600,10 @@ type
 
     (**
      * Pixel format, see PIX_FMT_xxx.
+     * May be set by the demuxer if known from headers.
+     * May be overriden by the decoder if it knows better.
      * - encoding: Set by user.
-     * - decoding: Set by libavcodec.
+     * - decoding: Set by user if known, overridden by libavcodec if known
      *)
     pix_fmt: TAVPixelFormat;
 
@@ -3363,7 +3365,7 @@ procedure audio_resample_close (s: PReSampleContext);
   cdecl; external av__codec;
 
 (**
- * Initializes an audio resampler.
+ * Initialize an audio resampler.
  * Note, if either rate is not an integer then simply scale both rates up so they are.
  * @param filter_length length of each FIR filter in the filterbank relative to the cutoff freq
  * @param log2_phase_count log2 of the number of entries in the polyphase filterbank
@@ -3376,7 +3378,7 @@ function av_resample_init (out_rate: cint; in_rate: cint; filter_length: cint;
   cdecl; external av__codec;
 
 (**
- * resamples.
+ * Resample an array of samples using a previously configured context.
  * @param src an array of unconsumed samples
  * @param consumed the number of samples of src which have been consumed are returned here
  * @param src_size the number of unconsumed samples available
@@ -3389,7 +3391,7 @@ function av_resample (c: PAVResampleContext; dst: PSmallint; src: PSmallint; var
   cdecl; external av__codec;
 
 (**
- * Compensates samplerate/timestamp drift. The compensation is done by changing
+ * Compensate samplerate/timestamp drift. The compensation is done by changing
  * the resampler parameters, so no audible clicks or similar distortions occur
  * @param compensation_distance distance in output samples over which the compensation should be performed
  * @param sample_delta number of output samples which should be output less
@@ -3507,15 +3509,15 @@ procedure avcodec_get_chroma_sub_sample (pix_fmt: TAVPixelFormat; var h_shift: c
   cdecl; external av__codec;
 
 (**
- * Returns the pixel format corresponding to the name \p name.
+ * Return the pixel format corresponding to the name name.
  *
- * If there is no pixel format with name \p name, then looks for a
+ * If there is no pixel format with name name, then look for a
  * pixel format with the name corresponding to the native endian
- * format of \p name.
- * For example in a little-endian system, first looks for "gray16",
+ * format of name.
+ * For example in a little-endian system, first look for "gray16",
  * then for "gray16le".
  *
- * Finally if no pixel format has been found, returns \c PIX_FMT_NONE.
+ * Finally if no pixel format has been found, return PIX_FMT_NONE.
  *)
 function avcodec_get_pix_fmt_name(pix_fmt: TAVPixelFormat): PAnsiChar;
   cdecl; external av__codec;
@@ -3525,7 +3527,7 @@ procedure avcodec_set_dimensions(s: PAVCodecContext; width: cint; height: cint);
 
 {$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
 (**
- * Returns the pixel format corresponding to the name name.
+ * Return the pixel format corresponding to the name name.
  *
  * If there is no pixel format with name name, then looks for a
  * pixel format with the name corresponding to the native endian
@@ -3544,7 +3546,7 @@ function avcodec_get_pix_fmt(name: {const} PAnsiChar): TAVPixelFormat;
 {$IFEND}
 
 (**
- * Returns a value representing the fourCC code associated to the
+ * Return a value representing the fourCC code associated to the
  * pixel format pix_fmt, or 0 if no associated fourCC code can be
  * found.
  *)
@@ -3553,7 +3555,7 @@ function avcodec_pix_fmt_to_codec_tag(pix_fmt: TAVPixelFormat): cuint;
 
 {$IF LIBAVCODEC_VERSION >= 52073000} // 52.73.0
 (**
- * Puts a string representing the codec tag codec_tag in buf.
+ * Put a string representing the codec tag codec_tag in buf.
  *
  * @param buf_size size in bytes of buf
  * @return the length of the string that would have been generated if
@@ -3572,7 +3574,7 @@ const
   FF_LOSS_CHROMA      = $0020; {**< loss of chroma (e.g. RGB to gray conversion) *}
 
 (**
- * Computes what kind of losses will occur when converting from one specific
+ * Compute what kind of losses will occur when converting from one specific
  * pixel format to another.
  * When converting from one pixel format to another, information loss may occur.
  * For example, when converting from RGB24 to GRAY, the color information will
@@ -3593,7 +3595,7 @@ function avcodec_get_pix_fmt_loss (dst_pix_fmt: TAVPixelFormat; src_pix_fmt: TAV
   cdecl; external av__codec;
 
 (**
- * Finds the best pixel format to convert to given a certain source pixel
+ * Find the best pixel format to convert to given a certain source pixel
  * format.  When converting from one pixel format to another, information loss
  * may occur.  For example, when converting from RGB24 to GRAY, the color
  * information will be lost. Similarly, other losses occur when converting from
@@ -3702,7 +3704,7 @@ function av_codec_next(c: PAVCodec): PAVCodec;
 {$IFEND}
 
 (**
- * Returns the LIBAVCODEC_VERSION_INT constant.
+ * Return the LIBAVCODEC_VERSION_INT constant.
  *)
 function avcodec_version(): cuint;
   cdecl; external av__codec;
@@ -3715,20 +3717,20 @@ function avcodec_build(): cuint;
 
 {$IF LIBAVCODEC_VERSION >= 52041000} // 52.41.0
 (**
- * Returns the libavcodec build-time configuration.
+ * Return the libavcodec build-time configuration.
  *)
 function avcodec_configuration(): PAnsiChar;
   cdecl; external av__codec;
 
 (**
- * Returns the libavcodec license.
+ * Return the libavcodec license.
  *)
 function avcodec_license(): PAnsiChar;
   cdecl; external av__codec;
 {$IFEND}
 
 (**
- * Initializes libavcodec.
+ * Initialize libavcodec.
  *
  * @warning This function must be called before any other libavcodec
  * function.
@@ -3752,7 +3754,7 @@ procedure register_avcodec(codec: PAVCodec);
   cdecl; external av__codec;
 {$IFEND}
 (**
- * Finds a registered encoder with a matching codec ID.
+ * Find a registered encoder with a matching codec ID.
  *
  * @param id CodecID of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
@@ -3761,7 +3763,7 @@ function avcodec_find_encoder(id: TCodecID): PAVCodec;
   cdecl; external av__codec;
 
 (**
- * Finds a registered encoder with the specified name.
+ * Find a registered encoder with the specified name.
  *
  * @param name name of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
@@ -3770,7 +3772,7 @@ function avcodec_find_encoder_by_name(name: PAnsiChar): PAVCodec;
   cdecl; external av__codec;
 
 (**
- * Finds a registered decoder with a matching codec ID.
+ * Findsa registered decoder with a matching codec ID.
  *
  * @param id CodecID of the requested decoder
  * @return A decoder if one was found, NULL otherwise.
@@ -3779,7 +3781,7 @@ function avcodec_find_decoder(id: TCodecID): PAVCodec;
   cdecl; external av__codec;
 
 (**
- * Finds a registered decoder with the specified name.
+ * Find a registered decoder with the specified name.
  *
  * @param name name of the requested decoder
  * @return A decoder if one was found, NULL otherwise.
@@ -3790,7 +3792,7 @@ procedure avcodec_string(buf: PAnsiChar; buf_size: cint; enc: PAVCodecContext; e
   cdecl; external av__codec;
 
 (**
- * Sets the fields of the given AVCodecContext to default values.
+ * Set the fields of the given AVCodecContext to default values.
  *
  * @param s The AVCodecContext of which the fields should be set to default values.
  *)
@@ -3810,7 +3812,7 @@ procedure avcodec_get_context_defaults2(s: PAVCodecContext; ctype: TAVMediaType)
 {$IFEND}
 
 (**
- * Allocates an AVCodecContext and sets its fields to default values.  The
+ * Allocate an AVCodecContext and sets it fields to default values.  The
  * resulting struct can be deallocated by simply calling av_free().
  *
  * @return An AVCodecContext filled with default values or NULL on failure.
@@ -3848,7 +3850,7 @@ function avcodec_copy_context(dest: PAVCodecContext; src: {const} PAVCodecContex
 {$IFEND}
 
 (**
- * Sets the fields of the given AVFrame to default values.
+ * Set the fields of the given AVFrame to default values.
  *
  * @param pic The AVFrame of which the fields should be set to default values.
  *)
@@ -3856,7 +3858,7 @@ procedure avcodec_get_frame_defaults (pic: PAVFrame);
   cdecl; external av__codec;
 
 (**
- * Allocates an AVFrame and sets its fields to default values.  The resulting
+ * Allocate an AVFrame and set its fields to default values.  The resulting
  * struct can be deallocated by simply calling av_free().
  *
  * @return An AVFrame filled with default values or NULL on failure.
@@ -3874,7 +3876,7 @@ function avcodec_default_reget_buffer (s: PAVCodecContext; pic: PAVFrame): cint;
 
 {$IF LIBAVCODEC_VERSION >= 52066000} // >= 52.66.0
 (**
- * Returns the amount of padding in pixels which the get_buffer callback must
+ * Return the amount of padding in pixels which the get_buffer callback must
  * provide around the edge of the image for codecs which do not have the
  * CODEC_FLAG_EMU_EDGE flag.
  *
@@ -3885,7 +3887,7 @@ function avcodec_get_edge_width(): cuint;
 {$IFEND}
 
 (**
- * Modifies width and height values so that they will result in a memory
+ * Modify width and height values so that they will result in a memory
  * buffer that is acceptable for the codec if you do not use any horizontal
  * padding.
  *
@@ -3898,7 +3900,7 @@ procedure avcodec_align_dimensions(s: PAVCodecContext; width: PCint; height: PCi
 
 {$IF LIBAVCODEC_VERSION >= 52055000} // >= 52.55.0
 (**
- * Modifies width and height values so that they will result in a memory
+ * Modifiy width and height values so that they will result in a memory
  * buffer that is acceptable for the codec if you also ensure that all
  * line sizes are a multiple of the respective linesize_align[i].
  *
@@ -3912,7 +3914,7 @@ procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PC
 {$IFEND}
 
 (**
- * Checks if the given dimension of a picture is valid, meaning that all
+ * Check if the given dimension of a picture is valid, meaning that all
  * bytes of the picture can be addressed with a signed int.
  *
  * @param[in] w Width of the picture.
@@ -3952,7 +3954,7 @@ function avcodec_default_execute2(s: PAVCodecContext; func: TExecuteFunc; arg: P
 //FIXME func typedef
 
 (**
- * Initializes the AVCodecContext to use the given AVCodec. Prior to using this
+ * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
  * function the context has to be allocated.
  *
  * The functions avcodec_find_decoder_by_name(), avcodec_find_encoder_by_name(),
@@ -3994,7 +3996,7 @@ function avcodec_decode_audio(avctx: PAVCodecContext; samples: PSmallint;
 {$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
 {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
 (**
- * Decodes an audio frame from buf into samples.
+ * Decode an audio frame from buf into samples.
  * Wrapper function which calls avcodec_decode_audio3.
  *
  * @deprecated Use avcodec_decode_audio3 instead.
@@ -4015,7 +4017,7 @@ function avcodec_decode_audio2(avctx: PAVCodecContext; samples: PSmallint;
 
 {$IF LIBAVCODEC_VERSION >= 52025000} // 52.25.0
 (**
- * Decodes the audio frame of size avpkt->size from avpkt->data into samples.
+ * Decode the audio frame of size avpkt->size from avpkt->data into samples.
  * Some decoders may support multiple frames in a single AVPacket, such
  * decoders would then just decode the first frame. In this case,
  * avcodec_decode_audio3 has to be called again with an AVPacket that contains
@@ -4064,7 +4066,7 @@ function avcodec_decode_audio3(avctx: PAVCodecContext; samples: PSmallint;
 
 {$IF LIBAVCODEC_MAX_VERSION_MAJOR < 53}
 (**
- * Decodes a video frame from buf into picture.
+ * Decode a video frame from buf into picture.
  * Wrapper function which calls avcodec_decode_video2.
  *
  * @deprecated Use avcodec_decode_video2 instead.
@@ -4091,7 +4093,7 @@ function avcodec_decode_video(avctx: PAVCodecContext; picture: PAVFrame;
 
 {$IF LIBAVCODEC_VERSION >= 52025000} // 52.25.0
 (**
- * Decodes the video frame of size avpkt->size from avpkt->data into picture.
+ * Decode the video frame of size avpkt->size from avpkt->data into picture.
  * Some decoders may support multiple frames in a single AVPacket, such
  * decoders would then just decode the first frame.
  *
@@ -4138,8 +4140,8 @@ function avcodec_decode_subtitle(avctx: PAVCodecContext; sub: PAVSubtitle;
 {$IFEND}
   
 {$IF LIBAVCODEC_VERSION >= 52025000} // 52.25.0
-(* Decodes a subtitle message.
- * Returns a negative value on error, otherwise returns the number of bytes used.
+(* Decode a subtitle message.
+ * Return a negative value on error, otherwise returns the number of bytes used.
  * If no subtitle could be decompressed, got_sub_ptr is zero.
  * Otherwise, the subtitle is stored in sub.
  *
@@ -4160,7 +4162,7 @@ function avcodec_parse_frame(avctx: PAVCodecContext; pdata: PPointer;
   cdecl; external av__codec;
 
 (**
- * Encodes an audio frame from samples into buf.
+ * Encode an audio frame from samples into buf.
  *
  * @note The output buffer should be at least FF_MIN_BUFFER_SIZE bytes large.
  * However, for PCM audio the user will know how much space is needed
@@ -4183,7 +4185,7 @@ function avcodec_encode_audio(avctx: PAVCodecContext; buf: PByte;
   cdecl; external av__codec;
 
 (**
- * Encodes a video frame from pict into buf.
+ * Encode a video frame from pict into buf.
  * The input picture should be
  * stored using a specific format, namely avctx.pix_fmt.
  *
@@ -4230,7 +4232,7 @@ procedure avcodec_default_free_buffers(s: PAVCodecContext);
 (* misc useful functions *)
 
 (**
- * Returns a single letter to describe the given picture type pict_type.
+ * Return a single letter to describe the given picture type pict_type.
  *
  * @param[in] pict_type the picture type
  * @return A single character representing the picture type.
@@ -4239,7 +4241,7 @@ function av_get_pict_type_char(pict_type: cint): AnsiChar;
   cdecl; external av__codec;
 
 (**
- * Returns codec bits per sample.
+ * Return codec bits per sample.
  *
  * @param[in] codec_id the codec
  * @return Number of bits per sample or zero if unknown for the given codec.
@@ -4249,7 +4251,7 @@ function av_get_bits_per_sample(codec_id: TCodecID): cint;
 
 {$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
 (**
- * Returns sample format bits per sample.
+ * Return sample format bits per sample.
  *
  * @param[in] sample_fmt the sample format
  * @return Number of bits per sample or zero if unknown for the given sample format.
@@ -4541,8 +4543,7 @@ function av_bitstream_filter_next(f: PAVBitStreamFilter): PAVBitStreamFilter;
 (* memory *)
 
 (**
- * Reallocates the given block if it is not large enough, otherwise it
- * does nothing.
+ * Reallocate the given block if it is not large enough, otherwise do nothing.
  *
  * @see av_realloc
  *)
@@ -4551,7 +4552,7 @@ procedure av_fast_realloc(ptr: pointer; size: PCuint; min_size: cuint);
 
 {$IF LIBAVCODEC_VERSION >= 52025000} // >= 52.25.0
 (**
- * Allocates a buffer, reusing the given one if large enough.
+ * Allocate a buffer, reusing the given one if large enough.
  *
  * Contrary to av_fast_realloc the current buffer contents might not be
  * preserved and on error the old buffer is freed, thus no special
@@ -4674,7 +4675,7 @@ function img_pad(dst: PAVPicture; src: {const} PAVPicture; height, width: cint;
 {$IFEND}
 
 (**
- * Encodes extradata length to a buffer. Used by xiph codecs.
+ * Encode extradata length to a buffer. Used by xiph codecs.
  *
  * @param s buffer to write to; must be at least (v/255+1) bytes long
  * @param v size of extradata in bytes
@@ -4685,7 +4686,7 @@ function av_xiphlacing(s: PByte; v: cuint): cuint;
 
 {$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
 (**
- * Parses str and put in width_ptr and height_ptr the detected values.
+ * Parse str and put in width_ptr and height_ptr the detected values.
  *
  * @return 0 in case of a successful parsing, a negative value otherwise
  * @param[in] str the string to parse: it has to be a string in the format
@@ -4699,7 +4700,7 @@ function av_parse_video_frame_size(width_ptr: PCint; height_ptr: PCint; str: {co
   cdecl; external av__codec;
 
 (**
- * Parses str and put in frame_rate the detected values.
+ * Parse str and store the detected values in *frame_rate.
  *
  * @return 0 in case of a successful parsing, a negative value otherwise
  * @param[in] str the string to parse: it has to be a string in the format
@@ -4790,7 +4791,7 @@ const
 
 {$IF LIBAVCODEC_VERSION >= 52032000} // >= 52.32.0
 (**
- * Logs a generic warning message about a missing feature. This function is
+ * Log a generic warning message about a missing feature. This function is
  * intended to be used internally by FFmpeg (libavcodec, libavformat, etc.)
  * only, and would normally not be used by applications.
  * @param[in] avc a pointer to an arbitrary struct of which the first field is
@@ -4805,7 +4806,7 @@ procedure av_log_missing_feature(avc: Pointer; feature: {const} Pchar; want_samp
   cdecl; external av__codec;
 
 (**
- * Logs a generic warning message asking for a sample. This function is
+ * Log a generic warning message asking for a sample. This function is
  * intended to be used internally by FFmpeg (libavcodec, libavformat, etc.)
  * only, and would normally not be used by applications.
  * @param[in] avc a pointer to an arbitrary struct of which the first field is
@@ -4818,7 +4819,7 @@ procedure av_log_ask_for_sample(avc: Pointer; msg: {const} Pchar);
 
 {$IF LIBAVCODEC_VERSION >= 52018000} // 52.18.0
 (**
- * Registers the hardware accelerator hwaccel.
+ * Register the hardware accelerator hwaccel.
  *)
 procedure av_register_hwaccel (hwaccel: PAVHWAccel)
   cdecl; external av__codec;
