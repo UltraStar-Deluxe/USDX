@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.79.1, revision 24021, Tue May 29 23:00:00 2010 CET
+ * Max. version: 52.80.0, revision 24098, Tue May 29 23:00:00 2010 CET
  *
  *)
 
@@ -82,8 +82,8 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 79;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 80;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -3089,13 +3089,16 @@ type
     long_name: {const} PAnsiChar;
     {$IFEND}
     {$IF LIBAVCODEC_VERSION >= 51056000} // 51.56.0
-    supported_samplerates: {const} PCint;       ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
+    supported_samplerates: {const} PCint;      ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
     {$IFEND}
     {$IF LIBAVCODEC_VERSION >= 51062000} // 51.62.0
     sample_fmts: {const} PSampleFormatArray;   ///< array of supported sample formats, or NULL if unknown, array is terminated by -1
     {$IFEND}
     {$IF LIBAVCODEC_VERSION >= 52002000} // 52.2.0
-    channel_layouts: {const} PCint64;         ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
+    channel_layouts: {const} PCint64;          ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
+    {$IFEND}
+    {$IF LIBAVCODEC_VERSION >= 52080000} // 52.80.0
+    max_lowres: byte;                          ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
     {$IFEND}
   end;
 
