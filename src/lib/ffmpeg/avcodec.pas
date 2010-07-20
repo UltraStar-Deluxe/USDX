@@ -22,8 +22,8 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavcodec/avcodec.h
- * Min. version: 51.16.0, revision 6577, Sat Oct 7 15:30:46 2006 UTC 
- * Max. version: 52.73.0, revision 23421, Sun May 30 20:55 2010 CET
+ * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
+ * Max. version: 52.75.1, revision 23532, Tue May 29 23:00:00 2010 CET
  *
  *)
 
@@ -82,8 +82,8 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 73;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 75;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -305,6 +305,9 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52067002}  // >= 52.67.2
     CODEC_ID_VP8,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52075001}  // >= 52.75.1
+    CODEC_ID_PICTOR,
 {$IFEND}
 
     //* various PCM "codecs" */
@@ -962,7 +965,7 @@ const
   {$IFEND}
   //FF_BUG_FAKE_SCALABILITY = 16 //Autodetection should work 100%.
 
-  FF_COMPLIANCE_VERY_STRICT   =  2; ///< strictly conform to a older more strict version of the spec or reference software
+  FF_COMPLIANCE_VERY_STRICT   =  2; ///< strictly conform to an older more strict version of the spec or reference software
   FF_COMPLIANCE_STRICT        =  1; ///< strictly conform to all the things in the spec no matter what consequences
   FF_COMPLIANCE_NORMAL        =  0;
   FF_COMPLIANCE_INOFFICIAL    = -1; ///< allow inofficial extensions
@@ -1816,11 +1819,11 @@ type
      * - encoding: Set by user.
      * - decoding: Set by user.
      * Setting this to STRICT or higher means the encoder and decoder will
-     * generally do stupid things. While setting it to inofficial or lower
-     * will mean the encoder might use things that are not supported by all
-     * spec compliant decoders. Decoders make no difference between normal,
-     * inofficial and experimental, that is they always try to decode things
-     * when they can unless they are explicitly asked to behave stupid
+     * generally do stupid things, whereas setting it to inofficial or lower
+     * will mean the encoder might produce output that is not supported by all
+     * spec-compliant decoders. Decoders don't differentiate between normal,
+     * inofficial and experimental (that is, they always try to decode things
+     * when they can) unless they are explicitly asked to behave stupidly
      * (=strictly conform to the specs)
      *)
     strict_std_compliance: cint;
@@ -4069,6 +4072,11 @@ function avcodec_decode_audio3(avctx: PAVCodecContext; samples: PSmallint;
  * @param[out] picture The AVFrame in which the decoded video frame will be stored.
  *             Use avcodec_alloc_frame to get an AVFrame, the codec will
  *             allocate memory for the actual bitmap.
+ *             with default get/release_buffer(), the decoder frees/reuses the bitmap as it sees fit.
+ *             with overridden get/release_buffer() (needs CODEC_CAP_DR1) the user decides into what buffer the decoder
+ *                   decodes and the decoder tells the user once it does not need the data anymore,
+ *                   the user app can at this point free/reuse/keep the memory as it sees fit.
+ *
  * @param[in] buf the input buffer
  * @param[in] buf_size the size of the input buffer in bytes
  * @param[in,out] got_picture_ptr Zero if no frame could be decompressed, otherwise, it is nonzero.
