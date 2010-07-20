@@ -19,7 +19,7 @@
  * - Ported by the UltraStar Deluxe Team
  *
  * Conversion of libswscale/swscale.h
- * Max. version: 0.11.0, revision 31301, Mon Jil 12 8:00:00 2010 CET 
+ * Max. version: 0.11.0, revision 31301, Mon Jul 12 8:00:00 2010 CET 
  *)
  
 unit swscale;
@@ -45,31 +45,31 @@ uses
   UConfig;
 
 const
-  (*
-   * IMPORTANT: The official FFmpeg C headers change very quickly. Often some
-   * of the data structures are changed so that they become incompatible with
-   * older header files. The Pascal headers have to be adjusted to those changes,
-   * otherwise the application might crash randomly or strange bugs (not
-   * necessarily related to video or audio due to buffer overflows etc.) might
-   * occur.
-   *
-   * In the past users reported problems with USDX that took hours to fix and
-   * the problem was an unsupported version of FFmpeg. So we decided to disable
-   * support for future versions of FFmpeg until the headers are revised by us
-   * for that version as they otherwise most probably will break USDX.
-   *
-   * If the headers do not yet support your FFmpeg version you may want to
-   * adjust the max. version numbers manually but please note: it may work but
-   * in many cases it does not. The USDX team does NOT PROVIDE ANY SUPPORT
-   * for the game if the MAX. VERSION WAS CHANGED.
-   *
-   * The only safe way to support new versions of FFmpeg is to add the changes
-   * of the FFmpeg git repository C headers to the Pascal headers.
-   * You can accelerate this process by posting a patch with the git changes
-   * translated to Pascal to our bug tracker (please join our IRC chat before
-   * you start working on it). Simply adjusting the max. versions is NOT a valid
-   * fix. 
-   *)
+(*
+ * IMPORTANT: The official FFmpeg C headers change very quickly. Often some
+ * of the data structures are changed so that they become incompatible with
+ * older header files. The Pascal headers have to be adjusted to those changes,
+ * otherwise the application might crash randomly or strange bugs (not
+ * necessarily related to video or audio due to buffer overflows etc.) might
+ * occur.
+ *
+ * In the past users reported problems with USDX that took hours to fix and
+ * the problem was an unsupported version of FFmpeg. So we decided to disable
+ * support for future versions of FFmpeg until the headers are revised by us
+ * for that version as they otherwise most probably will break USDX.
+ *
+ * If the headers do not yet support your FFmpeg version you may want to
+ * adjust the max. version numbers manually but please note: it may work but
+ * in many cases it does not. The USDX team does NOT PROVIDE ANY SUPPORT
+ * for the game if the MAX. VERSION WAS CHANGED.
+ *
+ * The only safe way to support new versions of FFmpeg is to add the changes
+ * of the FFmpeg git repository C headers to the Pascal headers.
+ * You can accelerate this process by posting a patch with the git changes
+ * translated to Pascal to our bug tracker (please join our IRC chat before
+ * you start working on it). Simply adjusting the max. versions is NOT a valid
+ * fix. 
+ *)
   (* Max. supported version by this header *)
   LIBSWSCALE_MAX_VERSION_MAJOR   =  0;
   LIBSWSCALE_MAX_VERSION_MINOR   = 11;
@@ -159,7 +159,7 @@ const
   SWS_CS_SMPTE240M      = 7;
   SWS_CS_DEFAULT        = 5;
 
-{$IF  LIBSWSCALE_VERSION >= 000010000} // 0.10.0
+{$IF LIBSWSCALE_VERSION >= 000010000} // 0.10.0
 (**
  * Returns a pointer to yuv<->rgb coefficients for the given colorspace
  * suitable for sws_setColorspaceDetails().
@@ -167,8 +167,8 @@ const
  * @param colorspace One of the SWS_CS_* macros. If invalid,
  * SWS_CS_DEFAULT is used.
  *)
-  function sws_getCoefficients(colorspace: cint): Pcint;
-    cdecl; external sw__scale;
+function sws_getCoefficients(colorspace: cint): Pcint;
+  cdecl; external sw__scale;
 {$IFEND}
   
 type
@@ -195,20 +195,20 @@ type
     {internal structure}
   end;
 
-{$IF  LIBSWSCALE_VERSION >= 000008000} // 0.8.0
+{$IF LIBSWSCALE_VERSION >= 000008000} // 0.8.0
 (**
  * Returns a positive value if pix_fmt is a supported input format, 0
  * otherwise.
  *)
-  function sws_isSupportedInput(pix_fmt: TAVPixelFormat): cint;
-    cdecl; external sw__scale;
+function sws_isSupportedInput(pix_fmt: TAVPixelFormat): cint;
+  cdecl; external sw__scale;
 
 (**
  * Returns a positive value if pix_fmt is a supported output format, 0
  * otherwise.
  *)
-  function sws_isSupportedOutput(pix_fmt: TAVPixelFormat): cint;
-    cdecl; external sw__scale;
+function sws_isSupportedOutput(pix_fmt: TAVPixelFormat): cint;
+  cdecl; external sw__scale;
 {$IFEND}
 
 (**
@@ -267,7 +267,7 @@ function sws_scale(context: PSwsContext; {const} srcSlice: PPCuint8Array; {const
               srcSliceY: cint; srcSliceH: cint; {const} dst: PPCuint8Array; {const} dstStride: PCintArray): cint;
   cdecl; external sw__scale;
 
-{$IF  LIBSWSCALE_VERSION_MAJOR < 1}
+{$IF LIBSWSCALE_VERSION_MAJOR < 1}
 // deprecated. Use sws_scale() instead.
 function sws_scale_ordered(context: PSwsContext; {const} src: PPCuint8Array;
                            srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
