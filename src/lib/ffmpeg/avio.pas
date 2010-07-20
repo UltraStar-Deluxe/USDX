@@ -100,6 +100,9 @@ type
     max_packet_size: cint;  (**< if non zero, the stream is packetized with this max packet size *)
     priv_data: pointer;
     filename: PAnsiChar; (**< specified URL *)
+{$IF LIBAVFORMAT_VERSION >= 52070000} // 52.70.0
+{$IFEND}
+     is_connected: cint;
   end;
   PPURLContext = ^PURLContext;
 
@@ -213,6 +216,27 @@ type
     {$IFEND}
   end;
 
+{$IF LIBAVFORMAT_VERSION >= 52070000} // 52.70.0
+(**
+ * Creates an URLContext for accessing to the resource indicated by
+ * url, but doesn't initiate the connection yet.
+ *
+ * @param puc pointer to the location where, in case of success, the
+ * function puts the pointer to the created URLContext
+ * @param flags flags which control how the resource indicated by url
+ * is to be opened
+ * @return 0 in case of success, a negative value corresponding to an
+ * AVERROR code in case of failure
+ *)
+function url_alloc(h: PPURLContext; {const} url: PAnsiChar; flags: cint): cint;
+  cdecl; external av__format;
+
+(**
+ * Connect an URLContext that has been allocated by url_alloc
+ *)
+function url_connect(h: PURLContext): cint;
+  cdecl; external av__format;
+{$IFEND}
 
 {$IF LIBAVFORMAT_VERSION >= 52021000} // 52.21.0
 (**
@@ -395,9 +419,9 @@ function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
 {$IFEND}
 {$IF LIBAVFORMAT_VERSION >= 52069000} // 52.69.0
-{$IFEND}
 function av_register_protocol2(protocol: PURLProtocol; size: cint): cint;
   cdecl; external av__format;
+{$IFEND}
 
 type
   TReadWriteFunc = function(opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
