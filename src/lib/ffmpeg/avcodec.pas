@@ -1050,8 +1050,16 @@ const
   {$IFEND}
   FF_MM_SSE         = $0008; ///< SSE functions
   FF_MM_SSE2        = $0010; ///< PIV SSE2 functions
+  {$IF LIBAVCODEC_VERSION >= 52084000} // >= 52.84.0
+  FF_MM_SSE2SLOW    = $40000000; ///< SSE2 supported, but usually not faster
+                                 ///< than regular MMX/SSE (e.g. Core1)
+  {$IFEND}
   FF_MM_3DNOWEXT    = $0020; ///< AMD 3DNowExt
   FF_MM_SSE3        = $0040; ///< Prescott SSE3 functions
+  {$IF LIBAVCODEC_VERSION >= 52084000} // >= 52.84.0
+  FF_MM_SSE3SLOW    = $20000000; ///< SSE3 supported, but usually not faster
+                                 ///< than regular MMX/SSE (e.g. Core1)
+  {$IFEND}
   FF_MM_SSSE3       = $0080; ///< Conroe SSSE3 functions
   {$IF LIBAVCODEC_VERSION >= 52022003} // >= 52.22.3
   FF_MM_SSE4        = $0100; ///< Penryn SSE4.1 functions
