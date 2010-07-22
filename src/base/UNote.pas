@@ -374,7 +374,7 @@ begin
     begin
       with Lines[0].Line[I] do
       begin
-        if (HighNote > 0) then
+        if (HighNote >= 0) then
         begin
           SentenceEnd := Note[HighNote].Start + Note[HighNote].Length;
 
