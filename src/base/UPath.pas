@@ -1028,7 +1028,7 @@ end;
 function TPathImpl.IsAbsolute(): boolean;
 begin
   AssertRefCount;
-  Result := FileSystem.FileIsReadOnly(Self);
+  Result := FileSystem.FileIsAbsolute(Self);
 end;
 
 function TPathImpl.GetAttr(): cardinal;
