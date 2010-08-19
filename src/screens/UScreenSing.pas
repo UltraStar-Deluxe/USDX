@@ -483,9 +483,9 @@ begin
   try
     // check if file is xml
     if CurrentSong.FileName.GetExtension.ToUTF8 = '.xml' then
-      success := CurrentSong.LoadXMLSong()
+      success := CurrentSong.AnalyseXML and CurrentSong.LoadXMLSong()
     else
-      success := CurrentSong.LoadSong();
+      success := CurrentSong.Analyse and CurrentSong.LoadSong();
   except
     success := false;
   end;
