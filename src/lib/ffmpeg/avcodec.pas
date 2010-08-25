@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.84.0, revision 24299, Tue May 29 23:00:00 2010 CET
+ * Max. version: 52.84.1, revision 24518, Wed Aug 23 06:00:00 2010 CET
  *
  *)
 
@@ -83,7 +83,7 @@ const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
   LIBAVCODEC_MAX_VERSION_MINOR   = 84;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -465,6 +465,9 @@ type
 {$IFEND}
 {$IF LIBAVCODEC_VERSION >= 52037001} // >= 52.37.1
     CODEC_ID_DVB_TELETEXT,
+{$IFEND}
+{$IF LIBAVCODEC_VERSION >= 52084001} // >= 52.84.1
+    CODEC_ID_SRT,
 {$IFEND}
 
     (* other specific kind of codecs (generally used for attachments) *)
@@ -4754,10 +4757,14 @@ function img_pad(dst: PAVPicture; src: {const} PAVPicture; height, width: cint;
 function av_xiphlacing(s: PByte; v: cuint): cuint;
   cdecl; external av__codec;
 
-{$IF LIBAVCODEC_VERSION >= 51041000} // 51.41.0
+{$IF LIBAVCODEC_VERSION_MAJOR < 53}  // < 53
+{$IF LIBAVCODEC_VERSION >= 51041000} // >= 51.41.0
 (**
  * Parse str and put in width_ptr and height_ptr the detected values.
  *
+{$IF LIBAVCODEC_VERSION >= 52084001} // >= 52.84.1
+ * @deprecated Deprecated in favor of av_parse_video_size().
+{$ELSE}
  * @return 0 in case of a successful parsing, a negative value otherwise
  * @param[in] str the string to parse: it has to be a string in the format
  * width x height or a valid video frame size abbreviation.
@@ -4765,21 +4772,33 @@ function av_xiphlacing(s: PByte; v: cuint): cuint;
  * frame width value
  * @param[in,out] height_ptr pointer to the variable which will contain the detected
  * frame height value
+{$IFEND}
  *)
 function av_parse_video_frame_size(width_ptr: PCint; height_ptr: PCint; str: {const} PAnsiChar): cint;
   cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION >= 52084001} // >= 52.84.1
+  deprecated;
+{$IFEND}
 
 (**
  * Parse str and store the detected values in *frame_rate.
  *
+{$IF LIBAVCODEC_VERSION >= 52084001} // >= 52.84.1
+ * @deprecated Deprecated in favor of av_parse_video_rate().
+{$ELSE}
  * @return 0 in case of a successful parsing, a negative value otherwise
  * @param[in] str the string to parse: it has to be a string in the format
  * frame_rate_num / frame_rate_den, a float number or a valid video rate abbreviation
  * @param[in,out] frame_rate pointer to the AVRational which will contain the detected
  * frame rate
+{$IFEND}
  *)
 function av_parse_video_frame_rate(frame_rate: PAVRational; str: {const} PAnsiChar): cint;
   cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION >= 52084001} // >= 52.84.1
+  deprecated;
+{$IFEND}
+{$IFEND}
 {$IFEND}
 
 {$IF LIBAVCODEC_VERSION < 52059000} // <52.59.0
