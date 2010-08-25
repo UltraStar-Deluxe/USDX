@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mathematics.h
- * avutil max. version 50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET
+ * avutil max. version 50.23.0, revision 24439, Wed Aug 25 05:00:00 2010 CET
  *
  *)
 
@@ -49,6 +49,9 @@ const
   M_LN10       = 2.30258509299404568402;  // log_e 10
 {$IF LIBAVUTIL_VERSION >= 50009000} // >= 50.9.0
   M_LOG2_10    = 3.32192809488736234787;  // log_2 10
+{$IFEND}
+{$IF LIBAVUTIL_VERSION >= 50023000} // >= 50.23.0
+  M_PHI        = 1.61803398874989484820;  // phi / golden ratio
 {$IFEND}
   M_PI         = 3.14159265358979323846;  // pi
   M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
