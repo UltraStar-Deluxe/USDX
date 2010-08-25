@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.84.3, revision 24709, Wed Aug 23 06:30:00 2010 CET
+ * Max. version: 52.85.1, revision 24786, Wed Aug 23 06:35:00 2010 CET
  *
  *)
 
@@ -82,8 +82,8 @@ const
    *)
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 84;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 3;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 85;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -1268,7 +1268,7 @@ type
 
   // int[4]
   PQuadIntArray = ^TQuadIntArray;
-  TQuadIntArray = array[0..3] of cint;
+  TQuadIntArray = array [0..3] of cint;
   // int (*func)(struct AVCodecContext *c2, void *arg)
   TExecuteFunc = function(c2: PAVCodecContext; arg: Pointer): cint; cdecl;
 {$IF LIBAVCODEC_VERSION >= 52037000} // >= 52.37.0
@@ -4679,6 +4679,23 @@ procedure av_mallocz_static(size: cuint);
   cdecl; external av__codec; deprecated; {av_malloc_attrib av_alloc_size(1)}
 {$IFEND}
 
+{$IF LIBAVCODEC_VERSION >= 52085000} // 52.85.0
+(**
+ * Copy image data in src_data to dst_data.
+ *
+ * @param dst_linesize linesizes for the image in dst_data
+ * @param src_linesize linesizes for the image in src_data
+ *)
+type
+  PQuaduint8Array = ^TQuaduint8Array;
+  TQuaduint8Array = array [0..3] of cuint8;
+
+procedure av_picture_data_copy(dst_data: PQuaduint8Array; dst_linesize: TQuadIntArray;
+                               src_data: PQuaduint8Array; src_linesize: TQuadIntArray;
+                               pix_fmt:  TAVPixelFormat;  width: cint; height: cint);
+  cdecl; external av__codec;
+{$IFEND}
+
 {$IF LIBAVCODEC_VERSION < 51035000} // 51.35.0
 procedure av_realloc_static(ptr: pointer; size: cuint);
   cdecl; external av__codec;
@@ -4686,7 +4703,7 @@ procedure av_realloc_static(ptr: pointer; size: cuint);
 
 {$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
 (**
- * Copy image 'src' to 'dst'.
+ * Copy image src to dst. Wraps av_picture_data_copy() above.
  *)
 procedure av_picture_copy(dst: PAVPicture; 
               src: {const} PAVPicture;
