@@ -23,7 +23,7 @@
  *
  * Conversion of libavcodec/avcodec.h
  * Min. version: 51.16.0, revision  6577, Sat Oct  7 15:30:46 2006 UTC 
- * Max. version: 52.84.1, revision 24518, Wed Aug 23 06:00:00 2010 CET
+ * Max. version: 52.84.3, revision 24709, Wed Aug 23 06:30:00 2010 CET
  *
  *)
 
@@ -83,7 +83,7 @@ const
   (* Max. supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
   LIBAVCODEC_MAX_VERSION_MINOR   = 84;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 1;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 3;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -3955,8 +3955,12 @@ function avcodec_get_edge_width(): cuint;
 procedure avcodec_align_dimensions(s: PAVCodecContext; width: PCint; height: PCint);
   cdecl; external av__codec;
 
+{$IF LIBAVCODEC_VERSION_MAJOR < 53}  // < 53
 {$IF LIBAVCODEC_VERSION >= 52055000} // >= 52.55.0
 (**
+{$IF LIBAVCODEC_VERSION >= 52084003} // >= 52.84.3
+ * @deprecated Deprecated in favor of av_check_image_size().
+{$ELSE}
  * Modifiy width and height values so that they will result in a memory
  * buffer that is acceptable for the codec if you also ensure that all
  * line sizes are a multiple of the respective linesize_align[i].
@@ -3964,10 +3968,15 @@ procedure avcodec_align_dimensions(s: PAVCodecContext; width: PCint; height: PCi
  * May only be used if a codec with CODEC_CAP_DR1 has been opened.
  * If CODEC_FLAG_EMU_EDGE is not set, the dimensions must have been increased
  * according to avcodec_get_edge_width() before.
+{$IFEND}
  *)
 procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PCint;
                                     linesize_align: PQuadIntArray);
   cdecl; external av__codec;
+{$IF LIBAVCODEC_VERSION >= 52084003} // >= 52.84.3
+  deprecated;
+{$IFEND}
+{$IFEND}
 {$IFEND}
 
 (**
@@ -3980,6 +3989,8 @@ procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PC
  *)
 function avcodec_check_dimensions(av_log_ctx: pointer; w: cuint; h: cuint): cint;
   cdecl; external av__codec;
+
+
 function avcodec_default_get_format(s: PAVCodecContext; fmt: {const} PAVPixelFormat): TAVPixelFormat;
   cdecl; external av__codec;
 
