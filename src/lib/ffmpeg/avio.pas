@@ -96,7 +96,7 @@ type
     {$ELSE}
       {$IFDEF FF_API_URL_CLASS}
     av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
-      {$IFEND}
+      {$ENDIF}
     {$IFEND}
     prot: PURLProtocol;
     flags: cint;
@@ -431,7 +431,7 @@ function av_register_protocol(protocol: PURLProtocol): cint;
   {$IFDEF FF_API_REGISTER_PROTOCOL}
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
-  {$IFEND}
+  {$ENDIF}
 {$IFEND}
 {$IF LIBAVFORMAT_VERSION >= 52069000} // 52.69.0
 function av_register_protocol2(protocol: PURLProtocol; size: cint): cint;
@@ -609,7 +609,7 @@ function ff_get_v(bc: PByteIOContext): cuint64;
     {$IFDEF FF_API_URL_RESETBUF}
 function ff_get_v(bc: PByteIOContext): cuint64;
   cdecl; external av__format;
-    {$IFEND}
+    {$ENDIF}
   {$IFEND}
 {$IFEND}
 
