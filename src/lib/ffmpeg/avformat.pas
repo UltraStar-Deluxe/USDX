@@ -1273,7 +1273,7 @@ function av_write_image(pb: PByteIOContext; fmt: PAVImageFormat; img: PAVImageIn
  * @param d_conv destination tags format conversion table
  * @param s_conv source tags format conversion table
  *)
-procedure av_metadata_conv(ctx: PAVFormatContext, {const} d_conv: PAVMetadataConv,
+procedure av_metadata_conv(ctx: PAVFormatContext; {const} d_conv: PAVMetadataConv;
                                                   {const} s_conv: PAVMetadataConv);
   cdecl; external av__format;
 {$IFEND}
