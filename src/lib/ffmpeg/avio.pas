@@ -428,10 +428,15 @@ function register_protocol(protocol: PURLProtocol): cint;
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format name 'register_protocol';
 {$ELSE}
+{$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
+function av_register_protocol(protocol: PURLProtocol): cint;
+  cdecl; external av__format;
+{$ELSE}
   {$IFDEF FF_API_REGISTER_PROTOCOL}
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
   {$ENDIF}
+{$IFEND}
 {$IFEND}
 {$IF LIBAVFORMAT_VERSION >= 52069000} // 52.69.0
 function av_register_protocol2(protocol: PURLProtocol; size: cint): cint;
