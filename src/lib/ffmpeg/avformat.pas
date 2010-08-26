@@ -249,20 +249,6 @@ function av_metadata_set2(var pm: PAVMetadata; key: {const} PAnsiChar; value: {c
   cdecl; external av__format;
 {$IFEND}
 
-{$IF LIBAVFORMAT_VERSION >= 52030001} // >= 52.30.1
-(**
- * Convert all the metadata sets from ctx according to the source and
- * destination conversion tables. If one of the tables is NULL, then
- * tags are converted to/from ffmpeg generic tag names.
- *
- * @param d_conv destination tags format conversion table
- * @param s_conv source tags format conversion table
- *)
-procedure av_metadata_conv(ctx: PAVFormatContext, {const} d_conv: PAVMetadataConv,
-                                                  {const} s_conv: PAVMetadataConv);
-  cdecl; external av__format;
-{$IFEND}
-
 (**
  * Free all the memory allocated for an AVMetadata struct.
  *)
@@ -1259,6 +1245,20 @@ type
     flags: cint;
     next: PAVImageFormat;
   end; {deprecated}
+
+{$IF LIBAVFORMAT_VERSION >= 52030001} // >= 52.30.1
+(**
+ * Convert all the metadata sets from ctx according to the source and
+ * destination conversion tables. If one of the tables is NULL, then
+ * tags are converted to/from ffmpeg generic tag names.
+ *
+ * @param d_conv destination tags format conversion table
+ * @param s_conv source tags format conversion table
+ *)
+procedure av_metadata_conv(ctx: PAVFormatContext, {const} d_conv: PAVMetadataConv,
+                                                  {const} s_conv: PAVMetadataConv);
+  cdecl; external av__format;
+{$IFEND}
 
 procedure av_register_image_format(img_fmt: PAVImageFormat);
     cdecl; external av__format; deprecated;
