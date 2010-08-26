@@ -231,7 +231,7 @@ function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {co
  *)
 function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar): cint;
   cdecl; external av__format; deprecated;
-  {$IFEND}
+  {$ENDIF}
 {$IFEND}
 
 {$IF LIBAVFORMAT_VERSION >= 52043000} // >= 52.43.0
@@ -436,7 +436,7 @@ const
 {$ELSE}
   {$IFDEF FF_API_MAX_STREAMS}
   MAX_STREAMS = 20;
-  {$IFEND}
+  {$ENDIF}
 {$IFEND}
 
 
@@ -550,7 +550,7 @@ type
     {$ELSE}
       {$IFDEF FF_API_OLD_METADATA}
     title: PAnsiChar;         ///< chapter title
-      {$IFEND}
+      {$ENDIF}
     {$IFEND}
     {$IF LIBAVFORMAT_VERSION >= 52024001} // 52.24.1
     metadata: PAVMetadata;
@@ -859,7 +859,7 @@ type
     {$ELSE}
       {$IFDEF FF_API_OLD_METADATA}
     language: array [0..3] of PAnsiChar; (**< ISO 639-2/B 3-letter language code (empty string if undefined) *)
-      {$IFEND}
+      {$ENDIF}
     {$IFEND}
 
     (* av_read_frame() support *)
@@ -886,7 +886,7 @@ type
     {$ELSE}
       {$IFDEF FF_API_OLD_METADATA}
     filename: PAnsiChar; (**< source filename of the stream *)
-      {$IFEND}    
+      {$ENDIF}    
     {$IFEND}
 
     {$IF LIBAVFORMAT_VERSION >= 52008000} // 52.8.0
@@ -1003,7 +1003,7 @@ type
     year: cint;  (**< ID3 year, 0 if none *)
     track: cint; (**< track number, 0 if none *)
     genre: array [0..31] of AnsiChar; (**< ID3 genre *)
-      {$IFEND}
+      {$ENDIF}
     {$IFEND}
 
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)
@@ -1198,7 +1198,7 @@ type
         {$IFDEF FF_API_OLD_METADATA}
       provider_name     : PAnsiChar;  ///< network name for DVB streams
       name              : PAnsiChar;  ///< service name for DVB streams
-        {$IFEND}
+        {$ENDIF}
       {$IFEND}
       flags             : cint;
       discard           : TAVDiscard; ///< selects which program to discard and which to feed to the caller
