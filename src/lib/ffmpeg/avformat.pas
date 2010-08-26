@@ -23,7 +23,7 @@
  *
  * Conversion of libavformat/avformat.h
  * Min. version: 50.5.0 , revision  6577, Sat Oct  7 15:30:46 2006 UTC
- * Max. version: 52.78.2, revision 24790, Wed Aug 25 23:00:00 2010 CET 
+ * Max. version: 52.78.3, revision 24841, Thu Aug 26 02:00:00 2010 CET
  *)
 
 unit avformat;
@@ -82,7 +82,7 @@ const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
   LIBAVFORMAT_MAX_VERSION_MINOR   = 78;
-  LIBAVFORMAT_MAX_VERSION_RELEASE = 2;
+  LIBAVFORMAT_MAX_VERSION_RELEASE = 3;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -103,6 +103,22 @@ const
 (* Check if linked versions are supported *)
 {$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
   {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
+{$IFEND}
+
+{$IF LIBAVFORMAT_VERSION >= 52078003} // >= 52.78.3
+(**
+ * Those FF_API_* defines are not part of public API.
+ * They may change, break or disappear at any time.
+ *)
+const
+  {$IF LIBAVFORMAT_VERSION_MAJOR < 53}
+  FF_API_MAX_STREAMS       = (LIBAVFORMAT_VERSION_MAJOR < 53);
+  FF_API_OLD_METADATA      = (LIBAVFORMAT_VERSION_MAJOR < 53);
+  FF_API_REGISTER_PROTOCOL = (LIBAVFORMAT_VERSION_MAJOR < 53);
+  FF_API_URL_RESETBUF      = (LIBAVFORMAT_VERSION_MAJOR < 53);
+  {$ELSE}
+  FF_API_URL_CLASS    = (LIBAVFORMAT_VERSION_MAJOR >= 53);
+  {$IFEND}
 {$IFEND}
 
 {$IF LIBAVFORMAT_VERSION >= 52020000} // 52.20.0
@@ -173,7 +189,6 @@ type
   PAVMetadata = Pointer;
 
 {$IF LIBAVFORMAT_VERSION > 52024001} // > 52.24.1
-{$IF LIBAVFORMAT_VERSION_MAJOR = 52}
 (**
  * Get a metadata element with matching key.
  *
@@ -186,6 +201,7 @@ function av_metadata_get(m: PAVMetadata; key: {const} PAnsiChar;
                          prev: {const} PAVMetadataTag ; flags: cint): PAVMetadataTag;
   cdecl; external av__format;
 
+{$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
 (**
  * Set the given tag in *pm, overwriting an existing tag.
  *
@@ -198,9 +214,24 @@ function av_metadata_get(m: PAVMetadata; key: {const} PAnsiChar;
  *)
 function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar): cint;
   cdecl; external av__format;
-{$IF LIBAVFORMAT_VERSION >= 52061000} // >= 52.61.0
+  {$IF LIBAVFORMAT_VERSION >= 52061000} // >= 52.61.0
     deprecated;
-{$IFEND}
+  {$IFEND}
+{$ELSE}
+  {$IFDEF FF_API_OLD_METADATA}
+(**
+ * Set the given tag in *pm, overwriting an existing tag.
+ *
+ * @param pm pointer to a pointer to a metadata struct. If *pm is NULL
+ * a metadata struct is allocated and put in *pm.
+ * @param key tag key to add to *pm (will be av_strduped)
+ * @param value tag value to add to *pm (will be av_strduped)
+ * @return >= 0 on success otherwise an error code <0
+ * @deprecated Use av_metadata_set2() instead.
+ *)
+function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar): cint;
+  cdecl; external av__format; deprecated;
+  {$IFEND}
 {$IFEND}
 
 {$IF LIBAVFORMAT_VERSION >= 52043000} // >= 52.43.0
@@ -407,13 +438,21 @@ const
 
   AVFMTCTX_NOHEADER = $0001; (**< signal that no header is present
                                          (streams are added dynamically) *)
-{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
+
+{$IF LIBAVFORMAT_VERSION < 52078003}  // < 52.78.3
+  {$IF LIBAVFORMAT_VERSION_MAJOR < 53}
   MAX_STREAMS = 20;
-{$ELSE}
-{$IF LIBAVFORMAT_VERSION < 52068000}  // < 52.68.0
+  {$ELSE}
+    {$IF LIBAVFORMAT_VERSION < 52068000}  // < 52.68.0
   MAX_STREAMS = 100;
+    {$IFEND}
+  {$IFEND}
+{$ELSE}
+  {$IFDEF FF_API_MAX_STREAMS}
+  MAX_STREAMS = 20;
+  {$IFEND}
 {$IFEND}
-{$IFEND}
+
 
   AVFMT_NOOUTPUTLOOP = -1;
   AVFMT_INFINITEOUTPUTLOOP = 0;
@@ -520,8 +559,12 @@ type
     id: cint;                 ///< unique ID to identify the chapter
     time_base: TAVRational;   ///< time base in which the start/end timestamps are specified
     start, end_: cint64;      ///< chapter start/end time in time_base units
-    {$IF LIBAVFORMAT_VERSION < 53000000}  // 53.00.0
+    {$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
     title: PAnsiChar;         ///< chapter title
+    {$ELSE}
+      {$IFDEF FF_API_OLD_METADATA}
+    title: PAnsiChar;         ///< chapter title
+      {$IFEND}
     {$IFEND}
     {$IF LIBAVFORMAT_VERSION >= 52024001} // 52.24.1
     metadata: PAVMetadata;
@@ -825,8 +868,12 @@ type
      *)
     duration: cint64;
 
-    {$IF LIBAVFORMAT_VERSION_MAJOR < 53}
+    {$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
     language: array [0..3] of PAnsiChar; (**< ISO 639-2/B 3-letter language code (empty string if undefined) *)
+    {$ELSE}
+      {$IFDEF FF_API_OLD_METADATA}
+    language: array [0..3] of PAnsiChar; (**< ISO 639-2/B 3-letter language code (empty string if undefined) *)
+      {$IFEND}
     {$IFEND}
 
     (* av_read_frame() support *)
@@ -848,8 +895,12 @@ type
     unused: array [0..4] of cint64;
     {$IFEND}
 
-    {$IF (LIBAVFORMAT_VERSION >= 52006000) and (LIBAVFORMAT_VERSION_MAJOR < 53)} // 52.6.0 - 53.0.0
+    {$IF (LIBAVFORMAT_VERSION >= 52006000) and (LIBAVFORMAT_VERSION < 52078003)} // 52.6.0 - 52.78.2
     filename: PAnsiChar; (**< source filename of the stream *)
+    {$ELSE}
+      {$IFDEF FF_API_OLD_METADATA}
+    filename: PAnsiChar; (**< source filename of the stream *)
+      {$IFEND}    
     {$IFEND}
 
     {$IF LIBAVFORMAT_VERSION >= 52008000} // 52.8.0
@@ -947,7 +998,7 @@ type
     filename: array [0..1023] of AnsiChar; (* input or output filename *)
     (* stream info *)
     timestamp: cint64;
-    {$IF LIBAVFORMAT_VERSION < 53000000} // 53.00.0
+    {$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
     title: array [0..511] of AnsiChar;
     author: array [0..511] of AnsiChar;
     copyright: array [0..511] of AnsiChar;
@@ -956,6 +1007,17 @@ type
     year: cint;  (**< ID3 year, 0 if none *)
     track: cint; (**< track number, 0 if none *)
     genre: array [0..31] of AnsiChar; (**< ID3 genre *)
+    {$ELSE}
+      {$IFDEF FF_API_OLD_METADATA}
+    title: array [0..511] of AnsiChar;
+    author: array [0..511] of AnsiChar;
+    copyright: array [0..511] of AnsiChar;
+    comment: array [0..511] of AnsiChar;
+    album: array [0..511] of AnsiChar;
+    year: cint;  (**< ID3 year, 0 if none *)
+    track: cint; (**< track number, 0 if none *)
+    genre: array [0..31] of AnsiChar; (**< ID3 genre *)
+      {$IFEND}
     {$IFEND}
 
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)
@@ -1143,9 +1205,14 @@ type
    *)
   TAVProgram = record
       id                : cint;
-      {$IF LIBAVFORMAT_VERSION < 53000000} // 53.00.0
+      {$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
       provider_name     : PAnsiChar;  ///< network name for DVB streams
       name              : PAnsiChar;  ///< service name for DVB streams
+      {$ELSE}
+        {$IFDEF FF_API_OLD_METADATA}
+      provider_name     : PAnsiChar;  ///< network name for DVB streams
+      name              : PAnsiChar;  ///< service name for DVB streams
+        {$IFEND}
       {$IFEND}
       flags             : cint;
       discard           : TAVDiscard; ///< selects which program to discard and which to feed to the caller

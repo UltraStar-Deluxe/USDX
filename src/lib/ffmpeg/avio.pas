@@ -28,7 +28,7 @@
  * header, so it should not be directly included in your projects.
  *
  * update to
- * Max. avformat version: 52.67.0, revision 23357, Sun May 30 21:30:00 2010 CET 
+ * Max. avformat version: 52.78.3, revision 24841, Thu Aug 26 02:00:00 2010 CET
  *)
 
 unit avio;
@@ -91,8 +91,12 @@ type
   *)
   PURLContext = ^TURLContext;
   TURLContext = record
-    {$IF LIBAVFORMAT_VERSION_MAJOR >= 53}
+    {$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
     av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
+    {$ELSE}
+      {$IFDEF FF_API_URL_CLASS}
+    av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
+      {$IFEND}
     {$IFEND}
     prot: PURLProtocol;
     flags: cint;
@@ -101,8 +105,8 @@ type
     priv_data: pointer;
     filename: PAnsiChar; (**< specified URL *)
 {$IF LIBAVFORMAT_VERSION >= 52070000} // 52.70.0
-{$IFEND}
      is_connected: cint;
+{$IFEND}
   end;
   PPURLContext = ^PURLContext;
 
@@ -388,8 +392,12 @@ function av_url_read_seek(h: PURLContext; stream_index: cint;
 
 (**
 var
-{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
+{$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
   first_protocol: PURLProtocol; external av__format;
+{$ELSE}
+  {$IFDEF FF_API_REGISTER_PROTOCOL}
+  first_protocol: PURLProtocol; external av__format;
+  {$IFEND}
 {$IFEND}
   url_interrupt_cb: PURLInterruptCB; external av__format;
 **)
@@ -420,8 +428,10 @@ function register_protocol(protocol: PURLProtocol): cint;
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format name 'register_protocol';
 {$ELSE}
+  {$IFDEF FF_API_REGISTER_PROTOCOL}
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format;
+  {$IFEND}
 {$IFEND}
 {$IF LIBAVFORMAT_VERSION >= 52069000} // 52.69.0
 function av_register_protocol2(protocol: PURLProtocol; size: cint): cint;
@@ -526,6 +536,7 @@ function url_ferror(s: PByteIOContext): cint;
 function av_url_read_fpause(h: PByteIOContext; pause: cint): cint;
   cdecl; external av__format;
 {$IFEND}
+
 {$IF LIBAVFORMAT_VERSION >= 52001000} // 52.1.0
 function av_url_read_fseek(h: PByteIOContext; stream_index: cint;
                            timestamp: cint64; flags: cint): cint64;
@@ -591,8 +602,15 @@ function get_be64(s: PByteIOContext): cuint64;
   cdecl; external av__format;
 
 {$IF LIBAVFORMAT_VERSION >= 51017001} // 51.17.1
+  {$IF LIBAVFORMAT_VERSION < 52078003} // < 52.78.3
 function ff_get_v(bc: PByteIOContext): cuint64;
   cdecl; external av__format;
+  {$ELSE}
+    {$IFDEF FF_API_URL_RESETBUF}
+function ff_get_v(bc: PByteIOContext): cuint64;
+  cdecl; external av__format;
+    {$IFEND}
+  {$IFEND}
 {$IFEND}
 
 function url_is_streamed(s: PByteIOContext): cint; {$IFDEF HasInline}inline;{$ENDIF}
@@ -744,6 +762,7 @@ function ff_crc04C11DB7_update(checksum: culong; buf: {const} PByteArray;
                                len: cuint): culong;
   cdecl; external av__format;
 {$IFEND}
+
 function get_checksum(s: PByteIOContext): culong;
   cdecl; external av__format;
 procedure init_gsum(s: PByteIOContext;
@@ -756,6 +775,7 @@ function udp_set_remote_url(h: PURLContext; uri: {const} PAnsiChar): cint;
   cdecl; external av__format;
 function udp_get_local_port(h: PURLContext): cint;
   cdecl; external av__format;
+
 {$IF LIBAVFORMAT_VERSION_MAJOR <= 52}
 function udp_get_file_handle(h: PURLContext): cint;
   cdecl; external av__format;
