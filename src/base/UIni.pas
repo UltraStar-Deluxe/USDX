@@ -929,10 +929,7 @@ begin
   LoadScreenModes(IniFile);
 
   // TextureSize (aka CachedCoverSize)
-  // Note: a default cached cover size of 128 pixels is big enough,
-  // 256 pixels are already noticeably slow with 180 covers in the song-screen
-  // displayed at once. In additon the covers.db will be too big.
-  TextureSize := GetArrayIndex(ITextureSize, IniFile.ReadString('Graphics', 'TextureSize', '128'));
+  TextureSize := GetArrayIndex(ITextureSize, IniFile.ReadString('Graphics', 'TextureSize', '256'));
 
   // SingWindow
   SingWindow := GetArrayIndex(ISingWindow, IniFile.ReadString('Graphics', 'SingWindow', 'Big'));
