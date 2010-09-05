@@ -489,6 +489,9 @@ begin
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN)
         else
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+        {$ELSE}
+        Screen.W := ScreenW;
+        Screen.H := ScreenH;
         {$IFEND}
       end;
       SDL_KEYDOWN:
