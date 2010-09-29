@@ -939,7 +939,7 @@ begin
   Option  := AudioPlayback.OpenSound(SoundPath.Append('option change col.mp3'));
   Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.mp3'));
 
-  BGMusic := AudioPlayback.OpenSound(SoundPath.Append('Bebeto_-_Loop010.mp3'));
+  BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
 
   if (BGMusic <> nil) then
     BGMusic.Loop := True;
