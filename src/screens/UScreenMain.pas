@@ -63,8 +63,8 @@ type
   end;
 
 const
-  { start credits after 30 seconds w/o interaction }
-  TicksUntilCredits = 30 * 1000;
+  { start credits after 60 seconds w/o interaction }
+  TicksUntilCredits = 60 * 1000;
 
 implementation
 
