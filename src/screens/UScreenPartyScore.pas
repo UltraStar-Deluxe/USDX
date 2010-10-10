@@ -316,6 +316,9 @@ begin
     Statics[StaticTeam3BG].Visible := false;
     Statics[StaticTeam3Deco].Visible := false;
   end;
+
+  //start Background-Music
+  SoundLib.StartBgMusic;
 end;
 
 procedure TScreenPartyScore.SetAnimationProgress(Progress: real);
