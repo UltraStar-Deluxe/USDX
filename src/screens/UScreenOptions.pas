@@ -191,6 +191,8 @@ end;
 procedure TScreenOptions.OnShow;
 begin
   inherited;
+  // continue possibly stopped bg-music (stopped in record options)
+  SoundLib.StartBgMusic;
 end;
 
 procedure TScreenOptions.InteractNext;

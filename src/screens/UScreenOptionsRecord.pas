@@ -445,6 +445,9 @@ var
 begin
   inherited;
 
+  // BgMusic distracts too much, pause it
+  SoundLib.PauseBgMusic;
+
   Interaction := 0;
 
   // create preview sound-buffers
