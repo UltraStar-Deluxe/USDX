@@ -256,6 +256,9 @@ end;
 procedure TScreenMain.OnShow;
 begin
   inherited;
+
+  SoundLib.StartBgMusic;
+
  {**
   * Clean up TPartyGame here
   * at the moment there is no better place for this
