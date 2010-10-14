@@ -517,7 +517,8 @@ function MicrophoneCallback(input: pointer; output: pointer; frameCount: culong;
       inputDevice: pointer): cint; cdecl;
 begin
   AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
-  result := paContinue;
+//  rauls bug ist behoben mit: AudioInputProcessor.HandleMicrophoneData(input, frameCount*2, inputDevice);
+result := paContinue;
 end;
 
 {*

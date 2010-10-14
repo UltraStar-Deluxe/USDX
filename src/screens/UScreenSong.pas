@@ -283,15 +283,23 @@ begin
 
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
+    Log.LogError('TScreenSong.ParseInput', 'SDL_ModState: ' + IntToStr(SDL_ModState));
+    Log.LogError('TScreenSong.ParseInput', 'KMOD_LALT:    ' + IntToStr(KMOD_LALT));
+    Log.LogError('TScreenSong.ParseInput', 'Mode:         ' + IntToStr(Ord(Mode)));
+    Log.LogError('TScreenSong.ParseInput', 'smNormal:     ' + IntToStr(Ord(smNormal)));
+    Log.LogError('TScreenSong.ParseInput', 'PressedKey:   ' + IntToStr(Ord(PressedKey)));
+    Log.LogError('TScreenSong.ParseInput', 'CharCode:     ' + IntToStr(Ord(CharCode)));
 
     //Jump to Artist/Titel
     if ((SDL_ModState and KMOD_LALT <> 0) and (Mode = smNormal)) then
     begin
-      UpperLetter := UCS4UpperCase(CharCode);
+      UpperLetter := UCS4UpperCase(PressedKey);
+    Log.LogError('TScreenSong.ParseInput', 'UpperLetter:  ' + IntToStr(Ord(UpperLetter)));
 
       if (UpperLetter in ([Ord('A')..Ord('Z'), Ord('0') .. Ord('9')]) ) then
       begin
         I2 := Length(CatSongs.Song);
+    Log.LogError('TScreenSong.ParseInput', '**** Got a key.');
 
         //Jump To Titel
         if (SDL_ModState = (KMOD_LALT or KMOD_LSHIFT)) then

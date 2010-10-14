@@ -88,6 +88,15 @@ type
    * bundle, which contains the default files. USDX should not delete files or
    * folders in Application Support/UltraStarDeluxe automatically or without
    * user confirmation.
+   *
+   * The log and benchmark files are stored in
+   * $HOME/Library/Log/UltraStar Deluxe/
+   * 
+   * Music should go into ~/Music/UltraStar Deluxe/
+   *
+   * ~/Library/Application Support/UltraStarDeluxe/songs is also used.
+   * The idea is to remove this at some time.
+   *
    *}
   TPlatformMacOSX = class(TPlatform)
     private

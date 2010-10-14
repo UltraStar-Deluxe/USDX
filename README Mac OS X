@@ -1,0 +1,47 @@
+UltraStar Deluxe Mac Specific README
+------------------------------------
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ->8 - -
+                   _______  _________
+            ___   /       \/         \_______
+           /   \  \      _/    /\____/       \__________
+          /   _/  /     / \______             \         \___    _____
+         /   |___/      \     \_/             /          \  \  /     \
+         \              /\                   /   |\       \  \/      /
+          \            /  \_ultrastardeluxe_/    |/       /         /
+           \______www_/                 |____________org_/          \
+                                                      /      /\  ~=~ \
+                                                      \_____/  \ mog /
+                                                                 ~=~
+- - 8<- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+ ============================
+= 1. Installation            =
+= 2. Song Folders            =
+ ============================
+
+SF.Net Page: http://sourceforge.net/projects/ultrastardx/
+Wiki:        http://wiki.ultrastardeluxe.org/
+
+ ====================
+ = 1. Installation  =
+ ====================
+
+Drag the application to your hard disk. It should run from any folder.
+
+ ====================
+ = 2. Song Folders  =
+ ====================
+
+- The primary folder for songs is "$HOME/Music/UltraStar Deluxe", which is
+  created when UltraStar Deluxe is run for the first time.
+
+- Further folders can be added through the configuration file "config.ini",
+  which is created in "$HOME/Library/Application Support/UltraStarDeluxe" 
+  when UltraStar Deluxe is run for the first time.
+  
+  example:
+  [Directories]
+  SongDir1=/Users/My/Music/MyUSDXSongs
+  SongDir2=/Volumes/MyExternalUSBDisk
+  SongDir...=... (some more directories)
