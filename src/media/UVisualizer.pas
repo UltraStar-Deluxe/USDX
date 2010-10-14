@@ -532,7 +532,6 @@ begin
       begin
         // Create() might fail if the config-file is not found
         Log.LogError('TProjectM.Create: ' + E.Message, 'TVideoPlayback_ProjectM.VisualizerStart');
-        Log.LogError('TProjectM.Create: ',  fProjectMPath + 'config.inp');
         Exit;
       end;
     end;
