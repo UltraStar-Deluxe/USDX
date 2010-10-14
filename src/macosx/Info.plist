@@ -21,13 +21,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.1</string>
 	<key>CFBundleSignature</key>
 	<string>USDX</string>
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
-	<key>LSExecutableArchitectures</key>
-	<string>i386</string>
+	<string>1.1</string>
 	<key>NSAppleScriptEnabled</key>
 	<false/>
 	<key>NSHumanReadableCopyright</key>
