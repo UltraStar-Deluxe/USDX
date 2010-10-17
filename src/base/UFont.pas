@@ -572,6 +572,7 @@ type
       fFace: TFTFontFace;           //**< Default font face
       fSize: integer;               //**< Font base size (in pixels)
       fOutset: single;              //**< size of outset extrusion (in pixels)
+      fPreCache: boolean;           //**< pre-load base glyphs
       fLoadFlags: FT_Int32;         //**< FT glpyh load-flags
       fUseDisplayLists: boolean;    //**< true: use display-lists, false: direct drawing
       fPart: TFontPart;             //**< indicates the part of an outline font
@@ -599,6 +600,7 @@ type
        *}
       constructor Create(const Filename: IPath;
                          Size: integer; Outset: single = 0.0;
+                         PreCache: boolean = true;
                          LoadFlags: FT_Int32 = FT_LOAD_DEFAULT);
 
       {**
@@ -651,7 +653,8 @@ type
        *}
       constructor Create(const Filename: IPath;
                          Size: integer; OutsetAmount: single = 0.0;
-                         UseMipmaps: boolean = true);
+                         UseMipmaps: boolean = true;
+                         PreCache: boolean = true);
 
       procedure AddFallback(const Filename: IPath); override;
                          
@@ -673,6 +676,7 @@ type
       fOutset: single;
       fInnerFont, fOutlineFont: TFTFont;
       fOutlineColor: TGLColor;
+      fPreCache: boolean;
 
       procedure ResetIntern();
       
@@ -697,6 +701,7 @@ type
     public
       constructor Create(const Filename: IPath;
                          Size: integer; Outset: single;
+                         PreCache: boolean = true;
                          LoadFlags: FT_Int32 = FT_LOAD_DEFAULT);
       destructor Destroy; override;
 
@@ -733,7 +738,8 @@ type
     public
       constructor Create(const Filename: IPath;
                          Size: integer; OutsetAmount: single;
-                         UseMipmaps: boolean = true);
+                         UseMipmaps: boolean = true;
+                         PreCache: boolean = true);
 
       {** @seealso TFTOutlineFont.SetOutlineColor }
       procedure SetOutlineColor(r, g, b: GLfloat; a: GLfloat = -1.0);
@@ -1603,6 +1609,7 @@ end;
 constructor TFTFont.Create(
     const Filename: IPath;
     Size: integer; Outset: single;
+    PreCache: boolean;
     LoadFlags: FT_Int32);
 var
   ch: UCS4Char;
@@ -1611,6 +1618,7 @@ begin
 
   fSize := Size;
   fOutset := Outset;
+  fPreCache := PreCache;
   fLoadFlags := LoadFlags;
   fUseDisplayLists := true;
   fPart := fpNone;
@@ -1620,8 +1628,11 @@ begin
   ResetIntern();
 
   // pre-cache some commonly used glyphs (' ' - '~')
-  for ch := 32 to 126 do
-    fCache.AddGlyph(ch, TFTGlyph.Create(Self, ch, Outset, LoadFlags));
+  if (PreCache) then
+  begin
+    for ch := 32 to 126 do
+      fCache.AddGlyph(ch, TFTGlyph.Create(Self, ch, Outset, LoadFlags));
+  end;
 end;
 
 destructor TFTFont.Destroy();
@@ -1852,7 +1863,8 @@ end;
 
 constructor TFTScalableFont.Create(const Filename: IPath;
                    Size: integer; OutsetAmount: single;
-                   UseMipmaps: boolean);
+                   UseMipmaps: boolean;
+                   PreCache: boolean);
 var
   LoadFlags: FT_Int32;
 begin
@@ -1866,7 +1878,7 @@ begin
   if (UseMipmaps) then
     LoadFlags := LoadFlags or FT_LOAD_NO_HINTING;
   inherited Create(
-      TFTFont.Create(Filename, Size, Size * OutsetAmount, LoadFlags),
+      TFTFont.Create(Filename, Size, Size * OutsetAmount, PreCache, LoadFlags),
       UseMipmaps);
 end;
 
@@ -1883,6 +1895,7 @@ begin
     Exit;
   Result := TFTFont.Create(BaseFont.Filename,
       ScaledSize, BaseFont.Outset * Scale,
+      BaseFont.fPreCache,
       FT_LOAD_DEFAULT or FT_LOAD_NO_HINTING);
 end;
 
@@ -1917,16 +1930,17 @@ end;
 constructor TFTOutlineFont.Create(
     const Filename: IPath;
     Size: integer; Outset: single;
+    PreCache: boolean;
     LoadFlags: FT_Int32);
 begin
   inherited Create(Filename);
 
   fSize := Size;
   fOutset := Outset;
-
-  fInnerFont := TFTFont.Create(Filename, Size, 0.0, LoadFlags);
+  fPreCache := PreCache;
+  fInnerFont := TFTFont.Create(Filename, Size, 0.0, PreCache, LoadFlags);
   fInnerFont.Part := fpInner;
-  fOutlineFont := TFTFont.Create(Filename, Size, Outset, LoadFlags);
+  fOutlineFont := TFTFont.Create(Filename, Size, Outset, PreCache, LoadFlags);
   fOutlineFont.Part := fpOutline;
 
   ResetIntern();
@@ -2114,7 +2128,8 @@ end;
 constructor TFTScalableOutlineFont.Create(
     const Filename: IPath;
     Size: integer; OutsetAmount: single;
-    UseMipmaps: boolean);
+    UseMipmaps: boolean;
+    PreCache: boolean);
 var
   LoadFlags: FT_Int32;
 begin
@@ -2123,7 +2138,7 @@ begin
   if (UseMipmaps) then
     LoadFlags := LoadFlags or FT_LOAD_NO_HINTING;
   inherited Create(
-      TFTOutlineFont.Create(Filename, Size, Size*OutsetAmount, LoadFlags),
+      TFTOutlineFont.Create(Filename, Size, Size*OutsetAmount, PreCache, LoadFlags),
       UseMipmaps);
 end;
 
@@ -2140,6 +2155,7 @@ begin
     Exit;
   Result := TFTOutlineFont.Create(BaseFont.fFilename,
       ScaledSize, BaseFont.fOutset*Scale,
+      BaseFont.fPreCache,
       FT_LOAD_DEFAULT or FT_LOAD_NO_HINTING);
 end;
 

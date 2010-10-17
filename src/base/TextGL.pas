@@ -149,7 +149,7 @@ begin
       if (Outline > 0.0) then
       begin
         // outlined font
-        OutlineFont := TFTScalableOutlineFont.Create(FontFile, 64, Outline);
+        OutlineFont := TFTScalableOutlineFont.Create(FontFile, 64, Outline, True, True);
         OutlineFont.SetOutlineColor(
           FontIni.ReadFloat(SectionName, 'OutlineColorR',  0.0),
           FontIni.ReadFloat(SectionName, 'OutlineColorG',  0.0),
@@ -163,7 +163,7 @@ begin
       begin
         // normal font
         Embolden := FontIni.ReadFloat(SectionName, 'Embolden', 0.0);
-        Fonts[I].Font := TFTScalableFont.Create(FontFile, 64, Embolden);
+        Fonts[I].Font := TFTScalableFont.Create(FontFile, 64, Embolden, True, True);
         Fonts[I].Outlined := false;
       end;
 
