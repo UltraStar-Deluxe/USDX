@@ -356,25 +356,31 @@ procedure TParticle.Draw;
 var
   L: cardinal;
 begin
-  if ScreenAct = Screen then
+  if (ScreenAct = Screen) then
+  begin
+    glEnable(GL_TEXTURE_2D);
+	  glBindTexture(GL_TEXTURE_2D, Tex);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+	
     // this draws (multiple) texture(s) of our particle
     for L := 0 to High(Col) do
     begin
       glColor4f(Col[L].r, Col[L].g, Col[L].b, Alpha);
 
-      glBindTexture(GL_TEXTURE_2D, Tex);
-      glEnable(GL_TEXTURE_2D);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
-
       glBegin(GL_QUADS);
-      glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
-      glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
-      glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
-      glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+	      glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+        glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
+        glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
+        glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
       glEnd;
     end;
-  glcolor4f(1,1,1,1);
+	
+	  glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glcolor4f(1,1,1,1);
+  end;
 end;
 // end of TParticle
 
