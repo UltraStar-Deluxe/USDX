@@ -8,6 +8,11 @@
 #define	PM_PCM(pm) (PM_CLASS(pm)->pcm)
 #endif
 
+// this is needed if ld is used instead of gcc to link this static
+// library (which is the case if the fpc pascal compiler is used).
+// Otherwise compilation fails with "undefined reference to __dso_handle"
+void *__dso_handle = 0;
+
 projectM_ptr projectM_create1(char* config_file) 
 {
     return projectM_ptr(new projectM(config_file));
