@@ -399,6 +399,8 @@ var
   SentenceMin:         integer;
   SentenceMax:         integer;
   SentenceDetected:    integer; // sentence of detected note
+  ActualBeat:          integer;
+  ActualTone:          integer;
   NoteAvailable:       boolean;
   NewNote:             boolean;
   Range:               integer;
@@ -406,6 +408,9 @@ var
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
 begin
+  ActualTone := 0;
+  NoteHit := false;
+  
   // TODO: add duet mode support
   // use Lines[LineSetIndex] with LineSetIndex depending on the current player
 
@@ -416,202 +421,200 @@ begin
     SentenceMin := 0;
   SentenceMax := Lines[0].Current;
 
-  // check for an active note at the current time defined in the lyrics
-  NoteAvailable := false;
-  SentenceDetected := SentenceMin;
-  for SentenceIndex := SentenceMin to SentenceMax do
+  for ActualBeat := LyricsState.OldBeatD+1 to LyricsState.CurrentBeatD do
   begin
-    Line := @Lines[0].Line[SentenceIndex];
-    for LineFragmentIndex := 0 to Line.HighNote do
+    // analyze player signals
+    for PlayerIndex := 0 to PlayersPlay-1 do
     begin
-      CurrentLineFragment := @Line.Note[LineFragmentIndex];
-      // check if line is active
-      if ((CurrentLineFragment.Start <= LyricsState.CurrentBeatD) and
-          (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= LyricsState.CurrentBeatD)) and
-         (CurrentLineFragment.NoteType <> ntFreestyle) and       // but ignore FreeStyle notes
-         (CurrentLineFragment.Length > 0) then                   // and make sure the note length is at least 1
+      // check for an active note at the current time defined in the lyrics
+      NoteAvailable := false;
+      SentenceDetected := SentenceMin;
+      for SentenceIndex := SentenceMin to SentenceMax do
       begin
-        SentenceDetected := SentenceIndex;
-        NoteAvailable := true;
-        Break;
-      end;
-    end;
-    // TODO: break here, if NoteAvailable is true? We would then use the first instead
-    // of the last note matching the current beat if notes overlap. But notes
-    // should not overlap at all.
-    // if (NoteAvailable) then
-    //  Break;
-  end;
-
-  // analyze player signals
-  for PlayerIndex := 0 to PlayersPlay-1 do
-  begin
-    CurrentPlayer := @Player[PlayerIndex];
-    CurrentSound := AudioInputProcessor.Sound[PlayerIndex];
-
-    // at the beginning of the song there is no previous note
-    if (Length(CurrentPlayer.Note) > 0) then
-      LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote]
-    else
-      LastPlayerNote := nil;
-
-    // analyze buffer
-    CurrentSound.AnalyzeBuffer;
-
-    // add some noise
-    // TODO: do we need this?
-    //LyricsState.Tone := LyricsState.Tone + Round(Random(3)) - 1;
-
-    // add note if possible
-    if (CurrentSound.ToneValid and NoteAvailable) then
-    begin
-      Line := @Lines[0].Line[SentenceDetected];
-
-      // process until last note
-      for LineFragmentIndex := 0 to Line.HighNote do
-      begin
-        CurrentLineFragment := @Line.Note[LineFragmentIndex];
-        if (CurrentLineFragment.Start <= LyricsState.OldBeatD+1) and
-           (CurrentLineFragment.Start + CurrentLineFragment.Length > LyricsState.OldBeatD+1) then
-        begin
-          // compare notes (from song-file and from player)
-
-          // move players tone to proper octave
-          while (CurrentSound.Tone - CurrentLineFragment.Tone > 6) do
-            CurrentSound.Tone := CurrentSound.Tone - 12;
-
-          while (CurrentSound.Tone - CurrentLineFragment.Tone < -6) do
-            CurrentSound.Tone := CurrentSound.Tone + 12;
-
-          // half size notes patch
-          NoteHit := false;
-
-          // if Ini.Difficulty = 0 then Range := 2;
-          // if Ini.Difficulty = 1 then Range := 1;
-          // if Ini.Difficulty = 2 then Range := 0;
-          Range := 2 - Ini.Difficulty;
-
-          // check if the player hit the correct tone within the tolerated range
-          if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) then
-          begin
-            // adjust the players tone to the correct one
-            // TODO: do we need to do this?
-            // Philipp: I think we do, at least when we draw the notes.
-            //          Otherwise the notehit thing would be shifted to the
-            //          correct unhit note. I think this will look kind of strange.
-            CurrentSound.Tone := CurrentLineFragment.Tone;
-
-            // half size notes patch
-            NoteHit := true;
-
-            if (Ini.LineBonus > 0) then
-              MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS
-            else
-              MaxSongPoints := MAX_SONG_SCORE;
-
-            // Note: ScoreValue is the sum of all note values of the song
-            // (MaxSongPoints / ScoreValue) is the points that a player
-            // gets for a hit of one beat of a normal note
-            // CurNotePoints is the amount of points that is meassured
-            // for a hit of the note per full beat
-            CurNotePoints := (MaxSongPoints / Lines[0].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
-            
-            case CurrentLineFragment.NoteType of
-              ntNormal: CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
-              ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
-            end;
-
-            // a problem if we use floor instead of round is that a score of
-            // 10000 points is only possible if the last digit of the total points
-            // for golden and normal notes is 0.
-            // if we use round, the max score is 10000 for most songs
-            // but a score of 10010 is possible if the last digit of the total
-            // points for golden and normal notes is 5
-            // the best solution is to use round for one of these scores
-            // and round the other score in the opposite direction
-            // so we assure that the highest possible score is 10000 in every case.
-            CurrentPlayer.ScoreInt := round(CurrentPlayer.Score / 10) * 10;
-
-            if (CurrentPlayer.ScoreInt < CurrentPlayer.Score) then
-              //normal score is floored so we have to ceil golden notes score
-              CurrentPlayer.ScoreGoldenInt := ceil(CurrentPlayer.ScoreGolden / 10) * 10
-            else
-              //normal score is ceiled so we have to floor golden notes score
-              CurrentPlayer.ScoreGoldenInt := floor(CurrentPlayer.ScoreGolden / 10) * 10;
-
-
-            CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
-                                           CurrentPlayer.ScoreGoldenInt +
-                                           CurrentPlayer.ScoreLineInt;
-          end;
-
-        end; // operation
-      end; // for
-
-      // check if we have to add a new note or extend the note's length
-      if (SentenceDetected = SentenceMax) then
-      begin
-        // we will add a new note
-        NewNote := true;
-
-        // if previous note (if any) was the same, extend previous note
-        if ((CurrentPlayer.LengthNote > 0) and
-            (LastPlayerNote <> nil) and
-            (LastPlayerNote.Tone = CurrentSound.Tone) and
-            ((LastPlayerNote.Start + LastPlayerNote.Length) = LyricsState.CurrentBeatD)) then
-        begin
-          NewNote := false;
-        end;
-
-        // if is not as new note to control
-        for LineFragmentIndex := 0 to Line.HighNote do
-        begin
-          if (Line.Note[LineFragmentIndex].Start = LyricsState.CurrentBeatD) then
-            NewNote := true;
-        end;
-
-        // add new note
-        if NewNote then
-        begin
-          // new note
-          Inc(CurrentPlayer.LengthNote);
-          Inc(CurrentPlayer.HighNote);
-          SetLength(CurrentPlayer.Note, CurrentPlayer.LengthNote);
-
-          // update player's last note
-          LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
-          with LastPlayerNote^ do
-          begin
-            Start  := LyricsState.CurrentBeatD;
-            Length := 1;
-            Tone   := CurrentSound.Tone; // Tone || ToneAbs
-            Detect := LyricsState.MidBeat;
-            Hit    := NoteHit; // half note patch
-          end;
-        end
-        else
-        begin
-          // extend note length
-          if (LastPlayerNote <> nil) then
-            Inc(LastPlayerNote.Length);
-        end;
-
-        // check for perfect note and then light the star (on Draw)
+        Line := @Lines[0].Line[SentenceIndex];
         for LineFragmentIndex := 0 to Line.HighNote do
         begin
           CurrentLineFragment := @Line.Note[LineFragmentIndex];
-          if (CurrentLineFragment.Start  = LastPlayerNote.Start) and
-             (CurrentLineFragment.Length = LastPlayerNote.Length) and
-             (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then
+          // check if line is active
+          if ((CurrentLineFragment.Start <= ActualBeat) and
+            (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= ActualBeat)) and
+            (CurrentLineFragment.NoteType <> ntFreestyle) and       // but ignore FreeStyle notes
+            (CurrentLineFragment.Length > 0) then                   // and make sure the note length is at least 1
           begin
-            LastPlayerNote.Perfect := true;
+            SentenceDetected := SentenceIndex;
+            NoteAvailable := true;
+            Break;
           end;
         end;
-      end; // if SentenceDetected = SentenceMax
+        // TODO: break here, if NoteAvailable is true? We would then use the first instead
+        // of the last note matching the current beat if notes overlap. But notes
+        // should not overlap at all.
+        // if (NoteAvailable) then
+        //  Break;
+      end;
 
-    end; // if Detected
-  end; // for PlayerIndex
+      CurrentPlayer := @Player[PlayerIndex];
+      CurrentSound := AudioInputProcessor.Sound[PlayerIndex];
 
+      // at the beginning of the song there is no previous note
+      if (Length(CurrentPlayer.Note) > 0) then
+        LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote]
+      else
+        LastPlayerNote := nil;
+
+      // analyze buffer
+      CurrentSound.AnalyzeBuffer;
+
+      // add some noise
+      // TODO: do we need this?
+      //LyricsState.Tone := LyricsState.Tone + Round(Random(3)) - 1;
+
+      // add note if possible
+      if (CurrentSound.ToneValid and NoteAvailable) then
+      begin
+        Line := @Lines[0].Line[SentenceDetected];
+        // process until last note
+        for LineFragmentIndex := 0 to Line.HighNote do
+        begin
+          CurrentLineFragment := @Line.Note[LineFragmentIndex];
+          if (CurrentLineFragment.Start <= ActualBeat) and
+            (CurrentLineFragment.Start + CurrentLineFragment.Length > ActualBeat) then
+          begin
+            // compare notes (from song-file and from player)
+
+            // move players tone to proper octave
+            while (CurrentSound.Tone - CurrentLineFragment.Tone > 6) do
+              CurrentSound.Tone := CurrentSound.Tone - 12;
+
+            while (CurrentSound.Tone - CurrentLineFragment.Tone < -6) do
+              CurrentSound.Tone := CurrentSound.Tone + 12;
+
+            // half size notes patch
+            NoteHit := false;
+            ActualTone := CurrentSound.Tone;
+            Range := 2 - Ini.Difficulty;
+
+            // check if the player hit the correct tone within the tolerated range
+            if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) then
+            begin
+              // adjust the players tone to the correct one
+              // TODO: do we need to do this?
+              // Philipp: I think we do, at least when we draw the notes.
+              //          Otherwise the notehit thing would be shifted to the
+              //          correct unhit note. I think this will look kind of strange.
+              ActualTone := CurrentLineFragment.Tone;
+
+              // half size notes patch
+              NoteHit := true;
+
+              if (Ini.LineBonus > 0) then
+                MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS
+              else
+                MaxSongPoints := MAX_SONG_SCORE;
+
+              // Note: ScoreValue is the sum of all note values of the song
+              // (MaxSongPoints / ScoreValue) is the points that a player
+              // gets for a hit of one beat of a normal note
+              // CurNotePoints is the amount of points that is meassured
+              // for a hit of the note per full beat
+              CurNotePoints := (MaxSongPoints / Lines[0].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
+            
+              case CurrentLineFragment.NoteType of
+                ntNormal: CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+                ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+              end;
+
+              // a problem if we use floor instead of round is that a score of
+              // 10000 points is only possible if the last digit of the total points
+              // for golden and normal notes is 0.
+              // if we use round, the max score is 10000 for most songs
+              // but a score of 10010 is possible if the last digit of the total
+              // points for golden and normal notes is 5
+              // the best solution is to use round for one of these scores
+              // and round the other score in the opposite direction
+              // so we assure that the highest possible score is 10000 in every case.
+              CurrentPlayer.ScoreInt := round(CurrentPlayer.Score / 10) * 10;
+
+              if (CurrentPlayer.ScoreInt < CurrentPlayer.Score) then
+                //normal score is floored so we have to ceil golden notes score
+                CurrentPlayer.ScoreGoldenInt := ceil(CurrentPlayer.ScoreGolden / 10) * 10
+              else
+                //normal score is ceiled so we have to floor golden notes score
+                CurrentPlayer.ScoreGoldenInt := floor(CurrentPlayer.ScoreGolden / 10) * 10;
+
+
+              CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
+                                            CurrentPlayer.ScoreGoldenInt +
+                                            CurrentPlayer.ScoreLineInt;
+            end;
+
+          end; // operation
+        end; // for
+
+        // check if we have to add a new note or extend the note's length
+        if (SentenceDetected = SentenceMax) then
+        begin
+          // we will add a new note
+          NewNote := true;
+
+          // if previous note (if any) was the same, extend previous note
+          if ((CurrentPlayer.LengthNote > 0) and
+              (LastPlayerNote <> nil) and
+              (LastPlayerNote.Tone = ActualTone) and
+              ((LastPlayerNote.Start + LastPlayerNote.Length) = ActualBeat)) then
+          begin
+            NewNote := false;
+          end;
+
+          // if is not as new note to control
+          for LineFragmentIndex := 0 to Line.HighNote do
+          begin
+            if (Line.Note[LineFragmentIndex].Start = ActualBeat) then
+              NewNote := true;
+          end;
+
+          // add new note
+          if NewNote then
+          begin
+            // new note
+            Inc(CurrentPlayer.LengthNote);
+            Inc(CurrentPlayer.HighNote);
+            SetLength(CurrentPlayer.Note, CurrentPlayer.LengthNote);
+
+            // update player's last note
+            LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
+            with LastPlayerNote^ do
+            begin
+              Start  := ActualBeat;
+              Length := 1;
+              Tone   := ActualTone; // Tone || ToneAbs
+              //Detect := LyricsState.MidBeat; // Not used!
+              Hit    := NoteHit; // half note patch
+            end;
+          end
+          else
+          begin
+            // extend note length
+            if (LastPlayerNote <> nil) then
+              Inc(LastPlayerNote.Length);
+          end;
+
+          // check for perfect note and then light the star (on Draw)
+          for LineFragmentIndex := 0 to Line.HighNote do
+          begin
+            CurrentLineFragment := @Line.Note[LineFragmentIndex];
+            if (CurrentLineFragment.Start  = LastPlayerNote.Start) and
+              (CurrentLineFragment.Length = LastPlayerNote.Length) and
+              (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then
+            begin
+              LastPlayerNote.Perfect := true;
+            end;
+          end;
+        end; // if SentenceDetected = SentenceMax
+
+      end; // if Detected
+    end; // for PlayerIndex
+  end; // for ActualBeat
   //Log.LogStatus('EndBeat', 'NewBeat');
 end;
 
