@@ -718,6 +718,10 @@ begin
       begin
         Life := RandomRange(8,16);
         Spawn(RandomRange(Left,Right), RandomRange(Top,Bottom), cScreen, Life, 16-Life, -1, PerfectLineTwinkle, P);
+
+        //spawn also on second screen if the amount of players is <=3
+        if (Screens = 2) and (PlayersPlay <= 3) then
+           Spawn(RandomRange(Left,Right), RandomRange(Top,Bottom), 2, Life, 16-Life, -1, PerfectLineTwinkle, P);
       end;
     end;
 end;
