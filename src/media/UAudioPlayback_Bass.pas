@@ -572,6 +572,10 @@ end;
 function TBassVoiceStream.Open(ChannelMap: integer; FormatInfo: TAudioFormatInfo): boolean;
 var
   Flags: DWORD;
+const
+  // prevent buffer underruns in BASS BASS_StreamPutData() sample output queue
+  // by stretching the input signal.
+  InputStretch = 0.01; // 1%
 begin
   Result := false;
 
@@ -592,7 +596,8 @@ begin
   *)
   
   // create the channel
-  Handle := BASS_StreamCreate(Round(FormatInfo.SampleRate), 1, Flags, STREAMPROC_PUSH, nil);
+  Handle := BASS_StreamCreate(Round(FormatInfo.SampleRate * (1-InputStretch)),
+      1, Flags, STREAMPROC_PUSH, nil);
 
   // start the channel
   BASS_ChannelPlay(Handle, true);
