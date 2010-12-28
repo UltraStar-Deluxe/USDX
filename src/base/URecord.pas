@@ -348,7 +348,7 @@ begin
     // For an in-game replay-mode we need to compress data so we do not
     // waste that much memory. Maybe ogg-vorbis with voice-preset in fast-mode?
     // Or we could use a faster but not that efficient lossless compression.
-    LogBuffer.WriteBuffer(Buffer, BufferSize);
+    LogBuffer.Write(Buffer^, BufferSize);
   end;
 end;
 
