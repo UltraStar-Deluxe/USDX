@@ -178,6 +178,7 @@ type
       procedure SetFormat(Format: TAudioSampleFormat);
       procedure UpdateFrameSize();
       function GetBytesPerSec(): double;
+      function GetSampleSize(): integer;
     public
       constructor Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
       function Copy(): TAudioFormatInfo;
@@ -193,6 +194,7 @@ type
       property Channels: byte read fChannels write SetChannels;
       property Format: TAudioSampleFormat read fFormat write SetFormat;
       property FrameSize: integer read fFrameSize;
+      property SampleSize: integer read GetSampleSize;
       property BytesPerSec: double read GetBytesPerSec;
   end;
 
@@ -650,7 +652,12 @@ end;
 
 function TAudioFormatInfo.GetBytesPerSec(): double;
 begin
-  Result := FrameSize * SampleRate; 
+  Result := FrameSize * SampleRate;
+end;
+
+function TAudioFormatInfo.GetSampleSize(): integer;
+begin
+  Result := AudioSampleSize[fFormat];
 end;
 
 procedure TAudioFormatInfo.UpdateFrameSize();
