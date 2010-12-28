@@ -343,7 +343,7 @@ begin
 
   StaticPausePopup := AddStatic(Theme.Sing.PausePopUp);
 
-  // <note> pausepopup is not visibile at the beginning </note>
+  // <note> pausepopup is not visible at the beginning </note>
   Statics[StaticPausePopup].Visible := false;
 
   Lyrics := TLyricEngine.Create(
@@ -934,8 +934,10 @@ begin
   begin
     Log.BenchmarkStart(0);
     Log.LogVoice(0);
-    Log.LogVoice(1);
-    Log.LogVoice(2);
+    if (PlayersPlay > 1) then
+      Log.LogVoice(1);
+    if (PlayersPlay > 2) then
+      Log.LogVoice(2);
     Log.BenchmarkEnd(0);
     Log.LogBenchmark('Creating files', 0);
   end;
