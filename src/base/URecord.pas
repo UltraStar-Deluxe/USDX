@@ -49,13 +49,17 @@ const
 type
   TCaptureBuffer = class
     private
-      VoiceStream: TAudioVoiceStream; // stream for voice passthrough
-      AnalysisBufferLock: PSDL_Mutex;
+      fVoiceStream: TAudioVoiceStream; // stream for voice passthrough
+      fAnalysisBufferLock: PSDL_Mutex;
+      fAudioFormat: TAudioFormatInfo;
 
       function GetToneString: string; // converts a tone to its string represenatation;
 
       procedure BoostBuffer(Buffer: PByteArray; Size: integer);
       procedure ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
+
+      procedure StartCapture(Format: TAudioFormatInfo);
+      procedure StopCapture();
 
       // we call it to analyze sound by checking Autocorrelation
       procedure AnalyzeByAutocorrelation;
@@ -66,8 +70,6 @@ type
       AnalysisBufferSize: integer; // number of samples of BufferArray to analyze
 
       LogBuffer:   TMemoryStream;              // full buffer
-
-      AudioFormat: TAudioFormatInfo;
 
       // pitch detection
       // TODO: remove ToneValid, set Tone/ToneAbs=-1 if invalid instead
@@ -88,6 +90,7 @@ type
 
       function MaxSampleVolume: single;
       property ToneString: string READ GetToneString;
+      property AudioFormat: TAudioFormatInfo READ fAudioFormat;
   end;
 
 const
@@ -220,7 +223,6 @@ end;
 
 procedure TAudioInputDevice.LinkCaptureBuffer(ChannelIndex: integer; Sound: TCaptureBuffer);
 var
-  DeviceCfg: PInputDeviceConfig;
   OldSound: TCaptureBuffer;
 begin
   // check bounds
@@ -231,26 +233,13 @@ begin
   OldSound := CaptureChannel[ChannelIndex];
   if (OldSound <> nil) then
   begin
-    // close voice stream
-    FreeAndNil(OldSound.VoiceStream);
-    // free old audio-format info
-    FreeAndNil(OldSound.AudioFormat);
+    OldSound.StopCapture();
   end;
 
   // set audio-format of new capture-buffer
   if (Sound <> nil) then
   begin
-    // copy the input-device audio-format ...
-    Sound.AudioFormat := AudioFormat.Copy;
-    // and adjust it because capture buffers are always mono
-    Sound.AudioFormat.Channels := 1;
-    DeviceCfg := @Ini.InputDeviceConfig[CfgIndex];
-
-    if (Ini.VoicePassthrough = 1) then
-    begin
-      // TODO: map odd players to the left and even players to the right speaker
-      Sound.VoiceStream := AudioPlayback.CreateVoiceStream(CHANNELMAP_FRONT, AudioFormat);
-    end;
+    Sound.StartCapture(AudioFormat);
   end;
 
   // replace old with new buffer (Note: Sound might be nil)
@@ -263,27 +252,27 @@ constructor TCaptureBuffer.Create;
 begin
   inherited;
   LogBuffer := TMemoryStream.Create;
-  AnalysisBufferLock := SDL_CreateMutex();
+  fAnalysisBufferLock := SDL_CreateMutex();
   AnalysisBufferSize := Length(AnalysisBuffer);
 end;
 
 destructor TCaptureBuffer.Destroy;
 begin
   FreeAndNil(LogBuffer);
-  FreeAndNil(VoiceStream);
-  FreeAndNil(AudioFormat);
-  SDL_DestroyMutex(AnalysisBufferLock);
+  FreeAndNil(fVoiceStream);
+  FreeAndNil(fAudioFormat);
+  SDL_DestroyMutex(fAnalysisBufferLock);
   inherited;
 end;
 
 procedure TCaptureBuffer.LockAnalysisBuffer();
 begin
-  SDL_mutexP(AnalysisBufferLock);
+  SDL_mutexP(fAnalysisBufferLock);
 end;
 
 procedure TCaptureBuffer.UnlockAnalysisBuffer();
 begin
-  SDL_mutexV(AnalysisBufferLock);
+  SDL_mutexV(fAnalysisBufferLock);
 end;
 
 procedure TCaptureBuffer.Clear;
@@ -305,8 +294,8 @@ begin
   BoostBuffer(Buffer, BufferSize);
 
   // voice passthrough (send data to playback-device)
-  if (assigned(VoiceStream)) then
-    VoiceStream.WriteData(Buffer, BufferSize);
+  if (assigned(fVoiceStream)) then
+    fVoiceStream.WriteData(Buffer, BufferSize);
 
   // we assume that samples are in S16Int format
   // TODO: support float too
@@ -527,6 +516,27 @@ begin
       SampleBuffer^[i] := Value;
     end;
   end;
+end;
+
+procedure TCaptureBuffer.StartCapture(Format: TAudioFormatInfo);
+begin
+  // free old audio-format info
+  FreeAndNil(fAudioFormat);
+  // copy the new input-device audio-format ...
+  fAudioFormat := Format.Copy;
+  // and adjust it because capture buffers are always mono
+  fAudioFormat.Channels := 1;
+
+  if (Ini.VoicePassthrough = 1) then
+  begin
+    // TODO: map odd players to the left and even players to the right speaker
+    fVoiceStream := AudioPlayback.CreateVoiceStream(CHANNELMAP_FRONT, fAudioFormat);
+  end;
+end;
+
+procedure TCaptureBuffer.StopCapture();
+begin
+  FreeAndNil(fVoiceStream);
 end;
 
 { TAudioInputProcessor }

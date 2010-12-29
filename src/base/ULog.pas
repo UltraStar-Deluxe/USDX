@@ -130,7 +130,8 @@ uses
   SysUtils,
   DateUtils,
   URecord,
-  UMain,  
+  UMain,
+  UMusic,  
   UTime,
   UCommon,
   UCommandLine,
@@ -398,26 +399,102 @@ begin
   LogMsg(Msg, Context, LOG_LEVEL_CRITICAL);
 end;
 
+type
+  TRiffChunkID = array[0..3] of byte;
+
+  TRiffChunk = packed record
+    ID: TRiffChunkID;
+    DataSize: cardinal;
+  end;
+
+  TRiffHeader = packed record
+    ChunkInfo: TRiffChunk;
+    RiffType: TRiffChunkID;
+  end;
+
+  TWaveFmtChunk = packed record
+    ChunkInfo: TRiffChunk;
+    FormatTag: word;
+    NumChannels: word;
+    SamplesPerSec: cardinal;
+    AvgBytesPerSec: cardinal;
+    BlockAlign: word;
+    BitsPerSample: word;
+  end;
+
 procedure TLog.LogVoice(SoundNr: integer);
 var
-  FS:           TBinaryFileStream;
-  Prefix:       string;
-  FileName:     IPath;
-  Num:          integer;
+  Stream: TBinaryFileStream;
+  Prefix: string;
+  FileName: IPath;
+  Num: integer;
+  CaptureBuffer: TCaptureBuffer;
+  Buffer: TMemoryStream;
+  FormatInfo: TAudioFormatInfo;
+  WaveHdr: TRiffHeader;
+  WaveFmt: TWaveFmtChunk;
+  DataChunk: TRiffChunk;
+  UseWavFile: boolean;
+  FileExt: string;
+const
+  Channels = 1;
+  SampleRate = 44100;
+  RIFF_CHUNK_HDR: TRiffChunkID = (Ord('R'), Ord('I'), Ord('F'), Ord('F'));
+  RIFF_CHUNK_FMT: TRiffChunkID = (Ord('f'), Ord('m'), Ord('t'), Ord(' '));
+  RIFF_CHUNK_DATA: TRiffChunkID = (Ord('d'), Ord('a'), Ord('t'), Ord('a'));
+  RIFF_TYPE_WAVE: TRiffChunkID = (Ord('W'), Ord('A'), Ord('V'), Ord('E'));
+  WAVE_FORMAT_PCM = 1; // PCM (uncompressed)
 begin
+  CaptureBuffer := AudioInputProcessor.Sound[SoundNr];
+  Buffer := CaptureBuffer.LogBuffer;
+  FormatInfo := CaptureBuffer.AudioFormat;
+
+  // not all formats can be stored in a wav-file
+  UseWavFile := (FormatInfo.Format in [asfU8, asfS16, asfS16LSB]);
+
+  // create output filename
   for Num := 1 to 9999 do begin
     Prefix := Format('Voice%.4d', [Num]);
-    FileName := LogPath.Append(Prefix + '.raw');
+    if (UseWavFile) then
+      FileExt := '.wav'
+    else
+      FileExt := '.raw';
+    FileName := LogPath.Append(Prefix + FileExt);
     if not FileName.Exists() then
       break
   end;
 
-  FS := TBinaryFileStream.Create(FileName, fmCreate);
+  // open output file
+  Stream := TBinaryFileStream.Create(FileName, fmCreate);
+  
+  // write wav-file header
+  if (UseWavFile) then
+  begin
+    WaveHdr.ChunkInfo.ID := RIFF_CHUNK_HDR;
+    WaveHdr.ChunkInfo.DataSize := (SizeOf(TRiffHeader) - 8) +
+        SizeOf(TWaveFmtChunk) + SizeOf(TRiffChunk) + Buffer.Size;
+    WaveHdr.RiffType := RIFF_TYPE_WAVE;
+    Stream.Write(WaveHdr, SizeOf(TRiffHeader));
 
-  AudioInputProcessor.Sound[SoundNr].LogBuffer.Seek(0, soBeginning);
-  FS.CopyFrom(AudioInputProcessor.Sound[SoundNr].LogBuffer, AudioInputProcessor.Sound[SoundNr].LogBuffer.Size);
+    WaveFmt.ChunkInfo.ID := RIFF_CHUNK_FMT;
+    WaveFmt.ChunkInfo.DataSize := SizeOf(TWaveFmtChunk) - 8;
+    WaveFmt.FormatTag := WAVE_FORMAT_PCM;
+    WaveFmt.NumChannels := FormatInfo.Channels;
+    WaveFmt.SamplesPerSec := Round(FormatInfo.SampleRate);
+    WaveFmt.AvgBytesPerSec := Round(FormatInfo.BytesPerSec);
+    WaveFmt.BlockAlign := FormatInfo.FrameSize;
+    WaveFmt.BitsPerSample := FormatInfo.SampleSize * 8;
+    Stream.Write(WaveFmt, SizeOf(TWaveFmtChunk));
 
-  FS.Free;
+    DataChunk.ID := RIFF_CHUNK_DATA;
+    DataChunk.DataSize := Buffer.Size;
+    Stream.Write(DataChunk, SizeOf(TRiffChunk));
+  end;
+
+  Buffer.Seek(0, soBeginning);
+  Stream.CopyFrom(Buffer, Buffer.Size);
+
+  Stream.Free;
 end;
 
 procedure TLog.LogBuffer(const buf: Pointer; const bufLength: Integer; const filename: IPath);
