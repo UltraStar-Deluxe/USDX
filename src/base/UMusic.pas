@@ -454,6 +454,7 @@ type
       // PlaySound/StopSound will be removed then, OpenSound will be renamed to
       // CreateSound.
       function OpenSound(const Filename: IPath): TAudioPlaybackStream;
+      function OpenSoundBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
       procedure PlaySound(Stream: TAudioPlaybackStream);
       procedure StopSound(Stream: TAudioPlaybackStream);
 

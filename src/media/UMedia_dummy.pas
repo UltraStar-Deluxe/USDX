@@ -38,6 +38,7 @@ implementation
 uses
   SysUtils,
   math,
+  Classes,
   UTime,
   UMusic,
   UPath;
@@ -90,6 +91,7 @@ type
       function Length: real;
 
       function OpenSound(const Filename: IPath): TAudioPlaybackStream;
+      function OpenSoundBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
       procedure CloseSound(var PlaybackStream: TAudioPlaybackStream);
       procedure PlaySound(stream: TAudioPlaybackStream);
       procedure StopSound(stream: TAudioPlaybackStream);
@@ -301,6 +303,11 @@ begin
 end;
 
 function TAudio_Dummy.OpenSound(const Filename: IPath): TAudioPlaybackStream;
+begin
+ Result := nil;
+end;
+
+function TAudio_Dummy.OpenSoundBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
 begin
  Result := nil;
 end;

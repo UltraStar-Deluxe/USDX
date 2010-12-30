@@ -36,7 +36,9 @@ interface
 uses
   UMusic,
   UTime,
-  UPath;
+  UPath,
+  Classes,
+  SysUtils;
 
 type
   TAudioPlaybackBase = class(TInterfacedObject, IAudioPlayback)
@@ -49,6 +51,7 @@ type
 
       // open sound or music stream (used by Open() and OpenSound())
       function OpenStream(const Filename: IPath): TAudioPlaybackStream;
+      function OpenStreamBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
       function OpenDecodeStream(const Filename: IPath): TAudioDecodeStream;
     public
       function GetName: string; virtual; abstract;
@@ -82,6 +85,7 @@ type
 
       // Sounds
       function OpenSound(const Filename: IPath): TAudioPlaybackStream;
+      function OpenSoundBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
       procedure PlaySound(Stream: TAudioPlaybackStream);
       procedure StopSound(Stream: TAudioPlaybackStream);
 
@@ -94,12 +98,30 @@ type
       function CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream; virtual; abstract;
   end;
 
+  TAudioBufferSourceStream = class(TAudioSourceStream)
+    private
+      fLoop: boolean;
+      fStream: TStream;
+      fFormat: TAudioFormatInfo;
+    protected
+      function IsEOF(): boolean; override;
+      function IsError(): boolean; override;
+      function GetLength(): real; override;
+      function GetPosition(): real; override;
+      procedure SetPosition(Time: real); override;
+      function GetLoop(): boolean; override;
+      procedure SetLoop(Enabled: boolean); override;
+    public
+      constructor Create(Buffer: TStream; Format: TAudioFormatInfo);
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
+      function GetAudioFormatInfo(): TAudioFormatInfo; override;
+      procedure Close(); override;
+  end;
 
 implementation
 
 uses
-  ULog,
-  SysUtils;
+  ULog;
 
 { TAudioPlaybackBase }
 
@@ -181,6 +203,28 @@ begin
   begin
     FreeAndNil(PlaybackStream);
     FreeAndNil(DecodeStream);
+    Exit;
+  end;
+
+  PlaybackStream.AddOnCloseHandler(OnClosePlaybackStream);
+
+  Result := PlaybackStream;
+end;
+
+function TAudioPlaybackBase.OpenStreamBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
+var
+  PlaybackStream: TAudioPlaybackStream;
+  SourceStream: TAudioSourceStream;
+begin
+  Result := nil;
+
+  // create a matching playback-stream for the decoder
+  PlaybackStream := CreatePlaybackStream();
+  SourceStream := TAudioBufferSourceStream.Create(Buffer, Format);
+  if (not PlaybackStream.Open(SourceStream)) then
+  begin
+    FreeAndNil(PlaybackStream);
+    FreeAndNil(SourceStream);
     Exit;
   end;
 
@@ -290,6 +334,11 @@ begin
   Result := OpenStream(Filename);
 end;
 
+function TAudioPlaybackBase.OpenSoundBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
+begin
+  Result := OpenStreamBuffer(Buffer, Format);
+end;
+
 procedure TAudioPlaybackBase.PlaySound(stream: TAudioPlaybackStream);
 begin
   if assigned(stream) then
@@ -314,6 +363,79 @@ end;
 function TAudioPlaybackBase.GetOutputDeviceList(): TAudioOutputDeviceList;
 begin
   Result := OutputDeviceList;
+end;
+
+{ TAudioBufferSourceStream }
+
+constructor TAudioBufferSourceStream.Create(Buffer: TStream; Format: TAudioFormatInfo);
+begin
+  fStream := Buffer;
+  fFormat := Format.Copy;
+end;
+
+function TAudioBufferSourceStream.IsEOF(): boolean;
+begin
+  Result := (not fLoop and (fStream.Position >= fStream.Size));
+end;
+
+function TAudioBufferSourceStream.IsError(): boolean;
+begin
+  Result := false;
+end;
+
+function TAudioBufferSourceStream.GetLength(): real;
+begin
+  Result := fStream.Size / fFormat.BytesPerSec;
+end;
+
+function TAudioBufferSourceStream.GetPosition(): real;
+begin
+  Result := fStream.Position / fFormat.BytesPerSec;
+end;
+
+procedure TAudioBufferSourceStream.SetPosition(Time: real);
+begin
+  fStream.Position := Trunc(Time * fFormat.BytesPerSec);
+end;
+
+function TAudioBufferSourceStream.GetLoop(): boolean;
+begin
+  Result := fLoop;
+end;
+
+procedure TAudioBufferSourceStream.SetLoop(Enabled: boolean);
+begin
+  fLoop := Enabled;
+end;
+
+function TAudioBufferSourceStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
+var
+  BufSizeLeft: integer;
+  NumRead: integer;
+begin
+  Result := fStream.Read(Buffer^, BufferSize);
+  if (fLoop) then
+  begin
+    BufSizeLeft := BufferSize - Result;
+    while (BufSizeLeft > 0) do
+    begin
+      fStream.Position := 0;
+      NumRead := fStream.Read(Buffer^, BufSizeLeft);
+      BufSizeLeft := BufSizeLeft - NumRead;
+    end;
+    Result := BufferSize;
+  end;
+end;
+
+function TAudioBufferSourceStream.GetAudioFormatInfo(): TAudioFormatInfo;
+begin
+  Result := fFormat;
+end;
+
+procedure TAudioBufferSourceStream.Close();
+begin
+  FreeAndNil(fFormat);
+  fStream := nil;
 end;
 
 end.
