@@ -86,6 +86,22 @@ DEPS += $(PROJECTM_CWRAPPER_DIR)
 endif
 
 #################################################
+# Mac OS X library functions
+#################################################
+# copy the dylib and change its install names
+
+define install_osx_libraries
+    $(shell $(INSTALL) -m 755 $(dylib) $(macosx_bundle_path)/MacOS)
+    $(shell $(INSTALL_NAME_TOOL) -change $(dylib) @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/ultrastardx)
+    $(shell $(INSTALL_NAME_TOOL) -id @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
+    $(foreach linked_dylibs_2,$(shell $(OTOOL) -L $(dylib) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \usr\/lib | grep -v executable_path),$(rename_secondary_osx_libraries))
+endef
+
+define rename_secondary_osx_libraries
+    $(shell $(INSTALL_NAME_TOOL) -change $(linked_dylibs_2) @executable_path/$(notdir $(linked_dylibs_2)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
+endef
+
+#################################################
 # general targets
 #################################################
 
@@ -408,19 +424,6 @@ macosx-standalone-app: macosx-app
 	@echo ""
 	@echo "Creating the standalone Mac OS X application"
 	@echo ""
-
-# copy the dylib and change its install names
-
-define install_osx_libraries
-    $(shell $(INSTALL) -m 755 $(dylib) $(macosx_bundle_path)/MacOS)
-    $(shell $(INSTALL_NAME_TOOL) -change $(dylib) @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/ultrastardx)
-    $(shell $(INSTALL_NAME_TOOL) -id @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
-    $(foreach linked_dylibs_2,$(shell $(OTOOL) -L $(dylib) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \usr\/lib | grep -v executable_path),$(rename_secondary_osx_libraries))
-endef
-
-define rename_secondary_osx_libraries
-    $(shell $(INSTALL_NAME_TOOL) -change $(linked_dylibs_2) @executable_path/$(notdir $(linked_dylibs_2)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
-endef
 
 # work on the dylibs in $(macosx_bundle_path)/MacOS/ultrastardx
 	$(foreach dylib,$(shell $(OTOOL) -L $(macosx_bundle_path)/MacOS/ultrastardx | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
