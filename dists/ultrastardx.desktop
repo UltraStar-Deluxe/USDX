@@ -1,5 +1,4 @@
 [Desktop Entry]
-Encoding=UTF-8
 Version=1.0
 
 Name=UltraStar Deluxe
@@ -14,4 +13,4 @@ StartupNotify=false
 Terminal=false
 
 Type=Application
-Categories=Application;Game;ArcadeGame;
+Categories=Game;ArcadeGame;
