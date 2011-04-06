@@ -44,7 +44,7 @@ uses
 
 const
   BaseToneFreq = 65.4064; // lowest (half-)tone to analyze (C2 = 65.4064 Hz)
-  NumHalftones = 36;      // C2-B4 (for Whitney and my high voice)
+  NumHalftones = 46;      // C2-A5 (for Whitney and my high voice)
 
 type
   TCaptureBuffer = class
