@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/rational.h
- * avutil version 50.43.0
+ * avutil max. version 50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET 
  *
  *)
 
@@ -62,7 +62,8 @@ type
  * Compare two rationals.
  * @param a first rational
  * @param b second rational
- * @return 0 if a==b, 1 if a>b and -1 if a<b
+ * @return 0 if a==b, 1 if a>b, -1 if a<b, and INT_MIN if one of the
+ * values is of the form 0/0
  *)
 function av_cmp_q(a: TAVRational; b: TAVRational): cint; {$IFDEF HasInline}inline;{$ENDIF}
 
@@ -160,6 +161,12 @@ begin
     Result := (tmp shr 63) or 1
   else
     Result := 0
+{ new version:
+    if(tmp) return ((tmp ^ a.den ^ b.den)>>63)|1;
+    else if(b.den && a.den) return 0;
+    else if(a.num && b.num) return (a.num>>31) - (b.num>>31);
+    else                    return INT_MIN;
+}
 end;
 
 function av_q2d(a: TAVRational): cdouble;

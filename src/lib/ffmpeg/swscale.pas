@@ -91,12 +91,15 @@ type
   TPCuint8Array = array[0..0] of PCuint8;
   PPCuint8Array = ^TPCuint8Array;
 
+{$IF LIBSWSCALE_VERSION >= 000006001} // 0.6.1
 (**
  * Returns the LIBSWSCALE_VERSION_INT constant.
  *)
 function swscale_version(): cuint;
   cdecl; external sw__scale;
+{$IFEND}
 
+{$IF LIBSWSCALE_VERSION >= 000007002} // 0.7.2
 (**
  * Returns the libswscale build-time configuration.
  *)
@@ -108,6 +111,7 @@ function swscale_configuration(): PAnsiChar;
  *)
 function swscale_license(): PAnsiChar;
   cdecl; external sw__scale;
+{$IFEND}
 
 const
   (* values for the flags, the stuff on the command line is different *)
@@ -155,6 +159,7 @@ const
   SWS_CS_SMPTE240M      = 7;
   SWS_CS_DEFAULT        = 5;
 
+{$IF LIBSWSCALE_VERSION >= 000010000} // 0.10.0
 (**
  * Returns a pointer to yuv<->rgb coefficients for the given colorspace
  * suitable for sws_setColorspaceDetails().
@@ -164,6 +169,7 @@ const
  *)
 function sws_getCoefficients(colorspace: cint): Pcint;
   cdecl; external sw__scale;
+{$IFEND}
   
 type
 
@@ -189,6 +195,7 @@ type
     {internal structure}
   end;
 
+{$IF LIBSWSCALE_VERSION >= 000008000} // 0.8.0
 (**
  * Returns a positive value if pix_fmt is a supported input format, 0
  * otherwise.
@@ -202,6 +209,7 @@ function sws_isSupportedInput(pix_fmt: TAVPixelFormat): cint;
  *)
 function sws_isSupportedOutput(pix_fmt: TAVPixelFormat): cint;
   cdecl; external sw__scale;
+{$IFEND}
 
 (**
  * Frees the swscaler context swsContext.
@@ -259,11 +267,13 @@ function sws_scale(context: PSwsContext; {const} srcSlice: PPCuint8Array; {const
               srcSliceY: cint; srcSliceH: cint; {const} dst: PPCuint8Array; {const} dstStride: PCintArray): cint;
   cdecl; external sw__scale;
 
+{$IF LIBSWSCALE_VERSION_MAJOR < 1}
 // deprecated. Use sws_scale() instead.
 function sws_scale_ordered(context: PSwsContext; {const} src: PPCuint8Array;
                            srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
 	                   dst: PPCuint8Array; dstStride: PCintArray): cint;
   cdecl; external sw__scale; deprecated;
+{$IFEND}
 
 (**
  * @param inv_table the yuv2rgb coefficients, normally ff_yuv2rgb_coeffs[x]
@@ -335,10 +345,14 @@ procedure sws_shiftVec(a: PSwsVector; shift: cint);
 function sws_cloneVec(a: PSwsVector): PSwsVector;
   cdecl; external sw__scale;
 
+{$IF LIBSWSCALE_VERSION_MAJOR < 1}
 // deprecated Use sws_printVec2() instead.
+
 procedure sws_printVec(a: PSwsVector);
   cdecl; external sw__scale; deprecated;
+{$IFEND}
 
+{$IF LIBSWSCALE_VERSION >= 000007000} // >= 0.7.0
 (**
  * Prints with av_log() a textual representation of the vector a
  * if log_level <= av_log_level.
@@ -347,6 +361,7 @@ procedure sws_printVec2(a:         PSwsVector;
                         log_ctx:   PAVClass; // PAVClass is declared in avcodec.pas
 			log_level: cint);
   cdecl; external sw__scale;
+{$IFEND}
 
 procedure sws_freeVec(a: PSwsVector);
   cdecl; external sw__scale;
@@ -380,6 +395,7 @@ function sws_getCachedContext(context: PSwsContext;
 	      dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
 
+{$IF LIBSWSCALE_VERSION >= 000011000} // >= 0.11.0
 (**
  * Converts an 8bit paletted frame into a frame with a color depth of 32-bits.
  *
@@ -411,6 +427,7 @@ procedure sws_convertPalette8ToPacked24({const} src:      PPCuint8Array;
 					 num_pixels:      clong;
 					 {const} palette: PPCuint8Array);
   cdecl; external sw__scale;
+{$IFEND}
 
 implementation
 

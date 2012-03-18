@@ -22,8 +22,8 @@
  *   in the source codes.
  * - Changes and updates by the UltraStar Deluxe Team
  *
- * Conversion of libavutil/opt.h
- * avutil version 50.43.0
+ * Conversion of libavcodec/opt.h
+ * Max. avcodec version: 52.86.1, 24882, Wed Aug 23 07:00:00 2010 CET
  *
  *)
 
@@ -41,7 +41,6 @@ interface
 
 uses
   ctypes,
-  dict,
   rational,
   UConfig;
 
@@ -90,14 +89,7 @@ type
     (**
      * the default value for scalar options
      *)
-    default_val: record
-      case cint of
-        0: (dbl: cdouble);
-        1: (str: PAnsiChar);
-        (* TODO those are unused now *)
-        2: (i64: cint64);
-        3: (q: TAVRational);
-      end;
+    default_val: cdouble;
     min: cdouble;                ///< minimum valid value for the option
     max: cdouble;                ///< maximum valid value for the option
 
@@ -112,7 +104,54 @@ type
     unit_: {const} PAnsiChar;
   end;
 
-{$IFDEF FF_API_FIND_OPT}
+{$IF LIBAVCODEC_VERSION >= 52042000} // >= 52.42.0
+(**
+ * AVOption2.
+ * THIS IS NOT PART OF THE API/ABI YET!
+ * This is identical to AVOption except that default_val was replaced by
+ * an union, it should be compatible with AVOption on normal platforms.
+ *)
+type
+  PAVOption2 = ^TAVOption2;
+  TAVOption2 = record
+    name   : {const} PAnsiChar;
+
+    (**
+     * short English help text
+     * @todo What about other languages?
+     *)
+    help   : {const} PAnsiChar;
+
+    (**
+     * The offset relative to the context structure where the option
+     * value is stored. It should be 0 for named constants.
+     *)
+    offset : cint;
+    type_  : TAVOptionType;
+
+    (**
+     * the default value for scalar options
+     *)
+    default_val : record
+      case cint of
+        0 : (dbl: cdouble);
+        1 : (str: PAnsiChar);
+      end;
+    min   : cdouble;
+    max   : cdouble;
+    flags : cint;
+//FIXME think about enc-audio, ... style flags
+
+    (**
+     * The logical unit to which the option belongs. Non-constant
+     * options and corresponding named constants share the same
+     * unit. May be NULL.
+     *)
+    unit_: {const} PAnsiChar;
+  end;
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
 (**
  * Look for an option in obj. Look only for the options which
  * have the flags set as specified in mask and flags (that is,
@@ -126,9 +165,31 @@ type
  * has been found
  *)
 function av_find_opt(obj: Pointer; {const} name: {const} PAnsiChar; {const} unit_: PAnsiChar; mask: cint; flags: cint): {const} PAVOption;
-  cdecl; external av__util; deprecated;
-{$ENDIF}
+  cdecl; external av__codec;
+{$IFEND}
 
+{$IF LIBAVCODEC_VERSION_MAJOR < 53}
+
+(**
+ * @see av_set_string2()
+ *)
+function av_set_string(obj: pointer; name: {const} PAnsiChar; val: {const} PAnsiChar): {const} PAVOption;
+  cdecl; external av__codec; deprecated;
+
+{$IF LIBAVCODEC_VERSION >= 51059000} // 51.59.0
+(**
+ * @return a pointer to the AVOption corresponding to the field set or
+ * NULL if no matching AVOption exists, or if the value val is not
+ * valid
+ * @see av_set_string3()
+ *)
+function av_set_string2(obj: Pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; alloc: cint): {const} PAVOption;
+  cdecl; external av__codec; deprecated;
+{$IFEND}
+
+{$IFEND}
+
+{$IF LIBAVCODEC_VERSION >= 52007000} // 52.7.0
 (**
  * Set the field of obj with the given name to value.
  *
@@ -157,124 +218,43 @@ function av_find_opt(obj: Pointer; {const} name: {const} PAnsiChar; {const} unit
  * AVERROR(EINVAL) if the value is not valid
  *)
 function av_set_string3(obj: Pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; alloc: cint; out o_out: {const} PAVOption): cint;
-  cdecl; external av__util;
+  cdecl; external av__codec;
+{$IFEND}
 
 function av_set_double(obj: pointer; name: {const} PAnsiChar; n: cdouble): PAVOption;
-  cdecl; external av__util;
-function av_set_q(obj: pointer; name: {const} PAnsiChar; n: TAVRational): PAVOption;
-  cdecl; external av__util;
-function av_set_int(obj: pointer; name: {const} PAnsiChar; n: cint64): PAVOption;
-  cdecl; external av__util;
-function av_get_double(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): cdouble;
-  cdecl; external av__util;
-function av_get_q(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): TAVRational;
-  cdecl; external av__util;
-function av_get_int(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): cint64;
-  cdecl; external av__util;
-function av_get_string(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption; buf: PAnsiChar; buf_len: cint): PAnsiChar;
-  cdecl; external av__util;
-function av_next_option(obj: pointer; last: {const} PAVOption): PAVOption;
-  cdecl; external av__util;
+  cdecl; external av__codec;
 
-(**
- * Show the obj options.
- *
- * @param req_flags requested flags for the options to show. Show only the
- * options for which it is opt->flags & req_flags.
- * @param rej_flags rejected flags for the options to show. Show only the
- * options for which it is !(opt->flags & req_flags).
- * @param av_log_obj log context to use for showing the options
- *)
-function av_opt_show2(obj: pointer; av_log_obj: pointer; req_flags: cint; rej_flags: cint): cint;
-  cdecl; external av__util;
+function av_set_q(obj: pointer; name: {const} PAnsiChar; n: TAVRational): PAVOption;
+  cdecl; external av__codec;
+
+function av_set_int(obj: pointer; name: {const} PAnsiChar; n: cint64): PAVOption;
+  cdecl; external av__codec;
+
+function av_get_double(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): cdouble;
+  cdecl; external av__codec;
+
+function av_get_q(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): TAVRational;
+  cdecl; external av__codec;
+
+function av_get_int(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption): cint64;
+  cdecl; external av__codec;
+
+function av_get_string(obj: pointer; name: {const} PAnsiChar; var o_out: {const} PAVOption; buf: PAnsiChar; buf_len: cint): PAnsiChar;
+  cdecl; external av__codec;
+
+function av_next_option(obj: pointer; last: {const} PAVOption): PAVOption;
+  cdecl; external av__codec;
+
+function av_opt_show(obj: pointer; av_log_obj: pointer): cint;
+  cdecl; external av__codec;
 
 procedure av_opt_set_defaults(s: pointer);
-  cdecl; external av__util;
+  cdecl; external av__codec;
+
+{$IF LIBAVCODEC_VERSION >= 51039000} // 51.39.0
 procedure av_opt_set_defaults2(s: Pointer; mask: cint; flags: cint);
-  cdecl; external av__util;
-
-(**
- * Parse the key/value pairs list in opts. For each key/value pair
- * found, stores the value in the field in ctx that is named like the
- * key. ctx must be an AVClass context, storing is done using
- * AVOptions.
- *
- * @param opts options string to parse, may be NULL
- * @param key_val_sep a 0-terminated list of characters used to
- * separate key from value
- * @param pairs_sep a 0-terminated list of characters used to separate
- * two pairs from each other
- * @return the number of successfully set key/value pairs, or a negative
- * value corresponding to an AVERROR code in case of error:
- * AVERROR(EINVAL) if opts cannot be parsed,
- * the error code issued by av_set_string3() if a key/value pair
- * cannot be set
-*)
-function av_set_options_string(ctx: pointer; opts: {const} PAnsiChar;
-                      key_val_sep: {const} PAnsiChar; pairs_sep: {const} PAnsiChar): cint;
-  cdecl; external av__util;
-
-(**
- * Free all string and binary options in obj.
- *)
-procedure av_opt_free(obj: pointer);
-  cdecl; external av__util;
-
-(**
- * Check whether a particular flag is set in a flags field.
- *
- * @param field_name the name of the flag field option
- * @param flag_name the name of the flag to check
- * @return non-zero if the flag is set, zero if the flag isn't set,
- *         isn't of the right type, or the flags field doesn't exist.
- *)
-function av_opt_flag_is_set(obj: pointer; field_name: {const} PAnsiChar; flag_name: {const} PAnsiChar): cint;
-  cdecl; external av__util;
-
-(**
- * Set all the options from a given dictionary on an object.
- *
- * @param obj a struct whose first element is a pointer to AVClass
- * @param options options to process. This dictionary will be freed and replaced
- *                by a new one containing all options not found in obj.
- *                Of course this new dictionary needs to be freed by caller
- *                with av_dict_free().
- *
- * @return 0 on success, a negative AVERROR if some option was found in obj,
- *         but could not be set.
- *
- * @see av_dict_copy()
- *)
-function av_opt_set_dict(obj: pointer; var options: PAVDictionary): cint;
-  cdecl; external av__util;
-
-const
-  AV_OPT_SEARCH_CHILDREN = 0001; (**< Search in possible children of the
-                                      given object first.*)
-
-(**
- * Look for an option in an object. Consider only options which
- * have all the specified flags set.
- *
- * @param[in] obj A pointer to a struct whose first element is a
- *                pointer to an AVClass.
- * @param[in] name The name of the option to look for.
- * @param[in] unit When searching for named constants, name of the unit
- *                 it belongs to.
- * @param opt_flags Find only options with all the specified flags set (AV_OPT_FLAG).
- * @param search_flags A combination of AV_OPT_SEARCH_*.
- *
- * @return A pointer to the option found, or NULL if no option
- *         was found.
- *
- * @note Options found with AV_OPT_SEARCH_CHILDREN flag may not be settable
- * directly with av_set_string3(). Use special calls which take an options
- * AVDictionary (e.g. avformat_open_input()) to set options found with this
- * flag.
- *)
-function av_opt_find(obj: pointer; name: {const} PAnsiChar; unit_: {const} PAnsiChar;
-                             opt_flags: cint; search_flags: cint): PAVOption;
-  cdecl; external av__util;
+  cdecl; external av__codec;
+{$IFEND}
 
 implementation
 
