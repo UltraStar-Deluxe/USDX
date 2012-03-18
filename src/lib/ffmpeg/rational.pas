@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/rational.h
- * avutil max. version 50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET 
+ * avutil version 50.43.0
  *
  *)
 
@@ -124,6 +124,8 @@ function av_sub_q(b: TAVRational; c: TAVRational): TAVRational;
 
 (**
  * Convert a double precision floating point number to a rational.
+ * inf is expressed as {1,0} or {-1,0} depending on the sign.
+ *
  * @param d double to convert
  * @param max the maximum allowed numerator and denominator
  * @return (AVRational) d
@@ -131,7 +133,6 @@ function av_sub_q(b: TAVRational; c: TAVRational): TAVRational;
 function av_d2q(d: cdouble; max: cint): TAVRational;
   cdecl; external av__util; {av_const}
 
-{$IF LIBAVUTIL_VERSION >= 49011000} // 49.11.0
 (**
  * @return 1 if q1 is nearer to q than q2, -1 if q2 is nearer
  * than q1, 0 if they have the same distance.
@@ -146,7 +147,6 @@ function av_nearer_q(q, q1, q2: TAVRational): cint;
  *)
 function av_find_nearest_q_idx(q: TAVRational; q_list: {const} PAVRationalArray): cint;
   cdecl; external av__util;
-{$IFEND}
 
 implementation
 

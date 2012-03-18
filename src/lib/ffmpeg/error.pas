@@ -19,11 +19,14 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/error.h
- * Max. avutil version:  50.21.0, revision 24190, Wed Jul 21 01:00:00 2010 CET
+ * avutil version 50.43.0
  *
  *)
 
-{$IF LIBAVUTIL_VERSION >= 50012000} // >= 50.12.0
+(**
+ * @file
+ * error code definitions
+ *)
 
 {* error handling *}
 
@@ -62,14 +65,13 @@ const
  * 1) shr 30:        shifts the sign bit to bit position 2
  * 2) and $00000002: sets all other bits to zero
  *                   positive EINVAL gives 0, negative gives 2
- * 3) not:           inverts all bits. This gives -1 and -3
  * 3) - 1:           positive EINVAL gives -1, negative 1
  *)
 const
   AVERROR_SIGN = (EINVAL shr 30) and $00000002 - 1;
 
 (*
-#if EINVAL > 0
+#if EDOM > 0
 #define AVERROR(e) (-(e)) {**< Returns a negative error code from a POSIX error code, to return from library functions. *}
 #define AVUNERROR(e) (-(e)) {**< Returns a POSIX error code from a library function error return value. *}
 #else
@@ -80,23 +82,31 @@ const
 *)
 
 const
-  AVERROR_UNKNOWN     = AVERROR_SIGN * EINVAL;  (**< unknown error *)
+  AVERROR_INVALIDDATA = AVERROR_SIGN * EINVAL;  (**< Invalid data found when processing input *)
   AVERROR_IO          = AVERROR_SIGN * EIO;     (**< I/O error *)
-  AVERROR_NUMEXPECTED = AVERROR_SIGN * EDOM;    (**< Number syntax expected in filename. *)
-  AVERROR_INVALIDDATA = AVERROR_SIGN * EINVAL;  (**< invalid data found *)
-  AVERROR_NOMEM       = AVERROR_SIGN * ENOMEM;  (**< not enough memory *)
-  AVERROR_NOFMT       = AVERROR_SIGN * EILSEQ;  (**< unknown format *)
-  AVERROR_NOTSUPP     = AVERROR_SIGN * ENOSYS;  (**< Operation not supported. *)
   AVERROR_NOENT       = AVERROR_SIGN * ENOENT;  (**< No such file or directory. *)
-{$IF LIBAVCODEC_VERSION >= 52017000} // 52.17.0
-  AVERROR_EOF         = AVERROR_SIGN * EPIPE;   (**< End of file. *)
-{$IFEND}
-  // Note: function calls as constant-initializers are invalid
-  //AVERROR_PATCHWELCOME = -MKTAG('P','A','W','E'); {**< Not yet implemented in FFmpeg. Patches welcome. *}
-  AVERROR_PATCHWELCOME = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24));
-{$IFEND}
+  AVERROR_NOFMT       = AVERROR_SIGN * EILSEQ;  (**< unknown format *)
+  AVERROR_NOMEM       = AVERROR_SIGN * ENOMEM;  (**< not enough memory *)
+  AVERROR_NOTSUPP     = AVERROR_SIGN * ENOSYS;  (**< Operation not supported. *)
+  AVERROR_NUMEXPECTED = AVERROR_SIGN * EDOM;    (**< Number syntax expected in filename. *)
+  AVERROR_UNKNOWN     = AVERROR_SIGN * EINVAL;  (**< Unknown error *)
 
-{$IF LIBAVUTIL_VERSION >= 50013000} // >= 50.13.0
+  AVERROR_EOF         = AVERROR_SIGN * EPIPE;   (**< End of file. *)
+
+  // Note: function calls as constant-initializers are invalid
+  AVERROR_PATCHWELCOME       = -(ord('P') or (ord('A') shl 8) or (ord('W') shl 16) or (ord('E') shl 24)); ///< Not yet implemented in Libav, patches welcome
+
+  AVERROR_BSF_NOT_FOUND      = -(ord($F8) or (ord('B') shl 8) or (ord('S') shl 16) or (ord('F') shl 24)); ///< Bitstream filter not found
+  AVERROR_DECODER_NOT_FOUND  = -(ord($F8) or (ord('D') shl 8) or (ord('E') shl 16) or (ord('C') shl 24)); ///< Decoder not found
+  AVERROR_DEMUXER_NOT_FOUND  = -(ord($F8) or (ord('D') shl 8) or (ord('E') shl 16) or (ord('M') shl 24)); ///< Demuxer not found
+  AVERROR_ENCODER_NOT_FOUND  = -(ord($F8) or (ord('E') shl 8) or (ord('N') shl 16) or (ord('C') shl 24)); ///< Encoder not found
+  AVERROR_EXIT               = -(ord('E') or (ord('X') shl 8) or (ord('I') shl 16) or (ord('T') shl 24)); ///< Immediate exit was requested; the called function should not be restarted
+  AVERROR_FILTER_NOT_FOUND   = -(ord($F8) or (ord('F') shl 8) or (ord('I') shl 16) or (ord('L') shl 24)); ///< Filter not found
+  AVERROR_MUXER_NOT_FOUND    = -(ord($F8) or (ord('M') shl 8) or (ord('U') shl 16) or (ord('X') shl 24)); ///< Muxer not found
+  AVERROR_OPTION_NOT_FOUND   = -(ord($F8) or (ord('O') shl 8) or (ord('P') shl 16) or (ord('T') shl 24)); ///< Option not found
+  AVERROR_PROTOCOL_NOT_FOUND = -(ord($F8) or (ord('P') shl 8) or (ord('R') shl 16) or (ord('O') shl 24)); ///< Protocol not found
+  AVERROR_STREAM_NOT_FOUND   = -(ord($F8) or (ord('S') shl 8) or (ord('T') shl 16) or (ord('R') shl 24)); ///< Stream not found
+
 (*
  * Put a description of the AVERROR code errnum in errbuf.
  * In case of failure the global variable errno is set to indicate the
@@ -110,6 +120,5 @@ const
  * cannot be found
  *)
 
-function av_strerror(errnum: cint; errbuf: Pchar; errbuf_size: cint): cint;
+function av_strerror(errnum: cint; errbuf: PAnsiChar; errbuf_size: size_t): cint;
   cdecl; external av__util;
-{$IFEND}
