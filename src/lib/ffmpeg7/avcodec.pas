@@ -1540,6 +1540,29 @@ type
   // int (*func)(struct AVCodecContext *c2, void *arg, int jobnr, int threadnr)
   TExecute2Func = function(c2: PAVCodecContext; arg: Pointer; jobnr: cint; threadnr: cint): cint; cdecl;
   
+{$IF FF_API_PALETTE_CONTROL}
+(**
+ * AVPaletteControl
+ * This structure defines a method for communicating palette changes
+ * between and demuxer and a decoder.
+ *
+ * @deprecated Use AVPacket to send palette changes instead.
+ * This is totally broken.
+ *)
+  PAVPaletteControl = ^TAVPaletteControl;
+  TAVPaletteControl = record
+    (* demuxer sets this to 1 to indicate the palette has changed;
+     * decoder resets to 0 *)
+    palette_changed: cint;
+
+    (* 4-byte ARGB palette entries, stored in native byte order; note that
+     * the individual palette components should be on a 8-bit scale; if
+     * the palette data comes from a IBM VGA native format, the component
+     * data is probably 6 bits in size and needs to be scaled *)
+    palette: array [0..AVPALETTE_COUNT - 1] of cuint;
+  end; {deprecated;}
+{$IFEND}
+
   (**
    * main external API structure.
    * New fields can be added to the end with minor version bumps.
@@ -3323,29 +3346,6 @@ type
     data: array [0..3] of PByteArray;
     linesize: array [0..3] of cint;       ///< number of bytes per line
   end; {TAVPicture}
-
-{$IF FF_API_PALETTE_CONTROL}
-(**
- * AVPaletteControl
- * This structure defines a method for communicating palette changes
- * between and demuxer and a decoder.
- *
- * @deprecated Use AVPacket to send palette changes instead.
- * This is totally broken.
- *)
-  PAVPaletteControl = ^TAVPaletteControl;
-  TAVPaletteControl = record
-    (* demuxer sets this to 1 to indicate the palette has changed;
-     * decoder resets to 0 *)
-    palette_changed: cint;
-
-    (* 4-byte ARGB palette entries, stored in native byte order; note that
-     * the individual palette components should be on a 8-bit scale; if
-     * the palette data comes from a IBM VGA native format, the component
-     * data is probably 6 bits in size and needs to be scaled *)
-    palette: array [0..AVPALETTE_COUNT - 1] of cuint;
-  end; {deprecated;}
-{$IFEND}
 
   TAVSubtitleType = (
     SUBTITLE_NONE,
