@@ -88,7 +88,7 @@ function av_get_sample_fmt(name: {const} PAnsiChar): TAVSampleFormat;
 function av_get_sample_fmt_string(buf: PAnsiChar; buf_size: cint; sample_fmt: TAVSampleFormat): PAnsiChar;
   cdecl; external av__util;
 
-{$IF FF_API_GET_BITS_PER_SAMPLE_FMT}
+{$IFDEF FF_API_GET_BITS_PER_SAMPLE_FMT}
 (**
  * @deprecated Use av_get_bytes_per_sample() instead.
  *)
@@ -105,6 +105,10 @@ function av_get_bits_per_sample_fmt(sample_fmt: TAVSampleFormat): cint; deprecat
  *)
 function av_get_bytes_per_sample(sample_fmt: TAVSampleFormat): cint;
   cdecl; external av__util;
+
+type
+  OctArrayOfPcuint8 = array[0..7] of Pcuint8;
+  OctArrayOfcint    = array[0..7] of cint;
 
 (**
  * Fill channel data pointers and linesizes for samples with sample
@@ -128,7 +132,7 @@ function av_get_bytes_per_sample(sample_fmt: TAVSampleFormat): cint;
  * @return the total size of the buffer, a negative
  * error code in case of failure
  *)
-function av_samples_fill_arrays(pointers: array[0..7] of Pcuint8; linesizes: array[0..7] of cint;
+function av_samples_fill_arrays(pointers: OctArrayOfPcuint8; linesizes: OctArrayOfcint;
                                 buf: Pcuint8; nb_channels: cint; nb_samples: cint; 
                                 sample_fmt: TAVSampleFormat; planar: cint; align: cint): cint;
   cdecl; external av__util;
@@ -147,7 +151,7 @@ function av_samples_fill_arrays(pointers: array[0..7] of Pcuint8; linesizes: arr
  * error code in case of failure
  * @see av_samples_fill_arrays()
  *)
-function av_samples_alloc(pointers: array[0..7] of Pcuint8; linesizes: array[0..7] of cint;
+function av_samples_alloc(pointers: OctArrayOfPcuint8; linesizes: OctArrayOfcint;
                           nb_channels: cint; nb_samples: cint;
 			  sample_fmt: TAVSampleFormat; planar: cint;
 			  align: cint): cint;
