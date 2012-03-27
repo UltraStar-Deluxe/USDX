@@ -23,26 +23,6 @@
  *
  *)
 
-unit samplefmt;
-
-{$IFDEF FPC}
-  {$MODE DELPHI}
-  {$PACKENUM 4}    (* use 4-byte enums *)
-  {$PACKRECORDS C} (* C/C++-compatible record packing *)
-{$ELSE}
-  {$MINENUMSIZE 4} (* use 4-byte enums *)
-{$ENDIF}
-
-{$IFNDEF AVUTIL_SAMPLEFMT_H}
-  {$DEFINE AVUTIL_SAMPLEFMT_H}
-{$ENDIF}
-
-interface
-
-uses
-  ctypes,
-  UConfig;
-
 type
 (**
  * all in native-endian format
@@ -156,7 +136,3 @@ function av_samples_alloc(pointers: OctArrayOfPcuint8; linesizes: OctArrayOfcint
 			  sample_fmt: TAVSampleFormat; planar: cint;
 			  align: cint): cint;
   cdecl; external av__util;
-
-implementation
-
-end.
