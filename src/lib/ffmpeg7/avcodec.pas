@@ -46,8 +46,6 @@ uses
   ctypes,
   avutil,
   rational,
-  opt,
-  samplefmt,
   SysUtils,
   {$IFDEF UNIX}
   BaseUnix,
@@ -527,7 +525,7 @@ const
 
 {$IF FF_API_OLD_AUDIOCONVERT}
 
-{$I audioconvert.pas}
+{$I libavcodec/audioconvert.pas}
 
 const
   {* Audio channel masks *}
