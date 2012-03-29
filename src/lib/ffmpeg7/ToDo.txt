@@ -1,11 +1,17 @@
 1)	rational.pas
 inline function of av_cmp_q
 
-	error.pas
+	cpu.pas	dict.pas	error.pas
+	log.pas	mathematics.pas
+	mem.pas
 	opt.pas
-	mathematics.pas
+	pixfmt.pas	samplefmt.pas
 	avutil.pas
+
+	audioconvert.pas
 	avcodec.pas
+
 	avio.pas
-	swscale.pas
 	avformat.pas
+
+	swscale.pas
