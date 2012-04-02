@@ -185,6 +185,8 @@ if [[ x$lua_HAVE = xno ]]; then
 fi
 AC_SUBST(lua_LIB_NAME)
 
+AC_FFMPEG_VERSION
+
 # find FFMpeg
 # Note: do not use the min/max version parameters with ffmpeg
 # otherwise it might fail in ubuntu due to a wrong version number 
