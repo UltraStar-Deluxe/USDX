@@ -10,7 +10,16 @@
 {$IFEND}
 
 {$@DEFINE_HAVE_FFMPEG@ HaveFFmpeg}
-{$IF Defined(HaveFFmpeg) and Defined(IncludeConstants)}
+{$IF Defined(HaveFFmpeg)}
+  {$MACRO ON}
+  {$IFNDEF FFMPEG_DIR}
+    {$IF @FFMPEG_VERSION_MINOR@ > 0}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg-@FFMPEG_VERSION_MAJOR@.@FFMPEG_VERSION_MINOR@'}
+    {$ELSE}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg'}
+    {$IFEND}
+  {$IFEND}
+  {$IF Defined(IncludeConstants)}
   av__codec = 'libavcodec';
   LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
   LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
@@ -25,6 +34,8 @@
   LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
   LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
   LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
+  
+  {$IFEND}
 {$IFEND}
 
 {$@DEFINE_HAVE_SWSCALE@ HaveSWScale}

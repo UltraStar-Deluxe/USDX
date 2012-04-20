@@ -64,7 +64,6 @@ uses
   avformat,
   avutil,
   avio,
-  mathematics, // used for av_rescale_q
   rational,
   UMusic,
   UIni,

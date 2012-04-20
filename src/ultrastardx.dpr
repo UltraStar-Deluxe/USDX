@@ -85,19 +85,16 @@ uses
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\portmixer.pas',
   {$ENDIF}
-
   {$IFDEF UseFFmpeg}
-  avcodec                in 'lib\ffmpeg\avcodec.pas',
-  avformat               in 'lib\ffmpeg\avformat.pas',
-  avutil                 in 'lib\ffmpeg\avutil.pas',
-  rational               in 'lib\ffmpeg\rational.pas',
-  opt                    in 'lib\ffmpeg\opt.pas',
-  avio                   in 'lib\ffmpeg\avio.pas',
-  mathematics            in 'lib\ffmpeg\mathematics.pas',
+  avcodec                in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
+  avformat               in 'lib\' + FFMPEG_DIR + '\avformat.pas',
+  avutil                 in 'lib\' + FFMPEG_DIR + '\avutil.pas',
+  rational               in 'lib\' + FFMPEG_DIR + '\rational.pas',
+  avio                   in 'lib\' + FFMPEG_DIR + '\avio.pas',
+    {$IFDEF UseSWScale}
+    swscale              in 'lib\' + FFMPEG_DIR + '\swscale.pas',
+    {$ENDIF}
   UMediaCore_FFmpeg      in 'media\UMediaCore_FFmpeg.pas',
-  {$IFDEF UseSWScale}
-  swscale                in 'lib\ffmpeg\swscale.pas',
-  {$ENDIF}
   {$ENDIF}
 
   {$IFDEF UseSRCResample}
@@ -242,7 +239,7 @@ uses
 {$IF Defined(MSWINDOWS)}
   UPlatformWindows  in 'base\UPlatformWindows.pas',
 {$ELSEIF Defined(DARWIN)}
-  UPlatformMacOSX   in 'base/UPlatformMacOSX.pas',
+  UPlatformMacOSX   in 'base\UPlatformMacOSX.pas',
 {$ELSEIF Defined(UNIX)}
   UPlatformLinux    in 'base\UPlatformLinux.pas',
 {$IFEND}

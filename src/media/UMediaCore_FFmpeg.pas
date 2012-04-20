@@ -92,7 +92,7 @@ type
       function GetErrorString(ErrorNum: integer): string;
       function FindStreamIDs(FormatCtx: PAVFormatContext; out FirstVideoStream, FirstAudioStream: integer ): boolean;
       function FindAudioStreamIndex(FormatCtx: PAVFormatContext): integer;
-      function ConvertFFmpegToAudioFormat(FFmpegFormat: TSampleFormat; out Format: TAudioSampleFormat): boolean;
+      function ConvertFFmpegToAudioFormat(FFmpegFormat: TAVSampleFormat; out Format: TAudioSampleFormat): boolean;
       procedure LockAVCodec();
       procedure UnlockAVCodec();
   end;
@@ -320,14 +320,14 @@ begin
   Result := StreamIndex;
 end;
 
-function TMediaCore_FFmpeg.ConvertFFmpegToAudioFormat(FFmpegFormat: TSampleFormat; out Format: TAudioSampleFormat): boolean;
+function TMediaCore_FFmpeg.ConvertFFmpegToAudioFormat(FFmpegFormat: TAVSampleFormat; out Format: TAudioSampleFormat): boolean;
 begin
   case FFmpegFormat of
-    SAMPLE_FMT_U8:  Format := asfU8;
-    SAMPLE_FMT_S16: Format := asfS16;
-    SAMPLE_FMT_S32: Format := asfS32;
-    SAMPLE_FMT_FLT: Format := asfFloat;
-    SAMPLE_FMT_DBL: Format := asfDouble;
+    AV_SAMPLE_FMT_U8:  Format := asfU8;
+    AV_SAMPLE_FMT_S16: Format := asfS16;
+    AV_SAMPLE_FMT_S32: Format := asfS32;
+    AV_SAMPLE_FMT_FLT: Format := asfFloat;
+    AV_SAMPLE_FMT_DBL: Format := asfDouble;
     else begin
       Result := false;
       Exit;

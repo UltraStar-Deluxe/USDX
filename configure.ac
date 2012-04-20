@@ -185,8 +185,6 @@ if [[ x$lua_HAVE = xno ]]; then
 fi
 AC_SUBST(lua_LIB_NAME)
 
-AC_FFMPEG_VERSION
-
 # find FFMpeg
 # Note: do not use the min/max version parameters with ffmpeg
 # otherwise it might fail in ubuntu due to a wrong version number 
@@ -215,7 +213,6 @@ AC_SUBST_DEFINE(HAVE_FFMPEG, $ffmpeg_HAVE)
 PKG_HAVE([libswscale], [libswscale], no)
 PKG_VERSION([libswscale], [libswscale])
 AC_SUBST_DEFINE(HAVE_SWSCALE, $libswscale_HAVE)
-
 
 # find projectM version
 libprojectM_PKG="libprojectM >= 0.98"

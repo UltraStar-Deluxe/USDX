@@ -96,8 +96,30 @@ AC_DEFUN([PKG_VERSION],
         [$1][_VERSION]="0.0.0"
     fi
     AX_EXTRACT_VERSION([$1], $[$1][_VERSION])
-])
 
+    # for avutil: map library version to ffmpeg version
+    if test $1 = "libavutil"; then
+        AC_MSG_CHECKING([version of ffmpeg])
+    	if test $[$1][_VERSION_INT] -le 51035100; then
+		if test $[$1][_VERSION_INT] -ge 51034101; then
+			FFMPEG_VERSION="0.10"
+		elif test $[$1][_VERSION_INT] -ge 51032000; then
+			FFMPEG_VERSION="0.9"
+		elif test $[$1][_VERSION_INT] -ge 51009001; then
+			FFMPEG_VERSION="0.8"
+		elif test $[$1][_VERSION_INT] -ge 50043000; then
+			FFMPEG_VERSION="0.7"
+		else
+			FFMPEG_VERSION="0"
+		fi
+	else
+		FFMPEG_VERSION="0"
+	fi
+        AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)
+        AC_SUBST(FFMPEG_VERSION)
+        AC_MSG_RESULT(@<:@$FFMPEG_VERSION@:>@)
+    fi
+])
 
 # SYNOPSIS
 #
