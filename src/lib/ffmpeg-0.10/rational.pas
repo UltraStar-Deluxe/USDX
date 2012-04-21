@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/rational.h
- * avutil version 50.43.0
+ * avutil version 51.34.101
  *
  *)
 
@@ -44,6 +44,11 @@ interface
 uses
   ctypes,
   UConfig;
+
+(**
+ * @addtogroup lavu_math
+ * @{
+ *)
 
 type
   (*
@@ -150,8 +155,6 @@ function av_find_nearest_q_idx(q: TAVRational; q_list: {const} PAVRationalArray)
 
 implementation
 
-// This corresponds to the old c version and should be updated to
-// the new c version.
 function av_cmp_q (a: TAVRational; b: TAVRational): cint;
 var
   tmp: cint64;
