@@ -669,8 +669,13 @@ begin
       fCodecContext^.opaque := @VideoPktPts;
 
       // decode packet
+      {$IF LIBAVFORMAT_VERSION < 5212200)}
       avcodec_decode_video(fCodecContext, fAVFrame,
           frameFinished, AVPacket.data, AVPacket.size);
+      {$ELSE}
+      avcodec_decode_video2(fCodecContext, fAVFrame,
+          frameFinished, @AVPacket);
+      {$IFEND}
 
       // reset opaque data
       fCodecContext^.opaque := nil;

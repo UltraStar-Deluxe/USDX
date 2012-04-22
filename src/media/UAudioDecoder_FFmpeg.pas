@@ -915,7 +915,10 @@ begin
     begin
       DataSize := BufferSize;
 
-      {$IF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
+      {$IF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
+      PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(Buffer),
+                  DataSize, @fAudioPaket);
+      {$ELSEIF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
       PaketDecodedSize := avcodec_decode_audio2(fCodecCtx, PSmallint(Buffer),
                   DataSize, fAudioPaketData, fAudioPaketSize);
       {$ELSE}

@@ -30,9 +30,6 @@
 
 (* memory handling functions *)
 
-type
-  FF_INTERNAL_MEM_TYPE = cuint;
-  
 (**
  * Allocate a block of size bytes with alignment suitable for all
  * memory accesses (including vectors if available on the CPU).
@@ -60,6 +57,19 @@ function av_realloc(ptr: pointer; size: FF_INTERNAL_MEM_TYPE): pointer;
   cdecl; external av__util; {av_alloc_size(2)}
 
 (**
+ * Allocate or reallocate a block of memory.
+ * This function does the same thing as av_realloc, except:
+ * - It takes two arguments and checks the result of the multiplication for
+ *   integer overflow.
+ * - It frees the input block in case of failure, thus avoiding the memory
+ *   leak with the classic "buf = realloc(buf); if (!buf) return -1;".
+ *)
+{ available only in 0.8.5 - 0.8.10
+function av_realloc_f(ptr: pointer; nelem: size_t; size: size_t): pointer;
+  cdecl; external av__util;
+}
+
+(**
  * Free a memory block which has been allocated with av_malloc(z)() or
  * av_realloc().
  * @param ptr Pointer to the memory block which should be freed.
@@ -80,6 +90,21 @@ procedure av_free(ptr: pointer);
  *)
 function av_mallocz(size: FF_INTERNAL_MEM_TYPE): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
+
+(**
+ * Allocate a block of nmemb * size bytes with alignment suitable for all
+ * memory accesses (including vectors if available on the CPU) and
+ * zero all the bytes of the block.
+ * The allocation will fail if nmemb * size is greater than or equal
+ * to INT_MAX.
+ * @param nmemb
+ * @param size
+ * @return Pointer to the allocated block, NULL if it cannot be allocated.
+ *)
+(* available only in 0.8.5 - 0.8.10
+function av_calloc(nmemb: size_t; size: size_t): pointer;
+  cdecl; external av__util; {av_malloc_attrib}
+*)
 
 (**
  * Duplicate the string s.
@@ -109,3 +134,20 @@ procedure av_freep (ptr: pointer);
  *)
 procedure av_dynarray_add(tab_ptr: pointer; nb_ptr: PCint; elem: pointer);
   cdecl; external av__util;
+
+(**
+ * Multiply two size_t values checking for overflow.
+ * @return  0 if success, AVERROR(EINVAL) if overflow.
+ *)
+{ available only in 0.8.5 - 0.8.10
+//static inline int av_size_mult(size_t a, size_t b, size_t *r)
+}
+{
+    size_t t = a * b;
+    /* Hack inspired from glibc: only try the division if nelem and elsize
+     * are both greater than sqrt(SIZE_MAX). */
+    if ((a | b) >= ((size_t)1 << (sizeof(size_t) * 4)) && a && t / a != b)
+        return AVERROR(EINVAL);
+    *r = t;
+    return 0;
+}

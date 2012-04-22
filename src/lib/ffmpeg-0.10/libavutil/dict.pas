@@ -23,66 +23,6 @@
  *
  *)
 
-unit dict;
-
-{$IFDEF FPC}
-  {$MODE DELPHI}
-  {$PACKENUM 4}    (* use 4-byte enums *)
-  {$PACKRECORDS C} (* C/C++-compatible record packing *)
-{$ELSE}
-  {$MINENUMSIZE 4} (* use 4-byte enums *)
-{$ENDIF}
-
-interface
-
-uses
-  ctypes,
-  UConfig;
-
-(**
- * @file
- * Public dictionary API.
- * @deprecated
- *  AVDictionary is provided for compatibility with libav. It is both in
- *  implementation as well as API inefficient. It does not scale and is
- *  extremely slow with large dictionaries.
- *  It is recommended that new code uses our tree container from tree.c/h
- *  where applicable, which uses AVL trees to achieve O(log n) performance.
- *)
-
-(**
- * @addtogroup lavu_dict AVDictionary
- * @ingroup lavu_data
- *
- * @brief Simple key:value store
- *
- * @{
- * Dictionaries are used for storing key:value pairs. To create
- * an AVDictionary, simply pass an address of a NULL pointer to
- * av_dict_set(). NULL can be used as an empty dictionary wherever
- * a pointer to an AVDictionary is required.
- * Use av_dict_get() to retrieve an entry or iterate over all
- * entries and finally av_dict_free() to free the dictionary
- * and all its contents.
- *
- * @code
- * AVDictionary *d = NULL;                // "create" an empty dictionary
- * av_dict_set(&d, "foo", "bar", 0);      // add an entry
- *
- * char *k = av_strdup("key");            // if your strings are already allocated,
- * char *v = av_strdup("value");          // you can avoid copying them like this
- * av_dict_set(&d, k, v, AV_DICT_DONT_STRDUP_KEY | AV_DICT_DONT_STRDUP_VAL);
- *
- * AVDictionaryEntry *t = NULL;
- * while (t = av_dict_get(d, "", t, AV_DICT_IGNORE_SUFFIX)) {
- *     <....>                             // iterate over all entries in d
- * }
- *
- * av_dict_free(&d);
- * @endcode
- *
- *)
-
 const
   AV_DICT_MATCH_CASE      = 1;
   AV_DICT_IGNORE_SUFFIX   = 2;
@@ -151,11 +91,3 @@ procedure av_dict_copy(var dst: PAVDictionary; src: PAVDictionary; flags: cint);
  *)
 procedure av_dict_free(var m: PAVDictionary);
   cdecl; external av__util;
-
-(**
- * @}
- *)
-
-implementation
-
-end.

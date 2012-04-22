@@ -27,24 +27,6 @@
  *
  *)
 
-unit opt;
-
-{$IFDEF FPC}
-  {$MODE DELPHI}
-  {$PACKENUM 4}    (* use 4-byte enums *)
-  {$PACKRECORDS C} (* C/C++-compatible record packing *)
-{$ELSE}
-  {$MINENUMSIZE 4} (* use 4-byte enums *)
-{$ENDIF}
-
-interface
-
-uses
-  ctypes,
-  dict,
-  rational,
-  UConfig;
-
 type
   TAVOptionType = (
     FF_OPT_TYPE_FLAGS,
@@ -275,7 +257,3 @@ const
 function av_opt_find(obj: pointer; name: {const} PAnsiChar; unit_: {const} PAnsiChar;
                              opt_flags: cint; search_flags: cint): PAVOption;
   cdecl; external av__util;
-
-implementation
-
-end.

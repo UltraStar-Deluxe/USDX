@@ -42,6 +42,7 @@ uses
   {$ENDIF}
   {$IFDEF UseFFmpegResample}
   avcodec,
+  avutil,
   {$ENDIF}
   UMediaCore_SDL,
   sdl,
@@ -123,6 +124,9 @@ type
   {$ENDIF}
 
 implementation
+
+uses
+  UConfig;
 
 function TAudioConverter_SDL.Init(srcFormatInfo: TAudioFormatInfo; dstFormatInfo: TAudioFormatInfo): boolean;
 var
@@ -219,9 +223,17 @@ begin
     Exit;
   end;
 
+  {$IF LIBAVCODEC_VERSION < 52122000} // 52.122.0
   ResampleContext := audio_resample_init(
       dstFormatInfo.Channels, srcFormatInfo.Channels,
       Round(dstFormatInfo.SampleRate), Round(srcFormatInfo.SampleRate));
+  {$ELSE}
+  ResampleContext := av_audio_resample_init(
+      dstFormatInfo.Channels, srcFormatInfo.Channels,
+      Round(dstFormatInfo.SampleRate), Round(srcFormatInfo.SampleRate),
+      AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S16,
+      16, 10, 0, 0.8);
+  {$IFEND}
   if (ResampleContext = nil) then
   begin
     Log.LogError('audio_resample_init() failed', 'TAudioConverter_FFmpeg.Init');

@@ -199,7 +199,12 @@ begin
   inherited;
 
   CheckVersions();
+  
+  {$IF LIBAVFORMAT_VERSION < 52110000} // 52.110.0
   av_register_protocol(@UTF8FileProtocol);
+  {$ELSE}
+  av_register_protocol2(@UTF8FileProtocol, sizeof(UTF8FileProtocol));
+  {$IFEND}
   AVCodecLock := SDL_CreateMutex();
 end;
 
@@ -228,6 +233,7 @@ end;
 
 function TMediaCore_FFmpeg.GetErrorString(ErrorNum: integer): string;
 begin
+{$IF LIBAVUTIL_VERSION < 50043000} // < 50.43.0
   case ErrorNum of
     AVERROR_IO:           Result := 'AVERROR_IO';
     AVERROR_NUMEXPECTED:  Result := 'AVERROR_NUMEXPECTED';
@@ -239,6 +245,8 @@ begin
     AVERROR_PATCHWELCOME: Result := 'AVERROR_PATCHWELCOME';
     else                  Result := 'AVERROR_#'+inttostr(ErrorNum);
   end;
+{$ELSE}
+{$IFEND}
 end;
 
 {
@@ -371,7 +379,11 @@ begin
     Stream := TBinaryFileStream.Create(FilePath, Mode);
     h.priv_data := Stream;
   except
+{$IF LIBAVUTIL_VERSION < 50043000} // < 50.43.0
     Result := AVERROR_NOENT;
+{$ELSE}
+    Result := -1;
+{$IFEND}
   end;
 end;
 

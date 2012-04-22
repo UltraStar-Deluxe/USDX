@@ -101,10 +101,10 @@ function av_mallocz(size: size_t): pointer;
  * @param size
  * @return Pointer to the allocated block, NULL if it cannot be allocated.
  *)
-{ available only in 0.8.5 - 0.8.10
+(* available only in 0.8.5 - 0.8.10
 function av_calloc(nmemb: size_t; size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib}
-}
+*)
 
 (**
  * Duplicate the string s.

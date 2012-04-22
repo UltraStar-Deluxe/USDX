@@ -27,24 +27,6 @@
  *
  *)
 
-unit opt;
-
-{$IFDEF FPC}
-  {$MODE DELPHI}
-  {$PACKENUM 4}    (* use 4-byte enums *)
-  {$PACKRECORDS C} (* C/C++-compatible record packing *)
-{$ELSE}
-  {$MINENUMSIZE 4} (* use 4-byte enums *)
-{$ENDIF}
-
-interface
-
-uses
-  ctypes,
-  dict,
-  rational,
-  UConfig;
-
 (**
  * @defgroup avoptions AVOptions
  * @ingroup lavu_data
@@ -649,11 +631,3 @@ function av_opt_get_q     (obj: pointer; name: {const} PAnsiChar; search_flags: 
 procedure av_opt_ptr(avclass: {const} PAVClass; obj: pointer; name: {const} PAnsiChar);
   cdecl; external av__util;
 *)
-
-(**
- * @}
- *)
-
-implementation
-
-end.

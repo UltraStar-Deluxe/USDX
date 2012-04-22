@@ -23,22 +23,6 @@
  *
  *)
 
-unit dict;
-
-{$IFDEF FPC}
-  {$MODE DELPHI}
-  {$PACKENUM 4}    (* use 4-byte enums *)
-  {$PACKRECORDS C} (* C/C++-compatible record packing *)
-{$ELSE}
-  {$MINENUMSIZE 4} (* use 4-byte enums *)
-{$ENDIF}
-
-interface
-
-uses
-  ctypes,
-  UConfig;
-
 const
   AV_DICT_MATCH_CASE      = 1;
   AV_DICT_IGNORE_SUFFIX   = 2;
@@ -103,7 +87,3 @@ procedure av_dict_copy(var dst: PAVDictionary; src: PAVDictionary; flags: cint);
  *)
 procedure av_dict_free(var m: PAVDictionary);
   cdecl; external av__util;
-
-implementation
-
-end.
