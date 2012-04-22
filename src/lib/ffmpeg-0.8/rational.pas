@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/rational.h
- * avutil version 50.43.0
+ * avutil version 51.9.1
  *
  *)
 
