@@ -26,9 +26,6 @@
  * libavutil/avutil.h:
  * version: 50.43.0
  *
- * include/keep pixfmt.h (change in revision 50.01.0)
- * Maybe, the pixelformats are not needed, but it has not been checked.
- *
  *)
 
 unit avutil;
@@ -73,7 +70,6 @@ const
                           (LIBAVUTIL_MIN_VERSION_RELEASE * VERSION_RELEASE);
 
 (* Check if linked versions are supported *)
-(*
 {$IF (LIBAVUTIL_VERSION < LIBAVUTIL_MIN_VERSION)}
   {$MESSAGE Error 'Linked version of libavutil is too old!'}
 {$IFEND}
@@ -81,7 +77,6 @@ const
 {$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
   {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
-*)
 
 (**
  * Return the LIBAVUTIL_VERSION_INT constant.
