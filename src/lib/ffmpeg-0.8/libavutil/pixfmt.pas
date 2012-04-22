@@ -18,8 +18,8 @@
  * This is a part of the Pascal port of ffmpeg.
  * - Changes and updates by the UltraStar Deluxe Team
  *
- * Conversion of libavutil/mem.h
- * avutil version 50.43.0
+ * Conversion of libavutil/pixfmt.h
+ * avutil version 51.9.1
  *
  *)
 

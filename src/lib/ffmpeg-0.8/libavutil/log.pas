@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/log.h
- * avutil version 50.43.0
+ * avutil version 51.9.1
  *
  *)
 
@@ -46,7 +46,7 @@ type
      * A pointer to a function which returns the name of a context
      * instance ctx associated with the class.
      *)
-    item_name: function(): PAnsiChar; cdecl;
+    item_name: function(ctx: pointer): PAnsiChar; cdecl;
 
     (**
      * a pointer to the first option specified in the class if any or NULL
@@ -80,7 +80,8 @@ type
      * A function for extended searching, e.g. in possible
      * children objects.
      *)
-    opt_find: function(): PAVOption; cdecl;
+    opt_find: function(obj: pointer; name: {const} PAnsiChar; unit: {const} PAnsiChar;
+                       opt_flags: cint; search_flags: cint): PAVOption; cdecl;
   end;
 
 
