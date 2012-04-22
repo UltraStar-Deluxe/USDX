@@ -1286,7 +1286,7 @@ type
        or AVFormatContext, which begin with an AVClass.
        Needed because av_log is in libavcodec and has no visibility
        of AVIn/OutputFormat *)
-    item_name: function(): PAnsiChar; cdecl;
+    item_name: function(ctx: pointer): PAnsiChar; cdecl;
     option: PAVOption;
 
 {$IF LIBAVUTIL_VERSION >= 50015000} // 50.15.0
