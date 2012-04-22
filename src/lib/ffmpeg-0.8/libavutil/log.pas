@@ -80,7 +80,7 @@ type
      * A function for extended searching, e.g. in possible
      * children objects.
      *)
-    opt_find: function(obj: pointer; name: {const} PAnsiChar; unit: {const} PAnsiChar;
+    opt_find: function(obj: pointer; name: {const} PAnsiChar; unit_: {const} PAnsiChar;
                        opt_flags: cint; search_flags: cint): PAVOption; cdecl;
   end;
 
