@@ -78,6 +78,29 @@ const
   {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
+{$INCLUDE libavutil/cpu.pas}
+
+{$INCLUDE libavutil/dict.pas}
+
+{$INCLUDE libavutil/error.pas}
+
+{$INCLUDE libavutil/mathematics.pas}
+
+{$INCLUDE libavutil/mem.pas}
+
+{$INCLUDE libavutil/opt.pas}
+
+{$INCLUDE libavutil/log.pas}
+
+{$INCLUDE libavutil/pixfmt.pas}
+
+{$INCLUDE libavutil/samplefmt.pas}
+
+(* libavutil/common.h *) // until now MKTAG and MKBETAG is all from common.h KMS 19/5/2010
+
+function MKTAG  (a, b, c, d: AnsiChar): integer;
+function MKBETAG(a, b, c, d: AnsiChar): integer;
+
 (**
  * Return the LIBAVUTIL_VERSION_INT constant.
  *)
@@ -139,29 +162,6 @@ type
  *)
 function av_get_picture_type_char(pict_type: TAVPictureType): Pchar;
   cdecl; external av__util;
-
-{$INCLUDE libavutil/cpu.pas}
-
-{$INCLUDE libavutil/dict.pas}
-
-{$INCLUDE libavutil/error.pas}
-
-{$INCLUDE libavutil/mathematics.pas}
-
-{$INCLUDE libavutil/mem.pas}
-
-{$INCLUDE libavutil/opt.pas}
-
-{$INCLUDE libavutil/log.pas}
-
-{$INCLUDE libavutil/pixfmt.pas}
-
-{$INCLUDE libavutil/samplefmt.pas}
-
-(* libavutil/common.h *) // until now MKTAG and MKBETAG is all from common.h KMS 19/5/2010
-
-function MKTAG  (a, b, c, d: AnsiChar): integer;
-function MKBETAG(a, b, c, d: AnsiChar): integer;
 
 implementation
 

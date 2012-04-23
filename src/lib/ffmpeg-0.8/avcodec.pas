@@ -173,6 +173,10 @@ const
   FF_API_GET_PIX_FMT_NAME = LIBAVCODEC_VERSION_MAJOR < 54;    
 {$endif}
 
+{$IF FF_API_OLD_AUDIOCONVERT}
+  {$I libavcodec/audioconvert.pas}
+{$ENDIF}
+
 type
   FF_INTERNALC_MEM_TYPE = cuint;
   
@@ -524,8 +528,6 @@ const
   CODEC_TYPE_NB         = AVMEDIA_TYPE_NB;
 
 {$IF FF_API_OLD_AUDIOCONVERT}
-
-{$I libavcodec/audioconvert.pas}
 
 const
   {* Audio channel masks *}
