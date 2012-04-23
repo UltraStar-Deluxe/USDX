@@ -515,6 +515,7 @@ type
     CODEC_ID_FFMETADATA= $21000   ///< Dummy codec for streams containing only metadata information.
   );
 
+{$IF LIBAVCODEC_VERSION_MAJOR < 53}
 type
   TCodecType = TAVMediaType;
 
@@ -526,6 +527,21 @@ const
   CODEC_TYPE_SUBTITLE   = AVMEDIA_TYPE_SUBTITLE;
   CODEC_TYPE_ATTACHMENT = AVMEDIA_TYPE_ATTACHMENT;
   CODEC_TYPE_NB         = AVMEDIA_TYPE_NB;
+{$IFEND}
+
+{$IF FF_API_OLD_SAMPLE_FMT}
+type
+  TSampleFormat = TAVSampleFormat;
+
+const
+  SAMPLE_FMT_NONE = AV_SAMPLE_FMT_NONE;
+  SAMPLE_FMT_U8   = AV_SAMPLE_FMT_U8;
+  SAMPLE_FMT_S16  = AV_SAMPLE_FMT_S16;
+  SAMPLE_FMT_S32  = AV_SAMPLE_FMT_S32;
+  SAMPLE_FMT_FLT  = AV_SAMPLE_FMT_FLT;
+  SAMPLE_FMT_DBL  = AV_SAMPLE_FMT_DBL;
+  SAMPLE_FMT_NB   = AV_SAMPLE_FMT_NB;
+{$IFEND}
 
 {$IF FF_API_OLD_AUDIOCONVERT}
 
@@ -2826,6 +2842,12 @@ type
 
 {$IF FF_API_FLAC_GLOBAL_OPTS}
     (**
+     * @defgroup flac_opts FLAC options
+     * @deprecated Use FLAC encoder private options instead.
+     * @{
+     *)
+
+    (**
      * search method for selecting prediction order
      * - encoding: Set by user.
      * - decoding: unused
@@ -2880,7 +2902,7 @@ type
     
     (**
      * Bits per sample/pixel of internal libavcodec pixel/sample format.
-     * This field is applicable only when sample_fmt is SAMPLE_FMT_S32.
+     * This field is applicable only when sample_fmt is AV_SAMPLE_FMT_S32.
      * - encoding: set by user.
      * - decoding: set by libavcodec.
      *)
