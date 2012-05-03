@@ -155,19 +155,37 @@ function av_find_nearest_q_idx(q: TAVRational; q_list: {const} PAVRationalArray)
 
 implementation
 
-function av_cmp_q (a: TAVRational; b: TAVRational): cint;
+function av_cmp_q (a: TAVRational; b: TAVRational): cint; {$IFDEF HasInline}inline;{$ENDIF}
 var
   tmp: cint64;
 begin
   tmp := a.num * cint64(b.den) - b.num * cint64(a.den);
 
+{ old version
   if (tmp <> 0) then
     Result := (tmp shr 63) or 1
   else
+    Result := 0;
+}
+{ C original:
+    if(tmp) return ((tmp ^ a.den ^ b.den)>>63)|1;
+    else if(b.den && a.den) return 0;
+    else if(a.num && b.num) return (a.num>>31) - (b.num>>31);
+    else                    return INT_MIN;
+}
+
+  if tmp <> 0 then
+    Result := ((tmp xor a.den xor b.den) >> 63) or 1
+  else if (b.den and a.den) <> 0 then
     Result := 0
+  else if (a.num and b.num) <> 0 then
+    Result := (a.num >> 31) - (b.num >> 31)
+  else
+    Result := low(cint);
+
 end;
 
-function av_q2d(a: TAVRational): cdouble;
+function av_q2d(a: TAVRational): cdouble; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := a.num / a.den;
 end;
