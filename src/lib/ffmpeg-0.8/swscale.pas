@@ -19,7 +19,7 @@
  * - Ported by the UltraStar Deluxe Team
  *
  * Conversion of libswscale/swscale.h
- * version: 0.14.1
+ * version: 2.0.0
  *)
  
 unit swscale;
@@ -71,8 +71,8 @@ const
  * fix. 
  *)
   (* Max. supported version by this header *)
-  LIBSWSCALE_MAX_VERSION_MAJOR   =  0;
-  LIBSWSCALE_MAX_VERSION_MINOR   = 11;
+  LIBSWSCALE_MAX_VERSION_MAJOR   =  2;
+  LIBSWSCALE_MAX_VERSION_MINOR   =  0;
   LIBSWSCALE_MAX_VERSION_RELEASE =  0;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -296,7 +296,9 @@ function sws_scale(context: PSwsContext; {const} srcSlice: PPCuint8Array; {const
   cdecl; external sw__scale;
 
 {$if LIBSWSCALE_VERSION_MAJOR < 1}
-// deprecated. Use sws_scale() instead.
+(**
+ * @deprecated. Use sws_scale() instead.
+ *)
 function sws_scale_ordered(context: PSwsContext; {const} src: PPCuint8Array;
                            srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
 	                   dst: PPCuint8Array; dstStride: PCintArray): cint;
@@ -440,7 +442,7 @@ function sws_getCachedContext(context: PSwsContext;
  *)
 procedure sws_convertPalette8ToPacked32({const} src:      PPCuint8Array;
                                          dst:             PPCuint8Array;
-					 num_pixels:      clong;
+					 num_pixels:      cint;
 					 {const} palette: PPCuint8Array);
   cdecl; external sw__scale;
 
@@ -456,7 +458,7 @@ procedure sws_convertPalette8ToPacked32({const} src:      PPCuint8Array;
  *)
 procedure sws_convertPalette8ToPacked24({const} src:      PPCuint8Array;
                                          dst:             PPCuint8Array;
-					 num_pixels:      clong;
+					 num_pixels:      cint;
 					 {const} palette: PPCuint8Array);
   cdecl; external sw__scale;
 

@@ -169,9 +169,7 @@ type
   PPURLContext = ^PURLContext;
   PURLContext = ^TURLContext;
   TURLContext = record
-{$IF FF_API_URL_CLASS}
     av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
-{$ENDIF}
     prot: PURLProtocol;
     flags: cint;
     is_streamed: cint;  (**< true if streamed (no seek possible), default = false *)
@@ -221,9 +219,9 @@ const
  * constants, optionally ORed with other flags.
  * @
  *)
-  URL_RDONLY = 0; (**< read-only *)
-  URL_WRONLY = 1; (**< write-only *)
-  URL_RDWR   = 2; (**< read-write *)
+  URL_RDONLY = 1; (**< read-only *)
+  URL_WRONLY = 2; (**< write-only *)
+  URL_RDWR   = URL_RDONLY or URL_WRONLY; (**< read-write *)
 (**
  * @
  *)
@@ -253,8 +251,8 @@ var
 
 (**
  * @defgroup old_url_funcs Old url_* functions
- * @eprecated. Use the buffered API based on AVIOContext instead.
- * @
+ * @deprecated use the buffered API based on AVIOContext instead
+ * @{
  *)
 function url_open_protocol(puc: PPURLContext; up: PURLProtocol;
                            url: {const} PAnsiChar; flags: cint): cint;
@@ -333,8 +331,8 @@ function av_alloc_put_byte(
 
 (**
  * @defgroup old_avio_funcs Old put_/get_*() functions
- * The following functions are deprecated. Use the "avio_"-prefixed functions instead.
- * @
+ * @deprecated use the avio_ -prefixed functions instead.
+ * @{
  *)
 function get_buffer(s: PAVIOContext; buf: PByteArray; size: cint): cint;
   cdecl; external av__format; deprecated;
@@ -395,8 +393,8 @@ function av_url_read_fseek(h: PAVIOContext; stream_index: cint;
 
 (**
  * @defgroup old_url_f_funcs Old url_f* functions
- * @deprecated, use the "avio_"-prefixed functions instead.
- * @
+ * @deprecated use the avio_ -prefixed functions instead.
+ * @{
  *)
 function url_fopen(var s: PAVIOContext; url: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format; deprecated;
@@ -491,7 +489,7 @@ function url_exist(url: {const} PAnsiChar): cint;
 {$ENDIF} // FF_API_OLD_AVIO
 
 (**
- * Return AVIO_* access flags corresponding to the access permissions
+ * Return AVIO_FLAG_* access flags corresponding to the access permissions
  * of the resource in url, or a negative value corresponding to an
  * AVERROR code in case of failure. The returned access flags are
  * masked by the value in flags.
@@ -502,8 +500,6 @@ function url_exist(url: {const} PAnsiChar): cint;
  * unless you are sure that no other processes are accessing the
  * checked resource.
  *
- * @note This function is slightly broken until next major bump
- *       because of AVIO_RDONLY == 0. Don't use it until then.
  *)
 function avio_check(url: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format;
@@ -516,27 +512,6 @@ function avio_check(url: {const} PAnsiChar; flags: cint): cint;
  *)
 procedure avio_set_interrupt_cb(interrupt_cb: Pointer);
   cdecl; external av__format;
-
-{$IF FF_API_REGISTER_PROTOCOL}
-{
-var
-  first_protocol: PURLProtocol; cvar; external av__format;
-}
-{$IFEND}
-
-{$IF FF_API_REGISTER_PROTOCOL}
-(**
- * @deprecated Use av_register_protocol() instead.
- *)
-function register_protocol(protocol: PURLProtocol): cint;
-  cdecl; external av__format; deprecated;
-
-(**
- * @deprecated Use av_register_protocol2() instead.
- *)
-function av_register_protocol(protocol: PURLProtocol): cint;
-  cdecl; external av__format; deprecated;
-{$ENDIF}
 
 (**
  * Allocate and initialize an AVIOContext for buffered I/O. It must be later
@@ -728,15 +703,6 @@ function avio_get_str16le(pb: PAVIOContext; maxlen: cint; buf: PAnsiChar; buflen
 function avio_get_str16be(pb: PAVIOContext; maxlen: cint; buf: PAnsiChar; buflen: cint): cint;
   cdecl; external av__format;
 
-{$IF FF_API_URL_RESETBUF}
-(** Reset the buffer for reading or writing.
- * @note Will drop any data currently in the buffer without transmitting it.
- * @param flags URL_RDONLY to set up the buffer for reading, or URL_WRONLY
- *        to set up the buffer for writing. *)
-function url_resetbuf(s: PAVIOContext; flags: cint): cint;
-  cdecl; external av__format;
-{$ENDIF}
-
 (**
  * @defgroup open_modes URL open modes
  * The flags argument to avio_open must be one of the following
@@ -745,15 +711,9 @@ function url_resetbuf(s: PAVIOContext; flags: cint): cint;
  *)
 
 const
-{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
-  AVIO_RDONLY = 0;    (**< read-only *)
-  AVIO_WRONLY = 1;    (**< write-only *)
-  AVIO_RDWR   = 2;    (**< read-write *)
-{$ELSE}
-  AVIO_RDONLY = 1;    (**< read-only *)
-  AVIO_WRONLY = 2;    (**< write-only *)
-  AVIO_RDWR   = 4;    (**< read-write *)
-{$ENDIF}
+  AVIO_FLAG_READ  = 1;    (**< read-only *)
+  AVIO_FLAG_WRITE = 2;    (**< write-only *)
+  AVIO_FLAG_READ_WRITE = AVIO_FLAG_READ or AVIO_FLAG_WRITE; (**< read-write *)
 (**
  * @
  *)
@@ -771,11 +731,7 @@ const
  * silently ignored.
  *)
 const
-{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
-  AVIO_FLAG_NONBLOCK = 4;    
-{$ELSE}
   AVIO_FLAG_NONBLOCK = 8;    
-{$ENDIF}
 
 (**
  * Create and initialize a AVIOContext for accessing the
@@ -822,11 +778,6 @@ function avio_open_dyn_buf(var s: PAVIOContext): cint;
  *)
 function avio_close_dyn_buf(s: PAVIOContext; var pbuffer: Pcuint8): cint;
   cdecl; external av__format;
-
-{$IF FF_API_UDP_GET_FILE}
-function udp_get_file_handle(h: PURLContext): cint;
-  cdecl; external av__format;
-{$ENDIF}
 
 (**
  * Iterate through names of available protocols.

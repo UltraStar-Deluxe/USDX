@@ -1,7 +1,4 @@
-1)	rational.pas
-inline function of av_cmp_q
-
-2)	avutil.pas
+1)	avutil.pas
 inline function av_x_if_null
 
 	avcodec.pas

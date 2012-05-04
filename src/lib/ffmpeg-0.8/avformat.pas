@@ -181,13 +181,6 @@ type
  *)
 
 const
-{
-  AV_METADATA_MATCH_CASE    = 1;
-  AV_METADATA_IGNORE_SUFFIX = 2;
-  AV_METADATA_DONT_STRDUP_KEY = 4;
-  AV_METADATA_DONT_STRDUP_VAL = 8;
-  AV_METADATA_DONT_OVERWRITE  = 16;
-}
   AV_METADATA_MATCH_CASE      = AV_DICT_MATCH_CASE;
   AV_METADATA_IGNORE_SUFFIX   = AV_DICT_IGNORE_SUFFIX;
   AV_METADATA_DONT_STRDUP_KEY = AV_DICT_DONT_STRDUP_KEY;
@@ -216,21 +209,6 @@ type
 function av_metadata_get(m: PAVDictionary; key: {const} PAnsiChar;
                          prev: {const} PAVDictionaryEntry; flags: cint): PAVDictionaryEntry;
   cdecl; external av__format;
-
-{$IF FF_API_OLD_METADATA}
-(**
- * Set the given tag in *pm, overwriting an existing tag.
- *
- * @param pm pointer to a pointer to a metadata struct. If *pm is NULL
- * a metadata struct is allocated and put in *pm.
- * @param key tag key to add to *pm (will be av_strduped)
- * @param value tag value to add to *pm (will be av_strduped)
- * @return >= 0 on success otherwise an error code <0
- * @deprecated Use av_metadata_set2() instead.
- *)
-function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar): cint;
-  cdecl; external av__format; deprecated;
-{$ENDIF}
 
 (**
  * Set the given tag in *pm, overwriting an existing tag.
@@ -409,6 +387,7 @@ type
   PAVInputFormat = ^TAVInputFormat;
   PAVIndexEntry = ^TAVIndexEntry;
 
+  PPAVStream = ^PAVStream;
   PAVStream = ^TAVStream;
   PAVPacketList = ^TAVPacketList;
 
@@ -437,10 +416,7 @@ type
     id: cint;                 ///< unique ID to identify the chapter
     time_base: TAVRational;   ///< time base in which the start/end timestamps are specified
     start, end_: cint64;      ///< chapter start/end time in time_base units
-{$IF FF_API_OLD_METADATA}
-    title: PAnsiChar;         ///< chapter title
-{$ENDIF}
-    metadata: PAVMetadata;
+    metadata: PAVDictionary;
   end;
 
   TAVChapterArray = array[0..(MaxInt div SizeOf(TAVChapter))-1] of TAVChapter;
@@ -465,8 +441,6 @@ type
     unsigned int prealloced_context:1;
     }
     bf_flags: byte; // 0:mpeg2ts_raw/1:mpeg2ts_compute_pcr/2:initial_pause/3:prealloced_context
-    video_codec_id: TCodecID;
-    audio_codec_id: TCodecID;
   end;
 
   TAVOutputFormat = record
@@ -714,10 +688,6 @@ type
      *)
     duration: cint64;
 
-{$IF FF_API_OLD_METADATA}
-    language: array [0..3] of PAnsiChar; (**< ISO 639-2/B 3-letter language code (empty string if undefined) *)
-{$ENDIF}
-
     (* av_read_frame() support *)
     need_parsing: TAVStreamParseType;
     parser: PAVCodecParserContext;
@@ -733,11 +703,6 @@ type
 
     nb_frames: cint64;                 ///< number of frames in this stream if known or 0
     
-    unused: array [0..4] of cint64;
-{$IF FF_API_OLD_METADATA}
-    filename: PAnsiChar; (**< source filename of the stream *)
-{$ENDIF}    
-
     disposition: cint; (**< AV_DISPOSITION_* bitfield *)
     probe_data: TAVProbeData;
     pts_buffer: array [0..MAX_REORDER_DELAY] of cint64;
@@ -807,20 +772,10 @@ type
     pb: PByteIOContext;
 
     nb_streams: cuint;
-    streams: array [0..MAX_STREAMS - 1] of PAVStream;
+    streams: PPAVStream;
     filename: array [0..1023] of AnsiChar; (* input or output filename *)
     (* stream info *)
     timestamp: cint64;
-{$IF FF_API_OLD_METADATA}
-    title: array [0..511] of AnsiChar;
-    author: array [0..511] of AnsiChar;
-    copyright: array [0..511] of AnsiChar;
-    comment: array [0..511] of AnsiChar;
-    album: array [0..511] of AnsiChar;
-    year: cint;  (**< ID3 year, 0 if none *)
-    track: cint; (**< track number, 0 if none *)
-    genre: array [0..31] of AnsiChar; (**< ID3 genre *)
-{$ENDIF}
 
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)
     (* private data for pts handling (do not modify directly). *)
@@ -857,13 +812,9 @@ type
 
     (* av_read_frame() support *)
     cur_st: PAVStream;
-    cur_ptr_deprecated: pbyte;
-    cur_len_deprecated: cint;
-    cur_pkt_deprecated: TAVPacket;
 
     (* av_seek_frame() support *)
     data_offset: cint64; (**< offset of the first packet *)
-    index_built: cint;
 
     mux_rate: cint;
     packet_size: cuint;
@@ -976,10 +927,6 @@ type
    *)
   TAVProgram = record
       id                : cint;
-{$IF FF_API_OLD_METADATA}
-      provider_name     : PAnsiChar;  ///< network name for DVB streams
-      name              : PAnsiChar;  ///< service name for DVB streams
-{$ENDIF}
       flags             : cint;
       discard           : TAVDiscard; ///< selects which program to discard and which to feed to the caller
       stream_index      : PCardinal;
@@ -1003,12 +950,6 @@ type
 procedure av_metadata_conv(ctx: PAVFormatContext; {const} d_conv: PAVMetadataConv;
                                                   {const} s_conv: PAVMetadataConv);
   cdecl; external av__format;
-
-{
-var
-  first_iformat: PAVInputFormat; external av__format;
-  first_oformat: PAVOutputFormat; external av__format;
-}
 
 (**
  * If f is NULL, returns the first registered input format,
@@ -1038,11 +979,6 @@ procedure av_register_input_format(format: PAVInputFormat);
 procedure av_register_output_format(format: PAVOutputFormat);
   cdecl; external av__format;
 
-function guess_stream_format(short_name: PAnsiChar;
-                             filename: PAnsiChar;
-                             mime_type: PAnsiChar): PAVOutputFormat;
-  cdecl; external av__format; deprecated;
-
 (**
  * Return the output format in the list of registered output formats
  * which best matches the provided parameters, or return NULL if
@@ -1055,14 +991,6 @@ function guess_stream_format(short_name: PAnsiChar;
  * @param mime_type if non-NULL checks if mime_type matches with the
  * MIME type of the registered formats
  *)
-(**
- * @deprecated Use av_guess_format() instead.
- *)
-function guess_format(short_name: PAnsiChar;
-                      filename: PAnsiChar;
-                      mime_type: PAnsiChar): PAVOutputFormat;
-  cdecl; external av__format; deprecated;
-
 function av_guess_format(short_name: PAnsiChar;
                          filename: PAnsiChar;
                          mime_type: PAnsiChar): PAVOutputFormat;
@@ -1073,7 +1001,7 @@ function av_guess_format(short_name: PAnsiChar;
  *)
 function av_guess_codec(fmt: PAVOutputFormat; short_name: PAnsiChar;
                         filename: PAnsiChar; mime_type: PAnsiChar;
-                        type_: TCodecType): TCodecID;
+                        type_: TAVMediaType): TCodecID;
   cdecl; external av__format;
 
 (**
@@ -1221,12 +1149,6 @@ function av_open_input_file(var ic_ptr: PAVFormatContext; filename: PAnsiChar;
  * explicitly allocated as well!
  *)
 function avformat_alloc_context(): PAVFormatContext;
-  cdecl; external av__format;
-
-(**
- * @deprecated Use avformat_alloc_context() instead.
- *)
-function av_alloc_format_context(): PAVFormatContext;
   cdecl; external av__format;
 
 (**
@@ -1614,22 +1536,6 @@ function av_write_trailer(s: pAVFormatContext): cint;
 procedure dump_format(ic: PAVFormatContext; index: cint; url: PAnsiChar;
                is_output: cint);
   cdecl; external av__format;
-
-(**
- * Parse width and height out of string str.
- * @deprecated Use av_parse_video_frame_size instead.
- *)
-function parse_image_size(width_ptr: PCint; height_ptr: PCint;
-                          str: PAnsiChar): cint;
-  cdecl; external av__format; deprecated;
-
-(**
- * Convert framerate from a string to a fraction.
- * @deprecated Use av_parse_video_frame_rate instead.
- *)
-function parse_frame_rate(frame_rate: PCint; frame_rate_base: PCint;
-                          arg: PByteArray): cint;
-  cdecl; external av__format; deprecated;
 
 (**
  * Parse datestr and return a corresponding number of microseconds.

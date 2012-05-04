@@ -1162,11 +1162,14 @@ type
  * Additional packet data that can be provided by the container.
  * Packet can contain several types of side information.
  *)
-    side_data: ^record
-      data:  Puint8;
+    side_data: pointer;
+    {
+    record
+      data:  Pcuint8;
       size:  cint;
       type_: TAVPacketSideDataType;
     end;
+    }
     side_data_elems: cint;
 
 (*
@@ -3409,7 +3412,7 @@ procedure av_free_packet(pkt: PAVPacket);
  * @return pointer to fresh allocated data or NULL otherwise
  *)
 function av_packet_new_side_data(pkt: PAVPacket; type_: TAVPacketSideDataType;
-                                 size: cint): Puint8;
+                                 size: cint): Pcuint8;
   cdecl; external av__codec;
 
 (**
@@ -3421,10 +3424,10 @@ function av_packet_new_side_data(pkt: PAVPacket; type_: TAVPacketSideDataType;
  * @return pointer to data if present or NULL otherwise
  *)
 function av_packet_get_side_data(pkt: PAVPacket; type_: TAVPacketSideDataType;
-                                 size: Pcint): Puint8;
+                                 size: Pcint): Pcuint8;
   cdecl; external av__codec;
 
-function av_packet_merge_side_data(pkt: PAVPacket);cint;
+function av_packet_merge_side_data(pkt: PAVPacket): cint;
   cdecl; external av__codec;
 
 function av_packet_split_side_data(pkt: PAVPacket): cint;
