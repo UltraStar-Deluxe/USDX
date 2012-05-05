@@ -347,7 +347,11 @@ begin
     Exit;
   end;
 
+{$IF LIBAVFORMAT_VERSION < 52110000} // < 52.110.0
   fStream := fFormatContext^.streams[fStreamIndex];
+{$ELSE}
+  fStream := Pointer(fFormatContext^.streams^) + fStreamIndex;
+{$IFEND}
   fCodecContext := fStream^.codec;
 
   fCodec := avcodec_find_decoder(fCodecContext^.codec_id);

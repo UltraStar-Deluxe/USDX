@@ -266,7 +266,11 @@ begin
 
   for i := 0 to FormatCtx.nb_streams-1 do
   begin
+{$IF LIBAVFORMAT_VERSION < 52110000} // < 52.110.0
     Stream := FormatCtx.streams[i];
+{$ELSE}
+    Stream := Pointer(FormatCtx.streams^) + i;
+{$IFEND}
 
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec.codec_type = CODEC_TYPE_VIDEO) and
@@ -312,7 +316,11 @@ begin
 
   for i := 0 to FormatCtx^.nb_streams-1 do
   begin
+{$IF LIBAVFORMAT_VERSION < 52110000} // < 52.110.0
     Stream := FormatCtx^.streams[i];
+{$ELSE}
+    Stream := Pointer(FormatCtx^.streams^) + i;
+{$IFEND}
 
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec^.codec_type = CODEC_TYPE_AUDIO) then
