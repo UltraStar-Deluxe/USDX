@@ -181,13 +181,6 @@ type
  *)
 
 const
-{
-  AV_METADATA_MATCH_CASE    = 1;
-  AV_METADATA_IGNORE_SUFFIX = 2;
-  AV_METADATA_DONT_STRDUP_KEY = 4;
-  AV_METADATA_DONT_STRDUP_VAL = 8;
-  AV_METADATA_DONT_OVERWRITE  = 16;
-}
   AV_METADATA_MATCH_CASE      = AV_DICT_MATCH_CASE;
   AV_METADATA_IGNORE_SUFFIX   = AV_DICT_IGNORE_SUFFIX;
   AV_METADATA_DONT_STRDUP_KEY = AV_DICT_DONT_STRDUP_KEY;
@@ -372,6 +365,8 @@ const
 
   // used by AVStream
   MAX_REORDER_DELAY = 16;
+  MAX_PROBE_PACKETS = 2500;
+  MAX_STD_TIMEBASES = 60*12+5;
 
   // used by TAVProgram
   AV_PROGRAM_RUNNING = 1;
@@ -394,7 +389,6 @@ const
   // used by TAVFormatContext.debug
   FF_FDEBUG_TS = 0001;
 
-  MAX_PROBE_PACKETS = 2500;
   RAW_PACKET_BUFFER_SIZE = 2500000;
 
 type
@@ -409,6 +403,7 @@ type
   PAVInputFormat = ^TAVInputFormat;
   PAVIndexEntry = ^TAVIndexEntry;
 
+  PPAVStream = ^PAVStream;
   PAVStream = ^TAVStream;
   PAVPacketList = ^TAVPacketList;
 
@@ -440,7 +435,7 @@ type
 {$IF FF_API_OLD_METADATA}
     title: PAnsiChar;         ///< chapter title
 {$ENDIF}
-    metadata: PAVMetadata;
+    metadata: PAVDictionary;
   end;
 
   TAVChapterArray = array[0..(MaxInt div SizeOf(TAVChapter))-1] of TAVChapter;
@@ -651,7 +646,7 @@ type
     min_distance: cint;         (**< Minimum distance between this and the previous keyframe, used to avoid unneeded searching. *)
   end;
 
- (**
+(**
   * Stream structure.
   * New fields can be added to the end with minor version bumps.
   * Removal, reordering and changes to existing fields require a major
@@ -788,6 +783,33 @@ type
      * Number of frames that have been demuxed during av_find_stream_info()
      *)
     codec_info_nb_frames: cint;
+
+    (**
+     * Stream Identifier
+     * This is the MPEG-TS stream identifier +1
+     * 0 means unknown
+     *)
+    stream_identifier: cint;
+
+    (**
+     * Stream informations used internally by av_find_stream_info()
+     *)
+    info: pointer;
+    {
+    record
+      last_dts: cint64;
+      duration_gcd: cint64;
+      duration_count: cint;
+      duration_error: array[0..MAX_STD_TIMEBASES-1] of cdouble;
+      codec_info_duration: cint64;
+     end;
+     }
+
+    (**
+     * flag to indicate that probing is requested
+     * NOT PART OF PUBLIC API
+     *)
+    request_probe: cint;
   end;
 
  (**
@@ -807,7 +829,11 @@ type
     pb: PByteIOContext;
 
     nb_streams: cuint;
+{$IF FF_API_MAX_STREAMS}
     streams: array [0..MAX_STREAMS - 1] of PAVStream;
+{$ELSE}
+    streams: PPAVStream;
+{$ENDIF}
     filename: array [0..1023] of AnsiChar; (* input or output filename *)
     (* stream info *)
     timestamp: cint64;
