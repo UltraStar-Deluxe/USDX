@@ -1,9 +1,6 @@
-1)	rational.pas
-inline function of av_cmp_q
-
-2)	opt.pas
+1)	opt.pas
 PAVClass
 
-3)	avutil.pas
+2)	avutil.pas
 inline function av_x_if_null
 inline function av_size_mult
