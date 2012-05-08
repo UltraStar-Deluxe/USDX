@@ -273,6 +273,7 @@ end;
 function TFFmpegDecodeStream.Open(const Filename: IPath): boolean;
 var
   SampleFormat: TAudioSampleFormat;
+  TestFrame: TAVPacket;
   AVResult: integer;
 begin
   Result := false;
@@ -306,6 +307,14 @@ begin
     Exit;
   end;
 
+{ av_find_stream_info is deprecated and should be replaced by av_read_frame. Untested.
+  if (av_read_frame(fFormatCtx, TestFrame) < 0) then
+  begin
+    Log.LogError('av_read_frame failed: "' + Filename.ToNative + '"', 'UAudio_FFmpeg');
+    Close();
+    Exit;
+  end;
+}
   // FIXME: hack used by ffplay. Maybe should not use url_feof() to test for the end
   fFormatCtx^.pb.eof_reached := 0;
 
