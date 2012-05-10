@@ -198,7 +198,7 @@ type
     priv_data_size: cint;
     {const} priv_data_class: PAVClass;
     flags: cint;
-    url_check: function (h: PURLContext; mask: cint): cint;
+    url_check: function (h: PURLContext; mask: cint): cint; cdecl;
   end;
 
   PURLPollEntry = ^TURLPollEntry;
