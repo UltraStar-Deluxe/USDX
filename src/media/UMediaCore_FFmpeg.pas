@@ -199,12 +199,13 @@ begin
   inherited;
 
   CheckVersions();
-  
+
   {$IF LIBAVFORMAT_VERSION < 52110000} // 52.110.0
   av_register_protocol(@UTF8FileProtocol);
   {$ELSE}
   av_register_protocol2(@UTF8FileProtocol, sizeof(UTF8FileProtocol));
   {$IFEND}
+
   AVCodecLock := SDL_CreateMutex();
 end;
 
