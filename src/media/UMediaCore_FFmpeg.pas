@@ -103,10 +103,10 @@ uses
   SysUtils,
   UConfig;
 
-function FFmpegStreamOpen(h: PURLContext; filename: PChar; flags: cint): cint; cdecl; forward;
+function FFmpegStreamOpen(h: PURLContext; filename: PAnsiChar; flags: cint): cint; cdecl; forward;
 function FFmpegStreamRead(h: PURLContext; buf: PByteArray; size: cint): cint; cdecl; forward;
 function FFmpegStreamWrite(h: PURLContext; buf: PByteArray; size: cint): cint; cdecl; forward;
-function FFmpegStreamSeek(h: PURLContext; pos: int64; whence: cint): int64; cdecl; forward;
+function FFmpegStreamSeek(h: PURLContext; pos: cint64; whence: cint): cint64; cdecl; forward;
 function FFmpegStreamClose(h: PURLContext): cint; cdecl; forward;
 
 const
@@ -358,7 +358,7 @@ end;
  * http://www.mail-archive.com/libav-user@mplayerhq.hu/msg02460.html
  *}
 
-function FFmpegStreamOpen(h: PURLContext; filename: PChar; flags: cint): cint; cdecl;
+function FFmpegStreamOpen(h: PURLContext; filename: PAnsiChar; flags: cint): cint; cdecl;
 var
   Stream: TStream;
   Mode: word;
@@ -423,7 +423,7 @@ begin
   end;
 end;
 
-function FFmpegStreamSeek(h: PURLContext; pos: int64; whence: cint): int64; cdecl;
+function FFmpegStreamSeek(h: PURLContext; pos: cint64; whence: cint): cint64; cdecl;
 var
   Stream : TStream;
   Origin : TSeekOrigin;
