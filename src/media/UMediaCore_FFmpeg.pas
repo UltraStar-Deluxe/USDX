@@ -200,7 +200,7 @@ begin
 
   CheckVersions();
 
-  {$IF LIBAVFORMAT_VERSION < 52110000} // 52.110.0
+  {$IF LIBAVFORMAT_VERSION <= 52111000} // 52.110.0
   av_register_protocol(@UTF8FileProtocol);
   {$ELSE}
   av_register_protocol2(@UTF8FileProtocol, sizeof(UTF8FileProtocol));
@@ -267,7 +267,7 @@ begin
 
   for i := 0 to FormatCtx.nb_streams-1 do
   begin
-{$IF LIBAVFORMAT_VERSION < 52110000} // < 52.110.0
+{$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
     Stream := FormatCtx.streams[i];
 {$ELSE}
     Stream := Pointer(FormatCtx.streams^) + i;
@@ -317,7 +317,7 @@ begin
 
   for i := 0 to FormatCtx^.nb_streams-1 do
   begin
-{$IF LIBAVFORMAT_VERSION < 52110000} // < 52.110.0
+{$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
     Stream := FormatCtx^.streams[i];
 {$ELSE}
     Stream := Pointer(FormatCtx^.streams^) + i;
@@ -375,9 +375,9 @@ begin
 
   FilePath := Path(filename);
 
-  if ((flags and URL_RDWR) <> 0) then
+  if ((flags and URL_RDWR) = URL_RDWR) then
     Mode := fmCreate
-  else if ((flags and URL_WRONLY) <> 0) then
+  else if ((flags and URL_WRONLY) = URL_WRONLY) then
     Mode := fmCreate // TODO: fmCreate is Read+Write -> reopen with fmOpenWrite
   else
     Mode := fmOpenRead or fmShareDenyWrite;

@@ -347,7 +347,7 @@ begin
     Exit;
   end;
 
-{$IF LIBAVFORMAT_VERSION < 52110000} // < 52.110.0
+{$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
   fStream := fFormatContext^.streams[fStreamIndex];
 {$ELSE}
   fStream := Pointer(fFormatContext^.streams^) + fStreamIndex;

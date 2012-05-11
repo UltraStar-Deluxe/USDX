@@ -332,7 +332,7 @@ begin
 
   //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFmpeg');
 
-{$IF LIBAVFORMAT_VERSION < 52110000} // < 52.110.0
+{$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
   fAudioStream := fFormatCtx.streams[fAudioStreamIndex];
 {$ELSE}
   fAudioStream := Pointer(fFormatCtx.streams^) + fAudioStreamIndex;
