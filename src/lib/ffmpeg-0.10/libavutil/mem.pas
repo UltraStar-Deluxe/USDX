@@ -38,22 +38,22 @@
  * be allocated.
  * @see av_mallocz()
  *)
-function av_malloc(size: FF_INTERNAL_MEM_TYPE): pointer;
+function av_malloc(size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
  * Allocate or reallocate a block of memory.
  * If ptr is NULL and size > 0, allocate a new block. If 
  * size is zero, free the memory block pointed to by ptr.
- * @param size Size in bytes for the memory block to be allocated or
- * reallocated.
  * @param ptr Pointer to a memory block already allocated with
  * av_malloc(z)() or av_realloc() or NULL.
+ * @param size Size in bytes for the memory block to be allocated or
+ * reallocated.
  * @return Pointer to a newly reallocated block or NULL if the block
  * cannot be allocated or the function is used to free the memory block.
  * @see av_fast_realloc()
  *)
-function av_realloc(ptr: pointer; size: FF_INTERNAL_MEM_TYPE): pointer;
+function av_realloc(ptr: pointer; size: size_t): pointer;
   cdecl; external av__util; {av_alloc_size(2)}
 
 (**
@@ -64,10 +64,8 @@ function av_realloc(ptr: pointer; size: FF_INTERNAL_MEM_TYPE): pointer;
  * - It frees the input block in case of failure, thus avoiding the memory
  *   leak with the classic "buf = realloc(buf); if (!buf) return -1;".
  *)
-{ available only in 0.8.5 - 0.8.10
 function av_realloc_f(ptr: pointer; nelem: size_t; size: size_t): pointer;
   cdecl; external av__util;
-}
 
 (**
  * Free a memory block which has been allocated with av_malloc(z)() or
@@ -88,7 +86,7 @@ procedure av_free(ptr: pointer);
  * @return Pointer to the allocated block, NULL if it cannot be allocated.
  * @see av_malloc()
  *)
-function av_mallocz(size: FF_INTERNAL_MEM_TYPE): pointer;
+function av_mallocz(size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
@@ -101,10 +99,8 @@ function av_mallocz(size: FF_INTERNAL_MEM_TYPE): pointer;
  * @param size
  * @return Pointer to the allocated block, NULL if it cannot be allocated.
  *)
-(* available only in 0.8.5 - 0.8.10
 function av_calloc(nmemb: size_t; size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib}
-*)
 
 (**
  * Duplicate the string s.

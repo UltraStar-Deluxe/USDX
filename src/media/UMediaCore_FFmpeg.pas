@@ -270,9 +270,9 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
     Stream := FormatCtx.streams[i];
 {$ELSE}
-    Stream := Pointer(FormatCtx.streams^) + i;
+    Stream := (FormatCtx.streams + i)^;
 {$IFEND}
-
+ 
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec.codec_type = CODEC_TYPE_VIDEO) and
        (FirstVideoStream < 0) then
@@ -320,7 +320,7 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
     Stream := FormatCtx^.streams[i];
 {$ELSE}
-    Stream := Pointer(FormatCtx^.streams^) + i;
+    Stream := (FormatCtx^.streams + i)^;
 {$IFEND}
 
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0

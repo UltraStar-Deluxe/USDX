@@ -80,7 +80,7 @@ const
 const
   // TODO: The factor 3/2 might not be necessary as we do not need extra
   // space for synchronizing as in the tutorial.
-  AUDIO_BUFFER_SIZE = (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) div 2;
+  AUDIO_BUFFER_SIZE = (192000 * 3) div 2;
 
 type
   TFFmpegDecodeStream = class(TAudioDecodeStream)
@@ -290,9 +290,14 @@ begin
   Self.fFilename := Filename;
 
   // use custom 'ufile' protocol for UTF-8 support
-  if (av_open_input_file(fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil) <> 0) then
-  begin
-    Log.LogError('av_open_input_file failed: "' + Filename.ToNative + '"', 'UAudio_FFmpeg');
+  {$IF LIBAVFORMAT_VERSION >= 53001003)}
+  AVResult := avformat_open_input(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
+  {$ELSE}
+  AVResult := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
+  {$IFEND}
+  if (AVResult <> 0) then
+   begin
+    Log.LogError('Failed to open file "' + Filename.ToNative + '" ('+FFmpegCore.GetErrorString(AVResult)+')', 'UAudio_FFmpeg');
     Exit;
   end;
 
@@ -300,9 +305,14 @@ begin
   fFormatCtx^.flags := fFormatCtx^.flags or AVFMT_FLAG_GENPTS;
 
   // retrieve stream information
-  if (av_find_stream_info(fFormatCtx) < 0) then
-  begin
-    Log.LogError('av_find_stream_info failed: "' + Filename.ToNative + '"', 'UAudio_FFmpeg');
+  {$IF LIBAVFORMAT_VERSION >= 53002000)}
+  AVResult := avformat_find_stream_info(fFormatCtx, nil);
+  {$ELSE}
+  AVResult := av_find_stream_info(fFormatCtx);
+  {$IFEND}
+  if (AVResult < 0) then
+   begin
+    Log.LogError('No stream info found: "' + Filename.ToNative + '"', 'UAudio_FFmpeg');
     Close();
     Exit;
   end;
@@ -335,7 +345,7 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
   fAudioStream := fFormatCtx.streams[fAudioStreamIndex];
 {$ELSE}
-  fAudioStream := Pointer(fFormatCtx.streams^) + fAudioStreamIndex;
+  fAudioStream := (fFormatCtx.streams + fAudioStreamIndex)^;
 {$IFEND}
   fAudioStreamPos := 0;
   fCodecCtx := fAudioStream^.codec;
@@ -374,7 +384,11 @@ begin
   // fail if called concurrently by different threads.
   FFmpegCore.LockAVCodec();
   try
+    {$IF LIBAVCODEC_VERSION >= 5300500}
+    AVResult := avcodec_open2(fCodecCtx, fCodec, nil);
+    {$ELSE}
     AVResult := avcodec_open(fCodecCtx, fCodec);
+    {$IFEND}
   finally
     FFmpegCore.UnlockAVCodec();
   end;
@@ -448,7 +462,11 @@ begin
   // Close the video file
   if (fFormatCtx <> nil) then
   begin
+    {$IF LIBAVFORMAT_VERSION >= 53017003)}
+    avformat_close_input(@fFormatCtx);
+    {$ELSE}
     av_close_input_file(fFormatCtx);
+    {$IFEND}
     fFormatCtx := nil;
   end;
 
@@ -672,6 +690,8 @@ var
   ErrorCode: integer;
   StartSilence: double;       // duration of silence at start of stream
   StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
+  fs: integer;
+  ue: integer;
 
   // Note: pthreads wakes threads waiting on a mutex in the order of their
   // priority and not in FIFO order. SDL does not provide any option to
@@ -817,7 +837,12 @@ begin
         end;
 
         // check for errors
-        if (url_ferror(ByteIOCtx) <> 0) then
+	{$IF (LIBAVFORMAT_VERSION >= 52103000)}
+	ue := ByteIOCtx^.error;
+	{$ELSE}
+	ue := url_ferror(ByteIOCtx);
+	{$IFEND}
+	if (ue <> 0) then
         begin
           // an error occured -> abort and wait for repositioning or termination
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
@@ -826,8 +851,12 @@ begin
 
         // url_feof() does not detect an EOF for some files
         // so we have to do it this way.
-        if ((fFormatCtx^.file_size <> 0) and
-            (ByteIOCtx^.pos >= fFormatCtx^.file_size)) then
+        {$IF (LIBAVFORMAT_VERSION >= 53009000)}
+        fs := avio_size(fFormatCtx^.pb);
+        {$ELSE}
+        fs := fFormatCtx^.file_size;
+        {$IFEND}
+        if ((fs <> 0) and (ByteIOCtx^.pos >= fs)) then
         begin
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
           Exit;
@@ -887,7 +916,11 @@ begin
     FFmpegCore.LockAVCodec();
     try
       avcodec_close(fCodecCtx);
+      {$IF LIBAVCODEC_VERSION >= 5300500}
+      avcodec_open2(fCodecCtx, fCodec, nil);
+      {$ELSE}
       avcodec_open(fCodecCtx, fCodec);
+      {$IFEND}
     finally
       FFmpegCore.UnlockAVCodec();
     end;
@@ -903,6 +936,10 @@ var
   {$IFDEF DebugFFmpegDecode}
   TmpPos: double;
   {$ENDIF}
+  {$IF LIBAVCODEC_VERSION >= 5300500}
+  AVFrame: PAVFrame;
+  got_frame_ptr: integer;
+  {$IFEND}
 begin
   Result := -1;
 
@@ -928,6 +965,11 @@ begin
     begin
       DataSize := BufferSize;
 
+//      {$IF LIBAVCODEC_VERSION >= 53025000} // 53.25.0
+//      PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, AVFrame,
+//	          @got_frame_ptr, @fAudioPaket);
+//      DataSize := AVFrame.nb_samples;
+//      Buffer   := PByteArray(AVFrame.data[0]);
       {$IF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
       PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(Buffer),
                   DataSize, @fAudioPaket);

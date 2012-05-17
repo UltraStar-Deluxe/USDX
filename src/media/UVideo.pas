@@ -322,7 +322,11 @@ begin
   fPboEnabled := PboSupported;
 
   // use custom 'ufile' protocol for UTF-8 support
+  {$IF LIBAVFORMAT_VERSION >= 53001003)}
+  errnum := avformat_open_input(@fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
+  {$ELSE}
   errnum := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
+  {$IFEND}
   if (errnum <> 0) then
   begin
     Log.LogError('Failed to open file "'+ FileName.ToNative +'" ('+FFmpegCore.GetErrorString(errnum)+')');
@@ -330,7 +334,12 @@ begin
   end;
 
   // update video info
-  if (av_find_stream_info(fFormatContext) < 0) then
+  {$IF LIBAVFORMAT_VERSION >= 53002000)}
+  errnum := avformat_find_stream_info(fFormatContext, nil);
+  {$ELSE}
+  errnum := av_find_stream_info(fFormatContext);
+  {$IFEND}
+  if (errnum < 0) then
   begin
     Log.LogError('No stream info found', 'TVideoPlayback_ffmpeg.Open');
     Close();
@@ -350,7 +359,7 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
   fStream := fFormatContext^.streams[fStreamIndex];
 {$ELSE}
-  fStream := Pointer(fFormatContext^.streams^) + fStreamIndex;
+  fStream := (fFormatContext^.streams + fStreamIndex)^;
 {$IFEND}
   fCodecContext := fStream^.codec;
 
@@ -377,7 +386,11 @@ begin
   // fail if called concurrently by different threads.
   FFmpegCore.LockAVCodec();
   try
+    {$IF LIBAVCODEC_VERSION >= 5300500)}
+    errnum := avcodec_open2(fCodecContext, fCodec, nil);
+    {$ELSE}
     errnum := avcodec_open(fCodecContext, fCodec);
+    {$IFEND}
   finally
     FFmpegCore.UnlockAVCodec();
   end;
@@ -570,7 +583,11 @@ begin
   end;
 
   if (fFormatContext <> nil) then
+    {$IF LIBAVFORMAT_VERSION >= 53017003)}
+    avformat_close_input(@fFormatContext);
+    {$ELSE}
     av_close_input_file(fFormatContext);
+    {$IFEND}
 
   fCodecContext  := nil;
   fFormatContext := nil;
@@ -616,6 +633,8 @@ var
   errnum: integer;
   AVPacket: TAVPacket;
   pts: double;
+  fs: integer;
+  ue: integer;
 begin
   Result := false;
   FrameFinished := 0;
@@ -645,7 +664,12 @@ begin
       end;
 
       // check for errors
-      if (url_ferror(pbIOCtx) <> 0) then
+      {$IF (LIBAVFORMAT_VERSION >= 52103000)}
+      ue := pbIOCtx^.error;
+      {$ELSE}
+      ue := url_ferror(pbIOCtx);
+      {$IFEND}
+      if (ue <> 0) then
       begin
         Log.LogError('Video decoding file error', 'TVideoPlayback_FFmpeg.DecodeFrame');
         Exit;
@@ -653,8 +677,12 @@ begin
 
       // url_feof() does not detect an EOF for some mov-files (e.g. deluxe.mov)
       // so we have to do it this way.
-      if ((fFormatContext^.file_size <> 0) and
-          (pbIOCtx^.pos >= fFormatContext^.file_size)) then
+      {$IF (LIBAVFORMAT_VERSION >= 53009000)}
+      fs := avio_size(fFormatContext^.pb);
+      {$ELSE}
+      fs := fFormatContext^.file_size;
+      {$IFEND}
+      if ((fs <> 0) and (pbIOCtx^.pos >= fs)) then
       begin
         fEOF := true;
         Exit;

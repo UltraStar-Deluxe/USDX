@@ -96,8 +96,26 @@ const
 type
   TReadWriteFunc = function(opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
   TSeekFunc = function(opaque: Pointer; offset: cint64; whence: cint): cint64; cdecl;
+  Tcallback = function(p: pointer): cint; cdecl;
 
 type
+(**
+ * Callback for checking whether to abort blocking functions.
+ * AVERROR_EXIT is returned in this case by the interrupted
+ * function. During blocking operations, callback is called with
+ * opaque as parameter. If the callback returns 1, the
+ * blocking operation will be aborted.
+ *
+ * No members can be added to this struct without a major bump, if
+ * new elements have been added after this struct in AVFormatContext
+ * or AVIOContext.
+ *)
+  PAVIOInterruptCB = ^TAVIOInterruptCB;
+  TAVIOInterruptCB = record
+    callback: Tcallback;
+    opaque: pointer;
+  end; (*TAVIOInterruptCB*)
+
 (**
  * Bytestream IO Context.
  * New fields can be added to the end with minor version bumps.
@@ -112,6 +130,21 @@ type
  *)
   PAVIOContext = ^TAVIOContext;
   TAVIOContext = record
+{$IFNDEF FF_API_OLD_AVIO}
+    (**
+     * A class for private options.
+     *
+     * If this AVIOContext is created by avio_open2(), av_class is set and
+     * passes the options down to protocols.
+     *
+     * If this AVIOContext is manually allocated, then av_class may be set by
+     * the caller.
+     *
+     * warning -- this field can be NULL, be sure to not pass this AVIOContext
+     * to any av_opt_* functions in that case.
+     *)
+    av_class: PAVClass;
+{$ENDIF}
     buffer: PByteArray;  (**< Start of the buffer. *)
     buffer_size: cint;   (**< Maximum buffer size *)
     buf_ptr: PByteArray; (**< Current position in the buffer *)
@@ -151,6 +184,12 @@ type
      * A combination of AVIO_SEEKABLE_ flags or 0 when the stream is not seekable.
      *)
     seekable: cint;
+
+    (**
+     * max filesize, used to limit allocations
+     * This field is internal to libavformat and access from outside is not allowed.
+     *)
+    maxsize: cint64;
   end;
 
 (* unbuffered I/O *)
@@ -169,9 +208,7 @@ type
   PPURLContext = ^PURLContext;
   PURLContext = ^TURLContext;
   TURLContext = record
-{$IF FF_API_URL_CLASS}
     av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
-{$ENDIF}
     prot: PURLProtocol;
     flags: cint;
     is_streamed: cint;  (**< true if streamed (no seek possible), default = false *)
@@ -179,6 +216,7 @@ type
     priv_data: pointer;
     filename: PAnsiChar; (**< specified URL *)
     is_connected: cint;
+    interrupt_callback: TAVIOInterruptCB;
   end;
 
 (**
@@ -216,14 +254,14 @@ function url_poll(poll_table: PURLPollEntry; n: cint; timeout: cint): cint;
 
 const
 (**
- * @defgroup open_modes URL open modes
+ * @name URL open modes
  * The flags argument to url_open and cosins must be one of the following
  * constants, optionally ORed with other flags.
- * @
+ * @{
  *)
-  URL_RDONLY = 0; (**< read-only *)
-  URL_WRONLY = 1; (**< write-only *)
-  URL_RDWR   = 2; (**< read-write *)
+  URL_RDONLY = 1;  (**< read-only *)
+  URL_WRONLY = 2;  (**< write-only *)
+  URL_RDWR   = {(URL_RDONLY|URL_WRONLY)} 3;  (**< read-write *)
 (**
  * @
  *)
@@ -240,7 +278,7 @@ const
  * Warning: non-blocking protocols is work-in-progress; this flag may be
  * silently ignored.
  *)
-  URL_FLAG_NONBLOCK = 4;
+  URL_FLAG_NONBLOCK = 8;
 
 type
   PURLInterruptCB = ^TURLInterruptCB;
@@ -315,7 +353,8 @@ type
 
 function init_put_byte(s: PAVIOContext;
                 buffer: PByteArray;
-                buffer_size: cint; write_flag: cint;
+                buffer_size: cint;
+		write_flag: cint;
                 opaque: pointer;
                 read_packet: TReadWriteFunc;
                 write_packet: TReadWriteFunc;
@@ -501,13 +540,11 @@ function url_exist(url: {const} PAnsiChar): cint;
  * one call to another. Thus you should not trust the returned value,
  * unless you are sure that no other processes are accessing the
  * checked resource.
- *
- * @note This function is slightly broken until next major bump
- *       because of AVIO_RDONLY == 0. Don't use it until then.
  *)
 function avio_check(url: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format;
 
+{$IFDEF FF_API_OLD_INTERRUPT_CB}
 (**
  * The callback is called in blocking functions to test regulary if
  * asynchronous interruption is needed. AVERROR_EXIT is returned
@@ -516,27 +553,7 @@ function avio_check(url: {const} PAnsiChar; flags: cint): cint;
  *)
 procedure avio_set_interrupt_cb(interrupt_cb: Pointer);
   cdecl; external av__format;
-
-{$IF FF_API_REGISTER_PROTOCOL}
-{
-var
-  first_protocol: PURLProtocol; cvar; external av__format;
-}
 {$IFEND}
-
-{$IF FF_API_REGISTER_PROTOCOL}
-(**
- * @deprecated Use av_register_protocol() instead.
- *)
-function register_protocol(protocol: PURLProtocol): cint;
-  cdecl; external av__format; deprecated;
-
-(**
- * @deprecated Use av_register_protocol2() instead.
- *)
-function av_register_protocol(protocol: PURLProtocol): cint;
-  cdecl; external av__format; deprecated;
-{$ENDIF}
 
 (**
  * Allocate and initialize an AVIOContext for buffered I/O. It must be later
@@ -728,32 +745,16 @@ function avio_get_str16le(pb: PAVIOContext; maxlen: cint; buf: PAnsiChar; buflen
 function avio_get_str16be(pb: PAVIOContext; maxlen: cint; buf: PAnsiChar; buflen: cint): cint;
   cdecl; external av__format;
 
-{$IF FF_API_URL_RESETBUF}
-(** Reset the buffer for reading or writing.
- * @note Will drop any data currently in the buffer without transmitting it.
- * @param flags URL_RDONLY to set up the buffer for reading, or URL_WRONLY
- *        to set up the buffer for writing. *)
-function url_resetbuf(s: PAVIOContext; flags: cint): cint;
-  cdecl; external av__format;
-{$ENDIF}
-
 (**
- * @defgroup open_modes URL open modes
+ * @name URL open modes
  * The flags argument to avio_open must be one of the following
  * constants, optionally ORed with other flags.
- * @
+ * @{
  *)
-
 const
-{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
-  AVIO_RDONLY = 0;    (**< read-only *)
-  AVIO_WRONLY = 1;    (**< write-only *)
-  AVIO_RDWR   = 2;    (**< read-write *)
-{$ELSE}
-  AVIO_RDONLY = 1;    (**< read-only *)
-  AVIO_WRONLY = 2;    (**< write-only *)
-  AVIO_RDWR   = 4;    (**< read-write *)
-{$ENDIF}
+  AVIO_FLAG_READ  = 1;                                      (**< read-only *)
+  AVIO_FLAG_WRITE = 2;                                      (**< write-only *)
+  AVIO_FLAG_READ_WRITE = {(AVIO_FLAG_READ|AVIO_FLAG_WRITE)} 3;  (**< read-write pseudo flag *)
 (**
  * @
  *)
@@ -771,11 +772,7 @@ const
  * silently ignored.
  *)
 const
-{$IF LIBAVFORMAT_VERSION_MAJOR < 53}
-  AVIO_FLAG_NONBLOCK = 4;    
-{$ELSE}
   AVIO_FLAG_NONBLOCK = 8;    
-{$ENDIF}
 
 (**
  * Create and initialize a AVIOContext for accessing the
@@ -791,6 +788,27 @@ const
  * AVERROR code in case of failure
  *)
 function avio_open(var s: PAVIOContext; url: {const} PAnsiChar; flags: cint): cint;
+  cdecl; external av__format;
+
+(**
+ * Create and initialize a AVIOContext for accessing the
+ * resource indicated by url.
+ * @note When the resource indicated by url has been opened in
+ * read+write mode, the AVIOContext can be used only for writing.
+ *
+ * @param s Used to return the pointer to the created AVIOContext.
+ * In case of failure the pointed to value is set to NULL.
+ * @param flags flags which control how the resource indicated by url
+ * is to be opened
+ * @param int_cb an interrupt callback to be used at the protocols level
+ * @param options  A dictionary filled with protocol-private options. On return
+ * this parameter will be destroyed and replaced with a dict containing options
+ * that were not found. May be NULL.
+ * @return 0 in case of success, a negative value corresponding to an
+ * AVERROR code in case of failure
+ *)
+function avio_open2(s: {PPAVIOContext} pointer; {const} url: PAnsiChar; flags: cint;
+	{const} int_cb: PAVIOInterruptCB; options: {PPAVDictionary} pointer): cint;
   cdecl; external av__format;
 
 (**
@@ -822,11 +840,6 @@ function avio_open_dyn_buf(var s: PAVIOContext): cint;
  *)
 function avio_close_dyn_buf(s: PAVIOContext; var pbuffer: Pcuint8): cint;
   cdecl; external av__format;
-
-{$IF FF_API_UDP_GET_FILE}
-function udp_get_file_handle(h: PURLContext): cint;
-  cdecl; external av__format;
-{$ENDIF}
 
 (**
  * Iterate through names of available protocols.
