@@ -270,7 +270,7 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
     Stream := FormatCtx.streams[i];
 {$ELSE}
-    Stream := (FormatCtx.streams + i)^;
+    Stream := PPAVStream(PtrUInt(FormatCtx.streams) + i * Sizeof(pointer))^;
 {$IFEND}
  
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
@@ -320,7 +320,7 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
     Stream := FormatCtx^.streams[i];
 {$ELSE}
-    Stream := (FormatCtx^.streams + i)^;
+    Stream := PPAVStream(PtrUInt(FormatCtx^.streams) + i * Sizeof(pointer))^;
 {$IFEND}
 
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0

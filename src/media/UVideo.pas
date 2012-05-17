@@ -359,7 +359,7 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
   fStream := fFormatContext^.streams[fStreamIndex];
 {$ELSE}
-  fStream := (fFormatContext^.streams + fStreamIndex)^;
+  fStream := PPAVStream(PtrUInt(fFormatContext^.streams) + fStreamIndex * Sizeof(pointer))^;
 {$IFEND}
   fCodecContext := fStream^.codec;
 

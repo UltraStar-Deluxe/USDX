@@ -345,7 +345,7 @@ begin
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
   fAudioStream := fFormatCtx.streams[fAudioStreamIndex];
 {$ELSE}
-  fAudioStream := (fFormatCtx.streams + fAudioStreamIndex)^;
+  fAudioStream := PPAVStream(PtrUInt(fFormatCtx.streams) + fAudioStreamIndex * Sizeof(pointer))^;
 {$IFEND}
   fAudioStreamPos := 0;
   fCodecCtx := fAudioStream^.codec;
@@ -936,10 +936,6 @@ var
   {$IFDEF DebugFFmpegDecode}
   TmpPos: double;
   {$ENDIF}
-  {$IF LIBAVCODEC_VERSION >= 5300500}
-  AVFrame: PAVFrame;
-  got_frame_ptr: integer;
-  {$IFEND}
 begin
   Result := -1;
 
