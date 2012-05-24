@@ -80,7 +80,7 @@ const
 const
   // TODO: The factor 3/2 might not be necessary as we do not need extra
   // space for synchronizing as in the tutorial.
-  AUDIO_BUFFER_SIZE = (192000 * 3) div 2;
+  AUDIO_BUFFER_SIZE = (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) div 2;
 
 type
   TFFmpegDecodeStream = class(TAudioDecodeStream)
@@ -293,7 +293,7 @@ begin
   {$IF LIBAVFORMAT_VERSION >= 53001003)}
   AVResult := avformat_open_input(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
   {$ELSE}
-  AVResult := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
+  AVResult := av_open_input_file(fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
   {$IFEND}
   if (AVResult <> 0) then
    begin
@@ -384,7 +384,7 @@ begin
   // fail if called concurrently by different threads.
   FFmpegCore.LockAVCodec();
   try
-    {$IF LIBAVCODEC_VERSION >= 5300500}
+    {$IF LIBAVCODEC_VERSION >= 53005000}
     AVResult := avcodec_open2(fCodecCtx, fCodec, nil);
     {$ELSE}
     AVResult := avcodec_open(fCodecCtx, fCodec);
@@ -916,7 +916,7 @@ begin
     FFmpegCore.LockAVCodec();
     try
       avcodec_close(fCodecCtx);
-      {$IF LIBAVCODEC_VERSION >= 5300500}
+      {$IF LIBAVCODEC_VERSION >= 53005000}
       avcodec_open2(fCodecCtx, fCodec, nil);
       {$ELSE}
       avcodec_open(fCodecCtx, fCodec);
