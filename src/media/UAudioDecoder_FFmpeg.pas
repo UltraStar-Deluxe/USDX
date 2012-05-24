@@ -690,8 +690,8 @@ var
   ErrorCode: integer;
   StartSilence: double;       // duration of silence at start of stream
   StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
-  fs: integer;
-  ue: integer;
+  fileSize: integer;
+  urlError: integer;
 
   // Note: pthreads wakes threads waiting on a mutex in the order of their
   // priority and not in FIFO order. SDL does not provide any option to
@@ -838,11 +838,11 @@ begin
 
         // check for errors
 	{$IF (LIBAVFORMAT_VERSION >= 52103000)}
-	ue := ByteIOCtx^.error;
+	urlError := ByteIOCtx^.error;
 	{$ELSE}
-	ue := url_ferror(ByteIOCtx);
+	urlError := url_ferror(ByteIOCtx);
 	{$IFEND}
-	if (ue <> 0) then
+	if (urlError <> 0) then
         begin
           // an error occured -> abort and wait for repositioning or termination
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
@@ -852,11 +852,11 @@ begin
         // url_feof() does not detect an EOF for some files
         // so we have to do it this way.
         {$IF (LIBAVFORMAT_VERSION >= 53009000)}
-        fs := avio_size(fFormatCtx^.pb);
+        fileSize := avio_size(fFormatCtx^.pb);
         {$ELSE}
-        fs := fFormatCtx^.file_size;
+        fileSize := fFormatCtx^.file_size;
         {$IFEND}
-        if ((fs <> 0) and (ByteIOCtx^.pos >= fs)) then
+        if ((fileSize <> 0) and (ByteIOCtx^.pos >= fileSize)) then
         begin
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
           Exit;
