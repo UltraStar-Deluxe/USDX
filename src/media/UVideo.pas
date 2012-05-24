@@ -386,7 +386,7 @@ begin
   // fail if called concurrently by different threads.
   FFmpegCore.LockAVCodec();
   try
-    {$IF LIBAVCODEC_VERSION >= 5300500)}
+    {$IF LIBAVCODEC_VERSION >= 53005000)}
     errnum := avcodec_open2(fCodecContext, fCodec, nil);
     {$ELSE}
     errnum := avcodec_open(fCodecContext, fCodec);
@@ -633,8 +633,8 @@ var
   errnum: integer;
   AVPacket: TAVPacket;
   pts: double;
-  fs: integer;
-  ue: integer;
+  fileSize: integer;
+  urlError: integer;
 begin
   Result := false;
   FrameFinished := 0;
@@ -665,11 +665,11 @@ begin
 
       // check for errors
       {$IF (LIBAVFORMAT_VERSION >= 52103000)}
-      ue := pbIOCtx^.error;
+      urlError := pbIOCtx^.error;
       {$ELSE}
-      ue := url_ferror(pbIOCtx);
+      urlError := url_ferror(pbIOCtx);
       {$IFEND}
-      if (ue <> 0) then
+      if (urlError <> 0) then
       begin
         Log.LogError('Video decoding file error', 'TVideoPlayback_FFmpeg.DecodeFrame');
         Exit;
@@ -678,11 +678,11 @@ begin
       // url_feof() does not detect an EOF for some mov-files (e.g. deluxe.mov)
       // so we have to do it this way.
       {$IF (LIBAVFORMAT_VERSION >= 53009000)}
-      fs := avio_size(fFormatContext^.pb);
+      fileSize := avio_size(fFormatContext^.pb);
       {$ELSE}
-      fs := fFormatContext^.file_size;
+      fileSize := fFormatContext^.file_size;
       {$IFEND}
-      if ((fs <> 0) and (pbIOCtx^.pos >= fs)) then
+      if ((fileSize <> 0) and (pbIOCtx^.pos >= fileSize)) then
       begin
         fEOF := true;
         Exit;
