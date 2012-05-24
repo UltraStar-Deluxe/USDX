@@ -1716,7 +1716,7 @@ function av_open_input_file(var ic_ptr: PAVFormatContext; filename: PAnsiChar;
  *
  * @note If you want to use custom IO, preallocate the format context and set its pb field.
  *)
-function avformat_open_input(ps: {PPAVFormatContext} pointer; {const} filename: PAnsiChar; fmt: PAVInputFormat; options: {PPAVDictionary} pointer): cint;
+function avformat_open_input(ps: PPAVFormatContext; {const} filename: PAnsiChar; fmt: PAVInputFormat; options: PPAVDictionary): cint;
   cdecl; external av__format;
 
 function av_demuxer_open(ic: PAVFormatContext; ap: TAVFormatParameters): cint;
@@ -1761,7 +1761,7 @@ function av_find_stream_info(ic: PAVFormatContext): cint; {deprecated}
  * @todo Let the user decide somehow what information is needed so that
  *       we do not waste time getting stuff the user does not need.
  *)
-function avformat_find_stream_info(ic: PAVFormatContext; options: {PPAVDictionary} pointer): cint;
+function avformat_find_stream_info(ic: PAVFormatContext; options: PPAVDictionary): cint;
   cdecl; external av__format;
 
 (**
@@ -1805,7 +1805,7 @@ function av_find_best_stream(ic: PAVFormatContext;
                         type_: TAVMediaType;
                         wanted_stream_nb: cint;
 			related_stream: cint;
-                        decoder_ret: {PPAVCodec} pointer;
+                        decoder_ret: PPAVCodec;
 			flags: cint): cint;
   cdecl; external av__format;
 

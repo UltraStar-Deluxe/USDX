@@ -1515,6 +1515,7 @@ type
 
   PAVClass = ^TAVClass;
 
+  PPAVCodec = ^PAVCodec;
   PAVCodec = ^TAVCodec;
 
   PAVHWAccel = ^TAVHWAccel;

@@ -1144,6 +1144,28 @@ function av_open_input_file(var ic_ptr: PAVFormatContext; filename: PAnsiChar;
   cdecl; external av__format;
 
 (**
+ * Open an input stream and read the header. The codecs are not opened.
+ * The stream must be closed with av_close_input_file().
+ *
+ * @param ps Pointer to user-supplied AVFormatContext (allocated by avformat_alloc_context).
+ *           May be a pointer to NULL, in which case an AVFormatContext is allocated by this
+ *           function and written into ps.
+ *           Note that a user-supplied AVFormatContext will be freed on failure.
+ * @param filename Name of the stream to open.
+ * @param fmt If non-NULL, this parameter forces a specific input format.
+ *            Otherwise the format is autodetected.
+ * @param options  A dictionary filled with AVFormatContext and demuxer-private options.
+ *                 On return this parameter will be destroyed and replaced with a dict containing
+ *                 options that were not found. May be NULL.
+ *
+ * @return 0 on success, a negative AVERROR on failure.
+ *
+ * @note If you want to use custom IO, preallocate the format context and set its pb field.
+ *)
+function avformat_open_input(ps: PPAVFormatContext; {const} filename: PAnsiChar; fmt: PAVInputFormat; options: PPAVDictionary): cint;
+  cdecl; external av__format;
+
+(**
  * Allocate an AVFormatContext.
  * Can be freed with av_free() but do not forget to free everything you
  * explicitly allocated as well!
@@ -1165,6 +1187,62 @@ function avformat_alloc_context(): PAVFormatContext;
  *       we do not waste time getting stuff the user does not need.
  *)
 function av_find_stream_info(ic: PAVFormatContext): cint;
+  cdecl; external av__format;
+
+(**
+ * Read packets of a media file to get stream information. This
+ * is useful for file formats with no headers such as MPEG. This
+ * function also computes the real framerate in case of MPEG-2 repeat
+ * frame mode.
+ * The logical file position is not changed by this function;
+ * examined packets may be buffered for later processing.
+ *
+ * @param ic media file handle
+ * @param options  If non-NULL, an ic.nb_streams long array of pointers to
+ *                 dictionaries, where i-th member contains options for
+ *                 codec corresponding to i-th stream.
+ *                 On return each dictionary will be filled with options that were not found.
+ * @return >=0 if OK, AVERROR_xxx on error
+ *
+ * @note this function isn't guaranteed to open all the codecs, so
+ *       options being non-empty at return is a perfectly normal behavior.
+ *
+ * @todo Let the user decide somehow what information is needed so that
+ *       we do not waste time getting stuff the user does not need.
+ *)
+function avformat_find_stream_info(ic: PAVFormatContext; options: PPAVDictionary): cint;
+  cdecl; external av__format;
+
+(**
+ * Find the "best" stream in the file.
+ * The best stream is determined according to various heuristics as the most
+ * likely to be what the user expects.
+ * If the decoder parameter is non-NULL, av_find_best_stream will find the
+ * default decoder for the stream's codec; streams for which no decoder can
+ * be found are ignored.
+ *
+ * @param ic                media file handle
+ * @param type              stream type: video, audio, subtitles, etc.
+ * @param wanted_stream_nb  user-requested stream number,
+ *                          or -1 for automatic selection
+ * @param related_stream    try to find a stream related (eg. in the same
+ *                          program) to this one, or -1 if none
+ * @param decoder_ret       if non-NULL, returns the decoder for the
+ *                          selected stream
+ * @param flags             flags; none are currently defined
+ * @return  the non-negative stream number in case of success,
+ *          AVERROR_STREAM_NOT_FOUND if no stream with the requested type
+ *          could be found,
+ *          AVERROR_DECODER_NOT_FOUND if streams were found but no decoder
+ * @note  If av_find_best_stream returns successfully and decoder_ret is not
+ *        NULL, then *decoder_ret is guaranteed to be set to a valid AVCodec.
+ *)
+function av_find_best_stream(ic: PAVFormatContext;
+                        type_: TAVMediaType;
+                        wanted_stream_nb: cint;
+			related_stream: cint;
+                        decoder_ret: PPAVCodec;
+			flags: cint): cint;
   cdecl; external av__format;
 
 (**
