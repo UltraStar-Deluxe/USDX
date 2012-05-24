@@ -4389,7 +4389,7 @@ function avcodec_open(avctx: PAVCodecContext; codec: PAVCodec): cint;
  * @see avcodec_alloc_context3(), avcodec_find_decoder(), avcodec_find_encoder(),
  *      av_dict_set(), av_opt_find().
  *)
-function avcodec_open2(avctx: PAVCodecContext; codec: PAVCodec; options: pointer): cint;
+function avcodec_open2(avctx: PAVCodecContext; codec: PAVCodec; options: PPAVDictionary): cint;
   cdecl; external av__codec;
 
 {$IFDEF FF_API_OLD_DECODE_AUDIO}

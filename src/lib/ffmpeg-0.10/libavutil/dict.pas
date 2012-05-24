@@ -42,6 +42,7 @@ type
   
 (* with the "help" of libavutil/internal.h: *)
 
+  PPAVDictionary = ^PAVDictionary;
   PAVDictionary = ^TAVDictionary;
   TAVDictionary = record
     count: cint;
