@@ -647,11 +647,14 @@ function avio_seek(s: PAVIOContext; offset: cint64; whence: cint): cint64;
 function avio_skip(s: PAVIOContext; offset: cint64): cint64;
   cdecl; external av__format;
 
+{$IFDEF UNIX}
 (**
  * ftell() equivalent for AVIOContext.
  * @return position or AVERROR.
  *)
 function avio_tell(s: PAVIOContext): cint64; {$IFDEF HasInline}inline;{$ENDIF}
+{$ELSE}
+{$ENDIF}
 
 (**
  * Get the filesize.
@@ -894,9 +897,12 @@ begin
 end;
 {$ENDIF}
 
+{$IFDEF UNIX}
 function avio_tell(s: PAVIOContext): cint64; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := avio_seek(s, 0, SEEK_CUR);
 end;
+{$ELSE}
+{$ENDIF}
 
 end.
