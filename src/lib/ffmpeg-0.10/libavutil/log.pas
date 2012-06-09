@@ -89,7 +89,7 @@ type
      * child_next iterates over _already existing_ objects, while
      * child_class_next iterates over _all possible_ children.
      *)
-    function child_class_next (prev: {const} PAVClass): {const} PAVClass; cdecl;
+    child_class_next: function (prev: {const} PAVClass): {const} PAVClass; cdecl;
 
 end;
 
