@@ -293,6 +293,7 @@ var
  * @defgroup old_url_funcs Old url_* functions
  * @eprecated. Use the buffered API based on AVIOContext instead.
  * @
+ * @ingroup lavf_io
  *)
 function url_open_protocol(puc: PPURLContext; up: PURLProtocol;
                            url: {const} PAnsiChar; flags: cint): cint;
@@ -550,9 +551,11 @@ function avio_check(url: {const} PAnsiChar; flags: cint): cint;
  * asynchronous interruption is needed. AVERROR_EXIT is returned
  * in this case by the interrupted function. 'NULL' means no interrupt
  * callback is given.
+ * @deprecated Use interrupt_callback in AVFormatContext/avio_open2
+ *             instead.
  *)
 procedure avio_set_interrupt_cb(interrupt_cb: Pointer);
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
 {$IFEND}
 
 (**
@@ -685,7 +688,7 @@ function avio_read(s: PAVIOContext; buf: Pbyte; size: cint): cint;
   cdecl; external av__format;
 
 (**
- * @defgroup avio_read Functions for reading from AVIOContext
+ * @name Functions for reading from AVIOContext
  * @
  *
  * @note return 0 if EOF, so you cannot use it if EOF handling is
