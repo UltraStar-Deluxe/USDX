@@ -458,6 +458,7 @@ procedure sws_convertPalette8ToPacked24({const} src:     PPCuint8Array;
  * @see av_opt_find().
  *)
 function sws_get_class(): {const} PAVClass;
+  cdecl; external sw__scale;
 
 implementation
 
