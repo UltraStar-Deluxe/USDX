@@ -77,13 +77,21 @@ type
     parent_log_context_offset: cint;
     
     (**
-     * A function for extended searching, e.g. in possible
-     * children objects.
+     * Return next AVOptions-enabled child or NULL
      *)
-    opt_find: function(obj: pointer; name: {const} PAnsiChar; unit_: {const} PAnsiChar;
-                       opt_flags: cint; search_flags: cint): PAVOption; cdecl;
-  end;
+    child_next: function (obj: pointer; prev: pointer): pointer; cdecl;
 
+    (**
+     * Return an AVClass corresponding to next potential
+     * AVOptions-enabled child.
+     *
+     * The difference between child_next and this is that
+     * child_next iterates over _already existing_ objects, while
+     * child_class_next iterates over _all possible_ children.
+     *)
+    function child_class_next (prev: {const} PAVClass): {const} PAVClass; cdecl;
+
+end;
 
 const
   AV_LOG_QUIET   = -8;
@@ -136,11 +144,7 @@ const
  *)
 
 {** to be translated if needed
-#ifdef __GNUC__
-void av_log(void*, int level, const char *fmt, ...) __attribute__ ((__format__ (__printf__, 3, 4)));
-#else
-void av_log(void*, int level, const char *fmt, ...);
-#endif
+void av_log(void *avcl, int level, const char *fmt, ...) av_printf_format(3, 4);
 **}
 
 type
@@ -159,6 +163,17 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl);
 **}
 
 function av_default_item_name (ctx: pointer): PAnsiChar;
+  cdecl; external av__util;
+
+(**
+ * Format a line of log the same way as the default callback.
+ * @param line          buffer to receive the formated line
+ * @param line_size     size of the buffer
+ * @param print_prefix  used to store whether the prefix must be printed;
+ *                      must point to a persistent integer initially set to 1
+ *)
+procedure av_log_format_line(ptr: pointer; level: cint; fmt: {const} PAnsiChar; vl: va_list;
+                        line: PAnsiChar; line_size: cint; print_prefix: Pcint);
   cdecl; external av__util;
 
 (**

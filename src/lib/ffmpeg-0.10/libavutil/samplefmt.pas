@@ -19,7 +19,7 @@
  * This is a part of the Pascal port of ffmpeg.
  *
  * Conversion of libavutil/samplefmt.h
- * avutil version 50.43.0
+ * avutil version 51.34.101
  *
  *)
 
@@ -34,6 +34,13 @@ type
     AV_SAMPLE_FMT_S32,         ///< signed 32 bits
     AV_SAMPLE_FMT_FLT,         ///< float
     AV_SAMPLE_FMT_DBL,         ///< double
+
+    AV_SAMPLE_FMT_U8P,         ///< unsigned 8 bits, planar
+    AV_SAMPLE_FMT_S16P,        ///< signed 16 bits, planar
+    AV_SAMPLE_FMT_S32P,        ///< signed 32 bits, planar
+    AV_SAMPLE_FMT_FLTP,        ///< float, planar
+    AV_SAMPLE_FMT_DBLP,        ///< double, planar
+
     AV_SAMPLE_FMT_NB           ///< Number of sample formats. DO NOT USE if linking dynamically
   );
   TAVSampleFormatArray = array [0 .. MaxInt div SizeOf(TAVSampleFormat) - 1] of TAVSampleFormat;
@@ -51,6 +58,15 @@ function av_get_sample_fmt_name(sample_fmt: TAVSampleFormat): {const} PAnsiChar;
  * on error.
  *)
 function av_get_sample_fmt(name: {const} PAnsiChar): TAVSampleFormat;
+  cdecl; external av__util;
+
+(**
+ * Return the planar<->packed alternative form of the given sample format, or
+ * AV_SAMPLE_FMT_NONE on error. If the passed sample_fmt is already in the
+ * requested planar/packed format, the format returned is the same as the
+ * input.
+ *)
+function av_get_alt_sample_fmt(sample_fmt: TAVSampleFormat; planar: cint): TAVSampleFormat;
   cdecl; external av__util;
 
 (**
@@ -91,48 +107,67 @@ type
   OctArrayOfcint    = array[0..7] of cint;
 
 (**
+ * Check if the sample format is planar.
+ *
+ * @param sample_fmt the sample format to inspect
+ * @return 1 if the sample format is planar, 0 if it is interleaved
+ *)
+function av_sample_fmt_is_planar(sample_fmt: TAVSampleFormat): cint;
+  cdecl; external av__util;
+
+(**
+ * Get the required buffer size for the given audio parameters.
+ *
+ * @param[out] linesize calculated linesize, may be NULL
+ * @param nb_channels   the number of channels
+ * @param nb_samples    the number of samples in a single channel
+ * @param sample_fmt    the sample format
+ * @return              required buffer size, or negative error code on failure
+ *)
+function av_samples_get_buffer_size(linesize: Pcint; nb_channels: cint; nb_samples: cint;
+                                    sample_fmt: TAVSampleFormat; align: cint): cint;
+  cdecl; external av__util;
+
+(**
  * Fill channel data pointers and linesizes for samples with sample
  * format sample_fmt.
  *
  * The pointers array is filled with the pointers to the samples data:
- * for planar, set the start point of each plane's data within the buffer,
+ * for planar, set the start point of each channel's data within the buffer,
  * for packed, set the start point of the entire buffer only.
  *
- * The linesize array is filled with the aligned size of each samples
- * plane, that is linesize[i] will contain the linesize of the plane i,
- * and will be zero for all the unused planes. All linesize values are
- * equal.
+ * The linesize array is filled with the aligned size of each channel's data
+ * buffer for planar layout, or the aligned size of the buffer for all channels
+ * for packed layout.
  *
- * @param pointers array to be filled with the pointer for each plane, may be NULL
- * @param linesizes array to be filled with the linesize, may be NULL
- * @param buf the pointer to a buffer containing the samples
- * @param nb_samples the number of samples in a single channel
- * @param planar 1 if the samples layout is planar, 0 if it is packed
- * @param nb_channels the number of channels
- * @return the total size of the buffer, a negative
- * error code in case of failure
+ * @param[out] audio_data  array to be filled with the pointer for each channel
+ * @param[out] linesize    calculated linesize
+ * @param buf              the pointer to a buffer containing the samples
+ * @param nb_channels      the number of channels
+ * @param nb_samples       the number of samples in a single channel
+ * @param sample_fmt       the sample format
+ * @param align            buffer size alignment (1 = no alignment required)
+ * @return                 0 on success or a negative error code on failure
  *)
-function av_samples_fill_arrays(pointers: OctArrayOfPcuint8; linesizes: OctArrayOfcint;
+function av_samples_fill_arrays(audio_data: pointer; linesize: Pcint;
                                 buf: Pcuint8; nb_channels: cint; nb_samples: cint; 
-                                sample_fmt: TAVSampleFormat; planar: cint; align: cint): cint;
+                                sample_fmt: TAVSampleFormat; align: cint): cint;
   cdecl; external av__util;
 
 (**
- * Allocate a samples buffer for nb_samples samples, and
- * fill pointers and linesizes accordingly.
- * The allocated samples buffer has to be freed by using
- * av_freep(&pointers[0]).
+ * Allocate a samples buffer for nb_samples samples, and fill data pointers and
+ * linesize accordingly.
+ * The allocated samples buffer can be freed by using av_freep(&audio_data[0])
  *
- * @param nb_channels number of audio channels
- * @param nb_samples number of samples per channel
- * @param planar 1 if the samples layout is planar, 0 if packed,
- * @param align the value to use for buffer size alignment
- * @return the size in bytes required for the samples buffer, a negative
- * error code in case of failure
+ * @param[out] audio_data  array to be filled with the pointer for each channel
+ * @param[out] linesize    aligned size for audio buffer(s)
+ * @param nb_channels      number of audio channels
+ * @param nb_samples       number of samples per channel
+ * @param align            buffer size alignment (1 = no alignment required)
+ * @return                 0 on success or a negative error code on failure
  * @see av_samples_fill_arrays()
  *)
-function av_samples_alloc(pointers: OctArrayOfPcuint8; linesizes: OctArrayOfcint;
+function av_samples_alloc(audio_data: pointer; linesize: Pcint; nb_channels: cint;
                           nb_channels: cint; nb_samples: cint;
-			  sample_fmt: TAVSampleFormat; planar: cint;
-			  align: cint): cint;
+			  sample_fmt: TAVSampleFormat; align: cint): cint;
   cdecl; external av__util;

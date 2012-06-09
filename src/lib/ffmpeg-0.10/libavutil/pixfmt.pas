@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/pixfmt.h
- * avutil version 51.9.1
+ * avutil version 51.34.101
  *
  *)
 
@@ -32,12 +32,14 @@ type
 (**
  * Pixel format. Notes:
  *
+ * @note
  * PIX_FMT_RGB32 is handled in an endian-specific manner. An RGBA
  * color is put together as:
  *  (A << 24) | (R << 16) | (G << 8) | B
  * This is stored as BGRA on little-endian CPU architectures and ARGB on
  * big-endian CPUs.
  *
+ * @par
  * When the pixel format is palettized RGB (PIX_FMT_PAL8), the palettized
  * image data is stored in AVFrame.data[0]. The palette is transported in
  * AVFrame.data[1], is 1024 bytes long (256 4-byte entries) and is
@@ -47,13 +49,15 @@ type
  * This is important as many custom PAL8 video codecs that were designed
  * to run on the IBM VGA graphics adapter use 6-bit palette components.
  *
+ * @par
  * For all the 8bit per pixel formats, an RGB32 palette is in data[1] like
  * for pal8. This palette is filled in automatically by the function
  * allocating the picture.
  *
- * Note, make sure that all newly added big endian formats have pix_fmt&1==1
- *       and that all newly added little endian formats have pix_fmt&1==0
- *       this allows simpler detection of big vs little endian.
+ * @note
+ * make sure that all newly added big endian formats have pix_fmt&1==1
+ * and that all newly added little endian formats have pix_fmt&1==0
+ * this allows simpler detection of big vs little endian.
  *)
 
   PAVPixelFormat = ^TAVPixelFormat;
@@ -143,24 +147,55 @@ type
     PIX_FMT_YUV420P9LE, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
     PIX_FMT_YUV420P10BE,///< planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
     PIX_FMT_YUV420P10LE,///< planar YUV 4:2:0, 15bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
-    PIX_FMT_YUV422P10BE,///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-    PIX_FMT_YUV422P10LE,///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
-    PIX_FMT_YUV444P9BE, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-    PIX_FMT_YUV444P9LE, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
-    PIX_FMT_YUV444P10BE,///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
-    PIX_FMT_YUV444P10LE,///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+    PIX_FMT_YUV422P10BE,///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+    PIX_FMT_YUV422P10LE,///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+    PIX_FMT_YUV444P9BE, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+    PIX_FMT_YUV444P9LE, ///< planar YUV 4:4:4, 27bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+    PIX_FMT_YUV444P10BE,///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+    PIX_FMT_YUV444P10LE,///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+    PIX_FMT_YUV422P9BE, ///< planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+    PIX_FMT_YUV422P9LE, ///< planar YUV 4:2:2, 18bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+    PIX_FMT_VDA_VLD,    ///< hardware decoding through VDA
+
+{$IFDEF AV_PIX_FMT_ABI_GIT_MASTER}
+    PIX_FMT_RGBA64BE,  ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+    PIX_FMT_RGBA64LE,  ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+    PIX_FMT_BGRA64BE,  ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+    PIX_FMT_BGRA64LE,  ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+{$ENDIF}
+    PIX_FMT_GBRP,      ///< planar GBR 4:4:4 24bpp
+    PIX_FMT_GBRP9BE,   ///< planar GBR 4:4:4 27bpp, big endian
+    PIX_FMT_GBRP9LE,   ///< planar GBR 4:4:4 27bpp, little endian
+    PIX_FMT_GBRP10BE,  ///< planar GBR 4:4:4 30bpp, big endian
+    PIX_FMT_GBRP10LE,  ///< planar GBR 4:4:4 30bpp, little endian
+    PIX_FMT_GBRP16BE,  ///< planar GBR 4:4:4 48bpp, big endian
+    PIX_FMT_GBRP16LE,  ///< planar GBR 4:4:4 48bpp, little endian
+
+{$IFNDEF AV_PIX_FMT_ABI_GIT_MASTER}
+    PIX_FMT_RGBA64BE = $123,  ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+    PIX_FMT_RGBA64LE,  ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+    PIX_FMT_BGRA64BE,  ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as big-endian
+    PIX_FMT_BGRA64LE,  ///< packed RGBA 16:16:16:16, 64bpp, 16B, 16G, 16R, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+{$ENDIF}
+    PIX_FMT_0RGB = $123 + 4,      ///< packed RGB 8:8:8, 32bpp, 0RGB0RGB...
+    PIX_FMT_RGB0,      ///< packed RGB 8:8:8, 32bpp, RGB0RGB0...
+    PIX_FMT_0BGR,      ///< packed BGR 8:8:8, 32bpp, 0BGR0BGR...
+    PIX_FMT_BGR0,      ///< packed BGR 8:8:8, 32bpp, BGR0BGR0...
 
     PIX_FMT_NB         ///< number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
   );
 
 const
     PIX_FMT_Y400A   = PIX_FMT_GRAY8A;
+    PIX_FMT_GBR24P  = PIX_FMT_GBRP;
 
-{$ifdef WORDS_BIGENDIAN}
+{$IFDEF WORDS_BIGENDIAN}
     PIX_FMT_RGB32   = PIX_FMT_ARGB;
     PIX_FMT_RGB32_1 = PIX_FMT_RGBA;
     PIX_FMT_BGR32   = PIX_FMT_ABGR;
     PIX_FMT_BGR32_1 = PIX_FMT_BGRA;
+    PIX_FMT_0RGB32  = PIX_FMT_0RGB;
+    PIX_FMT_0BGR32  = PIX_FMT_0BGR;
 
     PIX_FMT_GRAY16  = PIX_FMT_GRAY16BE;
     PIX_FMT_RGB48   = PIX_FMT_RGB48BE;
@@ -173,6 +208,7 @@ const
     PIX_FMT_BGR444  = PIX_FMT_BGR444BE;
 
     PIX_FMT_YUV420P9  = PIX_FMT_YUV420P9BE;
+    PIX_FMT_YUV422P9  = PIX_FMT_YUV422P9BE;
     PIX_FMT_YUV444P9  = PIX_FMT_YUV444P9BE;
     PIX_FMT_YUV420P10 = PIX_FMT_YUV420P10BE;
     PIX_FMT_YUV422P10 = PIX_FMT_YUV422P10BE;
@@ -180,11 +216,19 @@ const
     PIX_FMT_YUV420P16 = PIX_FMT_YUV420P16BE;
     PIX_FMT_YUV422P16 = PIX_FMT_YUV422P16BE;
     PIX_FMT_YUV444P16 = PIX_FMT_YUV444P16BE;
-{$else}
+ 
+    PIX_FMT_RGBA64 = PIX_FMT_RGBA64BE;
+    PIX_FMT_BGRA64 = PIX_FMT_BGRA64BE;
+    PIX_FMT_GBRP9  = PIX_FMT_GBRP9BE;
+    PIX_FMT_GBRP10 = PIX_FMT_GBRP10BE;
+    PIX_FMT_GBRP16 = PIX_FMT_GBRP16BE;
+{$ELSE}
     PIX_FMT_RGB32   = PIX_FMT_BGRA;
     PIX_FMT_RGB32_1 = PIX_FMT_ABGR;
     PIX_FMT_BGR32   = PIX_FMT_RGBA;
     PIX_FMT_BGR32_1 = PIX_FMT_ARGB;
+    PIX_FMT_0RGB32  = PIX_FMT_BGR0;
+    PIX_FMT_0BGR32  = PIX_FMT_RGB0;
 
     PIX_FMT_GRAY16  = PIX_FMT_GRAY16LE;
     PIX_FMT_RGB48   = PIX_FMT_RGB48LE;
@@ -197,6 +241,7 @@ const
     PIX_FMT_BGR444  = PIX_FMT_BGR444LE;
 
     PIX_FMT_YUV420P9  = PIX_FMT_YUV420P9LE;
+    PIX_FMT_YUV422P9  = PIX_FMT_YUV422P9LE;
     PIX_FMT_YUV444P9  = PIX_FMT_YUV444P9LE;
     PIX_FMT_YUV420P10 = PIX_FMT_YUV420P10LE;
     PIX_FMT_YUV422P10 = PIX_FMT_YUV422P10LE;
@@ -204,4 +249,10 @@ const
     PIX_FMT_YUV420P16 = PIX_FMT_YUV420P16LE;
     PIX_FMT_YUV422P16 = PIX_FMT_YUV422P16LE;
     PIX_FMT_YUV444P16 = PIX_FMT_YUV444P16LE;
+
+    PIX_FMT_RGBA64 = PIX_FMT_RGBA64LE;
+    PIX_FMT_BGRA64 = PIX_FMT_BGRA64LE;
+    PIX_FMT_GBRP9  = PIX_FMT_GBRP9LE;
+    PIX_FMT_GBRP10 = PIX_FMT_GBRP10LE;
+    PIX_FMT_GBRP16 = PIX_FMT_GBRP16LE;
 {$ENDIF}

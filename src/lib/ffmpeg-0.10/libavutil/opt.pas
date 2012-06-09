@@ -23,13 +23,14 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/opt.h
- * avutil version 51.9.1
+ * avutil version 51.34.101
  *
  *)
 
 type
   TAVOptionType = (
-    FF_OPT_TYPE_FLAGS,
+{$IFDEF FF_API_OLD_AVOPTIONS}
+    FF_OPT_TYPE_FLAGS = 0,
     FF_OPT_TYPE_INT,
     FF_OPT_TYPE_INT64,
     FF_OPT_TYPE_DOUBLE,
@@ -38,6 +39,17 @@ type
     FF_OPT_TYPE_RATIONAL,
     FF_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
     FF_OPT_TYPE_CONST = 128
+{$ELSE}
+    AV_OPT_TYPE_FLAGS,
+    AV_OPT_TYPE_INT,
+    AV_OPT_TYPE_INT64,
+    AV_OPT_TYPE_DOUBLE,
+    AV_OPT_TYPE_FLOAT,
+    AV_OPT_TYPE_STRING,
+    AV_OPT_TYPE_RATIONAL,
+    AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
+    AV_OPT_TYPE_CONST = 128
+{$ENDIF}
   );
 
 const

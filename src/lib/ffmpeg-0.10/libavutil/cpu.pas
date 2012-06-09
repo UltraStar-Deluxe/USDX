@@ -47,6 +47,8 @@ const
   AV_CPU_FLAG_SSE4          = $0100;     ///< Penryn SSE4.1 functions
   AV_CPU_FLAG_SSE42         = $0200;     ///< Nehalem SSE4.2 functions
   AV_CPU_FLAG_AVX           = $4000;     ///< AVX functions: requires OS support even if YMM registers aren't used
+  AV_CPU_FLAG_XOP           = $0400;     ///< Bulldozer XOP functions
+  AV_CPU_FLAG_FMA4          = $0800;     ///< Bulldozer FMA4 functions
   AV_CPU_FLAG_IWMMXT        = $0100;     ///< XScale IWMMXT
   AV_CPU_FLAG_ALTIVEC       = $0001;     ///< standard
 

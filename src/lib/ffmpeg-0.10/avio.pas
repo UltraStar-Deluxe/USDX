@@ -897,12 +897,29 @@ begin
 end;
 {$ENDIF}
 
-{$IFDEF UNIX}
+(**
+ * For SEEK_CUR on Windows
+ * values taken from stdio.h of C
+ *)
+{$IFNDEF SEEK_SET}
+const
+  SEEK_SET = 0;
+{$ENDIF}
+
+{$IFNDEF SEEK_CUR}
+const
+  SEEK_CUR = 1;
+{$ENDIF}
+
+{$IFNDEF SEEK_END}
+const
+  SEEK_END = 2;
+{$ENDIF}
+
 function avio_tell(s: PAVIOContext): cint64; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := avio_seek(s, 0, SEEK_CUR);
 end;
-{$ELSE}
-{$ENDIF}
+
 
 end.

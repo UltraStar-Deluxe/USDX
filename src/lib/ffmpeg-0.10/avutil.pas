@@ -116,7 +116,7 @@ type
  * Return a string describing the media_type enum, NULL if media_type
  * is unknown.
  *)
-function av_get_media_type_string(media_type: TAVMediaType): Pchar;
+function av_get_media_type_string(media_type: TAVMediaType): PAnsiChar;
   cdecl; external av__util;
 
 const
@@ -177,14 +177,13 @@ type
  * @param[in] pict_type the picture type @return a single character
  * representing the picture type, '?' if pict_type is unknown
  *)
-function av_get_picture_type_char(pict_type: TAVPictureType): Pchar;
+function av_get_picture_type_char(pict_type: TAVPictureType): PAnsiChar;
   cdecl; external av__util;
 
 (**
  * Return x default pointer in case p is NULL.
  *)
-function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer;
-  cdecl; external av__util;
+function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer; {$IFDEF HasInline}inline;{$ENDIF}
 
 {$INCLUDE libavutil/cpu.pas}
 
@@ -206,35 +205,38 @@ function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer;
 
 (* libavutil/common.h *) // until now MKTAG and MKBETAG is all from common.h KMS 19/5/2010
 
-function MKTAG  (a, b, c, d: AnsiChar): integer;
-function MKBETAG(a, b, c, d: AnsiChar): integer;
+(**
+ * MKTAG and MKBETAG are usually used to convert a magic string to an enumeration index.
+ * In Pascal this can probably not be used and the functions could be removed.
+ * KMS 8/6/2012
+ *)
+function MKTAG  (a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
+function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 
 implementation
 
-(* To Be Implemented, March 2012 KMS *)
-//function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer;
-//begin
-//  If p = Nil Then
-//		Result := p
-//  Else
-//		Result := x;
-//  //return (void *)(intptr_t)(p ? p : x);
-//end;
+function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer; {$IFDEF HasInline}inline;{$ENDIF}
+begin
+  if p = nil then
+    Result := x
+  else
+    Result := p;
+end;
 
 (* libavutil/common.h *)
 
-function MKTAG(a, b, c, d: AnsiChar): integer;
+function MKTAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := (ord(a) or (ord(b) shl 8) or (ord(c) shl 16) or (ord(d) shl 24));
 end;
 
-function MKBETAG(a, b, c, d: AnsiChar): integer;
+function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := (ord(d) or (ord(c) shl 8) or (ord(b) shl 16) or (ord(a) shl 24));
 end;
 
 type
-	Psize_t = ^size_t;
+  Psize_t = ^size_t;
 
 function av_size_mult(a: size_t; b: size_t; r: Psize_t): size_t;
   cdecl; external av__util;

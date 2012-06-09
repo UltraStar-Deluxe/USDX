@@ -64,7 +64,7 @@ function av_realloc(ptr: pointer; size: size_t): pointer;
  * - It frees the input block in case of failure, thus avoiding the memory
  *   leak with the classic "buf = realloc(buf); if (!buf) return -1;".
  *)
-function av_realloc_f(ptr: pointer; nelem: size_t; size: size_t): pointer;
+function av_realloc_f(ptr: pointer; nelem: size_t; elsize: size_t): pointer;
   cdecl; external av__util;
 
 (**
@@ -135,9 +135,7 @@ procedure av_dynarray_add(tab_ptr: pointer; nb_ptr: PCint; elem: pointer);
  * Multiply two size_t values checking for overflow.
  * @return  0 if success, AVERROR(EINVAL) if overflow.
  *)
-{ available only in 0.8.5 - 0.8.10
 //static inline int av_size_mult(size_t a, size_t b, size_t *r)
-}
 {
     size_t t = a * b;
     /* Hack inspired from glibc: only try the division if nelem and elsize
