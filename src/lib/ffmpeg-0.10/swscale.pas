@@ -1,5 +1,5 @@
 (*
- * Copyright (C) 2001-2003 Michael Niedermayer <michaelni@gmx.at>
+ * Copyright (C) 2001-2011 Michael Niedermayer <michaelni@gmx.at>
  *
  * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,7 +19,7 @@
  * - Ported by the UltraStar Deluxe Team
  *
  * Conversion of libswscale/swscale.h
- * version: 0.14.1
+ * version: 2.1.100
  *)
  
 unit swscale;
@@ -71,9 +71,9 @@ const
  * fix. 
  *)
   (* Max. supported version by this header *)
-  LIBSWSCALE_MAX_VERSION_MAJOR   =  0;
-  LIBSWSCALE_MAX_VERSION_MINOR   = 11;
-  LIBSWSCALE_MAX_VERSION_RELEASE =  0;
+  LIBSWSCALE_MAX_VERSION_MAJOR   =  2;
+  LIBSWSCALE_MAX_VERSION_MINOR   =  1;
+  LIBSWSCALE_MAX_VERSION_RELEASE =  100;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBSWSCALE_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -92,6 +92,10 @@ type
   PPCuint8Array = ^TPCuint8Array;
 
 const
+(**
+ * Those FF_API_* defines are not part of public API.
+ * They may change, break or disappear at any time.
+ *)
 {$ifndef FF_API_SWS_GETCONTEXT}
   FF_API_SWS_GETCONTEXT = LIBSWSCALE_VERSION_MAJOR < 3;    
 {$endif}
@@ -103,19 +107,19 @@ const
 {$endif}
 
 (**
- * Returns the LIBSWSCALE_VERSION_INT constant.
+ * Return the LIBSWSCALE_VERSION_INT constant.
  *)
 function swscale_version(): cuint;
   cdecl; external sw__scale;
 
 (**
- * Returns the libswscale build-time configuration.
+ * Return the libswscale build-time configuration.
  *)
 function swscale_configuration(): PAnsiChar;
   cdecl; external sw__scale;
 
 (**
- * Returns the libswscale license.
+ * Return the libswscale license.
  *)
 function swscale_license(): PAnsiChar;
   cdecl; external sw__scale;
@@ -150,7 +154,7 @@ const
   SWS_ACCURATE_RND      = $40000;
   SWS_BITEXACT          = $80000;
 
-{$if FF_API_SWS_CPU_CAPS}
+{$IF FF_API_SWS_CPU_CAPS}
 (**
  * CPU caps are autodetected now, those flags
  * are only provided for API compatibility.
@@ -160,7 +164,8 @@ const
   SWS_CPU_CAPS_3DNOW    = $40000000;
   SWS_CPU_CAPS_ALTIVEC  = $10000000;
   SWS_CPU_CAPS_BFIN     = $01000000;
-{$endif}
+  SWS_CPU_CAPS_SSE2     = $02000000;
+{$ENDIF}
 
   SWS_MAX_REDUCE_CUTOFF = 0.002;
 
@@ -173,7 +178,7 @@ const
   SWS_CS_DEFAULT        = 5;
 
 (**
- * Returns a pointer to yuv<->rgb coefficients for the given colorspace
+ * Return a pointer to yuv<->rgb coefficients for the given colorspace
  * suitable for sws_setColorspaceDetails().
  *
  * @param colorspace One of the SWS_CS_* macros. If invalid,
@@ -207,21 +212,21 @@ type
   end;
 
 (**
- * Returns a positive value if pix_fmt is a supported input format, 0
+ * Return a positive value if pix_fmt is a supported input format, 0
  * otherwise.
  *)
 function sws_isSupportedInput(pix_fmt: TAVPixelFormat): cint;
   cdecl; external sw__scale;
 
 (**
- * Returns a positive value if pix_fmt is a supported output format, 0
+ * Return a positive value if pix_fmt is a supported output format, 0
  * otherwise.
  *)
 function sws_isSupportedOutput(pix_fmt: TAVPixelFormat): cint;
   cdecl; external sw__scale;
 
 (**
- * Allocates an empty SwsContext. This must be filled and passed to
+ * Allocate an empty SwsContext. This must be filled and passed to
  * sws_init_context(). For filling see AVOptions, options.c and
  * sws_setColorspaceDetails().
  *)
@@ -229,7 +234,7 @@ function sws_alloc_context(): PSwsContext;
   cdecl; external sw__scale;
 
 (**
- * Initializes the swscaler context sws_context.
+ * Initialize the swscaler context sws_context.
  *
  * @return zero or positive value on success, a negative value on
  * error
@@ -238,15 +243,15 @@ function sws_init_context(sws_context: PSwsContext; srcFilter: PSwsFilter; dstFi
   cdecl; external sw__scale;
 
 (**
- * Frees the swscaler context swsContext.
+ * Free the swscaler context swsContext.
  * If swsContext is NULL, then does nothing.
  *)
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
-{$if FF_API_SWS_GETCONTEXT}
+{$IF FF_API_SWS_GETCONTEXT}
 (**
- * Allocates and returns a SwsContext. You need it to perform
+ * Allocate and return a SwsContext. You need it to perform
  * scaling/conversion operations using sws_scale().
  *
  * @param srcW the width of the source image
@@ -257,16 +262,19 @@ procedure sws_freeContext(swsContext: PSwsContext);
  * @param dstFormat the destination image format
  * @param flags specify which algorithm and options to use for rescaling
  * @return a pointer to an allocated context, or NULL in case of error
+ * @note this function is to be removed after a saner alternative is
+ *       written
+ * @deprecated Use sws_getCachedContext() instead.
  *)
 function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
                         dstW: cint; dstH: cint; dstFormat: TAVPixelFormat;
-	                flags: cint; srcFilter: PSwsFilter;
-	                dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
+                        flags: cint; srcFilter: PSwsFilter;
+                        dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
-{$endif}
+{$ENDIF}
 
 (**
- * Scales the image slice in srcSlice and puts the resulting scaled
+ * Scale the image slice in srcSlice and put the resulting scaled
  * slice in the image in dst. A slice is a sequence of consecutive
  * rows in an image.
  *
@@ -274,7 +282,7 @@ function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
  * top-bottom or bottom-top order. If slices are provided in
  * non-sequential order the behavior of the function is undefined.
  *
- * @param context   the scaling context previously created with
+ * @param c         the scaling context previously created with
  *                  sws_getContext()
  * @param srcSlice  the array containing the pointers to the planes of
  *                  the source slice
@@ -291,21 +299,13 @@ function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
  *                  the destination image
  * @return          the height of the output slice
  *)
-function sws_scale(context: PSwsContext; {const} srcSlice: PPCuint8Array; {const} srcStride: PCintArray;
-              srcSliceY: cint; srcSliceH: cint; {const} dst: PPCuint8Array; {const} dstStride: PCintArray): cint;
+function sws_scale(c: PSwsContext; {const} srcSlice: PPCuint8Array;
+              {const} srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint; 
+              {const} dst: PPCuint8Array; {const} dstStride: PCintArray): cint;
   cdecl; external sw__scale;
-
-{$if LIBSWSCALE_VERSION_MAJOR < 1}
-// deprecated. Use sws_scale() instead.
-function sws_scale_ordered(context: PSwsContext; {const} src: PPCuint8Array;
-                           srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
-	                   dst: PPCuint8Array; dstStride: PCintArray): cint;
-  cdecl; external sw__scale; deprecated;
-{$ifend}
 
 (**
  * @param inv_table the yuv2rgb coefficients, normally ff_yuv2rgb_coeffs[x]
- * @param fullRange if 1 then the luma range is 0..255 if 0 it is 16..235
  * @return -1 if not supported
  *)
 function sws_setColorspaceDetails(c: PSwsContext; inv_table: PQuadCintArray; 
@@ -322,40 +322,40 @@ function sws_getColorspaceDetails(c: PSwsContext; var inv_table: PQuadCintArray;
   cdecl; external sw__scale;
 
 (**
- * Allocates and returns an uninitialized vector with length coefficients.
+ * Allocate and return an uninitialized vector with length coefficients.
  *)
 function sws_allocVec(length: cint): PSwsVector;
   cdecl; external sw__scale;
 
 (**
- * Returns a normalized Gaussian curve used to filter stuff
- * quality=3 is high quality, lower is lower quality.
+ * Return a normalized Gaussian curve used to filter stuff
+ * quality = 3 is high quality, lower is lower quality.
  *)
 function sws_getGaussianVec(variance: cdouble; quality: cdouble): PSwsVector;
   cdecl; external sw__scale;
 
 (**
- * Allocates and returns a vector with length coefficients, all
+ * Allocate and return a vector with length coefficients, all
  * with the same value c.
  *)
 function sws_getConstVec(c: cdouble; length: cint): PSwsVector;
   cdecl; external sw__scale;
   
 (**
- * Allocates and returns a vector with just one coefficient, with
+ * Allocate and return a vector with just one coefficient, with
  * value 1.0.
  *)
 function sws_getIdentityVec: PSwsVector;
   cdecl; external sw__scale;
 
 (**
- * Scales all the coefficients of a by the scalar value.
+ * Scale all the coefficients of a by the scalar value.
  *)
 procedure sws_scaleVec(a: PSwsVector; scalar: cdouble);
   cdecl; external sw__scale;
 
 (**
- * Scales all the coefficients of a so that their sum equals height.
+ * Scale all the coefficients of a so that their sum equals height.
  *)
 procedure sws_normalizeVec(a: PSwsVector; height: cdouble);
   cdecl; external sw__scale;
@@ -373,27 +373,19 @@ procedure sws_shiftVec(a: PSwsVector; shift: cint);
   cdecl; external sw__scale;
 
 (**
- * Allocates and returns a clone of the vector a, that is a vector
+ * Allocate and return a clone of the vector a, that is a vector
  * with the same coefficients as a.
  *)
 function sws_cloneVec(a: PSwsVector): PSwsVector;
   cdecl; external sw__scale;
 
-{$if LIBSWSCALE_VERSION_MAJOR < 1}
 (**
- * @deprecated Use sws_printVec2() instead.
- *)
-procedure sws_printVec(a: PSwsVector);
-  cdecl; external sw__scale; deprecated;
-{$ifend}
-
-(**
- * Prints with av_log() a textual representation of the vector a
+ * Print with av_log() a textual representation of the vector a
  * if log_level <= av_log_level.
  *)
 procedure sws_printVec2(a:         PSwsVector;
                         log_ctx:   PAVClass; // PAVClass is declared in avcodec.pas
-			log_level: cint);
+                        log_level: cint);
   cdecl; external sw__scale;
 
 procedure sws_freeVec(a: PSwsVector);
@@ -401,16 +393,15 @@ procedure sws_freeVec(a: PSwsVector);
 
 function sws_getDefaultFilter(lumaGBlur: cfloat; chromaGBlur: cfloat; 
                               lumaSharpen: cfloat; chromaSharpen: cfloat;
-			      chromaHShift: cfloat; chromaVShift: cfloat;
-			      verbose: cint): PSwsFilter;
+                              chromaHShift: cfloat; chromaVShift: cfloat;
+                              verbose: cint): PSwsFilter;
   cdecl; external sw__scale;
 
 procedure sws_freeFilter(filter: PSwsFilter);
   cdecl; external sw__scale;
 
 (**
- * Checks if context can be reused, otherwise reallocates a new
- * one.
+ * Check if context can be reused, otherwise reallocates a new one.
  * 
  * If context is NULL, just calls sws_getContext() to get a new
  * context. Otherwise, checks if the parameters are the ones already
@@ -424,12 +415,12 @@ procedure sws_freeFilter(filter: PSwsFilter);
 function sws_getCachedContext(context: PSwsContext;
               srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
               dstW: cint; dstH: cint; dstFormat: TAVPixelFormat;
-	      flags: cint; srcFilter: PSwsFilter; 
-	      dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
+              flags: cint; srcFilter: PSwsFilter; 
+              dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
 
 (**
- * Converts an 8bit paletted frame into a frame with a color depth of 32-bits.
+ * Convert an 8bit paletted frame into a frame with a color depth of 32-bits.
  *
  * The output frame will have the same packed format as the palette.
  *
@@ -438,14 +429,14 @@ function sws_getCachedContext(context: PSwsContext;
  * @param num_pixels number of pixels to convert
  * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
  *)
-procedure sws_convertPalette8ToPacked32({const} src:      PPCuint8Array;
-                                         dst:             PPCuint8Array;
-					 num_pixels:      clong;
-					 {const} palette: PPCuint8Array);
+procedure sws_convertPalette8ToPacked32({const} src:     PPCuint8Array;
+                                        dst:             PPCuint8Array;
+                                        num_pixels:      cint;
+                                        {const} palette: PPCuint8Array);
   cdecl; external sw__scale;
 
 (**
- * Converts an 8bit paletted frame into a frame with a color depth of 24 bits.
+ * Convert an 8bit paletted frame into a frame with a color depth of 24 bits.
  *
  * With the palette format "ABCD", the destination frame ends up with the format "ABC".
  *
@@ -454,11 +445,19 @@ procedure sws_convertPalette8ToPacked32({const} src:      PPCuint8Array;
  * @param num_pixels number of pixels to convert
  * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
  *)
-procedure sws_convertPalette8ToPacked24({const} src:      PPCuint8Array;
-                                         dst:             PPCuint8Array;
-					 num_pixels:      clong;
-					 {const} palette: PPCuint8Array);
+procedure sws_convertPalette8ToPacked24({const} src:     PPCuint8Array;
+                                        dst:             PPCuint8Array;
+                                        num_pixels:      cint;
+                                        {const} palette: PPCuint8Array);
   cdecl; external sw__scale;
+
+(**
+ * Get the AVClass for swsContext. It can be used in combination with
+ * AV_OPT_SEARCH_FAKE_OBJ for examining options.
+ *
+ * @see av_opt_find().
+ *)
+function sws_get_class(): {const} PAVClass;
 
 implementation
 
