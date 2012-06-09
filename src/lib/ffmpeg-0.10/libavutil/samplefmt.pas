@@ -167,7 +167,7 @@ function av_samples_fill_arrays(audio_data: pointer; linesize: Pcint;
  * @return                 0 on success or a negative error code on failure
  * @see av_samples_fill_arrays()
  *)
-function av_samples_alloc(audio_data: pointer; linesize: Pcint; nb_channels: cint;
+function av_samples_alloc(audio_data: pointer; linesize: Pcint;
                           nb_channels: cint; nb_samples: cint;
 			  sample_fmt: TAVSampleFormat; align: cint): cint;
   cdecl; external av__util;
