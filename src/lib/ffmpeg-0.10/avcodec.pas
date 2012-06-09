@@ -531,7 +531,7 @@ type
     CODEC_ID_AAC_LATM,
     CODEC_ID_QDMC,
     CODEC_ID_CELT,
-//{$IF LIBAVCODEC_VERSION_MAJOR = 53}
+//{$IF LIBAVCODEC_VERSION_MAJOR > 53}
 //    CODEC_ID_G723_1_DEPRECATED,
 //    CODEC_ID_G729_DEPRECATED,
 //    CODEC_ID_8SVX_EXP,
@@ -792,7 +792,6 @@ const
   CODEC_FLAG_QPEL   = $0010;  ///< use qpel MC.
   CODEC_FLAG_GMC    = $0020;  ///< use GMC.
   CODEC_FLAG_MV0    = $0040;  ///< always try a MB with MV=<0,0>.
-  CODEC_FLAG_PART   = $0080;  ///< Use data partitioning.
   {**
    * The parent program guarantees that the input for B-frames containing
    * streams is not written to for at least s->max_b_frames+1 frames, if
@@ -801,7 +800,6 @@ const
   CODEC_FLAG_INPUT_PRESERVED    = $0100;
   CODEC_FLAG_PASS1              = $0200; ///< use internal 2pass ratecontrol in first  pass mode
   CODEC_FLAG_PASS2              = $0400; ///< use internal 2pass ratecontrol in second pass mode
-  CODEC_FLAG_EXTERN_HUFF        = $1000; ///< use external huffman table (for mjpeg)
   CODEC_FLAG_GRAY               = $2000; ///< only decode/encode grayscale
   CODEC_FLAG_EMU_EDGE           = $4000; ///< don't draw edges
   CODEC_FLAG_PSNR               = $8000; ///< error[?] variables will be set during encoding
@@ -840,14 +838,14 @@ const
 {$IFDEF FF_API_MPEGVIDEO_GLOBAL_OPTS}
   CODEC_FLAG_OBMC           = $00000001; ///< OBMC
   CODEC_FLAG_H263P_AIV      = $00000008; ///< H.263 alternative inter VLC
-  CODEC_FLAG_PART   0x0080  ///< Use data partitioning.
+  CODEC_FLAG_PART           = $0080;     ///< Use data partitioning.
   CODEC_FLAG_ALT_SCAN       = $00100000; ///< Use alternate scan.
   CODEC_FLAG_H263P_UMV      = $02000000; ///< unlimited motion vector
-  CODEC_FLAG_H263P_SLICE_STRUCT = $10000000;
-  CODEC_FLAG_SVCD_SCAN_OFFSET = $40000000; ///< Will reserve space for SVCD scan offset user data.
-  CODEC_FLAG2_INTRA_VLC     = $00000800; ///< Use MPEG-2 intra VLC table.
+  CODEC_FLAG_H263P_SLICE_STRUCT   = $10000000;
+  CODEC_FLAG_SVCD_SCAN_OFFSET     = $40000000; ///< Will reserve space for SVCD scan offset user data.
+  CODEC_FLAG2_INTRA_VLC           = $00000800; ///< Use MPEG-2 intra VLC table.
   CODEC_FLAG2_DROP_FRAME_TIMECODE = $00002000; ///< timecode is in drop frame format.
-  CODEC_FLAG2_NON_LINEAR_QUANT = $00010000; ///< Use MPEG-2 nonlinear quantizer.
+  CODEC_FLAG2_NON_LINEAR_QUANT    = $00010000; ///< Use MPEG-2 nonlinear quantizer.
 {$ENDIF}
 {$IFDEF FF_API_MJPEG_GLOBAL_OPTS}
   CODEC_FLAG_EXTERN_HUFF     = $1000;   ///< Use external Huffman table (for MJPEG).
@@ -866,10 +864,10 @@ const
   CODEC_FLAG2_INTRA_REFRESH = $00200000; ///< Use periodic insertion of intra blocks instead of keyframes.
 {$ENDIF}
 {$IFDEF FF_API_SNOW_GLOBAL_OPTS}
-  CODEC_FLAG2_MEMC_ONLY     = $00001000 ///< Only do ME/MC (I frames -> ref, P frame -> ME+MC).
+  CODEC_FLAG2_MEMC_ONLY     = $00001000; ///< Only do ME/MC (I frames -> ref, P frame -> ME+MC).
 {$ENDIF}
 {$IFDEF FF_API_LAME_GLOBAL_OPTS}
-  CODEC_FLAG2_BIT_RESERVOIR = $00020000 ///< Use a bit reservoir when encoding if possible
+  CODEC_FLAG2_BIT_RESERVOIR = $00020000; ///< Use a bit reservoir when encoding if possible
 {$ENDIF}
 (**
  * @}
@@ -1409,7 +1407,7 @@ type
    * Removal, reordering and changes in the remaining cases require
    * a major version bump.
    * sizeof(AVFrame) must not be used outside libavcodec.
-  x  *)
+   *)
   PAVFrame = ^TAVFrame;
   TAVFrame = record
     (**
@@ -1419,7 +1417,18 @@ type
      * - decoding: set by AVCodecContext.get_buffer()
      *)
     data: array [0..AV_NUM_DATA_POINTERS - 1] of pbyte;
+
+    (**
+     * Size, in bytes, of the data for each picture/channel plane.
+     *
+     * For audio, only linesize[0] may be set. For planar audio, each channel
+     * plane must be the same size.
+     *
+     * - encoding: Set by user (video only)
+     * - decoding: set by AVCodecContext.get_buffer()
+     *)
     linesize: array [0..AV_NUM_DATA_POINTERS - 1] of cint;
+
     (**
      * pointer to the first allocated byte of the picture. Can be used in get_buffer/release_buffer.
      * This isn't used by libavcodec unless the default get/release_buffer() is used.
@@ -1433,12 +1442,14 @@ type
      * - decoding: Set by libavcodec.
      *)
     key_frame: cint;
+
     (**
      * Picture type of the frame, see ?_TYPE below.
      * - encoding: Set by libavcodec. for coded_picture (and set by user for input).
      * - decoding: Set by libavcodec.
      *)
     pict_type: TAVPictureType;
+
     (**
      * presentation timestamp in time_base units (time when frame should be shown to user)
      * If AV_NOPTS_VALUE then frame_rate = 1/time_base will be assumed.
@@ -1446,6 +1457,7 @@ type
      * - decoding: Set by libavcodec.
      *)
     pts: cint64;
+
     (**
      * picture number in bitstream order
      * - encoding: set by
@@ -1929,8 +1941,10 @@ type
     frame_number: cint;   ///< audio or video frame number
 
     (**
-     * Number of frames the decoded output will be delayed relative to
-     * the encoded input.
+     * Encoding: Number of frames delay there will be from the encoder input to
+     *           the decoder output. (we assume the decoder matches the spec)
+     * Decoding: Number of frames delay in addition to what a standard decoder
+     *           as specified in the spec would produce.
      * - encoding: Set by libavcodec.
      * - decoding: Set by libavcodec.
      *)
@@ -2091,12 +2105,12 @@ type
 
 {$IFDEF FF_API_ER}
     (**
-     * Error recognization; higher values will detect more errors but may
+     * Error recognition; higher values will detect more errors but may
      * misdetect some more or less valid parts as errors.
      * - encoding: unused
      * - decoding: Set by user.
      *)
-    error_recognition: cint;
+    error_recognition: cint; {deprecated}
 {$ENDIF}
 
     (**
@@ -2125,6 +2139,7 @@ type
      * avcodec_align_dimensions2() should be used to find the required width and
      * height, as they normally need to be rounded up to the next multiple of 16.
      *
+     * If frame multithreading is used and thread_safe_callbacks is set,
      * it may be called from a different thread, but not from more than one at
      * once. Does not need to be reentrant.
      *
@@ -2538,14 +2553,14 @@ type
      * Don't touch, used by libavcodec default_get_buffer().
      * @deprecated this field was moved to an internal context
      *)
-    internal_buffer_count: cint;
+    internal_buffer_count: cint; {deprecated}
 
     (**
      * internal_buffers
      * Don't touch, used by libavcodec default_get_buffer().
      * @deprecated this field was moved to an internal context
      *)
-    internal_buffer: pointer;
+    internal_buffer: pointer; {deprecated}
 {$ENDIF}
 
     (**
@@ -2914,7 +2929,7 @@ type
      * - decoding: unused
      *   @deprecated use 'crf' libx264 private option
      *)
-    crf: cfloat;
+    crf: cfloat; {deprecated}
 
     (**
      * constant quantization parameter rate control method
@@ -2922,7 +2937,7 @@ type
      * - decoding: unused
      *   @deprecated use 'cqp' libx264 private option
      *)
-    cqp: cint;
+    cqp: cint; {deprecated}
 {$ENDIF}
 
     (**
@@ -2952,7 +2967,7 @@ type
      * - encoding: Set by user.
      * - decoding: unused
      *)
-    bframebias: cint;
+    bframebias: cint; {deprecated}
 {$ENDIF}
 
     (**
@@ -2968,7 +2983,7 @@ type
      * - encoding: Set by user.
      * - decoding: unused
      *)
-    complexityblur: cfloat;
+    complexityblur: cfloat; {deprecated}
 
     (**
      * in-loop deblocking filter alphac0 parameter
@@ -2976,7 +2991,7 @@ type
      * - encoding: Set by user.
      * - decoding: unused
      *)
-    deblockalpha: cint;
+    deblockalpha: cint; {deprecated}
 
     (**
      * in-loop deblocking filter beta parameter
@@ -2984,21 +2999,21 @@ type
      * - encoding: Set by user.
      * - decoding: unused
      *)
-    deblockbeta: cint;
+    deblockbeta: cint; {deprecated}
 
     (**
      * macroblock subpartition sizes to consider - p8x8, p4x4, b8x8, i8x8, i4x4
      * - encoding: Set by user.
      * - decoding: unused
      *)
-    partitions: cint;
+    partitions: cint; {deprecated}
 
     (**
      * direct MV prediction mode - 0 (none), 1 (spatial), 2 (temporal), 3 (auto)
      * - encoding: Set by user.
      * - decoding: unused
      *)
-    directpred: cint;
+    directpred: cint; {deprecated}
 {$ENDIF}
 
     (**
@@ -3084,8 +3099,8 @@ type
 
     (**
      * GOP timecode frame start number, in non drop frame format
-     * - encoding: Set by user.
-     * - decoding: unused
+     * - encoding: Set by user, in non drop frame format
+     * - decoding: Set by libavcodec (timecode in the 25 bits format, -1 if unset)
      *)
     timecode_frame_start: cint64;
 
@@ -3096,7 +3111,7 @@ type
      * - decoding: Set by user.
      * @deprecated Deprecated in favor of request_channel_layout.
      *)
-    request_channels: cint;
+    request_channels: cint; {deprecated}
 {$IFEND}
 
 {$IFDEF FF_API_DRC_SCALE}
@@ -3105,6 +3120,7 @@ type
      * The default value is 1.0, corresponding to full compression.
      * - encoding: unused
      * - decoding: Set by user.
+     * @deprecated use AC3 decoder private option instead.
      *)
     drc_scale: cfloat; {deprecated}
 {$ENDIF}
@@ -3352,6 +3368,8 @@ type
      * should be freed from the original context only.
      * - encoding: Set by libavcodec.
      * - decoding: Set by libavcodec.
+     *
+     * @deprecated this field has been moved to an internal context
      *)
     is_copy: cint; {deprecated}
 {$ENDIF}
@@ -3480,7 +3498,7 @@ type
     long_name: {const} PAnsiChar;
     supported_samplerates: {const} PCint;      ///< array of supported audio samplerates, or NULL if unknown, array is terminated by 0
     sample_fmts: {const} PAVSampleFormatArray; ///< array of supported sample formats, or NULL if unknown, array is terminated by -1
-    channel_layouts: {const} PCuint64;          ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
+    channel_layouts: {const} PCuint64;         ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
     max_lowres: byte;                          ///< array of support channel layouts, or NULL if unknown. array is terminated by 0
     priv_class: {const} PAVClass;              ///< AVClass for the private context
     profiles: {const} PAVProfile;              ///< array of recognized profiles, or NULL if unknown, array is terminated by {FF_PROFILE_UNKNOWN}
@@ -3629,8 +3647,8 @@ type
  *)
   PAVPicture = ^TAVPicture;
   TAVPicture = record
-    data: array [0..AV_NUM_DATA_POINTERS] of PByteArray;
-    linesize: array [0..AV_NUM_DATA_POINTERS] of cint;       ///< number of bytes per line
+    data: array [0..AV_NUM_DATA_POINTERS - 1] of PByteArray;
+    linesize: array [0..AV_NUM_DATA_POINTERS - 1] of cint;       ///< number of bytes per line
   end; {TAVPicture}
 
   TAVSubtitleType = (
@@ -3864,6 +3882,8 @@ procedure av_resample_close (c: PAVResampleContext);
 
 (**
  * Allocate memory for a picture.  Call avpicture_free to free it.
+ *
+ * @see avpicture_fill()
  *
  * @param picture the picture to be filled in.
  * @param pix_fmt the format of the picture.
@@ -4106,7 +4126,7 @@ function avcodec_license(): PAnsiChar;
  * and avcodec_register_all(), there is no need to call it manually
  *)
 procedure avcodec_init();
-  cdecl; external av__codec;
+  cdecl; external av__codec; deprecated;
 {$IFEND}
 
 (**
@@ -4175,13 +4195,13 @@ function av_get_profile_name(codec: {const} PAVCodec; profile: cint): {const} PA
  * @param s The AVCodecContext of which the fields should be set to default values.
  * @deprecated use avcodec_get_context_defaults3
  *)
-procedure avcodec_get_context_defaults(s: PAVCodecContext); {deprecated}
-  cdecl; external av__codec;
+procedure avcodec_get_context_defaults(s: PAVCodecContext);
+  cdecl; external av__codec; deprecated;
 
 (** THIS FUNCTION IS NOT YET PART OF THE PUBLIC API!
  *  we WILL change its arguments and name a few times! *)
 procedure avcodec_get_context_defaults2(s: PAVCodecContext; ctype: TAVMediaType); {deprecated}
-  cdecl; external av__codec;
+  cdecl; external av__codec; deprecated;
 {$ENDIF}
 
 (**
@@ -4203,6 +4223,8 @@ procedure avcodec_get_context_defaults3(s: PAVCodecContext; codec: PAVCodec);
  *
  * @return An AVCodecContext filled with default values or NULL on failure.
  * @see avcodec_get_context_defaults
+ *
+ * @deprecated use avcodec_alloc_context3()
  *)
 function avcodec_alloc_context(): PAVCodecContext;
   cdecl; external av__codec; deprecated;
@@ -4210,7 +4232,7 @@ function avcodec_alloc_context(): PAVCodecContext;
 (** THIS FUNCTION IS NOT YET PART OF THE PUBLIC API!
  *  we WILL change its arguments and name a few times! *)
 function avcodec_alloc_context2(ctype: TAVMediaType): PAVCodecContext; {deprecated}
-  cdecl; external av__codec;
+  cdecl; external av__codec; deprecated;
 {$ENDIF}
 
 (**
@@ -4450,8 +4472,8 @@ function avcodec_open2(avctx: PAVCodecContext; codec: PAVCodec; options: PPAVDic
  *)
 function avcodec_decode_audio3(avctx: PAVCodecContext; samples: PSmallint;
                var frame_size_ptr: cint;
-               avpkt: PAVPacket): cint; {deprecated}
-  cdecl; external av__codec;
+               avpkt: PAVPacket): cint;
+  cdecl; external av__codec; deprecated;
 {$ENDIF}
 
 (**
