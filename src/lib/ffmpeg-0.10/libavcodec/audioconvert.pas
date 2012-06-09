@@ -50,6 +50,10 @@ const
   AV_CH_TOP_BACK_RIGHT         = $00020000;
   AV_CH_STEREO_LEFT            = $20000000;  ///< Stereo downmix.
   AV_CH_STEREO_RIGHT           = $40000000;  ///< See AV_CH_STEREO_LEFT.
+  AV_CH_WIDE_LEFT: cuint64             = $0000000080000000;
+  AV_CH_WIDE_RIGHT: cuint64            = $0000000100000000;
+  AV_CH_SURROUND_DIRECT_LEFT: cuint64  = $0000000200000000;
+  AV_CH_SURROUND_DIRECT_RIGHT: cuint64 = $0000000400000000;
 
 (** Channel mask value used for AVCodecContext.request_channel_layout
  *  to indicate that the user requests the channel order of the decoder output
@@ -57,12 +61,19 @@ const
  *)
   AV_CH_LAYOUT_NATIVE          = $8000000000000000;
 
-(* Audio channel convenience macros *)
+(**
+ * @}
+ * @defgroup channel_mask_c Audio channel convenience macros
+ * @{
+ * *)
   AV_CH_LAYOUT_MONO            = (AV_CH_FRONT_CENTER);
   AV_CH_LAYOUT_STEREO          = (AV_CH_FRONT_LEFT or AV_CH_FRONT_RIGHT);
+  AV_CH_LAYOUT_2POINT1         = (AV_CH_LAYOUT_STEREO or AV_CH_LOW_FREQUENCY);
   AV_CH_LAYOUT_2_1             = (AV_CH_LAYOUT_STEREO or AV_CH_BACK_CENTER);
   AV_CH_LAYOUT_SURROUND        = (AV_CH_LAYOUT_STEREO or AV_CH_FRONT_CENTER);
+  AV_CH_LAYOUT_3POINT1         = (AV_CH_LAYOUT_SURROUND or AV_CH_LOW_FREQUENCY);
   AV_CH_LAYOUT_4POINT0         = (AV_CH_LAYOUT_SURROUND or AV_CH_BACK_CENTER);
+  AV_CH_LAYOUT_4POINT1         = (AV_CH_LAYOUT_4POINT0 or AV_CH_LOW_FREQUENCY);
   AV_CH_LAYOUT_2_2             = (AV_CH_LAYOUT_STEREO or AV_CH_SIDE_LEFT or AV_CH_SIDE_RIGHT);
   AV_CH_LAYOUT_QUAD            = (AV_CH_LAYOUT_STEREO or AV_CH_BACK_LEFT or AV_CH_BACK_RIGHT);
   AV_CH_LAYOUT_5POINT0         = (AV_CH_LAYOUT_SURROUND or AV_CH_SIDE_LEFT or AV_CH_SIDE_RIGHT);
@@ -70,17 +81,39 @@ const
   AV_CH_LAYOUT_5POINT0_BACK    = (AV_CH_LAYOUT_SURROUND or AV_CH_BACK_LEFT or 
                                   AV_CH_BACK_RIGHT);
   AV_CH_LAYOUT_5POINT1_BACK    = (AV_CH_LAYOUT_5POINT0_BACK or AV_CH_LOW_FREQUENCY);
-  AV_CH_LAYOUT_7POINT0         = (AV_CH_LAYOUT_5POINT0 or AV_CH_BACK_LEFT or AV_CH_BACK_RIGHT);
-  AV_CH_LAYOUT_7POINT1         = (AV_CH_LAYOUT_5POINT1 or AV_CH_BACK_LEFT or AV_CH_BACK_RIGHT);
-  AV_CH_LAYOUT_7POINT1_WIDE    = (AV_CH_LAYOUT_5POINT1_BACK or 
-                                  AV_CH_FRONT_LEFT_OF_CENTER or
+  AV_CH_LAYOUT_6POINT0         = (AV_CH_LAYOUT_5POINT0 or AV_CH_BACK_CENTER);
+  AV_CH_LAYOUT_6POINT0_FRONT   = (AV_CH_LAYOUT_2_2 or AV_CH_FRONT_LEFT_OF_CENTER or 
                                   AV_CH_FRONT_RIGHT_OF_CENTER);
+  AV_CH_LAYOUT_HEXAGONAL       = (AV_CH_LAYOUT_5POINT0_BACK or AV_CH_BACK_CENTER);
+  AV_CH_LAYOUT_6POINT1         = (AV_CH_LAYOUT_5POINT1 or AV_CH_BACK_CENTER);
+  AV_CH_LAYOUT_6POINT1_BACK    = (AV_CH_LAYOUT_5POINT1_BACK or AV_CH_BACK_CENTER);
+  AV_CH_LAYOUT_6POINT1_FRONT   = (AV_CH_LAYOUT_6POINT0_FRONT or AV_CH_LOW_FREQUENCY);
+  AV_CH_LAYOUT_7POINT0         = (AV_CH_LAYOUT_5POINT0 or AV_CH_BACK_LEFT or AV_CH_BACK_RIGHT);
+  AV_CH_LAYOUT_7POINT0_FRONT   = (AV_CH_LAYOUT_5POINT0 or AV_CH_FRONT_LEFT_OF_CENTER or 
+                                  AV_CH_FRONT_RIGHT_OF_CENTER);
+  AV_CH_LAYOUT_7POINT1         = (AV_CH_LAYOUT_5POINT1 or AV_CH_BACK_LEFT or AV_CH_BACK_RIGHT);
+  AV_CH_LAYOUT_7POINT1_WIDE    = (AV_CH_LAYOUT_5POINT1 or AV_CH_FRONT_LEFT_OF_CENTER or 
+                                  AV_CH_FRONT_RIGHT_OF_CENTER);
+  AV_CH_LAYOUT_OCTAGONAL       = (AV_CH_LAYOUT_5POINT0 or AV_CH_BACK_LEFT or AV_CH_BACK_CENTER or 
+                                  AV_CH_BACK_RIGHT);
   AV_CH_LAYOUT_STEREO_DOWNMIX  = (AV_CH_STEREO_LEFT or AV_CH_STEREO_RIGHT);
 
 (**
  * Return a channel layout id that matches name, 0 if no match.
+ * name can be one or several of the following notations,
+ * separated by '+' or '|':
+ * - the name of an usual channel layout (mono, stereo, 4.0, quad, 5.0,
+ *   5.0(side), 5.1, 5.1(side), 7.1, 7.1(wide), downmix);
+ * - the name of a single channel (FL, FR, FC, LFE, BL, BR, FLC, FRC, BC,
+ *   SL, SR, TC, TFL, TFC, TFR, TBL, TBC, TBR, DL, DR);
+ * - a number of channels, in decimal, optionnally followed by 'c', yielding
+ *   the default channel layout for that number of channels (@see
+ *   av_get_default_channel_layout);
+ * - a channel layout mask, in hexadecimal starting with "0x" (see the
+ *   AV_CH_* macros).
+ + Example: "stereo+FC" = "2+FC" = "2c+1c" = "0x7"
  *)
-function av_get_channel_layout(name: {const} PAnsiChar): cint64;
+function av_get_channel_layout(name: {const} PAnsiChar): cuint64;
   cdecl; external av__util;
 
 (**
@@ -90,11 +123,18 @@ function av_get_channel_layout(name: {const} PAnsiChar): cint64;
  * @param buf put here the string containing the channel layout
  * @param buf_size size in bytes of the buffer
  *)
-procedure av_get_channel_layout_string(buf: PAnsiChar; buf_size: cint; nb_channels: cint; channel_layout: cint64);
+procedure av_get_channel_layout_string(buf: PAnsiChar; buf_size: cint; nb_channels: cint; channel_layout: cuint64);
   cdecl; external av__util;
 
 (**
  * Return the number of channels in the channel layout.
  *)
-function av_get_channel_layout_nb_channels(channel_layout: cint64): cint;
+function av_get_channel_layout_nb_channels(channel_layout: cuint64): cint;
   cdecl; external av__util;
+
+(**
+ * Return default channel layout for a given number of channels.
+ *)
+function av_get_default_channel_layout(nb_channels: cint): cint64_t;
+  cdecl; external av__util;
+
