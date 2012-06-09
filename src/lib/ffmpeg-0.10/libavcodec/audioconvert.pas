@@ -135,6 +135,6 @@ function av_get_channel_layout_nb_channels(channel_layout: cuint64): cint;
 (**
  * Return default channel layout for a given number of channels.
  *)
-function av_get_default_channel_layout(nb_channels: cint): cint64_t;
+function av_get_default_channel_layout(nb_channels: cint): cint64;
   cdecl; external av__util;
 
