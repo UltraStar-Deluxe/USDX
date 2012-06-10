@@ -21,9 +21,9 @@
  *   in the source codes.
  * - Changes and updates by the UltraStar Deluxe Team
  *
- * Conversion of version 0.7 libavformat/avformat.h
- * Min. version: 52.110.0
- * Max. version: 52.111.0
+ * Conversion of version 0.10 libavformat/avformat.h
+ * Min. version: 53.31.100
+ * Max. version: 53.32.100
  *)
 
 unit avformat;
@@ -56,7 +56,7 @@ uses
 const
   (*
    * IMPORTANT: This headers are valid for all minor revisions of ffmpeg 
-   * version 0.7x
+   * version 0.10x
    * This file has been created with the previous ffmpeg headers as a basis
    * by removing all unneeded conditionals.
    *)
@@ -69,9 +69,9 @@ const
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
   (* Min. supported version by this header *)
-  LIBAVFORMAT_MIN_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MIN_VERSION_MINOR   = 110;
-  LIBAVFORMAT_MIN_VERSION_RELEASE = 0;
+  LIBAVFORMAT_MIN_VERSION_MAJOR   = 53;
+  LIBAVFORMAT_MIN_VERSION_MINOR   = 31;
+  LIBAVFORMAT_MIN_VERSION_RELEASE = 100;
   LIBAVFORMAT_MIN_VERSION = (LIBAVFORMAT_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MIN_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MIN_VERSION_RELEASE * VERSION_RELEASE);
@@ -529,10 +529,9 @@ const
   AVFMT_NOBINSEARCH   = $2000; (**< Format does not allow to fallback to binary search via read_timestamp *)
   AVFMT_NOGENSEARCH   = $4000; (**< Format does not allow to fallback to generic search *)
   AVFMT_NO_BYTE_SEEK  = $8000; (**< Format does not allow seeking by bytes *)
-  AVFMT_ALLOW_FLUSH   = $10000; (**< Format allows flushing. If not set, the muxer will not receive a NULL packet in the write_packet function. *)
   AVFMT_TS_NONSTRICT  = $8000000; (**< Format does not require strictly
-                                           increasing timestamps, but they must
-                                           still be monotonic *)
+                                       increasing timestamps, but they must
+                                       still be monotonic *)
  
   // used by AVIndexEntry
   AVINDEX_KEYFRAME = $0001;
@@ -827,10 +826,10 @@ type
      *)
     read_seek2: function (s:            PAVFormatContext;
                           stream_index: cint;
-			  min_ts:       cint64;
-			  ts:           cint64; 
-			  max_ts:       cint64;
-			  flags:        cint): cint; cdecl;
+                          min_ts:       cint64;
+                          ts:           cint64; 
+                          max_ts:       cint64;
+                          flags:        cint): cint; cdecl;
     
     {const} metadata_conv: PAVMetadataConv;
 
@@ -1188,8 +1187,8 @@ type
     timestamp: cint64; {deprecated}
 {$ENDIF}
 
-{$IFDEF FF_API_REORDER_PRIVATE}
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)
+{$IFDEF FF_API_REORDER_PRIVATE}
     (* private data for pts handling (do not modify directly). *)
     (**
      * This buffer is only needed when packets were already buffered but
@@ -1270,8 +1269,8 @@ type
     probesize: cuint;
 
     (**
-     * Maximum time (in AV_TIME_BASE units) during which the input should
-     * be analyzed in av_find_stream_info().
+     * decoding: maximum time (in AV_TIME_BASE units) during which the input should
+     * be analyzed in avformat_find_stream_info().
      *)
     max_analyze_duration: cint;
 
@@ -1325,6 +1324,7 @@ type
      *)
     debug: cint;
 
+{$IFDEF FF_API_REORDER_PRIVATE}
     (**
      * Raw packets from the demuxer, prior to parsing and decoding.
      * This buffer is used for buffering packets until the codec can
@@ -1335,6 +1335,7 @@ type
     raw_packet_buffer_end: PAVPacketList;
 
     packet_buffer_end: PAVPacketList;
+{$ENDIF}
 
     metadata: PAVDictionary;
     
@@ -1555,7 +1556,7 @@ procedure avformat_free_context(s: PAVFormatContext);
  *
  * @see av_opt_find().
  *)
-function avformat_get_class(): {const}PAVClass;
+function avformat_get_class(): {const} PAVClass;
   cdecl; external av__format;
 
 (**
@@ -1600,8 +1601,8 @@ procedure av_pkt_dump_log(avcl: Pointer; level: cint; pkt: PAVPacket; dump_paylo
  * @deprecated deprecated in favor of avformat_alloc_output_context2()
  *)
 function avformat_alloc_output_context({const} format: PAnsiChar;
-                                               oformat: PAVOutputFormat;
-					       {const} filename: PAnsiChar): PAVFormatContext;
+                                       oformat: PAVOutputFormat;
+                                       {const} filename: PAnsiChar): PAVFormatContext;
   cdecl; external av__format;
 {$ENDIF}
 
@@ -1622,7 +1623,7 @@ function avformat_alloc_output_context({const} format: PAnsiChar;
  * failure
  *)
 function avformat_alloc_output_context2(ctx: PPAVFormatContext; oformat: PAVOutputFormat;
-	{const} format_name: PAnsiChar; {const} filename: PAnsiChar): cint;
+        {const} format_name: PAnsiChar; {const} filename: PAnsiChar): cint;
   cdecl; external av__format;
 
 (**
@@ -1677,7 +1678,7 @@ function av_probe_input_format3(pd: PAVProbeData; is_opened: cint; score_ret: Pc
 function av_open_input_stream(var ic_ptr: PAVFormatContext;
                        pb: PByteIOContext; filename: PAnsiChar;
                        fmt: PAVInputFormat; ap: PAVFormatParameters): cint;
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
 
 (**
  * Open a media file as input. The codecs are not opened. Only the file
@@ -1694,7 +1695,7 @@ function av_open_input_stream(var ic_ptr: PAVFormatContext;
 function av_open_input_file(var ic_ptr: PAVFormatContext; filename: PAnsiChar;
                      fmt: PAVInputFormat; buf_size: cint;
                      ap: PAVFormatParameters): cint;
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
 {$ENDIF}
 
 (**
@@ -1736,8 +1737,8 @@ function av_demuxer_open(ic: PAVFormatContext; ap: TAVFormatParameters): cint;
  * @todo Let the user decide somehow what information is needed so that
  *       we do not waste time getting stuff the user does not need.
  *)
-function av_find_stream_info(ic: PAVFormatContext): cint; {deprecated}
-  cdecl; external av__format;
+function av_find_stream_info(ic: PAVFormatContext): cint;
+  cdecl; external av__format; deprecated;
 {$ENDIF}
 
 (**
@@ -1804,9 +1805,9 @@ function av_find_program_from_stream(ic: PAVFormatContext; last: PAVProgram; s: 
 function av_find_best_stream(ic: PAVFormatContext;
                         type_: TAVMediaType;
                         wanted_stream_nb: cint;
-			related_stream: cint;
+                        related_stream: cint;
                         decoder_ret: PPAVCodec;
-			flags: cint): cint;
+                        flags: cint): cint;
   cdecl; external av__format;
 
 (**
@@ -1942,23 +1943,23 @@ const
 
 {$IFDEF FF_API_SEEK_PUBLIC}
 function av_seek_frame_binary(s: PAVFormatContext; stream_index: cint;
-                 target_ts: cint64; flags: cint): cint; {deprecated}
-  cdecl; external av__format;
+                 target_ts: cint64; flags: cint): cint;
+  cdecl; external av__format; deprecated;
 procedure av_update_cur_dts(s: PAVFormatContext; ref_st: PAVStream;
-                            timestamp: cint64); {deprecated}
-  cdecl; external av__format;
+                            timestamp: cint64);
+  cdecl; external av__format; deprecated;
 
 type
   TReadTimestampFunc = function (pavfc: PAVFormatContext;
-    arg2: cint; arg3: Pint64; arg4: cint64): cint64; cdecl;
+    arg2: cint; arg3: Pint64; arg4: cint64): cint64; cdecl; {deprecated}
 
 function av_gen_search(s: PAVFormatContext; stream_index: cint;
                        target_ts: cint64; pos_min: cint64;
                        pos_max: cint64; pos_limit: cint64;
                        ts_min: cint64; ts_max: cint64;
                        flags: cint; ts_ret: Pint64;
-                       read_timestamp: TReadTimestampFunc): cint64; {deprecated}
-  cdecl; external av__format;
+                       read_timestamp: TReadTimestampFunc): cint64;
+  cdecl; external av__format; deprecated;
 {$ENDIF}
 
 {$IFDEF FF_API_FORMAT_PARAMETERS}
@@ -2113,7 +2114,7 @@ function av_guess_codec(fmt: PAVOutputFormat; short_name: PAnsiChar;
  * atomically.
  *)
 function av_get_output_timestamp(s: PAVFormatContext; stream: cint;
-	dts: Pcint64; wall: Pcint64): cint;
+        dts: Pcint64; wall: Pcint64): cint;
   cdecl; external av__format;
 
 
@@ -2261,7 +2262,7 @@ procedure av_url_split(proto: PAnsiChar;         proto_size: cint;
  *)
 procedure dump_format(ic: PAVFormatContext; index: cint; url: PAnsiChar;
                is_output: cint);
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
 {$ENDIF}
 
 procedure av_dump_format(ic: PAVFormatContext; index: cint; url: PAnsiChar;
@@ -2277,7 +2278,7 @@ procedure av_dump_format(ic: PAVFormatContext; index: cint; url: PAnsiChar;
  * @deprecated in favor of av_parse_time()
  *)
 function parse_date(datestr: PAnsiChar; duration: cint): cint64; {deprecated}
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
 {$ENDIF}
 
 (**
