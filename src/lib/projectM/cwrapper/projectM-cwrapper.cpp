@@ -8,10 +8,12 @@
 #define	PM_PCM(pm) (PM_CLASS(pm)->pcm)
 #endif
 
-// this is needed if ld is used instead of gcc to link this static
+#if (__GNUC__ == 4 && __GNUC_MINOR__ < 6 )
 // library (which is the case if the fpc pascal compiler is used).
 // Otherwise compilation fails with "undefined reference to __dso_handle"
+// resolved with gcc 4.6.*
 void *__dso_handle = 0;
+#endif
 
 projectM_ptr projectM_create1(char* config_file) 
 {
