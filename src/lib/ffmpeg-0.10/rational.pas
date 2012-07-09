@@ -175,11 +175,11 @@ begin
 }
 
   if tmp <> 0 then
-    Result := ((tmp xor a.den xor b.den) >> 63) or 1
+    Result := ((tmp xor a.den xor b.den) shr 63) or 1
   else if (b.den and a.den) <> 0 then
     Result := 0
   else if (a.num and b.num) <> 0 then
-    Result := (a.num >> 31) - (b.num >> 31)
+    Result := (a.num shr 31) - (b.num shr 31)
   else
     Result := low(cint);
 
