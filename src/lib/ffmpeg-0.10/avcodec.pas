@@ -323,9 +323,9 @@ type
     CODEC_ID_TIERTEXSEQVIDEO,
     CODEC_ID_TIFF,
     CODEC_ID_GIF,
-{$IFDEF LIBAVCODEC_VERSION_MAJOR == 53}
+{$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_FFH264,
-{$ENDIF}    
+{$IFEND}    
     CODEC_ID_DXA,
     CODEC_ID_DNXHD,
     CODEC_ID_THP,
@@ -346,7 +346,7 @@ type
 {$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_8SVX_EXP,
     CODEC_ID_8SVX_FIB,
-{$ENDIF}    
+{$IFEND}    
     CODEC_ID_ESCAPE124,
     CODEC_ID_DIRAC,
     CODEC_ID_BFI,
@@ -388,7 +388,7 @@ type
 {$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_G723_1_DEPRECATED,
     CODEC_ID_G729_DEPRECATED,
-{$ENDIF}
+{$IFEND}
     CODEC_ID_UTVIDEO_DEPRECATED,
     CODEC_ID_BMV_VIDEO,
     CODEC_ID_VBLE,
@@ -489,7 +489,7 @@ type
 {$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_SONIC,
     CODEC_ID_SONIC_LS,
-{$ENDIF}
+{$IFEND}
     CODEC_ID_FLAC,
     CODEC_ID_MP3ADU,
     CODEC_ID_MP3ON4,
@@ -536,7 +536,7 @@ type
 //    CODEC_ID_G729_DEPRECATED,
 //    CODEC_ID_8SVX_EXP,
 //    CODEC_ID_8SVX_FIB,
-//{$ENDIF}
+//{$IFEND}
     CODEC_ID_BMV_AUDIO,
     CODEC_ID_G729 = $15800,
     CODEC_ID_G723_1= $15801,
@@ -638,7 +638,7 @@ const
   CH_LAYOUT_7POINT1         = AV_CH_LAYOUT_7POINT1;
   CH_LAYOUT_7POINT1_WIDE    = AV_CH_LAYOUT_7POINT1_WIDE;
   CH_LAYOUT_STEREO_DOWNMIX  = AV_CH_LAYOUT_STEREO_DOWNMIX;
-{$IFEND}
+{$ENDIF}
 
 {$IFDEF FF_API_OLD_DECODE_AUDIO}
 {* in bytes *}
@@ -756,7 +756,7 @@ type
     AV_LPC_TYPE_CHOLESKY    =  3, ///< Cholesky factorization
     AV_LPC_TYPE_NB                ///< Not part of ABI
   );
-{$IFEND}
+{$ENDIF}
 
   TAVAudioServiceType =(
     AV_AUDIO_SERVICE_TYPE_MAIN              = 0,
@@ -1058,7 +1058,7 @@ const
   FF_SI_TYPE = 5; ///< Switching Intra
   FF_SP_TYPE = 6; ///< Switching Predicted
   FF_BI_TYPE = 7;
-{$IFEND}
+{$ENDIF}
 
   FF_BUFFER_HINTS_VALID    = $01; // Buffer hints value is meaningful (if 0 ignore)
   FF_BUFFER_HINTS_READABLE = $02; // Codec will read from buffer
@@ -1207,7 +1207,7 @@ const
   FF_AA_FASTINT = 1; //not implemented yet
   FF_AA_INT     = 2;
   FF_AA_FLOAT   = 3;
-{$IFEND}
+{$ENDIF}
 
   FF_PROFILE_UNKNOWN  = -99;
   FF_PROFILE_RESERVED = -100;
@@ -1228,8 +1228,8 @@ const
   FF_PROFILE_MPEG2_SNR_SCALABLE = 3;
   FF_PROFILE_MPEG2_MAIN  =  4;
   FF_PROFILE_MPEG2_SIMPLE=  5;
-  FF_PROFILE_H264_CONSTRAINED  = (1<<9);  // 8+1; constraint_set1_flag
-  FF_PROFILE_H264_INTRA        = (1<<11); // 8+3; constraint_set3_flag
+  FF_PROFILE_H264_CONSTRAINED  = (1 shl 9);  // 8+1; constraint_set1_flag
+  FF_PROFILE_H264_INTRA        = (1 shl 11); // 8+3; constraint_set3_flag
   FF_PROFILE_H264_BASELINE             = 66;
   FF_PROFILE_H264_CONSTRAINED_BASELINE = (66 or FF_PROFILE_H264_CONSTRAINED);
   FF_PROFILE_H264_MAIN                 = 77;
@@ -1782,7 +1782,7 @@ type
      * data is probably 6 bits in size and needs to be scaled *)
     palette: array [0..AVPALETTE_COUNT - 1] of cuint;
   end; {deprecated;}
-{$IFEND}
+{$ENDIF}
 
   AVFieldOrder = (
     AV_FIELD_UNKNOWN,
@@ -2664,7 +2664,7 @@ type
      * - decoding: Set by user.
      *)
     palctrl: PAVPaletteControl;
-{$IFEND}
+{$ENDIF}
 
     (**
      * noise reduction strength
@@ -2722,7 +2722,7 @@ type
      * - decoding: Set by user.
      *)
     antialias_algo: cint; {deprecated}
-{$IFEND}
+{$ENDIF}
 
     (**
      * quantizer noise shaping
@@ -3095,7 +3095,7 @@ type
      * - decoding: unused
      *)
     max_partition_order: cint; {deprecated}
-{$IFEND}
+{$ENDIF}
 
     (**
      * GOP timecode frame start number, in non drop frame format
@@ -3112,7 +3112,7 @@ type
      * @deprecated Deprecated in favor of request_channel_layout.
      *)
     request_channels: cint; {deprecated}
-{$IFEND}
+{$ENDIF}
 
 {$IFDEF FF_API_DRC_SCALE}
     (**
@@ -3330,7 +3330,7 @@ type
      * - decoding: unused
      *)
     lpc_passes: cint; {deprecated}
-{$IFEND}
+{$ENDIF}
 
     (**
      * Number of slices.
@@ -3978,7 +3978,7 @@ function avcodec_get_name(id: TCodecID): PAnsiChar;
  *)
 function avcodec_get_pix_fmt_name(pix_fmt: TAVPixelFormat): PAnsiChar;
   cdecl; external av__codec; deprecated;
-{$IFEND}
+{$ENDIF}
 
 procedure avcodec_set_dimensions(s: PAVCodecContext; width: cint; height: cint);
   cdecl; external av__codec;
@@ -4127,7 +4127,7 @@ function avcodec_license(): PAnsiChar;
  *)
 procedure avcodec_init();
   cdecl; external av__codec; deprecated;
-{$IFEND}
+{$ENDIF}
 
 (**
  * Register the codec codec and initialize libavcodec.
@@ -4333,7 +4333,7 @@ function avcodec_default_get_format(s: PAVCodecContext; fmt: {const} PAVPixelFor
  *)
 function avcodec_thread_init(s: PAVCodecContext; thread_count: cint): cint;
   cdecl; external av__codec; deprecated;
-{$IFEND}
+{$ENDIF}
 
 function avcodec_default_execute(s: PAVCodecContext; func: TExecuteFunc; arg: Pointer; var ret: cint; count: cint; size: cint): cint;
   cdecl; external av__codec;
@@ -4561,7 +4561,7 @@ function avcodec_decode_subtitle(avctx: PAVCodecContext; sub: PAVSubtitle;
                           var got_sub_ptr: cint;
                           buf: {const} PByteArray; buf_size: cint): cint;
   cdecl; external av__codec; deprecated;
-{$IFEND}
+{$ENDIF}
   
 (* Decode a subtitle message.
  * Return a negative value on error, otherwise return the number of bytes used.
@@ -4750,7 +4750,7 @@ procedure avcodec_default_free_buffers(s: PAVCodecContext);
  *)
 function av_get_pict_type_char(pict_type: cint): AnsiChar;
   cdecl; external av__codec; deprecated;
-{$IFEND}
+{$ENDIF}
 
 (**
  * Return codec bits per sample.
@@ -4767,7 +4767,7 @@ function av_get_bits_per_sample(codec_id: TCodecID): cint;
  *)
 function av_get_bits_per_sample_format(sample_fmt: TAVSampleFormat): cint;
   cdecl; external av__codec; deprecated;
-{$IFEND}
+{$ENDIF}
 
 const
   AV_PARSER_PTS_NB      = 4;
