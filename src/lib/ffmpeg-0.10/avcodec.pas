@@ -111,7 +111,7 @@ const
  *)
 {$IFDEF FPC}
   {$macro on}
-{$ENDIF
+{$ENDIF}
 {$ifndef FF_API_PALETTE_CONTROL}
 {$define FF_API_PALETTE_CONTROL := (LIBAVCODEC_VERSION_MAJOR < 54)}
 {$endif}
