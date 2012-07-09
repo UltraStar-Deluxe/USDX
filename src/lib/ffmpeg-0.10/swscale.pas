@@ -154,7 +154,7 @@ const
   SWS_ACCURATE_RND      = $40000;
   SWS_BITEXACT          = $80000;
 
-{$IF FF_API_SWS_CPU_CAPS}
+{$IFDEF FF_API_SWS_CPU_CAPS}
 (**
  * CPU caps are autodetected now, those flags
  * are only provided for API compatibility.
@@ -249,7 +249,7 @@ function sws_init_context(sws_context: PSwsContext; srcFilter: PSwsFilter; dstFi
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
-{$IF FF_API_SWS_GETCONTEXT}
+{$IFDEF FF_API_SWS_GETCONTEXT}
 (**
  * Allocate and return a SwsContext. You need it to perform
  * scaling/conversion operations using sws_scale().

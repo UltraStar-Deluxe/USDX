@@ -161,7 +161,7 @@ type
     must_flush: cint;    (**< true if the next seek should flush *)
     eof_reached: cint;   (**< true if eof reached *)
     write_flag: cint;    (**< true if open for writing *)
-{$IF FF_API_OLD_AVIO}
+{$IFDEF FF_API_OLD_AVIO}
     is_streamed: cint; { deprecated }
 {$ENDIF}
     max_packet_size: cint;
@@ -194,7 +194,7 @@ type
 
 (* unbuffered I/O *)
 
-{$IF FF_API_OLD_AVIO}
+{$IFDEF FF_API_OLD_AVIO}
   PURLProtocol = ^TURLProtocol;
 
 (**
@@ -556,7 +556,7 @@ function avio_check(url: {const} PAnsiChar; flags: cint): cint;
  *)
 procedure avio_set_interrupt_cb(interrupt_cb: Pointer);
   cdecl; external av__format; deprecated;
-{$IFEND}
+{$ENDIF}
 
 (**
  * Allocate and initialize an AVIOContext for buffered I/O. It must be later
@@ -898,7 +898,7 @@ function url_is_streamed(s: PAVIOContext): cint;
 begin
   Result := s^.is_streamed;
 end;
-{$ENDIF}
+{$IFEND}
 
 (**
  * For SEEK_CUR on Windows

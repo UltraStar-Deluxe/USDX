@@ -96,7 +96,9 @@ const
  * Those FF_API_* defines are not part of public API.
  * They may change, break or disappear at any time.
  *)
-{$macro on}
+{$IFDEF FPC}
+  {$macro on}
+{$ENDIF}
 {$ifndef FF_API_OLD_METADATA2}
 {$define FF_API_OLD_METADATA2 := (LIBAVFORMAT_VERSION_MAJOR < 54)}
 {$endif}
@@ -360,7 +362,7 @@ type
  * @}
  *)
 
-{$IF FF_API_OLD_METADATA2}
+{$IFDEF FF_API_OLD_METADATA2}
 (**
  * @defgroup old_metadata Old metadata API
  * The following functions are deprecated, use
@@ -689,7 +691,7 @@ type
 
     subtitle_codec: TCodecID; (**< default subtitle codec *)
 
-{$IF FF_API_OLD_METADATA2}
+{$IFDEF FF_API_OLD_METADATA2}
     {const} metadata_conv: PAVMetadataConv;
 {$ENDIF}
 

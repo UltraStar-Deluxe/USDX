@@ -109,7 +109,9 @@ const
  * Those FF_API_* defines are not part of public API.
  * They may change, break or disappear at any time.
  *)
-{$macro on}
+{$IFDEF FPC}
+  {$macro on}
+{$ENDIF
 {$ifndef FF_API_PALETTE_CONTROL}
 {$define FF_API_PALETTE_CONTROL := (LIBAVCODEC_VERSION_MAJOR < 54)}
 {$endif}
