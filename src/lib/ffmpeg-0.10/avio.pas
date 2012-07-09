@@ -161,9 +161,9 @@ type
     must_flush: cint;    (**< true if the next seek should flush *)
     eof_reached: cint;   (**< true if eof reached *)
     write_flag: cint;    (**< true if open for writing *)
-{$IFDEF FF_API_OLD_AVIO}
+{$IF FF_API_OLD_AVIO}
     is_streamed: cint; { deprecated }
-{$ENDIF}
+{$IFEND}
     max_packet_size: cint;
     checksum: culong;
     checksum_ptr: PByteArray;
@@ -194,7 +194,7 @@ type
 
 (* unbuffered I/O *)
 
-{$IFDEF FF_API_OLD_AVIO}
+{$IF FF_API_OLD_AVIO}
   PURLProtocol = ^TURLProtocol;
 
 (**
@@ -528,7 +528,7 @@ function url_close_buf(s: PAVIOContext): cint;
  *)
 function url_exist(url: {const} PAnsiChar): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF} // FF_API_OLD_AVIO
+{$IFEND} // FF_API_OLD_AVIO
 
 (**
  * Return AVIO_* access flags corresponding to the access permissions
