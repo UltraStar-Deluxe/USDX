@@ -83,7 +83,7 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
 {$IFEND}
 
 {
@@ -362,7 +362,7 @@ type
  * @}
  *)
 
-{$IFDEF FF_API_OLD_METADATA2}
+{$IF FF_API_OLD_METADATA2}
 (**
  * @defgroup old_metadata Old metadata API
  * The following functions are deprecated, use
@@ -439,7 +439,7 @@ procedure av_metadata_free(var m: PAVDictionary);
 (**
  * @}
  *)
-{$ENDIF}
+{$IFEND}
 
 (* packet functions *)
 
@@ -691,9 +691,9 @@ type
 
     subtitle_codec: TCodecID; (**< default subtitle codec *)
 
-{$IFDEF FF_API_OLD_METADATA2}
+{$IF FF_API_OLD_METADATA2}
     {const} metadata_conv: PAVMetadataConv;
-{$ENDIF}
+{$IFEND}
 
     {const} priv_class: PAVClass; ///< AVClass for the private context
 
@@ -898,10 +898,10 @@ type
     r_frame_rate: TAVRational;
     priv_data: pointer;
 
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     (* internal data used in av_find_stream_info() *)
     first_dts: cint64;
-{$ENDIF}
+{$IFEND}
 
     (** 
      * encoding: pts generation when outputting stream
@@ -916,22 +916,22 @@ type
      * encoding: set by libavformat in av_write_header
      *)
     time_base: TAVRational;
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     pts_wrap_bits: cint; (* number of bits in pts (used for wrapping control) *)
-{$ENDIF}
-{$IFDEF FF_API_STREAM_COPY}
+{$IFEND}
+{$IF FF_API_STREAM_COPY}
     (* ffmpeg.c private use *)
     stream_copy: cint; (**< If set, just copy stream. *) {deprecated}
-{$ENDIF}
+{$IFEND}
     discard: TAVDiscard; ///< Selects which packets can be discarded at will and do not need to be demuxed.
-{$IFDEF FF_API_AVSTREAM_QUALITY}
+{$IF FF_API_AVSTREAM_QUALITY}
     //FIXME move stuff to a flags field?
     (** 
      * Quality, as it has been removed from AVCodecContext and put in AVVideoFrame.
      * MN:dunno if thats the right place, for it
      *)
     quality: cfloat; {deprecated}
-{$ENDIF}
+{$IFEND}
 
     (**
      * Decoding: pts of the first frame of the stream in presentation order, in stream time base.
@@ -950,7 +950,7 @@ type
      *)
     duration: cint64;
 
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     (* av_read_frame() support *)
     need_parsing: TAVStreamParseType;
     parser: PAVCodecParserContext;
@@ -963,16 +963,16 @@ type
                                        support seeking natively. *)
     nb_index_entries: cint;
     index_entries_allocated_size: cuint;
-{$ENDIF}
+{$IFEND}
 
     nb_frames: cint64;                 ///< number of frames in this stream if known or 0
     
     disposition: cint; (**< AV_DISPOSITION_* bitfield *)
 
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     probe_data: TAVProbeData;
     pts_buffer: array [0..MAX_REORDER_DELAY] of cint64;
-{$ENDIF}
+{$IFEND}
 
     (**
      * sample aspect ratio (0 if unknown)
@@ -983,7 +983,7 @@ type
 
     metadata: PAVDictionary;
 
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     {* Intended mostly for av_read_frame() support. Not supposed to be used by *}
     {* external applications; try to use something else if at all possible.    *}
     cur_ptr: {const} PCuint8;
@@ -1012,7 +1012,7 @@ type
      * write from outside of libav*
      *)
     last_in_packet_buffer: PAVPacketList;
-{$ENDIF}
+{$IFEND}
 
     (**
      * Average framerate
@@ -1052,7 +1052,7 @@ type
      * NOT PART OF PUBLIC API
      *)
     request_probe: cint;
-{$IFNDEF FF_API_REORDER_PRIVATE}
+{$IF NOT FF_API_REORDER_PRIVATE}
     {const} cur_ptr: PByte;
     cur_len: cint;
     cur_pkt: TAVPacket;
@@ -1092,7 +1092,7 @@ type
     index_entries_allocated_size: cuint;
 
     pts_wrap_bits: cint; (**< number of bits in pts (used for wrapping control) *)
-{$ENDIF}
+{$IFEND}
   end;
 
 (**
@@ -1182,15 +1182,15 @@ type
 
     filename: array [0..1023] of AnsiChar; (* input or output filename *)
     (* stream info *)
-{$IFDEF FF_API_TIMESTAMP}
+{$IF FF_API_TIMESTAMP}
     (**
      * @deprecated use 'creation_time' metadata tag instead
      *)
     timestamp: cint64; {deprecated}
-{$ENDIF}
+{$IFEND}
 
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     (* private data for pts handling (do not modify directly). *)
     (**
      * This buffer is only needed when packets were already buffered but
@@ -1198,7 +1198,7 @@ type
      * streams.
      *)
     packet_buffer: PAVPacketList;
-{$ENDIF}
+{$IFEND}
 
     (**
      * Decoding: position of the first frame of the component, in
@@ -1214,12 +1214,12 @@ type
      *)
     duration: cint64;
 
-{$IFDEF FF_API_FILESIZE}
+{$IF FF_API_FILESIZE}
     (**
      * decoding: total file size, 0 if unknown
      *)
     file_size: cint64;
-{$ENDIF}
+{$IFEND}
 
     (**
      * Decoding: total stream bitrate in bit/s, 0 if not
@@ -1228,42 +1228,42 @@ type
      *)
     bit_rate: cint;
 
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     (* av_read_frame() support *)
     cur_st: PAVStream;
 
     (* av_seek_frame() support *)
     data_offset: cint64; (**< offset of the first packet *)
-{$ENDIF}
+{$IFEND}
 
-{$IFDEF FF_API_MUXRATE}
+{$IF FF_API_MUXRATE}
     (**
      * use mpeg muxer private options instead
      *)
     mux_rate: cint; {deprecated}
-{$ENDIF}
+{$IFEND}
     packet_size: cuint;
-{$IFDEF FF_API_PRELOAD}
+{$IF FF_API_PRELOAD}
     preload: cint; {deprecated}
-{$ENDIF}
+{$IFEND}
     max_delay: cint;
 
-{$IFDEF FF_API_LOOP_OUTPUT}
+{$IF FF_API_LOOP_OUTPUT}
     (**
      * number of times to loop output in formats that support it
      *
      * @deprecated use the 'loop' private option in the gif muxer.
      *)
     loop_output: cint;
-{$ENDIF}
+{$IFEND}
 
     flags: cint;
-{$IFDEF FF_API_LOOP_INPUT}
+{$IF FF_API_LOOP_INPUT}
     (**
      * @deprecated, use the 'loop' img2 demuxer private option.
      *)
     loop_input: cint; {deprecated}
-{$ENDIF}
+{$IFEND}
 
     (**
      * decoding: size of data to probe; encoding: unused.
@@ -1326,7 +1326,7 @@ type
      *)
     debug: cint;
 
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     (**
      * Raw packets from the demuxer, prior to parsing and decoding.
      * This buffer is used for buffering packets until the codec can
@@ -1337,17 +1337,17 @@ type
     raw_packet_buffer_end: PAVPacketList;
 
     packet_buffer_end: PAVPacketList;
-{$ENDIF}
+{$IFEND}
 
     metadata: PAVDictionary;
     
-{$IFDEF FF_API_REORDER_PRIVATE}
+{$IF FF_API_REORDER_PRIVATE}
     (**
      * Remaining size available for raw_packet_buffer, in bytes.
      * NOT PART OF PUBLIC API
      *)
     raw_packet_buffer_remaining_size: cint;
-{$ENDIF}
+{$IFEND}
     
     (**
      * Start time of the stream in real world time, in microseconds
@@ -1419,7 +1419,7 @@ type
      * New public fields should be added right above.
      *****************************************************************
      *)
-{$IFNDEF FF_API_REORDER_PRIVATE}
+{$IF NOT FF_API_REORDER_PRIVATE}
     (**
      * Raw packets from the demuxer, prior to parsing and decoding.
      * This buffer is used for buffering packets until the codec can
@@ -1446,7 +1446,7 @@ type
 
     (* av_seek_frame() support *)
     data_offset: cint64; (**< offset of the first packet *)
-{$ENDIF}
+{$IFEND}
   end;
 
   TAVPacketList = record
@@ -1586,19 +1586,19 @@ function av_new_program(s: PAVFormatContext; id: cint): PAVProgram;
  * @}
  *)
 
-{$IFDEF FF_API_GUESS_IMG2_CODEC}
+{$IF FF_API_GUESS_IMG2_CODEC}
 function av_guess_image2_codec(filename: {const} PAnsiChar): TCodecID;
     cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
-{$IFDEF FF_API_PKT_DUMP}
+{$IF FF_API_PKT_DUMP}
 procedure av_pkt_dump(f: PAVFile; pkt: PAVPacket; dump_payload: cint); {deprecated}
   cdecl; external av__format;
 procedure av_pkt_dump_log(avcl: Pointer; level: cint; pkt: PAVPacket; dump_payload: cint); {deprecated}
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
-{$IFDEF FF_API_ALLOC_OUTPUT_CONTEXT}
+{$IF FF_API_ALLOC_OUTPUT_CONTEXT}
 (**
  * @deprecated deprecated in favor of avformat_alloc_output_context2()
  *)
@@ -1606,7 +1606,7 @@ function avformat_alloc_output_context({const} format: PAnsiChar;
                                        oformat: PAVOutputFormat;
                                        {const} filename: PAnsiChar): PAVFormatContext;
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Allocate an AVFormatContext for an output format.
@@ -1672,7 +1672,7 @@ function av_probe_input_format2(pd: PAVProbeData; is_opened: cint; score_max: PC
 function av_probe_input_format3(pd: PAVProbeData; is_opened: cint; score_ret: Pcint): PAVInputFormat;
   cdecl; external av__format;
 
-{$IFDEF FF_API_FORMAT_PARAMETERS}
+{$IF FF_API_FORMAT_PARAMETERS}
 (**
  * Allocate all the structures needed to read an input stream.
  *        This does not open the needed codecs for decoding the stream[s].
@@ -1698,7 +1698,7 @@ function av_open_input_file(var ic_ptr: PAVFormatContext; filename: PAnsiChar;
                      fmt: PAVInputFormat; buf_size: cint;
                      ap: PAVFormatParameters): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Open an input stream and read the header. The codecs are not opened.
@@ -1725,7 +1725,7 @@ function avformat_open_input(ps: PPAVFormatContext; {const} filename: PAnsiChar;
 function av_demuxer_open(ic: PAVFormatContext; ap: TAVFormatParameters): cint;
   cdecl; external av__format;
 
-{$IFDEF FF_API_FORMAT_PARAMETERS}
+{$IF FF_API_FORMAT_PARAMETERS}
 (**
  * Read packets of a media file to get stream information. This
  * is useful for file formats with no headers such as MPEG. This
@@ -1741,7 +1741,7 @@ function av_demuxer_open(ic: PAVFormatContext; ap: TAVFormatParameters): cint;
  *)
 function av_find_stream_info(ic: PAVFormatContext): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Read packets of a media file to get stream information. This
@@ -1882,7 +1882,7 @@ function av_read_play(s: PAVFormatContext): cint;
 function av_read_pause(s: PAVFormatContext): cint;
   cdecl; external av__format;
 
-{$IFDEF FF_API_FORMAT_PARAMETERS}
+{$IF FF_API_FORMAT_PARAMETERS}
 (**
  * Free a AVFormatContext allocated by av_open_input_stream.
  * @param s context to free
@@ -1890,9 +1890,9 @@ function av_read_pause(s: PAVFormatContext): cint;
  *)
 procedure av_close_input_stream(s: PAVFormatContext);
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
-{$IFDEF FF_API_CLOSE_INPUT_FILE}
+{$IF FF_API_CLOSE_INPUT_FILE}
 (**
  * @deprecated use avformat_close_input()
  * Close a media file (but not its codecs).
@@ -1901,7 +1901,7 @@ procedure av_close_input_stream(s: PAVFormatContext);
  *)
 procedure av_close_input_file(s: PAVFormatContext);
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Close an opened input AVFormatContext. Free it and all its contents
@@ -1913,7 +1913,7 @@ procedure avformat_close_input(s: PPAVFormatContext);
  * @}
  *)
 
-{$IFDEF FF_API_NEW_STREAM}
+{$IF FF_API_NEW_STREAM}
 (**
  * Add a new stream to a media file.
  *
@@ -1926,16 +1926,16 @@ procedure avformat_close_input(s: PPAVFormatContext);
  *)
 function av_new_stream(s: PAVFormatContext; id: cint): PAVStream;
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
-{$IFDEF FF_API_SET_PTS_INFO}
+{$IF FF_API_SET_PTS_INFO}
 (**
  * @deprecated this function is not supposed to be called outside of lavf
  *)
 procedure av_set_pts_info(s: PAVStream; pts_wrap_bits: cint;
                    pts_num: cuint; pts_den: cuint);
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 const
   AVSEEK_FLAG_BACKWARD = 1; ///< seek backward
@@ -1943,7 +1943,7 @@ const
   AVSEEK_FLAG_ANY      = 4; ///< seek to any frame, even non-keyframes
   AVSEEK_FLAG_FRAME    = 8;
 
-{$IFDEF FF_API_SEEK_PUBLIC}
+{$IF FF_API_SEEK_PUBLIC}
 function av_seek_frame_binary(s: PAVFormatContext; stream_index: cint;
                  target_ts: cint64; flags: cint): cint;
   cdecl; external av__format; deprecated;
@@ -1962,15 +1962,15 @@ function av_gen_search(s: PAVFormatContext; stream_index: cint;
                        flags: cint; ts_ret: Pint64;
                        read_timestamp: TReadTimestampFunc): cint64;
   cdecl; external av__format; deprecated;
-{$ENDIF}
+{$IFEND}
 
-{$IFDEF FF_API_FORMAT_PARAMETERS}
+{$IF FF_API_FORMAT_PARAMETERS}
 (**
  * media file output
  *)
 function av_set_parameters(s: PAVFormatContext; ap: PAVFormatParameters): cint;
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
   
 (**
  * @addtogroup lavf_encoding
@@ -2001,7 +2001,7 @@ function avformat_write_header(s: PAVFormatContext; options: {PPAVDictionary} po
  * @param s media file handle
  * @return 0 if OK, AVERROR_xxx on error
  *)
-{$IFDEF FF_API_FORMAT_PARAMETERS}
+{$IF FF_API_FORMAT_PARAMETERS}
 (**
  * Allocate the stream private data and write the stream header to an
  * output media file.
@@ -2015,7 +2015,7 @@ function avformat_write_header(s: PAVFormatContext; options: {PPAVDictionary} po
  *)
 function av_write_header(s: PAVFormatContext): cint; {deprecated}
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Write a packet to an output media file ensuring correct interleaving.
@@ -2258,20 +2258,20 @@ procedure av_url_split(proto: PAnsiChar;         proto_size: cint;
                        {const} url: PAnsiChar);
   cdecl; external av__format;
 
-{$IFDEF FF_API_DUMP_FORMAT}
+{$IF FF_API_DUMP_FORMAT}
 (**
  * @deprecated Deprecated in favor of av_dump_format().
  *)
 procedure dump_format(ic: PAVFormatContext; index: cint; url: PAnsiChar;
                is_output: cint);
   cdecl; external av__format; deprecated;
-{$ENDIF}
+{$IFEND}
 
 procedure av_dump_format(ic: PAVFormatContext; index: cint; url: PAnsiChar;
                is_output: cint);
   cdecl; external av__format;
 
-{$IFDEF FF_API_PARSE_DATE}
+{$IF FF_API_PARSE_DATE}
 (**
  * Parse datestr and return a corresponding number of microseconds.
  *
@@ -2281,7 +2281,7 @@ procedure av_dump_format(ic: PAVFormatContext; index: cint; url: PAnsiChar;
  *)
 function parse_date(datestr: PAnsiChar; duration: cint): cint64; {deprecated}
   cdecl; external av__format; deprecated;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Get the current time in microseconds.
@@ -2289,13 +2289,13 @@ function parse_date(datestr: PAnsiChar; duration: cint): cint64; {deprecated}
 function av_gettime(): cint64;
   cdecl; external av__format;
 
-{$IFDEF FF_API_FIND_INFO_TAG}
+{$IF FF_API_FIND_INFO_TAG}
 (**
  * @deprecated use av_find_info_tag in libavutil instead.
  *)
 function find_info_tag(arg: PAnsiChar; arg_size: cint; tag1: PAnsiChar; info: PAnsiChar): cint;
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Return in 'buf' the path with '%d' replaced by a number.
@@ -2339,10 +2339,10 @@ function av_filename_number_test(filename: PAnsiChar): cint;
 function av_sdp_create(ac: pointer; n_files: cint; buf: PAnsiChar; size: cint): cint;
   cdecl; external av__format;
 
-{$IFDEF FF_API_SDP_CREATE}
+{$IF FF_API_SDP_CREATE}
 function avf_sdp_create(ac: PPAVFormatContext; n_files: cint; buff: PByteArray; size: cint): cint;
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Return a positive value if the given filename has one of the given

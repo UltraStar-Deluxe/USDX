@@ -80,7 +80,7 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBSWSCALE_VERSION > LIBSWSCALE_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libswscale is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libswscale is not yet supported!'}
 {$IFEND}
 
 type
@@ -102,7 +102,7 @@ const
 {$ifndef FF_API_SWS_CPU_CAPS}
   FF_API_SWS_CPU_CAPS = LIBSWSCALE_VERSION_MAJOR < 3;    
 {$endif}
-{$ifndef FF_API_SWS_GETCONTEXT}
+{$ifndef FF_API_SWS_FORMAT_NAME}
   FF_API_SWS_FORMAT_NAME = LIBSWSCALE_VERSION_MAJOR < 3;    
 {$endif}
 
@@ -154,7 +154,7 @@ const
   SWS_ACCURATE_RND      = $40000;
   SWS_BITEXACT          = $80000;
 
-{$IFDEF FF_API_SWS_CPU_CAPS}
+{$IF FF_API_SWS_CPU_CAPS}
 (**
  * CPU caps are autodetected now, those flags
  * are only provided for API compatibility.
@@ -165,7 +165,7 @@ const
   SWS_CPU_CAPS_ALTIVEC  = $10000000;
   SWS_CPU_CAPS_BFIN     = $01000000;
   SWS_CPU_CAPS_SSE2     = $02000000;
-{$ENDIF}
+{$IFEND}
 
   SWS_MAX_REDUCE_CUTOFF = 0.002;
 
@@ -249,7 +249,7 @@ function sws_init_context(sws_context: PSwsContext; srcFilter: PSwsFilter; dstFi
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
-{$IFDEF FF_API_SWS_GETCONTEXT}
+{$IF FF_API_SWS_GETCONTEXT}
 (**
  * Allocate and return a SwsContext. You need it to perform
  * scaling/conversion operations using sws_scale().
@@ -271,7 +271,7 @@ function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
                         flags: cint; srcFilter: PSwsFilter;
                         dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Scale the image slice in srcSlice and put the resulting scaled
