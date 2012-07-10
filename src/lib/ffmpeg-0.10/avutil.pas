@@ -55,8 +55,8 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 51;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 34;
-  LIBAVUTIL_MAX_VERSION_RELEASE = 101;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 35;
+  LIBAVUTIL_MAX_VERSION_RELEASE = 100;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
                           (LIBAVUTIL_MAX_VERSION_RELEASE * VERSION_RELEASE);
@@ -75,7 +75,7 @@ const
 {$IFEND}
 
 {$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
 (**
