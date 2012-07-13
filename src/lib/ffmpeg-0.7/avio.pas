@@ -130,7 +130,7 @@ type
     write_flag: cint;    (**< true if open for writing *)
 {$IF FF_API_OLD_AVIO}
     is_streamed: cint; { deprecated }
-{$ENDIF}
+{$IFEND}
     max_packet_size: cint;
     checksum: culong;
     checksum_ptr: PByteArray;
@@ -171,7 +171,7 @@ type
   TURLContext = record
 {$IF FF_API_URL_CLASS}
     av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
-{$ENDIF}
+{$IFEND}
     prot: PURLProtocol;
     flags: cint;
     is_streamed: cint;  (**< true if streamed (no seek possible), default = false *)
@@ -488,7 +488,7 @@ function url_close_buf(s: PAVIOContext): cint;
  *)
 function url_exist(url: {const} PAnsiChar): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF} // FF_API_OLD_AVIO
+{$IFEND} // FF_API_OLD_AVIO
 
 (**
  * Return AVIO_* access flags corresponding to the access permissions
@@ -536,7 +536,7 @@ function register_protocol(protocol: PURLProtocol): cint;
  *)
 function av_register_protocol(protocol: PURLProtocol): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Allocate and initialize an AVIOContext for buffered I/O. It must be later
@@ -738,7 +738,7 @@ function avio_get_str16be(pb: PAVIOContext; maxlen: cint; buf: PAnsiChar; buflen
  *        to set up the buffer for writing. *)
 function url_resetbuf(s: PAVIOContext; flags: cint): cint;
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 (**
  * @defgroup open_modes URL open modes
@@ -756,7 +756,7 @@ const
   AVIO_RDONLY = 1;    (**< read-only *)
   AVIO_WRONLY = 2;    (**< write-only *)
   AVIO_RDWR   = 4;    (**< read-write *)
-{$ENDIF}
+{$IFEND}
 (**
  * @
  *)
@@ -778,7 +778,7 @@ const
   AVIO_FLAG_NONBLOCK = 4;    
 {$ELSE}
   AVIO_FLAG_NONBLOCK = 8;    
-{$ENDIF}
+{$IFEND}
 
 (**
  * Create and initialize a AVIOContext for accessing the
@@ -829,7 +829,7 @@ function avio_close_dyn_buf(s: PAVIOContext; var pbuffer: Pcuint8): cint;
 {$IF FF_API_UDP_GET_FILE}
 function udp_get_file_handle(h: PURLContext): cint;
   cdecl; external av__format;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Iterate through names of available protocols.
@@ -882,14 +882,30 @@ function url_is_streamed(s: PAVIOContext): cint;
 begin
   Result := s^.is_streamed;
 end;
+{$IFEND}
+
+(**
+ * For SEEK_CUR on Windows
+ * values taken from stdio.h of C
+ *)
+{$IFNDEF SEEK_SET}
+const
+  SEEK_SET = 0;
 {$ENDIF}
 
-{$IFDEF UNIX}
+{$IFNDEF SEEK_CUR}
+const
+  SEEK_CUR = 1;
+{$ENDIF}
+
+{$IFNDEF SEEK_END}
+const
+  SEEK_END = 2;
+{$ENDIF}
+
 function avio_tell(s: PAVIOContext): cint64; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := avio_seek(s, 0, SEEK_CUR);
 end;
-{$ELSE}
-{$ENDIF}
 
 end.

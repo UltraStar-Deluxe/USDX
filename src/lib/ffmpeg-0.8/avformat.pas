@@ -21,9 +21,9 @@
  *   in the source codes.
  * - Changes and updates by the UltraStar Deluxe Team
  *
- * Conversion of version 0.7 libavformat/avformat.h
- * Min. version: 52.110.0
- * Max. version: 52.111.0
+ * Conversion of version 0.8 libavformat/avformat.h
+ * Min. version: 53.4.0
+ * Max. version: 53.5.0
  *)
 
 unit avformat;
@@ -61,16 +61,16 @@ const
    * by removing all unneeded conditionals.
    *)
   (* Max. supported version by this header *)
-  LIBAVFORMAT_MAX_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 111;
+  LIBAVFORMAT_MAX_VERSION_MAJOR   = 53;
+  LIBAVFORMAT_MAX_VERSION_MINOR   = 5;
   LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
   (* Min. supported version by this header *)
-  LIBAVFORMAT_MIN_VERSION_MAJOR   = 52;
-  LIBAVFORMAT_MIN_VERSION_MINOR   = 110;
+  LIBAVFORMAT_MIN_VERSION_MAJOR   = 53;
+  LIBAVFORMAT_MIN_VERSION_MINOR   = 4;
   LIBAVFORMAT_MIN_VERSION_RELEASE = 0;
   LIBAVFORMAT_MIN_VERSION = (LIBAVFORMAT_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MIN_VERSION_MINOR * VERSION_MINOR) +
@@ -83,7 +83,7 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
 {$IFEND}
 
 {
@@ -240,7 +240,7 @@ procedure av_metadata_copy(var dst: PAVDictionary; src: PAVDictionary; flags: ci
 procedure av_metadata_free(var m: PAVDictionary);
   cdecl; external av__format; deprecated;
 
-{$ENDIF}
+{$IFEND}
 
 (* packet functions *)
 

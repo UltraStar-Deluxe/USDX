@@ -83,7 +83,7 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
 {$IFEND}
 
 {
@@ -223,7 +223,7 @@ function av_metadata_get(m: PAVDictionary; key: {const} PAnsiChar;
  *)
 function av_metadata_set(var pm: PAVMetadata; key: {const} PAnsiChar; value: {const} PAnsiChar): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Set the given tag in *pm, overwriting an existing tag.
@@ -255,7 +255,7 @@ procedure av_metadata_copy(var dst: PAVDictionary; src: PAVDictionary; flags: ci
 procedure av_metadata_free(var m: PAVDictionary);
   cdecl; external av__format; deprecated;
 
-{$ENDIF}
+{$IFEND}
 
 (* packet functions *)
 
@@ -434,7 +434,7 @@ type
     start, end_: cint64;      ///< chapter start/end time in time_base units
 {$IF FF_API_OLD_METADATA}
     title: PAnsiChar;         ///< chapter title
-{$ENDIF}
+{$IFEND}
     metadata: PAVDictionary;
   end;
 
@@ -711,7 +711,7 @@ type
 
 {$IF FF_API_OLD_METADATA}
     language: array [0..3] of PAnsiChar; (**< ISO 639-2/B 3-letter language code (empty string if undefined) *)
-{$ENDIF}
+{$IFEND}
 
     (* av_read_frame() support *)
     need_parsing: TAVStreamParseType;
@@ -731,7 +731,7 @@ type
     unused: array [0..4] of cint64;
 {$IF FF_API_OLD_METADATA}
     filename: PAnsiChar; (**< source filename of the stream *)
-{$ENDIF}    
+{$IFEND}    
 
     disposition: cint; (**< AV_DISPOSITION_* bitfield *)
     probe_data: TAVProbeData;
@@ -833,7 +833,7 @@ type
     streams: array [0..MAX_STREAMS - 1] of PAVStream;
 {$ELSE}
     streams: PPAVStream;
-{$ENDIF}
+{$IFEND}
     filename: array [0..1023] of AnsiChar; (* input or output filename *)
     (* stream info *)
     timestamp: cint64;
@@ -846,7 +846,7 @@ type
     year: cint;  (**< ID3 year, 0 if none *)
     track: cint; (**< track number, 0 if none *)
     genre: array [0..31] of AnsiChar; (**< ID3 genre *)
-{$ENDIF}
+{$IFEND}
 
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)
     (* private data for pts handling (do not modify directly). *)
@@ -1005,7 +1005,7 @@ type
 {$IF FF_API_OLD_METADATA}
       provider_name     : PAnsiChar;  ///< network name for DVB streams
       name              : PAnsiChar;  ///< service name for DVB streams
-{$ENDIF}
+{$IFEND}
       flags             : cint;
       discard           : TAVDiscard; ///< selects which program to discard and which to feed to the caller
       stream_index      : PCardinal;

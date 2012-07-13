@@ -80,7 +80,7 @@ const
    *)
   (* Supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 122;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 123;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -96,12 +96,12 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVCODEC_VERSION < LIBAVCODEC_MIN_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
+  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
 {$IFEND}
 
 (* Check if linked version is supported *)
 {$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
 {$IFEND}
 
 (**
@@ -175,7 +175,7 @@ const
 
 {$IF FF_API_OLD_AUDIOCONVERT}
   {$I libavcodec/audioconvert.pas}
-{$ENDIF}
+{$IFEND}
 
 type
   FF_INTERNALC_MEM_TYPE = cuint;

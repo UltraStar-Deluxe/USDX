@@ -98,7 +98,7 @@ const
 {$ifndef FF_API_SWS_CPU_CAPS}
   FF_API_SWS_CPU_CAPS = LIBSWSCALE_VERSION_MAJOR < 3;    
 {$endif}
-{$ifndef FF_API_SWS_GETCONTEXT}
+{$ifndef FF_API_SWS_FORMAT_NAME}
   FF_API_SWS_FORMAT_NAME = LIBSWSCALE_VERSION_MAJOR < 3;    
 {$endif}
 
@@ -160,7 +160,7 @@ const
   SWS_CPU_CAPS_3DNOW    = $40000000;
   SWS_CPU_CAPS_ALTIVEC  = $10000000;
   SWS_CPU_CAPS_BFIN     = $01000000;
-{$endif}
+{$ifend}
 
   SWS_MAX_REDUCE_CUTOFF = 0.002;
 
@@ -260,10 +260,10 @@ procedure sws_freeContext(swsContext: PSwsContext);
  *)
 function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
                         dstW: cint; dstH: cint; dstFormat: TAVPixelFormat;
-	                flags: cint; srcFilter: PSwsFilter;
-	                dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
+                        flags: cint; srcFilter: PSwsFilter;
+                        dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
-{$endif}
+{$ifend}
 
 (**
  * Scales the image slice in srcSlice and puts the resulting scaled
@@ -299,7 +299,7 @@ function sws_scale(context: PSwsContext; {const} srcSlice: PPCuint8Array; {const
 // deprecated. Use sws_scale() instead.
 function sws_scale_ordered(context: PSwsContext; {const} src: PPCuint8Array;
                            srcStride: PCintArray; srcSliceY: cint; srcSliceH: cint;
-	                   dst: PPCuint8Array; dstStride: PCintArray): cint;
+                           dst: PPCuint8Array; dstStride: PCintArray): cint;
   cdecl; external sw__scale; deprecated;
 {$ifend}
 
@@ -393,7 +393,7 @@ procedure sws_printVec(a: PSwsVector);
  *)
 procedure sws_printVec2(a:         PSwsVector;
                         log_ctx:   PAVClass; // PAVClass is declared in avcodec.pas
-			log_level: cint);
+                        log_level: cint);
   cdecl; external sw__scale;
 
 procedure sws_freeVec(a: PSwsVector);
@@ -401,8 +401,8 @@ procedure sws_freeVec(a: PSwsVector);
 
 function sws_getDefaultFilter(lumaGBlur: cfloat; chromaGBlur: cfloat; 
                               lumaSharpen: cfloat; chromaSharpen: cfloat;
-			      chromaHShift: cfloat; chromaVShift: cfloat;
-			      verbose: cint): PSwsFilter;
+                              chromaHShift: cfloat; chromaVShift: cfloat;
+                              verbose: cint): PSwsFilter;
   cdecl; external sw__scale;
 
 procedure sws_freeFilter(filter: PSwsFilter);
@@ -424,8 +424,8 @@ procedure sws_freeFilter(filter: PSwsFilter);
 function sws_getCachedContext(context: PSwsContext;
               srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
               dstW: cint; dstH: cint; dstFormat: TAVPixelFormat;
-	      flags: cint; srcFilter: PSwsFilter; 
-	      dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
+              flags: cint; srcFilter: PSwsFilter; 
+              dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
 
 (**
@@ -438,10 +438,10 @@ function sws_getCachedContext(context: PSwsContext;
  * @param num_pixels number of pixels to convert
  * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
  *)
-procedure sws_convertPalette8ToPacked32({const} src:      PPCuint8Array;
-                                         dst:             PPCuint8Array;
-					 num_pixels:      clong;
-					 {const} palette: PPCuint8Array);
+procedure sws_convertPalette8ToPacked32({const} src:     PPCuint8Array;
+                                        dst:             PPCuint8Array;
+                                        num_pixels:      clong;
+                                        {const} palette: PPCuint8Array);
   cdecl; external sw__scale;
 
 (**
@@ -454,10 +454,10 @@ procedure sws_convertPalette8ToPacked32({const} src:      PPCuint8Array;
  * @param num_pixels number of pixels to convert
  * @param palette    array with [256] entries, which must match color arrangement (RGB or BGR) of src
  *)
-procedure sws_convertPalette8ToPacked24({const} src:      PPCuint8Array;
-                                         dst:             PPCuint8Array;
-					 num_pixels:      clong;
-					 {const} palette: PPCuint8Array);
+procedure sws_convertPalette8ToPacked24({const} src:     PPCuint8Array;
+                                        dst:             PPCuint8Array;
+                                        num_pixels:      clong;
+                                        {const} palette: PPCuint8Array);
   cdecl; external sw__scale;
 
 implementation

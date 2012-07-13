@@ -80,7 +80,7 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBSWSCALE_VERSION > LIBSWSCALE_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libswscale is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libswscale is not yet supported!'}
 {$IFEND}
 
 type
@@ -102,7 +102,7 @@ const
 {$ifndef FF_API_SWS_CPU_CAPS}
   FF_API_SWS_CPU_CAPS = LIBSWSCALE_VERSION_MAJOR < 3;    
 {$endif}
-{$ifndef FF_API_SWS_GETCONTEXT}
+{$ifndef FF_API_SWS_FORMAT_NAME}
   FF_API_SWS_FORMAT_NAME = LIBSWSCALE_VERSION_MAJOR < 3;    
 {$endif}
 
@@ -165,7 +165,7 @@ const
   SWS_CPU_CAPS_ALTIVEC  = $10000000;
   SWS_CPU_CAPS_BFIN     = $01000000;
   SWS_CPU_CAPS_SSE2     = $02000000;
-{$ENDIF}
+{$IFEND}
 
   SWS_MAX_REDUCE_CUTOFF = 0.002;
 
@@ -271,7 +271,7 @@ function sws_getContext(srcW: cint; srcH: cint; srcFormat: TAVPixelFormat;
                         flags: cint; srcFilter: PSwsFilter;
                         dstFilter: PSwsFilter; param: PCdouble): PSwsContext;
   cdecl; external sw__scale;
-{$ENDIF}
+{$IFEND}
 
 (**
  * Scales the image slice in srcSlice and puts the resulting scaled

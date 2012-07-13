@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavcodec/avcodec.h
- * version: 52.122.0
+ * version: 53.42.0 - 53.42.4
  *
  *)
 
@@ -79,16 +79,16 @@ const
    * fix. 
    *)
   (* Supported version by this header *)
-  LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 122;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 0;
+  LIBAVCODEC_MAX_VERSION_MAJOR   = 53;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 42;
+  LIBAVCODEC_MAX_VERSION_RELEASE = 4;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
   (* Min. supported version by this header *)
-  LIBAVCODEC_MIN_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MIN_VERSION_MINOR   = 122;
+  LIBAVCODEC_MIN_VERSION_MAJOR   = 53;
+  LIBAVCODEC_MIN_VERSION_MINOR   = 42;
   LIBAVCODEC_MIN_VERSION_RELEASE = 0;
   LIBAVCODEC_MIN_VERSION = (LIBAVCODEC_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVCODEC_MIN_VERSION_MINOR * VERSION_MINOR) +
@@ -96,12 +96,12 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVCODEC_VERSION < LIBAVCODEC_MIN_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
+  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
 {$IFEND}
 
 (* Check if linked version is supported *)
 {$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
 {$IFEND}
 
 (**
@@ -175,7 +175,7 @@ const
 
 {$IF FF_API_OLD_AUDIOCONVERT}
   {$I libavcodec/audioconvert.pas}
-{$ENDIF}
+{$IFEND}
 
 const
   AV_NOPTS_VALUE: cint64  = $8000000000000000;
@@ -301,7 +301,7 @@ type
     CODEC_ID_GIF,
 {$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_FFH264,
-{$ENDIF}
+{$IFEND}
     CODEC_ID_DXA,
     CODEC_ID_DNXHD,
     CODEC_ID_THP,
@@ -322,7 +322,7 @@ type
 {$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_8SVX_EXP,
     CODEC_ID_8SVX_FIB,
-{$ENDIF}
+{$IFEND}
     CODEC_ID_ESCAPE124,
     CODEC_ID_DIRAC,
     CODEC_ID_BFI,
@@ -364,7 +364,7 @@ type
 {$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_G723_1_DEPRECATED,
     CODEC_ID_G729_DEPRECATED,
-{$ENDIF}
+{$IFEND}
     CODEC_ID_UTVIDEO_DEPRECATED,
     CODEC_ID_BMV_VIDEO,
     CODEC_ID_VBLE,
@@ -465,7 +465,7 @@ type
 {$IF LIBAVCODEC_VERSION_MAJOR = 53}
     CODEC_ID_SONIC,
     CODEC_ID_SONIC_LS,
-{$ENDIF}
+{$IFEND}
     CODEC_ID_FLAC,
     CODEC_ID_MP3ADU,
     CODEC_ID_MP3ON4,
@@ -512,7 +512,7 @@ type
     CODEC_ID_G729_DEPRECATED,
     CODEC_ID_8SVX_EXP,
     CODEC_ID_8SVX_FIB,
-{$ENDIF}
+{$IFEND}
     CODEC_ID_BMV_AUDIO,
     CODEC_ID_G729 = $15800,
     CODEC_ID_G723_1= $15801,
@@ -556,7 +556,7 @@ type
 
   );
 
-{$IFDEF FF_API_OLD_SAMPLE_FMT}
+{$IF FF_API_OLD_SAMPLE_FMT}
 type
   TSampleFormat = TAVSampleFormat;
 
@@ -568,9 +568,9 @@ const
   SAMPLE_FMT_FLT  = AV_SAMPLE_FMT_FLT;
   SAMPLE_FMT_DBL  = AV_SAMPLE_FMT_DBL;
   SAMPLE_FMT_NB   = AV_SAMPLE_FMT_NB;
-{$ENDIF}
+{$IFEND}
 
-{$IFDEF FF_API_OLD_AUDIOCONVERT}
+{$IF FF_API_OLD_AUDIOCONVERT}
 
 const
   {* Audio channel masks *}
@@ -617,7 +617,7 @@ const
   CH_LAYOUT_7POINT1         = AV_CH_LAYOUT_7POINT1;
   CH_LAYOUT_7POINT1_WIDE    = AV_CH_LAYOUT_7POINT1_WIDE;
   CH_LAYOUT_STEREO_DOWNMIX  = AV_CH_LAYOUT_STEREO_DOWNMIX;
-{$ENDIF}
+{$IFEND}
 
 {$IFDEF FF_API_OLD_DECODE_AUDIO}
 {* in bytes *}
@@ -723,7 +723,7 @@ type
     AVCHROMA_LOC_NB               ///< Not part of ABI
   );
 
-{$IFDEF FF_API_FLAC_GLOBAL_OPTS}
+{$IF FF_API_FLAC_GLOBAL_OPTS}
 (**
  * LPC analysis type
  *)
@@ -735,7 +735,7 @@ type
     AV_LPC_TYPE_CHOLESKY    =  3, ///< Cholesky factorization
     AV_LPC_TYPE_NB                ///< Not part of ABI
   );
-{$ENDIF}
+{$IFEND}
 
   TAVAudioServiceType =(
     AV_AUDIO_SERVICE_TYPE_MAIN              = 0,

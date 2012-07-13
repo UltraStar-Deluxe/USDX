@@ -130,7 +130,7 @@ type
  *)
   PAVIOContext = ^TAVIOContext;
   TAVIOContext = record
-{$IFNDEF FF_API_OLD_AVIO}
+{$IF FF_API_OLD_AVIO}
     (**
      * A class for private options.
      *
@@ -144,7 +144,7 @@ type
      * to any av_opt_* functions in that case.
      *)
     av_class: PAVClass;
-{$ENDIF}
+{$IFEND}
     buffer: PByteArray;  (**< Start of the buffer. *)
     buffer_size: cint;   (**< Maximum buffer size *)
     buf_ptr: PByteArray; (**< Current position in the buffer *)
@@ -163,7 +163,7 @@ type
     write_flag: cint;    (**< true if open for writing *)
 {$IF FF_API_OLD_AVIO}
     is_streamed: cint; { deprecated }
-{$ENDIF}
+{$IFEND}
     max_packet_size: cint;
     checksum: culong;
     checksum_ptr: PByteArray;
@@ -522,7 +522,7 @@ function url_close_buf(s: PAVIOContext): cint;
  *)
 function url_exist(url: {const} PAnsiChar): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF} // FF_API_OLD_AVIO
+{$IFEND} // FF_API_OLD_AVIO
 
 (**
  * Return AVIO_FLAG_* access flags corresponding to the access permissions
@@ -540,7 +540,7 @@ function url_exist(url: {const} PAnsiChar): cint;
 function avio_check(url: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format;
 
-{$IFDEF FF_API_OLD_INTERRUPT_CB}
+{$IF FF_API_OLD_INTERRUPT_CB}
 (**
  * The callback is called in blocking functions to test regulary if
  * asynchronous interruption is needed. AVERROR_EXIT is returned
@@ -894,7 +894,7 @@ function url_is_streamed(s: PAVIOContext): cint;
 begin
   Result := s^.is_streamed;
 end;
-{$ENDIF}
+{$IFEND}
 
 (**
  * For SEEK_CUR on Windows

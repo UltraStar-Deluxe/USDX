@@ -83,7 +83,7 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
 {$IFEND}
 
 {
@@ -240,7 +240,7 @@ procedure av_metadata_copy(var dst: PAVDictionary; src: PAVDictionary; flags: ci
 procedure av_metadata_free(var m: PAVDictionary);
   cdecl; external av__format; deprecated;
 
-{$ENDIF}
+{$IFEND}
 
 (* packet functions *)
 
@@ -492,7 +492,7 @@ type
 
 {$IF FF_API_OLD_METADATA2}
     {const} metadata_conv: PAVMetadataConv;
-{$ENDIF}
+{$IFEND}
 
     {const} priv_class: PAVClass; ///< AVClass for the private context
 
@@ -580,7 +580,7 @@ type
      *)
     read_seek: function (c: PAVFormatContext; stream_index: cint;
                   timestamp: cint64; flags: cint): cint; cdecl; deprecated;
-{$ENDIF}
+{$IFEND}
 
     (**
      * Gets the next timestamp in stream[stream_index].time_base units.

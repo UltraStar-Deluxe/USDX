@@ -130,7 +130,7 @@ type
     write_flag: cint;    (**< true if open for writing *)
 {$IF FF_API_OLD_AVIO}
     is_streamed: cint; { deprecated }
-{$ENDIF}
+{$IFEND}
     max_packet_size: cint;
     checksum: culong;
     checksum_ptr: PByteArray;
@@ -486,7 +486,7 @@ function url_close_buf(s: PAVIOContext): cint;
  *)
 function url_exist(url: {const} PAnsiChar): cint;
   cdecl; external av__format; deprecated;
-{$ENDIF} // FF_API_OLD_AVIO
+{$IFEND} // FF_API_OLD_AVIO
 
 (**
  * Return AVIO_FLAG_* access flags corresponding to the access permissions
@@ -833,14 +833,30 @@ function url_is_streamed(s: PAVIOContext): cint;
 begin
   Result := s^.is_streamed;
 end;
+{$IFEND}
+
+(**
+ * For SEEK_CUR on Windows
+ * values taken from stdio.h of C
+ *)
+{$IFNDEF SEEK_SET}
+const
+  SEEK_SET = 0;
 {$ENDIF}
 
-{$IFDEF UNIX}
+{$IFNDEF SEEK_CUR}
+const
+  SEEK_CUR = 1;
+{$ENDIF}
+
+{$IFNDEF SEEK_END}
+const
+  SEEK_END = 2;
+{$ENDIF}
+
 function avio_tell(s: PAVIOContext): cint64; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := avio_seek(s, 0, SEEK_CUR);
 end;
-{$ELSE}
-{$ENDIF}
 
 end.

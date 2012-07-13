@@ -326,8 +326,13 @@ const
 
 (* libavutil/common.h *) // until now MKTAG and MKBETAG is all from common.h KMS 19/5/2010
 
-function MKTAG(a, b, c, d: AnsiChar): integer;
-function MKBETAG(a, b, c, d: AnsiChar): integer;
+(**
+ * MKTAG and MKBETAG are usually used to convert a magic string to an enumeration index.
+ * In Pascal this can probably not be used and the functions could be removed.
+ * KMS 8/6/2012
+ *)
+function MKTAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
+function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 
 (* libavutil/mem.h *)
 
@@ -491,12 +496,12 @@ implementation
 
 (* libavutil/common.h *)
 
-function MKTAG(a, b, c, d: AnsiChar): integer;
+function MKTAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := (ord(a) or (ord(b) shl 8) or (ord(c) shl 16) or (ord(d) shl 24));
 end;
 
-function MKBETAG(a, b, c, d: AnsiChar): integer;
+function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   Result := (ord(d) or (ord(c) shl 8) or (ord(b) shl 16) or (ord(a) shl 24));
 end;

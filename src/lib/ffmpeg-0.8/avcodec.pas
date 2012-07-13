@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavcodec/avcodec.h
- * version: 52.122.0
+ * version: 53.7.0 - 53.8.0
  *
  *)
 
@@ -79,16 +79,16 @@ const
    * fix. 
    *)
   (* Supported version by this header *)
-  LIBAVCODEC_MAX_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 122;
+  LIBAVCODEC_MAX_VERSION_MAJOR   = 53;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 8;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
                            (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
   (* Min. supported version by this header *)
-  LIBAVCODEC_MIN_VERSION_MAJOR   = 52;
-  LIBAVCODEC_MIN_VERSION_MINOR   = 122;
+  LIBAVCODEC_MIN_VERSION_MAJOR   = 53;
+  LIBAVCODEC_MIN_VERSION_MINOR   = 7;
   LIBAVCODEC_MIN_VERSION_RELEASE = 0;
   LIBAVCODEC_MIN_VERSION = (LIBAVCODEC_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVCODEC_MIN_VERSION_MINOR * VERSION_MINOR) +
@@ -96,12 +96,12 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVCODEC_VERSION < LIBAVCODEC_MIN_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
+  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
 {$IFEND}
 
 (* Check if linked version is supported *)
 {$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
 {$IFEND}
 
 (**
@@ -175,7 +175,7 @@ const
 
 {$IF FF_API_OLD_AUDIOCONVERT}
   {$I libavcodec/audioconvert.pas}
-{$ENDIF}
+{$IFEND}
 
 const
   AV_NOPTS_VALUE: cint64  = $8000000000000000;

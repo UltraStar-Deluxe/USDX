@@ -71,11 +71,11 @@ const
 
 (* Check if linked versions are supported *)
 {$IF (LIBAVUTIL_VERSION < LIBAVUTIL_MIN_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavutil is too old!'}
+  {$MESSAGE Error 'Linked version of libavutil is too old!'}
 {$IFEND}
 
 {$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
-//  {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
+  {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
 (**
