@@ -308,7 +308,7 @@ function av_register_protocol2(protocol: PURLProtocol; size: cint): cint;
  *)
 
 type
-  PByteIOContext = ^TByteIOContext;
+  PByteIOContext = PAVIOContext; { deprecated }
   TByteIOContext = TAVIOContext; { deprecated }
 
 function init_put_byte(s: PAVIOContext;
