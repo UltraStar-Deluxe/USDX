@@ -106,6 +106,12 @@ const
   {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
 {$IFEND}
 
+{$IFNDEF FPC}
+type
+  // defines for Delphi
+  size_t = cardinal;
+{$ENDIF}
+
 const
   AV_NOPTS_VALUE: cint64  = $8000000000000000;
   AV_TIME_BASE            = 1000000;

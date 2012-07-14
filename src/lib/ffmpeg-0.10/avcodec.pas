@@ -199,6 +199,12 @@ const
   FF_API_OLD_ENCODE_AUDIO = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 
+{$IFNDEF FPC}
+type
+  // defines for Delphi
+  size_t = cardinal;
+{$ENDIF}
+
 type
   FF_INTERNALC_MEM_TYPE = cuint;
   

@@ -78,6 +78,13 @@ const
   {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
+type
+{$IFNDEF FPC}
+  // defines for Delphi
+  size_t = cardinal;
+{$ENDIF}
+  Psize_t = ^size_t;
+
 (**
  * Return the LIBAVUTIL_VERSION_INT constant.
  *)
@@ -234,9 +241,6 @@ function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDI
 begin
   Result := (ord(d) or (ord(c) shl 8) or (ord(b) shl 16) or (ord(a) shl 24));
 end;
-
-type
-  Psize_t = ^size_t;
 
 function av_size_mult(a: size_t; b: size_t; r: Psize_t): size_t;
   cdecl; external av__util;

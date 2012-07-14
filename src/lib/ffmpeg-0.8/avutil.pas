@@ -78,6 +78,12 @@ const
   {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
+{$IFNDEF FPC}
+type
+  // defines for Delphi
+  size_t = cardinal;
+{$ENDIF}
+
 {$INCLUDE libavutil/cpu.pas}
 
 {$INCLUDE libavutil/dict.pas}

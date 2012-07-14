@@ -259,37 +259,6 @@ procedure av_metadata_free(var m: PAVDictionary);
 
 (* packet functions *)
 
-const
-  PKT_FLAG_KEY = $0001;
-
-procedure av_destruct_packet_nofree(var pkt: TAVPacket);
-  cdecl; external av__format;
-
-(**
- * Default packet destructor.
- *)
-procedure av_destruct_packet(var pkt: TAVPacket);
-  cdecl; external av__format;
-
-(**
- * Initialize optional fields of a packet with default values.
- *
- * @param pkt packet
- *)
-procedure av_init_packet(var pkt: TAVPacket);
-  cdecl; external av__format;
-
-(**
- * Allocate the payload of a packet and initialize its fields with
- * default values.
- *
- * @param pkt packet
- * @param size wanted payload size
- * @return 0 if OK, AVERROR_xxx otherwise
- *)
-function av_new_packet(var pkt: TAVPacket; size: cint): cint;
-  cdecl; external av__format;
-
 (**
  * Allocate and read the payload of a packet and initialize its fields with
  * default values.
@@ -299,6 +268,22 @@ function av_new_packet(var pkt: TAVPacket; size: cint): cint;
  * @return >0 (read size) if OK, AVERROR_xxx otherwise
  *)
 function av_get_packet(s: PByteIOContext; var pkt: TAVPacket; size: cint): cint;
+  cdecl; external av__format;
+
+(**
+ * Read data and append it to the current content of the AVPacket.
+ * If pkt->size is 0 this is identical to av_get_packet.
+ * Note that this uses av_grow_packet and thus involves a realloc
+ * which is inefficient. Thus this function should only be used
+ * when there is no reasonable way to know (an upper bound of)
+ * the final size.
+ *
+ * @param pkt packet
+ * @param size amount of data to read
+ * @return >0 (read size) if OK, AVERROR_xxx otherwise, previous data
+ *         will not be lost even if an error occurs.
+ *)
+function av_append_packet(s: PAVIOContext; var pkt: TAVPacket; size: cint): cint;
   cdecl; external av__format;
 
 (*************************************************)

@@ -173,6 +173,12 @@ const
   FF_API_GET_PIX_FMT_NAME = LIBAVCODEC_VERSION_MAJOR < 54;    
 {$endif}
 
+{$IFNDEF FPC}
+type
+  // defines for Delphi
+  size_t = cardinal;
+{$ENDIF}
+
 {$IF FF_API_OLD_AUDIOCONVERT}
   {$I libavcodec/audioconvert.pas}
 {$IFEND}
