@@ -20,21 +20,20 @@
     {$IFEND}
   {$IFEND}
   {$IF Defined(IncludeConstants)}
-  av__codec = 'libavcodec';
-  LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
-  LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
-  LIBAVCODEC_VERSION_RELEASE = @libavcodec_VERSION_RELEASE@;
+    av__codec = 'libavcodec';
+    LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
+    LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
+    LIBAVCODEC_VERSION_RELEASE = @libavcodec_VERSION_RELEASE@;
 
-  av__format = 'libavformat';
-  LIBAVFORMAT_VERSION_MAJOR   = @libavformat_VERSION_MAJOR@;
-  LIBAVFORMAT_VERSION_MINOR   = @libavformat_VERSION_MINOR@;
-  LIBAVFORMAT_VERSION_RELEASE = @libavformat_VERSION_RELEASE@;
+    av__format = 'libavformat';
+    LIBAVFORMAT_VERSION_MAJOR   = @libavformat_VERSION_MAJOR@;
+    LIBAVFORMAT_VERSION_MINOR   = @libavformat_VERSION_MINOR@;
+    LIBAVFORMAT_VERSION_RELEASE = @libavformat_VERSION_RELEASE@;
 
-  av__util = 'libavutil';
-  LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
-  LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
-  LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
-  
+    av__util = 'libavutil';
+    LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
+    LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
+    LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
   {$IFEND}
 {$IFEND}
 
