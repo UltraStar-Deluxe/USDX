@@ -53,6 +53,7 @@ implementation
 uses
   SysUtils,
   Math,
+  ctypes,
   SDL,
   avcodec,
   avformat,
@@ -119,7 +120,7 @@ type
     fAVFrame:     PAVFrame;
     fAVFrameRGB:  PAVFrame;
 
-    fFrameBuffer: PByte;  //**< stores a FFmpeg video frame
+    fFrameBuffer: Pcuint8;  //**< stores a FFmpeg video frame
     fFrameTex:    GLuint; //**< OpenGL texture for FrameBuffer
     fFrameTexValid: boolean; //**< if true, fFrameTex contains the current frame
     fTexWidth, fTexHeight: cardinal;
@@ -633,7 +634,7 @@ var
   errnum: integer;
   AVPacket: TAVPacket;
   pts: double;
-  fileSize: integer;
+  fileSize: int64;
   urlError: integer;
 begin
   Result := false;

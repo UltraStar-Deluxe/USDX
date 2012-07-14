@@ -3548,7 +3548,7 @@ procedure avpicture_free (picture: PAVPicture);
  * @param height the height of the image in pixels
  * @return size of the image data in bytes
  *)
-function avpicture_fill (picture: PAVPicture; ptr: pointer;
+function avpicture_fill (picture: PAVPicture; ptr: pcuint8;
                  pix_fmt: TAVPixelFormat; width: cint; height: cint): cint;
   cdecl; external av__codec;
 
