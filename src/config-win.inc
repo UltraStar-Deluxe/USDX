@@ -8,7 +8,25 @@
 
 {$IF Defined(HaveFFmpeg)}
   {$IFNDEF FFMPEG_DIR}
-    {$DEFINE FFMPEG_DIR := 'ffmpeg'}
+    {$DEFINE FFMPEG_DIR := 'ffmpeg-0.10'}
+  {$ENDIF}
+  {$IFNDEF AVCODEC_PATH}
+    {$DEFINE AVCODEC_PATH  := 'lib\ffmpeg-0.10\avcodec.pas'}
+  {$ENDIF}
+  {$IFNDEF AVFORMAT_PATH}
+    {$DEFINE AVFORMAT_PATH := 'lib\ffmpeg-0.10\avformat.pas'}
+  {$ENDIF}
+  {$IFNDEF AVUTIL_PATH}
+    {$DEFINE AVUTIL_PATH   := 'lib\ffmpeg-0.10\avutil.pas'}
+  {$ENDIF}
+  {$IFNDEF RATIONAL_PATH}
+    {$DEFINE RATIONAL_PATH := 'lib\ffmpeg-0.10\rational.pas'}
+  {$ENDIF}
+  {$IFNDEF AVIO_PATH}
+    {$DEFINE AVIO_PATH     := 'lib\ffmpeg-0.10\avio.pas'}
+  {$ENDIF}
+  {$IFNDEF SWSCALE_PATH}
+    {$DEFINE SWSCALE_PATH  := 'lib\ffmpeg-0.10\swscale.pas'}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
     av__codec = 'avcodec-52';

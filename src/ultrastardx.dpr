@@ -86,15 +86,15 @@ uses
   portmixer              in 'lib\portmixer\portmixer.pas',
   {$ENDIF}
   {$IFDEF UseFFmpeg}
-  avcodec                in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
-  avformat               in 'lib\' + FFMPEG_DIR + '\avformat.pas',
-  avutil                 in 'lib\' + FFMPEG_DIR + '\avutil.pas',
-  rational               in 'lib\' + FFMPEG_DIR + '\rational.pas',
-  avio                   in 'lib\' + FFMPEG_DIR + '\avio.pas',
-    {$IFDEF UseSWScale}
-    swscale              in 'lib\' + FFMPEG_DIR + '\swscale.pas',
-    {$ENDIF}
-  UMediaCore_FFmpeg      in 'media\UMediaCore_FFmpeg.pas',
+    avcodec                in AVCODEC_PATH,
+    avformat               in AVFORMAT_PATH,
+    avutil                 in AVUTIL_PATH,
+    rational               in RATIONAL_PATH,
+    avio                   in AVIO_PATH,
+      {$IFDEF UseSWScale}
+      swscale              in SWSCALE_PATH,
+      {$ENDIF}
+    UMediaCore_FFmpeg      in 'media\UMediaCore_FFmpeg.pas',
   {$ENDIF}
 
   {$IFDEF UseSRCResample}
