@@ -18,23 +18,22 @@
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
     {$IFEND}
-  {$IFEND}
+  {$ENDIF}
   {$IF Defined(IncludeConstants)}
-  av__codec = 'libavcodec';
-  LIBAVCODEC_VERSION_MAJOR   = 53;
-  LIBAVCODEC_VERSION_MINOR   = 8;
-  LIBAVCODEC_VERSION_RELEASE = 0;
+    av__codec = 'libavcodec';
+    LIBAVCODEC_VERSION_MAJOR   = 53;
+    LIBAVCODEC_VERSION_MINOR   = 8;
+    LIBAVCODEC_VERSION_RELEASE = 0;
 
-  av__format = 'libavformat';
-  LIBAVFORMAT_VERSION_MAJOR   = 53;
-  LIBAVFORMAT_VERSION_MINOR   = 5;
-  LIBAVFORMAT_VERSION_RELEASE = 0;
+    av__format = 'libavformat';
+    LIBAVFORMAT_VERSION_MAJOR   = 53;
+    LIBAVFORMAT_VERSION_MINOR   = 5;
+    LIBAVFORMAT_VERSION_RELEASE = 0;
 
-  av__util = 'libavutil';
-  LIBAVUTIL_VERSION_MAJOR   = 51;
-  LIBAVUTIL_VERSION_MINOR   = 9;
-  LIBAVUTIL_VERSION_RELEASE = 1;
-  
+    av__util = 'libavutil';
+    LIBAVUTIL_VERSION_MAJOR   = 51;
+    LIBAVUTIL_VERSION_MINOR   = 9;
+    LIBAVUTIL_VERSION_RELEASE = 1;
   {$IFEND}
 {$IFEND}
 

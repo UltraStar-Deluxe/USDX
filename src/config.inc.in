@@ -19,24 +19,6 @@
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
     {$IFEND}
   {$ENDIF}
-  {$IFNDEF AVCODEC_PATH}
-    {$DEFINE AVCODEC_PATH  := 'lib\' + FFMPEG_DIR + '\avcodec.pas'}
-  {$ENDIF}
-  {$IFNDEF AVFORMAT_PATH}
-    {$DEFINE AVFORMAT_PATH := 'lib\' + FFMPEG_DIR + '\avformat.pas'}
-  {$ENDIF}
-  {$IFNDEF AVUTIL_PATH}
-    {$DEFINE AVUTIL_PATH   := 'lib\' + FFMPEG_DIR + '\avutil.pas'}
-  {$ENDIF}
-  {$IFNDEF RATIONAL_PATH}
-    {$DEFINE RATIONAL_PATH := 'lib\' + FFMPEG_DIR + '\rational.pas'}
-  {$ENDIF}
-  {$IFNDEF AVIO_PATH}
-    {$DEFINE AVIO_PATH     := 'lib\' + FFMPEG_DIR + '\avio.pas'}
-  {$ENDIF}
-  {$IFNDEF SWSCALE_PATH}
-    {$DEFINE SWSCALE_PATH  := 'lib\' + FFMPEG_DIR + '\swscale.pas'}
-  {$ENDIF}
   {$IF Defined(IncludeConstants)}
     av__codec = 'libavcodec';
     LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;

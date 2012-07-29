@@ -85,17 +85,29 @@ uses
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\portmixer.pas',
   {$ENDIF}
+
   {$IFDEF UseFFmpeg}
-    avcodec                in AVCODEC_PATH,
-    avformat               in AVFORMAT_PATH,
-    avutil                 in AVUTIL_PATH,
-    rational               in RATIONAL_PATH,
-    avio                   in AVIO_PATH,
+    {$IFDEF FPC} // This solution is not very elegant, but working
+	  avcodec             in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
+      avformat            in 'lib\' + FFMPEG_DIR + '\avformat.pas',
+      avutil              in 'lib\' + FFMPEG_DIR + '\avutil.pas',
+      rational            in 'lib\' + FFMPEG_DIR + '\rational.pas',
+      avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
       {$IFDEF UseSWScale}
-      swscale              in SWSCALE_PATH,
+        swscale           in 'lib\' + FFMPEG_DIR + '\swscale.pas',
       {$ENDIF}
-    UMediaCore_FFmpeg      in 'media\UMediaCore_FFmpeg.pas',
-  {$ENDIF}
+    {$ELSE} // speak: This is for Delphi. Change version as needed!
+      avcodec            in 'lib\ffmpeg-0.10\avcodec.pas',
+      avformat           in 'lib\ffmpeg-0.10\avformat.pas',
+      avutil             in 'lib\ffmpeg-0.10\avutil.pas',
+      rational           in 'lib\ffmpeg-0.10\rational.pas',
+      avio               in 'lib\ffmpeg-0.10\avio.pas',
+      {$IFDEF UseSWScale}
+        swscale          in 'lib\ffmpeg-0.10\swscale.pas',
+  	  {$ENDIF}
+    {$ENDIF}
+    UMediaCore_FFmpeg    in 'media\UMediaCore_FFmpeg.pas',
+  {$ENDIF}  // UseFFmpeg
 
   {$IFDEF UseSRCResample}
   samplerate             in 'lib\samplerate\samplerate.pas',
