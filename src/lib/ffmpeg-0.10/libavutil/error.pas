@@ -109,7 +109,8 @@ const
  * This is semantically identical to AVERROR_BUG
  * it has been introduced in Libav after our AVERROR_BUG and with a modified value.
  *)
-  AVERROR_BUG2                = -(ord('B') or (ord('U') shl 8) or (ord('G') shl 16) or (ord(' ') shl 24));
+  AVERROR_BUG2               = -(ord('B') or (ord('U') shl 8) or (ord('G') shl 16) or (ord(' ') shl 24));
+  AVERROR_UNKNOWN            = -(ord('U') or (ord('N') shl 8) or (ord('K') shl 16) or (ord('N') shl 24)); ///< Unknown error, typically from an external library
 
 (*
  * Put a description of the AVERROR code errnum in errbuf.
