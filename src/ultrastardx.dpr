@@ -91,10 +91,11 @@ uses
       avcodec             in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
       avformat            in 'lib\' + FFMPEG_DIR + '\avformat.pas',
       avutil              in 'lib\' + FFMPEG_DIR + '\avutil.pas',
-      mathematics         in 'lib\' + FFMPEG_DIR + '\mathematics.pas',
-      opt                 in 'lib\' + FFMPEG_DIR + '\opt.pas',
       rational            in 'lib\' + FFMPEG_DIR + '\rational.pas',
       avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
+      {$IFDEF useOLD_FFMPEG}
+        mathematics       in 'lib\' + FFMPEG_DIR + '\mathematics.pas',
+      {$ENDIF}
       {$IFDEF UseSWScale}
         swscale           in 'lib\' + FFMPEG_DIR + '\swscale.pas',
       {$ENDIF}

@@ -17,6 +17,7 @@
       {$DEFINE FFMPEG_DIR := 'ffmpeg-0.8'}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
+      {$DEFINE useOLD_FFMPEG}
     {$IFEND}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}

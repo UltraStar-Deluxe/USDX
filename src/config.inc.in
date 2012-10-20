@@ -17,6 +17,7 @@
       {$DEFINE FFMPEG_DIR := 'ffmpeg-@FFMPEG_VERSION_MAJOR@.@FFMPEG_VERSION_MINOR@'}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
+      {$DEFINE useOLD_FFMPEG}
     {$IFEND}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
