@@ -95,6 +95,7 @@ uses
       avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
       {$IFDEF useOLD_FFMPEG}
         mathematics       in 'lib\' + FFMPEG_DIR + '\mathematics.pas',
+        opt               in 'lib\' + FFMPEG_DIR + '\opt.pas',
       {$ENDIF}
       {$IFDEF UseSWScale}
         swscale           in 'lib\' + FFMPEG_DIR + '\swscale.pas',
