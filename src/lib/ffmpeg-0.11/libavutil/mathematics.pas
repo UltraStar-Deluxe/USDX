@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mathematics.h
- * avutil version 51.34.101
+ * avutil version 51.54.100
  *
  *)
 
@@ -78,6 +78,13 @@ function av_rescale_rnd (a, b, c: cint64; enum: TAVRounding): cint64;
  * Rescale a 64-bit integer by 2 rational numbers.
  *)
 function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
+  cdecl; external av__util; {av_const}
+
+(**
+ * Rescale a 64-bit integer by 2 rational numbers with specified rounding.
+ *)
+function av_rescale_q_rnd(a: cint64; bq, cq: TAVRational;
+                          enum: TAVRounding): cint64;
   cdecl; external av__util; {av_const}
 
 (**

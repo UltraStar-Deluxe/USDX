@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/log.h
- * avutil version 51.34.101
+ * avutil version 51.54.100
  *
  *)
 
@@ -127,6 +127,8 @@ const
  * Stuff which is only useful for libav* developers.
  *)
   AV_LOG_DEBUG   = 48;
+
+  AV_LOG_MAX_OFFSET = (AV_LOG_DEBUG - AV_LOG_QUIET);
 
 (**
  * Send the specified message to the log if the level is less than or equal

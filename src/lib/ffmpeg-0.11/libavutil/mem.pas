@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mem.h
- * avutil version 51.34.101
+ * avutil version 51.54.100
  *
  *)
 

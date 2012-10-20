@@ -29,7 +29,7 @@
  * header, so it should not be directly included in your projects.
  *
  * update to
- * avformat version: 52.110.0
+ * avformat version: 54.6.100
  *)
 
 unit avio;
@@ -91,7 +91,6 @@ const
 
 const
   AVIO_SEEKABLE_NORMAL = 0001; (**< Seeking works like for a local file *)
-  URL_PROTOCOL_FLAG_NESTED_SCHEME = 1; (*< The protocol name can be the first part of a nested protocol scheme *)
 
 type
   TReadWriteFunc = function(opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
@@ -130,7 +129,6 @@ type
  *)
   PAVIOContext = ^TAVIOContext;
   TAVIOContext = record
-{$IFNDEF FF_API_OLD_AVIO}
     (**
      * A class for private options.
      *
@@ -143,8 +141,7 @@ type
      * warning -- this field can be NULL, be sure to not pass this AVIOContext
      * to any av_opt_* functions in that case.
      *)
-    av_class: PAVClass;
-{$ENDIF}
+    av_class: {const} PAVClass;
     buffer: PByteArray;  (**< Start of the buffer. *)
     buffer_size: cint;   (**< Maximum buffer size *)
     buf_ptr: PByteArray; (**< Current position in the buffer *)
@@ -161,9 +158,6 @@ type
     must_flush: cint;    (**< true if the next seek should flush *)
     eof_reached: cint;   (**< true if eof reached *)
     write_flag: cint;    (**< true if open for writing *)
-{$IF FF_API_OLD_AVIO}
-    is_streamed: cint; { deprecated }
-{$IFEND}
     max_packet_size: cint;
     checksum: culong;
     checksum_ptr: PByteArray;
@@ -190,345 +184,16 @@ type
      * This field is internal to libavformat and access from outside is not allowed.
      *)
     maxsize: cint64;
+
+     (**
+      * avio_read and avio_write should if possible be satisfied directly
+      * instead of going through a buffer, and avio_seek will always
+      * call the underlying seek function directly.
+      *)
+     direct: cint;
   end;
 
 (* unbuffered I/O *)
-
-{$IF FF_API_OLD_AVIO}
-  PURLProtocol = ^TURLProtocol;
-
-(**
- * URL Context.
- * New fields can be added to the end with minor version bumps.
- * Removal, reordering and changes to existing fields require a major
- * version bump.
- * sizeof(URLContext) must not be used outside libav*.
- * @deprecated This struct will be made private
- *)
-  PPURLContext = ^PURLContext;
-  PURLContext = ^TURLContext;
-  TURLContext = record
-    av_class: {const} PAVClass; ///< information for av_log(). Set by url_open().
-    prot: PURLProtocol;
-    flags: cint;
-    is_streamed: cint;  (**< true if streamed (no seek possible), default = false *)
-    max_packet_size: cint;  (**< if non zero, the stream is packetized with this max packet size *)
-    priv_data: pointer;
-    filename: PAnsiChar; (**< specified URL *)
-    is_connected: cint;
-    interrupt_callback: TAVIOInterruptCB;
-  end;
-
-(**
- * @deprecated This struct is to be made private. Use the higher-level
- *             AVIOContext-based API instead.
- *)
-  TURLProtocol = record
-    name: PAnsiChar;
-    url_open: function (h: PURLContext; url: {const} PAnsiChar; flags: cint): cint; cdecl;
-    url_read: function (h: PURLContext; buf: PByteArray; size: cint): cint; cdecl;
-    url_write: function (h: PURLContext; {const} buf: PByteArray; size: cint): cint; cdecl;
-    url_seek: function (h: PURLContext; pos: cint64; whence: cint): cint64; cdecl;
-    url_close: function (h: PURLContext): cint; cdecl;
-    next: PURLProtocol;
-    url_read_pause: function (h: PURLContext; pause: cint): cint; cdecl;
-    url_read_seek: function (h: PURLContext; stream_index: cint;
-                             timestamp: cint64; flags: cint): cint64; cdecl;
-    url_get_file_handle: function (h: PURLContext): cint; cdecl;
-    priv_data_size: cint;
-    {const} priv_data_class: PAVClass;
-    flags: cint;
-    url_check: function (h: PURLContext; mask: cint): cint;
-  end;
-
-  PURLPollEntry = ^TURLPollEntry;
-  TURLPollEntry = record
-    handle: PURLContext;
-    events: cint;
-    revents: cint;
-  end;
-
-(* not implemented *)
-function url_poll(poll_table: PURLPollEntry; n: cint; timeout: cint): cint;
-  cdecl; external av__format; deprecated;
-
-const
-(**
- * @name URL open modes
- * The flags argument to url_open and cosins must be one of the following
- * constants, optionally ORed with other flags.
- * @{
- *)
-  URL_RDONLY = 1;  (**< read-only *)
-  URL_WRONLY = 2;  (**< write-only *)
-  URL_RDWR   = {(URL_RDONLY|URL_WRONLY)} 3;  (**< read-write *)
-(**
- * @
- *)
-
-(**
- * Use non-blocking mode.
- * If this flag is set, operations on the context will return
- * AVERROR(EAGAIN) if they can not be performed immediately.
- * If this flag is not set, operations on the context will never return
- * AVERROR(EAGAIN).
- * Note that this flag does not affect the opening/connecting of the
- * context. Connecting a protocol will always block if necessary (e.g. on
- * network protocols) but never hang (e.g. on busy devices).
- * Warning: non-blocking protocols is work-in-progress; this flag may be
- * silently ignored.
- *)
-  URL_FLAG_NONBLOCK = 8;
-
-type
-  PURLInterruptCB = ^TURLInterruptCB;
-  TURLInterruptCB = function (): cint; cdecl;
-
-{
-var
-  url_interrupt_cb: PURLInterruptCB; cvar; external: av__format;
-}
-
-(**
- * @defgroup old_url_funcs Old url_* functions
- * @eprecated. Use the buffered API based on AVIOContext instead.
- * @
- * @ingroup lavf_io
- *)
-function url_open_protocol(puc: PPURLContext; up: PURLProtocol;
-                           url: {const} PAnsiChar; flags: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_alloc(h: PPURLContext; {const} url: PAnsiChar; flags: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_connect(h: PURLContext): cint;
-  cdecl; external av__format; deprecated;
-function url_open(h: PPointer; url: {const} PAnsiChar; flags: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_read (h: PURLContext; buf: PByteArray; size: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_read_complete (h: PURLContext; buf: PByteArray; size: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_write (h: PURLContext; {const} buf: PByteArray; size: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_seek (h: PURLContext; pos: cint64; whence: cint): cint64;
-  cdecl; external av__format; deprecated;
-function url_close (h: PURLContext): cint;
-  cdecl; external av__format; deprecated;
-function url_filesize (h: PURLContext): cint64;
-  cdecl; external av__format; deprecated;
-function url_get_file_handle(h: PURLContext): cint;
-  cdecl; external av__format; deprecated;
-function url_get_max_packet_size(h: PURLContext): cint;
-  cdecl; external av__format; deprecated;
-procedure url_get_filename(h: PURLContext; buf: PAnsiChar; buf_size: cint);
-  cdecl; external av__format; deprecated;
-function av_url_read_pause(h: PURLContext; pause: cint): cint;
-  cdecl; external av__format; deprecated;
-function av_url_read_seek(h: PURLContext; stream_index: cint;
-                          timestamp: cint64; flags: cint): cint64;
-  cdecl; external av__format; deprecated;
-procedure url_set_interrupt_cb (interrupt_cb: TURLInterruptCB);
-  cdecl; external av__format; deprecated;
-
-(**
- * returns the next registered protocol after the given protocol (the first if
- * NULL is given), or NULL if protocol is the last one.
- *)
-function av_protocol_next(p: PURLProtocol): PURLProtocol;
-  cdecl; external av__format;
-
-(**
- * Register the URLProtocol protocol.
- *
- * @param size the size of the URLProtocol struct referenced
- *)
-function av_register_protocol2(protocol: PURLProtocol; size: cint): cint;
-  cdecl; external av__format; deprecated;
-(**
- * @
- *)
-
-type
-  PByteIOContext = PAVIOContext; { deprecated }
-  TByteIOContext = TAVIOContext; { deprecated }
-
-function init_put_byte(s: PAVIOContext;
-                buffer: PByteArray;
-                buffer_size: cint;
-		write_flag: cint;
-                opaque: pointer;
-                read_packet: TReadWriteFunc;
-                write_packet: TReadWriteFunc;
-                seek: TSeekFunc): cint;
-  cdecl; external av__format; deprecated;
-function av_alloc_put_byte(
-                  buffer: PByteArray;
-                  buffer_size: cint;
-                  write_flag: cint;
-                  opaque: Pointer;
-                  read_packet: TReadWriteFunc;
-                  write_packet: TReadWriteFunc;
-                  seek: TSeekFunc): PAVIOContext;
-  cdecl; external av__format; deprecated;
-
-(**
- * @defgroup old_avio_funcs Old put_/get_*() functions
- * The following functions are deprecated. Use the "avio_"-prefixed functions instead.
- * @
- *)
-function get_buffer(s: PAVIOContext; buf: PByteArray; size: cint): cint;
-  cdecl; external av__format; deprecated;
-function get_partial_buffer(s: PAVIOContext; buf: PByteArray; size: cint): cint;
-  cdecl; external av__format; deprecated;
-function get_byte(s: PAVIOContext): cint;
-  cdecl; external av__format; deprecated;
-function get_le16(s: PAVIOContext): cuint;
-  cdecl; external av__format; deprecated;
-function get_le24(s: PAVIOContext): cuint;
-  cdecl; external av__format; deprecated;
-function get_le32(s: PAVIOContext): cuint;
-  cdecl; external av__format; deprecated;
-function get_le64(s: PAVIOContext): cuint64;
-  cdecl; external av__format; deprecated;
-function get_be16(s: PAVIOContext): cuint;
-  cdecl; external av__format; deprecated;
-function get_be24(s: PAVIOContext): cuint;
-  cdecl; external av__format; deprecated;
-function get_be32(s: PAVIOContext): cuint;
-  cdecl; external av__format; deprecated;
-function get_be64(s: PAVIOContext): cuint64;
-  cdecl; external av__format; deprecated;
-
-procedure put_byte(s: PAVIOContext; b: cint);
-  cdecl; external av__format; deprecated;
-procedure put_nbyte(s: PAVIOContext; b: cint; count: cint);
-  cdecl; external av__format; deprecated;
-procedure put_buffer (s: PAVIOContext; buf: {const} PByteArray; size: cint);
-  cdecl; external av__format; deprecated;
-procedure put_le64(s: PAVIOContext; val: cuint64);
-  cdecl; external av__format; deprecated;
-procedure put_be64(s: PAVIOContext; val: cuint64);
-  cdecl; external av__format; deprecated;
-procedure put_le32(s: PAVIOContext; val: cuint);
-  cdecl; external av__format; deprecated;
-procedure put_be32(s: PAVIOContext; val: cuint);
-  cdecl; external av__format; deprecated;
-procedure put_le24(s: PAVIOContext; val: cuint);
-  cdecl; external av__format; deprecated;
-procedure put_be24(s: PAVIOContext; val: cuint);
-  cdecl; external av__format; deprecated;
-procedure put_le16(s: PAVIOContext; val: cuint);
-  cdecl; external av__format; deprecated;
-procedure put_be16(s: PAVIOContext; val: cuint);
-  cdecl; external av__format; deprecated;
-procedure put_tag(s: PAVIOContext; tag: {const} PAnsiChar);
-  cdecl; external av__format; deprecated;
-(**
- * @
- *)
-
-function av_url_read_fpause(h: PAVIOContext; pause: cint): cint;
-  cdecl; external av__format; deprecated;
-function av_url_read_fseek(h: PAVIOContext; stream_index: cint;
-                           timestamp: cint64; flags: cint): cint64;
-  cdecl; external av__format; deprecated;
-
-(**
- * @defgroup old_url_f_funcs Old url_f* functions
- * @deprecated, use the "avio_"-prefixed functions instead.
- * @
- *)
-function url_fopen(var s: PAVIOContext; url: {const} PAnsiChar; flags: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_fclose(s: PAVIOContext): cint;
-  cdecl; external av__format; deprecated;
-function url_fseek(s: PAVIOContext; offset: cint64; whence: cint): cint64;
-  cdecl; external av__format; deprecated;
-function url_fskip(s: PAVIOContext; offset: cint64): cint;
-  cdecl; external av__format; deprecated;
-function url_ftell(s: PAVIOContext): cint64;
-  cdecl; external av__format; deprecated;
-function url_fsize(s: PAVIOContext): cint64;
-  cdecl; external av__format; deprecated;
-const
-  URL_EOF = -1;
-(** @note return URL_EOF (-1) if EOF *)
-function url_fgetc(s: PAVIOContext): cint;
-  cdecl; external av__format; deprecated;
-function url_setbufsize (s: PAVIOContext; buf_size: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_fprintf(s: PAVIOContext; fmt: {const} PAnsiChar; args: array of const): cint;
-  cdecl; external av__format; deprecated;
-procedure put_flush_packet (s: PAVIOContext);
-  cdecl; external av__format; deprecated;
-function url_open_dyn_buf(var s: PAVIOContext): cint;
-  cdecl; external av__format; deprecated;
-function url_open_dyn_packet_buf(var s: PAVIOContext; max_packet_size: cint): cint;
-  cdecl; external av__format; deprecated;
-function url_close_dyn_buf(s: PAVIOContext; pbuffer:PPointer): cint;
-  cdecl; external av__format; deprecated;
-function url_fdopen (var s: PAVIOContext; h: PURLContext): cint;
-  cdecl; external av__format; deprecated;
-(**
- * @
- *)
-
-function url_ferror(s: PAVIOContext): cint;
-  cdecl; external av__format; deprecated;
-
-function udp_set_remote_url(h: PURLContext; uri: {const} PAnsiChar): cint;
-  cdecl; external av__format; deprecated;
-function udp_get_local_port(h: PURLContext): cint;
-  cdecl; external av__format; deprecated;
-
-type
-  Tupdate_checksum = function (c: culong; p: Pcuint8; len: cuint): culong; cdecl;
-procedure init_checksum(s: PAVIOContext;
-                        update_checksum: Tupdate_checksum;
-			checksum: culong);
-  cdecl; external av__format; deprecated;
-function get_checksum(s: PAVIOContext): culong;
-  cdecl; external av__format; deprecated;
-procedure put_strz(s: PAVIOContext; buf: {const} PAnsiChar);
-  cdecl; external av__format; deprecated;
-(** @note unlike fgets, the EOL character is not returned and a whole
-   line is parsed. return NULL if first char read was EOF *)
-function url_fgets(s: PAVIOContext; buf: PAnsiChar; buf_size: cint): PAnsiChar;
-  cdecl; external av__format; deprecated;
-(**
- * @deprecated use avio_get_str instead
- *)
-function get_strz(s: PAVIOContext; buf: PAnsiChar; maxlen: cint): PAnsiChar;
-  cdecl; external av__format; deprecated;
-(**
- * @deprecated Use AVIOContext.seekable field directly.
- *)
-function url_is_streamed(s: PAVIOContext): cint; {$IFDEF HasInline}inline;{$ENDIF} deprecated;
-
-function url_fileno(s: PAVIOContext): PURLContext;
-  cdecl; external av__format; deprecated;
-
-(**
- * @deprecated use AVIOContext.max_packet_size directly.
- *)
-function url_fget_max_packet_size (s: PAVIOContext): cint;
-  cdecl; external av__format; deprecated;
-
-function url_open_buf(var s: PAVIOContext; buf: PAnsiChar; buf_size: cint; flags: cint): cint;
-  cdecl; external av__format; deprecated;
-
-(** return the written or read size *)
-function url_close_buf(s: PAVIOContext): cint;
-  cdecl; external av__format; deprecated;
-
-(**
- * Return a non-zero value if the resource indicated by url
- * exists, 0 otherwise.
- * @deprecated Use avio_check instead.
- *)
-function url_exist(url: {const} PAnsiChar): cint;
-  cdecl; external av__format; deprecated;
-{$IFEND} // FF_API_OLD_AVIO
 
 (**
  * Return AVIO_* access flags corresponding to the access permissions
@@ -544,19 +209,6 @@ function url_exist(url: {const} PAnsiChar): cint;
  *)
 function avio_check(url: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format;
-
-{$IFDEF FF_API_OLD_INTERRUPT_CB}
-(**
- * The callback is called in blocking functions to test regulary if
- * asynchronous interruption is needed. AVERROR_EXIT is returned
- * in this case by the interrupted function. 'NULL' means no interrupt
- * callback is given.
- * @deprecated Use interrupt_callback in AVFormatContext/avio_open2
- *             instead.
- *)
-procedure avio_set_interrupt_cb(interrupt_cb: Pointer);
-  cdecl; external av__format; deprecated;
-{$ENDIF}
 
 (**
  * Allocate and initialize an AVIOContext for buffered I/O. It must be later
@@ -765,6 +417,7 @@ const
  * @
  *)
 
+const
 (**
  * Use non-blocking mode.
  * If this flag is set, operations on the context will return
@@ -777,8 +430,15 @@ const
  * Warning:  non-blocking protocols is work-in-progress; this flag may be
  * silently ignored.
  *)
-const
   AVIO_FLAG_NONBLOCK = 8;    
+
+(**
+ * Use direct mode.
+ * avio_read and avio_write should if possible be satisfied directly
+ * instead of going through a buffer, and avio_seek will always
+ * call the underlying seek function directly.
+ *)
+  AVIO_FLAG_DIRECT = $8000;
 
 (**
  * Create and initialize a AVIOContext for accessing the
@@ -849,7 +509,7 @@ function avio_close_dyn_buf(s: PAVIOContext; var pbuffer: Pcuint8): cint;
 
 (**
  * Iterate through names of available protocols.
- * @note it is recommanded to use av_protocol_next() instead of this
+ * @note it is recommended to use av_protocol_next() instead of this
  *
  * @param opaque A private pointer representing current protocol.
  *        It must be a pointer to NULL on first iteration and will

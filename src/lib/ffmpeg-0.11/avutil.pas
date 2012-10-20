@@ -24,7 +24,7 @@
  * Conversions of
  *
  * libavutil/avutil.h:
- * version: 51.34.101
+ * version: 51.54.100
  *
  *)
 
@@ -55,7 +55,7 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 51;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 35;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 54;
   LIBAVUTIL_MAX_VERSION_RELEASE = 100;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -63,8 +63,8 @@ const
 
   (* Min. supported version by this header *)
   LIBAVUTIL_MIN_VERSION_MAJOR   = 51;
-  LIBAVUTIL_MIN_VERSION_MINOR   = 34;
-  LIBAVUTIL_MIN_VERSION_RELEASE = 101;
+  LIBAVUTIL_MIN_VERSION_MINOR   = 54;
+  LIBAVUTIL_MIN_VERSION_RELEASE = 0;
   LIBAVUTIL_MIN_VERSION = (LIBAVUTIL_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MIN_VERSION_MINOR * VERSION_MINOR) +
                           (LIBAVUTIL_MIN_VERSION_RELEASE * VERSION_RELEASE);

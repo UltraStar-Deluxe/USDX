@@ -19,7 +19,7 @@
  * This is a part of the Pascal port of ffmpeg.
  *
  * Conversion of libavutil/dict.h
- * avutil version 51.34.101
+ * avutil version 51.54.100
  *
  *)
 
@@ -68,7 +68,7 @@ function av_dict_get(m: PAVDictionary; {const} key: PAnsiChar; {const} prev: PAV
  * a dictionary struct is allocated and put in *pm.
  * @param key entry key to add to *pm (will be av_strduped depending on flags)
  * @param value entry value to add to *pm (will be av_strduped depending on flags).
- *        Passing a NULL value will cause an existing tag to be deleted.
+ *        Passing a NULL value will cause an existing entry to be deleted.
  * @return >= 0 on success otherwise an error code <0
  *)
 function av_dict_set(var pm: PAVDictionary; {const} key: PAnsiChar; {const} value: PAnsiChar; flags: cint): cint;
