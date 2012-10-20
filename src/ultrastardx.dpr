@@ -88,9 +88,11 @@ uses
 
   {$IFDEF UseFFmpeg}
     {$IFDEF FPC} // This solution is not very elegant, but working
-	  avcodec             in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
+      avcodec             in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
       avformat            in 'lib\' + FFMPEG_DIR + '\avformat.pas',
       avutil              in 'lib\' + FFMPEG_DIR + '\avutil.pas',
+      mathematics         in 'lib\' + FFMPEG_DIR + '\mathematics.pas',
+      opt                 in 'lib\' + FFMPEG_DIR + '\opt.pas',
       rational            in 'lib\' + FFMPEG_DIR + '\rational.pas',
       avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
       {$IFDEF UseSWScale}
