@@ -702,7 +702,7 @@ begin
       fCodecContext^.opaque := @VideoPktPts;
 
       // decode packet
-      {$IF LIBAVFORMAT_VERSION < 5212200)}
+      {$IF LIBAVFORMAT_VERSION < 52012200)}
       avcodec_decode_video(fCodecContext, fAVFrame,
           frameFinished, AVPacket.data, AVPacket.size);
       {$ELSE}
