@@ -19,7 +19,7 @@
  * - Ported by the UltraStar Deluxe Team
  *
  * Conversion of libswscale/swscale.h
- * version: 2.0.0
+ * version: 2.1.0
  *)
  
 unit swscale;
@@ -72,7 +72,7 @@ const
  *)
   (* Max. supported version by this header *)
   LIBSWSCALE_MAX_VERSION_MAJOR   =  2;
-  LIBSWSCALE_MAX_VERSION_MINOR   =  0;
+  LIBSWSCALE_MAX_VERSION_MINOR   =  1;
   LIBSWSCALE_MAX_VERSION_RELEASE =  0;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +

@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavcodec/avcodec.h
- * version: 53.7.0 - 53.8.0
+ * version: 53.7.0 - 53.35.0
  *
  *)
 
@@ -80,7 +80,7 @@ const
    *)
   (* Supported version by this header *)
   LIBAVCODEC_MAX_VERSION_MAJOR   = 53;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 8;
+  LIBAVCODEC_MAX_VERSION_MINOR   = 35;
   LIBAVCODEC_MAX_VERSION_RELEASE = 0;
   LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
