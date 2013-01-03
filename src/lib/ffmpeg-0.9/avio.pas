@@ -540,7 +540,7 @@ function url_exist(url: {const} PAnsiChar): cint;
 function avio_check(url: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format;
 
-{$IF FF_API_OLD_INTERRUPT_CB}
+{$IFDEF FF_API_OLD_INTERRUPT_CB}
 (**
  * The callback is called in blocking functions to test regulary if
  * asynchronous interruption is needed. AVERROR_EXIT is returned

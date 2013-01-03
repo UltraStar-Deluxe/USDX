@@ -519,7 +519,7 @@ function av_opt_find(obj: pointer; name: {const} PAnsiChar; unit_: {const} PAnsi
  * @return A pointer to the option found, or NULL if no option
  *         was found.
  *)
-funtion av_opt_find2(obj: pointer; name: {const} PAnsiChar; unit: {const} PAnsiChar;
+function av_opt_find2(obj: pointer; name: {const} PAnsiChar; unit_: {const} PAnsiChar;
                              opt_flags: cint; search_flags: cint; target_obj: pointer): {const} PAVOption;
   cdecl; external av__util;
 
@@ -532,7 +532,7 @@ funtion av_opt_find2(obj: pointer; name: {const} PAnsiChar; unit: {const} PAnsiC
  *             or NULL
  * @return next AVOption or NULL
  *)
-funtion av_opt_next(obj: pointer; prev: {const} PAVOption): {const} PAVOption;
+function av_opt_next(obj: pointer; prev: {const} PAVOption): {const} PAVOption;
   cdecl; external av__util;
 
 (**

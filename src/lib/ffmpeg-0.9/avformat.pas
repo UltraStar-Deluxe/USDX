@@ -462,7 +462,7 @@ type
      *)
     flags: cint;
 
-    dummy: pointer
+    dummy: pointer;
 
     interleave_packet: function (s: PAVFormatContext; out_: PAVPacket;
                                  in_: PAVPacket; flush: cint): cint; cdecl;
