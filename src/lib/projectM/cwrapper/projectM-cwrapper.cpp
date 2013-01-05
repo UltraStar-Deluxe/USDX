@@ -9,7 +9,7 @@
 #endif
 
 #ifndef __APPLE__
-  #if (__GNUC__ == 4 && __GNUC_MINOR__ < 6 )
+  #if (__GNUC__ == 4 && __GNUC_MINOR__ < 5 )
   // library (which is the case if the fpc pascal compiler is used).
   // Otherwise compilation fails with "undefined reference to __dso_handle"
   // resolved with gcc 4.6.*
