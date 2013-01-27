@@ -174,14 +174,18 @@ PKG_HAVE([freetype], [freetype2], yes)
 # find sqlite3
 PKG_HAVE([sqlite3], [sqlite3], yes)
 
-# find lua 5.1
-# (K)Ubuntu uses lua5.1.pc, Mac OS X and other 
-# linux distributions use lua.pc
-PKG_HAVE([lua], [lua5.1], no)
-lua_LIB_NAME="lua5.1"
+# find lua 5.2 or 5.11
+# (K)Ubuntu uses lua5.2.pc and lua5.1.pc, 
+# Mac OS X and other linux distributions use lua.pc
+PKG_HAVE([lua], [lua5.2], no)
+lua_LIB_NAME="lua5.2"
 if [[ x$lua_HAVE = xno ]]; then
-    PKG_HAVE([lua], [lua >= 5.1], yes)
-    lua_LIB_NAME="lua"
+    PKG_HAVE([lua], [lua5.1], no)
+    lua_LIB_NAME="lua5.1"
+    if [[ x$lua_HAVE = xno ]]; then
+        PKG_HAVE([lua], [lua >= 5.1], yes)
+        lua_LIB_NAME="lua"
+    fi
 fi
 AC_SUBST(lua_LIB_NAME)
 

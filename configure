@@ -4524,16 +4524,13 @@ $as_echo_n "checking version of ffmpeg... " >&6; }
 			FFMPEG_VERSION="0.9"
 		elif test $libpng_VERSION_INT -ge 51009001; then
 			FFMPEG_VERSION="0.8"
-			FFMPEG_OLD="1"
 		elif test $libpng_VERSION_INT -ge 50043000; then
 			FFMPEG_VERSION="0.7"
 		else
 			FFMPEG_VERSION="0"
-			FFMPEG_OLD="1"
 		fi
 	else
 		FFMPEG_VERSION="0"
-		FFMPEG_OLD="1"
 	fi
 
     version=$FFMPEG_VERSION
@@ -4969,9 +4966,72 @@ See the pkg-config man page for more details.
     fi
 
 
-# find lua 5.1
-# (K)Ubuntu uses lua5.1.pc, Mac OS X and other
-# linux distributions use lua.pc
+# find lua 5.2 or 5.11
+# (K)Ubuntu uses lua5.2.pc and lua5.1.pc,
+# Mac OS X and other linux distributions use lua.pc
+
+    have_lib="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lua5.2" >&5
+$as_echo_n "checking for lua5.2... " >&6; }
+    if test x"$with_lua" = xnocheck; then
+        # do not call pkg-config, use user settings
+        have_lib="yes"
+    elif test x"$with_lua" != xno; then
+        # check if package exists
+	if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lua5.2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "lua5.2") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+            have_lib="yes"
+            lua_LIBS=`$PKG_CONFIG --libs --silence-errors "lua5.2"`
+            lua_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "lua5.2"`
+            lua_LIBDIRS=`
+    echo "$lua_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+`
+            # add library directories to LIBS (ignore *_LIBS for now)
+	    if test -n "$lua_LIBDIRS"; then
+                LIBS="$LIBS $lua_LIBDIRS"
+            fi
+
+fi
+    fi
+    if test x$have_lib = xyes; then
+        lua_HAVE="yes"
+        if test -n "$lua_LIBDIRS"; then
+            # show additional lib-dirs
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes ($lua_LIBDIRS)" >&5
+$as_echo "yes ($lua_LIBDIRS)" >&6; }
+        else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+        fi
+    else
+        lua_HAVE="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+        # check if package is required
+        if test xno = xyes -o x"$with_lua" = xyes ; then
+            # print error message and quit
+            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "lua5.2"`
+            as_fn_error $? "
+
+$err_msg
+
+Alternatively, you may set --with-lua=nocheck and the environment
+variables lua_[...] (see configure --help)
+to appropriate values to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+        fi
+    fi
+
+lua_LIB_NAME="lua5.2"
+if [ x$lua_HAVE = xno ]; then
 
     have_lib="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lua5.1" >&5
@@ -5033,8 +5093,8 @@ See the pkg-config man page for more details.
         fi
     fi
 
-lua_LIB_NAME="lua5.1"
-if [ x$lua_HAVE = xno ]; then
+    lua_LIB_NAME="lua5.1"
+    if [ x$lua_HAVE = xno ]; then
 
     have_lib="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lua >= 5.1" >&5
@@ -5096,7 +5156,8 @@ See the pkg-config man page for more details.
         fi
     fi
 
-    lua_LIB_NAME="lua"
+        lua_LIB_NAME="lua"
+    fi
 fi
 
 
