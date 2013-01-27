@@ -1,7 +1,8 @@
 unit ULua;
 
 (*
- * A complete Pascal wrapper for Lua 5.1 DLL module.
+ * A complete Pascal wrapper for Lua DLL module.
+ * Version 5.1 or 5.2
  *
  * Created by Geo Massar, 2006
  * Distributed as free/open source.
@@ -34,15 +35,12 @@ const
   LuaDLL = 'lua5.1.dll';
 {$ENDIF}
 {$IFDEF UNIX}
-{$IFDEF DARWIN}
-  LuaDLL = 'liblua.5.1.dylib';
-  {$linklib liblua.5.1}
-{$ELSE}
-  LuaDLL = lua_lib_name;
-{$ENDIF}
-{$ENDIF}
-{$IFDEF MACOS}
-  SDLgfxLibName = 'lua5.1';
+  {$IFDEF DARWIN}
+    LuaDLL = 'liblua.dylib';
+    {$linklib liblua}
+  {$ELSE}
+    LuaDLL = lua_lib_name;
+  {$ENDIF}
 {$ENDIF}
 
 (* formats for Lua numbers *)
@@ -139,8 +137,8 @@ const
 *)
 
 const
-  LUA_VERSION     = 'Lua 5.1';
-  LUA_VERSION_NUM = 501;
+  LUA_VERSION     = 'Lua ' + LUA_VERSION_MAJOR + '.' + LUA_VERSION_MINOR;
+  LUA_VERSION_NUM = 100*(ord(LUA_VERSION_MAJOR) - ord('0')) + (ord(LUA_VERSION_MINOR) - ord('0'));
   LUA_COPYRIGHT   = 'Copyright (C) 1994-2006 Tecgraf, PUC-Rio';
   LUA_AUTHORS     = 'R. Ierusalimschy, L. H. de Figueiredo & W. Celes';
 

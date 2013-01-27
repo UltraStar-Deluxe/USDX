@@ -6,7 +6,12 @@
 {* Libraries *}
 
 {$IF Defined(IncludeConstants)}
-  lua_lib_name = '@lua_LIB_NAME@';
+  lua_lib_name        = '@lua_LIB_NAME@';
+  LUA_VERSION_INT     = '@lua_VERSION_INT@';
+  LUA_VERSION_RELEASE = '@lua_VERSION_RELEASE@';
+  LUA_VERSION_MINOR   = '@lua_VERSION_MINOR@';
+  LUA_VERSION_MAJOR   = '@lua_VERSION_MAJOR@';
+  LUA_VERSION         = '@lua_VERSION@';
 {$IFEND}
 
 {$@DEFINE_HAVE_FFMPEG@ HaveFFmpeg}
