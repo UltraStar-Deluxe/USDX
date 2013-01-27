@@ -179,13 +179,18 @@ PKG_HAVE([sqlite3], [sqlite3], yes)
 # Mac OS X and other linux distributions use lua.pc
 PKG_HAVE([lua], [lua5.2], no)
 lua_LIB_NAME="lua5.2"
-if [[ x$lua_HAVE = xno ]]; then
+if [[ x$lua_HAVE = xyes ]]; then
+    PKG_VERSION([lua], [lua5.2])
+else
     PKG_HAVE([lua], [lua5.1], no)
     lua_LIB_NAME="lua5.1"
-    if [[ x$lua_HAVE = xno ]]; then
-        PKG_HAVE([lua], [lua >= 5.1], yes)
+    if [[ x$lua_HAVE = xyes ]]; then
+        PKG_VERSION([lua], [lua5.1])
+    else
+		PKG_HAVE([lua], [lua >= 5.1], yes)
         lua_LIB_NAME="lua"
-    fi
+		PKG_VERSION([lua], [lua])
+	fi
 fi
 AC_SUBST(lua_LIB_NAME)
 

@@ -635,6 +635,11 @@ libavcodec_VERSION_MINOR
 libavcodec_VERSION_MAJOR
 libavcodec_VERSION
 lua_LIB_NAME
+lua_VERSION_INT
+lua_VERSION_RELEASE
+lua_VERSION_MINOR
+lua_VERSION_MAJOR
+lua_VERSION
 FFMPEG_VERSION
 FFMPEG_VERSION_INT
 FFMPEG_VERSION_RELEASE
@@ -781,6 +786,7 @@ PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 libpng_VERSION
+lua_VERSION
 libavcodec_VERSION
 libavformat_VERSION
 libavutil_VERSION
@@ -1451,6 +1457,7 @@ Some influential environment variables:
               path overriding pkg-config's built-in search path
   libpng_VERSION
               version of libpng, overriding pkg-config
+  lua_VERSION version of lua, overriding pkg-config
   libavcodec_VERSION
               version of libavcodec, overriding pkg-config
   libavformat_VERSION
@@ -5031,7 +5038,147 @@ See the pkg-config man page for more details.
     fi
 
 lua_LIB_NAME="lua5.2"
-if [ x$lua_HAVE = xno ]; then
+if [ x$lua_HAVE = yes ]; then
+
+    if test x$lua_HAVE = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of lua" >&5
+$as_echo_n "checking version of lua... " >&6; }
+
+
+    # check if variable was defined by the user
+    if test -z "$lua_VERSION"; then
+        # if not, get it from pkg-config
+        if test x$lua_HAVE = xyes; then
+            if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lua5.2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "lua5.2") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  lua_VERSION=`$PKG_CONFIG --modversion --silence-errors "lua5.2"`
+else
+  # print error message and quit
+                 err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "lua5.2"`
+                 as_fn_error $? "
+
+$err_msg
+
+If --with-lua=nocheck is defined the environment variable
+lua_VERSION
+must be set to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+
+
+fi
+        fi
+    fi
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$lua_VERSION]" >&5
+$as_echo "[$lua_VERSION]" >&6; }
+    else
+        lua_VERSION="0.0.0"
+    fi
+
+    version=$lua_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    lua_VERSION_MAJOR=$(($major))
+    lua_VERSION_MINOR=$(($minor))
+    lua_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    lua_VERSION_INT=$(($lua_VERSION_MAJOR*1000000+$lua_VERSION_MINOR*1000+$lua_VERSION_RELEASE))
+
+
+
+
+
+
+
+    # for avutil: map library version to ffmpeg version
+    if test lua = "libavutil"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
+$as_echo_n "checking version of ffmpeg... " >&6; }
+    	if test $lua_VERSION_INT -le 51035100; then
+		if test $lua_VERSION_INT -ge 51034101; then
+			FFMPEG_VERSION="0.10"
+		elif test $lua_VERSION_INT -ge 51032000; then
+			FFMPEG_VERSION="0.9"
+		elif test $lua_VERSION_INT -ge 51009001; then
+			FFMPEG_VERSION="0.8"
+		elif test $lua_VERSION_INT -ge 50043000; then
+			FFMPEG_VERSION="0.7"
+		else
+			FFMPEG_VERSION="0"
+		fi
+	else
+		FFMPEG_VERSION="0"
+	fi
+
+    version=$FFMPEG_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    FFMPEG_VERSION_MAJOR=$(($major))
+    FFMPEG_VERSION_MINOR=$(($minor))
+    FFMPEG_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    FFMPEG_VERSION_INT=$(($FFMPEG_VERSION_MAJOR*1000000+$FFMPEG_VERSION_MINOR*1000+$FFMPEG_VERSION_RELEASE))
+
+
+
+
+
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$FFMPEG_VERSION]" >&5
+$as_echo "[$FFMPEG_VERSION]" >&6; }
+    fi
+
+else
 
     have_lib="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lua5.1" >&5
@@ -5094,7 +5241,147 @@ See the pkg-config man page for more details.
     fi
 
     lua_LIB_NAME="lua5.1"
-    if [ x$lua_HAVE = xno ]; then
+    if [ x$lua_HAVE = yes ]; then
+
+    if test x$lua_HAVE = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of lua" >&5
+$as_echo_n "checking version of lua... " >&6; }
+
+
+    # check if variable was defined by the user
+    if test -z "$lua_VERSION"; then
+        # if not, get it from pkg-config
+        if test x$lua_HAVE = xyes; then
+            if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lua5.1\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "lua5.1") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  lua_VERSION=`$PKG_CONFIG --modversion --silence-errors "lua5.1"`
+else
+  # print error message and quit
+                 err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "lua5.1"`
+                 as_fn_error $? "
+
+$err_msg
+
+If --with-lua=nocheck is defined the environment variable
+lua_VERSION
+must be set to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+
+
+fi
+        fi
+    fi
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$lua_VERSION]" >&5
+$as_echo "[$lua_VERSION]" >&6; }
+    else
+        lua_VERSION="0.0.0"
+    fi
+
+    version=$lua_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    lua_VERSION_MAJOR=$(($major))
+    lua_VERSION_MINOR=$(($minor))
+    lua_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    lua_VERSION_INT=$(($lua_VERSION_MAJOR*1000000+$lua_VERSION_MINOR*1000+$lua_VERSION_RELEASE))
+
+
+
+
+
+
+
+    # for avutil: map library version to ffmpeg version
+    if test lua = "libavutil"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
+$as_echo_n "checking version of ffmpeg... " >&6; }
+    	if test $lua_VERSION_INT -le 51035100; then
+		if test $lua_VERSION_INT -ge 51034101; then
+			FFMPEG_VERSION="0.10"
+		elif test $lua_VERSION_INT -ge 51032000; then
+			FFMPEG_VERSION="0.9"
+		elif test $lua_VERSION_INT -ge 51009001; then
+			FFMPEG_VERSION="0.8"
+		elif test $lua_VERSION_INT -ge 50043000; then
+			FFMPEG_VERSION="0.7"
+		else
+			FFMPEG_VERSION="0"
+		fi
+	else
+		FFMPEG_VERSION="0"
+	fi
+
+    version=$FFMPEG_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    FFMPEG_VERSION_MAJOR=$(($major))
+    FFMPEG_VERSION_MINOR=$(($minor))
+    FFMPEG_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    FFMPEG_VERSION_INT=$(($FFMPEG_VERSION_MAJOR*1000000+$FFMPEG_VERSION_MINOR*1000+$FFMPEG_VERSION_RELEASE))
+
+
+
+
+
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$FFMPEG_VERSION]" >&5
+$as_echo "[$FFMPEG_VERSION]" >&6; }
+    fi
+
+    else
 
     have_lib="no"
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lua >= 5.1" >&5
@@ -5157,7 +5444,146 @@ See the pkg-config man page for more details.
     fi
 
         lua_LIB_NAME="lua"
+
+    if test x$lua_HAVE = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of lua" >&5
+$as_echo_n "checking version of lua... " >&6; }
+
+
+    # check if variable was defined by the user
+    if test -z "$lua_VERSION"; then
+        # if not, get it from pkg-config
+        if test x$lua_HAVE = xyes; then
+            if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lua\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "lua") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  lua_VERSION=`$PKG_CONFIG --modversion --silence-errors "lua"`
+else
+  # print error message and quit
+                 err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "lua"`
+                 as_fn_error $? "
+
+$err_msg
+
+If --with-lua=nocheck is defined the environment variable
+lua_VERSION
+must be set to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+
+
+fi
+        fi
     fi
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$lua_VERSION]" >&5
+$as_echo "[$lua_VERSION]" >&6; }
+    else
+        lua_VERSION="0.0.0"
+    fi
+
+    version=$lua_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    lua_VERSION_MAJOR=$(($major))
+    lua_VERSION_MINOR=$(($minor))
+    lua_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    lua_VERSION_INT=$(($lua_VERSION_MAJOR*1000000+$lua_VERSION_MINOR*1000+$lua_VERSION_RELEASE))
+
+
+
+
+
+
+
+    # for avutil: map library version to ffmpeg version
+    if test lua = "libavutil"; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
+$as_echo_n "checking version of ffmpeg... " >&6; }
+    	if test $lua_VERSION_INT -le 51035100; then
+		if test $lua_VERSION_INT -ge 51034101; then
+			FFMPEG_VERSION="0.10"
+		elif test $lua_VERSION_INT -ge 51032000; then
+			FFMPEG_VERSION="0.9"
+		elif test $lua_VERSION_INT -ge 51009001; then
+			FFMPEG_VERSION="0.8"
+		elif test $lua_VERSION_INT -ge 50043000; then
+			FFMPEG_VERSION="0.7"
+		else
+			FFMPEG_VERSION="0"
+		fi
+	else
+		FFMPEG_VERSION="0"
+	fi
+
+    version=$FFMPEG_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    FFMPEG_VERSION_MAJOR=$(($major))
+    FFMPEG_VERSION_MINOR=$(($minor))
+    FFMPEG_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    FFMPEG_VERSION_INT=$(($FFMPEG_VERSION_MAJOR*1000000+$FFMPEG_VERSION_MINOR*1000+$FFMPEG_VERSION_RELEASE))
+
+
+
+
+
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$FFMPEG_VERSION]" >&5
+$as_echo "[$FFMPEG_VERSION]" >&6; }
+    fi
+
+	fi
 fi
 
 
