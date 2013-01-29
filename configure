@@ -5021,7 +5021,7 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
 
         # check if package is required
-        if test xno = xyes -o x"$with_lua" = xyes ; then
+        if test xcheck = xyes -o x"$with_lua" = xyes ; then
             # print error message and quit
             err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "lua5.2"`
             as_fn_error $? "
@@ -5038,7 +5038,7 @@ See the pkg-config man page for more details.
     fi
 
 lua_LIB_NAME="lua5.2"
-if [ x$lua_HAVE = yes ]; then
+if [ x$lua_HAVE = xyes ]; then
 
     if test x$lua_HAVE = xyes; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of lua" >&5
@@ -5224,7 +5224,7 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
 
         # check if package is required
-        if test xno = xyes -o x"$with_lua" = xyes ; then
+        if test xcheck = xyes -o x"$with_lua" = xyes ; then
             # print error message and quit
             err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "lua5.1"`
             as_fn_error $? "
@@ -5241,7 +5241,7 @@ See the pkg-config man page for more details.
     fi
 
     lua_LIB_NAME="lua5.1"
-    if [ x$lua_HAVE = yes ]; then
+    if [ x$lua_HAVE = xyes ]; then
 
     if test x$lua_HAVE = xyes; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of lua" >&5
@@ -5583,7 +5583,7 @@ eof
 $as_echo "[$FFMPEG_VERSION]" >&6; }
     fi
 
-	fi
+    fi
 fi
 
 

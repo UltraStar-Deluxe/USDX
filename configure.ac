@@ -177,20 +177,20 @@ PKG_HAVE([sqlite3], [sqlite3], yes)
 # find lua 5.2 or 5.11
 # (K)Ubuntu uses lua5.2.pc and lua5.1.pc, 
 # Mac OS X and other linux distributions use lua.pc
-PKG_HAVE([lua], [lua5.2], no)
+PKG_HAVE([lua], [lua5.2], check)
 lua_LIB_NAME="lua5.2"
 if [[ x$lua_HAVE = xyes ]]; then
     PKG_VERSION([lua], [lua5.2])
 else
-    PKG_HAVE([lua], [lua5.1], no)
+    PKG_HAVE([lua], [lua5.1], check)
     lua_LIB_NAME="lua5.1"
     if [[ x$lua_HAVE = xyes ]]; then
         PKG_VERSION([lua], [lua5.1])
     else
-		PKG_HAVE([lua], [lua >= 5.1], yes)
+        PKG_HAVE([lua], [lua >= 5.1], yes)
         lua_LIB_NAME="lua"
-		PKG_VERSION([lua], [lua])
-	fi
+        PKG_VERSION([lua], [lua])
+    fi
 fi
 AC_SUBST(lua_LIB_NAME)
 
