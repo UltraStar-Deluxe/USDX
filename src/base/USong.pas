@@ -45,10 +45,6 @@ uses
   {$ENDIF}
   SysUtils,
   Classes,
-  UPlatform,
-  ULog,
-  UTexture,
-  UCommon,
   {$IFDEF DARWIN}
     cthreads,
   {$ENDIF}
@@ -56,15 +52,29 @@ uses
     PseudoThread,
   {$ENDIF}
   UCatCovers,
-  UXMLSong,
-  UUnicodeUtils,
-  UTextEncoding,
+  UCommon,
   UFilesystem,
-  UPath;
+  ULog,
+  UPath,
+  UPlatform,
+  UTexture,
+  UTextEncoding,
+  UUnicodeUtils,
+  UXMLSong;
 
 type
 
-  TSingMode = ( smNormal, smPartyMode, smPlaylistRandom );
+  TSingMode = ( smNormal, smPartyMode, smPlaylistRandom, smMedley );
+
+  TMedleySource = ( msNone, msCalculated, msTag );
+
+  TMedley = record
+    Source:       TMedleySource;  //source of the information
+    StartBeat:    integer;        //start beat of medley
+    EndBeat:      integer;        //end beat of medley
+    FadeIn_time:  real;           //FadeIn-Time in seconds
+    FadeOut_time: real;           //FadeOut-Time in seconds
+  end;
 
   TBPM = record
     BPM:        real;
@@ -92,6 +102,7 @@ type
     function DecodeFilename(Filename: RawByteString): IPath;
     procedure ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
+    procedure FindRefrain(); // tries to find a refrain for the medley mode and preview start
 
     function ParseLyricStringParam(const Line: RawByteString; var LinePos: integer): RawByteString;
     function ParseLyricIntParam(const Line: RawByteString; var LinePos: integer): integer;
@@ -139,6 +150,10 @@ type
 
     Encoding:   TEncoding;
 
+    PreviewStart: real;   // in seconds
+    CalcMedley: boolean;  // if true => do not calc medley for that song
+    Medley:     TMedley;  // medley params
+
     CustomTags: array of TCustomHeaderTag;
 
     Score:      array[0..2] of array of TScore;
@@ -166,6 +181,7 @@ type
     function    LoadXMLSong: boolean;
     function    Analyse(const ReadCustomTags: Boolean = false): boolean;
     function    AnalyseXML(): boolean;
+    procedure   SetMedleyMode();
     procedure   Clear();
   end;
 
@@ -175,9 +191,13 @@ uses
   StrUtils,
   TextGL,
   UIni,
-  UPathUtils,
   UMusic,  //needed for Lines
-  UNote;   //needed for Player
+  UNote,   //needed for Player
+  UPathUtils;
+
+const
+  DEFAULT_FADE_IN_TIME = 8;   // for medley fade-in
+  DEFAULT_FADE_OUT_TIME = 2;  // for medley fade-out
 
 constructor TSong.Create();
 begin
@@ -468,6 +488,7 @@ begin
         Exit;
       end;
 
+      SetLength(Lines, 0);
       SetLength(Lines, 2);
       for Count := 0 to High(Lines) do
       begin
@@ -867,6 +888,7 @@ var
   Value: string;
   SepPos: integer; // separator position
   Done: byte;      // bit-vector of mandatory fields
+  MedleyFlags: byte; //bit-vector for medley/preview tags
   EncFile: IPath; // encoded filename
   FullFileName: string;
 
@@ -887,6 +909,7 @@ var
 begin
   Result := true;
   Done   := 0;
+  MedleyFlags := 0;
 
   FullFileName := Path.Append(Filename).ToNative;
 
@@ -1090,6 +1113,35 @@ begin
         self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
       end
 
+      // PreviewStart
+      else if (Identifier = 'PREVIEWSTART') then
+      begin
+        self.PreviewStart := StrToFloatI18n( Value );
+        if (self.PreviewStart>0) then
+          MedleyFlags := MedleyFlags or 1;
+      end
+
+      // MedleyStartBeat
+      else if (Identifier = 'MEDLEYSTARTBEAT') and not self.Relative then
+      begin
+        if TryStrtoInt(Value, self.Medley.StartBeat) then
+          MedleyFlags := MedleyFlags or 2;
+      end
+
+      // MedleyEndBeat
+      else if (Identifier = 'MEDLEYENDBEAT') and not self.Relative then
+      begin
+        if TryStrtoInt(Value, self.Medley.EndBeat) then
+          MedleyFlags := MedleyFlags or 4;
+      end
+
+      // Medley
+      else if (Identifier = 'CALCMEDLEY') then
+      begin
+        if Uppercase(Value) = 'OFF' then
+          self.CalcMedley := false;
+      end
+
       // unsupported tag
       else
       begin
@@ -1099,7 +1151,7 @@ begin
     end; // End check for non-empty Value
 
     // read next line
-    if (not SongFile.ReadLine(Line)) then
+    if not SongFile.ReadLine(Line) then
     begin
       Result := false;
       Log.LogError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
@@ -1124,6 +1176,33 @@ begin
       Log.LogError('Title tag missing: ' + FullFileName)
     else //unknown Error
       Log.LogError('File incomplete or not Ultrastar txt (B - '+ inttostr(Done) +'): ' + FullFileName);
+  end
+  else
+  begin //check medley tags
+    if (MedleyFlags and 6) = 6 then //MedleyStartBeat and MedleyEndBeat are both set
+    begin
+      if self.Medley.StartBeat >= self.Medley.EndBeat then
+        MedleyFlags := MedleyFlags - 6;
+    end;
+
+    if ((MedleyFlags and 1) = 0) or (self.PreviewStart <= 0) then //PreviewStart is not set or <=0
+    begin
+      if (MedleyFlags and 2) = 2 then
+        self.PreviewStart := GetTimeFromBeat(self.Medley.StartBeat)  //fallback to MedleyStart
+      else
+        self.PreviewStart := 0; //else set it to 0, it will be set in FindRefrainStart
+    end;
+
+    if (MedleyFlags and 6) = 6 then
+    begin
+      self.Medley.Source := msTag;
+
+      //calculate fade time
+      self.Medley.FadeIn_time := DEFAULT_FADE_IN_TIME;
+
+      self.Medley.FadeOut_time := DEFAULT_FADE_OUT_TIME;
+    end else
+      self.Medley.Source := msNone;
   end;
 end;
 
@@ -1223,6 +1302,221 @@ begin
   Lines[LineNumberP].Line[Lines[LineNumberP].High].LastLine := false;
 end;
 
+{* new procedure for preview
+   tries find out the beginning of a refrain
+   and the end... *}
+procedure TSong.FindRefrain();
+Const
+  MEDLEY_MIN_DURATION = 40;   //minimum duration of a medley-song in seconds
+
+Type
+  TSeries = record
+    start:    integer; //Start sentence of series
+    end_:     integer; //End sentence of series
+    len:      integer; //Length of sentence series
+  end;
+
+var
+  I, J, K, num_lines:   integer;
+  sentences:            array of UTF8String;
+  series:               array of TSeries;
+  temp_series:          TSeries;
+  max:                  integer;
+  len_lines, len_notes: integer;
+  found_end:            boolean;
+begin
+  if self.Medley.Source = msTag then
+    Exit;
+
+  if not self.CalcMedley then
+    Exit;
+
+  //relative is not supported for medley!
+  if self.Relative then
+  begin
+    Log.LogError('Song '+self.Artist+'-' + self.Title + ' contains #Relative, this is not supported by medley-function!');
+    self.Medley.Source := msNone;
+    Exit;
+  end;
+
+  num_lines := Length(Lines[0].Line);
+  SetLength(sentences, num_lines);
+
+  //build sentences array
+  for I := 0 to num_lines - 1 do
+  begin
+    sentences[I] := '';
+    for J := 0 to Length(Lines[0].Line[I].Note) - 1 do
+    begin
+      if (Lines[0].Line[I].Note[J].NoteType <> ntFreestyle) then
+        sentences[I] := sentences[I] + Lines[0].Line[I].Note[J].Text;
+    end;
+  end;
+
+  //find equal sentences series
+  SetLength(series, 0);
+
+  for I := 0 to num_lines - 2 do
+  begin
+    for J := I + 1 to num_lines - 1 do
+    begin
+      if sentences[I] = sentences[J] then
+      begin
+        temp_series.start := I;
+        temp_series.end_  := I;
+
+        if (J + J - I - 1 > num_lines - 1) then
+          max:=num_lines-1-J
+        else
+          max:=J-I-1;
+
+        for K := 1 to max do
+        begin
+          if sentences[I+K] = sentences[J+K] then
+            temp_series.end_ := I+K
+          else
+            break;
+        end;
+        temp_series.len := temp_series.end_ - temp_series.start + 1;
+        SetLength(series, Length(series)+1);
+        series[Length(series)-1] := temp_series;
+      end;
+    end;
+  end;
+
+  //search for longest sequence
+  max := 0;
+  if Length(series) > 0 then
+  begin
+    for I := 0 to Length(series) - 1 do
+    begin
+      if series[I].len > series[max].len then
+        max := I;
+    end;
+  end;
+
+  len_lines := length(Lines[0].Line);
+
+  if (Length(series) > 0) and (series[max].len > 3) then
+  begin
+    self.Medley.StartBeat := Lines[0].Line[series[max].start].Note[0].Start;
+    len_notes := length(Lines[0].Line[series[max].end_].Note);
+    self.Medley.EndBeat := Lines[0].Line[series[max].end_].Note[len_notes - 1].Start +
+      Lines[0].Line[series[max].end_].Note[len_notes - 1].Length;
+
+    found_end := false;
+
+    //set end if duration > MEDLEY_MIN_DURATION
+    if GetTimeFromBeat(self.Medley.StartBeat) + MEDLEY_MIN_DURATION >
+      GetTimeFromBeat(self.Medley.EndBeat) then
+    begin
+      found_end := true;
+    end;
+
+    //estimate the end: just go MEDLEY_MIN_DURATION
+    //ahead an set to a line end (if possible)
+    if not found_end then
+    begin
+      for I := series[max].start + 1 to len_lines - 1 do
+      begin
+        len_notes := length(Lines[0].Line[I].Note);
+        for J := 0 to len_notes - 1 do
+        begin
+          if GetTimeFromBeat(self.Medley.StartBeat) + MEDLEY_MIN_DURATION >
+            GetTimeFromBeat(Lines[0].Line[I].Note[J].Start +
+            Lines[0].Line[I].Note[J].Length) then
+          begin
+            found_end := true;
+            self.Medley.EndBeat := Lines[0].Line[I].Note[len_notes-1].Start +
+              Lines[0].Line[I].Note[len_notes - 1].Length;
+            break;
+          end;
+        end;
+      end;
+    end;
+
+    if found_end then
+    begin
+      self.Medley.Source := msCalculated;
+
+      //calculate fade time
+      self.Medley.FadeIn_time := DEFAULT_FADE_IN_TIME;
+      self.Medley.FadeOut_time := DEFAULT_FADE_OUT_TIME;
+    end;
+  end;
+
+  //set PreviewStart if not set
+  if self.PreviewStart = 0 then
+  begin
+    if self.Medley.Source = msCalculated then
+      self.PreviewStart := GetTimeFromBeat(self.Medley.StartBeat);
+  end;
+end;
+
+//sets a song to medley-mode:
+//converts all unneeded notes into freestyle
+//updates score values
+procedure TSong.SetMedleyMode();
+var
+  pl, line, note: integer;
+  cut_line:       array of integer;
+  foundcut:       array of boolean;
+  start:          integer;
+  end_:           integer;
+
+begin
+  start := self.Medley.StartBeat;
+  end_  := self.Medley.EndBeat;
+  SetLength(cut_line, Length(Lines));
+  SetLength(foundcut, Length(Lines));
+
+  for pl := 0 to Length(Lines) - 1 do
+  begin
+    foundcut[pl] := false;
+    cut_line[pl] := high(integer);
+    Lines[pl].ScoreValue := 0;
+    for line := 0 to Length(Lines[pl].Line) - 1 do
+    begin
+      Lines[pl].Line[line].TotalNotes := 0;
+      for note := 0 to Length(Lines[pl].Line[line].Note) - 1 do
+      begin
+        if Lines[pl].Line[line].Note[note].Start < start then      //check start
+        begin
+          Lines[pl].Line[line].Note[note].NoteType := ntFreeStyle;
+        end else if Lines[pl].Line[line].Note[note].Start>= end_ then  //check end
+        begin
+          Lines[pl].Line[line].Note[note].NoteType := ntFreeStyle;
+          if not foundcut[pl] then
+          begin
+            if (note=0) then
+              cut_line[pl] := line
+            else
+              cut_line[pl] := line + 1;
+          end;
+          foundcut[pl] := true;
+        end
+	else
+        begin
+          //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
+          Inc(Lines[pl].ScoreValue, Lines[pl].Line[line].Note[note].Length * ScoreFactor[Lines[pl].Line[line].Note[note].NoteType]);
+          //and to the current lines entire value
+          Inc(Lines[pl].Line[line].TotalNotes, Lines[pl].Line[line].Note[note].Length * ScoreFactor[Lines[pl].Line[line].Note[note].NoteType]);
+        end;
+      end;
+    end;
+  end;
+
+  for pl := 0 to Length(Lines) - 1 do
+  begin
+    if (foundcut[pl]) and (Length(Lines[pl].Line) > cut_line[pl]) then
+    begin
+      SetLength(Lines[pl].Line, cut_line[pl]);
+      Lines[pl].High := cut_line[pl]-1;
+      Lines[pl].Number := Lines[pl].High+1;
+    end;
+  end;
+end;
+
 procedure TSong.Clear();
 begin
   //Main Information
@@ -1257,6 +1551,9 @@ begin
   NotesGAP   := 0;
   Resolution := 4;
   Creator    := '';
+  PreviewStart := 0;
+  CalcMedley := true;
+  Medley.Source := msNone;
 
   Relative := false;
 end;
@@ -1277,7 +1574,14 @@ begin
     Self.clear;
 
     //Read Header
-    Result := Self.ReadTxTHeader(SongFile, ReadCustomTags)
+    Result := Self.ReadTxTHeader(SongFile, ReadCustomTags);
+
+    //Load Song for Medley Tags
+    CurrentSong := self;
+    Result := Result and LoadSong();
+
+    if Result then
+      Self.FindRefrain();
   finally
     SongFile.Free;
   end;

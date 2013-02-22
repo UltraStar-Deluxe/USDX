@@ -38,7 +38,6 @@ uses
   SDL,
   UCommon,
   UDisplay,
-  UPath,
   UFiles,
   UIni,
   ULanguage,
@@ -46,6 +45,7 @@ uses
   UMenu,
   UMenuEqualizer,
   UMusic,
+  UPath,
   USong,
   USongs,
   UTexture,
@@ -53,6 +53,8 @@ uses
   UTime;
 
 type
+  TVisArr = array of integer;
+
   TScreenSong = class(TMenu)
     private
       Equalizer: Tms_Equalizer;
@@ -161,6 +163,10 @@ type
 
       //Extensions
       procedure DrawExtensions;
+
+      //Medley
+      procedure StartMedley(NumSongs: integer; MinSource: TMedleySource);
+      function  getVisibleMedleyArr(MinSource: TMedleySource): TVisArr;
   end;
 
 implementation
@@ -188,7 +194,7 @@ var
 begin
   if CatSongs.VisibleSongs > 0 then
   begin
-    I2:= 0;
+    I2 := 0;
     for I := Low(CatSongs.Song) to High(Catsongs.Song) do
     begin
       if CatSongs.Song[I].Visible then
@@ -209,7 +215,7 @@ var
 begin
   if CatSongs.VisibleSongs > 0 then
   begin
-    I2:= 0;
+    I2 := 0;
     for I := Low(CatSongs.Song) to High(Catsongs.Song) do
     begin
       if CatSongs.Song[I].Visible then
@@ -260,9 +266,9 @@ function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; Presse
 var
   I:      integer;
   I2:     integer;
-  SDL_ModState:  word;
-  UpperLetter: UCS4Char;
-  TempStr: UTF8String;
+  SDL_ModState: word;
+  UpperLetter:  UCS4Char;
+  TempStr:      UTF8String;
 begin
   Result := true;
 
@@ -415,6 +421,39 @@ begin
         begin
           OpenEditor;
           Exit;
+        end;
+
+      Ord('S'):
+        begin
+	  Log.LogError('SDL_ModState: ' + inttostr(SDL_ModState));
+	  Log.LogError('KMOD_LSHIFT: ' + inttostr(KMOD_LSHIFT));
+	  Log.LogError('CatSongs.Song[Interaction].Medley.Source: ' + inttostr(ord(CatSongs.Song[Interaction].Medley.Source)));
+	  Log.LogError('msCalculated: ' + inttostr(ord(msCalculated)));
+	  Log.LogError('msTag: ' + inttostr(ord(msTag)));
+	  Log.LogError('Mode: ' + inttostr(ord(Mode)));
+	  Log.LogError('smNormal: ' + inttostr(ord(smNormal)));
+          if //(SDL_ModState = KMOD_LSHIFT) and
+            (CatSongs.Song[Interaction].Medley.Source >= msCalculated) and (Mode = smNormal) then
+            StartMedley(0, msCalculated)
+          else if (CatSongs.Song[Interaction].Medley.Source >= msTag) and (Mode = smNormal) then
+            StartMedley(0, msTag);
+        end;
+
+      Ord('D'):
+        begin
+	  Log.LogError('SDL_ModState: ' + inttostr(SDL_ModState));
+	  Log.LogError('KMOD_LSHIFT: ' + inttostr(KMOD_LSHIFT));
+	  Log.LogError('length(getVisibleMedleyArr(msCalculated)): ' + inttostr(length(getVisibleMedleyArr(msCalculated))));
+	  Log.LogError('msCalculated: ' + inttostr(ord(msCalculated)));
+	  Log.LogError('msTag: ' + inttostr(ord(msTag)));
+	  Log.LogError('Length(getVisibleMedleyArr(msTag)): ' + inttostr(Length(getVisibleMedleyArr(msTag))));
+	  Log.LogError('smNormal: ' + inttostr(ord(smNormal)));
+	  Log.LogError('Mode: ' + inttostr(ord(Mode)));
+          if (Mode = smNormal) and //(SDL_ModState = KMOD_LSHIFT) and
+            (length(getVisibleMedleyArr(msCalculated)) > 0) then
+            StartMedley(5, msCalculated)
+          else if (Mode = smNormal) and (Length(getVisibleMedleyArr(msTag)) > 0) then
+            StartMedley(5, msTag);
         end;
 
       Ord('R'):
@@ -1518,8 +1557,15 @@ begin
   // reset video playback engine
   fCurrentVideo := nil;
 
-  if Ini.Players <= 3 then PlayersPlay := Ini.Players + 1;
-  if Ini.Players  = 4 then PlayersPlay := 6;
+  // reset Medley-Playlist
+  SetLength(PlaylistMedley.Song, 0);
+  if Mode = smMedley then
+    Mode := smNormal;
+
+  if Ini.Players <= 3 then
+    PlayersPlay := Ini.Players + 1;
+  if Ini.Players  = 4 then
+    PlayersPlay := 6;
 
   //Cat Mod etc
   if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then
@@ -1536,21 +1582,21 @@ begin
   end;
 
   //Playlist Mode
-  if (Mode = smNormal) then
+  if Mode = smNormal then
   begin
     //If Playlist Shown -> Select Next automatically
-    if (CatSongs.CatNumShow = -3) then
+    if CatSongs.CatNumShow = -3 then
     begin
       SelectNext;
     end;
   end
   //Party Mode
-  else if (Mode = smPartyMode) then
+  else if Mode = smPartyMode then
   begin
     SelectRandomSong;
     //Show Menu directly in PartyMode
     //But only if selected in Options
-    if (Ini.PartyPopup = 1) then
+    if Ini.PartyPopup = 1 then
     begin
       ScreenSongMenu.MenuShow(SM_Party_Main);
     end;
@@ -1810,14 +1856,18 @@ begin
   begin
     PreviewOpened := Interaction;
 
-    PreviewPos := AudioPlayback.Length / 4;
+    if Song.PreviewStart > 0 then
+      PreviewPos := Song.PreviewStart
+    else
+      PreviewPos := AudioPlayback.Length / 4;
+
     // fix for invalid music file lengths
-    if (PreviewPos > 60.0) then
+    if (PreviewPos > 60.0) and (Song.PreviewStart = 0) then
       PreviewPos := 60.0;
     AudioPlayback.Position := PreviewPos;
 
     // set preview volume
-    if (Ini.PreviewFading = 0) then
+    if Ini.PreviewFading = 0 then
     begin
       // music fade disabled: start with full volume
       AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
@@ -2151,6 +2201,133 @@ begin
   SelectNext(true);
   FixSelected;
   }
+end;
+
+procedure TScreenSong.StartMedley(NumSongs: integer; MinSource: TMedleySource);
+  procedure AddSong(SongNr: integer);
+  begin
+    SetLength(PlaylistMedley.Song, Length(PlaylistMedley.Song) + 1);
+    PlaylistMedley.Song[Length(PlaylistMedley.Song) - 1] := SongNr;
+  end;
+
+  function SongAdded(SongNr: integer): boolean;
+  var
+    i:       integer;
+    skipped: boolean;
+  begin
+    skipped := false;
+    for i := 0 to Length(PlaylistMedley.Song) - 1 do
+    begin
+      if SongNr = PlaylistMedley.Song[i] then
+      begin
+        skipped := true;
+        break;
+      end;
+    end;
+    Result := skipped;
+  end;
+
+  function NumSongsAdded(): Integer;
+  begin
+    Result := Length(PlaylistMedley.Song);
+  end;
+
+  function GetNextSongNr(MinS: TMedleySource): integer;
+  var
+    I, num:      integer;
+    unused_arr:  array of integer;
+    visible_arr: TVisArr;
+  begin
+    SetLength(unused_arr, 0);
+    visible_arr := getVisibleMedleyArr(MinS);
+    for I := 0 to Length(visible_arr) - 1 do
+    begin
+      if (not SongAdded(visible_arr[I])) then
+      begin
+        SetLength(unused_arr, Length(unused_arr)+1);
+        unused_arr[Length(unused_arr) - 1] := visible_arr[I];
+      end;
+    end;
+
+    num := Random(Length(unused_arr));
+    Result := unused_arr[num];
+end;
+
+var
+  I:  integer;
+  VS: integer;
+
+begin
+  if NumSongs > 0 then
+  begin
+    VS := Length(getVisibleMedleyArr(MinSource));
+    if VS < NumSongs then
+      PlaylistMedley.NumMedleySongs := VS
+    else
+      PlaylistMedley.NumMedleySongs := NumSongs;
+
+    //set up Playlist Medley
+    SetLength(PlaylistMedley.Song, 0);
+    for I := 0 to PlaylistMedley.NumMedleySongs - 1 do
+    begin
+      AddSong(GetNextSongNr(MinSource));
+    end;
+  end
+  else //start this song
+  begin
+    SetLength(PlaylistMedley.Song, 1);
+    PlaylistMedley.Song[0] := Interaction;
+    PlaylistMedley.NumMedleySongs := 1;
+  end;
+
+  if Mode = smNormal then
+  begin
+    Mode := smMedley;
+    StopMusicPreview();
+    
+    //TODO: how about case 2? menu for medley mode?
+    case Ini.OnSongClick of
+      0: FadeTo(@ScreenSing);
+      1: SelectPlayers;
+      2: FadeTo(@ScreenSing);
+      {2: begin
+         if CatSongs.CatNumShow = -3 then
+           ScreenSongMenu.MenuShow(SM_Playlist)
+         else
+           ScreenSongMenu.MenuShow(SM_Main);
+       end;}
+    end;
+  end;
+end;
+
+function TScreenSong.getVisibleMedleyArr(MinSource: TMedleySource): TVisArr;
+var
+  I: integer;
+
+begin
+  SetLength(Result, 0);
+  if CatSongs.Song[Interaction].Main then
+  begin
+    for I := 0 to Length(CatSongs.Song) - 1 do
+    begin
+      if not CatSongs.Song[I].Main and (CatSongs.Song[I].Medley.Source >= MinSource) then
+      begin
+        SetLength(Result, Length(Result) + 1);
+        Result[Length(Result) - 1] := I;
+      end;
+    end;
+  end
+  else
+  begin
+    for I := 0 to Length(CatSongs.Song) - 1 do
+    begin
+      if CatSongs.Song[I].Visible and (CatSongs.Song[I].Medley.Source >= MinSource) then
+      begin
+        SetLength(Result, Length(Result) + 1);
+        Result[Length(Result)-1] := I;
+      end;
+    end;
+  end;
 end;
 
 end.

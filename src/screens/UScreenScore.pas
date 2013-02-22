@@ -34,16 +34,16 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  SDL,
   SysUtils,
+  math,
+  SDL,
+  gl,
   UDisplay,
+  UMenu,
   UMusic,
   USongs,
-  UThemes,
-  gl,
-  math,
-  UTexture;
+  UTexture,
+  UThemes;
 
 const
   ZBars:            real = 0.8;   // Z value for the bars
@@ -167,6 +167,11 @@ type
       TextPhrase_ActualValue: array[1..6] of integer;
       TextGolden_ActualValue: array[1..6] of integer;
 
+      ActualRound:          integer;
+
+      procedure RefreshTexts;
+      procedure ResetScores;
+
       procedure MapPlayersToPosition;
 
       procedure FillPlayer(Item, P: integer);
@@ -196,7 +201,7 @@ type
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
-      function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
+      function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       procedure OnShowFinish; override;
       function Draw: boolean; override;
@@ -206,14 +211,15 @@ implementation
 
 uses
   UGraphic,
-  UScreenSong,
-  UMenuStatic,
-  UTime,
   UIni,
-  USkins,
   ULog,
   ULanguage,
+  UMenuStatic,
   UNote,
+  UScreenSong,
+  USkins,
+  USong,
+  UTime,
   UUnicodeUtils;
 
 
@@ -237,25 +243,94 @@ begin
       SDLK_BACKSPACE,
       SDLK_RETURN:
         begin
-          FadeTo(@ScreenTop5);
-          Exit;
+          if ScreenSong.Mode = smMedley then
+            FadeTo(@ScreenSong)
+          else
+            FadeTo(@ScreenTop5);
+
+	  Exit;
         end;
 
       SDLK_SYSREQ:
         begin
           Display.SaveScreenShot;
         end;
+
+      SDLK_RIGHT:
+        begin
+          if ActualRound < Length(PlaylistMedley.Stats) - 1 then
+          begin
+            AudioPlayback.PlaySound(SoundLib.Change);
+            inc(ActualRound);
+            RefreshTexts;
+          end;
+        end;
+
+      SDLK_LEFT:
+        begin
+          if ActualRound > 0 then
+          begin
+            AudioPlayback.PlaySound(SoundLib.Change);
+            dec(ActualRound);
+            RefreshTexts;
+          end;
+        end;
     end;
   end;
 end;
 
-function TScreenScore.ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean;
+function TScreenScore.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 begin
   Result := True;
-  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then begin
+  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
+  begin
     //left-click anywhere sends return
     ParseInput(SDLK_RETURN, 0, true);
   end;
+end;
+
+procedure TScreenScore.RefreshTexts;
+var
+  P: integer;
+  
+begin
+  if ActualRound < Length(PlaylistMedley.Stats) - 1 then
+  begin
+    Text[TextArtist].Text      := IntToStr(ActualRound+1) + '/' +
+      IntToStr(Length(PlaylistMedley.Stats)-1) + ': ' +
+      PlaylistMedley.Stats[ActualRound].SongArtist;
+    Text[TextTitle].Text       := PlaylistMedley.Stats[ActualRound].SongTitle;
+    Text[TextTitle].Visible    := true;
+    Text[TextArtistTitle].Text := IntToStr(ActualRound+1) + '/' +
+      IntToStr(Length(PlaylistMedley.Stats)-1) + ': ' +
+      PlaylistMedley.Stats[ActualRound].SongArtist +
+      ' - ' + PlaylistMedley.Stats[ActualRound].SongTitle;
+  end
+  else
+  begin
+    if ScreenSong.Mode = smMedley then
+    begin
+      Text[TextArtist].Text      := Language.Translate('SING_TOTAL');
+      Text[TextTitle].Visible    := false;
+      Text[TextArtistTitle].Text := Language.Translate('SING_TOTAL');
+    end
+    else
+    begin
+      Text[TextArtist].Text      := PlaylistMedley.Stats[ActualRound].SongArtist;
+      Text[TextTitle].Text       := PlaylistMedley.Stats[ActualRound].SongTitle;
+      Text[TextTitle].Visible    := true;
+      Text[TextArtistTitle].Text := PlaylistMedley.Stats[ActualRound].SongArtist + ' - ' +
+                                    PlaylistMedley.Stats[ActualRound].SongTitle;
+    end;
+  end;
+
+  if ScreenSong.Mode = smMedley then
+  begin
+    for P := 0 to PlayersPlay - 1 do
+      Player[P] := PlaylistMedley.Stats[ActualRound].Player[P];
+  end;
+
+  ResetScores;
 end;
 
 procedure TScreenScore.LoadSwapTextures;
@@ -621,22 +696,14 @@ begin
 
   inherited;
 
-  MapPlayersToPosition;
-
-  for P := 1 to PlayersPlay do
+  ActualRound := 0;
+  if ScreenSong.Mode = smMedley then
   begin
-    // data
-    aPlayerScoreScreenDatas[P].Bar_Y                  := Theme.Score.StaticBackLevel[PlayerPositionMap[P-1].Position].Y;
-
-    // ratings
-    aPlayerScoreScreenRatings[P].RateEaseStep         := 1;
-    aPlayerScoreScreenRatings[P].RateEaseValue        := 20;
-
-    // actual values
-    TextScore_ActualValue[P]  := 0;
-    TextPhrase_ActualValue[P] := 0;
-    TextGolden_ActualValue[P] := 0;
+    for P := 0 to PlayersPlay - 1 do
+      Player[P] := PlaylistMedley.Stats[ActualRound].Player[P];
   end;
+
+  MapPlayersToPosition;
 
   Text[TextArtist].Text      := CurrentSong.Artist;
   Text[TextTitle].Text       := CurrentSong.Title;
@@ -672,43 +739,29 @@ begin
 
   for P := 1 to 6 do
   begin
-   Text[TextName[P]].Visible               := V[P];
-   Text[TextScore[P]].Visible              := V[P];
+    Text[TextName[P]].Visible                := V[P];
+    Text[TextScore[P]].Visible               := V[P];
 
-    // We set alpha to 0 , so we can nicely blend them in when we need them
-    Text[TextScore[P]].Alpha                   := 0;
-    Text[TextNotesScore[P]].Alpha              := 0;
-    Text[TextNotes[P]].Alpha                   := 0;
-    Text[TextLineBonus[P]].Alpha               := 0;
-    Text[TextLineBonusScore[P]].Alpha          := 0;
-    Text[TextGoldenNotes[P]].Alpha             := 0;
-    Text[TextGoldenNotesScore[P]].Alpha        := 0;
-    Text[TextTotal[P]].Alpha                   := 0;
-    Text[TextTotalScore[P]].Alpha              := 0;
-    Statics[StaticBoxLightest[P]].Texture.Alpha := 0;
-    Statics[StaticBoxLight[P]].Texture.Alpha    := 0;
-    Statics[StaticBoxDark[P]].Texture.Alpha     := 0;
-
-    Text[TextNotes[P]].Visible              := V[P];
-    Text[TextNotesScore[P]].Visible         := V[P];
-    Text[TextLineBonus[P]].Visible          := V[P];
-    Text[TextLineBonusScore[P]].Visible     := V[P];
-    Text[TextGoldenNotes[P]].Visible        := V[P];
-    Text[TextGoldenNotesScore[P]].Visible   := V[P];
-    Text[TextTotal[P]].Visible              := V[P];
-    Text[TextTotalScore[P]].Visible         := V[P];
+    Text[TextNotes[P]].Visible               := V[P];
+    Text[TextNotesScore[P]].Visible          := V[P];
+    Text[TextLineBonus[P]].Visible           := V[P];
+    Text[TextLineBonusScore[P]].Visible      := V[P];
+    Text[TextGoldenNotes[P]].Visible         := V[P];
+    Text[TextGoldenNotesScore[P]].Visible    := V[P];
+    Text[TextTotal[P]].Visible               := V[P];
+    Text[TextTotalScore[P]].Visible          := V[P];
 
     for I := 0 to high(PlayerStatic[P]) do
       Statics[PlayerStatic[P, I]].Visible    := V[P];
 
     for I := 0 to high(PlayerTexts[P]) do
-      Text[PlayerTexts[P, I]].Visible       := V[P];
+      Text[PlayerTexts[P, I]].Visible        := V[P];
 
     Statics[StaticBoxLightest[P]].Visible    := V[P];
     Statics[StaticBoxLight[P]].Visible       := V[P];
     Statics[StaticBoxDark[P]].Visible        := V[P];
-
-    Statics[StaticPlayerIdBox[P]].Visible     := V[P];
+ 
+    Statics[StaticPlayerIdBox[P]].Visible    := V[P];
 
     // we draw that on our own
     Statics[StaticBackLevel[P]].Visible      := false;
@@ -717,9 +770,51 @@ begin
     Statics[StaticLevelRound[P]].Visible     := false;
   end;
 
+  RefreshTexts;
+end;
+
+procedure TScreenScore.ResetScores;
+var
+  P: integer;
+
+begin
+  for P := 1 to PlayersPlay do
+  begin
+    // data
+    aPlayerScoreScreenDatas[P].Bar_Y            := Theme.Score.StaticBackLevel[PlayerPositionMap[P-1].Position].Y;
+
+    // ratings
+    aPlayerScoreScreenRatings[P].RateEaseStep   := 1;
+    aPlayerScoreScreenRatings[P].RateEaseValue  := 20;
+
+    // actual values
+    TextScore_ActualValue[P]  := 0;
+    TextPhrase_ActualValue[P] := 0;
+    TextGolden_ActualValue[P] := 0;
+  end;
+
+  for P := 1 to 6 do
+  begin
+    // We set alpha to 0 , so we can nicely blend them in when we need them
+    Text[TextScore[P]].Alpha                    := 0;
+    Text[TextNotesScore[P]].Alpha               := 0;
+    Text[TextNotes[P]].Alpha                    := 0;
+    Text[TextLineBonus[P]].Alpha                := 0;
+    Text[TextLineBonusScore[P]].Alpha           := 0;
+    Text[TextGoldenNotes[P]].Alpha              := 0;
+    Text[TextGoldenNotesScore[P]].Alpha         := 0;
+    Text[TextTotal[P]].Alpha                    := 0;
+    Text[TextTotalScore[P]].Alpha               := 0;
+    Statics[StaticBoxLightest[P]].Texture.Alpha := 0;
+    Statics[StaticBoxLight[P]].Texture.Alpha    := 0;
+    Statics[StaticBoxDark[P]].Texture.Alpha     := 0;
+  end;
+
   BarScore_EaseOut_Step  := 1;
   BarPhrase_EaseOut_Step := 1;
   BarGolden_EaseOut_Step := 1;
+
+  BarTime := SDL_GetTicks();
 end;
 
 procedure TScreenScore.onShowFinish;

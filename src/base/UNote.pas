@@ -37,16 +37,15 @@ uses
   SysUtils,
   Classes,
   SDL,
-  UMusic,
-  URecord,
-  UTime,
+  gl,
   UDisplay,
   UIni,
   ULog,
   ULyrics,
+  URecord,
   UScreenSing,
   USong,
-  gl;
+  UTime;
 
 type
   PPLayerNote = ^TPlayerNote;
@@ -88,6 +87,21 @@ type
     Note:           array of TPlayerNote;
   end;
 
+  TStats = record
+    Player:     array of TPlayer;
+    SongArtist: string;
+    SongTitle:  string;
+  end;
+
+  TMedleyPlaylist = record
+    Song:              array of integer;
+    NumMedleySongs:    integer;
+    CurrentMedleySong: integer;
+    ApplausePlayed:    boolean;
+    Stats:             array of TStats;
+    NumPlayer:         integer;
+  end;
+
 {* Player and music info *}
 var
   {**
@@ -107,6 +121,8 @@ var
    *}
   CurrentSong: TSong;
 
+  PlaylistMedley: TMedleyPlaylist;  // playlist medley
+
 const
   MAX_SONG_SCORE = 10000;     // max. achievable points per song
   MAX_SONG_LINE_BONUS = 1000; // max. achievable line bonus per song
@@ -124,23 +140,23 @@ implementation
 uses
   Math,
   StrUtils,
-  USongs,
-  UJoystick,
-  UCommandLine,
-  ULanguage,
-  //SDL_ttf,
-  USkins,
-  UCovers,
   UCatCovers,
-  UDataBase,
-  UPlaylist,
-  UParty,
-  UConfig,
+  UCommandLine,
   UCommon,
+  UConfig,
+  UCovers,
+  UDataBase,
   UGraphic,
   UGraphicClasses,
+  UJoystick,
+  ULanguage,
+  UMusic,
+  UParty,
   UPathUtils,
   UPlatform,
+  UPlaylist,
+  USkins,
+  USongs,
   UThemes;
 
 function GetTimeForBeats(BPM, Beats: real): real;

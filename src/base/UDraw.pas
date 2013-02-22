@@ -93,6 +93,7 @@ uses
   UMusic,
   URecord,
   UScreenSing,
+  USong,
   UTexture;
 
 procedure SingDrawBackground;
@@ -1115,6 +1116,8 @@ var
   width, height:  real;
   LyricsProgress: real;
   CurLyricsTime:  real;
+  TotalTime:      real;
+
 begin
   x := Theme.Sing.StaticTimeProgress.x;
   y := Theme.Sing.StaticTimeProgress.y;
@@ -1135,13 +1138,22 @@ begin
     glTexCoord2f(0, 0);
     glVertex2f(x, y);
 
-    CurLyricsTime := LyricsState.GetCurrentTime();
+    if ScreenSong.Mode = smMedley then
+    begin
+      CurLyricsTime := LyricsState.GetCurrentTime() - ScreenSing.MedleyStart;
+      TotalTime := ScreenSing.MedleyEnd - ScreenSing.MedleyStart;
+    end
+    else
+    begin
+      CurLyricsTime := LyricsState.GetCurrentTime();
+      TotalTime := LyricsState.TotalTime;
+    end;
     if (CurLyricsTime > 0) and
        (LyricsState.TotalTime > 0) then
     begin
-      LyricsProgress := CurLyricsTime / LyricsState.TotalTime;
+      LyricsProgress := CurLyricsTime / TotalTime;
       // avoid that the bar "overflows" for inaccurate song lengths
-      if (LyricsProgress > 1.0) then
+      if LyricsProgress > 1.0 then
         LyricsProgress := 1.0;
       glTexCoord2f((width * LyricsProgress) / 8, 0);
       glVertex2f(x + width * LyricsProgress, y);
