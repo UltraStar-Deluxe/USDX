@@ -294,6 +294,7 @@ type
       procedure Pause();                    virtual; abstract;
       procedure Stop();                     virtual; abstract;
       procedure FadeIn(Time: real; TargetVolume: single);  virtual; abstract;
+      procedure Fade(Time: real; TargetVolume: single);  virtual; abstract;
 
       procedure GetFFTData(var data: TFFTData);          virtual; abstract;
       function GetPCMData(var data: TPCMData): Cardinal; virtual; abstract;
@@ -428,6 +429,7 @@ type
       procedure SetLoop(Enabled: boolean);
 
       procedure FadeIn(Time: real; TargetVolume: single);
+      procedure Fade(Time: real; TargetVolume: single);
       procedure SetSyncSource(SyncSource: TSyncSource);
 
       procedure Rewind;

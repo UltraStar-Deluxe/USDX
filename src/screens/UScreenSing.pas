@@ -1437,6 +1437,7 @@ begin
     (PlaylistMedley.CurrentMedleySong <= PlaylistMedley.NumMedleySongs) then
   begin
     PlaylistMedley.ApplausePlayed := true;
+    AudioPlayback.Fade(CurrentSong.Medley.FadeOut_time, 0.1);
     AudioPlayback.PlaySound(SoundLib.Applause);
   end;
 end;

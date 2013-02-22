@@ -81,6 +81,7 @@ type
       procedure Pause();                    override;
       procedure Stop();                     override;
       procedure FadeIn(Time: real; TargetVolume: single); override;
+      procedure Fade(Time: real; TargetVolume: single); override;
 
       procedure AddSoundEffect(Effect: TSoundEffect);    override;
       procedure RemoveSoundEffect(Effect: TSoundEffect); override;
@@ -335,6 +336,12 @@ procedure TBassPlaybackStream.FadeIn(Time: real; TargetVolume: single);
 begin
   // start stream
   Play();
+  // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
+  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume, Trunc(Time * 1000));
+end;
+
+procedure TBassPlaybackStream.Fade(Time: real; TargetVolume: single);
+begin
   // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
   BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume, Trunc(Time * 1000));
 end;

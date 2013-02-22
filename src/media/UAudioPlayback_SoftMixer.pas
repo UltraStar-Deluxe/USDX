@@ -101,6 +101,7 @@ type
       procedure Pause();                    override;
       procedure Stop();                     override;
       procedure FadeIn(Time: real; TargetVolume: single); override;
+      procedure Fade(Time: real; TargetVolume: single); override;
 
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
@@ -477,6 +478,14 @@ begin
   FadeInStartVolume := fVolume;
   FadeInTargetVolume := TargetVolume;
   Play();
+end;
+
+procedure TGenericPlaybackStream.Fade(Time: real; TargetVolume: single);
+begin
+  FadeInTime := Trunc(Time * 1000);
+  FadeInStartTime := SDL_GetTicks();
+  FadeInStartVolume := fVolume;
+  FadeInTargetVolume := TargetVolume;
 end;
 
 procedure TGenericPlaybackStream.Pause();

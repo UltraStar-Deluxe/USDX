@@ -80,6 +80,7 @@ type
 
       function GetOutputDeviceList(): TAudioOutputDeviceList;
       procedure FadeIn(Time: real; TargetVolume: single);
+      procedure Fade(Time: real; TargetVolume: single);
       procedure SetAppVolume(Volume: single);
       procedure SetVolume(Volume: single);
       procedure Rewind;
@@ -285,6 +286,10 @@ begin
 end;
 
 procedure TAudio_Dummy.FadeIn(Time: real; TargetVolume: single);
+begin
+end;
+
+procedure TAudio_Dummy.Fade(Time: real; TargetVolume: single);
 begin
 end;
 
