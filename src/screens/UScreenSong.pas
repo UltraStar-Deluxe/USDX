@@ -78,6 +78,10 @@ type
       //Video Icon Mod
       VideoIcon: cardinal;
 
+      //Medley Icons
+      MedleyIcon:     cardinal;
+      CalcMedleyIcon: cardinal;
+
       TextCat:   integer;
       StaticCat: integer;
 
@@ -425,13 +429,6 @@ begin
 
       Ord('S'):
         begin
-	  Log.LogError('SDL_ModState: ' + inttostr(SDL_ModState));
-	  Log.LogError('KMOD_LSHIFT: ' + inttostr(KMOD_LSHIFT));
-	  Log.LogError('CatSongs.Song[Interaction].Medley.Source: ' + inttostr(ord(CatSongs.Song[Interaction].Medley.Source)));
-	  Log.LogError('msCalculated: ' + inttostr(ord(msCalculated)));
-	  Log.LogError('msTag: ' + inttostr(ord(msTag)));
-	  Log.LogError('Mode: ' + inttostr(ord(Mode)));
-	  Log.LogError('smNormal: ' + inttostr(ord(smNormal)));
           if //(SDL_ModState = KMOD_LSHIFT) and
             (CatSongs.Song[Interaction].Medley.Source >= msCalculated) and (Mode = smNormal) then
             StartMedley(0, msCalculated)
@@ -441,14 +438,6 @@ begin
 
       Ord('D'):
         begin
-	  Log.LogError('SDL_ModState: ' + inttostr(SDL_ModState));
-	  Log.LogError('KMOD_LSHIFT: ' + inttostr(KMOD_LSHIFT));
-	  Log.LogError('length(getVisibleMedleyArr(msCalculated)): ' + inttostr(length(getVisibleMedleyArr(msCalculated))));
-	  Log.LogError('msCalculated: ' + inttostr(ord(msCalculated)));
-	  Log.LogError('msTag: ' + inttostr(ord(msTag)));
-	  Log.LogError('Length(getVisibleMedleyArr(msTag)): ' + inttostr(Length(getVisibleMedleyArr(msTag))));
-	  Log.LogError('smNormal: ' + inttostr(ord(smNormal)));
-	  Log.LogError('Mode: ' + inttostr(ord(Mode)));
           if (Mode = smNormal) and //(SDL_ModState = KMOD_LSHIFT) and
             (length(getVisibleMedleyArr(msCalculated)) > 0) then
             StartMedley(5, msCalculated)
@@ -881,6 +870,10 @@ begin
   //Show Video Icon Mod
   VideoIcon := AddStatic(Theme.Song.VideoIcon);
 
+  //Medley Icons
+  MedleyIcon := AddStatic(Theme.Song.MedleyIcon);
+  CalcMedleyIcon := AddStatic(Theme.Song.CalculatedMedleyIcon);
+
   //Party Mode
   StaticTeam1Joker1 := AddStatic(Theme.Song.StaticTeam1Joker1);
   StaticTeam1Joker2 := AddStatic(Theme.Song.StaticTeam1Joker2);
@@ -1041,6 +1034,10 @@ begin
 
     // Set visibility of video icon
     Statics[VideoIcon].Visible := CatSongs.Song[Interaction].Video.IsSet;
+
+    // Set visibility of medley icons
+    Statics[MedleyIcon].Visible := (CatSongs.Song[Interaction].Medley.Source = msTag);
+    Statics[CalcMedleyIcon].Visible := (CatSongs.Song[Interaction].Medley.Source = msCalculated);
 
     // Set texts
     Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;

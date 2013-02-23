@@ -56,6 +56,7 @@ const
   ftBold     = 1;
   ftOutline1 = 2;
   ftOutline2 = 3;
+  ftBoldHighRes = 4;
 
 var
   Fonts:   array of TGLFont;
@@ -98,7 +99,7 @@ procedure AddFontFallbacks(FontIni: TMemIniFile; Font: TFont);
 var
   FallbackFont: IPath;
   IdentName: string;
-  I: Integer;
+  I: integer;
 begin
   // evaluate the ini-file's 'Fallbacks' section
   for I := 1 to 10 do
@@ -117,8 +118,8 @@ begin
 end;
 
 const
-  FONT_NAMES: array [0..3] of string = (
-    'Normal', 'Bold', 'Outline1', 'Outline2'
+  FONT_NAMES: array [0..4] of string = (
+    'Normal', 'Bold', 'Outline1', 'Outline2', 'BoldHighRes'
   );
 
 procedure BuildFonts;
@@ -126,6 +127,8 @@ var
   I: integer;
   FontIni: TMemIniFile;
   FontFile: IPath;
+  FontMaxResolution: integer;
+  FontPreCache: integer;
   Outline: single;
   Embolden: single;
   OutlineFont: TFTScalableOutlineFont;
@@ -144,12 +147,21 @@ begin
 
       FontFile := FindFontFile(FontIni.ReadString(SectionName , 'File', ''));
 
+      FontMaxResolution := FontIni.ReadInteger(SectionName, 'MaxResolution', 64);
+      FontPreCache := FontIni.ReadInteger(SectionName, 'PreCache', 1);
+
       // create either outlined or normal font
       Outline := FontIni.ReadFloat(SectionName, 'Outline', 0.0);
       if (Outline > 0.0) then
       begin
         // outlined font
-        OutlineFont := TFTScalableOutlineFont.Create(FontFile, 64, Outline, True, True);
+        OutlineFont := TFTScalableOutlineFont.Create(
+          FontFile,
+          FontMaxResolution,
+          Outline,
+          True,
+          (FontPreCache <> 0)
+        );
         OutlineFont.SetOutlineColor(
           FontIni.ReadFloat(SectionName, 'OutlineColorR',  0.0),
           FontIni.ReadFloat(SectionName, 'OutlineColorG',  0.0),
@@ -163,7 +175,13 @@ begin
       begin
         // normal font
         Embolden := FontIni.ReadFloat(SectionName, 'Embolden', 0.0);
-        Fonts[I].Font := TFTScalableFont.Create(FontFile, 64, Embolden, True, True);
+        Fonts[I].Font := TFTScalableFont.Create(
+          FontFile,
+          FontMaxResolution,
+          Embolden,
+          True,
+          (FontPreCache <> 0)
+        );
         Fonts[I].Outlined := false;
       end;
 

@@ -168,6 +168,8 @@ type
       TextGolden_ActualValue: array[1..6] of integer;
 
       ActualRound:          integer;
+      StaticNavigate:       integer;
+      TextNavigate:         integer;
 
       procedure RefreshTexts;
       procedure ResetScores;
@@ -577,6 +579,9 @@ begin
     aPlayerScoreScreenTextures[Player].Player_Id_Box := Texture.GetTexture(Skin.GetTextureFileName('PlayerIDBox0' + IntToStr(Player)), Texture_Type_Transparent);
   end;
 
+  StaticNavigate := AddStatic(Theme.Score.StaticNavigate);
+  TextNavigate := AddText(Theme.Score.TextNavigate);
+
   LoadSwapTextures;
 end;
 
@@ -701,6 +706,14 @@ begin
   begin
     for P := 0 to PlayersPlay - 1 do
       Player[P] := PlaylistMedley.Stats[ActualRound].Player[P];
+
+    Statics[StaticNavigate].Visible := true;
+    Text[TextNavigate].Visible := true;
+  end
+  else
+  begin
+    Statics[StaticNavigate].Visible := false;
+    Text[TextNavigate].Visible := false;
   end;
 
   MapPlayersToPosition;

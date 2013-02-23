@@ -34,12 +34,12 @@ interface
 {$I switches.inc}
 
 uses
-  IniFiles,
   SysUtils,
   Classes,
+  IniFiles,
   ULog,
-  UTexture,
-  UPath;
+  UPath,
+  UTexture;
 
 type
   TRGB = record
@@ -261,6 +261,10 @@ type
     //Video Icon Mod
     VideoIcon:        TThemeStatic;
 
+    //Medley Icons
+    MedleyIcon:           TThemeStatic;
+    CalculatedMedleyIcon: TThemeStatic;
+
    //Show Cat in TopLeft Mod
     TextCat:          TThemeText;
     StaticCat:        TThemeStatic;
@@ -356,6 +360,9 @@ type
     TextP3R:          TThemeText;
     TextP3RScore:     TThemeText;
 
+    StaticSongName:   TThemeStatic;
+    TextSongName:     TThemeText;
+
     //Linebonus Translations
     LineBonusText:    array [0..8] of UTF8String;
 
@@ -400,6 +407,9 @@ type
     StaticLevel:            array[1..6] of TThemeStatic;
     StaticLevelRound:       array[1..6] of TThemeStatic;
     StaticPlayerIdBox:      array[1..6] of TThemeStatic;
+
+    StaticNavigate:   TThemeStatic;
+    TextNavigate:     TThemeText;
 
 //    Description:          array[0..5] of string;}
   end;
@@ -1087,6 +1097,10 @@ begin
       //Video Icon Mod
       ThemeLoadStatic(Song.VideoIcon, 'SongVideoIcon');
 
+      //Medley Icons
+      ThemeLoadStatic(Song.MedleyIcon, 'SongMedleyIcon');
+      ThemeLoadStatic(Song.CalculatedMedleyIcon, 'SongCalculatedMedleyIcon');
+
       //Show Cat in TopLeft Mod
       ThemeLoadStatic(Song.StaticCat, 'SongStaticCat');
       ThemeLoadText(Song.TextCat, 'SongTextCat');
@@ -1210,6 +1224,9 @@ begin
       ThemeLoadStatic(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
       ThemeLoadText(Sing.TextP3RScore, 'SingP3RTextScore');
 
+      ThemeLoadStatic(Sing.StaticSongName, 'SingSongNameStatic');
+      ThemeLoadText(Sing.TextSongName, 'SingSongNameText');
+
       //Line Bonus Texts
       Sing.LineBonusText[0] := Language.Translate('POPUP_AWFUL');
       Sing.LineBonusText[1] := Sing.LineBonusText[0];
@@ -1259,6 +1276,9 @@ begin
 
         ThemeLoadStatic(Score.StaticRatings[I],        'ScoreStaticRatingPicture'  + IntToStr(I));
       end;
+
+      ThemeLoadStatic(Score.StaticNavigate, 'ScoreStaticNavigate');
+      ThemeLoadText(Score.TextNavigate, 'ScoreTextNavigate');
 
       // Top5
       ThemeLoadBasic(Top5, 'Top5');

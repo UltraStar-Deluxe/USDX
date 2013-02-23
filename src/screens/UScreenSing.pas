@@ -123,6 +123,9 @@ type
 
     StaticPausePopup: integer;
 
+    SongNameStatic:   integer;
+    SongNameText:     integer;
+
     Tex_Background: TTexture;
     FadeOut: boolean;
     Lyrics:  TLyricEngine;
@@ -142,6 +145,7 @@ type
 
       PlayerEnabled: integer; //< defines whether a player can score atm
     end;
+
     procedure ClearSettings;
     procedure ApplySettings; //< applies changes of settings record
     procedure EndSong;
@@ -370,6 +374,9 @@ begin
   fLyricsSync := TLyricsSyncSource.Create();
   fMusicSync := TMusicSyncSource.Create();
 
+  SongNameStatic := AddStatic(Theme.Sing.StaticSongName);;
+  SongNameText := AddText(Theme.Sing.TextSongName);
+
   eSongLoaded := THookableEvent.Create('ScreenSing.SongLoaded');
 
   ClearSettings;
@@ -412,8 +419,8 @@ begin
   else
     fTimebarMode := tbmCurrent;
 
-  // prepare players
-  SetLength(Player, PlayersPlay);
+  Statics[SongNameStatic].Visible := false;
+  Text[SongNameText].Visible := false;
 
   case PlayersPlay of
     1:
@@ -768,11 +775,10 @@ begin
   begin
     CurrentSong.SetMedleyMode();
 
-{ ** ToDo
     Text[SongNameText].Text := IntToStr(PlaylistMedley.CurrentMedleySong) +
       '/' + IntToStr(PlaylistMedley.NumMedleySongs) + ': ' +
       CurrentSong.Artist + ' - ' + CurrentSong.Title;
-}
+
     //medley start and end timestamps
     StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeIn_time / 60));
     MedleyStart := GetTimeFromBeat(Lines[0].Line[StartNote.line].Note[0].Start);
@@ -1452,13 +1458,16 @@ var
 begin
   if AudioPlayback.Position < GetTimeFromBeat(CurrentSong.Medley.StartBeat) then
   begin
-    timeDiff := GetTimeFromBeat(CurrentSong.Medley.StartBeat)-AudioPlayback.Position+1;
+    Statics[SongNameStatic].Visible := true;
+    Text[SongNameText].Visible := true;
+
+    timeDiff := GetTimeFromBeat(CurrentSong.Medley.StartBeat) - AudioPlayback.Position + 1;
     t := frac(timeDiff);
 
     glColor4f(0.15, 0.30, 0.6, t);
 
     h := 300 * t * ScreenH / RenderH;
-    SetFontStyle(ftBold);
+    SetFontStyle(ftBoldHighRes);
     SetFontItalic(false);
     SetFontSize(h);
     CountDownText := IntToStr(round(timeDiff - t));
@@ -1466,7 +1475,13 @@ begin
 
     SetFontPos (RenderW / 2 - w / 2, RenderH / 2 - h / 2);
     glPrint(PChar(CountDownText));
+  end
+  else
+  begin
+    Statics[SongNameStatic].Visible := false;
+    Text[SongNameText].Visible := false;
   end;
+end;
 end;
 
 end.
