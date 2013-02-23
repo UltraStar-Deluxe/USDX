@@ -1482,6 +1482,5 @@ begin
     Text[SongNameText].Visible := false;
   end;
 end;
-end;
 
 end.
