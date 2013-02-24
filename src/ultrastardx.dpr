@@ -108,7 +108,7 @@ uses
       avio               in 'lib\ffmpeg-0.10\avio.pas',
       {$IFDEF UseSWScale}
         swscale          in 'lib\ffmpeg-0.10\swscale.pas',
-  	  {$ENDIF}
+      {$ENDIF}
     {$ENDIF}
     UMediaCore_FFmpeg    in 'media\UMediaCore_FFmpeg.pas',
   {$ENDIF}  // UseFFmpeg
