@@ -231,37 +231,43 @@ begin
   end;
 end;
 
-function GetTimeFromBeat(Beat: integer): real;
+function GetTimeFromBeat(Beat: integer; SelfSong: TSong = nil): real;
 var
   CurBPM: integer;
+  Song: TSong;
 begin
+  if (SelfSong <> nil) then
+    Song := SelfSong
+  else
+    Song := CurrentSong;
+
   // static BPM
-  if Length(CurrentSong.BPM) = 1 then
+  if Length(Song.BPM) = 1 then
   begin
-    Result := CurrentSong.GAP / 1000 + Beat * 60 / CurrentSong.BPM[0].BPM;
+    Result := Song.GAP / 1000 + Beat * 60 / Song.BPM[0].BPM;
   end
   // variable BPM
-  else if Length(CurrentSong.BPM) > 1 then
+  else if Length(Song.BPM) > 1 then
   begin
-    Result := CurrentSong.GAP / 1000;
+    Result := Song.GAP / 1000;
     CurBPM := 0;
-    while (CurBPM <= High(CurrentSong.BPM)) and
-          (Beat > CurrentSong.BPM[CurBPM].StartBeat) do
+    while (CurBPM <= High(Song.BPM)) and
+          (Beat > Song.BPM[CurBPM].StartBeat) do
     begin
-      if (CurBPM < High(CurrentSong.BPM)) and
-         (Beat >= CurrentSong.BPM[CurBPM+1].StartBeat) then
+      if (CurBPM < High(Song.BPM)) and
+         (Beat >= Song.BPM[CurBPM+1].StartBeat) then
       begin
         // full range
-        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) *
-                           (CurrentSong.BPM[CurBPM+1].StartBeat - CurrentSong.BPM[CurBPM].StartBeat);
+        Result := Result + (60 / Song.BPM[CurBPM].BPM) *
+                           (Song.BPM[CurBPM+1].StartBeat - Song.BPM[CurBPM].StartBeat);
       end;
 
-      if (CurBPM = High(CurrentSong.BPM)) or
-         (Beat < CurrentSong.BPM[CurBPM+1].StartBeat) then
+      if (CurBPM = High(Song.BPM)) or
+         (Beat < Song.BPM[CurBPM+1].StartBeat) then
       begin
         // in the middle
-        Result := Result + (60 / CurrentSong.BPM[CurBPM].BPM) *
-                           (Beat - CurrentSong.BPM[CurBPM].StartBeat);
+        Result := Result + (60 / Song.BPM[CurBPM].BPM) *
+                           (Beat - Song.BPM[CurBPM].StartBeat);
       end;
       Inc(CurBPM);
     end;
@@ -410,7 +416,7 @@ var
   CurrentSound:        TCaptureBuffer;
   CurrentPlayer:       PPlayer;
   LastPlayerNote:      PPlayerNote;
-  Line: 	       PLine;
+  Line:                PLine;
   SentenceIndex:       integer;
   SentenceMin:         integer;
   SentenceMax:         integer;

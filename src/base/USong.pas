@@ -1188,7 +1188,7 @@ begin
     if ((MedleyFlags and 1) = 0) or (self.PreviewStart <= 0) then //PreviewStart is not set or <=0
     begin
       if (MedleyFlags and 2) = 2 then
-        self.PreviewStart := GetTimeFromBeat(self.Medley.StartBeat)  //fallback to MedleyStart
+        self.PreviewStart := GetTimeFromBeat(self.Medley.StartBeat, self)  //fallback to MedleyStart
       else
         self.PreviewStart := 0; //else set it to 0, it will be set in FindRefrainStart
     end;
@@ -1552,7 +1552,10 @@ begin
   Resolution := 4;
   Creator    := '';
   PreviewStart := 0;
-  CalcMedley := true;
+  if CurrentSong = nil then
+    CalcMedley := false
+  else
+    CalcMedley := true;
   Medley.Source := msNone;
 
   Relative := false;
