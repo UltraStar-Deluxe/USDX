@@ -133,7 +133,7 @@ procedure NewBeatClick(Screen: TScreenSing);  // executed when on then new beat 
 procedure NewBeatDetect(Screen: TScreenSing); // executed when on then new beat for detection
 procedure NewNote(Screen: TScreenSing);       // detect note
 function  GetMidBeat(Time: real): real;
-function  GetTimeFromBeat(Beat: integer): real;
+function  GetTimeFromBeat(Beat: integer; SelfSong: TSong = nil): real;
 
 implementation
 
