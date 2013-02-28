@@ -125,6 +125,8 @@ type
   (**
    * List of AVOptionRange structs
    *)
+  PAVOptionRanges  = ^TAVOptionRanges;
+  PPAVOptionRanges = ^PAVOptionRanges;
   TAVOptionRanges = record
     range:     PPAVOptionRange;
     nb_ranges: cint;

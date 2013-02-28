@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/log.h
- * avutil version 51.54.100
+ * avutil version 51.73.101
  *
  *)
 
@@ -29,6 +29,22 @@
  *)
 
 type
+  PAVClassCategory = TAVClassCategory;
+  TAVClassCategory = (
+    AV_CLASS_CATEGORY_NA = 0,
+    AV_CLASS_CATEGORY_INPUT,
+    AV_CLASS_CATEGORY_OUTPUT,
+    AV_CLASS_CATEGORY_MUXER,
+    AV_CLASS_CATEGORY_DEMUXER,
+    AV_CLASS_CATEGORY_ENCODER,
+    AV_CLASS_CATEGORY_DECODER,
+    AV_CLASS_CATEGORY_FILTER,
+    AV_CLASS_CATEGORY_BITSTREAM_FILTER,
+    AV_CLASS_CATEGORY_SWSCALER,
+    AV_CLASS_CATEGORY_SWRESAMPLER,
+    AV_CLASS_CATEGORY_NB ///< not part of ABI/API
+  );
+
 (**
  * Describe the class of an AVClass context structure. That is an
  * arbitrary struct of which the first field is a pointer to an
@@ -90,6 +106,19 @@ type
      * child_class_next iterates over _all possible_ children.
      *)
     child_class_next: function (prev: {const} PAVClass): {const} PAVClass; cdecl;
+
+    (**
+     * Category used for visualization (like color)
+     * This is only set if the category is equal for all objects using this class.
+     * available since version (51 << 16 | 56 << 8 | 100)
+     *)
+    category: TAVClassCategory;
+
+    (**
+     * Callback to return the category.
+     * available since version (51 << 16 | 59 << 8 | 100)
+     *)
+    get_category: function (ctx: pointer): PAVClassCategory; cdecl;
 
 end;
 
@@ -165,6 +194,8 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl);
 **}
 
 function av_default_item_name (ctx: pointer): PAnsiChar;
+  cdecl; external av__util;
+function av_default_get_category(ptr: pointer): TAVClassCategory;
   cdecl; external av__util;
 
 (**

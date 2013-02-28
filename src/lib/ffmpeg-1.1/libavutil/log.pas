@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/log.h
- * avutil version 51.54.100
+ * avutil version 52.13.100
  *
  *)
 
@@ -29,6 +29,24 @@
  *)
 
 type
+  PAVClassCategory = TAVClassCategory;
+  TAVClassCategory = (
+    AV_CLASS_CATEGORY_NA = 0,
+    AV_CLASS_CATEGORY_INPUT,
+    AV_CLASS_CATEGORY_OUTPUT,
+    AV_CLASS_CATEGORY_MUXER,
+    AV_CLASS_CATEGORY_DEMUXER,
+    AV_CLASS_CATEGORY_ENCODER,
+    AV_CLASS_CATEGORY_DECODER,
+    AV_CLASS_CATEGORY_FILTER,
+    AV_CLASS_CATEGORY_BITSTREAM_FILTER,
+    AV_CLASS_CATEGORY_SWSCALER,
+    AV_CLASS_CATEGORY_SWRESAMPLER,
+    AV_CLASS_CATEGORY_NB ///< not part of ABI/API
+  );
+
+// struct AVOptionRanges;
+
 (**
  * Describe the class of an AVClass context structure. That is an
  * arbitrary struct of which the first field is a pointer to an
@@ -69,10 +87,11 @@ type
     log_level_offset_offset: cint;
 
     (**
-     * Offset in the structure where a pointer to the parent context for loging is stored.
-     * for example a decoder that uses eval.c could pass its AVCodecContext to eval as such
-     * parent context. And a av_log() implementation could then display the parent context
-     * can be NULL of course
+     * Offset in the structure where a pointer to the parent context for
+     * logging is stored. For example a decoder could pass its AVCodecContext
+     * to eval as such a parent context, which an av_log() implementation
+     * could then leverage to display the parent context.
+     * The offset can be NULL.
      *)
     parent_log_context_offset: cint;
     
@@ -82,7 +101,7 @@ type
     child_next: function (obj: pointer; prev: pointer): pointer; cdecl;
 
     (**
-     * Return an AVClass corresponding to next potential
+     * Return an AVClass corresponding to the next potential
      * AVOptions-enabled child.
      *
      * The difference between child_next and this is that
@@ -91,6 +110,25 @@ type
      *)
     child_class_next: function (prev: {const} PAVClass): {const} PAVClass; cdecl;
 
+
+    (**
+     * Category used for visualization (like color)
+     * This is only set if the category is equal for all objects using this class.
+     * available since version (51 << 16 | 56 << 8 | 100)
+     *)
+    category: TAVClassCategory;
+
+    (**
+     * Callback to return the category.
+     * available since version (51 << 16 | 59 << 8 | 100)
+     *)
+    get_category: function (ctx: pointer): PAVClassCategory; cdecl;
+
+    (**
+     * Callback to return the supported/allowed ranges.
+     * available since version (52.12)
+     *)
+    query_ranges: function (P: PPAVOptionRanges; obj: pointer; key: {const} PAnsiChar; flags: cint): cint; cdecl;
 end;
 
 const
