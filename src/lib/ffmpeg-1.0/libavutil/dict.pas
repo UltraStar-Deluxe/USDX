@@ -19,7 +19,7 @@
  * This is a part of the Pascal port of ffmpeg.
  *
  * Conversion of libavutil/dict.h
- * avutil version 51.54.100
+ * avutil version 51.73.101
  *
  *)
 
@@ -59,6 +59,15 @@ type
  * @return Found entry or NULL, changing key or value leads to undefined behavior.
  *)
 function av_dict_get(m: PAVDictionary; {const} key: PAnsiChar; {const} prev: PAVDictionaryEntry; flags: cint): PAVDictionaryEntry;
+  cdecl; external av__util;
+
+(**
+ * Get number of entries in dictionary.
+ *
+ * @param m dictionary
+ * @return  number of entries in dictionary
+ *)
+function av_dict_count({const} m: PAVDictionary): cint;
   cdecl; external av__util;
 
 (**
