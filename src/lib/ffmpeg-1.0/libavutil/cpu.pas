@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/cpu.h
- * avutil version 51.54.100
+ * avutil version 51.73.101
  *
  *)
 
@@ -34,6 +34,7 @@ const
 
     (* lower 16 bits - CPU features *)
   AV_CPU_FLAG_MMX           = $0001;     ///< standard MMX
+  AV_CPU_FLAG_MMXEXT        = $0002;     ///< SSE integer functions or AMD MMX ext
   AV_CPU_FLAG_MMX2          = $0002;     ///< SSE integer functions or AMD MMX ext
   AV_CPU_FLAG_3DNOW         = $0004;     ///< AMD 3DNOW
   AV_CPU_FLAG_SSE           = $0008;     ///< SSE functions
@@ -47,9 +48,11 @@ const
   AV_CPU_FLAG_SSE4          = $0100;     ///< Penryn SSE4.1 functions
   AV_CPU_FLAG_SSE42         = $0200;     ///< Nehalem SSE4.2 functions
   AV_CPU_FLAG_AVX           = $4000;     ///< AVX functions: requires OS support even if YMM registers aren't used
-  AV_CPU_FLAG_CMOV          = $1000000;  ///< supports cmov instruction
   AV_CPU_FLAG_XOP           = $0400;     ///< Bulldozer XOP functions
   AV_CPU_FLAG_FMA4          = $0800;     ///< Bulldozer FMA4 functions
+ 
+  AV_CPU_FLAG_CMOV          = $1001000;  ///< supports cmov instruction
+  
   AV_CPU_FLAG_ALTIVEC       = $0001;     ///< standard
 
   AV_CPU_FLAG_ARMV5TE       = (1 << 0);
@@ -92,6 +95,7 @@ procedure av_set_cpu_flags_mask(mask: cint);
  * @return a combination of AV_CPU_* flags, negative on error.
  *)
 function av_parse_cpu_flags(s: {const} PAnsiChar): cint;
+  cdecl; external av__util; deprecated;
 
 (**
  * Parse CPU caps from a string and update the given AV_CPU_* flags based on that.
@@ -99,6 +103,7 @@ function av_parse_cpu_flags(s: {const} PAnsiChar): cint;
  * @return negative on error.
  *)
 function av_parse_cpu_caps(flags: Pcuint, s: {const} PAnsiChar): cint;
+  cdecl; external av__util;
 
 (* The following CPU-specific functions shall not be called directly. *)
 function ff_get_cpu_flags_arm(): cint;

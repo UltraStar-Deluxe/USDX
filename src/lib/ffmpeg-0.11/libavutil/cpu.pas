@@ -92,6 +92,7 @@ procedure av_set_cpu_flags_mask(mask: cint);
  * @return a combination of AV_CPU_* flags, negative on error.
  *)
 function av_parse_cpu_flags(s: {const} PAnsiChar): cint;
+  cdecl; external av__util;
 
 (**
  * Parse CPU caps from a string and update the given AV_CPU_* flags based on that.
@@ -99,6 +100,7 @@ function av_parse_cpu_flags(s: {const} PAnsiChar): cint;
  * @return negative on error.
  *)
 function av_parse_cpu_caps(flags: Pcuint, s: {const} PAnsiChar): cint;
+  cdecl; external av__util;
 
 (* The following CPU-specific functions shall not be called directly. *)
 function ff_get_cpu_flags_arm(): cint;
