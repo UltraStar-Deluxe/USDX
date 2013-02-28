@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/opt.h
- * avutil version 51.54.100
+ * avutil version 51.73.101
  *
  *)
 
@@ -48,7 +48,9 @@ type
     AV_OPT_TYPE_STRING,
     AV_OPT_TYPE_RATIONAL,
     AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
-    AV_OPT_TYPE_CONST = 128
+    AV_OPT_TYPE_CONST = 128,
+    AV_OPT_TYPE_PIXEL_FMT  = $50464D54, ///< MKBETAG('P','F','M','T'),
+    AV_OPT_TYPE_IMAGE_SIZE = $53495A45  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
 {$ENDIF}
   );
 
@@ -59,6 +61,7 @@ const
   AV_OPT_FLAG_AUDIO_PARAM     = 8;
   AV_OPT_FLAG_VIDEO_PARAM     = 16;
   AV_OPT_FLAG_SUBTITLE_PARAM  = 32;
+  AV_OPT_FLAG_FILTERING_PARAM = 1 shl 16; ///< a generic parameter which can be set by the user for filtering
 
 type
   (**
@@ -86,10 +89,10 @@ type
      *)
     default_val: record
       case cint of
-        0: (dbl: cdouble);
-        1: (str: PAnsiChar);
+        0: (i64: cint64);
+        1: (dbl: cdouble);
+        2: (str: PAnsiChar);
         (* TODO those are unused now *)
-        2: (i64: cint64);
         3: (q: TAVRational);
       end;
     min: cdouble;                ///< minimum valid value for the option
@@ -396,6 +399,8 @@ function av_opt_set_int   (obj: pointer; name: {const} PAnsiChar; val: cint64;  
 function av_opt_set_double(obj: pointer; name: {const} PAnsiChar; val: cdouble;           search_flags: cint): cint;
   cdecl; external av__util;
 function av_opt_set_q     (obj: pointer; name: {const} PAnsiChar; val: TAVRational;       search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_bin   (obj: pointer; name: {const} PAnsiChar; val: {const} cuint8;    search_flags: cint): cint;
   cdecl; external av__util;
 (**
  * @}

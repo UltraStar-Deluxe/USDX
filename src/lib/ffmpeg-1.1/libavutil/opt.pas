@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/opt.h
- * avutil version 51.54.100
+ * avutil version 52.13.100
  *
  *)
 
@@ -48,7 +48,10 @@ type
     AV_OPT_TYPE_STRING,
     AV_OPT_TYPE_RATIONAL,
     AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
-    AV_OPT_TYPE_CONST = 128
+    AV_OPT_TYPE_CONST = 128,
+    AV_OPT_TYPE_PIXEL_FMT  = $50464D54, ///< MKBETAG('P','F','M','T')
+    AV_OPT_TYPE_SAMPLE_FMT = $53464D54, ///< MKBETAG('S','F','M','T')
+    AV_OPT_TYPE_IMAGE_SIZE = $53495A45  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
 {$ENDIF}
   );
 
@@ -59,6 +62,7 @@ const
   AV_OPT_FLAG_AUDIO_PARAM     = 8;
   AV_OPT_FLAG_VIDEO_PARAM     = 16;
   AV_OPT_FLAG_SUBTITLE_PARAM  = 32;
+  AV_OPT_FLAG_FILTERING_PARAM = 1 shl 16; ///< a generic parameter which can be set by the user for filtering
 
 type
   (**
@@ -86,10 +90,10 @@ type
      *)
     default_val: record
       case cint of
-        0: (dbl: cdouble);
-        1: (str: PAnsiChar);
+        0: (i64: cint64);
+        1: (dbl: cdouble);
+        2: (str: PAnsiChar);
         (* TODO those are unused now *)
-        2: (i64: cint64);
         3: (q: TAVRational);
       end;
     min: cdouble;                ///< minimum valid value for the option
@@ -104,6 +108,26 @@ type
      * unit. May be NULL.
      *)
     unit_: {const} PAnsiChar;
+  end;
+
+  (**
+   * A single allowed range of values, or a single allowed value.
+   *)
+  PAVOptionRange  = ^TAVOptionRange;
+  PPAVOptionRange = ^PAVOptionRange;
+  TAVOptionRange = record
+    str: {const} PAnsiChar;
+    value_min, value_max: cdouble;             ///< For string ranges this represents the min/max length, for dimensions this represents the min/max pixel count
+    component_min, component_max: cdouble;     ///< For string this represents the unicode range for chars, 0-127 limits to ASCII
+    is_range: cint;                            ///< if set to 1 the struct encodes a range, if set to 0 a single value
+  end;
+
+  (**
+   * List of AVOptionRange structs
+   *)
+  TAVOptionRanges = record
+    range:     PPAVOptionRange;
+    nb_ranges: cint;
   end;
 
 {$IFDEF FF_API_FIND_OPT}
@@ -216,6 +240,38 @@ function av_set_options_string(ctx: pointer; opts: {const} PAnsiChar;
   cdecl; external av__util;
 
 (**
+ * Parse the key-value pairs list in opts. For each key=value pair found,
+ * set the value of the corresponding option in ctx.
+ *
+ * @param ctx          the AVClass object to set options on
+ * @param opts         the options string, key-value pairs separated by a
+ *                     delimiter
+ * @param shorthand    a NULL-terminated array of options names for shorthand
+ *                     notation: if the first field in opts has no key part,
+ *                     the key is taken from the first element of shorthand;
+ *                     then again for the second, etc., until either opts is
+ *                     finished, shorthand is finished or a named option is
+ *                     found; after that, all options must be named
+ * @param key_val_sep  a 0-terminated list of characters used to separate
+ *                     key from value, for example '='
+ * @param pairs_sep    a 0-terminated list of characters used to separate
+ *                     two pairs from each other, for example ':' or ','
+ * @return  the number of successfully set key=value pairs, or a negative
+ *          value corresponding to an AVERROR code in case of error:
+ *          AVERROR(EINVAL) if opts cannot be parsed,
+ *          the error code issued by av_set_string3() if a key/value pair
+ *          cannot be set
+ *
+ * Options names must use only the following characters: a-z A-Z 0-9 - . / _
+ * Separators must use characters distinct from option names and from each
+ * other.
+ *)
+function av_opt_set_from_string(ctx: pointer; opts: {const} PAnsiChar;
+                           shorthand: {const} PAnsiChar;
+                           key_val_sep: {const} PAnsiChar; pairs_sep: {const} PAnsiChar): cint;
+  cdecl; external av__util;
+
+(**
  * Free all string and binary options in obj.
  *)
 procedure av_opt_free(obj: pointer);
@@ -248,6 +304,38 @@ function av_opt_flag_is_set(obj: pointer; field_name: {const} PAnsiChar; flag_na
  *)
 function av_opt_set_dict(obj: pointer; var options: PAVDictionary): cint;
   cdecl; external av__util;
+
+(**
+ * Extract a key-value pair from the beginning of a string.
+ *
+ * @param ropts        pointer to the options string, will be updated to
+ *                     point to the rest of the string (one of the pairs_sep
+ *                     or the final NUL)
+ * @param key_val_sep  a 0-terminated list of characters used to separate
+ *                     key from value, for example '='
+ * @param pairs_sep    a 0-terminated list of characters used to separate
+ *                     two pairs from each other, for example ':' or ','
+ * @param flags        flags; see the AV_OPT_FLAG_* values below
+ * @param rkey         parsed key; must be freed using av_free()
+ * @param rval         parsed value; must be freed using av_free()
+ *
+ * @return  >=0 for success, or a negative value corresponding to an
+ *          AVERROR code in case of error; in particular:
+ *          AVERROR(EINVAL) if no key is present
+ *
+ *)
+av_opt_get_key_value(ropts: {const} PPAnsiChar;
+                     key_val_sep: {const} PAnsiChar; pairs_sep: {const} PAnsiChar
+                     flags: byte,
+                     rkey, rval: PPAnsiChar): cint;
+  cdecl; external av__util;
+
+const
+  (**
+   * Accept to parse a value without a key; the key will then be returned
+   * as NULL.
+   *)
+  AV_OPT_FLAG_IMPLICIT_KEY = 1;
 
 (**
  * @defgroup opt_eval_funcs Evaluating option strings
@@ -389,13 +477,21 @@ function av_opt_child_class_next(parent: {const} PAVClass; prev: {const} PAVClas
  * AVERROR(ERANGE) if the value is out of range
  * AVERROR(EINVAL) if the value is not valid
  *)
-function av_opt_set       (obj: pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; search_flags: cint): cint;
+function av_opt_set           (obj: pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_int   (obj: pointer; name: {const} PAnsiChar; val: cint64;            search_flags: cint): cint;
+function av_opt_set_int       (obj: pointer; name: {const} PAnsiChar; val: cint64;            search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_double(obj: pointer; name: {const} PAnsiChar; val: cdouble;           search_flags: cint): cint;
+function av_opt_set_double    (obj: pointer; name: {const} PAnsiChar; val: cdouble;           search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_q     (obj: pointer; name: {const} PAnsiChar; val: TAVRational;       search_flags: cint): cint;
+function av_opt_set_q         (obj: pointer; name: {const} PAnsiChar; val: TAVRational;       search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_bin       (obj: pointer; name: {const} PAnsiChar; val: {const} cuint8;    search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_image_size(obj: pointer; name: {const} PAnsiChar; w, h,                   search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_pixel_fmt (obj: pointer; name: {const} PAnsiChar; fmt: TAVPixelFormat;    search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_sample_fmt(obj: pointer; name: {const} PAnsiChar; fmt: TAVPixelFormat;    search_flags: cint): cint;
   cdecl; external av__util;
 (**
  * @}
@@ -416,13 +512,19 @@ function av_opt_set_q     (obj: pointer; name: {const} PAnsiChar; val: TAVRation
 (**
  * @note the returned string will av_malloc()ed and must be av_free()ed by the caller
  *)
-function av_opt_get       (obj: pointer; name: {const} PAnsiChar; search_flags: cint; out out_val: Pcuint8):     cint;
+function av_opt_get           (obj: pointer; name: {const} PAnsiChar; search_flags: cint; out out_val: Pcuint8):     cint;
   cdecl; external av__util;
-function av_opt_get_int   (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcint64):     cint;
+function av_opt_get_int       (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcint64):     cint;
   cdecl; external av__util;
-function av_opt_get_double(obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcdouble):    cint;
+function av_opt_get_double    (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcdouble):    cint;
   cdecl; external av__util;
-function av_opt_get_q     (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: PAVRational): cint;
+function av_opt_get_q         (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: PAVRational): cint;
+  cdecl; external av__util;
+function av_opt_get_image_size(obj: pointer; name: {const} PAnsiChar; search_flags: cint; w_out, h_out: Pcint):      cint;
+  cdecl; external av__util;
+function av_opt_get_pixel_fmt (obj: pointer; name: {const} PAnsiChar; search_flags: cint; out_fmt: PAVPixelFormat):  cint;
+  cdecl; external av__util;
+function av_opt_get_sample_fmt(obj: pointer; name: {const} PAnsiChar; search_flags: cint; out_fmt: PAVPixelFormat):  cint;
   cdecl; external av__util;
 (**
  * @}
@@ -437,6 +539,44 @@ function av_opt_get_q     (obj: pointer; name: {const} PAnsiChar; search_flags: 
  *)
 function av_opt_ptr(avclass: {const} PAVClass; obj: pointer; name: {const} PAnsiChar): pointer;
   cdecl; external av__util;
+
+(**
+ * Free an AVOptionRanges struct and set it to NULL.
+ *)
+procedure av_opt_freep_ranges(ranges: PPAVOptionRanges);
+  cdecl; external av__util;
+
+(**
+ * Get a list of allowed ranges for the given option.
+ *
+ * The returned list may depend on other fields in obj like for example profile.
+ *
+ * @param flags is a bitmask of flags, undefined flags should not be set and should be ignored
+ *              AV_OPT_SEARCH_FAKE_OBJ indicates that the obj is a double pointer to a AVClass instead of a full instance
+ *
+ * The result must be freed with av_opt_freep_ranges.
+ *
+ * @return >= 0 on success, a negative errro code otherwise
+ *)
+function av_opt_query_ranges(P: PPAVOptionRanges; obj: pointer; key: {const} PAnsiChar; flags: cint): cint;
+  cdecl; external av__util;
+
+(**
+ * Get a default list of allowed ranges for the given option.
+ *
+ * This list is constructed without using the AVClass.query_ranges() callback
+ * and can be used as fallback from within the callback.
+ *
+ * @param flags is a bitmask of flags, undefined flags should not be set and should be ignored
+ *              AV_OPT_SEARCH_FAKE_OBJ indicates that the obj is a double pointer to a AVClass instead of a full instance
+ *
+ * The result must be freed with av_opt_free_ranges.
+ *
+ * @return >= 0 on success, a negative errro code otherwise
+ *)
+function av_opt_query_ranges_default(P: PPAVOptionRanges; obj: pointer; key: {const} PAnsiChar; flags: cint): cint;
+  cdecl; external av__util;
+
 (**
  * @}
  *)

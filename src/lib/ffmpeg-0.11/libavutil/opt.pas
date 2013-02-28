@@ -48,7 +48,8 @@ type
     AV_OPT_TYPE_STRING,
     AV_OPT_TYPE_RATIONAL,
     AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
-    AV_OPT_TYPE_CONST = 128
+    AV_OPT_TYPE_CONST = 128,
+    AV_OPT_TYPE_IMAGE_SIZE = $53495A45 ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
 {$ENDIF}
   );
 
