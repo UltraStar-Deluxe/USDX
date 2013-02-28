@@ -113,6 +113,7 @@ const
  *)
   AVERROR_BUG2               = -(ord('B') or (ord('U') shl 8) or (ord('G') shl 16) or (ord(' ') shl 24));
   AVERROR_UNKNOWN            = -(ord('U') or (ord('N') shl 8) or (ord('K') shl 16) or (ord('N') shl 24)); ///< Unknown error, typically from an external library
+  AVERROR_EXPERIMENTAL       = -($2bb2afa8);                                                              ///< Requested feature is flagged experimental. Set strict_std_compliance if you really want to use it.
 
   AV_ERROR_MAX_STRING_SIZE   = 64;
 
