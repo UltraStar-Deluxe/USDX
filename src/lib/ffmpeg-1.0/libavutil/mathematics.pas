@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mathematics.h
- * avutil version 51.54.100
+ * avutil version 51.73.101
  *
  *)
 
@@ -35,8 +35,8 @@ const
   M_PI         = 3.14159265358979323846;  // pi
   M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
   M_SQRT2      = 1.41421356237309504880;  // sqrt(2)
-  NAN          = 0.0/0.0;     
-  INFINITY     = 1.0/0.0;     
+  NAN          = $7fc00000;     
+  INFINITY     = $7f800000;     
 
 (**
  * @addtogroup lavu_math

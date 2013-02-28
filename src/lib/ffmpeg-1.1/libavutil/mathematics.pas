@@ -1,5 +1,5 @@
 (*
- * copyright (c) 2005 Michael Niedermayer <michaelni@gmx.at>
+ * copyright (c) 2005-2012 Michael Niedermayer <michaelni@gmx.at>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mathematics.h
- * avutil version 51.54.100
+ * avutil version 52.13.100
  *
  *)
 
@@ -35,8 +35,8 @@ const
   M_PI         = 3.14159265358979323846;  // pi
   M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
   M_SQRT2      = 1.41421356237309504880;  // sqrt(2)
-  NAN          = 0.0/0.0;     
-  INFINITY     = 1.0/0.0;     
+  NAN          = $7fc00000;     
+  INFINITY     = $7f800000;     
 
 (**
  * @addtogroup lavu_math
@@ -49,7 +49,8 @@ type
     AV_ROUND_INF      = 1, ///< Round away from zero.
     AV_ROUND_DOWN     = 2, ///< Round toward -infinity.
     AV_ROUND_UP       = 3, ///< Round toward +infinity.
-    AV_ROUND_NEAR_INF = 5  ///< Round to nearest and halfway cases away from zero.
+    AV_ROUND_NEAR_INF = 5, ///< Round to nearest and halfway cases away from zero.
+    AV_ROUND_PASS_MINMAX = 8192  ///< Flag to pass INT64_MIN/MAX through instead of rescaling, this avoids special cases for AV_NOPTS_VALUE
   );
 
 (**
@@ -70,6 +71,9 @@ function av_rescale (a, b, c: cint64): cint64;
 (**
  * Rescale a 64-bit integer with specified rounding.
  * A simple a*b/c isn't possible as it can overflow.
+ *
+ * @return rescaled value a, or if AV_ROUND_PASS_MINMAX is set and a is
+ *         INT64_MIN or INT64_MAX then a is passed through unchanged.
  *)
 function av_rescale_rnd (a, b, c: cint64; enum: TAVRounding): cint64;
   cdecl; external av__util; {av_const}
@@ -82,6 +86,9 @@ function av_rescale_q (a: cint64; bq, cq: TAVRational): cint64;
 
 (**
  * Rescale a 64-bit integer by 2 rational numbers with specified rounding.
+ *
+ * @return rescaled value a, or if AV_ROUND_PASS_MINMAX is set and a is
+ *         INT64_MIN or INT64_MAX then a is passed through unchanged.
  *)
 function av_rescale_q_rnd(a: cint64; bq, cq: TAVRational;
                           enum: TAVRounding): cint64;
@@ -108,3 +115,16 @@ function av_compare_ts(ts_a: cint64; tb_a: TAVRational; ts_b: cint64; tb_b: TAVR
  *)
 function av_compare_mod(a: cuint64; b: cuint64; modVar: cuint64): cint64;
   cdecl; external av__util;
+
+(**
+ * Rescale a timestamp while preserving known durations.
+ *
+ * @param in_ts Input timestamp
+ * @param in_tb Input timesbase
+ * @param fs_tb Duration and *last timebase
+ * @param duration duration till the next call
+ * @param out_tb Output timesbase
+ *)
+function av_rescale_delta(in_tb: TAVRational; in_ts: cint64;  fs_tb: TAVRational; duration: cint; last: Pcint64; out_tb: TAVRational): cint64;
+  cdecl; external av__util;
+
