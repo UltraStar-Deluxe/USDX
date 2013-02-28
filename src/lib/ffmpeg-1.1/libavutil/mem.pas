@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mem.h
- * avutil version 51.54.100
+ * avutil version 52.13.100
  *
  *)
 
@@ -40,6 +40,18 @@
  *)
 function av_malloc(size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
+
+(**
+ * Helper function to allocate a block of size * nmemb bytes with
+ * using av_malloc()
+ * @param nmemb Number of elements
+ * @param size Size of the single element
+ * @return Pointer to the allocated block, NULL if the block cannot
+ * be allocated.
+ * @see av_malloc()
+ *)
+function av_malloc_array(nmemb: size_t; size: size_t): pointer; {$IFDEF HasInline}inline;{$ENDIF} {av_alloc_size(1, 2)}
+// Note: defined in avutil.pas
 
 (**
  * Allocate or reallocate a block of memory.
@@ -103,6 +115,19 @@ function av_calloc(nmemb: size_t; size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib}
 
 (**
+ * Helper function to allocate a block of size * nmemb bytes with
+ * using av_mallocz()
+ * @param nmemb Number of elements
+ * @param size Size of the single element
+ * @return Pointer to the allocated block, NULL if the block cannot
+ * be allocated.
+ * @see av_mallocz()
+ * @see av_malloc_array()
+ *)
+function av_mallocz_array(nmemb: size_t; size: size_t): pointer; {$IFDEF HasInline}inline;{$ENDIF} {av_alloc_size(1, 2)}
+// Note: defined in avutil.pas
+
+(**
  * Duplicate the string s.
  * @param s string to be duplicated.
  * @return Pointer to a newly allocated string containing a
@@ -145,3 +170,22 @@ procedure av_dynarray_add(tab_ptr: pointer; nb_ptr: PCint; elem: pointer);
     *r = t;
     return 0;
 }
+
+(**
+ * Set the maximum size that may me allocated in one block.
+ *)
+procedure av_max_alloc(max: size_t);
+  cdecl; external av__util;
+
+(**
+ * @brief deliberately overlapping memcpy implementation
+ * @param dst destination buffer
+ * @param back how many bytes back we start (the initial size of the overlapping window), must be > 0
+ * @param cnt number of bytes to copy, must be >= 0
+ *
+ * cnt > back is valid, this will copy the bytes we just copied,
+ * thus creating a repeating pattern with a period length of back.
+ *)
+procedure av_memcpy_backptr(dst: Pcuint8; back: cint; cnt: cint);
+  cdecl; external av__util;
+

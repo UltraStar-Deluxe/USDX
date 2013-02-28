@@ -145,3 +145,10 @@ procedure av_dynarray_add(tab_ptr: pointer; nb_ptr: PCint; elem: pointer);
     *r = t;
     return 0;
 }
+
+(**
+ * Set the maximum size that may me allocated in one block.
+ *)
+procedure av_max_alloc(max: size_t);
+  cdecl; external av__util;
+
