@@ -3581,8 +3581,8 @@ type
     (**
      * 1 indicates this subtitle is a forced subtitle.
      * A forced subtitle should be displayed even when subtitles are hidden.
-     *(
-    iforced: cint;
+     *)
+    forced: cint;
   end; {TAVSubtitleRect}
 
   PPAVSubtitle = ^PAVSubtitle;
