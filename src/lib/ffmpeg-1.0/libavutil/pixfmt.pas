@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/pixfmt.h
- * avutil version 51.54.100
+ * avutil version 51.73.101
  *
  *)
 
@@ -145,7 +145,7 @@ type
     PIX_FMT_BGR48LE,   ///< packed RGB 16:16:16, 48bpp, 16B, 16G, 16R, the 2-byte value for each R/G/B component is stored as little-endian
 
     //the following 10 formats have the disadvantage of needing 1 format for each bit depth, thus
-    //If you want to support multiple bit depths, then using PIX_FMT_YUV420P16* with the bpp stored seperately
+    //If you want to support multiple bit depths, then using PIX_FMT_YUV420P16* with the bpp stored separately
     //is better
     PIX_FMT_YUV420P9BE, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
     PIX_FMT_YUV420P9LE, ///< planar YUV 4:2:0, 13.5bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
@@ -188,6 +188,23 @@ type
     PIX_FMT_YUVA444P,  ///< planar YUV 4:4:4 32bpp, (1 Cr & Cb sample per 1x1 Y & A samples)
     PIX_FMT_YUVA422P,  ///< planar YUV 4:2:2 24bpp, (1 Cr & Cb sample per 2x1 Y & A samples)
 
+    PIX_FMT_YUV420P12BE, ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+    PIX_FMT_YUV420P12LE, ///< planar YUV 4:2:0,18bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+    PIX_FMT_YUV420P14BE, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), big-endian
+    PIX_FMT_YUV420P14LE, ///< planar YUV 4:2:0,21bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+    PIX_FMT_YUV422P12BE, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+    PIX_FMT_YUV422P12LE, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+    PIX_FMT_YUV422P14BE, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), big-endian
+    PIX_FMT_YUV422P14LE, ///< planar YUV 4:2:2,28bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+    PIX_FMT_YUV444P12BE, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+    PIX_FMT_YUV444P12LE, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+    PIX_FMT_YUV444P14BE, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), big-endian
+    PIX_FMT_YUV444P14LE, ///< planar YUV 4:4:4,42bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
+    PIX_FMT_GBRP12BE,    ///< planar GBR 4:4:4 36bpp, big endian
+    PIX_FMT_GBRP12LE,    ///< planar GBR 4:4:4 36bpp, little endian
+    PIX_FMT_GBRP14BE,    ///< planar GBR 4:4:4 42bpp, big endian
+    PIX_FMT_GBRP14LE,    ///< planar GBR 4:4:4 42bpp, little endian
+
     PIX_FMT_NB         ///< number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
   );
 
@@ -219,6 +236,12 @@ const
     PIX_FMT_YUV420P10 = PIX_FMT_YUV420P10BE;
     PIX_FMT_YUV422P10 = PIX_FMT_YUV422P10BE;
     PIX_FMT_YUV444P10 = PIX_FMT_YUV444P10BE;
+    PIX_FMT_YUV420P12 = PIX_FMT_YUV420P12BE;
+    PIX_FMT_YUV422P12 = PIX_FMT_YUV422P12BE;
+    PIX_FMT_YUV444P12 = PIX_FMT_YUV444P12BE;
+    PIX_FMT_YUV420P14 = PIX_FMT_YUV420P14BE;
+    PIX_FMT_YUV422P14 = PIX_FMT_YUV422P14BE;
+    PIX_FMT_YUV444P14 = PIX_FMT_YUV444P14BE;
     PIX_FMT_YUV420P16 = PIX_FMT_YUV420P16BE;
     PIX_FMT_YUV422P16 = PIX_FMT_YUV422P16BE;
     PIX_FMT_YUV444P16 = PIX_FMT_YUV444P16BE;
@@ -227,6 +250,8 @@ const
     PIX_FMT_BGRA64 = PIX_FMT_BGRA64BE;
     PIX_FMT_GBRP9  = PIX_FMT_GBRP9BE;
     PIX_FMT_GBRP10 = PIX_FMT_GBRP10BE;
+    PIX_FMT_GBRP12 = PIX_FMT_GBRP12BE;
+    PIX_FMT_GBRP14 = PIX_FMT_GBRP14BE;
     PIX_FMT_GBRP16 = PIX_FMT_GBRP16BE;
 {$ELSE}
     PIX_FMT_RGB32   = PIX_FMT_BGRA;
@@ -252,6 +277,12 @@ const
     PIX_FMT_YUV420P10 = PIX_FMT_YUV420P10LE;
     PIX_FMT_YUV422P10 = PIX_FMT_YUV422P10LE;
     PIX_FMT_YUV444P10 = PIX_FMT_YUV444P10LE;
+    PIX_FMT_YUV420P12 = PIX_FMT_YUV420P12LE;
+    PIX_FMT_YUV422P12 = PIX_FMT_YUV422P12LE;
+    PIX_FMT_YUV444P12 = PIX_FMT_YUV444P12LE;
+    PIX_FMT_YUV420P14 = PIX_FMT_YUV420P14LE;
+    PIX_FMT_YUV422P14 = PIX_FMT_YUV422P14LE;
+    PIX_FMT_YUV444P14 = PIX_FMT_YUV444P14LE;
     PIX_FMT_YUV420P16 = PIX_FMT_YUV420P16LE;
     PIX_FMT_YUV422P16 = PIX_FMT_YUV422P16LE;
     PIX_FMT_YUV444P16 = PIX_FMT_YUV444P16LE;
@@ -260,5 +291,7 @@ const
     PIX_FMT_BGRA64 = PIX_FMT_BGRA64LE;
     PIX_FMT_GBRP9  = PIX_FMT_GBRP9LE;
     PIX_FMT_GBRP10 = PIX_FMT_GBRP10LE;
+    PIX_FMT_GBRP12 = PIX_FMT_GBRP12LE;
+    PIX_FMT_GBRP14 = PIX_FMT_GBRP14LE;
     PIX_FMT_GBRP16 = PIX_FMT_GBRP16LE;
 {$ENDIF}
