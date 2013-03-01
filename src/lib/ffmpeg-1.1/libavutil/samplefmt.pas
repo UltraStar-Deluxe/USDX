@@ -19,7 +19,7 @@
  * This is a part of the Pascal port of ffmpeg.
  *
  * Conversion of libavutil/samplefmt.h
- * avutil version 51.54.100
+ * avutil version 52.13.100
  *
  *)
 
@@ -37,7 +37,7 @@ type
  * [-1.0, 1.0]. Any values outside this range are beyond full volume level.
  *
  * @par
- * The data layout as used in av_samples_fill_arrays() and elsewhere in Libav
+ * The data layout as used in av_samples_fill_arrays() and elsewhere in FFmpeg
  * (such as AVFrame in libavcodec) is as follows:
  *
  * For planar sample formats, each audio channel is in a separate data plane,
@@ -173,16 +173,20 @@ function av_samples_get_buffer_size(linesize: Pcint; nb_channels: cint; nb_sampl
   cdecl; external av__util;
 
 (**
- * Fill channel data pointers and linesizes for samples with sample
+ * Fill plane data pointers and linesize for samples with sample
  * format sample_fmt.
  *
- * The pointers array is filled with the pointers to the samples data:
+ * The audio_data array is filled with the pointers to the samples data planes:
  * for planar, set the start point of each channel's data within the buffer,
  * for packed, set the start point of the entire buffer only.
  *
- * The linesize array is filled with the aligned size of each channel's data
- * buffer for planar layout, or the aligned size of the buffer for all channels
- * for packed layout.
+ * The value pointed to by linesize is set to the aligned size of each
+ * channel's data buffer for planar layout, or to the aligned size of the
+ * buffer for all channels for packed layout.
+ *
+ * The buffer in buf must be big enough to contain all the samples
+ * (use av_samples_get_buffer_size() to compute its minimum size),
+ * otherwise the audio_data pointers will point to invalid data.
  *
  * @see enum AVSampleFormat
  * The documentation for AVSampleFormat describes the data layout.
@@ -194,7 +198,9 @@ function av_samples_get_buffer_size(linesize: Pcint; nb_channels: cint; nb_sampl
  * @param nb_samples       the number of samples in a single channel
  * @param sample_fmt       the sample format
  * @param align            buffer size alignment (0 = default, 1 = no alignment)
- * @return                 0 on success or a negative error code on failure
+ * @return                 >=0 on success or a negative error code on failure
+ * @todo return minimum size in bytes required for the buffer in case
+ * of success at the next bump
  *)
 function av_samples_fill_arrays(audio_data: pointer; linesize: Pcint;
                                 buf: Pcuint8;
@@ -215,7 +221,8 @@ function av_samples_fill_arrays(audio_data: pointer; linesize: Pcint;
  * @param nb_channels      number of audio channels
  * @param nb_samples       number of samples per channel
  * @param align            buffer size alignment (0 = default, 1 = no alignment)
- * @return                 0 on success or a negative error code on failure
+ * @return                 >=0 on success or a negative error code on failure
+ * @todo return the size of the allocated buffer in case of success at the next bump
  * @see av_samples_fill_arrays()
  *)
 function av_samples_alloc(audio_data: pointer; linesize: Pcint;
