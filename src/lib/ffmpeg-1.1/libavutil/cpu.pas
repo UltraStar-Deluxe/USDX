@@ -105,7 +105,7 @@ function av_parse_cpu_flags(s: {const} PAnsiChar): cint;
  *
  * @return negative on error.
  *)
-function av_parse_cpu_caps(flags: Pcuint, s: {const} PAnsiChar): cint;
+function av_parse_cpu_caps(flags: Pcuint; s: {const} PAnsiChar): cint;
   cdecl; external av__util;
 
 (* The following CPU-specific functions shall not be called directly. *)

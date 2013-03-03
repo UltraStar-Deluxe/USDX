@@ -29,7 +29,7 @@
  *)
 
 type
-  PAVClassCategory = TAVClassCategory;
+  PAVClassCategory = ^TAVClassCategory;
   TAVClassCategory = (
     AV_CLASS_CATEGORY_NA = 0,
     AV_CLASS_CATEGORY_INPUT,

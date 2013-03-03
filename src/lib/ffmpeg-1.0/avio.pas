@@ -179,6 +179,10 @@ type
     seek_count: cint;
   end;
 
+type
+  PByteIOContext = PAVIOContext; { deprecated }
+  TByteIOContext = TAVIOContext; { deprecated }
+
 (* unbuffered I/O *)
 
 (**

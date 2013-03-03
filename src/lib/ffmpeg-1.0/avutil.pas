@@ -202,9 +202,9 @@ function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer; {$IFDEF 
 
 {$INCLUDE libavutil/mem.pas}
 
-{$INCLUDE libavutil/opt.pas}
-
 {$INCLUDE libavutil/log.pas}
+
+{$INCLUDE libavutil/opt.pas}
 
 {$INCLUDE libavutil/pixfmt.pas}
 
@@ -221,6 +221,9 @@ function MKTAG  (a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDI
 function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 
 implementation
+
+uses
+  SysUtils;
 
 function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer; {$IFDEF HasInline}inline;{$ENDIF}
 begin
@@ -272,6 +275,7 @@ var
 begin
   errbuf := stralloc(AV_ERROR_MAX_STRING_SIZE);
   av_make_error_string(errbuf, AV_ERROR_MAX_STRING_SIZE, errnum);
+  av_err2str := errbuf
 end;
 
 (* libavutil/mem.h *)
