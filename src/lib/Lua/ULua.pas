@@ -101,7 +101,7 @@ type
 @@ LUA_UNSIGNED is the integral type used by lua_pushunsigned/lua_tounsigned.
 ** It must have at least 32 bits.
 *)
-  LUA_UNSIGNED_ = type UInt32;
+  LUA_UNSIGNED_ = type Cardinal;
 {$IFEND}
 
 (*
