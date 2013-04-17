@@ -183,7 +183,7 @@ const
 type
 {$IF LUAI_BITSINT >= 32}
   LUA_INT32 = Integer;
-  LUAI_UMEM = UInt32;
+  LUAI_UMEM = Cardinal;
   LUAI_MEM  = ptrdiff_t;
 {$ELSE}
 (* 16-bit ints *)
