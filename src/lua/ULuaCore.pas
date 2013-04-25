@@ -33,7 +33,11 @@ interface
 
 {$I switches.inc}
 
-uses SysUtils, ULua, UHookableEvent, UPath;
+uses
+  SysUtils,
+  UHookableEvent,
+  ULua,
+  UPath;
 
 type
   { this exception is raised when the lua panic function
@@ -51,10 +55,11 @@ type
   { record represents a module }
   TLuaModule = record
     Name:      string;
-    Functions: array of luaL_reg; //modules functions, w/ trailing nils this time
+    Functions: array of luaL_reg; // modules functions, with trailing nils this time
   end;
 
   TLuaPlugin_Status = (psNone, psRunning, psClosed, psErrorOnLoad, psErrorOnCall, psErrorInInit, psErrorOnRun);
+
   { class represents a loaded plugin }
   TLuaPlugin = class
     private
@@ -88,14 +93,14 @@ type
       procedure Load;
 
       procedure Register(Name, Version, Author, Url: string);
-      function HasRegistred: boolean;
+      function  HasRegistered: boolean;
 
       procedure PausePlugin(doPause: boolean);
-      property Paused: boolean read bPaused write PausePlugin;
+      property  Paused: boolean read bPaused write PausePlugin;
 
       procedure ShutMeDown;
 
-      { calls the lua function in the global w/ the given name.
+      { calls the lua function in the global with the given name.
         the arguments to the function have to be pushed to the stack
         before calling this function.
         the arguments and the function will be removed from stack
@@ -109,13 +114,13 @@ type
 				  const ReportErrors: boolean = true): boolean;
       procedure ClearStack;
 
-      procedure Unload; //< Destroys the Luastate, and frees as much mem as possible, w/o destroying the class and important information 
+      procedure Unload; //< Destroys the Luastate, and frees as much mem as possible, without destroying the class and important information 
 
       destructor Destroy; override;
   end;
 
-  { class managing the plugins w/ their LuaStates, the events and modules
-    it also offers the usdx table to the plugins w/ some basic functionality
+  { class managing the plugins with their LuaStates, the events and modules
+    it also offers the usdx table to the plugins with some basic functionality
     like self unload or hook getting}
   TLuaCore = class
     private
@@ -128,15 +133,15 @@ type
     protected
       Modules: array of TLuaModule; //< modules that has been registred, has to be proctected because fucntions of this unit need to get access
 
-      function GetModuleIdByName(Name: string): integer; //returns id of given module, or -1 if module is not found
+      function GetModuleIdByName(Name: string): integer; // returns id of given module, or -1 if module is not found
     public
       constructor Create;
       destructor Destroy; override;
 
-      procedure LoadPlugins;                         //< calls LoadPlugin w/ Plugindir and LoadingFinished Eventchain
+      procedure LoadPlugins;                         //< calls LoadPlugin with Plugindir and LoadingFinished Eventchain
 
-      procedure BrowseDir(Dir: IPath);               //< searches for files w/ extension .usdx in the specified dir and tries to load them w/ lua
-      procedure LoadPlugin(Filename: IPath);         //< tries to load filename w/ lua and creates the default usdx lua environment for the plugins state
+      procedure BrowseDir(Dir: IPath);               //< searches for files with extension .usdx in the specified dir and tries to load them with lua
+      procedure LoadPlugin(Filename: IPath);         //< tries to load filename with lua and creates the default usdx lua environment for the plugins state
 
       function GetPluginByName(Name: string): TLuaPlugin;
       function GetPluginById(Id: integer): TLuaPlugin;
@@ -144,23 +149,23 @@ type
       { this function adds a module loader for your functions
         name is the name the script needs to write in its require()
         Functions is an array of lua calling compatible functions
-        w/o trailing nils! }
+        without trailing nils! }
       procedure RegisterModule(Name: string; const Functions: array of luaL_reg);
 
       function RegisterEvent(Event: THookableEvent): integer; //< adds the event to eventlist and returns its handle
       procedure UnRegisterEvent(hEvent: integer);             //< removes the event from eventlist by handle
 
-      function GetEventbyName(Name: string): THookableEvent;       //< tries to find the event w/ the given name in the list
-      function GetEventbyHandle(hEvent: integer): THookableEvent;  //< tries to find the event w/ the given handle
+      function GetEventbyName(Name: string): THookableEvent;       //< tries to find the event with the given name in the list
+      function GetEventbyHandle(hEvent: integer): THookableEvent;  //< tries to find the event with the given handle
 
       procedure UnHookByParent(Parent: integer); //< remove all hooks by given parent id from all events
 
       procedure PrepareState(L: Plua_State);
 
-      procedure DumpPlugins; //< prints plugin runtime information w/ Log.LogStatus
+      procedure DumpPlugins; //< prints plugin runtime information with Log.LogStatus
   end;
 
-//some luastyle functions to call from lua scripts
+// some luastyle functions to call from lua scripts
 { register global, used by plugins to identify
   register(plugin name, plugin version, [plugin author], [plugin homepage])
   can only be called once since the global "register" is niled by the function
@@ -193,11 +198,11 @@ function TLua_CustomPanic (L: Plua_State): integer; cdecl;
   this function }
 function TLua_CustomRequire(L: PLua_State): integer; cdecl;
 
-
 var
   LuaCore: TLuaCore;
 
 implementation
+
 uses
   StrUtils,
   ULog,
@@ -210,7 +215,7 @@ constructor TLuaCore.Create;
 begin
   inherited;
 
-  //init EventList w/ nil
+  // init EventList with nil
   EventList := nil;
 
   eLoadingFinished := nil;
@@ -223,7 +228,7 @@ var
 begin
   SetLength(EventHandles, 0);
 
-  //delete event list
+  // delete event list
   Cur := EventList;
 
   while(Cur <> nil) do
@@ -237,7 +242,7 @@ begin
   inherited;
 end;
 
-{ calls BrowseDir w/ plugin dir and LoadingFinished eventchain }
+{ calls BrowseDir with plugin dir and LoadingFinished eventchain }
 procedure TLuaCore.LoadPlugins;
 begin
   // we have to create event here, because in create it can
@@ -249,8 +254,8 @@ begin
   eLoadingFinished.CallHookChain(false);
 end;
 
-{ searches for files w/ extension .usdx in the specified
-  dir and tries to load them w/ lua }
+{ searches for files with extension .usdx in the specified
+  dir and tries to load them with lua }
 procedure TLuaCore.BrowseDir(Dir: IPath);
   var
     Iter:     IFileIterator;
@@ -281,7 +286,7 @@ begin
   end;
 end;
 
-{ tries to load filename w/ lua and creates the default
+{ tries to load filename with lua and creates the default
   usdx lua environment for the plugins state }
 procedure TLuaCore.LoadPlugin(Filename: IPath);
   var
@@ -321,7 +326,7 @@ end;
 { this function adds a module loader for your functions
   name is the name the script needs to write in its require()
   Functions is an array of lua calling compatible functions
-  w/o trailing nils! }
+  without trailing nils! }
 procedure TLuaCore.RegisterModule(Name: string; const Functions: array of luaL_reg);
   var
     Len:     integer;
@@ -351,15 +356,15 @@ begin
   if (Event <> nil) and (Length(Event.Name) > 0) then
   begin
     Result := Length(EventHandles);
-    SetLength(EventHandles, Result + 1); //get Handle and copy it to result
+    SetLength(EventHandles, Result + 1); // get Handle and copy it to result
 
     EventHandles[Result] := Event.Name;
 
-    //create eventlist item
+    // create eventlist item
     New(Item);
     Item.Event := Event;
 
-    //search for a place for this event in alphabetical order
+    // search for a place for this event in alphabetical order
     Prev := nil;
     Cur := EventList;
 
@@ -369,10 +374,10 @@ begin
       Cur := Prev.Next;
     end;
 
-    //found the place => add new item
+    // found the place => add new item
     if (Prev <> nil) then
       Prev.Next := Item
-    else //first item
+    else // first item
       EventList := Item;
 
     Item.Next := Cur;
@@ -387,8 +392,8 @@ procedure TLuaCore.UnRegisterEvent(hEvent: integer);
     Cur, Prev: PEventListItem;
 begin
   if (hEvent >= 0) and (hEvent <= High(EventHandles)) and (Length(EventHandles[hEvent]) > 0) then
-  begin //hEvent in bounds and not already deleted
-    //delete from eventlist
+  begin // hEvent in bounds and not already deleted
+    // delete from eventlist
     Prev := nil;
     Cur  := EventList;
 
@@ -399,17 +404,17 @@ begin
     end;
 
     if (Cur <> nil) and (Cur.Event.Name = EventHandles[hEvent]) then
-    begin //delete if found
+    begin // delete if found
       Prev.Next := Cur.Next; // remove from list
       Dispose(Cur); // free memory
     end;
 
-    //delete from handle array
+    // delete from handle array
     EventHandles[hEvent] := '';
   end;
 end;
 
-{ tries to find the event w/ the given name in the list
+{ tries to find the event with the given name in the list
   to-do : use binary search algorithm instead of linear search here
           check whether this is possible (events are saved in a pointer list) }
 function TLuaCore.GetEventbyName(Name: string): THookableEvent;
@@ -420,7 +425,7 @@ begin
 
   if (Length(Name) > 0) then
   begin
-    //search in eventlist
+    // search in eventlist
     Cur := EventList;
 
     while (Cur <> nil) and (CompareStr(Cur.Event.Name, Name) < 0) do
@@ -429,17 +434,17 @@ begin
     end;
 
     if (Cur <> nil) and (Cur.Event.Name = Name) then
-    begin //we found what we want to find
+    begin // we found what we want to find
       Result := Cur.Event;
     end;
   end;
 end;
 
-{ tries to find the event w/ the given handle }
+{ tries to find the event with the given handle }
 function TLuaCore.GetEventbyHandle(hEvent: integer): THookableEvent;
 begin
   if (hEvent >= 0) and (hEvent <= High(EventHandles)) and (Length(EventHandles[hEvent]) > 0) then
-  begin //hEvent in bounds and not already deleted
+  begin // hEvent in bounds and not already deleted
     Result := GetEventByName(EventHandles[hEvent]);
   end
   else
@@ -469,15 +474,15 @@ end;
   usdx moduleloader and usdx table }
 procedure TLuaCore.PrepareState(L: Plua_State);
 begin
-  //load basic lib functionality
+  // load basic lib functionality
   lua_pushcfunction(L, luaopen_base);
   lua_call(L, 0, 0);
-  lua_pop(L, lua_gettop(L)); //pop the results
+  lua_pop(L, lua_gettop(L)); // pop the results
 
-  //load module functionality
+  // load module functionality
   lua_pushcfunction(L, luaopen_package);
   lua_call(L, 0, 0);
-  lua_pop(L, lua_gettop(L)); //pop the results
+  lua_pop(L, lua_gettop(L)); // pop the results
 
   { adds the loader for the other standard lib to package.preload table
     plugins can call e.g. require('math') if they need math functionality }
@@ -532,32 +537,32 @@ begin
   {**** Move C-Library and all-in-one module loader backwards,
         slot 3 is free now }
   // get package.loaders[4] function
-  lua_pushinteger(L, 5); //push new index
-  lua_pushinteger(L, 4); //push old index
+  lua_pushinteger(L, 5); // push new index
+  lua_pushinteger(L, 4); // push old index
   lua_gettable (L, -3);
 
   // and move it to package.loaders[5]
   lua_settable (L, -3);
 
   // get package.loaders[3] function
-  lua_pushinteger(L, 4); //push new index
-  lua_pushinteger(L, 3); //push old index
+  lua_pushinteger(L, 4); // push new index
+  lua_pushinteger(L, 3); // push old index
   lua_gettable (L, -3);
 
   // and move it to package.loaders[4]
   lua_settable (L, -3);
 
   {**** now we add the core module to package.loaders[3] }
-  lua_pushinteger(L, 3); //push new loaders index
+  lua_pushinteger(L, 3); // push new loaders index
   lua_pushcfunction(L, TLuaCore_ModuleLoader);
 
   // and move it to package.loaders[3]
   lua_settable (L, -3);
 
-  //pop both package and package.loaders tables from stack
+  // pop both package and package.loaders tables from stack
   lua_pop(L, 2);
 
-  {**** replace the standard require w/ our custom require function }
+  {**** replace the standard require with our custom require function }
   // first move standard require function to _require
   lua_getfield(L, LUA_GLOBALSINDEX, PChar('require'));
   lua_setfield(L, LUA_GLOBALSINDEX, PChar('_require'));
@@ -567,7 +572,8 @@ begin
   lua_setfield(L, LUA_GLOBALSINDEX, PChar('require'));
 
   {**** now we create the usdx table }
-  //at first functions from ULuaUsdx
+  // at first functions from ULuaUsdx
+// Function luaL_register is deprecated. Use luaL_setfuncs so that your module does not create globals. (Modules are not expected to set global variables anymore.)
   luaL_register(L, 'Usdx', @ULuaUsdx_Lib_f[0]);
 end;
 
@@ -596,7 +602,7 @@ function TLuaCore_ModuleLoader (L: Plua_State): integer; cdecl;
     Name: string;
     ID:   integer;
 begin
-  Result := 1; //we will return one value in any case (or never return in case of an error)
+  Result := 1; // we will return one value in any case (or never return in case of an error)
 
   if (lua_gettop(L) >= 1) then
   begin
@@ -606,19 +612,19 @@ begin
 
 
     if (lua_IsString(L, 1)) then
-    begin //we got the name => go get it
+    begin // we got the name => go get it
       Name := lua_toString(L, 1);
 
-      //we need at least 6 letters
-      //and first 5 letters have to be usdx.
+      // we need at least 6 letters
+      // and first 5 letters have to be usdx.
       if (Length(Name) > 5) and (lowercase(copy(Name, 1, 5))='usdx.') then
       begin
         ID := LuaCore.GetModuleIdByName(copy(Name, 6, Length(Name) - 5));
         if (ID >= 0) then
-        begin //found the module -> return loader function
+        begin // found the module -> return loader function
           lua_pushinteger(L, Id);
           lua_pushcclosure(L, TLuaCore_LoadModule, 1);
-          //the function is the result, so we leave it on stack
+          // the function is the result, so we leave it on stack
         end
         else
           lua_pushString(L, PChar('usdx module "' + Name + '" couldn''t be found'));
@@ -645,6 +651,7 @@ begin
   begin
     Id := lua_ToInteger(L, lua_upvalueindex(1));
 
+// Function luaL_register is deprecated. Use luaL_setfuncs so that your module does not create globals. (Modules are not expected to set global variables anymore.)
     luaL_register(L, PChar('Usdx.' + LuaCore.Modules[Id].Name), @LuaCore.Modules[Id].Functions[0]);
 
     // set the modules table as global "modulename"
@@ -655,13 +662,13 @@ begin
     // no we net to push the table again to return it
     lua_getglobal(L, PChar(LuaCore.Modules[Id].Name));
 
-    Result := 1; //return table
+    Result := 1; // return table
   end
   else
     luaL_error(L, PChar('no upvalue found in LuaCore_LoadModule'));
 end;
 
-{ prints plugin runtime information w/ Log.LogStatus }
+{ prints plugin runtime information with Log.LogStatus }
 procedure TLuaCore.DumpPlugins;
   function PluginStatusToString(Status: TLuaPlugin_Status): string;
   begin
@@ -727,8 +734,8 @@ begin
   // create Lua state for this plugin
   State := luaL_newstate;
 
-  //set our custom panic function if s/t went wrong along the init
-  //we don't expect
+  // set our custom panic function if s/t went wrong along the init
+  // we don't expect
   lua_atPanic(State, TLua_CustomPanic);
 
   if (LuaL_LoadFile(State, PChar(Filename.ToNative)) = 0) then
@@ -742,7 +749,7 @@ begin
     if (lua_pcall(State, 0, 0, 0) = 0) then
     begin // file called successful
 
-      //let the core prepare our state
+      // let the core prepare our state
       LuaCore.PrepareState(State);
 
       // set register function
@@ -760,7 +767,7 @@ begin
       // plugin_init() if false or nothing is returned plugin init is aborted
       if (CallFunctionByName('plugin_init', 0, 1)) then
       begin
-        if (HasRegistred) and (sStatus = psNone) and (lua_toBoolean(State, 1)) then
+        if (HasRegistered) and (sStatus = psNone) and (lua_toBoolean(State, 1)) then
         begin
           sStatus := psRunning;
           ClearStack;
@@ -802,7 +809,7 @@ begin
 end;
 
 { returns true if plugin has called register }
-function TLuaPlugin.HasRegistred: boolean;
+function TLuaPlugin.HasRegistered: boolean;
 begin
   Result := (Self.sName <> 'not registred');
 end;
@@ -818,7 +825,7 @@ begin
   ShutDown := true;
 end;
 
-{ calls the lua function in the global w/ the given name.
+{ calls the lua function in the global with the given name.
   the arguments to the function have to be pushed to the stack
   before calling this function.
   the arguments and the function will be removed from stack
@@ -839,32 +846,32 @@ begin
       // we need at least one stack slot free
       lua_checkstack(State, 1);
 
-      // lua_getglobal(State, PChar(Name)); //this is just a macro:
+      // lua_getglobal(State, PChar(Name)); // this is just a macro:
       lua_getfield(State, LUA_GLOBALSINDEX, PChar(Name));
 
       if (lua_isfunction(State, -1)) then
-      begin //we got a function
+      begin // we got a function
         // move function in front of the arguments (if any)
         if (nArgs > 0) then
           lua_insert(State, -(nArgs + 1));
 
         // call it!
         if (lua_pcall(State, nArgs, nResults, 0) = 0) then
-          Result := true //called w/o errors
-        else //increase error counter
+          Result := true // called without errors
+        else // increase error counter
           Inc (ErrorCount);
       end
       else
-      begin //we have to pop the args and the field we pushed from stack
+      begin // we have to pop the args and the field we pushed from stack
         lua_pop(State, nArgs + 1);
-        //leave an errormessage on stack
+        // leave an errormessage on stack
         lua_pushstring(State, Pchar('could not find function named ' + Name));
       end;
     end
     else
-    begin //we have to pop the args from stack
+    begin // we have to pop the args from stack
       lua_pop(State, nArgs);
-      //leave an errormessage on stack
+      // leave an errormessage on stack
       lua_pushstring(State, PChar('plugin paused'));
     end;
 
@@ -880,7 +887,7 @@ begin
   end
   else
   begin
-    Log.LogError('trying to call function of closed or not opened lua state', IfThen(HasRegistred, Name, Filename.ToUTF8));
+    Log.LogError('trying to call function of closed or not opened lua state', IfThen(HasRegistered, Name, Filename.ToUTF8));
   end;
 end;
 
@@ -892,7 +899,7 @@ begin
 end;
 
 { destroys the lua state, and frees as much mem as possible,
-  w/o destroying the class and important information }
+  without destroying the class and important information }
 procedure TLuaPlugin.Unload;
 begin
   if (State <> nil) then
@@ -902,7 +909,7 @@ begin
 
     ClearStack;
     lua_close(State);
-    State := nil; //don't forget to nil it ;)
+    State := nil; // don't forget to nil it ;)
 
     LuaCore.UnHookByParent(iId);
 
@@ -930,12 +937,12 @@ begin
 
     Id := lua_ToInteger(L, lua_upvalueindex(1));
 
-    //get version and name
+    // get version and name
     Name    := lua_tostring(L, 1);
     Version := lua_tostring(L, 2);
 
-    //get optional parameters
-    if (lua_isString(L, 3)) then //author
+    // get optional parameters
+    if (lua_isString(L, 3)) then // author
       Author := lua_toString(L, 3)
     else
     begin
@@ -950,11 +957,11 @@ begin
       Url := '';
     end;
 
-    //clear stack
+    // clear stack
     if (lua_gettop(L) > 0) then
       lua_pop(L, lua_gettop(L));
 
-    //call register
+    // call register
     P := LuaCore.GetPluginById(Id);
     if (P <> nil) then
       P.Register(Name, Version, Author, Url)
@@ -1013,7 +1020,7 @@ begin
     // move it under the top param
     lua_insert(L, -2);
 
-    // call it w/ next param (function + param are poped from stack)
+    // call it with next param (function + param are poped from stack)
     lua_call(L, 1, 0);
   end;
 end;
