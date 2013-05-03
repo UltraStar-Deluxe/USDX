@@ -407,6 +407,7 @@ function lua_tolstring(L : Plua_State; idx : Integer;
 function lua_objlen(L : Plua_State; idx : Integer) : size_t;
   cdecl; external LUA_LIB_NAME;
 {$ELSEIF LUA_VERSION_NUM >= 502}
+function lua_objlen(L : Plua_State; idx : Integer) : size_t;
 function lua_rawlen(L : Plua_State; idx : Integer) : size_t;
   cdecl; external LUA_LIB_NAME;
 {$IFEND}
@@ -889,11 +890,13 @@ procedure luaL_openlib(L : Plua_State; const libname : PChar;
                        const lr : PluaL_Reg; nup : Integer);
   cdecl; external LUA_LIB_NAME;
 procedure luaL_register(L : Plua_State; const libname : PChar;
-                       const lr : PluaL_Reg);
+                        const lr : PluaL_Reg);
   cdecl; external LUA_LIB_NAME;
-{$IFEND}
+{$ELSEIF LUA_VERSION_NUM >= 502}
+// Added for simplicity --KMS
+procedure luaL_register(L : Plua_State; const libname : PChar;
+                        const lr : PluaL_Reg);
 
-{$IF LUA_VERSION_NUM >= 502}
 procedure luaL_checkversion(L : Plua_State);
 procedure luaL_checkversion_(L : Plua_State; ver : lua_Number);
   cdecl; external LUA_LIB_NAME;
@@ -1025,6 +1028,7 @@ function luaL_gsub(L : Plua_State; const s, p, r : PChar) : PChar;
 function luaL_findtable(L : Plua_State; idx : Integer;
                         const fname : PChar; szhint : Integer) : PChar;
   cdecl; external LUA_LIB_NAME;
+procedure luaL_setfuncs (L : Plua_State; const lr : PluaL_Reg; nup : Integer);
 {$ELSEIF LUA_VERSION_NUM >= 502}
 procedure luaL_setfuncs(L : Plua_State; const lr : PluaL_Reg;
                         nup : Integer); overload;
@@ -1215,6 +1219,11 @@ begin
 end;
 
 {$IF LUA_VERSION_NUM >= 502}
+function lua_objlen(L : Plua_State; idx : Integer) : size_t;
+begin
+  lua_objlen := lua_rawlen(L, idx);  
+end;
+
 procedure lua_call(L : Plua_State; nargs, nresults : Integer);
 begin
   lua_callk(L, nargs, nresults, 0, NIL);
@@ -1377,6 +1386,14 @@ begin
 end;
 
 {$ELSEIF LUA_VERSION_NUM >= 502}
+procedure luaL_register(L : Plua_State; const libname : PChar;
+                        const lr : PluaL_Reg);
+begin
+  lua_newtable(L); 
+  luaL_setfuncs(L, lr, 0); 
+  lua_pushvalue(L, -1); 
+  lua_setglobal(L, libname); 
+end;
 
 procedure luaL_checkversion(L : Plua_State);
 begin
@@ -1384,10 +1401,12 @@ begin
 end;
 {$IFEND}
 
+{$IF LUA_VERSION_NUM >= 502}
 function luaL_loadfile(L : Plua_State; const filename: PChar): Integer;
 begin
    Result := luaL_loadfilex(L, filename, nil);
 end;
+{$IFEND}
 
 {$IF LUA_VERSION_NUM >= 502}
 function luaL_loadbuffer(L : Plua_State; const buff : PChar;
@@ -1397,18 +1416,42 @@ begin
 end;
 {$IFEND}
 
+{$IF LUA_VERSION_NUM = 501}
+(*
+** Adapted from Lua 5.2.0 and this page 
+** http://lua-users.org/wiki/CompatibilityWithLuaFive
+** It enables the replacement of luaL_register by luaL_setfuncs in ULuaCore
+** As of now, it is not used.
+*)
+procedure luaL_setfuncs (L : Plua_State; const lr : PluaL_Reg; nup : Integer);
+var
+  i : integer;
+begin
+  luaL_checkstack(L, nup, 'too many upvalues');
+  repeat                        (* fill the table with given functions *)
+    for i := 1 to nup do        (* copy upvalues to the top            *)
+      lua_pushvalue(L, -nup);
+    lua_pushstring(L, lr.name);
+    lua_pushcclosure(L, lr.func, nup);  (* closure with those upvalues *)
+    lua_settable(L, -(nup + 3));
+//    inc(lr);
+  until (lr.name = NIL);
+  lua_pop(L, nup);                      (* remove upvalues *)
+end;
+{$ELSEIF LUA_VERSION_NUM >= 502}
 procedure luaL_setfuncs(L : Plua_State; const lr : array of luaL_Reg;
                         nup : Integer); overload;
 begin
   luaL_setfuncs(L, @lr, nup);
 end;
+{$IFEND}
 
-procedure luaL_newlibtable(L : Plua_State; lr : array of luaL_Reg);
+procedure luaL_newlibtable(L : Plua_State; lr : array of luaL_Reg); overload;
 begin
    lua_createtable(L, 0, High(lr));
 end;
 
-procedure luaL_newlibtable(L : Plua_State; lr : PluaL_Reg);
+procedure luaL_newlibtable(L : Plua_State; lr : PluaL_Reg); overload;
    var
       n: Integer;
 begin
@@ -1421,13 +1464,13 @@ begin
    lua_createtable(L, 0, n);
 end;
 
-procedure luaL_newlib(L : Plua_State; lr : array of luaL_Reg);
+procedure luaL_newlib(L : Plua_State; lr : array of luaL_Reg); overload;
 begin
    luaL_newlibtable(L, lr);
    luaL_setfuncs(L, @lr, 0);
 end;
 
-procedure luaL_newlib(L : Plua_State; lr : PluaL_Reg);
+procedure luaL_newlib(L : Plua_State; lr : PluaL_Reg); overload;
 begin
    luaL_newlibtable(L, lr);
    luaL_setfuncs(L, lr, 0);

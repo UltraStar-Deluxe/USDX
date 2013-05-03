@@ -564,16 +564,17 @@ begin
 
   {**** replace the standard require with our custom require function }
   // first move standard require function to _require
-  lua_getfield(L, LUA_GLOBALSINDEX, PChar('require'));
-  lua_setfield(L, LUA_GLOBALSINDEX, PChar('_require'));
+  lua_getglobal(L, PChar('require'));
+
+  lua_setglobal(L, PChar('_require'));
 
   // then save custom require function to require
   lua_pushcfunction(L, TLua_CustomRequire);
-  lua_setfield(L, LUA_GLOBALSINDEX, PChar('require'));
+
+  lua_setglobal(L, PChar('require'));
 
   {**** now we create the usdx table }
   // at first functions from ULuaUsdx
-// Function luaL_register is deprecated. Use luaL_setfuncs so that your module does not create globals. (Modules are not expected to set global variables anymore.)
   luaL_register(L, 'Usdx', @ULuaUsdx_Lib_f[0]);
 end;
 
@@ -651,7 +652,6 @@ begin
   begin
     Id := lua_ToInteger(L, lua_upvalueindex(1));
 
-// Function luaL_register is deprecated. Use luaL_setfuncs so that your module does not create globals. (Modules are not expected to set global variables anymore.)
     luaL_register(L, PChar('Usdx.' + LuaCore.Modules[Id].Name), @LuaCore.Modules[Id].Functions[0]);
 
     // set the modules table as global "modulename"
@@ -846,8 +846,7 @@ begin
       // we need at least one stack slot free
       lua_checkstack(State, 1);
 
-      // lua_getglobal(State, PChar(Name)); // this is just a macro:
-      lua_getfield(State, LUA_GLOBALSINDEX, PChar(Name));
+      lua_getglobal(State, PChar(Name));
 
       if (lua_isfunction(State, -1)) then
       begin // we got a function
@@ -1015,7 +1014,7 @@ begin
   while (lua_getTop(L) >= 1) do
   begin
     // get luas require function
-    lua_getfield(L, LUA_GLOBALSINDEX, PChar('_require'));
+    lua_getglobal(L, PChar('_require'));
 
     // move it under the top param
     lua_insert(L, -2);
