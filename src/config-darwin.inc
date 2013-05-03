@@ -6,8 +6,8 @@
 {* Libraries *}
 
 {$IF Defined(IncludeConstants)}
-  lua_lib_name        = 'lua';
-  LUA_VERSION_INT     = '5001004';
+  LUA_LIB_NAME        = '@lua_LIB_NAME@';
+  LUA_VERSION_INT     = 5001004;
   LUA_VERSION_RELEASE = '4';
   LUA_VERSION_MINOR   = '1';
   LUA_VERSION_MAJOR   = '5';
@@ -18,7 +18,7 @@
 {$IF Defined(HaveFFmpeg)}
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
-    {$IF 8 > 0}
+    {$IF (8 > 0) or (0 > 0)}
       {$DEFINE FFMPEG_DIR := 'ffmpeg-0.8'}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}

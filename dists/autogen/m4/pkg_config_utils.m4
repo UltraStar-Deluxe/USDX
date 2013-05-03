@@ -100,8 +100,14 @@ AC_DEFUN([PKG_VERSION],
     # for avutil: map library version to ffmpeg version
     if test $1 = "libavutil"; then
         AC_MSG_CHECKING([version of ffmpeg])
-    	if test $[$1][_VERSION_INT] -le 51035100; then
-		if test $[$1][_VERSION_INT] -ge 51034101; then
+    	if test $[$1][_VERSION_INT] -le 60000000; then
+		if   test $[$1][_VERSION_INT] -ge 52013100; then
+			FFMPEG_VERSION="1.1"
+		elif test $[$1][_VERSION_INT] -ge 51073101; then
+			FFMPEG_VERSION="1.0"
+		elif test $[$1][_VERSION_INT] -ge 51054100; then
+			FFMPEG_VERSION="0.11"
+		elif test $[$1][_VERSION_INT] -ge 51034101; then
 			FFMPEG_VERSION="0.10"
 		elif test $[$1][_VERSION_INT] -ge 51032000; then
 			FFMPEG_VERSION="0.9"

@@ -183,16 +183,16 @@ if [[ x$lua_HAVE = xyes ]]; then
     PKG_VERSION([lua], [lua5.2])
 else
     PKG_HAVE([lua], [lua5.1], check)
-    lua_LIB_NAME="lua5.1"
+    lua_lib_name="lua5.1"
     if [[ x$lua_HAVE = xyes ]]; then
         PKG_VERSION([lua], [lua5.1])
     else
         PKG_HAVE([lua], [lua >= 5.1], yes)
-        lua_LIB_NAME="lua"
+        lua_lib_name="lua"
         PKG_VERSION([lua], [lua])
     fi
 fi
-AC_SUBST(lua_LIB_NAME)
+AC_SUBST(lua_lib_name)
 
 # find FFMpeg
 # Note: do not use the min/max version parameters with ffmpeg
