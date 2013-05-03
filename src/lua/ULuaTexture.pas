@@ -38,7 +38,7 @@ uses
   ULua,
   UTexture;
 
-function luaopen_Texture (L: Plua_State): Integer; cdecl;
+function luaopen_Texture(L: Plua_State): Integer; cdecl;
 
 function ULuaTexture_Dummy(L: Plua_State): Integer; cdecl;
 
@@ -46,18 +46,19 @@ implementation
 
 function ULuaTexture_Dummy(L: Plua_State): Integer; cdecl;
 begin
-  result:=0; // number of results
+  result := 0; // number of results
 end;
 
 const
   ULuaTexture_Lib_f: array [0..1] of lual_reg = (
-   (name:'Add';func:ULuaTexture_Dummy),
-   (name:nil;func:nil)
-   );
+    (name: 'Add'; func: ULuaTexture_Dummy),
+    (name: nil; func: nil)
+  );
 
-function luaopen_Texture (L: Plua_State): Integer; cdecl;
+function luaopen_Texture(L: Plua_State): Integer; cdecl;
 begin
-    luaL_register(L,'Texture',@ULuaTexture_Lib_f[0]);
-    result:=1;
+  luaL_register(L, 'Texture', @ULuaTexture_Lib_f[0]);
+  result := 1;
 end;
+
 end.
