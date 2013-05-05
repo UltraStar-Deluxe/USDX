@@ -5049,7 +5049,7 @@ See the pkg-config man page for more details.
         fi
     fi
 
-lua_LIB_NAME="lua5.2"
+lua_lib_name="lua5.2"
 if [ x$lua_HAVE = xyes ]; then
 
     if test x$lua_HAVE = xyes; then

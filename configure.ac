@@ -178,7 +178,7 @@ PKG_HAVE([sqlite3], [sqlite3], yes)
 # (K)Ubuntu uses lua5.2.pc and lua5.1.pc, 
 # Mac OS X and other linux distributions use lua.pc
 PKG_HAVE([lua], [lua5.2], check)
-lua_LIB_NAME="lua5.2"
+lua_lib_name="lua5.2"
 if [[ x$lua_HAVE = xyes ]]; then
     PKG_VERSION([lua], [lua5.2])
 else

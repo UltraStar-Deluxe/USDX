@@ -6,7 +6,7 @@
 {* Libraries *}
 
 {$IF Defined(IncludeConstants)}
-  LUA_LIB_NAME        = '@lua_LIB_NAME@';
+  LUA_LIB_NAME        = 'lua';
   LUA_VERSION_INT     = 5001004;
   LUA_VERSION_RELEASE = '4';
   LUA_VERSION_MINOR   = '1';
