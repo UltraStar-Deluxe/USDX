@@ -584,7 +584,7 @@ begin
   end;
 
   if (fFormatContext <> nil) then
-    {$IF LIBAVFORMAT_VERSION >= 53017003)}
+    {$IF LIBAVFORMAT_VERSION >= 53024002)}
     avformat_close_input(@fFormatContext);
     {$ELSE}
     av_close_input_file(fFormatContext);

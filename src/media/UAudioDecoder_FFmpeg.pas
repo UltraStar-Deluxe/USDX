@@ -462,7 +462,7 @@ begin
   // Close the video file
   if (fFormatCtx <> nil) then
   begin
-    {$IF LIBAVFORMAT_VERSION >= 53017003)}
+    {$IF LIBAVFORMAT_VERSION >= 53024002)}
     avformat_close_input(@fFormatCtx);
     {$ELSE}
     av_close_input_file(fFormatCtx);

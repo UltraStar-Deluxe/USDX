@@ -23,7 +23,7 @@
  *
  * Conversion of version 0.8 libavformat/avformat.h
  * Min. version: 53.4.0
- * Max. version: 53.21.0
+ * Max. version: 53.21.1
  *)
 
 unit avformat;
@@ -63,7 +63,7 @@ const
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 53;
   LIBAVFORMAT_MAX_VERSION_MINOR   = 21;
-  LIBAVFORMAT_MAX_VERSION_RELEASE = 0;
+  LIBAVFORMAT_MAX_VERSION_RELEASE = 1;
   LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
                             (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
