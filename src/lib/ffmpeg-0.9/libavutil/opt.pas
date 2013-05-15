@@ -606,7 +606,7 @@ function av_opt_set_q     (obj: pointer; name: {const} PAnsiChar; val: TAVRation
 (**
  * @note the returned string will av_malloc()ed and must be av_free()ed by the caller
  *)
-function av_opt_get       (obj: pointer; name: {const} PAnsiChar; search_flags: cint; outval: PPuint8): cint;
+function av_opt_get       (obj: pointer; name: {const} PAnsiChar; search_flags: cint; outval: ^Puint8): cint;
   cdecl; external av__util;
 function av_opt_get_int   (obj: pointer; name: {const} PAnsiChar; search_flags: cint; outval: Pcint64): cint;
   cdecl; external av__util;
@@ -625,5 +625,5 @@ function av_opt_get_q     (obj: pointer; name: {const} PAnsiChar; search_flags: 
  * @returns a pointer to the field, it can be cast to the correct type and read
  *          or written to.
  *)
-functionav_opt_ptr(avclass: {const} PAVClass; obj: pointer; name: {const} PAnsiChar): pointer;
+function av_opt_ptr(avclass: {const} PAVClass; obj: pointer; name: {const} PAnsiChar): pointer;
   cdecl; external av__util;
