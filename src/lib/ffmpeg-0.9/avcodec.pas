@@ -3988,8 +3988,8 @@ function avcodec_find_best_pix_fmt(pix_fmt_mask: cint64; src_pix_fmt: TAVPixelFo
  *                               that occurs when converting from src to selected dst pixel format.
  * @return The best pixel format to convert to or -1 if none was found.
  *)
-enum PixelFormat avcodec_find_best_pix_fmt2(enum PixelFormat dst_pix_fmt1, enum PixelFormat dst_pix_fmt2,
-                                            enum PixelFormat src_pix_fmt, int has_alpha, int *loss_ptr);
+function avcodec_find_best_pix_fmt2(dst_pix_fmt1: TAVPixelFormat; dst_pix_fmt2: : TAVPixelFormat;
+                                    src_pix_fmt: TAVPixelFormat; has_alpha: cint; loss_ptr: Pcint): TAVPixelFormat;
   cdecl; external av__codec;
 
 {$IFDEF FF_API_GET_ALPHA_INFO}
