@@ -222,31 +222,6 @@ function av_metadata_get(m: PAVDictionary; key: {const} PAnsiChar;
  *)
 function av_metadata_set2(var pm: PAVDictionary; key: {const} PAnsiChar; value: {const} PAnsiChar; flags: cint): cint;
   cdecl; external av__format; deprecated;
-
-(**
- * This function is provided for compatibility reason and currently does nothing.
- *)
-procedure av_metadata_conv(ctx: PAVFormatContext; const d_conv: PAVMetadataConv;
-                                                  const s_conv: PAVMetadataConv);
-  cdecl; external av__format; deprecated;
-
-(**
- * Copy metadata from one AVDictionary struct into another.
- * @param dst pointer to a pointer to a AVDictionary struct. If *dst is NULL,
- *            this function will allocate a struct for you and put it in *dst
- * @param src pointer to source AVDictionary struct
- * @param flags flags to use when setting metadata in *dst
- * @note metadata is read using the AV_DICT_IGNORE_SUFFIX flag
- *)
-procedure av_metadata_copy(var dst: PAVDictionary; src: PAVDictionary; flags: cint);
-  cdecl; external av__format; deprecated;
-
-(**
- * Free all the memory allocated for an AVDictionary struct.
- *)
-procedure av_metadata_free(var m: PAVDictionary);
-  cdecl; external av__format; deprecated;
-
 {$IFEND}
 
 (* packet functions *)
@@ -1234,12 +1209,31 @@ type
     next: PAVPacketList;
   end;
 
+{$IF FF_API_OLD_METADATA2}
 (**
  * This function is provided for compatibility reason and currently does nothing.
  *)
-procedure av_metadata_conv(ctx: PAVFormatContext; {const} d_conv: PAVMetadataConv;
-                                                  {const} s_conv: PAVMetadataConv);
+procedure av_metadata_conv(ctx: PAVFormatContext; const d_conv: PAVMetadataConv;
+                                                  const s_conv: PAVMetadataConv);
   cdecl; external av__format; deprecated;
+
+(**
+ * Copy metadata from one AVDictionary struct into another.
+ * @param dst pointer to a pointer to a AVDictionary struct. If *dst is NULL,
+ *            this function will allocate a struct for you and put it in *dst
+ * @param src pointer to source AVDictionary struct
+ * @param flags flags to use when setting metadata in *dst
+ * @note metadata is read using the AV_DICT_IGNORE_SUFFIX flag
+ *)
+procedure av_metadata_copy(var dst: PAVDictionary; src: PAVDictionary; flags: cint);
+  cdecl; external av__format; deprecated;
+
+(**
+ * Free all the memory allocated for an AVDictionary struct.
+ *)
+procedure av_metadata_free(var m: PAVDictionary);
+  cdecl; external av__format; deprecated;
+{$IFEND}
 
 (**
  * If f is NULL, returns the first registered input format,
