@@ -625,10 +625,11 @@ const
   CH_LAYOUT_STEREO_DOWNMIX  = AV_CH_LAYOUT_STEREO_DOWNMIX;
 {$IFEND}
 
-{$IFDEF FF_API_OLD_DECODE_AUDIO}
+// not disabled for the moment KMS 05/2013
+//{$IFDEF FF_API_OLD_DECODE_AUDIO}
 {* in bytes *}
   AVCODEC_MAX_AUDIO_FRAME_SIZE = 192000; // 1 second of 48khz 32bit audio
-{$ENDIF}
+//{$ENDIF}
 
 (**
  * Required number of additionally allocated bytes at the end of the input bitstream for decoding.
@@ -4333,7 +4334,8 @@ function avcodec_open(avctx: PAVCodecContext; codec: PAVCodec): cint;
 function avcodec_open2(avctx: PAVCodecContext; codec: PAVCodec; options: PPAVDictionary): cint;
   cdecl; external av__codec;
 
-{$IFDEF FF_API_OLD_DECODE_AUDIO}
+// not disabled for the moment KMS 05/2013
+//{$IFDEF FF_API_OLD_DECODE_AUDIO}
 (**
  * Wrapper function which calls avcodec_decode_audio4.
  *
@@ -4387,7 +4389,7 @@ function avcodec_decode_audio3(avctx: PAVCodecContext; samples: PSmallint;
                var frame_size_ptr: cint;
                avpkt: PAVPacket): cint;
   cdecl; external av__codec; deprecated;
-{$ENDIF}
+//{$ENDIF}
 
 (**
  * Decode the audio frame of size avpkt->size from avpkt->data into frame.
