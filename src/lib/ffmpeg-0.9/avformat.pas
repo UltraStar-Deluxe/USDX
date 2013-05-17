@@ -1698,16 +1698,30 @@ function av_read_pause(s: PAVFormatContext): cint;
 procedure av_close_input_stream(s: PAVFormatContext);
   cdecl; external av__format;
 
+{$IFDEF FF_API_CLOSE_INPUT_FILE}
 (**
+ * @deprecated use avformat_close_input()
  * Close a media file (but not its codecs).
  *
  * @param s media file handle
  *)
 procedure av_close_input_file(s: PAVFormatContext);
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
+{$ENDIF}
+
 (**
- * @}
+ * Close an opened input AVFormatContext. Free it and all its contents
+ * and set *s to NULL.
  *)
+procedure avformat_close_input(s: PPAVFormatContext);
+  cdecl; external av__format;
+
+(**
+ * Free an AVFormatContext and all its streams.
+ * @param s context to free
+ *)
+procedure avformat_free_context(s: PAVFormatContext);
+  cdecl; external av__format;
 
 {$IFDEF FF_API_NEW_STREAM}
 (**
