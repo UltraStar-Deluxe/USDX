@@ -1784,16 +1784,6 @@ function av_add_index_entry(st: PAVStream; pos: cint64; timestamp: cint64;
                   size: cint; distance: cint; flags: cint): cint;
   cdecl; external av__format;
 
-(**
- * Add an index entry into a sorted list. Update the entry if the list
- * already contains it.
- *
- * @param timestamp timestamp in the timebase of the given stream
- *)
-function av_add_index_entry(st: PAVStream; pos: cint64; timestamp: cint64;
-                  size: cint; distance: cint; flags: cint): cint;
-  cdecl; external av__format;
-
 {$IFDEF FF_API_SEEK_PUBLIC}
 function av_seek_frame_binary(s: PAVFormatContext; stream_index: cint;
                  target_ts: cint64; flags: cint): cint;
