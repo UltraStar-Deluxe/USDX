@@ -202,11 +202,11 @@ function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer; {$IFDEF 
 
 {$INCLUDE libavutil/mem.pas}
 
-{$INCLUDE libavutil/log1.pas}
+{$INCLUDE libavutil/opt1.pas}
 
-{$INCLUDE libavutil/opt.pas}
+{$INCLUDE libavutil/log.pas}
 
-{$INCLUDE libavutil/log2.pas}
+{$INCLUDE libavutil/opt2.pas}
 
 {$INCLUDE libavutil/pixfmt.pas}
 
