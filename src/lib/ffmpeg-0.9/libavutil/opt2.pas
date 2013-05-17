@@ -60,7 +60,7 @@ function av_opt_set_q     (obj: pointer; name: {const} PAnsiChar; val: TAVRation
 (**
  * @note the returned string will av_malloc()ed and must be av_free()ed by the caller
  *)
-function av_opt_get       (obj: pointer; name: {const} PAnsiChar; search_flags: cint; outval: ^Pcuint8): cint;
+function av_opt_get       (obj: pointer; name: {const} PAnsiChar; search_flags: cint; outval: Pcuint8): cint;
   cdecl; external av__util;
 function av_opt_get_int   (obj: pointer; name: {const} PAnsiChar; search_flags: cint; outval: Pcint64): cint;
   cdecl; external av__util;

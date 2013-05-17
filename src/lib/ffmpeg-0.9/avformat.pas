@@ -224,6 +224,13 @@ function av_metadata_set2(var pm: PAVDictionary; key: {const} PAnsiChar; value: 
   cdecl; external av__format; deprecated;
 
 (**
+ * This function is provided for compatibility reason and currently does nothing.
+ *)
+procedure av_metadata_conv(ctx: PAVFormatContext; const d_conv: PAVMetadataConv;
+                                                  const s_conv: PAVMetadataConv);
+  cdecl; external av__format; deprecated;
+
+(**
  * Copy metadata from one AVDictionary struct into another.
  * @param dst pointer to a pointer to a AVDictionary struct. If *dst is NULL,
  *            this function will allocate a struct for you and put it in *dst
@@ -360,12 +367,17 @@ const
    * even when user did not explicitly ask for subtitles.
    *)
   AV_DISPOSITION_FORCED    = $0040;
+  AV_DISPOSITION_HEARING_IMPAIRED  = $0080;  (**< stream for hearing impaired audiences *)
+  AV_DISPOSITION_VISUAL_IMPAIRED   = $0100;  (**< stream for visual impaired audiences *)
+  AV_DISPOSITION_CLEAN_EFFECTS     = $0200;  (**< stream without voice *)
 
   // used by TAVFormatContext.debug
   FF_FDEBUG_TS = 0001;
 
   MAX_PROBE_PACKETS = 2500;
   RAW_PACKET_BUFFER_SIZE = 2500000;
+  MAX_STD_TIMEBASES = (60*12+5);
+
 
 type
   PPAVCodecTag = ^PAVCodecTag;
@@ -402,17 +414,6 @@ type
     d_conv: {const} PAVMetadataConv;
     s_conv: {const} PAVMetadataConv;
   end;
-
-  PAVChapter = ^TAVChapter;
-  TAVChapter = record
-    id: cint;                 ///< unique ID to identify the chapter
-    time_base: TAVRational;   ///< time base in which the start/end timestamps are specified
-    start, end_: cint64;      ///< chapter start/end time in time_base units
-    metadata: PAVDictionary;
-  end;
-
-  TAVChapterArray = array[0..(MaxInt div SizeOf(TAVChapter))-1] of TAVChapter;
-  PAVChapterArray = ^TAVChapterArray;
 
   TAVFormatParameters = record
     time_base: TAVRational;
@@ -564,7 +565,7 @@ type
      * @return >= 0 on success (but not necessarily the new offset)
      *)
     read_seek: function (c: PAVFormatContext; stream_index: cint;
-                  timestamp: cint64; flags: cint): cint; cdecl; deprecated;
+                  timestamp: cint64; flags: cint): cint; cdecl; {deprecated;}
 {$IFEND}
 
     (**
@@ -1228,37 +1229,17 @@ type
 {$ENDIF}
   end;
 
-  (**
-   * New fields can be added to the end with minor version bumps.
-   * Removal, reordering and changes to existing fields require a major
-   * version bump.
-   * sizeof(AVProgram) must not be used outside libav*.
-   *)
-  TAVProgram = record
-      id                : cint;
-      flags             : cint;
-      discard           : TAVDiscard; ///< selects which program to discard and which to feed to the caller
-      stream_index      : PCardinal;
-      nb_stream_indexes : PCardinal;
-      metadata          : PAVMetadata;
-  end;
-
   TAVPacketList = record
     pkt: TAVPacket;
     next: PAVPacketList;
   end;
 
 (**
- * Convert all the metadata sets from ctx according to the source and
- * destination conversion tables. If one of the tables is NULL, then
- * tags are converted to/from ffmpeg generic tag names.
- *
- * @param d_conv destination tags format conversion table
- * @param s_conv source tags format conversion table
+ * This function is provided for compatibility reason and currently does nothing.
  *)
 procedure av_metadata_conv(ctx: PAVFormatContext; {const} d_conv: PAVMetadataConv;
                                                   {const} s_conv: PAVMetadataConv);
-  cdecl; external av__format;
+  cdecl; external av__format; deprecated;
 
 (**
  * If f is NULL, returns the first registered input format,
