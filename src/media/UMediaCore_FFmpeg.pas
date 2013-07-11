@@ -512,20 +512,26 @@ var
   h: Pointer;
   buffer: Pointer;
 begin
+  {$IF LIBAVFORMAT_VERSION >= 54029104}
   ps^ := avformat_alloc_context();
   buffer := av_malloc(BLOCKSIZE);
   FFmpegStreamOpen(h, filename, URL_RDONLY);
   ps^^.pb := avio_alloc_context(buffer, BLOCKSIZE, 0, h, FFmpegStreamRead, FFmpegStreamWrite, FFmpegStreamSeek);
   Result := avformat_open_input(ps, filename, nil, nil);
+  {$ELSE}
+  Result := 0;
+  {$ENDIF}
 end;
 
 procedure TMediaCore_FFmpeg.AVFormatCloseInput(ps: PPAVFormatContext);
 begin
+  {$IF LIBAVFORMAT_VERSION >= 54029104}
   av_free(ps^^.pb.buffer);
   FFmpegStreamClose(ps^^.pb.opaque);
   { avformat_close_input frees AVIOContext pb, no avio_close needed }
   { avformat_close_input frees AVFormatContext, no additional avformat_free_context needed }
   avformat_close_input(ps);
+  {$ENDIF}
 end;
 
 { TPacketQueue }
