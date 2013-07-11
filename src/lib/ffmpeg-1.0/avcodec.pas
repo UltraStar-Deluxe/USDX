@@ -110,52 +110,51 @@ const
  * dropped at a future version bump. The defines themselves are not part of
  * the public API and may change, break or disappear at any time.
  *)
-const
 {$ifndef FF_API_REQUEST_CHANNELS}
-  FF_API_REQUEST_CHANNELS = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_REQUEST_CHANNELS} // = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_ALLOC_CONTEXT}
-  FF_API_ALLOC_CONTEXT    = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_ALLOC_CONTEXT} //    = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_AVCODEC_OPEN}
-  FF_API_AVCODEC_OPEN     = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_AVCODEC_OPEN} //     = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_OLD_DECODE_AUDIO}
-  FF_API_OLD_DECODE_AUDIO = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_DECODE_AUDIO} // = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_OLD_TIMECODE}
-  FF_API_OLD_TIMECODE     = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_TIMECODE} //     = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 
 {$ifndef FF_API_OLD_ENCODE_AUDIO}
-  FF_API_OLD_ENCODE_AUDIO = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_ENCODE_AUDIO} // = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_OLD_ENCODE_VIDEO}
-  FF_API_OLD_ENCODE_VIDEO = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_ENCODE_VIDEO} // = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_MPV_GLOBAL_OPTS}
-  FF_API_MPV_GLOBAL_OPTS  = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_MPV_GLOBAL_OPTS} //  = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_COLOR_TABLE_ID}
-  FF_API_COLOR_TABLE_ID   = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_COLOR_TABLE_ID} //   = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_INTER_THRESHOLD}
-  FF_API_INTER_THRESHOLD  = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_INTER_THRESHOLD} //  = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_SUB_ID}
-  FF_API_SUB_ID           = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_SUB_ID} //           = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_DSP_MASK}
-  FF_API_DSP_MASK         = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_DSP_MASK} //         = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_FIND_BEST_PIX_FMT}
-  FF_API_FIND_BEST_PIX_FMT = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_FIND_BEST_PIX_FMT} // = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_CODEC_ID}
-  FF_API_CODEC_ID          = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_CODEC_ID} //          = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 {$ifndef FF_API_VDA_ASYNC}
-  FF_API_VDA_ASYNC         = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_VDA_ASYNC} //         = (LIBAVCODEC_VERSION_MAJOR < 55);
 {$endif}
 
 {$IFNDEF FPC}
@@ -670,7 +669,7 @@ const
  *)
   AV_CODEC_PROP_LOSSLESS       = 1 << 2;
 
-{$IF FF_API_OLD_DECODE_AUDIO}
+{$IFDEF FF_API_OLD_DECODE_AUDIO}
 (* in bytes *)
   AVCODEC_MAX_AUDIO_FRAME_SIZE = 192000; // 1 second of 48khz 32bit audio
 {$IFEND}
@@ -1882,7 +1881,7 @@ type
      *)
     stream_codec_tag: cuint;
 
-{$IF FF_API_SUB_ID}
+{$IFDEF FF_API_SUB_ID}
     (**
      * @deprecated this field is unused
      *)
@@ -2615,7 +2614,7 @@ type
      *)
     cutoff: cint;
 
-{$IF FF_API_REQUEST_CHANNELS}
+{$IFDEF FF_API_REQUEST_CHANNELS}
     (**
      * Decoder should decode to this many channels if it can (0 for default)
      * - encoding: unused
@@ -3062,7 +3061,7 @@ type
      *)
     idct_algo: cint;
 
-{$IF FF_API_DSP_MASK}
+{$IFDEF FF_API_DSP_MASK}
     (**
      * Unused.
      * @deprecated use av_set_cpu_flags_mask() instead.
@@ -3256,7 +3255,7 @@ type
      * - encoding unused.
      * - decodimg set by user
      *)
-    pkt_timebase: PAVRational;
+    pkt_timebase: TAVRational;
 
     (**
      * AVCodecDescriptor
@@ -3644,7 +3643,7 @@ procedure avcodec_register(codec: PAVCodec);
 procedure avcodec_register_all();
   cdecl; external av__codec;
 
-{$IF FF_API_ALLOC_CONTEXT}
+{$IFDEF FF_API_ALLOC_CONTEXT}
 (**
  * Allocate an AVCodecContext and sets it fields to default values.  The
  * resulting struct can be deallocated by simply calling av_free().
@@ -3776,7 +3775,7 @@ procedure avcodec_get_frame_defaults(frame: PAVFrame);
 procedure avcodec_free_frame(frame: PPAVFrame);
   cdecl; external av__codec;
 
-{$IF FF_API_AVCODEC_OPEN}
+{$IFDEF FF_API_AVCODEC_OPEN}
 (**
  * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
  * function the context has to be allocated.
@@ -4049,7 +4048,7 @@ procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PC
                                     linesize_align: PAVNDPArray);
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_DECODE_AUDIO}
+{$IFDEF FF_API_OLD_DECODE_AUDIO}
 (**
  * Wrapper function which calls avcodec_decode_audio4.
  *
@@ -4445,7 +4444,7 @@ function avcodec_find_encoder(id: TAVCodecID): PAVCodec;
 function avcodec_find_encoder_by_name(name: PAnsiChar): PAVCodec;
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_ENCODE_AUDIO}
+{$IFDEF FF_API_OLD_ENCODE_AUDIO}
 (**
  * Encode an audio frame from samples into buf.
  *
@@ -4518,7 +4517,7 @@ function avcodec_encode_audio2(avctx: PAVCodecContext; avpkt: PAVPacket;
                           frame: {const} PAVFrame; got_packet_ptr: Pcint): cint;
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_ENCODE_AUDIO}
+{$IFDEF FF_API_OLD_ENCODE_AUDIO}
 (**
  * @deprecated use avcodec_encode_video2() instead.
  *

@@ -323,10 +323,12 @@ begin
   fPboEnabled := PboSupported;
 
   // use custom 'ufile' protocol for UTF-8 support
-  {$IF LIBAVFORMAT_VERSION >= 53001003)}
+  {$IF LIBAVFORMAT_VERSION < 54029104}
   errnum := avformat_open_input(@fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
-  {$ELSE}
+  {$ELSEIF LIBAVFORMAT_VERSION < 53001003}
   errnum := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
+  {$ELSE}
+  errnum := FFmpegCore.AVFormatOpenInput(@fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8));
   {$IFEND}
   if (errnum <> 0) then
   begin
@@ -584,10 +586,12 @@ begin
   end;
 
   if (fFormatContext <> nil) then
-    {$IF LIBAVFORMAT_VERSION >= 53024002)}
+    {$IF LIBAVFORMAT_VERSION < 54029104}
     avformat_close_input(@fFormatContext);
-    {$ELSE}
+    {$ELSEIF LIBAVFORMAT_VERSION < 53024002)}
     av_close_input_file(fFormatContext);
+    {$ELSE}
+    FFmpegCore.AVFormatCloseInput(@fFormatContext);
     {$IFEND}
 
   fCodecContext  := nil;
