@@ -1,0 +1,57 @@
+#!/bin/sh
+
+SRC_DIR='../../src'
+PAS='ffmpeg_pas.pas'
+C='ffmpeg_c.c'
+
+types=$(find $SRC_DIR -path "$SRC_DIR/lib" -prune -o -name "*.pas" -print0|xargs -0 grep --files-with-match '\bavcodec\b'|xargs grep --no-filename --only-matching '\b[PT]AV\w\+'|sed 's/^P/T/'|sort|uniq)
+
+# swscale doesn't seem to contain noteworthy types, thus it's not considered
+
+cat >$PAS <<EOL
+program ffmpeg_pas;
+
+uses
+  avcodec  in '$SRC_DIR/lib/ffmpeg-$FFMPEG_VERSION/avcodec.pas',
+  avformat in '$SRC_DIR/lib/ffmpeg-$FFMPEG_VERSION/avformat.pas',
+  avutil   in '$SRC_DIR/lib/ffmpeg-$FFMPEG_VERSION/avutil.pas',
+  rational in '$SRC_DIR/lib/ffmpeg-$FFMPEG_VERSION/rational.pas',
+  avio     in '$SRC_DIR/lib/ffmpeg-$FFMPEG_VERSION/avio.pas',
+  UConfig  in '$SRC_DIR/base/UConfig',
+  SysUtils;
+
+begin
+EOL
+
+for t in $types
+do
+	echo "  WriteLn('$t: ' + IntToStr(SizeOf($t)));" >>$PAS
+done
+
+cat >>$PAS <<EOL
+end.
+EOL
+
+cat >$C <<EOL
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libavutil/samplefmt.h"
+#include "libavutil/avutil.h"
+#include "libavformat/avio.h"
+
+// workaround for enum
+typedef enum AVSampleFormat AVSampleFormat;
+
+int main(int argc, char *argv[]) {
+EOL
+
+for t in $types
+do
+	tt=$(echo $t|sed 's/^T//')
+	echo "   printf(\"$t: %ld\\n\", sizeof($tt));" >>$C
+done
+
+cat >>$C <<EOL
+   return 0;
+}
+EOL

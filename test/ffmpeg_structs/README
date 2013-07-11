@@ -1,0 +1,22 @@
+This test scans through the source files in order to find types
+and pointers to types from the pascal port of the ffmpeg
+libraries (TAV..., PAV...).
+
+It generates source files for pascal and c that print the sizes
+of the types used in the sources.
+
+The concluding comparison shows the size differences between the
+pascal types and the c structs:
+- type is bigger than struct
+- type is smaller than struct
+
+If struct members' names have changed, the compiler will complain.
+
+The test doesn't, however, show if struct members have been swapped
+with the size staying exactly the same. Hopefully, that scenario
+isn't too likely.
+
+With the exception of the last point, if this test doesn't yield
+a result (the types and structs have the same size), it is quite
+plausible that the pascal port of the c structs has been done
+correctly.
