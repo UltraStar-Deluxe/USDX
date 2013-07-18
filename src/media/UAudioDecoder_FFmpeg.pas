@@ -290,10 +290,10 @@ begin
   Self.fFilename := Filename;
 
   // use custom 'ufile' protocol for UTF-8 support
-  {$IF LIBAVFORMAT_VERSION < 54029104}
-  AVResult := avformat_open_input(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
-  {$ELSEIF LIBAVFORMAT_VERSION < 53001003}
+  {$IF LIBAVFORMAT_VERSION < 53001003}
   AVResult := av_open_input_file(fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
+  {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
+  AVResult := avformat_open_input(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
   {$ELSE}
   AVResult := FFmpegCore.AVFormatOpenInput(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8));
   {$IFEND}
@@ -464,10 +464,10 @@ begin
   // Close the video file
   if (fFormatCtx <> nil) then
   begin
-    {$IF LIBAVFORMAT_VERSION < 54029104}
-    avformat_close_input(@fFormatCtx);
-    {$ELSEIF LIBAVFORMAT_VERSION < 53024002}
+    {$IF LIBAVFORMAT_VERSION < 53024002}
     av_close_input_file(fFormatCtx);
+    {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
+    avformat_close_input(@fFormatCtx);
     {$ELSE}
     FFmpegCore.AVFormatCloseInput(@fFormatCtx);
     {$IFEND}

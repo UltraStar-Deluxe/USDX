@@ -212,10 +212,10 @@ begin
 
   CheckVersions();
 
-  {$IF LIBAVFORMAT_VERSION < 54029104}
-  av_register_protocol2(@UTF8FileProtocol, sizeof(UTF8FileProtocol));
-  {$ELSEIF LIBAVFORMAT_VERSION <= 52111000} // 52.110.0
+  {$IF LIBAVFORMAT_VERSION <= 52111000} // 52.110.0
   av_register_protocol(@UTF8FileProtocol);
+  {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
+  av_register_protocol2(@UTF8FileProtocol, sizeof(UTF8FileProtocol));
   {$IFEND}
 
   AVCodecLock := SDL_CreateMutex();
