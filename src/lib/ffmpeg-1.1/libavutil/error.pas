@@ -133,9 +133,6 @@ const
 function av_strerror(errnum: cint; errbuf: PAnsiChar; errbuf_size: size_t): cint;
   cdecl; external av__util;
 
-function av_strerror(errnum: cint; errbuf: PAnsiChar; errbuf_size: size_t): cint;
-  cdecl; external av__util;
-
 (**
  * Fill the provided buffer with a string containing an error string
  * corresponding to the AVERROR code errnum.
