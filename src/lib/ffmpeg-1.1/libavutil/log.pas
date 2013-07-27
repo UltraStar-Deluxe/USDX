@@ -204,6 +204,8 @@ void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl);
 
 function av_default_item_name (ctx: pointer): PAnsiChar;
   cdecl; external av__util;
+function av_default_get_category(ptr: pointer): TAVClassCategory;
+  cdecl; external av__util;
 
 (**
  * Format a line of log the same way as the default callback.
