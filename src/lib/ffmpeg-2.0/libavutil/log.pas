@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/log.h
- * avutil version 52.13.100
+ * avutil version 52.38.100
  *
  *)
 

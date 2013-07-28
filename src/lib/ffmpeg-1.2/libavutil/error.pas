@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/error.h
- * avutil version 52.13.100
+ * avutil version 52.18.100
  *
  *)
 
