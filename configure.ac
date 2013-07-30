@@ -202,7 +202,14 @@ AC_SUBST(lua_lib_name)
 #   A check for version >=52.0.0 will return version 0d.51.1.2 
 #   although it is lower because pkg-config is confused by the 0d.
 # Use [mylib]_VERSION_INT for version-checking instead
-PKG_HAVE([libavcodec], [libavcodec], yes)
+PKG_HAVE([libavcodec], [libavcodec], check)
+# The following finds libavcodec.pc in its new location on Mac OS X.
+# It only takes the last from the list, assuming that this is the latest 
+# version.
+if [[ x$libavcodec_HAVE = xno -a x$FPC_PLATFORM = xdarwin ]]; then
+    PKG_CONFIG_PATH=`find $FPCDIR/lib/ffmpeg* -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
+    PKG_HAVE([libavcodec], [libavcodec], yes)
+fi
 PKG_VERSION([libavcodec], [libavcodec])
 AC_CHECK_LIB([avcodec], [avcodec_decode_audio], [HAVE_AVCODEC_DECODE_AUDIO="yes"])
 AC_CHECK_LIB([avcodec], [avcodec_decode_audio2], [HAVE_AVCODEC_DECODE_AUDIO2="yes"])

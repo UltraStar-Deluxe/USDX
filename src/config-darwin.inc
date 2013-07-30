@@ -18,8 +18,8 @@
 {$IF Defined(HaveFFmpeg)}
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
-    {$IF (8 > 0) or (0 > 0)}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg-0.8'}
+    {$IF (0 > 0) or (1 > 0)}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg-1.0'}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
       {$DEFINE useOLD_FFMPEG}
@@ -27,19 +27,19 @@
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
     av__codec = 'libavcodec';
-    LIBAVCODEC_VERSION_MAJOR   = 53;
-    LIBAVCODEC_VERSION_MINOR   = 8;
-    LIBAVCODEC_VERSION_RELEASE = 0;
+    LIBAVCODEC_VERSION_MAJOR   = 54;
+    LIBAVCODEC_VERSION_MINOR   = 59;
+    LIBAVCODEC_VERSION_RELEASE = 100;
 
     av__format = 'libavformat';
-    LIBAVFORMAT_VERSION_MAJOR   = 53;
-    LIBAVFORMAT_VERSION_MINOR   = 5;
-    LIBAVFORMAT_VERSION_RELEASE = 0;
+    LIBAVFORMAT_VERSION_MAJOR   = 54;
+    LIBAVFORMAT_VERSION_MINOR   = 29;
+    LIBAVFORMAT_VERSION_RELEASE = 104;
 
     av__util = 'libavutil';
     LIBAVUTIL_VERSION_MAJOR   = 51;
-    LIBAVUTIL_VERSION_MINOR   = 9;
-    LIBAVUTIL_VERSION_RELEASE = 1;
+    LIBAVUTIL_VERSION_MINOR   = 73;
+    LIBAVUTIL_VERSION_RELEASE = 101;
   {$IFEND}
 {$IFEND}
 
@@ -47,8 +47,8 @@
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
   sw__scale = 'libswscale';
   LIBSWSCALE_VERSION_MAJOR   = 2;
-  LIBSWSCALE_VERSION_MINOR   = 0;
-  LIBSWSCALE_VERSION_RELEASE = 0;
+  LIBSWSCALE_VERSION_MINOR   = 1;
+  LIBSWSCALE_VERSION_RELEASE = 101;
 {$IFEND}
 
 {$UNDEF HaveProjectM}
