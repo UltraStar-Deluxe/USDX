@@ -1,4 +1,4 @@
-{ $Header: /MidiComp/MIDIDEFS.PAS 2     10/06/97 7:33 Davec $ }
+{ $Header: /MidiComp/MidiDefs.pas 2     10/06/97 7:33 Davec $ }
 
 { Written by David Churcher <dchurcher@cix.compulink.co.uk>,
   released to the public domain. }
@@ -19,7 +19,7 @@ interface
 uses
   Windows,
   MMsystem,
-  Circbuf;
+  CircBuf;
 
 type
 

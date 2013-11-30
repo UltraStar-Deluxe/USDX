@@ -1,8 +1,8 @@
-{ $Header: /MidiComp/DELPHMCB.PAS 2     10/06/97 7:33 Davec $ }
+{ $Header: /MidiComp/DelphiMcb.pas 2     10/06/97 7:33 Davec $ }
 
 {MIDI callback for Delphi, was DLL for Delphi 1}
 
-unit Delphmcb;
+unit DelphiMcb;
 
 { These segment options required for the MIDI callback functions }
 {$IFNDEF FPC}
@@ -19,7 +19,7 @@ interface
 uses
   Windows,
   MMsystem,
-  Circbuf,
+  CircBuf,
   MidiDefs,
   MidiCons;
 

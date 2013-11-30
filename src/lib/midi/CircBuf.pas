@@ -1,4 +1,4 @@
-{ $Header: /MidiComp/CIRCBUF.PAS 2     10/06/97 7:33 Davec $ }
+{ $Header: /MidiComp/CircBuf.pas 2     10/06/97 7:33 Davec $ }
 
 { Written by David Churcher <dchurcher@cix.compulink.co.uk>,
   released to the public domain. }
@@ -17,7 +17,7 @@
   range-checking turned off, but I'm not sure it's worth it.
 }
 
-Unit Circbuf;
+Unit CircBuf;
 
 interface
 

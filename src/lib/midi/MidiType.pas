@@ -1,10 +1,10 @@
-{ $Header: /MidiComp/MIDITYPE.PAS 2     10/06/97 7:33 Davec $ }
+{ $Header: /MidiComp/MidiType.pas 2     10/06/97 7:33 Davec $ }
 
 { Written by David Churcher <dchurcher@cix.compulink.co.uk>,
   released to the public domain. }
 
 
-unit Miditype;
+unit MidiType;
 
 interface
 
@@ -19,7 +19,7 @@ uses
   Messages,
   MMSystem,
   MidiDefs,
-  Circbuf;
+  CircBuf;
 
 type
 	{-------------------------------------------------------------------}

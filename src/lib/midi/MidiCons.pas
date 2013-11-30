@@ -1,11 +1,11 @@
-{ $Header: /MidiComp/MIDICONS.PAS 2     10/06/97 7:33 Davec $ }
+{ $Header: /MidiComp/MidiCons.pas 2     10/06/97 7:33 Davec $ }
 
 { Written by David Churcher <dchurcher@cix.compulink.co.uk>,
   released to the public domain. }
 
 
 { MIDI Constants }
-unit Midicons;
+unit MidiCons;
 
 interface
 

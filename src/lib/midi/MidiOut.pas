@@ -110,10 +110,10 @@ uses
   {$IFDEF FPC}
   WinAllocation,
   {$ENDIF}
-  Circbuf,
+  CircBuf,
   MidiType,
   MidiDefs,
-  Delphmcb;
+  DelphiMcb;
 
 {$IFDEF FPC}
 type TmidioutCaps = MIDIOUTCAPS;

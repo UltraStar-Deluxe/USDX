@@ -1,4 +1,4 @@
-{ $Header: /MidiComp/Midiin.pas 2     10/06/97 7:33 Davec $ }
+{ $Header: /MidiComp/MidiIn.pas 2     10/06/97 7:33 Davec $ }
 
 { Written by David Churcher <dchurcher@cix.compulink.co.uk>,
   released to the public domain. }
@@ -118,8 +118,8 @@ uses
   MidiDefs,
   MidiType,
   MidiCons,
-  Circbuf,
-  Delphmcb;
+  CircBuf,
+  DelphiMcb;
 
 type
   MidiInputState = (misOpen, misClosed, misCreating, misDestroying);
