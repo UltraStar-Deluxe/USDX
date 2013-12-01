@@ -35,7 +35,6 @@ uses
 {$IFDEF MSWINDOWS}
   Windows,
 {$ENDIF}
-  StrUtils,
   SysUtils;
 
 type
