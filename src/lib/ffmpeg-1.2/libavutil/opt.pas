@@ -331,9 +331,9 @@ function av_opt_set_dict(obj: pointer; var options: PAVDictionary): cint;
  *          AVERROR(EINVAL) if no key is present
  *
  *)
-av_opt_get_key_value(ropts: {const} PPAnsiChar;
-                     key_val_sep: {const} PAnsiChar; pairs_sep: {const} PAnsiChar
-                     flags: byte,
+function av_opt_get_key_value(ropts: {const} PPAnsiChar;
+                     key_val_sep: {const} PAnsiChar; pairs_sep: {const} PAnsiChar;
+                     flags: byte;
                      rkey, rval: PPAnsiChar): cint;
   cdecl; external av__util;
 
