@@ -1,7 +1,6 @@
-
 Midi components
   TMidiFile, TMidiScope
-  TMidiIn and TMidiOut of david Churcher are included because they are used in 
+  TMidiIn and TMidiOut of David Churcher are included because they are used in 
   the demo application
 
 Freeware.
@@ -16,15 +15,12 @@ TMidiFile, read a midifile and have the contents available in memory
 
 TMidiScope, show all activity on a midi device
 
-TMidiIn and TMidiOut of David Churcher are included because they are used 
-in the demo application
-
 Midiplayer is a demo application which plays a midifile on a midi output
  it is build fairly simple with the included components. The timer is used
  to time the midievents. The timing is therefor as good as the windows timer.
 
 
-  The header of midifile,midiscope contains help information on the properties/functions
+  The header of midifile, midiscope contains help information on the properties/functions
   The example Midiplayer gives a good idea how to use the components
 
 Installation
@@ -35,8 +31,6 @@ Installation
 
 to run the demo
 	open project1.dpr in the demo directory and press run.
-
-
 
 history
 1.0  18-1-1999 first release
@@ -55,6 +49,6 @@ Frans Bouwmans
 fbouwmans@spiditel.nl
 
 I'm busy building a software music synthesizer, which will be available in source 
-to the public. If you are interrested in helping me with certain soundmodules 
+to the public. If you are interested in helping me with certain soundmodules 
 (effects, filters, sound generators) just sent me an email.
 

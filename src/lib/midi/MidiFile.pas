@@ -128,7 +128,7 @@ type
   TMidiTrack = class(TObject)
   protected
     events: TList;
-      name: string;
+    name: string;
     instrument: string;
     currentTime: integer;
     currentPos: integer;
@@ -162,13 +162,13 @@ type
     procedure WndProc(var Msg : TMessage);
   protected
     { Protected declarations }
-    midiFile: TBinaryFileStream;
+    MidiFile: TBinaryFileStream;
     chunkType: TChunkType;
     chunkLength: integer;
     chunkData: PByte;
     chunkIndex: PByte;
     chunkEnd: PByte;
-    FPriority: DWORD;
+    FPriority: dword;
 
     // midi file attributes
     FFileFormat: TFileFormat;
@@ -236,7 +236,8 @@ procedure Register;
 
 implementation
 
-uses mmsystem;
+uses
+  mmsystem;
 
 type
 {$IFDEF FPC}
@@ -246,40 +247,43 @@ type
   TTimerProc = TFNTimeCallBack;
 {$ENDIF}
 
-const TIMER_RESOLUTION=10;
-const WM_MULTIMEDIA_TIMER=WM_USER+127;
+const
+  TIMER_RESOLUTION = 10;
+  WM_MULTIMEDIA_TIMER = WM_USER + 127;
 
-var MIDIFileHandle : HWND;
-    TimerProc      : TTimerProc;
-    MIDITimerID    : Integer;
-    TimerPeriod     : Integer;
+var
+  MidiFileHandle: HWND;
+  TimerProc:      TTimerProc;
+  MidiTimerID:    integer;
+  TimerPeriod:    integer;
 
-procedure TimerCallBackProc(uTimerID,uMsg: Cardinal; dwUser,dwParam1,dwParam2:DWORD);stdcall;
+procedure TimerCallBackProc(uTimerID, uMsg: Cardinal; dwUser, dwParam1, dwParam2:dword);stdcall;
 begin
-     PostMessage(HWND(dwUser),WM_MULTIMEDIA_TIMER,0,0);
+  PostMessage(HWND(dwUser), WM_MULTIMEDIA_TIMER, 0, 0);
 end;
 
-procedure SetMIDITimer;
-  var TimeCaps    : TTimeCaps;
+procedure SetMidiTimer;
+var
+  TimeCaps: TTimeCaps;
 begin
-  timeGetDevCaps(@TimeCaps,SizeOf(TimeCaps));
+  timeGetDevCaps(@TimeCaps, SizeOf(TimeCaps));
   if TIMER_RESOLUTION < TimeCaps.wPeriodMin then
-    TimerPeriod:=TimeCaps.wPeriodMin
+    TimerPeriod := TimeCaps.wPeriodMin
   else if TIMER_RESOLUTION > TimeCaps.wPeriodMax then
-    TimerPeriod:=TimeCaps.wPeriodMax
+    TimerPeriod := TimeCaps.wPeriodMax
   else
-    TimerPeriod:=TIMER_RESOLUTION;
+    TimerPeriod := TIMER_RESOLUTION;
 
   timeBeginPeriod(TimerPeriod);
-  MIDITimerID:=timeSetEvent(TimerPeriod,TimerPeriod,TimerProc,
-                            DWORD(MIDIFileHandle),TIME_PERIODIC);
-  if MIDITimerID=0 then
+  MidiTimerID := timeSetEvent(TimerPeriod, TimerPeriod, TimerProc,
+                            dword(MidiFileHandle), TIME_PERIODIC);
+  if MidiTimerID=0 then
     timeEndPeriod(TimerPeriod);
 end;
 
-procedure KillMIDITimer;
+procedure KillMidiTimer;
 begin
-  timeKillEvent(MIDITimerID);
+  timeKillEvent(MidiTimerID);
   timeEndPeriod(TimerPeriod);
 end;
 
@@ -307,11 +311,11 @@ var
   i: integer;
   pevent: PMidiEvent;
 begin
-  if (event.event = $FF) then
+  if event.event = $FF then
   begin
-    if (event.data1 = 3) then
+    if event.data1 = 3 then
       name := event.str;
-    if (event.data1 = 4) then
+    if event.data1 = 4 then
       instrument := event.str;
   end;
   currentTime := currentTime + event.dticks;
@@ -320,8 +324,8 @@ begin
   events.add(TObject(event));
   command := event.event and $F0;
 
-  if ((command = $80) // note off
-    or ((command = $90) and (event.data2 = 0))) //note on with speed 0
+  if (command = $80) // note off
+    or ((command = $90) and (event.data2 = 0)) //note on with speed 0
   then
   begin
     // this is a note off, try to find the accompanion note on
@@ -331,8 +335,7 @@ begin
     begin
       pevent := PMidiEvent(events[i]);
       if (pevent.event = command) and
-        (pevent.data1 = event.data1)
-        then
+        (pevent.data1 = event.data1) then
       begin
         pevent.len := currentTIme - pevent.time;
         i := 0;
@@ -360,7 +363,7 @@ end;
 
 function TMiditrack.getEvent(index: integer): PMidiEvent;
 begin
-  if ((index < events.count) and (index >= 0)) then
+  if (index < events.count) and (index >= 0) then
     result := events[index]
   else
     result := nil;
@@ -375,36 +378,29 @@ procedure TMiditrack.Rewind(pos: integer);
 begin
   if currentPos = events.count then
     dec(currentPos);
-  while ((currentPos > 0) and
-    (PMidiEvent(events[currentPos]).time > pos))
-    do
-  begin
+  while (currentPos > 0) and
+    (PMidiEvent(events[currentPos]).time > pos) do
     dec(currentPos);
-  end;
   checkReady;
 end;
 
 procedure TMiditrack.PlayUntil(pos: integer);
 begin
   if assigned(OnMidiEvent) then
-  begin
     while ((currentPos < events.count) and
       (PMidiEvent(events[currentPos]).time < pos)) do
     begin
       OnMidiEvent(PMidiEvent(events[currentPos]));
       inc(currentPos);
     end;
-  end;
   checkReady;
 end;
 
 procedure TMidiTrack.GoUntil(pos: integer);
 begin
-  while ((currentPos < events.count) and
-    (PMidiEvent(events[currentPos]).time < pos)) do
-  begin
+  while (currentPos < events.count) and
+    (PMidiEvent(events[currentPos]).time < pos) do
     inc(currentPos);
-  end;
   checkReady;
 end;
 
@@ -433,27 +429,29 @@ end;
 constructor TMidifile.Create(AOwner: TComponent);
 begin
   inherited Create(AOWner);
-  MIDIFileHandle:=AllocateHWnd(WndProc);
+  MidiFileHandle := AllocateHWnd(WndProc);
   chunkData := nil;
   chunkType := illegal;
   Tracks := TList.Create;
-  TimerProc:=@TimerCallBackProc;
-  FPriority:=GetPriorityClass(MIDIFileHandle);
+  TimerProc := @TimerCallBackProc;
+  FPriority := GetPriorityClass(MidiFileHandle);
 end;
 
 destructor TMidifile.Destroy;
 var
   i: integer;
 begin
-  if not (chunkData = nil) then FreeMem(chunkData);
+  if not (chunkData = nil) then
+    FreeMem(chunkData);
   for i := 0 to Tracks.Count - 1 do
     TMidiTrack(Tracks.Items[i]).Free;
   Tracks.Free;
-  SetPriorityClass(MIDIFileHandle,FPriority);
+  SetPriorityClass(MidiFileHandle, FPriority);
 
-  if MIDITimerID<>0 then KillMIDITimer;
+  if MidiTimerID <> 0 then
+    KillMidiTimer;
 
-  DeallocateHWnd(MIDIFileHandle);
+  DeallocateHWnd(MidiFileHandle);
 
   inherited Destroy;
 end;
@@ -501,9 +499,9 @@ begin
   playStartTime := getTickCount;
   playing := true;
 
-  SetPriorityClass(MIDIFileHandle,REALTIME_PRIORITY_CLASS);
+  SetPriorityClass(MidiFileHandle, REALTIME_PRIORITY_CLASS);
 
-  SetMIDITimer;
+  SetMidiTimer;
   currentPos := 0.0;
   currentTime := 0;
 end;
@@ -514,17 +512,17 @@ begin
   PlayStartTime := GetTickCount - currentTime;
   playing := true;
 
-  SetPriorityClass(MIDIFileHandle,REALTIME_PRIORITY_CLASS);
+  SetPriorityClass(MidiFileHandle, REALTIME_PRIORITY_CLASS);
 
-  SetMIDITimer;
+  SetMidiTimer;
 end;
 {$WARNINGS ON}
 
 procedure TMidifile.StopPlaying;
 begin
   playing := false;
-  KillMIDITimer;
-  SetPriorityClass(MIDIFileHandle,FPriority);
+  KillMidiTimer;
+  SetPriorityClass(MidiFileHandle, FPriority);
 end;
 
 function TMidiFile.GetCurrentTime: integer;
@@ -586,7 +584,7 @@ procedure TMidifile.ReadChunkHeader;
 var
   theByte: array[0..7] of byte;
 begin
-  midiFile.Read(theByte[0], 8);
+  MidiFile.Read(theByte[0], 8);
   if (theByte[0] = $4D) and (theByte[1] = $54) then
   begin
     if (theByte[2] = $68) and (theByte[3] = $64) then
@@ -597,9 +595,7 @@ begin
       chunkType := illegal;
   end
   else
-  begin
     chunkType := illegal;
-  end;
   chunkLength := theByte[7] + theByte[6] * $100 + theByte[5] * $10000 + theByte[4] * $1000000;
 end;
 
@@ -608,7 +604,7 @@ begin
   if not (chunkData = nil) then
     FreeMem(chunkData);
   GetMem(chunkData, chunkLength + 10);
-  midiFile.Read(chunkData^, chunkLength);
+  MidiFile.Read(chunkData^, chunkLength);
   chunkIndex := chunkData;
   chunkEnd := PByte(integer(chunkIndex) + integer(chunkLength) - 1);
 end;
@@ -693,7 +689,7 @@ begin
 
               inc(chunkIndex);
               len := ReadVarLength;
-              midiEvent.str    := ReadString(len);
+              midiEvent.str := ReadString(len);
 
               currentTrack.putEvent(midiEvent);
             end;
@@ -826,7 +822,7 @@ end;
 
 function TMidifile.ReadString(l: integer): string;
 var
-  s: PChar;
+  s: Pchar;
   i: integer;
 begin
   GetMem(s, l + 1); ;
@@ -848,10 +844,10 @@ begin
   Tracks.Clear;
   chunkType := illegal;
 
-  midiFile := TBinaryFileStream.Create(FFilename, fmOpenRead);
-  while (midiFile.Position < midiFile.Size) do
+  MidiFile := TBinaryFileStream.Create(FFilename, fmOpenRead);
+  while (MidiFile.Position < MidiFile.Size) do
     ReadChunk;
-  FreeAndNil(midiFile);
+  FreeAndNil(MidiFile);
   numberTracks := Tracks.Count;
 end;
 
@@ -862,16 +858,16 @@ var
 begin
   n := key mod 12;
   case n of
-    0: str := 'C';
-    1: str := 'C#';
-    2: str := 'D';
-    3: str := 'D#';
-    4: str := 'E';
-    5: str := 'F';
-    6: str := 'F#';
-    7: str := 'G';
-    8: str := 'G#';
-    9: str := 'A';
+     0: str := 'C';
+     1: str := 'C#';
+     2: str := 'D';
+     3: str := 'D#';
+     4: str := 'E';
+     5: str := 'F';
+     6: str := 'F#';
+     7: str := 'G';
+     8: str := 'G#';
+     9: str := 'A';
     10: str := 'A#';
     11: str := 'B';
   end;
@@ -889,18 +885,18 @@ begin
 end;
 
 function MyTimeToStr(val: integer): string;
- var
+var
   hour: integer;
-  min: integer;
-  sec: integer;
+  min:  integer;
+  sec:  integer;
   msec: integer;
 begin
   msec := val mod 1000;
-  sec := val div 1000;
-  min := sec div 60;
-  sec := sec mod 60;
+  sec  := val div 1000;
+  min  := sec div 60;
+  sec  := sec mod 60;
   hour := min div 60;
-  min := min mod 60;
+  min  := min mod 60;
   Result := IntToStr(hour) + ':' + IntToLenStr(min, 2) + ':' + IntToLenStr(sec, 2) + '.' + IntToLenStr(msec, 3);
 end;
 
@@ -910,8 +906,9 @@ begin
 end;
 
 function  TMidiFIle.GetTrackLength:integer;
-var i,length : integer;
-    time : extended;
+var
+  i, length: integer;
+  time: extended;
 begin
   length := 0;
   for i := 0 to Tracks.Count - 1 do
@@ -923,7 +920,8 @@ begin
 end;
 
 function  TMidiFIle.Ready: boolean;
-var i : integer;
+var
+  i : integer;
 begin
   result := true;
   for i := 0 to Tracks.Count - 1 do
@@ -934,12 +932,13 @@ end;
 procedure TMidiFile.OnTrackReady;
 begin
   if ready then
-    if assigned(FOnUpdateEvent) then FOnUpdateEvent(self);
+    if assigned(FOnUpdateEvent) then
+      FOnUpdateEvent(self);
 end;
 
 procedure TMidiFile.WndProc(var Msg : TMessage);
 begin
-  with MSG do
+  with Msg do
   begin
     case Msg of
       WM_MULTIMEDIA_TIMER:
@@ -953,7 +952,7 @@ begin
       end;
     else
       begin
-        Result := DefWindowProc(MIDIFileHandle, Msg, wParam, lParam);
+        Result := DefWindowProc(MidiFileHandle, Msg, wParam, lParam);
       end;
     end;
   end;
@@ -965,4 +964,3 @@ begin
 end;
 
 end.
-

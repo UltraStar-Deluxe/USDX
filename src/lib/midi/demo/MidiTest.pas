@@ -5,8 +5,22 @@ unit MidiTest;
 interface
 
 uses
-  Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, MidiFile,  ExtCtrls, MidiOut, MidiType, MidiScope, Grids;
+  Windows,
+  Messages,
+  SysUtils,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  ExtCtrls,
+  Grids,
+  MidiFile,
+  MidiOut,
+  MidiType,
+  MidiScope;
+
 type
   TMidiPlayer = class(TForm)
     OpenDialog1: TOpenDialog;
@@ -33,9 +47,9 @@ type
     procedure cmbInputChange(Sender: TObject);
     procedure MidiFile1UpdateEvent(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    procedure edtBpmKeyPress(Sender: TObject; var Key: Char);
-    procedure TracksGridSelectCell(Sender: TObject; Col, Row: Integer;
-      var CanSelect: Boolean);
+    procedure edtBpmKeyPress(Sender: TObject; var Key: char);
+    procedure TracksGridSelectCell(Sender: TObject; Col, Row: integer;
+      var CanSelect: boolean);
     procedure FormShow(Sender: TObject);
   private
     { Private declarations }
@@ -58,9 +72,9 @@ implementation
 
 procedure TMidiPlayer.Button1Click(Sender: TObject);
 var
-  i,j: integer;
-  track : TMidiTrack;
-  event : PMidiEvent;
+  i, j:  integer;
+  track: TMidiTrack;
+  event: PMidiEvent;
 begin
   if opendialog1.execute then
   begin
@@ -79,7 +93,8 @@ begin
 end;
 
 procedure TMidiPlayer.MidiFile1MidiEvent(event: PMidiEvent);
-var mEvent : TMyMidiEvent;
+var
+  mEvent: TMyMidiEvent;
 begin
   mEvent := TMyMidiEvent.Create;
   if not (event.event = $FF) then
@@ -90,19 +105,16 @@ begin
     midioutput1.PutMidiEvent(mEvent);
   end
   else
-  begin
     if (event.data1 >= 1) and (event.data1 < 15) then
-    begin
       memo2.Lines.add(IntToStr(event.data1) + ' '+ event.str);
-    end
-  end;
   midiScope1.MidiEvent(event.event,event.data1,event.data2);
   mEvent.Destroy;
 end;
 
 procedure TMidiPlayer.SentAllNotesOff;
-var mEvent : TMyMidiEvent;
-channel : integer;
+var
+  mEvent:  TMyMidiEvent;
+  channel: integer;
 begin
   mEvent := TMyMidiEvent.Create;
   for channel:= 0 to 15 do
@@ -149,7 +161,8 @@ end;
 
 
 procedure TMidiPlayer.FormCreate(Sender: TObject);
-var thisDevice : integer;
+var
+  thisDevice: integer;
 begin
   for thisDevice := 0 to MidiOutput1.NumDevs - 1 do
   begin
@@ -183,7 +196,7 @@ begin
   MidiFile1.ContinuePlaying;
 end;
 
-procedure TMidiPlayer.edtBpmKeyPress(Sender: TObject; var Key: Char);
+procedure TMidiPlayer.edtBpmKeyPress(Sender: TObject; var Key: char);
 begin
  if Key = char(13) then
  begin
@@ -195,12 +208,11 @@ begin
 end;
 
 procedure TMidiPlayer.TracksGridSelectCell(Sender: TObject; Col,
-  Row: Integer; var CanSelect: Boolean);
+  Row: integer; var CanSelect: boolean);
 var
-  MidiTrack : TMidiTrack;
-  i         : integer;
-  j         : integer;
-  event     : PMidiEvent;
+  MidiTrack: TMidiTrack;
+  i, j:      integer;
+  event:     PMidiEvent;
 begin
   CanSelect := false;
   if Row < MidiFile1.NumberOfTracks then

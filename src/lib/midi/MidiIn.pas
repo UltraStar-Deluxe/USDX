@@ -7,26 +7,26 @@ unit MidiIn;
 
 {
   Properties:
- DeviceID: 	Windows numeric device ID for the MIDI input device.
+ DeviceID:  Windows numeric device ID for the MIDI input device.
  Between 0 and NumDevs-1.
  Read-only while device is open, exception when changed while open
 
- MIDIHandle:	The input handle to the MIDI device.
+ MIDIHandle:  The input handle to the MIDI device.
  0 when device is not open
  Read-only, runtime-only
 
- MessageCount:	Number of input messages waiting in input buffer
+ MessageCount:  Number of input messages waiting in input buffer
 
- Capacity:	Number of messages input buffer can hold
+ Capacity:  Number of messages input buffer can hold
  Defaults to 1024
  Limited to (64K/event size)
  Read-only when device is open (exception when changed while open)
 
- SysexBufferSize:	Size in bytes of each sysex buffer
+ SysexBufferSize: Size in bytes of each sysex buffer
  Defaults to 10K
  Minimum 0K (no buffers), Maximum 64K-1
 
- SysexBufferCount:	Number of sysex buffers
+ SysexBufferCount:  Number of sysex buffers
  Defaults to 16
  Minimum 0 (no buffers), Maximum (avail mem/SysexBufferSize)
  Check where these buffers are allocated?
@@ -83,7 +83,7 @@ unit MidiIn;
  are removed from the circular buffer by the GetMidiEvent method the buffers are
  put back on the input. If all the buffers are used up there will be no
  more sysex input until at least one sysex event is removed from the input buffer.
- In other	words if you're expecting lots of sysex input you need to set the
+ In other words if you're expecting lots of sysex input you need to set the
  SysexBufferCount property high enough so that you won't run out of
  input buffers before you get a chance to read them with GetMidiEvent.
 
@@ -129,23 +129,23 @@ type
   TMidiInput = class(TComponent)
   private
     Handle: THandle; { Window handle used for callback notification }
-    FDeviceID: Word; { MIDI device ID }
+    FDeviceID: word; { MIDI device ID }
     FMIDIHandle: HMIDIIn; { Handle to input device }
     FState: MidiInputState; { Current device state }
 
-    FError: Word;
-    FSysexOnly: Boolean;
+    FError: word;
+    FSysexOnly: boolean;
 
  { Stuff from MIDIINCAPS }
     FDriverVersion: MMVERSION;
     FProductName: string;
-    FMID: Word; { Manufacturer ID }
-    FPID: Word; { Product ID }
+    FMID: word; { Manufacturer ID }
+    FPID: word; { Product ID }
 
  { Queue }
-    FCapacity: Word; { Buffer capacity }
+    FCapacity: word; { Buffer capacity }
     PBuffer: PCircularBuffer; { Low-level MIDI input buffer created by Open method }
-    FNumdevs: Word; { Number of input devices on system }
+    FNumdevs: word; { Number of input devices on system }
 
  { Events }
     FOnMIDIInput: TNotifyEvent; { MIDI Input arrived }
@@ -153,8 +153,8 @@ type
  { TODO: Some sort of error handling event for MIM_ERROR }
 
  { Sysex }
-    FSysexBufferSize: Word;
-    FSysexBufferCount: Word;
+    FSysexBufferSize: word;
+    FSysexBufferCount: word;
     MidiHdrs: Tlist;
 
     PCtlInfo: PMidiCtlInfo; { Pointer to control info for DLL }
@@ -163,13 +163,13 @@ type
     procedure Prepareheaders;
     procedure UnprepareHeaders;
     procedure AddBuffers;
-    procedure SetDeviceID(DeviceID: Word);
+    procedure SetDeviceID(DeviceID: word);
     procedure SetProductName(NewProductName: string);
-    function GetEventCount: Word;
-    procedure SetSysexBufferSize(BufferSize: Word);
-    procedure SetSysexBufferCount(BufferCount: Word);
-    procedure SetSysexOnly(bSysexOnly: Boolean);
-    function MidiInErrorString(WError: Word): string;
+    function GetEventCount: word;
+    procedure SetSysexBufferSize(BufferSize: word);
+    procedure SetSysexBufferCount(BufferCount: word);
+    procedure SetSysexOnly(bSysexOnly: boolean);
+    function MidiInErrorString(WError: word): string;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -178,12 +178,12 @@ type
     property MIDIHandle: HMIDIIn read FMIDIHandle;
 
     property DriverVersion: MMVERSION read FDriverVersion;
-    property MID: Word read FMID; { Manufacturer ID }
-    property PID: Word read FPID; { Product ID }
+    property MID: word read FMID; { Manufacturer ID }
+    property PID: word read FPID; { Product ID }
 
-    property Numdevs: Word read FNumdevs;
+    property Numdevs: word read FNumdevs;
 
-    property MessageCount: Word read GetEventCount;
+    property MessageCount: word read GetEventCount;
  { TODO: property to select which incoming messages get filtered out }
 
     procedure Open;
@@ -201,21 +201,21 @@ type
  { TODO: Property editor with dropdown list of product names }
     property ProductName: string read FProductName write SetProductName;
 
-    property DeviceID: Word read FDeviceID write SetDeviceID default 0;
-    property Capacity: Word read FCapacity write FCapacity default 1024;
-    property Error: Word read FError;
-    property SysexBufferSize: Word
+    property DeviceID: word read FDeviceID write SetDeviceID default 0;
+    property Capacity: word read FCapacity write FCapacity default 1024;
+    property Error: word read FError;
+    property SysexBufferSize: word
       read FSysexBufferSize
       write SetSysexBufferSize
       default 10000;
-    property SysexBufferCount: Word
+    property SysexBufferCount: word
       read FSysexBufferCount
       write SetSysexBufferCount
       default 16;
-    property SysexOnly: Boolean
+    property SysexOnly: boolean
       read FSysexOnly
       write SetSysexOnly
-      default False;
+      default false;
 
  { Events }
     property OnMidiInput: TNotifyEvent read FOnMidiInput write FOnMidiInput;
@@ -228,8 +228,9 @@ procedure Register;
 {====================================================================}
 implementation
 
-uses Controls,
-     Graphics;
+uses
+  Controls,
+  Graphics;
 
 (* Not used in Delphi 3
 { This is the callback procedure in the external DLL.
@@ -241,9 +242,9 @@ uses Controls,
 function midiHandler(
     hMidiIn: HMidiIn;
     wMsg: UINT;
-    dwInstance: DWORD;
-    dwParam1: DWORD;
-    dwParam2: DWORD): Boolean; stdcall; external 'DELMID32.DLL';
+    dwInstance: dword;
+    dwParam1: dword;
+    dwParam2: dword): boolean; stdcall; external 'DELMID32.DLL';
 {$ENDIF}
 *)
 {-------------------------------------------------------------------}
@@ -253,7 +254,7 @@ begin
   inherited Create(AOwner);
   FState := misCreating;
 
-  FSysexOnly := False;
+  FSysexOnly := false;
   FNumDevs := midiInGetNumDevs;
   MidiHdrs := nil;
 
@@ -279,13 +280,13 @@ end;
 
 destructor TMidiInput.Destroy;
 begin
-  if (FMidiHandle <> 0) then
+  if FMidiHandle <> 0 then
   begin
     Close;
     FMidiHandle := 0;
   end;
 
-  if (PCtlInfo <> nil) then
+  if PCtlInfo <> nil then
     GlobalSharedLockedFree(PCtlinfo^.hMem, PCtlInfo);
 
   DeallocateHwnd(Handle);
@@ -298,9 +299,9 @@ end;
   (e.g. "an invalid parameter was passed to a system function") so
   sort out some proper error strings. }
 
-function TMidiInput.MidiInErrorString(WError: Word): string;
+function TMidiInput.MidiInErrorString(WError: word): string;
 var
-  errorDesc: PChar;
+  errorDesc: Pchar;
 begin
   errorDesc := nil;
   try
@@ -317,7 +318,7 @@ end;
 {-------------------------------------------------------------------}
 { Set the sysex buffer size, fail if device is already open }
 
-procedure TMidiInput.SetSysexBufferSize(BufferSize: Word);
+procedure TMidiInput.SetSysexBufferSize(BufferSize: word);
 begin
   if FState = misOpen then
     raise EMidiInputError.Create('Change to SysexBufferSize while device was open')
@@ -329,7 +330,7 @@ end;
 {-------------------------------------------------------------------}
 { Set the sysex buffer count, fail if device is already open }
 
-procedure TMidiInput.SetSysexBuffercount(Buffercount: Word);
+procedure TMidiInput.SetSysexBuffercount(Buffercount: word);
 begin
   if FState = misOpen then
     raise EMidiInputError.Create('Change to SysexBuffercount while device was open')
@@ -341,7 +342,7 @@ end;
 {-------------------------------------------------------------------}
 { Set the Sysex Only flag to eliminate unwanted short MIDI input messages }
 
-procedure TMidiInput.SetSysexOnly(bSysexOnly: Boolean);
+procedure TMidiInput.SetSysexOnly(bSysexOnly: boolean);
 begin
   FSysexOnly := bSysexOnly;
  { Update the interrupt handler's copy of this property }
@@ -353,14 +354,14 @@ end;
 { Set the Device ID to select a new MIDI input device
   Note: If no MIDI devices are installed, throws an 'Invalid Device ID' exception }
 
-procedure TMidiInput.SetDeviceID(DeviceID: Word);
+procedure TMidiInput.SetDeviceID(DeviceID: word);
 var
   MidiInCaps: TMidiInCaps;
 begin
   if FState = misOpen then
     raise EMidiInputError.Create('Change to DeviceID while device was open')
   else
-    if (DeviceID >= midiInGetNumDevs) then
+    if DeviceID >= midiInGetNumDevs then
       raise EMidiInputError.Create('Invalid device ID')
     else
     begin
@@ -391,7 +392,7 @@ end;
 procedure TMidiInput.SetProductName(NewProductName: string);
 var
   MidiInCaps: TMidiInCaps;
-  testDeviceID: Word;
+  testDeviceID: word;
   testProductName: string;
 begin
   if FState = misOpen then
@@ -414,7 +415,7 @@ begin
           if testProductName = NewProductName then
           begin
             FProductName := NewProductName;
-            Break;
+            break;
           end;
         end;
         if FProductName <> NewProductName then
@@ -432,7 +433,7 @@ end;
 
 procedure TMidiInput.PrepareHeaders;
 var
-  ctr: Word;
+  ctr: word;
   MyMidiHdr: TMyMidiHdr;
 begin
   if (FSysexBufferCount > 0) and (FSysexBufferSize > 0)
@@ -448,7 +449,7 @@ begin
               structure so we can get back to the object when a pointer to the
               MIDIHDR is received.
               E.g. see TMidiOutput.Output method }
-      MyMidiHdr.hdrPointer^.dwUser := DWORD(MyMidiHdr);
+      MyMidiHdr.hdrPointer^.dwUser := dword(MyMidiHdr);
 
    { Get MMSYSTEM's blessing for this header }
       FError := midiInPrepareHeader(FMidiHandle, MyMidiHdr.hdrPointer,
@@ -468,9 +469,9 @@ end;
 
 procedure TMidiInput.UnprepareHeaders;
 var
-  ctr: Word;
+  ctr: word;
 begin
-  if (MidiHdrs <> nil) then { will be Nil if 0 sysex buffers }
+  if MidiHdrs <> nil then { will be nil if 0 sysex buffers }
   begin
     for ctr := 0 to MidiHdrs.Count - 1 do
     begin
@@ -491,9 +492,9 @@ end;
 
 procedure TMidiInput.AddBuffers;
 var
-  ctr: Word;
+  ctr: word;
 begin
-  if MidiHdrs <> nil then { will be Nil if 0 sysex buffers }
+  if MidiHdrs <> nil then { will be nil if 0 sysex buffers }
   begin
     if MidiHdrs.Count > 0 then
     begin
@@ -517,11 +518,11 @@ var
 begin
   try
   { Create the buffer for the MIDI input messages }
-    if (PBuffer = nil) then
+    if PBuffer = nil then
       PBuffer := CircBufAlloc(FCapacity);
 
   { Create the control info for the DLL }
-    if (PCtlInfo = nil) then
+    if PCtlInfo = nil then
     begin
       PCtlInfo := GlobalSharedLockedAlloc(Sizeof(TMidiCtlInfo), hMem);
       PctlInfo^.hMem := hMem;
@@ -530,11 +531,11 @@ begin
     Pctlinfo^.hWindow := Handle; { Control's window handle }
     PCtlInfo^.SysexOnly := FSysexOnly;
     FError := midiInOpen(@FMidiHandle, FDeviceId,
-      DWORD(@midiHandler),
-      DWORD(PCtlInfo),
+      dword(@midiHandler),
+      dword(PCtlInfo),
       CALLBACK_FUNCTION);
 
-    if (FError <> MMSYSERR_NOERROR) then
+    if FError <> MMSYSERR_NOERROR then
    { TODO: use CreateFmtHelp to add MIDI device name/ID to message }
       raise EMidiInputError.Create(MidiInErrorString(FError));
 
@@ -576,7 +577,7 @@ begin
     with thisItem do
     begin
       Result.Time := Timestamp;
-      if (Sysex = nil) then
+      if Sysex = nil then
       begin
     { Short message }
         Result.MidiMessage := LoByte(LoWord(Data));
@@ -618,7 +619,7 @@ end;
 
 {-------------------------------------------------------------------}
 
-function TMidiInput.GetEventCount: Word;
+function TMidiInput.GetEventCount: word;
 begin
   if FState = misOpen then
     Result := PBuffer^.EventCount
@@ -654,7 +655,7 @@ begin
 
     FMidiHandle := 0;
 
-    if (PBuffer <> nil) then
+    if PBuffer <> nil then
     begin
       CircBufFree(PBuffer);
       PBuffer := nil;

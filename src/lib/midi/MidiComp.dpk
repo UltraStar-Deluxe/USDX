@@ -1,9 +1,9 @@
-package midiComp;
+package MidiComp;
 
 {$R *.RES}
 {$R 'MidiFile.dcr'}
-{$R 'Midiin.dcr'}
-{$R 'Midiout.dcr'}
+{$R 'MidiIn.dcr'}
+{$R 'MidiOut.dcr'}
 {$R 'MidiScope.dcr'}
 {$ALIGN ON}
 {$ASSERTIONS ON}
@@ -34,12 +34,12 @@ requires
   vcl50;
 
 contains
-  Miditype in 'Miditype.pas',
-  Mididefs in 'Mididefs.pas',
+  MidiType in 'MidiType.pas',
+  MidiDefs in 'MidiDefs.pas',
   MidiFile in 'MidiFile.pas',
-  Midiin in 'Midiin.pas',
-  Midiout in 'Midiout.pas',
+  MidiIn in 'MidiIn.pas',
+  MidiOut in 'MidiOut.pas',
   MidiScope in 'MidiScope.pas',
-  Midicons in 'Midicons.pas';
+  MidiCons in 'MidiCons.pas';
 
 end.
