@@ -121,20 +121,18 @@ uses
   projectM      in 'lib\projectM\projectM.pas',
   {$ENDIF}
 
+  MidiCons      in 'lib\midi\MidiCons.pas',
   {$IFDEF MSWINDOWS}
+  CircBuf       in 'lib\midi\CircBuf.pas',
+  DelphiMcb     in 'lib\midi\DelphiMcb.pas',
+  MidiDefs      in 'lib\midi\MidiDefs.pas',
+  MidiFile      in 'lib\midi\MidiFile.pas',
+//  MidiOut       in 'lib\midi\MidiOut.pas',
+  MidiType      in 'lib\midi\MidiType.pas',
   {$IFDEF FPC}
   // FPC compatibility file for Allocate/DeallocateHWnd
   WinAllocation in 'lib\other\WinAllocation.pas',
   {$ENDIF}
-
-  MidiOut       in 'lib\midi\MidiOut.pas',
-  CircBuf       in 'lib\midi\CircBuf.pas',
-  MidiType      in 'lib\midi\MidiType.pas',
-  MidiDefs      in 'lib\midi\MidiDefs.pas',
-  MidiCons      in 'lib\midi\MidiCons.pas',
-  MidiFile      in 'lib\midi\MidiFile.pas',
-  DelphiMcb     in 'lib\midi\DelphiMcb.pas',
-
   DirWatch      in 'lib\other\DirWatch.pas',
   {$ENDIF}
 
