@@ -91,7 +91,7 @@ type
    *
    * The log and benchmark files are stored in
    * $HOME/Library/Log/UltraStar Deluxe/
-   * 
+   *
    * Music should go into ~/Music/UltraStar Deluxe/
    *
    * ~/Library/Application Support/UltraStarDeluxe/songs is also used.
@@ -161,7 +161,13 @@ type
 implementation
 
 uses
-  SysUtils;
+  SysUtils,
+  MacOSAll;
+
+type
+  TLogSwitch = (On, Off);
+const
+  LogSwitch: TLogSwitch = Off;
 
 procedure TPlatformMacOSX.Init;
 begin
@@ -194,17 +200,43 @@ var
   DirectoryPath:    IPath;
   UserPath:         IPath;
   SrcFile, TgtFile: IPath;
+  mainBundle:       CFBundleRef;
+  resourcesURL:     CFURLRef;
+  bundlePath:       AnsiString;
+  success:          boolean;
+  Position:         integer;
+const
+  PATH_MAX = 500;
+
 begin
   // Get the current folder and save it in OldBaseDir for returning to it, when
   // finished.
   OldBaseDir := FileSystem.GetCurrentDir();
+  if LogSwitch = On then
+    writeln('Old base directory: ' + OldBaseDir.ToNative);
 
   // UltraStarDeluxe.app/Contents contains all the default files and folders.
-  BaseDir := OldBaseDir.Append('UltraStarDeluxe.app/Contents');
+  mainBundle := CFBundleGetMainBundle();
+  resourcesURL := CFBundleCopyResourcesDirectoryURL(mainBundle);
+  SetLength(bundlePath, PATH_MAX);
+  success := CFURLGetFileSystemRepresentation(resourcesURL, TRUE, PChar(bundlePath), PATH_MAX);
+  if not success then
+    writeln('CreateUserFolders:CFURLGetFileSystemRepresentation unexpectedly failed.');
+  CFRelease(resourcesURL);
+  if LogSwitch = On then
+    writeln('BundlePath: ', bundlePath);
+  Position := pos('UltraStarDeluxe.app', bundlePath);
+  setlength(bundlePath, Position + 19);
+  if success then
+    chdir(bundlePath);
+  BaseDir := FileSystem.GetCurrentDir();
+  BaseDir := BaseDir.Append('Contents');
   FileSystem.SetCurrentDir(BaseDir);
 
   // Right now, only $HOME/Library/Application Support/UltraStarDeluxe is used.
   UserPath := GetGameUserPath();
+  if LogSwitch = On then
+    writeln('User path: ' + UserPath.ToNative);
 
   DirectoryIsFinished := 0;
   // replace with IInterfaceList
@@ -217,21 +249,23 @@ begin
     RelativePath := (DirectoryList[DirectoryIsFinished] as IPath);
     FileSystem.SetCurrentDir(BaseDir.Append(RelativePath));
     Iter := FileSystem.FileFind(Path('*'), faAnyFile);
-    while (Iter.HasNext) do    
+    while (Iter.HasNext) do
     begin
       FileInfo := Iter.Next;
       CurPath := FileInfo.Name;
+      if LogSwitch = On then
+        writeln('Current path: ' + CurPath.ToNative);
       if CurPath.IsDirectory() then
       begin
-        if (not CurPath.Equals('.')) and 
-	   (not CurPath.Equals('..')) and 
-	   (not CurPath.Equals('MacOS')) then
+        if (not CurPath.Equals('.')) and
+           (not CurPath.Equals('..')) and
+           (not CurPath.Equals('MacOS')) then
           DirectoryList.Add(RelativePath.Append(CurPath));
       end
       else
         Filelist.Add(RelativePath.Append(CurPath));
     end;
-    Inc(DirectoryIsFinished);
+    inc(DirectoryIsFinished);
   until (DirectoryIsFinished = DirectoryList.Count);
 
   // create missing folders
@@ -239,20 +273,27 @@ begin
   for I := 0 to DirectoryList.Count-1 do
   begin
     CurPath          := DirectoryList[I] as IPath;
+    if LogSwitch = On then
+      writeln('Current path: ' + CurPath.ToNative);
     DirectoryPath    := UserPath.Append(CurPath);
+    if LogSwitch = On then
+      writeln('Directory path: ' + DirectoryPath.ToNative);
     CreatedDirectory := DirectoryPath.CreateDirectory();
     FileAttrs        := DirectoryPath.GetAttr();
     // Maybe analyse the target of the link with FpReadlink().
     // Let's assume the symlink is pointing to an existing directory.
     if (not CreatedDirectory) and (FileAttrs and faSymLink > 0) then
-      Log.LogError('Failed to create the folder "'+ DirectoryPath.ToNative +'"',
-                   'TPlatformMacOSX.CreateUserFolders');
+      writeln('Failed to create the folder "' +
+              DirectoryPath.ToNative +
+              '" in PlatformMacOSX.CreateUserFolders');
   end;
 
   // copy missing files
   for I := 0 to Filelist.Count-1 do
   begin
     CurPath := Filelist[I] as IPath;
+    if LogSwitch = On then
+      writeln('Current path: ' + CurPath.ToNative);
     SrcFile := BaseDir.Append(CurPath);
     TgtFile := UserPath.Append(CurPath);
     SrcFile.CopyFile(TgtFile, true);
@@ -267,11 +308,15 @@ begin
   // Mac applications are packaged in folders.
   // Cutting the last two folders yields the application folder.
   Result := GetExecutionDir().GetParent().GetParent();
+  if LogSwitch = On then
+    writeln('Bundle path: ' + Result.ToNative);
 end;
 
 function TPlatformMacOSX.GetHomeDir: IPath;
 begin
   Result := Path(GetEnvironmentVariable('HOME'));
+  if LogSwitch = On then
+    writeln('Home path: ' + Result.ToNative);
 end;
 
 function TPlatformMacOSX.GetApplicationSupportPath: IPath;
@@ -287,6 +332,8 @@ end;
 function TPlatformMacOSX.GetMusicPath: IPath;
 begin
   Result := GetHomeDir.Append('Music/UltraStar Deluxe', pdAppend);
+  if LogSwitch = On then
+    writeln('Music path: ' + Result.ToNative);
 end;
 
 function TPlatformMacOSX.GetGameSharedPath: IPath;
