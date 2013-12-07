@@ -450,8 +450,8 @@ macosx-standalone-app: macosx-app
 	$(shell $(INSTALL_NAME_TOOL) -change $(finkLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 	$(shell $(INSTALL_NAME_TOOL) -id @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 
-# codesigning
-	codesign -f -s USDX-codesign UltraStarDeluxe.app
+# do  not forget to sign the code
+#	codesign -f -s USDX-codesign UltraStarDeluxe.app
 
 # final messages
 	@echo "Standalone Mac OS X application created."
