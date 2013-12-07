@@ -27,111 +27,6 @@
  *
  *)
 
-type
-  TAVOptionType = (
-{$IFDEF FF_API_OLD_AVOPTIONS}
-    FF_OPT_TYPE_FLAGS = 0,
-    FF_OPT_TYPE_INT,
-    FF_OPT_TYPE_INT64,
-    FF_OPT_TYPE_DOUBLE,
-    FF_OPT_TYPE_FLOAT,
-    FF_OPT_TYPE_STRING,
-    FF_OPT_TYPE_RATIONAL,
-    FF_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
-    FF_OPT_TYPE_CONST = 128
-{$ELSE}
-    AV_OPT_TYPE_FLAGS,
-    AV_OPT_TYPE_INT,
-    AV_OPT_TYPE_INT64,
-    AV_OPT_TYPE_DOUBLE,
-    AV_OPT_TYPE_FLOAT,
-    AV_OPT_TYPE_STRING,
-    AV_OPT_TYPE_RATIONAL,
-    AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
-    AV_OPT_TYPE_CONST = 128,
-    AV_OPT_TYPE_PIXEL_FMT  = $50464D54, ///< MKBETAG('P','F','M','T')
-    AV_OPT_TYPE_SAMPLE_FMT = $53464D54, ///< MKBETAG('S','F','M','T')
-    AV_OPT_TYPE_IMAGE_SIZE = $53495A45  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
-{$ENDIF}
-  );
-
-const
-  AV_OPT_FLAG_ENCODING_PARAM  = 1;   ///< a generic parameter which can be set by the user for muxing or encoding
-  AV_OPT_FLAG_DECODING_PARAM  = 2;   ///< a generic parameter which can be set by the user for demuxing or decoding
-  AV_OPT_FLAG_METADATA        = 4;   ///< some data extracted or inserted into the file like title, comment, ...
-  AV_OPT_FLAG_AUDIO_PARAM     = 8;
-  AV_OPT_FLAG_VIDEO_PARAM     = 16;
-  AV_OPT_FLAG_SUBTITLE_PARAM  = 32;
-  AV_OPT_FLAG_FILTERING_PARAM = 1 shl 16; ///< a generic parameter which can be set by the user for filtering
-
-type
-  (**
-   * AVOption
-   *)
-  PAVOption = ^TAVOption;
-  TAVOption = record
-    name: {const} PAnsiChar;
-    
-    (**
-     * short English help text
-     * @todo What about other languages?
-     *)
-    help: {const} PAnsiChar;
-
-    (**
-     * The offset relative to the context structure where the option
-     * value is stored. It should be 0 for named constants.
-     *)
-    offset: cint;
-    type_: TAVOptionType;
-
-    (**
-     * the default value for scalar options
-     *)
-    default_val: record
-      case cint of
-        0: (i64: cint64);
-        1: (dbl: cdouble);
-        2: (str: PAnsiChar);
-        (* TODO those are unused now *)
-        3: (q: TAVRational);
-      end;
-    min: cdouble;                ///< minimum valid value for the option
-    max: cdouble;                ///< maximum valid value for the option
-
-    flags: cint;
-//FIXME think about enc-audio, ... style flags
-
-    (**
-     * The logical unit to which the option belongs. Non-constant
-     * options and corresponding named constants share the same
-     * unit. May be NULL.
-     *)
-    unit_: {const} PAnsiChar;
-  end;
-
-  (**
-   * A single allowed range of values, or a single allowed value.
-   *)
-  PAVOptionRange  = ^TAVOptionRange;
-  PPAVOptionRange = ^PAVOptionRange;
-  TAVOptionRange = record
-    str: {const} PAnsiChar;
-    value_min, value_max: cdouble;             ///< For string ranges this represents the min/max length, for dimensions this represents the min/max pixel count
-    component_min, component_max: cdouble;     ///< For string this represents the unicode range for chars, 0-127 limits to ASCII
-    is_range: cint;                            ///< if set to 1 the struct encodes a range, if set to 0 a single value
-  end;
-
-  (**
-   * List of AVOptionRange structs
-   *)
-  PAVOptionRanges  = ^TAVOptionRanges;
-  PPAVOptionRanges = ^PAVOptionRanges;
-  TAVOptionRanges = record
-    range:     PPAVOptionRange;
-    nb_ranges: cint;
-  end;
-
 {$IFDEF FF_API_FIND_OPT}
 (**
  * Look for an option in obj. Look only for the options which
@@ -359,11 +254,17 @@ const
  * @return 0 on success, a negative number on failure.
  *)
 function av_opt_eval_flags (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; flags_out:  Pcint):       cint;
+  cdecl; external av__util;
 function av_opt_eval_int   (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; int_out:    Pcint):       cint;
+  cdecl; external av__util;
 function av_opt_eval_int64 (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; int64_out:  Pcint64):     cint;
+  cdecl; external av__util;
 function av_opt_eval_float (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; float_out:  Pcfloat):     cint;
+  cdecl; external av__util;
 function av_opt_eval_double(obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; double_out: Pcdouble):    cint;
+  cdecl; external av__util;
 function av_opt_eval_q     (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; q_out:      PAVRational): cint;
+  cdecl; external av__util;
 (**
  * @}
  *)
