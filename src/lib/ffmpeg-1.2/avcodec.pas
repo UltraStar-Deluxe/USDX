@@ -658,10 +658,10 @@ type
     AV_CODEC_ID_Y41P        = $59343150, // MKBETAG('Y','4','1','P'),
     AV_CODEC_ID_YUV4        = $59555634, // MKBETAG('Y','U','V','4'),
     AV_CODEC_ID_EIA_608     = $63363038, // MKBETAG('c','6','0','8'),
-    AV_CODEC_ID_MICRODVD    = $6D445644  // MKBETAG('m','D','V','D')
+    AV_CODEC_ID_MICRODVD    = $6D445644, // MKBETAG('m','D','V','D'),
     AV_CODEC_ID_EVRC        = $73657663, // MKBETAG('s','e','v','c'),
     AV_CODEC_ID_SMV         = $73736D76, // MKBETAG('s','s','m','v'),
-    AV_CODEC_ID_TAK         = $7442614B, // MKBETAG('t','B','a','K'),
+    AV_CODEC_ID_TAK         = $7442614B  // MKBETAG('t','B','a','K')
   );
 
 type
@@ -682,7 +682,8 @@ const
  * @see avcodec_get_descriptor()
  *)
 type
-  record AVCodecDescriptor =
+  PAVCodecDescriptor = ^TAVCodecDescriptor;
+  TAVCodecDescriptor = record
     id: TAVCodecID;
     type_: TAVMediaType;
     (**
@@ -722,7 +723,7 @@ const
  *)
   AV_CODEC_PROP_BITMAP_SUB     = 1 << 16;
 
-{$IF FF_API_OLD_DECODE_AUDIO}
+{$IFDEF FF_API_OLD_DECODE_AUDIO}
 (* in bytes *)
   AVCODEC_MAX_AUDIO_FRAME_SIZE = 192000; // 1 second of 48khz 32bit audio
 {$IFEND}
@@ -1517,6 +1518,7 @@ type
  * av_opt_ptr() can be reordered. This allows 2 forks to add fields
  * without breaking compatibility with each other.
  *)
+  PPAVFrame = ^PAVFrame;
   PAVFrame = ^TAVFrame;
   TAVFrame = record
     (**
@@ -1556,7 +1558,7 @@ type
      * encoding: set by user
      * decoding: set by AVCodecContext.get_buffer()
      *)
-    extended_data: pointer of pbyte;
+    extended_data: ^pbyte;
 
     (**
      * width and height of the video frame
@@ -1919,49 +1921,6 @@ type
      pkt_size: cint;
   end; {TAVFrame}
 
-(**
- * Accessors for some AVFrame fields.
- * The position of these field in the structure is not part of the ABI,
- * they should not be accessed directly outside libavcodec.
- *)
-function  av_frame_get_best_effort_timestamp(frame: {const} PAVFrame): cint64;
-  cdecl; external av__codec;
-procedure av_frame_set_best_effort_timestamp(frame: PAVFrame; val: cint64);
-  cdecl; external av__codec;
-function  av_frame_get_pkt_duration         (frame: {const} PAVFrame): cint64;
-  cdecl; external av__codec;
-procedure av_frame_get_pkt_duration         (frame: PAVFrame; val: cint64);
-  cdecl; external av__codec;
-function  av_frame_get_pkt_pos              (frame: {const} PAVFrame): cint64;
-  cdecl; external av__codec;
-procedure av_frame_get_pkt_pos              (frame: PAVFrame; val: cint64);
-  cdecl; external av__codec;
-function  av_frame_get_channel_layout       (frame: {const} PAVFrame): cint64;
-  cdecl; external av__codec;
-procedure av_frame_get_channel_layout       (frame: PAVFrame; val: cint64);
-  cdecl; external av__codec;
-function  av_frame_get_channels             (frame: {const} PAVFrame): cint;
-  cdecl; external av__codec;
-procedure av_frame_set_channels             (frame: PAVFrame; val: cint);
-  cdecl; external av__codec;
-function  av_frame_get_sample_rate          (frame: {const} PAVFrame): cint;
-  cdecl; external av__codec;
-procedure av_frame_set_sample_rate          (frame: PAVFrame; val: cint);
-  cdecl; external av__codec;
-function  av_frame_get_metadata             (frame: {const} PAVFrame): PAVDictionary;
-  cdecl; external av__codec;
-procedure av_frame_set_metadata             (frame: PAVFrame; val: PAVDictionary);
-  cdecl; external av__codec;
-function  av_frame_get_decode_error_flags   (frame: {const} PAVFrame): cint;
-  cdecl; external av__codec;
-procedure av_frame_set_decode_error_flags   (frame: PAVFrame; val: cint);
-  cdecl; external av__codec;
-function  av_frame_get_pkt_size(frame: {const} PAVFrame): cint;
-  cdecl; external av__codec;
-procedure av_frame_set_pkt_size(frame: PAVFrame; val: cint);
-  cdecl; external av__codec;
-
-type
   TAVCodecInternal = record
   end;
   PAVCodecInternal = ^TAVCodecInternal;
@@ -1989,6 +1948,16 @@ type
     AV_FIELD_TB,          //< Top coded first, bottom displayed first
     AV_FIELD_BT          //< Bottom coded first, top displayed first
     );
+
+(**
+ * four components are given, that's all.
+ * the last component is alpha
+ *)
+  PAVPicture = ^TAVPicture;
+  TAVPicture = record
+    data: array [0..AV_NUM_DATA_POINTERS - 1] of PByteArray;
+    linesize: array [0..AV_NUM_DATA_POINTERS - 1] of cint;       ///< number of bytes per line
+  end; {TAVPicture}
 
 (**
  * main external API structure.
@@ -2035,7 +2004,7 @@ type
      *)
     stream_codec_tag: cuint;
 
-{$IF FF_API_SUB_ID}
+{$IFDEF FF_API_SUB_ID}
     (**
      * @deprecated this field is unused
      *)
@@ -2779,7 +2748,7 @@ type
      *)
     cutoff: cint;
 
-{$IF FF_API_REQUEST_CHANNELS}
+{$IFDEF FF_API_REQUEST_CHANNELS}
     (**
      * Decoder should decode to this many channels if it can (0 for default)
      * - encoding: unused
@@ -3231,7 +3200,7 @@ type
      *)
     idct_algo: cint;
 
-{$IF FF_API_DSP_MASK}
+{$IFDEF FF_API_DSP_MASK}
     (**
      * Unused.
      * @deprecated use av_set_cpu_flags_mask() instead.
@@ -3474,12 +3443,6 @@ const
   FF_SUB_CHARENC_MODE_AUTOMATIC   = 0;   ///< libavcodec will select the mode itself
   FF_SUB_CHARENC_MODE_PRE_DECODER = 1;   ///< the AVPacket data needs to be recoded to UTF-8 before being fed to the decoder, requires iconv
 
-  function  av_codec_get_pkt_timebase(avctx: {const} PAVCodecContext): TAVRational;
-  procedure av_codec_set_pkt_timebase(avctx: {const} PAVCodecContext; val: TAVRational);
-
-  function  av_codec_get_codec_descriptor(avctx: {const} PAVCodecContext): PAVCodecDescriptor;
-  procedure av_codec_set_codec_descriptor(avctx: {const} PAVCodecContext; desc: {const} PAVCodecDescriptor);
-
 type
   (**
    * AVProfile.
@@ -3490,8 +3453,62 @@ type
     name: {const} PAnsiChar; ///< short name for the profile
   end; {TAVProfile}
 
+  TAVSubtitleType = (
+    SUBTITLE_NONE,
+
+    SUBTITLE_BITMAP,                ///< A bitmap, pict will be set
+
+    (**
+     * Plain text, the text field must be set by the decoder and is
+     * authoritative. ass and pict fields may contain approximations.
+     *)
+    SUBTITLE_TEXT,
+
+    (**
+     * Formatted text, the ass field must be set by the decoder and is
+     * authoritative. pict and text fields may contain approximations.
+     *)
+    SUBTITLE_ASS
+  ); {TAVSubtitleType}
+
+  PPAVSubtitleRect = ^PAVSubtitleRect;
+  PAVSubtitleRect = ^TAVSubtitleRect;
+  TAVSubtitleRect = record
+    x: cint;        ///< top left corner  of pict, undefined when pict is not set
+    y: cint;        ///< top left corner  of pict, undefined when pict is not set
+    w: cint;        ///< width            of pict, undefined when pict is not set
+    h: cint;        ///< height           of pict, undefined when pict is not set
+    nb_colors: cint; ///< number of colors in pict, undefined when pict is not set
+
+    (**
+     * data+linesize for the bitmap of this subtitle.
+     * can be set for text/ass as well once they where rendered
+     *)
+    pict: TAVPicture;
+    type_: TAVSubtitleType;
+
+    text: PAnsiChar;                     ///< 0 terminated plain UTF-8 text
+
+    (**
+     * 0 terminated ASS/SSA compatible event line.
+     * The presentation of this is unaffected by the other values in this
+     * struct.
+     *)
+    ass: PAnsiChar;
+
+    flags: cint;
+  end; {TAVSubtitleRect}
+
+  PPAVSubtitle = ^PAVSubtitle;
+  PAVSubtitle = ^TAVSubtitle;
   TAVSubtitle = record
-  end;
+    format: cuint16; (* 0 = graphics *)
+    start_display_time: cuint32; (* relative to packet pts, in ms *)
+    end_display_time: cuint32; (* relative to packet pts, in ms *)
+    num_rects: cuint;
+    rects: PPAVSubtitleRect;
+    pts: cint64;     ///< Same as packet pts, in AV_TIME_BASE
+  end; {TAVSubtitle}
 
 (**
  * AVCodec.
@@ -3690,79 +3707,59 @@ type
  *)
 
 (**
- * four components are given, that's all.
- * the last component is alpha
+ * Accessors for some AVFrame fields.
+ * The position of these field in the structure is not part of the ABI,
+ * they should not be accessed directly outside libavcodec.
  *)
-  PAVPicture = ^TAVPicture;
-  TAVPicture = record
-    data: array [0..AV_NUM_DATA_POINTERS - 1] of PByteArray;
-    linesize: array [0..AV_NUM_DATA_POINTERS - 1] of cint;       ///< number of bytes per line
-  end; {TAVPicture}
+function  av_frame_get_best_effort_timestamp(frame: {const} PAVFrame): cint64;
+  cdecl; external av__codec; overload;
+procedure av_frame_set_best_effort_timestamp(frame: PAVFrame; val: cint64);
+  cdecl; external av__codec; overload;
+function  av_frame_get_pkt_duration         (frame: {const} PAVFrame): cint64;
+  cdecl; external av__codec; overload;
+procedure av_frame_get_pkt_duration         (frame: PAVFrame; val: cint64);
+  cdecl; external av__codec; overload;
+function  av_frame_get_pkt_pos              (frame: {const} PAVFrame): cint64;
+  cdecl; external av__codec; overload;
+procedure av_frame_get_pkt_pos              (frame: PAVFrame; val: cint64);
+  cdecl; external av__codec; overload;
+function  av_frame_get_channel_layout       (frame: {const} PAVFrame): cint64;
+  cdecl; external av__codec; overload;
+procedure av_frame_get_channel_layout       (frame: PAVFrame; val: cint64);
+  cdecl; external av__codec; overload;
+function  av_frame_get_channels             (frame: {const} PAVFrame): cint;
+  cdecl; external av__codec;
+procedure av_frame_set_channels             (frame: PAVFrame; val: cint);
+  cdecl; external av__codec;
+function  av_frame_get_sample_rate          (frame: {const} PAVFrame): cint;
+  cdecl; external av__codec;
+procedure av_frame_set_sample_rate          (frame: PAVFrame; val: cint);
+  cdecl; external av__codec;
+function  av_frame_get_metadata             (frame: {const} PAVFrame): PAVDictionary;
+  cdecl; external av__codec;
+procedure av_frame_set_metadata             (frame: PAVFrame; val: PAVDictionary);
+  cdecl; external av__codec;
+function  av_frame_get_decode_error_flags   (frame: {const} PAVFrame): cint;
+  cdecl; external av__codec;
+procedure av_frame_set_decode_error_flags   (frame: PAVFrame; val: cint);
+  cdecl; external av__codec;
+function  av_frame_get_pkt_size             (frame: {const} PAVFrame): cint;
+  cdecl; external av__codec;
+procedure av_frame_set_pkt_size             (frame: PAVFrame; val: cint);
+  cdecl; external av__codec;
 
-/**
- * @}
- */
+function  av_codec_get_pkt_timebase(avctx: {const} PAVCodecContext): TAVRational;
+  cdecl; external av__codec;
+procedure av_codec_set_pkt_timebase(avctx: {const} PAVCodecContext; val: TAVRational);
+  cdecl; external av__codec;
+
+function  av_codec_get_codec_descriptor(avctx: {const} PAVCodecContext): PAVCodecDescriptor;
+  cdecl; external av__codec;
+procedure av_codec_set_codec_descriptor(avctx: {const} PAVCodecContext; desc: {const} PAVCodecDescriptor);
+  cdecl; external av__codec;
 
 const
   AV_SUBTITLE_FLAG_FORCED = $00000001;
-
-type
-  TAVSubtitleType = (
-    SUBTITLE_NONE,
-
-    SUBTITLE_BITMAP,                ///< A bitmap, pict will be set
-
-    (**
-     * Plain text, the text field must be set by the decoder and is
-     * authoritative. ass and pict fields may contain approximations.
-     *)
-    SUBTITLE_TEXT,
-
-    (**
-     * Formatted text, the ass field must be set by the decoder and is
-     * authoritative. pict and text fields may contain approximations.
-     *)
-    SUBTITLE_ASS
-  ); {TAVSubtitleType}
-
-  PPAVSubtitleRect = ^PAVSubtitleRect;
-  PAVSubtitleRect = ^TAVSubtitleRect;
-  TAVSubtitleRect = record
-    x: cint;        ///< top left corner  of pict, undefined when pict is not set
-    y: cint;        ///< top left corner  of pict, undefined when pict is not set
-    w: cint;        ///< width            of pict, undefined when pict is not set
-    h: cint;        ///< height           of pict, undefined when pict is not set
-    nb_colors: cint; ///< number of colors in pict, undefined when pict is not set
-
-    (**
-     * data+linesize for the bitmap of this subtitle.
-     * can be set for text/ass as well once they where rendered
-     *)
-    pict: TAVPicture;
-    type_: TAVSubtitleType;
-
-    text: PAnsiChar;                     ///< 0 terminated plain UTF-8 text
-
-    (**
-     * 0 terminated ASS/SSA compatible event line.
-     * The presentation of this is unaffected by the other values in this
-     * struct.
-     *)
-    ass: PAnsiChar;
-
-    flags: cint;
-  end; {TAVSubtitleRect}
-
-  PPAVSubtitle = ^PAVSubtitle;
-  PAVSubtitle = ^TAVSubtitle;
-  TAVSubtitle = record
-    format: cuint16; (* 0 = graphics *)
-    start_display_time: cuint32; (* relative to packet pts, in ms *)
-    end_display_time: cuint32; (* relative to packet pts, in ms *)
-    num_rects: cuint;
-    rects: PPAVSubtitleRect;
-    pts: cint64;     ///< Same as packet pts, in AV_TIME_BASE
-  end; {TAVSubtitle}
 
 (**
  * If c is NULL, returns the first registered codec,
@@ -3815,7 +3812,7 @@ procedure avcodec_register(codec: PAVCodec);
 procedure avcodec_register_all();
   cdecl; external av__codec;
 
-{$IF FF_API_ALLOC_CONTEXT}
+{$IFDEF FF_API_ALLOC_CONTEXT}
 (**
  * Allocate an AVCodecContext and sets it fields to default values.  The
  * resulting struct can be deallocated by simply calling av_free().
@@ -3947,7 +3944,7 @@ procedure avcodec_get_frame_defaults(frame: PAVFrame);
 procedure avcodec_free_frame(frame: PPAVFrame);
   cdecl; external av__codec;
 
-{$IF FF_API_AVCODEC_OPEN}
+{$IFDEF FF_API_AVCODEC_OPEN}
 (**
  * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
  * function the context has to be allocated.
@@ -4092,7 +4089,7 @@ procedure av_shrink_packet(pkt: PAVPacket; size: cint);
  * @param pkt packet
  * @param grow_by number of bytes by which to increase the size of the packet
  *)
-function av_grow_packet(pkt: PAVPacket;  grow_by: cint): cint;
+function av_grow_packet(pkt: PAVPacket; grow_by: cint): cint;
   cdecl; external av__codec;
 
 (*
@@ -4160,15 +4157,6 @@ function av_packet_merge_side_data(pkt: PAVPacket): cint;
 function av_packet_split_side_data(pkt: PAVPacket): cint;
   cdecl; external av__codec;
 
-/**
- * @}
- */
-
-/**
- * @addtogroup lavc_decoding
- * @{
- */
-
 (**
  * Find a registered decoder with a matching codec ID.
  *
@@ -4229,7 +4217,7 @@ procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PC
                                     linesize_align: PAVNDPArray);
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_DECODE_AUDIO}
+{$IFDEF FF_API_OLD_DECODE_AUDIO}
 (**
  * Wrapper function which calls avcodec_decode_audio4.
  *
@@ -4386,10 +4374,10 @@ function avcodec_decode_subtitle2(avctx: PAVCodecContext; sub: PAVSubtitle;
                           avpkt: PAVPacket): cint;
   cdecl; external av__codec;
 
-/**
+(**
  * @defgroup lavc_parsing Frame parsing
  * @{
- */
+ *)
 
 const
   AV_PARSER_PTS_NB      = 4;
@@ -4629,7 +4617,7 @@ function avcodec_find_encoder(id: TAVCodecID): PAVCodec;
 function avcodec_find_encoder_by_name(name: PAnsiChar): PAVCodec;
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_ENCODE_AUDIO}
+{$IFDEF FF_API_OLD_ENCODE_AUDIO}
 (**
  * Encode an audio frame from samples into buf.
  *
@@ -4702,7 +4690,7 @@ function avcodec_encode_audio2(avctx: PAVCodecContext; avpkt: PAVPacket;
                           frame: {const} PAVFrame; got_packet_ptr: Pcint): cint;
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_ENCODE_AUDIO}
+{$IFDEF FF_API_OLD_ENCODE_AUDIO}
 (**
  * @deprecated use avcodec_encode_video2() instead.
  *
@@ -4869,7 +4857,7 @@ procedure av_resample_close (c: PAVResampleContext);
 
 (**
  * @addtogroup lavc_picture
- * @{
+ * @
  *)
 
 (**
@@ -4970,14 +4958,14 @@ function av_picture_pad(dst: PAVPicture; src: {const} PAVPicture;
  *
  * Miscellaneous utility functions related to both encoding and decoding
  * (or neither).
- * @{
+ * @
  *)
 
 (**
  * @defgroup lavc_misc_pixfmt Pixel formats
  *
  * Functions for working with pixel formats.
- * @{
+ * @
  *)
 
 (**
@@ -5121,7 +5109,7 @@ function avcodec_find_best_pix_fmt_of_list(pix_fmt_list: PAVPixelFormat;
  * @return The best pixel format to convert to or -1 if none was found.
  *)
 function avcodec_find_best_pix_fmt_of_2(dst_pix_fmt1: TAVPixelFormat; dst_pix_fmt2: TAVPixelFormat;
-                                        src_pix_fmt: TAVPixelFormat; has_alpha: cint; loss_ptr: Pcint)): TAVPixelFormat;
+                                        src_pix_fmt: TAVPixelFormat; has_alpha: cint; loss_ptr: Pcint): TAVPixelFormat;
   cdecl; external av__codec;
 
 {$IFDEF AV_HAVE_INCOMPATIBLE_FORK_ABI}
@@ -5145,6 +5133,7 @@ function avcodec_default_get_format(s: PAVCodecContext; fmt: {const} PAVPixelFor
 procedure avcodec_set_dimensions(s: PAVCodecContext; width: cint; height: cint);
   cdecl; external av__codec;
 
+(**
  * Put a string representing the codec tag codec_tag in buf.
  *
  * @param buf_size size in bytes of buf
@@ -5248,7 +5237,7 @@ function av_get_exact_bits_per_sample(codec_id: TAVCodecID): cint;
  * @return             frame duration, in samples, if known. 0 if not able to
  *                     determine.
  *)
-function av_get_audio_frame_duration(avctx: PAVCodecContext, frame_bytes: cint): cint;
+function av_get_audio_frame_duration(avctx: PAVCodecContext; frame_bytes: cint): cint;
   cdecl; external av__codec;
 
 type
