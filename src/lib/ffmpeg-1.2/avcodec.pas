@@ -36,6 +36,8 @@ unit avcodec;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$I switches.inc}  (* for ffmpeg defines *)
+
 {$IFDEF DARWIN}
   {$linklib libavcodec}
 {$ENDIF}

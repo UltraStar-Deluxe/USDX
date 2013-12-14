@@ -81,7 +81,11 @@ uses
 const
 {$IFDEF PIXEL_FMT_BGR}
   PIXEL_FMT_OPENGL = GL_BGR;
+  {$IF FFMPEG_VERSION_INT < 1001000}
   PIXEL_FMT_FFMPEG = PIX_FMT_BGR24;
+  {$ELSE}
+  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGR24;
+  {$ENDIF}
   PIXEL_FMT_SIZE   = 3;
 
   // looks strange on linux:
@@ -91,7 +95,11 @@ const
 {$ELSE}
   // looks strange on linux:
   PIXEL_FMT_OPENGL = GL_RGB;
-  PIXEL_FMT_FFMPEG = PIX_FMT_RGB24;
+  {$IF FFMPEG_VERSION_INT < 1001000}
+  PIXEL_FMT_FFMPEG = PIX_FMT_BGR24;
+  {$ELSE}
+  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGR24;
+  {$ENDIF}
   PIXEL_FMT_SIZE   = 3;
 {$ENDIF}
 
@@ -634,7 +642,11 @@ function TVideo_FFmpeg.DecodeFrame(): boolean;
 var
   FrameFinished: Integer;
   VideoPktPts: int64;
+  {$IF FFMPEG_VERSION_INT < 1001000}
   pbIOCtx: PByteIOContext;
+  {$ELSE}
+  pbIOCtx: PAVIOContext;
+  {$ENDIF}
   errnum: integer;
   AVPacket: TAVPacket;
   pts: double;

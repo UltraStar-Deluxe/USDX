@@ -97,6 +97,7 @@
 {$IFDEF HaveFFmpeg}
   {$DEFINE UseFFmpegDecoder}
   {$DEFINE UseFFmpegResample}
+  {$DEFINE FF_API_AVCODEC_RESAMPLE}
   {$DEFINE UseFFmpegVideo}
   {$IFDEF HaveSWScale}
     {$DEFINE UseSWScale}
