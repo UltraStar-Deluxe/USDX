@@ -20,12 +20,15 @@
   {$IFNDEF FFMPEG_DIR}
     {$IF (8 > 0) or (0 > 0)}
       {$DEFINE FFMPEG_DIR := 'ffmpeg-0.8'}
+      {$DEFINE FF_API_OLD_DECODE_AUDIO}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
       {$DEFINE useOLD_FFMPEG}
     {$IFEND}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
+    FFMPEG_VERSION_INT = 8000;
+
     av__codec = 'libavcodec';
     LIBAVCODEC_VERSION_MAJOR   = 53;
     LIBAVCODEC_VERSION_MINOR   = 8;

@@ -690,7 +690,11 @@ function TFFmpegDecodeStream.ParseLoop(): boolean;
 var
   Packet: TAVPacket;
   SeekTarget: int64;
+  {$IF FFMPEG_VERSION_INT < 1001000}
   ByteIOCtx: PByteIOContext;
+  {$ELSE}
+  ByteIOCtx: PAVIOContext;
+  {$ENDIF}
   ErrorCode: integer;
   StartSilence: double;       // duration of silence at start of stream
   StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
