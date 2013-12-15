@@ -374,6 +374,11 @@ begin
   // set debug options
   fCodecCtx^.debug_mv := 0;
   fCodecCtx^.debug := 0;
+	
+  {$IF FFMPEG_VERSION_INT > 1001000}
+	// set requested sample format
+	fCodecCtx^.request_sample_fmt := AV_SAMPLE_FMT_S16;
+  {$IFEND}
 
   // detect bug-workarounds automatically
   fCodecCtx^.workaround_bugs := FF_BUG_AUTODETECT;
