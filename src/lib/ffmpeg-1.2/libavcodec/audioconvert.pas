@@ -231,7 +231,7 @@ function av_get_channel_description(uint64_t channel: cuint64): PAnsiChar;
  *          <0 if index is beyond the limits
  *)
 function av_get_standard_channel_layout(index: cuint; layout: Pcuint64;
-                                   name: {const} PPAnsiChar): cint;
+                                        name: {const} PPAnsiChar): cint;
   cdecl; external av__util;
 
 (** libavcodec/audioconvert.h **)
