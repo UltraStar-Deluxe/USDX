@@ -351,18 +351,15 @@ end;
 
 function TMediaCore_FFmpeg.ConvertFFmpegToAudioFormat(FFmpegFormat: TAVSampleFormat; out Format: TAudioSampleFormat): boolean;
 begin
+	Result := true;
   case FFmpegFormat of
     AV_SAMPLE_FMT_U8:  Format := asfU8;
     AV_SAMPLE_FMT_S16: Format := asfS16;
     AV_SAMPLE_FMT_S32: Format := asfS32;
     AV_SAMPLE_FMT_FLT: Format := asfFloat;
     AV_SAMPLE_FMT_DBL: Format := asfDouble;
-    else begin
-      Result := false;
-      Exit;
-    end;
+    else               Result := false;
   end;
-  Result := true;
 end;
 
 
