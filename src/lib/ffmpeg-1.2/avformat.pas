@@ -55,7 +55,7 @@ uses
 const
   (*
    * IMPORTANT: This headers are valid for all minor revisions of ffmpeg 
-   * version 1.1.x
+   * version 1.2.x
    *)
   (* Max. supported version by this header *)
   LIBAVFORMAT_MAX_VERSION_MAJOR   = 54;
@@ -547,12 +547,12 @@ type
 
   PPAVStream = ^PAVStream;
   PAVStream = ^TAVStream;
+
   PAVPacketList = ^TAVPacketList;
   TAVPacketList = record
     pkt: TAVPacket;
     next: PAVPacketList;
   end; (*AVPacketList*)
-
 
   PPAVProgram = ^PAVProgram;
   PAVProgram = ^TAVProgram;
