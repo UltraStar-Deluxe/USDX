@@ -376,7 +376,10 @@ begin
   fCodecCtx^.debug := 0;
 	
   {$IF FFMPEG_VERSION_INT > 1001000}
-	// set requested sample format
+	// request required sample format
+	// reference:
+	// http://stackoverflow.com/questions/16479662/ffmpeg-1-0-causing-audio-playback-issues
+	// without this avcodec_open2 returns AV_SAMPLE_FMT_S16P
 	fCodecCtx^.request_sample_fmt := AV_SAMPLE_FMT_S16;
   {$IFEND}
 
