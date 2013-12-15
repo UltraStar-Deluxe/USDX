@@ -137,16 +137,16 @@ begin
 
   Result := false;
 
-  if (not ConvertAudioFormatToSDL(srcFormatInfo.Format, srcFormat) or
-      not ConvertAudioFormatToSDL(dstFormatInfo.Format, dstFormat)) then
+  if not ConvertAudioFormatToSDL(srcFormatInfo.Format, srcFormat) or
+     not ConvertAudioFormatToSDL(dstFormatInfo.Format, dstFormat) then
   begin
     Log.LogError('Audio-format not supported by SDL', 'TSoftMixerPlaybackStream.InitFormatConversion');
     Exit;
   end;
 
-  if (SDL_BuildAudioCVT(@cvt,
+  if SDL_BuildAudioCVT(@cvt,
     srcFormat, srcFormatInfo.Channels, Round(srcFormatInfo.SampleRate),
-    dstFormat, dstFormatInfo.Channels, Round(dstFormatInfo.SampleRate)) = -1) then
+    dstFormat, dstFormatInfo.Channels, Round(dstFormatInfo.SampleRate)) = -1 then
   begin
     Log.LogError(SDL_GetError(), 'TSoftMixerPlaybackStream.InitFormatConversion');
     Exit;
@@ -177,14 +177,15 @@ begin
   Result := cvt.len_ratio;
 end;
 
-function TAudioConverter_SDL.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer;
+function TAudioConverter_SDL.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
+                                     var InputSize: integer): integer;
 begin
   Result := -1;
 
-  if (InputSize <= 0) then
+  if InputSize <= 0 then
   begin
     // avoid div-by-zero problems
-    if (InputSize = 0) then
+    if InputSize = 0 then
       Result := 0;
     Exit;
   end;
@@ -193,16 +194,16 @@ begin
   Move(InputBuffer[0], OutputBuffer[0], InputSize);
   cvt.buf := PUint8(OutputBuffer);
   cvt.len := InputSize;
-  if (SDL_ConvertAudio(@cvt) = -1) then
+  if SDL_ConvertAudio(@cvt) = -1 then
     Exit;
 
   Result := cvt.len_cvt;
 end;
 
-
 {$IFDEF UseFFmpegResample}
 
-function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean;
+function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo;
+                                     DstFormatInfo: TAudioFormatInfo): boolean;
 begin
   inherited Init(SrcFormatInfo, DstFormatInfo);
 
@@ -210,14 +211,18 @@ begin
 
   // Note: ffmpeg does not support resampling for more than 2 input channels
 
-  if (srcFormatInfo.Format <> asfS16) then
+  if srcFormatInfo.Format <> asfS16 then
   begin
     Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
+    Log.LogError('asfS16: ' + intToStr(integer(asfS16))
+		             + ' (should be 7)', 'TAudioConverter_FFmpeg.Init');
+    Log.LogError('srcFormatInfo.Format: ' + intToStr(integer(srcFormatInfo.Format))
+		             + ' (exit because <> asfS16)', 'TAudioConverter_FFmpeg.Init');
     Exit;
   end;
 
   // TODO: use SDL here
-  if (srcFormatInfo.Format <> dstFormatInfo.Format) then
+  if srcFormatInfo.Format <> dstFormatInfo.Format then
   begin
     Log.LogError('Incompatible formats', 'TAudioConverter_FFmpeg.Init');
     Exit;
@@ -234,7 +239,7 @@ begin
       AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S16,
       16, 10, 0, 0.8);
   {$IFEND}
-  if (ResampleContext = nil) then
+  if ResampleContext = nil then
   begin
     Log.LogError('audio_resample_init() failed', 'TAudioConverter_FFmpeg.Init');
     Exit;
@@ -249,22 +254,23 @@ end;
 
 destructor TAudioConverter_FFmpeg.Destroy();
 begin
-  if (ResampleContext <> nil) then
+  if ResampleContext <> nil then
     audio_resample_close(ResampleContext);
   inherited;
 end;
 
-function TAudioConverter_FFmpeg.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer;
+function TAudioConverter_FFmpeg.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
+                                        var InputSize: integer): integer;
 var
   InputSampleCount: integer;
   OutputSampleCount: integer;
 begin
   Result := -1;
 
-  if (InputSize <= 0) then
+  if InputSize <= 0 then
   begin
     // avoid div-by-zero in audio_resample()
-    if (InputSize = 0) then
+    if InputSize = 0 then
       Result := 0;
     Exit;
   end;
@@ -273,7 +279,7 @@ begin
   OutputSampleCount := audio_resample(
       ResampleContext, PSmallInt(OutputBuffer), PSmallInt(InputBuffer),
       InputSampleCount);
-  if (OutputSampleCount = -1) then
+  if OutputSampleCount = -1 then
   begin
     Log.LogError('audio_resample() failed', 'TAudioConverter_FFmpeg.Convert');
     Exit;
@@ -293,10 +299,10 @@ end;
 
 {$ENDIF}
 
-
 {$IFDEF UseSRCResample}
 
-function TAudioConverter_SRC.Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean;
+function TAudioConverter_SRC.Init(SrcFormatInfo: TAudioFormatInfo;
+                                  DstFormatInfo: TAudioFormatInfo): boolean;
 var
   error: integer;
   TempSrcFormatInfo: TAudioFormatInfo;
@@ -309,8 +315,8 @@ begin
   FormatConverter := nil;
 
   // SRC does not handle channel or format conversion
-  if ((SrcFormatInfo.Channels <> DstFormatInfo.Channels) or
-      not (SrcFormatInfo.Format in [asfS16, asfFloat])) then
+  if (SrcFormatInfo.Channels <> DstFormatInfo.Channels) or
+      not (SrcFormatInfo.Format in [asfS16, asfFloat]) then
   begin
     // SDL can not convert to float, so we have to convert to SInt16 first
     TempSrcFormatInfo := TAudioFormatInfo.Create(
@@ -320,7 +326,7 @@ begin
 
     // init format/channel conversion
     FormatConverter := TAudioConverter_SDL.Create();
-    if (not FormatConverter.Init(TempSrcFormatInfo, TempDstFormatInfo)) then
+    if not FormatConverter.Init(TempSrcFormatInfo, TempDstFormatInfo) then
     begin
       Log.LogError('Unsupported input format', 'TAudioConverter_SRC.Init');
       FormatConverter.Free;
@@ -332,7 +338,7 @@ begin
     TempDstFormatInfo.Free;
 
     // leave if the format is not supported
-    if (not assigned(FormatConverter)) then
+    if not assigned(FormatConverter) then
       Exit;
 
     // adjust our copy of the input audio-format for SRC conversion
@@ -340,22 +346,22 @@ begin
     Self.SrcFormatInfo.Format := asfS16;
   end;
 
-  if ((DstFormatInfo.Format <> asfS16) and
-      (DstFormatInfo.Format <> asfFloat)) then
+  if (DstFormatInfo.Format <> asfS16) and
+     (DstFormatInfo.Format <> asfFloat) then
   begin
     Log.LogError('Unsupported output format', 'TAudioConverter_SRC.Init');
     Exit;
   end;
 
   ConversionData.src_ratio := DstFormatInfo.SampleRate / SrcFormatInfo.SampleRate;
-  if (src_is_valid_ratio(ConversionData.src_ratio) = 0) then
+  if src_is_valid_ratio(ConversionData.src_ratio) = 0 then
   begin
     Log.LogError('Invalid samplerate ratio', 'TAudioConverter_SRC.Init');
     Exit;
   end;
 
   ConverterState := src_new(SRC_CONVERTER_TYPE, DstFormatInfo.Channels, @error);
-  if (ConverterState = nil) then
+  if ConverterState = nil then
   begin
     Log.LogError('src_new() failed: ' + src_strerror(error), 'TAudioConverter_SRC.Init');
     Exit;
@@ -366,13 +372,14 @@ end;
 
 destructor TAudioConverter_SRC.Destroy();
 begin
-  if (ConverterState <> nil) then
+  if ConverterState <> nil then
     src_delete(ConverterState);
   FormatConverter.Free;
   inherited;
 end;
 
-function TAudioConverter_SRC.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer;
+function TAudioConverter_SRC.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
+                                     var InputSize: integer): integer;
 var
   FloatInputBuffer: PSingle;
   FloatOutputBuffer: PSingle;
@@ -387,7 +394,7 @@ begin
   TempBuffer := nil;
 
   // format conversion with external converter (to correct number of channels and format)
-  if (assigned(FormatConverter)) then
+  if assigned(FormatConverter) then
   begin
     TempSize := FormatConverter.GetOutputBufferSize(InputSize);
     GetMem(TempBuffer, TempSize);
@@ -395,20 +402,22 @@ begin
     InputBuffer := TempBuffer;
   end;
 
-  if (InputSize <= 0) then
+  if InputSize <= 0 then
   begin
     // avoid div-by-zero problems
-    if (InputSize = 0) then
+    if InputSize = 0 then
       Result := 0;
-    if (TempBuffer <> nil) then
+    if TempBuffer <> nil then
       FreeMem(TempBuffer);
     Exit;
   end;
 
-  if (SrcFormatInfo.Format = asfFloat) then
+  if SrcFormatInfo.Format = asfFloat then
   begin
     FloatInputBuffer := PSingle(InputBuffer);
-  end else begin
+  end
+	else
+	begin
     NumSamples := InputSize div AudioSampleSize[SrcFormatInfo.Format];
     GetMem(FloatInputBuffer, NumSamples * SizeOf(Single));
     src_short_to_float_array(PCshort(InputBuffer), PCfloat(FloatInputBuffer), NumSamples);
@@ -417,10 +426,12 @@ begin
   // calculate approx. output size
   OutputSize := Ceil(InputSize * ConversionData.src_ratio);
 
-  if (DstFormatInfo.Format = asfFloat) then
+  if DstFormatInfo.Format = asfFloat then
   begin
     FloatOutputBuffer := PSingle(OutputBuffer);
-  end else begin
+  end
+	else
+	begin
     NumSamples := OutputSize div AudioSampleSize[DstFormatInfo.Format];
     GetMem(FloatOutputBuffer, NumSamples * SizeOf(Single));
   end;
@@ -436,22 +447,22 @@ begin
   end;
 
   error := src_process(ConverterState, @ConversionData);
-  if (error <> 0) then
+  if error <> 0 then
   begin
     Log.LogError(src_strerror(error), 'TAudioConverter_SRC.Convert');
-    if (SrcFormatInfo.Format <> asfFloat) then
+    if SrcFormatInfo.Format <> asfFloat then
       FreeMem(FloatInputBuffer);
-    if (DstFormatInfo.Format <> asfFloat) then
+    if DstFormatInfo.Format <> asfFloat then
       FreeMem(FloatOutputBuffer);
-    if (TempBuffer <> nil) then
+    if TempBuffer <> nil then
       FreeMem(TempBuffer);
     Exit;
   end;
 
-  if (SrcFormatInfo.Format <> asfFloat) then
+  if SrcFormatInfo.Format <> asfFloat then
     FreeMem(FloatInputBuffer);
 
-  if (DstFormatInfo.Format <> asfFloat) then
+  if DstFormatInfo.Format <> asfFloat then
   begin
     NumSamples := ConversionData.output_frames_gen * DstFormatInfo.Channels;
     src_float_to_short_array(PCfloat(FloatOutputBuffer), PCshort(OutputBuffer), NumSamples);
@@ -459,10 +470,10 @@ begin
   end;
 
   // free format conversion buffer if used
-  if (TempBuffer <> nil) then
+  if TempBuffer <> nil then
     FreeMem(TempBuffer);
 
-  if (assigned(FormatConverter)) then
+  if assigned(FormatConverter) then
     InputSize := ConversionData.input_frames_used * FormatConverter.SrcFormatInfo.FrameSize
   else
     InputSize := ConversionData.input_frames_used * SrcFormatInfo.FrameSize;
@@ -479,7 +490,7 @@ end;
 function TAudioConverter_SRC.GetRatio(): double;
 begin
   // if we need additional channel/format conversion, use this ratio
-  if (assigned(FormatConverter)) then
+  if assigned(FormatConverter))then
     Result := FormatConverter.GetRatio()
   else
     Result := 1.0;
