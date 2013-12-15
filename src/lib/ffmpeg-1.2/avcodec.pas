@@ -1185,6 +1185,7 @@ const
   FF_DEBUG_VIS_QP       = $00002000;
   FF_DEBUG_VIS_MB_TYPE  = $00004000;
   FF_DEBUG_BUFFERS      = $00008000;
+	FF_DEBUG_THREADS      = $00010000;
 
   FF_DEBUG_VIS_MV_P_FOR  = $00000001; //visualize forward predicted MVs of P frames
   FF_DEBUG_VIS_MV_B_FOR  = $00000002; //visualize forward predicted MVs of B frames
