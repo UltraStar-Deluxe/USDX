@@ -3403,7 +3403,7 @@ type
      * - encoding unused.
      * - decodimg set by user
      *)
-    pkt_timebase: PAVRational;
+    pkt_timebase: TAVRational;
 
     (**
      * AVCodecDescriptor
