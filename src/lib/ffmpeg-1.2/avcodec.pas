@@ -1020,6 +1020,11 @@ const
   CODEC_CAP_VARIABLE_FRAME_SIZE = $10000;
 
 (**
+ * Codec is intra only.
+ *)
+  CODEC_CAP_INTRA_ONLY       = $40000000;
+
+(**
  * Codec is lossless.
  *)
   CODEC_CAP_LOSSLESS         = $80000000;
