@@ -362,7 +362,6 @@ begin
   end;
 end;
 
-
 {**
  * UTF-8 Filename wrapper based on:
  * http://www.mail-archive.com/libav-user@mplayerhq.hu/msg02460.html
