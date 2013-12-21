@@ -662,7 +662,8 @@ type
     AV_CODEC_ID_MICRODVD    = $6D445644, // MKBETAG('m','D','V','D'),
     AV_CODEC_ID_EVRC        = $73657663, // MKBETAG('s','e','v','c'),
     AV_CODEC_ID_SMV         = $73736D76, // MKBETAG('s','s','m','v'),
-    AV_CODEC_ID_TAK         = $7442614B  // MKBETAG('t','B','a','K')
+    AV_CODEC_ID_TAK         = $7442614B  // MKBETAG('t','B','a','K'),
+
   );
 
 type
@@ -1190,7 +1191,7 @@ const
   FF_DEBUG_VIS_QP       = $00002000;
   FF_DEBUG_VIS_MB_TYPE  = $00004000;
   FF_DEBUG_BUFFERS      = $00008000;
-	FF_DEBUG_THREADS      = $00010000;
+  FF_DEBUG_THREADS      = $00010000;
 
   FF_DEBUG_VIS_MV_P_FOR  = $00000001; //visualize forward predicted MVs of P frames
   FF_DEBUG_VIS_MV_B_FOR  = $00000002; //visualize forward predicted MVs of B frames
@@ -1406,7 +1407,6 @@ type
     size: cint;
     type_: AVPacketSideDataType;
   end;
-
   PAVPacketSideDataType = ^TAVPacketSideDataType;
 
 (**
@@ -4788,7 +4788,7 @@ type
                                  filter_length: cint; log2_phase_count: cint;
                                  linear: cint; cutoff: cdouble): PReSampleContext;
   cdecl; external av__codec; deprecated;
-          
+
 function audio_resample (s: PReSampleContext; output: PSmallint; input: PSmallint; nb_samples: cint): cint;
   cdecl; external av__codec; deprecated;
 
@@ -4909,7 +4909,7 @@ function avpicture_get_size (pix_fmt: TAVPixelFormat; width: cint; height: cint)
 
 {$IFDEF FF_API_DEINTERLACE}
 (**
- * deinterlace - if not supported return -1 *)
+ * deinterlace - if not supported return -1
  *
  * @deprecated - use yadif (in libavfilter) instead
  *)

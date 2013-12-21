@@ -128,8 +128,6 @@ type
     AV_CLASS_CATEGORY_NB ///< not part of ABI/API
   );
 
-type
-
 // struct AVOptionRanges;
 
   (**
