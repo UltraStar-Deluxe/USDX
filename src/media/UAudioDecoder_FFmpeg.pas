@@ -375,7 +375,7 @@ begin
   fCodecCtx^.debug_mv := 0;
   fCodecCtx^.debug := 0;
 	
-  {$IF FFMPEG_VERSION_INT > 1001000}
+  {$IF FFMPEG_VERSION_INT >= 1001000}
 	// request required sample format
 	// reference:
 	// http://stackoverflow.com/questions/16479662/ffmpeg-1-0-causing-audio-playback-issues
