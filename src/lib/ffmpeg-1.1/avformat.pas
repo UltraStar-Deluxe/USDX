@@ -465,7 +465,7 @@ const
                                        increasing timestamps, but they must
                                        still be monotonic *)
  
-  AVFMT_SEEK_TO_PTS   = $4000000 (**< Seeking is based on PTS *)
+  AVFMT_SEEK_TO_PTS   = $4000000; (**< Seeking is based on PTS *)
 
   // used by AVIndexEntry
   AVINDEX_KEYFRAME = $0001;
@@ -475,8 +475,8 @@ const
 
   MAX_STREAMS = 20;
 
-  AVFMT_FLAG_GENPTS          =  $0001;   ///< Generate missing pts even if it requires parsing future frames.
-  AVFMT_FLAG_IGNIDX          =  $0002;   ///< Ignore index.
+  AVFMT_FLAG_GENPTS          =  $0001; ///< Generate missing pts even if it requires parsing future frames.
+  AVFMT_FLAG_IGNIDX          =  $0002; ///< Ignore index.
   AVFMT_FLAG_NONBLOCK        =  $0004; ///< Do not block when reading packets from input.
   AVFMT_FLAG_IGNDTS          =  $0008; ///< Ignore DTS on frames that contain both DTS & PTS
   AVFMT_FLAG_NOFILLIN        =  $0010; ///< Do not infer any values from other values, just return what is stored in the container
@@ -511,9 +511,9 @@ const
    * even when user did not explicitly ask for subtitles.
    *)
   AV_DISPOSITION_FORCED    = $0040;
-  AV_DISPOSITION_HEARING_IMPAIRED = $0080;  /**< stream for hearing impaired audiences */
-  AV_DISPOSITION_VISUAL_IMPAIRED  = $0100;  /**< stream for visual impaired audiences */
-  AV_DISPOSITION_CLEAN_EFFECTS    = $0200;  /**< stream without voice */
+  AV_DISPOSITION_HEARING_IMPAIRED = $0080;  (**< stream for hearing impaired audiences *)
+  AV_DISPOSITION_VISUAL_IMPAIRED  = $0100;  (**< stream for visual impaired audiences *)
+  AV_DISPOSITION_CLEAN_EFFECTS    = $0200;  (**< stream without voice *)
 (**
  * The stream is stored in the file as an attached picture/"cover art" (e.g.
  * APIC frame in ID3v2). The single packet associated with it will be returned
@@ -547,7 +547,12 @@ type
 
   PPAVStream = ^PAVStream;
   PAVStream = ^TAVStream;
+
   PAVPacketList = ^TAVPacketList;
+  TAVPacketList = record
+    pkt: TAVPacket;
+    next: PAVPacketList;
+  end; (*AVPacketList*)
 
   PPAVProgram = ^PAVProgram;
   PAVProgram = ^TAVProgram;
@@ -775,17 +780,14 @@ type
                           max_ts:       cint64;
                           flags:        cint): cint; cdecl;
   end;
-(**
- * @}
- *)
  
   TAVStreamParseType = (
     AVSTREAM_PARSE_NONE,
     AVSTREAM_PARSE_FULL,       (**< full parsing and repack *)
     AVSTREAM_PARSE_HEADERS,    (**< Only parse headers, do not repack. *)
     AVSTREAM_PARSE_TIMESTAMPS, (**< full parsing and interpolation of timestamps for frames not starting on a packet boundary *)
-    AVSTREAM_PARSE_FULL_ONCE   (**< full parsing and repack of the first frame only, only implemented for H.264 currently *)
-    AVSTREAM_PARSE_FULL_RAW = $57415230; // MKTAG(0,'R','A','W'),
+    AVSTREAM_PARSE_FULL_ONCE,  (**< full parsing and repack of the first frame only, only implemented for H.264 currently *)
+    AVSTREAM_PARSE_FULL_RAW = $57415230 // MKTAG(0,'R','A','W'),
                                (**< full parsing and repack with timestamp and position generation by parser for raw
                                     this assumes that each packet in the file contains no demuxer level headers and
                                     just codec level data, otherwise position generation would fail *)
@@ -1137,7 +1139,7 @@ type
      * iformat/oformat.flags. In such a case, the (de)muxer will handle
      * I/O in some other way and this field will be NULL.
      *)
-     pb: PByteIOContext;
+    pb: PByteIOContext;
 
     (* stream info *)
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)
@@ -1393,7 +1395,7 @@ type
      *)
     raw_packet_buffer_remaining_size: cint;
 
-end;
+  end;
 
 (**
  * Returns the method used to set ctx->duration.
@@ -1403,18 +1405,13 @@ end;
 function av_fmt_ctx_get_duration_estimation_method(ctx: {const} PAVFormatContext): TAVDurationEstimationMethod;
   cdecl; external av__format;
 
-  TAVPacketList = record
-    pkt: TAVPacket;
-    next: PAVPacketList;
-  end; (*AVPacketList*)
-
 (**
  * @defgroup lavf_core Core functions
  * @ingroup libavf
  *
  * Functions for querying libavformat capabilities, allocating core structures,
  * etc.
- * @{
+ * @
  *)
 
 (**
@@ -1572,7 +1569,7 @@ function avformat_alloc_output_context2(ctx: PPAVFormatContext; oformat: PAVOutp
 
 (**
  * @addtogroup lavf_decoding
- * @{
+ * @
  *)
 
 (**
@@ -1631,7 +1628,8 @@ function av_probe_input_format3(pd: PAVProbeData; is_opened: cint; score_ret: Pc
  *)
 function av_probe_input_buffer(pb: PAVIOContext; var fmt: PAVInputFormat;
                           filename: {const} PAnsiChar; logctx: pointer;
-                          offset: cuint; max_probe_size: cuint);
+                          offset: cuint; max_probe_size: cuint): cint;
+  cdecl; external av__format;
   
 (**
  * Open an input stream and read the header. The codecs are not opened.

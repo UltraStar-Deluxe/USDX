@@ -29,6 +29,88 @@
  *)
 
 type
+  TAVOptionType = (
+{$IFDEF FF_API_OLD_AVOPTIONS}
+    FF_OPT_TYPE_FLAGS = 0,
+    FF_OPT_TYPE_INT,
+    FF_OPT_TYPE_INT64,
+    FF_OPT_TYPE_DOUBLE,
+    FF_OPT_TYPE_FLOAT,
+    FF_OPT_TYPE_STRING,
+    FF_OPT_TYPE_RATIONAL,
+    FF_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
+    FF_OPT_TYPE_CONST = 128
+{$ELSE}
+    AV_OPT_TYPE_FLAGS,
+    AV_OPT_TYPE_INT,
+    AV_OPT_TYPE_INT64,
+    AV_OPT_TYPE_DOUBLE,
+    AV_OPT_TYPE_FLOAT,
+    AV_OPT_TYPE_STRING,
+    AV_OPT_TYPE_RATIONAL,
+    AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
+    AV_OPT_TYPE_CONST = 128,
+    AV_OPT_TYPE_PIXEL_FMT  = $50464D54, ///< MKBETAG('P','F','M','T'),
+    AV_OPT_TYPE_IMAGE_SIZE = $53495A45  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
+{$ENDIF}
+  );
+
+const
+  AV_OPT_FLAG_ENCODING_PARAM  = 1;   ///< a generic parameter which can be set by the user for muxing or encoding
+  AV_OPT_FLAG_DECODING_PARAM  = 2;   ///< a generic parameter which can be set by the user for demuxing or decoding
+  AV_OPT_FLAG_METADATA        = 4;   ///< some data extracted or inserted into the file like title, comment, ...
+  AV_OPT_FLAG_AUDIO_PARAM     = 8;
+  AV_OPT_FLAG_VIDEO_PARAM     = 16;
+  AV_OPT_FLAG_SUBTITLE_PARAM  = 32;
+  AV_OPT_FLAG_FILTERING_PARAM = 1 shl 16; ///< a generic parameter which can be set by the user for filtering
+
+type
+  (**
+   * AVOption
+   *)
+  PAVOption = ^TAVOption;
+  TAVOption = record
+    name: {const} PAnsiChar;
+    
+    (**
+     * short English help text
+     * @todo What about other languages?
+     *)
+    help: {const} PAnsiChar;
+
+    (**
+     * The offset relative to the context structure where the option
+     * value is stored. It should be 0 for named constants.
+     *)
+    offset: cint;
+    type_: TAVOptionType;
+
+    (**
+     * the default value for scalar options
+     *)
+    default_val: record
+      case cint of
+        0: (i64: cint64);
+        1: (dbl: cdouble);
+        2: (str: PAnsiChar);
+        (* TODO those are unused now *)
+        3: (q: TAVRational);
+      end;
+    min: cdouble;                ///< minimum valid value for the option
+    max: cdouble;                ///< maximum valid value for the option
+
+    flags: cint;
+//FIXME think about enc-audio, ... style flags
+
+    (**
+     * The logical unit to which the option belongs. Non-constant
+     * options and corresponding named constants share the same
+     * unit. May be NULL.
+     *)
+    unit_: {const} PAnsiChar;
+  end;
+
+type
   PAVClassCategory = ^TAVClassCategory;
   TAVClassCategory = (
     AV_CLASS_CATEGORY_NA = 0,
@@ -109,7 +191,6 @@ type
      * child_class_next iterates over _all possible_ children.
      *)
     child_class_next: function (prev: {const} PAVClass): {const} PAVClass; cdecl;
-
 
     (**
      * Category used for visualization (like color)
