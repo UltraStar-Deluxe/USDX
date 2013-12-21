@@ -1352,7 +1352,7 @@ function av_fmt_ctx_get_duration_estimation_method(ctx: {const} PAVFormatContext
  *
  * Functions for querying libavformat capabilities, allocating core structures,
  * etc.
- * @{
+ * @
  *)
 
 (**
@@ -1510,7 +1510,7 @@ function avformat_alloc_output_context2(ctx: PPAVFormatContext; oformat: PAVOutp
 
 (**
  * @addtogroup lavf_decoding
- * @{
+ * @
  *)
 
 (**

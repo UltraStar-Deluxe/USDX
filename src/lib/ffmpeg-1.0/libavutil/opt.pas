@@ -316,15 +316,21 @@ function av_opt_child_class_next(parent: {const} PAVClass; prev: {const} PAVClas
  * AVERROR(ERANGE) if the value is out of range
  * AVERROR(EINVAL) if the value is not valid
  *)
-function av_opt_set       (obj: pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; search_flags: cint): cint;
+function av_opt_set           (obj: pointer; name: {const} PAnsiChar; val: {const} PAnsiChar; search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_int   (obj: pointer; name: {const} PAnsiChar; val: cint64;            search_flags: cint): cint;
+function av_opt_set_int       (obj: pointer; name: {const} PAnsiChar; val: cint64;            search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_double(obj: pointer; name: {const} PAnsiChar; val: cdouble;           search_flags: cint): cint;
+function av_opt_set_double    (obj: pointer; name: {const} PAnsiChar; val: cdouble;           search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_q     (obj: pointer; name: {const} PAnsiChar; val: TAVRational;       search_flags: cint): cint;
+function av_opt_set_q         (obj: pointer; name: {const} PAnsiChar; val: TAVRational;       search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_bin   (obj: pointer; name: {const} PAnsiChar; val: {const} cuint8;    search_flags: cint): cint;
+function av_opt_set_bin       (obj: pointer; name: {const} PAnsiChar; val: {const} cuint8;    search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_image_size(obj: pointer; name: {const} PAnsiChar; w, h,                   search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_pixel_fmt (obj: pointer; name: {const} PAnsiChar; fmt: TAVPixelFormat;    search_flags: cint): cint;
+  cdecl; external av__util;
+function av_opt_set_sample_fmt(obj: pointer; name: {const} PAnsiChar; fmt: TAVPixelFormat;    search_flags: cint): cint;
   cdecl; external av__util;
 (**
  * @}
@@ -345,13 +351,13 @@ function av_opt_set_bin   (obj: pointer; name: {const} PAnsiChar; val: {const} c
 (**
  * @note the returned string will av_malloc()ed and must be av_free()ed by the caller
  *)
-function av_opt_get       (obj: pointer; name: {const} PAnsiChar; search_flags: cint; out out_val: Pcuint8):     cint;
+function av_opt_get           (obj: pointer; name: {const} PAnsiChar; search_flags: cint; out out_val: Pcuint8):     cint;
   cdecl; external av__util;
-function av_opt_get_int   (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcint64):     cint;
+function av_opt_get_int       (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcint64):     cint;
   cdecl; external av__util;
-function av_opt_get_double(obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcdouble):    cint;
+function av_opt_get_double    (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: Pcdouble):    cint;
   cdecl; external av__util;
-function av_opt_get_q     (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: PAVRational): cint;
+function av_opt_get_q         (obj: pointer; name: {const} PAnsiChar; search_flags: cint;     out_val: PAVRational): cint;
   cdecl; external av__util;
 (**
  * @}

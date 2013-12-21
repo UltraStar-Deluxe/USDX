@@ -177,7 +177,7 @@ const
  *
  * Basic definitions, functions for querying libavcodec capabilities,
  * allocating core structures, etc.
- * @{
+ * @
  *)
 
 (**
@@ -1002,18 +1002,21 @@ type
   TAVPanScan = record {24}
     (*** id.
      * - encoding: set by user.
-     * - decoding: set by libavcodec. *)
+     * - decoding: set by libavcodec.
+     *)
     id: cint;
 
     (*** width and height in 1/16 pel
      * - encoding: set by user.
-     * - decoding: set by libavcodec. *)
+     * - decoding: set by libavcodec.
+     *)
     width: cint;
     height: cint;
 
     (*** position of the top left corner in 1/16 pel for up to 3 fields/frames.
      * - encoding: set by user.
-     * - decoding: set by libavcodec. *)
+     * - decoding: set by libavcodec.
+     *)
     position: array [0..2] of array [0..1] of cint16;
   end; {TAVPanScan}
 
@@ -1309,9 +1312,9 @@ type
   );
 
   TAVPacketSideDataType = record
-        data: PByte;
-	size: cint;
-        type_: AVPacketSideDataType;
+    data: PByte;
+    size: cint;
+    type_: AVPacketSideDataType;
   end;
   PAVPacketSideDataType = ^TAVPacketSideDataType;
 
@@ -1463,7 +1466,7 @@ type
 
     (**
      * format of the frame, -1 if unknown or unset
-     * Values correspond to enum TAVPixelFormat for video frames,
+     * Values correspond to enum AVPixelFormat for video frames,
      * enum AVSampleFormat for audio)
      * - encoding: unused
      * - decoding: Read by user.
@@ -3391,7 +3394,7 @@ type
     next: PAVCodec;
     (**
      * @name Frame-level threading support functions
-     * @{
+     * @
      *)
     (**
      * If defined, called on thread contexts when they are created.
@@ -3541,7 +3544,7 @@ type
  * @defgroup lavc_picture AVPicture
  *
  * Functions for working with AVPicture
- * @{
+ * @
  *)
 
 (**
@@ -3869,12 +3872,8 @@ procedure avsubtitle_free(sub: PAVSubtitle);
   cdecl; external av__codec;
 
 (**
- * @}
- *)
-
-(**
  * @addtogroup lavc_packet
- * @{
+ * @
  *)
 
 (*
@@ -3920,7 +3919,7 @@ procedure av_shrink_packet(pkt: PAVPacket; size: cint);
  * @param pkt packet
  * @param grow_by number of bytes by which to increase the size of the packet
  *)
-function av_grow_packet(pkt: PAVPacket;  grow_by: cint): cint;
+function av_grow_packet(pkt: PAVPacket; grow_by: cint): cint;
   cdecl; external av__codec;
 
 (*
@@ -4207,11 +4206,11 @@ function avcodec_decode_subtitle2(avctx: PAVCodecContext; sub: PAVSubtitle;
 
 (**
  * @defgroup lavc_parsing Frame parsing
- * @{
+ * @
  *)
 
 const
-  AV_PARSER_PTS_NB      = 4;
+  AV_PARSER_PTS_NB            = 4;
   PARSER_FLAG_COMPLETE_FRAMES = $0001;
   PARSER_FLAG_ONCE            = $0002;
 /// Set if the parser has a valid file offset
@@ -4417,13 +4416,8 @@ procedure av_parser_close(s: PAVCodecParserContext);
   cdecl; external av__codec;
 
 (**
- * @}
- * @}
- *)
-
-(**
  * @addtogroup lavc_encoding
- * @{
+ * @
  *)
 
 (**
@@ -4580,10 +4574,6 @@ function avcodec_encode_subtitle(avctx: PAVCodecContext; buf: PByteArray;
   cdecl; external av__codec;
 
 (**
- * @}
- *)
-
-(**
  * @defgroup lavc_resample Audio resampling
  * @ingroup libavc
  *
@@ -4617,7 +4607,7 @@ type
                                  filter_length: cint; log2_phase_count: cint;
                                  linear: cint; cutoff: cdouble): PReSampleContext;
   cdecl; external av__codec;
-					
+
 function audio_resample (s: PReSampleContext; output: PSmallint; input: PSmallint; nb_samples: cint): cint;
   cdecl; external av__codec;
 
@@ -4675,9 +4665,6 @@ procedure av_resample_compensate (c: PAVResampleContext; sample_delta: cint;
 procedure av_resample_close (c: PAVResampleContext);
   cdecl; external av__codec;
 
-(**
- * @}
- *)
 
 (**
  * @addtogroup lavc_picture
@@ -4767,10 +4754,6 @@ function av_picture_pad(dst: PAVPicture; src: {const} PAVPicture;
             padtop: cint;  padbottom: cint; padleft: cint;
             padright: cint; color: PCint): cint;
   cdecl; external av__codec;
-
-(**
- * @}
- *)
 
 (**
  * @defgroup lavc_misc Utility functions
@@ -4930,10 +4913,6 @@ function avcodec_find_best_pix_fmt2(dst_pix_fmt1: TAVPixelFormat; dst_pix_fmt2: 
 
 function avcodec_default_get_format(s: PAVCodecContext; fmt: {const} PAVPixelFormat): TAVPixelFormat;
   cdecl; external av__codec;
-
-(**
- * @}
- *)
 
 procedure avcodec_set_dimensions(s: PAVCodecContext; width: cint; height: cint);
   cdecl; external av__codec;
@@ -5252,10 +5231,6 @@ function avcodec_descriptor_next(prev: {const} PAVCodecDescriptor): PAVCodecDesc
  *)
 function avcodec_descriptor_get_by_name(name: {const} PAnsiChar): PAVCodecDescriptor;
   cdecl; external av__codec;
-
-(**
- * @}
- *)
 
 implementation
 
