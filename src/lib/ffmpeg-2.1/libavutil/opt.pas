@@ -49,11 +49,11 @@ type
     AV_OPT_TYPE_RATIONAL,
     AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
     AV_OPT_TYPE_CONST = 128,
-    AV_OPT_TYPE_COLOR      = $434F4C52  ///< MKBETAG('C','O','L','R'),
-    AV_OPT_TYPE_DURATION   = $44555220  ///< MKBETAG('D','U','R',' '),
+    AV_OPT_TYPE_COLOR      = $434F4C52,  ///< MKBETAG('C','O','L','R'),
+    AV_OPT_TYPE_DURATION   = $44555220,  ///< MKBETAG('D','U','R',' '),
     AV_OPT_TYPE_PIXEL_FMT  = $50464D54, ///< MKBETAG('P','F','M','T')
     AV_OPT_TYPE_SAMPLE_FMT = $53464D54, ///< MKBETAG('S','F','M','T')
-    AV_OPT_TYPE_IMAGE_SIZE = $53495A45  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
+    AV_OPT_TYPE_IMAGE_SIZE = $53495A45,  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
     AV_OPT_TYPE_VIDEO_RATE = $56524154  ///< MKBETAG('V','R','A','T'), offset must point to AVRational
 {$ENDIF}
   );
@@ -334,9 +334,9 @@ function av_opt_set_dict(obj: pointer; var options: PAVDictionary): cint;
  *          AVERROR(EINVAL) if no key is present
  *
  *)
-av_opt_get_key_value(ropts: {const} PPAnsiChar;
-                     key_val_sep: {const} PAnsiChar; pairs_sep: {const} PAnsiChar
-                     flags: byte,
+function av_opt_get_key_value(ropts: {const} PPAnsiChar;
+                     key_val_sep: {const} PAnsiChar; pairs_sep: {const} PAnsiChar;
+                     flags: byte;
                      rkey, rval: PPAnsiChar): cint;
   cdecl; external av__util;
 
