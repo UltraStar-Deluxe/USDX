@@ -42,8 +42,7 @@ function av_malloc(size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib av_alloc_size(1)}
 
 (**
- * Helper function to allocate a block of size * nmemb bytes with
- * using av_malloc()
+ * Allocate a block of size * nmemb bytes with av_malloc().
  * @param nmemb Number of elements
  * @param size Size of the single element
  * @return Pointer to the allocated block, NULL if the block cannot
@@ -55,14 +54,20 @@ function av_malloc_array(nmemb: size_t; size: size_t): pointer; {$IFDEF HasInlin
 
 (**
  * Allocate or reallocate a block of memory.
- * If ptr is NULL and size > 0, allocate a new block. If 
+ * If ptr is NULL and size > 0, allocate a new block. If
  * size is zero, free the memory block pointed to by ptr.
  * @param ptr Pointer to a memory block already allocated with
- * av_malloc(z)() or av_realloc() or NULL.
- * @param size Size in bytes for the memory block to be allocated or
+ * av_realloc() or NULL.
+ * @param size Size in bytes of the memory block to be allocated or
  * reallocated.
- * @return Pointer to a newly reallocated block or NULL if the block
- * cannot be allocated or the function is used to free the memory block.
+ * @return Pointer to a newly-reallocated block or NULL if the block
+ * cannot be reallocated or the function is used to free the memory block.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_realloc(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
  * @see av_fast_realloc()
  *)
 function av_realloc(ptr: pointer; size: size_t): pointer;
@@ -80,29 +85,61 @@ function av_realloc_f(ptr: pointer; nelem: size_t; elsize: size_t): pointer;
   cdecl; external av__util;
 
 (**
+ * Allocate or reallocate a block of memory.
+ * If *ptr is NULL and size > 0, allocate a new block. If
+ * size is zero, free the memory block pointed to by ptr.
+ * @param   ptr Pointer to a pointer to a memory block already allocated
+ *          with av_realloc(), or pointer to a pointer to NULL.
+ *          The pointer is updated on success, or freed on failure.
+ * @param   size Size in bytes for the memory block to be allocated or
+ *          reallocated
+ * @return  Zero on success, an AVERROR error code on failure.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_reallocp(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
+ *)
+function av_reallocp(ptr: pointer; elsize: size_t): cint;
+  cdecl; external av__util;
+
+(**
  * Allocate or reallocate an array.
  * If ptr is NULL and nmemb > 0, allocate a new block. If
  * nmemb is zero, free the memory block pointed to by ptr.
  * @param ptr Pointer to a memory block already allocated with
- * av_malloc(z)() or av_realloc() or NULL.
+ * av_realloc() or NULL.
  * @param nmemb Number of elements
  * @param size Size of the single element
- * @return Pointer to a newly reallocated block or NULL if the block
+ * @return Pointer to a newly-reallocated block or NULL if the block
  * cannot be reallocated or the function is used to free the memory block.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_realloc(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
  *)
 function av_realloc_array(ptr: pointer; nmemb, size: size_t): pointer; {av_alloc_size(2, 3)}
   cdecl; external av__util;
 
 (**
- * Allocate or reallocate an array.
+ * Allocate or reallocate an array through a pointer to a pointer.
  * If *ptr is NULL and nmemb > 0, allocate a new block. If
  * nmemb is zero, free the memory block pointed to by ptr.
  * @param ptr Pointer to a pointer to a memory block already allocated
- * with av_malloc(z)() or av_realloc(), or pointer to a pointer to NULL.
+ * with av_realloc(), or pointer to a pointer to NULL.
  * The pointer is updated on success, or freed on failure.
  * @param nmemb Number of elements
  * @param size Size of the single element
  * @return Zero on success, an AVERROR error code on failure.
+ * @warning Pointers originating from the av_malloc() family of functions must
+ *          not be passed to av_realloc(). The former can be implemented using
+ *          memalign() (or other functions), and there is no guarantee that
+ *          pointers from such functions can be passed to realloc() at all.
+ *          The situation is undefined according to POSIX and may crash with
+ *          some libc implementations.
  *)
 function av_reallocp_array(ptr: pointer; nmemb, size: size_t): cint; {av_alloc_size(2, 3)}
   cdecl; external av__util;
@@ -143,8 +180,7 @@ function av_calloc(nmemb: size_t; size: size_t): pointer;
   cdecl; external av__util; {av_malloc_attrib}
 
 (**
- * Helper function to allocate a block of size * nmemb bytes with
- * using av_mallocz()
+ * Allocate a block of size * nmemb bytes with av_mallocz().
  * @param nmemb Number of elements
  * @param size Size of the single element
  * @return Pointer to the allocated block, NULL if the block cannot
@@ -158,7 +194,7 @@ function av_mallocz_array(nmemb: size_t; size: size_t): pointer; {$IFDEF HasInli
 (**
  * Duplicate the string s.
  * @param s string to be duplicated.
- * @return Pointer to a newly allocated string containing a
+ * @return Pointer to a newly-allocated string containing a
  * copy of s or NULL if the string cannot be allocated.
  *)
 function av_strdup({const} s: PAnsiChar): PAnsiChar;
@@ -254,7 +290,7 @@ procedure av_max_alloc(max: size_t);
   cdecl; external av__util;
 
 (**
- * @brief deliberately overlapping memcpy implementation
+ * deliberately overlapping memcpy implementation
  * @param dst destination buffer
  * @param back how many bytes back we start (the initial size of the overlapping window), must be > 0
  * @param cnt number of bytes to copy, must be >= 0

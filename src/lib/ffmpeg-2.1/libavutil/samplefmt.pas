@@ -19,7 +19,7 @@
  * This is a part of the Pascal port of ffmpeg.
  *
  * Conversion of libavutil/samplefmt.h
- * avutil version 52.38.100
+ * avutil version 52.48.100
  *
  *)
 

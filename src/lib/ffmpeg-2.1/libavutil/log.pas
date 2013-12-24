@@ -131,6 +131,9 @@ type
 end;
 
 const
+(**
+ * Print no output.
+ *)
   AV_LOG_QUIET   = -8;
 
 (**
@@ -157,8 +160,15 @@ const
  *)
   AV_LOG_WARNING = 24;
 
+(**
+ * Standard information.
+ *)
   AV_LOG_INFO    = 32;
-  AV_LOG_VERBOSE = 40;
+
+(**
+ * Detailed information.
+ *)
+	AV_LOG_VERBOSE = 40;
 
 (**
  * Stuff which is only useful for libav* developers.
@@ -170,18 +180,17 @@ const
 (**
  * Send the specified message to the log if the level is less than or equal
  * to the current av_log_level. By default, all logging messages are sent to
- * stderr. This behavior can be altered by setting a different av_vlog callback
+ * stderr. This behavior can be altered by setting a different logging callback
  * function.
+ * @see av_log_set_callback
  *
  * @param avcl A pointer to an arbitrary struct of which the first field is a
- * pointer to an AVClass struct.
- * @param level The importance level of the message, lower values signifying
- * higher importance.
+ *        pointer to an AVClass struct.
+ * @param level The importance level of the message expressed using a @ref
+ *        lavu_log_constants "Logging Constant".
  * @param fmt The format string (printf-compatible) that specifies how
- * subsequent arguments are converted to output.
- * @see av_vlog
+ *        subsequent arguments are converted to output.
  *)
-
 {** to be translated if needed
 void av_log(void *avcl, int level, const char *fmt, ...) av_printf_format(3, 4);
 **}
@@ -189,19 +198,83 @@ void av_log(void *avcl, int level, const char *fmt, ...) av_printf_format(3, 4);
 type
   va_list = pointer;
 
-procedure av_vlog(avcl: pointer; level: cint; fmt: {const} PAnsiChar; dummy: va_list);
+(**
+ * Send the specified message to the log if the level is less than or equal
+ * to the current av_log_level. By default, all logging messages are sent to
+ * stderr. This behavior can be altered by setting a different logging callback
+ * function.
+ * @see av_log_set_callback
+ *
+ * @param avcl A pointer to an arbitrary struct of which the first field is a
+ *        pointer to an AVClass struct.
+ * @param level The importance level of the message expressed using a @ref
+ *        lavu_log_constants "Logging Constant".
+ * @param fmt The format string (printf-compatible) that specifies how
+ *        subsequent arguments are converted to output.
+ * @param vl The arguments referenced by the format string.
+ *)
+procedure av_vlog(avcl: pointer; level: cint; fmt: {const} PAnsiChar; vl: va_list);
   cdecl; external av__util;
+
+(**
+ * Get the current log level
+ *
+ * @see lavu_log_constants
+ *
+ * @return Current log level
+ *)
 function av_log_get_level(): cint;
   cdecl; external av__util;
+
+(**
+ * Set the log level
+ *
+ * @see lavu_log_constants
+ *
+ * @param level Logging level
+ *)
 procedure av_log_set_level(level: cint);
   cdecl; external av__util;
 
+(**
+ * Set the logging callback
+ *
+ * @note The callback must be thread safe, even if the application does not use
+ *       threads itself as some codecs are multithreaded.
+ *
+ * @see av_log_default_callback
+ *
+ * @param callback A logging function with a compatible signature.
+ *)
 {** to be translated if needed
-void av_log_set_callback(void (*)(void*, int, const char*, va_list));
+void av_log_set_callback(void (*callback)(void*, int, const char*, va_list));
+**}
+
+(**
+ * Default logging callback
+ *
+ * It prints the message to stderr, optionally colorizing it.
+ *
+ * @param avcl A pointer to an arbitrary struct of which the first field is a
+ *        pointer to an AVClass struct.
+ * @param level The importance level of the message expressed using a @ref
+ *        lavu_log_constants "Logging Constant".
+ * @param fmt The format string (printf-compatible) that specifies how
+ *        subsequent arguments are converted to output.
+ * @param ap The arguments referenced by the format string.
+ *)
+{** to be translated if needed
 void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl);
 **}
 
-function av_default_item_name (ctx: pointer): PAnsiChar;
+(**
+ * Return the context name
+ *
+ * @param  ctx The AVClass context
+ *
+ * @return The AVClass class_name
+ *)
+function av_default_item_name(ctx: pointer): PAnsiChar;
   cdecl; external av__util;
 function av_default_get_category(ptr: pointer): TAVClassCategory;
   cdecl; external av__util;

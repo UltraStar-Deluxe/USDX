@@ -49,12 +49,13 @@ type
     AV_OPT_TYPE_RATIONAL,
     AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
     AV_OPT_TYPE_CONST = 128,
-    AV_OPT_TYPE_COLOR      = $434F4C52,  ///< MKBETAG('C','O','L','R'),
-    AV_OPT_TYPE_DURATION   = $44555220,  ///< MKBETAG('D','U','R',' '),
-    AV_OPT_TYPE_PIXEL_FMT  = $50464D54, ///< MKBETAG('P','F','M','T')
-    AV_OPT_TYPE_SAMPLE_FMT = $53464D54, ///< MKBETAG('S','F','M','T')
-    AV_OPT_TYPE_IMAGE_SIZE = $53495A45,  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
-    AV_OPT_TYPE_VIDEO_RATE = $56524154  ///< MKBETAG('V','R','A','T'), offset must point to AVRational
+		AV_OPT_TYPE_CHANNEL_LAYOUT = $43484C41,  ///< MKBETAG('C','H','L','A'),
+    AV_OPT_TYPE_COLOR          = $434F4C52,  ///< MKBETAG('C','O','L','R'),
+    AV_OPT_TYPE_DURATION       = $44555220,  ///< MKBETAG('D','U','R',' '),
+    AV_OPT_TYPE_PIXEL_FMT      = $50464D54,  ///< MKBETAG('P','F','M','T')
+    AV_OPT_TYPE_SAMPLE_FMT     = $53464D54,  ///< MKBETAG('S','F','M','T')
+    AV_OPT_TYPE_IMAGE_SIZE     = $53495A45,  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
+    AV_OPT_TYPE_VIDEO_RATE     = $56524154   ///< MKBETAG('V','R','A','T'), offset must point to TAVRational
 {$ENDIF}
   );
 
@@ -139,7 +140,7 @@ type
 (**
  * Look for an option in obj. Look only for the options which
  * have the flags set as specified in mask and flags (that is,
- * for which it is the case that opt->flags & mask == flags).
+ * for which it is the case that (opt->flags & mask) == flags).
  *
  * @param[in] obj a pointer to a struct whose first element is a
  * pointer to an AVClass
@@ -349,7 +350,7 @@ const
 
 (**
  * @defgroup opt_eval_funcs Evaluating option strings
- * @{
+ * @
  * This group of functions can be used to evaluate option strings
  * and get numbers out of them. They do the same thing as av_opt_set(),
  * except the result is written into the caller-supplied pointer.
@@ -362,16 +363,22 @@ const
  * @return 0 on success, a negative number on failure.
  *)
 function av_opt_eval_flags (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; flags_out:  Pcint):       cint;
+  cdecl; external av__util;
 function av_opt_eval_int   (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; int_out:    Pcint):       cint;
+  cdecl; external av__util;
 function av_opt_eval_int64 (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; int64_out:  Pcint64):     cint;
+  cdecl; external av__util;
 function av_opt_eval_float (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; float_out:  Pcfloat):     cint;
+  cdecl; external av__util;
 function av_opt_eval_double(obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; double_out: Pcdouble):    cint;
+  cdecl; external av__util;
 function av_opt_eval_q     (obj: pointer; o: {const} PAVOption; val: {const} PAnsiChar; q_out:      PAVRational): cint;
+  cdecl; external av__util;
 (**
- * @}
+ * @
  *)
 
- const
+const
   AV_OPT_SEARCH_CHILDREN = 0001; (**< Search in possible children of the
                                       given object first.*)
 (**
@@ -463,7 +470,7 @@ function av_opt_child_class_next(parent: {const} PAVClass; prev: {const} PAVClas
 
 (**
  * @defgroup opt_set_funcs Option setting functions
- * @{
+ * @
  * Those functions set the field of obj with the given name to value.
  *
  * @param[in] obj A struct whose first element is a pointer to an AVClass.
@@ -505,6 +512,8 @@ function av_opt_set_sample_fmt(obj: pointer; name: {const} PAnsiChar; fmt: TAVPi
   cdecl; external av__util;
 function av_opt_set_video_rate(obj: pointer; name: {const} PAnsiChar; val: TAVRational;       search_flags: cint): cint;
   cdecl; external av__util;
+function av_opt_set_channel_layout(obj: pointer; name: {const} PAnsiChar; ch_layout: cint64;  search_flags: cint): cint;
+  cdecl; external av__util;
 
 (**
  * Set a binary option to an integer list.
@@ -524,12 +533,12 @@ function av_opt_set_video_rate(obj: pointer; name: {const} PAnsiChar; val: TAVRa
                     av_int_list_length(val, term) * sizeof(*(val)), flags))
 }
 (**
- * @}
+ * @
  *)
 
 (**
  * @defgroup opt_get_funcs Option getting functions
- * @{
+ * @
  * Those functions get a value of the option with the given name from an object.
  *
  * @param[in] obj a struct whose first element is a pointer to an AVClass.
@@ -537,10 +546,10 @@ function av_opt_set_video_rate(obj: pointer; name: {const} PAnsiChar; val: TAVRa
  * @param[in] search_flags flags passed to av_opt_find2. I.e. if AV_OPT_SEARCH_CHILDREN
  * is passed here, then the option may be found in a child of obj.
  * @param[out] out_val value of the option will be written here
- * @return 0 on success, a negative error code otherwise
+ * @return >=0 on success, a negative error code otherwise
  *)
 (**
- * @note the returned string will av_malloc()ed and must be av_free()ed by the caller
+ * @note the returned string will be av_malloc()ed and must be av_free()ed by the caller
  *)
 function av_opt_get           (obj: pointer; name: {const} PAnsiChar; search_flags: cint; out out_val: Pcuint8):     cint;
   cdecl; external av__util;
@@ -558,8 +567,10 @@ function av_opt_get_sample_fmt(obj: pointer; name: {const} PAnsiChar; search_fla
   cdecl; external av__util;
 function av_opt_get_video_rate(obj: pointer; name: {const} PAnsiChar; search_flags: cint; out_val: PAVRational):     cint;
   cdecl; external av__util;
+function av_opt_get_channel_layout(obj: pointer; name: {const} PAnsiChar; search_flags: cint; ch_layout: Pcint64):   cint;
+  cdecl; external av__util;
 (**
- * @}
+ * @
  *)
 (**
  * Gets a pointer to the requested field in a struct.
@@ -610,5 +621,5 @@ function av_opt_query_ranges_default(P: PPAVOptionRanges; obj: pointer; key: {co
   cdecl; external av__util;
 
 (**
- * @}
+ * @
  *)

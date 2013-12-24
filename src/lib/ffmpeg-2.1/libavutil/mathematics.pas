@@ -40,7 +40,7 @@ const
 
 (**
  * @addtogroup lavu_math
- * @{
+ * @
  *)
 
 type

@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/cpu.h
- * avutil version 52.38.100
+ * avutil version 52.48.100 - 52.48.101
  *
  *)
 
@@ -35,9 +35,11 @@ const
   AV_CPU_FLAG_SSE           = $0008;     ///< SSE functions
   AV_CPU_FLAG_SSE2          = $0010;     ///< PIV SSE2 functions
   AV_CPU_FLAG_SSE2SLOW      = $40000000; ///< SSE2 supported, but usually not faster
+                                         ///< than regular MMX/SSE (e.g. Core1)
   AV_CPU_FLAG_3DNOWEXT      = $0020;     ///< AMD 3DNowExt
   AV_CPU_FLAG_SSE3          = $0040;     ///< Prescott SSE3 functions
   AV_CPU_FLAG_SSE3SLOW      = $20000000; ///< SSE3 supported, but usually not faster
+                                         ///< than regular MMX/SSE (e.g. Core1)
   AV_CPU_FLAG_SSSE3         = $0080;     ///< Conroe SSSE3 functions
   AV_CPU_FLAG_ATOM          = $10000000; ///< Atom processor, some SSSE3 instructions are slower
   AV_CPU_FLAG_SSE4          = $0100;     ///< Penryn SSE4.1 functions
@@ -48,6 +50,8 @@ const
  
   AV_CPU_FLAG_CMOV          = $1001000;  ///< supports cmov instruction
   
+  AV_CPU_FLAG_AVX2          = $8000;     ///< AVX2 functions: requires OS support even if YMM registers aren't used
+
   AV_CPU_FLAG_ALTIVEC       = $0001;     ///< standard
 
   AV_CPU_FLAG_ARMV5TE       = (1 << 0);
@@ -107,12 +111,4 @@ function av_parse_cpu_caps(flags: Pcuint; s: {const} PAnsiChar): cint;
  * @return the number of logical CPU cores present.
  *)
 function av_cpu_count(): cint;
-  cdecl; external av__util;
-
-(* The following CPU-specific functions shall not be called directly. *)
-function ff_get_cpu_flags_arm(): cint;
-  cdecl; external av__util;
-function ff_get_cpu_flags_ppc(): cint;
-  cdecl; external av__util;
-function ff_get_cpu_flags_x86(): cint;
   cdecl; external av__util;

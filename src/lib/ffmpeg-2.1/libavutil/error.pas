@@ -31,7 +31,7 @@
 (**
  * @addtogroup lavu_error
  *
- * @{
+ * @
  *)
 
 {* error handling *}
