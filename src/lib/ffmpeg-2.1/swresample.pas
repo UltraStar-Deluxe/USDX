@@ -54,7 +54,6 @@ uses
     UConfig;
 
 const
-
   {$IF LIBRESAMPLE_VERSION_MAJOR <  1}
   SWR_CH_MAX = 32;  (* < Maximum number of channels *)
   {$ENDIF}
@@ -75,19 +74,19 @@ type
     SWR_DITHER_NS_SHIBATA,
     SWR_DITHER_NS_LOW_SHIBATA,
     SWR_DITHER_NS_HIGH_SHIBATA,
-    SWR_DITHER_NB              (* < not part of API/ABI *)
+    SWR_DITHER_NB               (* < not part of API/ABI *)
   );
 
   TSwrEngine = (
     SWR_ENGINE_SWR,             (* < SW Resampler *)
     SWR_ENGINE_SOXR,            (* < SoX Resampler *)
-    SWR_ENGINE_NB              (* < not part of API/ABI *)
+    SWR_ENGINE_NB               (* < not part of API/ABI *)
   );
 
   TSwrFilterType = (
     SWR_FILTER_TYPE_CUBIC,              (* < Cubic *)
     SWR_FILTER_TYPE_BLACKMAN_NUTTALL,   (* < Blackman Nuttall Windowed Sinc *)
-    SWR_FILTER_TYPE_KAISER             (* < Kaiser Windowed Sinc *)
+    SWR_FILTER_TYPE_KAISER              (* < Kaiser Windowed Sinc *)
   );
 
   PPSwrContext= ^PSwrContext;
@@ -95,192 +94,190 @@ type
   TSwrContext = record
   end;
 
-  (**
-   * Get the AVClass for swrContext. It can be used in combination with
-   * AV_OPT_SEARCH_FAKE_OBJ for examining options.
-   *
-   * @see av_opt_find().
-  *)
-  function swr_get_class(): PAVClass;
+(**
+ * Get the AVClass for swrContext. It can be used in combination with
+ * AV_OPT_SEARCH_FAKE_OBJ for examining options.
+ *
+ * @see av_opt_find().
+ *)
+function swr_get_class(): PAVClass;
   cdecl; external swresample;
 
-  (**
-   * Allocate SwrContext.
-   *
-   * If you use this function you will need to set the parameters (manually or
-   * with swr_alloc_set_opts()) before calling swr_init().
-   *
-   * @see swr_alloc_set_opts(), swr_init(), swr_free()
-   * @return NULL on error, allocated context otherwise
-  *)
-
-  function swr_alloc(): PSwrContext;
+(**
+ * Allocate SwrContext.
+ *
+ * If you use this function you will need to set the parameters (manually or
+ * with swr_alloc_set_opts()) before calling swr_init().
+ *
+ * @see swr_alloc_set_opts(), swr_init(), swr_free()
+ * @return NULL on error, allocated context otherwise
+ *)
+function swr_alloc(): PSwrContext;
   cdecl; external swresample;
 
-  (**
-   * Initialize context after user parameters have been set.
-   *
-   * @return AVERROR error code in case of failure.
-  *)
-  function swr_init(s : PSwrContext): cint;
+(**
+ * Initialize context after user parameters have been set.
+ *
+ * @return AVERROR error code in case of failure.
+ *)
+function swr_init(s: PSwrContext): cint;
   cdecl; external swresample;
 
-  (**
-   * Allocate SwrContext if needed and set/reset common parameters.
-   *
-   * This function does not require s to be allocated with swr_alloc(). On the
-   * other hand, swr_alloc() can use swr_alloc_set_opts() to set the parameters
-   * on the allocated context.
-   *
-   * @param s               Swr context, can be NULL
-   * @param out_ch_layout   output channel layout (AV_CH_LAYOUT_* )
-   * @param out_sample_fmt  output sample format (AV_SAMPLE_FMT_* ).
-   * @param out_sample_rate output sample rate (frequency in Hz)
-   * @param in_ch_layout    input channel layout (AV_CH_LAYOUT_* )
-   * @param in_sample_fmt   input sample format (AV_SAMPLE_FMT_* ).
-   * @param in_sample_rate  input sample rate (frequency in Hz)
-   * @param log_offset      logging level offset
-   * @param log_ctx         parent logging context, can be NULL
-   *
-   * @see swr_init(), swr_free()
-   * @return NULL on error, allocated context otherwise
-  *)
-  function swr_alloc_set_opts(s : PSwrContext;
-                                        out_ch_layout: cint64; out_sample_fmt: TAVSampleFormat; out_sample_rate: cint;
-                                        in_ch_layout: cint64; in_sample_fmt: TAVSampleFormat; in_sample_rate: cint;
-                                        log_offset: cint; log_ctx: pointer): PSwrContext;
+(**
+ * Allocate SwrContext if needed and set/reset common parameters.
+ *
+ * This function does not require s to be allocated with swr_alloc(). On the
+ * other hand, swr_alloc() can use swr_alloc_set_opts() to set the parameters
+ * on the allocated context.
+ *
+ * @param s               Swr context, can be NULL
+ * @param out_ch_layout   output channel layout (AV_CH_LAYOUT_* )
+ * @param out_sample_fmt  output sample format (AV_SAMPLE_FMT_* ).
+ * @param out_sample_rate output sample rate (frequency in Hz)
+ * @param in_ch_layout    input channel layout (AV_CH_LAYOUT_* )
+ * @param in_sample_fmt   input sample format (AV_SAMPLE_FMT_* ).
+ * @param in_sample_rate  input sample rate (frequency in Hz)
+ * @param log_offset      logging level offset
+ * @param log_ctx         parent logging context, can be NULL
+ *
+ * @see swr_init(), swr_free()
+ * @return NULL on error, allocated context otherwise
+ *)
+function swr_alloc_set_opts(s: PSwrContext;
+                            out_ch_layout: cint64; out_sample_fmt: TAVSampleFormat; out_sample_rate: cint;
+                            in_ch_layout:  cint64; in_sample_fmt:  TAVSampleFormat; in_sample_rate:  cint;
+                            log_offset: cint; log_ctx: pointer): PSwrContext;
   cdecl; external swresample;
 
-  (**
-   * Free the given SwrContext and set the pointer to NULL.
-  *)
-  procedure swr_free(s: PPSwrContext);
+(**
+ * Free the given SwrContext and set the pointer to NULL.
+ *)
+procedure swr_free(s: PPSwrContext);
   cdecl; external swresample;
 
-  (**
-   * Convert audio.
-   *
-   * in and in_count can be set to 0 to flush the last few samples out at the
-   * end.
-   *
-   * If more input is provided than output space then the input will be buffered.
-   * You can avoid this buffering by providing more output space than input.
-   * Convertion will run directly without copying whenever possible.
-   *
-   * @param s         allocated Swr context, with parameters set
-   * @param out       output buffers, only the first one need be set in case of packed audio
-   * @param out_count amount of space available for output in samples per channel
-   * @param in        input buffers, only the first one need to be set in case of packed audio
-   * @param in_count  number of input samples available in one channel
-   *
-   * @return number of samples output per channel, negative value on error
-  *)
-  function swr_convert(s: PSwrContext; out_: PByte; out_count: cint;
-                                  {const} in_: PByte; in_count: cint): cint;
+(**
+ * Convert audio.
+ *
+ * in and in_count can be set to 0 to flush the last few samples out at the
+ * end.
+ *
+ * If more input is provided than output space then the input will be buffered.
+ * You can avoid this buffering by providing more output space than input.
+ * Convertion will run directly without copying whenever possible.
+ *
+ * @param s         allocated Swr context, with parameters set
+ * @param out       output buffers, only the first one need be set in case of packed audio
+ * @param out_count amount of space available for output in samples per channel
+ * @param in        input buffers, only the first one need to be set in case of packed audio
+ * @param in_count  number of input samples available in one channel
+ *
+ * @return number of samples output per channel, negative value on error
+ *)
+function swr_convert(s: PSwrContext; out_: PByte; out_count: cint;
+                             {const} in_:  PByte; in_count:  cint): cint;
   cdecl; external swresample;
 
-  (**
-   * Convert the next timestamp from input to output
-   * timestamps are in 1/(in_sample_rate * out_sample_rate) units.
-   *
-   * @note There are 2 slightly differently behaving modes.
-   *       First is when automatic timestamp compensation is not used, (min_compensation >= FLT_MAX)
-   *              in this case timestamps will be passed through with delays compensated
-   *       Second is when automatic timestamp compensation is used, (min_compensation < FLT_MAX)
-   *              in this case the output timestamps will match output sample numbers
-   *
-   * @param pts   timestamp for the next input sample, INT64_MIN if unknown
-   * @return the output timestamp for the next output sample
-  *)
-  function swr_next_pts(s: PSwrContext; pts: cint): cint64;
+(**
+ * Convert the next timestamp from input to output
+ * timestamps are in 1/(in_sample_rate * out_sample_rate) units.
+ *
+ * @note There are 2 slightly differently behaving modes.
+ *       First is when automatic timestamp compensation is not used, (min_compensation >= FLT_MAX)
+ *              in this case timestamps will be passed through with delays compensated
+ *       Second is when automatic timestamp compensation is used, (min_compensation < FLT_MAX)
+ *              in this case the output timestamps will match output sample numbers
+ *
+ * @param pts   timestamp for the next input sample, INT64_MIN if unknown
+ * @return the output timestamp for the next output sample
+ *)
+function swr_next_pts(s: PSwrContext; pts: cint64): cint64;
   cdecl; external swresample;
 
-  (**
-   * Activate resampling compensation.
-  *)
-  function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_distance: cint): cint;
+(**
+ * Activate resampling compensation.
+ *)
+function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_distance: cint): cint;
   cdecl; external swresample;
 
-  (**
-   * Set a customized input channel mapping.
-   *
-   * @param s           allocated Swr context, not yet initialized
-   * @param channel_map customized input channel mapping (array of channel
-   *                    indexes, -1 for a muted channel)
-   * @return AVERROR error code in case of failure.
-   *)
-  function swr_set_channel_mapping(s: PSwrContext; {const} channel_map: pcint): cint;
+(**
+ * Set a customized input channel mapping.
+ *
+ * @param s           allocated Swr context, not yet initialized
+ * @param channel_map customized input channel mapping (array of channel
+ *                    indexes, -1 for a muted channel)
+ * @return AVERROR error code in case of failure.
+ *)
+function swr_set_channel_mapping(s: PSwrContext; {const} channel_map: pcint): cint;
   cdecl; external swresample;
 
-  (**
-   * Set a customized remix matrix.
-   *
-   * @param s       allocated Swr context, not yet initialized
-   * @param matrix  remix coefficients; matrix[i + stride * o] is
-   *                the weight of input channel i in output channel o
-   * @param stride  offset between lines of the matrix
-   * @return  AVERROR error code in case of failure.
-  *)
-  function swr_set_matrix(s: PSwrContext; {const} matrix: pcdouble; stride: cint): cint;
+(**
+ * Set a customized remix matrix.
+ *
+ * @param s       allocated Swr context, not yet initialized
+ * @param matrix  remix coefficients; matrix[i + stride * o] is
+ *                the weight of input channel i in output channel o
+ * @param stride  offset between lines of the matrix
+ * @return  AVERROR error code in case of failure.
+ *)
+function swr_set_matrix(s: PSwrContext; {const} matrix: pcdouble; stride: cint): cint;
   cdecl; external swresample;
 
-  (**
-   * Drops the specified number of output samples.
-  *)
-  function swr_drop_output(s: PSwrContext; count: cint): cint;
+(**
+ * Drops the specified number of output samples.
+ *)
+function swr_drop_output(s: PSwrContext; count: cint): cint;
   cdecl; external swresample;
 
-  (**
-   * Injects the specified number of silence samples.
-  *)
-  function swr_inject_silence(s: PSwrContext; count: cint): cint;
+(**
+ * Injects the specified number of silence samples.
+ *)
+function swr_inject_silence(s: PSwrContext; count: cint): cint;
   cdecl; external swresample;
 
-  (**
-   * Gets the delay the next input sample will experience relative to the next output sample.
-   *
-   * Swresample can buffer data if more input has been provided than available
-   * output space, also converting between sample rates needs a delay.
-   * This function returns the sum of all such delays.
-   * The exact delay is not necessarily an integer value in either input or
-   * output sample rate. Especially when downsampling by a large value, the
-   * output sample rate may be a poor choice to represent the delay, similarly
-   * for upsampling and the input sample rate.
-   *
-   * @param s     swr context
-   * @param base  timebase in which the returned delay will be
-   *              if its set to 1 the returned delay is in seconds
-   *              if its set to 1000 the returned delay is in milli seconds
-   *              if its set to the input sample rate then the returned delay is in input samples
-   *              if its set to the output sample rate then the returned delay is in output samples
-   *              an exact rounding free delay can be found by using LCM(in_sample_rate, out_sample_rate)
-   * @returns     the delay in 1/base units.
-  *)
-  function swr_get_delay(s: PSwrContext; base: cint64): cint64;
+(**
+ * Gets the delay the next input sample will experience relative to the next output sample.
+ *
+ * Swresample can buffer data if more input has been provided than available
+ * output space, also converting between sample rates needs a delay.
+ * This function returns the sum of all such delays.
+ * The exact delay is not necessarily an integer value in either input or
+ * output sample rate. Especially when downsampling by a large value, the
+ * output sample rate may be a poor choice to represent the delay, similarly
+ * for upsampling and the input sample rate.
+ *
+ * @param s     swr context
+ * @param base  timebase in which the returned delay will be
+ *              if its set to 1 the returned delay is in seconds
+ *              if its set to 1000 the returned delay is in milli seconds
+ *              if its set to the input sample rate then the returned delay is in input samples
+ *              if its set to the output sample rate then the returned delay is in output samples
+ *              an exact rounding free delay can be found by using LCM(in_sample_rate, out_sample_rate)
+ * @returns     the delay in 1/base units.
+ *)
+function swr_get_delay(s: PSwrContext; base: cint64): cint64;
   cdecl; external swresample;
 
-  (**
-   * Return the LIBSWRESAMPLE_VERSION_INT constant.
-  *)
-  function swresample_version(): cuint;
+(**
+ * Return the LIBSWRESAMPLE_VERSION_INT constant.
+ *)
+function swresample_version(): cuint;
   cdecl; external swresample;
 
-  (**
-   * Return the swr build-time configuration.
-  *)
-  function swresample_configuration(): cuchar;
+(**
+ * Return the swr build-time configuration.
+ *)
+function swresample_configuration(): cuchar;
   cdecl; external swresample;
 
-  (**
-   * Return the swr license.
-  *)
-  function swresample_license(): cuchar;
-    cdecl; external swresample;
+(**
+ * Return the swr license.
+ *)
+function swresample_license(): cuchar;
+  cdecl; external swresample;
 
-  (**
-   * @
-   *)
-
+(**
+ * @
+ *)
 
 implementation
 
