@@ -231,6 +231,11 @@ function av_int_list_length({const} list: pointer; term: cuint64): cuint;
 
 {$INCLUDE libavutil/samplefmt.pas}
 
+{$INCLUDE libavutil/buffer.pas}
+
+{$INCLUDE libavutil/frame.pas}
+
+
 (* libavutil/common.h *) // until now MKTAG and MKBETAG is all from common.h KMS 19/5/2010
 
 (**
