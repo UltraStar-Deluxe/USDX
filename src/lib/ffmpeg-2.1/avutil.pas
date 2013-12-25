@@ -24,7 +24,7 @@
  * Conversions of
  *
  * libavutil/avutil.h:
- * version: 52.38.100
+ * version: 52.48.100
  *
  *)
 
@@ -162,7 +162,7 @@ const
  *
  * AVPicture types, pixel formats and basic image planes manipulation.
  *
- * @{
+ * @
  *)
 
 type
@@ -223,11 +223,11 @@ function av_int_list_length({const} list: pointer; term: cuint64): cuint;
 
 {$INCLUDE libavutil/mem.pas}
 
-{$INCLUDE libavutil/opt.pas}
-
 {$INCLUDE libavutil/log.pas}
 
 {$INCLUDE libavutil/pixfmt.pas}
+
+{$INCLUDE libavutil/opt.pas}
 
 {$INCLUDE libavutil/samplefmt.pas}
 
@@ -242,6 +242,9 @@ function MKTAG  (a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDI
 function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDIF}
 
 implementation
+
+uses
+  SysUtils;
 
 function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer; {$IFDEF HasInline}inline;{$ENDIF}
 begin

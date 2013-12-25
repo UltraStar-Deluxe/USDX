@@ -243,6 +243,9 @@ function MKBETAG(a, b, c, d: AnsiChar): integer; {$IFDEF HasInline}inline;{$ENDI
 
 implementation
 
+uses
+  SysUtils;
+
 function av_x_if_null(p: {const} pointer; x: {const} pointer): pointer; {$IFDEF HasInline}inline;{$ENDIF}
 begin
   if p = nil then
