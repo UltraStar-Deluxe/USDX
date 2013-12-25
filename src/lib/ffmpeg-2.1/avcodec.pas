@@ -668,10 +668,10 @@ type
     AV_CODEC_ID_Y41P        = $59343150, // MKBETAG('Y','4','1','P'),
     AV_CODEC_ID_YUV4        = $59555634, // MKBETAG('Y','U','V','4'),
     AV_CODEC_ID_EIA_608     = $63363038, // MKBETAG('c','6','0','8'),
-    AV_CODEC_ID_MICRODVD    = $6D445644  // MKBETAG('m','D','V','D')
+    AV_CODEC_ID_MICRODVD    = $6D445644, // MKBETAG('m','D','V','D')
     AV_CODEC_ID_EVRC        = $73657663, // MKBETAG('s','e','v','c'),
     AV_CODEC_ID_SMV         = $73736D76, // MKBETAG('s','s','m','v'),
-    AV_CODEC_ID_TAK         = $7442614B, // MKBETAG('t','B','a','K'),
+    AV_CODEC_ID_TAK         = $7442614B // MKBETAG('t','B','a','K'),
 
   );
 
@@ -693,7 +693,7 @@ const
  * @see avcodec_get_descriptor()
  *)
 type
-  record AVCodecDescriptor =
+  TAVCodecDescriptor = record
     id: TAVCodecID;
     type_: TAVMediaType;
     (**
