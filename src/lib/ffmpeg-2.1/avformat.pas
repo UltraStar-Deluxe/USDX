@@ -94,36 +94,38 @@ const
  * dropped at a future version bump. The defines themselves are not part of
  * the public API and may change, break or disappear at any time.
  *)
-const
+
+(*old defines not present anymore in ffmpeg-2.1
 {$ifndef FF_API_OLD_AVIO}
-  FF_API_OLD_AVIO             = (LIBAVFORMAT_VERSION_MAJOR < 55);
+{$define FF_API_OLD_AVIO               := (LIBAVFORMAT_VERSION_MAJOR < 55)}
 {$endif}
 {$ifndef FF_API_PKT_DUMP}
-  FF_API_PKT_DUMP             = (LIBAVFORMAT_VERSION_MAJOR < 54);
+{$define FF_API_PKT_DUMP               := (LIBAVFORMAT_VERSION_MAJOR < 54)
 {$endif}
+*)
 {$ifndef FF_API_ALLOC_OUTPUT_CONTEXT}
-  FF_API_ALLOC_OUTPUT_CONTEXT = (LIBAVFORMAT_VERSION_MAJOR < 56);
+{$define FF_API_ALLOC_OUTPUT_CONTEXT  := (LIBAVFORMAT_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_FORMAT_PARAMETERS}
-  FF_API_FORMAT_PARAMETERS    = (LIBAVFORMAT_VERSION_MAJOR < 56);
+{$define FF_API_FORMAT_PARAMETERS     := (LIBAVFORMAT_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_NEW_STREAM}
-  FF_API_NEW_STREAM           = (LIBAVFORMAT_VERSION_MAJOR < 56);
+{$define FF_API_NEW_STREAM            := (LIBAVFORMAT_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_SET_PTS_INFO}
-  FF_API_SET_PTS_INFO         = (LIBAVFORMAT_VERSION_MAJOR < 56);
+{$define FF_API_SET_PTS_INFO          := (LIBAVFORMAT_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_CLOSE_INPUT_FILE}
-  FF_API_CLOSE_INPUT_FILE     = (LIBAVFORMAT_VERSION_MAJOR < 56);
+{$define FF_API_CLOSE_INPUT_FILE      := (LIBAVFORMAT_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_READ_PACKET}
-  FF_API_READ_PACKET          = (LIBAVFORMAT_VERSION_MAJOR < 56);
+{$define FF_API_READ_PACKET           := (LIBAVFORMAT_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_ASS_SSA}
-  FF_API_ASS_SSA              = (LIBAVFORMAT_VERSION_MAJOR < 56);
+{$define FF_API_ASS_SSA               := (LIBAVFORMAT_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_R_FRAME_RATE}
-  FF_API_R_FRAME_RATE         = 1;
+{$define FF_API_R_FRAME_RATE          := 1}
 {$endif}
 
 (**
@@ -1584,14 +1586,14 @@ function av_new_program(s: PAVFormatContext; id: cint): PAVProgram;
  * @}
  *)
 
-{$IF FF_API_PKT_DUMP}
+{$IFDEF FF_API_PKT_DUMP}
 procedure av_pkt_dump(f: PAVFile; pkt: PAVPacket; dump_payload: cint); {deprecated}
   cdecl; external av__format;
 procedure av_pkt_dump_log(avcl: Pointer; level: cint; pkt: PAVPacket; dump_payload: cint); {deprecated}
   cdecl; external av__format;
 {$IFEND}
 
-{$IF FF_API_ALLOC_OUTPUT_CONTEXT}
+{$IFDEF FF_API_ALLOC_OUTPUT_CONTEXT}
 (**
  * @deprecated deprecated in favor of avformat_alloc_output_context2()
  *)
@@ -1710,7 +1712,7 @@ function avformat_open_input(ps: PPAVFormatContext; filename: {const} PAnsiChar;
 function av_demuxer_open(ic: PAVFormatContext): cint;
   cdecl; external av__format; deprecated;
 
-{$IF FF_API_FORMAT_PARAMETERS}
+{$IFDEF FF_API_FORMAT_PARAMETERS}
 (**
  * Read packets of a media file to get stream information. This
  * is useful for file formats with no headers such as MPEG. This
@@ -1900,7 +1902,7 @@ function av_read_play(s: PAVFormatContext): cint;
 function av_read_pause(s: PAVFormatContext): cint;
   cdecl; external av__format;
 
-{$IF FF_API_CLOSE_INPUT_FILE}
+{$IFDEF FF_API_CLOSE_INPUT_FILE}
 (**
  * @deprecated use avformat_close_input()
  * Close a media file (but not its codecs).
@@ -1921,7 +1923,7 @@ procedure avformat_close_input(s: PPAVFormatContext);
  * @}
  *)
 
-{$IF FF_API_NEW_STREAM}
+{$IFDEF FF_API_NEW_STREAM}
 (**
  * Add a new stream to a media file.
  *
@@ -1936,7 +1938,7 @@ function av_new_stream(s: PAVFormatContext; id: cint): PAVStream;
   cdecl; external av__format;
 {$IFEND}
 
-{$IF FF_API_SET_PTS_INFO}
+{$IFDEF FF_API_SET_PTS_INFO}
 (**
  * @deprecated this function is not supposed to be called outside of lavf
  *)

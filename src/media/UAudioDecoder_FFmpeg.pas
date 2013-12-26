@@ -80,7 +80,11 @@ const
 const
   // TODO: The factor 3/2 might not be necessary as we do not need extra
   // space for synchronizing as in the tutorial.
+{$IF FFMPEG_VERSION_INT >= 2000000}
+  AUDIO_BUFFER_SIZE = (192000 * 3) div 2;
+{$ELSE}
   AUDIO_BUFFER_SIZE = (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) div 2;
+{$ENDIF}
 
 type
   TFFmpegDecodeStream = class(TAudioDecodeStream)
