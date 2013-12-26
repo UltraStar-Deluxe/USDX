@@ -36,6 +36,8 @@ unit avcodec;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$I switches.inc}  (* for ffmpeg defines *)
+
 {$IFDEF DARWIN}
   {$linklib libavcodec}
 {$ENDIF}
@@ -110,53 +112,83 @@ const
  * dropped at a future version bump. The defines themselves are not part of
  * the public API and may change, break or disappear at any time.
  *)
-const
+
 {$ifndef FF_API_REQUEST_CHANNELS}
-  FF_API_REQUEST_CHANNELS = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_REQUEST_CHANNELS := (LIBAVCODEC_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_ALLOC_CONTEXT}
-  FF_API_ALLOC_CONTEXT    = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_ALLOC_CONTEXT    := (LIBAVCODEC_VERSION_MAJOR < 55)}
 {$endif}
 {$ifndef FF_API_AVCODEC_OPEN}
-  FF_API_AVCODEC_OPEN     = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_AVCODEC_OPEN     := (LIBAVCODEC_VERSION_MAJOR < 55)}
 {$endif}
 {$ifndef FF_API_OLD_DECODE_AUDIO}
-  FF_API_OLD_DECODE_AUDIO = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_DECODE_AUDIO := (LIBAVCODEC_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_OLD_TIMECODE}
-  FF_API_OLD_TIMECODE     = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_TIMECODE     := (LIBAVCODEC_VERSION_MAJOR < 55)}
 {$endif}
 
 {$ifndef FF_API_OLD_ENCODE_AUDIO}
-  FF_API_OLD_ENCODE_AUDIO = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_ENCODE_AUDIO := (LIBAVCODEC_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_OLD_ENCODE_VIDEO}
-  FF_API_OLD_ENCODE_VIDEO = (LIBAVCODEC_VERSION_MAJOR < 55);
-{$endif}
-{$ifndef FF_API_MPV_GLOBAL_OPTS}
-  FF_API_MPV_GLOBAL_OPTS  = (LIBAVCODEC_VERSION_MAJOR < 55);
-{$endif}
-{$ifndef FF_API_COLOR_TABLE_ID}
-  FF_API_COLOR_TABLE_ID   = (LIBAVCODEC_VERSION_MAJOR < 55);
-{$endif}
-{$ifndef FF_API_INTER_THRESHOLD}
-  FF_API_INTER_THRESHOLD  = (LIBAVCODEC_VERSION_MAJOR < 55);
-{$endif}
-{$ifndef FF_API_SUB_ID}
-  FF_API_SUB_ID           = (LIBAVCODEC_VERSION_MAJOR < 55);
-{$endif}
-{$ifndef FF_API_DSP_MASK}
-  FF_API_DSP_MASK         = (LIBAVCODEC_VERSION_MAJOR < 55);
-{$endif}
-{$ifndef FF_API_FIND_BEST_PIX_FMT}
-  FF_API_FIND_BEST_PIX_FMT = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_OLD_ENCODE_VIDEO := (LIBAVCODEC_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_CODEC_ID}
-  FF_API_CODEC_ID          = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_CODEC_ID         := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_AVCODEC_RESAMPLE}
+{$define FF_API_AVCODEC_RESAMPLE := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_DEINTERLACE}
+{$define FF_API_DEINTERLACE      := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_DESTRUCT_PACKET
+{$define FF_API_DESTRUCT_PACKET  := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_GET_BUFFER}
+{$define FF_API_GET_BUFFER       := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_MISSING_SAMPLE}
+{$define FF_API_MISSING_SAMPLE   := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_LOWRES}
+{$define FF_API_LOWRES           := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_CAP_VDPAU}
+{$define FF_API_CAP_VDPAU        := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_BUFS_VDPAU}
+{$define FF_API_BUFS_VDPAU       := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+{$ifndef FF_API_VOXWARE}
+{$define FF_API_VOXWARE          := (LIBAVCODEC_VERSION_MAJOR < 56)}
+{$endif}
+
+(*defines not present anymore in ffmpeg-2.1 avcodec/version.h
+{$ifndef FF_API_MPV_GLOBAL_OPTS}
+{$define FF_API_MPV_GLOBAL_OPTS  := (LIBAVCODEC_VERSION_MAJOR < 55)};
+{$endif}
+{$ifndef FF_API_COLOR_TABLE_ID}
+{$define FF_API_COLOR_TABLE_ID   := (LIBAVCODEC_VERSION_MAJOR < 55)};
+{$endif}
+{$ifndef FF_API_INTER_THRESHOLD}
+{$define FF_API_INTER_THRESHOLD  := (LIBAVCODEC_VERSION_MAJOR < 55)};
+{$endif}
+{$ifndef FF_API_SUB_ID}
+{$define FF_API_SUB_ID           := (LIBAVCODEC_VERSION_MAJOR < 55)};
+{$endif}
+{$ifndef FF_API_DSP_MASK}
+{$define FF_API_DSP_MASK         := (LIBAVCODEC_VERSION_MAJOR < 55)};
+{$endif}
+{$ifndef FF_API_FIND_BEST_PIX_FMT}
+{$define FF_API_FIND_BEST_PIX_FMT := (LIBAVCODEC_VERSION_MAJOR < 55)};
 {$endif}
 {$ifndef FF_API_VDA_ASYNC}
-  FF_API_VDA_ASYNC         = (LIBAVCODEC_VERSION_MAJOR < 55);
+{$define FF_API_VDA_ASYNC         := (LIBAVCODEC_VERSION_MAJOR < 55)};
 {$endif}
+*)
 
 {$IFNDEF FPC}
 type
@@ -2771,7 +2803,7 @@ type
      *)
     cutoff: cint;
 
-{$IF FF_API_REQUEST_CHANNELS}
+{$IFDEF FF_API_REQUEST_CHANNELS}
     (**
      * Decoder should decode to this many channels if it can (0 for default)
      * - encoding: unused
@@ -3913,7 +3945,7 @@ procedure avcodec_register(codec: PAVCodec);
 procedure avcodec_register_all();
   cdecl; external av__codec;
 
-{$IF FF_API_ALLOC_CONTEXT}
+{$IFDEF FF_API_ALLOC_CONTEXT}
 (**
  * Allocate an AVCodecContext and sets it fields to default values.  The
  * resulting struct can be deallocated by simply calling av_free().
@@ -4045,7 +4077,7 @@ procedure avcodec_get_frame_defaults(frame: PAVFrame);
 procedure avcodec_free_frame(frame: PPAVFrame);
   cdecl; external av__codec;
 
-{$IF FF_API_AVCODEC_OPEN}
+{$IFDEF FF_API_AVCODEC_OPEN}
 (**
  * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
  * function the context has to be allocated.
@@ -4364,7 +4396,7 @@ procedure avcodec_align_dimensions2(s: PAVCodecContext; width: PCint; height: PC
                                     linesize_align: PAVNDPArray);
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_DECODE_AUDIO}
+{$IFDEF FF_API_OLD_DECODE_AUDIO}
 (**
  * Wrapper function which calls avcodec_decode_audio4.
  *
@@ -4811,7 +4843,7 @@ function avcodec_find_encoder(id: TAVCodecID): PAVCodec;
 function avcodec_find_encoder_by_name(name: PAnsiChar): PAVCodec;
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_ENCODE_AUDIO}
+{$IFDEF FF_API_OLD_ENCODE_AUDIO}
 (**
  * Encode an audio frame from samples into buf.
  *
@@ -4884,7 +4916,7 @@ function avcodec_encode_audio2(avctx: PAVCodecContext; avpkt: PAVPacket;
                           frame: {const} PAVFrame; got_packet_ptr: Pcint): cint;
   cdecl; external av__codec;
 
-{$IF FF_API_OLD_ENCODE_AUDIO}
+{$IFDEF FF_API_OLD_ENCODE_AUDIO}
 (**
  * @deprecated use avcodec_encode_video2() instead.
  *
@@ -5110,7 +5142,7 @@ function avpicture_get_size (pix_fmt: TAVPixelFormat; width: cint; height: cint)
 
 {$IFDEF FF_API_DEINTERLACE}
 (**
- * deinterlace - if not supported return -1 *)
+ * deinterlace - if not supported return -1
  *
  * @deprecated - use yadif (in libavfilter) instead
  *)
