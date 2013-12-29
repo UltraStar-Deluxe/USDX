@@ -144,7 +144,7 @@ const
 {$ifndef FF_API_DEINTERLACE}
 {$define FF_API_DEINTERLACE      := (LIBAVCODEC_VERSION_MAJOR < 56)}
 {$endif}
-{$ifndef FF_API_DESTRUCT_PACKET
+{$ifndef FF_API_DESTRUCT_PACKET}
 {$define FF_API_DESTRUCT_PACKET  := (LIBAVCODEC_VERSION_MAJOR < 56)}
 {$endif}
 {$ifndef FF_API_GET_BUFFER}
@@ -2034,6 +2034,7 @@ procedure av_frame_set_pkt_size(frame: PAVFrame; val: cint);
 type
   TAVCodecInternal = record
   end;
+
   PAVCodecInternal = ^TAVCodecInternal;
   PAVCodecContext = ^TAVCodecContext;
 
