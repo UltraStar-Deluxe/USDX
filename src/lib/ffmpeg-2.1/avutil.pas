@@ -227,9 +227,9 @@ function av_int_list_length({const} list: pointer; term: cuint64): cuint;
 
 {$INCLUDE libavutil/pixfmt.pas}
 
-{$INCLUDE libavutil/opt.pas}
-
 {$INCLUDE libavutil/samplefmt.pas}
+
+{$INCLUDE libavutil/opt.pas}
 
 {$INCLUDE libavutil/buffer.pas}
 

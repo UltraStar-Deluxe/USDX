@@ -399,7 +399,7 @@ function av_opt_set_image_size(obj: pointer; name: {const} PAnsiChar; w, h,     
   cdecl; external av__util;
 function av_opt_set_pixel_fmt (obj: pointer; name: {const} PAnsiChar; fmt: TAVPixelFormat;    search_flags: cint): cint;
   cdecl; external av__util;
-function av_opt_set_sample_fmt(obj: pointer; name: {const} PAnsiChar; fmt: TAVPixelFormat;    search_flags: cint): cint;
+function av_opt_set_sample_fmt(obj: pointer; name: {const} PAnsiChar; fmt: TAVSampleFormat;    search_flags: cint): cint;
   cdecl; external av__util;
 function av_opt_set_video_rate(obj: pointer; name: {const} PAnsiChar; val: TAVRational;       search_flags: cint): cint;
   cdecl; external av__util;
