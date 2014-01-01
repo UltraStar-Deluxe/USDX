@@ -338,6 +338,15 @@ begin
         SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := false;
       end;
     end;
+
+    Theme.OptionsRecord.SelectThreshold.showArrows := true;
+    Theme.OptionsRecord.SelectThreshold.oneItemOnly := true;
+    AddSelectSlide(Theme.OptionsRecord.SelectThreshold, Ini.ThresholdIndex, IThreshold);
+
+    Theme.OptionsRecord.SelectMicBoost.showArrows := true;
+    Theme.OptionsRecord.SelectMicBoost.oneItemOnly := true;
+    AddSelectSlide(Theme.OptionsRecord.SelectMicBoost, Ini.MicBoost, IMicBoostTranslated);
+
   end;
 
   // add Exit-button
@@ -346,9 +355,9 @@ begin
     AddButtonText(20, 5, Theme.Options.Description[7]);
   // store InteractionID
   if (Length(AudioInputProcessor.DeviceList) > 0) then
-    ExitButtonIID := MaxChannelCount + 2
+    ExitButtonIID := MaxChannelCount + 4
   else
-    ExitButtonIID := 0;
+    ExitButtonIID := 2;
 
   // set focus
   Interaction := 0;

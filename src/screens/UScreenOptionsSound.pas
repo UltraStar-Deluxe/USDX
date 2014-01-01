@@ -145,12 +145,6 @@ begin
   Theme.OptionsSound.SelectBackgroundMusic.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsSound.SelectBackgroundMusic, Ini.BackgroundMusicOption, IBackgroundMusicTranslated);
 
-  // TODO: - MicBoost needs to be moved to ScreenOptionsRecord
-  Theme.OptionsSound.SelectMicBoost.showArrows := true;
-  Theme.OptionsSound.SelectMicBoost.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsSound.SelectMicBoost, Ini.MicBoost, IMicBoostTranslated);
-
-
   Theme.OptionsSound.SelectClickAssist.showArrows := true;
   Theme.OptionsSound.SelectClickAssist.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsSound.SelectClickAssist, Ini.ClickAssist, IClickAssistTranslated);
@@ -158,10 +152,6 @@ begin
   Theme.OptionsSound.SelectBeatClick.showArrows := true;
   Theme.OptionsSound.SelectBeatClick.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClickTranslated);
-
-  Theme.OptionsSound.SelectThreshold.showArrows := true;
-  Theme.OptionsSound.SelectThreshold.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsSound.SelectThreshold, Ini.ThresholdIndex, IThreshold);
 
   Theme.OptionsSound.SelectSlidePreviewVolume.showArrows := true;
   Theme.OptionsSound.SelectSlidePreviewVolume.oneItemOnly := true;

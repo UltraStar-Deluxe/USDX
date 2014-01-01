@@ -461,11 +461,9 @@ type
   end;
 
   TThemeOptionsSound = class(TThemeBasic)
-    SelectMicBoost:              TThemeSelectSlide;
     SelectBackgroundMusic:       TThemeSelectSlide;
     SelectClickAssist:           TThemeSelectSlide;
     SelectBeatClick:             TThemeSelectSlide;
-    SelectThreshold:             TThemeSelectSlide;
     SelectSlidePreviewVolume:    TThemeSelectSlide;
     SelectSlidePreviewFading:    TThemeSelectSlide;
     SelectSlideVoicePassthrough: TThemeSelectSlide;
@@ -491,6 +489,8 @@ type
     SelectSlideCard:       TThemeSelectSlide;
     SelectSlideInput:      TThemeSelectSlide;
     SelectSlideChannel:    TThemeSelectSlide;
+    SelectThreshold:       TThemeSelectSlide;
+    SelectMicBoost:        TThemeSelectSlide;
     ButtonExit:            TThemeButton;
   end;
 
@@ -1342,10 +1342,8 @@ begin
       ThemeLoadBasic(OptionsSound, 'OptionsSound');
 
       ThemeLoadSelectSlide(OptionsSound.SelectBackgroundMusic,       'OptionsSoundSelectBackgroundMusic');
-      ThemeLoadSelectSlide(OptionsSound.SelectMicBoost,              'OptionsSoundSelectMicBoost');
       ThemeLoadSelectSlide(OptionsSound.SelectClickAssist,           'OptionsSoundSelectClickAssist');
       ThemeLoadSelectSlide(OptionsSound.SelectBeatClick,             'OptionsSoundSelectBeatClick');
-      ThemeLoadSelectSlide(OptionsSound.SelectThreshold,             'OptionsSoundSelectThreshold');
       //Song Preview
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume,    'OptionsSoundSelectSlidePreviewVolume');
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading,    'OptionsSoundSelectSlidePreviewFading');
@@ -1376,6 +1374,8 @@ begin
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideCard,     'OptionsRecordSelectSlideCard');
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideInput,    'OptionsRecordSelectSlideInput');
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannel,  'OptionsRecordSelectSlideChannel');
+      ThemeLoadSelectSlide(OptionsRecord.SelectThreshold,     'OptionsRecordSelectThreshold');
+      ThemeLoadSelectSlide(OptionsRecord.SelectMicBoost,      'OptionsRecordSelectMicBoost');
       ThemeLoadButton(OptionsRecord.ButtonExit,               'OptionsRecordButtonExit');
 
       //Options Advanced
