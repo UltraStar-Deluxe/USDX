@@ -1139,7 +1139,7 @@ type
      * iformat/oformat.flags. In such a case, the (de)muxer will handle
      * I/O in some other way and this field will be NULL.
      *)
-    pb: PByteIOContext;
+    pb: PAVIOContext;
 
     (* stream info *)
     ctx_flags: cint; (**< Format-specific flags, see AVFMTCTX_xx *)

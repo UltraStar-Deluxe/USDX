@@ -264,7 +264,7 @@ function av_opt_eval_q     (obj: pointer; o: {const} PAVOption; val: {const} PAn
  * @}
  *)
 
- const
+const
   AV_OPT_SEARCH_CHILDREN = 0001; (**< Search in possible children of the
                                       given object first.*)
 (**

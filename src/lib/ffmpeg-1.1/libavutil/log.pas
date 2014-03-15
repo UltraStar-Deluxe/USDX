@@ -129,6 +129,28 @@ type
 
 // struct AVOptionRanges;
 
+  (**
+   * A single allowed range of values, or a single allowed value.
+   *)
+  PAVOptionRange  = ^TAVOptionRange;
+  PPAVOptionRange = ^PAVOptionRange;
+  TAVOptionRange = record
+    str: {const} PAnsiChar;
+    value_min, value_max: cdouble;             ///< For string ranges this represents the min/max length, for dimensions this represents the min/max pixel count
+    component_min, component_max: cdouble;     ///< For string this represents the unicode range for chars, 0-127 limits to ASCII
+    is_range: cint;                            ///< if set to 1 the struct encodes a range, if set to 0 a single value
+  end;
+
+  (**
+   * List of AVOptionRange structs
+   *)
+  PAVOptionRanges  = ^TAVOptionRanges;
+  PPAVOptionRanges = ^PAVOptionRanges;
+  TAVOptionRanges = record
+    range:     PPAVOptionRange;
+    nb_ranges: cint;
+  end;
+
 (**
  * Describe the class of an AVClass context structure. That is an
  * arbitrary struct of which the first field is a pointer to an
