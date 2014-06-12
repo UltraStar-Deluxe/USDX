@@ -222,6 +222,17 @@ begin
         Exit;
       end;
 
+      // skip intro
+      Ord('S'):
+      begin
+        if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
+        begin
+          LyricsState.SetCurrentTime(CurrentSong.gap / 1000 - 5);
+          AudioPlayback.SetSyncSource(fLyricsSync);
+        end;
+        Exit;
+      end;
+
       // pause
       Ord('P'):
       begin
