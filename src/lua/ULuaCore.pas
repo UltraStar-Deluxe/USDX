@@ -475,67 +475,19 @@ end;
 procedure TLuaCore.PrepareState(L: Plua_State);
 begin
   // load basic lib functionality
-  lua_pushcfunction(L, luaopen_base);
-  lua_call(L, 0, 0);
-  lua_pop(L, lua_gettop(L)); // pop the results
+  lual_openLibs(L);
+  lua_pop(L,1);
 
-  // load module functionality
-  lua_pushcfunction(L, luaopen_package);
-  lua_call(L, 0, 0);
-  lua_pop(L, lua_gettop(L)); // pop the results
-
-  { adds the loader for the other standard lib to package.preload table
-    plugins can call e.g. require('math') if they need math functionality }
-
-  // we need 3 free stack slots
-  lua_checkstack(L, 3);
-
-  // get package table
-  lua_getglobal (L, PChar('package'));
-
-  // get package.preload table
-  lua_getfield (L, -1, PChar('preload'));
-
-  {**** add string lib }
-
-  // push loader function
-  lua_pushcfunction(L, luaopen_string);
-
-  // set package.preload.x loader
-  lua_setfield (L, -2, PChar('string'));
-
-  {**** add table lib }
-
-  // push loader function
-  lua_pushcfunction(L, luaopen_table);
-
-  // set package.preload.x loader
-  lua_setfield (L, -2, PChar('table'));
-
-  {**** add math lib }
-
-  // push loader function
-  lua_pushcfunction(L, luaopen_math);
-
-  // set package.preload.x loader
-  lua_setfield (L, -2, PChar('math'));
-
-  {**** add os lib }
-
-  // push loader function
-  lua_pushcfunction(L, luaopen_os);
-
-  // set package.preload.x loader
-  lua_setfield (L, -2, PChar('os'));
-
-  //pop package.preload table from stack
-  lua_pop(L, 1);
-
-  // get package.loaders table
-  lua_getfield (L, -1, PChar('loaders'));
+  // get package.searchers (former package.loaders) table
+  lua_getGlobal (L, PChar('package'));
+{$IF LUA_VERSION_NUM >= 502}
+  lua_getfield(L,-1,PChar('searchers'));
+{$ELSE}
+  lua_getfield(L,-1,PChar('loaders'));
+{$IFEND}
 
   {**** Move C-Library and all-in-one module loader backwards,
-        slot 3 is free now }
+  slot 3 is free now }
   // get package.loaders[4] function
   lua_pushinteger(L, 5); // push new index
   lua_pushinteger(L, 4); // push old index
@@ -651,7 +603,12 @@ begin
   if (not lua_isnoneornil(L, lua_upvalueindex(1))) then
   begin
     Id := lua_ToInteger(L, lua_upvalueindex(1));
-
+{$IF LUA_VERSION_NUM >= 502}
+    // set module table as a field of the global Usdx
+    lua_getglobal(L,Pchar('Usdx'));
+    luaL_register(L, PChar(LuaCore.Modules[Id].Name), @LuaCore.Modules[Id].Functions[0]);
+    lua_setfield(L, -2, PChar(LuaCore.Modules[Id].Name));
+{$ELSE}
     luaL_register(L, PChar('Usdx.' + LuaCore.Modules[Id].Name), @LuaCore.Modules[Id].Functions[0]);
 
     // set the modules table as global "modulename"
@@ -661,7 +618,7 @@ begin
 
     // no we net to push the table again to return it
     lua_getglobal(L, PChar(LuaCore.Modules[Id].Name));
-
+{$IFEND}
     Result := 1; // return table
   end
   else
@@ -1013,6 +970,7 @@ begin
   // move through parameters
   while (lua_getTop(L) >= 1) do
   begin
+    lua_checkstack(L,1);
     // get luas require function
     lua_getglobal(L, PChar('_require'));
 
@@ -1024,4 +982,4 @@ begin
   end;
 end;
 
-end.
+end.
