@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mem.h
- * avutil version 52.38.100
+ * avutil version 52.66.100
  *
  *)
 
@@ -301,3 +301,25 @@ procedure av_max_alloc(max: size_t);
 procedure av_memcpy_backptr(dst: Pcuint8; back: cint; cnt: cint);
   cdecl; external av__util;
 
+(**
+ * Reallocate the given block if it is not large enough, otherwise do nothing.
+ *
+ * @see av_realloc
+ *)
+procedure av_fast_realloc(ptr: pointer; size: Pcuint; min_size: size_t);
+  cdecl; external av__util;
+
+(**
+ * Allocate a buffer, reusing the given one if large enough.
+ *
+ * Contrary to av_fast_realloc the current buffer contents might not be
+ * preserved and on error the old buffer is freed, thus no special
+ * handling to avoid memleaks is necessary.
+ *
+ * @param ptr pointer to pointer to already allocated buffer, overwritten with pointer to new buffer
+ * @param size size of the buffer *ptr points to
+ * @param min_size minimum size of *ptr buffer after returning, *ptr will be NULL and
+ *                 *size 0 if an error occurred.
+ *)
+procedure av_fast_malloc(ptr: pointer; size: Pcuint; min_size: size_t);
+  cdecl; external av__util;

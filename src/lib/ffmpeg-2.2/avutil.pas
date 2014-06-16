@@ -24,7 +24,7 @@
  * Conversions of
  *
  * libavutil/avutil.h:
- * version: 52.48.100
+ * version: 52.66.100
  *
  *)
 
@@ -212,6 +212,14 @@ function av_int_list_length_for_size(elsize: cuint;
  * @return  length of the list, in elements, not counting the terminator
  *)
 function av_int_list_length({const} list: pointer; term: cuint64): cuint;
+
+(**
+ * Open a file using a UTF-8 filename.
+ * The API of this function matches POSIX fopen(), errors are returned through
+ * errno.
+ *)
+function av_fopen_utf8(path: {const} Pchar; mode: {const} Pchar): PAVFile;
+  cdecl; external av__util;
 
 {$INCLUDE libavutil/cpu.pas}
 

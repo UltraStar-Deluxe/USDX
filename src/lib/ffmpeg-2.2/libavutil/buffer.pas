@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/buffer.h
- * avutil version 52.48.100
+ * avutil version 52.66.100
  *
  *)
 

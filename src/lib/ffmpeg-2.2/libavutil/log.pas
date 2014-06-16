@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/log.h
- * avutil version 52.38.100
+ * avutil version 52.66.100
  *
  *)
 
@@ -50,23 +50,34 @@ type
     AV_OPT_TYPE_RATIONAL,
     AV_OPT_TYPE_BINARY,  ///< offset must point to a pointer immediately followed by an int for the length
     AV_OPT_TYPE_CONST = 128,
-		AV_OPT_TYPE_CHANNEL_LAYOUT = $43484C41,  ///< MKBETAG('C','H','L','A'),
-    AV_OPT_TYPE_COLOR          = $434F4C52,  ///< MKBETAG('C','O','L','R'),
+    AV_OPT_TYPE_IMAGE_SIZE     = $53495A45,  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers    
+    AV_OPT_TYPE_PIXEL_FMT      = $50464D54,  ///< MKBETAG('P','F','M','T') 
+    AV_OPT_TYPE_SAMPLE_FMT     = $53464D54,  ///< MKBETAG('S','F','M','T') 
+    AV_OPT_TYPE_VIDEO_RATE     = $56524154   ///< MKBETAG('V','R','A','T'), offset must point to TAVRational   
     AV_OPT_TYPE_DURATION       = $44555220,  ///< MKBETAG('D','U','R',' '),
-    AV_OPT_TYPE_PIXEL_FMT      = $50464D54,  ///< MKBETAG('P','F','M','T')
-    AV_OPT_TYPE_SAMPLE_FMT     = $53464D54,  ///< MKBETAG('S','F','M','T')
-    AV_OPT_TYPE_IMAGE_SIZE     = $53495A45,  ///< MKBETAG('S','I','Z','E'), offset must point to two consecutive integers
-    AV_OPT_TYPE_VIDEO_RATE     = $56524154   ///< MKBETAG('V','R','A','T'), offset must point to TAVRational
+    AV_OPT_TYPE_COLOR          = $434F4C52,  ///< MKBETAG('C','O','L','R'),    
+    AV_OPT_TYPE_CHANNEL_LAYOUT = $43484C41,  ///< MKBETAG('C','H','L','A'),
 {$ENDIF}
   );
 
 const
   AV_OPT_FLAG_ENCODING_PARAM  = 1;   ///< a generic parameter which can be set by the user for muxing or encoding
   AV_OPT_FLAG_DECODING_PARAM  = 2;   ///< a generic parameter which can be set by the user for demuxing or decoding
+{$IFDEF FF_API_OPT_TYPE_METADATA}
   AV_OPT_FLAG_METADATA        = 4;   ///< some data extracted or inserted into the file like title, comment, ...
+{$ENDIF}
   AV_OPT_FLAG_AUDIO_PARAM     = 8;
   AV_OPT_FLAG_VIDEO_PARAM     = 16;
   AV_OPT_FLAG_SUBTITLE_PARAM  = 32;
+  (**
+   * The option is inteded for exporting values to the caller.
+   *)
+  AV_OPT_FLAG_EXPORT          = 64;
+  (**
+   * The option may not be set through the AVOptions API, only read.
+   * This flag only makes sense when AV_OPT_FLAG_EXPORT is also set.
+   *)
+  AV_OPT_FLAG_READONLY        = 128;
   AV_OPT_FLAG_FILTERING_PARAM = 1 shl 16; ///< a generic parameter which can be set by the user for filtering
 
 type
@@ -370,10 +381,10 @@ void av_log_set_callback(void (*callback)(void*, int, const char*, va_list));
  *        lavu_log_constants "Logging Constant".
  * @param fmt The format string (printf-compatible) that specifies how
  *        subsequent arguments are converted to output.
- * @param ap The arguments referenced by the format string.
+ * @param vl The arguments referenced by the format string.
  *)
 {** to be translated if needed
-void av_log_default_callback(void* ptr, int level, const char* fmt, va_list vl);
+void av_log_default_callback(void* avcl, int level, const char *fmt, va_list vl);
 **}
 
 (**

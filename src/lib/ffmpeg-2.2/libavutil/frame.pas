@@ -23,7 +23,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/frame.h
- * avutil version 52.48.100
+ * avutil version 52.66.100
  *
 *)
 
@@ -37,14 +37,16 @@ const
 type
   TAVColorSpace = (
     AVCOL_SPC_RGB         = 0,
-    AVCOL_SPC_BT709       = 1, ///< also ITU-R BT1361 / IEC 61966-2-4 xvYCC709 / SMPTE RP177 Annex B
+    AVCOL_SPC_BT709       = 1,  ///< also ITU-R BT1361 / IEC 61966-2-4 xvYCC709 / SMPTE RP177 Annex B
     AVCOL_SPC_UNSPECIFIED = 2,
     AVCOL_SPC_FCC         = 4,
-    AVCOL_SPC_BT470BG     = 5, ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
-    AVCOL_SPC_SMPTE170M   = 6, ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC / functionally identical to above
+    AVCOL_SPC_BT470BG     = 5,  ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
+    AVCOL_SPC_SMPTE170M   = 6,  ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC / functionally identical to above
     AVCOL_SPC_SMPTE240M_  = 7,
-    AVCOL_SPC_YCGCO       = 8,
-    AVCOL_SPC_NB               ///< Not part of ABI
+    AVCOL_SPC_YCGCO       = 8,  ///< Used by Dirac / VC-2 and H.264 FRext, see ITU-T SG16
+    AVCOL_SPC_BT2020_NCL  = 9,  ///< ITU-R BT2020 non-constant luminance system
+    AVCOL_SPC_BT2020_CL   = 10, ///< ITU-R BT2020 constant luminance system
+    AVCOL_SPC_NB                ///< Not part of ABI
   );
 
   TAVColorRange = (
@@ -54,11 +56,39 @@ type
     AVCOL_RANGE_NB               ///< Not part of ABI
   );
 
+
+  (**
+   * @defgroup lavu_frame AVFrame
+   * @ingroup lavu_data
+   *
+   * @{
+   * AVFrame is an abstraction for reference-counted raw multimedia data.
+   *)  
   TAVFrameSideDataType = (
     (**
      * The data is the AVPanScan struct defined in libavcodec.
      *)
-    AV_FRAME_DATA_PANSCAN
+    AV_FRAME_DATA_PANSCAN,
+    (**
+     * ATSC A53 Part 4 Closed Captions.
+     * A53 CC bitstream is stored as uint8_t in AVFrameSideData.data.
+     * The number of bytes of CC data is AVFrameSideData.size.
+     *)
+    AV_FRAME_DATA_A53_CC,
+    (**
+     * Stereoscopic 3d metadata.
+     * The data is the AVStereo3D struct defined in libavutil/stereo3d.h.
+     *)
+    AV_FRAME_DATA_STEREO3D,
+    (**
+     * The data is the AVMatrixEncoding enum defined in libavutil/channel_layout.h.
+     *)
+    AV_FRAME_DATA_MATRIXENCODING,
+    (**
+     * Metadata relevant to a downmix procedure.
+     * The data is the AVDownmixInfo struct defined in libavutil/downmix_info.h.
+     *)
+    AV_FRAME_DATA_DOWNMIX_INFO     
   );
 
   PAVFrameSideData = ^TAVFrameSideData;
@@ -429,6 +459,23 @@ type
     nb_side_data: cint;
 
     (**
+     * @defgroup lavu_frame_flags AV_FRAME_FLAGS
+     * Flags describing additional frame properties.
+     *
+     * @{
+     *)
+
+    (**
+     * The frame data may be corrupted, e.g. due to decoding errors.
+     *)
+     {$define AV_FRAME_FLAG_CORRUPT   :=    (1 << 0)}
+
+    (**
+     * Frame flags, a combination of @ref lavu_frame_flags
+     *)
+    flags: cint;
+
+    (**
      * frame timestamp estimated using various heuristics, in stream time base
      * Code outside libavcodec should access this field using:
      * av_frame_get_best_effort_timestamp(frame)
@@ -604,7 +651,7 @@ procedure av_frame_free(frame: PPAVFrame);
   cdecl; external av__codec;
 
 (**
- * Setup a new reference to the data described by a given frame.
+ * Set up a new reference to the data described by the source frame.
  *
  * Copy frame properties from src to dst and create a new reference for each
  * AVBufferRef from src.
@@ -614,7 +661,7 @@ procedure av_frame_free(frame: PPAVFrame);
  *
  * @return 0 on success, a negative AVERROR on error
  *)
-function av_frame_ref(dst: PAVFrame; src: PAVFrame): cint;
+function av_frame_ref(dst: PAVFrame; src: {const} PAVFrame): cint;
   cdecl; external av__codec;
 
 (**
@@ -624,7 +671,7 @@ function av_frame_ref(dst: PAVFrame; src: PAVFrame): cint;
  *
  * @return newly created AVFrame on success, NULL on error.
  *)
-function av_frame_clone(src: PAVFrame): PAVFrame;
+function av_frame_clone(src: {const} PAVFrame): PAVFrame;
   cdecl; external av__codec;
 
 (**
@@ -688,6 +735,20 @@ function av_frame_is_writable(frame: PAVFrame): cint;
 function av_frame_make_writable(frame: PAVFrame): cint;
   cdecl; external av__codec;
 
+(**
+ * Copy the frame data from src to dst.
+ *
+ * This function does not allocate anything, dst must be already initialized and
+ * allocated with the same parameters as src.
+ *
+ * This function only copies the frame data (i.e. the contents of the data /
+ * extended data arrays), not any other properties.
+ *
+ * @return >= 0 on success, a negative AVERROR on error.
+ *)
+function av_frame_copy(dst: PAVFrame, src: {const} PAVFrame): cint;
+  cdecl; external av__codec;
+  
 (**
  * Copy only "metadata" fields from src to dst.
  *

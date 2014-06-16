@@ -22,7 +22,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/mathematics.h
- * avutil version 52.38.100
+ * avutil version 52.66.100
  *
  *)
 
@@ -33,6 +33,7 @@ const
   M_LOG2_10    = 3.32192809488736234787;  // log_2 10
   M_PHI        = 1.61803398874989484820;  // phi / golden ratio
   M_PI         = 3.14159265358979323846;  // pi
+  M_PI_2       = 1.57079632679489661923;  // pi/2
   M_SQRT1_2    = 0.70710678118654752440;  // 1/sqrt(2)
   M_SQRT2      = 1.41421356237309504880;  // sqrt(2)
   NAN          = $7fc00000;     
@@ -120,11 +121,24 @@ function av_compare_mod(a: cuint64; b: cuint64; modVar: cuint64): cint64;
  * Rescale a timestamp while preserving known durations.
  *
  * @param in_ts Input timestamp
- * @param in_tb Input timesbase
+ * @param in_tb Input timebase
  * @param fs_tb Duration and *last timebase
  * @param duration duration till the next call
- * @param out_tb Output timesbase
+ * @param out_tb Output timebase
  *)
 function av_rescale_delta(in_tb: TAVRational; in_ts: cint64;  fs_tb: TAVRational; duration: cint; last: Pcint64; out_tb: TAVRational): cint64;
   cdecl; external av__util;
 
+(**
+ * Add a value to a timestamp.
+ *
+ * This function gurantees that when the same value is repeatly added that
+ * no accumulation of rounding errors occurs.
+ *
+ * @param ts Input timestamp
+ * @param ts_tb Input timestamp timebase
+ * @param inc value to add to ts
+ * @param inc_tb inc timebase
+ *)
+function av_add_stable(ts_tb: TAVRational; ts: cint64; inc_tb: TAVRational; inc: cint64): cint64;
+  cdecl; external av__util;

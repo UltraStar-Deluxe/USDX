@@ -19,7 +19,7 @@
  * This is a part of the Pascal port of ffmpeg.
  *
  * Conversion of libavutil/dict.h
- * avutil version 52.38.100
+ * avutil version 52.66.100
  *
  *)
 
@@ -27,9 +27,9 @@ const
   AV_DICT_MATCH_CASE      = 1;
   AV_DICT_IGNORE_SUFFIX   = 2;
   AV_DICT_DONT_STRDUP_KEY = 4;    (**< Take ownership of a key that's been
-                                       allocated with av_malloc() and children. *)
+                                       allocated with av_malloc() or another memory allocation function. *)
   AV_DICT_DONT_STRDUP_VAL = 8;    (**< Take ownership of a value that's been
-                                       allocated with av_malloc() and chilren. *)
+                                       allocated with av_malloc() or another memory allocation function. *)
   AV_DICT_DONT_OVERWRITE  = 16;   (**< Don't overwrite existing entries. *)
   AV_DICT_APPEND          = 32;   (**< If the entry already exists, append to it.  Note that no
                                     delimiter is added, the strings are simply concatenated. *)
@@ -53,10 +53,17 @@ type
 (**
  * Get a dictionary entry with matching key.
  *
+ * The returned entry key or value must not be changed, or it will
+ * cause undefined behavior.
+ *
+ * To iterate through all the dictionary entries, you can set the matching key
+ * to the null string "" and set the AV_DICT_IGNORE_SUFFIX flag.
+ *  
+ * @param key matching key  
  * @param prev Set to the previous matching element to find the next.
  *             If set to NULL the first matching element is returned.
- * @param flags Allows case as well as suffix-insensitive comparisons.
- * @return Found entry or NULL, changing key or value leads to undefined behavior.
+ * @param flags a collection of AV_DICT_* flags controlling how the entry is retrieved
+ * @return found entry or NULL in case no matching entry was found in the dictionary
  *)
 function av_dict_get(m: PAVDictionary; {const} key: PAnsiChar; {const} prev: PAVDictionaryEntry; flags: cint): PAVDictionaryEntry;
   cdecl; external av__util;
@@ -84,7 +91,10 @@ function av_dict_set(var pm: PAVDictionary; {const} key: PAnsiChar; {const} valu
   cdecl; external av__util;
 
 (**
- * Parse the key/value pairs list and add to a dictionary.
+ * Parse the key/value pairs list and add the parsed entries to a dictionary.
+ *
+ * In case of failure, all the successfully set entries are stored in
+ * *pm. You may need to manually free the created dictionary.
  *
  * @param key_val_sep  a 0-terminated list of characters used to separate
  *                     key from value

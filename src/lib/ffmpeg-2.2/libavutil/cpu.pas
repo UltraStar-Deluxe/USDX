@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/cpu.h
- * avutil version 52.48.100 - 52.48.101
+ * avutil version 52.66.100
  *
  *)
 
@@ -51,7 +51,10 @@ const
   AV_CPU_FLAG_CMOV          = $1001000;  ///< supports cmov instruction
   
   AV_CPU_FLAG_AVX2          = $8000;     ///< AVX2 functions: requires OS support even if YMM registers aren't used
-
+  AV_CPU_FLAG_FMA3	    = $10000;    ///< Haswell FMA3 functions
+  AV_CPU_FLAG_BMI1	    = $20000;    ///< Bit Manipulation Instruction Set 1
+  AV_CPU_FLAG_BMI2	    = $40000;    ///< Bit Manipulation Instruction Set 2  
+  
   AV_CPU_FLAG_ALTIVEC       = $0001;     ///< standard
 
   AV_CPU_FLAG_ARMV5TE       = (1 << 0);
