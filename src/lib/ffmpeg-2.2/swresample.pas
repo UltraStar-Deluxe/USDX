@@ -21,10 +21,10 @@
  *   in the source codes.
  * - Changes and updates by the UltraStar Deluxe Team
  *
- * Conversions of
+ * Conversion of
  *
  * libswresample/swresample.h:
- * version: 0.17.104
+ * version: 0.18.100
  *
  *)
 
@@ -54,9 +54,61 @@ uses
     UConfig;
 
 const
-  {$IF LIBRESAMPLE_VERSION_MAJOR <  1}
+  (*
+   * IMPORTANT: The official FFmpeg C headers change very quickly. Often some
+   * of the data structures are changed so that they become incompatible with
+   * older header files. The Pascal headers have to be adjusted to those changes,
+   * otherwise the application might crash randomly or strange bugs (not
+   * necessarily related to video or audio due to buffer overflows etc.) might
+   * occur.
+   *
+   * In the past users reported problems with USDX that took hours to fix and
+   * the problem was an unsupported version of FFmpeg. So we decided to disable
+   * support for future versions of FFmpeg until the headers are revised by us
+   * for that version as they otherwise most probably will break USDX.
+   *
+   * If the headers do not yet support your FFmpeg version you may want to
+   * adjust the max. version numbers manually but please note: it may work but
+   * in many cases it does not. The USDX team does NOT PROVIDE ANY SUPPORT
+   * for the game if the MAX. VERSION WAS CHANGED.
+   *
+   * The only safe way to support new versions of FFmpeg is to add the changes
+   * of the FFmpeg git repository C headers to the Pascal headers.
+   * You can accelerate this process by posting a patch with the git changes
+   * translated to Pascal to our bug tracker (please join our IRC chat before
+   * you start working on it). Simply adjusting the max. versions is NOT a valid
+   * fix.
+   *)
+
+  (* Supported version by this header *)
+  LIBSWRESAMPLE_MAX_VERSION_MAJOR   = 0;
+  LIBSWRESAMPLE_MAX_VERSION_MINOR   = 18;
+  LIBSWRESAMPLE_MAX_VERSION_RELEASE = 100;
+  LIBSWRESAMPLE_MAX_VERSION = (LIBSWRESAMPLE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
+                           (LIBSWRESAMPLE_MAX_VERSION_MINOR * VERSION_MINOR) +
+                           (LIBSWRESAMPLE_VERSION_RELEASE * VERSION_RELEASE);
+
+  (* Min. supported version by this header *)
+  LIBSWRESAMPLE_MIN_VERSION_MAJOR   = 0;
+  LIBSWRESAMPLE_MIN_VERSION_MINOR   = 18;
+  LIBSWRESAMPLE_MIN_VERSION_RELEASE = 100;
+  LIBSWRESAMPLE_MIN_VERSION = (LIBSWRESAMPLE_MIN_VERSION_MAJOR * VERSION_MAJOR) +
+                            (LIBSWRESAMPLE_MIN_VERSION_MINOR * VERSION_MINOR) +
+                            (LIBSWRESAMPLE_MIN_VERSION_RELEASE * VERSION_RELEASE);
+
+(* Check if linked versions are supported *)
+{$IF (LIBSWRESAMPLE_VERSION < LIBSWRESAMPLE_MIN_VERSION)}
+  {$MESSAGE Error 'Linked version of libswresample is too old!'}
+{$IFEND}
+
+(* Check if linked version is supported *)
+{$IF (LIBSWRESAMPLE_VERSION > LIBSWRESAMPLE_MAX_VERSION)}
+  {$MESSAGE Error 'Linked version of libswresample is not yet supported!'}
+{$IFEND}
+  
+{$IF LIBRESAMPLE_VERSION_MAJOR <  1}
   SWR_CH_MAX = 32;  (* < Maximum number of channels *)
-  {$ENDIF}
+{$ENDIF}
   SWR_FLAG_RESAMPLE = 1; (* < Force resampling even if equal sample rate *)
 
 type
@@ -123,6 +175,14 @@ function swr_alloc(): PSwrContext;
 function swr_init(s: PSwrContext): cint;
   cdecl; external swresample;
 
+(**
+ * Check whether an swr context has been initialized or not.
+ *
+ * @return positive if it has been initialized, 0 if not initialized
+ *)
+function swr_is_initialized(s: PSwrContext): cint;
+  cdecl; external swresample;
+  
 (**
  * Allocate SwrContext if needed and set/reset common parameters.
  *

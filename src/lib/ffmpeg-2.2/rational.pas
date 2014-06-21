@@ -64,6 +64,26 @@ type
   PAVRationalArray = ^TAVRationalArray;
 
 (**
+ * Create a rational.
+ * Useful for compilers that do not support compound literals.
+ * @note  The return value is not reduced.
+ */
+static inline AVRational av_make_q(int num, int den)
+{
+      AVRational r = { num, den };
+      return r;
+}
+
+/**)  
+  
+(**
+ * Create a rational.
+ * Useful for compilers that do not support compound literals.
+ * @note  The return value is not reduced.
+ *)
+function av_make_q(num, den: cint): TAVRational; {$IFDEF HasInline}inline;{$ENDIF}
+  
+(**
  * Compare two rationals.
  * @param a first rational
  * @param b second rational
@@ -202,6 +222,12 @@ function av_inv_q(q: TAVRational): TAVRational; {$IFDEF HasInline}inline;{$ENDIF
 begin
   Result.num := q.den;
   Result.den := q.num;
+end;
+
+function av_make_q(num, den: cint): TAVRational; {$IFDEF HasInline}inline;{$ENDIF}
+begin
+  Result.num := q.num;
+  Result.den := q.den;
 end;
 
 end.
