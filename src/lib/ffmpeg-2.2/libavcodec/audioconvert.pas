@@ -19,7 +19,7 @@
  * - Changes and updates by the UltraStar Deluxe Team
  *
  * Conversion of libavutil/channel_layout.h and libavcodec/audioconvert.h
- * avutil version 52.38.100; avcodec version 55.18.102
+ * avutil version 52.66.100; avcodec version 55.52.102
  *
  *)
 
@@ -238,6 +238,8 @@ function av_get_standard_channel_layout(index: cuint; layout: Pcuint64;
                                    name: {const} PPAnsiChar): cint;
   cdecl; external av__util;
 
+{$IFDEF FF_API_AUDIO_CONVERT}
+  
 (** libavcodec/audioconvert.h **)
 
 // type definition from libavcodec/audioconvert.c
@@ -285,3 +287,5 @@ function av_audio_convert(ctx: PAVAudioConvert;
                           out[6]: {const} P6; out_stride[6]: {const} I6;
                            in[6]: {const} P6;  in_stride[6]: {const} I6; len: cint): cint;
   cdecl; external av__codec;
+
+{$IFEND}
