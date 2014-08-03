@@ -226,8 +226,8 @@ end;
 
 function av_make_q(num, den: cint): TAVRational; {$IFDEF HasInline}inline;{$ENDIF}
 begin
-  Result.num := q.num;
-  Result.den := q.den;
+  Result.num := num;
+  Result.den := den;
 end;
 
 end.

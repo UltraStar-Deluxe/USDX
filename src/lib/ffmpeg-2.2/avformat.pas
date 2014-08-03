@@ -49,6 +49,9 @@ uses
   avio,
   avutil,
   rational,
+  {$IFDEF UNIX}
+  BaseUnix,
+  {$ENDIF}
   SysUtils,
   UConfig;
 
@@ -351,8 +354,9 @@ const
  *
  *)
 
-type
-  PAVFile = Pointer;
+//type
+
+
 
 (*
  * @defgroup metadata_api Public Metadata API
@@ -471,6 +475,11 @@ type
     val, num, den: cint64;
   end;
 
+{$IFNDEF FPC}
+  //defines for delphi
+  size_t = cardinal;
+{$ENDIF}
+
 (*************************************************)
 (* input/output formats *)
 
@@ -485,10 +494,10 @@ type
   end;
 
 const
+  AVPROBE_SCORE_MAX          = 100; ///< maximum score
   AVPROBE_SCORE_RETRY        = (AVPROBE_SCORE_MAX DIV 4);  
   AVPROBE_SCORE_STREAM_RETRY = (AVPROBE_SCORE_MAX DIV 4-1);
   AVPROBE_SCORE_EXTENSION    = 50;  ///< score for file extension
-  AVPROBE_SCORE_MAX          = 100; ///< maximum score
 
   AVPROBE_PADDING_SIZE       = 32;  ///< extra allocated bytes at the end of the probe buffer
 
@@ -641,6 +650,21 @@ type
     s_conv: {const} PAVMetadataConv;
   end;
 
+  (** From libavdevice/avdevice.h **)
+  PPAVDeviceInfo = ^PAVDeviceInfo;
+  PAVDeviceInfo = ^TAVDeviceInfo;
+  TAVDeviceInfo = record
+    device_name: PAnsiChar; (**< device name, format depends on device *)
+    device_description: PAnsiChar; (**< human friendly name *)
+  end; {TAVDeviceInfo}
+
+  PAVDeviceInfoList = ^TAVDeviceInfoList;
+  TAVDeviceInfoList = record
+    devices: PPAVDeviceInfo;  (**< list of autodetected devices *)
+    nb_devices: cint; (**< number of autodetected devices *)
+    default_device: cint; (**< index of default device or -1 if no default *)
+  end; {TAVDeviceInfoList}  
+
 (**
  * @addtogroup lavf_encoding
  * @{
@@ -730,7 +754,7 @@ type
      * by setting the pointer to NULL.
      *)
     write_uncodec_frame: function(s: PAVFormatContext; stream_index: cint;
-				  frame: ^PAVFrame; flags: cuint): cint; cdecl;
+				  frame: PPAVFrame; flags: cuint): cint; cdecl;
     
     (**
      * Returns device list with it properties.
@@ -1712,21 +1736,6 @@ type
   procedure av_format_set_control_message_cb(s: PAVFormatContext; callback: TAv_format_control_message);
     cdecl; external av__format;
 
-  (** From libavdevice/avdevice.h **)
-  PPAVDeviceInfo = ^PAVDeviceInfo;
-  PAVDeviceInfo = ^TAVDeviceInfo;
-  TAVDeviceInfo = record
-    device_name: PAnsiChar; (**< device name, format depends on device *)
-    device_description: PAnsiChar; (**< human friendly name *)
-  end; {TAVDeviceInfo}
-
-  PAVDeviceInfoList = ^TAVDeviceInfoList;
-  TAVDeviceInfoList = record
-    devices: PPAVDeviceInfo;  (**< list of autodetected devices *)
-    nb_devices: cint; (**< number of autodetected devices *)
-    default_device: cint; (**< index of default device or -1 if no default *)
-  end; {TAVDeviceInfoList}
-
 function  av_stream_get_r_frame_rate({const} s: PAVStream): TAVRational;
   cdecl; external av__format;
 procedure av_stream_set_r_frame_rate(s: PAVStream; r: TAVRational);
@@ -2688,11 +2697,14 @@ function avformat_get_riff_audio_tags(): {const} PAVCodecTag;
  * @return the table mapping MOV FourCCs for video to libavcodec AVCodecID.
  *)
 function avformat_get_mov_video_tags(): {const} PAVCodecTag;
+  cdecl; external av__format;
+
 (**
  * @return the table mapping MOV FourCCs for audio to AVCodecID.
  *)
 function avformat_get_mov_audio_tags(): {const} PAVCodecTag;
-  
+  cdecl; external av__format;
+
 (**
  * Guess the sample aspect ratio of a frame, based on both the stream and the
  * frame aspect ratio.

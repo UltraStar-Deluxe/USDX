@@ -34,6 +34,7 @@ unit avutil;
   {$MODE DELPHI}
   {$PACKENUM 4}    (* use 4-byte enums *)
   {$PACKRECORDS C} (* C/C++-compatible record packing *)
+  {$MACRO ON}      (* Turn macro support on *)
 {$ELSE}
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
@@ -55,15 +56,15 @@ uses
 const
   (* Max. supported version by this header *)
   LIBAVUTIL_MAX_VERSION_MAJOR   = 52;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 48;
-  LIBAVUTIL_MAX_VERSION_RELEASE = 101;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 66;
+  LIBAVUTIL_MAX_VERSION_RELEASE = 100;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
                           (LIBAVUTIL_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
   (* Min. supported version by this header *)
   LIBAVUTIL_MIN_VERSION_MAJOR   = 52;
-  LIBAVUTIL_MIN_VERSION_MINOR   = 48;
+  LIBAVUTIL_MIN_VERSION_MINOR   = 66;
   LIBAVUTIL_MIN_VERSION_RELEASE = 100;
   LIBAVUTIL_MIN_VERSION = (LIBAVUTIL_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MIN_VERSION_MINOR * VERSION_MINOR) +
@@ -78,6 +79,76 @@ const
   {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
 {$IFEND}
 
+
+(**
+ * @}
+ *
+ * @defgroup depr_guards Deprecation guards
+ * FF_API_* defines may be placed below to indicate public API that will be
+ * dropped at a future version bump. The defines themselves are not part of
+ * the public API and may change, break or disappear at any time.
+ *
+ * @{
+ *)
+
+{$ifndef FF_API_GET_BITS_PER_SAMPLE_FMT}
+{$define FF_API_GET_BITS_PER_SAMPLE_FMT := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_FIND_OPT}
+{$define FF_API_FIND_OPT                := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_OLD_AVOPTIONS}
+{$define FF_API_OLD_AVOPTIONS           := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_PIX_FMT}
+{$define FF_API_PIX_FMT                 := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_CONTEXT_SIZE}
+{$define FF_API_CONTEXT_SIZE            := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_PIX_FMT_DESC}
+{$define FF_API_PIX_FMT_DESC            := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_AV_REVERSE}
+{$define FF_API_AV_REVERSE              := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_AUDIOCONVERT}
+{$define FF_API_AUDIOCONVERT            := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_CPU_FLAG_MMX2}
+{$define FF_API_CPU_FLAG_MMX2           := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_SAMPLES_UTILS_RETURN_ZERO}
+{$define FF_API_SAMPLES_UTILS_RETURN_ZERO := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_LLS_PRIVATE}
+{$define FF_API_LLS_PRIVATE              := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_LLS1}
+{$define FF_API_LLS1                     :=(LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_AVFRAME_LAVC}
+{$define FF_API_AVFRAME_LAVC             := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_VDPAU}
+{$define FF_API_VDPAU                    := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_GET_CHANNEL_LAYOUT_COMPAT}
+{$define FF_API_GET_CHANNEL_LAYOUT_COMPAT := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_OLD_OPENCL}
+{$define FF_API_OLD_OPENCL               := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_XVMC}
+{$define FF_API_XVMC                     := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_INTFLOAT
+{$define FF_API_INTFLOAT                 := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+{$ifndef FF_API_OPT_TYPE_METADATA}
+{$define FF_API_OPT_TYPE_METADATA        := (LIBAVUTIL_VERSION_MAJOR < 54)}
+{$endif}
+  
 type
 {$IFNDEF FPC}
   // defines for Delphi
@@ -109,6 +180,9 @@ function avutil_license(): PAnsiChar;
  *)
 
 type
+
+  PAVFile = pointer;
+
   TAVMediaType = (
     AVMEDIA_TYPE_UNKNOWN = -1,  ///< Usually treated as AVMEDIA_TYPE_DATA
     AVMEDIA_TYPE_VIDEO,
@@ -301,6 +375,7 @@ var
 begin
   errbuf := stralloc(AV_ERROR_MAX_STRING_SIZE);
   av_make_error_string(errbuf, AV_ERROR_MAX_STRING_SIZE, errnum);
+  av_err2str := errbuf;
 end;
 
 (* libavutil/mem.h *)
