@@ -39,6 +39,8 @@ unit avutil;
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
 
+{$I ff_api-defines.inc}  (* FF_API_* defines *)
+
 {$IFDEF DARWIN}
   {$linklib libavutil}
 {$ENDIF}
