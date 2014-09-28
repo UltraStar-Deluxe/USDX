@@ -205,7 +205,8 @@ const
 {$endif}
 {$ifndef FF_API_EMU_EDGE}
 {$define FF_API_EMU_EDGE         := (LIBAVCODEC_VERSION_MAJOR < 56)}
-{$endif}  
+{$endif}
+  
 
 {$IFNDEF FPC}
 type
@@ -879,25 +880,6 @@ type
     AVCOL_TRC_NB                 ///< Not part of ABI
   );
 
-  TAVColorSpace = (
-    AVCOL_SPC_RGB         = 0,
-    AVCOL_SPC_BT709       = 1, ///< also ITU-R BT1361 / IEC 61966-2-4 xvYCC709 / SMPTE RP177 Annex B
-    AVCOL_SPC_UNSPECIFIED = 2,
-    AVCOL_SPC_FCC         = 4,
-    AVCOL_SPC_BT470BG     = 5, ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
-    AVCOL_SPC_SMPTE170M   = 6, ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC / functionally identical to above
-    AVCOL_SPC_SMPTE240M_  = 7,
-    AVCOL_SPC_YCGCO       = 8,
-    AVCOL_SPC_NB               ///< Not part of ABI
-  );
-
-  TAVColorRange = (
-    AVCOL_RANGE_UNSPECIFIED = 0,
-    AVCOL_RANGE_MPEG        = 1, ///< the normal 219*2^(n-8) "MPEG" YUV ranges
-    AVCOL_RANGE_JPEG        = 2, ///< the normal     2^n-1   "JPEG" YUV ranges
-    AVCOL_RANGE_NB               ///< Not part of ABI
-  );
-
 (**
  *  X   X      3 4 X      X are luma samples,
  *             1 2        1-6 are possible chroma positions
@@ -1152,33 +1134,9 @@ const
    MB_TYPE_CBP        = $0020000;
    //Note bits 24-31 are reserved for codec specific use (h264 ref0, mpeg1 0mv, ...)
 {$IFEND}
+
+(** Note: AVPanScan is now (28/09/2014) defined in libavutil/frame.pas to workaround a reference problem *)
    
-type
-(**
- * Pan Scan area.
- * This specifies the area which should be displayed.
- * Note there may be multiple such areas for one frame.
- *)
-  PAVPanScan = ^TAVPanScan;
-  TAVPanScan = record {24}
-    (*** id.
-     * - encoding: set by user.
-     * - decoding: set by libavcodec. *)
-    id: cint;
-
-    (*** width and height in 1/16 pel
-     * - encoding: set by user.
-     * - decoding: set by libavcodec. *)
-    width: cint;
-    height: cint;
-
-    (*** position of the top left corner in 1/16 pel for up to 3 fields/frames.
-     * - encoding: set by user.
-     * - decoding: set by libavcodec. *)
-    position: array [0..2] of array [0..1] of cint16;
-  end; {TAVPanScan}
-
-const
 {$IFDEF FF_API_QSCALE_TYPE}  
   FF_QSCALE_TYPE_MPEG1  = 0;
   FF_QSCALE_TYPE_MPEG2  = 1;
@@ -3915,7 +3873,7 @@ type
 
   PMpegEncContext = ^TMpegEncContext;
   // To be expanded if needed.
-  TMpegEncContext = record;
+  TMpegEncContext = record
   end;
   
 (**
@@ -4022,7 +3980,7 @@ type
      * @param s the mpeg context
      *)
     //void (*decode_mb)(struct MpegEncContext *s);
-    decode_mb = function (s: PMpegEncContext); cdecl;
+    decode_mb: procedure(s: PMpegEncContext); cdecl;
   end; {TAVHWAccel}
 
 const

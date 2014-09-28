@@ -56,7 +56,31 @@ type
     AVCOL_RANGE_NB               ///< Not part of ABI
   );
 
+(* Note: AVPanScan is defined in avcodec.h but is here to avoid reference problems - Brian-ch 28/09/2014
+ *
+ * Pan Scan area.
+ * This specifies the area which should be displayed.
+ * Note there may be multiple such areas for one frame.
+ *)
+  PAVPanScan = ^TAVPanScan;
+  TAVPanScan = record {24}
+    (*** id.
+     * - encoding: set by user.
+     * - decoding: set by libavcodec. *)
+    id: cint;
 
+    (*** width and height in 1/16 pel
+     * - encoding: set by user.
+     * - decoding: set by libavcodec. *)
+    width: cint;
+    height: cint;
+
+    (*** position of the top left corner in 1/16 pel for up to 3 fields/frames.
+     * - encoding: set by user.
+     * - decoding: set by libavcodec. *)
+    position: array [0..2] of array [0..1] of cint16;
+  end; {TAVPanScan}
+  
   (**
    * @defgroup lavu_frame AVFrame
    * @ingroup lavu_data
@@ -398,7 +422,7 @@ type
      * @deprecated this field is unused
      *)
     hwaccel_picture_private: pointer; {deprecated}
-    owner: PAVCodecContext; {deprecated}
+    owner: pointer; {deprecated} (** Note: Should be a PAVCodecContext, but a type pointer is used to avoid a reference problem. *)
     thread_opaque: pointer; {deprecated}
 
     (**
@@ -746,7 +770,7 @@ function av_frame_make_writable(frame: PAVFrame): cint;
  *
  * @return >= 0 on success, a negative AVERROR on error.
  *)
-function av_frame_copy(dst: PAVFrame, src: {const} PAVFrame): cint;
+function av_frame_copy(dst: PAVFrame; src: {const} PAVFrame): cint;
   cdecl; external av__codec;
   
 (**

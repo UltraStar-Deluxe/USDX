@@ -407,7 +407,7 @@ const
 
 {$IFDEF FF_API_PIX_FMT}
 type
-  PixelFormat = AVPixelFormat;
+  PixelFormat = TAVPixelFormat;
 
 const
   PIX_FMT_Y400A  = AV_PIX_FMT_Y400A;

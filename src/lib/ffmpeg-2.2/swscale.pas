@@ -28,9 +28,12 @@ unit swscale;
   {$MODE DELPHI }
   {$PACKENUM 4}    (* use 4-byte enums *)
   {$PACKRECORDS C} (* C/C++-compatible record packing *)
+  {$MACRO ON}      (* Turn macro support on *)
 {$ELSE}
   {$MINENUMSIZE 4} (* use 4-byte enums *)
 {$ENDIF}
+
+{$I switches.inc}  (* for ffmpeg defines *)
 
 {$IFDEF DARWIN}
   {$linklib libswscale}
@@ -96,20 +99,19 @@ type
 
 (* libswscale/version.h start *)
 
-const
 (**
  * FF_API_* defines may be placed below to indicate public API that will be
  * dropped at a future version bump. The defines themselves are not part of
  * the public API and may change, break or disappear at any time.
  *)
 {$ifndef FF_API_SWS_GETCONTEXT}
-  FF_API_SWS_GETCONTEXT = LIBSWSCALE_VERSION_MAJOR < 3;    
+{$define FF_API_SWS_GETCONTEXT        := (LIBSWSCALE_VERSION_MAJOR < 3)}
 {$endif}
 {$ifndef FF_API_SWS_CPU_CAPS}
-  FF_API_SWS_CPU_CAPS = LIBSWSCALE_VERSION_MAJOR < 3;    
+{$define FF_API_SWS_CPU_CAPS          := (LIBSWSCALE_VERSION_MAJOR < 3)}
 {$endif}
 {$ifndef FF_API_SWS_FORMAT_NAME}
-  FF_API_SWS_FORMAT_NAME = LIBSWSCALE_VERSION_MAJOR < 3;    
+{$define FF_API_SWS_FORMAT_NAME       := (LIBSWSCALE_VERSION_MAJOR < 3)}
 {$endif}
 
 (* libswscale/version.h end *)
@@ -162,7 +164,7 @@ const
   SWS_ACCURATE_RND      = $40000;
   SWS_BITEXACT          = $80000;
 
-{$IF FF_API_SWS_CPU_CAPS}
+{$IFDEF FF_API_SWS_CPU_CAPS}
 (**
  * CPU caps are autodetected now, those flags
  * are only provided for API compatibility.
@@ -266,7 +268,7 @@ function sws_init_context(sws_context: PSwsContext; srcFilter: PSwsFilter; dstFi
 procedure sws_freeContext(swsContext: PSwsContext);
   cdecl; external sw__scale;
 
-{$IF FF_API_SWS_GETCONTEXT}
+{$IFDEF FF_API_SWS_GETCONTEXT}
 (**
  * Allocate and return a SwsContext. You need it to perform
  * scaling/conversion operations using sws_scale().
