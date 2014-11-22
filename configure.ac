@@ -263,6 +263,16 @@ AC_SUBST_DEFINE(HAVE_LIBPCRE, $libpcre_HAVE)
 # get libpcre library dir
 PKG_VALUE([libpcre], [LIBDIR], [variable=libdir], [$libpcre_PKG], 
           [library dir (e.g. /usr/lib, /sw/lib, ...)])
+# we need the soname of the pcre library
+if test x"$libpcre_HAVE" = xyes; then
+    old_LIBS="$LIBS"
+    LIBS="-lpcre"
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+                   [libpcre_LIBNAME=`objdump -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'` dnl '
+                    AC_SUBST([libpcre_LIBNAME],[$libpcre_LIBNAME])],
+                   [AC_MSG_ERROR([failed to link])])
+    LIBS="$old_LIBS"
+fi
 
 # find portmixer
 PKG_HAVE([portmixer], [portmixer], no)

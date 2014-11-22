@@ -71,6 +71,7 @@
 
 {$@DEFINE_HAVE_LIBPCRE@ HaveLibPcre}
 {$IF Defined(HaveLibPcre) and Defined(IncludeConstants)}
+  LIBPCRE_LIBNAME  = '@libpcre_LIBNAME@';
   LIBPCRE_LIBDIR   = '@libpcre_LIBDIR@';
 {$IFEND}
 
