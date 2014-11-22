@@ -1149,7 +1149,7 @@ begin
       TotalTime := LyricsState.TotalTime;
     end;
     if (CurLyricsTime > 0) and
-       (LyricsState.TotalTime > 0) then
+       (TotalTime > 0) then
     begin
       LyricsProgress := CurLyricsTime / TotalTime;
       // avoid that the bar "overflows" for inaccurate song lengths
