@@ -674,7 +674,11 @@ begin
       {$IFEND}
 
       // check for end-of-file (EOF is not an error)
+      {$IF (LIBAVFORMAT_VERSION_MAJOR < 56)}
       if (url_feof(pbIOCtx) <> 0) then
+      {$ELSE}
+      if (avio_feof(pbIOCtx) <> 0) then
+      {$IFEND}
       begin
         fEOF := true;
         Exit;

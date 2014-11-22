@@ -302,7 +302,7 @@ begin
   AVResult := FFmpegCore.AVFormatOpenInput(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8));
   {$IFEND}
   if (AVResult <> 0) then
-   begin
+  begin
     Log.LogError('Failed to open file "' + Filename.ToNative + '" ('+FFmpegCore.GetErrorString(AVResult)+')', 'UAudio_FFmpeg');
     Exit;
   end;
@@ -317,7 +317,7 @@ begin
   AVResult := av_find_stream_info(fFormatCtx);
   {$IFEND}
   if (AVResult < 0) then
-   begin
+  begin
     Log.LogError('No stream info found: "' + Filename.ToNative + '"', 'UAudio_FFmpeg');
     Close();
     Exit;
@@ -378,13 +378,13 @@ begin
   // set debug options
   fCodecCtx^.debug_mv := 0;
   fCodecCtx^.debug := 0;
-	
+  
   {$IF FFMPEG_VERSION_INT >= 1001000}
-	// request required sample format
-	// reference:
-	// http://stackoverflow.com/questions/16479662/ffmpeg-1-0-causing-audio-playback-issues
-	// without this avcodec_open2 returns AV_SAMPLE_FMT_S16P
-	fCodecCtx^.request_sample_fmt := AV_SAMPLE_FMT_S16;
+  // request required sample format
+  // reference:
+  // http://stackoverflow.com/questions/16479662/ffmpeg-1-0-causing-audio-playback-issues
+  // without this avcodec_open2 returns AV_SAMPLE_FMT_S16P
+  fCodecCtx^.request_sample_fmt := AV_SAMPLE_FMT_S16;
   {$IFEND}
 
   // detect bug-workarounds automatically
@@ -840,7 +840,11 @@ begin
         {$IFEND}
 
         // check for end-of-file (eof is not an error)
+        {$IF (LIBAVFORMAT_VERSION_MAJOR < 56)}
         if (url_feof(ByteIOCtx) <> 0) then
+        {$ELSE}
+        if (avio_feof(ByteIOCtx) <> 0) then
+        {$IFEND}
         begin
           if (GetLoop()) then
           begin
@@ -857,12 +861,12 @@ begin
         end;
 
         // check for errors
-	{$IF (LIBAVFORMAT_VERSION >= 52103000)}
-	urlError := ByteIOCtx^.error;
-	{$ELSE}
-	urlError := url_ferror(ByteIOCtx);
-	{$IFEND}
-	if (urlError <> 0) then
+        {$IF (LIBAVFORMAT_VERSION >= 52103000)}
+        urlError := ByteIOCtx^.error;
+        {$ELSE}
+        urlError := url_ferror(ByteIOCtx);
+        {$IFEND}
+        if (urlError <> 0) then
         begin
           // an error occured -> abort and wait for repositioning or termination
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
@@ -983,7 +987,7 @@ begin
 
 //      {$IF LIBAVCODEC_VERSION >= 53025000} // 53.25.0
 //      PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, AVFrame,
-//	          @got_frame_ptr, @fAudioPaket);
+//            @got_frame_ptr, @fAudioPaket);
 //      DataSize := AVFrame.nb_samples;
 //      Buffer   := PByteArray(AVFrame.data[0]);
       {$IF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
@@ -1224,7 +1228,6 @@ begin
 
   Result := Stream;
 end;
-
 
 initialization
   MediaManager.Add(TAudioDecoder_FFmpeg.Create);
