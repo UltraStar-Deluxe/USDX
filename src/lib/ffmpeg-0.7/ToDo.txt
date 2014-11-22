@@ -1,8 +1,12 @@
-	cpu.pas	dict.pas	error.pas
-	log.pas	mathematics.pas
+	cpu.pas
+	dict.pas
+	error.pas
+	log.pas
+	mathematics.pas
 	mem.pas
 	opt.pas
-	pixfmt.pas	samplefmt.pas
+	pixfmt.pas
+	samplefmt.pas
 	avutil.pas
 
 	audioconvert.pas
