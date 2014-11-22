@@ -216,7 +216,6 @@ var
   FadeStateSquare: real;
   FadeW, FadeH:    real;
   FadeCopyW, FadeCopyH: integer;
-  currentTime:     cardinal;
   glError:         glEnum;
 
 begin

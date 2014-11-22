@@ -782,7 +782,6 @@ end;
 function LoadImage(const Filename: IPath): PSDL_Surface;
 var
   FilenameCaseAdj: IPath;
-  FileStream: TBinaryFileStream;
   SDLStream: PSDL_RWops;
 begin
   Result := nil;

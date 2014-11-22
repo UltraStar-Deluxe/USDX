@@ -283,8 +283,6 @@ end;
 function TSong.FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
 var
   Iter: IFileIterator;
-  FileInfo: TFileInfo;
-  FileName: IPath;
 begin
   Iter := FileSystem.FileFind(Dir.Append(Mask), faDirectory);
   if (Iter.HasNext) then
@@ -638,7 +636,6 @@ var
   Param3:    integer;
   ParamS:    string;
   I, J:      integer;
-  NoteIndex: integer;
 
   NoteType:  char;
   SentenceEnd, Rest, Time: integer;
@@ -1264,8 +1261,6 @@ begin
 end;
 
 procedure TSong.NewSentence(LineNumberP: integer; Param1, Param2: integer);
-var
-  I: integer;
 begin
 
   if (Lines[LineNumberP].Line[Lines[LineNumberP].High].HighNote  <> -1) then

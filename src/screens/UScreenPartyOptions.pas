@@ -48,7 +48,6 @@ type
       SelectLevel:     cardinal;
       SelectPlayList:  cardinal;
       SelectPlayList2: cardinal;
-      SelectRounds:    cardinal;
 
       IPlaylist: array[0..2] of UTF8String;
       IPlaylist2: array of UTF8String;

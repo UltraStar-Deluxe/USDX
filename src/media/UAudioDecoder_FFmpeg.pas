@@ -277,7 +277,7 @@ end;
 function TFFmpegDecodeStream.Open(const Filename: IPath): boolean;
 var
   SampleFormat: TAudioSampleFormat;
-  TestFrame: TAVPacket;
+{  TestFrame: TAVPacket;}
   AVResult: integer;
 begin
   Result := false;

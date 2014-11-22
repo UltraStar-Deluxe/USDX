@@ -813,8 +813,10 @@ begin
 end;
 
 function TPathImpl.Equals(const Other: IPath; IgnoreCase: boolean): boolean;
+{$IFNDEF UNIX}
 var
   SelfPath, OtherPath: UTF8String;
+{$ENDIF}
 begin
 {$IFDEF UNIX}
   (*

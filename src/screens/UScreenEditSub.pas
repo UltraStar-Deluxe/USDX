@@ -83,13 +83,15 @@ type
 
       {$IFDEF UseMIDIPort}
       MidiOut:          TMidiOutput;
-      {$endif}
+      {$ENDIF}
 
       MidiStart:        real;
       MidiStop:         real;
       MidiTime:         real;
       MidiPos:          real;
+			{$IFDEF UseMIDIPort}
       MidiLastNote:     integer;
+      {$ENDIF}
 
       TextEditMode:     boolean;
       editText:         UTF8String; //backup of current text in text-edit-mode
@@ -1428,8 +1430,8 @@ var
   pos:                real;
   br:                 real;
 
-  line, note:         integer;
-  numLines, numNotes: integer;
+  line:               integer;
+  numLines:           integer;
 
 begin
   numLines := Length(Lines[0].Line);

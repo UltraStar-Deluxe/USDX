@@ -213,7 +213,6 @@ end;
  *}
 function TLanguage.Translate(const Text: RawByteString): UTF8String;
 var
-  E:  integer; // entry
   ID: AnsiString;
   EntryIndex: integer;
 begin

@@ -159,9 +159,6 @@ type
 
       { statics with players ids }
       StaticPlayerIdBox:    array[1..6] of integer;
-      TexturePlayerIdBox:   array[1..6] of TTexture;
-
-      Animation:            real;
 
       TextScore_ActualValue:  array[1..6] of integer;
       TextPhrase_ActualValue: array[1..6] of integer;

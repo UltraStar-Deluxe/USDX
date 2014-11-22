@@ -1315,7 +1315,6 @@ function TMenu.AddSelectSlide(X, Y, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DC
   const Caption: UTF8String; var Data: integer): integer;
 var
   S: integer;
-  I: integer;
 begin
   S := Length(SelectsS);
   SetLength(SelectsS, S + 1);
@@ -1750,7 +1749,7 @@ end;
 //of the control at this position
 function TMenu.InteractAt(X, Y: real): integer;
 var
-  i, nBut: integer;
+  i: integer;
 begin
   Result := -1;
   for i := Low(Interactions) to High(Interactions) do
@@ -1782,7 +1781,7 @@ end;
 //takes x,y coordinates and returns the button collection id
 function TMenu.CollectionAt(X, Y: real): integer;
 var
-  i, nBut: integer;
+  i: integer;
 begin
   Result := -1;
   for i:= Low(ButtonCollection) to High(ButtonCollection) do

@@ -439,11 +439,16 @@ begin
 end;
 
 procedure TScreenPartyPlayer.SetAnimationProgress(Progress: real);
+{
 var
   I:    integer;
+}
 begin
-  {for I := 0 to high(Button) do
-    Button[I].Texture.ScaleW := Progress;   }
+{
+  for I := 0 to high(Button) do
+    Button[I].Texture.ScaleW := Progress;
+}
 end;
+
 
 end.

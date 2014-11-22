@@ -90,7 +90,6 @@ type
   TSongs = class(TThread)
   {$ENDIF}
   private
-    fNotify, fWatch:     longint;
     fParseSongDirectory: boolean;
     fProcessing:         boolean;
     {$ifdef MSWINDOWS}
@@ -207,8 +206,6 @@ begin
 end;
 
 procedure TSongs.Execute();
-var
-  fChangeNotify: THandle;
 begin
 {$IFDEF USE_PSEUDO_THREAD}
   int_LoadSongList();

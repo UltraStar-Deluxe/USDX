@@ -84,7 +84,7 @@ type
     fMusicSync:         TMusicSyncSource;
     fTimebarMode:       TTimebarMode;
 
-    StartNote, EndNote: TPos;
+    StartNote: TPos;
 
     procedure LoadNextSong();
     procedure UpdateMedleyStats(medley_end: boolean);
@@ -983,7 +983,6 @@ var
   DisplayPrefix:         string;
   DisplayMin:            integer;
   DisplaySec:            integer;
-  T:                     integer;
   CurLyricsTime:         real;
   TotalTime:             real;
   VideoFrameTime:        extended;

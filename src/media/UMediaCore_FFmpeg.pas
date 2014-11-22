@@ -504,9 +504,11 @@ begin
 end;
 
 function TMediaCore_FFmpeg.AVFormatOpenInput(ps: PPAVFormatContext; filename: {const} PAnsiChar): Integer;
+{$IF LIBAVFORMAT_VERSION >= 54029104}
 var
   h: Pointer;
   buffer: Pointer;
+{$ENDIF}
 begin
   {$IF LIBAVFORMAT_VERSION >= 54029104}
   ps^ := avformat_alloc_context();
