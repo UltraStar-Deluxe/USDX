@@ -25,6 +25,7 @@ AC_SUBST(PACKAGE_WEBSITE)
 PACKAGE_IRC="#ultrastardx at quakenet.org"
 AC_SUBST(PACKAGE_IRC)
 
+AC_CONFIG_MACRO_DIR([dists/autogen/m4])
 # Specify a source-file so autoconf can check if the source-dir exists
 AC_CONFIG_SRCDIR(src/ultrastardx.dpr)
 
