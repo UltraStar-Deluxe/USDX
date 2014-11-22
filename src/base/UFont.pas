@@ -2835,7 +2835,7 @@ constructor TBitmapFont.Create(const Filename: IPath; Outline: integer;
 begin
   inherited Create(Filename);
 
-  fTex := Texture.LoadTexture(true, Filename, TEXTURE_TYPE_TRANSPARENT, 0);
+  fTex := Texture.LoadTexture(Filename, TEXTURE_TYPE_TRANSPARENT, 0);
   fTexSize := 1024;
   fOutline := Outline;
   fBaseline  := Baseline;

@@ -119,7 +119,6 @@ type
       procedure AddTexture(var Tex: TTexture; Typ: TTextureType; Color: cardinal; Cache: boolean = false); overload;
       function GetTexture(const Name: IPath; Typ: TTextureType; FromCache: boolean = false): TTexture; overload;
       function GetTexture(const Name: IPath; Typ: TTextureType; Col: LongWord; FromCache: boolean = false): TTexture; overload;
-      function LoadTexture(FromRegistry: boolean; const Identifier: IPath; Typ: TTextureType; Col: LongWord): TTexture; overload;
       function LoadTexture(const Identifier: IPath; Typ: TTextureType; Col: LongWord): TTexture; overload;
       function LoadTexture(const Identifier: IPath): TTexture; overload;
       function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; BitsPerPixel: byte): TTexture;
@@ -234,12 +233,6 @@ end;
 procedure TTextureUnit.AddTexture(var Tex: TTexture; Typ: TTextureType; Color: cardinal; Cache: boolean);
 begin
   TextureDatabase.AddTexture(Tex, Typ, Color, Cache);
-end;
-
-function TTextureUnit.LoadTexture(FromRegistry: boolean; const Identifier: IPath; Typ: TTextureType; Col: LongWord): TTexture;
-begin
-  // FIXME: what is the FromRegistry parameter supposed to do?
-  Result := LoadTexture(Identifier, Typ, Col);
 end;
 
 function TTextureUnit.LoadTexture(const Identifier: IPath): TTexture;
@@ -382,7 +375,6 @@ begin
 
   if (FromCache) then
   begin
-    // use texture
     TextureIndex := TextureDatabase.FindTexture(Name, Typ, Col);
     if (TextureIndex > -1) then
       Result := TextureDatabase.Texture[TextureIndex].TextureCache;
@@ -408,7 +400,7 @@ begin
 
   // load full texture
   if (TextureDatabase.Texture[TextureIndex].Texture.TexNum = 0) then
-    TextureDatabase.Texture[TextureIndex].Texture := LoadTexture(false, Name, Typ, Col);
+    TextureDatabase.Texture[TextureIndex].Texture := LoadTexture(Name, Typ, Col);
 
   // use texture
   Result := TextureDatabase.Texture[TextureIndex].Texture;
