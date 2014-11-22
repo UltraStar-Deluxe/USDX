@@ -816,12 +816,24 @@ function TPathImpl.Equals(const Other: IPath; IgnoreCase: boolean): boolean;
 var
   SelfPath, OtherPath: UTF8String;
 begin
+{$IFDEF UNIX}
+  (*
+    It looks like the code converts correctly to UTF-8 for all input data.
+    Therefore, just use those (byte) strings to perform the comparision.
+
+    NOTE: This is broken for UTF-8 strings, because file system and singstar
+    files might not be normalized. However, the previous code (see below in
+    ELSE ifdef) doesn't handle that either. So it should be fine.
+  *)
+  Result := CompareStr(Self.ToNative(), Other.ToNative()) = 0;
+{$ELSE}
   SelfPath := Self.GetAbsolutePath().RemovePathDelim().ToUTF8();
   OtherPath := Other.GetAbsolutePath().RemovePathDelim().ToUTF8();
   if (FileSystem.IsCaseSensitive() and not IgnoreCase) then
     Result := (CompareStr(SelfPath, OtherPath) = 0)
   else
     Result := (CompareText(SelfPath, OtherPath) = 0);
+{$ENDIF}
 end;
 
 function TPathImpl.Equals(const Other: RawByteString; IgnoreCase: boolean): boolean;
