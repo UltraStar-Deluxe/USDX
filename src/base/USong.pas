@@ -623,7 +623,9 @@ begin
       Lines[Count].Line[High(Lines[Count].Line)].LastLine := true;
   end;
 
-  Result := true;
+  FindRefrain();
+
+	Result := true;
 end;
 
 //Load XML Song
@@ -1581,10 +1583,6 @@ begin
 
     //Load Song for Medley Tags
     CurrentSong := self;
-    Result := Result and LoadSong();
-
-    if Result then
-      Self.FindRefrain();
   finally
     SongFile.Free;
   end;

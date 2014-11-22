@@ -770,7 +770,7 @@ begin
     if CurrentSong.FileName.GetExtension.ToUTF8 = '.xml' then
       success := CurrentSong.AnalyseXML and CurrentSong.LoadXMLSong()
     else
-      success := CurrentSong.Analyse; // and CurrentSong.LoadSong();
+      success := CurrentSong.Analyse and CurrentSong.LoadSong();
   except
     success := false;
   end;
