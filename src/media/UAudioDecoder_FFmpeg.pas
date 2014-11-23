@@ -64,6 +64,7 @@ uses
   avformat,
   avutil,
   avio,
+	ctypes,
   rational,
   UMusic,
   UIni,
@@ -493,11 +494,17 @@ begin
 end;
 
 function TFFmpegDecodeStream.GetLength(): real;
+var
+  start_time: cint64;
 begin
-  // do not forget to consider the start_time value here
+  start_time := fFormatCtx^.start_time;
+  // AV_NOPTS_VALUE is returned if no explicit start_time is available.
+  if start_time = AV_NOPTS_VALUE then
+    start_time := 0;
+
   // there is a type size mismatch warnign because start_time and duration are cint64.
   // So, in principle there could be an overflow when doing the sum.
-  Result := (fFormatCtx^.start_time + fFormatCtx^.duration) / AV_TIME_BASE;
+  Result := (start_time + fFormatCtx^.duration) / AV_TIME_BASE;
 end;
 
 function TFFmpegDecodeStream.GetAudioFormatInfo(): TAudioFormatInfo;
