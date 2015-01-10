@@ -590,6 +590,7 @@ ac_unique_file="src/ultrastardx.dpr"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 DEFINE_HAVE_PORTMIXER
+libpcre_LIBNAME
 libpcre_LIBDIR
 DEFINE_HAVE_LIBPCRE
 libpcre_VERSION_INT
@@ -2038,6 +2039,7 @@ PACKAGE_WEBSITE="http://www.ultrastardeluxe.org/"
 
 # specify the IRC-channel here
 PACKAGE_IRC="#ultrastardx at quakenet.org"
+
 
 
 # Specify a source-file so autoconf can check if the source-dir exists
@@ -4526,7 +4528,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libpng_VERSION_INT -le 60000000; then
-		if   test $libpng_VERSION_INT -ge 52066100; then
+		if   test $libpng_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libpng_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libpng_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libpng_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -4742,7 +4748,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libpng_VERSION_INT -le 60000000; then
-		if   test $libpng_VERSION_INT -ge 52066100; then
+		if   test $libpng_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libpng_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libpng_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libpng_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -5152,7 +5162,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $lua_VERSION_INT -le 60000000; then
-		if   test $lua_VERSION_INT -ge 52066100; then
+		if   test $lua_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $lua_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $lua_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $lua_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -5369,7 +5383,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $lua_VERSION_INT -le 60000000; then
-		if   test $lua_VERSION_INT -ge 52066100; then
+		if   test $lua_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $lua_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $lua_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $lua_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -5585,7 +5603,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $lua_VERSION_INT -le 60000000; then
-		if   test $lua_VERSION_INT -ge 52066100; then
+		if   test $lua_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $lua_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $lua_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $lua_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -5878,7 +5900,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libavcodec_VERSION_INT -le 60000000; then
-		if   test $libavcodec_VERSION_INT -ge 52066100; then
+		if   test $libavcodec_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libavcodec_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libavcodec_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libavcodec_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -6213,7 +6239,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libavformat_VERSION_INT -le 60000000; then
-		if   test $libavformat_VERSION_INT -ge 52066100; then
+		if   test $libavformat_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libavformat_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libavformat_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libavformat_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -6427,7 +6457,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libavutil_VERSION_INT -le 60000000; then
-		if   test $libavutil_VERSION_INT -ge 52066100; then
+		if   test $libavutil_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libavutil_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libavutil_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libavutil_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -6656,7 +6690,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libswscale_VERSION_INT -le 60000000; then
-		if   test $libswscale_VERSION_INT -ge 52066100; then
+		if   test $libswscale_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libswscale_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libswscale_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libswscale_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -6881,7 +6919,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libprojectM_VERSION_INT -le 60000000; then
-		if   test $libprojectM_VERSION_INT -ge 52066100; then
+		if   test $libprojectM_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libprojectM_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libprojectM_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libprojectM_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -7181,7 +7223,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $portaudio_VERSION_INT -le 60000000; then
-		if   test $portaudio_VERSION_INT -ge 52066100; then
+		if   test $portaudio_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $portaudio_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $portaudio_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $portaudio_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -7406,7 +7452,11 @@ eof
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
     	if test $libpcre_VERSION_INT -le 60000000; then
-		if   test $libpcre_VERSION_INT -ge 52066100; then
+		if   test $libpcre_VERSION_INT -ge 54015100; then
+			FFMPEG_VERSION="2.5"
+		elif test $libpcre_VERSION_INT -ge 54007001; then
+			FFMPEG_VERSION="2.4"
+		elif test $libpcre_VERSION_INT -ge 52066100; then
 			FFMPEG_VERSION="2.2"
 		elif test $libpcre_VERSION_INT -ge 52048100; then
 			FFMPEG_VERSION="2.1"
@@ -7517,6 +7567,31 @@ fi
     fi
 
 
+# we need the soname of the pcre library
+if test x"$libpcre_HAVE" = xyes; then
+    old_LIBS="$LIBS"
+    LIBS="-lpcre"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  libpcre_LIBNAME=`objdump -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'`                     libpcre_LIBNAME=$libpcre_LIBNAME
+
+else
+  as_fn_error $? "failed to link" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    LIBS="$old_LIBS"
+fi
 
 # find portmixer
 
