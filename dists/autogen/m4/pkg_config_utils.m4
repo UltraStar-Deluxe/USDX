@@ -101,7 +101,9 @@ AC_DEFUN([PKG_VERSION],
     if test $1 = "libavutil"; then
         AC_MSG_CHECKING([version of ffmpeg])
     	if test $[$1][_VERSION_INT] -le 60000000; then
-		if   test $[$1][_VERSION_INT] -ge 54015100; then
+		if   test $[$1][_VERSION_INT] -ge 54020100; then
+			FFMPEG_VERSION="2.6"    	    	
+		elif test $[$1][_VERSION_INT] -ge 54015100; then
 			FFMPEG_VERSION="2.5"    	    	
 		elif test $[$1][_VERSION_INT] -ge 54007001; then
 			FFMPEG_VERSION="2.4"    	
