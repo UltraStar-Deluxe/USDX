@@ -264,6 +264,10 @@ const
  *   be set to the timebase that the caller desires to use for this stream (note
  *   that the timebase actually used by the muxer can be different, as will be
  *   described later).
+ * - It is advised to manually initialize only the relevant fields in
+ *   AVCodecContext, rather than using @ref avcodec_copy_context() during
+ *   remuxing: there is no guarantee that the codec context values remain valid
+ *   for both input and output format contexts.
  * - The caller may fill in additional information, such as @ref
  *   AVFormatContext.metadata "global" or @ref AVStream.metadata "per-stream"
  *   metadata, @ref AVFormatContext.chapters "chapters", @ref
@@ -755,6 +759,8 @@ type
      * @see avdevice_capabilities_free() for more details.
      *)
     free_device_capabilities: function(s: PAVFormatContext; caps: PAVDeviceCapabilitiesQuery): cint; cdecl;
+
+    data_codec: TAVCodecID; (**< default data codec *)
   end;
 (**
  * @}
@@ -1734,54 +1740,6 @@ type
      *)
     format_whitelist: PAnsiChar;
 
-		(*****************************************************************
-     * All fields below this line are not part of the public API. They
-     * may not be used outside of libavformat and can be changed and
-     * removed at will.
-     * New public fields should be added right above.
-     *****************************************************************
-     *)
-
-    (**
-     * This buffer is only needed when packets were already buffered but
-     * not decoded, for example to get the codec parameters in MPEG
-     * streams.
-     *)
-    packet_buffer: PAVPacketList;
-    packet_buffer_end_: PAVPacketList;
-
-    (* av_seek_frame() support *)
-    data_offset: cint64; (**< offset of the first packet *)
-
-    (**
-     * Raw packets from the demuxer, prior to parsing and decoding.
-     * This buffer is used for buffering packets until the codec can
-     * be identified, as parsing cannot be done without knowing the
-     * codec.
-     *)
-    raw_packet_buffer_: PAVPacketList;
-    raw_packet_buffer_end_: PAVPacketList;
-    (**
-     * Packets split by the parser get queued here.
-     *)
-    parse_queue: PAVPacketList;
-    parse_queue_end: PAVPacketList;
-    (**
-     * Remaining size available for raw_packet_buffer, in bytes.
-     *)
-    raw_packet_buffer_remaining_size: cint;
-
-    (**
-     * Offset to remap timestamps to be non-negative.
-     * Expressed in timebase units.
-     * @see AVStream.mux_ts_offset
-     *)
-    offset: cint64;
-
-    (**
-     * Timebase for the timestamp offset.
-     *)
-    offset_timebase: TAVRational;
 
     (**
      * An opaque field for libavformat internal usage.
@@ -1820,6 +1778,14 @@ type
      * Demuxing: Set by user via av_format_set_subtitle_codec (NO direct access).
      *)
     subtitle_codec: PAVCodec;
+
+    (**
+     * Forced data codec.
+     * This allows forcing a specific decoder, even when there are multiple with
+     * the same codec_id.
+     * Demuxing: Set by user via av_format_set_data_codec (NO direct access).
+     *)
+    data_codec: PAVCodec;
 
     (**
      * Number of bytes to be written as padding in a metadata header.
@@ -1872,6 +1838,12 @@ type
      * - demuxing: Set by user.
      *)
     dump_separator: Pcuint8;
+
+    (**
+     * Forced Data codec_id.
+     * Demuxing: Set by user.
+     *)
+    data_codec_id: TAVCodecID;
   end; (** TAVFormatContext **)
 
 function av_format_get_probe_score(s: {const} PAVFormatContext): cint;
@@ -1887,6 +1859,10 @@ procedure av_format_set_audio_codec(s: PAVFormatContext; c: PAVCodec);
 function av_format_get_subtitle_codec(s: {const} PAVFormatContext): PAVCodec;
   cdecl; external av__format;
 procedure av_format_set_subtitle_codec(s: PAVFormatContext; c: PAVCodec);
+  cdecl; external av__format;
+function av_format_get_data_codec(s: {const} PAVFormatContext): PAVCodec;
+  cdecl; external av__format;
+procedure av_format_set_data_codec(s: PAVFormatContext; c: PAVCodec);
   cdecl; external av__format;
 function av_format_get_metadata_header_padding(s: {const} PAVFormatContext): cint;
   cdecl; external av__format;
@@ -2337,6 +2313,25 @@ function av_seek_frame(s: PAVFormatContext; stream_index: cint; timestamp: cint6
  *       ABI compatibility yet!
  *)
 function avformat_seek_file(s: PAVFormatContext; stream_index: cint; min_ts, ts, max_ts: cint64; flags: cint): cint;
+  cdecl; external av__format;
+
+(**
+ * Discard all internally buffered data. This can be useful when dealing with
+ * discontinuities in the byte stream. Generally works only with formats that
+ * can resync. This includes headerless formats like MPEG-TS/TS but should also
+ * work with NUT, Ogg and in a limited way AVI for example.
+ *
+ * The set of streams, the detected duration, stream parameters and codecs do
+ * not change when calling this function. If you want a complete reset, it's
+ * better to open a new AVFormatContext.
+ *
+ * This does not flush the AVIOContext (s->pb). If necessary, call
+ * avio_flush(s->pb) before calling this function.
+ *
+ * @param s media file handle
+ * @return >=0 on success, error code otherwise
+ *)
+function avformat_flush(s: PAVFormatContext): cint;
   cdecl; external av__format;
 
 (**

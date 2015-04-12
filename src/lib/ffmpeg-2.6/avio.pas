@@ -276,6 +276,13 @@ function avio_put_str(s: PAVIOContext; str: {const} PAnsiChar): cint;
 function avio_put_str16le(s: PAVIOContext; str: {const} PAnsiChar): cint;
   cdecl; external av__format;
 
+(**
+ * Convert an UTF-8 string to UTF-16BE and write it.
+ * @return number of bytes written.
+ *)
+function avio_put_str16be(s: PAVIOContext; str: {const} PAnsiChar): cint;
+  cdecl; external av__format;
+
 const
 (**
  * Passing this as the "whence" parameter to a seek function causes it to
