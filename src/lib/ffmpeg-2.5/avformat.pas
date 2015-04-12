@@ -1734,7 +1734,7 @@ type
      *)
     format_whitelist: PAnsiChar;
 
-		(*****************************************************************
+    (*****************************************************************
      * All fields below this line are not part of the public API. They
      * may not be used outside of libavformat and can be changed and
      * removed at will.
