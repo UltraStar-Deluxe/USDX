@@ -1,0 +1,20 @@
+how to update the ffmpeg files:
+
+1)	buffer.pas
+	cpu.pas
+	dict.pas
+	error.pas
+	frame.pas
+	log.pas
+	mathematics.pas
+	mem.pas
+	opt.pas
+	pixfmt.pas
+	samplefmt.pas
+2)	rational.pas
+3)	avutil.pas
+4)	avcodec.pas
+5)	avio.pas
+	swscale.pas
+	swresample.pas
+6)	avformat.pas
