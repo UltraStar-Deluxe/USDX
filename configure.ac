@@ -169,6 +169,9 @@ fi
 # find sdl
 PKG_HAVE([sdl], [sdl], yes)
 
+# find SDL_image
+PKG_HAVE([SDL_image], [SDL_image], yes)
+
 # find freetype
 PKG_HAVE([freetype], [freetype2], yes)
 

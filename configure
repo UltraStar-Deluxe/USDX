@@ -4894,6 +4894,69 @@ See the pkg-config man page for more details.
     fi
 
 
+# find SDL_image
+
+    have_lib="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL_image" >&5
+$as_echo_n "checking for SDL_image... " >&6; }
+    if test x"$with_SDL_image" = xnocheck; then
+        # do not call pkg-config, use user settings
+        have_lib="yes"
+    elif test x"$with_SDL_image" != xno; then
+        # check if package exists
+	if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"SDL_image\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "SDL_image") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+            have_lib="yes"
+            SDL_image_LIBS=`$PKG_CONFIG --libs --silence-errors "SDL_image"`
+            SDL_image_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "SDL_image"`
+            SDL_image_LIBDIRS=`
+    echo "$SDL_image_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+`
+            # add library directories to LIBS (ignore *_LIBS for now)
+	    if test -n "$SDL_image_LIBDIRS"; then
+                LIBS="$LIBS $SDL_image_LIBDIRS"
+            fi
+
+fi
+    fi
+    if test x$have_lib = xyes; then
+        SDL_image_HAVE="yes"
+        if test -n "$SDL_image_LIBDIRS"; then
+            # show additional lib-dirs
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes ($SDL_image_LIBDIRS)" >&5
+$as_echo "yes ($SDL_image_LIBDIRS)" >&6; }
+        else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+        fi
+    else
+        SDL_image_HAVE="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+        # check if package is required
+        if test xyes = xyes -o x"$with_SDL_image" = xyes ; then
+            # print error message and quit
+            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "SDL_image"`
+            as_fn_error $? "
+
+$err_msg
+
+Alternatively, you may set --with-SDL_image=nocheck and the environment
+variables SDL_image_[...] (see configure --help)
+to appropriate values to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+        fi
+    fi
+
+
 # find freetype
 
     have_lib="no"
