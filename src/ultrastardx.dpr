@@ -127,7 +127,7 @@ uses
   DelphiMcb     in 'lib\midi\DelphiMcb.pas',
   MidiDefs      in 'lib\midi\MidiDefs.pas',
   MidiFile      in 'lib\midi\MidiFile.pas',
-//  MidiOut       in 'lib\midi\MidiOut.pas',
+  MidiOut       in 'lib\midi\MidiOut.pas',
   MidiType      in 'lib\midi\MidiType.pas',
   {$IFDEF FPC}
   // FPC compatibility file for Allocate/DeallocateHWnd
