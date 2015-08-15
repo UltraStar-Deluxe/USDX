@@ -350,7 +350,17 @@ uses
 
   SysUtils;
 
+const
+  sLineBreak = {$IFDEF LINUX} AnsiChar(#10) {$ENDIF}
+               {$IFDEF MSWINDOWS} AnsiString(#13#10) {$ENDIF};
 begin
-  Main;
+  try
+    Main;
+  except
+    on E : Exception do
+    begin
+      ShowMessage('Exception class name = '+E.ClassName+sLineBreak+'Exception message = '+E.Message);
+    end;
+  end;
 end.
 
