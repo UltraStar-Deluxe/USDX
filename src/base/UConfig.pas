@@ -203,16 +203,6 @@ const
                           (LIBSAMPLERATE_VERSION_RELEASE * VERSION_RELEASE);
   {$ENDIF}
 
-  {$IFNDEF lua_VERSION_MAJOR}
-  LUA_VERSION_MAJOR = '5';
-  {$ENDIF}
-  {$IFNDEF lua_VERSION_MINOR}
-  LUA_VERSION_MINOR = '1';
-  {$ENDIF}
-  {$IFNDEF lua_VERSION_RELEASE}
-  LUA_VERSION_RELEASE = '4';
-  {$ENDIF}
-
 function USDXVersionStr(): string;
 function USDXShortVersionStr(): string;
 
