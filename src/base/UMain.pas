@@ -149,6 +149,7 @@ begin
     Log.BenchmarkStart(1);
     Log.LogStatus('Initialize Paths', 'Initialization');
     InitializePaths;
+    Log.SetLogFileLevel(50);
     Log.LogStatus('Load Language', 'Initialization');
     Language := TLanguage.Create;
 

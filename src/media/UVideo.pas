@@ -336,11 +336,11 @@ begin
   {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
   errnum := avformat_open_input(@fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
   {$ELSE}
-  errnum := FFmpegCore.AVFormatOpenInput(@fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8));
+  errnum := FFmpegCore.AVFormatOpenInput(@fFormatContext, PAnsiChar(FileName.ToUTF8));//'ufile:'+FileName.ToUTF8));
   {$IFEND}
   if (errnum <> 0) then
   begin
-    Log.LogError('Failed to open file "'+ FileName.ToNative +'" ('+FFmpegCore.GetErrorString(errnum)+')');
+    Log.LogError('Failed to open file "'+ FileName.ToNative +'" ('+FFmpegCore.GetErrorString(errnum)+'::'+IntToStr(errnum)+')');
     Exit;
   end;
 
