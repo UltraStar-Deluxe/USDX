@@ -84,7 +84,7 @@ begin
       end;
       SDLK_RETURN:
       begin
-        if SelInteraction = 8 then
+        if SelInteraction = 6 then
         begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
@@ -97,7 +97,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 8) then
+        if (SelInteraction >= 0) and (SelInteraction < 6) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
@@ -105,7 +105,7 @@ begin
       end;
       SDLK_LEFT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 8) then
+        if (SelInteraction >= 0) and (SelInteraction < 6) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
