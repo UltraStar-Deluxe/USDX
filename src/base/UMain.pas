@@ -350,7 +350,7 @@ end;
 
 procedure MainLoop;
 const
-  MAX_FPS = 100;
+  MAX_FPS = 60;
 var
   Delay:            integer;
   TicksCurrent:     cardinal;

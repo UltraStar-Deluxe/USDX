@@ -125,6 +125,7 @@ implementation
 
 uses 
   SysUtils,
+  UDisplay,
   UDrawTexture;
 
 procedure TButton.SetX(Value: real);
@@ -534,42 +535,45 @@ end;
 
 function TButton.GetMouseOverArea: TMouseOverRect;
 begin
-  if (FadeTex.TexNum = 0) then
+  if (Display.Cursor_HiddenByScreen = false) then
   begin
-    Result.X := Texture.X;
-    Result.Y := Texture.Y;
-    Result.W := Texture.W;
-    Result.H := Texture.H;
-  end
-  else
-  begin
-    case FadeTexPos of
-      0: begin // fade tex on top
-        Result.X := Texture.X;
-        Result.Y := FadeTex.Y;
-        Result.W := Texture.W;
-        Result.H := FadeTex.H + Texture.H;
-      end;
+    if (FadeTex.TexNum = 0) then
+    begin
+      Result.X := Texture.X;
+      Result.Y := Texture.Y;
+      Result.W := Texture.W;
+      Result.H := Texture.H;
+    end
+    else
+    begin
+      case FadeTexPos of
+        0: begin // fade tex on top
+          Result.X := Texture.X;
+          Result.Y := FadeTex.Y;
+          Result.W := Texture.W;
+          Result.H := FadeTex.H + Texture.H;
+        end;
 
-      1: begin // fade tex on left side
-        Result.X := FadeTex.X;
-        Result.Y := Texture.Y;
-        Result.W := FadeTex.W + Texture.W;
-        Result.H := Texture.H;
-      end;
+        1: begin // fade tex on left side
+          Result.X := FadeTex.X;
+          Result.Y := Texture.Y;
+          Result.W := FadeTex.W + Texture.W;
+          Result.H := Texture.H;
+        end;
 
-      2: begin // fade tex on bottom
-        Result.X := Texture.X;
-        Result.Y := Texture.Y;
-        Result.W := Texture.W;
-        Result.H := FadeTex.H + Texture.H;
-      end;
+        2: begin // fade tex on bottom
+          Result.X := Texture.X;
+          Result.Y := Texture.Y;
+          Result.W := Texture.W;
+          Result.H := FadeTex.H + Texture.H;
+        end;
 
-      3: begin // fade tex on right side
-        Result.X := Texture.X;
-        Result.Y := Texture.Y;
-        Result.W := FadeTex.W + Texture.W;
-        Result.H := Texture.H;
+        3: begin // fade tex on right side
+          Result.X := Texture.X;
+          Result.Y := Texture.Y;
+          Result.W := FadeTex.W + Texture.W;
+          Result.H := Texture.H;
+        end;
       end;
     end;
   end;

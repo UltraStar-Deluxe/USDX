@@ -72,7 +72,6 @@ type
       Cursor_X:              double;
       Cursor_Y:              double;
       Cursor_Pressed:        boolean;
-      Cursor_HiddenByScreen: boolean; // hides software cursor and deactivate auto fade in
 
       // used for cursor fade out when there is no movement
       Cursor_Visible:      boolean;
@@ -84,6 +83,8 @@ type
       { called by MoveCursor and OnMouseButton to update last move and start fade in }
       procedure UpdateCursorFade;
     public
+      Cursor_HiddenByScreen: boolean; // hides software cursor and deactivate auto fade in, must be public for access in UMenuButton
+
       NextScreen:          PMenu;
       CurrentScreen:       PMenu;
 
