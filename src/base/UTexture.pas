@@ -110,8 +110,8 @@ type
   end;
 
   TTextureUnit = class
-    private
-      TextureDatabase: TTextureDatabase;
+    //private
+
     public
       Limit: integer;
 
@@ -132,7 +132,7 @@ type
 
 var
   Texture: TTextureUnit;
-
+  TextureDatabase: TTextureDatabase;
 implementation
 
 uses

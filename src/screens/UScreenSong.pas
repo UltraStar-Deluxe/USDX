@@ -173,6 +173,9 @@ type
       function  getVisibleMedleyArr(MinSource: TMedleySource): TVisArr;
   end;
 
+var
+   ThumbnailsGenerated: boolean; //true if Thumbnails were already genearated during application run
+
 implementation
 
 uses
@@ -932,7 +935,6 @@ var
   I: integer;
   CoverButtonIndex: integer;
   CoverButton: TButton;
-  CoverTexture: TTexture;
   Cover: TCover;
   CoverFile: IPath;
   Song: TSong;
@@ -977,9 +979,9 @@ begin
     // song and cover.
     if (Cover <> nil) then
     begin
-      CoverTexture := Cover.GetPreviewTexture();
-      Texture.AddTexture(CoverTexture, TEXTURE_TYPE_PLAIN, true);
-      CoverButton.Texture := CoverTexture;
+      CoverButton.Texture := Cover.GetPreviewTexture();
+      if (ThumbnailsGenerated = false) then
+         Texture.AddTexture(CoverButton.Texture, TEXTURE_TYPE_PLAIN, true);
 
       // set selected to false -> the right texture will be displayed
       CoverButton.Selected := False;
@@ -987,10 +989,10 @@ begin
 
     Cover.Free;
   end;
-
   // reset selection
   if (Length(CatSongs.Song) > 0) then
     Interaction := 0;
+  ThumbnailsGenerated := true;
 end;
 
 { called when song flows movement stops at a song }
