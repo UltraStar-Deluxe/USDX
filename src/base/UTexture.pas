@@ -133,6 +133,7 @@ type
 var
   Texture: TTextureUnit;
   TextureDatabase: TTextureDatabase;
+  SupportsNPOT: Boolean;
 implementation
 
 uses
@@ -217,6 +218,11 @@ constructor TTextureUnit.Create;
 begin
   inherited Create;
   TextureDatabase := TTextureDatabase.Create;
+  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'TTextureUnit.Create');
+  Log.LogInfo('OpenGL renderer ' + glGetString(GL_RENDERER), 'TTextureUnit.Create');
+  Log.LogInfo('OpenGL version ' + glGetString(GL_VERSION), 'TTextureUnit.Create');
+  SupportsNPOT := AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two');
+  Log.LogInfo('OpenGL TextureNPOT-support: ' + BoolToStr(SupportsNPOT), 'TTextureUnit.Create');
 end;
 
 destructor TTextureUnit.Destroy;
@@ -283,11 +289,14 @@ begin
   oldWidth  := newWidth;
   oldHeight := newHeight;
 
-  // make texture dimensions be powers of 2
-  newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
-  newHeight := Round(Power(2, Ceil(Log2(newHeight))));
-  if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
-    FitImage(TexSurface, newWidth, newHeight);
+  if (SupportsNPOT = false) then
+  begin
+       // make texture dimensions be powers of 2
+       newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
+       newHeight := Round(Power(2, Ceil(Log2(newHeight))));
+       if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
+          FitImage(TexSurface, newWidth, newHeight);
+  end;
 
   // at this point we have the image in memory...
   // scaled so that dimensions are powers of 2
