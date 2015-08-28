@@ -702,10 +702,10 @@ begin
   glDisable(GL_TEXTURE_2D);
   glColor4f(1, 1, 1, 0.5);
   glBegin(GL_QUADS);
-    glVertex2f(690, 44);
+    glVertex2f(690, 60);
     glVertex2f(690, 0);
     glVertex2f(800, 0);
-    glVertex2f(800, 44);
+    glVertex2f(800, 60);
   glEnd;
   glDisable(GL_BLEND);
 
@@ -740,6 +740,9 @@ begin
   SetFontPos(695, 26);
   glColor4f(1, 0, 0, 1);
   glPrint (OSD_LastError);
+  SetFontPos(695, 39);
+  glColor4f(0.5, 0.5, 0, 1);
+  glPrint ('Pre-alpha');
 
   glColor4f(1, 1, 1, 1);
 end;

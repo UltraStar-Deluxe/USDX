@@ -85,9 +85,9 @@ function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
   PressedDown: boolean): boolean;
 var
   SDL_ModState: word;
+  I: integer;
 begin
   Result := true;
-
   { reset user interaction timer }
   UserInteractionTicks := SDL_GetTicks;
 
@@ -125,6 +125,27 @@ begin
       Ord('E'): begin
         FadeTo(@ScreenEdit, SoundLib.Start);
         Exit;
+      end;
+
+      Ord('J'): begin
+        //ScreenSong.Mode := smPartyJukebox;
+        AudioPlayback.PlaySound(SoundLib.Start);
+
+        SetLength(ScreenJukebox.JukeboxSongsList, 0);
+        SetLength(ScreenJukebox.JukeboxVisibleSongs, 0);
+
+        for I := 0 to High(CatSongs.Song) do
+        begin
+          if not (CatSongs.Song[I].Main) then
+            ScreenJukebox.AddSongToJukeboxList(I);
+        end;
+        ScreenJukebox.ActualInteraction := 0;
+        ScreenJukebox.CurrentSongList := 0;
+        ScreenJukebox.ListMin := 0;
+        ScreenJukebox.Interaction := 0;
+        ScreenJukebox.CurrentSongID := ScreenJukebox.JukeboxVisibleSongs[ScreenJukebox.CurrentSongList];
+
+        FadeTo(@ScreenJukebox);
       end;
     end;
 

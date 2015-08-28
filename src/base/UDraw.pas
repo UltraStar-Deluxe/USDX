@@ -53,6 +53,11 @@ procedure SingDrawTimeBar();
 //Draw Editor NoteLines
 procedure EditDrawLine(Left, Top, Right: real; NrLines: integer; Space: integer);
 
+// Draw Jukebox
+procedure SingDrawJukebox;
+procedure SingDrawJukeboxBackground;
+procedure SingDrawJukeboxTimeBar();
+
 type
   TRecR = record
     Top:    real;
@@ -93,6 +98,7 @@ uses
   UMusic,
   URecord,
   UScreenSing,
+  UScreenJukebox,
   USong,
   UTexture;
 
@@ -168,6 +174,92 @@ begin
       glDisable(GL_TEXTURE_2D);
       //glDisable(GL_BLEND);
     end;
+  end;
+end;
+
+procedure SingDrawJukeboxBackground;
+var
+  Rec:    TRecR;
+  TexRec: TRecR;
+begin
+  if (ScreenJukebox.Tex_Background.TexNum > 0) then
+  begin
+    if (Ini.MovieSize <= 1) then  //HalfSize BG
+    begin
+      (* half screen + gradient *)
+      Rec.Top := 110; // 80
+      Rec.Bottom := Rec.Top + 20;
+      Rec.Left  := 0;
+      Rec.Right := 800;
+
+      TexRec.Top := (Rec.Top / 600) * ScreenJukebox.Tex_Background.TexH;
+      TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
+      TexRec.Left := 0;
+      TexRec.Right := ScreenJukebox.Tex_Background.TexW;
+
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
+      glEnable(GL_BLEND);
+      glBegin(GL_QUADS);
+        (* gradient draw *)
+        (* top *)
+        glColor4f(1, 1, 1, 0);
+        glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
+        glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
+        glColor4f(1, 1, 1, 1);
+        glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
+        glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
+        (* mid *)
+        Rec.Top := Rec.Bottom;
+        Rec.Bottom := 490 - 20; // 490 - 20
+        TexRec.Top := TexRec.Bottom;
+        TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
+        glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
+        glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
+        glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
+        glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
+        (* bottom *)
+        Rec.Top := Rec.Bottom;
+        Rec.Bottom := 490; // 490
+        TexRec.Top := TexRec.Bottom;
+        TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
+        glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
+        glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
+        glColor4f(1, 1, 1, 0);
+        glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
+        glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
+
+      glEnd;
+      glDisable(GL_TEXTURE_2D);
+      glDisable(GL_BLEND);
+    end
+    else //Full Size BG
+    begin
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
+      //glEnable(GL_BLEND);
+      glBegin(GL_QUADS);
+
+        glTexCoord2f(0, 0);   glVertex2f(0,  0);
+        glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
+        glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
+        glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
+
+      glEnd;
+      glDisable(GL_TEXTURE_2D);
+      //glDisable(GL_BLEND);
+    end;
+  end
+  else
+  begin
+    // black screen
+    glColor4f(0, 0, 0, 1);
+    glbegin(gl_quads);
+      glVertex2f(0, 0);
+      glVertex2f(0, 600);
+      glVertex2f(800, 600);
+      glVertex2f(800, 0);
+    glEnd;
   end;
 end;
 
@@ -901,6 +993,39 @@ begin
   glDisable(GL_TEXTURE_2D);
 end;
 
+procedure SingDrawJukebox;
+var
+  NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
+  LyricEngine: TLyricEngine;
+begin
+  // positions
+  if Ini.SingWindow = 0 then
+    NR.Left := 120
+  else
+    NR.Left := 20;
+
+  NR.Right := 780;
+
+  NR.Width := NR.Right - NR.Left;
+  NR.WMid  := NR.Width / 2;
+  NR.Mid   := NR.Left + NR.WMid;
+
+  // FIXME: accessing ScreenJukebox is not that generic
+  LyricEngine := ScreenJukebox.Lyrics;
+
+  // draw time-bar
+  if (ScreenAct = 1) and (ScreenJukebox.SongListVisible) then
+    SingDrawJukeboxTimeBar();
+
+  // draw Lyrics
+  if (ScreenJukebox.ShowLyrics) then
+    LyricEngine.Draw(LyricsState.MidBeat);
+  //SingDrawLyricHelper(NR.Left, NR.WMid);
+
+  glDisable(GL_BLEND);
+  glDisable(GL_TEXTURE_2D);
+end;
+
 {//SingBar Mod
 procedure SingDrawSingbar(X, Y, W, H: real; Percent: integer);
 var
@@ -1169,6 +1294,56 @@ begin
  glDisable(GL_TEXTURE_2D);
  glDisable(GL_BLEND);
  glcolor4f(1, 1, 1, 1);
+end;
+
+procedure SingDrawJukeboxTimeBar();
+var
+  x, y:           real;
+  width, height:  real;
+  LyricsProgress: real;
+  CurLyricsTime:  real;
+begin
+  x := Theme.Jukebox.StaticTimeProgress.x;
+  y := Theme.Jukebox.StaticTimeProgress.y;
+
+  width  := Theme.Jukebox.StaticTimeProgress.w;
+  height := Theme.Jukebox.StaticTimeProgress.h;
+
+  glColor4f(Theme.Jukebox.StaticTimeProgress.ColR,
+            Theme.Jukebox.StaticTimeProgress.ColG,
+            Theme.Jukebox.StaticTimeProgress.ColB, 1); //Set Color
+
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glBindTexture(GL_TEXTURE_2D, Tex_JukeboxTimeProgress.TexNum);
+
+  glBegin(GL_QUADS);
+    glTexCoord2f(0, 0);
+    glVertex2f(x, y);
+
+    CurLyricsTime := LyricsState.GetCurrentTime();
+    if (CurLyricsTime > 0) and
+       (LyricsState.TotalTime > 0) then
+    begin
+      LyricsProgress := CurLyricsTime / LyricsState.TotalTime;
+      // avoid that the bar "overflows" for inaccurate song lengths
+      if (LyricsProgress > 1.0) then
+        LyricsProgress := 1.0;
+      glTexCoord2f((width * LyricsProgress) / 8, 0);
+      glVertex2f(x + width * LyricsProgress, y);
+
+      glTexCoord2f((width * LyricsProgress) / 8, 1);
+      glVertex2f(x + width * LyricsProgress, y + height);
+    end;
+
+    glTexCoord2f(0, 1);
+    glVertex2f(x, y + height);
+  glEnd;
+
+ glDisable(GL_TEXTURE_2D);
+ glDisable(GL_BLEND);
+ glcolor4f(1, 1, 1, 1);
+
 end;
 
 end.

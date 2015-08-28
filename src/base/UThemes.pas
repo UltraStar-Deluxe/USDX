@@ -107,9 +107,13 @@ type
     W:      integer;
     Z:      real;
     Color:  string;
+    DColor:  string;
     ColR:   real;
     ColG:   real;
     ColB:   real;
+    DColR:   real;
+    DColG:   real;
+    DColB:   real;
     Font:   integer;
     Size:   integer;
     Align:  integer;
@@ -370,11 +374,44 @@ type
      PausePopUp:      TThemeStatic;
   end;
 
+  TThemeJukebox = class(TThemeBasic)
+    StaticTimeProgress:   TThemeStatic;
+    StaticTimeBackground: TThemeStatic;
+    StaticSongBackground: TThemeStatic;
+    StaticSongListBackground: TThemeStatic;
+    TextTimeText:         TThemeText;
+    TextTimeDesc:         TThemeText;
+    TextSongText:         TThemeText;
+    SongDescription:      TThemeButton;
+    FindSong:             TThemeButton;
+    RepeatSongList:       TThemeButton;
+    SongListOrder:        TThemeButton;
+    RandomSongList:       TThemeButton;
+    Lyric:                TThemeButton;
+    TextListText:         TThemeText;
+    TextCountText:        TThemeText;
+    SongCover:            TThemeStatic;
+
+    //options desc
+    StaticOptions:   TThemeStatic;
+    TextOptionsSongPosition: TThemeText;
+    TextOptionsLyric:  TThemeText;
+    TextOptionsSort:   TThemeText;
+    TextOptionsRandom: TThemeText;
+    TextOptionsRepeat: TThemeText;
+    TextOptionsFind:   TThemeText;
+  end;
+  
   TThemeLyricBar = record
      IndicatorYOffset, UpperX, UpperW, UpperY, UpperH,
      LowerX, LowerW, LowerY, LowerH  : integer;
   end;
 
+  TThemeLyricBarJukebox = record
+     IndicatorYOffset, UpperX, UpperW, UpperY, UpperH,
+     LowerX, LowerW, LowerY, LowerH  : integer;
+  end; 
+  
   TThemeScore = class(TThemeBasic)
     TextArtist:       TThemeText;
     TextTitle:        TThemeText;
@@ -758,6 +795,8 @@ type
     Song:             TThemeSong;
     Sing:             TThemeSing;
     LyricBar:         TThemeLyricBar;
+    LyricBarJukebox:  TThemeLyricBarJukebox;
+    Jukebox:          TThemeJukebox;
     Score:            TThemeScore;
     Top5:             TThemeTop5;
     Options:          TThemeOptions;
@@ -1153,6 +1192,44 @@ begin
       LyricBar.LowerW := ThemeIni.ReadInteger('SingLyricsLowerBar', 'W', 0);
       LyricBar.LowerY := ThemeIni.ReadInteger('SingLyricsLowerBar', 'Y', 0);
       LyricBar.LowerH := ThemeIni.ReadInteger('SingLyricsLowerBar', 'H', 0);
+
+      // Lyric Jukebox
+      LyricBarJukebox.UpperX := ThemeIni.ReadInteger('JukeboxLyricsUpperBar', 'X', 0);
+      LyricBarJukebox.UpperW := ThemeIni.ReadInteger('JukeboxLyricsUpperBar', 'W', 0);
+      LyricBarJukebox.UpperY := ThemeIni.ReadInteger('JukeboxLyricsUpperBar', 'Y', 0);
+      LyricBarJukebox.UpperH := ThemeIni.ReadInteger('JukeboxLyricsUpperBar', 'H', 0);
+      LyricBarJukebox.LowerX := ThemeIni.ReadInteger('JukeboxLyricsLowerBar', 'X', 0);
+      LyricBarJukebox.LowerW := ThemeIni.ReadInteger('JukeboxLyricsLowerBar', 'W', 0);
+      LyricBarJukebox.LowerY := ThemeIni.ReadInteger('JukeboxLyricsLowerBar', 'Y', 0);
+      LyricBarJukebox.LowerH := ThemeIni.ReadInteger('JukeboxLyricsLowerBar', 'H', 0);
+      LyricBarJukebox.IndicatorYOffset := ThemeIni.ReadInteger('JukeboxLyricsUpperBar', 'IndicatorYOffset', 0);
+
+      // Jukebox
+      ThemeLoadStatic(Jukebox.StaticTimeProgress, 'JukeboxTimeProgress');
+      ThemeLoadStatic(Jukebox.StaticTimeBackground, 'JukeboxTimeBackground');
+      ThemeLoadStatic(Jukebox.StaticSongBackground, 'JukeboxSongBackground');
+      ThemeLoadStatic(Jukebox.StaticSongListBackground, 'JukeboxSongListBackground');
+      ThemeLoadText(Jukebox.TextTimeText, 'JukeboxTimeText');
+      ThemeLoadText(Jukebox.TextTimeDesc, 'JukeboxTimeDesc');
+      ThemeLoadText(Jukebox.TextSongText, 'JukeboxTextSong');
+      ThemeLoadButton(Jukebox.SongDescription, 'JukeboxSongDescription');    //TODO: BasisBit fish theme loading and fix theme for JukeBox
+      ThemeLoadButton(Jukebox.FindSong, 'JukeboxFind');
+      ThemeLoadButton(Jukebox.RepeatSongList, 'JukeboxRepeat');
+      ThemeLoadButton(Jukebox.SongListOrder, 'JukeboxSort');
+      ThemeLoadButton(Jukebox.RandomSongList, 'JukeboxRandom');
+      ThemeLoadButton(Jukebox.Lyric, 'JukeboxLyric');
+      ThemeLoadText(Jukebox.TextListText, 'JukeboxListText');
+      ThemeLoadText(Jukebox.TextCountText, 'JukeboxCountText');
+      ThemeLoadStatic(Jukebox.SongCover, 'JukeboxSongCover');
+
+      // options desc
+      ThemeLoadStatic(Jukebox.StaticOptions, 'JukeboxStaticOptions');
+      ThemeLoadText(Jukebox.TextOptionsSongPosition, 'JukeboxOptionsSongPositionDesc');
+      ThemeLoadText(Jukebox.TextOptionsLyric, 'JukeboxOptionsLyricDesc');
+      ThemeLoadText(Jukebox.TextOptionsRandom, 'JukeboxOptionsRandomDesc');
+      ThemeLoadText(Jukebox.TextOptionsRepeat, 'JukeboxOptionsRepeatDesc');
+      ThemeLoadText(Jukebox.TextOptionsFind, 'JukeboxOptionsFindDesc');
+      ThemeLoadText(Jukebox.TextOptionsSort, 'JukeboxOptionsSortDesc');
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
@@ -2447,6 +2524,9 @@ begin
 
   freeandnil(Sing);
   Sing := TThemeSing.Create;
+  
+  freeandnil(Jukebox);
+  Jukebox := TThemeJukebox.Create;
 
   freeandnil(Score);
   Score := TThemeScore.Create;

@@ -59,6 +59,7 @@ uses
   UScreenSong,
   UScreenSing,
   UScreenScore,
+  UScreenJukeBox,
   UScreenTop5,
   UScreenEditSub,
   UScreenEdit,
@@ -111,6 +112,7 @@ var
   ScreenLevel:        TScreenLevel;
   ScreenSong:         TScreenSong;
   ScreenSing:         TScreenSing;
+  ScreenJukebox:      TScreenJukebox;
   ScreenScore:        TScreenScore;
   ScreenTop5:         TScreenTop5;
   ScreenOptions:          TScreenOptions;
@@ -173,6 +175,7 @@ var
   FullScreen:     boolean;
 
   Tex_TimeProgress: TTexture;
+  Tex_JukeboxTimeProgress: TTexture;
 
   //Sing Bar Mod
   Tex_SingBar_Back:  TTexture;
@@ -372,6 +375,10 @@ begin
   //TimeBar mod
   Tex_TimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('TimeBar'));
   //eoa TimeBar mod
+  
+  //JukeBox mod
+  Tex_JukeboxTimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('JukeboxTimeBar'));
+  //end Jukebox Mod
 
   //SingBar Mod
   Tex_SingBar_Back  := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBack'),  TEXTURE_TYPE_PLAIN, 0);
@@ -741,6 +748,8 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Song', 3); Log.BenchmarkStart(3);
   ScreenSongMenu :=             TScreenSongMenu.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Song Menu', 3); Log.BenchmarkStart(3);
+  ScreenJukebox :=             TScreenJukebox.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox', 3); Log.BenchmarkStart(3);
   ScreenSing :=             TScreenSing.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing', 3); Log.BenchmarkStart(3);
   ScreenScore :=            TScreenScore.Create;
@@ -819,6 +828,7 @@ begin
   ScreenLevel.Free;
   ScreenSong.Free;
   ScreenSing.Free;
+  ScreenJukebox.Free;
   ScreenScore.Free;
   ScreenTop5.Free;
   ScreenOptions.Free;

@@ -319,6 +319,7 @@ uses
   UScreenSong             in 'screens\UScreenSong.pas',
   UScreenSing             in 'screens\UScreenSing.pas',
   UScreenScore            in 'screens\UScreenScore.pas',
+  UScreenJukebox          in 'screens\UScreenJukebox.pas',
   UScreenOptions          in 'screens\UScreenOptions.pas',
   UScreenOptionsGame      in 'screens\UScreenOptionsGame.pas',
   UScreenOptionsGraphics  in 'screens\UScreenOptionsGraphics.pas',
