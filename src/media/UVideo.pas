@@ -720,9 +720,14 @@ begin
         fEOF := true;
         Exit;
       end;
+      if (errnum = -541478725) then // LIBAVFORMAT_VERSION >= 56000000 tells us if EOF reached.
+      begin
+        fEOF := true;
+        Exit
+      end;
 
       // error occured, log and exit
-      Log.LogError('Video decoding error', 'TVideoPlayback_FFmpeg.DecodeFrame');
+      Log.LogError('Video decoding error: ' + IntToStr(errnum), 'TVideoPlayback_FFmpeg.DecodeFrame');
       Exit;
     end;
 
