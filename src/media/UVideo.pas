@@ -67,6 +67,7 @@ uses
   glu,
   glext,
   textgl,
+  StrUtils,
   UMediaCore_FFmpeg,
   UCommon,
   UConfig,
@@ -237,6 +238,7 @@ type
 
 var
   FFmpegCore: TMediaCore_FFmpeg;
+  SupportsNPOT: Boolean;
 
 
 // These are called whenever we allocate a frame buffer.
@@ -310,6 +312,7 @@ end;
 constructor TVideo_FFmpeg.Create;
 begin
   glGenTextures(1, PGLuint(@fFrameTex));
+  SupportsNPOT := AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two');
   Reset();
 end;
 
@@ -494,8 +497,17 @@ begin
   end;
   {$ENDIF}
 
-  fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
-  fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
+  if (SupportsNPOT = false) then
+  begin
+    fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
+    fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
+  end
+  else
+  begin
+    fTexWidth   := fCodecContext^.width;
+    fTexHeight  := fCodecContext^.height;
+  end;
+
 
   if (fPboEnabled) then
   begin
@@ -523,7 +535,7 @@ begin
   glBindTexture(GL_TEXTURE_2D, fFrameTex);
   glTexImage2D(GL_TEXTURE_2D, 0, 3, fTexWidth, fTexHeight, 0,
       PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   fOpened := true;

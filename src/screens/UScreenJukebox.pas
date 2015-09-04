@@ -1713,9 +1713,6 @@ begin
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
 
-  //Text[JukeboxTextSongText].Visible := true;
-  //Text[JukeboxTextSongText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
-
   Max := 9;
 
   if (High(JukeboxVisibleSongs) < 9) then

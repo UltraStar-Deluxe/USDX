@@ -127,6 +127,7 @@ type
 
 var
   Display: TDisplay;
+  SupportsNPOT: Boolean;
 
 const
   { constants for screen transition
@@ -142,6 +143,7 @@ implementation
 
 uses
   TextGL,
+  StrUtils,
   UCommandLine,
   UGraphic,
   UIni,
@@ -174,6 +176,7 @@ begin
   DoneOnShow  := false;
 
   glGenTextures(2, PGLuint(@FadeTex));
+  SupportsNPOT := AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two');
   InitFadeTextures();
 
   // set LastError for OSD to No Error
@@ -199,13 +202,20 @@ procedure TDisplay.InitFadeTextures();
 var
   i: integer;
 begin
-  TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
-  TexH := Round(Power(2, Ceil(Log2(ScreenH))));
-
+  if (SupportsNPOT = false) then
+  begin
+    TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
+    TexH := Round(Power(2, Ceil(Log2(ScreenH))));
+  end
+  else
+  begin
+    TexW := ScreenW div Screens;
+    TexH := ScreenH;
+  end;
   for i := 0 to 1 do
   begin
     glBindTexture(GL_TEXTURE_2D, FadeTex[i]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
   end;
