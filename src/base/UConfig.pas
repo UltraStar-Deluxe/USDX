@@ -128,9 +128,9 @@ const
    * Current version of UltraStar Deluxe
    *)
   USDX_VERSION_MAJOR   = 1;
-  USDX_VERSION_MINOR   = 1;
+  USDX_VERSION_MINOR   = 2;
   USDX_VERSION_RELEASE = 0;
-  USDX_VERSION_STATE   = '';
+  USDX_VERSION_STATE   = 'alpha';
   USDX_STRING = 'UltraStar Deluxe';
 
   (*

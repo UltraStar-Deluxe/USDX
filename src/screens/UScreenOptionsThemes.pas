@@ -40,6 +40,7 @@ uses
   UMusic,
   UFiles,
   UIni,
+  UConfig,
   UThemes;
 
 type
@@ -89,7 +90,7 @@ begin
           // Reload all screens, after Theme changed
           // Todo : JB - Check if theme was actually changed
           UGraphic.UnLoadScreens();
-          UGraphic.LoadScreens();
+          UGraphic.LoadScreens(USDXVersionStr);
 
           AudioPlayback.PlaySound(SoundLib.Back);
 
@@ -107,7 +108,7 @@ begin
             // Reload all screens, after Theme changed
             // Todo : JB - Check if theme was actually changed
             UGraphic.UnLoadScreens();
-            UGraphic.LoadScreens();
+            UGraphic.LoadScreens(USDXVersionStr);
 
             AudioPlayback.PlaySound(SoundLib.Back);
 

@@ -39,6 +39,7 @@ uses
   glext,
   UTexture,
   TextGL,
+  UConfig,
   ULog,
   SysUtils,
   ULyrics,
@@ -275,7 +276,7 @@ procedure SwapBuffers;
 procedure LoadTextures;
 procedure InitializeScreen;
 procedure LoadLoadingScreen;
-procedure LoadScreens;
+procedure LoadScreens(Title: string);
 procedure UnloadScreens;
 
 function LoadingThreadFunction: integer;
@@ -512,57 +513,37 @@ begin
   { workaround for buggy Intel 3D driver on Linux }
   SDL_putenv('texture_tiling=false');
 
-  //Log.BenchmarkStart(2);
-
+  SDL_WM_SetCaption(PChar(Title + ' - Initializing screen'), nil);
   InitializeScreen;
-
-  //Log.BenchmarkEnd(2);
-  //Log.LogBenchmark('--> Setting Screen', 2);
-
-  //Log.BenchmarkStart(2);
+  SDL_WM_SetCaption(PChar(Title + ' - Initializing texturizer'), nil);
   Texture := TTextureUnit.Create;
   // FIXME: this does not seem to be correct as Limit.
   // Is the max. of either width or height.
   Texture.Limit := 1024*1024;
 
   //LoadTextures;
-  //Log.BenchmarkEnd(2);
-  //Log.LogBenchmark('--> Loading Textures', 2);
-
-  {
-  Log.BenchmarkStart(2);
-  Lyric:= TLyric.Create;
-  Log.BenchmarkEnd(2);
-  Log.LogBenchmark('--> Loading Fonts', 2);
-  }
-
+  SDL_WM_SetCaption(PChar(Title + ' - Initializing video modules'), nil);
   // Note: do not initialize video modules earlier. They might depend on some
   // SDL video functions or OpenGL extensions initialized in InitializeScreen()
   InitializeVideo();
 
-  //Log.BenchmarkStart(2);
-
+  SDL_WM_SetCaption(PChar(Title + ' - Initializing 3D'), nil);
   Log.LogStatus('TDisplay.Create', 'UGraphic.Initialize3D');
   Display := TDisplay.Create;
   //Display.SetCursor;
 
-  //Log.BenchmarkEnd(2); Log.LogBenchmark('====> Creating Display', 2);
-
-  //Log.LogStatus('Loading Screens', 'Initialize3D');
-  //Log.BenchmarkStart(3);
-
+  SDL_WM_SetCaption(PChar(Title + ' - Loading font textures'), nil);
   Log.LogStatus('Loading Font Textures', 'UGraphic.Initialize3D');
   LoadFontTextures();
 
-  // Show the Loading Screen -------------
+  // Show the Loading Screen
+  SDL_WM_SetCaption(PChar(Title + ' - Loading first screen'), nil);
   Log.LogStatus('Loading Loading Screen', 'UGraphic.Initialize3D');
   LoadLoadingScreen;
 
-
+  SDL_WM_SetCaption(PChar(Title + ' - Loading textures'), nil);
   Log.LogStatus(' Loading Textures', 'UGraphic.Initialize3D');
-  LoadTextures; // jb
-
-
+  LoadTextures;
 
   // now that we have something to display while loading,
   // start thread that loads the rest of ultrastar
@@ -574,8 +555,9 @@ begin
   //LoadingThread  := SDL_CreateThread(@LoadingThread, nil);
 
   // this would be run in the loadingthread
+  SDL_WM_SetCaption(PChar(Title + ' - Loading screens'), nil);
   Log.LogStatus(' Loading Screens', 'UGraphic.Initialize3D');
-  LoadScreens;
+  LoadScreens(Title);
 
 
   // TODO:
@@ -597,7 +579,7 @@ begin
   // currently does not work this way
   // SDL_WaitThread(LoadingThread, I);
   // SDL_DestroyMutex(Mutex);
-
+  SDL_WM_SetCaption(PChar(Title), nil);
   Display.CurrentScreen^.FadeTo( @ScreenMain );
 
   Log.BenchmarkEnd(2);
@@ -728,7 +710,7 @@ begin
   SwapBuffers;
 end;
 
-procedure LoadScreens;
+procedure LoadScreens(Title: string);
 begin
 {  ScreenLoading := TScreenLoading.Create;
   ScreenLoading.OnShow;
@@ -737,87 +719,64 @@ begin
   Display.Draw;
   SwapBuffers;
 }
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Loading', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenMain & ScreenName'), nil);
   ScreenMain :=             TScreenMain.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Main', 3); Log.BenchmarkStart(3);
   ScreenName :=             TScreenName.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Name', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenLevel & ScreenSong'), nil);
   ScreenLevel :=            TScreenLevel.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Level', 3); Log.BenchmarkStart(3);
   ScreenSong :=             TScreenSong.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Song', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenSongMenu & ScreenJukebox'), nil);
   ScreenSongMenu :=             TScreenSongMenu.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Song Menu', 3); Log.BenchmarkStart(3);
   ScreenJukebox :=             TScreenJukebox.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenSing & ScreenScore & ScreenTop5'), nil);
   ScreenSing :=             TScreenSing.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing', 3); Log.BenchmarkStart(3);
-  ScreenScore :=            TScreenScore.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Score', 3); Log.BenchmarkStart(3);
+  ScreenScore :=            TScreenScore.Create;;
   ScreenTop5 :=             TScreenTop5.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Top5', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptions & ScreenOptionsGame'), nil);
   ScreenOptions :=          TScreenOptions.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options', 3); Log.BenchmarkStart(3);
   ScreenOptionsGame :=      TScreenOptionsGame.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Game', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsGraphics & ScreenOptionsSound'), nil);
   ScreenOptionsGraphics  :=  TScreenOptionsGraphics.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Graphics', 3); Log.BenchmarkStart(3);
   ScreenOptionsSound    :=     TScreenOptionsSound.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Sound', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsLyrics & ScreenOptionsThemes'), nil);
   ScreenOptionsLyrics   :=    TScreenOptionsLyrics.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Lyrics', 3); Log.BenchmarkStart(3);
   ScreenOptionsThemes   :=    TScreenOptionsThemes.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Themes', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsRecord & ScreenOptionsAdvanced'), nil);
   ScreenOptionsRecord   :=    TScreenOptionsRecord.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Record', 3); Log.BenchmarkStart(3);
   ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Options Advanced', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenEditSub & ScreenEdit'), nil);
   ScreenEditSub :=          TScreenEditSub.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Edit Sub', 3); Log.BenchmarkStart(3);
   ScreenEdit :=             TScreenEdit.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Edit', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenEditConvert & ScreenOpen'), nil);
   ScreenEditConvert :=      TScreenEditConvert.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen EditConvert', 3); Log.BenchmarkStart(3);
-//  ScreenEditHeader :=       TScreenEditHeader.Create(Skin.ScoreBG);
-//  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Edit Header', 3); Log.BenchmarkStart(3);
   ScreenOpen :=             TScreenOpen.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Open', 3); Log.BenchmarkStart(3);
-  //ScreenSingModi :=         TScreenSingModi.Create;
-  //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenSongMenu & ScreenSongJumpto'), nil);
   ScreenSongMenu :=         TScreenSongMenu.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongMenu', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen SongJumpto', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError'), nil);
   ScreenPopupCheck := TScreenPopupCheck.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Check)', 3); Log.BenchmarkStart(3);
   ScreenPopupError := TScreenPopupError.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Error)', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPopupInfo & ScreenPartyNewRound'), nil);
   ScreenPopupInfo := TScreenPopupInfo.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Popup (Info)', 3); Log.BenchmarkStart(3);
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyNewRound', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyScore & ScreenPartyWin'), nil);
   ScreenPartyScore :=       TScreenPartyScore.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyScore', 3); Log.BenchmarkStart(3);
   ScreenPartyWin :=         TScreenPartyWin.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyWin', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyOptions & ScreenPartyPlayer'), nil);
   ScreenPartyOptions :=     TScreenPartyOptions.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyOptions', 3); Log.BenchmarkStart(3);
   ScreenPartyPlayer :=      TScreenPartyPlayer.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyPlayer', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyRounds & ScreenStatMain'), nil);
   ScreenPartyRounds :=      TScreenPartyRounds.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen PartyRounds', 3); Log.BenchmarkStart(3);
   ScreenStatMain :=         TScreenStatMain.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Stat Main', 3); Log.BenchmarkStart(3);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenStatDetail & ScreenCredits'), nil);
   ScreenStatDetail :=       TScreenStatDetail.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Stat Detail', 3); Log.BenchmarkStart(3);
   ScreenCredits    :=       TScreenCredits.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Credits', 3); Log.BenchmarkStart(3);
-
+  SDL_WM_SetCaption(PChar(Title), nil);
 end;
 
 function LoadingThreadFunction: integer;
 begin
-  LoadScreens;
+  LoadScreens(USDXVersionStr);
   Result:= 1;
 end;
 
