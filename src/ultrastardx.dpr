@@ -354,13 +354,27 @@ uses
 const
   sLineBreak = {$IFDEF LINUX} AnsiChar(#10) {$ENDIF}
                {$IFDEF MSWINDOWS} AnsiString(#13#10) {$ENDIF};
+var
+  I: Integer;
+  Report: string;
+
 begin
   try
     Main;
   except
     on E : Exception do
     begin
-      ShowMessage('Exception class name = '+E.ClassName+sLineBreak+'Exception message = '+E.Message);
+      Report := 'Sorry, an error ocurred! Please report this error to the game-developers. Also check the Error.log file in the game folder.' + LineEnding +
+        'Stacktrace:' + LineEnding;
+      if E <> nil then begin
+        Report := Report + 'Exception class: ' + E.ClassName + LineEnding +
+        'Message: ' + E.Message + LineEnding;
+      end;
+      Report := Report + BackTraceStrFunc(ExceptAddr);
+      for I := 0 to ExceptFrameCount - 1 do
+        Report := Report + LineEnding + BackTraceStrFunc(ExceptFrames[I]);
+      ShowMessage(Report);
+      Halt;
     end;
   end;
 end.

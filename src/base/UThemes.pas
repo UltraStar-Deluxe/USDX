@@ -106,7 +106,7 @@ type
     Y:      integer;
     W:      integer;
     Z:      real;
-    Color:  string;
+    Color:   string;
     DColor:  string;
     ColR:   real;
     ColG:   real;
@@ -228,6 +228,13 @@ type
     ButtonCollection: AThemeButtonCollection;
   end;
 
+  TThemeBox = record
+    X: integer;
+    Y: integer;
+    W: integer;
+    H: integer;
+  end;
+
   TThemeLoading = class(TThemeBasic)
     StaticAnimation:  TThemeStatic;
     TextLoading:      TThemeText;
@@ -269,7 +276,10 @@ type
     MedleyIcon:           TThemeStatic;
     CalculatedMedleyIcon: TThemeStatic;
 
-   //Show Cat in TopLeft Mod
+    //Duet Icon
+    DuetIcon:         TThemeStatic;
+
+    //Show Cat in TopLeft Mod
     TextCat:          TThemeText;
     StaticCat:        TThemeStatic;
 
@@ -295,6 +305,17 @@ type
     StaticNonParty: AThemeStatic;
     TextNonParty:   AThemeText;
 
+    //Screen Song Scores
+    TextScore:       TThemeText;
+    TextMaxScore:    TThemeText;
+    TextMediaScore:  TThemeText;
+    TextMaxScore2:   TThemeText;
+    TextMediaScore2: TThemeText;
+    TextScoreUser:   TThemeText;
+    TextMaxScoreLocal:   TThemeText;
+    TextMediaScoreLocal: TThemeText;
+    TextScoreUserLocal:  TThemeText;
+
     //Party Mode
     StaticTeam1Joker1: TThemeStatic;
     StaticTeam1Joker2: TThemeStatic;
@@ -313,6 +334,10 @@ type
     StaticTeam3Joker5: TThemeStatic;
 
 
+    StaticDuetSingerP1: TThemeStatic;
+    StaticDuetSingerP2: TThemeStatic;
+    TextDuetSingerP1:   TThemeText;
+    TextDuetSingerP2:   TThemeText;
   end;
 
    TThemeSing = class(TThemeBasic)
@@ -371,7 +396,12 @@ type
     LineBonusText:    array [0..8] of UTF8String;
 
     //Pause Popup
-     PausePopUp:      TThemeStatic;
+    PausePopUp:      TThemeStatic;
+
+    InfoMessageText: TThemeText;
+    InfoMessageBG:   TThemeStatic;
+
+    StaticDuet: AThemeStatic;
   end;
 
   TThemeJukebox = class(TThemeBasic)
@@ -403,6 +433,11 @@ type
   end;
   
   TThemeLyricBar = record
+     IndicatorYOffset, UpperX, UpperW, UpperY, UpperH,
+     LowerX, LowerW, LowerY, LowerH  : integer;
+  end;
+
+  TThemeLyricBarDuet = record
      IndicatorYOffset, UpperX, UpperW, UpperY, UpperH,
      LowerX, LowerW, LowerY, LowerH  : integer;
   end;
@@ -473,7 +508,7 @@ type
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
-    Description:          array[0..7] of UTF8String;
+    Description:          array[0..9] of UTF8String;
   end;
 
   TThemeOptionsGame = class(TThemeBasic)
@@ -571,6 +606,7 @@ type
     Button2: TThemeButton;
     Button3: TThemeButton;
     Button4: TThemeButton;
+    Button5: TThemeButton;
 
     SelectSlide3: TThemeSelectSlide;
 
@@ -795,6 +831,7 @@ type
     Song:             TThemeSong;
     Sing:             TThemeSing;
     LyricBar:         TThemeLyricBar;
+    LyricBarDuet:     TThemeLyricBarDuet;
     LyricBarJukebox:  TThemeLyricBarJukebox;
     Jukebox:          TThemeJukebox;
     Score:            TThemeScore;
@@ -880,6 +917,7 @@ var
   //Skin:         TSkin;
   Theme:        TTheme;
   Color:        array of TColor;
+  LastC:        integer;
 
 implementation
 
@@ -1037,7 +1075,7 @@ end;
 
 function TTheme.LoadTheme(ThemeNum: integer; sColor: integer): boolean;
 var
-  I:    integer;
+  I, J:    integer;
 begin
   Result := false;
 
@@ -1140,6 +1178,9 @@ begin
       ThemeLoadStatic(Song.MedleyIcon, 'SongMedleyIcon');
       ThemeLoadStatic(Song.CalculatedMedleyIcon, 'SongCalculatedMedleyIcon');
 
+      //Duet Icon
+      ThemeLoadStatic(Song.DuetIcon, 'SongDuetIcon');
+
       //Show Cat in TopLeft Mod
       ThemeLoadStatic(Song.StaticCat, 'SongStaticCat');
       ThemeLoadText(Song.TextCat, 'SongTextCat');
@@ -1161,6 +1202,12 @@ begin
 
       ThemeLoadStatics (Song.StaticNonParty, 'SongStaticNonParty');
       ThemeLoadTexts (Song.TextNonParty, 'SongTextNonParty');
+
+      // Duet Singers
+      ThemeLoadStatic (Song.StaticDuetSingerP1, 'SongStaticDuetSingerP1');
+      ThemeLoadStatic (Song.StaticDuetSingerP2, 'SongStaticDuetSingerP2');
+      ThemeLoadText (Song.TextDuetSingerP1, 'SongTextDuetSingerP1');
+      ThemeLoadText (Song.TextDuetSingerP2, 'SongTextDuetSingerP2');
 
       //Party Mode
       ThemeLoadStatic(Song.StaticTeam1Joker1, 'SongStaticTeam1Joker1');
@@ -1192,6 +1239,17 @@ begin
       LyricBar.LowerW := ThemeIni.ReadInteger('SingLyricsLowerBar', 'W', 0);
       LyricBar.LowerY := ThemeIni.ReadInteger('SingLyricsLowerBar', 'Y', 0);
       LyricBar.LowerH := ThemeIni.ReadInteger('SingLyricsLowerBar', 'H', 0);
+
+      //LyricBarDuet
+      LyricBarDuet.UpperX := ThemeIni.ReadInteger('SingLyricsDuetUpperBar', 'X', 0);
+      LyricBarDuet.UpperW := ThemeIni.ReadInteger('SingLyricsDuetUpperBar', 'W', 0);
+      LyricBarDuet.UpperY := ThemeIni.ReadInteger('SingLyricsDuetUpperBar', 'Y', 0);
+      LyricBarDuet.UpperH := ThemeIni.ReadInteger('SingLyricsDuetUpperBar', 'H', 0);
+      LyricBarDuet.IndicatorYOffset := ThemeIni.ReadInteger('SingLyricsDuetUpperBar', 'IndicatorYOffset', 0);
+      LyricBarDuet.LowerX := ThemeIni.ReadInteger('SingLyricsDuetLowerBar', 'X', 0);
+      LyricBarDuet.LowerW := ThemeIni.ReadInteger('SingLyricsDuetLowerBar', 'W', 0);
+      LyricBarDuet.LowerY := ThemeIni.ReadInteger('SingLyricsDuetLowerBar', 'Y', 0);
+      LyricBarDuet.LowerH := ThemeIni.ReadInteger('SingLyricsDuetLowerBar', 'H', 0);
 
       // Lyric Jukebox
       LyricBarJukebox.UpperX := ThemeIni.ReadInteger('JukeboxLyricsUpperBar', 'X', 0);
@@ -1233,6 +1291,9 @@ begin
 
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
+
+      ThemeLoadStatics (Sing.StaticDuet, 'SingStaticDuet');
+
       //TimeBar mod
        ThemeLoadStatic(Sing.StaticTimeProgress, 'SingTimeProgress');
        ThemeLoadText(Sing.TextTimeText, 'SingTimeText');
@@ -1771,6 +1832,7 @@ begin
 
   ThemeText.Text  := Language.Translate(ThemeIni.ReadString(Name, 'Text', ''));
   ThemeText.Color := ThemeIni.ReadString(Name, 'Color', '');
+  ThemeText.DColor := ThemeIni.ReadString(Name, 'DColor', '');
 
   //Reflection
   ThemeText.Reflection         := (ThemeIni.ReadInteger(Name, 'Reflection', 0)) = 1;
@@ -1783,6 +1845,15 @@ begin
     ThemeText.ColG := Color[C].RGB.G;
     ThemeText.ColB := Color[C].RGB.B;
   end;
+
+  C := ColorExists(ThemeText.DColor);
+  if C >= 0 then
+  begin
+    ThemeText.DColR := Color[C].RGB.R;
+    ThemeText.DColG := Color[C].RGB.G;
+    ThemeText.DColB := Color[C].RGB.B;
+  end;
+
 end;
 
 procedure TTheme.ThemeLoadTexts(var ThemeText: AThemeText; const Name: string);

@@ -214,6 +214,8 @@ begin
     Text[TextDate[I]].Text := CurrentSong.Score[Ini.Difficulty, I-1].Date;
   end;
 
+  If Length(CurrentSong.Score[Ini.Difficulty])=0 then
+    FadeTo(@ScreenSong); //if there are no scores to show, go to next screen
   for I := Length(CurrentSong.Score[Ini.Difficulty]) + 1 to 5 do
   begin
     Statics[StaticNumber[I]].Visible := false;

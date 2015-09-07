@@ -116,7 +116,7 @@ type
 
     JukeboxTextTimeText: integer;
     JukeboxTextTimeDesc: integer;
-    //JukeboxTextSongText: integer;
+    JukeboxTextSongText: integer;    //Button of Songtitle
 
     SongFinish: boolean;
 
@@ -489,14 +489,14 @@ begin
       OrderMode := false;
       Button[JukeboxSongListOrder].SetSelect(false);
       try
-         //Button[JukeboxSongListOrder].Text[0].Text := Language.Translate('OPTION_VALUE_ARTIST');     /hackyhack
+         Button[JukeboxSongListOrder].Text[0].Text := Language.Translate('OPTION_VALUE_ARTIST');
       finally
       end;
 
     end;
   end;
 
-  //Button[JukeboxFindSong].Text[0].Text := '';                                                /hackyhack
+  Button[JukeboxFindSong].Text[0].Text := '';
 
   Button[JukeboxLyric].SetSelect(true);
   Button[JukeboxRandomSongList].SetSelect(false);
@@ -610,6 +610,57 @@ begin
             Inc(fTimebarMode);
           Exit;
         end;
+
+        // allow search for songs
+        Ord('J'):
+        begin
+          LastTick := SDL_GetTicks();
+          FindSongList := not FindSongList;
+          if (Filter = '') then
+          begin
+            if (FindSongList) then
+              Button[JukeboxFindSong].Text[0].Text := '';
+          end;
+          Button[JukeboxFindSong].SetSelect(FindSongList);
+          if FindSongList then
+            FilterSongList(Filter)
+          else
+            FilterSongList('');
+          Exit;
+        end;
+
+        //Randomixe Playlist
+        Ord('R'):
+        begin
+          if (SongListVisible) then
+          begin
+            LastTick := SDL_GetTicks();
+
+            Button[JukeboxRandomSongList].SetSelect(true);
+            Button[JukeboxSongListOrder].SetSelect(false);
+
+            RandomMode := true;
+            OrderMode := false;
+
+            for I := 0 to High(JukeboxVisibleSongs) * 2 do
+            begin
+              RValueI := RandomRange(0, High(JukeboxVisibleSongs) + 1);
+              RValueE := RandomRange(0, High(JukeboxVisibleSongs) + 1);
+
+              tmp := JukeboxVisibleSongs[RValueI];
+              JukeboxVisibleSongs[RValueI] := JukeboxVisibleSongs[RValueE];
+              JukeboxVisibleSongs[RValueE] := tmp;
+
+              if (RValueI = CurrentSongList) then
+                CurrentSongList := RValueE
+              else
+              begin
+                if (RValueE = CurrentSongList) then
+                  CurrentSongList := RValueI;
+              end;
+            end;
+          end;
+        end;
       end;
      end;
 
@@ -701,65 +752,6 @@ begin
             RepeatSongList := not RepeatSongList;
             Button[JukeboxRepeatSongList].SetSelect(RepeatSongList);
             Exit;
-          end;
-        end;
-
-        SDLK_F:
-        begin
-
-          if (SongListVisible) and (SDL_ModState = KMOD_LCTRL) then
-          begin
-            LastTick := SDL_GetTicks();
-
-            FindSongList := not FindSongList;
-
-            if (Filter = '') then
-            begin
-              if (FindSongList) then
-                Button[JukeboxFindSong].Text[0].Text := ''
-            end;
-
-            Button[JukeboxFindSong].SetSelect(FindSongList);
-
-            if not (FindSongList) then
-              FilterSongList('')
-            else
-              FilterSongList(Filter);
-
-            Exit;
-          end;
-        end;
-
-        SDLK_R:
-        begin
-
-          if (SongListVisible) and (SDL_ModState = KMOD_LCTRL) then
-          begin
-            LastTick := SDL_GetTicks();
-
-            Button[JukeboxRandomSongList].SetSelect(true);
-            Button[JukeboxSongListOrder].SetSelect(false);
-
-            RandomMode := true;
-            OrderMode := false;
-
-            for I := 0 to High(JukeboxVisibleSongs) * 2 do
-            begin
-              RValueI := RandomRange(0, High(JukeboxVisibleSongs) + 1);
-              RValueE := RandomRange(0, High(JukeboxVisibleSongs) + 1);
-
-              tmp := JukeboxVisibleSongs[RValueI];
-              JukeboxVisibleSongs[RValueI] := JukeboxVisibleSongs[RValueE];
-              JukeboxVisibleSongs[RValueE] := tmp;
-
-              if (RValueI = CurrentSongList) then
-                CurrentSongList := RValueE
-              else
-              begin
-                if (RValueE = CurrentSongList) then
-                  CurrentSongList := RValueI;
-              end;
-            end;
           end;
         end;
 
@@ -1097,7 +1089,7 @@ begin
 
   JukeboxTextTimeText         := AddText(Theme.Jukebox.TextTimeText);
   JukeboxTextTimeDesc         := AddText(Theme.Jukebox.TextTimeDesc);
-//  JukeboxTextSongText         := AddText(Theme.Jukebox.TextSongText);
+  JukeboxTextSongText         := AddText(Theme.Jukebox.TextSongText);
 
   PosY := Theme.Jukebox.SongDescription.Y;
   for I := 0 to 9 do
@@ -1531,7 +1523,7 @@ begin
 
     Text[JukeboxTextTimeText].Draw;
     Text[JukeboxTextTimeDesc].Draw;
-   // Text[JukeboxTextSongText].Draw;
+    Text[JukeboxTextSongText].Draw;
 
     // options desc
     Text[JukeboxTextOptionsSongPosition].Draw;
@@ -1712,6 +1704,9 @@ begin
   begin
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
+
+  Text[JukeboxTextSongText].Visible := true;
+  Text[JukeboxTextSongText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
   Max := 9;
 
