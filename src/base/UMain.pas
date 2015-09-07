@@ -143,10 +143,8 @@ begin
     Log := TLog.Create;
     Log.Title := WindowTitle;
     Log.FileOutputEnabled := not Params.NoLog;
-    Log.BenchmarkStart(0);
 
     // Language
-    Log.BenchmarkStart(1);
     Log.LogStatus('Initialize Paths', 'Initialization');
     InitializePaths;
     Log.SetLogFileLevel(50);
@@ -155,24 +153,16 @@ begin
 
     // add const values:
     Language.AddConst('US_VERSION', USDXVersionStr);
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Language', 1);
 
     // Skin
     Log.BenchmarkStart(1);
     Log.LogStatus('Loading Skin List', 'Initialization');
     Skin := TSkin.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Skin List', 1);
 
-    Log.BenchmarkStart(1);
     Log.LogStatus('Loading Theme List', 'Initialization');
     Theme := TTheme.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Theme List', 1);
 
     // Ini + Paths
-    Log.BenchmarkStart(1);
     Log.LogStatus('Load Ini', 'Initialization');
     Ini := TIni.Create;
     Ini.Load;
@@ -181,61 +171,33 @@ begin
     Log.LogStatus('Write Ini', 'Initialization');
     Ini.Save;
 
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Ini', 1);
-
     // Sound
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize Sound', 'Initialization');
     InitializeSound();
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing Sound', 1);
 
     // Lyrics-engine with media reference timer
     LyricsState := TLyricsState.Create();
 
     // Theme
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Load Theme', 'Initialization');
     Theme.LoadTheme(Ini.Theme, Ini.Color);
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Theme', 1);
 
     // Covers Cache
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Creating Covers Cache', 'Initialization');
     Covers := TCoverDatabase.Create;
-    Log.LogBenchmark('Loading Covers Cache Array', 1);
-    Log.BenchmarkStart(1);
 
     // Category Covers
-    Log.BenchmarkStart(1);
     Log.LogStatus('Creating Category Covers Array', 'Initialization');
     CatCovers:= TCatCovers.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Category Covers Array', 1);
 
     // Songs
-    //Log.BenchmarkStart(1);
     Log.LogStatus('Creating Song Array', 'Initialization');
     Songs := TSongs.Create;
-    //Songs.LoadSongList;
 
     Log.LogStatus('Creating 2nd Song Array', 'Initialization');
     CatSongs := TCatSongs.Create;
 
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Songs', 1);
-
     // Graphics
-    Log.BenchmarkStart(1);
-    Log.LogStatus('Initialize 3D', 'Initialization');
     Initialize3D(WindowTitle);
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing 3D', 1);
 
     // Score Saving System
-    Log.BenchmarkStart(1);
     Log.LogStatus('DataBase System', 'Initialization');
     DataBase := TDataBaseSystem.Create;
 
@@ -244,58 +206,33 @@ begin
     else
       DataBase.Init(Params.ScoreFile);
 
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading DataBase System', 1);
-
     // Playlist Manager
-    Log.BenchmarkStart(1);
     Log.LogStatus('Playlist Manager', 'Initialization');
     PlaylistMan := TPlaylistManager.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Playlist Manager', 1);
 
     // GoldenStarsTwinkleMod
-    Log.BenchmarkStart(1);
     Log.LogStatus('Effect Manager', 'Initialization');
     GoldenRec := TEffectManager.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Particle System', 1);
 
     // Joypad
     if (Ini.Joypad = 1) or (Params.Joypad) then
     begin
-      Log.BenchmarkStart(1);
       Log.LogStatus('Initialize Joystick', 'Initialization');
       Joy := TJoy.Create;
-      Log.BenchmarkEnd(1);
-      Log.LogBenchmark('Initializing Joystick', 1);
     end;
 
     // Lua
-    Log.BenchmarkStart(1);
     Party := TPartyGame.Create;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing Party Manager', 1);
 
-    Log.BenchmarkStart(1);
     LuaCore.RegisterModule('Log', ULuaLog_Lib_f);
     LuaCore.RegisterModule('Gl', ULuaGl_Lib_f);
     LuaCore.RegisterModule('TextGl', ULuaTextGl_Lib_f);
     LuaCore.RegisterModule('Party', ULuaParty_Lib_f);
     LuaCore.RegisterModule('ScreenSing', ULuaScreenSing_Lib_f);
 
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Initializing LuaCore', 1);
-
-    Log.BenchmarkStart(1);
     LuaCore.LoadPlugins;
-    Log.BenchmarkEnd(1);
-    Log.LogBenchmark('Loading Lua Plugins', 1);
 
     LuaCore.DumpPlugins;
-
-    Log.BenchmarkEnd(0);
-    Log.LogBenchmark('Loading Time', 0);
 
     { prepare software cursor }
     Display.SetCursor;
