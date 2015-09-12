@@ -1028,7 +1028,7 @@ function TPathImpl.IsFile(): boolean;
 begin
   // note the different specifications of FileExists() on Win32 <> Unix
   {$IFDEF MSWINDOWS}
-  Result := FileSystem.FileExists(Self);
+  Result:= FileSystem.FileExists(Self);
   {$ELSE}
   Result := Exists() and not IsDirectory();
   {$ENDIF}
@@ -1183,7 +1183,7 @@ var
   SaveMode: word;
 begin
   // save changes in write mode (= not read-only mode)
-  if ((fMode and 3) <> fmOpenRead) then
+  if ((fMode) <> fmOpenRead) then
   begin
     if (fMode = fmCreate) then
       SaveMode := fmCreate

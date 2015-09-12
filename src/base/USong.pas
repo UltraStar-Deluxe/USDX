@@ -989,6 +989,10 @@ begin
 
           //Add Mp3 Flag to Done
           Done := Done or 4;
+        end
+        else
+        begin
+          Log.LogError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
         end;
       end
 
