@@ -36,6 +36,7 @@ interface
 uses
   SysUtils,
   Classes,
+  TntSysUtils,
   IniFiles,
   {$IFDEF MSWINDOWS}
   TntClasses,
@@ -667,7 +668,7 @@ begin
   if (IsNativeUTF8()) then
     Result := fName
   else
-    Result := Utf8ToAnsi(fName);
+    Result := Utf8ToAnsi(fName);   //basisbit hackyhack - rteverted already
 end;
 
 function TPathImpl.GetDrive(): IPath;

@@ -187,7 +187,7 @@ begin
   if (TextureName <> '') and (Result.IsSet) then
   begin
     //Log.LogError('', '-----------------------------------------');
-    //Log.LogError(TextureName+' - '+ Result, 'TSkin.GetTextureFileName');
+    Log.LogError('Was not able to retrieve Texture for ' + TextureName + ' - ' + Result.ToNative, 'TSkin.GetTextureFileName');
   end;
 end;
 

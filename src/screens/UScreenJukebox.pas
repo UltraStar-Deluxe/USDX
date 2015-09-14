@@ -614,19 +614,19 @@ begin
         // allow search for songs
         Ord('J'):
         begin
-          LastTick := SDL_GetTicks();
-          FindSongList := not FindSongList;
-          if (Filter = '') then
+          if (SongListVisible) then
           begin
-            if (FindSongList) then
-              Button[JukeboxFindSong].Text[0].Text := '';
+            LastTick := SDL_GetTicks();
+            FindSongList := not FindSongList;
+            if (Filter = '') and (FindSongList) then
+                Button[JukeboxFindSong].Text[0].Text := '';
+            Button[JukeboxFindSong].SetSelect(FindSongList);
+            if FindSongList then
+              FilterSongList(Filter)
+            else
+              FilterSongList('');
+            Exit;
           end;
-          Button[JukeboxFindSong].SetSelect(FindSongList);
-          if FindSongList then
-            FilterSongList(Filter)
-          else
-            FilterSongList('');
-          Exit;
         end;
 
         //Randomixe Playlist
@@ -758,7 +758,14 @@ begin
         SDLK_ESCAPE:
         begin
           if (SongListVisible) then
-            SongListVisible := false
+          begin
+            SongListVisible := false;
+            FindSongList := false;
+            Button[JukeboxFindSong].SetSelect(FindSongList);
+            Filter:= '';
+            FilterSongList('');
+            Button[JukeboxFindSong].Text[0].Text := '';
+          end
           else
             ScreenPopupCheck.ShowPopup('MSG_END_JUKEBOX', OnEscapeJukebox, nil, false)
         end;
@@ -769,6 +776,12 @@ begin
           if (FindSongList) and (SongListVisible) then
           begin
             LastTick := SDL_GetTicks();
+            if (Filter = '') then
+            begin
+              FindSongList:=false;
+              Button[JukeboxFindSong].SetSelect(FindSongList);
+              Exit;
+            end;
             Button[JukeboxFindSong].Text[0].DeleteLastLetter();
             Filter := Button[JukeboxFindSong].Text[0].Text;
             FilterSongList(Filter);
@@ -795,20 +808,24 @@ begin
           if (SongListVisible) then
           begin
             LastTick := SDL_GetTicks();
+            if (FindSongList) then
+            begin
+              FindSongList:=false;
+              Button[JukeboxFindSong].SetSelect(FindSongList);
+            end;
+            if (High(JukeboxVisibleSongs) < 0) then
+            begin
+              FilterSongList('');
+            end;
             CurrentSongList := ActualInteraction - 1;
             Finish;
             PlayMusic(CurrentSongList);
           end;
+
         end;
 
         SDLK_LEFT:
         begin
-          {if not (SongListVisible) and (CurrentSongList > 0) then
-          begin
-            CurrentSongList := CurrentSongList - 2;
-            PlayMusic(CurrentSongList);
-          end;
-           }
           if (SDL_ModState = KMOD_LSHIFT) then
           begin
             fCurrentVideo.GetScreenPosition(X, Y, Z);
@@ -823,21 +840,12 @@ begin
 
         SDLK_RIGHT:
         begin
-          {
-          if not (SongListVisible) and (CurrentSongList < High(JukeboxVisibleSongs)) then
-          begin
-            CurrentSongList := CurrentSongList + 1;
-            PlayMusic(CurrentSongList);
-          end;
-          }
-
           if (SDL_ModState = KMOD_LSHIFT) then
           begin
             fCurrentVideo.GetScreenPosition(X, Y, Z);
             fCurrentVideo.SetScreenPosition(X - 2, Y, Z);
             fCurrentVideo.SetWidth(fCurrentVideo.GetWidth + 4);
           end;
-
         end;
 
         SDLK_DELETE:
@@ -847,51 +855,6 @@ begin
            // DeleteSong(ActualInteraction);
           end;
         end;
-
-        SDLK_PAGEDOWN:
-        begin
-          {if (SongListVisible) and ((ActualInteraction + 10) < High(JukeboxVisibleSongs)) then
-          begin
-
-            LastTick := SDL_GetTicks();
-
-            // TODO: BUG AT END
-            if (ListMin + 10 < High(JukeboxVisibleSongs) - 9 + Interaction) then
-            begin
-              ListMin := ListMin + 10;
-              ActualInteraction := ActualInteraction + 10;
-            end
-            else
-            begin
-              ListMin := High(JukeboxVisibleSongs) - 9 + Interaction;
-              ActualInteraction := High(JukeboxVisibleSongs) - 9 + Interaction;
-            end;
-
-          end;}
-        end;
-
-        SDLK_PAGEUP:
-        begin
-        {
-          if (SongListVisible) and (ActualInteraction - 9 > 0) then
-          begin
-            if (ListMin > 10) then
-              ListMin := ListMin - 10
-            else
-              ListMin := 0;
-
-            ActualInteraction := ActualInteraction - 10;
-
-            if (ActualInteraction < 10) then
-              Interaction := ActualInteraction;
-
-            LastTick := SDL_GetTicks();
-          end;}
-        end;
-
-        // up and down could be done at the same time,
-        // but i don't want to declare variables inside
-        // functions like this one, called so many times
 
         SDLK_DOWN:
         begin
@@ -1107,9 +1070,10 @@ begin
   JukeboxSongListOrder := AddButton(Theme.Jukebox.SongListOrder);
   JukeboxRandomSongList := AddButton(Theme.Jukebox.RandomSongList);
   JukeboxLyric := AddButton(Theme.Jukebox.Lyric);
+  RepeatSongList := true;
 
   Button[JukeboxFindSong].Selectable := false;
-  Button[JukeboxRepeatSongList].Selectable := false;
+  Button[JukeboxRepeatSongList].Selectable := true;
   Button[JukeboxSongListOrder].Selectable := false;
   Button[JukeboxRandomSongList].Selectable := false;
   Button[JukeboxLyric].Selectable := false;
@@ -1405,7 +1369,7 @@ begin
   begin
     if (RepeatSongList) then
     begin
-      // resyart playlist
+      // restart playlist
       CurrentSongList := 0;
       CatSongs.Selected := JukeboxVisibleSongs[CurrentSongList];
       PlayMusic(CurrentSongList);
@@ -1705,8 +1669,8 @@ begin
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
 
-  Text[JukeboxTextSongText].Visible := true;
-  Text[JukeboxTextSongText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
+  //Text[JukeboxTextSongText].Visible := true;
+  //Text[JukeboxTextSongText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
   Max := 9;
 
@@ -1769,31 +1733,32 @@ begin
   Button[JukeboxRepeatSongList].Draw;
   Button[JukeboxRandomSongList].Draw;
   Button[JukeboxLyric].Draw;
-
-  for I := 0 to Max do
-  begin
-    Button[SongDescription[I]].Visible := true;
-    Button[SongDescription[I]].Selectable := true;
-
-    SongDesc := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Artist + ' - ' + CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Title;
-
-    if (JukeboxVisibleSongs[I + ListMin] = CurrentSongID) and (I + ListMin <> ActualInteraction) then
+  try
+    for I := 0 to Max do
     begin
-      Button[SongDescription[I]].Text[0].ColR := SelectColR;
-      Button[SongDescription[I]].Text[0].ColG := SelectColG;
-      Button[SongDescription[I]].Text[0].ColB := SelectColB;
-    end
-    else
-    begin
-      Button[SongDescription[I]].Text[0].ColR := 1;
-      Button[SongDescription[I]].Text[0].ColG := 1;
-      Button[SongDescription[I]].Text[0].ColB := 1;
+      Button[SongDescription[I]].Visible := true;
+      Button[SongDescription[I]].Selectable := true;
+
+      SongDesc := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Artist + ' - ' + CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Title;
+
+      if (JukeboxVisibleSongs[I + ListMin] = CurrentSongID) and (I + ListMin <> ActualInteraction) then
+      begin
+        Button[SongDescription[I]].Text[0].ColR := SelectColR;
+        Button[SongDescription[I]].Text[0].ColG := SelectColG;
+        Button[SongDescription[I]].Text[0].ColB := SelectColB;
+      end
+      else
+      begin
+        Button[SongDescription[I]].Text[0].ColR := 1;
+        Button[SongDescription[I]].Text[0].ColG := 1;
+        Button[SongDescription[I]].Text[0].ColB := 1;
+      end;
+
+      Button[SongDescription[I]].Text[0].Text := SongDesc;
+      Button[SongDescription[I]].Draw;
     end;
-
-    Button[SongDescription[I]].Text[0].Text := SongDesc;
-    Button[SongDescription[I]].Draw;
+  finally
   end;
-
 end;
 
 end.
