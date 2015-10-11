@@ -45,7 +45,7 @@ uses
   UAudioCore_Bass,
   ULog,
   sdl,
-  bass,
+  Bass,
   SysUtils;
 
 type
@@ -172,8 +172,6 @@ var
   SourceFormatInfo: TAudioFormatInfo;
   FrameSize: integer;
   PadFrame: PByteArray;
-  //Info: BASS_INFO;
-  //Latency: double;
 begin
   Result := -1;
 
@@ -249,7 +247,6 @@ var
   FormatFlags: DWORD;
 begin
   Result := false;
-
   // close previous stream and reset state
   Reset();
 
@@ -365,13 +362,13 @@ begin
 end;
 
 function TBassPlaybackStream.GetLatency(): double;
+var
+  Info: BASS_INFO;
 begin
-  // TODO: should we consider output latency for synching (needs BASS_DEVICE_LATENCY)?
-  //if (BASS_GetInfo(Info)) then
-  //  Latency := Info.latency / 1000
-  //else
-  //  Latency := 0;
-  Result := 0; 
+  if (BASS_GetInfo(Info)) then
+    Result := Info.latency / 1000
+  else
+    Result := 0;
 end;
 
 function TBassPlaybackStream.GetVolume(): single;
@@ -706,9 +703,9 @@ begin
 
   //Log.BenchmarkStart(4);
   //Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
-
+  BASS_SetConfig(BASS_CONFIG_DEV_DEFAULT, 1);
   // TODO: use BASS_DEVICE_LATENCY to determine the latency
-  if not BASS_Init(-1, 44100, 0, 0, nil) then
+  if not BASS_Init(-1, 44100, BASS_DEVICE_LATENCY, 0, nil) then
   begin
     Log.LogError('Could not initialize BASS', 'TAudioPlayback_Bass.InitializePlayback');
     Exit;
@@ -759,8 +756,13 @@ begin
 end;
 
 function TAudioPlayback_Bass.GetLatency(): double;
+var
+  Info: BASS_INFO;
 begin
-  Result := 0;
+  if (BASS_GetInfo(Info)) then
+    Result := Info.latency / 1000
+  else
+    Result := 0;
 end;
 
 

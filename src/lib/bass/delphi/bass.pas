@@ -96,9 +96,9 @@ const
   BASS_CONFIG_MUSIC_VIRTUAL = 22;
   BASS_CONFIG_VERIFY        = 23;
   BASS_CONFIG_UPDATETHREADS = 24;
-  {$IFDEF LINUX}
   BASS_CONFIG_DEV_BUFFER    = 27;
-  {$ENDIF}
+  BASS_CONFIG_DEV_DEFAULT   = 36;
+  BASS_CONFIG_NET_READTIMEOUT = 37;
 
   // BASS_SetConfigPtr options
   BASS_CONFIG_NET_AGENT     = 16;
@@ -330,6 +330,7 @@ const
   BASS_ATTRIB_VOL                   = 2;
   BASS_ATTRIB_PAN                   = 3;
   BASS_ATTRIB_EAXMIX                = 4;
+  BASS_ATTRIB_NOBUFFER              = 5;
   BASS_ATTRIB_MUSIC_AMPLIFY         = $100;
   BASS_ATTRIB_MUSIC_PANSEP          = $101;
   BASS_ATTRIB_MUSIC_PSCALER         = $102;
@@ -348,6 +349,7 @@ const
   BASS_DATA_FFT2048   = $80000003; // 2048 FFT
   BASS_DATA_FFT4096   = $80000004; // 4096 FFT
   BASS_DATA_FFT8192   = $80000005; // 8192 FFT
+  BASS_DATA_FFT16384  = $80000006; // 16384 FFT
   BASS_DATA_FFT_INDIVIDUAL = $10; // FFT flag: FFT for each channel, else all combined
   BASS_DATA_FFT_NOWINDOW = $20;   // FFT flag: no Hanning window
 
@@ -364,6 +366,7 @@ const
   BASS_TAG_RIFF_INFO  = $100; // RIFF "INFO" tags : series of null-terminated ANSI strings
   BASS_TAG_RIFF_BEXT  = $101; // RIFF/BWF "bext" tags : TAG_BEXT structure
   BASS_TAG_RIFF_CART  = $102; // RIFF/BWF "cart" tags : TAG_CART structure
+  BASS_TAG_RIFF_DISP  = $103; // RIFF "DISP" text tag : ANSI string
   BASS_TAG_MUSIC_NAME = $10000;	// MOD music name : ANSI string
   BASS_TAG_MUSIC_MESSAGE = $10001; // MOD message : ANSI string
   BASS_TAG_MUSIC_ORDERS = $10002; // MOD order list : BYTE array of pattern numbers
@@ -374,7 +377,8 @@ const
   BASS_POS_BYTE           = 0; // byte position
   BASS_POS_MUSIC_ORDER    = 1; // order.row position, MAKELONG(order,row)
   BASS_POS_DECODE         = $10000000; // flag: get the decoding (not playing) position
-  
+  BASS_POS_DECODETO       = $20000000; // flag: decode to the position instead of seeking
+
   // BASS_RecordSetInput flags
   BASS_INPUT_OFF    = $10000;
   BASS_INPUT_ON     = $20000;

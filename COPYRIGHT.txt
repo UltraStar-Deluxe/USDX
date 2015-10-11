@@ -14,6 +14,7 @@ Tobias Gunkel "tobigun"
 Alexander S. "s_alexander"
 Karl-Michael Schindler "mischi"
 Philipp Steinhardt "whiteshark"
+Stefan Ludowicy "basisbit"
 
 Based on UltraStar written by:
 "Corvus5"
@@ -28,3 +29,4 @@ Benedikt Krueger
 Holger Kuhn "hawkear"
 Florian Küpper "flokuep"
 Wesley Stessens "profoX"
+team of the Ultrastar Deluxe World Party mod

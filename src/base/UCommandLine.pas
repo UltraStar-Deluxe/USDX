@@ -38,6 +38,7 @@ uses
 
 type
   TScreenMode = (scmDefault, scmFullscreen, scmWindowed);
+  TSplitMode = (spmDefault, spmNoSplit, spmSplit);
 
   {**
    * Reads infos from ParamStr and set some easy interface variables
@@ -61,6 +62,7 @@ type
       NoLog:      boolean;
       ScreenMode: TScreenMode;
       Joypad:     boolean;
+      Split:      TSplitMode;
 
       // some value variables set when reading infos {-1: Not Set, others: Value}
       Depth:      integer;
@@ -139,6 +141,7 @@ begin
   NoLog       := False;
   ScreenMode  := scmDefault;
   Joypad      := False;
+  Split       := spmDefault;
 
   // some value variables set when reading infos {-1: Not Set, others: Value}
   fResolution := '';
@@ -190,6 +193,10 @@ begin
         ScreenMode  := scmWindowed
       else if (Command = 'joypad') then
         Joypad    := True
+      else if (Command = 'split') then
+        Split     := spmSplit
+      else if (Command = 'nosplit') then
+        Split     := spmNoSplit
 
       // integer variables
       else if (Command = 'depth') then

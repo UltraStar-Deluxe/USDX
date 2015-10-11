@@ -616,11 +616,20 @@ var
   W, H:   integer;
   Depth:  Integer;
   Fullscreen: boolean;
+  Split: boolean;
 begin
   if (Params.Screens <> -1) then
     Screens := Params.Screens + 1
   else
     Screens := Ini.Screens + 1;
+  case Params.Split of
+    spmSplit:
+      Split := True;
+    spmNoSplit:
+      Split := False;
+    else
+      Split := Ini.Split = 1;
+  end; // case
 
   // Set minimum color component sizes
   // Note: do not request an alpha plane with SDL_GL_ALPHA_SIZE here as
@@ -647,8 +656,10 @@ begin
     S := IResolution[Ini.Resolution];
 
   I := Pos('x', S);
-  W := StrToInt(Copy(S, 1, I-1)) * Screens;
+  W := StrToInt(Copy(S, 1, I-1));
   H := StrToInt(Copy(S, I+1, 1000));
+  if ((Screens > 1) and not Split) then
+  	W := W * Screens;
 
   if (Params.Depth <> -1) then
     Depth := Params.Depth

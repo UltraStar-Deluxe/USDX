@@ -115,6 +115,7 @@ type
 
       // Graphics
       Screens:        integer;
+      Split:          integer;
       Resolution:     integer;
       Depth:          integer;
       VisualizerOption: integer;
@@ -206,6 +207,7 @@ const
   IDebug:            array[0..1] of UTF8String  = ('Off', 'On');
 
   IScreens:          array[0..1] of UTF8String  = ('1', '2');
+  ISplit:            array[0..1] of UTF8String  = ('Off', 'On');
   IFullScreen:       array[0..1] of UTF8String  = ('Off', 'On');
   IDepth:            array[0..1] of UTF8String  = ('16 bit', '32 bit');
   IVisualizer:       array[0..2] of UTF8String  = ('Off', 'WhenNoVideo','On');
@@ -786,6 +788,9 @@ begin
   // Screens
   Screens := GetArrayIndex(IScreens, IniFile.ReadString('Graphics', 'Screens', IScreens[0]));
 
+  // Split mode
+  Split := GetArrayIndex(ISplit, IniFile.ReadString('Graphics', 'Split', ISplit[0]));
+
   // FullScreen
   FullScreen := GetArrayIndex(IFullScreen, IniFile.ReadString('Graphics', 'FullScreen', 'On'));
 
@@ -1071,6 +1076,9 @@ begin
 
   // Screens
   IniFile.WriteString('Graphics', 'Screens', IScreens[Screens]);
+
+  // Split
+  IniFile.WriteString('Graphics', 'Split', ISplit[Split]);
 
   // FullScreen
   IniFile.WriteString('Graphics', 'FullScreen', IFullScreen[FullScreen]);
