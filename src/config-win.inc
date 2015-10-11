@@ -19,7 +19,7 @@
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
     {$IF (4 > 0) or (2 > 0)}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg-2.7'}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg-2.8'}
       {$DEFINE FF_API_OLD_DECODE_AUDIO}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
@@ -27,10 +27,10 @@
     {$IFEND}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
-    FFMPEG_VERSION_INT = 2007000;
+    FFMPEG_VERSION_INT = 2008000;
     av__codec = 'avcodec-56';
     LIBAVCODEC_VERSION_MAJOR   = 56;
-    LIBAVCODEC_VERSION_MINOR   = 57;
+    LIBAVCODEC_VERSION_MINOR   = 60;
     LIBAVCODEC_VERSION_RELEASE = 100;
 
     av__format = 'avformat-56';
@@ -40,7 +40,7 @@
 
     av__util = 'avutil-54';
     LIBAVUTIL_VERSION_MAJOR   = 54;
-    LIBAVUTIL_VERSION_MINOR   = 30;
+    LIBAVUTIL_VERSION_MINOR   = 31;
     LIBAVUTIL_VERSION_RELEASE = 100;
   {$IFEND}
 {$IFEND}
