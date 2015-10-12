@@ -1,6 +1,6 @@
 {
   BASS 2.4 Delphi unit
-  Copyright (c) 1999-2009 Un4seen Developments Ltd.
+  Copyright (c) 1999-2014 Un4seen Developments Ltd.
 
   See the BASS.CHM file for more detailed documentation
 
@@ -8,22 +8,16 @@
   --------------
   Copy BASS.PAS to the \LIB subdirectory of your Delphi path or your project dir
 
-  NOTE: Delphi 2009 users should use the BASS_UNICODE flag where possible
+  NOTE: Delphi users should use the BASS_UNICODE flag where possible
 }
 
-unit Bass;
+unit BASS;
 
 interface
 
 {$IFDEF FPC}
   {$MODE Delphi}
   {$PACKRECORDS C}
-{$ENDIF}
-
-{$IFDEF MSWINDOWS}
-  {$DEFINE DLL_STDCALL}
-{$ELSE}
-  {$DEFINE DLL_CDECL}
 {$ENDIF}
 
 {$IFDEF MSWINDOWS}
@@ -64,9 +58,9 @@ const
   BASS_ERROR_EMPTY        = 31;   // the MOD music has no sequence data
   BASS_ERROR_NONET        = 32;   // no internet connection could be opened
   BASS_ERROR_CREATE       = 33;   // couldn't create the file
-  BASS_ERROR_NOFX         = 34;   // effects are not enabled
+  BASS_ERROR_NOFX         = 34;   // effects are not available
   BASS_ERROR_NOTAVAIL     = 37;   // requested data is not available
-  BASS_ERROR_DECODE       = 38;   // the channel is a "decoding channel"
+  BASS_ERROR_DECODE       = 38;   // the channel is/isn't a "decoding channel"
   BASS_ERROR_DX           = 39;   // a sufficient DirectX version is not installed
   BASS_ERROR_TIMEOUT      = 40;   // connection timedout
   BASS_ERROR_FILEFORM     = 41;   // unsupported file format
@@ -74,6 +68,7 @@ const
   BASS_ERROR_VERSION      = 43;   // invalid BASS version (used by add-ons)
   BASS_ERROR_CODEC        = 44;   // codec is not available/supported
   BASS_ERROR_ENDED        = 45;   // the channel/file has ended
+  BASS_ERROR_BUSY         = 46;   // the device is busy
   BASS_ERROR_UNKNOWN      = -1;   // some other mystery problem
 
   // BASS_SetConfig options
@@ -97,24 +92,39 @@ const
   BASS_CONFIG_VERIFY        = 23;
   BASS_CONFIG_UPDATETHREADS = 24;
   BASS_CONFIG_DEV_BUFFER    = 27;
+  BASS_CONFIG_VISTA_TRUEPOS = 30;
+  BASS_CONFIG_IOS_MIXAUDIO  = 34;
   BASS_CONFIG_DEV_DEFAULT   = 36;
   BASS_CONFIG_NET_READTIMEOUT = 37;
+  BASS_CONFIG_VISTA_SPEAKERS = 38;
+  BASS_CONFIG_IOS_SPEAKER   = 39;
+  BASS_CONFIG_MF_DISABLE    = 40;
+  BASS_CONFIG_HANDLES       = 41;
+  BASS_CONFIG_UNICODE       = 42;
+  BASS_CONFIG_SRC           = 43;
+  BASS_CONFIG_SRC_SAMPLE    = 44;
+  BASS_CONFIG_ASYNCFILE_BUFFER = 45;
+  BASS_CONFIG_OGG_PRESCAN   = 47;
+  BASS_CONFIG_MF_VIDEO      = 48;
+  BASS_CONFIG_AIRPLAY       = 49;
+  BASS_CONFIG_DEV_NONSTOP   = 50;
+  BASS_CONFIG_IOS_NOCATEGORY = 51;
+  BASS_CONFIG_VERIFY_NET    = 52;
 
   // BASS_SetConfigPtr options
   BASS_CONFIG_NET_AGENT     = 16;
   BASS_CONFIG_NET_PROXY     = 17;
 
-  // Initialization flags
-  BASS_DEVICE_8BITS       = 1;    // use 8 bit resolution, else 16 bit
-  BASS_DEVICE_MONO        = 2;    // use mono, else stereo
+  // BASS_Init flags
+  BASS_DEVICE_8BITS       = 1;    // 8 bit resolution, else 16 bit
+  BASS_DEVICE_MONO        = 2;    // mono, else stereo
   BASS_DEVICE_3D          = 4;    // enable 3D functionality
-  BASS_DEVICE_LATENCY     = 256;  // calculate device latency (BASS_INFO struct)
-  BASS_DEVICE_CPSPEAKERS  = 1024; // detect speakers via Windows control panel
-  BASS_DEVICE_SPEAKERS    = 2048; // force enabling of speaker assignment
-  BASS_DEVICE_NOSPEAKER   = 4096; // ignore speaker arrangement
-  {$IFDEF LINUX}
-  BASS_DEVICE_DMIX        = 8192; // use "dmix" (shared) output
-  {$ENDIF}
+  BASS_DEVICE_LATENCY     = $100;  // calculate device latency (BASS_INFO struct)
+  BASS_DEVICE_CPSPEAKERS  = $400; // detect speakers via Windows control panel
+  BASS_DEVICE_SPEAKERS    = $800; // force enabling of speaker assignment
+  BASS_DEVICE_NOSPEAKER   = $1000; // ignore speaker arrangement
+  BASS_DEVICE_DMIX        = $2000; // use ALSA "dmix" plugin
+  BASS_DEVICE_FREQ        = $4000; // set device sample rate
 
   // DirectSound interfaces (for use with BASS_GetDSoundObject)
   BASS_OBJECT_DS          = 1;   // IDirectSound
@@ -124,6 +134,22 @@ const
   BASS_DEVICE_ENABLED     = 1;
   BASS_DEVICE_DEFAULT     = 2;
   BASS_DEVICE_INIT        = 4;
+
+  BASS_DEVICE_TYPE_MASK        = $ff000000;
+  BASS_DEVICE_TYPE_NETWORK     = $01000000;
+  BASS_DEVICE_TYPE_SPEAKERS    = $02000000;
+  BASS_DEVICE_TYPE_LINE        = $03000000;
+  BASS_DEVICE_TYPE_HEADPHONES  = $04000000;
+  BASS_DEVICE_TYPE_MICROPHONE  = $05000000;
+  BASS_DEVICE_TYPE_HEADSET     = $06000000;
+  BASS_DEVICE_TYPE_HANDSET     = $07000000;
+  BASS_DEVICE_TYPE_DIGITAL     = $08000000;
+  BASS_DEVICE_TYPE_SPDIF       = $09000000;
+  BASS_DEVICE_TYPE_HDMI        = $0a000000;
+  BASS_DEVICE_TYPE_DISPLAYPORT = $40000000;
+
+  // BASS_GetDeviceInfo flags
+  BASS_DEVICES_AIRPLAY         = $1000000;
 
   // BASS_INFO flags (from DSOUND.H)
   DSCAPS_CONTINUOUSRATE   = $00000010;     // supports all sample rates between min/maxrate
@@ -211,6 +237,7 @@ const
   BASS_SPEAKER_REAR2LEFT  = BASS_SPEAKER_REAR2 or BASS_SPEAKER_LEFT;
   BASS_SPEAKER_REAR2RIGHT = BASS_SPEAKER_REAR2 or BASS_SPEAKER_RIGHT;
 
+  BASS_ASYNCFILE          = $40000000;
   BASS_UNICODE            = $80000000;
 
   BASS_RECORD_PAUSE       = $8000; // start recording paused
@@ -231,7 +258,6 @@ const
   BASS_CTYPE_STREAM_MP2   = $10004;
   BASS_CTYPE_STREAM_MP3   = $10005;
   BASS_CTYPE_STREAM_AIFF  = $10006;
-  BASS_CTYPE_STREAM_CA    = $10007;
   BASS_CTYPE_STREAM_WAV   = $40000; // WAVE flag, LOWORD=codec
   BASS_CTYPE_STREAM_WAV_PCM = $50001;
   BASS_CTYPE_STREAM_WAV_FLOAT = $50003;
@@ -285,7 +311,6 @@ const
 
   BASS_STREAMPROC_END = $80000000; // end of user stream flag
 
-
   // BASS_StreamCreateFileUser file systems
   STREAMFILE_NOBUFFER     = 0;
   STREAMFILE_BUFFER       = 1;
@@ -302,6 +327,9 @@ const
   BASS_FILEPOS_START      = 3;
   BASS_FILEPOS_CONNECTED  = 4;
   BASS_FILEPOS_BUFFER     = 5;
+  BASS_FILEPOS_SOCKET     = 6;
+  BASS_FILEPOS_ASYNCBUF   = 7;
+  BASS_FILEPOS_SIZE       = 8;
 
   // BASS_ChannelSetSync types
   BASS_SYNC_POS           = 0;
@@ -331,17 +359,24 @@ const
   BASS_ATTRIB_PAN                   = 3;
   BASS_ATTRIB_EAXMIX                = 4;
   BASS_ATTRIB_NOBUFFER              = 5;
+  BASS_ATTRIB_VBR                   = 6;
+  BASS_ATTRIB_CPU                   = 7;
+  BASS_ATTRIB_SRC                   = 8;
+  BASS_ATTRIB_NET_RESUME            = 9;
+  BASS_ATTRIB_SCANINFO              = 10;
   BASS_ATTRIB_MUSIC_AMPLIFY         = $100;
   BASS_ATTRIB_MUSIC_PANSEP          = $101;
   BASS_ATTRIB_MUSIC_PSCALER         = $102;
   BASS_ATTRIB_MUSIC_BPM             = $103;
   BASS_ATTRIB_MUSIC_SPEED           = $104;
   BASS_ATTRIB_MUSIC_VOL_GLOBAL      = $105;
+  BASS_ATTRIB_MUSIC_ACTIVE          = $106;
   BASS_ATTRIB_MUSIC_VOL_CHAN        = $200; // + channel #
   BASS_ATTRIB_MUSIC_VOL_INST        = $300; // + instrument #
 
   // BASS_ChannelGetData flags
   BASS_DATA_AVAILABLE = 0;        // query how much data is buffered
+  BASS_DATA_FIXED     = $20000000; // flag: return 8.24 fixed-point data
   BASS_DATA_FLOAT     = $40000000; // flag: return floating-point sample data
   BASS_DATA_FFT256    = $80000000; // 256 sample FFT
   BASS_DATA_FFT512    = $80000001; // 512 FFT
@@ -352,6 +387,13 @@ const
   BASS_DATA_FFT16384  = $80000006; // 16384 FFT
   BASS_DATA_FFT_INDIVIDUAL = $10; // FFT flag: FFT for each channel, else all combined
   BASS_DATA_FFT_NOWINDOW = $20;   // FFT flag: no Hanning window
+  BASS_DATA_FFT_REMOVEDC = $40;   // FFT flag: pre-remove DC bias
+  BASS_DATA_FFT_COMPLEX = $80;    // FFT flag: return complex data
+
+  // BASS_ChannelGetLevelEx flags
+  BASS_LEVEL_MONO     = 1;
+  BASS_LEVEL_STEREO   = 2;
+  BASS_LEVEL_RMS      = 4;
 
   // BASS_ChannelGetTags types : what's returned
   BASS_TAG_ID3        = 0; // ID3v1 tags : TAG_ID3 structure
@@ -360,13 +402,18 @@ const
   BASS_TAG_HTTP       = 3; // HTTP headers : series of null-terminated ANSI strings
   BASS_TAG_ICY        = 4; // ICY headers : series of null-terminated ANSI strings
   BASS_TAG_META       = 5; // ICY metadata : ANSI string
+  BASS_TAG_APE        = 6; // APEv2 tags : series of null-terminated UTF-8 strings
+  BASS_TAG_MP4        = 7; // MP4/iTunes metadata : series of null-terminated UTF-8 strings
   BASS_TAG_VENDOR     = 9; // OGG encoder : UTF-8 string
   BASS_TAG_LYRICS3    = 10; // Lyric3v2 tag : ASCII string
-  BASS_TAG_CA_CODEC   = 11; // CoreAudio codec info : TAG_CA_CODEC structure
+  BASS_TAG_CA_CODEC   = 11;	// CoreAudio codec info : TAG_CA_CODEC structure
+  BASS_TAG_MF         = 13;	// Media Foundation tags : series of null-terminated UTF-8 strings
+  BASS_TAG_WAVEFORMAT = 14;	// WAVE format : WAVEFORMATEEX structure
   BASS_TAG_RIFF_INFO  = $100; // RIFF "INFO" tags : series of null-terminated ANSI strings
   BASS_TAG_RIFF_BEXT  = $101; // RIFF/BWF "bext" tags : TAG_BEXT structure
   BASS_TAG_RIFF_CART  = $102; // RIFF/BWF "cart" tags : TAG_CART structure
   BASS_TAG_RIFF_DISP  = $103; // RIFF "DISP" text tag : ANSI string
+  BASS_TAG_APE_BINARY = $1000; // + index #, binary APEv2 tag : TAG_APE_BINARY structure
   BASS_TAG_MUSIC_NAME = $10000;	// MOD music name : ANSI string
   BASS_TAG_MUSIC_MESSAGE = $10001; // MOD message : ANSI string
   BASS_TAG_MUSIC_ORDERS = $10002; // MOD order list : BYTE array of pattern numbers
@@ -376,8 +423,11 @@ const
   // BASS_ChannelGetLength/GetPosition/SetPosition modes
   BASS_POS_BYTE           = 0; // byte position
   BASS_POS_MUSIC_ORDER    = 1; // order.row position, MAKELONG(order,row)
+  BASS_POS_OGG            = 3; // OGG bitstream number
+  BASS_POS_INEXACT        = $8000000; // flag: allow seeking to inexact position
   BASS_POS_DECODE         = $10000000; // flag: get the decoding (not playing) position
   BASS_POS_DECODETO       = $20000000; // flag: decode to the position instead of seeking
+  BASS_POS_SCAN           = $40000000; // flag: scan to the position
 
   // BASS_RecordSetInput flags
   BASS_INPUT_OFF    = $10000;
@@ -415,7 +465,6 @@ const
 type
   DWORD = LongWord;
   BOOL = LongBool;
-  FLOAT = Single;
   QWORD = Int64;
 
   HMUSIC = DWORD;       // MOD music handle
@@ -449,7 +498,7 @@ type
     latency: DWORD;     // delay (in ms) before start of playback (requires BASS_DEVICE_LATENCY)
     initflags: DWORD;   // BASS_Init "flags" parameter
     speakers: DWORD;    // number of speakers available
-    freq: DWORD;        // current output rate (OSX only)
+    freq: DWORD;        // current output rate
   end;
 
   // Recording device info structure
@@ -458,14 +507,14 @@ type
     formats: DWORD;     // supported standard formats (WAVE_FORMAT_xxx flags)
     inputs: DWORD;      // number of inputs
     singlein: BOOL;     // only 1 input can be set at a time
-    freq: DWORD;        // current input rate (OSX only)
+    freq: DWORD;        // current input rate
   end;
 
   // Sample info structure
   BASS_SAMPLE = record
     freq: DWORD;        // default playback rate
-    volume: FLOAT;      // default volume (0-100)
-    pan: FLOAT;         // default pan (-100=left, 0=middle, 100=right)
+    volume: Single;     // default volume (0-100)
+    pan: Single;        // default pan (-100=left, 0=middle, 100=right)
     flags: DWORD;       // BASS_SAMPLE_xxx flags
     length: DWORD;      // length (in samples, not bytes)
     max: DWORD;         // maximum simultaneous playbacks
@@ -473,11 +522,11 @@ type
     chans: DWORD;       // number of channels
     mingap: DWORD;      // minimum gap (ms) between creating channels
     mode3d: DWORD;      // BASS_3DMODE_xxx mode
-    mindist: FLOAT;     // minimum distance
-    maxdist: FLOAT;     // maximum distance
+    mindist: Single;    // minimum distance
+    maxdist: Single;    // maximum distance
     iangle: DWORD;      // angle of inside projection cone
     oangle: DWORD;      // angle of outside projection cone
-    outvol: FLOAT;      // delta-volume outside the projection cone
+    outvol: Single;     // delta-volume outside the projection cone
     vam: DWORD;         // voice allocation/management flags (BASS_VAM_xxx)
     priority: DWORD;    // priority (0=lowest, $ffffffff=highest)
   end;
@@ -491,36 +540,42 @@ type
     origres: DWORD;     // original resolution
     plugin: HPLUGIN;    // plugin
     sample: HSAMPLE;    // sample
+    {$IFDEF CPUX64}
+    padding: DWORD;
+    {$ENDIF}
     filename: PChar;    // filename
   end;
 
   BASS_PLUGINFORM = record
     ctype: DWORD;       // channel type
+    {$IFDEF CPUX64}
+    padding: DWORD;
+    {$ENDIF}
     name: PAnsiChar;    // format description
     exts: PAnsiChar;    // file extension filter (*.ext1;*.ext2;etc...)
   end;
   PBASS_PLUGINFORMS = ^TBASS_PLUGINFORMS;
   TBASS_PLUGINFORMS = array[0..maxInt div sizeOf(BASS_PLUGINFORM) - 1] of BASS_PLUGINFORM;
 
+  PBASS_PLUGININFO = ^BASS_PLUGININFO;
   BASS_PLUGININFO = record
     version: DWORD;             // version (same form as BASS_GetVersion)
     formatc: DWORD;             // number of formats
     formats: PBASS_PLUGINFORMS; // the array of formats
   end;
-  PBASS_PLUGININFO = ^BASS_PLUGININFO;
 
   // 3D vector (for 3D positions/velocities/orientations)
   BASS_3DVECTOR = record
-    x: FLOAT;           // +=right, -=left
-    y: FLOAT;           // +=up, -=down
-    z: FLOAT;           // +=front, -=behind
+    x: Single;          // +=right, -=left
+    y: Single;          // +=up, -=down
+    z: Single;          // +=front, -=behind
   end;
 
   // User file stream callback functions
-  FILECLOSEPROC = procedure(user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
-  FILELENPROC = function(user: Pointer): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
-  FILEREADPROC = function(buffer: Pointer; length: DWORD; user: Pointer): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
-  FILESEEKPROC = function(offset: QWORD; user: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+  FILECLOSEPROC = procedure(user: Pointer); {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+  FILELENPROC = function(user: Pointer): QWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+  FILEREADPROC = function(buffer: Pointer; length: DWORD; user: Pointer): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
+  FILESEEKPROC = function(offset: QWORD; user: Pointer): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
 
   BASS_FILEPROCS = record
     close: FILECLOSEPROC;
@@ -530,6 +585,7 @@ type
   end;
 
   // ID3v1 tag structure
+  PTAG_ID3 = ^TAG_ID3;
   TAG_ID3 = record
     id: Array[0..2] of AnsiChar;
     title: Array[0..29] of AnsiChar;
@@ -540,8 +596,17 @@ type
     genre: Byte;
   end;
 
+  // Binary APEv2 tag structure
+  PTAG_APE_BINARY = ^TAG_APE_BINARY;
+  TAG_APE_BINARY = record
+    key: PAnsiChar;
+    data: PAnsiChar;
+    length: DWORD;
+  end;
+
   // BWF "bext" tag structure
-  TAG_BEXT = record
+  PTAG_BEXT = ^TAG_BEXT;
+  TAG_BEXT = packed record
     Description: Array[0..255] of AnsiChar;     // description
     Originator: Array[0..31] of AnsiChar;       // name of the originator
     OriginatorReference: Array[0..31] of AnsiChar; // reference of the originator
@@ -551,87 +616,51 @@ type
     Version: Word;                              // BWF version (little-endian)
     UMID: Array[0..63] of Byte;                 // SMPTE UMID
     Reserved: Array[0..189] of Byte;
-    CodingHistory: Array of AnsiChar;           // history
+    CodingHistory: Array[0..maxInt div 2 - 1] of AnsiChar;           // history
   end;
 
-  // BWF "cart" tag structures
-  TAG_CART_TIMER = record
-	dwUsage: DWORD;					// FOURCC timer usage ID
-	dwValue: DWORD;					// timer value in samples from head
-  end;
-
-  TAG_CART = record
-	Version: array [0..3] of AnsiChar;				// version of the data structure
-	Title: array [0..63] of AnsiChar;				// title of cart audio sequence
-	Artist: array [0..63] of AnsiChar;				// artist or creator name
-	CutID: array [0..63] of AnsiChar;				// cut number identification
-	ClientID: array [0..63] of AnsiChar;			// client identification
-	Category: array [0..63] of AnsiChar;			// category ID, PSA, NEWS, etc
-	Classification: array [0..63] of AnsiChar;		// classification or auxiliary key
-	OutCue: array [0..63] of AnsiChar;				// out cue text
-	StartDate: array [0..9] of AnsiChar;			// yyyy-mm-dd
-	StartTime: array [0..7] of AnsiChar;			// hh:mm:ss
-	EndDate: array [0..9] of AnsiChar;				// yyyy-mm-dd
-	EndTime: array [0..7] of AnsiChar;				// hh:mm:ss
-	ProducerAppID: array [0..63] of AnsiChar;		// name of vendor or application
-	ProducerAppVersion: array [0..63] of AnsiChar;	// version of producer application
-	UserDef: array [0..63] of AnsiChar;				// user defined text
-	dwLevelReference: DWORD;						// sample value for 0 dB reference
-	PostTimer: array [0..7] of TAG_CART_TIMER;		// 8 time markers after head
-	Reserved: array [0..275] of AnsiChar;
-	URL: array [0..1023] of AnsiChar;				// uniform resource locator
-	TagText: array [0..0] of AnsiChar;				// free form text for scripts or tags
-  end;
-  
-  // CoreAudio codec info structure
-  TAG_CA_CODEC = record
-	ftype: DWORD;					// file format
-	atype: DWORD;					// audio format
-	name: {const} PAnsiChar;		// description
-  end;
-  
   BASS_DX8_CHORUS = record
-    fWetDryMix: FLOAT;
-    fDepth: FLOAT;
-    fFeedback: FLOAT;
-    fFrequency: FLOAT;
+    fWetDryMix: Single;
+    fDepth: Single;
+    fFeedback: Single;
+    fFrequency: Single;
     lWaveform: DWORD;   // 0=triangle, 1=sine
-    fDelay: FLOAT;
+    fDelay: Single;
     lPhase: DWORD;      // BASS_DX8_PHASE_xxx
   end;
 
   BASS_DX8_COMPRESSOR = record
-    fGain: FLOAT;
-    fAttack: FLOAT;
-    fRelease: FLOAT;
-    fThreshold: FLOAT;
-    fRatio: FLOAT;
-    fPredelay: FLOAT;
+    fGain: Single;
+    fAttack: Single;
+    fRelease: Single;
+    fThreshold: Single;
+    fRatio: Single;
+    fPredelay: Single;
   end;
 
   BASS_DX8_DISTORTION = record
-    fGain: FLOAT;
-    fEdge: FLOAT;
-    fPostEQCenterFrequency: FLOAT;
-    fPostEQBandwidth: FLOAT;
-    fPreLowpassCutoff: FLOAT;
+    fGain: Single;
+    fEdge: Single;
+    fPostEQCenterFrequency: Single;
+    fPostEQBandwidth: Single;
+    fPreLowpassCutoff: Single;
   end;
 
   BASS_DX8_ECHO = record
-    fWetDryMix: FLOAT;
-    fFeedback: FLOAT;
-    fLeftDelay: FLOAT;
-    fRightDelay: FLOAT;
+    fWetDryMix: Single;
+    fFeedback: Single;
+    fLeftDelay: Single;
+    fRightDelay: Single;
     lPanDelay: BOOL;
   end;
 
   BASS_DX8_FLANGER = record
-    fWetDryMix: FLOAT;
-    fDepth: FLOAT;
-    fFeedback: FLOAT;
-    fFrequency: FLOAT;
+    fWetDryMix: Single;
+    fDepth: Single;
+    fFeedback: Single;
+    fFrequency: Single;
     lWaveform: DWORD;   // 0=triangle, 1=sine
-    fDelay: FLOAT;
+    fDelay: Single;
     lPhase: DWORD;      // BASS_DX8_PHASE_xxx
   end;
 
@@ -643,33 +672,33 @@ type
   BASS_DX8_I3DL2REVERB = record
     lRoom: LongInt;                // [-10000, 0]      default: -1000 mB
     lRoomHF: LongInt;              // [-10000, 0]      default: 0 mB
-    flRoomRolloffFactor: FLOAT;    // [0.0, 10.0]      default: 0.0
-    flDecayTime: FLOAT;            // [0.1, 20.0]      default: 1.49s
-    flDecayHFRatio: FLOAT;         // [0.1, 2.0]       default: 0.83
+    flRoomRolloffFactor: Single;   // [0.0, 10.0]      default: 0.0
+    flDecayTime: Single;           // [0.1, 20.0]      default: 1.49s
+    flDecayHFRatio: Single;        // [0.1, 2.0]       default: 0.83
     lReflections: LongInt;         // [-10000, 1000]   default: -2602 mB
-    flReflectionsDelay: FLOAT;     // [0.0, 0.3]       default: 0.007 s
+    flReflectionsDelay: Single;    // [0.0, 0.3]       default: 0.007 s
     lReverb: LongInt;              // [-10000, 2000]   default: 200 mB
-    flReverbDelay: FLOAT;          // [0.0, 0.1]       default: 0.011 s
-    flDiffusion: FLOAT;            // [0.0, 100.0]     default: 100.0 %
-    flDensity: FLOAT;              // [0.0, 100.0]     default: 100.0 %
-    flHFReference: FLOAT;          // [20.0, 20000.0]  default: 5000.0 Hz
+    flReverbDelay: Single;         // [0.0, 0.1]       default: 0.011 s
+    flDiffusion: Single;           // [0.0, 100.0]     default: 100.0 %
+    flDensity: Single;             // [0.0, 100.0]     default: 100.0 %
+    flHFReference: Single;         // [20.0, 20000.0]  default: 5000.0 Hz
   end;
 
   BASS_DX8_PARAMEQ = record
-    fCenter: FLOAT;
-    fBandwidth: FLOAT;
-    fGain: FLOAT;
+    fCenter: Single;
+    fBandwidth: Single;
+    fGain: Single;
   end;
 
   BASS_DX8_REVERB = record
-    fInGain: FLOAT;                // [-96.0,0.0]            default: 0.0 dB
-    fReverbMix: FLOAT;             // [-96.0,0.0]            default: 0.0 db
-    fReverbTime: FLOAT;            // [0.001,3000.0]         default: 1000.0 ms
-    fHighFreqRTRatio: FLOAT;       // [0.001,0.999]          default: 0.001
+    fInGain: Single;               // [-96.0,0.0]            default: 0.0 dB
+    fReverbMix: Single;            // [-96.0,0.0]            default: 0.0 db
+    fReverbTime: Single;           // [0.001,3000.0]         default: 1000.0 ms
+    fHighFreqRTRatio: Single;      // [0.001,0.999]          default: 0.001
   end;
 
   // callback function types
-  STREAMPROC = function(handle: HSTREAM; buffer: Pointer; length: DWORD; user: Pointer): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+  STREAMPROC = function(handle: HSTREAM; buffer: Pointer; length: DWORD; user: Pointer): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
   {
     User stream callback function. NOTE: A stream function should obviously be as
     quick as possible, other streams (and MOD musics) can't be mixed until
@@ -684,12 +713,12 @@ type
 
 const
   // special STREAMPROCs
-  STREAMPROC_DUMMY {: STREAMPROC} = Pointer(0);  // "dummy" stream
-  STREAMPROC_PUSH  {: STREAMPROC} = Pointer(-1); // push stream
+  STREAMPROC_DUMMY = Pointer(0);   // "dummy" stream
+  STREAMPROC_PUSH = Pointer(-1);   // push stream
 
 type
 
-  DOWNLOADPROC = procedure(buffer: Pointer; length: DWORD; user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+  DOWNLOADPROC = procedure(buffer: Pointer; length: DWORD; user: Pointer); {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
   {
     Internet stream download callback function.
     buffer : Buffer containing the downloaded data... NULL=end of download
@@ -697,7 +726,7 @@ type
     user   : The 'user' parameter value given when calling BASS_StreamCreateURL
   }
 
-  SYNCPROC = procedure(handle: HSYNC; channel, data: DWORD; user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+  SYNCPROC = procedure(handle: HSYNC; channel, data: DWORD; user: Pointer); {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
   {
     Sync callback function. NOTE: a sync callback function should be very
     quick as other syncs cannot be processed until it has finished. If the
@@ -709,7 +738,7 @@ type
     user   : The 'user' parameter given when calling BASS_ChannelSetSync
   }
 
-  DSPPROC = procedure(handle: HDSP; channel: DWORD; buffer: Pointer; length: DWORD; user: Pointer); {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+  DSPPROC = procedure(handle: HDSP; channel: DWORD; buffer: Pointer; length: DWORD; user: Pointer); {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
   {
     DSP callback function. NOTE: A DSP function should obviously be as quick
     as possible... other DSP functions, streams and MOD musics can not be
@@ -721,7 +750,7 @@ type
     user   : The 'user' parameter given when calling BASS_ChannelSetDSP
   }
 
-  RECORDPROC = function(handle: HRECORD; buffer: Pointer; length: DWORD; user: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}
+  RECORDPROC = function(handle: HRECORD; buffer: Pointer; length: DWORD; user: Pointer): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};
   {
     Recording callback function.
     handle : The recording handle
@@ -738,126 +767,128 @@ const
   bassdll = 'bass.dll';
 {$ENDIF}
 {$IFDEF LINUX}
-  bassdll = 'bass';
+  bassdll = 'libbass.so';
 {$ENDIF}
-{$IFDEF DARWIN}
+{$IFDEF MACOS}
   bassdll = 'libbass.dylib';
-  {$linklib libbass}
 {$ENDIF}
 
-function BASS_SetConfig(option, value: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetConfig(option: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SetConfigPtr(option: DWORD; value: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetConfigPtr(option: DWORD): Pointer; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetVersion: DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ErrorGetCode: LongInt; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_SetConfig(option, value: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetConfig(option: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SetConfigPtr(option: DWORD; value: Pointer): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetConfigPtr(option: DWORD): Pointer; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetVersion: DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ErrorGetCode: LongInt; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 {$IFDEF MSWINDOWS}
-function BASS_Init(device: LongInt; freq, flags: DWORD; win: HWND; clsid: PGUID): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_Init(device: LongInt; freq, flags: DWORD; win: HWND; clsid: PGUID): BOOL; stdcall; external bassdll;
 {$ELSE}
-function BASS_Init(device: LongInt; freq, flags: DWORD; win: Pointer; clsid: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_Init(device: LongInt; freq, flags: DWORD; win: Pointer; clsid: Pointer): BOOL; cdecl; external bassdll;
 {$ENDIF}
-function BASS_SetDevice(device: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetDevice: DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Free: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_SetDevice(device: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetDevice: DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Free: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 {$IFDEF MSWINDOWS}
-function BASS_GetDSoundObject(obj: DWORD): Pointer; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_GetDSoundObject(obj: DWORD): Pointer; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 {$ENDIF}
-function BASS_GetInfo(var info: BASS_INFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Update(length: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetCPU: FLOAT; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Start: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Stop: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Pause: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SetVolume(volume: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetVolume: FLOAT; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_GetInfo(var info: BASS_INFO): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Update(length: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetCPU: Single; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Start: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Stop: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Pause: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SetVolume(volume: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetVolume: Single; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
-function BASS_PluginLoad(filename: PChar; flags: DWORD): HPLUGIN; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_PluginFree(handle: HPLUGIN): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_PluginGetInfo(handle: HPLUGIN): PBASS_PLUGININFO; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_PluginLoad(filename: PChar; flags: DWORD): HPLUGIN; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_PluginFree(handle: HPLUGIN): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_PluginGetInfo(handle: HPLUGIN): PBASS_PLUGININFO; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
-function BASS_Set3DFactors(distf, rollf, doppf: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Get3DFactors(var distf, rollf, doppf: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Set3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_Get3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-procedure BASS_Apply3D; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_Set3DFactors(distf, rollf, doppf: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Get3DFactors(var distf, rollf, doppf: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Set3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_Get3DPosition(var pos, vel, front, top: BASS_3DVECTOR): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+procedure BASS_Apply3D; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 {$IFDEF MSWINDOWS}
-function BASS_SetEAXParameters(env: LongInt; vol, decay, damp: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_GetEAXParameters(var env: DWORD; var vol, decay, damp: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_SetEAXParameters(env: LongInt; vol, decay, damp: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_GetEAXParameters(var env: DWORD; var vol, decay, damp: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 {$ENDIF}
 
-function BASS_MusicLoad(mem: BOOL; f: Pointer; offset: QWORD; length, flags, freq: DWORD): HMUSIC; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_MusicFree(handle: HMUSIC): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_MusicLoad(mem: BOOL; f: Pointer; offset: QWORD; length, flags, freq: DWORD): HMUSIC; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_MusicFree(handle: HMUSIC): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
-function BASS_SampleLoad(mem: BOOL; f: Pointer; offset: QWORD; length, max, flags: DWORD): HSAMPLE; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleCreate(length, freq, chans, max, flags: DWORD): HSAMPLE; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleFree(handle: HSAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleSetData(handle: HSAMPLE; buffer: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleGetData(handle: HSAMPLE; buffer: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleGetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleSetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleGetChannel(handle: HSAMPLE; onlynew: BOOL): HCHANNEL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleGetChannels(handle: HSAMPLE; channels: Pointer): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_SampleStop(handle: HSAMPLE): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_SampleLoad(mem: BOOL; f: Pointer; offset: QWORD; length, max, flags: DWORD): HSAMPLE; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleCreate(length, freq, chans, max, flags: DWORD): HSAMPLE; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleFree(handle: HSAMPLE): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleSetData(handle: HSAMPLE; buffer: Pointer): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleGetData(handle: HSAMPLE; buffer: Pointer): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleGetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleSetInfo(handle: HSAMPLE; var info: BASS_SAMPLE): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleGetChannel(handle: HSAMPLE; onlynew: BOOL): HCHANNEL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleGetChannels(handle: HSAMPLE; channels: Pointer): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_SampleStop(handle: HSAMPLE): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
-function BASS_StreamCreate(freq, chans, flags: DWORD; proc: STREAMPROC; user: Pointer): HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_StreamCreateFile(mem: BOOL; f: Pointer; offset, length: QWORD; flags: DWORD): HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_StreamCreateURL(url: PAnsiChar; offset: DWORD; flags: DWORD; proc: DOWNLOADPROC; user: Pointer):HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_StreamCreateFileUser(system, flags: DWORD; var procs: BASS_FILEPROCS; user: Pointer): HSTREAM; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_StreamFree(handle: HSTREAM): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_StreamGetFilePosition(handle: HSTREAM; mode: DWORD): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_StreamPutData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_StreamPutFileData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_StreamCreate(freq, chans, flags: DWORD; proc: STREAMPROC; user: Pointer): HSTREAM; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_StreamCreateFile(mem: BOOL; f: Pointer; offset, length: QWORD; flags: DWORD): HSTREAM; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_StreamCreateURL(url: PChar; offset: DWORD; flags: DWORD; proc: DOWNLOADPROC; user: Pointer):HSTREAM; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_StreamCreateFileUser(system, flags: DWORD; var procs: BASS_FILEPROCS; user: Pointer): HSTREAM; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_StreamFree(handle: HSTREAM): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_StreamGetFilePosition(handle: HSTREAM; mode: DWORD): QWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_StreamPutData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_StreamPutFileData(handle: HSTREAM; buffer: Pointer; length: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
-function BASS_RecordGetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordInit(device: LongInt):BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordSetDevice(device: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordGetDevice: DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordFree: BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordGetInfo(var info: BASS_RECORDINFO): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordGetInputName(input: LongInt): PAnsiChar; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordSetInput(input: LongInt; flags: DWORD; volume: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordGetInput(input: LongInt; var volume: FLOAT): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_RecordStart(freq, chans, flags: DWORD; proc: RECORDPROC; user: Pointer): HRECORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_RecordGetDeviceInfo(device: DWORD; var info: BASS_DEVICEINFO): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordInit(device: LongInt):BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordSetDevice(device: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordGetDevice: DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordFree: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordGetInfo(var info: BASS_RECORDINFO): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordGetInputName(input: LongInt): PAnsiChar; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordSetInput(input: LongInt; flags: DWORD; volume: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordGetInput(input: LongInt; var volume: Single): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordStart(freq, chans, flags: DWORD; proc: RECORDPROC; user: Pointer): HRECORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
-function BASS_ChannelBytes2Seconds(handle: DWORD; pos: QWORD): Double; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
-function BASS_ChannelSeconds2Bytes(handle: DWORD; pos: Double): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
-function BASS_ChannelGetDevice(handle: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSetDevice(handle, device: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelIsActive(handle: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
-function BASS_ChannelGetInfo(handle: DWORD; var info: BASS_CHANNELINFO):BOOL;{$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
-function BASS_ChannelGetTags(handle: HSTREAM; tags: DWORD): PAnsiChar; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelFlags(handle, flags, mask: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelUpdate(handle, length: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelLock(handle: DWORD; lock: BOOL): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelPlay(handle: DWORD; restart: BOOL): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelStop(handle: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelPause(handle: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSetAttribute(handle, attrib: DWORD; value: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelGetAttribute(handle, attrib: DWORD; var value: FLOAT): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSlideAttribute(handle, attrib: DWORD; value: FLOAT; time: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelIsSliding(handle, attrib: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF}external bassdll;
-function BASS_ChannelSet3DAttributes(handle: DWORD; mode: LongInt; min, max: FLOAT; iangle, oangle, outvol: LongInt): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelGet3DAttributes(handle: DWORD; var mode: DWORD; var min, max: FLOAT; var iangle, oangle, outvol: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelGet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelGetLength(handle, mode: DWORD): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSetPosition(handle: DWORD; pos: QWORD; mode: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelGetPosition(handle, mode: DWORD): QWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelGetLevel(handle: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelGetData(handle: DWORD; buffer: Pointer; length: DWORD): DWORD; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSetSync(handle: DWORD; type_: DWORD; param: QWORD; proc: SYNCPROC; user: Pointer): HSYNC; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelRemoveSync(handle: DWORD; sync: HSYNC): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSetDSP(handle: DWORD; proc: DSPPROC; user: Pointer; priority: LongInt): HDSP; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelRemoveDSP(handle: DWORD; dsp: HDSP): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSetLink(handle, chan: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelRemoveLink(handle, chan: DWORD): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelSetFX(handle, type_: DWORD; priority: LongInt): HFX; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_ChannelRemoveFX(handle: DWORD; fx: HFX): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_ChannelBytes2Seconds(handle: DWORD; pos: QWORD): Double; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;
+function BASS_ChannelSeconds2Bytes(handle: DWORD; pos: Double): QWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;
+function BASS_ChannelGetDevice(handle: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSetDevice(handle, device: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelIsActive(handle: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;
+function BASS_ChannelGetInfo(handle: DWORD; var info: BASS_CHANNELINFO):BOOL;{$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;
+function BASS_ChannelGetTags(handle: HSTREAM; tags: DWORD): PAnsiChar; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelFlags(handle, flags, mask: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelUpdate(handle, length: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelLock(handle: DWORD; lock: BOOL): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelPlay(handle: DWORD; restart: BOOL): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelStop(handle: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelPause(handle: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSetAttribute(handle, attrib: DWORD; value: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGetAttribute(handle, attrib: DWORD; var value: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSlideAttribute(handle, attrib: DWORD; value: Single; time: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelIsSliding(handle, attrib: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;
+function BASS_ChannelSetAttributeEx(handle, attrib: DWORD; value: Pointer; size: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;
+function BASS_ChannelGetAttributeEx(handle, attrib: DWORD; value: Pointer; size: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;
+function BASS_ChannelSet3DAttributes(handle: DWORD; mode: LongInt; min, max: Single; iangle, oangle, outvol: LongInt): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGet3DAttributes(handle: DWORD; var mode: DWORD; var min, max: Single; var iangle, oangle, outvol: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGet3DPosition(handle: DWORD; var pos, orient, vel: BASS_3DVECTOR): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGetLength(handle, mode: DWORD): QWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSetPosition(handle: DWORD; pos: QWORD; mode: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGetPosition(handle, mode: DWORD): QWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGetLevel(handle: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGetLevelEx(handle: DWORD; levels: PSingle; length: Single; flags: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelGetData(handle: DWORD; buffer: Pointer; length: DWORD): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSetSync(handle: DWORD; type_: DWORD; param: QWORD; proc: SYNCPROC; user: Pointer): HSYNC; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelRemoveSync(handle: DWORD; sync: HSYNC): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSetDSP(handle: DWORD; proc: DSPPROC; user: Pointer; priority: LongInt): HDSP; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelRemoveDSP(handle: DWORD; dsp: HDSP): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSetLink(handle, chan: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelRemoveLink(handle, chan: DWORD): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelSetFX(handle, type_: DWORD; priority: LongInt): HFX; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_ChannelRemoveFX(handle: DWORD; fx: HFX): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
-function BASS_FXSetParameters(handle: HFX; par: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_FXGetParameters(handle: HFX; par: Pointer): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
-function BASS_FXReset(handle: HFX): BOOL; {$IFDEF DLL_STDCALL}stdcall;{$ENDIF}{$IFDEF DLL_CDECL}cdecl;{$ENDIF} external bassdll;
+function BASS_FXSetParameters(handle: HFX; par: Pointer): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_FXGetParameters(handle: HFX; par: Pointer): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_FXReset(handle: HFX): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
 
 function BASS_SPEAKER_N(n: DWORD): DWORD;
@@ -870,6 +901,7 @@ function BASS_SetEAXPreset(env: LongInt): BOOL;
   env    : a EAX_ENVIRONMENT_xxx constant
 }
 {$ENDIF}
+
 
 implementation
 
@@ -941,5 +973,4 @@ end;
 {$ENDIF}
 
 end.
-// END OF FILE /////////////////////////////////////////////////////////////////
 
