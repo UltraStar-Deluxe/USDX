@@ -78,8 +78,10 @@ type
   TScreenSing = class(TMenu)
   private
     fShowVisualization: boolean;
+    fShowBackground:    boolean;
     fCurrentVideo:      IVideo;
     fVideoClip:         IVideo;
+    fVideoClipStill:    IVideo;
     fLyricsSync:        TLyricsSyncSource;
     fMusicSync:         TMusicSyncSource;
     fTimebarMode:       TTimebarMode;
@@ -205,19 +207,29 @@ begin
         Exit;
       end;
 
+      //ToDo basisbit: get this to work properly
       // show visualization
       Ord('V'):
       begin
-        fShowVisualization := not fShowVisualization;
-
-        if fShowVisualization then
+        if (fShowVisualization = false) and (fShowBackground = true) then //only Background should be visible currently, switch to video
         begin
-          fCurrentVideo := Visualization.Open(PATH_NONE);
-          fCurrentVideo.play;
+          fShowBackground := false;
+          fCurrentVideo := fVideoClip;
         end
         else
         begin
-          fCurrentVideo := fVideoClip;
+          if fShowVisualization then
+          begin //switch to Background only
+            fShowBackground := true;
+            fCurrentVideo := fVideoClipStill; //note: ffmpeg is used to show certain images, too
+            fShowVisualization := false;
+          end
+          else
+          begin //Video is currently visible, change to visualization
+            fShowVisualization := true;
+            fCurrentVideo := Visualization.Open(PATH_NONE);
+            fCurrentVideo.play;
+          end;
         end;
         Exit;
       end;
@@ -816,12 +828,14 @@ begin
 
   {*
    * set background to: video
+   * Note: ffmpeg / this is also used for many background formats"
    *}
   fShowVisualization := false;
   VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
   if (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet() and VideoFile.IsFile then
   begin
     fVideoClip := VideoPlayback.Open(VideoFile);
+    fVideoClipStill := VideoPlayback.Open(CurrentSong.Path.Append(CurrentSong.Background));
     fCurrentVideo := fVideoClip;
     if (fVideoClip <> nil) then
     begin
@@ -997,7 +1011,7 @@ begin
   // draw background picture (if any, and if no visualizations)
   // when we don't check for visualizations the visualizations would
   // be overdrawn by the picture when {UNDEFINED UseTexture} in UVisualizer
-  if (not fShowVisualization) then
+  if (not fShowVisualization) or (fShowBackground) then
     SingDrawBackground;
 
   // set player names (for 2 screens and only singstar skin)
