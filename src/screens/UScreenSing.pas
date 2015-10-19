@@ -81,7 +81,6 @@ type
     fShowBackground:    boolean;
     fCurrentVideo:      IVideo;
     fVideoClip:         IVideo;
-    fVideoClipStill:    IVideo;
     fLyricsSync:        TLyricsSyncSource;
     fMusicSync:         TMusicSyncSource;
     fTimebarMode:       TTimebarMode;
@@ -211,17 +210,17 @@ begin
       // show visualization
       Ord('V'):
       begin
-        if (fShowVisualization = false) and (fShowBackground = true) then //only Background should be visible currently, switch to video
+        if (fShowVisualization = false) and (fShowBackground = true) and (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet() then //only Background should be visible currently, switch to video
         begin
           fShowBackground := false;
           fCurrentVideo := fVideoClip;
         end
         else
         begin
-          if fShowVisualization then
+          if fShowVisualization and CurrentSong.Background.IsSet() then
           begin //switch to Background only
             fShowBackground := true;
-            fCurrentVideo := fVideoClipStill; //note: ffmpeg is used to show certain images, too
+            fCurrentVideo := nil;
             fShowVisualization := false;
           end
           else
@@ -834,7 +833,6 @@ begin
   if (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet() and VideoFile.IsFile then
   begin
     fVideoClip := VideoPlayback.Open(VideoFile);
-    fVideoClipStill := VideoPlayback.Open(CurrentSong.Path.Append(CurrentSong.Background));
     fCurrentVideo := fVideoClip;
     if (fVideoClip <> nil) then
     begin
@@ -850,8 +848,7 @@ begin
   {*
    * set background to: picture
    *}
-  if (CurrentSong.Background.IsSet) and (fVideoClip = nil)
-    and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
+  if (CurrentSong.Background.IsSet) then
   begin
     BgFile := CurrentSong.Path.Append(CurrentSong.Background);
     try
