@@ -422,15 +422,18 @@ begin
         // Important: Unless SDL_SetVideoMode() is called (it is not on Windows), Screen.w
         // and Screen.h are not valid after a resize and still contain the old size. Use
         // ScreenW and ScreenH instead.
-        {$IF Defined(Linux) or Defined(FreeBSD)}
+        //////
         if boolean( Ini.FullScreen ) then
-          SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN)
+        begin
+          {$IF Defined(Linux) or Defined(FreeBSD)}
+          SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+          {$ELSE}
+          Screen.W := ScreenW;
+          Screen.H := ScreenH;
+          {$IFEND}
+        end
         else
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
-        {$ELSE}
-        Screen.W := ScreenW;
-        Screen.H := ScreenH;
-        {$IFEND}
       end;
       SDL_KEYDOWN:
         begin
