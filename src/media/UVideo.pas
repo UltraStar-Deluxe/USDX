@@ -394,7 +394,9 @@ begin
   // error resilience strategy (careful/compliant/agressive/very_aggressive)
   //fCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
   // allow non spec compliant speedup tricks.
-  //fCodecContext^.flags2 := fCodecContext^.flags2 or CODEC_FLAG2_FAST;
+
+  fCodecContext^.flags2 := CODEC_FLAG2_FAST;
+  fCodecContext^.flags := CODEC_FLAG_LOW_DELAY;
 
   // Note: avcodec_open() and avcodec_close() are not thread-safe and will
   // fail if called concurrently by different threads.
