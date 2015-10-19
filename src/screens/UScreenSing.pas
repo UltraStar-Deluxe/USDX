@@ -239,8 +239,7 @@ begin
       begin
         if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
         begin
-          LyricsState.SetCurrentTime(CurrentSong.gap / 1000 - 5);
-          AudioPlayback.SetSyncSource(fLyricsSync);
+          AudioPlayback.SetPosition(CurrentSong.gap / 1000.0 - 5.0);
         end;
         Exit;
       end;
@@ -1004,7 +1003,7 @@ var
   LastWord:              TLyricWord;
   medley_end:            boolean;
   medley_start_applause: boolean;
-
+  DebugStringDeleteSthis:string;
 begin
   Background.Draw;
 
@@ -1132,7 +1131,8 @@ begin
     DrawMedleyCountdown;
 
   // check for music finish
-  //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LyricsState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
+  //Log.LogError
+  DebugStringDeleteSthis:=('Check for music finish: ' + BoolToStr(not AudioPlayback.Finished) + ' ' + FloatToStr(LyricsState.GetCurrentTime()*1000) + ' ' + IntToStr(CurrentSong.Finish));
   if ShowFinish then
   begin
     if (not AudioPlayback.Finished) and (not medley_end or (ScreenSong.Mode <> smMedley)) and
