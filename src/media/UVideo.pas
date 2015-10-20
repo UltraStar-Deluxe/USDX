@@ -312,7 +312,8 @@ end;
 constructor TVideo_FFmpeg.Create;
 begin
   glGenTextures(1, PGLuint(@fFrameTex));
-  SupportsNPOT := AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two');
+  SupportsNPOT := (AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two')) and not (AnsiContainsStr(glGetString(GL_EXTENSIONS), 'Radeon X16'));
+
   Reset();
 end;
 

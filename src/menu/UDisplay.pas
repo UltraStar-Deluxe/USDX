@@ -176,7 +176,7 @@ begin
   DoneOnShow  := false;
 
   glGenTextures(2, PGLuint(@FadeTex));
-  SupportsNPOT := AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two');
+  SupportsNPOT := (AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two')) and not (AnsiContainsStr(glGetString(GL_EXTENSIONS), 'Radeon X16'));
   InitFadeTextures();
 
   // set LastError for OSD to No Error

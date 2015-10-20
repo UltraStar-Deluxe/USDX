@@ -210,10 +210,13 @@ begin
       // show visualization
       Ord('V'):
       begin
-        if (fShowVisualization = false) and (fShowBackground = true) and (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet() then //only Background should be visible currently, switch to video
+        if ((fShowBackground = true) and (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet())
+                             or (fShowVisualization and not CurrentSong.Background.IsSet()) then //switch to video
         begin
           Log.LogStatus('decided to switch to video', 'UScreenSing.ParseInput');
           fShowBackground := false;
+          fCurrentVideo := nil;
+          fShowVisualization := false;
           fCurrentVideo := fVideoClip;
           Log.LogStatus('finished switching to video', 'UScreenSing.ParseInput');
         end
