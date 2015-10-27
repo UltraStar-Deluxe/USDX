@@ -818,7 +818,7 @@ begin
           X := Round((X / (ScreenW / Screens)) * RenderW);
           if (X > RenderW) then
             X := X - RenderW;
-          Y := Round((Y / ScreenH) * RenderH
+          Y := Round((Y / ScreenH) * RenderH);
 
           // test the 5 front buttons for click
           for I := 0 to 4 do
