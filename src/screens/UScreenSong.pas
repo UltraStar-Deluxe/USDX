@@ -813,6 +813,12 @@ begin
             if (CatSongs.Song[Btn].Visible) then
               Inc(I);
           end;
+		  
+		  // transfer mousecords to the 800x600 raster we use to draw
+          X := Round((X / (ScreenW / Screens)) * RenderW);
+          if (X > RenderW) then
+            X := X - RenderW;
+          Y := Round((Y / ScreenH) * RenderH
 
           // test the 5 front buttons for click
           for I := 0 to 4 do
